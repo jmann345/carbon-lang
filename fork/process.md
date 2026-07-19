@@ -93,6 +93,34 @@ Compute realism: this container has 4 cores / 15 GB / ~30 GB disk — not
 parallelism is serialized. Long grinds run as background workflows across
 sessions; anything durable is committed and pushed before a session ends.
 
+## Quantized state (the Bun-style machine-readable artifacts)
+
+The Zig→Rust port worked because its state lived in machine-readable
+artifacts every agent read and updated — a rulebook plus an inventory of
+every struct/function to port. This fork's equivalents, all in-repo:
+
+1. **`fork/conformance/out/scoreboard.json`** — behavioral truth: every
+   milestone bullet → PASS/FAIL/SKIP with program-level detail.
+2. **`fork/inventory/work-items.json`** — the work inventory: every known
+   concrete gap (TODO stub, fail_todo test, missing feature slice,
+   undesigned area) as a structured item with file:line evidence, owning
+   bullet, and dependency edges. Agents claim items from here, never from
+   vibes; discovering un-inventoried work means *adding the item first*.
+3. **`fork/rulebook.md`** — process rules + toolchain traps, grown from
+   repeated review findings; loaded by every producer/reviewer agent.
+4. **`fork/decision-log.md`** — design authority between upstream
+   proposals and implementation.
+
+Every workstream loop starts by reading (1)+(2) and ends by updating them.
+
+## Human-in-the-loop rule
+
+Every design fork presented to the user comes with a curated reading list
+(`fork/design-sprint/reading-list.md` format): in-repo sources first,
+minimal external material second, and the one load-bearing concept named
+explicitly — so the decider is always equipped to overrule the
+recommendation.
+
 ## Standing rules
 
 1. **Trunk stays green.** The fork branch must always build and pass the

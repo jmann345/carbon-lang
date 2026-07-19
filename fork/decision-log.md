@@ -16,6 +16,20 @@ consequences. Undecided forks are listed as OPEN at the top.
 overriding the design README's older Success/Failure spelling; docs and
 prelude code use `Core.Result(T, E)` with alternatives `Ok(T)` / `Err(E)`.
 
+**Sub-decisions F-006b..l (user via AskUserQuestion, 2026-07-19), all per
+doc recommendation:** `?` in the suffix-operator precedence group,
+repeatable (b); ImplicitAs-only error conversion, no dedicated trait (c);
+`?` requires a declared Core.Try-implementing return type — no
+auto-return, file scope, or global initializers (d); `--cpp-exceptions`
+defaults to `auto` (e); fenced std::terminate at unfenced boundaries (f);
+Cpp.Exception stores exception_ptr only with lazy str accessors and
+lossless rethrow (g); export ships the Carbon::expected<T,E> header only,
+no generated throwing wrappers (h); Optional implements Try but no
+implicit Optional/Result bridge (i); entry points: (), i32,
+Result((),E), Result(i32,E) with Err → stderr + exit 1 (j); try-blocks
+and catch-expressions deferred past 0.1 (k); Carbon aborts terminate
+without unwinding C++ frames (l).
+
 Staged B0-B3 per fork/design-sprint/error-handling.md: B0 `--cpp-exceptions`
 flag + fenced terminate-at-boundary thunks (zero deps, replaces today's UB);
 B1 Core.Result + match (after W4/W5); B2 postfix `?` through an open
@@ -32,6 +46,22 @@ trivially-copyable fields in 0.1), C++-compatible layout on the existing
 CustomLayoutType machinery, both interop directions. Settles the
 overlapping-storage primitive choice payloads (W5) lower onto. Rejected:
 Core.Storage primitive only, import-only. Per fork/design-sprint/unions.md.
+
+**Sub-decisions F-007a..k (user via AskUserQuestion, 2026-07-19):**
+standalone `union` introducer keyword (a); Rust safety model — writes
+safe, reads Strict-unsafe, Permissive behavior in 0.1 (b) — WITH the
+user's standing guidance that `choice` is Carbon's safe tagged union
+(Rust-enum model) and the docs must steer users to `choice` unless C++
+union interop is needed; read semantics are defined byte reinterpretation,
+never UB — chosen by the user's lowest-friction rule since the existing
+imported-union lowering already behaves this way mechanically (c);
+designated single-field or unformed-then-assign init only (d);
+trivially-copyable + trivially-destructible fields in 0.1 (e);
+anonymous unions import-only in 0.1 (f); debug-build discriminator
+tracking committed as named future work (g); `union` reserved keyword
+with r#union migration (h); at least one field required (i); fully
+guaranteed layout — offset 0, max size/align (j); choice-payload storage
+contract stated normatively as the W5 implementation contract (k).
 
 ### F-008: Threading/atomics interop — **Fix the three defects** (2026-07-19)
 

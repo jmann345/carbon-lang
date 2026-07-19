@@ -98,8 +98,36 @@ leading comment block:
   (write-tests-first, per process.md step 1). Keep SKIPs rare; prefer
   writing programs against constructs that already work.
 
+### Differential Carbon-vs-C++ programs
+
+A program `<name>.carbon` may have a sibling file `<name>.diff.cpp`: an
+equivalent plain C++17 program. When present, the runner — after the Carbon
+binary runs and passes its EXPECT-* checks (which stay authoritative) —
+additionally compiles the C++ file with the toolchain's **own** clang++
+(`<root>/lib/carbon/llvm/bin/clang++`, the busybox symlink next to
+`bin/carbon`; it builds runtimes on demand like `carbon link`, so the C++
+compile gets the link timeout), runs it, and requires:
+
+- C++ exit code == Carbon exit code, and
+- C++ stdout byte-identical to Carbon stdout.
+
+Any divergence (including a C++-side compile failure or timeout) is the
+`DIFF-MISMATCH` status. This makes real clang-compiled C++ the oracle for
+output values instead of hand-authored `EXPECT-STDOUT` alone — for an
+interop-first language, "the Carbon program and the equivalent C++ program
+produce byte-identical output" is the honest arbiter, and it catches
+wrong-value expectations a program author could bake into `EXPECT-STDOUT`
+(fork/ORCHESTRATION.md next-action 6). Differential programs therefore
+deliberately omit `EXPECT-STDOUT` and let the C++ side compute the
+expectation. Mirror `Core.Print`'s exact lowering in the C++ side:
+`printf("%d\n", x)` with the argument as `int`
+(toolchain/lower/handle_call.cpp). `--self-test` validates that every
+`*.diff.cpp` sits next to its matching `*.carbon` program.
+
 Statuses per program: `PASS`, `COMPILE-FAIL`, `LINK-FAIL`, `RUN-FAIL`
-(crash, timeout, or wrong exit code), `OUTPUT-MISMATCH`, `SKIP`.
+(crash, timeout, or wrong exit code), `OUTPUT-MISMATCH`, `DIFF-MISMATCH`
+(Carbon and differential C++ diverge, or the C++ side fails to build/run),
+`SKIP`.
 
 ## Bullet mapping and rollup
 
@@ -148,4 +176,8 @@ when match semantics (workstream W4) and choice payloads (W5) land.
 3. Keep one concept per program; make output observable via
    `Core.Print`/`Core.PrintChar`/exit codes (or `Cpp.std.cout` for interop
    programs).
-4. Run `python3 fork/conformance/runner.py --self-test`, then a full run.
+4. For already-working behavior with a natural C++ counterpart, prefer a
+   differential pair: add `<name>.diff.cpp` next to the program and omit
+   `EXPECT-STDOUT` so the C++ side is the oracle (see "Differential
+   Carbon-vs-C++ programs" above).
+5. Run `python3 fork/conformance/runner.py --self-test`, then a full run.

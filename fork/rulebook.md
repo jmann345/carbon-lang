@@ -50,13 +50,13 @@ file into context.
 - **R10. SKIP reasons must state the exact blocking evidence** (compiler
   error text, missing-symbol name, or file:line of the stub) so un-skipping
   is mechanical when the blocker lands. (Origin: conformance-growth run.)
-- **R11. Format-check changed C++ with the CI-pinned clang-format** (the
+- **R18. Format-check changed C++ with the CI-pinned clang-format** (the
   `==` version in `.pre-commit-config.yaml`, currently 21.1.8) before
   commit. Distro clang-format disagrees with CI on files CI considers
   green — never use it as the arbiter. (Origin: W4 slice-1 adversarial
   review confirmed a violation invisible to local clang-format 18,
   2026-07-19.)
-- **R12. New or changed AUTOUPDATE goldens without regenerated CHECK lines
+- **R19 (companion to R15). New or changed AUTOUPDATE goldens without regenerated CHECK lines
   fail `bazel test`.** When goldens cannot be autoupdated locally (no local
   build), the land sequence must run
   `bazel run //toolchain/testing:file_test -- --autoupdate ...` on the
@@ -122,3 +122,34 @@ here.
   autoupdate workflow, let it commit the reconciliation back — never
   hand-author SemIR goldens. A green autoupdate run doubles as
   compile-validation of the feature code. (Origin: trial run.)
+
+## Anti-Goodhart protocol (the tests serve the goal, never the reverse)
+
+- **R16. Passing tests is necessary, never sufficient — and gaming them
+  is the cardinal sin.** Concretely prohibited: (a) hand-editing golden
+  CHECK lines in `toolchain/**/testdata/**` — goldens change ONLY via the
+  runner-side autoupdate workflow (R15), so semantic drift is always a
+  reviewed diff from a real compiler run, never an agent's assertion;
+  (b) weakening, deleting, or SKIP-ing an existing test to make a run
+  green — a SKIP added to a previously-passing program is presumed
+  cheating until its reason cites a design/toolchain change that
+  legitimately regressed it; (c) special-casing recognizable test inputs
+  in compiler code (matching on test file names, magic constants from
+  testdata); (d) deriving EXPECT values by running the implementation
+  under test — expected outputs come from the design doc, from C++
+  differential pairs, or from independent reasoning, and the reviewer
+  must be able to re-derive them. Adversary #2's brief now includes an
+  explicit Goodhart check: diff the goldens for weakened assertions,
+  grep the implementation diff for input-specific special cases, and
+  verify no test was deleted or skipped to force green.
+  (Origin: user directive, 2026-07-19; Kelley critique of the Bun
+  rewrite — "the arbiter is only as good as its coverage".)
+- **R17. A convoluted justification is itself a defect signal.** Per the
+  Bun rewrite's lesson: when an implementer, fixer, or rebuttal needs a
+  long, winding explanation for why surprising code is actually fine —
+  "this looks wrong but works because..." — the presumption is that the
+  code is wrong and must be simplified or fixed. Reviewers treat
+  multi-paragraph workaround rationales as findings in their own right:
+  the burden is a one-sentence justification citing a design doc,
+  proposal, or rulebook rule. Dispositions that rebut findings must cite
+  evidence, not narrative. (Origin: user directive, 2026-07-19.)

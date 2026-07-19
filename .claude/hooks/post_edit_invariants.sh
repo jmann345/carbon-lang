@@ -68,6 +68,26 @@ case "$file" in
     if ! out=$(cd "$root" && python3 fork/conformance/runner.py --self-test 2>&1); then
       fail "conformance --self-test failed after editing $file: $(echo "$out" | tail -5)"
     fi
+    # Anti-Goodhart (R16b): adding SKIP to a previously-passing tracked
+    # program is presumed test-dodging until justified.
+    if git -C "$root" ls-files --error-unmatch "$file" >/dev/null 2>&1; then
+      if git -C "$root" diff HEAD -- "$file" | grep -q '^\+// SKIP:' \
+         && ! git -C "$root" show "HEAD:$(git -C "$root" ls-files --full-name "$file" | head -1)" 2>/dev/null | grep -q '^// SKIP:'; then
+        fail "R16b: this edit ADDS a SKIP to a previously-passing conformance program ($file). SKIP-to-dodge-a-failure is prohibited; the SKIP reason must cite the design/toolchain change that legitimately regressed it, and an adversarial reviewer must confirm."
+      fi
+    fi
+    ;;
+esac
+
+# 4b. Anti-Goodhart (R16a): golden CHECK lines change only via the
+# runner-side autoupdate workflow, never by agent hand-edits.
+case "$file" in
+  */toolchain/*/testdata/*.carbon)
+    if git -C "$root" ls-files --error-unmatch "$file" >/dev/null 2>&1; then
+      if git -C "$root" diff HEAD -- "$file" | grep -Eq '^[+-].*CHECK:(STDOUT|STDERR)'; then
+        fail "R16a: this edit changes golden CHECK lines in $file by hand. Goldens change ONLY via the fork_autoupdate workflow (R15) so every semantic change comes from a real compiler run. Revert the CHECK-line edits; change only the source portion and let autoupdate reconcile."
+      fi
+    fi
     ;;
 esac
 

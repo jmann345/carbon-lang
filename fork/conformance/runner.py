@@ -11,6 +11,21 @@ Toolchain invocation (verified against repo sources; see README.md):
     <carbon> link --output=<out>/bin/<name> <out>/obj/<name>.o
     <out>/bin/<name>            # 30s timeout, capture exit code + stdout
 
+Differential Carbon-vs-C++ checking: a program `<name>.carbon` may have a
+sibling `<name>.diff.cpp` — an equivalent plain C++17 program. When present,
+after the Carbon binary runs (and passes its EXPECT-* checks, which stay
+authoritative), the runner additionally does:
+
+    <root>/lib/carbon/llvm/bin/clang++ -std=c++17 -o <out>/bin/<name>.cpp.bin <name>.diff.cpp
+    <out>/bin/<name>.cpp.bin    # run timeout, capture exit code + stdout
+
+and requires C++ exit code == Carbon exit code AND C++ stdout byte-identical
+to Carbon stdout; divergence is the DIFF-MISMATCH status. clang++ here is
+the toolchain's own busybox symlink (dispatches on argv[0]; builds runtimes
+on demand like `carbon link`, hence the link timeout for the C++ compile).
+This makes real C++ the oracle for output values instead of hand-authored
+EXPECT-STDOUT alone (fork/ORCHESTRATION.md next-action 6).
+
 Evidence for the command pattern:
   - toolchain/install/install_test.py (run_carbon_test): `carbon compile
     --output=X f.carbon` then `carbon link --output=Y X` against an installed
@@ -48,9 +63,18 @@ COMPILE_FAIL = "COMPILE-FAIL"
 LINK_FAIL = "LINK-FAIL"
 RUN_FAIL = "RUN-FAIL"
 OUTPUT_MISMATCH = "OUTPUT-MISMATCH"
+DIFF_MISMATCH = "DIFF-MISMATCH"
 SKIP = "SKIP"
 
-FAIL_STATUSES = (COMPILE_FAIL, LINK_FAIL, RUN_FAIL, OUTPUT_MISMATCH)
+FAIL_STATUSES = (
+    COMPILE_FAIL, LINK_FAIL, RUN_FAIL, OUTPUT_MISMATCH, DIFF_MISMATCH)
+
+# Location of the toolchain's own clang++ inside an installed tree, relative
+# to the tree root (the directory containing bin/carbon). Verified against an
+# extracted carbon_toolchain tarball: lib/carbon/llvm/bin/clang++ is a
+# busybox symlink that dispatches on argv[0], so invoking it by this path
+# behaves as a real clang++ (with on-demand runtimes, like `carbon link`).
+CLANGXX_RELPATH = ("lib", "carbon", "llvm", "bin", "clang++")
 
 # Bullet rollup statuses (process.md: "bullet -> PASS / FAIL / NOT-WRITTEN").
 BULLET_PASS = "PASS"
@@ -76,6 +100,11 @@ class Program:
         self.expect_exit = 0
         self.expect_stdout = None  # None => stdout unchecked; else exact str
         self.skip_reason = None
+        # Differential sibling: `<name>.diff.cpp` next to `<name>.carbon`.
+        # When set, the runner also compiles+runs the C++ file with the
+        # toolchain's own clang++ and requires exit code and stdout to be
+        # byte-identical to the Carbon program's.
+        self.diff_cpp = None
 
 
 def parse_directives(path, rel):
@@ -171,10 +200,50 @@ def discover_programs(programs_dir, filter_substr):
         if filter_substr and filter_substr not in rel:
             continue
         try:
-            programs.append(parse_directives(path, rel))
+            prog = parse_directives(path, rel)
         except DirectiveError as e:
             errors.append(str(e))
+            continue
+        diff_cpp = path.with_name(path.name[:-len(".carbon")] + ".diff.cpp")
+        if diff_cpp.is_file():
+            prog.diff_cpp = diff_cpp
+        programs.append(prog)
+    # Orphan differential files: every *.diff.cpp must sit next to its
+    # matching *.carbon program (enforced by --self-test; reported here too
+    # so a stray rename can't silently drop a differential check).
+    for path in sorted(programs_dir.rglob("*.diff.cpp")):
+        rel = path.relative_to(programs_dir).as_posix()
+        if filter_substr and filter_substr not in rel:
+            continue
+        carbon_sibling = path.with_name(
+            path.name[:-len(".diff.cpp")] + ".carbon")
+        if not carbon_sibling.is_file():
+            errors.append(
+                f"{rel}: differential C++ file has no matching "
+                f"{carbon_sibling.name} program next to it")
     return programs, errors
+
+
+def find_clangxx(toolchain):
+    """Locate the toolchain's own clang++ from the `carbon` binary path.
+
+    The install tree layout is <root>/bin/carbon with clang++ at
+    <root>/lib/carbon/llvm/bin/clang++ (a carbon-busybox symlink).
+    `bin/carbon` is itself a symlink to lib/carbon/carbon-busybox, so a
+    resolved toolchain path lands in lib/carbon/ — probe both layouts.
+    Returns None if not found.
+    """
+    candidates = [
+        # From <root>/bin/carbon (the unresolved install-tree entry point).
+        toolchain.parent.parent.joinpath(*CLANGXX_RELPATH),
+        # From <root>/lib/carbon/carbon-busybox (the resolved symlink
+        # target): clang++ sits in the llvm/bin/ dir next to it.
+        toolchain.parent / "llvm" / "bin" / "clang++",
+    ]
+    for clangxx in candidates:
+        if clangxx.is_file():
+            return clangxx
+    return None
 
 
 def run_cmd(cmd, timeout):
@@ -209,8 +278,14 @@ def write_log(log_dir, prog, sections):
     return log_path
 
 
-def execute_program(prog, toolchain, out_dir, timeouts):
-    """Compile, link, and run one program. Returns (status, detail)."""
+def execute_program(prog, toolchain, clangxx, out_dir, timeouts):
+    """Compile, link, and run one program. Returns (status, detail).
+
+    If the program has a `<name>.diff.cpp` differential sibling, the C++
+    file is additionally compiled with the toolchain's clang++ and run; its
+    exit code and stdout must be byte-identical to the Carbon program's
+    (on top of any EXPECT-* directives, which stay authoritative).
+    """
     if prog.skip_reason:
         return SKIP, prog.skip_reason
 
@@ -292,6 +367,59 @@ def execute_program(prog, toolchain, out_dir, timeouts):
             ("stderr", err),
         ])
         return OUTPUT_MISMATCH, detail
+
+    # --- Differential C++ (byte-identical exit code + stdout) ---
+    if prog.diff_cpp is not None:
+        carbon_rc, carbon_out = rc, out
+        if clangxx is None:
+            detail = ("differential C++ sibling present but clang++ not "
+                      "found in the toolchain tree "
+                      f"(expected at <root>/{'/'.join(CLANGXX_RELPATH)})")
+            write_log(log_dir, prog, [("detail", detail)])
+            return DIFF_MISMATCH, detail
+        cpp_bin = bin_dir / f"{prog.name}.cpp.bin"
+        cpp_cmd = [clangxx, "-std=c++17", "-o", cpp_bin, prog.diff_cpp]
+        # The toolchain clang++ builds runtimes on demand like `carbon
+        # link`, so give the C++ compile the link timeout.
+        rc, out, err, timed_out = run_cmd(cpp_cmd, timeouts["link"])
+        if timed_out or rc != 0:
+            detail = ("differential C++ compile timed out" if timed_out
+                      else f"differential C++ compile exited with {rc}")
+            write_log(log_dir, prog, [
+                ("command", " ".join(str(c) for c in cpp_cmd)),
+                ("detail", detail),
+                ("stdout", out),
+                ("stderr", err),
+            ])
+            return DIFF_MISMATCH, detail
+        rc, out, err, timed_out = run_cmd([cpp_bin], timeouts["run"])
+        if timed_out:
+            detail = (f"differential C++ binary did not finish within "
+                      f"{timeouts['run']}s")
+            write_log(log_dir, prog, [
+                ("command", str(cpp_bin)),
+                ("detail", detail),
+                ("stdout", out),
+                ("stderr", err),
+            ])
+            return DIFF_MISMATCH, detail
+        if rc != carbon_rc or out != carbon_out:
+            parts = []
+            if rc != carbon_rc:
+                parts.append(f"exit code: C++ {rc} vs Carbon {carbon_rc}")
+            if out != carbon_out:
+                parts.append("stdout differs")
+            detail = "Carbon/C++ divergence (" + "; ".join(parts) + ")"
+            write_log(log_dir, prog, [
+                ("command", str(cpp_bin)),
+                ("detail", detail),
+                ("carbon exit code", str(carbon_rc)),
+                ("c++ exit code", str(rc)),
+                ("carbon stdout", carbon_out),
+                ("c++ stdout", out),
+                ("c++ stderr", err),
+            ])
+            return DIFF_MISMATCH, detail
 
     return PASS, ""
 
@@ -375,6 +503,8 @@ def self_test(programs_dir, filter_substr):
                 marks.append(f"SKIP: {prog.skip_reason}")
             if prog.expect_stdout is not None:
                 marks.append(f"stdout: {len(prog.expect_stdout.splitlines())} lines")
+            if prog.diff_cpp is not None:
+                marks.append("diff: C++")
             marks.append(f"exit: {prog.expect_exit}")
             print(f"  {prog.rel:<{width}}  ->  {prog.bullet}  [{'; '.join(marks)}]")
     return 0 if ok else 1
@@ -403,7 +533,8 @@ def print_table(programs, results, rollup, totals):
 
     print()
     print("=== totals ===")
-    for key in (PASS, COMPILE_FAIL, LINK_FAIL, RUN_FAIL, OUTPUT_MISMATCH, SKIP):
+    for key in (PASS, COMPILE_FAIL, LINK_FAIL, RUN_FAIL, OUTPUT_MISMATCH,
+                DIFF_MISMATCH, SKIP):
         print(f"  {key:<16} {totals[key]}")
     bullet_pass = sum(1 for r in rollup.values() if r["status"] == BULLET_PASS)
     bullet_fail = sum(1 for r in rollup.values() if r["status"] == BULLET_FAIL)
@@ -474,10 +605,13 @@ def main(argv=None):
         "run": args.run_timeout,
     }
 
+    clangxx = find_clangxx(toolchain)
+
     results = {}
     started = time.time()
     for prog in programs:
-        status, detail = execute_program(prog, toolchain, out_dir, timeouts)
+        status, detail = execute_program(
+            prog, toolchain, clangxx, out_dir, timeouts)
         results[prog.rel] = (status, detail)
         line = f"[{status}] {prog.rel}"
         if detail:
@@ -485,7 +619,8 @@ def main(argv=None):
         print(line, flush=True)
 
     totals = {k: 0 for k in
-              (PASS, COMPILE_FAIL, LINK_FAIL, RUN_FAIL, OUTPUT_MISMATCH, SKIP)}
+              (PASS, COMPILE_FAIL, LINK_FAIL, RUN_FAIL, OUTPUT_MISMATCH,
+               DIFF_MISMATCH, SKIP)}
     for status, _ in results.values():
         totals[status] += 1
 
@@ -502,6 +637,7 @@ def main(argv=None):
                 "bullet": prog.bullet,
                 "status": results[prog.rel][0],
                 "detail": results[prog.rel][1],
+                "differential": prog.diff_cpp is not None,
             }
             for prog in programs
         ],

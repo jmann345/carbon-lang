@@ -129,6 +129,30 @@ points as OPEN with a recommendation; they never silently decide. The
 orchestrator batches accumulated sub-forks into AskUserQuestion rounds
 and records outcomes here before the affected work merges.
 
+## North-star guard (against optimizing for our own tests)
+
+The scoreboard is this fork's progress meter, but the goal is Google's
+stated goal for Carbon: a performance-critical successor language with
+seamless, incremental C++ interop (`docs/project/goals.md` — the
+constitution). Tests we wrote can drift from that goal; three guards keep
+them honest:
+
+1. **Differential arbitration**: wherever possible, expected behavior is
+   pinned by an independent implementation (paired C++ programs must
+   produce byte-identical output), not by values the implementing agent
+   chose.
+2. **Evaluator simulation** (recurring workstream, after each major
+   merge): a fresh-context agent acts as a skeptical C++ developer
+   evaluating Carbon per the milestone's own goals — ports a small
+   real-world C++ snippet using only the installed toolchain and public
+   docs, no fork-internal knowledge. Friction, wrong results, and
+   misleading diagnostics become inventory items regardless of what the
+   scoreboard says. The scoreboard measures what we encoded; evaluator
+   simulation measures what we forgot to encode.
+3. **Rulebook R16/R17**: the anti-Goodhart prohibitions (goldens only via
+   autoupdate, no test weakening, no special-casing, independently
+   derivable expectations) and the convoluted-justification defect signal.
+
 ## Standing rules
 
 1. **Trunk stays green.** The fork branch must always build and pass the

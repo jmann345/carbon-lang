@@ -9,6 +9,12 @@ name: 'Fork: mirror upstream nightly toolchain'
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - '.github/workflows/fork_mirror_nightly.yaml'
+      - 'fork/conformance/arbiter-request.txt'
 
 permissions:
   contents: write # For creating and uploading to releases on this fork.

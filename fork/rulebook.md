@@ -105,3 +105,20 @@ here.
   *mechanical* class of error, the fix is extending the hook script, then
   a rulebook entry. (Origin: user directive after reviewer 2 burned a
   finding on clang-format, 2026-07-19.)
+- **R13. Workflow YAML: never let commit-message text sit at column 0
+  inside a `run: |` block** — it terminates the block scalar and becomes
+  a stray top-level key that Actions rejects with a jobless failed run;
+  use multiple `-m` flags instead. Python yaml.safe_load does NOT catch
+  this (it happily parses the stray key) — validate root keys, not just
+  parseability. (Origin: trial run, fork_autoupdate.yaml failure
+  29696011228.)
+- **R14. A run 'queued' >10 min while no other run is in_progress means
+  the self-hosted runner is offline** — tell the user to restart it
+  (`./run.sh`, or `svc.sh install` for persistence) instead of waiting;
+  queued work survives and starts automatically on reconnect. (Origin:
+  trial run, ~3.5h stall 2026-07-19.)
+- **R15. New compiler features land with runner-side golden autoupdate:**
+  push testdata with AUTOUPDATE markers and empty CHECK lines, fire the
+  autoupdate workflow, let it commit the reconciliation back — never
+  hand-author SemIR goldens. A green autoupdate run doubles as
+  compile-validation of the feature code. (Origin: trial run.)

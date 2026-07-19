@@ -47,6 +47,11 @@ while (x < 3) {
 Print("Done!");
 ```
 
+In place of a boolean expression, the condition may be a _pattern condition_,
+`while (let` _pattern_ `=` _expression_`)`, which re-matches a refutable
+pattern each iteration and exits the loop on the first failure; see
+[Pattern conditions and `let ... else`](pattern_conditions.md).
+
 ### `for`
 
 `for` statements support range-based looping, typically over containers. Syntax

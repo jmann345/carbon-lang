@@ -43,6 +43,11 @@ evaluate.
 
 Note that `else if` may be repeated.
 
+In place of a boolean expression, the condition may be a _pattern condition_,
+`if (let` _pattern_ `=` _expression_`)`, which matches a refutable pattern and
+binds its names in the success block; see
+[Pattern conditions and `let ... else`](pattern_conditions.md).
+
 For example:
 
 ```carbon

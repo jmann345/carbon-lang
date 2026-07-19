@@ -1061,7 +1061,11 @@ template parameters, use the `template` keyword before `constraint`. Method,
 associated constant, and associated function requirements may only be declared
 inside a `template constraint`. Note that a checked-generic constraint ignores
 the names of members defined for a type, but a template constraint can depend on
-them.
+them. The full design for template constraints — including member requirements,
+`require` validity blocks, boolean predicate requirements, satisfaction and
+probe-mode evaluation semantics, and the mapping to and from C++20 concepts — is
+in [Template constraints](template_constraints.md), fixed by fork decision
+[F-010](/fork/decision-log.md#f-010-template-structural-conformance--template-constraint--require-2026-07-19).
 
 There is an analogy between declarations used in a `template constraint` and in
 an `interface` definition. If an `interface` `I` has (non-`alias`,
@@ -6873,6 +6877,11 @@ an integer to live inside a specified range. See
 [question-for-leads issue #2153: Checked generics calling templates](https://github.com/carbon-language/carbon-lang/issues/2153)
 and
 [future work in proposal #2200: Template generics](/proposals/p002200-template-generics.md#predicates-constraints-on-values).
+Boolean predicate requirements on template _type_ parameters are now specified
+in
+[Template constraints](template_constraints.md#boolean-predicate-requirements);
+predicates on non-facet template parameter values remain future work and are
+expected to reuse the same `require` expression form when designed.
 
 ## References
 

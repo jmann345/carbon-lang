@@ -227,7 +227,12 @@ could match either overload.
 **Note:** It is undecided what to do in the situation where `F` is overloaded,
 but the signatures are consistent and so callers could still typecheck calls to
 `F`. This still poses problems for the dynamic strategy for compiling generics,
-in a similar way to impl specialization.
+in a similar way to impl specialization. For 0.1, fork decision
+[F-009](/fork/decision-log.md#f-009-function-overloading--marked-overload-fn-2026-07-19)
+fixes the rule: overload resolution in a checked-generic body happens once, at
+type-check time, and a candidate whose match status depends on the specific is
+a compile error at the definition — see
+[Function overloading: interaction with checked generics](../functions_overloading.md#interaction-with-checked-generics).
 
 ### Constrained genericity
 

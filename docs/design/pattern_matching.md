@@ -669,11 +669,28 @@ We will diagnose the following situations:
 
     -   If a refutable pattern appears in a context where only one pattern can
         be specified, such as a `let` or `var` declaration, and there is no
-        fallback behavior. This currently includes all pattern matching contexts
-        other than `match` statements, but the `var`/`let`-`else` feature in
-        [#1871](https://github.com/carbon-language/carbon-lang/pull/1871) would
-        introduce a second context permitting refutable matches, and overloaded
-        functions might introduce a third context.
+        fallback behavior. The contexts that permit refutable full patterns are
+        exactly:
+
+        -   `case` (and `default`) patterns in a `match` statement, where the
+            fallback is trying the next arm; and
+        -   the combined match control-flow forms `if (let ...)`,
+            `while (let ...)`, and `let ... else`, where the fallback is the
+            form's failure arm — adopted by fork decision
+            [F-011](/fork/decision-log.md) and specified in
+            [Pattern conditions and `let ... else`](control_flow/pattern_conditions.md).
+            These forms fill the second refutable context that this section
+            previously anticipated via the never-merged upstream
+            `var`/`let`-`else` PR
+            [#1871](https://github.com/carbon-language/carbon-lang/pull/1871).
+
+        Every other pattern context — plain `let` and `var` declarations,
+        function parameter lists, and `for` loop headers — requires an
+        irrefutable pattern, and a refutable pattern there is an error.
+        Overloaded functions might introduce a further refutable context in the
+        future. (In 0.1, [overloaded function](functions_overloading.md)
+        signatures use only irrefutable patterns; value-pattern overload members
+        remain [future work](functions_overloading.md#future-work).)
 
         ```carbon
         fn F(n: i32) {
@@ -690,11 +707,13 @@ We will diagnose the following situations:
     them to overlap unless there is a unique best match for any value that
     matches more than one pattern. However, this situation does not apply to any
     current language rule:
-
     -   For `match` statements, patterns are matched top-down, so overlap is
         permitted.
-    -   We do not yet have an approved design for overloaded functions, but it
-        is anticipated that declaration order will be used in that case too.
+    -   For [overloaded functions](functions_overloading.md), declaration order
+        is used, per fork decision
+        [F-009](/fork/decision-log.md#f-009-function-overloading--marked-overload-fn-2026-07-19):
+        candidates are tried in declaration order and the first match is
+        selected, so overlap between members is permitted.
     -   For a set of `impl`s that match a given `impl` lookup, argument
         deduction is used rather than pattern matching, but `impl`s with the
         same type structure are an error unless a `match_first` declaration is
@@ -860,8 +879,8 @@ Evaluation of the last line involves 6 function calls:
 1.  Call `MakeA`.
 2.  Call `A.(Core.ImplicitAsPrimitive(C)).Convert`, to convert the `A` object to
     a `C` value, as part of type conversion.
-3.  Call `A.(Core.Copy).Op` to copy the `C` value into the storage for `cd.0`, as
-    part of category conversion.
+3.  Call `A.(Core.Copy).Op` to copy the `C` value into the storage for `cd.0`,
+    as part of category conversion.
 4.  Call `MakeB`.
 5.  Call `B.(Core.ImplicitAsPrimitive(D)).Convert`.
 6.  Call `B.(Core.Copy).Op`.
@@ -965,8 +984,15 @@ nested value pattern matching, or whether we shouldn't do so.
 
 ### Pattern matching as function overload resolution
 
-Need to flesh out specific details of how overload selection leverages the
-pattern matching machinery, what (if any) restrictions are imposed, etc.
+For 0.1, overload selection is fixed by fork decision
+[F-009](/fork/decision-log.md#f-009-function-overloading--marked-overload-fn-2026-07-19)
+and specified in [Function overloading](functions_overloading.md):
+declaration-order first-match over signatures containing only irrefutable
+patterns — the compile-time subset of pattern dispatch, chosen so that
+declaration order coincides with match-case order. What remains open is the
+future extension to refutable value patterns in overload signatures, which would
+leverage the full pattern matching machinery described here; see
+[Function overloading: future work](functions_overloading.md#future-work).
 
 ## Alternatives considered
 

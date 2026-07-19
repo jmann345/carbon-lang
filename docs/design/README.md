@@ -2845,7 +2845,10 @@ controlled by the SFINAE rule of C++
 [2](https://en.cppreference.com/w/cpp/language/sfinae)) but by explicit
 constraints declared in the function signature and evaluated at compile-time.
 
-> **TODO:** The design for template constraints is still under development.
+The design for template constraints — structural member requirements, `require`
+validity blocks, and boolean predicates — is specified in
+[Template constraints](generics/template_constraints.md), fixed by fork decision
+[F-010](/fork/decision-log.md#f-010-template-structural-conformance--template-constraint--require-2026-07-19).
 
 The [expression phase](#expression-phases) of a checked parameter is a symbolic
 constant whereas the expression phase of a template parameter is template
@@ -2861,6 +2864,7 @@ rigor of checked generics is problematic.
 > References:
 >
 > -   [Templates](templates.md)
+> -   [Template constraints](generics/template_constraints.md)
 > -   Proposal
 >     [#553: Generics details part 1](https://github.com/carbon-language/carbon-lang/pull/553)
 > -   Question-for-leads issue
@@ -3258,11 +3262,12 @@ Carbon generics have a number of other features, including:
     disambiguate when combining two interfaces that have name conflicts. Named
     constraints define facet types, and may be implemented and otherwise used in
     place of an interface.
--   [Template constraints](generics/details.md#named-constraints) are a kind of
-    named constraint that can contain structural requirements. For example, a
-    template constraint could match any type that has a function with a specific
-    name and signature without any explicit declaration that the type implements
-    the constraint. Template constraints may only be used as requirements for
+-   [Template constraints](generics/template_constraints.md) are a kind of named
+    constraint that can contain structural requirements. For example, a template
+    constraint could match any type that has a function with a specific name and
+    signature without any explicit declaration that the type implements the
+    constraint. Template constraints may also contain `require` validity blocks
+    and boolean predicate requirements, and may only be used as requirements for
     template parameters.
 -   An [adapter type](generics/details.md#adapting-types) is a type with the
     same data representation as an existing type, so you may cast between the
@@ -3473,7 +3478,10 @@ Carbon's approach to interop is most similar to
 where the two languages are different, but share enough of runtime model that
 data from one side can be used from the other. For example, C++ and Carbon will
 use the same
-[memory model](https://en.cppreference.com/w/cpp/language/memory_model).
+[memory model](https://en.cppreference.com/w/cpp/language/memory_model); this,
+and the use of C++'s threading and synchronization primitives from Carbon, is
+specified in
+[Threading, atomics, and the C++ memory model](interoperability/threading.md).
 
 The design for interoperability between Carbon and C++ hinges on:
 
@@ -3877,10 +3885,25 @@ preprocessing of source text such as C and C++ do.
 
 ### Pattern matching as function overload resolution
 
-> **TODO:** References need to be evolved. Needs a detailed design and a high
-> level summary provided inline.
+> **Note:** Function overloading for 0.1 is no longer provisional: it is fixed
+> by fork decision
+> [F-009](/fork/decision-log.md#f-009-function-overloading--marked-overload-fn-2026-07-19)
+> and specified normatively in [Function overloading](functions_overloading.md).
 
-> References: [Pattern matching](pattern_matching.md)
+Carbon supports closed function overloading: every member of an overload set
+carries the `overload` declaration modifier, all members are declared in the
+same library, and calls resolve by trying the candidates in declaration order
+and taking the first that matches — the function-call analog of top-down `match`
+semantics, with no best-match ranking. Imported C++ overload sets resolve under
+C++'s own rules, and exported Carbon sets are resolved by C++ callers under
+C++'s rules; the resulting divergence is documented and conformance-tested.
+Overload signatures in 0.1 use ordinary irrefutable parameter patterns;
+extending overload selection to refutable value patterns (true "pattern matching
+as overload resolution") remains
+[future work](functions_overloading.md#future-work).
+
+> References: [Function overloading](functions_overloading.md);
+> [Pattern matching](pattern_matching.md)
 
 ### Error handling
 
@@ -3892,14 +3915,14 @@ preprocessing of source text such as C and C++ do.
 Carbon's error handling is specified in [Error handling](error_handling.md).
 Errors are values: a fallible function returns the [choice type](#choice-types)
 `Core.Result(T, E)`, holding either an `Ok` value or an `Err` error. (The
-alternative names `Ok`/`Err` were decided by the user — sub-decision F-006a;
-the illustrative `IntResult` example [above](#choice-types) uses
-`Success`/`Failure` and is not `Core.Result`.)
-Results are consumed with [`match`](#match) and with the combined match
-control-flow forms `if (let ...)` and `let ... else` — adopted in fork decision
-[F-011](/fork/decision-log.md) and shown applied to `Result` in
-[Error handling](error_handling.md), with their own design doc to land with the
-control-flow work — and propagated with the postfix
+alternative names `Ok`/`Err` were decided by the user — sub-decision F-006a; the
+illustrative `IntResult` example [above](#choice-types) uses `Success`/`Failure`
+and is not `Core.Result`.) Results are consumed with [`match`](#match) and with
+the combined match control-flow forms `if (let ...)` and `let ... else` —
+adopted in fork decision [F-011](/fork/decision-log.md) and specified in
+[Pattern conditions and `let ... else`](control_flow/pattern_conditions.md),
+with their application to `Result` shown in [Error handling](error_handling.md)
+— and propagated with the postfix
 [`?` operator](error_handling.md#error-propagation-the-postfix--operator), which
 unwraps a success value or returns the failure to the caller, converting the
 error with [implicit conversions](expressions/implicit_conversions.md). `?`
@@ -3941,4 +3964,6 @@ the critical underpinnings of such abstractions.
 
 #### Concurrency
 
-> **TODO:**
+> **TODO:** Carbon-native concurrency is deferred until at least 0.2. In 0.1,
+> threading is provided through C++ interop, specified in
+> [Threading, atomics, and the C++ memory model](interoperability/threading.md).

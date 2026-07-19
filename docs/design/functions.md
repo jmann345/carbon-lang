@@ -879,6 +879,10 @@ Other designs build upon basic function syntax to add advanced features:
     deduced parameters and compile-time parameters.
 -   [Member functions](classes.md#member-functions) adds support for methods and
     non-instance member functions.
+-   [Function overloading](functions_overloading.md) adds support for marked,
+    closed overload sets (`overload fn`) resolved by declaration-order
+    first-match, including how overloaded members compose with
+    [redeclaration matching](#redeclaration-matching).
 
 ## Alternatives considered
 

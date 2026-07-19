@@ -15,6 +15,11 @@ Carbon's flow control statements are:
 
 -   [`if` and `else`](conditionals.md) provides conditional execution of
     statements.
+-   [Pattern conditions and `let ... else`](pattern_conditions.md) combine
+    refutable [pattern matching](../pattern_matching.md) with control flow:
+    `if (let ...)` and `while (let ...)` test a pattern and bind its names on
+    success, and `let ... else` binds names in the enclosing scope or runs a
+    diverging `else` block (fork decision [F-011](/fork/decision-log.md)).
 -   Loops:
     -   [`while`](loops.md#while) executes the loop body for as long as the loop
         expression returns `True`.

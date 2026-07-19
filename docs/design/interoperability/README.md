@@ -23,7 +23,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     -   [Importing C++ macros](#importing-c-macros)
 -   [Calling C++ code from Carbon](#calling-c-code-from-carbon)
     -   [Function call syntax and semantics](#function-call-syntax-and-semantics)
-    -   [TODO: Overload resolution](#todo-overload-resolution)
+    -   [Overload resolution](#overload-resolution)
     -   [TODO: Constructors](#todo-constructors)
     -   [TODO: Struct literals](#todo-struct-literals)
 -   [TODO: Accessing C++ classes, structs, and members](#todo-accessing-c-classes-structs-and-members)
@@ -35,6 +35,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -   [TODO: Advanced type mapping: pointers, references, and `const`](#todo-advanced-type-mapping-pointers-references-and-const)
 -   [Bi-directional type mapping: standard library types](#bi-directional-type-mapping-standard-library-types)
     -   [`std::string_view` and `str`](#stdstring_view-and-str)
+-   [Threading, atomics, and the memory model](#threading-atomics-and-the-memory-model)
 -   [TODO: The operator interoperability model](#todo-the-operator-interoperability-model)
 
 <!-- tocstop -->
@@ -153,6 +154,12 @@ This syntax is used for both standard library headers and user-defined headers:
 
 ### TODO: Importing C++ code (inline)
 
+The `inline Cpp '''...'''` form — embedding C++ source directly in a Carbon
+file, after at least one `import Cpp ...` declaration — is implemented in the
+toolchain (`toolchain/parse/handle_inline_decl.cpp`) and is used normatively
+by [Threading, atomics, and the C++ memory model](threading.md), but its
+design has not yet been written here.
+
 ### Accessing built-in C++ entities (file-less)
 
 Some C++ entities, particularly built-in primitive types, are not defined in any
@@ -207,7 +214,21 @@ fn Run() {
 }
 ```
 
-### TODO: Overload resolution
+### Overload resolution
+
+A call from Carbon to an imported C++ overload set is resolved under **C++'s
+rules, exactly**: the toolchain hands the candidate set to Clang Sema and
+performs genuine C++ overload resolution, including implicit conversion
+ranking, ambiguity diagnostics, default arguments, and the
+[literal conversion rules](literals.md) for Carbon literal arguments. In the
+other direction, an exported Carbon
+[overload set](../functions_overloading.md) appears to C++ as an ordinary C++
+overload set, which C++ callers also resolve under C++'s rules — a documented
+divergence from Carbon's own declaration-order first-match rule. Both
+directions of the mapping, and the divergence, are specified in
+[Function overloading: C++ interoperability](../functions_overloading.md#c-interoperability)
+(fork decision
+[F-009](/fork/decision-log.md#f-009-function-overloading--marked-overload-fn-2026-07-19)).
 
 ### TODO: Constructors
 
@@ -270,5 +291,12 @@ default until layout compatibility is established.
 >
 > -   Proposal
 >     [#6177: C++ Interop: Mapping `std::string_view` to `Core.Str`](https://github.com/carbon-language/carbon-lang/pull/6177)
+
+## Threading, atomics, and the memory model
+
+Mixed Carbon/C++ programs share the C++ memory model, and Carbon code uses
+C++'s threading, atomic, and synchronization primitives directly through
+interop. See
+[Threading, atomics, and the C++ memory model](threading.md).
 
 ## TODO: The operator interoperability model

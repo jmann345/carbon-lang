@@ -188,14 +188,12 @@ if (let .Ok(f: File) = Open(name)) {
 ```
 
 These forms are fixed by fork decision
-[F-011](/fork/decision-log.md), whose grammar and semantics are recorded in
-[fork/design-sprint/if-let.md](/fork/design-sprint/if-let.md); their design-doc
-write-up — including amending
+[F-011](/fork/decision-log.md) and specified normatively in
+[Pattern conditions and `let ... else`](control_flow/pattern_conditions.md);
 [pattern matching](pattern_matching.md#refutability-overlap-usefulness-and-exhaustiveness)'s
-enumeration of contexts that permit refutable patterns — is a deliverable of
-the F-011 workstream, sequenced alongside this document. This document only
-fixes that `Result` is consumed through the one shared pattern grammar — there
-is no `Result`-specific unwrapping syntax besides `?`.
+enumeration of contexts that permit refutable patterns includes them. This
+document only fixes that `Result` is consumed through the one shared pattern
+grammar — there is no `Result`-specific unwrapping syntax besides `?`.
 
 ## Error propagation: the postfix `?` operator
 
@@ -283,8 +281,9 @@ bindings are scoped to their arms, this expansion is not literally writable as
 Carbon source. It specifies the observable behavior: the evaluation order, the
 conversions applied, and the early return. The compiler implements it directly
 on the same refutable-match core that the
-[F-011](/fork/decision-log.md) `if (let ...)` / `let ... else` forms lower
-onto — F-011 records that "a future `?` desugars onto this core" — so `?`
+[F-011](/fork/decision-log.md)
+[`if (let ...)` / `let ... else` forms](control_flow/pattern_conditions.md)
+lower onto — F-011 records that "a future `?` desugars onto this core" — so `?`
 introduces no second pattern-matching construct and no value-yielding `match`
 form.
 
@@ -732,7 +731,7 @@ for every stage.
 | Stage  | Contents                                                                                        | Depends on                                                                                                                                                     |
 | ------ | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **B0** | `--cpp-exceptions` option; fenced thunks; boundary terminate semantics                           | Nothing — implementable now; replaces today's undefined behavior                                                                                                |
-| **B1** | `Core.Result` in the prelude; consumption via `match` (and F-011 forms when they land)           | `match` semantics and choice-alternative payloads, both currently unimplemented in check; `Core.Optional` rebuilt as a payload-carrying choice type (see below) |
+| **B1** | `Core.Result` in the prelude; consumption via `match` (and F-011 forms when they land)           | The refutable-match core (bindings in `case` patterns, guards) and choice-alternative payloads — `match` slice 1 (integer scrutinee, literal cases, `default`; fork decision W4-S1) is implemented, the rest is gated behind check-stage semantics-TODO diagnostics; `Core.Optional` rebuilt as a payload-carrying choice type (see below) |
 | **B2** | Postfix `?`; `Core.Try`; `ImplicitAs` error conversion; `Run` `Result` signatures                | B1                                                                                                                                                              |
 | **B3** | Catching thunks; `Cpp.Exception` synthesis into the `Cpp` package; `Carbon::expected` export and support header | B0-B2                                                                                                                                                           |
 
@@ -870,4 +869,5 @@ rather than relitigating it.
     [fork/design-sprint/error-handling.md](/fork/design-sprint/error-handling.md)
 -   Fork decision
     [F-011](/fork/decision-log.md)
-    (combined match control flow)
+    (combined match control flow), specified in
+    [Pattern conditions and `let ... else`](control_flow/pattern_conditions.md)

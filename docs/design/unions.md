@@ -11,6 +11,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 ## Table of contents
 
 -   [Overview](#overview)
+    -   [When to use `choice` vs `union`](#when-to-use-choice-vs-union)
 -   [Declaring a union](#declaring-a-union)
     -   [Union members](#union-members)
     -   [The `union` keyword](#the-union-keyword)
@@ -68,10 +69,23 @@ Unions are the one place in current Carbon where object layout is fully
 guaranteed, because interoperability demands it; class layout control remains
 [future work](classes.md#memory-layout).
 
-For the common case of "one of several alternatives, tracked", use a
-[choice type](sum_types.md), not a union. A union is the right tool only when
-the discriminator is external (or intentionally absent) and layout is part of
-the type's contract.
+### When to use `choice` vs `union`
+
+**Default to [`choice`](sum_types.md).** A `choice` type is Carbon's type-safe
+tagged union — the equivalent of a Rust `enum` — and the recommended way to
+express "one of several alternatives": it stores and checks its own
+discriminant, is consumed with exhaustive pattern matching, and (unlike a
+union's fields) its payloads may be of any type. In ordinary Carbon code,
+`union` exists for C++ interoperability and migration only (per the user's
+sub-decision F-007b): reach for it when using or migrating C++ code that uses
+a union — that is, when the discriminator is external (or intentionally
+absent) and layout is part of the type's contract.
+
+Payload-carrying `choice` alternatives are not yet implemented in the
+toolchain (fork workstream W5; see
+[fork/gap-analysis.md](/fork/gap-analysis.md)). When they land, they lower
+onto the overlapping-storage contract this document specifies — see
+[Relationship to choice types](#relationship-to-choice-types).
 
 ## Declaring a union
 
@@ -551,7 +565,9 @@ are implemented, they must lower onto the storage specified here.
 
 These points were open questions in the design sprint; they are decided here as
 part of the accepted design (decision
-[F-007](/fork/decision-log.md#f-007-unions--native-union-declaration-2026-07-19)).
+[F-007](/fork/decision-log.md#f-007-unions--native-union-declaration-2026-07-19)),
+and every sub-decision below was ratified by the user through the fork's
+decision process, recorded in [fork/decision-log.md](/fork/decision-log.md).
 
 1.  **Standalone `union` introducer**, not a `union class` modifier. It mirrors
     the `choice` precedent in both grammar and implementation, matches C++ and
@@ -571,7 +587,13 @@ part of the accepted design (decision
     common-initial-sequence rule instead of special-casing it, it is what Rust
     ships, and it costs nothing in this toolchain's lowering. Adopting C++'s
     undefined behavior would buy no optimization and import a class of
-    time-travel bugs Carbon's safety strategy exists to eliminate.
+    time-travel bugs Carbon's safety strategy exists to eliminate. The user
+    confirmed this choice under their lowest-friction rule, judged against
+    the existing imported-union lowering behavior: imported C++ unions
+    already lower to byte-offset accesses into an untyped byte array with no
+    type-based aliasing claims, so defined reinterpretation is the semantics
+    the implementation already exhibits, and ratifying it required no change
+    to that behavior.
 4.  **Initialization is designated single-field struct literal or
     unformed-then-assign.** Both fall out of existing language machinery
     (struct-literal conversion, unformed state); factory functions remain

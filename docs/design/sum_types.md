@@ -26,6 +26,17 @@ a _discriminator_ tag that identifies which alternative is present, together
 with that alternative's value if it has one. Sum types are typically handled
 with pattern matching.
 
+A [`choice`](#choice-declarations) type is Carbon's type-safe tagged union —
+the equivalent of a Rust `enum` — and the **default recommendation** for
+expressing "one of several alternatives". Carbon also has un-discriminated
+[unions](unions.md), which exist for C++ interoperability and migration only;
+see [When to use `choice` vs `union`](unions.md#when-to-use-choice-vs-union).
+Note that payload-carrying `choice` alternatives are not yet implemented in
+the toolchain (fork workstream W5; see
+[fork/gap-analysis.md](/fork/gap-analysis.md)); when they land, they lower
+onto the overlapping-storage contract in
+[Relationship to choice types](unions.md#relationship-to-choice-types).
+
 ## `choice` declarations
 
 The `choice` keyword is used to declare a sum type by specifying its interface,

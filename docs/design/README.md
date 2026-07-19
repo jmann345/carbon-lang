@@ -3891,7 +3891,10 @@ preprocessing of source text such as C and C++ do.
 
 Carbon's error handling is specified in [Error handling](error_handling.md).
 Errors are values: a fallible function returns the [choice type](#choice-types)
-`Core.Result(T, E)`, holding either a `Success` value or a `Failure` error.
+`Core.Result(T, E)`, holding either an `Ok` value or an `Err` error. (The
+alternative names `Ok`/`Err` were decided by the user — sub-decision F-006a;
+the illustrative `IntResult` example [above](#choice-types) uses
+`Success`/`Failure` and is not `Core.Result`.)
 Results are consumed with [`match`](#match) and with the combined match
 control-flow forms `if (let ...)` and `let ... else` — adopted in fork decision
 [F-011](/fork/decision-log.md) and shown applied to `Result` in

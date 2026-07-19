@@ -100,8 +100,8 @@ The prelude defines `Result` as a parameterized choice type:
 ```carbon
 // In package Core.
 choice Result(T: type, E: type) {
-  Success(value: T),
-  Failure(error: E)
+  Ok(value: T),
+  Err(error: E)
 }
 ```
 
@@ -109,11 +109,13 @@ choice Result(T: type, E: type) {
 `E` is not constrained to implement any error interface in 0.1. `Result((), E)`
 is the conventional shape for operations with no interesting success value.
 
-The alternative names are `Success` and `Failure`. This matches the vocabulary
-already used by choice-type examples in the
-[language overview](README.md#choice-types), and follows Carbon's convention of
-using whole words rather than abbreviations for names; see
-[decision D1](#decisions-within-this-design).
+The alternative names are `Ok` and `Err`, decided by the user as part of the
+F-006 review (sub-decision F-006a); see
+[decision D1](#decisions-within-this-design). The illustrative `IntResult`
+example in the [language overview](README.md#choice-types) spells its
+alternatives `Success`/`Failure`; that example predates this decision, is not
+`Core.Result`, and does not set the naming — the normative alternative names
+for `Core.Result` are `Ok` and `Err`.
 
 `Result` is a choice type with payloads. Choice-alternative payloads and
 `match` semantics are not yet implemented in the toolchain (see
@@ -128,10 +130,10 @@ leading-period shorthand when the type is known from context:
 ```carbon
 fn Open(name: str) -> Core.Result(File, IoError) {
   if (not Exists(name)) {
-    // Equivalent to `Core.Result(File, IoError).Failure(...)`.
-    return .Failure(IoError.NotFound);
+    // Equivalent to `Core.Result(File, IoError).Err(...)`.
+    return .Err(IoError.NotFound);
   }
-  return .Success(OpenExisting(name));
+  return .Ok(OpenExisting(name));
 }
 ```
 
@@ -148,10 +150,10 @@ alternatives and is checked for exhaustiveness:
 ```carbon
 fn Report(name: str) {
   match (Open(name)) {
-    case .Success(f: File) => {
+    case .Ok(f: File) => {
       Print(f.Size());
     }
-    case .Failure(e: IoError) => {
+    case .Err(e: IoError) => {
       PrintError(e);
     }
   }
@@ -168,19 +170,19 @@ enclosing scope and requires the failure arm to diverge:
 
 ```carbon
 fn Copy(from: str, to: str) -> Core.Result((), IoError) {
-  let .Success(f: File) = Open(from) else {
-    return .Failure(IoError.NotFound);
+  let .Ok(f: File) = Open(from) else {
+    return .Err(IoError.NotFound);
   }
   // `f` is in scope here.
   WriteAll(to, f);
-  return .Success(());
+  return .Ok(());
 }
 ```
 
 and the positive form scopes the binding to the success path:
 
 ```carbon
-if (let .Success(f: File) = Open(name)) {
+if (let .Ok(f: File) = Open(name)) {
   Print(f.Size());
 }
 ```
@@ -209,7 +211,7 @@ fn ReadConfig(name: str) -> Core.Result(Config, IoError) {
   // Each `?` unwraps a success value or returns the failure.
   var f: File = Open(name)?;
   var c: Config = Parse(f)?;
-  return .Success(c);
+  return .Ok(c);
 }
 ```
 
@@ -263,11 +265,11 @@ innermost enclosing function. Both `S` and `R` must implement
 ```carbon
 // Desugaring of `expr?`; `__v` and `__b` are compiler-internal names.
 match (expr.(Core.Try.Branch)()) {
-  case .Success(__v: S.(Core.Try.ContinueType)) => {
+  case .Ok(__v: S.(Core.Try.ContinueType)) => {
     // `__v` becomes the value of the whole `expr?` expression, in place in
     // the enclosing statement.
   }
-  case .Failure(__b: S.(Core.Try.BreakType)) => {
+  case .Err(__b: S.(Core.Try.BreakType)) => {
     // `__b` implicitly converts to `R.(Core.Try.BreakType)`;
     // see "Error conversion".
     return R.(Core.Try.FromBreak)(__b);
@@ -325,15 +327,15 @@ The prelude provides the implementations:
 final impl forall [T: type, E: type] Result(T, E) as Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Result(T, E) { return self; }
-  fn FromBreak(b: E) -> Self { return .Failure(b); }
+  fn FromBreak(b: E) -> Self { return .Err(b); }
 }
 
 final impl forall [T: type] Optional(T) as Try
     where .ContinueType = T and .BreakType = () {
   fn Branch(self) -> Result(T, ()) {
     match (self) {
-      case .Some(v: T) => { return .Success(v); }
-      case .None => { return .Failure(()); }
+      case .Some(v: T) => { return .Ok(v); }
+      case .None => { return .Err(()); }
     }
   }
   fn FromBreak(b: ()) -> Self { return .None; }
@@ -446,8 +448,8 @@ process exit code is determined as follows:
 
 -   `fn Run()`: exit code 0.
 -   `fn Run() -> i32`: the returned value.
--   `Result` forms, on `.Success(())`: exit code 0; on `.Success(code)`: the
-    returned code; on `.Failure(e)`: the runtime writes a diagnostic to
+-   `Result` forms, on `.Ok(())`: exit code 0; on `.Ok(code)`: the
+    returned code; on `.Err(e)`: the runtime writes a diagnostic to
     standard error naming the error's type (and, when `E` is
     [`Cpp.Exception`](#cppexception), its message when available), then exits
     with code 1. The failure value is destroyed normally; nothing unwinds.
@@ -572,9 +574,9 @@ import Cpp library "parser.h";
 
 fn ParseAll(input: str) -> Core.Result(i64, Cpp.Exception) {
   // `Cpp.parse` is C++ and may throw. `?` requests the catching thunk;
-  // a thrown exception becomes the `.Failure` alternative and propagates.
+  // a thrown exception becomes the `.Err` alternative and propagates.
   let n: i64 = Cpp.parse(input)?;
-  return .Success(n);
+  return .Ok(n);
 }
 ```
 
@@ -762,14 +764,18 @@ implementation, not this design.
 The option paper for this area
 ([fork/design-sprint/error-handling.md](/fork/design-sprint/error-handling.md))
 left sub-questions open beyond the main F-006 fork. Each is decided here;
-these are the reviewable batch for this document.
+these were the reviewable batch for this document, and were ratified by the
+user through the fork's decision process
+([fork/decision-log.md](/fork/decision-log.md)).
 
--   **D1 — Alternative names are `Success`/`Failure`, not `Ok`/`Err`.**
-    Matches the choice-type vocabulary already used in the
-    [language overview](README.md#choice-types) (`IntResult.Success` /
-    `.Failure`), and Carbon's general preference for whole-word names.
-    Avoids importing Rust spellings onto a type whose conversion and interop
-    behavior differ from Rust's.
+-   **D1 — Alternative names are `Ok`/`Err`, decided by the user
+    (sub-decision F-006a).** The option paper left the naming open between
+    `Success`/`Failure` (the spelling of the illustrative `IntResult`
+    example in the [language overview](README.md#choice-types)) and
+    `Ok`/`Err`; the user ratified `Ok`/`Err` as the alternative names for
+    `Core.Result`. The overview's `IntResult` example illustrates choice
+    types generally, is not `Core.Result`, and does not constrain this
+    naming.
 -   **D2 — `?` precedence: highest (suffix-operator) group, repeating.**
     Propagation must chain with member access and calls
     (`Open(n)?.Read()?`); any looser binding would force parentheses in the
@@ -815,7 +821,7 @@ these are the reviewable batch for this document.
 -   **D10 — Entry-point return types are fixed as `()`, `i32`,
     `Core.Result((), E)`, and `Core.Result(i32, E)`, combined with either the
     empty parameter list or the already-implemented command-line parameter
-    list `(argc: i32, argv: Core.Optional(char*)*)`; `.Failure` maps to a
+    list `(argc: i32, argv: Core.Optional(char*)*)`; `.Err` maps to a
     stderr diagnostic and exit code 1.** This resolves the overview's open
     note on entry-point signatures with the minimal set that makes `?` usable
     at top level, without outlawing the parameterized signatures the

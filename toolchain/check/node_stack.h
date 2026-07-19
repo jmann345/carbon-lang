@@ -416,7 +416,10 @@ class NodeStack {
     switch (node_kind) {
       case Parse::NodeKind::CallExprStart:
       case Parse::NodeKind::IfExprThen:
+      case Parse::NodeKind::MatchCondition:
       case Parse::NodeKind::MatchFirstDefinitionStart:
+      case Parse::NodeKind::MatchHandler:
+      case Parse::NodeKind::MatchStatementStart:
       case Parse::NodeKind::ObserveIntroducer:
       case Parse::NodeKind::RequireIntroducer:
       case Parse::NodeKind::ShortCircuitOperandAnd:
@@ -427,6 +430,7 @@ class NodeStack {
       case Parse::NodeKind::IfCondition:
       case Parse::NodeKind::IfExprIf:
       case Parse::NodeKind::ImplicitParamList:
+      case Parse::NodeKind::MatchCase:
       case Parse::NodeKind::WhileConditionStart:
         return Id::KindFor<SemIR::InstBlockId>();
       case Parse::NodeKind::FunctionDefinitionStart:
@@ -464,6 +468,9 @@ class NodeStack {
       case Parse::NodeKind::LambdaIntroducer:
       case Parse::NodeKind::LetInitializer:
       case Parse::NodeKind::LetIntroducer:
+      case Parse::NodeKind::MatchCaseIntroducer:
+      case Parse::NodeKind::MatchDefault:
+      case Parse::NodeKind::MatchHandlerStart:
       case Parse::NodeKind::NamedConstraintIntroducer:
       case Parse::NodeKind::RefBindingName:
       case Parse::NodeKind::RuntimeBindingName:
@@ -513,20 +520,13 @@ class NodeStack {
       case Parse::NodeKind::LibraryIntroducer:
       case Parse::NodeKind::LibrarySpecifier:
       case Parse::NodeKind::InlineImportSpecifier:
-      case Parse::NodeKind::MatchCase:
       case Parse::NodeKind::MatchCaseGuard:
       case Parse::NodeKind::MatchCaseGuardIntroducer:
       case Parse::NodeKind::MatchCaseGuardStart:
-      case Parse::NodeKind::MatchCaseIntroducer:
-      case Parse::NodeKind::MatchCondition:
       case Parse::NodeKind::MatchConditionStart:
-      case Parse::NodeKind::MatchDefault:
       case Parse::NodeKind::MatchDefaultIntroducer:
       case Parse::NodeKind::MatchFirstIntroducer:
-      case Parse::NodeKind::MatchHandlerStart:
-      case Parse::NodeKind::MatchHandler:
       case Parse::NodeKind::MatchIntroducer:
-      case Parse::NodeKind::MatchStatementStart:
       case Parse::NodeKind::NamespaceStart:
       case Parse::NodeKind::PackageIntroducer:
       case Parse::NodeKind::ParenExprStart:

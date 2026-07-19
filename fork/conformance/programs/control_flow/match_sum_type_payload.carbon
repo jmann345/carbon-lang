@@ -3,13 +3,13 @@
 // EXPECT-STDOUT:
 //   42
 //   7
-// SKIP: MISSING end-to-end — match has no semantics (every check handler in toolchain/check/handle_match.cpp is a context.TODO stub), choice payloads cannot be destructured, and there is no std::variant/std::optional interop mapping; Optional is a placeholder without pattern integration. Un-SKIP (and uncomment the body) when W4 (match semantics) + W5 (choice payloads, std::variant/optional interop) land.
+// SKIP: MISSING end-to-end — match statement semantics exist only for W4 slice 1 (integer scrutinee, integer-literal cases, `default`): a choice-typed scrutinee like `match (r)` is rejected at its `)` with "error: semantics TODO: `match on non-integer scrutinee`" (the `MatchCondition` slice gate in toolchain/check/handle_match.cpp), alternative patterns like `.Ok(...)` are outside the `MatchCaseIntroducer` integer-literal gate, choice payloads cannot be destructured, and there is no std::variant/std::optional interop mapping; Optional is a placeholder without pattern integration. Un-SKIP (and uncomment the body) when post-slice-1 W4 (non-integer scrutinees, alternative patterns) + W5 (choice payloads, std::variant/optional interop) land.
 //
 // Write-tests-first stub. Intended future test: consume a payload-carrying
 // choice via `match` alternative patterns (choice-with-payload and `.Name`
 // pattern shapes from docs/design/sum_types.md; `case ... => { }` statement
-// shape from toolchain/parse/testdata/match/match.carbon, the only in-repo
-// match evidence), then do the same over a `Cpp.std.variant`/
+// shape from toolchain/parse/testdata/match/match.carbon), then do the same
+// over a `Cpp.std.variant`/
 // `Cpp.std.optional` value imported from C++ so sum-type consumption spans
 // the interop boundary. First-match-wins semantics per
 // docs/design/pattern_matching.md.

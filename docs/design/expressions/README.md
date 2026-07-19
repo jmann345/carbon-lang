@@ -69,7 +69,8 @@ graph BT
                x->y
                x->(...)
                x(...)
-               x[y]"}
+               x[y]
+               x?"}
     click suffixOps "https://github.com/carbon-language/carbon-lang/blob/trunk/docs/design/expressions/README.md#suffix-operators"
 
     qualifiedType["const T
@@ -354,6 +355,7 @@ Most expressions are modeled as operators:
 | Logical    | [`and`](logical_operators.md)       | `x and y` | A short-circuiting logical AND: `true` if both operands are `true`.   |
 | Logical    | [`or`](logical_operators.md)        | `x or y`  | A short-circuiting logical OR: `true` if either operand is `true`.    |
 | Logical    | [`not`](logical_operators.md)       | `not x`   | Logical NOT: `true` if the operand is `false`.                        |
+| Error      | [`?`](../error_handling.md#error-propagation-the-postfix--operator) (unary) | `x?` | Error propagation: the success value of `x`, or returns the failure from the enclosing function. |
 
 The binary arithmetic and bitwise operators also have
 [compound assignment](/docs/design/assignment.md) forms. These are statements
@@ -375,6 +377,12 @@ These operators act like unary postfix operators for purposes of precedence:
 -   The call operator, `x(...)`, takes a comma-separated list of arguments, but
     again puts them in parentheses that clearly separate them for precedence
     purposes.
+-   The
+    [error-propagation operator](../error_handling.md#error-propagation-the-postfix--operator),
+    `x?`, is a true postfix unary operator: it takes only an expression on its
+    left, and unwraps a success value or returns the failure from the enclosing
+    function. It shares this precedence group so that propagation chains with
+    member access and calls, as in `Open(name)?.ReadHeader()?`.
 
 The operand or result of a suffix operator is called a _suffix expression_.
 

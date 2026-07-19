@@ -71,6 +71,40 @@ jobs:
           fi
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
+      - name: Ensure static LLVM libunwind
+        # Carbon's cc toolchain links host binaries with -unwindlib=libunwind
+        # + static runtimes (bazel/cc_toolchains/cc_toolchain_cpp_features.bzl),
+        # which needs LLVM's libunwind.a. Distros often don't ship the static
+        # archive, so probe for it and otherwise build a private copy from the
+        # LLVM sources bazel has already fetched into its external tree.
+        run: |
+          set -euo pipefail
+          LIBDIR="$HOME/.local/lib/carbon-host-deps"
+          mkdir -p "$LIBDIR"
+          probe() {
+            printf 'int main(){return 0;}' | clang++ -x c++ - -o /tmp/unwind_probe \
+              -fuse-ld=lld -static-libgcc -unwindlib=libunwind -L"$LIBDIR" 2>/dev/null
+          }
+          if ! probe; then
+            echo "libunwind.a not found; building it from bazel's LLVM checkout"
+            SRC=$(ls -d "$HOME"/.cache/bazel/_bazel_*/*/external/+llvm_project+llvm-project 2>/dev/null | head -1)
+            if [ -z "$SRC" ] || ! command -v cmake >/dev/null 2>&1; then
+              echo "::error::Need cmake (and bazel's llvm-project checkout) to build libunwind.a. Install cmake on the runner host, or provide /usr/lib/libunwind.a."
+              exit 1
+            fi
+            rm -rf /tmp/unwind-build
+            cmake -S "$SRC/runtimes" -B /tmp/unwind-build \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DLLVM_ENABLE_RUNTIMES=libunwind \
+              -DLIBUNWIND_ENABLE_SHARED=OFF \
+              -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+            cmake --build /tmp/unwind-build -j"$(nproc)"
+            cp /tmp/unwind-build/lib/libunwind.a "$LIBDIR/"
+            probe
+          fi
+          echo "build --linkopt=-L$LIBDIR" >> user.bazelrc
+          echo "user.bazelrc:"; cat user.bazelrc
+
       - name: Build toolchain tarball
         run: |
           python3 ./scripts/run_bazelisk.py \

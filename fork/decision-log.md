@@ -10,6 +10,25 @@ consequences. Undecided forks are listed as OPEN at the top.
 
 ## Decided
 
+### W5 SF-1..8: choice-payload plan sub-forks (user via AskUserQuestion, 2026-07-20)
+
+Hybrid struct representation — discriminant + CustomLayoutType payload
+region; payload-free choices untouched (SF-1); bit-minimal discriminant
+kept, export may revisit behind a repr version (SF-2); zero-payload
+`Alt()` function-like alternatives in slice 1 (SF-3); leading-dot
+patterns only, qualified form a recorded work item (SF-4); bare
+`name: type` bindings per the design doc (SF-5); trivially-copyable +
+trivially-destructible payloads only in 0.1, clean diagnostic, deviation
+from the unions.md contract text recorded as post-0.1 work (SF-6);
+exhaustive choice matches need no `default` — the closed-set case lands
+in slice 2, W4's rule stays for integer matches (SF-7); std::variant
+mapping DEFERRED to S4 planning WITH the user's steer: tagged unions are
+the first-class construct (`choice`), any Core.Variant prelude name would
+be sugar over a generic choice at most, and the default lean is the
+anonymous/synthesized-choice mapping — introducing a Variant vocabulary
+type requires affirmative justification at the S4 fork (SF-8).
+
+
 ### DIFF-1..4: differential-harness sub-decisions (user via AskUserQuestion, 2026-07-19)
 
 Differential programs use the C++ oracle only, no EXPECT-STDOUT (1);

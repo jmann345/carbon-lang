@@ -75,6 +75,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         -   [Move](#move)
         -   [Mixins](#mixins)
     -   [Choice types](#choice-types)
+    -   [Unions](#unions)
 -   [Names](#names)
     -   [Files, libraries, packages](#files-libraries-packages)
     -   [Package declaration](#package-declaration)
@@ -113,6 +114,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     -   [Standard types](#standard-types)
     -   [Inheritance](#inheritance-1)
     -   [Enums](#enums)
+    -   [Unions](#unions-1)
 -   [Unfinished tales](#unfinished-tales)
     -   [Safety](#safety)
     -   [Lifetime and move semantics](#lifetime-and-move-semantics)
@@ -354,9 +356,9 @@ var résultat: String = "Succès";
 ```
 
 Comments start with two slashes `//` and go to the end of the line. A comment
-may be the only content on its line, or it may follow other content as a trailing
-comment. Full-line comments are preferred for documentation, while trailing
-comments mark or annotate a specific line.
+may be the only content on its line, or it may follow other content as a
+trailing comment. Full-line comments are preferred for documentation, while
+trailing comments mark or annotate a specific line.
 
 ```carbon
 // Compute an approximation of π.
@@ -2202,6 +2204,43 @@ choice LikeABoolean { False, True }
 > -   Proposal
 >     [#162: Basic Syntax](https://github.com/carbon-language/carbon-lang/pull/162)
 
+### Unions
+
+A _union_ is the un-discriminated counterpart of a [choice type](#choice-types):
+a nominal type whose fields all share the same storage, with no tag recording
+which field was written. All fields are at offset zero, the union's alignment is
+the largest alignment of its fields, and its size is the largest field's size
+rounded up to a multiple of that alignment — the same layout rule as a C++
+`union`, guaranteed. Writing a field is always safe; reading a field
+reinterprets the stored bytes as the field's type, and is defined whenever those
+bytes are a valid value of that type.
+
+```carbon
+union IntOrBytes {
+  var word: u32;
+  var bytes: array(u8, 4);
+}
+
+fn LowByte(u: IntOrBytes) -> u8 {
+  return u.bytes[0];
+}
+```
+
+In 0.1, union fields must be
+[trivially copyable and trivially destructible](unions.md#trivially-destructible-and-trivially-copyable-types).
+Unions map to and from C++ unions in both interop directions, and specify the
+overlapping storage layout that payload-carrying choice types lower onto — a
+contract at the level of the compiler's layout machinery, where the source-level
+field rules do not apply (see
+[relationship to choice types](unions.md#relationship-to-choice-types)).
+
+> References:
+>
+> -   [Unions](unions.md)
+> -   [Sum types](sum_types.md)
+> -   Proposal
+>     [#157: Design direction for sum types](https://github.com/carbon-language/carbon-lang/pull/157)
+
 ## Names
 
 Names are introduced by [declarations](#declarations-definitions-and-scopes) and
@@ -2292,7 +2331,9 @@ If the default library of the `Main` package contains a function named `Run`,
 that function is the program entry point. Otherwise, the program's entry point
 may be defined in another language, such as by defining a C++ `main` function.
 
-> **Note:** Valid signatures for the entry point have not yet been decided.
+The valid signatures for the entry point, including fallible
+`Core.Result`-returning forms usable with the `?` operator, are specified in
+[Error handling: the program entry point](error_handling.md#the-program-entry-point).
 
 > References:
 >
@@ -3733,9 +3774,24 @@ corresponding interface.
 
 > **TODO**
 
+### Unions
+
+[Carbon unions](#unions) and C++ unions are the same kind of entity, with the
+same guaranteed layout. An imported C++ union is usable as a Carbon union —
+fields may be read and written, values pass and return by value and by pointer,
+and anonymous-union members are injected into the enclosing scope as in C++. An
+exported Carbon union appears to C++ as a genuine `union` with identical layout.
+C++ unions with non-trivial members import with the corresponding operations
+deleted, following the C++ rules; bit-field members are not imported in 0.1.
+
+> References:
+>
+> -   [Unions: C++ interoperability](unions.md#c-interoperability)
+
 ## Unfinished tales
 
-> **Note:** Everything in this section is provisional and forward looking.
+> **Note:** Everything in this section is provisional and forward looking,
+> except where a subsection explicitly states otherwise.
 
 ### Safety
 
@@ -3828,15 +3884,39 @@ preprocessing of source text such as C and C++ do.
 
 ### Error handling
 
-For now, Carbon does not have language features dedicated to error handling, but
-we would consider adding some in the future. At this point, errors are
-represented using [choice types](#choice-types) like `Result` and `Optional`.
+> **Note:** Unlike the rest of this section, error handling is not provisional:
+> the design summarized here is fixed by fork decision
+> [F-006](/fork/decision-log.md) and specified normatively in
+> [Error handling](error_handling.md).
 
-This is similar to the story for Rust, which started using `Result`, then added
-[`?` operator](https://doc.rust-lang.org/reference/expressions/operator-expr.html#the-question-mark-operator)
-for convenience, and is now considering ([1](https://yaah.dev/try-blocks),
-[2](https://doc.rust-lang.org/beta/unstable-book/language-features/try-blocks.html))
-adding more.
+Carbon's error handling is specified in [Error handling](error_handling.md).
+Errors are values: a fallible function returns the [choice type](#choice-types)
+`Core.Result(T, E)`, holding either an `Ok` value or an `Err` error. (The
+alternative names `Ok`/`Err` were decided by the user — sub-decision F-006a;
+the illustrative `IntResult` example [above](#choice-types) uses
+`Success`/`Failure` and is not `Core.Result`.)
+Results are consumed with [`match`](#match) and with the combined match
+control-flow forms `if (let ...)` and `let ... else` — adopted in fork decision
+[F-011](/fork/decision-log.md) and shown applied to `Result` in
+[Error handling](error_handling.md), with their own design doc to land with the
+control-flow work — and propagated with the postfix
+[`?` operator](error_handling.md#error-propagation-the-postfix--operator), which
+unwraps a success value or returns the failure to the caller, converting the
+error with [implicit conversions](expressions/implicit_conversions.md). `?`
+desugars onto the `Core.Try` interface, so `Optional` and user-defined types
+participate in propagation as well.
+
+At the C++ boundary, exceptions are converted to values in both directions: C++
+exceptions never unwind Carbon frames — each crossing point either terminates on
+escape or captures the exception as `Core.Result(T, Cpp.Exception)` — and
+fallible Carbon functions are exported to C++ as `Carbon::expected<T, E>`. The
+`--cpp-exceptions` compile option configures this for both standard and
+`-fno-exceptions` C++ dialects.
+
+> References:
+>
+> -   [Error handling](error_handling.md)
+> -   Fork decision [F-006](/fork/decision-log.md)
 
 ### Execution abstractions
 

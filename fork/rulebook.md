@@ -77,3 +77,18 @@ here.
   `agent()` call that receives the findings as data. (Origin: user
   directive, 2026-07-19; matches the Bun per-failing-test loop of
   1 implementer + 2 adversarial reviewers + 1 fixer.)
+
+## Deterministic invariant layer (hooks)
+
+- **R12. Mechanical invariants are enforced by PostToolUse hooks, not
+  reviewers.** `.claude/settings.json` + `.claude/hooks/post_edit_invariants.sh`
+  run on every Edit/Write by every agent: clang-format 21.1.8 (the exact
+  CI pin) with re-read feedback on reformat, header-guard check for .h
+  (CI's own script), license-header presence in upstream dirs, conformance
+  `--self-test` on program edits, JSON parse, Python compile, trailing
+  newline. Adversarial reviewers must NOT spend findings on anything this
+  layer catches — their attention belongs to semantics, invariants the
+  hook cannot check, and design conformance. When a reviewer catches a new
+  *mechanical* class of error, the fix is extending the hook script, then
+  a rulebook entry. (Origin: user directive after reviewer 2 burned a
+  finding on clang-format, 2026-07-19.)

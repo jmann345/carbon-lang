@@ -15,11 +15,11 @@
 // Integer-literal patterns are never exhaustive, so a `match` without a
 // `default` arm is invalid; exhaustiveness checking is not yet implemented.
 fn F(x: i32) {
+  // CHECK:STDERR: fail_todo_no_default.carbon:[[@LINE+4]]:3: error: semantics TODO: `match statement without `default` arm` [SemanticsTodo]
+  // CHECK:STDERR:   match (x) {
+  // CHECK:STDERR:   ^~~~~~~~~~~
+  // CHECK:STDERR:
   match (x) {
     case 0 => { return; }
-  // CHECK:STDERR: fail_todo_no_default.carbon:[[@LINE+4]]:3: error: semantics TODO: `match statement without `default` arm` [SemanticsTodo]
-  // CHECK:STDERR:   }
-  // CHECK:STDERR:   ^
-  // CHECK:STDERR:
   }
 }

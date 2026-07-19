@@ -11,9 +11,9 @@
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/match/fail_todo_non_int_scrutinee.carbon
 
 fn F(b: bool) {
-  // CHECK:STDERR: fail_todo_non_int_scrutinee.carbon:[[@LINE+4]]:11: error: semantics TODO: `match on non-integer scrutinee` [SemanticsTodo]
+  // CHECK:STDERR: fail_todo_non_int_scrutinee.carbon:[[@LINE+4]]:9: error: semantics TODO: `match on non-integer scrutinee` [SemanticsTodo]
   // CHECK:STDERR:   match (b) {
-  // CHECK:STDERR:           ^
+  // CHECK:STDERR:         ^~~
   // CHECK:STDERR:
   match (b) {
     default => { return; }

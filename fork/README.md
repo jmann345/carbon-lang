@@ -31,5 +31,6 @@ review → fix loops that grind against ground truth.
 - [x] Repo audited against the 0.1 checklist (11-area agent audit)
 - [x] Design forks F-001..F-005 decided (see `decision-log.md`)
 - [x] Arbiter: nightly toolchain mirrored + conformance scoreboard v1 (93 programs: 60 PASS / 33 SKIP / 0 FAIL; all 56 bullets covered: 38 PASS / 18 SKIP)
-- [ ] Trial run: one bullet end-to-end through the loop
+- [x] Own-toolchain CI loop closed: jeromehome builds the branch, gates on `bazel test //toolchain/...`, publishes a release; fork-built toolchain scores identical parity (60 PASS / 33 SKIP / 0 FAIL)
+- [ ] Trial run: match semantics slice 1 end-to-end through the loop (in progress, branch `claude/carbon-fork-0-1-7mwfb7-w4-match`)
 - [ ] Scaled workstreams

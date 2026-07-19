@@ -81,9 +81,13 @@ jobs:
           set -euo pipefail
           LIBDIR="$HOME/.local/lib/carbon-host-deps"
           mkdir -p "$LIBDIR"
+          # Mirror the real link flags from
+          # bazel/cc_toolchains/cc_toolchain_cpp_features.bzl: clang rejects
+          # -unwindlib=libunwind without -rtlib=compiler-rt.
           probe() {
             printf 'int main(){return 0;}' | clang++ -x c++ - -o /tmp/unwind_probe \
-              -fuse-ld=lld -static-libgcc -unwindlib=libunwind -L"$LIBDIR" 2>/dev/null
+              -fuse-ld=lld -stdlib=libc++ -static-libstdc++ -static-libgcc \
+              -rtlib=compiler-rt -unwindlib=libunwind -l:libc++abi.a -L"$LIBDIR"
           }
           if ! probe; then
             echo "libunwind.a not found; building it from bazel's LLVM checkout"

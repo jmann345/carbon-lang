@@ -50,6 +50,19 @@ file into context.
 - **R10. SKIP reasons must state the exact blocking evidence** (compiler
   error text, missing-symbol name, or file:line of the stub) so un-skipping
   is mechanical when the blocker lands. (Origin: conformance-growth run.)
+- **R11. Format-check changed C++ with the CI-pinned clang-format** (the
+  `==` version in `.pre-commit-config.yaml`, currently 21.1.8) before
+  commit. Distro clang-format disagrees with CI on files CI considers
+  green — never use it as the arbiter. (Origin: W4 slice-1 adversarial
+  review confirmed a violation invisible to local clang-format 18,
+  2026-07-19.)
+- **R12. New or changed AUTOUPDATE goldens without regenerated CHECK lines
+  fail `bazel test`.** When goldens cannot be autoupdated locally (no local
+  build), the land sequence must run
+  `bazel run //toolchain/testing:file_test -- --autoupdate ...` on the
+  runner and commit the reconciliation *before* the merge gate is judged —
+  a red first CI on empty goldens is expected, not a semantics failure.
+  (Origin: W4 slice-1 adversarial review; fork/trial-w4/plan.md risk 1.)
 
 ## Adversarial-review protocol (applies at EVERY production step)
 

@@ -4,32 +4,51 @@
 //   10
 //   20
 //   30
-// SKIP: match parses but has no semantics — every `match` statement fails compile with "error: semantics TODO: `HandleMatchIntroducer`" (all check handlers in toolchain/check/handle_match.cpp are context.TODO stubs; this file passes `carbon compile --phase=parse` with exit 0, which is the entire working slice of this PARTIAL bullet). Un-SKIP when W4 (match check + lowering) lands.
+//   40
+//   40
 //
-// The C/C++ `switch` equivalent: `match` over an i32 with a literal-expression
-// case, a binding pattern with an `if` guard, and `default`. Case shapes are
-// verbatim from toolchain/parse/testdata/match/match.carbon (the parse golden:
-// `case a: i32 if (a != x) => { ... }`, `default => { ... }`), which is the
-// only in-repo evidence for match — there is no check or lower testdata.
-// EXPECT-STDOUT/EXPECT-EXIT encode the designed first-match-wins semantics
-// (docs/design/pattern_matching.md) so this becomes a real execution test the
-// moment the SKIP line is removed.
+// Lands together with W4 slice 1 (match statement: integer scrutinee,
+// integer-literal cases, `default` — fork/trial-w4/plan.md) and is expected
+// to PASS; the scoreboard, not this comment, carries the before/after
+// history (fork/process.md standing rule 2).
+//
+// The honest C/C++ `switch` equivalent — literal cases plus `default`, which
+// is all C `switch` can express (no guards/bindings; that coverage lives in
+// match_guard_binding.carbon). Three integer cases probed so every case is
+// taken (0/1/2 — default NOT taken) and the default is taken (42, and -7 to
+// show default also catches negatives). `case <literal>` parses as an
+// expression pattern: toolchain/parse/handle_pattern.cpp:43-55 (default
+// branch pushes StateKind::ExprPattern, no wrapper node), with AnyPatternId
+// accepting Expr-category nodes (toolchain/parse/node_ids.h:109-110);
+// `default => { ... }` shape per toolchain/parse/testdata/match/match.carbon.
+// Semantics per docs/design/pattern_matching.md: an expression pattern
+// matches by equality, and the match executes the first `case` that
+// matches, else the `default` block.
 
 import Core library "io";
 
-// switch (n) { case 0: return 10; ... default: return 30; }
+// switch (n) { case 0: return 10; case 1: return 20; case 2: return 30;
+//              default: return 40; }
 fn Classify(n: i32) -> i32 {
   match (n) {
     case 0 => { return 10; }
-    case a: i32 if (a < 0) => { return 20; }
-    default => { return 30; }
+    case 1 => { return 20; }
+    case 2 => { return 30; }
+    default => { return 40; }
   }
+  // Unreachable belt: every arm returns. If a checker/lowering bug let the
+  // match fall through, this makes the program fail loudly (exit 1 below).
   return -1;
 }
 
 fn Run() -> i32 {
+  // Each case taken; default not taken.
   Core.Print(Classify(0));
-  Core.Print(Classify(-7));
+  Core.Print(Classify(1));
+  Core.Print(Classify(2));
+  // Default taken.
   Core.Print(Classify(42));
+  Core.Print(Classify(-7));
+  if (Classify(2) != 30) { return 1; }
   return 0;
 }

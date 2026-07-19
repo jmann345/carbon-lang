@@ -1,7 +1,7 @@
 {
   "schema": "fork/inventory work item v1",
   "generated": "2026-07-19",
-  "source": "Deduplicated from 99 raw items produced by four scanners (check-TODO scan, fail_todo golden-test scan, conformance-SKIP scan, design-sprint scan) against trunk @ 99cda60. Bullet strings are copied exactly from fork/gap-analysis.md. blocked_by references work-item ids (W-###), design-fork ids (F-006..F-011, see fork/design-sprint/README.md), or external upstream issues.",
+  "source": "Deduplicated from 99 raw items produced by four scanners (check-TODO scan, fail_todo golden-test scan, conformance-SKIP scan, design-sprint scan) against trunk @ 99cda60. Bullet strings are copied exactly from fork/gap-analysis.md. blocked_by references work-item ids (W-###), design-fork ids (F-006..F-011, see fork/design-sprint/README.md), or external upstream issues. Updated 2026-07-19 by the W4 slice-1 fixer: W-008 refreshed to post-slice-1 evidence; W-066 added (usefulness-diagnostic scope cut).",
   "items": [
     {
       "id": "W-001",
@@ -108,28 +108,25 @@
     },
     {
       "id": "W-008",
-      "title": "W4: match statement checking and lowering + expression/refutable patterns (all 14 check handlers are TODO stubs)",
+      "title": "W4: match statement checking and lowering + expression/refutable patterns (slice 1 — integer scrutinee, integer-literal cases, `default` — implemented; rest gated by semantics-TODO diagnostics)",
       "kind": "todo-stub",
       "subsystem": "toolchain/check + toolchain/lower",
       "size": "L",
       "bullet": "Control flow: matching — good switch equivalents",
       "evidence": [
-        "toolchain/check/handle_match.cpp:13",
-        "toolchain/check/handle_match.cpp:18",
-        "toolchain/check/handle_match.cpp:23",
-        "toolchain/check/handle_match.cpp:28",
-        "toolchain/check/handle_match.cpp:33",
-        "toolchain/check/handle_match.cpp:38",
-        "toolchain/check/handle_match.cpp:43",
-        "toolchain/check/handle_match.cpp:48",
-        "toolchain/check/handle_match.cpp:52",
-        "toolchain/check/handle_match.cpp:57",
-        "toolchain/check/handle_match.cpp:61",
-        "toolchain/check/handle_match.cpp:66",
-        "toolchain/check/handle_match.cpp:70",
-        "toolchain/check/handle_match.cpp:75",
-        "toolchain/check/testdata/patterns/unused.carbon:159",
-        "toolchain/check/testdata/patterns/unused.carbon:164",
+        "toolchain/check/handle_match.cpp:73",
+        "toolchain/check/handle_match.cpp:112",
+        "toolchain/check/handle_match.cpp:122",
+        "toolchain/check/handle_match.cpp:127",
+        "toolchain/check/handle_match.cpp:132",
+        "toolchain/check/handle_match.cpp:234",
+        "toolchain/check/testdata/match/fail_todo_binding_pattern.carbon:15",
+        "toolchain/check/testdata/match/fail_todo_guard.carbon:15",
+        "toolchain/check/testdata/match/fail_todo_no_default.carbon:20",
+        "toolchain/check/testdata/match/fail_todo_non_int_scrutinee.carbon:14",
+        "toolchain/check/testdata/match/fail_todo_non_int_literal_case.carbon:17",
+        "toolchain/check/testdata/match/fail_todo_adapter_scrutinee.carbon:21",
+        "fork/conformance/programs/control_flow/match_guard_binding.carbon:7",
         "toolchain/check/testdata/patterns/expression.carbon:13",
         "toolchain/check/testdata/patterns/expression.carbon:19",
         "toolchain/check/testdata/patterns/expression.carbon:25",
@@ -140,7 +137,7 @@
         "fork/conformance/programs/project/most_features_missing_match.carbon:7"
       ],
       "blocked_by": [],
-      "notes": "Merges three scanner reports of the same slice. Every HandleParseNode in handle_match.cpp (introducer, condition, case, guard, default, handler, statement) returns context.TODO; match is fully parsed (toolchain/parse/testdata/match/) and designed, but has no check semantics and consequently no lowering. Scope per gap-analysis W4 arbiter: cases, guards, default, exhaustiveness, expression patterns, refutable-pattern rejection (expression.carbon comments at :17,:29,:41), and lowering (decision-tree or chain). Completion flips TWO scoreboard entries: control_flow/match_switch.carbon (owning bullet) and project/most_features_missing_match.carbon (bullet: Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation). Prerequisite for W-010/W-011/W-012/W-017. Coherence risk 2 (fork/design-sprint/README.md:182-188): pin scope to ONE shared refutable-match SemIR core that `?` (W-018) and let-else (W-012) also desugar onto."
+      "notes": "W4 slice 1 (fork/trial-w4/plan.md) implements the match *statement* with an integer scrutinee (Core.IntLiteral, builtin integer types, and the Int(N)/UInt(N) adapters only — other integer-repr adapter classes are gated out), integer-literal case patterns, and a `default` arm, as an if/else-chain SemIR shape (Branch/BranchIf + convergence; no lowering changes; comparisons use the design-mandated `literal == scrutinee` operand order, docs/design/pattern_matching.md 'Expression patterns'). Remaining scope, each gated by a clean semantics-TODO (evidence lines): binding/tuple/var/unused/paren patterns and guards (MatchCaseIntroducer gate), non-integer and adapter-class scrutinees (MatchCondition gate), missing-`default`/exhaustiveness (MatchStatement gate), guard handlers (stubs), refutable-pattern rejection (expression.carbon comments at :17,:29,:41), and usefulness diagnostics (split out as W-066). Land gate: the new AUTOUPDATE goldens have no CHECK lines yet and must be autoupdated on the runner, then the scoreboard regenerated (rulebook R11/R12). Completion flips TWO scoreboard entries: control_flow/match_switch.carbon (owning bullet) and project/most_features_missing_match.carbon (bullet: Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation). Prerequisite for W-010/W-011/W-012/W-017. Coherence risk 2 (fork/design-sprint/README.md:182-188): pin scope to ONE shared refutable-match SemIR core that `?` (W-018) and let-else (W-012) also desugar onto."
     },
     {
       "id": "W-009",
@@ -1131,6 +1128,20 @@
       ],
       "blocked_by": ["F-006", "F-007", "F-009", "F-010", "F-011", "W-005"],
       "notes": "Merges two scanner reports. Sprint outputs already close several placeholders: the unions page replaces the sum_types.md:94 sentence, OV-3 (W-026) fills the interop README overload-resolution TODO + design README:3822 placeholder, TA-0 (W-020) adds threads_and_atomics.md, IL-1 (W-012) amends pattern_matching.md, EH stages replace the README error-handling section. Remaining per the SKIP audit: templates.md/metaprogramming.md/aliases.md/blocks_and_statements.md 'skeletal placeholder' self-descriptions (templates.md rewritten by W7/W-027 proposals), the match section's own placeholder note, and the interop README's other empty TODO headings (constructors, struct literals, class member access, globals) — documentation-of-existing-behavior work. Document-review arbitration only; W2's arbiter is grep-verifiable ('no TODO/placeholder markers')."
+    },
+    {
+      "id": "W-066",
+      "title": "W4 follow-up: diagnose duplicate / never-matching `case` patterns (usefulness), per pattern_matching.md §Refutability, overlap, usefulness",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check",
+      "size": "S",
+      "bullet": "Control flow: matching — good switch equivalents",
+      "evidence": [
+        "toolchain/check/handle_match.cpp:23",
+        "docs/design/pattern_matching.md:625-631"
+      ],
+      "blocked_by": ["W-008"],
+      "notes": "Scope cut recorded from the W4 slice-1 adversarial review (finding F3): `match (n) { case 5 => {A} case 5 => {B} default => {} }` compiles cleanly with a dead second arm. Runtime SemIR is still design-correct (top-down first-match-wins, pattern_matching.md:694-695,745-747), so this is a missing diagnostic, not a mischeck; the design requires 'We will diagnose... A pattern is not useful in the context of prior patterns.'"
     }
   ]
 }

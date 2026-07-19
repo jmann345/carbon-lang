@@ -464,6 +464,14 @@ struct BranchNames {
       case Parse::NodeKind::IfStatement:
         return {{.prefix = "if", .branch = "done"}};
 
+      case Parse::NodeKind::MatchCase:
+        return {{.prefix = "match",
+                 .branch_if = "case.then",
+                 .branch = "case.else"}};
+
+      case Parse::NodeKind::MatchStatement:
+        return {{.prefix = "match", .branch = "done"}};
+
       case Parse::NodeKind::ShortCircuitOperandAnd:
         return {
             {.prefix = "and", .branch_if = "rhs", .branch_with_arg = "result"}};

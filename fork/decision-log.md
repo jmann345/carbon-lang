@@ -97,6 +97,41 @@ scope bindings; syntactic divergence list in 0.1 (return/break/continue),
 type-based noreturn rule deferred to safe-Carbon work. A future `?`
 desugars onto this core per F-006. Rejected: is-expression flow scoping,
 guard-let, match-only. Per fork/design-sprint/if-let.md.
+### W4-S1: conformance scope trades for match slice 1 (2026-07-19)
+
+Process/scope decision made by Claude during the trial run under standing
+rule 6 (not a language-design divergence — the language semantics follow
+`docs/design/pattern_matching.md` unchanged); recorded per process step 4
+so the user can overrule. Slice 1 implements the `match` *statement* with
+an integer scrutinee, integer-literal `case` patterns, and a `default`
+arm; everything else keeps a clean `semantics TODO` diagnostic. Trades:
+
+- **`control_flow/match_switch.carbon` narrowed to slice-1 arms** (literal
+  cases + `default`, the honest C `switch` equivalent) and un-SKIPped so the
+  bullet is scoreboard-arbitrated. The guarded-binding arm it previously
+  carried moved to the new SKIP program
+  `control_flow/match_guard_binding.carbon`, whose SKIP cites the exact
+  `MatchCaseIntroducer` gate diagnostic (R10). Alternative rejected:
+  keeping the guard arm would have left the bullet permanently SKIP during
+  slice 1 with no executable arbiter for the switch-equivalent subset.
+- **`project/most_features_missing_match.carbon` kept SKIP** as the
+  guarded-binding representative of that PARTIAL bullet, with its SKIP
+  evidence refreshed to the post-slice-1 gate diagnostic, instead of the
+  plan §7 alternative (rewrite to slice-1 arms + un-SKIP). Rationale:
+  un-SKIPping it on slice-1 arms would double-count coverage
+  match_switch.carbon already provides and overstate "most 0.1 features".
+- **Usefulness/redundancy diagnostics deferred**: duplicate or
+  never-matching `case` literals (e.g. two `case 5` arms) are accepted in
+  slice 1; runtime first-match-wins SemIR is design-correct, but
+  `pattern_matching.md` ("We will diagnose... A pattern is not useful in
+  the context of prior patterns") requires a diagnostic. Recorded as
+  work item W-066, blocked on W-008 landing.
+- **Scrutinee gate**: only `Core.IntLiteral`, builtin integer types, and
+  the `Int(N)`/`UInt(N)` adapters are in-slice. Other class types whose
+  object representation is an integer (`Core.Char`, user adapter classes)
+  are explicitly gated out to the scrutinee TODO — they have their own
+  operator semantics and would break the slice's cleanup-soundness
+  argument (adversarial finding F2).
 
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 

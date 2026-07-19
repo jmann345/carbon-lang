@@ -12,6 +12,11 @@ name: 'Fork: autoupdate testdata'
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - 'fork/autoupdate-request.txt'
 
 permissions:
   contents: write # For pushing the autoupdated goldens back to the branch.
@@ -84,12 +89,14 @@ jobs:
       - name: Commit and push testdata changes
         run: |
           set -euo pipefail
-          git config user.name 'Claude Fork Bot'
-          git config user.email 'noreply@anthropic.com'
+          git config user.name 'jmann345'
+          git config user.email 'jerrymannstan@gmail.com'
           git add -- ':(glob)toolchain/**/testdata/**'
           if git diff --cached --quiet; then
             echo "No testdata changes; nothing to commit."
             exit 0
           fi
-          git commit -m 'Autoupdate testdata for match slice 1'
+          git commit -m "Autoupdate testdata goldens on the self-hosted runner
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
           git push origin "HEAD:refs/heads/${GITHUB_REF_NAME}"

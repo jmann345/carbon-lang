@@ -1,0 +1,1136 @@
+{
+  "schema": "fork/inventory work item v1",
+  "generated": "2026-07-19",
+  "source": "Deduplicated from 99 raw items produced by four scanners (check-TODO scan, fail_todo golden-test scan, conformance-SKIP scan, design-sprint scan) against trunk @ 99cda60. Bullet strings are copied exactly from fork/gap-analysis.md. blocked_by references work-item ids (W-###), design-fork ids (F-006..F-011, see fork/design-sprint/README.md), or external upstream issues.",
+  "items": [
+    {
+      "id": "W-001",
+      "title": "INFRA-1: operationalize the F-002 upstream-merge staging flow (staging branch + full-suite + scoreboard gate)",
+      "kind": "infra",
+      "subsystem": "ci + fork process",
+      "size": "M",
+      "bullet": "none",
+      "evidence": [
+        "fork/decision-log.md:36-50",
+        "fork/decision-log.md:13-26",
+        "fork/process.md:124-139"
+      ],
+      "blocked_by": [],
+      "notes": "F-002 defines the discipline (upstream trunk merges into a staging branch; land only when the pre-existing toolchain suite + conformance scoreboard are green, no skipped/deleted tests) and F-005 provides the runner + fork_build_toolchain.yaml merge gate, but no recurring staging-merge workflow exists yet. Upstream lands weekly (standing rule 5) — also implement the per-workstream 'check upstream activity first' step. First cold runner build compiles LLVM (hours); disk cache makes later builds incremental."
+    },
+    {
+      "id": "W-002",
+      "title": "INFRA-3: conformance harness v2 — per-program clang args, multi-file programs, external-build and doc-review arbitration, README refresh",
+      "kind": "infra",
+      "subsystem": "fork/conformance",
+      "size": "M",
+      "bullet": "none",
+      "evidence": [
+        "fork/conformance/runner.py:226-232",
+        "fork/conformance/programs/interop/cpp_concept_import_predicate.carbon:6",
+        "fork/conformance/programs/code_org/library_multifile_export.carbon:2",
+        "fork/conformance/programs/code_org/impl_files_impl_defined_fn.carbon:5",
+        "fork/conformance/README.md:63-72",
+        "fork/conformance/README.md:114-135"
+      ],
+      "blocked_by": [],
+      "notes": "Merges the runner-limitations scan with the harness-v2 item. Self-documented harness limits currently forcing SKIPs that are NOT feature gaps: (1) runner.py's fixed compile line (compile --output=<obj> --output-last-input-only <one file>) passes no clang args — an EXTRA-ARGS directive would un-SKIP the verified-by-hand C++20 concept-import program; (2) one-file-per-program rule blocks multi-library/api-impl/export-import programs; (3) no arbitration channel for external-build-system or document-review bullets (CMake, safety docs, evaluator docs); (4) conformance/README program table is stale (lists 16 of the 93 programs on the current 60-PASS/33-SKIP scoreboard). Core-impl linking is the sibling toolchain item W-003. Growing the arbiter is a permanent first-class workstream per fork/process.md step 1."
+    },
+    {
+      "id": "W-003",
+      "title": "Link core-library impl objects in `carbon link`",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/driver",
+      "size": "S",
+      "bullet": "Code organization: Implementation files",
+      "evidence": [
+        "toolchain/driver/link_driver.cpp:150-151",
+        "fork/conformance/programs/code_org/impl_files_impl_defined_fn.carbon:5"
+      ],
+      "blocked_by": [],
+      "notes": "link_driver.cpp TODO: 'should also be able to link in the rest of the Core object files' — only prelude objects are appended, so Core.EOF (defined in core/io.impl.carbon) compiles but link-fails with ld.lld: undefined symbol: _CEOF.Core. The bazel carbon_binary rule and `carbon build` already link these objects; extending link_driver.cpp's object search flips the SKIP and removes the runner-wide restriction to inline-lowered Core.Print/PrintChar builtins (runner.py docstring)."
+    },
+    {
+      "id": "W-004",
+      "title": "INFRA-2: trial run — one bullet end-to-end through the full loop (design check -> conformance tests -> implement -> adversarial review -> scoreboard PASS -> land)",
+      "kind": "infra",
+      "subsystem": "fork process",
+      "size": "M",
+      "bullet": "none",
+      "evidence": [
+        "fork/README.md:34-35",
+        "fork/process.md:67-74",
+        "fork/rulebook.md:54-69"
+      ],
+      "blocked_by": ["W-001"],
+      "notes": "The last unchecked prerequisite before scaled workstreams in the fork README status. Validates the harness (build, test runner, review loop, worktree discipline) on one small representative bullet and grows rulebook.md; the adversarial-review table in rulebook.md defines the gates each artifact class must pass. F-003 already picks the first scaled track that follows (design sprint + match chain)."
+    },
+    {
+      "id": "W-005",
+      "title": "DS-0: register design forks F-006..F-011 in decision-log and run the six user decisions in dependency order",
+      "kind": "design-needed",
+      "subsystem": "fork/design-sprint",
+      "size": "S",
+      "bullet": "none",
+      "evidence": [
+        "fork/design-sprint/README.md:9-11",
+        "fork/design-sprint/README.md:134-169",
+        "fork/decision-log.md:7-9"
+      ],
+      "blocked_by": [],
+      "notes": "decision-log OPEN section currently says '(none)' — the six papers are not yet registered as open forks. Decision order per README: 1 error-handling (F-006), 2 unions (F-007), 3 threading/atomics (F-008), 4 function overloading (F-009), 5 structural conformance (F-010), 6 if-let/let-else (F-011). Gates every F-###-blocked item below."
+    },
+    {
+      "id": "W-006",
+      "title": "DS-X1: resolve cross-paper coherence risks — storage-primitive decision chain, single `?` desugar target, diverging-else owner, trivially-copyable definition, Optional ownership",
+      "kind": "design-needed",
+      "subsystem": "fork/design-sprint",
+      "size": "S",
+      "bullet": "none",
+      "evidence": [
+        "fork/design-sprint/README.md:171-246"
+      ],
+      "blocked_by": ["W-005", "F-006", "F-007", "F-008", "F-009", "F-010", "F-011"],
+      "notes": "Coherence-audit findings needing explicit owners before implementation scales: (1) unions->W5->EH-B1 storage chain made explicit; (2) W4 scope pinned to one shared refutable-match SemIR core both `?` and let-else desugar onto; (3) assign the diverging-else/noreturn rule an owner or `else { Abort(); }` stays rejected; (7) one trivially-copyable predicate over Carbon classes defined once (unions/TA-D2/expected export); (9) fold Optional's redesign into W5 deliverables explicitly. Record outcomes in decision-log."
+    },
+    {
+      "id": "W-007",
+      "title": "DS-X2: W8 refactor-first plan for check/cpp/export.cpp + thunk.cpp + type_mapping.cpp (five-way contention point)",
+      "kind": "infra",
+      "subsystem": "toolchain/check/cpp",
+      "size": "S",
+      "bullet": "none",
+      "evidence": [
+        "fork/design-sprint/README.md:204-212"
+      ],
+      "blocked_by": [],
+      "notes": "EH-B3 (W-019), UN-2 (W-015), OV-3 (W-026), TA-D1/D2 (W-023/W-021), and SC-B3 (W-029) all land in the same files W8 extends; no single owner or branch ordering exists. Publish an export-machinery refactor/ownership plan before any two of these start concurrently, else serialized rebases or conflicting refactors under F-002 merge gating."
+    },
+    {
+      "id": "W-008",
+      "title": "W4: match statement checking and lowering + expression/refutable patterns (all 14 check handlers are TODO stubs)",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check + toolchain/lower",
+      "size": "L",
+      "bullet": "Control flow: matching — good switch equivalents",
+      "evidence": [
+        "toolchain/check/handle_match.cpp:13",
+        "toolchain/check/handle_match.cpp:18",
+        "toolchain/check/handle_match.cpp:23",
+        "toolchain/check/handle_match.cpp:28",
+        "toolchain/check/handle_match.cpp:33",
+        "toolchain/check/handle_match.cpp:38",
+        "toolchain/check/handle_match.cpp:43",
+        "toolchain/check/handle_match.cpp:48",
+        "toolchain/check/handle_match.cpp:52",
+        "toolchain/check/handle_match.cpp:57",
+        "toolchain/check/handle_match.cpp:61",
+        "toolchain/check/handle_match.cpp:66",
+        "toolchain/check/handle_match.cpp:70",
+        "toolchain/check/handle_match.cpp:75",
+        "toolchain/check/testdata/patterns/unused.carbon:159",
+        "toolchain/check/testdata/patterns/unused.carbon:164",
+        "toolchain/check/testdata/patterns/expression.carbon:13",
+        "toolchain/check/testdata/patterns/expression.carbon:19",
+        "toolchain/check/testdata/patterns/expression.carbon:25",
+        "toolchain/check/testdata/patterns/expression.carbon:37",
+        "toolchain/check/testdata/patterns/expression.carbon:49",
+        "toolchain/check/testdata/patterns/expression.carbon:64",
+        "fork/conformance/programs/control_flow/match_switch.carbon:7",
+        "fork/conformance/programs/project/most_features_missing_match.carbon:7"
+      ],
+      "blocked_by": [],
+      "notes": "Merges three scanner reports of the same slice. Every HandleParseNode in handle_match.cpp (introducer, condition, case, guard, default, handler, statement) returns context.TODO; match is fully parsed (toolchain/parse/testdata/match/) and designed, but has no check semantics and consequently no lowering. Scope per gap-analysis W4 arbiter: cases, guards, default, exhaustiveness, expression patterns, refutable-pattern rejection (expression.carbon comments at :17,:29,:41), and lowering (decision-tree or chain). Completion flips TWO scoreboard entries: control_flow/match_switch.carbon (owning bullet) and project/most_features_missing_match.carbon (bullet: Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation). Prerequisite for W-010/W-011/W-012/W-017. Coherence risk 2 (fork/design-sprint/README.md:182-188): pin scope to ONE shared refutable-match SemIR core that `?` (W-018) and let-else (W-012) also desugar onto."
+    },
+    {
+      "id": "W-009",
+      "title": "UN-1: native `union` declaration — design page + lex/parse/check/lower front-end on CustomLayoutType",
+      "kind": "design-needed",
+      "subsystem": "lex + parse + check + lower",
+      "size": "M",
+      "bullet": "Type system: Unions (un-discriminated) + C++ union mapping",
+      "evidence": [
+        "fork/design-sprint/unions.md:240-306",
+        "fork/design-sprint/unions.md:327-356",
+        "fork/design-sprint/unions.md:463-511",
+        "toolchain/lex/token_kind.def",
+        "fork/conformance/programs/types/union_basic.carbon:6"
+      ],
+      "blocked_by": ["F-007", "W-005"],
+      "notes": "Absorbs the generic 'design and implement un-discriminated unions' item (no `union` token exists in token_kind.def — verified by grep; missing at every layer). Recommended Option A: Rust-shaped safety surface (writes safe, reads byte-reinterpretation), C++-compatible layout by construction. Expensive half exists (imported-union CustomLayoutType lowering, unions.md:194-224); new work is one keyword, choice-pattern parse (~12 states), handle_union.cpp on the handle_choice build-a-Class pattern, symbolic max-size/max-align (route b preferred). 0.1 cut-line at unions.md:506-511. Settles the overlapping-storage primitive W-010 choice payloads lower onto (coherence risk 1)."
+    },
+    {
+      "id": "W-010",
+      "title": "W5a: choice alternatives with parameters (payload-carrying sum types)",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check + toolchain/lower",
+      "size": "L",
+      "bullet": "Type system: Sum types (discriminated unions)",
+      "evidence": [
+        "toolchain/check/handle_choice.cpp:154",
+        "toolchain/check/handle_choice.cpp:159",
+        "toolchain/check/testdata/choice/params.carbon:13",
+        "toolchain/check/testdata/choice/params.carbon:26",
+        "toolchain/check/testdata/choice/params.carbon:39",
+        "toolchain/check/testdata/choice/params.carbon:50"
+      ],
+      "blocked_by": ["W-008", "W-009"],
+      "notes": "Merges the check-TODO and fail_todo-test reports. handle_choice.cpp:159 rejects any alternative with a parameter list ('choice alternatives with parameters are not yet supported'); :154 also TODOs empty parameter lists that should become member functions. Parameterless choice works as an enum substitute only. Four payload shapes pre-staged as splits in choice/params.carbon: empty parens, typed payloads, generic payloads, self params. W-009 is the storage-primitive blocker (sum_types.md admits the low-level primitive 'hasn't been designed yet'; per coherence risk 1 the unions decision settles it); W-008 is needed to consume payloads."
+    },
+    {
+      "id": "W-011",
+      "title": "W5b: match destructuring of choice payloads + transparent std::variant/std::optional interop",
+      "kind": "missing-feature",
+      "subsystem": "toolchain/check + toolchain/lower + toolchain/check/cpp",
+      "size": "L",
+      "bullet": "Control flow: matching — sum-type consumption incl. std::variant/std::optional interop",
+      "evidence": [
+        "fork/conformance/programs/control_flow/match_sum_type_payload.carbon:6",
+        "toolchain/check/cpp/custom_type_mapping.cpp:92-104"
+      ],
+      "blocked_by": ["W-008", "W-010"],
+      "notes": "The consumption half of W5: (1) destructuring payloads through match patterns, (2) transparent std::variant/std::optional mapping (custom_type_mapping.cpp's std::string_view matcher is the extension mechanism this rides). Arbiter per gap-analysis W5: choice alternatives construct AND destructure via match in executed tests; a Carbon match over an imported std::optional/std::variant works. Coherence risk 9: Optional's redesign (W-058) folds into these deliverables."
+    },
+    {
+      "id": "W-012",
+      "title": "IL-1: if-let / let-else / while-let (Option A) as desugarings onto W4's refutable-match SemIR + pattern_matching.md amendment",
+      "kind": "design-needed",
+      "subsystem": "parse + check + docs/design",
+      "size": "M",
+      "bullet": "Control flow: matching — if-let / let-else combined match+declaration",
+      "evidence": [
+        "fork/design-sprint/if-let.md:241-373",
+        "fork/design-sprint/if-let.md:493-532",
+        "fork/design-sprint/if-let.md:559-563",
+        "docs/design/pattern_matching.md:712-714",
+        "fork/conformance/programs/control_flow/if_let_let_else.carbon:6"
+      ],
+      "blocked_by": ["F-011", "W-005", "W-008", "W-010"],
+      "notes": "Absorbs the generic 'design and implement if-let/let-else' item (absent at every layer; the match design section calls itself a skeletal placeholder; the SKIP program body is a strawman). No lexer change, ~5 node kinds + ~6 states, single-token peek after '(' in paren-condition; check adds a refutable LocalPatternMatch variant with failure-block target; lowering zero (rider 1: both forms specified as one-case-match desugarings). Rider 2: if upstream #5101 lands a different surface, re-spell mechanically keeping semantics. let-else initializer must forbid unparenthesized if-expressions; else-block divergence syntactic (return/break/continue) for 0.1. Doc amendment must enumerate all three refutable contexts (coherence risk 10). W-010 is a soft blocker (motivating .Some examples). Options B/D rejected on record; C is fallback."
+    },
+    {
+      "id": "W-013",
+      "title": "W6: implement definition-checked variadics",
+      "kind": "missing-feature",
+      "subsystem": "lex + parse + check + lower + core/prelude",
+      "size": "XL",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "docs/design/variadics.md",
+        "toolchain/lex/token_kind.def",
+        "fork/conformance/programs/generics/variadics_each.carbon:6"
+      ],
+      "blocked_by": [],
+      "notes": "Complete accepted 964-line design (docs/design/variadics.md, proposal p002240) with zero implementation — no `...`/`each` tokens exist (verified by grep), so pack expansion fails at the lexer. Full-stack: lexer tokens, parse states, pack typechecking, pack lowering. Independent — can start immediately. W6 arbiter also rewrites core/prelude tuple Copy (hand-rolled for arities 0-3) as one variadic impl, unblocking part of 'Stdlib: tuple/array library parts'."
+    },
+    {
+      "id": "W-014",
+      "title": "W7: integrated templates — template lowering (SpliceInst) plus dependent-form conversions, operators, and pattern splices",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check + toolchain/lower",
+      "size": "L",
+      "bullet": "Generics: Integrated templates",
+      "evidence": [
+        "toolchain/lower/handle.cpp:359-364",
+        "toolchain/check/return.cpp:217",
+        "toolchain/check/return.cpp:228",
+        "toolchain/check/handle_binding_pattern.cpp:406",
+        "toolchain/check/pattern_match.cpp:830",
+        "toolchain/check/pattern_match.cpp:833",
+        "toolchain/check/testdata/generic/template/unimplemented.carbon:15",
+        "toolchain/check/testdata/generic/template/unimplemented.carbon:29",
+        "toolchain/check/testdata/generic/template/unimplemented.carbon:48",
+        "toolchain/check/testdata/generic/template/fail_todo_template_access_assoc_const.carbon:15",
+        "fork/conformance/programs/generics/templates_dependent_member.carbon:5"
+      ],
+      "blocked_by": [],
+      "notes": "Merges three scanner reports. Lowering: HandleInst for SemIR::SpliceInst is CARBON_FATAL('Template lowering not implemented yet') at lower/handle.cpp:363 — flips generics/templates_dependent_member.carbon (crash context 'Lowering splice_inst'; the other two Integrated-templates conformance programs already PASS). Check: return.cpp TODOs nontrivial conversions between symbolic forms; handle_binding_pattern.cpp:406 TODOs local form (template) bindings; pattern_match.cpp:830/833 CARBON_FATAL on thunk/local matching of pattern splices; fail_todo splits pin dependent operators (Core.MulWith on <dependent type>), dependent conversions, and deferred T.I1 assoc-const access. W7 arbiter: all generic/template fail_todo tests flip, the lower fatal is gone, and a template function executes in the run harness. Also a prerequisite for exporting Carbon `template` functions to C++ (W-044 note) and for W-043."
+    },
+    {
+      "id": "W-015",
+      "title": "UN-2: union C++ interop — designated-init construction of imported unions, is_union import marking, union export",
+      "kind": "design-needed",
+      "subsystem": "toolchain/check/cpp + toolchain/check/convert",
+      "size": "M",
+      "bullet": "Type system: Unions (un-discriminated) + C++ union mapping",
+      "evidence": [
+        "fork/design-sprint/unions.md:225-236",
+        "fork/design-sprint/unions.md:307-326",
+        "fork/design-sprint/unions.md:353-354"
+      ],
+      "blocked_by": ["F-007", "W-009"],
+      "notes": "Absorbs Option C's fix: convert.cpp:882-885 struct-literal bailout blocks constructing imported-union values; is_union bit on import (currently just final); export rides existing CXXRecordDecl creation with TagTypeKind::Union — layout agrees by construction. Round-trip + punning execution tests per W1. Note: gap-analysis row 32's 'opaque interop types' claim is stale per unions.md:194-197 audit. Needs the shared trivially-copyable predicate (coherence risk 7, W-006)."
+    },
+    {
+      "id": "W-016",
+      "title": "EH-B0: --cpp-exceptions={auto,none,catch} driver flag + fenced (try/catch-terminate) thunks",
+      "kind": "design-needed",
+      "subsystem": "toolchain/driver + toolchain/check/cpp/thunk",
+      "size": "S",
+      "bullet": "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)",
+      "evidence": [
+        "fork/design-sprint/error-handling.md:206-230",
+        "fork/design-sprint/error-handling.md:497-501",
+        "fork/design-sprint/error-handling.md:166-181",
+        "toolchain/base/clang_invocation.cpp"
+      ],
+      "blocked_by": ["F-006", "W-005"],
+      "notes": "Absorbs the exception-configuration half of the generic exception-interop item (clang_invocation.cpp has no exception-mode plumbing at all — grep -i except matches only the license header). Stage B0 of recommended Option B: replaces today's UB (C++ exception crossing into unwind-less Carbon frames) with a documented terminate-at-boundary contract; closes the milestone exception-config sub-bullet. No W-dependencies — paper says land first regardless of fork outcome. Threading doc freeze (W-020) waits on this flag's default (coherence risk 6)."
+    },
+    {
+      "id": "W-017",
+      "title": "EH-B1: Core.Result choice in the prelude + match-based consumption + conformance programs",
+      "kind": "design-needed",
+      "subsystem": "core/prelude",
+      "size": "S",
+      "bullet": "Error handling: dedicated control flow constructs",
+      "evidence": [
+        "fork/design-sprint/error-handling.md:241-282",
+        "fork/design-sprint/error-handling.md:502-503",
+        "fork/design-sprint/error-handling.md:519-527",
+        "docs/design/README.md:3830-3832",
+        "fork/conformance/programs/error_handling/control_flow_constructs.carbon:6"
+      ],
+      "blocked_by": ["F-006", "W-005", "W-008", "W-010"],
+      "notes": "Absorbs the generic 'design and implement dedicated error-handling control flow' item (docs/design/README.md: 'For now, Carbon does not have language features dedicated to error handling'; no try/throw tokens exist; the SKIP program body is a strawman — gap-analysis calls the five undesigned features the single largest schedule risk for 0.1). Option A's artifacts as Option B's first stage; S-sized on top of W-008+W-010 (hard prerequisites). Result naming (Success/Failure vs Ok/Err) is open user question 1 (error-handling.md:546-548)."
+    },
+    {
+      "id": "W-018",
+      "title": "EH-B2: postfix `?` operator + Core.Try interface + ImplicitAs error conversion",
+      "kind": "design-needed",
+      "subsystem": "parse + check + core/prelude",
+      "size": "M",
+      "bullet": "Error handling: dedicated control flow constructs",
+      "evidence": [
+        "fork/design-sprint/error-handling.md:284-343",
+        "fork/design-sprint/error-handling.md:359-377",
+        "fork/design-sprint/error-handling.md:504-505"
+      ],
+      "blocked_by": ["F-006", "W-017"],
+      "notes": "Bare Question token already lexed and unused (token_kind.def:103 per paper); desugars entirely in check onto existing branch/return SemIR — zero lowering work. Must desugar onto the same shared refutable-match SemIR core as if-let (coherence risk 2 — W4 scope must be pinned once, see W-008)."
+    },
+    {
+      "id": "W-019",
+      "title": "EH-B3: catching thunks (Result(T, Cpp.Exception) imports) + Carbon::expected<T,E> export support header",
+      "kind": "design-needed",
+      "subsystem": "toolchain/check/cpp (thunk/import/export) + install",
+      "size": "M",
+      "bullet": "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)",
+      "evidence": [
+        "fork/design-sprint/error-handling.md:217-237",
+        "fork/design-sprint/error-handling.md:506-508",
+        "fork/design-sprint/error-handling.md:536-542",
+        "fork/conformance/programs/error_handling/cpp_exception_interop.carbon:6"
+      ],
+      "blocked_by": ["F-006", "W-016", "W-018", "W-007"],
+      "notes": "Absorbs the calling-throwing-C++/exporting-errors half of the generic exception-interop item (its conformance SKIP: no design for calling throwing C++ from Carbon or exporting Carbon errors as std::expected/exceptions). Closes milestone sub-bullets 3+4 (automatic throwing-C++ import, expected-shaped export). Cpp.Exception holds exception_ptr; C++17-compatible expected header in install tree. Lands in the five-way-contention files (W-007). Windows/W-059 must budget MSVC-funclet variant (error-handling.md:540-542)."
+    },
+    {
+      "id": "W-020",
+      "title": "TA-0: threads_and_atomics.md memory-model design doc + deterministic multithreaded conformance programs",
+      "kind": "design-needed",
+      "subsystem": "docs/design/interoperability + fork/conformance",
+      "size": "S",
+      "bullet": "C++ interop: threading, atomics, memory model, synchronization",
+      "evidence": [
+        "fork/design-sprint/threading-atomics.md:184-224",
+        "fork/design-sprint/threading-atomics.md:265-269",
+        "fork/design-sprint/threading-atomics.md:456-460",
+        "fork/conformance/programs/interop/cpp_threading_atomics.carbon:5"
+      ],
+      "blocked_by": ["F-008", "W-005", "W-016"],
+      "notes": "Absorbs the generic 'design threading/atomics/memory-model C++ interop' item (nothing in toolchain/ or docs/design/ defines Carbon's memory model or how std::thread/std::mutex/std::atomic map into Carbon). The bullet's substance already works empirically (executed matrix, threading-atomics.md:76-96): atomics with orders/CAS, all mutex types, condvars, RAII guards, Carbon-on-foreign-threads. Doc states a 7-point C++-memory-model contract; 5-6 programs written join-before-print for the runner's exact-stdout rule. Write doc against W-016's fenced-thunk semantics so std::system_error is a defined terminate (coherence risk 6). Interacts with the safe-Carbon data-race-safety design (p005914 defers data-race safety)."
+    },
+    {
+      "id": "W-021",
+      "title": "TA-D2: mark exported trivially-copyable Carbon classes trivial in the Clang AST (std::atomic<CarbonClass>)",
+      "kind": "design-needed",
+      "subsystem": "toolchain/check/cpp/export",
+      "size": "S",
+      "bullet": "C++ interop: threading, atomics, memory model, synchronization",
+      "evidence": [
+        "fork/design-sprint/threading-atomics.md:102",
+        "fork/design-sprint/threading-atomics.md:315-317",
+        "fork/design-sprint/threading-atomics.md:328-330"
+      ],
+      "blocked_by": ["F-008", "W-005"],
+      "notes": "Instantiation already works; only libc++'s is_trivially_copyable static_assert fires. Deliberately sequenced first among the D-fixes: it is the cheapest slice of the shared Carbon-type-into-Clang-AST machinery that concept export (W-029) and C++-templates-on-Carbon-types (W-043) also need (coherence risk 8), and consumes the single trivially-copyable predicate (risk 7)."
+    },
+    {
+      "id": "W-022",
+      "title": "TA-D3: emit definitions for file-scope globals typed by imported C++ template specializations",
+      "kind": "design-needed",
+      "subsystem": "toolchain/lower (file-level globals)",
+      "size": "M",
+      "bullet": "C++ interop: threading, atomics, memory model, synchronization",
+      "evidence": [
+        "fork/design-sprint/threading-atomics.md:103",
+        "fork/design-sprint/threading-atomics.md:319-324",
+        "fork/design-sprint/threading-atomics.md:331-333"
+      ],
+      "blocked_by": ["F-008", "W-005"],
+      "notes": "var g: Cpp.std.atomic(i32) at file scope compiles but links with undefined symbol _Cgcount.Main.1; plain imported-class globals (std::mutex) link fine, localizing to specialization-typed global emission (start at lower/file_context.cpp per paper). Fork-local patch through the F-005 runner; upstreamable."
+    },
+    {
+      "id": "W-023",
+      "title": "TA-D1: map concrete Carbon function values to C++ callables (std::thread(CarbonFn))",
+      "kind": "design-needed",
+      "subsystem": "toolchain/check/cpp (type_mapping/overload_resolution/thunk/export)",
+      "size": "M",
+      "bullet": "C++ interop: threading, atomics, memory model, synchronization",
+      "evidence": [
+        "fork/design-sprint/threading-atomics.md:101",
+        "fork/design-sprint/threading-atomics.md:306-313",
+        "fork/design-sprint/threading-atomics.md:335-339",
+        "fork/design-sprint/threading-atomics.md:488-490"
+      ],
+      "blocked_by": ["F-008", "W-005", "upstream-watch: p003848 lambdas"],
+      "notes": "Riskiest of the three D-fixes (ABI compatibility must be checked, not assumed); generic/deduced-parameter functions stay unsupported. Open question 4 (threading-atomics.md:508-510) lets it degrade to a documented limitation with the inline-C++ bridge pattern if deeper than M. Check upstream lambda work first per standing rule 5."
+    },
+    {
+      "id": "W-024",
+      "title": "OV-1: `overload fn` non-generic same-library sets — keyword, modifier, OverloadSet SemIR store, first-match resolution loop, signature-fingerprint mangling",
+      "kind": "design-needed",
+      "subsystem": "lex + parse + sem_ir + check",
+      "size": "M",
+      "bullet": "Functions: function overloading (Carbon-native)",
+      "evidence": [
+        "fork/design-sprint/function-overloading.md:190-261",
+        "fork/design-sprint/function-overloading.md:245-255",
+        "fork/design-sprint/function-overloading.md:380-382",
+        "docs/design/pattern_matching.md:696",
+        "fork/conformance/programs/functions/overloading_native.carbon:6"
+      ],
+      "blocked_by": ["F-009", "W-005"],
+      "notes": "Absorbs the generic 'design and implement Carbon-native function overloading' item (pattern_matching.md:696: 'We do not yet have an approved design for overloaded functions'; a second `fn Describe` with a different signature is rejected as a redeclaration today; only imported C++ overload sets work — PASSing interop/cpp_overload_set_by_type.carbon). Recommended Option A: marked closed sets, declaration-order first-match (no ranking lattice), designed as the compile-time subset of pattern-dispatch. Mirrors the in-tree CppOverloadSet/CalleeCppOverloadSet pattern; TryMergeRedecl grows an add-to-set branch; Mangler needs a signature fingerprint or two non-generic overloads collide at link. Arity pre-check written as arity-range from day one for W-013 variadics (function-overloading.md:403-406)."
+    },
+    {
+      "id": "W-025",
+      "title": "OV-2: generic overload-set members (non-diagnosing deduction) + cross-library set import",
+      "kind": "design-needed",
+      "subsystem": "toolchain/check/deduce + toolchain/check/import_ref",
+      "size": "M",
+      "bullet": "Functions: function overloading (Carbon-native)",
+      "evidence": [
+        "fork/design-sprint/function-overloading.md:163-165",
+        "fork/design-sprint/function-overloading.md:384",
+        "fork/design-sprint/function-overloading.md:250-252"
+      ],
+      "blocked_by": ["F-009", "W-024"],
+      "notes": "Tentative machinery half-built (TryConvertToValueOfType, DeduceImplArguments returns None on failure); the new piece is a non-diagnosing DeduceGenericCallArguments variant plus discarding failed speculative insts. Set import through import_ref.cpp with poisoning rules. Feeds the shared probe/diagnose=false subsystem jointly owned with SC-B2 (W-028, coherence risk 4)."
+    },
+    {
+      "id": "W-026",
+      "title": "OV-3: overload-set export to C++ + documented-divergence conformance tests + docs (functions.md section, interop README overload-resolution TODO)",
+      "kind": "design-needed",
+      "subsystem": "toolchain/check/cpp/export + docs/design",
+      "size": "M",
+      "bullet": "Functions: function overloading (Carbon-native)",
+      "evidence": [
+        "fork/design-sprint/function-overloading.md:236-243",
+        "fork/design-sprint/function-overloading.md:385-389",
+        "fork/design-sprint/function-overloading.md:144-150"
+      ],
+      "blocked_by": ["F-009", "W-024", "W-007"],
+      "notes": "Loop the set through ExportFunctionToCpp; C++ callers resolve with C++ rules — Carbon-first-match vs C++-best-match divergence is accepted and conformance-tested in both directions (rulebook rule proposed in paper). Docs stage also fills interoperability/README.md:210 empty TODO and retires the design README:3822 placeholder."
+    },
+    {
+      "id": "W-027",
+      "title": "SC-B1: `template constraint` + structural member requirements (check-phase only)",
+      "kind": "design-needed",
+      "subsystem": "parse + sem_ir + check",
+      "size": "M",
+      "bullet": "Generics: Template-style structural conformance to nominal constraints",
+      "evidence": [
+        "fork/design-sprint/structural-conformance.md:301-377",
+        "fork/design-sprint/structural-conformance.md:389-397",
+        "fork/design-sprint/structural-conformance.md:521-524",
+        "fork/conformance/programs/generics/structural_conformance.carbon:5",
+        "docs/design/templates.md:22-27"
+      ],
+      "blocked_by": ["F-010", "F-009", "W-005"],
+      "notes": "Absorbs the generic 'design and implement template structural conformance' item ('structural conformance' appears nowhere in the toolchain; a `template T:! I` parameter still requires nominal `impl as I`; templates.md is a self-described placeholder). Implements accepted p000818/p002200 verbatim: template modifier on named constraints (currently UnrecognizedDecl; handle_named_constraint.cpp:118 TODO per paper), new requirement vectors in facet_type_info.h, satisfaction + structural-witness synthesis in new structural_conformance.cpp hooked at the convert.cpp:1596 facet-conversion chokepoint. Check-complete before the template-lowering fatal is fixed, but its compile-and-run arbiter blocks on W-014. F-009 shares the no-subsumption rule. Option A (implicit interface satisfaction) explicitly rejected on record."
+    },
+    {
+      "id": "W-028",
+      "title": "SC-B2: `require (...) {...}` validity blocks + `require <bool-expr>` predicates via probe-mode eval-block replay",
+      "kind": "design-needed",
+      "subsystem": "parse + check (probe mode)",
+      "size": "L",
+      "bullet": "Generics: Template-style structural conformance to nominal constraints",
+      "evidence": [
+        "fork/design-sprint/structural-conformance.md:356-363",
+        "fork/design-sprint/structural-conformance.md:398-403",
+        "fork/design-sprint/README.md:195-203"
+      ],
+      "blocked_by": ["F-010", "W-027", "W-014"],
+      "notes": "The one genuinely new subsystem: diagnostic capture around deferred-action replay, generalizing the existing impl_lookup diagnose=false idiom — the irreducible cost of any predicate-supporting option. Absorbs Option C's `where <bool-expr>` binding form. Spec the probe subsystem ONCE and have overloading's candidate loop (W-025) consume it too (coherence risk 4). B2 and W7's deferred-action completion should be one engineering track (structural-conformance.md:527-532). Probe-observability rule is user open question 4."
+    },
+    {
+      "id": "W-029",
+      "title": "SC-B3: two-way C++20 concept mapping — deferred concept-satisfaction action on import, ConceptDecl export with __carbon_satisfies hook",
+      "kind": "design-needed",
+      "subsystem": "toolchain/check/cpp (call/export)",
+      "size": "M",
+      "bullet": "Generics: C++ interop — C++20 concepts <-> named predicates mapping",
+      "evidence": [
+        "fork/design-sprint/structural-conformance.md:455-484",
+        "fork/design-sprint/structural-conformance.md:404-405",
+        "fork/design-sprint/structural-conformance.md:538-541",
+        "fork/conformance/programs/interop/cpp_concept_export_predicate.carbon:5",
+        "fork/gap-analysis.md:40"
+      ],
+      "blocked_by": ["F-010", "W-027", "W-021", "W-007"],
+      "notes": "Absorbs the generic 'export Carbon interfaces as C++20 concepts' item (SKIP: `requires Carbon::HasGet<T>` fails with 'interop with unsupported type' and 'no member named HasGet in namespace Carbon' even with -std=c++20; gap-analysis: the export direction 'has no trace'). Import side (dependent-arg CheckPredicateAction extending cpp/call.cpp concept evaluation) can land with W7; export (synthesized ConceptDecls; member reqs render as requires-expressions, Carbon-only predicates via a __carbon_satisfies Clang-builtin hook; interfaces export nominally) lands with W8. The import-direction conformance program is blocked only by the harness clang-args item (W-002), not by this feature. Export-fidelity bar is user open question 7."
+    },
+    {
+      "id": "W-030",
+      "title": "Interface default/final member modifiers unimplemented",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check",
+      "size": "M",
+      "bullet": "Generics: Checked generics",
+      "evidence": [
+        "toolchain/check/handle_function.cpp:103",
+        "toolchain/check/handle_let_and_var.cpp:386",
+        "toolchain/check/testdata/interface/fail_todo_modifiers.carbon:16-25",
+        "toolchain/check/testdata/interface/fail_todo_define_default_fn_inline.carbon:16-26",
+        "toolchain/check/testdata/interface/fail_todo_define_default_fn_out_of_line.carbon:18-33",
+        "toolchain/check/testdata/interface/fail_todo_define_default_fn_out_of_line.carbon:44-55",
+        "toolchain/check/testdata/interface/fail_todo_assoc_const_default.carbon:16-25"
+      ],
+      "blocked_by": [],
+      "notes": "Merges the check-TODO and fail_todo-test reports. Both function decls and associated constants in interfaces diagnose 'interface modifier' via context.TODO instead of tracking default/final. Four standalone fail_todo files pre-stage the slice: modifiers, inline default fn bodies (incl. builtin), out-of-line fn Interface.F definitions (incl. dependent return type), and `default let` associated constants. Listed in the gap analysis as a residual edge of the otherwise-DONE checked-generics bullet."
+    },
+    {
+      "id": "W-031",
+      "title": "Local compile-time let bindings unsupported",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check",
+      "size": "M",
+      "bullet": "Generics: Checked generics",
+      "evidence": [
+        "toolchain/check/handle_binding_pattern.cpp:303",
+        "toolchain/check/handle_binding_pattern.cpp:521",
+        "toolchain/check/handle_binding_pattern.cpp:547"
+      ],
+      "blocked_by": [],
+      "notes": ":303 local generic let (:!) bindings unsupported pending re-evaluation of the eval block in a synthesized specific; :521 compile-time let outside function/interface scope; :547 underscore as associated constant name needs a real diagnostic (may just need documentation + proper error)."
+    },
+    {
+      "id": "W-032",
+      "title": "Same-type (==) facet-type constraints parsed but unenforced (other_requirements)",
+      "kind": "missing-feature",
+      "subsystem": "toolchain/check + toolchain/sem_ir",
+      "size": "M",
+      "bullet": "Generics: Checked generics",
+      "evidence": [
+        "toolchain/check/handle_require.cpp:219",
+        "toolchain/sem_ir/facet_type_info.h:109"
+      ],
+      "blocked_by": [],
+      "notes": "FacetTypeInfo carries a bare bool other_requirements (facet_type_info.h:109) instead of modeling the constraints; handle_require.cpp bails with 'facet type has constraints that we don't handle yet' whenever it is set, so require/impls cycle detection and enforcement skip them."
+    },
+    {
+      "id": "W-033",
+      "title": "Runtime facet values and non-constant associated entities rejected",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check",
+      "size": "M",
+      "bullet": "Generics: Checked generics",
+      "evidence": [
+        "toolchain/check/member_access.cpp:209",
+        "toolchain/check/member_access.cpp:217",
+        "toolchain/check/member_access.cpp:710",
+        "toolchain/check/member_access.cpp:791",
+        "toolchain/check/convert.cpp:1565"
+      ],
+      "blocked_by": [],
+      "notes": "Impl lookup assumes compile-time-constant facet values: associated-value lookup on a runtime facet value (member_access.cpp:710) and conversion of runtime facet values (convert.cpp:1565) are TODO; non-constant associated entity values in (compound) member access (209/791) error out with SemanticsTodo; a constant member value that is not an AssociatedEntity hits the 'unexpected value for associated entity' TODO (217)."
+    },
+    {
+      "id": "W-034",
+      "title": "Forward-declared impls and qualified impl redeclaration syntax `impl C.(as I)`",
+      "kind": "fail-test",
+      "subsystem": "toolchain/check (impl)",
+      "size": "S",
+      "bullet": "Generics: Checked generics",
+      "evidence": [
+        "toolchain/check/testdata/impl/lookup/fail_todo_undefined_impl.carbon:20-22",
+        "toolchain/check/testdata/impl/lookup/fail_todo_undefined_impl.carbon:33-34",
+        "toolchain/check/testdata/impl/lookup/fail_todo_undefined_impl.carbon:26",
+        "toolchain/check/testdata/impl/lookup/fail_todo_undefined_impl.carbon:40-47"
+      ],
+      "blocked_by": [],
+      "notes": "Small checked-generics edge: out-of-line definition of an impl forward-declared inside a class needs the qualified-impl syntax from proposal #3763 (`impl C.(Self as I)` / `impl C.(as I)`); until then the two decls are treated as distinct impls, producing ImplAccessMemberBeforeSet and ImplMissingDefinition on C.F() calls."
+    },
+    {
+      "id": "W-035",
+      "title": "DiagnoseMissingDefinitions fatals on forward-declared interfaces",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check",
+      "size": "S",
+      "bullet": "Generics: Checked generics",
+      "evidence": [
+        "toolchain/check/check_unit.cpp:498"
+      ],
+      "blocked_by": ["upstream: carbon-language/carbon-lang#4071"],
+      "notes": "CARBON_FATAL('TODO: Support interfaces in DiagnoseMissingDefinitions') for the InterfaceDecl case; the comment defers until it can be tested without triggering issue #4071, so interfaces declared-but-never-defined are not diagnosed like functions/classes/impls are."
+    },
+    {
+      "id": "W-036",
+      "title": "Control-flow expressions (if-expr, and/or, pattern-match regions) only work inside function bodies",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check + toolchain/lower (global init)",
+      "size": "M",
+      "bullet": "Control flow: conditions",
+      "evidence": [
+        "toolchain/check/handle_if_expr.cpp:72",
+        "toolchain/check/handle_operator.cpp:462",
+        "toolchain/check/pattern_match.cpp:319",
+        "toolchain/check/testdata/var/fail_todo_control_flow_init.carbon:19-31",
+        "toolchain/check/testdata/if_expr/fail_not_in_function.carbon:19",
+        "toolchain/check/testdata/operators/builtin/fail_and_or_not_in_function.carbon:25"
+      ],
+      "blocked_by": [],
+      "notes": "Merges the check-TODO and fail_todo-test reports. Three sites emit 'Control flow expressions are currently only supported inside functions': if-expressions, short-circuit and/or, and pattern-match-generated control-flow regions. The bullet is DONE inside function bodies; global/file-scope initializers cannot contain any branching — needs global-init CFG support in check+lower."
+    },
+    {
+      "id": "W-037",
+      "title": "Lambdas, terse `=>` bodies, and fn declarations without parameter lists (positional parameters) stubbed in check",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check",
+      "size": "M",
+      "bullet": "none",
+      "evidence": [
+        "toolchain/check/handle_lambda.cpp:12",
+        "toolchain/check/handle_lambda.cpp:16",
+        "toolchain/check/handle_lambda.cpp:21",
+        "toolchain/check/handle_function.cpp:825",
+        "toolchain/check/handle_function.cpp:490",
+        "toolchain/check/testdata/function/declaration/fail_todo_no_params.carbon:18-22",
+        "toolchain/check/testdata/function/declaration/fail_todo_no_params.carbon:54-64",
+        "toolchain/check/testdata/function/declaration/fail_todo_no_params.carbon:70-78"
+      ],
+      "blocked_by": [],
+      "notes": "Merges the lambda-stub and no-params fail_todo reports. HandleLambdaIntroducer/HandleLambda/HandleTerseBodyArrow and HandleFunctionTerseDefinition (fn F() => expr) are all context.TODO — parsed but zero check support; `fn A;` (no parameter list) emits 'function with positional parameters' SemanticsTodo (handle_function.cpp:490) across brace-body/return-type/implicit-param/terse variants. No 0.1 bullet in fork/gap-analysis.md names lambdas; nearest owners are the Functions group ('Functions: separate declaration and definition' for the no-params half). Watch upstream p003848 lambda work before implementing (standing rule 5; also gates W-023)."
+    },
+    {
+      "id": "W-038",
+      "title": "Float literal/type conversion edges TODO",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check",
+      "size": "S",
+      "bullet": "Stdlib: fundamental types (bool, iN, fN)",
+      "evidence": [
+        "toolchain/check/eval.cpp:1500",
+        "toolchain/check/eval.cpp:1545",
+        "toolchain/check/type.cpp:90",
+        "toolchain/check/handle_operator.cpp:181"
+      ],
+      "blocked_by": [],
+      "notes": "eval.cpp: conversion from float to Core.FloatLiteral and negative integer-to-FloatLiteral conversions are TODO; type.cpp:90 lacks a float_type.make builtin taking a float kind (wrong-size float types TODO). handle_operator.cpp:181 is the related operator cleanup: remove `<=>`, which is not in the design. Consistent with gap-analysis note that Float(N) support is narrower than Int."
+    },
+    {
+      "id": "W-039",
+      "title": "Assorted single-site check stubs: auto type literal, extern library on classes, non-constant field initializers",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check",
+      "size": "S",
+      "bullet": "none",
+      "evidence": [
+        "toolchain/check/handle_literal.cpp:151",
+        "toolchain/check/handle_class.cpp:200",
+        "toolchain/check/convert.cpp:931"
+      ],
+      "blocked_by": [],
+      "notes": "Three unrelated one-line gaps bucketed to avoid fragmentation: HandleAutoTypeLiteral is a stub (auto outside supported positions); 'extern library' modifier on class decls is TODO (candidate owner: Code organization: Libraries); struct-to-class conversion TODOs when a field initializer is not constant (candidate owner: Type system: User-defined types (classes)). The fn-without-parameter-list stub formerly bucketed here moved to W-037."
+    },
+    {
+      "id": "W-040",
+      "title": "Internal-error paths abuse context.TODO instead of proper diagnostics/UNEXPECTED",
+      "kind": "infra",
+      "subsystem": "toolchain/check",
+      "size": "S",
+      "bullet": "none",
+      "evidence": [
+        "toolchain/check/generic.cpp:617",
+        "toolchain/check/generic.cpp:620",
+        "toolchain/check/cpp/generate_ast.cpp:961"
+      ],
+      "blocked_by": [],
+      "notes": "generic.cpp diagnoses 'generic redeclaration differs from previous declaration' via TODO and its own comments (lines 612/616) ask for a context.UNEXPECTED() mechanism; generate_ast.cpp:961 TODOs when a clang action fails to execute (contract allows failure, never happens today). Work: add an UNEXPECTED/internal-error diagnostic facility and migrate these sites."
+    },
+    {
+      "id": "W-041",
+      "title": "Lowering hard-fatals on custom value representations and negative-offset element access",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/lower",
+      "size": "M",
+      "bullet": "Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation",
+      "evidence": [
+        "toolchain/lower/function_context.cpp:391",
+        "toolchain/lower/handle_expr_category.cpp:37",
+        "toolchain/lower/aggregate.cpp:146"
+      ],
+      "blocked_by": [],
+      "notes": "Three CARBON_FATAL compiler crashes (not diagnostics) on value-representation edges: CopyValue and AcquireValue with ValueRepr::Custom, and aggregate element access needing a getelementptr with a negative offset. These are the 'value-representation edge cases are fatal errors' from the gap-analysis lowering summary."
+    },
+    {
+      "id": "W-042",
+      "title": "Synthesized custom witnesses: interfaces with non-TypeType associated constants or unexpected shape",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check",
+      "size": "M",
+      "bullet": "Type system: C++ interop — synthesizing Carbon overloads for imported C++ types",
+      "evidence": [
+        "toolchain/check/custom_witness.cpp:446",
+        "toolchain/check/custom_witness.cpp:540"
+      ],
+      "blocked_by": [],
+      "notes": "BuildCustomWitness (backs compiler-synthesized impls: primitive copy, trivial destroy, builtin operators, and the cpp/impl_lookup synthesized impls for imported C++ types) TODOs when the interface's associated-entity count differs from the supplied values (:446) and when an associated constant's type is anything other than TypeType (:540)."
+    },
+    {
+      "id": "W-043",
+      "title": "C++ templates instantiated on Carbon types / symbolic Carbon generic parameters as C++ template arguments",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check/cpp",
+      "size": "L",
+      "bullet": "Generics: C++ interop — importing C++ templates, instantiating on Carbon types",
+      "evidence": [
+        "toolchain/check/cpp/call.cpp:127",
+        "toolchain/check/cpp/call.cpp:252",
+        "toolchain/check/cpp/type_mapping.cpp:560",
+        "toolchain/check/testdata/interop/cpp/template/generic_call.carbon:20",
+        "toolchain/check/testdata/interop/cpp/template/generic_call.carbon:28",
+        "fork/conformance/programs/interop/cpp_template_symbolic_arg.carbon:5",
+        "fork/conformance/programs/interop/cpp_template_on_carbon_generic.carbon:2"
+      ],
+      "blocked_by": ["W-014"],
+      "notes": "Merges three scanner reports. call.cpp:127 'unsupported type used as template argument' is the exact blocker the gap-analysis cites — MapToCppType has no mapping for Carbon classes; :252 restricts non-type template parameter arguments; type_mapping.cpp:560 TODOs form-dependent (template-dependent) args to C++ functions. Fix direction per both conformance SKIPs: defer C++ template instantiation to monomorphization (hence the W-014 dependency and W8 grouping). One blocker, two scoreboard entries under two bullets: cpp_template_symbolic_arg.carbon (owning bullet) and cpp_template_on_carbon_generic.carbon (bullet: Type system: C++ interop — importing C++ types / exporting Carbon types). Concrete Carbon class types as template args already work per the PASSing cpp_template_carbon_class.carbon... (verify: gap-analysis says Carbon class types error; conformance shows concrete-class PASS on the 2026.07.19 toolchain — re-check which sub-case is live before claiming)."
+    },
+    {
+      "id": "W-044",
+      "title": "Export non-type and enclosing-scope Carbon generics as C++ templates",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check/cpp",
+      "size": "M",
+      "bullet": "Generics: C++ interop — exporting Carbon templates/checked generics as C++ templates",
+      "evidence": [
+        "toolchain/check/cpp/export.cpp:985",
+        "toolchain/check/testdata/interop/cpp/function/export/generic.carbon:47",
+        "toolchain/check/testdata/interop/cpp/function/export/generic.carbon:85",
+        "toolchain/check/testdata/interop/cpp/function/export/function.carbon:84",
+        "fork/conformance/programs/interop/cpp_generic_export_nontype_param.carbon:5"
+      ],
+      "blocked_by": [],
+      "notes": "Merges three scanner reports. export.cpp creates clang FunctionTemplateDecls only for type-typed compile-time bindings; a binding that maps to a non-type template parameter TODOs at :985 ('binding maps to a non-type template parameter', then 'no member named Constant in namespace Carbon' at the C++ call site), and enclosing-scope generics fail in the same golden test. Fix per SKIP: map value bindings to clang NonTypeTemplateParmDecls. Carbon `template` (vs checked generic) export exists at all only after template lowering (W-014). Type-parameter checked-generic export already works (two PASSing conformance siblings)."
+    },
+    {
+      "id": "W-045",
+      "title": "C++ operator import completion: assignment, ==/<=> rewrites, boolish returns, deref forms, initializer-list/overload-set edges",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check/cpp",
+      "size": "M",
+      "bullet": "Type system: C++ interop — synthesizing Carbon overloads for imported C++ types",
+      "evidence": [
+        "toolchain/check/cpp/operators.cpp:199",
+        "toolchain/check/cpp/operators.cpp:236",
+        "toolchain/check/cpp/operators.cpp:478",
+        "toolchain/check/cpp/operators.cpp:656",
+        "toolchain/check/cpp/operators.cpp:796",
+        "toolchain/check/cpp/impl_lookup.cpp:189",
+        "toolchain/check/cpp/impl_lookup.cpp:405",
+        "toolchain/check/testdata/interop/cpp/operators/operators.carbon:214",
+        "toolchain/check/testdata/interop/cpp/operators/operators.carbon:327",
+        "toolchain/check/testdata/interop/cpp/operators/operators.carbon:399",
+        "toolchain/check/testdata/interop/cpp/operators/operators.carbon:483",
+        "toolchain/check/testdata/interop/cpp/operators/operators.carbon:529",
+        "toolchain/check/testdata/interop/cpp/operators/operators.carbon:604",
+        "toolchain/check/testdata/interop/cpp/operators/operators.carbon:724",
+        "toolchain/check/testdata/interop/cpp/operators/eq_with.carbon:89",
+        "toolchain/check/testdata/interop/cpp/operators/eq_with.carbon:181",
+        "toolchain/check/testdata/interop/cpp/operators/ordered_with.carbon:115",
+        "toolchain/check/testdata/interop/cpp/operators/spaceship.carbon:129",
+        "toolchain/check/testdata/interop/cpp/operators/deref.carbon:49",
+        "toolchain/check/testdata/interop/cpp/operators/deref.carbon:72",
+        "fork/conformance/programs/interop/cpp_operator_import_assignment.carbon:2"
+      ],
+      "blocked_by": [],
+      "notes": "Merges three scanner reports (operators.cpp TODO frontier, 13 pre-staged fail_todo splits across 5 golden files, and the conformance SKIP for assignment import — same error verified against the arbiter toolchain). Missing syntheses named by the splits: operator= import routed through Carbon assignment (the bullet's known-missing slice per gap-analysis; arithmetic/comparison import already PASS), secondary ==/<=> rewrites, bool-convertible return types, multi-level/conditional deref, ADL across namespaces, unsupported unary/binary operators, plus operators.cpp edges: unsupported Carbon operator interfaces (:199), non-standard std::initializer_list layouts (:236), non-constructor initialization sequences (:478), as/ImplicitAs passed a type (:656), non-spaceship operator rewrites (:796), and impl_lookup overload sets for operator* and member lookups feeding synthesized impls (:189,:405)."
+    },
+    {
+      "id": "W-046",
+      "title": "C++ multiple/virtual/diamond inheritance import (derived-to-base conversion) and abstract-class export with non-virtual destructor",
+      "kind": "fail-test",
+      "subsystem": "toolchain/check/cpp",
+      "size": "M",
+      "bullet": "Type system: C++ interop — bi-directional inheritance, hierarchy roots, abstract/final/virtual mapping",
+      "evidence": [
+        "toolchain/check/testdata/interop/cpp/class/import/base.carbon:152",
+        "toolchain/check/testdata/interop/cpp/class/import/base.carbon:304",
+        "toolchain/check/testdata/interop/cpp/class/import/base.carbon:339",
+        "toolchain/check/testdata/interop/cpp/class/export/base.carbon:106",
+        "toolchain/check/testdata/interop/cpp/class/export/base.carbon:127",
+        "toolchain/check/cpp/export.cpp:1106",
+        "fork/conformance/programs/interop/inherit_multiple_bases.carbon:6"
+      ],
+      "blocked_by": [],
+      "notes": "Merges two scanner reports; exactly the fail_todo cases the gap-analysis PARTIAL verdict names. Import: Cpp.C* to Cpp.A*/Cpp.B* derived-to-base conversion fails with ImplicitAs ConversionFailure (multiple bases need non-zero base offsets; virtual/diamond need vbase lookup in the pointer adjustment); same errors verified on the 2026.07.19 toolchain by the conformance SKIP. Export: 'exporting abstract class with no abstract methods and non-virtual destructor to C++' SemanticsTodo (export.cpp:1106), with the sibling split's TODO to generate a base-subobject destructor while refusing the complete-object destructor. Single-base bi-directional inheritance PASSes both directions."
+    },
+    {
+      "id": "W-047",
+      "title": "Indirect import of C++ declarations through Carbon libraries (no direct Cpp import)",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check/cpp",
+      "size": "M",
+      "bullet": "Type system: C++ interop — importing C++ types / exporting Carbon types",
+      "evidence": [
+        "toolchain/check/cpp/import.cpp:172",
+        "toolchain/check/cpp/import.cpp:278",
+        "toolchain/check/cpp/import.cpp:337",
+        "toolchain/check/cpp/import.cpp:368",
+        "toolchain/check/testdata/interop/cpp/basics/import/import.carbon:29",
+        "toolchain/check/testdata/interop/cpp/basics/import/import.carbon:66",
+        "toolchain/check/testdata/interop/cpp/basics/import/indirect.carbon:65",
+        "toolchain/check/testdata/interop/cpp/basics/import/indirect.carbon:84"
+      ],
+      "blocked_by": [],
+      "notes": "Merges the check-TODO and fail_todo-test reports. Using a Carbon API that references C++ decls from a file lacking its own `import Cpp`: TODO when there is no cpp_context (:172), when no corresponding local decl is found (:278, 'needs a proper diagnostic'), when the imported decl is not constant (:337), and for unsupported decl kinds on the indirect path (:368). Pre-staged splits cover a Carbon library re-exporting a C++ struct, aliased C++ functions consumed downstream, not-included headers, and no-cpp-import consumers. Residual gap under a bullet-adjacent area marked DONE (also touches 'Code organization: Importing')."
+    },
+    {
+      "id": "W-048",
+      "title": "C++ import coverage: unsupported declaration/type kinds and member-access edge cases",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check/cpp",
+      "size": "L",
+      "bullet": "Type system: C++ interop — importing C++ types / exporting Carbon types",
+      "evidence": [
+        "toolchain/check/cpp/import.cpp:1488",
+        "toolchain/check/cpp/import.cpp:1551",
+        "toolchain/check/cpp/import.cpp:1628",
+        "toolchain/check/cpp/import.cpp:1945",
+        "toolchain/check/cpp/import.cpp:1952",
+        "toolchain/check/cpp/import.cpp:2123",
+        "toolchain/check/cpp/import.cpp:2222",
+        "toolchain/check/cpp/import.cpp:2237",
+        "toolchain/check/cpp/import.cpp:2251",
+        "toolchain/check/cpp/import.cpp:2390",
+        "toolchain/check/cpp/import.cpp:2601",
+        "toolchain/check/testdata/interop/cpp/class/import/field.carbon:124",
+        "toolchain/check/testdata/interop/cpp/class/import/access.carbon:308",
+        "toolchain/check/testdata/interop/cpp/basics/unsupported_decl_type.carbon:18",
+        "toolchain/check/testdata/interop/cpp/impls/implicit_as.carbon:295",
+        "toolchain/check/testdata/interop/cpp/impls/implicit_as.carbon:330",
+        "toolchain/check/testdata/interop/cpp/impls/destroy.carbon:68"
+      ],
+      "blocked_by": [],
+      "notes": "Merges the import.cpp 'Unsupported:' SemanticsTodo frontier with the pre-staged import-side fail_todo grab-bag: unmappable object-parameter/parameter/return/var/field/builtin types, variadic C++ functions (:1945), direct references to function templates outside call sites (:1952), unhandled Clang decl kinds (:2251), type declarations that fail MapType (:2222), non-single non-ambiguous lookup results (:2601); plus bitfield member access, protected member access via extend, structured bindings, aggregate init from Carbon tuple/struct literals, and protected base destructors. Open-ended coverage work rather than one feature."
+    },
+    {
+      "id": "W-049",
+      "title": "Exporting Carbon entities to C++: type-mapping and scope gaps (incl. array params/returns and monomorphization diagnostics)",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check/cpp",
+      "size": "L",
+      "bullet": "Type system: C++ interop — importing C++ types / exporting Carbon types",
+      "evidence": [
+        "toolchain/check/cpp/export.cpp:88",
+        "toolchain/check/cpp/export.cpp:117",
+        "toolchain/check/cpp/export.cpp:139",
+        "toolchain/check/cpp/export.cpp:212",
+        "toolchain/check/cpp/export.cpp:428",
+        "toolchain/check/cpp/export.cpp:436",
+        "toolchain/check/cpp/export.cpp:510",
+        "toolchain/check/cpp/export.cpp:527",
+        "toolchain/check/cpp/export.cpp:540",
+        "toolchain/check/cpp/export.cpp:545",
+        "toolchain/check/cpp/export.cpp:909",
+        "toolchain/check/cpp/export.cpp:1172",
+        "toolchain/check/testdata/interop/cpp/function/export/array.carbon:35",
+        "toolchain/check/testdata/interop/cpp/function/export/array.carbon:68",
+        "toolchain/check/testdata/interop/cpp/class/export/class.carbon:79"
+      ],
+      "blocked_by": [],
+      "notes": "Merges the export.cpp TODO-fallback frontier with the array-export fail_todo splits (Carbon array(T, N) has no C++ export mapping in function signatures — bullet 'Functions: C++ interop — exporting Carbon functions/methods to C++' marked DONE otherwise) and the C++-triggered monomorphization-diagnostic split (using Carbon generic specific B(-1) from inline C++ hits 'interop with unsupported type' instead of a monomorphization-time array-bound error). Reverse-interop fallbacks: keyword/non-identifier package names (:88), non-class non-namespace scopes (:117), specific (generic-instance) classes (:139), MapToCppType failures for fields/self/params/returns/vars, by-value array params/returns (:510,:545), failed C++ type import (:909). Abstract-class export (:1106) is tracked with inheritance in W-046."
+    },
+    {
+      "id": "W-050",
+      "title": "C++ constant and macro import: APValue mapping edges, function-like and predefined macros, lvalue-path assignment",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check/cpp",
+      "size": "M",
+      "bullet": "Type system: C++ interop — importing C++ types / exporting Carbon types",
+      "evidence": [
+        "toolchain/check/cpp/constant.cpp:29",
+        "toolchain/check/cpp/constant.cpp:34",
+        "toolchain/check/cpp/constant.cpp:57",
+        "toolchain/check/cpp/constant.cpp:64",
+        "toolchain/check/cpp/constant.cpp:74",
+        "toolchain/check/cpp/constant.cpp:127",
+        "toolchain/check/cpp/constant.cpp:154",
+        "toolchain/check/cpp/macros.cpp:26",
+        "toolchain/check/cpp/macros.cpp:42",
+        "toolchain/check/cpp/macros.cpp:55",
+        "toolchain/check/cpp/macros.cpp:115",
+        "toolchain/check/testdata/interop/cpp/macros/macros.carbon:794",
+        "toolchain/check/testdata/interop/cpp/macros/macros.carbon:816",
+        "toolchain/check/testdata/interop/cpp/macros/macros.carbon:917",
+        "toolchain/check/testdata/interop/cpp/macros/macros.carbon:947"
+      ],
+      "blocked_by": [],
+      "notes": "Merges the check-TODO and fail_todo-test reports. Importing constexpr constants and object-like macros only handles int/float and simple lvalue paths: pathless/one-past-the-end lvalues, array elements and base-class subobjects in lvalue paths, other APValue kinds, and unmappable types all TODO; macros with 0 replacement tokens, non-UTF8 string literals, and unsupported expression/result types TODO. Pre-staged splits pin function-like macros (Cpp.MAX(1,2) → MemberNameNotFoundInInstScope), compiler-predefined macros (Cpp.__LINE__), and assignment through macro-expanded lvalue paths containing arrays or base-class subobjects. Object-like macro import otherwise works. No dedicated macro bullet exists in the 0.1 list; nearest sibling owner is 'Functions: C++ interop — importing/calling C++ functions and methods'."
+    },
+    {
+      "id": "W-051",
+      "title": "C++ function/method import edge cases: variadics, constexpr ctors, struct-literal args, forwarding references, move-only and ref-qualified params",
+      "kind": "fail-test",
+      "subsystem": "toolchain/check/cpp",
+      "size": "M",
+      "bullet": "Functions: C++ interop — importing/calling C++ functions and methods",
+      "evidence": [
+        "toolchain/check/testdata/interop/cpp/function/import/function.carbon:110",
+        "toolchain/check/testdata/interop/cpp/function/import/constexpr.carbon:131",
+        "toolchain/check/testdata/interop/cpp/function/import/overloads.carbon:256",
+        "toolchain/check/testdata/interop/cpp/function/import/overloads.carbon:607",
+        "toolchain/check/testdata/interop/cpp/function/import/reference.carbon:459",
+        "toolchain/check/testdata/interop/cpp/function/import/class.carbon:223",
+        "toolchain/check/testdata/interop/cpp/function/import/decayed_param.carbon:37",
+        "toolchain/check/testdata/interop/cpp/class/import/method.carbon:104"
+      ],
+      "blocked_by": [],
+      "notes": "Residual gaps under a bullet marked DONE: 8 pre-staged fail_todo splits across 7 files (variadic C++ functions — same frontier as import.cpp:1945 in W-048; constexpr constructors; non-empty/nested struct-literal arguments; forwarding references by ref; move-only params passed by move; decayed params; bad object-parameter qualifiers by ref)."
+    },
+    {
+      "id": "W-052",
+      "title": "Unmapped C++ arithmetic types (wchar_t/charN_t/_BitInt) and heterogeneous long/long long arithmetic with Carbon ints",
+      "kind": "fail-test",
+      "subsystem": "toolchain/check/cpp + core/prelude",
+      "size": "M",
+      "bullet": "Stdlib C++ interop: transparent fundamental-type mapping",
+      "evidence": [
+        "toolchain/check/testdata/interop/cpp/primitive_types/fail_todo_arithmetic_types_unmapped.carbon:17",
+        "toolchain/check/testdata/interop/cpp/function/import/arithmetic_types_bridged.carbon:118",
+        "toolchain/check/testdata/interop/cpp/function/import/arithmetic_types_bridged.carbon:142",
+        "toolchain/check/testdata/interop/cpp/function/import/arithmetic_types_bridged.carbon:167",
+        "toolchain/check/testdata/interop/cpp/function/import/arithmetic_types_bridged.carbon:191",
+        "toolchain/check/testdata/interop/cpp/function/import/arithmetic_types_bridged.carbon:522",
+        "toolchain/check/testdata/interop/cpp/function/import/param_unsupported.carbon:21",
+        "toolchain/check/testdata/interop/cpp/function/import/param_unsupported.carbon:45",
+        "toolchain/check/testdata/interop/cpp/primitive_types/arithmetic.carbon:47",
+        "toolchain/check/testdata/interop/cpp/primitive_types/long_and_long_long.lp64.carbon:175",
+        "toolchain/check/testdata/interop/cpp/primitive_types/long_and_long_long.lp64.carbon:209",
+        "toolchain/check/testdata/interop/cpp/primitive_types/long_and_long_long.lp64.carbon:299",
+        "toolchain/check/testdata/interop/cpp/primitive_types/long_and_long_long.lp64.carbon:408",
+        "toolchain/check/testdata/interop/cpp/primitive_types/long_and_long_long.lp64.carbon:524",
+        "toolchain/check/testdata/interop/cpp/primitive_types/long_and_long_long.llp64.carbon:189",
+        "toolchain/check/testdata/interop/cpp/primitive_types/long_and_long_long.llp64.carbon:317",
+        "toolchain/check/testdata/interop/cpp/primitive_types/long_and_long_long.llp64.carbon:452",
+        "toolchain/check/testdata/interop/cpp/primitive_types/long_and_long_long.llp64.carbon:576"
+      ],
+      "blocked_by": [],
+      "notes": "Residual gaps under a bullet the gap analysis marks DONE: wide/unicode char types (wchar_t, char8_t/16_t/32_t) and _BitInt have no Carbon mapping ('Unsupported: return type: wchar_t' SemanticsTodo), and the CppCompat.Long adapters don't support mixed-type comparisons/arithmetic/bitwise/compound-assignment with native Carbon int types (matrices for LP64 long long vs i32/i256 and LLP64 long vs i16/i128). 19 pre-staged split tests across 6 files."
+    },
+    {
+      "id": "W-053",
+      "title": "Generalize C++ extension-point import beyond begin/end: swap-style interfaces + ADL range-for gaps",
+      "kind": "missing-feature",
+      "subsystem": "toolchain/check/cpp + core/prelude",
+      "size": "L",
+      "bullet": "Functions: C++ interop — open overload sets as extension points (swap etc.)",
+      "evidence": [
+        "toolchain/check/cpp/impl_lookup.cpp:478-538",
+        "toolchain/check/cpp/impl_lookup.cpp:608",
+        "toolchain/check/testdata/interop/cpp/impls/cpp_range_for_iterate.carbon:113",
+        "toolchain/check/testdata/interop/cpp/impls/cpp_range_for_iterate.carbon:177",
+        "toolchain/check/testdata/interop/cpp/impls/cpp_range_for_iterate.carbon:231",
+        "toolchain/check/testdata/interop/cpp/range_for.carbon:189",
+        "toolchain/check/testdata/interop/cpp/range_for.carbon:314",
+        "toolchain/check/testdata/interop/cpp/range_for.carbon:418",
+        "fork/conformance/programs/interop/cpp_adl_swap_extension_point.carbon:6"
+      ],
+      "blocked_by": [],
+      "notes": "Merges two scanner reports. Iteration is the only open-overload-set extension point synthesized into a Carbon interface today (BuildCppRangeForIterateWitnessImpl hard-codes exactly the identifiers 'begin' and 'end'; the only extension-point call site is impl_lookup.cpp:608). Two parts: (1) add a Core.Swap-style interface and generalize the member+ADL-lookup-to-witness synthesis beyond the begin/end special case (no swap-style heuristic tests exist at all — that half of the bullet is untested, not fail_todo; direct Cpp.ext.swap calls already work); (2) fix the six pre-staged ADL range failures: begin/end returning mutable iterators, differing sentinel types, and overloaded begin/end sets — the mutable case also fails while building the fn Begin(self) thunk per the conformance SKIP."
+    },
+    {
+      "id": "W-054",
+      "title": "Export Carbon operator impls as C++ operator overloads",
+      "kind": "missing-feature",
+      "subsystem": "toolchain/check/cpp",
+      "size": "L",
+      "bullet": "Type system: C++ interop — exporting Carbon operator overloads into C++",
+      "evidence": [
+        "fork/conformance/programs/interop/cpp_operator_export.carbon:5",
+        "fork/gap-analysis.md:30"
+      ],
+      "blocked_by": ["W-007"],
+      "notes": "W8 slice; the bullet is MISSING ('operator interop is one-directional'). Nothing maps a Carbon `impl as Core.AddWith` back to a C++ operator+ on the exported Carbon:: type. Inverse of the working import direction (operators.cpp synthesis); builds on export.cpp's existing thunk machinery for exported methods — lands in the five-way-contention files, so it follows the W-007 refactor plan."
+    },
+    {
+      "id": "W-055",
+      "title": "W9a: implement Core slice type and heap allocation",
+      "kind": "missing-feature",
+      "subsystem": "core/prelude (+ check support as needed)",
+      "size": "L",
+      "bullet": "Stdlib: Slices",
+      "evidence": [
+        "fork/conformance/programs/stdlib/slices_basic.carbon:6",
+        "fork/gap-analysis.md:61"
+      ],
+      "blocked_by": [],
+      "notes": "grep -rn Slice in core/ returns nothing (verified); no slice type exists anywhere in the Core package, and heap allocation is likewise absent. Un-SKIP condition: a Core slice type with construction-from-array, indexing, and size. Heap allocation is the same workstream's sibling gap (no separate SKIP program exists for it)."
+    },
+    {
+      "id": "W-056",
+      "title": "W9b: transparent std::span / contiguous-container view mapping",
+      "kind": "missing-feature",
+      "subsystem": "toolchain/check/cpp + core/prelude",
+      "size": "M",
+      "bullet": "Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view)",
+      "evidence": [
+        "fork/conformance/programs/interop/cpp_span_view.carbon:6",
+        "toolchain/check/cpp/custom_type_mapping.cpp:92-104"
+      ],
+      "blocked_by": ["W-055"],
+      "notes": "A Carbon array cannot pass transparently as std::span and an owning std::vector cannot be viewed as a Carbon slice. Requires the Carbon-side slice type first, then a span matcher plus owning-container->view conversions alongside the shipped str<->std::string_view mapping (custom_type_mapping.cpp is the mechanism this extends)."
+    },
+    {
+      "id": "W-057",
+      "title": "W9c: string equality, concatenation, and owning variant",
+      "kind": "missing-feature",
+      "subsystem": "core/prelude",
+      "size": "M",
+      "bullet": "Stdlib: String and string-literal types",
+      "evidence": [
+        "core/prelude/types/string.carbon:1-32",
+        "fork/conformance/programs/stdlib/string_missing_ops.carbon:2"
+      ],
+      "blocked_by": [],
+      "notes": "The entire string type is a non-owning {Char*, u64} with only Size/Copy/IndexWith — `a == b` and `a + b` on str fail with does-not-implement Core.EqWith(str)/Core.AddWith(str). Equality/comparison impls are implementable now (byte-wise Eq needs no new design); concatenation and an owning String depend on heap allocation (W-055)."
+    },
+    {
+      "id": "W-058",
+      "title": "W9d: approved Optional design with comparison support",
+      "kind": "design-needed",
+      "subsystem": "core/prelude + docs/design",
+      "size": "M",
+      "bullet": "Stdlib: Optional",
+      "evidence": [
+        "core/prelude/types/optional.carbon:27-28",
+        "fork/conformance/programs/stdlib/optional_missing_ops.carbon:2"
+      ],
+      "blocked_by": [],
+      "notes": "optional.carbon TODO: 'We don't have an approved design for an Optional type yet ... The API here is a placeholder'; `a == b` on two Optional(i32) fails with does-not-implement Core.EqWith. Basic Some/None/HasValue/Get and the pointer niche already PASS; a conditional `impl Optional(T) as EqWith where T impls EqWith` is the concrete missing piece. Coherence risk 9 (W-006): fold Optional's redesign into W5 (W-010/W-011) deliverables explicitly."
+    },
+    {
+      "id": "W-059",
+      "title": "W10: Windows support end-to-end — runtimes, COFF linking, CI runner, multi-platform releases",
+      "kind": "infra",
+      "subsystem": "toolchain/driver + lld + ci/releases",
+      "size": "XL",
+      "bullet": "Project: installs on Windows, macOS, and Linux and builds working programs",
+      "evidence": [
+        "fork/gap-analysis.md:68",
+        "fork/gap-analysis.md:152-158",
+        "toolchain/driver/clang_runtimes.cpp:476"
+      ],
+      "blocked_by": [],
+      "notes": "Merges the clang_runtimes diagnostic item: CARBON_FATAL('Target architecture is not supported') for any non-x86/ARM triple (with an adjacent CHECK rejecting 16-bit x86) should become a user-facing diagnostic — a small fix inside this workstream. clang_runtimes.cpp hard-errors on Windows, LLD is wired for ELF/MachO only, no Windows CI, releases Linux-x86-64-only. Arbiter: Windows CI runner installing the toolchain, building runtimes, compiling/linking/executing a Carbon+C++-interop program, plus released artifacts for Windows/macOS/Linux incl. arm64. Independent of language features. Must budget the MSVC-funclet EH variant of the W-016/W-019 thunk fencing (error-handling.md:540-542)."
+    },
+    {
+      "id": "W-060",
+      "title": "W11a: CMake integration for building Carbon code, plus Make documentation",
+      "kind": "missing-feature",
+      "subsystem": "examples + docs + CI",
+      "size": "L",
+      "bullet": "Project: CMake build-system integration plus Make documentation",
+      "evidence": [
+        "fork/conformance/programs/project/cmake_build_integration.carbon:5",
+        "fork/gap-analysis.md:69",
+        "fork/gap-analysis.md:160-166"
+      ],
+      "blocked_by": [],
+      "notes": "No CMake support, example, or docs anywhere in the repo; Bazel is the only integrated build system. Requires a module/find-package flow driving carbon compile/link from CMakeLists.txt plus written Make docs. The harness cannot arbitrate this (runner.py runs single .carbon files); when the integration lands, arbitration moves to the example project's own CI per the SKIP directive and W-002's arbitration-channel work. Distinct from W-061: this bullet is about building *Carbon* code from CMake/Make."
+    },
+    {
+      "id": "W-061",
+      "title": "W11b: in-repo Make/CMake drop-in-Clang example project, CI coverage, and docs",
+      "kind": "missing-feature",
+      "subsystem": "examples + docs + CI",
+      "size": "M",
+      "bullet": "Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems",
+      "evidence": [
+        "fork/conformance/programs/project/dropin_clang_make_cmake.carbon:5"
+      ],
+      "blocked_by": [],
+      "notes": "The functionality already works — the drop-in clang++ symlink was verified working by hand under both make and cmake against the arbiter install tree (CXX= and -DCMAKE_CXX_COMPILER both built+ran C++ hello world) — but no CMakeLists.txt or Makefile example exists anywhere (examples/bazel/ is the only downstream build-system example) and docs/ has no Make/CMake guide. Pure example-project + docs + CI-workflow item; arbitration moves to that example's CI on landing."
+    },
+    {
+      "id": "W-062",
+      "title": "W11c: evaluator documentation — getting-started tutorial and evaluation walkthrough in docs/guides",
+      "kind": "missing-feature",
+      "subsystem": "docs/guides",
+      "size": "M",
+      "bullet": "Project: basic evaluator documentation (getting started to FAQs)",
+      "evidence": [
+        "fork/conformance/programs/project/evaluator_docs_review.carbon:2",
+        "fork/gap-analysis.md:72",
+        "fork/gap-analysis.md:160-166"
+      ],
+      "blocked_by": [],
+      "notes": "docs/guides contains only README.md and glossary.md (verified by ls) — no language tutorial or evaluation walkthrough beyond the README shell snippet, and the README getting-started is Ubuntu-only (apt libgcc-11-dev dependency). Deliverable per W11 arbiter: an install-to-running-program-with-interop tutorial an evaluator can follow. Un-SKIP path defined: write the tutorial, then replace the review program with programs transcribed from its code samples. The getting-started slice already PASSes (evaluator_docs_getting_started.carbon)."
+    },
+    {
+      "id": "W-063",
+      "title": "W3: safe-Carbon concrete design — five safety categories + safe-Rust-interop analysis (next design-sprint wave)",
+      "kind": "design-needed",
+      "subsystem": "docs/design/safety + proposals",
+      "size": "XL",
+      "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
+      "evidence": [
+        "proposals/p005914-updating-carbon-s-safety-strategy.md",
+        "fork/gap-analysis.md:71",
+        "fork/gap-analysis.md:96-102",
+        "fork/conformance/programs/project/safe_carbon_design.carbon:5",
+        "fork/decision-log.md:52-59"
+      ],
+      "blocked_by": [],
+      "notes": "Startable now; its five safety-category decisions will need design-fork ids beyond F-011, which are not yet assigned (register them via the W-005/DS-0 flow when the wave starts). Merges two scanner reports. Design-only for 0.1 (implementation deferred to 0.2); pure design work, parallelizable with everything, and the stated reason 0.1 slipped to end-2026. Temporal/mutation safety exists only as p005914's explicitly 'directional... provisional' section; needs concrete pointer/borrow rules, safety-mode syntax, soundness model, worked C++-migration examples, and a written safe-Rust-interop analysis (none exists anywhere; README 'Lifetime and move semantics' is a bare TODO). F-003 names it the wave after the current sprint. Also owns the Strict-mode `unsafe` spelling that UN-1's read-marking hook waits on (unions.md:521-525). Arbitrated by document review — no executable surface (arbitration channel via W-002)."
+    },
+    {
+      "id": "W-064",
+      "title": "Safety-strategy follow-ons: mode-syntax proposals and stale principles doc",
+      "kind": "design-needed",
+      "subsystem": "docs/design/safety + docs/project/principles + proposals",
+      "size": "M",
+      "bullet": "Project: detailed safety strategy",
+      "evidence": [
+        "docs/design/safety/README.md:89",
+        "docs/design/safety/README.md:116",
+        "docs/design/safety/README.md:122",
+        "docs/project/principles/safety_strategy.md:151",
+        "fork/conformance/programs/project/safety_strategy_doc.carbon:5"
+      ],
+      "blocked_by": [],
+      "notes": "The only SKIP whose bullet is gap-status DONE: the strategy document exists and is accepted via p005914; the SKIP is an arbitration gap. Three 'Future work' blocks remain (soundness model, safety-mode package/function syntax, permissive-import marking), so no program can yet observe the strategy. Flips when p005914's follow-on mode-syntax proposals land (then the program body morphs into a Strict-mode file requiring `unsafe` on the existing `unsafe as`), plus reconcile/retire the stale build-mode-centric principles doc. Overlaps W-063, which owns the mode-syntax substance."
+    },
+    {
+      "id": "W-065",
+      "title": "DOCS-1: replace skeletal/placeholder design docs not covered by the six sprint deliverables (templates, metaprogramming, match, interop TODO sections)",
+      "kind": "design-needed",
+      "subsystem": "docs/design + proposals",
+      "size": "L",
+      "bullet": "Goal: design docs documented, cohesive, understandable without placeholders",
+      "evidence": [
+        "docs/design/templates.md:22-27",
+        "docs/design/metaprogramming.md:18-23",
+        "docs/design/pattern_matching.md:712-714",
+        "docs/design/interoperability/README.md:210-218",
+        "fork/gap-analysis.md:73",
+        "fork/conformance/programs/project/design_docs_placeholders.carbon:2"
+      ],
+      "blocked_by": ["F-006", "F-007", "F-009", "F-010", "F-011", "W-005"],
+      "notes": "Merges two scanner reports. Sprint outputs already close several placeholders: the unions page replaces the sum_types.md:94 sentence, OV-3 (W-026) fills the interop README overload-resolution TODO + design README:3822 placeholder, TA-0 (W-020) adds threads_and_atomics.md, IL-1 (W-012) amends pattern_matching.md, EH stages replace the README error-handling section. Remaining per the SKIP audit: templates.md/metaprogramming.md/aliases.md/blocks_and_statements.md 'skeletal placeholder' self-descriptions (templates.md rewritten by W7/W-027 proposals), the match section's own placeholder note, and the interop README's other empty TODO headings (constructors, struct literals, class member access, globals) — documentation-of-existing-behavior work. Document-review arbitration only; W2's arbiter is grep-verifiable ('no TODO/placeholder markers')."
+    }
+  ]
+}

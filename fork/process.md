@@ -122,7 +122,11 @@ explicitly — so the decider is always equipped to overrule the
 recommendation.
 
 **Sub-forks: veto-digest model (V-2, 2026-07-20, superseding the
-2026-07-19 always-ask directive).** Genuine forks — design divergence
+2026-07-19 always-ask directive).** The synchronous-question test is
+DECISION ENTROPY, not importance: ask live only when the user's answer is
+genuinely unpredictable, or the item reverses a user directive, spends
+user resources, or redefines scope. A high-stakes item with one realistic
+answer goes in the digest with the alternative as a standing veto. Genuine forks — design divergence
 from upstream, scope trades, north-star tension — still come to the user
 synchronously via AskUserQuestion. Mundane sub-decisions (naming,
 spellings, defaults) auto-adopt the drafter's recommendation, are

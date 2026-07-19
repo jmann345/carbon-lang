@@ -1,0 +1,104 @@
+# Part of jmann345's carbon-lang fork tooling (see /fork/README.md).
+#
+# Builds THIS branch's toolchain on the self-hosted runner and publishes the
+# install tarball as a release on this fork. This is how fork-local compiler
+# changes get a runnable toolchain for the conformance arbiter
+# (fork/conformance/), and the `bazel test //toolchain/...` step is the
+# Bun-style merge gate from fork/decision-log.md F-002.
+#
+# First cold build compiles LLVM+Clang+LLD from source (hours); later builds
+# reuse the local bazel disk cache. Requires on the runner host: clang >= 19
+# with libc++ (see docs/project/contribution_tools.md), python3, ~60GB free
+# disk for cache + outputs.
+
+name: 'Fork: build toolchain'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - '.github/workflows/fork_build_toolchain.yaml'
+      - 'fork/toolchain-build-request.txt'
+
+permissions:
+  contents: write # For creating and uploading to releases on this fork.
+
+concurrency:
+  group: fork-build-toolchain
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 720
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Preflight
+        run: |
+          set -x
+          uname -a
+          nproc
+          df -h .
+          python3 --version
+          clang --version || true
+          clang++ --version || true
+
+      - name: Build toolchain tarball
+        run: |
+          ./scripts/run_bazelisk.py \
+            build -c opt --stamp \
+            //toolchain/install:carbon_toolchain_tar_gz
+          ls -la bazel-bin/toolchain/install/carbon_toolchain-*.tar.gz
+
+      - name: Test toolchain (merge gate)
+        run: |
+          ./scripts/run_bazelisk.py \
+            test -c opt --stamp \
+            //toolchain/...
+
+      - name: Extract version and stage artifact
+        id: version
+        run: |
+          TARBALL=$(ls bazel-bin/toolchain/install/carbon_toolchain-*.tar.gz)
+          VERSION=$(basename "$TARBALL" .tar.gz | sed 's/^carbon_toolchain-//')
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          mkdir -p "$RUNNER_TEMP/fork-toolchain"
+          cp "$TARBALL" "$RUNNER_TEMP/fork-toolchain/"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fork-toolchain
+          path: ${{ runner.temp }}/fork-toolchain/carbon_toolchain-*.tar.gz
+          retention-days: 14
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-22.04
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fork-toolchain
+
+      - name: Create release
+        run: |
+          set -euo pipefail
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-9)
+          TAG="fork-toolchain-${{ github.run_number }}-${SHORT_SHA}"
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --prerelease \
+            --title "Fork toolchain ${{ needs.build.outputs.version }} @ ${SHORT_SHA}" \
+            --notes "Toolchain built from ${GITHUB_SHA} on the self-hosted runner, with \`bazel test //toolchain/...\` green. See /fork/process.md." \
+            carbon_toolchain-*.tar.gz

@@ -6,15 +6,23 @@ consequences. Undecided forks are listed as OPEN at the top.
 
 ## OPEN forks
 
-- **F-005: Own-toolchain build environment.** The conformance arbiter
-  currently runs on the upstream *prebuilt nightly* toolchain. The moment
-  we modify compiler code, we need to build our own toolchain — infeasible
-  in this container (4 CPU / ~30 GB disk / BCR downloads gated; a full
-  LLVM+Clang build needs 30–50 GB and 4–8 h). Options when we get there:
-  bigger session environment (60 GB+ disk, open network), CI-side builds
-  (GitHub Actions on the fork), or a self-hosted runner.
+(none)
 
 ## Decided
+
+### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
+
+The user registered a self-hosted GitHub Actions runner ("jeromehome",
+self-hosted/Linux/X64) on the fork. `.github/workflows/fork_build_toolchain.yaml`
+builds `//toolchain/install:carbon_toolchain_tar_gz` from the pushed
+branch, runs `bazel test //toolchain/...` as the F-002 merge gate, and
+publishes the tarball as a fork release (via a hosted publish job). The
+sandbox then downloads that release the same way it downloads the mirrored
+nightly. First cold build compiles LLVM (hours); the runner's bazel disk
+cache makes subsequent fork builds incremental. Security note: on a public
+repo, keep the default "require approval for outside collaborators'
+workflow runs" protection enabled so third-party PRs can't run code on the
+runner host.
 
 ### F-001: What "0.1" means for this fork — **Staged official 0.1** (2026-07-19)
 

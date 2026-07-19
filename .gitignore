@@ -50,3 +50,6 @@ uv.lock
 
 # Ignore the .gdb_history that's created next to the project-specific .gdbinit
 .gdb_history
+
+# Fork conformance harness output (fork/conformance/README.md).
+/fork/conformance/out/

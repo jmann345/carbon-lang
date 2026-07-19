@@ -29,7 +29,7 @@ review → fix loops that grind against ground truth.
 
 - [x] Methodology research and process definition
 - [x] Repo audited against the 0.1 checklist (11-area agent audit)
-- [ ] Design forks F-001..F-004 decided (see `decision-log.md`)
-- [ ] Arbiter: build working + conformance scoreboard v0
+- [x] Design forks F-001..F-005 decided (see `decision-log.md`)
+- [x] Arbiter: nightly toolchain mirrored + conformance scoreboard v0 (16/16 programs PASS, 16/56 bullets arbitrated)
 - [ ] Trial run: one bullet end-to-end through the loop
 - [ ] Scaled workstreams

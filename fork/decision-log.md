@@ -10,6 +10,17 @@ consequences. Undecided forks are listed as OPEN at the top.
 
 ## Decided
 
+### B0 SF-1..5: exception-boundary implementation sub-forks (user via AskUserQuestion, 2026-07-20)
+
+Fence = noexcept exception-spec on the thunk type; boundary-identifying
+diagnostic recorded as a B3 follow-up (1); explicit mode wins over user
+clang args, appended last, justified as a boundary contract not a tuning
+default (2); flag on `carbon compile` only for B0 (3); auto resolves from
+Clang's final LangOpts, not arg-string scanning (4); the exception-interop
+bullet flips PASS on B0's boundary-contract slice with this recorded
+scope trade — catching-into-Result stays a visible SKIP until B3 (5).
+
+
 ### W5 SF-1..8: choice-payload plan sub-forks (user via AskUserQuestion, 2026-07-20)
 
 Hybrid struct representation — discriminant + CustomLayoutType payload

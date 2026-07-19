@@ -19,9 +19,12 @@ AskUserQuestion rounds only for genuine forks (design divergence, scope
 trades, north-star tension); mundane sub-decisions auto-adopt the
 recommendation and appear in a per-merge veto digest the user can
 overturn (overturned items get reworked before the next merge).
-**V-3: re-anchor to upstream** — future design decisions are constrained
-to upstream-signaled direction (accepted proposals, leads' recorded
-leans); mergeability outranks speed at design forks. Ratified designs
+**V-3 (as amended by V-3a, 2026-07-20): upstream alignment as veto
+criterion, not permission gate** — decisions that CONTRADICT upstream's
+accepted proposals or recorded leads' direction are vetoed; where
+upstream is ambiguous or silent, creative fork design is permitted and
+progress must not slow to await upstream signals; upstream intent is the
+default preference, overridable with stated good reason. Ratified designs
 F-006..F-011 stand (audit: each was already the lowest-divergence option;
 none contradicts an accepted proposal), but genuinely fork-local
 spellings (e.g. F-006a Ok/Err vs the README's illustrative

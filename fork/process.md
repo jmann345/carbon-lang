@@ -179,8 +179,9 @@ them honest:
    starting any workstream, check whether upstream has active work there
    (avoid burning tokens re-implementing what will arrive in a merge).
 6. **User decides design forks; Claude decides everything else.**
-7. **Re-anchor to upstream (V-3).** Design decisions are constrained to
-   upstream-signaled direction: accepted proposals and leads' recorded
-   leans outrank fork convenience, and mergeability outranks speed at
-   design forks. Fork-local spellings live on a divergence-risk register
-   reviewed at every upstream merge.
+7. **Upstream alignment as veto criterion (V-3/V-3a).** Contradicting an
+   accepted upstream proposal or recorded leads' direction is vetoed.
+   Where upstream is ambiguous or silent, creative fork design proceeds
+   at full speed. Upstream intent is the default preference, overridable
+   with a stated good reason. Fork-local spellings live on a
+   divergence-risk register reviewed at every upstream merge.

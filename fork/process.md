@@ -121,13 +121,15 @@ minimal external material second, and the one load-bearing concept named
 explicitly — so the decider is always equipped to overrule the
 recommendation.
 
-**Sub-forks are forks.** Every design sub-decision — naming, syntax
-spelling, default flag values, anything with more than one defensible
-answer — goes to the user via AskUserQuestion, no matter how mundane
-(user directive, 2026-07-19). Agents drafting design docs mark such
-points as OPEN with a recommendation; they never silently decide. The
-orchestrator batches accumulated sub-forks into AskUserQuestion rounds
-and records outcomes here before the affected work merges.
+**Sub-forks: veto-digest model (V-2, 2026-07-20, superseding the
+2026-07-19 always-ask directive).** Genuine forks — design divergence
+from upstream, scope trades, north-star tension — still come to the user
+synchronously via AskUserQuestion. Mundane sub-decisions (naming,
+spellings, defaults) auto-adopt the drafter's recommendation, are
+recorded in the decision log as auto-adopted, and appear in a compact
+veto digest presented with each merge; anything the user vetoes is
+reworked before the next merge. Drafting agents still mark every such
+point rather than silently deciding — the digest must be complete.
 
 **Never re-ask a decided fork.** Before any AskUserQuestion round, the
 orchestrator checks `fork/decision-log.md` for already-decided IDs; a
@@ -177,3 +179,8 @@ them honest:
    starting any workstream, check whether upstream has active work there
    (avoid burning tokens re-implementing what will arrive in a merge).
 6. **User decides design forks; Claude decides everything else.**
+7. **Re-anchor to upstream (V-3).** Design decisions are constrained to
+   upstream-signaled direction: accepted proposals and leads' recorded
+   leans outrank fork convenience, and mergeability outranks speed at
+   design forks. Fork-local spellings live on a divergence-risk register
+   reviewed at every upstream merge.

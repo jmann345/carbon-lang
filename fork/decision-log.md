@@ -10,6 +10,25 @@ consequences. Undecided forks are listed as OPEN at the top.
 
 ## Decided
 
+### V-1..3: viability-review decisions (user via AskUserQuestion, 2026-07-20)
+
+**V-1: fork-0.1 targets Linux/macOS** — F-001 amended; Windows recorded
+as post-0.1 (XL item stays visible in the gap analysis and inventory).
+**V-2: veto-digest model replaces always-ask** — synchronous
+AskUserQuestion rounds only for genuine forks (design divergence, scope
+trades, north-star tension); mundane sub-decisions auto-adopt the
+recommendation and appear in a per-merge veto digest the user can
+overturn (overturned items get reworked before the next merge).
+**V-3: re-anchor to upstream** — future design decisions are constrained
+to upstream-signaled direction (accepted proposals, leads' recorded
+leans); mergeability outranks speed at design forks. Ratified designs
+F-006..F-011 stand (audit: each was already the lowest-divergence option;
+none contradicts an accepted proposal), but genuinely fork-local
+spellings (e.g. F-006a Ok/Err vs the README's illustrative
+Success/Failure) enter a divergence-risk register reviewed at each
+upstream merge.
+
+
 ### B0 SF-1..5: exception-boundary implementation sub-forks (user via AskUserQuestion, 2026-07-20)
 
 Fence = noexcept exception-spec on the thunk type; boundary-identifying

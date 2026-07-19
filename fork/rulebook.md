@@ -153,3 +153,8 @@ here.
   the burden is a one-sentence justification citing a design doc,
   proposal, or rulebook rule. Dispositions that rebut findings must cite
   evidence, not narrative. (Origin: user directive, 2026-07-19.)
+- **R20. One committer per worktree.** Concurrent agents must not share a
+  worktree when either will commit; the orchestrator never uses
+  `git add -A` on a tree an agent is working in — explicit paths only.
+  (Origin: commit 837bb60 accidentally swept the differential-harness
+  agent's 12 staged files into the anti-Goodhart commit, 2026-07-19.)

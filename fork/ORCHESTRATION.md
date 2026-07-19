@@ -4,7 +4,7 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-07-19 ~23:50Z_
+_Last updated: 2026-07-20 ~00:20Z_
 
 ## Branches
 
@@ -16,8 +16,8 @@ _Last updated: 2026-07-19 ~23:50Z_
 
 ## Scoreboard (source of truth: run the suite, don't trust this line)
 
-63 PASS / 33 SKIP / 0 FAIL programs; 39/56 bullets green
-(toolchain `fork-toolchain-11-c5281a36e`).
+68 PASS / 33 SKIP / 0 FAIL programs (101 total, 5 differential C++-oracle
+pairs); 39/56 bullets green (toolchain `fork-toolchain-11-c5281a36e`).
 
 ## CI on jmann345/carbon-lang (self-hosted runner "jeromehome", 28-core Arch)
 

@@ -71,6 +71,21 @@ case "$file" in
     ;;
 esac
 
+# 5a. prettier (CI pins prettier@3.3.3 for json/yaml via pre-commit).
+case "$file" in
+  */MODULE.bazel.lock|*/out/*) ;;
+  *.json|*.yaml)
+    if command -v npx >/dev/null 2>&1; then
+      before=$(sha256sum "$file")
+      npx --yes prettier@3.3.3 --write --log-level=silent "$file" >/dev/null 2>&1
+      after=$(sha256sum "$file")
+      if [ "$before" != "$after" ]; then
+        msgs="${msgs}prettier@3.3.3 (CI pin) reformatted $file — Read it again before further edits. "
+      fi
+    fi
+    ;;
+esac
+
 # 5. JSON must parse.
 case "$file" in
   *.json)

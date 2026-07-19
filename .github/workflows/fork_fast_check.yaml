@@ -1,0 +1,52 @@
+# Part of jmann345's carbon-lang fork tooling (see /fork/README.md).
+#
+# Fast compile feedback for implementers working without a local build:
+# builds the compiler binary only — no tests, no tarball, no runtimes, no
+# publish. Warm-cache verdict in ~2 minutes vs ~10+ for the full gate.
+
+name: 'Fork: fast compile check'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - 'toolchain/**'
+      - 'common/**'
+      - 'core/**'
+
+concurrency:
+  group: fork-fast-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compile:
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 120
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Ensure uv
+        run: |
+          if ! command -v uv >/dev/null 2>&1; then
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+          fi
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Configure libunwind search path
+        # The archive is already cached in ~/.local/lib/carbon-host-deps by
+        # the build workflow's probe step.
+        run: |
+          LIBDIR="$HOME/.local/lib/carbon-host-deps"
+          echo "build --linkopt=-L$LIBDIR" >> user.bazelrc
+          echo "build --host_linkopt=-L$LIBDIR" >> user.bazelrc
+
+      - name: Build compiler binary
+        run: |
+          python3 ./scripts/run_bazelisk.py \
+            build -c opt \
+            //toolchain/driver:carbon

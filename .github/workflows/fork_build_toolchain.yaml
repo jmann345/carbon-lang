@@ -26,7 +26,7 @@ permissions:
   contents: write # For creating and uploading to releases on this fork.
 
 concurrency:
-  group: fork-build-toolchain
+  group: fork-build-toolchain-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:

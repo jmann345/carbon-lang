@@ -96,7 +96,7 @@ jobs:
             echo "No testdata changes; nothing to commit."
             exit 0
           fi
-          git commit -m "Autoupdate testdata goldens on the self-hosted runner
-
-Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
+          git commit \
+            -m "Autoupdate testdata goldens on the self-hosted runner" \
+            -m "Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
           git push origin "HEAD:refs/heads/${GITHUB_REF_NAME}"

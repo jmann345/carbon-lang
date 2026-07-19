@@ -4,7 +4,7 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-07-20 ~00:20Z_
+_Last updated: 2026-07-20 ~01:10Z_ (scope map: active branches are file-disjoint; expected merge collisions only in fork/ state files)
 
 ## Branches
 
@@ -12,7 +12,9 @@ _Last updated: 2026-07-20 ~00:20Z_
 | --- | --- |
 | `claude/carbon-fork-0-1-7mwfb7` | Main fork branch; green (post-merge verified). Contains: fork/ process docs, conformance suite (96+ programs), match slice 1, error-handling + unions design docs |
 | `claude/carbon-fork-0-1-7mwfb7-w4-match` | MERGED into fork branch; keep for history |
-| `claude/carbon-fork-0-1-7mwfb7-design-docs` | MERGED into fork branch; reuse for F-008..F-011 doc authoring |
+| `claude/carbon-fork-0-1-7mwfb7-design-docs` | ACTIVE: F-008..F-011 doc authoring. Scope: docs/design/** only |
+| `claude/carbon-fork-0-1-7mwfb7-w5-choice` | ACTIVE: W5 S1 payload choices. Scope: check/handle_choice + match alt-patterns + choice testdata/programs |
+| `claude/carbon-fork-0-1-7mwfb7-b0-exceptions` | ACTIVE: B0 exception boundary (gate dispatched). Scope: driver/compile_options, check/cpp/thunk.cpp, error_handling programs |
 
 ## Scoreboard (source of truth: run the suite, don't trust this line)
 

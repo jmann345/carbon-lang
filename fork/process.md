@@ -129,6 +129,14 @@ points as OPEN with a recommendation; they never silently decide. The
 orchestrator batches accumulated sub-forks into AskUserQuestion rounds
 and records outcomes here before the affected work merges.
 
+**Never re-ask a decided fork.** Before any AskUserQuestion round, the
+orchestrator checks `fork/decision-log.md` for already-decided IDs; a
+decided fork is only re-opened with genuinely new information, and the
+question must say so explicitly. (Tool-delivery failures are retried, but
+a retry states that it is a retry.) One branch owns one scope: before
+launching parallel workstreams, the orchestrator verifies their touched
+paths are disjoint and records the scope map in ORCHESTRATION.md.
+
 ## North-star guard (against optimizing for our own tests)
 
 The scoreboard is this fork's progress meter, but the goal is Google's

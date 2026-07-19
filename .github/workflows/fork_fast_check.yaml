@@ -12,6 +12,7 @@ on:
     branches:
       - 'claude/**'
     paths:
+      - '.github/workflows/fork_fast_check.yaml'
       - 'toolchain/**'
       - 'common/**'
       - 'core/**'
@@ -49,4 +50,4 @@ jobs:
         run: |
           python3 ./scripts/run_bazelisk.py \
             build -c opt \
-            //toolchain/driver:carbon
+            //toolchain:carbon

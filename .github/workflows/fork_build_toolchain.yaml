@@ -106,7 +106,10 @@ jobs:
             cp /tmp/unwind-build/lib/libunwind.a "$LIBDIR/"
             probe
           fi
+          # Both configs: --linkopt covers target-config links, --host_linkopt
+          # covers exec-config ("[for tool]") links like the tblgen binaries.
           echo "build --linkopt=-L$LIBDIR" >> user.bazelrc
+          echo "build --host_linkopt=-L$LIBDIR" >> user.bazelrc
           echo "user.bazelrc:"; cat user.bazelrc
 
       - name: Build toolchain tarball

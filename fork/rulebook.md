@@ -67,3 +67,13 @@ loop (1 implementer, 2 reviewers, 1 fixer):
 Review verdicts are structured (OK / NEEDS-FIX + cited findings); a fixer
 agent applies surviving findings; repeated finding classes become rules
 here.
+
+- **R11. The fixer is its own agent.** Every loop iteration uses four
+  distinct, fresh context windows: 1 implementer → 2 adversarial
+  reviewers → 1 fixer, per the Bun rewrite's loop. The fixer is never the
+  implementer continuing in its own context (it would inherit the
+  implementer's blind spots) and never a reviewer (it would grade its own
+  homework). Workflow scripts must invoke the fixer as a separate
+  `agent()` call that receives the findings as data. (Origin: user
+  directive, 2026-07-19; matches the Bun per-failing-test loop of
+  1 implementer + 2 adversarial reviewers + 1 fixer.)

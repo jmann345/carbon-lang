@@ -121,6 +121,14 @@ minimal external material second, and the one load-bearing concept named
 explicitly — so the decider is always equipped to overrule the
 recommendation.
 
+**Sub-forks are forks.** Every design sub-decision — naming, syntax
+spelling, default flag values, anything with more than one defensible
+answer — goes to the user via AskUserQuestion, no matter how mundane
+(user directive, 2026-07-19). Agents drafting design docs mark such
+points as OPEN with a recommendation; they never silently decide. The
+orchestrator batches accumulated sub-forks into AskUserQuestion rounds
+and records outcomes here before the affected work merges.
+
 ## Standing rules
 
 1. **Trunk stays green.** The fork branch must always build and pass the

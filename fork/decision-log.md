@@ -12,6 +12,10 @@ consequences. Undecided forks are listed as OPEN at the top.
 
 ### F-006: Error handling — **Result + postfix `?` via Core.Try** (2026-07-19)
 
+**Sub-decision F-006a (user, 2026-07-19): variant naming is `Ok`/`Err`**,
+overriding the design README's older Success/Failure spelling; docs and
+prelude code use `Core.Result(T, E)` with alternatives `Ok(T)` / `Err(E)`.
+
 Staged B0-B3 per fork/design-sprint/error-handling.md: B0 `--cpp-exceptions`
 flag + fenced terminate-at-boundary thunks (zero deps, replaces today's UB);
 B1 Core.Result + match (after W4/W5); B2 postfix `?` through an open

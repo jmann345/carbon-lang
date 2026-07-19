@@ -46,10 +46,20 @@ fn Call() -> i32 {
 // CHECK:STDOUT:   %n.var = alloca i32, align 4, !dbg !20
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %n.var), !dbg !20
 // CHECK:STDOUT:   store i32 0, ptr %n.var, align 4, !dbg !20
-// CHECK:STDOUT:   call void @_Z1FPi(ptr %n.var), !dbg !21
+// CHECK:STDOUT:   call void @_Z1FPi.carbon_thunk._(ptr %n.var), !dbg !21
 // CHECK:STDOUT:   %.loc24 = load i32, ptr %n.var, align 4, !dbg !22
 // CHECK:STDOUT:   call void @"_COp.5e27612b9dd31a14:core.Destroy.Core"(ptr %n.var), !dbg !20
 // CHECK:STDOUT:   ret i32 %.loc24, !dbg !23
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z1FPi.carbon_thunk._(ptr noundef %p) #2 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %p.addr = alloca ptr, align 8
+// CHECK:STDOUT:   store ptr %p, ptr %p.addr, align 8, !tbaa !12
+// CHECK:STDOUT:   %0 = load ptr, ptr %p.addr, align 8, !tbaa !12
+// CHECK:STDOUT:   call void @_Z1FPi(ptr noundef %0)
+// CHECK:STDOUT:   ret void
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
@@ -59,11 +69,12 @@ fn Call() -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
-// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #2
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #3
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #1 = { nounwind }
-// CHECK:STDOUT: attributes #2 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT: attributes #2 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #3 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}

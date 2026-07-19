@@ -20,6 +20,10 @@ import Cpp;
 // In `none` mode, `throw` in imported C++ is diagnosed exactly as Clang
 // diagnoses it under `-fno-exceptions`.
 inline Cpp '''
+// CHECK:STDERR: fail_throw_in_none.carbon:[[@LINE+4]]:24: error: cannot use 'throw' with exceptions disabled [CppInteropParseError]
+// CHECK:STDERR:     9 | void always_throws() { throw 42; }
+// CHECK:STDERR:       |                        ^
+// CHECK:STDERR:
 void always_throws() { throw 42; }
 ''';
 

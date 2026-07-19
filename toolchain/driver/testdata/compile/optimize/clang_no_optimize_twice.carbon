@@ -34,6 +34,8 @@ fn Call() -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: $_Z1fv = comdat any
 // CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: mustprogress uwtable
 // CHECK:STDOUT: define dso_local noundef i32 @_Z1gv() #0 {
 // CHECK:STDOUT: entry:
@@ -48,15 +50,41 @@ fn Call() -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: noinline nounwind optnone
-// CHECK:STDOUT: define i32 @_CCall.Main() #2 !dbg !12 {
+// CHECK:STDOUT: define i32 @_CCall.Main() #2 personality ptr @__gxx_personality_v0 !dbg !12 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %g.call = call i32 @_Z1gv(), !dbg !16
-// CHECK:STDOUT:   ret i32 %g.call, !dbg !17
+// CHECK:STDOUT:   %call.i = invoke noundef i32 @_Z1gv()
+// CHECK:STDOUT:           to label %_Z1gv.carbon_thunk..exit unwind label %terminate.lpad.i, !dbg !16
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad.i:                                 ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null, !dbg !16
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0, !dbg !16
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #4, !dbg !16
+// CHECK:STDOUT:   unreachable, !dbg !16
+// CHECK:STDOUT:
+// CHECK:STDOUT: _Z1gv.carbon_thunk..exit:                         ; preds = %entry
+// CHECK:STDOUT:   ret i32 %call.i, !dbg !17
 // CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #3 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #5
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #4
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { mustprogress uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #1 = { inlinehint mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #2 = { noinline nounwind optnone }
+// CHECK:STDOUT: attributes #3 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #4 = { noreturn nounwind }
+// CHECK:STDOUT: attributes #5 = { nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}

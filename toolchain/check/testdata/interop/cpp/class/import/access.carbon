@@ -1807,12 +1807,12 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %S.instance_fn.cpp_overload_set.type: type = cpp_overload_set_type @S.instance_fn.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %S.instance_fn.cpp_overload_set.value: %S.instance_fn.cpp_overload_set.type = cpp_overload_set_value @S.instance_fn.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %S.instance_fn.type: type = fn_type @S.instance_fn [concrete]
-// CHECK:STDOUT:   %S.instance_fn: %S.instance_fn.type = struct_value () [concrete]
+// CHECK:STDOUT:   %instance_fn__carbon_thunk.type: type = fn_type @instance_fn__carbon_thunk [concrete]
+// CHECK:STDOUT:   %instance_fn__carbon_thunk: %instance_fn__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %S.static_fn.cpp_overload_set.type: type = cpp_overload_set_type @S.static_fn.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %S.static_fn.cpp_overload_set.value: %S.static_fn.cpp_overload_set.type = cpp_overload_set_value @S.static_fn.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %S.static_fn.type: type = fn_type @S.static_fn [concrete]
-// CHECK:STDOUT:   %S.static_fn: %S.static_fn.type = struct_value () [concrete]
+// CHECK:STDOUT:   %static_fn__carbon_thunk.type: type = fn_type @static_fn__carbon_thunk [concrete]
+// CHECK:STDOUT:   %static_fn__carbon_thunk: %static_fn__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -1822,13 +1822,13 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %S.decl: type = class_decl @S [concrete = constants.%S] {} {}
 // CHECK:STDOUT:   %S.instance_fn.cpp_overload_set.value: %S.instance_fn.cpp_overload_set.type = cpp_overload_set_value @S.instance_fn.cpp_overload_set [concrete = constants.%S.instance_fn.cpp_overload_set.value]
-// CHECK:STDOUT:   %S.instance_fn.decl: %S.instance_fn.type = fn_decl @S.instance_fn [concrete = constants.%S.instance_fn] {
+// CHECK:STDOUT:   %instance_fn__carbon_thunk.decl: %instance_fn__carbon_thunk.type = fn_decl @instance_fn__carbon_thunk [concrete = constants.%instance_fn__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %S.static_fn.cpp_overload_set.value: %S.static_fn.cpp_overload_set.type = cpp_overload_set_value @S.static_fn.cpp_overload_set [concrete = constants.%S.static_fn.cpp_overload_set.value]
-// CHECK:STDOUT:   %S.static_fn.decl: %S.static_fn.type = fn_decl @S.static_fn [concrete = constants.%S.static_fn] {} {}
+// CHECK:STDOUT:   %static_fn__carbon_thunk.decl: %static_fn__carbon_thunk.type = fn_decl @static_fn__carbon_thunk [concrete = constants.%static_fn__carbon_thunk] {} {}
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @F(%s.param: %ptr.037) {
@@ -1837,11 +1837,11 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   %.loc8: ref %S = deref %s.ref
 // CHECK:STDOUT:   %instance_fn.ref: %S.instance_fn.cpp_overload_set.type = name_ref instance_fn, imports.%S.instance_fn.cpp_overload_set.value [concrete = constants.%S.instance_fn.cpp_overload_set.value]
 // CHECK:STDOUT:   %bound_method: <bound method> = bound_method %.loc8, %instance_fn.ref
-// CHECK:STDOUT:   %S.instance_fn.call: init %empty_tuple.type = call imports.%S.instance_fn.decl(%.loc8)
+// CHECK:STDOUT:   %instance_fn__carbon_thunk.call: init %empty_tuple.type = call imports.%instance_fn__carbon_thunk.decl(%.loc8)
 // CHECK:STDOUT:   %Cpp.ref.loc9: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %S.ref.loc9: type = name_ref S, imports.%S.decl [concrete = constants.%S]
 // CHECK:STDOUT:   %static_fn.ref: %S.static_fn.cpp_overload_set.type = name_ref static_fn, imports.%S.static_fn.cpp_overload_set.value [concrete = constants.%S.static_fn.cpp_overload_set.value]
-// CHECK:STDOUT:   %S.static_fn.call: init %empty_tuple.type = call imports.%S.static_fn.decl()
+// CHECK:STDOUT:   %static_fn__carbon_thunk.call: init %empty_tuple.type = call imports.%static_fn__carbon_thunk.decl()
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -1885,8 +1885,8 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %C.static_fn.cpp_overload_set.type: type = cpp_overload_set_type @C.static_fn.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %C.static_fn.cpp_overload_set.value: %C.static_fn.cpp_overload_set.type = cpp_overload_set_value @C.static_fn.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %C.static_fn.type: type = fn_type @C.static_fn [concrete]
-// CHECK:STDOUT:   %C.static_fn: %C.static_fn.type = struct_value () [concrete]
+// CHECK:STDOUT:   %static_fn__carbon_thunk.type: type = fn_type @static_fn__carbon_thunk [concrete]
+// CHECK:STDOUT:   %static_fn__carbon_thunk: %static_fn__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -1896,7 +1896,7 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %C.decl: type = class_decl @C [concrete = constants.%C] {} {}
 // CHECK:STDOUT:   %C.static_fn.cpp_overload_set.value: %C.static_fn.cpp_overload_set.type = cpp_overload_set_value @C.static_fn.cpp_overload_set [concrete = constants.%C.static_fn.cpp_overload_set.value]
-// CHECK:STDOUT:   %C.static_fn.decl: %C.static_fn.type = fn_decl @C.static_fn [concrete = constants.%C.static_fn] {} {}
+// CHECK:STDOUT:   %static_fn__carbon_thunk.decl: %static_fn__carbon_thunk.type = fn_decl @static_fn__carbon_thunk [concrete = constants.%static_fn__carbon_thunk] {} {}
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: class @Derived {
@@ -1915,14 +1915,14 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT: fn @Derived.F(%self.param: %Derived) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %static_fn.ref.loc10: %C.static_fn.cpp_overload_set.type = name_ref static_fn, imports.%C.static_fn.cpp_overload_set.value [concrete = constants.%C.static_fn.cpp_overload_set.value]
-// CHECK:STDOUT:   %C.static_fn.call.loc10: init %empty_tuple.type = call imports.%C.static_fn.decl()
+// CHECK:STDOUT:   %static_fn__carbon_thunk.call.loc10: init %empty_tuple.type = call imports.%static_fn__carbon_thunk.decl()
 // CHECK:STDOUT:   %Derived.ref: type = name_ref Derived, file.%Derived.decl [concrete = constants.%Derived]
 // CHECK:STDOUT:   %static_fn.ref.loc11: %C.static_fn.cpp_overload_set.type = name_ref static_fn, imports.%C.static_fn.cpp_overload_set.value [concrete = constants.%C.static_fn.cpp_overload_set.value]
-// CHECK:STDOUT:   %C.static_fn.call.loc11: init %empty_tuple.type = call imports.%C.static_fn.decl()
+// CHECK:STDOUT:   %static_fn__carbon_thunk.call.loc11: init %empty_tuple.type = call imports.%static_fn__carbon_thunk.decl()
 // CHECK:STDOUT:   %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %C.ref: type = name_ref C, imports.%C.decl [concrete = constants.%C]
 // CHECK:STDOUT:   %static_fn.ref.loc12: %C.static_fn.cpp_overload_set.type = name_ref static_fn, imports.%C.static_fn.cpp_overload_set.value [concrete = constants.%C.static_fn.cpp_overload_set.value]
-// CHECK:STDOUT:   %C.static_fn.call.loc12: init %empty_tuple.type = call imports.%C.static_fn.decl()
+// CHECK:STDOUT:   %static_fn__carbon_thunk.call.loc12: init %empty_tuple.type = call imports.%static_fn__carbon_thunk.decl()
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -2521,20 +2521,20 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %Public.PublicStatic.cpp_overload_set.type: type = cpp_overload_set_type @Public.PublicStatic.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %Public.PublicStatic.cpp_overload_set.value: %Public.PublicStatic.cpp_overload_set.type = cpp_overload_set_value @Public.PublicStatic.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %Base.PublicStatic.type: type = fn_type @Base.PublicStatic [concrete]
-// CHECK:STDOUT:   %Base.PublicStatic: %Base.PublicStatic.type = struct_value () [concrete]
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk.type: type = fn_type @PublicStatic__carbon_thunk [concrete]
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk: %PublicStatic__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Public.ProtectedStatic.cpp_overload_set.type: type = cpp_overload_set_type @Public.ProtectedStatic.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %Public.ProtectedStatic.cpp_overload_set.value: %Public.ProtectedStatic.cpp_overload_set.type = cpp_overload_set_value @Public.ProtectedStatic.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %Base.ProtectedStatic.type: type = fn_type @Base.ProtectedStatic [concrete]
-// CHECK:STDOUT:   %Base.ProtectedStatic: %Base.ProtectedStatic.type = struct_value () [concrete]
+// CHECK:STDOUT:   %ProtectedStatic__carbon_thunk.type: type = fn_type @ProtectedStatic__carbon_thunk [concrete]
+// CHECK:STDOUT:   %ProtectedStatic__carbon_thunk: %ProtectedStatic__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Public.PublicInstance.cpp_overload_set.type: type = cpp_overload_set_type @Public.PublicInstance.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %Public.PublicInstance.cpp_overload_set.value: %Public.PublicInstance.cpp_overload_set.type = cpp_overload_set_value @Public.PublicInstance.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %Base.PublicInstance.type: type = fn_type @Base.PublicInstance [concrete]
-// CHECK:STDOUT:   %Base.PublicInstance: %Base.PublicInstance.type = struct_value () [concrete]
+// CHECK:STDOUT:   %PublicInstance__carbon_thunk.type: type = fn_type @PublicInstance__carbon_thunk [concrete]
+// CHECK:STDOUT:   %PublicInstance__carbon_thunk: %PublicInstance__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Public.ProtectedInstance.cpp_overload_set.type: type = cpp_overload_set_type @Public.ProtectedInstance.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %Public.ProtectedInstance.cpp_overload_set.value: %Public.ProtectedInstance.cpp_overload_set.type = cpp_overload_set_value @Public.ProtectedInstance.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %Base.ProtectedInstance.type: type = fn_type @Base.ProtectedInstance [concrete]
-// CHECK:STDOUT:   %Base.ProtectedInstance: %Base.ProtectedInstance.type = struct_value () [concrete]
+// CHECK:STDOUT:   %ProtectedInstance__carbon_thunk.type: type = fn_type @ProtectedInstance__carbon_thunk [concrete]
+// CHECK:STDOUT:   %ProtectedInstance__carbon_thunk: %ProtectedInstance__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -2544,17 +2544,17 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Public.decl: type = class_decl @Public [concrete = constants.%Public] {} {}
 // CHECK:STDOUT:   %Public.PublicStatic.cpp_overload_set.value: %Public.PublicStatic.cpp_overload_set.type = cpp_overload_set_value @Public.PublicStatic.cpp_overload_set [concrete = constants.%Public.PublicStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.PublicStatic.decl: %Base.PublicStatic.type = fn_decl @Base.PublicStatic [concrete = constants.%Base.PublicStatic] {} {}
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk.decl: %PublicStatic__carbon_thunk.type = fn_decl @PublicStatic__carbon_thunk [concrete = constants.%PublicStatic__carbon_thunk] {} {}
 // CHECK:STDOUT:   %Public.ProtectedStatic.cpp_overload_set.value: %Public.ProtectedStatic.cpp_overload_set.type = cpp_overload_set_value @Public.ProtectedStatic.cpp_overload_set [concrete = constants.%Public.ProtectedStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.ProtectedStatic.decl: %Base.ProtectedStatic.type = fn_decl @Base.ProtectedStatic [concrete = constants.%Base.ProtectedStatic] {} {}
+// CHECK:STDOUT:   %ProtectedStatic__carbon_thunk.decl: %ProtectedStatic__carbon_thunk.type = fn_decl @ProtectedStatic__carbon_thunk [concrete = constants.%ProtectedStatic__carbon_thunk] {} {}
 // CHECK:STDOUT:   %Public.PublicInstance.cpp_overload_set.value: %Public.PublicInstance.cpp_overload_set.type = cpp_overload_set_value @Public.PublicInstance.cpp_overload_set [concrete = constants.%Public.PublicInstance.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.PublicInstance.decl: %Base.PublicInstance.type = fn_decl @Base.PublicInstance [concrete = constants.%Base.PublicInstance] {
+// CHECK:STDOUT:   %PublicInstance__carbon_thunk.decl: %PublicInstance__carbon_thunk.type = fn_decl @PublicInstance__carbon_thunk [concrete = constants.%PublicInstance__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Public.ProtectedInstance.cpp_overload_set.value: %Public.ProtectedInstance.cpp_overload_set.type = cpp_overload_set_value @Public.ProtectedInstance.cpp_overload_set [concrete = constants.%Public.ProtectedInstance.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.ProtectedInstance.decl: %Base.ProtectedInstance.type = fn_decl @Base.ProtectedInstance [concrete = constants.%Base.ProtectedInstance] {
+// CHECK:STDOUT:   %ProtectedInstance__carbon_thunk.decl: %ProtectedInstance__carbon_thunk.type = fn_decl @ProtectedInstance__carbon_thunk [concrete = constants.%ProtectedInstance__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -2580,17 +2580,17 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   %Cpp.ref.loc12: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %Public.ref.loc12: type = name_ref Public, imports.%Public.decl [concrete = constants.%Public]
 // CHECK:STDOUT:   %PublicStatic.ref.loc12: %Public.PublicStatic.cpp_overload_set.type = name_ref PublicStatic, imports.%Public.PublicStatic.cpp_overload_set.value [concrete = constants.%Public.PublicStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.PublicStatic.call.loc12: init %empty_tuple.type = call imports.%Base.PublicStatic.decl()
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk.call.loc12: init %empty_tuple.type = call imports.%PublicStatic__carbon_thunk.decl()
 // CHECK:STDOUT:   %Self.ref.loc13: type = name_ref Self, constants.%Derived [concrete = constants.%Derived]
 // CHECK:STDOUT:   %PublicStatic.ref.loc13: %Public.PublicStatic.cpp_overload_set.type = name_ref PublicStatic, imports.%Public.PublicStatic.cpp_overload_set.value [concrete = constants.%Public.PublicStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.PublicStatic.call.loc13: init %empty_tuple.type = call imports.%Base.PublicStatic.decl()
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk.call.loc13: init %empty_tuple.type = call imports.%PublicStatic__carbon_thunk.decl()
 // CHECK:STDOUT:   %Cpp.ref.loc16: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %Public.ref.loc16: type = name_ref Public, imports.%Public.decl [concrete = constants.%Public]
 // CHECK:STDOUT:   %ProtectedStatic.ref.loc16: %Public.ProtectedStatic.cpp_overload_set.type = name_ref ProtectedStatic, imports.%Public.ProtectedStatic.cpp_overload_set.value [concrete = constants.%Public.ProtectedStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.ProtectedStatic.call.loc16: init %empty_tuple.type = call imports.%Base.ProtectedStatic.decl()
+// CHECK:STDOUT:   %ProtectedStatic__carbon_thunk.call.loc16: init %empty_tuple.type = call imports.%ProtectedStatic__carbon_thunk.decl()
 // CHECK:STDOUT:   %Self.ref.loc17: type = name_ref Self, constants.%Derived [concrete = constants.%Derived]
 // CHECK:STDOUT:   %ProtectedStatic.ref.loc17: %Public.ProtectedStatic.cpp_overload_set.type = name_ref ProtectedStatic, imports.%Public.ProtectedStatic.cpp_overload_set.value [concrete = constants.%Public.ProtectedStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.ProtectedStatic.call.loc17: init %empty_tuple.type = call imports.%Base.ProtectedStatic.decl()
+// CHECK:STDOUT:   %ProtectedStatic__carbon_thunk.call.loc17: init %empty_tuple.type = call imports.%ProtectedStatic__carbon_thunk.decl()
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -2602,14 +2602,14 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   %.loc24_5.1: ref %Base = as_compatible %instance.ref.loc24
 // CHECK:STDOUT:   %.loc24_5.2: ref %Base = class_element_access %.loc24_5.1, element0
 // CHECK:STDOUT:   %.loc24_5.3: ref %Base = converted %instance.ref.loc24, %.loc24_5.2
-// CHECK:STDOUT:   %Base.PublicInstance.call: init %empty_tuple.type = call imports.%Base.PublicInstance.decl(%.loc24_5.3)
+// CHECK:STDOUT:   %PublicInstance__carbon_thunk.call: init %empty_tuple.type = call imports.%PublicInstance__carbon_thunk.decl(%.loc24_5.3)
 // CHECK:STDOUT:   %instance.ref.loc26: ref %Public = name_ref instance, %instance
 // CHECK:STDOUT:   %ProtectedInstance.ref: %Public.ProtectedInstance.cpp_overload_set.type = name_ref ProtectedInstance, imports.%Public.ProtectedInstance.cpp_overload_set.value [concrete = constants.%Public.ProtectedInstance.cpp_overload_set.value]
 // CHECK:STDOUT:   %bound_method.loc26: <bound method> = bound_method %instance.ref.loc26, %ProtectedInstance.ref
 // CHECK:STDOUT:   %.loc26_5.1: ref %Base = as_compatible %instance.ref.loc26
 // CHECK:STDOUT:   %.loc26_5.2: ref %Base = class_element_access %.loc26_5.1, element0
 // CHECK:STDOUT:   %.loc26_5.3: ref %Base = converted %instance.ref.loc26, %.loc26_5.2
-// CHECK:STDOUT:   %Base.ProtectedInstance.call: init %empty_tuple.type = call imports.%Base.ProtectedInstance.decl(%.loc26_5.3)
+// CHECK:STDOUT:   %ProtectedInstance__carbon_thunk.call: init %empty_tuple.type = call imports.%ProtectedInstance__carbon_thunk.decl(%.loc26_5.3)
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -2618,24 +2618,24 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   %Cpp.ref.loc33: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %Public.ref.loc33: type = name_ref Public, imports.%Public.decl [concrete = constants.%Public]
 // CHECK:STDOUT:   %PublicStatic.ref.loc33: %Public.PublicStatic.cpp_overload_set.type = name_ref PublicStatic, imports.%Public.PublicStatic.cpp_overload_set.value [concrete = constants.%Public.PublicStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.PublicStatic.call.loc33: init %empty_tuple.type = call imports.%Base.PublicStatic.decl()
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk.call.loc33: init %empty_tuple.type = call imports.%PublicStatic__carbon_thunk.decl()
 // CHECK:STDOUT:   %Derived.ref: type = name_ref Derived, file.%Derived.decl [concrete = constants.%Derived]
 // CHECK:STDOUT:   %PublicStatic.ref.loc34: %Public.PublicStatic.cpp_overload_set.type = name_ref PublicStatic, imports.%Public.PublicStatic.cpp_overload_set.value [concrete = constants.%Public.PublicStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.PublicStatic.call.loc34: init %empty_tuple.type = call imports.%Base.PublicStatic.decl()
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk.call.loc34: init %empty_tuple.type = call imports.%PublicStatic__carbon_thunk.decl()
 // CHECK:STDOUT:   %instance.ref.loc36: ref %Public = name_ref instance, %instance
 // CHECK:STDOUT:   %PublicInstance.ref.loc36: %Public.PublicInstance.cpp_overload_set.type = name_ref PublicInstance, imports.%Public.PublicInstance.cpp_overload_set.value [concrete = constants.%Public.PublicInstance.cpp_overload_set.value]
 // CHECK:STDOUT:   %bound_method.loc36: <bound method> = bound_method %instance.ref.loc36, %PublicInstance.ref.loc36
 // CHECK:STDOUT:   %.loc36_3.1: ref %Base = as_compatible %instance.ref.loc36
 // CHECK:STDOUT:   %.loc36_3.2: ref %Base = class_element_access %.loc36_3.1, element0
 // CHECK:STDOUT:   %.loc36_3.3: ref %Base = converted %instance.ref.loc36, %.loc36_3.2
-// CHECK:STDOUT:   %Base.PublicInstance.call.loc36: init %empty_tuple.type = call imports.%Base.PublicInstance.decl(%.loc36_3.3)
+// CHECK:STDOUT:   %PublicInstance__carbon_thunk.call.loc36: init %empty_tuple.type = call imports.%PublicInstance__carbon_thunk.decl(%.loc36_3.3)
 // CHECK:STDOUT:   %instance.ref.loc37: ref %Public = name_ref instance, %instance
 // CHECK:STDOUT:   %PublicInstance.ref.loc37: %Public.PublicInstance.cpp_overload_set.type = name_ref PublicInstance, imports.%Public.PublicInstance.cpp_overload_set.value [concrete = constants.%Public.PublicInstance.cpp_overload_set.value]
 // CHECK:STDOUT:   %bound_method.loc37: <bound method> = bound_method %instance.ref.loc37, %PublicInstance.ref.loc37
 // CHECK:STDOUT:   %.loc37_3.1: ref %Base = as_compatible %instance.ref.loc37
 // CHECK:STDOUT:   %.loc37_3.2: ref %Base = class_element_access %.loc37_3.1, element0
 // CHECK:STDOUT:   %.loc37_3.3: ref %Base = converted %instance.ref.loc37, %.loc37_3.2
-// CHECK:STDOUT:   %Base.PublicInstance.call.loc37: init %empty_tuple.type = call imports.%Base.PublicInstance.decl(%.loc37_3.3)
+// CHECK:STDOUT:   %PublicInstance__carbon_thunk.call.loc37: init %empty_tuple.type = call imports.%PublicInstance__carbon_thunk.decl(%.loc37_3.3)
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -2676,20 +2676,20 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %Protected.PublicStatic.cpp_overload_set.type: type = cpp_overload_set_type @Protected.PublicStatic.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %Protected.PublicStatic.cpp_overload_set.value: %Protected.PublicStatic.cpp_overload_set.type = cpp_overload_set_value @Protected.PublicStatic.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %Base.PublicStatic.type: type = fn_type @Base.PublicStatic [concrete]
-// CHECK:STDOUT:   %Base.PublicStatic: %Base.PublicStatic.type = struct_value () [concrete]
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk.type: type = fn_type @PublicStatic__carbon_thunk [concrete]
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk: %PublicStatic__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Protected.ProtectedStatic.cpp_overload_set.type: type = cpp_overload_set_type @Protected.ProtectedStatic.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %Protected.ProtectedStatic.cpp_overload_set.value: %Protected.ProtectedStatic.cpp_overload_set.type = cpp_overload_set_value @Protected.ProtectedStatic.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %Base.ProtectedStatic.type: type = fn_type @Base.ProtectedStatic [concrete]
-// CHECK:STDOUT:   %Base.ProtectedStatic: %Base.ProtectedStatic.type = struct_value () [concrete]
+// CHECK:STDOUT:   %ProtectedStatic__carbon_thunk.type: type = fn_type @ProtectedStatic__carbon_thunk [concrete]
+// CHECK:STDOUT:   %ProtectedStatic__carbon_thunk: %ProtectedStatic__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Protected.PublicInstance.cpp_overload_set.type: type = cpp_overload_set_type @Protected.PublicInstance.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %Protected.PublicInstance.cpp_overload_set.value: %Protected.PublicInstance.cpp_overload_set.type = cpp_overload_set_value @Protected.PublicInstance.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %Base.PublicInstance.type: type = fn_type @Base.PublicInstance [concrete]
-// CHECK:STDOUT:   %Base.PublicInstance: %Base.PublicInstance.type = struct_value () [concrete]
+// CHECK:STDOUT:   %PublicInstance__carbon_thunk.type: type = fn_type @PublicInstance__carbon_thunk [concrete]
+// CHECK:STDOUT:   %PublicInstance__carbon_thunk: %PublicInstance__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Protected.ProtectedInstance.cpp_overload_set.type: type = cpp_overload_set_type @Protected.ProtectedInstance.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %Protected.ProtectedInstance.cpp_overload_set.value: %Protected.ProtectedInstance.cpp_overload_set.type = cpp_overload_set_value @Protected.ProtectedInstance.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %Base.ProtectedInstance.type: type = fn_type @Base.ProtectedInstance [concrete]
-// CHECK:STDOUT:   %Base.ProtectedInstance: %Base.ProtectedInstance.type = struct_value () [concrete]
+// CHECK:STDOUT:   %ProtectedInstance__carbon_thunk.type: type = fn_type @ProtectedInstance__carbon_thunk [concrete]
+// CHECK:STDOUT:   %ProtectedInstance__carbon_thunk: %ProtectedInstance__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -2699,17 +2699,17 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Protected.decl: type = class_decl @Protected [concrete = constants.%Protected] {} {}
 // CHECK:STDOUT:   %Protected.PublicStatic.cpp_overload_set.value: %Protected.PublicStatic.cpp_overload_set.type = cpp_overload_set_value @Protected.PublicStatic.cpp_overload_set [concrete = constants.%Protected.PublicStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.PublicStatic.decl: %Base.PublicStatic.type = fn_decl @Base.PublicStatic [concrete = constants.%Base.PublicStatic] {} {}
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk.decl: %PublicStatic__carbon_thunk.type = fn_decl @PublicStatic__carbon_thunk [concrete = constants.%PublicStatic__carbon_thunk] {} {}
 // CHECK:STDOUT:   %Protected.ProtectedStatic.cpp_overload_set.value: %Protected.ProtectedStatic.cpp_overload_set.type = cpp_overload_set_value @Protected.ProtectedStatic.cpp_overload_set [concrete = constants.%Protected.ProtectedStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.ProtectedStatic.decl: %Base.ProtectedStatic.type = fn_decl @Base.ProtectedStatic [concrete = constants.%Base.ProtectedStatic] {} {}
+// CHECK:STDOUT:   %ProtectedStatic__carbon_thunk.decl: %ProtectedStatic__carbon_thunk.type = fn_decl @ProtectedStatic__carbon_thunk [concrete = constants.%ProtectedStatic__carbon_thunk] {} {}
 // CHECK:STDOUT:   %Protected.PublicInstance.cpp_overload_set.value: %Protected.PublicInstance.cpp_overload_set.type = cpp_overload_set_value @Protected.PublicInstance.cpp_overload_set [concrete = constants.%Protected.PublicInstance.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.PublicInstance.decl: %Base.PublicInstance.type = fn_decl @Base.PublicInstance [concrete = constants.%Base.PublicInstance] {
+// CHECK:STDOUT:   %PublicInstance__carbon_thunk.decl: %PublicInstance__carbon_thunk.type = fn_decl @PublicInstance__carbon_thunk [concrete = constants.%PublicInstance__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Protected.ProtectedInstance.cpp_overload_set.value: %Protected.ProtectedInstance.cpp_overload_set.type = cpp_overload_set_value @Protected.ProtectedInstance.cpp_overload_set [concrete = constants.%Protected.ProtectedInstance.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.ProtectedInstance.decl: %Base.ProtectedInstance.type = fn_decl @Base.ProtectedInstance [concrete = constants.%Base.ProtectedInstance] {
+// CHECK:STDOUT:   %ProtectedInstance__carbon_thunk.decl: %ProtectedInstance__carbon_thunk.type = fn_decl @ProtectedInstance__carbon_thunk [concrete = constants.%ProtectedInstance__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -2735,17 +2735,17 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   %Cpp.ref.loc12: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %Protected.ref.loc12: type = name_ref Protected, imports.%Protected.decl [concrete = constants.%Protected]
 // CHECK:STDOUT:   %PublicStatic.ref.loc12: %Protected.PublicStatic.cpp_overload_set.type = name_ref PublicStatic, imports.%Protected.PublicStatic.cpp_overload_set.value [concrete = constants.%Protected.PublicStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.PublicStatic.call.loc12: init %empty_tuple.type = call imports.%Base.PublicStatic.decl()
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk.call.loc12: init %empty_tuple.type = call imports.%PublicStatic__carbon_thunk.decl()
 // CHECK:STDOUT:   %Self.ref.loc13: type = name_ref Self, constants.%Derived [concrete = constants.%Derived]
 // CHECK:STDOUT:   %PublicStatic.ref.loc13: %Protected.PublicStatic.cpp_overload_set.type = name_ref PublicStatic, imports.%Protected.PublicStatic.cpp_overload_set.value [concrete = constants.%Protected.PublicStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.PublicStatic.call.loc13: init %empty_tuple.type = call imports.%Base.PublicStatic.decl()
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk.call.loc13: init %empty_tuple.type = call imports.%PublicStatic__carbon_thunk.decl()
 // CHECK:STDOUT:   %Cpp.ref.loc16: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %Protected.ref.loc16: type = name_ref Protected, imports.%Protected.decl [concrete = constants.%Protected]
 // CHECK:STDOUT:   %ProtectedStatic.ref.loc16: %Protected.ProtectedStatic.cpp_overload_set.type = name_ref ProtectedStatic, imports.%Protected.ProtectedStatic.cpp_overload_set.value [concrete = constants.%Protected.ProtectedStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.ProtectedStatic.call.loc16: init %empty_tuple.type = call imports.%Base.ProtectedStatic.decl()
+// CHECK:STDOUT:   %ProtectedStatic__carbon_thunk.call.loc16: init %empty_tuple.type = call imports.%ProtectedStatic__carbon_thunk.decl()
 // CHECK:STDOUT:   %Self.ref.loc17: type = name_ref Self, constants.%Derived [concrete = constants.%Derived]
 // CHECK:STDOUT:   %ProtectedStatic.ref.loc17: %Protected.ProtectedStatic.cpp_overload_set.type = name_ref ProtectedStatic, imports.%Protected.ProtectedStatic.cpp_overload_set.value [concrete = constants.%Protected.ProtectedStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.ProtectedStatic.call.loc17: init %empty_tuple.type = call imports.%Base.ProtectedStatic.decl()
+// CHECK:STDOUT:   %ProtectedStatic__carbon_thunk.call.loc17: init %empty_tuple.type = call imports.%ProtectedStatic__carbon_thunk.decl()
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -2757,14 +2757,14 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   %.loc24_5.1: ref %Base = as_compatible %instance.ref.loc24
 // CHECK:STDOUT:   %.loc24_5.2: ref %Base = class_element_access %.loc24_5.1, element0
 // CHECK:STDOUT:   %.loc24_5.3: ref %Base = converted %instance.ref.loc24, %.loc24_5.2
-// CHECK:STDOUT:   %Base.PublicInstance.call: init %empty_tuple.type = call imports.%Base.PublicInstance.decl(%.loc24_5.3)
+// CHECK:STDOUT:   %PublicInstance__carbon_thunk.call: init %empty_tuple.type = call imports.%PublicInstance__carbon_thunk.decl(%.loc24_5.3)
 // CHECK:STDOUT:   %instance.ref.loc26: ref %Protected = name_ref instance, %instance
 // CHECK:STDOUT:   %ProtectedInstance.ref: %Protected.ProtectedInstance.cpp_overload_set.type = name_ref ProtectedInstance, imports.%Protected.ProtectedInstance.cpp_overload_set.value [concrete = constants.%Protected.ProtectedInstance.cpp_overload_set.value]
 // CHECK:STDOUT:   %bound_method.loc26: <bound method> = bound_method %instance.ref.loc26, %ProtectedInstance.ref
 // CHECK:STDOUT:   %.loc26_5.1: ref %Base = as_compatible %instance.ref.loc26
 // CHECK:STDOUT:   %.loc26_5.2: ref %Base = class_element_access %.loc26_5.1, element0
 // CHECK:STDOUT:   %.loc26_5.3: ref %Base = converted %instance.ref.loc26, %.loc26_5.2
-// CHECK:STDOUT:   %Base.ProtectedInstance.call: init %empty_tuple.type = call imports.%Base.ProtectedInstance.decl(%.loc26_5.3)
+// CHECK:STDOUT:   %ProtectedInstance__carbon_thunk.call: init %empty_tuple.type = call imports.%ProtectedInstance__carbon_thunk.decl(%.loc26_5.3)
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -2778,20 +2778,20 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %PublicProtected.PublicStatic.cpp_overload_set.type: type = cpp_overload_set_type @PublicProtected.PublicStatic.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %PublicProtected.PublicStatic.cpp_overload_set.value: %PublicProtected.PublicStatic.cpp_overload_set.type = cpp_overload_set_value @PublicProtected.PublicStatic.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %Base.PublicStatic.type: type = fn_type @Base.PublicStatic [concrete]
-// CHECK:STDOUT:   %Base.PublicStatic: %Base.PublicStatic.type = struct_value () [concrete]
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk.type: type = fn_type @PublicStatic__carbon_thunk [concrete]
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk: %PublicStatic__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %PublicProtected.ProtectedStatic.cpp_overload_set.type: type = cpp_overload_set_type @PublicProtected.ProtectedStatic.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %PublicProtected.ProtectedStatic.cpp_overload_set.value: %PublicProtected.ProtectedStatic.cpp_overload_set.type = cpp_overload_set_value @PublicProtected.ProtectedStatic.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %Base.ProtectedStatic.type: type = fn_type @Base.ProtectedStatic [concrete]
-// CHECK:STDOUT:   %Base.ProtectedStatic: %Base.ProtectedStatic.type = struct_value () [concrete]
+// CHECK:STDOUT:   %ProtectedStatic__carbon_thunk.type: type = fn_type @ProtectedStatic__carbon_thunk [concrete]
+// CHECK:STDOUT:   %ProtectedStatic__carbon_thunk: %ProtectedStatic__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %PublicProtected.PublicInstance.cpp_overload_set.type: type = cpp_overload_set_type @PublicProtected.PublicInstance.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %PublicProtected.PublicInstance.cpp_overload_set.value: %PublicProtected.PublicInstance.cpp_overload_set.type = cpp_overload_set_value @PublicProtected.PublicInstance.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %Base.PublicInstance.type: type = fn_type @Base.PublicInstance [concrete]
-// CHECK:STDOUT:   %Base.PublicInstance: %Base.PublicInstance.type = struct_value () [concrete]
+// CHECK:STDOUT:   %PublicInstance__carbon_thunk.type: type = fn_type @PublicInstance__carbon_thunk [concrete]
+// CHECK:STDOUT:   %PublicInstance__carbon_thunk: %PublicInstance__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %PublicProtected.ProtectedInstance.cpp_overload_set.type: type = cpp_overload_set_type @PublicProtected.ProtectedInstance.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %PublicProtected.ProtectedInstance.cpp_overload_set.value: %PublicProtected.ProtectedInstance.cpp_overload_set.type = cpp_overload_set_value @PublicProtected.ProtectedInstance.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %Base.ProtectedInstance.type: type = fn_type @Base.ProtectedInstance [concrete]
-// CHECK:STDOUT:   %Base.ProtectedInstance: %Base.ProtectedInstance.type = struct_value () [concrete]
+// CHECK:STDOUT:   %ProtectedInstance__carbon_thunk.type: type = fn_type @ProtectedInstance__carbon_thunk [concrete]
+// CHECK:STDOUT:   %ProtectedInstance__carbon_thunk: %ProtectedInstance__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -2801,17 +2801,17 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %PublicProtected.decl: type = class_decl @PublicProtected [concrete = constants.%PublicProtected] {} {}
 // CHECK:STDOUT:   %PublicProtected.PublicStatic.cpp_overload_set.value: %PublicProtected.PublicStatic.cpp_overload_set.type = cpp_overload_set_value @PublicProtected.PublicStatic.cpp_overload_set [concrete = constants.%PublicProtected.PublicStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.PublicStatic.decl: %Base.PublicStatic.type = fn_decl @Base.PublicStatic [concrete = constants.%Base.PublicStatic] {} {}
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk.decl: %PublicStatic__carbon_thunk.type = fn_decl @PublicStatic__carbon_thunk [concrete = constants.%PublicStatic__carbon_thunk] {} {}
 // CHECK:STDOUT:   %PublicProtected.ProtectedStatic.cpp_overload_set.value: %PublicProtected.ProtectedStatic.cpp_overload_set.type = cpp_overload_set_value @PublicProtected.ProtectedStatic.cpp_overload_set [concrete = constants.%PublicProtected.ProtectedStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.ProtectedStatic.decl: %Base.ProtectedStatic.type = fn_decl @Base.ProtectedStatic [concrete = constants.%Base.ProtectedStatic] {} {}
+// CHECK:STDOUT:   %ProtectedStatic__carbon_thunk.decl: %ProtectedStatic__carbon_thunk.type = fn_decl @ProtectedStatic__carbon_thunk [concrete = constants.%ProtectedStatic__carbon_thunk] {} {}
 // CHECK:STDOUT:   %PublicProtected.PublicInstance.cpp_overload_set.value: %PublicProtected.PublicInstance.cpp_overload_set.type = cpp_overload_set_value @PublicProtected.PublicInstance.cpp_overload_set [concrete = constants.%PublicProtected.PublicInstance.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.PublicInstance.decl: %Base.PublicInstance.type = fn_decl @Base.PublicInstance [concrete = constants.%Base.PublicInstance] {
+// CHECK:STDOUT:   %PublicInstance__carbon_thunk.decl: %PublicInstance__carbon_thunk.type = fn_decl @PublicInstance__carbon_thunk [concrete = constants.%PublicInstance__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %PublicProtected.ProtectedInstance.cpp_overload_set.value: %PublicProtected.ProtectedInstance.cpp_overload_set.type = cpp_overload_set_value @PublicProtected.ProtectedInstance.cpp_overload_set [concrete = constants.%PublicProtected.ProtectedInstance.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.ProtectedInstance.decl: %Base.ProtectedInstance.type = fn_decl @Base.ProtectedInstance [concrete = constants.%Base.ProtectedInstance] {
+// CHECK:STDOUT:   %ProtectedInstance__carbon_thunk.decl: %ProtectedInstance__carbon_thunk.type = fn_decl @ProtectedInstance__carbon_thunk [concrete = constants.%ProtectedInstance__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -2837,17 +2837,17 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   %Cpp.ref.loc12: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %PublicProtected.ref.loc12: type = name_ref PublicProtected, imports.%PublicProtected.decl [concrete = constants.%PublicProtected]
 // CHECK:STDOUT:   %PublicStatic.ref.loc12: %PublicProtected.PublicStatic.cpp_overload_set.type = name_ref PublicStatic, imports.%PublicProtected.PublicStatic.cpp_overload_set.value [concrete = constants.%PublicProtected.PublicStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.PublicStatic.call.loc12: init %empty_tuple.type = call imports.%Base.PublicStatic.decl()
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk.call.loc12: init %empty_tuple.type = call imports.%PublicStatic__carbon_thunk.decl()
 // CHECK:STDOUT:   %Self.ref.loc13: type = name_ref Self, constants.%Derived [concrete = constants.%Derived]
 // CHECK:STDOUT:   %PublicStatic.ref.loc13: %PublicProtected.PublicStatic.cpp_overload_set.type = name_ref PublicStatic, imports.%PublicProtected.PublicStatic.cpp_overload_set.value [concrete = constants.%PublicProtected.PublicStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.PublicStatic.call.loc13: init %empty_tuple.type = call imports.%Base.PublicStatic.decl()
+// CHECK:STDOUT:   %PublicStatic__carbon_thunk.call.loc13: init %empty_tuple.type = call imports.%PublicStatic__carbon_thunk.decl()
 // CHECK:STDOUT:   %Cpp.ref.loc16: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %PublicProtected.ref.loc16: type = name_ref PublicProtected, imports.%PublicProtected.decl [concrete = constants.%PublicProtected]
 // CHECK:STDOUT:   %ProtectedStatic.ref.loc16: %PublicProtected.ProtectedStatic.cpp_overload_set.type = name_ref ProtectedStatic, imports.%PublicProtected.ProtectedStatic.cpp_overload_set.value [concrete = constants.%PublicProtected.ProtectedStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.ProtectedStatic.call.loc16: init %empty_tuple.type = call imports.%Base.ProtectedStatic.decl()
+// CHECK:STDOUT:   %ProtectedStatic__carbon_thunk.call.loc16: init %empty_tuple.type = call imports.%ProtectedStatic__carbon_thunk.decl()
 // CHECK:STDOUT:   %Self.ref.loc17: type = name_ref Self, constants.%Derived [concrete = constants.%Derived]
 // CHECK:STDOUT:   %ProtectedStatic.ref.loc17: %PublicProtected.ProtectedStatic.cpp_overload_set.type = name_ref ProtectedStatic, imports.%PublicProtected.ProtectedStatic.cpp_overload_set.value [concrete = constants.%PublicProtected.ProtectedStatic.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.ProtectedStatic.call.loc17: init %empty_tuple.type = call imports.%Base.ProtectedStatic.decl()
+// CHECK:STDOUT:   %ProtectedStatic__carbon_thunk.call.loc17: init %empty_tuple.type = call imports.%ProtectedStatic__carbon_thunk.decl()
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -2860,7 +2860,7 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   %.loc24_5.2: ref %Protected = class_element_access %.loc24_5.1, element0
 // CHECK:STDOUT:   %.loc24_5.3: ref %Base = class_element_access %.loc24_5.2, element0
 // CHECK:STDOUT:   %.loc24_5.4: ref %Base = converted %instance.ref.loc24, %.loc24_5.3
-// CHECK:STDOUT:   %Base.PublicInstance.call: init %empty_tuple.type = call imports.%Base.PublicInstance.decl(%.loc24_5.4)
+// CHECK:STDOUT:   %PublicInstance__carbon_thunk.call: init %empty_tuple.type = call imports.%PublicInstance__carbon_thunk.decl(%.loc24_5.4)
 // CHECK:STDOUT:   %instance.ref.loc26: ref %PublicProtected = name_ref instance, %instance
 // CHECK:STDOUT:   %ProtectedInstance.ref: %PublicProtected.ProtectedInstance.cpp_overload_set.type = name_ref ProtectedInstance, imports.%PublicProtected.ProtectedInstance.cpp_overload_set.value [concrete = constants.%PublicProtected.ProtectedInstance.cpp_overload_set.value]
 // CHECK:STDOUT:   %bound_method.loc26: <bound method> = bound_method %instance.ref.loc26, %ProtectedInstance.ref
@@ -2868,7 +2868,7 @@ fn Call(var instance: Cpp.PublicPrivate) {
 // CHECK:STDOUT:   %.loc26_5.2: ref %Protected = class_element_access %.loc26_5.1, element0
 // CHECK:STDOUT:   %.loc26_5.3: ref %Base = class_element_access %.loc26_5.2, element0
 // CHECK:STDOUT:   %.loc26_5.4: ref %Base = converted %instance.ref.loc26, %.loc26_5.3
-// CHECK:STDOUT:   %Base.ProtectedInstance.call: init %empty_tuple.type = call imports.%Base.ProtectedInstance.decl(%.loc26_5.4)
+// CHECK:STDOUT:   %ProtectedInstance__carbon_thunk.call: init %empty_tuple.type = call imports.%ProtectedInstance__carbon_thunk.decl(%.loc26_5.4)
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

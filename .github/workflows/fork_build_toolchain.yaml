@@ -61,6 +61,16 @@ jobs:
             exit 1
           fi
 
+      - name: Ensure uv
+        # Carbon's scripts (incl. the .bazelrc workspace_status_command) use
+        # `#!/usr/bin/env -S uv run` shebangs; uv is a required contribution
+        # tool (docs/project/contribution_tools.md). User-space install.
+        run: |
+          if ! command -v uv >/dev/null 2>&1; then
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+          fi
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
       - name: Build toolchain tarball
         run: |
           python3 ./scripts/run_bazelisk.py \

@@ -7,7 +7,7 @@ per-milestone-bullet scoreboard keyed to the table in fork/gap-analysis.md.
 
 Toolchain invocation (verified against repo sources; see README.md):
 
-    <carbon> compile --output=<out>/obj/<name>.o --output-last-input-only <prog>.carbon
+    <carbon> compile [COMPILE-ARGS...] --output=<out>/obj/<name>.o --output-last-input-only <prog>.carbon
     <carbon> link --output=<out>/bin/<name> <out>/obj/<name>.o
     <out>/bin/<name>            # 30s timeout, capture exit code + stdout
 
@@ -100,6 +100,9 @@ class Program:
         self.expect_exit = 0
         self.expect_stdout = None  # None => stdout unchecked; else exact str
         self.skip_reason = None
+        # Extra `carbon compile` arguments (from `// COMPILE-ARGS:`), e.g.
+        # `--cpp-exceptions=none` for programs that pin a boundary mode.
+        self.compile_args = []
         # Differential sibling: `<name>.diff.cpp` next to `<name>.carbon`.
         # When set, the runner also compiles+runs the C++ file with the
         # toolchain's own clang++ and requires exit code and stdout to be
@@ -112,6 +115,7 @@ def parse_directives(path, rel):
 
     Recognized (all in leading `//` comments, before the first code line):
       // CONFORMANCE-BULLET: <exact bullet text from fork/gap-analysis.md>
+      // COMPILE-ARGS: <extra `carbon compile` args, whitespace-split>
       // EXPECT-EXIT: <int>                          (default 0)
       // EXPECT-STDOUT:                              (then `//   <line>` lines)
       // SKIP: <reason>
@@ -140,6 +144,12 @@ def parse_directives(path, rel):
 
         if comment.startswith("// CONFORMANCE-BULLET:"):
             prog.bullet = comment[len("// CONFORMANCE-BULLET:"):].strip()
+        elif comment.startswith("// COMPILE-ARGS:"):
+            value = comment[len("// COMPILE-ARGS:"):].strip()
+            if not value:
+                raise DirectiveError(
+                    f"{rel}: COMPILE-ARGS needs at least one argument")
+            prog.compile_args = value.split()
         elif comment.startswith("// EXPECT-EXIT:"):
             value = comment[len("// EXPECT-EXIT:"):].strip()
             try:
@@ -301,6 +311,7 @@ def execute_program(prog, toolchain, clangxx, out_dir, timeouts):
     compile_cmd = [
         toolchain,
         "compile",
+        *prog.compile_args,
         f"--output={obj_path}",
         "--output-last-input-only",
         prog.path,
@@ -561,6 +572,8 @@ def self_test(programs_dir, filter_substr):
                 marks.append(f"stdout: {len(prog.expect_stdout.splitlines())} lines")
             if prog.diff_cpp is not None:
                 marks.append("diff: C++")
+            if prog.compile_args:
+                marks.append("args: " + " ".join(prog.compile_args))
             marks.append(f"exit: {prog.expect_exit}")
             print(f"  {prog.rel:<{width}}  ->  {prog.bullet}  [{'; '.join(marks)}]")
     return 0 if ok else 1

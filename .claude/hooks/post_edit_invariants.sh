@@ -48,17 +48,35 @@ case "$file" in
     ;;
 esac
 
-# 3. License header on source files (CI enforces via doc checks/review).
+# 3. License header (upstream check-copyright, R21). Covers fork/ too — the
+# gap that let PR #1's headerless files reach CI. JSON can't carry a comment
+# header (parsed by json.load) and request/*.txt are excluded, matching the
+# fork exclusions in .pre-commit-config.yaml.
 case "$file" in
-  */fuzzer_corpus/*|*/out/*) ;;
-  "$root"/toolchain/*|"$root"/core/*|"$root"/common/*|"$root"/testing/*|"$root"/scripts/*)
+  */fuzzer_corpus/*|*/out/*|*-request.txt|*.json) ;;
+  "$root"/toolchain/*|"$root"/core/*|"$root"/common/*|"$root"/testing/*|"$root"/scripts/*|"$root"/fork/*)
     case "$file" in
-      *.cpp|*.h|*.def|*.carbon|*.py|*.bzl|*.md|*.yaml)
+      *.cpp|*.h|*.def|*.carbon|*.py|*.bzl|*.md|*.yaml|*.sh)
         if ! head -5 "$file" | grep -q "Part of the Carbon Language project"; then
           fail "$file is missing the Carbon license header (Apache-2.0 WITH LLVM-exception block; copy from a sibling file)."
         fi
         ;;
     esac
+    ;;
+esac
+
+# 3b. Python: ruff format + lint (the CI-pinned hooks that flagged runner.py
+# in PR #1). ruff is available locally; run it before the CI prek gate sees it.
+case "$file" in
+  *.py)
+    if command -v ruff >/dev/null 2>&1; then
+      before=$(sha256sum "$file")
+      ruff format "$file" >/dev/null 2>&1
+      ruff check --fix "$file" >/dev/null 2>&1 || true
+      if [ "$before" != "$(sha256sum "$file")" ]; then
+        msgs="${msgs}ruff reformatted/fixed $file — Read it again before further edits. "
+      fi
+    fi
     ;;
 esac
 

@@ -199,3 +199,10 @@ here.
     and runs ruff on Python. The hook is the fast local prevention layer; the
     runner-side prek in the merge gate (R21) remains the authority — the hook
     is best-effort, not a reimplementation of prek. (Origin: PR #1, 2026-07-20.)
+- **R24. Differential `.diff.cpp` oracles are excluded from clangd-tidy.**
+  They are standalone C++ programs compiled at runtime by the conformance
+  runner with the Carbon toolchain's clang++, not bazel targets, so they
+  have no compile_commands entry — clangd-tidy fails to resolve their
+  standard-library includes. Excluded in clangd_tidy.yaml's paths-filter,
+  same category as the existing `!**/*.tpl.h`. (Origin: PR #1 clangd-tidy
+  failures on the differential fixtures, 2026-07-20.)

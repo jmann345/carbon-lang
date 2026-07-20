@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     -   [Implementation realities in this toolchain](#implementation-realities-in-this-toolchain)
 -   [The memory-model contract every option must state](#the-memory-model-contract-every-option-must-state)
 -   [Options](#options)
-    -   [Option A: Document-and-conform — adopt the C++ memory model, fix nothing](#option-a-document-and-conform--adopt-the-c-memory-model-fix-nothing)
+    -   [Option A: Document-and-conform - adopt the C++ memory model, fix nothing](#option-a-document-and-conform---adopt-the-c-memory-model-fix-nothing)
     -   [Option B: Option A + targeted toolchain fixes for the three verified defects](#option-b-option-a--targeted-toolchain-fixes-for-the-three-verified-defects)
     -   [Option C: Option B + a `Core.Sync` veneer library](#option-c-option-b--a-coresync-veneer-library)
     -   [Option D: Carbon-native atomics lowered directly to LLVM](#option-d-carbon-native-atomics-lowered-directly-to-llvm)
@@ -42,7 +42,7 @@ Exactly one bullet, from `docs/project/milestones.md:176-177`:
 
 Its scope boundary is set two sections later (`milestones.md:271`):
 **Carbon-native threading is explicitly deferred until at least 0.2.** So the
-0.1 deliverable is *interop-only*: Carbon code must be able to use
+0.1 deliverable is _interop-only_: Carbon code must be able to use
 `std::thread`/`std::atomic`/`std::mutex` and friends, and mixed Carbon/C++
 programs must have a defined memory model. The `fork/gap-analysis.md` row is:
 
@@ -59,8 +59,8 @@ C++ interoperability".
 
 Every other paper in this design sprint (error handling, unions, overloading,
 if-let) covers a feature with **no design and no implementation**. This one is
-different: the audit's "no *dedicated* support" is literally true — there is
-no threading-specific code in `toolchain/` — but the *general* interop
+different: the audit's "no _dedicated_ support" is literally true — there is
+no threading-specific code in `toolchain/` — but the _general_ interop
 machinery (embedded Clang, template import, `ref` parameters, synthesized
 `Destroy` impls, single-LLVM-module lowering) turns out to already carry
 almost the entire bullet. This paper is grounded in a fresh empirical run, not
@@ -86,7 +86,7 @@ Verified working end-to-end (compile → link → run, correct output):
 | 5 | Operator sugar: `a = 5` (atomic `operator=`), `var v: i32 = a` (`operator T` implicit conversion), `a += 2` (`operator+=`) | printed `7` |
 | 6 | `Cpp.std.atomic_flag` `test_and_set`/`clear`; `atomic(bool)`; `atomic(i32*)` storing/loading a Carbon `&x`; `atomic(f64)` | ran |
 | 7 | `Cpp.std.mutex` / `recursive_mutex` / `shared_mutex` / `condition_variable` locals; `lock`/`unlock`/`try_lock`/`lock_shared`/`notify_one`/`notify_all` | ran |
-| 8 | **RAII across the boundary**: `var g: Cpp.std.lock_guard(Cpp.std.mutex) = Cpp.std.lock_guard(Cpp.std.mutex).lock_guard(ref m);` — mutex verifiably held while `g` lives, released when the Carbon scope ends (C++ destructor runs via the synthesized `Destroy` impl) | `try_lock` probes printed `1` then `2` |
+| 8 | **RAII across the boundary**: `var g: Cpp.std.lock_guard(Cpp.std.mutex) = Cpp.std.lock_guard(Cpp.std.mutex).lock_guard(ref m);` — mutex verifiably held while `g` lives, released when the Carbon scope ends (C++ destructor runs by way of the synthesized `Destroy` impl) | `try_lock` probes printed `1` then `2` |
 | 9 | **Full producer/consumer**: C++ inline globals (`inline std::mutex m; inline std::condition_variable cv; inline int ready;`) accessed from Carbon as `Cpp.m`/`Cpp.cv`/`Cpp.ready`; Carbon takes `unique_lock`, loops on `Cpp.cv.wait(ref ul)`; a worker thread — `std::thread(Carbon::Worker).detach()` in inline C++, reverse interop per `check/cpp/export.cpp` — locks, writes, notifies | printed `1`, exited 0 |
 | 10 | **A Carbon function runs on a foreign thread** and synchronizes with the main thread through a release/acquire `std::atomic` pair | printed `7`, `1` |
 | 11 | `Cpp.std.this_thread.yield()`, `sleep_for(Cpp.std.chrono.milliseconds.duration(10))` (note: ctor is named `duration` through the alias), `Cpp.std.thread.hardware_concurrency()` | ran |
@@ -99,10 +99,10 @@ Verified **broken** (the three defects):
 | # | Defect | Failure mode |
 | --- | --- | --- |
 | D1 | `Cpp.std.thread.thread(Work)` with a Carbon function as the callable | check error: `` call argument of type `<type of Work>` is not supported `` — there is no Carbon-function-value → C++-callable mapping in `check/cpp/type_mapping.cpp` / `overload_resolution.cpp` |
-| D2 | `Cpp.std.atomic(P)` over a Carbon class `P` | the template *instantiates* on the Carbon type (export works), but libc++'s `static_assert(is_trivially_copyable<Carbon::P>)` fires: `check/cpp/export.cpp` does not mark exported Carbon classes trivially copyable even when they are |
-| D3 | File-scope Carbon `var gcount: Cpp.std.atomic(i32);` | compiles, but **links** with `undefined symbol: _Cgcount.Main.1` — global emission for variables whose type is an imported C++ *template specialization* loses the definition (plain imported classes like `std::mutex` are fine, so this is specific to specialization-typed globals in `toolchain/lower/` file-level lowering) |
+| D2 | `Cpp.std.atomic(P)` over a Carbon class `P` | the template _instantiates_ on the Carbon type (export works), but libc++'s `static_assert(is_trivially_copyable<Carbon::P>)` fires: `check/cpp/export.cpp` does not mark exported Carbon classes trivially copyable even when they are |
+| D3 | File-scope Carbon `var gcount: Cpp.std.atomic(i32);` | compiles, but **links** with `undefined symbol: _Cgcount.Main.1` — global emission for variables whose type is an imported C++ _template specialization_ loses the definition (plain imported classes like `std::mutex` are fine, so this is specific to specialization-typed globals in `toolchain/lower/` file-level lowering) |
 
-Workarounds for all three exist today and are pure user-code: spawn via an
+Workarounds for all three exist today and are pure user-code: spawn by way of an
 inline-C++ bridge that calls back through `Carbon::` (D1), keep shared state
 in C++-defined inline globals accessed as `Cpp.name` (D3), and use C++ structs
 for atomic payloads (D2). The producer/consumer program above uses exactly
@@ -124,7 +124,7 @@ these patterns.
     interoperability." Any 0.1 option that is not "adopt the C++ memory model"
     contradicts accepted design.
 -   **Data-race safety is explicitly not a 0.1 problem.**
-    `docs/design/safety/README.md:136` (via p005914) plans *compile-time*
+    `docs/design/safety/README.md:136` (by way of p005914) plans _compile-time_
     data-race enforcement as part of safe Carbon (0.2+), and
     `safety/README.md:154-177` reserves the option of tolerating pure data
     races that are not also temporal-safety bugs. The 0.1 doc must therefore
@@ -141,10 +141,10 @@ these patterns.
 
 ### Interop constraints from the milestone
 
--   The bullet is *interop support*, not language features; native threading
+-   The bullet is _interop support_, not language features; native threading
     is 0.2 (`milestones.md:271`). Options must not smuggle in Carbon-native
     concurrency design.
--   The W8 arbiter (`fork/gap-analysis.md`) requires *executed* interop tests;
+-   The W8 arbiter (`fork/gap-analysis.md`) requires _executed_ interop tests;
     per `fork/process.md` standing rule 2, this bullet flips only when
     conformance programs under `fork/conformance/programs/interop/` PASS.
 -   Exception configuration is a sibling bullet (`milestones.md:178-183`):
@@ -155,7 +155,7 @@ these patterns.
 ### Implementation realities in this toolchain
 
 -   **One `llvm::Module` per mixed file.** Carbon lowering builds its module
-    *from* the Clang `CodeGenerator`'s module when C++ is imported
+    _from_ the Clang `CodeGenerator`'s module when C++ is imported
     (`toolchain/lower/context.cpp:37-47`, `toolchain/lower/lower.cpp:26`,
     `toolchain/lower/file_context.cpp:67`). Clang-generated and
     Carbon-generated IR share one module, one pass pipeline, one target — so
@@ -198,7 +198,7 @@ option:
     0.1 provides no compile-time race detection; that is the 0.2+ safe-Carbon
     design (`safety/README.md:136,154-177`). Dynamic detection is
     Debug+TSan (`safety/README.md:245`).
-3.  **Atomicity is a property of the object's type**, obtained exclusively via
+3.  **Atomicity is a property of the object's type**, obtained exclusively by way of
     imported C++ types (`Cpp.std.atomic(T)`, `Cpp.std.atomic_flag`,
     `Cpp.std.atomic_ref(T)` under C++20). Carbon adds no per-access atomic
     syntax in 0.1 and has no `volatile`.
@@ -225,7 +225,7 @@ option:
 
 ## Options
 
-### Option A: Document-and-conform — adopt the C++ memory model, fix nothing
+### Option A: Document-and-conform - adopt the C++ memory model, fix nothing
 
 **Design sketch.** Ship the design doc above, verbatim workaround patterns
 included, and conformance programs that exercise only the working surface.
@@ -258,7 +258,7 @@ fn Run() -> i32 {
 }
 ```
 
-**C++ interop story.** Everything *is* C++ interop; nothing new is imported
+**C++ interop story.** Everything _is_ C++ interop; nothing new is imported
 or exported. The doc documents D1-D3 as "known limitations" with the bridge
 patterns as the supported idiom.
 
@@ -271,14 +271,14 @@ toolchain changes — nothing in `toolchain/` is touched.
 **Evolution risk vs upstream: minimal.** Upstream has no competing doc (no
 proposal in `proposals/` touches threading; web search finds only the FAQ
 line), and the doc restates what p000175 already committed to. The risk is
-*milestone-lawyering*: an evaluator who writes
+_milestone-lawyering_: an evaluator who writes
 `var t: Cpp.std.thread = ...(callback)` or a global atomic hits D1/D3 and may
 reasonably say the bullet's "support" is not met. The scoreboard would go
 green while the ergonomic floor stays low.
 
 ### Option B: Option A + targeted toolchain fixes for the three verified defects
 
-Everything in A, plus fix D1-D3 so the *obvious* spellings work.
+Everything in A, plus fix D1-D3 so the _obvious_ spellings work.
 
 **Design sketch.** The doc's "limitations" section shrinks to notes; these
 become legal:
@@ -304,7 +304,7 @@ fn Run() -> i32 {
 
 **C++ interop story.**
 
--   D1: map a *concrete, non-generic* Carbon function value to a C++ function
+-   D1: map a _concrete, non-generic_ Carbon function value to a C++ function
     pointer whose pointee signature is the function's exported thunk-free C++
     signature; reuse the reverse-interop machinery that already synthesizes
     `Carbon::F` `FunctionDecl`s (`check/cpp/export.cpp`) and let Clang Sema
@@ -338,14 +338,14 @@ fn Run() -> i32 {
     C-ABI symbol for the callee); this is the riskiest fix because signature
     ABI compatibility must be checked, not assumed.
 
-All three are fork-local patches to the *fork-built* toolchain (decision
+All three are fork-local patches to the _fork-built_ toolchain (decision
 F-005 gives us the build runner); each is small enough to also send upstream.
 
 **Evolution risk vs upstream: low, and convergent.** All three fixes make
 existing general interop machinery more complete — no new syntax, no new
 semantics beyond what upstream's own machinery implies. Upstream is highly
 likely to want each fix (D1 in particular matches
-"minimize bridge code"); upstream landing a different D1 (e.g. via their
+"minimize bridge code"); upstream landing a different D1 (for example by way of their
 lambda work, p003848) would supersede rather than conflict with ours.
 
 ### Option C: Option B + a `Core.Sync` veneer library
@@ -381,13 +381,13 @@ and C++ code sees the same `std::` objects (a `Core.Mutex*` is convertible to
 `std::mutex*` for bridge APIs).
 
 **Implementation cost: M+.** B's cost, plus a new `core/sync.carbon` (~200-400
-lines) with execution tests. No compiler changes beyond B, *but*: `core/`
+lines) with execution tests. No compiler changes beyond B, _but_: `core/`
 currently has no dedicated unit-test suite (gap-analysis, stdlib area
 summary), `Core.Sync` would be the first Core library whose implementation
 imports `Cpp` — a build-graph novelty (`core/BUILD` currently compiles the
 prelude without Clang; wiring `import Cpp` into prelude compilation touches
 `toolchain/check/` driver defaults) — and naming/API choices here are
-*Carbon-native library design*, which the milestone deliberately deferred.
+_Carbon-native library design_, which the milestone deliberately deferred.
 
 **Evolution risk vs upstream: moderate.** Upstream will design native
 threading for 0.2 with committee-level care (async, effects, and data-race
@@ -450,7 +450,7 @@ wrong today. Rejected unless the user wants to pull 0.2 work forward.
 3.  **A is too little** (documents around holes rather than closing them; the
     workaround idioms would calcify into evaluator-visible warts), **C adds
     upstream-divergence risk for sugar** (and quietly starts the 0.2
-    native-threading design a year early via naming decisions), **D is
+    native-threading design a year early by way of naming decisions), **D is
     scope-violating**.
 4.  Sequencing within B: land the doc + conformance programs first (they
     arbitrate A-level function immediately and are pure fork assets), then
@@ -462,7 +462,7 @@ wrong today. Rejected unless the user wants to pull 0.2 work forward.
 ## Dependencies on other workstreams
 
 -   **W1 conformance harness** (done): the runner exists; this area adds the
-    first *multithreaded* execution programs, which must be written for
+    first _multithreaded_ execution programs, which must be written for
     deterministic stdout (join-then-print) under the runner's exact-match
     rule and 30s timeout (`fork/conformance/runner.py`).
 -   **W2 sibling: error handling / exception interop**
@@ -476,7 +476,7 @@ wrong today. Rejected unless the user wants to pull 0.2 work forward.
 -   **W3 safe-Carbon design**: the 0.2 data-race-safety design (p005914's
     provisional Ante-style shared-mutation direction) will layer a type
     system over exactly the model this doc freezes; the doc must keep its
-    "races are UB" wording forward-compatible (it describes 0.1 *Permissive*
+    "races are UB" wording forward-compatible (it describes 0.1 _Permissive_
     Carbon, not the eventual Strict mode).
 -   **W8 interop frontier**: D1/D2/D3 fixes live in the same files W8 will
     churn (`check/cpp/export.cpp`, `type_mapping.cpp`, lower globals);

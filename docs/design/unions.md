@@ -565,7 +565,7 @@ are implemented, they must lower onto the storage specified here.
 
 These points were open questions in the design sprint; they are decided here as
 part of the accepted design (decision
-[F-007](/fork/decision-log.md#f-007-unions--native-union-declaration-2026-07-19)),
+[F-007](/fork/decision-log.md#f-007-unions---native-union-declaration-2026-07-19)),
 and every sub-decision below was ratified by the user through the fork's
 decision process, recorded in [fork/decision-log.md](/fork/decision-log.md).
 
@@ -631,7 +631,7 @@ decision process, recorded in [fork/decision-log.md](/fork/decision-log.md).
 Two alternatives were considered and rejected at the design fork; the full
 analysis is in the [option paper](/fork/design-sprint/unions.md) and the
 decision is recorded as
-[F-007](/fork/decision-log.md#f-007-unions--native-union-declaration-2026-07-19):
+[F-007](/fork/decision-log.md#f-007-unions---native-union-declaration-2026-07-19):
 
 -   **An untyped `Core.Storage(size, align)` primitive only** (the other
     primitive sanctioned by
@@ -651,6 +651,6 @@ decision is recorded as
 -   Upstream discussion
     [#1907: Checked unions in debug builds](https://github.com/carbon-language/carbon-lang/discussions/1907)
 -   Fork decision
-    [F-007: Unions — native `union` declaration](/fork/decision-log.md#f-007-unions--native-union-declaration-2026-07-19)
+    [F-007: Unions — native `union` declaration](/fork/decision-log.md#f-007-unions---native-union-declaration-2026-07-19)
     and the [design-sprint option paper](/fork/design-sprint/unions.md)
 -   [Sum types](sum_types.md) and [Safety](safety/README.md)

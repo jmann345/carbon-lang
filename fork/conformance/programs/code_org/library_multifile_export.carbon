@@ -1,3 +1,7 @@
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 // CONFORMANCE-BULLET: Code organization: Libraries
 // SKIP: harness limitation, not a feature gap: user-written named libraries (`library "x";` api + `impl library "x";`), `export C;`, and `export import library "x";` need multiple compilation units, but runner.py compiles exactly one file per program; this slice is arbitrated by golden checks in toolchain/check/testdata/packages/ (export_name.carbon, export_import.carbon, fail_duplicate_api.carbon, fail_api_not_found.carbon).
 //

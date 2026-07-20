@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#
+# Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+# Exceptions. See /LICENSE for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 # Part of jmann345's carbon-lang fork tooling (see /fork/rulebook.md R12).
 #
 # PostToolUse hook on Edit|Write: enforce deterministic repo invariants

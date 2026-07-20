@@ -20,10 +20,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     -   [Syntax space already consumed](#syntax-space-already-consumed)
 -   [Shared interop machinery (used by every option)](#shared-interop-machinery-used-by-every-option)
 -   [Options](#options)
-    -   [Option A: Library-only — `Core.Result` + `match`, no new syntax](#option-a-library-only--coreresult--match-no-new-syntax)
-    -   [Option B: `Core.Result` + postfix `?` propagation via a `Core.Try` interface](#option-b-coreresult--postfix--propagation-via-a-coretry-interface)
+    -   [Option A: Library-only - `Core.Result` + `match`, no new syntax](#option-a-library-only---coreresult--match-no-new-syntax)
+    -   [Option B: `Core.Result` + postfix `?` propagation by way of a `Core.Try` interface](#option-b-coreresult--postfix--propagation-by-way-of-a-coretry-interface)
     -   [Option C: Declared-fallibility signatures with `try`/`catch` sugar over values](#option-c-declared-fallibility-signatures-with-trycatch-sugar-over-values)
-    -   [Option D: Native exceptions — Carbon `throw`/`catch` on Itanium unwinding](#option-d-native-exceptions--carbon-throwcatch-on-itanium-unwinding)
+    -   [Option D: Native exceptions - Carbon `throw`/`catch` on Itanium unwinding](#option-d-native-exceptions---carbon-throwcatch-on-itanium-unwinding)
 -   [Recommendation](#recommendation)
 -   [Dependencies on other workstreams](#dependencies-on-other-workstreams)
 -   [Open questions for the user (beyond option choice)](#open-questions-for-the-user-beyond-option-choice)
@@ -86,7 +86,7 @@ placeholders" (replaces `docs/design/README.md` §Error handling).
 
 ### A note on "issue #686"
 
-The task brief referenced "issue #686 leads' direction". In-repo evidence
+The task brief referenced "issue #686 leads' direction". In-repository evidence
 shows upstream carbon-lang #686 is "Operation order in struct/class
 assignment/initialization" (cited in `docs/design/assignment.md:164`) —
 unrelated. Web-searchable upstream error-handling discussion consists of
@@ -103,7 +103,7 @@ operator" (`docs/project/principles/error_handling.md:44-47`).
 
 From `docs/project/goals.md` and accepted principles:
 
--   **Errors are values** (p000301): recoverable failure is reported via a sum
+-   **Errors are values** (p000301): recoverable failure is reported by way of a sum
     type in the return position; no implicit propagation; no
     `noexcept`/`throws`-style effect annotations — fallibility lives in the
     return type. Any option violating this needs the user to knowingly
@@ -131,7 +131,7 @@ The three interop bullets impose an asymmetric shape:
 
 -   **Both dialects**: the design must be coherent when the C++ side is built
     `-fno-exceptions` (throwing is impossible; error channels are
-    `std::expected`-shaped types, error codes, or abort) *and* when it is
+    `std::expected`-shaped types, error codes, or abort) _and_ when it is
     standard C++ (any non-`noexcept` function may throw).
 -   **Import direction is "automatic"**: calling throwing C++ must land in
     Carbon's error handling without hand-written bridge per call.
@@ -152,7 +152,7 @@ Verified against the tree; these drive the cost estimates below:
 -   **The lexer already reserves `?` tokens — for a different feature.**
     `toolchain/lex/token_kind.def:62,67,103` defines `->?`
     (`MinusGreaterQuestion`), `:?` (`ColonQuestion`), and bare `?`
-    (`Question`). `->?` and `:?` are consumed by the *expression forms*
+    (`Question`). `->?` and `:?` are consumed by the _expression forms_
     feature (p005545, p005434): `fn F() ->? form(...)` return forms
     (`toolchain/parse/handle_function.cpp:28-31`,
     `toolchain/parse/typed_nodes.h:546-553`) and `name:? Form` bindings
@@ -186,7 +186,7 @@ Verified against the tree; these drive the cost estimates below:
     (`toolchain/install/`).
 -   **Nothing in lowering understands unwinding.** Adding real EH (Option D)
     means `invoke`/landingpad/personality emission in
-    `toolchain/lower/function_context.*` and `handle_call.cpp`, *plus*
+    `toolchain/lower/function_context.*` and `handle_call.cpp`, _plus_
     modeling destructor cleanups on unwind paths — a concept SemIR does not
     have at all today.
 
@@ -218,11 +218,11 @@ in what the Carbon-side surface looks like. Describing it once:
     `toolchain/check/cpp/thunk.cpp`, when the callee is potentially-throwing
     (non-`noexcept` per the Clang `FunctionProtoType`) and the mode is
     `catch`, generate the C++-side thunk as either:
-    -   *fenced* (default): thunk body wrapped in
+    -   _fenced_ (default): thunk body wrapped in
         `try { ... } catch (...) { __carbon_boundary_terminate(); }` — a
         defined, documented terminate at the boundary (this is also what
         upstream's philosophy doc floor permits), or
-    -   *catching* (when the Carbon call-site requests the error): thunk gets
+    -   _catching_ (when the Carbon call-site requests the error): thunk gets
         an extra out-param slot; `catch (...)` captures
         `std::current_exception()` into a `Cpp.Exception` payload and returns
         a discriminant. The Carbon side sees `Result(T, Cpp.Exception)` (or
@@ -238,7 +238,7 @@ in what the Carbon-side surface looks like. Describing it once:
 
 ## Options
 
-### Option A: Library-only — `Core.Result` + `match`, no new syntax
+### Option A: Library-only - `Core.Result` + `match`, no new syntax
 
 Ship the vocabulary type and pattern matching; add **no** dedicated control
 flow. This is upstream's literal status quo direction ("errors are
@@ -266,8 +266,8 @@ fn ReadConfig(name: str) -> Result(Config, IoError) {
 }
 ```
 
-C++ interop story: the shared machinery above, with *catching* imports
-surfaced as an explicit wrapper the user must name (e.g.
+C++ interop story: the shared machinery above, with _catching_ imports
+surfaced as an explicit wrapper the user must name (for example
 `Cpp.catching(Cpp.f)(args)` yielding `Result(T, Cpp.Exception)`); exports map
 `Result` to `Carbon::expected`. Nothing at the call-site is lighter than a
 full `match`.
@@ -281,11 +281,11 @@ exactly the readability failure p000301 warns about, and an evaluator
 comparing against Rust/Swift will notice immediately. The floor, not a
 destination.
 
-### Option B: `Core.Result` + postfix `?` propagation via a `Core.Try` interface
+### Option B: `Core.Result` + postfix `?` propagation by way of a `Core.Try` interface
 
 Option A plus the single control-flow construct upstream's own principle doc
 names: a postfix `?` operator that unwraps success or early-returns the
-failure, made open via an interface so `Optional` and user types participate
+failure, made open by way of an interface so `Optional` and user types participate
 (Rust's `Try` trait, adapted to Carbon's interface style).
 
 Design sketch:
@@ -319,7 +319,7 @@ Use:
 ```carbon
 fn ReadConfig(name: str) -> Result(Config, IoError) {
   // `Open(name)?` is `Open(name)` unwrapped, or an early
-  // `return .Failure(e')` where `e'` converts via `FromBreak`/`ImplicitAs`.
+  // `return .Failure(e')` where `e'` converts by way of `FromBreak`/`ImplicitAs`.
   var f: File = Open(name)?;
   var c: Config = Parse(f)?;
   return .Success(c);
@@ -346,9 +346,9 @@ C++ interop story: the strongest of the four, because `?` gives the
 
 -   **Calling throwing C++**: in `catch` mode, applying `?` (or binding into a
     `Result`) at a call to a potentially-throwing C++ function makes check
-    request the *catching* thunk; the call becomes
+    request the _catching_ thunk; the call becomes
     `Result(T, Cpp.Exception)` and `?` propagates it like any Carbon error.
-    Without `?`/`Result` consumption, the *fenced* thunk applies —
+    Without `?`/`Result` consumption, the _fenced_ thunk applies —
     exceptions never unwind Carbon frames, so Carbon `Destroy` cleanups are
     never skipped. In `none` mode, `?` on a C++ call is a compile error
     ("callee cannot fail under -fno-exceptions").
@@ -366,7 +366,7 @@ Implementation cost in this toolchain: **M** overall, layered:
 -   check: one new handler (pattern: `handle_operator.cpp`'s short-circuit
     branching, `control_flow.h` helpers), interface plumbing like existing
     operator interfaces (`toolchain/check/operator.h` +
-    `core/prelude/operators/`), error-conversion via existing `ImplicitAs`
+    `core/prelude/operators/`), error-conversion by way of existing `ImplicitAs`
     machinery in `convert.cpp`. **M**.
 -   sem_ir/lower: nothing new — desugars to existing branch/return insts that
     already lower and execute.
@@ -418,7 +418,7 @@ Semantics: `T or E` is compiler-known sugar for (and interconvertible with) a
 expression-level unwrap-or-handle (subsuming part of the if-let/let-else
 area). `return c` auto-wraps success — the main ergonomic delta over B.
 
-C++ interop story: identical machinery to B; arguably a *cleaner* import
+C++ interop story: identical machinery to B; arguably a _cleaner_ import
 mapping — a potentially-throwing C++ `T f()` imports directly as
 `fn f() -> T or Cpp.Exception` in `catch` mode. Export of `-> T or E`
 produces the same `Carbon::expected<T, E>`.
@@ -436,12 +436,12 @@ sibling paper) and must be co-designed.
 
 Evolution risk vs upstream: **medium-high**. Upstream has zero signal toward
 signature-level sugar; its written direction is B. `-> T or E` is arguably
-still "in the return type" per p000301, but `try`-at-call-site as *required*
+still "in the return type" per p000301, but `try`-at-call-site as _required_
 syntax is a bigger commitment upstream never discussed. If upstream later
 lands `Result`+`?`, migrating C-fork code back is a mechanical but pervasive
 rewrite of signatures and call sites.
 
-### Option D: Native exceptions — Carbon `throw`/`catch` on Itanium unwinding
+### Option D: Native exceptions - Carbon `throw`/`catch` on Itanium unwinding
 
 For completeness (the interop-maximalist position): give Carbon real
 exceptions sharing the C++ ABI's unwinder, so C++ exceptions propagate
@@ -495,7 +495,7 @@ because it is viable for this fork's F-002 merge-gating model.
     subsystems the audit rates as the most mature and best tested.
 3.  **It degrades gracefully around the W4/W5 bottleneck.** Stage order:
     -   **B0 (now, size S, no dependencies):** `--cpp-exceptions` mode flag +
-        *fenced* thunks — defined terminate-at-boundary behavior in both
+        _fenced_ thunks — defined terminate-at-boundary behavior in both
         dialects. This alone closes milestone bullet 2 and turns today's UB
         into a documented contract; it is also a prerequisite for honest
         conformance tests of everything else.
@@ -508,9 +508,9 @@ because it is viable for this fork's F-002 merge-gating model.
         bullets 3 and 4.
 4.  **Option C's ergonomic wins (auto-wrap on `return`, `catch` expression)
     remain reachable later** as sugar over B's semantics; B is
-    forward-compatible with C but not vice versa.
+    forward-compatible with C but not the other way around.
 
-Reject A alone (fails bullet 1 in spirit). Reject C as the *initial*
+Reject A alone (fails bullet 1 in spirit). Reject C as the _initial_
 commitment (2-3x B's cost through signature plumbing, medium-high upstream
 divergence, couples to the unfinished if-let/let-else design). Reject D
 outright (contradicts an accepted principle, XL lowering cost, permanent
@@ -568,7 +568,7 @@ merge-conflict surface).
     explicitly defer post-0.1 (recommended: defer; record in decision log).
 9.  **Panic vs error split.** Unrecoverable failures are out of scope here,
     but the boundary doc must define what a Carbon abort does with C++
-    frames on the stack (and vice versa) — here or in the safety workstream.
+    frames on the stack (and the other way around) — here or in the safety workstream.
 
 ## References
 

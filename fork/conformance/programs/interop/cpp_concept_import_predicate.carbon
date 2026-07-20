@@ -1,3 +1,7 @@
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 // CONFORMANCE-BULLET: Generics: C++ interop — C++20 concepts <-> named predicates mapping
 // EXPECT-EXIT: 0
 // EXPECT-STDOUT:

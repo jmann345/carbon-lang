@@ -1,5 +1,11 @@
 # W4 Slice 1 implementation plan: `match` statement (integer scrutinee, integer-literal cases, `default`)
 
+<!--
+Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+Exceptions. See /LICENSE for license information.
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
 Status: PLAN (trial run, process step 5). Author context: fork/process.md +
 fork/rulebook.md loaded; design authority docs/design/pattern_matching.md and
 docs/design/control_flow/. Work item: fork/inventory/work-items.json W4 entry
@@ -8,7 +14,7 @@ docs/design/control_flow/. Work item: fork/inventory/work-items.json W4 entry
 ## 0. Slice boundary (restated as checkable behavior)
 
 In slice: `match (<int-expr>) { case <int-literal> => { ... } ... default => { ... } }`
-as a *statement*. Everything else — binding patterns, tuple patterns,
+as a _statement_. Everything else — binding patterns, tuple patterns,
 `unused`/`var` patterns, guards (`if (...)`), choice/variant patterns, missing
 `default`, non-integer scrutinee — must keep producing a clean
 `semantics TODO: ...` error (Context::TODO → emit + return false, which aborts
@@ -55,7 +61,7 @@ CARBON_FATAL / CHECK-fail without pattern-context setup
 (FullPatternStack::Kind::NotInEitherParamList → "Unreachable",
 handle_binding_pattern.cpp:451-452). Because the traversal is postorder,
 pattern nodes are visited BEFORE MatchCase — the abort decision must be made at
-MatchCaseIntroducer, via parse-tree lookahead (see §3, H5).
+MatchCaseIntroducer, by way of parse-tree lookahead (see §3, H5).
 
 Error-recovery trees never reach these handlers: any node with has_error makes
 ProcessNodeIds emit "handle invalid parse trees in `check`" and abort
@@ -68,16 +74,16 @@ All Match* node kinds currently sit in the `Id::Kind::Invalid` group of
 `NodeStack::NodeKindToIdKindSpecialCases` (toolchain/check/node_stack.h:516-529)
 — pushing any of them CHECK-fails. Move:
 
-- → `Id::KindFor<SemIR::InstId>` group (with CallExprStart, node_stack.h:417):
-  `MatchCondition`, `MatchStatementStart`, `MatchHandler` (payload: scrutinee value).
-- → `Id::KindFor<SemIR::InstBlockId>` group (with IfCondition, node_stack.h:427):
-  `MatchCase` (payload: the arm's else/next-test block).
-- → `Id::Kind::None` (solo) group (with CodeBlockStart, node_stack.h:456):
-  `MatchCaseIntroducer`, `MatchHandlerStart`, `MatchDefault`.
-- Stay `Invalid` (never pushed): `MatchIntroducer`, `MatchConditionStart`,
-  `MatchDefaultIntroducer`, `MatchCaseGuardIntroducer`, `MatchCaseGuardStart`,
-  `MatchCaseGuard` (guard kinds stay TODO stubs), `MatchFirstIntroducer`
-  (unrelated feature, untouched).
+-   → `Id::KindFor<SemIR::InstId>` group (with CallExprStart, node_stack.h:417):
+    `MatchCondition`, `MatchStatementStart`, `MatchHandler` (payload: scrutinee value).
+-   → `Id::KindFor<SemIR::InstBlockId>` group (with IfCondition, node_stack.h:427):
+    `MatchCase` (payload: the arm's else/next-test block).
+-   → `Id::Kind::None` (solo) group (with CodeBlockStart, node_stack.h:456):
+    `MatchCaseIntroducer`, `MatchHandlerStart`, `MatchDefault`.
+-   Stay `Invalid` (never pushed): `MatchIntroducer`, `MatchConditionStart`,
+    `MatchDefaultIntroducer`, `MatchCaseGuardIntroducer`, `MatchCaseGuardStart`,
+    `MatchCaseGuard` (guard kinds stay TODO stubs), `MatchFirstIntroducer`
+    (unrelated feature, untouched).
 
 The table is consteval-checked, so a miscategorized kind is a compile error,
 not a runtime surprise.
@@ -98,7 +104,7 @@ H3 `MatchCondition` — pop the scrutinee expr
 (`node_stack().PopExpr()`), `ConvertToValueOrRefExpr` (loop_statement.cpp:181
 precedent: "so that we can use it multiple times"). Slice gate: if
 `!context.types().TryGetIntTypeInfo(type_id)` (sem_ir/type.cpp:170 — sees
-through the `i32`/`u32` class adapters via object repr, and accepts
+through the `i32`/`u32` class adapters by way of object repr, and accepts
 `Core.IntLiteral`) → `return context.TODO(node_id, "match on non-integer scrutinee")`.
 Then `AddAndDiscardTemporaryCleanups` (mirror IfCondition; safe because integer
 values have no cleanups). Push `(MatchCondition, scrutinee_inst_id)`.
@@ -291,7 +297,7 @@ handler assumes unprepared context can run.** Concretely:
 
 Because TODO returns false and ProcessNodeIds aborts the file, leftover
 node/inst-block/scope stack state is irrelevant — this is the established
-pattern for every existing mid-construct TODO (e.g. today's
+pattern for every existing mid-construct TODO (for example today's
 HandleMatchIntroducer abort inside a function body). The guard-node stubs
 (H6-H8) remain as unreachable backstops.
 
@@ -303,14 +309,14 @@ must quote them (rulebook R10).
 Searched all of toolchain/*/testdata for match statements and for the
 `HandleMatchIntroducer` TODO text. Exactly **one** existing golden changes:
 
-1. `/home/user/w4-match/toolchain/check/testdata/patterns/unused.carbon`
-   (split-file `fail_todo_match.carbon`, lines 162-176): today expects
-   `error: semantics TODO: \`HandleMatchIntroducer\`` at the `match (f(x))`
-   line (col 3). After slice 1, MatchIntroducer/Condition succeed (scrutinee
-   `f(x)` is i32) and the abort moves to the first `case` (its pattern is
-   `unused var (a: i32, b: i32)`): message becomes the H5 pattern TODO,
-   location the `case` token (line 169 col 5). CHECK:STDERR block and its
-   [[@LINE+n]] offsets must be regenerated/hand-updated.
+1.  `/home/user/w4-match/toolchain/check/testdata/patterns/unused.carbon`
+    (split-file `fail_todo_match.carbon`, lines 162-176): today expects
+    `error: semantics TODO: \`HandleMatchIntroducer\`` at the `match (f(x))`
+    line (col 3). After slice 1, MatchIntroducer/Condition succeed (scrutinee
+    `f(x)` is i32) and the abort moves to the first `case` (its pattern is
+    `unused var (a: i32, b: i32)`): message becomes the H5 pattern TODO,
+    location the `case` token (line 169 col 5). CHECK:STDERR block and its
+    [[@LINE+n]] offsets must be regenerated/hand-updated.
 
 Not affected: `toolchain/check/testdata/match_first/*` (unrelated
 `match_first` impl-prioritization feature); all parse/testdata/match/* (parse
@@ -318,96 +324,97 @@ untouched); no lower testdata mentions match; no other check testdata contains
 a `match (` statement (verified by grep).
 
 New goldens to ADD (all with AUTOUPDATE):
-- `toolchain/check/testdata/match/basic.carbon` — 3-arm shape of §4.
-- `toolchain/check/testdata/match/default_only.carbon`, `nested.carbon`,
-  `converging_arms.carbon` (arms without return; statement after match),
-  `constant_scrutinee.carbon` (`match (3)`, IntLiteral-typed scrutinee).
-- `toolchain/check/testdata/match/fail_todo_binding_pattern.carbon`,
-  `fail_todo_guard.carbon`, `fail_todo_no_default.carbon`,
-  `fail_todo_non_int_scrutinee.carbon`, `fail_todo_non_int_literal_case.carbon`
-  (float/bool/negative literal cases).
-- `toolchain/lower/testdata/match/basic.carbon` — locks the "no lower changes"
-  claim as an executable golden (icmp eq + br chain).
+
+-   `toolchain/check/testdata/match/basic.carbon` — 3-arm shape of §4.
+-   `toolchain/check/testdata/match/default_only.carbon`, `nested.carbon`,
+    `converging_arms.carbon` (arms without return; statement after match),
+    `constant_scrutinee.carbon` (`match (3)`, IntLiteral-typed scrutinee).
+-   `toolchain/check/testdata/match/fail_todo_binding_pattern.carbon`,
+    `fail_todo_guard.carbon`, `fail_todo_no_default.carbon`,
+    `fail_todo_non_int_scrutinee.carbon`, `fail_todo_non_int_literal_case.carbon`
+    (float/bool/negative literal cases).
+-   `toolchain/lower/testdata/match/basic.carbon` — locks the "no lower changes"
+    claim as an executable golden (icmp eq + br chain).
 
 ## 7. Conformance suite impact (fork/conformance/programs/)
 
-- `control_flow/match_switch.carbon` (bullet "Control flow: matching — good
-  switch equivalents"): currently SKIP citing the HandleMatchIntroducer stub.
-  Its middle arm `case a: i32 if (a < 0)` is out of slice. Recommendation
-  (log per process step 4, scope trade): rewrite arms to slice-1 form —
-  probes (0, 1, 42), `case 0 => 10`, `case 1 => 20`, `default => 30`, EXPECT
-  updated — literal cases + default is the honest C `switch` equivalent
-  (C switch has no guards), then remove SKIP → scoreboard bullet flips PASS
-  (R9). Guard/binding coverage moves to a new SKIP program
-  (`match_guard_binding.carbon`) citing the H5 TODO text verbatim (R10, R6:
-  sketch must at least parse-compile).
-- `project/most_features_missing_match.carbon`: identical structure and same
-  out-of-slice guard arm; same treatment (rewrite arms + un-SKIP), or keep
-  SKIP with evidence updated to the H5 TODO string. Recommend rewrite+un-SKIP;
-  decision-log entry.
-- `control_flow/match_sum_type_payload.carbon`: stays SKIP (choice payloads =
-  W5), but its SKIP text cites "every check handler ... is a context.TODO
-  stub" — must be updated to the new exact blocking evidence (H5 pattern TODO
-  + choice payload gaps) per R10.
-- Run `runner.py --self-test` before commit (R7); regenerate scoreboard with a
-  private --out dir (R5); update fork/inventory/work-items.json W4 item state.
+-   `control_flow/match_switch.carbon` (bullet "Control flow: matching — good
+    switch equivalents"): currently SKIP citing the HandleMatchIntroducer stub.
+    Its middle arm `case a: i32 if (a < 0)` is out of slice. Recommendation
+    (log per process step 4, scope trade): rewrite arms to slice-1 form —
+    probes (0, 1, 42), `case 0 => 10`, `case 1 => 20`, `default => 30`, EXPECT
+    updated — literal cases + default is the honest C `switch` equivalent
+    (C switch has no guards), then remove SKIP → scoreboard bullet flips PASS
+    (R9). Guard/binding coverage moves to a new SKIP program
+    (`match_guard_binding.carbon`) citing the H5 TODO text verbatim (R10, R6:
+    sketch must at least parse-compile).
+-   `project/most_features_missing_match.carbon`: identical structure and same
+    out-of-slice guard arm; same treatment (rewrite arms + un-SKIP), or keep
+    SKIP with evidence updated to the H5 TODO string. Recommend rewrite+un-SKIP;
+    decision-log entry.
+-   `control_flow/match_sum_type_payload.carbon`: stays SKIP (choice payloads =
+    W5), but its SKIP text cites "every check handler ... is a context.TODO
+    stub" — must be updated to the new exact blocking evidence (H5 pattern TODO
+    -   choice payload gaps) per R10.
+-   Run `runner.py --self-test` before commit (R7); regenerate scoreboard with a
+    private --out dir (R5); update fork/inventory/work-items.json W4 item state.
 
 ## 8. Files touched (complete list)
 
-- `toolchain/check/handle_match.cpp` — implement H1-H5, H9-H14; keep H6-H8 stubs.
-- `toolchain/check/node_stack.h` — recategorize 6 match node kinds (§2).
-- `toolchain/sem_ir/inst_namer.cpp` — optional block labels (§4).
-- `toolchain/check/testdata/patterns/unused.carbon` — golden update (§6).
-- `toolchain/check/testdata/match/*` + `toolchain/lower/testdata/match/basic.carbon` — new.
-- `fork/conformance/programs/control_flow/match_switch.carbon`,
-  `fork/conformance/programs/project/most_features_missing_match.carbon`,
-  `fork/conformance/programs/control_flow/match_sum_type_payload.carbon`,
-  plus new `match_guard_binding.carbon` — §7.
-- `fork/inventory/work-items.json`, `fork/decision-log.md` (scope-trade entry),
-  `fork/conformance/out/scoreboard.json` (regenerated).
+-   `toolchain/check/handle_match.cpp` — implement H1-H5, H9-H14; keep H6-H8 stubs.
+-   `toolchain/check/node_stack.h` — recategorize 6 match node kinds (§2).
+-   `toolchain/sem_ir/inst_namer.cpp` — optional block labels (§4).
+-   `toolchain/check/testdata/patterns/unused.carbon` — golden update (§6).
+-   `toolchain/check/testdata/match/*` + `toolchain/lower/testdata/match/basic.carbon` — new.
+-   `fork/conformance/programs/control_flow/match_switch.carbon`,
+    `fork/conformance/programs/project/most_features_missing_match.carbon`,
+    `fork/conformance/programs/control_flow/match_sum_type_payload.carbon`,
+    plus new `match_guard_binding.carbon` — §7.
+-   `fork/inventory/work-items.json`, `fork/decision-log.md` (scope-trade entry),
+    `fork/conformance/out/scoreboard.json` (regenerated).
 
 No changes to: toolchain/parse/*, toolchain/lower/* (source),
 toolchain/sem_ir/* except optional inst_namer, any BUILD file.
 
 ## 9. Risk list
 
-1. **No local build; goldens cannot be autoupdated locally.** The
-   unused.carbon edit and all new goldens must be produced via the CI
-   file_test autoupdate path (or hand-written CHECK lines and reconciled on
-   first CI run). This is the single most likely source of a red first CI run
-   — plan for one golden-reconciliation commit; candidate rulebook rule.
-2. **Node-stack discipline bugs** (wrong Peek kind at arm boundaries,
-   MatchDefault entry left/popped asymmetrically) manifest as CHECK failures in
-   file_test, not diagnostics. Mitigation: the §6 testdata matrix deliberately
-   exercises first-arm/later-arm/default-only/nested/sequential-match paths;
-   both adversarial reviewers should re-derive the stack trace tables in §3.
-3. **Lookahead novelty**: H5's `NodeId(index+1)` peek has precedent in parse
-   (tree.cpp:83) but is new in check handlers. It relies only on immutable
-   postorder layout, not traversal order; NodeIdTraversal's deferred-definition
-   reordering never applies inside a match (no deferred definitions there).
-   Reviewer instruction: attack this assumption specifically.
-4. **Temporary/cleanup semantics** are only trivially correct because the slice
-   is integers (no destroy fns, by-value repr). H3's early
-   AddAndDiscardTemporaryCleanups and the absence of per-case temporary cleanup
-   are NOT correct for class-typed scrutinees — the H3 integer gate is what
-   makes this sound. Future slices must revisit before widening the gate.
-5. **Missing usefulness/redundancy diagnostics**: design
-   (pattern_matching.md §"Refutability, overlap, usefulness") requires errors
-   for never-matching cases (e.g. duplicate `case 0`); slice 1 accepts them
-   (runtime first-match-wins is still correct). Deviation must be recorded as
-   a follow-up work item, not silently.
-6. **`match (n)` with errored scrutinee** (ErrorInst type) hits the H3 TODO,
-   adding a second diagnostic after the real one. Noisy but safe; golden for
-   this case optional.
-7. **Upstream collision** (standing rule 5): upstream lands features weekly and
-   match checking is an obvious target; before implementation starts, check
-   upstream carbon-language/carbon for in-flight match-check PRs to avoid
-   re-implementing a merge.
-8. **Conformance rewrite trade-off**: replacing the guard arm in two programs
-   narrows what the PASS asserts. Mitigated by the new guard SKIP program and a
-   decision-log entry; reviewer #2's "SKIP hides working behavior / PASS hides
-   narrowed coverage" lens applies.
-9. **`Peek<Kind>` API assumption**: H9/H13 rely on NodeStack::Peek<NodeKind>
-   (node_stack.h:315) returning the mapped id of the top entry and on
-   PopAndDiscardSoloNodeIdIf (node_stack.h:178). Both exist today; if upstream
-   merge churns node_stack.h, re-verify signatures before CI.
+1.  **No local build; goldens cannot be autoupdated locally.** The
+    unused.carbon edit and all new goldens must be produced by way of the CI
+    file_test autoupdate path (or hand-written CHECK lines and reconciled on
+    first CI run). This is the single most likely source of a red first CI run
+    — plan for one golden-reconciliation commit; candidate rulebook rule.
+2.  **Node-stack discipline bugs** (wrong Peek kind at arm boundaries,
+    MatchDefault entry left/popped asymmetrically) manifest as CHECK failures in
+    file_test, not diagnostics. Mitigation: the §6 testdata matrix deliberately
+    exercises first-arm/later-arm/default-only/nested/sequential-match paths;
+    both adversarial reviewers should re-derive the stack trace tables in §3.
+3.  **Lookahead novelty**: H5's `NodeId(index+1)` peek has precedent in parse
+    (tree.cpp:83) but is new in check handlers. It relies only on immutable
+    postorder layout, not traversal order; NodeIdTraversal's deferred-definition
+    reordering never applies inside a match (no deferred definitions there).
+    Reviewer instruction: attack this assumption specifically.
+4.  **Temporary/cleanup semantics** are only trivially correct because the slice
+    is integers (no destroy fns, by-value repr). H3's early
+    AddAndDiscardTemporaryCleanups and the absence of per-case temporary cleanup
+    are NOT correct for class-typed scrutinees — the H3 integer gate is what
+    makes this sound. Future slices must revisit before widening the gate.
+5.  **Missing usefulness/redundancy diagnostics**: design
+    (pattern_matching.md §"Refutability, overlap, usefulness") requires errors
+    for never-matching cases (for example duplicate `case 0`); slice 1 accepts them
+    (runtime first-match-wins is still correct). Deviation must be recorded as
+    a follow-up work item, not silently.
+6.  **`match (n)` with errored scrutinee** (ErrorInst type) hits the H3 TODO,
+    adding a second diagnostic after the real one. Noisy but safe; golden for
+    this case optional.
+7.  **Upstream collision** (standing rule 5): upstream lands features weekly and
+    match checking is an obvious target; before implementation starts, check
+    upstream carbon-language/carbon for in-flight match-check PRs to avoid
+    re-implementing a merge.
+8.  **Conformance rewrite trade-off**: replacing the guard arm in two programs
+    narrows what the PASS asserts. Mitigated by the new guard SKIP program and a
+    decision-log entry; reviewer #2's "SKIP hides working behavior / PASS hides
+    narrowed coverage" lens applies.
+9.  **`Peek<Kind>` API assumption**: H9/H13 rely on NodeStack::Peek<NodeKind>
+    (node_stack.h:315) returning the mapped id of the top entry and on
+    PopAndDiscardSoloNodeIdIf (node_stack.h:178). Both exist today; if upstream
+    merge churns node_stack.h, re-verify signatures before CI.

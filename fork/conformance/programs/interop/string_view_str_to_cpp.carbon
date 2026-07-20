@@ -1,3 +1,7 @@
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 // CONFORMANCE-BULLET: Stdlib C++ interop: transparent non-owning string mapping
 // EXPECT-EXIT: 0
 // EXPECT-STDOUT:

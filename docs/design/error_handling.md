@@ -375,7 +375,7 @@ impl IoError as Core.ImplicitAs(AppError) {
 }
 
 fn Load(name: str) -> Core.Result(Config, AppError) {
-  // `Open` fails with `IoError`; `?` converts it via `ImplicitAs(AppError)`.
+  // `Open` fails with `IoError`; `?` converts it by way of `ImplicitAs(AppError)`.
   var f: File = Open(name)?;
   ...
 }
@@ -537,7 +537,7 @@ ReturnT __carbon_thunk__f(Args... args) {
 ```
 
 If an exception reaches the fence, the program prints a diagnostic identifying
-the boundary and terminates via `std::terminate`. This is a **defined,
+the boundary and terminates by way of `std::terminate`. This is a **defined,
 documented** behavior — the language-boundary analog of an exception escaping
 a `noexcept` C++ function — and replaces the undefined behavior of unwinding
 through frames with no unwind support. Termination is not an error-handling
@@ -732,7 +732,7 @@ for every stage.
 | Stage  | Contents                                                                                        | Depends on                                                                                                                                                     |
 | ------ | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **B0** | `--cpp-exceptions` option; fenced thunks; boundary terminate semantics                           | Nothing — implementable now; replaces today's undefined behavior                                                                                                |
-| **B1** | `Core.Result` in the prelude; consumption via `match` (and F-011 forms when they land)           | `match` semantics and choice-alternative payloads, both currently unimplemented in check; `Core.Optional` rebuilt as a payload-carrying choice type (see below) |
+| **B1** | `Core.Result` in the prelude; consumption by way of `match` (and F-011 forms when they land)           | `match` semantics and choice-alternative payloads, both currently unimplemented in check; `Core.Optional` rebuilt as a payload-carrying choice type (see below) |
 | **B2** | Postfix `?`; `Core.Try`; `ImplicitAs` error conversion; `Run` `Result` signatures                | B1                                                                                                                                                              |
 | **B3** | Catching thunks; `Cpp.Exception` synthesis into the `Cpp` package; `Carbon::expected` export and support header | B0-B2                                                                                                                                                           |
 

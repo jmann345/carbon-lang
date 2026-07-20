@@ -1,3 +1,7 @@
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 // Differential C++17 equivalent of arith_widths_diff.carbon. printf("%d\n",
 // ...) mirrors Core.Print's exact lowering (toolchain/lower/handle_call.cpp:
 // printf with the "%d\n" format string, argument sign-extended-or-truncated

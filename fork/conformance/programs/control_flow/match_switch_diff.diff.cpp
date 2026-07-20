@@ -1,3 +1,7 @@
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 // Differential C++17 equivalent of match_switch_diff.carbon: the honest
 // literal `switch` counterpart of the Carbon `match` — same cases, same
 // default, same probe values. printf("%d\n", ...) mirrors Core.Print's

@@ -20,7 +20,7 @@ configuration: the embedded Clang compiles C++ with exceptions on while
 Carbon frames have no unwind support, so a C++ exception crossing the
 boundary is undefined behavior today and `Destroy` cleanups are silently
 skipped. Options: **A** library-only `Core.Result` + `match`; **B**
-Result + postfix `?` propagation via a `Core.Try` interface; **C**
+Result + postfix `?` propagation by way of a `Core.Try` interface; **C**
 declared-fallibility signatures (`fn F() -> T or E` with `try`/`catch`
 sugar); **D** native exceptions on Itanium unwinding.
 **Recommendation: Option B, staged** — B0 (size S, no dependencies,
@@ -66,8 +66,9 @@ library (M+); **D** Carbon-native atomics (XL, rejected).
 (`std::thread(carbon_fn)`, specialization-typed file-scope globals,
 `std::atomic<CarbonClass>`) are exactly what an evaluator hits first,
 and all three are small, convergent, upstreamable fixes. Sequence: doc
-+ conformance programs first, then D2 (S), D3 (S-M), D1 (M). The doc's
-stated exception environment comes from the error-handling decision.
+
+-   conformance programs first, then D2 (S), D3 (S-M), D1 (M). The doc's
+    stated exception environment comes from the error-handling decision.
 
 ### 4. Carbon-native function overloading — [`function-overloading.md`](function-overloading.md)
 
@@ -101,7 +102,7 @@ implicit structural satisfaction of interfaces for template bindings;
 compile-time predicates only.
 **Recommendation: Option B, staged** — B1: `template constraint` +
 member requirements (check-phase only, can start before the template
-lowering fatal is fixed); B2: validity blocks + bool predicates via
+lowering fatal is fixed); B2: validity blocks + bool predicates by way of
 probe-mode eval-block replay (absorbing Option C's `where <bool-expr>`
 form); B3: two-way C++20 concept mapping (`ConceptDecl` export with a
 `__carbon_satisfies` hook, landing with W8). Do not do Option A —
@@ -141,7 +142,7 @@ Decide in this order; rationale for each edge follows.
     exception environment the threading contract must state, and its B0
     stage (exception-mode flag + fenced thunks) is S-sized with zero
     dependencies and should land immediately regardless.
-2.  **Unions** — independent of every other *decision*, but it settles
+2.  **Unions** — independent of every other _decision_, but it settles
     the overlapping-storage primitive that W5 choice payloads lower
     onto; W5 in turn gates error-handling B1 (`Result` as a payload
     choice) and if-let's motivating `.Some` examples. Deciding it second
@@ -179,7 +180,7 @@ dependency. Only error-handling B1+ and if-let wait on W4/W5.
     If unions were decided as Option C, W5 would build the storage
     machinery ad hoc and the chain breaks.
 2.  **Two papers specify different desugar targets for `?`.**
-    Error-handling desugars `expr?` onto a *match expression* (whose
+    Error-handling desugars `expr?` onto a _match expression_ (whose
     arms yield values — a form W4's statement-match deliverable may not
     include); if-let says a future `?`/`try` "would typically desugar to
     let-else". Both are semantically fine but W4's scope must be pinned

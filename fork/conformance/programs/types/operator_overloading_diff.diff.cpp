@@ -1,3 +1,7 @@
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 // Differential C++17 equivalent of operator_overloading_diff.carbon: a
 // value-wrapping class with overloaded homogeneous + and heterogeneous
 // (by-int) *. printf("%d\n", ...) mirrors Core.Print's lowering exactly

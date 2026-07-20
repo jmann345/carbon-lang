@@ -1,3 +1,7 @@
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 // Differential C++17 equivalent of virtual_dispatch_diff.carbon: the same
 // two-derived-class hierarchy with dispatch through a base pointer.
 // printf("%d\n", ...) mirrors Core.Print's lowering exactly

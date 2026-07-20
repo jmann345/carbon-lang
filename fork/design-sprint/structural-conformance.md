@@ -28,10 +28,11 @@ frontier: concept export).
     -   [Option A: implicit structural satisfaction of interfaces for template bindings](#option-a-implicit-structural-satisfaction-of-interfaces-for-template-bindings)
     -   [Option B: `template constraint` + `require` validity blocks (the accepted-design path)](#option-b-template-constraint--require-validity-blocks-the-accepted-design-path)
     -   [Option C: boolean compile-time predicates only](#option-c-boolean-compile-time-predicates-only)
--   [How C++20 concepts map, in both directions](#how-c20-concepts-map-in-both-directions)
--   [Recommendation](#recommendation)
--   [Dependencies on other workstreams](#dependencies-on-other-workstreams)
--   [Open questions for the user](#open-questions-for-the-user)
+-   [2153 "predicates" direction, but shipping _only_ this leaves the accepted](#2153-predicates-direction-but-shipping-only-this-leaves-the-accepted)
+    -   [How C++20 concepts map, in both directions](#how-c20-concepts-map-in-both-directions)
+    -   [Recommendation](#recommendation)
+    -   [Dependencies on other workstreams](#dependencies-on-other-workstreams)
+    -   [Open questions for the user](#open-questions-for-the-user)
 
 <!-- tocstop -->
 
@@ -50,7 +51,7 @@ doc (`docs/design/templates.md:22-27`) is a self-described "skeletal design
 ... a placeholder". The closest accepted design material is:
 
 -   `template constraint` declarations — named constraints that contain
-    function/field declarations matched *structurally* against a type —
+    function/field declarations matched _structurally_ against a type —
     accepted in proposal p000818 (Constraints for generics) and re-affirmed
     with worked examples in p002200 (Template generics,
     `proposals/p002200-template-generics.md:348-431`).
@@ -83,7 +84,7 @@ and the checker has an explicit
 
 The phrase is ambiguous and the ambiguity matters for the option split:
 
--   Reading 1 — *conformance to interfaces is structural in template code*:
+-   Reading 1 — _conformance to interfaces is structural in template code_:
     a template argument satisfies an interface constraint by having the
     right members, no `impl` needed. (Go-style implicit satisfaction,
     limited to the template phase.)
@@ -93,9 +94,9 @@ The phrase is ambiguous and the ambiguity matters for the option split:
     predicates.
 
 Upstream's own docs support Reading 2: `docs/design/generics/terminology.md`
-(408-438) is careful that *interfaces* stay nominal ("satisfies the
+(408-438) is careful that _interfaces_ stay nominal ("satisfies the
 interface [only] if there is some explicit statement saying so") while
-*named constraints* are the structural mechanism; and p002200's C++
+_named constraints_ are the structural mechanism; and p002200's C++
 migration story routes structural conformance through `template constraint`
 plus explicit blanket impls, never through implicit interface satisfaction.
 Reading 1 is nevertheless a real design option (Option A below) because
@@ -128,7 +129,7 @@ rather than create a new constraint system."
 -   **No SFINAE / errors up front** (p002200 rationale;
     `docs/design/generics/goals.md:140-143`): an unsatisfied constraint at
     a use site is a hard, well-located error; constraints select overloads
-    *before* instantiation rather than discarding failed instantiations.
+    _before_ instantiation rather than discarding failed instantiations.
 -   **Interfaces are nominal for checked generics**
     (`docs/design/generics/terminology.md:416-424`): implementing an
     interface carries semantic meaning beyond structure. Any structural
@@ -169,7 +170,7 @@ Chain of accepted proposals this design must respect (all in `proposals/`):
 -   **C++20 concepts**: named boolean predicates; requires-expressions test
     expression validity; subsumption partial-orders overloads. Maps most
     directly onto Option B/C. Known pain points to avoid: satisfaction
-    caching vs. type completeness, and subsumption's normalization cost.
+    caching versus type completeness, and subsumption's normalization cost.
 -   **Go**: interfaces satisfied implicitly by method set — the purest
     "structural conformance to nominal constraints" (Option A), and a
     warning: accidental conformance is a real defect class, which is why
@@ -182,15 +183,15 @@ Chain of accepted proposals this design must respect (all in `proposals/`):
     prior art for Option C. Ergonomic, but predicates-as-code proved hard
     to introspect for diagnostics and tooling.
 -   **Zig**: no declared constraints; pure comptime duck typing with
-    `@compileError`. This is what Carbon templates are *without* this
+    `@compileError`. This is what Carbon templates are _without_ this
     feature — the milestone bullet exists precisely to be better than this.
--   **Swift**: nominal protocols; retroactive conformance via `extension`
+-   **Swift**: nominal protocols; retroactive conformance by way of `extension`
     is the analogue of Carbon's blanket-impl migration step, not of
     structural conformance.
 
 ### Implementation realities in this toolchain
 
-What exists and is reusable (all paths relative to repo root):
+What exists and is reusable (all paths relative to repository root):
 
 -   **Named constraints just landed in check**: `constraint` declarations
     with `require impls I` / `extend require impls I` bodies check
@@ -208,7 +209,7 @@ What exists and is reusable (all paths relative to repo root):
     operations become action insts (`AccessMemberAction`,
     `RefineTypeAction`, ... in `toolchain/sem_ir/typed_insts.h`) parked in
     a generic's eval block (`toolchain/check/generic.cpp:258`
-    `AddTemplateActionToEvalBlock`) and performed at instantiation via
+    `AddTemplateActionToEvalBlock`) and performed at instantiation by way of
     `PerformDelayedAction` (`toolchain/check/action.h:121-131`).
     Constraint-satisfaction checks for dependent arguments become one more
     action kind on this rail.
@@ -237,7 +238,7 @@ What is broken or missing that this design sits on top of:
 -   Template lowering is a hard fatal:
     `CARBON_FATAL("Template lowering not implemented yet")` at
     `toolchain/lower/handle.cpp:363` (`SpliceInst`). No structural-
-    conformance conformance test can *execute* until W7 fixes this.
+    conformance conformance test can _execute_ until W7 fixes this.
 -   There is no speculative checking mode: check is a single pass over the
     parse tree; diagnostics are emitted eagerly. Requires-style validity
     predicates need a "probe" mode (details under Option B).
@@ -252,7 +253,7 @@ What is broken or missing that this design sits on top of:
 `template` binding, satisfaction at instantiation is: nominal `impl` if one
 exists, otherwise structural — every interface member must be found by
 member lookup in the concrete type with a matching signature. A
-*structural witness* (an impl-witness-shaped table whose entries point at
+_structural witness_ (an impl-witness-shaped table whose entries point at
 the type's own members) is synthesized so `x.(I.F)()` and unqualified
 lookup both work.
 
@@ -290,7 +291,7 @@ eval-block plumbing in `toolchain/check/generic.cpp`, signature matching
 reused from `toolchain/check/function.cpp`.
 
 **Evolution risk vs upstream: HIGH.** Upstream's terminology doc pointedly
-keeps interfaces nominal, and p002200's migration ladder exists *because*
+keeps interfaces nominal, and p002200's migration ladder exists _because_
 implicit interface satisfaction was not chosen; the "explore" note in
 templates.md is about applying interface constraints to template params
 (which p002200 already does, nominally), not about waiving impls. Expect
@@ -356,7 +357,7 @@ Semantics:
     the constraint's definition, inside the constraint's generic with
     `Self` symbolic-but-template — producing deferred actions exactly as
     template function bodies do today. Satisfaction for a concrete type =
-    run those actions via `PerformDelayedAction`
+    run those actions by way of `PerformDelayedAction`
     (`toolchain/check/action.h:121`) with diagnostics captured instead of
     emitted (generalizing the existing `diagnose=false` pattern of
     `toolchain/check/impl_lookup.h:40`); any failed action ⇒ unsatisfied.
@@ -414,7 +415,7 @@ mechanical rename, not a semantic migration.
 **Design sketch.** Skip named structural constraints entirely. Constraints
 on template bindings are arbitrary compile-time `bool` expressions attached
 with `where`; expression validity is provided by a `require {...}`
-*expression* that evaluates to `bool` instead of erroring (D's
+_expression_ that evaluates to `bool` instead of erroring (D's
 `__traits(compiles)`, `is_detected`):
 
 ```carbon
@@ -446,13 +447,15 @@ coverage is still partial — p002200 lines 1098-1118 lists this as an open
 design question upstream too).
 
 **Evolution risk vs upstream: MEDIUM.** Predicates align with upstream's
-#2153 "predicates" direction, but shipping *only* this leaves the accepted
+
+## 2153 "predicates" direction, but shipping _only_ this leaves the accepted
+
 `template constraint` design unimplemented, and the milestone's "modeling
 the members (like interfaces)" half is only weakly satisfied (members are
 tested by usage inside validity blocks, not declared). Convergence with
 upstream would mean adding Option B later anyway.
 
-## How C++20 concepts map, in both directions
+### How C++20 concepts map, in both directions
 
 Assuming Option B's surface (mappings degrade as noted under A/C):
 
@@ -462,7 +465,7 @@ Assuming Option B's surface (mappings degrade as noted under A/C):
 | C++20 construct | Carbon today | Carbon after this design |
 | --- | --- | --- |
 | `Concept<ConcreteType>` | `Cpp.Concept(T)` → `bool` (works) | unchanged |
-| Concept constraining a template param | n/a | `fn F[template T: type where Cpp.Concept(T)]` — dependent uses defer via a new `CheckPredicateAction`; when `T` is concrete, evaluate through Clang as today |
+| Concept constraining a template param | n/a | `fn F[template T: type where Cpp.Concept(T)]` — dependent uses defer by way of a new `CheckPredicateAction`; when `T` is concrete, evaluate through Clang as today |
 | `requires (T x) { x + y; }` (in C++ headers) | inside imported concepts: evaluated by Clang, invisible to Carbon | unchanged (Clang keeps evaluating its own requires-expressions — no re-modeling) |
 | `std::enable_if` / detection idiom | n/a | migrate to `template constraint` per p002200; no SFINAE emulation |
 
@@ -481,9 +484,9 @@ in-memory Clang AST, not textual headers, so exported decls are synthesized
 | `template constraint C` member reqs (`fn Sum[self: Self](o: Self) -> Self;`) | requires-expression compound requirements: `requires(T x, T o) { { x.Sum(o) } -> std::same_as<T>; }` |
 | `require (x: Self) { ... }` validity block | the corresponding requires-expression, statement by statement (each Carbon expression form has a defined C++ rendering; forms with no C++ rendering fall back to the opaque hook below) |
 | `require <bool-expr>;` with Carbon-only semantics (compile-time fn calls, `Self impls I`) | nested requirement on an opaque satisfaction hook: a Carbon-patched Clang builtin (`__carbon_satisfies(C, T)`) that calls back into check — feasible because the toolchain already carries local Clang patches and owns the Sema instance |
-| `interface I` (nominal) | concept over the nominal hook only: `template<class T> concept I = __carbon_impls<T, I>;` — deliberately *not* a structural requires-expression, preserving nominal semantics across the boundary |
+| `interface I` (nominal) | concept over the nominal hook only: `template<class T> concept I = __carbon_impls<T, I>;` — deliberately _not_ a structural requires-expression, preserving nominal semantics across the boundary |
 
-## Recommendation
+### Recommendation
 
 **Option B, staged B1 → B2 → B3, with Option C's `where <bool-expr>`
 binding form absorbed into B2.** Do not do Option A.
@@ -491,10 +494,10 @@ binding form absorbed into B2.** Do not do Option A.
 Rationale:
 
 1.  **It is the only option that closes the whole bullet.** B models
-    members as declarations ("like interfaces") *and* arbitrary predicates
+    members as declarations ("like interfaces") _and_ arbitrary predicates
     (validity blocks + bool requires). A needs C bolted on and still
     diverges; C alone under-delivers the member-modeling half that F-001
-    (staged *official* 0.1) obligates this fork to hit.
+    (staged _official_ 0.1) obligates this fork to hit.
 2.  **Lowest upstream divergence.** B1 is accepted design (p000818,
     p002200); B2 is upstream's own named future work. Standing rule 5
     ("upstream is a moving asset") argues for building the thing upstream
@@ -506,7 +509,7 @@ Rationale:
     more deferred-action kind on the eval-block rail
     (`toolchain/check/generic.cpp:258`); probe mode generalizes an
     existing `diagnose=false` idiom. The only new subsystem (diagnostic
-    capture around eval-block replay) is needed by *every* option that
+    capture around eval-block replay) is needed by _every_ option that
     supports validity predicates — it is the irreducible cost of the
     milestone bullet, so pay it where it buys the most.
 4.  **Best interop story in both directions.** Requires-expressions and
@@ -520,15 +523,15 @@ Rationale:
 
 Sequencing note: B1 is check-phase-complete without touching lowering, so
 it can start before W7 fixes the `toolchain/lower/handle.cpp:363` fatal —
-but its *arbiter* (compile-and-run structural-conformance test) blocks on
+but its _arbiter_ (compile-and-run structural-conformance test) blocks on
 that fix landing.
 
-## Dependencies on other workstreams
+### Dependencies on other workstreams
 
 -   **W7 (carrier)**: dependent-operator/conversion deferral
     (`fail_todo` tests in `toolchain/check/testdata/generic/template/`) and
     the `SpliceInst` lowering fatal must be fixed for conformance tests to
-    execute. Probe-mode replay *is* eval-block replay — B2 and W7's
+    execute. Probe-mode replay _is_ eval-block replay — B2 and W7's
     deferred-action completion should be one engineering track.
 -   **W2 — function overloading design**: constraints as overload filters,
     and the no-subsumption/explicit-ordering decision, must be settled
@@ -545,7 +548,7 @@ that fix landing.
     interact with pack checking; explicitly out of scope until W6 lands
     (note in the design doc, not a blocker).
 
-## Open questions for the user
+### Open questions for the user
 
 Beyond choosing an option:
 

@@ -1,3 +1,7 @@
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 // CONFORMANCE-BULLET: Type system: C++ interop — importing C++ types / exporting Carbon types
 // SKIP: known-missing slice — instantiating an imported C++ template on a symbolic Carbon generic parameter fails to compile on nightly 2026.07.19 with: "error: semantics TODO: `unsupported type used as template argument`" (both uses of Cpp.Box(T) below; same TODO as check/testdata/interop/cpp/template/generic_call.carbon). Concrete Carbon class types as template args DO work — arbitrated by cpp_type_import_class_enum.carbon.
 // EXPECT-EXIT: 0

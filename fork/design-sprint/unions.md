@@ -24,8 +24,20 @@ variant interop) per `fork/gap-analysis.md`.
     -   [Implementation realities in this toolchain](#implementation-realities-in-this-toolchain)
 -   [Options](#options)
     -   [Option A: native `union` declaration](#option-a-native-union-declaration)
+        -   [Design sketch](#design-sketch)
+        -   [C++ interop story](#c-interop-story)
+        -   [Implementation cost in this toolchain: **M**](#implementation-cost-in-this-toolchain-m)
+        -   [Evolution risk vs upstream: **Medium-low**](#evolution-risk-vs-upstream-medium-low)
     -   [Option B: unsafe storage primitive only](#option-b-unsafe-storage-primitive-only)
+        -   [Design sketch](#design-sketch-1)
+        -   [C++ interop story](#c-interop-story-1)
+        -   [Implementation cost in this toolchain: **M** (and it buys less)](#implementation-cost-in-this-toolchain-m-and-it-buys-less)
+        -   [Evolution risk vs upstream: **Medium**](#evolution-risk-vs-upstream-medium)
     -   [Option C: C++-import-only](#option-c-c-import-only)
+        -   [Design sketch](#design-sketch-2)
+        -   [C++ interop story](#c-interop-story-2)
+        -   [Implementation cost in this toolchain: **S**](#implementation-cost-in-this-toolchain-s)
+        -   [Evolution risk vs upstream: **Low now, Medium later**](#evolution-risk-vs-upstream-low-now-medium-later)
 -   [Recommendation](#recommendation)
 -   [Dependencies on other workstreams](#dependencies-on-other-workstreams)
 -   [Open questions for the user](#open-questions-for-the-user)
@@ -86,7 +98,7 @@ escape hatch; A and B do not.
     skips them; `fail_todo_use_bitfields.carbon`), and Carbon has no
     bit-field design. That is a gap we can document rather than close,
     per `milestones.md:79-80` ("gaps ... that don't undermine
-    evaluation confidence") — but it must be a *documented* limitation.
+    evaluation confidence") — but it must be a _documented_ limitation.
 
 ### Carbon design principles that bind this design
 
@@ -102,9 +114,9 @@ escape hatch; A and B do not.
     should also be possible to write it naturally in Carbon." Union-based
     data structures are idiomatic C++.
 -   **Safety strategy** (p005914, `docs/design/safety/README.md:54-124`):
-    unsafe capabilities must be *semantically narrow* (reading an
+    unsafe capabilities must be _semantically narrow_ (reading an
     inactive union member is a type-punning capability and nothing
-    more) and *syntactically narrow* (identifiable `unsafe` marking in
+    more) and _syntactically narrow_ (identifiable `unsafe` marking in
     Strict Carbon; Permissive Carbon may omit it for C++-migration
     ergonomics). Type punning is precisely the kind of
     C++-compatibility unsafety Permissive mode exists for.
@@ -114,7 +126,7 @@ escape hatch; A and B do not.
 ### What upstream has already said
 
 -   Accepted proposal **p000157** ("Design direction for sum types")
-    requires that Carbon have *at least one* of: a typed `union`
+    requires that Carbon have _at least one_ of: a typed `union`
     facility (referencing never-merged PR
     [#139](https://github.com/carbon-language/carbon-lang/pull/139)),
     or an untyped `Storage(size, align)` byte-buffer primitive
@@ -137,11 +149,11 @@ The interop feature must be faithful to what C++ actually guarantees:
 
 -   **Layout**: size = max member size (padded), align = max member
     alignment; all members at offset 0. Clang computes this; the
-    importer already consumes it via `ASTRecordLayout`
+    importer already consumes it by way of `ASTRecordLayout`
     (`toolchain/check/cpp/import.cpp:674-686`).
 -   **Active member**: at most one member is active; writing a member
     starts its lifetime (implicit-lifetime rules); reading a non-active
-    member is UB in C++ — *except* the **common initial sequence**
+    member is UB in C++ — _except_ the **common initial sequence**
     rule: if standard-layout struct members share a common initial
     sequence, inspecting that common part through any of them is
     defined while one of them is active (C++ [class.mem.general]).
@@ -151,7 +163,7 @@ The interop feature must be faithful to what C++ actually guarantees:
     type punning is unspecified-value reinterpretation, not UB, and
     real codebases assume the C semantics even in C++.
 -   **Anonymous unions**: members are injected into the enclosing
-    scope. The importer already flattens these via
+    scope. The importer already flattens these by way of
     `IndirectFieldDecl` chains with accumulated offsets
     (`import.cpp:780-847`; test
     `toolchain/check/testdata/interop/cpp/class/import/field.carbon`
@@ -159,7 +171,7 @@ The interop feature must be faithful to what C++ actually guarantees:
     anonymous struct/union).
 -   **Special members**: a C++ union member with a non-trivial
     ctor/dtor/copy deletes the union's corresponding special member
-    unless user-provided. Any Carbon-side rule must not be *more*
+    unless user-provided. Any Carbon-side rule must not be _more_
     permissive than this for imported types.
 -   **No inheritance**: unions cannot be base classes or derive. The
     importer already models this by treating unions as `final`
@@ -176,14 +188,14 @@ The interop feature must be faithful to what C++ actually guarantees:
     borrows the whole union. This is the minimal-safe-surface design
     and the closest fit to Carbon's safety strategy.
 -   **Zig**: `extern union` (C ABI), `packed union`, and bare `union`
-    which carries a *hidden safety tag in safe build modes only* —
+    which carries a _hidden safety tag in safe build modes only_ —
     exactly the #1907 idea; plus `union(enum)` as the tagged form.
     Validates the "raw union + debug checking" split across build
     modes.
 -   **Swift**: no native unions; C unions import as structs with
     computed properties over raw storage. This is the Option C
     precedent — and Swift's experience (ergonomic but write-only-ish,
-    no way to *author* a union) is why Swift is not a systems-migration
+    no way to _author_ a union) is why Swift is not a systems-migration
     language for union-heavy C.
 -   **C++ `std::variant` / Carbon `choice`**: the discriminated case is
     a separate 0.1 bullet (`milestones.md:133`) handled in W5; this
@@ -223,7 +235,7 @@ types") is stale — imported unions are field-addressable today:
 -   Gaps that any option inherits: struct-literal initialization of
     `CustomLayoutType` classes bails out of builtin conversion
     (`toolchain/check/convert.cpp:882-885` — "Builtin conversion does
-    not apply"), so *constructing* imported-union values in Carbon
+    not apply"), so _constructing_ imported-union values in Carbon
     (rather than receiving them from C++) is not yet wired; bit-field
     members are skipped at import; `unsafe` exists as a keyword
     (`token_kind.def:230`) and `Core.UnsafeAs` pointer casts exist
@@ -311,10 +323,10 @@ Core semantic rules (one page in `docs/design/unions.md`):
     `SemIR::ClassFields::inheritance_kind`) instead of merely `final`.
     Field read/write already works (tests above); the remaining wiring
     is designated-field initialization of `CustomLayoutType` values
-    (the `convert.cpp:882` bailout) so Carbon can *construct* C++
+    (the `convert.cpp:882` bailout) so Carbon can _construct_ C++
     union values. Anonymous-union flattening already works.
 -   **Export ("to")**: exported Carbon unions produce a
-    `TagTypeKind::Union` record via the existing `CXXRecordDecl`
+    `TagTypeKind::Union` record by way of the existing `CXXRecordDecl`
     creation path in `check/cpp/export.cpp:104/161`; because the layout
     rule is C++'s union layout rule by construction, the Clang-computed
     layout and the Carbon `CustomLayoutType` layout agree, and C++ sees
@@ -368,7 +380,7 @@ design.
 
 ### Option B: unsafe storage primitive only
 
-Adopt p000157's *other* primitive: no `union` type; instead a library
+Adopt p000157's _other_ primitive: no `union` type; instead a library
 type `Core.Storage(size:! usize, align:! usize)` — an untyped,
 max-aligned byte buffer with unsafe `Create(T, args)` / `Read(T)` /
 `Destroy(T)` operations — and let users (and the `choice`
@@ -392,7 +404,7 @@ class IntOrBytes {
 
 Weak. Imported C++ unions stay exactly what they are today (custom
 layout classes with overlapping fields) — that part is fine — but there
-is no Carbon entity that *exports as* a C++ union, and no mechanical
+is no Carbon entity that _exports as_ a C++ union, and no mechanical
 translation for a migrated C++ `union` declaration: every one becomes a
 hand-written class over `Storage` whose layout equivalence is by
 convention, not by construction. The "mapping **to** ... C++ unions"
@@ -413,7 +425,7 @@ interop bullet. Library work in `core/prelude/`.
 
 Equally sanctioned by p000157 (its examples use `Storage`), and
 genuinely needed eventually for `std::any`-style dynamic storage
-(p000157:301-308). But upstream would *still* need a union-shaped
+(p000157:301-308). But upstream would _still_ need a union-shaped
 answer for the interop bullet, so B alone likely under-shoots what
 upstream ends up with.
 
@@ -506,14 +518,14 @@ Rationale:
 Suggested 0.1 cut-line within Option A: concrete (non-generic) unions,
 trivially-copyable/destructible fields, designated single-field init,
 field read/write, methods/impls, import mapping, export mapping,
-anonymous-union *import* (already works). Deferred and documented:
+anonymous-union _import_ (already works). Deferred and documented:
 Carbon-authored anonymous unions inside classes, bit-fields, non-trivial
 field types, generic-union conformance, debug-mode tracking.
 
 ## Dependencies on other workstreams
 
 -   **W1 (conformance harness)** — required first: the round-trip and
-    punning tests must *execute*, per `fork/process.md` step 1.
+    punning tests must _execute_, per `fork/process.md` step 1.
 -   **W5 (sum types / choice payloads / variant interop)** — consumer:
     choice payload storage should reuse the union object-representation
     machinery; sequencing is unions-design → choice-payload
@@ -526,9 +538,9 @@ field types, generic-union conformance, debug-mode tracking.
 -   **W8 (interop frontier)** — union export lands in the same
     `check/cpp/export.cpp` machinery W8 extends for operators/concepts;
     coordinate to avoid conflicting refactors.
--   **Pattern matching (W4)** — explicitly *not* a dependency: unions do
+-   **Pattern matching (W4)** — explicitly _not_ a dependency: unions do
     not participate in `match` (they have no discriminator). Any
-    perceived coupling is via `choice`, which is W5.
+    perceived coupling is by way of `choice`, which is W5.
 -   **Upstream merge risk (standing rule 5)** — before implementation
     starts, re-check upstream for movement on p000157's open question
     or a `union` proposal; as of trunk `99cda60` (2026-07) there is
@@ -545,7 +557,7 @@ Beyond choosing A/B/C, these need decisions (defaults proposed):
     Rust/Zig precedent; modifier avoids a new introducer token class.
 2.  **Strict-mode read marking**: is reading a union field `unsafe` in
     Strict Carbon (Rust rule, proposed) or unmarked-but-erroneous?
-    And is the *write* of a field over a live non-trivial member ever
+    And is the _write_ of a field over a live non-trivial member ever
     reachable given the 0.1 field restriction (proposed: no)?
 3.  **Read semantics text**: adopt byte-reinterpretation
     (defined-if-valid, proposed) vs C++ active-member UB with a

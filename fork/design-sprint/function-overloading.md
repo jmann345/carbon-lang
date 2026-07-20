@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     -   [Implementation realities in this toolchain](#implementation-realities-in-this-toolchain)
 -   [Prior art](#prior-art)
 -   [Options](#options)
-    -   [Option A: Marked closed overloading — `overload fn`, declaration-order first-match](#option-a-marked-closed-overloading--overload-fn-declaration-order-first-match)
+    -   [Option A: Marked closed overloading - `overload fn`, declaration-order first-match](#option-a-marked-closed-overloading---overload-fn-declaration-order-first-match)
     -   [Option B: Unmarked closed overloading (C++/Swift surface, Carbon resolution)](#option-b-unmarked-closed-overloading-cswift-surface-carbon-resolution)
     -   [Option C: Pattern-dispatch overloading (value patterns as overloads)](#option-c-pattern-dispatch-overloading-value-patterns-as-overloads)
     -   [Option D: No Carbon-native overloading in 0.1 (Rust/Zig discipline)](#option-d-no-carbon-native-overloading-in-01-rustzig-discipline)
@@ -32,7 +32,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 ## Problem statement
 
 Carbon 0.1 requires function overloading declared in Carbon itself. Today the
-fork (== upstream trunk `99cda60`) has the C++ *import* half fully working and
+fork (== upstream trunk `99cda60`) has the C++ _import_ half fully working and
 the Carbon-native half entirely absent:
 
 -   `docs/design/pattern_matching.md:696`: "We do not yet have an approved
@@ -58,7 +58,7 @@ the Carbon-native half entirely absent:
     (`toolchain/check/testdata/interop/cpp/function/import/overloads.carbon`).
 
 So the gap is precisely the `MISSING` row in `fork/gap-analysis.md` line 42:
-Carbon-side overload *declaration* and *resolution*, plus exporting such sets
+Carbon-side overload _declaration_ and _resolution_, plus exporting such sets
 to C++.
 
 ### 0.1 milestone bullets this area closes
@@ -70,17 +70,17 @@ From `docs/project/milestones.md` ("Functions", lines 154-164):
 -   **"Exporting Carbon functions and methods and calling them from C++"**
     (line 159) — DONE for single functions
     (`toolchain/check/cpp/export.cpp`, 1202 lines); this area extends it to
-    overload *sets*, which is implied by parity ("callable from C++" is a
+    overload _sets_, which is implied by parity ("callable from C++" is a
     fork requirement for exported overloads).
 
 Bullets this area touches but does **not** close:
 
 -   "Importing C++ overload sets into Carbon overload sets where the model
-    (closed overloading) fits" (lines 160-161) — already DONE via Clang Sema.
+    (closed overloading) fits" (lines 160-161) — already DONE by way of Clang Sema.
     Note the milestone text itself names Carbon's model: **closed
     overloading**.
 -   "Importing C++ open-overload-sets-as-extension-points (`swap`, etc)"
-    (lines 162-164) — separate work (W8); Carbon's answer to *open*
+    (lines 162-164) — separate work (W8); Carbon's answer to _open_
     overloading is interfaces, not this design.
 -   "Operator overloading: Exporting Carbon overloads into C++" (line 132) —
     operators route through Core interfaces
@@ -100,7 +100,7 @@ intent. Any design that ignores it maximizes divergence risk on future merges
     (`docs/project/principles/static_open_extension.md:52-56`): "function
     overloading is limited in Carbon to only signatures defined together in
     the same library... Closed overloading in Carbon also simplifies what
-    gets exported to C++." Interfaces are the *only* open extension
+    gets exported to C++." Interfaces are the _only_ open extension
     mechanism; there is no ADL in Carbon
     (`docs/design/generics/goals.md:216-242`).
 2.  **Declaration-order, first-match resolution.**
@@ -137,7 +137,7 @@ intent. Any design that ignores it maximizes divergence risk on future merges
     `DeclContext` (`ExportFunctionToCpp`,
     `toolchain/check/cpp/export.cpp:1023`; `clang::FunctionDecl::Create` at
     line 455, `clang::FunctionTemplateDecl::Create` at line 1015). Multiple
-    same-name `FunctionDecl`s in one context *are* a C++ overload set — C++
+    same-name `FunctionDecl`s in one context _are_ a C++ overload set — C++
     callers then resolve with **C++ rules**. Carbon first-match and C++
     best-viable-match can disagree on the same argument list; the design must
     say what happens (accept-and-document vs restrict exports).
@@ -171,13 +171,13 @@ What a Carbon-native overload set has to thread through, with current state:
 
 -   **C++**: open overloading + ADL + best-viable-match. Carbon's principles
     explicitly reject the open part and ADL (p000998); the import direction
-    already embeds the real thing via Clang Sema.
+    already embeds the real thing by way of Clang Sema.
 -   **Swift**: unmarked overloading with most-specific-match ranking; a known
     source of exponential type-checker blowups ("expression too complex") and
     subtle source-compat breaks when overloads are added. A caution against
     best-match ranking.
 -   **Rust**: no function overloading; traits (+ method resolution) instead.
-    This is exactly Carbon's answer for *open* extension, but Carbon's
+    This is exactly Carbon's answer for _open_ extension, but Carbon's
     milestone still demands closed overloading for C++ migration parity.
 -   **Zig**: no overloading; `comptime` + `anytype` dispatch inside one
     function body. Maps to Carbon's templates, not to this bullet.
@@ -187,7 +187,7 @@ What a Carbon-native overload set has to thread through, with current state:
 
 ## Options
 
-### Option A: Marked closed overloading — `overload fn`, declaration-order first-match
+### Option A: Marked closed overloading - `overload fn`, declaration-order first-match
 
 Every member of a set carries an `overload` declaration modifier; all members
 must live in the same library. Resolution tries candidates in declaration
@@ -204,7 +204,7 @@ overload fn Dist[T:! Numeric](a: Vec2(T), b: Vec2(T)) -> T { ... }
 fn Use() {
   Dist(3, 5);            // candidate 1 (exact)
   Dist(1.5, 0.25);       // candidate 2
-  Dist(v1, v2);          // candidate 3 via deduction
+  Dist(v1, v2);          // candidate 3 by way of deduction
   var n: i32 = 4;
   Dist(n, n);            // candidate 1: first match after i32 -> i64
                          // implicit conversion; candidate 2 never tried.
@@ -213,14 +213,14 @@ fn Use() {
 
 Rules (the proposal-sized core):
 
--   A second `overload fn F` with a *different* signature extends the set; a
+-   A second `overload fn F` with a _different_ signature extends the set; a
     second declaration **without** `overload` keeps today's
     `RedeclParamDiffers`/`DiagnoseDuplicateName` errors — accidental
     collisions stay loud, and p003763's syntactic matching still governs
     redeclaration of each individual member (forward declaration + definition
     must match exactly, per member).
 -   Set is frozen at the library boundary (p000998). `api`-file order defines
-    resolution order; `impl` files may only *define* members, not add them.
+    resolution order; `impl` files may only _define_ members, not add them.
 -   Methods overload the same way (`overload fn Append[addr self: Self*]
     (x: i32);` / `(s: str);` in one class body). Interface members: excluded
     in 0.1 (associated functions stay non-overloaded).
@@ -228,7 +228,7 @@ Rules (the proposal-sized core):
     accumulation, p000875).
 -   No-match diagnostic lists every candidate with its first failure reason,
     mirroring the Clang note style users already get from imported sets.
--   Naming an overload set other than as a callee (e.g. taking its value) is
+-   Naming an overload set other than as a callee (for example taking its value) is
     an error in 0.1; p002875's single-function-type-with-many-`Call`-impls
     model is the documented future path.
 
@@ -238,7 +238,7 @@ C++ resolution. Divergence example, documented and conformance-tested:
 `overload fn F(x: i64); overload fn F(x: f64);` called with an `i32`/`int`
 argument — Carbon picks the first candidate; C++ rejects the call as
 ambiguous (two equal-rank standard conversions). Divergence is only ever
-*which member or whether* — never a wrong-ABI call, since each exported
+_which member or whether_ — never a wrong-ABI call, since each exported
 member keeps its own thunked symbol. A `fork/rulebook.md` rule: every
 exported-overload conformance test asserts both directions' resolution.
 
@@ -247,7 +247,7 @@ exported-overload conformance test asserts both directions' resolution.
 `sem_ir/{overload_set.h,inst_kind.def,typed_insts.h,ids.h,file.h}` (M),
 `check/handle_function.cpp` `TryMergeRedecl` branch (M), `check/call.cpp` +
 `sem_ir/function.h` new callee kind and first-match loop (M — the loop is
-simple *because* first-match needs no ranking), non-diagnosing
+simple _because_ first-match needs no ranking), non-diagnosing
 `DeduceGenericCallArguments` (M), `sem_ir/mangler.cpp` signature fingerprint
 (S), `check/import_ref.cpp` set import (M), `cpp/export.cpp` member loop (S),
 `check/name_lookup.cpp` poisoning (S), plus golden + conformance tests.
@@ -292,7 +292,7 @@ will have diverged in ways users notice.
 ### Option C: Pattern-dispatch overloading (value patterns as overloads)
 
 The original Carbon aspiration (`docs/design/README.md:3822`): a function
-call *is* a pattern match, an overload set *is* an ordered list of `case`
+call _is_ a pattern match, an overload set _is_ an ordered list of `case`
 patterns, and signatures may contain refutable patterns —
 `pattern_matching.md:670-676` explicitly reserves overloaded functions as
 "a third context" permitting refutable patterns.
@@ -309,7 +309,7 @@ members compile the whole set into one dispatcher function containing a
 constants).
 
 **C++ interop story.** Type-distinct members export as in Option A.
-Value-pattern members share a signature, so the set exports as a *single*
+Value-pattern members share a signature, so the set exports as a _single_
 C++ function wrapping the dispatcher — coherent, and arguably the cleanest
 export story of all options. Import unchanged.
 
@@ -322,8 +322,8 @@ stubs today (gap-analysis W4). Exhaustiveness/usefulness checking
 
 **Evolution risk vs upstream: MEDIUM.** Upstream's docs aspire to this
 framing, but there is zero active work and the placeholder section has sat
-untouched; the risk is converging on *details* upstream never wrote down.
-Critically, Option A is a strict subset: declaration-order first-match *is*
+untouched; the risk is converging on _details_ upstream never wrote down.
+Critically, Option A is a strict subset: declaration-order first-match _is_
 match-case order, so A can grow into C without breaking programs.
 
 ### Option D: No Carbon-native overloading in 0.1 (Rust/Zig discipline)
@@ -401,7 +401,7 @@ Suggested staging against the arbiter (fork/conformance):
     as the two anticipated new contexts) — keep the two papers' terminology
     aligned. Error-handling and unions: no coupling.
 -   **W6 variadics** (p002240, designed but 0% implemented): the resolution
-    loop's arity pre-check must be written as "arity *range*" from day one so
+    loop's arity pre-check must be written as "arity _range_" from day one so
     variadic candidates can join sets later without reworking the loop.
 -   **W8 interop frontier**: operator export (milestones.md:132) and
     swap-style extension-point import remain separate; but the export
@@ -417,17 +417,17 @@ Suggested staging against the arbiter (fork/conformance):
 
 1.  **Marker spelling and placement**: `overload fn` (modifier, recommended)
     vs p002875's `overloaded fn` vs marking only the second-and-later
-    members. Recommendation: modifier on *every* member, so any single
+    members. Recommendation: modifier on _every_ member, so any single
     declaration reveals the set exists.
 2.  **Mixed generic/non-generic sets and ordering discipline**: pure
     declaration order (recommended, simplest and matches the anticipated
-    rule) vs any specificity preference (e.g. non-generic before generic),
+    rule) vs any specificity preference (for example non-generic before generic),
     which reintroduces ranking complexity.
 3.  **Export coherence policy**: accept documented Carbon-vs-C++ resolution
     divergence (recommended for 0.1), or add a per-set opt-in/opt-out for
     export, or attempt a conservative "reject export when members overlap
     under C++ rules" check (undecidable in general, heuristic at best).
-4.  **Method sets and `self`**: are overloads distinguishable *only* by
+4.  **Method sets and `self`**: are overloads distinguishable _only_ by
     explicit parameters, or also by `self` shape (`self` vs `addr self`)?
     Recommendation for 0.1: explicit parameters only; `self`-shape
     overloading deferred (parallels p002875's open issue
@@ -477,7 +477,7 @@ Suggested staging against the arbiter (fork/conformance):
     `toolchain/check/import_ref.cpp`.
 -   Prior art: C++ overload resolution + ADL; Swift overload ranking (and its
     type-checker cost); Rust traits-not-overloads; Zig comptime dispatch;
-    upstream discussion trail via
+    upstream discussion trail by way of
     [generics goals](https://github.com/carbon-language/carbon-lang/blob/trunk/docs/design/generics/goals.md)
     and
     [design README](https://github.com/carbon-language/carbon-lang/blob/trunk/docs/design/README.md).

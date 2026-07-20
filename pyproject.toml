@@ -17,6 +17,7 @@ ignore = ["ANN401", "ANN204"]
 "*_test.py" = ["ANN"]
 "proposals/**" = ["ANN"]
 "examples/bazel_test_runner.py" = ["ANN"]
+"fork/conformance/runner.py" = ["ANN"]
 "**/lit.cfg.py" = ["ANN"]
 
 [tool.ruff.lint.isort]

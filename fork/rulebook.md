@@ -1,5 +1,11 @@
 # Rulebook
 
+<!--
+Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+Exceptions. See /LICENSE for license information.
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
 Fork-local process rules, in the migration-framework sense: when an
 adversarial reviewer catches the same class of mistake twice, the fix is a
 rule here — and affected work is regenerated against the rule, never
@@ -184,12 +190,12 @@ here.
     before push — not a bespoke approximation. When feasible, run
     `prek run --files <changed>` locally; where the sandbox lacks prek, the
     runner-side R21 gate is the backstop. (Origin: PR #1, 2026-07-20.)
-- **R23. The invariant hook covers `fork/` too, and the CI prek gate is the
-  authority.** PR #1's lint failures were files under `fork/` — license
-  headers, ruff-format, codespell — that escaped because R12's hook only
-  policed `toolchain/core/common/testing/scripts`. The hook now enforces
-  the license header on `fork/` source files (excluding JSON data files,
-  which `json.load` can't parse with a comment header, and `*-request.txt`)
-  and runs ruff on Python. The hook is the fast local prevention layer; the
-  runner-side prek in the merge gate (R21) remains the authority — the hook
-  is best-effort, not a reimplementation of prek. (Origin: PR #1, 2026-07-20.)
+-   **R23. The invariant hook covers `fork/` too, and the CI prek gate is the
+    authority.** PR #1's lint failures were files under `fork/` — license
+    headers, ruff-format, codespell — that escaped because R12's hook only
+    policed `toolchain/core/common/testing/scripts`. The hook now enforces
+    the license header on `fork/` source files (excluding JSON data files,
+    which `json.load` can't parse with a comment header, and `*-request.txt`)
+    and runs ruff on Python. The hook is the fast local prevention layer; the
+    runner-side prek in the merge gate (R21) remains the authority — the hook
+    is best-effort, not a reimplementation of prek. (Origin: PR #1, 2026-07-20.)

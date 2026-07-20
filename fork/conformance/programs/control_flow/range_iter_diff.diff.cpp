@@ -1,3 +1,7 @@
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 // Differential C++17 equivalent of range_iter_diff.carbon: Core.Range /
 // Core.InclusiveRange become the canonical C++ counting loops; the array
 // iteration becomes a range-based for over a C array. printf("%d\n", ...)

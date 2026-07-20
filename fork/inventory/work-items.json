@@ -87,10 +87,16 @@
       "subsystem": "fork/design-sprint",
       "size": "S",
       "bullet": "none",
-      "evidence": [
-        "fork/design-sprint/README.md:171-246"
+      "evidence": ["fork/design-sprint/README.md:171-246"],
+      "blocked_by": [
+        "W-005",
+        "F-006",
+        "F-007",
+        "F-008",
+        "F-009",
+        "F-010",
+        "F-011"
       ],
-      "blocked_by": ["W-005", "F-006", "F-007", "F-008", "F-009", "F-010", "F-011"],
       "notes": "Coherence-audit findings needing explicit owners before implementation scales: (1) unions->W5->EH-B1 storage chain made explicit; (2) W4 scope pinned to one shared refutable-match SemIR core both `?` and let-else desugar onto; (3) assign the diverging-else/noreturn rule an owner or `else { Abort(); }` stays rejected; (7) one trivially-copyable predicate over Carbon classes defined once (unions/TA-D2/expected export); (9) fold Optional's redesign into W5 deliverables explicitly. Record outcomes in decision-log."
     },
     {
@@ -100,9 +106,7 @@
       "subsystem": "toolchain/check/cpp",
       "size": "S",
       "bullet": "none",
-      "evidence": [
-        "fork/design-sprint/README.md:204-212"
-      ],
+      "evidence": ["fork/design-sprint/README.md:204-212"],
       "blocked_by": [],
       "notes": "EH-B3 (W-019), UN-2 (W-015), OV-3 (W-026), TA-D1/D2 (W-023/W-021), and SC-B3 (W-029) all land in the same files W8 extends; no single owner or branch ordering exists. Publish an export-machinery refactor/ownership plan before any two of these start concurrently, else serialized rebases or conflicting refactors under F-002 merge gating."
     },
@@ -568,9 +572,7 @@
       "subsystem": "toolchain/check",
       "size": "S",
       "bullet": "Generics: Checked generics",
-      "evidence": [
-        "toolchain/check/check_unit.cpp:498"
-      ],
+      "evidence": ["toolchain/check/check_unit.cpp:498"],
       "blocked_by": ["upstream: carbon-language/carbon-lang#4071"],
       "notes": "CARBON_FATAL('TODO: Support interfaces in DiagnoseMissingDefinitions') for the InterfaceDecl case; the comment defers until it can be tested without triggering issue #4071, so interfaces declared-but-never-defined are not diagnosed like functions/classes/impls are."
     },

@@ -1,3 +1,7 @@
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 // CONFORMANCE-BULLET: Stdlib: Optional
 // SKIP: known-missing slice of this PARTIAL bullet: Core.Optional is an unapproved placeholder API ("We don't have an approved design for an `Optional` type yet... The API here is a placeholder", core/prelude/types/optional.carbon:27-28) with no comparison support; on the arbiter toolchain `a == b` on two Optional(i32) values fails with "error: cannot access member of interface `Core.EqWith(Core.Optional(i32 as Core.OptionalStorage))` in type `Core.Optional(i32 as Core.OptionalStorage)` that does not implement that interface"
 // EXPECT-EXIT: 0

@@ -1,3 +1,7 @@
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 // CONFORMANCE-BULLET: Type system: C++ interop — synthesizing Carbon overloads for imported C++ types
 // SKIP: assignment-operator import is the bullet's known-missing slice (audit: fail_todo): C++ `operator=(int)` is not imported, so `c = 42;` fails to compile with: error: cannot implicitly convert expression of type `Core.IntLiteral` to `Cpp.Cell` / note: type `Core.IntLiteral` does not implement interface `Core.ImplicitAs(Cpp.Cell)` — exact error verified against this toolchain; matches upstream check/testdata/interop/cpp/operators/operators.carbon (fail_todo_import_assignment.carbon).
 // EXPECT-EXIT: 0

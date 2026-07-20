@@ -10,17 +10,42 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-07-20 ~01:10Z_ (scope map: active branches are file-disjoint; expected merge collisions only in fork/ state files)
+_Last updated: 2026-07-20 ~04:00Z_ — PR #1 (match slice 1 + all process/arbiter infra) MERGED to `trunk` (origin/trunk == 6793618). Go-forward structure: **one workstream = one branch off `trunk` = one focused PR** (V-review fix for the 162-file mega-PR bloat).
 
 ## Branches
 
 | Branch | State |
 | --- | --- |
-| `claude/carbon-fork-0-1-7mwfb7` | Main fork branch; green (post-merge verified). Contains: fork/ process docs, conformance suite (96+ programs), match slice 1, error-handling + unions design docs |
-| `claude/carbon-fork-0-1-7mwfb7-w4-match` | MERGED into fork branch; keep for history |
-| `claude/carbon-fork-0-1-7mwfb7-design-docs` | ACTIVE: F-008..F-011 doc authoring. Scope: docs/design/** only |
-| `claude/carbon-fork-0-1-7mwfb7-w5-choice` | ACTIVE: W5 S1 payload choices. Scope: check/handle_choice + match alt-patterns + choice testdata/programs |
-| `claude/carbon-fork-0-1-7mwfb7-b0-exceptions` | ACTIVE: B0 exception boundary (gate dispatched). Scope: driver/compile_options, check/cpp/thunk.cpp, error_handling programs |
+| `trunk` | Integrated fork line; has match, arbiter (101 programs), error-handling+unions design docs, R21/R23/R24/R25 prevention. Base all new work here. |
+| `claude/carbon-fork-0-1-7mwfb7` | MERGED by way of PR #1 — finished; do not stack new commits. |
+| `claude/carbon-fork-0-1-b0` | NEW off trunk: b0 exception-boundary reconstruction (this branch). |
+| `claude/carbon-fork-0-1-7mwfb7-{b0-exceptions,w5-choice,design-docs}` | STRANDED ~17 commits behind trunk; source material for reconstruction, do NOT merge as-is. |
+
+## Reconstruction recipe (stranded branch -> fresh branch off trunk)
+
+The stranded feature branches predate the merge + prevention layers, so
+reconstruct rather than rebase. For each (b0 first):
+
+1.  `git checkout -B <new> origin/trunk`.
+2.  Overlay ONLY the real code, from the stranded branch:
+    -   **b0**: `toolchain/check/cpp/{import,thunk}.{cpp,h}`,
+        `toolchain/driver/compile_options.{cpp,h}` (overlay clean — trunk's
+        match touched handle_match/node_stack/inst_namer, not these);
+        4 programs under `fork/conformance/programs/error_handling/`;
+        `fork/b0-exc/plan.md`.
+    -   **Targeted merges** (do NOT file-overlay — trunk's versions moved on):
+        b0's COMPILE-ARGS directive into trunk's `runner.py` + its doc into
+        `fork/conformance/README.md`.
+    -   **DROP** b0's `fork_build_toolchain.yaml` (stale, pre-R21) and its
+        72 regenerated goldens (regenerate on trunk by way of autoupdate).
+3.  `uvx prek run --all-files` clean + `runner.py --self-test` (R25) before push.
+4.  Push -> fast-check (compile) -> autoupdate (goldens) -> gate -> PR.
+
+## Scoreboard (source of truth: run the suite, don't trust this line)
+
+68 PASS / 33 SKIP / 0 FAIL programs (101 total, 5 differential C++-oracle
+pairs); 39/56 bullets green (toolchain `fork-toolchain-11-c5281a36e`).
+Merged to trunk; B0 will flip the exception-interop bullet when it lands.
 
 ## Scoreboard (source of truth: run the suite, don't trust this line)
 

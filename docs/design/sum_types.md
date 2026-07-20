@@ -26,6 +26,17 @@ a _discriminator_ tag that identifies which alternative is present, together
 with that alternative's value if it has one. Sum types are typically handled
 with pattern matching.
 
+A [`choice`](#choice-declarations) type is Carbon's type-safe tagged union —
+the equivalent of a Rust `enum` — and the **default recommendation** for
+expressing "one of several alternatives". Carbon also has un-discriminated
+[unions](unions.md), which exist for C++ interoperability and migration only;
+see [When to use `choice` vs `union`](unions.md#when-to-use-choice-vs-union).
+Note that payload-carrying `choice` alternatives are not yet implemented in
+the toolchain (fork workstream W5; see
+[fork/gap-analysis.md](/fork/gap-analysis.md)); when they land, they lower
+onto the overlapping-storage contract in
+[Relationship to choice types](unions.md#relationship-to-choice-types).
+
 ## `choice` declarations
 
 The `choice` keyword is used to declare a sum type by specifying its interface,
@@ -90,11 +101,19 @@ declaration, but gives the author full control over the representation and class
 members.
 
 The ability to create instances of the sum type can be straightforwardly
-emulated with factory functions and static constants, and the internal storage
-layout will presumably involve untagged unions or some other low-level storage
-primitive which hasn't been designed yet, but the key to defining a sum type's
-interface is enabling it to support pattern matching. To do that, the sum type
-has to specify two things:
+emulated with factory functions and static constants. The internal storage
+layout will typically involve an un-discriminated [union](unions.md) when the
+alternatives' types satisfy the
+[0.1 union field rules](unions.md#field-rules-in-01) (trivially copyable and
+destructible); for other alternative types, a 0.1 class-based sum type stores
+its alternatives in ordinary non-overlapping fields, as the `Optional` example
+below does, until those field rules are relaxed. Payload-carrying `choice` types
+lower onto the same overlapping-storage _layout_ that unions specify, but at the
+level of the compiler's layout machinery, where the source-level union field
+rules do not apply — see
+[Relationship to choice types](unions.md#relationship-to-choice-types). The key
+to defining a sum type's interface is enabling it to support pattern matching.
+To do that, the sum type has to specify two things:
 
 -   The set of all possible alternatives, including their names and parameter
     types, so that the compiler can typecheck the `match` body, identify any
@@ -240,5 +259,6 @@ return an index that identifies the `case` body to be executed.
 
 ## References
 
+-   [Unions](unions.md)
 -   Proposal
     [#157: Design direction for sum types](https://github.com/carbon-language/carbon-lang/pull/157)

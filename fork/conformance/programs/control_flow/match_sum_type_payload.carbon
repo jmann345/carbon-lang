@@ -1,0 +1,50 @@
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+// CONFORMANCE-BULLET: Control flow: matching — sum-type consumption incl. std::variant/std::optional interop
+// EXPECT-EXIT: 0
+// EXPECT-STDOUT:
+//   42
+//   7
+// SKIP: MISSING end-to-end — match statement semantics exist only for W4 slice 1 (integer scrutinee, integer-literal cases, `default`): a choice-typed scrutinee like `match (r)` is rejected at its `)` with "error: semantics TODO: `match on non-integer scrutinee`" (the `MatchCondition` slice gate in toolchain/check/handle_match.cpp), alternative patterns like `.Ok(...)` are outside the `MatchCaseIntroducer` integer-literal gate, choice payloads cannot be destructured, and there is no std::variant/std::optional interop mapping; Optional is a placeholder without pattern integration. Un-SKIP (and uncomment the body) when post-slice-1 W4 (non-integer scrutinees, alternative patterns) + W5 (choice payloads, std::variant/optional interop) land.
+//
+// Write-tests-first stub. Intended future test: consume a payload-carrying
+// choice via `match` alternative patterns (choice-with-payload and `.Name`
+// pattern shapes from docs/design/sum_types.md; `case ... => { }` statement
+// shape from toolchain/parse/testdata/match/match.carbon), then do the same
+// over a `Cpp.std.variant`/
+// `Cpp.std.optional` value imported from C++ so sum-type consumption spans
+// the interop boundary. First-match-wins semantics per
+// docs/design/pattern_matching.md.
+
+import Core library "io";
+// import Cpp inline '''c++
+// #include <optional>
+// inline std::optional<int> MaybeSeven() { return 7; }
+// ''';
+//
+// choice IntResult {
+//   Ok(value: i32),
+//   Err
+// }
+//
+// fn Consume(r: IntResult) -> i32 {
+//   match (r) {
+//     case .Ok(let v: i32) => { return v; }
+//     case .Err => { return -1; }
+//   }
+// }
+
+fn Run() -> i32 {
+  // Intended body once the features land:
+  //   Core.Print(Consume(IntResult.Ok(42)));
+  //   match (Cpp.MaybeSeven()) {
+  //     case .Some(let n: i32) => { Core.Print(n); }
+  //     case .None => { return 1; }
+  //   }
+  //   return 0;
+  // Guard: fails loudly (exit 1 vs EXPECT-EXIT 0) if un-SKIPped before
+  // match semantics, choice payloads, and variant/optional interop land.
+  return 1;
+}

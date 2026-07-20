@@ -69,6 +69,11 @@ jobs:
             has_cpp:
               - added|modified: '{**/*.cpp,**/*.h}'
               - '!**/*.tpl.h'
+              # Fork: differential-test .diff.cpp oracles are compiled at
+              # runtime by the conformance runner with the Carbon toolchain's
+              # clang++, not by bazel, so they have no compile_commands entry
+              # and cannot be clangd-tidy'd (like the .tpl.h fragments above).
+              - '!fork/conformance/programs/**'
           list-files: 'shell'
 
       - uses: ./.github/actions/build-setup-common

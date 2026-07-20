@@ -1,0 +1,383 @@
+{
+  "milestone_status": [
+    {
+      "bullet": "Code organization: Packages",
+      "status": "DONE",
+      "evidence": "Full package model checked with ~29 golden tests in toolchain/check/testdata/packages/ incl. restricted names and cross-package import."
+    },
+    {
+      "bullet": "Code organization: Libraries",
+      "status": "DONE",
+      "evidence": "Named libraries, api/impl pairing, export names/export import all checked and tested (check/testdata/packages/)."
+    },
+    {
+      "bullet": "Code organization: Implementation files",
+      "status": "DONE",
+      "evidence": "api vs impl file semantics tested in check/testdata/packages/ (pairing, implicit imports)."
+    },
+    {
+      "bullet": "Code organization: Importing",
+      "status": "DONE",
+      "evidence": "Lazy cross-IR import machinery (check/import_ref.cpp, 5013 lines), import cycles diagnosed, `import Cpp` and inline imports work; tested across suites."
+    },
+    {
+      "bullet": "Code organization: Namespaces",
+      "status": "DONE",
+      "evidence": "23 golden tests in check/testdata/namespace/ covering nesting, aliasing, shadowing, cross-import merging, conflict/poisoning diagnostics."
+    },
+    {
+      "bullet": "Type system: User-defined types (classes)",
+      "status": "DONE",
+      "evidence": "Classes with fields, methods, adapt, abstract/base/final, access control fully checked and lowered (check/testdata/class/, lower/testdata/class/)."
+    },
+    {
+      "bullet": "Type system: C++ interop \u2014 importing C++ types / exporting Carbon types",
+      "status": "PARTIAL",
+      "evidence": "Classes/enums/unions/templates import and Carbon classes export (125 check + 38 lower interop tests), but C++ templates cannot instantiate on Carbon class types and several export cases are fail_todo."
+    },
+    {
+      "bullet": "Type system: Single inheritance",
+      "status": "DONE",
+      "evidence": "base class/extend base, derived-to-base conversion, shadowing \u2014 ~19 golden tests in check/testdata/class/inheritance/."
+    },
+    {
+      "bullet": "Type system: Virtual dispatch",
+      "status": "DONE",
+      "evidence": "Vtables with override checking and thunks (check/class.cpp:142-370), verified to LLVM IR with llvm.load.relative.i32 in lower/testdata/class/virtual.carbon."
+    },
+    {
+      "bullet": "Type system: C++ interop \u2014 bi-directional inheritance, hierarchy roots, abstract/final/virtual mapping",
+      "status": "PARTIAL",
+      "evidence": "Carbon extends C++ bases and overrides C++ virtuals (with adaptation thunks); C++ derives from exported Carbon classes; but multiple/virtual/diamond inheritance and abstract-with-nonvirtual-dtor export are fail_todo."
+    },
+    {
+      "bullet": "Type system: Operator overloading",
+      "status": "DONE",
+      "evidence": "All operators route through Core interfaces (check/operator.h + core/prelude/operators), ~25 per-operator golden tests in check/testdata/operators/overloaded/."
+    },
+    {
+      "bullet": "Type system: C++ interop \u2014 synthesizing Carbon overloads for imported C++ types",
+      "status": "PARTIAL",
+      "evidence": "Broad C++ operator import mapped onto Carbon interfaces incl. spaceship rewrites, plus synthesized Copy/Destroy/As/Eq/Ordered/Iterate impls; assignment-operator import and some rewrites still fail_todo."
+    },
+    {
+      "bullet": "Type system: C++ interop \u2014 exporting Carbon operator overloads into C++",
+      "status": "MISSING",
+      "evidence": "No evidence anywhere of exporting Carbon operator impls for use from C++ (audit: 'operator interop is one-directional')."
+    },
+    {
+      "bullet": "Type system: Sum types (discriminated unions)",
+      "status": "PARTIAL",
+      "evidence": "Parameterless `choice` works end-to-end (enum substitute), but payload alternatives emit context.TODO('choice alternatives with parameters are not yet supported') in handle_choice.cpp:159 and match cannot consume them."
+    },
+    {
+      "bullet": "Type system: Unions (un-discriminated) + C++ union mapping",
+      "status": "MISSING",
+      "evidence": "No `union` token in token_kind.def (verified by grep), no parse/check/design doc; C++ unions import only as opaque interop types."
+    },
+    {
+      "bullet": "Generics: generic functions and types",
+      "status": "DONE",
+      "evidence": "Generic classes/functions/methods with Generic/Specific definition-checked model (sem_ir/generic.h) and monomorphizing lowering (lower/testdata/function/generic/, 28 tests)."
+    },
+    {
+      "bullet": "Generics: Checked generics",
+      "status": "DONE",
+      "evidence": "Interfaces, impls (forall/blanket/final), witness tables, associated constants, where-rewrites, named constraints, deduction, specialization + match_first \u2014 ~227 golden tests; residual gaps (== constraints, observe semantics, interface defaults) are edges."
+    },
+    {
+      "bullet": "Generics: Definition-checked variadics",
+      "status": "DESIGN-ONLY",
+      "evidence": "Complete 964-line design (docs/design/variadics.md, accepted p002240) but zero implementation \u2014 no `...`/`each` tokens exist in token_kind.def (verified)."
+    },
+    {
+      "bullet": "Generics: Integrated templates",
+      "status": "PARTIAL",
+      "evidence": "`template T: type` checks and simple dependent member access works via deferred actions, but operators/conversions on dependent values are fail_todo, lowering hits CARBON_FATAL 'Template lowering not implemented yet' (lower/handle.cpp:363), and templates.md is a self-described skeletal placeholder."
+    },
+    {
+      "bullet": "Generics: Template-style structural conformance to nominal constraints",
+      "status": "MISSING",
+      "evidence": "'structural conformance' appears nowhere in the toolchain and the templates design doc doesn't concretely design it \u2014 neither design nor implementation exists."
+    },
+    {
+      "bullet": "Generics: C++ interop \u2014 importing C++ templates, instantiating on Carbon types",
+      "status": "PARTIAL",
+      "evidence": "Class/function/alias/variable templates import and instantiate on C++ types and Carbon builtins, but Carbon class types as template args error 'unsupported type used as template argument' (interop/cpp/template/generic_call.carbon)."
+    },
+    {
+      "bullet": "Generics: C++ interop \u2014 exporting Carbon templates/checked generics as C++ templates",
+      "status": "PARTIAL",
+      "evidence": "check/cpp/export.cpp creates clang FunctionTemplateDecls for type-parameter checked generics; non-type and enclosing-scope generics fail_todo; no Carbon-template export."
+    },
+    {
+      "bullet": "Generics: C++ interop \u2014 C++20 concepts <-> named predicates mapping",
+      "status": "PARTIAL",
+      "evidence": "Concepts import as compile-time predicates (interop/cpp/template/concept.carbon passes); the export direction (Carbon predicates as C++20 concepts) has no trace."
+    },
+    {
+      "bullet": "Functions: separate declaration and definition",
+      "status": "DONE",
+      "evidence": "Parsed and checked with redeclaration matching; tested in parse/testdata/function/ and check suites."
+    },
+    {
+      "bullet": "Functions: function overloading (Carbon-native)",
+      "status": "MISSING",
+      "evidence": "pattern_matching.md:696: 'We do not yet have an approved design for overloaded functions' \u2014 no design, no implementation of Carbon-side overloading."
+    },
+    {
+      "bullet": "Functions: C++ interop \u2014 importing/calling C++ functions and methods",
+      "status": "DONE",
+      "evidence": "Free functions, methods, ctors, extern C imported with auto-generated ABI thunks, verified through LLVM IR goldens (lower/testdata/interop/cpp/)."
+    },
+    {
+      "bullet": "Functions: C++ interop \u2014 exporting Carbon functions/methods to C++",
+      "status": "DONE",
+      "evidence": "Reverse interop lets inline C++ call Carbon functions/methods/statics with thunk machinery (check/cpp/export.cpp, 1202 lines; weak_odr thunks landed July 2026)."
+    },
+    {
+      "bullet": "Functions: C++ interop \u2014 importing C++ overload sets",
+      "status": "DONE",
+      "evidence": "Real Clang Sema overload resolution incl. default arguments and literal-driven resolution (check/cpp/ overload tests)."
+    },
+    {
+      "bullet": "Functions: C++ interop \u2014 open overload sets as extension points (swap etc.)",
+      "status": "PARTIAL",
+      "evidence": "Only iteration is synthesized into an interface (ADL begin/end -> Core.Iterate); no general swap-style heuristic import, several ADL cases fail_todo."
+    },
+    {
+      "bullet": "Control flow: conditions",
+      "status": "DONE",
+      "evidence": "if/else and if-expressions checked and lowered with golden tests (lower/testdata/)."
+    },
+    {
+      "bullet": "Control flow: loops incl. range-based and C/C++ loop equivalents",
+      "status": "DONE",
+      "evidence": "while, for-in over arrays, ranges (Core.Range in prelude) and C++ ranges via Iterate; break/continue; lowered and exercised by ~40 building advent2024 programs."
+    },
+    {
+      "bullet": "Control flow: matching \u2014 good switch equivalents",
+      "status": "PARTIAL",
+      "evidence": "match fully parses (14 parse tests) but all 15 check handlers in check/handle_match.cpp are context.TODO stubs (verified: 14 TODO occurrences) \u2014 no semantics, no lowering."
+    },
+    {
+      "bullet": "Control flow: matching \u2014 sum-type consumption incl. std::variant/std::optional interop",
+      "status": "MISSING",
+      "evidence": "No match semantics, no choice payloads, no std::variant mapping; Optional is a placeholder without pattern integration."
+    },
+    {
+      "bullet": "Control flow: matching \u2014 if-let / let-else combined match+declaration",
+      "status": "MISSING",
+      "evidence": "Absent at every layer (no tokens, parse states, or check support) and absent from docs/design/pattern_matching.md \u2014 not even designed."
+    },
+    {
+      "bullet": "C++ interop: threading, atomics, memory model, synchronization",
+      "status": "MISSING",
+      "evidence": "No dedicated support, tests, or design doc anywhere in toolchain/ or docs/design/."
+    },
+    {
+      "bullet": "Error handling: dedicated control flow constructs",
+      "status": "MISSING",
+      "evidence": "No try/throw tokens or parser states; docs/design/README.md:3831: 'Carbon does not have language features dedicated to error handling' \u2014 undesigned and unimplemented."
+    },
+    {
+      "bullet": "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)",
+      "status": "MISSING",
+      "evidence": "clang_invocation.cpp contains no exception-handling configuration; no mapping design exists; philosophy doc disclaims seamless exception interop."
+    },
+    {
+      "bullet": "Stdlib: fundamental types (bool, iN, fN)",
+      "status": "DONE",
+      "evidence": "bool, Int(N)/UInt(N) with full checked arithmetic/comparison/conversion impls, Char; Float(N) somewhat narrower (core/prelude/types/)."
+    },
+    {
+      "bullet": "Stdlib: tuple/array library parts",
+      "status": "PARTIAL",
+      "evidence": "array Iterate impl works; tuple Copy hand-written only for arities 0-3 with 'TODO: Implement tuple copy as a variadic generic impl'; no tuple Eq/Ordered \u2014 blocked on variadics."
+    },
+    {
+      "bullet": "Stdlib: pointer types",
+      "status": "DONE",
+      "evidence": "Pointer Copy/UnformedInit/const conversions, UnsafeAs casts, Optional(T*) null-niche for C++ ABI (core/prelude/)."
+    },
+    {
+      "bullet": "Stdlib: interfaces powering language syntax (operators, conversions)",
+      "status": "DONE",
+      "evidence": "AddWith/EqWith/OrderedWith/IndexWith/ImplicitAs/As/UnsafeAs/Copy/Iterate etc. all present and powering syntax, though several shapes are workarounds pending interface extension."
+    },
+    {
+      "bullet": "Stdlib: String and string-literal types",
+      "status": "PARTIAL",
+      "evidence": "String is a 33-line non-owning {Char*, u64} with Size/Copy/indexing only \u2014 no equality, concatenation, or owning variant (core/prelude/types/string.carbon)."
+    },
+    {
+      "bullet": "Stdlib: Optional",
+      "status": "PARTIAL",
+      "evidence": "Working Some/None/HasValue/Get with pointer niche, but the file states 'We don't have an approved design... The API here is a placeholder' (optional.carbon:27-28)."
+    },
+    {
+      "bullet": "Stdlib: Slices",
+      "status": "MISSING",
+      "evidence": "grep for Slice in core/ returns nothing; no slice type anywhere; heap allocation likewise absent."
+    },
+    {
+      "bullet": "Stdlib C++ interop: transparent fundamental-type mapping",
+      "status": "DONE",
+      "evidence": "bool/char/iN/uN/fN map plus CppCompat.Long32/ULongLong64 adapters (core/prelude/types/cpp/, check/cpp/type_mapping.cpp)."
+    },
+    {
+      "bullet": "Stdlib C++ interop: transparent non-owning string mapping",
+      "status": "DONE",
+      "evidence": "str <-> std::string_view bidirectional transparent mapping implemented and tested (check/cpp/custom_type_mapping.cpp, proposal p006177)."
+    },
+    {
+      "bullet": "Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view)",
+      "status": "MISSING",
+      "evidence": "No Carbon slice type and no std::span/vector view mapping \u2014 only ordinary API import of containers works."
+    },
+    {
+      "bullet": "Stdlib C++ interop: transparent iteration-abstraction mapping",
+      "status": "DONE",
+      "evidence": "Carbon range-for over C++ ranges via synthesized Core.Iterate (member and ADL begin/end), tested in check+lower (cpp_range_for_iterate.carbon)."
+    },
+    {
+      "bullet": "Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems",
+      "status": "PARTIAL",
+      "evidence": "clang/clang++/clang-cl/lld busybox symlinks with on-demand runtimes are implemented and integration-tested, but nothing exercises or documents them under CMake or Make."
+    },
+    {
+      "bullet": "Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation",
+      "status": "PARTIAL",
+      "evidence": "Compile->link->run works on Linux/macOS for classes/generics/interop, but match, variadics, templates lowering, error handling, and unions are absent \u2014 gaps that do undermine evaluation of those features."
+    },
+    {
+      "bullet": "Project: installs on Windows, macOS, and Linux and builds working programs",
+      "status": "PARTIAL",
+      "evidence": "Linux x86-64/arm64 and macOS arm64 in CI (only Linux x86-64 released); Windows explicitly unsupported \u2014 clang_runtimes.cpp returns 'TODO: Windows runtimes are untested and not yet supported', LLD wired for ELF/MachO only, no Windows CI."
+    },
+    {
+      "bullet": "Project: CMake build-system integration plus Make documentation",
+      "status": "MISSING",
+      "evidence": "No CMake support, example, or docs anywhere (only a libc++ header-expansion .bzl mentions cmake); Bazel is the only integrated build system."
+    },
+    {
+      "bullet": "Project: detailed safety strategy",
+      "status": "DONE",
+      "evidence": "docs/design/safety/README.md rewritten via accepted p005914 (Strict/Permissive modes, per-category enforcement model, build modes, Rust-ecosystem reuse); residual future-work on soundness model/mode syntax and a stale conflicting principles doc."
+    },
+    {
+      "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
+      "status": "MISSING",
+      "evidence": "Temporal/mutation safety exists only as an explicitly 'directional... provisional' section of p005914; no dedicated design docs or follow-up proposals, no Rust-interop analysis, README 'Lifetime and move semantics' is a bare TODO."
+    },
+    {
+      "bullet": "Project: basic evaluator documentation (getting started to FAQs)",
+      "status": "PARTIAL",
+      "evidence": "README nightly-tarball getting-started (Ubuntu-only) and a comprehensive project FAQ exist, but docs/guides contains only a glossary \u2014 no language tutorial or evaluation walkthrough."
+    },
+    {
+      "bullet": "Goal: design docs documented, cohesive, understandable without placeholders",
+      "status": "PARTIAL",
+      "evidence": "Generics/variadics/pattern-matching/classes designs are mature, but templates/metaprogramming/match-control-flow are self-described skeletal placeholders and the interop README has ~10 empty TODO sections."
+    }
+  ],
+  "workstreams": [
+    {
+      "name": "Execution/conformance test harness",
+      "depends_on": [],
+      "size": "M",
+      "arbiter": "A bazel test target that compiles, links, AND executes a directory of .carbon programs asserting stdout/exit code (e.g. FileTestBase subclass invoking `carbon build` then ExecuteAndWait, or a generalized install_test.py); advent2024 programs run under it in CI.",
+      "description": "Today only one test executes a compiled Carbon binary; all 1,625 golden tests pin compiler dumps, not behavior. Build the compile-and-run harness first \u2014 it is the objective arbiter every other workstream's 'done' claim needs, and it has no dependencies. Include a `carbon run` subcommand or build+exec mode."
+    },
+    {
+      "name": "Design authorship: error handling, unions, if-let/let-else, function overloading, threading/atomics interop",
+      "depends_on": [],
+      "size": "XL",
+      "arbiter": "Accepted proposals merged for each topic; docs/design/ sections exist with no 'TODO:'/'placeholder' markers for error handling, unions, combined match-declare, overloading, and threading interop (grep-verifiable against the 0.1 'without placeholders' bar).",
+      "description": "Five 0.1-required features have no accepted design at all \u2014 error handling (README explicitly says none exists), un-discriminated unions, if-let/let-else, Carbon function overloading, and C++ threading/atomics interop. Nothing downstream can be implemented until these proposals land; this is the single largest schedule risk because it is bottlenecked on design bandwidth, not engineering."
+    },
+    {
+      "name": "Concrete safe-Carbon design (temporal/mutation safety + safe-Rust-interop analysis)",
+      "depends_on": [],
+      "size": "XL",
+      "arbiter": "Dedicated accepted proposals replacing p005914's 'provisional' section: concrete pointer/borrow type-system rules, safety-mode syntax, soundness model, worked C++-migration examples, and a written safe-Rust-interop analysis \u2014 reviewed against the milestone's five safety categories. No implementation required.",
+      "description": "The 0.1 checklist requires a detailed, concrete design (not implementation) for safe Carbon. Only a directional sketch exists (Ante-style shared mutability, Swift-style adoption). Pure design work, parallelizable with everything else, but it is the stated reason 0.1 slipped to end-2026."
+    },
+    {
+      "name": "Pattern matching semantics (match check + lowering, expression/refutable patterns)",
+      "depends_on": ["Execution/conformance test harness"],
+      "size": "L",
+      "arbiter": "All 15 context.TODO stubs in check/handle_match.cpp replaced; parse/testdata/match cases flow through check and lower to golden IR; execution tests demonstrate C/C++ switch-equivalent programs producing correct output incl. guards and default.",
+      "description": "match is fully parsed and designed but 100% stubbed in check. Implement match statement checking (cases, guards, default, exhaustiveness), expression patterns, refutable-pattern rejection, and lowering (decision-tree or chain). This unblocks sum types, Optional/variant interop, and the if-let family."
+    },
+    {
+      "name": "Sum types with payloads, native unions, and std::variant/optional interop",
+      "depends_on": [
+        "Pattern matching semantics (match check + lowering, expression/refutable patterns)",
+        "Design authorship: error handling, unions, if-let/let-else, function overloading, threading/atomics interop"
+      ],
+      "size": "L",
+      "arbiter": "Choice alternatives with parameters construct AND destructure via match in executed tests; a `union` declaration round-trips with C++ unions in interop tests; a Carbon match over an imported std::optional/std::variant works.",
+      "description": "Implement payload-carrying choice alternatives (handle_choice.cpp TODO; storage design in sum_types.md admits the low-level primitive 'hasn't been designed yet'), destructuring through match, the new union feature per its landed design, and the variant/optional interop mapping the milestone names explicitly."
+    },
+    {
+      "name": "Definition-checked variadics implementation",
+      "depends_on": [],
+      "size": "XL",
+      "arbiter": "`...`/`each` tokens, parse nodes, and check/lower support such that the worked examples in docs/design/variadics.md compile and execute; core/prelude tuple Copy/Eq rewritten as a single variadic impl replacing the arity-3 hand-rolls.",
+      "description": "The design (964 lines, accepted p002240 with formal typechecking appendix) is complete but implementation is at 0% \u2014 not even lexable. Requires lexer tokens, parse states, pack typechecking machinery in check, and pack lowering. Independent of match; can start immediately. Explicit 0.1 bullet."
+    },
+    {
+      "name": "Integrated templates completion + structural conformance",
+      "depends_on": [
+        "Design authorship: error handling, unions, if-let/let-else, function overloading, threading/atomics interop"
+      ],
+      "size": "L",
+      "arbiter": "generic/template/unimplemented.carbon fail_todo tests flip to passing (operators, conversions, assoc-const access on dependent values); the CARBON_FATAL at lower/handle.cpp:363 is gone and a template function executes in the run harness; a structural-conformance test (C++20-style validity predicate) checks and runs.",
+      "description": "Template bindings and simple dependent member access exist, but dependent operators/conversions are fail_todo and template lowering is a hard fatal. Structural conformance to nominal constraints needs a real design first (templates.md is a placeholder). Also unlocks C++ templates instantiated on Carbon types."
+    },
+    {
+      "name": "C++ interop frontier: templates-on-Carbon-types, operator/concept export, exception + threading interop",
+      "depends_on": [
+        "Integrated templates completion + structural conformance",
+        "Design authorship: error handling, unions, if-let/let-else, function overloading, threading/atomics interop",
+        "Sum types with payloads, native unions, and std::variant/optional interop"
+      ],
+      "size": "XL",
+      "arbiter": "Instantiating an imported C++ class template on a Carbon class type works in executed tests; Carbon operators and named predicates usable from C++; a Carbon program calls a throwing C++ function under both -fexceptions and -fno-except configs with defined behavior; a benchmark with interop in the critical path runs \u2014 matching the milestone's 'build and run tests of most C++ interoperability' goal.",
+      "description": "Interop machinery is strong (thunks, overload sets, inheritance) but the 0.1 bullets still open are: C++ templates on Carbon class types, exporting operators and concepts, the entire exception-interop story (blocked on error-handling design), threading/atomics, and closing the interop design README's ~10 placeholder sections."
+    },
+    {
+      "name": "Standard library buildout: slices, heap allocation, String, Optional, span mapping",
+      "depends_on": [
+        "Definition-checked variadics implementation",
+        "Sum types with payloads, native unions, and std::variant/optional interop"
+      ],
+      "size": "L",
+      "arbiter": "A core/ test suite (compiled AND executed via the run harness) covering: a slice type with runtime bounds behavior, heap allocation, an approved-design Optional and String with comparison/ownership story, and transparent std::span/owning-container->view mapping round-tripping with C++.",
+      "description": "Close the 'types with important language support' half of the stdlib checklist: slices (missing entirely), heap allocation (missing), owning/comparable String, a designed (non-placeholder) Optional, and the non-owning contiguous-container interop mapping. Several APIs are currently workarounds pending variadics and interface extension."
+    },
+    {
+      "name": "Windows support end-to-end",
+      "depends_on": ["Execution/conformance test harness"],
+      "size": "XL",
+      "arbiter": "A Windows runner in CI that installs the toolchain, builds runtimes (or uses prebuilt), compiles/links/executes a Carbon+C++-interop program, and a released carbon_toolchain artifact for Windows alongside macOS and Linux (incl. arm64) with OS/CPU in package names.",
+      "description": "The 0.1 milestone requires install + working programs on Windows; today clang_runtimes.cpp hard-errors on Windows, LLD has no COFF driver wired, there is no Windows CI, and releases are Linux-x86-64-only. Independent of language features; large due to runtimes, linking (link.exe/lld-link), path/ABI work, and CI infrastructure."
+    },
+    {
+      "name": "CMake/Make integration and evaluator documentation",
+      "depends_on": ["Execution/conformance test harness"],
+      "size": "M",
+      "arbiter": "A CI-tested example CMake project that builds a mixed Carbon/C++ program using the installed toolchain (drop-in Clang mode), written Make-integration docs, and a docs/guides getting-started tutorial an evaluator can follow from install to running a program with interop.",
+      "description": "The milestone explicitly requires CMake integration plus Make documentation; neither has been started (Bazel-only today, though `carbon config --json` provides groundwork). Evaluator docs are thin (glossary only in docs/guides). Mostly product/docs work, parallelizable late."
+    },
+    {
+      "name": "Unicode source support in the lexer",
+      "depends_on": [],
+      "size": "S",
+      "arbiter": "Lexer accepts UAX#31/NFC identifiers and Unicode whitespace per docs/design/lexical_conventions/words.md, with golden lex tests for non-ASCII identifiers replacing today's hard errors.",
+      "description": "Explicit TODOs at lex.cpp:301/471/1454 make non-ASCII source a lex error despite a finished design. Small, self-contained, no dependencies \u2014 good early win for the 'translate existing C++ code' goal (identifiers in real codebases)."
+    }
+  ],
+  "overall_assessment": "This fork (a fresh clone of upstream trunk, July 2026) is roughly at a strong mid-stage toward 0.1: the front half of the compiler is essentially done and the back half of the checklist is barely started. Lexing/parsing cover nearly the whole declared syntax with CI-enforced coverage; checked generics, classes with virtual dispatch, operator overloading, the package/import model, and the C++ interop machinery (embedded Clang, bidirectional thunks, overload sets, inheritance, template import) are implemented with deep golden-test suites and real programs compile to working Linux/macOS binaries. The gaps cluster in three tiers. Tier 1 \u2014 undesigned 0.1 requirements: error handling + C++ exception interop, un-discriminated unions, if-let/let-else, function overloading, threading/atomics interop, and the concrete safe-Carbon design; these are bottlenecked on proposal authorship, not code, and are the dominant schedule risk (the project's own roadmap calls end-2026 the earliest plausible 0.1). Tier 2 \u2014 designed but unimplemented or stubbed: definition-checked variadics (0% implemented), match semantics (all check handlers are TODO stubs), choice payloads, and template lowering (hard CARBON_FATAL). Tier 3 \u2014 product gaps: Windows support (explicitly unsupported), CMake/Make integration (not started), multi-platform releases, evaluator docs, and \u2014 critically for judging everything else \u2014 the absence of any execution-level conformance testing (exactly one test runs a compiled Carbon binary). Recommended sequencing: stand up the run-and-verify harness immediately as the arbiter, launch the design-authorship and safe-Carbon workstreams in parallel (longest pole), then implement match -> sum types/unions -> stdlib, with variadics, templates/interop frontier, Windows, and CMake proceeding as parallel tracks. Realistically this is 2+ years of work at current velocity for a small team, dominated by design and by the interop/Windows XL items."
+}

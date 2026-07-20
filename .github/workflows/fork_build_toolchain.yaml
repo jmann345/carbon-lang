@@ -1,0 +1,193 @@
+# Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+# Exceptions. See /LICENSE for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# Part of jmann345's carbon-lang fork tooling (see /fork/README.md).
+#
+# Builds THIS branch's toolchain on the self-hosted runner and publishes the
+# install tarball as a release on this fork. This is how fork-local compiler
+# changes get a runnable toolchain for the conformance arbiter
+# (fork/conformance/), and the `bazel test //toolchain/...` step is the
+# Bun-style merge gate from fork/decision-log.md F-002.
+#
+# First cold build compiles LLVM+Clang+LLD from source (hours); later builds
+# reuse the local bazel disk cache. Requires on the runner host: clang >= 19
+# with libc++ (see docs/project/contribution_tools.md), python3, ~60GB free
+# disk for cache + outputs.
+
+name: 'Fork: build toolchain'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - '.github/workflows/fork_build_toolchain.yaml'
+      - 'fork/toolchain-build-request.txt'
+
+permissions:
+  contents: write # For creating and uploading to releases on this fork.
+
+concurrency:
+  group: fork-build-toolchain-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 720
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # GATE PARITY (rulebook R21): this merge gate must be a superset of
+      # upstream's own acceptance gate, so "fork-green" == "upstream would
+      # accept". Upstream's real bar is prek (.pre-commit-config.yaml) +
+      # clangd-tidy + bazel test. We run the SAME tools upstream runs
+      # (j178/prek-action, uvx clangd-tidy) rather than re-approximating them
+      # in a hook — a reimplemented gate drifts from the real one (R22).
+      - name: prek (upstream lint/format acceptance gate)
+        uses: j178/prek-action@01345c78b7de7d79edf368729212760396ba9345 # v2
+
+      - name: Preflight
+        env:
+          # A cold LLVM+Clang build plus bazel caches needs roughly this much.
+          # Free space on the runner host (or point bazel's output_user_root
+          # and the .bazelrc disk_cache at a bigger volume) before building.
+          MIN_FREE_GB: 40
+        run: |
+          set -x
+          uname -a
+          nproc
+          df -h . "$HOME"
+          python3 --version
+          clang --version || true
+          clang++ --version || true
+          free_gb=$(df -BG --output=avail "$HOME" | tail -1 | tr -dc '0-9')
+          if [ "$free_gb" -lt "$MIN_FREE_GB" ]; then
+            echo "::error::Only ${free_gb}GB free on \$HOME; need ~${MIN_FREE_GB}GB+ for the toolchain build (bazel output base + disk cache + LLVM objects). Free space or move ~/.cache/bazel and ~/.cache/carbon-lang-build-cache to a larger volume, then re-run."
+            exit 1
+          fi
+
+      - name: Ensure uv
+        # Carbon's scripts (incl. the .bazelrc workspace_status_command) use
+        # `#!/usr/bin/env -S uv run` shebangs; uv is a required contribution
+        # tool (docs/project/contribution_tools.md). User-space install.
+        run: |
+          if ! command -v uv >/dev/null 2>&1; then
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+          fi
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Ensure static LLVM libunwind
+        # Carbon's cc toolchain links host binaries with -unwindlib=libunwind
+        # + static runtimes (bazel/cc_toolchains/cc_toolchain_cpp_features.bzl),
+        # which needs LLVM's libunwind.a. Distros often don't ship the static
+        # archive, so probe for it and otherwise build a private copy from the
+        # LLVM sources bazel has already fetched into its external tree.
+        run: |
+          set -euo pipefail
+          LIBDIR="$HOME/.local/lib/carbon-host-deps"
+          mkdir -p "$LIBDIR"
+          # Mirror the real link flags from
+          # bazel/cc_toolchains/cc_toolchain_cpp_features.bzl: clang rejects
+          # -unwindlib=libunwind without -rtlib=compiler-rt.
+          probe() {
+            printf 'int main(){return 0;}' | clang++ -x c++ - -o /tmp/unwind_probe \
+              -fuse-ld=lld -stdlib=libc++ -static-libstdc++ -static-libgcc \
+              -rtlib=compiler-rt -unwindlib=libunwind -l:libc++abi.a -L"$LIBDIR"
+          }
+          if ! probe; then
+            echo "libunwind.a not found; building it from bazel's LLVM checkout"
+            SRC=$(ls -d "$HOME"/.cache/bazel/_bazel_*/*/external/+llvm_project+llvm-project 2>/dev/null | head -1)
+            if [ -z "$SRC" ] || ! command -v cmake >/dev/null 2>&1; then
+              echo "::error::Need cmake (and bazel's llvm-project checkout) to build libunwind.a. Install cmake on the runner host, or provide /usr/lib/libunwind.a."
+              exit 1
+            fi
+            rm -rf /tmp/unwind-build
+            cmake -S "$SRC/runtimes" -B /tmp/unwind-build \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DLLVM_ENABLE_RUNTIMES=libunwind \
+              -DLIBUNWIND_ENABLE_SHARED=OFF \
+              -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+            cmake --build /tmp/unwind-build -j"$(nproc)"
+            cp /tmp/unwind-build/lib/libunwind.a "$LIBDIR/"
+            probe
+          fi
+          # Both configs: --linkopt covers target-config links, --host_linkopt
+          # covers exec-config ("[for tool]") links like the tblgen binaries.
+          echo "build --linkopt=-L$LIBDIR" >> user.bazelrc
+          echo "build --host_linkopt=-L$LIBDIR" >> user.bazelrc
+          echo "user.bazelrc:"; cat user.bazelrc
+
+      - name: Build toolchain tarball
+        run: |
+          python3 ./scripts/run_bazelisk.py \
+            build -c opt --stamp \
+            //toolchain/install:carbon_toolchain_tar_gz
+          ls -la bazel-bin/toolchain/install/carbon_toolchain-*.tar.gz
+
+      - name: clangd-tidy (upstream semantic-lint acceptance gate)
+        # Mirrors upstream .github/workflows/clangd_tidy.yaml on the changed
+        # C++ since the merge base. Reuses the build's compile DB.
+        run: |
+          set -euo pipefail
+          ./scripts/create_compdb.py
+          base=$(git merge-base HEAD origin/trunk 2>/dev/null || echo HEAD~1)
+          files=$(git diff --name-only "$base" HEAD -- '*.cpp' '*.h' \
+            | grep -v '\.tpl\.h$' || true)
+          if [ -n "$files" ]; then
+            uvx --with clangd-tidy==1.1.0.post2 clangd-tidy -p . -j 10 $files
+          else
+            echo "No changed C++ files; skipping clangd-tidy."
+          fi
+
+      - name: Test toolchain (merge gate)
+        run: |
+          python3 ./scripts/run_bazelisk.py \
+            test -c opt --stamp \
+            //toolchain/...
+
+      - name: Extract version and stage artifact
+        id: version
+        run: |
+          TARBALL=$(ls bazel-bin/toolchain/install/carbon_toolchain-*.tar.gz)
+          VERSION=$(basename "$TARBALL" .tar.gz | sed 's/^carbon_toolchain-//')
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          mkdir -p "$RUNNER_TEMP/fork-toolchain"
+          cp "$TARBALL" "$RUNNER_TEMP/fork-toolchain/"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fork-toolchain
+          path: ${{ runner.temp }}/fork-toolchain/carbon_toolchain-*.tar.gz
+          retention-days: 14
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-22.04
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fork-toolchain
+
+      - name: Create release
+        run: |
+          set -euo pipefail
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-9)
+          TAG="fork-toolchain-${{ github.run_number }}-${SHORT_SHA}"
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --prerelease \
+            --title "Fork toolchain ${{ needs.build.outputs.version }} @ ${SHORT_SHA}" \
+            --notes "Toolchain built from ${GITHUB_SHA} on the self-hosted runner, with \`bazel test //toolchain/...\` green. See /fork/process.md." \
+            carbon_toolchain-*.tar.gz

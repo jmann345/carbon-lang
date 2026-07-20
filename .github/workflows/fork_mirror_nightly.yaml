@@ -1,0 +1,58 @@
+# Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+# Exceptions. See /LICENSE for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# Part of jmann345's carbon-lang fork tooling (see /fork/README.md).
+#
+# Mirrors the latest upstream carbon-language/carbon-lang nightly toolchain
+# tarball into a release on this fork, so that sandboxed development
+# environments scoped to this fork can download a runnable `carbon` toolchain
+# as the conformance-suite arbiter.
+
+name: 'Fork: mirror upstream nightly toolchain'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - '.github/workflows/fork_mirror_nightly.yaml'
+      - 'fork/conformance/arbiter-request.txt'
+
+permissions:
+  contents: write # For creating and uploading to releases on this fork.
+
+jobs:
+  mirror:
+    runs-on: ubuntu-22.04
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Download latest upstream nightly
+        run: |
+          set -euo pipefail
+          TAG=$(gh release list --repo carbon-language/carbon-lang \
+            --limit 1 --json tagName -q '.[0].tagName')
+          echo "Upstream tag: $TAG"
+          gh release download "$TAG" --repo carbon-language/carbon-lang \
+            --pattern 'carbon_toolchain-*.tar.gz' --dir .
+          ls -la carbon_toolchain-*.tar.gz
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+
+      - name: Create mirror release on fork
+        run: |
+          set -euo pipefail
+          MIRROR_TAG="arbiter-${TAG}"
+          if gh release view "$MIRROR_TAG" --repo "$GITHUB_REPOSITORY" \
+            >/dev/null 2>&1; then
+            echo "Release $MIRROR_TAG already exists; uploading assets only."
+            gh release upload "$MIRROR_TAG" --repo "$GITHUB_REPOSITORY" \
+              --clobber carbon_toolchain-*.tar.gz
+          else
+            gh release create "$MIRROR_TAG" --repo "$GITHUB_REPOSITORY" \
+              --prerelease \
+              --title "Arbiter: mirrored upstream nightly ${TAG}" \
+              --notes "Verbatim mirror of the upstream carbon-language/carbon-lang release ${TAG} toolchain tarball, used as the conformance-suite arbiter for this fork. See /fork/process.md." \
+              carbon_toolchain-*.tar.gz
+          fi

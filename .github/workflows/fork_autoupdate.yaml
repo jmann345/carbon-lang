@@ -1,0 +1,106 @@
+# Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+# Exceptions. See /LICENSE for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# Part of jmann345's carbon-lang fork tooling (see /fork/README.md).
+#
+# Regenerates AUTOUPDATE golden CHECK lines on the self-hosted runner and
+# commits the reconciliation back to the branch. This is the rulebook R12 land
+# sequence for changes made without a local build: new or edited testdata
+# files are pushed with stale/empty CHECK lines, this workflow runs
+# `bazel run //toolchain/testing:file_test -- --autoupdate` via
+# toolchain/autoupdate_testdata.py, and commits only the resulting
+# toolchain/**/testdata changes.
+
+name: 'Fork: autoupdate testdata'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - 'fork/autoupdate-request.txt'
+
+permissions:
+  contents: write # For pushing the autoupdated goldens back to the branch.
+
+jobs:
+  autoupdate:
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 720
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Ensure uv
+        # Carbon's scripts (incl. the .bazelrc workspace_status_command) use
+        # `#!/usr/bin/env -S uv run` shebangs; uv is a required contribution
+        # tool (docs/project/contribution_tools.md). User-space install.
+        run: |
+          if ! command -v uv >/dev/null 2>&1; then
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+          fi
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Ensure static LLVM libunwind
+        # Carbon's cc toolchain links host binaries with -unwindlib=libunwind
+        # + static runtimes (bazel/cc_toolchains/cc_toolchain_cpp_features.bzl),
+        # which needs LLVM's libunwind.a. Distros often don't ship the static
+        # archive, so probe for it and otherwise build a private copy from the
+        # LLVM sources bazel has already fetched into its external tree.
+        run: |
+          set -euo pipefail
+          LIBDIR="$HOME/.local/lib/carbon-host-deps"
+          mkdir -p "$LIBDIR"
+          # Mirror the real link flags from
+          # bazel/cc_toolchains/cc_toolchain_cpp_features.bzl: clang rejects
+          # -unwindlib=libunwind without -rtlib=compiler-rt.
+          probe() {
+            printf 'int main(){return 0;}' | clang++ -x c++ - -o /tmp/unwind_probe \
+              -fuse-ld=lld -stdlib=libc++ -static-libstdc++ -static-libgcc \
+              -rtlib=compiler-rt -unwindlib=libunwind -l:libc++abi.a -L"$LIBDIR"
+          }
+          if ! probe; then
+            echo "libunwind.a not found; building it from bazel's LLVM checkout"
+            SRC=$(ls -d "$HOME"/.cache/bazel/_bazel_*/*/external/+llvm_project+llvm-project 2>/dev/null | head -1)
+            if [ -z "$SRC" ] || ! command -v cmake >/dev/null 2>&1; then
+              echo "::error::Need cmake (and bazel's llvm-project checkout) to build libunwind.a. Install cmake on the runner host, or provide /usr/lib/libunwind.a."
+              exit 1
+            fi
+            rm -rf /tmp/unwind-build
+            cmake -S "$SRC/runtimes" -B /tmp/unwind-build \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DLLVM_ENABLE_RUNTIMES=libunwind \
+              -DLIBUNWIND_ENABLE_SHARED=OFF \
+              -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+            cmake --build /tmp/unwind-build -j"$(nproc)"
+            cp /tmp/unwind-build/lib/libunwind.a "$LIBDIR/"
+            probe
+          fi
+          # Both configs: --linkopt covers target-config links, --host_linkopt
+          # covers exec-config ("[for tool]") links like the tblgen binaries.
+          echo "build --linkopt=-L$LIBDIR" >> user.bazelrc
+          echo "build --host_linkopt=-L$LIBDIR" >> user.bazelrc
+          echo "user.bazelrc:"; cat user.bazelrc
+
+      - name: Autoupdate testdata
+        run: |
+          python3 ./toolchain/autoupdate_testdata.py
+
+      - name: Commit and push testdata changes
+        run: |
+          set -euo pipefail
+          git config user.name 'jmann345'
+          git config user.email 'jerrymannstan@gmail.com'
+          git add -- ':(glob)toolchain/**/testdata/**'
+          if git diff --cached --quiet; then
+            echo "No testdata changes; nothing to commit."
+            exit 0
+          fi
+          git commit \
+            -m "Autoupdate testdata goldens on the self-hosted runner" \
+            -m "Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
+          git push origin "HEAD:refs/heads/${GITHUB_REF_NAME}"

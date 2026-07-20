@@ -24,3 +24,9 @@ Carbon's flow control statements are:
     -   [`continue`](loops.md#continue) goes to the next iteration of a loop.
 -   [`return`](return.md) ends the flow of execution within a function,
     returning it to the caller.
+
+In addition, the postfix
+[`?` operator](../error_handling.md#error-propagation-the-postfix--operator)
+combines control flow with [error handling](../error_handling.md): it unwraps
+the success value of a `Core.Result` (or other `Core.Try` type), or returns
+the failure from the enclosing function.

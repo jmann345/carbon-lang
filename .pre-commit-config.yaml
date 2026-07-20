@@ -198,7 +198,8 @@ repos:
         exclude: |
           (?x)^(
               .*/testdata/.*|
-              .*/fuzzer_corpus/.*
+              .*/fuzzer_corpus/.*|
+              fork/audit/.*\.json
           )$
   - repo: https://github.com/google/pre-commit-tool-hooks
     rev: efaea7c61c774c0b1a9805fd999e754a2d19dbd1 # frozen: v1.2.5
@@ -249,6 +250,7 @@ repos:
           (?x)^(
               .bazelversion|
               .github/pull_request_template.md|
+              fork/.*-request\.txt|
               .python-version|
               LICENSE.*|
               compile_flags.txt|

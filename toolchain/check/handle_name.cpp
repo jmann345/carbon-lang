@@ -192,6 +192,33 @@ auto HandleParseNode(Context& context, Parse::DesignatorExprId node_id)
     -> bool {
   SemIR::NameId name_id = context.node_stack().PopName();
 
+  // A designator that is the entire pattern of a match `case` over a
+  // choice-typed scrutinee resolves in the scrutinee's choice scope rather
+  // than requiring `.Self` in scope: `case .Err` names the alternative `Err`
+  // of the scrutinee's type (docs/design/sum_types.md; leading-dot patterns
+  // only, per decision-log W5 SF-4). `MatchCaseIntroducer` admits this parse
+  // shape only for choice scrutinees, so the introducer entry below the name
+  // implies the scrutinee's type is a choice.
+  if (name_id != SemIR::NameId::SelfType &&
+      context.node_stack().PeekIs(Parse::NodeKind::MatchCaseIntroducer)) {
+    auto introducer_node_id =
+        context.node_stack()
+            .PopForSoloNodeId<Parse::NodeKind::MatchCaseIntroducer>();
+    SemIR::InstId scrutinee_id =
+        context.node_stack().PeekIs(Parse::NodeKind::MatchHandler)
+            ? context.node_stack().Peek<Parse::NodeKind::MatchHandler>()
+            : context.node_stack().Peek<Parse::NodeKind::MatchStatementStart>();
+    context.node_stack().Push(introducer_node_id);
+
+    auto scrutinee_type_inst_id =
+        context.types().GetTypeInstId(context.types().GetUnqualifiedType(
+            context.insts().Get(scrutinee_id).type_id()));
+    auto member_id =
+        PerformMemberAccess(context, node_id, scrutinee_type_inst_id, name_id);
+    context.node_stack().Push(node_id, member_id);
+    return true;
+  }
+
   if (name_id == SemIR::NameId::SelfType) {
     // Look up `.Self`.
     SemIR::InstId period_self_id =

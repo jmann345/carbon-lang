@@ -2015,6 +2015,7 @@ static auto ImportIncompleteClass(ImportContext& context,
        {.self_type_id = SemIR::TypeId::None,
         .inheritance_kind = import_class.inheritance_kind,
         .is_dynamic = import_class.is_dynamic,
+        .is_choice = import_class.is_choice,
         .scope_id = import_class.is_complete()
                         ? AddPlaceholderNameScope(context)
                         : SemIR::NameScopeId::None}});
@@ -4127,6 +4128,45 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
 }
 
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
+                                SemIR::CustomLayoutType inst) -> ResolveResult {
+  // A native custom-layout type: today, the payload region of a
+  // payload-carrying choice. (Custom layouts of imported C++ classes are
+  // rebuilt from the Clang AST instead of resolving through here.) The
+  // resolution mirrors `StructType`, plus a copy of the layout block, which
+  // contains only sizes and offsets — no cross-file ids.
+  CARBON_CHECK(inst.type_id == SemIR::TypeType::TypeId);
+  auto orig_fields = resolver.import_struct_type_fields().Get(inst.fields_id);
+  llvm::SmallVector<SemIR::TypeInstId> field_type_inst_ids;
+  field_type_inst_ids.reserve(orig_fields.size());
+  for (auto field : orig_fields) {
+    field_type_inst_ids.push_back(
+        GetLocalTypeInstId(resolver, field.type_inst_id));
+  }
+  if (resolver.HasNewWork()) {
+    return ResolveResult::Retry();
+  }
+
+  llvm::SmallVector<SemIR::StructTypeField> new_fields;
+  new_fields.reserve(orig_fields.size());
+  for (auto [orig_field, field_type_inst_id] :
+       llvm::zip_equal(orig_fields, field_type_inst_ids)) {
+    auto name_id = GetLocalNameId(resolver, orig_field.name_id);
+    new_fields.push_back(
+        {.name_id = name_id, .type_inst_id = field_type_inst_id});
+  }
+
+  llvm::SmallVector<SemIR::ObjectSize> layout(
+      resolver.import_ir().custom_layouts().Get(inst.layout_id).begin(),
+      resolver.import_ir().custom_layouts().Get(inst.layout_id).end());
+
+  return ResolveResult::Deduplicated<SemIR::CustomLayoutType>(
+      resolver,
+      {.type_id = SemIR::TypeType::TypeId,
+       .fields_id = resolver.local_struct_type_fields().Add(new_fields),
+       .layout_id = resolver.local_ir().custom_layouts().Add(layout)});
+}
+
+static auto TryResolveTypedInst(ImportRefResolver& resolver,
                                 SemIR::StructType inst) -> ResolveResult {
   CARBON_CHECK(inst.type_id == SemIR::TypeType::TypeId);
   auto orig_fields = resolver.import_struct_type_fields().Get(inst.fields_id);
@@ -4431,6 +4471,9 @@ static auto TryResolveInstCanonical(ImportRefResolver& resolver,
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::CppOverloadSetValue inst): {
+      return TryResolveTypedInst(resolver, inst);
+    }
+    case CARBON_KIND(SemIR::CustomLayoutType inst): {
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::CustomWitness inst): {

@@ -21,6 +21,8 @@ static auto GetSpecialName(NameId name_id, bool for_ir) -> llvm::StringRef {
       return "base";
     case NameId::SpecialNameId::ChoiceDiscriminant:
       return "discriminant";
+    case NameId::SpecialNameId::ChoicePayload:
+      return "payload";
     case NameId::SpecialNameId::Core:
       return "Core";
     case NameId::SpecialNameId::Cpp:

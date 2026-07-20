@@ -553,13 +553,13 @@ choice could not be re-expressed as a tag plus a source-level `union` in 0.1;
 the compiler's lowering is under no such restriction, because it only borrows
 the union _layout_ rule, never a union _declaration_.
 
-**Dependency, stated plainly:** payload-carrying choice alternatives and the
-`match` statement are not yet implemented in this toolchain (`choice` today
-supports only payload-free alternatives, and `match` is unimplemented). This
-design does not depend on them — unions are complete and testable without any
-pattern matching, since unions deliberately do not participate in `match` (they
-have no discriminator). The dependency runs the other way: when choice payloads
-are implemented, they must lower onto the storage specified here.
+**Dependency, stated plainly:** this design does not depend on `match` or on
+choice payloads — unions are complete and testable without any pattern
+matching, since unions deliberately do not participate in `match` (they have
+no discriminator). The dependency runs the other way: choice payloads (W5
+slice 1: trivially-copyable payload construction and storage; the `match`
+statement landed with W4 slice 1) lower onto the storage specified here, as
+this contract requires.
 
 ## Decisions within this design
 

@@ -1,0 +1,69 @@
+# Part of jmann345's carbon-lang fork tooling (see /fork/README.md).
+#
+# Runs upstream's REAL prek suite (.pre-commit-config.yaml) with auto-fix and
+# commits the reformatting back to the branch. This is the rulebook R22 tool:
+# run the project's own gate, never approximate it. Use to bring a branch into
+# prek compliance (e.g. the one-time cleanup of history predating the R21 gate).
+
+name: 'Fork: prek autofix'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - 'fork/prek-fix-request.txt'
+
+permissions:
+  contents: write # For pushing the reformatting back to the branch.
+
+concurrency:
+  group: fork-prek-fix-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prek-fix:
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 60
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Ensure uv
+        run: |
+          if ! command -v uv >/dev/null 2>&1; then
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+          fi
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Run prek with auto-fix
+        # prek reads .pre-commit-config.yaml (same as pre-commit). Fixable
+        # hooks (ruff-format, prettier, rumdl, clang-format, buildifier,
+        # markdown-toc, end-of-file/trailing-whitespace) edit files in place;
+        # prek exits non-zero when it changes anything, so don't fail here.
+        run: |
+          uvx prek run --all-files --color always || true
+
+      - name: Commit and push the reformatting
+        run: |
+          set -euo pipefail
+          git config user.name 'jmann345'
+          git config user.email 'jerrymannstan@gmail.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo "prek made no changes; branch is already formatted."
+          else
+            git commit \
+              -m "Apply prek autofix (upstream lint/format acceptance gate)" \
+              -m "Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
+            git push origin "HEAD:refs/heads/${GITHUB_REF_NAME}"
+          fi
+
+      - name: Report residual (non-auto-fixable) prek failures
+        run: |
+          echo "===== Residual prek failures after autofix (need manual edits) ====="
+          uvx prek run --all-files --color always || true

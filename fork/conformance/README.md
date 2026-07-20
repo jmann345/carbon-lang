@@ -15,7 +15,7 @@ harness emits is the project's progress number.
 
 ```sh
 # Full run against an installed toolchain tree's `carbon` busybox binary
-# (e.g. an extracted nightly carbon_toolchain tarball):
+# (for example an extracted nightly carbon_toolchain tarball):
 python3 fork/conformance/runner.py \
     --toolchain /path/to/carbon_toolchain-*/bin/carbon
 
@@ -34,11 +34,11 @@ program fails.
 
 Outputs under `--out`:
 
-- `scoreboard.json` — machine-readable results: per-program statuses and the
-  per-bullet rollup (including `NOT-WRITTEN` for every gap-analysis bullet
-  that has no program yet, per process.md's scoreboard definition).
-- `logs/<name>.log` — command line, stdout, stderr for each failure.
-- `obj/`, `bin/` — kept compile/link artifacts for debugging.
+-   `scoreboard.json` — machine-readable results: per-program statuses and the
+    per-bullet rollup (including `NOT-WRITTEN` for every gap-analysis bullet
+    that has no program yet, per process.md's scoreboard definition).
+-   `logs/<name>.log` — command line, stdout, stderr for each failure.
+-   `obj/`, `bin/` — kept compile/link artifacts for debugging.
 
 ### Toolchain invocation
 
@@ -54,22 +54,22 @@ This mirrors `toolchain/install/install_test.py` (`run_carbon_test`), the one
 upstream test that exercises an installed tree end-to-end. Details that
 matter:
 
-- `--include-carbon-core` is the compile default
-  (`toolchain/driver/compile_driver.cpp`), which is what resolves
-  `import Core library "io"` against the install tree. Because that adds the
-  prelude + Core files as extra compilation units, we pass
-  `--output-last-input-only` (as `bazel/carbon_rules/defs.bzl` does) so only
-  the program's own object is written, warning-free.
-- `carbon link` builds the Carbon **prelude** runtimes on demand and links
-  them automatically (`toolchain/driver/link_driver.cpp`) — but *not* the
-  rest of the Core objects (explicit TODO there). Programs therefore print
-  with `Core.Print`/`Core.PrintChar`, which lower inline to
-  `printf`/`putchar` (`toolchain/lower/handle_call.cpp`), and avoid
-  `Core.PrintStr`, whose body lives in `core/io.impl.carbon` and is only
-  linked by the bazel `carbon_binary` rule or the `carbon build` subcommand.
-- The **first** link on a fresh machine builds runtimes (compiler-rt, libc++,
-  prelude objects) on demand and can take many minutes; later links hit the
-  runtimes cache. Hence the generous default `--link-timeout=1800`.
+-   `--include-carbon-core` is the compile default
+    (`toolchain/driver/compile_driver.cpp`), which is what resolves
+    `import Core library "io"` against the install tree. Because that adds the
+    prelude + Core files as extra compilation units, we pass
+    `--output-last-input-only` (as `bazel/carbon_rules/defs.bzl` does) so only
+    the program's own object is written, warning-free.
+-   `carbon link` builds the Carbon **prelude** runtimes on demand and links
+    them automatically (`toolchain/driver/link_driver.cpp`) — but _not_ the
+    rest of the Core objects (explicit TODO there). Programs therefore print
+    with `Core.Print`/`Core.PrintChar`, which lower inline to
+    `printf`/`putchar` (`toolchain/lower/handle_call.cpp`), and avoid
+    `Core.PrintStr`, whose body lives in `core/io.impl.carbon` and is only
+    linked by the bazel `carbon_binary` rule or the `carbon build` subcommand.
+-   The **first** link on a fresh machine builds runtimes (compiler-rt, libc++,
+    prelude objects) on demand and can take many minutes; later links hit the
+    runtimes cache. Hence the generous default `--link-timeout=1800`.
 
 ## Program format
 
@@ -87,16 +87,16 @@ leading comment block:
 // SKIP: <reason>              (optional; marks a not-yet-runnable program)
 ```
 
-- `CONFORMANCE-BULLET` is **required** and must match a first-column cell of
-  the "Per-bullet status" table in [`fork/gap-analysis.md`](../gap-analysis.md)
-  character-for-character (`--self-test` enforces this).
-- `EXPECT-STDOUT` continuation lines are `//` + three spaces + the literal
-  expected line; the captured stdout must equal the lines joined with
-  newlines (each line newline-terminated). Note `Core.Print(x)` prints
-  `<int>\n`.
-- `SKIP` exists for programs written ahead of their feature
-  (write-tests-first, per process.md step 1). Keep SKIPs rare; prefer
-  writing programs against constructs that already work.
+-   `CONFORMANCE-BULLET` is **required** and must match a first-column cell of
+    the "Per-bullet status" table in [`fork/gap-analysis.md`](../gap-analysis.md)
+    character-for-character (`--self-test` enforces this).
+-   `EXPECT-STDOUT` continuation lines are `//` + three spaces + the literal
+    expected line; the captured stdout must equal the lines joined with
+    newlines (each line newline-terminated). Note `Core.Print(x)` prints
+    `<int>\n`.
+-   `SKIP` exists for programs written ahead of their feature
+    (write-tests-first, per process.md step 1). Keep SKIPs rare; prefer
+    writing programs against constructs that already work.
 
 ### Differential Carbon-vs-C++ programs
 
@@ -108,8 +108,8 @@ additionally compiles the C++ file with the toolchain's **own** clang++
 `bin/carbon`; it builds runtimes on demand like `carbon link`, so the C++
 compile gets the link timeout), runs it, and requires:
 
-- C++ exit code == Carbon exit code, and
-- C++ stdout byte-identical to Carbon stdout.
+-   C++ exit code == Carbon exit code, and
+-   C++ stdout byte-identical to Carbon stdout.
 
 Any divergence (including a C++-side compile failure or timeout) is the
 `DIFF-MISMATCH` status. This makes real clang-compiled C++ the oracle for
@@ -133,11 +133,11 @@ Statuses per program: `PASS`, `COMPILE-FAIL`, `LINK-FAIL`, `RUN-FAIL`
 
 Every program names the milestone bullet it arbitrates. The rollup rule:
 
-- A bullet **PASSes** only if *all* of its programs pass (skips don't count
-  against it, but a bullet with only SKIPs is `SKIP`, not `PASS`).
-- Any program failure makes its bullet **FAIL**.
-- Bullets in the gap-analysis table with no programs are **NOT-WRITTEN** —
-  visible debt: growing this suite is a permanent first-class workstream.
+-   A bullet **PASSes** only if _all_ of its programs pass (skips don't count
+    against it, but a bullet with only SKIPs is `SKIP`, not `PASS`).
+-   Any program failure makes its bullet **FAIL**.
+-   Bullets in the gap-analysis table with no programs are **NOT-WRITTEN** —
+    visible debt: growing this suite is a permanent first-class workstream.
 
 Current programs (auto-generated; regenerate with
 `python3 fork/conformance/runner.py --update-readme-table` — `--self-test`
@@ -259,15 +259,15 @@ when match semantics (workstream W4) and choice payloads (W5) land.
 
 ## Adding programs
 
-1. Copy the bullet text exactly from the gap-analysis table.
-2. Derive syntax from working code in the repo (`examples/advent2024/`,
-   `examples/*.carbon`, `toolchain/*/testdata/`,
-   `toolchain/install/install_test.py`) — never from design docs alone.
-3. Keep one concept per program; make output observable via
-   `Core.Print`/`Core.PrintChar`/exit codes (or `Cpp.std.cout` for interop
-   programs).
-4. For already-working behavior with a natural C++ counterpart, prefer a
-   differential pair: add `<name>.diff.cpp` next to the program and omit
-   `EXPECT-STDOUT` so the C++ side is the oracle (see "Differential
-   Carbon-vs-C++ programs" above).
-5. Run `python3 fork/conformance/runner.py --self-test`, then a full run.
+1.  Copy the bullet text exactly from the gap-analysis table.
+2.  Derive syntax from working code in the repository (`examples/advent2024/`,
+    `examples/*.carbon`, `toolchain/*/testdata/`,
+    `toolchain/install/install_test.py`) — never from design docs alone.
+3.  Keep one concept per program; make output observable by way of
+    `Core.Print`/`Core.PrintChar`/exit codes (or `Cpp.std.cout` for interop
+    programs).
+4.  For already-working behavior with a natural C++ counterpart, prefer a
+    differential pair: add `<name>.diff.cpp` next to the program and omit
+    `EXPECT-STDOUT` so the C++ side is the oracle (see "Differential
+    Carbon-vs-C++ programs" above).
+5.  Run `python3 fork/conformance/runner.py --self-test`, then a full run.

@@ -16,23 +16,23 @@ ordered: an item never precedes anything it is blocked by.
 
 Per `fork/process.md`:
 
-- **Agents claim items from here, never from vibes.** Every workstream
-  loop starts by reading `fork/conformance/out/scoreboard.json` (behavioral
-  truth) plus this inventory, and ends by updating both.
-- **Discovering un-inventoried work means adding the item first** — with
-  file:line evidence and an owning bullet — before doing the work.
-- **`bullet`** is copied *exactly* from the per-bullet table in
-  `fork/gap-analysis.md` (`"none"` = fork-process/infra work or a feature
-  with no owning 0.1 bullet, e.g. lambdas). 38 distinct bullets are
-  covered.
-- **`blocked_by`** references work-item ids (`W-###`), design-fork ids
-  (`F-006`..`F-011`, the six design-sprint decisions gated by W-005), or
-  external upstream markers. Items with an empty list are startable now.
-- **`evidence`** paths are repo-relative and were opened/verified during
-  inventory construction or by the originating scanner; per the
-  gap-analysis preamble, spot-check before building on a claim.
-- Sizes: S < M < L < XL. `kind` ∈ todo-stub | fail-test | missing-feature
-  | design-needed | infra.
+-   **Agents claim items from here, never from vibes.** Every workstream
+    loop starts by reading `fork/conformance/out/scoreboard.json` (behavioral
+    truth) plus this inventory, and ends by updating both.
+-   **Discovering un-inventoried work means adding the item first** — with
+    file:line evidence and an owning bullet — before doing the work.
+-   **`bullet`** is copied _exactly_ from the per-bullet table in
+    `fork/gap-analysis.md` (`"none"` = fork-process/infra work or a feature
+    with no owning 0.1 bullet, for example lambdas). 38 distinct bullets are
+    covered.
+-   **`blocked_by`** references work-item ids (`W-###`), design-fork ids
+    (`F-006`..`F-011`, the six design-sprint decisions gated by W-005), or
+    external upstream markers. Items with an empty list are startable now.
+-   **`evidence`** paths are repository-relative and were opened/verified during
+    inventory construction or by the originating scanner; per the
+    gap-analysis preamble, spot-check before building on a claim.
+-   Sizes: S < M < L < XL. `kind` ∈ todo-stub | fail-test | missing-feature
+    | design-needed | infra.
 
 ## Counts
 
@@ -66,30 +66,30 @@ Windows, W-063 safe-Carbon design).
 
 ## Top 10 highest-leverage items
 
-1. **W-008** — match checking + lowering (W4). The single widest
-   unblocker: gates W-010/W-011/W-012/W-017/W-018, flips two scoreboard
-   entries, and all 14 check handlers are already-parsed TODO stubs.
-2. **W-005** — DS-0: register F-006..F-011 and run the six user
-   decisions. An S-sized item that gates 20+ design-blocked items; nothing
-   in the design sprint can land until the forks are decided.
-3. **W-063** — safe-Carbon concrete design (W3). The stated reason 0.1
-   slipped; XL but pure design, parallelizable with everything.
-4. **W-013** — definition-checked variadics (W6). XL with zero blockers
-   and a complete accepted design; also unblocks stdlib tuple work.
-5. **W-014** — template lowering + dependent operations (W7). Removes the
-   only hard compiler crash on a designed feature and gates W-028, W-043.
-6. **W-009** — UN-1 native `union`. Settles the overlapping-storage
-   primitive that choice payloads (W-010) and Core.Result (W-017) lower
-   onto — the sprint's load-bearing storage decision (coherence risk 1).
-7. **W-002** — conformance harness v2. Flips SKIPs that are not feature
-   gaps (clang-args, multi-file) and creates arbitration channels for
-   every doc/build-system bullet; the arbiter is the progress number.
-8. **W-001** — upstream-merge staging flow. Upstream lands weekly; without
-   the F-002 gate every other item risks re-implementing or colliding
-   with incoming trunk work.
-9. **W-059** — Windows end-to-end (W10). XL, independent of language
-   features, and an explicit 0.1 install bullet — start early or it
-   becomes the tail.
+1.  **W-008** — match checking + lowering (W4). The single widest
+    unblocker: gates W-010/W-011/W-012/W-017/W-018, flips two scoreboard
+    entries, and all 14 check handlers are already-parsed TODO stubs.
+2.  **W-005** — DS-0: register F-006..F-011 and run the six user
+    decisions. An S-sized item that gates 20+ design-blocked items; nothing
+    in the design sprint can land until the forks are decided.
+3.  **W-063** — safe-Carbon concrete design (W3). The stated reason 0.1
+    slipped; XL but pure design, parallelizable with everything.
+4.  **W-013** — definition-checked variadics (W6). XL with zero blockers
+    and a complete accepted design; also unblocks stdlib tuple work.
+5.  **W-014** — template lowering + dependent operations (W7). Removes the
+    only hard compiler crash on a designed feature and gates W-028, W-043.
+6.  **W-009** — UN-1 native `union`. Settles the overlapping-storage
+    primitive that choice payloads (W-010) and Core.Result (W-017) lower
+    onto — the sprint's load-bearing storage decision (coherence risk 1).
+7.  **W-002** — conformance harness v2. Flips SKIPs that are not feature
+    gaps (clang-args, multi-file) and creates arbitration channels for
+    every doc/build-system bullet; the arbiter is the progress number.
+8.  **W-001** — upstream-merge staging flow. Upstream lands weekly; without
+    the F-002 gate every other item risks re-implementing or colliding
+    with incoming trunk work.
+9.  **W-059** — Windows end-to-end (W10). XL, independent of language
+    features, and an explicit 0.1 install bullet — start early or it
+    becomes the tail.
 10. **W-016** — EH-B0 exception fencing flag. S-sized, replaces real UB at
     every Carbon↔C++ boundary today, first stage of the whole
     error-handling chain, and the threading doc (W-020) freezes on its
@@ -97,9 +97,9 @@ Windows, W-063 safe-Carbon design).
 
 ## Maintenance
 
-- Update an item's `evidence`/`notes` when the cited lines move after an
-  upstream merge (W-001's staging flow is the natural checkpoint).
-- When an item completes, record the flipped scoreboard entries in its
-  closing commit and remove it (or mark it done) here in the same change.
-- One item per coherent feature slice: extend an existing item's evidence
-  rather than adding near-duplicates.
+-   Update an item's `evidence`/`notes` when the cited lines move after an
+    upstream merge (W-001's staging flow is the natural checkpoint).
+-   When an item completes, record the flipped scoreboard entries in its
+    closing commit and remove it (or mark it done) here in the same change.
+-   One item per coherent feature slice: extend an existing item's evidence
+    rather than adding near-duplicates.

@@ -26,7 +26,7 @@ semantics) and W5 (sum types / variant interop) per
     -   [Option A: `if (let ...)` conditions plus `let ... else` declarations](#option-a-if-let--conditions-plus-let--else-declarations)
     -   [Option B: `is` pattern-test expressions with flow-scoped bindings](#option-b-is-pattern-test-expressions-with-flow-scoped-bindings)
     -   [Option C: Swift-shaped `guard let ... else` for the negative form](#option-c-swift-shaped-guard-let--else-for-the-negative-form)
-    -   [Option D: no dedicated forms — `match` only](#option-d-no-dedicated-forms--match-only)
+    -   [Option D: no dedicated forms — `match` only](#option-d-no-dedicated-forms-—-match-only)
 -   [Recommendation](#recommendation)
 -   [Dependencies on other workstreams](#dependencies-on-other-workstreams)
 -   [Open questions for the user](#open-questions-for-the-user)
@@ -53,7 +53,7 @@ error, and that "the `var`/`let`-`else` feature in
 [#1871](https://github.com/carbon-language/carbon-lang/pull/1871) would
 introduce a second context permitting refutable matches". That sentence
 comes from accepted proposal `proposals/p002188` (same wording at
-p002188:651-658), so the *slot* for this feature is already reserved in
+p002188:651-658), so the _slot_ for this feature is already reserved in
 an accepted design; the feature itself was never designed.
 
 Closing this bullet also materially advances the other two Matching
@@ -61,7 +61,7 @@ bullets: single-alternative consumption of `Optional`/`std::optional`
 and `std::variant` is precisely the case where a full `match` is too
 heavy (per-case exhaustiveness, mandatory `default`, extra nesting), so
 the "good switch equivalents" and "sum-type interop" bullets are only
-*ergonomically* closed once an if-let family exists. It also advances
+_ergonomically_ closed once an if-let family exists. It also advances
 the 0.1 documentation goal ("understandable ... without placeholders",
 `milestones.md:55-56`) by replacing the pattern-matching design's
 forward reference to a dead upstream PR with real text.
@@ -77,9 +77,9 @@ takes that escape hatch; A, B, and C do not.
 1.  A **positive** form: test-and-bind in one construct, with the
     bindings scoped to the success path (`if let` in Rust's terms).
 2.  A **negative** form: bind-or-diverge, with the bindings scoped to
-    the *enclosing* scope (`let else` in Rust's terms).
-3.  Both must be *combined match control flow and variable declaration*
-    — i.e. they must use the real pattern grammar (bindings,
+    the _enclosing_ scope (`let else` in Rust's terms).
+3.  Both must be _combined match control flow and variable declaration_
+    — that is they must use the real pattern grammar (bindings,
     destructuring, choice alternatives), not a boolean-plus-cast idiom.
 4.  They must serve the `std::optional`/`std::variant` interop story
     named two bullets up.
@@ -99,7 +99,7 @@ takes that escape hatch; A, B, and C do not.
 -   **One pattern grammar** (`proposals/p002188`, accepted): patterns
     are already fully specified — binding patterns are
     `name: type` (not Rust's bare `name`), `var`/`ref` produce storage
-    and reference bindings, choice alternatives match via
+    and reference bindings, choice alternatives match by way of
     `.Some(n: i32)` (`docs/design/pattern_matching.md:474-524`), and
     refutability is already defined
     (`pattern_matching.md:573-607`). The combined forms must consume
@@ -107,7 +107,7 @@ takes that escape hatch; A, B, and C do not.
     full-pattern match" — not a new mini-language.
 -   **Failure-path object semantics already exist**
     (`proposals/p005164`): `pattern_matching.md:776-792` specifies that
-    objects created by `var` subpatterns during a *failed* `case` match
+    objects created by `var` subpatterns during a _failed_ `case` match
     are destroyed at the failure point. if-let failure must reuse
     exactly this rule.
 -   **Interop-first ergonomics** (`docs/project/goals.md`,
@@ -122,7 +122,7 @@ takes that escape hatch; A, B, and C do not.
     [#1871](https://github.com/carbon-language/carbon-lang/pull/1871)
     ("var/let ... else") is cited by accepted p002188 as the anticipated
     second refutable-match context. It was never merged, but the
-    accepted design *plans for its existence* — strong evidence that a
+    accepted design _plans for its existence_ — strong evidence that a
     `let ... else` shape converges with upstream intent.
 -   Upstream issue
     [#5101](https://github.com/carbon-language/carbon-lang/issues/5101)
@@ -151,15 +151,15 @@ takes that escape hatch; A, B, and C do not.
     trailing brace-bearing expression can't swallow the `else`.
 -   **Swift**: `if let x = opt { }`, `if case .foo(let x) = e`,
     `guard let x = opt else { return }` — `guard` requires the `else`
-    block to exit the scope, and its bindings live in the *enclosing*
+    block to exit the scope, and its bindings live in the _enclosing_
     scope. Swift demonstrates the readability value of a dedicated
     negative-form introducer.
 -   **C#**: `if (e is T x)` / `is` patterns with flow-sensitive ("scoped
     by definite assignment") bindings — powerful and composable, but
     the scoping rules (negation, `||`, loops) are famously subtle.
 -   **C++**: C++17 `if (init; cond)`, `std::get_if`, and the in-flight
-    pattern-matching (P2688) and `is`/`as` (P2392) proposals — i.e. the
-    audience Carbon targets has *no* stable native equivalent; Carbon
+    pattern-matching (P2688) and `is`/`as` (P2392) proposals — that is the
+    audience Carbon targets has _no_ stable native equivalent; Carbon
     gets to define the idiom for them.
 -   **Zig**: `if (opt) |x| { }` and `while (it.next()) |x|` payload
     captures — compact, but a separate capture syntax disjoint from the
@@ -184,7 +184,7 @@ Ground truth in `toolchain/` (trunk `99cda60`):
     condition — no backtracking, satisfying p000646.
 -   **The pattern state machine is reusable as-is**: `let`, `var`,
     `for`-headers, and `match` `case`s all parse patterns by pushing
-    `StateKind::Pattern` via `PushStateForPattern`
+    `StateKind::Pattern` by way of `PushStateForPattern`
     (`handle_let.cpp:20-23`, `handle_statement.cpp:121-124` for `for`,
     `handle_match.cpp:145-148` for `case`). An if-let condition is the
     same call.
@@ -194,7 +194,7 @@ Ground truth in `toolchain/` (trunk `99cda60`):
     assignment expression until the parser proves `P` contains a
     binding. This is the concrete reason to require an introducer
     keyword inside the condition.
--   **`else` is contended**: `if` *expressions* (`if c then a else b`,
+-   **`else` is contended**: `if` _expressions_ (`if c then a else b`,
     `docs/design/expressions/if.md`; parse states
     `IfExprFinishThen/IfExprFinishElse`,
     `toolchain/parse/state.def:641-675`) consume `else` greedily, and
@@ -232,7 +232,7 @@ Ground truth in `toolchain/` (trunk `99cda60`):
 
 ## Options
 
-All options share the same *semantic core* (deliberately): a refutable
+All options share the same _semantic core_ (deliberately): a refutable
 full pattern per p002188 is matched against a scrutinee; on success its
 bindings become visible in some scope; on failure control transfers
 somewhere. They differ in surface syntax, binding scope rules, and how
@@ -241,7 +241,7 @@ much new machinery check needs.
 ### Option A: `if (let ...)` conditions plus `let ... else` declarations
 
 Rust's two forms, spelled with Carbon's existing tokens and brace/paren
-style. Positive form — a *pattern condition* inside the existing
+style. Positive form — a _pattern condition_ inside the existing
 parenthesized condition slot:
 
 ```carbon
@@ -324,11 +324,11 @@ Semantics:
     expression (diagnose with a "parenthesize the initializer" fixit).
     This is Rust RFC 3137's restriction adapted to Carbon's one
     brace-bearing expression form.
--   An *irrefutable* pattern in these forms is valid but warns (as with
+-   An _irrefutable_ pattern in these forms is valid but warns (as with
     Rust's `irrefutable_let_patterns`), keeping the macro-friendly
     degenerate case legal.
 -   Not in 0.1 (reserved): boolean chaining (`if (let P = e and cond)`),
-    guards inside the condition, and an if-let *expression* form. The
+    guards inside the condition, and an if-let _expression_ form. The
     grammar above keeps `)` immediately after the initializer expression
     precisely so a future `and` chain (Rust let-chains) can be added
     without reparsing.
@@ -357,7 +357,7 @@ Implementation cost in this toolchain: **M** (assuming W4 lands first;
     `handle_let_and_var.cpp` (else-region + divergence check) and a
     pattern-condition sibling to `handle_if_statement.cpp` /
     `handle_loop_statement.cpp` using the existing
-    `control_flow.h:21-41` helpers; binding scope placement via the
+    `control_flow.h:21-41` helpers; binding scope placement by way of the
     existing `full_pattern_stack`/`scope_stack` (bindings go to the
     dominated block's scope — same mechanism W4 needs for `case`
     bodies). Size **M** on top of W4.
@@ -374,7 +374,7 @@ stay clean).
 
 ### Option B: `is` pattern-test expressions with flow-scoped bindings
 
-A new low-precedence operator makes pattern-testing an *expression*:
+A new low-precedence operator makes pattern-testing an _expression_:
 
 ```carbon
 fn UseOpt(opt: Optional(i32)) -> i32 {
@@ -399,17 +399,17 @@ fn ParsePort(s: str) -> i32 {
     succeeded (flow-sensitive scoping: then-blocks, `and`-continuations,
     post-diverging-else code).
 
-Pros: one construct covers positive, negative, chained, and
+Advantages: one construct covers positive, negative, chained, and
 boolean-mixed cases; composes with `while`; aligns with where C++ itself
 may go (P2392 `is`/`as`) and with C#'s proven ergonomics; reads well to
 the target audience.
 
-Cons: **flow-sensitive name scoping is a new compiler concept** —
+Disadvantages: **flow-sensitive name scoping is a new compiler concept** —
 `scope_stack` is strictly lexical today, and check would need
 dominance-driven scope injection plus rules for `not`/`or`/loops (C#'s
 definite-assignment tangle); it violates the "patterns appear only after
 introducers" simplicity and p000646's spirit (deep in an expression, a
-`:` flips you into pattern grammar); needs a new `is` keyword *and*
+`:` flips you into pattern grammar); needs a new `is` keyword _and_
 precedence surgery in `precedence.cpp`; and no upstream artifact hints
 at `is`, so divergence risk is highest. Guards/chains — its main selling
 point over A — can be added to A later as let-chains anyway.
@@ -420,7 +420,7 @@ ever ships).
 
 Implementation cost: **L-XL** even after W4: lex **S** (token), parse
 **M** (expression-operator with a pattern RHS; the only place patterns
-appear mid-expression), check **L** (refutable core *plus* the novel
+appear mid-expression), check **L** (refutable core _plus_ the novel
 flow-scoping machinery), lower none. Evolution risk: **medium-high**.
 
 ### Option C: Swift-shaped `guard let ... else` for the negative form
@@ -443,14 +443,14 @@ fn ParsePort(s: str) -> i32 {
     bindings, diverging `else`); optionally also `guard (cond) else`
     as a boolean guard for symmetry (Swift precedent).
 
-Pros: matches the syntax the upstream #5101 snippet literally floats
+Advantages: matches the syntax the upstream #5101 snippet literally floats
 (`guard let (x: i32, y) = Foo() else { ... }`), so *if that snippet
 reflects upstream's lean*, this is the convergent spelling; the
 introducer announces "early-exit" to readers; and the if-expression
 `else` ambiguity narrows, since a `guard` statement can forbid `if`
 expressions as its initializer without touching ordinary `let` grammar.
 
-Cons: burns a new keyword — `guard` is a common identifier in exactly
+Disadvantages: burns a new keyword — `guard` is a common identifier in exactly
 the C++ code Carbon targets (`std::lock_guard`, scope guards), forcing
 `r#guard` escapes on import; it duplicates spelling for one semantic
 (a `guard let` is observationally a `let ... else`); and p002188's own
@@ -476,13 +476,13 @@ fn ParsePort(s: str) -> i32 {
 }
 ```
 
-Pros: zero design and implementation cost beyond W4; no divergence
+Advantages: zero design and implementation cost beyond W4; no divergence
 risk; everything remains expressible.
 
-Cons: fails the milestone bullet *as written* — it explicitly names both
+Disadvantages: fails the milestone bullet _as written_ — it explicitly names both
 combined forms, and the audit already scored this row MISSING against
 that wording; the escape hatch requires arguing `match` "addresses the
-use cases", but the use case *is* ergonomics (a guard clause becomes
+use cases", but the use case _is_ ergonomics (a guard clause becomes
 5 lines of nesting with a mandatory `default`, and the "translate C++
 into obvious and unsurprising Carbon" goal, `milestones.md:57-61`, is
 hurt for every `if (opt)` in the source corpus); and it would leave
@@ -494,7 +494,7 @@ risk: none now, guaranteed rework when upstream lands #5101.
 
 **Option A**, with two riders:
 
-1.  Specify both forms as *desugarings onto W4's refutable-match SemIR*
+1.  Specify both forms as _desugarings onto W4's refutable-match SemIR_
     (an if-let is a one-case match with the else-arm as the failure
     target; a let-else is the same with a divergence-checked failure
     block). This keeps check/lower deltas at M/zero and means the
@@ -518,7 +518,7 @@ Rationale:
     single-token peek after `(`, reuse of the existing `Pattern` state
     — no lexer change, no precedence surgery, no backtracking
     (p000646 upheld).
--   Its cost is honestly M *because* it rides W4; Options B's novel
+-   Its cost is honestly M _because_ it rides W4; Options B's novel
     scoping machinery is the only L/XL item on the table and buys
     nothing that let-chains can't add to A later.
 -   `while (let ...)` comes along nearly free and strengthens the loops
@@ -553,7 +553,7 @@ an answer on record. Option D fails the milestone as written.
 -   **W2 (error handling design)** — the let-else divergence rule
     should eventually reference the error-handling design's
     control-flow forms (early-return sugar like a future `?`/`try`
-    would typically desugar *to* let-else; and a noreturn-type-based
+    would typically desugar _to_ let-else; and a noreturn-type-based
     divergence rule replaces the syntactic list). Coordinate wording so
     the two papers don't define "diverges" twice.
 -   **Design docs**: amend `docs/design/pattern_matching.md` (replace
@@ -591,7 +591,7 @@ Beyond choosing A/B/C/D:
     non-optionals)?
 7.  **Chaining reservation**: confirm that `and`-chaining
     (`if (let P = e and cond)`) is out of 0.1 but the grammar must not
-    foreclose it. If you want it *in* 0.1, Option A's parse cost rises
+    foreclose it. If you want it _in_ 0.1, Option A's parse cost rises
     to M and evaluation-order text must extend p005545.
 8.  **Upstream tracking policy**: if upstream #5101 produces an
     accepted proposal mid-implementation, do we pause and adopt, or

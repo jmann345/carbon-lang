@@ -67,7 +67,12 @@ DIFF_MISMATCH = "DIFF-MISMATCH"
 SKIP = "SKIP"
 
 FAIL_STATUSES = (
-    COMPILE_FAIL, LINK_FAIL, RUN_FAIL, OUTPUT_MISMATCH, DIFF_MISMATCH)
+    COMPILE_FAIL,
+    LINK_FAIL,
+    RUN_FAIL,
+    OUTPUT_MISMATCH,
+    DIFF_MISMATCH,
+)
 
 # Location of the toolchain's own clang++ inside an installed tree, relative
 # to the tree root (the directory containing bin/carbon). Verified against an
@@ -139,30 +144,36 @@ def parse_directives(path, rel):
             in_stdout = False  # any other comment ends the block
 
         if comment.startswith("// CONFORMANCE-BULLET:"):
-            prog.bullet = comment[len("// CONFORMANCE-BULLET:"):].strip()
+            prog.bullet = comment[len("// CONFORMANCE-BULLET:") :].strip()
         elif comment.startswith("// EXPECT-EXIT:"):
-            value = comment[len("// EXPECT-EXIT:"):].strip()
+            value = comment[len("// EXPECT-EXIT:") :].strip()
             try:
                 prog.expect_exit = int(value)
             except ValueError:
                 raise DirectiveError(
-                    f"{rel}: EXPECT-EXIT is not an integer: {value!r}")
+                    f"{rel}: EXPECT-EXIT is not an integer: {value!r}"
+                )
         elif comment.startswith("// EXPECT-STDOUT:"):
-            trailing = comment[len("// EXPECT-STDOUT:"):].strip()
+            trailing = comment[len("// EXPECT-STDOUT:") :].strip()
             if trailing:
                 raise DirectiveError(
                     f"{rel}: EXPECT-STDOUT takes no inline value; put "
-                    f"expected lines on following `//   <line>` lines")
+                    f"expected lines on following `//   <line>` lines"
+                )
             in_stdout = True
             prog.expect_stdout = ""  # will be filled from stdout_lines
         elif comment.startswith("// SKIP:"):
-            prog.skip_reason = comment[len("// SKIP:"):].strip() or "(no reason)"
+            prog.skip_reason = (
+                comment[len("// SKIP:") :].strip() or "(no reason)"
+            )
 
     if prog.expect_stdout is not None:
         prog.expect_stdout = "".join(l + "\n" for l in stdout_lines)
 
     if not prog.bullet:
-        raise DirectiveError(f"{rel}: missing `// CONFORMANCE-BULLET:` directive")
+        raise DirectiveError(
+            f"{rel}: missing `// CONFORMANCE-BULLET:` directive"
+        )
     return prog
 
 
@@ -204,7 +215,7 @@ def discover_programs(programs_dir, filter_substr):
         except DirectiveError as e:
             errors.append(str(e))
             continue
-        diff_cpp = path.with_name(path.name[:-len(".carbon")] + ".diff.cpp")
+        diff_cpp = path.with_name(path.name[: -len(".carbon")] + ".diff.cpp")
         if diff_cpp.is_file():
             prog.diff_cpp = diff_cpp
         programs.append(prog)
@@ -216,11 +227,13 @@ def discover_programs(programs_dir, filter_substr):
         if filter_substr and filter_substr not in rel:
             continue
         carbon_sibling = path.with_name(
-            path.name[:-len(".diff.cpp")] + ".carbon")
+            path.name[: -len(".diff.cpp")] + ".carbon"
+        )
         if not carbon_sibling.is_file():
             errors.append(
                 f"{rel}: differential C++ file has no matching "
-                f"{carbon_sibling.name} program next to it")
+                f"{carbon_sibling.name} program next to it"
+            )
     return programs, errors
 
 
@@ -307,14 +320,19 @@ def execute_program(prog, toolchain, clangxx, out_dir, timeouts):
     ]
     rc, out, err, timed_out = run_cmd(compile_cmd, timeouts["compile"])
     if timed_out or rc != 0:
-        detail = ("compile timed out" if timed_out
-                  else f"compile exited with {rc}")
-        write_log(log_dir, prog, [
-            ("command", " ".join(str(c) for c in compile_cmd)),
-            ("detail", detail),
-            ("stdout", out),
-            ("stderr", err),
-        ])
+        detail = (
+            "compile timed out" if timed_out else f"compile exited with {rc}"
+        )
+        write_log(
+            log_dir,
+            prog,
+            [
+                ("command", " ".join(str(c) for c in compile_cmd)),
+                ("detail", detail),
+                ("stdout", out),
+                ("stderr", err),
+            ],
+        )
         return COMPILE_FAIL, detail
 
     # --- Link ---
@@ -326,55 +344,76 @@ def execute_program(prog, toolchain, clangxx, out_dir, timeouts):
     ]
     rc, out, err, timed_out = run_cmd(link_cmd, timeouts["link"])
     if timed_out or rc != 0:
-        detail = ("link timed out (note: the first link builds runtimes "
-                  "on demand and can be slow)" if timed_out
-                  else f"link exited with {rc}")
-        write_log(log_dir, prog, [
-            ("command", " ".join(str(c) for c in link_cmd)),
-            ("detail", detail),
-            ("stdout", out),
-            ("stderr", err),
-        ])
+        detail = (
+            "link timed out (note: the first link builds runtimes "
+            "on demand and can be slow)"
+            if timed_out
+            else f"link exited with {rc}"
+        )
+        write_log(
+            log_dir,
+            prog,
+            [
+                ("command", " ".join(str(c) for c in link_cmd)),
+                ("detail", detail),
+                ("stdout", out),
+                ("stderr", err),
+            ],
+        )
         return LINK_FAIL, detail
 
     # --- Run ---
     rc, out, err, timed_out = run_cmd([bin_path], timeouts["run"])
     if timed_out:
         detail = f"binary did not finish within {timeouts['run']}s"
-        write_log(log_dir, prog, [
-            ("command", str(bin_path)),
-            ("detail", detail),
-            ("stdout", out),
-            ("stderr", err),
-        ])
+        write_log(
+            log_dir,
+            prog,
+            [
+                ("command", str(bin_path)),
+                ("detail", detail),
+                ("stdout", out),
+                ("stderr", err),
+            ],
+        )
         return RUN_FAIL, detail
     if rc != prog.expect_exit:
         detail = f"exit code {rc}, expected {prog.expect_exit}"
-        write_log(log_dir, prog, [
-            ("command", str(bin_path)),
-            ("detail", detail),
-            ("stdout", out),
-            ("stderr", err),
-        ])
+        write_log(
+            log_dir,
+            prog,
+            [
+                ("command", str(bin_path)),
+                ("detail", detail),
+                ("stdout", out),
+                ("stderr", err),
+            ],
+        )
         return RUN_FAIL, detail
     if prog.expect_stdout is not None and out != prog.expect_stdout:
         detail = "stdout does not match EXPECT-STDOUT"
-        write_log(log_dir, prog, [
-            ("command", str(bin_path)),
-            ("detail", detail),
-            ("expected stdout", prog.expect_stdout),
-            ("actual stdout", out),
-            ("stderr", err),
-        ])
+        write_log(
+            log_dir,
+            prog,
+            [
+                ("command", str(bin_path)),
+                ("detail", detail),
+                ("expected stdout", prog.expect_stdout),
+                ("actual stdout", out),
+                ("stderr", err),
+            ],
+        )
         return OUTPUT_MISMATCH, detail
 
     # --- Differential C++ (byte-identical exit code + stdout) ---
     if prog.diff_cpp is not None:
         carbon_rc, carbon_out = rc, out
         if clangxx is None:
-            detail = ("differential C++ sibling present but clang++ not "
-                      "found in the toolchain tree "
-                      f"(expected at <root>/{'/'.join(CLANGXX_RELPATH)})")
+            detail = (
+                "differential C++ sibling present but clang++ not "
+                "found in the toolchain tree "
+                f"(expected at <root>/{'/'.join(CLANGXX_RELPATH)})"
+            )
             write_log(log_dir, prog, [("detail", detail)])
             return DIFF_MISMATCH, detail
         cpp_bin = bin_dir / f"{prog.name}.cpp.bin"
@@ -383,25 +422,38 @@ def execute_program(prog, toolchain, clangxx, out_dir, timeouts):
         # link`, so give the C++ compile the link timeout.
         rc, out, err, timed_out = run_cmd(cpp_cmd, timeouts["link"])
         if timed_out or rc != 0:
-            detail = ("differential C++ compile timed out" if timed_out
-                      else f"differential C++ compile exited with {rc}")
-            write_log(log_dir, prog, [
-                ("command", " ".join(str(c) for c in cpp_cmd)),
-                ("detail", detail),
-                ("stdout", out),
-                ("stderr", err),
-            ])
+            detail = (
+                "differential C++ compile timed out"
+                if timed_out
+                else f"differential C++ compile exited with {rc}"
+            )
+            write_log(
+                log_dir,
+                prog,
+                [
+                    ("command", " ".join(str(c) for c in cpp_cmd)),
+                    ("detail", detail),
+                    ("stdout", out),
+                    ("stderr", err),
+                ],
+            )
             return DIFF_MISMATCH, detail
         rc, out, err, timed_out = run_cmd([cpp_bin], timeouts["run"])
         if timed_out:
-            detail = (f"differential C++ binary did not finish within "
-                      f"{timeouts['run']}s")
-            write_log(log_dir, prog, [
-                ("command", str(cpp_bin)),
-                ("detail", detail),
-                ("stdout", out),
-                ("stderr", err),
-            ])
+            detail = (
+                f"differential C++ binary did not finish within "
+                f"{timeouts['run']}s"
+            )
+            write_log(
+                log_dir,
+                prog,
+                [
+                    ("command", str(cpp_bin)),
+                    ("detail", detail),
+                    ("stdout", out),
+                    ("stderr", err),
+                ],
+            )
             return DIFF_MISMATCH, detail
         if rc != carbon_rc or out != carbon_out:
             parts = []
@@ -410,15 +462,19 @@ def execute_program(prog, toolchain, clangxx, out_dir, timeouts):
             if out != carbon_out:
                 parts.append("stdout differs")
             detail = "Carbon/C++ divergence (" + "; ".join(parts) + ")"
-            write_log(log_dir, prog, [
-                ("command", str(cpp_bin)),
-                ("detail", detail),
-                ("carbon exit code", str(carbon_rc)),
-                ("c++ exit code", str(rc)),
-                ("carbon stdout", carbon_out),
-                ("c++ stdout", out),
-                ("c++ stderr", err),
-            ])
+            write_log(
+                log_dir,
+                prog,
+                [
+                    ("command", str(cpp_bin)),
+                    ("detail", detail),
+                    ("carbon exit code", str(carbon_rc)),
+                    ("c++ exit code", str(rc)),
+                    ("carbon stdout", carbon_out),
+                    ("c++ stdout", out),
+                    ("c++ stderr", err),
+                ],
+            )
             return DIFF_MISMATCH, detail
 
     return PASS, ""
@@ -476,19 +532,26 @@ TABLE_END = "<!-- END PROGRAM TABLE -->"
 
 def generate_program_table(programs):
     """Render the program->bullet table from parsed headers."""
-    lines = [TABLE_BEGIN,
-             "",
-             "| Program | Bullet | Kind |",
-             "| --- | --- | --- |"]
+    lines = [
+        TABLE_BEGIN,
+        "",
+        "| Program | Bullet | Kind |",
+        "| --- | --- | --- |",
+    ]
     for prog in sorted(programs, key=lambda pr: pr.rel):
         kind = []
         if prog.skip_reason is not None:
             kind.append("SKIP")
         if prog.diff_cpp is not None:
             kind.append("differential")
-        lines.append("| `%s` | %s | %s |"
-                     % (prog.rel, prog.bullet.replace("|", "\\|"),
-                        ", ".join(kind) or "run"))
+        lines.append(
+            "| `%s` | %s | %s |"
+            % (
+                prog.rel,
+                prog.bullet.replace("|", "\\|"),
+                ", ".join(kind) or "run",
+            )
+        )
     lines += ["", TABLE_END]
     return "\n".join(lines)
 
@@ -506,20 +569,28 @@ def update_readme_table(programs, check_only=False):
     begin = text.find(TABLE_BEGIN)
     end = text.find(TABLE_END)
     if begin == -1 or end == -1 or end < begin:
-        print(f"error: program-table markers not found in {README_PATH.name};"
-              f" add {TABLE_BEGIN!r} and {TABLE_END!r}", file=sys.stderr)
+        print(
+            f"error: program-table markers not found in {README_PATH.name};"
+            f" add {TABLE_BEGIN!r} and {TABLE_END!r}",
+            file=sys.stderr,
+        )
         return 1
     new_block = generate_program_table(programs)
-    new_text = text[:begin] + new_block + text[end + len(TABLE_END):]
+    new_text = text[:begin] + new_block + text[end + len(TABLE_END) :]
     if new_text == text:
         return 0
     if check_only:
-        print("error: README program table is stale; run "
-              "`runner.py --update-readme-table`", file=sys.stderr)
+        print(
+            "error: README program table is stale; run "
+            "`runner.py --update-readme-table`",
+            file=sys.stderr,
+        )
         return 1
     README_PATH.write_text(new_text)
-    print(f"updated program table in {README_PATH.name} "
-          f"({len(programs)} programs)")
+    print(
+        f"updated program table in {README_PATH.name} "
+        f"({len(programs)} programs)"
+    )
     return 0
 
 
@@ -527,7 +598,9 @@ def self_test(programs_dir, filter_substr):
     """Validate all program headers + bullet names without a toolchain."""
     ok = True
     if not GAP_ANALYSIS.exists():
-        print(f"error: gap analysis not found at {GAP_ANALYSIS}", file=sys.stderr)
+        print(
+            f"error: gap analysis not found at {GAP_ANALYSIS}", file=sys.stderr
+        )
         return 1
     bullets = load_gap_analysis_bullets(GAP_ANALYSIS)
     if not bullets:
@@ -543,14 +616,21 @@ def self_test(programs_dir, filter_substr):
     for prog in programs:
         if prog.bullet not in bullets:
             ok = False
-            print(f"bullet mismatch: {prog.rel}: CONFORMANCE-BULLET not in "
-                  f"{GAP_ANALYSIS.name} table:\n  {prog.bullet!r}",
-                  file=sys.stderr)
-    if not filter_substr and update_readme_table(programs, check_only=True) != 0:
+            print(
+                f"bullet mismatch: {prog.rel}: CONFORMANCE-BULLET not in "
+                f"{GAP_ANALYSIS.name} table:\n  {prog.bullet!r}",
+                file=sys.stderr,
+            )
+    if (
+        not filter_substr
+        and update_readme_table(programs, check_only=True) != 0
+    ):
         ok = False
-    print(f"self-test: {len(programs)} programs parsed, "
-          f"{len(bullets)} bullets in table, "
-          f"{'OK' if ok else 'ERRORS'}")
+    print(
+        f"self-test: {len(programs)} programs parsed, "
+        f"{len(bullets)} bullets in table, "
+        f"{'OK' if ok else 'ERRORS'}"
+    )
     if ok:
         width = max(len(p.rel) for p in programs)
         for prog in programs:
@@ -558,11 +638,15 @@ def self_test(programs_dir, filter_substr):
             if prog.skip_reason:
                 marks.append(f"SKIP: {prog.skip_reason}")
             if prog.expect_stdout is not None:
-                marks.append(f"stdout: {len(prog.expect_stdout.splitlines())} lines")
+                marks.append(
+                    f"stdout: {len(prog.expect_stdout.splitlines())} lines"
+                )
             if prog.diff_cpp is not None:
                 marks.append("diff: C++")
             marks.append(f"exit: {prog.expect_exit}")
-            print(f"  {prog.rel:<{width}}  ->  {prog.bullet}  [{'; '.join(marks)}]")
+            print(
+                f"  {prog.rel:<{width}}  ->  {prog.bullet}  [{'; '.join(marks)}]"
+            )
     return 0 if ok else 1
 
 
@@ -578,62 +662,111 @@ def print_table(programs, results, rollup, totals):
         print(line)
 
     print()
-    print("=== per-bullet rollup (bullet PASSes only if all its programs pass) ===")
-    exercised = {b: r for b, r in rollup.items() if r["status"] != BULLET_NOT_WRITTEN}
+    print(
+        "=== per-bullet rollup (bullet PASSes only if all its programs pass) ==="
+    )
+    exercised = {
+        b: r for b, r in rollup.items() if r["status"] != BULLET_NOT_WRITTEN
+    }
     bwidth = max((len(b) for b in exercised), default=10)
     for bullet, r in exercised.items():
-        print(f"  {r['status']:<12} {bullet:<{bwidth}}  "
-              f"[gap: {r['gap_status']}; {len(r['programs'])} program(s)]")
+        print(
+            f"  {r['status']:<12} {bullet:<{bwidth}}  "
+            f"[gap: {r['gap_status']}; {len(r['programs'])} program(s)]"
+        )
     not_written = sum(
-        1 for r in rollup.values() if r["status"] == BULLET_NOT_WRITTEN)
+        1 for r in rollup.values() if r["status"] == BULLET_NOT_WRITTEN
+    )
 
     print()
     print("=== totals ===")
-    for key in (PASS, COMPILE_FAIL, LINK_FAIL, RUN_FAIL, OUTPUT_MISMATCH,
-                DIFF_MISMATCH, SKIP):
+    for key in (
+        PASS,
+        COMPILE_FAIL,
+        LINK_FAIL,
+        RUN_FAIL,
+        OUTPUT_MISMATCH,
+        DIFF_MISMATCH,
+        SKIP,
+    ):
         print(f"  {key:<16} {totals[key]}")
     bullet_pass = sum(1 for r in rollup.values() if r["status"] == BULLET_PASS)
     bullet_fail = sum(1 for r in rollup.values() if r["status"] == BULLET_FAIL)
-    print(f"  bullets: {bullet_pass} PASS, {bullet_fail} FAIL, "
-          f"{len(exercised) - bullet_pass - bullet_fail} SKIP, "
-          f"{not_written} NOT-WRITTEN "
-          f"(of {len(rollup)} in the gap-analysis table)")
+    print(
+        f"  bullets: {bullet_pass} PASS, {bullet_fail} FAIL, "
+        f"{len(exercised) - bullet_pass - bullet_fail} SKIP, "
+        f"{not_written} NOT-WRITTEN "
+        f"(of {len(rollup)} in the gap-analysis table)"
+    )
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        description="Carbon 0.1 execution-conformance runner")
-    parser.add_argument("--toolchain", type=Path,
-                        help="path to the `carbon` busybox binary of an "
-                             "installed toolchain tree")
-    parser.add_argument("--filter", default="",
-                        help="only run programs whose relative path contains "
-                             "this substring")
-    parser.add_argument("--out", type=Path, default=SCRIPT_DIR / "out",
-                        help="output directory for scoreboard.json, logs/, "
-                             "obj/, bin/ (default: fork/conformance/out)")
-    parser.add_argument("--programs", type=Path, default=DEFAULT_PROGRAMS_DIR,
-                        help="programs directory (default: "
-                             "fork/conformance/programs)")
-    parser.add_argument("--update-readme-table", action="store_true",
-                        help="Regenerate the program table in README.md "
-                             "between the generated-table markers.")
-    parser.add_argument("--self-test", action="store_true",
-                        help="parse all program headers and validate bullet "
-                             "names against fork/gap-analysis.md, then exit "
-                             "(no toolchain needed)")
-    parser.add_argument("--compile-timeout", type=int, default=300,
-                        help="seconds per compile (default 300)")
-    parser.add_argument("--link-timeout", type=int, default=1800,
-                        help="seconds per link; the first link builds "
-                             "runtimes on demand and is slow (default 1800)")
-    parser.add_argument("--run-timeout", type=int, default=30,
-                        help="seconds per program execution (default 30)")
+        description="Carbon 0.1 execution-conformance runner"
+    )
+    parser.add_argument(
+        "--toolchain",
+        type=Path,
+        help="path to the `carbon` busybox binary of an "
+        "installed toolchain tree",
+    )
+    parser.add_argument(
+        "--filter",
+        default="",
+        help="only run programs whose relative path contains this substring",
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=SCRIPT_DIR / "out",
+        help="output directory for scoreboard.json, logs/, "
+        "obj/, bin/ (default: fork/conformance/out)",
+    )
+    parser.add_argument(
+        "--programs",
+        type=Path,
+        default=DEFAULT_PROGRAMS_DIR,
+        help="programs directory (default: fork/conformance/programs)",
+    )
+    parser.add_argument(
+        "--update-readme-table",
+        action="store_true",
+        help="Regenerate the program table in README.md "
+        "between the generated-table markers.",
+    )
+    parser.add_argument(
+        "--self-test",
+        action="store_true",
+        help="parse all program headers and validate bullet "
+        "names against fork/gap-analysis.md, then exit "
+        "(no toolchain needed)",
+    )
+    parser.add_argument(
+        "--compile-timeout",
+        type=int,
+        default=300,
+        help="seconds per compile (default 300)",
+    )
+    parser.add_argument(
+        "--link-timeout",
+        type=int,
+        default=1800,
+        help="seconds per link; the first link builds "
+        "runtimes on demand and is slow (default 1800)",
+    )
+    parser.add_argument(
+        "--run-timeout",
+        type=int,
+        default=30,
+        help="seconds per program execution (default 30)",
+    )
     args = parser.parse_args(argv)
 
     if not args.programs.is_dir():
-        print(f"error: programs directory not found: {args.programs}",
-              file=sys.stderr)
+        print(
+            f"error: programs directory not found: {args.programs}",
+            file=sys.stderr,
+        )
         return 2
 
     if args.update_readme_table:
@@ -650,7 +783,9 @@ def main(argv=None):
         parser.error("--toolchain is required (or use --self-test)")
     toolchain = args.toolchain.resolve()
     if not toolchain.is_file():
-        print(f"error: toolchain binary not found: {toolchain}", file=sys.stderr)
+        print(
+            f"error: toolchain binary not found: {toolchain}", file=sys.stderr
+        )
         return 2
 
     bullets = load_gap_analysis_bullets(GAP_ANALYSIS)
@@ -677,16 +812,26 @@ def main(argv=None):
     started = time.time()
     for prog in programs:
         status, detail = execute_program(
-            prog, toolchain, clangxx, out_dir, timeouts)
+            prog, toolchain, clangxx, out_dir, timeouts
+        )
         results[prog.rel] = (status, detail)
         line = f"[{status}] {prog.rel}"
         if detail:
             line += f" ({detail})"
         print(line, flush=True)
 
-    totals = {k: 0 for k in
-              (PASS, COMPILE_FAIL, LINK_FAIL, RUN_FAIL, OUTPUT_MISMATCH,
-               DIFF_MISMATCH, SKIP)}
+    totals = {
+        k: 0
+        for k in (
+            PASS,
+            COMPILE_FAIL,
+            LINK_FAIL,
+            RUN_FAIL,
+            OUTPUT_MISMATCH,
+            DIFF_MISMATCH,
+            SKIP,
+        )
+    }
     for status, _ in results.values():
         totals[status] += 1
 
@@ -711,7 +856,8 @@ def main(argv=None):
     }
     scoreboard_path = out_dir / "scoreboard.json"
     scoreboard_path.write_text(
-        json.dumps(scoreboard, indent=2) + "\n", encoding="utf-8")
+        json.dumps(scoreboard, indent=2) + "\n", encoding="utf-8"
+    )
 
     print_table(programs, results, rollup, totals)
     print(f"\nscoreboard: {scoreboard_path}")

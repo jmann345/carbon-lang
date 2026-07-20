@@ -166,6 +166,11 @@ them honest:
 3. **Rulebook R16/R17**: the anti-Goodhart prohibitions (goldens only via
    autoupdate, no test weakening, no special-casing, independently
    derivable expectations) and the convoluted-justification defect signal.
+4. **Gate parity (R21/R22)**: the merge gate mirrors the destination's
+   real acceptance gate (upstream prek + clangd-tidy + test), running
+   upstream's own tools — not a reduced gate we authored, and not a
+   hand-rolled approximation. "Green" must mean what the project means by
+   green. (Root cause of PR #1's lint failures: our gate was a subset.)
 
 ## Standing rules
 

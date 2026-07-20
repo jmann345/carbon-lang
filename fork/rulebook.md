@@ -158,3 +158,29 @@ here.
   `git add -A` on a tree an agent is working in — explicit paths only.
   (Origin: commit 837bb60 accidentally swept the differential-harness
   agent's 12 staged files into the anti-Goodhart commit, 2026-07-19.)
+
+## Gate parity (the root-cause fix from PR #1)
+
+- **R21. The merge gate must be a superset of the destination's real
+  acceptance gate.** PR #1 built and tested green on upstream's hosted CI
+  across every platform, but failed `prek` and `clangd-tidy` — because our
+  `fork_build_toolchain.yaml` gated only on `bazel test //toolchain/...`,
+  a strict SUBSET of upstream's `tests.yaml` (prek + clangd-tidy +
+  Default/Opt/ASan × 4 platforms). Every "green, gated merge" this session
+  was green against a bar we authored, narrower than the project's — the
+  Goodhart failure the north-star guard warns about, realized. Fix: the
+  fork gate now runs upstream's OWN prek and clangd-tidy steps. Rule: when
+  a workstream targets a destination with its own CI, the gate mirrors
+  that CI or explicitly enumerates and justifies each omission; you never
+  invent a reduced gate and call its green "mergeable." (Origin: PR #1
+  prek/clangd-tidy failures, 2026-07-20.)
+- **R22. Run the real gate; never re-approximate it.** The R12 hook was a
+  hand-rolled subset of prek (clang-format + some prettier). A
+  reimplemented gate drifts from the real config, and it only armed from
+  its creation session — so every file written earlier (the audit,
+  inventory, and early docs that ruff/prettier flagged in PR #1) bypassed
+  it entirely. The hook stays as fast per-edit feedback, but the AUTHORITY
+  is `prek run` (upstream's actual tool) on changed files, run in the loop
+  before push — not a bespoke approximation. When feasible, run
+  `prek run --files <changed>` locally; where the sandbox lacks prek, the
+  runner-side R21 gate is the backstop. (Origin: PR #1, 2026-07-20.)

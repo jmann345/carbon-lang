@@ -41,6 +41,15 @@ jobs:
         with:
           persist-credentials: false
 
+      # GATE PARITY (rulebook R21): this merge gate must be a superset of
+      # upstream's own acceptance gate, so "fork-green" == "upstream would
+      # accept". Upstream's real bar is prek (.pre-commit-config.yaml) +
+      # clangd-tidy + bazel test. We run the SAME tools upstream runs
+      # (j178/prek-action, uvx clangd-tidy) rather than re-approximating them
+      # in a hook — a reimplemented gate drifts from the real one (R22).
+      - name: prek (upstream lint/format acceptance gate)
+        uses: j178/prek-action@01345c78b7de7d79edf368729212760396ba9345 # v2
+
       - name: Preflight
         env:
           # A cold LLVM+Clang build plus bazel caches needs roughly this much.
@@ -118,6 +127,21 @@ jobs:
             build -c opt --stamp \
             //toolchain/install:carbon_toolchain_tar_gz
           ls -la bazel-bin/toolchain/install/carbon_toolchain-*.tar.gz
+
+      - name: clangd-tidy (upstream semantic-lint acceptance gate)
+        # Mirrors upstream .github/workflows/clangd_tidy.yaml on the changed
+        # C++ since the merge base. Reuses the build's compile DB.
+        run: |
+          set -euo pipefail
+          ./scripts/create_compdb.py
+          base=$(git merge-base HEAD origin/trunk 2>/dev/null || echo HEAD~1)
+          files=$(git diff --name-only "$base" HEAD -- '*.cpp' '*.h' \
+            | grep -v '\.tpl\.h$' || true)
+          if [ -n "$files" ]; then
+            uvx --with clangd-tidy==1.1.0.post2 clangd-tidy -p . -j 10 $files
+          else
+            echo "No changed C++ files; skipping clangd-tidy."
+          fi
 
       - name: Test toolchain (merge gate)
         run: |

@@ -10,10 +10,16 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-07-20 ~04:00Z._ PR #1 (match slice 1 plus all
-process/arbiter infra) MERGED to `trunk` (origin/trunk == 6793618).
-Go-forward structure: **one workstream = one branch off `trunk` = one
-focused PR** (the viability-review fix for the 162-file mega-PR bloat).
+_Last updated: 2026-07-20 (weekly upstream check)._ PR #1 (match slice 1
+plus all process/arbiter infra) MERGED to `trunk` (origin/trunk ==
+6793618). Go-forward structure: **one workstream = one branch off `trunk`
+= one focused PR** (the viability-review fix for the 162-file mega-PR
+bloat).
+
+**Weekly upstream-merge check (standing rule 5):** upstream
+carbon-language/carbon-lang `trunk` is unchanged at `99cda60` — zero
+divergence from our base, nothing to merge. No staging branch created.
+Next check: Monday 14:00 UTC.
 
 ## Branches
 

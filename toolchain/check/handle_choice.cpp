@@ -356,6 +356,29 @@ static auto MakeLetBinding(Context& context, const ChoiceInfo& choice_info,
                         bind_name_id, SemIR::AccessKind::Public)});
 }
 
+// Converts `value_id` into an in-place initializer of the storage `storage_id`
+// for use as an element of the constructor's `ClassInit`. The choice class's
+// initializing representation is in-place, so every `ClassInit` element must
+// initialize its slot in place — the discipline
+// `GetAggregateElementConversionTargetKind` applies when `convert.cpp` builds
+// a `ClassInit` for an in-place class: an element that is not itself in-place
+// is wrapped in `InPlaceInit`, whose lowering performs the destination store
+// and which carries the storage argument `FindStorageArgForInitializer`
+// requires when lowering a constant element (`EmitAggregateInitializer`'s
+// `InitRepr::InPlace` case). A plain `Initializing` conversion satisfies
+// neither: a by-copy element (such as the `UInt(N)` discriminant) would have
+// no destination store and no storage argument.
+static auto InitializeElementInPlace(Context& context, SemIR::LocId loc_id,
+                                     SemIR::InstId storage_id,
+                                     SemIR::InstId value_id) -> SemIR::InstId {
+  PendingBlock target_block(&context);
+  return Convert(context, loc_id, value_id,
+                 {.kind = ConversionTarget::InPlaceInitializing,
+                  .type_id = context.insts().Get(storage_id).type_id(),
+                  .storage_id = storage_id,
+                  .storage_access_block = &target_block});
+}
+
 // Builds the constructor function for a function-like alternative, and adds it
 // to the choice's scope. For `choice C { Ok(value: i32), ... }` the function
 // behaves like:
@@ -416,13 +439,13 @@ static auto BuildAlternativeConstructor(
         {.type_id = choice_info.discriminant_type_id,
          .base_id = return_slot_id,
          .index = SemIR::ElementIndex(0)});
-    // Hand the raw literal to `InitializeExisting`, which converts it to an
-    // initializer of the discriminant type; an empty-tuple discriminant then
-    // initializes in place without requiring a `Copy` impl.
+    // Hand the raw literal to `InitializeElementInPlace`, which converts it to
+    // an in-place initializer of the discriminant type; an empty-tuple
+    // discriminant then initializes in place without requiring a `Copy` impl.
     auto disc_literal_id = MakeDiscriminantLiteral(
         context, choice_info, binding.node_id, alternative_index);
-    element_init_ids.push_back(
-        InitializeExisting(context, loc_id, disc_ref_id, disc_literal_id));
+    element_init_ids.push_back(InitializeElementInPlace(
+        context, loc_id, disc_ref_id, disc_literal_id));
   }
 
   // Store the parameters into this alternative's payload tuple field, at
@@ -447,8 +470,8 @@ static auto BuildAlternativeConstructor(
         context, binding.node_id,
         SemIR::TupleLiteral{.type_id = alt.payload_tuple_type_id,
                             .elements_id = context.inst_blocks().Add(args)});
-    element_init_ids.push_back(
-        InitializeExisting(context, loc_id, field_ref_id, tuple_literal_id));
+    element_init_ids.push_back(InitializeElementInPlace(
+        context, loc_id, field_ref_id, tuple_literal_id));
   }
 
   auto class_init_id = AddInst<SemIR::ClassInit>(

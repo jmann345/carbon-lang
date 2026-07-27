@@ -1,1 +1,1 @@
-2026-07-27T10:00:12Z regenerate choice goldens after alternative-param scope fix (members lists lose param entries; expect two passes, R26)
+2026-07-27T10:19:20Z regenerate choice goldens after in-place ClassInit element fix (4 files churn incl. stale NameDeclDuplicate lines; R26 two passes)

@@ -117,7 +117,7 @@ fn Use(n: i32) {
 // CHECK:STDOUT:   %Use: %Use.type = struct_value () [concrete]
 // CHECK:STDOUT:   %r.patt: %pattern_type.e14 = ref_binding_pattern r [concrete]
 // CHECK:STDOUT:   %r.var_patt: %pattern_type.e14 = var_pattern %r.patt [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.8: type = fn_type @Destroy.Op.loc21_3.8 [concrete]
+// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.8: type = fn_type @Destroy.Op.loc25_3.8 [concrete]
 // CHECK:STDOUT:   %Destroy.Op.1a2547.8: %Destroy.Op.type.1d8f74.8 = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -255,8 +255,8 @@ fn Use(n: i32) {
 // CHECK:STDOUT:   %r.var: ref %IntResult = var_storage %r.var_patt
 // CHECK:STDOUT:   %Make.ref: %Make.type = name_ref Make, file.%Make.decl [concrete = constants.%Make]
 // CHECK:STDOUT:   %n.ref: %i32 = name_ref n, %n
-// CHECK:STDOUT:   %.loc21: ref %IntResult = splice_block %r.var {}
-// CHECK:STDOUT:   %Make.call: init %IntResult to %.loc21 = call %Make.ref(%n.ref)
+// CHECK:STDOUT:   %.loc25: ref %IntResult = splice_block %r.var {}
+// CHECK:STDOUT:   %Make.call: init %IntResult to %.loc25 = call %Make.ref(%n.ref)
 // CHECK:STDOUT:   assign %r.var, %Make.call
 // CHECK:STDOUT:   %IntResult.ref: type = name_ref IntResult, file.%IntResult.decl [concrete = constants.%IntResult]
 // CHECK:STDOUT:   %r: ref %IntResult = wrapper_binding r, %r.var
@@ -269,36 +269,36 @@ fn Use(n: i32) {
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc21_3.1(%self.param: ref %u1.builtin) = "no_op";
+// CHECK:STDOUT: fn @Destroy.Op.loc25_3.1(%self.param: ref %u1.builtin) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc21_3.2(%self.param: ref %u1) {
+// CHECK:STDOUT: fn @Destroy.Op.loc25_3.2(%self.param: ref %u1) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc21_3.3(%self.param: ref %i32.builtin) = "no_op";
+// CHECK:STDOUT: fn @Destroy.Op.loc25_3.3(%self.param: ref %i32.builtin) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc21_3.4(%self.param: ref %i32) {
+// CHECK:STDOUT: fn @Destroy.Op.loc25_3.4(%self.param: ref %i32) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc21_3.5(%self.param: ref %tuple.type.a8a) {
+// CHECK:STDOUT: fn @Destroy.Op.loc25_3.5(%self.param: ref %tuple.type.a8a) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc21_3.6(%self.param: ref %.2a5) {
+// CHECK:STDOUT: fn @Destroy.Op.loc25_3.6(%self.param: ref %.2a5) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc21_3.7(%self.param: ref %struct_type.discriminant.payload.898) {
+// CHECK:STDOUT: fn @Destroy.Op.loc25_3.7(%self.param: ref %struct_type.discriminant.payload.898) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc21_3.8(%self.param: ref %IntResult) {
+// CHECK:STDOUT: fn @Destroy.Op.loc25_3.8(%self.param: ref %IntResult) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }

@@ -1,1 +1,1 @@
-2026-07-27T08:01:12Z w5 reconstruction: regenerate choice goldens on trunk base (expect two passes, R26)
+2026-07-27T08:43:20Z w5 loc fix: regenerate choice goldens (fn_decl loc now the choice ClassDecl; expect two passes, R26)

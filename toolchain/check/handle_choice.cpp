@@ -163,6 +163,8 @@ namespace {
 // Info about the Choice type, used to construct each alternative member of the
 // class representing the Choice.
 struct ChoiceInfo {
+  // The `ClassDecl` of the class representing the choice.
+  SemIR::InstId class_decl_id;
   // The `Self` type.
   SemIR::TypeId self_type_id;
   // The scope of the class for adding the alternatives to.
@@ -355,7 +357,15 @@ static auto BuildAlternativeConstructor(
     Context& context, const ChoiceInfo& choice_info, int alternative_index,
     const ChoiceAlternativeFunctionInfo& alt,
     const Context::ChoiceDeferredBinding& binding) -> void {
-  auto loc_id = SemIR::LocId(binding.node_id);
+  // The constructor is compiler-generated, so there is no function
+  // declaration parse node to use as its location: the alternative's own node
+  // is a choice node, which `FunctionDecl` (constrained to
+  // `Parse::AnyFunctionDeclId`) rejects at location verification. Use an
+  // inst-based location naming the choice's class declaration instead — the
+  // generated-function precedent set by `BuildDestroyThunk` in
+  // `ExportDestructorToCpp` — which still resolves to the choice's source
+  // location in diagnostics.
+  auto loc_id = SemIR::LocId(choice_info.class_decl_id);
   auto [decl_id, function_id] =
       MakeGeneratedFunctionDecl(context, loc_id,
                                 {.parent_scope_id = choice_info.name_scope_id,
@@ -635,7 +645,8 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
       context, context.struct_type_fields().AddCanonical(
                    llvm::ArrayRef(struct_type_fields).take_front(1)));
 
-  const ChoiceInfo choice_info = {.self_type_id = class_info.self_type_id,
+  const ChoiceInfo choice_info = {.class_decl_id = class_info.first_decl_id(),
+                                  .self_type_id = class_info.self_type_id,
                                   .name_scope_id = class_info.scope_id,
                                   .self_struct_type_id = self_struct_type_id,
                                   .discriminant_type_id = discriminant_type_id,

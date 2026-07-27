@@ -243,6 +243,26 @@ struct CalleeFunctionInfo {
 };
 }  // namespace
 
+auto IsCppThunkFenceRequired(Context& context, const clang::FunctionDecl* decl)
+    -> bool {
+  if (!context.ast_context().getLangOpts().CXXExceptions) {
+    return false;
+  }
+  const auto* proto = decl->getType()->castAs<clang::FunctionProtoType>();
+  // Implicit and defaulted special members and unannotated destructors carry
+  // an unevaluated exception specification, which `canThrow` rejects; resolve
+  // it first, mirroring `Sema::MarkFunctionReferenced`.
+  if (clang::isUnresolvedExceptionSpec(proto->getExceptionSpecType())) {
+    proto =
+        context.clang_sema().ResolveExceptionSpec(decl->getLocation(), proto);
+  }
+  // A callee whose specification cannot be resolved is conservatively treated
+  // as potentially-throwing.
+  return !proto ||
+         clang::isUnresolvedExceptionSpec(proto->getExceptionSpecType()) ||
+         proto->canThrow() != clang::CT_Cannot;
+}
+
 auto IsCppThunkRequired(Context& context, const SemIR::Function& function)
     -> bool {
   const auto* clang_decl =
@@ -258,6 +278,14 @@ auto IsCppThunkRequired(Context& context, const SemIR::Function& function)
   const auto& signature =
       context.clang_decl_signatures().Get(clang_decl->key.signature_id);
   auto* decl = cast<clang::FunctionDecl>(clang_decl->decl());
+
+  // With C++ exceptions enabled, every potentially-throwing callee crosses
+  // the boundary through a fenced thunk
+  // (docs/design/error_handling.md#the-fenced-boundary-terminate-semantics).
+  if (IsCppThunkFenceRequired(context, decl)) {
+    return true;
+  }
+
   if (signature.kind != SemIR::ClangDeclSignature::Normal ||
       signature.num_params != static_cast<int>(decl->getNumNonObjectParams())) {
     // We require a thunk if the number of parameters we want isn't all of them.
@@ -443,6 +471,11 @@ static auto CreateThunkFunctionDecl(
       GetDeclNameForThunk(ast_context, callee_info.decl->getDeclName());
 
   auto ext_proto_info = clang::FunctionProtoType::ExtProtoInfo();
+  if (ast_context.getLangOpts().CXXExceptions) {
+    // Fence: an exception escaping the wrapped call reaches this noexcept
+    // boundary and terminates deterministically at the thunk.
+    ext_proto_info.ExceptionSpec.Type = clang::EST_BasicNoexcept;
+  }
   clang::QualType thunk_function_type = ast_context.getFunctionType(
       callee_info.has_simple_return_type ? callee_info.effective_return_type
                                          : ast_context.VoidTy,

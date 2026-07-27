@@ -19,7 +19,7 @@
 auto foo(short a) -> void;
 // CHECK:STDOUT: |-FunctionDecl {{0x[a-f0-9]+}} <./thunk_required.h:[[@LINE-1]]:1, col:22> col:6 used foo 'auto (short) -> void' external-linkage
 // CHECK:STDOUT: | `-ParmVarDecl {{0x[a-f0-9]+}} <col:10, col:16> col:16 a 'short'
-// CHECK:STDOUT: `-FunctionDecl {{0x[a-f0-9]+}} <col:6> col:6 foo__carbon_thunk 'void (short * _Nonnull)' inline internal-linkage
+// CHECK:STDOUT: `-FunctionDecl {{0x[a-f0-9]+}} <col:6> col:6 foo__carbon_thunk 'void (short * _Nonnull) noexcept' inline internal-linkage
 // CHECK:STDOUT:   |-ParmVarDecl {{0x[a-f0-9]+}} <col:6> col:6 used a 'short * _Nonnull':'short *'
 // CHECK:STDOUT:   |-ReturnStmt {{0x[a-f0-9]+}} <col:6>
 // CHECK:STDOUT:   | `-CallExpr {{0x[a-f0-9]+}} <col:6> 'void'
@@ -49,7 +49,7 @@ fn F() {
 
 auto foo() -> short;
 // CHECK:STDOUT: |-FunctionDecl {{0x[a-f0-9]+}} <./return_thunk_required.h:[[@LINE-1]]:1, col:15> col:6 used foo 'auto () -> short' external-linkage
-// CHECK:STDOUT: `-FunctionDecl {{0x[a-f0-9]+}} <col:6> col:6 foo__carbon_thunk 'void (short * _Nonnull)' inline internal-linkage
+// CHECK:STDOUT: `-FunctionDecl {{0x[a-f0-9]+}} <col:6> col:6 foo__carbon_thunk 'void (short * _Nonnull) noexcept' inline internal-linkage
 // CHECK:STDOUT:   |-ParmVarDecl {{0x[a-f0-9]+}} <col:6> col:6 used return 'short * _Nonnull':'short *'
 // CHECK:STDOUT:   |-CXXNewExpr {{0x[a-f0-9]+}} <col:6> 'short *' global Function {{0x[a-f0-9]+}} 'operator new' 'void *(__size_t, void *) noexcept'
 // CHECK:STDOUT:   | |-CallExpr {{0x[a-f0-9]+}} <col:6> 'short'

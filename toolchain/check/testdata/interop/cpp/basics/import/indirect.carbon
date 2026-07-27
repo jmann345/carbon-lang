@@ -158,8 +158,8 @@ fn UseZ() -> Cpp.A.Z {
 // CHECK:STDOUT:   %X.cpp_destructor: %X.cpp_destructor.type = struct_value () [concrete]
 // CHECK:STDOUT:   %X.g.cpp_overload_set.type: type = cpp_overload_set_type @X.g.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %X.g.cpp_overload_set.value: %X.g.cpp_overload_set.type = cpp_overload_set_value @X.g.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %X.g.type: type = fn_type @X.g [concrete]
-// CHECK:STDOUT:   %X.g: %X.g.type = struct_value () [concrete]
+// CHECK:STDOUT:   %g__carbon_thunk.type: type = fn_type @g__carbon_thunk [concrete]
+// CHECK:STDOUT:   %g__carbon_thunk: %g__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -167,7 +167,7 @@ fn UseZ() -> Cpp.A.Z {
 // CHECK:STDOUT:   %Core.import_ref.cd6: @Int.as.Copy.impl.%Int.as.Copy.impl.Op.type (%Int.as.Copy.impl.Op.type.ac8) = import_ref Core//prelude/parts/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.Copy.impl.%Int.as.Copy.impl.Op (constants.%Int.as.Copy.impl.Op.5e0)]
 // CHECK:STDOUT:   %Copy.impl_witness_table.367 = impl_witness_table (%Core.import_ref.cd6), @Int.as.Copy.impl [concrete]
 // CHECK:STDOUT:   %X.g.cpp_overload_set.value: %X.g.cpp_overload_set.type = cpp_overload_set_value @X.g.cpp_overload_set [concrete = constants.%X.g.cpp_overload_set.value]
-// CHECK:STDOUT:   %X.g.decl: %X.g.type = fn_decl @X.g [concrete = constants.%X.g] {
+// CHECK:STDOUT:   %g__carbon_thunk.decl: %g__carbon_thunk.type = fn_decl @g__carbon_thunk [concrete = constants.%g__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -202,10 +202,10 @@ fn UseZ() -> Cpp.A.Z {
 // CHECK:STDOUT:   %g.ref: %X.g.cpp_overload_set.type = name_ref g, imports.%X.g.cpp_overload_set.value [concrete = constants.%X.g.cpp_overload_set.value]
 // CHECK:STDOUT:   %bound_method: <bound method> = bound_method %.loc15_12.2, %g.ref
 // CHECK:STDOUT:   %.loc15_12.3: %X = acquire_value %.loc15_12.2
-// CHECK:STDOUT:   %X.g.call: init %i32 = call imports.%X.g.decl(%.loc15_12.3)
+// CHECK:STDOUT:   %g__carbon_thunk.call: init %i32 = call imports.%g__carbon_thunk.decl(%.loc15_12.3)
 // CHECK:STDOUT:   %X.cpp_destructor.bound: <bound method> = bound_method %.loc15_12.2, constants.%X.cpp_destructor
 // CHECK:STDOUT:   %X.cpp_destructor.call: init %empty_tuple.type = call %X.cpp_destructor.bound(%.loc15_12.2)
-// CHECK:STDOUT:   return %X.g.call
+// CHECK:STDOUT:   return %g__carbon_thunk.call
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- indirect_import_via_alias.carbon
@@ -241,8 +241,8 @@ fn UseZ() -> Cpp.A.Z {
 // CHECK:STDOUT:   %int_1.0c6: %i32 = int_value 1 [concrete]
 // CHECK:STDOUT:   %X.g.cpp_overload_set.type: type = cpp_overload_set_type @X.g.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %X.g.cpp_overload_set.value: %X.g.cpp_overload_set.type = cpp_overload_set_value @X.g.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %X.g.type: type = fn_type @X.g [concrete]
-// CHECK:STDOUT:   %X.g: %X.g.type = struct_value () [concrete]
+// CHECK:STDOUT:   %g__carbon_thunk.type: type = fn_type @g__carbon_thunk [concrete]
+// CHECK:STDOUT:   %g__carbon_thunk: %g__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Copy.type: type = facet_type <@Copy> [concrete]
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.ac8: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%N) [symbolic]
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.5e0: %Int.as.Copy.impl.Op.type.ac8 = struct_value () [symbolic]
@@ -267,7 +267,7 @@ fn UseZ() -> Cpp.A.Z {
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/parts/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.b3c = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl [concrete]
 // CHECK:STDOUT:   %X.g.cpp_overload_set.value: %X.g.cpp_overload_set.type = cpp_overload_set_value @X.g.cpp_overload_set [concrete = constants.%X.g.cpp_overload_set.value]
-// CHECK:STDOUT:   %X.g.decl: %X.g.type = fn_decl @X.g [concrete = constants.%X.g] {
+// CHECK:STDOUT:   %g__carbon_thunk.decl: %g__carbon_thunk.type = fn_decl @g__carbon_thunk [concrete = constants.%g__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -305,8 +305,8 @@ fn UseZ() -> Cpp.A.Z {
 // CHECK:STDOUT:   %ax.ref.loc10_17: ref %X = name_ref ax, %ax
 // CHECK:STDOUT:   %g.ref: %X.g.cpp_overload_set.type = name_ref g, imports.%X.g.cpp_overload_set.value [concrete = constants.%X.g.cpp_overload_set.value]
 // CHECK:STDOUT:   %bound_method.loc10_19: <bound method> = bound_method %ax.ref.loc10_17, %g.ref
-// CHECK:STDOUT:   %X.g.call: init %i32 = call imports.%X.g.decl(%ax.ref.loc10_17)
-// CHECK:STDOUT:   %.loc10_23.1: %tuple.type.e55 = tuple_literal (%.loc10_13.1, %X.g.call)
+// CHECK:STDOUT:   %g__carbon_thunk.call: init %i32 = call imports.%g__carbon_thunk.decl(%ax.ref.loc10_17)
+// CHECK:STDOUT:   %.loc10_23.1: %tuple.type.e55 = tuple_literal (%.loc10_13.1, %g__carbon_thunk.call)
 // CHECK:STDOUT:   %.loc10_13.2: %i32 = acquire_value %.loc10_13.1
 // CHECK:STDOUT:   %impl.elem0.loc10: %.7a6 = impl_witness_access constants.%Copy.impl_witness.0e0, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
 // CHECK:STDOUT:   %bound_method.loc10_13.1: <bound method> = bound_method %.loc10_13.2, %impl.elem0.loc10
@@ -316,7 +316,7 @@ fn UseZ() -> Cpp.A.Z {
 // CHECK:STDOUT:   %tuple.elem0: ref %i32 = tuple_access %return.param, element0
 // CHECK:STDOUT:   %.loc10_23.2: init %i32 to %tuple.elem0 = in_place_init %Int.as.Copy.impl.Op.call
 // CHECK:STDOUT:   %tuple.elem1: ref %i32 = tuple_access %return.param, element1
-// CHECK:STDOUT:   %.loc10_23.3: init %i32 to %tuple.elem1 = in_place_init %X.g.call
+// CHECK:STDOUT:   %.loc10_23.3: init %i32 to %tuple.elem1 = in_place_init %g__carbon_thunk.call
 // CHECK:STDOUT:   %.loc10_23.4: init %tuple.type.e55 to %return.param = tuple_init (%.loc10_23.2, %.loc10_23.3)
 // CHECK:STDOUT:   %.loc10_24: init %tuple.type.e55 = converted %.loc10_23.1, %.loc10_23.4
 // CHECK:STDOUT:   %X.cpp_destructor.bound: <bound method> = bound_method %ax.var, constants.%X.cpp_destructor

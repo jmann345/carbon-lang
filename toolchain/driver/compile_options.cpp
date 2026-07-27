@@ -149,6 +149,30 @@ compile to machine code.
             &phase);
       });
 
+  b.AddOneOfOption(
+      {
+          .name = "cpp-exceptions",
+          .help = R"""(
+Selects how imported C++ code is built with respect to exceptions and what
+happens when an exception reaches the language boundary.
+
+`none` compiles imported C++ with exceptions disabled. `catch` compiles it
+with exceptions enabled; an exception escaping a call from Carbon into C++
+deterministically terminates the program at the boundary. `auto` (the
+default) resolves to `none` when the Clang arguments disable exceptions,
+and to `catch` otherwise.
+)""",
+      },
+      [&](auto& arg_b) {
+        arg_b.SetOneOf(
+            {
+                arg_b.OneOfValue("auto", CppExceptions::Auto).Default(true),
+                arg_b.OneOfValue("none", CppExceptions::None),
+                arg_b.OneOfValue("catch", CppExceptions::Catch),
+            },
+            &cpp_exceptions);
+      });
+
   // TODO: Rearrange the code setting this option and two related ones to
   // allow them to reference each other instead of hard-coding their names.
   b.AddStringOption(
@@ -487,6 +511,20 @@ auto CompileOptions::BuildClangInvocation(DriverEnv& driver_env)
       CompileOptions::GetClangOptimizationFlag(opt_level),
   };
   all_clang_args.append(clang_args);
+  // An explicit `--cpp-exceptions` mode is a boundary-semantics contract, so
+  // its flags are appended after the user's Clang arguments to win by Clang's
+  // last-wins rule; `auto` appends nothing and lets the Clang driver resolve
+  // the exceptions state from the user's arguments and target defaults.
+  switch (cpp_exceptions) {
+    case CppExceptions::Auto:
+      break;
+    case CppExceptions::None:
+      all_clang_args.append({"-fno-exceptions", "-fno-cxx-exceptions"});
+      break;
+    case CppExceptions::Catch:
+      all_clang_args.append({"-fexceptions", "-fcxx-exceptions"});
+      break;
+  }
   auto clang_invocation = Carbon::BuildClangInvocation(
       *driver_env.consumer, driver_env.fs, *driver_env.installation,
       codegen_options->target, all_clang_args);

@@ -215,3 +215,17 @@ here.
     locally before pushing (it is fast and needs no build), so the R21 CI
     gate is a backstop, not the first detector. (Origin: PR #1, my `cat >>`
     to `rulebook.md` bypassed the hook, 2026-07-20.)
+-   **R26. Golden autoupdate runs to fixpoint — expect two passes when a
+    change adds output lines.** file_test's SemIR names embed source line
+    numbers (`%x.locNN`). When a compiler change adds output lines (for
+    example B0's thunk decls in the `imports` block), autoupdate pass 1
+    inserts the new CHECK lines, which shifts the source lines below them —
+    so the `locNN` values it wrote (computed from the pre-shift compile) are
+    stale by exactly the shift, and the test stays red with "Autoupdate
+    would make changes". Pass 2 converges: renumbering `locNN` does not
+    change the CHECK line count. Discipline: after an autoupdate that
+    touches files whose diff adds/removes CHECK lines above source code,
+    fire a second pass and verify it is loc-number-only before gating; a
+    pass-2 diff with structural changes means real nondeterminism — stop
+    and diagnose instead of looping. This red-loop is what stranded the
+    original b0 branch. (Origin: b0 reconstruction runs 19-22, 2026-07-27.)

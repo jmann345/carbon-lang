@@ -583,15 +583,15 @@ class V {
 // CHECK:STDOUT:   %Base: type = class_type @Base [concrete]
 // CHECK:STDOUT:   %Base.base_fn.cpp_overload_set.type: type = cpp_overload_set_type @Base.base_fn.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %Base.base_fn.cpp_overload_set.value: %Base.base_fn.cpp_overload_set.type = cpp_overload_set_value @Base.base_fn.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %Base.base_fn.type: type = fn_type @Base.base_fn [concrete]
-// CHECK:STDOUT:   %Base.base_fn: %Base.base_fn.type = struct_value () [concrete]
+// CHECK:STDOUT:   %base_fn__carbon_thunk.type: type = fn_type @base_fn__carbon_thunk [concrete]
+// CHECK:STDOUT:   %base_fn__carbon_thunk: %base_fn__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Derived: type = class_type @Derived [concrete]
 // CHECK:STDOUT:   %Derived.base_fn.cpp_overload_set.type: type = cpp_overload_set_type @Derived.base_fn.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %Derived.base_fn.cpp_overload_set.value: %Derived.base_fn.cpp_overload_set.type = cpp_overload_set_value @Derived.base_fn.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %Derived.derived_fn.cpp_overload_set.type: type = cpp_overload_set_type @Derived.derived_fn.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %Derived.derived_fn.cpp_overload_set.value: %Derived.derived_fn.cpp_overload_set.type = cpp_overload_set_value @Derived.derived_fn.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %Derived.derived_fn.type: type = fn_type @Derived.derived_fn [concrete]
-// CHECK:STDOUT:   %Derived.derived_fn: %Derived.derived_fn.type = struct_value () [concrete]
+// CHECK:STDOUT:   %derived_fn__carbon_thunk.type: type = fn_type @derived_fn__carbon_thunk [concrete]
+// CHECK:STDOUT:   %derived_fn__carbon_thunk: %derived_fn__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -602,11 +602,11 @@ class V {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Base.decl: type = class_decl @Base [concrete = constants.%Base] {} {}
 // CHECK:STDOUT:   %Base.base_fn.cpp_overload_set.value: %Base.base_fn.cpp_overload_set.type = cpp_overload_set_value @Base.base_fn.cpp_overload_set [concrete = constants.%Base.base_fn.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.base_fn.decl: %Base.base_fn.type = fn_decl @Base.base_fn [concrete = constants.%Base.base_fn] {} {}
+// CHECK:STDOUT:   %base_fn__carbon_thunk.decl: %base_fn__carbon_thunk.type = fn_decl @base_fn__carbon_thunk [concrete = constants.%base_fn__carbon_thunk] {} {}
 // CHECK:STDOUT:   %Derived.decl: type = class_decl @Derived [concrete = constants.%Derived] {} {}
 // CHECK:STDOUT:   %Derived.base_fn.cpp_overload_set.value: %Derived.base_fn.cpp_overload_set.type = cpp_overload_set_value @Derived.base_fn.cpp_overload_set [concrete = constants.%Derived.base_fn.cpp_overload_set.value]
 // CHECK:STDOUT:   %Derived.derived_fn.cpp_overload_set.value: %Derived.derived_fn.cpp_overload_set.type = cpp_overload_set_value @Derived.derived_fn.cpp_overload_set [concrete = constants.%Derived.derived_fn.cpp_overload_set.value]
-// CHECK:STDOUT:   %Derived.derived_fn.decl: %Derived.derived_fn.type = fn_decl @Derived.derived_fn [concrete = constants.%Derived.derived_fn] {} {}
+// CHECK:STDOUT:   %derived_fn__carbon_thunk.decl: %derived_fn__carbon_thunk.type = fn_decl @derived_fn__carbon_thunk [concrete = constants.%derived_fn__carbon_thunk] {} {}
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @MyF() {
@@ -614,15 +614,15 @@ class V {
 // CHECK:STDOUT:   %Cpp.ref.loc8: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %Base.ref: type = name_ref Base, imports.%Base.decl [concrete = constants.%Base]
 // CHECK:STDOUT:   %base_fn.ref.loc8: %Base.base_fn.cpp_overload_set.type = name_ref base_fn, imports.%Base.base_fn.cpp_overload_set.value [concrete = constants.%Base.base_fn.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.base_fn.call.loc8: init %empty_tuple.type = call imports.%Base.base_fn.decl()
+// CHECK:STDOUT:   %base_fn__carbon_thunk.call.loc8: init %empty_tuple.type = call imports.%base_fn__carbon_thunk.decl()
 // CHECK:STDOUT:   %Cpp.ref.loc9: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %Derived.ref.loc9: type = name_ref Derived, imports.%Derived.decl [concrete = constants.%Derived]
 // CHECK:STDOUT:   %base_fn.ref.loc9: %Derived.base_fn.cpp_overload_set.type = name_ref base_fn, imports.%Derived.base_fn.cpp_overload_set.value [concrete = constants.%Derived.base_fn.cpp_overload_set.value]
-// CHECK:STDOUT:   %Base.base_fn.call.loc9: init %empty_tuple.type = call imports.%Base.base_fn.decl()
+// CHECK:STDOUT:   %base_fn__carbon_thunk.call.loc9: init %empty_tuple.type = call imports.%base_fn__carbon_thunk.decl()
 // CHECK:STDOUT:   %Cpp.ref.loc10: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %Derived.ref.loc10: type = name_ref Derived, imports.%Derived.decl [concrete = constants.%Derived]
 // CHECK:STDOUT:   %derived_fn.ref: %Derived.derived_fn.cpp_overload_set.type = name_ref derived_fn, imports.%Derived.derived_fn.cpp_overload_set.value [concrete = constants.%Derived.derived_fn.cpp_overload_set.value]
-// CHECK:STDOUT:   %Derived.derived_fn.call: init %empty_tuple.type = call imports.%Derived.derived_fn.decl()
+// CHECK:STDOUT:   %derived_fn__carbon_thunk.call: init %empty_tuple.type = call imports.%derived_fn__carbon_thunk.decl()
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

@@ -137,8 +137,8 @@ fn F() {
 // CHECK:STDOUT:   %.0f8: type = maybe_unformed_type %ptr.d08 [concrete]
 // CHECK:STDOUT:   %OptionalStorage.facet.e9e: %OptionalStorage.type = facet_value %ptr.d08, (%OptionalStorage.impl_witness.5c5) [concrete]
 // CHECK:STDOUT:   %Optional.cd0: type = class_type @Optional, @Optional(%OptionalStorage.facet.e9e) [concrete]
-// CHECK:STDOUT:   %TakesArray.type: type = fn_type @TakesArray [concrete]
-// CHECK:STDOUT:   %TakesArray: %TakesArray.type = struct_value () [concrete]
+// CHECK:STDOUT:   %TakesArray__carbon_thunk.type: type = fn_type @TakesArray__carbon_thunk [concrete]
+// CHECK:STDOUT:   %TakesArray__carbon_thunk: %TakesArray__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %ImplicitAs.type.733: type = facet_type <@ImplicitAs, @ImplicitAs(%Optional.cd0)> [concrete]
 // CHECK:STDOUT:   %OptionalAs.type.3b8: type = facet_type <@OptionalAs, @OptionalAs(%T.220)> [symbolic]
 // CHECK:STDOUT:   %U.042: %OptionalAs.type.3b8 = symbolic_binding U, 1 [symbolic]
@@ -195,7 +195,7 @@ fn F() {
 // CHECK:STDOUT:   %Core.import_ref.e32 = import_ref Core//prelude/types/optional, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.3cf = import_ref Core//prelude/types/optional, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %OptionalStorage.impl_witness_table.a04 = impl_witness_table (%Core.import_ref.509, %Core.import_ref.cde8, %Core.import_ref.66a, %Core.import_ref.ee7, %Core.import_ref.e32, %Core.import_ref.3cf), @ptr.as.OptionalStorage.impl [concrete]
-// CHECK:STDOUT:   %TakesArray.decl: %TakesArray.type = fn_decl @TakesArray [concrete = constants.%TakesArray] {
+// CHECK:STDOUT:   %TakesArray__carbon_thunk.decl: %TakesArray__carbon_thunk.type = fn_decl @TakesArray__carbon_thunk [concrete = constants.%TakesArray__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -258,7 +258,7 @@ fn F() {
 // CHECK:STDOUT:   %.loc11_18.2: ref %Optional.cd0 = temporary_storage
 // CHECK:STDOUT:   %.loc11_18.3: ref %Optional.cd0 = temporary %.loc11_18.2, %.loc11_18.1
 // CHECK:STDOUT:   %.loc11_18.4: %Optional.cd0 = acquire_value %.loc11_18.3
-// CHECK:STDOUT:   %TakesArray.call.loc11: init %empty_tuple.type = call imports.%TakesArray.decl(%.loc11_18.4)
+// CHECK:STDOUT:   %TakesArray__carbon_thunk.call.loc11: init %empty_tuple.type = call imports.%TakesArray__carbon_thunk.decl(%.loc11_18.4)
 // CHECK:STDOUT:   %Destroy.Op.bound.loc11: <bound method> = bound_method %.loc11_18.3, constants.%Destroy.Op.1a2547.4
 // CHECK:STDOUT:   %Destroy.Op.call.loc11: init %empty_tuple.type = call %Destroy.Op.bound.loc11(%.loc11_18.3)
 // CHECK:STDOUT:   %Cpp.ref.loc13_3: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
@@ -275,7 +275,7 @@ fn F() {
 // CHECK:STDOUT:   %.loc13_21.2: ref %Optional.cd0 = temporary_storage
 // CHECK:STDOUT:   %.loc13_21.3: ref %Optional.cd0 = temporary %.loc13_21.2, %.loc13_21.1
 // CHECK:STDOUT:   %.loc13_21.4: %Optional.cd0 = acquire_value %.loc13_21.3
-// CHECK:STDOUT:   %TakesArray.call.loc13: init %empty_tuple.type = call imports.%TakesArray.decl(%.loc13_21.4)
+// CHECK:STDOUT:   %TakesArray__carbon_thunk.call.loc13: init %empty_tuple.type = call imports.%TakesArray__carbon_thunk.decl(%.loc13_21.4)
 // CHECK:STDOUT:   %Destroy.Op.bound.loc13: <bound method> = bound_method %.loc13_21.3, constants.%Destroy.Op.1a2547.4
 // CHECK:STDOUT:   %Destroy.Op.call.loc13: init %empty_tuple.type = call %Destroy.Op.bound.loc13(%.loc13_21.3)
 // CHECK:STDOUT:   %Destroy.Op.bound.loc10: <bound method> = bound_method %n.var, constants.%Destroy.Op.1a2547.8

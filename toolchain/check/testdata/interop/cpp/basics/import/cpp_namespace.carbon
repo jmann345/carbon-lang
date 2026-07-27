@@ -137,8 +137,8 @@ fn F() {
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %system_function.cpp_overload_set.type: type = cpp_overload_set_type @system_function.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %system_function.cpp_overload_set.value: %system_function.cpp_overload_set.type = cpp_overload_set_value @system_function.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %system_function.type: type = fn_type @system_function [concrete]
-// CHECK:STDOUT:   %system_function: %system_function.type = struct_value () [concrete]
+// CHECK:STDOUT:   %system_function__carbon_thunk.type: type = fn_type @system_function__carbon_thunk [concrete]
+// CHECK:STDOUT:   %system_function__carbon_thunk: %system_function__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -147,7 +147,7 @@ fn F() {
 // CHECK:STDOUT:     import Cpp//...
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %system_function.cpp_overload_set.value: %system_function.cpp_overload_set.type = cpp_overload_set_value @system_function.cpp_overload_set [concrete = constants.%system_function.cpp_overload_set.value]
-// CHECK:STDOUT:   %system_function.decl: %system_function.type = fn_decl @system_function [concrete = constants.%system_function] {} {}
+// CHECK:STDOUT:   %system_function__carbon_thunk.decl: %system_function__carbon_thunk.type = fn_decl @system_function__carbon_thunk [concrete = constants.%system_function__carbon_thunk] {} {}
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
@@ -160,7 +160,7 @@ fn F() {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %system_function.ref: %system_function.cpp_overload_set.type = name_ref system_function, imports.%system_function.cpp_overload_set.value [concrete = constants.%system_function.cpp_overload_set.value]
-// CHECK:STDOUT:   %system_function.call: init %empty_tuple.type = call imports.%system_function.decl()
+// CHECK:STDOUT:   %system_function__carbon_thunk.call: init %empty_tuple.type = call imports.%system_function__carbon_thunk.decl()
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

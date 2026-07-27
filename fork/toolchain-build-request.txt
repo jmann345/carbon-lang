@@ -1,1 +1,1 @@
-2026-07-27T14:20:57Z gate the 20260727 upstream staging merge (25 commits, 0 conflicts)
+2026-07-27T16:40:44Z gate the b0+upstream composition (trunk 2619bd1 merged back into b0) before PR #2 merges

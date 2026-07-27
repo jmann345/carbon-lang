@@ -452,6 +452,9 @@ class NodeStack {
       case Parse::NodeKind::DefaultLibrary:
       case Parse::NodeKind::LibraryName:
         return Id::KindFor<SemIR::LibraryNameId>();
+      case Parse::NodeKind::BindingPatternTypeStart:
+      case Parse::NodeKind::CompileTimeBindingPatternTypeStart:
+        return Id::KindFor<SemIR::ElementIndex>();
       case Parse::NodeKind::AssociatedConstantInitializer:
       case Parse::NodeKind::AssociatedConstantIntroducer:
       case Parse::NodeKind::BuiltinName:
@@ -498,7 +501,6 @@ class NodeStack {
       case Parse::NodeKind::BreakStatementStart:
       case Parse::NodeKind::ChoiceAlternativeListComma:
       case Parse::NodeKind::CodeBlock:
-      case Parse::NodeKind::CompileTimeBindingPatternStart:
       case Parse::NodeKind::ContinueStatementStart:
       case Parse::NodeKind::CorePackageName:
       case Parse::NodeKind::CppPackageName:

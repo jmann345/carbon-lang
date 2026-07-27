@@ -1,1 +1,1 @@
-build 2026-07-19T05:18:28Z: first fork toolchain build
+2026-07-27T14:20:57Z gate the 20260727 upstream staging merge (25 commits, 0 conflicts)

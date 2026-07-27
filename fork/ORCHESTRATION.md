@@ -10,7 +10,16 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-07-20 ~01:10Z_ (scope map: active branches are file-disjoint; expected merge collisions only in fork/ state files)
+_Last updated: 2026-07-27 (weekly upstream merge staged)._ This copy lives
+on the upstream-staging branch. **Weekly upstream-merge outcome (standing
+rule 5):** upstream trunk moved to `39916ad` (25 commits, 264 files since
+base 99cda60). Trial merges: ZERO textual conflicts against our trunk and
+against both open PR branches (#2 b0, #3 w5; 9 overlapping files, all
+hunk-disjoint). This staging branch = trunk + upstream, gate run 27 GREEN
+(release `fork-toolchain-27-fd4daca7b`), conformance scoreboard
+non-regressing (68 PASS / 33 SKIP / 0 FAIL, 39/56 bullets — byte-identical
+to baseline). PR into trunk opened for user review. PRs #2/#3 stay
+mergeable in any order.
 
 ## Branches
 

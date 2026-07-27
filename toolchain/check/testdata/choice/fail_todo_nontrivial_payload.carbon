@@ -20,6 +20,10 @@ class Boxy {
 // The slice-1 payload restriction (decision-log W5 SF-6) admits only scalar
 // payload types; class-typed payloads are rejected with a clean diagnostic.
 choice C {
+  // CHECK:STDERR: fail_todo_class_payload.carbon:[[@LINE+4]]:7: error: semantics TODO: `choice alternative payload that is not trivially copyable and destructible` [SemanticsTodo]
+  // CHECK:STDERR:   Hold(b: Boxy),
+  // CHECK:STDERR:       ^~~~~~~~~
+  // CHECK:STDERR:
   Hold(b: Boxy),
   Nothing
 }
@@ -37,6 +41,10 @@ library "[[@TEST_NAME]]";
 // Struct-typed payloads are also out of slice 1, even when their fields are
 // scalars.
 choice D {
+  // CHECK:STDERR: fail_todo_struct_payload.carbon:[[@LINE+4]]:7: error: semantics TODO: `choice alternative payload that is not trivially copyable and destructible` [SemanticsTodo]
+  // CHECK:STDERR:   Pair(p: {.a: i32, .b: i32}),
+  // CHECK:STDERR:       ^~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   Pair(p: {.a: i32, .b: i32}),
   Nothing
 }

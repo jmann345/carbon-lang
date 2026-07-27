@@ -41,6 +41,10 @@ fn Construct(n: i32) -> C {
 library "[[@TEST_NAME]]";
 
 choice C(T: type) {
+  // CHECK:STDERR: fail_todo_generic_params.carbon:[[@LINE+4]]:6: error: semantics TODO: `choice alternative payload with generic or Self-dependent type` [SemanticsTodo]
+  // CHECK:STDERR:   Alt(a: T)
+  // CHECK:STDERR:      ^~~~~~
+  // CHECK:STDERR:
   Alt(a: T)
 }
 
@@ -48,6 +52,10 @@ choice C(T: type) {
 library "[[@TEST_NAME]]";
 
 choice C {
+  // CHECK:STDERR: fail_todo_self_param.carbon:[[@LINE+4]]:6: error: semantics TODO: `choice alternative payload with generic or Self-dependent type` [SemanticsTodo]
+  // CHECK:STDERR:   Alt(a: Self*)
+  // CHECK:STDERR:      ^~~~~~~~~~
+  // CHECK:STDERR:
   Alt(a: Self*)
 }
 
@@ -55,6 +63,10 @@ choice C {
 library "[[@TEST_NAME]]";
 
 choice C {
+  // CHECK:STDERR: fail_unknown_payload_type.carbon:[[@LINE+4]]:10: error: name `NoSuchType` not found [NameNotFound]
+  // CHECK:STDERR:   Alt(a: NoSuchType),
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR:
   Alt(a: NoSuchType),
   Nothing
 }

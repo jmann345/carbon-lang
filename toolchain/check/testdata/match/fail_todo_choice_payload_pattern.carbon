@@ -21,6 +21,10 @@ choice IntResult {
 // `.Ok(...)` destructures the alternative's payload: slice 2.
 fn F(r: IntResult) -> i32 {
   match (r) {
+    // CHECK:STDERR: fail_todo_payload_pattern_args.carbon:[[@LINE+4]]:5: error: semantics TODO: `match case pattern destructuring a choice payload` [SemanticsTodo]
+    // CHECK:STDERR:     case .Ok(42) => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case .Ok(42) => { return 1; }
     default => { return 0; }
   }
@@ -39,6 +43,10 @@ choice IntResult {
 // it is also payload destructuring (slice 2).
 fn F(r: IntResult) -> i32 {
   match (r) {
+    // CHECK:STDERR: fail_todo_payload_pattern_bare.carbon:[[@LINE+4]]:5: error: semantics TODO: `match case pattern destructuring a choice payload` [SemanticsTodo]
+    // CHECK:STDERR:     case .Ok => { return 1; }
+    // CHECK:STDERR:     ^~~~~~~~~~~
+    // CHECK:STDERR:
     case .Ok => { return 1; }
     default => { return 0; }
   }
@@ -57,6 +65,10 @@ choice IntResult {
 // (decision-log W5 SF-4); the qualified form is a recorded work item.
 fn F(r: IntResult) -> i32 {
   match (r) {
+    // CHECK:STDERR: fail_todo_qualified_pattern.carbon:[[@LINE+4]]:5: error: semantics TODO: `qualified alternative pattern in match case` [SemanticsTodo]
+    // CHECK:STDERR:     case IntResult.Err => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case IntResult.Err => { return 1; }
     default => { return 0; }
   }

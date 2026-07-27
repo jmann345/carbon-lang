@@ -17,7 +17,15 @@ library "[[@TEST_NAME]]";
 // payload type itself is concrete: the representation is computed at the
 // definition, before any arguments are known.
 choice C(T: type) {
+  // CHECK:STDERR: fail_todo_generic_payload.carbon:[[@LINE+4]]:7: error: semantics TODO: `choice alternative payload with generic or Self-dependent type` [SemanticsTodo]
+  // CHECK:STDERR:   Wrap(a: T),
+  // CHECK:STDERR:       ^~~~~~
+  // CHECK:STDERR:
   Wrap(a: T),
+  // CHECK:STDERR: fail_todo_generic_payload.carbon:[[@LINE+4]]:11: error: semantics TODO: `choice alternative payload with generic or Self-dependent type` [SemanticsTodo]
+  // CHECK:STDERR:   Concrete(b: i32),
+  // CHECK:STDERR:           ^~~~~~~~
+  // CHECK:STDERR:
   Concrete(b: i32),
   Nothing
 }

@@ -22,6 +22,13 @@
 
 choice Sized {
   Small(a: i32),
+  // CHECK:STDERR: payload_layout.carbon:[[@LINE+7]]:9: error: duplicate name `a` being declared in the same scope [NameDeclDuplicate]
+  // CHECK:STDERR:   Large(a: i64, b: i32),
+  // CHECK:STDERR:         ^
+  // CHECK:STDERR: payload_layout.carbon:[[@LINE-4]]:9: note: name is previously declared here [NameDeclPrevious]
+  // CHECK:STDERR:   Small(a: i32),
+  // CHECK:STDERR:         ^~~~~~
+  // CHECK:STDERR:
   Large(a: i64, b: i32),
   None
 }
@@ -46,5 +53,9 @@ fn Classify(s: Sized) -> i32 {
 
 fn Use(n: i32) {
   // Scope exit of a local exercises the destroy path for the payload region.
+  // CHECK:STDERR: payload_layout.carbon:[[@LINE+4]]:7: warning: binding `v` unused [UnusedBinding]
+  // CHECK:STDERR:   var v: Sized = MakeSmall(n);
+  // CHECK:STDERR:       ^~~~~~~~
+  // CHECK:STDERR:
   var v: Sized = MakeSmall(n);
 }

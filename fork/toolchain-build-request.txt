@@ -1,1 +1,1 @@
-2026-07-27T09:25:59Z gate after clangd-tidy fixes (range-copy, no-recursion worklist, R24 .diff.cpp exclusion)
+2026-07-27T10:54:28Z FINAL gate for w5 slice 1: goldens at fixpoint (pass 2 zero-diff), six defects fixed, reviews OK

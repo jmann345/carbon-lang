@@ -18,6 +18,13 @@ library "[[@TEST_NAME]]";
 // alternative, so the use below produces no further diagnostic.
 choice C {
   A,
+  // CHECK:STDERR: fail_two_constants.carbon:[[@LINE+7]]:3: error: duplicate name `A` being declared in the same scope [NameDeclDuplicate]
+  // CHECK:STDERR:   A
+  // CHECK:STDERR:   ^
+  // CHECK:STDERR: fail_two_constants.carbon:[[@LINE-4]]:3: note: name is previously declared here [NameDeclPrevious]
+  // CHECK:STDERR:   A,
+  // CHECK:STDERR:   ^
+  // CHECK:STDERR:
   A
 }
 
@@ -32,6 +39,13 @@ library "[[@TEST_NAME]]";
 // no payload region is built for it.
 choice D {
   B,
+  // CHECK:STDERR: fail_constant_then_function.carbon:[[@LINE+7]]:3: error: duplicate name `B` being declared in the same scope [NameDeclDuplicate]
+  // CHECK:STDERR:   B(x: i32)
+  // CHECK:STDERR:   ^
+  // CHECK:STDERR: fail_constant_then_function.carbon:[[@LINE-4]]:3: note: name is previously declared here [NameDeclPrevious]
+  // CHECK:STDERR:   B,
+  // CHECK:STDERR:   ^
+  // CHECK:STDERR:
   B(x: i32)
 }
 
@@ -43,6 +57,13 @@ library "[[@TEST_NAME]]";
 // reference below resolves to the constructor function.
 choice E {
   B(x: i32),
+  // CHECK:STDERR: fail_function_then_constant.carbon:[[@LINE+7]]:3: error: duplicate name `B` being declared in the same scope [NameDeclDuplicate]
+  // CHECK:STDERR:   B
+  // CHECK:STDERR:   ^
+  // CHECK:STDERR: fail_function_then_constant.carbon:[[@LINE-4]]:3: note: name is previously declared here [NameDeclPrevious]
+  // CHECK:STDERR:   B(x: i32),
+  // CHECK:STDERR:   ^
+  // CHECK:STDERR:
   B
 }
 
@@ -59,6 +80,13 @@ library "[[@TEST_NAME]]";
 // constructor list must stay index-aligned for `C` past the skipped `B`.
 choice X {
   B(x: i32),
+  // CHECK:STDERR: fail_function_duplicate_then_function.carbon:[[@LINE+7]]:3: error: duplicate name `B` being declared in the same scope [NameDeclDuplicate]
+  // CHECK:STDERR:   B(y: i32),
+  // CHECK:STDERR:   ^
+  // CHECK:STDERR: fail_function_duplicate_then_function.carbon:[[@LINE-4]]:3: note: name is previously declared here [NameDeclPrevious]
+  // CHECK:STDERR:   B(x: i32),
+  // CHECK:STDERR:   ^
+  // CHECK:STDERR:
   B(y: i32),
   C(z: i32)
 }
@@ -74,6 +102,20 @@ library "[[@TEST_NAME]]";
 // FIRST declaration (the map keeps the first value).
 choice T {
   A,
+  // CHECK:STDERR: fail_triple_occurrence.carbon:[[@LINE+7]]:3: error: duplicate name `A` being declared in the same scope [NameDeclDuplicate]
+  // CHECK:STDERR:   A,
+  // CHECK:STDERR:   ^
+  // CHECK:STDERR: fail_triple_occurrence.carbon:[[@LINE-4]]:3: note: name is previously declared here [NameDeclPrevious]
+  // CHECK:STDERR:   A,
+  // CHECK:STDERR:   ^
+  // CHECK:STDERR:
   A,
+  // CHECK:STDERR: fail_triple_occurrence.carbon:[[@LINE+7]]:3: error: duplicate name `A` being declared in the same scope [NameDeclDuplicate]
+  // CHECK:STDERR:   A
+  // CHECK:STDERR:   ^
+  // CHECK:STDERR: fail_triple_occurrence.carbon:[[@LINE-12]]:3: note: name is previously declared here [NameDeclPrevious]
+  // CHECK:STDERR:   A,
+  // CHECK:STDERR:   ^
+  // CHECK:STDERR:
   A
 }

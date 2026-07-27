@@ -10,7 +10,7 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-07-20 (weekly upstream check)._ PR #1 (match slice 1
+_Last updated: 2026-07-27 (b0 gate green)._ PR #1 (match slice 1
 plus all process/arbiter infra) MERGED to `trunk` (origin/trunk ==
 6793618). Go-forward structure: **one workstream = one branch off `trunk`
 = one focused PR** (the viability-review fix for the 162-file mega-PR
@@ -27,7 +27,8 @@ Next check: Monday 14:00 UTC.
 | --- | --- |
 | `trunk` | Integrated fork line: match, arbiter (101 programs), error-handling + unions design docs, R21/R23/R24/R25 prevention. Base all new work here. |
 | `claude/carbon-fork-0-1-7mwfb7` | MERGED by way of PR #1 — finished; do not stack new commits. |
-| `claude/carbon-fork-0-1-b0` | b0 exception-boundary reconstruction EXECUTED (code overlaid, COMPILE-ARGS targeted-merged, prek clean, self-test OK); pushed — awaiting fast-check + autoupdate + gate, then PR into trunk. |
+| `claude/carbon-fork-0-1-b0` | b0 reconstruction GATE-GREEN (run 22, release `fork-toolchain-22-d2dad50e4`); PR into trunk open for review. Along the way: gate diagnostics hardened (opt-config testlogs, --test_output=errors, clangd-tidy was silently skipping — now fetches trunk and runs for real), and R26 recorded (autoupdate to fixpoint; the loc-shift red-loop is what stranded the original b0 branch). |
+| `claude/carbon-fork-0-1-w5` | NEW off trunk: w5-choice slice 1 (payload choices) reconstruction. |
 | `claude/carbon-fork-0-1-7mwfb7-{b0-exceptions,w5-choice,design-docs}` | STRANDED ~17 commits behind trunk; source material for reconstruction, do NOT merge as-is. |
 
 ## Reconstruction recipe (stranded branch to fresh branch off trunk)
@@ -74,9 +75,9 @@ Merged to trunk; B0 flips the exception-interop bullet when it lands.
 
 ## Next actions (dependency order)
 
-1.  Reconstruct + land b0 exceptions (branch above): overlay code, push,
-    autoupdate goldens, gate, open PR into trunk.
-2.  Reconstruct + land w5-choice slice 1 (payload choices) the same way.
+1.  b0 exceptions: gate green, PR open — awaiting user review/merge.
+2.  Reconstruct + land w5-choice slice 1 (payload choices) per the recipe
+    (in progress on `claude/carbon-fork-0-1-w5`).
 3.  Reconstruct + land design-docs (F-008..F-011) — the veto digest was
     presented to the user 2026-07-20; record any vetoes before it merges.
 4.  W5 slices 2-4; then error-handling B1/B2/B3; threading defect fixes.

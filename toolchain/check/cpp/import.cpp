@@ -2011,8 +2011,17 @@ static auto ImportFunctionDecl(Context& context, SemIR::LocId loc_id,
     // (overload_resolution.cpp). Importing the thunk itself reuses those
     // same already-accepted types. A callee that also needs an ABI thunk can
     // still hit the pre-existing ABI-thunk build failures; those now surface
-    // here (previously a silent unthunked fallback) and are the candidate
-    // shape for a future fail_ golden if one is found.
+    // here (previously a silent unthunked fallback). Concrete reachable
+    // shape (fail_fence_thunk_unbuildable.carbon): a by-value parameter of a
+    // class with deleted copy and move constructors — the thunk body
+    // forwards the parameter through a deref-of-pointer lvalue (ByValue) or
+    // an xvalue cast (ByVar), and either initialization needs a constructor
+    // the class deletes, while decl import checks only type mappability.
+    // Shapes attempted and excluded: non-simple return types (the placement
+    // `new (ret) T(call())` parens-init is guaranteed elision, no copy
+    // needed); member callees (explicit public `DeclAccessPair` bypasses
+    // access control); deleted-move-only classes (a ByValue lvalue copy
+    // still succeeds).
     if (!thunk_attached && IsCppThunkFenceRequired(context, clang_decl)) {
       context.TODO(loc_id,
                    "Unsupported: fenced thunk for potentially-throwing C++ "

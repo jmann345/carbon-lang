@@ -22,6 +22,9 @@ permissions: {}
 
 jobs:
   build:
+    # GitHub Pages is not configured on forks, so `configure-pages` below (and
+    # the deploy job) fail on every trunk push there. Run only upstream.
+    if: github.repository == 'carbon-language/carbon-lang'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -68,6 +71,9 @@ jobs:
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
 
   deploy:
+    # Skipped on forks along with `build` above (Pages is not configured
+    # there); the explicit guard keeps that true even if `needs` changes.
+    if: github.repository == 'carbon-language/carbon-lang'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

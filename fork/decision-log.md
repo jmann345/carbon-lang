@@ -113,19 +113,27 @@ discriminant dispatch only.
     producing a 1-element ClassInit against a 2-field repr (now filled with
     an uninit payload element mirroring convert.cpp's ChoicePayload case,
     covered by the new mixed_payload_alternatives testdata). Adversarial review passed both semantic fixes with no
-    landing blockers and these recorded follow-ups: (1) reword the
-    defense-in-depth fallback TODO at the choice-case pattern (currently the
-    scrutinee string) to name the pattern; (2) when §2.2c name-to-index
-    metadata lands for S2 exhaustiveness, replace
-    `GetAlternativeDiscriminant`'s constant excavation with it; (3) optional
-    comment that CustomLayoutType's type-structure fingerprint conflates with
-    a same-shaped StructType (filter/ordering-only today); (4) add a
-    multi-hop `export import` variant of choice_scrutinee_imported to pin
-    the GetCanonicalFileAndInstId path; (5) PRE-EXISTING latent crash found
-    by the scope-fix review: `choice C { A, A }` (duplicate alternative
-    NAMES, distinct from the fixed param collision) CHECK-crashes in
-    NameScope::AddRequired — needs a real duplicate-name diagnostic plus a
-    fail_ test before 0.1.
+    landing blockers and these recorded follow-ups: (1) DONE
+    (claude/carbon-fork-0-1-followups): the defense-in-depth fallback at the
+    choice-case pattern now emits `match case pattern on unsupported choice
+    alternative shape` instead of the scrutinee string, which stays on the
+    scrutinee gate only; (2) when §2.2c name-to-index metadata lands for S2
+    exhaustiveness, replace `GetAlternativeDiscriminant`'s constant
+    excavation with it; (3) optional comment that CustomLayoutType's
+    type-structure fingerprint conflates with a same-shaped StructType
+    (filter/ordering-only today); (4) DONE (claude/carbon-fork-0-1-followups):
+    match/choice_scrutinee_reexported.carbon pins the
+    GetCanonicalFileAndInstId multi-hop path through an `export import`
+    relay library; (5) DONE (claude/carbon-fork-0-1-followups): duplicate
+    alternative NAMES (`choice C { A, A }`, distinct from the fixed param
+    collision) no longer CHECK-crash in NameScope::AddRequired —
+    handle_choice.cpp diagnoses NameDeclDuplicate/NameDeclPrevious before
+    registration and drops the duplicate (references resolve to the first
+    alternative), with choice/fail_duplicate_alternative.carbon covering
+    constant/constant, constant/function, and function/constant orders. Also
+    landed on that branch: the review F-A1 OneShot single-payload-alternative
+    testdata (check+lower) pinning the zero-bit-()-discriminant +
+    payload-region constructor shape.
 
 ### W5 SF-1..8: choice-payload plan sub-forks (user by way of AskUserQuestion, 2026-07-20)
 

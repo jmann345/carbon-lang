@@ -100,10 +100,19 @@ discriminant dispatch only.
     exhaustiveness lands in S2), so every S1 conformance/testdata match carries
     `default`.
 -   **Reconstruction-landing addendum (2026-07-27):** the first full CI run
-    of S1 exposed and fixed three crashes (generated-constructor FunctionDecl
-    loc; match discriminant lookup — plan §2.2c's "constant imports with the
-    binding" premise was wrong, see the amendment there; TypeIterator missing
-    CustomLayoutType). Adversarial review passed both semantic fixes with no
+    of S1 exposed and fixed six defects across five fix rounds:
+    generated-constructor FunctionDecl loc; match discriminant lookup (plan
+    §2.2c's "constant imports with the binding" premise was wrong, see the
+    amendment there); TypeIterator missing CustomLayoutType;
+    alternative-param names leaking into the choice scope
+    (NameDeclDuplicate across alternatives); constructor ClassInit elements
+    built with InitializeExisting against its documented contract (by-copy
+    discriminant crashed lowering AND the Small payload store was silently
+    dropped — now InPlaceInitializing per upstream's aggregate discipline);
+    and review-found F1, a zero-param `Alt()` in a payload-carrying choice
+    producing a 1-element ClassInit against a 2-field repr (now filled with
+    an uninit payload element mirroring convert.cpp's ChoicePayload case,
+    covered by the new mixed_payload_alternatives testdata). Adversarial review passed both semantic fixes with no
     landing blockers and these recorded follow-ups: (1) reword the
     defense-in-depth fallback TODO at the choice-case pattern (currently the
     scrutinee string) to name the pattern; (2) when §2.2c name-to-index

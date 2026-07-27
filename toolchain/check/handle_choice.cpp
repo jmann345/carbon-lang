@@ -371,6 +371,12 @@ static auto MakeLetBinding(Context& context, const ChoiceInfo& choice_info,
 static auto InitializeElementInPlace(Context& context, SemIR::LocId loc_id,
                                      SemIR::InstId storage_id,
                                      SemIR::InstId value_id) -> SemIR::InstId {
+  // Parity with `InitializeExisting`'s approximate dominance check: the
+  // storage must be created no later than the value initializing it.
+  CARBON_CHECK(value_id == SemIR::ErrorInst::InstId ||
+                   context.insts().GetRawIndex(storage_id) <=
+                       context.insts().GetRawIndex(value_id),
+               "Storage might not dominate initializer");
   PendingBlock target_block(&context);
   return Convert(context, loc_id, value_id,
                  {.kind = ConversionTarget::InPlaceInitializing,
@@ -472,6 +478,25 @@ static auto BuildAlternativeConstructor(
                             .elements_id = context.inst_blocks().Add(args)});
     element_init_ids.push_back(InitializeElementInPlace(
         context, loc_id, field_ref_id, tuple_literal_id));
+  } else if (choice_info.payload_type_id.has_value()) {
+    // A zero-payload `Alt()` alternative of a payload-carrying choice: cover
+    // the payload field with an uninitialized value so the `ClassInit`'s
+    // element count matches the object representation's field count — the
+    // same fill the `NameId::ChoicePayload` case in
+    // `ConvertStructToStructOrClass` performs for parenless constant
+    // alternatives.
+    auto payload_ref_id = AddInst<SemIR::ClassElementAccess>(
+        context, loc_id,
+        {.type_id = choice_info.payload_type_id,
+         .base_id = return_slot_id,
+         .index = SemIR::ElementIndex(1)});
+    auto uninit_id = AddInst<SemIR::UninitializedValue>(
+        context, loc_id, {.type_id = choice_info.payload_type_id});
+    element_init_ids.push_back(
+        AddInst<SemIR::InPlaceInit>(context, loc_id,
+                                    {.type_id = choice_info.payload_type_id,
+                                     .src_id = uninit_id,
+                                     .dest_id = payload_ref_id}));
   }
 
   auto class_init_id = AddInst<SemIR::ClassInit>(

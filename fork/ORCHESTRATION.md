@@ -10,10 +10,16 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-07-27 (w5 gate green, PR #3 open)._ Note: this copy
-lives on the w5 branch; the b0 branch carries its own edits to this file
-and to the rulebook (R26) — reconcile fork/ state files at whichever PR
-merges second (expected collision point per the scope map).
+_Last updated: 2026-07-27 (post-PR #4: trunk includes upstream 39916ad)._
+This copy lives on the w5 branch; PR #2 (b0) carries sibling edits to
+fork/ state files — reconcile at whichever merges second.
+
+**Weekly upstream-merge outcome (standing rule 5, 2026-07-27):** upstream
+moved to `39916ad` (25 commits since `99cda60`). Staged, gate run 27
+GREEN (release `fork-toolchain-27-fd4daca7b`), conformance scoreboard
+non-regressing (68 PASS / 33 SKIP / 0 FAIL — byte-identical), MERGED to
+trunk by way of PR #4. This branch (w5) has now merged that trunk back
+in. Next check: Monday 14:00 UTC.
 
 ## Branches
 

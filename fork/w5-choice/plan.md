@@ -295,8 +295,15 @@ references diagnose against the TODO, not against a phantom missing member.
     field at offset 0 inside the payload region.
 -   Discriminant scheme unchanged: `UInt(ceil(log2(n)))`, `()` for 0/1
     alternatives — pending SF-2 ratification. A single-alternative choice
-    _with_ a payload gets repr `{ .payload: CustomLayoutType }` (zero-bit
-    discriminant elided as today) — called out for adversarial review.
+    _with_ a payload gets repr `{ .discriminant: (), .payload:
+    CustomLayoutType }` — CORRECTED at landing review (PR #3 adversary
+    F-A1): the implementation never elides the discriminant field; the
+    `()` field is zero-size so the layout is equivalent, and keeping it
+    makes the payload's ElementIndex(1) uniform across all shapes
+    (handle_choice.cpp field construction + BuildAlternativeConstructor).
+    Recorded follow-up: add `choice OneShot { Only(x: i32) }` check+lower
+    testdata — the composed zero-bit-disc + payload constructor shape is
+    currently unexercised (its two sub-paths are individually pinned).
 -   Destroy witness: add the `CustomLayoutType` case to
     `CanDestroyType`/`MakeDestroyOpBody` (custom_witness.cpp:311-312 /
     :339-340 CARBON_FATAL today — risk R-5): with S1's trivial-payload gate,

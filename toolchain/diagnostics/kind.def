@@ -199,6 +199,7 @@ CARBON_DIAGNOSTIC_KIND(ExpectedAliasInitializer)
 // Where requirement diagnostics.
 CARBON_DIAGNOSTIC_KIND(ExpectedRequirementOperator)
 CARBON_DIAGNOSTIC_KIND(RequirementEqualAfterNonDesignator)
+CARBON_DIAGNOSTIC_KIND(InvalidWhereInsideBinding)
 CARBON_DIAGNOSTIC_KIND(NestedWhereInsideWhere)
 CARBON_DIAGNOSTIC_KIND(NestedWhereInsideWhereOuterNote)
 
@@ -411,7 +412,8 @@ CARBON_DIAGNOSTIC_KIND(RequireImplsMissingSelfEmptyFacetType)
 CARBON_DIAGNOSTIC_KIND(RequireImplsIncompleteFacetType)
 CARBON_DIAGNOSTIC_KIND(RequireImplsReferenceCycle)
 CARBON_DIAGNOSTIC_KIND(RequireImplsUnidentifiedFacetType)
-CARBON_DIAGNOSTIC_KIND(RequireImplsNotImplemented)
+CARBON_DIAGNOSTIC_KIND(IdentifiedRequireImplsNotImplemented)
+CARBON_DIAGNOSTIC_KIND(InterfaceRequireImplsNotImplemented)
 CARBON_DIAGNOSTIC_KIND(RequireInWrongScope)
 
 // Observe checking.

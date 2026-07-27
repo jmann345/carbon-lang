@@ -1,1 +1,1 @@
-2026-07-27T09:07:23Z pass 2 (R26): converge locNN after 1364-line CHECK insertion in choice/match goldens
+2026-07-27T10:00:12Z regenerate choice goldens after alternative-param scope fix (members lists lose param entries; expect two passes, R26)

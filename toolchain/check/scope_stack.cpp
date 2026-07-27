@@ -104,6 +104,15 @@ auto ScopeStack::PushForDeclName() -> void {
   MarkNestingIfInReturnScope();
 }
 
+auto ScopeStack::PushForChoiceAlternative(SemIR::InstId choice_decl_id)
+    -> void {
+  CARBON_CHECK(choice_decl_id.has_value());
+  CARBON_DCHECK(sem_ir().insts().Is<SemIR::ClassDecl>(choice_decl_id));
+  Push(choice_decl_id, SemIR::NameScopeId::None, SemIR::SpecificId::None,
+       CleanupScopeKind::None, /*lexical_lookup_has_load_error=*/false);
+  MarkNestingIfInReturnScope();
+}
+
 auto ScopeStack::PushForEntity(SemIR::InstId scope_inst_id,
                                SemIR::NameScopeId scope_id,
                                SemIR::SpecificId specific_id,

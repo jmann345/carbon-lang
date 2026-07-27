@@ -134,6 +134,13 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionStartId node_id)
       class_info.scope_id, SemIR::NameId::SelfType,
       context.types().GetTypeInstId(self_type_id));
 
+  // Enter a scope for the first alternative's parameter patterns. Parameter
+  // names bind in this scope rather than in the choice's scope — as a function
+  // declaration's parameter names bind in the scope pushed by
+  // `DeclNameStack::PushScopeAndStartName`, not in the enclosing scope — so
+  // different alternatives can reuse a parameter name.
+  context.scope_stack().PushForChoiceAlternative(class_decl_id);
+
   // Mark the beginning of the choice body.
   context.node_stack().Push(node_id, class_decl.class_id);
 
@@ -156,6 +163,10 @@ static auto AddChoiceAlternative(
   // Both are queued here and built at `ChoiceDefinitionId`, when the object
   // representation is known.
   auto name_component = PopNameComponent(context);
+  // Leave the alternative's parameter scope. As with a function declaration's
+  // parameters, no unused-name check applies: the names become the generated
+  // constructor's parameter names.
+  context.scope_stack().Pop();
   context.choice_deferred_bindings().push_back({node_id, name_component});
 }
 
@@ -465,6 +476,10 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
   // case we get here after the last alternative.
   if (!context.node_stack().PeekIs(Parse::NodeKind::ChoiceDefinitionStart)) {
     AddChoiceAlternative(context, node_id);
+  } else {
+    // A trailing comma (or an empty choice) entered a parameter scope for an
+    // alternative that never came; leave it.
+    context.scope_stack().Pop();
   }
 
   auto class_id =
@@ -691,6 +706,11 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
 auto HandleParseNode(Context& context,
                      Parse::ChoiceAlternativeListCommaId node_id) -> bool {
   AddChoiceAlternative(context, node_id);
+  // Enter the scope for the next alternative's parameter patterns.
+  auto class_id =
+      context.node_stack().Peek<Parse::NodeKind::ChoiceDefinitionStart>();
+  context.scope_stack().PushForChoiceAlternative(
+      context.classes().Get(class_id).first_decl_id());
   return true;
 }
 

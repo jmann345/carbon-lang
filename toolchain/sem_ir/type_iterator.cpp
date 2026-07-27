@@ -183,6 +183,27 @@ auto TypeIterator::ProcessType(InstId inst_id) -> std::optional<Step> {
       PushInstId(const_type.inner_id);
       return Step::ConstStart();
     }
+    case CARBON_KIND(CustomLayoutType custom_layout_type): {
+      // An explicit-layout aggregate: the payload region of a payload-carrying
+      // choice type, or the object representation of a class imported from
+      // C++. Iterate its fields the way a struct's fields are iterated, so
+      // consumers see the component types; the layout block holds only sizes
+      // and offsets, which contribute no type values.
+      auto fields =
+          sem_ir_->struct_type_fields().Get(custom_layout_type.fields_id);
+      if (fields.empty()) {
+        return Step::StructStartOnly{
+            {.type_id = sem_ir_->types().GetTypeIdForTypeInstId(inst_id)}};
+      } else {
+        Push(EndType());
+        for (const auto& field : llvm::reverse(fields)) {
+          Push(StructFieldName{.name_id = field.name_id});
+          PushInstId(field.type_inst_id);
+        }
+        return Step::StructStart{
+            .type_id = sem_ir_->types().GetTypeIdForTypeInstId(inst_id)};
+      }
+    }
     case CARBON_KIND(ImplWitnessAssociatedConstant assoc): {
       PushTypeId(assoc.type_id);
       return std::nullopt;

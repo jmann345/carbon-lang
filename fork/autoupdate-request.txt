@@ -1,1 +1,1 @@
-2026-07-27T08:43:20Z w5 loc fix: regenerate choice goldens (fn_decl loc now the choice ClassDecl; expect two passes, R26)
+2026-07-27T09:05:06Z w5 crash fixes landed (match discriminant + TypeIterator CustomLayoutType): regenerate choice goldens

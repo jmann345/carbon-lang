@@ -271,11 +271,19 @@ references diagnose against the TODO, not against a phantom missing member.
     import_ref.cpp:~2016) — precedented, one-flag entity churn, NOT
     inferred from the `NameId::ChoiceDiscriminant` repr field (a syntactic
     test R-4's discipline forbids; the flag is entity truth). Name→index
-    for S1's payload-free arms comes from the resolved WrapperBinding's
-    constant: its StructValue's discriminant element is the IntValue baked
-    by MakeLetBinding (handle_choice.cpp:190-204) — well-defined cross-file
-    because the constant imports with the binding (LoadImportRef +
-    canonical constants). S2's payload patterns need richer per-alternative
+    for S1's payload-free arms comes from the alternative's **bound
+    value** constant, not the WrapperBinding's own constant. AMENDED
+    post-CI (autoupdate run 30251025460): a WrapperBinding over a
+    value-category bound value is never constant — EvalConstantInst
+    forwards constants only for ref-category bounds (eval_inst.cpp:118-126)
+    — and a non-constant binding imports as ConstantId::NotConstant
+    (import_ref.cpp:4401-4408), so this section's original "constant
+    imports with the binding (LoadImportRef + canonical constants)"
+    premise was wrong on both counts and CHECK-crashed the first real run.
+    The implemented mechanism resolves the binding to its defining file
+    (SemIR::GetCanonicalFileAndInstId) and reads the bound value's
+    concrete StructValue discriminant element there (handle_match.cpp
+    GetAlternativeDiscriminant). S2's payload patterns need richer per-alternative
     metadata (payload tuple type, payload field index); that shape
     (an alternatives side-table on Class, a la fields) is planned in §3.2.
     The §2.4 sem_ir line and §6 are updated accordingly; a cross-file

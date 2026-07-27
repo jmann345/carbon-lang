@@ -10,7 +10,9 @@
 #include "toolchain/check/core_identifier.h"
 #include "toolchain/check/handle.h"
 #include "toolchain/check/inst.h"
+#include "toolchain/check/literal.h"
 #include "toolchain/check/operator.h"
+#include "toolchain/sem_ir/import_ir.h"
 #include "toolchain/sem_ir/typed_insts.h"
 
 namespace Carbon::Check {
@@ -80,6 +82,53 @@ static auto GetChoiceDiscriminantType(Context& context, SemIR::TypeId type_id)
     return std::nullopt;
   }
   return disc_type_id;
+}
+
+// Returns the discriminant of the payload-free alternative that `pattern_id`
+// resolves to, or nullopt if no concrete discriminant can be recovered. The
+// alternative's `wrapper_binding` is not itself a constant: constant
+// evaluation of a `WrapperBinding` only forwards reference-category bound
+// values, and `MakeLetBinding` (handle_choice.cpp) binds a value-category
+// result. So the discriminant is read from the constant of the *bound value*,
+// a struct value whose leading element is the discriminant `MakeLetBinding`
+// baked in. The binding may also live in an imported file, where the local
+// `ImportRefLoaded` carries no constant at all (non-constant bindings do not
+// import; see `TryResolveInstCanonical` in import_ref.cpp), so the binding is
+// read from its defining file.
+static auto GetAlternativeDiscriminant(Context& context,
+                                       SemIR::InstId pattern_id)
+    -> std::optional<IntId> {
+  // Look through name references to the binding they name.
+  while (auto name_ref = context.insts().TryGetAs<SemIR::NameRef>(pattern_id)) {
+    pattern_id = name_ref->value_id;
+  }
+  // The binding may be imported; read it in its defining file.
+  auto [file, binding_id] =
+      SemIR::GetCanonicalFileAndInstId(&context.sem_ir(), pattern_id);
+  auto binding = file->insts().TryGetAs<SemIR::WrapperBinding>(binding_id);
+  if (!binding) {
+    return std::nullopt;
+  }
+  auto const_id = file->constant_values().Get(binding->value_id);
+  if (!const_id.is_concrete()) {
+    return std::nullopt;
+  }
+  auto struct_value = file->insts().TryGetAs<SemIR::StructValue>(
+      file->constant_values().GetInstId(const_id));
+  if (!struct_value) {
+    return std::nullopt;
+  }
+  auto elements = file->inst_blocks().Get(struct_value->elements_id);
+  if (elements.empty()) {
+    return std::nullopt;
+  }
+  auto discriminant = file->insts().TryGetAs<SemIR::IntValue>(elements[0]);
+  if (!discriminant) {
+    return std::nullopt;
+  }
+  // Add the value to the local int store; a no-op when the defining file
+  // shares this file's value stores.
+  return context.ints().AddSigned(file->ints().Get(discriminant->int_id));
 }
 
 auto HandleParseNode(Context& /*context*/,
@@ -251,20 +300,22 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
                           "match case pattern destructuring a choice payload");
     } else {
       // The designator names a payload-free alternative constant of the
-      // scrutinee's choice type. Its constant is a struct value whose leading
-      // element is the alternative's discriminant; compare it against the
+      // scrutinee's choice type; compare its discriminant against the
       // scrutinee's discriminant field.
       CARBON_CHECK(context.types().GetUnqualifiedType(pattern_type_id) ==
                        context.types().GetUnqualifiedType(scrutinee_type_id),
                    "Alternative constant type differs from scrutinee type");
-      auto const_id = context.constant_values().Get(pattern_id);
-      CARBON_CHECK(const_id.is_constant(),
-                   "Alternative constant is not constant");
-      auto struct_value = context.insts().GetAs<SemIR::StructValue>(
-          context.constant_values().GetInstId(const_id));
-      auto elements = context.inst_blocks().Get(struct_value.elements_id);
-      CARBON_CHECK(!elements.empty(), "Choice constant has no discriminant");
-      auto index_value_id = elements[0];
+      auto disc_int_id = GetAlternativeDiscriminant(context, pattern_id);
+      if (!disc_int_id) {
+        // An alternative whose discriminant is not a concrete constant, such
+        // as in a generic context, is out of slice 1; see decision-log W5-S1.
+        // The scrutinee gate rejects those shapes already, so this is
+        // defense-in-depth: diagnose rather than crash.
+        return context.TODO(node_id, "match on unsupported scrutinee type");
+      }
+      auto index_value_id = ConvertToValueOfType(
+          context, node_id, MakeIntLiteral(context, node_id, *disc_int_id),
+          *disc_type_id);
 
       auto disc_access_id =
           AddInst<SemIR::ClassElementAccess>(context, node_id,

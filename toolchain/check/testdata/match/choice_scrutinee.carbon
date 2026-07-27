@@ -191,7 +191,7 @@ fn IsOn(f: Flag) -> i32 {
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.1de = out_param_pattern [concrete = constants.%return.param_patt.463]
 // CHECK:STDOUT:     %return.patt: %pattern_type.1de = return_slot_pattern %return.param_patt, constants.%Signal [concrete = constants.%return.patt.a55]
 // CHECK:STDOUT:   } {
-// CHECK:STDOUT:     %.loc4_15.7: Core.Form = init_form constants.%Signal [concrete = constants.%.1d7]
+// CHECK:STDOUT:     %.loc4_15.9: Core.Form = init_form constants.%Signal [concrete = constants.%.1d7]
 // CHECK:STDOUT:     %_.param: %i32 = value_param call_param0
 // CHECK:STDOUT:     %_: %i32 = wrapper_binding _, %_.param
 // CHECK:STDOUT:     %return.param: ref %Signal = out_param call_param1
@@ -277,7 +277,6 @@ fn IsOn(f: Flag) -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !members:
 // CHECK:STDOUT:   .Self = constants.%Signal
-// CHECK:STDOUT:   .speed = %speed
 // CHECK:STDOUT:   .Go = generated.%Signal.Go.decl
 // CHECK:STDOUT:   .Stop = %Stop
 // CHECK:STDOUT:   .Wait = %Wait
@@ -293,18 +292,20 @@ fn IsOn(f: Flag) -> i32 {
 // CHECK:STDOUT:   %bound_method.loc4_15.2: <bound method> = bound_method %int_0, %specific_fn.loc4_15.1 [concrete = constants.%bound_method.6ef]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %u2 = call %bound_method.loc4_15.2(%int_0) [concrete = constants.%int_0.336]
 // CHECK:STDOUT:   %.loc4_15.2: init %u2 = converted %int_0, %Core.IntLiteral.as.ImplicitAs.impl.Convert.call [concrete = constants.%int_0.336]
-// CHECK:STDOUT:   %.loc4_15.3: ref %.0fa = class_element_access %return.param, element1
-// CHECK:STDOUT:   %.loc4_15.4: ref %tuple.type.a8a = class_element_access %.loc4_15.3, element0
+// CHECK:STDOUT:   %.loc4_15.3: init %u2 to %.loc4_15.1 = in_place_init %.loc4_15.2 [concrete = constants.%int_0.336]
+// CHECK:STDOUT:   %.loc4_15.4: ref %.0fa = class_element_access %return.param, element1
+// CHECK:STDOUT:   %.loc4_15.5: ref %tuple.type.a8a = class_element_access %.loc4_15.4, element0
 // CHECK:STDOUT:   %.loc5_17.1: %tuple.type.a8a = tuple_literal (%_.param)
 // CHECK:STDOUT:   %impl.elem0.loc4_15.2: %.7a6 = impl_witness_access constants.%Copy.impl_witness.0e0, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
 // CHECK:STDOUT:   %bound_method.loc4_15.3: <bound method> = bound_method %_.param, %impl.elem0.loc4_15.2
 // CHECK:STDOUT:   %specific_fn.loc4_15.2: <specific function> = specific_function %impl.elem0.loc4_15.2, @Int.as.Copy.impl.Op(constants.%int_32) [concrete = constants.%Int.as.Copy.impl.Op.specific_fn]
 // CHECK:STDOUT:   %bound_method.loc4_15.4: <bound method> = bound_method %_.param, %specific_fn.loc4_15.2
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.call: init %i32 = call %bound_method.loc4_15.4(%_.param)
-// CHECK:STDOUT:   %.loc5_17.2: init %tuple.type.a8a to %.loc4_15.4 = tuple_init (%Int.as.Copy.impl.Op.call)
-// CHECK:STDOUT:   %.loc4_15.5: init %tuple.type.a8a = converted %.loc5_17.1, %.loc5_17.2
-// CHECK:STDOUT:   %.loc4_15.6: init %Signal to %return.param = class_init (%.loc4_15.2, %.loc4_15.5)
-// CHECK:STDOUT:   return %.loc4_15.6 to %return.param
+// CHECK:STDOUT:   %.loc5_17.2: init %tuple.type.a8a to %.loc4_15.5 = tuple_init (%Int.as.Copy.impl.Op.call)
+// CHECK:STDOUT:   %.loc4_15.6: init %tuple.type.a8a = converted %.loc5_17.1, %.loc5_17.2
+// CHECK:STDOUT:   %.loc4_15.7: init %tuple.type.a8a to %.loc4_15.5 = in_place_init %.loc4_15.6
+// CHECK:STDOUT:   %.loc4_15.8: init %Signal to %return.param = class_init (%.loc4_15.3, %.loc4_15.7)
+// CHECK:STDOUT:   return %.loc4_15.8 to %return.param
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @Classify(%s.param: %Signal) -> out %return.param: %i32 {

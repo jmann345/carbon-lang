@@ -22,13 +22,6 @@ library "[[@TEST_NAME]]";
 // sum.
 choice Sized {
   Small(a: i32),
-  // CHECK:STDERR: payload_layout.carbon:[[@LINE+7]]:9: error: duplicate name `a` being declared in the same scope [NameDeclDuplicate]
-  // CHECK:STDERR:   Large(a: i64, b: i32),
-  // CHECK:STDERR:         ^
-  // CHECK:STDERR: payload_layout.carbon:[[@LINE-4]]:9: note: name is previously declared here [NameDeclPrevious]
-  // CHECK:STDERR:   Small(a: i32),
-  // CHECK:STDERR:         ^~~~~~
-  // CHECK:STDERR:
   Large(a: i64, b: i32),
   None
 }
@@ -54,7 +47,9 @@ fn MakeLarge(a: i64, b: i32) -> Sized {
 // CHECK:STDOUT:   %i64: type = class_type @Int, @Int(%int_64) [concrete]
 // CHECK:STDOUT:   %pattern_type.f57: type = pattern_type %i64 [concrete]
 // CHECK:STDOUT:   %a.param_patt.089: %pattern_type.f57 = value_param_pattern [concrete]
+// CHECK:STDOUT:   %a.patt.71e: %pattern_type.f57 = at_binding_pattern a, %a.param_patt.089 [concrete]
 // CHECK:STDOUT:   %b.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
+// CHECK:STDOUT:   %b.patt: %pattern_type.6b6 = at_binding_pattern b, %b.param_patt [concrete]
 // CHECK:STDOUT:   %int_2.ecc: Core.IntLiteral = int_value 2 [concrete]
 // CHECK:STDOUT:   %u2: type = class_type @UInt, @UInt(%int_2.ecc) [concrete]
 // CHECK:STDOUT:   %tuple.type.a8a: type = tuple_type (%i32) [concrete]
@@ -133,8 +128,6 @@ fn MakeLarge(a: i64, b: i32) -> Sized {
 // CHECK:STDOUT:   %n.patt: %pattern_type.6b6 = at_binding_pattern n, %n.param_patt [concrete]
 // CHECK:STDOUT:   %MakeSmall.type: type = fn_type @MakeSmall [concrete]
 // CHECK:STDOUT:   %MakeSmall: %MakeSmall.type = struct_value () [concrete]
-// CHECK:STDOUT:   %a.patt.71e: %pattern_type.f57 = at_binding_pattern a, %a.param_patt.089 [concrete]
-// CHECK:STDOUT:   %b.patt.2d1: %pattern_type.6b6 = at_binding_pattern b, %b.param_patt [concrete]
 // CHECK:STDOUT:   %MakeLarge.type: type = fn_type @MakeLarge [concrete]
 // CHECK:STDOUT:   %MakeLarge: %MakeLarge.type = struct_value () [concrete]
 // CHECK:STDOUT: }
@@ -155,7 +148,7 @@ fn MakeLarge(a: i64, b: i32) -> Sized {
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.698 = out_param_pattern [concrete = constants.%return.param_patt.590]
 // CHECK:STDOUT:     %return.patt: %pattern_type.698 = return_slot_pattern %return.param_patt, constants.%Sized [concrete = constants.%return.patt.f0c]
 // CHECK:STDOUT:   } {
-// CHECK:STDOUT:     %.loc10_14.7: Core.Form = init_form constants.%Sized [concrete = constants.%.a72]
+// CHECK:STDOUT:     %.loc10_14.9: Core.Form = init_form constants.%Sized [concrete = constants.%.a72]
 // CHECK:STDOUT:     %_.param: %i32 = value_param call_param0
 // CHECK:STDOUT:     %_: %i32 = wrapper_binding _, %_.param
 // CHECK:STDOUT:     %return.param: ref %Sized = out_param call_param1
@@ -169,7 +162,7 @@ fn MakeLarge(a: i64, b: i32) -> Sized {
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.698 = out_param_pattern [concrete = constants.%return.param_patt.590]
 // CHECK:STDOUT:     %return.patt: %pattern_type.698 = return_slot_pattern %return.param_patt, constants.%Sized [concrete = constants.%return.patt.f0c]
 // CHECK:STDOUT:   } {
-// CHECK:STDOUT:     %.loc10_14.7: Core.Form = init_form constants.%Sized [concrete = constants.%.a72]
+// CHECK:STDOUT:     %.loc10_14.8: Core.Form = init_form constants.%Sized [concrete = constants.%.a72]
 // CHECK:STDOUT:     %_.param.loc10_14.1: %i64 = value_param call_param0
 // CHECK:STDOUT:     %_.loc10_14.1: %i64 = wrapper_binding _, %_.param.loc10_14.1
 // CHECK:STDOUT:     %_.param.loc10_14.2: %i32 = value_param call_param1
@@ -199,7 +192,7 @@ fn MakeLarge(a: i64, b: i32) -> Sized {
 // CHECK:STDOUT:     %a.param_patt: %pattern_type.f57 = value_param_pattern [concrete = constants.%a.param_patt.089]
 // CHECK:STDOUT:     %a.patt: %pattern_type.f57 = at_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.71e]
 // CHECK:STDOUT:     %b.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.6b6 = at_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.2d1]
+// CHECK:STDOUT:     %b.patt: %pattern_type.6b6 = at_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.698 = out_param_pattern [concrete = constants.%return.param_patt.590]
 // CHECK:STDOUT:     %return.patt: %pattern_type.698 = return_slot_pattern %return.param_patt, %Sized.ref.loc27 [concrete = constants.%return.patt.f0c]
 // CHECK:STDOUT:   } {
@@ -257,8 +250,6 @@ fn MakeLarge(a: i64, b: i32) -> Sized {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !members:
 // CHECK:STDOUT:   .Self = constants.%Sized
-// CHECK:STDOUT:   .a = %a.loc11
-// CHECK:STDOUT:   .b = %b
 // CHECK:STDOUT:   .Small = generated.%Sized.Small.decl
 // CHECK:STDOUT:   .Large = generated.%Sized.Large.decl
 // CHECK:STDOUT:   .None = %None
@@ -274,18 +265,20 @@ fn MakeLarge(a: i64, b: i32) -> Sized {
 // CHECK:STDOUT:   %bound_method.loc10_14.2: <bound method> = bound_method %int_0, %specific_fn.loc10_14.1 [concrete = constants.%bound_method.6ef]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %u2 = call %bound_method.loc10_14.2(%int_0) [concrete = constants.%int_0.336]
 // CHECK:STDOUT:   %.loc10_14.2: init %u2 = converted %int_0, %Core.IntLiteral.as.ImplicitAs.impl.Convert.call [concrete = constants.%int_0.336]
-// CHECK:STDOUT:   %.loc10_14.3: ref %.a22 = class_element_access %return.param, element1
-// CHECK:STDOUT:   %.loc10_14.4: ref %tuple.type.a8a = class_element_access %.loc10_14.3, element0
+// CHECK:STDOUT:   %.loc10_14.3: init %u2 to %.loc10_14.1 = in_place_init %.loc10_14.2 [concrete = constants.%int_0.336]
+// CHECK:STDOUT:   %.loc10_14.4: ref %.a22 = class_element_access %return.param, element1
+// CHECK:STDOUT:   %.loc10_14.5: ref %tuple.type.a8a = class_element_access %.loc10_14.4, element0
 // CHECK:STDOUT:   %.loc11_16.1: %tuple.type.a8a = tuple_literal (%_.param)
 // CHECK:STDOUT:   %impl.elem0.loc10_14.2: %.7a6 = impl_witness_access constants.%Copy.impl_witness.0e0, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
 // CHECK:STDOUT:   %bound_method.loc10_14.3: <bound method> = bound_method %_.param, %impl.elem0.loc10_14.2
 // CHECK:STDOUT:   %specific_fn.loc10_14.2: <specific function> = specific_function %impl.elem0.loc10_14.2, @Int.as.Copy.impl.Op(constants.%int_32) [concrete = constants.%Int.as.Copy.impl.Op.specific_fn.287]
 // CHECK:STDOUT:   %bound_method.loc10_14.4: <bound method> = bound_method %_.param, %specific_fn.loc10_14.2
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.call: init %i32 = call %bound_method.loc10_14.4(%_.param)
-// CHECK:STDOUT:   %.loc11_16.2: init %tuple.type.a8a to %.loc10_14.4 = tuple_init (%Int.as.Copy.impl.Op.call)
-// CHECK:STDOUT:   %.loc10_14.5: init %tuple.type.a8a = converted %.loc11_16.1, %.loc11_16.2
-// CHECK:STDOUT:   %.loc10_14.6: init %Sized to %return.param = class_init (%.loc10_14.2, %.loc10_14.5)
-// CHECK:STDOUT:   return %.loc10_14.6 to %return.param
+// CHECK:STDOUT:   %.loc11_16.2: init %tuple.type.a8a to %.loc10_14.5 = tuple_init (%Int.as.Copy.impl.Op.call)
+// CHECK:STDOUT:   %.loc10_14.6: init %tuple.type.a8a = converted %.loc11_16.1, %.loc11_16.2
+// CHECK:STDOUT:   %.loc10_14.7: init %tuple.type.a8a to %.loc10_14.5 = in_place_init %.loc10_14.6
+// CHECK:STDOUT:   %.loc10_14.8: init %Sized to %return.param = class_init (%.loc10_14.3, %.loc10_14.7)
+// CHECK:STDOUT:   return %.loc10_14.8 to %return.param
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @Sized.Large(%_.param.loc10_14.1: %i64, %_.param.loc10_14.2: %i32) -> out %return.param: %Sized {
@@ -298,27 +291,28 @@ fn MakeLarge(a: i64, b: i32) -> Sized {
 // CHECK:STDOUT:   %bound_method.loc10_14.2: <bound method> = bound_method %int_1, %specific_fn.loc10_14.1 [concrete = constants.%bound_method.0f5]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %u2 = call %bound_method.loc10_14.2(%int_1) [concrete = constants.%int_1.508]
 // CHECK:STDOUT:   %.loc10_14.2: init %u2 = converted %int_1, %Core.IntLiteral.as.ImplicitAs.impl.Convert.call [concrete = constants.%int_1.508]
-// CHECK:STDOUT:   %.loc10_14.3: ref %.a22 = class_element_access %return.param, element1
-// CHECK:STDOUT:   %.loc10_14.4: ref %tuple.type.952 = class_element_access %.loc10_14.3, element1
+// CHECK:STDOUT:   %.loc10_14.3: init %u2 to %.loc10_14.1 = in_place_init %.loc10_14.2 [concrete = constants.%int_1.508]
+// CHECK:STDOUT:   %.loc10_14.4: ref %.a22 = class_element_access %return.param, element1
+// CHECK:STDOUT:   %.loc10_14.5: ref %tuple.type.952 = class_element_access %.loc10_14.4, element1
 // CHECK:STDOUT:   %.loc19_24.1: %tuple.type.952 = tuple_literal (%_.param.loc10_14.1, %_.param.loc10_14.2)
 // CHECK:STDOUT:   %impl.elem0.loc10_14.2: %.3cb = impl_witness_access constants.%Copy.impl_witness.c5e, element0 [concrete = constants.%Int.as.Copy.impl.Op.d73]
 // CHECK:STDOUT:   %bound_method.loc10_14.3: <bound method> = bound_method %_.param.loc10_14.1, %impl.elem0.loc10_14.2
 // CHECK:STDOUT:   %specific_fn.loc10_14.2: <specific function> = specific_function %impl.elem0.loc10_14.2, @Int.as.Copy.impl.Op(constants.%int_64) [concrete = constants.%Int.as.Copy.impl.Op.specific_fn.b95]
 // CHECK:STDOUT:   %bound_method.loc10_14.4: <bound method> = bound_method %_.param.loc10_14.1, %specific_fn.loc10_14.2
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.call.loc10_14.1: init %i64 = call %bound_method.loc10_14.4(%_.param.loc10_14.1)
-// CHECK:STDOUT:   %tuple.elem0: ref %i64 = tuple_access %.loc10_14.4, element0
+// CHECK:STDOUT:   %tuple.elem0: ref %i64 = tuple_access %.loc10_14.5, element0
 // CHECK:STDOUT:   %.loc19_24.2: init %i64 to %tuple.elem0 = in_place_init %Int.as.Copy.impl.Op.call.loc10_14.1
 // CHECK:STDOUT:   %impl.elem0.loc10_14.3: %.7a6 = impl_witness_access constants.%Copy.impl_witness.0e0, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
 // CHECK:STDOUT:   %bound_method.loc10_14.5: <bound method> = bound_method %_.param.loc10_14.2, %impl.elem0.loc10_14.3
 // CHECK:STDOUT:   %specific_fn.loc10_14.3: <specific function> = specific_function %impl.elem0.loc10_14.3, @Int.as.Copy.impl.Op(constants.%int_32) [concrete = constants.%Int.as.Copy.impl.Op.specific_fn.287]
 // CHECK:STDOUT:   %bound_method.loc10_14.6: <bound method> = bound_method %_.param.loc10_14.2, %specific_fn.loc10_14.3
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.call.loc10_14.2: init %i32 = call %bound_method.loc10_14.6(%_.param.loc10_14.2)
-// CHECK:STDOUT:   %tuple.elem1: ref %i32 = tuple_access %.loc10_14.4, element1
+// CHECK:STDOUT:   %tuple.elem1: ref %i32 = tuple_access %.loc10_14.5, element1
 // CHECK:STDOUT:   %.loc19_24.3: init %i32 to %tuple.elem1 = in_place_init %Int.as.Copy.impl.Op.call.loc10_14.2
-// CHECK:STDOUT:   %.loc19_24.4: init %tuple.type.952 to %.loc10_14.4 = tuple_init (%.loc19_24.2, %.loc19_24.3)
-// CHECK:STDOUT:   %.loc10_14.5: init %tuple.type.952 = converted %.loc19_24.1, %.loc19_24.4
-// CHECK:STDOUT:   %.loc10_14.6: init %Sized to %return.param = class_init (%.loc10_14.2, %.loc10_14.5)
-// CHECK:STDOUT:   return %.loc10_14.6 to %return.param
+// CHECK:STDOUT:   %.loc19_24.4: init %tuple.type.952 to %.loc10_14.5 = tuple_init (%.loc19_24.2, %.loc19_24.3)
+// CHECK:STDOUT:   %.loc10_14.6: init %tuple.type.952 = converted %.loc19_24.1, %.loc19_24.4
+// CHECK:STDOUT:   %.loc10_14.7: init %Sized to %return.param = class_init (%.loc10_14.3, %.loc10_14.6)
+// CHECK:STDOUT:   return %.loc10_14.7 to %return.param
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @MakeSmall(%n.param: %i32) -> out %return.param: %Sized {

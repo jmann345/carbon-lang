@@ -1,1 +1,1 @@
-2026-07-27T09:13:34Z gate on converged w5 goldens 892f336 (pass 2 loc-only, 2 files/55 lines; review verdict OK)
+2026-07-27T09:25:59Z gate after clangd-tidy fixes (range-copy, no-recursion worklist, R24 .diff.cpp exclusion)

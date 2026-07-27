@@ -203,48 +203,50 @@ struct ChoiceAlternativeFunctionInfo {
 // the choice being defined.
 static auto TypeContainsChoice(Context& context, SemIR::TypeId type_id,
                                SemIR::ClassId class_id) -> bool {
-  auto inst =
-      context.types().GetAsInst(context.types().GetUnqualifiedType(type_id));
-  CARBON_KIND_SWITCH(inst) {
-    case CARBON_KIND(SemIR::ClassType class_type): {
-      return class_type.class_id == class_id;
-    }
-    case CARBON_KIND(SemIR::PointerType pointer_type): {
-      return TypeContainsChoice(
-          context,
-          context.types().GetTypeIdForTypeInstId(pointer_type.pointee_id),
-          class_id);
-    }
-    case CARBON_KIND(SemIR::ArrayType array_type): {
-      return TypeContainsChoice(context,
-                                context.types().GetTypeIdForTypeInstId(
-                                    array_type.element_type_inst_id),
-                                class_id);
-    }
-    case CARBON_KIND(SemIR::StructType struct_type): {
-      for (auto field :
-           context.struct_type_fields().Get(struct_type.fields_id)) {
-        if (TypeContainsChoice(
-                context,
-                context.types().GetTypeIdForTypeInstId(field.type_inst_id),
-                class_id)) {
+  // Iterative worklist (upstream bans recursion, misc-no-recursion). The
+  // walked constructors cannot form a cycle: only the choice being defined
+  // could close one, and finding it terminates the walk.
+  llvm::SmallVector<SemIR::TypeId> worklist = {type_id};
+  while (!worklist.empty()) {
+    auto inst = context.types().GetAsInst(
+        context.types().GetUnqualifiedType(worklist.pop_back_val()));
+    CARBON_KIND_SWITCH(inst) {
+      case CARBON_KIND(SemIR::ClassType class_type): {
+        if (class_type.class_id == class_id) {
           return true;
         }
+        break;
       }
-      return false;
-    }
-    case CARBON_KIND(SemIR::TupleType tuple_type): {
-      for (auto element_type_id : context.types().GetBlockAsTypeIds(
-               context.inst_blocks().Get(tuple_type.type_elements_id))) {
-        if (TypeContainsChoice(context, element_type_id, class_id)) {
-          return true;
+      case CARBON_KIND(SemIR::PointerType pointer_type): {
+        worklist.push_back(
+            context.types().GetTypeIdForTypeInstId(pointer_type.pointee_id));
+        break;
+      }
+      case CARBON_KIND(SemIR::ArrayType array_type): {
+        worklist.push_back(context.types().GetTypeIdForTypeInstId(
+            array_type.element_type_inst_id));
+        break;
+      }
+      case CARBON_KIND(SemIR::StructType struct_type): {
+        for (auto field :
+             context.struct_type_fields().Get(struct_type.fields_id)) {
+          worklist.push_back(
+              context.types().GetTypeIdForTypeInstId(field.type_inst_id));
         }
+        break;
       }
-      return false;
+      case CARBON_KIND(SemIR::TupleType tuple_type): {
+        for (auto element_type_id : context.types().GetBlockAsTypeIds(
+                 context.inst_blocks().Get(tuple_type.type_elements_id))) {
+          worklist.push_back(element_type_id);
+        }
+        break;
+      }
+      default:
+        break;
     }
-    default:
-      return false;
   }
+  return false;
 }
 
 // The slice-1 payload restriction (decision-log W5 SF-6): payload types must

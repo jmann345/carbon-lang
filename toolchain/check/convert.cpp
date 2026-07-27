@@ -392,7 +392,7 @@ static auto ConvertTupleToTuple(Context& context, SemIR::TupleType src_type,
           : SemIR::CopyOnWriteInstBlock(
                 &sem_ir, SemIR::CopyOnWriteInstBlock::UninitializedBlock{
                              src_elem_types.size()});
-  for (auto [i, src_type_inst_id, dest_type_inst_id] : llvm::enumerate(
+  for (const auto& [i, src_type_inst_id, dest_type_inst_id] : llvm::enumerate(
            context.types().GetBlockAsTypeInstIds(src_elem_types),
            context.types().GetBlockAsTypeInstIds(dest_elem_types))) {
     // TODO: This call recurses back into conversion. Switch to an iterative

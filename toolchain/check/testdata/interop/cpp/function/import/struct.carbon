@@ -585,7 +585,7 @@ fn F() {
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @F(%s.param: %S) {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %Cpp.ref.loc24: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %Cpp.ref.loc31: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %foo.ref: %foo.cpp_overload_set.type = name_ref foo, imports.%foo.cpp_overload_set.value [concrete = constants.%foo.cpp_overload_set.value]
 // CHECK:STDOUT:   %s.ref: %S = name_ref s, %s
 // CHECK:STDOUT:   %foo.call: init %empty_tuple.type = call imports.%foo.decl(%s.ref)

@@ -1,1 +1,1 @@
-2026-07-27T09:05:06Z w5 crash fixes landed (match discriminant + TypeIterator CustomLayoutType): regenerate choice goldens
+2026-07-27T09:07:23Z pass 2 (R26): converge locNN after 1364-line CHECK insertion in choice/match goldens

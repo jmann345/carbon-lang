@@ -99,6 +99,20 @@ discriminant dispatch only.
 -   **The `default` arm stays required** for choice matches in S1 (SF-7's
     exhaustiveness lands in S2), so every S1 conformance/testdata match carries
     `default`.
+-   **Reconstruction-landing addendum (2026-07-27):** the first full CI run
+    of S1 exposed and fixed three crashes (generated-constructor FunctionDecl
+    loc; match discriminant lookup — plan §2.2c's "constant imports with the
+    binding" premise was wrong, see the amendment there; TypeIterator missing
+    CustomLayoutType). Adversarial review passed both semantic fixes with no
+    landing blockers and these recorded follow-ups: (1) reword the
+    defense-in-depth fallback TODO at the choice-case pattern (currently the
+    scrutinee string) to name the pattern; (2) when §2.2c name-to-index
+    metadata lands for S2 exhaustiveness, replace
+    `GetAlternativeDiscriminant`'s constant excavation with it; (3) optional
+    comment that CustomLayoutType's type-structure fingerprint conflates with
+    a same-shaped StructType (filter/ordering-only today); (4) add a
+    multi-hop `export import` variant of choice_scrutinee_imported to pin
+    the GetCanonicalFileAndInstId path.
 
 ### W5 SF-1..8: choice-payload plan sub-forks (user by way of AskUserQuestion, 2026-07-20)
 

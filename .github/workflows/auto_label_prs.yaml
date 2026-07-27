@@ -16,6 +16,10 @@ permissions:
 # able to remove the extra flag.
 jobs:
   set_labels:
+    # The `--repo carbon-language/carbon-lang` workaround above hardcodes the
+    # upstream repo, so on this fork the job fails on every PR trying to
+    # label a nonexistent upstream PR. Run it only upstream.
+    if: github.repository == 'carbon-language/carbon-lang'
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner

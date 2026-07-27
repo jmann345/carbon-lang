@@ -153,6 +153,13 @@ jobs:
             test -c opt --stamp \
             //toolchain/...
 
+      - name: Print failing test logs
+        if: failure()
+        run: |
+          find "$(python3 ./scripts/run_bazelisk.py info bazel-testlogs 2>/dev/null | tail -1)" \
+            -name test.log -newer MODULE.bazel -print \
+            -exec sh -c 'echo "===== {} ====="; tail -150 "{}"' \; 2>/dev/null || true
+
       - name: Extract version and stage artifact
         id: version
         run: |

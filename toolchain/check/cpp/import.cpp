@@ -1975,6 +1975,7 @@ static auto ImportFunctionDecl(Context& context, SemIR::LocId loc_id,
           builder.Note(loc_id, InCppThunk);
         });
 
+    bool thunk_attached = false;
     if (clang::FunctionDecl* thunk_clang_decl =
             BuildCppThunk(context, function_info)) {
       SemIR::ClangDeclSignature thunk_signature;
@@ -1995,7 +1996,17 @@ static auto ImportFunctionDecl(Context& context, SemIR::LocId loc_id,
         SemIR::InstId thunk_function_decl_id =
             thunk_function.first_owning_decl_id;
         function_info.SetHasCppThunk(thunk_function_decl_id);
+        thunk_attached = true;
       }
+    }
+    // A potentially-throwing callee must not fall back to an unfenced direct
+    // call
+    // (docs/design/error_handling.md#the-fenced-boundary-terminate-semantics),
+    // so a failed fence-thunk build is an error, not a fallback.
+    if (!thunk_attached && IsCppThunkFenceRequired(context, clang_decl)) {
+      context.TODO(loc_id,
+                   "Unsupported: fenced thunk for potentially-throwing C++ "
+                   "function could not be built");
     }
   } else {
     // Inform Clang that the function has been referenced. This will trigger

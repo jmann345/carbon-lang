@@ -27,7 +27,7 @@ Next check: Monday 14:00 UTC.
 | --- | --- |
 | `trunk` | Integrated fork line: match, arbiter (101 programs), error-handling + unions design docs, R21/R23/R24/R25 prevention. Base all new work here. |
 | `claude/carbon-fork-0-1-7mwfb7` | MERGED by way of PR #1 — finished; do not stack new commits. |
-| `claude/carbon-fork-0-1-b0` | NEW off trunk: b0 exception-boundary reconstruction. |
+| `claude/carbon-fork-0-1-b0` | b0 exception-boundary reconstruction EXECUTED (code overlaid, COMPILE-ARGS targeted-merged, prek clean, self-test OK); pushed — awaiting fast-check + autoupdate + gate, then PR into trunk. |
 | `claude/carbon-fork-0-1-7mwfb7-{b0-exceptions,w5-choice,design-docs}` | STRANDED ~17 commits behind trunk; source material for reconstruction, do NOT merge as-is. |
 
 ## Reconstruction recipe (stranded branch to fresh branch off trunk)

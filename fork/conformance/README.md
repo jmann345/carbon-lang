@@ -51,7 +51,7 @@ Outputs under `--out`:
 For each program the runner executes:
 
 ```sh
-<carbon> compile --output=<out>/obj/<name>.o --output-last-input-only <prog>.carbon
+<carbon> compile [COMPILE-ARGS...] --output=<out>/obj/<name>.o --output-last-input-only <prog>.carbon
 <carbon> link --output=<out>/bin/<name> <out>/obj/<name>.o
 <out>/bin/<name>     # 30s timeout; exit code + stdout captured
 ```
@@ -86,6 +86,7 @@ leading comment block:
 
 ```carbon
 // CONFORMANCE-BULLET: <exact bullet text from the table in fork/gap-analysis.md>
+// COMPILE-ARGS: <args>        (optional; extra `carbon compile` flags)
 // EXPECT-EXIT: <int>          (optional; default 0)
 // EXPECT-STDOUT:              (optional; if absent, stdout is unchecked)
 //   <literal line 1>
@@ -100,6 +101,12 @@ leading comment block:
     expected line; the captured stdout must equal the lines joined with
     newlines (each line newline-terminated). Note `Core.Print(x)` prints
     `<int>\n`.
+-   `COMPILE-ARGS` is whitespace-split and inserted into the `carbon compile`
+    command line right after `compile` (before the runner's own `--output` /
+    `--output-last-input-only` flags). Programs use it to pin a per-program
+    compile configuration — for example `--cpp-exceptions=none` for the
+    error-handling boundary programs. A program whose flags the driver rejects
+    is an honest `COMPILE-FAIL` (write-tests-first: red until the flag lands).
 -   `SKIP` exists for programs written ahead of their feature
     (write-tests-first, per process.md step 1). Keep SKIPs rare; prefer
     writing programs against constructs that already work.
@@ -176,6 +183,9 @@ fails if this table is stale):
 | `control_flow/range_iter_diff.carbon` | Control flow: loops incl. range-based and C/C++ loop equivalents | differential |
 | `error_handling/control_flow_constructs.carbon` | Error handling: dedicated control flow constructs | SKIP |
 | `error_handling/cpp_exception_interop.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | SKIP |
+| `error_handling/cpp_exceptions_auto_catch.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | run |
+| `error_handling/cpp_exceptions_fence_terminate.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | run |
+| `error_handling/cpp_exceptions_none_mode.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | run |
 | `functions/forward_decl.carbon` | Functions: separate declaration and definition | run |
 | `functions/overloading_native.carbon` | Functions: function overloading (Carbon-native) | SKIP |
 | `generics/checked_generics.carbon` | Generics: Checked generics | run |

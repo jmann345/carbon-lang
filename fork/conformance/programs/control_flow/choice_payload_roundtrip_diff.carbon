@@ -31,8 +31,8 @@ import Core library "io";
 
 fn Run() -> i32 {
   // Intended body once slice 2 lands:
-  //   var base: i32 = 40;
-  //   Core.Print(Consume(IntResult.Ok(base + 2)));
+  //   var seed: i32 = 40;
+  //   Core.Print(Consume(IntResult.Ok(seed + 2)));
   //   Core.Print(Consume(IntResult.Err));
   //   return 0;
   // Guard: fails loudly (exit 1 vs EXPECT-EXIT 0) if un-SKIPped before

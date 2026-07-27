@@ -42,8 +42,11 @@ fn Classify(s: Signal) -> i32 {
 fn Run() -> i32 {
   // Runtime-computed payload argument, so constant folding cannot fake the
   // constructed value (R16d).
-  var base: i32 = 55;
-  var go: Signal = Signal.Go(base + 5);
+  // `base` became a reserved word in binding patterns with upstream
+  // 39916ad's keyword work, so this uses `seed` (caught by this very
+  // program's first run on the merged tree — the arbiter working).
+  var seed: i32 = 55;
+  var go: Signal = Signal.Go(seed + 5);
   let stop: Signal = Signal.Stop;
   let wait: Signal = Signal.Wait;
   Core.Print(Classify(go));

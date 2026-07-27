@@ -2020,8 +2020,10 @@ static auto ImportFunctionDecl(Context& context, SemIR::LocId loc_id,
     // Shapes attempted and excluded: non-simple return types (the placement
     // `new (ret) T(call())` parens-init is guaranteed elision, no copy
     // needed); member callees (explicit public `DeclAccessPair` bypasses
-    // access control); deleted-move-only classes (a ByValue lvalue copy
-    // still succeeds).
+    // access control); classes with a deleted move constructor but an
+    // explicitly defaulted/provided copy constructor (the ByValue lvalue
+    // copy still succeeds; note a user-declared move ctor deletes the
+    // IMPLICIT copy ctor, so this exclusion needs the copy ctor spelled).
     if (!thunk_attached && IsCppThunkFenceRequired(context, clang_decl)) {
       context.TODO(loc_id,
                    "Unsupported: fenced thunk for potentially-throwing C++ "

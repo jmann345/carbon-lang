@@ -49,3 +49,31 @@ choice E {
 fn F(n: i32) -> E {
   return E.B(n);
 }
+
+// --- fail_function_duplicate_then_function.carbon
+library "[[@TEST_NAME]]";
+
+// The alignment-critical shape (landing-review advisory): a duplicate
+// FUNCTION-like alternative followed by a later function-like alternative.
+// The duplicate is skipped in both the classify and build loops, so the
+// constructor list must stay index-aligned for `C` past the skipped `B`.
+choice X {
+  B(x: i32),
+  B(y: i32),
+  C(z: i32)
+}
+
+fn G(n: i32) -> X {
+  return X.C(n);
+}
+
+// --- fail_triple_occurrence.carbon
+library "[[@TEST_NAME]]";
+
+// Three occurrences: one diagnostic per extra occurrence, each noting the
+// FIRST declaration (the map keeps the first value).
+choice T {
+  A,
+  A,
+  A
+}

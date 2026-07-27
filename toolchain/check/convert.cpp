@@ -733,6 +733,33 @@ static auto ConvertStructToStructOrClass(
       continue;
     }
 
+    if (dest_field.name_id == SemIR::NameId::ChoicePayload) {
+      if constexpr (!ToClass) {
+        CARBON_FATAL("Only choice classes should have payload fields.");
+      }
+      // The payload region of a payload-carrying choice is written by the
+      // alternatives' constructor functions; a payload-free alternative
+      // constant covers the field with an uninitialized value, like the
+      // partial-class vptr fill above. The name is not spellable, so the
+      // source can never supply this field.
+      target.storage_access_block->InsertHere();
+      auto payload_type_id =
+          context.types().GetTypeIdForTypeInstId(dest_field.type_inst_id);
+      auto dest_id =
+          AddInst<SemIR::ClassElementAccess>(context, value_loc_id,
+                                             {.type_id = payload_type_id,
+                                              .base_id = target.storage_id,
+                                              .index = SemIR::ElementIndex(i)});
+      auto uninit_id = AddInst<SemIR::UninitializedValue>(
+          context, value_loc_id, {.type_id = payload_type_id});
+      auto init_id = AddInst<SemIR::InPlaceInit>(context, value_loc_id,
+                                                 {.type_id = payload_type_id,
+                                                  .src_id = uninit_id,
+                                                  .dest_id = dest_id});
+      new_block.Set(i, init_id);
+      continue;
+    }
+
     // Find the matching source field.
     auto src_field_index = i;
     bool found = true;

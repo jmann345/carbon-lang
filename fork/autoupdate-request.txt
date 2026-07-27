@@ -1,1 +1,1 @@
-2026-07-19T17:03:25Z retry
+2026-07-27T08:01:12Z w5 reconstruction: regenerate choice goldens on trunk base (expect two passes, R26)

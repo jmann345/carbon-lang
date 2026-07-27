@@ -46,6 +46,13 @@ struct ClassFields {
   // Whether this class or any base class has at least one virtual function.
   bool is_dynamic = false;
 
+  // Whether this class was declared as a `choice`. Choice alternatives are
+  // entries in the class scope, and the object representation carries a
+  // compiler-defined discriminant field (and, when any alternative has a
+  // payload, a payload field). This is entity-level truth, not inferred from
+  // the representation's field names.
+  bool is_choice = false;
+
   // Whether the class's fields have been exported to C++.
   bool fields_exported = false;
 

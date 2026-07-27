@@ -278,6 +278,31 @@ static auto CanDestroyType(
       return has_witness ? DestroyFormat::NonTrivial : DestroyFormat::NoDestroy;
     }
 
+    case CARBON_KIND(SemIR::CustomLayoutType custom_layout_type): {
+      // A native custom-layout type today is the payload region of a
+      // payload-carrying choice, whose fields are restricted to trivially
+      // destructible payload tuples at completion time; mirror the struct
+      // handling over the overlapping fields. (C++ imported classes don't get
+      // here: `CanDestroyClass` returns early for C++ scopes.)
+      auto fields =
+          context.struct_type_fields().Get(custom_layout_type.fields_id);
+      if (fields.empty()) {
+        return DestroyFormat::Trivial;
+      }
+      auto query_facet_type_const_id =
+          PrepareForHasWitness(context, loc_id, query_specific_interface_id);
+      bool has_witness = true;
+      for (const auto& field : fields) {
+        if (!HasWitnessForRepeatedField(context, loc_id, field.type_inst_id,
+                                        query_facet_type_const_id)) {
+          has_witness = false;
+          break;
+        }
+      }
+      CleanupAfterHasWitness(context);
+      return has_witness ? DestroyFormat::NonTrivial : DestroyFormat::NoDestroy;
+    }
+
     case CARBON_KIND(SemIR::TupleType tuple_type): {
       auto block = context.inst_blocks().Get(tuple_type.type_elements_id);
       if (block.empty()) {
@@ -329,6 +354,7 @@ static auto MakeDestroyOpBody(Context& context, SemIR::LocId loc_id,
     case SemIR::ArrayType::Kind:
     case SemIR::ClassType::Kind:
     case SemIR::ConstType::Kind:
+    case SemIR::CustomLayoutType::Kind:
     case SemIR::MaybeUnformedType::Kind:
     case SemIR::PartialType::Kind:
     case SemIR::StructType::Kind:

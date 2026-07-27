@@ -10,19 +10,20 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-07-27 (b0 gate green)._ PR #1 (match slice 1
-plus all process/arbiter infra) MERGED to `trunk` (origin/trunk ==
-6793618). Go-forward structure: **one workstream = one branch off `trunk`
-= one focused PR** (the viability-review fix for the 162-file mega-PR
-bloat).
+_Last updated: 2026-07-27 (post-PR #4: trunk includes upstream 39916ad)._
+PR #1 (match slice 1 plus all process/arbiter infra) MERGED to `trunk`.
+Go-forward structure: **one workstream = one branch off `trunk` = one
+focused PR** (the viability-review fix for the 162-file mega-PR bloat).
 
-**Weekly upstream-merge check (standing rule 5), corrected 2026-07-27:**
-upstream moved to `39916ad` (25 commits since `99cda60`, including the
-C++ diagnostic-emitter split #7558 touching toolchain/check/cpp). Staged
-on `claude/carbon-fork-0-1-7mwfb7-upstream-20260727`, gate-green,
-scoreboard non-regressing, and MERGED to trunk by way of PR #4 — trunk now
-includes upstream `39916ad`. This branch (b0) was trial-merge-verified
-conflict-free against it. Next check: Monday 14:00 UTC.
+**Weekly upstream-merge outcome (standing rule 5, 2026-07-27):** upstream
+moved to `39916ad` (25 commits since `99cda60`, including the C++
+diagnostic-emitter split #7558). Staged, gate run 27 GREEN (release
+`fork-toolchain-27-fd4daca7b`), conformance scoreboard non-regressing
+(68 PASS / 33 SKIP / 0 FAIL — byte-identical to baseline), and MERGED to
+trunk by way of PR #4. This branch (b0) has now merged that trunk back in;
+PR #2 and #3 were trial-merge-verified conflict-free against upstream
+(collisions occur only in fork/ state files like this one, as the scope
+map predicts). Next check: Monday 14:00 UTC.
 
 ## Branches
 

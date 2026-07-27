@@ -1,1 +1,1 @@
-2026-07-27T07:38:29Z gate on converged goldens bff7078 (autoupdate pass 2 loc-only, 3 files/8 lines)
+2026-07-27T16:40:44Z gate the b0+upstream composition (trunk 2619bd1 merged back into b0) before PR #2 merges

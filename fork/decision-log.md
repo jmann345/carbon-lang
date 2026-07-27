@@ -112,7 +112,11 @@ discriminant dispatch only.
     comment that CustomLayoutType's type-structure fingerprint conflates with
     a same-shaped StructType (filter/ordering-only today); (4) add a
     multi-hop `export import` variant of choice_scrutinee_imported to pin
-    the GetCanonicalFileAndInstId path.
+    the GetCanonicalFileAndInstId path; (5) PRE-EXISTING latent crash found
+    by the scope-fix review: `choice C { A, A }` (duplicate alternative
+    NAMES, distinct from the fixed param collision) CHECK-crashes in
+    NameScope::AddRequired — needs a real duplicate-name diagnostic plus a
+    fail_ test before 0.1.
 
 ### W5 SF-1..8: choice-payload plan sub-forks (user by way of AskUserQuestion, 2026-07-20)
 

@@ -332,7 +332,10 @@ class ScopeStack {
 
     // The instruction associated with this entry, if any. This can be one of:
     //
-    // - A `ClassDecl`, for a class definition scope.
+    // - A `ClassDecl`, for a class definition scope, or for the lexical
+    //   choice-alternative parameter scope (`PushForChoiceAlternative`),
+    //   which carries the choice's `ClassDecl` without being a class
+    //   definition scope.
     // - A `FunctionDecl`, for the outermost scope in a function
     //   definition.
     // - Invalid, for any other scope.

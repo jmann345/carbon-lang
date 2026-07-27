@@ -37,12 +37,20 @@ fn Call() -> i32 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @_CCall.Main() #1 !dbg !19 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %f.call = call i32 @_Z1fv(), !dbg !20
-// CHECK:STDOUT:   ret i32 %f.call, !dbg !21
+// CHECK:STDOUT:   %f__carbon_thunk.call = call i32 @_Z1fv.carbon_thunk.(), !dbg !20
+// CHECK:STDOUT:   ret i32 %f__carbon_thunk.call, !dbg !21
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef i32 @_Z1fv.carbon_thunk.() #2 !dbg !22 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %call = call noundef i32 @_Z1fv(), !dbg !23
+// CHECK:STDOUT:   ret i32 %call, !dbg !24
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #1 = { nounwind }
+// CHECK:STDOUT: attributes #2 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0, !2}
 // CHECK:STDOUT: !llvm.module.flags = !{!4, !5, !6, !7, !8}
@@ -70,4 +78,7 @@ fn Call() -> i32 {
 // CHECK:STDOUT: !19 = distinct !DISubprogram(name: "Call", linkageName: "_CCall.Main", scope: null, file: !3, line: 21, type: !15, spFlags: DISPFlagDefinition, unit: !2)
 // CHECK:STDOUT: !20 = !DILocation(line: 22, column: 10, scope: !19)
 // CHECK:STDOUT: !21 = !DILocation(line: 22, column: 3, scope: !19)
+// CHECK:STDOUT: !22 = distinct !DISubprogram(name: "f__carbon_thunk", linkageName: "_Z1fv.carbon_thunk.", scope: !3, file: !3, line: 18, type: !15, scopeLine: 18, flags: DIFlagPrototyped | DIFlagAllCallsDescribed, spFlags: DISPFlagLocalToUnit | DISPFlagDefinition | DISPFlagOptimized, unit: !0, keyInstructions: true)
+// CHECK:STDOUT: !23 = !DILocation(line: 18, column: 5, scope: !22, atomGroup: 1, atomRank: 2)
+// CHECK:STDOUT: !24 = !DILocation(line: 18, column: 5, scope: !22, atomGroup: 1, atomRank: 1)
 // CHECK:STDOUT:

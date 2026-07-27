@@ -54,8 +54,8 @@ fn Run() {
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %func.cpp_overload_set.type: type = cpp_overload_set_type @func.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %func.cpp_overload_set.value: %func.cpp_overload_set.type = cpp_overload_set_value @func.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %func.type: type = fn_type @func [concrete]
-// CHECK:STDOUT:   %func: %func.type = struct_value () [concrete]
+// CHECK:STDOUT:   %func__carbon_thunk.type: type = fn_type @func__carbon_thunk [concrete]
+// CHECK:STDOUT:   %func__carbon_thunk: %func__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -64,7 +64,7 @@ fn Run() {
 // CHECK:STDOUT:     import Cpp//...
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %func.cpp_overload_set.value: %func.cpp_overload_set.type = cpp_overload_set_value @func.cpp_overload_set [concrete = constants.%func.cpp_overload_set.value]
-// CHECK:STDOUT:   %func.decl: %func.type = fn_decl @func [concrete = constants.%func] {} {}
+// CHECK:STDOUT:   %func__carbon_thunk.decl: %func__carbon_thunk.type = fn_decl @func__carbon_thunk [concrete = constants.%func__carbon_thunk] {} {}
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
@@ -77,7 +77,7 @@ fn Run() {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %func.ref: %func.cpp_overload_set.type = name_ref func, imports.%func.cpp_overload_set.value [concrete = constants.%func.cpp_overload_set.value]
-// CHECK:STDOUT:   %func.call: init %empty_tuple.type = call imports.%func.decl()
+// CHECK:STDOUT:   %func__carbon_thunk.call: init %empty_tuple.type = call imports.%func__carbon_thunk.decl()
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -87,8 +87,8 @@ fn Run() {
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %another_func.cpp_overload_set.type: type = cpp_overload_set_type @another_func.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %another_func.cpp_overload_set.value: %another_func.cpp_overload_set.type = cpp_overload_set_value @another_func.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %another_func.type: type = fn_type @another_func [concrete]
-// CHECK:STDOUT:   %another_func: %another_func.type = struct_value () [concrete]
+// CHECK:STDOUT:   %another_func__carbon_thunk.type: type = fn_type @another_func__carbon_thunk [concrete]
+// CHECK:STDOUT:   %another_func__carbon_thunk: %another_func__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -97,7 +97,7 @@ fn Run() {
 // CHECK:STDOUT:     import Cpp//...
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %another_func.cpp_overload_set.value: %another_func.cpp_overload_set.type = cpp_overload_set_value @another_func.cpp_overload_set [concrete = constants.%another_func.cpp_overload_set.value]
-// CHECK:STDOUT:   %another_func.decl: %another_func.type = fn_decl @another_func [concrete = constants.%another_func] {} {}
+// CHECK:STDOUT:   %another_func__carbon_thunk.decl: %another_func__carbon_thunk.type = fn_decl @another_func__carbon_thunk [concrete = constants.%another_func__carbon_thunk] {} {}
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
@@ -110,7 +110,7 @@ fn Run() {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %another_func.ref: %another_func.cpp_overload_set.type = name_ref another_func, imports.%another_func.cpp_overload_set.value [concrete = constants.%another_func.cpp_overload_set.value]
-// CHECK:STDOUT:   %another_func.call: init %empty_tuple.type = call imports.%another_func.decl()
+// CHECK:STDOUT:   %another_func__carbon_thunk.call: init %empty_tuple.type = call imports.%another_func__carbon_thunk.decl()
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

@@ -84,6 +84,8 @@ fn Driver(x: Cpp.A, y: Cpp.A) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: $_Zeq1AS_ = comdat any
 // CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT:
 // CHECK:STDOUT: $_Zne1AS_ = comdat any
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
@@ -93,8 +95,8 @@ fn Driver(x: Cpp.A, y: Cpp.A) {
 // CHECK:STDOUT:   ret void, !dbg !20
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_Zeq1AS_.carbon_thunk.__(ptr noundef %x, ptr noundef %y, ptr noundef %return) #1 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Zeq1AS_.carbon_thunk.__(ptr noundef %x, ptr noundef %y, ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %x.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %y.addr = alloca ptr, align 8
@@ -113,14 +115,24 @@ fn Driver(x: Cpp.A, y: Cpp.A) {
 // CHECK:STDOUT:   %3 = load i32, ptr %coerce.dive, align 4
 // CHECK:STDOUT:   %coerce.dive2 = getelementptr inbounds nuw %struct.A, ptr %agg.tmp1, i32 0, i32 0
 // CHECK:STDOUT:   %4 = load i32, ptr %coerce.dive2, align 4
-// CHECK:STDOUT:   %call = call noundef zeroext i1 @_Zeq1AS_(i32 %3, i32 %4)
+// CHECK:STDOUT:   %call = invoke noundef zeroext i1 @_Zeq1AS_(i32 %3, i32 %4)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   %storedv = zext i1 %call to i8
 // CHECK:STDOUT:   store i8 %storedv, ptr %0, align 1, !tbaa !28
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_Zne1AS_.carbon_thunk.__(ptr noundef %x, ptr noundef %y, ptr noundef %return) #1 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Zne1AS_.carbon_thunk.__(ptr noundef %x, ptr noundef %y, ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %x.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %y.addr = alloca ptr, align 8
@@ -139,10 +151,20 @@ fn Driver(x: Cpp.A, y: Cpp.A) {
 // CHECK:STDOUT:   %3 = load i32, ptr %coerce.dive, align 4
 // CHECK:STDOUT:   %coerce.dive2 = getelementptr inbounds nuw %struct.A, ptr %agg.tmp1, i32 0, i32 0
 // CHECK:STDOUT:   %4 = load i32, ptr %coerce.dive2, align 4
-// CHECK:STDOUT:   %call = call noundef zeroext i1 @_Zne1AS_(i32 %3, i32 %4)
+// CHECK:STDOUT:   %call = invoke noundef zeroext i1 @_Zne1AS_(i32 %3, i32 %4)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   %storedv = zext i1 %call to i8
 // CHECK:STDOUT:   store i8 %storedv, ptr %0, align 1, !tbaa !28
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: alwaysinline nounwind
@@ -196,6 +218,19 @@ fn Driver(x: Cpp.A, y: Cpp.A) {
 // CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
 // CHECK:STDOUT: declare void @llvm.memcpy.p0.p0.i64(ptr noalias writeonly captures(none), ptr noalias readonly captures(none), i64, i1 immarg) #3
 // CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #5 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: mustprogress nounwind uwtable
 // CHECK:STDOUT: define linkonce_odr dso_local noundef zeroext i1 @_Zne1AS_(i32 %x.coerce, i32 %y.coerce) #4 comdat {
 // CHECK:STDOUT: entry:
@@ -221,12 +256,16 @@ fn Driver(x: Cpp.A, y: Cpp.A) {
 // CHECK:STDOUT: ; uselistorder directives
 // CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @llvm.memcpy.p0.p0.i64, { 0, 1, 5, 4, 3, 2 }
+// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #2 = { alwaysinline nounwind }
 // CHECK:STDOUT: attributes #3 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
 // CHECK:STDOUT: attributes #4 = { mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #6 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -294,6 +333,8 @@ fn Driver(x: Cpp.A, y: Cpp.A) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: $_Zlt1AS_ = comdat any
 // CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT:
 // CHECK:STDOUT: $_Zle1AS_ = comdat any
 // CHECK:STDOUT:
 // CHECK:STDOUT: $_Zgt1AS_ = comdat any
@@ -307,8 +348,8 @@ fn Driver(x: Cpp.A, y: Cpp.A) {
 // CHECK:STDOUT:   ret void, !dbg !20
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_Zlt1AS_.carbon_thunk.__(ptr noundef %x, ptr noundef %y, ptr noundef %return) #1 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Zlt1AS_.carbon_thunk.__(ptr noundef %x, ptr noundef %y, ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %x.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %y.addr = alloca ptr, align 8
@@ -327,14 +368,24 @@ fn Driver(x: Cpp.A, y: Cpp.A) {
 // CHECK:STDOUT:   %3 = load i32, ptr %coerce.dive, align 4
 // CHECK:STDOUT:   %coerce.dive2 = getelementptr inbounds nuw %struct.A, ptr %agg.tmp1, i32 0, i32 0
 // CHECK:STDOUT:   %4 = load i32, ptr %coerce.dive2, align 4
-// CHECK:STDOUT:   %call = call noundef zeroext i1 @_Zlt1AS_(i32 %3, i32 %4)
+// CHECK:STDOUT:   %call = invoke noundef zeroext i1 @_Zlt1AS_(i32 %3, i32 %4)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   %storedv = zext i1 %call to i8
 // CHECK:STDOUT:   store i8 %storedv, ptr %0, align 1, !tbaa !28
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_Zle1AS_.carbon_thunk.__(ptr noundef %x, ptr noundef %y, ptr noundef %return) #1 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Zle1AS_.carbon_thunk.__(ptr noundef %x, ptr noundef %y, ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %x.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %y.addr = alloca ptr, align 8
@@ -353,14 +404,24 @@ fn Driver(x: Cpp.A, y: Cpp.A) {
 // CHECK:STDOUT:   %3 = load i32, ptr %coerce.dive, align 4
 // CHECK:STDOUT:   %coerce.dive2 = getelementptr inbounds nuw %struct.A, ptr %agg.tmp1, i32 0, i32 0
 // CHECK:STDOUT:   %4 = load i32, ptr %coerce.dive2, align 4
-// CHECK:STDOUT:   %call = call noundef zeroext i1 @_Zle1AS_(i32 %3, i32 %4)
+// CHECK:STDOUT:   %call = invoke noundef zeroext i1 @_Zle1AS_(i32 %3, i32 %4)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   %storedv = zext i1 %call to i8
 // CHECK:STDOUT:   store i8 %storedv, ptr %0, align 1, !tbaa !28
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_Zgt1AS_.carbon_thunk.__(ptr noundef %x, ptr noundef %y, ptr noundef %return) #1 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Zgt1AS_.carbon_thunk.__(ptr noundef %x, ptr noundef %y, ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %x.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %y.addr = alloca ptr, align 8
@@ -379,14 +440,24 @@ fn Driver(x: Cpp.A, y: Cpp.A) {
 // CHECK:STDOUT:   %3 = load i32, ptr %coerce.dive, align 4
 // CHECK:STDOUT:   %coerce.dive2 = getelementptr inbounds nuw %struct.A, ptr %agg.tmp1, i32 0, i32 0
 // CHECK:STDOUT:   %4 = load i32, ptr %coerce.dive2, align 4
-// CHECK:STDOUT:   %call = call noundef zeroext i1 @_Zgt1AS_(i32 %3, i32 %4)
+// CHECK:STDOUT:   %call = invoke noundef zeroext i1 @_Zgt1AS_(i32 %3, i32 %4)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   %storedv = zext i1 %call to i8
 // CHECK:STDOUT:   store i8 %storedv, ptr %0, align 1, !tbaa !28
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_Zge1AS_.carbon_thunk.__(ptr noundef %x, ptr noundef %y, ptr noundef %return) #1 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Zge1AS_.carbon_thunk.__(ptr noundef %x, ptr noundef %y, ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %x.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %y.addr = alloca ptr, align 8
@@ -405,10 +476,20 @@ fn Driver(x: Cpp.A, y: Cpp.A) {
 // CHECK:STDOUT:   %3 = load i32, ptr %coerce.dive, align 4
 // CHECK:STDOUT:   %coerce.dive2 = getelementptr inbounds nuw %struct.A, ptr %agg.tmp1, i32 0, i32 0
 // CHECK:STDOUT:   %4 = load i32, ptr %coerce.dive2, align 4
-// CHECK:STDOUT:   %call = call noundef zeroext i1 @_Zge1AS_(i32 %3, i32 %4)
+// CHECK:STDOUT:   %call = invoke noundef zeroext i1 @_Zge1AS_(i32 %3, i32 %4)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   %storedv = zext i1 %call to i8
 // CHECK:STDOUT:   store i8 %storedv, ptr %0, align 1, !tbaa !28
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: alwaysinline nounwind
@@ -484,6 +565,19 @@ fn Driver(x: Cpp.A, y: Cpp.A) {
 // CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
 // CHECK:STDOUT: declare void @llvm.memcpy.p0.p0.i64(ptr noalias writeonly captures(none), ptr noalias readonly captures(none), i64, i1 immarg) #3
 // CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #5 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: mustprogress nounwind uwtable
 // CHECK:STDOUT: define linkonce_odr dso_local noundef zeroext i1 @_Zle1AS_(i32 %x.coerce, i32 %y.coerce) #4 comdat {
 // CHECK:STDOUT: entry:
@@ -552,12 +646,16 @@ fn Driver(x: Cpp.A, y: Cpp.A) {
 // CHECK:STDOUT: ; uselistorder directives
 // CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 3, 2, 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @llvm.memcpy.p0.p0.i64, { 0, 1, 4, 5, 8, 9, 13, 12, 11, 10, 7, 6, 3, 2 }
+// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 3, 2, 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 3, 2, 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #2 = { alwaysinline nounwind }
 // CHECK:STDOUT: attributes #3 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
 // CHECK:STDOUT: attributes #4 = { mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #6 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}

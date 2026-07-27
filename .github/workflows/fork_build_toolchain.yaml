@@ -44,6 +44,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+          # Full history so clangd-tidy can diff against origin/trunk; a
+          # shallow clone made the merge-base fail and silently skipped the
+          # lint (observed in run 19: "fatal: bad revision 'HEAD~1'").
+          fetch-depth: 0
 
       # GATE PARITY (rulebook R21): this merge gate must be a superset of
       # upstream's own acceptance gate, so "fork-green" == "upstream would
@@ -138,7 +142,8 @@ jobs:
         run: |
           set -euo pipefail
           ./scripts/create_compdb.py
-          base=$(git merge-base HEAD origin/trunk 2>/dev/null || echo HEAD~1)
+          git fetch origin trunk
+          base=$(git merge-base HEAD origin/trunk)
           files=$(git diff --name-only "$base" HEAD -- '*.cpp' '*.h' \
             | grep -v '\.tpl\.h$' || true)
           if [ -n "$files" ]; then
@@ -150,15 +155,18 @@ jobs:
       - name: Test toolchain (merge gate)
         run: |
           python3 ./scripts/run_bazelisk.py \
-            test -c opt --stamp \
+            test -c opt --stamp --test_output=errors \
             //toolchain/...
 
       - name: Print failing test logs
         if: failure()
+        # -c opt matters: without it `bazel info` reports the k8-fastbuild
+        # testlogs dir while the gate's tests ran under k8-opt (run 19
+        # printed nothing because of this).
         run: |
-          find "$(python3 ./scripts/run_bazelisk.py info bazel-testlogs 2>/dev/null | tail -1)" \
-            -name test.log -newer MODULE.bazel -print \
-            -exec sh -c 'echo "===== {} ====="; tail -150 "{}"' \; 2>/dev/null || true
+          logs=$(python3 ./scripts/run_bazelisk.py info -c opt bazel-testlogs 2>/dev/null | tail -1)
+          find "$logs" -name test.log -mmin -60 \
+            -exec sh -c 'echo "===== $1 ====="; tail -200 "$1"' _ {} \; 2>/dev/null || true
 
       - name: Extract version and stage artifact
         id: version

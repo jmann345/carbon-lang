@@ -341,6 +341,14 @@ references diagnose against the TODO, not against a phantom missing member.
 -   `toolchain/sem_ir/class.h` + `toolchain/check/import_ref.cpp` — the one
     `Class::is_choice` bool and its import copy (§2.2c). **No new inst
     kinds planned** (§6); possible inst_namer cosmetic labels besides.
+-   AMENDED at landing (see the decision-log W5-S1 reconstruction
+    addendum for why): the sem_ir/import surface grew beyond the line
+    above — `toolchain/check/scope_stack.{h,cpp}` (per-alternative param
+    scope), `toolchain/check/handle_binding_pattern.cpp` (comment),
+    `toolchain/sem_ir/ids.h` + `name.cpp` (`NameId::ChoicePayload`),
+    `toolchain/sem_ir/type_iterator.cpp` (CustomLayoutType case), and a
+    ~43-line CustomLayoutType resolver in `import_ref.cpp`. S2 scoping
+    should budget from this list, not the original line.
 -   `toolchain/lower/` — **no source changes planned**: CustomLayoutType,
     byte-offset GEP, struct constants, and the UninitializedValue→poison
     constant path (§2.2b, lower/constant.cpp:351-354) all pre-exist. The

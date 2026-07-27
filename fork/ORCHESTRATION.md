@@ -16,10 +16,13 @@ plus all process/arbiter infra) MERGED to `trunk` (origin/trunk ==
 = one focused PR** (the viability-review fix for the 162-file mega-PR
 bloat).
 
-**Weekly upstream-merge check (standing rule 5):** upstream
-carbon-language/carbon-lang `trunk` is unchanged at `99cda60` — zero
-divergence from our base, nothing to merge. No staging branch created.
-Next check: Monday 14:00 UTC.
+**Weekly upstream-merge check (standing rule 5), corrected 2026-07-27:**
+upstream moved to `39916ad` (25 commits since `99cda60`, including the
+C++ diagnostic-emitter split #7558 touching toolchain/check/cpp). Staged
+on `claude/carbon-fork-0-1-7mwfb7-upstream-20260727`, gate-green,
+scoreboard non-regressing, and MERGED to trunk by way of PR #4 — trunk now
+includes upstream `39916ad`. This branch (b0) was trial-merge-verified
+conflict-free against it. Next check: Monday 14:00 UTC.
 
 ## Branches
 

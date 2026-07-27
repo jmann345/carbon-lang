@@ -42,12 +42,16 @@ case "$file" in
     ;;
 esac
 
-# 2. Header guards for .h files (same script CI runs).
+# 2. Header guards for .h files (same script CI runs). Must be invoked with
+# the REPO-RELATIVE path from the repo root: the script derives the expected
+# guard macro from the path as given, so an absolute path yields a garbage
+# macro (and its autofix would write it into the file).
 case "$file" in
   */testdata/*) ;;
   *.h)
-    if ! out=$(python3 "$root/scripts/check_header_guards.py" "$file" 2>&1); then
-      fail "check_header_guards.py failed for $file: $out"
+    rel=${file#"$root"/}
+    if ! out=$(cd "$root" && python3 scripts/check_header_guards.py "$rel" 2>&1); then
+      fail "check_header_guards.py failed for $rel: $out"
     fi
     ;;
 esac

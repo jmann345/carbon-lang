@@ -2,12 +2,17 @@
 // Exceptions. See /LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <optional>
+
 #include "toolchain/check/context.h"
 #include "toolchain/check/control_flow.h"
 #include "toolchain/check/convert.h"
 #include "toolchain/check/core_identifier.h"
 #include "toolchain/check/handle.h"
+#include "toolchain/check/inst.h"
+#include "toolchain/check/literal.h"
 #include "toolchain/check/operator.h"
+#include "toolchain/sem_ir/import_ir.h"
 #include "toolchain/sem_ir/typed_insts.h"
 
 namespace Carbon::Check {
@@ -17,12 +22,18 @@ namespace Carbon::Check {
 // each `case <literal>` becomes a `<literal> == scrutinee` test with a
 // conditional branch to the arm's body block, falling through to the next test
 // otherwise, with the `default` body as the final `else` block and all arm
-// bodies converging on a single resumption block. Everything outside that
-// subset produces a "semantics TODO" diagnostic.
+// bodies converging on a single resumption block.
 //
-// TODO: Support other pattern kinds, guards, non-integer scrutinees, and
-// exhaustiveness checking without a `default` arm. Diagnose cases that can
-// never match, per docs/design/pattern_matching.md.
+// A choice-typed scrutinee is additionally admitted, with leading-dot
+// payload-free alternative patterns (`case .Err`): the alternative's index is
+// compared against the scrutinee's `.discriminant` field with the same `==`
+// chain. Everything outside that subset produces a "semantics TODO"
+// diagnostic.
+//
+// TODO: Support other pattern kinds, guards, other scrutinee types, payload
+// destructuring in alternative patterns, and exhaustiveness checking without
+// a `default` arm. Diagnose cases that can never match, per
+// docs/design/pattern_matching.md.
 
 // Returns the scrutinee value, which is on the `MatchHandler` entry after an
 // earlier case arm, or otherwise on the `MatchStatementStart` entry.
@@ -31,6 +42,93 @@ static auto PeekScrutinee(Context& context) -> SemIR::InstId {
     return context.node_stack().Peek<Parse::NodeKind::MatchHandler>();
   }
   return context.node_stack().Peek<Parse::NodeKind::MatchStatementStart>();
+}
+
+// If `type_id` is a complete, non-generic choice type whose discriminant is
+// an integer field, returns the discriminant's type; returns nullopt
+// otherwise. This is the in-slice choice scrutinee shape: choices with fewer
+// than two alternatives have an empty-tuple discriminant, and specifics of
+// generic choices are out of slice 1 (alternative name-to-index metadata is
+// scoped to concrete choices, plan section 2.2c), so both stay behind the
+// scrutinee TODO. Uses the `Class::is_choice` entity flag, never the
+// representation's spelling.
+static auto GetChoiceDiscriminantType(Context& context, SemIR::TypeId type_id)
+    -> std::optional<SemIR::TypeId> {
+  auto unqualified_type_id = context.types().GetUnqualifiedType(type_id);
+  auto class_type =
+      context.types().TryGetAsIfValid<SemIR::ClassType>(unqualified_type_id);
+  if (!class_type || class_type->specific_id.has_value()) {
+    return std::nullopt;
+  }
+  const auto& class_info = context.classes().Get(class_type->class_id);
+  if (!class_info.is_choice || !class_info.is_complete()) {
+    return std::nullopt;
+  }
+  auto object_repr_id =
+      class_info.GetObjectRepr(context.sem_ir(), class_type->specific_id);
+  auto struct_type =
+      context.types().TryGetAsIfValid<SemIR::StructType>(object_repr_id);
+  if (!struct_type) {
+    return std::nullopt;
+  }
+  auto fields = context.struct_type_fields().Get(struct_type->fields_id);
+  if (fields.empty() ||
+      fields.front().name_id != SemIR::NameId::ChoiceDiscriminant) {
+    return std::nullopt;
+  }
+  auto disc_type_id =
+      context.types().GetTypeIdForTypeInstId(fields.front().type_inst_id);
+  if (!context.types().TryGetIntTypeInfo(disc_type_id)) {
+    return std::nullopt;
+  }
+  return disc_type_id;
+}
+
+// Returns the discriminant of the payload-free alternative that `pattern_id`
+// resolves to, or nullopt if no concrete discriminant can be recovered. The
+// alternative's `wrapper_binding` is not itself a constant: constant
+// evaluation of a `WrapperBinding` only forwards reference-category bound
+// values, and `MakeLetBinding` (handle_choice.cpp) binds a value-category
+// result. So the discriminant is read from the constant of the *bound value*,
+// a struct value whose leading element is the discriminant `MakeLetBinding`
+// baked in. The binding may also live in an imported file, where the local
+// `ImportRefLoaded` carries no constant at all (non-constant bindings do not
+// import; see `TryResolveInstCanonical` in import_ref.cpp), so the binding is
+// read from its defining file.
+static auto GetAlternativeDiscriminant(Context& context,
+                                       SemIR::InstId pattern_id)
+    -> std::optional<IntId> {
+  // Look through name references to the binding they name.
+  while (auto name_ref = context.insts().TryGetAs<SemIR::NameRef>(pattern_id)) {
+    pattern_id = name_ref->value_id;
+  }
+  // The binding may be imported; read it in its defining file.
+  auto [file, binding_id] =
+      SemIR::GetCanonicalFileAndInstId(&context.sem_ir(), pattern_id);
+  auto binding = file->insts().TryGetAs<SemIR::WrapperBinding>(binding_id);
+  if (!binding) {
+    return std::nullopt;
+  }
+  auto const_id = file->constant_values().Get(binding->value_id);
+  if (!const_id.is_concrete()) {
+    return std::nullopt;
+  }
+  auto struct_value = file->insts().TryGetAs<SemIR::StructValue>(
+      file->constant_values().GetInstId(const_id));
+  if (!struct_value) {
+    return std::nullopt;
+  }
+  auto elements = file->inst_blocks().Get(struct_value->elements_id);
+  if (elements.empty()) {
+    return std::nullopt;
+  }
+  auto discriminant = file->insts().TryGetAs<SemIR::IntValue>(elements[0]);
+  if (!discriminant) {
+    return std::nullopt;
+  }
+  // Add the value to the local int store; a no-op when the defining file
+  // shares this file's value stores.
+  return context.ints().AddSigned(file->ints().Get(discriminant->int_id));
 }
 
 auto HandleParseNode(Context& /*context*/,
@@ -46,14 +144,21 @@ auto HandleParseNode(Context& context, Parse::MatchConditionId node_id)
   // use it multiple times, once per `case`.
   scrutinee_id = ConvertToValueOrRefExpr(context, scrutinee_id);
 
-  // Only integer scrutinees are supported so far: `Core.IntLiteral`, a
-  // builtin integer type, or a class type directly adapting a builtin integer
-  // type, as `Int(N)` and `UInt(N)` do. Other class types whose object
-  // representation is an integer type, such as `Core.Char` or user-defined
-  // adapter classes, are excluded: they have their own operator semantics,
-  // and admitting class-typed scrutinees here would also invalidate the
-  // temporary cleanup handling below, which is trivially correct only
-  // because integer values have no `destroy` functions.
+  // Two scrutinee shapes are supported so far.
+  //
+  // Integer scrutinees: `Core.IntLiteral`, a builtin integer type, or a class
+  // type directly adapting a builtin integer type, as `Int(N)` and `UInt(N)`
+  // do. Other class types whose object representation is an integer type,
+  // such as `Core.Char` or user-defined adapter classes, are excluded: they
+  // have their own operator semantics.
+  //
+  // Choice scrutinees with an integer discriminant: dispatch compares the
+  // alternative's index against the `.discriminant` field. The temporary
+  // cleanup handling below stays trivially correct for both shapes as a type
+  // property, not a syntactic one: integer values have no `destroy`
+  // functions, and an in-slice choice's payloads are restricted to trivially
+  // copyable and destructible types when the choice's representation is
+  // completed (see handle_choice.cpp), so its destruction is a no-op.
   auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
   bool is_int_scrutinee = false;
   if (context.types().TryGetIntTypeInfo(scrutinee_type_id)) {
@@ -69,8 +174,9 @@ auto HandleParseNode(Context& context, Parse::MatchConditionId node_id)
       is_int_scrutinee = true;
     }
   }
-  if (!is_int_scrutinee) {
-    return context.TODO(node_id, "match on non-integer scrutinee");
+  if (!is_int_scrutinee &&
+      !GetChoiceDiscriminantType(context, scrutinee_type_id)) {
+    return context.TODO(node_id, "match on unsupported scrutinee type");
   }
 
   // Destroy any temporaries created in the scrutinee expression.
@@ -96,17 +202,50 @@ auto HandleParseNode(Context& context, Parse::MatchStatementStartId node_id)
 
 auto HandleParseNode(Context& context, Parse::MatchCaseIntroducerId node_id)
     -> bool {
-  // Only a `case` whose pattern is a single integer literal with no guard is
-  // supported so far. The parse tree is stored in postorder and the introducer
-  // is a leaf node, so the pattern's first node is at the next node index; a
-  // one-node pattern additionally requires the bracketing `MatchCase` node to
-  // immediately follow it. Diagnosing here, before the pattern's nodes are
-  // traversed, keeps unsupported pattern nodes from reaching their handlers
-  // outside of a pattern-matching context.
+  // Only single-node-rooted, guard-free `case` patterns are supported so far:
+  // a single integer literal for an integer scrutinee, or a single
+  // leading-dot designator (`.Name`, per decision-log W5 SF-4: leading-dot
+  // only) for a choice scrutinee. The parse tree is stored in postorder and
+  // the introducer is a leaf node, so the pattern's first node is at the next
+  // node index; the bracketing `MatchCase` node must immediately follow the
+  // pattern. Diagnosing here, before the pattern's nodes are traversed, keeps
+  // unsupported pattern nodes from reaching their handlers outside of a
+  // pattern-matching context.
   auto pattern_kind =
       context.parse_tree().node_kind(Parse::NodeId(node_id.index + 1));
   auto after_pattern_kind =
       context.parse_tree().node_kind(Parse::NodeId(node_id.index + 2));
+  if (GetChoiceDiscriminantType(
+          context, context.insts().Get(PeekScrutinee(context)).type_id())) {
+    // A designator pattern is [name, DesignatorExpr], then `MatchCase`.
+    if (pattern_kind == Parse::NodeKind::IdentifierNameNotBeforeSignature &&
+        after_pattern_kind == Parse::NodeKind::DesignatorExpr) {
+      auto third_kind =
+          context.parse_tree().node_kind(Parse::NodeId(node_id.index + 3));
+      if (third_kind == Parse::NodeKind::MatchCase) {
+        context.node_stack().Push(node_id);
+        return true;
+      }
+      if (third_kind == Parse::NodeKind::MatchCaseGuardIntroducer) {
+        return context.TODO(node_id,
+                            "match `case` pattern other than an integer "
+                            "literal, or a case guard");
+      }
+      // A designator-rooted pattern with more nodes, such as `.Ok(...)`,
+      // is an attempt to destructure the alternative's payload (slice 2).
+      return context.TODO(node_id,
+                          "match case pattern destructuring a choice payload");
+    }
+    if (pattern_kind == Parse::NodeKind::IdentifierNameExpr) {
+      // For example `case IntResult.Err`: only the leading-dot spelling is
+      // in-slice (SF-4); the qualified form is a recorded work item.
+      return context.TODO(node_id,
+                          "qualified alternative pattern in match case");
+    }
+    return context.TODO(
+        node_id,
+        "match `case` pattern other than an integer literal, or a case guard");
+  }
   if (pattern_kind != Parse::NodeKind::IntLiteral ||
       after_pattern_kind != Parse::NodeKind::MatchCase) {
     return context.TODO(
@@ -133,24 +272,75 @@ auto HandleParseNode(Context& context, Parse::MatchCaseGuardId node_id)
 }
 
 auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
-  auto literal_id = context.node_stack().PopExpr();
+  auto pattern_id = context.node_stack().PopExpr();
   context.node_stack()
       .PopAndDiscardSoloNodeId<Parse::NodeKind::MatchCaseIntroducer>();
   auto scrutinee_id = PeekScrutinee(context);
-
-  // Build `literal == scrutinee` — docs/design/pattern_matching.md mandates
-  // that operand order for expression patterns: "The scrutinee is compared
-  // with the expression using the `==` operator: _expression_ `==`
-  // _scrutinee_" — the same way as the infix `==` operator: the `EqWith`
-  // interface takes a single argument that is the type of the RHS operand.
   auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
-  SemIR::InstId args[] = {context.types().GetTypeInstId(scrutinee_type_id)};
-  auto eq_id = BuildBinaryOperator(context, node_id,
-                                   {.interface_name = CoreIdentifier::EqWith,
-                                    .interface_args_ref = args,
-                                    .op_name = CoreIdentifier::Equal},
-                                   literal_id, scrutinee_id);
-  auto cond_value_id = ConvertToBoolValue(context, node_id, eq_id);
+
+  // Build the arm's condition — docs/design/pattern_matching.md mandates the
+  // operand order for expression patterns: "The scrutinee is compared with
+  // the expression using the `==` operator: _expression_ `==` _scrutinee_" —
+  // the same way as the infix `==` operator: the `EqWith` interface takes a
+  // single argument that is the type of the RHS operand.
+  SemIR::InstId cond_value_id = SemIR::InstId::None;
+  if (auto disc_type_id =
+          GetChoiceDiscriminantType(context, scrutinee_type_id)) {
+    // A choice scrutinee: `MatchCaseIntroducer` admitted a single leading-dot
+    // designator, resolved against the scrutinee's choice scope (see
+    // `DesignatorExpr` handling in handle_name.cpp).
+    auto pattern_type_id = context.insts().Get(pattern_id).type_id();
+    if (pattern_type_id == SemIR::ErrorInst::TypeId) {
+      // The designator failed to resolve; a diagnostic was already produced.
+      cond_value_id = SemIR::ErrorInst::InstId;
+    } else if (context.types().Is<SemIR::FunctionType>(pattern_type_id)) {
+      // The designator names a payload alternative's constructor function;
+      // destructuring its payload is slice 2.
+      return context.TODO(node_id,
+                          "match case pattern destructuring a choice payload");
+    } else {
+      // The designator names a payload-free alternative constant of the
+      // scrutinee's choice type; compare its discriminant against the
+      // scrutinee's discriminant field.
+      CARBON_CHECK(context.types().GetUnqualifiedType(pattern_type_id) ==
+                       context.types().GetUnqualifiedType(scrutinee_type_id),
+                   "Alternative constant type differs from scrutinee type");
+      auto disc_int_id = GetAlternativeDiscriminant(context, pattern_id);
+      if (!disc_int_id) {
+        // An alternative whose discriminant is not a concrete constant, such
+        // as in a generic context, is out of slice 1; see decision-log W5-S1.
+        // The scrutinee gate rejects those shapes already, so this is
+        // defense-in-depth: diagnose rather than crash.
+        return context.TODO(node_id, "match on unsupported scrutinee type");
+      }
+      auto index_value_id = ConvertToValueOfType(
+          context, node_id, MakeIntLiteral(context, node_id, *disc_int_id),
+          *disc_type_id);
+
+      auto disc_access_id =
+          AddInst<SemIR::ClassElementAccess>(context, node_id,
+                                             {.type_id = *disc_type_id,
+                                              .base_id = scrutinee_id,
+                                              .index = SemIR::ElementIndex(0)});
+      SemIR::InstId args[] = {context.types().GetTypeInstId(*disc_type_id)};
+      auto eq_id =
+          BuildBinaryOperator(context, node_id,
+                              {.interface_name = CoreIdentifier::EqWith,
+                               .interface_args_ref = args,
+                               .op_name = CoreIdentifier::Equal},
+                              index_value_id, disc_access_id);
+      cond_value_id = ConvertToBoolValue(context, node_id, eq_id);
+    }
+  } else {
+    // An integer scrutinee with an integer-literal pattern.
+    SemIR::InstId args[] = {context.types().GetTypeInstId(scrutinee_type_id)};
+    auto eq_id = BuildBinaryOperator(context, node_id,
+                                     {.interface_name = CoreIdentifier::EqWith,
+                                      .interface_args_ref = args,
+                                      .op_name = CoreIdentifier::Equal},
+                                     pattern_id, scrutinee_id);
+    cond_value_id = ConvertToBoolValue(context, node_id, eq_id);
+  }
 
   // Create the arm's body block and the block for the next test (or the
   // `default` body), and branch to the right one.

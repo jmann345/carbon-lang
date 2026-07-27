@@ -11,49 +11,22 @@ branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
 _Last updated: 2026-07-27 (post-PR #4: trunk includes upstream 39916ad)._
-PR #1 (match slice 1 plus all process/arbiter infra) MERGED to `trunk`.
-Go-forward structure: **one workstream = one branch off `trunk` = one
-focused PR** (the viability-review fix for the 162-file mega-PR bloat).
+PR #1 (match), PR #4 (upstream 39916ad), and PR #2 (B0 exception
+boundary) are all MERGED to `trunk`. Go-forward structure: **one
+workstream = one branch off `trunk` = one focused PR**.
 
 **Weekly upstream-merge outcome (standing rule 5, 2026-07-27):** upstream
-moved to `39916ad` (25 commits since `99cda60`, including the C++
-diagnostic-emitter split #7558). Staged, gate run 27 GREEN (release
-`fork-toolchain-27-fd4daca7b`), conformance scoreboard non-regressing
-(68 PASS / 33 SKIP / 0 FAIL — byte-identical to baseline), and MERGED to
-trunk by way of PR #4. This branch (b0) has now merged that trunk back in;
-PR #2 and #3 were trial-merge-verified conflict-free against upstream
-(collisions occur only in fork/ state files like this one, as the scope
-map predicts). Next check: Monday 14:00 UTC.
+`39916ad` staged, gate-green, scoreboard non-regressing, merged by way of
+PR #4. Next check: Monday 14:00 UTC.
 
 ## Branches
 
 | Branch | State |
 | --- | --- |
-| `trunk` | Integrated fork line: match, arbiter (101 programs), error-handling + unions design docs, R21/R23/R24/R25 prevention. Base all new work here. |
-| `claude/carbon-fork-0-1-7mwfb7` | MERGED by way of PR #1 — finished; do not stack new commits. |
-| `claude/carbon-fork-0-1-b0` | b0 reconstruction GATE-GREEN (run 22, release `fork-toolchain-22-d2dad50e4`); PR into trunk open for review. Along the way: gate diagnostics hardened (opt-config testlogs, --test_output=errors, clangd-tidy was silently skipping — now fetches trunk and runs for real), and R26 recorded (autoupdate to fixpoint; the loc-shift red-loop is what stranded the original b0 branch). |
-| `claude/carbon-fork-0-1-w5` | NEW off trunk: w5-choice slice 1 (payload choices) reconstruction. |
-| `claude/carbon-fork-0-1-7mwfb7-{b0-exceptions,w5-choice,design-docs}` | STRANDED ~17 commits behind trunk; source material for reconstruction, do NOT merge as-is. |
-
-## Reconstruction recipe (stranded branch to fresh branch off trunk)
-
-The stranded feature branches predate the merge plus prevention layers, so
-reconstruct rather than rebase. For each (b0 first):
-
-1.  `git checkout -B <new> origin/trunk`.
-2.  Overlay ONLY the real code from the stranded branch. For b0:
-    `toolchain/check/cpp/{import,thunk}.{cpp,h}` and
-    `toolchain/driver/compile_options.{cpp,h}` overlay clean (trunk's match
-    touched handle_match/node_stack/inst_namer, not these); the 4 programs
-    under `fork/conformance/programs/error_handling/`; `fork/b0-exc/plan.md`.
-3.  Targeted-merge (do NOT file-overlay — trunk's versions moved on): b0's
-    COMPILE-ARGS directive into trunk's `runner.py`, and its doc into
-    `fork/conformance/README.md`.
-4.  DROP b0's `fork_build_toolchain.yaml` (stale, pre-R21) and its 72
-    regenerated goldens (regenerate on trunk by way of autoupdate).
-5.  Verify `uvx prek run --all-files` clean and `runner.py --self-test`
-    (R25) before push.
-6.  Push, then fast-check (compile), autoupdate (goldens), gate, PR.
+| `trunk` | Integrated line: match + arbiter + upstream 39916ad (PR #4) + B0 exception boundary (PR #2). Base all new work here. |
+| `claude/carbon-fork-0-1-w5` | THIS branch: W5 slice 1, adversarially reviewed OK; **PR #3 open**, final composition (w5 + b0 + upstream) gating now. |
+| `claude/carbon-fork-0-1-7mwfb7-design-docs` | STRANDED source for the F-008..F-011 design docs; reconstruction is NEXT, **gated on the user's veto-digest response** (presented 2026-07-20, unanswered). Reconstruct per the recipe pattern used for b0/w5 (overlay real content onto fresh branch off trunk; targeted-merge diverged files; prek + gate + PR). |
+| `claude/carbon-fork-0-1-{7mwfb7,b0,7mwfb7-upstream-20260727}` and other `7mwfb7-*` | MERGED or superseded; do not stack new commits. |
 
 ## Scoreboard (source of truth: run the suite, don't trust this line)
 

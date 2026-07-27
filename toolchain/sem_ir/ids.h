@@ -620,6 +620,8 @@ inline constexpr FloatKind FloatKind::PPCFloat128 = FloatKind(6);
   X(Base)                                                        \
   /* The name of the discriminant field (if any) in a choice. */ \
   X(ChoiceDiscriminant)                                          \
+  /* The name of the payload field (if any) in a choice. */      \
+  X(ChoicePayload)                                               \
   /* The name of the package `Core`. */                          \
   X(Core)                                                        \
   /* The name of the package `Cpp`. */                           \

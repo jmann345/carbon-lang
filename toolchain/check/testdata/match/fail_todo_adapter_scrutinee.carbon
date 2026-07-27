@@ -18,7 +18,7 @@ class Wrapped {
 }
 
 fn F(w: Wrapped) {
-  // CHECK:STDERR: fail_todo_adapter_scrutinee.carbon:[[@LINE+4]]:9: error: semantics TODO: `match on non-integer scrutinee` [SemanticsTodo]
+  // CHECK:STDERR: fail_todo_adapter_scrutinee.carbon:[[@LINE+4]]:9: error: semantics TODO: `match on unsupported scrutinee type` [SemanticsTodo]
   // CHECK:STDERR:   match (w) {
   // CHECK:STDERR:         ^~~
   // CHECK:STDERR:

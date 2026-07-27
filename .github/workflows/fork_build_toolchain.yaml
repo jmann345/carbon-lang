@@ -144,8 +144,12 @@ jobs:
           ./scripts/create_compdb.py
           git fetch origin trunk
           base=$(git merge-base HEAD origin/trunk)
+          # .diff.cpp differential fixtures are compiled by the conformance
+          # runner, not bazel — no compile_commands entry, so clangd-tidy
+          # cannot resolve their includes (rulebook R24, mirrors the
+          # !**/*.diff.cpp exclusion in upstream-style paths-filters).
           files=$(git diff --name-only "$base" HEAD -- '*.cpp' '*.h' \
-            | grep -v '\.tpl\.h$' || true)
+            | grep -v '\.tpl\.h$' | grep -v '\.diff\.cpp$' || true)
           if [ -n "$files" ]; then
             uvx --with clangd-tidy==1.1.0.post2 clangd-tidy -p . -j 10 $files
           else

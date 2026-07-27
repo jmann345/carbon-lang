@@ -75,6 +75,11 @@ static auto IsValidParamForIntroducer(Context& context, SemIR::LocId loc_id,
       return true;
     }
     case Lex::TokenKind::Choice:
+      // A choice alternative's parameter patterns are checked in a scope
+      // carrying the choice's `ClassDecl` (see
+      // `ScopeStack::PushForChoiceAlternative`); the choice type's own
+      // parameter list is instead checked in an instruction-less
+      // declaration-name scope.
       if (context.scope_stack().PeekInstId().has_value()) {
         // We are building a pattern for a choice alternative, not the
         // choice type itself.

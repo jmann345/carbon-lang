@@ -162,21 +162,24 @@
     },
     {
       "id": "W-010",
-      "title": "W5a: choice alternatives with parameters (payload-carrying sum types)",
+      "title": "W5a: choice alternatives with parameters (payload-carrying sum types) (slice 1 \u2014 concrete trivially-copyable payload construction, F-007k hybrid storage, discriminant-observable match via payload-free alternative patterns \u2014 implemented; generic/Self-dependent and non-trivial payloads gated by semantics-TODO diagnostics)",
       "kind": "todo-stub",
       "subsystem": "toolchain/check + toolchain/lower",
       "size": "L",
       "bullet": "Type system: Sum types (discriminated unions)",
       "evidence": [
-        "toolchain/check/handle_choice.cpp:154",
-        "toolchain/check/handle_choice.cpp:159",
-        "toolchain/check/testdata/choice/params.carbon:13",
-        "toolchain/check/testdata/choice/params.carbon:26",
-        "toolchain/check/testdata/choice/params.carbon:39",
-        "toolchain/check/testdata/choice/params.carbon:50"
+        "toolchain/check/handle_choice.cpp:503",
+        "toolchain/check/handle_match.cpp:128",
+        "toolchain/check/handle_match.cpp:179",
+        "toolchain/check/handle_match.cpp:185",
+        "toolchain/check/testdata/choice/fail_todo_generic_payload.carbon:19",
+        "toolchain/check/testdata/choice/fail_todo_nontrivial_payload.carbon:23",
+        "toolchain/check/testdata/choice/params.carbon:40",
+        "toolchain/check/testdata/choice/params.carbon:47",
+        "toolchain/check/testdata/match/fail_todo_choice_payload_pattern.carbon:13"
       ],
-      "blocked_by": ["W-008", "W-009"],
-      "notes": "Merges the check-TODO and fail_todo-test reports. handle_choice.cpp:159 rejects any alternative with a parameter list ('choice alternatives with parameters are not yet supported'); :154 also TODOs empty parameter lists that should become member functions. Parameterless choice works as an enum substitute only. Four payload shapes pre-staged as splits in choice/params.carbon: empty parens, typed payloads, generic payloads, self params. W-009 is the storage-primitive blocker (sum_types.md admits the low-level primitive 'hasn't been designed yet'; per coherence risk 1 the unions decision settles it); W-008 is needed to consume payloads."
+      "blocked_by": ["W-008"],
+      "notes": "W5 slice 1 (fork/w5-choice/plan.md \u00a72) implements payload-alternative construction (C.Ok(42); zero-payload Alt() function-like per SF-3), the F-007k hybrid storage contract (StructType{.discriminant, .payload: CustomLayoutType}, payload tuples overlapping at offset 0, max-of-fields size/align; payload-free choices keep the prior repr), and match over choice scrutinees with leading-dot payload-free alternative patterns + default (SF-4), all via pre-existing SemIR inst kinds plus the Class::is_choice entity flag. Remaining scope, each gated by a clean semantics-TODO (evidence lines): generic/Self-dependent payloads (S3), non-trivially-copyable/destructible payloads (SF-6, post-0.1 record), payload destructuring patterns .Ok(...)/.Ok and qualified alternative patterns (S2 / SF-4 work item), non-choice non-integer scrutinees. Land gate: the new AUTOUPDATE goldens (choice/payload_construct, choice/payload_layout, match/choice_scrutinee, match/choice_scrutinee_imported, and lower/choice/payload_layout \u2014 the F-007k anti-Goodhart layout pin, plan risk R-6) ship with no CHECK lines and must be autoupdated on the runner, then the scoreboard regenerated. S1 un-SKIPs types/choice_payload_construct.carbon and adds the choice_discriminant_diff pair. Destructuring + exhaustiveness (SF-7) continue as S2 under W-011. W-009 coordination per plan risk R-3: S1 built the narrow custom-layout pieces (convert.cpp ChoicePayload fill; custom_witness.cpp CustomLayoutType destroy cases); W-009 rebases on them."
     },
     {
       "id": "W-011",

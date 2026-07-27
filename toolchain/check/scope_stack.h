@@ -77,6 +77,14 @@ class ScopeStack {
   // Pushes a scope for a declaration name's parameters.
   auto PushForDeclName() -> void;
 
+  // Pushes a scope for a choice alternative's parameter patterns. Like
+  // `PushForDeclName`, the scope is lexical, so the parameter names bind here
+  // rather than in the choice's scope and different alternatives can reuse a
+  // name. Unlike `PushForDeclName`, the scope carries the choice's `ClassDecl`
+  // as its instruction, which pattern checking uses to recognize the
+  // alternative-parameter context (see `IsValidParamForIntroducer`).
+  auto PushForChoiceAlternative(SemIR::InstId choice_decl_id) -> void;
+
   // Pushes a non-function entity scope. Functions must use
   // `PushForFunctionBody` instead.
   auto PushForEntity(SemIR::InstId scope_inst_id, SemIR::NameScopeId scope_id,
@@ -324,7 +332,10 @@ class ScopeStack {
 
     // The instruction associated with this entry, if any. This can be one of:
     //
-    // - A `ClassDecl`, for a class definition scope.
+    // - A `ClassDecl`, for a class definition scope, or for the lexical
+    //   choice-alternative parameter scope (`PushForChoiceAlternative`),
+    //   which carries the choice's `ClassDecl` without being a class
+    //   definition scope.
     // - A `FunctionDecl`, for the outermost scope in a function
     //   definition.
     // - Invalid, for any other scope.

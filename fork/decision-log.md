@@ -47,6 +47,86 @@ Clang's final LangOpts, not arg-string scanning (4); the exception-interop
 bullet flips PASS on B0's boundary-contract slice with this recorded
 scope trade — catching-into-Result stays a visible SKIP until B3 (5).
 
+### W5-S1: scope trades in choice-payload slice 1 (2026-07-19)
+
+Process/scope decisions made by Claude during S1 implementation under
+standing rule 6 (language semantics follow docs/design/sum_types.md and the
+ratified SF-1..8 outcomes unchanged); recorded per process step 4 so the user
+can overrule. Also records, per plan §0.3, that the `Match`
+interface/Continuation mechanism of sum_types.md:124-246 (user-defined sum
+types) is OUT of the whole W5 workstream — S1 match consumption is direct
+discriminant dispatch only.
+
+-   **Scalar-only payload gate.** SF-6's "trivially copyable + trivially
+    destructible" restriction is implemented as an over-restrictive structural
+    allowlist: integer/float/bool/pointer types and adapters over them
+    (`IsInSlicePayloadType`, handle_choice.cpp). Trivially-copyable aggregates
+    (struct/tuple payload params) are also rejected, with the same SF-6
+    contract diagnostic. Rationale: the allowlist is a type property that fails
+    safe (match-gate soundness, plan risk R-4) and avoids relying on
+    aggregate-copy machinery S1 does not exercise. Relaxation rides SF-6's
+    recorded post-0.1 work item. **Admitted exception**: the gate does not
+    query Destroy/Copy witnesses, so a user adapter over a scalar carrying its
+    own `Core.Destroy` impl passes it despite not being trivially destructible.
+    Harmless today only because destroy-op synthesis is a placeholder no-op
+    (custom_witness.cpp `MakeDestroyOpBody`); when destroy synthesis lands, the
+    gate must become a destroy-witness triviality check. Recorded here, not
+    silently accepted, so the user can overrule.
+-   **Alternatives with parameter lists in generic choices** (including
+    zero-payload `Alt()`) are gated to the generic/Self-dependent TODO string —
+    SF-3's function-like `Alt()` lands for non-generic choices only; generic
+    synthesis is S3's re-plan.
+-   **Choices with fewer than two alternatives are not matchable in S1**: their
+    discriminant is the empty tuple, so they stay behind the widened scrutinee
+    TODO (`match on unsupported scrutinee type`). There is nothing to dispatch
+    on; S2's exhaustiveness work is the natural place to admit them.
+-   **Specifics of generic choices are not matchable in S1** (`choice P(T:
+    type) { A, B }` matched as a `P(i32)` value): they also stay behind
+    `match on unsupported scrutinee type`. Plan §2.2c scopes alternative
+    name→index metadata to concrete choices, and admitting the
+    specific-resolved constant path untested would trade a diagnostic for a
+    potential compiler crash; S3's generic re-plan owns it.
+-   **Matching a zero-payload function-like alternative (`case .On` for
+    `On()`) is gated by the `match case pattern destructuring a choice
+    payload` TODO string**, although there is no payload to destructure: the
+    designator resolves to the alternative's constructor function, and S1
+    keeps every function-typed alternative pattern behind S2's
+    destructuring work. SF-3's ratification text covers construction only;
+    the string choice is recorded here so R10 SKIP quoting stays consistent.
+    In S1 such alternatives are observable through `default`-arm inversion.
+-   **Guarded designator patterns** (`case .Err if (...)`) keep W4's generic
+    pattern/guard TODO string, not the payload-destructuring string.
+-   **The `default` arm stays required** for choice matches in S1 (SF-7's
+    exhaustiveness lands in S2), so every S1 conformance/testdata match carries
+    `default`.
+-   **Reconstruction-landing addendum (2026-07-27):** the first full CI run
+    of S1 exposed and fixed six defects across five fix rounds:
+    generated-constructor FunctionDecl loc; match discriminant lookup (plan
+    §2.2c's "constant imports with the binding" premise was wrong, see the
+    amendment there); TypeIterator missing CustomLayoutType;
+    alternative-param names leaking into the choice scope
+    (NameDeclDuplicate across alternatives); constructor ClassInit elements
+    built with InitializeExisting against its documented contract (by-copy
+    discriminant crashed lowering AND the Small payload store was silently
+    dropped — now InPlaceInitializing per upstream's aggregate discipline);
+    and review-found F1, a zero-param `Alt()` in a payload-carrying choice
+    producing a 1-element ClassInit against a 2-field repr (now filled with
+    an uninit payload element mirroring convert.cpp's ChoicePayload case,
+    covered by the new mixed_payload_alternatives testdata). Adversarial review passed both semantic fixes with no
+    landing blockers and these recorded follow-ups: (1) reword the
+    defense-in-depth fallback TODO at the choice-case pattern (currently the
+    scrutinee string) to name the pattern; (2) when §2.2c name-to-index
+    metadata lands for S2 exhaustiveness, replace
+    `GetAlternativeDiscriminant`'s constant excavation with it; (3) optional
+    comment that CustomLayoutType's type-structure fingerprint conflates with
+    a same-shaped StructType (filter/ordering-only today); (4) add a
+    multi-hop `export import` variant of choice_scrutinee_imported to pin
+    the GetCanonicalFileAndInstId path; (5) PRE-EXISTING latent crash found
+    by the scope-fix review: `choice C { A, A }` (duplicate alternative
+    NAMES, distinct from the fixed param collision) CHECK-crashes in
+    NameScope::AddRequired — needs a real duplicate-name diagnostic plus a
+    fail_ test before 0.1.
+
 ### W5 SF-1..8: choice-payload plan sub-forks (user by way of AskUserQuestion, 2026-07-20)
 
 Hybrid struct representation — discriminant + CustomLayoutType payload

@@ -10,20 +10,28 @@
 //   -1
 //
 // B0 slice, `-fno-except config` arm of the bullet (decision F-006 stage
-// B0; docs/design/error_handling.md "The --cpp-exceptions compile option"):
-// `--cpp-exceptions=none` compiles imported C++ with
-// `-fno-exceptions -fno-cxx-exceptions`, so a no-exceptions C++ dialect is
-// a supported first-class configuration. The helper deliberately contains
-// no `throw` (it would be a Clang compile error in this mode) and reports
-// failure by value, the idiomatic -fno-exceptions style; calls cross the
-// boundary as plain calls with zero added machinery. Expected values are
-// derived by hand: 84/2 == 42, and a zero divisor returns the -1 sentinel.
-// Inline-C++ block shape from interop/cpp_operator_import_arithmetic.carbon.
+// B0; docs/design/error_handling.md "The --cpp-exceptions compile option").
 //
-// Tests-first status (written before B0 is implemented): COMPILE-FAIL
-// today — the `--cpp-exceptions` option does not exist yet in
-// toolchain/driver/compile_options.cpp, so the driver rejects the flag.
-// Flips to PASS when the B0 driver option lands.
+// What this program pins: the driver accepts `--cpp-exceptions=none`, and
+// a value-reporting no-exceptions-style C++ helper builds and runs
+// correctly under it. The helper deliberately contains no `throw` and
+// reports failure by value, the idiomatic -fno-exceptions style; calls
+// cross the boundary as plain calls. Expected values are derived by hand:
+// 84/2 == 42, and a zero divisor returns the -1 sentinel.
+//
+// What this program does NOT pin: that `none` actually disables
+// exceptions. With no `throw` in the C++ block, this program would pass
+// even if the flag were parsed and ignored. The rejection of `throw`
+// under `none` is pinned by the check golden
+// toolchain/check/testdata/interop/cpp/exceptions/fail_throw_in_none.carbon,
+// and the claim that `none` mode generates code byte-identical to an
+// explicit -fno-exceptions build today is pinned by the four untouched
+// -fno-exceptions sentinel goldens
+// (toolchain/lower/testdata/interop/cpp/class/{virtual_fn,
+// import/copy_vs_move,export/method,export/class}.carbon), not by this
+// program.
+//
+// Inline-C++ block shape from interop/cpp_operator_import_arithmetic.carbon.
 
 import Core library "io";
 import Cpp inline '''c++

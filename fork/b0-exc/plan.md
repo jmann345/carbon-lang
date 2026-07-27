@@ -29,8 +29,10 @@ In B0:
     potentially-throwing C++ callee crosses through a generated thunk whose
     escaping exception deterministically terminates (`std::terminate`
     semantics) AT the thunk — replacing today's UB of unwinding into
-    Carbon frames. `noexcept` callees and all `none`-mode calls stay plain,
-    exactly as today.
+    Carbon frames. `none` mode and direct (unthunked) `noexcept` calls are
+    byte-identical to today; a `noexcept` callee that independently needs an
+    ABI thunk gets no new thunk, but that thunk now carries
+    `EST_BasicNoexcept` (strictly strengthening — see §4(b)).
 
 NOT in B0 (hard boundary, error_handling.md staging table): `Core.Result`,
 `Cpp.Exception`, catching thunks / `Result(T, Cpp.Exception)` imports (B3),
@@ -201,7 +203,10 @@ thunk.cpp:283-284; `ImportFunctionDecl` guarantees a prototype
 can-throw. In `none` mode (or auto→none) `CXXExceptions` is false and the
 predicate — and thus all behavior — is byte-identical to today.
 Consequences that fall out for free: `noexcept` callees (including
-implicitly-noexcept destructors) get no fence and no new thunk; C++
+implicitly-noexcept destructors) get no NEW thunk, and direct (unthunked)
+`noexcept` calls stay byte-identical to today — though a `noexcept` callee
+that independently needs an ABI thunk carries `EST_BasicNoexcept` on that
+thunk by way of (b), strictly strengthening; C++
 constructors/methods/operators are covered because every imported callee
 funnels through this one predicate and `PerformCppThunkCall`
 (call.cpp:291); virtual dispatch is preserved because the thunk body calls
@@ -328,18 +333,24 @@ interop/cpp_operator_import_arithmetic.carbon:
 -   `cpp_exceptions_none_mode.carbon` — `COMPILE-ARGS:
     --cpp-exceptions=none`; non-throwing C++ helper (no `throw` anywhere —
     it would be a compile error in this mode); computes and prints a value;
-    EXPECT-EXIT 0 + EXPECT-STDOUT. Proves the -fno-except configuration
-    compiles and calls stay plain.
+    EXPECT-EXIT 0 + EXPECT-STDOUT. Pins that the -fno-except configuration compiles and runs (throw
+    rejection is pinned by fail_throw_in_none.carbon, not here —
+    landing-review honesty note).
 -   `cpp_exceptions_auto_catch.carbon` — no COMPILE-ARGS (default `auto`);
     helper containing `throw` on an untaken path; EXPECT-EXIT 0 +
-    EXPECT-STDOUT. Proves auto resolves to catch (under `none` this exact
-    program cannot compile) and that the fence is free on the success path.
+    EXPECT-STDOUT. Pins that the default build keeps C++ exceptions enabled (a literal
+    `throw` compiles); auto RESOLUTION is pinned by the check goldens, not
+    here (landing-review honesty note).
 -   `cpp_exceptions_fence_terminate.carbon` — `COMPILE-ARGS:
     --cpp-exceptions=catch`; helper that unconditionally throws; the Carbon
     call site never sees the exception; `EXPECT-EXIT: -6` (SIGABRT by way of
     negative subprocess returncode, §1) and **no EXPECT-STDOUT** (buffered
     stdout is lost on abort — deliberate, see risk 6). This is the
-    documented-crash program: today's build of the same program is UB.
+    documented-crash program. Landing-review honesty note: exit -6 does
+    not discriminate fence-present from fence-absent (an uncaught
+    exception aborts in the phase-1 handler search before unwinding, so
+    an unfenced exceptions-on build exits -6 identically); the fence
+    itself is pinned by the lower golden fenced_thunk.carbon.
 -   `cpp_exception_interop.carbon` (existing SKIP) — stays SKIP (its body is
     B3: catching into values), but its reason currently cites
     "toolchain/base/clang_invocation.cpp contains no exception-handling

@@ -1,1 +1,1 @@
-2026-07-27T10:34:29Z regenerate goldens after F1 fill + new mixed_payload_alternatives tests (empty goldens; R26 two passes)
+2026-07-27T10:37:05Z pass 2 (R26): converge locNN after mixed_payload_alternatives golden generation

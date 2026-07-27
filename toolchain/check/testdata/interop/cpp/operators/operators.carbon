@@ -1032,10 +1032,10 @@ fn F() {
 // CHECK:STDOUT:   %ptr.0a2: type = ptr_type %C [concrete]
 // CHECK:STDOUT:   %C__carbon_thunk.type: type = fn_type @C__carbon_thunk [concrete]
 // CHECK:STDOUT:   %C__carbon_thunk: %C__carbon_thunk.type = struct_value () [concrete]
-// CHECK:STDOUT:   %cpp_operator.type.da53e5.1: type = fn_type @cpp_operator.1 [concrete]
-// CHECK:STDOUT:   %cpp_operator.3fb16d.1: %cpp_operator.type.da53e5.1 = struct_value () [concrete]
-// CHECK:STDOUT:   %cpp_operator.type.da53e5.2: type = fn_type @cpp_operator.2 [concrete]
-// CHECK:STDOUT:   %cpp_operator.3fb16d.2: %cpp_operator.type.da53e5.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %operator_PlusPlus__carbon_thunk.type: type = fn_type @operator_PlusPlus__carbon_thunk [concrete]
+// CHECK:STDOUT:   %operator_PlusPlus__carbon_thunk: %operator_PlusPlus__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT:   %operator_MinusMinus__carbon_thunk.type: type = fn_type @operator_MinusMinus__carbon_thunk [concrete]
+// CHECK:STDOUT:   %operator_MinusMinus__carbon_thunk: %operator_MinusMinus__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %minus.patt: %pattern_type.bbc = value_binding_pattern minus [concrete]
 // CHECK:STDOUT:   %operator_Minus__carbon_thunk.type: type = fn_type @operator_Minus__carbon_thunk [concrete]
 // CHECK:STDOUT:   %operator_Minus__carbon_thunk: %operator_Minus__carbon_thunk.type = struct_value () [concrete]
@@ -1060,12 +1060,12 @@ fn F() {
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %cpp_operator.decl.5ce91d.1: %cpp_operator.type.da53e5.1 = fn_decl @cpp_operator.1 [concrete = constants.%cpp_operator.3fb16d.1] {
+// CHECK:STDOUT:   %operator_PlusPlus__carbon_thunk.decl: %operator_PlusPlus__carbon_thunk.type = fn_decl @operator_PlusPlus__carbon_thunk [concrete = constants.%operator_PlusPlus__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %cpp_operator.decl.5ce91d.2: %cpp_operator.type.da53e5.2 = fn_decl @cpp_operator.2 [concrete = constants.%cpp_operator.3fb16d.2] {
+// CHECK:STDOUT:   %operator_MinusMinus__carbon_thunk.decl: %operator_MinusMinus__carbon_thunk.type = fn_decl @operator_MinusMinus__carbon_thunk [concrete = constants.%operator_MinusMinus__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -1108,9 +1108,9 @@ fn F() {
 // CHECK:STDOUT:     %c.var_patt: %pattern_type.bbc = var_pattern %c.patt [concrete = constants.%c.var_patt]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %c.ref.loc11: ref %C = name_ref c, %c
-// CHECK:STDOUT:   %cpp_operator.call.loc11: ref %C = call imports.%cpp_operator.decl.5ce91d.1(%c.ref.loc11)
+// CHECK:STDOUT:   %operator_PlusPlus__carbon_thunk.call: ref %C = call imports.%operator_PlusPlus__carbon_thunk.decl(%c.ref.loc11)
 // CHECK:STDOUT:   %c.ref.loc12: ref %C = name_ref c, %c
-// CHECK:STDOUT:   %cpp_operator.call.loc12: ref %C = call imports.%cpp_operator.decl.5ce91d.2(%c.ref.loc12)
+// CHECK:STDOUT:   %operator_MinusMinus__carbon_thunk.call: ref %C = call imports.%operator_MinusMinus__carbon_thunk.decl(%c.ref.loc12)
 // CHECK:STDOUT:   %c.ref.loc15: ref %C = name_ref c, %c
 // CHECK:STDOUT:   %.loc15_29.1: ref %C = temporary_storage
 // CHECK:STDOUT:   %.loc15_30.1: %C = acquire_value %c.ref.loc15
@@ -1246,10 +1246,10 @@ fn F() {
 // CHECK:STDOUT:   %operator_PipeEqual__carbon_thunk: %operator_PipeEqual__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %operator_CaretEqual__carbon_thunk.type: type = fn_type @operator_CaretEqual__carbon_thunk [concrete]
 // CHECK:STDOUT:   %operator_CaretEqual__carbon_thunk: %operator_CaretEqual__carbon_thunk.type = struct_value () [concrete]
-// CHECK:STDOUT:   %cpp_operator.type.da53e5.19: type = fn_type @cpp_operator.19 [concrete]
-// CHECK:STDOUT:   %cpp_operator.3fb16d.19: %cpp_operator.type.da53e5.19 = struct_value () [concrete]
-// CHECK:STDOUT:   %cpp_operator.type.da53e5.20: type = fn_type @cpp_operator.20 [concrete]
-// CHECK:STDOUT:   %cpp_operator.3fb16d.20: %cpp_operator.type.da53e5.20 = struct_value () [concrete]
+// CHECK:STDOUT:   %operator_LessLessEqual__carbon_thunk.type: type = fn_type @operator_LessLessEqual__carbon_thunk [concrete]
+// CHECK:STDOUT:   %operator_LessLessEqual__carbon_thunk: %operator_LessLessEqual__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT:   %operator_GreaterGreaterEqual__carbon_thunk.type: type = fn_type @operator_GreaterGreaterEqual__carbon_thunk [concrete]
+// CHECK:STDOUT:   %operator_GreaterGreaterEqual__carbon_thunk: %operator_GreaterGreaterEqual__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %pattern_type.831: type = pattern_type bool [concrete]
 // CHECK:STDOUT:   %equal.patt: %pattern_type.831 = value_binding_pattern equal [concrete]
 // CHECK:STDOUT:   %ptr.bb2: type = ptr_type bool [concrete]
@@ -1272,8 +1272,8 @@ fn F() {
 // CHECK:STDOUT:   %operator_LessEqual__carbon_thunk: %operator_LessEqual__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %index.patt: %pattern_type.6b6 = value_binding_pattern index [concrete]
 // CHECK:STDOUT:   %int_42.20e: Core.IntLiteral = int_value 42 [concrete]
-// CHECK:STDOUT:   %C.cpp_operator.type: type = fn_type @C.cpp_operator [concrete]
-// CHECK:STDOUT:   %C.cpp_operator: %C.cpp_operator.type = struct_value () [concrete]
+// CHECK:STDOUT:   %operator_Subscript__carbon_thunk.type: type = fn_type @operator_Subscript__carbon_thunk [concrete]
+// CHECK:STDOUT:   %operator_Subscript__carbon_thunk: %operator_Subscript__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.bf3: <bound method> = bound_method %int_42.20e, %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39 [concrete]
 // CHECK:STDOUT:   %bound_method.098: <bound method> = bound_method %int_42.20e, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn [concrete]
 // CHECK:STDOUT:   %int_42.ac4: %i32 = int_value 42 [concrete]
@@ -1389,12 +1389,12 @@ fn F() {
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %cpp_operator.decl.5ce91d.19: %cpp_operator.type.da53e5.19 = fn_decl @cpp_operator.19 [concrete = constants.%cpp_operator.3fb16d.19] {
+// CHECK:STDOUT:   %operator_LessLessEqual__carbon_thunk.decl: %operator_LessLessEqual__carbon_thunk.type = fn_decl @operator_LessLessEqual__carbon_thunk [concrete = constants.%operator_LessLessEqual__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %cpp_operator.decl.5ce91d.20: %cpp_operator.type.da53e5.20 = fn_decl @cpp_operator.20 [concrete = constants.%cpp_operator.3fb16d.20] {
+// CHECK:STDOUT:   %operator_GreaterGreaterEqual__carbon_thunk.decl: %operator_GreaterGreaterEqual__carbon_thunk.type = fn_decl @operator_GreaterGreaterEqual__carbon_thunk [concrete = constants.%operator_GreaterGreaterEqual__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -1429,7 +1429,7 @@ fn F() {
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %C.cpp_operator.decl: %C.cpp_operator.type = fn_decl @C.cpp_operator [concrete = constants.%C.cpp_operator] {
+// CHECK:STDOUT:   %operator_Subscript__carbon_thunk.decl: %operator_Subscript__carbon_thunk.type = fn_decl @operator_Subscript__carbon_thunk [concrete = constants.%operator_Subscript__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -1764,7 +1764,7 @@ fn F() {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc36: init %i32 = call %bound_method.loc36_10.2(%int_3.loc36) [concrete = constants.%int_3.410]
 // CHECK:STDOUT:   %.loc36_10.1: %i32 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc36 [concrete = constants.%int_3.410]
 // CHECK:STDOUT:   %.loc36_10.2: %i32 = converted %int_3.loc36, %.loc36_10.1 [concrete = constants.%int_3.410]
-// CHECK:STDOUT:   %cpp_operator.call.loc36: ref %C = call imports.%cpp_operator.decl.5ce91d.19(%c1.ref.loc36, %.loc36_10.2)
+// CHECK:STDOUT:   %operator_LessLessEqual__carbon_thunk.call: ref %C = call imports.%operator_LessLessEqual__carbon_thunk.decl(%c1.ref.loc36, %.loc36_10.2)
 // CHECK:STDOUT:   %c1.ref.loc37: ref %C = name_ref c1, %c1
 // CHECK:STDOUT:   %int_5.loc37: Core.IntLiteral = int_value 5 [concrete = constants.%int_5.64b]
 // CHECK:STDOUT:   %impl.elem0.loc37: %.1c5 = impl_witness_access constants.%ImplicitAs.impl_witness.a23, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
@@ -1774,7 +1774,7 @@ fn F() {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc37: init %i32 = call %bound_method.loc37_10.2(%int_5.loc37) [concrete = constants.%int_5.eef]
 // CHECK:STDOUT:   %.loc37_10.1: %i32 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc37 [concrete = constants.%int_5.eef]
 // CHECK:STDOUT:   %.loc37_10.2: %i32 = converted %int_5.loc37, %.loc37_10.1 [concrete = constants.%int_5.eef]
-// CHECK:STDOUT:   %cpp_operator.call.loc37: ref %C = call imports.%cpp_operator.decl.5ce91d.20(%c1.ref.loc37, %.loc37_10.2)
+// CHECK:STDOUT:   %operator_GreaterGreaterEqual__carbon_thunk.call: ref %C = call imports.%operator_GreaterGreaterEqual__carbon_thunk.decl(%c1.ref.loc37, %.loc37_10.2)
 // CHECK:STDOUT:   %c1.ref.loc40: ref %C = name_ref c1, %c1
 // CHECK:STDOUT:   %c2.ref.loc40: ref %C = name_ref c2, %c2
 // CHECK:STDOUT:   %.loc40_28.1: %C = acquire_value %c1.ref.loc40
@@ -1898,9 +1898,9 @@ fn F() {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc48: init %i32 = call %bound_method.loc48_30.2(%int_42) [concrete = constants.%int_42.ac4]
 // CHECK:STDOUT:   %.loc48_30.1: %i32 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc48 [concrete = constants.%int_42.ac4]
 // CHECK:STDOUT:   %.loc48_30.2: %i32 = converted %int_42, %.loc48_30.1 [concrete = constants.%int_42.ac4]
-// CHECK:STDOUT:   %C.cpp_operator.call: init %i32 = call imports.%C.cpp_operator.decl(%c1.ref.loc48, %.loc48_30.2)
-// CHECK:STDOUT:   %.loc48_32.1: %i32 = value_of_initializer %C.cpp_operator.call
-// CHECK:STDOUT:   %.loc48_32.2: %i32 = converted %C.cpp_operator.call, %.loc48_32.1
+// CHECK:STDOUT:   %operator_Subscript__carbon_thunk.call: init %i32 = call imports.%operator_Subscript__carbon_thunk.decl(%c1.ref.loc48, %.loc48_30.2)
+// CHECK:STDOUT:   %.loc48_32.1: %i32 = value_of_initializer %operator_Subscript__carbon_thunk.call
+// CHECK:STDOUT:   %.loc48_32.2: %i32 = converted %operator_Subscript__carbon_thunk.call, %.loc48_32.1
 // CHECK:STDOUT:   %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:   %index: %i32 = wrapper_binding index, %.loc48_32.2
 // CHECK:STDOUT:   name_binding_decl {

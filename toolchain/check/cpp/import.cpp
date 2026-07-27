@@ -1965,6 +1965,7 @@ static auto ImportFunctionDecl(Context& context, SemIR::LocId loc_id,
           builder.Note(loc_id, InCppThunk);
         });
 
+    bool thunk_attached = false;
     if (clang::FunctionDecl* thunk_clang_decl =
             BuildCppThunk(context, function_info)) {
       SemIR::ClangDeclSignature thunk_signature;
@@ -1985,7 +1986,37 @@ static auto ImportFunctionDecl(Context& context, SemIR::LocId loc_id,
         SemIR::InstId thunk_function_decl_id =
             thunk_function.first_owning_decl_id;
         function_info.SetHasCppThunk(thunk_function_decl_id);
+        thunk_attached = true;
       }
+    }
+    // A potentially-throwing callee must not fall back to an unfenced direct
+    // call
+    // (docs/design/error_handling.md#the-fenced-boundary-terminate-semantics),
+    // so a failed fence-thunk build is an error, not a fallback.
+    //
+    // Reachability: for a fence-only thunk (callee otherwise thunk-exempt),
+    // no reachable failure is known and this branch is defense-in-depth.
+    // `BuildCppThunk` fails only when `BuildThunkBody` (thunk.cpp) produces
+    // an invalid body, and each failure return there is excluded for
+    // fence-only shapes: constructors always need an ABI thunk (their
+    // effective return type is the class type, never a simple ABI type), the
+    // member-callee path builds its `MemberExpr` with an explicit public
+    // access pair, and otherwise the body is an argument-type-exact call
+    // (each thunk parameter type equals the callee's simple ABI parameter
+    // type per `GetThunkParameterType`), so Sema performs only identity
+    // conversions on a callee this import already accepted: unsupported
+    // parameter/object/return types failed `ImportFunction` above, variadic
+    // and template callees were rejected earlier in this function, and
+    // deleted callees are diagnosed during overload resolution before import
+    // (overload_resolution.cpp). Importing the thunk itself reuses those
+    // same already-accepted types. A callee that also needs an ABI thunk can
+    // still hit the pre-existing ABI-thunk build failures; those now surface
+    // here (previously a silent unthunked fallback) and are the candidate
+    // shape for a future fail_ golden if one is found.
+    if (!thunk_attached && IsCppThunkFenceRequired(context, clang_decl)) {
+      context.TODO(loc_id,
+                   "Unsupported: fenced thunk for potentially-throwing C++ "
+                   "function could not be built");
     }
   } else {
     // Inform Clang that the function has been referenced. This will trigger

@@ -42,6 +42,12 @@ struct CompileOptions {
     CodeGen,
   };
 
+  enum class CppExceptions : int8_t {
+    Auto,
+    None,
+    Catch,
+  };
+
   friend auto operator<<(llvm::raw_ostream& out, Phase phase)
       -> llvm::raw_ostream&;
 
@@ -92,6 +98,7 @@ struct CompileOptions {
   bool run_llvm_verifier = true;
 
   Phase phase = Phase::CodeGen;
+  CppExceptions cpp_exceptions = CppExceptions::Auto;
   Check::CheckParseTreesOptions::DumpSemIRRanges dump_sem_ir_ranges;
 
   llvm::StringRef output_filename;

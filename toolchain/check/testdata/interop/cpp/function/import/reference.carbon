@@ -495,8 +495,8 @@ fn PassConstRef(ref x: const X) {
 // CHECK:STDOUT:   %S.val: %S = struct_value () [concrete]
 // CHECK:STDOUT:   %TakesLValue.cpp_overload_set.type: type = cpp_overload_set_type @TakesLValue.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %TakesLValue.cpp_overload_set.value: %TakesLValue.cpp_overload_set.type = cpp_overload_set_value @TakesLValue.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %TakesLValue.type: type = fn_type @TakesLValue [concrete]
-// CHECK:STDOUT:   %TakesLValue: %TakesLValue.type = struct_value () [concrete]
+// CHECK:STDOUT:   %TakesLValue__carbon_thunk.type: type = fn_type @TakesLValue__carbon_thunk [concrete]
+// CHECK:STDOUT:   %TakesLValue__carbon_thunk: %TakesLValue__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %S.cpp_destructor.type: type = fn_type @S.cpp_destructor [concrete]
 // CHECK:STDOUT:   %S.cpp_destructor: %S.cpp_destructor.type = struct_value () [concrete]
 // CHECK:STDOUT: }
@@ -509,7 +509,7 @@ fn PassConstRef(ref x: const X) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %S.decl: type = class_decl @S [concrete = constants.%S] {} {}
 // CHECK:STDOUT:   %TakesLValue.cpp_overload_set.value: %TakesLValue.cpp_overload_set.type = cpp_overload_set_value @TakesLValue.cpp_overload_set [concrete = constants.%TakesLValue.cpp_overload_set.value]
-// CHECK:STDOUT:   %TakesLValue.decl: %TakesLValue.type = fn_decl @TakesLValue [concrete = constants.%TakesLValue] {
+// CHECK:STDOUT:   %TakesLValue__carbon_thunk.decl: %TakesLValue__carbon_thunk.type = fn_decl @TakesLValue__carbon_thunk [concrete = constants.%TakesLValue__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -536,7 +536,7 @@ fn PassConstRef(ref x: const X) {
 // CHECK:STDOUT:   %TakesLValue.ref: %TakesLValue.cpp_overload_set.type = name_ref TakesLValue, imports.%TakesLValue.cpp_overload_set.value [concrete = constants.%TakesLValue.cpp_overload_set.value]
 // CHECK:STDOUT:   %s.ref: ref %S = name_ref s, %s
 // CHECK:STDOUT:   %.loc9: %S = ref_tag %s.ref
-// CHECK:STDOUT:   %TakesLValue.call: init %empty_tuple.type = call imports.%TakesLValue.decl(%s.ref)
+// CHECK:STDOUT:   %TakesLValue__carbon_thunk.call: init %empty_tuple.type = call imports.%TakesLValue__carbon_thunk.decl(%s.ref)
 // CHECK:STDOUT:   %S.cpp_destructor.bound: <bound method> = bound_method %s.var, constants.%S.cpp_destructor
 // CHECK:STDOUT:   %S.cpp_destructor.call: init %empty_tuple.type = call %S.cpp_destructor.bound(%s.var)
 // CHECK:STDOUT:   <elided>
@@ -1182,8 +1182,8 @@ fn PassConstRef(ref x: const X) {
 // CHECK:STDOUT:   %s.patt: %pattern_type = ref_binding_pattern s [concrete]
 // CHECK:STDOUT:   %ReturnsLValue.cpp_overload_set.type: type = cpp_overload_set_type @ReturnsLValue.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %ReturnsLValue.cpp_overload_set.value: %ReturnsLValue.cpp_overload_set.type = cpp_overload_set_value @ReturnsLValue.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %ReturnsLValue.type: type = fn_type @ReturnsLValue [concrete]
-// CHECK:STDOUT:   %ReturnsLValue: %ReturnsLValue.type = struct_value () [concrete]
+// CHECK:STDOUT:   %ReturnsLValue__carbon_thunk.type: type = fn_type @ReturnsLValue__carbon_thunk [concrete]
+// CHECK:STDOUT:   %ReturnsLValue__carbon_thunk: %ReturnsLValue__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -1194,19 +1194,19 @@ fn PassConstRef(ref x: const X) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %S.decl: type = class_decl @S [concrete = constants.%S] {} {}
 // CHECK:STDOUT:   %ReturnsLValue.cpp_overload_set.value: %ReturnsLValue.cpp_overload_set.type = cpp_overload_set_value @ReturnsLValue.cpp_overload_set [concrete = constants.%ReturnsLValue.cpp_overload_set.value]
-// CHECK:STDOUT:   %ReturnsLValue.decl: %ReturnsLValue.type = fn_decl @ReturnsLValue [concrete = constants.%ReturnsLValue] {} {}
+// CHECK:STDOUT:   %ReturnsLValue__carbon_thunk.decl: %ReturnsLValue__carbon_thunk.type = fn_decl @ReturnsLValue__carbon_thunk [concrete = constants.%ReturnsLValue__carbon_thunk] {} {}
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @F() {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %Cpp.ref.loc8_29: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %ReturnsLValue.ref: %ReturnsLValue.cpp_overload_set.type = name_ref ReturnsLValue, imports.%ReturnsLValue.cpp_overload_set.value [concrete = constants.%ReturnsLValue.cpp_overload_set.value]
-// CHECK:STDOUT:   %ReturnsLValue.call: ref %S = call imports.%ReturnsLValue.decl()
+// CHECK:STDOUT:   %ReturnsLValue__carbon_thunk.call: ref %S = call imports.%ReturnsLValue__carbon_thunk.decl()
 // CHECK:STDOUT:   %.loc8: type = splice_block %S.ref [concrete = constants.%S] {
 // CHECK:STDOUT:     %Cpp.ref.loc8_21: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:     %S.ref: type = name_ref S, imports.%S.decl [concrete = constants.%S]
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %s: ref %S = wrapper_binding s, %ReturnsLValue.call
+// CHECK:STDOUT:   %s: ref %S = wrapper_binding s, %ReturnsLValue__carbon_thunk.call
 // CHECK:STDOUT:   name_binding_decl {
 // CHECK:STDOUT:     %s.patt: %pattern_type = ref_binding_pattern s [concrete = constants.%s.patt]
 // CHECK:STDOUT:   }
@@ -1221,8 +1221,8 @@ fn PassConstRef(ref x: const X) {
 // CHECK:STDOUT:   %s.patt: %pattern_type = ref_binding_pattern s [concrete]
 // CHECK:STDOUT:   %ReturnsRValue.cpp_overload_set.type: type = cpp_overload_set_type @ReturnsRValue.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %ReturnsRValue.cpp_overload_set.value: %ReturnsRValue.cpp_overload_set.type = cpp_overload_set_value @ReturnsRValue.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %ReturnsRValue.type: type = fn_type @ReturnsRValue [concrete]
-// CHECK:STDOUT:   %ReturnsRValue: %ReturnsRValue.type = struct_value () [concrete]
+// CHECK:STDOUT:   %ReturnsRValue__carbon_thunk.type: type = fn_type @ReturnsRValue__carbon_thunk [concrete]
+// CHECK:STDOUT:   %ReturnsRValue__carbon_thunk: %ReturnsRValue__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -1233,19 +1233,19 @@ fn PassConstRef(ref x: const X) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %S.decl: type = class_decl @S [concrete = constants.%S] {} {}
 // CHECK:STDOUT:   %ReturnsRValue.cpp_overload_set.value: %ReturnsRValue.cpp_overload_set.type = cpp_overload_set_value @ReturnsRValue.cpp_overload_set [concrete = constants.%ReturnsRValue.cpp_overload_set.value]
-// CHECK:STDOUT:   %ReturnsRValue.decl: %ReturnsRValue.type = fn_decl @ReturnsRValue [concrete = constants.%ReturnsRValue] {} {}
+// CHECK:STDOUT:   %ReturnsRValue__carbon_thunk.decl: %ReturnsRValue__carbon_thunk.type = fn_decl @ReturnsRValue__carbon_thunk [concrete = constants.%ReturnsRValue__carbon_thunk] {} {}
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @F() {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %Cpp.ref.loc8_29: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %ReturnsRValue.ref: %ReturnsRValue.cpp_overload_set.type = name_ref ReturnsRValue, imports.%ReturnsRValue.cpp_overload_set.value [concrete = constants.%ReturnsRValue.cpp_overload_set.value]
-// CHECK:STDOUT:   %ReturnsRValue.call: ref %S = call imports.%ReturnsRValue.decl()
+// CHECK:STDOUT:   %ReturnsRValue__carbon_thunk.call: ref %S = call imports.%ReturnsRValue__carbon_thunk.decl()
 // CHECK:STDOUT:   %.loc8: type = splice_block %S.ref [concrete = constants.%S] {
 // CHECK:STDOUT:     %Cpp.ref.loc8_21: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:     %S.ref: type = name_ref S, imports.%S.decl [concrete = constants.%S]
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %s: ref %S = wrapper_binding s, %ReturnsRValue.call
+// CHECK:STDOUT:   %s: ref %S = wrapper_binding s, %ReturnsRValue__carbon_thunk.call
 // CHECK:STDOUT:   name_binding_decl {
 // CHECK:STDOUT:     %s.patt: %pattern_type = ref_binding_pattern s [concrete = constants.%s.patt]
 // CHECK:STDOUT:   }
@@ -1261,8 +1261,8 @@ fn PassConstRef(ref x: const X) {
 // CHECK:STDOUT:   %s.patt: %pattern_type = ref_binding_pattern s [concrete]
 // CHECK:STDOUT:   %ReturnConstLValue.cpp_overload_set.type: type = cpp_overload_set_type @ReturnConstLValue.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %ReturnConstLValue.cpp_overload_set.value: %ReturnConstLValue.cpp_overload_set.type = cpp_overload_set_value @ReturnConstLValue.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %ReturnConstLValue.type: type = fn_type @ReturnConstLValue [concrete]
-// CHECK:STDOUT:   %ReturnConstLValue: %ReturnConstLValue.type = struct_value () [concrete]
+// CHECK:STDOUT:   %ReturnConstLValue__carbon_thunk.type: type = fn_type @ReturnConstLValue__carbon_thunk [concrete]
+// CHECK:STDOUT:   %ReturnConstLValue__carbon_thunk: %ReturnConstLValue__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -1273,20 +1273,20 @@ fn PassConstRef(ref x: const X) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %S.decl: type = class_decl @S [concrete = constants.%S] {} {}
 // CHECK:STDOUT:   %ReturnConstLValue.cpp_overload_set.value: %ReturnConstLValue.cpp_overload_set.type = cpp_overload_set_value @ReturnConstLValue.cpp_overload_set [concrete = constants.%ReturnConstLValue.cpp_overload_set.value]
-// CHECK:STDOUT:   %ReturnConstLValue.decl: %ReturnConstLValue.type = fn_decl @ReturnConstLValue [concrete = constants.%ReturnConstLValue] {} {}
+// CHECK:STDOUT:   %ReturnConstLValue__carbon_thunk.decl: %ReturnConstLValue__carbon_thunk.type = fn_decl @ReturnConstLValue__carbon_thunk [concrete = constants.%ReturnConstLValue__carbon_thunk] {} {}
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @F() {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %Cpp.ref.loc8_35: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %ReturnConstLValue.ref: %ReturnConstLValue.cpp_overload_set.type = name_ref ReturnConstLValue, imports.%ReturnConstLValue.cpp_overload_set.value [concrete = constants.%ReturnConstLValue.cpp_overload_set.value]
-// CHECK:STDOUT:   %ReturnConstLValue.call: ref %const = call imports.%ReturnConstLValue.decl()
+// CHECK:STDOUT:   %ReturnConstLValue__carbon_thunk.call: ref %const = call imports.%ReturnConstLValue__carbon_thunk.decl()
 // CHECK:STDOUT:   %.loc8: type = splice_block %const [concrete = constants.%const] {
 // CHECK:STDOUT:     %Cpp.ref.loc8_27: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:     %S.ref: type = name_ref S, imports.%S.decl [concrete = constants.%S]
 // CHECK:STDOUT:     %const: type = const_type %S.ref [concrete = constants.%const]
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %s: ref %const = wrapper_binding s, %ReturnConstLValue.call
+// CHECK:STDOUT:   %s: ref %const = wrapper_binding s, %ReturnConstLValue__carbon_thunk.call
 // CHECK:STDOUT:   name_binding_decl {
 // CHECK:STDOUT:     %s.patt: %pattern_type = ref_binding_pattern s [concrete = constants.%s.patt]
 // CHECK:STDOUT:   }
@@ -1309,8 +1309,8 @@ fn PassConstRef(ref x: const X) {
 // CHECK:STDOUT:   %ptr.db8: type = ptr_type %X [concrete]
 // CHECK:STDOUT:   %TakeAnything_ExpectLRef.cpp_overload_set.type: type = cpp_overload_set_type @TakeAnything_ExpectLRef.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %TakeAnything_ExpectLRef.cpp_overload_set.value: %TakeAnything_ExpectLRef.cpp_overload_set.type = cpp_overload_set_value @TakeAnything_ExpectLRef.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %TakeAnything_ExpectLRef.type: type = fn_type @TakeAnything_ExpectLRef [concrete]
-// CHECK:STDOUT:   %TakeAnything_ExpectLRef: %TakeAnything_ExpectLRef.type = struct_value () [concrete]
+// CHECK:STDOUT:   %TakeAnything_ExpectLRef__carbon_thunk.type: type = fn_type @TakeAnything_ExpectLRef__carbon_thunk [concrete]
+// CHECK:STDOUT:   %TakeAnything_ExpectLRef__carbon_thunk: %TakeAnything_ExpectLRef__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %TakeAnything_ExpectConstLRef.cpp_overload_set.type: type = cpp_overload_set_type @TakeAnything_ExpectConstLRef.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %TakeAnything_ExpectConstLRef.cpp_overload_set.value: %TakeAnything_ExpectConstLRef.cpp_overload_set.type = cpp_overload_set_value @TakeAnything_ExpectConstLRef.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %TakeAnything_ExpectConstLRef__carbon_thunk.type: type = fn_type @TakeAnything_ExpectConstLRef__carbon_thunk [concrete]
@@ -1336,7 +1336,7 @@ fn PassConstRef(ref x: const X) {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %TakeAnything_ExpectLRef.cpp_overload_set.value: %TakeAnything_ExpectLRef.cpp_overload_set.type = cpp_overload_set_value @TakeAnything_ExpectLRef.cpp_overload_set [concrete = constants.%TakeAnything_ExpectLRef.cpp_overload_set.value]
-// CHECK:STDOUT:   %TakeAnything_ExpectLRef.decl: %TakeAnything_ExpectLRef.type = fn_decl @TakeAnything_ExpectLRef [concrete = constants.%TakeAnything_ExpectLRef] {
+// CHECK:STDOUT:   %TakeAnything_ExpectLRef__carbon_thunk.decl: %TakeAnything_ExpectLRef__carbon_thunk.type = fn_decl @TakeAnything_ExpectLRef__carbon_thunk [concrete = constants.%TakeAnything_ExpectLRef__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -1374,7 +1374,7 @@ fn PassConstRef(ref x: const X) {
 // CHECK:STDOUT:   %TakeAnything_ExpectLRef.ref: %TakeAnything_ExpectLRef.cpp_overload_set.type = name_ref TakeAnything_ExpectLRef, imports.%TakeAnything_ExpectLRef.cpp_overload_set.value [concrete = constants.%TakeAnything_ExpectLRef.cpp_overload_set.value]
 // CHECK:STDOUT:   %x.ref: ref %X = name_ref x, %x
 // CHECK:STDOUT:   %.loc34: %X = ref_tag %x.ref
-// CHECK:STDOUT:   %TakeAnything_ExpectLRef.call: init %empty_tuple.type = call imports.%TakeAnything_ExpectLRef.decl(%x.ref)
+// CHECK:STDOUT:   %TakeAnything_ExpectLRef__carbon_thunk.call: init %empty_tuple.type = call imports.%TakeAnything_ExpectLRef__carbon_thunk.decl(%x.ref)
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

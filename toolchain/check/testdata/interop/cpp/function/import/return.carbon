@@ -126,8 +126,8 @@ fn Var() {
 // CHECK:STDOUT:   %Destroy.Op.1a2547.2: %Destroy.Op.type.1d8f74.2 = struct_value () [concrete]
 // CHECK:STDOUT:   %foo2.cpp_overload_set.type: type = cpp_overload_set_type @foo2.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %foo2.cpp_overload_set.value: %foo2.cpp_overload_set.type = cpp_overload_set_value @foo2.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %foo2.type: type = fn_type @foo2 [concrete]
-// CHECK:STDOUT:   %foo2: %foo2.type = struct_value () [concrete]
+// CHECK:STDOUT:   %foo2__carbon_thunk.type: type = fn_type @foo2__carbon_thunk [concrete]
+// CHECK:STDOUT:   %foo2__carbon_thunk: %foo2__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -143,7 +143,7 @@ fn Var() {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %foo2.cpp_overload_set.value: %foo2.cpp_overload_set.type = cpp_overload_set_value @foo2.cpp_overload_set [concrete = constants.%foo2.cpp_overload_set.value]
-// CHECK:STDOUT:   %foo2.decl: %foo2.type = fn_decl @foo2 [concrete = constants.%foo2] {
+// CHECK:STDOUT:   %foo2__carbon_thunk.decl: %foo2__carbon_thunk.type = fn_decl @foo2__carbon_thunk [concrete = constants.%foo2__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -167,9 +167,9 @@ fn Var() {
 // CHECK:STDOUT:   %IngestI32.ref: %IngestI32.type = name_ref IngestI32, file.%IngestI32.decl [concrete = constants.%IngestI32]
 // CHECK:STDOUT:   %Cpp.ref.loc12: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %foo2.ref: %foo2.cpp_overload_set.type = name_ref foo2, imports.%foo2.cpp_overload_set.value [concrete = constants.%foo2.cpp_overload_set.value]
-// CHECK:STDOUT:   %foo2.call: init %i32 = call imports.%foo2.decl()
-// CHECK:STDOUT:   %.loc12_22.1: %i32 = value_of_initializer %foo2.call
-// CHECK:STDOUT:   %.loc12_22.2: %i32 = converted %foo2.call, %.loc12_22.1
+// CHECK:STDOUT:   %foo2__carbon_thunk.call: init %i32 = call imports.%foo2__carbon_thunk.decl()
+// CHECK:STDOUT:   %.loc12_22.1: %i32 = value_of_initializer %foo2__carbon_thunk.call
+// CHECK:STDOUT:   %.loc12_22.2: %i32 = converted %foo2__carbon_thunk.call, %.loc12_22.1
 // CHECK:STDOUT:   %IngestI32.call: init %empty_tuple.type = call %IngestI32.ref(%.loc12_22.2)
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
@@ -366,8 +366,8 @@ fn Var() {
 // CHECK:STDOUT:   %ReturnU32.cpp_overload_set.value: %ReturnU32.cpp_overload_set.type = cpp_overload_set_value @ReturnU32.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %return.param_patt: %pattern_type.668 = out_param_pattern [concrete]
 // CHECK:STDOUT:   %return.patt: %pattern_type.668 = return_slot_pattern %return.param_patt, %u32 [concrete]
-// CHECK:STDOUT:   %ReturnU32.type: type = fn_type @ReturnU32 [concrete]
-// CHECK:STDOUT:   %ReturnU32: %ReturnU32.type = struct_value () [concrete]
+// CHECK:STDOUT:   %ReturnU32__carbon_thunk.type: type = fn_type @ReturnU32__carbon_thunk [concrete]
+// CHECK:STDOUT:   %ReturnU32__carbon_thunk: %ReturnU32__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Destroy.type: type = facet_type <@Destroy> [concrete]
 // CHECK:STDOUT:   %Destroy.Op.type.1d8f74.2: type = fn_type @Destroy.Op.loc9_3.2 [concrete]
 // CHECK:STDOUT:   %Destroy.Op.1a2547.2: %Destroy.Op.type.1d8f74.2 = struct_value () [concrete]
@@ -386,7 +386,7 @@ fn Var() {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Core.UInt: %UInt.type = import_ref Core//prelude/types/uint, UInt, loaded [concrete = constants.%UInt.generic]
 // CHECK:STDOUT:   %ReturnU32.cpp_overload_set.value: %ReturnU32.cpp_overload_set.type = cpp_overload_set_value @ReturnU32.cpp_overload_set [concrete = constants.%ReturnU32.cpp_overload_set.value]
-// CHECK:STDOUT:   %ReturnU32.decl: %ReturnU32.type = fn_decl @ReturnU32 [concrete = constants.%ReturnU32] {
+// CHECK:STDOUT:   %ReturnU32__carbon_thunk.decl: %ReturnU32__carbon_thunk.type = fn_decl @ReturnU32__carbon_thunk [concrete = constants.%ReturnU32__carbon_thunk] {
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.668 = out_param_pattern [concrete = constants.%return.param_patt]
 // CHECK:STDOUT:     %return.patt: %pattern_type.668 = return_slot_pattern %return.param_patt, %u32.2 [concrete = constants.%return.patt]
 // CHECK:STDOUT:   } {
@@ -417,8 +417,8 @@ fn Var() {
 // CHECK:STDOUT:   %my_u32.var: ref %u32 = var_storage %my_u32.var_patt
 // CHECK:STDOUT:   %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %ReturnU32.ref: %ReturnU32.cpp_overload_set.type = name_ref ReturnU32, imports.%ReturnU32.cpp_overload_set.value [concrete = constants.%ReturnU32.cpp_overload_set.value]
-// CHECK:STDOUT:   %ReturnU32.call: init %u32 = call imports.%ReturnU32.decl()
-// CHECK:STDOUT:   assign %my_u32.var, %ReturnU32.call
+// CHECK:STDOUT:   %ReturnU32__carbon_thunk.call: init %u32 = call imports.%ReturnU32__carbon_thunk.decl()
+// CHECK:STDOUT:   assign %my_u32.var, %ReturnU32__carbon_thunk.call
 // CHECK:STDOUT:   %u32: type = type_literal constants.%u32 [concrete = constants.%u32]
 // CHECK:STDOUT:   %my_u32: ref %u32 = wrapper_binding my_u32, %my_u32.var
 // CHECK:STDOUT:   name_binding_decl {
@@ -431,6 +431,8 @@ fn Var() {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @ReturnU32() -> out %return.param: %u32;
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @ReturnU32__carbon_thunk() -> out %return.param: %u32;
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @Destroy.Op.loc9_3.1(%self.param: ref %u32.builtin) = "no_op";
 // CHECK:STDOUT:

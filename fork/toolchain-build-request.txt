@@ -1,1 +1,1 @@
-2026-07-27T16:41:49Z gate the w5+upstream composition (trunk 2619bd1 merged back into w5) before PR #3 merges
+2026-07-27T17:08:22Z gate the FINAL w5+b0+upstream composition (trunk da3b84c merged into w5) before PR #3 merges

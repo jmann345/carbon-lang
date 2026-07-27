@@ -10,6 +10,14 @@
 
 namespace Carbon::Check {
 
+// Returns whether, with C++ exceptions enabled, `decl` is a
+// potentially-throwing callee whose calls must cross the language boundary
+// through a fenced thunk
+// (docs/design/error_handling.md#the-fenced-boundary-terminate-semantics).
+// Resolves the callee's exception specification if it is still unevaluated.
+auto IsCppThunkFenceRequired(Context& context, const clang::FunctionDecl* decl)
+    -> bool;
+
 // Returns whether the given C++ imported function requires a C++ thunk to be
 // used to call it. A C++ thunk is required for functions whose ABI uses any
 // type except void, pointer and reference types, and signed 32-bit and 64-bit

@@ -62,6 +62,8 @@ fn Packed(n: i32) {
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CNaturallyAligned.Main(i32 %n) #0 !dbg !12 {
 // CHECK:STDOUT: entry:
@@ -70,7 +72,7 @@ fn Packed(n: i32) {
 // CHECK:STDOUT:   call void @"_COp.51f3fb62cb986374:DefaultOrUnformed.Core.d4cda66b3640b619"(ptr %a.var), !dbg !18
 // CHECK:STDOUT:   %.loc25.n = getelementptr inbounds nuw [4 x i8], ptr %a.var, i32 0, i32 0, !dbg !19
 // CHECK:STDOUT:   store i32 %n, ptr %.loc25.n, align 4, !dbg !19
-// CHECK:STDOUT:   call void @_Z4TakeI16NaturallyAlignedEvRT_(ptr %a.var), !dbg !20
+// CHECK:STDOUT:   call void @_Z4TakeI16NaturallyAlignedEvRT_.carbon_thunk.r(ptr %a.var), !dbg !20
 // CHECK:STDOUT:   ret void, !dbg !21
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -90,97 +92,174 @@ fn Packed(n: i32) {
 // CHECK:STDOUT:   ret void, !dbg !29
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z4TakeI16NaturallyAlignedEvRT_(ptr noundef nonnull align 4 dereferenceable(4)) #3
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z4TakeI16NaturallyAlignedEvRT_.carbon_thunk.r(ptr noundef nonnull align 4 dereferenceable(4) %0) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.addr = alloca ptr, align 8
+// CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !22
+// CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !22, !nonnull !30, !align !31
+// CHECK:STDOUT:   invoke void @_Z4TakeI16NaturallyAlignedEvRT_(ptr noundef nonnull align 4 dereferenceable(4) %1)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CExtraAlignment.Main(i32 %n) #0 !dbg !30 {
+// CHECK:STDOUT: define void @_CExtraAlignment.Main(i32 %n) #0 !dbg !32 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %a.var = alloca [16 x i8], align 16, !dbg !33
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %a.var), !dbg !33
-// CHECK:STDOUT:   call void @"_COp.51f3fb62cb986374:DefaultOrUnformed.Core.34933c1c343bd645"(ptr %a.var), !dbg !33
-// CHECK:STDOUT:   %.loc33.n = getelementptr inbounds nuw [16 x i8], ptr %a.var, i32 0, i32 0, !dbg !34
-// CHECK:STDOUT:   store i32 %n, ptr %.loc33.n, align 4, !dbg !34
-// CHECK:STDOUT:   call void @_Z4TakeI14ExtraAlignmentEvRT_(ptr %a.var), !dbg !35
-// CHECK:STDOUT:   ret void, !dbg !36
+// CHECK:STDOUT:   %a.var = alloca [16 x i8], align 16, !dbg !35
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %a.var), !dbg !35
+// CHECK:STDOUT:   call void @"_COp.51f3fb62cb986374:DefaultOrUnformed.Core.34933c1c343bd645"(ptr %a.var), !dbg !35
+// CHECK:STDOUT:   %.loc33.n = getelementptr inbounds nuw [16 x i8], ptr %a.var, i32 0, i32 0, !dbg !36
+// CHECK:STDOUT:   store i32 %n, ptr %.loc33.n, align 4, !dbg !36
+// CHECK:STDOUT:   call void @_Z4TakeI14ExtraAlignmentEvRT_.carbon_thunk.r(ptr %a.var), !dbg !37
+// CHECK:STDOUT:   ret void, !dbg !38
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
 // CHECK:STDOUT: define internal void @_ZN14ExtraAlignmentC1Ev.carbon_thunk.(ptr noundef %return) #1 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
-// CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !37
-// CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !37
+// CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !39
+// CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !39
 // CHECK:STDOUT:   ret void
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: alwaysinline nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp:thunk:Default.52e7708693d29223.Core:ExtraAlignment.Cpp"(ptr sret([16 x i8]) %return) #2 !dbg !39 {
+// CHECK:STDOUT: define weak_odr void @"_COp:thunk:Default.52e7708693d29223.Core:ExtraAlignment.Cpp"(ptr sret([16 x i8]) %return) #2 !dbg !41 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @_ZN14ExtraAlignmentC1Ev.carbon_thunk.(ptr %return), !dbg !40
-// CHECK:STDOUT:   ret void, !dbg !40
+// CHECK:STDOUT:   call void @_ZN14ExtraAlignmentC1Ev.carbon_thunk.(ptr %return), !dbg !42
+// CHECK:STDOUT:   ret void, !dbg !42
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z4TakeI14ExtraAlignmentEvRT_(ptr noundef nonnull align 16 dereferenceable(16)) #3
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z4TakeI14ExtraAlignmentEvRT_.carbon_thunk.r(ptr noundef nonnull align 16 dereferenceable(16) %0) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.addr = alloca ptr, align 8
+// CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !39
+// CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !39, !nonnull !30, !align !43
+// CHECK:STDOUT:   invoke void @_Z4TakeI14ExtraAlignmentEvRT_(ptr noundef nonnull align 16 dereferenceable(16) %1)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CPacked.Main(i32 %n) #0 !dbg !41 {
+// CHECK:STDOUT: define void @_CPacked.Main(i32 %n) #0 !dbg !44 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %a.var = alloca [4 x i8], align 1, !dbg !44
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %a.var), !dbg !44
-// CHECK:STDOUT:   call void @"_COp.51f3fb62cb986374:DefaultOrUnformed.Core.3e10857902c69c1a"(ptr %a.var), !dbg !44
-// CHECK:STDOUT:   %.loc42.n = getelementptr inbounds nuw [4 x i8], ptr %a.var, i32 0, i32 0, !dbg !45
-// CHECK:STDOUT:   store i32 %n, ptr %.loc42.n, align 4, !dbg !45
-// CHECK:STDOUT:   call void @_Z4TakeI6PackedEvRT_(ptr %a.var), !dbg !46
-// CHECK:STDOUT:   ret void, !dbg !47
+// CHECK:STDOUT:   %a.var = alloca [4 x i8], align 1, !dbg !47
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %a.var), !dbg !47
+// CHECK:STDOUT:   call void @"_COp.51f3fb62cb986374:DefaultOrUnformed.Core.3e10857902c69c1a"(ptr %a.var), !dbg !47
+// CHECK:STDOUT:   %.loc42.n = getelementptr inbounds nuw [4 x i8], ptr %a.var, i32 0, i32 0, !dbg !48
+// CHECK:STDOUT:   store i32 %n, ptr %.loc42.n, align 4, !dbg !48
+// CHECK:STDOUT:   call void @_Z4TakeI6PackedEvRT_.carbon_thunk.r(ptr %a.var), !dbg !49
+// CHECK:STDOUT:   ret void, !dbg !50
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
 // CHECK:STDOUT: define internal void @_ZN6PackedC1Ev.carbon_thunk.(ptr noundef %return) #1 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
-// CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !48
-// CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !48
+// CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !51
+// CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !51
 // CHECK:STDOUT:   ret void
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: alwaysinline nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp:thunk:Default.ca2b917a39954a06.Core:Packed.Cpp"(ptr sret([4 x i8]) %return) #2 !dbg !50 {
+// CHECK:STDOUT: define weak_odr void @"_COp:thunk:Default.ca2b917a39954a06.Core:Packed.Cpp"(ptr sret([4 x i8]) %return) #2 !dbg !53 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @_ZN6PackedC1Ev.carbon_thunk.(ptr %return), !dbg !51
-// CHECK:STDOUT:   ret void, !dbg !51
+// CHECK:STDOUT:   call void @_ZN6PackedC1Ev.carbon_thunk.(ptr %return), !dbg !54
+// CHECK:STDOUT:   ret void, !dbg !54
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z4TakeI6PackedEvRT_(ptr noundef nonnull align 1 dereferenceable(4)) #3
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z4TakeI6PackedEvRT_.carbon_thunk.r(ptr noundef nonnull align 1 dereferenceable(4) %0) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.addr = alloca ptr, align 8
+// CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !51
+// CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !51, !nonnull !30
+// CHECK:STDOUT:   invoke void @_Z4TakeI6PackedEvRT_(ptr noundef nonnull align 1 dereferenceable(4) %1)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
-// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #4
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #3
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @"_COp.51f3fb62cb986374:DefaultOrUnformed.Core.d4cda66b3640b619"(ptr sret([4 x i8]) %return) #0 !dbg !52 {
-// CHECK:STDOUT:   call void @"_COp:thunk:Default.c846b89dd79c7366.Core:NaturallyAligned.Cpp"(ptr %return), !dbg !54
-// CHECK:STDOUT:   ret void, !dbg !55
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @"_COp.51f3fb62cb986374:DefaultOrUnformed.Core.34933c1c343bd645"(ptr sret([16 x i8]) %return) #0 !dbg !56 {
-// CHECK:STDOUT:   call void @"_COp:thunk:Default.52e7708693d29223.Core:ExtraAlignment.Cpp"(ptr %return), !dbg !57
+// CHECK:STDOUT: define linkonce_odr void @"_COp.51f3fb62cb986374:DefaultOrUnformed.Core.d4cda66b3640b619"(ptr sret([4 x i8]) %return) #0 !dbg !55 {
+// CHECK:STDOUT:   call void @"_COp:thunk:Default.c846b89dd79c7366.Core:NaturallyAligned.Cpp"(ptr %return), !dbg !57
 // CHECK:STDOUT:   ret void, !dbg !58
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @"_COp.51f3fb62cb986374:DefaultOrUnformed.Core.3e10857902c69c1a"(ptr sret([4 x i8]) %return) #0 !dbg !59 {
-// CHECK:STDOUT:   call void @"_COp:thunk:Default.ca2b917a39954a06.Core:Packed.Cpp"(ptr %return), !dbg !60
+// CHECK:STDOUT: define linkonce_odr void @"_COp.51f3fb62cb986374:DefaultOrUnformed.Core.34933c1c343bd645"(ptr sret([16 x i8]) %return) #0 !dbg !59 {
+// CHECK:STDOUT:   call void @"_COp:thunk:Default.52e7708693d29223.Core:ExtraAlignment.Cpp"(ptr %return), !dbg !60
 // CHECK:STDOUT:   ret void, !dbg !61
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr void @"_COp.51f3fb62cb986374:DefaultOrUnformed.Core.3e10857902c69c1a"(ptr sret([4 x i8]) %return) #0 !dbg !62 {
+// CHECK:STDOUT:   call void @"_COp:thunk:Default.ca2b917a39954a06.Core:Packed.Cpp"(ptr %return), !dbg !63
+// CHECK:STDOUT:   ret void, !dbg !64
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z4TakeI16NaturallyAlignedEvRT_(ptr noundef nonnull align 4 dereferenceable(4)) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #5 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z4TakeI14ExtraAlignmentEvRT_(ptr noundef nonnull align 16 dereferenceable(16)) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z4TakeI6PackedEvRT_(ptr noundef nonnull align 1 dereferenceable(4)) #4
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
 // CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 2, 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 2, 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 2, 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #2 = { alwaysinline nounwind }
-// CHECK:STDOUT: attributes #3 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #4 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT: attributes #3 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT: attributes #4 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #6 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -216,36 +295,39 @@ fn Packed(n: i32) {
 // CHECK:STDOUT: !27 = !{!28}
 // CHECK:STDOUT: !28 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
 // CHECK:STDOUT: !29 = !DILocation(line: 7, column: 8, scope: !25)
-// CHECK:STDOUT: !30 = distinct !DISubprogram(name: "ExtraAlignment", linkageName: "_CExtraAlignment.Main", scope: null, file: !1, line: 29, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !31)
-// CHECK:STDOUT: !31 = !{!32}
-// CHECK:STDOUT: !32 = !DILocalVariable(arg: 1, scope: !30, type: !15)
-// CHECK:STDOUT: !33 = !DILocation(line: 30, column: 3, scope: !30)
-// CHECK:STDOUT: !34 = !DILocation(line: 33, column: 3, scope: !30)
-// CHECK:STDOUT: !35 = !DILocation(line: 34, column: 3, scope: !30)
-// CHECK:STDOUT: !36 = !DILocation(line: 29, column: 1, scope: !30)
-// CHECK:STDOUT: !37 = !{!38, !38, i64 0}
-// CHECK:STDOUT: !38 = !{!"p1 _ZTS14ExtraAlignment", !24, i64 0}
-// CHECK:STDOUT: !39 = distinct !DISubprogram(name: "Op", linkageName: "_COp:thunk:Default.52e7708693d29223.Core:ExtraAlignment.Cpp", scope: null, file: !1, line: 11, type: !26, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !40 = !DILocation(line: 11, column: 20, scope: !39)
-// CHECK:STDOUT: !41 = distinct !DISubprogram(name: "Packed", linkageName: "_CPacked.Main", scope: null, file: !1, line: 37, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !42)
-// CHECK:STDOUT: !42 = !{!43}
-// CHECK:STDOUT: !43 = !DILocalVariable(arg: 1, scope: !41, type: !15)
-// CHECK:STDOUT: !44 = !DILocation(line: 38, column: 3, scope: !41)
-// CHECK:STDOUT: !45 = !DILocation(line: 42, column: 3, scope: !41)
-// CHECK:STDOUT: !46 = !DILocation(line: 43, column: 3, scope: !41)
-// CHECK:STDOUT: !47 = !DILocation(line: 37, column: 1, scope: !41)
-// CHECK:STDOUT: !48 = !{!49, !49, i64 0}
-// CHECK:STDOUT: !49 = !{!"p1 _ZTS6Packed", !24, i64 0}
-// CHECK:STDOUT: !50 = distinct !DISubprogram(name: "Op", linkageName: "_COp:thunk:Default.ca2b917a39954a06.Core:Packed.Cpp", scope: null, file: !1, line: 15, type: !26, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !51 = !DILocation(line: 15, column: 32, scope: !50)
-// CHECK:STDOUT: !52 = distinct !DISubprogram(name: "Op", linkageName: "_COp.51f3fb62cb986374:DefaultOrUnformed.Core.d4cda66b3640b619", scope: null, file: !53, line: 9, type: !26, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !53 = !DIFile(filename: "min_prelude/parts/default.carbon", directory: "")
-// CHECK:STDOUT: !54 = !DILocation(line: 9, column: 28, scope: !52)
-// CHECK:STDOUT: !55 = !DILocation(line: 9, column: 21, scope: !52)
-// CHECK:STDOUT: !56 = distinct !DISubprogram(name: "Op", linkageName: "_COp.51f3fb62cb986374:DefaultOrUnformed.Core.34933c1c343bd645", scope: null, file: !53, line: 9, type: !26, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !57 = !DILocation(line: 9, column: 28, scope: !56)
-// CHECK:STDOUT: !58 = !DILocation(line: 9, column: 21, scope: !56)
-// CHECK:STDOUT: !59 = distinct !DISubprogram(name: "Op", linkageName: "_COp.51f3fb62cb986374:DefaultOrUnformed.Core.3e10857902c69c1a", scope: null, file: !53, line: 9, type: !26, spFlags: DISPFlagDefinition, unit: !0)
+// CHECK:STDOUT: !30 = !{}
+// CHECK:STDOUT: !31 = !{i64 4}
+// CHECK:STDOUT: !32 = distinct !DISubprogram(name: "ExtraAlignment", linkageName: "_CExtraAlignment.Main", scope: null, file: !1, line: 29, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !33)
+// CHECK:STDOUT: !33 = !{!34}
+// CHECK:STDOUT: !34 = !DILocalVariable(arg: 1, scope: !32, type: !15)
+// CHECK:STDOUT: !35 = !DILocation(line: 30, column: 3, scope: !32)
+// CHECK:STDOUT: !36 = !DILocation(line: 33, column: 3, scope: !32)
+// CHECK:STDOUT: !37 = !DILocation(line: 34, column: 3, scope: !32)
+// CHECK:STDOUT: !38 = !DILocation(line: 29, column: 1, scope: !32)
+// CHECK:STDOUT: !39 = !{!40, !40, i64 0}
+// CHECK:STDOUT: !40 = !{!"p1 _ZTS14ExtraAlignment", !24, i64 0}
+// CHECK:STDOUT: !41 = distinct !DISubprogram(name: "Op", linkageName: "_COp:thunk:Default.52e7708693d29223.Core:ExtraAlignment.Cpp", scope: null, file: !1, line: 11, type: !26, spFlags: DISPFlagDefinition, unit: !0)
+// CHECK:STDOUT: !42 = !DILocation(line: 11, column: 20, scope: !41)
+// CHECK:STDOUT: !43 = !{i64 16}
+// CHECK:STDOUT: !44 = distinct !DISubprogram(name: "Packed", linkageName: "_CPacked.Main", scope: null, file: !1, line: 37, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !45)
+// CHECK:STDOUT: !45 = !{!46}
+// CHECK:STDOUT: !46 = !DILocalVariable(arg: 1, scope: !44, type: !15)
+// CHECK:STDOUT: !47 = !DILocation(line: 38, column: 3, scope: !44)
+// CHECK:STDOUT: !48 = !DILocation(line: 42, column: 3, scope: !44)
+// CHECK:STDOUT: !49 = !DILocation(line: 43, column: 3, scope: !44)
+// CHECK:STDOUT: !50 = !DILocation(line: 37, column: 1, scope: !44)
+// CHECK:STDOUT: !51 = !{!52, !52, i64 0}
+// CHECK:STDOUT: !52 = !{!"p1 _ZTS6Packed", !24, i64 0}
+// CHECK:STDOUT: !53 = distinct !DISubprogram(name: "Op", linkageName: "_COp:thunk:Default.ca2b917a39954a06.Core:Packed.Cpp", scope: null, file: !1, line: 15, type: !26, spFlags: DISPFlagDefinition, unit: !0)
+// CHECK:STDOUT: !54 = !DILocation(line: 15, column: 32, scope: !53)
+// CHECK:STDOUT: !55 = distinct !DISubprogram(name: "Op", linkageName: "_COp.51f3fb62cb986374:DefaultOrUnformed.Core.d4cda66b3640b619", scope: null, file: !56, line: 9, type: !26, spFlags: DISPFlagDefinition, unit: !0)
+// CHECK:STDOUT: !56 = !DIFile(filename: "min_prelude/parts/default.carbon", directory: "")
+// CHECK:STDOUT: !57 = !DILocation(line: 9, column: 28, scope: !55)
+// CHECK:STDOUT: !58 = !DILocation(line: 9, column: 21, scope: !55)
+// CHECK:STDOUT: !59 = distinct !DISubprogram(name: "Op", linkageName: "_COp.51f3fb62cb986374:DefaultOrUnformed.Core.34933c1c343bd645", scope: null, file: !56, line: 9, type: !26, spFlags: DISPFlagDefinition, unit: !0)
 // CHECK:STDOUT: !60 = !DILocation(line: 9, column: 28, scope: !59)
 // CHECK:STDOUT: !61 = !DILocation(line: 9, column: 21, scope: !59)
+// CHECK:STDOUT: !62 = distinct !DISubprogram(name: "Op", linkageName: "_COp.51f3fb62cb986374:DefaultOrUnformed.Core.3e10857902c69c1a", scope: null, file: !56, line: 9, type: !26, spFlags: DISPFlagDefinition, unit: !0)
+// CHECK:STDOUT: !63 = !DILocation(line: 9, column: 28, scope: !62)
+// CHECK:STDOUT: !64 = !DILocation(line: 9, column: 21, scope: !62)
 // CHECK:STDOUT:

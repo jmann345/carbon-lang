@@ -268,18 +268,19 @@
     {
       "id": "W-016",
       "title": "EH-B0: --cpp-exceptions={auto,none,catch} driver flag + fenced (try/catch-terminate) thunks",
-      "kind": "design-needed",
+      "kind": "implemented",
       "subsystem": "toolchain/driver + toolchain/check/cpp/thunk",
       "size": "S",
       "bullet": "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)",
       "evidence": [
-        "fork/design-sprint/error-handling.md:206-230",
-        "fork/design-sprint/error-handling.md:497-501",
-        "fork/design-sprint/error-handling.md:166-181",
-        "toolchain/base/clang_invocation.cpp"
+        "toolchain/driver/compile_options.cpp (CppExceptions flag, appended after user clang args)",
+        "toolchain/check/cpp/thunk.cpp (EST_BasicNoexcept fence, gated on LangOpts.CXXExceptions)",
+        "toolchain/check/cpp/import.cpp (fail-closed TODO when a required fence cannot be built)",
+        "fork/conformance/programs/error_handling/cpp_exceptions_{none_mode,auto_catch,fence_terminate}.carbon",
+        "fork/b0-exc/plan.md"
       ],
       "blocked_by": ["F-006", "W-005"],
-      "notes": "Absorbs the exception-configuration half of the generic exception-interop item (clang_invocation.cpp has no exception-mode plumbing at all — grep -i except matches only the license header). Stage B0 of recommended Option B: replaces today's UB (C++ exception crossing into unwind-less Carbon frames) with a documented terminate-at-boundary contract; closes the milestone exception-config sub-bullet. No W-dependencies — paper says land first regardless of fork outcome. Threading doc freeze (W-020) waits on this flag's default (coherence risk 6)."
+      "notes": "LANDED on claude/carbon-fork-0-1-b0 (PR #2; gate run 22 green, release fork-toolchain-22-d2dad50e4). Replaces the prior UB with the documented terminate-at-boundary contract; auto resolves from the final Clang LangOpts (SF-4, no arg-string scanning). DEVIATION recorded per plan risk 9: the fence terminates via the thunk's EST_BasicNoexcept spec without a boundary-identifying diagnostic message; that diagnostic is deferred to W-019/B3 (B0 SF-1 decision). Threading doc freeze (W-020) unblocked: the flag default is auto."
     },
     {
       "id": "W-017",
@@ -324,10 +325,10 @@
         "fork/design-sprint/error-handling.md:217-237",
         "fork/design-sprint/error-handling.md:506-508",
         "fork/design-sprint/error-handling.md:536-542",
-        "fork/conformance/programs/error_handling/cpp_exception_interop.carbon:6"
+        "fork/conformance/programs/error_handling/cpp_exception_interop.carbon (SKIP block, B3 blockers recut post-B0)"
       ],
       "blocked_by": ["F-006", "W-016", "W-018", "W-007"],
-      "notes": "Absorbs the calling-throwing-C++/exporting-errors half of the generic exception-interop item (its conformance SKIP: no design for calling throwing C++ from Carbon or exporting Carbon errors as std::expected/exceptions). Closes milestone sub-bullets 3+4 (automatic throwing-C++ import, expected-shaped export). Cpp.Exception holds exception_ptr; C++17-compatible expected header in install tree. Lands in the five-way-contention files (W-007). Windows/W-059 must budget MSVC-funclet variant (error-handling.md:540-542)."
+      "notes": "Absorbs the calling-throwing-C++/exporting-errors half of the generic exception-interop item (its conformance SKIP: no design for calling throwing C++ from Carbon or exporting Carbon errors as std::expected/exceptions). Closes milestone sub-bullets 3+4 (automatic throwing-C++ import, expected-shaped export). Cpp.Exception holds exception_ptr; C++17-compatible expected header in install tree. Lands in the five-way-contention files (W-007). Windows/W-059 must budget MSVC-funclet variant (error-handling.md:540-542). B0 follow-up folded in (SF-1 deferral): add the boundary-identifying diagnostic at the fence when catching thunks land, so terminate-at-boundary failures name the C++ callee instead of a bare noexcept abort."
     },
     {
       "id": "W-020",

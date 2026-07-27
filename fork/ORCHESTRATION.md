@@ -10,7 +10,10 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-07-20 ~01:10Z_ (scope map: active branches are file-disjoint; expected merge collisions only in fork/ state files)
+_Last updated: 2026-07-27 (w5 gate green, PR #3 open)._ Note: this copy
+lives on the w5 branch; the b0 branch carries its own edits to this file
+and to the rulebook (R26) — reconcile fork/ state files at whichever PR
+merges second (expected collision point per the scope map).
 
 ## Branches
 
@@ -19,8 +22,9 @@ _Last updated: 2026-07-20 ~01:10Z_ (scope map: active branches are file-disjoint
 | `claude/carbon-fork-0-1-7mwfb7` | Main fork branch; green (post-merge verified). Contains: fork/ process docs, conformance suite (96+ programs), match slice 1, error-handling + unions design docs |
 | `claude/carbon-fork-0-1-7mwfb7-w4-match` | MERGED into fork branch; keep for history |
 | `claude/carbon-fork-0-1-7mwfb7-design-docs` | ACTIVE: F-008..F-011 doc authoring. Scope: docs/design/** only |
-| `claude/carbon-fork-0-1-7mwfb7-w5-choice` | ACTIVE: W5 S1 payload choices. Scope: check/handle_choice + match alt-patterns + choice testdata/programs |
-| `claude/carbon-fork-0-1-7mwfb7-b0-exceptions` | ACTIVE: B0 exception boundary (gate dispatched). Scope: driver/compile_options, check/cpp/thunk.cpp, error_handling programs |
+| `claude/carbon-fork-0-1-b0` | GATE-GREEN; **PR #2 open into trunk, awaiting user review** (release `fork-toolchain-22-d2dad50e4`). |
+| `claude/carbon-fork-0-1-w5` | GATE-GREEN (run 26, release `fork-toolchain-26-f40b4980f`); **PR #3 open into trunk, awaiting user review**. Six defects fixed in five adversarially-reviewed rounds during landing (see decision-log W5-S1 addendum). |
+| `claude/carbon-fork-0-1-7mwfb7-{b0-exceptions,w5-choice,design-docs}` | STRANDED source branches; b0 + w5 fully reconstructed and superseded by the PRs above. design-docs reconstruction is NEXT, gated on the F-008..F-011 veto digest (presented 2026-07-20, unanswered). |
 
 ## Scoreboard (source of truth: run the suite, don't trust this line)
 

@@ -1,1 +1,1 @@
-2026-07-27T18:41:35Z regenerate goldens for the follow-ups batch (6 empty-golden testdata files; R26 two passes)
+2026-07-27T19:04:56Z pass 2 (R26): converge locNN after 550-line golden generation for the follow-ups batch

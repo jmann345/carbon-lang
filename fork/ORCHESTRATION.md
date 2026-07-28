@@ -63,14 +63,14 @@ on its first merged-tree run — renamed to `seed` (this file's commit).
 2.  Before W5-S2: re-platform match onto the pattern machinery (viability
     review finding — current impl is if/else-chain desugar).
 3.  W5 slices 2-4; error-handling B1/B2/B3; threading defect fixes (F-008).
-4.  Recorded follow-ups from the landing reviews: DONE on
-    `claude/carbon-fork-0-1-followups` (goldens empty pending runner
-    autoupdate, R15/R19): b0 fence-unbuildable fail_ golden (deleted
-    copy+move by-value param shape); w5 OneShot single-alt-payload testdata
-    (check+lower); multi-hop export-import scrutinee test; `choice C { A,
-    A }` duplicate-name diagnostic + fail_ test (pre-0.1); fallback-TODO
-    reword; gh_pages workflow fork guards. Remaining: S2 name-to-index
-    metadata replacing constant excavation.
+4.  Landing-review follow-ups: MERGED to trunk (PR #5, gate run 31,
+    goldens at R26 fixpoint; the fence-unbuildable golden's predicted
+    error was CONFIRMED by the runner). Remaining follow-up: S2
+    name-to-index metadata replacing constant excavation (rides S2c).
+    The match re-platform plan (fork/match-replatform/plan.md on
+    `claude/carbon-fork-0-1-match-replatform`) passed two-adversary
+    review with text amendments applied — implementation-approved;
+    S2a is the next implementation slice.
 5.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI; W-066 match usefulness diagnostics.
 

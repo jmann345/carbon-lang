@@ -56,8 +56,13 @@ goldens. "Byte-equivalent-or-better observable behavior" means: identical
 diagnostics (strings and, where prescribed below, locations), identical
 runtime behavior of every conformance program, and — the strong arbiter —
 **byte-identical LLVM output**: lower/testdata/match/basic.carbon's golden
-diff after S2a must be empty or loc-comment-only. One deliberate co-change
-(the guard TODO string) is called out as sub-fork RF-3, never slipped in.
+diff after S2a must be empty or loc-comment-only. Two deliberate co-changes
+are called out as sub-forks and never slipped in: the guard TODO string
+(RF-3), and constant-expression-pattern admission (RF-4), which flips
+fail_todo_non_int_literal_case.carbon and deletes its pinned diagnostic.
+RF-4 lands as a separate second commit within S2a, sequenced after the
+lower-golden byte-equivalence arbiter has been proven on the pre-RF-4
+state.
 
 ## 1. Current state (claims re-derived from the tree at b81d473)
 
@@ -115,10 +120,12 @@ handle_binding_pattern.cpp:295-562, which reads the innermost
 `decl_introducer_state_stack` entry (:324-325) and switches on
 `full_pattern_stack().CurrentKind()` (:416-560) — `NotInEitherParamList` is
 `CARBON_FATAL("Unreachable")` (:558-559). The driving sequence for a
-statement-context pattern is proven by the `for` loop:
-`pattern_block_stack().Push()` + `full_pattern_stack().PushNameBindingDecl()`
+statement-context pattern is proven by the `for` loop: an implicit
+introducer push (`decl_introducer_state_stack().Push<Lex::TokenKind::Let>()`,
+handle_loop_statement.cpp:136) + `pattern_block_stack().Push()` +
+`full_pattern_stack().PushNameBindingDecl()`
 
--   `BeginExprRegionForPattern` (handle_loop_statement.cpp:137-139), pattern
+-   `BeginExprRegionForPattern` (handle_loop_statement.cpp:136-139), pattern
     popped by way of `EndExprRegionForPattern` + `PopPattern` (:146,173),
     `StartPatternInitializer`/`EndPatternInitializer` around the scrutinee
     (:151,250), `LocalPatternMatch` + `PopFullPattern` (:255-256). The finished
@@ -137,8 +144,11 @@ the pattern-inst representation + MatchContext engine itself.**
 **Design authority for the semantics we must implement:** p002188 defines
 alternative patterns (match iff active alternative matches and its arguments
 match the tuple pattern; parens present iff the alternative has a parameter
-list — p002188:442-473), guards (on `case` only, pattern bindings in scope
-in the guard, :538-554), and refutability/exhaustiveness (:555-604;
+list — p002188:442-473), guards (on **both `case` and `default` clauses** —
+p002188:552-553, pattern_matching.md:814-815 — with pattern bindings in
+scope in the guard, :538-554; the fork's parser attaches guard nodes to
+`case` only, a gap recorded as a scope trade in §3.4), and
+refutability/exhaustiveness (:555-604;
 non-exhaustive match without `default` is an error, :633-641).
 
 ### 1.2 What the fork's match is today
@@ -199,9 +209,10 @@ impl-lookup declaration with no runtime semantics. The fork's match
 1.  **Pattern construction** — `case` patterns become real pattern SemIR by
     letting the parse tree's pattern nodes reach their ordinary check
     handlers **inside a per-arm full-pattern context**, mirroring the
-    `for`-loop driving sequence (handle_loop_statement.cpp:137-139,146):
-    `MatchCaseIntroducer` pushes scope + full-pattern + pattern block +
-    expr region; `MatchCase` pops the checked pattern root. The index sniff
+    `for`-loop driving sequence (handle_loop_statement.cpp:136-139,146):
+    `MatchCaseIntroducer` pushes scope + implicit introducer state (R-5) +
+    full-pattern + pattern block + expr region; `MatchCase` pops the
+    checked pattern root. The index sniff
     is deleted; unsupported shapes are diagnosed by inspecting the _checked
     pattern inst_, not raw node indices.
 2.  **Refutable matching** — a new **`MatchCaseState`** added to
@@ -214,13 +225,22 @@ impl-lookup declaration with no runtime semantics. The fork's match
     -   _Test pass_ (in the arm's test block): `ExprPattern` → splice its
         region (`InsertHere` exists, pattern_match.cpp:298-337), classify,
         and emit the compare; alternative-pattern roots → emit
-        `ClassElementAccess .discriminant` + compare. Result: cond.
+        `ClassElementAccess .discriminant` + compare. Result: cond. The
+        test pass **must prune at binding-pattern roots**: descending into
+        bindings would consume `bind_name_map` entries by way of
+        `std::exchange` (pattern_match.cpp:430-433) that the bind pass
+        still needs, tripping the used-twice CHECK (:437).
     -   _Bind pass_ (in the arm's body block, only when the pattern
         contains bindings — S2b+): irrefutable residue initialized from
-        payload extraction by way of the existing `LocalState` machinery. This
-        keeps `MatchContext` single-block per invocation — no CFG inside
-        the engine, which is what makes the extension small and
-        upstream-mergeable.
+        payload extraction by way of the existing `LocalState` machinery.
+        The invariant this preserves is not "single-block per invocation" —
+        it is that **the engine never emits dispatch CFG**:
+        BranchIf/else/convergence stay in handle_match.cpp, while
+        `InsertHere` may legitimately emit branches when splicing a
+        multi-block expr region (pattern_match.cpp:317-336). S2a regions
+        are single-block; S2d guard regions will be multi-block, and the
+        splice mechanism already handles that. This division of labor is
+        what makes the extension small and upstream-mergeable.
 
 ### 2.2 What replaces the EqWith chain
 
@@ -235,7 +255,7 @@ the discriminant integer type exactly as today. The _chain structure_
 realization of first-match-wins, and W4/W5 goldens prove it lowers.
 Upstream's comparison approach for patterns does not exist yet (§1.1
 ExprPattern TODO); if upstream later lands its own expression-pattern
-semantics, the divergence-risk register entry (RF-6/R-6) triggers
+semantics, the divergence-risk register entry (R-6) triggers
 reconciliation.
 
 ### 2.3 SemIR representation
@@ -266,7 +286,11 @@ node-stack scrutinee protocol (`PeekScrutinee`, handle_match.cpp:40-45) is
 retained; the scrutinee's _type_ additionally becomes available to pattern
 checking by way of the case-arm context (needed by S2c's alternative resolution)
 — recommended as a small match-scrutinee stack on `Context`, mirroring
-`match_first_context()` (context.h:238-239) in shape.
+`match_first_context()` (context.h:238-239) in shape. The case-arm context
+also carries the **`MatchCaseIntroducer` node id**: preserved diagnostics
+are pinned to the case token (§0.3, §3.1), and handle_binding_pattern has
+no other cheap access to that token, so the combined TODO for binding
+roots keeps its location only if the id is plumbed through here.
 
 ### 2.5 Forward compatibility
 
@@ -282,22 +306,26 @@ through the full R11 loop and the R21 gate; scoreboard floor 73 PASS /
 
 | #   | Name                                                           | Size | What flips                                                     |
 | --- | -------------------------------------------------------------- | ---- | -------------------------------------------------------------- |
-| S2a | Re-platform core: pattern SemIR + refutable engine              | M/L  | nothing flips; behavior byte-equivalent (§0.3); goldens restructure |
+| S2a | Re-platform core: pattern SemIR + refutable engine              | M/L  | only the two §0.3 co-changes flip (RF-3 guard string; RF-4 flips fail_todo_non_int_literal_case); otherwise byte-equivalent; goldens restructure |
 | S2b | Bindings in case arms (`case a: i32`) + arm-scope discipline    | M    | fail_todo_binding_pattern → success golden                     |
 | S2c | Alternative patterns with payload destructuring (the W5-S2 slice) | L  | fail_todo_choice_payload_pattern flips; roundtrip conformance un-SKIPs |
-| S2d | Guards (`case P if (E)`)                                        | S/M  | fail_todo_guard flips; 2 conformance programs un-SKIP (75 PASS) |
+| S2d | Guards (`case P if (E)`)                                        | M    | fail_todo_guard flips; 2 conformance programs un-SKIP (75 PASS) |
 | S2e | Choice exhaustiveness (SF-7): full coverage ⇒ no `default`      | S/M  | fail_todo_no_default splits; sum_types.md example compiles     |
 
 ### 3.1 S2a — minimal re-platform (byte-equivalent-or-better)
 
 In-slice:
 
--   `MatchCaseIntroducer`: delete the index peeks; push arm scope +
-    `full_pattern_stack` frame (recommended: new `Kind::MatchCaseArm`, so
-    handle_binding_pattern can gate case-arm bindings to the S2b TODO
-    explicitly — RF-1 companion) + `pattern_block_stack` +
-    `BeginExprRegionForPattern`, mirroring
-    handle_loop_statement.cpp:137-139.
+-   `MatchCaseIntroducer`: delete the index peeks; push arm scope + an
+    **implicit introducer state** (R-5's resolution, the for-loop precedent
+    at handle_loop_statement.cpp:136 — required in S2a, not S2b: binding
+    nodes reach `HandleAnyBindingPattern`, whose introducer read at
+    :324-325 precedes the `CurrentKind()` switch, and by statement position
+    the stack is otherwise empty) + `full_pattern_stack` frame
+    (recommended: new `Kind::MatchCaseArm`, so handle_binding_pattern can
+    gate case-arm bindings to the S2b TODO explicitly — RF-1 companion) +
+    `pattern_block_stack` + `BeginExprRegionForPattern`, mirroring
+    handle_loop_statement.cpp:136-139.
 -   `MatchCase`: `EndExprRegionForPattern`, `PopPattern`; classify the
     root: integer-literal expr pattern → EqWith test; payload-free
     alternative constant → discriminant test (reusing
@@ -305,28 +333,40 @@ In-slice:
     payload alternative's constructor (FunctionType) → payload TODO;
     binding-pattern root → the W4 combined TODO (S2b's flip is S2b's);
     other shapes → existing strings, **emitted against the introducer's
-    node id** so diagnostic locations do not move (§0.3). The test emission
+    node id** so diagnostic locations do not move (§0.3) — the id is
+    carried in the case-arm context (§2.4). The test emission
     moves into `MatchCaseState` in pattern_match.cpp (RF-1), entry declared
     in pattern_match.h.
--   Emit the per-arm `NameBindingDecl` (§2.3); pop the pattern context
-    symmetrically on every path including TODO early-outs
-    (`VerifyOnFinish` CHECKs at full_pattern_stack.h:197-201 make imbalance
-    a deterministic crash — good).
+-   Emit the per-arm `NameBindingDecl` (§2.3), amending its doc comment in
+    the same commit (typed_insts.h:1319-1320 currently says a declaration
+    "introduced with `let` or `var`"); pop the pattern context
+    symmetrically on every **success** path (`VerifyOnFinish` CHECKs at
+    full_pattern_stack.h:197-201 make imbalance a deterministic crash on
+    passing programs). Symmetric popping after a TODO early-out is _not_
+    required: a TODO aborts checking before `FinishRun` ever reaches
+    `VerifyOnFinish` (check_unit.cpp:100-104, :628), so it is unverifiable
+    dead work — see R-2.
 -   Guard nodes now _reached_: keep TODO, string consolidates — RF-3.
 -   The handle_name.cpp:191-220 designator special case is _kept_ in S2a
     and deleted in S2c.
 -   Stretch (RF-4): admit `case -1` and other constant integer expr
     patterns — strictly better; default is to take it since the
     classification is by checked-inst, making the literal-only restriction
-    _more_ work than the general constant.
+    _more_ work than the general constant. This is the **second deliberate
+    co-change** (§0.3): it flips fail_todo_non_int_literal_case.carbon and
+    deletes its pinned diagnostic, so it lands as a **separate commit
+    within S2a**, sequenced after the lower-golden byte-equivalence arbiter
+    has been proven on the pre-RF-4 state.
 
 Exit criteria: `bazel test //toolchain/...` green after R26 fixpoint;
 conformance 73 PASS / 34 SKIP / 0 FAIL with identical EXPECT outputs; every
-§1.2 TODO string byte-identical except the RF-3 guard co-change
-(decision-log entry + SKIP-evidence refresh in the same slice);
+§1.2 TODO string byte-identical except the two §0.3 deliberate co-changes —
+the RF-3 guard string and RF-4's flip of
+fail_todo_non_int_literal_case.carbon (each with a decision-log entry +
+SKIP-evidence refresh in the same slice);
 **lower/testdata/match/basic.carbon golden diff empty or loc-only** (the
-byte-equivalence arbiter); fail_todo goldens diff loc-only where strings
-are preserved.
+byte-equivalence arbiter), proven on the pre-RF-4 commit before the RF-4
+commit lands; fail_todo goldens diff loc-only where strings are preserved.
 
 Golden churn: all 15 check/testdata/match files (pattern blocks +
 `expr_pattern` insts appear), zero parse-golden churn, lower churn asserted
@@ -338,8 +378,10 @@ Golden churn: all 15 check/testdata/match files (pattern blocks +
 `ValueBindingPattern` under `Kind::MatchCaseArm`; test pass contributes no
 condition (irrefutable); bind pass runs in the arm's body block by way of
 `LocalState`. `default` stays required. Hard parts, budgeted: (a) the
-`decl_introducer_state_stack` read (handle_binding_pattern.cpp:324-325) has
-no `let`/`var` introducer in a case arm — risk R-5; (b) name-scope
+`decl_introducer_state_stack` coupling (handle_binding_pattern.cpp:324-325)
+is discharged in S2a by R-5's implicit introducer push; S2b's job is to
+verify modifier behavior under that introducer kind with failing testdata;
+(b) name-scope
 discipline: binding visible in guard+body only, with failing testdata for
 sibling-arm and post-match leakage; (c) `var`-mode case bindings and `ref`
 stay TODO (new precise string, recorded).
@@ -370,6 +412,17 @@ edges converging on the next arm's test block — a handle_match.cpp CFG
 change, engine untouched. fail_todo_guard flips; match_guard_binding.carbon
 and project/most_features_missing_match.carbon un-SKIP (PASS floor rises to
 75); differential pair for guards added.
+
+Two recorded notes. **Scope trade (recorded, veto-able per §6):** S2d
+implements guards on `case` clauses only. Design authority extends guards
+to `default` clauses too (p002188:552-553; pattern_matching.md:814-815),
+but the fork's parser attaches guard nodes only to `case`
+(parse/handle_match.cpp:151-219 has no `default`-guard production) — the
+gap is parse + check, and `default`-clause guards are recorded as a work
+item with a decision-log entry at S2d landing. **Sizing: M, not S/M** —
+the guard expression's nodes precede `MatchCase` in postorder, so
+capturing the guard requires its own expr-region plumbing threaded through
+the case-arm context.
 
 ### 3.5 S2e — choice exhaustiveness (SF-7)
 
@@ -408,11 +461,15 @@ fail_choice_nonexhaustive goldens.
     diagnostic pointing at the wrong token — S2a testdata includes a
     deliberately-failing conversion inside an arm to pin diagnostic locs.
 -   **R-2. Scope-stack imbalance.** MatchCaseIntroducer now pushes what
-    MatchHandlerStart used to; every early-out must leave the
-    scope/full-pattern/pattern-block/region stacks poppable. _Falsifier:_
-    `VerifyOnFinish` CHECK failures (full_pattern_stack.h:197-201) on any
-    fail_todo input; adversary #1's brief: a match inside a match inside a
-    lambda.
+    MatchHandlerStart used to; every success path must leave the
+    scope/full-pattern/pattern-block/region stacks poppable. TODO
+    early-outs are exempt: a TODO aborts checking before `FinishRun`
+    (check_unit.cpp:100-104), so `VerifyOnFinish` (check_unit.cpp:628)
+    never runs on fail_todo inputs and cannot verify them (§3.1).
+    _Falsifier:_ `VerifyOnFinish` CHECK failures
+    (full_pattern_stack.h:197-201) on **passing** programs — the entire
+    S2a testdata suite plus the nested-match golden; adversary #1's brief:
+    a match inside a match inside a lambda.
 -   **R-3. Autoupdate churn scale.** All 15 match check goldens churn
     structurally in S2a (~2,000 lines); two-pass fixpoint mandatory (R26).
     _Falsifier:_ a pass-2 diff with structural (non-loc) changes = real
@@ -420,20 +477,38 @@ fail_choice_nonexhaustive goldens.
     rounds per slice, one reconciliation commit each (R19).
 -   **R-4. Upstream drift in exactly these files.** §1.3 evidence: the last
     25-commit batch rewrote binding-pattern surface (#7479) and is building
-    match_first (#7478/#7480). Mitigations: additions to pattern_match.cpp
-    as a new State + appended functions, never edits inside existing
-    DoPreWork bodies where avoidable; pre-slice upstream-activity check
+    match_first (#7478/#7480). `MatchCaseState` is _not_ purely additive:
+    widening the State variant forces in-body edits at
+    pattern_match.cpp:90-91 and at every state-discriminating site —
+    `AnyParamPattern` (:477-548), `ExprPattern` (:559-564),
+    `DoVarPreWorkImpl` (:643-707), `SpliceInst` (:812-853) — plus ~8
+    `holds_alternative` sites each needing a per-site decision (:272,
+    :374, :396-397, :597, :610, :736-737, :860, :877, :893). Mitigations:
+    that enumerated set is the **accepted collision surface** — each site
+    gains one alternative mechanically, with no restructuring, and new
+    code is otherwise appended; pre-slice upstream-activity check
     (standing rule 5); weekly upstream-merge Routine keeps installments
-    small. _Falsifier:_ an upstream merge conflicting in >2 of this plan's
-    files in one week — re-plan trigger.
--   **R-5. `decl_introducer_state_stack` coupling** (S2b). Binding checks
-    read the innermost introducer (handle_binding_pattern.cpp:324-325); a
-    case arm has none, so the innermost is the _enclosing_ declaration's —
-    semantics leak. Options: dedicated introducer state at
-    MatchCaseIntroducer, or branch on `Kind::MatchCaseArm` before the
-    introducer read. _Falsifier:_ a case binding accepting a
-    modifier/behavior only valid for the enclosing introducer (adversary #1
-    writes it).
+    small; RF-1(b) is the recorded fallback if this surface turns hostile.
+    _Falsifier:_ an upstream merge conflicting in >2 of this plan's files
+    in one week — re-plan trigger.
+-   **R-5. `decl_introducer_state_stack` coupling** (S2a). Binding checks
+    read the innermost introducer state
+    (handle_binding_pattern.cpp:324-325) _before_ the `CurrentKind()`
+    switch, and binding nodes reach `HandleAnyBindingPattern` as soon as
+    S2a routes pattern nodes to their ordinary handlers — exposure starts
+    at **S2a**, not S2b. The failure mode is not a semantics leak: in
+    statement position the enclosing `fn` introducer has already been
+    popped (handle_function.cpp:541 pops before body statements), so the
+    stack is _empty_ and `innermost()` is `back()` on an empty vector —
+    crash/UB. Upstream's own answer is the for-loop's implicit introducer
+    push (handle_loop_statement.cpp:136 pushes `Lex::TokenKind::Let`).
+    Options: (a) an implicit introducer push at MatchCaseIntroducer — the
+    for-loop precedent, **recommended and scheduled in S2a** (§3.1, §7);
+    (b) a dedicated introducer state kind; (c) branch on
+    `Kind::MatchCaseArm` before the introducer read. _Falsifier:_ an S2a
+    binding-root testdata program crashing instead of emitting the
+    combined TODO; a case binding accepting a modifier only valid under
+    the pushed introducer kind (adversary #1 writes it).
 -   **R-6. ExprPattern semantics divergence.** Upstream TODO's expression
     patterns engine-wide; our MatchCaseState implements them for match
     only. If upstream lands its own, ours reconciles (V-3). Entered in the
@@ -463,13 +538,21 @@ Real-entropy decisions (recommendation ≠ decision; auto-adopted per V-2
 with digest entries, veto-able):
 
 -   **RF-1 (blocks S2a): where the refutable engine lives.** (a) New
-    `MatchCaseState` inside pattern_match.cpp's MatchContext (upstream's
-    own roadmap points here — handle_loop_statement.cpp:234-235 — and
-    S2b/S2c reuse binding/tuple traversal for free; cost: maximal R-4
-    collision surface). (b) A fork-local check/match_case_pattern.cpp with
-    its own traversal delegating irrefutable subtrees to
-    `LocalPatternMatch` (cost: a second pattern walker to keep in sync — an
-    R17 smell). **Adopted: (a)**, additions structurally appended.
+    `MatchCaseState` inside pattern_match.cpp's MatchContext. The
+    originally claimed benefit — "S2b/S2c reuse binding/tuple traversal
+    for free" — is false in-scope: no slice's test pass recurses past
+    binding-pattern roots (§2.1's pruning obligation), and bind-pass reuse
+    comes by way of the already-public `LocalPatternMatch` under either
+    option. (a) stands instead on **upstream alignment** (upstream's own
+    roadmap points into this engine — the `.Some(pattern_id)` comment,
+    handle_loop_statement.cpp:234-235) and on **F-011's future entry
+    point** (§2.5); its cost is R-4's enumerated variant-widening
+    collision surface. (b) A fork-local check/match_case_pattern.cpp — in
+    truth root-classification plus calls to the existing public entries,
+    cheaper than this plan first claimed, though still a second dispatch
+    point to keep in sync (an R17 smell). **Adopted: (a)** on this
+    re-argued basis; (b) is the recorded fallback if upstream churn in
+    pattern_match.cpp turns hostile (R-4's trigger).
     Companion: new `FullPatternStack::Kind::MatchCaseArm` vs reusing
     `NameBindingDecl` kind — **adopted: the new enum value** (explicit
     gating, cheap).
@@ -486,7 +569,11 @@ with digest entries, veto-able):
 -   **RF-4 (S2a stretch): admit constant integer expression patterns**
     (`case -1`, `case 2+3`). Strictly-better; discharges the recorded
     viability-review gap; needs a duplicate-arm story recorded against
-    W-066. **Adopted: take it in S2a** with new testdata.
+    W-066. **Adopted: take it in S2a** with new testdata — as the second
+    §0.3 deliberate co-change: it flips
+    fail_todo_non_int_literal_case.carbon (deleting its pinned
+    diagnostic) and lands as a separate commit sequenced after the
+    lower-golden arbiter is proven on the pre-RF-4 state (§3.1).
 -   **RF-5 (blocks S2c): alternative-pattern parse-node shape** — dedicated
     `AlternativePattern`/`AlternativePatternStart` kinds vs generalizing
     the designator-expr route. **Adopted: dedicated kinds** (W5 plan
@@ -494,11 +581,16 @@ with digest entries, veto-able):
 
 Mundane auto-adopts (rationale inline, veto-able): EqWith remains the
 compare primitive (mandated by pattern_matching.md/p2188); first-match
-if/else CFG retained; `default` required until S2e (SF-7 ratified with this
-sequencing); leading-dot-only patterns (SF-4); bare `name: type` binding
-spelling (SF-5); TODO strings preserved elsewhere verbatim (R10); S2c
-side-table replaces `GetAlternativeDiscriminant` (recorded follow-up);
-diagnostic locations for preserved strings pinned to the introducer node.
+if/else CFG retained; `default` required until S2e — noting SF-7 itself
+said exhaustiveness "lands in slice 2", so deferring it to S2e is a
+plan-made resequencing under the viability mandate, recorded here as its
+own veto-able digest entry rather than as SF-7-ratified; S2d implements
+`case`-clause guards only, with `default`-clause guards deferred as a
+recorded work item (the parse gap is named in §3.4); leading-dot-only
+patterns (SF-4); bare `name: type` binding spelling (SF-5); TODO strings
+preserved elsewhere verbatim (R10); S2c side-table replaces
+`GetAlternativeDiscriminant` (recorded follow-up); diagnostic locations
+for preserved strings pinned to the introducer node.
 
 ## 7. Files touched (budgeted generously per the W5 §2.4 drift lesson)
 
@@ -506,7 +598,12 @@ S2a: toolchain/check/handle_match.cpp (major rewrite);
 toolchain/check/pattern_match.{h,cpp} (MatchCaseState + entry);
 toolchain/check/full_pattern_stack.h (new Kind);
 toolchain/check/handle_binding_pattern.cpp (MatchCaseArm gating);
-toolchain/check/context.h (case-arm scrutinee context);
+toolchain/check/handle_let_and_var.cpp (the exhaustive `CurrentKind()`
+switch at ~:125-148 has no default and must gain a `Kind::MatchCaseArm`
+case); toolchain/check/decl_introducer_state.h surfaces as needed for
+R-5's implicit introducer push; toolchain/sem_ir/typed_insts.h
+(NameBindingDecl doc comment, :1319-1320); toolchain/check/context.h
+(case-arm scrutinee + introducer-node-id context, §2.4);
 toolchain/check/node_stack.h; toolchain/check/handle_name.cpp
 (comment/guard only); possibly toolchain/check/pattern.{h,cpp},
 toolchain/check/scope_stack.{h,cpp}, toolchain/sem_ir/inst_namer.cpp
@@ -516,11 +613,12 @@ tweak, diagnostics kinds. Testdata: all 15 check/testdata/match goldens,
 lower/testdata/match/basic (assert-no-change), new expr-pattern testdata
 (RF-4).
 
-S2b adds: unused.cpp/decl_introducer surfaces per R-5's resolution; new
-binding testdata. S2c adds: parse/handle_pattern.cpp, parse/typed_nodes.h,
+S2b adds: unused.cpp surfaces; new binding testdata (R-5's introducer work
+lands in S2a). S2c adds: parse/handle_pattern.cpp, parse/typed_nodes.h,
 parse node kinds + goldens; sem_ir/class.h + import_ref.cpp (side-table);
 handle_choice.cpp (metadata population); lower golden. S2d:
-handle_match.cpp CFG + guard handlers. S2e: handle_match.cpp completion +
+handle_match.cpp CFG + guard handlers + guard expr-region capture plumbing
+through the case-arm context (§3.4). S2e: handle_match.cpp completion +
 diagnostics. Every slice ends with runner autoupdate to fixpoint (R26),
 `prek run --all-files` (R25), scoreboard publication (R9), and
 decision-log/work-items updates at landing.

@@ -355,10 +355,19 @@ auto HandleParseNode(Context& context, Parse::AlternativePatternId node_id)
     }
     auto type_id =
         GetPatternType(context, GetTupleType(context, type_inst_ids));
-    root_id = AddInst<SemIR::TuplePattern>(
-        context, node_id,
-        {.type_id = type_id,
-         .elements_id = context.inst_blocks().Add(subpattern_ids)});
+    // The `TuplePattern` is synthesized rather than checked from a
+    // `TuplePattern` parse node, so `SemIR::TuplePattern`'s typed node id
+    // doesn't fit; attach the subpattern inst's location instead, the way
+    // `RebuildPatternInst` (thunk.cpp) gives a synthesized inst an existing
+    // inst's location. The location resolves into the alternative pattern's
+    // source for diagnostics.
+    root_id = AddInst(
+        context,
+        SemIR::LocIdAndInst::RuntimeVerified(
+            context.sem_ir(), SemIR::LocId(payload_id),
+            SemIR::TuplePattern{
+                .type_id = type_id,
+                .elements_id = context.inst_blocks().Add(subpattern_ids)}));
   }
 
   case_context.alternative = Context::MatchCaseContext::Alternative{

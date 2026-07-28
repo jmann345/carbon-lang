@@ -1,1 +1,1 @@
-RF-4 gate: full merge gate on constant-expr case patterns + formatter-crash fix + PR #6 trunk composition (fixpoint at 52f7756, pass-2 empty).
+S2b gate: full merge gate on match case bindings (fixpoint at 690a894, pass-2 empty).

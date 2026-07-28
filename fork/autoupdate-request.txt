@@ -1,1 +1,1 @@
-S2a R26 pass 2: verify fixpoint after pass-1 reconciliation 3882922 (expect loc-only or empty; structural diff = nondeterminism, stop and diagnose).
+RF-4: regenerate match goldens — new empty-golden testdata negative_literal_case.carbon + constant_expr_case.carbon (full generation), fail_todo_non_constant_case.carbon STDERR verification; no existing golden should churn (R26 two passes).

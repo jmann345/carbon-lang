@@ -36,22 +36,20 @@ fn MyF() {
 
 // --- without_definition.h
 
+// TODO: Promote this warning to an error by default.
+// CHECK:STDERR: ./without_definition.h:[[@LINE+7]]:13: warning: inline function 'foo' is not defined [CppInteropParseWarning]
+// CHECK:STDERR:    10 | inline void foo();
+// CHECK:STDERR:       |             ^
+// CHECK:STDERR: ./without_definition.h:[[@LINE+4]]:13: note: used here [CppInteropParseNote]
+// CHECK:STDERR:    10 | inline void foo();
+// CHECK:STDERR:       |             ^
+// CHECK:STDERR:
 inline void foo();
 
 // --- todo_fail_import_without_definition.carbon
 
 library "[[@TEST_NAME]]";
 
-// TODO: Promote this warning to an error by default.
-// CHECK:STDERR: todo_fail_import_without_definition.carbon:[[@LINE+9]]:10: in file included here [InCppInclude]
-// CHECK:STDERR: ./without_definition.h:2:13: warning: inline function 'foo' is not defined [CppInteropParseWarning]
-// CHECK:STDERR:     2 | inline void foo();
-// CHECK:STDERR:       |             ^
-// CHECK:STDERR: todo_fail_import_without_definition.carbon:[[@LINE+5]]:10: in file included here [InCppInclude]
-// CHECK:STDERR: ./without_definition.h:2:13: note: used here [CppInteropParseNote]
-// CHECK:STDERR:     2 | inline void foo();
-// CHECK:STDERR:       |             ^
-// CHECK:STDERR:
 import Cpp library "without_definition.h";
 
 fn MyF() {
@@ -135,12 +133,12 @@ fn MyF() {
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @MyF() {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %Cpp.ref.loc18: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
-// CHECK:STDOUT:   %foo.ref.loc18: %foo.cpp_overload_set.type = name_ref foo, imports.%foo.cpp_overload_set.value [concrete = constants.%foo.cpp_overload_set.value]
-// CHECK:STDOUT:   %foo__carbon_thunk.call.loc18: init %empty_tuple.type = call imports.%foo__carbon_thunk.decl()
-// CHECK:STDOUT:   %Cpp.ref.loc21: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
-// CHECK:STDOUT:   %foo.ref.loc21: %foo.cpp_overload_set.type = name_ref foo, imports.%foo.cpp_overload_set.value [concrete = constants.%foo.cpp_overload_set.value]
-// CHECK:STDOUT:   %foo__carbon_thunk.call.loc21: init %empty_tuple.type = call imports.%foo__carbon_thunk.decl()
+// CHECK:STDOUT:   %Cpp.ref.loc8: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo.ref.loc8: %foo.cpp_overload_set.type = name_ref foo, imports.%foo.cpp_overload_set.value [concrete = constants.%foo.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo__carbon_thunk.call.loc8: init %empty_tuple.type = call imports.%foo__carbon_thunk.decl()
+// CHECK:STDOUT:   %Cpp.ref.loc11: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo.ref.loc11: %foo.cpp_overload_set.type = name_ref foo, imports.%foo.cpp_overload_set.value [concrete = constants.%foo.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo__carbon_thunk.call.loc11: init %empty_tuple.type = call imports.%foo__carbon_thunk.decl()
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

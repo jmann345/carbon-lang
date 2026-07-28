@@ -33,10 +33,10 @@ namespace Carbon::Check {
 // on a single resumption block.
 //
 // Two scrutinee shapes are supported so far: integer scrutinees with
-// integer-literal `case` patterns, and choice scrutinees with leading-dot
-// payload-free alternative patterns (`case .Err`), whose discriminant is
-// compared against the scrutinee's `.discriminant` field. Everything outside
-// that subset produces a "semantics TODO" diagnostic.
+// constant integer expression `case` patterns, and choice scrutinees with
+// leading-dot payload-free alternative patterns (`case .Err`), whose
+// discriminant is compared against the scrutinee's `.discriminant` field.
+// Everything outside that subset produces a "semantics TODO" diagnostic.
 //
 // TODO: Support other pattern kinds, guards, other scrutinee types, payload
 // destructuring in alternative patterns, and exhaustiveness checking without
@@ -173,8 +173,7 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
   // expression on the node stack becomes an `ExprPattern`, and the checked
   // pattern root is popped.
   EndExprRegionForPattern(context, context.node_stack());
-  auto [pattern_node_id, pattern_id] =
-      context.node_stack().PopPatternWithNodeId();
+  auto pattern_id = context.node_stack().PopPattern();
   context.node_stack()
       .PopAndDiscardSoloNodeId<Parse::NodeKind::MatchCaseIntroducer>();
   context.decl_introducer_state_stack().Pop<Lex::TokenKind::Let>();
@@ -199,8 +198,8 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
   SemIR::InstId cond_value_id = SemIR::InstId::None;
   if (pattern_id == SemIR::ErrorInst::InstId ||
       context.insts().Is<SemIR::ExprPattern>(pattern_id)) {
-    cond_value_id = MatchCasePatternMatch(context, pattern_id, scrutinee_id,
-                                          node_id, pattern_node_id);
+    cond_value_id =
+        MatchCasePatternMatch(context, pattern_id, scrutinee_id, node_id);
     if (!cond_value_id.has_value()) {
       // The engine diagnosed an unsupported case-pattern shape with a TODO,
       // which aborts checking.
@@ -298,7 +297,7 @@ auto HandleParseNode(Context& context, Parse::MatchStatementId node_id)
 
   if (!has_default) {
     // A `match` whose patterns are not exhaustive and that has no `default`
-    // is an error per docs/design/pattern_matching.md, and integer-literal
+    // is an error per docs/design/pattern_matching.md, and integer expression
     // patterns are never exhaustive. Exhaustiveness checking for other
     // pattern kinds is future work.
     return context.TODO(node_id, "match statement without `default` arm");

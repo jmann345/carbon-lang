@@ -25,7 +25,6 @@
 #include "toolchain/check/pattern.h"
 #include "toolchain/check/type.h"
 #include "toolchain/diagnostics/format_providers.h"
-#include "toolchain/parse/node_kind.h"
 #include "toolchain/sem_ir/expr_info.h"
 #include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/import_ir.h"
@@ -101,10 +100,6 @@ struct MatchCaseState {
   // The `MatchCase` parse node, used as the location of the emitted
   // comparison insts.
   Parse::NodeId case_node_id;
-  // The pattern's root parse node, used to restrict expression patterns to
-  // single-token integer literals until constant integer expression patterns
-  // are admitted (plan RF-4).
-  Parse::NodeId pattern_node_id;
 };
 
 using State = std::variant<CallerState*, CalleeState*, LocalState*, ThunkState*,
@@ -776,14 +771,25 @@ auto MatchContext::DoMatchCaseExprPattern(
     return SemIR::InstId::None;
   }
 
-  // An integer scrutinee. Only a single-token integer literal is admitted so
-  // far; admitting constant integer expression patterns is the RF-4
-  // follow-up.
-  if (context_.parse_tree().node_kind(match_case_state.pattern_node_id) !=
-      Parse::NodeKind::IntLiteral) {
-    context_.TODO(
-        introducer_node_id,
-        "match `case` pattern other than an integer literal, or a case guard");
+  // An integer scrutinee. Any case expression whose constant value is a
+  // concrete `IntValue` is admitted (plan RF-4), whatever its declared type:
+  // classification is by the checked expression's constant representation,
+  // never its syntax, so `case -1` and `case 2 + 3` work the same way as
+  // `case 5`, and a constant of an int-adapter class type is admitted too —
+  // if its type is not `EqWith`-compatible with the scrutinee, the comparison
+  // below produces a real missing-impl operator diagnostic. Everything else —
+  // non-constant expressions, symbolic constants, and constants not
+  // represented as `IntValue` — stays behind the SemanticsTodo. Note that
+  // `let` bindings bind value-category results and so are not constants (see
+  // `WrapperBinding` in eval_inst.cpp); a case naming one stays behind it
+  // too.
+  auto pattern_const_id = context_.constant_values().Get(result_id);
+  if (!pattern_const_id.is_concrete() ||
+      !context_.insts().Is<SemIR::IntValue>(
+          context_.constant_values().GetInstId(pattern_const_id))) {
+    context_.TODO(introducer_node_id,
+                  "match case expression pattern that is not a constant "
+                  "integer");
     return SemIR::InstId::None;
   }
 
@@ -1440,10 +1446,8 @@ auto LocalPatternMatch(Context& context, SemIR::InstId pattern_id,
 
 auto MatchCasePatternMatch(Context& context, SemIR::InstId pattern_id,
                            SemIR::InstId scrutinee_id,
-                           Parse::NodeId case_node_id,
-                           Parse::NodeId pattern_node_id) -> SemIR::InstId {
-  MatchCaseState state = {.case_node_id = case_node_id,
-                          .pattern_node_id = pattern_node_id};
+                           Parse::NodeId case_node_id) -> SemIR::InstId {
+  MatchCaseState state = {.case_node_id = case_node_id};
   MatchContext match(context);
   return match.MatchWithResult(
       &state, {.pattern_id = pattern_id,

@@ -309,6 +309,30 @@ arm; everything else keeps a clean `semantics TODO` diagnostic. Trades:
     operator semantics and would break the slice's cleanup-soundness
     argument (adversarial finding F2).
 
+_RF-4 landing note (2026-07-28):_ the match re-platform's RF-4 slice
+(fork/match-replatform/plan.md) widens this section's "integer-literal
+`case` patterns" to constant integer expression patterns. At the
+integer-scrutinee expression-pattern gate in
+toolchain/check/pattern_match.cpp ONLY, the TODO string
+`` `match `case` pattern other than an integer literal, or a case guard` ``
+becomes `` `match case expression pattern that is not a constant integer` ``;
+the old string survives verbatim at its other five sites
+(handle_match.cpp, handle_binding_pattern.cpp twice,
+handle_let_and_var.cpp, and pattern_match.cpp's choice-pattern fallback).
+Testdata: fail_todo_non_int_literal_case.carbon flips to the now-passing
+negative_literal_case.carbon, and two files land alongside it —
+constant_expr_case.carbon (admitted constant arithmetic) and
+fail_todo_non_constant_case.carbon (runtime `var` reads and plain `let`
+bindings stay behind the TODO). Recorded admission-semantics caveat from
+review: admission is by constant representation (a concrete SemIR
+`IntValue`), so a constant of an int-adapter class type is admitted and
+produces a real missing-impl `==` operator error downstream rather than
+the TODO — reviewed, no crash, deemed acceptable for RF-4 scope.
+Implication for W-066 (usefulness diagnostics): constant-expression
+admission creates invisible overlaps (`case 5` vs `case 2 + 3` on the
+same scrutinee), so duplicate/overlap detection must compare evaluated
+constant values, not source forms — noted on the work item. Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

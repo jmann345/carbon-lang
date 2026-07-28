@@ -96,13 +96,12 @@ auto LocalPatternMatch(Context& context, SemIR::InstId pattern_id,
 // `MatchCaseIntroducer` must be on `Context::match_case_stack()`.
 //
 // `case_node_id` is the `MatchCase` parse node, used as the location of the
-// emitted comparison insts; `pattern_node_id` is the pattern's root parse
-// node. Returns `None` after diagnosing an unsupported case-pattern shape
-// with a "semantics TODO" diagnostic, which aborts checking.
+// emitted comparison insts. Returns `None` after diagnosing an unsupported
+// case-pattern shape with a "semantics TODO" diagnostic, which aborts
+// checking.
 auto MatchCasePatternMatch(Context& context, SemIR::InstId pattern_id,
                            SemIR::InstId scrutinee_id,
-                           Parse::NodeId case_node_id,
-                           Parse::NodeId pattern_node_id) -> SemIR::InstId;
+                           Parse::NodeId case_node_id) -> SemIR::InstId;
 
 // If `type_id` is a complete, non-generic choice type whose discriminant is
 // an integer field, returns the discriminant's type; returns nullopt

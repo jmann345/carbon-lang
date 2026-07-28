@@ -310,8 +310,12 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
         // An alternative whose discriminant is not a concrete constant, such
         // as in a generic context, is out of slice 1; see decision-log W5-S1.
         // The scrutinee gate rejects those shapes already, so this is
-        // defense-in-depth: diagnose rather than crash.
-        return context.TODO(node_id, "match on unsupported scrutinee type");
+        // defense-in-depth: diagnose rather than crash. Named for the
+        // pattern, not the scrutinee: the scrutinee passed its gate, and it
+        // is this case pattern's alternative that has no usable shape.
+        return context.TODO(
+            node_id,
+            "match case pattern on unsupported choice alternative shape");
       }
       auto index_value_id = ConvertToValueOfType(
           context, node_id, MakeIntLiteral(context, node_id, *disc_int_id),

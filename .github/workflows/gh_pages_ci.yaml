@@ -19,6 +19,10 @@ permissions:
 jobs:
   # Build job
   build:
+    # `pull_request` fires on every fork PR, but the website is only built
+    # and deployed upstream (Pages is not configured on forks). Run only
+    # upstream.
+    if: github.repository == 'carbon-language/carbon-lang'
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner

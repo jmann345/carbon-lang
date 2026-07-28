@@ -73,6 +73,7 @@ auto Context::VerifyOnFinish() const -> void {
   generic_region_stack_.VerifyOnFinish();
   vtable_stack_.VerifyOnFinish();
   region_stack_.VerifyOnFinish();
+  CARBON_CHECK(match_case_stack_.empty());
   CARBON_CHECK(impl_lookup_stack_.empty());
   CARBON_CHECK(return_form_expr_ == std::nullopt);
 

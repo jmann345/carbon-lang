@@ -45,6 +45,9 @@ class FullPatternStack {
     // A `var` field declaration inside a class.
     ClassScopeVarDecl,
 
+    // The pattern of a `match` statement's `case` arm.
+    MatchCaseArm,
+
     // The implicit parameter list of a function or impl declaration.
     ImplicitParamList,
 
@@ -93,6 +96,14 @@ class FullPatternStack {
   // Marks the start of a new full-pattern for a class `var` declaration.
   auto PushClassScopeVarDecl() -> void {
     kind_stack_.push_back(Kind::ClassScopeVarDecl);
+    bind_name_stack_.PushArray();
+    var_pattern_stack_.PushArray();
+    next_var_index_stack_.push_back(-1);
+  }
+
+  // Marks the start of a new full-pattern for a `match` `case` arm's pattern.
+  auto PushMatchCaseArm() -> void {
+    kind_stack_.push_back(Kind::MatchCaseArm);
     bind_name_stack_.PushArray();
     var_pattern_stack_.PushArray();
     next_var_index_stack_.push_back(-1);

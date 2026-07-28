@@ -5,6 +5,8 @@
 #ifndef CARBON_TOOLCHAIN_CHECK_PATTERN_MATCH_H_
 #define CARBON_TOOLCHAIN_CHECK_PATTERN_MATCH_H_
 
+#include <optional>
+
 #include "toolchain/check/context.h"
 #include "toolchain/sem_ir/function.h"
 #include "toolchain/sem_ir/ids.h"
@@ -84,6 +86,34 @@ auto CallerPatternMatch(Context& context, SemIR::SpecificId specific_id,
 // given pattern and scrutinee.
 auto LocalPatternMatch(Context& context, SemIR::InstId pattern_id,
                        SemIR::InstId scrutinee_id) -> void;
+
+// Emits the refutable test IR for matching a `match` `case` pattern against
+// the given scrutinee into the current block, and returns a boolean condition
+// inst that is true when the arm matches. This is only the test pass of case
+// matching: it prunes at binding-pattern roots (their initialization is the
+// bind pass's job, via `LocalPatternMatch`), and the dispatch CFG (branches
+// and convergence) stays with the caller. The case-arm state pushed by
+// `MatchCaseIntroducer` must be on `Context::match_case_stack()`.
+//
+// `case_node_id` is the `MatchCase` parse node, used as the location of the
+// emitted comparison insts; `pattern_node_id` is the pattern's root parse
+// node. Returns `None` after diagnosing an unsupported case-pattern shape
+// with a "semantics TODO" diagnostic, which aborts checking.
+auto MatchCasePatternMatch(Context& context, SemIR::InstId pattern_id,
+                           SemIR::InstId scrutinee_id,
+                           Parse::NodeId case_node_id,
+                           Parse::NodeId pattern_node_id) -> SemIR::InstId;
+
+// If `type_id` is a complete, non-generic choice type whose discriminant is
+// an integer field, returns the discriminant's type; returns nullopt
+// otherwise. This is the in-slice choice scrutinee shape: choices with fewer
+// than two alternatives have an empty-tuple discriminant, and specifics of
+// generic choices are out of slice 1 (alternative name-to-index metadata is
+// scoped to concrete choices, plan section 2.2c), so both stay behind the
+// scrutinee TODO. Uses the `Class::is_choice` entity flag, never the
+// representation's spelling.
+auto GetChoiceDiscriminantType(Context& context, SemIR::TypeId type_id)
+    -> std::optional<SemIR::TypeId>;
 
 }  // namespace Carbon::Check
 

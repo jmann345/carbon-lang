@@ -5,6 +5,7 @@
 #include "toolchain/check/pattern_match.h"
 
 #include <functional>
+#include <optional>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -16,13 +17,18 @@
 #include "toolchain/check/context.h"
 #include "toolchain/check/control_flow.h"
 #include "toolchain/check/convert.h"
+#include "toolchain/check/core_identifier.h"
 #include "toolchain/check/eval.h"
 #include "toolchain/check/generic.h"
+#include "toolchain/check/literal.h"
+#include "toolchain/check/operator.h"
 #include "toolchain/check/pattern.h"
 #include "toolchain/check/type.h"
 #include "toolchain/diagnostics/format_providers.h"
+#include "toolchain/parse/node_kind.h"
 #include "toolchain/sem_ir/expr_info.h"
 #include "toolchain/sem_ir/ids.h"
+#include "toolchain/sem_ir/import_ir.h"
 #include "toolchain/sem_ir/inst_kind.h"
 #include "toolchain/sem_ir/pattern.h"
 
@@ -87,8 +93,22 @@ struct ThunkState {
   llvm::ArrayRef<SemIR::InstId> outer_call_args;
 };
 
-using State =
-    std::variant<CallerState*, CalleeState*, LocalState*, ThunkState*>;
+// State for `match` `case` pattern matching: the refutable test pass, which
+// emits the arm's boolean condition into the current (test) block. It prunes
+// at binding-pattern roots: bindings are irrefutable and belong to the bind
+// pass, which owns their `bind_name_map` entries. See `MatchCasePatternMatch`.
+struct MatchCaseState {
+  // The `MatchCase` parse node, used as the location of the emitted
+  // comparison insts.
+  Parse::NodeId case_node_id;
+  // The pattern's root parse node, used to restrict expression patterns to
+  // single-token integer literals until constant integer expression patterns
+  // are admitted (plan RF-4).
+  Parse::NodeId pattern_node_id;
+};
+
+using State = std::variant<CallerState*, CalleeState*, LocalState*, ThunkState*,
+                           MatchCaseState*>;
 
 // The worklist and state machine for a pattern-matching operation.
 //
@@ -239,6 +259,14 @@ class MatchContext {
   // `SpecificConstant`.
   auto DoIndirectPreWorkImpl(State state, WorkItem entry) -> void;
 
+  // Emits the refutable test for an expression pattern in a `match` `case`
+  // and returns the boolean condition inst, or `None` after diagnosing an
+  // unsupported case-pattern shape with a "semantics TODO" diagnostic (which
+  // aborts checking).
+  auto DoMatchCaseExprPattern(const MatchCaseState& match_case_state,
+                              SemIR::ExprPattern expr_pattern,
+                              SemIR::InstId scrutinee_id) -> SemIR::InstId;
+
   // Asserts that there is a single inst in the top array in `results_stack_`,
   // pops that array, and returns the inst.
   auto PopResult() -> SemIR::InstId {
@@ -336,6 +364,85 @@ static auto InsertHere(Context& context, SemIR::ExprRegionId region_id)
   return region.result_id;
 }
 
+auto GetChoiceDiscriminantType(Context& context, SemIR::TypeId type_id)
+    -> std::optional<SemIR::TypeId> {
+  auto unqualified_type_id = context.types().GetUnqualifiedType(type_id);
+  auto class_type =
+      context.types().TryGetAsIfValid<SemIR::ClassType>(unqualified_type_id);
+  if (!class_type || class_type->specific_id.has_value()) {
+    return std::nullopt;
+  }
+  const auto& class_info = context.classes().Get(class_type->class_id);
+  if (!class_info.is_choice || !class_info.is_complete()) {
+    return std::nullopt;
+  }
+  auto object_repr_id =
+      class_info.GetObjectRepr(context.sem_ir(), class_type->specific_id);
+  auto struct_type =
+      context.types().TryGetAsIfValid<SemIR::StructType>(object_repr_id);
+  if (!struct_type) {
+    return std::nullopt;
+  }
+  auto fields = context.struct_type_fields().Get(struct_type->fields_id);
+  if (fields.empty() ||
+      fields.front().name_id != SemIR::NameId::ChoiceDiscriminant) {
+    return std::nullopt;
+  }
+  auto disc_type_id =
+      context.types().GetTypeIdForTypeInstId(fields.front().type_inst_id);
+  if (!context.types().TryGetIntTypeInfo(disc_type_id)) {
+    return std::nullopt;
+  }
+  return disc_type_id;
+}
+
+// Returns the discriminant of the payload-free alternative that `pattern_id`
+// resolves to, or nullopt if no concrete discriminant can be recovered. The
+// alternative's `wrapper_binding` is not itself a constant: constant
+// evaluation of a `WrapperBinding` only forwards reference-category bound
+// values, and `MakeLetBinding` (handle_choice.cpp) binds a value-category
+// result. So the discriminant is read from the constant of the *bound value*,
+// a struct value whose leading element is the discriminant `MakeLetBinding`
+// baked in. The binding may also live in an imported file, where the local
+// `ImportRefLoaded` carries no constant at all (non-constant bindings do not
+// import; see `TryResolveInstCanonical` in import_ref.cpp), so the binding is
+// read from its defining file.
+static auto GetAlternativeDiscriminant(Context& context,
+                                       SemIR::InstId pattern_id)
+    -> std::optional<IntId> {
+  // Look through name references to the binding they name.
+  while (auto name_ref = context.insts().TryGetAs<SemIR::NameRef>(pattern_id)) {
+    pattern_id = name_ref->value_id;
+  }
+  // The binding may be imported; read it in its defining file.
+  auto [file, binding_id] =
+      SemIR::GetCanonicalFileAndInstId(&context.sem_ir(), pattern_id);
+  auto binding = file->insts().TryGetAs<SemIR::WrapperBinding>(binding_id);
+  if (!binding) {
+    return std::nullopt;
+  }
+  auto const_id = file->constant_values().Get(binding->value_id);
+  if (!const_id.is_concrete()) {
+    return std::nullopt;
+  }
+  auto struct_value = file->insts().TryGetAs<SemIR::StructValue>(
+      file->constant_values().GetInstId(const_id));
+  if (!struct_value) {
+    return std::nullopt;
+  }
+  auto elements = file->inst_blocks().Get(struct_value->elements_id);
+  if (elements.empty()) {
+    return std::nullopt;
+  }
+  auto discriminant = file->insts().TryGetAs<SemIR::IntValue>(elements[0]);
+  if (!discriminant) {
+    return std::nullopt;
+  }
+  // Add the value to the local int store; a no-op when the defining file
+  // shares this file's value stores.
+  return context.ints().AddSigned(file->ints().Get(discriminant->int_id));
+}
+
 // Returns the kind of conversion to perform on the scrutinee when matching the
 // given pattern. Note that this returns `NoOp` for `var` patterns, because
 // their conversion needs special handling, prior to any general-purpose
@@ -370,6 +477,13 @@ auto MatchContext::DoPreWork(State state,
                              SemIR::AnyBindingPattern binding_pattern,
                              SemIR::InstId scrutinee_id, WorkItem entry)
     -> void {
+  if (std::holds_alternative<MatchCaseState*>(state)) {
+    // The refutable test pass prunes at binding-pattern roots: bindings are
+    // irrefutable and contribute no condition, and descending into them here
+    // would consume their `bind_name_map` entries, which the bind pass still
+    // needs.
+    return;
+  }
   bool scheduled_post_work = false;
   if (!std::holds_alternative<CallerState*>(state)) {
     results_stack_.PushArray();
@@ -545,6 +659,9 @@ auto MatchContext::DoPreWork(State state, SemIR::AnyParamPattern param_pattern,
     case CARBON_KIND(LocalState* _): {
       CARBON_FATAL("Found ValueParamPattern during local pattern match");
     }
+    case CARBON_KIND(MatchCaseState* _): {
+      CARBON_FATAL("Found ValueParamPattern during match case pattern match");
+    }
   }
 }
 
@@ -556,11 +673,134 @@ auto MatchContext::DoPostWork(State /*state*/,
   // would have to be done here.
 }
 
-auto MatchContext::DoPreWork(State /*state*/,
-                             SemIR::ExprPattern /*expr_pattern*/,
-                             SemIR::InstId /*scrutinee_id*/, WorkItem entry)
+auto MatchContext::DoPreWork(State state, SemIR::ExprPattern expr_pattern,
+                             SemIR::InstId scrutinee_id, WorkItem entry)
     -> void {
+  if (auto** match_case_state = std::get_if<MatchCaseState*>(&state)) {
+    results_stack_.AppendToTop(
+        DoMatchCaseExprPattern(**match_case_state, expr_pattern, scrutinee_id));
+    return;
+  }
   context_.TODO(entry.pattern_id, "expression pattern");
+}
+
+auto MatchContext::DoMatchCaseExprPattern(
+    const MatchCaseState& match_case_state, SemIR::ExprPattern expr_pattern,
+    SemIR::InstId scrutinee_id) -> SemIR::InstId {
+  const auto& case_context = context_.match_case_stack().back();
+  auto introducer_node_id = case_context.introducer_node_id;
+  auto case_node_id = match_case_state.case_node_id;
+  auto result_id = context_.sem_ir()
+                       .expr_regions()
+                       .Get(expr_pattern.expr_region_id)
+                       .result_id;
+  auto scrutinee_type_id = context_.insts().Get(scrutinee_id).type_id();
+
+  if (auto disc_type_id =
+          GetChoiceDiscriminantType(context_, scrutinee_type_id)) {
+    // A choice scrutinee.
+    auto result_type_id = context_.insts().Get(result_id).type_id();
+    if (result_type_id == SemIR::ErrorInst::TypeId) {
+      // The pattern failed to check; a diagnostic was already produced.
+      InsertHere(context_, expr_pattern.expr_region_id);
+      return SemIR::ErrorInst::InstId;
+    }
+    if (result_id == case_context.designator_root_id) {
+      // The whole pattern is a leading-dot designator, resolved against the
+      // scrutinee's choice scope (see `DesignatorExpr` in handle_name.cpp).
+      if (context_.types().Is<SemIR::FunctionType>(result_type_id)) {
+        // The designator names a payload alternative's constructor function;
+        // destructuring its payload is slice 2.
+        context_.TODO(case_node_id,
+                      "match case pattern destructuring a choice payload");
+        return SemIR::InstId::None;
+      }
+      // The designator names a payload-free alternative constant of the
+      // scrutinee's choice type; compare its discriminant against the
+      // scrutinee's discriminant field.
+      CARBON_CHECK(context_.types().GetUnqualifiedType(result_type_id) ==
+                       context_.types().GetUnqualifiedType(scrutinee_type_id),
+                   "Alternative constant type differs from scrutinee type");
+      auto disc_int_id = GetAlternativeDiscriminant(context_, result_id);
+      if (!disc_int_id) {
+        // An alternative whose discriminant is not a concrete constant, such
+        // as in a generic context, is out of slice 1; see decision-log W5-S1.
+        // The scrutinee gate rejects those shapes already, so this is
+        // defense-in-depth: diagnose rather than crash. Named for the
+        // pattern, not the scrutinee: the scrutinee passed its gate, and it
+        // is this case pattern's alternative that has no usable shape.
+        context_.TODO(
+            case_node_id,
+            "match case pattern on unsupported choice alternative shape");
+        return SemIR::InstId::None;
+      }
+      InsertHere(context_, expr_pattern.expr_region_id);
+      auto index_value_id = ConvertToValueOfType(
+          context_, case_node_id,
+          MakeIntLiteral(context_, case_node_id, *disc_int_id), *disc_type_id);
+
+      auto disc_access_id =
+          AddInst<SemIR::ClassElementAccess>(context_, case_node_id,
+                                             {.type_id = *disc_type_id,
+                                              .base_id = scrutinee_id,
+                                              .index = SemIR::ElementIndex(0)});
+      SemIR::InstId args[] = {context_.types().GetTypeInstId(*disc_type_id)};
+      auto eq_id =
+          BuildBinaryOperator(context_, case_node_id,
+                              {.interface_name = CoreIdentifier::EqWith,
+                               .interface_args_ref = args,
+                               .op_name = CoreIdentifier::Equal},
+                              index_value_id, disc_access_id);
+      return ConvertToBoolValue(context_, case_node_id, eq_id);
+    }
+    if (case_context.designator_root_id.has_value()) {
+      // A leading-dot designator with more pattern wrapped around it, such as
+      // `.Ok(...)`: an attempt to destructure the alternative's payload
+      // (slice 2).
+      context_.TODO(introducer_node_id,
+                    "match case pattern destructuring a choice payload");
+      return SemIR::InstId::None;
+    }
+    if (context_.types().Is<SemIR::FunctionType>(result_type_id) ||
+        context_.types().GetUnqualifiedType(result_type_id) ==
+            context_.types().GetUnqualifiedType(scrutinee_type_id)) {
+      // For example `case IntResult.Err`: only the leading-dot spelling is
+      // in-slice (SF-4); the qualified form is a recorded work item.
+      context_.TODO(introducer_node_id,
+                    "qualified alternative pattern in match case");
+      return SemIR::InstId::None;
+    }
+    context_.TODO(
+        introducer_node_id,
+        "match `case` pattern other than an integer literal, or a case guard");
+    return SemIR::InstId::None;
+  }
+
+  // An integer scrutinee. Only a single-token integer literal is admitted so
+  // far; admitting constant integer expression patterns is the RF-4
+  // follow-up.
+  if (context_.parse_tree().node_kind(match_case_state.pattern_node_id) !=
+      Parse::NodeKind::IntLiteral) {
+    context_.TODO(
+        introducer_node_id,
+        "match `case` pattern other than an integer literal, or a case guard");
+    return SemIR::InstId::None;
+  }
+
+  // Splice the pattern's expression into the test block, then build the arm's
+  // condition — docs/design/pattern_matching.md mandates the operand order
+  // for expression patterns: "The scrutinee is compared with the expression
+  // using the `==` operator: _expression_ `==` _scrutinee_" — the same way as
+  // the infix `==` operator: the `EqWith` interface takes a single argument
+  // that is the type of the RHS operand.
+  auto expr_id = InsertHere(context_, expr_pattern.expr_region_id);
+  SemIR::InstId args[] = {context_.types().GetTypeInstId(scrutinee_type_id)};
+  auto eq_id = BuildBinaryOperator(context_, case_node_id,
+                                   {.interface_name = CoreIdentifier::EqWith,
+                                    .interface_args_ref = args,
+                                    .op_name = CoreIdentifier::Equal},
+                                   expr_id, scrutinee_id);
+  return ConvertToBoolValue(context_, case_node_id, eq_id);
 }
 
 auto MatchContext::DoPostWork(State /*state*/,
@@ -703,6 +943,12 @@ auto MatchContext::DoVarPreWorkImpl(State state,
           {.lhs_id = init_result.storage_id, .rhs_id = init_result.init_id});
       return init_result.storage_id;
     }
+    case CARBON_KIND(MatchCaseState* _): {
+      // The test pass never descends past a binding-pattern root, and `var`
+      // patterns in `case` arms are gated behind a TODO until case bindings
+      // land (S2b).
+      CARBON_FATAL("Found VarPattern during match case pattern match");
+    }
   }
 }
 
@@ -831,6 +1077,9 @@ auto MatchContext::DoPreWork(State state, SemIR::SpliceInst /*splice*/,
     }
     case CARBON_KIND(LocalState* _): {
       CARBON_FATAL("TODO: support local matching of pattern splices");
+    }
+    case CARBON_KIND(MatchCaseState* _): {
+      CARBON_FATAL("TODO: support match case matching of pattern splices");
     }
     case CARBON_KIND(CalleeState* callee_state): {
       CARBON_CHECK(!scrutinee_id.has_value());
@@ -1186,6 +1435,18 @@ auto LocalPatternMatch(Context& context, SemIR::InstId pattern_id,
   MatchContext match(context);
   match.Match(&state,
               {.pattern_id = pattern_id,
+               .work = MatchContext::PreWork{.scrutinee_id = scrutinee_id}});
+}
+
+auto MatchCasePatternMatch(Context& context, SemIR::InstId pattern_id,
+                           SemIR::InstId scrutinee_id,
+                           Parse::NodeId case_node_id,
+                           Parse::NodeId pattern_node_id) -> SemIR::InstId {
+  MatchCaseState state = {.case_node_id = case_node_id,
+                          .pattern_node_id = pattern_node_id};
+  MatchContext match(context);
+  return match.MatchWithResult(
+      &state, {.pattern_id = pattern_id,
                .work = MatchContext::PreWork{.scrutinee_id = scrutinee_id}});
 }
 

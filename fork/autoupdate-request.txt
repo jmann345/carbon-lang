@@ -1,1 +1,1 @@
-2026-07-27T19:04:56Z pass 2 (R26): converge locNN after 550-line golden generation for the follow-ups batch
+2026-07-28T14:12:19Z S2a re-platform: regenerate ALL match goldens (structural churn expected, R26 two passes)

@@ -239,6 +239,27 @@ class Context {
     return match_first_context_;
   }
 
+  // Per-arm state of the `match` `case` pattern that we are currently
+  // checking, pushed by `MatchCaseIntroducer` and popped by `MatchCase`. A
+  // stack rather than a single optional because a case pattern's expression
+  // can itself contain a `match` (for example inside a lambda).
+  struct MatchCaseContext {
+    // The scrutinee's type. Provisioned for S2c's alternative resolution;
+    // not read yet — current consumers recompute the scrutinee type from
+    // the scrutinee inst instead.
+    SemIR::TypeId scrutinee_type_id;
+    // The `MatchCaseIntroducer` parse node; the preserved slice-gate
+    // diagnostics are pinned to it.
+    Parse::NodeId introducer_node_id;
+    // The inst that the pattern's root leading-dot designator resolved to in
+    // the scrutinee's choice scope, if any (see `DesignatorExpr` in
+    // handle_name.cpp).
+    SemIR::InstId designator_root_id = SemIR::InstId::None;
+  };
+  auto match_case_stack() -> llvm::SmallVector<MatchCaseContext>& {
+    return match_case_stack_;
+  }
+
   // An ongoing impl lookup, used to ensure termination.
   struct ImplLookupStackEntry {
     SemIR::ConstantId query_self_const_id;
@@ -578,6 +599,10 @@ class Context {
 
   // The statte of the `match_first` block that we are currently checking.
   std::optional<MatchFirstContext> match_first_context_;
+
+  // The stack of `match` `case` arms whose patterns are currently being
+  // checked.
+  llvm::SmallVector<MatchCaseContext> match_case_stack_;
 
   // Tracks all ongoing impl lookups in order to ensure that lookup terminates
   // via the acyclic rule and the termination rule.

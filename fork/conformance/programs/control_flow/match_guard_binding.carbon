@@ -8,7 +8,7 @@
 //   10
 //   20
 //   30
-// SKIP: out of W4 slice 1 — binding patterns and case guards have no semantics: this file's `case a: i32 if (a < 0)` arm is rejected at its `case` token with "error: semantics TODO: `match `case` pattern other than an integer literal, or a case guard`" (the `MatchCaseIntroducer` slice gate in toolchain/check/handle_match.cpp; fork/trial-w4/plan.md H5). Un-SKIP when guards + binding patterns land (post-slice-1 W4 work). Sketch compile-verified per R6: passes `carbon compile --phase=parse` (exit 0) on the arbiter tree (nightly 2026.07.19).
+// SKIP: binding patterns and case guards have no semantics yet: this file's `case a: i32 if (a < 0)` arm is rejected at its `case` token with "error: semantics TODO: `match `case` pattern other than an integer literal, or a case guard`" (the case-arm binding gate, `Kind::MatchCaseArm` in toolchain/check/handle_binding_pattern.cpp, which fires before the guard nodes are reached; a guard on a supported pattern is instead rejected at its `if` token with "error: semantics TODO: `match case guard`", toolchain/check/handle_match.cpp — S2a re-platform, fork/match-replatform/plan.md RF-3). Un-SKIP when case bindings (S2b) + guards (S2d) land. Sketch compile-verified per R6: passes `carbon compile --phase=parse` (exit 0) on the arbiter tree (nightly 2026.07.19).
 //
 // Preserves the guard/binding coverage that match_switch.carbon carried
 // before it was narrowed to slice-1 arms (literal cases + `default` only):

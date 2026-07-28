@@ -96,6 +96,29 @@ discriminant dispatch only.
     In S1 such alternatives are observable through `default`-arm inversion.
 -   **Guarded designator patterns** (`case .Err if (...)`) keep W4's generic
     pattern/guard TODO string, not the payload-destructuring string.
+    _S2a landing note (2026-07-28):_ the match re-platform's RF-3 co-change
+    (fork/match-replatform/plan.md §6) supersedes this: guard nodes are now
+    reached by checking, and every guard — on any pattern — is diagnosed at
+    the guard's `if` token with the single string
+    `` `match case guard` ``. Patterns whose own gate fires first (for
+    example a binding in `case a: i32 if (...)`) still emit their pattern
+    TODO at the `case` token before the guard nodes are reached. A further
+    recorded deviation class from the same landing: pattern-expression
+    diagnostics now surface before or instead of the slice-gate TODOs for
+    non-golden-pinned inputs (inherent to plan §2.1's re-route of pattern
+    nodes through their ordinary handlers) — for example `case undeclared` adds a
+    real name-not-found before the TODO; `case .Err == .Stop` and the like
+    produce expression errors instead of the payload TODO; `case (.Err)`
+    loses the TODO entirely (the tuple wrapper masks the introducer peek;
+    the error-typed pattern continues with real `.Self`-scope errors).
+    Disposition: recorded as more-honest diagnostics rather than gated —
+    adding lookahead to preserve blanket TODOs on unpinned inputs would
+    reintroduce the sniffing this slice removes (R17). No golden or SKIP
+    evidence pins any affected input (verified by reviewer #1). Veto-able.
+    Relatedly, the binding-root gate lives in the binding handlers rather
+    than in `MatchCase` classification as the plan sketched, because
+    binding nodes check before `MatchCase` — same string and location,
+    forced by traversal order.
 -   **The `default` arm stays required** for choice matches in S1 (SF-7's
     exhaustiveness lands in S2), so every S1 conformance/testdata match carries
     `default`.

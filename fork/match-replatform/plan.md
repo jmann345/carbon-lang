@@ -290,7 +290,13 @@ checking by way of the case-arm context (needed by S2c's alternative resolution)
 also carries the **`MatchCaseIntroducer` node id**: preserved diagnostics
 are pinned to the case token (§0.3, §3.1), and handle_binding_pattern has
 no other cheap access to that token, so the combined TODO for binding
-roots keeps its location only if the id is plumbed through here.
+roots keeps its location only if the id is plumbed through here. The
+context carries a third field, **`designator_root_id`**, recording the
+inst that the case pattern's root `DesignatorExpr` resolved to (written
+in handle_name.cpp, read by the engine's classification): checked-inst
+classification alone cannot distinguish a leading-dot alternative
+spelling from a wrapped or qualified spelling resolving to the same
+constant, so the provenance must be recorded at resolution time.
 
 ### 2.5 Forward compatibility
 
@@ -605,7 +611,8 @@ R-5's implicit introducer push; toolchain/sem_ir/typed_insts.h
 (NameBindingDecl doc comment, :1319-1320); toolchain/check/context.h
 (case-arm scrutinee + introducer-node-id context, §2.4);
 toolchain/check/node_stack.h; toolchain/check/handle_name.cpp
-(comment/guard only); possibly toolchain/check/pattern.{h,cpp},
+(guard TODOs + designator-provenance recording); possibly
+toolchain/check/pattern.{h,cpp},
 toolchain/check/scope_stack.{h,cpp}, toolchain/sem_ir/inst_namer.cpp
 (labels). Drift buffer (+50%, the W5 lesson): convert.cpp,
 control_flow.{h,cpp}, sem_ir/formatter if NameBindingDecl printing needs a

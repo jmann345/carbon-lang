@@ -555,6 +555,15 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
       break;
     }
 
+    case FullPatternStack::Kind::MatchCaseArm:
+      // Bindings in `match` `case` patterns are a later slice (S2b). The TODO
+      // is pinned to the arm's `case` token, where the W4 slice gate emitted
+      // it.
+      return context.TODO(
+          context.match_case_stack().back().introducer_node_id,
+          "match `case` pattern other than an integer literal, or a case "
+          "guard");
+
     case FullPatternStack::Kind::NotInEitherParamList:
       CARBON_FATAL("Unreachable");
   }
@@ -621,6 +630,17 @@ auto HandleParseNode(Context& context,
   // Pop the `.Self` facet value name introduced by the
   // CompileTimeBindingPatternTypeStart.
   context.scope_stack().Pop(/*check_unused=*/true);
+
+  // Gate `match` case-arm bindings before the introducer-dependent logic
+  // below, which would otherwise emit the generic-`let` TODO for them; the
+  // case arm's implicit introducer is a `let`.
+  if (context.full_pattern_stack().CurrentKind() ==
+      FullPatternStack::Kind::MatchCaseArm) {
+    return context.TODO(
+        context.match_case_stack().back().introducer_node_id,
+        "match `case` pattern other than an integer literal, or a case "
+        "guard");
+  }
 
   auto node_kind = Parse::NodeKind::CompileTimeBindingPattern;
   const DeclIntroducerState& introducer =

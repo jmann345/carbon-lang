@@ -9,6 +9,7 @@
 #include "toolchain/check/convert.h"
 #include "toolchain/check/handle.h"
 #include "toolchain/check/inst.h"
+#include "toolchain/check/literal.h"
 #include "toolchain/check/pattern.h"
 #include "toolchain/check/pattern_match.h"
 #include "toolchain/lex/token_kind.h"
@@ -37,12 +38,17 @@ namespace Carbon::Check {
 // constant integer expression `case` patterns, and choice scrutinees with
 // leading-dot payload-free alternative patterns (`case .Err`), whose
 // discriminant is compared against the scrutinee's `.discriminant` field.
+// Against either shape, a bare `name: type` binding pattern is also
+// supported: it is irrefutable, so the test pass contributes no real
+// condition (the arm's condition is a constant `true`), and a bind pass in
+// the arm's body block initializes the binding from the scrutinee through
+// `LocalPatternMatch`, so the binding exists only where the arm has matched.
 // Everything outside that subset produces a "semantics TODO" diagnostic.
 //
-// TODO: Support other pattern kinds, guards, other scrutinee types, payload
-// destructuring in alternative patterns, and exhaustiveness checking without
-// a `default` arm. Diagnose cases that can never match, per
-// docs/design/pattern_matching.md.
+// TODO: Support other pattern kinds (`var`/`ref` case bindings, tuple
+// patterns), guards, other scrutinee types, payload destructuring in
+// alternative patterns, and exhaustiveness checking without a `default` arm.
+// Diagnose cases that can never match, per docs/design/pattern_matching.md.
 
 // Returns the scrutinee value, which is on the `MatchHandler` entry after an
 // earlier case arm, or otherwise on the `MatchStatementStart` entry.
@@ -215,11 +221,16 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
 
   // Classify by the checked pattern inst: expression patterns (including
   // error recovery) are matched by the refutable engine, which returns the
-  // arm's condition; every other pattern root stays behind the W4 slice-gate
-  // TODO until bindings (S2b) and payload destructuring (S2c) land. The TODO
-  // is pinned to the introducer node so the preserved diagnostics keep their
-  // location.
+  // arm's condition; a binding-pattern root is irrefutable, so its test pass
+  // contributes no condition and the arm's condition is a constant `true`
+  // (the refutable engine prunes at binding-pattern roots, whose
+  // `bind_name_map` entries belong to the bind pass below); every other
+  // pattern root stays behind the W4 slice-gate TODO until payload
+  // destructuring (S2c) lands. The TODO is pinned to the introducer node so
+  // the preserved diagnostics keep their location.
   SemIR::InstId cond_value_id = SemIR::InstId::None;
+  bool is_binding_arm =
+      context.insts().Is<SemIR::ValueBindingPattern>(pattern_id);
   if (pattern_id == SemIR::ErrorInst::InstId ||
       context.insts().Is<SemIR::ExprPattern>(pattern_id)) {
     cond_value_id =
@@ -229,6 +240,8 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
       // which aborts checking.
       return false;
     }
+  } else if (is_binding_arm) {
+    cond_value_id = MakeBoolLiteral(context, node_id, SemIR::BoolValue::True);
   } else {
     return context.TODO(
         introducer_node_id,
@@ -248,6 +261,22 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
   context.inst_block_stack().Pop();
   context.inst_block_stack().Push(then_block_id);
   context.region_stack().AddToRegion(then_block_id, node_id);
+
+  // Bind pass: initialize the pattern's bindings from the scrutinee in the
+  // arm's body block, where they are reachable only when the arm has
+  // matched. This runs the irrefutable `LocalState` machinery, the same way
+  // `let` initializes its bindings.
+  if (is_binding_arm) {
+    LocalPatternMatch(context, pattern_id, scrutinee_id);
+
+    // Objects created initializing the binding live until the end of the
+    // arm's scope, the same way `let` and `for` bindings defer theirs: the
+    // conversion to the binding's declared type can materialize a temporary,
+    // which must not be destroyed by the next statement's temporary-cleanup
+    // discharge while the binding is live. `MatchHandler`'s scope cleanups
+    // discharge it at arm exit instead.
+    context.scope_stack().DeferCleanups();
+  }
 
   context.node_stack().Push(node_id, else_block_id);
   return true;

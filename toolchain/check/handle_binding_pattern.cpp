@@ -507,6 +507,25 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
       break;
     }
 
+    case FullPatternStack::Kind::MatchCaseArm:
+      // A bare `name: type` binding in a `match` `case` pattern checks like a
+      // `let` binding: it is irrefutable and binds the scrutinee's value in
+      // the arm's scope (re-platform plan S2b). `var`-mode and `ref` case
+      // bindings are a recorded later slice with their own TODO; form
+      // bindings in case arms stay behind the W4 slice gate, pinned to the
+      // arm's `case` token.
+      if (node_kind == Parse::NodeKind::VarBindingPattern || is_ref) {
+        return context.TODO(node_id,
+                            "`var` or `ref` binding in match `case` pattern");
+      }
+      if (node_kind == Parse::NodeKind::FormBindingPattern) {
+        return context.TODO(
+            context.match_case_stack().back().introducer_node_id,
+            "match `case` pattern other than an integer literal, or a case "
+            "guard");
+      }
+      [[fallthrough]];
+
     case FullPatternStack::Kind::NameBindingDecl:
     case FullPatternStack::Kind::ClassScopeVarDecl: {
       if (node_kind == Parse::NodeKind::FormBindingPattern) {
@@ -554,15 +573,6 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
       context.node_stack().Push(node_id, binding_pattern_id);
       break;
     }
-
-    case FullPatternStack::Kind::MatchCaseArm:
-      // Bindings in `match` `case` patterns are a later slice (S2b). The TODO
-      // is pinned to the arm's `case` token, where the W4 slice gate emitted
-      // it.
-      return context.TODO(
-          context.match_case_stack().back().introducer_node_id,
-          "match `case` pattern other than an integer literal, or a case "
-          "guard");
 
     case FullPatternStack::Kind::NotInEitherParamList:
       CARBON_FATAL("Unreachable");

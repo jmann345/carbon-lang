@@ -950,9 +950,10 @@ auto MatchContext::DoVarPreWorkImpl(State state,
       return init_result.storage_id;
     }
     case CARBON_KIND(MatchCaseState* _): {
-      // The test pass never descends past a binding-pattern root, and `var`
-      // patterns in `case` arms are gated behind a TODO until case bindings
-      // land (S2b).
+      // The test pass never descends past a binding-pattern root (the bind
+      // pass runs as a `LocalState` match in the arm's body block instead),
+      // and `var` patterns in `case` arms are gated behind a TODO at check
+      // time.
       CARBON_FATAL("Found VarPattern during match case pattern match");
     }
   }

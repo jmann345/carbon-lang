@@ -162,9 +162,9 @@ library "[[@TEST_NAME]]";
 fn F() -> i32 {
   var x: i32 = 3;
   match (x) {
-    // CHECK:STDERR: fail_todo_match.carbon:[[@LINE+4]]:5: error: semantics TODO: `match `case` pattern other than an integer literal, or a case guard` [SemanticsTodo]
+    // CHECK:STDERR: fail_todo_match.carbon:[[@LINE+4]]:22: error: semantics TODO: ``var` or `ref` binding in match `case` pattern` [SemanticsTodo]
     // CHECK:STDERR:     case unused var (a: i32, b: i32) => { return 0; }
-    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:                      ^~~~~~
     // CHECK:STDERR:
     case unused var (a: i32, b: i32) => { return 0; }
     case (a: i32) if (a < 0) => { return 2; }

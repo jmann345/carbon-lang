@@ -1,1 +1,1 @@
-RF-4 R26 pass 2: verify fixpoint after b3fab91 (two new goldens generated; expect empty or loc-only).
+S2b: regenerate match goldens — binding_pattern.carbon, binding_choice_scrutinee.carbon, fail_todo_tuple_pattern.carbon full generation; STDERR verification in the fail_ binding files + patterns/unused.carbon + fail_arm_conversion.carbon. Churn outside these files = red flag (R26 two passes).

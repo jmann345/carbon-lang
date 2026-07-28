@@ -123,8 +123,9 @@
         "toolchain/check/handle_match.cpp:122",
         "toolchain/check/handle_match.cpp:127",
         "toolchain/check/handle_match.cpp:132",
-        "toolchain/check/handle_match.cpp:234",
-        "toolchain/check/testdata/match/fail_todo_binding_pattern.carbon:15",
+        "toolchain/check/handle_match.cpp:246",
+        "toolchain/check/testdata/match/fail_todo_tuple_pattern.carbon:26",
+        "toolchain/check/testdata/match/fail_todo_var_binding.carbon:18",
         "toolchain/check/testdata/match/fail_todo_guard.carbon:15",
         "toolchain/check/testdata/match/fail_todo_no_default.carbon:20",
         "toolchain/check/testdata/match/fail_todo_non_int_scrutinee.carbon:14",
@@ -141,7 +142,7 @@
         "fork/conformance/programs/project/most_features_missing_match.carbon:7"
       ],
       "blocked_by": [],
-      "notes": "W4 slice 1 (fork/trial-w4/plan.md) implements the match *statement* with an integer scrutinee (Core.IntLiteral, builtin integer types, and the Int(N)/UInt(N) adapters only — other integer-repr adapter classes are gated out), constant integer expression case patterns, and a `default` arm, as an if/else-chain SemIR shape (Branch/BranchIf + convergence; no lowering changes; comparisons use the design-mandated `literal == scrutinee` operand order, docs/design/pattern_matching.md 'Expression patterns'). Remaining scope, each gated by a clean semantics-TODO (evidence lines): binding/tuple/var/unused/paren patterns and guards (MatchCaseIntroducer gate), non-integer and adapter-class scrutinees (MatchCondition gate), missing-`default`/exhaustiveness (MatchStatement gate), guard handlers (stubs), refutable-pattern rejection (expression.carbon comments at :17,:29,:41), and usefulness diagnostics (split out as W-066). Land gate: the new AUTOUPDATE goldens have no CHECK lines yet and must be autoupdated on the runner, then the scoreboard regenerated (rulebook R11/R12). Completion flips TWO scoreboard entries: control_flow/match_switch.carbon (owning bullet) and project/most_features_missing_match.carbon (bullet: Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation). Prerequisite for W-010/W-011/W-012/W-017. Coherence risk 2 (fork/design-sprint/README.md:182-188): pin scope to ONE shared refutable-match SemIR core that `?` (W-018) and let-else (W-012) also desugar onto."
+      "notes": "W4 slice 1 (fork/trial-w4/plan.md) implements the match *statement* with an integer scrutinee (Core.IntLiteral, builtin integer types, and the Int(N)/UInt(N) adapters only — other integer-repr adapter classes are gated out), constant integer expression case patterns, and a `default` arm, as an if/else-chain SemIR shape (Branch/BranchIf + convergence; no lowering changes; comparisons use the design-mandated `literal == scrutinee` operand order, docs/design/pattern_matching.md 'Expression patterns'). Bare `name: type` case bindings (including `unused`) landed in S2b (fork/match-replatform/plan.md §3.2): they check as a `ValueBindingPattern` under `Kind::MatchCaseArm`, contribute a constant-true test condition, and bind via `LocalPatternMatch` in the arm's body block. Remaining scope, each gated by a clean semantics-TODO (evidence lines): tuple/paren patterns and compile-time case bindings (the combined-string gates: handle_match.cpp's non-binding-root fallback at :246 and handle_binding_pattern.cpp's compile-time/form case gates; pinned by fail_todo_tuple_pattern.carbon), `var`/`ref` case bindings (their own TODO string at the `Kind::MatchCaseArm` gate in handle_binding_pattern.cpp, pinned to the binding), guards (stub handlers in handle_match.cpp), non-integer and adapter-class scrutinees (MatchCondition gate), missing-`default`/exhaustiveness (MatchStatement gate), refutable-pattern rejection (expression.carbon comments at :17,:29,:41), and usefulness diagnostics (split out as W-066). Land gate: the new AUTOUPDATE goldens have no CHECK lines yet and must be autoupdated on the runner, then the scoreboard regenerated (rulebook R11/R12). Completion flips TWO scoreboard entries: control_flow/match_switch.carbon (owning bullet) and project/most_features_missing_match.carbon (bullet: Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation). Prerequisite for W-010/W-011/W-012/W-017. Coherence risk 2 (fork/design-sprint/README.md:182-188): pin scope to ONE shared refutable-match SemIR core that `?` (W-018) and let-else (W-012) also desugar onto."
     },
     {
       "id": "W-009",
@@ -520,12 +521,12 @@
       "size": "M",
       "bullet": "Generics: Checked generics",
       "evidence": [
-        "toolchain/check/handle_binding_pattern.cpp:303",
-        "toolchain/check/handle_binding_pattern.cpp:521",
-        "toolchain/check/handle_binding_pattern.cpp:547"
+        "toolchain/check/handle_binding_pattern.cpp:410",
+        "toolchain/check/handle_binding_pattern.cpp:670",
+        "toolchain/check/handle_binding_pattern.cpp:698"
       ],
       "blocked_by": [],
-      "notes": ":303 local generic let (:!) bindings unsupported pending re-evaluation of the eval block in a synthesized specific; :521 compile-time let outside function/interface scope; :547 underscore as associated constant name needs a real diagnostic (may just need documentation + proper error)."
+      "notes": ":410 local generic let (:!) bindings unsupported pending re-evaluation of the eval block in a synthesized specific; :670 compile-time let outside function/interface scope; :698 underscore as associated constant name needs a real diagnostic (may just need documentation + proper error)."
     },
     {
       "id": "W-032",

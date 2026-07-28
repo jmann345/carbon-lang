@@ -56,3 +56,24 @@ fn G(x: i32) -> i32 {
   }
   return -1;
 }
+
+// --- fail_case_binding_conversion.carbon
+library "[[@TEST_NAME]]";
+
+// A case binding whose type the scrutinee cannot convert to diagnoses at the
+// bind-pass conversion in the arm's body block; the conversion's location is
+// the scrutinee it converts (re-platform plan R-1).
+fn H(x: i32) -> i32 {
+  // CHECK:STDERR: fail_case_binding_conversion.carbon:[[@LINE+7]]:10: error: cannot implicitly convert expression of type `i32` to `bool` [ConversionFailure]
+  // CHECK:STDERR:   match (x) {
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_case_binding_conversion.carbon:[[@LINE+4]]:10: note: type `i32` does not implement interface `Core.ImplicitAs(bool)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   match (x) {
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR:
+  match (x) {
+    case b: bool => { if (b) { return 1; } return 2; }
+    default => { return 0; }
+  }
+  return -1;
+}

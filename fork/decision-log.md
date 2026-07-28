@@ -316,9 +316,20 @@ integer-scrutinee expression-pattern gate in
 toolchain/check/pattern_match.cpp ONLY, the TODO string
 `` `match `case` pattern other than an integer literal, or a case guard` ``
 becomes `` `match case expression pattern that is not a constant integer` ``;
-the old string survives verbatim at its other five sites
+the old string survives verbatim at its other six sites
 (handle_match.cpp, handle_binding_pattern.cpp twice,
-handle_let_and_var.cpp, and pattern_match.cpp's choice-pattern fallback).
+handle_let_and_var.cpp, pattern_match.cpp's choice-pattern fallback, and
+handle_name.cpp's leading-dot designator gate — the last was missed in
+this note's original count because the string literal is split across
+two source lines there; corrected at S2b).
+_RF-4 addendum (2026-07-28):_ the RF-4 autoupdate run exposed a
+formatter CHECK-crash on initializing-category case expressions
+(`case 2 + 3` — the prelude operator call returns through a return
+slot, and a spliced region result must never be initializing-category).
+Fixed in commit d9be8f4 by converting such expressions to values inside
+the pattern's expression region before it closes, the same invariant
+type expressions uphold by way of `ExprAsType`. This invariant is
+load-bearing for all later slices. Veto-able.
 Testdata: fail_todo_non_int_literal_case.carbon flips to the now-passing
 negative_literal_case.carbon, and two files land alongside it —
 constant_expr_case.carbon (admitted constant arithmetic) and
@@ -332,6 +343,86 @@ Implication for W-066 (usefulness diagnostics): constant-expression
 admission creates invisible overlaps (`case 5` vs `case 2 + 3` on the
 same scrutinee), so duplicate/overlap detection must compare evaluated
 constant values, not source forms — noted on the work item. Veto-able.
+
+_S2b landing note (2026-07-28):_ the match re-platform's S2b slice
+(fork/match-replatform/plan.md §3.2) discharges this section's binding
+gate for bare `name: type` case bindings: they check to a
+`ValueBindingPattern` under `Kind::MatchCaseArm` and bind the scrutinee's
+value in the arm's scope. The test pass contributes no condition
+(bindings are irrefutable), so the arm's condition is a constant `true`
+emitted by handle_match.cpp — keeping the first-match-wins CFG uniform —
+and the bind pass runs `LocalPatternMatch` in the arm's body block, so
+the binding is initialized only where the arm has matched. The TODO
+string `` `match `case` pattern other than an integer literal, or a case
+guard` `` is therefore no longer emitted at the plain-binding case gate
+in toolchain/check/handle_binding_pattern.cpp, but survives byte-identical
+at its remaining sites (handle_match.cpp's non-binding-root fallback, the
+compile-time-binding and form-binding case gates in
+handle_binding_pattern.cpp, handle_let_and_var.cpp's binding-free `var`
+case pattern, pattern_match.cpp's choice-pattern fallback, and
+handle_name.cpp's leading-dot designator gate — six in all; the
+tuple-case and compile-time-binding sites are golden-pinned by
+fail_todo_tuple_pattern.carbon). Per
+§3.2(c), `var`-mode and `ref` case bindings stay gated behind a NEW
+precise TODO string `` `var` or `ref` binding in match `case` pattern ``,
+pinned to the binding itself (fail_todo_var_binding.carbon,
+fail_todo_ref_binding.carbon). Other testdata: the now-compiling
+fail_todo_binding_pattern.carbon flips to binding_pattern.carbon (multiple
+arms, mixed literal+binding arms, `unused` modifier);
+binding_choice_scrutinee.carbon binds a choice-typed scrutinee and
+rematches it in a nested match (risks R-2/R-8);
+fail_binding_scope.carbon pins sibling-arm and post-match leakage as
+`NameNotFound` (§3.2(b)); fail_unused_case_binding.carbon pins
+`UnusedButUsed` under the arm's implicit `let` introducer (§3.2(a));
+fail_arm_conversion.carbon gains a bind-pass conversion-failure pin
+(R-1); and the fail_todo_match subfile of
+toolchain/check/testdata/patterns/unused.carbon — whose first case is a
+`var`-mode binding — moves from the combined string at its `case` token
+to the new `var`/`ref` string at the binding, the same §3.2(c) sanction. `default` stays required — an irrefutable binding arm does not yet
+discharge exhaustiveness (S2e). SKIP evidence refreshed for
+control_flow/match_guard_binding.carbon and
+project/most_features_missing_match.carbon: their guarded-binding arms
+are now rejected at the guard's `if` token ("match case guard") instead
+of the `case` token, and both un-SKIP only at S2d. Veto-able.
+
+_S2b R-7 re-derivation (2026-07-28, post-review):_ the bind pass's
+no-cleanups argument does not close from the scrutinee gate alone. The
+gate guarantees the _scrutinee's_ type is trivially destructible (integer
+types; an in-slice choice's payloads are restricted to trivially copyable
+and destructible types when its representation completes), but the bind
+pass's `Convert` targets the _binding's declared type_, which is not
+gated: `case n: i64` on an `i32` scrutinee runs `Core.ImplicitAs` and
+materializes a `Temporary` (convert.cpp `FinalizeTemporary` →
+`AddInstWithCleanup`), registering a cleanup in the arm's Owned scope —
+and destroy synthesis is live on this branch (`Destroy.Op` calls are
+emitted at discharge; see toolchain/check/testdata/let/lifetime.carbon),
+so discharge placement is real output. Fix applied per the `let`/`for`
+precedent (handle_let_and_var.cpp, handle_loop_statement.cpp): the bind
+pass now calls `scope_stack().DeferCleanups()` (handle_match.cpp), so
+such a temporary is discharged by `MatchHandler`'s end-of-scope cleanups
+at arm exit, not by the first arm-body statement's temporary-cleanup
+discharge while the binding is live. Output-neutral for in-slice
+testdata: `DeferCleanups` only raises the scope's ambient cleanup-depth
+marker (scope_stack.h) and emits no insts, and a same-type bind
+conversion registers no cleanup (value→value is a no-op; ref→value binds
+a value without a `Temporary`), so no existing golden changes. Bounded
+today by DeferCleanups plus the scrutinee gate — the binding-type hole
+now yields correctly-placed end-of-arm destroys, not unsound ones. Must
+be re-derived at S2c (payload destructuring adds non-integer
+subscrutinees and per-element conversions). Two further recorded
+nuances: the bind pass re-reads the scrutinee at _arm entry_ in the
+arm's body block, not at match entry, so a reference-category scrutinee
+is observed after earlier arms' tests ran — benign while tests are
+effect-free, re-derive at S2d when guards can run arbitrary code between
+tests; and fork/conformance/out/scoreboard.json is not hand-edited here —
+its regeneration rides the landing autoupdate/merge gate (R9). Also
+landed post-review:
+toolchain/check/testdata/match/fail_todo_tuple_pattern.carbon re-pins
+the surviving combined W4 TODO
+string (a tuple-pattern root at handle_match.cpp's non-binding-root
+fallback, and `case template n: i32` at handle_binding_pattern.cpp's
+compile-time case gate), which had zero testdata pins after S2b's flips.
+Veto-able.
 
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 

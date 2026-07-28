@@ -1,1 +1,1 @@
-2026-07-28T12:23:45Z gate the follow-ups batch (goldens at fixpoint; review OK + advisories)
+Upstream-20260728 gate: full merge gate on the weekly upstream merge (fixpoint at f8fc908, pass-2 loc-only).

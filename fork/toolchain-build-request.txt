@@ -1,1 +1,1 @@
-S2a gate: full merge gate on the re-platformed match (fixpoint at d755202, pass-2 empty). Exit criteria: lower/basic.carbon arbiter (already empty at pass 1), conformance 73 PASS floor vs this release.
+RF-4 gate: full merge gate on constant-expr case patterns + formatter-crash fix + PR #6 trunk composition (fixpoint at 52f7756, pass-2 empty).

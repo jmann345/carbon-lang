@@ -1,1 +1,1 @@
-RF-4: regenerate match goldens — new empty-golden testdata negative_literal_case.carbon + constant_expr_case.carbon (full generation), fail_todo_non_constant_case.carbon STDERR verification; no existing golden should churn (R26 two passes).
+RF-4 retry after formatter-crash fix d9be8f4: regenerate match goldens — negative_literal_case.carbon + constant_expr_case.carbon full generation, fail_todo_non_constant_case.carbon STDERR verification; existing goldens must not churn (R26 two passes).

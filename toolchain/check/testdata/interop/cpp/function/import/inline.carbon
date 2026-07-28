@@ -38,10 +38,10 @@ fn MyF() {
 
 // TODO: Promote this warning to an error by default.
 // CHECK:STDERR: ./without_definition.h:[[@LINE+7]]:13: warning: inline function 'foo' is not defined [CppInteropParseWarning]
-// CHECK:STDERR:     6 | inline void foo();
+// CHECK:STDERR:    10 | inline void foo();
 // CHECK:STDERR:       |             ^
 // CHECK:STDERR: ./without_definition.h:[[@LINE+4]]:13: note: used here [CppInteropParseNote]
-// CHECK:STDERR:     6 | inline void foo();
+// CHECK:STDERR:    10 | inline void foo();
 // CHECK:STDERR:       |             ^
 // CHECK:STDERR:
 inline void foo();
@@ -133,12 +133,12 @@ fn MyF() {
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @MyF() {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %Cpp.ref.loc12: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
-// CHECK:STDOUT:   %foo.ref.loc12: %foo.cpp_overload_set.type = name_ref foo, imports.%foo.cpp_overload_set.value [concrete = constants.%foo.cpp_overload_set.value]
-// CHECK:STDOUT:   %foo__carbon_thunk.call.loc12: init %empty_tuple.type = call imports.%foo__carbon_thunk.decl()
-// CHECK:STDOUT:   %Cpp.ref.loc15: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
-// CHECK:STDOUT:   %foo.ref.loc15: %foo.cpp_overload_set.type = name_ref foo, imports.%foo.cpp_overload_set.value [concrete = constants.%foo.cpp_overload_set.value]
-// CHECK:STDOUT:   %foo__carbon_thunk.call.loc15: init %empty_tuple.type = call imports.%foo__carbon_thunk.decl()
+// CHECK:STDOUT:   %Cpp.ref.loc8: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo.ref.loc8: %foo.cpp_overload_set.type = name_ref foo, imports.%foo.cpp_overload_set.value [concrete = constants.%foo.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo__carbon_thunk.call.loc8: init %empty_tuple.type = call imports.%foo__carbon_thunk.decl()
+// CHECK:STDOUT:   %Cpp.ref.loc11: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo.ref.loc11: %foo.cpp_overload_set.type = name_ref foo, imports.%foo.cpp_overload_set.value [concrete = constants.%foo.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo__carbon_thunk.call.loc11: init %empty_tuple.type = call imports.%foo__carbon_thunk.decl()
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

@@ -10,23 +10,31 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-07-27 (post-PR #4: trunk includes upstream 39916ad)._
-ALL FOUR PRs MERGED to `trunk`: PR 1 (match), PR 4 (upstream
-39916ad), PR 2 (B0 exception boundary), and PR 3 (W5 choice payloads
-slice 1) — each behind a green composition gate of the exact resulting
-tree plus adversarial review (2 reviewers per feature PR, a
-merge-integrity audit for the upstream merge). Go-forward: **one
-workstream = one branch off `trunk` = one focused PR**.
+_Last updated: 2026-07-28 (post-PR #6: trunk includes upstream 7d89ac9)._
+SIX PRs MERGED to `trunk`: PR 1 (match), PR 4 (upstream 39916ad), PR 2
+(B0 exception boundary), PR 3 (W5 choice payloads slice 1), PR 5
+(review follow-ups), PR 6 (upstream 7d89ac9) — each behind a green
+composition gate of the exact resulting tree plus adversarial review
+(2 reviewers per feature PR, a merge-integrity audit per upstream
+merge). Go-forward: **one workstream = one branch off `trunk` = one
+focused PR**.
 
-**Weekly upstream-merge outcome (standing rule 5, 2026-07-27):** upstream
-`39916ad` staged, gate-green, scoreboard non-regressing, merged by way of
-PR #4. Next check: Monday 14:00 UTC.
+**Weekly upstream-merge outcome (standing rule 5, 2026-07-28):** upstream
+`7d89ac9` (8 commits; shared-ASTContext flag, orphan-rule anchoring)
+staged, 3 conflicts resolved, goldens runner-reconciled to R26 fixpoint,
+gate run 35 green, merge-integrity audit OK (no blockers), merged by way
+of PR #6. Recorded advisory: the two interop cpp import goldens carry a
+permanent fork-vs-upstream `CppInteropParseNote` placement difference
+(the fork's thunk is the "use") and will re-conflict whenever upstream
+edits those STDERR blocks. Next check: Monday 14:00 UTC.
 
 ## Branches
 
 | Branch | State |
 | --- | --- |
-| `trunk` | Integrated line: match + arbiter + upstream 39916ad (PR #4) + B0 exception boundary (PR #2). Base all new work here. |
+| `trunk` | Integrated line: match + arbiter + B0 + W5-S1 + follow-ups + upstream 7d89ac9 (PR #6). Base all new work here. |
+| `claude/carbon-fork-0-1-match-replatform` | ACTIVE. S2a LANDED on-branch: gate run 34 green (release fork-toolchain-34-7d72d983d), R26 fixpoint at pass 2 (empty), lower/basic.carbon arbiter diff EMPTY, conformance 73 PASS / 0 FAIL / 34 SKIP vs the gate release. RF-4 (constant-expr case patterns) implemented + two-adversary reviewed (correctness OK; strictness: 2 bookkeeping blockers + advisories), fixer in flight; commits next, then autoupdate → gate → floor, then S2b. Needs trunk (PR #6) merged back in before its PR. |
+| `claude/carbon-fork-0-1-upstream-20260728` | MERGED by way of PR #6. |
 | `claude/carbon-fork-0-1-w5` | MERGED by way of PR #3 (composition gate run 30 green). |
 | `claude/carbon-fork-0-1-7mwfb7-design-docs` | STRANDED source for the F-008..F-011 design docs; reconstruction is NEXT, **gated on the user's veto-digest response** (presented 2026-07-20, unanswered). Reconstruct per the recipe pattern used for b0/w5 (overlay real content onto fresh branch off trunk; targeted-merge diverged files; prek + gate + PR). |
 | `claude/carbon-fork-0-1-{7mwfb7,b0,7mwfb7-upstream-20260727}` and other `7mwfb7-*` | MERGED or superseded; do not stack new commits. |
@@ -34,11 +42,11 @@ PR #4. Next check: Monday 14:00 UTC.
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
 73 PASS / 34 SKIP / 0 FAIL programs (107 total, 7 differential C++-oracle
-pairs); **40/56 bullets green** (toolchain `fork-toolchain-30-7c8a55e69`,
-the merged trunk composition). B0 flipped the exception-interop bullet;
-W5 kept sum-types green after a real catch: upstream 39916ad made `base`
-a reserved word in binding patterns, which broke choice_discriminant_diff
-on its first merged-tree run — renamed to `seed` (this file's commit).
+pairs); **40/56 bullets green** (most recent full run: toolchain
+`fork-toolchain-34-7d72d983d`, the S2a re-platform tree — the floor held
+exactly through the re-platform). Earlier context: B0 flipped the
+exception-interop bullet; upstream 39916ad's `base` reservation broke
+choice_discriminant_diff once — renamed to `seed`.
 
 ### CI on jmann345/carbon-lang (self-hosted runner "jeromehome", 28-core Arch)
 
@@ -60,18 +68,14 @@ on its first merged-tree run — renamed to `seed` (this file's commit).
 
 1.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
     user's veto-digest response** (presented 2026-07-20, unanswered).
-2.  Before W5-S2: re-platform match onto the pattern machinery (viability
-    review finding — current impl is if/else-chain desugar).
+2.  Match re-platform (branch `claude/carbon-fork-0-1-match-replatform`):
+    S2a LANDED on-branch (byte-equivalence arbiter empty; floor held).
+    RF-4 in the commit pipeline. Then S2b (bindings), S2c (payload
+    destructuring + the S2 name-to-index metadata follow-up), S2d
+    (guards), S2e (exhaustiveness); PR to trunk after a slice boundary
+    with trunk merged back in first (trunk moved: PR #6).
 3.  W5 slices 2-4; error-handling B1/B2/B3; threading defect fixes (F-008).
-4.  Landing-review follow-ups: MERGED to trunk (PR #5, gate run 31,
-    goldens at R26 fixpoint; the fence-unbuildable golden's predicted
-    error was CONFIRMED by the runner). Remaining follow-up: S2
-    name-to-index metadata replacing constant excavation (rides S2c).
-    The match re-platform plan (fork/match-replatform/plan.md on
-    `claude/carbon-fork-0-1-match-replatform`) passed two-adversary
-    review with text amendments applied — implementation-approved;
-    S2a is the next implementation slice.
-5.  Conformance depth: differential pair per flipped bullet; scoreboard in
+4.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI; W-066 match usefulness diagnostics.
 
 ### Standing user directives

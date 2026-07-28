@@ -1,1 +1,1 @@
-2026-07-27T19:04:56Z pass 2 (R26): converge locNN after 550-line golden generation for the follow-ups batch
+S2a landing in flight on the replatform branch; this file bumps autoupdate for the upstream-20260728 staging branch: regenerate interop cpp import goldens (function.carbon, inline.carbon resolved to upstream side; our thunk output must be restored by the merged toolchain).

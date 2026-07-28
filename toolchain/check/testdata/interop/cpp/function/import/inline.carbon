@@ -36,26 +36,24 @@ fn MyF() {
 
 // --- without_definition.h
 
+// TODO: Promote this warning to an error by default.
+// CHECK:STDERR: ./without_definition.h:[[@LINE+3]]:13: warning: inline function 'foo' is not defined [CppInteropParseWarning]
+// CHECK:STDERR:     6 | inline void foo();
+// CHECK:STDERR:       |             ^
 inline void foo();
 
 // --- todo_fail_import_without_definition.carbon
 
 library "[[@TEST_NAME]]";
 
-// TODO: Promote this warning to an error by default.
-// CHECK:STDERR: todo_fail_import_without_definition.carbon:[[@LINE+9]]:10: in file included here [InCppInclude]
-// CHECK:STDERR: ./without_definition.h:2:13: warning: inline function 'foo' is not defined [CppInteropParseWarning]
-// CHECK:STDERR:     2 | inline void foo();
-// CHECK:STDERR:       |             ^
-// CHECK:STDERR: todo_fail_import_without_definition.carbon:[[@LINE+5]]:10: in file included here [InCppInclude]
-// CHECK:STDERR: ./without_definition.h:2:13: note: used here [CppInteropParseNote]
-// CHECK:STDERR:     2 | inline void foo();
-// CHECK:STDERR:       |             ^
-// CHECK:STDERR:
 import Cpp library "without_definition.h";
 
 fn MyF() {
   //@dump-sem-ir-begin
+  // CHECK:STDERR: todo_fail_import_without_definition.carbon:[[@LINE+4]]:11: note: used here [CppInteropParseNote]
+  // CHECK:STDERR:    12 |   Cpp.foo();
+  // CHECK:STDERR:       |           ^
+  // CHECK:STDERR:
   Cpp.foo();
 
   // Don't error on repeated calls.
@@ -93,8 +91,8 @@ fn MyF() {
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %foo.cpp_overload_set.type: type = cpp_overload_set_type @foo.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %foo.cpp_overload_set.value: %foo.cpp_overload_set.type = cpp_overload_set_value @foo.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %foo__carbon_thunk.type: type = fn_type @foo__carbon_thunk [concrete]
-// CHECK:STDOUT:   %foo__carbon_thunk: %foo__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT:   %foo.type: type = fn_type @foo [concrete]
+// CHECK:STDOUT:   %foo: %foo.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -103,14 +101,14 @@ fn MyF() {
 // CHECK:STDOUT:     import Cpp//...
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %foo.cpp_overload_set.value: %foo.cpp_overload_set.type = cpp_overload_set_value @foo.cpp_overload_set [concrete = constants.%foo.cpp_overload_set.value]
-// CHECK:STDOUT:   %foo__carbon_thunk.decl: %foo__carbon_thunk.type = fn_decl @foo__carbon_thunk [concrete = constants.%foo__carbon_thunk] {} {}
+// CHECK:STDOUT:   %foo.decl: %foo.type = fn_decl @foo [concrete = constants.%foo] {} {}
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @MyF() {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %foo.ref: %foo.cpp_overload_set.type = name_ref foo, imports.%foo.cpp_overload_set.value [concrete = constants.%foo.cpp_overload_set.value]
-// CHECK:STDOUT:   %foo__carbon_thunk.call: init %empty_tuple.type = call imports.%foo__carbon_thunk.decl()
+// CHECK:STDOUT:   %foo.call: init %empty_tuple.type = call imports.%foo.decl()
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -120,8 +118,8 @@ fn MyF() {
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %foo.cpp_overload_set.type: type = cpp_overload_set_type @foo.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %foo.cpp_overload_set.value: %foo.cpp_overload_set.type = cpp_overload_set_value @foo.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %foo__carbon_thunk.type: type = fn_type @foo__carbon_thunk [concrete]
-// CHECK:STDOUT:   %foo__carbon_thunk: %foo__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT:   %foo.type: type = fn_type @foo [concrete]
+// CHECK:STDOUT:   %foo: %foo.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -130,17 +128,17 @@ fn MyF() {
 // CHECK:STDOUT:     import Cpp//...
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %foo.cpp_overload_set.value: %foo.cpp_overload_set.type = cpp_overload_set_value @foo.cpp_overload_set [concrete = constants.%foo.cpp_overload_set.value]
-// CHECK:STDOUT:   %foo__carbon_thunk.decl: %foo__carbon_thunk.type = fn_decl @foo__carbon_thunk [concrete = constants.%foo__carbon_thunk] {} {}
+// CHECK:STDOUT:   %foo.decl: %foo.type = fn_decl @foo [concrete = constants.%foo] {} {}
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @MyF() {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %Cpp.ref.loc18: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
-// CHECK:STDOUT:   %foo.ref.loc18: %foo.cpp_overload_set.type = name_ref foo, imports.%foo.cpp_overload_set.value [concrete = constants.%foo.cpp_overload_set.value]
-// CHECK:STDOUT:   %foo__carbon_thunk.call.loc18: init %empty_tuple.type = call imports.%foo__carbon_thunk.decl()
-// CHECK:STDOUT:   %Cpp.ref.loc21: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
-// CHECK:STDOUT:   %foo.ref.loc21: %foo.cpp_overload_set.type = name_ref foo, imports.%foo.cpp_overload_set.value [concrete = constants.%foo.cpp_overload_set.value]
-// CHECK:STDOUT:   %foo__carbon_thunk.call.loc21: init %empty_tuple.type = call imports.%foo__carbon_thunk.decl()
+// CHECK:STDOUT:   %Cpp.ref.loc12: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo.ref.loc12: %foo.cpp_overload_set.type = name_ref foo, imports.%foo.cpp_overload_set.value [concrete = constants.%foo.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo.call.loc12: init %empty_tuple.type = call imports.%foo.decl()
+// CHECK:STDOUT:   %Cpp.ref.loc15: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo.ref.loc15: %foo.cpp_overload_set.type = name_ref foo, imports.%foo.cpp_overload_set.value [concrete = constants.%foo.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo.call.loc15: init %empty_tuple.type = call imports.%foo.decl()
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -156,8 +154,8 @@ fn MyF() {
 // CHECK:STDOUT:   %WithoutThunk.cpp_overload_set.type: type = cpp_overload_set_type @WithoutThunk.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %WithoutThunk.cpp_overload_set.value: %WithoutThunk.cpp_overload_set.type = cpp_overload_set_value @WithoutThunk.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
-// CHECK:STDOUT:   %WithoutThunk__carbon_thunk.type: type = fn_type @WithoutThunk__carbon_thunk [concrete]
-// CHECK:STDOUT:   %WithoutThunk__carbon_thunk: %WithoutThunk__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT:   %WithoutThunk.type: type = fn_type @WithoutThunk [concrete]
+// CHECK:STDOUT:   %WithoutThunk: %WithoutThunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %ImplicitAs.type.914: type = facet_type <@ImplicitAs, @ImplicitAs(%i32)> [concrete]
 // CHECK:STDOUT:   %To: Core.IntLiteral = symbolic_binding To, 0 [symbolic]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74: type = fn_type @Core.IntLiteral.as.ImplicitAs.impl.Convert, @Core.IntLiteral.as.ImplicitAs.impl(%To) [symbolic]
@@ -231,7 +229,7 @@ fn MyF() {
 // CHECK:STDOUT:     import Cpp//...
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %WithoutThunk.cpp_overload_set.value: %WithoutThunk.cpp_overload_set.type = cpp_overload_set_value @WithoutThunk.cpp_overload_set [concrete = constants.%WithoutThunk.cpp_overload_set.value]
-// CHECK:STDOUT:   %WithoutThunk__carbon_thunk.decl: %WithoutThunk__carbon_thunk.type = fn_decl @WithoutThunk__carbon_thunk [concrete = constants.%WithoutThunk__carbon_thunk] {
+// CHECK:STDOUT:   %WithoutThunk.decl: %WithoutThunk.type = fn_decl @WithoutThunk [concrete = constants.%WithoutThunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -272,9 +270,9 @@ fn MyF() {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc13: init %i32 = call %bound_method.loc13_41.2(%int_1.loc13) [concrete = constants.%int_1.0c6]
 // CHECK:STDOUT:   %.loc13_41.1: %i32 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc13 [concrete = constants.%int_1.0c6]
 // CHECK:STDOUT:   %.loc13_41.2: %i32 = converted %int_1.loc13, %.loc13_41.1 [concrete = constants.%int_1.0c6]
-// CHECK:STDOUT:   %WithoutThunk__carbon_thunk.call: init %i32 = call imports.%WithoutThunk__carbon_thunk.decl(%.loc13_41.2)
-// CHECK:STDOUT:   %.loc13_42.1: %i32 = value_of_initializer %WithoutThunk__carbon_thunk.call
-// CHECK:STDOUT:   %.loc13_42.2: %i32 = converted %WithoutThunk__carbon_thunk.call, %.loc13_42.1
+// CHECK:STDOUT:   %WithoutThunk.call: init %i32 = call imports.%WithoutThunk.decl(%.loc13_41.2)
+// CHECK:STDOUT:   %.loc13_42.1: %i32 = value_of_initializer %WithoutThunk.call
+// CHECK:STDOUT:   %.loc13_42.2: %i32 = converted %WithoutThunk.call, %.loc13_42.1
 // CHECK:STDOUT:   %i32.loc13: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:   %r1: %i32 = wrapper_binding r1, %.loc13_42.2
 // CHECK:STDOUT:   name_binding_decl {

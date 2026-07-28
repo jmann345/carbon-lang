@@ -22,6 +22,13 @@ library "[[@TEST_NAME]]";
 // generated location.
 fn F(x: i32) -> i32 {
   match (x) {
+    // CHECK:STDERR: fail_case_pattern_conversion.carbon:[[@LINE+7]]:10: error: integer value 5000000000 too large for type `i32` [IntTooLargeForType]
+    // CHECK:STDERR:     case 5000000000 => { return 1; }
+    // CHECK:STDERR:          ^~~~~~~~~~
+    // CHECK:STDERR: {{.*}}/prelude/types/int.carbon:124:12: note: initializing function parameter [InCallToFunctionParam]
+    // CHECK:STDERR:   fn Equal(self: Int(N), other: Int(N)) -> bool = "int.eq";
+    // CHECK:STDERR:            ^~~~~~~~~~~~
+    // CHECK:STDERR:
     case 5000000000 => { return 1; }
     default => { return 0; }
   }
@@ -35,6 +42,13 @@ library "[[@TEST_NAME]]";
 fn G(x: i32) -> i32 {
   match (x) {
     case 5 => {
+      // CHECK:STDERR: fail_arm_body_conversion.carbon:[[@LINE+7]]:20: error: cannot implicitly convert expression of type `()` to `i32` [ConversionFailure]
+      // CHECK:STDERR:       let y: i32 = ();
+      // CHECK:STDERR:                    ^~
+      // CHECK:STDERR: fail_arm_body_conversion.carbon:[[@LINE+4]]:20: note: type `()` does not implement interface `Core.ImplicitAs(i32)` [MissingImplInMemberAccessInContext]
+      // CHECK:STDERR:       let y: i32 = ();
+      // CHECK:STDERR:                    ^~
+      // CHECK:STDERR:
       let y: i32 = ();
       return y;
     }

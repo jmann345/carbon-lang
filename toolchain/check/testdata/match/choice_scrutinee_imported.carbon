@@ -162,6 +162,11 @@ fn Construct(n: i32) -> Signal {
 // CHECK:STDOUT: fn @Classify(%s.param: %Signal) -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %s.ref: %Signal = name_ref s, %s
+// CHECK:STDOUT:   name_binding_decl {
+// CHECK:STDOUT:     %expr_patt: %pattern_type.1de = expr_pattern %Stop.ref in [concrete] {
+// CHECK:STDOUT:       %Stop.ref: %Signal = name_ref Stop, imports.%Main.import_ref.f4b
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Stop.ref: %Signal = name_ref Stop, imports.%Main.import_ref.f4b
 // CHECK:STDOUT:   %int_1: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
 // CHECK:STDOUT:   %impl.elem0.loc11_16.1: %.66c = impl_witness_access constants.%ImplicitAs.impl_witness.e93, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.409]

@@ -25,6 +25,7 @@ fn F() -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
+// CHECK:STDOUT:   %pattern_type.dc0: type = pattern_type Core.IntLiteral [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %.795: Core.Form = init_form %i32 [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
@@ -86,6 +87,11 @@ fn F() -> i32 {
 // CHECK:STDOUT: fn @F() -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %int_3.loc17: Core.IntLiteral = int_value 3 [concrete = constants.%int_3]
+// CHECK:STDOUT:   name_binding_decl {
+// CHECK:STDOUT:     %expr_patt: %pattern_type.dc0 = expr_pattern %int_3.loc18 in [concrete] {
+// CHECK:STDOUT:       %int_3.loc18: Core.IntLiteral = int_value 3 [concrete = constants.%int_3]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %int_3.loc18: Core.IntLiteral = int_value 3 [concrete = constants.%int_3]
 // CHECK:STDOUT:   %impl.elem0.loc18_12: %.c10 = impl_witness_access constants.%EqWith.impl_witness, element0 [concrete = constants.%Core.IntLiteral.as.EqWith.impl.Equal]
 // CHECK:STDOUT:   %bound_method.loc18_12: <bound method> = bound_method %int_3.loc18, %impl.elem0.loc18_12 [concrete = constants.%Core.IntLiteral.as.EqWith.impl.Equal.bound]

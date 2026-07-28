@@ -1,1 +1,1 @@
-2026-07-28T14:12:19Z S2a re-platform: regenerate ALL match goldens (structural churn expected, R26 two passes)
+S2a R26 pass 2: verify fixpoint after pass-1 reconciliation 3882922 (expect loc-only or empty; structural diff = nondeterminism, stop and diagnose).

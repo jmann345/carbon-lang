@@ -94,6 +94,8 @@ discriminant dispatch only.
     destructuring work. SF-3's ratification text covers construction only;
     the string choice is recorded here so R10 SKIP quoting stays consistent.
     In S1 such alternatives are observable through `default`-arm inversion.
+    _S2c landing note (2026-07-28):_ superseded — `.On()` now matches per
+    SF-3; bare `.On` diagnoses MissingParens (see the S2c note).
 -   **Guarded designator patterns** (`case .Err if (...)`) keep W4's generic
     pattern/guard TODO string, not the payload-destructuring string.
     _S2a landing note (2026-07-28):_ the match re-platform's RF-3 co-change
@@ -423,6 +425,106 @@ string (a tuple-pattern root at handle_match.cpp's non-binding-root
 fallback, and `case template n: i32` at handle_binding_pattern.cpp's
 compile-time case gate), which had zero testdata pins after S2b's flips.
 Veto-able.
+
+_S2c landing note (2026-07-28):_ the match re-platform's S2c slice
+(fork/match-replatform/plan.md §3.3) discharges W5-S2's payload
+destructuring: `case .Ok(value: i32)` tests the scrutinee's discriminant
+and, in the bind pass, extracts the alternative's payload tuple from the
+payload region (`ClassElementAccess` field 1, then the alternative's tuple
+field — the F-007k offset-0 overlap) and initializes each payload binding
+through `LocalPatternMatch` on a `TuplePattern` root, in the arm's scope.
+Parse gains the RF-5 dedicated form: `AlternativePatternStart` +
+`AlternativePattern` node kinds, entered from `MatchCaseIntroducer` only
+when the case pattern starts with `.` followed by an identifier
+(leading-dot-only per SF-4); the `Period` token gains a virtual-node
+allowance because the wrapper node shares the period with its bracketing
+start node. **Name-to-index metadata (the W5-S1 review follow-up (2), now
+DONE):** a `SemIR::ChoiceAlternative` side table
+(`{name_id, index, payload_field_index, has_parameters}`) on
+`SemIR::Class`, populated in declaration order when the choice definition
+completes and imported with the class definition (names translated by
+`GetLocalNameId`). It replaces `GetAlternativeDiscriminant`'s constant
+excavation, which is DELETED from pattern_match.cpp together with its
+cross-file `GetCanonicalFileAndInstId` walk — imported and reexported
+choices resolve through the ordinary class import
+(choice_scrutinee_imported/choice_scrutinee_reexported still pin those
+paths, plus the new choice_payload_imported.carbon for payload metadata).
+Sanctioned diagnostic changes, verbatim: the TODO string
+`` `match case pattern destructuring a choice payload` `` is DISCHARGED —
+both emission sites (bare `.Ok` and wrapped-designator, pattern_match.cpp)
+are deleted. In its place: in-slice payload patterns compile; the
+parens-iff-parameter-list rule (p2188:453-456) is enforced by two new
+diagnostics, `` alternative `{0}` is declared with a parameter list, so its
+pattern requires parentheses `` (MatchAlternativeMissingParens, bare `.Ok`
+— this also supersedes the W5-S1 recorded gate that kept `case .On` for a
+zero-payload `On()` behind the payload TODO: `.On()` now matches per SF-3
+and bare `.On` gets this error) and `` alternative `{0}` is declared
+without a parameter list, so its pattern cannot have parentheses ``
+(MatchAlternativeUnexpectedParens, `case .Err()`); wrong arity gets
+`` alternative pattern has {0} subpattern{0:s}, but alternative `{1}` is
+declared with {2} parameter{2:s} `` (MatchAlternativeArgCountMismatch); a
+non-binding payload subpattern (`case .Ok(42)`) gets a NEW precise TODO
+`` `non-binding subpattern in match `case` alternative pattern` ``, pinned
+to the subpattern. Span choice: all three new match-alternative
+diagnostics anchor on the whole alternative pattern node — uniformity
+over sharpness — with sharper sub-spans deferred to W-066's
+diagnostics-quality work. The combined W4 string survives byte-identical at six
+sites, but one site MOVES: handle_name.cpp's leading-dot designator gate
+(the split-literal site) is deleted with the whole S2c-scheduled
+DesignatorExpr node-stack hack (plan §1.2 F-Q1 residue), and the same
+string with the same introducer-node pin is re-emitted from the
+`AlternativePattern` check handler in handle_match.cpp (non-choice
+scrutinee gate). `qualified alternative pattern in match case` and
+`match case pattern on unsupported choice alternative shape` survive
+verbatim (the latter now keyed on missing metadata rather than failed
+excavation). _R-7 re-derivation for S2c:_ payload extraction itself
+registers no cleanups — the `ClassElementAccess` chain is reference
+projection into the scrutinee, and in-slice payload element types are
+trivially copyable and destructible by the choice-completion gate — but
+the bind pass's per-element `Convert` to each binding's DECLARED type is
+ungated (the same S2b hole: `case .Set(n: i64)` on an `i32` payload runs
+`Core.ImplicitAs` and can materialize a `Temporary` with a registered
+cleanup, and destroy synthesis is live), so alternative-payload arms get
+the identical `DeferCleanups` treatment as S2b binding arms: such
+temporaries discharge at arm exit by `MatchHandler`'s scope cleanups, not
+at the next statement while the binding is live. Re-derive at S2d, where
+guards run arbitrary code between test and bind. Recorded deviations
+(veto-able): (1) the alternative-pattern parse form is gated to the match
+case ROOT position only, not all pattern positions as W5 plan §3.2.1
+sketched — leading-dot in any other pattern position (function params,
+`let`, nested in payload lists, `case (.Err)`) parses exactly as before;
+alternative patterns are meaningless without a scrutinee-typed scope, and
+F-011's if-let can widen the gate later. (2) Consequently unpinned inputs
+of the S2a "more-honest diagnostics" class shift again: `case .Err ==
+.Stop` now parses `.Err` as an alternative pattern and the trailing
+operator is a parse error (expected `=>`), and `case .Self` takes the
+ordinary expression route (`.Self` not in scope) since the lookahead gate
+requires an identifier after the period; no golden or SKIP evidence pins
+either. (3) A single parenthesized subpattern (`ParenPattern`) is wrapped
+in a synthesized `TuplePattern` so payloads uniformly destructure through
+upstream's tuple machinery. (4) Unknown alternative names get the standard
+member-access diagnostic in both forms (`PerformMemberAccess` against the
+choice scope; in the paren form its name-ref lands in a consumed,
+unreferenced expr region). (5) `default` stays required — payload arms do
+not discharge exhaustiveness (S2e). (6) The paren-form discriminant test
+is emitted by a free function (`MatchCaseAlternativePatternMatch`)
+sharing `EmitChoiceDiscriminantTest` rather than entering the
+`MatchContext` engine worklist as plan §2.1/RF-1 sketched — functionally
+equivalent, same file (pattern_match.cpp); fold into the engine at S2d
+when guards force it. Testdata:
+fail_todo_choice_payload_pattern.carbon is renamed (git mv) to
+fail_choice_alternative_pattern.carbon, its `.Ok(42)`/`.Ok` subfiles
+re-pinned to the new TODO/diagnostics, qualified subfile unchanged, plus
+new arity/parens/unknown-name/nested-designator fail subfiles; new
+positive goldens choice_payload_pattern.carbon,
+choice_payload_multi.carbon (multi-element, `.On()`, converting binding),
+choice_payload_imported.carbon, lower/testdata/match/choice_payload.carbon
+(the R-9 payload-GEP pin), and parse alternative_pattern goldens — all new
+CHECK content rides the runner autoupdate (R15/R19). Conformance:
+choice_payload_roundtrip_diff.carbon un-SKIPs (with a recorded
+never-taken `default` arm until S2e); match_sum_type_payload.carbon keeps
+only its interop half per the W5 plan §3.3 split, SKIP evidence refreshed
+to the S4 blocker. Veto-able.
 
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 

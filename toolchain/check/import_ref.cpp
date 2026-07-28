@@ -2073,6 +2073,19 @@ static auto ImportClassDefinition(ImportContext& context,
   if (import_class.vtable_decl_id.has_value()) {
     new_class.vtable_decl_id = vtable_decl_id;
   }
+
+  // Bring over a choice's alternative name-to-index metadata, translating the
+  // names into the local file. The indices are plain integers (discriminant
+  // value and payload field position), so they carry over unchanged.
+  new_class.choice_alternatives.reserve(
+      import_class.choice_alternatives.size());
+  for (const auto& alternative : import_class.choice_alternatives) {
+    new_class.choice_alternatives.push_back(
+        {.name_id = GetLocalNameId(context, alternative.name_id),
+         .index = alternative.index,
+         .payload_field_index = alternative.payload_field_index,
+         .has_parameters = alternative.has_parameters});
+  }
 }
 
 static auto TryResolveTypedInst(ImportRefResolver& resolver,

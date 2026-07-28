@@ -9,7 +9,6 @@
 #include "toolchain/check/member_access.h"
 #include "toolchain/check/name_component.h"
 #include "toolchain/check/name_lookup.h"
-#include "toolchain/check/pattern_match.h"
 #include "toolchain/check/pointer_dereference.h"
 #include "toolchain/check/type.h"
 #include "toolchain/lex/token_kind.h"
@@ -192,46 +191,6 @@ auto HandleParseNode(Context& context,
 auto HandleParseNode(Context& context, Parse::DesignatorExprId node_id)
     -> bool {
   SemIR::NameId name_id = context.node_stack().PopName();
-
-  // A designator at the root of a match `case` pattern over a choice-typed
-  // scrutinee resolves in the scrutinee's choice scope rather than requiring
-  // `.Self` in scope: `case .Err` names the alternative `Err` of the
-  // scrutinee's type (docs/design/sum_types.md; leading-dot patterns only,
-  // per decision-log W5 SF-4). The `MatchCaseIntroducer` entry directly below
-  // the name marks the root-of-case-pattern position.
-  if (name_id != SemIR::NameId::SelfType &&
-      context.node_stack().PeekIs(Parse::NodeKind::MatchCaseIntroducer)) {
-    auto introducer_node_id =
-        context.node_stack()
-            .PopForSoloNodeId<Parse::NodeKind::MatchCaseIntroducer>();
-    SemIR::InstId scrutinee_id =
-        context.node_stack().PeekIs(Parse::NodeKind::MatchHandler)
-            ? context.node_stack().Peek<Parse::NodeKind::MatchHandler>()
-            : context.node_stack().Peek<Parse::NodeKind::MatchStatementStart>();
-    context.node_stack().Push(introducer_node_id);
-
-    // Only a choice scrutinee resolves leading-dot case patterns in its
-    // scope; on any other scrutinee such a pattern keeps the W4 slice-gate
-    // TODO, pinned to the introducer node.
-    if (!GetChoiceDiscriminantType(
-            context, context.insts().Get(scrutinee_id).type_id())) {
-      return context.TODO(introducer_node_id,
-                          "match `case` pattern other than an integer "
-                          "literal, or a case guard");
-    }
-
-    auto scrutinee_type_inst_id =
-        context.types().GetTypeInstId(context.types().GetUnqualifiedType(
-            context.insts().Get(scrutinee_id).type_id()));
-    auto member_id =
-        PerformMemberAccess(context, node_id, scrutinee_type_inst_id, name_id);
-    // Record the resolution so that `MatchCasePatternMatch` can recognize a
-    // pattern whose root is this designator, versus a qualified spelling or
-    // a larger pattern wrapped around it.
-    context.match_case_stack().back().designator_root_id = member_id;
-    context.node_stack().Push(node_id, member_id);
-    return true;
-  }
 
   if (name_id == SemIR::NameId::SelfType) {
     // Look up `.Self`.

@@ -244,17 +244,34 @@ class Context {
   // stack rather than a single optional because a case pattern's expression
   // can itself contain a `match` (for example inside a lambda).
   struct MatchCaseContext {
-    // The scrutinee's type. Provisioned for S2c's alternative resolution;
-    // not read yet — current consumers recompute the scrutinee type from
-    // the scrutinee inst instead.
+    // The alternative that a case pattern's root alternative pattern
+    // (`.Name` or `.Name(...)`) resolved to against the scrutinee's choice
+    // type, from the choice's name-to-index metadata
+    // (`SemIR::ChoiceAlternative`).
+    struct Alternative {
+      // The alternative's discriminant value.
+      int32_t index;
+      // The index of the alternative's payload tuple field within the
+      // payload region, or -1 if the alternative stores no payload.
+      int32_t payload_field_index = -1;
+      // For a parenthesized alternative pattern, the `TuplePattern` holding
+      // the payload subpatterns; `None` for the bare constant-alternative
+      // spelling, whose pattern root is the designator's `ExprPattern`.
+      SemIR::InstId payload_pattern_id = SemIR::InstId::None;
+    };
+
+    // The scrutinee's type, which the case pattern's root alternative
+    // pattern (if any) resolves its name against.
     SemIR::TypeId scrutinee_type_id;
     // The `MatchCaseIntroducer` parse node; the preserved slice-gate
     // diagnostics are pinned to it.
     Parse::NodeId introducer_node_id;
     // The inst that the pattern's root leading-dot designator resolved to in
-    // the scrutinee's choice scope, if any (see `DesignatorExpr` in
-    // handle_name.cpp).
+    // the scrutinee's choice scope, if any (see `AlternativePattern` in
+    // handle_match.cpp).
     SemIR::InstId designator_root_id = SemIR::InstId::None;
+    // The resolved alternative for a root alternative pattern, if any.
+    std::optional<Alternative> alternative;
   };
   auto match_case_stack() -> llvm::SmallVector<MatchCaseContext>& {
     return match_case_stack_;

@@ -1,1 +1,1 @@
-S2b R26 pass 2: verify fixpoint after ad9ed79 (two new goldens generated; expect empty or loc-only).
+S2c: regenerate goldens — parse/match/alternative_pattern + fail_alternative_pattern_unclosed, check/match choice_payload_pattern + choice_payload_multi + choice_payload_imported + fail_choice_alternative_pattern (renamed), lower/match/choice_payload, coverage. Possibly-loc-only: choice_scrutinee*, nested_choice_designator, binding_choice_scrutinee, lower/choice/payload_layout. Churn outside this list = red flag (R26 two passes).

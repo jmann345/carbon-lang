@@ -8,6 +8,7 @@
 #include <optional>
 
 #include "toolchain/check/context.h"
+#include "toolchain/sem_ir/class.h"
 #include "toolchain/sem_ir/function.h"
 #include "toolchain/sem_ir/ids.h"
 
@@ -113,6 +114,46 @@ auto MatchCasePatternMatch(Context& context, SemIR::InstId pattern_id,
 // representation's spelling.
 auto GetChoiceDiscriminantType(Context& context, SemIR::TypeId type_id)
     -> std::optional<SemIR::TypeId>;
+
+// If `type_id` is a choice type with an alternative named `name_id`, returns
+// that alternative's name-to-index metadata; returns nullopt otherwise. The
+// entry is returned by value: the class store may grow while the caller
+// still holds it.
+auto LookupChoiceAlternative(Context& context, SemIR::TypeId type_id,
+                             SemIR::NameId name_id)
+    -> std::optional<SemIR::ChoiceAlternative>;
+
+// The types involved in extracting one alternative's payload from a choice
+// value: the payload region (the `CustomLayoutType` field of the object
+// representation, where every alternative's payload tuple overlaps at offset
+// zero per the F-007k storage contract) and the alternative's own payload
+// tuple field within it.
+struct ChoicePayloadInfo {
+  SemIR::TypeId payload_region_type_id;
+  SemIR::TypeId payload_tuple_type_id;
+};
+
+// Returns the payload extraction types for the alternative whose payload
+// tuple is at `payload_field_index` of `type_id`'s payload region, or
+// nullopt if `type_id` is not a complete choice type with such a payload
+// field. Verifies the payload field's name (`.payload`) rather than
+// trusting its position alone; the `.discriminant` half of the
+// representation is verified by `GetChoiceDiscriminantType`.
+auto GetChoicePayloadInfo(Context& context, SemIR::TypeId type_id,
+                          int32_t payload_field_index)
+    -> std::optional<ChoicePayloadInfo>;
+
+// Emits the refutable test for the arm of a parenthesized alternative
+// pattern (`case .Name(...)`): a comparison of the scrutinee's discriminant
+// field against the resolved alternative's discriminant value, taken from
+// the case-arm context's `alternative` (which must be set). Returns the
+// boolean condition inst. The payload subpatterns contribute no test; their
+// initialization is the bind pass's job, via `LocalPatternMatch` against the
+// extracted payload tuple.
+auto MatchCaseAlternativePatternMatch(Context& context,
+                                      SemIR::InstId scrutinee_id,
+                                      Parse::NodeId case_node_id)
+    -> SemIR::InstId;
 
 }  // namespace Carbon::Check
 

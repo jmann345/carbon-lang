@@ -745,6 +745,13 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
                                   .payload_type_id = payload_type_id,
                                   .num_alternative_bits = num_alternative_bits};
 
+  // The alternatives' name-to-index metadata, recorded on the class below:
+  // pattern matching resolves an alternative's discriminant value and payload
+  // location by name through it (see `LookupChoiceAlternative` in
+  // pattern_match.cpp). Alternatives dropped as duplicates or rejected with a
+  // diagnostic get no entry; their references resolve to the first
+  // alternative or to the error scope entry, respectively.
+  llvm::SmallVector<SemIR::ChoiceAlternative, 0> choice_alternatives;
   const auto* next_function_alternative = function_alternatives.begin();
   for (auto [i, deferred_binding] :
        llvm::enumerate(context.choice_deferred_bindings())) {
@@ -757,6 +764,9 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
       // But this also potentially adds things to the generic definition, so we
       // can't call `FinishGenericDefinition` before this call, either.
       MakeLetBinding(context, choice_info, i, deferred_binding);
+      choice_alternatives.push_back(
+          {.name_id = deferred_binding.name_component.name_id,
+           .index = static_cast<int32_t>(i)});
       continue;
     }
     CARBON_CHECK(next_function_alternative != function_alternatives.end() &&
@@ -765,9 +775,17 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
     if (!next_function_alternative->error) {
       BuildAlternativeConstructor(context, choice_info, i,
                                   *next_function_alternative, deferred_binding);
+      choice_alternatives.push_back(
+          {.name_id = deferred_binding.name_component.name_id,
+           .index = static_cast<int32_t>(i),
+           .payload_field_index = static_cast<int32_t>(
+               next_function_alternative->payload_field_index),
+           .has_parameters = true});
     }
     ++next_function_alternative;
   }
+  context.classes().Get(class_id).choice_alternatives =
+      std::move(choice_alternatives);
 
   // The scopes and blocks for the choice itself.
   context.inst_block_stack().Pop();

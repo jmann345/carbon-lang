@@ -1824,9 +1824,29 @@ CARBON_PARSE_STATE(MatchCaseLoop)
 //
 // match (...) { case ...}
 //               ^~~~
-//   1. Pattern
+//   1. Pattern (or MatchCaseAlternativePattern for a leading-dot pattern)
 //   2. MatchCaseAfterPattern
 CARBON_PARSE_STATE(MatchCaseIntroducer)
+
+// Handles a choice alternative pattern in a `match` `case`: the designator
+// name, then an optional parenthesized payload pattern list.
+//
+// match (...) { case .Name(...) ... }
+//                    ^~~~~
+//   1. PatternListAsTuple
+//   2. MatchCaseAlternativePatternFinish
+//
+// match (...) { case .Name ... }
+//                    ^~~~~
+//   (state done)
+CARBON_PARSE_STATE(MatchCaseAlternativePattern)
+
+// Finishes a choice alternative pattern after its payload pattern list.
+//
+// match (...) { case .Name(...) ... }
+//                             ^
+//   (state done)
+CARBON_PARSE_STATE(MatchCaseAlternativePatternFinish)
 
 // Handles `match` case after pattern.
 //

@@ -27,7 +27,6 @@
 #include "toolchain/diagnostics/format_providers.h"
 #include "toolchain/sem_ir/expr_info.h"
 #include "toolchain/sem_ir/ids.h"
-#include "toolchain/sem_ir/import_ir.h"
 #include "toolchain/sem_ir/inst_kind.h"
 #include "toolchain/sem_ir/pattern.h"
 
@@ -391,51 +390,109 @@ auto GetChoiceDiscriminantType(Context& context, SemIR::TypeId type_id)
   return disc_type_id;
 }
 
-// Returns the discriminant of the payload-free alternative that `pattern_id`
-// resolves to, or nullopt if no concrete discriminant can be recovered. The
-// alternative's `wrapper_binding` is not itself a constant: constant
-// evaluation of a `WrapperBinding` only forwards reference-category bound
-// values, and `MakeLetBinding` (handle_choice.cpp) binds a value-category
-// result. So the discriminant is read from the constant of the *bound value*,
-// a struct value whose leading element is the discriminant `MakeLetBinding`
-// baked in. The binding may also live in an imported file, where the local
-// `ImportRefLoaded` carries no constant at all (non-constant bindings do not
-// import; see `TryResolveInstCanonical` in import_ref.cpp), so the binding is
-// read from its defining file.
-static auto GetAlternativeDiscriminant(Context& context,
-                                       SemIR::InstId pattern_id)
-    -> std::optional<IntId> {
-  // Look through name references to the binding they name.
-  while (auto name_ref = context.insts().TryGetAs<SemIR::NameRef>(pattern_id)) {
-    pattern_id = name_ref->value_id;
-  }
-  // The binding may be imported; read it in its defining file.
-  auto [file, binding_id] =
-      SemIR::GetCanonicalFileAndInstId(&context.sem_ir(), pattern_id);
-  auto binding = file->insts().TryGetAs<SemIR::WrapperBinding>(binding_id);
-  if (!binding) {
+auto LookupChoiceAlternative(Context& context, SemIR::TypeId type_id,
+                             SemIR::NameId name_id)
+    -> std::optional<SemIR::ChoiceAlternative> {
+  auto unqualified_type_id = context.types().GetUnqualifiedType(type_id);
+  auto class_type =
+      context.types().TryGetAsIfValid<SemIR::ClassType>(unqualified_type_id);
+  if (!class_type) {
     return std::nullopt;
   }
-  auto const_id = file->constant_values().Get(binding->value_id);
-  if (!const_id.is_concrete()) {
+  const auto& class_info = context.classes().Get(class_type->class_id);
+  for (const auto& alternative : class_info.choice_alternatives) {
+    if (alternative.name_id == name_id) {
+      return alternative;
+    }
+  }
+  return std::nullopt;
+}
+
+auto GetChoicePayloadInfo(Context& context, SemIR::TypeId type_id,
+                          int32_t payload_field_index)
+    -> std::optional<ChoicePayloadInfo> {
+  auto unqualified_type_id = context.types().GetUnqualifiedType(type_id);
+  auto class_type =
+      context.types().TryGetAsIfValid<SemIR::ClassType>(unqualified_type_id);
+  if (!class_type) {
     return std::nullopt;
   }
-  auto struct_value = file->insts().TryGetAs<SemIR::StructValue>(
-      file->constant_values().GetInstId(const_id));
-  if (!struct_value) {
+  const auto& class_info = context.classes().Get(class_type->class_id);
+  if (!class_info.is_choice || !class_info.is_complete()) {
     return std::nullopt;
   }
-  auto elements = file->inst_blocks().Get(struct_value->elements_id);
-  if (elements.empty()) {
+  auto object_repr_id =
+      class_info.GetObjectRepr(context.sem_ir(), class_type->specific_id);
+  auto struct_type =
+      context.types().TryGetAsIfValid<SemIR::StructType>(object_repr_id);
+  if (!struct_type) {
     return std::nullopt;
   }
-  auto discriminant = file->insts().TryGetAs<SemIR::IntValue>(elements[0]);
-  if (!discriminant) {
+  auto fields = context.struct_type_fields().Get(struct_type->fields_id);
+  if (fields.size() < 2 || fields[1].name_id != SemIR::NameId::ChoicePayload) {
     return std::nullopt;
   }
-  // Add the value to the local int store; a no-op when the defining file
-  // shares this file's value stores.
-  return context.ints().AddSigned(file->ints().Get(discriminant->int_id));
+  auto payload_region_type_id =
+      context.types().GetTypeIdForTypeInstId(fields[1].type_inst_id);
+  auto custom_layout = context.types().TryGetAsIfValid<SemIR::CustomLayoutType>(
+      payload_region_type_id);
+  if (!custom_layout) {
+    return std::nullopt;
+  }
+  auto payload_fields =
+      context.struct_type_fields().Get(custom_layout->fields_id);
+  if (payload_field_index < 0 ||
+      payload_field_index >= static_cast<int32_t>(payload_fields.size())) {
+    return std::nullopt;
+  }
+  return ChoicePayloadInfo{
+      .payload_region_type_id = payload_region_type_id,
+      .payload_tuple_type_id = context.types().GetTypeIdForTypeInstId(
+          payload_fields[payload_field_index].type_inst_id)};
+}
+
+// Emits the comparison of `scrutinee_id`'s discriminant field against the
+// discriminant value `alternative_index`, and returns the boolean condition.
+// The discriminant is read as field 0 of the choice's
+// `StructType{.discriminant, ...}` representation via `ClassElementAccess`
+// (the F-007k storage contract), and compared with `EqWith` on the
+// discriminant's integer type.
+static auto EmitChoiceDiscriminantTest(
+    Context& context, Parse::NodeId case_node_id, SemIR::InstId scrutinee_id,
+    SemIR::TypeId disc_type_id, int32_t alternative_index) -> SemIR::InstId {
+  auto index_value_id = ConvertToValueOfType(
+      context, case_node_id,
+      MakeIntLiteral(context, case_node_id,
+                     context.ints().Add(alternative_index)),
+      disc_type_id);
+
+  auto disc_access_id =
+      AddInst<SemIR::ClassElementAccess>(context, case_node_id,
+                                         {.type_id = disc_type_id,
+                                          .base_id = scrutinee_id,
+                                          .index = SemIR::ElementIndex(0)});
+  SemIR::InstId args[] = {context.types().GetTypeInstId(disc_type_id)};
+  auto eq_id = BuildBinaryOperator(context, case_node_id,
+                                   {.interface_name = CoreIdentifier::EqWith,
+                                    .interface_args_ref = args,
+                                    .op_name = CoreIdentifier::Equal},
+                                   index_value_id, disc_access_id);
+  return ConvertToBoolValue(context, case_node_id, eq_id);
+}
+
+auto MatchCaseAlternativePatternMatch(Context& context,
+                                      SemIR::InstId scrutinee_id,
+                                      Parse::NodeId case_node_id)
+    -> SemIR::InstId {
+  const auto& case_context = context.match_case_stack().back();
+  CARBON_CHECK(case_context.alternative,
+               "Alternative pattern arm without resolved alternative");
+  auto disc_type_id = GetChoiceDiscriminantType(
+      context, context.insts().Get(scrutinee_id).type_id());
+  CARBON_CHECK(disc_type_id, "Alternative pattern with non-choice scrutinee");
+  return EmitChoiceDiscriminantTest(context, case_node_id, scrutinee_id,
+                                    *disc_type_id,
+                                    case_context.alternative->index);
 }
 
 // Returns the kind of conversion to perform on the scrutinee when matching the
@@ -701,26 +758,20 @@ auto MatchContext::DoMatchCaseExprPattern(
       return SemIR::ErrorInst::InstId;
     }
     if (result_id == case_context.designator_root_id) {
-      // The whole pattern is a leading-dot designator, resolved against the
-      // scrutinee's choice scope (see `DesignatorExpr` in handle_name.cpp).
-      if (context_.types().Is<SemIR::FunctionType>(result_type_id)) {
-        // The designator names a payload alternative's constructor function;
-        // destructuring its payload is slice 2.
-        context_.TODO(case_node_id,
-                      "match case pattern destructuring a choice payload");
-        return SemIR::InstId::None;
-      }
-      // The designator names a payload-free alternative constant of the
-      // scrutinee's choice type; compare its discriminant against the
-      // scrutinee's discriminant field.
+      // The whole pattern is a leading-dot designator naming a payload-free
+      // alternative constant of the scrutinee's choice type, resolved against
+      // the scrutinee's choice scope (see `AlternativePattern` in
+      // handle_match.cpp); compare its discriminant against the scrutinee's
+      // discriminant field. The discriminant value comes from the choice's
+      // name-to-index metadata, resolved into the case-arm context at
+      // pattern-check time.
       CARBON_CHECK(context_.types().GetUnqualifiedType(result_type_id) ==
                        context_.types().GetUnqualifiedType(scrutinee_type_id),
                    "Alternative constant type differs from scrutinee type");
-      auto disc_int_id = GetAlternativeDiscriminant(context_, result_id);
-      if (!disc_int_id) {
-        // An alternative whose discriminant is not a concrete constant, such
-        // as in a generic context, is out of slice 1; see decision-log W5-S1.
-        // The scrutinee gate rejects those shapes already, so this is
+      if (!case_context.alternative) {
+        // An alternative without name-to-index metadata, such as in a
+        // generic context, is out of slice; see decision-log W5-S1. The
+        // scrutinee gate rejects those shapes already, so this is
         // defense-in-depth: diagnose rather than crash. Named for the
         // pattern, not the scrutinee: the scrutinee passed its gate, and it
         // is this case pattern's alternative that has no usable shape.
@@ -730,31 +781,9 @@ auto MatchContext::DoMatchCaseExprPattern(
         return SemIR::InstId::None;
       }
       InsertHere(context_, expr_pattern.expr_region_id);
-      auto index_value_id = ConvertToValueOfType(
-          context_, case_node_id,
-          MakeIntLiteral(context_, case_node_id, *disc_int_id), *disc_type_id);
-
-      auto disc_access_id =
-          AddInst<SemIR::ClassElementAccess>(context_, case_node_id,
-                                             {.type_id = *disc_type_id,
-                                              .base_id = scrutinee_id,
-                                              .index = SemIR::ElementIndex(0)});
-      SemIR::InstId args[] = {context_.types().GetTypeInstId(*disc_type_id)};
-      auto eq_id =
-          BuildBinaryOperator(context_, case_node_id,
-                              {.interface_name = CoreIdentifier::EqWith,
-                               .interface_args_ref = args,
-                               .op_name = CoreIdentifier::Equal},
-                              index_value_id, disc_access_id);
-      return ConvertToBoolValue(context_, case_node_id, eq_id);
-    }
-    if (case_context.designator_root_id.has_value()) {
-      // A leading-dot designator with more pattern wrapped around it, such as
-      // `.Ok(...)`: an attempt to destructure the alternative's payload
-      // (slice 2).
-      context_.TODO(introducer_node_id,
-                    "match case pattern destructuring a choice payload");
-      return SemIR::InstId::None;
+      return EmitChoiceDiscriminantTest(context_, case_node_id, scrutinee_id,
+                                        *disc_type_id,
+                                        case_context.alternative->index);
     }
     if (context_.types().Is<SemIR::FunctionType>(result_type_id) ||
         context_.types().GetUnqualifiedType(result_type_id) ==

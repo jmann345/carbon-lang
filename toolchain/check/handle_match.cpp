@@ -12,6 +12,7 @@
 #include "toolchain/check/pattern.h"
 #include "toolchain/check/pattern_match.h"
 #include "toolchain/lex/token_kind.h"
+#include "toolchain/sem_ir/expr_info.h"
 #include "toolchain/sem_ir/typed_insts.h"
 
 namespace Carbon::Check {
@@ -172,6 +173,29 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
   // Finish the pattern context begun by `MatchCaseIntroducer`: a leftover
   // expression on the node stack becomes an `ExprPattern`, and the checked
   // pattern root is popped.
+  //
+  // A `case` expression such as `2 + 3` is an initializing expression: its
+  // prelude operator call returns through a return slot. Convert it to a
+  // value now, while the pattern's expression region is still open, so the
+  // conversion insts land inside the region and the region's result is a
+  // value. Splicing an initializing result would make the `splice_block` at
+  // the use site itself an initializing expression, which SemIR does not
+  // support: an initializer must carry a storage argument (see
+  // `FindStorageArgForInitializer`). Type expressions uphold the same
+  // invariant by converting with `ExprAsType` before their region closes
+  // (handle_binding_pattern.cpp). Value-category expressions, including
+  // plain literals, are left exactly as they are.
+  {
+    auto [expr_node_id, maybe_expr_id] =
+        context.node_stack().PopWithNodeIdIf<Parse::NodeCategory::Expr>();
+    if (maybe_expr_id) {
+      if (SemIR::IsInitializerCategory(
+              SemIR::GetExprCategory(context.sem_ir(), *maybe_expr_id))) {
+        *maybe_expr_id = ConvertToValueExpr(context, *maybe_expr_id);
+      }
+      context.node_stack().Push(expr_node_id, *maybe_expr_id);
+    }
+  }
   EndExprRegionForPattern(context, context.node_stack());
   auto pattern_id = context.node_stack().PopPattern();
   context.node_stack()

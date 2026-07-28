@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "common/map.h"
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/check/context.h"
 #include "toolchain/check/control_flow.h"
@@ -16,6 +17,7 @@
 #include "toolchain/check/inst.h"
 #include "toolchain/check/literal.h"
 #include "toolchain/check/name_component.h"
+#include "toolchain/check/name_lookup.h"
 #include "toolchain/check/pattern.h"
 #include "toolchain/check/type.h"
 #include "toolchain/check/type_completion.h"
@@ -563,6 +565,28 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
       context.classes().Get(class_id).generic_id.has_value();
   auto choice_scope_id = context.classes().Get(class_id).scope_id;
 
+  // Diagnose duplicate alternative names before any alternative is registered
+  // in the choice's scope: members are added with `NameScope::AddRequired`,
+  // which CHECK-fails on a non-poisoned duplicate. A duplicate alternative is
+  // dropped after the diagnostic — neither validated, built, nor registered —
+  // so a later reference to the name resolves to the first alternative.
+  llvm::SmallVector<bool> is_duplicate_alternative(num_alternatives, false);
+  {
+    Map<SemIR::NameId, Parse::NodeId> alternative_names;
+    for (auto [i, deferred_binding] :
+         llvm::enumerate(context.choice_deferred_bindings())) {
+      const auto& name_component = deferred_binding.name_component;
+      auto result = alternative_names.Insert(name_component.name_id,
+                                             name_component.name_loc_id);
+      if (!result.is_inserted()) {
+        DiagnoseDuplicateName(context, name_component.name_id,
+                              SemIR::LocId(name_component.name_loc_id),
+                              SemIR::LocId(result.value()));
+        is_duplicate_alternative[i] = true;
+      }
+    }
+  }
+
   // Classify and validate the alternatives, and collect the payload region's
   // fields: one field per payload-carrying alternative, holding that
   // alternative's payload tuple type. Per the F-007k storage contract
@@ -575,6 +599,9 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
   auto payload_align = SemIR::ObjectSize::Bytes(1);
   for (auto [i, deferred_binding] :
        llvm::enumerate(context.choice_deferred_bindings())) {
+    if (is_duplicate_alternative[i]) {
+      continue;
+    }
     const auto& name_component = deferred_binding.name_component;
     if (!name_component.param_patterns_id.has_value()) {
       // A constant alternative; nothing to validate.
@@ -721,6 +748,9 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
   const auto* next_function_alternative = function_alternatives.begin();
   for (auto [i, deferred_binding] :
        llvm::enumerate(context.choice_deferred_bindings())) {
+    if (is_duplicate_alternative[i]) {
+      continue;
+    }
     if (!deferred_binding.name_component.param_patterns_id.has_value()) {
       // TODO: This requires the class to be complete, but we've not yet called
       // `FinishGenericDefinition`, so we can't use it as a complete type yet.

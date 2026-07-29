@@ -1,1 +1,1 @@
-S2c autoupdate retry after compile fix: regenerate goldens per the 042dc77 request (new parse/check/lower match testdata; possibly-loc-only choice files; churn outside list = red flag; R26 two passes).
+S2c R26 pass 2: verify fixpoint after c26225d (seven files generated/corrected; expect empty or loc-only).

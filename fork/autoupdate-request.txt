@@ -1,1 +1,1 @@
-S2d autoupdate retry after node_stack fix: regenerate guard goldens per the 5e29869 request (guard.carbon flip + 3 new fail/positive files; zero existing-golden churn expected; R26 two passes).
+S2d R26 pass 2: verify fixpoint after c2a4f75 (two guard goldens generated; expect empty or loc-only).

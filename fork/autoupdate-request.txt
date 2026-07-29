@@ -1,1 +1,1 @@
-S2c R26 pass 2: verify fixpoint after c26225d (seven files generated/corrected; expect empty or loc-only).
+S2d: regenerate goldens — guard.carbon (flip), choice_payload_guard.carbon, fail_guard_non_bool.carbon, fail_guard_sibling_binding.carbon; STDERR verification only in the fail files. Zero churn expected for every existing golden (R26 two passes).

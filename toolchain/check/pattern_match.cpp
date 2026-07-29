@@ -495,6 +495,11 @@ auto MatchCaseAlternativePatternMatch(Context& context,
                                     case_context.alternative->index);
 }
 
+auto SpliceMatchCaseGuard(Context& context, SemIR::ExprRegionId region_id)
+    -> SemIR::InstId {
+  return InsertHere(context, region_id);
+}
+
 // Returns the kind of conversion to perform on the scrutinee when matching the
 // given pattern. Note that this returns `NoOp` for `var` patterns, because
 // their conversion needs special handling, prior to any general-purpose

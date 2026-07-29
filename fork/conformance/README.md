@@ -175,7 +175,8 @@ fails if this table is stale):
 | `control_flow/conditions.carbon` | Control flow: conditions | run |
 | `control_flow/if_let_let_else.carbon` | Control flow: matching — if-let / let-else combined match+declaration | SKIP |
 | `control_flow/loops.carbon` | Control flow: loops incl. range-based and C/C++ loop equivalents | run |
-| `control_flow/match_guard_binding.carbon` | Control flow: matching — good switch equivalents | SKIP |
+| `control_flow/match_guard_binding.carbon` | Control flow: matching — good switch equivalents | run |
+| `control_flow/match_guard_diff.carbon` | Control flow: matching — good switch equivalents | differential |
 | `control_flow/match_no_fallthrough.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_position.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_sum_type_payload.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | SKIP |
@@ -240,7 +241,7 @@ fails if this table is stale):
 | `project/evaluator_docs_review.carbon` | Project: basic evaluator documentation (getting started to FAQs) | SKIP |
 | `project/most_features_interop_matrix.carbon` | Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation | run |
 | `project/most_features_language_matrix.carbon` | Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation | run |
-| `project/most_features_missing_match.carbon` | Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation | SKIP |
+| `project/most_features_missing_match.carbon` | Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation | run |
 | `project/run_exit_code.carbon` | Project: installs on Windows, macOS, and Linux and builds working programs | run |
 | `project/safe_carbon_design.carbon` | Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis) | SKIP |
 | `project/safety_strategy_doc.carbon` | Project: detailed safety strategy | SKIP |

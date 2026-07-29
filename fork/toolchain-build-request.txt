@@ -1,1 +1,1 @@
-S2b gate: full merge gate on match case bindings (fixpoint at 690a894, pass-2 empty).
+S2c gate: full merge gate on choice payload destructuring (fixpoint at e180d95, pass-2 loc-only).

@@ -47,7 +47,7 @@ fn F(r: IntResult) -> i32 {
   match (r) {
     // CHECK:STDERR: fail_bare_payload_alternative.carbon:[[@LINE+4]]:10: error: alternative `Ok` is declared with a parameter list, so its pattern requires parentheses [MatchAlternativeMissingParens]
     // CHECK:STDERR:     case .Ok => { return 1; }
-    // CHECK:STDERR:          ^
+    // CHECK:STDERR:          ^~~
     // CHECK:STDERR:
     case .Ok => { return 1; }
     default => { return 0; }
@@ -69,7 +69,7 @@ fn F(r: IntResult) -> i32 {
   match (r) {
     // CHECK:STDERR: fail_parens_on_constant_alternative.carbon:[[@LINE+4]]:10: error: alternative `Err` is declared without a parameter list, so its pattern cannot have parentheses [MatchAlternativeUnexpectedParens]
     // CHECK:STDERR:     case .Err() => { return 1; }
-    // CHECK:STDERR:          ^
+    // CHECK:STDERR:          ^~~~~~
     // CHECK:STDERR:
     case .Err() => { return 1; }
     default => { return 0; }
@@ -89,9 +89,13 @@ choice Shape {
 // subpattern per declared parameter.
 fn F(s: Shape) -> i32 {
   match (s) {
-    // CHECK:STDERR: fail_wrong_arity.carbon:[[@LINE+4]]:10: error: alternative pattern has 1 subpattern, but alternative `Pair` is declared with 2 parameters [MatchAlternativeArgCountMismatch]
+    // CHECK:STDERR: fail_wrong_arity.carbon:[[@LINE+8]]:10: error: alternative pattern has 1 subpattern, but alternative `Pair` is declared with 2 parameters [MatchAlternativeArgCountMismatch]
     // CHECK:STDERR:     case .Pair(a: i32) => { return 1; }
-    // CHECK:STDERR:          ^
+    // CHECK:STDERR:          ^~~~~~~~~~~~~
+    // CHECK:STDERR:
+    // CHECK:STDERR: fail_wrong_arity.carbon:[[@LINE+4]]:16: warning: binding `a` unused [UnusedBinding]
+    // CHECK:STDERR:     case .Pair(a: i32) => { return 1; }
+    // CHECK:STDERR:                ^~~~~~
     // CHECK:STDERR:
     case .Pair(a: i32) => { return 1; }
     default => { return 0; }
@@ -111,9 +115,13 @@ choice IntResult {
 // with or without a payload list.
 fn F(r: IntResult) -> i32 {
   match (r) {
-    // CHECK:STDERR: fail_unknown_alternative.carbon:[[@LINE+4]]:10: error: member name `Nope` not found in `IntResult` [MemberNameNotFoundInInstScope]
+    // CHECK:STDERR: fail_unknown_alternative.carbon:[[@LINE+8]]:10: error: member name `Nope` not found in `IntResult` [MemberNameNotFoundInInstScope]
     // CHECK:STDERR:     case .Nope(x: i32) => { return 1; }
-    // CHECK:STDERR:          ^
+    // CHECK:STDERR:          ^~~~~~~~~~~~~
+    // CHECK:STDERR:
+    // CHECK:STDERR: fail_unknown_alternative.carbon:[[@LINE+4]]:16: warning: binding `x` unused [UnusedBinding]
+    // CHECK:STDERR:     case .Nope(x: i32) => { return 1; }
+    // CHECK:STDERR:                ^~~~~~
     // CHECK:STDERR:
     case .Nope(x: i32) => { return 1; }
     default => { return 0; }
@@ -135,10 +143,14 @@ choice IntResult {
 // `.Self` in scope.
 fn F(r: IntResult) -> i32 {
   match (r) {
-    // CHECK:STDERR: fail_nested_designator_subpattern.carbon:[[@LINE+5]]:14: error: name `.Self` not found [NameNotFound]
+    // CHECK:STDERR: fail_nested_designator_subpattern.carbon:[[@LINE+9]]:14: error: name `.Self` not found [NameNotFound]
     // CHECK:STDERR:     case .Ok(.Err) => { return 1; }
     // CHECK:STDERR:              ^~~~
-    // CHECK:STDERR: note: designator may only be used when `.Self` is in scope [NoPeriodSelfForDesignator]
+    // CHECK:STDERR: fail_nested_designator_subpattern.carbon: note: designator may only be used when `.Self` is in scope [NoPeriodSelfForDesignator]
+    // CHECK:STDERR:
+    // CHECK:STDERR: fail_nested_designator_subpattern.carbon:[[@LINE+4]]:14: error: semantics TODO: `non-binding subpattern in match `case` alternative pattern` [SemanticsTodo]
+    // CHECK:STDERR:     case .Ok(.Err) => { return 1; }
+    // CHECK:STDERR:              ^~~~
     // CHECK:STDERR:
     case .Ok(.Err) => { return 1; }
     default => { return 0; }

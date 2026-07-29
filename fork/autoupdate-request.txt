@@ -1,1 +1,1 @@
-S2d: regenerate goldens — guard.carbon (flip), choice_payload_guard.carbon, fail_guard_non_bool.carbon, fail_guard_sibling_binding.carbon; STDERR verification only in the fail files. Zero churn expected for every existing golden (R26 two passes).
+S2d autoupdate retry after node_stack fix: regenerate guard goldens per the 5e29869 request (guard.carbon flip + 3 new fail/positive files; zero existing-golden churn expected; R26 two passes).

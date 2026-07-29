@@ -1,0 +1,25 @@
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+// INCLUDE-FILE: toolchain/testing/testdata/min_prelude/int.carbon
+//
+// AUTOUPDATE
+// TIP: To test this file alone, run:
+// TIP:   bazel test //toolchain/testing:file_test --test_arg=--file_tests=toolchain/check/testdata/match/fail_todo_ref_binding.carbon
+// TIP: To dump output, run:
+// TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/match/fail_todo_ref_binding.carbon
+
+// `ref` case bindings are a recorded later slice (re-platform plan §3.2(c));
+// the TODO is pinned to the binding itself.
+
+fn F(x: i32) {
+  match (x) {
+    // CHECK:STDERR: fail_todo_ref_binding.carbon:[[@LINE+4]]:10: error: semantics TODO: ``var` or `ref` binding in match `case` pattern` [SemanticsTodo]
+    // CHECK:STDERR:     case ref a: i32 => { return; }
+    // CHECK:STDERR:          ^~~~~~~~~~
+    // CHECK:STDERR:
+    case ref a: i32 => { return; }
+    default => { return; }
+  }
+}

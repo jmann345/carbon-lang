@@ -239,6 +239,44 @@ class Context {
     return match_first_context_;
   }
 
+  // Per-arm state of the `match` `case` pattern that we are currently
+  // checking, pushed by `MatchCaseIntroducer` and popped by `MatchCase`. A
+  // stack rather than a single optional because a case pattern's expression
+  // can itself contain a `match` (for example inside a lambda).
+  struct MatchCaseContext {
+    // The alternative that a case pattern's root alternative pattern
+    // (`.Name` or `.Name(...)`) resolved to against the scrutinee's choice
+    // type, from the choice's name-to-index metadata
+    // (`SemIR::ChoiceAlternative`).
+    struct Alternative {
+      // The alternative's discriminant value.
+      int32_t index;
+      // The index of the alternative's payload tuple field within the
+      // payload region, or -1 if the alternative stores no payload.
+      int32_t payload_field_index = -1;
+      // For a parenthesized alternative pattern, the `TuplePattern` holding
+      // the payload subpatterns; `None` for the bare constant-alternative
+      // spelling, whose pattern root is the designator's `ExprPattern`.
+      SemIR::InstId payload_pattern_id = SemIR::InstId::None;
+    };
+
+    // The scrutinee's type, which the case pattern's root alternative
+    // pattern (if any) resolves its name against.
+    SemIR::TypeId scrutinee_type_id;
+    // The `MatchCaseIntroducer` parse node; the preserved slice-gate
+    // diagnostics are pinned to it.
+    Parse::NodeId introducer_node_id;
+    // The inst that the pattern's root leading-dot designator resolved to in
+    // the scrutinee's choice scope, if any (see `AlternativePattern` in
+    // handle_match.cpp).
+    SemIR::InstId designator_root_id = SemIR::InstId::None;
+    // The resolved alternative for a root alternative pattern, if any.
+    std::optional<Alternative> alternative;
+  };
+  auto match_case_stack() -> llvm::SmallVector<MatchCaseContext>& {
+    return match_case_stack_;
+  }
+
   // An ongoing impl lookup, used to ensure termination.
   struct ImplLookupStackEntry {
     SemIR::ConstantId query_self_const_id;
@@ -578,6 +616,10 @@ class Context {
 
   // The statte of the `match_first` block that we are currently checking.
   std::optional<MatchFirstContext> match_first_context_;
+
+  // The stack of `match` `case` arms whose patterns are currently being
+  // checked.
+  llvm::SmallVector<MatchCaseContext> match_case_stack_;
 
   // Tracks all ongoing impl lookups in order to ensure that lookup terminates
   // via the acyclic rule and the termination rule.

@@ -171,7 +171,7 @@ fails if this table is stale):
 | `code_org/packages_cross_import.carbon` | Code organization: Packages | run |
 | `code_org/packages_restricted_names.carbon` | Code organization: Packages | run |
 | `code_org/packages_scope_expr.carbon` | Code organization: Packages | run |
-| `control_flow/choice_payload_roundtrip_diff.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | SKIP, differential |
+| `control_flow/choice_payload_roundtrip_diff.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | differential |
 | `control_flow/conditions.carbon` | Control flow: conditions | run |
 | `control_flow/if_let_let_else.carbon` | Control flow: matching — if-let / let-else combined match+declaration | SKIP |
 | `control_flow/loops.carbon` | Control flow: loops incl. range-based and C/C++ loop equivalents | run |

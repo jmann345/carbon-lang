@@ -12,9 +12,9 @@
 
 fn F(x: i32) {
   match (x) {
-    // CHECK:STDERR: fail_todo_guard.carbon:[[@LINE+4]]:5: error: semantics TODO: `match `case` pattern other than an integer literal, or a case guard` [SemanticsTodo]
+    // CHECK:STDERR: fail_todo_guard.carbon:[[@LINE+4]]:12: error: semantics TODO: `match case guard` [SemanticsTodo]
     // CHECK:STDERR:     case 0 if (x > 1) => { return; }
-    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:            ^~
     // CHECK:STDERR:
     case 0 if (x > 1) => { return; }
     default => { return; }

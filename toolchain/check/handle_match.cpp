@@ -4,36 +4,60 @@
 
 #include <optional>
 
+#include "llvm/ADT/STLExtras.h"
+#include "llvm/ADT/SmallVector.h"
 #include "toolchain/check/context.h"
 #include "toolchain/check/control_flow.h"
 #include "toolchain/check/convert.h"
-#include "toolchain/check/core_identifier.h"
 #include "toolchain/check/handle.h"
 #include "toolchain/check/inst.h"
 #include "toolchain/check/literal.h"
-#include "toolchain/check/operator.h"
-#include "toolchain/sem_ir/import_ir.h"
+#include "toolchain/check/member_access.h"
+#include "toolchain/check/pattern.h"
+#include "toolchain/check/pattern_match.h"
+#include "toolchain/check/type.h"
+#include "toolchain/diagnostics/format_providers.h"
+#include "toolchain/lex/token_kind.h"
+#include "toolchain/sem_ir/expr_info.h"
+#include "toolchain/sem_ir/type.h"
 #include "toolchain/sem_ir/typed_insts.h"
 
 namespace Carbon::Check {
 
-// A `match` statement with an integer scrutinee, integer-literal `case`
-// patterns, and a `default` arm is checked as an `if`/`else if`/`else` chain:
-// each `case <literal>` becomes a `<literal> == scrutinee` test with a
-// conditional branch to the arm's body block, falling through to the next test
-// otherwise, with the `default` body as the final `else` block and all arm
-// bodies converging on a single resumption block.
+// A `match` statement is checked in two layers:
 //
-// A choice-typed scrutinee is additionally admitted, with leading-dot
-// payload-free alternative patterns (`case .Err`): the alternative's index is
-// compared against the scrutinee's `.discriminant` field with the same `==`
-// chain. Everything outside that subset produces a "semantics TODO"
-// diagnostic.
+// Pattern layer: each `case` pattern is checked into pattern SemIR inside a
+// per-arm full-pattern context (`MatchCaseIntroducer` through `MatchCase`),
+// mirroring the `for` loop's driving sequence in handle_loop_statement.cpp,
+// and the finished pattern block is attached to a `NameBindingDecl` in the
+// arm's test block — the same SemIR home `let` and `var` give their patterns.
+// The arm's refutable test is emitted by `MatchCasePatternMatch`
+// (pattern_match.cpp), which returns a boolean condition inst.
 //
-// TODO: Support other pattern kinds, guards, other scrutinee types, payload
-// destructuring in alternative patterns, and exhaustiveness checking without
-// a `default` arm. Diagnose cases that can never match, per
-// docs/design/pattern_matching.md.
+// CFG layer (owned here): first-match-wins dispatch as an
+// `if`/`else if`/`else` chain — each arm's condition conditionally branches
+// to the arm's body block, falling through to the next test otherwise, with
+// the `default` body as the final `else` block and all arm bodies converging
+// on a single resumption block.
+//
+// Two scrutinee shapes are supported so far: integer scrutinees with
+// constant integer expression `case` patterns, and choice scrutinees with
+// leading-dot alternative patterns — payload-free (`case .Err`), whose
+// discriminant is compared against the scrutinee's `.discriminant` field,
+// and payload-destructuring (`case .Ok(value: i32)`), which additionally
+// extract the alternative's payload tuple from the scrutinee's payload
+// region in the bind pass and initialize the payload bindings from its
+// elements. Against either shape, a bare `name: type` binding pattern is
+// also supported: it is irrefutable, so the test pass contributes no real
+// condition (the arm's condition is a constant `true`), and a bind pass in
+// the arm's body block initializes the binding from the scrutinee through
+// `LocalPatternMatch`, so the binding exists only where the arm has matched.
+// Everything outside that subset produces a "semantics TODO" diagnostic.
+//
+// TODO: Support other pattern kinds (`var`/`ref` case bindings, tuple
+// patterns, non-binding payload subpatterns), guards, other scrutinee types,
+// and exhaustiveness checking without a `default` arm. Diagnose cases that
+// can never match, per docs/design/pattern_matching.md.
 
 // Returns the scrutinee value, which is on the `MatchHandler` entry after an
 // earlier case arm, or otherwise on the `MatchStatementStart` entry.
@@ -42,93 +66,6 @@ static auto PeekScrutinee(Context& context) -> SemIR::InstId {
     return context.node_stack().Peek<Parse::NodeKind::MatchHandler>();
   }
   return context.node_stack().Peek<Parse::NodeKind::MatchStatementStart>();
-}
-
-// If `type_id` is a complete, non-generic choice type whose discriminant is
-// an integer field, returns the discriminant's type; returns nullopt
-// otherwise. This is the in-slice choice scrutinee shape: choices with fewer
-// than two alternatives have an empty-tuple discriminant, and specifics of
-// generic choices are out of slice 1 (alternative name-to-index metadata is
-// scoped to concrete choices, plan section 2.2c), so both stay behind the
-// scrutinee TODO. Uses the `Class::is_choice` entity flag, never the
-// representation's spelling.
-static auto GetChoiceDiscriminantType(Context& context, SemIR::TypeId type_id)
-    -> std::optional<SemIR::TypeId> {
-  auto unqualified_type_id = context.types().GetUnqualifiedType(type_id);
-  auto class_type =
-      context.types().TryGetAsIfValid<SemIR::ClassType>(unqualified_type_id);
-  if (!class_type || class_type->specific_id.has_value()) {
-    return std::nullopt;
-  }
-  const auto& class_info = context.classes().Get(class_type->class_id);
-  if (!class_info.is_choice || !class_info.is_complete()) {
-    return std::nullopt;
-  }
-  auto object_repr_id =
-      class_info.GetObjectRepr(context.sem_ir(), class_type->specific_id);
-  auto struct_type =
-      context.types().TryGetAsIfValid<SemIR::StructType>(object_repr_id);
-  if (!struct_type) {
-    return std::nullopt;
-  }
-  auto fields = context.struct_type_fields().Get(struct_type->fields_id);
-  if (fields.empty() ||
-      fields.front().name_id != SemIR::NameId::ChoiceDiscriminant) {
-    return std::nullopt;
-  }
-  auto disc_type_id =
-      context.types().GetTypeIdForTypeInstId(fields.front().type_inst_id);
-  if (!context.types().TryGetIntTypeInfo(disc_type_id)) {
-    return std::nullopt;
-  }
-  return disc_type_id;
-}
-
-// Returns the discriminant of the payload-free alternative that `pattern_id`
-// resolves to, or nullopt if no concrete discriminant can be recovered. The
-// alternative's `wrapper_binding` is not itself a constant: constant
-// evaluation of a `WrapperBinding` only forwards reference-category bound
-// values, and `MakeLetBinding` (handle_choice.cpp) binds a value-category
-// result. So the discriminant is read from the constant of the *bound value*,
-// a struct value whose leading element is the discriminant `MakeLetBinding`
-// baked in. The binding may also live in an imported file, where the local
-// `ImportRefLoaded` carries no constant at all (non-constant bindings do not
-// import; see `TryResolveInstCanonical` in import_ref.cpp), so the binding is
-// read from its defining file.
-static auto GetAlternativeDiscriminant(Context& context,
-                                       SemIR::InstId pattern_id)
-    -> std::optional<IntId> {
-  // Look through name references to the binding they name.
-  while (auto name_ref = context.insts().TryGetAs<SemIR::NameRef>(pattern_id)) {
-    pattern_id = name_ref->value_id;
-  }
-  // The binding may be imported; read it in its defining file.
-  auto [file, binding_id] =
-      SemIR::GetCanonicalFileAndInstId(&context.sem_ir(), pattern_id);
-  auto binding = file->insts().TryGetAs<SemIR::WrapperBinding>(binding_id);
-  if (!binding) {
-    return std::nullopt;
-  }
-  auto const_id = file->constant_values().Get(binding->value_id);
-  if (!const_id.is_concrete()) {
-    return std::nullopt;
-  }
-  auto struct_value = file->insts().TryGetAs<SemIR::StructValue>(
-      file->constant_values().GetInstId(const_id));
-  if (!struct_value) {
-    return std::nullopt;
-  }
-  auto elements = file->inst_blocks().Get(struct_value->elements_id);
-  if (elements.empty()) {
-    return std::nullopt;
-  }
-  auto discriminant = file->insts().TryGetAs<SemIR::IntValue>(elements[0]);
-  if (!discriminant) {
-    return std::nullopt;
-  }
-  // Add the value to the local int store; a no-op when the defining file
-  // shares this file's value stores.
-  return context.ints().AddSigned(file->ints().Get(discriminant->int_id));
 }
 
 auto HandleParseNode(Context& /*context*/,
@@ -202,149 +139,348 @@ auto HandleParseNode(Context& context, Parse::MatchStatementStartId node_id)
 
 auto HandleParseNode(Context& context, Parse::MatchCaseIntroducerId node_id)
     -> bool {
-  // Only single-node-rooted, guard-free `case` patterns are supported so far:
-  // a single integer literal for an integer scrutinee, or a single
-  // leading-dot designator (`.Name`, per decision-log W5 SF-4: leading-dot
-  // only) for a choice scrutinee. The parse tree is stored in postorder and
-  // the introducer is a leaf node, so the pattern's first node is at the next
-  // node index; the bracketing `MatchCase` node must immediately follow the
-  // pattern. Diagnosing here, before the pattern's nodes are traversed, keeps
-  // unsupported pattern nodes from reaching their handlers outside of a
-  // pattern-matching context.
-  auto pattern_kind =
-      context.parse_tree().node_kind(Parse::NodeId(node_id.index + 1));
-  auto after_pattern_kind =
-      context.parse_tree().node_kind(Parse::NodeId(node_id.index + 2));
-  if (GetChoiceDiscriminantType(
-          context, context.insts().Get(PeekScrutinee(context)).type_id())) {
-    // A designator pattern is [name, DesignatorExpr], then `MatchCase`.
-    if (pattern_kind == Parse::NodeKind::IdentifierNameNotBeforeSignature &&
-        after_pattern_kind == Parse::NodeKind::DesignatorExpr) {
-      auto third_kind =
-          context.parse_tree().node_kind(Parse::NodeId(node_id.index + 3));
-      if (third_kind == Parse::NodeKind::MatchCase) {
-        context.node_stack().Push(node_id);
-        return true;
-      }
-      if (third_kind == Parse::NodeKind::MatchCaseGuardIntroducer) {
-        return context.TODO(node_id,
-                            "match `case` pattern other than an integer "
-                            "literal, or a case guard");
-      }
-      // A designator-rooted pattern with more nodes, such as `.Ok(...)`,
-      // is an attempt to destructure the alternative's payload (slice 2).
-      return context.TODO(node_id,
-                          "match case pattern destructuring a choice payload");
-    }
-    if (pattern_kind == Parse::NodeKind::IdentifierNameExpr) {
-      // For example `case IntResult.Err`: only the leading-dot spelling is
-      // in-slice (SF-4); the qualified form is a recorded work item.
-      return context.TODO(node_id,
-                          "qualified alternative pattern in match case");
-    }
-    return context.TODO(
-        node_id,
-        "match `case` pattern other than an integer literal, or a case guard");
-  }
-  if (pattern_kind != Parse::NodeKind::IntLiteral ||
-      after_pattern_kind != Parse::NodeKind::MatchCase) {
-    return context.TODO(
-        node_id,
-        "match `case` pattern other than an integer literal, or a case guard");
-  }
+  // Push the arm's scope. It must cover the pattern's bindings, the guard,
+  // and the arm's body (bindings are in scope in the guard, p2188), so it is
+  // pushed here rather than at `MatchHandlerStart`, which must not push a
+  // second scope for this arm; `MatchHandler` pops it.
+  context.scope_stack().PushForSameRegion(ScopeStack::CleanupScopeKind::Owned);
+
+  // Begin an implicit `let` declaration context for the case pattern,
+  // mirroring the `for` loop's driving sequence (handle_loop_statement.cpp):
+  // binding-pattern checking reads the innermost introducer state before
+  // dispatching on the full-pattern kind, and in statement position the
+  // introducer stack is otherwise empty.
+  context.decl_introducer_state_stack().Push<Lex::TokenKind::Let>();
+  context.pattern_block_stack().Push();
+  context.full_pattern_stack().PushMatchCaseArm();
+  BeginExprRegionForPattern(context);
+
+  // Record the case-arm context: the scrutinee's type for pattern checking,
+  // and this introducer node, which the preserved slice-gate diagnostics are
+  // pinned to.
+  context.match_case_stack().push_back(
+      {.scrutinee_type_id =
+           context.insts().Get(PeekScrutinee(context)).type_id(),
+       .introducer_node_id = node_id});
+
   context.node_stack().Push(node_id);
+  return true;
+}
+
+auto HandleParseNode(Context& context, Parse::AlternativePatternStartId node_id)
+    -> bool {
+  context.node_stack().Push(node_id);
+  return true;
+}
+
+// Checks a choice alternative pattern (`.Name` or `.Name(<subpatterns>)`) at
+// the root of a `match` `case` pattern. The name resolves against the
+// case-arm scrutinee's choice type through the choice's name-to-index
+// metadata (`SemIR::ChoiceAlternative`), and the resolved alternative is
+// recorded in the case-arm context for `MatchCase`'s classification and the
+// refutable engine's discriminant test.
+//
+// A bare `.Name` names a payload-free alternative constant: the designator
+// is resolved in the choice's scope and wrapped in an `ExprPattern`, the
+// same pattern shape a designator expression pattern produced before this
+// form had its own parse node. A parenthesized `.Name(...)` destructures the
+// alternative's payload: the subpatterns (bare `name: type` bindings in this
+// slice) become a `TuplePattern` that the bind pass matches against the
+// alternative's payload tuple, extracted from the scrutinee's payload
+// region.
+auto HandleParseNode(Context& context, Parse::AlternativePatternId node_id)
+    -> bool {
+  // Pop the optional parenthesized payload pattern list. A single
+  // parenthesized subpattern arrives as a `ParenPattern` (the subpattern
+  // itself), more than one (or a trailing comma, or none) as a
+  // `TuplePattern`.
+  bool has_parens = false;
+  bool payload_is_tuple = false;
+  SemIR::InstId payload_id = SemIR::InstId::None;
+  if (context.node_stack().PeekIs(Parse::NodeKind::ParenPattern)) {
+    has_parens = true;
+    payload_id = context.node_stack().Pop<Parse::NodeKind::ParenPattern>();
+  } else if (context.node_stack().PeekIs(Parse::NodeKind::TuplePattern)) {
+    has_parens = true;
+    payload_is_tuple = true;
+    payload_id = context.node_stack().Pop<Parse::NodeKind::TuplePattern>();
+  }
+  auto name_id = context.node_stack().PopName();
+  context.node_stack()
+      .PopAndDiscardSoloNodeId<Parse::NodeKind::AlternativePatternStart>();
+
+  auto& case_context = context.match_case_stack().back();
+  auto scrutinee_type_id = case_context.scrutinee_type_id;
+
+  // Only a choice scrutinee resolves leading-dot case patterns in its scope;
+  // on any other scrutinee such a pattern keeps the W4 slice-gate TODO,
+  // pinned to the introducer node.
+  if (!GetChoiceDiscriminantType(context, scrutinee_type_id)) {
+    return context.TODO(case_context.introducer_node_id,
+                        "match `case` pattern other than an integer "
+                        "literal, or a case guard");
+  }
+
+  auto push_error = [&] {
+    context.node_stack().Push(node_id, SemIR::ErrorInst::InstId);
+    return true;
+  };
+
+  auto alternative =
+      LookupChoiceAlternative(context, scrutinee_type_id, name_id);
+  if (!alternative || !alternative->has_parameters) {
+    // A constant alternative — or an unknown name, which gets the standard
+    // member-access diagnostic. Resolve the designator in the scrutinee's
+    // choice scope; the name reference lands in the pattern's pending
+    // expression region.
+    auto scrutinee_type_inst_id = context.types().GetTypeInstId(
+        context.types().GetUnqualifiedType(scrutinee_type_id));
+    if (alternative && has_parens) {
+      CARBON_DIAGNOSTIC(MatchAlternativeUnexpectedParens, Error,
+                        "alternative `{0}` is declared without a parameter "
+                        "list, so its pattern cannot have parentheses",
+                        SemIR::NameId);
+      context.emitter().Emit(node_id, MatchAlternativeUnexpectedParens,
+                             name_id);
+      return push_error();
+    }
+    auto member_id =
+        PerformMemberAccess(context, node_id, scrutinee_type_inst_id, name_id);
+    // Record the resolution so that the refutable engine can recognize a
+    // pattern whose root is this designator. Re-fetch the case-arm context:
+    // if the member access ever checks code that opens a nested match, the
+    // stack may have reallocated, invalidating `case_context`.
+    auto& resolved_case_context = context.match_case_stack().back();
+    resolved_case_context.designator_root_id = member_id;
+    if (alternative) {
+      resolved_case_context.alternative =
+          Context::MatchCaseContext::Alternative{.index = alternative->index};
+    }
+    if (has_parens) {
+      // Unknown alternative name with parentheses: the member access above
+      // diagnosed it. Consume the pending region the name reference was
+      // emitted into; the pattern is an error and the region is unused.
+      ConsumeExprRegionForPattern(context, member_id);
+      return push_error();
+    }
+    // Wrap the resolved designator in an `ExprPattern`, consuming the
+    // pending expression region it was emitted into.
+    auto region_id = ConsumeExprRegionForPattern(context, member_id);
+    auto pattern_type_id =
+        GetPatternType(context, context.insts().Get(member_id).type_id());
+    auto pattern_id = AddInst<SemIR::ExprPattern>(
+        context, node_id,
+        {.type_id = pattern_type_id, .expr_region_id = region_id});
+    context.node_stack().Push(node_id, pattern_id);
+    return true;
+  }
+
+  // A payload alternative: parentheses are required, per the
+  // parens-iff-parameter-list rule.
+  if (!has_parens) {
+    CARBON_DIAGNOSTIC(MatchAlternativeMissingParens, Error,
+                      "alternative `{0}` is declared with a parameter list, "
+                      "so its pattern requires parentheses",
+                      SemIR::NameId);
+    context.emitter().Emit(node_id, MatchAlternativeMissingParens, name_id);
+    return push_error();
+  }
+  if (payload_id == SemIR::ErrorInst::InstId) {
+    return push_error();
+  }
+
+  // Collect the payload subpatterns.
+  llvm::SmallVector<SemIR::InstId> subpattern_ids;
+  if (payload_is_tuple) {
+    auto tuple_pattern = context.insts().GetAs<SemIR::TuplePattern>(payload_id);
+    llvm::append_range(subpattern_ids,
+                       context.inst_blocks().Get(tuple_pattern.elements_id));
+  } else {
+    subpattern_ids.push_back(payload_id);
+  }
+
+  // The pattern must reproduce the alternative's parameter list, one
+  // subpattern per declared parameter.
+  int param_count = 0;
+  if (alternative->payload_field_index >= 0) {
+    auto payload_info = GetChoicePayloadInfo(context, scrutinee_type_id,
+                                             alternative->payload_field_index);
+    CARBON_CHECK(payload_info, "Payload alternative without payload field");
+    param_count = context.inst_blocks()
+                      .Get(context.types()
+                               .GetAs<SemIR::TupleType>(
+                                   payload_info->payload_tuple_type_id)
+                               .type_elements_id)
+                      .size();
+  }
+  if (static_cast<int>(subpattern_ids.size()) != param_count) {
+    CARBON_DIAGNOSTIC(MatchAlternativeArgCountMismatch, Error,
+                      "alternative pattern has {0} subpattern{0:s}, but "
+                      "alternative `{1}` is declared with {2} parameter{2:s}",
+                      Diagnostics::IntAsSelect, SemIR::NameId,
+                      Diagnostics::IntAsSelect);
+    context.emitter().Emit(node_id, MatchAlternativeArgCountMismatch,
+                           static_cast<int>(subpattern_ids.size()), name_id,
+                           param_count);
+    return push_error();
+  }
+
+  // In this slice, each payload subpattern must be a bare `name: type`
+  // binding (decision-log W5 SF-5); `var`/`ref`/compile-time bindings were
+  // already gated at the binding. Expression subpatterns and nested
+  // destructuring stay TODO.
+  for (auto subpattern_id : subpattern_ids) {
+    if (subpattern_id == SemIR::ErrorInst::InstId) {
+      return push_error();
+    }
+    if (!context.insts().Is<SemIR::ValueBindingPattern>(subpattern_id)) {
+      return context.TODO(
+          SemIR::LocId(subpattern_id),
+          "non-binding subpattern in match `case` alternative pattern");
+    }
+  }
+
+  // The pattern root is a `TuplePattern` over the payload subpatterns; the
+  // bind pass matches it against the alternative's extracted payload tuple.
+  // A single parenthesized subpattern is wrapped in one here so the payload
+  // always destructures through the tuple machinery.
+  SemIR::InstId root_id = payload_id;
+  if (!payload_is_tuple) {
+    llvm::SmallVector<SemIR::InstId> type_inst_ids;
+    type_inst_ids.reserve(subpattern_ids.size());
+    for (auto subpattern_id : subpattern_ids) {
+      type_inst_ids.push_back(
+          context.types().GetTypeInstId(SemIR::ExtractScrutineeType(
+              context.sem_ir(), context.insts().Get(subpattern_id).type_id())));
+    }
+    auto type_id =
+        GetPatternType(context, GetTupleType(context, type_inst_ids));
+    // The `TuplePattern` is synthesized rather than checked from a
+    // `TuplePattern` parse node, so `SemIR::TuplePattern`'s typed node id
+    // doesn't fit; attach the subpattern inst's location instead, the way
+    // `RebuildPatternInst` (thunk.cpp) gives a synthesized inst an existing
+    // inst's location. The location resolves into the alternative pattern's
+    // source for diagnostics.
+    root_id = AddInst(
+        context,
+        SemIR::LocIdAndInst::RuntimeVerified(
+            context.sem_ir(), SemIR::LocId(payload_id),
+            SemIR::TuplePattern{
+                .type_id = type_id,
+                .elements_id = context.inst_blocks().Add(subpattern_ids)}));
+  }
+
+  case_context.alternative = Context::MatchCaseContext::Alternative{
+      .index = alternative->index,
+      .payload_field_index = alternative->payload_field_index,
+      .payload_pattern_id = root_id};
+  context.node_stack().Push(node_id, root_id);
   return true;
 }
 
 auto HandleParseNode(Context& context,
                      Parse::MatchCaseGuardIntroducerId node_id) -> bool {
-  return context.TODO(node_id, "HandleMatchCaseGuardIntroducer");
+  // Guards are a later slice (S2d). The TODO aborts checking, so the open
+  // pattern context needs no unwinding.
+  return context.TODO(node_id, "match case guard");
 }
 
 auto HandleParseNode(Context& context, Parse::MatchCaseGuardStartId node_id)
     -> bool {
-  return context.TODO(node_id, "HandleMatchCaseGuardStart");
+  return context.TODO(node_id, "match case guard");
 }
 
 auto HandleParseNode(Context& context, Parse::MatchCaseGuardId node_id)
     -> bool {
-  return context.TODO(node_id, "HandleMatchCaseGuard");
+  return context.TODO(node_id, "match case guard");
 }
 
 auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
-  auto pattern_id = context.node_stack().PopExpr();
+  // Finish the pattern context begun by `MatchCaseIntroducer`: a leftover
+  // expression on the node stack becomes an `ExprPattern`, and the checked
+  // pattern root is popped.
+  //
+  // A `case` expression such as `2 + 3` is an initializing expression: its
+  // prelude operator call returns through a return slot. Convert it to a
+  // value now, while the pattern's expression region is still open, so the
+  // conversion insts land inside the region and the region's result is a
+  // value. Splicing an initializing result would make the `splice_block` at
+  // the use site itself an initializing expression, which SemIR does not
+  // support: an initializer must carry a storage argument (see
+  // `FindStorageArgForInitializer`). Type expressions uphold the same
+  // invariant by converting with `ExprAsType` before their region closes
+  // (handle_binding_pattern.cpp). Value-category expressions, including
+  // plain literals, are left exactly as they are.
+  {
+    auto [expr_node_id, maybe_expr_id] =
+        context.node_stack().PopWithNodeIdIf<Parse::NodeCategory::Expr>();
+    if (maybe_expr_id) {
+      if (SemIR::IsInitializerCategory(
+              SemIR::GetExprCategory(context.sem_ir(), *maybe_expr_id))) {
+        *maybe_expr_id = ConvertToValueExpr(context, *maybe_expr_id);
+      }
+      context.node_stack().Push(expr_node_id, *maybe_expr_id);
+    }
+  }
+  EndExprRegionForPattern(context, context.node_stack());
+  auto pattern_id = context.node_stack().PopPattern();
   context.node_stack()
       .PopAndDiscardSoloNodeId<Parse::NodeKind::MatchCaseIntroducer>();
+  context.decl_introducer_state_stack().Pop<Lex::TokenKind::Let>();
+
+  // Attach the arm's finished pattern block to a `NameBindingDecl` in the
+  // arm's test block, the same SemIR home `let` and `var` give their
+  // patterns.
+  auto pattern_block_id = context.pattern_block_stack().Pop();
+  AddInst<SemIR::NameBindingDecl>(context, node_id,
+                                  {.pattern_block_id = pattern_block_id});
+
+  auto introducer_node_id =
+      context.match_case_stack().back().introducer_node_id;
+  // Copy: the case-arm context is popped below, before the bind pass reads
+  // the resolved alternative.
+  auto alternative = context.match_case_stack().back().alternative;
   auto scrutinee_id = PeekScrutinee(context);
-  auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
 
-  // Build the arm's condition — docs/design/pattern_matching.md mandates the
-  // operand order for expression patterns: "The scrutinee is compared with
-  // the expression using the `==` operator: _expression_ `==` _scrutinee_" —
-  // the same way as the infix `==` operator: the `EqWith` interface takes a
-  // single argument that is the type of the RHS operand.
+  // Classify by the checked pattern inst: a parenthesized alternative
+  // pattern's root (recorded in the case-arm context) tests the scrutinee's
+  // discriminant, and its payload subpatterns bind below; other expression
+  // patterns (including error recovery) are matched by the refutable engine,
+  // which returns the arm's condition; a binding-pattern root is
+  // irrefutable, so its test pass contributes no condition and the arm's
+  // condition is a constant `true` (the refutable engine prunes at
+  // binding-pattern roots, whose `bind_name_map` entries belong to the bind
+  // pass below); every other pattern root stays behind the W4 slice-gate
+  // TODO. The TODO is pinned to the introducer node so the preserved
+  // diagnostics keep their location.
   SemIR::InstId cond_value_id = SemIR::InstId::None;
-  if (auto disc_type_id =
-          GetChoiceDiscriminantType(context, scrutinee_type_id)) {
-    // A choice scrutinee: `MatchCaseIntroducer` admitted a single leading-dot
-    // designator, resolved against the scrutinee's choice scope (see
-    // `DesignatorExpr` handling in handle_name.cpp).
-    auto pattern_type_id = context.insts().Get(pattern_id).type_id();
-    if (pattern_type_id == SemIR::ErrorInst::TypeId) {
-      // The designator failed to resolve; a diagnostic was already produced.
-      cond_value_id = SemIR::ErrorInst::InstId;
-    } else if (context.types().Is<SemIR::FunctionType>(pattern_type_id)) {
-      // The designator names a payload alternative's constructor function;
-      // destructuring its payload is slice 2.
-      return context.TODO(node_id,
-                          "match case pattern destructuring a choice payload");
-    } else {
-      // The designator names a payload-free alternative constant of the
-      // scrutinee's choice type; compare its discriminant against the
-      // scrutinee's discriminant field.
-      CARBON_CHECK(context.types().GetUnqualifiedType(pattern_type_id) ==
-                       context.types().GetUnqualifiedType(scrutinee_type_id),
-                   "Alternative constant type differs from scrutinee type");
-      auto disc_int_id = GetAlternativeDiscriminant(context, pattern_id);
-      if (!disc_int_id) {
-        // An alternative whose discriminant is not a concrete constant, such
-        // as in a generic context, is out of slice 1; see decision-log W5-S1.
-        // The scrutinee gate rejects those shapes already, so this is
-        // defense-in-depth: diagnose rather than crash. Named for the
-        // pattern, not the scrutinee: the scrutinee passed its gate, and it
-        // is this case pattern's alternative that has no usable shape.
-        return context.TODO(
-            node_id,
-            "match case pattern on unsupported choice alternative shape");
-      }
-      auto index_value_id = ConvertToValueOfType(
-          context, node_id, MakeIntLiteral(context, node_id, *disc_int_id),
-          *disc_type_id);
-
-      auto disc_access_id =
-          AddInst<SemIR::ClassElementAccess>(context, node_id,
-                                             {.type_id = *disc_type_id,
-                                              .base_id = scrutinee_id,
-                                              .index = SemIR::ElementIndex(0)});
-      SemIR::InstId args[] = {context.types().GetTypeInstId(*disc_type_id)};
-      auto eq_id =
-          BuildBinaryOperator(context, node_id,
-                              {.interface_name = CoreIdentifier::EqWith,
-                               .interface_args_ref = args,
-                               .op_name = CoreIdentifier::Equal},
-                              index_value_id, disc_access_id);
-      cond_value_id = ConvertToBoolValue(context, node_id, eq_id);
+  bool is_binding_arm =
+      context.insts().Is<SemIR::ValueBindingPattern>(pattern_id);
+  bool is_alternative_payload_arm =
+      alternative && alternative->payload_pattern_id.has_value() &&
+      alternative->payload_pattern_id == pattern_id;
+  if (is_alternative_payload_arm) {
+    cond_value_id =
+        MatchCaseAlternativePatternMatch(context, scrutinee_id, node_id);
+  } else if (pattern_id == SemIR::ErrorInst::InstId ||
+             context.insts().Is<SemIR::ExprPattern>(pattern_id)) {
+    cond_value_id =
+        MatchCasePatternMatch(context, pattern_id, scrutinee_id, node_id);
+    if (!cond_value_id.has_value()) {
+      // The engine diagnosed an unsupported case-pattern shape with a TODO,
+      // which aborts checking.
+      return false;
     }
+  } else if (is_binding_arm) {
+    cond_value_id = MakeBoolLiteral(context, node_id, SemIR::BoolValue::True);
   } else {
-    // An integer scrutinee with an integer-literal pattern.
-    SemIR::InstId args[] = {context.types().GetTypeInstId(scrutinee_type_id)};
-    auto eq_id = BuildBinaryOperator(context, node_id,
-                                     {.interface_name = CoreIdentifier::EqWith,
-                                      .interface_args_ref = args,
-                                      .op_name = CoreIdentifier::Equal},
-                                     pattern_id, scrutinee_id);
-    cond_value_id = ConvertToBoolValue(context, node_id, eq_id);
+    return context.TODO(
+        introducer_node_id,
+        "match `case` pattern other than an integer literal, or a case guard");
   }
+
+  context.full_pattern_stack().PopFullPattern();
+  context.match_case_stack().pop_back();
 
   // Create the arm's body block and the block for the next test (or the
   // `default` body), and branch to the right one.
@@ -356,6 +492,45 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
   context.inst_block_stack().Pop();
   context.inst_block_stack().Push(then_block_id);
   context.region_stack().AddToRegion(then_block_id, node_id);
+
+  // Bind pass: initialize the pattern's bindings from the scrutinee in the
+  // arm's body block, where they are reachable only when the arm has
+  // matched. This runs the irrefutable `LocalState` machinery, the same way
+  // `let` initializes its bindings.
+  //
+  // For either arm shape, objects created initializing the bindings live
+  // until the end of the arm's scope, the same way `let` and `for` bindings
+  // defer theirs: the conversion to a binding's declared type can
+  // materialize a temporary, which must not be destroyed by the next
+  // statement's temporary-cleanup discharge while the binding is live.
+  // `MatchHandler`'s scope cleanups discharge it at arm exit instead.
+  if (is_binding_arm) {
+    LocalPatternMatch(context, pattern_id, scrutinee_id);
+    context.scope_stack().DeferCleanups();
+  } else if (is_alternative_payload_arm &&
+             alternative->payload_field_index >= 0) {
+    // Extract this alternative's payload tuple from the scrutinee's payload
+    // region — field 1 of the choice's object representation, with every
+    // alternative's payload tuple overlapping at offset zero (the F-007k
+    // storage contract) — and initialize the payload bindings from its
+    // elements through the tuple-pattern machinery.
+    auto payload_info = GetChoicePayloadInfo(
+        context, context.insts().Get(scrutinee_id).type_id(),
+        alternative->payload_field_index);
+    CARBON_CHECK(payload_info, "Payload arm without payload field");
+    auto payload_ref_id = AddInst<SemIR::ClassElementAccess>(
+        context, node_id,
+        {.type_id = payload_info->payload_region_type_id,
+         .base_id = scrutinee_id,
+         .index = SemIR::ElementIndex(1)});
+    auto field_ref_id = AddInst<SemIR::ClassElementAccess>(
+        context, node_id,
+        {.type_id = payload_info->payload_tuple_type_id,
+         .base_id = payload_ref_id,
+         .index = SemIR::ElementIndex(alternative->payload_field_index)});
+    LocalPatternMatch(context, pattern_id, field_ref_id);
+    context.scope_stack().DeferCleanups();
+  }
 
   context.node_stack().Push(node_id, else_block_id);
   return true;
@@ -378,8 +553,15 @@ auto HandleParseNode(Context& context, Parse::MatchDefaultId node_id) -> bool {
 
 auto HandleParseNode(Context& context, Parse::MatchHandlerStartId node_id)
     -> bool {
+  // A `case` arm's scope was pushed by `MatchCaseIntroducer`, so that pattern
+  // bindings cover the guard and the body; do not push a second one. A
+  // `default` arm has no pattern context, so its scope starts here. Either
+  // way, `MatchHandler` pops the one arm scope.
+  if (context.node_stack().PeekIs(Parse::NodeKind::MatchDefault)) {
+    context.scope_stack().PushForSameRegion(
+        ScopeStack::CleanupScopeKind::Owned);
+  }
   context.node_stack().Push(node_id);
-  context.scope_stack().PushForSameRegion(ScopeStack::CleanupScopeKind::Owned);
   return true;
 }
 
@@ -422,7 +604,7 @@ auto HandleParseNode(Context& context, Parse::MatchStatementId node_id)
 
   if (!has_default) {
     // A `match` whose patterns are not exhaustive and that has no `default`
-    // is an error per docs/design/pattern_matching.md, and integer-literal
+    // is an error per docs/design/pattern_matching.md, and integer expression
     // patterns are never exhaustive. Exhaustiveness checking for other
     // pattern kinds is future work.
     return context.TODO(node_id, "match statement without `default` arm");

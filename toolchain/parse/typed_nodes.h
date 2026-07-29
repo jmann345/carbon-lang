@@ -968,6 +968,26 @@ struct MatchCaseGuard {
   Lex::CloseParenTokenIndex token;
 };
 
+using AlternativePatternStart =
+    LeafNode<NodeKind::AlternativePatternStart, Lex::PeriodTokenIndex>;
+
+// A choice alternative pattern in a `match` `case`: `.Name` for an
+// alternative declared without a parameter list, or `.Name(<subpatterns>)`
+// for an alternative declared with one — parentheses are present in the
+// pattern exactly when the alternative declares a parameter list. The
+// wrapper node shares the period token with its bracketing start node (the
+// period's virtual parse node).
+struct AlternativePattern {
+  static constexpr auto Kind = NodeKind::AlternativePattern.Define(
+      {.category = NodeCategory::Pattern,
+       .bracketed_by = AlternativePatternStart::Kind});
+
+  AlternativePatternStartId period;
+  IdentifierNameNotBeforeSignatureId name;
+  std::optional<AnyPatternId> payload;
+  Lex::PeriodTokenIndex token;
+};
+
 struct MatchCase {
   static constexpr auto Kind =
       NodeKind::MatchCase.Define({.bracketed_by = MatchCaseIntroducer::Kind});

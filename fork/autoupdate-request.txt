@@ -1,1 +1,1 @@
-Upstream-20260728 R26 pass 2: verify fixpoint after 16be79f (two interop goldens regenerated; expect empty or loc-only).
+S2c R26 pass 2: verify fixpoint after c26225d (seven files generated/corrected; expect empty or loc-only).

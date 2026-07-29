@@ -43,6 +43,7 @@ fn F(n: i32) {
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
 // CHECK:STDOUT:   %Int.67af24.1: type = class_type @Int, @Int(%N) [symbolic]
+// CHECK:STDOUT:   %pattern_type.dc0: type = pattern_type Core.IntLiteral [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
 // CHECK:STDOUT:   %n.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
@@ -118,6 +119,11 @@ fn F(n: i32) {
 // CHECK:STDOUT: fn @F(%n.param: %i32) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %n.ref: %i32 = name_ref n, %n
+// CHECK:STDOUT:   name_binding_decl {
+// CHECK:STDOUT:     %expr_patt.loc23: %pattern_type.dc0 = expr_pattern %int_1 in [concrete] {
+// CHECK:STDOUT:       %int_1: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %int_1: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
 // CHECK:STDOUT:   %impl.elem0.loc23_12: %.44e = impl_witness_access constants.%EqWith.impl_witness.8ff, element0 [concrete = constants.%T.as_type.as.EqWith.impl.Equal.a942d5.2]
 // CHECK:STDOUT:   %bound_method.loc23_12.1: <bound method> = bound_method %int_1, %impl.elem0.loc23_12 [concrete = constants.%T.as_type.as.EqWith.impl.Equal.bound.b586ba.1]
@@ -146,6 +152,11 @@ fn F(n: i32) {
 // CHECK:STDOUT:   br !match.done
 // CHECK:STDOUT:
 // CHECK:STDOUT: !match.case.else.loc23:
+// CHECK:STDOUT:   name_binding_decl {
+// CHECK:STDOUT:     %expr_patt.loc24: %pattern_type.dc0 = expr_pattern %int_2 in [concrete] {
+// CHECK:STDOUT:       %int_2: Core.IntLiteral = int_value 2 [concrete = constants.%int_2.ecc]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %int_2: Core.IntLiteral = int_value 2 [concrete = constants.%int_2.ecc]
 // CHECK:STDOUT:   %impl.elem0.loc24_12: %.44e = impl_witness_access constants.%EqWith.impl_witness.8ff, element0 [concrete = constants.%T.as_type.as.EqWith.impl.Equal.a942d5.2]
 // CHECK:STDOUT:   %bound_method.loc24_12.1: <bound method> = bound_method %int_2, %impl.elem0.loc24_12 [concrete = constants.%T.as_type.as.EqWith.impl.Equal.bound.9723f2.1]

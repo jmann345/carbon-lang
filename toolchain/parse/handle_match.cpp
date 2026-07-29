@@ -142,10 +142,58 @@ auto HandleMatchCaseIntroducer(Context& context) -> void {
 
   context.AddLeafNode(NodeKind::MatchCaseIntroducer, context.Consume());
   context.PushState(state, StateKind::MatchCaseAfterPattern);
-  context.PushStateForPattern(StateKind::Pattern, /*in_var_pattern=*/false,
-                              /*in_unused_pattern=*/false,
-                              BindingContext::ExplicitParam,
-                              PrecedenceGroup::ForTopLevelPattern());
+  // `.Name`, optionally followed by a parenthesized payload pattern list, is
+  // a choice alternative pattern. Only the leading-dot spelling at the root
+  // of the case pattern is an alternative pattern (root-position-only parse
+  // gating, the S2c recorded deviation (1) in decision-log's S2c landing
+  // note); any other leading token parses as an ordinary pattern.
+  if (context.PositionIs(Lex::TokenKind::Period) &&
+      context.PositionKind(Lookahead::NextToken) ==
+          Lex::TokenKind::Identifier) {
+    context.PushStateForPattern(StateKind::MatchCaseAlternativePattern,
+                                /*in_var_pattern=*/false,
+                                /*in_unused_pattern=*/false,
+                                BindingContext::ExplicitParam,
+                                PrecedenceGroup::ForTopLevelPattern());
+  } else {
+    context.PushStateForPattern(StateKind::Pattern, /*in_var_pattern=*/false,
+                                /*in_unused_pattern=*/false,
+                                BindingContext::ExplicitParam,
+                                PrecedenceGroup::ForTopLevelPattern());
+  }
+}
+
+auto HandleMatchCaseAlternativePattern(Context& context) -> void {
+  auto state = context.PopState();
+
+  context.AddLeafNode(NodeKind::AlternativePatternStart,
+                      context.ConsumeChecked(Lex::TokenKind::Period));
+  // `MatchCaseIntroducer` only enters this state with an identifier after
+  // the period.
+  context.AddLeafNode(NodeKind::IdentifierNameNotBeforeSignature,
+                      context.ConsumeChecked(Lex::TokenKind::Identifier));
+
+  if (context.PositionIs(Lex::TokenKind::OpenParen)) {
+    context.PushState(state, StateKind::MatchCaseAlternativePatternFinish);
+    context.PushStateForPattern(StateKind::PatternListAsTuple,
+                                state.in_var_pattern, state.in_unused_pattern,
+                                state.binding_context,
+                                state.ambient_precedence);
+  } else {
+    context.AddNode(NodeKind::AlternativePattern, state.token, state.has_error);
+    if (state.has_error) {
+      context.ReturnErrorOnState();
+    }
+  }
+}
+
+auto HandleMatchCaseAlternativePatternFinish(Context& context) -> void {
+  auto state = context.PopState();
+
+  context.AddNode(NodeKind::AlternativePattern, state.token, state.has_error);
+  if (state.has_error) {
+    context.ReturnErrorOnState();
+  }
 }
 
 auto HandleMatchCaseAfterPattern(Context& context) -> void {

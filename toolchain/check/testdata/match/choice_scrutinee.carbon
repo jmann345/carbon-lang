@@ -311,6 +311,11 @@ fn IsOn(f: Flag) -> i32 {
 // CHECK:STDOUT: fn @Classify(%s.param: %Signal) -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %s.ref: %Signal = name_ref s, %s
+// CHECK:STDOUT:   name_binding_decl {
+// CHECK:STDOUT:     %expr_patt.loc15: %pattern_type.1de = expr_pattern %Stop.ref in [concrete] {
+// CHECK:STDOUT:       %Stop.ref: %Signal = name_ref Stop, @Signal.%Stop
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Stop.ref: %Signal = name_ref Stop, @Signal.%Stop
 // CHECK:STDOUT:   %int_1.loc15: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
 // CHECK:STDOUT:   %impl.elem0.loc15_16.1: %.66c = impl_witness_access constants.%ImplicitAs.impl_witness.e93, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.409]
@@ -342,6 +347,11 @@ fn IsOn(f: Flag) -> i32 {
 // CHECK:STDOUT:   return %.loc15_29
 // CHECK:STDOUT:
 // CHECK:STDOUT: !match.case.else.loc15:
+// CHECK:STDOUT:   name_binding_decl {
+// CHECK:STDOUT:     %expr_patt.loc16: %pattern_type.1de = expr_pattern %Wait.ref in [concrete] {
+// CHECK:STDOUT:       %Wait.ref: %Signal = name_ref Wait, @Signal.%Wait
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Wait.ref: %Signal = name_ref Wait, @Signal.%Wait
 // CHECK:STDOUT:   %int_2.loc16: Core.IntLiteral = int_value 2 [concrete = constants.%int_2.ecc]
 // CHECK:STDOUT:   %impl.elem0.loc16_16.1: %.66c = impl_witness_access constants.%ImplicitAs.impl_witness.e93, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.409]
@@ -559,6 +569,11 @@ fn IsOn(f: Flag) -> i32 {
 // CHECK:STDOUT: fn @IsOn(%f.param: %Flag) -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %f.ref: %Flag = name_ref f, %f
+// CHECK:STDOUT:   name_binding_decl {
+// CHECK:STDOUT:     %expr_patt: %pattern_type.5bc = expr_pattern %On.ref in [concrete] {
+// CHECK:STDOUT:       %On.ref: %Flag = name_ref On, @Flag.%On
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %On.ref: %Flag = name_ref On, @Flag.%On
 // CHECK:STDOUT:   %int_0.loc12: Core.IntLiteral = int_value 0 [concrete = constants.%int_0.5c6]
 // CHECK:STDOUT:   %impl.elem0.loc12_14.1: %.e60 = impl_witness_access constants.%ImplicitAs.impl_witness.9a9, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a]

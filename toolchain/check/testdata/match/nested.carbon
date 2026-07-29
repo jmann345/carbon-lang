@@ -47,6 +47,7 @@ fn F(n: i32, m: i32) {
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
 // CHECK:STDOUT:   %Int.67af24.1: type = class_type @Int, @Int(%N) [symbolic]
+// CHECK:STDOUT:   %pattern_type.dc0: type = pattern_type Core.IntLiteral [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
 // CHECK:STDOUT:   %n.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
@@ -129,6 +130,11 @@ fn F(n: i32, m: i32) {
 // CHECK:STDOUT: fn @F(%n.param: %i32, %m.param: %i32) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %n.ref: %i32 = name_ref n, %n
+// CHECK:STDOUT:   name_binding_decl {
+// CHECK:STDOUT:     %expr_patt.loc22: %pattern_type.dc0 = expr_pattern %int_0 in [concrete] {
+// CHECK:STDOUT:       %int_0: Core.IntLiteral = int_value 0 [concrete = constants.%int_0.5c6]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %int_0: Core.IntLiteral = int_value 0 [concrete = constants.%int_0.5c6]
 // CHECK:STDOUT:   %impl.elem0.loc22_12: %.44e = impl_witness_access constants.%EqWith.impl_witness.8ff, element0 [concrete = constants.%T.as_type.as.EqWith.impl.Equal.a942d5.2]
 // CHECK:STDOUT:   %bound_method.loc22_12.1: <bound method> = bound_method %int_0, %impl.elem0.loc22_12 [concrete = constants.%T.as_type.as.EqWith.impl.Equal.bound.6da2d9.1]
@@ -153,6 +159,11 @@ fn F(n: i32, m: i32) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !match.case.then.loc22:
 // CHECK:STDOUT:   %m.ref.loc23: %i32 = name_ref m, %m
+// CHECK:STDOUT:   name_binding_decl {
+// CHECK:STDOUT:     %expr_patt.loc24: %pattern_type.dc0 = expr_pattern %int_1 in [concrete] {
+// CHECK:STDOUT:       %int_1: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %int_1: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
 // CHECK:STDOUT:   %impl.elem0.loc24_16: %.44e = impl_witness_access constants.%EqWith.impl_witness.8ff, element0 [concrete = constants.%T.as_type.as.EqWith.impl.Equal.a942d5.2]
 // CHECK:STDOUT:   %bound_method.loc24_16.1: <bound method> = bound_method %int_1, %impl.elem0.loc24_16 [concrete = constants.%T.as_type.as.EqWith.impl.Equal.bound.b586ba.1]

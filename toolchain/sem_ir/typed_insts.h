@@ -1316,8 +1316,9 @@ struct MaybeUnformedType {
   TypeInstId inner_id;
 };
 
-// A name-binding declaration, i.e. a declaration introduced with `let` or
-// `var`.
+// A name-binding declaration: a declaration introduced with `let` or `var`,
+// or the pattern of a `match` statement's `case` arm, which is checked as an
+// implicit `let`.
 struct NameBindingDecl {
   // TODO: Make Parse::NodeId more specific.
   static constexpr auto Kind = InstKind::NameBindingDecl.Define<Parse::NodeId>(

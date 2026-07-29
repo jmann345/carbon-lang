@@ -1,1 +1,1 @@
-Upstream-20260728 gate: full merge gate on the weekly upstream merge (fixpoint at f8fc908, pass-2 loc-only).
+S2c gate: full merge gate on choice payload destructuring (fixpoint at e180d95, pass-2 loc-only).

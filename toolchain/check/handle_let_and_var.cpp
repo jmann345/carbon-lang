@@ -143,6 +143,16 @@ auto HandleParseNode(Context& context, Parse::VariablePatternId node_id)
         pattern_id = context.field_decls_stack().PeekArray().back();
       }
       break;
+    case FullPatternStack::Kind::MatchCaseArm:
+      // `var` patterns in `match` `case` arms are a recorded later slice; a
+      // binding inside the `var` pattern is gated at the binding (the
+      // `var`/`ref` case-binding TODO in handle_binding_pattern.cpp) before
+      // reaching here, so this is the binding-free spelling, such as
+      // `case var 5`, which stays behind the W4 slice gate.
+      return context.TODO(
+          context.match_case_stack().back().introducer_node_id,
+          "match `case` pattern other than an integer literal, or a case "
+          "guard");
     case FullPatternStack::Kind::NotInEitherParamList:
       CARBON_FATAL("Unreachable");
   }

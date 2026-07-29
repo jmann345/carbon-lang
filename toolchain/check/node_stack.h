@@ -455,6 +455,7 @@ class NodeStack {
       case Parse::NodeKind::BindingPatternTypeStart:
       case Parse::NodeKind::CompileTimeBindingPatternTypeStart:
         return Id::KindFor<SemIR::ElementIndex>();
+      case Parse::NodeKind::AlternativePatternStart:
       case Parse::NodeKind::AssociatedConstantInitializer:
       case Parse::NodeKind::AssociatedConstantIntroducer:
       case Parse::NodeKind::BuiltinName:

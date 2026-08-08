@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-08T18:51:40.468117+00:00",
+  "generated": "2026-08-08T22:49:29.654880+00:00",
   "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 10.1,
+  "elapsed_seconds": 11.1,
   "totals": {
-    "PASS": 81,
+    "PASS": 83,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
     "OUTPUT-MISMATCH": 0,
     "DIFF-MISMATCH": 0,
-    "SKIP": 31
+    "SKIP": 30
   },
   "programs": [
     {
@@ -183,8 +183,8 @@
     {
       "path": "error_handling/control_flow_constructs.carbon",
       "bullet": "Error handling: dedicated control flow constructs",
-      "status": "SKIP",
-      "detail": "GATED \u2014 the accepted design is F-006 postfix `?` over `Core.Try` (docs/design/error_handling.md; fork/b1/plan.md). As of B1a the postfix `?` expression PARSES (PostfixOperatorQuestion, toolchain/parse/handle_expr.cpp's postfix loop), but its check handler gates the entire surface behind the TODO string `postfix `?` operator` (pinned by toolchain/check/testdata/operators/fail_todo_question.carbon), and `Core.Try` does not exist yet. Un-SKIP at B1b, which lands the prelude interface plus the desugar and rewrites this body (still a pre-F-006 strawman below) to the accepted `?` shape.",
+      "status": "PASS",
+      "detail": "",
       "differential": false
     },
     {
@@ -221,6 +221,13 @@
       "status": "PASS",
       "detail": "",
       "differential": false
+    },
+    {
+      "path": "error_handling/question_propagation_diff.carbon",
+      "bullet": "Error handling: dedicated control flow constructs",
+      "status": "PASS",
+      "detail": "",
+      "differential": true
     },
     {
       "path": "functions/forward_decl.carbon",
@@ -1082,10 +1089,11 @@
       ]
     },
     "Error handling: dedicated control flow constructs": {
-      "status": "SKIP",
+      "status": "PASS",
       "gap_status": "MISSING",
       "programs": [
-        "error_handling/control_flow_constructs.carbon"
+        "error_handling/control_flow_constructs.carbon",
+        "error_handling/question_propagation_diff.carbon"
       ]
     },
     "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)": {

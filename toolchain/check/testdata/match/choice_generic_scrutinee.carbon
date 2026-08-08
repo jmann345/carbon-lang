@@ -88,15 +88,7 @@ choice P(T: type) {
 // payload-free choice's representation witness is concrete, and the forced
 // completion defers the specific's requirement to monomorphization
 // (`require_complete_type`).
-// CHECK:STDERR: symbolic_specific.carbon:[[@LINE+8]]:8: error: expected expression [ExpectedExpr]
-// CHECK:STDERR: fn F(T:! type, x: P(T)) -> i32 {
-// CHECK:STDERR:        ^
-// CHECK:STDERR:
-// CHECK:STDERR: symbolic_specific.carbon:[[@LINE+4]]:8: error: semantics TODO: `handle invalid parse trees in `check`` [SemanticsTodo]
-// CHECK:STDERR: fn F(T:! type, x: P(T)) -> i32 {
-// CHECK:STDERR:        ^
-// CHECK:STDERR:
-fn F(T:! type, x: P(T)) -> i32 {
+fn F[T: type](x: P(T)) -> i32 {
   match (x) {
     case .A => { return 0; }
     case .B => { return 1; }
@@ -105,7 +97,7 @@ fn F(T:! type, x: P(T)) -> i32 {
 }
 
 fn Call(p: P(i32)) -> i32 {
-  return F(i32, p);
+  return F(p);
 }
 //@dump-sem-ir-end
 

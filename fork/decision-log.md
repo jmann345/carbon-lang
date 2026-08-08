@@ -241,6 +241,30 @@ none flips. _Bookkeeping:_ SF-9 recorded as OPEN per plan §0.2's landing
 obligation (see the OPEN forks section); W-010's generic residue narrows to
 payload synthesis (S3b) + destructuring on specifics (S3c). Veto-able.
 
+_S3a crash-fix addendum (2026-08-08, post-first-CI-cycle):_ the slice's
+first CI cycle surfaced two defects the no-local-bazel review could not
+execute. (1) SIGSEGV: a generic choice's eval block holds a
+`require_complete_type` of the choice's own type (its body converts
+alternative constants to symbolic `Self`), and
+`ResolveSpecificDefinition` had no in-progress guard — completing
+`Pair(i32)` re-entered its own resolution unboundedly. Fixed by a
+placeholder guard mirroring `ResolveSpecificDecl`, a loud bounds
+CHECK in `GetConstantInSpecific` (was an unchecked opt-mode read), and
+`LookupMemberNameInScope` attaching the scope's specific to a
+`WrapperBinding`'s symbolic bound value (it was silently dropped;
+`P(i32).B` would have failed lowering). One fresh-context adversarial
+review, five lanes, no blocker; residual for S3b recorded in the plan
+(symbolic witness during the placeholder window hits the new CHECK).
+(2) R17 catch by the gate's `fail_`-prefix invariant: the
+symbolic-specific testdata split was authored with the retired `:!`
+binding syntax, so it PARSED WITH ERRORS and never exercised the
+symbolic path — autoupdate faithfully pinned the error goldens and only
+the gate refused. Re-authored to the current bracket-list form
+(`fn F[T: type](x: P(T))`, `T` deduced at the call); its regenerated
+goldens are the symbolic path's first real execution, so the
+"symbolic specifics" exit claim rests on that run, not on the earlier
+review tracing alone.
+
 ### W5 SF-1..8: choice-payload plan sub-forks (user by way of AskUserQuestion, 2026-07-20)
 
 Hybrid struct representation — discriminant + CustomLayoutType payload

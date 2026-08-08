@@ -337,10 +337,14 @@ auto EvalConstantInst(Context& context, SemIR::InstId inst_id,
   new_layout.push_back(payload_align);
   static_assert(SemIR::CustomLayoutId::FirstFieldIndex == 2);
   new_layout.append(fields.size(), SemIR::ObjectSize::Zero());
+  // The layout block is canonical so that the recomputed constant converges
+  // with a structurally identical one arriving through import: the constant
+  // store deduplicates by the raw block ids, and the import resolver
+  // canonicalizes both blocks (`TryResolveTypedInst` for `CustomLayoutType`).
   return ConstantEvalResult::NewSamePhase(SemIR::CustomLayoutType{
       .type_id = inst.type_id,
       .fields_id = inst.fields_id,
-      .layout_id = context.custom_layouts().Add(new_layout)});
+      .layout_id = context.custom_layouts().AddCanonical(new_layout)});
 }
 
 auto EvalConstantInst(Context& /*context*/, SemIR::Deref /*inst*/)

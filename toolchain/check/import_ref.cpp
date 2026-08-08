@@ -4214,11 +4214,21 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
       resolver.import_ir().custom_layouts().Get(inst.layout_id).begin(),
       resolver.import_ir().custom_layouts().Get(inst.layout_id).end());
 
+  // Both blocks must be canonical: the constant store deduplicates by the raw
+  // block ids, and one imported constant is resolved once per *requesting*
+  // inst id — the generic's eval-block instruction and the canonical constant
+  // instruction of the same exported constant resolve separately. Fresh
+  // (non-canonical) blocks would mint a distinct local constant per request,
+  // and `RebuildGenericEvalBlock`'s per-entry map — keyed by the constant inst
+  // id — would then miss the payload-region entry when rebuilding the object
+  // representation `StructType` that refers to it (the `StructType` resolver's
+  // `AddCanonical` precedent).
   return ResolveResult::Deduplicated<SemIR::CustomLayoutType>(
       resolver,
       {.type_id = SemIR::TypeType::TypeId,
-       .fields_id = resolver.local_struct_type_fields().Add(new_fields),
-       .layout_id = resolver.local_ir().custom_layouts().Add(layout)});
+       .fields_id =
+           resolver.local_struct_type_fields().AddCanonical(new_fields),
+       .layout_id = resolver.local_ir().custom_layouts().AddCanonical(layout)});
 }
 
 static auto TryResolveTypedInst(ImportRefResolver& resolver,

@@ -97,8 +97,6 @@ fn F(ref r: Cpp.A) {
 // CHECK:STDOUT: %struct.A = type <{ %struct.Base, i32, [4 x i8] }>
 // CHECK:STDOUT: %struct.Base = type { ptr }
 // CHECK:STDOUT:
-// CHECK:STDOUT: $__clang_call_terminate = comdat any
-// CHECK:STDOUT:
 // CHECK:STDOUT: $_ZNK1A6by_valEv = comdat any
 // CHECK:STDOUT:
 // CHECK:STDOUT: @_ZTV1A = available_externally constant { [4 x ptr] } { [4 x ptr] [ptr null, ptr @_ZTI1A, ptr @_ZN4Base5virt0Ev, ptr @_ZN1A5virt1Ev] }, align 8
@@ -113,111 +111,38 @@ fn F(ref r: Cpp.A) {
 // CHECK:STDOUT:   ret i32 %by_val__carbon_thunk.call, !dbg !20
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal void @_ZN4Base5virt0Ev.carbon_thunk.r(ptr noundef nonnull align 8 dereferenceable(8) %this) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: declare void @_ZN4Base5virt0Ev(ptr noundef nonnull align 8 dereferenceable(8)) unnamed_addr #1
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZN1A5virt1Ev(ptr noundef nonnull align 8 dereferenceable(12)) unnamed_addr #1
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
+// CHECK:STDOUT: define internal noundef i32 @_ZNK1A6by_valEv.carbon_thunk._(ptr noundef nonnull align 8 dereferenceable(12) %this) #2 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %this.addr = alloca ptr, align 8
 // CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !21
 // CHECK:STDOUT:   %0 = load ptr, ptr %this.addr, align 8, !tbaa !21, !nonnull !24, !align !25
-// CHECK:STDOUT:   %vtable = load ptr, ptr %0, align 8, !tbaa !26
-// CHECK:STDOUT:   %vfn = getelementptr inbounds ptr, ptr %vtable, i64 0
-// CHECK:STDOUT:   %1 = load ptr, ptr %vfn, align 8
-// CHECK:STDOUT:   invoke void %1(ptr noundef nonnull align 8 dereferenceable(8) %0)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret void
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #5
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal void @_ZN1A5virt1Ev.carbon_thunk.r(ptr noundef nonnull align 8 dereferenceable(12) %this) #1 personality ptr @__gxx_personality_v0 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %this.addr = alloca ptr, align 8
-// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !28
-// CHECK:STDOUT:   %0 = load ptr, ptr %this.addr, align 8, !tbaa !28, !nonnull !24, !align !25
-// CHECK:STDOUT:   %vtable = load ptr, ptr %0, align 8, !tbaa !26
-// CHECK:STDOUT:   %vfn = getelementptr inbounds ptr, ptr %vtable, i64 1
-// CHECK:STDOUT:   %1 = load ptr, ptr %vfn, align 8
-// CHECK:STDOUT:   invoke void %1(ptr noundef nonnull align 8 dereferenceable(12) %0)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret void
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #5
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal noundef i32 @_ZNK1A6by_valEv.carbon_thunk._(ptr noundef nonnull align 8 dereferenceable(12) %this) #1 personality ptr @__gxx_personality_v0 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %this.addr = alloca ptr, align 8
-// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !28
-// CHECK:STDOUT:   %0 = load ptr, ptr %this.addr, align 8, !tbaa !28, !nonnull !24, !align !25
-// CHECK:STDOUT:   %call = invoke noundef i32 @_ZNK1A6by_valEv(ptr noundef nonnull align 8 dereferenceable(12) %0)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   %call = call noundef i32 @_ZNK1A6by_valEv(ptr noundef nonnull align 8 dereferenceable(12) %0)
 // CHECK:STDOUT:   ret i32 %call
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %2) #5
-// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZN4Base5virt0Ev(ptr noundef nonnull align 8 dereferenceable(8)) unnamed_addr #2
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZN1A5virt1Ev(ptr noundef nonnull align 8 dereferenceable(12)) unnamed_addr #2
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
-// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #3 comdat {
-// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
-// CHECK:STDOUT:   call void @_ZSt9terminatev() #5
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZSt9terminatev()
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: mustprogress nounwind uwtable
-// CHECK:STDOUT: define linkonce_odr dso_local noundef i32 @_ZNK1A6by_valEv(ptr noundef nonnull align 8 dereferenceable(12) %this) #4 comdat align 2 {
+// CHECK:STDOUT: define linkonce_odr dso_local noundef i32 @_ZNK1A6by_valEv(ptr noundef nonnull align 8 dereferenceable(12) %this) #3 comdat align 2 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %this.addr = alloca ptr, align 8
-// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !28
+// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !21
 // CHECK:STDOUT:   %this1 = load ptr, ptr %this.addr, align 8
 // CHECK:STDOUT:   %n = getelementptr inbounds nuw %struct.A, ptr %this1, i32 0, i32 1
-// CHECK:STDOUT:   %0 = load i32, ptr %n, align 8, !tbaa !30
+// CHECK:STDOUT:   %0 = load i32, ptr %n, align 8, !tbaa !26
 // CHECK:STDOUT:   ret i32 %0
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
 // CHECK:STDOUT: uselistorder ptr @_ZN4Base5virt0Ev, { 1, 0 }
-// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 2, 1, 0 }
-// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 2, 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #2 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #3 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #4 = { mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #5 = { noreturn nounwind }
+// CHECK:STDOUT: attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #2 = { alwaysinline mustprogress uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #3 = { mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -245,17 +170,13 @@ fn F(ref r: Cpp.A) {
 // CHECK:STDOUT: !19 = !DILocation(line: 7, column: 10, scope: !12)
 // CHECK:STDOUT: !20 = !DILocation(line: 7, column: 3, scope: !12)
 // CHECK:STDOUT: !21 = !{!22, !22, i64 0}
-// CHECK:STDOUT: !22 = !{!"p1 _ZTS4Base", !23, i64 0}
+// CHECK:STDOUT: !22 = !{!"p1 _ZTS1A", !23, i64 0}
 // CHECK:STDOUT: !23 = !{!"any pointer", !10, i64 0}
 // CHECK:STDOUT: !24 = !{}
 // CHECK:STDOUT: !25 = !{i64 8}
-// CHECK:STDOUT: !26 = !{!27, !27, i64 0}
-// CHECK:STDOUT: !27 = !{!"vtable pointer", !11, i64 0}
-// CHECK:STDOUT: !28 = !{!29, !29, i64 0}
-// CHECK:STDOUT: !29 = !{!"p1 _ZTS1A", !23, i64 0}
-// CHECK:STDOUT: !30 = !{!31, !9, i64 8}
-// CHECK:STDOUT: !31 = !{!"_ZTS1A", !32, i64 0, !9, i64 8}
-// CHECK:STDOUT: !32 = !{!"_ZTS4Base"}
+// CHECK:STDOUT: !26 = !{!27, !9, i64 8}
+// CHECK:STDOUT: !27 = !{!"_ZTS1A", !28, i64 0, !9, i64 8}
+// CHECK:STDOUT: !28 = !{!"_ZTS4Base"}
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'call_by_ref.carbon'
@@ -263,10 +184,8 @@ fn F(ref r: Cpp.A) {
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
-// CHECK:STDOUT: %struct.A = type <{ %struct.Base, i32, [4 x i8] }>
-// CHECK:STDOUT: %struct.Base = type { ptr }
-// CHECK:STDOUT:
-// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT: %struct.A.18 = type <{ %struct.Base.19, i32, [4 x i8] }>
+// CHECK:STDOUT: %struct.Base.19 = type { ptr }
 // CHECK:STDOUT:
 // CHECK:STDOUT: $_ZN1A6by_refEv = comdat any
 // CHECK:STDOUT:
@@ -278,115 +197,31 @@ fn F(ref r: Cpp.A) {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @_CUseVal.Main(ptr %a) #0 !dbg !12 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %by_ref__carbon_thunk.call = call i32 @_ZN1A6by_refEv.carbon_thunk.r(ptr %a), !dbg !19
-// CHECK:STDOUT:   ret i32 %by_ref__carbon_thunk.call, !dbg !20
+// CHECK:STDOUT:   %A.by_ref.call = call i32 @_ZN1A6by_refEv(ptr %a), !dbg !19
+// CHECK:STDOUT:   ret i32 %A.by_ref.call, !dbg !20
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal void @_ZN4Base5virt0Ev.carbon_thunk.r(ptr noundef nonnull align 8 dereferenceable(8) %this) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: declare void @_ZN4Base5virt0Ev(ptr noundef nonnull align 8 dereferenceable(8)) unnamed_addr #1
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZN1A5virt1Ev(ptr noundef nonnull align 8 dereferenceable(12)) unnamed_addr #1
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: mustprogress nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr dso_local noundef i32 @_ZN1A6by_refEv(ptr noundef nonnull align 8 dereferenceable(12) %this) #2 comdat align 2 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %this.addr = alloca ptr, align 8
 // CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !21
-// CHECK:STDOUT:   %0 = load ptr, ptr %this.addr, align 8, !tbaa !21, !nonnull !24, !align !25
-// CHECK:STDOUT:   %vtable = load ptr, ptr %0, align 8, !tbaa !26
-// CHECK:STDOUT:   %vfn = getelementptr inbounds ptr, ptr %vtable, i64 0
-// CHECK:STDOUT:   %1 = load ptr, ptr %vfn, align 8
-// CHECK:STDOUT:   invoke void %1(ptr noundef nonnull align 8 dereferenceable(8) %0)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret void
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #5
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal void @_ZN1A5virt1Ev.carbon_thunk.r(ptr noundef nonnull align 8 dereferenceable(12) %this) #1 personality ptr @__gxx_personality_v0 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %this.addr = alloca ptr, align 8
-// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !28
-// CHECK:STDOUT:   %0 = load ptr, ptr %this.addr, align 8, !tbaa !28, !nonnull !24, !align !25
-// CHECK:STDOUT:   %vtable = load ptr, ptr %0, align 8, !tbaa !26
-// CHECK:STDOUT:   %vfn = getelementptr inbounds ptr, ptr %vtable, i64 1
-// CHECK:STDOUT:   %1 = load ptr, ptr %vfn, align 8
-// CHECK:STDOUT:   invoke void %1(ptr noundef nonnull align 8 dereferenceable(12) %0)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret void
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #5
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal noundef i32 @_ZN1A6by_refEv.carbon_thunk.r(ptr noundef nonnull align 8 dereferenceable(12) %this) #1 personality ptr @__gxx_personality_v0 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %this.addr = alloca ptr, align 8
-// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !28
-// CHECK:STDOUT:   %0 = load ptr, ptr %this.addr, align 8, !tbaa !28, !nonnull !24, !align !25
-// CHECK:STDOUT:   %call = invoke noundef i32 @_ZN1A6by_refEv(ptr noundef nonnull align 8 dereferenceable(12) %0)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret i32 %call
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %2) #5
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZN4Base5virt0Ev(ptr noundef nonnull align 8 dereferenceable(8)) unnamed_addr #2
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZN1A5virt1Ev(ptr noundef nonnull align 8 dereferenceable(12)) unnamed_addr #2
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
-// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #3 comdat {
-// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
-// CHECK:STDOUT:   call void @_ZSt9terminatev() #5
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZSt9terminatev()
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: mustprogress nounwind uwtable
-// CHECK:STDOUT: define linkonce_odr dso_local noundef i32 @_ZN1A6by_refEv(ptr noundef nonnull align 8 dereferenceable(12) %this) #4 comdat align 2 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %this.addr = alloca ptr, align 8
-// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !28
 // CHECK:STDOUT:   %this1 = load ptr, ptr %this.addr, align 8
-// CHECK:STDOUT:   %n = getelementptr inbounds nuw %struct.A, ptr %this1, i32 0, i32 1
-// CHECK:STDOUT:   %0 = load i32, ptr %n, align 8, !tbaa !30
+// CHECK:STDOUT:   %n = getelementptr inbounds nuw %struct.A.18, ptr %this1, i32 0, i32 1
+// CHECK:STDOUT:   %0 = load i32, ptr %n, align 8, !tbaa !24
 // CHECK:STDOUT:   ret i32 %0
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
 // CHECK:STDOUT: uselistorder ptr @_ZN4Base5virt0Ev, { 1, 0 }
-// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 2, 1, 0 }
-// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 2, 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #2 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #3 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #4 = { mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #5 = { noreturn nounwind }
+// CHECK:STDOUT: attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #2 = { mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -414,25 +249,17 @@ fn F(ref r: Cpp.A) {
 // CHECK:STDOUT: !19 = !DILocation(line: 7, column: 10, scope: !12)
 // CHECK:STDOUT: !20 = !DILocation(line: 7, column: 3, scope: !12)
 // CHECK:STDOUT: !21 = !{!22, !22, i64 0}
-// CHECK:STDOUT: !22 = !{!"p1 _ZTS4Base", !23, i64 0}
+// CHECK:STDOUT: !22 = !{!"p1 _ZTS1A", !23, i64 0}
 // CHECK:STDOUT: !23 = !{!"any pointer", !10, i64 0}
-// CHECK:STDOUT: !24 = !{}
-// CHECK:STDOUT: !25 = !{i64 8}
-// CHECK:STDOUT: !26 = !{!27, !27, i64 0}
-// CHECK:STDOUT: !27 = !{!"vtable pointer", !11, i64 0}
-// CHECK:STDOUT: !28 = !{!29, !29, i64 0}
-// CHECK:STDOUT: !29 = !{!"p1 _ZTS1A", !23, i64 0}
-// CHECK:STDOUT: !30 = !{!31, !9, i64 8}
-// CHECK:STDOUT: !31 = !{!"_ZTS1A", !32, i64 0, !9, i64 8}
-// CHECK:STDOUT: !32 = !{!"_ZTS4Base"}
+// CHECK:STDOUT: !24 = !{!25, !9, i64 8}
+// CHECK:STDOUT: !25 = !{!"_ZTS1A", !26, i64 0, !9, i64 8}
+// CHECK:STDOUT: !26 = !{!"_ZTS4Base"}
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'call_virtual.carbon'
 // CHECK:STDOUT: source_filename = "call_virtual.carbon"
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
-// CHECK:STDOUT:
-// CHECK:STDOUT: $__clang_call_terminate = comdat any
 // CHECK:STDOUT:
 // CHECK:STDOUT: @_ZTV1A = available_externally constant { [4 x ptr] } { [4 x ptr] [ptr null, ptr @_ZTI1A, ptr @_ZN4Base5virt0Ev, ptr @_ZN1A5virt1Ev] }, align 8
 // CHECK:STDOUT: @_ZTV4Base = available_externally constant { [3 x ptr] } { [3 x ptr] [ptr null, ptr @_ZTI4Base, ptr @_ZN4Base5virt0Ev] }, align 8
@@ -443,84 +270,26 @@ fn F(ref r: Cpp.A) {
 // CHECK:STDOUT: define void @_CUseVal.Main(ptr %a) #0 !dbg !12 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.loc7_4.3.vptr = getelementptr inbounds nuw [8 x i8], ptr %a, i32 0, i32 0, !dbg !18
-// CHECK:STDOUT:   call void @_ZN4Base5virt0Ev.carbon_thunk.r(ptr %.loc7_4.3.vptr), !dbg !18
-// CHECK:STDOUT:   call void @_ZN1A5virt1Ev.carbon_thunk.r(ptr %a), !dbg !19
+// CHECK:STDOUT:   %Base.virt0.call.vtable = load ptr, ptr %.loc7_4.3.vptr, align 8, !dbg !18
+// CHECK:STDOUT:   %Base.virt0.call = getelementptr ptr, ptr %Base.virt0.call.vtable, i32 0, !dbg !18
+// CHECK:STDOUT:   %Base.virt0.call.memptr.virtualfn = load ptr, ptr %Base.virt0.call, align 8, !dbg !18
+// CHECK:STDOUT:   call void %Base.virt0.call.memptr.virtualfn(ptr %.loc7_4.3.vptr), !dbg !18
+// CHECK:STDOUT:   %A.virt1.call.vtable = load ptr, ptr %a, align 8, !dbg !19
+// CHECK:STDOUT:   %A.virt1.call = getelementptr ptr, ptr %A.virt1.call.vtable, i32 1, !dbg !19
+// CHECK:STDOUT:   %A.virt1.call.memptr.virtualfn = load ptr, ptr %A.virt1.call, align 8, !dbg !19
+// CHECK:STDOUT:   call void %A.virt1.call.memptr.virtualfn(ptr %a), !dbg !19
 // CHECK:STDOUT:   ret void, !dbg !20
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal void @_ZN4Base5virt0Ev.carbon_thunk.r(ptr noundef nonnull align 8 dereferenceable(8) %this) #1 personality ptr @__gxx_personality_v0 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %this.addr = alloca ptr, align 8
-// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !21
-// CHECK:STDOUT:   %0 = load ptr, ptr %this.addr, align 8, !tbaa !21, !nonnull !24, !align !25
-// CHECK:STDOUT:   %vtable = load ptr, ptr %0, align 8, !tbaa !26
-// CHECK:STDOUT:   %vfn = getelementptr inbounds ptr, ptr %vtable, i64 0
-// CHECK:STDOUT:   %1 = load ptr, ptr %vfn, align 8
-// CHECK:STDOUT:   invoke void %1(ptr noundef nonnull align 8 dereferenceable(8) %0)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT: declare void @_ZN4Base5virt0Ev(ptr noundef nonnull align 8 dereferenceable(8)) unnamed_addr #1
 // CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret void
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #4
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal void @_ZN1A5virt1Ev.carbon_thunk.r(ptr noundef nonnull align 8 dereferenceable(12) %this) #1 personality ptr @__gxx_personality_v0 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %this.addr = alloca ptr, align 8
-// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !28
-// CHECK:STDOUT:   %0 = load ptr, ptr %this.addr, align 8, !tbaa !28, !nonnull !24, !align !25
-// CHECK:STDOUT:   %vtable = load ptr, ptr %0, align 8, !tbaa !26
-// CHECK:STDOUT:   %vfn = getelementptr inbounds ptr, ptr %vtable, i64 1
-// CHECK:STDOUT:   %1 = load ptr, ptr %vfn, align 8
-// CHECK:STDOUT:   invoke void %1(ptr noundef nonnull align 8 dereferenceable(12) %0)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret void
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #4
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZN4Base5virt0Ev(ptr noundef nonnull align 8 dereferenceable(8)) unnamed_addr #2
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZN1A5virt1Ev(ptr noundef nonnull align 8 dereferenceable(12)) unnamed_addr #2
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
-// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #3 comdat {
-// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
-// CHECK:STDOUT:   call void @_ZSt9terminatev() #4
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZSt9terminatev()
+// CHECK:STDOUT: declare void @_ZN1A5virt1Ev(ptr noundef nonnull align 8 dereferenceable(12)) unnamed_addr #1
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
 // CHECK:STDOUT: uselistorder ptr @_ZN4Base5virt0Ev, { 1, 0 }
-// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 1, 0 }
-// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #2 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #3 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #4 = { noreturn nounwind }
+// CHECK:STDOUT: attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -547,15 +316,6 @@ fn F(ref r: Cpp.A) {
 // CHECK:STDOUT: !18 = !DILocation(line: 7, column: 3, scope: !12)
 // CHECK:STDOUT: !19 = !DILocation(line: 8, column: 3, scope: !12)
 // CHECK:STDOUT: !20 = !DILocation(line: 6, column: 1, scope: !12)
-// CHECK:STDOUT: !21 = !{!22, !22, i64 0}
-// CHECK:STDOUT: !22 = !{!"p1 _ZTS4Base", !23, i64 0}
-// CHECK:STDOUT: !23 = !{!"any pointer", !10, i64 0}
-// CHECK:STDOUT: !24 = !{}
-// CHECK:STDOUT: !25 = !{i64 8}
-// CHECK:STDOUT: !26 = !{!27, !27, i64 0}
-// CHECK:STDOUT: !27 = !{!"vtable pointer", !11, i64 0}
-// CHECK:STDOUT: !28 = !{!29, !29, i64 0}
-// CHECK:STDOUT: !29 = !{!"p1 _ZTS1A", !23, i64 0}
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'call_thunk.carbon'
@@ -564,8 +324,6 @@ fn F(ref r: Cpp.A) {
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
 // CHECK:STDOUT: %struct.NeedThunk = type { i8 }
-// CHECK:STDOUT:
-// CHECK:STDOUT: $__clang_call_terminate = comdat any
 // CHECK:STDOUT:
 // CHECK:STDOUT: @int_1.f1e = internal constant i8 1
 // CHECK:STDOUT:
@@ -583,8 +341,8 @@ fn F(ref r: Cpp.A) {
 // CHECK:STDOUT:   ret void, !dbg !22
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal void @_ZNK9NeedThunk8ImplicitEa.carbon_thunk.__(ptr noundef nonnull align 1 dereferenceable(1) %this, ptr noundef %c) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
+// CHECK:STDOUT: define internal void @_ZNK9NeedThunk8ImplicitEa.carbon_thunk.__(ptr noundef nonnull align 1 dereferenceable(1) %this, ptr noundef %c) #1 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %this.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %c.addr = alloca ptr, align 8
@@ -593,18 +351,8 @@ fn F(ref r: Cpp.A) {
 // CHECK:STDOUT:   %0 = load ptr, ptr %this.addr, align 8, !tbaa !23, !nonnull !28
 // CHECK:STDOUT:   %1 = load ptr, ptr %c.addr, align 8, !tbaa !26
 // CHECK:STDOUT:   %2 = load i8, ptr %1, align 1, !tbaa !29
-// CHECK:STDOUT:   invoke void @_ZNK9NeedThunk8ImplicitEa(ptr noundef nonnull align 1 dereferenceable(1) %0, i8 noundef signext %2)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   call void @_ZNK9NeedThunk8ImplicitEa(ptr noundef nonnull align 1 dereferenceable(1) %0, i8 noundef signext %2)
 // CHECK:STDOUT:   ret void
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %3 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %4 = extractvalue { ptr, i32 } %3, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %4) #5
-// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
@@ -613,8 +361,8 @@ fn F(ref r: Cpp.A) {
 // CHECK:STDOUT:   ret void, !dbg !36
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal void @_ZNH9NeedThunk8ExplicitES_a.carbon_thunk.__(ptr noundef %0, ptr noundef %c) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
+// CHECK:STDOUT: define internal void @_ZNH9NeedThunk8ExplicitES_a.carbon_thunk.__(ptr noundef %0, ptr noundef %c) #1 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %c.addr = alloca ptr, align 8
@@ -624,18 +372,8 @@ fn F(ref r: Cpp.A) {
 // CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !23
 // CHECK:STDOUT:   %2 = load ptr, ptr %c.addr, align 8, !tbaa !26
 // CHECK:STDOUT:   %3 = load i8, ptr %2, align 1, !tbaa !29
-// CHECK:STDOUT:   invoke void @_ZNH9NeedThunk8ExplicitES_a(i8 noundef signext %3)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   call void @_ZNH9NeedThunk8ExplicitES_a(i8 noundef signext %3)
 // CHECK:STDOUT:   ret void
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %4 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %5 = extractvalue { ptr, i32 } %4, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %5) #5
-// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
@@ -643,33 +381,16 @@ fn F(ref r: Cpp.A) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @_ZNK9NeedThunk8ImplicitEa(ptr noundef nonnull align 1 dereferenceable(1), i8 noundef signext) #3
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
-// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #4 comdat {
-// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
-// CHECK:STDOUT:   call void @_ZSt9terminatev() #5
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZSt9terminatev()
-// CHECK:STDOUT:
 // CHECK:STDOUT: declare void @_ZNH9NeedThunk8ExplicitES_a(i8 noundef signext) #3
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
 // CHECK:STDOUT: uselistorder ptr @"_COp.578b3934f85dbca6:core.Destroy.Core", { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 1, 0 }
-// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 1, 0 }
-// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #2 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
 // CHECK:STDOUT: attributes #3 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #4 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #5 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -719,61 +440,17 @@ fn F(ref r: Cpp.A) {
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
-// CHECK:STDOUT: $__clang_call_terminate = comdat any
-// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CF.Main(ptr %r) #0 !dbg !12 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @_ZN1A1fEii.carbon_thunk.r__(ptr %r, i32 1, i32 2), !dbg !18
+// CHECK:STDOUT:   call void @_ZN1A1fEii(ptr %r, i32 1, i32 2), !dbg !18
 // CHECK:STDOUT:   ret void, !dbg !19
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal void @_ZN1A1fEii.carbon_thunk.r__(ptr noundef nonnull align 1 dereferenceable(1) %this, i32 noundef %x, i32 noundef %y) #1 personality ptr @__gxx_personality_v0 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %this.addr = alloca ptr, align 8
-// CHECK:STDOUT:   %x.addr = alloca i32, align 4
-// CHECK:STDOUT:   %y.addr = alloca i32, align 4
-// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !20
-// CHECK:STDOUT:   store i32 %x, ptr %x.addr, align 4, !tbaa !23
-// CHECK:STDOUT:   store i32 %y, ptr %y.addr, align 4, !tbaa !23
-// CHECK:STDOUT:   %0 = load ptr, ptr %this.addr, align 8, !tbaa !20, !nonnull !24
-// CHECK:STDOUT:   %1 = load i32, ptr %x.addr, align 4, !tbaa !23
-// CHECK:STDOUT:   %2 = load i32, ptr %y.addr, align 4, !tbaa !23
-// CHECK:STDOUT:   invoke void @_ZN1A1fEii(ptr noundef nonnull align 1 dereferenceable(1) %0, i32 noundef %1, i32 noundef %2)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret void
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %3 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %4 = extractvalue { ptr, i32 } %3, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %4) #4
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZN1A1fEii(ptr noundef nonnull align 1 dereferenceable(1), i32 noundef, i32 noundef) #2
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
-// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #3 comdat {
-// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
-// CHECK:STDOUT:   call void @_ZSt9terminatev() #4
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZSt9terminatev()
+// CHECK:STDOUT: declare void @_ZN1A1fEii(ptr noundef nonnull align 1 dereferenceable(1), i32 noundef, i32 noundef) #1
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #2 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #3 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #4 = { noreturn nounwind }
+// CHECK:STDOUT: attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -799,9 +476,4 @@ fn F(ref r: Cpp.A) {
 // CHECK:STDOUT: !17 = !DILocalVariable(arg: 1, scope: !12, type: !15)
 // CHECK:STDOUT: !18 = !DILocation(line: 12, column: 3, scope: !12)
 // CHECK:STDOUT: !19 = !DILocation(line: 11, column: 1, scope: !12)
-// CHECK:STDOUT: !20 = !{!21, !21, i64 0}
-// CHECK:STDOUT: !21 = !{!"p1 _ZTS1A", !22, i64 0}
-// CHECK:STDOUT: !22 = !{!"any pointer", !10, i64 0}
-// CHECK:STDOUT: !23 = !{!9, !9, i64 0}
-// CHECK:STDOUT: !24 = !{}
 // CHECK:STDOUT:

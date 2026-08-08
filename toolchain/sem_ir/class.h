@@ -88,9 +88,6 @@ struct ClassFields {
   // order; set when the definition completes. Empty for non-choice classes.
   llvm::SmallVector<ChoiceAlternative, 0> choice_alternatives = {};
 
-  // Whether the class's fields have been exported to C++.
-  bool fields_exported = false;
-
   // The following members are set at the `{` of the class definition.
 
   // The class scope.
@@ -185,7 +182,7 @@ struct Class : public EntityWithParamsBase,
   auto GetObjectRepr(const File& file, SpecificId specific_id) const -> TypeId;
 
   // Get the `StructTypeField`s from a class's object repr.
-  auto GetStructTypeFields(const File& sem_ir) const
+  auto GetStructTypeFields(const File& sem_ir, SpecificId specific_id) const
       -> llvm::ArrayRef<SemIR::StructTypeField>;
 };
 

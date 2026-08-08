@@ -34,6 +34,10 @@ permissions:
 
 jobs:
   release:
+    # The remote build cache credential (CARBON_BUILDS_GITHUB) exists only
+    # upstream; without it, bazel aborts at startup on every scheduled run
+    # on forks. Run only upstream, like the other scheduled workflows.
+    if: github.repository == 'carbon-language/carbon-lang'
     runs-on: ubuntu-22.04
     steps:
       - name: Harden Runner

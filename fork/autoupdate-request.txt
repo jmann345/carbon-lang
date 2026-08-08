@@ -1,1 +1,1 @@
-Upstream-20260808 autoupdate retry on the formatted tip: regenerate the ~31 goldens perturbed by the upstream delta (parse-dump format, interop restorations, match surface). R26 two passes.
+Upstream-20260808 R26 pass 2: verify fixpoint after 5d6f622 (expect empty or loc-only).

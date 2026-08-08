@@ -1,1 +1,1 @@
-2026-08-08T15:39:18Z autoupdate attempt E: import-safe constructor wiring + imported_global re-author
+2026-08-08T15:55:48Z autoupdate attempt F: imported wrapper-binding constants; expect churn in concrete-import choice goldens (wrapper refs gain constant annotations) per commit message

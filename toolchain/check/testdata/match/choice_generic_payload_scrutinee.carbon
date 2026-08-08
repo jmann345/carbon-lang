@@ -49,10 +49,13 @@ choice P(T: type) {
 
 // A `var`, not a `let`: cross-file file-scope `var` references lower through
 // the exported `VarStorage` global (lower/testdata/var/import.carbon), while
-// lowering a reference to an imported `let` is an unsupported upstream TODO
-// (that test's own comment) — a class-typed `let` binds its value through a
-// runtime temporary with no cross-file storage, even when the initializer is
-// a constant. Recorded as work item W-069 (fork/inventory/work-items.json).
+// an imported `let` only lowers when its bound value's constant propagates
+// through import (import_ref.cpp's non-constant binding resolution) — a
+// runtime-bound `let` still has no cross-file storage, an upstream TODO
+// (that test's own comment). The supported `var` vehicle keeps this split
+// pinned on the R-2 completion-forcing question rather than on the `let`
+// import story. Recorded as work item W-069
+// (fork/inventory/work-items.json).
 var g: P(i64) = P(i64).Neither;
 
 // --- imported_global.carbon

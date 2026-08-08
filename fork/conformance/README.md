@@ -187,6 +187,7 @@ fails if this table is stale):
 | `error_handling/cpp_exception_interop.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | SKIP |
 | `error_handling/cpp_exceptions_auto_catch.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | run |
 | `error_handling/cpp_exceptions_fence_terminate.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | run |
+| `error_handling/cpp_exceptions_fence_value_diff.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | differential |
 | `error_handling/cpp_exceptions_none_mode.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | run |
 | `functions/forward_decl.carbon` | Functions: separate declaration and definition | run |
 | `functions/overloading_native.carbon` | Functions: function overloading (Carbon-native) | SKIP |

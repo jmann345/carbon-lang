@@ -47,15 +47,21 @@ choice P(T: type) {
   Neither
 }
 
-let g: P(i64) = P(i64).Neither;
+// A `var`, not a `let`: cross-file file-scope `var` references lower through
+// the exported `VarStorage` global (lower/testdata/var/import.carbon), while
+// lowering a reference to an imported `let` is an unsupported upstream TODO
+// (that test's own comment) — a class-typed `let` binds its value through a
+// runtime temporary with no cross-file storage, even when the initializer is
+// a constant. Recorded as work item W-069 (fork/inventory/work-items.json).
+var g: P(i64) = P(i64).Neither;
 
-// --- imported_let.carbon
+// --- imported_global.carbon
 library "[[@TEST_NAME]]";
 
 import library "plib";
 
 //@dump-sem-ir-begin
-// An imported `let` completes nothing in this file on the way in: the value
+// An imported global completes nothing in this file on the way in: the value
 // was produced in `plib`, and the specific's definition — with the payload
 // recompute — is resolved here by the match gate's forcing.
 fn F() -> i32 {

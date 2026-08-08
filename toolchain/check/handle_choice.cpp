@@ -456,11 +456,11 @@ static auto BuildAlternativeConstructor(
   // Store the parameters into this alternative's payload tuple field, at
   // offset zero of the payload region.
   //
-  // For a symbolic payload, the store instructions are built in this pending
-  // block and spliced into the body after the `UpdateInit` built below, so
-  // that they lower after the covering base initialization the `UpdateInit`
-  // re-emits. `payload_update_init_id` holds the update step's in-place
-  // initializer when the alternative needs one.
+  // For a symbolic payload, the per-element store instructions are built in
+  // this pending block and spliced into the body after the `UpdateInit` built
+  // below, so that they lower after the covering base initialization the
+  // `UpdateInit` re-emits. `payload_update_init_id` holds the update step's
+  // initializer (the payload `TupleInit`) when the alternative needs one.
   PendingBlock payload_update_block(&context);
   SemIR::InstId payload_update_init_id = SemIR::InstId::None;
   if (alt.payload_field_index >= 0) {
@@ -489,48 +489,60 @@ static auto BuildAlternativeConstructor(
       //    a constant object value, and its lowering is a single whole-object
       //    copy from a per-specific constant global — the discriminant bytes
       //    plus poison payload bytes.
-      // 2. Update: each parameter's value representation is stored raw into
-      //    its payload tuple element (`InPlaceInit`, lowered as the direct
-      //    destination store). The SF-6 payload restriction guarantees every
-      //    admissible specific's element types are trivially copyable
-      //    (enforced per specific at monomorphization, `EvalConstantInst` for
-      //    `CustomLayoutType`), so the raw store IS the copy.
+      // 2. Update: the parameters are stored raw into the payload tuple. The
+      //    SF-6 payload restriction guarantees every admissible specific's
+      //    element types are trivially copyable (enforced per specific at
+      //    monomorphization, `EvalConstantInst` for `CustomLayoutType`), so a
+      //    store of each parameter's value representation IS the copy.
       //
       // The steps are sequenced by the `UpdateInit` built below — the
       // protocol `ConvertPartialInitializerToNonPartial` uses to store a vptr
       // over a folded `ClassInit`. `UpdateInit` never constant-folds, and its
       // lowering re-emits its folded base's covering copy at the
-      // `UpdateInit`'s own position; the update stores are spliced in after
-      // it, so the covering copy cannot overwrite them. Returning the bare
-      // `ClassInit` instead would surface the fold at the `ReturnExpr`, whose
-      // lowering re-emits the covering copy after the element stores —
+      // `UpdateInit`'s own position, before the update step. Returning the
+      // bare `ClassInit` instead would surface the fold at the `ReturnExpr`,
+      // whose lowering re-emits the covering copy after the element stores —
       // clobbering the payload with the constant's poison bytes.
-      llvm::SmallVector<SemIR::InstId> elem_init_ids;
+      //
+      // The update step must lower correctly under BOTH initializing
+      // representations a specific's payload tuple can resolve to, so it has
+      // two cooperating parts, and every instruction the `UpdateInit` or the
+      // `TupleInit` references is one whose lowering produces a value (a
+      // parameter, or the `TupleInit` itself) — never a bare `InPlaceInit`,
+      // which lowers as a store with no value and would fail `GetValue`:
+      //
+      // - The `TupleInit` over the parameter VALUES, targeting the field, is
+      //   the `UpdateInit`'s update operand and precedes it in the block. For
+      //   an in-place-representation specific (multi-element payloads) it
+      //   lowers to nothing; for a by-copy-representation specific
+      //   (single-element payloads are passed by value) the `UpdateInit`'s
+      //   own lowering copies the tuple value into the field immediately
+      //   after the covering copy.
+      // - The per-element `InPlaceInit` raw stores are spliced in AFTER the
+      //   `UpdateInit`, so in the in-place regime the element stores land
+      //   after the covering copy. In the by-copy regime they re-store the
+      //   same bytes the `UpdateInit` copied, which is idempotent.
+      llvm::SmallVector<SemIR::InstId> arg_ids;
+      for (int i = ranges.explicit_begin().index;
+           i < ranges.explicit_end().index; ++i) {
+        arg_ids.push_back(call_params[i]);
+      }
+      payload_update_init_id = AddInst(
+          context, binding.node_id,
+          SemIR::TupleInit{.type_id = alt.payload_tuple_type_id,
+                           .elements_id = context.inst_blocks().Add(arg_ids),
+                           .dest_id = field_ref_id});
       for (auto [i, param_type_id] : llvm::enumerate(alt.param_type_ids)) {
         auto elem_ref_id = payload_update_block.AddInst(
             binding.node_id, SemIR::TupleAccess{.type_id = param_type_id,
                                                 .tuple_id = field_ref_id,
                                                 .index = SemIR::ElementIndex(
                                                     static_cast<int>(i))});
-        elem_init_ids.push_back(payload_update_block.AddInst(
-            binding.node_id,
-            SemIR::InPlaceInit{
-                .type_id = param_type_id,
-                .src_id = call_params[ranges.explicit_begin().index +
-                                      static_cast<int>(i)],
-                .dest_id = elem_ref_id}));
+        payload_update_block.AddInst(
+            binding.node_id, SemIR::InPlaceInit{.type_id = param_type_id,
+                                                .src_id = arg_ids[i],
+                                                .dest_id = elem_ref_id});
       }
-      auto tuple_init_id = payload_update_block.AddInst(
-          binding.node_id,
-          SemIR::TupleInit{
-              .type_id = alt.payload_tuple_type_id,
-              .elements_id = context.inst_blocks().Add(elem_init_ids),
-              .dest_id = field_ref_id});
-      payload_update_init_id = payload_update_block.AddInst(
-          binding.node_id,
-          SemIR::InPlaceInit{.type_id = alt.payload_tuple_type_id,
-                             .src_id = tuple_init_id,
-                             .dest_id = field_ref_id});
       cover_payload_field(payload_ref_id);
     } else {
       llvm::SmallVector<SemIR::InstId> args;

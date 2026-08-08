@@ -1,1 +1,1 @@
-2026-08-08T15:09:58Z autoupdate for constructor rework (copy deferral + return-type attachment + UpdateInit sequencing); positive splits must regen error-free
+2026-08-08T15:39:18Z autoupdate attempt E: import-safe constructor wiring + imported_global re-author

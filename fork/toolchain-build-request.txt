@@ -1,1 +1,1 @@
-2026-08-08T18:47:49Z gate for B1a (fixpoint at 94acd96)
+2026-08-08T22:47:47Z gate for B1b (fixpoint at 704b215)

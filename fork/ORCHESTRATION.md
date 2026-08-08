@@ -10,17 +10,24 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-08 (post-PR #10: MATCH RE-PLATFORM COMPLETE)._
-TEN PRs MERGED to `trunk`, most recently: PR 7 (S2a-S2c), PR 8 (S2d
-guards), PR 9 (upstream e7050af), PR 10 (S2e exhaustiveness) — the
-match re-platform S2a-S2e is DONE: match checks through the real
-pattern machinery with constant-expression patterns, bindings, choice
-payload destructuring (W5-S2 discharged), guards, and real choice
-exhaustiveness (SF-7 discharged; `default` optional for exhaustive
-choice matches). Each slice behind two adversarial reviews + fixer
-rounds, R26 golden fixpoint, a green merge gate, and a runner-side
-conformance floor check. Go-forward: **one workstream = one branch off
-`trunk` = one focused PR**.
+_Last updated: 2026-08-08 (post-PR #12: W5-S3a — generic-choice
+specifics match)._
+TWELVE PRs MERGED to `trunk`, most recently: PR 10 (S2e exhaustiveness),
+PR 11 (exception-interop differential pair), PR 12 (W5-S3a: specifics of
+generic choices as match scrutinees — payload-free generic choices
+construct through specifics' scopes and match with full S2e
+exhaustiveness, incl. symbolic specifics and imported generics). S3a's
+first CI cycle caught and fixed a SIGSEGV (self-recursive
+`ResolveSpecificDefinition`, now guarded with a placeholder mirroring
+`ResolveSpecificDecl`; loud bounds CHECK in `GetConstantInSpecific`;
+`WrapperBinding` specific attachment in member access) and an R17 catch
+(the symbolic_specific testdata split was authored in the retired `:!`
+syntax and never exercised its path; re-authored, goldens are the
+symbolic path's first real execution). S3b residual recorded in
+fork/w5-s3/plan.md: a symbolic complete-type witness read during the
+resolution-placeholder window hits the new CHECK — S3b's
+sentinel/recompute design must clear it. Go-forward: **one workstream =
+one branch off `trunk` = one focused PR**.
 
 **Weekly upstream-merge outcome (standing rule 5, 2026-08-08):** upstream
 `e7050af` (37 commits over the ten-day gap; struct-pattern parsing,
@@ -41,7 +48,8 @@ code). Next check: Monday 14:00 UTC.
 
 | Branch | State |
 | --- | --- |
-| `trunk` | Integrated line: match re-platform S2a-S2e + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
+| `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
+| `claude/carbon-fork-0-1-w5-s3` | MERGED by way of PR #12 (S3a). S3b/S3c continue on fresh branches off `trunk`. |
 | `claude/carbon-fork-0-1-match-{replatform,s2d,s2e}` and `claude/carbon-fork-0-1-upstream-2026{0728,0808}` | MERGED by way of PRs #7/#8/#9/#10 and #6. |
 | `claude/carbon-fork-0-1-w5` | MERGED by way of PR #3 (composition gate run 30 green). |
 | `claude/carbon-fork-0-1-7mwfb7-design-docs` | STRANDED source for the F-008..F-011 design docs; reconstruction is NEXT, **gated on the user's veto-digest response** (presented 2026-07-20, unanswered). Reconstruct per the recipe pattern used for b0/w5 (overlay real content onto fresh branch off trunk; targeted-merge diverged files; prek + gate + PR). |
@@ -49,14 +57,15 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-77 PASS / 31 SKIP / 0 FAIL programs (108 total, 8 differential C++-oracle
-pairs); **41/56 bullets green** (runner-side scoreboard, S2e tree = the
-PR #10 head; the S2d/S2e program flips landed inside already-counted
-bullets). History: 73 → 74 at S2c (sum-type consumption bullet by way of
-the payload-destructuring differential) → 77 at S2d (guard programs +
-match_guard_diff differential) → 77 held at S2e with the roundtrip
-differential now exercising an exhaustive no-`default` match. The
-scoreboard regenerates on the runner (`Fork: conformance suite`).
+79 PASS / 31 SKIP / 0 FAIL programs (110 total, 9 differential C++-oracle
+pairs); **41/56 bullets green** (runner-side scoreboard at the PR #12
+head; verified from fork/conformance/out/scoreboard.json). History: 73 →
+74 at S2c → 77 at S2d → 77 held at S2e → 78 at PR #11 (exception-interop
+fence-value differential) → 79 at S3a
+(types/choice_generic_roundtrip.carbon: runtime dispatch over Pair(i32)
+and Pair(bool) specifics — the program whose SIGSEGV drove the S3a crash
+fix, now passing at runtime). The scoreboard regenerates on the runner
+(`Fork: conformance suite`, fork/conformance-request.txt trigger).
 
 ### CI on jmann345/carbon-lang (self-hosted runner "jeromehome", 28-core Arch)
 
@@ -78,12 +87,15 @@ scoreboard regenerates on the runner (`Fork: conformance suite`).
 
 1.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
     user's veto-digest response** (presented 2026-07-20, unanswered).
-2.  W5 slice 3 (generic choices: matching specifics, generic alternative
-    synthesis — the S3 re-plan the W5-S1 notes defer to) and slice 4;
-    error-handling B1/B2/B3; threading defect fixes (F-008). Residues
-    from the re-platform: W-067 (default-clause guards), W-068
-    (fewer-than-two-alternative choices), tuple/var/ref/compile-time
-    case patterns, non-binding payload subpatterns (W-008).
+2.  W5-S3b (generic payload synthesis + per-specific layout, the L risk
+    slice of fork/w5-s3/plan.md; pre-declared S3b-i/S3b-ii fallback
+    split; MUST clear the recorded S3a residual — symbolic witness
+    during the resolution-placeholder window) then S3c (payload
+    destructuring on specifics); error-handling B1/B2/B3; threading
+    defect fixes (F-008). Residues from the re-platform: W-067
+    (default-clause guards), W-068 (fewer-than-two-alternative choices),
+    tuple/var/ref/compile-time case patterns, non-binding payload
+    subpatterns (W-008).
 3.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI; W-066 match usefulness diagnostics.
 

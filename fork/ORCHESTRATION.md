@@ -10,9 +10,16 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-08 (post-PR #14: W5-S3 COMPLETE — generic
-choices end-to-end)._
-FOURTEEN PRs MERGED to `trunk`. W5-S3 is COMPLETE across PRs #12/#13/#14:
+_Last updated: 2026-08-08 (post-PR #15: B1 plan approved + B1a
+landed)._
+FIFTEEN PRs MERGED to `trunk`, most recently PR 15 (error-handling B1a:
+postfix `?` parses through the expression postfix loop and check gates
+it behind the §6 ledger TODO; zero conformance movement, floor
+byte-identical — plus the APPROVED fork/b1/plan.md, whose design review
+caught two blockers pre-implementation). B1b is next: prelude Core.Try +
+Core.ControlFlow, the six-step desugar with pre-flight witness lookup,
+region-position diagnose-and-reject, conformance flip to 83/0/30 over
+113. W5-S3 is COMPLETE across PRs #12/#13/#14:
 S3a (payload-free generic-choice specifics as match scrutinees), S3b
 (payload synthesis + per-specific layout — five CI cycles, each defect
 root-caused before the next push, see the decision-log five-cycle
@@ -86,8 +93,8 @@ trigger).
 
 1.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
     user's veto-digest response** (presented 2026-07-20, unanswered).
-2.  Error-handling B1 (F-006: Result + postfix `?` by way of Core.Try —
-    ungated, the default next workstream) and B2/B3; W5-S3p (prelude
+2.  Error-handling B1b (prelude + desugar per the approved
+    fork/b1/plan.md §3; then B2/B3); W5-S3p (prelude
     Result/Optional) stays GATED on the OPEN SF-9 fork; W5-S4
     (std::variant mapping) rides its deferred planning decision;
     threading defect fixes (F-008). Residues: W-067 (default-clause

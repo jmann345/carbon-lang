@@ -278,6 +278,18 @@ Conformance: new types/choice_generic_diff.carbon / .diff.cpp (C++ oracle: class
 explicitly exercising the payload-free `.None`/monostate arm — PASS 79/110. The diff pair
 runtime-arbitrates SIZE, not alignment; alignment is pinned only by the lower goldens (R-1).
 
+S3a residual (crash-fix review, 2026-08-08) — a known wall this slice must clear:
+`ResolveSpecificDefinition` now guards self-recursive resolution with a placeholder
+(`InstBlockId::Empty`) mirroring `ResolveSpecificDecl`. Today's nested completion during that
+window only reads the class's complete-type witness, which is CONCRETE for every admissible
+generic choice (payload-carrying alternatives are rejected at handle_choice.cpp:628-631). Once
+S3b admits symbolic payloads, the witness read at type_completion.cpp:489 during the placeholder
+window will index the placeholder and hit the new `GetConstantInSpecific` bounds CHECK — a
+diagnosed crash (pre-guard it was a stack overflow), not a silent wrong answer, but S3b's
+sentinel/recompute design must resolve the witness without querying the in-progress definition
+region (the §2.2 eval-time recomputation path is the intended mechanism; verify it against this
+exact reentrancy shape).
+
 ### S3c — payload destructuring on specifics + the sum_types.md example (M)
 
 Scope: `case .Some(the_value: i32)` on an `Optional(i32)` scrutinee — expected to be mostly

@@ -718,7 +718,6 @@ auto MakeSelfSpecific(Context& context, SemIR::LocId loc_id,
 
 auto ResolveSpecificDefinition(Context& context, SemIR::LocId loc_id,
                                SemIR::SpecificId specific_id) -> bool {
-  // TODO: Handle recursive resolution of the same generic definition.
   auto& specific = context.specifics().Get(specific_id);
   auto generic_id = specific.generic_id;
   CARBON_CHECK(generic_id.has_value(), "Specific with no generic ID");
@@ -731,6 +730,24 @@ auto ResolveSpecificDefinition(Context& context, SemIR::LocId loc_id,
       // The generic is not defined yet.
       return false;
     }
+    // Set a placeholder value as the definition block ID so we won't attempt
+    // to recursively resolve the same specific, mirroring
+    // `ResolveSpecificDecl`. Such recursion arises when the eval block
+    // requires the specific's own type to be complete: a generic choice's
+    // body converts its alternative constants to the choice's own (symbolic)
+    // `Self` type, so its eval block contains a `require_complete_type` of
+    // the choice type itself. Evaluating that entry for a concrete specific
+    // completes the very `ClassType` whose completion is resolving this
+    // definition (`TypeCompleter::AddNestedIncompleteTypes`), which would
+    // otherwise re-enter here unboundedly. While the placeholder is in
+    // place, the specific's definition-region constants must not be queried;
+    // `GetConstantInSpecific` CHECKs on out-of-range value block indexes
+    // rather than reading through the placeholder. Today's nested completion
+    // only reads the class's complete-type witness, which is concrete for
+    // every admissible generic choice; a *symbolic* witness read during this
+    // window (for example, once generic choices carry symbolic payloads)
+    // would hit that CHECK and needs its own resolution strategy.
+    specific.definition_block_id = SemIR::InstBlockId::Empty;
     std::tie(specific.definition_block_id,
              specific.definition_block_has_error) =
         TryEvalBlockForSpecific(context, loc_id, specific_id,

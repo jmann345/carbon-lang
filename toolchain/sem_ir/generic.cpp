@@ -99,9 +99,17 @@ static auto GetConstantInSpecific(const File& specific_ir,
     // specific.
     return {&const_ir, const_ir.constant_values().Get(symbolic.inst_id)};
   }
-  return {&specific_ir,
-          specific_ir.constant_values().Get(specific_ir.inst_blocks().Get(
-              value_block_id)[symbolic.index.index()])};
+  auto value_block = specific_ir.inst_blocks().Get(value_block_id);
+  // An in-range index is an invariant of a resolved region. An out-of-range
+  // index means the region's value block is still a resolution-in-progress
+  // placeholder (see `ResolveSpecificDefinition`), and reading through it
+  // would silently produce a wrong constant.
+  CARBON_CHECK(static_cast<size_t>(symbolic.index.index()) < value_block.size(),
+               "Queried {0} in {1}, outside the specific's value block (size "
+               "{2}); the region's resolution may still be in progress.",
+               symbolic.index, specific_id, value_block.size());
+  return {&specific_ir, specific_ir.constant_values().Get(
+                            value_block[symbolic.index.index()])};
 }
 
 auto GetConstantValueInSpecific(const File& sem_ir, SpecificId specific_id,

@@ -1,1 +1,1 @@
-W5-S3a: regenerate goldens — choice_generic_scrutinee.carbon (check, 10 subfiles) full STDOUT generation, lower/match/choice_generic_scrutinee.carbon generation, fail_incomplete_scrutinee.carbon STDERR verification. Zero churn expected for every existing golden (R26 two passes).
+2026-08-08T07:52:07Z autoupdate for S3a crash fix (recursion guard + WrapperBinding specific)

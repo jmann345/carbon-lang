@@ -50,8 +50,9 @@ code). Next check: Monday 14:00 UTC.
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
 77 PASS / 31 SKIP / 0 FAIL programs (108 total, 8 differential C++-oracle
-pairs); **42/56 bullets green** (runner-side scoreboard, S2e tree = the
-PR #10 head). History: 73 → 74 at S2c (sum-type consumption bullet by way of
+pairs); **41/56 bullets green** (runner-side scoreboard, S2e tree = the
+PR #10 head; the S2d/S2e program flips landed inside already-counted
+bullets). History: 73 → 74 at S2c (sum-type consumption bullet by way of
 the payload-destructuring differential) → 77 at S2d (guard programs +
 match_guard_diff differential) → 77 held at S2e with the roundtrip
 differential now exercising an exhaustive no-`default` match. The

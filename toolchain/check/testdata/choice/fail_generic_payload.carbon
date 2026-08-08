@@ -21,18 +21,33 @@ library "[[@TEST_NAME]]";
 // placement precedent).
 class C {}
 
+// CHECK:STDERR: fail_not_trivial_in_specific.carbon:[[@LINE+7]]:1: error: cannot copy value of type `T` [CopyOfUncopyableType]
+// CHECK:STDERR: choice P(T: type) {
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_not_trivial_in_specific.carbon:[[@LINE+4]]:1: note: type `T` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
+// CHECK:STDERR: choice P(T: type) {
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 choice P(T: type) {
   Wrap(a: T),
   None
 }
 
 fn F() {
-  // CHECK:STDERR: fail_not_trivial_in_specific.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `P(C)` [ResolvingSpecificHere]
+  // CHECK:STDERR: fail_not_trivial_in_specific.carbon:[[@LINE+15]]:10: error: binding pattern has incomplete type `P(C)` in name binding declaration [IncompleteTypeInBindingDecl]
   // CHECK:STDERR:   var p: P(C);
-  // CHECK:STDERR:          ^
-  // CHECK:STDERR: fail_not_trivial_in_specific.carbon:[[@LINE-6]]:1: note: choice alternative payload type `C` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
-  // CHECK:STDERR: }
-  // CHECK:STDERR: ^
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR: fail_not_trivial_in_specific.carbon:[[@LINE-9]]:1: note: choice alternative payload type `C` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
+  // CHECK:STDERR: choice P(T: type) {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_not_trivial_in_specific.carbon:[[@LINE+8]]:3: error: cannot convert type `P(C)` into type implementing `Core.DefaultOrUnformed` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   var p: P(C);
+  // CHECK:STDERR:   ^~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_not_trivial_in_specific.carbon:[[@LINE+4]]:7: warning: binding `p` unused [UnusedBinding]
+  // CHECK:STDERR:   var p: P(C);
+  // CHECK:STDERR:       ^~~~~~~
   // CHECK:STDERR:
   var p: P(C);
 }
@@ -67,6 +82,14 @@ class G(T: type) {
 }
 
 fn F() {
+  // CHECK:STDERR: fail_mutual_by_value_recursion.carbon:[[@LINE+8]]:3: error: cannot convert type `P(i32)` into type implementing `Core.DefaultOrUnformed` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   var p: P(i32);
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_mutual_by_value_recursion.carbon:[[@LINE+4]]:7: warning: binding `p` unused [UnusedBinding]
+  // CHECK:STDERR:   var p: P(i32);
+  // CHECK:STDERR:       ^~~~~~~~~
+  // CHECK:STDERR:
   var p: P(i32);
 }
 

@@ -20,6 +20,13 @@
 // --- plib.carbon
 library "plib";
 
+// CHECK:STDERR: plib.carbon:[[@LINE+7]]:1: error: cannot copy value of type `T` [CopyOfUncopyableType]
+// CHECK:STDERR: choice Pair(T: type) {
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: plib.carbon:[[@LINE+4]]:1: note: type `T` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
+// CHECK:STDERR: choice Pair(T: type) {
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 choice Pair(T: type) {
   Both(x: T, y: T),
   Neither
@@ -38,6 +45,13 @@ fn Classify(p: Pair(i32)) -> i32 {
 }
 
 fn Run() -> i32 {
+  // CHECK:STDERR: use_imported.carbon:[[@LINE+7]]:22: error: cannot implicitly convert expression of type `Pair(T)` to `Pair(i32)` [ConversionFailure]
+  // CHECK:STDERR:   let b: Pair(i32) = Pair(i32).Both(1, 2);
+  // CHECK:STDERR:                      ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: use_imported.carbon:[[@LINE+4]]:22: note: type `Pair(T)` does not implement interface `Core.ImplicitAs(Pair(i32))` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   let b: Pair(i32) = Pair(i32).Both(1, 2);
+  // CHECK:STDERR:                      ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   let b: Pair(i32) = Pair(i32).Both(1, 2);
   return Classify(b);
 }

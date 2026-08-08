@@ -1,1 +1,1 @@
-2026-08-08T15:59:25Z pass 1b: fail_implicit.impl split rename after imported-let constants (upstream TODO answered)
+2026-08-08T16:00:20Z R26 pass 2 fixpoint for S3b (expect zero churn)

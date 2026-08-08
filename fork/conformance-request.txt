@@ -1,1 +1,1 @@
-S2e conformance: floor 77 PASS / 0 FAIL / 31 SKIP (108 programs) expected unchanged.
+Conformance-depth: run the suite with the new exception-boundary differential pair; expect 78 PASS / 0 FAIL / 31 SKIP over 109.

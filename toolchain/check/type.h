@@ -169,6 +169,29 @@ auto GetCanonicalFacetOrTypeValue(Context& context, SemIR::ConstantId const_id)
 auto TryGetCanonicalFacetValue(Context& context, SemIR::InstId inst_id)
     -> SemIR::InstId;
 
+// The slice-1 choice-payload restriction (decision-log W5 SF-6): payload types
+// must be trivially copyable and trivially destructible. This accepts the
+// scalar types for which that property is structural — integer, float, bool,
+// and pointer types, including adapters over them such as `i32` — and rejects
+// everything else; callers diagnose. Deliberately conservative: relaxing it is
+// recorded post-0.1 work, and the match scrutinee gate relies on completed
+// choices having only trivial payloads (a type property, not a syntactic
+// test). Checked at the choice definition for concrete payload types
+// (handle_choice.cpp) and at monomorphization for symbolic ones
+// (`EvalConstantInst` for `CustomLayoutType`, eval_inst.cpp). `type_id` must
+// be concrete; completeness is needed only to classify THROUGH an adapter
+// (the foundation walk reads the specific's resolved values) — non-class
+// kinds and non-adapter classes classify without completion, which the
+// eval hook's recursion pre-filter relies on.
+//
+// Admitted exception, recorded in decision-log W5-S1: a user-declared adapter
+// over a scalar with its own `Core.Destroy` impl passes this gate without a
+// witness query. Harmless while destroy-op synthesis is a placeholder no-op;
+// when it lands, this must become a destroy-witness triviality check (it rides
+// SF-6's post-0.1 work item).
+auto IsInSliceChoicePayloadType(Context& context, SemIR::TypeId type_id)
+    -> bool;
+
 }  // namespace Carbon::Check
 
 #endif  // CARBON_TOOLCHAIN_CHECK_TYPE_H_

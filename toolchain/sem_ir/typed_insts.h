@@ -613,12 +613,18 @@ struct CppTemplateNameType {
 };
 
 // A type whose layout is determined externally. This is used as the object
-// representation of class types imported from C++.
+// representation of class types imported from C++, and for the payload region
+// of a payload-carrying `choice`. A layout whose alignment word is zero is
+// dependent on a generic parameter (the same encoding as
+// `ObjectLayout::has_value()`): evaluation recomputes it from the substituted
+// field types once they are concrete, which is why this is `Conditional` with
+// an eval-time hook rather than `WheneverPossible`.
 struct CustomLayoutType {
   static constexpr auto Kind = InstKind::CustomLayoutType.Define<Parse::NodeId>(
       {.ir_name = "custom_layout_type",
        .is_type = InstIsType::Always,
-       .constant_kind = InstConstantKind::WheneverPossible,
+       .constant_kind = InstConstantKind::Conditional,
+       .constant_needs_inst_id = InstConstantNeedsInstIdKind::DuringEvaluation,
        .deduce_through = true});
 
   TypeId type_id;

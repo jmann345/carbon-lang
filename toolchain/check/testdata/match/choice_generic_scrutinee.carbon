@@ -16,7 +16,8 @@
 // `GetChoiceDiscriminantType` reads the object representation through the
 // specific, so payload-free generic choices dispatch and are covered by the
 // SF-7 exhaustiveness analysis exactly like concrete choices. Payload
-// synthesis in generic choices stays behind its definition TODO (S3b).
+// synthesis in generic choices lands at W5-S3b (choice/generic_payload.carbon
+// and match/choice_generic_payload_scrutinee.carbon).
 
 // --- basic.carbon
 library "[[@TEST_NAME]]";
@@ -220,28 +221,25 @@ fn F(n: Never(i32)) {
   }
 }
 
-// --- fail_todo_mixed_partial_table.carbon
+// --- fail_mixed_table_closed.carbon
 library "[[@TEST_NAME]]";
 
-// The S3a partial-table window (plan §2.5 i): the parameterized alternative
-// of a MIXED generic choice is still rejected at the definition (payload
-// synthesis is S3b), so it gets no alternative-table entry — and a match on
-// a specific covering only the constant alternatives is judged exhaustive
-// IN SILENCE, `.Tag` uncovered. The pairing of the definition TODO with the
-// silent pass below pins the window until S3b populates parameterized rows;
-// this mirrors the S2e recorded deviation (3) error-recovery semantics
-// (coverage over surviving alternatives only).
+// The S3a partial-table window is CLOSED (plan §2.5 i): the parameterized
+// alternative of a MIXED generic choice now synthesizes and gets its
+// alternative-table row, so the match below — which covers only the constant
+// alternatives and passed exhaustiveness IN SILENCE at S3a — is diagnosed,
+// naming `.Tag`.
 choice P(T: type) {
-  // CHECK:STDERR: fail_todo_mixed_partial_table.carbon:[[@LINE+4]]:6: error: semantics TODO: `choice alternative payload with generic or Self-dependent type` [SemanticsTodo]
-  // CHECK:STDERR:   Tag(n: i32),
-  // CHECK:STDERR:      ^~~~~~~~
-  // CHECK:STDERR:
   Tag(n: i32),
   A,
   B
 }
 
 fn F(p: P(i32)) -> i32 {
+  // CHECK:STDERR: fail_mixed_table_closed.carbon:[[@LINE+4]]:3: error: `match` on choice `P(i32)` has no `default` arm and does not cover alternative `.Tag` [MatchNonexhaustive]
+  // CHECK:STDERR:   match (p) {
+  // CHECK:STDERR:   ^~~~~~~~~~~
+  // CHECK:STDERR:
   match (p) {
     case .A => { return 0; }
     case .B => { return 1; }

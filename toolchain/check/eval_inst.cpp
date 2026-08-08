@@ -4,8 +4,10 @@
 
 #include "toolchain/check/eval_inst.h"
 
+#include <algorithm>
 #include <variant>
 
+#include "llvm/ADT/STLExtras.h"
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/check/action.h"
 #include "toolchain/check/cpp/constant.h"
@@ -29,6 +31,13 @@
 #include "toolchain/sem_ir/typed_insts.h"
 
 namespace Carbon::Check {
+
+// The completion context attached by the eval hooks that complete types
+// during monomorphization: the `RequireCompleteType` hook and the
+// `CustomLayoutType` (choice payload region) hook.
+CARBON_DIAGNOSTIC(IncompleteTypeInMonomorphization, Context,
+                  "{0} evaluates to incomplete type {1}", InstIdAsType,
+                  InstIdAsType);
 
 // Performs an access into an aggregate, retrieving the specified element.
 static auto PerformAggregateAccess(Context& context, SemIR::Inst inst)
@@ -197,6 +206,141 @@ auto EvalConstantInst(Context& context, SemIR::Converted inst)
   // A conversion evaluates to the result of the conversion.
   return ConstantEvalResult::Existing(
       context.constant_values().Get(inst.result_id));
+}
+
+auto EvalConstantInst(Context& context, SemIR::InstId inst_id,
+                      SemIR::CustomLayoutType inst) -> ConstantEvalResult {
+  // A layout with a nonzero alignment word is final: a Clang-computed layout
+  // of an imported C++ class, or a choice payload region whose fields were
+  // concrete at the definition. It passes through unchanged — the
+  // max-of-fields rebuild below is the choice-payload rule (the F-007k
+  // storage contract), and applying it to a Clang layout would corrupt its
+  // field offsets.
+  const auto& layout = context.custom_layouts().Get(inst.layout_id);
+  if (layout[SemIR::CustomLayoutId::AlignIndex] != SemIR::ObjectSize::Zero()) {
+    return ConstantEvalResult::NewSamePhase(inst);
+  }
+
+  // A zero alignment word marks a layout dependent on a generic parameter
+  // (`ObjectLayout::has_value()`'s encoding): the payload region of a generic
+  // choice with a symbolic payload type. While any field type remains
+  // symbolic, the layout stays dependent.
+  auto fields = context.struct_type_fields().Get(inst.fields_id);
+  for (auto field : fields) {
+    if (!context.types()
+             .GetTypeIdForTypeInstId(field.type_inst_id)
+             .is_concrete()) {
+      return ConstantEvalResult::NewSamePhase(inst);
+    }
+  }
+
+  // All field types are concrete: enforce the payload restriction on the
+  // substituted element types (SF-6, deferred from the definition for
+  // symbolic payloads), complete each alternative's payload tuple, and
+  // rebuild the layout with real max-of-fields numbers. Every payload tuple
+  // sits at offset zero of the region.
+  auto diagnose_not_trivial = [&](SemIR::TypeId element_type_id) {
+    CARBON_DIAGNOSTIC(ChoicePayloadNotTrivialInSpecific, Error,
+                      "choice alternative payload type {0} is not "
+                      "trivially copyable and destructible in this "
+                      "specific",
+                      InstIdAsType);
+    context.emitter().Emit(SemIR::LocId(inst_id),
+                           ChoicePayloadNotTrivialInSpecific,
+                           context.types().GetTypeInstId(element_type_id));
+  };
+  auto payload_size = SemIR::ObjectSize::Zero();
+  auto payload_align = SemIR::ObjectSize::Bytes(1);
+  for (auto [i, field] : llvm::enumerate(fields)) {
+    auto tuple_type_id =
+        context.types().GetTypeIdForTypeInstId(field.type_inst_id);
+    auto tuple_type = context.types().GetAs<SemIR::TupleType>(tuple_type_id);
+    llvm::ArrayRef<SemIR::InstId> element_inst_ids =
+        context.inst_blocks().Get(tuple_type.type_elements_id);
+    auto element_type_ids = context.types().GetBlockAsTypeIds(element_inst_ids);
+
+    // Structural SF-6 pre-filter, run BEFORE completing the tuple: completing
+    // an SF-6-disallowed aggregate can recurse into this specific's own
+    // in-progress resolution — mutual by-value generic recursion, e.g.
+    // `choice P(T: type) { A(x: G(T)) }` with `class G(T: type) { var p:
+    // P(T); }`, where completing `G(i32)` completes its field `P(i32)`, whose
+    // published-but-unfinished definition region then reads a
+    // not-yet-evaluated entry and dies on the forward-reference CHECK
+    // (`GetConstantInSpecific`). The kind classification needs no
+    // completeness except through an adapter's foundation walk, so the kinds
+    // classifiable incompletely — a defined non-adapter class, and every
+    // non-class kind — are rejected here with the real diagnostic; adapters
+    // and not-yet-defined classes fall through to the completion below, which
+    // resolves the foundation walk (or diagnoses incompleteness) ahead of the
+    // post-completion check.
+    for (auto element_type_id : element_type_ids) {
+      auto unqual_type_id = context.types().GetUnqualifiedType(element_type_id);
+      if (auto class_type =
+              context.types().TryGetAs<SemIR::ClassType>(unqual_type_id)) {
+        const auto& class_info = context.classes().Get(class_type->class_id);
+        if (!class_info.is_complete() || class_info.adapt_id.has_value()) {
+          continue;
+        }
+        // A defined non-adapter class is never a scalar.
+        diagnose_not_trivial(element_type_id);
+        return ConstantEvalResult::Error;
+      }
+      // A non-class kind never enters the adapter walk, so the full check is
+      // completeness-independent here.
+      if (!IsInSliceChoicePayloadType(context, element_type_id)) {
+        diagnose_not_trivial(element_type_id);
+        return ConstantEvalResult::Error;
+      }
+    }
+
+    // Complete the substituted payload tuple, bracketed with the
+    // monomorphization diagnostic context the way the `RequireCompleteType`
+    // hook is (plan §2.2's "diagnostic-context scope included"): {0} is the
+    // definition-time (symbolic) payload tuple type, {1} its substituted
+    // evaluation.
+    {
+      Diagnostics::ContextScope diagnostic_context(
+          &context.emitter(), [&](auto& builder) {
+            builder.Context(
+                inst_id, IncompleteTypeInMonomorphization,
+                context.struct_type_fields()
+                    .Get(context.insts()
+                             .GetAs<SemIR::CustomLayoutType>(inst_id)
+                             .fields_id)[i]
+                    .type_inst_id,
+                field.type_inst_id);
+          });
+      if (!TryToCompleteType(context, tuple_type_id, SemIR::LocId(inst_id),
+                             /*diagnose=*/true)) {
+        return ConstantEvalResult::Error;
+      }
+    }
+
+    // Post-completion SF-6 check: adapters classify through their foundation
+    // walk only once completion has resolved it.
+    for (auto element_type_id : element_type_ids) {
+      if (!IsInSliceChoicePayloadType(context, element_type_id)) {
+        diagnose_not_trivial(element_type_id);
+        return ConstantEvalResult::Error;
+      }
+    }
+    auto tuple_layout =
+        context.types().GetCompleteTypeInfo(tuple_type_id).object_layout;
+    payload_size = std::max(payload_size, tuple_layout.size);
+    payload_align = std::max(payload_align, tuple_layout.alignment);
+  }
+
+  llvm::SmallVector<SemIR::ObjectSize> new_layout;
+  static_assert(SemIR::CustomLayoutId::SizeIndex == 0);
+  new_layout.push_back(payload_size.AlignedTo(payload_align));
+  static_assert(SemIR::CustomLayoutId::AlignIndex == 1);
+  new_layout.push_back(payload_align);
+  static_assert(SemIR::CustomLayoutId::FirstFieldIndex == 2);
+  new_layout.append(fields.size(), SemIR::ObjectSize::Zero());
+  return ConstantEvalResult::NewSamePhase(SemIR::CustomLayoutType{
+      .type_id = inst.type_id,
+      .fields_id = inst.fields_id,
+      .layout_id = context.custom_layouts().Add(new_layout)});
 }
 
 auto EvalConstantInst(Context& /*context*/, SemIR::Deref /*inst*/)
@@ -611,9 +755,6 @@ auto EvalConstantInst(Context& context, SemIR::InstId inst_id,
   if (complete_type_id.is_concrete()) {
     Diagnostics::ContextScope diagnostic_context(
         &context.emitter(), [&](auto& builder) {
-          CARBON_DIAGNOSTIC(IncompleteTypeInMonomorphization, Context,
-                            "{0} evaluates to incomplete type {1}",
-                            InstIdAsType, InstIdAsType);
           builder.Context(inst_id, IncompleteTypeInMonomorphization,
                           context.insts()
                               .GetAs<SemIR::RequireCompleteType>(inst_id)

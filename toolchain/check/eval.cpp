@@ -3269,14 +3269,25 @@ auto TryEvalInstUnsafe(Context& context, SemIR::InstId inst_id,
 
 auto TryEvalBlockForSpecific(Context& context, SemIR::LocId loc_id,
                              SemIR::SpecificId specific_id,
-                             SemIR::GenericInstIndex::Region region)
+                             SemIR::GenericInstIndex::Region region,
+                             SemIR::InstBlockId publish_block_id)
     -> std::pair<SemIR::InstBlockId, bool> {
   auto generic_id = context.specifics().Get(specific_id).generic_id;
   auto eval_block_id = context.generics().Get(generic_id).GetEvalBlock(region);
   auto eval_block = context.inst_blocks().Get(eval_block_id);
 
-  llvm::SmallVector<SemIR::InstId> result;
-  result.resize(eval_block.size(), SemIR::InstId::None);
+  // Values are written into the published block as they are evaluated: block
+  // storage is slab-allocated, so the mutable view stays valid across blocks
+  // added during evaluation.
+  llvm::SmallVector<SemIR::InstId> local_result;
+  llvm::MutableArrayRef<SemIR::InstId> result;
+  if (publish_block_id.has_value()) {
+    result = context.inst_blocks().GetMutable(publish_block_id);
+    CARBON_CHECK(result.size() == eval_block.size());
+  } else {
+    local_result.resize(eval_block.size(), SemIR::InstId::None);
+    result = local_result;
+  }
 
   EvalContext eval_context(&context, loc_id, specific_id,
                            SpecificEvalInfo{
@@ -3304,7 +3315,9 @@ auto TryEvalBlockForSpecific(Context& context, SemIR::LocId loc_id,
                  context.insts().Get(inst_id));
   }
 
-  return {context.inst_blocks().Add(result), has_error};
+  return {publish_block_id.has_value() ? publish_block_id
+                                       : context.inst_blocks().Add(result),
+          has_error};
 }
 
 // Information about the function call we are currently executing. Unlike

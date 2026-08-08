@@ -164,11 +164,19 @@ static auto MakeFunctionSignature(Context& context, SemIR::LocId loc_id,
 auto MakeGeneratedFunctionDecl(Context& context, SemIR::LocId loc_id,
                                const FunctionDeclArgs& args)
     -> std::pair<SemIR::InstId, SemIR::FunctionId> {
+  // A generic signature's symbolic instructions must attach to the function's
+  // own generic: bracket the signature with a generic declaration region, as a
+  // member function's introducer does (handle_function.cpp), closed by
+  // `BuildGenericDecl` over the finished declaration in `MakeFunctionDecl`.
+  if (args.build_generic) {
+    StartGenericDecl(context);
+  }
   auto insts = MakeFunctionSignature(context, loc_id, args);
 
   // Add the function declaration.
   auto [decl_id, function_id] = MakeFunctionDecl(
-      context, loc_id, insts.decl_block_id, /*build_generic=*/false,
+      context, loc_id, insts.decl_block_id,
+      /*build_generic=*/args.build_generic,
       /*is_definition=*/true,
       SemIR::Function{
           {

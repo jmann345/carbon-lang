@@ -48,11 +48,16 @@ struct FunctionDeclArgs {
   ParamPatternKind param_kind = ParamPatternKind::Value;
   // The return type, or `None` if the function doesn't declare a return type.
   SemIR::TypeId return_type_id = SemIR::TypeId::None;
+  // Whether to build a generic for the function. Required when any signature
+  // type is symbolic — a generated member of a generic scope, such as a
+  // generic choice's alternative constructor — so the function resolves,
+  // checks, and lowers per specific.
+  bool build_generic = false;
 };
 
 // Generates and returns a function declaration. The caller should update the
 // function object to add a definition. The caller is responsible for ensuring
-// that the signature is non-generic.
+// that the signature is non-generic unless `args.build_generic` is set.
 auto MakeGeneratedFunctionDecl(Context& context, SemIR::LocId loc_id,
                                const FunctionDeclArgs& args)
     -> std::pair<SemIR::InstId, SemIR::FunctionId>;

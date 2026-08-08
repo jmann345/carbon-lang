@@ -310,4 +310,13 @@ auto TryGetCanonicalFacetValue(Context& context, SemIR::InstId inst_id)
   return SemIR::InstId::None;
 }
 
+auto IsInSliceChoicePayloadType(Context& context, SemIR::TypeId type_id)
+    -> bool {
+  auto adapted_type_id = context.types().GetTransitiveAdaptedType(
+      context.types().GetUnqualifiedType(type_id));
+  auto inst = context.types().GetAsInst(adapted_type_id);
+  return inst.Is<SemIR::IntType>() || inst.Is<SemIR::FloatType>() ||
+         inst.Is<SemIR::BoolType>() || inst.Is<SemIR::PointerType>();
+}
+
 }  // namespace Carbon::Check

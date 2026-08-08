@@ -190,6 +190,10 @@ struct ChoiceInfo {
   // carries a payload.
   SemIR::TypeId payload_type_id;
   int num_alternative_bits;
+  // Whether the choice has a generic (its own parameters or an enclosing
+  // generic scope). Alternative constructors of a generic choice are
+  // themselves generic: they must resolve, check, and lower per specific.
+  bool is_generic;
 };
 
 // Per-alternative info for a function-like (parameterized) alternative.
@@ -260,29 +264,6 @@ static auto TypeContainsChoice(Context& context, SemIR::TypeId type_id,
     }
   }
   return false;
-}
-
-// The slice-1 payload restriction (decision-log W5 SF-6): payload types must
-// be trivially copyable and trivially destructible. This accepts the scalar
-// types for which that property is structural — integer, float, bool, and
-// pointer types, including adapters over them such as `i32` — and rejects
-// everything else with a clean diagnostic at the caller. Deliberately
-// conservative: relaxing it is recorded post-0.1 work, and the match scrutinee
-// gate relies on completed choices having only trivial payloads (a type
-// property, not a syntactic test).
-//
-// Admitted exception, recorded in decision-log W5-S1: a user-declared adapter
-// over a scalar with its own `Core.Destroy` impl passes this gate without a
-// witness query. Harmless while destroy-op synthesis is a placeholder no-op;
-// when it lands, this must become a destroy-witness triviality check (it rides
-// SF-6's post-0.1 work item).
-static auto IsInSlicePayloadType(Context& context, SemIR::TypeId type_id)
-    -> bool {
-  auto adapted_type_id = context.types().GetTransitiveAdaptedType(
-      context.types().GetUnqualifiedType(type_id));
-  auto inst = context.types().GetAsInst(adapted_type_id);
-  return inst.Is<SemIR::IntType>() || inst.Is<SemIR::FloatType>() ||
-         inst.Is<SemIR::BoolType>() || inst.Is<SemIR::PointerType>();
 }
 
 // Builds the literal for the discriminant of the alternative with the given
@@ -416,7 +397,8 @@ static auto BuildAlternativeConstructor(
                                  .name_id = binding.name_component.name_id,
                                  .param_type_ids = alt.param_type_ids,
                                  .param_kind = ParamPatternKind::Value,
-                                 .return_type_id = choice_info.self_type_id});
+                                 .return_type_id = choice_info.self_type_id,
+                                 .build_generic = choice_info.is_generic});
 
   context.scope_stack().PushForDeclName();
   StartFunctionDefinition(context, decl_id, function_id);
@@ -597,6 +579,9 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
   llvm::SmallVector<SemIR::StructTypeField> payload_fields;
   auto payload_size = SemIR::ObjectSize::Zero();
   auto payload_align = SemIR::ObjectSize::Bytes(1);
+  // Whether any payload tuple type is symbolic, making the region's layout
+  // dependent on the choice's generic arguments.
+  bool payload_is_symbolic = false;
   for (auto [i, deferred_binding] :
        llvm::enumerate(context.choice_deferred_bindings())) {
     if (is_duplicate_alternative[i]) {
@@ -625,44 +610,43 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
       add_error_binding();
     };
 
-    if (is_generic_choice) {
-      // Payload synthesis in a generic choice is slice 3: the representation
-      // depends on the substituted arguments.
-      reject("choice alternative payload with generic or Self-dependent type");
-    } else {
-      for (auto pattern_id :
-           context.inst_blocks().Get(name_component.param_patterns_id)) {
-        auto pattern_type_id = context.insts().Get(pattern_id).type_id();
-        if (pattern_type_id == SemIR::ErrorInst::TypeId) {
-          // The parameter's pattern was already diagnosed.
-          add_error_binding();
-          break;
-        }
-        auto param_type_id =
-            SemIR::ExtractScrutineeType(context.sem_ir(), pattern_type_id);
-        if (context.types().GetConstantId(param_type_id).is_symbolic() ||
-            TypeContainsChoice(context, param_type_id, class_id)) {
-          reject(
-              "choice alternative payload with generic or Self-dependent "
-              "type");
-          break;
-        }
-        if (!TryToCompleteType(context, param_type_id,
-                               SemIR::LocId(name_component.params_loc_id),
-                               /*diagnose=*/true)) {
-          // The incomplete-type diagnostic was already produced; don't
-          // misclassify incompleteness as non-triviality.
-          add_error_binding();
-          break;
-        }
-        if (!IsInSlicePayloadType(context, param_type_id)) {
-          reject(
-              "choice alternative payload that is not trivially copyable and "
-              "destructible");
-          break;
-        }
-        info.param_type_ids.push_back(param_type_id);
+    for (auto pattern_id :
+         context.inst_blocks().Get(name_component.param_patterns_id)) {
+      auto pattern_type_id = context.insts().Get(pattern_id).type_id();
+      if (pattern_type_id == SemIR::ErrorInst::TypeId) {
+        // The parameter's pattern was already diagnosed.
+        add_error_binding();
+        break;
       }
+      auto param_type_id =
+          SemIR::ExtractScrutineeType(context.sem_ir(), pattern_type_id);
+      if (TypeContainsChoice(context, param_type_id, class_id)) {
+        reject("choice alternative payload with Self-dependent type");
+        break;
+      }
+      if (context.types().GetConstantId(param_type_id).is_symbolic()) {
+        // A symbolic payload type in a generic choice: the layout and the
+        // SF-6 payload restriction are resolved per specific at
+        // monomorphization (`EvalConstantInst` for `CustomLayoutType`,
+        // eval_inst.cpp).
+        info.param_type_ids.push_back(param_type_id);
+        continue;
+      }
+      if (!TryToCompleteType(context, param_type_id,
+                             SemIR::LocId(name_component.params_loc_id),
+                             /*diagnose=*/true)) {
+        // The incomplete-type diagnostic was already produced; don't
+        // misclassify incompleteness as non-triviality.
+        add_error_binding();
+        break;
+      }
+      if (!IsInSliceChoicePayloadType(context, param_type_id)) {
+        reject(
+            "choice alternative payload that is not trivially copyable and "
+            "destructible");
+        break;
+      }
+      info.param_type_ids.push_back(param_type_id);
     }
 
     if (!info.error && !info.param_type_ids.empty()) {
@@ -676,11 +660,20 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
       payload_fields.push_back({.name_id = name_component.name_id,
                                 .type_inst_id = context.types().GetTypeInstId(
                                     info.payload_tuple_type_id)});
-      auto layout = context.types()
-                        .GetCompleteTypeInfo(info.payload_tuple_type_id)
-                        .object_layout;
-      payload_size = std::max(payload_size, layout.size);
-      payload_align = std::max(payload_align, layout.alignment);
+      if (context.types()
+              .GetConstantId(info.payload_tuple_type_id)
+              .is_symbolic()) {
+        // A symbolic payload tuple completes with a dependent (no-value)
+        // layout; the fold below would read zeros. The whole region's layout
+        // is dependent instead (see the sentinel emission below).
+        payload_is_symbolic = true;
+      } else {
+        auto layout = context.types()
+                          .GetCompleteTypeInfo(info.payload_tuple_type_id)
+                          .object_layout;
+        payload_size = std::max(payload_size, layout.size);
+        payload_align = std::max(payload_align, layout.alignment);
+      }
     }
     function_alternatives.push_back(std::move(info));
   }
@@ -697,12 +690,23 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
     // Payload-free choices don't get here, keeping their representation
     // bit-identical to before.
     llvm::SmallVector<SemIR::ObjectSize> layout;
-    static_assert(SemIR::CustomLayoutId::SizeIndex == 0);
-    layout.push_back(payload_size.AlignedTo(payload_align));
-    static_assert(SemIR::CustomLayoutId::AlignIndex == 1);
-    layout.push_back(payload_align);
-    static_assert(SemIR::CustomLayoutId::FirstFieldIndex == 2);
-    layout.append(payload_fields.size(), SemIR::ObjectSize::Zero());
+    if (payload_is_symbolic) {
+      // The sizes are unknowable at the definition: emit the dependent-layout
+      // sentinel — a zero alignment word, the `ObjectLayout::has_value()`
+      // encoding — bypassing the `AlignedTo` fold, which requires a power-of-2
+      // alignment. Monomorphization rebuilds the block from the substituted
+      // field types (`EvalConstantInst` for `CustomLayoutType`, eval_inst.cpp).
+      layout.append(
+          SemIR::CustomLayoutId::FirstFieldIndex + payload_fields.size(),
+          SemIR::ObjectSize::Zero());
+    } else {
+      static_assert(SemIR::CustomLayoutId::SizeIndex == 0);
+      layout.push_back(payload_size.AlignedTo(payload_align));
+      static_assert(SemIR::CustomLayoutId::AlignIndex == 1);
+      layout.push_back(payload_align);
+      static_assert(SemIR::CustomLayoutId::FirstFieldIndex == 2);
+      layout.append(payload_fields.size(), SemIR::ObjectSize::Zero());
+    }
 
     auto payload_type_inst_id = AddTypeInst(
         context, node_id,
@@ -743,7 +747,8 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
                                   .self_struct_type_id = self_struct_type_id,
                                   .discriminant_type_id = discriminant_type_id,
                                   .payload_type_id = payload_type_id,
-                                  .num_alternative_bits = num_alternative_bits};
+                                  .num_alternative_bits = num_alternative_bits,
+                                  .is_generic = is_generic_choice};
 
   // The alternatives' name-to-index metadata, recorded on the class below:
   // pattern matching resolves an alternative's discriminant value and payload

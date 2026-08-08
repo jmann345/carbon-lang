@@ -261,6 +261,7 @@ fails if this table is stale):
 | `stdlib/tuples_arrays_structs.carbon` | Stdlib: tuple/array library parts | run |
 | `types/choice_basic.carbon` | Type system: Sum types (discriminated unions) | run |
 | `types/choice_discriminant_diff.carbon` | Type system: Sum types (discriminated unions) | differential |
+| `types/choice_generic_diff.carbon` | Type system: Sum types (discriminated unions) | differential |
 | `types/choice_generic_roundtrip.carbon` | Type system: Sum types (discriminated unions) | run |
 | `types/choice_payload_construct.carbon` | Type system: Sum types (discriminated unions) | run |
 | `types/classes.carbon` | Type system: User-defined types (classes) | run |

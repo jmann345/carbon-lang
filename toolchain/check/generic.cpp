@@ -730,28 +730,35 @@ auto ResolveSpecificDefinition(Context& context, SemIR::LocId loc_id,
       // The generic is not defined yet.
       return false;
     }
-    // Set a placeholder value as the definition block ID so we won't attempt
-    // to recursively resolve the same specific, mirroring
-    // `ResolveSpecificDecl`. Such recursion arises when the eval block
-    // requires the specific's own type to be complete: a generic choice's
-    // body converts its alternative constants to the choice's own (symbolic)
-    // `Self` type, so its eval block contains a `require_complete_type` of
-    // the choice type itself. Evaluating that entry for a concrete specific
-    // completes the very `ClassType` whose completion is resolving this
-    // definition (`TypeCompleter::AddNestedIncompleteTypes`), which would
-    // otherwise re-enter here unboundedly. While the placeholder is in
-    // place, the specific's definition-region constants must not be queried;
-    // `GetConstantInSpecific` CHECKs on out-of-range value block indexes
-    // rather than reading through the placeholder. Today's nested completion
-    // only reads the class's complete-type witness, which is concrete for
-    // every admissible generic choice; a *symbolic* witness read during this
-    // window (for example, once generic choices carry symbolic payloads)
-    // would hit that CHECK and needs its own resolution strategy.
-    specific.definition_block_id = SemIR::InstBlockId::Empty;
+    // Publish a pre-sized value block, filled with `None`, before evaluating,
+    // so we won't attempt to recursively resolve the same specific (the guard
+    // mirrors `ResolveSpecificDecl`'s placeholder). Such recursion arises
+    // when the eval block requires the specific's own type to be complete: a
+    // generic choice's body converts its alternative constants to the
+    // choice's own (symbolic) `Self` type, so its eval block contains a
+    // `require_complete_type` of the choice type itself. Evaluating that
+    // entry for a concrete specific completes the very `ClassType` whose
+    // completion is resolving this definition
+    // (`TypeCompleter::AddNestedIncompleteTypes`), which would otherwise
+    // re-enter here unboundedly. `TryEvalBlockForSpecific` writes each value
+    // into the published block as it is evaluated, so the nested completion's
+    // read of the class's complete-type witness — a symbolic constant when
+    // the choice carries a symbolic payload, resolved earlier in the eval
+    // block than the `require_complete_type` that triggers the completion —
+    // sees the already-evaluated value; a genuine forward reference within
+    // the window reads `None` and hits the loud CHECK in
+    // `GetConstantInSpecific` rather than a wrong constant.
+    auto eval_block_size =
+        context.inst_blocks().Get(generic.definition_block_id).size();
+    llvm::SmallVector<SemIR::InstId> placeholder_values(eval_block_size,
+                                                        SemIR::InstId::None);
+    specific.definition_block_id =
+        context.inst_blocks().Add(placeholder_values);
     std::tie(specific.definition_block_id,
              specific.definition_block_has_error) =
         TryEvalBlockForSpecific(context, loc_id, specific_id,
-                                SemIR::GenericInstIndex::Definition);
+                                SemIR::GenericInstIndex::Definition,
+                                specific.definition_block_id);
   }
   return true;
 }

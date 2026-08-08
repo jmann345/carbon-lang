@@ -222,7 +222,10 @@ pin: a MIXED generic choice's parameterized alternative still carries the
 definition TODO and no table row, so a specific's match covering only the
 constant alternatives passes exhaustiveness IN SILENCE
 (fail_todo_mixed_partial_table subfile; S3b populates the rows and closes
-the window — plan §2.5 i). _Byte-equivalence (plan §4):_ concrete-choice
+the window — plan §2.5 i. SUPERSEDED at the S3b landing, 2026-08-08: the
+window is CLOSED — the subfile is now fail_mixed_table_closed, pinning the
+MatchNonexhaustive diagnostic that names the uncovered payload
+alternative). _Byte-equivalence (plan §4):_ concrete-choice
 and integer matches take byte-identical paths — the deleted clause is
 unreachable for `specific_id == None` and the forced completion is a no-op
 for already-complete concrete types; expected golden churn is NEW FILES
@@ -264,6 +267,95 @@ the gate refused. Re-authored to the current bracket-list form
 goldens are the symbolic path's first real execution, so the
 "symbolic specifics" exit claim rests on that run, not on the earlier
 review tracing alone.
+
+_W5-S3b landing note (2026-08-08):_ the risk slice of the approved
+generic-choice plan (fork/w5-s3/plan.md §3 S3b) lands payload synthesis in
+generic choices end-to-end. _Mechanism (plan §2.2-§2.5):_ the
+handle_choice.cpp definition gate lifts — symbolic payload types proceed
+to synthesis (concrete payloads inside generic choices validate SF-6 at
+the definition; `TypeContainsChoice` keeps a definition-time gate with the
+narrowed string `` `choice alternative payload with Self-dependent
+type` ``, the §6 co-change); the payload region's `CustomLayoutType` is
+emitted with the zero-alignment dependent-layout sentinel and recomputed
+per specific by the now-reachable `EvalConstantInst` hook (constant kind
+flipped to `Conditional` + `DuringEvaluation`), which completes the
+substituted payload tuples, runs SF-6 per specific (the plan-authored
+`ChoicePayloadNotTrivialInSpecific` diagnostic at the forcing use), and
+rebuilds the layout by max-of-fields (F-007k); alternative constructors of
+a generic choice are themselves generic (`MakeGeneratedFunctionDecl` gains
+the pre-committed `build_generic` bracketing — the member-function
+precedent sufficed, so plan R-3's revision trigger did not fire); and the
+alternative table now carries parameterized rows, closing the S3a
+partial-table silence window (choice_generic_scrutinee.carbon's subfile is
+now fail_mixed_table_closed, pinning MatchNonexhaustive naming the
+uncovered payload alternative — see the superseded S3a sentence above).
+_Guard redesign (veto-able sub-decision):_ S3a's `InstBlockId::Empty`
+placeholder in `ResolveSpecificDefinition` — and its "the in-progress
+region must not be queried" discipline — is REPLACED by incremental
+publication: the definition value block is pre-sized to the eval block
+(every entry `None`) and published on the specific BEFORE evaluation, and
+`TryEvalBlockForSpecific` writes each value in as it is evaluated, so the
+nested completion that recursion produces (the choice's own
+`require_complete_type`, whose completion reads the class's complete-type
+witness — under S3b a recomputed, symbolic-at-definition constant, exactly
+the S3a-recorded residual) legally reads already-evaluated PREFIX entries,
+while a genuine forward reference reads `None` and dies on a loud
+per-entry `has_value` CARBON_CHECK in `GetConstantInSpecific`
+(sem_ir/generic.cpp) instead of silently yielding a wrong constant.
+Consequence: the pre-allocation shifts inst-block allocation order, so
+raw_sem_ir dump goldens renumber InstBlockIds with contents unchanged.
+_Plan amendments (in-slice, house rule — reality diverged):_ §4 now
+budgets the ID-only raw_sem_ir renumbering and states the reconciliation
+rule (churn beyond pure renumbering, or outside those dumps plus the §6
+flips and new files, is stop-and-explain); the §S3b residual paragraph is
+rewritten to the landed incremental-publication mechanism; §8's floor
+arithmetic is reconciled (pre-S3b floor 79/0/31 over 110 — the
+exception-interop pair and S3a landed after the plan was written; S3b
+target 80/0/31 over 111; S3c shifts to 81/112); §5 R-1's falsifier numbers
+re-derive for the landed `Pair(T: type) { Both(x: T, y: T), Neither }`
+artifact (8 bytes/align 4 vs 16 bytes/align 8; the 4-byte single-payload
+case rides the optional subfile's `[4 x i8]`). _Fixer round (two
+adversarial reviews):_ (1) conformance pair strengthened — the runtime
+size-collision claim was unarbitrable as written (with field order
+{.discriminant, .payload} any corrupted discriminant fell to `default`,
+reproducing the expected output), so the i64 side adds a runtime-computed
+COLLISION probe (seed-derived 257, low byte 1 == `None`'s discriminant)
+whose probed index flips under a discriminant/payload collision,
+`Some(64)` became runtime-computed (making the R16d claim true), and the
+header comment now claims only what the program arbitrates — constructor
+synthesis, dispatch, and the collision probe; layout numbers (size AND
+alignment) are pinned by the lower goldens. (2) Hardening
+(crash-not-diagnostic): mutual by-value generic recursion (`choice
+P(T: type) { A(x: G(T)) }` with `class G(T: type) { var p: P(T); }`)
+would recurse from the hook's payload-tuple completion back into the
+specific's own in-progress resolution and die on the forward-reference
+CHECK; the hook now runs a structural SF-6 pre-filter BEFORE each
+completion — kinds classifiable without completeness (defined non-adapter
+classes, every non-class kind) reject with the real diagnostic; adapters
+and undefined classes still defer to completion — pinned by
+fail_generic_payload.carbon's fail_mutual_by_value_recursion subfile; the
+hook's completion also gained the plan-specified
+`Diagnostics::ContextScope` (IncompleteTypeInMonomorphization, the
+RequireCompleteType-hook precedent). (3) Newly-reachable surface: payload
+DESTRUCTURING on a concrete specific (`case .Some(v: i32)` on `Opt(i32)`)
+became reachable with the table population and traces to WORKING —
+`GetChoicePayloadInfo` resolves the payload tuple through
+`class_type->specific_id` at both the case check and the bind pass —
+pinned by new destructure subfiles (check + lower
+choice/generic_payload.carbon); S3c keeps symbolic destructuring,
+substituted binding conversions, imported pairs, and the doc example.
+_Byte-equivalence (plan §4 as amended):_ concrete choices and
+C++-imported class layouts pass through the eval hook unchanged (nonzero
+alignment word); expected churn is the §6 flips, the new files, and the
+ID-only raw_sem_ir renumbering. _Conformance:_ NEW
+types/choice_generic_diff pair (DIFF-1: C++ `std::variant<T,
+std::monostate>` oracle, no EXPECT-STDOUT, the `.None`/monostate arm
+probed explicitly) — PASS floor 79 → 80 over 111; runner --self-test
+green; README table regenerated; scoreboard regeneration rides the
+landing gate (R9). _Bookkeeping:_ the S3a partial-table sentence above and
+W-010's inventory entry are superseded/updated in place (payload synthesis
+landed; destructuring remains S3c); stale W-010 evidence references
+(renamed testdata, drifted line numbers) refreshed. Veto-able.
 
 ### W5 SF-1..8: choice-payload plan sub-forks (user by way of AskUserQuestion, 2026-07-20)
 

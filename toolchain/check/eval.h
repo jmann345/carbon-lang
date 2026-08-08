@@ -53,9 +53,18 @@ auto TryEvalInst(Context& context, InstT inst) -> SemIR::ConstantId {
 // Evaluates the eval block for a region of a specific. Produces a block
 // containing the evaluated constant values of the instructions in the eval
 // block. The returned bool indicates whether the region has an error.
-auto TryEvalBlockForSpecific(Context& context, SemIR::LocId loc_id,
-                             SemIR::SpecificId specific_id,
-                             SemIR::GenericInstIndex::Region region)
+//
+// If `publish_block_id` has a value, it must be a block pre-sized to the eval
+// block and filled with `None`, already published as the region's value block
+// on the specific: evaluated values are written into it as they are produced,
+// so that a nested query of the specific's constants during resolution — a
+// nested type completion reading the class's complete-type witness, for
+// example — sees every already-evaluated value instead of a placeholder (see
+// `ResolveSpecificDefinition`), and the block itself is returned.
+auto TryEvalBlockForSpecific(
+    Context& context, SemIR::LocId loc_id, SemIR::SpecificId specific_id,
+    SemIR::GenericInstIndex::Region region,
+    SemIR::InstBlockId publish_block_id = SemIR::InstBlockId::None)
     -> std::pair<SemIR::InstBlockId, bool>;
 
 }  // namespace Carbon::Check

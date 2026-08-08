@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-08T06:27:14.385288+00:00",
+  "generated": "2026-08-08T09:24:07.638128+00:00",
   "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 6.2,
+  "elapsed_seconds": 10.5,
   "totals": {
-    "PASS": 78,
+    "PASS": 79,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
@@ -720,6 +720,13 @@
       "differential": true
     },
     {
+      "path": "types/choice_generic_roundtrip.carbon",
+      "bullet": "Type system: Sum types (discriminated unions)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
       "path": "types/choice_payload_construct.carbon",
       "bullet": "Type system: Sum types (discriminated unions)",
       "status": "PASS",
@@ -888,6 +895,7 @@
       "programs": [
         "types/choice_basic.carbon",
         "types/choice_discriminant_diff.carbon",
+        "types/choice_generic_roundtrip.carbon",
         "types/choice_payload_construct.carbon"
       ]
     },

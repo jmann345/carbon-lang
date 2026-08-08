@@ -1,1 +1,1 @@
-S2e: regenerate goldens — exhaustive_choice.carbon (+imported subfiles), exhaustive_choice_binding.carbon STDOUT generation; STDERR verification in fail_choice_nonexhaustive.carbon (6 subfiles incl. all-rejected + imported), fail_todo_single_alternative_choice.carbon, fail_todo_no_default.carbon split. Zero churn expected elsewhere (R26 two passes).
+S2e R26 pass 2: verify fixpoint after 5652cc0 + trunk merge (expect empty or loc-only).

@@ -1,1 +1,1 @@
-Upstream-20260808 conformance: floor 77 PASS / 0 FAIL / 31 SKIP (108 programs) must hold across the upstream merge.
+S2e conformance: floor 77 PASS / 0 FAIL / 31 SKIP (108 programs) expected unchanged.

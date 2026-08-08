@@ -1,1 +1,1 @@
-Upstream-20260808 gate retry after the for-range-copy lint fix.
+S2e gate: full merge gate on match exhaustiveness + post-PR9 trunk composition.

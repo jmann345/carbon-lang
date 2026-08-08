@@ -1,1 +1,1 @@
-S2e gate: full merge gate on match exhaustiveness + post-PR9 trunk composition.
+S2e gate (solo): full merge gate on match exhaustiveness at fixpoint 822a051.

@@ -10,16 +10,20 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-08 (post-PR #15: B1 plan approved + B1a
-landed)._
-FIFTEEN PRs MERGED to `trunk`, most recently PR 15 (error-handling B1a:
-postfix `?` parses through the expression postfix loop and check gates
-it behind the §6 ledger TODO; zero conformance movement, floor
-byte-identical — plus the APPROVED fork/b1/plan.md, whose design review
-caught two blockers pre-implementation). B1b is next: prelude Core.Try +
-Core.ControlFlow, the six-step desugar with pre-flight witness lookup,
-region-position diagnose-and-reject, conformance flip to 83 PASS / 0
-FAIL / 30 SKIP over 113. W5-S3 is COMPLETE across PRs #12/#13/#14:
+_Last updated: 2026-08-09 (post-PR #16: ERROR-HANDLING B1 COMPLETE)._
+SIXTEEN PRs MERGED to `trunk`. B1 is complete across PRs #15/#16:
+postfix `?` parses, desugars through the fork's FIRST prelude additions
+(`Core.ControlFlow(C, B)` + `Core.Try` in `prelude/try`), and
+propagates at runtime over user-defined generic-choice Results —
+`Ok(v)?` yields `v`, `Err(e)?` converts and early-returns, verified
+against a C++ early-return oracle. B1b took four golden cycles (prelude
+`ImplicitAs` import for the first prelude `choice`; trailing unreachable
+returns after exhaustive matches — reachability ignores exhaustiveness;
+the projection-non-reduction trailing-return correction plus the
+symbolic-operand narrowing W-071: `?` on SYMBOLIC-typed operands is
+TODO-gated pending a `Destroy` bound decision on `Try`'s associated
+constants — future fork material). `Check Dependent PRs` is now guarded
+upstream-only (it hardcodes upstream and passed by number coincidence). W5-S3 is COMPLETE across PRs #12/#13/#14:
 S3a (payload-free generic-choice specifics as match scrutinees), S3b
 (payload synthesis + per-specific layout — five CI cycles, each defect
 root-caused before the next push, see the decision-log five-cycle
@@ -55,6 +59,7 @@ code). Next check: Monday 14:00 UTC.
 | Branch | State |
 | --- | --- |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
+| `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |
 | `claude/carbon-fork-0-1-w5-s3{,b,c}` | MERGED by way of PRs #12/#13/#14 — W5-S3 complete. |
 | `claude/carbon-fork-0-1-match-{replatform,s2d,s2e}` and `claude/carbon-fork-0-1-upstream-2026{0728,0808}` | MERGED by way of PRs #7/#8/#9/#10 and #6. |
 | `claude/carbon-fork-0-1-w5` | MERGED by way of PR #3 (composition gate run 30 green). |
@@ -63,15 +68,16 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-81 PASS / 31 SKIP / 0 FAIL programs (112 total, 11 differential
-C++-oracle pairs); **41/56 bullets green** (runner-side scoreboard at
-the PR #14 head; verified from fork/conformance/out/scoreboard.json).
-History: 73 → 74 at S2c → 77 at S2d/S2e → 78 at PR #11 → 79 at S3a →
-80 at S3b (types/choice_generic_diff: std::variant oracle) → 81 at S3c
-(control_flow/choice_generic_roundtrip_diff: the sum_types.md doc
-example against a std::optional oracle). The scoreboard regenerates on
-the runner (`Fork: conformance suite`, fork/conformance-request.txt
-trigger).
+83 PASS / 30 SKIP / 0 FAIL programs (113 total, 12 differential
+C++-oracle pairs); **42/56 bullets green** (runner-side scoreboard at
+the PR #16 head; verified from fork/conformance/out/scoreboard.json —
+the error-handling control-flow bullet is the fork's first
+error-handling flip). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79
+at S3a → 80 at S3b → 81 at S3c → 83 at B1b
+(error_handling/control_flow_constructs flip +
+question_propagation_diff, a C++ early-return oracle). The scoreboard
+regenerates on the runner (`Fork: conformance suite`,
+fork/conformance-request.txt trigger).
 
 ### CI on jmann345/carbon-lang (self-hosted runner "jeromehome", 28-core Arch)
 
@@ -93,15 +99,16 @@ trigger).
 
 1.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
     user's veto-digest response** (presented 2026-07-20, unanswered).
-2.  Error-handling B1b (prelude + desugar per the approved
-    fork/b1/plan.md §3; then B2/B3); W5-S3p (prelude
-    Result/Optional) stays GATED on the OPEN SF-9 fork; W5-S4
+2.  Error-handling B2/B3 per F-006 (next plan round); W5-S3p (prelude
+    Result/Optional) stays GATED on the OPEN SF-9 fork — and W-071
+    (Try associated-constant `Destroy` bounds, gating symbolic-operand
+    `?`) is adjacent fork material for the same ask; W5-S4
     (std::variant mapping) rides its deferred planning decision;
     threading defect fixes (F-008). Residues: W-067 (default-clause
     guards), W-068 (fewer-than-two-alternative choices), W-069
-    (cross-file runtime let), choice `Core.Copy` construction gap (the
-    S3c doc-example adaptation), tuple/var/ref/compile-time case
-    patterns, non-binding payload subpatterns (W-008).
+    (cross-file runtime let), W-070 (unit break types, SF-9-blocked),
+    choice `Core.Copy` construction gap, tuple/var/ref/compile-time
+    case patterns, non-binding payload subpatterns (W-008).
 3.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI; W-066 match usefulness diagnostics.
 

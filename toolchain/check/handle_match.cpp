@@ -4,8 +4,10 @@
 
 #include <optional>
 
+#include "common/raw_string_ostream.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallVector.h"
+#include "llvm/ADT/StringExtras.h"
 #include "toolchain/check/context.h"
 #include "toolchain/check/control_flow.h"
 #include "toolchain/check/convert.h"
@@ -64,12 +66,22 @@ namespace Carbon::Check {
 // falls through to the next arm (or `default`), preserving
 // first-match-wins.
 //
+// Exhaustiveness (SF-7): a choice scrutinee's alternatives are a closed set,
+// so a `match` whose unguarded arms cover every alternative — one arm per
+// discriminant, or an irrefutable binding arm covering everything — needs no
+// `default` arm; a non-exhaustive choice `match` without `default` is an
+// error naming the uncovered alternatives. Guarded arms never count toward
+// coverage, because exhaustiveness assumes every guard can fail. Integer
+// scrutinees keep requiring `default`: integer expression patterns are never
+// exhaustive per docs/design/pattern_matching.md.
+//
 // TODO: Support other pattern kinds (`var`/`ref` case bindings, tuple
 // patterns, non-binding payload subpatterns), guards on `default` arms
 // (docs/design/pattern_matching.md allows them; the parser does not yet),
-// other scrutinee types, and exhaustiveness checking without a `default`
-// arm. Diagnose cases that can never match, per
-// docs/design/pattern_matching.md.
+// other scrutinee types (including choices with fewer than two
+// alternatives, which have no integer discriminant to dispatch on), and
+// integer exhaustiveness via an irrefutable arm or full enumeration.
+// Diagnose cases that can never match, per docs/design/pattern_matching.md.
 
 // Returns the scrutinee value, which is on the `MatchHandler` entry after an
 // earlier case arm, or otherwise on the `MatchStatementStart` entry.
@@ -146,6 +158,9 @@ auto HandleParseNode(Context& context, Parse::MatchStatementStartId node_id)
   auto scrutinee_id =
       context.node_stack().Pop<Parse::NodeKind::MatchCondition>();
   context.node_stack().Push(node_id, scrutinee_id);
+  // Start tracking what this statement's arms cover; `MatchStatement` reads
+  // the accumulated coverage for exhaustiveness.
+  context.match_statement_stack().push_back({});
   return true;
 }
 
@@ -534,6 +549,28 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
         "match `case` pattern other than an integer literal, or a case guard");
   }
 
+  // Record what this arm contributes to the enclosing statement's
+  // exhaustiveness (SF-7). A guarded arm contributes nothing, whatever its
+  // pattern: exhaustiveness assumes every guard can evaluate to false
+  // (docs/design/pattern_matching.md, "Refutability, overlap, usefulness,
+  // and exhaustiveness"). An unguarded irrefutable arm covers every
+  // scrutinee value; an unguarded alternative-pattern arm covers its
+  // alternative. An arm whose pattern contained an error contributes
+  // unknowable coverage and suppresses the exhaustiveness diagnostic.
+  {
+    auto& match_context = context.match_statement_stack().back();
+    if (pattern_id == SemIR::ErrorInst::InstId ||
+        cond_value_id == SemIR::ErrorInst::InstId) {
+      match_context.has_error_arm = true;
+    } else if (guard_region_id.has_value()) {
+      // Guarded arms never count toward coverage.
+    } else if (is_binding_arm) {
+      match_context.has_irrefutable_arm = true;
+    } else if (alternative) {
+      match_context.covered_alternatives.push_back(alternative->index);
+    }
+  }
+
   context.full_pattern_stack().PopFullPattern();
   context.match_case_stack().pop_back();
 
@@ -669,6 +706,68 @@ auto HandleParseNode(Context& context, Parse::MatchHandlerId node_id) -> bool {
   return true;
 }
 
+// Diagnoses a choice-scrutinee `match` statement with no `default` arm whose
+// arms do not cover every alternative, naming the uncovered alternatives. No
+// diagnostic when the arms are exhaustive: an unguarded irrefutable arm
+// covers everything, and otherwise every alternative's discriminant must be
+// covered by an unguarded alternative-pattern arm (see the coverage
+// recording in `MatchCase`). An arm whose pattern contained an error also
+// suppresses the diagnostic — coverage is unknowable, and the arm carries
+// its own diagnostic already.
+static auto DiagnoseNonexhaustiveMatch(
+    Context& context, Parse::NodeId node_id, SemIR::TypeId scrutinee_type_id,
+    const Context::MatchStatementContext& match_context) -> void {
+  if (match_context.has_irrefutable_arm || match_context.has_error_arm) {
+    return;
+  }
+
+  auto unqualified_type_id =
+      context.types().GetUnqualifiedType(scrutinee_type_id);
+  auto class_type =
+      context.types().GetAs<SemIR::ClassType>(unqualified_type_id);
+  const auto& class_info = context.classes().Get(class_type.class_id);
+  // A valid choice with two or more alternatives always has a non-empty
+  // name-to-index table, so an empty table here triggers only under error
+  // recovery: a choice whose alternatives were ALL rejected with a
+  // diagnostic gets no table entries (`handle_choice.cpp` skips the push for
+  // each rejected alternative), yet the declared alternative count still
+  // sizes a real integer discriminant, so the class completes and the
+  // scrutinee passes its gate. Coverage is then unknowable — bail without
+  // diagnosing, mirroring the `has_error_arm` suppression; the declaration
+  // already carries its own diagnostics. A PARTIALLY-errored choice keeps
+  // entries for its surviving alternatives, so coverage is computed over
+  // those only — deliberate error-recovery behavior, consistent with how
+  // references to rejected alternatives resolve.
+  if (class_info.choice_alternatives.empty()) {
+    return;
+  }
+
+  llvm::SmallVector<SemIR::NameId> missing;
+  for (const auto& alternative : class_info.choice_alternatives) {
+    if (!llvm::is_contained(match_context.covered_alternatives,
+                            alternative.index)) {
+      missing.push_back(alternative.name_id);
+    }
+  }
+  if (missing.empty()) {
+    return;
+  }
+
+  RawStringOstream missing_stream;
+  llvm::ListSeparator sep;
+  for (auto name_id : missing) {
+    missing_stream << sep << "`." << context.names().GetFormatted(name_id)
+                   << "`";
+  }
+  CARBON_DIAGNOSTIC(MatchNonexhaustive, Error,
+                    "`match` on choice {0} has no `default` arm and does not "
+                    "cover alternative{1:s} {2}",
+                    SemIR::TypeId, Diagnostics::IntAsSelect, std::string);
+  context.emitter().Emit(node_id, MatchNonexhaustive, unqualified_type_id,
+                         static_cast<int>(missing.size()),
+                         missing_stream.TakeStr());
+}
+
 auto HandleParseNode(Context& context, Parse::MatchStatementId node_id)
     -> bool {
   bool has_default =
@@ -679,20 +778,40 @@ auto HandleParseNode(Context& context, Parse::MatchStatementId node_id)
     context.node_stack().Pop<Parse::NodeKind::MatchHandler>();
     ++num_case_arms;
   }
-  context.node_stack().Pop<Parse::NodeKind::MatchStatementStart>();
+  auto scrutinee_id =
+      context.node_stack().Pop<Parse::NodeKind::MatchStatementStart>();
+  auto match_context = context.match_statement_stack().pop_back_val();
 
   if (!has_default) {
     // A `match` whose patterns are not exhaustive and that has no `default`
-    // is an error per docs/design/pattern_matching.md, and integer expression
-    // patterns are never exhaustive. Exhaustiveness checking for other
-    // pattern kinds is future work.
-    return context.TODO(node_id, "match statement without `default` arm");
+    // is an error per docs/design/pattern_matching.md.
+    auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
+    if (!GetChoiceDiscriminantType(context, scrutinee_type_id)) {
+      // An integer scrutinee. Integer expression patterns are never
+      // exhaustive — each is treated as matching a single value from an
+      // infinite set (docs/design/pattern_matching.md) — so W4's rule stays:
+      // an integer `match` requires a `default` arm (SF-7). Exhaustiveness
+      // via an irrefutable arm or full enumeration of a small integer type
+      // is future work.
+      return context.TODO(node_id, "match statement without `default` arm");
+    }
+    // A choice scrutinee: the alternatives are a closed set, so full
+    // coverage discharges the `default` requirement (SF-7); otherwise
+    // diagnose, naming the uncovered alternatives. Either way the statement
+    // converges below: the last arm's else edge — dynamically dead when the
+    // arms are exhaustive — branches to the resumption block, the same shape
+    // an empty `default` arm produces.
+    DiagnoseNonexhaustiveMatch(context, node_id, scrutinee_type_id,
+                               match_context);
   }
 
-  // The instruction block stack holds one body block per case arm, plus the
-  // `default` arm's body block on top; branch from all of them to a new
-  // resumption block. With no case arms, the `default` body was emitted
-  // directly into the enclosing block, and there is nothing to converge.
+  // The instruction block stack holds one body block per case arm, plus one
+  // more block on top: the `default` arm's body block, or — without a
+  // `default` — the last arm's empty else block, whose edge from the last
+  // arm's test branches straight to the resumption block. Branch from all of
+  // them to a new resumption block. With no case arms, the `default` body
+  // was emitted directly into the enclosing block, and there is nothing to
+  // converge.
   int num_blocks = num_case_arms + 1;
   if (num_blocks >= 2) {
     AddConvergenceBlockAndPush(context, node_id, num_blocks);

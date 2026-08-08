@@ -1,1 +1,1 @@
-Upstream-20260808 R26 pass 2: verify fixpoint after 5d6f622 (expect empty or loc-only).
+S2e autoupdate pass-2 retry after the three-way push race (reconciliation lost the ref race; regenerate to fixpoint).

@@ -12,9 +12,9 @@
 // Differential pair: choice_payload_roundtrip_diff.diff.cpp holds the same
 // sum in a std::variant and extracts via std::get_if, so C++ is the oracle
 // for the round-tripped value (DIFF-1; no EXPECT-STDOUT). Binding spelling
-// is bare `name: type` per SF-5. A `default` arm is still required until
-// choice exhaustiveness lands (re-platform plan S2e / SF-7); it mirrors no
-// oracle path and is never taken.
+// is bare `name: type` per SF-5. The arms cover both alternatives, so no
+// `default` arm is needed: choice exhaustiveness landed at re-platform
+// S2e (SF-7), dropping the never-taken `default` the S2c landing recorded.
 
 import Core library "io";
 
@@ -27,7 +27,6 @@ fn Consume(r: IntResult) -> i32 {
   match (r) {
     case .Ok(value: i32) => { return value; }
     case .Err => { return -1; }
-    default => { return -1; }
   }
   return -1;
 }

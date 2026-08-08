@@ -1,1 +1,1 @@
-Upstream-20260808 gate retry after the for-range-copy lint fix.
+S2e gate retry 2: BUILD dep added to the check target (previous edit hit the context target).

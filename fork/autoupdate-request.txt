@@ -1,1 +1,1 @@
-2026-08-08T18:44:47Z autoupdate for B1a (postfix ? parse + gated TODO); expect churn = new files only (parse goldens + fail_todo pin)
+2026-08-08T18:46:23Z R26 pass 2 for B1a (expect zero churn)

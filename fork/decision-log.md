@@ -357,6 +357,37 @@ W-010's inventory entry are superseded/updated in place (payload synthesis
 landed; destructuring remains S3c); stale W-010 evidence references
 (renamed testdata, drifted line numbers) refreshed. Veto-able.
 
+_S3b landing addendum — the five CI cycles (2026-08-08):_ the slice
+needed five autoupdate cycles to land, each defect root-caused by a
+dedicated fixer round before the next push (branch commits are the
+audit trail). (1) The definition path asserted on payload tuples naming
+forward-declared class specifics — now a real diagnostic
+(`IncompleteTypeInChoicePayload`, class-field precedent). (2) The import
+resolver had no `UninitializedValue` case for the exported constant
+alternatives' struct values — mechanical case added. (3) A PRE-EXISTING
+fork bug, first exercised here: the `CustomLayoutType` import resolver
+minted its blocks non-canonically, so one exported constant resolved to
+two local constants and broke the eval-block rebuild invariant —
+`AddCanonical` on import and recompute paths. (4) The constructor
+wiring was semantically broken two ways (Convert demanded `Core.Copy`
+on symbolic `T` at definition; the canonical return-type inst never
+substituted through specifics) — reworked to raw per-element
+initialization (SF-6 is the correctness argument) plus a
+region-attached return type; the rework's own review caught a P0
+miscompile (the folded `ClassInit`'s cover memcpy clobbering the
+element stores at the return) — fixed by `UpdateInit` sequencing,
+golden-pinned cover-then-stores. (5) Imported choice-alternative
+bindings arrived value-less (upstream's let-import TODO), crashing
+cross-file `case` lowering — the resolver now propagates the bound
+value's constant. _Consequences beyond the slice (veto-able):_ imported
+`let` bindings tree-wide now carry their bound constants (four upstream
+`let/` goldens improved; two upstream `fail_*.impl.carbon` splits whose
+own comments asked "Should this be valid?" now pass and were renamed);
+W-069 records the remaining cross-file RUNTIME-let gap, and the R-2
+split's binding moved to the importing file (a `var` cannot initialize
+from an alternative constant — choice types implement no `Core.Copy`).
+Veto-able.
+
 ### W5 SF-1..8: choice-payload plan sub-forks (user by way of AskUserQuestion, 2026-07-20)
 
 Hybrid struct representation — discriminant + CustomLayoutType payload

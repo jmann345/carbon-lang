@@ -1,1 +1,1 @@
-2026-08-08T17:13:44Z gate for S3c (fixpoint at 72c41d9)
+2026-08-08T18:47:49Z gate for B1a (fixpoint at 94acd96)

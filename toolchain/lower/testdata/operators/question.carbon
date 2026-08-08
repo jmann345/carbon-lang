@@ -41,6 +41,13 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6): reachability
     // doesn't consult match exhaustiveness; no generic `ControlFlow(T, E)`
     // value is conjurable, so recurse through the interface.
+    // CHECK:STDERR: propagate.carbon:[[@LINE+7]]:5: error: cannot implicitly convert expression of type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` to `Core.ControlFlow(T, E)` [ConversionFailure]
+    // CHECK:STDERR:     return self.(Core.Try.Branch)();
+    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // CHECK:STDERR: propagate.carbon:[[@LINE+4]]:5: note: type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` does not implement interface `Core.ImplicitAs(Core.ControlFlow(T, E))` [MissingImplInMemberAccessInContext]
+    // CHECK:STDERR:     return self.(Core.Try.Branch)();
+    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // CHECK:STDERR:
     return self.(Core.Try.Branch)();
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }

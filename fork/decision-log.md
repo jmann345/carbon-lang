@@ -12,7 +12,18 @@ consequences. Undecided forks are listed as OPEN at the top.
 
 ## OPEN forks
 
-(none — F-001..F-011 all decided)
+-   **SF-9: identity of the existing `Core.Optional` class** (recorded OPEN at
+    the W5-S3a landing per fork/w5-s3/plan.md §0.2's landing obligation,
+    2026-08-08). Whether the prelude's placeholder `Core.Optional(T)` class is
+    re-platformed onto the generic `choice` machinery (W5-S3 family), kept as
+    an adapter over it, or left as an independent class with a redesigned API
+    (W-058), and how `Core.Result(T, E)` relates. The generic-choice slices
+    S3a-S3c have NO SF-9 dependency; the decision rides the W5-S3p (prelude)
+    AskUserQuestion round, which this entry queues — this split explicitly
+    supersedes the fork/w5-choice/plan.md §5/§7 gate ("SF-9 … must be decided
+    before S3's detailed plan is written"), which now binds W5-S3p only.
+    stdlib/optional_missing_ops.carbon's SKIP stays pinned to the placeholder
+    API until then.
 
 ## Decided
 
@@ -93,6 +104,9 @@ discriminant dispatch only.
     name→index metadata to concrete choices, and admitting the
     specific-resolved constant path untested would trade a diagnostic for a
     potential compiler crash; S3's generic re-plan owns it.
+    _S3a landing note (2026-08-08):_ lifted for payload-free generic
+    choices — specifics (concrete and symbolic) now dispatch and are
+    covered by SF-7 exhaustiveness; see the W5-S3a landing note below.
 -   **Matching a zero-payload function-like alternative (`case .On` for
     `On()`) is gated by the `match case pattern destructuring a choice
     payload` TODO string**, although there is no payload to destructure: the
@@ -168,6 +182,64 @@ discriminant dispatch only.
     landed on that branch: the review F-A1 OneShot single-payload-alternative
     testdata (check+lower) pinning the zero-bit-()-discriminant +
     payload-region constructor shape.
+
+_W5-S3a landing note (2026-08-08):_ the first slice of the approved
+generic-choice plan (fork/w5-s3/plan.md §3 S3a) lifts the W5-S1
+specifics-as-scrutinees gate for PAYLOAD-FREE generic choices, end-to-end.
+_Mechanism (plan §2.1 Option B, two coordinated changes):_ (1) the
+un-stringed `specific_id.has_value()` clause in `GetChoiceDiscriminantType`
+(pattern_match.cpp) is deleted — every downstream consumer already resolves
+the object representation through `class_type->specific_id`
+(`Class::GetObjectRepr`), so discriminant and payload types arrive
+substituted; (2) the `MatchCondition` scrutinee gate now FORCES that
+resolution — `RequireCompleteType` on the scrutinee type runs before any
+repr read, so the match itself is the forcing use (the completer's
+`ClassType` case runs `ResolveSpecificDefinition`) and the handle_match
+soundness comment's payload restriction holds BY CONSTRUCTION regardless of
+which path produced the scrutinee value (§2.6; the value-producing-path
+audit would fail — pointer deref and import complete nothing, risk R-2).
+Symbolic scrutinee types defer to monomorphization through a
+`require_complete_type` witness, which also admits SYMBOLIC specifics
+(`x: P(T)` matched inside `fn F(T:! type, ...)`) — risk R-8's recorded
+scope-in, sound at S3a because a payload-free choice's representation
+witness is concrete; instability here narrows the scope-in (re-gate behind
+the TODO), not the slice (plan R-8). _S3a implementation sub-decision
+(veto-able):_
+`RequireCompleteType` requires a diagnostic-context callback, which the plan
+did not spell; authored here as the Context-severity
+`IncompleteTypeInMatchScrutinee` (`matching on value of incomplete type
+{0}`, the member-access precedent's shape). Consequence: a genuinely
+incomplete concrete scrutinee type (for example matching a dereferenced
+pointer to a forward-declared class) now gets a real incomplete-type error
+instead of the scrutinee TODO, and the handler aborts exactly as the TODO
+path does; no golden pinned that input. _TODO ledger (plan §6):_ the
+`` `match on unsupported scrutinee type` `` string survives byte-identical
+at its site; no pin moves (the gate was unpinned, plan §1's finding) — the
+new goldens add the positive pins directly, plus the W-068 composition pins
+(single-alternative and empty-choice SPECIFICS keep the scrutinee TODO by
+way of the non-integer-discriminant check) and the S3a partial-table window
+pin: a MIXED generic choice's parameterized alternative still carries the
+definition TODO and no table row, so a specific's match covering only the
+constant alternatives passes exhaustiveness IN SILENCE
+(fail_todo_mixed_partial_table subfile; S3b populates the rows and closes
+the window — plan §2.5 i). _Byte-equivalence (plan §4):_ concrete-choice
+and integer matches take byte-identical paths — the deleted clause is
+unreachable for `specific_id == None` and the forced completion is a no-op
+for already-complete concrete types; expected golden churn is NEW FILES
+ONLY (match/choice_generic_scrutinee.carbon: positive
+basic/two-specifics/symbolic-specific/imported-pair subfiles + the R-5
+one-file exhaustive-beside-nonexhaustive pin naming the missing alternative
+per specific + the fail pins above; lower/match/choice_generic_scrutinee
+pinning discriminant dispatch and construction on a specific), CHECK
+content riding the runner autoupdate (R15/R19), STDERR pins hand-written.
+_Conformance:_ NEW types/choice_generic_roundtrip.carbon (two specifics
+constructed and matched at runtime, exhaustive matches without `default`,
+runtime-selected alternatives per R16d) — PASS floor 77 → 78 over 109
+programs, README table regenerated, scoreboard regeneration rides the
+landing gate (R9); no existing SKIP quotes the lifted gate (plan §8), so
+none flips. _Bookkeeping:_ SF-9 recorded as OPEN per plan §0.2's landing
+obligation (see the OPEN forks section); W-010's generic residue narrows to
+payload synthesis (S3b) + destructuring on specifics (S3c). Veto-able.
 
 ### W5 SF-1..8: choice-payload plan sub-forks (user by way of AskUserQuestion, 2026-07-20)
 

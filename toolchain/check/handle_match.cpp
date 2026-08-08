@@ -18,6 +18,7 @@
 #include "toolchain/check/pattern.h"
 #include "toolchain/check/pattern_match.h"
 #include "toolchain/check/type.h"
+#include "toolchain/check/type_completion.h"
 #include "toolchain/diagnostics/format_providers.h"
 #include "toolchain/lex/token_kind.h"
 #include "toolchain/sem_ir/expr_info.h"
@@ -121,6 +122,31 @@ auto HandleParseNode(Context& context, Parse::MatchConditionId node_id)
   // copyable and destructible types when the choice's representation is
   // completed (see handle_choice.cpp), so its destruction is a no-op.
   auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
+
+  // Force the scrutinee's type complete before the shape checks below read
+  // its object representation. For a specific of a generic choice this
+  // resolves the specific's definition (the completer's `ClassType` case runs
+  // `ResolveSpecificDefinition`), so the repr — and with it the payload
+  // restriction above — is established by the match itself no matter which
+  // path produced the scrutinee value; a pointer dereference or an import,
+  // for example, completes nothing on the way in. A symbolic scrutinee type
+  // defers the requirement to monomorphization (a `require_complete_type`
+  // witness), and an already-complete concrete type is a no-op, keeping the
+  // pre-existing scrutinee shapes on byte-identical paths.
+  if (!RequireCompleteType(
+          context, scrutinee_type_id, SemIR::LocId(node_id),
+          [&](auto& builder) {
+            CARBON_DIAGNOSTIC(IncompleteTypeInMatchScrutinee, Context,
+                              "matching on value of incomplete type {0}",
+                              TypeOfInstId);
+            builder.Context(scrutinee_id, IncompleteTypeInMatchScrutinee,
+                            scrutinee_id);
+          })) {
+    // The incomplete-type error was diagnosed above; abort checking the
+    // `match`, the same way the scrutinee-shape TODO below does.
+    return false;
+  }
+
   bool is_int_scrutinee = false;
   if (context.types().TryGetIntTypeInfo(scrutinee_type_id)) {
     auto unqualified_type_id =

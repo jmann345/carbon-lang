@@ -1,1 +1,1 @@
-S2e autoupdate pass-2 retry after the three-way push race (reconciliation lost the ref race; regenerate to fixpoint).
+W5-S3a: regenerate goldens — choice_generic_scrutinee.carbon (check, 10 subfiles) full STDOUT generation, lower/match/choice_generic_scrutinee.carbon generation, fail_incomplete_scrutinee.carbon STDERR verification. Zero churn expected for every existing golden (R26 two passes).

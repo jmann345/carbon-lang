@@ -121,14 +121,14 @@ let a: T = 0;
 // CHECK:STDOUT:   %default.import = import <none>
 // CHECK:STDOUT:   %Core.import = import Core
 // CHECK:STDOUT:   %impl.elem0: %.1c5 = impl_witness_access constants.%ImplicitAs.impl_witness.a23, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
-// CHECK:STDOUT:   %bound_method.loc9_12.1: <bound method> = bound_method @__global_init.%int_0, %impl.elem0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound]
+// CHECK:STDOUT:   %bound_method.loc5_12.1: <bound method> = bound_method @__global_init.%int_0, %impl.elem0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound]
 // CHECK:STDOUT:   %specific_fn: <specific function> = specific_function %impl.elem0, @Core.IntLiteral.as.ImplicitAs.impl.Convert(constants.%int_32) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn]
-// CHECK:STDOUT:   %bound_method.loc9_12.2: <bound method> = bound_method @__global_init.%int_0, %specific_fn [concrete = constants.%bound_method]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %i32 = call %bound_method.loc9_12.2(@__global_init.%int_0) [concrete = constants.%int_0.3c0]
-// CHECK:STDOUT:   %.loc9_12.1: %i32 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call [concrete = constants.%int_0.3c0]
-// CHECK:STDOUT:   %.loc9_12.2: %i32 = converted @__global_init.%int_0, %.loc9_12.1 [concrete = constants.%int_0.3c0]
+// CHECK:STDOUT:   %bound_method.loc5_12.2: <bound method> = bound_method @__global_init.%int_0, %specific_fn [concrete = constants.%bound_method]
+// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %i32 = call %bound_method.loc5_12.2(@__global_init.%int_0) [concrete = constants.%int_0.3c0]
+// CHECK:STDOUT:   %.loc5_12.1: %i32 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call [concrete = constants.%int_0.3c0]
+// CHECK:STDOUT:   %.loc5_12.2: %i32 = converted @__global_init.%int_0, %.loc5_12.1 [concrete = constants.%int_0.3c0]
 // CHECK:STDOUT:   %T.ref: type = name_ref T, imports.%Implicit.T [concrete = constants.%i32]
-// CHECK:STDOUT:   %a: %i32 = wrapper_binding a, %.loc9_12.2
+// CHECK:STDOUT:   %a: %i32 = wrapper_binding a, %.loc5_12.2
 // CHECK:STDOUT:   name_binding_decl {
 // CHECK:STDOUT:     %a.patt: %pattern_type.6b6 = value_binding_pattern a [concrete = constants.%a.patt]
 // CHECK:STDOUT:   }

@@ -134,9 +134,9 @@ var b: T = *a;
 // CHECK:STDOUT:   %default.import = import <none>
 // CHECK:STDOUT:   %Core.import = import Core
 // CHECK:STDOUT:   %a.var: ref %ptr.d08 = var_storage %a.var_patt [concrete]
-// CHECK:STDOUT:   %.loc8: type = splice_block %ptr [concrete = constants.%ptr.d08] {
-// CHECK:STDOUT:     %T.ref.loc8: type = name_ref T, imports.%Implicit.T [concrete = constants.%i32]
-// CHECK:STDOUT:     %ptr: type = ptr_type %T.ref.loc8 [concrete = constants.%ptr.d08]
+// CHECK:STDOUT:   %.loc4: type = splice_block %ptr [concrete = constants.%ptr.d08] {
+// CHECK:STDOUT:     %T.ref.loc4: type = name_ref T, imports.%Implicit.T [concrete = constants.%i32]
+// CHECK:STDOUT:     %ptr: type = ptr_type %T.ref.loc4 [concrete = constants.%ptr.d08]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %a: ref %ptr.d08 = wrapper_binding a, %a.var [concrete = %a.var]
 // CHECK:STDOUT:   name_binding_decl {
@@ -144,7 +144,7 @@ var b: T = *a;
 // CHECK:STDOUT:     %a.var_patt: %pattern_type.f00 = var_pattern %a.patt [concrete = constants.%a.var_patt]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %b.var: ref %i32 = var_storage %b.var_patt [concrete]
-// CHECK:STDOUT:   %T.ref.loc13: type = name_ref T, imports.%Implicit.T [concrete = constants.%i32]
+// CHECK:STDOUT:   %T.ref.loc5: type = name_ref T, imports.%Implicit.T [concrete = constants.%i32]
 // CHECK:STDOUT:   %b: ref %i32 = wrapper_binding b, %b.var [concrete = %b.var]
 // CHECK:STDOUT:   name_binding_decl {
 // CHECK:STDOUT:     %b.patt: %pattern_type.6b6 = ref_binding_pattern b [concrete = constants.%b.patt]
@@ -155,21 +155,21 @@ var b: T = *a;
 // CHECK:STDOUT: fn @__global_init() {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %DefaultOrUnformed.facet: %DefaultOrUnformed.type = facet_value constants.%ptr.d08, (constants.%DefaultOrUnformed.impl_witness.5bb) [concrete = constants.%DefaultOrUnformed.facet]
-// CHECK:STDOUT:   %.loc8_10.1: %DefaultOrUnformed.type = converted constants.%ptr.d08, %DefaultOrUnformed.facet [concrete = constants.%DefaultOrUnformed.facet]
-// CHECK:STDOUT:   %as_type: type = facet_access_type %.loc8_10.1 [concrete = constants.%ptr.d08]
-// CHECK:STDOUT:   %.loc8_10.2: type = converted %.loc8_10.1, %as_type [concrete = constants.%ptr.d08]
+// CHECK:STDOUT:   %.loc4_10.1: %DefaultOrUnformed.type = converted constants.%ptr.d08, %DefaultOrUnformed.facet [concrete = constants.%DefaultOrUnformed.facet]
+// CHECK:STDOUT:   %as_type: type = facet_access_type %.loc4_10.1 [concrete = constants.%ptr.d08]
+// CHECK:STDOUT:   %.loc4_10.2: type = converted %.loc4_10.1, %as_type [concrete = constants.%ptr.d08]
 // CHECK:STDOUT:   %T.as.DefaultOrUnformed.impl.Op.specific_fn: <specific function> = specific_function constants.%T.as.DefaultOrUnformed.impl.Op.a48, @T.as.DefaultOrUnformed.impl.Op(constants.%ptr.d08) [concrete = constants.%T.as.DefaultOrUnformed.impl.Op.specific_fn]
 // CHECK:STDOUT:   %T.as.DefaultOrUnformed.impl.Op.call: init %ptr.d08 = call %T.as.DefaultOrUnformed.impl.Op.specific_fn()
 // CHECK:STDOUT:   assign file.%a.var, %T.as.DefaultOrUnformed.impl.Op.call
 // CHECK:STDOUT:   %a.ref: ref %ptr.d08 = name_ref a, file.%a [concrete = file.%a.var]
-// CHECK:STDOUT:   %.loc13_13: %ptr.d08 = acquire_value %a.ref
-// CHECK:STDOUT:   %.loc13_12.1: ref %i32 = deref %.loc13_13
-// CHECK:STDOUT:   %.loc13_12.2: %i32 = acquire_value %.loc13_12.1
+// CHECK:STDOUT:   %.loc5_13: %ptr.d08 = acquire_value %a.ref
+// CHECK:STDOUT:   %.loc5_12.1: ref %i32 = deref %.loc5_13
+// CHECK:STDOUT:   %.loc5_12.2: %i32 = acquire_value %.loc5_12.1
 // CHECK:STDOUT:   %impl.elem0: %.7a6 = impl_witness_access constants.%Copy.impl_witness.0e0, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
-// CHECK:STDOUT:   %bound_method.loc13_12.1: <bound method> = bound_method %.loc13_12.2, %impl.elem0
+// CHECK:STDOUT:   %bound_method.loc5_12.1: <bound method> = bound_method %.loc5_12.2, %impl.elem0
 // CHECK:STDOUT:   %specific_fn: <specific function> = specific_function %impl.elem0, @Int.as.Copy.impl.Op(constants.%int_32) [concrete = constants.%Int.as.Copy.impl.Op.specific_fn]
-// CHECK:STDOUT:   %bound_method.loc13_12.2: <bound method> = bound_method %.loc13_12.2, %specific_fn
-// CHECK:STDOUT:   %Int.as.Copy.impl.Op.call: init %i32 = call %bound_method.loc13_12.2(%.loc13_12.2)
+// CHECK:STDOUT:   %bound_method.loc5_12.2: <bound method> = bound_method %.loc5_12.2, %specific_fn
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.call: init %i32 = call %bound_method.loc5_12.2(%.loc5_12.2)
 // CHECK:STDOUT:   assign file.%b.var, %Int.as.Copy.impl.Op.call
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }

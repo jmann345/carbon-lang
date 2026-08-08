@@ -1,1 +1,1 @@
-2026-08-08T08:30:35Z gate for S3a + crash fix (fc800b36 fixpoint confirmed)
+2026-08-08T09:22:09Z gate re-fire for S3a (crash fix + symbolic_specific re-author; fixpoint at d4262a64)

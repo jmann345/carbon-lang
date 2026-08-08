@@ -22,7 +22,7 @@ package Implicit;
 // CHECK:STDERR:
 let generic T: type = i32;
 
-// --- fail_implicit.impl.carbon
+// --- implicit.impl.carbon
 
 impl package Implicit;
 
@@ -73,7 +73,7 @@ let a: T = 0;
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: --- fail_implicit.impl.carbon
+// CHECK:STDOUT: --- implicit.impl.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]

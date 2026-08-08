@@ -1,1 +1,1 @@
-2026-08-08T15:55:48Z autoupdate attempt F: imported wrapper-binding constants; expect churn in concrete-import choice goldens (wrapper refs gain constant annotations) per commit message
+2026-08-08T15:59:25Z pass 1b: fail_implicit.impl split rename after imported-let constants (upstream TODO answered)

@@ -89,6 +89,9 @@ class ArrayStack {
   // Returns the current number of values in all arrays.
   auto all_values_size() const -> size_t { return values_.size(); }
 
+  // Returns the current number of arrays on the stack.
+  auto size() const -> int { return array_offsets_.size(); }
+
   // Returns true if the stack has no arrays pushed.
   auto empty() const -> bool { return array_offsets_.empty(); }
 

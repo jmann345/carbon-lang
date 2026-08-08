@@ -270,7 +270,16 @@ two parsing routes, pinned by a fail parse golden. Type-position `?`
 expression and is rejected in CHECK by the ordinary missing-impl diagnostic (`type`
 does not implement `Core.Try`) — no parse-level ban, recorded as a sub-decision
 (approval-gate item 6; the doc's "never appears in type position" is enforced
-semantically, which also keeps error recovery uniform).
+semantically, which also keeps error recovery uniform). AMENDED as landed at
+B1b (2026-08-08): the §2.4 region-position policy (added by the same plan
+revision) fires FIRST for binding type annotations — a type annotation is a
+captured expression region, so `var x: i32?` diagnoses
+`QuestionInPatternContext`, not the missing-impl pair; the missing-impl
+rejection remains the observed behavior for type-valued operands at region
+depth 1 (statement position `i32?;`, pinned in fail_question.carbon's
+fail_operand_not_try subfile beside the annotation pin in
+fail_pattern_positions). The sub-decision's substance — rejected in check,
+not parse — is unchanged.
 
 Check-side, B1a registers the `HandleParseNode(Context&, Parse::
 PostfixOperatorQuestionId)` handler emitting a NEW gate string —
@@ -295,7 +304,13 @@ paragraph after the list — and the region-position policy is new):
     the declared return FORM is not `InitForm` (return.cpp:202-236's `RefForm`
     and `SymbolicBinding` paths) → `QuestionNonInitReturnForm` — the desugar
     supports ordinary value-returning functions only, rejected up front rather
-    than surfacing a conversion failure deep in the return machinery; finally the
+    than surfacing a conversion failure deep in the return machinery; a
+    `returned var` in scope → `QuestionInReturnedVarScope` (added at the B1b
+    fix round, 2026-08-08: the break path returns through the
+    initializing-expression form the `returned var` discipline forbids —
+    without this check `?` reached `BuildReturnWithExpr` mid-desugar and
+    emitted the nonsense `ReturnExprWithReturnedVar` AFTER CFG existed,
+    contradicting this step's before-any-emission claim); finally the
     **return-type `Try` witness pre-flight**: resolve `Core.Try`'s facet type
     (`LookupNameInCore` + `FacetTypeFromInterface`, the `GetAssociatedValueImpl`
     shape, member_access.cpp:730-740) and run `LookupImplWitness` against the
@@ -402,8 +417,18 @@ lower today); the lower golden pins the emitted CFG, not new code.
     have a declared return type that implements `Core.Try` `` (+ the existing
     no-return-type note).
 -   `QuestionNonInitReturnForm`, Error: `` `?` cannot be used in a function whose
-    return uses a `ref` or expression form `` (+ the return-form-here note shape,
-    return.cpp:113-114; revised after plan review, 2026-08-08).
+    return uses a `ref` form or a symbolic form `` (+ the return-form-here note
+    shape, return.cpp:113-114; revised after plan review, 2026-08-08; re-worded
+    at the B1b fix round, 2026-08-08: a symbolic form (`->? Fm`) is not an
+    "expression form", and concrete initializing `->?` forms are accepted — the
+    message now names the two rejected shapes, `RefForm` and `SymbolicBinding`,
+    accurately).
+-   `QuestionInReturnedVarScope`, Error (added at the B1b fix round,
+    2026-08-08, the seventh B1b diagnostic): `` `?` cannot be used in the scope
+    of a `returned var`; `?` returns through an initializing expression `` (+
+    the existing `returned var`-declared-here note, return.cpp's
+    NoteReturnedVar, exported for reuse). Pre-flight-checked before the
+    return-type `Try` witness lookup, so the rejection consults no impl.
 -   `QuestionOperandNotTry`, Context (attached to the Branch impl-lookup failure —
     live on this path per §2.4 step 3): `` operand of `?` does not implement
     `Core.Try` ``.
@@ -671,8 +696,23 @@ handling control flow" line to arbitrated-PASS; opens the unit-break-type work i
     in toolchain/check/handle_operator.cpp beside PostfixOperatorStar's, and the
     pin is toolchain/check/testdata/operators/fail_todo_question.carbon — four
     subfiles covering expression, statement, argument, and type positions).
-    B1b DELETES the site and the pin flips to the positive question.carbon goldens
-    plus the §2.5 real diagnostics. Net across B1: zero TODO strings remain.
+    DISCHARGED at B1b (as landed, 2026-08-08): the handler moved to the new
+    toolchain/check/handle_question.cpp as the §2.4 desugar, the TODO's
+    `context.TODO` emission site is deleted (the phrase survives only in
+    prose comments), fail_todo_question.carbon is deleted, and
+    the pins are the positive operators/question.carbon goldens plus the §2.5
+    real diagnostics in operators/fail_question.carbon (impl-requiring shapes,
+    full prelude) and operators/fail_question_preflight.carbon (the pre-flight
+    shapes PLUS the R-4 per-specific carrier rejection — fail_unit_break_type
+    pins the SF-6 eval hook, not a pre-flight diagnostic; wording amended at
+    the B1b fix round, 2026-08-08 — on the new min_prelude/try.carbon combo,
+    an as-landed split of the planned single fail_question.carbon: that
+    prelude has NO `Try` impls and no `EqWith`, so the pre-flight pins fire
+    before any impl lookup or discriminant test). Amended at the B1b fix
+    round (2026-08-08): fail_question_preflight.carbon gained the
+    fail_returned_var_scope pin for the seventh diagnostic,
+    `QuestionInReturnedVarScope` (§2.5). Net across B1: zero TODO strings
+    remain.
 -   All existing TODO strings — the six-site combined W4 string, the scrutinee
     string, the `var`/`ref` case-binding string, S2e's integer-`default` string,
     the Self-dependent payload string — survive BYTE-IDENTICAL at their sites;
@@ -778,6 +818,9 @@ Items the coordinator signs off on (the V-2 veto digest for this plan):
 6.  **Diagnostics and gate text (§2.3/§2.5):** the B1a TODO string and the six
     B1b diagnostic names/messages (including the pre-flight
     `QuestionReturnTypeNotTry` Error placement and `QuestionNonInitReturnForm`).
+    (A seventh, `QuestionInReturnedVarScope`, plus the
+    `QuestionNonInitReturnForm` re-wording were added at the B1b fix round,
+    2026-08-08 — §2.5's dated entries.)
 7.  **Type-position `?` is rejected in check, not parse (§2.3)** — plus the
     recorded C-1 whitespace-acceptance and C-2 `i32*?` asymmetry sub-decisions.
 8.  **Conformance movement (§8):** the control_flow_constructs rewrite-and-flip

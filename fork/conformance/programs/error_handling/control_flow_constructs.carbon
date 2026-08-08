@@ -7,45 +7,61 @@
 // EXPECT-STDOUT:
 //   42
 //   -1
-// SKIP: GATED — the accepted design is F-006 postfix `?` over `Core.Try` (docs/design/error_handling.md; fork/b1/plan.md). As of B1a the postfix `?` expression PARSES (PostfixOperatorQuestion, toolchain/parse/handle_expr.cpp's postfix loop), but its check handler gates the entire surface behind the TODO string `postfix `?` operator` (pinned by toolchain/check/testdata/operators/fail_todo_question.carbon), and `Core.Try` does not exist yet. Un-SKIP at B1b, which lands the prelude interface plus the desugar and rewrites this body (still a pre-F-006 strawman below) to the accepted `?` shape.
 //
-// Write-tests-first stub. Intended future test: a fallible function whose
-// error propagates through a dedicated construct (spelled `try` below as a
-// strawman) rather than through manual sum-type plumbing, with both the
-// success path and the propagated-error path observable at runtime. Today
-// the only expressible pattern is hand-rolled choice/Optional returns
-// (types/choice_basic.carbon, stdlib/optional_basic.carbon) with no
-// language support for propagation.
+// The B1b arbiter (fork/b1/plan.md §3/§8): Carbon's dedicated error-handling
+// control-flow construct is the postfix `?` operator over `Core.Try`
+// (F-006), arbitrated here over a USER-DEFINED generic choice — prelude
+// `Core.Result` rides the SF-9/W5-S3p round and is deliberately not named.
+// Both `?` paths are observed at runtime: the continue path (Doubled(42/2)
+// prints 42) and the break path (a negative input's `Err` propagates out of
+// `Doubled` through `?`, prints -1). Inputs are runtime-computed (R16d), so
+// the discriminant dispatch cannot be constant-folded; consumption is by
+// exhaustive `match` without `default`; the `Branch` impl body uses the
+// match-reconstruct style (plan §2.6 — choices have no `Copy` impl, so
+// pass-through `return self` bodies are inexpressible). Impossible arms
+// return their payloads, so a wrong path fails loudly by exit code, not
+// just stdout.
 
 import Core library "io";
 
-// choice ParseError {
-//   BadDigit
-// }
-//
-// fn ParsePositive(n: i32) -> i32 or ParseError {
-//   if (n < 0) { return error ParseError.BadDigit; }
-//   return n;
-// }
-//
-// fn Doubled(n: i32) -> i32 or ParseError {
-//   // Dedicated propagation construct: on error, return it to the caller.
-//   let v: i32 = try ParsePositive(n);
-//   return v * 2;
-// }
+choice MyResult(T: type, E: type) {
+  Ok(v: T),
+  Err(e: E)
+}
+
+impl forall [T: type, E: type] MyResult(T, E) as Core.Try
+    where .ContinueType = T and .BreakType = E {
+  fn Branch(self) -> Core.ControlFlow(T, E) {
+    match (self) {
+      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+    }
+  }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+}
+
+fn ParsePositive(n: i32) -> MyResult(i32, i32) {
+  if (n < 0) { return MyResult(i32, i32).Err(-1); }
+  return MyResult(i32, i32).Ok(n);
+}
+
+fn Doubled(n: i32) -> MyResult(i32, i32) {
+  // The dedicated propagation construct: on `Err`, `?` rebuilds it through
+  // `Core.Try.FromBreak` on the return type and returns it to the caller.
+  var v: i32 = ParsePositive(n)?;
+  return MyResult(i32, i32).Ok(v * 2);
+}
+
+fn RuntimeSeed(x: i32) -> i32 { return x + 20; }
 
 fn Run() -> i32 {
-  // Intended body once the feature lands (strawman syntax):
-  //   match (Doubled(21)) {
-  //     case .ok(let v: i32) => { Core.Print(v); }         // 42
-  //     case .error(_) => { return 1; }
-  //   }
-  //   match (Doubled(-3)) {
-  //     case .ok(_) => { return 1; }
-  //     case .error(_) => { Core.Print(-1); }              // propagated
-  //   }
-  //   return 0;
-  // Guard: fails loudly (exit 1 vs EXPECT-EXIT 0) if un-SKIPped before
-  // dedicated error-handling control flow exists.
-  return 1;
+  match (Doubled(RuntimeSeed(1))) {
+    case .Ok(v: i32) => { Core.Print(v); }
+    case .Err(e: i32) => { return e; }
+  }
+  match (Doubled(RuntimeSeed(-50))) {
+    case .Ok(v: i32) => { return v; }
+    case .Err(e: i32) => { Core.Print(e); }
+  }
+  return 0;
 }

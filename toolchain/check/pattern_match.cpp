@@ -451,15 +451,10 @@ auto GetChoicePayloadInfo(Context& context, SemIR::TypeId type_id,
           payload_fields[payload_field_index].type_inst_id)};
 }
 
-// Emits the comparison of `scrutinee_id`'s discriminant field against the
-// discriminant value `alternative_index`, and returns the boolean condition.
-// The discriminant is read as field 0 of the choice's
-// `StructType{.discriminant, ...}` representation via `ClassElementAccess`
-// (the F-007k storage contract), and compared with `EqWith` on the
-// discriminant's integer type.
-static auto EmitChoiceDiscriminantTest(
-    Context& context, Parse::NodeId case_node_id, SemIR::InstId scrutinee_id,
-    SemIR::TypeId disc_type_id, int32_t alternative_index) -> SemIR::InstId {
+auto EmitChoiceDiscriminantTest(Context& context, Parse::NodeId case_node_id,
+                                SemIR::InstId scrutinee_id,
+                                SemIR::TypeId disc_type_id,
+                                int32_t alternative_index) -> SemIR::InstId {
   auto index_value_id = ConvertToValueOfType(
       context, case_node_id,
       MakeIntLiteral(context, case_node_id,

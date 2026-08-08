@@ -145,6 +145,19 @@ auto GetChoicePayloadInfo(Context& context, SemIR::TypeId type_id,
                           int32_t payload_field_index)
     -> std::optional<ChoicePayloadInfo>;
 
+// Emits the comparison of `scrutinee_id`'s discriminant field against the
+// discriminant value `alternative_index`, and returns the boolean condition.
+// The discriminant is read as field 0 of the choice's
+// `StructType{.discriminant, ...}` representation via `ClassElementAccess`
+// (the F-007k storage contract), and compared with `EqWith` on the
+// discriminant's integer type `disc_type_id` (`GetChoiceDiscriminantType`'s
+// result for the scrutinee's type). Shared between `match` `case`
+// alternative patterns and the postfix `?` desugar (handle_question.cpp).
+auto EmitChoiceDiscriminantTest(Context& context, Parse::NodeId case_node_id,
+                                SemIR::InstId scrutinee_id,
+                                SemIR::TypeId disc_type_id,
+                                int32_t alternative_index) -> SemIR::InstId;
+
 // Emits the refutable test for the arm of a parenthesized alternative
 // pattern (`case .Name(...)`): a comparison of the scrutinee's discriminant
 // field against the resolved alternative's discriminant value, taken from

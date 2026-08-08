@@ -14,6 +14,23 @@ namespace Carbon::Check {
 // return from.
 auto GetCurrentFunctionForReturn(Context& context) -> SemIR::Function&;
 
+// Produces a note that the given function has no explicit return type.
+auto NoteNoReturnTypeProvided(DiagnosticBuilder& diag,
+                              const SemIR::Function& function) -> void;
+
+// Produces a note describing the return type of the given function, which
+// must be a function whose definition is currently being checked.
+auto NoteReturnType(DiagnosticBuilder& diag, const SemIR::Function& function)
+    -> void;
+
+// Produces a note pointing at the given function's declared return form.
+auto NoteReturnForm(DiagnosticBuilder& diag, const SemIR::Function& function)
+    -> void;
+
+// Produces a note pointing at the currently in scope `returned var`.
+auto NoteReturnedVar(DiagnosticBuilder& diag, SemIR::InstId returned_var_id)
+    -> void;
+
 // Gets the return parameter corresponding to `function`'s `returned var`.
 // Returns None if the `returned var` doesn't correspond to a return parameter
 // (e.g. because it doesn't have an in-place init representation).

@@ -80,6 +80,13 @@ class RegionStack {
   // Returns true if any regions have been added.
   auto empty() -> bool { return stack_.empty(); }
 
+  // Returns the number of open regions. A function body being checked is one
+  // region (see function.cpp), and every captured expression region — a
+  // pattern's type expression, a `match` `case` pattern, or a `case` guard —
+  // pushes above it, so a depth greater than 1 inside a function means
+  // checking is inside a captured region.
+  auto depth() const -> int { return stack_.size(); }
+
  private:
   TodoFn todo_fn_;
 

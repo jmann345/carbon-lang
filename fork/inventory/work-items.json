@@ -1,7 +1,7 @@
 {
   "schema": "fork/inventory work item v1",
   "generated": "2026-07-19",
-  "source": "Deduplicated from 99 raw items produced by four scanners (check-TODO scan, fail_todo golden-test scan, conformance-SKIP scan, design-sprint scan) against trunk @ 99cda60. Bullet strings are copied exactly from fork/gap-analysis.md. blocked_by references work-item ids (W-###), design-fork ids (F-006..F-011, see fork/design-sprint/README.md), or external upstream issues. Updated 2026-07-19 by the W4 slice-1 fixer: W-008 refreshed to post-slice-1 evidence; W-066 added (usefulness-diagnostic scope cut). Updated 2026-07-29 by the S2d implementer: W-008 refreshed to post-S2d evidence (guard gates discharged); W-067 added (default-clause guards scope trade). Updated 2026-08-08 by the S2e implementer: W-008/W-010 refreshed to post-S2e evidence (choice exhaustiveness landed; the no-default TODO narrowed to integer scrutinees); W-068 added (fewer-than-two-alternative choice matching stays scrutinee-gated). Updated 2026-08-08 by the W5-S3a implementer: W-010 refreshed (specifics of generic choices as match scrutinees landed, payload-free; generic residue narrowed to S3b payload synthesis + S3c destructuring); W-068 evidence extended with the specific-composition pins. Updated 2026-08-08 by the W5-S3b fixer: W-069 added (imported file-scope `let` lowering gap; scrutinee split re-authored to `var`).",
+  "source": "Deduplicated from 99 raw items produced by four scanners (check-TODO scan, fail_todo golden-test scan, conformance-SKIP scan, design-sprint scan) against trunk @ 99cda60. Bullet strings are copied exactly from fork/gap-analysis.md. blocked_by references work-item ids (W-###), design-fork ids (F-006..F-011, see fork/design-sprint/README.md), decision-log sub-fork ids (SF-#, see fork/decision-log.md), or external upstream issues. Updated 2026-07-19 by the W4 slice-1 fixer: W-008 refreshed to post-slice-1 evidence; W-066 added (usefulness-diagnostic scope cut). Updated 2026-07-29 by the S2d implementer: W-008 refreshed to post-S2d evidence (guard gates discharged); W-067 added (default-clause guards scope trade). Updated 2026-08-08 by the S2e implementer: W-008/W-010 refreshed to post-S2e evidence (choice exhaustiveness landed; the no-default TODO narrowed to integer scrutinees); W-068 added (fewer-than-two-alternative choice matching stays scrutinee-gated). Updated 2026-08-08 by the W5-S3a implementer: W-010 refreshed (specifics of generic choices as match scrutinees landed, payload-free; generic residue narrowed to S3b payload synthesis + S3c destructuring); W-068 evidence extended with the specific-composition pins. Updated 2026-08-08 by the W5-S3b fixer: W-069 added (imported file-scope `let` lowering gap; scrutinee split re-authored to `var`). Updated 2026-08-08 by the B1b implementer: W-070 added (unit break types inexpressible under SF-6, fork/b1/plan.md §2.7). Updated 2026-08-08 by the B1b fixer: the blocked_by reference-forms sentence above amended to admit SF-* (W-070 is blocked_by SF-9).",
   "items": [
     {
       "id": "W-001",
@@ -1205,6 +1205,23 @@
       ],
       "blocked_by": [],
       "notes": "Surfaced by W5-S3b: once the generic-choice constructor rework made plib's `let g: P(i64) = P(i64).Neither;` check successfully, the importing file's `match (g)` crashed in lowering (function_context.cpp:190 — ImportRefLoaded with non-concrete value 'runtime'). This is not a choice bug: upstream has no cross-file runtime-global story for `let` at all — a `let` has no VarStorage, a class-typed `let` binds its value through a runtime temporary even when the initializer is constant, and the importer has no path that routes an ImportRefLoaded of a `let` binding to the defining file's backing storage the way `var` routes through the exported VarStorage global. The R-2 counter-program split was re-authored to `var g` (imported_global) rather than silently dropping the cross-file scrutinee coverage; restoring a `let`-based split is the acceptance test for discharging this item. Half (b) of the fix landed with the W5-S3b import-crash round (import_ref.cpp, TryResolveInstCanonical's non-constant-binding branch): an imported binding whose BOUND VALUE is constant now resolves to that value's constant — translated with its generic attachment intact — so constant-bound `let`s and choice-alternative wrapper bindings import as constants and lower through the constant path. The residual gap is (a): a `let` bound to a RUNTIME value still has no exported backing storage (the materialized temporary would need promotion to a named global, referenced cross-file like VarStorage). Restoring a runtime-`let`-based cross-file split is the acceptance test for the residue."
+    },
+    {
+      "id": "W-070",
+      "title": "B1 follow-up: unit break types (`BreakType = ()`) are inexpressible — `ControlFlow(C, ())` rejected by the SF-6 payload allowlist",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/check + core/prelude",
+      "size": "S",
+      "bullet": "Error handling: dedicated control flow constructs",
+      "evidence": [
+        "toolchain/check/type.cpp (IsInSliceChoicePayloadType: tuples, including `()`, rejected)",
+        "toolchain/check/eval_inst.cpp (ChoicePayloadNotTrivialInSpecific, the per-specific SF-6 hook)",
+        "toolchain/check/testdata/operators/fail_question_preflight.carbon (fail_unit_break_type subfile — the R-4 pin)",
+        "docs/design/error_handling.md (the amended `Optional` impl sketch's `BreakType = ()` note)",
+        "fork/b1/plan.md §2.7 (the bound, recorded honestly rather than widened)"
+      ],
+      "blocked_by": ["SF-9"],
+      "notes": "Recorded at the B1b landing (fork/decision-log.md B1 landing note, 2026-08-08). The doc's `Optional` Try impl needs `BreakType = ()`, which needs a `ControlFlow(T, ())` specific; the SF-6 in-slice payload allowlist rejects tuples including `()` (S1's aggregates-rejected scope, enforced per specific by the S3b eval hook). B1 does not widen the allowlist; the fail_unit_break_type pin keeps the bound arbitrated. W5-S3p decides the resolution when it mints the prelude Try impls: admit the zero-sized `()` payload as a minimal allowlist widening, or give the prelude `Optional` impl a scalar break carrier."
     }
   ]
 }

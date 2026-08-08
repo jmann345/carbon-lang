@@ -1,1 +1,1 @@
-2026-08-08T09:23:43Z conformance for S3a landing (gate 48 green at a46fc7b; expect 79/0/31 over 110)
+2026-08-08T16:13:00Z conformance for S3b landing (gate 50 green at c0e9435; expect 80/0/31 over 111)

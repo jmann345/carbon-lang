@@ -1559,10 +1559,12 @@ fn Classify(s: Signal) -> i32 {
 // CHECK:STDOUT:   %Copy.WithSelf.Op.type.d09: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet) [concrete]
 // CHECK:STDOUT:   %.7a6: type = fn_type_with_self_type %Copy.WithSelf.Op.type.d09, %Copy.facet [concrete]
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.specific_fn: <specific function> = specific_function %Int.as.Copy.impl.Op.4f6, @Int.as.Copy.impl.Op(%int_32) [concrete]
+// CHECK:STDOUT:   %uninit: %.0fa = uninitialized_value [concrete]
+// CHECK:STDOUT:   %int_1.508: %u2 = int_value 1 [concrete]
+// CHECK:STDOUT:   %Signal.val.b94: %Signal = struct_value (%int_1.508, %uninit) [concrete]
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.48e: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.409 [concrete]
 // CHECK:STDOUT:   %bound_method.0f5: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.a72 [concrete]
-// CHECK:STDOUT:   %int_1.508: %u2 = int_value 1 [concrete]
 // CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.bound.f51: <bound method> = bound_method %int_1.508, %UInt.as.EqWith.impl.Equal.e76 [concrete]
 // CHECK:STDOUT:   %bound_method.1da: <bound method> = bound_method %int_1.508, %UInt.as.EqWith.impl.Equal.specific_fn.149 [concrete]
 // CHECK:STDOUT:   %ImplicitAs.type.914: type = facet_type <@ImplicitAs, @ImplicitAs(%i32)> [concrete]
@@ -1578,9 +1580,10 @@ fn Classify(s: Signal) -> i32 {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571: <specific function> = specific_function %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39, @Core.IntLiteral.as.ImplicitAs.impl.Convert.2(%int_32) [concrete]
 // CHECK:STDOUT:   %bound_method.6e0: <bound method> = bound_method %int_0.5c6, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571 [concrete]
 // CHECK:STDOUT:   %int_0.3c0: %i32 = int_value 0 [concrete]
+// CHECK:STDOUT:   %int_2.996: %u2 = int_value 2 [concrete]
+// CHECK:STDOUT:   %Signal.val.4b5: %Signal = struct_value (%int_2.996, %uninit) [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.6c9: <bound method> = bound_method %int_2.ecc, %Core.IntLiteral.as.ImplicitAs.impl.Convert.409 [concrete]
 // CHECK:STDOUT:   %bound_method.135: <bound method> = bound_method %int_2.ecc, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.a72 [concrete]
-// CHECK:STDOUT:   %int_2.996: %u2 = int_value 2 [concrete]
 // CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.bound.99a: <bound method> = bound_method %int_2.996, %UInt.as.EqWith.impl.Equal.e76 [concrete]
 // CHECK:STDOUT:   %bound_method.64f: <bound method> = bound_method %int_2.996, %UInt.as.EqWith.impl.Equal.specific_fn.149 [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.094: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39 [concrete]
@@ -1602,8 +1605,8 @@ fn Classify(s: Signal) -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Main.Signal: type = import_ref Main//signal, Signal, loaded [concrete = constants.%Signal]
-// CHECK:STDOUT:   %Main.import_ref.f4b: %Signal = import_ref Main//signal, loc5_7, loaded
-// CHECK:STDOUT:   %Main.import_ref.4f3: %Signal = import_ref Main//signal, loc7_1, loaded
+// CHECK:STDOUT:   %Main.import_ref.f4b: %Signal = import_ref Main//signal, loc5_7, loaded [concrete = constants.%Signal.val.b94]
+// CHECK:STDOUT:   %Main.import_ref.4f3: %Signal = import_ref Main//signal, loc7_1, loaded [concrete = constants.%Signal.val.4b5]
 // CHECK:STDOUT:   %Core.import_ref.aa5: @Core.IntLiteral.as.ImplicitAs.impl.b68.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.199) = import_ref Core//prelude/types/uint, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.b68.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.170)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.42f = impl_witness_table (%Core.import_ref.aa5), @Core.IntLiteral.as.ImplicitAs.impl.b68 [concrete]
 // CHECK:STDOUT:   %Core.import_ref.b92: @UInt.as.EqWith.impl.f13.%UInt.as.EqWith.impl.Equal.type (%UInt.as.EqWith.impl.Equal.type.544) = import_ref Core//prelude/types/uint, loc{{\d+_\d+}}, loaded [symbolic = @UInt.as.EqWith.impl.f13.%UInt.as.EqWith.impl.Equal (constants.%UInt.as.EqWith.impl.Equal.c67)]
@@ -1679,10 +1682,10 @@ fn Classify(s: Signal) -> i32 {
 // CHECK:STDOUT: !match.case.else.loc12:
 // CHECK:STDOUT:   name_binding_decl {
 // CHECK:STDOUT:     %expr_patt.loc13: %pattern_type.1de = expr_pattern %Stop.ref in [concrete] {
-// CHECK:STDOUT:       %Stop.ref: %Signal = name_ref Stop, imports.%Main.import_ref.f4b
+// CHECK:STDOUT:       %Stop.ref: %Signal = name_ref Stop, imports.%Main.import_ref.f4b [concrete = constants.%Signal.val.b94]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %Stop.ref: %Signal = name_ref Stop, imports.%Main.import_ref.f4b
+// CHECK:STDOUT:   %Stop.ref: %Signal = name_ref Stop, imports.%Main.import_ref.f4b [concrete = constants.%Signal.val.b94]
 // CHECK:STDOUT:   %int_1.loc13: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
 // CHECK:STDOUT:   %impl.elem0.loc13_16.1: %.66c = impl_witness_access constants.%ImplicitAs.impl_witness.e93, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.409]
 // CHECK:STDOUT:   %bound_method.loc13_16.1: <bound method> = bound_method %int_1.loc13, %impl.elem0.loc13_16.1 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.48e]
@@ -1715,10 +1718,10 @@ fn Classify(s: Signal) -> i32 {
 // CHECK:STDOUT: !match.case.else.loc13:
 // CHECK:STDOUT:   name_binding_decl {
 // CHECK:STDOUT:     %expr_patt.loc14: %pattern_type.1de = expr_pattern %Wait.ref in [concrete] {
-// CHECK:STDOUT:       %Wait.ref: %Signal = name_ref Wait, imports.%Main.import_ref.4f3
+// CHECK:STDOUT:       %Wait.ref: %Signal = name_ref Wait, imports.%Main.import_ref.4f3 [concrete = constants.%Signal.val.4b5]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %Wait.ref: %Signal = name_ref Wait, imports.%Main.import_ref.4f3
+// CHECK:STDOUT:   %Wait.ref: %Signal = name_ref Wait, imports.%Main.import_ref.4f3 [concrete = constants.%Signal.val.4b5]
 // CHECK:STDOUT:   %int_2: Core.IntLiteral = int_value 2 [concrete = constants.%int_2.ecc]
 // CHECK:STDOUT:   %impl.elem0.loc14_16.1: %.66c = impl_witness_access constants.%ImplicitAs.impl_witness.e93, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.409]
 // CHECK:STDOUT:   %bound_method.loc14_16.1: <bound method> = bound_method %int_2, %impl.elem0.loc14_16.1 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.6c9]

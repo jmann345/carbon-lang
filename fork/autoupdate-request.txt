@@ -1,1 +1,1 @@
-2026-08-08T09:20:43Z R26 pass 2 fixpoint after symbolic_specific regen (expect zero churn)
+2026-08-08T16:09:09Z R26 pass 2 for S3b after split fixes (expect zero churn)

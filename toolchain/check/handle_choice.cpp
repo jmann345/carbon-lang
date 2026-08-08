@@ -10,6 +10,7 @@
 #include "toolchain/check/control_flow.h"
 #include "toolchain/check/convert.h"
 #include "toolchain/check/decl_name_stack.h"
+#include "toolchain/check/diagnostic_helpers.h"
 #include "toolchain/check/eval.h"
 #include "toolchain/check/function.h"
 #include "toolchain/check/generic.h"
@@ -190,6 +191,10 @@ struct ChoiceInfo {
   // carries a payload.
   SemIR::TypeId payload_type_id;
   int num_alternative_bits;
+  // Whether the choice has a generic (its own parameters or an enclosing
+  // generic scope). Alternative constructors of a generic choice are
+  // themselves generic: they must resolve, check, and lower per specific.
+  bool is_generic;
 };
 
 // Per-alternative info for a function-like (parameterized) alternative.
@@ -260,29 +265,6 @@ static auto TypeContainsChoice(Context& context, SemIR::TypeId type_id,
     }
   }
   return false;
-}
-
-// The slice-1 payload restriction (decision-log W5 SF-6): payload types must
-// be trivially copyable and trivially destructible. This accepts the scalar
-// types for which that property is structural — integer, float, bool, and
-// pointer types, including adapters over them such as `i32` — and rejects
-// everything else with a clean diagnostic at the caller. Deliberately
-// conservative: relaxing it is recorded post-0.1 work, and the match scrutinee
-// gate relies on completed choices having only trivial payloads (a type
-// property, not a syntactic test).
-//
-// Admitted exception, recorded in decision-log W5-S1: a user-declared adapter
-// over a scalar with its own `Core.Destroy` impl passes this gate without a
-// witness query. Harmless while destroy-op synthesis is a placeholder no-op;
-// when it lands, this must become a destroy-witness triviality check (it rides
-// SF-6's post-0.1 work item).
-static auto IsInSlicePayloadType(Context& context, SemIR::TypeId type_id)
-    -> bool {
-  auto adapted_type_id = context.types().GetTransitiveAdaptedType(
-      context.types().GetUnqualifiedType(type_id));
-  auto inst = context.types().GetAsInst(adapted_type_id);
-  return inst.Is<SemIR::IntType>() || inst.Is<SemIR::FloatType>() ||
-         inst.Is<SemIR::BoolType>() || inst.Is<SemIR::PointerType>();
 }
 
 // Builds the literal for the discriminant of the alternative with the given
@@ -416,7 +398,8 @@ static auto BuildAlternativeConstructor(
                                  .name_id = binding.name_component.name_id,
                                  .param_type_ids = alt.param_type_ids,
                                  .param_kind = ParamPatternKind::Value,
-                                 .return_type_id = choice_info.self_type_id});
+                                 .return_type_id = choice_info.self_type_id,
+                                 .build_generic = choice_info.is_generic});
 
   context.scope_stack().PushForDeclName();
   StartFunctionDefinition(context, decl_id, function_id);
@@ -456,8 +439,30 @@ static auto BuildAlternativeConstructor(
         context, loc_id, disc_ref_id, disc_literal_id));
   }
 
+  // Covers the payload field with an uninitialized value so the `ClassInit`'s
+  // element count matches the object representation's field count — the same
+  // fill the `NameId::ChoicePayload` case in `ConvertStructToStructOrClass`
+  // performs for parenless constant alternatives.
+  auto cover_payload_field = [&](SemIR::InstId payload_ref_id) {
+    auto uninit_id = AddInst<SemIR::UninitializedValue>(
+        context, loc_id, {.type_id = choice_info.payload_type_id});
+    element_init_ids.push_back(
+        AddInst<SemIR::InPlaceInit>(context, loc_id,
+                                    {.type_id = choice_info.payload_type_id,
+                                     .src_id = uninit_id,
+                                     .dest_id = payload_ref_id}));
+  };
+
   // Store the parameters into this alternative's payload tuple field, at
   // offset zero of the payload region.
+  //
+  // For a symbolic payload, the per-element store instructions are built in
+  // this pending block and spliced into the body after the `UpdateInit` built
+  // below, so that they lower after the covering base initialization the
+  // `UpdateInit` re-emits. `payload_update_init_id` holds the update step's
+  // initializer (the payload `TupleInit`) when the alternative needs one.
+  PendingBlock payload_update_block(&context);
+  SemIR::InstId payload_update_init_id = SemIR::InstId::None;
   if (alt.payload_field_index >= 0) {
     auto payload_ref_id = AddInst<SemIR::ClassElementAccess>(
         context, loc_id,
@@ -469,36 +474,97 @@ static auto BuildAlternativeConstructor(
         {.type_id = alt.payload_tuple_type_id,
          .base_id = payload_ref_id,
          .index = SemIR::ElementIndex(alt.payload_field_index)});
-    llvm::SmallVector<SemIR::InstId> args;
-    for (int i = ranges.explicit_begin().index; i < ranges.explicit_end().index;
-         ++i) {
-      args.push_back(call_params[i]);
+    if (context.types()
+            .GetConstantId(alt.payload_tuple_type_id)
+            .is_symbolic()) {
+      // A symbolic payload tuple cannot initialize through `Convert`: the
+      // value-to-initializer step is a `Core.Copy` interface copy, and an
+      // unconstrained binding has no impl at the definition — the rejection
+      // generic/fail_generic_copy.carbon pins for `return x`. Instead, the
+      // whole object initializes by a two-step base-then-update protocol:
+      //
+      // 1. Base cover: the payload field is covered in the `ClassInit` with
+      //    an `UninitializedValue`, like a zero-payload alternative. Every
+      //    `ClassInit` element is then constant, so the `ClassInit` folds to
+      //    a constant object value, and its lowering is a single whole-object
+      //    copy from a per-specific constant global — the discriminant bytes
+      //    plus poison payload bytes.
+      // 2. Update: the parameters are stored raw into the payload tuple. The
+      //    SF-6 payload restriction guarantees every admissible specific's
+      //    element types are trivially copyable (enforced per specific at
+      //    monomorphization, `EvalConstantInst` for `CustomLayoutType`), so a
+      //    store of each parameter's value representation IS the copy.
+      //
+      // The steps are sequenced by the `UpdateInit` built below — the
+      // protocol `ConvertPartialInitializerToNonPartial` uses to store a vptr
+      // over a folded `ClassInit`. `UpdateInit` never constant-folds, and its
+      // lowering re-emits its folded base's covering copy at the
+      // `UpdateInit`'s own position, before the update step. Returning the
+      // bare `ClassInit` instead would surface the fold at the `ReturnExpr`,
+      // whose lowering re-emits the covering copy after the element stores —
+      // clobbering the payload with the constant's poison bytes.
+      //
+      // The update step must lower correctly under BOTH initializing
+      // representations a specific's payload tuple can resolve to, so it has
+      // two cooperating parts, and every instruction the `UpdateInit` or the
+      // `TupleInit` references is one whose lowering produces a value (a
+      // parameter, or the `TupleInit` itself) — never a bare `InPlaceInit`,
+      // which lowers as a store with no value and would fail `GetValue`:
+      //
+      // - The `TupleInit` over the parameter VALUES, targeting the field, is
+      //   the `UpdateInit`'s update operand and precedes it in the block. For
+      //   an in-place-representation specific (multi-element payloads) it
+      //   lowers to nothing; for a by-copy-representation specific
+      //   (single-element payloads are passed by value) the `UpdateInit`'s
+      //   own lowering copies the tuple value into the field immediately
+      //   after the covering copy.
+      // - The per-element `InPlaceInit` raw stores are spliced in AFTER the
+      //   `UpdateInit`, so in the in-place regime the element stores land
+      //   after the covering copy. In the by-copy regime they re-store the
+      //   same bytes the `UpdateInit` copied, which is idempotent.
+      llvm::SmallVector<SemIR::InstId> arg_ids;
+      for (int i = ranges.explicit_begin().index;
+           i < ranges.explicit_end().index; ++i) {
+        arg_ids.push_back(call_params[i]);
+      }
+      payload_update_init_id = AddInst(
+          context, binding.node_id,
+          SemIR::TupleInit{.type_id = alt.payload_tuple_type_id,
+                           .elements_id = context.inst_blocks().Add(arg_ids),
+                           .dest_id = field_ref_id});
+      for (auto [i, param_type_id] : llvm::enumerate(alt.param_type_ids)) {
+        auto elem_ref_id = payload_update_block.AddInst(
+            binding.node_id, SemIR::TupleAccess{.type_id = param_type_id,
+                                                .tuple_id = field_ref_id,
+                                                .index = SemIR::ElementIndex(
+                                                    static_cast<int>(i))});
+        payload_update_block.AddInst(
+            binding.node_id, SemIR::InPlaceInit{.type_id = param_type_id,
+                                                .src_id = arg_ids[i],
+                                                .dest_id = elem_ref_id});
+      }
+      cover_payload_field(payload_ref_id);
+    } else {
+      llvm::SmallVector<SemIR::InstId> args;
+      for (int i = ranges.explicit_begin().index;
+           i < ranges.explicit_end().index; ++i) {
+        args.push_back(call_params[i]);
+      }
+      auto tuple_literal_id = AddInst(
+          context, binding.node_id,
+          SemIR::TupleLiteral{.type_id = alt.payload_tuple_type_id,
+                              .elements_id = context.inst_blocks().Add(args)});
+      element_init_ids.push_back(InitializeElementInPlace(
+          context, loc_id, field_ref_id, tuple_literal_id));
     }
-    auto tuple_literal_id = AddInst(
-        context, binding.node_id,
-        SemIR::TupleLiteral{.type_id = alt.payload_tuple_type_id,
-                            .elements_id = context.inst_blocks().Add(args)});
-    element_init_ids.push_back(InitializeElementInPlace(
-        context, loc_id, field_ref_id, tuple_literal_id));
   } else if (choice_info.payload_type_id.has_value()) {
-    // A zero-payload `Alt()` alternative of a payload-carrying choice: cover
-    // the payload field with an uninitialized value so the `ClassInit`'s
-    // element count matches the object representation's field count — the
-    // same fill the `NameId::ChoicePayload` case in
-    // `ConvertStructToStructOrClass` performs for parenless constant
-    // alternatives.
+    // A zero-payload `Alt()` alternative of a payload-carrying choice.
     auto payload_ref_id = AddInst<SemIR::ClassElementAccess>(
         context, loc_id,
         {.type_id = choice_info.payload_type_id,
          .base_id = return_slot_id,
          .index = SemIR::ElementIndex(1)});
-    auto uninit_id = AddInst<SemIR::UninitializedValue>(
-        context, loc_id, {.type_id = choice_info.payload_type_id});
-    element_init_ids.push_back(
-        AddInst<SemIR::InPlaceInit>(context, loc_id,
-                                    {.type_id = choice_info.payload_type_id,
-                                     .src_id = uninit_id,
-                                     .dest_id = payload_ref_id}));
+    cover_payload_field(payload_ref_id);
   }
 
   auto class_init_id = AddInst<SemIR::ClassInit>(
@@ -506,9 +572,21 @@ static auto BuildAlternativeConstructor(
       {.type_id = choice_info.self_type_id,
        .elements_id = context.inst_blocks().Add(element_init_ids),
        .dest_id = return_slot_id});
+  auto return_expr_id = class_init_id;
+  if (payload_update_init_id.has_value()) {
+    // A symbolic payload: sequence the parameter stores after the folded
+    // base. The `UpdateInit`'s lowering re-emits the base's covering copy at
+    // this position, and the pending update stores are spliced in after it.
+    return_expr_id =
+        AddInst<SemIR::UpdateInit>(context, loc_id,
+                                   {.type_id = choice_info.self_type_id,
+                                    .base_init_id = class_init_id,
+                                    .update_init_id = payload_update_init_id});
+    payload_update_block.InsertHere();
+  }
   AddReturnInstWithCleanups(
       context, loc_id,
-      SemIR::ReturnExpr{.expr_id = class_init_id, .dest_id = return_slot_id});
+      SemIR::ReturnExpr{.expr_id = return_expr_id, .dest_id = return_slot_id});
 
   FinishFunctionDefinition(context, function_id);
   context.scope_stack().Pop();
@@ -597,6 +675,9 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
   llvm::SmallVector<SemIR::StructTypeField> payload_fields;
   auto payload_size = SemIR::ObjectSize::Zero();
   auto payload_align = SemIR::ObjectSize::Bytes(1);
+  // Whether any payload tuple type is symbolic, making the region's layout
+  // dependent on the choice's generic arguments.
+  bool payload_is_symbolic = false;
   for (auto [i, deferred_binding] :
        llvm::enumerate(context.choice_deferred_bindings())) {
     if (is_duplicate_alternative[i]) {
@@ -625,44 +706,59 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
       add_error_binding();
     };
 
-    if (is_generic_choice) {
-      // Payload synthesis in a generic choice is slice 3: the representation
-      // depends on the substituted arguments.
-      reject("choice alternative payload with generic or Self-dependent type");
-    } else {
-      for (auto pattern_id :
-           context.inst_blocks().Get(name_component.param_patterns_id)) {
-        auto pattern_type_id = context.insts().Get(pattern_id).type_id();
-        if (pattern_type_id == SemIR::ErrorInst::TypeId) {
-          // The parameter's pattern was already diagnosed.
-          add_error_binding();
-          break;
-        }
-        auto param_type_id =
-            SemIR::ExtractScrutineeType(context.sem_ir(), pattern_type_id);
-        if (context.types().GetConstantId(param_type_id).is_symbolic() ||
-            TypeContainsChoice(context, param_type_id, class_id)) {
-          reject(
-              "choice alternative payload with generic or Self-dependent "
-              "type");
-          break;
-        }
-        if (!TryToCompleteType(context, param_type_id,
-                               SemIR::LocId(name_component.params_loc_id),
-                               /*diagnose=*/true)) {
-          // The incomplete-type diagnostic was already produced; don't
-          // misclassify incompleteness as non-triviality.
-          add_error_binding();
-          break;
-        }
-        if (!IsInSlicePayloadType(context, param_type_id)) {
-          reject(
-              "choice alternative payload that is not trivially copyable and "
-              "destructible");
-          break;
-        }
-        info.param_type_ids.push_back(param_type_id);
+    for (auto pattern_id :
+         context.inst_blocks().Get(name_component.param_patterns_id)) {
+      auto pattern_type_id = context.insts().Get(pattern_id).type_id();
+      if (pattern_type_id == SemIR::ErrorInst::TypeId) {
+        // The parameter's pattern was already diagnosed.
+        add_error_binding();
+        break;
       }
+      auto param_type_id =
+          SemIR::ExtractScrutineeType(context.sem_ir(), pattern_type_id);
+      if (TypeContainsChoice(context, param_type_id, class_id)) {
+        reject("choice alternative payload with Self-dependent type");
+        break;
+      }
+      // Payload types must be complete at the definition — symbolic ones with
+      // a dependent layout — so the payload tuple built below is guaranteed to
+      // complete (`CompleteTypeOrCheckFail`). A specific of a class with no
+      // definition yet has no layout, dependent or otherwise, and is diagnosed
+      // here like any other incomplete payload: the class-field precedent
+      // (`IncompleteTypeInBindingDecl`). For a dependent payload type that
+      // does complete, `RequireCompleteType` also records the instruction that
+      // re-enforces completeness of the substituted type per specific.
+      if (!RequireCompleteType(
+              context, param_type_id,
+              SemIR::LocId(name_component.params_loc_id), [&](auto& builder) {
+                CARBON_DIAGNOSTIC(
+                    IncompleteTypeInChoicePayload, Context,
+                    "choice alternative payload has incomplete type {0}",
+                    InstIdAsType);
+                builder.Context(name_component.params_loc_id,
+                                IncompleteTypeInChoicePayload,
+                                context.types().GetTypeInstId(param_type_id));
+              })) {
+        // The incomplete-type diagnostic was already produced; don't
+        // misclassify incompleteness as non-triviality.
+        add_error_binding();
+        break;
+      }
+      if (context.types().GetConstantId(param_type_id).is_symbolic()) {
+        // A symbolic payload type in a generic choice: the layout and the
+        // SF-6 payload restriction are resolved per specific at
+        // monomorphization (`EvalConstantInst` for `CustomLayoutType`,
+        // eval_inst.cpp).
+        info.param_type_ids.push_back(param_type_id);
+        continue;
+      }
+      if (!IsInSliceChoicePayloadType(context, param_type_id)) {
+        reject(
+            "choice alternative payload that is not trivially copyable and "
+            "destructible");
+        break;
+      }
+      info.param_type_ids.push_back(param_type_id);
     }
 
     if (!info.error && !info.param_type_ids.empty()) {
@@ -676,11 +772,20 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
       payload_fields.push_back({.name_id = name_component.name_id,
                                 .type_inst_id = context.types().GetTypeInstId(
                                     info.payload_tuple_type_id)});
-      auto layout = context.types()
-                        .GetCompleteTypeInfo(info.payload_tuple_type_id)
-                        .object_layout;
-      payload_size = std::max(payload_size, layout.size);
-      payload_align = std::max(payload_align, layout.alignment);
+      if (context.types()
+              .GetConstantId(info.payload_tuple_type_id)
+              .is_symbolic()) {
+        // A symbolic payload tuple completes with a dependent (no-value)
+        // layout; the fold below would read zeros. The whole region's layout
+        // is dependent instead (see the sentinel emission below).
+        payload_is_symbolic = true;
+      } else {
+        auto layout = context.types()
+                          .GetCompleteTypeInfo(info.payload_tuple_type_id)
+                          .object_layout;
+        payload_size = std::max(payload_size, layout.size);
+        payload_align = std::max(payload_align, layout.alignment);
+      }
     }
     function_alternatives.push_back(std::move(info));
   }
@@ -697,12 +802,23 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
     // Payload-free choices don't get here, keeping their representation
     // bit-identical to before.
     llvm::SmallVector<SemIR::ObjectSize> layout;
-    static_assert(SemIR::CustomLayoutId::SizeIndex == 0);
-    layout.push_back(payload_size.AlignedTo(payload_align));
-    static_assert(SemIR::CustomLayoutId::AlignIndex == 1);
-    layout.push_back(payload_align);
-    static_assert(SemIR::CustomLayoutId::FirstFieldIndex == 2);
-    layout.append(payload_fields.size(), SemIR::ObjectSize::Zero());
+    if (payload_is_symbolic) {
+      // The sizes are unknowable at the definition: emit the dependent-layout
+      // sentinel — a zero alignment word, the `ObjectLayout::has_value()`
+      // encoding — bypassing the `AlignedTo` fold, which requires a power-of-2
+      // alignment. Monomorphization rebuilds the block from the substituted
+      // field types (`EvalConstantInst` for `CustomLayoutType`, eval_inst.cpp).
+      layout.append(
+          SemIR::CustomLayoutId::FirstFieldIndex + payload_fields.size(),
+          SemIR::ObjectSize::Zero());
+    } else {
+      static_assert(SemIR::CustomLayoutId::SizeIndex == 0);
+      layout.push_back(payload_size.AlignedTo(payload_align));
+      static_assert(SemIR::CustomLayoutId::AlignIndex == 1);
+      layout.push_back(payload_align);
+      static_assert(SemIR::CustomLayoutId::FirstFieldIndex == 2);
+      layout.append(payload_fields.size(), SemIR::ObjectSize::Zero());
+    }
 
     auto payload_type_inst_id = AddTypeInst(
         context, node_id,
@@ -743,7 +859,8 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
                                   .self_struct_type_id = self_struct_type_id,
                                   .discriminant_type_id = discriminant_type_id,
                                   .payload_type_id = payload_type_id,
-                                  .num_alternative_bits = num_alternative_bits};
+                                  .num_alternative_bits = num_alternative_bits,
+                                  .is_generic = is_generic_choice};
 
   // The alternatives' name-to-index metadata, recorded on the class below:
   // pattern matching resolves an alternative's discriminant value and payload

@@ -77,7 +77,7 @@ let b: () = Other.a;
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
-// CHECK:STDOUT:   %Implicit.a: %empty_tuple.type = import_ref Implicit//default, a, loaded
+// CHECK:STDOUT:   %Implicit.a: %empty_tuple.type = import_ref Implicit//default, a, loaded [concrete = constants.%empty_tuple]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
@@ -99,7 +99,7 @@ let b: () = Other.a;
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @__global_init() {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %a.ref: %empty_tuple.type = name_ref a, imports.%Implicit.a
+// CHECK:STDOUT:   %a.ref: %empty_tuple.type = name_ref a, imports.%Implicit.a [concrete = constants.%empty_tuple]
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -148,7 +148,7 @@ let b: () = Other.a;
 // CHECK:STDOUT:     .a = %Other.a
 // CHECK:STDOUT:     import Other//default
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %Other.a: %empty_tuple.type = import_ref Other//default, a, loaded
+// CHECK:STDOUT:   %Other.a: %empty_tuple.type = import_ref Other//default, a, loaded [concrete = constants.%empty_tuple]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
@@ -170,7 +170,7 @@ let b: () = Other.a;
 // CHECK:STDOUT: fn @__global_init() {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %Other.ref: <namespace> = name_ref Other, imports.%Other [concrete = imports.%Other]
-// CHECK:STDOUT:   %a.ref: %empty_tuple.type = name_ref a, imports.%Other.a
+// CHECK:STDOUT:   %a.ref: %empty_tuple.type = name_ref a, imports.%Other.a [concrete = constants.%empty_tuple]
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

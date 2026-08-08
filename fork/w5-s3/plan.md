@@ -278,17 +278,23 @@ Conformance: new types/choice_generic_diff.carbon / .diff.cpp (C++ oracle: class
 explicitly exercising the payload-free `.None`/monostate arm — PASS 79/110. The diff pair
 runtime-arbitrates SIZE, not alignment; alignment is pinned only by the lower goldens (R-1).
 
-S3a residual (crash-fix review, 2026-08-08) — a known wall this slice must clear:
-`ResolveSpecificDefinition` now guards self-recursive resolution with a placeholder
-(`InstBlockId::Empty`) mirroring `ResolveSpecificDecl`. Today's nested completion during that
-window only reads the class's complete-type witness, which is CONCRETE for every admissible
-generic choice (payload-carrying alternatives are rejected at handle_choice.cpp:628-631). Once
-S3b admits symbolic payloads, the witness read at type_completion.cpp:489 during the placeholder
-window will index the placeholder and hit the new `GetConstantInSpecific` bounds CHECK — a
-diagnosed crash (pre-guard it was a stack overflow), not a silent wrong answer, but S3b's
-sentinel/recompute design must resolve the witness without querying the in-progress definition
-region (the §2.2 eval-time recomputation path is the intended mechanism; verify it against this
-exact reentrancy shape).
+S3a residual (crash-fix review, 2026-08-08) — the wall this slice had to clear (amended at
+S3b landing, 2026-08-08: rewritten to record the LANDED mechanism, which REPLACES the S3a
+`InstBlockId::Empty` placeholder discipline and its "must not query the in-progress region"
+rule). `ResolveSpecificDefinition` now guards self-recursive resolution by INCREMENTAL
+PUBLICATION: the definition value block is pre-sized to the eval block (every entry `None`)
+and published on the specific BEFORE evaluation begins, and `TryEvalBlockForSpecific` writes
+each value into the published block as it is evaluated. A nested completion during resolution
+— the eval block's `require_complete_type` of the choice's own type, whose completion reads
+the class's complete-type witness, under S3b a symbolic-at-definition constant recomputed
+earlier in the eval block — legally reads the already-evaluated PREFIX of the block; that
+prefix read is the mechanism, not a violation. A GENUINE forward reference into the
+not-yet-evaluated suffix reads a `None` entry and hits a loud per-entry `has_value`
+CARBON_CHECK in `GetConstantInSpecific` (sem_ir/generic.cpp) rather than silently producing a
+wrong constant; the S3a bounds CHECK survives for the declaration-region placeholder shape.
+The §2.2 eval-time recomputation was verified against this exact reentrancy shape: the
+recomputed witness resolves before the `require_complete_type` entry that triggers the nested
+completion, so the read stays inside the evaluated prefix.
 
 ### S3c — payload destructuring on specifics + the sum_types.md example (M)
 
@@ -297,6 +303,11 @@ verification: `GetChoicePayloadInfo` and the bind pass's element access
 (handle_match.cpp:602-625) already consume specific-resolved types under Option B; this slice
 pins it, re-derives R-7 for substituted binding conversions (`case .Some(v: i64)` on an `i32`
 payload — same `DeferCleanups` shape as S2c), and closes exhaustiveness with payload arms.
+(S3b status of this surface, 2026-08-08: destructuring on a CONCRETE specific became reachable
+with S3b's table population and traces to WORKING through `GetChoicePayloadInfo`'s
+specific-resolved reads at both the case check and the bind pass, so S3b pins the minimal
+positive path — the destructure subfiles of choice/generic_payload.carbon (check) and
+lower/testdata/choice/generic_payload.carbon — and S3c keeps everything else in this scope.)
 Exit criteria: the sum_types.md:60-89 example compiles and runs with the doc's
 declaration/construction/match shapes verbatim, I/O adapted per R1 (match without `default`) —
 discharging S2e deviation (2); check golden match/choice_generic_payload_pattern.carbon
@@ -324,6 +335,15 @@ WITHDRAWN — S3a never touches the table (§2.5 i), and the table is unprinted 
 movement there is a stop-and-explain event. The stop-and-explain watchlist explicitly includes
 every C++-IMPORTED-CLASS check and lower golden (the blast radius if §2.2's predicate is wrong).
 
+(amended at S3b landing, 2026-08-08: the expected churn now ALSO includes ID-ONLY renumbering
+in the toolchain/check/testdata/basics/raw_sem_ir/* dumps. `ResolveSpecificDefinition`
+pre-allocates the definition value block BEFORE evaluation (the incremental-publication guard,
+see the amended S3a residual below), so every inst block allocated during a definition's
+evaluation shifts by one `InstBlockId` — an allocation-order shift that renumbers the raw
+dumps' IDs while leaving block CONTENTS unchanged. Reconciliation rule: any churn beyond pure
+renumbering, or in any golden outside the raw_sem_ir dumps — over and above the
+already-planned §6 flips and the new files — remains a stop-and-explain event.)
+
 ## 5. Risk register (falsifiable)
 
 -   **R-1. Stale-layout silent miscompile.** The §2.2 recompute is the load-bearing claim.
@@ -334,7 +354,13 @@ every C++-IMPORTED-CLASS check and lower golden (the blast radius if §2.2's pre
     alternative is largest. FALSIFIER: regions equal, zero-sized (sentinel leaked), or off the
     derived numbers. The differential pair catches SIZE at runtime; ALIGNMENT is arbitrated
     only by the lower goldens (the diff pair cannot observe it). Reviewer #2's brief: verify
-    the goldens discriminate (R-6 discipline).
+    the goldens discriminate (R-6 discipline). (amended at S3b landing, 2026-08-08: the landed
+    two_sizes artifact registers the falsifier over `Pair(T: type) { Both(x: T, y: T),
+    Neither }`, so the derived numbers re-derive as: `Pair(i32)` payload tuple `(i32, i32)` =
+    8 bytes, align 4 (`[8 x i8]`); `Pair(i64)` payload tuple `(i64, i64)` = 16 bytes, align 8
+    (`[16 x i8]`). The 4-byte single-payload case is covered by the optional subfile —
+    `Optional(i32)`'s `(i32,)` region, `[4 x i8]`. The falsifier itself — regions equal,
+    zero-sized, or off the derivation — is unchanged.)
 -   **R-2. Forced-completion gap at the scrutinee gate.** §2.1(2) claims the gate forces
     witness resolution before any repr read. FALSIFIERS — two real counter-programs, each an
     S3b subfile: (a) pointer-deref scrutinee, `fn F(p: P(Big)*) { match (*p) {...} }` — the
@@ -414,6 +440,14 @@ S3a-S3c**; the floor moves only by addition, exactly one new PASS program per sl
 choice_generic_diff pair counts as one program), S3c **80/0/31 over 111**
 (choice_generic_roundtrip_diff). Both quoted SKIPs stay, un-SKIPped by W5-S4 and W5-S3p
 respectively. Scoreboard regeneration rides each landing gate (R9); FAIL stays 0 throughout.
+
+(amended at S3b landing, 2026-08-08: the arithmetic above predates two additions that landed
+after this plan was written — S3a's types/choice_generic_roundtrip.carbon AND the
+exception-interop differential pair, which this ledger never counted. The PRE-S3B floor is
+therefore **79 PASS / 0 FAIL / 31 SKIP over 110**, and S3b's target is **80 PASS / 0 FAIL /
+31 SKIP over 111** (the choice_generic_diff pair, one program). The same +1 shift carries to
+S3c: **81/0/31 over 112**. The structural claims — no existing SKIP flips, the floor moves by
+addition only, FAIL stays 0 — are unchanged.)
 
 ## 9. R-7 cleanups
 

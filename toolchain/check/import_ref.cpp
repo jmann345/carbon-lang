@@ -4214,11 +4214,21 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
       resolver.import_ir().custom_layouts().Get(inst.layout_id).begin(),
       resolver.import_ir().custom_layouts().Get(inst.layout_id).end());
 
+  // Both blocks must be canonical: the constant store deduplicates by the raw
+  // block ids, and one imported constant is resolved once per *requesting*
+  // inst id — the generic's eval-block instruction and the canonical constant
+  // instruction of the same exported constant resolve separately. Fresh
+  // (non-canonical) blocks would mint a distinct local constant per request,
+  // and `RebuildGenericEvalBlock`'s per-entry map — keyed by the constant inst
+  // id — would then miss the payload-region entry when rebuilding the object
+  // representation `StructType` that refers to it (the `StructType` resolver's
+  // `AddCanonical` precedent).
   return ResolveResult::Deduplicated<SemIR::CustomLayoutType>(
       resolver,
       {.type_id = SemIR::TypeType::TypeId,
-       .fields_id = resolver.local_struct_type_fields().Add(new_fields),
-       .layout_id = resolver.local_ir().custom_layouts().Add(layout)});
+       .fields_id =
+           resolver.local_struct_type_fields().AddCanonical(new_fields),
+       .layout_id = resolver.local_ir().custom_layouts().AddCanonical(layout)});
 }
 
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
@@ -4373,6 +4383,19 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
                  .element_type_inst_id = elem_const_inst_id});
 }
 
+static auto TryResolveTypedInst(ImportRefResolver& resolver,
+                                SemIR::UninitializedValue inst)
+    -> ResolveResult {
+  auto type_id = GetLocalConstantId(resolver, inst.type_id);
+  if (resolver.HasNewWork()) {
+    return ResolveResult::Retry();
+  }
+
+  return ResolveResult::Deduplicated<SemIR::UninitializedValue>(
+      resolver,
+      {.type_id = resolver.local_types().GetTypeIdForTypeConstantId(type_id)});
+}
+
 template <typename VarPatternT>
   requires SemIR::Internal::HasInstCategory<SemIR::AnyVarPattern, VarPatternT>
 static auto TryResolveTypedInst(ImportRefResolver& resolver, VarPatternT inst)
@@ -4459,6 +4482,26 @@ static auto TryResolveInstCanonical(ImportRefResolver& resolver,
     // declarations.
     CARBON_CHECK(resolver.import_insts().Is<SemIR::AnyBinding>(inst_id),
                  "TryResolveInst on non-constant instruction {0}", inst_id);
+    // A binding is not itself a constant — it binds a value-category result —
+    // but the value it binds can be one: a choice alternative's wrapper
+    // binding binds the alternative constant (symbolic in a generic choice's
+    // scope), and a file-scope `let` can bind a constant initializer. Resolve
+    // the imported reference to the bound value's constant, so cross-file
+    // uses can see through the binding the way local uses do: both the
+    // member-access specific wrap (`LookupMemberNameInScope`) and lowering's
+    // `NameRef` peek-through read a LOCAL binding's bound value, and neither
+    // can look through an `ImportRefLoaded` to another file's binding.
+    // Resolving the bound value's own instruction (rather than its raw
+    // constant) preserves a symbolic constant's generic attachment, which the
+    // specific wrap needs to resolve the constant per specific. A binding
+    // whose bound value is non-constant — a runtime `let` — still has no
+    // importable value.
+    auto binding = resolver.import_insts().GetAs<SemIR::AnyBinding>(inst_id);
+    if (binding.value_id.has_value() &&
+        resolver.import_constant_values().Get(binding.value_id).is_constant()) {
+      return ResolveResult::RetryOrDone(
+          resolver, GetLocalConstantId(resolver, binding.value_id));
+    }
     return ResolveResult::Done(SemIR::ConstantId::NotConstant);
   }
 
@@ -4685,6 +4728,9 @@ static auto TryResolveInstCanonical(ImportRefResolver& resolver,
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::UnboundElementType inst): {
+      return TryResolveTypedInst(resolver, inst);
+    }
+    case CARBON_KIND(SemIR::UninitializedValue inst): {
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::ValueBindingPattern inst): {

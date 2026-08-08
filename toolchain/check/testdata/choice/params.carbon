@@ -37,22 +37,25 @@ fn Construct(n: i32) -> C {
   return C.Alt2(n, 9);
 }
 
-// --- fail_todo_generic_params.carbon
+// --- generic_params.carbon
 library "[[@TEST_NAME]]";
 
+// A symbolic payload type synthesizes (W5-S3b): the single-alternative choice
+// defines and constructs — its discriminant is the empty tuple — though
+// matching a fewer-than-two-alternatives specific stays gated (W-068).
 choice C(T: type) {
-  // CHECK:STDERR: fail_todo_generic_params.carbon:[[@LINE+4]]:6: error: semantics TODO: `choice alternative payload with generic or Self-dependent type` [SemanticsTodo]
-  // CHECK:STDERR:   Alt(a: T)
-  // CHECK:STDERR:      ^~~~~~
-  // CHECK:STDERR:
   Alt(a: T)
+}
+
+fn Make(n: i32) -> C(i32) {
+  return C(i32).Alt(n);
 }
 
 // --- fail_todo_self_param.carbon
 library "[[@TEST_NAME]]";
 
 choice C {
-  // CHECK:STDERR: fail_todo_self_param.carbon:[[@LINE+4]]:6: error: semantics TODO: `choice alternative payload with generic or Self-dependent type` [SemanticsTodo]
+  // CHECK:STDERR: fail_todo_self_param.carbon:[[@LINE+4]]:6: error: semantics TODO: `choice alternative payload with Self-dependent type` [SemanticsTodo]
   // CHECK:STDERR:   Alt(a: Self*)
   // CHECK:STDERR:      ^~~~~~~~~~
   // CHECK:STDERR:

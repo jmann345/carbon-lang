@@ -101,15 +101,25 @@ static auto GetConstantInSpecific(const File& specific_ir,
   }
   auto value_block = specific_ir.inst_blocks().Get(value_block_id);
   // An in-range index is an invariant of a resolved region. An out-of-range
-  // index means the region's value block is still a resolution-in-progress
-  // placeholder (see `ResolveSpecificDefinition`), and reading through it
-  // would silently produce a wrong constant.
+  // index means the region's value block is still a declaration-resolution
+  // placeholder (see `ResolveSpecificDecl`), and reading through it would
+  // silently produce a wrong constant.
   CARBON_CHECK(static_cast<size_t>(symbolic.index.index()) < value_block.size(),
                "Queried {0} in {1}, outside the specific's value block (size "
                "{2}); the region's resolution may still be in progress.",
                symbolic.index, specific_id, value_block.size());
-  return {&specific_ir, specific_ir.constant_values().Get(
-                            value_block[symbolic.index.index()])};
+  auto value_inst_id = value_block[symbolic.index.index()];
+  // While a definition region is being resolved, its value block is pre-sized
+  // and filled in as evaluation proceeds (see `ResolveSpecificDefinition`):
+  // an already-evaluated prefix value is valid to read — a nested type
+  // completion during resolution reads the class's complete-type witness this
+  // way — but a `None` entry is a forward reference into the in-progress
+  // suffix, and reading through it would silently produce a wrong constant.
+  CARBON_CHECK(value_inst_id.has_value(),
+               "Queried {0} in {1} before it was evaluated; the region's "
+               "resolution is still in progress.",
+               symbolic.index, specific_id);
+  return {&specific_ir, specific_ir.constant_values().Get(value_inst_id)};
 }
 
 auto GetConstantValueInSpecific(const File& sem_ir, SpecificId specific_id,

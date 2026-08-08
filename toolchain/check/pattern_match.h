@@ -104,13 +104,15 @@ auto MatchCasePatternMatch(Context& context, SemIR::InstId pattern_id,
                            SemIR::InstId scrutinee_id,
                            Parse::NodeId case_node_id) -> SemIR::InstId;
 
-// If `type_id` is a complete, non-generic choice type whose discriminant is
-// an integer field, returns the discriminant's type; returns nullopt
-// otherwise. This is the in-slice choice scrutinee shape: choices with fewer
-// than two alternatives have an empty-tuple discriminant, and specifics of
-// generic choices are out of slice 1 (alternative name-to-index metadata is
-// scoped to concrete choices, plan section 2.2c), so both stay behind the
-// scrutinee TODO. Uses the `Class::is_choice` entity flag, never the
+// If `type_id` is a complete choice type — including a specific of a generic
+// choice — whose discriminant is an integer field, returns the discriminant's
+// type; returns nullopt otherwise. This is the in-slice choice scrutinee
+// shape: choices with fewer than two alternatives have an empty-tuple
+// discriminant, so they stay behind the scrutinee TODO. The object
+// representation is read through `class_type->specific_id`, so a specific's
+// repr arrives substituted; the `MatchCondition` scrutinee gate forces the
+// specific's definition resolution (`RequireCompleteType`) before this runs
+// (see handle_match.cpp). Uses the `Class::is_choice` entity flag, never the
 // representation's spelling.
 auto GetChoiceDiscriminantType(Context& context, SemIR::TypeId type_id)
     -> std::optional<SemIR::TypeId>;

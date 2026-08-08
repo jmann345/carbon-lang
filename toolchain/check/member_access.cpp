@@ -335,18 +335,33 @@ static auto LookupMemberNameInScope(Context& context, SemIR::LocId loc_id,
                context.insts().Get(result.scope_result.target_inst_id()));
 
   // If the named entity has a constant value that depends on its specific,
-  // store the specific too.
-  if (result.specific_id.has_value() &&
-      context.constant_values()
-          .Get(result.scope_result.target_inst_id())
-          .is_symbolic()) {
-    result.scope_result = SemIR::ScopeLookupResult::MakeFound(
-        GetOrAddInst<SemIR::SpecificConstant>(
-            context, loc_id,
-            {.type_id = type_id,
-             .inst_id = result.scope_result.target_inst_id(),
-             .specific_id = result.specific_id}),
-        SemIR::AccessKind::Public);
+  // store the specific too. A `WrapperBinding` member — such as a choice's
+  // payload-free alternative constant — is itself not a constant (it binds a
+  // value-category result), but the value it binds can be a symbolic constant
+  // of the scope's generic; the specific applies to that bound value. Without
+  // capturing it here the specific would be lost: consumers of the `NameRef`
+  // (in particular lowering's binding peek-through) only know the enclosing
+  // function's specific, not this scope's.
+  if (result.specific_id.has_value()) {
+    auto target_inst_id = result.scope_result.target_inst_id();
+    auto specific_value_id = SemIR::InstId::None;
+    if (context.constant_values().Get(target_inst_id).is_symbolic()) {
+      specific_value_id = target_inst_id;
+    } else if (auto wrapper = context.insts().TryGetAs<SemIR::WrapperBinding>(
+                   target_inst_id);
+               wrapper && wrapper->value_id.has_value() &&
+               context.constant_values().Get(wrapper->value_id).is_symbolic()) {
+      specific_value_id = wrapper->value_id;
+    }
+    if (specific_value_id.has_value()) {
+      result.scope_result = SemIR::ScopeLookupResult::MakeFound(
+          GetOrAddInst<SemIR::SpecificConstant>(
+              context, loc_id,
+              {.type_id = type_id,
+               .inst_id = specific_value_id,
+               .specific_id = result.specific_id}),
+          SemIR::AccessKind::Public);
+    }
   }
 
   // TODO: Use a different kind of instruction that also references the

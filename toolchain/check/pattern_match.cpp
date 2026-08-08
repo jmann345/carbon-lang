@@ -363,7 +363,7 @@ auto GetChoiceDiscriminantType(Context& context, SemIR::TypeId type_id)
   auto unqualified_type_id = context.types().GetUnqualifiedType(type_id);
   auto class_type =
       context.types().TryGetAsIfValid<SemIR::ClassType>(unqualified_type_id);
-  if (!class_type || class_type->specific_id.has_value()) {
+  if (!class_type) {
     return std::nullopt;
   }
   const auto& class_info = context.classes().Get(class_type->class_id);

@@ -1,1 +1,1 @@
-S2e gate retry 2: BUILD dep added to the check target (previous edit hit the context target).
+2026-08-08T09:22:09Z gate re-fire for S3a (crash fix + symbolic_specific re-author; fixpoint at d4262a64)

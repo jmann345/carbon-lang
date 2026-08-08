@@ -1,1 +1,1 @@
-Conformance-depth: run the suite with the new exception-boundary differential pair; expect 78 PASS / 0 FAIL / 31 SKIP over 109.
+2026-08-08T09:23:43Z conformance for S3a landing (gate 48 green at a46fc7b; expect 79/0/31 over 110)

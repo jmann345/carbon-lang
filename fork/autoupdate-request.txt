@@ -1,1 +1,1 @@
-2026-08-08T07:52:07Z autoupdate for S3a crash fix (recursion guard + WrapperBinding specific)
+2026-08-08T07:54:10Z R26 pass 2 fixpoint verification for S3a (expect zero churn)

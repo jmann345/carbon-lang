@@ -63,13 +63,19 @@ jobs:
 
       - name: Build toolchain
         run: |
-          ./scripts/run_bazel.py build -c opt //toolchain/install:prefix_root
+          ./scripts/run_bazel.py build -c opt //toolchain/install:carbon_toolchain_tar
 
       - name: Run conformance suite
         run: |
           set -euo pipefail
+          rm -rf /tmp/conformance-toolchain
+          mkdir -p /tmp/conformance-toolchain
+          tar xf bazel-bin/toolchain/install/carbon_toolchain-*.tar \
+            -C /tmp/conformance-toolchain
+          CARBON=$(echo /tmp/conformance-toolchain/carbon_toolchain-*/bin/carbon)
+          "$CARBON" version
           python3 fork/conformance/runner.py \
-            --toolchain bazel-bin/toolchain/install/prefix_root/bin/carbon \
+            --toolchain "$CARBON" \
             | tee /tmp/conformance-output.txt
           # Fail loudly on any FAIL-class result. The runner script exits
           # zero as long as it ran; the scoreboard is the verdict.

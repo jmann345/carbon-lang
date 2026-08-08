@@ -1,1 +1,1 @@
-S2d conformance: run the suite against this tree; expected floor 77 PASS / 0 FAIL / 31 SKIP (108 programs).
+S2d conformance retry (workflow target fix): expected floor 77 PASS / 0 FAIL / 31 SKIP (108 programs).

@@ -346,7 +346,13 @@ The prelude will provide the implementations when `Core.Result` and the
 match-reconstruct style — destructure `self`, rebuild the carrier
 alternative in return position — because choices have no `Core.Copy` impl,
 so the earlier `fn Branch(self) -> ... { return self; }` sketch would
-value-copy a choice (amended 2026-08-08 per fork/b1/plan.md §2.6):
+value-copy a choice (amended 2026-08-08 per fork/b1/plan.md §2.6). Each
+`Branch` body also ends with an unreachable trailing return (amended
+2026-08-08, second round): the checker's reachability analysis does not
+consult match exhaustiveness, so an exhaustive `match` alone leaves the
+function end reachable — and in a generic body, where no `ControlFlow`
+value is otherwise conjurable, the trailing return is the
+interface-recursive call:
 
 ```carbon
 final impl forall [T: type, E: type] Result(T, E) as Try
@@ -356,6 +362,9 @@ final impl forall [T: type, E: type] Result(T, E) as Try
       case .Ok(v: T) => { return ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return ControlFlow(T, E).Break(e); }
     }
+    // Unreachable-terminator idiom: reachability doesn't consult match
+    // exhaustiveness.
+    return self.(Try.Branch)();
   }
   fn FromBreak(b: E) -> Self { return Result(T, E).Err(b); }
 }
@@ -367,6 +376,9 @@ final impl forall [T: type] Optional(T) as Try
       case .Some(v: T) => { return ControlFlow(T, ()).Continue(v); }
       case .None => { return ControlFlow(T, ()).Break(()); }
     }
+    // Unreachable-terminator idiom: reachability doesn't consult match
+    // exhaustiveness.
+    return self.(Try.Branch)();
   }
   fn FromBreak(b: ()) -> Self { return Optional(T).None(); }
 }

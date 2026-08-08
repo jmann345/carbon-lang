@@ -482,6 +482,9 @@ Trace of every choice-valued flow in the `?` design:
           case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
           case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
         }
+        // Unreachable-terminator idiom: reachability doesn't consult match
+        // exhaustiveness.
+        return self.(Core.Try.Branch)();
       }
       fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
     }
@@ -493,6 +496,22 @@ Trace of every choice-valued flow in the `?` design:
     in place (S3b), exhaustive match without `default` (S2e). A fail golden pins
     the `return self` shape's CopyOfUncopyableType so the bound is visible, not
     latent (§3 B1b exit criteria; risk R-5).
+
+    **Trailing-return amendment (B1b as landed, 2026-08-08, second fix
+    round).** The match-reconstruct rule as first written omitted a
+    requirement the first full autoupdate surfaced: the checker's
+    reachability analysis does NOT consult match exhaustiveness (the
+    S3a/S3c convention), so a function ending in an exhaustive `match` —
+    every `Branch` body above, and any function like it — still diagnoses
+    `MissingReturnStatement`. Every match-reconstruct body therefore ends
+    with an unreachable trailing return, in one of two idioms, each
+    commented at the site as the unreachable-terminator idiom: (i) GENERIC
+    bodies (no `ControlFlow(T, E)` value is conjurable) use the
+    interface-recursive call `return self.(Core.Try.Branch)();`
+    (arbiter-verified); (ii) CONCRETE contexts (for example a function returning
+    `MyResult(i32, i32)` that ends in an exhaustive match) use a dead
+    constructible value, `return MyResult(i32, i32).Err(0);` style. The
+    doc's impl sketches carry the same dated amendment.
 
 Verdict: the `?` desugar itself never value-copies a choice; the Copy gap
 constrains impl-body STYLE, which this plan adopts explicitly and pins. Choice

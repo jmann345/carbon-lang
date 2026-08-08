@@ -33,10 +33,12 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-  // CHECK:STDERR: propagate.carbon:[[@LINE+4]]:3: error: missing `return` at end of function with declared return type [MissingReturnStatement]
-  // CHECK:STDERR:   }
-  // CHECK:STDERR:   ^
-  // CHECK:STDERR:
+    // Unreachable-terminator idiom (fork/b1/plan.md §2.6, dated amendment):
+    // reachability analysis does not consult match exhaustiveness, so an
+    // exhaustive match still needs a trailing terminator; in a generic body
+    // no `ControlFlow(T, E)` value is conjurable, so recurse through the
+    // interface.
+    return self.(Core.Try.Branch)();
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
 }
@@ -90,10 +92,9 @@ fn InArm(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
     }
     case .Err(e: i32) => { return MyResult(i32, i32).Err(e); }
   }
-// CHECK:STDERR: propagate.carbon:[[@LINE+4]]:1: error: missing `return` at end of function with declared return type [MissingReturnStatement]
-// CHECK:STDERR: }
-// CHECK:STDERR: ^
-// CHECK:STDERR:
+  // Unreachable trailing return (reachability doesn't consult match
+  // exhaustiveness — fork/b1/plan.md §2.6): a dead constructible value.
+  return MyResult(i32, i32).Err(0);
 }
 
 // `?` inside both arms of an `if` expression: branched CFG at region
@@ -119,10 +120,10 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-  // CHECK:STDERR: two_specifics.carbon:[[@LINE+4]]:3: error: missing `return` at end of function with declared return type [MissingReturnStatement]
-  // CHECK:STDERR:   }
-  // CHECK:STDERR:   ^
-  // CHECK:STDERR:
+    // Unreachable-terminator idiom (fork/b1/plan.md §2.6): reachability
+    // doesn't consult match exhaustiveness; no generic `ControlFlow(T, E)`
+    // value is conjurable, so recurse through the interface.
+    return self.(Core.Try.Branch)();
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
 }
@@ -228,10 +229,10 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-  // CHECK:STDERR: convert.carbon:[[@LINE+4]]:3: error: missing `return` at end of function with declared return type [MissingReturnStatement]
-  // CHECK:STDERR:   }
-  // CHECK:STDERR:   ^
-  // CHECK:STDERR:
+    // Unreachable-terminator idiom (fork/b1/plan.md §2.6): reachability
+    // doesn't consult match exhaustiveness; no generic `ControlFlow(T, E)`
+    // value is conjurable, so recurse through the interface.
+    return self.(Core.Try.Branch)();
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
 }

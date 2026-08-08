@@ -561,6 +561,13 @@ EqWith-needing discriminant test — plus fail_question.carbon on the full
 prelude), and §2.3's type-position sub-decision is amended: binding-type-
 annotation positions take the region-policy rejection (the annotation IS a
 captured region), depth-1 type operands keep the missing-impl rejection.
+Second fix round, same day: reachability analysis does not consult match
+exhaustiveness (the S3a/S3c convention), so every match-reconstruct body
+ends with an unreachable trailing return — the interface-recursive
+`return self.(Core.Try.Branch)();` in generic bodies (where no carrier
+value is conjurable), a dead constructible value in concrete ones — per
+plan §2.6's dated trailing-return amendment; the doc's impl sketches
+carry the same amendment.
 _The impl-style rule (digest item 5):_ match-reconstruct `Branch` bodies
 throughout (testdata, conformance, the doc's amended impl sketches); the
 `return r` choice-binding CopyOfUncopyableType bound is pinned (R-5).

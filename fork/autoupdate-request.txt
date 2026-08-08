@@ -1,1 +1,1 @@
-S2e R26 pass 2: verify fixpoint after 5652cc0 + trunk merge (expect empty or loc-only).
+S2e autoupdate pass-2 retry after the three-way push race (reconciliation lost the ref race; regenerate to fixpoint).

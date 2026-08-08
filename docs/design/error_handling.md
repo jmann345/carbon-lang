@@ -264,12 +264,14 @@ innermost enclosing function. Both `S` and `R` must implement
 
 ```carbon
 // Desugaring of `expr?`; `__v` and `__b` are compiler-internal names.
+// `Branch` returns the `Core.ControlFlow` branch carrier (see "The
+// `Core.Try` interface"; amended 2026-08-08 with the B1 restaging).
 match (expr.(Core.Try.Branch)()) {
-  case .Ok(__v: S.(Core.Try.ContinueType)) => {
+  case .Continue(__v: S.(Core.Try.ContinueType)) => {
     // `__v` becomes the value of the whole `expr?` expression, in place in
     // the enclosing statement.
   }
-  case .Err(__b: S.(Core.Try.BreakType)) => {
+  case .Break(__b: S.(Core.Try.BreakType)) => {
     // `__b` implicitly converts to `R.(Core.Try.BreakType)`;
     // see "Error conversion".
     return R.(Core.Try.FromBreak)(__b);
@@ -303,10 +305,27 @@ Consequences of defining `?` by this desugaring:
 ### The `Core.Try` interface
 
 `?` is open to types other than `Result` through a prelude interface, in the
-same way arithmetic operators are open through their operator interfaces:
+same way arithmetic operators are open through their operator interfaces.
+*(Amended 2026-08-08 with the B1 restaging, fork/b1/plan.md §2.2: `Branch`
+returns a dedicated prelude branch-carrier choice, `Core.ControlFlow`,
+instead of `Result(...)` — minting `Core.Result` before the SF-9 round would
+preempt that decision, while the carrier is internal to the `Try` contract
+and preserves the desugar semantics exactly. The parameter order
+`ControlFlow(C, B)` is continue-first, matching `Try`'s associated-constant
+order; this deliberately diverges from Rust's break-first
+`ControlFlow<B, C>` and is recorded in the divergence-risk register.)*
 
 ```carbon
-// In package Core.
+// In package Core (library "prelude/try", landed at B1).
+
+// The branch carrier returned by `Try.Branch`. The alternative order fixes
+// the discriminants — `Continue` = 0, `Break` = 1 — which the `?` desugar's
+// discriminant test depends on.
+choice ControlFlow(C: type, B: type) {
+  Continue(value: C),
+  Break(value: B)
+}
+
 interface Try {
   // The type produced by `expr?` on the success path.
   let ContinueType: type;
@@ -314,33 +333,72 @@ interface Try {
   let BreakType: type;
 
   // Splits `self` into continue-or-break.
-  fn Branch(self) -> Result(ContinueType, BreakType);
+  fn Branch(self) -> ControlFlow(ContinueType, BreakType);
   // Rebuilds a value of `Self` from a propagated break value. Used on the
   // *return type* of the enclosing function.
   fn FromBreak(b: BreakType) -> Self;
 }
 ```
 
-The prelude provides the implementations:
+The prelude will provide the implementations when `Core.Result` and the
+`Core.Optional` rebuild land (the post-SF-9 W5-S3p stage; see
+[Implementation staging](#implementation-staging)). Their bodies use the
+match-reconstruct style — destructure `self`, rebuild the carrier
+alternative in return position — because choices have no `Core.Copy` impl,
+so the earlier `fn Branch(self) -> ... { return self; }` sketch would
+value-copy a choice (amended 2026-08-08 per fork/b1/plan.md §2.6). Each
+`Branch` body also ends with an unreachable trailing return (amended
+2026-08-08, second round): the checker's reachability analysis does not
+consult match exhaustiveness, so an exhaustive `match` alone leaves the
+function end reachable — and in a generic body, where no `ControlFlow`
+value is otherwise conjurable, the trailing return diverges through a
+helper (corrected 2026-08-08, third round: the earlier interface-recursive
+`return self.(Try.Branch)();` does not type-check — the recursive call's
+return type carries associated-constant projections,
+`ControlFlow(Result(T, E).(Try.ContinueType), ...)`, which are not reduced
+by the impl's own `where` rewrites, so it does not convert to the declared
+`ControlFlow(T, E)`; the helper's return type is exactly the annotation):
 
 ```carbon
+// Unreachable trailing-return helper: returns a value of any type by never
+// returning.
+fn Diverge(generic T2: type) -> T2 { return Diverge(T2); }
+
 final impl forall [T: type, E: type] Result(T, E) as Try
     where .ContinueType = T and .BreakType = E {
-  fn Branch(self) -> Result(T, E) { return self; }
-  fn FromBreak(b: E) -> Self { return .Err(b); }
+  fn Branch(self) -> ControlFlow(T, E) {
+    match (self) {
+      case .Ok(v: T) => { return ControlFlow(T, E).Continue(v); }
+      case .Err(e: E) => { return ControlFlow(T, E).Break(e); }
+    }
+    // Unreachable-terminator idiom: reachability doesn't consult match
+    // exhaustiveness.
+    return Diverge(ControlFlow(T, E));
+  }
+  fn FromBreak(b: E) -> Self { return Result(T, E).Err(b); }
 }
 
 final impl forall [T: type] Optional(T) as Try
     where .ContinueType = T and .BreakType = () {
-  fn Branch(self) -> Result(T, ()) {
+  fn Branch(self) -> ControlFlow(T, ()) {
     match (self) {
-      case .Some(v: T) => { return .Ok(v); }
-      case .None => { return .Err(()); }
+      case .Some(v: T) => { return ControlFlow(T, ()).Continue(v); }
+      case .None => { return ControlFlow(T, ()).Break(()); }
     }
+    // Unreachable-terminator idiom: reachability doesn't consult match
+    // exhaustiveness.
+    return Diverge(ControlFlow(T, ()));
   }
-  fn FromBreak(b: ()) -> Self { return .None; }
+  fn FromBreak(b: ()) -> Self { return Optional(T).None(); }
 }
 ```
+
+The `Optional` impl additionally needs a unit break type: `BreakType = ()`
+requires a `ControlFlow(T, ())` specific, which the current SF-6 payload
+restriction rejects (tuples, including `()`, are not admissible payloads).
+That bound is recorded as an open work item at the B1 landing; W5-S3p
+decides between admitting the zero-sized `()` payload and giving the
+`Optional` impl a scalar break carrier (fork/b1/plan.md §2.7).
 
 The `Optional` impl depends on `Core.Optional` being a payload-carrying choice
 type with alternatives `.Some(value: T)` and `.None`. Today's prelude
@@ -732,9 +790,9 @@ for every stage.
 | Stage  | Contents                                                                                        | Depends on                                                                                                                                                     |
 | ------ | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **B0** | `--cpp-exceptions` option; fenced thunks; boundary terminate semantics                           | Nothing — implementable now; replaces today's undefined behavior                                                                                                |
-| **B1** | `Core.Result` in the prelude; consumption by way of `match` (and F-011 forms when they land)           | `match` semantics and choice-alternative payloads, both currently unimplemented in check; `Core.Optional` rebuilt as a payload-carrying choice type (see below) |
-| **B2** | Postfix `?`; `Core.Try`; `ImplicitAs` error conversion; `Run` `Result` signatures                | B1                                                                                                                                                              |
-| **B3** | Catching thunks; `Cpp.Exception` synthesis into the `Cpp` package; `Carbon::expected` export and support header | B0-B2                                                                                                                                                           |
+| **B1** (restaged 2026-08-08) | `Core.Try`, postfix `?`, `ImplicitAs` error conversion, arbitrated over user-defined choice types (with the `Core.ControlFlow` branch carrier); original B1's `match` consumption already landed for user choices at W5-S2/S3 | `match` semantics and choice-alternative payloads (landed, W5-S2/S3) |
+| **W5-S3p** (the original B1/B2 prelude halves, post-SF-9) | Prelude `Core.Result(T, E)` and its `Try` impl; the `Core.Optional` rebuild and its `Try` impl; the `Run` `Result` signatures; the unit-break-type resolution | SF-9 — the `Core.Optional` identity decision and "how `Core.Result(T, E)` relates" (fork/decision-log.md OPEN forks; restaging recorded in fork/b1/plan.md §0.2/§2.1) |
+| **B3** | Catching thunks; `Cpp.Exception` synthesis into the `Cpp` package; `Carbon::expected` export and support header | B0, B1, W5-S3p                                                                                                                                                  |
 
 Dependency notes, stated plainly:
 
@@ -747,13 +805,16 @@ Dependency notes, stated plainly:
 -   **`Core.Optional` rebuild.** The prelude `Optional` is today a placeholder
     class, not a choice type. The [`Try` impl for `Optional`](#the-coretry-interface)
     and every `.Some`/`.None` pattern in this document require it to become a
-    payload-carrying choice; that rebuild is part of the choice-payloads work
-    B1 depends on.
+    payload-carrying choice; that rebuild rides the SF-9 decision at W5-S3p
+    (restaged 2026-08-08 — the choice-payloads machinery itself landed at
+    W5-S2/S3).
 -   **`Cpp.Exception` synthesis.** Carbon source cannot declare into the `Cpp`
     package, so B3 must add a toolchain mechanism that synthesizes the type
     into the `Cpp` scope (as for the built-in file-less C++ entities).
 
-Until B1's dependencies land, `Result` cannot be defined or consumed; until
+Until the W5-S3p stage lands, prelude `Core.Result` cannot be defined or
+consumed (user-defined `Result`-shaped choices, and `?` over them, work as of
+the restaged B1); until
 F-011's implementation lands, the `let ... else` / `if (let ...)` consumption
 forms are design-only. Windows support will additionally need the boundary
 thunks reworked for MSVC's exception model; that changes the thunk

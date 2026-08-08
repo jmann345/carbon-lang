@@ -270,7 +270,16 @@ two parsing routes, pinned by a fail parse golden. Type-position `?`
 expression and is rejected in CHECK by the ordinary missing-impl diagnostic (`type`
 does not implement `Core.Try`) — no parse-level ban, recorded as a sub-decision
 (approval-gate item 6; the doc's "never appears in type position" is enforced
-semantically, which also keeps error recovery uniform).
+semantically, which also keeps error recovery uniform). AMENDED as landed at
+B1b (2026-08-08): the §2.4 region-position policy (added by the same plan
+revision) fires FIRST for binding type annotations — a type annotation is a
+captured expression region, so `var x: i32?` diagnoses
+`QuestionInPatternContext`, not the missing-impl pair; the missing-impl
+rejection remains the observed behavior for type-valued operands at region
+depth 1 (statement position `i32?;`, pinned in fail_question.carbon's
+fail_operand_not_try subfile beside the annotation pin in
+fail_pattern_positions). The sub-decision's substance — rejected in check,
+not parse — is unchanged.
 
 Check-side, B1a registers the `HandleParseNode(Context&, Parse::
 PostfixOperatorQuestionId)` handler emitting a NEW gate string —
@@ -295,7 +304,13 @@ paragraph after the list — and the region-position policy is new):
     the declared return FORM is not `InitForm` (return.cpp:202-236's `RefForm`
     and `SymbolicBinding` paths) → `QuestionNonInitReturnForm` — the desugar
     supports ordinary value-returning functions only, rejected up front rather
-    than surfacing a conversion failure deep in the return machinery; finally the
+    than surfacing a conversion failure deep in the return machinery; a
+    `returned var` in scope → `QuestionInReturnedVarScope` (added at the B1b
+    fix round, 2026-08-08: the break path returns through the
+    initializing-expression form the `returned var` discipline forbids —
+    without this check `?` reached `BuildReturnWithExpr` mid-desugar and
+    emitted the nonsense `ReturnExprWithReturnedVar` AFTER CFG existed,
+    contradicting this step's before-any-emission claim); finally the
     **return-type `Try` witness pre-flight**: resolve `Core.Try`'s facet type
     (`LookupNameInCore` + `FacetTypeFromInterface`, the `GetAssociatedValueImpl`
     shape, member_access.cpp:730-740) and run `LookupImplWitness` against the
@@ -402,8 +417,18 @@ lower today); the lower golden pins the emitted CFG, not new code.
     have a declared return type that implements `Core.Try` `` (+ the existing
     no-return-type note).
 -   `QuestionNonInitReturnForm`, Error: `` `?` cannot be used in a function whose
-    return uses a `ref` or expression form `` (+ the return-form-here note shape,
-    return.cpp:113-114; revised after plan review, 2026-08-08).
+    return uses a `ref` form or a symbolic form `` (+ the return-form-here note
+    shape, return.cpp:113-114; revised after plan review, 2026-08-08; re-worded
+    at the B1b fix round, 2026-08-08: a symbolic form (`->? Fm`) is not an
+    "expression form", and concrete initializing `->?` forms are accepted — the
+    message now names the two rejected shapes, `RefForm` and `SymbolicBinding`,
+    accurately).
+-   `QuestionInReturnedVarScope`, Error (added at the B1b fix round,
+    2026-08-08, the seventh B1b diagnostic): `` `?` cannot be used in the scope
+    of a `returned var`; `?` returns through an initializing expression `` (+
+    the existing `returned var`-declared-here note, return.cpp's
+    NoteReturnedVar, exported for reuse). Pre-flight-checked before the
+    return-type `Try` witness lookup, so the rejection consults no impl.
 -   `QuestionOperandNotTry`, Context (attached to the Branch impl-lookup failure —
     live on this path per §2.4 step 3): `` operand of `?` does not implement
     `Core.Try` ``.
@@ -450,6 +475,10 @@ Trace of every choice-valued flow in the `?` design:
     the `ControlFlow` alternative by way of constructor call in the return position:
 
     ```carbon
+    // Testdata-local unreachable trailing-return helper (see the
+    // trailing-return amendment below).
+    fn Diverge(generic T2: type) -> T2 { return Diverge(T2); }
+
     impl forall [T: type, E: type] MyResult(T, E) as Core.Try
         where .ContinueType = T and .BreakType = E {
       fn Branch(self) -> Core.ControlFlow(T, E) {
@@ -457,6 +486,9 @@ Trace of every choice-valued flow in the `?` design:
           case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
           case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
         }
+        // Unreachable-terminator idiom: reachability doesn't consult match
+        // exhaustiveness.
+        return Diverge(Core.ControlFlow(T, E));
       }
       fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
     }
@@ -468,6 +500,41 @@ Trace of every choice-valued flow in the `?` design:
     in place (S3b), exhaustive match without `default` (S2e). A fail golden pins
     the `return self` shape's CopyOfUncopyableType so the bound is visible, not
     latent (§3 B1b exit criteria; risk R-5).
+
+    **Trailing-return amendment (B1b as landed, 2026-08-08, second fix
+    round; idiom (i) corrected in the third fix round, same day — see
+    below).** The match-reconstruct rule as first written omitted a
+    requirement the first full autoupdate surfaced: the checker's
+    reachability analysis does NOT consult match exhaustiveness (the
+    S3a/S3c convention), so a function ending in an exhaustive `match` —
+    every `Branch` body above, and any function like it — still diagnoses
+    `MissingReturnStatement`. Every match-reconstruct body therefore ends
+    with an unreachable trailing return, in one of two idioms, each
+    commented at the site as the unreachable-terminator idiom: (i) GENERIC
+    bodies (no `ControlFlow(T, E)` value is conjurable) diverge through a
+    testdata-local helper, `fn Diverge(generic T2: type) -> T2 { return
+    Diverge(T2); }` / `return Diverge(Core.ControlFlow(T, E));` — the
+    explicit-generic-param self-recursion is the arbiter-verified
+    function/generic/deduce.carbon `ExplicitGenericParam` shape, declared
+    once per split/program, NOT in the prelude; (ii) CONCRETE contexts (for
+    example a function returning `MyResult(i32, i32)` that ends in an
+    exhaustive match) use a dead constructible value,
+    `return MyResult(i32, i32).Err(0);` style. The doc's impl sketches
+    carry the same dated amendment.
+
+    **Third fix round correction (2026-08-08): the second round's idiom (i)
+    — the interface-recursive `return self.(Core.Try.Branch)();` — is
+    SUPERSEDED; it does not type-check.** The regen pinned why: the
+    recursive call's return type substitutes to
+    `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType),
+    MyResult(T, E).(Core.Try.BreakType))`, and those associated-constant
+    PROJECTIONS are not reduced under the impl's own `where` rewrites
+    (`.ContinueType = T and .BreakType = E`) while the impl is being
+    checked, so the value does not implicitly convert to the declared
+    `Core.ControlFlow(T, E)` — a ConversionFailure at every generic
+    `Branch` body. The `Diverge` helper's return type is exactly the
+    annotation (`T2` substituted with `Core.ControlFlow(T, E)` at the call),
+    so no projection is involved.
 
 Verdict: the `?` desugar itself never value-copies a choice; the Copy gap
 constrains impl-body STYLE, which this plan adopts explicitly and pins. Choice
@@ -564,6 +631,24 @@ Exit criteria:
     user `ImplicitAs` impl (D3 pin), plus the no-conversion fail pin; `?` inside a
     generic function body (symbolic `R`) — scoped IN like S3a's R-8 with the same
     narrowing rule (instability re-gates it behind a precise TODO, not the slice).
+    NARROWED as landed (2026-08-08, third fix round — the pre-declared rule
+    exercised): the symbolic-`R` shape is re-gated behind the NEW precise TODO
+    `` `postfix `?` on an operand of symbolic type` `` (handle_question.cpp,
+    after the pre-flight) and the positive generic split is re-authored as the
+    fail_todo_generic.carbon pin. Root cause is a genuine machinery gap, not
+    the desugar taking a wrong path: the carrier temporary's destroy is the
+    STANDARD cleanup discharge (a `var` or match-scrutinee temporary of the
+    same symbolic `ControlFlow` specific registers identically), and
+    `LookupDestroyWitness` (custom_witness.cpp) does defer witness BUILDING
+    for symbolic selves — but only when `CanDestroyType` says the type is
+    destroyable, which requires every payload element destroyable, and `Try`
+    places no `Destroy` bound on `ContinueType`/`BreakType` (upstream's own
+    pattern for associated types that flow through temporaries is a bound —
+    `Iterate.ElementType: Copy & Destroy`). Bounding `Try`'s associated
+    constants is an interface-contract change (every impl's `forall` params
+    would need `Destroy` bounds) — veto-digest territory, not a fix round.
+    W-071 records the gap; restoring the positive split is its discharge
+    test. Concrete operands inside generic bodies remain UNGATED.
 -   check golden fail_question.carbon: operand not implementing Try (`i32?`, and a
     type-position `i32?` — same diagnostic, §2.3's sub-decision); return type not
     implementing Try (`fn F() -> i32` using `?` inside) — pinning the PRE-FLIGHT
@@ -671,8 +756,33 @@ handling control flow" line to arbitrated-PASS; opens the unit-break-type work i
     in toolchain/check/handle_operator.cpp beside PostfixOperatorStar's, and the
     pin is toolchain/check/testdata/operators/fail_todo_question.carbon — four
     subfiles covering expression, statement, argument, and type positions).
-    B1b DELETES the site and the pin flips to the positive question.carbon goldens
-    plus the §2.5 real diagnostics. Net across B1: zero TODO strings remain.
+    DISCHARGED at B1b (as landed, 2026-08-08): the handler moved to the new
+    toolchain/check/handle_question.cpp as the §2.4 desugar, the TODO's
+    `context.TODO` emission site is deleted (the phrase survives only in
+    prose comments), fail_todo_question.carbon is deleted, and
+    the pins are the positive operators/question.carbon goldens plus the §2.5
+    real diagnostics in operators/fail_question.carbon (impl-requiring shapes,
+    full prelude) and operators/fail_question_preflight.carbon (the pre-flight
+    shapes PLUS the R-4 per-specific carrier rejection — fail_unit_break_type
+    pins the SF-6 eval hook, not a pre-flight diagnostic; wording amended at
+    the B1b fix round, 2026-08-08 — on the new min_prelude/try.carbon combo,
+    an as-landed split of the planned single fail_question.carbon: that
+    prelude has NO `Try` impls and no `EqWith`, so the pre-flight pins fire
+    before any impl lookup or discriminant test). Amended at the B1b fix
+    round (2026-08-08): fail_question_preflight.carbon gained the
+    fail_returned_var_scope pin for the seventh diagnostic,
+    `QuestionInReturnedVarScope` (§2.5). Superseded in part at the third fix
+    round — see the next bullet: one precise TODO string is authored by the
+    §3 narrowing, so the net across B1 is ONE TODO string (the narrowing
+    gate), not zero.
+-   `` `postfix `?` on an operand of symbolic type` `` — NEW, authored at the
+    B1b third fix round (2026-08-08) by §3's dated narrowing clause (risk
+    R-3's pre-declared rule). Emission site: toolchain/check/
+    handle_question.cpp, after the pre-flight, keyed on the operand type's
+    constant being symbolic. Pin: toolchain/check/testdata/operators/
+    question.carbon's fail_todo_generic.carbon subfile (the re-authored
+    positive generic split). Discharge rides W-071 (symbolic carrier
+    destroy); the discharge test is restoring that split positive.
 -   All existing TODO strings — the six-site combined W4 string, the scrutinee
     string, the `var`/`ref` case-binding string, S2e's integer-`default` string,
     the Self-dependent payload string — survive BYTE-IDENTICAL at their sites;
@@ -778,6 +888,9 @@ Items the coordinator signs off on (the V-2 veto digest for this plan):
 6.  **Diagnostics and gate text (§2.3/§2.5):** the B1a TODO string and the six
     B1b diagnostic names/messages (including the pre-flight
     `QuestionReturnTypeNotTry` Error placement and `QuestionNonInitReturnForm`).
+    (A seventh, `QuestionInReturnedVarScope`, plus the
+    `QuestionNonInitReturnForm` re-wording were added at the B1b fix round,
+    2026-08-08 — §2.5's dated entries.)
 7.  **Type-position `?` is rejected in check, not parse (§2.3)** — plus the
     recorded C-1 whitespace-acceptance and C-2 `i32*?` asymmetry sub-decisions.
 8.  **Conformance movement (§8):** the control_flow_constructs rewrite-and-flip

@@ -511,6 +511,105 @@ export. Rejected: library-only (fails the milestone bullet), declared
 fallibility (2-3x cost, collides with if-let), native exceptions
 (contradicts p000301, XL lowering).
 
+_B1 landing note (2026-08-08):_ both slices of the approved B1 plan
+(fork/b1/plan.md — process step 6, two adversarial plan-review rounds with
+the 2026-08-08 revisions folded in, coordinator sign-off on the eight-item
+V-2 veto digest) are landed: B1a (postfix `?` parse in the postfix loop +
+the gated check TODO) and B1b (`Core.Try` + the desugar + conformance).
+_The restaging (digest item 1):_ this B1 = the F-006 `?`/`Core.Try`
+machinery over USER-DEFINED generic choices; prelude
+`Core.Result`/`Core.Optional` and the entry-point `Result` signatures move
+to W5-S3p behind OPEN SF-9 — the F-006 staging table carries the dated
+amendment. _The carrier (digest item 2, option B):_ `Branch` returns the
+NEW prelude choice `Core.ControlFlow(C, B)` (core/prelude/try.carbon,
+library "prelude/try", export-imported from the prelude; alternatives
+`Continue(value: C)`/`Break(value: B)` in that order, fixing discriminants
+Continue=0/Break=1 that the desugar's test and the goldens hard-depend on).
+_V-3a divergence-risk register entries (reviewed at each upstream merge):_
+(i) the name `Core.ControlFlow` — a fork-authored prelude name landed
+pre-SF-9; Rust's `Try` shape is the stated good reason; reversible pre-S3p
+(only B1 testdata and one conformance program name it); (ii) the parameter
+order `ControlFlow(C, B)` — continue-first, matching `Try`'s
+`(ContinueType, BreakType)` reading, a DELIBERATE divergence from Rust's
+break-first `ControlFlow<B, C>`; (iii) the member spellings
+`Try`/`Branch`/`FromBreak`/`Continue`/`Break` (with F-006a's `Ok`/`Err`
+already on the register). _Mechanism (plan §2.4 as revised):_ the desugar
+(new toolchain/check/handle_question.cpp) emits only existing inst kinds —
+pre-flight (QuestionOutsideFunction; region-depth>1 →
+QuestionInPatternContext, digest item 3's diagnose-and-reject policy, by way of
+the new RegionStack::depth()/ArrayStack::size() accessors;
+QuestionNoDeclaredReturnType; QuestionNonInitReturnForm;
+QuestionInReturnedVarScope (added at the same-day B1b fix round — a
+`returned var` in scope is rejected up front, before the break path could
+reach `BuildReturnWithExpr`'s ReturnExprWithReturnedVar mid-desugar; seven
+`?` diagnostics total); the discarded scratch-block `LookupImplWitness`
+pre-flight → QuestionReturnTypeNotTry, the A-1 correction, bracketed by a
+fresh `GenericId::None` generic region per the DeduceImplArguments
+precedent so dropped lookup insts never register in an enclosing generic's
+eval region), then Branch by way of `BuildUnaryOperator` with the
+QuestionOperandNotTry context hook, the exported
+`EmitChoiceDiscriminantTest` against Break's discriminant, reference-
+projection payload extraction, `FromBreak` resolved by compound access on
+the return type with the argument conversion as the D3 ImplicitAs error
+conversion, and `BuildReturnWithExpr`'s whole-function cleanup discharge on
+the exclusive break edge. return.cpp's note helpers
+(NoteReturnType/NoteNoReturnTypeProvided/new NoteReturnForm) are exported
+for the §2.5 diagnostics. _As-landed deviations, dated in the plan:_ the
+fail goldens split in two (fail_question_preflight.carbon on the NEW
+min_prelude/try combo — proving the pre-flight fires before the
+EqWith-needing discriminant test — plus fail_question.carbon on the full
+prelude), and §2.3's type-position sub-decision is amended: binding-type-
+annotation positions take the region-policy rejection (the annotation IS a
+captured region), depth-1 type operands keep the missing-impl rejection.
+Second fix round, same day: reachability analysis does not consult match
+exhaustiveness (the S3a/S3c convention), so every match-reconstruct body
+ends with an unreachable trailing return — a dead constructible value in
+concrete contexts, and in generic bodies (where no carrier value is
+conjurable) a diverging idiom — per plan §2.6's dated trailing-return
+amendment; the doc's impl sketches carry the same amendment. Third fix
+round, same day, two regen-surfaced defects: (1) the second round's
+generic idiom — the interface-recursive `return
+self.(Core.Try.Branch)();` — is SUPERSEDED: it does not type-check,
+because the recursive call's return type carries associated-constant
+projections (`ControlFlow(MyResult(T, E).(Core.Try.ContinueType), ...)`)
+that are NOT reduced under the impl's own `where` rewrites, so it never
+converts to the declared `ControlFlow(T, E)`; generic bodies now diverge
+through a testdata-local helper, `fn Diverge(generic T2: type) -> T2 {
+return Diverge(T2); }` (the arbiter-verified
+function/generic/deduce.carbon `ExplicitGenericParam` self-recursion
+shape), applied across both check goldens, the lower golden, and both
+conformance programs. (2) The symbolic-`R` generic golden hit a genuine
+machinery gap: the carrier temporary's STANDARD cleanup discharge needs a
+`Core.Destroy` witness for the symbolic `ControlFlow` specific, and
+`CanDestroyType` (custom_witness.cpp) cannot derive one — its symbolic
+deferral only engages for types it can prove destroyable, `Try` places no
+`Destroy` bound on `ContinueType`/`BreakType` (contrast
+`Iterate.ElementType: Copy & Destroy`), and bounding them is an
+interface-contract change for the veto digest, not a fix round. Per §3's
+pre-declared narrowing rule the symbolic-operand case is re-gated behind
+the NEW precise TODO `` `postfix `?` on an operand of symbolic type` ``
+(pinned by question.carbon's fail_todo_generic subfile; concrete operands
+in generic bodies stay ungated), NEW work item W-071 records the gap with
+the restored positive split as its discharge test, and plan §6's net-TODO
+count is amended from zero to one.
+_The impl-style rule (digest item 5):_ match-reconstruct `Branch` bodies
+throughout (testdata, conformance, the doc's amended impl sketches); the
+`return r` choice-binding CopyOfUncopyableType bound is pinned (R-5).
+_The unit-break bound (digest item 4):_ `ControlFlow(C, ())` per-specific
+SF-6 rejection pinned (R-4); NEW work item W-070 records the resolution
+options for S3p. _Conformance (digest item 8):_
+error_handling/control_flow_constructs.carbon SKIP → PASS (rewritten to the
+F-006 shape, both `?` paths runtime-observed) plus the NEW differential
+pair error_handling/question_propagation_diff.{carbon,diff.cpp} (C++
+struct-shaped early-return oracle, 3-deep chain, runtime-selected failure
+depth): target floor 83 PASS / 0 FAIL / 30 SKIP over 113;
+`runner.py --self-test` OK, README table regenerated, scoreboard
+regeneration rides the landing gate (R9). _TODO ledger:_ the B1a gate
+string is DISCHARGED; one `?` TODO string remains as landed — the third
+fix round's symbolic-operand narrowing gate, ledgered in plan §6 with
+W-071 as its discharge (amended from "zero remain" at that round).
+Veto-able.
+
 ### F-007: Unions - **Native `union` declaration** (2026-07-19)
 
 Rust-shaped safety surface (writes safe, reads defined byte-reinterpretation,

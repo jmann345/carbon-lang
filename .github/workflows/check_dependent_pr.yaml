@@ -18,6 +18,12 @@ permissions:
 
 jobs:
   check_dependent_prs:
+    # The dependency scan queries carbon-language/carbon-lang by number
+    # (hardcoded in github_tools/check_dependent_pr.py), so on a fork it
+    # resolves against UPSTREAM's same-numbered pull request — passing or
+    # failing by coincidence. Guard to the upstream repository, the same
+    # pattern as Nightly Release (user decision, 2026-08-08).
+    if: github.repository == 'carbon-language/carbon-lang'
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner

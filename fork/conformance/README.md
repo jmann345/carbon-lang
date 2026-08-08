@@ -184,12 +184,13 @@ fails if this table is stale):
 | `control_flow/match_switch.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_switch_diff.carbon` | Control flow: matching — good switch equivalents | differential |
 | `control_flow/range_iter_diff.carbon` | Control flow: loops incl. range-based and C/C++ loop equivalents | differential |
-| `error_handling/control_flow_constructs.carbon` | Error handling: dedicated control flow constructs | SKIP |
+| `error_handling/control_flow_constructs.carbon` | Error handling: dedicated control flow constructs | run |
 | `error_handling/cpp_exception_interop.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | SKIP |
 | `error_handling/cpp_exceptions_auto_catch.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | run |
 | `error_handling/cpp_exceptions_fence_terminate.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | run |
 | `error_handling/cpp_exceptions_fence_value_diff.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | differential |
 | `error_handling/cpp_exceptions_none_mode.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | run |
+| `error_handling/question_propagation_diff.carbon` | Error handling: dedicated control flow constructs | differential |
 | `functions/forward_decl.carbon` | Functions: separate declaration and definition | run |
 | `functions/overloading_native.carbon` | Functions: function overloading (Carbon-native) | SKIP |
 | `generics/checked_generics.carbon` | Generics: Checked generics | run |

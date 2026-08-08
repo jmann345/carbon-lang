@@ -1,1 +1,1 @@
-2026-08-08T16:10:33Z gate re-fire for S3b (fixpoint at dde4ec2)
+2026-08-08T17:13:44Z gate for S3c (fixpoint at 72c41d9)

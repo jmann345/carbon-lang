@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-08T04:56:22.965224+00:00",
+  "generated": "2026-08-08T06:27:14.385288+00:00",
   "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 9.0,
+  "elapsed_seconds": 6.2,
   "totals": {
-    "PASS": 77,
+    "PASS": 78,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
@@ -200,6 +200,13 @@
       "status": "PASS",
       "detail": "",
       "differential": false
+    },
+    {
+      "path": "error_handling/cpp_exceptions_fence_value_diff.carbon",
+      "bullet": "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)",
+      "status": "PASS",
+      "detail": "",
+      "differential": true
     },
     {
       "path": "error_handling/cpp_exceptions_none_mode.carbon",
@@ -1064,6 +1071,7 @@
         "error_handling/cpp_exception_interop.carbon",
         "error_handling/cpp_exceptions_auto_catch.carbon",
         "error_handling/cpp_exceptions_fence_terminate.carbon",
+        "error_handling/cpp_exceptions_fence_value_diff.carbon",
         "error_handling/cpp_exceptions_none_mode.carbon"
       ]
     },

@@ -1,1 +1,1 @@
-2026-08-08T13:30:54Z autoupdate for W5-S3b (generic payload synthesis); expected churn per amended plan §4: new files + §6 flips + raw_sem_ir ID-only renumbering
+2026-08-08T13:53:58Z autoupdate re-fire after S3b crash fixes (definition-path RequireCompleteType + import UninitializedValue case)

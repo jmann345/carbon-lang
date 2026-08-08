@@ -41,15 +41,23 @@ fn F() {
 library "[[@TEST_NAME]]";
 
 // Mutual by-value generic recursion between a choice payload and a class
-// field: completing the substituted payload tuple `(G(i32),)` would complete
-// `G(i32)`, whose field `P(i32)` re-enters the choice specific's own
-// in-progress resolution and dies on the forward-reference CHECK. The
-// structural SF-6 pre-filter in the `CustomLayoutType` eval hook rejects the
-// disallowed class kind BEFORE any completion, so this is the real
-// per-specific diagnostic, not a crash.
+// field: the payload names a specific of a class that is only forward
+// declared at the choice definition, so it cannot complete — dependently or
+// otherwise — and the definition-time completion requirement rejects the
+// alternative with the incomplete-payload diagnostic (the class-field
+// precedent), instead of CHECK-failing on the payload tuple's forced
+// completion. The rejected alternative gets an error binding; the remaining
+// payload-free choice monomorphizes cleanly.
 class G(T: type);
 
 choice P(T: type) {
+  // CHECK:STDERR: fail_mutual_by_value_recursion.carbon:[[@LINE+7]]:4: error: choice alternative payload has incomplete type `G(T)` [IncompleteTypeInChoicePayload]
+  // CHECK:STDERR:   A(x: G(T)),
+  // CHECK:STDERR:    ^~~~~~~~~
+  // CHECK:STDERR: fail_mutual_by_value_recursion.carbon:[[@LINE-6]]:1: note: class was forward declared here [ClassForwardDeclaredHere]
+  // CHECK:STDERR: class G(T: type);
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   A(x: G(T)),
   B
 }
@@ -59,13 +67,6 @@ class G(T: type) {
 }
 
 fn F() {
-  // CHECK:STDERR: fail_mutual_by_value_recursion.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `P(i32)` [ResolvingSpecificHere]
-  // CHECK:STDERR:   var p: P(i32);
-  // CHECK:STDERR:          ^
-  // CHECK:STDERR: fail_mutual_by_value_recursion.carbon:[[@LINE-10]]:1: note: choice alternative payload type `G(i32)` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
-  // CHECK:STDERR: }
-  // CHECK:STDERR: ^
-  // CHECK:STDERR:
   var p: P(i32);
 }
 

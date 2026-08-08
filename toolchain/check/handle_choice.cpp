@@ -10,6 +10,7 @@
 #include "toolchain/check/control_flow.h"
 #include "toolchain/check/convert.h"
 #include "toolchain/check/decl_name_stack.h"
+#include "toolchain/check/diagnostic_helpers.h"
 #include "toolchain/check/eval.h"
 #include "toolchain/check/function.h"
 #include "toolchain/check/generic.h"
@@ -624,6 +625,30 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
         reject("choice alternative payload with Self-dependent type");
         break;
       }
+      // Payload types must be complete at the definition — symbolic ones with
+      // a dependent layout — so the payload tuple built below is guaranteed to
+      // complete (`CompleteTypeOrCheckFail`). A specific of a class with no
+      // definition yet has no layout, dependent or otherwise, and is diagnosed
+      // here like any other incomplete payload: the class-field precedent
+      // (`IncompleteTypeInBindingDecl`). For a dependent payload type that
+      // does complete, `RequireCompleteType` also records the instruction that
+      // re-enforces completeness of the substituted type per specific.
+      if (!RequireCompleteType(
+              context, param_type_id,
+              SemIR::LocId(name_component.params_loc_id), [&](auto& builder) {
+                CARBON_DIAGNOSTIC(
+                    IncompleteTypeInChoicePayload, Context,
+                    "choice alternative payload has incomplete type {0}",
+                    InstIdAsType);
+                builder.Context(name_component.params_loc_id,
+                                IncompleteTypeInChoicePayload,
+                                context.types().GetTypeInstId(param_type_id));
+              })) {
+        // The incomplete-type diagnostic was already produced; don't
+        // misclassify incompleteness as non-triviality.
+        add_error_binding();
+        break;
+      }
       if (context.types().GetConstantId(param_type_id).is_symbolic()) {
         // A symbolic payload type in a generic choice: the layout and the
         // SF-6 payload restriction are resolved per specific at
@@ -631,14 +656,6 @@ auto HandleParseNode(Context& context, Parse::ChoiceDefinitionId node_id)
         // eval_inst.cpp).
         info.param_type_ids.push_back(param_type_id);
         continue;
-      }
-      if (!TryToCompleteType(context, param_type_id,
-                             SemIR::LocId(name_component.params_loc_id),
-                             /*diagnose=*/true)) {
-        // The incomplete-type diagnostic was already produced; don't
-        // misclassify incompleteness as non-triviality.
-        add_error_binding();
-        break;
       }
       if (!IsInSliceChoicePayloadType(context, param_type_id)) {
         reject(

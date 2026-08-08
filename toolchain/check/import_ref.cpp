@@ -4373,6 +4373,19 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
                  .element_type_inst_id = elem_const_inst_id});
 }
 
+static auto TryResolveTypedInst(ImportRefResolver& resolver,
+                                SemIR::UninitializedValue inst)
+    -> ResolveResult {
+  auto type_id = GetLocalConstantId(resolver, inst.type_id);
+  if (resolver.HasNewWork()) {
+    return ResolveResult::Retry();
+  }
+
+  return ResolveResult::Deduplicated<SemIR::UninitializedValue>(
+      resolver,
+      {.type_id = resolver.local_types().GetTypeIdForTypeConstantId(type_id)});
+}
+
 template <typename VarPatternT>
   requires SemIR::Internal::HasInstCategory<SemIR::AnyVarPattern, VarPatternT>
 static auto TryResolveTypedInst(ImportRefResolver& resolver, VarPatternT inst)
@@ -4685,6 +4698,9 @@ static auto TryResolveInstCanonical(ImportRefResolver& resolver,
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::UnboundElementType inst): {
+      return TryResolveTypedInst(resolver, inst);
+    }
+    case CARBON_KIND(SemIR::UninitializedValue inst): {
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::ValueBindingPattern inst): {

@@ -44,3 +44,39 @@ fn StarThenQuestion() {
   // CHECK:STDERR:
   i32*?;
 }
+
+// CHECK:STDOUT: - filename: fail_question.carbon
+// CHECK:STDOUT:   ╭─FileStart ''
+// CHECK:STDOUT:   │   ╭─FunctionIntroducer 'fn'
+// CHECK:STDOUT:   │   ├─IdentifierNameMaybeBeforeSignature 'BareQuestion'
+// CHECK:STDOUT:   │   │ ╭─ExplicitParamListStart '('
+// CHECK:STDOUT:   │   ├─ExplicitParamList ')'
+// CHECK:STDOUT:   │ ╭─FunctionDefinitionStart '{'
+// CHECK:STDOUT:   │ │ ╭─InvalidParse '?' has_error
+// CHECK:STDOUT:   │ ├─ExprStatement ';' has_error
+// CHECK:STDOUT:   ├─FunctionDefinition '}'
+// CHECK:STDOUT:   │   ╭─FunctionIntroducer 'fn'
+// CHECK:STDOUT:   │   ├─IdentifierNameMaybeBeforeSignature 'NoOperandAfterInfix'
+// CHECK:STDOUT:   │   │ ╭─ExplicitParamListStart '('
+// CHECK:STDOUT:   │   │ │ ╭─IdentifierNameNotBeforeSignature 'n'
+// CHECK:STDOUT:   │   │ │ ├─BindingPatternTypeStart ':'
+// CHECK:STDOUT:   │   │ │ ├─IntTypeLiteral 'i32'
+// CHECK:STDOUT:   │   │ ├─LetBindingPattern ':'
+// CHECK:STDOUT:   │   ├─ExplicitParamList ')'
+// CHECK:STDOUT:   │ ╭─FunctionDefinitionStart '{'
+// CHECK:STDOUT:   │ │   ╭─IdentifierNameExpr 'n'
+// CHECK:STDOUT:   │ │   ├─InvalidParse '?' has_error
+// CHECK:STDOUT:   │ │ ╭─InfixOperatorPlus '+' has_error
+// CHECK:STDOUT:   │ ├─ExprStatement ';' has_error
+// CHECK:STDOUT:   ├─FunctionDefinition '}'
+// CHECK:STDOUT:   │   ╭─FunctionIntroducer 'fn'
+// CHECK:STDOUT:   │   ├─IdentifierNameMaybeBeforeSignature 'StarThenQuestion'
+// CHECK:STDOUT:   │   │ ╭─ExplicitParamListStart '('
+// CHECK:STDOUT:   │   ├─ExplicitParamList ')'
+// CHECK:STDOUT:   │ ╭─FunctionDefinitionStart '{'
+// CHECK:STDOUT:   │ │   ╭─IntTypeLiteral 'i32'
+// CHECK:STDOUT:   │ │ ╭─PostfixOperatorStar '*'
+// CHECK:STDOUT:   │ ├─ExprStatement ';' has_error
+// CHECK:STDOUT:   ├─FunctionDefinition '}'
+// CHECK:STDOUT:   ├─FileEnd ''
+// CHECK:STDOUT:   (root)

@@ -1,0 +1,108 @@
+# Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+# Exceptions. See /LICENSE for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# Part of jmann345's carbon-lang fork tooling (see /fork/README.md).
+#
+# Runs the fork conformance suite (fork/conformance/runner.py) on the
+# self-hosted runner against a freshly built toolchain from the same tree,
+# and commits the regenerated scoreboard back to the branch. This became
+# runner-side work when the runner host's glibc moved past the dev
+# container's: locally built release tarballs no longer execute there, and
+# the scoreboard belongs next to the tree that produced it anyway
+# (ORCHESTRATION next-actions: "scoreboard in CI"). The job fails if any
+# program FAILs; SKIP/PASS totals are printed for the driving session to
+# compare against the recorded floor.
+
+name: 'Fork: conformance suite'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'claude/**'
+    paths:
+      - 'fork/conformance-request.txt'
+
+permissions:
+  contents: write # For pushing the regenerated scoreboard back to the branch.
+
+jobs:
+  conformance:
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 720
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Ensure uv
+        run: |
+          if ! command -v uv >/dev/null 2>&1; then
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+          fi
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Ensure static LLVM libunwind
+        run: |
+          set -euo pipefail
+          LIBDIR="$HOME/.local/lib/carbon-host-deps"
+          mkdir -p "$LIBDIR"
+          probe() {
+            printf 'int main(){return 0;}' | clang++ -x c++ - -o /tmp/unwind_probe \
+              -fuse-ld=lld -stdlib=libc++ -static-libstdc++ -static-libgcc \
+              -rtlib=compiler-rt -unwindlib=libunwind -l:libc++abi.a -L"$LIBDIR"
+          }
+          if ! probe; then
+            echo "::error::libunwind.a probe failed; see fork_autoupdate.yaml's provisioning step."
+            exit 1
+          fi
+          echo "build --linkopt=-L$LIBDIR" >> user.bazelrc
+          echo "build --host_linkopt=-L$LIBDIR" >> user.bazelrc
+
+      - name: Build toolchain
+        run: |
+          ./scripts/run_bazel.py build -c opt //toolchain/install:carbon_toolchain_tar
+
+      - name: Run conformance suite
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/conformance-toolchain
+          mkdir -p /tmp/conformance-toolchain
+          tar xf bazel-bin/toolchain/install/carbon_toolchain-*.tar \
+            -C /tmp/conformance-toolchain
+          CARBON=$(echo /tmp/conformance-toolchain/carbon_toolchain-*/bin/carbon)
+          "$CARBON" version
+          python3 fork/conformance/runner.py \
+            --toolchain "$CARBON" \
+            | tee /tmp/conformance-output.txt
+          # Fail loudly on any FAIL-class result. The runner script exits
+          # zero as long as it ran; the scoreboard is the verdict.
+          python3 - <<'EOF'
+          import json
+          d = json.load(open('fork/conformance/out/scoreboard.json'))
+          totals = d['totals']
+          fails = sum(
+              totals.get(k, 0)
+              for k in ('COMPILE-FAIL', 'LINK-FAIL', 'RUN-FAIL',
+                        'OUTPUT-MISMATCH', 'DIFF-MISMATCH'))
+          print('totals:', totals)
+          if fails:
+              raise SystemExit(f'{fails} conformance failure(s)')
+          EOF
+
+      - name: Commit and push scoreboard
+        run: |
+          set -euo pipefail
+          git config user.name 'jmann345'
+          git config user.email 'jerrymannstan@gmail.com'
+          git add -f -- fork/conformance/out/scoreboard.json
+          if git diff --cached --quiet; then
+            echo "Scoreboard unchanged; nothing to commit."
+            exit 0
+          fi
+          git commit \
+            -m "Regenerate the conformance scoreboard on the self-hosted runner" \
+            -m "Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
+          git push origin "HEAD:refs/heads/${GITHUB_REF_NAME}"

@@ -8,18 +8,19 @@
 //   10
 //   20
 //   30
-// SKIP: case guards have no semantics yet: this file's `case a: i32 if (a < 0)` arm is rejected at its `if` token with "error: semantics TODO: `match case guard`" (the guard-introducer gate, `MatchCaseGuardIntroducer` in toolchain/check/handle_match.cpp — S2a re-platform, fork/match-replatform/plan.md RF-3). The arm's binding itself now checks through the pattern machinery (S2b, plan §3.2), so the former binding-gate rejection at the `case` token no longer fires; the guard is the sole remaining blocker. Un-SKIP when guards (S2d) land. Sketch compile-verified per R6: passes `carbon compile --phase=parse` (exit 0) on the arbiter tree (nightly 2026.07.19).
 //
 // Preserves the guard/binding coverage that match_switch.carbon carried
 // before it was narrowed to slice-1 arms (literal cases + `default` only):
 // a binding pattern with an `if` guard, shape verbatim from
 // toolchain/parse/testdata/match/match.carbon:16 (`case a: i32 if (a != x)
 // => { ... }`). Semantics per
-// docs/design/pattern_matching.md: first matching case wins, and the bound
+// docs/design/pattern_matching.md: first matching case wins, the bound
 // `a` is in scope in the guard ("Guards": `case` _pattern_ [`if`
-// _expression_]? `=>` _block_). EXPECT directives already encode those
-// designed semantics so this becomes a real execution test the moment the
-// SKIP line is removed.
+// _expression_]? `=>` _block_), and a failed guard falls through to the
+// next arm — here `default`. Un-SKIPped at S2d (match re-platform,
+// fork/match-replatform/plan.md §3.4), which gave guards real semantics:
+// the guard evaluates after the arm's bindings are initialized, and
+// branches into the arm's body or on to the next arm's test.
 
 import Core library "io";
 

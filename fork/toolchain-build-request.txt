@@ -1,1 +1,1 @@
-S2c gate: full merge gate on choice payload destructuring (fixpoint at e180d95, pass-2 loc-only).
+S2d gate: full merge gate on match case guards (fixpoint at 3fe3804, pass-2 empty).

@@ -155,6 +155,17 @@ auto MatchCaseAlternativePatternMatch(Context& context,
                                       Parse::NodeId case_node_id)
     -> SemIR::InstId;
 
+// Splices a `match` `case` guard's captured condition region into the
+// current code block, and returns the region's result (the guard condition
+// as a bool value). `MatchCase` (handle_match.cpp) calls this in the arm's
+// body block after the bind pass, so the guard evaluates with the arm's
+// bindings initialized. The region may contain control flow (for example a
+// short-circuiting `and`), in which case the current block ends with a
+// branch into the region's blocks and emission resumes in the region's
+// successor block; single-block regions splice in place.
+auto SpliceMatchCaseGuard(Context& context, SemIR::ExprRegionId region_id)
+    -> SemIR::InstId;
+
 }  // namespace Carbon::Check
 
 #endif  // CARBON_TOOLCHAIN_CHECK_PATTERN_MATCH_H_

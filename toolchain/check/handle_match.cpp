@@ -54,10 +54,22 @@ namespace Carbon::Check {
 // `LocalPatternMatch`, so the binding exists only where the arm has matched.
 // Everything outside that subset produces a "semantics TODO" diagnostic.
 //
+// A `case` arm may carry a guard (`case P if (E) => ...`): the guard
+// expression is checked in the arm's scope (its pattern's bindings are in
+// scope, per the design's guard rule) and converted to `bool` inside its
+// own expression region, which is spliced into the arm's body block after
+// the bind pass. The arm then branches on the guard: on success into the arm's
+// body, on failure to the same else block the pattern test falls through
+// to, after destroying any objects the arm created — so a failed guard
+// falls through to the next arm (or `default`), preserving
+// first-match-wins.
+//
 // TODO: Support other pattern kinds (`var`/`ref` case bindings, tuple
-// patterns, non-binding payload subpatterns), guards, other scrutinee types,
-// and exhaustiveness checking without a `default` arm. Diagnose cases that
-// can never match, per docs/design/pattern_matching.md.
+// patterns, non-binding payload subpatterns), guards on `default` arms
+// (docs/design/pattern_matching.md allows them; the parser does not yet),
+// other scrutinee types, and exhaustiveness checking without a `default`
+// arm. Diagnose cases that can never match, per
+// docs/design/pattern_matching.md.
 
 // Returns the scrutinee value, which is on the `MatchHandler` entry after an
 // earlier case arm, or otherwise on the `MatchStatementStart` entry.
@@ -378,39 +390,26 @@ auto HandleParseNode(Context& context, Parse::AlternativePatternId node_id)
   return true;
 }
 
-auto HandleParseNode(Context& context,
-                     Parse::MatchCaseGuardIntroducerId node_id) -> bool {
-  // Guards are a later slice (S2d). The TODO aborts checking, so the open
-  // pattern context needs no unwinding.
-  return context.TODO(node_id, "match case guard");
-}
-
-auto HandleParseNode(Context& context, Parse::MatchCaseGuardStartId node_id)
-    -> bool {
-  return context.TODO(node_id, "match case guard");
-}
-
-auto HandleParseNode(Context& context, Parse::MatchCaseGuardId node_id)
-    -> bool {
-  return context.TODO(node_id, "match case guard");
-}
-
-auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
-  // Finish the pattern context begun by `MatchCaseIntroducer`: a leftover
-  // expression on the node stack becomes an `ExprPattern`, and the checked
-  // pattern root is popped.
-  //
-  // A `case` expression such as `2 + 3` is an initializing expression: its
-  // prelude operator call returns through a return slot. Convert it to a
-  // value now, while the pattern's expression region is still open, so the
-  // conversion insts land inside the region and the region's result is a
-  // value. Splicing an initializing result would make the `splice_block` at
-  // the use site itself an initializing expression, which SemIR does not
-  // support: an initializer must carry a storage argument (see
-  // `FindStorageArgForInitializer`). Type expressions uphold the same
-  // invariant by converting with `ExprAsType` before their region closes
-  // (handle_binding_pattern.cpp). Value-category expressions, including
-  // plain literals, are left exactly as they are.
+// Finishes the arm's case pattern, begun by `MatchCaseIntroducer`: a
+// leftover expression on the node stack becomes an `ExprPattern`, and the
+// checked pattern root is popped and recorded in the case-arm context.
+// Called from `MatchCaseGuardIntroducer` when the arm has a guard —
+// expression regions nest LIFO on a region stack, so the guard's region
+// could nest inside the pattern's pending one; closing the pattern's first
+// keeps them siblings (a simplicity choice) — and otherwise from `MatchCase`.
+//
+// A `case` expression such as `2 + 3` is an initializing expression: its
+// prelude operator call returns through a return slot. Convert it to a
+// value now, while the pattern's expression region is still open, so the
+// conversion insts land inside the region and the region's result is a
+// value. Splicing an initializing result would make the `splice_block` at
+// the use site itself an initializing expression, which SemIR does not
+// support: an initializer must carry a storage argument (see
+// `FindStorageArgForInitializer`). Type expressions uphold the same
+// invariant by converting with `ExprAsType` before their region closes
+// (handle_binding_pattern.cpp). Value-category expressions, including
+// plain literals, are left exactly as they are.
+static auto FinishCasePattern(Context& context) -> void {
   {
     auto [expr_node_id, maybe_expr_id] =
         context.node_stack().PopWithNodeIdIf<Parse::NodeCategory::Expr>();
@@ -423,7 +422,61 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
     }
   }
   EndExprRegionForPattern(context, context.node_stack());
-  auto pattern_id = context.node_stack().PopPattern();
+  context.match_case_stack().back().pattern_id =
+      context.node_stack().PopPattern();
+}
+
+auto HandleParseNode(Context& context,
+                     Parse::MatchCaseGuardIntroducerId node_id) -> bool {
+  // The arm has a guard, so the case pattern's nodes are all checked:
+  // finish the pattern and open a fresh expression region to capture the
+  // guard expression. The guard is checked in the arm's scope — the
+  // pattern's bindings are in scope in the guard
+  // (docs/design/pattern_matching.md, "Guards") — but its insts must not be
+  // emitted here in the test block, where the pattern has not yet matched
+  // and the bindings are uninitialized; `MatchCase` splices the captured
+  // region into the arm's body block after the bind pass.
+  FinishCasePattern(context);
+  BeginExprRegionForPattern(context);
+  context.node_stack().Push(node_id);
+  return true;
+}
+
+auto HandleParseNode(Context& context, Parse::MatchCaseGuardStartId node_id)
+    -> bool {
+  context.node_stack().Push(node_id);
+  return true;
+}
+
+auto HandleParseNode(Context& context, Parse::MatchCaseGuardId node_id)
+    -> bool {
+  // Convert the guard's condition to a bool value while its expression
+  // region is still open, so the conversion insts land inside the region
+  // and the region's result is a value (the same invariant
+  // `FinishCasePattern` maintains for case expressions). A conversion
+  // failure is diagnosed at the guard expression.
+  auto [expr_node_id, cond_id] = context.node_stack().PopExprWithNodeId();
+  cond_id = ConvertToBoolValue(context, expr_node_id, cond_id);
+  auto region_id = ConsumeExprRegionForPattern(context, cond_id);
+  EndEmptyExprRegionForPattern(context);
+  context.node_stack()
+      .PopAndDiscardSoloNodeId<Parse::NodeKind::MatchCaseGuardStart>();
+  context.node_stack()
+      .PopAndDiscardSoloNodeId<Parse::NodeKind::MatchCaseGuardIntroducer>();
+
+  auto& case_context = context.match_case_stack().back();
+  case_context.guard_region_id = region_id;
+  case_context.guard_node_id = node_id;
+  return true;
+}
+
+auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
+  // Finish the pattern context begun by `MatchCaseIntroducer`, unless the
+  // arm's guard already did (`MatchCaseGuardIntroducer`).
+  if (!context.match_case_stack().back().pattern_id.has_value()) {
+    FinishCasePattern(context);
+  }
+  auto pattern_id = context.match_case_stack().back().pattern_id;
   context.node_stack()
       .PopAndDiscardSoloNodeId<Parse::NodeKind::MatchCaseIntroducer>();
   context.decl_introducer_state_stack().Pop<Lex::TokenKind::Let>();
@@ -437,9 +490,11 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
 
   auto introducer_node_id =
       context.match_case_stack().back().introducer_node_id;
-  // Copy: the case-arm context is popped below, before the bind pass reads
-  // the resolved alternative.
+  // Copy: the case-arm context is popped below, before the bind pass and
+  // guard emission read the resolved alternative and the guard's region.
   auto alternative = context.match_case_stack().back().alternative;
+  auto guard_region_id = context.match_case_stack().back().guard_region_id;
+  auto guard_node_id = context.match_case_stack().back().guard_node_id;
   auto scrutinee_id = PeekScrutinee(context);
 
   // Classify by the checked pattern inst: a parenthesized alternative
@@ -530,6 +585,30 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
          .index = SemIR::ElementIndex(alternative->payload_field_index)});
     LocalPatternMatch(context, pattern_id, field_ref_id);
     context.scope_stack().DeferCleanups();
+  }
+
+  // Guard: splice the captured condition region here, after the bind pass,
+  // so the guard evaluates with the arm's bindings initialized, and branch
+  // on it — into the arm's body on success, and on failure to the same else
+  // block the pattern test falls through to, so a failed guard tries the
+  // next arm (or `default`). Objects created by the bind pass and the guard
+  // itself are live on both edges: the success edge destroys them with the
+  // arm scope's cleanups at arm exit (`MatchHandler`), and the failure edge
+  // — which leaves the arm's scope — must destroy them itself, before
+  // branching. `DeferCleanups` keeps the body's statement-level
+  // temporary-cleanup discharge from destroying them early, the same way
+  // the bind pass defers its conversion temporaries.
+  if (guard_region_id.has_value()) {
+    auto guard_cond_id = SpliceMatchCaseGuard(context, guard_region_id);
+    context.scope_stack().DeferCleanups();
+    auto body_block_id =
+        AddDominatedBlockAndBranchIf(context, node_id, guard_cond_id);
+    AddBranchWithCleanups(
+        context, SemIR::LocId(guard_node_id), else_block_id,
+        context.scope_stack().enclosing_cleanup_scope_depth());
+    context.inst_block_stack().Pop();
+    context.inst_block_stack().Push(body_block_id);
+    context.region_stack().AddToRegion(body_block_id, node_id);
   }
 
   context.node_stack().Push(node_id, else_block_id);

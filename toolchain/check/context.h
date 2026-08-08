@@ -272,6 +272,19 @@ class Context {
     SemIR::InstId designator_root_id = SemIR::InstId::None;
     // The resolved alternative for a root alternative pattern, if any.
     std::optional<Alternative> alternative;
+    // The checked pattern root. Populated by `MatchCaseGuardIntroducer` when
+    // the arm has a guard — the pattern is finished early so that the guard
+    // expression can capture its own expression region — and otherwise by
+    // `MatchCase`.
+    SemIR::InstId pattern_id = SemIR::InstId::None;
+    // The guard's captured condition region: the guard expression converted
+    // to a bool value, which `MatchCase` splices into the arm's body block
+    // after the bind pass so the guard evaluates with the arm's bindings
+    // initialized. `None` when the arm has no guard.
+    SemIR::ExprRegionId guard_region_id = SemIR::ExprRegionId::None;
+    // The `MatchCaseGuard` parse node, used as the location of the guard's
+    // failure edge.
+    Parse::NodeId guard_node_id = Parse::NodeId::None;
   };
   auto match_case_stack() -> llvm::SmallVector<MatchCaseContext>& {
     return match_case_stack_;

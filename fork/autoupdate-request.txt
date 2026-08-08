@@ -1,1 +1,1 @@
-S2c R26 pass 2: verify fixpoint after c26225d (seven files generated/corrected; expect empty or loc-only).
+S2d R26 pass 2: verify fixpoint after c2a4f75 (two guard goldens generated; expect empty or loc-only).

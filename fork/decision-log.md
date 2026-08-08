@@ -526,6 +526,103 @@ never-taken `default` arm until S2e); match_sum_type_payload.carbon keeps
 only its interop half per the W5 plan §3.3 split, SKIP evidence refreshed
 to the S4 blocker. Veto-able.
 
+_S2d landing note (2026-07-29):_ the match re-platform's S2d slice
+(fork/match-replatform/plan.md §3.4) gives `case` guards real semantics.
+Sanctioned diagnostic change, verbatim: the TODO string
+`` `match case guard` `` is DISCHARGED — all three emission sites (the
+guard stub handlers in toolchain/check/handle_match.cpp) are deleted; a
+guard expression that does not implicitly convert to `bool` now gets the
+real `ConversionFailure` at the guard expression
+(fail_guard_non_bool.carbon). The combined W4 string survives
+byte-identical at its six sites, including its now-anachronistic "or a
+case guard" tail — preserved verbatim per R10; rewording it is left to
+the slice that discharges each remaining site. _CFG and sequencing:_ the
+guard's nodes precede `MatchCase` in postorder while the pattern's
+expression region is still pending, so `MatchCaseGuardIntroducer`
+finishes the case pattern early (shared `FinishCasePattern` helper, root
+recorded in the case-arm context) and captures the guard expression in
+its own region, converted to `bool` inside the region
+(`MatchCaseGuard`); `MatchCase` splices the region into the arm's body
+block AFTER the bind pass — test → BranchIf → bind → guard →
+BranchIf(body) — so the pattern's bindings are initialized and in scope
+in the guard (p2188:543-544), and the guard-failure edge branches to the
+SAME else block the pattern test falls through to (next arm's test or
+the `default` body), preserving first-match-wins. Compound guards
+(`and`/`or`) capture multi-block regions; the splice's branch path
+handles them (plan §2.1). _Scope unwind on guard failure (R-7
+re-derivation for S2d):_ guard evaluation and the bind pass can both
+materialize cleanup-registered temporaries in the arm's Owned scope
+(registered at capture/bind time; `DeferCleanups` keeps the body's
+statement-level discharge off them). The failure edge leaves the arm's
+scope, so it discharges the arm scope's cleanups itself —
+`AddBranchWithCleanups` at the enclosing cleanup depth, emitted between
+the guard's `BranchIf` and the `Branch` to the else block, so the
+destroys run only on the failure path; the success path discharges the
+identical set at arm exit (`MatchHandler`), and the two paths are
+exclusive, so no double-destroy. Bind-pass conversion temporaries (the
+S2b/S2c hole, for example `case n: i64` on an `i32` scrutinee) are live on the
+failure edge — the binds ran before the guard — and are destroyed there
+(guard.carbon's `Converting` fn pins the shape). One recorded nuance:
+cleanups discharge in reverse REGISTRATION order, and a guard temporary
+registers at capture time (before `MatchCase` runs the binds) while
+executing after them, so a guarded arm's discharge destroys bind-pass
+temporaries before guard temporaries — reverse-execution order would be
+the opposite. Unobservable in-slice — every cleanup-registered object
+here is of trivially-destructible integer shape — but revisit if
+non-trivial destructors ever become registrable in a case arm.
+_Engine-fold resolution
+(supersedes S2c recorded deviation (6) "fold into the engine at S2d when
+guards force it"):_ NOT folded, recorded as a sanctioned deviation
+instead (R17: no ritual folds). Guards do not force it: the plan's own
+sequencing places the guard AFTER the bind pass, in the dispatch-CFG
+layer that §2.1 assigns to handle_match.cpp — the guard never
+participates in the engine's test-pass worklist, so folding
+`MatchCaseAlternativePatternMatch` into `MatchContext` would move code
+into the engine with no consumer of the move. The free function stays
+(same file, shares `EmitChoiceDiscriminantTest` with the engine's
+expression-pattern path); the only S2d engine surface is the
+`SpliceMatchCaseGuard` wrapper over the existing `InsertHere`. Revisit
+only if a later slice needs guard state inside the worklist (none
+planned; S2e reads arms, not the engine). _Ref-category scrutinee
+(discharges the S2b "revisit at S2d" note):_ the arm-entry re-read is
+KEPT and is the correct semantics. Within one arm, no user code runs
+between the test and the bind (the guard runs after both), so test and
+bind cannot disagree about a reference-category scrutinee's state.
+Across arms, a guard that mutates the scrutinee's object through a
+reference is ordinary sequential execution: the next arm's test AND bind
+both re-read at that arm's entry, so they stay mutually consistent — a
+choice scrutinee mutated to a different alternative by a failed guard is
+re-tested against the NEW discriminant before any payload extraction,
+which is exactly what prevents test/extraction type confusion. The
+design supports this: pattern_matching.md:190-204 defines bindings as
+aliases of the converted scrutinee expression and requires `ref`-binding
+scrutinees to remain durable references — snapshotting the scrutinee's
+value at match entry would break that model; neither pattern_matching.md
+("Guards") nor p2188:552-554 prescribes any scrutinee freeze across
+guard evaluation. _Scope trade re-recorded:_ guards on `default` clauses
+(p002188:552-553, pattern_matching.md:814-815) remain unimplemented —
+the fork's parser has no `default`-guard production — now tracked as
+work item W-067. Testdata: fail_todo_guard.carbon flips (git mv) to
+guard.carbon (guarded literal arm, guarded binding arms using their
+bindings with fall-through chaining, multi-block `and` guard, converting
+binding under a guard); new choice_payload_guard.carbon (guard over a
+payload-destructured binding, same alternative matched twice — once
+guarded, once unguarded); new fail_guard_non_bool.carbon; new CHECK content
+rides the runner autoupdate (R15/R19). Expected golden churn: ONLY the
+guard files — unguarded arms take a byte-identical code path (the
+`FinishCasePattern` refactor is behavior-preserving and the guard CFG is
+emitted only when a guard region exists). Conformance:
+control_flow/match_guard_binding.carbon and
+project/most_features_missing_match.carbon un-SKIP (PASS floor 74 → 77);
+differential pair match_guard_diff.carbon/.diff.cpp added (guard chain
+vs C++ `if`/`else if` with `&&` mirroring the short-circuit `and`);
+README program table regenerated; scoreboard regeneration rides the
+landing gate (R9). No new lower golden: plan §7 schedules none for S2d,
+failure-edge destroys are vacuous in-slice (trivially destructible
+integer shapes), and runtime behavior is locked by the match_guard_diff
+differential pair; revisit with the same trigger as the
+cleanup-ordering nuance. Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

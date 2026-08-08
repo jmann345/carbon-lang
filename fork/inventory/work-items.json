@@ -1,7 +1,7 @@
 {
   "schema": "fork/inventory work item v1",
   "generated": "2026-07-19",
-  "source": "Deduplicated from 99 raw items produced by four scanners (check-TODO scan, fail_todo golden-test scan, conformance-SKIP scan, design-sprint scan) against trunk @ 99cda60. Bullet strings are copied exactly from fork/gap-analysis.md. blocked_by references work-item ids (W-###), design-fork ids (F-006..F-011, see fork/design-sprint/README.md), or external upstream issues. Updated 2026-07-19 by the W4 slice-1 fixer: W-008 refreshed to post-slice-1 evidence; W-066 added (usefulness-diagnostic scope cut).",
+  "source": "Deduplicated from 99 raw items produced by four scanners (check-TODO scan, fail_todo golden-test scan, conformance-SKIP scan, design-sprint scan) against trunk @ 99cda60. Bullet strings are copied exactly from fork/gap-analysis.md. blocked_by references work-item ids (W-###), design-fork ids (F-006..F-011, see fork/design-sprint/README.md), or external upstream issues. Updated 2026-07-19 by the W4 slice-1 fixer: W-008 refreshed to post-slice-1 evidence; W-066 added (usefulness-diagnostic scope cut). Updated 2026-07-29 by the S2d implementer: W-008 refreshed to post-S2d evidence (guard gates discharged); W-067 added (default-clause guards scope trade).",
   "items": [
     {
       "id": "W-001",
@@ -118,31 +118,26 @@
       "size": "L",
       "bullet": "Control flow: matching — good switch equivalents",
       "evidence": [
-        "toolchain/check/handle_match.cpp:116",
-        "toolchain/check/handle_match.cpp:376",
-        "toolchain/check/handle_match.cpp:381",
-        "toolchain/check/handle_match.cpp:386",
-        "toolchain/check/handle_match.cpp:468",
-        "toolchain/check/handle_match.cpp:601",
+        "toolchain/check/handle_match.cpp:128",
+        "toolchain/check/handle_match.cpp:349",
+        "toolchain/check/handle_match.cpp:532",
+        "toolchain/check/handle_match.cpp:689",
         "toolchain/check/testdata/match/fail_todo_tuple_pattern.carbon:26",
         "toolchain/check/testdata/match/fail_todo_var_binding.carbon:18",
-        "toolchain/check/testdata/match/fail_todo_guard.carbon:15",
         "toolchain/check/testdata/match/fail_todo_no_default.carbon:20",
         "toolchain/check/testdata/match/fail_todo_non_int_scrutinee.carbon:14",
         "toolchain/check/testdata/match/fail_todo_non_constant_case.carbon:22",
         "toolchain/check/testdata/match/fail_todo_adapter_scrutinee.carbon:21",
-        "fork/conformance/programs/control_flow/match_guard_binding.carbon:7",
         "toolchain/check/testdata/patterns/expression.carbon:13",
         "toolchain/check/testdata/patterns/expression.carbon:19",
         "toolchain/check/testdata/patterns/expression.carbon:25",
         "toolchain/check/testdata/patterns/expression.carbon:37",
         "toolchain/check/testdata/patterns/expression.carbon:49",
         "toolchain/check/testdata/patterns/expression.carbon:64",
-        "fork/conformance/programs/control_flow/match_switch.carbon:7",
-        "fork/conformance/programs/project/most_features_missing_match.carbon:7"
+        "fork/conformance/programs/control_flow/match_switch.carbon:7"
       ],
       "blocked_by": [],
-      "notes": "W4 slice 1 (fork/trial-w4/plan.md) implements the match *statement* with an integer scrutinee (Core.IntLiteral, builtin integer types, and the Int(N)/UInt(N) adapters only — other integer-repr adapter classes are gated out), constant integer expression case patterns, and a `default` arm, as an if/else-chain SemIR shape (Branch/BranchIf + convergence; no lowering changes; comparisons use the design-mandated `literal == scrutinee` operand order, docs/design/pattern_matching.md 'Expression patterns'). Bare `name: type` case bindings (including `unused`) landed in S2b (fork/match-replatform/plan.md §3.2): they check as a `ValueBindingPattern` under `Kind::MatchCaseArm`, contribute a constant-true test condition, and bind via `LocalPatternMatch` in the arm's body block. Choice alternative patterns with payload destructuring (`case .Ok(value: i32)`) landed in S2c (§3.3, tracked under W-010/W-011): a dedicated AlternativePattern parse form at the case root, discriminant test, and per-element payload bindings in the bind pass. Remaining scope, each gated by a clean semantics-TODO (evidence lines): tuple/paren patterns and compile-time case bindings (the combined-string gates: handle_match.cpp's non-binding-root fallback at :468 and handle_binding_pattern.cpp's compile-time/form case gates; pinned by fail_todo_tuple_pattern.carbon), `var`/`ref` case bindings (their own TODO string at the `Kind::MatchCaseArm` gate in handle_binding_pattern.cpp, pinned to the binding), guards (stub handlers in handle_match.cpp), non-integer and adapter-class scrutinees (MatchCondition gate), missing-`default`/exhaustiveness (MatchStatement gate), refutable-pattern rejection (expression.carbon comments at :17,:29,:41), and usefulness diagnostics (split out as W-066). Land gate: the new AUTOUPDATE goldens have no CHECK lines yet and must be autoupdated on the runner, then the scoreboard regenerated (rulebook R11/R12). Completion flips TWO scoreboard entries: control_flow/match_switch.carbon (owning bullet) and project/most_features_missing_match.carbon (bullet: Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation). Prerequisite for W-010/W-011/W-012/W-017. Coherence risk 2 (fork/design-sprint/README.md:182-188): pin scope to ONE shared refutable-match SemIR core that `?` (W-018) and let-else (W-012) also desugar onto."
+      "notes": "W4 slice 1 (fork/trial-w4/plan.md) implements the match *statement* with an integer scrutinee (Core.IntLiteral, builtin integer types, and the Int(N)/UInt(N) adapters only — other integer-repr adapter classes are gated out), constant integer expression case patterns, and a `default` arm, as an if/else-chain SemIR shape (Branch/BranchIf + convergence; no lowering changes; comparisons use the design-mandated `literal == scrutinee` operand order, docs/design/pattern_matching.md 'Expression patterns'). Bare `name: type` case bindings (including `unused`) landed in S2b (fork/match-replatform/plan.md §3.2): they check as a `ValueBindingPattern` under `Kind::MatchCaseArm`, contribute a constant-true test condition, and bind via `LocalPatternMatch` in the arm's body block. Choice alternative patterns with payload destructuring (`case .Ok(value: i32)`) landed in S2c (§3.3, tracked under W-010/W-011): a dedicated AlternativePattern parse form at the case root, discriminant test, and per-element payload bindings in the bind pass. Case guards (`case P if (E)`) landed in S2d (§3.4): the guard is checked in the arm's scope with the pattern's bindings in scope, captured in its own expression region, spliced into the arm's body block after the bind pass, and a failed guard branches to the next arm's test with the arm scope's cleanups discharged on the failure edge; the `match case guard` TODO string is discharged (all three stub sites deleted), and control_flow/match_guard_binding.carbon + project/most_features_missing_match.carbon un-SKIPped (PASS floor 74 → 77), with the new differential pair control_flow/match_guard_diff.carbon. `default`-clause guards remain a parse+check gap (W-067). Remaining scope, each gated by a clean semantics-TODO (evidence lines): tuple/paren patterns and compile-time case bindings (the combined-string gates: handle_match.cpp's non-binding-root fallback at :532 and handle_binding_pattern.cpp's compile-time/form case gates; pinned by fail_todo_tuple_pattern.carbon), `var`/`ref` case bindings (their own TODO string at the `Kind::MatchCaseArm` gate in handle_binding_pattern.cpp, pinned to the binding), non-binding subpatterns in choice alternative payloads (the S2c `non-binding subpattern in match `case` alternative pattern` TODO at handle_match.cpp:349), non-integer and adapter-class scrutinees (MatchCondition gate), missing-`default`/exhaustiveness (MatchStatement gate, next: S2e), refutable-pattern rejection (expression.carbon comments at :17,:29,:41), and usefulness diagnostics (split out as W-066). Land gate: the new AUTOUPDATE goldens have no CHECK lines yet and must be autoupdated on the runner, then the scoreboard regenerated (rulebook R11/R12). Completion flips TWO scoreboard entries: control_flow/match_switch.carbon (owning bullet) and project/most_features_missing_match.carbon (bullet: Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation). Prerequisite for W-010/W-011/W-012/W-017. Coherence risk 2 (fork/design-sprint/README.md:182-188): pin scope to ONE shared refutable-match SemIR core that `?` (W-018) and let-else (W-012) also desugar onto."
     },
     {
       "id": "W-009",
@@ -1154,6 +1149,22 @@
       ],
       "blocked_by": ["W-008"],
       "notes": "Scope cut recorded from the W4 slice-1 adversarial review (finding F3): `match (n) { case 5 => {A} case 5 => {B} default => {} }` compiles cleanly with a dead second arm. Runtime SemIR is still design-correct (top-down first-match-wins, pattern_matching.md:694-695,745-747), so this is a missing diagnostic, not a mischeck; the design requires 'We will diagnose... A pattern is not useful in the context of prior patterns.' RF-4's constant-expression admission creates invisible overlaps (for example `case 5` vs `case 2 + 3` on the same scrutinee), so duplicate/overlap detection must compare evaluated constant values, not source forms."
+    },
+    {
+      "id": "W-067",
+      "title": "S2d follow-up: guards on `default` clauses (parse + check), per p002188/pattern_matching.md",
+      "kind": "todo-stub",
+      "subsystem": "toolchain/parse + toolchain/check",
+      "size": "S",
+      "bullet": "Control flow: matching — good switch equivalents",
+      "evidence": [
+        "toolchain/parse/handle_match.cpp:273-277",
+        "docs/design/pattern_matching.md:813-815",
+        "proposals/p002188-pattern-matching-syntax-and-semantics.md:551-553",
+        "fork/decision-log.md (S2d landing note, 2026-07-29)"
+      ],
+      "blocked_by": [],
+      "notes": "Scope trade recorded at fork/match-replatform/plan.md §3.4 and re-recorded at the S2d landing: design authority allows `default if (E) => ...` (so `default` stays equivalent to `case _: auto`), but the fork's parser attaches guard nodes only to `case` — `HandleMatchDefaultIntroducer` goes straight to the handler block with no guard production. The check side is small once parse carries the nodes: a guarded `default` arm reuses the S2d capture-splice-branch shape with no pattern test and no bindings, and its else edge needs a following arm or another `default` to fall through to, so the exhaustiveness interaction (a guarded `default` never discharges the `default` requirement) should land with or after S2e."
     }
   ]
 }

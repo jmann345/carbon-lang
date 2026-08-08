@@ -1,0 +1,1218 @@
+{
+  "generated": "2026-08-08T03:02:26.043184+00:00",
+  "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
+  "elapsed_seconds": 12.3,
+  "totals": {
+    "PASS": 77,
+    "COMPILE-FAIL": 0,
+    "LINK-FAIL": 0,
+    "RUN-FAIL": 0,
+    "OUTPUT-MISMATCH": 0,
+    "DIFF-MISMATCH": 0,
+    "SKIP": 31
+  },
+  "programs": [
+    {
+      "path": "code_org/impl_files_impl_defined_fn.carbon",
+      "bullet": "Code organization: Implementation files",
+      "status": "SKIP",
+      "detail": "needs `carbon link` to link core-library impl objects (explicit TODO in toolchain/driver/link_driver.cpp, which links only prelude objects): Core.EOF is declared in core/io.carbon and defined in core/io.impl.carbon, and this program compiles but link-fails with `ld.lld: error: undefined symbol: _CEOF.Core` on carbon_toolchain-0.0.0-0.nightly.2026.07.19.",
+      "differential": false
+    },
+    {
+      "path": "code_org/impl_files_pair_in_compile.carbon",
+      "bullet": "Code organization: Implementation files",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "code_org/importing_core_library.carbon",
+      "bullet": "Code organization: Importing",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "code_org/importing_cpp_header.carbon",
+      "bullet": "Code organization: Importing",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "code_org/importing_cpp_inline.carbon",
+      "bullet": "Code organization: Importing",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "code_org/library_multifile_export.carbon",
+      "bullet": "Code organization: Libraries",
+      "status": "SKIP",
+      "detail": "harness limitation, not a feature gap: user-written named libraries (`library \"x\";` api + `impl library \"x\";`), `export C;`, and `export import library \"x\";` need multiple compilation units, but runner.py compiles exactly one file per program; this slice is arbitrated by golden checks in toolchain/check/testdata/packages/ (export_name.carbon, export_import.carbon, fail_duplicate_api.carbon, fail_api_not_found.carbon).",
+      "differential": false
+    },
+    {
+      "path": "code_org/library_named_import.carbon",
+      "bullet": "Code organization: Libraries",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "code_org/namespaces.carbon",
+      "bullet": "Code organization: Namespaces",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "code_org/packages_cross_import.carbon",
+      "bullet": "Code organization: Packages",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "code_org/packages_restricted_names.carbon",
+      "bullet": "Code organization: Packages",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "code_org/packages_scope_expr.carbon",
+      "bullet": "Code organization: Packages",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "control_flow/choice_payload_roundtrip_diff.carbon",
+      "bullet": "Control flow: matching \u2014 sum-type consumption incl. std::variant/std::optional interop",
+      "status": "PASS",
+      "detail": "",
+      "differential": true
+    },
+    {
+      "path": "control_flow/conditions.carbon",
+      "bullet": "Control flow: conditions",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "control_flow/if_let_let_else.carbon",
+      "bullet": "Control flow: matching \u2014 if-let / let-else combined match+declaration",
+      "status": "SKIP",
+      "detail": "MISSING and not even designed \u2014 absent at every layer (no tokens, parse states, or check support) and absent from docs/design/pattern_matching.md; there is no accepted syntax for a combined match+declaration, so the `if (let ...)` / `let ... else` forms below are strawmen to be replaced by the accepted design. Un-SKIP (and uncomment the body) when an if-let/let-else design is accepted and implemented (depends on W4 match semantics).",
+      "differential": false
+    },
+    {
+      "path": "control_flow/loops.carbon",
+      "bullet": "Control flow: loops incl. range-based and C/C++ loop equivalents",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "control_flow/match_guard_binding.carbon",
+      "bullet": "Control flow: matching \u2014 good switch equivalents",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "control_flow/match_guard_diff.carbon",
+      "bullet": "Control flow: matching \u2014 good switch equivalents",
+      "status": "PASS",
+      "detail": "",
+      "differential": true
+    },
+    {
+      "path": "control_flow/match_no_fallthrough.carbon",
+      "bullet": "Control flow: matching \u2014 good switch equivalents",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "control_flow/match_position.carbon",
+      "bullet": "Control flow: matching \u2014 good switch equivalents",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "control_flow/match_sum_type_payload.carbon",
+      "bullet": "Control flow: matching \u2014 sum-type consumption incl. std::variant/std::optional interop",
+      "status": "SKIP",
+      "detail": "MISSING interop half \u2014 Carbon-side sum-type consumption landed at the match re-platform's S2c (W5 slice 2): a payload alternative pattern `case .Ok(value: i32)` destructures the payload and binds it (arbiter: control_flow/choice_payload_roundtrip_diff.carbon, un-SKIPped at S2c), so per the fork/w5-choice/plan.md \u00a73.3 split this program now keeps only its interop half. Remaining blocker: no std::variant/std::optional interop mapping (check/cpp/custom_type_mapping.cpp has no variant/optional matcher; W5 slice 4) \u2014 `match (Cpp.MaybeSeven())` has no choice-typed view of std::optional, and Optional is a placeholder without pattern integration, so the post-S2c toolchain rejects the intended body at the scrutinee with \"error: semantics TODO: `match on unsupported scrutinee type`\" (the MatchCondition scrutinee gate in toolchain/check/handle_match.cpp), before any case pattern is reached. Un-SKIP (and uncomment the body) when W5 slice 4 lands the interop mapping.",
+      "differential": false
+    },
+    {
+      "path": "control_flow/match_switch.carbon",
+      "bullet": "Control flow: matching \u2014 good switch equivalents",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "control_flow/match_switch_diff.carbon",
+      "bullet": "Control flow: matching \u2014 good switch equivalents",
+      "status": "PASS",
+      "detail": "",
+      "differential": true
+    },
+    {
+      "path": "control_flow/range_iter_diff.carbon",
+      "bullet": "Control flow: loops incl. range-based and C/C++ loop equivalents",
+      "status": "PASS",
+      "detail": "",
+      "differential": true
+    },
+    {
+      "path": "error_handling/control_flow_constructs.carbon",
+      "bullet": "Error handling: dedicated control flow constructs",
+      "status": "SKIP",
+      "detail": "MISSING and undesigned \u2014 docs/design/README.md:3831: \"Carbon does not have language features dedicated to error handling\"; no try/throw tokens or parser states exist anywhere in the toolchain, so the error-propagation syntax below is a strawman to be replaced by the accepted design. Un-SKIP (and uncomment the body) when W2 delivers an accepted error-handling design and it is implemented.",
+      "differential": false
+    },
+    {
+      "path": "error_handling/cpp_exception_interop.carbon",
+      "bullet": "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)",
+      "status": "SKIP",
+      "detail": "MISSING (B3) \u2014 this body is the catching-import stage: designed FINAL as B3 in docs/design/error_handling.md#implementation-staging (decision F-006), but no `Core.Result` type exists under core/prelude/ (grep Result there hits only the arithmetic interfaces' `.Result` associated constants), toolchain/check/cpp/thunk.cpp has no catching/exception-capturing thunk path (its only exception-spec use is EST_BasicNoexcept on the placement-new helper, thunk.cpp:37), and nothing synthesizes `Cpp.Exception` anywhere in toolchain/check/cpp/. Un-SKIP (and uncomment the body) when B3's catching thunks + Core.Result + Cpp.Exception land. The B0 boundary contract (--cpp-exceptions flag, none mode, auto->catch, fenced terminate) is arbitrated by the sibling cpp_exceptions_*.carbon programs, not here.",
+      "differential": false
+    },
+    {
+      "path": "error_handling/cpp_exceptions_auto_catch.carbon",
+      "bullet": "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "error_handling/cpp_exceptions_fence_terminate.carbon",
+      "bullet": "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "error_handling/cpp_exceptions_none_mode.carbon",
+      "bullet": "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "functions/forward_decl.carbon",
+      "bullet": "Functions: separate declaration and definition",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "functions/overloading_native.carbon",
+      "bullet": "Functions: function overloading (Carbon-native)",
+      "status": "SKIP",
+      "detail": "MISSING with no design \u2014 docs/design/pattern_matching.md:696: \"We do not yet have an approved design for overloaded functions\"; there is no design and no implementation of Carbon-side overloading, so a second `fn Describe` with a different signature is rejected as a redeclaration today (only imported C++ overload sets work, per interop/cpp_overload_set_by_type.carbon). Un-SKIP (and uncomment the body) when an overloading design is accepted and implemented.",
+      "differential": false
+    },
+    {
+      "path": "generics/checked_generics.carbon",
+      "bullet": "Generics: Checked generics",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "generics/generic_class.carbon",
+      "bullet": "Generics: generic functions and types",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "generics/structural_conformance.carbon",
+      "bullet": "Generics: Template-style structural conformance to nominal constraints",
+      "status": "SKIP",
+      "detail": "MISSING at both layers \u2014 \"structural conformance\" appears nowhere in the toolchain, and the templates design doc does not concretely design it: neither design nor implementation exists, so today a `template T:! I` parameter still requires the argument type to nominally `impl as I`. Un-SKIP (and uncomment the body) when W7 (integrated templates completion + structural conformance) lands.",
+      "differential": false
+    },
+    {
+      "path": "generics/templates_dependent_member.carbon",
+      "bullet": "Generics: Integrated templates",
+      "status": "SKIP",
+      "detail": "dependent member access `x.n` type-checks via deferred actions but compile aborts: FATAL failure at toolchain/lower/handle.cpp:363: Template lowering not implemented yet (SpliceInst; crash context \"Lowering splice_inst\" at the `x.n` line) \u2014 verified against this arbiter toolchain 2026-07-19",
+      "differential": false
+    },
+    {
+      "path": "generics/templates_type_param.carbon",
+      "bullet": "Generics: Integrated templates",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "generics/templates_value_param.carbon",
+      "bullet": "Generics: Integrated templates",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "generics/variadics_each.carbon",
+      "bullet": "Generics: Definition-checked variadics",
+      "status": "SKIP",
+      "detail": "DESIGN-ONLY \u2014 a complete 964-line accepted design exists (docs/design/variadics.md, proposal p002240) but there is zero implementation: no `...`/`each` tokens exist in toolchain/lex/token_kind.def (verified by grep), so any pack expansion fails at the lexer. Un-SKIP (and uncomment the body) when W6 (definition-checked variadics implementation) lands.",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_adl_swap_extension_point.carbon",
+      "bullet": "Functions: C++ interop \u2014 open overload sets as extension points (swap etc.)",
+      "status": "SKIP",
+      "detail": "feature gap, the missing slice of this PARTIAL bullet: only the `begin`/`end` overload set gets extension-point treatment \u2014 BuildCppRangeForIterateWitness in toolchain/check/cpp/impl_lookup.cpp special-cases exactly the identifiers \"begin\" and \"end\" (member lookup, then ADL via AddArgumentDependentLookupCandidates) into the prelude's private CppRangeForIterate interface, and LookupCppImpl's switch covers only that plus operator interfaces (Inc/EqWith/AddWith/...). There is no swap-style heuristic import: no Swap interface exists anywhere in the arbiter's shipped prelude (grep -ri swap over carbon_toolchain-0.0.0-0.nightly.2026.07.19/lib/carbon/core/ finds nothing), so the `Core.Swap` bound and `.(Core.Swap.Op)` call below have no real spelling to compile against. ADL coverage is itself partial: on this arbiter a mutable-reference ADL range (`friend auto begin(MutRange&)`) fails to iterate with `error: facet type ... can not be identified` / `note: value expression passed to reference parameter` while building the thunk for `fn Begin(self)` (matches fail_todo_adl_returns_same_types_mutable.carbon in check/testdata/interop/cpp/impls/cpp_range_for_iterate.carbon). Verified by hand on this arbiter: the direct qualified call `Cpp.ext.swap(ref a, ref b)` on this exact Box type compiles, links, runs and prints 2 then 1 \u2014 but that is plain imported-function overload resolution (the importing/calling bullet), not the overload set surfaced as an extension point for Carbon generic code. Promote out of SKIP when a swap-style synthesized interface lands; the working begin/end slice is arbitrated by the two PASSing cpp_range_*_iterate.carbon siblings.",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_compat_long_adapters.carbon",
+      "bullet": "Stdlib C++ interop: transparent fundamental-type mapping",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_concept_export_predicate.carbon",
+      "bullet": "Generics: C++ interop \u2014 C++20 concepts <-> named predicates mapping",
+      "status": "SKIP",
+      "detail": "known-missing slice \u2014 the export direction (Carbon named predicates usable as C++20 concepts in C++ code) is unimplemented: naming the Carbon interface from the inline Cpp block fails on nightly 2026.07.19 (even with `--clang-arg=-std=c++20` added by hand to rule out the C++17 importer default) with: error: semantics TODO: `interop with unsupported type` and: error: no member named 'HasGet' in namespace 'Carbon' at `requires Carbon::HasGet<T>` \u2014 interfaces are not exported to C++ at all, matching the gap-analysis audit (\"the export direction (Carbon predicates as C++20 concepts) has no trace\").",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_concept_import_predicate.carbon",
+      "bullet": "Generics: C++ interop \u2014 C++20 concepts <-> named predicates mapping",
+      "status": "SKIP",
+      "detail": "harness limitation, not a feature gap: `carbon compile` defaults the C++ importer to C++17 (probed on nightly 2026.07.19: `#if __cplusplus >= 202002L` is false, 201703L is picked), so the `concept` declaration below fails with: error: unknown type name 'concept' \u2014 it needs `--clang-arg=-std=c++20` (exactly what check/testdata/interop/cpp/template/concept.carbon passes via EXTRA-ARGS), and runner.py's fixed compile line (compile --output=... --output-last-input-only <file>) passes no clang args; this exact body was verified end-to-end by hand with that one flag added: compile + link + run prints 0 then 1 and exits 0 on this arbiter toolchain.",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_export_function.carbon",
+      "bullet": "Functions: C++ interop \u2014 exporting Carbon functions/methods to C++",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_export_method.carbon",
+      "bullet": "Functions: C++ interop \u2014 exporting Carbon functions/methods to C++",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_fundamental_types.carbon",
+      "bullet": "Stdlib C++ interop: transparent fundamental-type mapping",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_generic_export_deduced_builtin.carbon",
+      "bullet": "Generics: C++ interop \u2014 exporting Carbon templates/checked generics as C++ templates",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_generic_export_interface_dispatch.carbon",
+      "bullet": "Generics: C++ interop \u2014 exporting Carbon templates/checked generics as C++ templates",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_generic_export_nontype_param.carbon",
+      "bullet": "Generics: C++ interop \u2014 exporting Carbon templates/checked generics as C++ templates",
+      "status": "SKIP",
+      "detail": "known-missing slice \u2014 a non-type generic parameter cannot be exported as a C++ non-type template parameter on nightly 2026.07.19: this file fails to compile with `error: semantics TODO: `binding maps to a non-type template parameter`` at the `fn Constant[N: i32]` declaration, followed by `error: no member named 'Constant' in namespace 'Carbon'` at the C++ call site (verified against this arbiter toolchain; same TODO as check/testdata/interop/cpp/function/export/generic.carbon, fail_todo_non_type_generic). The related missing slices \u2014 generics inside an enclosing generic scope (fail_todo_enclosing_generic) and Carbon `template` export (template lowering itself is CARBON_FATAL, see generics/templates_dependent_member.carbon) \u2014 are TODO in the same file. Enable when export.cpp maps value bindings to clang NonTypeTemplateParmDecls.",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_iostream.carbon",
+      "bullet": "Functions: C++ interop \u2014 importing/calling C++ functions and methods",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_iterate_generic_adl_range.carbon",
+      "bullet": "Stdlib C++ interop: transparent iteration-abstraction mapping",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_iterate_generic_member_range.carbon",
+      "bullet": "Stdlib C++ interop: transparent iteration-abstraction mapping",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_iterate_sentinel_range_for.carbon",
+      "bullet": "Stdlib C++ interop: transparent iteration-abstraction mapping",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_operator_export.carbon",
+      "bullet": "Type system: C++ interop \u2014 exporting Carbon operator overloads into C++",
+      "status": "SKIP",
+      "detail": "exporting Carbon operator impls for use from C++ is MISSING \u2014 no evidence anywhere in the toolchain (audit: \"operator interop is one-directional\"): interop testdata covers importing C++ operators and synthesizing Carbon overloads for imported types, but nothing maps a Carbon `impl as Core.AddWith` back to a C++ `operator+` on the exported `Carbon::` type. Un-SKIP (and uncomment the body) when the export direction lands.",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_operator_import_arithmetic.carbon",
+      "bullet": "Type system: C++ interop \u2014 synthesizing Carbon overloads for imported C++ types",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_operator_import_assignment.carbon",
+      "bullet": "Type system: C++ interop \u2014 synthesizing Carbon overloads for imported C++ types",
+      "status": "SKIP",
+      "detail": "assignment-operator import is the bullet's known-missing slice (audit: fail_todo): C++ `operator=(int)` is not imported, so `c = 42;` fails to compile with: error: cannot implicitly convert expression of type `Core.IntLiteral` to `Cpp.Cell` / note: type `Core.IntLiteral` does not implement interface `Core.ImplicitAs(Cpp.Cell)` \u2014 exact error verified against this toolchain; matches upstream check/testdata/interop/cpp/operators/operators.carbon (fail_todo_import_assignment.carbon).",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_operator_import_compare.carbon",
+      "bullet": "Type system: C++ interop \u2014 synthesizing Carbon overloads for imported C++ types",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_overload_set_by_type.carbon",
+      "bullet": "Functions: C++ interop \u2014 importing C++ overload sets",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_overload_set_default_args.carbon",
+      "bullet": "Functions: C++ interop \u2014 importing C++ overload sets",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_overload_set_literals.carbon",
+      "bullet": "Functions: C++ interop \u2014 importing C++ overload sets",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_range_adl_begin_end_iterate.carbon",
+      "bullet": "Functions: C++ interop \u2014 open overload sets as extension points (swap etc.)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_range_member_begin_end_iterate.carbon",
+      "bullet": "Functions: C++ interop \u2014 open overload sets as extension points (swap etc.)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_span_view.carbon",
+      "bullet": "Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view)",
+      "status": "SKIP",
+      "detail": "MISSING \u2014 no Carbon slice type exists (grep for Slice in core/ returns nothing) and there is no std::span/vector view mapping: only ordinary API import of containers works, so a Carbon array cannot be passed transparently as std::span and an owning std::vector cannot be viewed as a Carbon slice. Un-SKIP (and uncomment the body) when the Core slice type (W9) and its contiguous-container interop mapping land.",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_template_builtins.carbon",
+      "bullet": "Generics: C++ interop \u2014 importing C++ templates, instantiating on Carbon types",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_template_carbon_class.carbon",
+      "bullet": "Generics: C++ interop \u2014 importing C++ templates, instantiating on Carbon types",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_template_on_carbon_generic.carbon",
+      "bullet": "Type system: C++ interop \u2014 importing C++ types / exporting Carbon types",
+      "status": "SKIP",
+      "detail": "known-missing slice \u2014 instantiating an imported C++ template on a symbolic Carbon generic parameter fails to compile on nightly 2026.07.19 with: \"error: semantics TODO: `unsupported type used as template argument`\" (both uses of Cpp.Box(T) below; same TODO as check/testdata/interop/cpp/template/generic_call.carbon). Concrete Carbon class types as template args DO work \u2014 arbitrated by cpp_type_import_class_enum.carbon.",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_template_symbolic_arg.carbon",
+      "bullet": "Generics: C++ interop \u2014 importing C++ templates, instantiating on Carbon types",
+      "status": "SKIP",
+      "detail": "a symbolic checked-generic type parameter as a C++ template argument still fails to compile on nightly 2026.07.19: \"error: semantics TODO: `unsupported type used as template argument`\" at `var b: Cpp.Box(T);` \u2014 the exact TODO tracked in toolchain/check/testdata/interop/cpp/template/generic_call.carbon (fail_todo_generic_call); enable when template instantiation is deferred to monomorphization.",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_threading_atomics.carbon",
+      "bullet": "C++ interop: threading, atomics, memory model, synchronization",
+      "status": "SKIP",
+      "detail": "MISSING \u2014 no dedicated support, tests, or design doc anywhere in toolchain/ or docs/design/: nothing defines Carbon's memory model, how std::thread/std::mutex/std::atomic map into Carbon, or what synchronization guarantees hold for Carbon code called from C++ threads. Un-SKIP (and uncomment the body) when a threading/atomics interop design lands and Cpp.std.thread/Cpp.std.atomic are usable from Carbon.",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_type_export_carbon_class.carbon",
+      "bullet": "Type system: C++ interop \u2014 importing C++ types / exporting Carbon types",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/cpp_type_import_class_enum.carbon",
+      "bullet": "Type system: C++ interop \u2014 importing C++ types / exporting Carbon types",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/inherit_carbon_extends_cpp.carbon",
+      "bullet": "Type system: C++ interop \u2014 bi-directional inheritance, hierarchy roots, abstract/final/virtual mapping",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/inherit_cpp_extends_carbon.carbon",
+      "bullet": "Type system: C++ interop \u2014 bi-directional inheritance, hierarchy roots, abstract/final/virtual mapping",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/inherit_multiple_bases.carbon",
+      "bullet": "Type system: C++ interop \u2014 bi-directional inheritance, hierarchy roots, abstract/final/virtual mapping",
+      "status": "SKIP",
+      "detail": "multiple-inheritance mapping is the bullet's known-missing slice: derived-to-base conversion for a C++ class with two bases fails on the 2026.07.19 toolchain with `error: cannot implicitly convert expression of type `Cpp.C*` to `Cpp.A*`` / note: type `Cpp.C*` does not implement interface `Core.ImplicitAs(Cpp.A*)` (and likewise for `Cpp.B*`), matching fail_todo_use_multiple_inheritance.carbon in toolchain/check/testdata/interop/cpp/class/import/base.carbon; virtual/diamond bases fail the same way (fail_todo_use_virtual_inheritance, fail_todo_use_diamond). Un-SKIP when multiple-base conversion lands.",
+      "differential": false
+    },
+    {
+      "path": "interop/string_view_cpp_to_str.carbon",
+      "bullet": "Stdlib C++ interop: transparent non-owning string mapping",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "interop/string_view_str_to_cpp.carbon",
+      "bullet": "Stdlib C++ interop: transparent non-owning string mapping",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "project/cmake_build_integration.carbon",
+      "bullet": "Project: CMake build-system integration plus Make documentation",
+      "status": "SKIP",
+      "detail": "MISSING \u2014 no CMake support, example, or docs exist anywhere in the repo (only a libc++ header-expansion .bzl mentions cmake); Bazel is the only integrated build system. Distinct from the drop-in-Clang bullet (project/dropin_clang_make_cmake.carbon): this bullet requires first-class CMake integration for building *Carbon* code (a language/toolchain module or find-package flow driving `carbon compile`/`carbon link` from CMakeLists.txt) plus written Make documentation, none of which exists. This harness also cannot arbitrate it \u2014 runner.py only runs single .carbon files and cannot drive an external build system \u2014 so when the integration lands, arbitration must move to the example project's own CI; un-SKIP then.",
+      "differential": false
+    },
+    {
+      "path": "project/design_docs_placeholders.carbon",
+      "bullet": "Goal: design docs documented, cohesive, understandable without placeholders",
+      "status": "SKIP",
+      "detail": "documentation/goal bullet, not an executable language feature \u2014 arbitrated by document review of docs/design/, not by a runnable program. The working slice (why gap-analysis marks this PARTIAL, not MISSING): generics (docs/design/generics/: overview.md, terminology.md, details.md plus three appendices), variadics (docs/design/variadics.md), pattern matching in declarations (docs/design/pattern_matching.md), and classes (docs/design/classes.md) are mature proposal-backed designs. The known-missing slice, verified in-tree today: docs/design/templates.md (lines 24-25) and docs/design/metaprogramming.md (lines 20-21) each open with the self-description \"This is a skeletal design ... it is a placeholder until we have more time to examine this detail\" (docs/design/aliases.md and docs/design/blocks_and_statements.md carry the same boilerplate); the `match` control-flow section of docs/design/pattern_matching.md says of itself \"`match` is a skeletal design ... it is a placeholder\" (lines 712-714); docs/design/interoperability/README.md has nine \"TODO:\" section headings plus an inline TODO \u2014 several literally empty headings with no body at all (lines 210-218: \"TODO: Overload resolution\", \"TODO: Constructors\", \"TODO: Struct literals\", \"TODO: Accessing C++ classes, structs, and members\", \"TODO: Accessing global variables\"); and docs/design/README.md itself warns \"This document includes much that is provisional or placeholder\" (line 143). No runnable program can distinguish a cohesive design doc from a placeholder one, so this bullet has no executable surface; the features those docs describe are arbitrated separately by the generics/, types/, control_flow/, and interop/ programs in this suite. Re-audit by document review when the skeletal docs and empty interop sections are replaced by accepted proposals.",
+      "differential": false
+    },
+    {
+      "path": "project/dropin_clang_cpp_toolchain.carbon",
+      "bullet": "Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "project/dropin_clang_make_cmake.carbon",
+      "bullet": "Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems",
+      "status": "SKIP",
+      "detail": "known-missing slice \u2014 Make/CMake integration of the drop-in Clang mode is unexercised and undocumented in-repo: the 0.1 arbiter (fork/gap-analysis.md, \"Project/toolchain product features\" section) requires a CI-tested example CMake project building a mixed Carbon/C++ program with the installed toolchain plus written Make-integration docs, and neither exists (no CMakeLists.txt or Makefile example anywhere; examples/bazel/ is the only downstream build-system example, and docs/ has no Make/CMake guide). This harness also cannot arbitrate it: runner.py only runs `carbon compile`/`carbon link` on single Main//default .carbon files and cannot drive an external build system. The underlying functionality does work when driven by hand against this exact install tree (nightly 2026.07.19): lib/carbon/llvm/bin/clang++ built and ran a std::cout C++ hello world both via `make` with CXX=<symlink> and via `cmake -DCMAKE_CXX_COMPILER=<symlink>` + `cmake --build` (configure detects \"clang version 23.0.0git\"), each printing the expected line with exit 0 \u2014 so the gap is in-repo integration, CI coverage, and documentation, not the drop-in toolchain itself. Un-SKIP (and move the arbitration to that example's CI) when the CMake example project and Make docs land.",
+      "differential": false
+    },
+    {
+      "path": "project/evaluator_docs_getting_started.carbon",
+      "bullet": "Project: basic evaluator documentation (getting started to FAQs)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "project/evaluator_docs_review.carbon",
+      "bullet": "Project: basic evaluator documentation (getting started to FAQs)",
+      "status": "SKIP",
+      "detail": "documentation bullet \u2014 beyond its one runnable example (see evaluator_docs_getting_started.carbon, which PASSes), it is arbitrated by document review, not by a runnable program. What exists (the working PARTIAL slice): README.md \"## Getting started\" gives a concrete nightly-tarball evaluation walkthrough \u2014 download carbon_toolchain-<version>.tar.gz from the releases page, unpack, write forty_two.carbon, `carbon compile` / `carbon link`, run \u2014 but it is Ubuntu/Debian-only (its link step depends on `sudo apt install libgcc-11-dev`) and it points browser evaluators at carbon.compiler-explorer.com; docs/project/faq.md is a comprehensive 659-line project FAQ (What is Carbon? / status / why build it / alternatives considered / feature-design rationale / how interop and generics work). What is missing (why the bullet is PARTIAL, per fork/gap-analysis.md): docs/guides/ \u2014 the directory the bullet's \"getting started to FAQs\" range should span \u2014 contains only glossary.md plus a 12-line README index; there is no language tutorial, no step-by-step evaluation walkthrough beyond the README shell snippet, and no getting-started doc for non-Ubuntu platforms. None of that missing prose has an executable arbiter: a tutorial's absence cannot make a program fail, so this half stays document-review. Un-SKIP by replacing this file with programs transcribed from a real docs/guides tutorial's code samples once one is written (workstream W11 in fork/gap-analysis.md).",
+      "differential": false
+    },
+    {
+      "path": "project/most_features_interop_matrix.carbon",
+      "bullet": "Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "project/most_features_language_matrix.carbon",
+      "bullet": "Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "project/most_features_missing_match.carbon",
+      "bullet": "Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "project/run_exit_code.carbon",
+      "bullet": "Project: installs on Windows, macOS, and Linux and builds working programs",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "project/safe_carbon_design.carbon",
+      "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
+      "status": "SKIP",
+      "detail": "MISSING documentation bullet \u2014 there is no document to review: temporal/mutation safety exists only as an explicitly \"directional... provisional\" section of proposals/p005914-updating-carbon-s-safety-strategy.md, there are no dedicated design docs or follow-up proposals for the per-category design (type/init/spatial/temporal/mutation), no safe-Rust-interop analysis exists anywhere, and docs/design/README.md's \"Lifetime and move semantics\" section is a bare TODO. Distinct from the (also-SKIPped) strategy bullet arbitrated by project/safety_strategy_doc.carbon: that one reviews the accepted p005914 strategy; this one requires the *detailed and concrete* follow-on design, which has not been written. Arbitrate by document review \u2014 un-SKIP when dedicated safe-Carbon design docs covering all five categories plus the Rust-interop analysis land, then morph the body per below.",
+      "differential": false
+    },
+    {
+      "path": "project/safety_strategy_doc.carbon",
+      "bullet": "Project: detailed safety strategy",
+      "status": "SKIP",
+      "detail": "documentation/strategy bullet \u2014 arbitrated by document review, not by a runnable program. The strategy is docs/design/safety/README.md, rewritten via the accepted proposals/p005914-updating-carbon-s-safety-strategy.md and covering: safe vs. unsafe code with three narrowness principles for `unsafe` constructs; Strict Carbon and Permissive Carbon safety modes configurable per file (package declaration) or per function; a per-category memory safety model (spatial, type, initialization enforced statically/dynamically; temporal via a Rust-style borrow-checked default with fallbacks; data-race safety deferred behind unsynchronized temporal safety); a safe library ecosystem plan including reuse of the Rust crate ecosystem; hardened/debug/optimized build-mode interaction; and constraints on probabilistic mitigations \u2014 supported by docs/design/safety/terminology.md. Toolchain state: one `unsafe` construct IS fully implemented and runnable today \u2014 the `unsafe as` conversion operator (Core.UnsafeAs; checked as ExplicitUnsafeAs in toolchain/check/convert.h, diagnostic-tested in toolchain/check/testdata/as/unsafe_as.carbon, lowered in toolchain/lower/testdata/pointer/convert.carbon) \u2014 and this file's body demonstrates it (hand-verified compile+link+run+output on the arbiter toolchain; EXPECT directives above describe that run). But `unsafe as` predates p005914 and exercises only narrowness principle 3 (a way to include the `unsafe` keyword in the operation's syntax); it cannot arbitrate this bullet, because what the strategy document adds \u2014 the Strict/Permissive safety modes, per-category enforcement, borrow-checked temporal default \u2014 has no toolchain surface: the doc itself marks the safety-mode syntax and the soundness model as \"Future work\" (three such blocks in docs/design/safety/README.md), so no program can yet distinguish a toolchain that follows the strategy from one that ignores it, and letting the `unsafe as` demo alone flip a documentation bullet to PASS would overclaim. Residual gaps per the gap-analysis note: soundness model and mode syntax undefined, and docs/project/principles/safety_strategy.md is a stale conflicting doc still describing the older build-mode-centric strategy (\"Using build modes to manage safety checks\"). Un-SKIP only when p005914's follow-on mode-syntax proposals land: then drop this directive and morph the body into a Strict-mode file where the `unsafe as` below is required to carry its `unsafe` keyword.",
+      "differential": false
+    },
+    {
+      "path": "stdlib/arith_widths_diff.carbon",
+      "bullet": "Stdlib: fundamental types (bool, iN, fN)",
+      "status": "PASS",
+      "detail": "",
+      "differential": true
+    },
+    {
+      "path": "stdlib/conversion_interfaces.carbon",
+      "bullet": "Stdlib: interfaces powering language syntax (operators, conversions)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "stdlib/fundamental_types.carbon",
+      "bullet": "Stdlib: fundamental types (bool, iN, fN)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "stdlib/iterate_interface.carbon",
+      "bullet": "Stdlib: interfaces powering language syntax (operators, conversions)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "stdlib/operator_interfaces.carbon",
+      "bullet": "Stdlib: interfaces powering language syntax (operators, conversions)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "stdlib/optional_basic.carbon",
+      "bullet": "Stdlib: Optional",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "stdlib/optional_missing_ops.carbon",
+      "bullet": "Stdlib: Optional",
+      "status": "SKIP",
+      "detail": "known-missing slice of this PARTIAL bullet: Core.Optional is an unapproved placeholder API (\"We don't have an approved design for an `Optional` type yet... The API here is a placeholder\", core/prelude/types/optional.carbon:27-28) with no comparison support; on the arbiter toolchain `a == b` on two Optional(i32) values fails with \"error: cannot access member of interface `Core.EqWith(Core.Optional(i32 as Core.OptionalStorage))` in type `Core.Optional(i32 as Core.OptionalStorage)` that does not implement that interface\"",
+      "differential": false
+    },
+    {
+      "path": "stdlib/optional_pointer_niche.carbon",
+      "bullet": "Stdlib: Optional",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "stdlib/pointers.carbon",
+      "bullet": "Stdlib: pointer types",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "stdlib/slices_basic.carbon",
+      "bullet": "Stdlib: Slices",
+      "status": "SKIP",
+      "detail": "MISSING \u2014 grep for Slice in core/ returns nothing: no slice type exists anywhere in the Core package (and heap allocation is likewise absent), so a non-owning contiguous view over an array cannot be expressed today. Un-SKIP (and uncomment the body) when W9 delivers a Core slice type with construction-from-array, indexing, and size.",
+      "differential": false
+    },
+    {
+      "path": "stdlib/string_basic.carbon",
+      "bullet": "Stdlib: String and string-literal types",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "stdlib/string_missing_ops.carbon",
+      "bullet": "Stdlib: String and string-literal types",
+      "status": "SKIP",
+      "detail": "known-missing slice of this PARTIAL bullet: Core.String has no equality/concatenation impls and no owning variant (core/prelude/types/string.carbon is only Size/Copy/IndexWith); on the arbiter toolchain `a == b` on `str` fails with \"error: cannot access member of interface `Core.EqWith(str)` in type `str` that does not implement that interface\" and `a + b` fails with \"error: cannot access member of interface `Core.AddWith(str)` in type `str` that does not implement that interface\"",
+      "differential": false
+    },
+    {
+      "path": "stdlib/tuples_arrays_structs.carbon",
+      "bullet": "Stdlib: tuple/array library parts",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "types/choice_basic.carbon",
+      "bullet": "Type system: Sum types (discriminated unions)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "types/choice_discriminant_diff.carbon",
+      "bullet": "Type system: Sum types (discriminated unions)",
+      "status": "PASS",
+      "detail": "",
+      "differential": true
+    },
+    {
+      "path": "types/choice_payload_construct.carbon",
+      "bullet": "Type system: Sum types (discriminated unions)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "types/classes.carbon",
+      "bullet": "Type system: User-defined types (classes)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "types/inheritance.carbon",
+      "bullet": "Type system: Single inheritance",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "types/operator_overloading.carbon",
+      "bullet": "Type system: Operator overloading",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "types/operator_overloading_diff.carbon",
+      "bullet": "Type system: Operator overloading",
+      "status": "PASS",
+      "detail": "",
+      "differential": true
+    },
+    {
+      "path": "types/union_basic.carbon",
+      "bullet": "Type system: Unions (un-discriminated) + C++ union mapping",
+      "status": "SKIP",
+      "detail": "un-discriminated unions are MISSING at every layer \u2014 no `union` token in toolchain/lex/token_kind.def (verified by grep), no parse/check support, and no design doc; C++ unions import only as opaque interop types, so neither a native Carbon union nor member access on an imported C++ union can be written today. Un-SKIP (and uncomment the body) when a union design + implementation land.",
+      "differential": false
+    },
+    {
+      "path": "types/virtual_dispatch.carbon",
+      "bullet": "Type system: Virtual dispatch",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "types/virtual_dispatch_diff.carbon",
+      "bullet": "Type system: Virtual dispatch",
+      "status": "PASS",
+      "detail": "",
+      "differential": true
+    }
+  ],
+  "bullets": {
+    "Code organization: Packages": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "code_org/packages_cross_import.carbon",
+        "code_org/packages_restricted_names.carbon",
+        "code_org/packages_scope_expr.carbon"
+      ]
+    },
+    "Code organization: Libraries": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "code_org/library_multifile_export.carbon",
+        "code_org/library_named_import.carbon"
+      ]
+    },
+    "Code organization: Implementation files": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "code_org/impl_files_impl_defined_fn.carbon",
+        "code_org/impl_files_pair_in_compile.carbon"
+      ]
+    },
+    "Code organization: Importing": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "code_org/importing_core_library.carbon",
+        "code_org/importing_cpp_header.carbon",
+        "code_org/importing_cpp_inline.carbon"
+      ]
+    },
+    "Code organization: Namespaces": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "code_org/namespaces.carbon"
+      ]
+    },
+    "Type system: User-defined types (classes)": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "types/classes.carbon"
+      ]
+    },
+    "Type system: C++ interop \u2014 importing C++ types / exporting Carbon types": {
+      "status": "PASS",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "interop/cpp_template_on_carbon_generic.carbon",
+        "interop/cpp_type_export_carbon_class.carbon",
+        "interop/cpp_type_import_class_enum.carbon"
+      ]
+    },
+    "Type system: Single inheritance": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "types/inheritance.carbon"
+      ]
+    },
+    "Type system: Virtual dispatch": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "types/virtual_dispatch.carbon",
+        "types/virtual_dispatch_diff.carbon"
+      ]
+    },
+    "Type system: C++ interop \u2014 bi-directional inheritance, hierarchy roots, abstract/final/virtual mapping": {
+      "status": "PASS",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "interop/inherit_carbon_extends_cpp.carbon",
+        "interop/inherit_cpp_extends_carbon.carbon",
+        "interop/inherit_multiple_bases.carbon"
+      ]
+    },
+    "Type system: Operator overloading": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "types/operator_overloading.carbon",
+        "types/operator_overloading_diff.carbon"
+      ]
+    },
+    "Type system: C++ interop \u2014 synthesizing Carbon overloads for imported C++ types": {
+      "status": "PASS",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "interop/cpp_operator_import_arithmetic.carbon",
+        "interop/cpp_operator_import_assignment.carbon",
+        "interop/cpp_operator_import_compare.carbon"
+      ]
+    },
+    "Type system: C++ interop \u2014 exporting Carbon operator overloads into C++": {
+      "status": "SKIP",
+      "gap_status": "MISSING",
+      "programs": [
+        "interop/cpp_operator_export.carbon"
+      ]
+    },
+    "Type system: Sum types (discriminated unions)": {
+      "status": "PASS",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "types/choice_basic.carbon",
+        "types/choice_discriminant_diff.carbon",
+        "types/choice_payload_construct.carbon"
+      ]
+    },
+    "Type system: Unions (un-discriminated) + C++ union mapping": {
+      "status": "SKIP",
+      "gap_status": "MISSING",
+      "programs": [
+        "types/union_basic.carbon"
+      ]
+    },
+    "Generics: generic functions and types": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "generics/generic_class.carbon"
+      ]
+    },
+    "Generics: Checked generics": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "generics/checked_generics.carbon"
+      ]
+    },
+    "Generics: Definition-checked variadics": {
+      "status": "SKIP",
+      "gap_status": "DESIGN-ONLY",
+      "programs": [
+        "generics/variadics_each.carbon"
+      ]
+    },
+    "Generics: Integrated templates": {
+      "status": "PASS",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "generics/templates_dependent_member.carbon",
+        "generics/templates_type_param.carbon",
+        "generics/templates_value_param.carbon"
+      ]
+    },
+    "Generics: Template-style structural conformance to nominal constraints": {
+      "status": "SKIP",
+      "gap_status": "MISSING",
+      "programs": [
+        "generics/structural_conformance.carbon"
+      ]
+    },
+    "Generics: C++ interop \u2014 importing C++ templates, instantiating on Carbon types": {
+      "status": "PASS",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "interop/cpp_template_builtins.carbon",
+        "interop/cpp_template_carbon_class.carbon",
+        "interop/cpp_template_symbolic_arg.carbon"
+      ]
+    },
+    "Generics: C++ interop \u2014 exporting Carbon templates/checked generics as C++ templates": {
+      "status": "PASS",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "interop/cpp_generic_export_deduced_builtin.carbon",
+        "interop/cpp_generic_export_interface_dispatch.carbon",
+        "interop/cpp_generic_export_nontype_param.carbon"
+      ]
+    },
+    "Generics: C++ interop \u2014 C++20 concepts <-> named predicates mapping": {
+      "status": "SKIP",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "interop/cpp_concept_export_predicate.carbon",
+        "interop/cpp_concept_import_predicate.carbon"
+      ]
+    },
+    "Functions: separate declaration and definition": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "functions/forward_decl.carbon"
+      ]
+    },
+    "Functions: function overloading (Carbon-native)": {
+      "status": "SKIP",
+      "gap_status": "MISSING",
+      "programs": [
+        "functions/overloading_native.carbon"
+      ]
+    },
+    "Functions: C++ interop \u2014 importing/calling C++ functions and methods": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "interop/cpp_iostream.carbon"
+      ]
+    },
+    "Functions: C++ interop \u2014 exporting Carbon functions/methods to C++": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "interop/cpp_export_function.carbon",
+        "interop/cpp_export_method.carbon"
+      ]
+    },
+    "Functions: C++ interop \u2014 importing C++ overload sets": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "interop/cpp_overload_set_by_type.carbon",
+        "interop/cpp_overload_set_default_args.carbon",
+        "interop/cpp_overload_set_literals.carbon"
+      ]
+    },
+    "Functions: C++ interop \u2014 open overload sets as extension points (swap etc.)": {
+      "status": "PASS",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "interop/cpp_adl_swap_extension_point.carbon",
+        "interop/cpp_range_adl_begin_end_iterate.carbon",
+        "interop/cpp_range_member_begin_end_iterate.carbon"
+      ]
+    },
+    "Control flow: conditions": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "control_flow/conditions.carbon"
+      ]
+    },
+    "Control flow: loops incl. range-based and C/C++ loop equivalents": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "control_flow/loops.carbon",
+        "control_flow/range_iter_diff.carbon"
+      ]
+    },
+    "Control flow: matching \u2014 good switch equivalents": {
+      "status": "PASS",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "control_flow/match_guard_binding.carbon",
+        "control_flow/match_guard_diff.carbon",
+        "control_flow/match_no_fallthrough.carbon",
+        "control_flow/match_position.carbon",
+        "control_flow/match_switch.carbon",
+        "control_flow/match_switch_diff.carbon"
+      ]
+    },
+    "Control flow: matching \u2014 sum-type consumption incl. std::variant/std::optional interop": {
+      "status": "PASS",
+      "gap_status": "MISSING",
+      "programs": [
+        "control_flow/choice_payload_roundtrip_diff.carbon",
+        "control_flow/match_sum_type_payload.carbon"
+      ]
+    },
+    "Control flow: matching \u2014 if-let / let-else combined match+declaration": {
+      "status": "SKIP",
+      "gap_status": "MISSING",
+      "programs": [
+        "control_flow/if_let_let_else.carbon"
+      ]
+    },
+    "C++ interop: threading, atomics, memory model, synchronization": {
+      "status": "SKIP",
+      "gap_status": "MISSING",
+      "programs": [
+        "interop/cpp_threading_atomics.carbon"
+      ]
+    },
+    "Error handling: dedicated control flow constructs": {
+      "status": "SKIP",
+      "gap_status": "MISSING",
+      "programs": [
+        "error_handling/control_flow_constructs.carbon"
+      ]
+    },
+    "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)": {
+      "status": "PASS",
+      "gap_status": "MISSING",
+      "programs": [
+        "error_handling/cpp_exception_interop.carbon",
+        "error_handling/cpp_exceptions_auto_catch.carbon",
+        "error_handling/cpp_exceptions_fence_terminate.carbon",
+        "error_handling/cpp_exceptions_none_mode.carbon"
+      ]
+    },
+    "Stdlib: fundamental types (bool, iN, fN)": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "stdlib/arith_widths_diff.carbon",
+        "stdlib/fundamental_types.carbon"
+      ]
+    },
+    "Stdlib: tuple/array library parts": {
+      "status": "PASS",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "stdlib/tuples_arrays_structs.carbon"
+      ]
+    },
+    "Stdlib: pointer types": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "stdlib/pointers.carbon"
+      ]
+    },
+    "Stdlib: interfaces powering language syntax (operators, conversions)": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "stdlib/conversion_interfaces.carbon",
+        "stdlib/iterate_interface.carbon",
+        "stdlib/operator_interfaces.carbon"
+      ]
+    },
+    "Stdlib: String and string-literal types": {
+      "status": "PASS",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "stdlib/string_basic.carbon",
+        "stdlib/string_missing_ops.carbon"
+      ]
+    },
+    "Stdlib: Optional": {
+      "status": "PASS",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "stdlib/optional_basic.carbon",
+        "stdlib/optional_missing_ops.carbon",
+        "stdlib/optional_pointer_niche.carbon"
+      ]
+    },
+    "Stdlib: Slices": {
+      "status": "SKIP",
+      "gap_status": "MISSING",
+      "programs": [
+        "stdlib/slices_basic.carbon"
+      ]
+    },
+    "Stdlib C++ interop: transparent fundamental-type mapping": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "interop/cpp_compat_long_adapters.carbon",
+        "interop/cpp_fundamental_types.carbon"
+      ]
+    },
+    "Stdlib C++ interop: transparent non-owning string mapping": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "interop/string_view_cpp_to_str.carbon",
+        "interop/string_view_str_to_cpp.carbon"
+      ]
+    },
+    "Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view)": {
+      "status": "SKIP",
+      "gap_status": "MISSING",
+      "programs": [
+        "interop/cpp_span_view.carbon"
+      ]
+    },
+    "Stdlib C++ interop: transparent iteration-abstraction mapping": {
+      "status": "PASS",
+      "gap_status": "DONE",
+      "programs": [
+        "interop/cpp_iterate_generic_adl_range.carbon",
+        "interop/cpp_iterate_generic_member_range.carbon",
+        "interop/cpp_iterate_sentinel_range_for.carbon"
+      ]
+    },
+    "Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems": {
+      "status": "PASS",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "project/dropin_clang_cpp_toolchain.carbon",
+        "project/dropin_clang_make_cmake.carbon"
+      ]
+    },
+    "Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation": {
+      "status": "PASS",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "project/most_features_interop_matrix.carbon",
+        "project/most_features_language_matrix.carbon",
+        "project/most_features_missing_match.carbon"
+      ]
+    },
+    "Project: installs on Windows, macOS, and Linux and builds working programs": {
+      "status": "PASS",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "project/run_exit_code.carbon"
+      ]
+    },
+    "Project: CMake build-system integration plus Make documentation": {
+      "status": "SKIP",
+      "gap_status": "MISSING",
+      "programs": [
+        "project/cmake_build_integration.carbon"
+      ]
+    },
+    "Project: detailed safety strategy": {
+      "status": "SKIP",
+      "gap_status": "DONE",
+      "programs": [
+        "project/safety_strategy_doc.carbon"
+      ]
+    },
+    "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)": {
+      "status": "SKIP",
+      "gap_status": "MISSING",
+      "programs": [
+        "project/safe_carbon_design.carbon"
+      ]
+    },
+    "Project: basic evaluator documentation (getting started to FAQs)": {
+      "status": "PASS",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "project/evaluator_docs_getting_started.carbon",
+        "project/evaluator_docs_review.carbon"
+      ]
+    },
+    "Goal: design docs documented, cohesive, understandable without placeholders": {
+      "status": "SKIP",
+      "gap_status": "PARTIAL",
+      "programs": [
+        "project/design_docs_placeholders.carbon"
+      ]
+    }
+  }
+}

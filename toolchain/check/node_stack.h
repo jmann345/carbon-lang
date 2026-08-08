@@ -472,6 +472,8 @@ class NodeStack {
       case Parse::NodeKind::LambdaIntroducer:
       case Parse::NodeKind::LetInitializer:
       case Parse::NodeKind::LetIntroducer:
+      case Parse::NodeKind::MatchCaseGuardIntroducer:
+      case Parse::NodeKind::MatchCaseGuardStart:
       case Parse::NodeKind::MatchCaseIntroducer:
       case Parse::NodeKind::MatchDefault:
       case Parse::NodeKind::MatchHandlerStart:
@@ -524,8 +526,6 @@ class NodeStack {
       case Parse::NodeKind::LibrarySpecifier:
       case Parse::NodeKind::InlineImportSpecifier:
       case Parse::NodeKind::MatchCaseGuard:
-      case Parse::NodeKind::MatchCaseGuardIntroducer:
-      case Parse::NodeKind::MatchCaseGuardStart:
       case Parse::NodeKind::MatchConditionStart:
       case Parse::NodeKind::MatchDefaultIntroducer:
       case Parse::NodeKind::MatchFirstIntroducer:

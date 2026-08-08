@@ -10,27 +10,23 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-08 (post-PR #13: W5-S3b — generic choice payload
-synthesis)._
-THIRTEEN PRs MERGED to `trunk`, most recently: PR 11 (exception-interop
-differential pair), PR 12 (W5-S3a: payload-free generic-choice specifics
-as match scrutinees), PR 13 (W5-S3b: payload synthesis + per-specific
-layout — `Optional(T: type) { Some(value: T), None }` constructs and
-matches at runtime through specifics; `CustomLayoutType` sentinel +
-per-specific eval-hook recompute; SF-6 at monomorphization; generic
-constructor synthesis; full alternative tables). S3b took FIVE CI
-cycles, each defect root-caused before the next push (see the
-decision-log five-cycle addendum): a definition-path assert, a missing
-import-resolver case, a pre-existing non-canonical-blocks bug, a
-two-defect constructor rework whose review caught a P0 memcpy-clobber
-miscompile (fixed with `UpdateInit` sequencing), and value-less imported
-alternative bindings (the resolver now propagates bound-value constants
-— advancing upstream's own let-import TODO; two upstream
-`fail_*.impl.carbon` splits now pass and were renamed). Notable
-sub-decision: `ResolveSpecificDefinition`'s recursion guard is redesigned
-to incremental publication (prefix reads legal, loud CHECK on forward
-references). W-069 records the cross-file runtime-let gap. Go-forward:
-**one workstream = one branch off `trunk` = one focused PR**.
+_Last updated: 2026-08-08 (post-PR #14: W5-S3 COMPLETE — generic
+choices end-to-end)._
+FOURTEEN PRs MERGED to `trunk`. W5-S3 is COMPLETE across PRs #12/#13/#14:
+S3a (payload-free generic-choice specifics as match scrutinees), S3b
+(payload synthesis + per-specific layout — five CI cycles, each defect
+root-caused before the next push, see the decision-log five-cycle
+addendum; headline sub-decision: `ResolveSpecificDefinition` recursion
+guard redesigned to incremental publication; imported-binding constants
+advance upstream's let-import TODO; W-069 records the cross-file
+runtime-let gap), and S3c (payload destructuring on specifics +
+`sum_types.md:60-89` landing as a runtime differential — declaration and
+no-`default` match verbatim, construction adapted per the disclosed
+`Core.Copy` gap; W-010 generic residue CLOSED, W-011 choice half
+closed). `Optional(T: type) { Some(value: T), None }` now declares,
+constructs, matches, and destructures through specifics at runtime with
+per-specific layouts. Go-forward: **one workstream = one branch off
+`trunk` = one focused PR**.
 
 **Weekly upstream-merge outcome (standing rule 5, 2026-08-08):** upstream
 `e7050af` (37 commits over the ten-day gap; struct-pattern parsing,
@@ -52,7 +48,7 @@ code). Next check: Monday 14:00 UTC.
 | Branch | State |
 | --- | --- |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
-| `claude/carbon-fork-0-1-w5-s3{,b}` | MERGED by way of PRs #12 (S3a) and #13 (S3b). S3c continues on a fresh branch off `trunk`. |
+| `claude/carbon-fork-0-1-w5-s3{,b,c}` | MERGED by way of PRs #12/#13/#14 — W5-S3 complete. |
 | `claude/carbon-fork-0-1-match-{replatform,s2d,s2e}` and `claude/carbon-fork-0-1-upstream-2026{0728,0808}` | MERGED by way of PRs #7/#8/#9/#10 and #6. |
 | `claude/carbon-fork-0-1-w5` | MERGED by way of PR #3 (composition gate run 30 green). |
 | `claude/carbon-fork-0-1-7mwfb7-design-docs` | STRANDED source for the F-008..F-011 design docs; reconstruction is NEXT, **gated on the user's veto-digest response** (presented 2026-07-20, unanswered). Reconstruct per the recipe pattern used for b0/w5 (overlay real content onto fresh branch off trunk; targeted-merge diverged files; prek + gate + PR). |
@@ -60,15 +56,14 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-80 PASS / 31 SKIP / 0 FAIL programs (111 total, 10 differential
+81 PASS / 31 SKIP / 0 FAIL programs (112 total, 11 differential
 C++-oracle pairs); **41/56 bullets green** (runner-side scoreboard at
-the PR #13 head; verified from fork/conformance/out/scoreboard.json).
-History: 73 → 74 at S2c → 77 at S2d/S2e → 78 at PR #11 → 79 at S3a
-(choice_generic_roundtrip: the program whose SIGSEGV drove the S3a
-crash fix) → 80 at S3b (types/choice_generic_diff: C++ std::variant
-oracle over payload-carrying specifics, runtime-computed payloads incl.
-a low-byte-1 discriminant-collision probe). The scoreboard regenerates
-on the runner (`Fork: conformance suite`, fork/conformance-request.txt
+the PR #14 head; verified from fork/conformance/out/scoreboard.json).
+History: 73 → 74 at S2c → 77 at S2d/S2e → 78 at PR #11 → 79 at S3a →
+80 at S3b (types/choice_generic_diff: std::variant oracle) → 81 at S3c
+(control_flow/choice_generic_roundtrip_diff: the sum_types.md doc
+example against a std::optional oracle). The scoreboard regenerates on
+the runner (`Fork: conformance suite`, fork/conformance-request.txt
 trigger).
 
 ### CI on jmann345/carbon-lang (self-hosted runner "jeromehome", 28-core Arch)
@@ -91,14 +86,15 @@ trigger).
 
 1.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
     user's veto-digest response** (presented 2026-07-20, unanswered).
-2.  W5-S3c (payload destructuring on specifics + the sum_types.md doc
-    example, the M slice closing fork/w5-s3/plan.md; floor target 81/112
-    per amended §8) then W5-S3p (prelude Result/Optional — GATED on the
-    OPEN SF-9 fork); error-handling B1/B2/B3; threading defect fixes
-    (F-008). Residues: W-067 (default-clause guards), W-068
-    (fewer-than-two-alternative choices), W-069 (cross-file runtime
-    let), tuple/var/ref/compile-time case patterns, non-binding payload
-    subpatterns (W-008).
+2.  Error-handling B1 (F-006: Result + postfix `?` by way of Core.Try —
+    ungated, the default next workstream) and B2/B3; W5-S3p (prelude
+    Result/Optional) stays GATED on the OPEN SF-9 fork; W5-S4
+    (std::variant mapping) rides its deferred planning decision;
+    threading defect fixes (F-008). Residues: W-067 (default-clause
+    guards), W-068 (fewer-than-two-alternative choices), W-069
+    (cross-file runtime let), choice `Core.Copy` construction gap (the
+    S3c doc-example adaptation), tuple/var/ref/compile-time case
+    patterns, non-binding payload subpatterns (W-008).
 3.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI; W-066 match usefulness diagnostics.
 

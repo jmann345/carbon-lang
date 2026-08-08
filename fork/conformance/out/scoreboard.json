@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-08T16:13:21.532823+00:00",
+  "generated": "2026-08-08T17:15:22.798315+00:00",
   "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 9.8,
+  "elapsed_seconds": 6.2,
   "totals": {
-    "PASS": 80,
+    "PASS": 81,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
@@ -88,6 +88,13 @@
       "status": "PASS",
       "detail": "",
       "differential": false
+    },
+    {
+      "path": "control_flow/choice_generic_roundtrip_diff.carbon",
+      "bullet": "Control flow: matching \u2014 sum-type consumption incl. std::variant/std::optional interop",
+      "status": "PASS",
+      "detail": "",
+      "differential": true
     },
     {
       "path": "control_flow/choice_payload_roundtrip_diff.carbon",
@@ -1055,6 +1062,7 @@
       "status": "PASS",
       "gap_status": "MISSING",
       "programs": [
+        "control_flow/choice_generic_roundtrip_diff.carbon",
         "control_flow/choice_payload_roundtrip_diff.carbon",
         "control_flow/match_sum_type_payload.carbon"
       ]

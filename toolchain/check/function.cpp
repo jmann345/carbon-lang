@@ -139,8 +139,37 @@ static auto MakeFunctionSignature(Context& context, SemIR::LocId loc_id,
 
   // Build and add the return type. We always use an initializing form for now.
   if (args.return_type_id.has_value()) {
-    auto return_form = ReturnExprAsForm(
-        context, loc_id, context.types().GetTypeInstId(args.return_type_id));
+    SemIR::InstId return_type_expr_id =
+        context.types().GetTypeInstId(args.return_type_id);
+    if (args.build_generic &&
+        context.types().GetConstantId(args.return_type_id).is_symbolic()) {
+      // The canonical type instruction carries an unattached symbolic
+      // constant, which `Function::GetDeclaredReturnType` cannot resolve
+      // through the function's specifics — a call through a specific would
+      // keep the symbolic return type. Re-add the instruction in the
+      // declaration region: its re-evaluation per specific substitutes its
+      // operands, and `BuildGenericDecl` attaches the constant to the
+      // function's own generic — the position a user-written return type
+      // expression occupies.
+      //
+      // Re-adding is only valid for instructions that merely COMPUTE a type.
+      // A `SymbolicBinding` canonical instruction is a binding DECLARATION:
+      // re-adding it raw here would declare the binding a second time instead
+      // of referencing it, so such a caller must build a `NameRef` to the
+      // existing binding instead. No current caller hits this — choice
+      // constructors, the only `build_generic` users, return the choice's
+      // class type, whose canonical instruction is a `ClassType`.
+      CARBON_CHECK(
+          !context.insts().Is<SemIR::SymbolicBinding>(return_type_expr_id),
+          "build_generic caller passed a return type whose canonical "
+          "instruction is a binding; re-adding it would duplicate the "
+          "binding declaration");
+      return_type_expr_id =
+          AddInst(context, SemIR::LocIdAndInst::RuntimeVerified(
+                               context.sem_ir(), loc_id,
+                               context.insts().Get(return_type_expr_id)));
+    }
+    auto return_form = ReturnExprAsForm(context, loc_id, return_type_expr_id);
     insts.return_type_inst_id = return_form.type_component_inst_id;
     insts.return_form_inst_id = return_form.form_inst_id;
     insts.return_pattern_id = AddReturnPattern(context, loc_id, return_form);

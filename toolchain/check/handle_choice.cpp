@@ -439,8 +439,30 @@ static auto BuildAlternativeConstructor(
         context, loc_id, disc_ref_id, disc_literal_id));
   }
 
+  // Covers the payload field with an uninitialized value so the `ClassInit`'s
+  // element count matches the object representation's field count — the same
+  // fill the `NameId::ChoicePayload` case in `ConvertStructToStructOrClass`
+  // performs for parenless constant alternatives.
+  auto cover_payload_field = [&](SemIR::InstId payload_ref_id) {
+    auto uninit_id = AddInst<SemIR::UninitializedValue>(
+        context, loc_id, {.type_id = choice_info.payload_type_id});
+    element_init_ids.push_back(
+        AddInst<SemIR::InPlaceInit>(context, loc_id,
+                                    {.type_id = choice_info.payload_type_id,
+                                     .src_id = uninit_id,
+                                     .dest_id = payload_ref_id}));
+  };
+
   // Store the parameters into this alternative's payload tuple field, at
   // offset zero of the payload region.
+  //
+  // For a symbolic payload, the store instructions are built in this pending
+  // block and spliced into the body after the `UpdateInit` built below, so
+  // that they lower after the covering base initialization the `UpdateInit`
+  // re-emits. `payload_update_init_id` holds the update step's in-place
+  // initializer when the alternative needs one.
+  PendingBlock payload_update_block(&context);
+  SemIR::InstId payload_update_init_id = SemIR::InstId::None;
   if (alt.payload_field_index >= 0) {
     auto payload_ref_id = AddInst<SemIR::ClassElementAccess>(
         context, loc_id,
@@ -452,36 +474,85 @@ static auto BuildAlternativeConstructor(
         {.type_id = alt.payload_tuple_type_id,
          .base_id = payload_ref_id,
          .index = SemIR::ElementIndex(alt.payload_field_index)});
-    llvm::SmallVector<SemIR::InstId> args;
-    for (int i = ranges.explicit_begin().index; i < ranges.explicit_end().index;
-         ++i) {
-      args.push_back(call_params[i]);
+    if (context.types()
+            .GetConstantId(alt.payload_tuple_type_id)
+            .is_symbolic()) {
+      // A symbolic payload tuple cannot initialize through `Convert`: the
+      // value-to-initializer step is a `Core.Copy` interface copy, and an
+      // unconstrained binding has no impl at the definition — the rejection
+      // generic/fail_generic_copy.carbon pins for `return x`. Instead, the
+      // whole object initializes by a two-step base-then-update protocol:
+      //
+      // 1. Base cover: the payload field is covered in the `ClassInit` with
+      //    an `UninitializedValue`, like a zero-payload alternative. Every
+      //    `ClassInit` element is then constant, so the `ClassInit` folds to
+      //    a constant object value, and its lowering is a single whole-object
+      //    copy from a per-specific constant global — the discriminant bytes
+      //    plus poison payload bytes.
+      // 2. Update: each parameter's value representation is stored raw into
+      //    its payload tuple element (`InPlaceInit`, lowered as the direct
+      //    destination store). The SF-6 payload restriction guarantees every
+      //    admissible specific's element types are trivially copyable
+      //    (enforced per specific at monomorphization, `EvalConstantInst` for
+      //    `CustomLayoutType`), so the raw store IS the copy.
+      //
+      // The steps are sequenced by the `UpdateInit` built below — the
+      // protocol `ConvertPartialInitializerToNonPartial` uses to store a vptr
+      // over a folded `ClassInit`. `UpdateInit` never constant-folds, and its
+      // lowering re-emits its folded base's covering copy at the
+      // `UpdateInit`'s own position; the update stores are spliced in after
+      // it, so the covering copy cannot overwrite them. Returning the bare
+      // `ClassInit` instead would surface the fold at the `ReturnExpr`, whose
+      // lowering re-emits the covering copy after the element stores —
+      // clobbering the payload with the constant's poison bytes.
+      llvm::SmallVector<SemIR::InstId> elem_init_ids;
+      for (auto [i, param_type_id] : llvm::enumerate(alt.param_type_ids)) {
+        auto elem_ref_id = payload_update_block.AddInst(
+            binding.node_id, SemIR::TupleAccess{.type_id = param_type_id,
+                                                .tuple_id = field_ref_id,
+                                                .index = SemIR::ElementIndex(
+                                                    static_cast<int>(i))});
+        elem_init_ids.push_back(payload_update_block.AddInst(
+            binding.node_id,
+            SemIR::InPlaceInit{
+                .type_id = param_type_id,
+                .src_id = call_params[ranges.explicit_begin().index +
+                                      static_cast<int>(i)],
+                .dest_id = elem_ref_id}));
+      }
+      auto tuple_init_id = payload_update_block.AddInst(
+          binding.node_id,
+          SemIR::TupleInit{
+              .type_id = alt.payload_tuple_type_id,
+              .elements_id = context.inst_blocks().Add(elem_init_ids),
+              .dest_id = field_ref_id});
+      payload_update_init_id = payload_update_block.AddInst(
+          binding.node_id,
+          SemIR::InPlaceInit{.type_id = alt.payload_tuple_type_id,
+                             .src_id = tuple_init_id,
+                             .dest_id = field_ref_id});
+      cover_payload_field(payload_ref_id);
+    } else {
+      llvm::SmallVector<SemIR::InstId> args;
+      for (int i = ranges.explicit_begin().index;
+           i < ranges.explicit_end().index; ++i) {
+        args.push_back(call_params[i]);
+      }
+      auto tuple_literal_id = AddInst(
+          context, binding.node_id,
+          SemIR::TupleLiteral{.type_id = alt.payload_tuple_type_id,
+                              .elements_id = context.inst_blocks().Add(args)});
+      element_init_ids.push_back(InitializeElementInPlace(
+          context, loc_id, field_ref_id, tuple_literal_id));
     }
-    auto tuple_literal_id = AddInst(
-        context, binding.node_id,
-        SemIR::TupleLiteral{.type_id = alt.payload_tuple_type_id,
-                            .elements_id = context.inst_blocks().Add(args)});
-    element_init_ids.push_back(InitializeElementInPlace(
-        context, loc_id, field_ref_id, tuple_literal_id));
   } else if (choice_info.payload_type_id.has_value()) {
-    // A zero-payload `Alt()` alternative of a payload-carrying choice: cover
-    // the payload field with an uninitialized value so the `ClassInit`'s
-    // element count matches the object representation's field count — the
-    // same fill the `NameId::ChoicePayload` case in
-    // `ConvertStructToStructOrClass` performs for parenless constant
-    // alternatives.
+    // A zero-payload `Alt()` alternative of a payload-carrying choice.
     auto payload_ref_id = AddInst<SemIR::ClassElementAccess>(
         context, loc_id,
         {.type_id = choice_info.payload_type_id,
          .base_id = return_slot_id,
          .index = SemIR::ElementIndex(1)});
-    auto uninit_id = AddInst<SemIR::UninitializedValue>(
-        context, loc_id, {.type_id = choice_info.payload_type_id});
-    element_init_ids.push_back(
-        AddInst<SemIR::InPlaceInit>(context, loc_id,
-                                    {.type_id = choice_info.payload_type_id,
-                                     .src_id = uninit_id,
-                                     .dest_id = payload_ref_id}));
+    cover_payload_field(payload_ref_id);
   }
 
   auto class_init_id = AddInst<SemIR::ClassInit>(
@@ -489,9 +560,21 @@ static auto BuildAlternativeConstructor(
       {.type_id = choice_info.self_type_id,
        .elements_id = context.inst_blocks().Add(element_init_ids),
        .dest_id = return_slot_id});
+  auto return_expr_id = class_init_id;
+  if (payload_update_init_id.has_value()) {
+    // A symbolic payload: sequence the parameter stores after the folded
+    // base. The `UpdateInit`'s lowering re-emits the base's covering copy at
+    // this position, and the pending update stores are spliced in after it.
+    return_expr_id =
+        AddInst<SemIR::UpdateInit>(context, loc_id,
+                                   {.type_id = choice_info.self_type_id,
+                                    .base_init_id = class_init_id,
+                                    .update_init_id = payload_update_init_id});
+    payload_update_block.InsertHere();
+  }
   AddReturnInstWithCleanups(
       context, loc_id,
-      SemIR::ReturnExpr{.expr_id = class_init_id, .dest_id = return_slot_id});
+      SemIR::ReturnExpr{.expr_id = return_expr_id, .dest_id = return_slot_id});
 
   FinishFunctionDefinition(context, function_id);
   context.scope_stack().Pop();

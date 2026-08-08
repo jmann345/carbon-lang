@@ -22,13 +22,6 @@
 library "[[@TEST_NAME]]";
 
 //@dump-sem-ir-begin
-// CHECK:STDERR: pointer_deref.carbon:[[@LINE+7]]:1: error: cannot copy value of type `T` [CopyOfUncopyableType]
-// CHECK:STDERR: choice P(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: pointer_deref.carbon:[[@LINE+4]]:1: note: type `T` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
-// CHECK:STDERR: choice P(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 choice P(T: type) {
   Both(x: T, y: T),
   Neither
@@ -49,13 +42,6 @@ fn F(p: P(i64)*) -> i32 {
 // --- plib.carbon
 library "plib";
 
-// CHECK:STDERR: plib.carbon:[[@LINE+7]]:1: error: cannot copy value of type `T` [CopyOfUncopyableType]
-// CHECK:STDERR: choice P(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: plib.carbon:[[@LINE+4]]:1: note: type `T` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
-// CHECK:STDERR: choice P(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 choice P(T: type) {
   Both(x: T, y: T),
   Neither
@@ -89,20 +75,6 @@ library "[[@TEST_NAME]]";
 // returns no discriminant and the match keeps the scrutinee TODO.
 class C {}
 
-// CHECK:STDERR: fail_all_payloads_rejected.carbon:[[@LINE+14]]:1: error: cannot copy value of type `T` [CopyOfUncopyableType]
-// CHECK:STDERR: choice P(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_all_payloads_rejected.carbon:[[@LINE+11]]:1: note: type `T` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
-// CHECK:STDERR: choice P(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: fail_all_payloads_rejected.carbon:[[@LINE+7]]:1: error: cannot copy value of type `T` [CopyOfUncopyableType]
-// CHECK:STDERR: choice P(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_all_payloads_rejected.carbon:[[@LINE+4]]:1: note: type `T` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
-// CHECK:STDERR: choice P(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 choice P(T: type) {
   A(x: T),
   B(y: T)
@@ -130,13 +102,6 @@ fn F(p: P(C)) -> i32 {
 library "[[@TEST_NAME]]";
 
 //@dump-sem-ir-begin
-// CHECK:STDERR: by_value_param.carbon:[[@LINE+7]]:1: error: cannot copy value of type `T` [CopyOfUncopyableType]
-// CHECK:STDERR: choice P(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: by_value_param.carbon:[[@LINE+4]]:1: note: type `T` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
-// CHECK:STDERR: choice P(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 choice P(T: type) {
   Both(x: T, y: T),
   Neither

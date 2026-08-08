@@ -26,13 +26,6 @@ library "[[@TEST_NAME]]";
 // The doc's shape (docs/design/sum_types.md): constructing and matching by
 // discriminant. `Optional(i32)`'s payload region is 4 bytes ([4 x i8] in the
 // lower golden): the single payload tuple `(i32,)`.
-// CHECK:STDERR: optional.carbon:[[@LINE+7]]:1: error: cannot copy value of type `T` [CopyOfUncopyableType]
-// CHECK:STDERR: choice Optional(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: optional.carbon:[[@LINE+4]]:1: note: type `T` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
-// CHECK:STDERR: choice Optional(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 choice Optional(T: type) {
   Some(value: T),
   None
@@ -50,13 +43,6 @@ fn Run() -> i32 {
   if (IsPresent(n) != 0) {
     return 1;
   }
-  // CHECK:STDERR: optional.carbon:[[@LINE+7]]:26: error: cannot implicitly convert expression of type `Optional(T)` to `Optional(i32)` [ConversionFailure]
-  // CHECK:STDERR:   let s: Optional(i32) = Optional(i32).Some(42);
-  // CHECK:STDERR:                          ^~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: optional.carbon:[[@LINE+4]]:26: note: type `Optional(T)` does not implement interface `Core.ImplicitAs(Optional(i32))` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   let s: Optional(i32) = Optional(i32).Some(42);
-  // CHECK:STDERR:                          ^~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   let s: Optional(i32) = Optional(i32).Some(42);
   return IsPresent(s) - 1;
 }
@@ -74,13 +60,6 @@ library "[[@TEST_NAME]]";
 // scope — symbolic-payload destructuring inside a generic body, substituted
 // binding conversions, imported pairs, and the sum_types.md example verbatim
 // — stays S3c.
-// CHECK:STDERR: destructure.carbon:[[@LINE+7]]:1: error: cannot copy value of type `T` [CopyOfUncopyableType]
-// CHECK:STDERR: choice Opt(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: destructure.carbon:[[@LINE+4]]:1: note: type `T` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
-// CHECK:STDERR: choice Opt(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 choice Opt(T: type) {
   Some(value: T),
   None
@@ -91,20 +70,11 @@ fn Get(o: Opt(i32)) -> i32 {
     case .Some(v: i32) => { return v; }
     case .None => { return -1; }
   }
-// CHECK:STDERR: destructure.carbon:[[@LINE+4]]:1: error: missing `return` at end of function with declared return type [MissingReturnStatement]
-// CHECK:STDERR: }
-// CHECK:STDERR: ^
-// CHECK:STDERR:
+  // Unreachable: every arm returns.
+  return -2;
 }
 
 fn Run() -> i32 {
-  // CHECK:STDERR: destructure.carbon:[[@LINE+7]]:21: error: cannot implicitly convert expression of type `Opt(T)` to `Opt(i32)` [ConversionFailure]
-  // CHECK:STDERR:   let s: Opt(i32) = Opt(i32).Some(42);
-  // CHECK:STDERR:                     ^~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: destructure.carbon:[[@LINE+4]]:21: note: type `Opt(T)` does not implement interface `Core.ImplicitAs(Opt(i32))` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   let s: Opt(i32) = Opt(i32).Some(42);
-  // CHECK:STDERR:                     ^~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   let s: Opt(i32) = Opt(i32).Some(42);
   return Get(s) - 42;
 }
@@ -119,13 +89,6 @@ library "[[@TEST_NAME]]";
 // bytes, align 4 — and `Pair(i64)`'s is `(i64, i64)` — 16 bytes, align 8. The
 // two `custom_layout_type` constants must carry distinct, recomputed numbers;
 // equal or zero-sized regions (a leaked sentinel) falsify the recompute.
-// CHECK:STDERR: two_sizes.carbon:[[@LINE+7]]:1: error: cannot copy value of type `T` [CopyOfUncopyableType]
-// CHECK:STDERR: choice Pair(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: two_sizes.carbon:[[@LINE+4]]:1: note: type `T` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
-// CHECK:STDERR: choice Pair(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 choice Pair(T: type) {
   Both(x: T, y: T),
   Neither
@@ -149,21 +112,7 @@ fn Classify64(p: Pair(i64)) -> i32 {
 // checks, and lowers per specific (risk R-3's falsifier is the pair of
 // specific function bodies in the lower golden).
 fn Run() -> i32 {
-  // CHECK:STDERR: two_sizes.carbon:[[@LINE+7]]:22: error: cannot implicitly convert expression of type `Pair(T)` to `Pair(i32)` [ConversionFailure]
-  // CHECK:STDERR:   let a: Pair(i32) = Pair(i32).Both(1, 2);
-  // CHECK:STDERR:                      ^~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: two_sizes.carbon:[[@LINE+4]]:22: note: type `Pair(T)` does not implement interface `Core.ImplicitAs(Pair(i32))` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   let a: Pair(i32) = Pair(i32).Both(1, 2);
-  // CHECK:STDERR:                      ^~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   let a: Pair(i32) = Pair(i32).Both(1, 2);
-  // CHECK:STDERR: two_sizes.carbon:[[@LINE+7]]:22: error: cannot implicitly convert expression of type `Pair(T)` to `Pair(i64)` [ConversionFailure]
-  // CHECK:STDERR:   let b: Pair(i64) = Pair(i64).Both(3, 4);
-  // CHECK:STDERR:                      ^~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: two_sizes.carbon:[[@LINE+4]]:22: note: type `Pair(T)` does not implement interface `Core.ImplicitAs(Pair(i64))` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   let b: Pair(i64) = Pair(i64).Both(3, 4);
-  // CHECK:STDERR:                      ^~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   let b: Pair(i64) = Pair(i64).Both(3, 4);
   return Classify32(a) + Classify64(b) - 2;
 }
@@ -178,13 +127,6 @@ library "[[@TEST_NAME]]";
 // between the two pinned specifics: in `M(i8)` the concrete `(i32,)` wins — 4
 // bytes, align 4 — and in `M(i64)` the substituted `(i64, i64)` wins — 16
 // bytes, align 8. The constant alternative `None` adds no payload field.
-// CHECK:STDERR: mixed.carbon:[[@LINE+7]]:1: error: cannot copy value of type `T` [CopyOfUncopyableType]
-// CHECK:STDERR: choice M(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: mixed.carbon:[[@LINE+4]]:1: note: type `T` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
-// CHECK:STDERR: choice M(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 choice M(T: type) {
   Small(a: i32),
   Big(x: T, y: T),
@@ -206,21 +148,7 @@ fn F64(m: M(i64)) -> i32 {
 }
 
 fn Run() -> i32 {
-  // CHECK:STDERR: mixed.carbon:[[@LINE+7]]:18: error: cannot implicitly convert expression of type `M(T)` to `M(i8)` [ConversionFailure]
-  // CHECK:STDERR:   let s: M(i8) = M(i8).Small(1);
-  // CHECK:STDERR:                  ^~~~~~~~~~~~~~
-  // CHECK:STDERR: mixed.carbon:[[@LINE+4]]:18: note: type `M(T)` does not implement interface `Core.ImplicitAs(M(i8))` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   let s: M(i8) = M(i8).Small(1);
-  // CHECK:STDERR:                  ^~~~~~~~~~~~~~
-  // CHECK:STDERR:
   let s: M(i8) = M(i8).Small(1);
-  // CHECK:STDERR: mixed.carbon:[[@LINE+7]]:19: error: cannot implicitly convert expression of type `M(T)` to `M(i64)` [ConversionFailure]
-  // CHECK:STDERR:   let b: M(i64) = M(i64).Big(3, 4);
-  // CHECK:STDERR:                   ^~~~~~~~~~~~~~~~
-  // CHECK:STDERR: mixed.carbon:[[@LINE+4]]:19: note: type `M(T)` does not implement interface `Core.ImplicitAs(M(i64))` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   let b: M(i64) = M(i64).Big(3, 4);
-  // CHECK:STDERR:                   ^~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   let b: M(i64) = M(i64).Big(3, 4);
   return F8(s) + F64(b) - 2;
 }
@@ -250,21 +178,7 @@ fn F(p: P(bool)) -> i32 {
 }
 
 fn Run() -> i32 {
-  // CHECK:STDERR: concrete_payload_in_generic.carbon:[[@LINE+7]]:20: error: cannot implicitly convert expression of type `P(T)` to `P(bool)` [ConversionFailure]
-  // CHECK:STDERR:   let t: P(bool) = P(bool).Tag(7);
-  // CHECK:STDERR:                    ^~~~~~~~~~~~~~
-  // CHECK:STDERR: concrete_payload_in_generic.carbon:[[@LINE+4]]:20: note: type `P(T)` does not implement interface `Core.ImplicitAs(P(bool))` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   let t: P(bool) = P(bool).Tag(7);
-  // CHECK:STDERR:                    ^~~~~~~~~~~~~~
-  // CHECK:STDERR:
   let t: P(bool) = P(bool).Tag(7);
-  // CHECK:STDERR: concrete_payload_in_generic.carbon:[[@LINE+7]]:20: error: cannot implicitly convert expression of type `P(T)` to `P(bool)` [ConversionFailure]
-  // CHECK:STDERR:   let e: P(bool) = P(bool).Empty();
-  // CHECK:STDERR:                    ^~~~~~~~~~~~~~~
-  // CHECK:STDERR: concrete_payload_in_generic.carbon:[[@LINE+4]]:20: note: type `P(T)` does not implement interface `Core.ImplicitAs(P(bool))` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   let e: P(bool) = P(bool).Empty();
-  // CHECK:STDERR:                    ^~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   let e: P(bool) = P(bool).Empty();
   return F(t) + F(e) - 2;
 }

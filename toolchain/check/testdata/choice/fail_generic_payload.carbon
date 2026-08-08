@@ -21,13 +21,6 @@ library "[[@TEST_NAME]]";
 // placement precedent).
 class C {}
 
-// CHECK:STDERR: fail_not_trivial_in_specific.carbon:[[@LINE+7]]:1: error: cannot copy value of type `T` [CopyOfUncopyableType]
-// CHECK:STDERR: choice P(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_not_trivial_in_specific.carbon:[[@LINE+4]]:1: note: type `T` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
-// CHECK:STDERR: choice P(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 choice P(T: type) {
   Wrap(a: T),
   None

@@ -1,1 +1,1 @@
-2026-08-08T14:13:06Z autoupdate re-fire after canonical CustomLayoutType blocks fix
+2026-08-08T15:09:58Z autoupdate for constructor rework (copy deferral + return-type attachment + UpdateInit sequencing); positive splits must regen error-free

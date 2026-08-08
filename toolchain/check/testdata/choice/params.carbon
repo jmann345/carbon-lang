@@ -43,25 +43,11 @@ library "[[@TEST_NAME]]";
 // A symbolic payload type synthesizes (W5-S3b): the single-alternative choice
 // defines and constructs — its discriminant is the empty tuple — though
 // matching a fewer-than-two-alternatives specific stays gated (W-068).
-// CHECK:STDERR: generic_params.carbon:[[@LINE+7]]:1: error: cannot copy value of type `T` [CopyOfUncopyableType]
-// CHECK:STDERR: choice C(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: generic_params.carbon:[[@LINE+4]]:1: note: type `T` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
-// CHECK:STDERR: choice C(T: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 choice C(T: type) {
   Alt(a: T)
 }
 
 fn Make(n: i32) -> C(i32) {
-  // CHECK:STDERR: generic_params.carbon:[[@LINE+7]]:3: error: cannot implicitly convert expression of type `C(T)` to `C(i32)` [ConversionFailure]
-  // CHECK:STDERR:   return C(i32).Alt(n);
-  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: generic_params.carbon:[[@LINE+4]]:3: note: type `C(T)` does not implement interface `Core.ImplicitAs(C(i32))` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   return C(i32).Alt(n);
-  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   return C(i32).Alt(n);
 }
 

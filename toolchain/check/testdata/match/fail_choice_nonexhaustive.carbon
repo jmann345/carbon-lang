@@ -93,11 +93,15 @@ choice Flag {
 // (the S2d guarded-arm-never-irrefutable rule), so a guarded binding arm
 // covers nothing: both alternatives are named as uncovered.
 fn Classify(f: Flag) -> i32 {
-  // CHECK:STDERR: fail_guarded_binding.carbon:[[@LINE+4]]:3: error: `match` on choice `Flag` has no `default` arm and does not cover alternatives `.Off`, `.On` [MatchNonexhaustive]
-  // CHECK:STDERR:   match (f) {
-  // CHECK:STDERR:   ^~~~~~~~~~~
-  // CHECK:STDERR:
   match (f) {
+    // CHECK:STDERR: fail_guarded_binding.carbon:[[@LINE+8]]:10: warning: binding `whole` unused [UnusedBinding]
+    // CHECK:STDERR:     case whole: Flag if (true) => { return 0; }
+    // CHECK:STDERR:          ^~~~~~~~~~~
+    // CHECK:STDERR:
+    // CHECK:STDERR: fail_guarded_binding.carbon:[[@LINE-5]]:3: error: `match` on choice `Flag` has no `default` arm and does not cover alternatives `.Off`, `.On` [MatchNonexhaustive]
+    // CHECK:STDERR:   match (f) {
+    // CHECK:STDERR:   ^~~~~~~~~~~
+    // CHECK:STDERR:
     case whole: Flag if (true) => { return 0; }
   }
   return -1;
@@ -128,6 +132,10 @@ choice C {
 
 fn F(v: C) -> i32 {
   match (v) {
+    // CHECK:STDERR: fail_all_alternatives_rejected.carbon:[[@LINE+4]]:10: warning: binding `w` unused [UnusedBinding]
+    // CHECK:STDERR:     case w: C if (true) => { return 0; }
+    // CHECK:STDERR:          ^~~~
+    // CHECK:STDERR:
     case w: C if (true) => { return 0; }
   }
   return -1;

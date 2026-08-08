@@ -40,11 +40,15 @@ library "[[@TEST_NAME]]";
 // requiring `default` verbatim (SF-7); the irrefutable-arm discharge
 // applies to choice scrutinees only in this slice.
 fn F(x: i32) {
-  // CHECK:STDERR: fail_irrefutable_binding_arm.carbon:[[@LINE+4]]:3: error: semantics TODO: `match statement without `default` arm` [SemanticsTodo]
-  // CHECK:STDERR:   match (x) {
-  // CHECK:STDERR:   ^~~~~~~~~~~
-  // CHECK:STDERR:
   match (x) {
+    // CHECK:STDERR: fail_irrefutable_binding_arm.carbon:[[@LINE+8]]:10: warning: binding `n` unused [UnusedBinding]
+    // CHECK:STDERR:     case n: i32 => { return; }
+    // CHECK:STDERR:          ^~~~~~
+    // CHECK:STDERR:
+    // CHECK:STDERR: fail_irrefutable_binding_arm.carbon:[[@LINE-5]]:3: error: semantics TODO: `match statement without `default` arm` [SemanticsTodo]
+    // CHECK:STDERR:   match (x) {
+    // CHECK:STDERR:   ^~~~~~~~~~~
+    // CHECK:STDERR:
     case n: i32 => { return; }
   }
 }

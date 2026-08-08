@@ -388,6 +388,70 @@ split's binding moved to the importing file (a `var` cannot initialize
 from an alternative constant — choice types implement no `Core.Copy`).
 Veto-able.
 
+_W5-S3c landing note (2026-08-08):_ the closing slice of the approved
+generic-choice plan (fork/w5-s3/plan.md §3 S3c) — payload destructuring
+on specifics plus the sum_types.md example — landed as pure
+verification-and-pinning: NO toolchain code changed; the surface S3b
+built carries every S3c shape. _Trace verdicts (the two questions the
+plan left open, both resolved POSITIVE, so no fail_ pins were needed):_
+(1) the R-8 symbolic destructure — `fn F[T: type](p: P(T))` matching
+`case .Both(a: T, b: T)` — WORKS: the scrutinee gate's forced completion
+runs the type completer even for a symbolic scrutinee
+(`RequireCompleteType` completes before its `is_symbolic` check,
+type_completion.cpp:884-886), the completer's `ClassType` case resolves
+the symbolic specific's definition (type_completion.cpp:481-483,
+`ResolveSpecificDefinition` on the specific with symbolic arguments), and
+from there `GetChoicePayloadInfo`'s reads are purely structural on the
+substituted symbolic constants (sentinel `CustomLayoutType`, `(T, T)`
+tuple) — no size is read — while the payload bindings bind `T` values
+without copying (`let`-binding semantics; unconstrained `T` has no
+`Core.Copy`, so the goldens deliberately avoid returning or
+`var`-initializing from them); (2) R-7 substituted binding conversion —
+`case .Some(v: i64)` on an `Opt(i32)` scrutinee — WORKS: the specific's
+payload tuple is fully concrete by the bind pass, so the per-element
+conversion rides S2c's exact `DeferCleanups` shape
+(choice_payload_multi.carbon precedent). _Pins:_ NEW check golden
+match/choice_generic_payload_pattern.carbon — multi-parameter payloads on
+two specifics, a guarded destructuring arm (S2d composing with the S3b
+table), the R-7 conversion, an imported-generic pair (plib convention),
+the R-8 symbolic subfile, every positive match exhaustive without
+`default` (S2e's coverage records a destructuring arm by ALTERNATIVE
+index, handle_match.cpp's `MatchCase` recording — verified, pattern-shape
+independent), and a fail_nonexhaustive_payload subfile (destructuring arm
+covers only its own alternative; MatchNonexhaustive names `.Neither`);
+NEW lower golden match/choice_generic_payload_pattern.carbon under the
+plan's only-if-new clause — per-specific ELEMENT offsets (second payload
+element at byte 4 in `Pair(i32)`'s `[8 x i8]` vs byte 8 in `Pair(i64)`'s
+`[16 x i8]`) and the instantiated symbolic-body destructure, neither
+pinned by S3b's single-element lower subfile. _Doc example
+(S2e deviation (2) discharged):_ NEW conformance pair
+control_flow/choice_generic_roundtrip_diff.carbon / .diff.cpp
+(std::optional oracle, DIFF-1) runs the sum_types.md example —
+declaration (63-66) and match (81-88, no `default`) VERBATIM, I/O
+adapted per rulebook R1 — with ONE construction adaptation, recorded as
+a plan amendment rather than discovered-at-review: sum_types.md:74's
+`var ... = Optional(i32).None` cannot compile (initializing a `var`
+from a class value copies, and choices implement no `Core.Copy` — the
+S1-recorded gap), so the None value binds with `let` while
+sum_types.md:75's re-assignment (`my_opt = Optional(i32).Some(42);`)
+runs SHAPE-verbatim on a `var` initialized in place — the payload
+argument is runtime-computed per R16d — (the rhs is an
+in-place-initializing constructor call; `InitializeExisting` + the
+`Assign` lowering, a no-op for an in-place-initializing rhs, need no
+copy). One further honest bound: the doc's None→Some transition on the
+SAME variable is not exercised (assigning `.None` is also a value copy
+through the same path), so the arbitrated transition is Some→Some,
+the closest achievable. Payloads are runtime-computed
+(R16d, 22 + 20 = 42), the re-assignment is arbitrated (a failed
+overwrite leaves the initial payload visible), and the i64 side carries
+the collision payload (257, low byte 1) into payload READBACK. Floor per
+the §8 amendment: 81 PASS / 0 FAIL / 31 SKIP over 112; runner
+--self-test green; README table regenerated; scoreboard regeneration
+rides the landing gate (R9). _Bookkeeping:_ plan §3 S3c amended in-slice
+(the dated 2026-08-08 clause: the construction-verbatim narrowing and
+both trace verdicts); W-010's generic residue closed and W-011's choice
+half updated in fork/inventory/work-items.json. Veto-able.
+
 ### W5 SF-1..8: choice-payload plan sub-forks (user by way of AskUserQuestion, 2026-07-20)
 
 Hybrid struct representation — discriminant + CustomLayoutType payload

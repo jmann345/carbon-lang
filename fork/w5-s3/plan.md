@@ -315,6 +315,35 @@ discharging S2e deviation (2); check golden match/choice_generic_payload_pattern
 from SYMBOLIC payload tuples inside a generic body); conformance control_flow/
 choice_generic_roundtrip_diff.carbon / .diff.cpp (runtime-computed payload, R16d) — PASS 80/111.
 
+(amended at S3c implementation, 2026-08-08 — two reality checks against the exit criteria as
+written. (1) The "construction shapes verbatim" claim over-promised: sum_types.md:74 —
+`var my_opt: Optional(i32) = Optional(i32).None;` — CANNOT compile in this fork, generic or
+not: initializing a `var` from a class VALUE goes through `PerformCopy`
+(convert.cpp:1694-1706, CopyOfUncopyableType) and choice types implement no `Core.Copy` (the
+S1-recorded gap the types/choice_generic_diff.carbon header already documents). This is a
+pre-existing construction-surface gap, not an S3c destructuring defect, and it is NOT
+narrowed silently: the conformance program binds the None value with `let` and keeps the
+doc's RE-ASSIGNMENT SHAPE (sum_types.md:75) on a `var` initialized in place — the payload
+argument is runtime-computed per R16d (`RuntimeSeed(22)` where the doc writes `42`) — the
+assignment's rhs is an in-place-initializing constructor call, which `InitializeExisting` +
+the `Assign` lowering (lower/handle.cpp:80-87) support without a copy. Declaration
+(sum_types.md:63-66) and match (sum_types.md:81-88, no `default`) land verbatim, I/O adapted
+per R1. (2) Both open trace questions resolved POSITIVE, so no fail_ pins were needed: the
+R-8 symbolic destructure works — the scrutinee gate's forcing runs the completer even for a
+symbolic scrutinee type (RequireCompleteType completes before its is_symbolic check,
+type_completion.cpp:884-886) and the completer's `ClassType` case resolves the symbolic
+specific's definition (type_completion.cpp:481-483), after which `GetChoicePayloadInfo`'s
+reads are purely structural on the substituted symbolic constants and the payload bindings
+bind `T` values without copying (`let`-binding semantics; let/generic.carbon precedent) —
+and R-7 substituted binding conversion works, since the specific's payload tuple is concrete
+by the bind pass, riding S2c's exact `DeferCleanups` shape (choice_payload_multi.carbon
+precedent). A lower golden WAS added (lower/testdata/match/choice_generic_payload_pattern
+.carbon) beyond the written exit criteria, justified by pinning facts no existing golden
+pins: per-specific ELEMENT offsets
+(second element at byte 4 vs 8) and the instantiated symbolic-body destructure, neither
+pinned by S3b's single-element single-specific lower subfile. Floor arithmetic per the §8
+amendment: 81/0/31 over 112.)
+
 Dependency chain: S3a → S3b → S3c. Inventory: completes W-010's generic residue; the choice
 half of W-011 stays with S3c's roundtrip arbiter; W5-S4 and W5-S3p (post-SF-9) follow.
 

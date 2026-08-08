@@ -1,1 +1,1 @@
-2026-08-08T16:09:09Z R26 pass 2 for S3b after split fixes (expect zero churn)
+2026-08-08T17:10:48Z autoupdate for W5-S3c (destructuring pins + doc example); expect churn = new files only

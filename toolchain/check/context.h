@@ -358,8 +358,12 @@ class Context {
     return binding_type_where_count_;
   }
 
-  auto forbidden_impls() -> llvm::SmallVector<SemIR::ImplId>& {
-    return forbidden_impls_;
+  struct DeclaringImplDecl {
+    SemIR::ConstantId self_id;
+    SemIR::SpecificInterface specific_interface;
+  };
+  auto declaring_impl_decls() -> llvm::SmallVector<DeclaringImplDecl>& {
+    return declaring_impl_decls_;
   }
 
   // Data about a form expression.
@@ -662,10 +666,10 @@ class Context {
   // currently being checked.
   int32_t binding_type_where_count_ = 0;
 
-  // Impls that cannot be used in impl lookup. This prevents cycles where a
-  // `LookupImplWitness` instruction inside the impl decl should not be able to
-  // find the containing impl decl.
-  llvm::SmallVector<SemIR::ImplId> forbidden_impls_;
+  // Track impl declarations that are underway. If we're declaring an impl for
+  // `C as I`, an impl lookup query for `C as I` or `.Self as I` should find
+  // that impl being declared (even though it does not yet exist).
+  llvm::SmallVector<DeclaringImplDecl> declaring_impl_decls_;
 
   // Declared return form for the in-progress function declaration, if any.
   std::optional<FormExpr> return_form_expr_;

@@ -83,7 +83,7 @@ fn Classify(s: Signal) -> i32 {
 // CHECK:STDOUT:   %Copy.facet.987: %Copy.type = facet_value %i32, (%Copy.impl_witness.0e0) [concrete]
 // CHECK:STDOUT:   %Copy.WithSelf.Op.type.d09: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.987) [concrete]
 // CHECK:STDOUT:   %.7a6: type = fn_type_with_self_type %Copy.WithSelf.Op.type.d09, %Copy.facet.987 [concrete]
-// CHECK:STDOUT:   %.795: Core.Form = init_form %i32 [concrete]
+// CHECK:STDOUT:   %.795f: Core.Form = init_form %i32 [concrete]
 // CHECK:STDOUT:   %return.param_patt.a9a: %pattern_type.6b6 = out_param_pattern [concrete]
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.specific_fn: <specific function> = specific_function %Int.as.Copy.impl.Op.4f6, @Int.as.Copy.impl.Op(%int_32) [concrete]
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
@@ -198,7 +198,7 @@ fn Classify(s: Signal) -> i32 {
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
-// CHECK:STDOUT:     %.loc24: Core.Form = init_form %i32 [concrete = constants.%.795]
+// CHECK:STDOUT:     %.loc24: Core.Form = init_form %i32 [concrete = constants.%.795f]
 // CHECK:STDOUT:     %s.param: %Signal = value_param call_param0
 // CHECK:STDOUT:     %Signal.ref.loc24: type = name_ref Signal, file.%Signal.decl [concrete = constants.%Signal]
 // CHECK:STDOUT:     %s: %Signal = wrapper_binding s, %s.param

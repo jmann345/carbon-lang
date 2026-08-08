@@ -901,7 +901,7 @@ fn GetRefs() {
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
-// CHECK:STDOUT: %class.ForceThunk = type { i8 }
+// CHECK:STDOUT: %class.ForceThunk.24 = type { i8 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: $__clang_call_terminate = comdat any
 // CHECK:STDOUT:
@@ -920,7 +920,7 @@ fn GetRefs() {
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
 // CHECK:STDOUT: define internal noundef nonnull align 1 dereferenceable(1) ptr @_Z10ReturnCRef10ForceThunk.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk, align 1
+// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.24, align 1
 // CHECK:STDOUT:   %call = invoke noundef nonnull align 1 dereferenceable(1) ptr @_Z10ReturnCRef10ForceThunk()
 // CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
 // CHECK:STDOUT:
@@ -938,7 +938,7 @@ fn GetRefs() {
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
 // CHECK:STDOUT: define internal noundef nonnull align 1 dereferenceable(1) ptr @_Z11ReturnCRRef10ForceThunk.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk, align 1
+// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.24, align 1
 // CHECK:STDOUT:   %call = invoke noundef nonnull align 1 dereferenceable(1) ptr @_Z11ReturnCRRef10ForceThunk()
 // CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
 // CHECK:STDOUT:
@@ -956,7 +956,7 @@ fn GetRefs() {
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
 // CHECK:STDOUT: define internal noundef nonnull align 1 dereferenceable(1) ptr @_Z15ReturnConstCRef10ForceThunk.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk, align 1
+// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.24, align 1
 // CHECK:STDOUT:   %call = invoke noundef nonnull align 1 dereferenceable(1) ptr @_Z15ReturnConstCRef10ForceThunk()
 // CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
 // CHECK:STDOUT:
@@ -974,7 +974,7 @@ fn GetRefs() {
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
 // CHECK:STDOUT: define internal noundef nonnull align 4 dereferenceable(4) ptr @_Z12ReturnIntRef10ForceThunk.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk, align 1
+// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.24, align 1
 // CHECK:STDOUT:   %call = invoke noundef nonnull align 4 dereferenceable(4) ptr @_Z12ReturnIntRef10ForceThunk()
 // CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
 // CHECK:STDOUT:
@@ -992,7 +992,7 @@ fn GetRefs() {
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
 // CHECK:STDOUT: define internal noundef nonnull align 4 dereferenceable(4) ptr @_Z13ReturnIntRRef10ForceThunk.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk, align 1
+// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.24, align 1
 // CHECK:STDOUT:   %call = invoke noundef nonnull align 4 dereferenceable(4) ptr @_Z13ReturnIntRRef10ForceThunk()
 // CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
 // CHECK:STDOUT:
@@ -1010,7 +1010,7 @@ fn GetRefs() {
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
 // CHECK:STDOUT: define internal noundef nonnull align 4 dereferenceable(4) ptr @_Z17ReturnConstIntRef10ForceThunk.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk, align 1
+// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.24, align 1
 // CHECK:STDOUT:   %call = invoke noundef nonnull align 4 dereferenceable(4) ptr @_Z17ReturnConstIntRef10ForceThunk()
 // CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
 // CHECK:STDOUT:

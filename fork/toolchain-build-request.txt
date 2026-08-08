@@ -1,1 +1,1 @@
-S2d gate: full merge gate on match case guards (fixpoint at 3fe3804, pass-2 empty).
+Upstream-20260808 gate retry after the for-range-copy lint fix.

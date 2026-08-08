@@ -1,1 +1,1 @@
-S2d R26 pass 2: verify fixpoint after c2a4f75 (two guard goldens generated; expect empty or loc-only).
+Upstream-20260808 R26 pass 2: verify fixpoint after 5d6f622 (expect empty or loc-only).

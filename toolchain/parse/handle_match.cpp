@@ -153,11 +153,13 @@ auto HandleMatchCaseIntroducer(Context& context) -> void {
     context.PushStateForPattern(StateKind::MatchCaseAlternativePattern,
                                 /*in_var_pattern=*/false,
                                 /*in_unused_pattern=*/false,
+                                /*in_field_shorthand_pattern=*/false,
                                 BindingContext::ExplicitParam,
                                 PrecedenceGroup::ForTopLevelPattern());
   } else {
     context.PushStateForPattern(StateKind::Pattern, /*in_var_pattern=*/false,
                                 /*in_unused_pattern=*/false,
+                                /*in_field_shorthand_pattern=*/false,
                                 BindingContext::ExplicitParam,
                                 PrecedenceGroup::ForTopLevelPattern());
   }
@@ -175,10 +177,10 @@ auto HandleMatchCaseAlternativePattern(Context& context) -> void {
 
   if (context.PositionIs(Lex::TokenKind::OpenParen)) {
     context.PushState(state, StateKind::MatchCaseAlternativePatternFinish);
-    context.PushStateForPattern(StateKind::PatternListAsTuple,
-                                state.in_var_pattern, state.in_unused_pattern,
-                                state.binding_context,
-                                state.ambient_precedence);
+    context.PushStateForPattern(
+        StateKind::PatternListAsTuple, state.in_var_pattern,
+        state.in_unused_pattern, state.in_field_shorthand_pattern,
+        state.binding_context, state.ambient_precedence);
   } else {
     context.AddNode(NodeKind::AlternativePattern, state.token, state.has_error);
     if (state.has_error) {

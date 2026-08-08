@@ -438,6 +438,9 @@ auto TypeCompleter::ProcessStep() -> bool {
 }
 
 auto TypeCompleter::AddNestedIncompleteTypes(SemIR::Inst type_inst) -> bool {
+  // NOTE: `TryToCompleteClassType()` in convert.cpp matches the same types as
+  // the switch here. When adding a new type here, it should also be added
+  // there.
   CARBON_KIND_SWITCH(type_inst) {
     case CARBON_KIND(SemIR::ArrayType inst): {
       Push(context_->types().GetTypeIdForTypeInstId(inst.element_type_inst_id));
@@ -963,11 +966,17 @@ static auto GetSelfFacetValue(Context& context, SemIR::ConstantId self_const_id)
       context, context.types().GetAsTypeInstId(self_inst_id));
 }
 
+// Identifies the facet type in the `facet_type_inst_id`. Returns None if an
+// error is encountered or diagnosed.
 static auto IdentifyFacetType(Context& context, SemIR::LocId loc_id,
                               SemIR::ConstantId initial_self_const_id,
                               SemIR::TypeInstId facet_type_inst_id,
                               bool allow_partially_identified, bool diagnose)
     -> SemIR::IdentifiedFacetTypeId {
+  if (facet_type_inst_id == SemIR::ErrorInst::InstId) {
+    return SemIR::IdentifiedFacetTypeId::None;
+  }
+
   auto declared_facet_type_id = context.insts()
                                     .GetAs<SemIR::FacetType>(facet_type_inst_id)
                                     .declared_facet_type_id;

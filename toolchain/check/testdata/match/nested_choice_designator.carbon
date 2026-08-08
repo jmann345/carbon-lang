@@ -104,7 +104,7 @@ fn F(c: Color, s: Shape) -> i32 {
 // CHECK:STDOUT:   %s.patt: %pattern_type.6e5 = at_binding_pattern s, %s.param_patt [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
-// CHECK:STDOUT:   %.795: Core.Form = init_form %i32 [concrete]
+// CHECK:STDOUT:   %.795f: Core.Form = init_form %i32 [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
 // CHECK:STDOUT:   %return.param_patt.a9a: %pattern_type.6b6 = out_param_pattern [concrete]
 // CHECK:STDOUT:   %return.patt.e1b: %pattern_type.6b6 = return_slot_pattern %return.param_patt.a9a, %i32 [concrete]
@@ -176,7 +176,7 @@ fn F(c: Color, s: Shape) -> i32 {
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
-// CHECK:STDOUT:     %.loc28: Core.Form = init_form %i32 [concrete = constants.%.795]
+// CHECK:STDOUT:     %.loc28: Core.Form = init_form %i32 [concrete = constants.%.795f]
 // CHECK:STDOUT:     %c.param: %Color = value_param call_param0
 // CHECK:STDOUT:     %Color.ref: type = name_ref Color, file.%Color.decl [concrete = constants.%Color]
 // CHECK:STDOUT:     %c: %Color = wrapper_binding c, %c.param

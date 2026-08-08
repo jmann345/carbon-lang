@@ -28,123 +28,122 @@ fn F(x: i32) -> i32 {
 }
 
 // CHECK:STDOUT: - filename: alternative_pattern.carbon
-// CHECK:STDOUT:   parse_tree: [
-// CHECK:STDOUT:     {kind: 'FileStart', text: ''},
-// CHECK:STDOUT:         {kind: 'FunctionIntroducer', text: 'fn'},
-// CHECK:STDOUT:         {kind: 'IdentifierNameMaybeBeforeSignature', text: 'F'},
-// CHECK:STDOUT:           {kind: 'ExplicitParamListStart', text: '('},
-// CHECK:STDOUT:             {kind: 'IdentifierNameNotBeforeSignature', text: 'x'},
-// CHECK:STDOUT:             {kind: 'BindingPatternTypeStart', text: ':'},
-// CHECK:STDOUT:             {kind: 'IntTypeLiteral', text: 'i32'},
-// CHECK:STDOUT:           {kind: 'LetBindingPattern', text: ':', subtree_size: 4},
-// CHECK:STDOUT:         {kind: 'ExplicitParamList', text: ')', subtree_size: 6},
-// CHECK:STDOUT:           {kind: 'IntTypeLiteral', text: 'i32'},
-// CHECK:STDOUT:         {kind: 'ReturnType', text: '->', subtree_size: 2},
-// CHECK:STDOUT:       {kind: 'FunctionDefinitionStart', text: '{', subtree_size: 11},
-// CHECK:STDOUT:           {kind: 'MatchIntroducer', text: 'match'},
-// CHECK:STDOUT:             {kind: 'MatchConditionStart', text: '('},
-// CHECK:STDOUT:             {kind: 'IdentifierNameExpr', text: 'x'},
-// CHECK:STDOUT:           {kind: 'MatchCondition', text: ')', subtree_size: 3},
-// CHECK:STDOUT:         {kind: 'MatchStatementStart', text: '{', subtree_size: 5},
-// CHECK:STDOUT:               {kind: 'MatchCaseIntroducer', text: 'case'},
-// CHECK:STDOUT:                 {kind: 'AlternativePatternStart', text: '.'},
-// CHECK:STDOUT:                 {kind: 'IdentifierNameNotBeforeSignature', text: 'Err'},
-// CHECK:STDOUT:               {kind: 'AlternativePattern', text: '.', subtree_size: 3},
-// CHECK:STDOUT:             {kind: 'MatchCase', text: '=>', subtree_size: 5},
-// CHECK:STDOUT:           {kind: 'MatchHandlerStart', text: '{', subtree_size: 6},
-// CHECK:STDOUT:             {kind: 'ReturnStatementStart', text: 'return'},
-// CHECK:STDOUT:             {kind: 'IntLiteral', text: '0'},
-// CHECK:STDOUT:           {kind: 'ReturnStatement', text: ';', subtree_size: 3},
-// CHECK:STDOUT:         {kind: 'MatchHandler', text: '}', subtree_size: 10},
-// CHECK:STDOUT:               {kind: 'MatchCaseIntroducer', text: 'case'},
-// CHECK:STDOUT:                 {kind: 'AlternativePatternStart', text: '.'},
-// CHECK:STDOUT:                 {kind: 'IdentifierNameNotBeforeSignature', text: 'Ok'},
-// CHECK:STDOUT:                   {kind: 'TuplePatternStart', text: '('},
-// CHECK:STDOUT:                     {kind: 'IdentifierNameNotBeforeSignature', text: 'value'},
-// CHECK:STDOUT:                     {kind: 'BindingPatternTypeStart', text: ':'},
-// CHECK:STDOUT:                     {kind: 'IntTypeLiteral', text: 'i32'},
-// CHECK:STDOUT:                   {kind: 'LetBindingPattern', text: ':', subtree_size: 4},
-// CHECK:STDOUT:                 {kind: 'ParenPattern', text: ')', subtree_size: 6},
-// CHECK:STDOUT:               {kind: 'AlternativePattern', text: '.', subtree_size: 9},
-// CHECK:STDOUT:             {kind: 'MatchCase', text: '=>', subtree_size: 11},
-// CHECK:STDOUT:           {kind: 'MatchHandlerStart', text: '{', subtree_size: 12},
-// CHECK:STDOUT:             {kind: 'ReturnStatementStart', text: 'return'},
-// CHECK:STDOUT:             {kind: 'IntLiteral', text: '1'},
-// CHECK:STDOUT:           {kind: 'ReturnStatement', text: ';', subtree_size: 3},
-// CHECK:STDOUT:         {kind: 'MatchHandler', text: '}', subtree_size: 16},
-// CHECK:STDOUT:               {kind: 'MatchCaseIntroducer', text: 'case'},
-// CHECK:STDOUT:                 {kind: 'AlternativePatternStart', text: '.'},
-// CHECK:STDOUT:                 {kind: 'IdentifierNameNotBeforeSignature', text: 'Pair'},
-// CHECK:STDOUT:                   {kind: 'TuplePatternStart', text: '('},
-// CHECK:STDOUT:                     {kind: 'IdentifierNameNotBeforeSignature', text: 'a'},
-// CHECK:STDOUT:                     {kind: 'BindingPatternTypeStart', text: ':'},
-// CHECK:STDOUT:                     {kind: 'IntTypeLiteral', text: 'i32'},
-// CHECK:STDOUT:                   {kind: 'LetBindingPattern', text: ':', subtree_size: 4},
-// CHECK:STDOUT:                   {kind: 'PatternListComma', text: ','},
-// CHECK:STDOUT:                     {kind: 'IdentifierNameNotBeforeSignature', text: 'b'},
-// CHECK:STDOUT:                     {kind: 'BindingPatternTypeStart', text: ':'},
-// CHECK:STDOUT:                     {kind: 'IntTypeLiteral', text: 'i32'},
-// CHECK:STDOUT:                   {kind: 'LetBindingPattern', text: ':', subtree_size: 4},
-// CHECK:STDOUT:                 {kind: 'TuplePattern', text: ')', subtree_size: 11},
-// CHECK:STDOUT:               {kind: 'AlternativePattern', text: '.', subtree_size: 14},
-// CHECK:STDOUT:             {kind: 'MatchCase', text: '=>', subtree_size: 16},
-// CHECK:STDOUT:           {kind: 'MatchHandlerStart', text: '{', subtree_size: 17},
-// CHECK:STDOUT:             {kind: 'ReturnStatementStart', text: 'return'},
-// CHECK:STDOUT:             {kind: 'IntLiteral', text: '2'},
-// CHECK:STDOUT:           {kind: 'ReturnStatement', text: ';', subtree_size: 3},
-// CHECK:STDOUT:         {kind: 'MatchHandler', text: '}', subtree_size: 21},
-// CHECK:STDOUT:               {kind: 'MatchCaseIntroducer', text: 'case'},
-// CHECK:STDOUT:                 {kind: 'AlternativePatternStart', text: '.'},
-// CHECK:STDOUT:                 {kind: 'IdentifierNameNotBeforeSignature', text: 'Single'},
-// CHECK:STDOUT:                   {kind: 'TuplePatternStart', text: '('},
-// CHECK:STDOUT:                     {kind: 'IdentifierNameNotBeforeSignature', text: 'a'},
-// CHECK:STDOUT:                     {kind: 'BindingPatternTypeStart', text: ':'},
-// CHECK:STDOUT:                     {kind: 'IntTypeLiteral', text: 'i32'},
-// CHECK:STDOUT:                   {kind: 'LetBindingPattern', text: ':', subtree_size: 4},
-// CHECK:STDOUT:                   {kind: 'PatternListComma', text: ','},
-// CHECK:STDOUT:                 {kind: 'TuplePattern', text: ')', subtree_size: 7},
-// CHECK:STDOUT:               {kind: 'AlternativePattern', text: '.', subtree_size: 10},
-// CHECK:STDOUT:             {kind: 'MatchCase', text: '=>', subtree_size: 12},
-// CHECK:STDOUT:           {kind: 'MatchHandlerStart', text: '{', subtree_size: 13},
-// CHECK:STDOUT:             {kind: 'ReturnStatementStart', text: 'return'},
-// CHECK:STDOUT:             {kind: 'IntLiteral', text: '3'},
-// CHECK:STDOUT:           {kind: 'ReturnStatement', text: ';', subtree_size: 3},
-// CHECK:STDOUT:         {kind: 'MatchHandler', text: '}', subtree_size: 17},
-// CHECK:STDOUT:               {kind: 'MatchCaseIntroducer', text: 'case'},
-// CHECK:STDOUT:                 {kind: 'AlternativePatternStart', text: '.'},
-// CHECK:STDOUT:                 {kind: 'IdentifierNameNotBeforeSignature', text: 'On'},
-// CHECK:STDOUT:                   {kind: 'TuplePatternStart', text: '('},
-// CHECK:STDOUT:                 {kind: 'TuplePattern', text: ')', subtree_size: 2},
-// CHECK:STDOUT:               {kind: 'AlternativePattern', text: '.', subtree_size: 5},
-// CHECK:STDOUT:             {kind: 'MatchCase', text: '=>', subtree_size: 7},
-// CHECK:STDOUT:           {kind: 'MatchHandlerStart', text: '{', subtree_size: 8},
-// CHECK:STDOUT:             {kind: 'ReturnStatementStart', text: 'return'},
-// CHECK:STDOUT:             {kind: 'IntLiteral', text: '4'},
-// CHECK:STDOUT:           {kind: 'ReturnStatement', text: ';', subtree_size: 3},
-// CHECK:STDOUT:         {kind: 'MatchHandler', text: '}', subtree_size: 12},
-// CHECK:STDOUT:               {kind: 'MatchCaseIntroducer', text: 'case'},
-// CHECK:STDOUT:                 {kind: 'TuplePatternStart', text: '('},
-// CHECK:STDOUT:                   {kind: 'IdentifierNameNotBeforeSignature', text: 'Err'},
-// CHECK:STDOUT:                 {kind: 'DesignatorExpr', text: '.', subtree_size: 2},
-// CHECK:STDOUT:               {kind: 'ParenPattern', text: ')', subtree_size: 4},
-// CHECK:STDOUT:             {kind: 'MatchCase', text: '=>', subtree_size: 6},
-// CHECK:STDOUT:           {kind: 'MatchHandlerStart', text: '{', subtree_size: 7},
-// CHECK:STDOUT:             {kind: 'ReturnStatementStart', text: 'return'},
-// CHECK:STDOUT:             {kind: 'IntLiteral', text: '5'},
-// CHECK:STDOUT:           {kind: 'ReturnStatement', text: ';', subtree_size: 3},
-// CHECK:STDOUT:         {kind: 'MatchHandler', text: '}', subtree_size: 11},
-// CHECK:STDOUT:               {kind: 'MatchDefaultIntroducer', text: 'default'},
-// CHECK:STDOUT:             {kind: 'MatchDefault', text: '=>', subtree_size: 2},
-// CHECK:STDOUT:           {kind: 'MatchHandlerStart', text: '{', subtree_size: 3},
-// CHECK:STDOUT:             {kind: 'ReturnStatementStart', text: 'return'},
-// CHECK:STDOUT:             {kind: 'IntLiteral', text: '6'},
-// CHECK:STDOUT:           {kind: 'ReturnStatement', text: ';', subtree_size: 3},
-// CHECK:STDOUT:         {kind: 'MatchHandler', text: '}', subtree_size: 7},
-// CHECK:STDOUT:       {kind: 'MatchStatement', text: '}', subtree_size: 100},
-// CHECK:STDOUT:         {kind: 'ReturnStatementStart', text: 'return'},
-// CHECK:STDOUT:           {kind: 'IntLiteral', text: '1'},
-// CHECK:STDOUT:         {kind: 'PrefixOperatorMinus', text: '-', subtree_size: 2},
-// CHECK:STDOUT:       {kind: 'ReturnStatement', text: ';', subtree_size: 4},
-// CHECK:STDOUT:     {kind: 'FunctionDefinition', text: '}', subtree_size: 116},
-// CHECK:STDOUT:     {kind: 'FileEnd', text: ''},
-// CHECK:STDOUT:   ]
+// CHECK:STDOUT:   ╭─FileStart ''
+// CHECK:STDOUT:   │   ╭─FunctionIntroducer 'fn'
+// CHECK:STDOUT:   │   ├─IdentifierNameMaybeBeforeSignature 'F'
+// CHECK:STDOUT:   │   │ ╭─ExplicitParamListStart '('
+// CHECK:STDOUT:   │   │ │ ╭─IdentifierNameNotBeforeSignature 'x'
+// CHECK:STDOUT:   │   │ │ ├─BindingPatternTypeStart ':'
+// CHECK:STDOUT:   │   │ │ ├─IntTypeLiteral 'i32'
+// CHECK:STDOUT:   │   │ ├─LetBindingPattern ':'
+// CHECK:STDOUT:   │   ├─ExplicitParamList ')'
+// CHECK:STDOUT:   │   │ ╭─IntTypeLiteral 'i32'
+// CHECK:STDOUT:   │   ├─ReturnType '->'
+// CHECK:STDOUT:   │ ╭─FunctionDefinitionStart '{'
+// CHECK:STDOUT:   │ │   ╭─MatchIntroducer 'match'
+// CHECK:STDOUT:   │ │   │ ╭─MatchConditionStart '('
+// CHECK:STDOUT:   │ │   │ ├─IdentifierNameExpr 'x'
+// CHECK:STDOUT:   │ │   ├─MatchCondition ')'
+// CHECK:STDOUT:   │ │ ╭─MatchStatementStart '{'
+// CHECK:STDOUT:   │ │ │     ╭─MatchCaseIntroducer 'case'
+// CHECK:STDOUT:   │ │ │     │ ╭─AlternativePatternStart '.'
+// CHECK:STDOUT:   │ │ │     │ ├─IdentifierNameNotBeforeSignature 'Err'
+// CHECK:STDOUT:   │ │ │     ├─AlternativePattern '.'
+// CHECK:STDOUT:   │ │ │   ╭─MatchCase '=>'
+// CHECK:STDOUT:   │ │ │ ╭─MatchHandlerStart '{'
+// CHECK:STDOUT:   │ │ │ │ ╭─ReturnStatementStart 'return'
+// CHECK:STDOUT:   │ │ │ │ ├─IntLiteral '0'
+// CHECK:STDOUT:   │ │ │ ├─ReturnStatement ';'
+// CHECK:STDOUT:   │ │ ├─MatchHandler '}'
+// CHECK:STDOUT:   │ │ │     ╭─MatchCaseIntroducer 'case'
+// CHECK:STDOUT:   │ │ │     │ ╭─AlternativePatternStart '.'
+// CHECK:STDOUT:   │ │ │     │ ├─IdentifierNameNotBeforeSignature 'Ok'
+// CHECK:STDOUT:   │ │ │     │ │ ╭─TuplePatternStart '('
+// CHECK:STDOUT:   │ │ │     │ │ │ ╭─IdentifierNameNotBeforeSignature 'value'
+// CHECK:STDOUT:   │ │ │     │ │ │ ├─BindingPatternTypeStart ':'
+// CHECK:STDOUT:   │ │ │     │ │ │ ├─IntTypeLiteral 'i32'
+// CHECK:STDOUT:   │ │ │     │ │ ├─LetBindingPattern ':'
+// CHECK:STDOUT:   │ │ │     │ ├─ParenPattern ')'
+// CHECK:STDOUT:   │ │ │     ├─AlternativePattern '.'
+// CHECK:STDOUT:   │ │ │   ╭─MatchCase '=>'
+// CHECK:STDOUT:   │ │ │ ╭─MatchHandlerStart '{'
+// CHECK:STDOUT:   │ │ │ │ ╭─ReturnStatementStart 'return'
+// CHECK:STDOUT:   │ │ │ │ ├─IntLiteral '1'
+// CHECK:STDOUT:   │ │ │ ├─ReturnStatement ';'
+// CHECK:STDOUT:   │ │ ├─MatchHandler '}'
+// CHECK:STDOUT:   │ │ │     ╭─MatchCaseIntroducer 'case'
+// CHECK:STDOUT:   │ │ │     │ ╭─AlternativePatternStart '.'
+// CHECK:STDOUT:   │ │ │     │ ├─IdentifierNameNotBeforeSignature 'Pair'
+// CHECK:STDOUT:   │ │ │     │ │ ╭─TuplePatternStart '('
+// CHECK:STDOUT:   │ │ │     │ │ │ ╭─IdentifierNameNotBeforeSignature 'a'
+// CHECK:STDOUT:   │ │ │     │ │ │ ├─BindingPatternTypeStart ':'
+// CHECK:STDOUT:   │ │ │     │ │ │ ├─IntTypeLiteral 'i32'
+// CHECK:STDOUT:   │ │ │     │ │ ├─LetBindingPattern ':'
+// CHECK:STDOUT:   │ │ │     │ │ ├─PatternListComma ','
+// CHECK:STDOUT:   │ │ │     │ │ │ ╭─IdentifierNameNotBeforeSignature 'b'
+// CHECK:STDOUT:   │ │ │     │ │ │ ├─BindingPatternTypeStart ':'
+// CHECK:STDOUT:   │ │ │     │ │ │ ├─IntTypeLiteral 'i32'
+// CHECK:STDOUT:   │ │ │     │ │ ├─LetBindingPattern ':'
+// CHECK:STDOUT:   │ │ │     │ ├─TuplePattern ')'
+// CHECK:STDOUT:   │ │ │     ├─AlternativePattern '.'
+// CHECK:STDOUT:   │ │ │   ╭─MatchCase '=>'
+// CHECK:STDOUT:   │ │ │ ╭─MatchHandlerStart '{'
+// CHECK:STDOUT:   │ │ │ │ ╭─ReturnStatementStart 'return'
+// CHECK:STDOUT:   │ │ │ │ ├─IntLiteral '2'
+// CHECK:STDOUT:   │ │ │ ├─ReturnStatement ';'
+// CHECK:STDOUT:   │ │ ├─MatchHandler '}'
+// CHECK:STDOUT:   │ │ │     ╭─MatchCaseIntroducer 'case'
+// CHECK:STDOUT:   │ │ │     │ ╭─AlternativePatternStart '.'
+// CHECK:STDOUT:   │ │ │     │ ├─IdentifierNameNotBeforeSignature 'Single'
+// CHECK:STDOUT:   │ │ │     │ │ ╭─TuplePatternStart '('
+// CHECK:STDOUT:   │ │ │     │ │ │ ╭─IdentifierNameNotBeforeSignature 'a'
+// CHECK:STDOUT:   │ │ │     │ │ │ ├─BindingPatternTypeStart ':'
+// CHECK:STDOUT:   │ │ │     │ │ │ ├─IntTypeLiteral 'i32'
+// CHECK:STDOUT:   │ │ │     │ │ ├─LetBindingPattern ':'
+// CHECK:STDOUT:   │ │ │     │ │ ├─PatternListComma ','
+// CHECK:STDOUT:   │ │ │     │ ├─TuplePattern ')'
+// CHECK:STDOUT:   │ │ │     ├─AlternativePattern '.'
+// CHECK:STDOUT:   │ │ │   ╭─MatchCase '=>'
+// CHECK:STDOUT:   │ │ │ ╭─MatchHandlerStart '{'
+// CHECK:STDOUT:   │ │ │ │ ╭─ReturnStatementStart 'return'
+// CHECK:STDOUT:   │ │ │ │ ├─IntLiteral '3'
+// CHECK:STDOUT:   │ │ │ ├─ReturnStatement ';'
+// CHECK:STDOUT:   │ │ ├─MatchHandler '}'
+// CHECK:STDOUT:   │ │ │     ╭─MatchCaseIntroducer 'case'
+// CHECK:STDOUT:   │ │ │     │ ╭─AlternativePatternStart '.'
+// CHECK:STDOUT:   │ │ │     │ ├─IdentifierNameNotBeforeSignature 'On'
+// CHECK:STDOUT:   │ │ │     │ │ ╭─TuplePatternStart '('
+// CHECK:STDOUT:   │ │ │     │ ├─TuplePattern ')'
+// CHECK:STDOUT:   │ │ │     ├─AlternativePattern '.'
+// CHECK:STDOUT:   │ │ │   ╭─MatchCase '=>'
+// CHECK:STDOUT:   │ │ │ ╭─MatchHandlerStart '{'
+// CHECK:STDOUT:   │ │ │ │ ╭─ReturnStatementStart 'return'
+// CHECK:STDOUT:   │ │ │ │ ├─IntLiteral '4'
+// CHECK:STDOUT:   │ │ │ ├─ReturnStatement ';'
+// CHECK:STDOUT:   │ │ ├─MatchHandler '}'
+// CHECK:STDOUT:   │ │ │     ╭─MatchCaseIntroducer 'case'
+// CHECK:STDOUT:   │ │ │     │ ╭─TuplePatternStart '('
+// CHECK:STDOUT:   │ │ │     │ │ ╭─IdentifierNameNotBeforeSignature 'Err'
+// CHECK:STDOUT:   │ │ │     │ ├─DesignatorExpr '.'
+// CHECK:STDOUT:   │ │ │     ├─ParenPattern ')'
+// CHECK:STDOUT:   │ │ │   ╭─MatchCase '=>'
+// CHECK:STDOUT:   │ │ │ ╭─MatchHandlerStart '{'
+// CHECK:STDOUT:   │ │ │ │ ╭─ReturnStatementStart 'return'
+// CHECK:STDOUT:   │ │ │ │ ├─IntLiteral '5'
+// CHECK:STDOUT:   │ │ │ ├─ReturnStatement ';'
+// CHECK:STDOUT:   │ │ ├─MatchHandler '}'
+// CHECK:STDOUT:   │ │ │     ╭─MatchDefaultIntroducer 'default'
+// CHECK:STDOUT:   │ │ │   ╭─MatchDefault '=>'
+// CHECK:STDOUT:   │ │ │ ╭─MatchHandlerStart '{'
+// CHECK:STDOUT:   │ │ │ │ ╭─ReturnStatementStart 'return'
+// CHECK:STDOUT:   │ │ │ │ ├─IntLiteral '6'
+// CHECK:STDOUT:   │ │ │ ├─ReturnStatement ';'
+// CHECK:STDOUT:   │ │ ├─MatchHandler '}'
+// CHECK:STDOUT:   │ ├─MatchStatement '}'
+// CHECK:STDOUT:   │ │ ╭─ReturnStatementStart 'return'
+// CHECK:STDOUT:   │ │ │ ╭─IntLiteral '1'
+// CHECK:STDOUT:   │ │ ├─PrefixOperatorMinus '-'
+// CHECK:STDOUT:   │ ├─ReturnStatement ';'
+// CHECK:STDOUT:   ├─FunctionDefinition '}'
+// CHECK:STDOUT:   ├─FileEnd ''
+// CHECK:STDOUT:   (root)

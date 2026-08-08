@@ -11,14 +11,6 @@
 // TIP:   bazel test //toolchain/testing:file_test --test_arg=--file_tests=toolchain/check/testdata/operators/builtin/fail_unimplemented_op.carbon
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/operators/builtin/fail_unimplemented_op.carbon
-// CHECK:STDERR: {{.*}}/prelude/try.carbon:20:1: error: name `Core.ImplicitAs` implicitly referenced here, but not found [CoreNameNotFound]
-// CHECK:STDERR: choice ControlFlow(C: type, B: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: {{.*}}/prelude/try.carbon:20:1: error: name `Core.ImplicitAs` implicitly referenced here, but not found [CoreNameNotFound]
-// CHECK:STDERR: choice ControlFlow(C: type, B: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 
 fn Main() -> i32 {
   // CHECK:STDERR: fail_unimplemented_op.carbon:[[@LINE+4]]:10: error: cannot access member of interface `Core.AddWith(Core.IntLiteral)` in type `{}` that does not implement that interface [MissingImplInMemberAccess]

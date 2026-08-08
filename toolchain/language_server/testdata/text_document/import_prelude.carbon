@@ -28,30 +28,6 @@
 
 // --- AUTOUPDATE-SPLIT
 
-// CHECK:STDERR: /test.carbon: warning: dropping diagnostic in {{.*}}/prelude/try.carbon:
-// CHECK:STDERR: {{.*}}/prelude/try.carbon:20:1: error: name `Core.ImplicitAs` implicitly referenced here, but not found
-// CHECK:STDERR: choice ControlFlow(C: type, B: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:  [LanguageServerDiagnosticInWrongFile]
-// CHECK:STDERR:
-// CHECK:STDERR: /test.carbon: warning: dropping diagnostic in {{.*}}/prelude/try.carbon:
-// CHECK:STDERR: {{.*}}/prelude/try.carbon:20:1: error: name `Core.ImplicitAs` implicitly referenced here, but not found
-// CHECK:STDERR: choice ControlFlow(C: type, B: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:  [LanguageServerDiagnosticInWrongFile]
-// CHECK:STDERR:
-// CHECK:STDERR: /test.carbon: warning: dropping diagnostic in {{.*}}/prelude/try.carbon:
-// CHECK:STDERR: {{.*}}/prelude/try.carbon:20:1: error: name `Core.ImplicitAs` implicitly referenced here, but not found
-// CHECK:STDERR: choice ControlFlow(C: type, B: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:  [LanguageServerDiagnosticInWrongFile]
-// CHECK:STDERR:
-// CHECK:STDERR: /test.carbon: warning: dropping diagnostic in {{.*}}/prelude/try.carbon:
-// CHECK:STDERR: {{.*}}/prelude/try.carbon:20:1: error: name `Core.ImplicitAs` implicitly referenced here, but not found
-// CHECK:STDERR: choice ControlFlow(C: type, B: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:  [LanguageServerDiagnosticInWrongFile]
-// CHECK:STDERR:
 // CHECK:STDOUT: Content-Length: 146{{\r}}
 // CHECK:STDOUT: {{\r}}
 // CHECK:STDOUT: {

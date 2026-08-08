@@ -11,14 +11,6 @@
 // TIP:   bazel test //toolchain/testing:file_test --test_arg=--file_tests=toolchain/check/testdata/index/fail_non_tuple_access.carbon
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/index/fail_non_tuple_access.carbon
-// CHECK:STDERR: {{.*}}/prelude/try.carbon:20:1: error: name `Core.ImplicitAs` implicitly referenced here, but not found [CoreNameNotFound]
-// CHECK:STDERR: choice ControlFlow(C: type, B: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: {{.*}}/prelude/try.carbon:20:1: error: name `Core.ImplicitAs` implicitly referenced here, but not found [CoreNameNotFound]
-// CHECK:STDERR: choice ControlFlow(C: type, B: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 
 fn Main() {
   // CHECK:STDERR: fail_non_tuple_access.carbon:[[@LINE+4]]:3: error: cannot access member of interface `Core.IndexWith(Core.IntLiteral)` in type `Core.IntLiteral` that does not implement that interface [MissingImplInMemberAccess]

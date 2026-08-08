@@ -9,14 +9,6 @@
 // TIP:   bazel test //toolchain/testing:file_test --test_arg=--file_tests=toolchain/check/testdata/operators/fail_question.carbon
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/operators/fail_question.carbon
-// CHECK:STDERR: {{.*}}/prelude/try.carbon:20:1: error: name `Core.ImplicitAs` implicitly referenced here, but not found [CoreNameNotFound]
-// CHECK:STDERR: choice ControlFlow(C: type, B: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: {{.*}}/prelude/try.carbon:20:1: error: name `Core.ImplicitAs` implicitly referenced here, but not found [CoreNameNotFound]
-// CHECK:STDERR: choice ControlFlow(C: type, B: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 
 // Postfix `?` rejections that need a user `Core.Try` impl in scope
 // (fork/b1/plan.md §3 B1b): the operand rejection, the three
@@ -40,10 +32,6 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-  // CHECK:STDERR: fail_operand_not_try.carbon:[[@LINE+4]]:3: error: missing `return` at end of function with declared return type [MissingReturnStatement]
-  // CHECK:STDERR:   }
-  // CHECK:STDERR:   ^
-  // CHECK:STDERR:
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
 }
@@ -92,10 +80,6 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-  // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:3: error: missing `return` at end of function with declared return type [MissingReturnStatement]
-  // CHECK:STDERR:   }
-  // CHECK:STDERR:   ^
-  // CHECK:STDERR:
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
 }
@@ -118,21 +102,13 @@ fn Guard(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
     case .Ok(w: i32) => { return MyResult(i32, i32).Ok(w); }
     case .Err(e: i32) => { return MyResult(i32, i32).Err(e); }
   }
-// CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:1: error: missing `return` at end of function with declared return type [MissingReturnStatement]
-// CHECK:STDERR: }
-// CHECK:STDERR: ^
-// CHECK:STDERR:
 }
 
 fn ExprPattern(n: i32) -> MyResult(i32, i32) {
   match (n) {
-    // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+8]]:10: error: `?` cannot be used inside a pattern, a `case` guard, or a binding's type expression [QuestionInPatternContext]
+    // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:10: error: `?` cannot be used inside a pattern, a `case` guard, or a binding's type expression [QuestionInPatternContext]
     // CHECK:STDERR:     case H(0)? => { return MyResult(i32, i32).Ok(n); }
     // CHECK:STDERR:          ^~~~~
-    // CHECK:STDERR:
-    // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:5: error: semantics TODO: `match case expression pattern that is not a constant integer` [SemanticsTodo]
-    // CHECK:STDERR:     case H(0)? => { return MyResult(i32, i32).Ok(n); }
-    // CHECK:STDERR:     ^~~~
     // CHECK:STDERR:
     case H(0)? => { return MyResult(i32, i32).Ok(n); }
     default => { return MyResult(i32, i32).Err(n); }
@@ -140,6 +116,10 @@ fn ExprPattern(n: i32) -> MyResult(i32, i32) {
 }
 
 fn Annotation(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
+  // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:10: error: `?` cannot be used inside a pattern, a `case` guard, or a binding's type expression [QuestionInPatternContext]
+  // CHECK:STDERR:   var y: r? = 0;
+  // CHECK:STDERR:          ^~
+  // CHECK:STDERR:
   var y: r? = 0;
   return MyResult(i32, i32).Ok(y);
 }
@@ -151,6 +131,10 @@ fn Annotation(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // divergence clause). The depth-1 type-position shape keeps the
 // missing-impl rejection (fail_operand_not_try.carbon).
 fn TypeAnnotation() -> MyResult(i32, i32) {
+  // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:10: error: `?` cannot be used inside a pattern, a `case` guard, or a binding's type expression [QuestionInPatternContext]
+  // CHECK:STDERR:   var p: i32? = 0;
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR:
   var p: i32? = 0;
   return MyResult(i32, i32).Ok(p);
 }
@@ -170,10 +154,6 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-  // CHECK:STDERR: fail_no_conversion.carbon:[[@LINE+4]]:3: error: missing `return` at end of function with declared return type [MissingReturnStatement]
-  // CHECK:STDERR:   }
-  // CHECK:STDERR:   ^
-  // CHECK:STDERR:
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
 }

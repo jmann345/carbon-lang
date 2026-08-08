@@ -18,8 +18,8 @@ it behind the §6 ledger TODO; zero conformance movement, floor
 byte-identical — plus the APPROVED fork/b1/plan.md, whose design review
 caught two blockers pre-implementation). B1b is next: prelude Core.Try +
 Core.ControlFlow, the six-step desugar with pre-flight witness lookup,
-region-position diagnose-and-reject, conformance flip to 83/0/30 over
-113. W5-S3 is COMPLETE across PRs #12/#13/#14:
+region-position diagnose-and-reject, conformance flip to 83 PASS / 0
+FAIL / 30 SKIP over 113. W5-S3 is COMPLETE across PRs #12/#13/#14:
 S3a (payload-free generic-choice specifics as match scrutinees), S3b
 (payload synthesis + per-specific layout — five CI cycles, each defect
 root-caused before the next push, see the decision-log five-cycle

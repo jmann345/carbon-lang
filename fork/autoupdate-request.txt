@@ -1,1 +1,1 @@
-2026-08-08T22:11:29Z autoupdate for B1b (prelude Core.Try/ControlFlow + ? desugar); churn budget: new files + fail_todo_question deletion; ANY full-prelude golden churn beyond plan R-1 ladder = R17 stop
+2026-08-08T22:14:49Z autoupdate re-fire after try.carbon ImplicitAs import fix; churn budget: new-file goldens ONLY, zero existing-golden churn

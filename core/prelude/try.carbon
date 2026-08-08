@@ -6,6 +6,7 @@ package Core library "prelude/try";
 
 // The choice's discriminant type and construction need the unsigned
 // integer types.
+import library "prelude/operators/as";
 import library "prelude/types/uint";
 
 // The branch carrier returned by `Try.Branch`: the value either continues

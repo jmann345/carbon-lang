@@ -563,11 +563,35 @@ annotation positions take the region-policy rejection (the annotation IS a
 captured region), depth-1 type operands keep the missing-impl rejection.
 Second fix round, same day: reachability analysis does not consult match
 exhaustiveness (the S3a/S3c convention), so every match-reconstruct body
-ends with an unreachable trailing return — the interface-recursive
-`return self.(Core.Try.Branch)();` in generic bodies (where no carrier
-value is conjurable), a dead constructible value in concrete ones — per
-plan §2.6's dated trailing-return amendment; the doc's impl sketches
-carry the same amendment.
+ends with an unreachable trailing return — a dead constructible value in
+concrete contexts, and in generic bodies (where no carrier value is
+conjurable) a diverging idiom — per plan §2.6's dated trailing-return
+amendment; the doc's impl sketches carry the same amendment. Third fix
+round, same day, two regen-surfaced defects: (1) the second round's
+generic idiom — the interface-recursive `return
+self.(Core.Try.Branch)();` — is SUPERSEDED: it does not type-check,
+because the recursive call's return type carries associated-constant
+projections (`ControlFlow(MyResult(T, E).(Core.Try.ContinueType), ...)`)
+that are NOT reduced under the impl's own `where` rewrites, so it never
+converts to the declared `ControlFlow(T, E)`; generic bodies now diverge
+through a testdata-local helper, `fn Diverge(generic T2: type) -> T2 {
+return Diverge(T2); }` (the arbiter-verified
+function/generic/deduce.carbon `ExplicitGenericParam` self-recursion
+shape), applied across both check goldens, the lower golden, and both
+conformance programs. (2) The symbolic-`R` generic golden hit a genuine
+machinery gap: the carrier temporary's STANDARD cleanup discharge needs a
+`Core.Destroy` witness for the symbolic `ControlFlow` specific, and
+`CanDestroyType` (custom_witness.cpp) cannot derive one — its symbolic
+deferral only engages for types it can prove destroyable, `Try` places no
+`Destroy` bound on `ContinueType`/`BreakType` (contrast
+`Iterate.ElementType: Copy & Destroy`), and bounding them is an
+interface-contract change for the veto digest, not a fix round. Per §3's
+pre-declared narrowing rule the symbolic-operand case is re-gated behind
+the NEW precise TODO `` `postfix `?` on an operand of symbolic type` ``
+(pinned by question.carbon's fail_todo_generic subfile; concrete operands
+in generic bodies stay ungated), NEW work item W-071 records the gap with
+the restored positive split as its discharge test, and plan §6's net-TODO
+count is amended from zero to one.
 _The impl-style rule (digest item 5):_ match-reconstruct `Branch` bodies
 throughout (testdata, conformance, the doc's amended impl sketches); the
 `return r` choice-binding CopyOfUncopyableType bound is pinned (R-5).
@@ -581,7 +605,9 @@ struct-shaped early-return oracle, 3-deep chain, runtime-selected failure
 depth): target floor 83 PASS / 0 FAIL / 30 SKIP over 113;
 `runner.py --self-test` OK, README table regenerated, scoreboard
 regeneration rides the landing gate (R9). _TODO ledger:_ the B1a gate
-string is DISCHARGED — zero `?` TODO strings remain (plan §6 as-landed).
+string is DISCHARGED; one `?` TODO string remains as landed — the third
+fix round's symbolic-operand narrowing gate, ledgered in plan §6 with
+W-071 as its discharge (amended from "zero remain" at that round).
 Veto-able.
 
 ### F-007: Unions - **Native `union` declaration** (2026-07-19)

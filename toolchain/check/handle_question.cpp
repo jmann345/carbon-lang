@@ -311,6 +311,26 @@ auto HandleParseNode(Context& context, Parse::PostfixOperatorQuestionId node_id)
     return true;
   }
 
+  // B1b narrowing (fork/b1/plan.md §3's dated narrowing clause, 2026-08-08;
+  // risk R-3's rule — instability re-gates behind a precise TODO, not the
+  // slice): a SYMBOLIC operand type makes the `ControlFlow` carrier a
+  // symbolic specific, and the carrier temporary's destroy has no derivable
+  // `Core.Destroy` witness — `CanDestroyType` (custom_witness.cpp) needs
+  // every payload element destroyable, and `Try` places no `Destroy` bound
+  // on `ContinueType`/`BreakType`, so the symbolic payload projection
+  // reports NoDestroy and the standard cleanup discharge (the same one a
+  // `var` or a match scrutinee temporary of this type would get) surfaces
+  // an eager missing-impl error at the `?`. Work item W-071 records the
+  // gap; its discharge test is restoring the positive generic golden this
+  // gate's fail_todo pin replaced. Concrete operand types inside generic
+  // bodies are unaffected — their carrier specifics get concrete destroy
+  // witnesses.
+  if (context.types()
+          .GetConstantId(context.insts().Get(operand_id).type_id())
+          .is_symbolic()) {
+    return context.TODO(node_id, "postfix `?` on an operand of symbolic type");
+  }
+
   // Step 2: evaluate the operand exactly once, as a value or reference.
   operand_id = ConvertToValueOrRefExpr(context, operand_id);
 

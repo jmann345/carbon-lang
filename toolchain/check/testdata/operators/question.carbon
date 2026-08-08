@@ -26,6 +26,13 @@ choice MyResult(T: type, E: type) {
   Err(e: E)
 }
 
+// Returns a value of any type by never returning — the unreachable
+// trailing-return helper for generic match-reconstruct bodies
+// (fork/b1/plan.md §2.6, dated correction). The explicit generic type
+// param + self-recursion is the arbiter-verified
+// function/generic/deduce.carbon `ExplicitGenericParam` shape.
+fn Diverge(generic T2: type) -> T2 { return Diverge(T2); }
+
 impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
@@ -33,19 +40,13 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-    // Unreachable-terminator idiom (fork/b1/plan.md §2.6, dated amendment):
-    // reachability analysis does not consult match exhaustiveness, so an
-    // exhaustive match still needs a trailing terminator; in a generic body
-    // no `ControlFlow(T, E)` value is conjurable, so recurse through the
-    // interface.
-    // CHECK:STDERR: propagate.carbon:[[@LINE+7]]:5: error: cannot implicitly convert expression of type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` to `Core.ControlFlow(T, E)` [ConversionFailure]
-    // CHECK:STDERR:     return self.(Core.Try.Branch)();
-    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // CHECK:STDERR: propagate.carbon:[[@LINE+4]]:5: note: type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` does not implement interface `Core.ImplicitAs(Core.ControlFlow(T, E))` [MissingImplInMemberAccessInContext]
-    // CHECK:STDERR:     return self.(Core.Try.Branch)();
-    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // CHECK:STDERR:
-    return self.(Core.Try.Branch)();
+    // Unreachable-terminator idiom (fork/b1/plan.md §2.6, dated
+    // correction): reachability doesn't consult match exhaustiveness; no
+    // generic `ControlFlow(T, E)` value is conjurable, and the
+    // interface-recursive call does not type-collapse (its return type's
+    // associated-constant projections are not reduced by this impl's own
+    // `where` rewrites), so diverge through the helper.
+    return Diverge(Core.ControlFlow(T, E));
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
 }
@@ -120,6 +121,13 @@ choice MyResult(T: type, E: type) {
   Err(e: E)
 }
 
+// Returns a value of any type by never returning — the unreachable
+// trailing-return helper for generic match-reconstruct bodies
+// (fork/b1/plan.md §2.6, dated correction). The explicit generic type
+// param + self-recursion is the arbiter-verified
+// function/generic/deduce.carbon `ExplicitGenericParam` shape.
+fn Diverge(generic T2: type) -> T2 { return Diverge(T2); }
+
 impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
@@ -127,17 +135,13 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-    // Unreachable-terminator idiom (fork/b1/plan.md §2.6): reachability
-    // doesn't consult match exhaustiveness; no generic `ControlFlow(T, E)`
-    // value is conjurable, so recurse through the interface.
-    // CHECK:STDERR: two_specifics.carbon:[[@LINE+7]]:5: error: cannot implicitly convert expression of type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` to `Core.ControlFlow(T, E)` [ConversionFailure]
-    // CHECK:STDERR:     return self.(Core.Try.Branch)();
-    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // CHECK:STDERR: two_specifics.carbon:[[@LINE+4]]:5: note: type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` does not implement interface `Core.ImplicitAs(Core.ControlFlow(T, E))` [MissingImplInMemberAccessInContext]
-    // CHECK:STDERR:     return self.(Core.Try.Branch)();
-    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // CHECK:STDERR:
-    return self.(Core.Try.Branch)();
+    // Unreachable-terminator idiom (fork/b1/plan.md §2.6, dated
+    // correction): reachability doesn't consult match exhaustiveness; no
+    // generic `ControlFlow(T, E)` value is conjurable, and the
+    // interface-recursive call does not type-collapse (its return type's
+    // associated-constant projections are not reduced by this impl's own
+    // `where` rewrites), so diverge through the helper.
+    return Diverge(Core.ControlFlow(T, E));
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
 }
@@ -206,27 +210,31 @@ fn Twice(x: Outer) -> Outer {
 }
 //@dump-sem-ir-end
 
-// --- generic.carbon
+// --- fail_todo_generic.carbon
 library "[[@TEST_NAME]]";
 
-//@dump-sem-ir-begin
-// `?` inside a generic function body: the operand and the return type are
-// the SYMBOLIC facet binding `R`, so the Branch witness comes from the
-// facet bound, the carrier is a symbolic `ControlFlow` specific, and the
-// extracted payloads have symbolic types (plan §3's R-8-style scope-in).
+// NARROWED as landed (fork/b1/plan.md §3's dated narrowing clause,
+// 2026-08-08; risk R-3's narrowing rule — instability re-gates behind a
+// precise TODO, not the slice): `?` on a SYMBOLIC operand type makes the
+// `ControlFlow` carrier a symbolic specific, and the carrier temporary's
+// destroy has no derivable `Core.Destroy` witness — `CanDestroyType`
+// (custom_witness.cpp) needs every payload element destroyable, and `Try`
+// places no `Destroy` bound on `ContinueType`/`BreakType`, so the symbolic
+// payload projection reports NoDestroy and the standard cleanup discharge
+// diagnosed an eager `MissingImplInMemberAccess` at the `?` (twice: once
+// per exclusive discharge path). Gated behind the precise TODO below;
+// W-071 records the gap, and restoring this split POSITIVE (the pre-gate
+// body: `let unused c: R.ContinueType = r?; return R.FromBreak(0);`) is
+// its discharge test. Concrete operands inside generic bodies are NOT
+// gated — their carriers get concrete destroy witnesses.
 fn PropagateOnly[R: Core.Try where .BreakType = i32](r: R) -> R {
-  // CHECK:STDERR: generic.carbon:[[@LINE+8]]:34: error: cannot access member of interface `Core.Destroy` in type `Core.ControlFlow(R.(Core.Try.ContinueType), i32)` that does not implement that interface [MissingImplInMemberAccess]
-  // CHECK:STDERR:   let unused c: R.ContinueType = r?;
-  // CHECK:STDERR:                                  ^~
-  // CHECK:STDERR:
-  // CHECK:STDERR: generic.carbon:[[@LINE+4]]:34: error: cannot access member of interface `Core.Destroy` in type `Core.ControlFlow(R.(Core.Try.ContinueType), i32)` that does not implement that interface [MissingImplInMemberAccess]
+  // CHECK:STDERR: fail_todo_generic.carbon:[[@LINE+4]]:34: error: semantics TODO: `postfix `?` on an operand of symbolic type` [SemanticsTodo]
   // CHECK:STDERR:   let unused c: R.ContinueType = r?;
   // CHECK:STDERR:                                  ^~
   // CHECK:STDERR:
   let unused c: R.ContinueType = r?;
   return R.FromBreak(0);
 }
-//@dump-sem-ir-end
 
 // --- convert.carbon
 library "[[@TEST_NAME]]";
@@ -236,6 +244,13 @@ choice MyResult(T: type, E: type) {
   Err(e: E)
 }
 
+// Returns a value of any type by never returning — the unreachable
+// trailing-return helper for generic match-reconstruct bodies
+// (fork/b1/plan.md §2.6, dated correction). The explicit generic type
+// param + self-recursion is the arbiter-verified
+// function/generic/deduce.carbon `ExplicitGenericParam` shape.
+fn Diverge(generic T2: type) -> T2 { return Diverge(T2); }
+
 impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
@@ -243,17 +258,13 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-    // Unreachable-terminator idiom (fork/b1/plan.md §2.6): reachability
-    // doesn't consult match exhaustiveness; no generic `ControlFlow(T, E)`
-    // value is conjurable, so recurse through the interface.
-    // CHECK:STDERR: convert.carbon:[[@LINE+7]]:5: error: cannot implicitly convert expression of type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` to `Core.ControlFlow(T, E)` [ConversionFailure]
-    // CHECK:STDERR:     return self.(Core.Try.Branch)();
-    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // CHECK:STDERR: convert.carbon:[[@LINE+4]]:5: note: type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` does not implement interface `Core.ImplicitAs(Core.ControlFlow(T, E))` [MissingImplInMemberAccessInContext]
-    // CHECK:STDERR:     return self.(Core.Try.Branch)();
-    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // CHECK:STDERR:
-    return self.(Core.Try.Branch)();
+    // Unreachable-terminator idiom (fork/b1/plan.md §2.6, dated
+    // correction): reachability doesn't consult match exhaustiveness; no
+    // generic `ControlFlow(T, E)` value is conjurable, and the
+    // interface-recursive call does not type-collapse (its return type's
+    // associated-constant projections are not reduced by this impl's own
+    // `where` rewrites), so diverge through the helper.
+    return Diverge(Core.ControlFlow(T, E));
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
 }
@@ -2198,323 +2209,6 @@ fn Outer(n: i32) -> MyResult(i32, ErrB) {
 // CHECK:STDOUT: fn @Destroy.Op.loc47_18.3(%self.param: ref %ControlFlow.32a) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: --- generic.carbon
-// CHECK:STDOUT:
-// CHECK:STDOUT: constants {
-// CHECK:STDOUT:   %type: type = facet_type <type> [concrete]
-// CHECK:STDOUT:   %.Self.frozen.197: %type = symbolic_binding .Self [symbolic_self]
-// CHECK:STDOUT:   %Try.type: type = facet_type <@Try> [concrete]
-// CHECK:STDOUT:   %Self.cc4: %Try.type = symbolic_binding Self, 0 [symbolic]
-// CHECK:STDOUT:   %Try.WithSelf.FromBreak.type.030: type = fn_type @Try.WithSelf.FromBreak, @Try.WithSelf(%Self.cc4) [symbolic]
-// CHECK:STDOUT:   %Try.WithSelf.FromBreak.e67: %Try.WithSelf.FromBreak.type.030 = struct_value () [symbolic]
-// CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
-// CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
-// CHECK:STDOUT:   %u1: type = class_type @UInt, @UInt(%int_1.5b8) [concrete]
-// CHECK:STDOUT:   %u1.builtin: type = int_type unsigned, %int_1.5b8 [concrete]
-// CHECK:STDOUT:   %int_1.233: %u1 = int_value 1 [concrete]
-// CHECK:STDOUT:   %.Self.frozen.5e9: %Try.type = symbolic_binding .Self [symbolic_self]
-// CHECK:STDOUT:   %.Self.frozen.as_type: type = facet_access_type %.Self.frozen.5e9 [symbolic_self]
-// CHECK:STDOUT:   %Try.assoc_type: type = assoc_entity_type @Try [concrete]
-// CHECK:STDOUT:   %assoc1.f63: %Try.assoc_type = assoc_entity element1, imports.%Core.import_ref.9a9 [concrete]
-// CHECK:STDOUT:   %Try.lookup_impl_witness.73a: <witness> = lookup_impl_witness %.Self.frozen.5e9, @Try [symbolic_self]
-// CHECK:STDOUT:   %impl.elem1.660: type = impl_witness_access %Try.lookup_impl_witness.73a, element1 [symbolic_self]
-// CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
-// CHECK:STDOUT:   %Int.type: type = generic_class_type @Int [concrete]
-// CHECK:STDOUT:   %Int.generic: %Int.type = struct_value () [concrete]
-// CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
-// CHECK:STDOUT:   %.Self: %Try.type = symbolic_binding .Self [symbolic_self]
-// CHECK:STDOUT:   %Try.lookup_impl_witness.775: <witness> = lookup_impl_witness %.Self, @Try [symbolic_self]
-// CHECK:STDOUT:   %impl.elem1.d8a: type = impl_witness_access %Try.lookup_impl_witness.775, element1 [symbolic_self]
-// CHECK:STDOUT:   %Try_where.type: type = facet_type <@Try where %impl.elem1.d8a = %i32> [concrete]
-// CHECK:STDOUT:   %pattern_type.df6: type = pattern_type %Try_where.type [concrete]
-// CHECK:STDOUT:   %R.patt: %pattern_type.df6 = symbolic_binding_pattern R, 0 [symbolic]
-// CHECK:STDOUT:   %R: %Try_where.type = symbolic_binding R, 0 [symbolic]
-// CHECK:STDOUT:   %R.as_type: type = facet_access_type %R [symbolic]
-// CHECK:STDOUT:   %pattern_type.239: type = pattern_type %R.as_type [symbolic]
-// CHECK:STDOUT:   %r.param_patt: %pattern_type.239 = value_param_pattern [symbolic]
-// CHECK:STDOUT:   %r.patt: %pattern_type.239 = at_binding_pattern r, %r.param_patt [symbolic]
-// CHECK:STDOUT:   %.802: Core.Form = init_form %R.as_type [symbolic]
-// CHECK:STDOUT:   %return.param_patt.aed: %pattern_type.239 = out_param_pattern [symbolic]
-// CHECK:STDOUT:   %return.patt.0bca: %pattern_type.239 = return_slot_pattern %return.param_patt.aed, %R.as_type [symbolic]
-// CHECK:STDOUT:   %PropagateOnly.type: type = fn_type @PropagateOnly [concrete]
-// CHECK:STDOUT:   %PropagateOnly: %PropagateOnly.type = struct_value () [concrete]
-// CHECK:STDOUT:   %require_complete.b5f: <witness> = require_complete_type %R.as_type [symbolic]
-// CHECK:STDOUT:   %assoc0.de3: %Try.assoc_type = assoc_entity element0, imports.%Core.import_ref.c56 [concrete]
-// CHECK:STDOUT:   %Try.lookup_impl_witness.832: <witness> = lookup_impl_witness %R, @Try [symbolic]
-// CHECK:STDOUT:   %Try.facet: %Try.type = facet_value %R.as_type, (%Try.lookup_impl_witness.832) [symbolic]
-// CHECK:STDOUT:   %Try.WithSelf.Branch.type.ef1: type = fn_type @Try.WithSelf.Branch, @Try.WithSelf(%Try.facet) [symbolic]
-// CHECK:STDOUT:   %Try.WithSelf.FromBreak.type.4c3: type = fn_type @Try.WithSelf.FromBreak, @Try.WithSelf(%Try.facet) [symbolic]
-// CHECK:STDOUT:   %impl.elem0.fca: type = impl_witness_access %Try.lookup_impl_witness.832, element0 [symbolic]
-// CHECK:STDOUT:   %require_complete.677: <witness> = require_complete_type %impl.elem0.fca [symbolic]
-// CHECK:STDOUT:   %pattern_type.b1f: type = pattern_type %impl.elem0.fca [symbolic]
-// CHECK:STDOUT:   %c.patt: %pattern_type.b1f = value_binding_pattern c [symbolic]
-// CHECK:STDOUT:   %.392: type = fn_type_with_self_type %Try.WithSelf.Branch.type.ef1, %Try.facet [symbolic]
-// CHECK:STDOUT:   %impl.elem2: %.392 = impl_witness_access %Try.lookup_impl_witness.832, element2 [symbolic]
-// CHECK:STDOUT:   %ControlFlow.67f: type = class_type @ControlFlow, @ControlFlow(%impl.elem0.fca, %i32) [symbolic]
-// CHECK:STDOUT:   %specific_impl_fn.8ea: <specific function> = specific_impl_function %impl.elem2, @Try.WithSelf.Branch(%Try.facet) [symbolic]
-// CHECK:STDOUT:   %tuple.type.c39: type = tuple_type (%impl.elem0.fca) [symbolic]
-// CHECK:STDOUT:   %tuple.type.a8a: type = tuple_type (%i32) [concrete]
-// CHECK:STDOUT:   %.990: type = custom_layout_type {size=0, align=0, .Continue@0: %tuple.type.c39, .Break@0: %tuple.type.a8a} [symbolic]
-// CHECK:STDOUT:   %ImplicitAs.type.0ff: type = generic_interface_type @ImplicitAs [concrete]
-// CHECK:STDOUT:   %ImplicitAs.generic: %ImplicitAs.type.0ff = struct_value () [concrete]
-// CHECK:STDOUT:   %ImplicitAs.type.ca1: type = facet_type <@ImplicitAs, @ImplicitAs(%u1)> [concrete]
-// CHECK:STDOUT:   %To.fe9: Core.IntLiteral = symbolic_binding To, 0 [symbolic]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.199: type = fn_type @Core.IntLiteral.as.ImplicitAs.impl.Convert.1, @Core.IntLiteral.as.ImplicitAs.impl.b68(%To.fe9) [symbolic]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.170: %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.199 = struct_value () [symbolic]
-// CHECK:STDOUT:   %ImplicitAs.impl_witness.9a9: <witness> = impl_witness imports.%ImplicitAs.impl_witness_table.42f, @Core.IntLiteral.as.ImplicitAs.impl.b68(%int_1.5b8) [concrete]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.2ab: type = fn_type @Core.IntLiteral.as.ImplicitAs.impl.Convert.1, @Core.IntLiteral.as.ImplicitAs.impl.b68(%int_1.5b8) [concrete]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a: %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.2ab = struct_value () [concrete]
-// CHECK:STDOUT:   %ImplicitAs.facet.115: %ImplicitAs.type.ca1 = facet_value Core.IntLiteral, (%ImplicitAs.impl_witness.9a9) [concrete]
-// CHECK:STDOUT:   %ImplicitAs.WithSelf.Convert.type.19e: type = fn_type @ImplicitAs.WithSelf.Convert, @ImplicitAs.WithSelf(%u1, %ImplicitAs.facet.115) [concrete]
-// CHECK:STDOUT:   %.e60: type = fn_type_with_self_type %ImplicitAs.WithSelf.Convert.type.19e, %ImplicitAs.facet.115 [concrete]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.320: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a [concrete]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.e93: <specific function> = specific_function %Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a, @Core.IntLiteral.as.ImplicitAs.impl.Convert.1(%int_1.5b8) [concrete]
-// CHECK:STDOUT:   %bound_method.d7a: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.e93 [concrete]
-// CHECK:STDOUT:   %EqWith.type.f77: type = generic_interface_type @EqWith [concrete]
-// CHECK:STDOUT:   %EqWith.generic: %EqWith.type.f77 = struct_value () [concrete]
-// CHECK:STDOUT:   %EqWith.type.c25: type = facet_type <@EqWith, @EqWith(%u1)> [concrete]
-// CHECK:STDOUT:   %M: Core.IntLiteral = symbolic_binding M, 1 [symbolic]
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.type.544: type = fn_type @UInt.as.EqWith.impl.Equal.1, @UInt.as.EqWith.impl.f13(%N, %M) [symbolic]
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.c67: %UInt.as.EqWith.impl.Equal.type.544 = struct_value () [symbolic]
-// CHECK:STDOUT:   %EqWith.impl_witness.d63: <witness> = impl_witness imports.%EqWith.impl_witness_table.cbd, @UInt.as.EqWith.impl.f13(%int_1.5b8, %int_1.5b8) [concrete]
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.type.29b: type = fn_type @UInt.as.EqWith.impl.Equal.1, @UInt.as.EqWith.impl.f13(%int_1.5b8, %int_1.5b8) [concrete]
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.ba4: %UInt.as.EqWith.impl.Equal.type.29b = struct_value () [concrete]
-// CHECK:STDOUT:   %EqWith.facet.3b6: %EqWith.type.c25 = facet_value %u1, (%EqWith.impl_witness.d63) [concrete]
-// CHECK:STDOUT:   %EqWith.WithSelf.Equal.type.922: type = fn_type @EqWith.WithSelf.Equal, @EqWith.WithSelf(%u1, %EqWith.facet.3b6) [concrete]
-// CHECK:STDOUT:   %.9ed: type = fn_type_with_self_type %EqWith.WithSelf.Equal.type.922, %EqWith.facet.3b6 [concrete]
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.bound: <bound method> = bound_method %int_1.233, %UInt.as.EqWith.impl.Equal.ba4 [concrete]
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.specific_fn.6b6: <specific function> = specific_function %UInt.as.EqWith.impl.Equal.ba4, @UInt.as.EqWith.impl.Equal.1(%int_1.5b8, %int_1.5b8) [concrete]
-// CHECK:STDOUT:   %bound_method.a82: <bound method> = bound_method %int_1.233, %UInt.as.EqWith.impl.Equal.specific_fn.6b6 [concrete]
-// CHECK:STDOUT:   %assoc3: %Try.assoc_type = assoc_entity element3, imports.%Core.import_ref.271 [concrete]
-// CHECK:STDOUT:   %.287: type = fn_type_with_self_type %Try.WithSelf.FromBreak.type.4c3, %Try.facet [symbolic]
-// CHECK:STDOUT:   %impl.elem3: %.287 = impl_witness_access %Try.lookup_impl_witness.832, element3 [symbolic]
-// CHECK:STDOUT:   %specific_impl_fn.9a1: <specific function> = specific_impl_function %impl.elem3, @Try.WithSelf.FromBreak(%Try.facet) [symbolic]
-// CHECK:STDOUT:   %Destroy.type: type = facet_type <@Destroy> [concrete]
-// CHECK:STDOUT:   %int_0.5c6: Core.IntLiteral = int_value 0 [concrete]
-// CHECK:STDOUT:   %ImplicitAs.type.914: type = facet_type <@ImplicitAs, @ImplicitAs(%i32)> [concrete]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74: type = fn_type @Core.IntLiteral.as.ImplicitAs.impl.Convert.2, @Core.IntLiteral.as.ImplicitAs.impl.0e9(%To.fe9) [symbolic]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.845: %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74 = struct_value () [symbolic]
-// CHECK:STDOUT:   %ImplicitAs.impl_witness.a23: <witness> = impl_witness imports.%ImplicitAs.impl_witness_table.b3c, @Core.IntLiteral.as.ImplicitAs.impl.0e9(%int_32) [concrete]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.2ba: type = fn_type @Core.IntLiteral.as.ImplicitAs.impl.Convert.2, @Core.IntLiteral.as.ImplicitAs.impl.0e9(%int_32) [concrete]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39: %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.2ba = struct_value () [concrete]
-// CHECK:STDOUT:   %ImplicitAs.facet.9f1: %ImplicitAs.type.914 = facet_value Core.IntLiteral, (%ImplicitAs.impl_witness.a23) [concrete]
-// CHECK:STDOUT:   %ImplicitAs.WithSelf.Convert.type.740: type = fn_type @ImplicitAs.WithSelf.Convert, @ImplicitAs.WithSelf(%i32, %ImplicitAs.facet.9f1) [concrete]
-// CHECK:STDOUT:   %.1c5: type = fn_type_with_self_type %ImplicitAs.WithSelf.Convert.type.740, %ImplicitAs.facet.9f1 [concrete]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.7b4: <bound method> = bound_method %int_0.5c6, %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39 [concrete]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571: <specific function> = specific_function %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39, @Core.IntLiteral.as.ImplicitAs.impl.Convert.2(%int_32) [concrete]
-// CHECK:STDOUT:   %bound_method.6e0: <bound method> = bound_method %int_0.5c6, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571 [concrete]
-// CHECK:STDOUT:   %int_0.3c0: %i32 = int_value 0 [concrete]
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: imports {
-// CHECK:STDOUT:   %Core: <namespace> = namespace file.%Core.import, [concrete] {
-// CHECK:STDOUT:     .Try = %Core.Try
-// CHECK:STDOUT:     .Int = %Core.Int
-// CHECK:STDOUT:     .ImplicitAs = %Core.ImplicitAs
-// CHECK:STDOUT:     .EqWith = %Core.EqWith
-// CHECK:STDOUT:     .Destroy = %Core.Destroy
-// CHECK:STDOUT:     import Core//prelude
-// CHECK:STDOUT:     import Core//prelude/...
-// CHECK:STDOUT:   }
-// CHECK:STDOUT:   %Core.Try: type = import_ref Core//prelude/try, Try, loaded [concrete = constants.%Try.type]
-// CHECK:STDOUT:   %Core.import_ref.baf: %Try.assoc_type = import_ref Core//prelude/try, loc{{\d+_\d+}}, loaded [concrete = constants.%assoc0.de3]
-// CHECK:STDOUT:   %Core.import_ref.814: %Try.assoc_type = import_ref Core//prelude/try, loc{{\d+_\d+}}, loaded [concrete = constants.%assoc1.f63]
-// CHECK:STDOUT:   %Core.import_ref.8ab: %Try.assoc_type = import_ref Core//prelude/try, loc{{\d+_\d+}}, loaded [concrete = constants.%assoc3]
-// CHECK:STDOUT:   %Core.import_ref.9a9: type = import_ref Core//prelude/try, loc{{\d+_\d+}}, loaded [concrete = %BreakType]
-// CHECK:STDOUT:   %BreakType: type = assoc_const_decl @BreakType [concrete] {}
-// CHECK:STDOUT:   %Core.Int: %Int.type = import_ref Core//prelude/types/int, Int, loaded [concrete = constants.%Int.generic]
-// CHECK:STDOUT:   %Core.import_ref.c56: type = import_ref Core//prelude/try, loc{{\d+_\d+}}, loaded [concrete = %ContinueType]
-// CHECK:STDOUT:   %ContinueType: type = assoc_const_decl @ContinueType [concrete] {}
-// CHECK:STDOUT:   %Core.ImplicitAs: %ImplicitAs.type.0ff = import_ref Core//prelude/operators/as, ImplicitAs, loaded [concrete = constants.%ImplicitAs.generic]
-// CHECK:STDOUT:   %Core.import_ref.aa5: @Core.IntLiteral.as.ImplicitAs.impl.b68.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.199) = import_ref Core//prelude/types/uint, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.b68.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.170)]
-// CHECK:STDOUT:   %ImplicitAs.impl_witness_table.42f = impl_witness_table (%Core.import_ref.aa5), @Core.IntLiteral.as.ImplicitAs.impl.b68 [concrete]
-// CHECK:STDOUT:   %Core.EqWith: %EqWith.type.f77 = import_ref Core//prelude/operators/comparison, EqWith, loaded [concrete = constants.%EqWith.generic]
-// CHECK:STDOUT:   %Core.import_ref.b92: @UInt.as.EqWith.impl.f13.%UInt.as.EqWith.impl.Equal.type (%UInt.as.EqWith.impl.Equal.type.544) = import_ref Core//prelude/types/uint, loc{{\d+_\d+}}, loaded [symbolic = @UInt.as.EqWith.impl.f13.%UInt.as.EqWith.impl.Equal (constants.%UInt.as.EqWith.impl.Equal.c67)]
-// CHECK:STDOUT:   %Core.import_ref.b44 = import_ref Core//prelude/types/uint, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %EqWith.impl_witness_table.cbd = impl_witness_table (%Core.import_ref.b92, %Core.import_ref.b44), @UInt.as.EqWith.impl.f13 [concrete]
-// CHECK:STDOUT:   %Core.import_ref.271: @Try.WithSelf.%Try.WithSelf.FromBreak.type (%Try.WithSelf.FromBreak.type.030) = import_ref Core//prelude/try, loc{{\d+_\d+}}, loaded [symbolic = @Try.WithSelf.%Try.WithSelf.FromBreak (constants.%Try.WithSelf.FromBreak.e67)]
-// CHECK:STDOUT:   %Core.Destroy: type = import_ref Core//prelude/destroy, Destroy, loaded [concrete = constants.%Destroy.type]
-// CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
-// CHECK:STDOUT:   %ImplicitAs.impl_witness_table.b3c = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: file {
-// CHECK:STDOUT:   %PropagateOnly.decl: %PropagateOnly.type = fn_decl @PropagateOnly [concrete = constants.%PropagateOnly] {
-// CHECK:STDOUT:     %R.patt.loc8_19.1: %pattern_type.df6 = symbolic_binding_pattern R, 0 [symbolic = %R.patt.loc8_19.2 (constants.%R.patt)]
-// CHECK:STDOUT:     %r.param_patt.loc8_55.1: @PropagateOnly.%pattern_type.loc8 (%pattern_type.239) = value_param_pattern [symbolic = %r.param_patt.loc8_55.2 (constants.%r.param_patt)]
-// CHECK:STDOUT:     %r.patt.loc8_55.1: @PropagateOnly.%pattern_type.loc8 (%pattern_type.239) = at_binding_pattern r, %r.param_patt.loc8_55.1 [symbolic = %r.patt.loc8_55.2 (constants.%r.patt)]
-// CHECK:STDOUT:     %return.param_patt.loc8_63.1: @PropagateOnly.%pattern_type.loc8 (%pattern_type.239) = out_param_pattern [symbolic = %return.param_patt.loc8_63.2 (constants.%return.param_patt.aed)]
-// CHECK:STDOUT:     %return.patt.loc8_60.1: @PropagateOnly.%pattern_type.loc8 (%pattern_type.239) = return_slot_pattern %return.param_patt.loc8_63.1, %.loc8_63.4 [symbolic = %return.patt.loc8_60.2 (constants.%return.patt.0bca)]
-// CHECK:STDOUT:   } {
-// CHECK:STDOUT:     %R.ref.loc8_63: %Try_where.type = name_ref R, %R.loc8_19.2 [symbolic = %R.loc8_19.1 (constants.%R)]
-// CHECK:STDOUT:     %R.as_type.loc8_63: type = facet_access_type %R.ref.loc8_63 [symbolic = %R.as_type.loc8_57.1 (constants.%R.as_type)]
-// CHECK:STDOUT:     %.loc8_63.4: type = converted %R.ref.loc8_63, %R.as_type.loc8_63 [symbolic = %R.as_type.loc8_57.1 (constants.%R.as_type)]
-// CHECK:STDOUT:     %.loc8_63.5: Core.Form = init_form %.loc8_63.4 [symbolic = %.loc8_63.3 (constants.%.802)]
-// CHECK:STDOUT:     %.loc8_30.1: type = splice_block %.loc8_30.2 [concrete = constants.%Try_where.type] {
-// CHECK:STDOUT:       %.Self.frozen.loc8_19: %type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen.197]
-// CHECK:STDOUT:       %Core.ref: <namespace> = name_ref Core, imports.%Core [concrete = imports.%Core]
-// CHECK:STDOUT:       %Try.ref: type = name_ref Try, imports.%Core.Try [concrete = constants.%Try.type]
-// CHECK:STDOUT:       %.Self.frozen.loc8_30: %Try.type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen.5e9]
-// CHECK:STDOUT:       %base_facet_type = requirement_base_facet_type %Try.ref [concrete]
-// CHECK:STDOUT:       %.Self.ref: %Try.type = name_ref .Self, %.Self.frozen.loc8_30 [symbolic_self = constants.%.Self.frozen.5e9]
-// CHECK:STDOUT:       %.Self.as_type: type = facet_access_type %.Self.ref [symbolic_self = constants.%.Self.frozen.as_type]
-// CHECK:STDOUT:       %.loc8_36: type = converted %.Self.ref, %.Self.as_type [symbolic_self = constants.%.Self.frozen.as_type]
-// CHECK:STDOUT:       %BreakType.ref: %Try.assoc_type = name_ref BreakType, imports.%Core.import_ref.814 [concrete = constants.%assoc1.f63]
-// CHECK:STDOUT:       %impl.elem1.loc8_36.1: type = impl_witness_access constants.%Try.lookup_impl_witness.73a, element1 [symbolic_self = constants.%impl.elem1.660]
-// CHECK:STDOUT:       %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
-// CHECK:STDOUT:       %rewrite.loc8_47.1 = requirement_rewrite %impl.elem1.loc8_36.1, %i32 [concrete]
-// CHECK:STDOUT:       %impl.elem1.loc8_36.2: type = impl_witness_access constants.%Try.lookup_impl_witness.775, element1 [symbolic_self = constants.%impl.elem1.d8a]
-// CHECK:STDOUT:       %rewrite.loc8_47.2 = requirement_rewrite %impl.elem1.loc8_36.2, %i32 [concrete]
-// CHECK:STDOUT:       %.loc8_30.2: type = where_expr [concrete = constants.%Try_where.type] {
-// CHECK:STDOUT:         %base_facet_type = requirement_base_facet_type %Try.ref [concrete]
-// CHECK:STDOUT:         %rewrite.loc8_47.2 = requirement_rewrite %impl.elem1.loc8_36.2, %i32 [concrete]
-// CHECK:STDOUT:       }
-// CHECK:STDOUT:     }
-// CHECK:STDOUT:     %R.loc8_19.2: %Try_where.type = symbolic_binding R, 0 [symbolic = %R.loc8_19.1 (constants.%R)]
-// CHECK:STDOUT:     %r.param: @PropagateOnly.%R.as_type.loc8_57.1 (%R.as_type) = value_param call_param0
-// CHECK:STDOUT:     %.loc8_57.1: type = splice_block %.loc8_57.2 [symbolic = %R.as_type.loc8_57.1 (constants.%R.as_type)] {
-// CHECK:STDOUT:       %R.ref.loc8_57: %Try_where.type = name_ref R, %R.loc8_19.2 [symbolic = %R.loc8_19.1 (constants.%R)]
-// CHECK:STDOUT:       %R.as_type.loc8_57.2: type = facet_access_type %R.ref.loc8_57 [symbolic = %R.as_type.loc8_57.1 (constants.%R.as_type)]
-// CHECK:STDOUT:       %.loc8_57.2: type = converted %R.ref.loc8_57, %R.as_type.loc8_57.2 [symbolic = %R.as_type.loc8_57.1 (constants.%R.as_type)]
-// CHECK:STDOUT:     }
-// CHECK:STDOUT:     %r: @PropagateOnly.%R.as_type.loc8_57.1 (%R.as_type) = wrapper_binding r, %r.param
-// CHECK:STDOUT:     %return.param: ref @PropagateOnly.%R.as_type.loc8_57.1 (%R.as_type) = out_param call_param1
-// CHECK:STDOUT:     %return: ref @PropagateOnly.%R.as_type.loc8_57.1 (%R.as_type) = return_slot %return.param
-// CHECK:STDOUT:   }
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: generic fn @PropagateOnly(%R.loc8_19.2: %Try_where.type) {
-// CHECK:STDOUT:   %R.patt.loc8_19.2: %pattern_type.df6 = symbolic_binding_pattern R, 0 [symbolic = %R.patt.loc8_19.2 (constants.%R.patt)]
-// CHECK:STDOUT:   %R.loc8_19.1: %Try_where.type = symbolic_binding R, 0 [symbolic = %R.loc8_19.1 (constants.%R)]
-// CHECK:STDOUT:   %R.as_type.loc8_57.1: type = facet_access_type %R.loc8_19.1 [symbolic = %R.as_type.loc8_57.1 (constants.%R.as_type)]
-// CHECK:STDOUT:   %pattern_type.loc8: type = pattern_type %R.as_type.loc8_57.1 [symbolic = %pattern_type.loc8 (constants.%pattern_type.239)]
-// CHECK:STDOUT:   %r.param_patt.loc8_55.2: @PropagateOnly.%pattern_type.loc8 (%pattern_type.239) = value_param_pattern [symbolic = %r.param_patt.loc8_55.2 (constants.%r.param_patt)]
-// CHECK:STDOUT:   %r.patt.loc8_55.2: @PropagateOnly.%pattern_type.loc8 (%pattern_type.239) = at_binding_pattern r, %r.param_patt.loc8_55.2 [symbolic = %r.patt.loc8_55.2 (constants.%r.patt)]
-// CHECK:STDOUT:   %.loc8_63.3: Core.Form = init_form %R.as_type.loc8_57.1 [symbolic = %.loc8_63.3 (constants.%.802)]
-// CHECK:STDOUT:   %return.param_patt.loc8_63.2: @PropagateOnly.%pattern_type.loc8 (%pattern_type.239) = out_param_pattern [symbolic = %return.param_patt.loc8_63.2 (constants.%return.param_patt.aed)]
-// CHECK:STDOUT:   %return.patt.loc8_60.2: @PropagateOnly.%pattern_type.loc8 (%pattern_type.239) = return_slot_pattern %return.param_patt.loc8_63.2, %R.as_type.loc8_57.1 [symbolic = %return.patt.loc8_60.2 (constants.%return.patt.0bca)]
-// CHECK:STDOUT:
-// CHECK:STDOUT: !definition:
-// CHECK:STDOUT:   %require_complete.loc8: <witness> = require_complete_type %R.as_type.loc8_57.1 [symbolic = %require_complete.loc8 (constants.%require_complete.b5f)]
-// CHECK:STDOUT:   %Try.lookup_impl_witness: <witness> = lookup_impl_witness %R.loc8_19.1, @Try [symbolic = %Try.lookup_impl_witness (constants.%Try.lookup_impl_witness.832)]
-// CHECK:STDOUT:   %impl.elem0.loc17_18.2: type = impl_witness_access %Try.lookup_impl_witness, element0 [symbolic = %impl.elem0.loc17_18.2 (constants.%impl.elem0.fca)]
-// CHECK:STDOUT:   %require_complete.loc17: <witness> = require_complete_type %impl.elem0.loc17_18.2 [symbolic = %require_complete.loc17 (constants.%require_complete.677)]
-// CHECK:STDOUT:   %pattern_type.loc17: type = pattern_type %impl.elem0.loc17_18.2 [symbolic = %pattern_type.loc17 (constants.%pattern_type.b1f)]
-// CHECK:STDOUT:   %c.patt.loc17_15.2: @PropagateOnly.%pattern_type.loc17 (%pattern_type.b1f) = value_binding_pattern c [symbolic = %c.patt.loc17_15.2 (constants.%c.patt)]
-// CHECK:STDOUT:   %Try.facet.loc17_35.4: %Try.type = facet_value %R.as_type.loc8_57.1, (%Try.lookup_impl_witness) [symbolic = %Try.facet.loc17_35.4 (constants.%Try.facet)]
-// CHECK:STDOUT:   %Try.WithSelf.Branch.type: type = fn_type @Try.WithSelf.Branch, @Try.WithSelf(%Try.facet.loc17_35.4) [symbolic = %Try.WithSelf.Branch.type (constants.%Try.WithSelf.Branch.type.ef1)]
-// CHECK:STDOUT:   %.loc17_35.18: type = fn_type_with_self_type %Try.WithSelf.Branch.type, %Try.facet.loc17_35.4 [symbolic = %.loc17_35.18 (constants.%.392)]
-// CHECK:STDOUT:   %impl.elem2.loc17_35.2: @PropagateOnly.%.loc17_35.18 (%.392) = impl_witness_access %Try.lookup_impl_witness, element2 [symbolic = %impl.elem2.loc17_35.2 (constants.%impl.elem2)]
-// CHECK:STDOUT:   %specific_impl_fn.loc17_35.3: <specific function> = specific_impl_function %impl.elem2.loc17_35.2, @Try.WithSelf.Branch(%Try.facet.loc17_35.4) [symbolic = %specific_impl_fn.loc17_35.3 (constants.%specific_impl_fn.8ea)]
-// CHECK:STDOUT:   <elided>
-// CHECK:STDOUT:   %tuple.type: type = tuple_type (%impl.elem0.loc17_18.2) [symbolic = %tuple.type (constants.%tuple.type.c39)]
-// CHECK:STDOUT:   %.loc17_35.19: type = custom_layout_type {size=0, align=0, .Continue@0: @PropagateOnly.%tuple.type (%tuple.type.c39), .Break@0: %tuple.type.a8a} [symbolic = %.loc17_35.19 (constants.%.990)]
-// CHECK:STDOUT:   %Try.WithSelf.FromBreak.type: type = fn_type @Try.WithSelf.FromBreak, @Try.WithSelf(%Try.facet.loc17_35.4) [symbolic = %Try.WithSelf.FromBreak.type (constants.%Try.WithSelf.FromBreak.type.4c3)]
-// CHECK:STDOUT:   %.loc17_35.20: type = fn_type_with_self_type %Try.WithSelf.FromBreak.type, %Try.facet.loc17_35.4 [symbolic = %.loc17_35.20 (constants.%.287)]
-// CHECK:STDOUT:   %impl.elem3.loc17_35.2: @PropagateOnly.%.loc17_35.20 (%.287) = impl_witness_access %Try.lookup_impl_witness, element3 [symbolic = %impl.elem3.loc17_35.2 (constants.%impl.elem3)]
-// CHECK:STDOUT:   %specific_impl_fn.loc17_35.4: <specific function> = specific_impl_function %impl.elem3.loc17_35.2, @Try.WithSelf.FromBreak(%Try.facet.loc17_35.4) [symbolic = %specific_impl_fn.loc17_35.4 (constants.%specific_impl_fn.9a1)]
-// CHECK:STDOUT:
-// CHECK:STDOUT:   fn(%r.param: @PropagateOnly.%R.as_type.loc8_57.1 (%R.as_type)) -> out %return.param: @PropagateOnly.%R.as_type.loc8_57.1 (%R.as_type) {
-// CHECK:STDOUT:   !entry:
-// CHECK:STDOUT:     %r.ref: @PropagateOnly.%R.as_type.loc8_57.1 (%R.as_type) = name_ref r, %r
-// CHECK:STDOUT:     %impl.elem2.loc17_35.1: @PropagateOnly.%.loc17_35.18 (%.392) = impl_witness_access constants.%Try.lookup_impl_witness.832, element2 [symbolic = %impl.elem2.loc17_35.2 (constants.%impl.elem2)]
-// CHECK:STDOUT:     %bound_method.loc17_35.1: <bound method> = bound_method %r.ref, %impl.elem2.loc17_35.1
-// CHECK:STDOUT:     %Try.facet.loc17_35.1: %Try.type = facet_value constants.%R.as_type, (constants.%Try.lookup_impl_witness.832) [symbolic = %Try.facet.loc17_35.4 (constants.%Try.facet)]
-// CHECK:STDOUT:     %.loc17_35.1: %Try.type = converted constants.%R.as_type, %Try.facet.loc17_35.1 [symbolic = %Try.facet.loc17_35.4 (constants.%Try.facet)]
-// CHECK:STDOUT:     %Try.facet.loc17_35.2: %Try.type = facet_value constants.%R.as_type, (constants.%Try.lookup_impl_witness.832) [symbolic = %Try.facet.loc17_35.4 (constants.%Try.facet)]
-// CHECK:STDOUT:     %.loc17_35.2: %Try.type = converted constants.%R.as_type, %Try.facet.loc17_35.2 [symbolic = %Try.facet.loc17_35.4 (constants.%Try.facet)]
-// CHECK:STDOUT:     %specific_impl_fn.loc17_35.1: <specific function> = specific_impl_function %impl.elem2.loc17_35.1, @Try.WithSelf.Branch(constants.%Try.facet) [symbolic = %specific_impl_fn.loc17_35.3 (constants.%specific_impl_fn.8ea)]
-// CHECK:STDOUT:     %bound_method.loc17_35.2: <bound method> = bound_method %r.ref, %specific_impl_fn.loc17_35.1
-// CHECK:STDOUT:     %.loc17_35.3: ref @PropagateOnly.%ControlFlow (%ControlFlow.67f) = temporary_storage
-// CHECK:STDOUT:     %Try.WithSelf.Branch.call: init @PropagateOnly.%ControlFlow (%ControlFlow.67f) to %.loc17_35.3 = call %bound_method.loc17_35.2(%r.ref)
-// CHECK:STDOUT:     %.loc17_35.4: ref @PropagateOnly.%ControlFlow (%ControlFlow.67f) = temporary %.loc17_35.3, %Try.WithSelf.Branch.call
-// CHECK:STDOUT:     %int_1: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
-// CHECK:STDOUT:     %impl.elem0.loc17_35.1: %.e60 = impl_witness_access constants.%ImplicitAs.impl_witness.9a9, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a]
-// CHECK:STDOUT:     %bound_method.loc17_35.3: <bound method> = bound_method %int_1, %impl.elem0.loc17_35.1 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.320]
-// CHECK:STDOUT:     %specific_fn.loc17_35.1: <specific function> = specific_function %impl.elem0.loc17_35.1, @Core.IntLiteral.as.ImplicitAs.impl.Convert.1(constants.%int_1.5b8) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.e93]
-// CHECK:STDOUT:     %bound_method.loc17_35.4: <bound method> = bound_method %int_1, %specific_fn.loc17_35.1 [concrete = constants.%bound_method.d7a]
-// CHECK:STDOUT:     %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc17: init %u1 = call %bound_method.loc17_35.4(%int_1) [concrete = constants.%int_1.233]
-// CHECK:STDOUT:     %.loc17_35.5: %u1 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc17 [concrete = constants.%int_1.233]
-// CHECK:STDOUT:     %.loc17_35.6: %u1 = converted %int_1, %.loc17_35.5 [concrete = constants.%int_1.233]
-// CHECK:STDOUT:     %.loc17_35.7: ref %u1 = class_element_access %.loc17_35.4, element0
-// CHECK:STDOUT:     %impl.elem0.loc17_35.2: %.9ed = impl_witness_access constants.%EqWith.impl_witness.d63, element0 [concrete = constants.%UInt.as.EqWith.impl.Equal.ba4]
-// CHECK:STDOUT:     %bound_method.loc17_35.5: <bound method> = bound_method %.loc17_35.6, %impl.elem0.loc17_35.2 [concrete = constants.%UInt.as.EqWith.impl.Equal.bound]
-// CHECK:STDOUT:     %specific_fn.loc17_35.2: <specific function> = specific_function %impl.elem0.loc17_35.2, @UInt.as.EqWith.impl.Equal.1(constants.%int_1.5b8, constants.%int_1.5b8) [concrete = constants.%UInt.as.EqWith.impl.Equal.specific_fn.6b6]
-// CHECK:STDOUT:     %bound_method.loc17_35.6: <bound method> = bound_method %.loc17_35.6, %specific_fn.loc17_35.2 [concrete = constants.%bound_method.a82]
-// CHECK:STDOUT:     %.loc17_35.8: %u1 = acquire_value %.loc17_35.7
-// CHECK:STDOUT:     %UInt.as.EqWith.impl.Equal.call: init bool = call %bound_method.loc17_35.6(%.loc17_35.6, %.loc17_35.8)
-// CHECK:STDOUT:     %.loc17_35.9: bool = value_of_initializer %UInt.as.EqWith.impl.Equal.call
-// CHECK:STDOUT:     %.loc17_35.10: bool = converted %UInt.as.EqWith.impl.Equal.call, %.loc17_35.9
-// CHECK:STDOUT:     if %.loc17_35.10 br !.loc17_35.1 else br !.loc17_35.2
-// CHECK:STDOUT:
-// CHECK:STDOUT:   !.loc17_35.1:
-// CHECK:STDOUT:     %.loc17_35.11: ref @PropagateOnly.%.loc17_35.19 (%.990) = class_element_access %.loc17_35.4, element1
-// CHECK:STDOUT:     %.loc17_35.12: ref %tuple.type.a8a = class_element_access %.loc17_35.11, element1
-// CHECK:STDOUT:     %tuple.elem0.loc17_35.1: ref %i32 = tuple_access %.loc17_35.12, element0
-// CHECK:STDOUT:     %.loc17_35.13: %i32 = acquire_value %tuple.elem0.loc17_35.1
-// CHECK:STDOUT:     %Try.facet.loc17_35.3: %Try.type = facet_value constants.%R.as_type, (constants.%Try.lookup_impl_witness.832) [symbolic = %Try.facet.loc17_35.4 (constants.%Try.facet)]
-// CHECK:STDOUT:     %.loc17_35.14: %Try.type = converted constants.%R.as_type, %Try.facet.loc17_35.3 [symbolic = %Try.facet.loc17_35.4 (constants.%Try.facet)]
-// CHECK:STDOUT:     %impl.elem3.loc17_35.1: @PropagateOnly.%.loc17_35.20 (%.287) = impl_witness_access constants.%Try.lookup_impl_witness.832, element3 [symbolic = %impl.elem3.loc17_35.2 (constants.%impl.elem3)]
-// CHECK:STDOUT:     %specific_impl_fn.loc17_35.2: <specific function> = specific_impl_function %impl.elem3.loc17_35.1, @Try.WithSelf.FromBreak(constants.%Try.facet) [symbolic = %specific_impl_fn.loc17_35.4 (constants.%specific_impl_fn.9a1)]
-// CHECK:STDOUT:     %.loc8_63.1: ref @PropagateOnly.%R.as_type.loc8_57.1 (%R.as_type) = splice_block %return.param {}
-// CHECK:STDOUT:     %Try.WithSelf.FromBreak.call.loc17: init @PropagateOnly.%R.as_type.loc8_57.1 (%R.as_type) to %.loc8_63.1 = call %specific_impl_fn.loc17_35.2(%.loc17_35.13)
-// CHECK:STDOUT:     return %Try.WithSelf.FromBreak.call.loc17 to %return.param
-// CHECK:STDOUT:
-// CHECK:STDOUT:   !.loc17_35.2:
-// CHECK:STDOUT:     %.loc17_35.15: ref @PropagateOnly.%.loc17_35.19 (%.990) = class_element_access %.loc17_35.4, element1
-// CHECK:STDOUT:     %.loc17_35.16: ref @PropagateOnly.%tuple.type (%tuple.type.c39) = class_element_access %.loc17_35.15, element0
-// CHECK:STDOUT:     %tuple.elem0.loc17_35.2: ref @PropagateOnly.%impl.elem0.loc17_18.2 (%impl.elem0.fca) = tuple_access %.loc17_35.16, element0
-// CHECK:STDOUT:     %.loc17_35.17: @PropagateOnly.%impl.elem0.loc17_18.2 (%impl.elem0.fca) = acquire_value %tuple.elem0.loc17_35.2
-// CHECK:STDOUT:     %.loc17_18.1: type = splice_block %impl.elem0.loc17_18.1 [symbolic = %impl.elem0.loc17_18.2 (constants.%impl.elem0.fca)] {
-// CHECK:STDOUT:       %R.ref.loc17: %Try_where.type = name_ref R, %R.loc8_19.2 [symbolic = %R.loc8_19.1 (constants.%R)]
-// CHECK:STDOUT:       %R.as_type.loc17: type = facet_access_type %R.ref.loc17 [symbolic = %R.as_type.loc8_57.1 (constants.%R.as_type)]
-// CHECK:STDOUT:       %.loc17_18.2: type = converted %R.ref.loc17, %R.as_type.loc17 [symbolic = %R.as_type.loc8_57.1 (constants.%R.as_type)]
-// CHECK:STDOUT:       %ContinueType.ref: %Try.assoc_type = name_ref ContinueType, imports.%Core.import_ref.baf [concrete = constants.%assoc0.de3]
-// CHECK:STDOUT:       %impl.elem0.loc17_18.1: type = impl_witness_access constants.%Try.lookup_impl_witness.832, element0 [symbolic = %impl.elem0.loc17_18.2 (constants.%impl.elem0.fca)]
-// CHECK:STDOUT:     }
-// CHECK:STDOUT:     %c: @PropagateOnly.%impl.elem0.loc17_18.2 (%impl.elem0.fca) = wrapper_binding c, %.loc17_35.17
-// CHECK:STDOUT:     name_binding_decl {
-// CHECK:STDOUT:       %c.patt.loc17_15.1: @PropagateOnly.%pattern_type.loc17 (%pattern_type.b1f) = value_binding_pattern c [symbolic = %c.patt.loc17_15.2 (constants.%c.patt)]
-// CHECK:STDOUT:     }
-// CHECK:STDOUT:     %R.ref.loc18: %Try_where.type = name_ref R, %R.loc8_19.2 [symbolic = %R.loc8_19.1 (constants.%R)]
-// CHECK:STDOUT:     %R.as_type.loc18: type = facet_access_type %R.ref.loc18 [symbolic = %R.as_type.loc8_57.1 (constants.%R.as_type)]
-// CHECK:STDOUT:     %.loc18_11: type = converted %R.ref.loc18, %R.as_type.loc18 [symbolic = %R.as_type.loc8_57.1 (constants.%R.as_type)]
-// CHECK:STDOUT:     %FromBreak.ref: %Try.assoc_type = name_ref FromBreak, imports.%Core.import_ref.8ab [concrete = constants.%assoc3]
-// CHECK:STDOUT:     %impl.elem3.loc18: @PropagateOnly.%.loc17_35.20 (%.287) = impl_witness_access constants.%Try.lookup_impl_witness.832, element3 [symbolic = %impl.elem3.loc17_35.2 (constants.%impl.elem3)]
-// CHECK:STDOUT:     %int_0: Core.IntLiteral = int_value 0 [concrete = constants.%int_0.5c6]
-// CHECK:STDOUT:     %specific_impl_fn.loc18: <specific function> = specific_impl_function %impl.elem3.loc18, @Try.WithSelf.FromBreak(constants.%Try.facet) [symbolic = %specific_impl_fn.loc17_35.4 (constants.%specific_impl_fn.9a1)]
-// CHECK:STDOUT:     %.loc8_63.2: ref @PropagateOnly.%R.as_type.loc8_57.1 (%R.as_type) = splice_block %return.param {}
-// CHECK:STDOUT:     %impl.elem0.loc18: %.1c5 = impl_witness_access constants.%ImplicitAs.impl_witness.a23, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
-// CHECK:STDOUT:     %bound_method.loc18_22.1: <bound method> = bound_method %int_0, %impl.elem0.loc18 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.7b4]
-// CHECK:STDOUT:     %specific_fn.loc18: <specific function> = specific_function %impl.elem0.loc18, @Core.IntLiteral.as.ImplicitAs.impl.Convert.2(constants.%int_32) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571]
-// CHECK:STDOUT:     %bound_method.loc18_22.2: <bound method> = bound_method %int_0, %specific_fn.loc18 [concrete = constants.%bound_method.6e0]
-// CHECK:STDOUT:     %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc18: init %i32 = call %bound_method.loc18_22.2(%int_0) [concrete = constants.%int_0.3c0]
-// CHECK:STDOUT:     %.loc18_22.1: %i32 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc18 [concrete = constants.%int_0.3c0]
-// CHECK:STDOUT:     %.loc18_22.2: %i32 = converted %int_0, %.loc18_22.1 [concrete = constants.%int_0.3c0]
-// CHECK:STDOUT:     %Try.WithSelf.FromBreak.call.loc18: init @PropagateOnly.%R.as_type.loc8_57.1 (%R.as_type) to %.loc8_63.2 = call %specific_impl_fn.loc18(%.loc18_22.2)
-// CHECK:STDOUT:     return %Try.WithSelf.FromBreak.call.loc18 to %return.param
-// CHECK:STDOUT:   }
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc17_35.1(%self.param: ref %u1.builtin) = "no_op";
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc17_35.2(%self.param: ref %u1) {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: specific @PropagateOnly(constants.%R) {
-// CHECK:STDOUT:   %R.patt.loc8_19.2 => constants.%R.patt
-// CHECK:STDOUT:   %R.loc8_19.1 => constants.%R
-// CHECK:STDOUT:   %R.as_type.loc8_57.1 => constants.%R.as_type
-// CHECK:STDOUT:   %pattern_type.loc8 => constants.%pattern_type.239
-// CHECK:STDOUT:   %r.param_patt.loc8_55.2 => constants.%r.param_patt
-// CHECK:STDOUT:   %r.patt.loc8_55.2 => constants.%r.patt
-// CHECK:STDOUT:   %.loc8_63.3 => constants.%.802
-// CHECK:STDOUT:   %return.param_patt.loc8_63.2 => constants.%return.param_patt.aed
-// CHECK:STDOUT:   %return.patt.loc8_60.2 => constants.%return.patt.0bca
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- convert.carbon

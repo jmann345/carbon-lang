@@ -475,6 +475,10 @@ Trace of every choice-valued flow in the `?` design:
     the `ControlFlow` alternative by way of constructor call in the return position:
 
     ```carbon
+    // Testdata-local unreachable trailing-return helper (see the
+    // trailing-return amendment below).
+    fn Diverge(generic T2: type) -> T2 { return Diverge(T2); }
+
     impl forall [T: type, E: type] MyResult(T, E) as Core.Try
         where .ContinueType = T and .BreakType = E {
       fn Branch(self) -> Core.ControlFlow(T, E) {
@@ -484,7 +488,7 @@ Trace of every choice-valued flow in the `?` design:
         }
         // Unreachable-terminator idiom: reachability doesn't consult match
         // exhaustiveness.
-        return self.(Core.Try.Branch)();
+        return Diverge(Core.ControlFlow(T, E));
       }
       fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
     }
@@ -498,7 +502,8 @@ Trace of every choice-valued flow in the `?` design:
     latent (§3 B1b exit criteria; risk R-5).
 
     **Trailing-return amendment (B1b as landed, 2026-08-08, second fix
-    round).** The match-reconstruct rule as first written omitted a
+    round; idiom (i) corrected in the third fix round, same day — see
+    below).** The match-reconstruct rule as first written omitted a
     requirement the first full autoupdate surfaced: the checker's
     reachability analysis does NOT consult match exhaustiveness (the
     S3a/S3c convention), so a function ending in an exhaustive `match` —
@@ -506,12 +511,30 @@ Trace of every choice-valued flow in the `?` design:
     `MissingReturnStatement`. Every match-reconstruct body therefore ends
     with an unreachable trailing return, in one of two idioms, each
     commented at the site as the unreachable-terminator idiom: (i) GENERIC
-    bodies (no `ControlFlow(T, E)` value is conjurable) use the
-    interface-recursive call `return self.(Core.Try.Branch)();`
-    (arbiter-verified); (ii) CONCRETE contexts (for example a function returning
-    `MyResult(i32, i32)` that ends in an exhaustive match) use a dead
-    constructible value, `return MyResult(i32, i32).Err(0);` style. The
-    doc's impl sketches carry the same dated amendment.
+    bodies (no `ControlFlow(T, E)` value is conjurable) diverge through a
+    testdata-local helper, `fn Diverge(generic T2: type) -> T2 { return
+    Diverge(T2); }` / `return Diverge(Core.ControlFlow(T, E));` — the
+    explicit-generic-param self-recursion is the arbiter-verified
+    function/generic/deduce.carbon `ExplicitGenericParam` shape, declared
+    once per split/program, NOT in the prelude; (ii) CONCRETE contexts (for
+    example a function returning `MyResult(i32, i32)` that ends in an
+    exhaustive match) use a dead constructible value,
+    `return MyResult(i32, i32).Err(0);` style. The doc's impl sketches
+    carry the same dated amendment.
+
+    **Third fix round correction (2026-08-08): the second round's idiom (i)
+    — the interface-recursive `return self.(Core.Try.Branch)();` — is
+    SUPERSEDED; it does not type-check.** The regen pinned why: the
+    recursive call's return type substitutes to
+    `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType),
+    MyResult(T, E).(Core.Try.BreakType))`, and those associated-constant
+    PROJECTIONS are not reduced under the impl's own `where` rewrites
+    (`.ContinueType = T and .BreakType = E`) while the impl is being
+    checked, so the value does not implicitly convert to the declared
+    `Core.ControlFlow(T, E)` — a ConversionFailure at every generic
+    `Branch` body. The `Diverge` helper's return type is exactly the
+    annotation (`T2` substituted with `Core.ControlFlow(T, E)` at the call),
+    so no projection is involved.
 
 Verdict: the `?` desugar itself never value-copies a choice; the Copy gap
 constrains impl-body STYLE, which this plan adopts explicitly and pins. Choice
@@ -608,6 +631,24 @@ Exit criteria:
     user `ImplicitAs` impl (D3 pin), plus the no-conversion fail pin; `?` inside a
     generic function body (symbolic `R`) — scoped IN like S3a's R-8 with the same
     narrowing rule (instability re-gates it behind a precise TODO, not the slice).
+    NARROWED as landed (2026-08-08, third fix round — the pre-declared rule
+    exercised): the symbolic-`R` shape is re-gated behind the NEW precise TODO
+    `` `postfix `?` on an operand of symbolic type` `` (handle_question.cpp,
+    after the pre-flight) and the positive generic split is re-authored as the
+    fail_todo_generic.carbon pin. Root cause is a genuine machinery gap, not
+    the desugar taking a wrong path: the carrier temporary's destroy is the
+    STANDARD cleanup discharge (a `var` or match-scrutinee temporary of the
+    same symbolic `ControlFlow` specific registers identically), and
+    `LookupDestroyWitness` (custom_witness.cpp) does defer witness BUILDING
+    for symbolic selves — but only when `CanDestroyType` says the type is
+    destroyable, which requires every payload element destroyable, and `Try`
+    places no `Destroy` bound on `ContinueType`/`BreakType` (upstream's own
+    pattern for associated types that flow through temporaries is a bound —
+    `Iterate.ElementType: Copy & Destroy`). Bounding `Try`'s associated
+    constants is an interface-contract change (every impl's `forall` params
+    would need `Destroy` bounds) — veto-digest territory, not a fix round.
+    W-071 records the gap; restoring the positive split is its discharge
+    test. Concrete operands inside generic bodies remain UNGATED.
 -   check golden fail_question.carbon: operand not implementing Try (`i32?`, and a
     type-position `i32?` — same diagnostic, §2.3's sub-decision); return type not
     implementing Try (`fn F() -> i32` using `?` inside) — pinning the PRE-FLIGHT
@@ -730,8 +771,18 @@ handling control flow" line to arbitrated-PASS; opens the unit-break-type work i
     before any impl lookup or discriminant test). Amended at the B1b fix
     round (2026-08-08): fail_question_preflight.carbon gained the
     fail_returned_var_scope pin for the seventh diagnostic,
-    `QuestionInReturnedVarScope` (§2.5). Net across B1: zero TODO strings
-    remain.
+    `QuestionInReturnedVarScope` (§2.5). Superseded in part at the third fix
+    round — see the next bullet: one precise TODO string is authored by the
+    §3 narrowing, so the net across B1 is ONE TODO string (the narrowing
+    gate), not zero.
+-   `` `postfix `?` on an operand of symbolic type` `` — NEW, authored at the
+    B1b third fix round (2026-08-08) by §3's dated narrowing clause (risk
+    R-3's pre-declared rule). Emission site: toolchain/check/
+    handle_question.cpp, after the pre-flight, keyed on the operand type's
+    constant being symbolic. Pin: toolchain/check/testdata/operators/
+    question.carbon's fail_todo_generic.carbon subfile (the re-authored
+    positive generic split). Discharge rides W-071 (symbolic carrier
+    destroy); the discharge test is restoring that split positive.
 -   All existing TODO strings — the six-site combined W4 string, the scrutinee
     string, the `var`/`ref` case-binding string, S2e's integer-`default` string,
     the Self-dependent payload string — survive BYTE-IDENTICAL at their sites;

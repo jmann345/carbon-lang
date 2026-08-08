@@ -31,6 +31,13 @@ choice MyResult(T: type, E: type) {
   Err(e: E)
 }
 
+// Returns a value of any type by never returning — the unreachable
+// trailing-return helper for generic match-reconstruct bodies
+// (fork/b1/plan.md §2.6, dated correction). The explicit generic type
+// param + self-recursion is the arbiter-verified
+// function/generic/deduce.carbon `ExplicitGenericParam` shape.
+fn Diverge(generic T2: type) -> T2 { return Diverge(T2); }
+
 impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
@@ -38,17 +45,13 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-    // Unreachable-terminator idiom (fork/b1/plan.md §2.6): reachability
-    // doesn't consult match exhaustiveness; no generic `ControlFlow(T, E)`
-    // value is conjurable, so recurse through the interface.
-    // CHECK:STDERR: propagate.carbon:[[@LINE+7]]:5: error: cannot implicitly convert expression of type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` to `Core.ControlFlow(T, E)` [ConversionFailure]
-    // CHECK:STDERR:     return self.(Core.Try.Branch)();
-    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // CHECK:STDERR: propagate.carbon:[[@LINE+4]]:5: note: type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` does not implement interface `Core.ImplicitAs(Core.ControlFlow(T, E))` [MissingImplInMemberAccessInContext]
-    // CHECK:STDERR:     return self.(Core.Try.Branch)();
-    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // CHECK:STDERR:
-    return self.(Core.Try.Branch)();
+    // Unreachable-terminator idiom (fork/b1/plan.md §2.6, dated
+    // correction): reachability doesn't consult match exhaustiveness; no
+    // generic `ControlFlow(T, E)` value is conjurable, and the
+    // interface-recursive call does not type-collapse (its return type's
+    // associated-constant projections are not reduced by this impl's own
+    // `where` rewrites), so diverge through the helper.
+    return Diverge(Core.ControlFlow(T, E));
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
 }

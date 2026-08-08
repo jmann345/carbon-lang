@@ -351,10 +351,19 @@ value-copy a choice (amended 2026-08-08 per fork/b1/plan.md §2.6). Each
 2026-08-08, second round): the checker's reachability analysis does not
 consult match exhaustiveness, so an exhaustive `match` alone leaves the
 function end reachable — and in a generic body, where no `ControlFlow`
-value is otherwise conjurable, the trailing return is the
-interface-recursive call:
+value is otherwise conjurable, the trailing return diverges through a
+helper (corrected 2026-08-08, third round: the earlier interface-recursive
+`return self.(Try.Branch)();` does not type-check — the recursive call's
+return type carries associated-constant projections,
+`ControlFlow(Result(T, E).(Try.ContinueType), ...)`, which are not reduced
+by the impl's own `where` rewrites, so it does not convert to the declared
+`ControlFlow(T, E)`; the helper's return type is exactly the annotation):
 
 ```carbon
+// Unreachable trailing-return helper: returns a value of any type by never
+// returning.
+fn Diverge(generic T2: type) -> T2 { return Diverge(T2); }
+
 final impl forall [T: type, E: type] Result(T, E) as Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> ControlFlow(T, E) {
@@ -364,7 +373,7 @@ final impl forall [T: type, E: type] Result(T, E) as Try
     }
     // Unreachable-terminator idiom: reachability doesn't consult match
     // exhaustiveness.
-    return self.(Try.Branch)();
+    return Diverge(ControlFlow(T, E));
   }
   fn FromBreak(b: E) -> Self { return Result(T, E).Err(b); }
 }
@@ -378,7 +387,7 @@ final impl forall [T: type] Optional(T) as Try
     }
     // Unreachable-terminator idiom: reachability doesn't consult match
     // exhaustiveness.
-    return self.(Try.Branch)();
+    return Diverge(ControlFlow(T, ()));
   }
   fn FromBreak(b: ()) -> Self { return Optional(T).None(); }
 }

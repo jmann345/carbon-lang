@@ -25,6 +25,13 @@ choice MyResult(T: type, E: type) {
   Err(e: E)
 }
 
+// Returns a value of any type by never returning — the unreachable
+// trailing-return helper for generic match-reconstruct bodies
+// (fork/b1/plan.md §2.6, dated correction). The explicit generic type
+// param + self-recursion is the arbiter-verified
+// function/generic/deduce.carbon `ExplicitGenericParam` shape.
+fn Diverge(generic T2: type) -> T2 { return Diverge(T2); }
+
 impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
@@ -32,17 +39,13 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-    // Unreachable-terminator idiom (fork/b1/plan.md §2.6): reachability
-    // doesn't consult match exhaustiveness; no generic `ControlFlow(T, E)`
-    // value is conjurable, so recurse through the interface.
-    // CHECK:STDERR: fail_operand_not_try.carbon:[[@LINE+7]]:5: error: cannot implicitly convert expression of type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` to `Core.ControlFlow(T, E)` [ConversionFailure]
-    // CHECK:STDERR:     return self.(Core.Try.Branch)();
-    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // CHECK:STDERR: fail_operand_not_try.carbon:[[@LINE+4]]:5: note: type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` does not implement interface `Core.ImplicitAs(Core.ControlFlow(T, E))` [MissingImplInMemberAccessInContext]
-    // CHECK:STDERR:     return self.(Core.Try.Branch)();
-    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // CHECK:STDERR:
-    return self.(Core.Try.Branch)();
+    // Unreachable-terminator idiom (fork/b1/plan.md §2.6, dated
+    // correction): reachability doesn't consult match exhaustiveness; no
+    // generic `ControlFlow(T, E)` value is conjurable, and the
+    // interface-recursive call does not type-collapse (its return type's
+    // associated-constant projections are not reduced by this impl's own
+    // `where` rewrites), so diverge through the helper.
+    return Diverge(Core.ControlFlow(T, E));
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
 }
@@ -84,6 +87,13 @@ choice MyResult(T: type, E: type) {
   Err(e: E)
 }
 
+// Returns a value of any type by never returning — the unreachable
+// trailing-return helper for generic match-reconstruct bodies
+// (fork/b1/plan.md §2.6, dated correction). The explicit generic type
+// param + self-recursion is the arbiter-verified
+// function/generic/deduce.carbon `ExplicitGenericParam` shape.
+fn Diverge(generic T2: type) -> T2 { return Diverge(T2); }
+
 impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
@@ -91,17 +101,13 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-    // Unreachable-terminator idiom (fork/b1/plan.md §2.6): reachability
-    // doesn't consult match exhaustiveness; no generic `ControlFlow(T, E)`
-    // value is conjurable, so recurse through the interface.
-    // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+7]]:5: error: cannot implicitly convert expression of type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` to `Core.ControlFlow(T, E)` [ConversionFailure]
-    // CHECK:STDERR:     return self.(Core.Try.Branch)();
-    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:5: note: type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` does not implement interface `Core.ImplicitAs(Core.ControlFlow(T, E))` [MissingImplInMemberAccessInContext]
-    // CHECK:STDERR:     return self.(Core.Try.Branch)();
-    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // CHECK:STDERR:
-    return self.(Core.Try.Branch)();
+    // Unreachable-terminator idiom (fork/b1/plan.md §2.6, dated
+    // correction): reachability doesn't consult match exhaustiveness; no
+    // generic `ControlFlow(T, E)` value is conjurable, and the
+    // interface-recursive call does not type-collapse (its return type's
+    // associated-constant projections are not reduced by this impl's own
+    // `where` rewrites), so diverge through the helper.
+    return Diverge(Core.ControlFlow(T, E));
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
 }
@@ -129,6 +135,35 @@ fn Guard(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
   return MyResult(i32, i32).Err(0);
 }
 
+fn Annotation(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
+  // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:10: error: `?` cannot be used inside a pattern, a `case` guard, or a binding's type expression [QuestionInPatternContext]
+  // CHECK:STDERR:   var y: r? = 0;
+  // CHECK:STDERR:          ^~
+  // CHECK:STDERR:
+  var y: r? = 0;
+  return MyResult(i32, i32).Ok(y);
+}
+
+// Migrated from the B1a gate pin (fail_todo_question.carbon's type
+// position): a type annotation is a captured region, so `var p: i32?`
+// takes the region-policy rejection — recorded as superseding §2.3's
+// missing-impl expectation for annotation positions (see the plan's dated
+// divergence clause). The depth-1 type-position shape keeps the
+// missing-impl rejection (fail_operand_not_try.carbon).
+fn TypeAnnotation() -> MyResult(i32, i32) {
+  // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:10: error: `?` cannot be used inside a pattern, a `case` guard, or a binding's type expression [QuestionInPatternContext]
+  // CHECK:STDERR:   var p: i32? = 0;
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR:
+  var p: i32? = 0;
+  return MyResult(i32, i32).Ok(p);
+}
+
+// The `case` expression-pattern shape aborts checking at RF-4's
+// non-constant-case TODO (after the region-policy rejection), so it is the
+// subfile's LAST function: everything after a `context.TODO` abort would go
+// unchecked, as the first regen proved when this function preceded the
+// annotation shapes and silently un-pinned them.
 fn ExprPattern(n: i32) -> MyResult(i32, i32) {
   match (n) {
     // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+8]]:10: error: `?` cannot be used inside a pattern, a `case` guard, or a binding's type expression [QuestionInPatternContext]
@@ -144,22 +179,6 @@ fn ExprPattern(n: i32) -> MyResult(i32, i32) {
   }
 }
 
-fn Annotation(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
-  var y: r? = 0;
-  return MyResult(i32, i32).Ok(y);
-}
-
-// Migrated from the B1a gate pin (fail_todo_question.carbon's type
-// position): a type annotation is a captured region, so `var p: i32?`
-// takes the region-policy rejection — recorded as superseding §2.3's
-// missing-impl expectation for annotation positions (see the plan's dated
-// divergence clause). The depth-1 type-position shape keeps the
-// missing-impl rejection (fail_operand_not_try.carbon).
-fn TypeAnnotation() -> MyResult(i32, i32) {
-  var p: i32? = 0;
-  return MyResult(i32, i32).Ok(p);
-}
-
 // --- fail_no_conversion.carbon
 library "[[@TEST_NAME]]";
 
@@ -168,6 +187,13 @@ choice MyResult(T: type, E: type) {
   Err(e: E)
 }
 
+// Returns a value of any type by never returning — the unreachable
+// trailing-return helper for generic match-reconstruct bodies
+// (fork/b1/plan.md §2.6, dated correction). The explicit generic type
+// param + self-recursion is the arbiter-verified
+// function/generic/deduce.carbon `ExplicitGenericParam` shape.
+fn Diverge(generic T2: type) -> T2 { return Diverge(T2); }
+
 impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> Core.ControlFlow(T, E) {
@@ -175,17 +201,13 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-    // Unreachable-terminator idiom (fork/b1/plan.md §2.6): reachability
-    // doesn't consult match exhaustiveness; no generic `ControlFlow(T, E)`
-    // value is conjurable, so recurse through the interface.
-    // CHECK:STDERR: fail_no_conversion.carbon:[[@LINE+7]]:5: error: cannot implicitly convert expression of type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` to `Core.ControlFlow(T, E)` [ConversionFailure]
-    // CHECK:STDERR:     return self.(Core.Try.Branch)();
-    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // CHECK:STDERR: fail_no_conversion.carbon:[[@LINE+4]]:5: note: type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` does not implement interface `Core.ImplicitAs(Core.ControlFlow(T, E))` [MissingImplInMemberAccessInContext]
-    // CHECK:STDERR:     return self.(Core.Try.Branch)();
-    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // CHECK:STDERR:
-    return self.(Core.Try.Branch)();
+    // Unreachable-terminator idiom (fork/b1/plan.md §2.6, dated
+    // correction): reachability doesn't consult match exhaustiveness; no
+    // generic `ControlFlow(T, E)` value is conjurable, and the
+    // interface-recursive call does not type-collapse (its return type's
+    // associated-constant projections are not reduced by this impl's own
+    // `where` rewrites), so diverge through the helper.
+    return Diverge(Core.ControlFlow(T, E));
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
 }

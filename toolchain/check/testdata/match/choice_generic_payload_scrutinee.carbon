@@ -56,6 +56,13 @@ choice P(T: type) {
 // pinned on the R-2 completion-forcing question rather than on the `let`
 // import story. Recorded as work item W-069
 // (fork/inventory/work-items.json).
+// CHECK:STDERR: plib.carbon:[[@LINE+7]]:17: error: cannot copy value of type `P(i64)` [CopyOfUncopyableType]
+// CHECK:STDERR: var g: P(i64) = P(i64).Neither;
+// CHECK:STDERR:                 ^~~~~~~~~~~~~~
+// CHECK:STDERR: plib.carbon:[[@LINE+4]]:17: note: type `P(i64)` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
+// CHECK:STDERR: var g: P(i64) = P(i64).Neither;
+// CHECK:STDERR:                 ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 var g: P(i64) = P(i64).Neither;
 
 // --- imported_global.carbon
@@ -181,7 +188,8 @@ fn Call() -> i32 {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.e93: <specific function> = specific_function %Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a, @Core.IntLiteral.as.ImplicitAs.impl.Convert.1(%int_1.5b8) [concrete]
 // CHECK:STDOUT:   %bound_method.0e8: <bound method> = bound_method %int_0.5c6, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.e93 [concrete]
 // CHECK:STDOUT:   %int_0.1a7: %u1 = int_value 0 [concrete]
-// CHECK:STDOUT:   %require_complete.22a: <witness> = require_complete_type %tuple.type.07a [symbolic]
+// CHECK:STDOUT:   %uninit.216: %.d27 = uninitialized_value [symbolic]
+// CHECK:STDOUT:   %P.val.5d5: %P.f86 = struct_value (%int_0.1a7, %uninit.216) [symbolic]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.320: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a [concrete]
 // CHECK:STDOUT:   %bound_method.d7a: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.e93 [concrete]
 // CHECK:STDOUT:   %int_1.233: %u1 = int_value 1 [concrete]
@@ -197,7 +205,6 @@ fn Call() -> i32 {
 // CHECK:STDOUT:   %UInt.as.Copy.impl.Op.bound: <bound method> = bound_method %int_1.233, %UInt.as.Copy.impl.Op.d9c [concrete]
 // CHECK:STDOUT:   %UInt.as.Copy.impl.Op.specific_fn: <specific function> = specific_function %UInt.as.Copy.impl.Op.d9c, @UInt.as.Copy.impl.Op(%int_1.5b8) [concrete]
 // CHECK:STDOUT:   %bound_method.edd: <bound method> = bound_method %int_1.233, %UInt.as.Copy.impl.Op.specific_fn [concrete]
-// CHECK:STDOUT:   %uninit.216: %.d27 = uninitialized_value [symbolic]
 // CHECK:STDOUT:   %P.val.a40: %P.f86 = struct_value (%int_1.233, %uninit.216) [symbolic]
 // CHECK:STDOUT:   %.a21: ref %P.f86 = temporary invalid, %P.val.a40 [symbolic]
 // CHECK:STDOUT:   %int_64: Core.IntLiteral = int_value 64 [concrete]
@@ -282,15 +289,16 @@ fn Call() -> i32 {
 // CHECK:STDOUT:     %_.param_patt.loc4_19.2: @P.Both.%pattern_type.loc4_19.1 (%pattern_type.51d1c4.1) = value_param_pattern [symbolic = %_.param_patt.loc4_19.3 (constants.%_.param_patt)]
 // CHECK:STDOUT:     %_.patt.loc4_19.2: @P.Both.%pattern_type.loc4_19.1 (%pattern_type.51d1c4.1) = at_binding_pattern _, %_.param_patt.loc4_19.2 [symbolic = %_.patt.loc4_19.3 (constants.%_.patt)]
 // CHECK:STDOUT:     %return.param_patt.loc4_19.1: @P.Both.%pattern_type.loc4_19.2 (%pattern_type.6d3) = out_param_pattern [symbolic = %return.param_patt.loc4_19.2 (constants.%return.param_patt.3b8)]
-// CHECK:STDOUT:     %return.patt.loc4_19.1: @P.Both.%pattern_type.loc4_19.2 (%pattern_type.6d3) = return_slot_pattern %return.param_patt.loc4_19.1, constants.%P.f86 [symbolic = %return.patt.loc4_19.2 (constants.%return.patt.ec6)]
+// CHECK:STDOUT:     %return.patt.loc4_19.1: @P.Both.%pattern_type.loc4_19.2 (%pattern_type.6d3) = return_slot_pattern %return.param_patt.loc4_19.1, %P.loc4_19.2 [symbolic = %return.patt.loc4_19.2 (constants.%return.patt.ec6)]
 // CHECK:STDOUT:   } {
-// CHECK:STDOUT:     %.loc4_19.9: Core.Form = init_form constants.%P.f86 [symbolic = %.loc4_19.7 (constants.%.3a8)]
+// CHECK:STDOUT:     %P.loc4_19.2: type = class_type @P, @P(constants.%T.67d) [symbolic = %P.loc4_19.1 (constants.%P.f86)]
+// CHECK:STDOUT:     %.loc4_19.11: Core.Form = init_form %P.loc4_19.2 [symbolic = %.loc4_19.9 (constants.%.3a8)]
 // CHECK:STDOUT:     %_.param.loc4_19.1: @P.Both.%T (%T.67d) = value_param call_param0
 // CHECK:STDOUT:     %_.loc4_19.1: @P.Both.%T (%T.67d) = wrapper_binding _, %_.param.loc4_19.1
 // CHECK:STDOUT:     %_.param.loc4_19.2: @P.Both.%T (%T.67d) = value_param call_param1
 // CHECK:STDOUT:     %_.loc4_19.2: @P.Both.%T (%T.67d) = wrapper_binding _, %_.param.loc4_19.2
-// CHECK:STDOUT:     %return.param: ref @P.Both.%P (%P.f86) = out_param call_param2
-// CHECK:STDOUT:     %return: ref @P.Both.%P (%P.f86) = return_slot %return.param
+// CHECK:STDOUT:     %return.param: ref @P.Both.%P.loc4_19.1 (%P.f86) = out_param call_param2
+// CHECK:STDOUT:     %return: ref @P.Both.%P.loc4_19.1 (%P.f86) = return_slot %return.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -397,20 +405,21 @@ fn Call() -> i32 {
 // CHECK:STDOUT:   %pattern_type.loc4_19.1: type = pattern_type %T [symbolic = %pattern_type.loc4_19.1 (constants.%pattern_type.51d1c4.1)]
 // CHECK:STDOUT:   %_.param_patt.loc4_19.3: @P.Both.%pattern_type.loc4_19.1 (%pattern_type.51d1c4.1) = value_param_pattern [symbolic = %_.param_patt.loc4_19.3 (constants.%_.param_patt)]
 // CHECK:STDOUT:   %_.patt.loc4_19.3: @P.Both.%pattern_type.loc4_19.1 (%pattern_type.51d1c4.1) = at_binding_pattern _, %_.param_patt.loc4_19.3 [symbolic = %_.patt.loc4_19.3 (constants.%_.patt)]
-// CHECK:STDOUT:   %P: type = class_type @P, @P(%T) [symbolic = %P (constants.%P.f86)]
-// CHECK:STDOUT:   %.loc4_19.7: Core.Form = init_form %P [symbolic = %.loc4_19.7 (constants.%.3a8)]
-// CHECK:STDOUT:   %pattern_type.loc4_19.2: type = pattern_type %P [symbolic = %pattern_type.loc4_19.2 (constants.%pattern_type.6d3)]
+// CHECK:STDOUT:   %P.loc4_19.1: type = class_type @P, @P(%T) [symbolic = %P.loc4_19.1 (constants.%P.f86)]
+// CHECK:STDOUT:   %.loc4_19.9: Core.Form = init_form %P.loc4_19.1 [symbolic = %.loc4_19.9 (constants.%.3a8)]
+// CHECK:STDOUT:   %pattern_type.loc4_19.2: type = pattern_type %P.loc4_19.1 [symbolic = %pattern_type.loc4_19.2 (constants.%pattern_type.6d3)]
 // CHECK:STDOUT:   %return.param_patt.loc4_19.2: @P.Both.%pattern_type.loc4_19.2 (%pattern_type.6d3) = out_param_pattern [symbolic = %return.param_patt.loc4_19.2 (constants.%return.param_patt.3b8)]
-// CHECK:STDOUT:   %return.patt.loc4_19.2: @P.Both.%pattern_type.loc4_19.2 (%pattern_type.6d3) = return_slot_pattern %return.param_patt.loc4_19.2, %P [symbolic = %return.patt.loc4_19.2 (constants.%return.patt.ec6)]
+// CHECK:STDOUT:   %return.patt.loc4_19.2: @P.Both.%pattern_type.loc4_19.2 (%pattern_type.6d3) = return_slot_pattern %return.param_patt.loc4_19.2, %P.loc4_19.1 [symbolic = %return.patt.loc4_19.2 (constants.%return.patt.ec6)]
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete.loc4_19.1: <witness> = require_complete_type %T [symbolic = %require_complete.loc4_19.1 (constants.%require_complete.944)]
-// CHECK:STDOUT:   %require_complete.loc4_19.2: <witness> = require_complete_type %P [symbolic = %require_complete.loc4_19.2 (constants.%require_complete.657)]
+// CHECK:STDOUT:   %require_complete.loc4_19.2: <witness> = require_complete_type %P.loc4_19.1 [symbolic = %require_complete.loc4_19.2 (constants.%require_complete.657)]
 // CHECK:STDOUT:   %tuple.type: type = tuple_type (%T, %T) [symbolic = %tuple.type (constants.%tuple.type.07a)]
-// CHECK:STDOUT:   %.loc4_19.8: type = custom_layout_type {size=0, align=0, .Both@0: @P.Both.%tuple.type (%tuple.type.07a)} [symbolic = %.loc4_19.8 (constants.%.d27)]
-// CHECK:STDOUT:   %require_complete.loc4_19.3: <witness> = require_complete_type %tuple.type [symbolic = %require_complete.loc4_19.3 (constants.%require_complete.22a)]
+// CHECK:STDOUT:   %.loc4_19.10: type = custom_layout_type {size=0, align=0, .Both@0: @P.Both.%tuple.type (%tuple.type.07a)} [symbolic = %.loc4_19.10 (constants.%.d27)]
+// CHECK:STDOUT:   %uninit.loc4_19.2: @P.Both.%.loc4_19.10 (%.d27) = uninitialized_value [symbolic = %uninit.loc4_19.2 (constants.%uninit.216)]
+// CHECK:STDOUT:   %P.val: @P.Both.%P.loc4_19.1 (%P.f86) = struct_value (constants.%int_0.1a7, %uninit.loc4_19.2) [symbolic = %P.val (constants.%P.val.5d5)]
 // CHECK:STDOUT:
-// CHECK:STDOUT:   fn(%_.param.loc4_19.1: @P.Both.%T (%T.67d), %_.param.loc4_19.2: @P.Both.%T (%T.67d)) -> out %return.param: @P.Both.%P (%P.f86) {
+// CHECK:STDOUT:   fn(%_.param.loc4_19.1: @P.Both.%T (%T.67d), %_.param.loc4_19.2: @P.Both.%T (%T.67d)) -> out %return.param: @P.Both.%P.loc4_19.1 (%P.f86) {
 // CHECK:STDOUT:   !entry:
 // CHECK:STDOUT:     %.loc4_19.1: ref %u1 = class_element_access %return.param, element0
 // CHECK:STDOUT:     %int_0: Core.IntLiteral = int_value 0 [concrete = constants.%int_0.5c6]
@@ -421,11 +430,18 @@ fn Call() -> i32 {
 // CHECK:STDOUT:     %Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %u1 = call %bound_method.loc4_19.2(%int_0) [concrete = constants.%int_0.1a7]
 // CHECK:STDOUT:     %.loc4_19.2: init %u1 = converted %int_0, %Core.IntLiteral.as.ImplicitAs.impl.Convert.call [concrete = constants.%int_0.1a7]
 // CHECK:STDOUT:     %.loc4_19.3: init %u1 to %.loc4_19.1 = in_place_init %.loc4_19.2 [concrete = constants.%int_0.1a7]
-// CHECK:STDOUT:     %.loc4_19.4: ref @P.Both.%.loc4_19.8 (%.d27) = class_element_access %return.param, element1
+// CHECK:STDOUT:     %.loc4_19.4: ref @P.Both.%.loc4_19.10 (%.d27) = class_element_access %return.param, element1
 // CHECK:STDOUT:     %.loc4_19.5: ref @P.Both.%tuple.type (%tuple.type.07a) = class_element_access %.loc4_19.4, element0
-// CHECK:STDOUT:     %.loc5: @P.Both.%tuple.type (%tuple.type.07a) = tuple_literal (%_.param.loc4_19.1, %_.param.loc4_19.2)
-// CHECK:STDOUT:     %.loc4_19.6: init @P.Both.%P (%P.f86) to %return.param = class_init (%.loc4_19.3, <error>) [concrete = <error>]
-// CHECK:STDOUT:     return %.loc4_19.6 to %return.param
+// CHECK:STDOUT:     %.loc5_19.1: init @P.Both.%tuple.type (%tuple.type.07a) to %.loc4_19.5 = tuple_init (%_.param.loc4_19.1, %_.param.loc4_19.2)
+// CHECK:STDOUT:     %uninit.loc4_19.1: @P.Both.%.loc4_19.10 (%.d27) = uninitialized_value [symbolic = %uninit.loc4_19.2 (constants.%uninit.216)]
+// CHECK:STDOUT:     %.loc4_19.6: init @P.Both.%.loc4_19.10 (%.d27) to %.loc4_19.4 = in_place_init %uninit.loc4_19.1 [symbolic = %uninit.loc4_19.2 (constants.%uninit.216)]
+// CHECK:STDOUT:     %.loc4_19.7: init @P.Both.%P.loc4_19.1 (%P.f86) to %return.param = class_init (%.loc4_19.3, %.loc4_19.6) [symbolic = %P.val (constants.%P.val.5d5)]
+// CHECK:STDOUT:     %.loc4_19.8: init @P.Both.%P.loc4_19.1 (%P.f86) = update_init %.loc4_19.7, %.loc5_19.1
+// CHECK:STDOUT:     %tuple.elem0: ref @P.Both.%T (%T.67d) = tuple_access %.loc4_19.5, element0
+// CHECK:STDOUT:     %.loc5_19.2: init @P.Both.%T (%T.67d) to %tuple.elem0 = in_place_init %_.param.loc4_19.1
+// CHECK:STDOUT:     %tuple.elem1: ref @P.Both.%T (%T.67d) = tuple_access %.loc4_19.5, element1
+// CHECK:STDOUT:     %.loc5_19.3: init @P.Both.%T (%T.67d) to %tuple.elem1 = in_place_init %_.param.loc4_19.2
+// CHECK:STDOUT:     return %.loc4_19.8 to %return.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -493,8 +509,8 @@ fn Call() -> i32 {
 // CHECK:STDOUT:   %pattern_type.loc4_19.1 => constants.%pattern_type.51d1c4.1
 // CHECK:STDOUT:   %_.param_patt.loc4_19.3 => constants.%_.param_patt
 // CHECK:STDOUT:   %_.patt.loc4_19.3 => constants.%_.patt
-// CHECK:STDOUT:   %P => constants.%P.f86
-// CHECK:STDOUT:   %.loc4_19.7 => constants.%.3a8
+// CHECK:STDOUT:   %P.loc4_19.1 => constants.%P.f86
+// CHECK:STDOUT:   %.loc4_19.9 => constants.%.3a8
 // CHECK:STDOUT:   %pattern_type.loc4_19.2 => constants.%pattern_type.6d3
 // CHECK:STDOUT:   %return.param_patt.loc4_19.2 => constants.%return.param_patt.3b8
 // CHECK:STDOUT:   %return.patt.loc4_19.2 => constants.%return.patt.ec6
@@ -524,7 +540,7 @@ fn Call() -> i32 {
 // CHECK:STDOUT:   %.loc7_1.15 => constants.%.efe
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: --- imported_let.carbon
+// CHECK:STDOUT: --- imported_global.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
@@ -539,12 +555,22 @@ fn Call() -> i32 {
 // CHECK:STDOUT:   %int_64: Core.IntLiteral = int_value 64 [concrete]
 // CHECK:STDOUT:   %i64: type = class_type @Int, @Int(%int_64) [concrete]
 // CHECK:STDOUT:   %T.67d: type = symbolic_binding T, 0 [symbolic]
+// CHECK:STDOUT:   %tuple.type.07a: type = tuple_type (%T.67d, %T.67d) [symbolic]
+// CHECK:STDOUT:   %.d27: type = custom_layout_type {size=0, align=0, .Both@0: %tuple.type.07a} [symbolic]
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
 // CHECK:STDOUT:   %u1: type = class_type @UInt, @UInt(%int_1.5b8) [concrete]
 // CHECK:STDOUT:   %P.f86: type = class_type @P, @P(%T.67d) [symbolic]
+// CHECK:STDOUT:   %uninit.216: %.d27 = uninitialized_value [symbolic]
 // CHECK:STDOUT:   %int_1.233: %u1 = int_value 1 [concrete]
+// CHECK:STDOUT:   %P.val.a40: %P.f86 = struct_value (%int_1.233, %uninit.216) [symbolic]
 // CHECK:STDOUT:   %P.4ae: type = class_type @P, @P(%i64) [concrete]
+// CHECK:STDOUT:   %tuple.type.1ac: type = tuple_type (%i64, %i64) [concrete]
+// CHECK:STDOUT:   %.58e: type = custom_layout_type {size=16, align=8, .Both@0: %tuple.type.1ac} [concrete]
+// CHECK:STDOUT:   %uninit.ccc: %.58e = uninitialized_value [concrete]
+// CHECK:STDOUT:   %P.val.c4c: %P.4ae = struct_value (%int_1.233, %uninit.ccc) [concrete]
 // CHECK:STDOUT:   %pattern_type.d17: type = pattern_type %P.4ae [concrete]
+// CHECK:STDOUT:   %g.patt: %pattern_type.d17 = ref_binding_pattern g [concrete]
+// CHECK:STDOUT:   %g.var_patt: %pattern_type.d17 = var_pattern %g.patt [concrete]
 // CHECK:STDOUT:   %ImplicitAs.type.ca1: type = facet_type <@ImplicitAs, @ImplicitAs(%u1)> [concrete]
 // CHECK:STDOUT:   %To.fe9: Core.IntLiteral = symbolic_binding To, 0 [symbolic]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.type.199: type = fn_type @Core.IntLiteral.as.ImplicitAs.impl.Convert.1, @Core.IntLiteral.as.ImplicitAs.impl.b68(%To.fe9) [symbolic]
@@ -558,6 +584,7 @@ fn Call() -> i32 {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.320: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.e93: <specific function> = specific_function %Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a, @Core.IntLiteral.as.ImplicitAs.impl.Convert.1(%int_1.5b8) [concrete]
 // CHECK:STDOUT:   %bound_method.d7a: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.e93 [concrete]
+// CHECK:STDOUT:   %.093: ref %u1 = class_element_access imports.%g.var, element0 [concrete]
 // CHECK:STDOUT:   %EqWith.type.c25: type = facet_type <@EqWith, @EqWith(%u1)> [concrete]
 // CHECK:STDOUT:   %M: Core.IntLiteral = symbolic_binding M, 1 [symbolic]
 // CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.type.544: type = fn_type @UInt.as.EqWith.impl.Equal.1, @UInt.as.EqWith.impl.f13(%N, %M) [symbolic]
@@ -591,8 +618,9 @@ fn Call() -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
-// CHECK:STDOUT:   %Main.g: %P.4ae = import_ref Main//plib, g, loaded
-// CHECK:STDOUT:   %Main.import_ref.ff2: @P.%P (%P.f86) = import_ref Main//plib, loc6_1, loaded
+// CHECK:STDOUT:   %Main.g: ref %P.4ae = import_ref Main//plib, g, loaded [concrete = %g.var]
+// CHECK:STDOUT:   %Main.import_ref.ff2: @P.%P (%P.f86) = import_ref Main//plib, loc6_1, loaded [symbolic = @P.%P.val (constants.%P.val.a40)]
+// CHECK:STDOUT:   %g.var: ref %P.4ae = var_storage constants.%g.var_patt [concrete]
 // CHECK:STDOUT:   %Core.import_ref.aa5: @Core.IntLiteral.as.ImplicitAs.impl.b68.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.199) = import_ref Core//prelude/types/uint, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.b68.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.170)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.42f = impl_witness_table (%Core.import_ref.aa5), @Core.IntLiteral.as.ImplicitAs.impl.b68 [concrete]
 // CHECK:STDOUT:   %Core.import_ref.b92: @UInt.as.EqWith.impl.f13.%UInt.as.EqWith.impl.Equal.type (%UInt.as.EqWith.impl.Equal.type.544) = import_ref Core//prelude/types/uint, loc{{\d+_\d+}}, loaded [symbolic = @UInt.as.EqWith.impl.f13.%UInt.as.EqWith.impl.Equal (constants.%UInt.as.EqWith.impl.Equal.c67)]
@@ -616,13 +644,17 @@ fn Call() -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @F() -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %g.ref: %P.4ae = name_ref g, imports.%Main.g
+// CHECK:STDOUT:   %g.ref: ref %P.4ae = name_ref g, imports.%Main.g [concrete = imports.%g.var]
 // CHECK:STDOUT:   name_binding_decl {
 // CHECK:STDOUT:     %expr_patt: %pattern_type.d17 = expr_pattern %Neither.ref in [concrete] {
-// CHECK:STDOUT:       %Neither.ref: %P.4ae = name_ref Neither, imports.%Main.import_ref.ff2
+// CHECK:STDOUT:       %.loc11_10.2: %P.4ae = specific_constant imports.%Main.import_ref.ff2, @P(constants.%i64) [concrete = constants.%P.val.c4c]
+// CHECK:STDOUT:       %Neither.ref: %P.4ae = name_ref Neither, %.loc11_10.2 [concrete = constants.%P.val.c4c]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %Neither.ref: %P.4ae = name_ref Neither, imports.%Main.import_ref.ff2
+// CHECK:STDOUT:   %.loc11_10.1: %P.4ae = splice_block %Neither.ref [concrete = constants.%P.val.c4c] {
+// CHECK:STDOUT:     %.loc11_10.2: %P.4ae = specific_constant imports.%Main.import_ref.ff2, @P(constants.%i64) [concrete = constants.%P.val.c4c]
+// CHECK:STDOUT:     %Neither.ref: %P.4ae = name_ref Neither, %.loc11_10.2 [concrete = constants.%P.val.c4c]
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %int_1.loc11: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
 // CHECK:STDOUT:   %impl.elem0.loc11_19.1: %.e60 = impl_witness_access constants.%ImplicitAs.impl_witness.9a9, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a]
 // CHECK:STDOUT:   %bound_method.loc11_19.1: <bound method> = bound_method %int_1.loc11, %impl.elem0.loc11_19.1 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.320]
@@ -631,7 +663,7 @@ fn Call() -> i32 {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc11_19: init %u1 = call %bound_method.loc11_19.2(%int_1.loc11) [concrete = constants.%int_1.233]
 // CHECK:STDOUT:   %.loc11_19.1: %u1 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc11_19 [concrete = constants.%int_1.233]
 // CHECK:STDOUT:   %.loc11_19.2: %u1 = converted %int_1.loc11, %.loc11_19.1 [concrete = constants.%int_1.233]
-// CHECK:STDOUT:   %.loc11_19.3: ref %u1 = class_element_access %g.ref, element0
+// CHECK:STDOUT:   %.loc11_19.3: ref %u1 = class_element_access %g.ref, element0 [concrete = constants.%.093]
 // CHECK:STDOUT:   %impl.elem0.loc11_19.2: %.9ed = impl_witness_access constants.%EqWith.impl_witness.d63, element0 [concrete = constants.%UInt.as.EqWith.impl.Equal.ba4]
 // CHECK:STDOUT:   %bound_method.loc11_19.3: <bound method> = bound_method %.loc11_19.2, %impl.elem0.loc11_19.2 [concrete = constants.%UInt.as.EqWith.impl.Equal.bound]
 // CHECK:STDOUT:   %specific_fn.loc11_19.2: <specific function> = specific_function %impl.elem0.loc11_19.2, @UInt.as.EqWith.impl.Equal.1(constants.%int_1.5b8, constants.%int_1.5b8) [concrete = constants.%UInt.as.EqWith.impl.Equal.specific_fn.6b6]
@@ -713,7 +745,8 @@ fn Call() -> i32 {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.e93: <specific function> = specific_function %Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a, @Core.IntLiteral.as.ImplicitAs.impl.Convert.1(%int_1.5b8) [concrete]
 // CHECK:STDOUT:   %bound_method.0e8: <bound method> = bound_method %int_0.5c6, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.e93 [concrete]
 // CHECK:STDOUT:   %int_0.1a7: %u1 = int_value 0 [concrete]
-// CHECK:STDOUT:   %require_complete.22a: <witness> = require_complete_type %tuple.type.07a [symbolic]
+// CHECK:STDOUT:   %uninit.216: %.d27 = uninitialized_value [symbolic]
+// CHECK:STDOUT:   %P.val.5d5: %P.f86 = struct_value (%int_0.1a7, %uninit.216) [symbolic]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.320: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a [concrete]
 // CHECK:STDOUT:   %bound_method.d7a: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.e93 [concrete]
 // CHECK:STDOUT:   %int_1.233: %u1 = int_value 1 [concrete]
@@ -729,7 +762,6 @@ fn Call() -> i32 {
 // CHECK:STDOUT:   %UInt.as.Copy.impl.Op.bound: <bound method> = bound_method %int_1.233, %UInt.as.Copy.impl.Op.d9c [concrete]
 // CHECK:STDOUT:   %UInt.as.Copy.impl.Op.specific_fn: <specific function> = specific_function %UInt.as.Copy.impl.Op.d9c, @UInt.as.Copy.impl.Op(%int_1.5b8) [concrete]
 // CHECK:STDOUT:   %bound_method.edd: <bound method> = bound_method %int_1.233, %UInt.as.Copy.impl.Op.specific_fn [concrete]
-// CHECK:STDOUT:   %uninit.216: %.d27 = uninitialized_value [symbolic]
 // CHECK:STDOUT:   %P.val.a40: %P.f86 = struct_value (%int_1.233, %uninit.216) [symbolic]
 // CHECK:STDOUT:   %.a21: ref %P.f86 = temporary invalid, %P.val.a40 [symbolic]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
@@ -812,15 +844,16 @@ fn Call() -> i32 {
 // CHECK:STDOUT:     %_.param_patt.loc4_19.2: @P.Both.%pattern_type.loc4_19.1 (%pattern_type.51d1c4.1) = value_param_pattern [symbolic = %_.param_patt.loc4_19.3 (constants.%_.param_patt)]
 // CHECK:STDOUT:     %_.patt.loc4_19.2: @P.Both.%pattern_type.loc4_19.1 (%pattern_type.51d1c4.1) = at_binding_pattern _, %_.param_patt.loc4_19.2 [symbolic = %_.patt.loc4_19.3 (constants.%_.patt)]
 // CHECK:STDOUT:     %return.param_patt.loc4_19.1: @P.Both.%pattern_type.loc4_19.2 (%pattern_type.6d3) = out_param_pattern [symbolic = %return.param_patt.loc4_19.2 (constants.%return.param_patt.3b8)]
-// CHECK:STDOUT:     %return.patt.loc4_19.1: @P.Both.%pattern_type.loc4_19.2 (%pattern_type.6d3) = return_slot_pattern %return.param_patt.loc4_19.1, constants.%P.f86 [symbolic = %return.patt.loc4_19.2 (constants.%return.patt.ec6)]
+// CHECK:STDOUT:     %return.patt.loc4_19.1: @P.Both.%pattern_type.loc4_19.2 (%pattern_type.6d3) = return_slot_pattern %return.param_patt.loc4_19.1, %P.loc4_19.2 [symbolic = %return.patt.loc4_19.2 (constants.%return.patt.ec6)]
 // CHECK:STDOUT:   } {
-// CHECK:STDOUT:     %.loc4_19.9: Core.Form = init_form constants.%P.f86 [symbolic = %.loc4_19.7 (constants.%.3a8)]
+// CHECK:STDOUT:     %P.loc4_19.2: type = class_type @P, @P(constants.%T.67d) [symbolic = %P.loc4_19.1 (constants.%P.f86)]
+// CHECK:STDOUT:     %.loc4_19.11: Core.Form = init_form %P.loc4_19.2 [symbolic = %.loc4_19.9 (constants.%.3a8)]
 // CHECK:STDOUT:     %_.param.loc4_19.1: @P.Both.%T (%T.67d) = value_param call_param0
 // CHECK:STDOUT:     %_.loc4_19.1: @P.Both.%T (%T.67d) = wrapper_binding _, %_.param.loc4_19.1
 // CHECK:STDOUT:     %_.param.loc4_19.2: @P.Both.%T (%T.67d) = value_param call_param1
 // CHECK:STDOUT:     %_.loc4_19.2: @P.Both.%T (%T.67d) = wrapper_binding _, %_.param.loc4_19.2
-// CHECK:STDOUT:     %return.param: ref @P.Both.%P (%P.f86) = out_param call_param2
-// CHECK:STDOUT:     %return: ref @P.Both.%P (%P.f86) = return_slot %return.param
+// CHECK:STDOUT:     %return.param: ref @P.Both.%P.loc4_19.1 (%P.f86) = out_param call_param2
+// CHECK:STDOUT:     %return: ref @P.Both.%P.loc4_19.1 (%P.f86) = return_slot %return.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -935,20 +968,21 @@ fn Call() -> i32 {
 // CHECK:STDOUT:   %pattern_type.loc4_19.1: type = pattern_type %T [symbolic = %pattern_type.loc4_19.1 (constants.%pattern_type.51d1c4.1)]
 // CHECK:STDOUT:   %_.param_patt.loc4_19.3: @P.Both.%pattern_type.loc4_19.1 (%pattern_type.51d1c4.1) = value_param_pattern [symbolic = %_.param_patt.loc4_19.3 (constants.%_.param_patt)]
 // CHECK:STDOUT:   %_.patt.loc4_19.3: @P.Both.%pattern_type.loc4_19.1 (%pattern_type.51d1c4.1) = at_binding_pattern _, %_.param_patt.loc4_19.3 [symbolic = %_.patt.loc4_19.3 (constants.%_.patt)]
-// CHECK:STDOUT:   %P: type = class_type @P, @P(%T) [symbolic = %P (constants.%P.f86)]
-// CHECK:STDOUT:   %.loc4_19.7: Core.Form = init_form %P [symbolic = %.loc4_19.7 (constants.%.3a8)]
-// CHECK:STDOUT:   %pattern_type.loc4_19.2: type = pattern_type %P [symbolic = %pattern_type.loc4_19.2 (constants.%pattern_type.6d3)]
+// CHECK:STDOUT:   %P.loc4_19.1: type = class_type @P, @P(%T) [symbolic = %P.loc4_19.1 (constants.%P.f86)]
+// CHECK:STDOUT:   %.loc4_19.9: Core.Form = init_form %P.loc4_19.1 [symbolic = %.loc4_19.9 (constants.%.3a8)]
+// CHECK:STDOUT:   %pattern_type.loc4_19.2: type = pattern_type %P.loc4_19.1 [symbolic = %pattern_type.loc4_19.2 (constants.%pattern_type.6d3)]
 // CHECK:STDOUT:   %return.param_patt.loc4_19.2: @P.Both.%pattern_type.loc4_19.2 (%pattern_type.6d3) = out_param_pattern [symbolic = %return.param_patt.loc4_19.2 (constants.%return.param_patt.3b8)]
-// CHECK:STDOUT:   %return.patt.loc4_19.2: @P.Both.%pattern_type.loc4_19.2 (%pattern_type.6d3) = return_slot_pattern %return.param_patt.loc4_19.2, %P [symbolic = %return.patt.loc4_19.2 (constants.%return.patt.ec6)]
+// CHECK:STDOUT:   %return.patt.loc4_19.2: @P.Both.%pattern_type.loc4_19.2 (%pattern_type.6d3) = return_slot_pattern %return.param_patt.loc4_19.2, %P.loc4_19.1 [symbolic = %return.patt.loc4_19.2 (constants.%return.patt.ec6)]
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete.loc4_19.1: <witness> = require_complete_type %T [symbolic = %require_complete.loc4_19.1 (constants.%require_complete.944)]
-// CHECK:STDOUT:   %require_complete.loc4_19.2: <witness> = require_complete_type %P [symbolic = %require_complete.loc4_19.2 (constants.%require_complete.657)]
+// CHECK:STDOUT:   %require_complete.loc4_19.2: <witness> = require_complete_type %P.loc4_19.1 [symbolic = %require_complete.loc4_19.2 (constants.%require_complete.657)]
 // CHECK:STDOUT:   %tuple.type: type = tuple_type (%T, %T) [symbolic = %tuple.type (constants.%tuple.type.07a)]
-// CHECK:STDOUT:   %.loc4_19.8: type = custom_layout_type {size=0, align=0, .Both@0: @P.Both.%tuple.type (%tuple.type.07a)} [symbolic = %.loc4_19.8 (constants.%.d27)]
-// CHECK:STDOUT:   %require_complete.loc4_19.3: <witness> = require_complete_type %tuple.type [symbolic = %require_complete.loc4_19.3 (constants.%require_complete.22a)]
+// CHECK:STDOUT:   %.loc4_19.10: type = custom_layout_type {size=0, align=0, .Both@0: @P.Both.%tuple.type (%tuple.type.07a)} [symbolic = %.loc4_19.10 (constants.%.d27)]
+// CHECK:STDOUT:   %uninit.loc4_19.2: @P.Both.%.loc4_19.10 (%.d27) = uninitialized_value [symbolic = %uninit.loc4_19.2 (constants.%uninit.216)]
+// CHECK:STDOUT:   %P.val: @P.Both.%P.loc4_19.1 (%P.f86) = struct_value (constants.%int_0.1a7, %uninit.loc4_19.2) [symbolic = %P.val (constants.%P.val.5d5)]
 // CHECK:STDOUT:
-// CHECK:STDOUT:   fn(%_.param.loc4_19.1: @P.Both.%T (%T.67d), %_.param.loc4_19.2: @P.Both.%T (%T.67d)) -> out %return.param: @P.Both.%P (%P.f86) {
+// CHECK:STDOUT:   fn(%_.param.loc4_19.1: @P.Both.%T (%T.67d), %_.param.loc4_19.2: @P.Both.%T (%T.67d)) -> out %return.param: @P.Both.%P.loc4_19.1 (%P.f86) {
 // CHECK:STDOUT:   !entry:
 // CHECK:STDOUT:     %.loc4_19.1: ref %u1 = class_element_access %return.param, element0
 // CHECK:STDOUT:     %int_0: Core.IntLiteral = int_value 0 [concrete = constants.%int_0.5c6]
@@ -959,11 +993,18 @@ fn Call() -> i32 {
 // CHECK:STDOUT:     %Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %u1 = call %bound_method.loc4_19.2(%int_0) [concrete = constants.%int_0.1a7]
 // CHECK:STDOUT:     %.loc4_19.2: init %u1 = converted %int_0, %Core.IntLiteral.as.ImplicitAs.impl.Convert.call [concrete = constants.%int_0.1a7]
 // CHECK:STDOUT:     %.loc4_19.3: init %u1 to %.loc4_19.1 = in_place_init %.loc4_19.2 [concrete = constants.%int_0.1a7]
-// CHECK:STDOUT:     %.loc4_19.4: ref @P.Both.%.loc4_19.8 (%.d27) = class_element_access %return.param, element1
+// CHECK:STDOUT:     %.loc4_19.4: ref @P.Both.%.loc4_19.10 (%.d27) = class_element_access %return.param, element1
 // CHECK:STDOUT:     %.loc4_19.5: ref @P.Both.%tuple.type (%tuple.type.07a) = class_element_access %.loc4_19.4, element0
-// CHECK:STDOUT:     %.loc5: @P.Both.%tuple.type (%tuple.type.07a) = tuple_literal (%_.param.loc4_19.1, %_.param.loc4_19.2)
-// CHECK:STDOUT:     %.loc4_19.6: init @P.Both.%P (%P.f86) to %return.param = class_init (%.loc4_19.3, <error>) [concrete = <error>]
-// CHECK:STDOUT:     return %.loc4_19.6 to %return.param
+// CHECK:STDOUT:     %.loc5_19.1: init @P.Both.%tuple.type (%tuple.type.07a) to %.loc4_19.5 = tuple_init (%_.param.loc4_19.1, %_.param.loc4_19.2)
+// CHECK:STDOUT:     %uninit.loc4_19.1: @P.Both.%.loc4_19.10 (%.d27) = uninitialized_value [symbolic = %uninit.loc4_19.2 (constants.%uninit.216)]
+// CHECK:STDOUT:     %.loc4_19.6: init @P.Both.%.loc4_19.10 (%.d27) to %.loc4_19.4 = in_place_init %uninit.loc4_19.1 [symbolic = %uninit.loc4_19.2 (constants.%uninit.216)]
+// CHECK:STDOUT:     %.loc4_19.7: init @P.Both.%P.loc4_19.1 (%P.f86) to %return.param = class_init (%.loc4_19.3, %.loc4_19.6) [symbolic = %P.val (constants.%P.val.5d5)]
+// CHECK:STDOUT:     %.loc4_19.8: init @P.Both.%P.loc4_19.1 (%P.f86) = update_init %.loc4_19.7, %.loc5_19.1
+// CHECK:STDOUT:     %tuple.elem0: ref @P.Both.%T (%T.67d) = tuple_access %.loc4_19.5, element0
+// CHECK:STDOUT:     %.loc5_19.2: init @P.Both.%T (%T.67d) to %tuple.elem0 = in_place_init %_.param.loc4_19.1
+// CHECK:STDOUT:     %tuple.elem1: ref @P.Both.%T (%T.67d) = tuple_access %.loc4_19.5, element1
+// CHECK:STDOUT:     %.loc5_19.3: init @P.Both.%T (%T.67d) to %tuple.elem1 = in_place_init %_.param.loc4_19.2
+// CHECK:STDOUT:     return %.loc4_19.8 to %return.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -1052,8 +1093,8 @@ fn Call() -> i32 {
 // CHECK:STDOUT:   %pattern_type.loc4_19.1 => constants.%pattern_type.51d1c4.1
 // CHECK:STDOUT:   %_.param_patt.loc4_19.3 => constants.%_.param_patt
 // CHECK:STDOUT:   %_.patt.loc4_19.3 => constants.%_.patt
-// CHECK:STDOUT:   %P => constants.%P.f86
-// CHECK:STDOUT:   %.loc4_19.7 => constants.%.3a8
+// CHECK:STDOUT:   %P.loc4_19.1 => constants.%P.f86
+// CHECK:STDOUT:   %.loc4_19.9 => constants.%.3a8
 // CHECK:STDOUT:   %pattern_type.loc4_19.2 => constants.%pattern_type.6d3
 // CHECK:STDOUT:   %return.param_patt.loc4_19.2 => constants.%return.param_patt.3b8
 // CHECK:STDOUT:   %return.patt.loc4_19.2 => constants.%return.patt.ec6

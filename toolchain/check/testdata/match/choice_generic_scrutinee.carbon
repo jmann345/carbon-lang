@@ -1541,7 +1541,9 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT:   %T.67d: type = symbolic_binding T, 0 [symbolic]
 // CHECK:STDOUT:   %P.f86: type = class_type @P, @P(%T.67d) [symbolic]
 // CHECK:STDOUT:   %int_1.233: %u1 = int_value 1 [concrete]
+// CHECK:STDOUT:   %P.val.e49: %P.f86 = struct_value (%int_1.233) [symbolic]
 // CHECK:STDOUT:   %int_0.1a7: %u1 = int_value 0 [concrete]
+// CHECK:STDOUT:   %P.val.7d0: %P.f86 = struct_value (%int_0.1a7) [symbolic]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %P.b38: type = class_type @P, @P(%i32) [concrete]
@@ -1554,6 +1556,8 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT:   %return.patt.e1b: %pattern_type.6b6 = return_slot_pattern %return.param_patt.a9a, %i32 [concrete]
 // CHECK:STDOUT:   %Classify.type: type = fn_type @Classify [concrete]
 // CHECK:STDOUT:   %Classify: %Classify.type = struct_value () [concrete]
+// CHECK:STDOUT:   %P.val.0e9: %P.b38 = struct_value (%int_0.1a7) [concrete]
+// CHECK:STDOUT:   %P.val.61e: %P.b38 = struct_value (%int_1.233) [concrete]
 // CHECK:STDOUT:   %int_0.5c6: Core.IntLiteral = int_value 0 [concrete]
 // CHECK:STDOUT:   %ImplicitAs.type.ca1: type = facet_type <@ImplicitAs, @ImplicitAs(%u1)> [concrete]
 // CHECK:STDOUT:   %To.fe9: Core.IntLiteral = symbolic_binding To, 0 [symbolic]
@@ -1620,8 +1624,8 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Main.P: %P.type = import_ref Main//plib, P, loaded [concrete = constants.%P.generic]
-// CHECK:STDOUT:   %Main.import_ref.f62: @P.%P (%P.f86) = import_ref Main//plib, loc4_4, loaded
-// CHECK:STDOUT:   %Main.import_ref.950: @P.%P (%P.f86) = import_ref Main//plib, loc6_1, loaded
+// CHECK:STDOUT:   %Main.import_ref.f62: @P.%P (%P.f86) = import_ref Main//plib, loc4_4, loaded [symbolic = @P.%P.val.1 (constants.%P.val.7d0)]
+// CHECK:STDOUT:   %Main.import_ref.950: @P.%P (%P.f86) = import_ref Main//plib, loc6_1, loaded [symbolic = @P.%P.val.2 (constants.%P.val.e49)]
 // CHECK:STDOUT:   %Core.import_ref.aa5: @Core.IntLiteral.as.ImplicitAs.impl.b68.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.199) = import_ref Core//prelude/types/uint, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.b68.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.170)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.42f = impl_witness_table (%Core.import_ref.aa5), @Core.IntLiteral.as.ImplicitAs.impl.b68 [concrete]
 // CHECK:STDOUT:   %Core.import_ref.b92: @UInt.as.EqWith.impl.f13.%UInt.as.EqWith.impl.Equal.type (%UInt.as.EqWith.impl.Equal.type.544) = import_ref Core//prelude/types/uint, loc{{\d+_\d+}}, loaded [symbolic = @UInt.as.EqWith.impl.f13.%UInt.as.EqWith.impl.Equal (constants.%UInt.as.EqWith.impl.Equal.c67)]
@@ -1669,10 +1673,14 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT:   %p.ref: %P.b38 = name_ref p, %p
 // CHECK:STDOUT:   name_binding_decl {
 // CHECK:STDOUT:     %expr_patt.loc12: %pattern_type.e96 = expr_pattern %A.ref in [concrete] {
-// CHECK:STDOUT:       %A.ref: %P.b38 = name_ref A, imports.%Main.import_ref.f62
+// CHECK:STDOUT:       %.loc12_10.2: %P.b38 = specific_constant imports.%Main.import_ref.f62, @P(constants.%i32) [concrete = constants.%P.val.0e9]
+// CHECK:STDOUT:       %A.ref: %P.b38 = name_ref A, %.loc12_10.2 [concrete = constants.%P.val.0e9]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %A.ref: %P.b38 = name_ref A, imports.%Main.import_ref.f62
+// CHECK:STDOUT:   %.loc12_10.1: %P.b38 = splice_block %A.ref [concrete = constants.%P.val.0e9] {
+// CHECK:STDOUT:     %.loc12_10.2: %P.b38 = specific_constant imports.%Main.import_ref.f62, @P(constants.%i32) [concrete = constants.%P.val.0e9]
+// CHECK:STDOUT:     %A.ref: %P.b38 = name_ref A, %.loc12_10.2 [concrete = constants.%P.val.0e9]
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %int_0.loc12_13: Core.IntLiteral = int_value 0 [concrete = constants.%int_0.5c6]
 // CHECK:STDOUT:   %impl.elem0.loc12_13.1: %.e60 = impl_witness_access constants.%ImplicitAs.impl_witness.9a9, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a]
 // CHECK:STDOUT:   %bound_method.loc12_13.1: <bound method> = bound_method %int_0.loc12_13, %impl.elem0.loc12_13.1 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.219]
@@ -1705,10 +1713,14 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT: !match.case.else.loc12:
 // CHECK:STDOUT:   name_binding_decl {
 // CHECK:STDOUT:     %expr_patt.loc13: %pattern_type.e96 = expr_pattern %B.ref in [concrete] {
-// CHECK:STDOUT:       %B.ref: %P.b38 = name_ref B, imports.%Main.import_ref.950
+// CHECK:STDOUT:       %.loc13_10.2: %P.b38 = specific_constant imports.%Main.import_ref.950, @P(constants.%i32) [concrete = constants.%P.val.61e]
+// CHECK:STDOUT:       %B.ref: %P.b38 = name_ref B, %.loc13_10.2 [concrete = constants.%P.val.61e]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %B.ref: %P.b38 = name_ref B, imports.%Main.import_ref.950
+// CHECK:STDOUT:   %.loc13_10.1: %P.b38 = splice_block %B.ref [concrete = constants.%P.val.61e] {
+// CHECK:STDOUT:     %.loc13_10.2: %P.b38 = specific_constant imports.%Main.import_ref.950, @P(constants.%i32) [concrete = constants.%P.val.61e]
+// CHECK:STDOUT:     %B.ref: %P.b38 = name_ref B, %.loc13_10.2 [concrete = constants.%P.val.61e]
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %int_1.loc13_13: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
 // CHECK:STDOUT:   %impl.elem0.loc13_13.1: %.e60 = impl_witness_access constants.%ImplicitAs.impl_witness.9a9, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a]
 // CHECK:STDOUT:   %bound_method.loc13_13.1: <bound method> = bound_method %int_1.loc13_13, %impl.elem0.loc13_13.1 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.320]
@@ -1762,8 +1774,9 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT:   %P.ref.loc19_19: %P.type = name_ref P, imports.%Main.P [concrete = constants.%P.generic]
 // CHECK:STDOUT:   %i32.loc19_21: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:   %P.loc19_24: type = class_type @P, @P(constants.%i32) [concrete = constants.%P.b38]
-// CHECK:STDOUT:   %A.ref: %P.b38 = name_ref A, imports.%Main.import_ref.f62
-// CHECK:STDOUT:   %.loc19: type = splice_block %P.loc19_15 [concrete = constants.%P.b38] {
+// CHECK:STDOUT:   %.loc19_25: %P.b38 = specific_constant imports.%Main.import_ref.f62, @P(constants.%i32) [concrete = constants.%P.val.0e9]
+// CHECK:STDOUT:   %A.ref: %P.b38 = name_ref A, %.loc19_25 [concrete = constants.%P.val.0e9]
+// CHECK:STDOUT:   %.loc19_15: type = splice_block %P.loc19_15 [concrete = constants.%P.b38] {
 // CHECK:STDOUT:     %P.ref.loc19_10: %P.type = name_ref P, imports.%Main.P [concrete = constants.%P.generic]
 // CHECK:STDOUT:     %i32.loc19_12: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:     %P.loc19_15: type = class_type @P, @P(constants.%i32) [concrete = constants.%P.b38]

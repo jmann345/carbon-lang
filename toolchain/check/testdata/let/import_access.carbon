@@ -97,7 +97,7 @@ let v2: () = Test.v;
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
-// CHECK:STDOUT:   %Test.v: %empty_tuple.type = import_ref Test//def, v, loaded
+// CHECK:STDOUT:   %Test.v: %empty_tuple.type = import_ref Test//def, v, loaded [concrete = constants.%empty_tuple]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
@@ -119,7 +119,7 @@ let v2: () = Test.v;
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @__global_init() {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %v.ref: %empty_tuple.type = name_ref v, imports.%Test.v
+// CHECK:STDOUT:   %v.ref: %empty_tuple.type = name_ref v, imports.%Test.v [concrete = constants.%empty_tuple]
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

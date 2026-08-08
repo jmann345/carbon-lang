@@ -47,33 +47,21 @@ choice P(T: type) {
   Neither
 }
 
-// A `var`, not a `let`: cross-file file-scope `var` references lower through
-// the exported `VarStorage` global (lower/testdata/var/import.carbon), while
-// an imported `let` only lowers when its bound value's constant propagates
-// through import (import_ref.cpp's non-constant binding resolution) — a
-// runtime-bound `let` still has no cross-file storage, an upstream TODO
-// (that test's own comment). The supported `var` vehicle keeps this split
-// pinned on the R-2 completion-forcing question rather than on the `let`
-// import story. Recorded as work item W-069
-// (fork/inventory/work-items.json).
-// CHECK:STDERR: plib.carbon:[[@LINE+7]]:17: error: cannot copy value of type `P(i64)` [CopyOfUncopyableType]
-// CHECK:STDERR: var g: P(i64) = P(i64).Neither;
-// CHECK:STDERR:                 ^~~~~~~~~~~~~~
-// CHECK:STDERR: plib.carbon:[[@LINE+4]]:17: note: type `P(i64)` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
-// CHECK:STDERR: var g: P(i64) = P(i64).Neither;
-// CHECK:STDERR:                 ^~~~~~~~~~~~~~
-// CHECK:STDERR:
-var g: P(i64) = P(i64).Neither;
-
 // --- imported_global.carbon
 library "[[@TEST_NAME]]";
 
 import library "plib";
 
+// The binding is local — a cross-file `let` reference has no lowering story
+// (W-069, fork/inventory/work-items.json), and a `var` cannot initialize
+// from the alternative constant (choice types implement no `Core.Copy`; a
+// `let` binds without copying). The choice and its specific are imported,
+// so the R-2 question stands: nothing in this file defines `P`, and the
+// match gate's forcing resolves the specific's definition — with the
+// payload recompute — here.
+let g: P(i64) = P(i64).Neither;
+
 //@dump-sem-ir-begin
-// An imported global completes nothing in this file on the way in: the value
-// was produced in `plib`, and the specific's definition — with the payload
-// recompute — is resolved here by the match gate's forcing.
 fn F() -> i32 {
   match (g) {
     case .Neither => { return 0; }

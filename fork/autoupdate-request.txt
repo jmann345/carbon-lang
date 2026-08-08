@@ -1,1 +1,1 @@
-2026-08-08T16:00:20Z R26 pass 2 fixpoint for S3b (expect zero churn)
+2026-08-08T16:07:38Z pass 1c: imported_global let moves to importing file; generic_import split rename

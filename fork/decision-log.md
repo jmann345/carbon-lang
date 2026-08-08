@@ -80,6 +80,13 @@ discriminant dispatch only.
     discriminant is the empty tuple, so they stay behind the widened scrutinee
     TODO (`match on unsupported scrutinee type`). There is nothing to dispatch
     on; S2's exhaustiveness work is the natural place to admit them.
+    _S2e landing note (2026-08-08):_ NOT admitted at S2e. Plan §3.5
+    sanctions only the `MatchStatement` exhaustiveness analysis; admitting
+    an empty-tuple discriminant is scrutinee-gate + dispatch work (a
+    single-alternative match needs a no-test always-taken arm, an empty
+    choice a vacuous zero-arm match), so both stay behind the scrutinee
+    string, now pinned by match/fail_todo_single_alternative_choice.carbon
+    and tracked as work item W-068.
 -   **Specifics of generic choices are not matchable in S1** (`choice P(T:
     type) { A, B }` matched as a `P(i32)` value): they also stay behind
     `match on unsupported scrutinee type`. Plan §2.2c scopes alternative
@@ -124,6 +131,8 @@ discriminant dispatch only.
 -   **The `default` arm stays required** for choice matches in S1 (SF-7's
     exhaustiveness lands in S2), so every S1 conformance/testdata match carries
     `default`.
+    _Discharged at S2e (2026-08-08): exhaustive choice matches no longer
+    require `default`; integer matches still do (see the S2e note)._
 -   **Reconstruction-landing addendum (2026-07-27):** the first full CI run
     of S1 exposed and fixed six defects across five fix rounds:
     generated-constructor FunctionDecl loc; match discriminant lookup (plan
@@ -171,7 +180,10 @@ patterns only, qualified form a recorded work item (SF-4); bare
 trivially-destructible payloads only in 0.1, clean diagnostic, deviation
 from the unions.md contract text recorded as post-0.1 work (SF-6);
 exhaustive choice matches need no `default` — the closed-set case lands
-in slice 2, W4's rule stays for integer matches (SF-7); std::variant
+in slice 2, W4's rule stays for integer matches (SF-7 — _discharged at
+the match re-platform's S2e, 2026-08-08: choice matches get real
+coverage analysis and integer matches keep the requirement; see the S2e
+landing note_); std::variant
 mapping DEFERRED to S4 planning WITH the user's steer: tagged unions are
 the first-class construct (`choice`), any Core.Variant prelude name would
 be sugar over a generic choice at most, and the default lean is the
@@ -381,7 +393,9 @@ fail_arm_conversion.carbon gains a bind-pass conversion-failure pin
 toolchain/check/testdata/patterns/unused.carbon — whose first case is a
 `var`-mode binding — moves from the combined string at its `case` token
 to the new `var`/`ref` string at the binding, the same §3.2(c) sanction. `default` stays required — an irrefutable binding arm does not yet
-discharge exhaustiveness (S2e). SKIP evidence refreshed for
+discharge exhaustiveness (S2e; _discharged there for choice scrutinees
+only, 2026-08-08 — integer matches keep the requirement per SF-7_). SKIP
+evidence refreshed for
 control_flow/match_guard_binding.carbon and
 project/most_features_missing_match.carbon: their guarded-binding arms
 are now rejected at the guard's `if` token ("match case guard") instead
@@ -506,7 +520,8 @@ upstream's tuple machinery. (4) Unknown alternative names get the standard
 member-access diagnostic in both forms (`PerformMemberAccess` against the
 choice scope; in the paren form its name-ref lands in a consumed,
 unreferenced expr region). (5) `default` stays required — payload arms do
-not discharge exhaustiveness (S2e). (6) The paren-form discriminant test
+not discharge exhaustiveness (S2e; _discharged there, 2026-08-08: an
+unguarded payload arm now covers its alternative_). (6) The paren-form discriminant test
 is emitted by a free function (`MatchCaseAlternativePatternMatch`)
 sharing `EmitChoiceDiscriminantTest` rather than entering the
 `MatchContext` engine worklist as plan §2.1/RF-1 sketched — functionally
@@ -622,6 +637,118 @@ failure-edge destroys are vacuous in-slice (trivially destructible
 integer shapes), and runtime behavior is locked by the match_guard_diff
 differential pair; revisit with the same trigger as the
 cleanup-ordering nuance. Veto-able.
+
+_S2e landing note (2026-08-08):_ the match re-platform's final slice
+(fork/match-replatform/plan.md §3.5) makes `match` exhaustiveness real for
+choice scrutinees, discharging SF-7's closed-set rule. _Mechanism:_ a
+per-statement coverage context (`Context::MatchStatementContext`, a stack
+because matches nest) is pushed by `MatchStatementStart`; each arm's
+`MatchCase` records what its already-classified pattern covers — an
+unguarded alternative-pattern arm covers its alternative's discriminant
+(the index the S2c `SemIR::ChoiceAlternative` metadata resolved), an
+unguarded binding-pattern arm is irrefutable and covers everything, and a
+GUARDED arm covers nothing whatever its pattern, because exhaustiveness
+assumes every guard can evaluate to false (pattern_matching.md,
+"Refutability, overlap, usefulness, and exhaustiveness" — the S2d
+guarded-arm-never-irrefutable rule made observable by
+fail_choice_nonexhaustive.carbon's fail_guarded_binding subfile);
+`MatchStatement` pops the context and, when there is no `default`, compares
+coverage against the choice's full alternative table. Sanctioned diagnostic
+changes, verbatim: a covered choice match without `default` now compiles; a
+non-exhaustive one gets the NEW real error
+`` `match` on choice {0} has no `default` arm and does not cover
+alternative{1:s} {2} `` (MatchNonexhaustive; {0} the unqualified scrutinee
+type, {2} the uncovered alternatives in declaration order, each formatted
+`` `.Name` `` and joined with ", " — one diagnostic naming the set, per
+plan §3.5; upstream has no list-diagnostic precedent to follow, so the
+joined-string shape mirrors SemanticsTodo's std::string argument). The TODO
+string `` `match statement without `default` arm` `` survives
+byte-identical but is NARROWED to integer scrutinees (SF-7: "W4's rule
+stays for integer matches") — deliberately including an integer match whose
+only arm is an irrefutable binding, which is genuinely exhaustive by the
+design but keeps the TODO as a recorded conservative gate (pinned by
+fail_todo_no_default.carbon's new fail_irrefutable_binding_arm subfile;
+narrowing rides future integer-exhaustiveness work under W-008). _CFG (the
+final-arm else edge):_ no new machinery. Without a `default`, the last
+arm's else block — always a real branch target of that arm's test — is the
+top of the instruction block stack at `MatchStatement`, so the existing
+`num_case_arms + 1` convergence (`AddConvergenceBlockAndPush`) pops it as
+the +1 that used to be the `default` body and emits its single `Branch` to
+the resumption block: the else edge of an exhaustive match is dynamically
+dead but statically wired, byte-for-byte the shape an empty
+`default => {}` body block produces, and lowering sees no dangling edge.
+_R-7 re-derivation for S2e:_ exhaustiveness adds analysis, not runtime
+temporaries — the coverage recording reads already-computed per-arm state
+and the only new emission is the diagnostic; no inst, conversion,
+temporary, or cleanup is created on any new path, so the S2b-S2d cleanup
+discipline carries over untouched, and matches WITH `default` take a
+byte-identical check path (the coverage context push/pop emits nothing).
+Recorded deviations (veto-able): (1) choices with fewer than two
+alternatives stay behind the scrutinee gate — §3.5 sanctions only the
+`MatchStatement` analysis (see the inline note on the W5-S1 bullet; new
+work item W-068). (2) §3.5's "sum_types.md example compiles" is met modulo
+genericity: the doc's example matches a generic `Optional(i32)`, and
+generic-choice scrutinees remain gated (W5-S1, S3's re-plan); the same
+match shape over a concrete choice compiles without `default`
+(exhaustive_choice.carbon's payload subfile). (3) An EMPTY alternative
+table at the exhaustiveness analysis is a graceful bail, not a
+CARBON_CHECK or a TODO: a valid choice with two or more alternatives
+always builds its name-to-index table alongside the integer discriminant,
+so an empty table is USER-REACHABLE only under error recovery — a choice
+whose alternatives were ALL rejected with a diagnostic (for example every
+payload names an unknown type) gets no table entries, yet the declared
+alternative count still sizes a real discriminant, the class completes,
+and the scrutinee passes its gate; with only a guarded arm, neither the
+error-arm nor the irrefutable-arm suppression fires. The analysis then
+returns without diagnosing — coverage is unknowable and the declaration
+already carries its own diagnostics — mirroring the error-arm
+suppression (pinned by fail_choice_nonexhaustive.carbon's
+fail_all_alternatives_rejected subfile, whose expected STDERR is the
+declaration's NameNotFound pair and NO nonexhaustive error). Nuance: a
+PARTIALLY-errored choice keeps table entries for its surviving
+alternatives, so coverage is computed over those only — deliberate
+error-recovery behavior, consistent with how references to rejected
+alternatives resolve. (4) No lower golden: plan §7
+schedules none for S2e, the exhaustive no-default CFG is inst-identical to
+an empty-`default` match at the SemIR level, and runtime behavior is
+locked by the un-defaulted choice_payload_roundtrip_diff differential
+pair. (5) An arm whose pattern contained an error suppresses the
+nonexhaustive diagnostic — coverage is unknowable and the arm already
+carries its own error, so staying silent avoids a cascading diagnostic;
+§3.5 does not sanction this suppression, recorded here. Files touched
+beyond plan §7's list: toolchain/check/context.{h,cpp} — the
+`Context::MatchStatementContext` stack and its `VerifyOnFinish`
+empty-check — disclosed as the coverage-context mechanism above.
+Testdata: new exhaustive_choice.carbon (payload-free, payload — the
+sum_types.md shape, guarded-duplicate, still-legal never-taken
+`default`, and an imported-choice pair — signal library + use_imported —
+per choice_scrutinee_imported.carbon's conventions),
+exhaustive_choice_binding.carbon (irrefutable final
+arm; single binding-only arm), fail_choice_nonexhaustive.carbon
+(missing-one singular, missing-many plural in declaration order,
+guarded-only-cover, a guarded binding arm covering nothing — the
+guarded-arm-never-irrefutable pin — the all-alternatives-rejected
+empty-table pin, and an imported-choice pair — signal library +
+fail_imported_nonexhaustive), fail_todo_single_alternative_choice.carbon
+(single-alternative and empty-choice scrutinees stay gated);
+fail_todo_no_default.carbon splits into integer subfiles per §3.5
+(fail_literal_arms, fail_irrefutable_binding_arm); the choice shape is
+NEW in fail_choice_nonexhaustive.carbon (fail_todo_no_default had no
+choice shape to move). Every failing subfile ships with hand-written
+CHECK:STDERR pins (house precedent: S2c/S2d landed their new diagnostics
+hand-pinned), so the intended text is reviewed rather than derived from
+the implementation; the runner autoupdate remains the corrector for any
+rendering detail, and STDOUT dump content rides it as before (R15/R19).
+Expected golden churn: ONLY the new files
+plus fail_todo_no_default.carbon's subfile split — no existing match
+loses its `default`, and defaulted matches are byte-identical.
+Conformance: choice_payload_roundtrip_diff.carbon drops the never-taken
+`default` recorded at S2c for exactly this slice (comment + arm; PASS
+before and after), choice_payload_construct.carbon's stale
+"exhaustiveness arrives in slice 2" comment refreshed (its `default` is a
+live arm and stays); no SKIP flips — scoreboard stays 77 PASS / 0 FAIL /
+31 SKIP over 108 programs; runner.py --self-test OK; scoreboard
+regeneration rides the landing gate (R9). Veto-able.
 
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 

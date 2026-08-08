@@ -290,6 +290,32 @@ class Context {
     return match_case_stack_;
   }
 
+  // Per-statement exhaustiveness state of the `match` statement that we are
+  // currently checking, pushed by `MatchStatementStart` and popped by
+  // `MatchStatement`. A stack because `match` statements nest — in an arm's
+  // body, or in a lambda inside a case pattern's expression. Each `case` arm
+  // records what its pattern covers when the arm's condition is emitted
+  // (`MatchCase`); `MatchStatement` reads the accumulated coverage to decide
+  // whether a `match` without a `default` arm is exhaustive (SF-7).
+  struct MatchStatementContext {
+    // The discriminant values of the choice alternatives covered by the
+    // unguarded alternative-pattern arms so far, in arm order, possibly with
+    // duplicates. Guarded arms record nothing: exhaustiveness assumes every
+    // guard can evaluate to false (docs/design/pattern_matching.md,
+    // "Refutability, overlap, usefulness, and exhaustiveness").
+    llvm::SmallVector<int32_t> covered_alternatives;
+    // Whether an unguarded arm's pattern is irrefutable (a binding-pattern
+    // root), covering every scrutinee value.
+    bool has_irrefutable_arm = false;
+    // Whether any arm's pattern contained an error. Coverage is then
+    // unknowable, and exhaustiveness is not diagnosed on top of the arm's
+    // own diagnostic.
+    bool has_error_arm = false;
+  };
+  auto match_statement_stack() -> llvm::SmallVector<MatchStatementContext>& {
+    return match_statement_stack_;
+  }
+
   // An ongoing impl lookup, used to ensure termination.
   struct ImplLookupStackEntry {
     SemIR::ConstantId query_self_const_id;
@@ -637,6 +663,10 @@ class Context {
   // The stack of `match` `case` arms whose patterns are currently being
   // checked.
   llvm::SmallVector<MatchCaseContext> match_case_stack_;
+
+  // The stack of `match` statements currently being checked, tracking what
+  // their arms cover for exhaustiveness.
+  llvm::SmallVector<MatchStatementContext> match_statement_stack_;
 
   // Tracks all ongoing impl lookups in order to ensure that lookup terminates
   // via the acyclic rule and the termination rule.

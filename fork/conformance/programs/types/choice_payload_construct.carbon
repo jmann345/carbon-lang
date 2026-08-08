@@ -16,9 +16,11 @@
 // alternative (docs/design/sum_types.md:69-76); constructing it must write a
 // discriminant distinct from the payload-free constants `Stop`/`Wait`, which
 // `match` observes via leading-dot payload-free alternative patterns
-// (`case .Stop`, SF-4: leading-dot only) plus `default` (exhaustiveness
-// arrives in slice 2 per SF-7). Payload *values* are not observable until
-// slice 2 binding patterns land; the payload argument is runtime-computed
+// (`case .Stop`, SF-4: leading-dot only) plus `default`, which here is a
+// live arm covering the uncovered payload alternative — the match is
+// deliberately non-exhaustive, so it still needs `default` after S2e's
+// exhaustiveness (SF-7). Payload *values* were not observable until
+// slice 2 binding patterns landed; the payload argument is runtime-computed
 // anyway so a constant-folding shortcut cannot fake construction (R16d).
 // Expected prints derive from the source: Classify returns 0 for Stop,
 // 1 for Wait, 2 otherwise (Go); IsOff returns 1 for Off, 0 otherwise (On) —

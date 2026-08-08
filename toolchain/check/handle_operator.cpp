@@ -253,6 +253,15 @@ auto HandleParseNode(Context& context, Parse::InfixOperatorStarEqualId node_id)
   return HandleBinaryOperator(context, node_id, CoreIdentifier::MulAssignWith);
 }
 
+auto HandleParseNode(Context& context, Parse::PostfixOperatorQuestionId node_id)
+    -> bool {
+  // TODO: B1b replaces this gate with the `Core.Try` desugar (fork/b1/plan.md
+  // §2.4); until then every postfix `?` — expression, statement, argument, or
+  // type position — is gated identically here, the string's only emission
+  // site (fork/b1/plan.md §6).
+  return context.TODO(node_id, "postfix `?` operator");
+}
+
 auto HandleParseNode(Context& context, Parse::PostfixOperatorStarId node_id)
     -> bool {
   auto value_id = context.node_stack().PopExpr();

@@ -1,1 +1,1 @@
-2026-08-08T17:15:05Z conformance for S3c landing (expect 81/0/31 over 112)
+2026-08-08T18:51:16Z conformance for B1a landing (expect UNCHANGED 81/0/31 over 112)

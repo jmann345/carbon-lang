@@ -7,7 +7,7 @@
 // EXPECT-STDOUT:
 //   42
 //   -1
-// SKIP: MISSING and undesigned — docs/design/README.md:3831: "Carbon does not have language features dedicated to error handling"; no try/throw tokens or parser states exist anywhere in the toolchain, so the error-propagation syntax below is a strawman to be replaced by the accepted design. Un-SKIP (and uncomment the body) when W2 delivers an accepted error-handling design and it is implemented.
+// SKIP: GATED — the accepted design is F-006 postfix `?` over `Core.Try` (docs/design/error_handling.md; fork/b1/plan.md). As of B1a the postfix `?` expression PARSES (PostfixOperatorQuestion, toolchain/parse/handle_expr.cpp's postfix loop), but its check handler gates the entire surface behind the TODO string `postfix `?` operator` (pinned by toolchain/check/testdata/operators/fail_todo_question.carbon), and `Core.Try` does not exist yet. Un-SKIP at B1b, which lands the prelude interface plus the desugar and rewrites this body (still a pre-F-006 strawman below) to the accepted `?` shape.
 //
 // Write-tests-first stub. Intended future test: a fallible function whose
 // error propagates through a dedicated construct (spelled `try` below as a

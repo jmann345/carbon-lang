@@ -1,7 +1,7 @@
 {
-  "generated": "2026-08-08T17:15:22.798315+00:00",
+  "generated": "2026-08-08T18:51:40.468117+00:00",
   "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 6.2,
+  "elapsed_seconds": 10.1,
   "totals": {
     "PASS": 81,
     "COMPILE-FAIL": 0,
@@ -184,7 +184,7 @@
       "path": "error_handling/control_flow_constructs.carbon",
       "bullet": "Error handling: dedicated control flow constructs",
       "status": "SKIP",
-      "detail": "MISSING and undesigned \u2014 docs/design/README.md:3831: \"Carbon does not have language features dedicated to error handling\"; no try/throw tokens or parser states exist anywhere in the toolchain, so the error-propagation syntax below is a strawman to be replaced by the accepted design. Un-SKIP (and uncomment the body) when W2 delivers an accepted error-handling design and it is implemented.",
+      "detail": "GATED \u2014 the accepted design is F-006 postfix `?` over `Core.Try` (docs/design/error_handling.md; fork/b1/plan.md). As of B1a the postfix `?` expression PARSES (PostfixOperatorQuestion, toolchain/parse/handle_expr.cpp's postfix loop), but its check handler gates the entire surface behind the TODO string `postfix `?` operator` (pinned by toolchain/check/testdata/operators/fail_todo_question.carbon), and `Core.Try` does not exist yet. Un-SKIP at B1b, which lands the prelude interface plus the desugar and rewrites this body (still a pre-F-006 strawman below) to the accepted `?` shape.",
       "differential": false
     },
     {

@@ -290,6 +290,21 @@ auto HandleExprInPostfixLoop(Context& context) -> void {
       context.PushState(state, StateKind::IndexExpr);
       break;
     }
+    case Lex::TokenKind::Question: {
+      // A postfix `?` is complete on its own: add the node over the
+      // expression parsed so far and continue the loop, so that `?` chains
+      // with `.`, `->`, calls, indexing, and itself (`x??`). Like the other
+      // suffix components here — and unlike the operators in `ExprLoop` —
+      // no whitespace/fixity check is performed (fork/b1/plan.md §2.3 C-1).
+      // `has_error` attaches to the operator node and then resets, following
+      // `ExprLoop`'s operator paths rather than the cascading convention of
+      // the other suffix cases: the error was already diagnosed and marked.
+      context.AddNode(NodeKind::PostfixOperatorQuestion, context.Consume(),
+                      state.has_error);
+      state.has_error = false;
+      context.PushState(state);
+      break;
+    }
     default: {
       if (state.has_error) {
         context.ReturnErrorOnState();

@@ -586,6 +586,10 @@ CARBON_PARSE_STATE(ExprInPostfix)
 //   1. IndexExprStart
 //   2. ExprInPostfixLoop
 //
+// expr ? ...
+//     ^
+//   1. ExprInPostfixLoop
+//
 //  ...
 // ^
 //   (state done)

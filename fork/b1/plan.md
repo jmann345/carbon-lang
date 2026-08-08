@@ -667,7 +667,10 @@ handling control flow" line to arbitrated-PASS; opens the unit-break-type work i
 ## 6. TODO-string discharge ledger
 
 -   `` `postfix `?` operator` `` — NEW, authored at B1a (the PostfixOperatorQuestion
-    check handler, the only emission site), pinned by fail_todo_question.carbon.
+    check handler, the only emission site; as landed 2026-08-08 that handler lives
+    in toolchain/check/handle_operator.cpp beside PostfixOperatorStar's, and the
+    pin is toolchain/check/testdata/operators/fail_todo_question.carbon — four
+    subfiles covering expression, statement, argument, and type positions).
     B1b DELETES the site and the pin flips to the positive question.carbon goldens
     plus the §2.5 real diagnostics. Net across B1: zero TODO strings remain.
 -   All existing TODO strings — the six-site combined W4 string, the scrutinee

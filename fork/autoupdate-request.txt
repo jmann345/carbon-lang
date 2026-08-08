@@ -1,1 +1,1 @@
-Upstream-20260808 merge: regenerate ALL goldens perturbed by the 37-commit upstream delta — parse-dump format change 6429c16 churns every parse golden; 14 interop goldens resolved to upstream side need fork thunk/choice output restored; match goldens may shift under struct-pattern parse changes. Structural churn is EXPECTED here (R26 two passes; pass-2 must converge loc-only).
+Upstream-20260808 autoupdate retry on the formatted tip: regenerate the ~31 goldens perturbed by the upstream delta (parse-dump format, interop restorations, match surface). R26 two passes.

@@ -1,1 +1,1 @@
-Upstream-20260808 gate: full merge gate on the weekly upstream merge composition (S2d + upstream e7050af, fixpoint at 49751e2).
+Upstream-20260808 gate retry after the for-range-copy lint fix.

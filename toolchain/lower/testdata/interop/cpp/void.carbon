@@ -62,6 +62,8 @@ fn ConvertFromConstVoidPtr(p: const Cpp.void*) -> const i32* {
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CPassVoidPtr.Main(ptr %a) #0 !dbg !12 {
 // CHECK:STDOUT: entry:
@@ -70,186 +72,244 @@ fn ConvertFromConstVoidPtr(p: const Cpp.void*) -> const i32* {
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc7_21.2.temp), !dbg !18
 // CHECK:STDOUT:   store ptr %U.as_type.as.ImplicitAs.impl.Convert.call, ptr %.loc7_21.2.temp, align 8, !dbg !18
 // CHECK:STDOUT:   %.loc7_21.4 = load ptr, ptr %.loc7_21.2.temp, align 8, !dbg !18
-// CHECK:STDOUT:   call void @_Z13take_void_ptrPv(ptr %.loc7_21.4), !dbg !19
+// CHECK:STDOUT:   call void @_Z13take_void_ptrPv.carbon_thunk._(ptr %.loc7_21.4), !dbg !19
 // CHECK:STDOUT:   call void @"_COp.e89528464ae58584:core.Destroy.Core"(ptr %.loc7_21.2.temp), !dbg !18
 // CHECK:STDOUT:   ret void, !dbg !20
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z13take_void_ptrPv(ptr noundef) #1
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.fd39a15e7d61228d:core.Destroy.Core"(ptr %self) #0 !dbg !21 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z13take_void_ptrPv.carbon_thunk._(ptr noundef %p) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !24
+// CHECK:STDOUT:   %p.addr = alloca ptr, align 8
+// CHECK:STDOUT:   store ptr %p, ptr %p.addr, align 8, !tbaa !21
+// CHECK:STDOUT:   %0 = load ptr, ptr %p.addr, align 8, !tbaa !21
+// CHECK:STDOUT:   invoke void @_Z13take_void_ptrPv(ptr noundef %0)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %2) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.125695b29f2cf97c:core.Destroy.Core"(ptr %self) #0 !dbg !25 {
+// CHECK:STDOUT: define weak_odr void @"_COp.fd39a15e7d61228d:core.Destroy.Core"(ptr %self) #0 !dbg !23 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !28
+// CHECK:STDOUT:   ret void, !dbg !26
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.e89528464ae58584:core.Destroy.Core"(ptr %self) #0 !dbg !29 {
+// CHECK:STDOUT: define weak_odr void @"_COp.125695b29f2cf97c:core.Destroy.Core"(ptr %self) #0 !dbg !27 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !32
+// CHECK:STDOUT:   ret void, !dbg !30
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CPassIntPtr.Main(ptr %a) #0 !dbg !33 {
+// CHECK:STDOUT: define weak_odr void @"_COp.e89528464ae58584:core.Destroy.Core"(ptr %self) #0 !dbg !31 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc11_21.2.temp = alloca ptr, align 8, !dbg !36
-// CHECK:STDOUT:   %U.as_type.as.ImplicitAs.impl.Convert.call = call ptr @"_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.da998f6eb92dc5f2"(ptr %a), !dbg !36
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc11_21.2.temp), !dbg !36
-// CHECK:STDOUT:   store ptr %U.as_type.as.ImplicitAs.impl.Convert.call, ptr %.loc11_21.2.temp, align 8, !dbg !36
-// CHECK:STDOUT:   %.loc11_21.4 = load ptr, ptr %.loc11_21.2.temp, align 8, !dbg !36
-// CHECK:STDOUT:   call void @_Z13take_void_ptrPv(ptr %.loc11_21.4), !dbg !37
-// CHECK:STDOUT:   call void @"_COp.e89528464ae58584:core.Destroy.Core"(ptr %.loc11_21.2.temp), !dbg !36
-// CHECK:STDOUT:   ret void, !dbg !38
+// CHECK:STDOUT:   ret void, !dbg !34
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CPassIntPtrToConstVoidPtr.Main(ptr %a) #0 !dbg !39 {
+// CHECK:STDOUT: define void @_CPassIntPtr.Main(ptr %a) #0 !dbg !35 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc15_27.2.temp = alloca ptr, align 8, !dbg !42
-// CHECK:STDOUT:   %U.as_type.as.ImplicitAs.impl.Convert.call = call ptr @"_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.727afce595587809"(ptr %a), !dbg !42
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc15_27.2.temp), !dbg !42
-// CHECK:STDOUT:   store ptr %U.as_type.as.ImplicitAs.impl.Convert.call, ptr %.loc15_27.2.temp, align 8, !dbg !42
-// CHECK:STDOUT:   %.loc15_27.4 = load ptr, ptr %.loc15_27.2.temp, align 8, !dbg !42
-// CHECK:STDOUT:   call void @_Z19take_const_void_ptrPKv(ptr %.loc15_27.4), !dbg !43
-// CHECK:STDOUT:   call void @"_COp.1e14fa14d732c592:core.Destroy.Core"(ptr %.loc15_27.2.temp), !dbg !42
-// CHECK:STDOUT:   ret void, !dbg !44
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z19take_const_void_ptrPKv(ptr noundef) #1
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.0aac4ce7c7765bae:core.Destroy.Core"(ptr %self) #0 !dbg !45 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !48
+// CHECK:STDOUT:   %.loc11_21.2.temp = alloca ptr, align 8, !dbg !38
+// CHECK:STDOUT:   %U.as_type.as.ImplicitAs.impl.Convert.call = call ptr @"_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.da998f6eb92dc5f2"(ptr %a), !dbg !38
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc11_21.2.temp), !dbg !38
+// CHECK:STDOUT:   store ptr %U.as_type.as.ImplicitAs.impl.Convert.call, ptr %.loc11_21.2.temp, align 8, !dbg !38
+// CHECK:STDOUT:   %.loc11_21.4 = load ptr, ptr %.loc11_21.2.temp, align 8, !dbg !38
+// CHECK:STDOUT:   call void @_Z13take_void_ptrPv.carbon_thunk._(ptr %.loc11_21.4), !dbg !39
+// CHECK:STDOUT:   call void @"_COp.e89528464ae58584:core.Destroy.Core"(ptr %.loc11_21.2.temp), !dbg !38
+// CHECK:STDOUT:   ret void, !dbg !40
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.b8b38d4701ca7f8c:core.Destroy.Core"(ptr %self) #0 !dbg !49 {
+// CHECK:STDOUT: define void @_CPassIntPtrToConstVoidPtr.Main(ptr %a) #0 !dbg !41 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !52
+// CHECK:STDOUT:   %.loc15_27.2.temp = alloca ptr, align 8, !dbg !44
+// CHECK:STDOUT:   %U.as_type.as.ImplicitAs.impl.Convert.call = call ptr @"_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.727afce595587809"(ptr %a), !dbg !44
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc15_27.2.temp), !dbg !44
+// CHECK:STDOUT:   store ptr %U.as_type.as.ImplicitAs.impl.Convert.call, ptr %.loc15_27.2.temp, align 8, !dbg !44
+// CHECK:STDOUT:   %.loc15_27.4 = load ptr, ptr %.loc15_27.2.temp, align 8, !dbg !44
+// CHECK:STDOUT:   call void @_Z19take_const_void_ptrPKv.carbon_thunk._(ptr %.loc15_27.4), !dbg !45
+// CHECK:STDOUT:   call void @"_COp.1e14fa14d732c592:core.Destroy.Core"(ptr %.loc15_27.2.temp), !dbg !44
+// CHECK:STDOUT:   ret void, !dbg !46
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z19take_const_void_ptrPKv.carbon_thunk._(ptr noundef %p) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %p.addr = alloca ptr, align 8
+// CHECK:STDOUT:   store ptr %p, ptr %p.addr, align 8, !tbaa !21
+// CHECK:STDOUT:   %0 = load ptr, ptr %p.addr, align 8, !tbaa !21
+// CHECK:STDOUT:   invoke void @_Z19take_const_void_ptrPKv(ptr noundef %0)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %2) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.1e14fa14d732c592:core.Destroy.Core"(ptr %self) #0 !dbg !53 {
+// CHECK:STDOUT: define weak_odr void @"_COp.0aac4ce7c7765bae:core.Destroy.Core"(ptr %self) #0 !dbg !47 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !56
+// CHECK:STDOUT:   ret void, !dbg !50
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CPassConstIntPtrToConstVoidPtr.Main(ptr %a) #0 !dbg !57 {
+// CHECK:STDOUT: define weak_odr void @"_COp.b8b38d4701ca7f8c:core.Destroy.Core"(ptr %self) #0 !dbg !51 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc19_27.2.temp = alloca ptr, align 8, !dbg !60
-// CHECK:STDOUT:   %U.as_type.as.ImplicitAs.impl.Convert.call = call ptr @"_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.727afce595587809"(ptr %a), !dbg !60
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc19_27.2.temp), !dbg !60
-// CHECK:STDOUT:   store ptr %U.as_type.as.ImplicitAs.impl.Convert.call, ptr %.loc19_27.2.temp, align 8, !dbg !60
-// CHECK:STDOUT:   %.loc19_27.4 = load ptr, ptr %.loc19_27.2.temp, align 8, !dbg !60
-// CHECK:STDOUT:   call void @_Z19take_const_void_ptrPKv(ptr %.loc19_27.4), !dbg !61
-// CHECK:STDOUT:   call void @"_COp.1e14fa14d732c592:core.Destroy.Core"(ptr %.loc19_27.2.temp), !dbg !60
-// CHECK:STDOUT:   ret void, !dbg !62
+// CHECK:STDOUT:   ret void, !dbg !54
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr ptr @"_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.2eaa73d71601da9d"(ptr %self) #0 !dbg !63 {
-// CHECK:STDOUT:   %1 = call ptr @"_CConvert.9fdaf39d07a1dc4e:OptionalAs.24b7347a93330e68.Core.4590e49549871d50"(ptr %self), !dbg !69
-// CHECK:STDOUT:   ret ptr %1, !dbg !70
+// CHECK:STDOUT: define weak_odr void @"_COp.1e14fa14d732c592:core.Destroy.Core"(ptr %self) #0 !dbg !55 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret void, !dbg !58
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CPassConstIntPtrToConstVoidPtr.Main(ptr %a) #0 !dbg !59 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.loc19_27.2.temp = alloca ptr, align 8, !dbg !62
+// CHECK:STDOUT:   %U.as_type.as.ImplicitAs.impl.Convert.call = call ptr @"_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.727afce595587809"(ptr %a), !dbg !62
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc19_27.2.temp), !dbg !62
+// CHECK:STDOUT:   store ptr %U.as_type.as.ImplicitAs.impl.Convert.call, ptr %.loc19_27.2.temp, align 8, !dbg !62
+// CHECK:STDOUT:   %.loc19_27.4 = load ptr, ptr %.loc19_27.2.temp, align 8, !dbg !62
+// CHECK:STDOUT:   call void @_Z19take_const_void_ptrPKv.carbon_thunk._(ptr %.loc19_27.4), !dbg !63
+// CHECK:STDOUT:   call void @"_COp.1e14fa14d732c592:core.Destroy.Core"(ptr %.loc19_27.2.temp), !dbg !62
+// CHECK:STDOUT:   ret void, !dbg !64
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr ptr @"_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.2eaa73d71601da9d"(ptr %self) #0 !dbg !65 {
+// CHECK:STDOUT:   %1 = call ptr @"_CConvert.9fdaf39d07a1dc4e:OptionalAs.24b7347a93330e68.Core.4590e49549871d50"(ptr %self), !dbg !71
+// CHECK:STDOUT:   ret ptr %1, !dbg !72
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
 // CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #2
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr ptr @"_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.da998f6eb92dc5f2"(ptr %self) #0 !dbg !71 {
-// CHECK:STDOUT:   %1 = call ptr @"_CConvert.d62727437df45535:OptionalAs.1dac4564233fecd1.Core.a73eddb6529b4cd8"(ptr %self), !dbg !74
-// CHECK:STDOUT:   ret ptr %1, !dbg !75
+// CHECK:STDOUT: define linkonce_odr ptr @"_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.da998f6eb92dc5f2"(ptr %self) #0 !dbg !73 {
+// CHECK:STDOUT:   %1 = call ptr @"_CConvert.d62727437df45535:OptionalAs.1dac4564233fecd1.Core.a73eddb6529b4cd8"(ptr %self), !dbg !76
+// CHECK:STDOUT:   ret ptr %1, !dbg !77
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr ptr @"_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.727afce595587809"(ptr %self) #0 !dbg !76 {
-// CHECK:STDOUT:   %1 = call ptr @"_CConvert.d62727437df45535:OptionalAs.1dac4564233fecd1.Core.383a2151b7350205"(ptr %self), !dbg !79
-// CHECK:STDOUT:   ret ptr %1, !dbg !80
+// CHECK:STDOUT: define linkonce_odr ptr @"_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.727afce595587809"(ptr %self) #0 !dbg !78 {
+// CHECK:STDOUT:   %1 = call ptr @"_CConvert.d62727437df45535:OptionalAs.1dac4564233fecd1.Core.383a2151b7350205"(ptr %self), !dbg !81
+// CHECK:STDOUT:   ret ptr %1, !dbg !82
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr ptr @"_CConvert.9fdaf39d07a1dc4e:OptionalAs.24b7347a93330e68.Core.4590e49549871d50"(ptr %self) #0 !dbg !81 {
-// CHECK:STDOUT:   %1 = call ptr @_CSome.Optional.Core.4590e49549871d50(ptr %self), !dbg !84
-// CHECK:STDOUT:   ret ptr %1, !dbg !85
+// CHECK:STDOUT: define linkonce_odr ptr @"_CConvert.9fdaf39d07a1dc4e:OptionalAs.24b7347a93330e68.Core.4590e49549871d50"(ptr %self) #0 !dbg !83 {
+// CHECK:STDOUT:   %1 = call ptr @_CSome.Optional.Core.4590e49549871d50(ptr %self), !dbg !86
+// CHECK:STDOUT:   ret ptr %1, !dbg !87
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr ptr @"_CConvert.d62727437df45535:OptionalAs.1dac4564233fecd1.Core.a73eddb6529b4cd8"(ptr %self) #0 !dbg !86 {
-// CHECK:STDOUT:   %temp = alloca ptr, align 8, !dbg !89
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %temp), !dbg !89
-// CHECK:STDOUT:   store ptr %self, ptr %temp, align 8, !dbg !89
-// CHECK:STDOUT:   %1 = load ptr, ptr %temp, align 8, !dbg !89
-// CHECK:STDOUT:   %2 = call ptr @_CSome.Optional.Core.4590e49549871d50(ptr %1), !dbg !90
-// CHECK:STDOUT:   ret ptr %2, !dbg !91
+// CHECK:STDOUT: define linkonce_odr ptr @"_CConvert.d62727437df45535:OptionalAs.1dac4564233fecd1.Core.a73eddb6529b4cd8"(ptr %self) #0 !dbg !88 {
+// CHECK:STDOUT:   %temp = alloca ptr, align 8, !dbg !91
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %temp), !dbg !91
+// CHECK:STDOUT:   store ptr %self, ptr %temp, align 8, !dbg !91
+// CHECK:STDOUT:   %1 = load ptr, ptr %temp, align 8, !dbg !91
+// CHECK:STDOUT:   %2 = call ptr @_CSome.Optional.Core.4590e49549871d50(ptr %1), !dbg !92
+// CHECK:STDOUT:   ret ptr %2, !dbg !93
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr ptr @"_CConvert.d62727437df45535:OptionalAs.1dac4564233fecd1.Core.383a2151b7350205"(ptr %self) #0 !dbg !92 {
-// CHECK:STDOUT:   %temp = alloca ptr, align 8, !dbg !95
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %temp), !dbg !95
-// CHECK:STDOUT:   %1 = call ptr @"_CConvert:thunk:ImplicitAs.d035546bf1a99743.Core:e8f8f92d3d08d149:ImplicitAs.01c4a560c986e7d1.Core.84588f41d61dafba"(ptr %self), !dbg !95
-// CHECK:STDOUT:   store ptr %1, ptr %temp, align 8, !dbg !95
-// CHECK:STDOUT:   %2 = load ptr, ptr %temp, align 8, !dbg !95
-// CHECK:STDOUT:   %3 = call ptr @_CSome.Optional.Core.75889a5a3413d33d(ptr %2), !dbg !96
-// CHECK:STDOUT:   ret ptr %3, !dbg !97
+// CHECK:STDOUT: define linkonce_odr ptr @"_CConvert.d62727437df45535:OptionalAs.1dac4564233fecd1.Core.383a2151b7350205"(ptr %self) #0 !dbg !94 {
+// CHECK:STDOUT:   %temp = alloca ptr, align 8, !dbg !97
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %temp), !dbg !97
+// CHECK:STDOUT:   %1 = call ptr @"_CConvert:thunk:ImplicitAs.d035546bf1a99743.Core:e8f8f92d3d08d149:ImplicitAs.01c4a560c986e7d1.Core.84588f41d61dafba"(ptr %self), !dbg !97
+// CHECK:STDOUT:   store ptr %1, ptr %temp, align 8, !dbg !97
+// CHECK:STDOUT:   %2 = load ptr, ptr %temp, align 8, !dbg !97
+// CHECK:STDOUT:   %3 = call ptr @_CSome.Optional.Core.75889a5a3413d33d(ptr %2), !dbg !98
+// CHECK:STDOUT:   ret ptr %3, !dbg !99
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr ptr @_CSome.Optional.Core.4590e49549871d50(ptr %value) #0 !dbg !98 {
-// CHECK:STDOUT:   %1 = call ptr @"_CSome.e8f8f92d3d08d149:OptionalStorage.Core.7a595a06c724a271"(ptr %value), !dbg !101
-// CHECK:STDOUT:   ret ptr %1, !dbg !102
+// CHECK:STDOUT: define linkonce_odr ptr @_CSome.Optional.Core.4590e49549871d50(ptr %value) #0 !dbg !100 {
+// CHECK:STDOUT:   %1 = call ptr @"_CSome.e8f8f92d3d08d149:OptionalStorage.Core.7a595a06c724a271"(ptr %value), !dbg !103
+// CHECK:STDOUT:   ret ptr %1, !dbg !104
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: alwaysinline nounwind
-// CHECK:STDOUT: define linkonce_odr ptr @"_CConvert:thunk:ImplicitAs.d035546bf1a99743.Core:e8f8f92d3d08d149:ImplicitAs.01c4a560c986e7d1.Core.84588f41d61dafba"(ptr %self) #3 !dbg !103 {
-// CHECK:STDOUT:   ret ptr %self, !dbg !107
+// CHECK:STDOUT: define linkonce_odr ptr @"_CConvert:thunk:ImplicitAs.d035546bf1a99743.Core:e8f8f92d3d08d149:ImplicitAs.01c4a560c986e7d1.Core.84588f41d61dafba"(ptr %self) #3 !dbg !105 {
+// CHECK:STDOUT:   ret ptr %self, !dbg !109
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr ptr @_CSome.Optional.Core.75889a5a3413d33d(ptr %value) #0 !dbg !108 {
-// CHECK:STDOUT:   %1 = call ptr @"_CSome.e8f8f92d3d08d149:OptionalStorage.Core.8f1054b47505c137"(ptr %value), !dbg !111
-// CHECK:STDOUT:   ret ptr %1, !dbg !112
+// CHECK:STDOUT: define linkonce_odr ptr @_CSome.Optional.Core.75889a5a3413d33d(ptr %value) #0 !dbg !110 {
+// CHECK:STDOUT:   %1 = call ptr @"_CSome.e8f8f92d3d08d149:OptionalStorage.Core.8f1054b47505c137"(ptr %value), !dbg !113
+// CHECK:STDOUT:   ret ptr %1, !dbg !114
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr ptr @"_CSome.e8f8f92d3d08d149:OptionalStorage.Core.7a595a06c724a271"(ptr %self) #0 !dbg !113 {
-// CHECK:STDOUT:   %1 = alloca ptr, align 8, !dbg !116
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %1), !dbg !116
-// CHECK:STDOUT:   store ptr poison, ptr %1, align 8, !dbg !116
-// CHECK:STDOUT:   store ptr %self, ptr %1, align 8, !dbg !117
-// CHECK:STDOUT:   %2 = load ptr, ptr %1, align 8, !dbg !118
-// CHECK:STDOUT:   call void @"_COp.125695b29f2cf97c:core.Destroy.Core"(ptr %1), !dbg !116
-// CHECK:STDOUT:   ret ptr %2, !dbg !119
+// CHECK:STDOUT: define linkonce_odr ptr @"_CSome.e8f8f92d3d08d149:OptionalStorage.Core.7a595a06c724a271"(ptr %self) #0 !dbg !115 {
+// CHECK:STDOUT:   %1 = alloca ptr, align 8, !dbg !118
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %1), !dbg !118
+// CHECK:STDOUT:   store ptr poison, ptr %1, align 8, !dbg !118
+// CHECK:STDOUT:   store ptr %self, ptr %1, align 8, !dbg !119
+// CHECK:STDOUT:   %2 = load ptr, ptr %1, align 8, !dbg !120
+// CHECK:STDOUT:   call void @"_COp.125695b29f2cf97c:core.Destroy.Core"(ptr %1), !dbg !118
+// CHECK:STDOUT:   ret ptr %2, !dbg !121
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr ptr @"_CSome.e8f8f92d3d08d149:OptionalStorage.Core.8f1054b47505c137"(ptr %self) #0 !dbg !120 {
-// CHECK:STDOUT:   %1 = alloca ptr, align 8, !dbg !123
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %1), !dbg !123
-// CHECK:STDOUT:   store ptr poison, ptr %1, align 8, !dbg !123
-// CHECK:STDOUT:   store ptr %self, ptr %1, align 8, !dbg !124
-// CHECK:STDOUT:   %2 = load ptr, ptr %1, align 8, !dbg !125
-// CHECK:STDOUT:   call void @"_COp.b8b38d4701ca7f8c:core.Destroy.Core"(ptr %1), !dbg !123
-// CHECK:STDOUT:   ret ptr %2, !dbg !126
+// CHECK:STDOUT: define linkonce_odr ptr @"_CSome.e8f8f92d3d08d149:OptionalStorage.Core.8f1054b47505c137"(ptr %self) #0 !dbg !122 {
+// CHECK:STDOUT:   %1 = alloca ptr, align 8, !dbg !125
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %1), !dbg !125
+// CHECK:STDOUT:   store ptr poison, ptr %1, align 8, !dbg !125
+// CHECK:STDOUT:   store ptr %self, ptr %1, align 8, !dbg !126
+// CHECK:STDOUT:   %2 = load ptr, ptr %1, align 8, !dbg !127
+// CHECK:STDOUT:   call void @"_COp.b8b38d4701ca7f8c:core.Destroy.Core"(ptr %1), !dbg !125
+// CHECK:STDOUT:   ret ptr %2, !dbg !128
 // CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z13take_void_ptrPv(ptr noundef) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #5 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z19take_const_void_ptrPKv(ptr noundef) #4
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
 // CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 0, 1, 2, 3, 7, 6, 5, 4 }
 // CHECK:STDOUT: uselistorder ptr @"_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.727afce595587809", { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @_CSome.Optional.Core.4590e49549871d50, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #2 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
 // CHECK:STDOUT: attributes #3 = { alwaysinline nounwind }
+// CHECK:STDOUT: attributes #4 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #6 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -276,112 +336,114 @@ fn ConvertFromConstVoidPtr(p: const Cpp.void*) -> const i32* {
 // CHECK:STDOUT: !18 = !DILocation(line: 7, column: 21, scope: !12)
 // CHECK:STDOUT: !19 = !DILocation(line: 7, column: 3, scope: !12)
 // CHECK:STDOUT: !20 = !DILocation(line: 6, column: 1, scope: !12)
-// CHECK:STDOUT: !21 = distinct !DISubprogram(name: "Op", linkageName: "_COp.fd39a15e7d61228d:core.Destroy.Core", scope: null, file: !1, line: 7, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !22)
-// CHECK:STDOUT: !22 = !{!23}
-// CHECK:STDOUT: !23 = !DILocalVariable(arg: 1, scope: !21, type: !15)
-// CHECK:STDOUT: !24 = !DILocation(line: 7, column: 21, scope: !21)
-// CHECK:STDOUT: !25 = distinct !DISubprogram(name: "Op", linkageName: "_COp.125695b29f2cf97c:core.Destroy.Core", scope: null, file: !1, line: 7, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !26)
-// CHECK:STDOUT: !26 = !{!27}
-// CHECK:STDOUT: !27 = !DILocalVariable(arg: 1, scope: !25, type: !15)
-// CHECK:STDOUT: !28 = !DILocation(line: 7, column: 21, scope: !25)
-// CHECK:STDOUT: !29 = distinct !DISubprogram(name: "Op", linkageName: "_COp.e89528464ae58584:core.Destroy.Core", scope: null, file: !1, line: 7, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !30)
-// CHECK:STDOUT: !30 = !{!31}
-// CHECK:STDOUT: !31 = !DILocalVariable(arg: 1, scope: !29, type: !15)
-// CHECK:STDOUT: !32 = !DILocation(line: 7, column: 21, scope: !29)
-// CHECK:STDOUT: !33 = distinct !DISubprogram(name: "PassIntPtr", linkageName: "_CPassIntPtr.Main", scope: null, file: !1, line: 10, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !34)
-// CHECK:STDOUT: !34 = !{!35}
-// CHECK:STDOUT: !35 = !DILocalVariable(arg: 1, scope: !33, type: !15)
-// CHECK:STDOUT: !36 = !DILocation(line: 11, column: 21, scope: !33)
-// CHECK:STDOUT: !37 = !DILocation(line: 11, column: 3, scope: !33)
-// CHECK:STDOUT: !38 = !DILocation(line: 10, column: 1, scope: !33)
-// CHECK:STDOUT: !39 = distinct !DISubprogram(name: "PassIntPtrToConstVoidPtr", linkageName: "_CPassIntPtrToConstVoidPtr.Main", scope: null, file: !1, line: 14, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !40)
-// CHECK:STDOUT: !40 = !{!41}
-// CHECK:STDOUT: !41 = !DILocalVariable(arg: 1, scope: !39, type: !15)
-// CHECK:STDOUT: !42 = !DILocation(line: 15, column: 27, scope: !39)
-// CHECK:STDOUT: !43 = !DILocation(line: 15, column: 3, scope: !39)
-// CHECK:STDOUT: !44 = !DILocation(line: 14, column: 1, scope: !39)
-// CHECK:STDOUT: !45 = distinct !DISubprogram(name: "Op", linkageName: "_COp.0aac4ce7c7765bae:core.Destroy.Core", scope: null, file: !1, line: 15, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !46)
-// CHECK:STDOUT: !46 = !{!47}
-// CHECK:STDOUT: !47 = !DILocalVariable(arg: 1, scope: !45, type: !15)
-// CHECK:STDOUT: !48 = !DILocation(line: 15, column: 27, scope: !45)
-// CHECK:STDOUT: !49 = distinct !DISubprogram(name: "Op", linkageName: "_COp.b8b38d4701ca7f8c:core.Destroy.Core", scope: null, file: !1, line: 15, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !50)
-// CHECK:STDOUT: !50 = !{!51}
-// CHECK:STDOUT: !51 = !DILocalVariable(arg: 1, scope: !49, type: !15)
-// CHECK:STDOUT: !52 = !DILocation(line: 15, column: 27, scope: !49)
-// CHECK:STDOUT: !53 = distinct !DISubprogram(name: "Op", linkageName: "_COp.1e14fa14d732c592:core.Destroy.Core", scope: null, file: !1, line: 15, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !54)
-// CHECK:STDOUT: !54 = !{!55}
-// CHECK:STDOUT: !55 = !DILocalVariable(arg: 1, scope: !53, type: !15)
-// CHECK:STDOUT: !56 = !DILocation(line: 15, column: 27, scope: !53)
-// CHECK:STDOUT: !57 = distinct !DISubprogram(name: "PassConstIntPtrToConstVoidPtr", linkageName: "_CPassConstIntPtrToConstVoidPtr.Main", scope: null, file: !1, line: 18, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !58)
-// CHECK:STDOUT: !58 = !{!59}
-// CHECK:STDOUT: !59 = !DILocalVariable(arg: 1, scope: !57, type: !15)
-// CHECK:STDOUT: !60 = !DILocation(line: 19, column: 27, scope: !57)
-// CHECK:STDOUT: !61 = !DILocation(line: 19, column: 3, scope: !57)
-// CHECK:STDOUT: !62 = !DILocation(line: 18, column: 1, scope: !57)
-// CHECK:STDOUT: !63 = distinct !DISubprogram(name: "Convert", linkageName: "_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.2eaa73d71601da9d", scope: null, file: !64, line: 105, type: !65, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !67)
-// CHECK:STDOUT: !64 = !DIFile(filename: "{{.*}}/prelude/types/optional.carbon", directory: "")
-// CHECK:STDOUT: !65 = !DISubroutineType(types: !66)
-// CHECK:STDOUT: !66 = !{!15, !15}
-// CHECK:STDOUT: !67 = !{!68}
-// CHECK:STDOUT: !68 = !DILocalVariable(arg: 1, scope: !63, type: !15)
-// CHECK:STDOUT: !69 = !DILocation(line: 106, column: 12, scope: !63)
-// CHECK:STDOUT: !70 = !DILocation(line: 106, column: 5, scope: !63)
-// CHECK:STDOUT: !71 = distinct !DISubprogram(name: "Convert", linkageName: "_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.da998f6eb92dc5f2", scope: null, file: !64, line: 105, type: !65, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !72)
-// CHECK:STDOUT: !72 = !{!73}
-// CHECK:STDOUT: !73 = !DILocalVariable(arg: 1, scope: !71, type: !15)
-// CHECK:STDOUT: !74 = !DILocation(line: 106, column: 12, scope: !71)
-// CHECK:STDOUT: !75 = !DILocation(line: 106, column: 5, scope: !71)
-// CHECK:STDOUT: !76 = distinct !DISubprogram(name: "Convert", linkageName: "_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.727afce595587809", scope: null, file: !64, line: 105, type: !65, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !77)
-// CHECK:STDOUT: !77 = !{!78}
-// CHECK:STDOUT: !78 = !DILocalVariable(arg: 1, scope: !76, type: !15)
-// CHECK:STDOUT: !79 = !DILocation(line: 106, column: 12, scope: !76)
-// CHECK:STDOUT: !80 = !DILocation(line: 106, column: 5, scope: !76)
-// CHECK:STDOUT: !81 = distinct !DISubprogram(name: "Convert", linkageName: "_CConvert.9fdaf39d07a1dc4e:OptionalAs.24b7347a93330e68.Core.4590e49549871d50", scope: null, file: !64, line: 80, type: !65, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !82)
-// CHECK:STDOUT: !82 = !{!83}
-// CHECK:STDOUT: !83 = !DILocalVariable(arg: 1, scope: !81, type: !15)
-// CHECK:STDOUT: !84 = !DILocation(line: 81, column: 12, scope: !81)
-// CHECK:STDOUT: !85 = !DILocation(line: 81, column: 5, scope: !81)
-// CHECK:STDOUT: !86 = distinct !DISubprogram(name: "Convert", linkageName: "_CConvert.d62727437df45535:OptionalAs.1dac4564233fecd1.Core.a73eddb6529b4cd8", scope: null, file: !64, line: 87, type: !65, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !87)
-// CHECK:STDOUT: !87 = !{!88}
-// CHECK:STDOUT: !88 = !DILocalVariable(arg: 1, scope: !86, type: !15)
-// CHECK:STDOUT: !89 = !DILocation(line: 88, column: 29, scope: !86)
-// CHECK:STDOUT: !90 = !DILocation(line: 88, column: 12, scope: !86)
-// CHECK:STDOUT: !91 = !DILocation(line: 88, column: 5, scope: !86)
-// CHECK:STDOUT: !92 = distinct !DISubprogram(name: "Convert", linkageName: "_CConvert.d62727437df45535:OptionalAs.1dac4564233fecd1.Core.383a2151b7350205", scope: null, file: !64, line: 87, type: !65, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !93)
-// CHECK:STDOUT: !93 = !{!94}
-// CHECK:STDOUT: !94 = !DILocalVariable(arg: 1, scope: !92, type: !15)
-// CHECK:STDOUT: !95 = !DILocation(line: 88, column: 29, scope: !92)
-// CHECK:STDOUT: !96 = !DILocation(line: 88, column: 12, scope: !92)
-// CHECK:STDOUT: !97 = !DILocation(line: 88, column: 5, scope: !92)
-// CHECK:STDOUT: !98 = distinct !DISubprogram(name: "Some", linkageName: "_CSome.Optional.Core.4590e49549871d50", scope: null, file: !64, line: 33, type: !65, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !99)
-// CHECK:STDOUT: !99 = !{!100}
-// CHECK:STDOUT: !100 = !DILocalVariable(arg: 1, scope: !98, type: !15)
-// CHECK:STDOUT: !101 = !DILocation(line: 34, column: 12, scope: !98)
-// CHECK:STDOUT: !102 = !DILocation(line: 34, column: 5, scope: !98)
-// CHECK:STDOUT: !103 = distinct !DISubprogram(name: "Convert", linkageName: "_CConvert:thunk:ImplicitAs.d035546bf1a99743.Core:e8f8f92d3d08d149:ImplicitAs.01c4a560c986e7d1.Core.84588f41d61dafba", scope: null, file: !104, line: 40, type: !65, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !105)
-// CHECK:STDOUT: !104 = !DIFile(filename: "{{.*}}/prelude/types/cpp/void.carbon", directory: "")
-// CHECK:STDOUT: !105 = !{!106}
-// CHECK:STDOUT: !106 = !DILocalVariable(arg: 1, scope: !103, type: !15)
-// CHECK:STDOUT: !107 = !DILocation(line: 40, column: 3, scope: !103)
-// CHECK:STDOUT: !108 = distinct !DISubprogram(name: "Some", linkageName: "_CSome.Optional.Core.75889a5a3413d33d", scope: null, file: !64, line: 33, type: !65, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !109)
-// CHECK:STDOUT: !109 = !{!110}
-// CHECK:STDOUT: !110 = !DILocalVariable(arg: 1, scope: !108, type: !15)
-// CHECK:STDOUT: !111 = !DILocation(line: 34, column: 12, scope: !108)
-// CHECK:STDOUT: !112 = !DILocation(line: 34, column: 5, scope: !108)
-// CHECK:STDOUT: !113 = distinct !DISubprogram(name: "Some", linkageName: "_CSome.e8f8f92d3d08d149:OptionalStorage.Core.7a595a06c724a271", scope: null, file: !64, line: 166, type: !65, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !114)
-// CHECK:STDOUT: !114 = !{!115}
-// CHECK:STDOUT: !115 = !DILocalVariable(arg: 1, scope: !113, type: !15)
-// CHECK:STDOUT: !116 = !DILocation(line: 167, column: 14, scope: !113)
-// CHECK:STDOUT: !117 = !DILocation(line: 169, column: 5, scope: !113)
-// CHECK:STDOUT: !118 = !DILocation(line: 167, column: 18, scope: !113)
-// CHECK:STDOUT: !119 = !DILocation(line: 170, column: 5, scope: !113)
-// CHECK:STDOUT: !120 = distinct !DISubprogram(name: "Some", linkageName: "_CSome.e8f8f92d3d08d149:OptionalStorage.Core.8f1054b47505c137", scope: null, file: !64, line: 166, type: !65, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !121)
-// CHECK:STDOUT: !121 = !{!122}
-// CHECK:STDOUT: !122 = !DILocalVariable(arg: 1, scope: !120, type: !15)
-// CHECK:STDOUT: !123 = !DILocation(line: 167, column: 14, scope: !120)
-// CHECK:STDOUT: !124 = !DILocation(line: 169, column: 5, scope: !120)
-// CHECK:STDOUT: !125 = !DILocation(line: 167, column: 18, scope: !120)
-// CHECK:STDOUT: !126 = !DILocation(line: 170, column: 5, scope: !120)
+// CHECK:STDOUT: !21 = !{!22, !22, i64 0}
+// CHECK:STDOUT: !22 = !{!"any pointer", !10, i64 0}
+// CHECK:STDOUT: !23 = distinct !DISubprogram(name: "Op", linkageName: "_COp.fd39a15e7d61228d:core.Destroy.Core", scope: null, file: !1, line: 7, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !24)
+// CHECK:STDOUT: !24 = !{!25}
+// CHECK:STDOUT: !25 = !DILocalVariable(arg: 1, scope: !23, type: !15)
+// CHECK:STDOUT: !26 = !DILocation(line: 7, column: 21, scope: !23)
+// CHECK:STDOUT: !27 = distinct !DISubprogram(name: "Op", linkageName: "_COp.125695b29f2cf97c:core.Destroy.Core", scope: null, file: !1, line: 7, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !28)
+// CHECK:STDOUT: !28 = !{!29}
+// CHECK:STDOUT: !29 = !DILocalVariable(arg: 1, scope: !27, type: !15)
+// CHECK:STDOUT: !30 = !DILocation(line: 7, column: 21, scope: !27)
+// CHECK:STDOUT: !31 = distinct !DISubprogram(name: "Op", linkageName: "_COp.e89528464ae58584:core.Destroy.Core", scope: null, file: !1, line: 7, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !32)
+// CHECK:STDOUT: !32 = !{!33}
+// CHECK:STDOUT: !33 = !DILocalVariable(arg: 1, scope: !31, type: !15)
+// CHECK:STDOUT: !34 = !DILocation(line: 7, column: 21, scope: !31)
+// CHECK:STDOUT: !35 = distinct !DISubprogram(name: "PassIntPtr", linkageName: "_CPassIntPtr.Main", scope: null, file: !1, line: 10, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !36)
+// CHECK:STDOUT: !36 = !{!37}
+// CHECK:STDOUT: !37 = !DILocalVariable(arg: 1, scope: !35, type: !15)
+// CHECK:STDOUT: !38 = !DILocation(line: 11, column: 21, scope: !35)
+// CHECK:STDOUT: !39 = !DILocation(line: 11, column: 3, scope: !35)
+// CHECK:STDOUT: !40 = !DILocation(line: 10, column: 1, scope: !35)
+// CHECK:STDOUT: !41 = distinct !DISubprogram(name: "PassIntPtrToConstVoidPtr", linkageName: "_CPassIntPtrToConstVoidPtr.Main", scope: null, file: !1, line: 14, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !42)
+// CHECK:STDOUT: !42 = !{!43}
+// CHECK:STDOUT: !43 = !DILocalVariable(arg: 1, scope: !41, type: !15)
+// CHECK:STDOUT: !44 = !DILocation(line: 15, column: 27, scope: !41)
+// CHECK:STDOUT: !45 = !DILocation(line: 15, column: 3, scope: !41)
+// CHECK:STDOUT: !46 = !DILocation(line: 14, column: 1, scope: !41)
+// CHECK:STDOUT: !47 = distinct !DISubprogram(name: "Op", linkageName: "_COp.0aac4ce7c7765bae:core.Destroy.Core", scope: null, file: !1, line: 15, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !48)
+// CHECK:STDOUT: !48 = !{!49}
+// CHECK:STDOUT: !49 = !DILocalVariable(arg: 1, scope: !47, type: !15)
+// CHECK:STDOUT: !50 = !DILocation(line: 15, column: 27, scope: !47)
+// CHECK:STDOUT: !51 = distinct !DISubprogram(name: "Op", linkageName: "_COp.b8b38d4701ca7f8c:core.Destroy.Core", scope: null, file: !1, line: 15, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !52)
+// CHECK:STDOUT: !52 = !{!53}
+// CHECK:STDOUT: !53 = !DILocalVariable(arg: 1, scope: !51, type: !15)
+// CHECK:STDOUT: !54 = !DILocation(line: 15, column: 27, scope: !51)
+// CHECK:STDOUT: !55 = distinct !DISubprogram(name: "Op", linkageName: "_COp.1e14fa14d732c592:core.Destroy.Core", scope: null, file: !1, line: 15, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !56)
+// CHECK:STDOUT: !56 = !{!57}
+// CHECK:STDOUT: !57 = !DILocalVariable(arg: 1, scope: !55, type: !15)
+// CHECK:STDOUT: !58 = !DILocation(line: 15, column: 27, scope: !55)
+// CHECK:STDOUT: !59 = distinct !DISubprogram(name: "PassConstIntPtrToConstVoidPtr", linkageName: "_CPassConstIntPtrToConstVoidPtr.Main", scope: null, file: !1, line: 18, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !60)
+// CHECK:STDOUT: !60 = !{!61}
+// CHECK:STDOUT: !61 = !DILocalVariable(arg: 1, scope: !59, type: !15)
+// CHECK:STDOUT: !62 = !DILocation(line: 19, column: 27, scope: !59)
+// CHECK:STDOUT: !63 = !DILocation(line: 19, column: 3, scope: !59)
+// CHECK:STDOUT: !64 = !DILocation(line: 18, column: 1, scope: !59)
+// CHECK:STDOUT: !65 = distinct !DISubprogram(name: "Convert", linkageName: "_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.2eaa73d71601da9d", scope: null, file: !66, line: 105, type: !67, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !69)
+// CHECK:STDOUT: !66 = !DIFile(filename: "{{.*}}/prelude/types/optional.carbon", directory: "")
+// CHECK:STDOUT: !67 = !DISubroutineType(types: !68)
+// CHECK:STDOUT: !68 = !{!15, !15}
+// CHECK:STDOUT: !69 = !{!70}
+// CHECK:STDOUT: !70 = !DILocalVariable(arg: 1, scope: !65, type: !15)
+// CHECK:STDOUT: !71 = !DILocation(line: 106, column: 12, scope: !65)
+// CHECK:STDOUT: !72 = !DILocation(line: 106, column: 5, scope: !65)
+// CHECK:STDOUT: !73 = distinct !DISubprogram(name: "Convert", linkageName: "_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.da998f6eb92dc5f2", scope: null, file: !66, line: 105, type: !67, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !74)
+// CHECK:STDOUT: !74 = !{!75}
+// CHECK:STDOUT: !75 = !DILocalVariable(arg: 1, scope: !73, type: !15)
+// CHECK:STDOUT: !76 = !DILocation(line: 106, column: 12, scope: !73)
+// CHECK:STDOUT: !77 = !DILocation(line: 106, column: 5, scope: !73)
+// CHECK:STDOUT: !78 = distinct !DISubprogram(name: "Convert", linkageName: "_CConvert.538322f9fda4254f:ImplicitAs.a276ba298c70ba87.Core.727afce595587809", scope: null, file: !66, line: 105, type: !67, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !79)
+// CHECK:STDOUT: !79 = !{!80}
+// CHECK:STDOUT: !80 = !DILocalVariable(arg: 1, scope: !78, type: !15)
+// CHECK:STDOUT: !81 = !DILocation(line: 106, column: 12, scope: !78)
+// CHECK:STDOUT: !82 = !DILocation(line: 106, column: 5, scope: !78)
+// CHECK:STDOUT: !83 = distinct !DISubprogram(name: "Convert", linkageName: "_CConvert.9fdaf39d07a1dc4e:OptionalAs.24b7347a93330e68.Core.4590e49549871d50", scope: null, file: !66, line: 80, type: !67, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !84)
+// CHECK:STDOUT: !84 = !{!85}
+// CHECK:STDOUT: !85 = !DILocalVariable(arg: 1, scope: !83, type: !15)
+// CHECK:STDOUT: !86 = !DILocation(line: 81, column: 12, scope: !83)
+// CHECK:STDOUT: !87 = !DILocation(line: 81, column: 5, scope: !83)
+// CHECK:STDOUT: !88 = distinct !DISubprogram(name: "Convert", linkageName: "_CConvert.d62727437df45535:OptionalAs.1dac4564233fecd1.Core.a73eddb6529b4cd8", scope: null, file: !66, line: 87, type: !67, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !89)
+// CHECK:STDOUT: !89 = !{!90}
+// CHECK:STDOUT: !90 = !DILocalVariable(arg: 1, scope: !88, type: !15)
+// CHECK:STDOUT: !91 = !DILocation(line: 88, column: 29, scope: !88)
+// CHECK:STDOUT: !92 = !DILocation(line: 88, column: 12, scope: !88)
+// CHECK:STDOUT: !93 = !DILocation(line: 88, column: 5, scope: !88)
+// CHECK:STDOUT: !94 = distinct !DISubprogram(name: "Convert", linkageName: "_CConvert.d62727437df45535:OptionalAs.1dac4564233fecd1.Core.383a2151b7350205", scope: null, file: !66, line: 87, type: !67, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !95)
+// CHECK:STDOUT: !95 = !{!96}
+// CHECK:STDOUT: !96 = !DILocalVariable(arg: 1, scope: !94, type: !15)
+// CHECK:STDOUT: !97 = !DILocation(line: 88, column: 29, scope: !94)
+// CHECK:STDOUT: !98 = !DILocation(line: 88, column: 12, scope: !94)
+// CHECK:STDOUT: !99 = !DILocation(line: 88, column: 5, scope: !94)
+// CHECK:STDOUT: !100 = distinct !DISubprogram(name: "Some", linkageName: "_CSome.Optional.Core.4590e49549871d50", scope: null, file: !66, line: 33, type: !67, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !101)
+// CHECK:STDOUT: !101 = !{!102}
+// CHECK:STDOUT: !102 = !DILocalVariable(arg: 1, scope: !100, type: !15)
+// CHECK:STDOUT: !103 = !DILocation(line: 34, column: 12, scope: !100)
+// CHECK:STDOUT: !104 = !DILocation(line: 34, column: 5, scope: !100)
+// CHECK:STDOUT: !105 = distinct !DISubprogram(name: "Convert", linkageName: "_CConvert:thunk:ImplicitAs.d035546bf1a99743.Core:e8f8f92d3d08d149:ImplicitAs.01c4a560c986e7d1.Core.84588f41d61dafba", scope: null, file: !106, line: 40, type: !67, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !107)
+// CHECK:STDOUT: !106 = !DIFile(filename: "{{.*}}/prelude/types/cpp/void.carbon", directory: "")
+// CHECK:STDOUT: !107 = !{!108}
+// CHECK:STDOUT: !108 = !DILocalVariable(arg: 1, scope: !105, type: !15)
+// CHECK:STDOUT: !109 = !DILocation(line: 40, column: 3, scope: !105)
+// CHECK:STDOUT: !110 = distinct !DISubprogram(name: "Some", linkageName: "_CSome.Optional.Core.75889a5a3413d33d", scope: null, file: !66, line: 33, type: !67, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !111)
+// CHECK:STDOUT: !111 = !{!112}
+// CHECK:STDOUT: !112 = !DILocalVariable(arg: 1, scope: !110, type: !15)
+// CHECK:STDOUT: !113 = !DILocation(line: 34, column: 12, scope: !110)
+// CHECK:STDOUT: !114 = !DILocation(line: 34, column: 5, scope: !110)
+// CHECK:STDOUT: !115 = distinct !DISubprogram(name: "Some", linkageName: "_CSome.e8f8f92d3d08d149:OptionalStorage.Core.7a595a06c724a271", scope: null, file: !66, line: 166, type: !67, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !116)
+// CHECK:STDOUT: !116 = !{!117}
+// CHECK:STDOUT: !117 = !DILocalVariable(arg: 1, scope: !115, type: !15)
+// CHECK:STDOUT: !118 = !DILocation(line: 167, column: 14, scope: !115)
+// CHECK:STDOUT: !119 = !DILocation(line: 169, column: 5, scope: !115)
+// CHECK:STDOUT: !120 = !DILocation(line: 167, column: 18, scope: !115)
+// CHECK:STDOUT: !121 = !DILocation(line: 170, column: 5, scope: !115)
+// CHECK:STDOUT: !122 = distinct !DISubprogram(name: "Some", linkageName: "_CSome.e8f8f92d3d08d149:OptionalStorage.Core.8f1054b47505c137", scope: null, file: !66, line: 166, type: !67, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !123)
+// CHECK:STDOUT: !123 = !{!124}
+// CHECK:STDOUT: !124 = !DILocalVariable(arg: 1, scope: !122, type: !15)
+// CHECK:STDOUT: !125 = !DILocation(line: 167, column: 14, scope: !122)
+// CHECK:STDOUT: !126 = !DILocation(line: 169, column: 5, scope: !122)
+// CHECK:STDOUT: !127 = !DILocation(line: 167, column: 18, scope: !122)
+// CHECK:STDOUT: !128 = !DILocation(line: 170, column: 5, scope: !122)
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'receive.carbon'
@@ -389,14 +451,31 @@ fn ConvertFromConstVoidPtr(p: const Cpp.void*) -> const i32* {
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define ptr @_CReceiveVoidPtr.Main() #0 !dbg !12 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %return_void_ptr.call = call ptr @_Z15return_void_ptrv(), !dbg !16
-// CHECK:STDOUT:   ret ptr %return_void_ptr.call, !dbg !17
+// CHECK:STDOUT:   %return_void_ptr__carbon_thunk.call = call ptr @_Z15return_void_ptrv.carbon_thunk.(), !dbg !16
+// CHECK:STDOUT:   ret ptr %return_void_ptr__carbon_thunk.call, !dbg !17
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef ptr @_Z15return_void_ptrv() #1
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef ptr @_Z15return_void_ptrv.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %call = invoke noundef ptr @_Z15return_void_ptrv()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret ptr %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #4
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define ptr @_CConvertFromVoidPtr.Main(ptr %p) #0 !dbg !18 {
@@ -410,8 +489,26 @@ fn ConvertFromConstVoidPtr(p: const Cpp.void*) -> const i32* {
 // CHECK:STDOUT:   ret ptr %p, !dbg !27
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
+// CHECK:STDOUT: declare noundef ptr @_Z15return_void_ptrv() #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #3 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #4
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
+// CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #2 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #3 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #4 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}

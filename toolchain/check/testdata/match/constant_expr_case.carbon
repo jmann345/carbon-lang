@@ -37,7 +37,7 @@ fn F(x: i32) -> i32 {
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
 // CHECK:STDOUT:   %x.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
 // CHECK:STDOUT:   %x.patt: %pattern_type.6b6 = at_binding_pattern x, %x.param_patt [concrete]
-// CHECK:STDOUT:   %.795: Core.Form = init_form %i32 [concrete]
+// CHECK:STDOUT:   %.795f: Core.Form = init_form %i32 [concrete]
 // CHECK:STDOUT:   %return.param_patt.a9a: %pattern_type.6b6 = out_param_pattern [concrete]
 // CHECK:STDOUT:   %return.patt.e1b: %pattern_type.6b6 = return_slot_pattern %return.param_patt.a9a, %i32 [concrete]
 // CHECK:STDOUT:   %F.type: type = fn_type @F [concrete]
@@ -47,8 +47,8 @@ fn F(x: i32) -> i32 {
 // CHECK:STDOUT:   %AddWith.type.832: type = facet_type <@AddWith, @AddWith(Core.IntLiteral)> [concrete]
 // CHECK:STDOUT:   %AddWith.impl_witness: <witness> = impl_witness imports.%AddWith.impl_witness_table [concrete]
 // CHECK:STDOUT:   %AddWith.facet: %AddWith.type.832 = facet_value Core.IntLiteral, (%AddWith.impl_witness) [concrete]
-// CHECK:STDOUT:   %AddWith.WithSelf.Op.type.af6: type = fn_type @AddWith.WithSelf.Op, @AddWith.WithSelf(Core.IntLiteral, %AddWith.facet) [concrete]
-// CHECK:STDOUT:   %.eb6: type = fn_type_with_self_type %AddWith.WithSelf.Op.type.af6, %AddWith.facet [concrete]
+// CHECK:STDOUT:   %AddWith.WithSelf.Op.type.8da: type = fn_type @AddWith.WithSelf.Op, @AddWith.WithSelf(Core.IntLiteral, %AddWith.facet) [concrete]
+// CHECK:STDOUT:   %.cef: type = fn_type_with_self_type %AddWith.WithSelf.Op.type.8da, %AddWith.facet [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.AddWith.impl.Op.type: type = fn_type @Core.IntLiteral.as.AddWith.impl.Op [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.AddWith.impl.Op: %Core.IntLiteral.as.AddWith.impl.Op.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.AddWith.impl.Op.bound: <bound method> = bound_method %int_2.ecc, %Core.IntLiteral.as.AddWith.impl.Op [concrete]
@@ -96,8 +96,8 @@ fn F(x: i32) -> i32 {
 // CHECK:STDOUT:   %MulWith.type.fbc: type = facet_type <@MulWith, @MulWith(Core.IntLiteral)> [concrete]
 // CHECK:STDOUT:   %MulWith.impl_witness: <witness> = impl_witness imports.%MulWith.impl_witness_table [concrete]
 // CHECK:STDOUT:   %MulWith.facet: %MulWith.type.fbc = facet_value Core.IntLiteral, (%MulWith.impl_witness) [concrete]
-// CHECK:STDOUT:   %MulWith.WithSelf.Op.type.e39: type = fn_type @MulWith.WithSelf.Op, @MulWith.WithSelf(Core.IntLiteral, %MulWith.facet) [concrete]
-// CHECK:STDOUT:   %.abf: type = fn_type_with_self_type %MulWith.WithSelf.Op.type.e39, %MulWith.facet [concrete]
+// CHECK:STDOUT:   %MulWith.WithSelf.Op.type.b82: type = fn_type @MulWith.WithSelf.Op, @MulWith.WithSelf(Core.IntLiteral, %MulWith.facet) [concrete]
+// CHECK:STDOUT:   %.3ea: type = fn_type_with_self_type %MulWith.WithSelf.Op.type.b82, %MulWith.facet [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.MulWith.impl.Op.type: type = fn_type @Core.IntLiteral.as.MulWith.impl.Op [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.MulWith.impl.Op: %Core.IntLiteral.as.MulWith.impl.Op.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.MulWith.impl.Op.bound: <bound method> = bound_method %int_4, %Core.IntLiteral.as.MulWith.impl.Op [concrete]
@@ -105,8 +105,8 @@ fn F(x: i32) -> i32 {
 // CHECK:STDOUT:   %Negate.type: type = facet_type <@Negate> [concrete]
 // CHECK:STDOUT:   %Negate.impl_witness: <witness> = impl_witness imports.%Negate.impl_witness_table [concrete]
 // CHECK:STDOUT:   %Negate.facet: %Negate.type = facet_value Core.IntLiteral, (%Negate.impl_witness) [concrete]
-// CHECK:STDOUT:   %Negate.WithSelf.Op.type.f03: type = fn_type @Negate.WithSelf.Op, @Negate.WithSelf(%Negate.facet) [concrete]
-// CHECK:STDOUT:   %.02b: type = fn_type_with_self_type %Negate.WithSelf.Op.type.f03, %Negate.facet [concrete]
+// CHECK:STDOUT:   %Negate.WithSelf.Op.type.db1: type = fn_type @Negate.WithSelf.Op, @Negate.WithSelf(%Negate.facet) [concrete]
+// CHECK:STDOUT:   %.e9b: type = fn_type_with_self_type %Negate.WithSelf.Op.type.db1, %Negate.facet [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.Negate.impl.Op.type: type = fn_type @Core.IntLiteral.as.Negate.impl.Op [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.Negate.impl.Op: %Core.IntLiteral.as.Negate.impl.Op.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.Negate.impl.Op.bound: <bound method> = bound_method %int_16, %Core.IntLiteral.as.Negate.impl.Op [concrete]
@@ -130,7 +130,7 @@ fn F(x: i32) -> i32 {
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Core.import_ref.abd97d.1 = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.9c3475.1: %Core.IntLiteral.as.AddWith.impl.Op.type = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [concrete = constants.%Core.IntLiteral.as.AddWith.impl.Op]
-// CHECK:STDOUT:   %AddWith.impl_witness_table = impl_witness_table (%Core.import_ref.abd97d.1, %Core.import_ref.9c3475.1), @Core.IntLiteral.as.AddWith.impl.83c [concrete]
+// CHECK:STDOUT:   %AddWith.impl_witness_table = impl_witness_table (%Core.import_ref.abd97d.1, %Core.import_ref.9c3475.1), @Core.IntLiteral.as.AddWith.impl.8f4 [concrete]
 // CHECK:STDOUT:   %Core.import_ref.a9a: @T.as_type.as.EqWith.impl.%T.as_type.as.EqWith.impl.Equal.type.2 (%T.as_type.as.EqWith.impl.Equal.type.8af025.1) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @T.as_type.as.EqWith.impl.%T.as_type.as.EqWith.impl.Equal.2 (constants.%T.as_type.as.EqWith.impl.Equal.c477d6.1)]
 // CHECK:STDOUT:   %Core.import_ref.712 = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %EqWith.impl_witness_table.468 = impl_witness_table (%Core.import_ref.a9a, %Core.import_ref.712), @T.as_type.as.EqWith.impl [concrete]
@@ -153,7 +153,7 @@ fn F(x: i32) -> i32 {
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32.loc20_17 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %i32.loc20_17: type = type_literal constants.%i32 [concrete = constants.%i32]
-// CHECK:STDOUT:     %.loc20: Core.Form = init_form %i32.loc20_17 [concrete = constants.%.795]
+// CHECK:STDOUT:     %.loc20: Core.Form = init_form %i32.loc20_17 [concrete = constants.%.795f]
 // CHECK:STDOUT:     %x.param: %i32 = value_param call_param0
 // CHECK:STDOUT:     %i32.loc20_9: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:     %x: %i32 = wrapper_binding x, %x.param
@@ -169,7 +169,7 @@ fn F(x: i32) -> i32 {
 // CHECK:STDOUT:     %expr_patt.loc22: %pattern_type.dc0 = expr_pattern %.loc22_12.5 in [concrete] {
 // CHECK:STDOUT:       %int_2.loc22: Core.IntLiteral = int_value 2 [concrete = constants.%int_2.ecc]
 // CHECK:STDOUT:       %int_3: Core.IntLiteral = int_value 3 [concrete = constants.%int_3]
-// CHECK:STDOUT:       %impl.elem1.loc22: %.eb6 = impl_witness_access constants.%AddWith.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.AddWith.impl.Op]
+// CHECK:STDOUT:       %impl.elem1.loc22: %.cef = impl_witness_access constants.%AddWith.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.AddWith.impl.Op]
 // CHECK:STDOUT:       %bound_method.loc22_12.3: <bound method> = bound_method %int_2.loc22, %impl.elem1.loc22 [concrete = constants.%Core.IntLiteral.as.AddWith.impl.Op.bound]
 // CHECK:STDOUT:       %Core.IntLiteral.as.AddWith.impl.Op.call: init Core.IntLiteral = call %bound_method.loc22_12.3(%int_2.loc22, %int_3) [concrete = constants.%int_5.64b]
 // CHECK:STDOUT:       %.loc22_12.4: Core.IntLiteral = value_of_initializer %Core.IntLiteral.as.AddWith.impl.Op.call [concrete = constants.%int_5.64b]
@@ -179,7 +179,7 @@ fn F(x: i32) -> i32 {
 // CHECK:STDOUT:   %.loc22_12.1: Core.IntLiteral = splice_block %.loc22_12.5 [concrete = constants.%int_5.64b] {
 // CHECK:STDOUT:     %int_2.loc22: Core.IntLiteral = int_value 2 [concrete = constants.%int_2.ecc]
 // CHECK:STDOUT:     %int_3: Core.IntLiteral = int_value 3 [concrete = constants.%int_3]
-// CHECK:STDOUT:     %impl.elem1.loc22: %.eb6 = impl_witness_access constants.%AddWith.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.AddWith.impl.Op]
+// CHECK:STDOUT:     %impl.elem1.loc22: %.cef = impl_witness_access constants.%AddWith.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.AddWith.impl.Op]
 // CHECK:STDOUT:     %bound_method.loc22_12.3: <bound method> = bound_method %int_2.loc22, %impl.elem1.loc22 [concrete = constants.%Core.IntLiteral.as.AddWith.impl.Op.bound]
 // CHECK:STDOUT:     %Core.IntLiteral.as.AddWith.impl.Op.call: init Core.IntLiteral = call %bound_method.loc22_12.3(%int_2.loc22, %int_3) [concrete = constants.%int_5.64b]
 // CHECK:STDOUT:     %.loc22_12.4: Core.IntLiteral = value_of_initializer %Core.IntLiteral.as.AddWith.impl.Op.call [concrete = constants.%int_5.64b]
@@ -221,10 +221,10 @@ fn F(x: i32) -> i32 {
 // CHECK:STDOUT:     %expr_patt.loc23: %pattern_type.dc0 = expr_pattern %.loc23_10.5 in [concrete] {
 // CHECK:STDOUT:       %int_4.loc23_12: Core.IntLiteral = int_value 4 [concrete = constants.%int_4]
 // CHECK:STDOUT:       %int_4.loc23_16: Core.IntLiteral = int_value 4 [concrete = constants.%int_4]
-// CHECK:STDOUT:       %impl.elem1.loc23_14: %.abf = impl_witness_access constants.%MulWith.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.MulWith.impl.Op]
+// CHECK:STDOUT:       %impl.elem1.loc23_14: %.3ea = impl_witness_access constants.%MulWith.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.MulWith.impl.Op]
 // CHECK:STDOUT:       %bound_method.loc23_14: <bound method> = bound_method %int_4.loc23_12, %impl.elem1.loc23_14 [concrete = constants.%Core.IntLiteral.as.MulWith.impl.Op.bound]
 // CHECK:STDOUT:       %Core.IntLiteral.as.MulWith.impl.Op.call: init Core.IntLiteral = call %bound_method.loc23_14(%int_4.loc23_12, %int_4.loc23_16) [concrete = constants.%int_16]
-// CHECK:STDOUT:       %impl.elem1.loc23_10: %.02b = impl_witness_access constants.%Negate.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
+// CHECK:STDOUT:       %impl.elem1.loc23_10: %.e9b = impl_witness_access constants.%Negate.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
 // CHECK:STDOUT:       %bound_method.loc23_10.3: <bound method> = bound_method %Core.IntLiteral.as.MulWith.impl.Op.call, %impl.elem1.loc23_10 [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op.bound]
 // CHECK:STDOUT:       %.loc23_14.1: Core.IntLiteral = value_of_initializer %Core.IntLiteral.as.MulWith.impl.Op.call [concrete = constants.%int_16]
 // CHECK:STDOUT:       %.loc23_14.2: Core.IntLiteral = converted %Core.IntLiteral.as.MulWith.impl.Op.call, %.loc23_14.1 [concrete = constants.%int_16]
@@ -236,10 +236,10 @@ fn F(x: i32) -> i32 {
 // CHECK:STDOUT:   %.loc23_10.1: Core.IntLiteral = splice_block %.loc23_10.5 [concrete = constants.%int_-16.8e1] {
 // CHECK:STDOUT:     %int_4.loc23_12: Core.IntLiteral = int_value 4 [concrete = constants.%int_4]
 // CHECK:STDOUT:     %int_4.loc23_16: Core.IntLiteral = int_value 4 [concrete = constants.%int_4]
-// CHECK:STDOUT:     %impl.elem1.loc23_14: %.abf = impl_witness_access constants.%MulWith.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.MulWith.impl.Op]
+// CHECK:STDOUT:     %impl.elem1.loc23_14: %.3ea = impl_witness_access constants.%MulWith.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.MulWith.impl.Op]
 // CHECK:STDOUT:     %bound_method.loc23_14: <bound method> = bound_method %int_4.loc23_12, %impl.elem1.loc23_14 [concrete = constants.%Core.IntLiteral.as.MulWith.impl.Op.bound]
 // CHECK:STDOUT:     %Core.IntLiteral.as.MulWith.impl.Op.call: init Core.IntLiteral = call %bound_method.loc23_14(%int_4.loc23_12, %int_4.loc23_16) [concrete = constants.%int_16]
-// CHECK:STDOUT:     %impl.elem1.loc23_10: %.02b = impl_witness_access constants.%Negate.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
+// CHECK:STDOUT:     %impl.elem1.loc23_10: %.e9b = impl_witness_access constants.%Negate.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
 // CHECK:STDOUT:     %bound_method.loc23_10.3: <bound method> = bound_method %Core.IntLiteral.as.MulWith.impl.Op.call, %impl.elem1.loc23_10 [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op.bound]
 // CHECK:STDOUT:     %.loc23_14.1: Core.IntLiteral = value_of_initializer %Core.IntLiteral.as.MulWith.impl.Op.call [concrete = constants.%int_16]
 // CHECK:STDOUT:     %.loc23_14.2: Core.IntLiteral = converted %Core.IntLiteral.as.MulWith.impl.Op.call, %.loc23_14.1 [concrete = constants.%int_16]

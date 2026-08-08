@@ -83,7 +83,7 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT:   %Copy.facet.987: %Copy.type = facet_value %i32, (%Copy.impl_witness.0e0) [concrete]
 // CHECK:STDOUT:   %Copy.WithSelf.Op.type.d09: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.987) [concrete]
 // CHECK:STDOUT:   %.7a6: type = fn_type_with_self_type %Copy.WithSelf.Op.type.d09, %Copy.facet.987 [concrete]
-// CHECK:STDOUT:   %.795: Core.Form = init_form %i32 [concrete]
+// CHECK:STDOUT:   %.795f: Core.Form = init_form %i32 [concrete]
 // CHECK:STDOUT:   %return.param_patt.a9a: %pattern_type.6b6 = out_param_pattern [concrete]
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.specific_fn: <specific function> = specific_function %Int.as.Copy.impl.Op.4f6, @Int.as.Copy.impl.Op(%int_32) [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.320: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a [concrete]
@@ -159,20 +159,20 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT:   %.849: %pattern_type.e71 = tuple_pattern (%w.patt) [concrete]
 // CHECK:STDOUT:   %SubWith.type.4c2: type = facet_type <@SubWith, @SubWith(Core.IntLiteral)> [concrete]
 // CHECK:STDOUT:   %U.4e6: %ImplicitAs.type.f7de31.1 = symbolic_binding U, 1 [symbolic]
-// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.type.409f5c.1: type = fn_type @Int.as.SubWith.impl.Op.2, @Int.as.SubWith.impl.e74(%N, %U.4e6) [symbolic]
-// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.4b8395.1: %Int.as.SubWith.impl.Op.type.409f5c.1 = struct_value () [symbolic]
-// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.type.409f5c.2: type = fn_type @Int.as.SubWith.impl.Op.3, @Int.as.SubWith.impl.e74(%N, %U.4e6) [symbolic]
-// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.4b8395.2: %Int.as.SubWith.impl.Op.type.409f5c.2 = struct_value () [symbolic]
-// CHECK:STDOUT:   %SubWith.impl_witness.45c: <witness> = impl_witness imports.%SubWith.impl_witness_table.931, @Int.as.SubWith.impl.e74(%int_32, %ImplicitAs.facet.9f1) [concrete]
-// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.type.6ebef3.1: type = fn_type @Int.as.SubWith.impl.Op.3, @Int.as.SubWith.impl.e74(%int_32, %ImplicitAs.facet.9f1) [concrete]
-// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.09063a.1: %Int.as.SubWith.impl.Op.type.6ebef3.1 = struct_value () [concrete]
-// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.type.6ebef3.2: type = fn_type @Int.as.SubWith.impl.Op.2, @Int.as.SubWith.impl.e74(%int_32, %ImplicitAs.facet.9f1) [concrete]
-// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.09063a.2: %Int.as.SubWith.impl.Op.type.6ebef3.2 = struct_value () [concrete]
-// CHECK:STDOUT:   %SubWith.facet.962: %SubWith.type.4c2 = facet_value %i32, (%SubWith.impl_witness.45c) [concrete]
-// CHECK:STDOUT:   %SubWith.WithSelf.Op.type.a25: type = fn_type @SubWith.WithSelf.Op, @SubWith.WithSelf(Core.IntLiteral, %SubWith.facet.962) [concrete]
-// CHECK:STDOUT:   %.298: type = fn_type_with_self_type %SubWith.WithSelf.Op.type.a25, %SubWith.facet.962 [concrete]
-// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.specific_fn.b38ba1.1: <specific function> = specific_function %Int.as.SubWith.impl.Op.09063a.2, @Int.as.SubWith.impl.Op.2(%int_32, %ImplicitAs.facet.9f1) [concrete]
-// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.specific_fn.b38ba1.2: <specific function> = specific_function %Int.as.SubWith.impl.Op.09063a.1, @Int.as.SubWith.impl.Op.3(%int_32, %ImplicitAs.facet.9f1) [concrete]
+// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.type.6f3321.1: type = fn_type @Int.as.SubWith.impl.Op.2, @Int.as.SubWith.impl.dc8(%N, %U.4e6) [symbolic]
+// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.a37528.1: %Int.as.SubWith.impl.Op.type.6f3321.1 = struct_value () [symbolic]
+// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.type.6f3321.2: type = fn_type @Int.as.SubWith.impl.Op.3, @Int.as.SubWith.impl.dc8(%N, %U.4e6) [symbolic]
+// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.a37528.2: %Int.as.SubWith.impl.Op.type.6f3321.2 = struct_value () [symbolic]
+// CHECK:STDOUT:   %SubWith.impl_witness.d78: <witness> = impl_witness imports.%SubWith.impl_witness_table.dc9, @Int.as.SubWith.impl.dc8(%int_32, %ImplicitAs.facet.9f1) [concrete]
+// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.type.745d60.1: type = fn_type @Int.as.SubWith.impl.Op.3, @Int.as.SubWith.impl.dc8(%int_32, %ImplicitAs.facet.9f1) [concrete]
+// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.49baee.1: %Int.as.SubWith.impl.Op.type.745d60.1 = struct_value () [concrete]
+// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.type.745d60.2: type = fn_type @Int.as.SubWith.impl.Op.2, @Int.as.SubWith.impl.dc8(%int_32, %ImplicitAs.facet.9f1) [concrete]
+// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.49baee.2: %Int.as.SubWith.impl.Op.type.745d60.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %SubWith.facet.d48: %SubWith.type.4c2 = facet_value %i32, (%SubWith.impl_witness.d78) [concrete]
+// CHECK:STDOUT:   %SubWith.WithSelf.Op.type.d3c: type = fn_type @SubWith.WithSelf.Op, @SubWith.WithSelf(Core.IntLiteral, %SubWith.facet.d48) [concrete]
+// CHECK:STDOUT:   %.e15: type = fn_type_with_self_type %SubWith.WithSelf.Op.type.d3c, %SubWith.facet.d48 [concrete]
+// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.specific_fn.4cc768.1: <specific function> = specific_function %Int.as.SubWith.impl.Op.49baee.2, @Int.as.SubWith.impl.Op.2(%int_32, %ImplicitAs.facet.9f1) [concrete]
+// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.specific_fn.4cc768.2: <specific function> = specific_function %Int.as.SubWith.impl.Op.49baee.1, @Int.as.SubWith.impl.Op.3(%int_32, %ImplicitAs.facet.9f1) [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.094: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39 [concrete]
 // CHECK:STDOUT:   %bound_method.953: <bound method> = bound_method %int_1.5b8, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571 [concrete]
 // CHECK:STDOUT:   %int_1.0c6: %i32 = int_value 1 [concrete]
@@ -182,8 +182,8 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT:   %Negate.type: type = facet_type <@Negate> [concrete]
 // CHECK:STDOUT:   %Negate.impl_witness: <witness> = impl_witness imports.%Negate.impl_witness_table [concrete]
 // CHECK:STDOUT:   %Negate.facet: %Negate.type = facet_value Core.IntLiteral, (%Negate.impl_witness) [concrete]
-// CHECK:STDOUT:   %Negate.WithSelf.Op.type.f03: type = fn_type @Negate.WithSelf.Op, @Negate.WithSelf(%Negate.facet) [concrete]
-// CHECK:STDOUT:   %.02b: type = fn_type_with_self_type %Negate.WithSelf.Op.type.f03, %Negate.facet [concrete]
+// CHECK:STDOUT:   %Negate.WithSelf.Op.type.db1: type = fn_type @Negate.WithSelf.Op, @Negate.WithSelf(%Negate.facet) [concrete]
+// CHECK:STDOUT:   %.e9b: type = fn_type_with_self_type %Negate.WithSelf.Op.type.db1, %Negate.facet [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.Negate.impl.Op.type: type = fn_type @Core.IntLiteral.as.Negate.impl.Op [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.Negate.impl.Op: %Core.IntLiteral.as.Negate.impl.Op.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.Negate.impl.Op.bound.599: <bound method> = bound_method %int_10, %Core.IntLiteral.as.Negate.impl.Op [concrete]
@@ -218,9 +218,9 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT:   %Core.import_ref.b44 = import_ref Core//prelude/types/uint, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %EqWith.impl_witness_table.cbd = impl_witness_table (%Core.import_ref.b92, %Core.import_ref.b44), @UInt.as.EqWith.impl.f13 [concrete]
 // CHECK:STDOUT:   %Core.import_ref.b4fd3a.2 = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %Core.import_ref.875: @Int.as.SubWith.impl.e74.%Int.as.SubWith.impl.Op.type.2 (%Int.as.SubWith.impl.Op.type.409f5c.1) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.SubWith.impl.e74.%Int.as.SubWith.impl.Op.2 (constants.%Int.as.SubWith.impl.Op.4b8395.1)]
-// CHECK:STDOUT:   %SubWith.impl_witness_table.931 = impl_witness_table (%Core.import_ref.b4fd3a.2, %Core.import_ref.875), @Int.as.SubWith.impl.e74 [concrete]
-// CHECK:STDOUT:   %Core.Op.33f: @Int.as.SubWith.impl.e74.%Int.as.SubWith.impl.Op.type.1 (%Int.as.SubWith.impl.Op.type.409f5c.2) = import_ref Core//prelude/types/int, Op, loaded [symbolic = @Int.as.SubWith.impl.e74.%Int.as.SubWith.impl.Op.1 (constants.%Int.as.SubWith.impl.Op.4b8395.2)]
+// CHECK:STDOUT:   %Core.import_ref.6fa: @Int.as.SubWith.impl.dc8.%Int.as.SubWith.impl.Op.type.2 (%Int.as.SubWith.impl.Op.type.6f3321.1) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.SubWith.impl.dc8.%Int.as.SubWith.impl.Op.2 (constants.%Int.as.SubWith.impl.Op.a37528.1)]
+// CHECK:STDOUT:   %SubWith.impl_witness_table.dc9 = impl_witness_table (%Core.import_ref.b4fd3a.2, %Core.import_ref.6fa), @Int.as.SubWith.impl.dc8 [concrete]
+// CHECK:STDOUT:   %Core.Op.9ff: @Int.as.SubWith.impl.dc8.%Int.as.SubWith.impl.Op.type.1 (%Int.as.SubWith.impl.Op.type.6f3321.2) = import_ref Core//prelude/types/int, Op, loaded [symbolic = @Int.as.SubWith.impl.dc8.%Int.as.SubWith.impl.Op.1 (constants.%Int.as.SubWith.impl.Op.a37528.2)]
 // CHECK:STDOUT:   %Core.import_ref.abd = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.9c3: %Core.IntLiteral.as.Negate.impl.Op.type = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
 // CHECK:STDOUT:   %Negate.impl_witness_table = impl_witness_table (%Core.import_ref.abd, %Core.import_ref.9c3), @Core.IntLiteral.as.Negate.impl [concrete]
@@ -250,7 +250,7 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32.loc27 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %i32.loc27: type = type_literal constants.%i32 [concrete = constants.%i32]
-// CHECK:STDOUT:     %.loc27: Core.Form = init_form %i32.loc27 [concrete = constants.%.795]
+// CHECK:STDOUT:     %.loc27: Core.Form = init_form %i32.loc27 [concrete = constants.%.795f]
 // CHECK:STDOUT:     %r.param: %IntResult = value_param call_param0
 // CHECK:STDOUT:     %IntResult.ref: type = name_ref IntResult, file.%IntResult.decl [concrete = constants.%IntResult]
 // CHECK:STDOUT:     %r: %IntResult = wrapper_binding r, %r.param
@@ -424,14 +424,14 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT:   %w: %i32 = wrapper_binding w, %.loc30_22.9
 // CHECK:STDOUT:   %w.ref: %i32 = name_ref w, %w
 // CHECK:STDOUT:   %int_1.loc30: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
-// CHECK:STDOUT:   %impl.elem1.loc30: %.298 = impl_witness_access constants.%SubWith.impl_witness.45c, element1 [concrete = constants.%Int.as.SubWith.impl.Op.09063a.2]
+// CHECK:STDOUT:   %impl.elem1.loc30: %.e15 = impl_witness_access constants.%SubWith.impl_witness.d78, element1 [concrete = constants.%Int.as.SubWith.impl.Op.49baee.2]
 // CHECK:STDOUT:   %bound_method.loc30_36.1: <bound method> = bound_method %w.ref, %impl.elem1.loc30
-// CHECK:STDOUT:   %specific_fn.loc30_36: <specific function> = specific_function %impl.elem1.loc30, @Int.as.SubWith.impl.Op.2(constants.%int_32, constants.%ImplicitAs.facet.9f1) [concrete = constants.%Int.as.SubWith.impl.Op.specific_fn.b38ba1.1]
+// CHECK:STDOUT:   %specific_fn.loc30_36: <specific function> = specific_function %impl.elem1.loc30, @Int.as.SubWith.impl.Op.2(constants.%int_32, constants.%ImplicitAs.facet.9f1) [concrete = constants.%Int.as.SubWith.impl.Op.specific_fn.4cc768.1]
 // CHECK:STDOUT:   %bound_method.loc30_36.2: <bound method> = bound_method %w.ref, %specific_fn.loc30_36
-// CHECK:STDOUT:   %.loc30_36: %Int.as.SubWith.impl.Op.type.6ebef3.1 = specific_constant imports.%Core.Op.33f, @Int.as.SubWith.impl.e74(constants.%int_32, constants.%ImplicitAs.facet.9f1) [concrete = constants.%Int.as.SubWith.impl.Op.09063a.1]
-// CHECK:STDOUT:   %Op.ref: %Int.as.SubWith.impl.Op.type.6ebef3.1 = name_ref Op, %.loc30_36 [concrete = constants.%Int.as.SubWith.impl.Op.09063a.1]
+// CHECK:STDOUT:   %.loc30_36: %Int.as.SubWith.impl.Op.type.745d60.1 = specific_constant imports.%Core.Op.9ff, @Int.as.SubWith.impl.dc8(constants.%int_32, constants.%ImplicitAs.facet.9f1) [concrete = constants.%Int.as.SubWith.impl.Op.49baee.1]
+// CHECK:STDOUT:   %Op.ref: %Int.as.SubWith.impl.Op.type.745d60.1 = name_ref Op, %.loc30_36 [concrete = constants.%Int.as.SubWith.impl.Op.49baee.1]
 // CHECK:STDOUT:   %Int.as.SubWith.impl.Op.bound: <bound method> = bound_method %w.ref, %Op.ref
-// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.specific_fn: <specific function> = specific_function %Op.ref, @Int.as.SubWith.impl.Op.3(constants.%int_32, constants.%ImplicitAs.facet.9f1) [concrete = constants.%Int.as.SubWith.impl.Op.specific_fn.b38ba1.2]
+// CHECK:STDOUT:   %Int.as.SubWith.impl.Op.specific_fn: <specific function> = specific_function %Op.ref, @Int.as.SubWith.impl.Op.3(constants.%int_32, constants.%ImplicitAs.facet.9f1) [concrete = constants.%Int.as.SubWith.impl.Op.specific_fn.4cc768.2]
 // CHECK:STDOUT:   %bound_method.loc30_36.3: <bound method> = bound_method %w.ref, %Int.as.SubWith.impl.Op.specific_fn
 // CHECK:STDOUT:   %impl.elem0.loc30_38: %.1c5 = impl_witness_access constants.%ImplicitAs.impl_witness.a23, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
 // CHECK:STDOUT:   %bound_method.loc30_38.1: <bound method> = bound_method %int_1.loc30, %impl.elem0.loc30_38 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.094]
@@ -471,7 +471,7 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !match.case.then.loc31:
 // CHECK:STDOUT:   %int_10: Core.IntLiteral = int_value 10 [concrete = constants.%int_10]
-// CHECK:STDOUT:   %impl.elem1.loc31: %.02b = impl_witness_access constants.%Negate.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
+// CHECK:STDOUT:   %impl.elem1.loc31: %.e9b = impl_witness_access constants.%Negate.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
 // CHECK:STDOUT:   %bound_method.loc31_27: <bound method> = bound_method %int_10, %impl.elem1.loc31 [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op.bound.599]
 // CHECK:STDOUT:   %Core.IntLiteral.as.Negate.impl.Op.call.loc31: init Core.IntLiteral = call %bound_method.loc31_27(%int_10) [concrete = constants.%int_-10.06d]
 // CHECK:STDOUT:   %impl.elem0.loc31_30: %.1c5 = impl_witness_access constants.%ImplicitAs.impl_witness.a23, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
@@ -486,7 +486,7 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !match.case.else.loc31:
 // CHECK:STDOUT:   %int_2: Core.IntLiteral = int_value 2 [concrete = constants.%int_2]
-// CHECK:STDOUT:   %impl.elem1.loc32: %.02b = impl_witness_access constants.%Negate.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
+// CHECK:STDOUT:   %impl.elem1.loc32: %.e9b = impl_witness_access constants.%Negate.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
 // CHECK:STDOUT:   %bound_method.loc32_25: <bound method> = bound_method %int_2, %impl.elem1.loc32 [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op.bound.e21]
 // CHECK:STDOUT:   %Core.IntLiteral.as.Negate.impl.Op.call.loc32: init Core.IntLiteral = call %bound_method.loc32_25(%int_2) [concrete = constants.%int_-2.962]
 // CHECK:STDOUT:   %impl.elem0.loc32: %.1c5 = impl_witness_access constants.%ImplicitAs.impl_witness.a23, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]

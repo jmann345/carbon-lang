@@ -27,7 +27,7 @@ library "[[@TEST_NAME]]";
 
 import Cpp library "thunk_required.h";
 // CHECK:STDOUT: |-ImportDecl {{0x[a-f0-9]+}} <import_thunk_required.carbon:[[@LINE-1]]:38> col:38 in thunk_required.h implicit thunk_required.h
-// CHECK:STDOUT: |-FunctionDecl {{0x[a-f0-9]+}} <./thunk_required.h:2:6> col:6 in import_thunk_required.carbon hidden foo__carbon_thunk 'void (short * _Nonnull)' inline internal-linkage
+// CHECK:STDOUT: |-FunctionDecl {{0x[a-f0-9]+}} <./thunk_required.h:2:6> col:6 in import_thunk_required.carbon hidden foo__carbon_thunk 'void (short * _Nonnull) noexcept' inline internal-linkage
 // CHECK:STDOUT: | |-ParmVarDecl {{0x[a-f0-9]+}} <col:6> col:6 in import_thunk_required.carbon hidden used a 'short * _Nonnull':'short *'
 // CHECK:STDOUT: | |-ReturnStmt {{0x[a-f0-9]+}} <col:6>
 // CHECK:STDOUT: | | `-CallExpr {{0x[a-f0-9]+}} <col:6> 'void'
@@ -60,7 +60,7 @@ library "[[@TEST_NAME]]";
 
 import Cpp library "return_thunk_required.h";
 // CHECK:STDOUT: |-ImportDecl {{0x[a-f0-9]+}} <import_return_thunk_required.carbon:[[@LINE-1]]:45> col:45 in return_thunk_required.h implicit return_thunk_required.h
-// CHECK:STDOUT: |-FunctionDecl {{0x[a-f0-9]+}} <./return_thunk_required.h:2:6> col:6 in import_return_thunk_required.carbon hidden foo__carbon_thunk 'void (short * _Nonnull)' inline internal-linkage
+// CHECK:STDOUT: |-FunctionDecl {{0x[a-f0-9]+}} <./return_thunk_required.h:2:6> col:6 in import_return_thunk_required.carbon hidden foo__carbon_thunk 'void (short * _Nonnull) noexcept' inline internal-linkage
 // CHECK:STDOUT: | |-ParmVarDecl {{0x[a-f0-9]+}} <col:6> col:6 in import_return_thunk_required.carbon hidden used return 'short * _Nonnull':'short *'
 // CHECK:STDOUT: | |-CXXNewExpr {{0x[a-f0-9]+}} <col:6> 'short *' global Function {{0x[a-f0-9]+}} 'operator new' 'void *(__size_t, void *) noexcept'
 // CHECK:STDOUT: | | |-CallExpr {{0x[a-f0-9]+}} <col:6> 'short'

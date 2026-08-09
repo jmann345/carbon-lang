@@ -57,9 +57,23 @@ fn VarSide[R: Core.Try where .BreakType = i32]() -> R {
   // from the call is an in-place init, so the `var` storage is the only
   // registered cleanup (the eval/call.carbon fail_todo_dependent_call_type
   // location shape).
-  // CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE+4]]:3: error: cannot access member of interface `Core.Destroy` in type `R` that does not implement that interface [MissingImplInMemberAccess]
+  // CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE+18]]:3: error: cannot access member of interface `Core.Destroy` in type `R` that does not implement that interface [MissingImplInMemberAccess]
   // CHECK:STDERR:   var unused x: R = MakeR(R);
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE-13]]:34: error: use of undefined generic function [MissingGenericFunctionDefinition]
+  // CHECK:STDERR:   let unused c: R.ContinueType = MakeR(R)?;
+  // CHECK:STDERR:                                  ^~~~~
+  // CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE-31]]:1: note: generic function declared here [MissingGenericFunctionDefinitionHere]
+  // CHECK:STDERR: fn MakeR(generic R2: Core.Try where .BreakType = i32) -> R2;
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE+7]]:21: error: use of undefined generic function [MissingGenericFunctionDefinition]
+  // CHECK:STDERR:   var unused x: R = MakeR(R);
+  // CHECK:STDERR:                     ^~~~~
+  // CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE-38]]:1: note: generic function declared here [MissingGenericFunctionDefinitionHere]
+  // CHECK:STDERR: fn MakeR(generic R2: Core.Try where .BreakType = i32) -> R2;
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   var unused x: R = MakeR(R);
   return R.FromBreak(0);
@@ -95,13 +109,20 @@ fn Widened(generic T: type) {
 }
 
 fn Trigger() {
-  // CHECK:STDERR: fail_sf6_rejected_instantiation.carbon:[[@LINE+10]]:3: error: unable to monomorphize specific `Widened(Fat)` [ResolvingSpecificHere]
+  // CHECK:STDERR: fail_sf6_rejected_instantiation.carbon:[[@LINE+17]]:3: error: unable to monomorphize specific `Widened(Fat)` [ResolvingSpecificHere]
   // CHECK:STDERR:   Widened(Fat);
   // CHECK:STDERR:   ^~~~~~~
   // CHECK:STDERR: fail_sf6_rejected_instantiation.carbon:[[@LINE-7]]:18: note: `MyResult(T, i32)` evaluates to incomplete type `MyResult(Fat, i32)` [IncompleteTypeInMonomorphization]
   // CHECK:STDERR:   var unused mr: MyResult(T, i32) = MyResult(T, i32).Err(0);
   // CHECK:STDERR:                  ^~~~~~~~~~~~~~~~
   // CHECK:STDERR: fail_sf6_rejected_instantiation.carbon:[[@LINE-19]]:1: note: choice alternative payload type `Fat` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
+  // CHECK:STDERR: choice MyResult(T: type, E: type) {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_sf6_rejected_instantiation.carbon:[[@LINE-14]]:37: error: unable to monomorphize specific `Err(i32)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   var unused mr: MyResult(T, i32) = MyResult(T, i32).Err(0);
+  // CHECK:STDERR:                                     ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_sf6_rejected_instantiation.carbon:[[@LINE-26]]:1: note: choice alternative payload type `Fat` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
   // CHECK:STDERR: choice MyResult(T: type, E: type) {
   // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:

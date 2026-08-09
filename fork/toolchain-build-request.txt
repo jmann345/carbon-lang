@@ -1,1 +1,1 @@
-2026-08-08T22:50:22Z gate re-fire for B1b (MD032 fix)
+2026-08-09T01:30Z gate fire for B2a (symbolic-choice destroy widening)

@@ -1,1 +1,1 @@
-2026-08-08T22:49:07Z conformance for B1b landing (expect 83/0/30 over 113)
+2026-08-09T01:35Z conformance run for B2a (expect 84/0/30 over 114)

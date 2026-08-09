@@ -610,6 +610,85 @@ fix round's symbolic-operand narrowing gate, ledgered in plan §6 with
 W-071 as its discharge (amended from "zero remain" at that round).
 Veto-able.
 
+_B2a landing note (2026-08-09):_ the implementation slice of the approved
+B2 plan (fork/b2/plan.md — process step 6, two adversarial plan-review
+rounds, coordinator sign-off on the six-item veto digest) is landed: the
+W-071 discharge, the only ungated F-006 remainder per the plan's §0.1
+classification (B3 stays post-S3p; the B2b S3p ask package is the sibling
+slice). _The resolution (digest item 2, option (b) as pinned):_
+`CanDestroyClass` (custom_witness.cpp) gains a choice clause BEFORE the
+object-repr field walk — `class_info.is_choice` plus the symbolic-QUERY
+predicate (the same `query_self_const_id.is_symbolic()` fact
+`LookupDestroyWitness` defers witness building on, threaded down from the
+`CanDestroyType` entry so yes/no and build/defer key on one predicate) —
+answering destroyable-deferred `NonTrivial`, never `Trivial`, on the
+strength of SF-6's per-specific payload guarantee; concrete choice
+specifics take the unchanged field walk, and non-choice symbolic cases
+(`ImplWitnessAccess`/`SymbolicBinding`) are untouched. **Recorded
+deviation, flagged for B2b ratification:** the W-071 ledger's option-(b)
+wording said "TRIVIALLY destructible"; the landed answer is
+`NonTrivial`-deferred (a symbolic-time `Trivial` would encode a format a
+future consumer could trust wrongly — the S1 adapter shape is genuinely
+`NonTrivial` concretely); the B2b brief surfaces that delta alongside
+option (a) as the user's S3p alternative. The §2.2 revisit note (valid
+only while SF-6's allowlist holds and destroy synthesis stays a
+placeholder) is recorded in the clause comment and in W-071's successor
+state in work-items.json. _The widening (digest item 2's language-wide
+statement):_ plain `var`s, `match` scrutinee temporaries, and `?`
+carriers/operands of SYMBOLIC choice specifics in generic bodies now
+compile uniformly — pinned deliberately by question.carbon's restored
+generic split (the recorded discharge body `let unused c: R.ContinueType
+= r?; return R.FromBreak(0);`), its symbolic-choice-operand,
+widened-var, and widened-scrutinee-temporary probes (the scrutinee
+probe carries the mixed-specific `MyResult(T, i32)` edge). _The uniformity policy (digest item
+3):_ the handle_question.cpp gate is DELETED outright, no narrowed-gate
+fallback needed — the NEW fail_question_generic.carbon pins `MakeR(R)?`
+and `var unused x: R = MakeR(R);` side by side diagnosing the identical
+missing-`Core.Destroy` error (`?` gets no carve-out; R-2/R-3's
+falsifiers), plus the R-8 negative probe: an SF-6-REJECTED instantiation
+of the widened `var` shape (`Widened(Fat)`) pins
+`ChoicePayloadNotTrivialInSpecific` as a clean
+monomorphization-time diagnostic under `ResolvingSpecificHere`, not a
+crash or eval retry loop. _Golden placement note:_ the §3 probes landed
+as NEW files (check fail_question_generic.carbon, lower
+question_generic.carbon with the instantiated-generic CFG and the S1
+adapter-payload probe) rather than subfiles of the existing
+fail_question.carbon/question.carbon lower goldens, keeping those
+byte-identical per §4; positive CHECK content rides the runner
+autoupdate (R15/R19 red-first-CI reconciliation). The lower criterion is
+the REVISED one: the instantiated-generic CFG carries the same
+no-op-body destroy-call shape as the concrete `_CBasic.Main` baseline;
+falsification is a non-empty destroy body, a user `Destroy` impl invoked
+on the propagation path, or absent calls. _TODO ledger (digest item 4):_
+the symbolic-operand string is DISCHARGED at its emission site; **net `?`
+TODO strings across B2: zero** (plan §6 as written, no amendment needed);
+all other TODO strings byte-identical. _Conformance (digest item 5):_ NEW
+differential pair error_handling/question_generic_diff.{carbon,diff.cpp}
+(generic `?` chain over symbolic `MyResult(T, i32)` operands instantiated
+at i32 AND i64 — distinct `ControlFlow` specifics/layouts at runtime —
+against a C++ function-TEMPLATE early-return oracle, runtime-selected
+failure depth, runtime-computed payloads, an i64 payload-integrity
+comparison): target floor 84 PASS / 0 FAIL / 30 SKIP over 114, no SKIP
+flips; `runner.py --self-test` OK, README table regenerated (DIFF-4),
+scoreboard regeneration rides the landing gate (R9). _R-6 (upstream):_
+the pre-implementation re-check found the tree matching every plan
+citation (CanDestroyClass :144, CanDestroyType dispatch, the :658
+symbolic-build deferral, the eval hook) — no drift from upstream 453b547's
+line of work; no public names minted, no new V-3a divergence-register
+entries. _Review-round records (2026-08-09):_ plan §4's pre-change grep
+found zero `Core.Destroy`-adjacent choice/match goldens outside the
+enumerated set (outcome verified independently by the strictness
+review); the R-5 broken-oracle drill was NOT run locally (no toolchain)
+— its falsifier stands and the drill rides the conformance gate, whose
+runtime differential comparison is also the pair's first compile+run
+verification; the reconciliation churn review must apply the R-1/R-8
+falsification triads by hand against the autoupdated goldens (they are
+pinned in comments until then). Named residue: IMPORT parity for
+generic bodies containing `?` (the deferred destroy-witness eval-block
+content is only instantiated same-file; the W-069 precedent says
+import-side gaps are real) — a follow-up subfile, not B2a scope.
+Veto-able.
+
 ### F-007: Unions - **Native `union` declaration** (2026-07-19)
 
 Rust-shaped safety surface (writes safe, reads defined byte-reinterpretation,

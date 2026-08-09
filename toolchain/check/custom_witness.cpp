@@ -140,12 +140,16 @@ static auto HasWitnessForOneField(
   return has_witness ? DestroyFormat::NonTrivial : DestroyFormat::NoDestroy;
 }
 
-// Returns true if `class_type` should impl `Destroy`.
+// Returns true if `class_type` should impl `Destroy`. `query_is_symbolic` is
+// whether the QUERY constant is symbolic — the same
+// `query_self_const_id.is_symbolic()` fact `LookupDestroyWitness` branches on
+// to defer witness BUILDING, threaded down from the `CanDestroyType` entry so
+// that yes/no and build/defer key on one predicate (fork/b2/plan.md §2.2).
 static auto CanDestroyClass(
     Context& context, SemIR::LocId loc_id, SemIR::ClassType class_type,
     const SemIR::CompleteTypeInfo& complete_info,
-    SemIR::SpecificInterfaceId query_specific_interface_id, bool is_partial)
-    -> DestroyFormat {
+    SemIR::SpecificInterfaceId query_specific_interface_id, bool is_partial,
+    bool query_is_symbolic) -> DestroyFormat {
   // Abstract classes can't be destroyed.
   if (!is_partial && complete_info.IsAbstract()) {
     return DestroyFormat::NoDestroy;
@@ -156,6 +160,38 @@ static auto CanDestroyClass(
   // `LookupCppImpl` handles C++ types.
   if (context.name_scopes().Get(class_info.scope_id).is_cpp_scope()) {
     return DestroyFormat::NoDestroy;
+  }
+
+  // Fork (W-071 discharge, fork/b2/plan.md §2.2): a `choice` specific under a
+  // symbolic query is destroyable, answered STRUCTURALLY rather than by the
+  // object-repr field walk below. The justification is SF-6's per-specific
+  // payload guarantee: every INSTANTIABLE specific of a payload-carrying
+  // choice passes the scalar payload allowlist (`IsInSliceChoicePayloadType`),
+  // enforced at monomorphization by the `CustomLayoutType` eval hook
+  // (`ChoicePayloadNotTrivialInSpecific`), so the elements the field walk
+  // would check are guaranteed destroyable in every specific that can
+  // actually exist. The walk itself cannot run here: under symbolic arguments
+  // the repr is the dependent-layout sentinel (or a partially substituted
+  // `CustomLayoutType`), which is exactly the walk that fails. The answer is
+  // `NonTrivial`, never `Trivial`: it is only ever consumed as a yes/no —
+  // `LookupDestroyWitness` declines to BUILD a witness for symbolic selves,
+  // and each concrete monomorphization re-derives the real format from its
+  // concrete fields (the S1 admitted-exception adapter shape — a payload
+  // adapter with a user `Core.Destroy` impl — is genuinely `NonTrivial`
+  // concretely, so a cached `Trivial` would be wrong for it). Concrete choice
+  // specifics take the unchanged field walk below.
+  //
+  // W-071 revisit note: this structural trust is valid exactly while SF-6's
+  // per-specific allowlist holds and destroy-op synthesis stays a placeholder
+  // (`MakeDestroyOpBody`). When SF-6 widens past trivially destructible
+  // payloads or real destroy synthesis lands, this clause must become a real
+  // per-element witness check under the symbolic arguments — and note the
+  // predicate keys on the ORIGINAL query constant while the class dispatch
+  // keys on the canonical facet-or-type value: unobservable while the answer
+  // is a bare yes/no, but the spot where yes/no and a real per-element walk
+  // could diverge once this clause does structural work.
+  if (class_info.is_choice && query_is_symbolic) {
+    return DestroyFormat::NonTrivial;
   }
 
   auto object_repr_id =
@@ -226,7 +262,8 @@ static auto CanDestroyType(
       return CanDestroyClass(context, loc_id, class_type,
                              context.types().GetCompleteTypeInfo(type_id),
                              query_specific_interface_id,
-                             /*is_partial=*/false);
+                             /*is_partial=*/false,
+                             query_self_const_id.is_symbolic());
     }
 
     case CARBON_KIND(SemIR::ConstType const_type): {
@@ -248,7 +285,8 @@ static auto CanDestroyType(
       return CanDestroyClass(context, loc_id, class_type,
                              context.types().GetCompleteTypeInfo(type_id),
                              query_specific_interface_id,
-                             /*is_partial=*/true);
+                             /*is_partial=*/true,
+                             query_self_const_id.is_symbolic());
     }
 
     case CARBON_KIND(SemIR::StructType struct_type): {

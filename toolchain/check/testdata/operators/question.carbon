@@ -210,31 +210,102 @@ fn Twice(x: Outer) -> Outer {
 }
 //@dump-sem-ir-end
 
-// --- fail_todo_generic.carbon
+// --- generic.carbon
 library "[[@TEST_NAME]]";
 
-// NARROWED as landed (fork/b1/plan.md §3's dated narrowing clause,
-// 2026-08-08; risk R-3's narrowing rule — instability re-gates behind a
-// precise TODO, not the slice): `?` on a SYMBOLIC operand type makes the
-// `ControlFlow` carrier a symbolic specific, and the carrier temporary's
-// destroy has no derivable `Core.Destroy` witness — `CanDestroyType`
-// (custom_witness.cpp) needs every payload element destroyable, and `Try`
-// places no `Destroy` bound on `ContinueType`/`BreakType`, so the symbolic
-// payload projection reports NoDestroy and the standard cleanup discharge
-// diagnosed an eager `MissingImplInMemberAccess` at the `?` (twice: once
-// per exclusive discharge path). Gated behind the precise TODO below;
-// W-071 records the gap, and restoring this split POSITIVE (the pre-gate
-// body: `let unused c: R.ContinueType = r?; return R.FromBreak(0);`) is
-// its discharge test. Concrete operands inside generic bodies are NOT
-// gated — their carriers get concrete destroy witnesses.
+// The W-071 discharge test (fork/b2/plan.md §2.2-2.3), restored POSITIVE
+// from the B1b fail_todo_generic TODO pin: `?` on a SYMBOLIC operand type is
+// ungated. The symbolic `Core.ControlFlow` carrier specific's standard
+// cleanup discharge resolves through `CanDestroyClass`'s choice clause
+// (custom_witness.cpp) — destroyable-deferred `NonTrivial` on the strength
+// of SF-6's per-specific payload guarantee, with each concrete
+// monomorphization re-deriving its own witness.
+
+choice MyResult(T: type, E: type) {
+  Ok(v: T),
+  Err(e: E)
+}
+
+// Returns a value of any type by never returning — the unreachable
+// trailing-return helper for generic match-reconstruct bodies
+// (fork/b1/plan.md §2.6, dated correction). The explicit generic type
+// param + self-recursion is the arbiter-verified
+// function/generic/deduce.carbon `ExplicitGenericParam` shape.
+fn Diverge(generic T2: type) -> T2 { return Diverge(T2); }
+
+impl forall [T: type, E: type] MyResult(T, E) as Core.Try
+    where .ContinueType = T and .BreakType = E {
+  fn Branch(self) -> Core.ControlFlow(T, E) {
+    match (self) {
+      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+    }
+    // Unreachable-terminator idiom (fork/b1/plan.md §2.6, dated
+    // correction): reachability doesn't consult match exhaustiveness; no
+    // generic `ControlFlow(T, E)` value is conjurable, and the
+    // interface-recursive call does not type-collapse (its return type's
+    // associated-constant projections are not reduced by this impl's own
+    // `where` rewrites), so diverge through the helper.
+    return Diverge(Core.ControlFlow(T, E));
+  }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+}
+
+// Declaration-only maker for the scrutinee-temporary probe below (the
+// abstract.carbon `ReturnAbstract` precedent); explicit `generic` params
+// because `E2` is not deducible from the value arguments.
+fn MakeMR(generic T2: type, generic E2: type, x: T2) -> MyResult(T2, E2);
+
+// Payload-binding sink (the match/choice_generic_payload_pattern.carbon
+// `Discard` shape): consumes a symbolic-typed payload binding by value.
+fn Discard[U: type](_: U) {}
+
+//@dump-sem-ir-begin
+// The recorded W-071 discharge body: a facet-bound operand `r: R`. The
+// carrier is `Core.ControlFlow(R.ContinueType, i32)` — a symbolic specific
+// whose payload projections carry no `Destroy` bound.
 fn PropagateOnly[R: Core.Try where .BreakType = i32](r: R) -> R {
-  // CHECK:STDERR: fail_todo_generic.carbon:[[@LINE+4]]:34: error: semantics TODO: `postfix `?` on an operand of symbolic type` [SemanticsTodo]
-  // CHECK:STDERR:   let unused c: R.ContinueType = r?;
-  // CHECK:STDERR:                                  ^~
-  // CHECK:STDERR:
   let unused c: R.ContinueType = r?;
   return R.FromBreak(0);
 }
+
+// The second symbolic shape: the operand is itself a symbolic CHOICE
+// specific (`mr: MyResult(T, E)`), not a facet binding — both the operand's
+// own future discharges and the carrier's go through the choice clause.
+fn PropagateChoice[T: type, E: type](mr: MyResult(T, E), e: E)
+    -> MyResult(T, E) {
+  let unused v: T = mr?;
+  return MyResult(T, E).Err(e);
+}
+
+// The §2.2 widening is language-wide, pinned deliberately rather than
+// incidentally: a plain `var` of a symbolic choice specific in a generic
+// body compiles — its destroy is the same deferred-`NonTrivial` answer the
+// `?` carrier gets.
+fn WidenedVar[T: type, E: type](t: T, unused e: E) {
+  var unused mr: MyResult(T, E) = MyResult(T, E).Ok(t);
+}
+
+// ...and so does a `match` scrutinee TEMPORARY of a symbolic choice
+// specific (the same discharge, registered by the scrutinee
+// materialization; the arm shapes are the proven
+// match/choice_generic_payload_pattern.carbon symbolic destructuring).
+// `MyResult(T, i32)` is also the MIXED-specific edge pinned by §2.2: one
+// symbolic argument makes the whole specific's constant symbolic, so the
+// clause fires and the concrete monomorphization re-derives per specific.
+fn WidenedScrutinee[T: type](t: T) -> i32 {
+  match (MakeMR(T, i32, t)) {
+    case .Ok(v: T) => {
+      Discard(v);
+      return 1;
+    }
+    case .Err(e: i32) => { return e; }
+  }
+  // Unreachable trailing return (reachability doesn't consult match
+  // exhaustiveness — fork/b1/plan.md §2.6).
+  return -1;
+}
+//@dump-sem-ir-end
 
 // --- convert.carbon
 library "[[@TEST_NAME]]";

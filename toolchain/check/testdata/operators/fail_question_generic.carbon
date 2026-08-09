@@ -62,33 +62,26 @@ fn VarSide[R: Core.Try where .BreakType = i32]() -> R {
   // from the call is an in-place init, so the `var` storage is the only
   // registered cleanup (the eval/call.carbon fail_todo_dependent_call_type
   // location shape).
-  // CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE+18]]:3: error: cannot access member of interface `Core.Destroy` in type `R` that does not implement that interface [MissingImplInMemberAccess]
+// to be callable, and no R2 value is conjurable, so it diverges — the
+// probes below never run, they only need to CHECK.
+fn MakeR(generic R2: Core.Try where .BreakType = i32) -> R2 {
+  return MakeR(R2);
+}
+// to be callable, and no R2 value is conjurable, so it diverges — the
+// probes below never run, they only need to CHECK.
+// CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE+7]]:1: error: redefinition of `fn MakeR` [RedeclRedef]
+// CHECK:STDERR: fn MakeR(generic R2: Core.Try where .BreakType = i32) -> R2 {
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE-8]]:1: note: previously defined here [RedeclPrevDef]
+// CHECK:STDERR: fn MakeR(generic R2: Core.Try where .BreakType = i32) -> R2 {
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
+fn MakeR(generic R2: Core.Try where .BreakType = i32) -> R2 {
+  return MakeR(R2);
+}
+  // CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE+4]]:3: error: cannot access member of interface `Core.Destroy` in type `R` that does not implement that interface [MissingImplInMemberAccess]
   // CHECK:STDERR:   var unused x: R = MakeR(R);
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~
-  // CHECK:STDERR:
-  // CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE-13]]:34: error: use of undefined generic function [MissingGenericFunctionDefinition]
-  // CHECK:STDERR:   let unused c: R.ContinueType = MakeR(R)?;
-  // CHECK:STDERR:                                  ^~~~~
-  // CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE-31]]:1: note: generic function declared here [MissingGenericFunctionDefinitionHere]
-  // CHECK:STDERR: // Diverging maker (the Diverge shape): a GENERIC function must be defined
-// to be callable, and no R2 value is conjurable, so it diverges — the
-// probes below never run, they only need to CHECK.
-fn MakeR(generic R2: Core.Try where .BreakType = i32) -> R2 {
-  return MakeR(R2);
-}
-  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
-  // CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE+7]]:21: error: use of undefined generic function [MissingGenericFunctionDefinition]
-  // CHECK:STDERR:   var unused x: R = MakeR(R);
-  // CHECK:STDERR:                     ^~~~~
-  // CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE-38]]:1: note: generic function declared here [MissingGenericFunctionDefinitionHere]
-  // CHECK:STDERR: // Diverging maker (the Diverge shape): a GENERIC function must be defined
-// to be callable, and no R2 value is conjurable, so it diverges — the
-// probes below never run, they only need to CHECK.
-fn MakeR(generic R2: Core.Try where .BreakType = i32) -> R2 {
-  return MakeR(R2);
-}
-  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   var unused x: R = MakeR(R);
   return R.FromBreak(0);

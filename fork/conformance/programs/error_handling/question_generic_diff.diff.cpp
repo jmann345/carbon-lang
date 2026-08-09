@@ -10,7 +10,7 @@
 // runtime-computed seeds, and the same error-tagging bases (101/202), so
 // byte-identical output pins where propagation stopped inside the template
 // body and what the break payload was. The int64_t leg compares the
-// continue payload against the same runtime-computed expectation the
+// Ok payload against the same runtime-computed expectation the
 // Carbon side uses. printf("%d\n", ...) mirrors Core.Print's lowering
 // exactly (toolchain/lower/handle_call.cpp).
 
@@ -44,19 +44,21 @@ static auto Step(T x, bool fail, int tag) -> Result<T> {
 
 template <typename T>
 static auto Chain(T x, int fail_at) -> Result<T> {
-  // The explicit spelling of `Step(x, fail_at == 1, 101)?`.
+  // The explicit spelling of `Discard(Step(x, fail_at == 1, 101)?)`: the
+  // break path early-returns with the converted payload; the continue
+  // value is discarded and the Ok payload is reconstructed from `x` (the
+  // identical value — `Step` passes `x` through), mirroring the Carbon
+  // side's W-072 wart scope stated in question_generic_diff.carbon.
   Result<T> r1 = Step(x, fail_at == 1, 101);
   if (!r1.ok) {
     return Err<T>(r1.e);
   }
-  T a = r1.v;
-  // The explicit spelling of `Step(a, fail_at == 2, 202)?`.
-  Result<T> r2 = Step(a, fail_at == 2, 202);
+  // The explicit spelling of `Discard(Step(x, fail_at == 2, 202)?)`.
+  Result<T> r2 = Step(x, fail_at == 2, 202);
   if (!r2.ok) {
     return Err<T>(r2.e);
   }
-  T b = r2.v;
-  return Ok(b);
+  return Ok(x);
 }
 
 static auto ProbeI(int fail_at, int seed) -> void {

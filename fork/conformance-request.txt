@@ -1,1 +1,1 @@
-2026-08-09T01:35Z conformance run for B2a (expect 84/0/30 over 114)
+2026-08-09T01:55Z conformance re-run for B2a after W-072 pair restructure (expect 84/0/30 over 114)

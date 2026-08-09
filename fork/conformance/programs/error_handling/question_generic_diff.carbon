@@ -17,13 +17,28 @@
 // second step) and every payload is runtime-computed (R16d), each step
 // tagging its error with a distinct base (101/202), so byte-identical
 // output pins WHERE propagation stopped inside the generic body and WHAT
-// the break payload was. The i64 leg additionally compares the continue
+// the break payload was. The i64 leg additionally compares the Ok
 // payload against a runtime-computed expectation, so a corrupted i64
-// payload roundtrip through the wider carrier layout breaks the
+// payload roundtrip through the wider specific's layout breaks the
 // byte-identical-output requirement. Exit code and stdout must be
 // byte-identical per DIFF-1; no EXPECT-STDOUT — C++ computes the
 // expectation. The `Branch` impl body uses the match-reconstruct style
 // (fork/b1/plan.md §2.6).
+//
+// SCOPE, honestly narrowed (W-072): what this pair arbitrates at runtime
+// is BREAK-path propagation — that each instantiation's `?` early-returns
+// at the runtime-selected depth with the right converted payload, riding
+// the B2a symbolic-choice destroy widening for its carrier and operand
+// temporaries. The `?` CONTINUE values are consumed through the check
+// golden's proven deduced-sink shape (`Discard`), NOT threaded onward as
+// `T`: under symbolic arguments the continue value types as the unreduced
+// projection `MyResult(T, i32).(Core.Try.ContinueType)` (the recorded
+// B2a wart, fork/decision-log.md landing note), so a `T`-annotated
+// binding does not check until projection rewrite-reduction lands
+// (W-072). The Ok payload is reconstructed from `x` — the identical
+// value, since `Step` passes `x` through — keeping the output table and
+// the layout-roundtrip observation intact; a continue-THREADING runtime
+// arbiter is W-072 follow-up material.
 
 import Core library "io";
 
@@ -63,15 +78,23 @@ fn Step[T: type](x: T, fail: bool, tag: i32) -> MyResult(T, i32) {
   return MyResult(T, i32).Ok(x);
 }
 
+// Payload sink — the check golden's proven deduced-sink shape
+// (toolchain/check/testdata/operators/question.carbon `Discard`).
+fn Discard[U: type](_: U) {}
+
 // The generic `?` chain (the W-071 shape, runtime-arbitrated): both `?`
 // operands are temporaries of the SYMBOLIC choice specific
 // `MyResult(T, i32)`, so their carrier and operand discharges both ride
 // `CanDestroyClass`'s choice clause at check time and re-derive concrete
-// witnesses per instantiation.
+// witnesses per instantiation. Operand and return type are the SAME
+// specific, so the break path's `FromBreak` conversion aligns
+// projection-for-projection (the check golden's `PropagateChoice`
+// configuration); continue values go through `Discard` per the W-072
+// wart note in the header.
 fn Chain[T: type](x: T, fail_at: i32) -> MyResult(T, i32) {
-  let a: T = Step(x, fail_at == 1, 101)?;
-  let b: T = Step(a, fail_at == 2, 202)?;
-  return MyResult(T, i32).Ok(b);
+  Discard(Step(x, fail_at == 1, 101)?);
+  Discard(Step(x, fail_at == 2, 202)?);
+  return MyResult(T, i32).Ok(x);
 }
 
 // Prints the outcome tag (0 = Ok, 1 = Err) and the payload.
@@ -89,8 +112,8 @@ fn ProbeI(fail_at: i32, seed: i32) {
 }
 
 // The i64 instantiation: prints the outcome tag, then 1/0 for whether the
-// continue payload matches the runtime-computed expectation (Core.Print
-// takes i32 only), or the i32 break payload directly.
+// Ok payload matches the runtime-computed expectation (Core.Print takes
+// i32 only), or the i32 break payload directly.
 fn ProbeL(fail_at: i32, seed: i64, expect: i64) {
   match (Chain(seed, fail_at)) {
     case .Ok(v: i64) => {

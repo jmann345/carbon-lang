@@ -703,7 +703,27 @@ synthesized op bodies are bare returns; the adapter probe's user
 `Tag.Op` appears ONLY inside the materialized witness thunk's
 definition, which has ZERO call sites — never invoked from program
 flow, which is the honest reading of the S1 exception's
-"consulted-but-never-invoked". Veto-able.
+"consulted-but-never-invoked". _Conformance round (2026-08-09):_ the
+suite's first run COMPILE-FAILED the new pair — its original `let a: T =
+Step(...)?;` chain was authored (in the implementation commit) before the
+regen round surfaced the projection wart, and never received the goldens'
+fix; the golden fix consumed the value through a deduced sink because
+under symbolic arguments the continue value CANNOT be threaded as `T` at
+all — an expressiveness limit of the landed slice, now ledgered as
+**W-072** (projection rewrite-reduction; facet-binding rewrites DO reduce
+— the W-071 discharge body's `FromBreak(0)` — but impl-lookup projections
+on symbolic specifics do not; `Core.Try`'s missing success constructor is
+recorded there as adjacent B2b/SF-9 brief material). Per R17 the pair was
+NOT worked around silently: it is restructured to the proven
+`PropagateChoice` configuration (operand and return the same specific so
+the break path's `FromBreak` aligns projection-for-projection; continue
+values through the golden's `Discard` sink; Ok payload reconstructed from
+the seed — the identical value `Step` passes through, so the output
+table, the runtime-selected depths, and the i64 layout-roundtrip
+observation are unchanged) with the honest scope narrowing stated in the
+pair's header: it arbitrates BREAK-path propagation + per-instantiation
+layouts; continue-THREADING runtime arbitration is W-072 follow-up. The
+C++ oracle's Chain mirrors the discard semantics. Veto-able.
 
 ### F-007: Unions - **Native `union` declaration** (2026-07-19)
 

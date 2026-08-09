@@ -696,7 +696,14 @@ now consumed through the deduced sink and RECORDED AS A KNOWN WART:
 projection-typed values users must consume by way of deduction or
 projection-annotated bindings until rewrite-reduction lands); and the
 scrutinee probe's maker was declaration-only, but a GENERIC function
-must be defined to be callable — defined. Veto-able.
+must be defined to be callable — defined (and the fail file's facet
+maker likewise, as a diverging body). _R-1 triad applied by hand to the
+regen (2026-08-09):_ destroy calls carry the baseline no-op shape; all
+synthesized op bodies are bare returns; the adapter probe's user
+`Tag.Op` appears ONLY inside the materialized witness thunk's
+definition, which has ZERO call sites — never invoked from program
+flow, which is the honest reading of the S1 exception's
+"consulted-but-never-invoked". Veto-able.
 
 ### F-007: Unions - **Native `union` declaration** (2026-07-19)
 

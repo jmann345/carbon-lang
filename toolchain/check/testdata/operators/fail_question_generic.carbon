@@ -33,7 +33,12 @@ library "[[@TEST_NAME]]";
 
 // Declaration-only maker (the abstract.carbon `ReturnAbstract` precedent):
 // returns a value of the caller's facet binding.
-fn MakeR(generic R2: Core.Try where .BreakType = i32) -> R2;
+// Diverging maker (the Diverge shape): a GENERIC function must be defined
+// to be callable, and no R2 value is conjurable, so it diverges — the
+// probes below never run, they only need to CHECK.
+fn MakeR(generic R2: Core.Try where .BreakType = i32) -> R2 {
+  return MakeR(R2);
+}
 
 fn QuestionSide[R: Core.Try where .BreakType = i32](e: i32) -> R {
   // The operand temporary's destroy is attempted once per exclusive
@@ -65,14 +70,24 @@ fn VarSide[R: Core.Try where .BreakType = i32]() -> R {
   // CHECK:STDERR:   let unused c: R.ContinueType = MakeR(R)?;
   // CHECK:STDERR:                                  ^~~~~
   // CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE-31]]:1: note: generic function declared here [MissingGenericFunctionDefinitionHere]
-  // CHECK:STDERR: fn MakeR(generic R2: Core.Try where .BreakType = i32) -> R2;
+  // CHECK:STDERR: // Diverging maker (the Diverge shape): a GENERIC function must be defined
+// to be callable, and no R2 value is conjurable, so it diverges — the
+// probes below never run, they only need to CHECK.
+fn MakeR(generic R2: Core.Try where .BreakType = i32) -> R2 {
+  return MakeR(R2);
+}
   // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   // CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE+7]]:21: error: use of undefined generic function [MissingGenericFunctionDefinition]
   // CHECK:STDERR:   var unused x: R = MakeR(R);
   // CHECK:STDERR:                     ^~~~~
   // CHECK:STDERR: fail_symbolic_temporary_uniformity.carbon:[[@LINE-38]]:1: note: generic function declared here [MissingGenericFunctionDefinitionHere]
-  // CHECK:STDERR: fn MakeR(generic R2: Core.Try where .BreakType = i32) -> R2;
+  // CHECK:STDERR: // Diverging maker (the Diverge shape): a GENERIC function must be defined
+// to be callable, and no R2 value is conjurable, so it diverges — the
+// probes below never run, they only need to CHECK.
+fn MakeR(generic R2: Core.Try where .BreakType = i32) -> R2 {
+  return MakeR(R2);
+}
   // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   var unused x: R = MakeR(R);

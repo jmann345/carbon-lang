@@ -1,1 +1,1 @@
-2026-08-09T01:11:55Z autoupdate re-fire after generic-subfile authoring fixes; positives must be error-free
+2026-08-09T01:15:23Z autoupdate re-fire: fail-file maker defined; expect fail-file pin reconciliation only

@@ -1,1 +1,1 @@
-2026-08-09T01:15:23Z autoupdate re-fire: fail-file maker defined; expect fail-file pin reconciliation only
+2026-08-09T01:17:00Z R26 pass 2 for B2a (expect zero churn)

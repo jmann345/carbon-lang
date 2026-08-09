@@ -92,6 +92,18 @@ jobs:
               raise SystemExit(f'{fails} conformance failure(s)')
           EOF
 
+      - name: Print failure logs
+        if: failure()
+        run: |
+          # Diagnostic-only: the per-program failure logs (compiler stderr,
+          # both stdouts of a DIFF-MISMATCH) otherwise exist only on the
+          # runner's disk. Printing them changes no pass/fail semantics.
+          for f in fork/conformance/out/logs/*; do
+            [ -f "$f" ] || continue
+            echo "===== $f ====="
+            sed -n '1,200p' "$f"
+          done
+
       - name: Commit and push scoreboard
         run: |
           set -euo pipefail

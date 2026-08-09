@@ -1,1 +1,1 @@
-2026-08-09T01:55Z conformance re-run for B2a after W-072 pair restructure (expect 84/0/30 over 114)
+2026-08-09T02:05Z conformance re-run for B2a with failure-log printing (diagnosing question_generic_diff DIFF-MISMATCH)

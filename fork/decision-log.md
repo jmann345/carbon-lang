@@ -686,8 +686,17 @@ falsification triads by hand against the autoupdated goldens (they are
 pinned in comments until then). Named residue: IMPORT parity for
 generic bodies containing `?` (the deferred destroy-witness eval-block
 content is only instantiated same-file; the W-069 precedent says
-import-side gaps are real) — a follow-up subfile, not B2a scope.
-Veto-able.
+import-side gaps are real) — a follow-up subfile, not B2a scope. _Regen
+round (2026-08-09):_ two authoring defects caught by the first
+autoupdate — the symbolic-choice-operand probe annotated the continue
+value as `T`, but it types as the unreduced projection
+`MyResult(T, E).(Core.Try.ContinueType)` (the B1b non-reduction family;
+now consumed through the deduced sink and RECORDED AS A KNOWN WART:
+`?` on a direct choice operand under symbolic arguments yields
+projection-typed values users must consume by way of deduction or
+projection-annotated bindings until rewrite-reduction lands); and the
+scrutinee probe's maker was declaration-only, but a GENERIC function
+must be defined to be callable — defined. Veto-able.
 
 ### F-007: Unions - **Native `union` declaration** (2026-07-19)
 

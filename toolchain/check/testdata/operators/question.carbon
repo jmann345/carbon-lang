@@ -251,10 +251,14 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
 }
 
-// Declaration-only maker for the scrutinee-temporary probe below (the
-// abstract.carbon `ReturnAbstract` precedent); explicit `generic` params
-// because `E2` is not deducible from the value arguments.
-fn MakeMR(generic T2: type, generic E2: type, x: T2) -> MyResult(T2, E2);
+// Maker for the scrutinee-temporary probe below; explicit `generic` params
+// because `E2` is not deducible from the value arguments. Defined, not
+// declaration-only: a GENERIC function must be defined to be callable
+// (MissingGenericFunctionDefinition), unlike the non-generic
+// declaration-only precedent.
+fn MakeMR(generic T2: type, generic E2: type, x: T2) -> MyResult(T2, E2) {
+  return MyResult(T2, E2).Ok(x);
+}
 
 // Payload-binding sink (the match/choice_generic_payload_pattern.carbon
 // `Discard` shape): consumes a symbolic-typed payload binding by value.
@@ -274,14 +278,12 @@ fn PropagateOnly[R: Core.Try where .BreakType = i32](r: R) -> R {
 // own future discharges and the carrier's go through the choice clause.
 fn PropagateChoice[T: type, E: type](mr: MyResult(T, E), e: E)
     -> MyResult(T, E) {
-  // CHECK:STDERR: generic.carbon:[[@LINE+7]]:21: error: cannot implicitly convert expression of type `MyResult(T, E).(Core.Try.ContinueType)` to `T` [ConversionFailure]
-  // CHECK:STDERR:   let unused v: T = mr?;
-  // CHECK:STDERR:                     ^~~
-  // CHECK:STDERR: generic.carbon:[[@LINE+4]]:21: note: type `MyResult(T, E).(Core.Try.ContinueType)` does not implement interface `Core.ImplicitAs(T)` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   let unused v: T = mr?;
-  // CHECK:STDERR:                     ^~~
-  // CHECK:STDERR:
-  let unused v: T = mr?;
+  // Known wart, recorded: the continue value types as the projection
+  // `MyResult(T, E).(Core.Try.ContinueType)`, which the impl's own `where`
+  // rewrites do not reduce to `T` at check time (the same non-reduction the
+  // B1b trailing-return correction documents), so it is consumed through
+  // the DEDUCED sink rather than a `T`-annotated binding.
+  Discard(mr?);
   return MyResult(T, E).Err(e);
 }
 
@@ -301,13 +303,6 @@ fn WidenedVar[T: type, E: type](t: T, unused e: E) {
 // symbolic argument makes the whole specific's constant symbolic, so the
 // clause fires and the concrete monomorphization re-derives per specific.
 fn WidenedScrutinee[T: type](t: T) -> i32 {
-  // CHECK:STDERR: generic.carbon:[[@LINE+7]]:10: error: use of undefined generic function [MissingGenericFunctionDefinition]
-  // CHECK:STDERR:   match (MakeMR(T, i32, t)) {
-  // CHECK:STDERR:          ^~~~~~
-  // CHECK:STDERR: generic.carbon:[[@LINE-50]]:1: note: generic function declared here [MissingGenericFunctionDefinitionHere]
-  // CHECK:STDERR: fn MakeMR(generic T2: type, generic E2: type, x: T2) -> MyResult(T2, E2);
-  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   match (MakeMR(T, i32, t)) {
     case .Ok(v: T) => {
       Discard(v);

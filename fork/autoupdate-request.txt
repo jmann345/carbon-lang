@@ -1,1 +1,1 @@
-2026-08-09T01:08:44Z autoupdate for B2a; churn budget per plan §4: the replaced generic subfile + 4 new files ONLY; reconciliation review must apply the R-1/R-8 falsification triads by hand
+2026-08-09T01:11:55Z autoupdate re-fire after generic-subfile authoring fixes; positives must be error-free

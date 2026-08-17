@@ -1,1 +1,1 @@
-2026-08-17T19:25Z stage-1v2 regen: reserved-word authoring fix (f1/f2 are fN float literals)
+2026-08-17T21:20Z regen for the poison-filler fix (expect all .val templates zeroinitializer)

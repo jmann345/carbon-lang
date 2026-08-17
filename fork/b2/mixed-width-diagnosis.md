@@ -221,3 +221,58 @@ A width-asymmetric skipped-or-clobbered store is unreachable from this
 code for this evidence, and the observed signature (payload at the wrong
 OFFSET, one width only) is a redirect/layout signature, not a
 missing-store signature. Not live for this bug; no change made.
+
+## ROOT CAUSE — ESTABLISHED (2026-08-17, round 3)
+
+The optimization-level bisect and the post-optimization IR dump close the
+case. Evidence chain, all mechanical:
+
+1.  `--optimize=none` produces the ORACLE-EXACT output; `debug`/`default`
+    corrupt the i64 Err payloads to the stale seed; `speed` corrupts them
+    DIFFERENTLY (`1 1`) — level-dependent corruption of IR that is correct
+    at -O0 is optimizer-exploited UB, and the divergence enters in the
+    LLVM pass pipeline, after lowering (whose IR the dump shows per-width
+    correct — which is also why no file_test golden could ever reproduce
+    it: golden dumps never run the optimizer).
+2.  The same unoptimized IR compiled with the toolchain's own clang at
+    -O1 reproduces the corruption outside `carbon compile` entirely.
+3.  The post-opt dump of `ProbeL` shows the exploitation verbatim: the
+    discriminants fold to loads FROM THE TEMPLATE GLOBALS and the Err-arm
+    payload is `trunc i64 %seed to i32` — the optimizer proved the real
+    payload store irrelevant.
+4.  The license: the covering-copy template globals are emitted with
+    POISON payload filler —
+    `@ControlFlow.val.d01.anon = constant <{ <{ i1, [7 x i8] }>, [8 x i8] }>
+    <{ <{ i1 true, [7 x i8] poison }>, [8 x i8] poison }>` —
+    from `EmitAsConstant(SemIR::UninitializedValue)` returning
+    `PoisonValue` (toolchain/lower/constant.cpp:352). The constructor
+    protocol memcpys the template (poisoning the payload bytes), then the
+    element store covers only a PREFIX of the payload region in a
+    mixed-width specific (i32 tag into the 8-byte region sized for the
+    i64 alternative). When SROA promotes that region to one scalar, the
+    residual poison bytes make the WHOLE value poison (LLVM does not
+    track per-bit poison), and every downstream read is substitutable.
+
+Why each symptom: i32 leg — the store covers the whole 4-byte region,
+no residue, defined. i64 Ok — the i64 store covers all 8 bytes,
+defined. i64 Err — 4 of 8 bytes stored, poison residue, whole scalar
+poison; the optimizer wired the phi to the other arm's seed value. The
+discriminant byte is fully DEFINED in the template (`i1 true`), so the
+arm selection stayed correct at every level. Order-independent,
+multi-file-independent — which is why W1 (coalescing), H-ZERO
+(fingerprint holes), and W2 (layout reuse) all failed to reproduce:
+they were never the mechanism.
+
+THE FIX: `EmitAsConstant(UninitializedValue)` returns zeros
+(`Constant::getNullValue`), making every covering-copied byte defined
+under any partial overwrite. Golden signature: every `.val` template
+global's filler flips `poison` → `zeroinitializer` in the regen; the
+runtime arbiter (question_generic_diff) must flip to PASS at the
+default optimization level. UPSTREAM-ALIGNMENT NOTE (V-3a): whether
+`UninitializedValue`'s lowering is upstream-authored or S3b-era fork
+code, upstream's covering-copy TODO in EmitAggregateInitializer
+contemplates the same memcpy-then-store protocol, so a poison template
+is unsound there too; flagged for the PR as potentially upstreamable.
+The prior rounds' artifacts stay landed AS HARDENING (sret fingerprint
+gate; the presence-set refuse-absent invariant remains staged), each
+labeled for what it is.

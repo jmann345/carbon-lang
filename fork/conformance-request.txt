@@ -1,1 +1,1 @@
-2026-08-18T10:10Z F8c ADJUDICATION RUN: real-header D3 pair un-SKIPped on the branch — PASS=H0(upstream fixed), LINK-FAIL(undefined symbol)=live defect, COMPILE-FAIL=conversion-chain risk
+2026-08-18T13:00Z F8c conformance (expect 89/0/30 over 119; D3 pair flips LINK-FAIL to PASS)

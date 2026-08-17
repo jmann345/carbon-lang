@@ -64,10 +64,22 @@ class SpecificCoalescer {
   }
 
   auto CreateTypeFingerprint(SemIR::SpecificId specific_id,
-                             llvm::Type* llvm_type) -> void {
+                             llvm::Type* llvm_type, llvm::Type* sret_type)
+      -> void {
     llvm::BLAKE3 function_type_fingerprint;
     RawStringOstream os;
     llvm_type->print(os);
+    // With opaque pointers the LLVM function type does not distinguish an
+    // sret return of one object type from another: two specifics returning
+    // differently laid out objects both print as `void (ptr, ...)`. The sret
+    // pointee is part of the signature this gate must separate on. By-ref
+    // returns stay width-blind here deliberately: their pointer contract is
+    // visible in the body, so identical-instruction-stream merging remains
+    // semantically sound for them, unlike sret's callee-owned initialize.
+    if (sret_type != nullptr) {
+      os << "\nsret ";
+      sret_type->print(os);
+    }
     function_type_fingerprint.update(os.TakeStr());
     function_type_fingerprint.final(
         lowered_specifics_type_fingerprint_.Get(specific_id));

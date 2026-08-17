@@ -237,6 +237,13 @@ auto SpecificCoalescer::AreFunctionBodiesEquivalent(
         if (IsKnownEquivalence(state1_call, state2_call)) {
           continue;
         }
+        // The type gate applies to every pair this closure can commit, not
+        // only the root pair: callee specifics whose bodies fingerprint
+        // identically can still differ in signature (sret pointee).
+        if (!AreFunctionTypesEquivalent(state1_call, state2_call)) {
+          InsertPair(state1_call, state2_call, non_equivalent_specifics_);
+          return false;
+        }
         if (!InsertPair(state1_call, state2_call,
                         visited_equivalent_specifics)) {
           continue;

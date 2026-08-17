@@ -212,7 +212,8 @@ class FileContext {
   // lowered.
   auto HandleReferencedSpecificFunction(SemIR::FunctionId function_id,
                                         SemIR::SpecificId specific_id,
-                                        llvm::Type* llvm_type) -> void;
+                                        llvm::Type* llvm_type,
+                                        llvm::Type* sret_type) -> void;
 
   // Builds an LLVM function declaration for the given function, or returns an
   // existing one if we've already lowered another declaration of the same

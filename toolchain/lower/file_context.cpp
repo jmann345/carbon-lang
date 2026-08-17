@@ -328,7 +328,7 @@ auto FileContext::HandleReferencedCppFunction(clang::FunctionDecl* cpp_decl)
 
 auto FileContext::HandleReferencedSpecificFunction(
     SemIR::FunctionId function_id, SemIR::SpecificId specific_id,
-    llvm::Type* llvm_type) -> void {
+    llvm::Type* llvm_type, llvm::Type* sret_type) -> void {
   CARBON_CHECK(specific_id.has_value());
 
   // Add this specific function to a list of specific functions whose
@@ -343,7 +343,7 @@ auto FileContext::HandleReferencedSpecificFunction(
   // For now, we compute the function type fingerprint only for specifics,
   // though we might need it for all functions in order to create a canonical
   // fingerprint across translation units.
-  coalescer_.CreateTypeFingerprint(specific_id, llvm_type);
+  coalescer_.CreateTypeFingerprint(specific_id, llvm_type, sret_type);
 }
 
 auto FileContext::GetOrCreateLLVMFunction(
@@ -386,7 +386,8 @@ auto FileContext::GetOrCreateLLVMFunction(
   // emit its definition.
   if (specific_id.has_value()) {
     HandleReferencedSpecificFunction(function_id, specific_id,
-                                     function_type_info.type);
+                                     function_type_info.type,
+                                     function_type_info.sret_type);
   }
 
   auto* llvm_function = llvm::Function::Create(function_type_info.type,

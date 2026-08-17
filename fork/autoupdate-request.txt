@@ -1,1 +1,1 @@
-2026-08-09T01:17:00Z R26 pass 2 for B2a (expect zero churn)
+2026-08-09T12:00:00Z mixed-width miscompile fix: coalescer sret gate; regenerate all lower goldens; NEW lower/testdata/operators/question_generic_mixed.carbon (expect churn only in coalescer-affected lower goldens plus the new file)

@@ -5,7 +5,7 @@ the implementer terminated after finishing the fix + golden but before
 this note. AMENDED 2026-08-17 per the strictness review's F1: the
 coalescing mechanism below is CANDIDATE W1, not established fact — the
 review showed the body fingerprint hashes width-distinct data
-(object-repr types via ClassElementAccess lowering, load/store types,
+(object-repr types by way of ClassElementAccess lowering, load/store types,
 covering-copy constants: toolchain/lower/handle_aggregates.cpp:37-48,
 function_context.h:124-128, function_context.cpp:193-195/:342-373), so
 the two bodies should NOT have collided unless a hashing bypass exists.
@@ -50,14 +50,14 @@ equivalent through the closure.
 
 ## The fix (both halves)
 
-1. `CreateTypeFingerprint` now appends the sret pointee's printed type
-   to the hash input (specific_coalescer.h:76-79), threaded from
-   `FunctionTypeInfo::sret_type` (lower/type.h:48) through
-   `HandleReferencedSpecificFunction` (file_context.cpp:330,
-   :386-390).
-2. `AreFunctionBodiesEquivalent` applies `AreFunctionTypesEquivalent`
-   to every callee pair before committing it, recording failures in
-   `non_equivalent_specifics_` (specific_coalescer.cpp:240-246).
+1.  `CreateTypeFingerprint` now appends the sret pointee's printed type
+    to the hash input (specific_coalescer.h:76-79), threaded from
+    `FunctionTypeInfo::sret_type` (lower/type.h:48) through
+    `HandleReferencedSpecificFunction` (file_context.cpp:330,
+    :386-390).
+2.  `AreFunctionBodiesEquivalent` applies `AreFunctionTypesEquivalent`
+    to every callee pair before committing it, recording failures in
+    `non_equivalent_specifics_` (specific_coalescer.cpp:240-246).
 
 ## Pre-B2a verdict
 
@@ -84,29 +84,29 @@ arbiter stays fork/conformance/programs/error_handling/question_generic_diff
 
 ## Residues / review attention
 
-- Upstream 4ea5ef4 ("Skip ImplWitnessTable::elements_id when generating
-  fingerprints", in the pending 2026-08-17 weekly merge) touches the
-  SAME fingerprint machinery — the fix must be re-verified against
-  post-merge trunk (mechanical re-read; the sret append is orthogonal
-  to witness-table element skipping, but the merge may move lines).
-- The closure-level gate returns non-equivalence for the WHOLE root pair
-  on the first mismatched callee pair (conservative: correctness over
-  coalescing coverage). An alternative (skip just that callee pair)
-  would coalesce more; rejected for the fix slice — conservative is
-  correct, coverage is an optimization question.
-- Whether upstream can hit this without fork choices (any generic whose
-  instantiations differ only in sret layout with constant-free bodies)
-  is UPSTREAMABLE-fix material; not pursued in this slice.
-- Strictness F2 (conditional on W1): the gate hashes only the sret
-  pointee; INDIRECT-parameter pointees (`ptr %self` for by-ref
-  aggregates) stay invisible to the type fingerprint — if a body-hash
-  bypass exists (the only way W1's collision is real), the same
-  miscompile recurs through a pair differing only in a
-  pointer-parameter pointee. If W1 confirms, the gate must be widened
-  to all indirect pointees (follow-up in the same fix round).
-- Strictness F3: no pre-fix baseline regen exists, so the golden alone
-  cannot prove the fix changed anything; the conformance flip is the
-  arbiter of record (R9).
+-   Upstream 4ea5ef4 ("Skip ImplWitnessTable::elements_id when generating
+    fingerprints", in the pending 2026-08-17 weekly merge) touches the
+    SAME fingerprint machinery — the fix must be re-verified against
+    post-merge trunk (mechanical re-read; the sret append is orthogonal
+    to witness-table element skipping, but the merge may move lines).
+-   The closure-level gate returns non-equivalence for the WHOLE root pair
+    on the first mismatched callee pair (conservative: correctness over
+    coalescing coverage). An alternative (skip just that callee pair)
+    would coalesce more; rejected for the fix slice — conservative is
+    correct, coverage is an optimization question.
+-   Whether upstream can hit this without fork choices (any generic whose
+    instantiations differ only in sret layout with constant-free bodies)
+    is UPSTREAMABLE-fix material; not pursued in this slice.
+-   Strictness F2 (conditional on W1): the gate hashes only the sret
+    pointee; INDIRECT-parameter pointees (`ptr %self` for by-ref
+    aggregates) stay invisible to the type fingerprint — if a body-hash
+    bypass exists (the only way W1's collision is real), the same
+    miscompile recurs through a pair differing only in a
+    pointer-parameter pointee. If W1 confirms, the gate must be widened
+    to all indirect pointees (follow-up in the same fix round).
+-   Strictness F3: no pre-fix baseline regen exists, so the golden alone
+    cannot prove the fix changed anything; the conformance flip is the
+    arbiter of record (R9).
 
 ## Round 2 (2026-08-17): W1 and W2 both refuted; H-ZERO
 
@@ -127,7 +127,8 @@ golden. The distinguishing facts about the failing program: it IMPORTS
 (`import Core library "io"` — multi-file lowering) and its `?` operands
 are call-result temporaries.
 
-### Round-2 root cause — H-ZERO (zero-fingerprint coalescing commits),
+### Round-2 root cause — H-ZERO (zero-fingerprint coalescing commits)
+
 ### code-verified
 
 The coalescer's fingerprint stores are PER-FILE and default-initialized:
@@ -142,21 +143,21 @@ the specific-fingerprint `continue` with no further verification
 (:217-224 pre-fix). Two verified holes produce queried-but-never-written
 slots, both exclusive to multi-file lowering:
 
-1. `GetOrCreateLLVMFunction`'s mangled-name early-return
-   (lower/file_context.cpp:371-383 pre-fix) returns a function created
-   while lowering a different file WITHOUT `HandleReferencedSpecificFunction`
-   — the specific gets neither a type fingerprint nor a scheduled body
-   (hence no body fingerprint) in this file's stores, yet
-   `HandleInst(Call)` records its id into callers' `calls` lists
-   unconditionally (lower/handle_call.cpp:721-723).
-2. `calls` records `callee.file`'s specific id — the file the callee
-   constant resolves into, which for calls inside instantiated bodies can
-   be a DIFFERENT file (handle_call.cpp:707-723) — and the file identity
-   is dropped at `calls.push_back(specific_id)`
-   (lower/function_context.cpp:443). The per-file stores are id-TAGGED
-   (`Tag<SemIR::CheckIRId>`; toolchain/base/id_tag.h:80-93 XOR-untags with
-   THIS file's tag), so a foreign id indexes a garbage slot guarded only
-   by DCHECKs — in the common case an unwritten, all-zero slot.
+1.  `GetOrCreateLLVMFunction`'s mangled-name early-return
+    (lower/file_context.cpp:371-383 pre-fix) returns a function created
+    while lowering a different file WITHOUT `HandleReferencedSpecificFunction`
+    — the specific gets neither a type fingerprint nor a scheduled body
+    (hence no body fingerprint) in this file's stores, yet
+    `HandleInst(Call)` records its id into callers' `calls` lists
+    unconditionally (lower/handle_call.cpp:721-723).
+2.  `calls` records `callee.file`'s specific id — the file the callee
+    constant resolves into, which for calls inside instantiated bodies can
+    be a DIFFERENT file (handle_call.cpp:707-723) — and the file identity
+    is dropped at `calls.push_back(specific_id)`
+    (lower/function_context.cpp:443). The per-file stores are id-TAGGED
+    (`Tag<SemIR::CheckIRId>`; toolchain/base/id_tag.h:80-93 XOR-untags with
+    THIS file's tag), so a foreign id indexes a garbage slot guarded only
+    by DCHECKs — in the common case an unwritten, all-zero slot.
 
 Mechanism: a closure-walk callee pair whose two ids read absent-zero
 passes the (pre-fix) type gate and body check, is committed into
@@ -189,28 +190,28 @@ call site addressing only wide defines.
 
 Commit 2 — the fixes:
 
-1. The early-return now writes the type fingerprint for the specific in
-   this file's store (file_context.cpp; the definition is deliberately
-   NOT re-registered — the creating file owns the body, and a second
-   registration would attempt to redefine the function, tripping the
-   `isDeclaration()` CHECK in `BuildFunctionBody`). The body fingerprint
-   stays absent, which the next item makes safe.
-2. Presence tracking in the coalescer (specific_coalescer.{h,cpp}):
-   `fingerprinted_types_` / `fingerprinted_bodies_` id-sets written at
-   `CreateTypeFingerprint` / `InitializeFingerprintForSpecific`; the root
-   type gate and the closure walk refuse any pair with a missing type OR
-   body fingerprint (absent = unknown = do not merge). Membership is by
-   id value, not store indexing, so foreign-file ids read as absent
-   without touching the tagged stores.
-3. Latent, unrelated to this bug: the eval hook now CHECKs
-   `object_layout.has_value()` before folding a payload tuple layout into
-   max-of-fields (check/eval_inst.cpp) — a dependent layout must not
-   contribute size 0 silently.
+1.  The early-return now writes the type fingerprint for the specific in
+    this file's store (file_context.cpp; the definition is deliberately
+    NOT re-registered — the creating file owns the body, and a second
+    registration would attempt to redefine the function, tripping the
+    `isDeclaration()` CHECK in `BuildFunctionBody`). The body fingerprint
+    stays absent, which the next item makes safe.
+2.  Presence tracking in the coalescer (specific_coalescer.{h,cpp}):
+    `fingerprinted_types_` / `fingerprinted_bodies_` id-sets written at
+    `CreateTypeFingerprint` / `InitializeFingerprintForSpecific`; the root
+    type gate and the closure walk refuse any pair with a missing type OR
+    body fingerprint (absent = unknown = do not merge). Membership is by
+    id value, not store indexing, so foreign-file ids read as absent
+    without touching the tagged stores.
+3.  Latent, unrelated to this bug: the eval hook now CHECKs
+    `object_layout.has_value()` before folding a payload tuple layout into
+    max-of-fields (check/eval_inst.cpp) — a dependent layout must not
+    contribute size 0 silently.
 
 ### W4-candidate-1 ruled out
 
 lower/aggregate.cpp:227-234 (`EmitAggregateInitializer` InPlace)
-classifies elements via `constant_values().Get(ref_id)` on the GENERIC
+classifies elements by way of `constant_values().Get(ref_id)` on the GENERIC
 body's inst — the attached constant, shared by every specific of that
 generic. The classification therefore cannot differ between the i32 and
 i64 instantiations of the same body: both widths take the same branch for

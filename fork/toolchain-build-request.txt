@@ -1,1 +1,2 @@
 2026-08-08T22:50:22Z gate re-fire for B1b (MD032 fix)
+2026-08-17 weekly upstream merge gate, staging 864845c

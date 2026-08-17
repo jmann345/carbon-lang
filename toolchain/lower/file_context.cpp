@@ -370,7 +370,17 @@ auto FileContext::GetOrCreateLLVMFunction(
   std::string mangled_name = m.Mangle(function_id, specific_id);
   if (auto* existing = llvm_module().getFunction(mangled_name)) {
     // We might have already lowered this function while lowering a different
-    // file. That's OK.
+    // file. That's OK, but a specific must still get a type fingerprint in
+    // this file's coalescer: its id can be recorded as a callee of bodies
+    // lowered in this file, and the coalescer must never compare it through
+    // an absent (default) fingerprint. The definition is not re-registered —
+    // the file that created the function owns lowering its body, and this
+    // specific's body fingerprint stays absent here, which the coalescer
+    // treats as not-coalescable.
+    if (specific_id.has_value()) {
+      coalescer_.CreateTypeFingerprint(specific_id, function_type_info.type,
+                                       function_type_info.sret_type);
+    }
     // TODO: If the prior function was inexact and the new one is not, we should
     // lower this new one and replace the existing function with it.
     // TODO: Check-fail or maybe diagnose if the two LLVM functions are not

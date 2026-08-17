@@ -326,6 +326,13 @@ auto EvalConstantInst(Context& context, SemIR::InstId inst_id,
     }
     auto tuple_layout =
         context.types().GetCompleteTypeInfo(tuple_type_id).object_layout;
+    // A completed-but-dependent layout must not fold into max-of-fields as
+    // zero: the definition path guards this (handle_choice.cpp) and the
+    // recompute must too. Reaching here with an invalid layout means a
+    // concrete-phase element type completed dependently.
+    CARBON_CHECK(tuple_layout.has_value(),
+                 "Dependent payload tuple layout in concrete specific: {0}",
+                 context.types().GetAsInst(tuple_type_id));
     payload_size = std::max(payload_size, tuple_layout.size);
     payload_align = std::max(payload_align, tuple_layout.alignment);
   }

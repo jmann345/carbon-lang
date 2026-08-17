@@ -2,7 +2,7 @@
 // Exceptions. See /LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// CONFORMANCE-BULLET: Functions: C++ interop — exporting Carbon functions/methods to C++
+// CONFORMANCE-BULLET: C++ interop: threading, atomics, memory model, synchronization
 // EXPECT-EXIT: 0
 //
 // Differential pair — the F-008 concurrency arbiter (fork/f008/plan.md §2.5,
@@ -22,11 +22,12 @@
 // main thread after `.join()` returns.
 //
 // Bullet attachment (disclosed in fork/f008/plan.md §2.5): at F8a this
-// program attaches to the exporting bullet it genuinely arbitrates at
-// execution level — its worker IS an exported Carbon function run from C++,
-// on a foreign thread. It re-homes to the threading bullet at F8b together
-// with that bullet's SKIP→PASS flip (adjudication A: no bullet flips on the
-// harness slice).
+// program attached to `Functions: C++ interop — exporting Carbon
+// functions/methods to C++`, the bullet it genuinely arbitrates at execution
+// level — its worker IS an exported Carbon function run from C++, on a
+// foreign thread. RE-HOMED to the threading bullet at F8b together with that
+// bullet's SKIP→PASS flip (adjudication A held the flip off the harness
+// slice); the exporting bullet keeps its other passing programs.
 
 import Core library "io";
 import Cpp library "<atomic>";

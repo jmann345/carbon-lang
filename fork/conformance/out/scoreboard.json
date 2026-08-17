@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-17T21:08:55.036766+00:00",
+  "generated": "2026-08-17T23:06:41.201141+00:00",
   "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 6.7,
+  "elapsed_seconds": 11.9,
   "totals": {
-    "PASS": 86,
+    "PASS": 88,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
     "OUTPUT-MISMATCH": 0,
     "DIFF-MISMATCH": 0,
-    "SKIP": 33
+    "SKIP": 31
   },
   "programs": [
     {
@@ -309,8 +309,8 @@
     {
       "path": "interop/cpp_atomic_carbon_class_diff.carbon",
       "bullet": "C++ interop: threading, atomics, memory model, synchronization",
-      "status": "SKIP",
-      "detail": "defect TA-D2 (W-021) \u2014 `Cpp.std.atomic(Vec2)` over an all-scalar Carbon class instantiates (export works) but libc++'s `static_assert(is_trivially_copyable<T>)` fires \u2014 measured 2026-07-19 over `Carbon::P` (fork/design-sprint/threading-atomics.md:102, quoted verbatim there); this pair instantiates the same assert over its own `Carbon::Vec2`: check/cpp/export.cpp does not mark exported Carbon classes trivially copyable even when they are \u2014 CompleteType adds a thunk-calling destructor to every plain exported class (check/cpp/generate_ast.cpp:489, TODO at :492 at this branch's head \u2014 post-B2a the add is guarded `!isa<ClassTemplateSpecializationDecl>`, which does not reach this defect), so `is_trivially_copyable` is false for ALL Carbon classes. Un-SKIP (and uncomment the body) when F8b (fork/f008/plan.md \u00a73) lands the triviality predicate + conditional trivial destructor export; the mock-header red baseline this pair arbitrates on real libc++ is check/testdata/interop/cpp/class/export/fail_todo_trivially_copyable.carbon.",
+      "status": "PASS",
+      "detail": "",
       "differential": true
     },
     {
@@ -518,14 +518,14 @@
     },
     {
       "path": "interop/cpp_thread_condvar_diff.carbon",
-      "bullet": "Functions: C++ interop \u2014 exporting Carbon functions/methods to C++",
+      "bullet": "C++ interop: threading, atomics, memory model, synchronization",
       "status": "PASS",
       "detail": "",
       "differential": true
     },
     {
       "path": "interop/cpp_thread_mutex_raii.carbon",
-      "bullet": "Type system: C++ interop \u2014 synthesizing Carbon overloads for imported C++ types",
+      "bullet": "C++ interop: threading, atomics, memory model, synchronization",
       "status": "PASS",
       "detail": "",
       "differential": false
@@ -533,8 +533,8 @@
     {
       "path": "interop/cpp_threading_atomics.carbon",
       "bullet": "C++ interop: threading, atomics, memory model, synchronization",
-      "status": "SKIP",
-      "detail": "HELD-BACK, not missing \u2014 the prior SKIP's \"no dedicated support ... nothing defines Carbon's memory model\" claim is stale: the executed matrix of fork/design-sprint/threading-atomics.md:78-96 (nightly 2026.07.19) verified atomics with orders/CAS/operator sugar, all four mutex types, condvars, RAII guards across the boundary, and Carbon functions on foreign threads, and every building block of the body below is on that matrix (rows 2, 9). The bullet's flip is sequenced with the FIRST DEFECT FIX, not the harness slice (fork/f008/plan.md \u00a73, adjudication A): un-SKIP (and uncomment the body) when F8b lands the D2 triviality-export fix. The prior text's \"design lands\" clause is superseded by the F-008 decision itself (fork/decision-log.md:637-644 sanctions the fixes without the doc); the threads_and_atomics.md design doc rides the gated design-docs digest separately (fork/ORCHESTRATION.md next-action 1).",
+      "status": "PASS",
+      "detail": "",
       "differential": false
     },
     {
@@ -942,8 +942,7 @@
       "programs": [
         "interop/cpp_operator_import_arithmetic.carbon",
         "interop/cpp_operator_import_assignment.carbon",
-        "interop/cpp_operator_import_compare.carbon",
-        "interop/cpp_thread_mutex_raii.carbon"
+        "interop/cpp_operator_import_compare.carbon"
       ]
     },
     "Type system: C++ interop \u2014 exporting Carbon operator overloads into C++": {
@@ -1060,8 +1059,7 @@
       "gap_status": "DONE",
       "programs": [
         "interop/cpp_export_function.carbon",
-        "interop/cpp_export_method.carbon",
-        "interop/cpp_thread_condvar_diff.carbon"
+        "interop/cpp_export_method.carbon"
       ]
     },
     "Functions: C++ interop \u2014 importing C++ overload sets": {
@@ -1126,12 +1124,14 @@
       ]
     },
     "C++ interop: threading, atomics, memory model, synchronization": {
-      "status": "SKIP",
+      "status": "PASS",
       "gap_status": "MISSING",
       "programs": [
         "interop/cpp_atomic_carbon_class_diff.carbon",
         "interop/cpp_atomic_global_counter_diff.carbon",
         "interop/cpp_thread_carbon_fn_diff.carbon",
+        "interop/cpp_thread_condvar_diff.carbon",
+        "interop/cpp_thread_mutex_raii.carbon",
         "interop/cpp_threading_atomics.carbon"
       ]
     },

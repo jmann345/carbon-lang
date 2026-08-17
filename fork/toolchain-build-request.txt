@@ -1,1 +1,1 @@
-2026-08-18T06:10Z F8a merge gate
+2026-08-18T08:50Z F8b gate re-fire (misc-no-recursion: predicate rewritten iterative)

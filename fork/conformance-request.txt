@@ -1,1 +1,1 @@
-2026-08-18T06:40Z F8a conformance (expect 86/0/33 over 119, ZERO bullet flips)
+2026-08-18T09:20Z F8b conformance (expect 88/0/31 over 119, threading bullet flips, 43/56)

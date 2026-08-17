@@ -2,7 +2,7 @@
 // Exceptions. See /LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// CONFORMANCE-BULLET: Type system: C++ interop — synthesizing Carbon overloads for imported C++ types
+// CONFORMANCE-BULLET: C++ interop: threading, atomics, memory model, synchronization
 // EXPECT-EXIT: 0
 // EXPECT-STDOUT:
 //   1
@@ -31,11 +31,12 @@
 // .lock_guard(ref gm)`. Deterministic single-threaded output.
 //
 // Bullet attachment (disclosed in fork/f008/plan.md §2.5): at F8a this
-// program attaches to the synthesized-overloads bullet it genuinely
-// arbitrates — the RAII release is the synthesized Destroy impl doing
-// observable work. It re-homes to the threading bullet at F8b together with
-// that bullet's SKIP→PASS flip (adjudication A: no bullet flips on the
-// harness slice).
+// program attached to `Type system: C++ interop — synthesizing Carbon
+// overloads for imported C++ types`, the bullet it genuinely arbitrates —
+// the RAII release is the synthesized Destroy impl doing observable work.
+// RE-HOMED to the threading bullet at F8b together with that bullet's
+// SKIP→PASS flip (adjudication A held the flip off the harness slice); the
+// synthesized-overloads bullet keeps its other passing programs.
 
 import Core library "io";
 import Cpp library "<mutex>";

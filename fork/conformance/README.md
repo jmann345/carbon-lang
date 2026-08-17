@@ -206,7 +206,7 @@ fails if this table is stale):
 | `generics/templates_value_param.carbon` | Generics: Integrated templates | run |
 | `generics/variadics_each.carbon` | Generics: Definition-checked variadics | SKIP |
 | `interop/cpp_adl_swap_extension_point.carbon` | Functions: C++ interop — open overload sets as extension points (swap etc.) | SKIP |
-| `interop/cpp_atomic_carbon_class_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | SKIP, differential |
+| `interop/cpp_atomic_carbon_class_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |
 | `interop/cpp_atomic_global_counter_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | SKIP, differential |
 | `interop/cpp_compat_long_adapters.carbon` | Stdlib C++ interop: transparent fundamental-type mapping | run |
 | `interop/cpp_concept_export_predicate.carbon` | Generics: C++ interop — C++20 concepts <-> named predicates mapping | SKIP |
@@ -236,9 +236,9 @@ fails if this table is stale):
 | `interop/cpp_template_on_carbon_generic.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | SKIP |
 | `interop/cpp_template_symbolic_arg.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | SKIP |
 | `interop/cpp_thread_carbon_fn_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | SKIP, differential |
-| `interop/cpp_thread_condvar_diff.carbon` | Functions: C++ interop — exporting Carbon functions/methods to C++ | differential |
-| `interop/cpp_thread_mutex_raii.carbon` | Type system: C++ interop — synthesizing Carbon overloads for imported C++ types | run |
-| `interop/cpp_threading_atomics.carbon` | C++ interop: threading, atomics, memory model, synchronization | SKIP |
+| `interop/cpp_thread_condvar_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |
+| `interop/cpp_thread_mutex_raii.carbon` | C++ interop: threading, atomics, memory model, synchronization | run |
+| `interop/cpp_threading_atomics.carbon` | C++ interop: threading, atomics, memory model, synchronization | run |
 | `interop/cpp_type_export_carbon_class.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
 | `interop/cpp_type_import_class_enum.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
 | `interop/inherit_carbon_extends_cpp.carbon` | Type system: C++ interop — bi-directional inheritance, hierarchy roots, abstract/final/virtual mapping | run |

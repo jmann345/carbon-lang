@@ -97,7 +97,7 @@
         "F-010",
         "F-011"
       ],
-      "notes": "Coherence-audit findings needing explicit owners before implementation scales: (1) unions->W5->EH-B1 storage chain made explicit; (2) W4 scope pinned to one shared refutable-match SemIR core both `?` and let-else desugar onto; (3) assign the diverging-else/noreturn rule an owner or `else { Abort(); }` stays rejected; (7) one trivially-copyable predicate over Carbon classes defined once (unions/TA-D2/expected export); (9) fold Optional's redesign into W5 deliverables explicitly. Record outcomes in decision-log."
+      "notes": "Coherence-audit findings needing explicit owners before implementation scales: (1) unions->W5->EH-B1 storage chain made explicit; (2) W4 scope pinned to one shared refutable-match SemIR core both `?` and let-else desugar onto; (3) assign the diverging-else/noreturn rule an owner or `else { Abort(); }` stays rejected; (7) one trivially-copyable predicate over Carbon classes defined once (unions/TA-D2/expected export); (9) fold Optional's redesign into W5 deliverables explicitly. Record outcomes in decision-log. Risk 7 PARTIALLY DISCHARGED at F8b (fork/f008/plan.md §9): the predicate now exists with one owner — `IsTriviallyCopyableForExport` (check/cpp/export.cpp) over `IsTriviallyDestructible` (check/custom_witness.cpp, the destroy machinery's own classification); unions (F-007) and `Carbon::expected` export (B3) consume it later."
     },
     {
       "id": "W-007",
@@ -365,10 +365,15 @@
       "evidence": [
         "fork/design-sprint/threading-atomics.md:102",
         "fork/design-sprint/threading-atomics.md:315-317",
-        "fork/design-sprint/threading-atomics.md:328-330"
+        "fork/design-sprint/threading-atomics.md:328-330",
+        "toolchain/check/cpp/export.cpp (IsTriviallyCopyableForExport)",
+        "toolchain/check/custom_witness.cpp (IsTriviallyDestructible)",
+        "toolchain/check/testdata/interop/cpp/class/export/trivially_copyable.carbon",
+        "toolchain/check/testdata/interop/cpp/class/export/fail_atomic_of_nontrivial_carbon_class.carbon",
+        "fork/conformance/programs/interop/cpp_atomic_carbon_class_diff.carbon"
       ],
       "blocked_by": ["F-008", "W-005"],
-      "notes": "Instantiation already works; only libc++'s is_trivially_copyable static_assert fires. Deliberately sequenced first among the D-fixes: it is the cheapest slice of the shared Carbon-type-into-Clang-AST machinery that concept export (W-029) and C++-templates-on-Carbon-types (W-043) also need (coherence risk 8), and consumes the single trivially-copyable predicate (risk 7)."
+      "notes": "Instantiation already works; only libc++'s is_trivially_copyable static_assert fires. Deliberately sequenced first among the D-fixes: it is the cheapest slice of the shared Carbon-type-into-Clang-AST machinery that concept export (W-029) and C++-templates-on-Carbon-types (W-043) also need (coherence risk 8), and consumes the single trivially-copyable predicate (risk 7). DISCHARGED at F8b (fork/f008/plan.md §3 F8b, §9): `CompleteType` (check/cpp/generate_ast.cpp) now consults `IsTriviallyCopyableForExport` (check/cpp/export.cpp) — destroy-triviality half reused from the destroy machinery's own DestroyFormat classification via `IsTriviallyDestructible` (check/custom_witness.cpp), not a parallel walk (risk 7) — and a qualifying class (concrete, non-generic, no base/vtable/abstract, trivially-destructible fields, no user Core.Destroy impl) exports WITHOUT the thunk destructor, so clang computes genuine triviality. No §2.2 S→M escalation fired. Evidence refreshed: positive pin trivially_copyable.carbon (flipped from fail_todo_), negative probe fail_atomic_of_nontrivial_carbon_class.carbon (user-Destroy class still rejected, plan §5 R-3), real-libc++ arbiter cpp_atomic_carbon_class_diff un-SKIPped (§5 R-2); scoreboard confirmation rides the F8b conformance run (R9). Review fix round (F1 BLOCKER, both reviews): the user-Core.Destroy-impl scan initially covered only the local impl store — it now mirrors the destroy lookup's candidate population read-only across every imported IR's impl store (cross-IR class identity via GetCanonicalFileAndInstId, no materialization), pinned by the two-file destroy_lib/fail_atomic_of_imported_user_destroy split; see the F-008 F8b landing note (2026-08-18)."
     },
     {
       "id": "W-022",

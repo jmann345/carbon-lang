@@ -131,10 +131,10 @@ fn F() {
 
 // TODO: Promote this warning to an error by default.
 // CHECK:STDERR: ./static.h:[[@LINE+7]]:13: warning: function 'foo' has internal linkage but is not defined [CppInteropParseWarning]
-// CHECK:STDERR:     6 | static auto foo() -> void;
+// CHECK:STDERR:    10 | static auto foo() -> void;
 // CHECK:STDERR:       |             ^
 // CHECK:STDERR: ./static.h:[[@LINE+4]]:13: note: used here [CppInteropParseNote]
-// CHECK:STDERR:     6 | static auto foo() -> void;
+// CHECK:STDERR:    10 | static auto foo() -> void;
 // CHECK:STDERR:       |             ^
 // CHECK:STDERR:
 static auto foo() -> void;

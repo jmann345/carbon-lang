@@ -124,6 +124,30 @@ jobs:
           echo "===== chain bodies ====="
           awk '/^define.*(Chain|Step|FromBreak|Branch|Err\.MyResult|Ok\.MyResult|Break\.ControlFlow|Continue\.ControlFlow)/, /^}/' /tmp/qgd.ll | sed -n '1,400p'
 
+      - name: Optimization-level bisect
+        if: failure()
+        run: |
+          # Diagnostic-only: the lowered IR is per-width correct, so the
+          # divergence must enter during LLVM optimization/codegen or link
+          # (lifetime.start has no matching end — an upstream lowering TODO,
+          # function_context.cpp — making optimizer-exploited stack-slot UB
+          # the live suspect). Runs the failing pair at each --optimize
+          # level; the level where output goes wrong localizes the stage.
+          set +e
+          CARBON=$(echo /tmp/conformance-toolchain/carbon_toolchain-*/bin/carbon)
+          PROG=fork/conformance/programs/error_handling/question_generic_diff.carbon
+          [ -x "$CARBON" ] && [ -f "$PROG" ] || exit 0
+          for LVL in none debug speed default; do
+            if [ "$LVL" = default ]; then OPTARG=""; else OPTARG="--optimize=$LVL"; fi
+            "$CARBON" compile $OPTARG --output=/tmp/qgd_$LVL.o \
+              --output-last-input-only "$PROG" 2>/dev/null \
+            && "$CARBON" link --output=/tmp/qgd_$LVL /tmp/qgd_$LVL.o 2>/dev/null \
+            && OUT=$(timeout 30 /tmp/qgd_$LVL; echo "exit=$?")
+            echo "===== --optimize=$LVL ====="
+            echo "$OUT" | tr '\n' ' '
+            echo
+          done
+
       - name: Commit and push scoreboard
         run: |
           set -euo pipefail

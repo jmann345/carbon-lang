@@ -1,1 +1,1 @@
-2026-08-17T19:55Z conformance with IR dump diagnostics (three goldens failed to reproduce; read the real compile's IR)
+2026-08-17T20:20Z conformance with optimization-level bisect (IR is per-width correct; suspect optimizer-exploited lifetime UB)

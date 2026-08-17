@@ -1,1 +1,1 @@
-2026-08-17T15:05Z conformance arbiter for the mixed-width fix round (question_generic_diff: flip = coalescer sufficed; red = layout suspect)
+2026-08-17T15:35Z conformance arbiter re-fire (previous attempt died at setup: GitHub codeload 503/429)

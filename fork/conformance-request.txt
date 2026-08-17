@@ -1,1 +1,1 @@
-2026-08-17T20:20Z conformance with optimization-level bisect (IR is per-width correct; suspect optimizer-exploited lifetime UB)
+2026-08-17T20:50Z conformance with lifetime-strip UB proof (bisect: none correct, debug/speed corrupt level-dependently)

@@ -148,6 +148,44 @@ jobs:
             echo
           done
 
+      - name: Lifetime-strip experiment
+        if: failure()
+        run: |
+          # Diagnostic-only, the UB-source proof: --optimize=none is correct
+          # and every optimizing level corrupts (level-dependently), so the
+          # UNOPTIMIZED IR is semantically right and carries something the
+          # optimizer is entitled to exploit. Candidate: lifetime.start with
+          # no matching end (upstream TODO, lower/function_context.cpp).
+          # Compile the same unoptimized IR twice with the bundled clang at
+          # -O1 — verbatim, and with every llvm.lifetime call stripped. If
+          # stripped is correct and verbatim is wrong, the markers are the
+          # proven UB source.
+          set +e
+          TC=$(echo /tmp/conformance-toolchain/carbon_toolchain-*)
+          CARBON="$TC/bin/carbon"
+          CLANGXX="$TC/lib/carbon/llvm/bin/clang++"
+          PROG=fork/conformance/programs/error_handling/question_generic_diff.carbon
+          [ -x "$CARBON" ] && [ -x "$CLANGXX" ] || exit 0
+          "$CARBON" compile --phase=lower --dump-llvm-ir "$PROG" \
+            > /tmp/qgd0.ll 2>/dev/null
+          grep -v "call void @llvm.lifetime" /tmp/qgd0.ll > /tmp/qgd0_stripped.ll
+          for VAR in qgd0 qgd0_stripped; do
+            "$CLANGXX" -Wno-override-module -O1 /tmp/$VAR.ll -o /tmp/${VAR}_bin \
+              2>/tmp/${VAR}_cc.err
+            if [ -x /tmp/${VAR}_bin ]; then
+              OUT=$(timeout 30 /tmp/${VAR}_bin; echo "exit=$?")
+            else
+              OUT="compile failed: $(head -3 /tmp/${VAR}_cc.err | tr '\n' ' ')"
+            fi
+            echo "===== $VAR -O1 ====="
+            echo "$OUT" | tr '\n' ' '
+            echo
+          done
+          echo "===== post-opt IR (optimize=debug): ProbeL + wide Chain ====="
+          "$CARBON" compile --optimize=debug --dump-llvm-ir "$PROG" \
+            > /tmp/qgd_opt.ll 2>/dev/null
+          awk '/^define.*(_CProbeL|_CChain.Main.f249b435)/, /^}/' /tmp/qgd_opt.ll | sed -n '1,220p'
+
       - name: Commit and push scoreboard
         run: |
           set -euo pipefail

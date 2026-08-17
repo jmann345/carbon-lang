@@ -135,7 +135,11 @@ deliberately omit `EXPECT-STDOUT` and let the C++ side compute the
 expectation. Mirror `Core.Print`'s exact lowering in the C++ side:
 `printf("%d\n", x)` with the argument as `int`
 (toolchain/lower/handle_call.cpp). `--self-test` validates that every
-`*.diff.cpp` sits next to its matching `*.carbon` program.
+`*.diff.cpp` sits next to its matching `*.carbon` program. The C++ compile
+line is exactly `clang++ -std=c++17 -pthread -o <bin> <file>`: `-pthread`
+is passed unconditionally because threaded oracles (the F-008 threading
+pairs) spawn `std::thread`, and it is neutral for non-threaded oracles
+(fork/f008/plan.md §2.5; full-suite neutrality is probe R-8 there).
 
 Statuses per program: `PASS`, `COMPILE-FAIL`, `LINK-FAIL`, `RUN-FAIL`
 (crash, timeout, or wrong exit code), `OUTPUT-MISMATCH`, `DIFF-MISMATCH`
@@ -202,6 +206,8 @@ fails if this table is stale):
 | `generics/templates_value_param.carbon` | Generics: Integrated templates | run |
 | `generics/variadics_each.carbon` | Generics: Definition-checked variadics | SKIP |
 | `interop/cpp_adl_swap_extension_point.carbon` | Functions: C++ interop — open overload sets as extension points (swap etc.) | SKIP |
+| `interop/cpp_atomic_carbon_class_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | SKIP, differential |
+| `interop/cpp_atomic_global_counter_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | SKIP, differential |
 | `interop/cpp_compat_long_adapters.carbon` | Stdlib C++ interop: transparent fundamental-type mapping | run |
 | `interop/cpp_concept_export_predicate.carbon` | Generics: C++ interop — C++20 concepts <-> named predicates mapping | SKIP |
 | `interop/cpp_concept_import_predicate.carbon` | Generics: C++ interop — C++20 concepts <-> named predicates mapping | SKIP |
@@ -229,6 +235,9 @@ fails if this table is stale):
 | `interop/cpp_template_carbon_class.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/cpp_template_on_carbon_generic.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | SKIP |
 | `interop/cpp_template_symbolic_arg.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | SKIP |
+| `interop/cpp_thread_carbon_fn_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | SKIP, differential |
+| `interop/cpp_thread_condvar_diff.carbon` | Functions: C++ interop — exporting Carbon functions/methods to C++ | differential |
+| `interop/cpp_thread_mutex_raii.carbon` | Type system: C++ interop — synthesizing Carbon overloads for imported C++ types | run |
 | `interop/cpp_threading_atomics.carbon` | C++ interop: threading, atomics, memory model, synchronization | SKIP |
 | `interop/cpp_type_export_carbon_class.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
 | `interop/cpp_type_import_class_enum.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |

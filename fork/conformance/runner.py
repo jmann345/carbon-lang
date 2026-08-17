@@ -23,7 +23,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 # after the Carbon binary runs (and passes its EXPECT-* checks, which stay
 # authoritative), the runner additionally does:
 #
-#     <root>/lib/carbon/llvm/bin/clang++ -std=c++17 \
+#     <root>/lib/carbon/llvm/bin/clang++ -std=c++17 -pthread \
 #         -o <out>/bin/<name>.cpp.bin <name>.diff.cpp
 #     <out>/bin/<name>.cpp.bin    # run timeout, capture exit code + stdout
 #
@@ -436,7 +436,17 @@ def execute_program(prog, toolchain, clangxx, out_dir, timeouts):
             write_log(log_dir, prog, [("detail", detail)])
             return DIFF_MISMATCH, detail
         cpp_bin = bin_dir / f"{prog.name}.cpp.bin"
-        cpp_cmd = [clangxx, "-std=c++17", "-o", cpp_bin, prog.diff_cpp]
+        # `-pthread` is unconditional: required by threaded oracles (the
+        # F-008 threading pairs spawn std::thread), neutral for the rest
+        # (fork/f008/plan.md §2.5, full-suite neutrality probe R-8).
+        cpp_cmd = [
+            clangxx,
+            "-std=c++17",
+            "-pthread",
+            "-o",
+            cpp_bin,
+            prog.diff_cpp,
+        ]
         # The toolchain clang++ builds runtimes on demand like `carbon
         # link`, so give the C++ compile the link timeout.
         rc, out, err, timed_out = run_cmd(cpp_cmd, timeouts["link"])

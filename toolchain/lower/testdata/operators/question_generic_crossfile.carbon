@@ -131,10 +131,10 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: ; ModuleID = 'lib.carbon'
 // CHECK:STDOUT: source_filename = "lib.carbon"
 // CHECK:STDOUT:
-// CHECK:STDOUT: @MyResult.val.30e.loc3_35.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 false, [3 x i8] poison }>, [4 x i8] poison }>
-// CHECK:STDOUT: @MyResult.val.df1.loc3_35.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] poison }>
-// CHECK:STDOUT: @ControlFlow.val.f6c.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 false, [3 x i8] poison }>, [4 x i8] poison }>
-// CHECK:STDOUT: @ControlFlow.val.493.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] poison }>
+// CHECK:STDOUT: @MyResult.val.30e.loc3_35.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 false, [3 x i8] poison }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @MyResult.val.df1.loc3_35.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @ControlFlow.val.f6c.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 false, [3 x i8] poison }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @ControlFlow.val.493.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] zeroinitializer }>
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CLibCall32.Main(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %x, i1 %failA, i1 %failB) #0 !dbg !4 {
@@ -545,14 +545,14 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: ; ModuleID = 'use.carbon'
 // CHECK:STDOUT: source_filename = "use.carbon"
 // CHECK:STDOUT:
-// CHECK:STDOUT: @MyResult.val.142.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 true, [7 x i8] poison }>, [8 x i8] poison }>
-// CHECK:STDOUT: @MyResult.val.30e.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 false, [3 x i8] poison }>, [4 x i8] poison }>
-// CHECK:STDOUT: @MyResult.val.9f4.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 false, [7 x i8] poison }>, [8 x i8] poison }>
-// CHECK:STDOUT: @MyResult.val.df1.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] poison }>
-// CHECK:STDOUT: @ControlFlow.val.f6c.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 false, [3 x i8] poison }>, [4 x i8] poison }>
-// CHECK:STDOUT: @ControlFlow.val.493.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] poison }>
-// CHECK:STDOUT: @ControlFlow.val.fa9.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 false, [7 x i8] poison }>, [8 x i8] poison }>
-// CHECK:STDOUT: @ControlFlow.val.d01.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 true, [7 x i8] poison }>, [8 x i8] poison }>
+// CHECK:STDOUT: @MyResult.val.142.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 true, [7 x i8] poison }>, [8 x i8] zeroinitializer }>
+// CHECK:STDOUT: @MyResult.val.30e.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 false, [3 x i8] poison }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @MyResult.val.9f4.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 false, [7 x i8] poison }>, [8 x i8] zeroinitializer }>
+// CHECK:STDOUT: @MyResult.val.df1.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @ControlFlow.val.f6c.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 false, [3 x i8] poison }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @ControlFlow.val.493.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @ControlFlow.val.fa9.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 false, [7 x i8] poison }>, [8 x i8] zeroinitializer }>
+// CHECK:STDOUT: @ControlFlow.val.d01.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 true, [7 x i8] poison }>, [8 x i8] zeroinitializer }>
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CCall32.Main(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %x, i1 %failA, i1 %failB) #0 !dbg !4 {
@@ -578,34 +578,34 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @_CReadErr64.Main(ptr %r) #0 !dbg !32 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc25_22.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 0, !dbg !37
-// CHECK:STDOUT:   %.loc25_22.4 = load i8, ptr %.loc25_22.3.discriminant, align 1, !dbg !37
-// CHECK:STDOUT:   %.loc25_22.41 = trunc i8 %.loc25_22.4 to i1, !dbg !37
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc25 = icmp eq i1 false, %.loc25_22.41, !dbg !37
-// CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc25, label %match.case.then.loc25, label %match.case.else.loc25, !dbg !37
+// CHECK:STDOUT:   %.loc29_22.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 0, !dbg !37
+// CHECK:STDOUT:   %.loc29_22.4 = load i8, ptr %.loc29_22.3.discriminant, align 1, !dbg !37
+// CHECK:STDOUT:   %.loc29_22.41 = trunc i8 %.loc29_22.4 to i1, !dbg !37
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc29 = icmp eq i1 false, %.loc29_22.41, !dbg !37
+// CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc29, label %match.case.then.loc29, label %match.case.else.loc29, !dbg !37
 // CHECK:STDOUT:
-// CHECK:STDOUT: match.case.then.loc25:                            ; preds = %entry
-// CHECK:STDOUT:   %.loc25_22.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 1, !dbg !37
-// CHECK:STDOUT:   %.loc25_22.8.Ok = getelementptr inbounds nuw [8 x i8], ptr %.loc25_22.7.payload, i32 0, i32 0, !dbg !37
-// CHECK:STDOUT:   %tuple.elem0.loc25.tuple.elem = getelementptr inbounds nuw { i64 }, ptr %.loc25_22.8.Ok, i32 0, i32 0, !dbg !37
-// CHECK:STDOUT:   %.loc25_22.9 = load i64, ptr %tuple.elem0.loc25.tuple.elem, align 8, !dbg !37
+// CHECK:STDOUT: match.case.then.loc29:                            ; preds = %entry
+// CHECK:STDOUT:   %.loc29_22.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 1, !dbg !37
+// CHECK:STDOUT:   %.loc29_22.8.Ok = getelementptr inbounds nuw [8 x i8], ptr %.loc29_22.7.payload, i32 0, i32 0, !dbg !37
+// CHECK:STDOUT:   %tuple.elem0.loc29.tuple.elem = getelementptr inbounds nuw { i64 }, ptr %.loc29_22.8.Ok, i32 0, i32 0, !dbg !37
+// CHECK:STDOUT:   %.loc29_22.9 = load i64, ptr %tuple.elem0.loc29.tuple.elem, align 8, !dbg !37
 // CHECK:STDOUT:   ret i32 0, !dbg !38
 // CHECK:STDOUT:
-// CHECK:STDOUT: match.case.else.loc25:                            ; preds = %entry
-// CHECK:STDOUT:   %.loc26_23.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 0, !dbg !39
-// CHECK:STDOUT:   %.loc26_23.4 = load i8, ptr %.loc26_23.3.discriminant, align 1, !dbg !39
-// CHECK:STDOUT:   %.loc26_23.42 = trunc i8 %.loc26_23.4 to i1, !dbg !39
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc26 = icmp eq i1 true, %.loc26_23.42, !dbg !39
-// CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc26, label %match.case.then.loc26, label %match.done, !dbg !39
+// CHECK:STDOUT: match.case.else.loc29:                            ; preds = %entry
+// CHECK:STDOUT:   %.loc30_23.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 0, !dbg !39
+// CHECK:STDOUT:   %.loc30_23.4 = load i8, ptr %.loc30_23.3.discriminant, align 1, !dbg !39
+// CHECK:STDOUT:   %.loc30_23.42 = trunc i8 %.loc30_23.4 to i1, !dbg !39
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc30 = icmp eq i1 true, %.loc30_23.42, !dbg !39
+// CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc30, label %match.case.then.loc30, label %match.done, !dbg !39
 // CHECK:STDOUT:
-// CHECK:STDOUT: match.case.then.loc26:                            ; preds = %match.case.else.loc25
-// CHECK:STDOUT:   %.loc26_23.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 1, !dbg !39
-// CHECK:STDOUT:   %.loc26_23.8.Err = getelementptr inbounds nuw [8 x i8], ptr %.loc26_23.7.payload, i32 0, i32 0, !dbg !39
-// CHECK:STDOUT:   %tuple.elem0.loc26.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc26_23.8.Err, i32 0, i32 0, !dbg !39
-// CHECK:STDOUT:   %.loc26_23.9 = load i32, ptr %tuple.elem0.loc26.tuple.elem, align 4, !dbg !39
-// CHECK:STDOUT:   ret i32 %.loc26_23.9, !dbg !40
+// CHECK:STDOUT: match.case.then.loc30:                            ; preds = %match.case.else.loc29
+// CHECK:STDOUT:   %.loc30_23.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 1, !dbg !39
+// CHECK:STDOUT:   %.loc30_23.8.Err = getelementptr inbounds nuw [8 x i8], ptr %.loc30_23.7.payload, i32 0, i32 0, !dbg !39
+// CHECK:STDOUT:   %tuple.elem0.loc30.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc30_23.8.Err, i32 0, i32 0, !dbg !39
+// CHECK:STDOUT:   %.loc30_23.9 = load i32, ptr %tuple.elem0.loc30.tuple.elem, align 4, !dbg !39
+// CHECK:STDOUT:   ret i32 %.loc30_23.9, !dbg !40
 // CHECK:STDOUT:
-// CHECK:STDOUT: match.done:                                       ; preds = %match.case.else.loc25
+// CHECK:STDOUT: match.done:                                       ; preds = %match.case.else.loc29
 // CHECK:STDOUT:   ret i32 -1, !dbg !41
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -1145,11 +1145,11 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !34 = !{!8, !7}
 // CHECK:STDOUT: !35 = !{!36}
 // CHECK:STDOUT: !36 = !DILocalVariable(arg: 1, scope: !32, type: !7)
-// CHECK:STDOUT: !37 = !DILocation(line: 25, column: 5, scope: !32)
-// CHECK:STDOUT: !38 = !DILocation(line: 25, column: 27, scope: !32)
-// CHECK:STDOUT: !39 = !DILocation(line: 26, column: 5, scope: !32)
-// CHECK:STDOUT: !40 = !DILocation(line: 26, column: 28, scope: !32)
-// CHECK:STDOUT: !41 = !DILocation(line: 29, column: 3, scope: !32)
+// CHECK:STDOUT: !37 = !DILocation(line: 29, column: 5, scope: !32)
+// CHECK:STDOUT: !38 = !DILocation(line: 29, column: 27, scope: !32)
+// CHECK:STDOUT: !39 = !DILocation(line: 30, column: 5, scope: !32)
+// CHECK:STDOUT: !40 = !DILocation(line: 30, column: 28, scope: !32)
+// CHECK:STDOUT: !41 = !DILocation(line: 33, column: 3, scope: !32)
 // CHECK:STDOUT: !42 = distinct !DISubprogram(name: "Op", linkageName: "_COp.7512aa4144aeb8db:core.Destroy.Core", scope: null, file: !43, line: 42, type: !44, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !47)
 // CHECK:STDOUT: !43 = !DIFile(filename: "lib.carbon", directory: "")
 // CHECK:STDOUT: !44 = !DISubroutineType(types: !45)

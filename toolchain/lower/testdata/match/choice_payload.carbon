@@ -34,8 +34,8 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT: ; ModuleID = 'choice_payload.carbon'
 // CHECK:STDOUT: source_filename = "choice_payload.carbon"
 // CHECK:STDOUT:
-// CHECK:STDOUT: @IntResult.val = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] poison }>
-// CHECK:STDOUT: @IntResult.val.loc22_1.13 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] poison }>
+// CHECK:STDOUT: @IntResult.val = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @IntResult.val.loc22_1.13 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] zeroinitializer }>
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_COk.IntResult.Main(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !4 {

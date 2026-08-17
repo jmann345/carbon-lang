@@ -371,7 +371,20 @@ H0 — it never links (§2.1).
     ledger.
 -   **H0-mock-divergence (pre-declared path)**: the MOCK probe's dump
     shows an initializer (looks fixed) while the REAL-header pair still
-    fails to link in the adjudication run. That falsifies the mock as a
+    fails to link in the adjudication run.
+    _AMENDMENT (2026-08-18, F8c round — this path FIRED)_: the
+    F8a-landed mock dump showed one healthy defined global with every
+    reference bound to it while run 32079343005 link-failed the
+    real-header pair — the mock's field-access shape was falsified as a
+    faithful model (it never drove the per-use-cluster re-mint the real
+    member-call thunks do). Per this path's own protocol the
+    mechanism-probe role moved OFF the F8a dump and onto the
+    adjudication run's linker attributions (the `.2`/`.3` per-cluster
+    rename suffixes), and the mock was repaired with the member-calls
+    split landed alongside the fix; the strictness review caught that
+    this amendment had not been filed before the fix commit, and it is
+    filed now, before the merge, with the fix's arbiters (the R-4 regen
+    pin and the pair's link flip) still pending pre-merge. That falsifies the mock as a
     faithful model of the defect (the specialization shape or import path
     differs), NOT the defect as fixed: F8c halts fix-site selection,
     extends diagnosis on the runner evidence (for example a real-header lower

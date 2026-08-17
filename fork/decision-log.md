@@ -830,7 +830,11 @@ line was touched, and the red-first runner autoupdate reconciliation
 
 _F8c landing note (2026-08-18):_ the D3 fix of the approved F-008 plan
 (fork/f008/plan.md §2.3, §3 F8c). _Adjudication verdict (step 1, plan
-adjudication D, run 32079343005, 2026-08-17T23:11Z): H0 REFUTED._ The un-SKIPped real-header
+adjudication D, run 32079343005, 2026-08-17T23:11Z): H0 REFUTED — and the plan's pre-declared H0-mock-divergence
+stop-and-explain path FIRED (the F8a mock dump looked fixed while the
+real pair link-failed; the §2.3 amendment is filed on this branch, a
+strictness-review catch: the substance was done, the mandated filing
+was not)._ The un-SKIPped real-header
 pair cpp_atomic_global_counter_diff COMPILES fully (the flagged as-i32
 chain and every thunk lowered) but LINKS red with `undefined symbol:
 _Ctotal.Main.2` (referenced by the fetch_add thunk and both

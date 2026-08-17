@@ -1,1 +1,1 @@
-2026-08-17T23:10Z post-trunk-merge state (merge of PR #17 trunk into b2)
+2026-08-18T02:50Z final conformance confirmation on the B2a merge head (expect 84/0/30 over 114)

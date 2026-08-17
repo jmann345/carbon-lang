@@ -104,6 +104,26 @@ jobs:
             sed -n '1,200p' "$f"
           done
 
+      - name: Dump failing-program LLVM IR
+        if: failure()
+        run: |
+          # Diagnostic-only: three golden shapes have failed to reproduce
+          # the question_generic_diff runtime divergence, so the mechanism
+          # must be read off the REAL compile's IR. Bounded output: defines
+          # and call sites of the propagation chain's symbols only.
+          set +e
+          CARBON=$(echo /tmp/conformance-toolchain/carbon_toolchain-*/bin/carbon)
+          PROG=fork/conformance/programs/error_handling/question_generic_diff.carbon
+          [ -x "$CARBON" ] && [ -f "$PROG" ] || exit 0
+          "$CARBON" compile --phase=lower --dump-llvm-ir "$PROG" \
+            > /tmp/qgd.ll 2> /tmp/qgd.err
+          echo "===== compile stderr (first 40) ====="
+          sed -n '1,40p' /tmp/qgd.err
+          echo "===== IR symbol inventory ====="
+          grep -E "^(define|declare)" /tmp/qgd.ll | grep -vE "llvm\.|Destroy" | sed -n '1,80p'
+          echo "===== chain bodies ====="
+          awk '/^define.*(Chain|Step|FromBreak|Branch|Err\.MyResult|Ok\.MyResult|Break\.ControlFlow|Continue\.ControlFlow)/, /^}/' /tmp/qgd.ll | sed -n '1,400p'
+
       - name: Commit and push scoreboard
         run: |
           set -euo pipefail

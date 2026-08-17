@@ -1,1 +1,1 @@
-2026-08-17T15:35Z conformance arbiter re-fire (previous attempt died at setup: GitHub codeload 503/429)
+2026-08-17T19:55Z conformance with IR dump diagnostics (three goldens failed to reproduce; read the real compile's IR)

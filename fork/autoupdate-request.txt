@@ -1,1 +1,1 @@
-2026-08-08T22:46:26Z R26 pass 2 for B1b (expect zero churn)
+2026-08-17T14:40Z autoupdate for weekly upstream merge (reconcile 9 upstream-side golden conflicts + LLVM-roll churn in fork goldens)

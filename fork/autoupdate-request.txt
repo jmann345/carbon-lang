@@ -1,1 +1,1 @@
-2026-08-17T15:50Z autoupdate re-fire (setup died on GitHub codeload 503/429)
+2026-08-17T20:35Z autoupdate pass 2 (function.carbon .h-split snippet-number non-convergence; R26)

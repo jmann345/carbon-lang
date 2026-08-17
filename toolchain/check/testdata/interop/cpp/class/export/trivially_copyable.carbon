@@ -27,6 +27,16 @@
 // the arbiter against mock divergence. The negative probe (a genuinely
 // non-trivial class must still fail the gate, plan §5 R-3) is
 // fail_atomic_of_nontrivial_carbon_class.carbon.
+//
+// The adapter_of_scalar split pins the recorded F8b deviation (plan §2.2 is
+// silent on `adapt`; the recursion follows `CanDestroyClass`'s identical
+// adapted-type dispatch): an adapter of a scalar with no user `Core.Destroy`
+// impl exports destructor-free too. The same R-2 falsifier applies to it —
+// its static_assert succeeding while a destructor declaration is attached
+// would be a predicate bypass, and the R-3 counterpart (an adapter WITH a
+// user Destroy impl must keep the thunk) is
+// fail_atomic_of_nontrivial_carbon_class.carbon's
+// fail_atomic_of_user_destroy_adapter split.
 
 // --- atomic.h
 
@@ -51,4 +61,22 @@ class Vec2 {
 
 fn F() {
   var unused a: Cpp.atomic(Vec2);
+}
+
+// --- adapter_of_scalar.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "atomic.h";
+
+// An adapter of a scalar, no user Destroy: destroy-trivial through the
+// adapted i32 (`IsTriviallyDestructible`'s adapted-type recursion —
+// `CanDestroyClass`'s identical dispatch), so the export carries no
+// destructor and the mock triviality gate accepts it.
+class Meters {
+  adapt i32;
+}
+
+fn G() {
+  var unused m: Cpp.atomic(Meters);
 }

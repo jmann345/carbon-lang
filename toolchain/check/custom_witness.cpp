@@ -4,6 +4,8 @@
 
 #include "toolchain/check/custom_witness.h"
 
+#include <utility>
+
 #include "llvm/ADT/APFloat.h"
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/check/eval.h"
@@ -21,6 +23,7 @@
 #include "toolchain/sem_ir/builtin_function_kind.h"
 #include "toolchain/sem_ir/constant.h"
 #include "toolchain/sem_ir/ids.h"
+#include "toolchain/sem_ir/import_ir.h"
 #include "toolchain/sem_ir/type_info.h"
 #include "toolchain/sem_ir/typed_insts.h"
 
@@ -368,17 +371,61 @@ static auto CanDestroyType(
   }
 }
 
+// Returns true if the interface is `Core.Destroy` in the given (possibly
+// imported) IR: the read-only, per-file mirror of `GetCoreInterface` — the
+// `core_interface` tag is assigned only to interfaces declared in package
+// Core (handle_interface.cpp) and propagates through import
+// (import_ref.cpp), and the Core-package parent-scope and identifier checks
+// match `GetCoreInterface`'s.
+static auto IsCoreDestroyInterface(const SemIR::File& sem_ir,
+                                   SemIR::InterfaceId interface_id) -> bool {
+  if (!interface_id.has_value()) {
+    // An error occurred when type-checking the impl (the same skip
+    // `ImportImplFilter::IsRelevantImpl` applies).
+    return false;
+  }
+  const auto& interface = sem_ir.interfaces().Get(interface_id);
+  return interface.core_interface == SemIR::CoreInterface::Destroy &&
+         sem_ir.name_scopes().IsCorePackage(interface.parent_scope_id) &&
+         interface.name_id.AsIdentifierId().has_value();
+}
+
 // Returns true if a user-declared `impl` of `Core.Destroy` covers the given
-// self constant. This scans the same impl population `LookupImplWitness`'s
-// candidate collection enumerates for a destroy query in this file; an inline
-// `impl as Core.Destroy` is present once its class is complete. A symbolic
-// impl self (an `impl forall` blanket) is conservatively treated as covering.
-// Today such an impl is inert for classes — the custom witness wins the
-// lookup — so this is a forward-looking guard: it keeps a class that declares
-// destruction work out of the trivially-destructible set before destroy-op
-// synthesis makes that work real.
-static auto HasUserDestroyImpl(Context& context,
+// class (`self_const_id` is the class type's constant in this file). This
+// mirrors, read-only, the impl population the destroy lookup's candidate
+// collection draws from (`CollectCandidateImplsForQuery`,
+// check/impl_lookup.cpp): the local impl store PLUS every imported IR's impl
+// store. The collection materializes relevant imported impls with
+// `ImportImpl` and then matches them through the local store's canonical
+// constants; this scan needs only existence — no witness — so it matches
+// each imported store in place and materializes nothing:
+//   - interface identity across IRs by `IsCoreDestroyInterface` above;
+//   - self identity across IRs by canonical defining declaration: two class
+//     types in different IRs denote the same class iff their defining decls
+//     canonicalize to the same (file, inst) pair (`GetCanonicalFileAndInstId`,
+//     sem_ir/import_ir.cpp) — the identity import deduplication itself
+//     verifies (`VerifySameCanonicalImportIRInst`).
+// Divergences from the collection, both in the conservative (non-trivial)
+// direction: ALL import IRs are walked, a superset of its
+// orphan-rule-filtered `FindAssociatedImportIRs` set; and a symbolic impl
+// self (an `impl forall` blanket, local or imported) is treated as covering
+// without a structure match. Known same-file ordering hole: an impl textually
+// after the class's first clang completion is not yet in the local store when
+// this scan runs, where real lookup would poison and diagnose the
+// use-before-declaration — inert today because a predicate-trivial class's
+// destroy lookup is answered by the custom witness anyway and synthesized
+// destroy ops are no-op placeholders.
+//
+// Today a user `Core.Destroy` impl on a class is inert (the custom witness
+// wins the lookup), so this scan is a forward-looking guard: it keeps a class
+// that declares destruction work — in its own file or in its defining
+// library — out of the trivially-destructible set before destroy-op
+// synthesis makes that work real, and keeps the exported record's triviality
+// identical across the defining and importing TUs.
+static auto HasUserDestroyImpl(Context& context, const SemIR::Class& class_info,
                                SemIR::ConstantId self_const_id) -> bool {
+  // The local store: impls declared in this file, plus any already
+  // materialized here from imports.
   for (auto [_, impl] : context.impls().enumerate()) {
     if (!impl.interface.interface_id.has_value() ||
         GetCoreInterface(context, impl.interface.interface_id) !=
@@ -391,7 +438,67 @@ static auto HasUserDestroyImpl(Context& context,
       return true;
     }
   }
+
+  // The imported stores, matched in place. The queried class's canonical
+  // identity is its defining file and declaration.
+  std::pair<const SemIR::File*, SemIR::InstId> class_canonical = {
+      nullptr, SemIR::InstId::None};
+  if (class_info.first_owning_decl_id.has_value()) {
+    class_canonical = SemIR::GetCanonicalFileAndInstId(
+        &context.sem_ir(), class_info.first_owning_decl_id);
+  }
+  for (const auto& import_ir : context.import_irs().values()) {
+    // Skips the `None` and `Cpp` slots; C++ code cannot declare a
+    // `Core.Destroy` impl.
+    if (import_ir.sem_ir == nullptr) {
+      continue;
+    }
+    const auto& import_sem_ir = *import_ir.sem_ir;
+    for (auto [_, impl] : import_sem_ir.impls().enumerate()) {
+      if (!IsCoreDestroyInterface(import_sem_ir, impl.interface.interface_id)) {
+        continue;
+      }
+      auto impl_self_const_id =
+          import_sem_ir.constant_values().Get(impl.self_id);
+      if (!impl_self_const_id.has_value()) {
+        continue;
+      }
+      if (impl_self_const_id.is_symbolic()) {
+        return true;
+      }
+      if (class_canonical.first == nullptr) {
+        // A class without an owning declaration cannot be named by an
+        // imported impl; only the blanket case above can cover it.
+        continue;
+      }
+      // A concrete impl self covers the class iff it is a class type whose
+      // defining declaration canonicalizes to the queried class's.
+      auto self_inst_id =
+          import_sem_ir.constant_values().GetInstId(impl_self_const_id);
+      auto self_class_type =
+          import_sem_ir.insts().TryGetAs<SemIR::ClassType>(self_inst_id);
+      if (!self_class_type) {
+        continue;
+      }
+      const auto& impl_class =
+          import_sem_ir.classes().Get(self_class_type->class_id);
+      if (!impl_class.first_owning_decl_id.has_value()) {
+        continue;
+      }
+      if (SemIR::GetCanonicalFileAndInstId(&import_sem_ir,
+                                           impl_class.first_owning_decl_id) ==
+          class_canonical) {
+        return true;
+      }
+    }
+  }
   return false;
+}
+
+auto HasTrivialClassShapeForExport(const SemIR::Class& class_info) -> bool {
+  return !class_info.base_id.has_value() &&
+         !class_info.vtable_decl_id.has_value() && !class_info.is_dynamic &&
+         class_info.inheritance_kind != SemIR::Class::InheritanceKind::Abstract;
 }
 
 auto IsTriviallyDestructible(Context& context, SemIR::TypeId type_id) -> bool {
@@ -423,7 +530,15 @@ auto IsTriviallyDestructible(Context& context, SemIR::TypeId type_id) -> bool {
       if (class_info.is_choice) {
         return false;
       }
-      if (HasUserDestroyImpl(context,
+      // A nested class field passes the same shape gate as the exported
+      // class itself (fork/f008/plan.md §2.2: nested classes qualify "under
+      // the same predicate"): a base, a vtable, or a dynamic/abstract class
+      // is not admitted here even where its destruction would reduce to its
+      // members'.
+      if (!HasTrivialClassShapeForExport(class_info)) {
+        return false;
+      }
+      if (HasUserDestroyImpl(context, class_info,
                              context.constant_values().Get(
                                  context.types().GetTypeInstId(type_id)))) {
         return false;

@@ -1,1 +1,2 @@
 2026-08-18T06:00Z F8b regen: positive triviality pin + negative probe reconciliation
+2026-08-18T07:30Z F8b amended regen (review fix round): imported-impl scan + adapter splits + two-file imported-user-destroy fail arm

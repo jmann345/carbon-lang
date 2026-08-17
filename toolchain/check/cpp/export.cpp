@@ -1528,10 +1528,11 @@ auto IsTriviallyCopyableForExport(Context& context,
     return false;
   }
   // Bases, dynamic classes, and abstract classes have non-trivial special
-  // members or need the (possibly pure-virtual) destructor declaration.
-  if (class_info.base_id.has_value() || class_info.vtable_decl_id.has_value() ||
-      class_info.is_dynamic ||
-      class_info.inheritance_kind == SemIR::Class::InheritanceKind::Abstract) {
+  // members or need the (possibly pure-virtual) destructor declaration. The
+  // shape gate is shared with the nested-class recursion inside
+  // `IsTriviallyDestructible`, so nested class fields pass the same checks
+  // (fork/f008/plan.md §2.2).
+  if (!HasTrivialClassShapeForExport(class_info)) {
     return false;
   }
   // The destroy half rides the destroy machinery's own classification

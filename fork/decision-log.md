@@ -758,6 +758,76 @@ as the first Carbon-type-into-Clang slice F-010/W8 need). Rejected:
 doc-only, Core.Sync veneer, native atomics. Per
 fork/design-sprint/threading-atomics.md.
 
+_F8b landing note (2026-08-18):_ the D2 fix of the approved F-008 plan
+(fork/f008/plan.md §2.2, §3 F8b), post-review fix round folded in.
+Mechanism: `CarbonExternalASTSource::CompleteType`
+(check/cpp/generate_ast.cpp) consults `IsTriviallyCopyableForExport`
+(check/cpp/export.cpp, the single-owner predicate of W-006 coherence risk
+7) and exports a qualifying class WITHOUT the thunk-bodied destructor, so
+Clang's implicitly-declared special members stay trivial and libc++'s
+`static_assert(is_trivially_copyable<T>)` gate accepts the class.
+Qualifying = concrete non-generic, `HasTrivialClassShapeForExport` (no
+base, no vtable, not dynamic, not abstract), and `IsTriviallyDestructible`
+(check/custom_witness.cpp — the destroy machinery's own `CanDestroyType`
+classification recursed through adapted types / object representations,
+scalars as the base case) including no user `Core.Destroy` impl. **W-021
+DISCHARGED**; no §2.2 S→M escalation fired. Deviations from the plan
+letter, recorded per R17: **(1)** the implementation commit's falsifier
+labels are corrected to plan §5's R-2 (positive pin / real-libc++ pair
+arbiter) and R-3 (negative probe). **(2)** Adapter classes qualify through
+`GetAdaptedType` recursion — §2.2 is silent on `adapt`; the recursion is
+destruction-semantics-aligned per `CanDestroyClass`'s identical
+adapted-type dispatch — pinned both ways (positive `adapter_of_scalar`
+split in trivially_copyable.carbon; negative user-Destroy-adapter arm in
+the fail probe). **(3)** The user-impl scan (`HasUserDestroyImpl`) is
+forward-looking (a user `Core.Destroy` impl is inert today — the custom
+witness wins the lookup and destroy ops are no-op placeholders) — WITH the
+F1 correction: the first cut scanned only the LOCAL impl store while its
+comment claimed equivalence with destroy-lookup's candidate population;
+both adversarial reviews refuted that (BLOCKER) — an imported class whose
+defining library declares a user `Core.Destroy` impl would have exported
+trivially-copyable in the importing TU while non-trivial in its own, a
+cross-TU divergence of the exported record. The landed scan mirrors the
+candidate collection (`CollectCandidateImplsForQuery`,
+check/impl_lookup.cpp) READ-ONLY: local store PLUS every imported IR's
+impl store, matched in place with no `ImportImpl`/materialization —
+interface identity by the imported IR's `core_interface` tag (assigned
+only to Core-package interfaces and propagated through import) plus the
+Core-package scope check `GetCoreInterface` applies locally; self identity
+by canonical defining declaration (`GetCanonicalFileAndInstId`,
+sem_ir/import_ir.cpp — the identity import deduplication itself verifies).
+Divergences from the collection are conservative-only: ALL import IRs are
+walked (a superset of the orphan-rule-filtered `FindAssociatedImportIRs`
+set) and symbolic-self blanket impls are treated as covering. The remaining
+same-file ordering hole is documented at the scan (an impl textually after
+the class's first clang completion is missed where lookup would poison the
+use — inert today for the same custom-witness reason). Falsifier landed
+with the fix: the two-file `destroy_lib` +
+`fail_atomic_of_imported_user_destroy` split pins that the imported-impl
+case KEEPS the thunk. **(4)** Nested-field narrowing per the strictness
+review's F2: the base/vtable/dynamic(/abstract) checks now apply to NESTED
+class-type fields too, through the shared `HasTrivialClassShapeForExport`,
+per §2.2's "under the same predicate" letter.
+make_unique_test.carbon re-derivation (plan §4, review amendment 5): its
+`class C` (single i32 field, no user Destroy, no base/vtable) qualifies,
+so `unique_ptr<C>`'s deleter now runs C++'s implicit trivial destructor
+instead of the exported thunk; the thunk's body was the no-op placeholder,
+so observable behavior is unchanged — exit criterion stays "test green on
+the runner". Refined golden-movement prediction (correctness F3): churn is
+confined to the nine goldens naming `__destroy_thunk`
+(check interop function/export/generic; lower class/static; lower interop
+cpp/class/export/{class,method}; lower interop cpp/class/import/dynamic;
+lower interop cpp/class/virtual_fn; lower interop
+cpp/function/export/{constructor,generic}; lower interop cpp/issue7142) —
+and of those, import/dynamic.carbon and virtual_fn.carbon must NOT move
+(C++-owned and dynamic classes stay on the thunk path); movement there is
+a stop-and-explain event. Process note: the R12 post-edit hook flagged the
+NEW fail arms' hand-written CHECK:STDERR pins under R16a; plan §8's
+fail-file exception applies (new fail_ content ships hand-pinned, S2c/S2d
+precedent), the pins are marked best-effort in-file, no pre-existing CHECK
+line was touched, and the red-first runner autoupdate reconciliation
+(fork/autoupdate-request.txt refreshed) is the arbiter. Veto-able.
+
 ### F-009: Function overloading — **Marked `overload fn`** (2026-07-19)
 
 Closed same-library sets (p000998), declaration-order first-match

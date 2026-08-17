@@ -101,9 +101,10 @@ auto ExportFunctionSpecializationToCpp(
 
 // Returns true if the exported C++ record for the given class must be
 // genuinely trivially copyable: a plain concrete class — no base, no virtual
-// members, not abstract — whose destroy is trivial per the destroy
-// machinery's own classification (`IsTriviallyDestructible`,
-// check/custom_witness.cpp). A qualifying class is exported WITHOUT a
+// members, not abstract (`HasTrivialClassShapeForExport`) — whose destroy is
+// trivial per the destroy machinery's own classification
+// (`IsTriviallyDestructible`, check/custom_witness.cpp; nested class fields
+// pass the same shape gate). A qualifying class is exported WITHOUT a
 // destructor, so Clang's implicitly-declared special members stay trivial and
 // `__is_trivially_copyable` computes true — the TA-D2 fix (W-021,
 // fork/f008/plan.md §2.2). Everything else keeps the thunk-bodied destructor.

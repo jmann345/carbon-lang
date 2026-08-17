@@ -10,8 +10,24 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-17 (post-PR #17: weekly upstream merge; B2a
-landing in flight on `claude/carbon-fork-0-1-b2`)._
+_Last updated: 2026-08-18 (post-PR #18: ERROR-HANDLING B2a COMPLETE)._
+EIGHTEEN PRs merged. B2a landed as PR #18: the language-wide
+symbolic-choice destroy widening (W-071 discharged, the `?`
+symbolic-operand gate deleted), PLUS the mixed-width miscompile its
+differential arbiter caught — root-caused per the no-slop directive to
+POISON covering-template filler (`EmitAsConstant(UninitializedValue)`,
+upstream-authored; SROA whole-scalar poison under partial overwrite;
+fixed to zeros, p000257-sanctioned, flagged upstreamable) after two
+implemented-then-refuted candidates (full three-round record in
+fork/b2/mixed-width-diagnosis.md), PLUS coalescer hardening (sret
+pointee in type fingerprints; absent-fingerprint pairs never merge;
+builtin callees fingerprinted by value — upstream dedup goldens
+restored). Scoreboard 84/0/30 over 114; W-072 minted (projection
+non-reduction, Try success-constructor gap). B2b = the SF-9 brief in
+PR #18's body (options a/b/c; default (c) defer). OPEN user asks: SF-9
+brief, Trivial→NonTrivial ratification (PR #18 digest item 1),
+design-docs veto digest (2026-07-20). Next workstream: F-008 threading
+fixes per the approved amended plan (coordinator sign-off 2026-08-17)._
 SIXTEEN PRs MERGED to `trunk`. B1 is complete across PRs #15/#16:
 postfix `?` parses, desugars through the fork's FIRST prelude additions
 (`Core.ControlFlow(C, B)` + `Core.Try` in `prelude/try`), and
@@ -80,7 +96,7 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-83 PASS / 30 SKIP / 0 FAIL programs (113 total, 12 differential
+84 PASS / 30 SKIP / 0 FAIL programs (114 total, 13 differential
 C++-oracle pairs); **42/56 bullets green** (runner-side scoreboard at
 the PR #16 head; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first

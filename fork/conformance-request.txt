@@ -1,1 +1,1 @@
-2026-08-17T20:50Z conformance with lifetime-strip UB proof (bisect: none correct, debug/speed corrupt level-dependently)
+2026-08-17T21:50Z THE ARBITER: conformance after the poison-filler root-cause fix (question_generic_diff must flip to PASS; 84/0/30 over 114)

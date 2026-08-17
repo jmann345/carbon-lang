@@ -132,34 +132,34 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @_CReadErr64.Main(ptr %r) #0 !dbg !25 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc56_22.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 0, !dbg !30
-// CHECK:STDOUT:   %.loc56_22.4 = load i8, ptr %.loc56_22.3.discriminant, align 1, !dbg !30
-// CHECK:STDOUT:   %.loc56_22.41 = trunc i8 %.loc56_22.4 to i1, !dbg !30
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc56 = icmp eq i1 false, %.loc56_22.41, !dbg !30
-// CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc56, label %match.case.then.loc56, label %match.case.else.loc56, !dbg !30
+// CHECK:STDOUT:   %.loc60_22.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 0, !dbg !30
+// CHECK:STDOUT:   %.loc60_22.4 = load i8, ptr %.loc60_22.3.discriminant, align 1, !dbg !30
+// CHECK:STDOUT:   %.loc60_22.41 = trunc i8 %.loc60_22.4 to i1, !dbg !30
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc60 = icmp eq i1 false, %.loc60_22.41, !dbg !30
+// CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc60, label %match.case.then.loc60, label %match.case.else.loc60, !dbg !30
 // CHECK:STDOUT:
-// CHECK:STDOUT: match.case.then.loc56:                            ; preds = %entry
-// CHECK:STDOUT:   %.loc56_22.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 1, !dbg !30
-// CHECK:STDOUT:   %.loc56_22.8.Ok = getelementptr inbounds nuw [8 x i8], ptr %.loc56_22.7.payload, i32 0, i32 0, !dbg !30
-// CHECK:STDOUT:   %tuple.elem0.loc56.tuple.elem = getelementptr inbounds nuw { i64 }, ptr %.loc56_22.8.Ok, i32 0, i32 0, !dbg !30
-// CHECK:STDOUT:   %.loc56_22.9 = load i64, ptr %tuple.elem0.loc56.tuple.elem, align 8, !dbg !30
+// CHECK:STDOUT: match.case.then.loc60:                            ; preds = %entry
+// CHECK:STDOUT:   %.loc60_22.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 1, !dbg !30
+// CHECK:STDOUT:   %.loc60_22.8.Ok = getelementptr inbounds nuw [8 x i8], ptr %.loc60_22.7.payload, i32 0, i32 0, !dbg !30
+// CHECK:STDOUT:   %tuple.elem0.loc60.tuple.elem = getelementptr inbounds nuw { i64 }, ptr %.loc60_22.8.Ok, i32 0, i32 0, !dbg !30
+// CHECK:STDOUT:   %.loc60_22.9 = load i64, ptr %tuple.elem0.loc60.tuple.elem, align 8, !dbg !30
 // CHECK:STDOUT:   ret i32 0, !dbg !31
 // CHECK:STDOUT:
-// CHECK:STDOUT: match.case.else.loc56:                            ; preds = %entry
-// CHECK:STDOUT:   %.loc57_23.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 0, !dbg !32
-// CHECK:STDOUT:   %.loc57_23.4 = load i8, ptr %.loc57_23.3.discriminant, align 1, !dbg !32
-// CHECK:STDOUT:   %.loc57_23.42 = trunc i8 %.loc57_23.4 to i1, !dbg !32
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc57 = icmp eq i1 true, %.loc57_23.42, !dbg !32
-// CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc57, label %match.case.then.loc57, label %match.done, !dbg !32
+// CHECK:STDOUT: match.case.else.loc60:                            ; preds = %entry
+// CHECK:STDOUT:   %.loc61_23.3.discriminant = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 0, !dbg !32
+// CHECK:STDOUT:   %.loc61_23.4 = load i8, ptr %.loc61_23.3.discriminant, align 1, !dbg !32
+// CHECK:STDOUT:   %.loc61_23.42 = trunc i8 %.loc61_23.4 to i1, !dbg !32
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc61 = icmp eq i1 true, %.loc61_23.42, !dbg !32
+// CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc61, label %match.case.then.loc61, label %match.done, !dbg !32
 // CHECK:STDOUT:
-// CHECK:STDOUT: match.case.then.loc57:                            ; preds = %match.case.else.loc56
-// CHECK:STDOUT:   %.loc57_23.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 1, !dbg !32
-// CHECK:STDOUT:   %.loc57_23.8.Err = getelementptr inbounds nuw [8 x i8], ptr %.loc57_23.7.payload, i32 0, i32 0, !dbg !32
-// CHECK:STDOUT:   %tuple.elem0.loc57.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc57_23.8.Err, i32 0, i32 0, !dbg !32
-// CHECK:STDOUT:   %.loc57_23.9 = load i32, ptr %tuple.elem0.loc57.tuple.elem, align 4, !dbg !32
-// CHECK:STDOUT:   ret i32 %.loc57_23.9, !dbg !33
+// CHECK:STDOUT: match.case.then.loc61:                            ; preds = %match.case.else.loc60
+// CHECK:STDOUT:   %.loc61_23.7.payload = getelementptr inbounds nuw <{ <{ i1, [7 x i8] }>, [8 x i8] }>, ptr %r, i32 0, i32 1, !dbg !32
+// CHECK:STDOUT:   %.loc61_23.8.Err = getelementptr inbounds nuw [8 x i8], ptr %.loc61_23.7.payload, i32 0, i32 0, !dbg !32
+// CHECK:STDOUT:   %tuple.elem0.loc61.tuple.elem = getelementptr inbounds nuw { i32 }, ptr %.loc61_23.8.Err, i32 0, i32 0, !dbg !32
+// CHECK:STDOUT:   %.loc61_23.9 = load i32, ptr %tuple.elem0.loc61.tuple.elem, align 4, !dbg !32
+// CHECK:STDOUT:   ret i32 %.loc61_23.9, !dbg !33
 // CHECK:STDOUT:
-// CHECK:STDOUT: match.done:                                       ; preds = %match.case.else.loc56
+// CHECK:STDOUT: match.done:                                       ; preds = %match.case.else.loc60
 // CHECK:STDOUT:   ret i32 -1, !dbg !34
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -520,11 +520,11 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !27 = !{!20, !7}
 // CHECK:STDOUT: !28 = !{!29}
 // CHECK:STDOUT: !29 = !DILocalVariable(arg: 1, scope: !25, type: !7)
-// CHECK:STDOUT: !30 = !DILocation(line: 56, column: 5, scope: !25)
-// CHECK:STDOUT: !31 = !DILocation(line: 56, column: 27, scope: !25)
-// CHECK:STDOUT: !32 = !DILocation(line: 57, column: 5, scope: !25)
-// CHECK:STDOUT: !33 = !DILocation(line: 57, column: 28, scope: !25)
-// CHECK:STDOUT: !34 = !DILocation(line: 60, column: 3, scope: !25)
+// CHECK:STDOUT: !30 = !DILocation(line: 60, column: 5, scope: !25)
+// CHECK:STDOUT: !31 = !DILocation(line: 60, column: 27, scope: !25)
+// CHECK:STDOUT: !32 = !DILocation(line: 61, column: 5, scope: !25)
+// CHECK:STDOUT: !33 = !DILocation(line: 61, column: 28, scope: !25)
+// CHECK:STDOUT: !34 = !DILocation(line: 64, column: 3, scope: !25)
 // CHECK:STDOUT: !35 = distinct !DISubprogram(name: "Op", linkageName: "_COp.7512aa4144aeb8db:core.Destroy.Core", scope: null, file: !1, line: 31, type: !36, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !39)
 // CHECK:STDOUT: !36 = !DISubroutineType(types: !37)
 // CHECK:STDOUT: !37 = !{null, !38}

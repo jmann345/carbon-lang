@@ -77,8 +77,44 @@ fn Discard[U: type](_: U) {}
 // The generic `?` chain with CALL-RESULT-temporary operands (the failing
 // conformance program's shape, fork/conformance/programs/error_handling/
 // question_generic_diff.carbon `Chain`).
+// CHECK:STDERR: lib.carbon:[[@LINE+16]]:27: error: expected name in binding pattern; prefix reserved word with `r#` to form a valid identifier [ExpectedBindingPattern]
+// CHECK:STDERR: fn Chain[T: type](x: T, f1: bool, f2: bool) -> MyResult(T, i32) {
+// CHECK:STDERR:                           ^
+// CHECK:STDERR:
+// CHECK:STDERR: lib.carbon:[[@LINE+12]]:27: warning: binding `f1` unused [UnusedBinding]
+// CHECK:STDERR: fn Chain[T: type](x: T, f1: bool, f2: bool) -> MyResult(T, i32) {
+// CHECK:STDERR:                           ^
+// CHECK:STDERR:
+// CHECK:STDERR: lib.carbon:[[@LINE+8]]:37: warning: binding `f2` unused [UnusedBinding]
+// CHECK:STDERR: fn Chain[T: type](x: T, f1: bool, f2: bool) -> MyResult(T, i32) {
+// CHECK:STDERR:                                     ^
+// CHECK:STDERR:
+// CHECK:STDERR: lib.carbon:[[@LINE+4]]:37: error: expected name in binding pattern; prefix reserved word with `r#` to form a valid identifier [ExpectedBindingPattern]
+// CHECK:STDERR: fn Chain[T: type](x: T, f1: bool, f2: bool) -> MyResult(T, i32) {
+// CHECK:STDERR:                                     ^
+// CHECK:STDERR:
 fn Chain[T: type](x: T, f1: bool, f2: bool) -> MyResult(T, i32) {
+  // CHECK:STDERR: lib.carbon:[[@LINE+10]]:19: error: cannot implicitly convert expression of type `type` to `bool` [ConversionFailure]
+  // CHECK:STDERR:   Discard(Step(x, f1, 101)?);
+  // CHECK:STDERR:                   ^~
+  // CHECK:STDERR: lib.carbon:[[@LINE+7]]:19: note: type `type` does not implement interface `Core.ImplicitAs(bool)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   Discard(Step(x, f1, 101)?);
+  // CHECK:STDERR:                   ^~
+  // CHECK:STDERR: lib.carbon:[[@LINE-35]]:24: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn Step[T: type](x: T, fail: bool, tag: i32) -> MyResult(T, i32) {
+  // CHECK:STDERR:                        ^~~~~~~~~~
+  // CHECK:STDERR:
   Discard(Step(x, f1, 101)?);
+  // CHECK:STDERR: lib.carbon:[[@LINE+10]]:19: error: cannot implicitly convert expression of type `type` to `bool` [ConversionFailure]
+  // CHECK:STDERR:   Discard(Step(x, f2, 202)?);
+  // CHECK:STDERR:                   ^~
+  // CHECK:STDERR: lib.carbon:[[@LINE+7]]:19: note: type `type` does not implement interface `Core.ImplicitAs(bool)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   Discard(Step(x, f2, 202)?);
+  // CHECK:STDERR:                   ^~
+  // CHECK:STDERR: lib.carbon:[[@LINE-46]]:24: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn Step[T: type](x: T, fail: bool, tag: i32) -> MyResult(T, i32) {
+  // CHECK:STDERR:                        ^~~~~~~~~~
+  // CHECK:STDERR:
   Discard(Step(x, f2, 202)?);
   return MyResult(T, i32).Ok(x);
 }
@@ -87,7 +123,43 @@ fn Chain[T: type](x: T, f1: bool, f2: bool) -> MyResult(T, i32) {
 // functions exist in lib's module under their canonical mangled names, so
 // the importing file's references to the SAME specifics take the
 // already-created path.
+// CHECK:STDERR: lib.carbon:[[@LINE+16]]:24: error: expected name in binding pattern; prefix reserved word with `r#` to form a valid identifier [ExpectedBindingPattern]
+// CHECK:STDERR: fn LibCall32(x: i32, f1: bool, f2: bool) -> MyResult(i32, i32) {
+// CHECK:STDERR:                        ^
+// CHECK:STDERR:
+// CHECK:STDERR: lib.carbon:[[@LINE+12]]:24: warning: binding `f1` unused [UnusedBinding]
+// CHECK:STDERR: fn LibCall32(x: i32, f1: bool, f2: bool) -> MyResult(i32, i32) {
+// CHECK:STDERR:                        ^
+// CHECK:STDERR:
+// CHECK:STDERR: lib.carbon:[[@LINE+8]]:34: warning: binding `f2` unused [UnusedBinding]
+// CHECK:STDERR: fn LibCall32(x: i32, f1: bool, f2: bool) -> MyResult(i32, i32) {
+// CHECK:STDERR:                                  ^
+// CHECK:STDERR:
+// CHECK:STDERR: lib.carbon:[[@LINE+4]]:34: error: expected name in binding pattern; prefix reserved word with `r#` to form a valid identifier [ExpectedBindingPattern]
+// CHECK:STDERR: fn LibCall32(x: i32, f1: bool, f2: bool) -> MyResult(i32, i32) {
+// CHECK:STDERR:                                  ^
+// CHECK:STDERR:
 fn LibCall32(x: i32, f1: bool, f2: bool) -> MyResult(i32, i32) {
+  // CHECK:STDERR: lib.carbon:[[@LINE+20]]:19: error: cannot implicitly convert expression of type `type` to `bool` [ConversionFailure]
+  // CHECK:STDERR:   return Chain(x, f1, f2);
+  // CHECK:STDERR:                   ^~
+  // CHECK:STDERR: lib.carbon:[[@LINE+17]]:19: note: type `type` does not implement interface `Core.ImplicitAs(bool)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return Chain(x, f1, f2);
+  // CHECK:STDERR:                   ^~
+  // CHECK:STDERR: lib.carbon:[[@LINE-53]]:27: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn Chain[T: type](x: T, f1: bool, f2: bool) -> MyResult(T, i32) {
+  // CHECK:STDERR:                           ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: lib.carbon:[[@LINE+10]]:23: error: cannot implicitly convert expression of type `type` to `bool` [ConversionFailure]
+  // CHECK:STDERR:   return Chain(x, f1, f2);
+  // CHECK:STDERR:                       ^~
+  // CHECK:STDERR: lib.carbon:[[@LINE+7]]:23: note: type `type` does not implement interface `Core.ImplicitAs(bool)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return Chain(x, f1, f2);
+  // CHECK:STDERR:                       ^~
+  // CHECK:STDERR: lib.carbon:[[@LINE-63]]:37: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn Chain[T: type](x: T, f1: bool, f2: bool) -> MyResult(T, i32) {
+  // CHECK:STDERR:                                     ^
+  // CHECK:STDERR:
   return Chain(x, f1, f2);
 }
 
@@ -97,11 +169,87 @@ library "[[@TEST_NAME]]";
 import library "lib";
 
 // Narrow first, wide second — the failing program's instantiation order.
+// CHECK:STDERR: use.carbon:[[@LINE+16]]:21: error: expected name in binding pattern; prefix reserved word with `r#` to form a valid identifier [ExpectedBindingPattern]
+// CHECK:STDERR: fn Call32(x: i32, f1: bool, f2: bool) -> MyResult(i32, i32) {
+// CHECK:STDERR:                     ^
+// CHECK:STDERR:
+// CHECK:STDERR: use.carbon:[[@LINE+12]]:21: warning: binding `f1` unused [UnusedBinding]
+// CHECK:STDERR: fn Call32(x: i32, f1: bool, f2: bool) -> MyResult(i32, i32) {
+// CHECK:STDERR:                     ^
+// CHECK:STDERR:
+// CHECK:STDERR: use.carbon:[[@LINE+8]]:31: warning: binding `f2` unused [UnusedBinding]
+// CHECK:STDERR: fn Call32(x: i32, f1: bool, f2: bool) -> MyResult(i32, i32) {
+// CHECK:STDERR:                               ^
+// CHECK:STDERR:
+// CHECK:STDERR: use.carbon:[[@LINE+4]]:31: error: expected name in binding pattern; prefix reserved word with `r#` to form a valid identifier [ExpectedBindingPattern]
+// CHECK:STDERR: fn Call32(x: i32, f1: bool, f2: bool) -> MyResult(i32, i32) {
+// CHECK:STDERR:                               ^
+// CHECK:STDERR:
 fn Call32(x: i32, f1: bool, f2: bool) -> MyResult(i32, i32) {
+  // CHECK:STDERR: use.carbon:[[@LINE+22]]:19: error: cannot implicitly convert expression of type `type` to `bool` [ConversionFailure]
+  // CHECK:STDERR:   return Chain(x, f1, f2);
+  // CHECK:STDERR:                   ^~
+  // CHECK:STDERR: use.carbon:[[@LINE+19]]:19: note: type `type` does not implement interface `Core.ImplicitAs(bool)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return Chain(x, f1, f2);
+  // CHECK:STDERR:                   ^~
+  // CHECK:STDERR: use.carbon:[[@LINE-26]]:1: in import [InImport]
+  // CHECK:STDERR: lib.carbon:57:27: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn Chain[T: type](x: T, f1: bool, f2: bool) -> MyResult(T, i32) {
+  // CHECK:STDERR:                           ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: use.carbon:[[@LINE+11]]:23: error: cannot implicitly convert expression of type `type` to `bool` [ConversionFailure]
+  // CHECK:STDERR:   return Chain(x, f1, f2);
+  // CHECK:STDERR:                       ^~
+  // CHECK:STDERR: use.carbon:[[@LINE+8]]:23: note: type `type` does not implement interface `Core.ImplicitAs(bool)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return Chain(x, f1, f2);
+  // CHECK:STDERR:                       ^~
+  // CHECK:STDERR: use.carbon:[[@LINE-37]]:1: in import [InImport]
+  // CHECK:STDERR: lib.carbon:57:37: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn Chain[T: type](x: T, f1: bool, f2: bool) -> MyResult(T, i32) {
+  // CHECK:STDERR:                                     ^
+  // CHECK:STDERR:
   return Chain(x, f1, f2);
 }
 
+// CHECK:STDERR: use.carbon:[[@LINE+16]]:21: error: expected name in binding pattern; prefix reserved word with `r#` to form a valid identifier [ExpectedBindingPattern]
+// CHECK:STDERR: fn Call64(x: i64, f1: bool, f2: bool) -> MyResult(i64, i32) {
+// CHECK:STDERR:                     ^
+// CHECK:STDERR:
+// CHECK:STDERR: use.carbon:[[@LINE+12]]:21: warning: binding `f1` unused [UnusedBinding]
+// CHECK:STDERR: fn Call64(x: i64, f1: bool, f2: bool) -> MyResult(i64, i32) {
+// CHECK:STDERR:                     ^
+// CHECK:STDERR:
+// CHECK:STDERR: use.carbon:[[@LINE+8]]:31: warning: binding `f2` unused [UnusedBinding]
+// CHECK:STDERR: fn Call64(x: i64, f1: bool, f2: bool) -> MyResult(i64, i32) {
+// CHECK:STDERR:                               ^
+// CHECK:STDERR:
+// CHECK:STDERR: use.carbon:[[@LINE+4]]:31: error: expected name in binding pattern; prefix reserved word with `r#` to form a valid identifier [ExpectedBindingPattern]
+// CHECK:STDERR: fn Call64(x: i64, f1: bool, f2: bool) -> MyResult(i64, i32) {
+// CHECK:STDERR:                               ^
+// CHECK:STDERR:
 fn Call64(x: i64, f1: bool, f2: bool) -> MyResult(i64, i32) {
+  // CHECK:STDERR: use.carbon:[[@LINE+22]]:19: error: cannot implicitly convert expression of type `type` to `bool` [ConversionFailure]
+  // CHECK:STDERR:   return Chain(x, f1, f2);
+  // CHECK:STDERR:                   ^~
+  // CHECK:STDERR: use.carbon:[[@LINE+19]]:19: note: type `type` does not implement interface `Core.ImplicitAs(bool)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return Chain(x, f1, f2);
+  // CHECK:STDERR:                   ^~
+  // CHECK:STDERR: use.carbon:[[@LINE-68]]:1: in import [InImport]
+  // CHECK:STDERR: lib.carbon:57:27: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn Chain[T: type](x: T, f1: bool, f2: bool) -> MyResult(T, i32) {
+  // CHECK:STDERR:                           ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: use.carbon:[[@LINE+11]]:23: error: cannot implicitly convert expression of type `type` to `bool` [ConversionFailure]
+  // CHECK:STDERR:   return Chain(x, f1, f2);
+  // CHECK:STDERR:                       ^~
+  // CHECK:STDERR: use.carbon:[[@LINE+8]]:23: note: type `type` does not implement interface `Core.ImplicitAs(bool)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return Chain(x, f1, f2);
+  // CHECK:STDERR:                       ^~
+  // CHECK:STDERR: use.carbon:[[@LINE-79]]:1: in import [InImport]
+  // CHECK:STDERR: lib.carbon:57:37: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn Chain[T: type](x: T, f1: bool, f2: bool) -> MyResult(T, i32) {
+  // CHECK:STDERR:                                     ^
+  // CHECK:STDERR:
   return Chain(x, f1, f2);
 }
 
@@ -116,6 +264,10 @@ fn MakeErr64(tag: i32) -> MyResult(i64, i32) {
 // the writer initialized.
 fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
   match (r) {
+    // CHECK:STDERR: use.carbon:[[@LINE+4]]:14: warning: binding `v` unused [UnusedBinding]
+    // CHECK:STDERR:     case .Ok(v: i64) => { return 0; }
+    // CHECK:STDERR:              ^~~~~~
+    // CHECK:STDERR:
     case .Ok(v: i64) => { return 0; }
     case .Err(e: i32) => { return e; }
   }

@@ -1,1 +1,1 @@
-2026-08-09T02:05Z conformance re-run for B2a with failure-log printing (diagnosing question_generic_diff DIFF-MISMATCH)
+2026-08-17T15:05Z conformance arbiter for the mixed-width fix round (question_generic_diff: flip = coalescer sufficed; red = layout suspect)

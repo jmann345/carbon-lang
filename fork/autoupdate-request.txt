@@ -1,1 +1,1 @@
-2026-08-17T21:20Z regen for the poison-filler fix (expect all .val templates zeroinitializer)
+2026-08-17T23:05Z post-trunk-merge reconcile regen (nullptr golden trunk-side; fix null-flips re-apply)

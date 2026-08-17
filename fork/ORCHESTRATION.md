@@ -10,7 +10,8 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-09 (post-PR #16: ERROR-HANDLING B1 COMPLETE)._
+_Last updated: 2026-08-17 (post-PR #17: weekly upstream merge; B2a
+landing in flight on `claude/carbon-fork-0-1-b2`)._
 SIXTEEN PRs MERGED to `trunk`. B1 is complete across PRs #15/#16:
 postfix `?` parses, desugars through the fork's FIRST prelude additions
 (`Core.ControlFlow(C, B)` + `Core.Try` in `prelude/try`), and
@@ -38,6 +39,17 @@ closed). `Optional(T: type) { Some(value: T), None }` now declares,
 constructs, matches, and destructures through specifics at runtime with
 per-specific layouts. Go-forward: **one workstream = one branch off
 `trunk` = one focused PR**.
+
+**Weekly upstream-merge outcome (standing rule 5, 2026-08-17, PR #17):**
+upstream `864845c` (15 commits over e7050af, covering the 08-10 AND 08-17
+firings — the session was credit-suspended between them) staged, 9
+golden-only conflicts (zero code), two-pass R26 reconciliation (a
+header-split snippet-number pair converged on pass 2), gate green,
+conformance 83/0/30 over 113 non-regressing, merged as PR #17. Ops: a
+GitHub codeload 503/429 outage killed several runner jobs at Set-up;
+`4ea5ef4` (ImplWitnessTable fingerprints) flagged for the in-flight B2a
+coalescer work. Next check: Monday 2026-08-24 14:00 UTC. The PREVIOUS
+outcome (2026-08-08) is retained below for the record.
 
 **Weekly upstream-merge outcome (standing rule 5, 2026-08-08):** upstream
 `e7050af` (37 commits over the ten-day gap; struct-pattern parsing,

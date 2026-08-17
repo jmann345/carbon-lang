@@ -10,7 +10,15 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-18 (post-PR #18: ERROR-HANDLING B2a COMPLETE)._
+_Last updated: 2026-08-18 (post-PR #19: F8a harness slice COMPLETE)._
+NINETEEN PRs. F-008 is underway per fork/f008/plan.md: F8a landed the
+zero-flip harness (two green thread programs on already-PASS bullets —
+H-P pthread linkage CONFIRMED live; three SKIP defect arbiters quoting
+the measured diagnostics; -pthread oracle line; 86/0/33 over 119).
+Next slice F8b: std::atomic(CarbonClass) destructor-thunk fix — the
+threading bullet flips there; then F8c (specialization-global link,
+real-header adjudication first), F8d (std::thread(carbon_fn), degrade
+path sanctioned)._
 EIGHTEEN PRs merged. B2a landed as PR #18: the language-wide
 symbolic-choice destroy widening (W-071 discharged, the `?`
 symbolic-operand gate deleted), PLUS the mixed-width miscompile its
@@ -96,7 +104,7 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-84 PASS / 30 SKIP / 0 FAIL programs (114 total, 13 differential
+86 PASS / 33 SKIP / 0 FAIL programs (119 total, 14 differential
 C++-oracle pairs); **42/56 bullets green** (runner-side scoreboard at
 the PR #16 head; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first

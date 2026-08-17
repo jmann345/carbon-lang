@@ -146,7 +146,7 @@ fn CallAdapter(r: MyResult(Tag, i32)) -> MyResult(Tag, i32) {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CCall.Main(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, ptr %r) #0 !dbg !4 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @_CPropagateOnly.Main.9bd65fe63fd21deb(ptr %return, ptr %r), !dbg !10
+// CHECK:STDOUT:   call void @_CPropagateOnly.Main.74e35ed26b9760b3(ptr %return, ptr %r), !dbg !10
 // CHECK:STDOUT:   ret void, !dbg !11
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -187,7 +187,7 @@ fn CallAdapter(r: MyResult(Tag, i32)) -> MyResult(Tag, i32) {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @_CPropagateOnly.Main.9bd65fe63fd21deb(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, ptr %r) #0 !dbg !44 {
+// CHECK:STDOUT: define linkonce_odr void @_CPropagateOnly.Main.74e35ed26b9760b3(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, ptr %r) #0 !dbg !44 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.loc38_35.3.temp = alloca <{ <{ i1, [3 x i8] }>, [4 x i8] }>, align 4, !dbg !47
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc38_35.3.temp), !dbg !47
@@ -368,7 +368,7 @@ fn CallAdapter(r: MyResult(Tag, i32)) -> MyResult(Tag, i32) {
 // CHECK:STDOUT: !41 = !{!42}
 // CHECK:STDOUT: !42 = !DILocalVariable(arg: 1, scope: !40, type: !7)
 // CHECK:STDOUT: !43 = !DILocation(line: 38, column: 34, scope: !40)
-// CHECK:STDOUT: !44 = distinct !DISubprogram(name: "PropagateOnly", linkageName: "_CPropagateOnly.Main.9bd65fe63fd21deb", scope: null, file: !1, line: 37, type: !5, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !45)
+// CHECK:STDOUT: !44 = distinct !DISubprogram(name: "PropagateOnly", linkageName: "_CPropagateOnly.Main.74e35ed26b9760b3", scope: null, file: !1, line: 37, type: !5, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !45)
 // CHECK:STDOUT: !45 = !{!46}
 // CHECK:STDOUT: !46 = !DILocalVariable(arg: 1, scope: !44, type: !7)
 // CHECK:STDOUT: !47 = !DILocation(line: 38, column: 34, scope: !44)
@@ -427,7 +427,7 @@ fn CallAdapter(r: MyResult(Tag, i32)) -> MyResult(Tag, i32) {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: alwaysinline nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp:thunk:Destroy.afa974aa0d5f7999.Core:Tag.Main:Destroy.Core"(ptr %self) #1 !dbg !11 {
+// CHECK:STDOUT: define weak_odr void @"_COp:thunk:Destroy.3d376358904aedc3.Core:Tag.Main:Destroy.Core"(ptr %self) #1 !dbg !11 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.2 = load i32, ptr %self, align 4, !dbg !14
 // CHECK:STDOUT:   call void @"_COp.Tag.Main:Destroy.Core"(i32 %.2), !dbg !15
@@ -437,7 +437,7 @@ fn CallAdapter(r: MyResult(Tag, i32)) -> MyResult(Tag, i32) {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CCallAdapter.Main(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, ptr %r) #0 !dbg !16 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @_CPropagateOnly.Main.3eda68fcce4a020a(ptr %return, ptr %r), !dbg !22
+// CHECK:STDOUT:   call void @_CPropagateOnly.Main.20eb365082aa2002(ptr %return, ptr %r), !dbg !22
 // CHECK:STDOUT:   ret void, !dbg !23
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -490,7 +490,7 @@ fn CallAdapter(r: MyResult(Tag, i32)) -> MyResult(Tag, i32) {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @_CPropagateOnly.Main.3eda68fcce4a020a(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, ptr %r) #0 !dbg !61 {
+// CHECK:STDOUT: define linkonce_odr void @_CPropagateOnly.Main.20eb365082aa2002(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, ptr %r) #0 !dbg !61 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.loc51_35.3.temp = alloca <{ <{ i1, [3 x i8] }>, [4 x i8] }>, align 4, !dbg !64
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc51_35.3.temp), !dbg !64
@@ -639,7 +639,7 @@ fn CallAdapter(r: MyResult(Tag, i32)) -> MyResult(Tag, i32) {
 // CHECK:STDOUT: !8 = !{!9}
 // CHECK:STDOUT: !9 = !DILocalVariable(arg: 1, scope: !4, type: !7)
 // CHECK:STDOUT: !10 = !DILocation(line: 47, column: 3, scope: !4)
-// CHECK:STDOUT: !11 = distinct !DISubprogram(name: "Op", linkageName: "_COp:thunk:Destroy.afa974aa0d5f7999.Core:Tag.Main:Destroy.Core", scope: null, file: !1, line: 47, type: !5, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !12)
+// CHECK:STDOUT: !11 = distinct !DISubprogram(name: "Op", linkageName: "_COp:thunk:Destroy.3d376358904aedc3.Core:Tag.Main:Destroy.Core", scope: null, file: !1, line: 47, type: !5, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !12)
 // CHECK:STDOUT: !12 = !{!13}
 // CHECK:STDOUT: !13 = !DILocalVariable(arg: 1, scope: !11, type: !7)
 // CHECK:STDOUT: !14 = !DILocation(line: 0, scope: !11)
@@ -689,7 +689,7 @@ fn CallAdapter(r: MyResult(Tag, i32)) -> MyResult(Tag, i32) {
 // CHECK:STDOUT: !58 = !{!59}
 // CHECK:STDOUT: !59 = !DILocalVariable(arg: 1, scope: !57, type: !19)
 // CHECK:STDOUT: !60 = !DILocation(line: 51, column: 34, scope: !57)
-// CHECK:STDOUT: !61 = distinct !DISubprogram(name: "PropagateOnly", linkageName: "_CPropagateOnly.Main.3eda68fcce4a020a", scope: null, file: !1, line: 50, type: !17, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !62)
+// CHECK:STDOUT: !61 = distinct !DISubprogram(name: "PropagateOnly", linkageName: "_CPropagateOnly.Main.20eb365082aa2002", scope: null, file: !1, line: 50, type: !17, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !62)
 // CHECK:STDOUT: !62 = !{!63}
 // CHECK:STDOUT: !63 = !DILocalVariable(arg: 1, scope: !61, type: !19)
 // CHECK:STDOUT: !64 = !DILocation(line: 51, column: 34, scope: !61)

@@ -111,14 +111,14 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CCall32.Main(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, ptr %r) #0 !dbg !4 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @_CPropagateOnly.Main.9bd65fe63fd21deb(ptr %return, ptr %r), !dbg !10
+// CHECK:STDOUT:   call void @_CPropagateOnly.Main.74e35ed26b9760b3(ptr %return, ptr %r), !dbg !10
 // CHECK:STDOUT:   ret void, !dbg !11
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CCall64.Main(ptr sret(<{ <{ i1, [7 x i8] }>, [8 x i8] }>) %return, ptr %r) #0 !dbg !12 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @_CPropagateOnly.Main.5122c9dfa169605b(ptr %return, ptr %r), !dbg !15
+// CHECK:STDOUT:   call void @_CPropagateOnly.Main.17ddbbf3e70b6f1d(ptr %return, ptr %r), !dbg !15
 // CHECK:STDOUT:   ret void, !dbg !16
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -230,7 +230,7 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @_CPropagateOnly.Main.9bd65fe63fd21deb(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, ptr %r) #0 !dbg !89 {
+// CHECK:STDOUT: define linkonce_odr void @_CPropagateOnly.Main.74e35ed26b9760b3(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, ptr %r) #0 !dbg !89 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.loc31_35.3.temp = alloca <{ <{ i1, [3 x i8] }>, [4 x i8] }>, align 4, !dbg !92
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc31_35.3.temp), !dbg !92
@@ -261,7 +261,7 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @_CPropagateOnly.Main.5122c9dfa169605b(ptr sret(<{ <{ i1, [7 x i8] }>, [8 x i8] }>) %return, ptr %r) #0 !dbg !95 {
+// CHECK:STDOUT: define linkonce_odr void @_CPropagateOnly.Main.17ddbbf3e70b6f1d(ptr sret(<{ <{ i1, [7 x i8] }>, [8 x i8] }>) %return, ptr %r) #0 !dbg !95 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.loc31_35.3.temp = alloca <{ <{ i1, [7 x i8] }>, [8 x i8] }>, align 8, !dbg !98
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc31_35.3.temp), !dbg !98
@@ -579,13 +579,13 @@ fn ReadErr64(r: MyResult(i64, i32)) -> i32 {
 // CHECK:STDOUT: !86 = !{!87}
 // CHECK:STDOUT: !87 = !DILocalVariable(arg: 1, scope: !85, type: !7)
 // CHECK:STDOUT: !88 = !DILocation(line: 31, column: 34, scope: !85)
-// CHECK:STDOUT: !89 = distinct !DISubprogram(name: "PropagateOnly", linkageName: "_CPropagateOnly.Main.9bd65fe63fd21deb", scope: null, file: !1, line: 30, type: !5, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !90)
+// CHECK:STDOUT: !89 = distinct !DISubprogram(name: "PropagateOnly", linkageName: "_CPropagateOnly.Main.74e35ed26b9760b3", scope: null, file: !1, line: 30, type: !5, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !90)
 // CHECK:STDOUT: !90 = !{!91}
 // CHECK:STDOUT: !91 = !DILocalVariable(arg: 1, scope: !89, type: !7)
 // CHECK:STDOUT: !92 = !DILocation(line: 31, column: 34, scope: !89)
 // CHECK:STDOUT: !93 = !DILocation(line: 32, column: 10, scope: !89)
 // CHECK:STDOUT: !94 = !DILocation(line: 32, column: 3, scope: !89)
-// CHECK:STDOUT: !95 = distinct !DISubprogram(name: "PropagateOnly", linkageName: "_CPropagateOnly.Main.5122c9dfa169605b", scope: null, file: !1, line: 30, type: !5, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !96)
+// CHECK:STDOUT: !95 = distinct !DISubprogram(name: "PropagateOnly", linkageName: "_CPropagateOnly.Main.17ddbbf3e70b6f1d", scope: null, file: !1, line: 30, type: !5, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !96)
 // CHECK:STDOUT: !96 = !{!97}
 // CHECK:STDOUT: !97 = !DILocalVariable(arg: 1, scope: !95, type: !7)
 // CHECK:STDOUT: !98 = !DILocation(line: 31, column: 34, scope: !95)

@@ -1,1 +1,1 @@
-2026-08-17T17:30Z stage-1 regen re-fire (GitHub codeload 429 outage)
+2026-08-17T19:25Z stage-1v2 regen: reserved-word authoring fix (f1/f2 are fN float literals)

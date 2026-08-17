@@ -1,1 +1,5 @@
 2026-08-08T22:50:22Z gate re-fire for B1b (MD032 fix)
+2026-08-17 weekly upstream merge gate, staging 864845c
+2026-08-17T16:20Z gate on reconciled head 373314b
+2026-08-17T19:30Z gate re-fire on reconciled head (from main checkout; sequencer misfired in worktree)
+2026-08-17T22:00Z gate on pass-2-reconciled head 230adbe (snippet numbers converged)

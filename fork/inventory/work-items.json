@@ -62,9 +62,7 @@
         "fork/process.md:67-74",
         "fork/rulebook.md:54-69"
       ],
-      "blocked_by": [
-        "W-001"
-      ],
+      "blocked_by": ["W-001"],
       "notes": "The last unchecked prerequisite before scaled workstreams in the fork README status. Validates the harness (build, test runner, review loop, worktree discipline) on one small representative bullet and grows rulebook.md; the adversarial-review table in rulebook.md defines the gates each artifact class must pass. F-003 already picks the first scaled track that follows (design sprint + match chain)."
     },
     {
@@ -89,9 +87,7 @@
       "subsystem": "fork/design-sprint",
       "size": "S",
       "bullet": "none",
-      "evidence": [
-        "fork/design-sprint/README.md:171-246"
-      ],
+      "evidence": ["fork/design-sprint/README.md:171-246"],
       "blocked_by": [
         "W-005",
         "F-006",
@@ -110,9 +106,7 @@
       "subsystem": "toolchain/check/cpp",
       "size": "S",
       "bullet": "none",
-      "evidence": [
-        "fork/design-sprint/README.md:204-212"
-      ],
+      "evidence": ["fork/design-sprint/README.md:204-212"],
       "blocked_by": [],
       "notes": "EH-B3 (W-019), UN-2 (W-015), OV-3 (W-026), TA-D1/D2 (W-023/W-021), and SC-B3 (W-029) all land in the same files W8 extends; no single owner or branch ordering exists. Publish an export-machinery refactor/ownership plan before any two of these start concurrently, else serialized rebases or conflicting refactors under F-002 merge gating."
     },
@@ -161,10 +155,7 @@
         "toolchain/lex/token_kind.def",
         "fork/conformance/programs/types/union_basic.carbon:6"
       ],
-      "blocked_by": [
-        "F-007",
-        "W-005"
-      ],
+      "blocked_by": ["F-007", "W-005"],
       "notes": "Absorbs the generic 'design and implement un-discriminated unions' item (no `union` token exists in token_kind.def — verified by grep; missing at every layer). Recommended Option A: Rust-shaped safety surface (writes safe, reads byte-reinterpretation), C++-compatible layout by construction. Expensive half exists (imported-union CustomLayoutType lowering, unions.md:194-224); new work is one keyword, choice-pattern parse (~12 states), handle_union.cpp on the handle_choice build-a-Class pattern, symbolic max-size/max-align (route b preferred). 0.1 cut-line at unions.md:506-511. Settles the overlapping-storage primitive W-010 choice payloads lower onto (coherence risk 1)."
     },
     {
@@ -195,9 +186,7 @@
         "toolchain/lower/testdata/match/choice_generic_payload_pattern.carbon",
         "fork/conformance/programs/control_flow/choice_generic_roundtrip_diff.carbon"
       ],
-      "blocked_by": [
-        "W-008"
-      ],
+      "blocked_by": ["W-008"],
       "notes": "W5 slice 1 (fork/w5-choice/plan.md §2) implements payload-alternative construction (C.Ok(42); zero-payload Alt() function-like per SF-3), the F-007k hybrid storage contract (StructType{.discriminant, .payload: CustomLayoutType}, payload tuples overlapping at offset 0, max-of-fields size/align; payload-free choices keep the prior repr), and match over choice scrutinees with leading-dot payload-free alternative patterns + default (SF-4), all via pre-existing SemIR inst kinds plus the Class::is_choice entity flag. Remaining scope, each gated by a clean semantics-TODO or dedicated diagnostic (evidence lines): generic/Self-dependent payloads (S3), non-trivially-copyable/destructible payloads (SF-6, post-0.1 record), qualified alternative patterns (SF-4 work item), non-choice non-integer scrutinees. Payload destructuring patterns .Ok(...) landed at the match re-platform's S2c (fork/match-replatform/plan.md §3.3): dedicated AlternativePattern parse form, discriminant test + payload-tuple extraction with per-element bindings, parens-iff-parameter-list enforcement (bare .Ok on a payload alternative and .Err() on a constant alternative are now real diagnostics, not TODOs), and non-binding payload subpatterns gated by a new TODO. Land gate: the new AUTOUPDATE goldens (choice/payload_construct, choice/payload_layout, match/choice_scrutinee, match/choice_scrutinee_imported, and lower/choice/payload_layout — the F-007k anti-Goodhart layout pin, plan risk R-6) ship with no CHECK lines and must be autoupdated on the runner, then the scoreboard regenerated. S1 un-SKIPs types/choice_payload_construct.carbon and adds the choice_discriminant_diff pair. Destructuring landed at S2c (see above); exhaustiveness (SF-7) landed at S2e under W-008 — exhaustive choice matches need no `default` (MatchNonexhaustive names uncovered alternatives otherwise); choices with fewer than two alternatives stay behind the scrutinee gate (W-068). W-009 coordination per plan risk R-3: S1 built the narrow custom-layout pieces (convert.cpp ChoicePayload fill; custom_witness.cpp CustomLayoutType destroy cases); W-009 rebases on them. Review follow-ups landed on claude/carbon-fork-0-1-followups: duplicate alternative names diagnose NameDeclDuplicate/NameDeclPrevious before scope registration instead of CHECK-crashing (handle_choice.cpp; fail_duplicate_alternative.carbon), the choice-case defense-in-depth fallback now emits `match case pattern on unsupported choice alternative shape` (the scrutinee string stays on the scrutinee gate), plus the F-A1 OneShot single-payload testdata (check+lower) and the export-import multi-hop scrutinee golden — all goldens empty pending runner autoupdate (R15/R19). DONE at S2c (review follow-up (2)): the SemIR::ChoiceAlternative name-to-index side table on Class (populated in handle_choice.cpp, imported in import_ref.cpp) replaced GetAlternativeDiscriminant's constant excavation, which was deleted from pattern_match.cpp along with its GetCanonicalFileAndInstId cross-file walk. Specifics of generic choices as match scrutinees landed at W5-S3a (fork/w5-s3/plan.md, slice S3a): the GetChoiceDiscriminantType specific_id clause is deleted and the MatchCondition scrutinee gate forces the specific's definition resolution via RequireCompleteType before any repr read, so payload-free specifics (concrete, symbolic inside a generic body, and imported) dispatch by discriminant and are covered by SF-7 exhaustiveness (match/choice_generic_scrutinee.carbon, lower/testdata/match/choice_generic_scrutinee.carbon, conformance types/choice_generic_roundtrip.carbon, PASS floor 77 -> 78). Payload synthesis landed at W5-S3b (fork/w5-s3/plan.md, slice S3b): symbolic payload types synthesize — the payload region's CustomLayoutType carries the zero-alignment dependent-layout sentinel at the definition and is recomputed per specific by the now-reachable EvalConstantInst hook (eval_inst.cpp:211) — SF-6 enforcement moves to monomorphization for symbolic payloads (ChoicePayloadNotTrivialInSpecific at the forcing use, with a structural pre-filter so mutual by-value generic recursion diagnoses instead of crashing on the forward-reference CHECK), alternative constructors of a generic choice are themselves generic (MakeGeneratedFunctionDecl's build_generic bracketing), and the alternative table carries parameterized rows, CLOSING the S3a partial-table window (the pin is now choice_generic_scrutinee.carbon's fail_mixed_table_closed subfile, a MatchNonexhaustive diagnosis naming the uncovered payload alternative). The definition TODO narrowed to `choice alternative payload with Self-dependent type` (handle_choice.cpp:624; params.carbon:58, fail_generic_payload.carbon). Payload DESTRUCTURING on a concrete specific (`case .Some(v: i32)` on Opt(i32)) is reachable at S3b and pinned by the destructure subfiles of choice/generic_payload.carbon (check + lower); the generic residue CLOSED at W5-S3c (fork/w5-s3/plan.md §3 S3c, a pure verification-and-pinning slice — no toolchain code change): multi-parameter payload destructuring per specific, guarded destructuring arms, R-7 substituted binding conversions (i32 payload to i64 binding, the S2c DeferCleanups shape), imported-generic destructuring, and the R-8 symbolic-body destructure (`case .Both(a: T, b: T)` on a `P(T)` scrutinee — the scrutinee gate's forcing resolves the symbolic specific's definition through the completer's ClassType case, and GetChoicePayloadInfo's reads are purely structural on the substituted symbolic constants), all pinned by match/choice_generic_payload_pattern.carbon (check + lower; the lower golden pins per-specific ELEMENT offsets — byte 4 vs byte 8 for the second payload element — and the instantiated symbolic-body destructure), every positive match exhaustive without `default` plus a fail_nonexhaustive_payload coverage pin. The sum_types.md example runs as conformance control_flow/choice_generic_roundtrip_diff (std::optional C++ oracle): declaration and match verbatim; the doc's `var ... = Optional(i32).None` line cannot compile (initializing a `var` from a class value copies, and choices implement no `Core.Copy` — the S1-recorded gap), so None binds with `let` while the doc's re-assignment line runs verbatim — recorded as a dated amendment to plan §3 S3c. Conformance: the types/choice_generic_diff pair landed at S3b (PASS floor 79 -> 80 over 111), including a runtime-computed discriminant/payload collision probe; choice_generic_roundtrip_diff lands at S3c (PASS floor 80 -> 81 over 112) and carries the collision payload into payload READBACK."
     },
     {
@@ -211,10 +200,7 @@
         "fork/conformance/programs/control_flow/match_sum_type_payload.carbon:6",
         "toolchain/check/cpp/custom_type_mapping.cpp:92-104"
       ],
-      "blocked_by": [
-        "W-008",
-        "W-010"
-      ],
+      "blocked_by": ["W-008", "W-010"],
       "notes": "The consumption half of W5: (1) destructuring payloads through match patterns — LANDED at the match re-platform's S2c (fork/match-replatform/plan.md §3.3): `case .Ok(value: i32)` tests the discriminant and binds the payload elements in the arm's scope, including for imported choices; arbiter control_flow/choice_payload_roundtrip_diff.carbon un-SKIPped, and match_sum_type_payload.carbon now keeps only its interop half per the W5 plan §3.3 split; the GENERIC-choice destructuring arbiter (control_flow/choice_generic_roundtrip_diff, the sum_types.md Optional(T) example against a std::optional C++ oracle at W5-S3c, runtime payload readback across two specifics) closes the choice half of this item; (2) transparent std::variant/std::optional mapping — OPEN (custom_type_mapping.cpp's std::string_view matcher is the extension mechanism this rides; W5 S4). Arbiter per gap-analysis W5: choice alternatives construct AND destructure via match in executed tests (met at S2c); a Carbon match over an imported std::optional/std::variant works (open). Coherence risk 9: Optional's redesign (W-058) folds into these deliverables."
     },
     {
@@ -231,12 +217,7 @@
         "docs/design/pattern_matching.md:712-714",
         "fork/conformance/programs/control_flow/if_let_let_else.carbon:6"
       ],
-      "blocked_by": [
-        "F-011",
-        "W-005",
-        "W-008",
-        "W-010"
-      ],
+      "blocked_by": ["F-011", "W-005", "W-008", "W-010"],
       "notes": "Absorbs the generic 'design and implement if-let/let-else' item (absent at every layer; the match design section calls itself a skeletal placeholder; the SKIP program body is a strawman). No lexer change, ~5 node kinds + ~6 states, single-token peek after '(' in paren-condition; check adds a refutable LocalPatternMatch variant with failure-block target; lowering zero (rider 1: both forms specified as one-case-match desugarings). Rider 2: if upstream #5101 lands a different surface, re-spell mechanically keeping semantics. let-else initializer must forbid unparenthesized if-expressions; else-block divergence syntactic (return/break/continue) for 0.1. Doc amendment must enumerate all three refutable contexts (coherence risk 10). W-010 is a soft blocker (motivating .Some examples). Options B/D rejected on record; C is fallback."
     },
     {
@@ -289,10 +270,7 @@
         "fork/design-sprint/unions.md:307-326",
         "fork/design-sprint/unions.md:353-354"
       ],
-      "blocked_by": [
-        "F-007",
-        "W-009"
-      ],
+      "blocked_by": ["F-007", "W-009"],
       "notes": "Absorbs Option C's fix: convert.cpp:882-885 struct-literal bailout blocks constructing imported-union values; is_union bit on import (currently just final); export rides existing CXXRecordDecl creation with TagTypeKind::Union — layout agrees by construction. Round-trip + punning execution tests per W1. Note: gap-analysis row 32's 'opaque interop types' claim is stale per unions.md:194-197 audit. Needs the shared trivially-copyable predicate (coherence risk 7, W-006)."
     },
     {
@@ -310,10 +288,7 @@
         "toolchain/check/testdata/interop/cpp/exceptions/fail_fence_thunk_unbuildable.carbon",
         "fork/b0-exc/plan.md"
       ],
-      "blocked_by": [
-        "F-006",
-        "W-005"
-      ],
+      "blocked_by": ["F-006", "W-005"],
       "notes": "LANDED on claude/carbon-fork-0-1-b0 (PR #2; gate run 22 green, release fork-toolchain-22-d2dad50e4). Replaces the prior UB with the documented terminate-at-boundary contract; auto resolves from the final Clang LangOpts (SF-4, no arg-string scanning). DEVIATION recorded per plan risk 9: the fence terminates via the thunk's EST_BasicNoexcept spec without a boundary-identifying diagnostic message; that diagnostic is deferred to W-019/B3 (B0 SF-1 decision). Threading doc freeze (W-020) unblocked: the flag default is auto. Follow-up landed on claude/carbon-fork-0-1-followups: the fence-unbuildable TODO branch gained a concrete reachable golden, fail_fence_thunk_unbuildable.carbon (by-value parameter of a class with deleted copy+move constructors: the ABI-thunk body cannot forward the parameter while decl import only checks type mappability); goldens empty pending runner autoupdate, which arbitrates the shape's reachability (import.cpp comment records the attempted-and-excluded shapes)."
     },
     {
@@ -330,12 +305,7 @@
         "docs/design/README.md:3830-3832",
         "fork/conformance/programs/error_handling/control_flow_constructs.carbon:6"
       ],
-      "blocked_by": [
-        "F-006",
-        "W-005",
-        "W-008",
-        "W-010"
-      ],
+      "blocked_by": ["F-006", "W-005", "W-008", "W-010"],
       "notes": "Absorbs the generic 'design and implement dedicated error-handling control flow' item (docs/design/README.md: 'For now, Carbon does not have language features dedicated to error handling'; no try/throw tokens exist; the SKIP program body is a strawman — gap-analysis calls the five undesigned features the single largest schedule risk for 0.1). Option A's artifacts as Option B's first stage; S-sized on top of W-008+W-010 (hard prerequisites). Result naming (Success/Failure vs Ok/Err) is open user question 1 (error-handling.md:546-548)."
     },
     {
@@ -350,10 +320,7 @@
         "fork/design-sprint/error-handling.md:359-377",
         "fork/design-sprint/error-handling.md:504-505"
       ],
-      "blocked_by": [
-        "F-006",
-        "W-017"
-      ],
+      "blocked_by": ["F-006", "W-017"],
       "notes": "Bare Question token already lexed and unused (token_kind.def:103 per paper); desugars entirely in check onto existing branch/return SemIR — zero lowering work. Must desugar onto the same shared refutable-match SemIR core as if-let (coherence risk 2 — W4 scope must be pinned once, see W-008)."
     },
     {
@@ -369,12 +336,7 @@
         "fork/design-sprint/error-handling.md:536-542",
         "fork/conformance/programs/error_handling/cpp_exception_interop.carbon (SKIP block, B3 blockers recut post-B0)"
       ],
-      "blocked_by": [
-        "F-006",
-        "W-016",
-        "W-018",
-        "W-007"
-      ],
+      "blocked_by": ["F-006", "W-016", "W-018", "W-007"],
       "notes": "Absorbs the calling-throwing-C++/exporting-errors half of the generic exception-interop item (its conformance SKIP: no design for calling throwing C++ from Carbon or exporting Carbon errors as std::expected/exceptions). Closes milestone sub-bullets 3+4 (automatic throwing-C++ import, expected-shaped export). Cpp.Exception holds exception_ptr; C++17-compatible expected header in install tree. Lands in the five-way-contention files (W-007). Windows/W-059 must budget MSVC-funclet variant (error-handling.md:540-542). B0 follow-up folded in (SF-1 deferral): add the boundary-identifying diagnostic at the fence when catching thunks land, so terminate-at-boundary failures name the C++ callee instead of a bare noexcept abort."
     },
     {
@@ -390,11 +352,7 @@
         "fork/design-sprint/threading-atomics.md:456-460",
         "fork/conformance/programs/interop/cpp_threading_atomics.carbon:5"
       ],
-      "blocked_by": [
-        "F-008",
-        "W-005",
-        "W-016"
-      ],
+      "blocked_by": ["F-008", "W-005", "W-016"],
       "notes": "Absorbs the generic 'design threading/atomics/memory-model C++ interop' item (nothing in toolchain/ or docs/design/ defines Carbon's memory model or how std::thread/std::mutex/std::atomic map into Carbon). The bullet's substance already works empirically (executed matrix, threading-atomics.md:76-96): atomics with orders/CAS, all mutex types, condvars, RAII guards, Carbon-on-foreign-threads. Doc states a 7-point C++-memory-model contract; 5-6 programs written join-before-print for the runner's exact-stdout rule. Write doc against W-016's fenced-thunk semantics so std::system_error is a defined terminate (coherence risk 6). Interacts with the safe-Carbon data-race-safety design (p005914 defers data-race safety)."
     },
     {
@@ -409,10 +367,7 @@
         "fork/design-sprint/threading-atomics.md:315-317",
         "fork/design-sprint/threading-atomics.md:328-330"
       ],
-      "blocked_by": [
-        "F-008",
-        "W-005"
-      ],
+      "blocked_by": ["F-008", "W-005"],
       "notes": "Instantiation already works; only libc++'s is_trivially_copyable static_assert fires. Deliberately sequenced first among the D-fixes: it is the cheapest slice of the shared Carbon-type-into-Clang-AST machinery that concept export (W-029) and C++-templates-on-Carbon-types (W-043) also need (coherence risk 8), and consumes the single trivially-copyable predicate (risk 7)."
     },
     {
@@ -427,10 +382,7 @@
         "fork/design-sprint/threading-atomics.md:319-324",
         "fork/design-sprint/threading-atomics.md:331-333"
       ],
-      "blocked_by": [
-        "F-008",
-        "W-005"
-      ],
+      "blocked_by": ["F-008", "W-005"],
       "notes": "var g: Cpp.std.atomic(i32) at file scope compiles but links with undefined symbol _Cgcount.Main.1; plain imported-class globals (std::mutex) link fine, localizing to specialization-typed global emission (start at lower/file_context.cpp per paper). Fork-local patch through the F-005 runner; upstreamable."
     },
     {
@@ -446,11 +398,7 @@
         "fork/design-sprint/threading-atomics.md:335-339",
         "fork/design-sprint/threading-atomics.md:488-490"
       ],
-      "blocked_by": [
-        "F-008",
-        "W-005",
-        "upstream-watch: p003848 lambdas"
-      ],
+      "blocked_by": ["F-008", "W-005", "upstream-watch: p003848 lambdas"],
       "notes": "Riskiest of the three D-fixes (ABI compatibility must be checked, not assumed); generic/deduced-parameter functions stay unsupported. Open question 4 (threading-atomics.md:508-510) lets it degrade to a documented limitation with the inline-C++ bridge pattern if deeper than M. Check upstream lambda work first per standing rule 5."
     },
     {
@@ -467,10 +415,7 @@
         "docs/design/pattern_matching.md:696",
         "fork/conformance/programs/functions/overloading_native.carbon:6"
       ],
-      "blocked_by": [
-        "F-009",
-        "W-005"
-      ],
+      "blocked_by": ["F-009", "W-005"],
       "notes": "Absorbs the generic 'design and implement Carbon-native function overloading' item (pattern_matching.md:696: 'We do not yet have an approved design for overloaded functions'; a second `fn Describe` with a different signature is rejected as a redeclaration today; only imported C++ overload sets work — PASSing interop/cpp_overload_set_by_type.carbon). Recommended Option A: marked closed sets, declaration-order first-match (no ranking lattice), designed as the compile-time subset of pattern-dispatch. Mirrors the in-tree CppOverloadSet/CalleeCppOverloadSet pattern; TryMergeRedecl grows an add-to-set branch; Mangler needs a signature fingerprint or two non-generic overloads collide at link. Arity pre-check written as arity-range from day one for W-013 variadics (function-overloading.md:403-406)."
     },
     {
@@ -485,10 +430,7 @@
         "fork/design-sprint/function-overloading.md:384",
         "fork/design-sprint/function-overloading.md:250-252"
       ],
-      "blocked_by": [
-        "F-009",
-        "W-024"
-      ],
+      "blocked_by": ["F-009", "W-024"],
       "notes": "Tentative machinery half-built (TryConvertToValueOfType, DeduceImplArguments returns None on failure); the new piece is a non-diagnosing DeduceGenericCallArguments variant plus discarding failed speculative insts. Set import through import_ref.cpp with poisoning rules. Feeds the shared probe/diagnose=false subsystem jointly owned with SC-B2 (W-028, coherence risk 4)."
     },
     {
@@ -503,11 +445,7 @@
         "fork/design-sprint/function-overloading.md:385-389",
         "fork/design-sprint/function-overloading.md:144-150"
       ],
-      "blocked_by": [
-        "F-009",
-        "W-024",
-        "W-007"
-      ],
+      "blocked_by": ["F-009", "W-024", "W-007"],
       "notes": "Loop the set through ExportFunctionToCpp; C++ callers resolve with C++ rules — Carbon-first-match vs C++-best-match divergence is accepted and conformance-tested in both directions (rulebook rule proposed in paper). Docs stage also fills interoperability/README.md:210 empty TODO and retires the design README:3822 placeholder."
     },
     {
@@ -524,11 +462,7 @@
         "fork/conformance/programs/generics/structural_conformance.carbon:5",
         "docs/design/templates.md:22-27"
       ],
-      "blocked_by": [
-        "F-010",
-        "F-009",
-        "W-005"
-      ],
+      "blocked_by": ["F-010", "F-009", "W-005"],
       "notes": "Absorbs the generic 'design and implement template structural conformance' item ('structural conformance' appears nowhere in the toolchain; a `template T:! I` parameter still requires nominal `impl as I`; templates.md is a self-described placeholder). Implements accepted p000818/p002200 verbatim: template modifier on named constraints (currently UnrecognizedDecl; handle_named_constraint.cpp:118 TODO per paper), new requirement vectors in facet_type_info.h, satisfaction + structural-witness synthesis in new structural_conformance.cpp hooked at the convert.cpp:1596 facet-conversion chokepoint. Check-complete before the template-lowering fatal is fixed, but its compile-and-run arbiter blocks on W-014. F-009 shares the no-subsumption rule. Option A (implicit interface satisfaction) explicitly rejected on record."
     },
     {
@@ -543,11 +477,7 @@
         "fork/design-sprint/structural-conformance.md:398-403",
         "fork/design-sprint/README.md:195-203"
       ],
-      "blocked_by": [
-        "F-010",
-        "W-027",
-        "W-014"
-      ],
+      "blocked_by": ["F-010", "W-027", "W-014"],
       "notes": "The one genuinely new subsystem: diagnostic capture around deferred-action replay, generalizing the existing impl_lookup diagnose=false idiom — the irreducible cost of any predicate-supporting option. Absorbs Option C's `where <bool-expr>` binding form. Spec the probe subsystem ONCE and have overloading's candidate loop (W-025) consume it too (coherence risk 4). B2 and W7's deferred-action completion should be one engineering track (structural-conformance.md:527-532). Probe-observability rule is user open question 4."
     },
     {
@@ -564,12 +494,7 @@
         "fork/conformance/programs/interop/cpp_concept_export_predicate.carbon:5",
         "fork/gap-analysis.md:40"
       ],
-      "blocked_by": [
-        "F-010",
-        "W-027",
-        "W-021",
-        "W-007"
-      ],
+      "blocked_by": ["F-010", "W-027", "W-021", "W-007"],
       "notes": "Absorbs the generic 'export Carbon interfaces as C++20 concepts' item (SKIP: `requires Carbon::HasGet<T>` fails with 'interop with unsupported type' and 'no member named HasGet in namespace Carbon' even with -std=c++20; gap-analysis: the export direction 'has no trace'). Import side (dependent-arg CheckPredicateAction extending cpp/call.cpp concept evaluation) can land with W7; export (synthesized ConceptDecls; member reqs render as requires-expressions, Carbon-only predicates via a __carbon_satisfies Clang-builtin hook; interfaces export nominally) lands with W8. The import-direction conformance program is blocked only by the harness clang-args item (W-002), not by this feature. Export-fidelity bar is user open question 7."
     },
     {
@@ -660,12 +585,8 @@
       "subsystem": "toolchain/check",
       "size": "S",
       "bullet": "Generics: Checked generics",
-      "evidence": [
-        "toolchain/check/check_unit.cpp:498"
-      ],
-      "blocked_by": [
-        "upstream: carbon-language/carbon-lang#4071"
-      ],
+      "evidence": ["toolchain/check/check_unit.cpp:498"],
+      "blocked_by": ["upstream: carbon-language/carbon-lang#4071"],
       "notes": "CARBON_FATAL('TODO: Support interfaces in DiagnoseMissingDefinitions') for the InterfaceDecl case; the comment defers until it can be tested without triggering issue #4071, so interfaces declared-but-never-defined are not diagnosed like functions/classes/impls are."
     },
     {
@@ -797,9 +718,7 @@
         "fork/conformance/programs/interop/cpp_template_symbolic_arg.carbon:5",
         "fork/conformance/programs/interop/cpp_template_on_carbon_generic.carbon:2"
       ],
-      "blocked_by": [
-        "W-014"
-      ],
+      "blocked_by": ["W-014"],
       "notes": "Merges three scanner reports. call.cpp:127 'unsupported type used as template argument' is the exact blocker the gap-analysis cites — MapToCppType has no mapping for Carbon classes; :252 restricts non-type template parameter arguments; type_mapping.cpp:560 TODOs form-dependent (template-dependent) args to C++ functions. Fix direction per both conformance SKIPs: defer C++ template instantiation to monomorphization (hence the W-014 dependency and W8 grouping). One blocker, two scoreboard entries under two bullets: cpp_template_symbolic_arg.carbon (owning bullet) and cpp_template_on_carbon_generic.carbon (bullet: Type system: C++ interop — importing C++ types / exporting Carbon types). Concrete Carbon class types as template args already work per the PASSing cpp_template_carbon_class.carbon... (verify: gap-analysis says Carbon class types error; conformance shows concrete-class PASS on the 2026.07.19 toolchain — re-check which sub-case is live before claiming)."
     },
     {
@@ -1056,9 +975,7 @@
         "fork/conformance/programs/interop/cpp_operator_export.carbon:5",
         "fork/gap-analysis.md:30"
       ],
-      "blocked_by": [
-        "W-007"
-      ],
+      "blocked_by": ["W-007"],
       "notes": "W8 slice; the bullet is MISSING ('operator interop is one-directional'). Nothing maps a Carbon `impl as Core.AddWith` back to a C++ operator+ on the exported Carbon:: type. Inverse of the working import direction (operators.cpp synthesis); builds on export.cpp's existing thunk machinery for exported methods — lands in the five-way-contention files, so it follows the W-007 refactor plan."
     },
     {
@@ -1086,9 +1003,7 @@
         "fork/conformance/programs/interop/cpp_span_view.carbon:6",
         "toolchain/check/cpp/custom_type_mapping.cpp:92-104"
       ],
-      "blocked_by": [
-        "W-055"
-      ],
+      "blocked_by": ["W-055"],
       "notes": "A Carbon array cannot pass transparently as std::span and an owning std::vector cannot be viewed as a Carbon slice. Requires the Carbon-side slice type first, then a span matcher plus owning-container->view conversions alongside the shipped str<->std::string_view mapping (custom_type_mapping.cpp is the mechanism this extends)."
     },
     {
@@ -1226,14 +1141,7 @@
         "fork/gap-analysis.md:73",
         "fork/conformance/programs/project/design_docs_placeholders.carbon:2"
       ],
-      "blocked_by": [
-        "F-006",
-        "F-007",
-        "F-009",
-        "F-010",
-        "F-011",
-        "W-005"
-      ],
+      "blocked_by": ["F-006", "F-007", "F-009", "F-010", "F-011", "W-005"],
       "notes": "Merges two scanner reports. Sprint outputs already close several placeholders: the unions page replaces the sum_types.md:94 sentence, OV-3 (W-026) fills the interop README overload-resolution TODO + design README:3822 placeholder, TA-0 (W-020) adds threads_and_atomics.md, IL-1 (W-012) amends pattern_matching.md, EH stages replace the README error-handling section. Remaining per the SKIP audit: templates.md/metaprogramming.md/aliases.md/blocks_and_statements.md 'skeletal placeholder' self-descriptions (templates.md rewritten by W7/W-027 proposals), the match section's own placeholder note, and the interop README's other empty TODO headings (constructors, struct literals, class member access, globals) — documentation-of-existing-behavior work. Document-review arbitration only; W2's arbiter is grep-verifiable ('no TODO/placeholder markers')."
     },
     {
@@ -1247,9 +1155,7 @@
         "toolchain/check/handle_match.cpp:23",
         "docs/design/pattern_matching.md:625-631"
       ],
-      "blocked_by": [
-        "W-008"
-      ],
+      "blocked_by": ["W-008"],
       "notes": "Scope cut recorded from the W4 slice-1 adversarial review (finding F3): `match (n) { case 5 => {A} case 5 => {B} default => {} }` compiles cleanly with a dead second arm. Runtime SemIR is still design-correct (top-down first-match-wins, pattern_matching.md:694-695,745-747), so this is a missing diagnostic, not a mischeck; the design requires 'We will diagnose... A pattern is not useful in the context of prior patterns.' RF-4's constant-expression admission creates invisible overlaps (for example `case 5` vs `case 2 + 3` on the same scrutinee), so duplicate/overlap detection must compare evaluated constant values, not source forms."
     },
     {
@@ -1314,9 +1220,7 @@
         "docs/design/error_handling.md (the amended `Optional` impl sketch's `BreakType = ()` note)",
         "fork/b1/plan.md §2.7 (the bound, recorded honestly rather than widened)"
       ],
-      "blocked_by": [
-        "SF-9"
-      ],
+      "blocked_by": ["SF-9"],
       "notes": "Recorded at the B1b landing (fork/decision-log.md B1 landing note, 2026-08-08). The doc's `Optional` Try impl needs `BreakType = ()`, which needs a `ControlFlow(T, ())` specific; the SF-6 in-slice payload allowlist rejects tuples including `()` (S1's aggregates-rejected scope, enforced per specific by the S3b eval hook). B1 does not widen the allowlist; the fail_unit_break_type pin keeps the bound arbitrated. W5-S3p decides the resolution when it mints the prelude Try impls: admit the zero-sized `()` payload as a minimal allowlist widening, or give the prelude `Optional` impl a scalar break carrier."
     },
     {

@@ -1,3 +1,9 @@
+<!--
+Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+Exceptions. See /LICENSE for license information.
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
 # Mixed-width choice miscompile — diagnosis note
 
 (Reconstructed by the coordinator from the implementer's landed artifacts;
@@ -304,7 +310,7 @@ recorded and applied:
     covering-copied template globals — same hazard class (a whole-slot
     SROA promotion spanning discriminant+padding reproduces whole-scalar
     poison). Now `Constant::getNullValue`. Regen signature: the remaining
-    `.val` poison padding (e.g. `<{ i1 true, [7 x i8] poison }>`) flips
+    `.val` poison padding (for example `<{ i1 true, [7 x i8] poison }>`) flips
     to zeros/`zeroinitializer`.
 -   Design sanction (p000257): zeros are the proposal's "maximally safe
     representation" for unformed objects. Instruction-path poison is
@@ -326,7 +332,7 @@ recorded and applied:
 The B2a hardening's first regen (22cfaa3, vs 0ea6eb7) SPLIT specifics
 that upstream's own coalescing goldens pin as merged (the 7
 function/generic call_* goldens plus interop/cpp/void.carbon, +402 net
-lines; e.g. call_basic's three `H<T*>` all targeted
+lines; for example call_basic's three `H<T*>` all targeted
 `@_CH.Main.a76b78461416b4a8`, now three suffixes).
 
 Diagnosis: the refused gate is the CLOSURE gate on recorded callee
@@ -335,7 +341,7 @@ builtin-expanded callees. `HandleCall` records every callee in the
 body fingerprint BEFORE the builtin check, pushing
 `resolved_specific_id` into the coalescer's `calls` list — including
 specifics of `= "primitive_copy"` / pointer-conversion /
-`make_uninitialized` builtins (e.g. `impl forall [T: type] T* as Copy`,
+`make_uninitialized` builtins (for example `impl forall [T: type] T* as Copy`,
 min_prelude parts/copy.carbon:44). Those callees are expanded inline:
 no LLVM function is ever created, so neither `CreateTypeFingerprint`
 nor `InitializeFingerprintForSpecific` ever runs for them, anywhere —

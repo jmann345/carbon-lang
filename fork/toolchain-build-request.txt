@@ -1,1 +1,1 @@
-2026-08-18T01:50Z merge gate on the B2a final head (widening + miscompile fix + hardening)
+2026-08-18T02:20Z gate re-fire after lint batch (all-files prek: license header, doc style, json newline/format)

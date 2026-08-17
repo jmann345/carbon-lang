@@ -1,1 +1,1 @@
-2026-08-09T01:30Z gate fire for B2a (symbolic-choice destroy widening)
+2026-08-18T01:50Z merge gate on the B2a final head (widening + miscompile fix + hardening)

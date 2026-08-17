@@ -207,7 +207,7 @@ fails if this table is stale):
 | `generics/variadics_each.carbon` | Generics: Definition-checked variadics | SKIP |
 | `interop/cpp_adl_swap_extension_point.carbon` | Functions: C++ interop — open overload sets as extension points (swap etc.) | SKIP |
 | `interop/cpp_atomic_carbon_class_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |
-| `interop/cpp_atomic_global_counter_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | SKIP, differential |
+| `interop/cpp_atomic_global_counter_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |
 | `interop/cpp_compat_long_adapters.carbon` | Stdlib C++ interop: transparent fundamental-type mapping | run |
 | `interop/cpp_concept_export_predicate.carbon` | Generics: C++ interop — C++20 concepts <-> named predicates mapping | SKIP |
 | `interop/cpp_concept_import_predicate.carbon` | Generics: C++ interop — C++20 concepts <-> named predicates mapping | SKIP |

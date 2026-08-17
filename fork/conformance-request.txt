@@ -1,1 +1,1 @@
-2026-08-18T09:20Z F8b conformance (expect 88/0/31 over 119, threading bullet flips, 43/56)
+2026-08-18T10:10Z F8c ADJUDICATION RUN: real-header D3 pair un-SKIPped on the branch — PASS=H0(upstream fixed), LINK-FAIL(undefined symbol)=live defect, COMPILE-FAIL=conversion-chain risk

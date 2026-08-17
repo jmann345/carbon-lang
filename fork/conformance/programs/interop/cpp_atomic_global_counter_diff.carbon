@@ -48,6 +48,9 @@ fn Run() -> i32 {
   //   total.store(RuntimeSeedL(14));
   //   Cpp.StartWorkers();
   //   Cpp.JoinWorkers();
+  //   // NOTE: the `as i32` chain from `load()`'s cpp-compat return type
+  //   // is statically unverified; F8c's first-step adjudication run
+  //   // vets it before this pair is un-SKIPped (fork/f008/plan.md).
   //   Core.Print(total.load() as i32);
   //   return 0;
   // Guard: fails loudly (exit 1 vs EXPECT-EXIT 0) if un-SKIPped without

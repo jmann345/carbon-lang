@@ -8,7 +8,13 @@
 //   1
 //   2
 //
-// Mutex/RAII across the language boundary — measured matrix row 8
+// Mutex/RAII across the language boundary — measured matrix row 8.
+// PROBE DEVIATION (disclosed): row 8's evidence column holds a
+// try-lock-while-held probe, which is same-thread UB on `std::mutex`
+// ([thread.mutex.requirements.mutex]); this program probes RAII via
+// `owns_lock()` plus a post-scope `try_lock` instead — the regressed-
+// Destroy branch still traverses that call, deterministic on
+// glibc/NPTL though not standard-guaranteed.
 // (fork/design-sprint/threading-atomics.md:89, verified by execution
 // 2026-07-19; part of the F-008 F8a working-surface pair, fork/f008/plan.md
 // §2.5). Probe 1: a `unique_lock` constructed from Carbon holds the mutex

@@ -1,1 +1,1 @@
-2026-08-18T01:30Z R26 pass-2 fixpoint verification (post correction regen)
+2026-08-18T05:10Z F8a regen: red-first reconciliation for the fail_todo probe pins

@@ -1,1 +1,1 @@
-2026-08-18T02:50Z final conformance confirmation on the B2a merge head (expect 84/0/30 over 114)
+2026-08-18T06:40Z F8a conformance (expect 86/0/33 over 119, ZERO bullet flips)

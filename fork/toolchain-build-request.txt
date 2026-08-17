@@ -1,1 +1,1 @@
-2026-08-18T02:20Z gate re-fire after lint batch (all-files prek: license header, doc style, json newline/format)
+2026-08-18T06:10Z F8a merge gate

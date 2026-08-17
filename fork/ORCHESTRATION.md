@@ -10,7 +10,16 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-18 (post-PR #19: F8a harness slice COMPLETE)._
+_Last updated: 2026-08-18 (post-PR #20: F8b COMPLETE — THREADING BULLET
+GREEN)._ TWENTY PRs. F8b: trivially-destructible exported classes drop
+the C++ destructor thunk (predicate reuses CanDestroyType's
+classification; the review round's impl-population blocker resolved by
+mirrored cross-IR enumeration with a two-file falsifier golden; W-021
+DISCHARGED); std::atomic(CarbonClass) runs store/exchange/load against
+its C++ oracle at runtime; the threading/atomics bullet flips —
+**43/56 bullets**, 88/0/31 over 119. Remaining F-008: F8c
+(specialization-global link; real-header adjudication run FIRST), F8d
+(std::thread(carbon_fn); documented-limitation degrade sanctioned)._
 NINETEEN PRs. F-008 is underway per fork/f008/plan.md: F8a landed the
 zero-flip harness (two green thread programs on already-PASS bullets —
 H-P pthread linkage CONFIRMED live; three SKIP defect arbiters quoting
@@ -104,8 +113,8 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-86 PASS / 33 SKIP / 0 FAIL programs (119 total, 14 differential
-C++-oracle pairs); **42/56 bullets green** (runner-side scoreboard at
+88 PASS / 31 SKIP / 0 FAIL programs (119 total, 15 differential
+C++-oracle pairs); **43/56 bullets green** (runner-side scoreboard at
 the PR #16 head; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first
 error-handling flip). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79

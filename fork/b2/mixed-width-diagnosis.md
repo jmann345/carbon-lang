@@ -107,3 +107,116 @@ arbiter stays fork/conformance/programs/error_handling/question_generic_diff
 - Strictness F3: no pre-fix baseline regen exists, so the golden alone
   cannot prove the fix changed anything; the conformance flip is the
   arbiter of record (R9).
+
+## Round 2 (2026-08-17): W1 and W2 both refuted; H-ZERO
+
+### Arbiter result on the sret gate
+
+The conformance arbiter re-ran on the committed 594bd1e sret-gate fix:
+the failure signature is BYTE-IDENTICAL to the pre-fix run (i64 leg: Err
+discriminant correct, payload = stale 44 at both depths; i32 leg fully
+correct). The gate changed nothing at runtime. Combined with the
+regenerated question_generic_mixed.carbon golden — which shows correct
+per-width shapes everywhere (two defines per chain function, correct
+sret pointees, 16-byte covers, no cross-width redirection) — BOTH round-1
+candidates are refuted as root cause: W1 (fingerprint collision between
+real fingerprints) cannot merge any payload-moving pair (w2-trace.md §3,
+review B1), and W2 (per-specific layout reuse) has no order-dependent
+path (w2-trace.md §1-§3) and is contradicted by the correct single-file
+golden. The distinguishing facts about the failing program: it IMPORTS
+(`import Core library "io"` — multi-file lowering) and its `?` operands
+are call-result temporaries.
+
+### Round-2 root cause — H-ZERO (zero-fingerprint coalescing commits),
+### code-verified
+
+The coalescer's fingerprint stores are PER-FILE and default-initialized:
+`lowered_specifics_type_fingerprint_(specifics, {})` and
+`lowered_specific_fingerprint_(specifics, {})`
+(lower/specific_coalescer.cpp:13-18). An ABSENT entry therefore reads as
+the all-zero default, and the equivalence checks compare raw values with
+no presence notion: `AreFunctionTypesEquivalent` is a bare `Get(id1) ==
+Get(id2)` (:199-204 pre-fix), and in `AreFunctionBodiesEquivalent` an
+absent/absent pair passes the common-fingerprint test and is ACCEPTED by
+the specific-fingerprint `continue` with no further verification
+(:217-224 pre-fix). Two verified holes produce queried-but-never-written
+slots, both exclusive to multi-file lowering:
+
+1. `GetOrCreateLLVMFunction`'s mangled-name early-return
+   (lower/file_context.cpp:371-383 pre-fix) returns a function created
+   while lowering a different file WITHOUT `HandleReferencedSpecificFunction`
+   — the specific gets neither a type fingerprint nor a scheduled body
+   (hence no body fingerprint) in this file's stores, yet
+   `HandleInst(Call)` records its id into callers' `calls` lists
+   unconditionally (lower/handle_call.cpp:721-723).
+2. `calls` records `callee.file`'s specific id — the file the callee
+   constant resolves into, which for calls inside instantiated bodies can
+   be a DIFFERENT file (handle_call.cpp:707-723) — and the file identity
+   is dropped at `calls.push_back(specific_id)`
+   (lower/function_context.cpp:443). The per-file stores are id-TAGGED
+   (`Tag<SemIR::CheckIRId>`; toolchain/base/id_tag.h:80-93 XOR-untags with
+   THIS file's tag), so a foreign id indexes a garbage slot guarded only
+   by DCHECKs — in the common case an unwritten, all-zero slot.
+
+Mechanism: a closure-walk callee pair whose two ids read absent-zero
+passes the (pre-fix) type gate and body check, is committed into
+`visited_equivalent_specifics`, and `ProcessSpecificEquivalence` then
+marks the pair in `equivalent_specifics_` (:113-148). The root loop
+treats any marked specific as replaced and `UpdateAndDeleteLLVMFunction`
+RAUWs its `llvm::Function` to the "canonical" one and ERASES it
+(:172-182) — the wide function's callers are silently redirected to the
+narrow body. Narrow Err writes the discriminant at byte 0 (coincides —
+Err arm correct) and the tag at byte 4; the wide reader loads byte 8 —
+the stale 44 the previous Ok left there. This is import-only (single-file
+lowering never leaves absent slots), deterministic (id/tag arithmetic is
+fixed per compile), and untouched by the sret gate (zero == zero passes
+any equality-based gate) — matching every observed fact.
+
+### The round-2 plan (two commits, pin then fix)
+
+Commit 1 — bug pin:
+`toolchain/lower/testdata/operators/question_generic_crossfile.carbon`
+(new): the failing shape in file_test form — `// --- lib.carbon` defines
+the choice, the forall Try impl, generic Step/Discard/Chain with
+call-result-temporary `?` operands, and its own narrow instantiation;
+`// --- use.carbon` imports lib and instantiates i32 THEN i64 plus
+concrete MakeErr64/ReadErr64. PRE-FIX regen must show the redirect
+signature in use.carbon's module: a cross-width pair resolved to ONE
+lowered body — a wide call site calling a define with narrow (8-byte)
+sret pointee/GEP shapes, or a missing wide define. POST-FIX regen must
+show two defines per width with correct per-width shapes and every wide
+call site addressing only wide defines.
+
+Commit 2 — the fixes:
+
+1. The early-return now writes the type fingerprint for the specific in
+   this file's store (file_context.cpp; the definition is deliberately
+   NOT re-registered — the creating file owns the body, and a second
+   registration would attempt to redefine the function, tripping the
+   `isDeclaration()` CHECK in `BuildFunctionBody`). The body fingerprint
+   stays absent, which the next item makes safe.
+2. Presence tracking in the coalescer (specific_coalescer.{h,cpp}):
+   `fingerprinted_types_` / `fingerprinted_bodies_` id-sets written at
+   `CreateTypeFingerprint` / `InitializeFingerprintForSpecific`; the root
+   type gate and the closure walk refuse any pair with a missing type OR
+   body fingerprint (absent = unknown = do not merge). Membership is by
+   id value, not store indexing, so foreign-file ids read as absent
+   without touching the tagged stores.
+3. Latent, unrelated to this bug: the eval hook now CHECKs
+   `object_layout.has_value()` before folding a payload tuple layout into
+   max-of-fields (check/eval_inst.cpp) — a dependent layout must not
+   contribute size 0 silently.
+
+### W4-candidate-1 ruled out
+
+lower/aggregate.cpp:227-234 (`EmitAggregateInitializer` InPlace)
+classifies elements via `constant_values().Get(ref_id)` on the GENERIC
+body's inst — the attached constant, shared by every specific of that
+generic. The classification therefore cannot differ between the i32 and
+i64 instantiations of the same body: both widths take the same branch for
+each element, and the actual stores resolve per-specific
+(`GetValue`/`InitializeStorage` go through the specific's value block).
+A width-asymmetric skipped-or-clobbered store is unreachable from this
+code for this evidence, and the observed signature (payload at the wrong
+OFFSET, one width only) is a redirect/layout signature, not a
+missing-store signature. Not live for this bug; no change made.

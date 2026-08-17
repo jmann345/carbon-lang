@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-17T23:06:41.201141+00:00",
+  "generated": "2026-08-17T23:58:28.230160+00:00",
   "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 11.9,
+  "elapsed_seconds": 11.4,
   "totals": {
-    "PASS": 88,
+    "PASS": 89,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
     "OUTPUT-MISMATCH": 0,
     "DIFF-MISMATCH": 0,
-    "SKIP": 31
+    "SKIP": 30
   },
   "programs": [
     {
@@ -316,8 +316,8 @@
     {
       "path": "interop/cpp_atomic_global_counter_diff.carbon",
       "bullet": "C++ interop: threading, atomics, memory model, synchronization",
-      "status": "SKIP",
-      "detail": "defect TA-D3 (W-022) \u2014 a file-scope Carbon `var` typed by an imported C++ template SPECIALIZATION compiles but fails to LINK: measured 2026-07-19 with `var gcount: Cpp.std.atomic(i32);`, `undefined symbol: _Cgcount.Main.1` (fork/design-sprint/threading-atomics.md:103). Plain imported-class globals (`std::mutex`, matrix row 14) link fine, localizing the defect to specialization-typed global emission in toolchain/lower/ (the F8a mechanism probe is lower/testdata/interop/cpp/globals_carbon_defined.carbon). Un-SKIP (and uncomment the body) when F8c (fork/f008/plan.md \u00a73) lands the global-definition-emission fix; a one-off runner compile+link of THIS pair is F8c's first-step H0 (\"fixed upstream\") adjudication run (plan \u00a72.3, adjudication D) \u2014 run BEFORE choosing any fix site.",
+      "status": "PASS",
+      "detail": "",
       "differential": true
     },
     {

@@ -488,7 +488,10 @@ static auto BuildAlternativeConstructor(
       //    `ClassInit` element is then constant, so the `ClassInit` folds to
       //    a constant object value, and its lowering is a single whole-object
       //    copy from a per-specific constant global — the discriminant bytes
-      //    plus poison payload bytes.
+      //    plus ZERO (defined) payload bytes: the covering-copy contract
+      //    requires defined filler, since the update step only partially
+      //    overwrites the copied region (lower/constant.cpp,
+      //    `EmitAsConstant(UninitializedValue)`).
       // 2. Update: the parameters are stored raw into the payload tuple. The
       //    SF-6 payload restriction guarantees every admissible specific's
       //    element types are trivially copyable (enforced per specific at
@@ -502,7 +505,7 @@ static auto BuildAlternativeConstructor(
       // `UpdateInit`'s own position, before the update step. Returning the
       // bare `ClassInit` instead would surface the fold at the `ReturnExpr`,
       // whose lowering re-emits the covering copy after the element stores —
-      // clobbering the payload with the constant's poison bytes.
+      // clobbering the payload with the constant's zero filler bytes.
       //
       // The update step must lower correctly under BOTH initializing
       // representations a specific's payload tuple can resolve to, so it has

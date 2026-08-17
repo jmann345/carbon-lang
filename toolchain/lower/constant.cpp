@@ -134,8 +134,12 @@ static auto PadToType(llvm::Constant* constant, llvm::Type* llvm_type)
   CARBON_CHECK(padded->getNumElements() == 2 &&
                    padded->getElementType(0) == constant->getType(),
                "Unexpected type {0} for constant {1}", *llvm_type, *constant);
+  // Zeros for the same covering-copy reason as
+  // EmitAsConstant(UninitializedValue) below: this padding sits inside
+  // covering-copied template globals.
   return llvm::ConstantStruct::get(
-      padded, constant, llvm::PoisonValue::get(padded->getElementType(1)));
+      padded, constant,
+      llvm::Constant::getNullValue(padded->getElementType(1)));
 }
 
 // Emits an aggregate constant of LLVM type `Type` whose elements are the

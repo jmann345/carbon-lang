@@ -10,31 +10,28 @@
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/lower/testdata/operators/question_generic_crossfile.carbon
 
-// The CROSS-FILE mixed-width instantiated-generic `?` golden (the
-// question_generic_diff runtime divergence, round 2, H-ZERO): the generic
+// The CROSS-FILE mixed-width instantiated-generic `?` golden: the generic
 // chain lives in an imported library while BOTH width instantiations —
 // narrow (i32) first, then wide (i64) — happen in the importing file, and
 // every `?` operand is a CALL-RESULT temporary (`Step(x, ...)?` through
-// the proven `Discard` sink), the two properties that separate the failing
-// conformance program from the correct single-file golden
-// (question_generic_mixed.carbon). Under multi-file lowering the specific
-// coalescer's per-file fingerprint stores can be queried at slots that
-// were never written — a specific whose `llvm::Function` was created while
-// lowering a different file is never fingerprinted in this file's store,
-// and callee specific ids recorded from another file's SemIR index this
-// file's stores — and an ABSENT fingerprint reads as the default
-// (all-zero) value, so an absent/absent pair compares EQUAL and commits.
-// What this pins, in use.carbon's module: every function of the chain
-// (Chain, Step, the Try impl's Branch/FromBreak, the Err/Ok constructors,
-// the ControlFlow constructors) must have TWO distinct lowered defines
-// with correct per-width shapes — the i64 leg's carrier and result objects
-// 16 bytes (`<{ <{ i1, [7 x i8] }>, [8 x i8] }>`, payload at byte 8,
-// covering copies of 16), the i32 leg's 8 bytes — and every wide call site
+// the proven `Discard` sink), the two properties that separate the
+// question_generic_diff conformance program from the single-file golden
+// (question_generic_mixed.carbon). What this pins, in use.carbon's module:
+// every function of the chain (Chain, Step, the Try impl's
+// Branch/FromBreak, the Err/Ok constructors, the ControlFlow constructors)
+// must have TWO distinct lowered defines with correct per-width shapes —
+// the i64 leg's carrier and result objects 16 bytes
+// (`<{ <{ i1, [7 x i8] }>, [8 x i8] }>`, payload at byte 8, covering
+// copies of 16), the i32 leg's 8 bytes — and every wide call site
 // (Call64's chain, MakeErr64, ReadErr64) must address only wide defines.
-// Falsification (the pre-fix signature): any cross-width pair resolving to
-// ONE lowered body — a wide call site calling a define whose sret pointee
-// or GEP shapes are the narrow 8-byte object — or a missing wide define,
-// or a covering memcpy shorter than the specific's object size.
+// History: authored as the round-2 H-ZERO probe (the hypothesis that the
+// specific coalescer's per-file fingerprint stores read absent slots as
+// the all-zero default, wrongly coalescing cross-width specifics). Its own
+// regen showed per-width-CORRECT lowering — two defines per function,
+// correct shapes — helping refute H-ZERO as the runtime cause. The actual
+// root cause of the question_generic_diff divergence was the poison filler
+// in covering-copied constant templates (fork/b2/mixed-width-diagnosis.md),
+// fixed in lower/constant.cpp.
 
 // --- lib.carbon
 library "[[@TEST_NAME]]";

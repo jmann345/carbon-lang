@@ -276,3 +276,47 @@ is unsound there too; flagged for the PR as potentially upstreamable.
 The prior rounds' artifacts stay landed AS HARDENING (sret fingerprint
 gate; the presence-set refuse-absent invariant remains staged), each
 labeled for what it is.
+
+## Review round (2026-08-17)
+
+Both adversarial reviews returned NO BLOCKER; the conformance arbiter
+confirmed the fix (84/0/30, question_generic_diff PASS). Findings
+recorded and applied:
+
+-   Correctness review, precondition refinement: the SROA
+    integer-widening exploit needs a SPANNING access — the Ok arm's
+    same-offset wide (i64) access is what licenses promoting the whole
+    payload region to one scalar. Same-width specifics never present a
+    wider same-offset access over the region, which is why ONLY mixed
+    widths failed.
+-   Correctness review, upstream provenance verified:
+    `EmitAsConstant(UninitializedValue)`, the vptr cover, and the
+    Cpp.nullptr-as-poison lowering are all upstream-authored at the fork
+    root — the zeroing fix is upstreamable, not a fork-local repair of
+    fork-local code.
+-   Strictness review F1, record honesty: the lifetime-strip experiment
+    NEVER RAN — its stripped IR variant failed to compile on a dangling
+    `uselistorder`, so the lifetime-marker hypothesis was never tested.
+    It was SUPERSEDED by the poison mechanism, not refuted. The poison
+    mechanism itself was confirmed causally by the arbiter flip.
+-   Residual padding-poison class zeroed in this batch: `PadToType`
+    (lower/constant.cpp) emitted poison tail padding INSIDE the same
+    covering-copied template globals — same hazard class (a whole-slot
+    SROA promotion spanning discriminant+padding reproduces whole-scalar
+    poison). Now `Constant::getNullValue`. Regen signature: the remaining
+    `.val` poison padding (e.g. `<{ i1 true, [7 x i8] poison }>`) flips
+    to zeros/`zeroinitializer`.
+-   Design sanction (p000257): zeros are the proposal's "maximally safe
+    representation" for unformed objects. Instruction-path poison is
+    untouched, so the freedom to detect unformed-local reads is retained;
+    the honest blast radius of the constant-path zeroing includes the
+    Cpp.nullptr call-arg and vptr-slot golden flips.
+-   Scaffolding: the three program-specific diagnostic steps ("Dump
+    failing-program LLVM IR", "Optimization-level bisect",
+    "Lifetime-strip experiment") are removed from fork_conformance.yaml
+    post-confirmation; the referenced workflow-run logs remain the
+    archival evidence.
+-   R9 acknowledgment: the ROOT CAUSE section above said ESTABLISHED
+    while the runtime arbiter was still pending. The falsifiable pin
+    (arbiter must flip to PASS) made the claim testable, and it has
+    since been confirmed.

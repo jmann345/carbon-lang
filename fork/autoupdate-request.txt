@@ -1,1 +1,1 @@
-2026-08-17T23:12Z post-trunk-merge reconcile regen (nullptr golden trunk-side; fix null-flips re-apply)
+2026-08-17T23:45Z regen for the padding-zeroing + review-findings batch (expect remaining .val poison padding -> zeroinitializer)

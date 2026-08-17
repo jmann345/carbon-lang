@@ -20,15 +20,19 @@
 // desugar's Break-arm extraction, and the concrete `match` read — must
 // address the SAME 16-byte object (`[8 x i8]` payload region at byte
 // offset 8, covering copy of 16). Falsification: any i64-specific
-// Err-path store or load through a NARROW object shape (the divergence's
-// candidate W2 — per-specific layout reuse in instantiated bodies, which
+// Err-path store or load through a NARROW object shape (the round-1 W2
+// hypothesis — per-specific layout reuse in instantiated bodies, which
 // is ORDER-dependent: Call32 below deliberately precedes Call64), a
 // covering memcpy shorter than the specific's object size, or a
 // cross-width pair resolving to ONE lowered body. Payload-touching
 // bodies fingerprint width-distinct types, so only forwarder-shaped
 // pairs (`Diverge`) could coalesce cross-width pre-gate; the sret type
-// gate pins that split, and the runtime arbiter for the divergence
-// stays the conformance pair.
+// gate pins that split. History: this golden's own regen showed
+// per-width-correct lowering, helping refute the W1/W2 layout-reuse
+// hypotheses as the runtime cause; the divergence's actual root cause
+// was the poison filler in covering-copied constant templates
+// (fork/b2/mixed-width-diagnosis.md), fixed in lower/constant.cpp and
+// confirmed by the conformance arbiter.
 
 // --- mixed.carbon
 library "[[@TEST_NAME]]";

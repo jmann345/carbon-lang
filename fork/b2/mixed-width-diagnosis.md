@@ -320,3 +320,69 @@ recorded and applied:
     while the runtime arbiter was still pending. The falsifiable pin
     (arbiter must flip to PASS) made the claim testable, and it has
     since been confirmed.
+
+### Addendum (2026-08-18): hardening regen split upstream-pinned dedup
+
+The B2a hardening's first regen (22cfaa3, vs 0ea6eb7) SPLIT specifics
+that upstream's own coalescing goldens pin as merged (the 7
+function/generic call_* goldens plus interop/cpp/void.carbon, +402 net
+lines; e.g. call_basic's three `H<T*>` all targeted
+`@_CH.Main.a76b78461416b4a8`, now three suffixes).
+
+Diagnosis: the refused gate is the CLOSURE gate on recorded callee
+pairs, and the absent side is BOTH sides' fingerprints for
+builtin-expanded callees. `HandleCall` records every callee in the
+body fingerprint BEFORE the builtin check, pushing
+`resolved_specific_id` into the coalescer's `calls` list — including
+specifics of `= "primitive_copy"` / pointer-conversion /
+`make_uninitialized` builtins (e.g. `impl forall [T: type] T* as Copy`,
+min_prelude parts/copy.carbon:44). Those callees are expanded inline:
+no LLVM function is ever created, so neither `CreateTypeFingerprint`
+nor `InitializeFingerprintForSpecific` ever runs for them, anywhere —
+and cross-file, the recorded id is from a foreign SpecificStore
+besides. Pre-hardening, such callee pairs compared through the stores'
+default values (absent==absent == EQUAL), which is exactly what
+committed `H<i32*> ≡ H<f64*>` — upstream's pinned dedup was itself
+riding the zero-hole. The refuse-absent gate turned that same edge
+into a refusal, splitting every caller pair differing only in a
+builtin callee. Root/type gates were NOT the refusers: every specific
+that gets an LLVM function in a file gets its type fingerprint there
+(HandleReferencedSpecificFunction + the hardened early-return), and
+every definition lowered in a file gets its body fingerprint
+(BuildFunctionBody's InitializeFingerprintForSpecific) — existence is
+already uniform on those paths.
+
+Correction (handle_call.cpp): a builtin callee is no longer recorded
+as a specific call at all — its specific_id never enters `calls` or
+the specific fingerprint. Instead the builtin call is fingerprinted BY
+VALUE into the common fingerprint: callee file+function id, builtin
+kind, and the call's lowered result type (the expansion's remaining
+specific-dependent content is already hashed by the emission's own
+GetType/GetValueRepr adds). This is strictly finer than upstream's
+effective semantics (upstream equated ALL differing builtin-callee
+pairs unconditionally) and reintroduces no absent==absent equality.
+The refuse-absent gates stand unchanged; they now bite only ids with
+genuinely no lowered definition in the coalescing file (real
+declaration-only or foreign-file callees) — correct conservatism.
+
+Predicted regen outcome for the 8 split goldens (all newly split pairs
+are ptr-shaped `ptr (ptr, ...)` signatures; none of the splits was
+sret-differing — sret-pointee pairs such as `H<C>`/`F<C>`
+(`42513763e01cba2c`, `void (ptr sret({}), ...)`) were never merged in
+the pinned goldens to begin with, and stay separate):
+
+| golden | prediction |
+|---|---|
+| function/generic/call_basic.carbon | RESTORE to 0ea6eb7 |
+| function/generic/call_dedup_ptr.carbon | RESTORE to 0ea6eb7 |
+| function/generic/call_recursive_basic.carbon | RESTORE to 0ea6eb7 |
+| function/generic/call_recursive_diamond.carbon | RESTORE to 0ea6eb7 |
+| function/generic/call_recursive_mutual.carbon | RESTORE to 0ea6eb7 |
+| function/generic/call_recursive_sccs_deep.carbon | RESTORE to 0ea6eb7 |
+| function/generic/call_specific_in_class.carbon | RESTORE to 0ea6eb7 |
+| interop/cpp/void.carbon | RESTORE to 0ea6eb7 (Optional/OptionalAs/ImplicitAs chain is single-file within core/prelude/types/optional.carbon; the differing leaf edges are builtin pointer conversions) |
+
+No remaining splits are predicted in these 8; any pair whose closure
+crosses a real (non-builtin) file boundary would remain split, and
+that residue, if the regen shows one, is the intended conservative
+behavior, not a regression.

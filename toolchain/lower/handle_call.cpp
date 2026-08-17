@@ -718,15 +718,34 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
 
   const SemIR::Function& function =
       callee.file->functions().Get(callee_function.function_id);
-  context.AddCallToCurrentFingerprint(callee.file->check_ir_id(),
-                                      callee_function.function_id,
-                                      callee_function.resolved_specific_id);
 
   if (auto builtin_kind = function.builtin_function_kind();
       builtin_kind != SemIR::BuiltinFunctionKind::None) {
+    // A builtin call is expanded inline: no LLVM function for the callee
+    // specific exists in the module, so its specific_id must not be recorded
+    // in the coalescer's call list — it names a specific that is never
+    // fingerprinted anywhere (and, for a cross-file callee, an id from a
+    // foreign SpecificStore). The coalescer's refuse-absent gate would then
+    // spuriously refuse every pair of callers differing only in such a
+    // callee. Instead, fingerprint the builtin call by value in the common
+    // fingerprint: the callee's identity (file + function, via the call
+    // record with no specific) plus the builtin kind and the call's lowered
+    // result type. The rest of the expansion's specific-dependent content is
+    // hashed by the emission itself (`GetType`/`GetValueRepr`/value adds), so
+    // two callers merge only when the expanded instructions agree.
+    context.AddCallToCurrentFingerprint(callee.file->check_ir_id(),
+                                        callee_function.function_id,
+                                        SemIR::SpecificId::None);
+    context.AddIntToCurrentFingerprint(builtin_kind.AsInt());
+    // GetTypeOfInst adds the lowered result type to the fingerprint.
+    context.GetTypeOfInst(inst_id);
     HandleBuiltinCall(context, inst_id, builtin_kind, arg_ids);
     return;
   }
+
+  context.AddCallToCurrentFingerprint(callee.file->check_ir_id(),
+                                      callee_function.function_id,
+                                      callee_function.resolved_specific_id);
 
   // Get the function info for the callee. If the callee has incomplete types,
   // fall back to using the information from the call instruction.

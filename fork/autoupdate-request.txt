@@ -1,1 +1,1 @@
-2026-08-17T23:45Z regen for the padding-zeroing + review-findings batch (expect remaining .val poison padding -> zeroinitializer)
+2026-08-18T00:30Z regen after the hardening correction (expect upstream dedup goldens to restore; sret-differing splits remain)

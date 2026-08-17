@@ -57,8 +57,8 @@ fn Use(n: i32) {
 // CHECK:STDOUT: ; ModuleID = 'payload_layout.carbon'
 // CHECK:STDOUT: source_filename = "payload_layout.carbon"
 // CHECK:STDOUT:
-// CHECK:STDOUT: @Sized.val = internal constant <{ <{ i2, [7 x i8] }>, [16 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 -2, [7 x i8] poison }>, [16 x i8] zeroinitializer }>
-// CHECK:STDOUT: @Sized.val.loc27_1.13 = internal constant <{ <{ i2, [7 x i8] }>, [16 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 -2, [7 x i8] poison }>, [16 x i8] zeroinitializer }>
+// CHECK:STDOUT: @Sized.val = internal constant <{ <{ i2, [7 x i8] }>, [16 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 -2, [7 x i8] zeroinitializer }>, [16 x i8] zeroinitializer }>
+// CHECK:STDOUT: @Sized.val.loc27_1.13 = internal constant <{ <{ i2, [7 x i8] }>, [16 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 -2, [7 x i8] zeroinitializer }>, [16 x i8] zeroinitializer }>
 // CHECK:STDOUT: @llvm.global_ctors = appending global [1 x { i32, ptr, ptr }] [{ i32, ptr, ptr } { i32 0, ptr @_C__global_init.Main, ptr null }]
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind

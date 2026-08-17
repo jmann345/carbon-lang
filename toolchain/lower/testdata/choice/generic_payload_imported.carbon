@@ -46,8 +46,8 @@ fn Run() -> i32 {
 // CHECK:STDOUT: ; ModuleID = 'use_imported.carbon'
 // CHECK:STDOUT: source_filename = "use_imported.carbon"
 // CHECK:STDOUT:
-// CHECK:STDOUT: @Pair.val.6e7 = internal constant <{ <{ i1, [3 x i8] }>, [8 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [8 x i8] zeroinitializer }>
-// CHECK:STDOUT: @Pair.val.cf1.anon = internal constant <{ <{ i1, [3 x i8] }>, [8 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 false, [3 x i8] poison }>, [8 x i8] zeroinitializer }>
+// CHECK:STDOUT: @Pair.val.6e7 = internal constant <{ <{ i1, [3 x i8] }>, [8 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [8 x i8] zeroinitializer }>
+// CHECK:STDOUT: @Pair.val.cf1.anon = internal constant <{ <{ i1, [3 x i8] }>, [8 x i8] }> zeroinitializer
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @_CClassify.Main(ptr %p) #0 !dbg !4 {

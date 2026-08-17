@@ -24,6 +24,11 @@
 // cpp_atomic_global_counter_diff (plan §2.3, adjudication D). The imported
 // direction (C++-owned globals, no Carbon-side definition emitted) is
 // covered by globals.carbon and must not move (plan §5 R-5).
+//
+// The third split (added at F8c) mirrors the failing pair's full shape —
+// member CALLS on the specialization-typed global from more than one
+// function — which the field-access split does not exercise; its pin is
+// described at the split.
 
 // --- box.h
 
@@ -54,6 +59,49 @@ fn ReadSpecialized() -> i32 {
 
 fn ReadPlain() -> i32 {
   return m.n;
+}
+
+// --- counter.h
+
+template <typename T> struct Counter {
+  T value;
+  void store(T v) { value = v; }
+  T fetch_add(T v) {
+    T old = value;
+    value += v;
+    return old;
+  }
+  T load() { return value; }
+};
+
+// --- carbon_defined_member_calls.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "counter.h";
+
+// The failing conformance pair's shape (fork/f008/plan.md §2.3;
+// cpp_atomic_global_counter_diff): a file-scope Carbon var typed by an
+// imported C++ template SPECIALIZATION whose members the Carbon side CALLS,
+// from more than one function — the ingredient the field-access split above
+// lacks. The measured defect bound each function's thunk-call references to
+// a fresh `.N`-renamed duplicate of the global (`undefined symbol:
+// _Ctotal.Main.2` / `.3`, adjudication run 2026-08-17) while the definition
+// stayed on another object. The pin (plan §5 R-4): the dump must contain the
+// DEFINITION `@_Ctotal.Main = global ...` and every reference must use that
+// SAME symbol; a reference to a symbol no definition carries, or any
+// `.N`-suffixed duplicate of the global, falsifies the fix.
+var total: Cpp.Counter(i32);
+
+// Mirrors the pair's `Bump` (there, run on bridge-spawned threads).
+fn Bump() { total.fetch_add(1); }
+
+// Mirrors the pair's `Run`: a second function calling members on the same
+// global — the measured shape diverged per function.
+fn Run() -> i32 {
+  total.store(20);
+  Bump();
+  return total.load();
 }
 
 // CHECK:STDOUT: ; ---

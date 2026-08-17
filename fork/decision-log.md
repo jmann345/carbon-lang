@@ -828,6 +828,61 @@ precedent), the pins are marked best-effort in-file, no pre-existing CHECK
 line was touched, and the red-first runner autoupdate reconciliation
 (fork/autoupdate-request.txt refreshed) is the arbiter. Veto-able.
 
+_F8c landing note (2026-08-18):_ the D3 fix of the approved F-008 plan
+(fork/f008/plan.md §2.3, §3 F8c). _Adjudication verdict (step 1, plan
+adjudication D, run 32079343005, 2026-08-17T23:11Z): H0 REFUTED._ The un-SKIPped real-header
+pair cpp_atomic_global_counter_diff COMPILES fully (the flagged as-i32
+chain and every thunk lowered) but LINKS red with `undefined symbol:
+_Ctotal.Main.2` (referenced by the fetch_add thunk and both
+`__thread_proxy` instantiations) AND `_Ctotal.Main.3` (referenced by the
+store and load thunks) — the defect is live, and richer than the sprint's
+single-symbol `_Cgcount.Main.1` measurement: references split per
+function across DISTINCT `.N`-renamed duplicates of one variable.
+_Mechanism (§2.3 H1 family):_
+`Lower::FileContext::BuildNonCppGlobalVariableDecl`
+(toolchain/lower/file_context.cpp) created a fresh `llvm::GlobalVariable`
+on EVERY call — no cache, no module-symbol-table lookup — while the
+function path (`GetOrCreateLLVMFunction`) has had a name-keyed
+early-return all along. LLVM silently uniquifies each duplicate with a
+`.N` suffix, so the initializer added by `LowerGlobalVariables`
+(file_context.cpp `LowerGlobalVariables`, the :305/:306 insert+define)
+lands on one object while references bind others. The evidence
+adjudicates the hypothesis set: two distinct undefined suffixes in one
+link refute H3 (a deterministic mangling divergence yields ONE wrong
+name, not per-function rename suffixes); H2's non-concrete constant-walk
+skip is refuted by the compile succeeding (a skipped constant would have
+crashed the definition walk's `cast`/`setInitializer` at
+file_context.cpp:297-307); H0 by the link failure itself. Honest residue,
+recorded per R17: the check-side reason the creation count EXCEEDS the
+two call sites the plan's H1 story names (constant lowering + the
+non-constant definition-walk branch) — the per-function split implies
+per-use-cluster mints — was not fully traced without a local build; the
+fix below restores the one-mangled-name⇔one-object invariant at the only
+site that mints these symbols, which closes every variant of the split,
+and the probe's new member-calls split plus the pair arbitrate that claim
+at regen and link level (falsifiers §5 R-4). _Fix:_ name-keyed reuse in
+`BuildNonCppGlobalVariableDecl` — `llvm_module().getGlobalVariable(
+mangled_name, /*AllowInternal=*/true)` early-return before creating, the
+exact global-side mirror of `GetOrCreateLLVMFunction`'s
+`getFunction(mangled_name)` early-return (the B2a-coalescer-adjacent
+function path had the dedup; the global path was the hole — answering
+the plan's H1/coalescer-analog question affirmatively). No check-side,
+mangler, or driver changes. _Probe:_
+lower/testdata/interop/cpp/globals_carbon_defined.carbon gains a third
+split (mock `Counter<T>` template, file-scope `var total:
+Cpp.Counter(i32)`, store/fetch_add/load member CALLS from two functions
+mirroring the pair's Bump/Run) with the R-4 pin stated in-file: one
+defined `@_Ctotal.Main`, every reference on that same symbol, no `.N`
+duplicate anywhere. _Movement prediction for the regen:_ ONLY
+globals_carbon_defined.carbon moves, by the ADDED split's new module dump
+(the fix's reuse path is unreachable when a variable is created once, so
+the existing splits' dumps and every other golden — globals.carbon in
+particular, the R-5 imported-direction negative — stay byte-identical;
+any other movement is stop-and-explain). Conformance:
+cpp_atomic_global_counter_diff flips SKIP→PASS off the branch's red
+baseline; floor 89/0/30 over 119; bullets stay 43/56 (plan §6). W-022
+DISCHARGED (ledger updated, plan §9). Veto-able.
+
 ### F-009: Function overloading — **Marked `overload fn`** (2026-07-19)
 
 Closed same-library sets (p000998), declaration-order first-match

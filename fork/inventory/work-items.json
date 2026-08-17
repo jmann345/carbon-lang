@@ -385,10 +385,13 @@
       "evidence": [
         "fork/design-sprint/threading-atomics.md:103",
         "fork/design-sprint/threading-atomics.md:319-324",
-        "fork/design-sprint/threading-atomics.md:331-333"
+        "fork/design-sprint/threading-atomics.md:331-333",
+        "toolchain/lower/file_context.cpp (BuildNonCppGlobalVariableDecl)",
+        "toolchain/lower/testdata/interop/cpp/globals_carbon_defined.carbon",
+        "fork/conformance/programs/interop/cpp_atomic_global_counter_diff.carbon"
       ],
       "blocked_by": ["F-008", "W-005"],
-      "notes": "var g: Cpp.std.atomic(i32) at file scope compiles but links with undefined symbol _Cgcount.Main.1; plain imported-class globals (std::mutex) link fine, localizing to specialization-typed global emission (start at lower/file_context.cpp per paper). Fork-local patch through the F-005 runner; upstreamable."
+      "notes": "var g: Cpp.std.atomic(i32) at file scope compiles but links with undefined symbol _Cgcount.Main.1; plain imported-class globals (std::mutex) link fine, localizing to specialization-typed global emission (start at lower/file_context.cpp per paper). Fork-local patch through the F-005 runner; upstreamable. DISCHARGED at F8c (fork/f008/plan.md §3 F8c, §9): H0 refuted by the plan-mandated adjudication run (2026-08-17, run 32079343005 — the un-SKIPped pair compiles but links with `undefined symbol: _Ctotal.Main.2` AND `.3`, references split per function across `.N`-renamed duplicates). Mechanism is the §2.3 H1 family: `Lower::FileContext::BuildNonCppGlobalVariableDecl` (lower/file_context.cpp) created a fresh `llvm::GlobalVariable` on every call with no cache and no module-symbol-table lookup — unlike the function path's name-keyed early-return in `GetOrCreateLLVMFunction` — so LLVM silently `.N`-renamed each duplicate and the initializer added by `LowerGlobalVariables` landed on a different object than (some) references; the two distinct undefined suffixes in one link refute the single-symbol H3 mangling-divergence story (a deterministic mangling divergence yields one wrong name, not per-function LLVM rename suffixes), and H2's non-concrete constant-walk skip is refuted by the compile succeeding (a skipped constant would have crashed LowerGlobalVariables' cast/setInitializer, lower/file_context.cpp:297-307). Fix: name-keyed reuse in BuildNonCppGlobalVariableDecl (the global-side mirror of GetOrCreateLLVMFunction's early-return), collapsing every creation path onto one object so definition and references cannot split. Evidence refreshed: the mechanism probe globals_carbon_defined.carbon gains the member-calls split mirroring the pair (pin: one defined `@_Ctotal.Main`, no `.N` duplicates, plan §5 R-4); imported-globals negative probe globals.carbon must stay byte-identical (R-5); the un-SKIPped cpp_atomic_global_counter_diff pair is the link+run arbiter; scoreboard confirmation rides the F8c conformance run (R9)."
     },
     {
       "id": "W-023",

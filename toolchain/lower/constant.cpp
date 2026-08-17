@@ -134,8 +134,12 @@ static auto PadToType(llvm::Constant* constant, llvm::Type* llvm_type)
   CARBON_CHECK(padded->getNumElements() == 2 &&
                    padded->getElementType(0) == constant->getType(),
                "Unexpected type {0} for constant {1}", *llvm_type, *constant);
+  // Zeros for the same covering-copy reason as
+  // EmitAsConstant(UninitializedValue) below: this padding sits inside
+  // covering-copied template globals.
   return llvm::ConstantStruct::get(
-      padded, constant, llvm::PoisonValue::get(padded->getElementType(1)));
+      padded, constant,
+      llvm::Constant::getNullValue(padded->getElementType(1)));
 }
 
 // Emits an aggregate constant of LLVM type `Type` whose elements are the
@@ -350,7 +354,18 @@ static auto EmitAsConstant(ConstantContext& context, SemIR::Temporary inst)
 
 static auto EmitAsConstant(ConstantContext& context,
                            SemIR::UninitializedValue inst) -> llvm::Constant* {
-  return llvm::PoisonValue::get(context.GetType(inst.type_id));
+  // Zeros, not poison: these constants reach memory through covering copies
+  // whose bytes are only PARTIALLY overwritten afterwards — a choice value
+  // template's payload region is memcpy'd whole and then a narrower
+  // alternative's element store covers a prefix of it. Poison filler taints
+  // the whole region when SROA promotes it to a scalar (partial defined bits
+  // do not rescue a partially-poison integer), which licensed the optimizer
+  // to replace a stored Err payload with an unrelated value at any
+  // optimizing level (the question_generic_diff mixed-width miscompile,
+  // fork/b2/mixed-width-diagnosis.md). Zero bytes are defined under any
+  // partial overwrite; the cost is only lost UB-detection freedom for reads
+  // of genuinely uninitialized storage.
+  return llvm::Constant::getNullValue(context.GetType(inst.type_id));
 }
 
 static auto EmitAsConstant(ConstantContext& context, SemIR::VarStorage inst)

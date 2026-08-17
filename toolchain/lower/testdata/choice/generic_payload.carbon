@@ -134,10 +134,10 @@ fn Run() -> i32 {
 // CHECK:STDOUT: ; ModuleID = 'two_sizes.carbon'
 // CHECK:STDOUT: source_filename = "two_sizes.carbon"
 // CHECK:STDOUT:
-// CHECK:STDOUT: @Pair.val.6e7 = internal constant <{ <{ i1, [3 x i8] }>, [8 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [8 x i8] poison }>
-// CHECK:STDOUT: @Pair.val.765 = internal constant <{ <{ i1, [7 x i8] }>, [16 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 true, [7 x i8] poison }>, [16 x i8] poison }>
-// CHECK:STDOUT: @Pair.val.cf1.loc3_22.7 = internal constant <{ <{ i1, [3 x i8] }>, [8 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 false, [3 x i8] poison }>, [8 x i8] poison }>
-// CHECK:STDOUT: @Pair.val.790.loc3_22.7 = internal constant <{ <{ i1, [7 x i8] }>, [16 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 false, [7 x i8] poison }>, [16 x i8] poison }>
+// CHECK:STDOUT: @Pair.val.6e7 = internal constant <{ <{ i1, [3 x i8] }>, [8 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [8 x i8] zeroinitializer }>
+// CHECK:STDOUT: @Pair.val.765 = internal constant <{ <{ i1, [7 x i8] }>, [16 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 true, [7 x i8] zeroinitializer }>, [16 x i8] zeroinitializer }>
+// CHECK:STDOUT: @Pair.val.cf1.loc3_22.7 = internal constant <{ <{ i1, [3 x i8] }>, [8 x i8] }> zeroinitializer
+// CHECK:STDOUT: @Pair.val.790.loc3_22.7 = internal constant <{ <{ i1, [7 x i8] }>, [16 x i8] }> zeroinitializer
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @_CClassify32.Main(ptr %p) #0 !dbg !4 {
@@ -402,9 +402,9 @@ fn Run() -> i32 {
 // CHECK:STDOUT: ; ModuleID = 'mixed.carbon'
 // CHECK:STDOUT: source_filename = "mixed.carbon"
 // CHECK:STDOUT:
-// CHECK:STDOUT: @M.val.de4 = internal constant <{ <{ i2, [3 x i8] }>, [4 x i8] }> <{ <{ i2, [3 x i8] }> <{ i2 -2, [3 x i8] poison }>, [4 x i8] poison }>
-// CHECK:STDOUT: @M.val.7cc = internal constant <{ <{ i2, [7 x i8] }>, [16 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 -2, [7 x i8] poison }>, [16 x i8] poison }>
-// CHECK:STDOUT: @M.val.287.loc6_19.7 = internal constant <{ <{ i2, [7 x i8] }>, [16 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 1, [7 x i8] poison }>, [16 x i8] poison }>
+// CHECK:STDOUT: @M.val.de4 = internal constant <{ <{ i2, [3 x i8] }>, [4 x i8] }> <{ <{ i2, [3 x i8] }> <{ i2 -2, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @M.val.7cc = internal constant <{ <{ i2, [7 x i8] }>, [16 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 -2, [7 x i8] zeroinitializer }>, [16 x i8] zeroinitializer }>
+// CHECK:STDOUT: @M.val.287.loc6_19.7 = internal constant <{ <{ i2, [7 x i8] }>, [16 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 1, [7 x i8] zeroinitializer }>, [16 x i8] zeroinitializer }>
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @_CF8.Main(ptr %m) #0 !dbg !4 {
@@ -688,8 +688,8 @@ fn Run() -> i32 {
 // CHECK:STDOUT: ; ModuleID = 'destructure.carbon'
 // CHECK:STDOUT: source_filename = "destructure.carbon"
 // CHECK:STDOUT:
-// CHECK:STDOUT: @Opt.val.b51 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] poison }>
-// CHECK:STDOUT: @Opt.val.5b3.loc6_21.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 false, [3 x i8] poison }>, [4 x i8] poison }>
+// CHECK:STDOUT: @Opt.val.b51 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @Opt.val.5b3.loc6_21.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> zeroinitializer
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @_CGet.Main(ptr %o) #0 !dbg !4 {
@@ -860,9 +860,9 @@ fn Run() -> i32 {
 // CHECK:STDOUT: ; ModuleID = 'optional.carbon'
 // CHECK:STDOUT: source_filename = "optional.carbon"
 // CHECK:STDOUT:
-// CHECK:STDOUT: @Optional.val.dae = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] poison }>
-// CHECK:STDOUT: @Optional.val.dae.None.ref = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] poison }>
-// CHECK:STDOUT: @Optional.val.b3e.loc5_26.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 false, [3 x i8] poison }>, [4 x i8] poison }>
+// CHECK:STDOUT: @Optional.val.dae = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @Optional.val.dae.None.ref = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @Optional.val.b3e.loc5_26.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> zeroinitializer
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @_CIsPresent.Main(ptr %o) #0 !dbg !4 {

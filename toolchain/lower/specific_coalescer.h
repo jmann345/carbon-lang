@@ -5,6 +5,7 @@
 #ifndef CARBON_TOOLCHAIN_LOWER_SPECIFIC_COALESCER_H_
 #define CARBON_TOOLCHAIN_LOWER_SPECIFIC_COALESCER_H_
 
+#include "common/set.h"
 #include "llvm/Support/BLAKE3.h"
 #include "toolchain/lower/context.h"
 #include "toolchain/sem_ir/ids.h"
@@ -60,23 +61,50 @@ class SpecificCoalescer {
     if (!specific_id.has_value()) {
       return nullptr;
     }
+    fingerprinted_bodies_.Insert(specific_id);
     return &lowered_specific_fingerprint_.Get(specific_id);
   }
 
   auto CreateTypeFingerprint(SemIR::SpecificId specific_id,
-                             llvm::Type* llvm_type) -> void {
+                             llvm::Type* llvm_type, llvm::Type* sret_type)
+      -> void {
     llvm::BLAKE3 function_type_fingerprint;
     RawStringOstream os;
     llvm_type->print(os);
+    // With opaque pointers the LLVM function type does not distinguish an
+    // sret return of one object type from another: two specifics returning
+    // differently laid out objects both print as `void (ptr, ...)`. The sret
+    // pointee is part of the signature this gate must separate on. By-ref
+    // returns stay width-blind here deliberately: their pointer contract is
+    // visible in the body, so identical-instruction-stream merging remains
+    // semantically sound for them, unlike sret's callee-owned initialize.
+    if (sret_type != nullptr) {
+      os << "\nsret ";
+      sret_type->print(os);
+    }
     function_type_fingerprint.update(os.TakeStr());
     function_type_fingerprint.final(
         lowered_specifics_type_fingerprint_.Get(specific_id));
+    fingerprinted_types_.Insert(specific_id);
   }
 
  private:
+  // Returns whether both fingerprints exist for a specific in THIS coalescer's
+  // stores. An absent fingerprint reads as the stores' default value, and
+  // default == default compares equal, so equivalence checks must refuse any
+  // specific that was never fingerprinted here: absent = unknown = do not
+  // merge. Membership is tracked by id value (not by indexing the stores), so
+  // an id minted by a different file's SpecificStore — which would index a
+  // garbage slot through this file's id tag — safely reads as absent.
+  auto HasBothFingerprints(SemIR::SpecificId specific_id) -> bool {
+    return fingerprinted_types_.Contains(specific_id) &&
+           fingerprinted_bodies_.Contains(specific_id);
+  }
+
   // While coalescing specifics, returns whether the function types for two
   // specifics are equivalent. This uses a fingerprint generated for each
-  // function type.
+  // function type. A specific with no type fingerprint recorded is never
+  // equivalent to anything.
   auto AreFunctionTypesEquivalent(SemIR::SpecificId specific_id1,
                                   SemIR::SpecificId specific_id2) -> bool;
 
@@ -156,6 +184,15 @@ class SpecificCoalescer {
   // TODO: Revisit this due to its quadratic space growth.
   Set<std::pair<SemIR::SpecificId, SemIR::SpecificId>>
       non_equivalent_specifics_;
+
+  // Specifics whose type fingerprint was written into
+  // `lowered_specifics_type_fingerprint_`, and specifics whose body
+  // fingerprint in `lowered_specific_fingerprint_` was initialized for
+  // lowering in this file. Ids absent from either set must never be found
+  // equivalent to anything: their fingerprint slots hold the default value,
+  // which would spuriously compare equal to any other absent slot.
+  Set<SemIR::SpecificId> fingerprinted_types_;
+  Set<SemIR::SpecificId> fingerprinted_bodies_;
 };
 
 }  // namespace Carbon::Lower

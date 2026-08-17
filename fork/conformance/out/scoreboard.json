@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-17T19:36:19.204997+00:00",
+  "generated": "2026-08-17T20:24:33.227246+00:00",
   "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 7.5,
+  "elapsed_seconds": 10.7,
   "totals": {
-    "PASS": 83,
+    "PASS": 84,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
@@ -221,6 +221,13 @@
       "status": "PASS",
       "detail": "",
       "differential": false
+    },
+    {
+      "path": "error_handling/question_generic_diff.carbon",
+      "bullet": "Error handling: dedicated control flow constructs",
+      "status": "PASS",
+      "detail": "",
+      "differential": true
     },
     {
       "path": "error_handling/question_propagation_diff.carbon",
@@ -1093,6 +1100,7 @@
       "gap_status": "MISSING",
       "programs": [
         "error_handling/control_flow_constructs.carbon",
+        "error_handling/question_generic_diff.carbon",
         "error_handling/question_propagation_diff.carbon"
       ]
     },

@@ -40,9 +40,9 @@ let some: MaybeInt = MakeSome(42);
 // CHECK:STDOUT: ; ModuleID = 'mixed_payload_alternatives.carbon'
 // CHECK:STDOUT: source_filename = "mixed_payload_alternatives.carbon"
 // CHECK:STDOUT:
-// CHECK:STDOUT: @MaybeInt.val.173 = internal constant <{ <{ i2, [7 x i8] }>, [8 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 1, [7 x i8] poison }>, [8 x i8] poison }>
-// CHECK:STDOUT: @MaybeInt.val.4b9.loc20_17.6 = internal constant <{ <{ i2, [7 x i8] }>, [8 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 0, [7 x i8] poison }>, [8 x i8] poison }>
-// CHECK:STDOUT: @MaybeInt.val.173.loc22_10.12 = internal constant <{ <{ i2, [7 x i8] }>, [8 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 1, [7 x i8] poison }>, [8 x i8] poison }>
+// CHECK:STDOUT: @MaybeInt.val.173 = internal constant <{ <{ i2, [7 x i8] }>, [8 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 1, [7 x i8] zeroinitializer }>, [8 x i8] zeroinitializer }>
+// CHECK:STDOUT: @MaybeInt.val.4b9.loc20_17.6 = internal constant <{ <{ i2, [7 x i8] }>, [8 x i8] }> zeroinitializer
+// CHECK:STDOUT: @MaybeInt.val.173.loc22_10.12 = internal constant <{ <{ i2, [7 x i8] }>, [8 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 1, [7 x i8] zeroinitializer }>, [8 x i8] zeroinitializer }>
 // CHECK:STDOUT: @llvm.global_ctors = appending global [1 x { i32, ptr, ptr }] [{ i32, ptr, ptr } { i32 0, ptr @_C__global_init.Main, ptr null }]
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind

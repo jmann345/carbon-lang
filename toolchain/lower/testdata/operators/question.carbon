@@ -81,14 +81,14 @@ fn Both(n: i32, m: i64) -> MyResult(i64, i32) {
 // CHECK:STDOUT: ; ModuleID = 'propagate.carbon'
 // CHECK:STDOUT: source_filename = "propagate.carbon"
 // CHECK:STDOUT:
-// CHECK:STDOUT: @MyResult.val.30e.loc3_35.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 false, [3 x i8] poison }>, [4 x i8] poison }>
-// CHECK:STDOUT: @MyResult.val.df1.loc3_35.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] poison }>
-// CHECK:STDOUT: @MyResult.val.9f4.loc3_35.7 = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 false, [7 x i8] poison }>, [8 x i8] poison }>
-// CHECK:STDOUT: @MyResult.val.142.loc3_35.7 = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 true, [7 x i8] poison }>, [8 x i8] poison }>
-// CHECK:STDOUT: @ControlFlow.val.f6c.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 false, [3 x i8] poison }>, [4 x i8] poison }>
-// CHECK:STDOUT: @ControlFlow.val.493.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] poison }>, [4 x i8] poison }>
-// CHECK:STDOUT: @ControlFlow.val.fa9.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 false, [7 x i8] poison }>, [8 x i8] poison }>
-// CHECK:STDOUT: @ControlFlow.val.d01.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 true, [7 x i8] poison }>, [8 x i8] poison }>
+// CHECK:STDOUT: @MyResult.val.30e.loc3_35.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> zeroinitializer
+// CHECK:STDOUT: @MyResult.val.df1.loc3_35.7 = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @MyResult.val.9f4.loc3_35.7 = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> zeroinitializer
+// CHECK:STDOUT: @MyResult.val.142.loc3_35.7 = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 true, [7 x i8] zeroinitializer }>, [8 x i8] zeroinitializer }>
+// CHECK:STDOUT: @ControlFlow.val.f6c.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> zeroinitializer
+// CHECK:STDOUT: @ControlFlow.val.493.anon = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }> <{ <{ i1, [3 x i8] }> <{ i1 true, [3 x i8] zeroinitializer }>, [4 x i8] zeroinitializer }>
+// CHECK:STDOUT: @ControlFlow.val.fa9.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> zeroinitializer
+// CHECK:STDOUT: @ControlFlow.val.d01.anon = internal constant <{ <{ i1, [7 x i8] }>, [8 x i8] }> <{ <{ i1, [7 x i8] }> <{ i1 true, [7 x i8] zeroinitializer }>, [8 x i8] zeroinitializer }>
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_COpen.Main(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %n) #0 !dbg !4 {
@@ -490,7 +490,7 @@ fn Both(n: i32, m: i64) -> MyResult(i64, i32) {
 // CHECK:STDOUT:   ret void, !dbg !177
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.done:                                       ; preds = %match.case.else.loc19
-// CHECK:STDOUT:   call void @_CDiverge.Main.9bba81283511934f(ptr %return), !dbg !178
+// CHECK:STDOUT:   call void @_CDiverge.Main.fc3567e4618671b9(ptr %return), !dbg !178
 // CHECK:STDOUT:   ret void, !dbg !179
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -556,6 +556,13 @@ fn Both(n: i32, m: i64) -> MyResult(i64, i32) {
 // CHECK:STDOUT:   ret void, !dbg !203
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr void @_CDiverge.Main.fc3567e4618671b9(ptr sret(<{ <{ i1, [7 x i8] }>, [8 x i8] }>) %return) #0 !dbg !204 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @_CDiverge.Main.fc3567e4618671b9(ptr %return), !dbg !205
+// CHECK:STDOUT:   ret void, !dbg !206
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
 // CHECK:STDOUT: uselistorder ptr @"_COp.5e27612b9dd31a14:core.Destroy.Core", { 0, 1, 2, 4, 3 }
 // CHECK:STDOUT: uselistorder ptr @"_COp.95f7b1df2e915936:core.Destroy.Core", { 0, 1, 2, 4, 3 }
@@ -569,7 +576,6 @@ fn Both(n: i32, m: i64) -> MyResult(i64, i32) {
 // CHECK:STDOUT: uselistorder ptr @"_CBranch.MyResult.f15b7207a8078ef6.Main:Try.Core.8122a03446648385", { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @"_CFromBreak.MyResult.f15b7207a8078ef6.Main:Try.Core.b7dd877894074427", { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @llvm.memcpy.p0.p0.i64, { 0, 1, 2, 3, 7, 6, 5, 4 }
-// CHECK:STDOUT: uselistorder ptr @_CDiverge.Main.9bba81283511934f, { 1, 2, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
@@ -781,4 +787,7 @@ fn Both(n: i32, m: i64) -> MyResult(i64, i32) {
 // CHECK:STDOUT: !201 = !{!202}
 // CHECK:STDOUT: !202 = !DILocalVariable(arg: 1, scope: !200, type: !8)
 // CHECK:STDOUT: !203 = !DILocation(line: 21, column: 1, scope: !200)
+// CHECK:STDOUT: !204 = distinct !DISubprogram(name: "Diverge", linkageName: "_CDiverge.Main.fc3567e4618671b9", scope: null, file: !1, line: 13, type: !191, spFlags: DISPFlagDefinition, unit: !0)
+// CHECK:STDOUT: !205 = !DILocation(line: 13, column: 45, scope: !204)
+// CHECK:STDOUT: !206 = !DILocation(line: 13, column: 38, scope: !204)
 // CHECK:STDOUT:

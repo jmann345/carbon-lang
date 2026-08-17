@@ -328,7 +328,7 @@ auto FileContext::HandleReferencedCppFunction(clang::FunctionDecl* cpp_decl)
 
 auto FileContext::HandleReferencedSpecificFunction(
     SemIR::FunctionId function_id, SemIR::SpecificId specific_id,
-    llvm::Type* llvm_type) -> void {
+    llvm::Type* llvm_type, llvm::Type* sret_type) -> void {
   CARBON_CHECK(specific_id.has_value());
 
   // Add this specific function to a list of specific functions whose
@@ -343,7 +343,7 @@ auto FileContext::HandleReferencedSpecificFunction(
   // For now, we compute the function type fingerprint only for specifics,
   // though we might need it for all functions in order to create a canonical
   // fingerprint across translation units.
-  coalescer_.CreateTypeFingerprint(specific_id, llvm_type);
+  coalescer_.CreateTypeFingerprint(specific_id, llvm_type, sret_type);
 }
 
 auto FileContext::GetOrCreateLLVMFunction(
@@ -370,7 +370,17 @@ auto FileContext::GetOrCreateLLVMFunction(
   std::string mangled_name = m.Mangle(function_id, specific_id);
   if (auto* existing = llvm_module().getFunction(mangled_name)) {
     // We might have already lowered this function while lowering a different
-    // file. That's OK.
+    // file. That's OK, but a specific must still get a type fingerprint in
+    // this file's coalescer: its id can be recorded as a callee of bodies
+    // lowered in this file, and the coalescer must never compare it through
+    // an absent (default) fingerprint. The definition is not re-registered —
+    // the file that created the function owns lowering its body, and this
+    // specific's body fingerprint stays absent here, which the coalescer
+    // treats as not-coalescable.
+    if (specific_id.has_value()) {
+      coalescer_.CreateTypeFingerprint(specific_id, function_type_info.type,
+                                       function_type_info.sret_type);
+    }
     // TODO: If the prior function was inexact and the new one is not, we should
     // lower this new one and replace the existing function with it.
     // TODO: Check-fail or maybe diagnose if the two LLVM functions are not
@@ -386,7 +396,8 @@ auto FileContext::GetOrCreateLLVMFunction(
   // emit its definition.
   if (specific_id.has_value()) {
     HandleReferencedSpecificFunction(function_id, specific_id,
-                                     function_type_info.type);
+                                     function_type_info.type,
+                                     function_type_info.sret_type);
   }
 
   auto* llvm_function = llvm::Function::Create(function_type_info.type,

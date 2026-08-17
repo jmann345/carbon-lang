@@ -1,1 +1,1 @@
-2026-08-17T22:20Z staging conformance non-regression (expect 83/0/30 over 113; earlier run raced the push-back)
+2026-08-18T02:50Z final conformance confirmation on the B2a merge head (expect 84/0/30 over 114)

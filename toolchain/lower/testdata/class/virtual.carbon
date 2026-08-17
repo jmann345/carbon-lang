@@ -272,7 +272,7 @@ fn Use() {
 // CHECK:STDOUT: @"_CDerived.Classes.$vtable" = external unnamed_addr constant ptr
 // CHECK:STDOUT: @Base.val.loc7_3 = internal constant {} zeroinitializer
 // CHECK:STDOUT: @Intermediate.val.54b.loc8_3 = internal constant { ptr, {} } { ptr @"_CIntermediate.Classes.$vtable", {} zeroinitializer }
-// CHECK:STDOUT: @Derived.val.loc9_49.5 = internal constant { { ptr, {} } } { { ptr, {} } { ptr poison, {} zeroinitializer } }
+// CHECK:STDOUT: @Derived.val.loc9_49.5 = internal constant { { ptr, {} } } zeroinitializer
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CCreate.Create() #0 !dbg !4 {
@@ -432,7 +432,7 @@ fn Use() {
 // CHECK:STDOUT:   %.loc11_36.1.base = getelementptr inbounds nuw { ptr, {} }, ptr %return, i32 0, i32 1, !dbg !10
 // CHECK:STDOUT:   call void @_CMakePartialBase.Main(ptr %.loc11_36.1.base), !dbg !11
 // CHECK:STDOUT:   %.loc11_36.3.vptr = getelementptr inbounds nuw { ptr, {} }, ptr %return, i32 0, i32 0, !dbg !10
-// CHECK:STDOUT:   store ptr poison, ptr %.loc11_36.3.vptr, align 8, !dbg !10
+// CHECK:STDOUT:   store ptr null, ptr %.loc11_36.3.vptr, align 8, !dbg !10
 // CHECK:STDOUT:   ret void, !dbg !12
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -632,7 +632,7 @@ fn Use() {
 // CHECK:STDOUT:
 // CHECK:STDOUT: @"_CBase.Main.$vtable" = unnamed_addr constant [1 x i32] [i32 trunc (i64 sub (i64 ptrtoint (ptr @_CF.Base.Main to i64), i64 ptrtoint (ptr @"_CBase.Main.$vtable" to i64)) to i32)]
 // CHECK:STDOUT: @"_CDerived.Main.$vtable" = unnamed_addr constant [1 x i32] [i32 trunc (i64 sub (i64 ptrtoint (ptr @_CF.Base.Main to i64), i64 ptrtoint (ptr @"_CDerived.Main.$vtable" to i64)) to i32)]
-// CHECK:STDOUT: @Derived.val.loc13_32.5 = internal constant { { ptr } } poison
+// CHECK:STDOUT: @Derived.val.loc13_32.5 = internal constant { { ptr } } zeroinitializer
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @_CF.Base.Main(ptr)
 // CHECK:STDOUT:
@@ -763,7 +763,7 @@ fn Use() {
 // CHECK:STDOUT:
 // CHECK:STDOUT: @"_CBase.Main.$vtable" = unnamed_addr constant [1 x i32] [i32 trunc (i64 sub (i64 ptrtoint (ptr @_CF.Base.Main to i64), i64 ptrtoint (ptr @"_CBase.Main.$vtable" to i64)) to i32)]
 // CHECK:STDOUT: @"_CDerived.Main.$vtable" = unnamed_addr constant [1 x i32] [i32 trunc (i64 sub (i64 ptrtoint (ptr @"_CF:thunk:Base.Main:Derived.Main" to i64), i64 ptrtoint (ptr @"_CDerived.Main.$vtable" to i64)) to i32)]
-// CHECK:STDOUT: @Derived.val.loc14_32.5 = internal constant { { ptr } } poison
+// CHECK:STDOUT: @Derived.val.loc14_32.5 = internal constant { { ptr } } zeroinitializer
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @_CF.Base.Main(ptr)
 // CHECK:STDOUT:
@@ -1124,7 +1124,7 @@ fn Use() {
 // CHECK:STDOUT: @"_CDerived.Main.$vtable" = unnamed_addr constant [1 x i32] [i32 trunc (i64 sub (i64 ptrtoint (ptr @"_CF:thunk:Base.Main:Derived.Main" to i64), i64 ptrtoint (ptr @"_CDerived.Main.$vtable" to i64)) to i32)]
 // CHECK:STDOUT: @From.val = internal constant {} zeroinitializer
 // CHECK:STDOUT: @From.val.loc18_14 = internal constant {} zeroinitializer
-// CHECK:STDOUT: @Derived.val.loc23_31.5 = internal constant { { ptr } } poison
+// CHECK:STDOUT: @Derived.val.loc23_31.5 = internal constant { { ptr } } zeroinitializer
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @"_CConvert.From.Main:ImplicitAs.a3bb440f6426a7d6.Core"(ptr sret({}), ptr)
 // CHECK:STDOUT:

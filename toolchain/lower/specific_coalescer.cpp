@@ -199,6 +199,14 @@ auto SpecificCoalescer::IsKnownEquivalence(SemIR::SpecificId specific_id1,
 auto SpecificCoalescer::AreFunctionTypesEquivalent(
     SemIR::SpecificId specific_id1, SemIR::SpecificId specific_id2) -> bool {
   CARBON_CHECK(specific_id1.has_value() && specific_id2.has_value());
+  // An absent fingerprint is the store's default value and would compare
+  // equal to any other absent fingerprint: absent = unknown = do not merge.
+  // The membership check must precede the Get calls — an id from another
+  // file's SpecificStore would index a garbage slot through this file's tag.
+  if (!fingerprinted_types_.Contains(specific_id1) ||
+      !fingerprinted_types_.Contains(specific_id2)) {
+    return false;
+  }
   return lowered_specifics_type_fingerprint_.Get(specific_id1) ==
          lowered_specifics_type_fingerprint_.Get(specific_id2);
 }
@@ -213,6 +221,16 @@ auto SpecificCoalescer::AreFunctionBodiesEquivalent(
   while (!worklist.empty()) {
     auto outer_pair = worklist.pop_back_val();
     auto [specific_id1, specific_id2] = outer_pair;
+
+    // A specific with no fingerprints in this file's stores must never be
+    // found equivalent: absent = unknown = do not merge. This also keeps ids
+    // from other files' SpecificStores out of the Get calls below, which
+    // would index garbage slots through this file's tag.
+    if (!HasBothFingerprints(specific_id1) ||
+        !HasBothFingerprints(specific_id2)) {
+      InsertPair(specific_id1, specific_id2, non_equivalent_specifics_);
+      return false;
+    }
 
     auto state1 = lowered_specific_fingerprint_.Get(specific_id1);
     auto state2 = lowered_specific_fingerprint_.Get(specific_id2);
@@ -234,8 +252,24 @@ auto SpecificCoalescer::AreFunctionBodiesEquivalent(
         if (ContainsPair(state1_call, state2_call, non_equivalent_specifics_)) {
           return false;
         }
+        // Callee pairs enter the closure from recorded call lists, which can
+        // carry ids this file never fingerprinted (including ids from other
+        // files' SpecificStores). Refuse them before any store access:
+        // absent = unknown = do not merge.
+        if (!HasBothFingerprints(state1_call) ||
+            !HasBothFingerprints(state2_call)) {
+          InsertPair(state1_call, state2_call, non_equivalent_specifics_);
+          return false;
+        }
         if (IsKnownEquivalence(state1_call, state2_call)) {
           continue;
+        }
+        // The type gate applies to every pair this closure can commit, not
+        // only the root pair: callee specifics whose bodies fingerprint
+        // identically can still differ in signature (sret pointee).
+        if (!AreFunctionTypesEquivalent(state1_call, state2_call)) {
+          InsertPair(state1_call, state2_call, non_equivalent_specifics_);
+          return false;
         }
         if (!InsertPair(state1_call, state2_call,
                         visited_equivalent_specifics)) {

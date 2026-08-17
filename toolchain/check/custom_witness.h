@@ -43,6 +43,20 @@ auto BuildTrivialDestroyWitness(
     SemIR::ConstantId query_self_const_id,
     SemIR::SpecificInterfaceId query_specific_interface_id) -> SemIR::InstId;
 
+// Returns true if destroying a value of the given concrete, complete type is
+// trivially a no-op. This is the destroy machinery's own `DestroyFormat`
+// classification (`CanDestroyType`, behind `LookupDestroyWitness`) extended
+// through composition: that query answers `NonTrivial` for every destroyable
+// aggregate because its synthesized `Destroy.Op` is a placeholder, so this
+// walk recurses where it would look up member witnesses and keeps its scalar
+// `Trivial` arm as the base case. C++-owned classes (destroyed by their
+// imported destructor), choice types, and classes covered by a user-declared
+// `Core.Destroy` impl are never trivially destructible. Consumer: the C++
+// export triviality predicate (`IsTriviallyCopyableForExport`,
+// check/cpp/export.cpp) — the single trivially-copyable predicate of W-006
+// coherence risk 7 (fork/f008/plan.md §2.2).
+auto IsTriviallyDestructible(Context& context, SemIR::TypeId type_id) -> bool;
+
 // Given an interface, returns the corresponding enum if it's covered by
 // `CoreInterface`, or `Unknown` if it's some other interface.
 auto GetCoreInterface(Context& context, SemIR::InterfaceId interface_id)

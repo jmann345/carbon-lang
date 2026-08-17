@@ -16,6 +16,7 @@
 #include "toolchain/check/cpp/import.h"
 #include "toolchain/check/cpp/location.h"
 #include "toolchain/check/cpp/type_mapping.h"
+#include "toolchain/check/custom_witness.h"
 #include "toolchain/check/facet_type.h"
 #include "toolchain/check/function.h"
 #include "toolchain/check/generic.h"
@@ -1516,6 +1517,26 @@ static auto HasAnyAbstractMethods(Context& context,
     }
   }
   return false;
+}
+
+auto IsTriviallyCopyableForExport(Context& context,
+                                  const SemIR::Class& class_info,
+                                  SemIR::ClassType class_type) -> bool {
+  // Generic classes and specifics keep the existing (separately gated)
+  // destructor-export path.
+  if (class_info.generic_id.has_value() || class_type.specific_id.has_value()) {
+    return false;
+  }
+  // Bases, dynamic classes, and abstract classes have non-trivial special
+  // members or need the (possibly pure-virtual) destructor declaration.
+  if (class_info.base_id.has_value() || class_info.vtable_decl_id.has_value() ||
+      class_info.is_dynamic ||
+      class_info.inheritance_kind == SemIR::Class::InheritanceKind::Abstract) {
+    return false;
+  }
+  // The destroy half rides the destroy machinery's own classification
+  // (W-006 risk 7: one predicate, not a parallel walk).
+  return IsTriviallyDestructible(context, class_info.self_type_id);
 }
 
 auto ExportDestructorToCpp(Context& context, const SemIR::Class& class_info,

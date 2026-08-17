@@ -485,8 +485,16 @@ auto CarbonExternalASTSource::CompleteType(clang::TagDecl* tag_decl) -> void {
 
   // TODO: support exporting destructors for generic classes.
   if (!llvm::isa<clang::ClassTemplateSpecializationDecl>(class_decl)) {
-    class_decl->addDecl(
-        ExportDestructorToCpp(*context_, class_info, class_decl));
+    // A class that is trivially copyable for export gets NO destructor
+    // declaration: Clang's implicitly-declared special members then stay
+    // trivial, so `__is_trivially_copyable` genuinely holds and libc++'s
+    // `std::atomic<T>` triviality gate accepts the class (defect TA-D2,
+    // W-021, fork/f008/plan.md §2.2). Other classes keep the thunk-bodied
+    // destructor calling the Carbon `Destroy` operator.
+    if (!IsTriviallyCopyableForExport(*context_, class_info, class_type)) {
+      class_decl->addDecl(
+          ExportDestructorToCpp(*context_, class_info, class_decl));
+    }
   }
 
   // TODO: Import any special member functions that affect class properties.

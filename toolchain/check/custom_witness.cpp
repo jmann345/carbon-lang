@@ -368,6 +368,133 @@ static auto CanDestroyType(
   }
 }
 
+// Returns true if a user-declared `impl` of `Core.Destroy` covers the given
+// self constant. This scans the same impl population `LookupImplWitness`'s
+// candidate collection enumerates for a destroy query in this file; an inline
+// `impl as Core.Destroy` is present once its class is complete. A symbolic
+// impl self (an `impl forall` blanket) is conservatively treated as covering.
+// Today such an impl is inert for classes — the custom witness wins the
+// lookup — so this is a forward-looking guard: it keeps a class that declares
+// destruction work out of the trivially-destructible set before destroy-op
+// synthesis makes that work real.
+static auto HasUserDestroyImpl(Context& context,
+                               SemIR::ConstantId self_const_id) -> bool {
+  for (auto [_, impl] : context.impls().enumerate()) {
+    if (!impl.interface.interface_id.has_value() ||
+        GetCoreInterface(context, impl.interface.interface_id) !=
+            SemIR::CoreInterface::Destroy) {
+      continue;
+    }
+    auto impl_self_const_id = context.constant_values().Get(impl.self_id);
+    if (impl_self_const_id.is_symbolic() ||
+        impl_self_const_id == self_const_id) {
+      return true;
+    }
+  }
+  return false;
+}
+
+auto IsTriviallyDestructible(Context& context, SemIR::TypeId type_id) -> bool {
+  auto inst = context.types().GetAsInst(type_id);
+  CARBON_KIND_SWITCH(inst) {
+    case CARBON_KIND(SemIR::ArrayType array_type): {
+      // A zero element array is always trivially destructible, matching
+      // `CanDestroyType`.
+      if (auto int_bound =
+              context.sem_ir().GetZExtIntValue(array_type.bound_id);
+          int_bound && *int_bound == 0) {
+        return true;
+      }
+      return IsTriviallyDestructible(context,
+                                     context.types().GetTypeIdForTypeInstId(
+                                         array_type.element_type_inst_id));
+    }
+
+    case CARBON_KIND(SemIR::ClassType class_type): {
+      const auto& class_info = context.classes().Get(class_type.class_id);
+      // A C++-owned class is destroyed by its imported C++ destructor
+      // (`BuildDestroyWitness` in cpp/impl_lookup.cpp); never assume
+      // triviality for it.
+      if (context.name_scopes().Get(class_info.scope_id).is_cpp_scope()) {
+        return false;
+      }
+      // Choice types have their own destroy handling (`CanDestroyClass`'s
+      // choice clause); leave them non-trivial here.
+      if (class_info.is_choice) {
+        return false;
+      }
+      if (HasUserDestroyImpl(context,
+                             context.constant_values().Get(
+                                 context.types().GetTypeInstId(type_id)))) {
+        return false;
+      }
+      // Recurse into the adapted type or the object representation — the
+      // same dispatch `CanDestroyClass` uses for its member walk.
+      auto object_repr_id =
+          class_info.GetAdaptedType(context.sem_ir(), class_type.specific_id);
+      if (!object_repr_id.has_value()) {
+        object_repr_id =
+            class_info.GetObjectRepr(context.sem_ir(), class_type.specific_id);
+      }
+      if (!object_repr_id.has_value() || !object_repr_id.is_concrete()) {
+        return false;
+      }
+      return IsTriviallyDestructible(context, object_repr_id);
+    }
+
+    case CARBON_KIND(SemIR::ConstType const_type): {
+      return IsTriviallyDestructible(
+          context, context.types().GetTypeIdForTypeInstId(const_type.inner_id));
+    }
+
+    case CARBON_KIND(SemIR::MaybeUnformedType maybe_unformed_type): {
+      return IsTriviallyDestructible(
+          context,
+          context.types().GetTypeIdForTypeInstId(maybe_unformed_type.inner_id));
+    }
+
+    case CARBON_KIND(SemIR::StructType struct_type): {
+      for (const auto& field :
+           context.struct_type_fields().Get(struct_type.fields_id)) {
+        if (!IsTriviallyDestructible(
+                context,
+                context.types().GetTypeIdForTypeInstId(field.type_inst_id))) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    case CARBON_KIND(SemIR::TupleType tuple_type): {
+      llvm::ArrayRef<SemIR::InstId> element_inst_ids =
+          context.inst_blocks().Get(tuple_type.type_elements_id);
+      for (auto element_type_id :
+           context.types().GetBlockAsTypeIds(element_inst_ids)) {
+        if (!IsTriviallyDestructible(context, element_type_id)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    case SemIR::BoolType::Kind:
+    case SemIR::FloatType::Kind:
+    case SemIR::IntLiteralType::Kind:
+    case SemIR::IntType::Kind:
+    case SemIR::PointerType::Kind:
+      // `CanDestroyType`'s scalar `DestroyFormat::Trivial` arm.
+      return true;
+
+    default:
+      // Everything else (facet types, symbolic types, function types, ...) is
+      // not known to be trivially destructible; callers keep their
+      // conservative path. Deliberately narrower than `CanDestroyType`'s
+      // `Trivial` arm: the non-object types it also classifies (`type`, facet
+      // types, `FormType`) cannot be object fields of an exported class.
+      return false;
+  }
+}
+
 // Returns the body for `Destroy.Op`.
 //
 // TODO: This is a placeholder still not actually destroying things, intended to

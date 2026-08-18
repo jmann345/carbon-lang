@@ -1985,6 +1985,58 @@ regenerated; --self-test OK (122 programs). Expected floor: EXACTLY
 program's PASS — any other movement re-opens W-068 (R9 hedge; status
 DISCHARGE-STAGED in the inventory). Veto-able.
 
+_W-068 review-round amendment (2026-08-18, the W-068 fixer):_ Both
+adversarial reviews came back clean: reviewer A APPROVE with zero
+should-fixes after tracing every caller of the new gate, reviewer B no
+blockers with the R16a flip-sanction independently verified against the
+old fail_todo pins. CI evidence chain: fast compile run
+<https://github.com/jmann345/carbon-lang/actions/runs/32123492856>; the
+runner autoupdate run
+<https://github.com/jmann345/carbon-lang/actions/runs/32123657954>
+reconciled the goldens (+1311 lines) with a NO-COMMIT pass-2 fixpoint run
+<https://github.com/jmann345/carbon-lang/actions/runs/32123793539>; the
+gate ran GREEN
+(<https://github.com/jmann345/carbon-lang/actions/runs/32123926260>); the
+conformance run
+(<https://github.com/jmann345/carbon-lang/actions/runs/32123926356>)
+landed the floor at EXACTLY **93 PASS / 0 FAIL / 29 SKIP over 122**,
+moving only by control_flow/match_single_alternative.carbon's PASS.
+Reviewer A's residual "asserted, not executed" risk is discharged by
+these runs, including B's verification that the reconciled lower golden
+shows the claimed no-discriminant dispatch shape (`br i1 true`, no icmp,
+real payload GEP). _Hook-environment note (flagged by the implementer;
+the landed diff dropped it):_ the container's distro clang-format is
+18.1.3 while the R18 edit-hook comment claims it matches CI — CI pins
+21.1.8 — and the implementer installed the pinned version manually;
+recorded here so the next slice doesn't rediscover it (a hook-environment
+fix is follow-up material, not this slice's scope). _Corrections of
+record:_ (1) the landing note's "flipped (git mv)" overstates — git
+records the flip as delete+add with a substantial rewrite (2 → 4
+subfiles, coverage added, nothing lost; the old fail_empty_choice
+territory is covered by empty_choice.carbon); (2) the landing note's R17
+citation for the zero-arm cut was a stretch — the actual grounding (no
+design grammar + deliberately unconstructible values) stands alone.
+_Accepted residue (recorded, not actioned):_ two stale golden header
+comments still name `GetChoiceDiscriminantType` where the gate now reads
+`IsMatchableChoiceType` (check/testdata/match/choice_generic_scrutinee.carbon:16
+and choice_generic_payload_scrutinee.carbon:78) — comment-only staleness;
+a retext rides any future touch of those goldens rather than costing a
+regen round now. _Inventory hedge parity:_ W-008's fewer-than-two
+sentence now carries the run-evidence qualifier (gate 32123926260 +
+conformance 32123926356 green) for parity with W-010's wording, and the
+W-068 entry's silently-shortened scope sentence and W5-S3a pin-flip
+obligation are restored with explicit amendment markers. Veto-able.
+
+_W-068 discharge confirmation (2026-08-18, coordinator):_ Every staged
+condition is met: the landing runner autoupdate reconciled the
+new/flipped goldens (run 32123657954) and pass 2 confirmed the R26
+NO-COMMIT fixpoint (run 32123793539); fast compile green (run
+32123492856); the gate ran GREEN (run 32123926260); and the conformance
+floor moved to EXACTLY **93 PASS / 0 FAIL / 29 SKIP over 122** (run
+32123926356) with the movement being ONLY the new program
+control_flow/match_single_alternative.carbon's PASS. **W-068 is
+DISCHARGED.** Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

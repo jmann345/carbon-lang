@@ -109,7 +109,17 @@ auto HandleMatchCaseLoop(Context& context) -> void {
     context.PushState(StateKind::MatchCaseLoop);
     context.PushState(StateKind::MatchCaseIntroducer);
   } else if (context.PositionIs(Lex::TokenKind::Default)) {
-    context.PushState(StateKind::MatchCaseLoopAfterDefault);
+    // Only an unguarded `default` matches unconditionally and ends the arm
+    // list; a guarded `default` (`default if (E) => ...`) can fail its
+    // guard, so arms after it remain reachable and the loop continues
+    // (docs/design/pattern_matching.md, "Refutability, overlap, usefulness,
+    // and exhaustiveness": a guard on any prior pattern is assumed able to
+    // evaluate to false).
+    if (context.PositionKind(Lookahead::NextToken) == Lex::TokenKind::If) {
+      context.PushState(StateKind::MatchCaseLoop);
+    } else {
+      context.PushState(StateKind::MatchCaseLoopAfterDefault);
+    }
     context.PushState(StateKind::MatchDefaultIntroducer);
   } else if (!context.PositionIs(Lex::TokenKind::CloseCurlyBrace)) {
     EmitUnexpectedTokenAndRecover(context);
@@ -120,6 +130,9 @@ auto HandleMatchCaseLoop(Context& context) -> void {
 auto HandleMatchCaseLoopAfterDefault(Context& context) -> void {
   context.PopAndDiscardState();
 
+  // This state is entered only after an UNGUARDED `default`, which matches
+  // unconditionally; a guarded `default` keeps the loop in `MatchCaseLoop`
+  // (see `HandleMatchCaseLoop`), because arms after it remain reachable.
   Lex::TokenKind kind = context.PositionKind();
   if (kind == Lex::TokenKind::Case or kind == Lex::TokenKind::Default) {
     CARBON_DIAGNOSTIC(UnreachableMatchCase, Error,
@@ -198,6 +211,47 @@ auto HandleMatchCaseAlternativePatternFinish(Context& context) -> void {
   }
 }
 
+// Parses a guard (`if (E)`) on a `case` or `default` arm; the position is at
+// the `if`. The caller has pushed the state that finishes the arm's label
+// (`MatchCaseStart` or `MatchGuardedDefaultStart`), whose label node kind is
+// `label_kind`; the guard's condition expression is queued, and
+// `MatchCaseGuardFinish` closes the guard at the `)`. On a malformed guard,
+// recovery closes the guard, the label, and the handler with error nodes and
+// skips past the arm.
+static auto HandleMatchGuard(Context& context, bool has_error,
+                             NodeKind label_kind) -> void {
+  context.PushState(StateKind::MatchCaseGuardFinish);
+  context.AddLeafNode(NodeKind::MatchCaseGuardIntroducer, context.Consume());
+  auto open_paren = context.ConsumeIf(Lex::TokenKind::OpenParen);
+  if (open_paren) {
+    context.AddLeafNode(NodeKind::MatchCaseGuardStart, *open_paren);
+    context.PushState(StateKind::Expr);
+  } else {
+    if (!has_error) {
+      CARBON_DIAGNOSTIC(ExpectedMatchCaseGuardOpenParen, Error,
+                        "expected `(` after `if`");
+      context.emitter().Emit(*context.position(),
+                             ExpectedMatchCaseGuardOpenParen);
+    }
+
+    context.AddLeafNode(NodeKind::MatchCaseGuardStart, *context.position(),
+                        /*has_error=*/true);
+    context.AddInvalidParse(*context.position());
+    context.PopAndDiscardState();
+    context.AddNode(NodeKind::MatchCaseGuard, *context.position(),
+                    /*has_error=*/true);
+    context.PopAndDiscardState();
+    context.AddNode(label_kind, *context.position(),
+                    /*has_error=*/true);
+    context.AddNode(NodeKind::MatchHandlerStart, *context.position(),
+                    /*has_error=*/true);
+    context.AddNode(NodeKind::MatchHandler, *context.position(),
+                    /*has_error=*/true);
+    context.SkipPastLikelyEnd(*context.position());
+    return;
+  }
+}
+
 auto HandleMatchCaseAfterPattern(Context& context) -> void {
   auto state = context.PopState();
   if (state.has_error) {
@@ -213,36 +267,7 @@ auto HandleMatchCaseAfterPattern(Context& context) -> void {
 
   context.PushState(state, StateKind::MatchCaseStart);
   if (context.PositionIs(Lex::TokenKind::If)) {
-    context.PushState(StateKind::MatchCaseGuardFinish);
-    context.AddLeafNode(NodeKind::MatchCaseGuardIntroducer, context.Consume());
-    auto open_paren = context.ConsumeIf(Lex::TokenKind::OpenParen);
-    if (open_paren) {
-      context.AddLeafNode(NodeKind::MatchCaseGuardStart, *open_paren);
-      context.PushState(StateKind::Expr);
-    } else {
-      if (!state.has_error) {
-        CARBON_DIAGNOSTIC(ExpectedMatchCaseGuardOpenParen, Error,
-                          "expected `(` after `if`");
-        context.emitter().Emit(*context.position(),
-                               ExpectedMatchCaseGuardOpenParen);
-      }
-
-      context.AddLeafNode(NodeKind::MatchCaseGuardStart, *context.position(),
-                          /*has_error=*/true);
-      context.AddInvalidParse(*context.position());
-      state = context.PopState();
-      context.AddNode(NodeKind::MatchCaseGuard, *context.position(),
-                      /*has_error=*/true);
-      state = context.PopState();
-      context.AddNode(NodeKind::MatchCase, *context.position(),
-                      /*has_error=*/true);
-      context.AddNode(NodeKind::MatchHandlerStart, *context.position(),
-                      /*has_error=*/true);
-      context.AddNode(NodeKind::MatchHandler, *context.position(),
-                      /*has_error=*/true);
-      context.SkipPastLikelyEnd(*context.position());
-      return;
-    }
+    HandleMatchGuard(context, state.has_error, NodeKind::MatchCase);
   }
 }
 
@@ -275,7 +300,24 @@ auto HandleMatchCaseStart(Context& context) -> void {
 auto HandleMatchDefaultIntroducer(Context& context) -> void {
   context.AddLeafNode(NodeKind::MatchDefaultIntroducer, context.Consume());
 
+  // A `default` arm accepts an optional guard, mirroring the `case` guard
+  // production: "this facility is also available for `default` clauses, so
+  // that `default` remains equivalent to `case _: auto`"
+  // (docs/design/pattern_matching.md, "Guards"; p2188:552-553). A guarded
+  // `default` is labeled `MatchGuardedDefault`, closed by
+  // `MatchGuardedDefaultStart` after the guard's `)`.
+  if (context.PositionIs(Lex::TokenKind::If)) {
+    auto state = context.PopState();
+    context.PushState(state, StateKind::MatchGuardedDefaultStart);
+    HandleMatchGuard(context, state.has_error, NodeKind::MatchGuardedDefault);
+    return;
+  }
+
   HandleMatchHandlerStart(context, NodeKind::MatchDefault);
+}
+
+auto HandleMatchGuardedDefaultStart(Context& context) -> void {
+  HandleMatchHandlerStart(context, NodeKind::MatchGuardedDefault);
 }
 
 auto HandleMatchHandlerFinish(Context& context) -> void {

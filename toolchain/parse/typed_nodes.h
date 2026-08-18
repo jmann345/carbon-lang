@@ -1009,11 +1009,24 @@ struct MatchDefault {
   Lex::EqualGreaterTokenIndex token;
 };
 
+// A guarded `default` arm (`default if (E) => ...`); unlike `MatchDefault`,
+// it can fail its guard, so it neither has to be the last arm nor
+// discharges the `default` requirement. The guard reuses the `case` guard's
+// node family.
+struct MatchGuardedDefault {
+  static constexpr auto Kind = NodeKind::MatchGuardedDefault.Define(
+      {.bracketed_by = MatchDefaultIntroducer::Kind, .child_count = 2});
+
+  MatchDefaultIntroducerId introducer;
+  MatchCaseGuardId guard;
+  Lex::EqualGreaterTokenIndex token;
+};
+
 struct MatchHandlerStart {
   static constexpr auto Kind =
       NodeKind::MatchHandlerStart.Define({.child_count = 1});
 
-  NodeIdOneOf<MatchCase, MatchDefault> label;
+  NodeIdOneOf<MatchCase, MatchDefault, MatchGuardedDefault> label;
   Lex::OpenCurlyBraceTokenIndex token;
 };
 

@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-18T04:08:31.932494+00:00",
+  "generated": "2026-08-18T07:23:34.088623+00:00",
   "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 8.1,
+  "elapsed_seconds": 11.6,
   "totals": {
-    "PASS": 91,
+    "PASS": 92,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
@@ -137,6 +137,13 @@
       "status": "PASS",
       "detail": "",
       "differential": true
+    },
+    {
+      "path": "control_flow/match_guarded_default.carbon",
+      "bullet": "Control flow: matching \u2014 good switch equivalents",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
     },
     {
       "path": "control_flow/match_no_fallthrough.carbon",
@@ -1108,6 +1115,7 @@
       "programs": [
         "control_flow/match_guard_binding.carbon",
         "control_flow/match_guard_diff.carbon",
+        "control_flow/match_guarded_default.carbon",
         "control_flow/match_no_fallthrough.carbon",
         "control_flow/match_position.carbon",
         "control_flow/match_switch.carbon",

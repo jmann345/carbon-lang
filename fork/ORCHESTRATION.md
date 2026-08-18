@@ -10,8 +10,27 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-18 (post-PR #27: W-068 — match over small
-choices, DISCHARGED)._ TWENTY-SEVEN PRs. Single-alternative and empty
+_Last updated: 2026-08-18 (post-PR #28: the W-069 workstream —
+cross-file runtime `let`, DISCHARGED)._ TWENTY-EIGHT PRs. The
+three-slice workstream closed an upstream-acknowledged gap: W69a's
+lowering-side promotion (lane a1 — exported backing storage minted at
+lowering, SemIR/import_ref untouched, GetValue routing reachable only
+where the old CHECK crashed), W69h's multi-unit conformance capability
+(directory programs, per-unit compile mirroring upstream's bazel rule,
+byte-identical rerun arbiter), and W69b's pointer-rep arm + the
+restored runtime `let g` acceptance split + BOTH discharge arbiters
+incl. the fork's FIRST multi-unit program. Floor **95/0/29 over 124**
+(evidenced twice, addition-only), 43/56 bullets. Twelve review rounds;
+three honest defect rounds rode the close (W-074 export-x crash minted;
+W-075 alternative-constant copy gap minted; the pre-existing
+AcquireValue folded-ref crash FIXED fenced; aggregate-consumption
+residue recorded). The _C<name>.<package> let-storage symbol shape is a
+divergence-register entry reviewed at each weekly merge; the
+three-golden PromoteObject churn was adjudicated accept-and-declare
+(R-7's falsifier fired as designed). Next: W-074/W-075 (new S
+candidates), the library_multifile_export un-SKIP follow-up (unblocked
+by W69h), conformance depth; W-066 stays blocked on W-008._
+TWENTY-SEVEN PRs. Single-alternative and empty
 choices now pass the match scrutinee gate: the discriminant repr walk
 factored into a shared query (`IsMatchableChoiceType` — integer OR
 empty-tuple discriminant, anything else fails safe), constant-true
@@ -211,16 +230,16 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-93 PASS / 29 SKIP / 0 FAIL programs (122 total, 18 differential
-C++-oracle pairs); **43/56 bullets green** (runner-side scoreboard at
-the PR #27 head; verified from fork/conformance/out/scoreboard.json —
+95 PASS / 29 SKIP / 0 FAIL programs (124 total, 18 differential
+C++-oracle pairs, 1 multi-unit); **43/56 bullets green** (runner-side
+scoreboard at the PR #28 head; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first
 error-handling flip, now 4 programs deep incl. the W72b threading
 arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79
 at S3a → 80 at S3b → 81 at S3c → 83 at B1b
 (error_handling/control_flow_constructs flip +
 question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a
-→ 88 F8b → 89 F8c → 90 F8d → 91 W72b → 92 W-067 → 93 W-068. The scoreboard
+→ 88 F8b → 89 F8c → 90 F8d → 91 W72b → 92 W-067 → 93 W-068 → 95 W-069. The scoreboard
 regenerates on the runner (`Fork: conformance suite`,
 fork/conformance-request.txt trigger).
 
@@ -242,11 +261,12 @@ fork/conformance-request.txt trigger).
 
 ### Next actions (dependency order)
 
-1.  The W-069 plan round (cross-file runtime `let` lowering — an
-    upstream gap, V-3a check first; size M, plan round before
-    implementation). W-066 (match usefulness diagnostics) stays blocked
-    on W-008; conformance depth (differential pairs for flipped bullets
-    lacking one) rides alongside.
+1.  New S-sized candidates from the W-069 close: W-074 (export-x
+    runtime-let crash — the sanctioned import_ref amendment round) and
+    W-075 (choice alternative-constant copy gap); the
+    library_multifile_export un-SKIP follow-up (adjudicated, unblocked
+    by W69h's multi-unit capability). W-066 stays blocked on W-008;
+    conformance depth rides alongside.
 2.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
     user's veto-digest response** (presented 2026-07-20, unanswered).
 3.  W5-S3p (prelude Result/Optional) stays GATED on the OPEN SF-9 fork

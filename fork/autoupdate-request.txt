@@ -1,1 +1,1 @@
-2026-08-18T10:00Z W-068 goldens red-first regen pass 1 (five check/lower goldens)
+2026-08-18T10:01Z W-068 regen pass 2 (R26 fixpoint)

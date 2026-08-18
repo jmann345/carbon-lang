@@ -17,7 +17,7 @@ non-generic non-member Carbon function maps to a pointer to its
 exported decl, argument embedded as DeclRefExpr+decay, mapping
 confined to the call-argument path (a correctness-review blocker
 narrowed it; export-side function types still diagnose), same-signature
-thunk collisions probed and fixed via mangled-suffix asm labels.
+thunk collisions probed and fixed by way of mangled-suffix asm labels.
 90/0/29 over 119, 43/56 bullets. F-008 TOTALS: 4 slices, 4 PRs, 8
 adversarial reviews, 3 pre-merge blockers fixed, D1/D2/D3 all FIXED
 (W-021/022/023 discharged; W-020 doc half stays digest-gated). The

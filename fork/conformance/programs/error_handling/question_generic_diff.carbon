@@ -25,20 +25,28 @@
 // expectation. The `Branch` impl body uses the match-reconstruct style
 // (fork/b1/plan.md §2.6).
 //
-// SCOPE, honestly narrowed (W-072): what this pair arbitrates at runtime
-// is BREAK-path propagation — that each instantiation's `?` early-returns
-// at the runtime-selected depth with the right converted payload, riding
-// the B2a symbolic-choice destroy widening for its carrier and operand
-// temporaries. The `?` CONTINUE values are consumed through the check
-// golden's proven deduced-sink shape (`Discard`), NOT threaded onward as
-// `T`: under symbolic arguments the continue value types as the unreduced
-// projection `MyResult(T, i32).(Core.Try.ContinueType)` (the recorded
-// B2a wart, fork/decision-log.md landing note), so a `T`-annotated
-// binding does not check until projection rewrite-reduction lands
-// (W-072). The Ok payload is reconstructed from `x` — the identical
-// value, since `Step` passes `x` through — keeping the output table and
-// the layout-roundtrip observation intact; a continue-THREADING runtime
-// arbiter is W-072 follow-up material.
+// SCOPE (retexted at the W-072 dissolution, fork/w072/plan.md §3): what
+// this pair arbitrates at runtime is BREAK-path propagation — that each
+// instantiation's `?` early-returns at the runtime-selected depth with
+// the right converted payload, riding the B2a symbolic-choice destroy
+// widening for its carrier and operand temporaries. The `?` CONTINUE
+// values are consumed through the check golden's proven deduced-sink
+// shape (`Discard`) — a DESIGN CHOICE of this pair (kept unchanged per
+// R16), not a language limit. The honest two-part statement replacing
+// the earlier narrowing: (i) through this pair's NON-final impl the
+// continue value does type as the unreduced projection
+// `MyResult(T, i32).(Core.Try.ContinueType)` — that is upstream-DESIGNED
+// specialization soundness (docs/design/generics/details.md, "`final`
+// impl declarations"), not pending rewrite-reduction; (ii) under the
+// ratified doc's own `final impl` spelling
+// (docs/design/error_handling.md's `Try` sketches) the continue value
+// threads as `T` with no compiler change
+// (toolchain/check/testdata/operators/question_final.carbon). The Ok
+// payload is reconstructed from `x` — the identical value, since `Step`
+// passes `x` through — keeping the output table and the layout-roundtrip
+// observation intact; the continue-THREADING runtime arbiter is the W72b
+// sibling pair (question_generic_thread_diff, staged in
+// fork/w072/plan.md §3).
 
 import Core library "io";
 
@@ -89,8 +97,9 @@ fn Discard[U: type](_: U) {}
 // witnesses per instantiation. Operand and return type are the SAME
 // specific, so the break path's `FromBreak` conversion aligns
 // projection-for-projection (the check golden's `PropagateChoice`
-// configuration); continue values go through `Discard` per the W-072
-// wart note in the header.
+// configuration); continue values go through `Discard` — this pair's
+// design choice, per the SCOPE note in the header (the `final impl`
+// threading arbiter is the W72b sibling pair).
 fn Chain[T: type](x: T, fail_at: i32) -> MyResult(T, i32) {
   Discard(Step(x, fail_at == 1, 101)?);
   Discard(Step(x, fail_at == 2, 202)?);

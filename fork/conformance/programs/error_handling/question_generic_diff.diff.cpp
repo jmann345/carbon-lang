@@ -47,8 +47,10 @@ static auto Chain(T x, int fail_at) -> Result<T> {
   // The explicit spelling of `Discard(Step(x, fail_at == 1, 101)?)`: the
   // break path early-returns with the converted payload; the continue
   // value is discarded and the Ok payload is reconstructed from `x` (the
-  // identical value — `Step` passes `x` through), mirroring the Carbon
-  // side's W-072 wart scope stated in question_generic_diff.carbon.
+  // identical value — `Step` passes `x` through), mirroring the discard
+  // shape the Carbon side CHOOSES (the SCOPE note in
+  // question_generic_diff.carbon — a design choice of this pair, not a
+  // language limit; the threading arbiter is the W72b sibling pair).
   Result<T> r1 = Step(x, fail_at == 1, 101);
   if (!r1.ok) {
     return Err<T>(r1.e);

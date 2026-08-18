@@ -725,6 +725,69 @@ pair's header: it arbitrates BREAK-path propagation + per-instantiation
 layouts; continue-THREADING runtime arbitration is W-072 follow-up. The
 C++ oracle's Chain mirrors the discard semantics. Veto-able.
 
+_RETRACTION addendum (2026-08-18, W72a — fork/w072/plan.md §3,
+record-honesty sweep item 1; a dated addendum, the historical text above
+is deliberately NOT rewritten):_ two claims in the 2026-08-09 rounds above
+are OVERSTATED and are hereby corrected. Quoted: "projection-annotated
+bindings until rewrite-reduction lands" (the regen round) and "under
+symbolic arguments the continue value CANNOT be threaded as `T` at all"
+(the conformance round) — and the R17-cited restructure rationale carried
+the same overstatement. The two-part correction, per the W-072
+dissolution verdict (fork/w072/plan.md §0.1): (i) the continue value CAN
+be threaded as `T` — under the ratified doc's own `final impl` spelling
+(docs/design/error_handling.md's `Try` sketches, which have carried
+`final` since the original F-006 design commit 9fdad04) — with NO
+compiler change expected (the W72a probe goldens question_final.carbon /
+fail_question_final.carbon / lower question_generic_final.carbon, probes
+P-1..P-9); and (ii) non-final rewrite-reduction is NOT pending — it will
+never "land", being upstream-DESIGNED refusal (specialization soundness:
+docs/design/generics/details.md "`final` impl declarations";
+p000983/p002868/p005337; upstream's
+fail_nonfinal_specialized_symbolic_rewrite pin). W-072 accordingly
+reclassifies from "language gap" to "idiom gap + verification gap"; it
+stays OPEN until W72b's runtime threading arbiter lands. _Postmortem
+(plan amendment, strictness F-1):_ the `final` omission survived every
+review because testdata was reviewed against the doc's SEMANTICS, never
+diffed against the sketch's exact spelling — the non-final idiom entered
+at B1b (6b0b80e), and the third-round correction (3099532) edited the
+very lines carrying `final` without connecting the modifier to the
+behavior. The loop fix is rulebook rule R27 (code-to-sketch spelling diff
+before landing), staged in W72a. Veto-able.
+
+_W72a fix-round addenda (2026-08-18, the R11 fixer — dated follow-up lines
+in the W-072 area per correctness F-3):_
+
+-   **P-9 observed outcome: the falsification branch FIRED; W-073 MINTED.**
+    The 3d261c0 regen showed fail_question_final.carbon's
+    fail_inbody_recursive_branch split compiling CLEAN — under `final`, the
+    in-body interface-recursive `return self.(Core.Try.Branch)();`
+    type-collapses TOO, the opposite of the plan §2.2 in-body-unchanged
+    prediction (the completed definition's body no longer routes through
+    the declaring_impl_decls intercept, impl_lookup.cpp:949-963
+    `GetImplSelfWitnessInsideImplDecl`, so the ordinary candidate path
+    applies the final-impl rewrite). Processed per the plan §3 P-9 minting
+    rule, which the implementation round left unexecuted (both adversarial
+    reviews' converged BLOCKER): the split MOVED to question_final.carbon
+    as the positive inbody_recursive_branch.carbon (zero diagnostics is
+    the pin; no hand CHECK lines), and **W-073 is the minted item**
+    (fork/inventory/work-items.json) — retext the eight-file "does not
+    type-collapse" comment family plus the b1 §2.6 / B2a-era
+    dated-correction texts FOR FINAL IMPLS (non-final sites stay valid)
+    and EVALUATE retiring the `Diverge` trailing-return idiom in
+    final-spelled impls, swept once W72b's runtime arbiter confirms.
+-   **§2.4 contingency ladder: RESOLVED-CLEAN (strictness M-1).**
+    P-1/P-2/P-3/P-8 all landed POSITIVE on the 3d261c0 regen
+    (question_final.carbon's thread/mixed/lib+use splits; lower
+    question_generic_final.carbon's instantiated threading CFG) — ladder
+    step 1 taken; steps 2 (narrow machinery defect) and 3 (lane blocked)
+    were never invoked and are closed for W72a.
+-   **Deviation-2 adjudication (one line):** the prek doc-style hook's
+    auto-fixes of pre-existing fork docs LAND per the F8a convention
+    (hook-clean tree); the 6a635cd housekeeping commit is the standing
+    resolution, superseding the W72a implementer's in-commit revert.
+
+Veto-able.
+
 ### F-007: Unions - **Native `union` declaration** (2026-07-19)
 
 Rust-shaped safety surface (writes safe, reads defined byte-reinterpretation,

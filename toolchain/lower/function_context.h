@@ -112,6 +112,17 @@ class FunctionContext {
   // Returns a value for the given instruction.
   auto GetValue(SemIR::InstId inst_id) -> llvm::Value*;
 
+  // Returns whether `GetValue(inst_id)` serves a constant's VALUE
+  // representation rather than an address. A reference-category instruction
+  // can constant-fold to a value-category constant (for example a
+  // `ClassElementAccess` into a constant-bound aggregate `let`); `LowerInst`
+  // then skips it and `GetValue` serves `FileContext::GetConstant`'s result,
+  // which for a value-category constant of non-pointer value representation
+  // is the constant's value itself, not the referenced object's address.
+  // Consumers that load from a reference operand (`AcquireValue`'s copy arm)
+  // must check this before emitting the load.
+  auto GetValueServesConstantValueRep(SemIR::InstId inst_id) -> bool;
+
   // Sets the value for the given instruction.
   auto SetLocal(SemIR::InstId inst_id, llvm::Value* value) -> void {
     bool added = locals_.Insert(inst_id, value).is_inserted();

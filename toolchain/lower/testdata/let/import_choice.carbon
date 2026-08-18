@@ -25,6 +25,16 @@
 // golden cannot assert absence: that claim is enforced by the reviewer
 // audit over this file's filled content, named here per the W69b fix
 // round.)
+//
+// The `gc` consumptions additionally pin a PRE-EXISTING constant-lowering
+// defect this probe surfaced (W69b post-fix crash round): a match on a
+// constant-bound choice folds the discriminant `class_element_access` to a
+// value-category `[concrete]` constant, and `AcquireValue`'s copy arm used
+// to load from that served VALUE as if it were an address (LLVM "Ptr must
+// have pointer type" assert). Fixed in handle_expr_category.cpp /
+// FunctionContext::GetValueServesConstantValueRep: the folded constant is
+// the acquired value, no load. Import-independent — pinned both same-file
+// (plib's SameFileConst) and cross-file (imported_global_constant's G).
 
 // --- plib.carbon
 
@@ -47,6 +57,17 @@ let gc: P(i64) = P(i64).Neither;
 // is the global's address.
 fn SameFile() -> i32 {
   match (g) {
+    case .Neither => { return 0; }
+    default => { return 1; }
+  }
+}
+
+// The same-file half of the constant-path consumption: `gc`'s discriminant
+// access folds `[concrete]`, so the acquired comparison operand is the
+// folded constant itself — no load, no promoted global (the crash-round
+// defect was import-independent).
+fn SameFileConst() -> i32 {
+  match (gc) {
     case .Neither => { return 0; }
     default => { return 1; }
   }

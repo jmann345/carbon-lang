@@ -285,6 +285,38 @@ auto FunctionContext::TryEmitGlobalLetValue(SemIR::InstId inst_id)
   CARBON_FATAL("Unknown disposition");
 }
 
+auto FunctionContext::GetValueServesConstantValueRep(SemIR::InstId inst_id)
+    -> bool {
+  // Mirror `GetValue`'s resolution order exactly; each branch answers for
+  // what that lookup would serve.
+  if (SemIR::IsSingletonInstId(inst_id)) {
+    // Builtins are served as the empty type value, not an address.
+    return true;
+  }
+  if (HasLocal(inst_id) || file_context_->global_variables().Lookup(inst_id)) {
+    // Lowered instructions and global variables are served directly: for a
+    // reference expression, that is the referenced object's address.
+    return false;
+  }
+  auto [const_ir, const_id] = GetConstantValueInSpecific(
+      specific_sem_ir(), specific_id_, sem_ir(), inst_id);
+  if (!const_id.is_concrete()) {
+    // The promoted file-scope `let` path (W-069) serves an address-derived
+    // value per its disposition, never a folded constant.
+    return false;
+  }
+  // The remaining lookups route to `FileContext::GetConstant`, which returns
+  // an address for constant reference expressions and for pointer value
+  // representations, and the constant's value representation otherwise.
+  auto const_inst_id = const_ir->constant_values().GetInstId(const_id);
+  if (SemIR::IsRefCategory(SemIR::GetExprCategory(*const_ir, const_inst_id))) {
+    return false;
+  }
+  auto value_rep = SemIR::ValueRepr::ForType(
+      *const_ir, const_ir->insts().Get(const_inst_id).type_id());
+  return value_rep.kind != SemIR::ValueRepr::Pointer;
+}
+
 auto FunctionContext::MakeSyntheticBlock() -> llvm::BasicBlock* {
   synthetic_block_ = llvm::BasicBlock::Create(llvm_context(), "", function_);
   return synthetic_block_;

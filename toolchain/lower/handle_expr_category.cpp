@@ -25,11 +25,24 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
       context.SetLocal(inst_id,
                        llvm::PoisonValue::get(context.GetType(inst_type)));
       break;
-    case SemIR::ValueRepr::Copy:
-      context.SetLocal(
-          inst_id,
-          context.LoadObject(inst_type, context.GetValue(inst.value_id)));
+    case SemIR::ValueRepr::Copy: {
+      // A reference operand can constant-fold to a value-category constant --
+      // e.g. a `ClassElementAccess` into a constant-bound aggregate `let`,
+      // such as the discriminant field of an imported constant choice
+      // (`FileContext::GetConstant` then serves the folded constant's value
+      // representation, not an address) -- in which case there is nothing to
+      // load: the served constant IS the acquired value, the same
+      // pass-through shape as the pointer arm below. Fingerprint the branch
+      // so specifics differing only in operand fold-ness never coalesce.
+      bool is_folded_value =
+          context.GetValueServesConstantValueRep(inst.value_id);
+      context.AddIntToCurrentFingerprint(is_folded_value);
+      auto* operand = context.GetValue(inst.value_id);
+      context.SetLocal(inst_id, is_folded_value
+                                    ? operand
+                                    : context.LoadObject(inst_type, operand));
       break;
+    }
     case SemIR::ValueRepr::Pointer:
       context.SetLocal(inst_id, context.GetValue(inst.value_id));
       break;

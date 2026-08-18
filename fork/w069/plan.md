@@ -1011,6 +1011,81 @@ landable:
     session — the PR digest presents them for HUMAN veto, which is the
     V-2 contract. Veto-able._
 
+## W69b post-fix crash round (2026-08-18, separate fixer per R11 — pre-existing constant-lowering defect surfaced by the fixed probe)
+
+The post-fix regen (autoupdate run 32146552813) CRASHED regenerating
+lower/testdata/let/import_choice.carbon at the
+`imported_global_constant.carbon` subfile — `G`'s `match (gc)` on the
+IMPORTED CONSTANT-bound `let gc: P(i64) = P(i64).Neither;` (which now
+checks cleanly after the f2a7274 MakeRuntime fix un-suppressed the
+subfile's lowering for the FIRST time; the earlier fill was vacuous, so
+this shape had never been lowered anywhere in the tree). LLVM assertion
+in `llvm::LoadInst::LoadInst` ("Ptr must have pointer type") by way of
+`IRBuilder::CreateLoad`, stack `HandleInst(AcquireValue)`
+(handle_expr_category.cpp) → `FunctionContext::LoadObject`
+(function_context.cpp:437), pending-diagnostics frame at the subfile's
+`case .Neither` line.
+
+**Root cause (by code reading, no local bazel), the exact non-pointer
+flow:** the check fill (check/testdata/match/
+choice_generic_payload_scrutinee.carbon, imported_global_constant split)
+shows the discriminant access folding: `%.loc13_19.3: ref %u1 =
+class_element_access %gc.ref, element0 [concrete = constants.%int_1.233]`
+— a REFERENCE-category inst with a CONCRETE value-category constant
+(eval_inst.cpp's `PerformAggregateAccess` folds element access on the
+imported `[concrete = %P.val.c4c]` scrutinee) — consumed by
+`%.loc13_19.4: %u1 = acquire_value %.loc13_19.3` (itself NOT constant:
+`EvalConstantInst(AcquireValue)`, eval_inst.cpp:138-154, folds only
+Clang var-decls and `Temporary` operands). In lowering: (1) `LowerInst`
+skips the folded access (function_context.cpp:126-129, "Skip over
+constants"); (2) `AcquireValue`'s COPY arm (u1 has Copy value rep) calls
+`LoadObject(inst_type, GetValue(value_id))`
+(handle_expr_category.cpp:28-31 pre-fix); (3) `GetValue` resolves the
+skipped operand through `GetConstantValueInSpecific` to the folded
+`int_value 1` and serves `FileContext::GetConstant`
+(function_context.cpp:198-218); (4) `GetConstant` keys its serving
+convention off the CONSTANT INST's category — `IntValue` is
+value-category, u1's value rep is Copy not Pointer — so it returns the
+raw scalar constant (file_context.cpp:230-254), NOT an address; (5)
+`LoadObject` hands that scalar to `CreateLoad` → assert. The defect is
+PRE-EXISTING constant/AcquireValue lowering, NOT the W69b promotion
+(`gc` folds `[concrete]`, so the `!const_id.is_concrete()` gate excludes
+it from promotion) and NOT import-specific (a same-file `match` on a
+constant-bound choice takes the identical folded path; no green golden
+anywhere matched on a CONSTANT scrutinee, which is why it never fired).
+
+**Chosen lane: (i), the small fenced lowering fix** (no check/ or
+import_ref.cpp surface; every line mirrors named precedent):
+
+-   handle_expr_category.cpp, AcquireValue Copy arm: when the operand's
+    served value IS the folded constant's value representation, pass it
+    through (the same pass-through shape as the Pointer arm two lines
+    below, and as `GetConstant`'s value-rep return); otherwise load as
+    before. The branch is added to the specific fingerprint
+    (`AddIntToCurrentFingerprint`), mirroring `GetValueRepr`'s
+    kind-fingerprint discipline, so specifics differing only in operand
+    fold-ness never coalesce.
+-   FunctionContext::GetValueServesConstantValueRep (new, public):
+    answers "does `GetValue(inst_id)` serve a value rather than an
+    address" by mirroring `GetValue`'s resolution order line for line —
+    singleton (:186-188), local/global-variable (:190-196),
+    `GetConstantValueInSpecific` + concreteness (:198-212), then
+    `GetConstant`'s two address conventions (constant reference
+    expressions, file_context.cpp:236-239; pointer-value-rep global
+    minting, :251-255). Every non-folded shape returns false, so NO
+    behavior changes outside the previously-crashing one.
+-   Probe extended: plib gains `SameFileConst()` matching `gc`
+    same-file (pins the import-independence of the defect); the header
+    names this round. The `no _Cgc` absence claim is unchanged — the
+    folded path mints no global at all.
+
+W-069's hedge is INTACT — no discharge language; the fix rides the next
+regen → fixpoint → gate → conformance chain, and discharge criteria
+(2)/(3) re-arbitrate there (floor expectation unchanged: exactly 95/0/29
+over 124, movement only the two W69b programs). No W-076 was minted:
+lane (ii)'s trigger (check-side/import_ref surface or nontrivial design)
+did not fire. Veto-able.
+
 ## Review-round amendments (2026-08-18)
 
 Both adversarial plan reviews completed 2026-08-18. Reviewer #1

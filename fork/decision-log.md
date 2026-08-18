@@ -2423,6 +2423,37 @@ same-commit-adjudication pattern acknowledged for the PR digest).
 Discharge criteria (2)/(3) re-arbitrate at the post-fix regen + gate;
 criterion (4) already met. Veto-able.
 
+_W69b post-fix crash round (2026-08-18, separate fixer per R11):_ the
+post-fix regen (autoupdate run 32146552813) crashed lowering
+import_choice.carbon's `imported_global_constant` subfile — `match (gc)`
+on the imported CONSTANT-bound generic-specific choice let, a shape whose
+lowering the f2a7274 fix un-suppressed for the first time anywhere in the
+tree (the earlier fill was masked by the plib copy error). ROOT-CAUSED BY
+READING as a PRE-EXISTING constant-lowering defect, not W69b promotion
+(gc folds `[concrete]`, the promotion gate excludes it) and not
+import-specific: the discriminant `class_element_access` folds to a
+value-category `[concrete]` int constant while staying a REF-category
+inst; `LowerInst` skips it as constant; `AcquireValue`'s Copy arm then
+loads from `GetValue`'s served value — which `FileContext::GetConstant`
+keys off the CONSTANT inst's category (value-category `IntValue`, Copy
+rep u1 → the raw scalar, not an address; file_context.cpp:230-254) — so
+`LoadObject` handed a non-pointer to `CreateLoad` ("Ptr must have pointer
+type"). No green golden ever matched on a constant scrutinee, which is
+why the defect never fired. CHOSEN LANE: the sanctioned small fenced
+lowering fix (lane (i); no check/ or import_ref surface, no W-076
+minted): the Copy arm passes the folded constant through — it IS the
+acquired value representation, the same pass-through shape as the Pointer
+arm and `GetConstant`'s value-rep return — by way of the new
+`FunctionContext::GetValueServesConstantValueRep`, which mirrors
+`GetValue`'s resolution order and `GetConstant`'s two address conventions
+line for line and answers false for every non-folded shape (no behavior
+change outside the crashing one); the branch is fingerprinted so
+specifics differing in fold-ness never coalesce. Probe extended with
+plib's `SameFileConst()` (pins import-independence); headers retexted.
+Full chain + citations in the plan's post-fix crash round amendment.
+W-069 hedge intact — discharge still waits on the rerun regen → fixpoint
+→ gate → conformance at exactly 95/0/29 over 124. Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

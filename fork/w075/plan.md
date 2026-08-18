@@ -134,6 +134,28 @@ return slot, `context.CopyValue(type, arg_ids[0], arg_ids[1])`
 memcpy by way of `CopyObject`). Eval needs nothing: `PrimitiveCopy` already
 constant-forwards (eval.cpp 2327-2329).
 
+_Amendment (2026-08-18, fix round — autoupdate run 32190561198; the
+full evidence lives in the decision log's W75a fix-round addendum):_
+"when the callee has a return slot" is NOT arity-testable. A call built
+against a symbolic `T: Core.Copy` carries the slot arg for every
+specific (check chose the slot from the dependent init repr), so a
+monomorphized by-copy specific — the pre-existing
+lower/testdata/class/generic.carbon create_generic golden's
+`Make(i32)` — also arrives with two args, and the landed
+arity-dispatched arm published the slot pointer as the call's value
+into by-copy consumers (function_context.cpp:482 CHECK; LLVM
+`StoreInst` pointer-type asserts). The arm's corrected contract:
+dispatch on the CONCRETE type's init repr, the same switch consumers
+run (`FunctionContext::InitializeStorage`) — two args AND
+`GetInitRepr(type).kind == InitRepr::InPlace` ⇒ `CopyValue` into the
+slot and `SetLocal` the slot (this section's extension, unchanged for
+pointer-rep choices); anything else ⇒ the pre-W75a arm verbatim
+(`SetLocal(inst_id, GetValue(arg_ids[0]))`, no slot store — the
+consumer's `InitializeStorage` ByCopy arm performs the store, as the
+green baseline's goldens pin). The regression class is pinned by the
+new mono_from_generic subfile of
+lower/testdata/choice/alternative_copy.carbon.
+
 Upstream-merge posture: both files are already fork-hot (B2a). The
 LookupCustomWitness TODO is the collision point — if upstream lands its
 own copy synthesis, upstream wins at the weekly merge and this witness
@@ -299,3 +321,33 @@ ADJUDICATED accepted: the plan prescribed the call, the move is the
 minimal enabler, and W69b's shared-`CopyObject` precedent already
 established the public-overload pattern for exactly this family.
 Veto-able.
+
+## W75a fix-round adjudications (2026-08-18, coordinator)
+
+1.  **The lower-arm regression** (run 32190561198): the implementation
+    review had judged the arity discriminator sound for callee
+    SIGNATURES; the CI crash refined it — call sites monomorphized from
+    symbolic SemIR retain the slot argument even though the resolved
+    concrete callee's validated signature never carries one. The R11
+    fixer's repr-based dispatch (GetInitRepr == InPlace gates the slot
+    path; the by-copy fallback is the pre-change arm verbatim, whose
+    consumer fills the slot) is ADOPTED, with the regression-class
+    subfile (mono_from_generic) as the permanent pin. The reviewer's
+    static analysis and the runner's empirical answer disagreed;
+    the runner won — recorded as a reminder that repr questions are
+    answered at monomorphized call sites, not signatures.
+2.  **The skipped P-0 red-pins stage (review SHOULD-FIX 1),
+    retro-adjudicated:** the plan's landed-first fail-golden stage was
+    silently folded into the single slice, and post-fix the old
+    diagnostics no longer exist to pin — the omission is
+    NOT recoverable. ACCEPTED with this record: the red evidence for
+    the pre-fix behavior is (i) the tripwire subfile's own STDERR pins
+    in fail_question.carbon's history (git), (ii) the W69b decision-log
+    round that minted W-075 quoting the diagnostics verbatim, and
+    (iii) the roundtrip pair's historical deviation header. The landing
+    note's "one deviation" claim is corrected by this record (there
+    were two: the CopyValue visibility move and the P-0 fold). The
+    review's NITs land alongside: the completeness-gate divergence
+    comment rides the fixer's hunk region; the two extra same-family
+    retexts recorded; the error_handling.md cite is :344-352.
+    Veto-able.

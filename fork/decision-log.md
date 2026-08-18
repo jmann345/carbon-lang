@@ -2671,6 +2671,65 @@ any diagnostic on the flipped shapes, a candidate-impl binding in the
 shadowing probe's dump, or any floor movement re-opens the item with
 the run's evidence. Veto-able.
 
+_W75a fix-round addendum (2026-08-18, the R11 fixer — dated follow-up in
+the W-075 area per correctness F-3):_ the staged-discharge autoupdate
+(run 32190561198) crashed gate-grade on a PRE-EXISTING golden —
+lower/testdata/class/generic.carbon's create_generic subfile,
+`fn Make[T: Core.Copy](x: T, y: T) -> A(T)` monomorphized at `T = i32`,
+at `return {.x = x, .y = y};` — two signatures across the parallel
+tests: the `CHECK failure at toolchain/lower/function_context.cpp:482:
+value->getType() == llvm_type` (frame: `StoreObject` ← `CopyValue` ←
+`InitializeStorage` ← `HandleInst(InPlaceInit)`) and LLVM's
+`StoreInst ... "Ptr must have pointer type!"` assert. _Root cause
+(confirmed against the code, not the hypothesized orientation swap):_
+the landed arm discriminated on ARITY (`arg_ids.size() == 2` ⇒ slot
+call), but a call built against a symbolic `T: Core.Copy` carries the
+return-slot trailing arg for EVERY specific — check decided the slot
+from the symbolic (dependent) init repr — so a monomorphized by-copy
+specific (i32) also arrives with two args. The arm then took the slot
+path: its `CopyValue`'s argument ORDER was correct
+(`CopyValue(type, source_id, dest_id)`, function_context.h:213-216 —
+no swap to fix), but the trailing
+`SetLocal(inst_id, GetValue(arg_ids[1]))` published the SLOT POINTER as
+the call's value, while every by-copy consumer dispatches through
+`InitializeStorage`'s `InitRepr::ByCopy` arm (function_context.cpp:
+406-407) and hands the call's value to
+`StoreObject(type, GetValue(call), addr)` — pointer where an `i32` is
+required, exactly the :482 CHECK; the pointer-type asserts are the same
+misdispatch reaching LLVM's `StoreInst` operand checks on the sibling
+consumer paths. _The old-code behavior (a99034e~1, the green baseline
+for this exact golden):_ the pre-W75a arm was unconditionally
+`context.SetLocal(inst_id, context.GetValue(arg_ids[0]));` — the call's
+value is the SOURCE VALUE, the slot arg is left untouched at the arm,
+and the consumer's `InitializeStorage` (ByCopy → `CopyValue` →
+`StoreObject`) performs the store into the destination itself — the
+golden's own CHECK line `store i32 %x, ptr %.loc10_25.2.x` is that
+consumer store, and the corrected arm reproduces it byte-identically.
+_The corrected dispatch (handle_call.cpp, PrimitiveCopy arm):_
+discriminate on the CONCRETE type's init repr — the same discriminator
+the consumers use (`FunctionContext::InitializeStorage`'s switch,
+function_context.cpp:393-419; `GetTypeIdOfInst` maps through
+`GetTypeOfInstInSpecific`, so the specific's concrete type answers) —
+`arg_ids.size() == 2 && GetInitRepr(type).kind == InitRepr::InPlace` ⇒
+the landed slot path (`CopyValue` into the slot, `SetLocal` the slot,
+per the CppStdInitializerListMake precedent, handle_call.cpp:635-642);
+otherwise (ByCopy/None, including every monomorphized by-copy specific)
+the old arm verbatim — no slot store at the arm, matching the green
+baseline (the consumer fills the destination, which IS the call's
+storage arg per `FindStorageArgForInitializer`). The bare `InitRepr`
+spelling without a new include follows lower/handle.cpp:306-335. The
+W75a-new pointer-rep golden subfiles are unchanged in meaning
+(`Pair(i64)` is `InitRepr::InPlace`, still the slot path); the
+regression class is now pinned inside the W75a probe set as
+lower/testdata/choice/alternative_copy.carbon's NEW mono_from_generic
+subfile (one generic `Dup[T: Core.Copy]` monomorphized at a by-copy
+choice, `i32`, and a pointer-rep choice). fork/w075/plan.md §2 carries
+the dated contract correction; W-075 stays DISCHARGE-STAGED with the
+hedge intact — this fix re-enters at fast compile → autoupdate
+red-first → R26 fixpoint (every untouched class/tuple copy golden
+byte-identical, create_generic included) → gate → conformance floor
+96/0/28. Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

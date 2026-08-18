@@ -21,6 +21,12 @@
 // slot shape). Copies of CONSTANT alternatives fold in eval
 // (`PrimitiveCopy` constant-forwards), so runtime bindings carry the
 // runtime-call pins.
+//
+// The arm dispatches on the CONCRETE type's init repr, never on call
+// arity (fix round 2026-08-18, autoupdate run 32190561198): a call built
+// against a symbolic `T: Core.Copy` carries the slot arg even when the
+// lowered specific's type is by-copy, so mono_from_generic.carbon pins
+// both monomorphizations of one generic body.
 
 // --- copy_rep.carbon
 library "[[@TEST_NAME]]";
@@ -59,3 +65,34 @@ fn RoundTrip(p: Pair(i64)) -> Pair(i64) {
   q = Pair(i64).Neither;
   return q;
 }
+
+// --- mono_from_generic.carbon
+library "[[@TEST_NAME]]";
+
+choice Flag {
+  Off,
+  On
+}
+
+choice Pair(T: type) {
+  Both(x: T, y: T),
+  Neither
+}
+
+// The regression class (autoupdate run 32190561198, lower/testdata/class/
+// generic.carbon's create_generic subfile): a generic body's copy call is
+// built against symbolic `T: Core.Copy`, whose dependent init repr forces a
+// return-slot arg — so EVERY monomorphized specific's `PrimitiveCopy` call
+// has two args, and the handle_call.cpp arm must dispatch on the concrete
+// init repr: by-copy specifics (Flag, i32) lower the call to the source
+// VALUE (the consumer stores it), in-place specifics (Pair(i64)) memcpy
+// into the slot and forward it.
+fn Dup[T: Core.Copy](x: T) -> T {
+  return x;
+}
+
+fn DupFlag(f: Flag) -> Flag { return Dup(f); }
+
+fn DupInt(n: i32) -> i32 { return Dup(n); }
+
+fn DupPair(p: Pair(i64)) -> Pair(i64) { return Dup(p); }

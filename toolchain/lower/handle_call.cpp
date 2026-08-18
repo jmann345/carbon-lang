@@ -337,18 +337,37 @@ static auto HandleBuiltinCall(FunctionContext& context, SemIR::InstId inst_id,
     }
 
     case SemIR::BuiltinFunctionKind::PrimitiveCopy: {
-      // Fork (W-075, fork/w075/plan.md §2): a `PrimitiveCopy` callee whose
-      // return type uses a return slot — the synthesized choice `Copy.Op`
-      // for an in-place init repr type, such as a pointer-rep
-      // payload-carrying choice — carries the slot as the trailing arg
-      // (`PrimitiveCopy` declares exactly one parameter, so two args means a
-      // slot). Copy the value into the slot — `CopyValue` handles both the
-      // copy and pointer value reprs (memcpy by way of `CopyObject`) — then
-      // forward the slot as the call's value, per the
-      // `CppStdInitializerListMake` arm below.
-      if (arg_ids.size() == 2) {
-        context.CopyValue(context.GetTypeIdOfInst(arg_ids[0]), arg_ids[0],
-                          arg_ids[1]);
+      // Fork (W-075, fork/w075/plan.md §2, amended 2026-08-18): a
+      // `PrimitiveCopy` call carries the return slot as the trailing arg
+      // whenever the call was *built* with one (`PrimitiveCopy` declares
+      // exactly one parameter, so two args means a slot). That includes
+      // calls built against a symbolic `T: Core.Copy` in a generic body:
+      // the dependent init repr forces a slot even when the specific being
+      // lowered binds `T` to a by-copy type like `i32`. So arity alone
+      // cannot pick the lowering — dispatch on the CONCRETE type's init
+      // repr, the same discriminator the initialization consumers use
+      // (`FunctionContext::InitializeStorage`'s switch,
+      // function_context.cpp).
+      //
+      // InPlace (e.g. a pointer-rep payload-carrying choice): initialize
+      // the slot here — `CopyValue(type, source, dest)` memcpys the object
+      // repr by way of `CopyObject` — and forward the slot as the call's
+      // value, per the `CppStdInitializerListMake` arm below. Consumers
+      // then treat the initialization as already done (the InPlace arm of
+      // `InitializeStorage` emits nothing for a non-constant source).
+      //
+      // Otherwise (ByCopy/None, including monomorphized copy-rep
+      // specifics): the pre-W75a lowering — the call's value is the source
+      // value, and the consumer's `InitializeStorage` (ByCopy arm,
+      // `CopyValue` -> `StoreObject`) performs the store into the
+      // destination storage itself; the unused slot arg needs no store
+      // here. Setting the slot pointer as the call's value instead would
+      // hand a pointer to value-expecting consumers (`StoreObject`'s
+      // `value->getType() == llvm_type` CHECK).
+      auto type = context.GetTypeIdOfInst(arg_ids[0]);
+      if (arg_ids.size() == 2 &&
+          context.GetInitRepr(type).kind == SemIR::InitRepr::InPlace) {
+        context.CopyValue(type, arg_ids[0], arg_ids[1]);
         context.SetLocal(inst_id, context.GetValue(arg_ids[1]));
         return;
       }

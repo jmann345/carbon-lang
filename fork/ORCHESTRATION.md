@@ -10,8 +10,23 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-18 (post-PR #25: the W-073 sweep — W-073
-DISCHARGED)._ TWENTY-FIVE PRs. The two-regime sweep landed across the
+_Last updated: 2026-08-18 (post-PR #26: W-067 — guarded `default`
+clauses, DISCHARGED)._ TWENTY-SIX PRs. `default if (E) => ...` is now a
+working fork feature under the design's own license
+(pattern_matching.md Guards; p002188): shared parse guard production
+with default+if lookahead (arms after a guarded default are reachable),
+check-side guarded-irrefutable-arm CFG (constant-true test + spliced
+guard; failure edge line-for-line the case-guard shape), and the
+exhaustiveness pin — a guarded default never discharges the `default`
+requirement, enforced structurally and falsified by two red-line fail
+goldens. Zero new diagnostics (R6). Floor **92/0/29 over 121** (moved
+only by control_flow/match_guarded_default.carbon on the already-PASS
+match bullet), 43/56 bullets. Reviews clean; coverage falsifiers added
+at the review round. Mid-slice the self-hosted runner died ~07:33Z
+(killed the first gate attempt mid-test — diagnosed infra by step-level
+evidence, re-fired green after the runner returned ~09:20Z; recorded,
+CI unchanged). Next: W-068 (fewer-than-two-alternative choices), then
+the W-069 plan round._ TWENTY-FIVE PRs. The two-regime sweep landed across the
 nine-file surface: seven non-final sites got scope-qualifying retext
 only (all four golden retexts line-count-preserving — runner autoupdate
 was a STRICT NO-OP, run 32097812689); the W72b pair (final impl) took
@@ -181,16 +196,16 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-91 PASS / 29 SKIP / 0 FAIL programs (120 total, 18 differential
+92 PASS / 29 SKIP / 0 FAIL programs (121 total, 18 differential
 C++-oracle pairs); **43/56 bullets green** (runner-side scoreboard at
-the PR #24 head; verified from fork/conformance/out/scoreboard.json —
+the PR #26 head; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first
 error-handling flip, now 4 programs deep incl. the W72b threading
 arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79
 at S3a → 80 at S3b → 81 at S3c → 83 at B1b
 (error_handling/control_flow_constructs flip +
 question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a
-→ 88 F8b → 89 F8c → 90 F8d → 91 W72b. The scoreboard
+→ 88 F8b → 89 F8c → 90 F8d → 91 W72b → 92 W-067. The scoreboard
 regenerates on the runner (`Fork: conformance suite`,
 fork/conformance-request.txt trigger).
 
@@ -212,10 +227,13 @@ fork/conformance-request.txt trigger).
 
 ### Next actions (dependency order)
 
-1.  Conformance depth (W-066 match usefulness diagnostics; differential
-    pairs for flipped bullets lacking one) + residues W-067
-    (default-clause guards), W-068 (fewer-than-two-alternative
-    choices), W-069 (cross-file runtime let).
+1.  W-068 (fewer-than-two-alternative choices: scrutinee-gate +
+    dispatch work; the S2e coverage machinery already handles the
+    exhaustiveness half); then the W-069 plan round (cross-file runtime
+    `let` lowering — an upstream gap, V-3a check first). W-066 (match
+    usefulness diagnostics) stays blocked on W-008; conformance depth
+    (differential pairs for flipped bullets lacking one) rides
+    alongside.
 2.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
     user's veto-digest response** (presented 2026-07-20, unanswered).
 3.  W5-S3p (prelude Result/Optional) stays GATED on the OPEN SF-9 fork

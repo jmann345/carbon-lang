@@ -233,7 +233,7 @@ fails if this table is stale):
 | `code_org/importing_core_library.carbon` | Code organization: Importing | run |
 | `code_org/importing_cpp_header.carbon` | Code organization: Importing | run |
 | `code_org/importing_cpp_inline.carbon` | Code organization: Importing | run |
-| `code_org/library_multifile_export.carbon` | Code organization: Libraries | SKIP |
+| `code_org/library_multifile_export` | Code organization: Libraries | multi-unit (5 units) |
 | `code_org/library_named_import.carbon` | Code organization: Libraries | run |
 | `code_org/namespaces.carbon` | Code organization: Namespaces | run |
 | `code_org/packages_cross_import.carbon` | Code organization: Packages | run |

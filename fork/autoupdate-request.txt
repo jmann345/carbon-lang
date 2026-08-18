@@ -1,1 +1,1 @@
-2026-08-18T16:11Z W69b regen pass 2 (R26 fixpoint)
+2026-08-18T16:45Z W69b regen pass 3 (pass-2 was convergent loc renumbering; this must be the no-commit fixpoint — oscillation = stop)

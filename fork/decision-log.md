@@ -2596,6 +2596,18 @@ autoupdate red-first → fixpoint → gate, floor unchanged; the inner
 CHECK firing, any `[concrete]` on the staged pins, or any floor
 movement re-opens the item. Veto-able.
 
+_W-074 discharge confirmation (2026-08-18, coordinator):_ every staged
+condition met — fills 32185260726 (no-commit fixpoint 32185406315; all
+six probe pins audited against pre-registered predictions and matching
+verbatim), gate GREEN 32185553936, conformance confirm GREEN
+32185553820 at exactly 96/0/28 over 124 unchanged. The implementation
+review returned APPROVE (single-hunk verified; fence held); its
+probe-placement deviation record is folded as a dated plan amendment.
+`export x;` of a runtime `let` now checks clean with the NotConstant
+import signature, the two-hop chain and ApiForImpl routes are pinned,
+and the W69a ExportDecl chase arm carries its first lower-side pin.
+**W-074 is DISCHARGED.** Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

@@ -284,3 +284,22 @@ chase would return the same NotConstant). Findings folded:
 digest carries: lane (a) adoption; the no-conformance-change floor
 adoption (96/0/28 unchanged); the two probe adoptions; the SF-1
 correction. Veto-able.
+
+## W74a implementation-round records (2026-08-18, coordinator)
+
+-   **Probe-placement deviation, recorded per the implementation review's
+    SHOULD-FIX:** the plan placed P-0/P-1 as new subfiles of
+    check/testdata/let/global_runtime.carbon; the implementer minted the
+    NEW golden check/testdata/let/export_runtime.carbon instead (own
+    scalar subfile). ADJUDICATED accepted — the just-stabilized
+    global_runtime.carbon stays byte-identical, which STRENGTHENS the
+    negative pin; the dodge retexts honestly point at the real location.
+-   §4 step 5's "(and its §8 P-2/unpinned-arm mention)" was a dangling
+    pointer — w069 §8 carries no such mention; Amendment 1 was the only
+    record and was updated.
+-   The historical "import_ref.cpp:4483" cites in ledger/log records
+    refer to the pre-insertion line; the CHECK now sits at ~4503.
+-   Implementation review verdict: APPROVE — the hunk faithful
+    (single-hunk verified, N-1/N-2 honored), all six probe fills
+    audited against pre-registered predictions and matching verbatim,
+    the fence held, no unexpected golden movement. Veto-able.

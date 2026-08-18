@@ -1,1 +1,1 @@
-2026-08-18T09:20Z F8b conformance (expect 88/0/31 over 119, threading bullet flips, 43/56)
+2026-08-18T13:00Z F8c conformance (expect 89/0/30 over 119; D3 pair flips LINK-FAIL to PASS)

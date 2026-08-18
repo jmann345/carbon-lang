@@ -185,7 +185,9 @@ class FileContext {
       -> llvm::Constant*;
 
   // Builds the global for the given instruction which is known to not be
-  // imported from C++.
+  // imported from C++. Reuses an existing `llvm::GlobalVariable` with the same
+  // mangled name if one was already created, so repeated calls for one
+  // variable all yield the same object.
   auto BuildNonCppGlobalVariableDecl(SemIR::VarStorage var_storage)
       -> llvm::GlobalVariable*;
 

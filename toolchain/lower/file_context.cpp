@@ -769,6 +769,25 @@ auto FileContext::BuildNonCppGlobalVariableDecl(SemIR::VarStorage var_storage)
     }
   }
 
+  // If we already created a global with this mangled name, reuse it — the
+  // mirror of `GetOrCreateLLVMFunction`'s name-keyed early-return for
+  // functions. This function is not cached by its callers: it can run more
+  // than once for one variable (constant lowering and the definition walk in
+  // `LowerGlobalVariables` both reach it, and lowering another file's view of
+  // the variable reaches it again). Each extra `new llvm::GlobalVariable`
+  // with a taken name is silently renamed by LLVM with a `.N` suffix, so the
+  // initializer added by `LowerGlobalVariables` and the references emitted at
+  // use sites can end up on different objects — measured as
+  // `undefined symbol: _Ctotal.Main.2` when linking a file-scope variable
+  // whose type is an imported C++ template specialization
+  // (fork/f008/plan.md §2.3 H1).
+  if (!mangled_name.empty()) {
+    if (auto* existing = llvm_module().getGlobalVariable(
+            mangled_name, /*AllowInternal=*/true)) {
+      return existing;
+    }
+  }
+
   auto* type = GetType(var_storage.type_id);
   return new llvm::GlobalVariable(llvm_module(), type,
                                   /*isConstant=*/false, linkage,

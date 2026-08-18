@@ -1,1 +1,1 @@
-2026-08-18T14:15Z W69a hardening gate (HasLocal CHECK + Temporary demotion guard + comment reconciliations; full bazel test)
+2026-08-18T16:46Z W69b gate (pointer-rep promotion arm; full bazel test)

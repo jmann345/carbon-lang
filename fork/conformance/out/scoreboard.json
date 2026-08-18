@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-18T07:23:34.088623+00:00",
+  "generated": "2026-08-18T09:53:27.839899+00:00",
   "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 11.6,
+  "elapsed_seconds": 12.2,
   "totals": {
-    "PASS": 92,
+    "PASS": 93,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
@@ -155,6 +155,13 @@
     {
       "path": "control_flow/match_position.carbon",
       "bullet": "Control flow: matching \u2014 good switch equivalents",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "control_flow/match_single_alternative.carbon",
+      "bullet": "Control flow: matching \u2014 sum-type consumption incl. std::variant/std::optional interop",
       "status": "PASS",
       "detail": "",
       "differential": false
@@ -1128,6 +1135,7 @@
       "programs": [
         "control_flow/choice_generic_roundtrip_diff.carbon",
         "control_flow/choice_payload_roundtrip_diff.carbon",
+        "control_flow/match_single_alternative.carbon",
         "control_flow/match_sum_type_payload.carbon"
       ]
     },

@@ -1086,6 +1086,25 @@ over 124, movement only the two W69b programs). No W-076 was minted:
 lane (ii)'s trigger (check-side/import_ref surface or nontrivial design)
 did not fire. Veto-able.
 
+## W69b crash round, part 2 (2026-08-18, coordinator): P-10 narrowed to declaration-only
+
+The crash-round regen re-crashed — this time on the W69b mechanism's OWN
+Declined FATAL, firing exactly as designed: the P-10 whole-tuple probe
+(`let t: (i32, i32) = MakePair();` consumed as `t.0` and whole-`t`)
+references a binding the pre-pass DECLINES (aggregate value rep, not a
+copy of the object rep — the amended SF-3 dispatch routes that to the
+(a3) FATAL). The consuming probe form therefore contradicts the plan's
+own dispatch and is un-goldenable (an in-process FATAL cannot be
+pinned). ADJUDICATION: P-10 narrows to DECLARATION-ONLY — the golden
+pins declaration-side silence (the file lowers with `t` declared); the
+reference-FATAL behavior is pinned by autoupdate run 32148462189's
+recorded crash text; whole-aggregate-Copy-rep runtime `let` CONSUMPTION
+(same-file or cross-file) is recorded as WORKSTREAM RESIDUE — candidate
+future lane: rep-conversion serving (LoadObject + object-to-value
+aggregate conversion) or upstream's eventual value-rep story. The
+elementwise tuple-PATTERN form (P-7, per-binding scalars) is promoted
+and covered — the practical spelling users have today. Veto-able.
+
 ## Review-round amendments (2026-08-18)
 
 Both adversarial plan reviews completed 2026-08-18. Reviewer #1

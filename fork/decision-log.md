@@ -2454,6 +2454,17 @@ Full chain + citations in the plan's post-fix crash round amendment.
 W-069 hedge intact — discharge still waits on the rerun regen → fixpoint
 → gate → conformance at exactly 95/0/29 over 124. Veto-able.
 
+_W69b crash round part 2 (2026-08-18, coordinator):_ the regen
+re-crashed on the mechanism's own Declined FATAL — P-10's consuming
+form references a binding the pre-pass declines (aggregate value rep;
+the amended SF-3 dispatch routes it to the loud (a3) FATAL by design).
+The probe contradicted the plan's own dispatch and is un-goldenable.
+P-10 narrowed to declaration-only (silence pinned; the FATAL pinned by
+run 32148462189's crash text); whole-aggregate consumption recorded as
+workstream residue with candidate lanes in the plan amendment. The
+AcquireValue folded-ref fix from part 1 is confirmed working (the prior
+crash site lowered past cleanly this round). Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

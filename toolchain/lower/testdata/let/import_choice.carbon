@@ -136,19 +136,15 @@ library "[[@TEST_NAME]]";
 
 fn MakePair() -> (i32, i32) { return (50, 60); }
 
-// P-10: a WHOLE-tuple-typed runtime `let` (contrast the tuple-PATTERN
-// elementwise promotion in let/global_runtime.carbon): one object-rep
-// global for the whole tuple.
+// P-10, narrowed at the crash round to DECLARATION-ONLY (contrast the
+// tuple-PATTERN elementwise promotion in let/global_runtime.carbon): a
+// whole-tuple-typed runtime `let` has an aggregate value representation
+// that is not a copy of the object representation, so the promotion
+// pre-pass DECLINES it per the plan's ValueRepr dispatch — declaration
+// stays silent (pinned here: this file lowers with `t` declared), and
+// ANY reference FATALs loudly by design ("...which the promotion
+// pre-pass declined... is not supported yet (W-069)", pinned by
+// autoupdate run 32148462189's crash — un-goldenable in-process, so the
+// consuming probe form is recorded as workstream residue in
+// fork/w069/plan.md rather than as a golden).
 let t: (i32, i32) = MakePair();
-
-// --- import_pair.carbon
-
-library "[[@TEST_NAME]]";
-
-import library "pair";
-
-// P-10 cross-file consumption, both shapes: an element read...
-fn First() -> i32 { return t.0; }
-
-// ...and the whole tuple.
-fn Whole() -> (i32, i32) { return t; }

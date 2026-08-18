@@ -57,19 +57,33 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // precedent); the poisoned-query family
 // (specialization_poison.carbon's PoisonedImplLookupConcreteResult) is
 // the plan's named alternative — repin from the CI run if it differs.
-// CHECK:STDERR: fail_specialize_after_final.carbon:[[@LINE+7]]:1: error: `impl` will never be used [ImplFinalOverlapsNonFinal]
-// CHECK:STDERR: impl MyResult(i32, i32) as Core.Try
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_specialize_after_final.carbon:[[@LINE-26]]:1: note: `final impl` declared here would always be used instead [ImplFinalOverlapsNonFinalNote]
-// CHECK:STDERR: final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 impl MyResult(i32, i32) as Core.Try
     where .ContinueType = () and .BreakType = i32 {
+  // CHECK:STDERR: fail_specialize_after_final.carbon:[[@LINE+7]]:19: error: function returns incomplete type `Core.ControlFlow((), i32)` [IncompleteTypeInFunctionReturnType]
+  // CHECK:STDERR:   fn Branch(self) -> Core.ControlFlow((), i32) {
+  // CHECK:STDERR:                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: {{.*}}/prelude/try.carbon:21:1: note: choice alternative payload type `()` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
+  // CHECK:STDERR: choice ControlFlow(C: type, B: type) {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn Branch(self) -> Core.ControlFlow((), i32) {
     match (self) {
       // The disagreeing continue type: payloads route to `Break` so both
       // bindings are used without conjuring an `i32` continue value.
+      // CHECK:STDERR: fail_specialize_after_final.carbon:[[@LINE+14]]:36: error: unable to monomorphize specific `Core.Break(i32)` [ResolvingSpecificHere]
+      // CHECK:STDERR:       case .Ok(v: i32) => { return Core.ControlFlow((), i32).Break(v); }
+      // CHECK:STDERR:                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      // CHECK:STDERR: {{.*}}/prelude/try.carbon:21:1: note: choice alternative payload type `()` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
+      // CHECK:STDERR: choice ControlFlow(C: type, B: type) {
+      // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      // CHECK:STDERR:
+      // CHECK:STDERR: fail_specialize_after_final.carbon:[[@LINE-20]]:1: error: `impl` will never be used [ImplFinalOverlapsNonFinal]
+      // CHECK:STDERR: impl MyResult(i32, i32) as Core.Try
+      // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      // CHECK:STDERR: fail_specialize_after_final.carbon:[[@LINE-45]]:1: note: `final impl` declared here would always be used instead [ImplFinalOverlapsNonFinalNote]
+      // CHECK:STDERR: final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
+      // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      // CHECK:STDERR:
       case .Ok(v: i32) => { return Core.ControlFlow((), i32).Break(v); }
       case .Err(e: i32) => { return Core.ControlFlow((), i32).Break(e); }
     }
@@ -153,13 +167,6 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     // Best-effort pin (the fail_nonfinal_specialized_symbolic_rewrite
     // ConversionFailure shape); the regen is the arbiter of the exact
     // projection spelling and span.
-    // CHECK:STDERR: fail_inbody_recursive_branch.carbon:[[@LINE+7]]:5: error: cannot implicitly convert expression of type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` to `Core.ControlFlow(T, E)` [ConversionFailure]
-    // CHECK:STDERR:     return self.(Core.Try.Branch)();
-    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // CHECK:STDERR: fail_inbody_recursive_branch.carbon:[[@LINE+4]]:5: note: type `Core.ControlFlow(MyResult(T, E).(Core.Try.ContinueType), MyResult(T, E).(Core.Try.BreakType))` does not implement interface `Core.ImplicitAs(Core.ControlFlow(T, E))` [MissingImplInMemberAccessInContext]
-    // CHECK:STDERR:     return self.(Core.Try.Branch)();
-    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // CHECK:STDERR:
     return self.(Core.Try.Branch)();
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }

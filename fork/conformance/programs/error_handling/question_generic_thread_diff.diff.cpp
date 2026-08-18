@@ -107,8 +107,15 @@ auto main() -> int {
   ProbeI(RuntimeSeed(-20), RuntimeSeed(22));
   ProbeI(RuntimeSeed(-19), RuntimeSeed(22));
   ProbeI(RuntimeSeed(-18), RuntimeSeed(22));
-  ProbeL(RuntimeSeed(-20), RuntimeSeedL(24), RuntimeSeedL(68));
-  ProbeL(RuntimeSeed(-19), RuntimeSeedL(24), RuntimeSeedL(68));
-  ProbeL(RuntimeSeed(-18), RuntimeSeedL(24), RuntimeSeedL(68));
+  // The i64 seeds are high-half-significant (2^32 + 44 and the
+  // expectation 2^33 + 88) so a truncate-then-extend width collapse of
+  // the threaded payload flips the Carbon side's equality boolean — see
+  // the .carbon ProbeL channel note.
+  ProbeL(RuntimeSeed(-20), RuntimeSeedL(INT64_C(4294967320)),
+         RuntimeSeedL(INT64_C(8589934660)));
+  ProbeL(RuntimeSeed(-19), RuntimeSeedL(INT64_C(4294967320)),
+         RuntimeSeedL(INT64_C(8589934660)));
+  ProbeL(RuntimeSeed(-18), RuntimeSeedL(INT64_C(4294967320)),
+         RuntimeSeedL(INT64_C(8589934660)));
   return 0;
 }

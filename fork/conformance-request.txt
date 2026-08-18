@@ -1,1 +1,1 @@
-2026-08-18T03:50Z W72b drill round 2 (Destroy-constraint fix + drill flip; EXPECTED RED: question_generic_thread_diff DIFF-MISMATCH at depth 1 — the R-5 broken-oracle drill evidence)
+2026-08-18T04:05Z W72b landing: drill flip reverted + review-round fixes (i64 widened seeds); DISCHARGE RUN — target floor 91/0/29 over 120; W-072 discharges iff question_generic_thread_diff is PASS on this run's scoreboard

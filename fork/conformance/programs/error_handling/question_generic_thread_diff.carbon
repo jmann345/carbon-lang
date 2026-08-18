@@ -115,7 +115,7 @@ fn Step[T: type](x: T, fail: bool, tag: i32) -> MyResult(T, i32) {
 // `type as Core.Destroy` pin; the combined-facet binding shape is
 // facet/call_combined_impl_witness.carbon's `G[T: A & Empty & B]`).
 fn Chain[T: Combinable & Core.Destroy](x: T, fail_at: i32) -> MyResult(T, i32) {
-  let a: T = Step(x, fail_at == 3, 101)?;
+  let a: T = Step(x, fail_at == 1, 101)?;
   let b: T = Step(a.Combine(), fail_at == 2, 202)?;
   return MyResult(T, i32).Ok(b);
 }
@@ -137,6 +137,13 @@ fn ProbeI(fail_at: i32, seed: i32) {
 // The i64 instantiation: prints the outcome tag, then 1/0 for whether the
 // Ok payload matches the independently runtime-computed expectation
 // (Core.Print takes i32 only), or the i32 break payload directly.
+// ACKNOWLEDGED CHANNEL LIMIT (review round): the i64 payload is observed
+// through this single boolean, so the leg's arbitration power comes from
+// the seed being HIGH-HALF-SIGNIFICANT (> 2^32): a truncate-then-extend
+// width collapse of the payload (the B2a mixed-width corruption family)
+// zeroes the high half and flips the boolean. With a narrow seed the
+// same corruption would pass invisibly — which is why the seeds below
+// do not fit in 32 bits.
 fn ProbeL(fail_at: i32, seed: i64, expect: i64) {
   match (Chain(seed, fail_at)) {
     case .Ok(v: i64) => {
@@ -161,14 +168,16 @@ fn RuntimeSeedL(x: i64) -> i64 { return x + 20; }
 fn Run() -> i32 {
   // Depths and seeds are runtime-computed: RuntimeSeed(-20..-18) selects
   // the failing step 0..2, RuntimeSeed(22) = 42 seeds the i32 chain,
-  // RuntimeSeedL(24) = 44 the i64 chain, and RuntimeSeedL(68) = 88 is the
-  // i64 Ok expectation (= 2 * 44), computed WITHOUT going through the
-  // chain or `Combine`.
+  // RuntimeSeedL(4294967320) = 2^32 + 44 the i64 chain (high-half
+  // significant — see ProbeL's channel note), and
+  // RuntimeSeedL(8589934660) = 2^33 + 88 is the i64 Ok expectation
+  // (= 2 * (2^32 + 44)), computed WITHOUT going through the chain or
+  // `Combine`.
   ProbeI(RuntimeSeed(-20), RuntimeSeed(22));
   ProbeI(RuntimeSeed(-19), RuntimeSeed(22));
   ProbeI(RuntimeSeed(-18), RuntimeSeed(22));
-  ProbeL(RuntimeSeed(-20), RuntimeSeedL(24), RuntimeSeedL(68));
-  ProbeL(RuntimeSeed(-19), RuntimeSeedL(24), RuntimeSeedL(68));
-  ProbeL(RuntimeSeed(-18), RuntimeSeedL(24), RuntimeSeedL(68));
+  ProbeL(RuntimeSeed(-20), RuntimeSeedL(4294967320), RuntimeSeedL(8589934660));
+  ProbeL(RuntimeSeed(-19), RuntimeSeedL(4294967320), RuntimeSeedL(8589934660));
+  ProbeL(RuntimeSeed(-18), RuntimeSeedL(4294967320), RuntimeSeedL(8589934660));
   return 0;
 }

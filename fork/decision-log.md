@@ -808,8 +808,10 @@ its header/:92/.diff.cpp comments already carries the sibling pointer,
 so this slice touches it not at all). Instantiated at i32 AND i64
 (distinct monomorphized `Core.ControlFlow` carrier layouts); failure
 depths and seeds runtime-computed (R16d; RuntimeSeed = x + 20, depths
-0..2 from RuntimeSeed(-20..-18), i32 seed 42, i64 seed 44 with the
-independently computed Ok expectation 88); the C++ oracle is a function
+0..2 from RuntimeSeed(-20..-18), i32 seed 42, i64 seed 2^32 + 44 with
+the independently computed Ok expectation 2^33 + 88 — widened
+high-half-significant at the review round, see the round-2 amendment);
+the C++ oracle is a function
 TEMPLATE with the same explicit early returns; byte-identical
 stdout + exit per DIFF-1, no EXPECT-STDOUT. Hand-computed output table,
 both sides: depth 0 -> `0,84` (i32) / `0,1` (i64 payload == 88); depth
@@ -818,7 +820,8 @@ the plan's declared mechanism (strictness F-5) the drill is the
 B2a-style DELIBERATE RED CI PUSH — the pair rides the PR branch once
 with step 1's injected depth flipped in the `.carbon` side only
 (`fail_at == 1` -> `fail_at == 3`), the red differential run is linked
-HERE as the drill evidence, and the flip is reverted before landing (an
+in the round-2 amendment below as the drill evidence, and the flip is
+reverted before landing (an
 always-green pair under the flip is falsification); the mechanism is
 recorded in the pair's header. _Discharge staging (the R9 hedge):_
 W-072's ledger notes now read DISCHARGE PENDING THIS RUN — the item
@@ -860,6 +863,46 @@ aspirational and is retracted for round 1; the drill restarts with the
 fix + flip on the next push, so the DIFF-MISMATCH drill evidence and the
 green discharge run both still lie ahead. The round-1 red run is
 compile-fail evidence only. Veto-able.
+
+_W72b round-2 amendment (2026-08-18, coordinator — drill evidence +
+review round):_ **The R-5 broken-oracle drill is DONE and verified.**
+Round 2 (run
+<https://github.com/jmann345/carbon-lang/actions/runs/32096324806>,
+commit 2217244: the Destroy-constraint fix + the drill flip) came back
+red as exactly the predicted **DIFF-MISMATCH** — the Carbon leg (flip
+live) succeeded at depth 1 (`0,84` on i32; `0,1` on i64) while the C++
+oracle broke (`1,101`), depths 0 and 2 byte-identical, both exits 0,
+stdout differing — so the harness demonstrably catches divergence on
+this pair, and the `& Core.Destroy` fix compiles AND runs (no
+`Core.Copy` conjunct needed for these `let` bindings). _The adversarial
+review round (2 fresh-context reviewers, findings folded into the
+landing commit):_ (1) BLOCKER, both reviews: the only
+conformance-request bump rode the drill (red) commit, so no scoreboard
+run would ever fire against the landing content — fixed: the landing
+commit carries its own request bump with the discharge-targeting text.
+(2) SHOULD-FIX, both reviews: the i64 leg observed its payload through
+a single boolean over values fitting in 32 bits, so a
+truncate-then-extend width collapse (the B2a corruption family) would
+pass invisibly — fixed: i64 seed widened to 2^32 + 44 (expectation
+2^33 + 88) on BOTH sides, and the single-boolean channel limit is now
+acknowledged in the pair's ProbeL comment. The widening postdates the
+drill run; the drill's divergence channel (depth-1 outcome-tag
+disagreement) is unaffected by seed magnitude, so the drill evidence
+stands for the landing content. (3) SHOULD-FIX (review B): plan §0.1's
+candidate lanes (a) eval-side and (b) desugar-side reduction were
+vetoed in the plan but never recorded in THIS log — recorded here:
+**both are VETOED per V-3a** (upstream contradictions: non-final
+non-reduction is upstream-DESIGNED specialization soundness), which
+completes the §6 criterion (iv) obligation the landing note had
+attributed entirely to W72a. (4) Ledger retexts (review B): W-072
+STATUS re-pointed at the post-revert green run; the new pair added to
+W-073's enumerated sweep surface (a final-impl `Diverge` site the
+pre-existing eight-file list predates). Residual review notes, recorded
+not actioned: `Step` is the identity on success, so the
+"yield-the-operand's-input" mis-thread class is unobservable in
+principle (rated implausible dataflow by the reviewer — accepted); the
+drill exercises the depth/tag channel only (the plan mandates exactly
+that). Veto-able.
 
 ### F-007: Unions - **Native `union` declaration** (2026-07-19)
 

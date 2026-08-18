@@ -909,6 +909,48 @@ APPROVE; the stub-toolchain execution-path coverage is committed into
 `--self-test`; the §4 arbiter PASSED — byte-identical 93/0/29-over-122
 rerun (run 32140593428, scoreboard b3f3ed2).
 
+## W69b implementation-round deviation record (2026-08-18, the W69b implementer)
+
+One R17 deviation, reported loudly for coordinator adjudication (all other
+§4 W69b items landed as written — the pointer-rep arm, the OQ-3 restored
+split with its constant-bound sibling, the S-5 class/field-read and P-10
+whole-tuple subfiles in lower/testdata/let/import_choice.carbon, the
+global_runtime.carbon dump ranges discharging the W69a fill-audit residue,
+and both N-6-recipe conformance programs at floor 95/0/29 over 124):
+
+-   **The §6 R-2 falsifier's literal shape is structurally inexpressible.**
+    "Two specifics of one generic each reading a DIFFERENT imported runtime
+    let" cannot be written: a file-scope name reference in a generic body
+    resolves statically to ONE binding, so every specific of a generic
+    references the SAME `let` set. The only specific-dependent value
+    channel in `GetValue` is the constant path
+    (`GetConstantValueInSpecific`), and a runtime `let` is NotConstant by
+    definition — so `TryEmitGlobalLetValue`, which is inst-keyed, can never
+    resolve differently across specifics of one generic. The assigned
+    falsifier golden (lower/testdata/let/global_runtime_specifics.carbon)
+    therefore pins the nearest expressible shapes: (1) two specifics of
+    one generic whose witness calls reach per-type impl readers each
+    loading a DIFFERENT imported runtime let (the
+    call_different_impls.carbon pattern) — a coalesced specific serving
+    both call sites is the alarm; and (2) two specifics of one generic
+    reading the SAME imported runtime let directly, exercising the
+    `AddGlobalToCurrentFingerprint` call R-2 mandates inside
+    specific-function lowering. That fingerprint call is RETAINED
+    (correct, cheap, parity with the constant path), with the honest
+    record that no expressible program today can make it the deciding
+    fingerprint entry. R-2's register text stands as a guard for future
+    channels (for example class-scope statics or any future specific-dependent
+    binding resolution), not as a today-reachable bug.
+
+_Coordinator adjudication (2026-08-18): the deviation is ACCEPTED. The
+falsifier's purpose is the alarm on a coalesced specific whose merged
+body would touch the wrong global — the witness-call substitute
+preserves exactly that alarm through an expressible channel, and the
+literal wording's inexpressibility is itself a useful record (the
+static-resolution fact strengthens, not weakens, the mechanism's
+safety argument). The R-2 register text stays as future-channel guard
+per the implementer's framing. Veto-able._
+
 ## Review-round amendments (2026-08-18)
 
 Both adversarial plan reviews completed 2026-08-18. Reviewer #1

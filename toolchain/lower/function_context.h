@@ -193,6 +193,12 @@ class FunctionContext {
   auto StoreObject(TypeInFile type, llvm::Value* value, llvm::Value* addr)
       -> void;
 
+  // Emits a copy of an object representation of type `type` from the object
+  // at `source_addr` to the object at `dest_addr`, as a memcpy of the
+  // object's alloc size.
+  auto CopyObject(TypeInFile type, llvm::Value* source_addr,
+                  llvm::Value* dest_addr) -> void;
+
   // Emits the instructions necessary to initialize the storage at `dest_id`
   // from the repr-initializing expression `source_id`. This assumes the
   // instructions for `source_id` have already been emitted, so it's a no-op if

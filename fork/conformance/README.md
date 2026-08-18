@@ -229,6 +229,7 @@ fails if this table is stale):
 | --- | --- | --- |
 | `code_org/impl_files_impl_defined_fn.carbon` | Code organization: Implementation files | SKIP |
 | `code_org/impl_files_pair_in_compile.carbon` | Code organization: Implementation files | run |
+| `code_org/import_runtime_let` | Code organization: Importing | multi-unit (2 units) |
 | `code_org/importing_core_library.carbon` | Code organization: Importing | run |
 | `code_org/importing_cpp_header.carbon` | Code organization: Importing | run |
 | `code_org/importing_cpp_inline.carbon` | Code organization: Importing | run |
@@ -243,6 +244,7 @@ fails if this table is stale):
 | `control_flow/conditions.carbon` | Control flow: conditions | run |
 | `control_flow/if_let_let_else.carbon` | Control flow: matching — if-let / let-else combined match+declaration | SKIP |
 | `control_flow/loops.carbon` | Control flow: loops incl. range-based and C/C++ loop equivalents | run |
+| `control_flow/match_global_runtime_let.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | run |
 | `control_flow/match_guard_binding.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_guard_diff.carbon` | Control flow: matching — good switch equivalents | differential |
 | `control_flow/match_guarded_default.carbon` | Control flow: matching — good switch equivalents | run |

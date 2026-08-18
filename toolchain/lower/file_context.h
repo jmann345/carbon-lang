@@ -68,13 +68,24 @@ struct GlobalLetBinding {
     // that `__global_init` stores once, and every reference — same-file
     // cross-function or cross-file — loads from it.
     Promote,
+    // The value representation is a pointer to the object representation
+    // (classes, choices, multi-element tuples/structs): the bound value's
+    // object is promoted to a named backing global of the OBJECT
+    // representation that `__global_init` fills once with a memcpy from the
+    // bound value's pointer (the as-if copy license, docs/design/values.md),
+    // and every reference is served the global's address AS the value
+    // representation — the same shape `AcquireValue`'s pointer arm produces
+    // (handle_expr_category.cpp) and `FileContext::GetConstant`'s
+    // pointer-value-rep arm serves for constants.
+    PromoteObject,
     // The value representation is `None` (e.g. an empty tuple type): no
     // storage is minted, and references produce the empty value.
     NoStorage,
-    // Any other value representation (pointer or custom), or an initializer
-    // shape the pre-pass could not map to a `__global_init`-resident
-    // instruction: not promoted in this slice. References fail loudly with a
-    // named message instead of tripping the generic missing-value check.
+    // Any other value representation (a `Copy` that is not a copy of the
+    // object representation, or `Custom`), or an initializer shape the
+    // pre-pass could not map to a `__global_init`-resident instruction: not
+    // promoted. References fail loudly with a named message instead of
+    // tripping the generic missing-value check.
     Declined,
   };
 
@@ -86,13 +97,13 @@ struct GlobalLetBinding {
   // The declared type of the binding.
   SemIR::TypeId type_id;
   Disposition disposition;
-  // For `Promote`: the file-top-block conversion wrapper instructions
-  // between the `__global_init`-resident initializer and `value_id`, in
-  // lowering (operand-first) order. These aren't part of any lowered block,
-  // so the ctor-store hook lowers them on demand.
+  // For `Promote`/`PromoteObject`: the file-top-block conversion wrapper
+  // instructions between the `__global_init`-resident initializer and
+  // `value_id`, in lowering (operand-first) order. These aren't part of any
+  // lowered block, so the ctor-store hook lowers them on demand.
   llvm::SmallVector<SemIR::InstId, 4> chain = {};
-  // For `Promote`: the `__global_init`-resident instruction after whose
-  // lowering the bound value can be computed and stored.
+  // For `Promote`/`PromoteObject`: the `__global_init`-resident instruction
+  // after whose lowering the bound value can be computed and stored.
   SemIR::InstId ctor_key_id = SemIR::InstId::None;
 };
 

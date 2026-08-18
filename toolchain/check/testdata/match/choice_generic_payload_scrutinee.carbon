@@ -47,23 +47,60 @@ choice P(T: type) {
   Neither
 }
 
+fn MakeNeither() -> P(i64) { return P(i64).Neither; }
+
+// The RESTORED cross-file split's defining side (the W-069 ledger
+// acceptance shape, upgraded to the RUNTIME-bound form per fork/w069/plan.md
+// §8-A OQ-3): `g` binds through a function call, so its bound value has no
+// constant and the importer's reference is served only by the promoted
+// backing global at lowering (the W69b pointer-value-rep arm; lower-side pin
+// in lower/testdata/let/import_choice.carbon).
+//@dump-sem-ir-begin
+let g: P(i64) = MakeNeither();
+//@dump-sem-ir-end
+
+// The half-(b) boundary pin: a CONSTANT-bound sibling keeps importing as
+// the alternative's constant (import_ref.cpp's non-constant-binding branch,
+// landed at W5-S3b), never the promoted global.
+//@dump-sem-ir-begin
+let gc: P(i64) = P(i64).Neither;
+//@dump-sem-ir-end
+
 // --- imported_global.carbon
 library "[[@TEST_NAME]]";
 
 import library "plib";
 
-// The binding is local — a cross-file `let` reference has no lowering story
-// (W-069, fork/inventory/work-items.json), and a `var` cannot initialize
-// from the alternative constant (choice types implement no `Core.Copy`; a
-// `let` binds without copying). The choice and its specific are imported,
-// so the R-2 question stands: nothing in this file defines `P`, and the
-// match gate's forcing resolves the specific's definition — with the
-// payload recompute — here.
-let g: P(i64) = P(i64).Neither;
+// The importing side of the restored split: `g` is bound in plib to a
+// runtime `MakeNeither()` call and matched here. This split previously
+// CRASHED lowering (function_context.cpp's missing-value CHECK — the W-069
+// ledger item); check has always accepted it, which this golden pins. The
+// choice and its specific are imported, so the R-2 question stands: nothing
+// in this file defines `P`, and the match gate's forcing resolves the
+// specific's definition — with the payload recompute — here.
 
 //@dump-sem-ir-begin
 fn F() -> i32 {
   match (g) {
+    case .Neither => { return 0; }
+    default => { return 1; }
+  }
+}
+//@dump-sem-ir-end
+
+// --- imported_global_constant.carbon
+library "[[@TEST_NAME]]";
+
+import library "plib";
+
+// The constant-bound sibling consumed cross-file: `gc` imports with a
+// `[concrete = ...]` constant (half (b)) and rides the constant path — the
+// explicit boundary showing that the RUNTIME restoration above, not the
+// constant binding, is what arbitrates the W-069 residue.
+
+//@dump-sem-ir-begin
+fn G() -> i32 {
+  match (gc) {
     case .Neither => { return 0; }
     default => { return 1; }
   }

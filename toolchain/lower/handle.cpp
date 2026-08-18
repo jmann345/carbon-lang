@@ -222,8 +222,9 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
   // through bindings here to directly access the bound value. When the bound
   // value isn't a global variable or constant either — a file-scope `let`
   // bound to a runtime value — `GetValue` serves the reference from the
-  // binding's promoted backing global, for PACKAGE-scope bindings with
-  // copy-of-object value representations only (W-069;
+  // binding's promoted backing global, for PACKAGE-scope bindings whose
+  // value representation is a copy of the object representation (loaded) or
+  // a pointer to it (the global's address served as the value) (W-069;
   // `FunctionContext::TryEmitGlobalLetValue`). Class-scope `static` bindings
   // (out of W-069's scope) and namespace-scope bindings (excluded by the
   // registry's Package-scope test) still ride the old path here and hit

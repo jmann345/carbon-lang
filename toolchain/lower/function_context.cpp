@@ -259,11 +259,26 @@ auto FunctionContext::TryEmitGlobalLetValue(SemIR::InstId inst_id)
       AddGlobalToCurrentFingerprint(global);
       return LoadObject({.file = let_ir, .type_id = binding->type_id}, global);
     }
+    case GlobalLetBinding::Disposition::PromoteObject: {
+      auto* global = let_context->GetOrCreateGlobalLetVariable(*binding);
+      // Include the global in the fingerprint so specifics reading different
+      // promoted bindings are never coalesced.
+      AddGlobalToCurrentFingerprint(global);
+      // The type's value representation is a pointer to the object: the
+      // backing global holds the object representation, so its address IS
+      // the value representation — the same shape `AcquireValue`'s pointer
+      // arm produces (handle_expr_category.cpp) and `FileContext::
+      // GetConstant`'s pointer-value-rep arm serves for constants. No
+      // language-level address is exposed: SemIR is untouched, so no
+      // address-of or mutation path exists for the binding.
+      return global;
+    }
     case GlobalLetBinding::Disposition::Declined: {
       CARBON_FATAL(
           "semantics TODO: lowering a reference to the file-scope `let` "
-          "binding {0}, whose value representation is not a copy of its "
-          "object representation, is not supported yet (W-069)",
+          "binding {0}, which the promotion pre-pass declined (a "
+          "non-object-copy or custom value representation, or an unmappable "
+          "initializer shape), is not supported yet (W-069)",
           let_ir->insts().Get(binding->binding_id));
     }
   }
@@ -468,13 +483,18 @@ auto FunctionContext::CopyValue(TypeInFile type, SemIR::InstId source_id,
 
 auto FunctionContext::CopyObject(TypeInFile type, SemIR::InstId source_id,
                                  SemIR::InstId dest_id) -> void {
+  CopyObject(type, GetValue(source_id), GetValue(dest_id));
+}
+
+auto FunctionContext::CopyObject(TypeInFile type, llvm::Value* source_addr,
+                                 llvm::Value* dest_addr) -> void {
   const auto& layout = llvm_module().getDataLayout();
   auto* llvm_type = GetType(type);
   auto align = GetAlignment(type);
 
   // TODO: Attach !tbaa.struct metadata indicating which portions of the
   // type we actually need to copy and which are padding.
-  builder().CreateMemCpy(GetValue(dest_id), align, GetValue(source_id), align,
+  builder().CreateMemCpy(dest_addr, align, source_addr, align,
                          layout.getTypeAllocSize(llvm_type));
 }
 

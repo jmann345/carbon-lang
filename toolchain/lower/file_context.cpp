@@ -866,11 +866,14 @@ auto FileContext::RegisterGlobalLetBindings() -> void {
       continue;
     }
 
-    // Value-representation dispatch: only a value representation that is a
-    // copy of the object representation takes the store/load promotion in
-    // this slice; `None` needs no storage at all; everything else (pointer
-    // and custom representations) is declined and fails loudly if
-    // referenced.
+    // Value-representation dispatch (`ValueRepr::Kind`): a value
+    // representation that is a copy of the object representation takes the
+    // store/load promotion; a pointer value representation (classes,
+    // choices, multi-element tuples/structs) takes the object-copy
+    // promotion — an object-representation global filled by a ctor memcpy,
+    // its address served as the value representation; `None` needs no
+    // storage at all; everything else (a non-object-identical copy, or a
+    // custom representation) is declined and fails loudly if referenced.
     auto value_rep = SemIR::ValueRepr::ForType(sem_ir(), binding->type_id);
     auto disposition = GlobalLetBinding::Disposition::Declined;
     if (value_rep.kind == SemIR::ValueRepr::None) {
@@ -878,6 +881,8 @@ auto FileContext::RegisterGlobalLetBindings() -> void {
     } else if (value_rep.kind == SemIR::ValueRepr::Copy &&
                value_rep.IsCopyOfObjectRepr(sem_ir(), binding->type_id)) {
       disposition = GlobalLetBinding::Disposition::Promote;
+    } else if (value_rep.kind == SemIR::ValueRepr::Pointer) {
+      disposition = GlobalLetBinding::Disposition::PromoteObject;
     }
 
     // For promotion, chase from the bound value through the file-top-block
@@ -887,7 +892,8 @@ auto FileContext::RegisterGlobalLetBindings() -> void {
     // could never be emitted.
     llvm::SmallVector<SemIR::InstId, 4> chain;
     auto ctor_key_id = SemIR::InstId::None;
-    if (disposition == GlobalLetBinding::Disposition::Promote) {
+    if (disposition == GlobalLetBinding::Disposition::Promote ||
+        disposition == GlobalLetBinding::Disposition::PromoteObject) {
       if (!ctor_insts_built) {
         for (auto block_id :
              sem_ir().functions().Get(global_ctor_id).body_block_ids) {
@@ -1000,9 +1006,11 @@ auto FileContext::LookupGlobalLetBinding(SemIR::InstId inst_id) const
 
 auto FileContext::GetOrCreateGlobalLetVariable(const GlobalLetBinding& binding)
     -> llvm::GlobalVariable* {
-  CARBON_CHECK(binding.disposition == GlobalLetBinding::Disposition::Promote,
-               "Backing global requested for unpromoted `let` binding {0}",
-               binding.binding_id);
+  CARBON_CHECK(
+      binding.disposition == GlobalLetBinding::Disposition::Promote ||
+          binding.disposition == GlobalLetBinding::Disposition::PromoteObject,
+      "Backing global requested for unpromoted `let` binding {0}",
+      binding.binding_id);
   SemIR::Mangler m(sem_ir(), context().total_ir_count(),
                    context().mangle_string_fingerprint());
   std::string mangled_name = m.MangleGlobalLetBinding(binding.binding_id);
@@ -1033,12 +1041,13 @@ auto FileContext::GetOrCreateGlobalLetVariable(const GlobalLetBinding& binding)
 
 auto FileContext::PrepareGlobalLetDefinitions() -> void {
   for (auto [index, binding] : llvm::enumerate(global_let_bindings_)) {
-    if (binding.disposition != GlobalLetBinding::Disposition::Promote) {
+    if (binding.disposition != GlobalLetBinding::Disposition::Promote &&
+        binding.disposition != GlobalLetBinding::Disposition::PromoteObject) {
       continue;
     }
     // Convert the declaration into a zero-initialized definition, exactly as
     // `LowerGlobalVariables` does for `VarStorage` globals; the runtime
-    // store is emitted while lowering `__global_init`.
+    // store (or object copy) is emitted while lowering `__global_init`.
     auto* llvm_var = GetOrCreateGlobalLetVariable(binding);
     llvm_var->setInitializer(
         llvm::Constant::getNullValue(llvm_var->getValueType()));
@@ -1076,8 +1085,20 @@ auto FileContext::EmitGlobalLetStores(FunctionContext& ctor_context,
                  "at its `__global_init` store point",
                  binding.binding_id, sem_ir().insts().Get(binding.binding_id));
     auto* global = GetOrCreateGlobalLetVariable(binding);
-    ctor_context.StoreObject({.file = &sem_ir(), .type_id = binding.type_id},
-                             ctor_context.GetValue(binding.value_id), global);
+    if (binding.disposition == GlobalLetBinding::Disposition::Promote) {
+      ctor_context.StoreObject({.file = &sem_ir(), .type_id = binding.type_id},
+                               ctor_context.GetValue(binding.value_id), global);
+    } else {
+      // `PromoteObject`: the bound value's lowered value is a pointer to the
+      // object (its value representation), so fill the backing global with a
+      // memcpy of the object representation — the same copy shape
+      // `CopyObject` emits for by-copy initialization, licensed by the
+      // design's as-if copy rule for values (docs/design/values.md): the
+      // source is the binding's own materialized temporary, which nothing
+      // can alias.
+      ctor_context.CopyObject({.file = &sem_ir(), .type_id = binding.type_id},
+                              ctor_context.GetValue(binding.value_id), global);
+    }
     ++global_let_stores_emitted_;
   }
 }

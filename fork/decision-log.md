@@ -2281,6 +2281,122 @@ by rel string — cosmetic, both deterministic); B NIT-5 (the runner
 reports only the first failing unit's compile error — pre-existing
 first-error-only shape). Veto-able.
 
+_W-069 W69b landing (2026-08-18, the W69b implementer):_ the workstream
+closer per fork/w069/plan.md §4 W69b — the pointer-value-rep arm, the
+restored ledger acceptance split, the W69b golden set, BOTH conformance
+programs, and the W69a fill-audit residue. _Mechanism (the pointer arm):_
+`GlobalLetBinding::Disposition` gains `PromoteObject` — the
+`ValueRepr::Pointer` case (classes, choices, multi-element tuples/structs)
+now promotes instead of Declining. The dispatch is unchanged in structure:
+object-identical `Copy` → the W69a store/load `Promote`; `Pointer` →
+`PromoteObject`; `None` → `NoStorage` (still dead defensive per the W69a
+fill audit); non-object-copy `Copy`/`Custom` and unmapped chase shapes →
+`Declined` FATAL (message retexted to name what remains declined). A
+`PromoteObject` binding's backing global holds the OBJECT representation
+(`GetType(type_id)`, exactly what `GetOrCreateGlobalLetVariable` already
+built), `PrepareGlobalLetDefinitions` zero-initializes it identically, and
+the ctor hook fills it with a MEMCPY of the object's alloc size from the
+bound value's lowered pointer — mirrored precedent:
+`FunctionContext::CopyObject` (function_context.cpp), whose body is now
+shared through a new public `CopyObject(TypeInFile, llvm::Value*
+source_addr, llvm::Value* dest_addr)` overload that the inst-id form
+delegates to. The bound value's lowered value IS a pointer because
+`AcquireValue`'s `Pointer` arm forwards the acquired ref's address
+(handle_expr_category.cpp), and the source is the binding's own
+materialized temporary (nothing can alias it — values cannot have their
+address taken), so the copy rides the values.md as-if license (§6 R-3).
+References: `TryEmitGlobalLetValue`'s `PromoteObject` arm serves the
+global's ADDRESS as the value representation — the same shape
+`FileContext::GetConstant`'s pointer-value-rep arm serves for constants
+and a by-value parameter carries — with `AddGlobalToCurrentFingerprint` on
+every hit, same as the `Promote` arm. handle.cpp's NameRef comment
+retexted (copy-of-object OR pointer now served; class-scope statics and
+namespace-scope bindings still excluded). import_ref.cpp and check
+untouched; SemIR untouched. _The ledger acceptance test (OQ-3):_
+check/testdata/match/choice_generic_payload_scrutinee.carbon's
+`imported_global` subfile is RESTORED to a cross-file split — plib gains
+`fn MakeNeither() -> P(i64)` and binds `let g: P(i64) = MakeNeither();`
+(RUNTIME-bound, the form that arbitrates the residue), the importer
+matches `g` — the exact shape that CRASHED lowering at W5-S3b — plus the
+constant-bound sibling `let gc: P(i64) = P(i64).Neither;` with its own
+importing subfile (`imported_global_constant`) as the half-(b) boundary
+pin; dump ranges mark both bindings and both match fns. _W69b goldens
+(all CHECK-less or range-marked; autoupdate fills):_ NEW
+lower/testdata/let/import_choice.carbon — the acceptance split's
+lower-side pin (object-rep `_Cg.Main` global + ctor memcpy + the
+importer's external decl + discriminant load; `gc` pinned to the constant
+path with no `_Cgc` symbol; a same-file `match (g)` for the same-file
+half), the class-typed subfile with FIELD-READ consumption (S-5:
+`Pt`/`MakePt`/`let origin` + same-file and cross-file `origin.x`), and
+the P-10 whole-tuple subfile (`let t: (i32, i32) = MakePair();` consumed
+cross-file as `t.0` AND whole `t`). NEW
+lower/testdata/let/global_runtime_specifics.carbon — the R-2 falsifier in
+its nearest EXPRESSIBLE form (deviation, below). W69a residue discharged:
+check/testdata/let/global_runtime.carbon now marks
+`//@dump-sem-ir-begin`/`end` ranges around every binding and consumer
+(11 ranges), so it pins the SemIR shape — binding in the file top block
+wrapping a `@__global_init.`-qualified bound value; the importer's
+no-`[concrete]` `import_ref` — and its header is retexted back from the
+"clean checking only" reconciliation. _R17 DEVIATION, loud (for
+coordinator adjudication):_ risk R-2's falsifier as written — "two
+specifics of one generic each reading a DIFFERENT imported runtime let" —
+is STRUCTURALLY INEXPRESSIBLE: a file-scope name reference in a generic
+body resolves statically to one binding, so every specific of a generic
+references the SAME `let` set; the only specific-dependent value channel
+in `GetValue` is the constant path (`GetConstantValueInSpecific`), and a
+runtime `let` is NotConstant by definition. The falsifier golden
+therefore pins the nearest expressible shapes: (1) two specifics of one
+generic (`fn G(generic T: Reader)`, the call_different_impls.carbon
+pattern) whose witness calls reach per-type impl readers each loading a
+DIFFERENT imported runtime let — a coalesced `_CG` specific serving both
+is the alarm; (2) two specifics of one generic reading the SAME imported
+runtime let directly — the direct promoted-global load inside
+specific-function lowering, the path whose
+`AddGlobalToCurrentFingerprint` call R-2 mandates (retained: correct,
+cheap, and future-proof parity with the constant path at GetValue's
+:217, though no expressible program today can make it the deciding
+fingerprint entry). Recorded as a dated plan amendment. _Conformance
+(the discharge arbiter; recipes per §4 N-6, RuntimeSeed(x) = x + 20,
+expectations from seed arithmetic written as literals):_ (1)
+control_flow/match_global_runtime_let.carbon (single-file, deepens the
+already-PASS sum-type-consumption bullet): `let boxed: Box(i32) =
+Box(i32).Full(RuntimeSeed(1));` matched exhaustively in `Run` with the
+payload printed, and `let bias: i32 = RuntimeSeed(2);` read through a
+cross-function helper — hand-computed output: RuntimeSeed(1)=1+20=**21**,
+RuntimeSeed(2)=2+20=**22**; EXPECT-STDOUT 21,22, exit 0; a zeroinit read
+prints 0 and fails loudly. (2) code_org/import_runtime_let/ (the FIRST
+multi-unit directory program — W69h's capability exercised for real;
+deepens the already-PASS Importing bullet): library unit seeds.carbon
+binds `let scalar_from_lib: i32 = RuntimeSeed(3);` and `let opt_from_lib:
+IntOption = IntOption.Some(RuntimeSeed(4));`, main.carbon imports
+`library "seeds"` and prints the scalar then the matched payload —
+hand-computed output: RuntimeSeed(3)=3+20=**23**,
+RuntimeSeed(4)=4+20=**24**; EXPECT-STDOUT 23,24, exit 0. Directives live
+in main.carbon only; discovery verified locally (`--self-test` green at
+**124 programs parsed, 56 bullets, OK**, the program listed as
+`multi-unit (2 units)`; README table regenerated by
+`--update-readme-table`). The program COMPILES AND RUNS only on the
+runner (no local toolchain) — its first real execution is the landing
+conformance run. _Expected golden movement:_ import_choice.carbon and
+global_runtime_specifics.carbon fill from empty CHECK;
+check let/global_runtime.carbon fills its new ranges (first real fill —
+the W69a empty-dump surprise cannot recur, ranges now exist);
+check match/choice_generic_payload_scrutinee.carbon regenerates (declared
+churn per §7 criterion (2): the P-5 restore — plib gains
+MakeNeither/g/gc with ranges, imported_global re-splits, the new
+imported_global_constant subfile fills); NO other file under
+toolchain/**/testdata may move — the byte-equivalence audit obligation.
+_Floor:_ **95/0/29 over 124** (+2 by addition: the two new programs'
+PASS; no SKIP flips — library_multifile_export's stale one-file SKIP
+text stays untouched per the adjudicated separate follow-up; no bullet
+flips — both bullets were already PASS). _Ledger:_ W-069 →
+DISCHARGE-STAGED under the R9 hedge (discharges when the landing
+autoupdate reaches the R26 fixpoint over the new/changed goldens
+including the restored split, the gate runs green, and the conformance
+floor lands at EXACTLY 95/0/29 over 124 with the movement being ONLY the
+two new programs' PASS; any other movement re-opens with the run's
+evidence). Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

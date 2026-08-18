@@ -1,1 +1,1 @@
-2026-08-18T20:40Z multifile un-SKIP conformance (floor must be EXACTLY 96/0/28 over 124 — this one program SKIP→PASS, no bullet flip)
+2026-08-18T22:50Z W74a conformance confirm (floor must be EXACTLY 96/0/28 over 124 — no program changes)

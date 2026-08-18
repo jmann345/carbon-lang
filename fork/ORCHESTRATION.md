@@ -10,8 +10,24 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-18 (post-PR #23: W72a — the W-072 DISSOLUTION)._
-TWENTY-THREE PRs. The B2a-era "hard limit" (generic `?` continue values
+_Last updated: 2026-08-18 (post-PR #24: W72b — W-072 DISCHARGED)._
+TWENTY-FOUR PRs. The continue-THREADING runtime arbiter
+(question_generic_thread_diff: `final impl forall` + load-bearing
+Combine chaining, i32 AND i64 with high-half-significant wide seeds,
+C++ template oracle) went green at exactly the target floor —
+**91/0/29 over 120**, bullet count still 43/56 (the pair deepens the
+already-PASS error-handling bullet to 4 programs). Three CI rounds, all
+honest: round 1 COMPILE-FAIL root-caused to the bare `[T: Combinable]`
+facet lacking the implicit Destroy witness the `type` facet carries
+(fixed with the precedented `& Core.Destroy` conjunct — a test-authoring
+defect, not a toolchain defect); round 2 the R-5 broken-oracle drill,
+red as the predicted DIFF-MISMATCH (run 32096324806); round 3 the
+discharge run (32096689454). Two adversarial reviews folded pre-merge
+(discharge-run wiring blocker; i64 truncation blind-spot widened away;
+(a)/(b) V-3a vetoes recorded on the log; W-073 sweep surface grown to
+nine files). W-072 DISCHARGED per plan §6 in full; W-073 (Diverge-idiom
++ comment-family sweep) unblocks as the natural successor. Scoreboard
+history: ... → 88 F8b → 89 F8c → 90 F8d → 91 W72b._ TWENTY-THREE PRs. The B2a-era "hard limit" (generic `?` continue values
 untheadable as `T`) dissolved with ZERO compiler change: non-reduction
 through non-`final` impls is upstream-DESIGNED; the ratified
 error_handling.md sketches spell `final impl` and B1b's testdata
@@ -148,14 +164,16 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-90 PASS / 29 SKIP / 0 FAIL programs (119 total, 17 differential
+91 PASS / 29 SKIP / 0 FAIL programs (120 total, 18 differential
 C++-oracle pairs); **43/56 bullets green** (runner-side scoreboard at
-the PR #16 head; verified from fork/conformance/out/scoreboard.json —
+the PR #24 head; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first
-error-handling flip). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79
+error-handling flip, now 4 programs deep incl. the W72b threading
+arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79
 at S3a → 80 at S3b → 81 at S3c → 83 at B1b
 (error_handling/control_flow_constructs flip +
-question_propagation_diff, a C++ early-return oracle). The scoreboard
+question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a
+→ 88 F8b → 89 F8c → 90 F8d → 91 W72b. The scoreboard
 regenerates on the runner (`Fork: conformance suite`,
 fork/conformance-request.txt trigger).
 
@@ -177,19 +195,22 @@ fork/conformance-request.txt trigger).
 
 ### Next actions (dependency order)
 
-1.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
+1.  W-073 sweep (UNBLOCKED at PR #24): retire/retext the Diverge
+    trailing-return idiom + the "does not type-collapse" comment family
+    for FINAL impls — nine enumerated files (grown at the W72b review
+    round), gated on the W72b arbiter that is now green.
+2.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
     user's veto-digest response** (presented 2026-07-20, unanswered).
-2.  Error-handling B2/B3 per F-006 (next plan round); W5-S3p (prelude
-    Result/Optional) stays GATED on the OPEN SF-9 fork — and W-071
-    (Try associated-constant `Destroy` bounds, gating symbolic-operand
-    `?`) is adjacent fork material for the same ask; W5-S4
-    (std::variant mapping) rides its deferred planning decision;
-    threading defect fixes (F-008). Residues: W-067 (default-clause
-    guards), W-068 (fewer-than-two-alternative choices), W-069
-    (cross-file runtime let), W-070 (unit break types, SF-9-blocked),
-    choice `Core.Copy` construction gap, tuple/var/ref/compile-time
-    case patterns, non-binding payload subpatterns (W-008).
-3.  Conformance depth: differential pair per flipped bullet; scoreboard in
+3.  W5-S3p (prelude Result/Optional) stays GATED on the OPEN SF-9 fork
+    (default (c) DEFER; carries W72c Try.FromContinue + the
+    `final`-spelling recurrence flag); W5-S4 (std::variant mapping)
+    rides its deferred planning decision. Residues: W-067
+    (default-clause guards), W-068 (fewer-than-two-alternative
+    choices), W-069 (cross-file runtime let), W-070 (unit break types,
+    SF-9-blocked), choice `Core.Copy` construction gap,
+    tuple/var/ref/compile-time case patterns, non-binding payload
+    subpatterns (W-008).
+4.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI; W-066 match usefulness diagnostics.
 
 ### Standing user directives

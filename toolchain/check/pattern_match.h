@@ -106,9 +106,9 @@ auto MatchCasePatternMatch(Context& context, SemIR::InstId pattern_id,
 
 // If `type_id` is a complete choice type — including a specific of a generic
 // choice — whose discriminant is an integer field, returns the discriminant's
-// type; returns nullopt otherwise. This is the in-slice choice scrutinee
-// shape: choices with fewer than two alternatives have an empty-tuple
-// discriminant, so they stay behind the scrutinee TODO. The object
+// type; returns nullopt otherwise, including for choices with fewer than two
+// alternatives, whose discriminant is the empty tuple (no discriminant test
+// exists for them; see `IsMatchableChoiceType`). The object
 // representation is read through `class_type->specific_id`, so a specific's
 // repr arrives substituted; the `MatchCondition` scrutinee gate forces the
 // specific's definition resolution (`RequireCompleteType`) before this runs
@@ -116,6 +116,16 @@ auto MatchCasePatternMatch(Context& context, SemIR::InstId pattern_id,
 // representation's spelling.
 auto GetChoiceDiscriminantType(Context& context, SemIR::TypeId type_id)
     -> std::optional<SemIR::TypeId>;
+
+// Returns whether `type_id` is a complete choice type `match` can dispatch
+// on: its object representation upholds the F-007k `.discriminant` contract
+// and the discriminant field is either an integer (two or more alternatives;
+// `GetChoiceDiscriminantType` returns its type) or the empty tuple (fewer
+// than two alternatives — a single-alternative choice's one arm is always
+// taken with no discriminant test, and an empty choice is vacuously
+// exhaustive; W-068). The same completion/specific-resolution caveats as
+// `GetChoiceDiscriminantType` apply.
+auto IsMatchableChoiceType(Context& context, SemIR::TypeId type_id) -> bool;
 
 // If `type_id` is a choice type with an alternative named `name_id`, returns
 // that alternative's name-to-index metadata; returns nullopt otherwise. The

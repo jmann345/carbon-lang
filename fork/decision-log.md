@@ -98,6 +98,12 @@ discriminant dispatch only.
     choice a vacuous zero-arm match), so both stay behind the scrutinee
     string, now pinned by match/fail_todo_single_alternative_choice.carbon
     and tracked as work item W-068.
+    _W-068 landing note (2026-08-18):_ lifted — both shapes are admitted
+    at the scrutinee gate (`IsMatchableChoiceType`), with constant-true
+    dispatch and the empty-choice lane scoped to type admission under
+    parse's at-least-one-arm rule; the fail_todo pin flipped (git mv) to
+    match/single_alternative_choice.carbon. See the W-068 landing note
+    below.
 -   **Specifics of generic choices are not matchable in S1** (`choice P(T:
     type) { A, B }` matched as a `P(i32)` value): they also stay behind
     `match on unsupported scrutinee type`. Plan §2.2c scopes alternative
@@ -1897,6 +1903,87 @@ landed the floor at EXACTLY **92 PASS / 0 FAIL / 29 SKIP over 121**,
 moving only by control_flow/match_guarded_default.carbon's PASS on the
 already-PASS match bullet. Guarded `default` clauses are now a working
 fork feature under the design's own license. Veto-able.
+
+_W-068 landing note (2026-08-18, the W-068 implementer):_ `match` over
+choices with FEWER than two alternatives — the W5-S1 scope trade
+re-recorded at S2e and tracked as W-068. _Gate:_ the scrutinee gate
+(`MatchCondition`), the alternative-pattern gate (`AlternativePattern`),
+and `MatchStatement`'s choice-vs-integer exhaustiveness split now ask a
+new `IsMatchableChoiceType` (pattern_match.cpp): the same F-007k repr
+walk `GetChoiceDiscriminantType` performs — factored into a shared
+`GetChoiceDiscriminantFieldType` so the two queries cannot drift — but
+accepting an integer OR empty-tuple `.discriminant` field. Any other
+field type still fails safe, the all-payloads-rejected error repr still
+degrades at the gate (choice_generic_payload_scrutinee.carbon's
+fail_all_payloads_rejected pin is untouched), and
+`GetChoiceDiscriminantType` keeps its integer-only contract for its other
+consumer (the `?` desugar, handle_question.cpp — out of scope here).
+_Dispatch:_ where no integer discriminant exists there is nothing to
+test, so the alternative arm's condition is a constant `true` by way of
+`MakeBoolLiteral` — exactly the condition shape binding arms and W-067's
+guarded `default` already lower — in both the payload-arm path
+(`MatchCaseAlternativePatternMatch`) and the payload-free designator path
+(`DoMatchCaseExprPattern`); payload extraction is untouched and real
+(`GetChoicePayloadInfo` never required the integer discriminant, and the
+bind pass reads the payload region exactly as for multi-alternative
+choices). _Exhaustiveness:_ NO coverage arithmetic changed, as the ledger
+predicted — one alternative is covered by its one unguarded arm, and an
+empty choice's legitimately-empty alternative table leaves nothing
+missing, so `DiagnoseNonexhaustiveMatch`'s empty-table bail is now
+documented as also being the correct vacuous-exhaustiveness answer (the
+same no-diagnostic outcome the loop would compute). _EMPTY-CHOICE LANE
+(the recorded decision):_ scrutinee-TYPE admission only, keeping parse's
+at-least-one-arm requirement — the zero-arm spelling `match (e) {}`
+remains the `ExpectedMatchCases` parse error. Grounding: the design docs
+define exhaustiveness over pattern sets and give NO zero-arm grammar
+(pattern_matching.md, "Refutability, overlap, usefulness, and
+exhaustiveness"), and empty-choice VALUES are unconstructible by
+construction — handle_choice.cpp deliberately gives an empty choice a
+`()` discriminant field so "there's no way to construct the Choice
+(which can be a useful type)" — so a zero-arm body would be
+design-unsanctioned syntax for an unreachable statement; minting a
+fork-only grammar extension for it fails R17's one-sentence-justification
+bar. Vacuous exhaustiveness is still REAL and pinned: a
+guarded-`default`-only match over an empty choice compiles with no
+unguarded `default` (empty_choice.carbon's guarded_default_vacuous
+subfile), while the same shape over a non-empty choice stays diagnosed
+(fail_choice_nonexhaustive.carbon). The zero-arm grammar question is
+recorded here as design residue, deliberately NOT a fork work item.
+_Construction side (verified):_ single-alternative construction landed
+long ago — constant alternatives by way of the empty-tuple discriminant `let`
+and payload alternatives by way of the composed constructor (W5-S1 review
+F-A1's choice/single_payload_alternative.carbon, check+lower; generic
+payload synthesis at S3b) — so this slice is consumption-only; empty
+choices are the uninhabited case. _Testdata:_ check
+single_alternative_choice.carbon (git mv from
+fail_todo_single_alternative_choice.carbon: constant alternative
+exhaustive one-arm match + construction, payload alternative with real
+extraction, `default`-only, and the W5-S3 composition — a
+single-alternative generic payload specific), empty_choice.carbon
+(`default`-only + the vacuous-exhaustiveness guarded-`default` pin),
+choice_generic_scrutinee.carbon's two fail_todo subfiles flipped positive
+(single_alternative_specific + empty_choice_specific — the ledger's
+must-flip pins), fail_choice_nonexhaustive.carbon gains
+fail_single_alternative_guarded (a guarded-only arm still leaves the one
+alternative uncovered: MatchNonexhaustive naming `.TheOnlyOption`);
+lower single_alternative_choice.carbon pins the new dispatch shape at
+lowering (no discriminant load/icmp, constant-true branch, real payload
+GEP — the discriminating counterpart of lower/match/choice_payload.carbon).
+Positive files ship with AUTOUPDATE and no CHECK lines; the fail subfile
+carries hand-written CHECK:STDERR pins only (house precedent per the
+S2e/W-067 notes); all golden content rides the runner autoupdate to R26
+fixpoint (R15/R19: red-first is expected — the R16a hook fired on the
+fail-pin additions and fail_todo removals, both sanctioned flip shapes).
+_Conformance:_ new run program
+control_flow/match_single_alternative.carbon (single-alternative payload
+consumption with RuntimeSeed x+20 runtime-computed payloads per R16d —
+expected prints 42/7/5 derived from the seed arithmetic, never from
+running the toolchain — plus the payload-free one-arm match and the
+compiled-but-uncallable empty-choice consumer); README table
+regenerated; --self-test OK (122 programs). Expected floor: EXACTLY
+**93 PASS / 0 FAIL / 29 SKIP over 122**, moving only by the new
+program's PASS — any other movement re-opens W-068 (R9 hedge; status
+DISCHARGE-STAGED in the inventory). Veto-able.
 
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 

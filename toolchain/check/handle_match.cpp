@@ -87,10 +87,18 @@ namespace Carbon::Check {
 // scrutinees keep requiring `default`: integer expression patterns are never
 // exhaustive per docs/design/pattern_matching.md.
 //
+// Choices with fewer than two alternatives have no integer discriminant —
+// their discriminant field is the empty tuple (handle_choice.cpp) — so
+// there is nothing to test at dispatch: a single-alternative choice's
+// alternative arm is always taken (a constant-true condition, the same
+// shape as an irrefutable binding arm, with the payload extraction still
+// real), and an empty choice — whose values cannot even be constructed —
+// is vacuously exhaustive, so no arm is needed for coverage (parse still
+// requires at least one arm; see `MatchStatementStart` in
+// parse/handle_match.cpp).
+//
 // TODO: Support other pattern kinds (`var`/`ref` case bindings, tuple
-// patterns, non-binding payload subpatterns), other scrutinee types
-// (including choices with fewer than two alternatives, which have no
-// integer discriminant to dispatch on), and
+// patterns, non-binding payload subpatterns), other scrutinee types, and
 // integer exhaustiveness via an irrefutable arm or full enumeration.
 // Diagnose cases that can never match, per docs/design/pattern_matching.md.
 
@@ -124,8 +132,11 @@ auto HandleParseNode(Context& context, Parse::MatchConditionId node_id)
   // such as `Core.Char` or user-defined adapter classes, are excluded: they
   // have their own operator semantics.
   //
-  // Choice scrutinees with an integer discriminant: dispatch compares the
-  // alternative's index against the `.discriminant` field. The temporary
+  // Choice scrutinees: with two or more alternatives, dispatch compares the
+  // alternative's index against the integer `.discriminant` field; with
+  // fewer than two, the discriminant is the empty tuple and there is nothing
+  // to test (W-068) — a single-alternative arm is always taken, and an empty
+  // choice is vacuously exhaustive. The temporary
   // cleanup handling below stays trivially correct for both shapes as a type
   // property, not a syntactic one: integer values have no `destroy`
   // functions, and an in-slice choice's payloads are restricted to trivially
@@ -171,8 +182,7 @@ auto HandleParseNode(Context& context, Parse::MatchConditionId node_id)
       is_int_scrutinee = true;
     }
   }
-  if (!is_int_scrutinee &&
-      !GetChoiceDiscriminantType(context, scrutinee_type_id)) {
+  if (!is_int_scrutinee && !IsMatchableChoiceType(context, scrutinee_type_id)) {
     return context.TODO(node_id, "match on unsupported scrutinee type");
   }
 
@@ -278,7 +288,7 @@ auto HandleParseNode(Context& context, Parse::AlternativePatternId node_id)
   // Only a choice scrutinee resolves leading-dot case patterns in its scope;
   // on any other scrutinee such a pattern keeps the W4 slice-gate TODO,
   // pinned to the introducer node.
-  if (!GetChoiceDiscriminantType(context, scrutinee_type_id)) {
+  if (!IsMatchableChoiceType(context, scrutinee_type_id)) {
     return context.TODO(case_context.introducer_node_id,
                         "match `case` pattern other than an integer "
                         "literal, or a case guard");
@@ -839,18 +849,20 @@ static auto DiagnoseNonexhaustiveMatch(
   auto class_type =
       context.types().GetAs<SemIR::ClassType>(unqualified_type_id);
   const auto& class_info = context.classes().Get(class_type.class_id);
-  // A valid choice with two or more alternatives always has a non-empty
-  // name-to-index table, so an empty table here triggers only under error
-  // recovery: a choice whose alternatives were ALL rejected with a
+  // An empty name-to-index table means there is nothing to cover, and the
+  // no-diagnostic answer below is right for both ways it arises. An EMPTY
+  // choice (W-068) has a legitimately empty table: the match is vacuously
+  // exhaustive — the loop below would find nothing missing anyway. Under
+  // error recovery, a choice whose alternatives were ALL rejected with a
   // diagnostic gets no table entries (`handle_choice.cpp` skips the push for
   // each rejected alternative), yet the declared alternative count still
   // sizes a real integer discriminant, so the class completes and the
-  // scrutinee passes its gate. Coverage is then unknowable — bail without
-  // diagnosing, mirroring the `has_error_arm` suppression; the declaration
-  // already carries its own diagnostics. A PARTIALLY-errored choice keeps
-  // entries for its surviving alternatives, so coverage is computed over
-  // those only — deliberate error-recovery behavior, consistent with how
-  // references to rejected alternatives resolve.
+  // scrutinee passes its gate; coverage is then unknowable — bail without
+  // diagnosing, mirroring the `has_error_arm` suppression, since the
+  // declaration already carries its own diagnostics. A PARTIALLY-errored
+  // choice keeps entries for its surviving alternatives, so coverage is
+  // computed over those only — deliberate error-recovery behavior,
+  // consistent with how references to rejected alternatives resolve.
   if (class_info.choice_alternatives.empty()) {
     return;
   }
@@ -902,7 +914,7 @@ auto HandleParseNode(Context& context, Parse::MatchStatementId node_id)
     // A `match` whose patterns are not exhaustive and that has no `default`
     // is an error per docs/design/pattern_matching.md.
     auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
-    if (!GetChoiceDiscriminantType(context, scrutinee_type_id)) {
+    if (!IsMatchableChoiceType(context, scrutinee_type_id)) {
       // An integer scrutinee. Integer expression patterns are never
       // exhaustive — each is treated as matching a single value from an
       // infinite set (docs/design/pattern_matching.md) — so W4's rule stays:

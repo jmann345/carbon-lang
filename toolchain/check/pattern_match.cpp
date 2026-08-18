@@ -358,7 +358,16 @@ static auto InsertHere(Context& context, SemIR::ExprRegionId region_id)
   return region.result_id;
 }
 
-auto GetChoiceDiscriminantType(Context& context, SemIR::TypeId type_id)
+// The shared representation walk behind the choice-scrutinee queries below:
+// if `type_id` is a complete choice class type — entity truth via
+// `Class::is_choice` — whose object representation upholds the F-007k
+// storage contract (a `StructType` whose field 0 is `.discriminant`),
+// returns the discriminant field's type, whatever that type is; returns
+// nullopt otherwise, including for the error-recovery repr of a choice all
+// of whose payloads were rejected (its object repr is the error type, not a
+// `StructType`).
+static auto GetChoiceDiscriminantFieldType(Context& context,
+                                           SemIR::TypeId type_id)
     -> std::optional<SemIR::TypeId> {
   auto unqualified_type_id = context.types().GetUnqualifiedType(type_id);
   auto class_type =
@@ -382,12 +391,29 @@ auto GetChoiceDiscriminantType(Context& context, SemIR::TypeId type_id)
       fields.front().name_id != SemIR::NameId::ChoiceDiscriminant) {
     return std::nullopt;
   }
-  auto disc_type_id =
-      context.types().GetTypeIdForTypeInstId(fields.front().type_inst_id);
-  if (!context.types().TryGetIntTypeInfo(disc_type_id)) {
+  return context.types().GetTypeIdForTypeInstId(fields.front().type_inst_id);
+}
+
+auto GetChoiceDiscriminantType(Context& context, SemIR::TypeId type_id)
+    -> std::optional<SemIR::TypeId> {
+  auto disc_type_id = GetChoiceDiscriminantFieldType(context, type_id);
+  if (!disc_type_id || !context.types().TryGetIntTypeInfo(*disc_type_id)) {
     return std::nullopt;
   }
   return disc_type_id;
+}
+
+auto IsMatchableChoiceType(Context& context, SemIR::TypeId type_id) -> bool {
+  auto disc_type_id = GetChoiceDiscriminantFieldType(context, type_id);
+  if (!disc_type_id) {
+    return false;
+  }
+  // Two or more alternatives dispatch on an integer discriminant; fewer than
+  // two have the empty-tuple discriminant field (handle_choice.cpp) —
+  // nothing to test at dispatch, but a matchable scrutinee (W-068). Any
+  // other field type is not a shape `handle_choice.cpp` produces; fail safe.
+  return context.types().TryGetIntTypeInfo(*disc_type_id).has_value() ||
+         *disc_type_id == GetTupleType(context, {});
 }
 
 auto LookupChoiceAlternative(Context& context, SemIR::TypeId type_id,
@@ -482,9 +508,18 @@ auto MatchCaseAlternativePatternMatch(Context& context,
   const auto& case_context = context.match_case_stack().back();
   CARBON_CHECK(case_context.alternative,
                "Alternative pattern arm without resolved alternative");
-  auto disc_type_id = GetChoiceDiscriminantType(
-      context, context.insts().Get(scrutinee_id).type_id());
-  CARBON_CHECK(disc_type_id, "Alternative pattern with non-choice scrutinee");
+  auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
+  auto disc_type_id = GetChoiceDiscriminantType(context, scrutinee_type_id);
+  if (!disc_type_id) {
+    // A single-alternative choice: its discriminant is the empty tuple
+    // (handle_choice.cpp), so there is nothing to test and the arm is always
+    // taken (W-068). The payload extraction in `MatchCase`'s bind pass stays
+    // real. The scrutinee gate admits only choice shapes here.
+    CARBON_CHECK(IsMatchableChoiceType(context, scrutinee_type_id),
+                 "Alternative pattern with non-choice scrutinee");
+    return MakeBoolLiteral(context, SemIR::LocId(case_node_id),
+                           SemIR::BoolValue::True);
+  }
   return EmitChoiceDiscriminantTest(context, case_node_id, scrutinee_id,
                                     *disc_type_id,
                                     case_context.alternative->index);
@@ -748,8 +783,7 @@ auto MatchContext::DoMatchCaseExprPattern(
                        .result_id;
   auto scrutinee_type_id = context_.insts().Get(scrutinee_id).type_id();
 
-  if (auto disc_type_id =
-          GetChoiceDiscriminantType(context_, scrutinee_type_id)) {
+  if (IsMatchableChoiceType(context_, scrutinee_type_id)) {
     // A choice scrutinee.
     auto result_type_id = context_.insts().Get(result_id).type_id();
     if (result_type_id == SemIR::ErrorInst::TypeId) {
@@ -781,6 +815,15 @@ auto MatchContext::DoMatchCaseExprPattern(
         return SemIR::InstId::None;
       }
       InsertHere(context_, expr_pattern.expr_region_id);
+      auto disc_type_id =
+          GetChoiceDiscriminantType(context_, scrutinee_type_id);
+      if (!disc_type_id) {
+        // A single-alternative choice has the empty-tuple discriminant —
+        // nothing to test, so the arm is always taken (W-068), the same
+        // constant-true condition an irrefutable binding arm contributes.
+        return MakeBoolLiteral(context_, SemIR::LocId(case_node_id),
+                               SemIR::BoolValue::True);
+      }
       return EmitChoiceDiscriminantTest(context_, case_node_id, scrutinee_id,
                                         *disc_type_id,
                                         case_context.alternative->index);

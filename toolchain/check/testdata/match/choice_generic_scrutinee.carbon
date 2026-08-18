@@ -183,43 +183,41 @@ fn F(a: P(i32), b: P(bool)) -> i32 {
   return -1;
 }
 
-// --- fail_todo_single_alternative_specific.carbon
+// --- single_alternative_specific.carbon
 library "[[@TEST_NAME]]";
 
+//@dump-sem-ir-begin
 choice Always(T: type) {
   Sunny
 }
 
-// W-068 composition on the post-deletion path: a single-alternative
-// specific's discriminant is the empty tuple, not an integer, so
-// `GetChoiceDiscriminantType` still rejects it — the fewer-than-two gate
-// composes with the lifted specifics gate and the scrutinee TODO survives.
+// W-068 composition: a single-alternative specific's discriminant is the
+// empty tuple, so the lifted fewer-than-two gate admits it through the same
+// repr read as a concrete choice — the one arm is always taken with no
+// discriminant test, and covering the only alternative discharges the
+// `default` requirement.
 fn F(a: Always(i32)) {
-  // CHECK:STDERR: fail_todo_single_alternative_specific.carbon:[[@LINE+4]]:9: error: semantics TODO: `match on unsupported scrutinee type` [SemanticsTodo]
-  // CHECK:STDERR:   match (a) {
-  // CHECK:STDERR:         ^~~
-  // CHECK:STDERR:
   match (a) {
     case .Sunny => { return; }
   }
 }
+//@dump-sem-ir-end
 
-// --- fail_todo_empty_choice_specific.carbon
+// --- empty_choice_specific.carbon
 library "[[@TEST_NAME]]";
 
+//@dump-sem-ir-begin
 choice Never(T: type) {}
 
-// The zero-alternative composition: an empty generic choice's specific also
-// keeps the scrutinee TODO (W-068).
+// The zero-alternative composition (W-068): an empty generic choice's
+// specific is admitted too; the `default` arm is dynamically dead —
+// `Never(i32)` has no constructors — and the match is vacuously exhaustive.
 fn F(n: Never(i32)) {
-  // CHECK:STDERR: fail_todo_empty_choice_specific.carbon:[[@LINE+4]]:9: error: semantics TODO: `match on unsupported scrutinee type` [SemanticsTodo]
-  // CHECK:STDERR:   match (n) {
-  // CHECK:STDERR:         ^~~
-  // CHECK:STDERR:
   match (n) {
     default => { return; }
   }
 }
+//@dump-sem-ir-end
 
 // --- fail_mixed_table_closed.carbon
 library "[[@TEST_NAME]]";

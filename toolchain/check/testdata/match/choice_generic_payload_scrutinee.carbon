@@ -47,14 +47,7 @@ choice P(T: type) {
   Neither
 }
 
-// CHECK:STDERR: plib.carbon:[[@LINE+7]]:37: error: cannot copy value of type `P(i64)` [CopyOfUncopyableType]
-// CHECK:STDERR: fn MakeNeither() -> P(i64) { return P(i64).Neither; }
-// CHECK:STDERR:                                     ^~~~~~~~~~~~~~
-// CHECK:STDERR: plib.carbon:[[@LINE+4]]:37: note: type `P(i64)` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
-// CHECK:STDERR: fn MakeNeither() -> P(i64) { return P(i64).Neither; }
-// CHECK:STDERR:                                     ^~~~~~~~~~~~~~
-// CHECK:STDERR:
-fn MakeNeither() -> P(i64) { return P(i64).Neither; }
+fn MakeRuntime() -> P(i64) { return P(i64).Both(1, 2); }
 
 // The RESTORED cross-file split's defining side (the W-069 ledger
 // acceptance shape, upgraded to the RUNTIME-bound form per fork/w069/plan.md
@@ -63,7 +56,7 @@ fn MakeNeither() -> P(i64) { return P(i64).Neither; }
 // backing global at lowering (the W69b pointer-value-rep arm; lower-side pin
 // in lower/testdata/let/import_choice.carbon).
 //@dump-sem-ir-begin
-let g: P(i64) = MakeNeither();
+let g: P(i64) = MakeRuntime();
 //@dump-sem-ir-end
 
 // The half-(b) boundary pin: a CONSTANT-bound sibling keeps importing as
@@ -79,7 +72,7 @@ library "[[@TEST_NAME]]";
 import library "plib";
 
 // The importing side of the restored split: `g` is bound in plib to a
-// runtime `MakeNeither()` call and matched here. This split previously
+// runtime `MakeRuntime()` call and matched here. This split previously
 // CRASHED lowering (function_context.cpp's missing-value CHECK — the W-069
 // ledger item); check has always accepted it, which this golden pins. The
 // choice and its specific are imported, so the R-2 question stands: nothing

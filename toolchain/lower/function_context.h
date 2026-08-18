@@ -119,6 +119,11 @@ class FunctionContext {
                  sem_ir().insts().Get(inst_id));
   }
 
+  // Returns whether a lowered value has been set for the given instruction.
+  auto HasLocal(SemIR::InstId inst_id) -> bool {
+    return static_cast<bool>(locals_.Lookup(inst_id));
+  }
+
   // Returns a lowered type for the given type_id in the given file. This adds
   // the specified type to the fingerprint.
   auto GetType(TypeInFile type) -> llvm::Type* {
@@ -312,6 +317,13 @@ class FunctionContext {
   auto CopyObject(TypeInFile type, SemIR::InstId source_id,
                   SemIR::InstId dest_id) -> void;
 
+  // Serves a reference to a file-scope `let` binding whose bound value is a
+  // runtime value (W-069): `inst_id` is either such a binding of the current
+  // file (or its bound value), or an imported instruction whose canonical
+  // defining instruction is one. Returns null if `inst_id` is no such
+  // reference.
+  auto TryEmitGlobalLetValue(SemIR::InstId inst_id) -> llvm::Value*;
+
   // When fingerprinting for a specific, adds the global.
   auto AddGlobalToCurrentFingerprint(llvm::Value* global) -> void;
 
@@ -333,6 +345,11 @@ class FunctionContext {
 
   // The specific id, if the function is a specific.
   SemIR::SpecificId specific_id_;
+
+  // Whether the function being lowered is this file's `__global_init`, in
+  // which case `LowerInst` hooks `FileContext::EmitGlobalLetStores` after
+  // each instruction (W-069).
+  bool is_global_ctor_ = false;
 
   // Builder for creating code in this function. The insertion point is held at
   // the location of the current SemIR instruction.

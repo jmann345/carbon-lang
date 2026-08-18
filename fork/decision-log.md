@@ -2037,6 +2037,71 @@ floor moved to EXACTLY **93 PASS / 0 FAIL / 29 SKIP over 122** (run
 control_flow/match_single_alternative.carbon's PASS. **W-068 is
 DISCHARGED.** Veto-able.
 
+_W-069 W69a landing (2026-08-18, the W69a implementer):_ the scalar half
+of the approved lane (a1) is staged per fork/w069/plan.md §4 —
+lowering-only, SemIR untouched, import_ref.cpp untouched. _Mechanism:_
+`FileContext::RegisterGlobalLetBindings` (a `PrepareToLower` pre-pass, so
+the registry exists in every module that can reference the file) selects
+package-scope VALUE bindings (`GetExprCategory == Value`, excluding
+`let ref`; aliases can't be runtime-valued; class-scope statics stay out
+of scope) whose bound value is NotConstant, and dispatches on
+`ValueRepr`: `IsCopyOfObjectRepr` Copy → Promote (named global, mangled
+by the new `Mangler::MangleGlobalLetBinding` — `_C` + name +
+inverse-qualified scope + private-to-library fingerprint of the BINDING
+inst, both sides feeding the same input); `None` → no storage,
+references served as the empty value; pointer/custom (or a bound-value
+chain the chase can't map to a ctor-resident initializer, or one whose
+terminal is itself constant) → Declined. `PrepareGlobalLetDefinitions`
+(defining side only) zero-initializes the definitions and schedules the
+stores; the `__global_init` `LowerInst` tail hook emits each store right
+after the binding's ctor-resident initializer lowers (so later
+initializers already observe it), lowering the file-top-block wrapper
+chain (`converted`/`value_of_initializer`/`acquire_value`/`temporary`/
+`tuple_access`/`struct_access`) on demand; a post-ctor CHECK guarantees
+no scheduled store is silently dropped (the "promoted or diagnosed,
+never a silent zeroinit" invariant); `GetValue`'s fall-through — entered
+ONLY when the constant path would have CHECK-crashed, so every
+previously-green path is bit-identical — serves same-file references by way of
+the value-id key and imported references by way of
+`SemIR::GetCanonicalFileAndInstId` (the SF-1 amendment), then loads from
+the get-before-create global (F8c discipline; R-2's
+`AddGlobalToCurrentFingerprint` on every hit). Declined shapes
+CARBON_FATAL with a named "semantics TODO ... (W-069)" message instead
+of the cryptic missing-value CHECK. _Probes staged (autoupdate fills):_
+check+lower `testdata/let/global_runtime.carbon` (P-1 scalar, P-2
+cross-file + the A/B/main re-export subfile, P-7 tuple pattern, P-8
+`let ref` exclusion pin, P-9 empty-tuple no-storage pin), lower
+`testdata/let/global_runtime_symbols.carbon` (the R-1 falsifier:
+defining file + two importers + private let — any `.N` symbol is the
+alarm), and the P-6 flip in upstream's lower/testdata/var/import.carbon
+(`fn X() -> i32 { return x; }` added, the :47 TODO deleted; prediction:
+green already by way of half (b)'s constant import — regeneration rides the
+runner per R16a). _Expected golden movement:_ the three let goldens fill
+from empty CHECK; var/import.carbon regenerates (new `X` function; no
+other module content should change); every OTHER file under
+toolchain/**/testdata must be byte-identical in the PR diff — that audit
+is this slice's negative pin. _Floor:_ no movement claimed, 93/0/29 over
+122 (goldens only; the runtime arbiters land at W69b after W69h).
+_Recorded deviations (R17, for coordinator adjudication):_ (1) the SF-1
+amendment's `export x;` re-export golden form is UNCHECKABLE today —
+`export x` of a runtime let mints an `ExportDecl` whose constant is
+NotConstant, and import_ref.cpp:4483's non-constant branch
+`CARBON_CHECK(Is<AnyBinding>...)` fails on ExportDecl — so P-2's
+re-export subfile uses the `export import library` form (import-chain
+hops; checks clean by way of half (b)); the chase's ExportDecl arm is
+implemented but not golden-pinned, and pinning it needs an import_ref.cpp
+amendment with its own review round (§5 step 3(ii) STOP honored —
+import_ref.cpp has zero changed lines). (2) The plan's "(a3) diagnostic"
+demotion is realized as loud named CARBON_FATALs plus silent
+declination at declaration (never at reference), because lowering has no
+diagnostic emitter and runs only on error-free SemIR — a true user-facing
+diagnostic would be a check-side change outside W69a's file list; if the
+coordinator wants the check-time diagnostic of §2.3, that is a dated
+plan amendment, not this slice. (3) `let x = <var member>` shapes whose
+initializer chain bottoms out in a CONSTANT reference (no ctor-resident
+key) are Declined, not promoted — recorded as in-scope-for-later residue
+under §5 step 4. Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

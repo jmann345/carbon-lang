@@ -816,6 +816,42 @@ Slice order after adjudication: W69a (mechanism, scalar) → W69h
 (harness, split-file programs) → W69b (choice shapes + restored split +
 runtime cross-file arbiter) → W69c contingent (generic residue).
 
+## W69a implementation-round amendments (2026-08-18, coordinator adjudications of the implementer's R17 deviation reports)
+
+Three deviations were reported loudly by the W69a implementer instead of
+being worked around; each is hereby ADJUDICATED and folded (veto-able):
+
+1.  **P-2's re-export subfile uses the `export import library` chain
+    form, not `export x`.** Discovery: `export x` of a RUNTIME let mints
+    an `ExportDecl` whose constant forwards NotConstant, and the
+    importer's resolution then trips
+    `CARBON_CHECK(...Is<SemIR::AnyBinding>...)` at import_ref.cpp:4483 —
+    a CHECK-SIDE CRASH upstream of this plan's lowering scope. Fixing it
+    requires import_ref.cpp, which §5 step 3(ii) STOPs — the fence held
+    (zero import_ref.cpp lines changed). ADJUDICATION: accepted; the
+    canonical-chase's ExportDecl arm stays implemented but golden-pinned
+    only for import-chain hops; pinning the ExportDecl arm rides a
+    future import_ref amendment round with its own review. The
+    discovered crash is minted as ledger item **W-074** (check-side
+    `export` of runtime-let bindings crashes resolution) so it cannot
+    silently vanish.
+2.  **The (a3) guard is realized as loud named `CARBON_FATAL`s at
+    reference + silent declination at declaration + a post-ctor CHECK
+    for dropped stores — not user diagnostics.** Lowering has no
+    diagnostic emitter and runs only on error-free SemIR (the
+    FileContext ctor CHECKs `!has_errors()`); §2.3's check-time
+    diagnostic would be a check-side change outside W69a's file fence.
+    Declaration-site silence is REQUIRED for byte-equivalence (existing
+    goldens carry declared-unreferenced pointer-rep runtime lets).
+    ADJUDICATION: accepted for this slice; the eventual right home for a
+    user-facing diagnostic is a check-side pass, recorded as W69b/W69c
+    evaluation material — the invariant "promoted OR loudly refused,
+    never a silent zeroinit" holds as implemented.
+3.  **Chases bottoming out at constant-terminal ctor shapes (for example
+    `let x: i32 = v.0` off a `var`) are declined at pre-pass time.**
+    ADJUDICATION: accepted as §5 step-4 residue, recorded; a future
+    widening emits the store after the terminal's dependees instead.
+
 ## Review-round amendments (2026-08-18)
 
 Both adversarial plan reviews completed 2026-08-18. Reviewer #1

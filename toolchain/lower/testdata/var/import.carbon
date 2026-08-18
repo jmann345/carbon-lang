@@ -44,7 +44,7 @@ import library "tuple_pattern";
 
 fn V() -> i32 { return v; }
 fn W() -> i32 { return w; }
-// TODO: Also test `x`. Right now, lowering a reference to an imported `let` asserts.
+fn X() -> i32 { return x; }
 fn Y() -> i32 { return y; }
 fn Z() -> i32 { return z; }
 

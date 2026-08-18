@@ -4,6 +4,7 @@
 
 #include "toolchain/lower/file_context.h"
 
+#include <algorithm>
 #include <memory>
 #include <optional>
 #include <string>
@@ -13,6 +14,7 @@
 #include "clang/CodeGen/ModuleBuilder.h"
 #include "common/check.h"
 #include "common/pretty_stack_trace_function.h"
+#include "common/set.h"
 #include "common/vlog.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/Sequence.h"
@@ -104,6 +106,11 @@ auto FileContext::PrepareToLower() -> void {
 
   // Lower constants.
   LowerConstants(*this, constants_);
+
+  // Register file-scope `let` bindings whose bound value is a runtime value,
+  // so references — from this file's functions or from importing files — can
+  // be served from promoted backing globals (W-069).
+  RegisterGlobalLetBindings();
 }
 
 // TODO: Move this to lower.cpp.
@@ -112,6 +119,10 @@ auto FileContext::LowerDefinitions() -> void {
   // TODO: Storing both a `constants_` array and a separate `global_variables_`
   // map is redundant.
   LowerGlobalVariables(sem_ir().top_inst_block_id());
+
+  // Promote file-scope runtime `let` bindings: mint their zero-initialized
+  // backing globals and schedule the `__global_init` stores.
+  PrepareGlobalLetDefinitions();
 
   // Lower static class variable definitions.
   for (const auto& class_info : sem_ir().classes().values()) {
@@ -175,6 +186,18 @@ auto FileContext::LowerDefinitions() -> void {
                       *this, global_ctor);
     llvm::appendToGlobalCtors(llvm_module(), llvm_function,
                               /*Priority=*/0);
+
+    // Every scheduled promoted-`let` store must have been emitted while the
+    // ctor body was built: a leftover entry would leave a silently
+    // zero-initialized global behind a green build (W-069 — the "promoted or
+    // diagnosed, never silent" invariant).
+    CARBON_CHECK(global_let_stores_emitted_ ==
+                     static_cast<int>(global_let_ctor_stores_.size()),
+                 "file-scope `let` promotion (W-069): {0} of {1} promoted "
+                 "bindings never had their `__global_init` store emitted",
+                 static_cast<int>(global_let_ctor_stores_.size()) -
+                     global_let_stores_emitted_,
+                 global_let_ctor_stores_.size());
   }
 }
 
@@ -792,6 +815,250 @@ auto FileContext::BuildNonCppGlobalVariableDecl(SemIR::VarStorage var_storage)
   return new llvm::GlobalVariable(llvm_module(), type,
                                   /*isConstant=*/false, linkage,
                                   /*Initializer=*/nullptr, mangled_name);
+}
+
+auto FileContext::RegisterGlobalLetBindings() -> void {
+  auto global_ctor_id = sem_ir().global_ctor_id();
+  if (!global_ctor_id.has_value()) {
+    // Without `__global_init` no file-scope binding can have a runtime bound
+    // value.
+    return;
+  }
+
+  // The instructions in `__global_init`'s body, for the promotion-shape
+  // chase below. Built lazily on the first promotable candidate.
+  Set<SemIR::InstId> ctor_insts;
+  bool ctor_insts_built = false;
+
+  for (auto inst_id :
+       sem_ir().inst_blocks().Get(sem_ir().top_inst_block_id())) {
+    auto binding = sem_ir().insts().TryGetAs<SemIR::AnyBinding>(inst_id);
+    if (!binding) {
+      continue;
+    }
+    // Only VALUE bindings at package scope with a runtime bound value
+    // qualify: `let ref` (reference-category) bindings are excluded by the
+    // category test — and runtime-valued aliases never reach lowering (check
+    // rejects them) — class-scope `static` bindings by the scope walk (only
+    // the top block is visited) and the scope test, and constant-bound
+    // `let`s by the constant test: those keep riding the constant path that
+    // W5-S3b's import half already serves, which is what the byte-equivalence
+    // audit over existing `let` goldens pins.
+    if (!binding->entity_name_id.has_value() ||
+        !binding->value_id.has_value()) {
+      continue;
+    }
+    const auto& entity_name =
+        sem_ir().entity_names().Get(binding->entity_name_id);
+    if (entity_name.parent_scope_id != SemIR::NameScopeId::Package) {
+      continue;
+    }
+    if (sem_ir().constant_values().Get(binding->value_id).is_constant()) {
+      continue;
+    }
+    if (SemIR::GetExprCategory(sem_ir(), inst_id) !=
+        SemIR::ExprCategory::Value) {
+      continue;
+    }
+    // A binding without an identifier name can't be named in an expression,
+    // so no reference can reach `GetValue` for it.
+    if (!entity_name.name_id.AsIdentifierId().has_value()) {
+      continue;
+    }
+
+    // Value-representation dispatch: only a value representation that is a
+    // copy of the object representation takes the store/load promotion in
+    // this slice; `None` needs no storage at all; everything else (pointer
+    // and custom representations) is declined and fails loudly if
+    // referenced.
+    auto value_rep = SemIR::ValueRepr::ForType(sem_ir(), binding->type_id);
+    auto disposition = GlobalLetBinding::Disposition::Declined;
+    if (value_rep.kind == SemIR::ValueRepr::None) {
+      disposition = GlobalLetBinding::Disposition::NoStorage;
+    } else if (value_rep.kind == SemIR::ValueRepr::Copy &&
+               value_rep.IsCopyOfObjectRepr(sem_ir(), binding->type_id)) {
+      disposition = GlobalLetBinding::Disposition::Promote;
+    }
+
+    // For promotion, chase from the bound value through the file-top-block
+    // conversion wrappers to the `__global_init`-resident instruction that
+    // computes the initializer. A shape the chase cannot map is loudly
+    // demoted to `Declined` rather than promoted to a global whose store
+    // could never be emitted.
+    llvm::SmallVector<SemIR::InstId, 4> chain;
+    auto ctor_key_id = SemIR::InstId::None;
+    if (disposition == GlobalLetBinding::Disposition::Promote) {
+      if (!ctor_insts_built) {
+        for (auto block_id :
+             sem_ir().functions().Get(global_ctor_id).body_block_ids) {
+          for (auto ctor_inst_id : sem_ir().inst_blocks().Get(block_id)) {
+            ctor_insts.Insert(ctor_inst_id);
+          }
+        }
+        ctor_insts_built = true;
+      }
+
+      auto cur_id = binding->value_id;
+      while (true) {
+        if (ctor_insts.Contains(cur_id)) {
+          ctor_key_id = cur_id;
+          break;
+        }
+        // File-top-block conversion wrappers the ctor-store hook knows how
+        // to lower on demand; each is chased through its value-carrying
+        // operand.
+        auto next_id = SemIR::InstId::None;
+        CARBON_KIND_SWITCH(sem_ir().insts().Get(cur_id)) {
+          case CARBON_KIND(SemIR::Converted converted): {
+            next_id = converted.result_id;
+            break;
+          }
+          case CARBON_KIND(SemIR::ValueOfInitializer value_of_init): {
+            next_id = value_of_init.init_id;
+            break;
+          }
+          case CARBON_KIND(SemIR::AcquireValue acquire): {
+            next_id = acquire.value_id;
+            break;
+          }
+          case CARBON_KIND(SemIR::Temporary temporary): {
+            next_id = temporary.init_id;
+            break;
+          }
+          case CARBON_KIND(SemIR::TupleAccess access): {
+            next_id = access.tuple_id;
+            break;
+          }
+          case CARBON_KIND(SemIR::StructAccess access): {
+            next_id = access.struct_id;
+            break;
+          }
+          default: {
+            break;
+          }
+        }
+        if (!next_id.has_value()) {
+          break;
+        }
+        chain.push_back(cur_id);
+        cur_id = next_id;
+      }
+
+      // A constant key has no "runs after" point in the ctor (its ordering
+      // against the stores that make its value meaningful is unknown), so
+      // it is demoted along with unmapped shapes.
+      if (!ctor_key_id.has_value() ||
+          sem_ir().constant_values().Get(ctor_key_id).is_constant()) {
+        CARBON_VLOG(
+            "Demoting file-scope runtime `let` binding {0} to Declined: no "
+            "usable `__global_init`-resident initializer found (W-069)\n",
+            inst_id);
+        disposition = GlobalLetBinding::Disposition::Declined;
+        chain.clear();
+        ctor_key_id = SemIR::InstId::None;
+      } else {
+        // The chase collected outermost-first; the hook lowers operand-first.
+        std::reverse(chain.begin(), chain.end());
+      }
+    }
+
+    auto index = static_cast<int32_t>(global_let_bindings_.size());
+    global_let_bindings_.push_back({.binding_id = inst_id,
+                                    .value_id = binding->value_id,
+                                    .type_id = binding->type_id,
+                                    .disposition = disposition,
+                                    .chain = std::move(chain),
+                                    .ctor_key_id = ctor_key_id});
+    global_let_binding_indices_.Insert(inst_id, index);
+    global_let_binding_indices_.Insert(binding->value_id, index);
+  }
+}
+
+auto FileContext::LookupGlobalLetBinding(SemIR::InstId inst_id) const
+    -> const GlobalLetBinding* {
+  if (global_let_bindings_.empty()) {
+    return nullptr;
+  }
+  auto result = global_let_binding_indices_.Lookup(inst_id);
+  if (!result) {
+    return nullptr;
+  }
+  return &global_let_bindings_[result.value()];
+}
+
+auto FileContext::GetOrCreateGlobalLetVariable(const GlobalLetBinding& binding)
+    -> llvm::GlobalVariable* {
+  CARBON_CHECK(binding.disposition == GlobalLetBinding::Disposition::Promote,
+               "Backing global requested for unpromoted `let` binding {0}",
+               binding.binding_id);
+  SemIR::Mangler m(sem_ir(), context().total_ir_count(),
+                   context().mangle_string_fingerprint());
+  std::string mangled_name = m.MangleGlobalLetBinding(binding.binding_id);
+  // Registration only promotes bindings with identifier names.
+  CARBON_CHECK(!mangled_name.empty(),
+               "Promoted `let` binding {0} has no mangled name",
+               binding.binding_id);
+
+  // If we already created a global with this mangled name, reuse it — the
+  // same get-before-create discipline as `BuildNonCppGlobalVariableDecl`
+  // above: the defining file's definition pass and every reference (local or
+  // from an importing file's view of this file) reach here for one binding,
+  // and each extra `new llvm::GlobalVariable` with a taken name is silently
+  // renamed by LLVM with a `.N` suffix, splitting the initializing store
+  // from the loads.
+  if (auto* existing =
+          llvm_module().getGlobalVariable(mangled_name,
+                                          /*AllowInternal=*/true)) {
+    return existing;
+  }
+
+  auto* type = GetType(binding.type_id);
+  return new llvm::GlobalVariable(llvm_module(), type,
+                                  /*isConstant=*/false,
+                                  llvm::GlobalVariable::ExternalLinkage,
+                                  /*Initializer=*/nullptr, mangled_name);
+}
+
+auto FileContext::PrepareGlobalLetDefinitions() -> void {
+  for (auto [index, binding] : llvm::enumerate(global_let_bindings_)) {
+    if (binding.disposition != GlobalLetBinding::Disposition::Promote) {
+      continue;
+    }
+    // Convert the declaration into a zero-initialized definition, exactly as
+    // `LowerGlobalVariables` does for `VarStorage` globals; the runtime
+    // store is emitted while lowering `__global_init`.
+    auto* llvm_var = GetOrCreateGlobalLetVariable(binding);
+    llvm_var->setInitializer(
+        llvm::Constant::getNullValue(llvm_var->getValueType()));
+    global_let_ctor_stores_.push_back(
+        {binding.ctor_key_id, static_cast<int32_t>(index)});
+  }
+}
+
+auto FileContext::EmitGlobalLetStores(FunctionContext& ctor_context,
+                                      SemIR::InstId ctor_inst_id) -> void {
+  if (global_let_ctor_stores_.empty()) {
+    return;
+  }
+  for (auto [key_id, index] : global_let_ctor_stores_) {
+    if (key_id != ctor_inst_id) {
+      continue;
+    }
+    const auto& binding = global_let_bindings_[index];
+    // Lower the file-top-block conversion wrappers between the initializer
+    // and the bound value. They aren't part of any lowered block, so nothing
+    // else lowers them; a wrapper shared between bindings (one tuple
+    // temporary feeding several bindings) is lowered once.
+    for (auto chain_id : binding.chain) {
+      if (!ctor_context.HasLocal(chain_id)) {
+        ctor_context.LowerInst(chain_id);
+      }
+    }
+    auto* global = GetOrCreateGlobalLetVariable(binding);
+    ctor_context.StoreObject({.file = &sem_ir(), .type_id = binding.type_id},
+                             ctor_context.GetValue(binding.value_id), global);
+    ++global_let_stores_emitted_;
+  }
 }
 
 auto FileContext::GetLocForDI(SemIR::InstId inst_id) -> Context::LocForDI {

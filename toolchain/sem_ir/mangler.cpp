@@ -13,6 +13,7 @@
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/sem_ir/entry_point.h"
 #include "toolchain/sem_ir/ids.h"
+#include "toolchain/sem_ir/inst_categories.h"
 #include "toolchain/sem_ir/name_scope.h"
 #include "toolchain/sem_ir/pattern.h"
 #include "toolchain/sem_ir/specific_interface.h"
@@ -319,6 +320,37 @@ auto Mangler::MangleGlobalVariable(SemIR::InstId pattern_id) -> std::string {
                                                 var_name.parent_scope_id)) {
     os << ".";
     MangleFingerprint(os, &sem_ir(), pattern_id);
+  }
+  return os.TakeStr();
+}
+
+auto Mangler::MangleGlobalLetBinding(SemIR::InstId binding_inst_id)
+    -> std::string {
+  auto binding = insts().GetAs<SemIR::AnyBinding>(binding_inst_id);
+  if (!binding.entity_name_id.has_value()) {
+    return std::string();
+  }
+  auto let_name = sem_ir().entity_names().Get(binding.entity_name_id);
+  if (!let_name.name_id.AsIdentifierId().has_value()) {
+    // A binding without an identifier name can't be referenced from another
+    // file.
+    return std::string();
+  }
+
+  RawStringOstream os;
+  os << "_C";
+
+  MangleNameId(os, let_name.name_id);
+  MangleInverseQualifiedNameScope(os, let_name.parent_scope_id);
+
+  if (sem_ir().name_scopes().IsPrivateToLibrary(let_name.name_id,
+                                                let_name.parent_scope_id)) {
+    os << ".";
+    // Fingerprint the binding instruction itself: unlike `VarStorage`, an
+    // `AnyBinding` carries no pattern instruction, and the defining and
+    // importing sides must feed the same fingerprint input or the two sides
+    // silently mint different symbols.
+    MangleFingerprint(os, &sem_ir(), binding_inst_id);
   }
   return os.TakeStr();
 }

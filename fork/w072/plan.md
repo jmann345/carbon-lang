@@ -133,7 +133,7 @@ from the tree:
     calls `EvalLookupSingleFinalWitness` (impl_lookup.cpp:1170-1258), which
     collects candidates with `final_only = !query_is_concrete` (:1253-1258).
     `CollectCandidateImplsForQuery` filters non-final candidates out under
-    `final_only` (:690-693) via `TreatImplAsFinal` (:232-238) →
+    `final_only` (:690-693) by way of `TreatImplAsFinal` (:232-238) →
     `IsImplEffectivelyFinal` (impl.cpp:980-984): an impl counts only if it is
     declared `final`, is fully concrete, or is the impl currently being
     defined. The fork's testdata/conformance `Core.Try` impls are none of
@@ -283,12 +283,12 @@ the case where the never-exercised combination — final impl × generic choice 
     deduced `Discard` sink with the wart comment (:279-288); `PropagateOnly`
     pins the facet-binding contrast — `R: Core.Try where .BreakType = i32`
     reduces `FromBreak`'s argument conversion, while `R.ContinueType` stays a
-    projection consumed via a projection-annotated binding (:271-274).
+    projection consumed by way of a projection-annotated binding (:271-274).
     question_generic_diff.carbon:28-41 carries the honest scope narrowing
     ("continue-THREADING runtime arbitration is W-072 follow-up"); its Chain
     (:94-98) discards continue values and reconstructs Ok from the seed.
 -   **The desugar.** handle_question.cpp: pre-flight witness check on the
-    return type only, yes/no consumed (:240-296); `Branch` via
+    return type only, yes/no consumed (:240-296); `Branch` by way of
     `BuildUnaryOperator` (:333-341); continue type = the carrier's Continue
     payload element type (`ResolveCarrierPayload` :86-115, used :355-360);
     continue value emitted at :415-416. The desugar never reads the witness
@@ -328,7 +328,7 @@ the case where the never-exercised combination — final impl × generic choice 
 
 | Candidate | V-3a status | Disposition |
 | --- | --- | --- |
-| (a) eval-side reduction via resolved non-final impl | CONTRADICTS p000983 / details.md specialization doctrine; the refusal is pinned by upstream fail testdata | VETOED |
+| (a) eval-side reduction by way of resolved non-final impl | CONTRADICTS p000983 / details.md specialization doctrine; the refusal is pinned by upstream fail testdata | VETOED |
 | (b) desugar-side continue-type annotation | Same commitment localized + a `?`-only carve-out (violates the B2a uniformity policy) | VETOED |
 | (c) documented wart | Aligned but unnecessary as primary | FALLBACK ONLY (§2.4) |
 | (d) `final impl` idiom (ADOPTED) | Upstream-designed mechanism, already implemented; the fork's ratified doc sketches already spell it | Full speed; digest item 1 |
@@ -400,7 +400,7 @@ the plan pre-declares outcomes for failure shapes rather than improvising.
 
 1.  **Probe compiles and reduces (expected):** proceed; wart comments flip to
     positive/negative pins as specified in §3.
-2.  **Probe fails with a NARROW machinery defect** (e.g. the :335-361 cycle
+2.  **Probe fails with a NARROW machinery defect** (for example the :335-361 cycle
     guard suppressing a legitimate reduction; a deduction failure specific to
     choice specifics; an import-parity gap per the W-069 precedent): STOP,
     record the failing input in the decision log, and re-scope W72a to a
@@ -506,12 +506,12 @@ Probe table (each row is a falsification probe; N = negative):
 | P-3 | mixed specific `mr: MyResult(T, i32)`, threading as P-1/P-2 | compiles; break path's `FromBreak` conversion intact | deduction failure on the partially-concrete query ⇒ §2.4 step 2 (cell filled after plan review, 2026-08-18) |
 | P-4 (N) | the EXISTING generic.carbon subfile, untouched impl (non-final): `mr?` continue value | STAYS the unreduced projection; `Discard` sink still required | non-final reduction firing ⇒ specialization soundness broken — halt, upstream check |
 | P-5 (N) | bare facet binding `R: Core.Try where .BreakType = i32` (`PropagateOnly`, untouched): `R.ContinueType` | stays a projection (no rewrite in R's facet type; the final impl's self `MyResult(T, E)` does not unify with `R`) | reduction firing ⇒ unsound blanket match — halt |
-| P-6 (N, fail golden) | after the final impl, a disagreeing narrower impl (e.g. `impl MyResult(i32, i32) as Core.Try where .ContinueType = ()...`) | diagnosed (specialization-vs-final; pin the actual diagnostic from the CI run — candidate families named after plan review, 2026-08-18: the poisoned-query family pinned by toolchain/check/testdata/impl/lookup/specialization_poison.carbon and the final-overlap family pinned by impl_overlap.carbon) | silent acceptance ⇒ halt |
+| P-6 (N, fail golden) | after the final impl, a disagreeing narrower impl (for example `impl MyResult(i32, i32) as Core.Try where .ContinueType = ()...`) | diagnosed (specialization-vs-final; pin the actual diagnostic from the CI run — candidate families named after plan review, 2026-08-18: the poisoned-query family pinned by toolchain/check/testdata/impl/lookup/specialization_poison.carbon and the final-overlap family pinned by impl_overlap.carbon) | silent acceptance ⇒ halt |
 | P-7 (N, fail golden) | `final impl` for a choice defined in a DIFFERENT file | `FinalImplInvalidFile` (impl_validation.cpp:143-146) | other/no diagnostic ⇒ record |
 | P-8 | import parity: lib.carbon declares choice + final impl; use.carbon threads `let v: T = mr?;` (the question_generic_crossfile shape) | reduction survives import (import_final.carbon precedent) | import-side non-reduction ⇒ W-069-family gap, §2.4 step 2 |
 | P-9 (obs.) | inside the final impl's own body: does `return self.(Core.Try.Branch)();` now collapse? | observation only — either way recorded; the b1 §2.6 `Diverge` idiom is NOT revised here. MINTING RULE (added after plan review, 2026-08-18, strictness F-3): if the observation FALSIFIES the eight-file "does not type-collapse" comment family (W72a sweep item 5), a follow-up work item is MINTED to retext the family and revisit the idiom — not merely observed | no gate, but minting is mandatory on falsification |
 
-Exit criteria: P-1..P-3 positive CHECK content via autoupdate; P-4/P-5 pinned
+Exit criteria: P-1..P-3 positive CHECK content by way of autoupdate; P-4/P-5 pinned
 by the EXISTING goldens staying semantically identical (generic.carbon's wart
 comment at :281-285 retexted into a deliberate negative pin citing
 details.md's specialization doctrine and pointing at question_final.carbon —
@@ -657,7 +657,7 @@ recurrence flag, and the re-staging instruction — see §0.3.
 
 House rules as at B1/B2: new fail subfiles ship hand-written CHECK:STDERR
 pins; positive CHECK content rides the runner autoupdate (R15/R19), two-pass
-to fixpoint where line counts shift (R26); clang-format via hooks (R12/R18);
+to fixpoint where line counts shift (R26); clang-format by way of hooks (R12/R18);
 `runner.py --self-test` before conformance-touching commits (R7); private
 `--out` dirs (R5); `uvx prek run --all-files` before every push (R25);
 conformance program bodies compile-verified against the fork toolchain before
@@ -681,7 +681,7 @@ cut — the ladder ends at W72b.)
 | W72b | 91 | 0 | 29 | 120 | +question_generic_thread_diff |
 
 FAIL stays 0 throughout; no SKIP flips (none cites this work); scoreboard
-regeneration rides each landing gate (R9); README table via
+regeneration rides each landing gate (R9); README table by way of
 `runner.py --update-readme-table` (DIFF-4). The one addition deepens the
 already-PASS "Error handling: dedicated control flow constructs" bullet —
 this plan flips no bullet and claims no bullet movement.

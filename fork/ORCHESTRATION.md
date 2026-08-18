@@ -10,7 +10,21 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-18 (post-PR #22: F-008 COMPLETE)._ TWENTY-TWO
+_Last updated: 2026-08-18 (post-PR #23: W72a — the W-072 DISSOLUTION)._
+TWENTY-THREE PRs. The B2a-era "hard limit" (generic `?` continue values
+untheadable as `T`) dissolved with ZERO compiler change: non-reduction
+through non-`final` impls is upstream-DESIGNED; the ratified
+error_handling.md sketches spell `final impl` and B1b's testdata
+dropped the keyword (R17 postmortem + new rule R27 landed —
+sketch-implementing testdata is diffed against the sketch's exact
+spelling). `let v: T = mr?;` now compiles clean (direct/mixed/import,
+SemIR-pinned as genuine reduction). P-9 SURPRISE: the in-body
+recursive-Branch call ALSO collapses under `final` — W-073 minted
+(evaluate retiring the Diverge idiom + the eight-file comment family).
+W72c (Try success ctor) parked in the SF-9/S3p brief with the
+`final`-spelling recurrence flag. Floor unchanged 90/0/29 over 119;
+W-072 stays OPEN until W72b's continue-THREADING runtime differential
+(91/0/29 over 120) goes green._ TWENTY-TWO
 PRs. F8d closed the workstream on the FIX path (degrade never needed):
 `std::thread(Carbon::Work)` constructs directly — a concrete
 non-generic non-member Carbon function maps to a pointer to its

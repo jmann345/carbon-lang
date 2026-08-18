@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-18T14:39:26.601026+00:00",
+  "generated": "2026-08-18T20:18:51.852813+00:00",
   "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 11.9,
+  "elapsed_seconds": 8.3,
   "totals": {
-    "PASS": 95,
+    "PASS": 96,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
     "OUTPUT-MISMATCH": 0,
     "DIFF-MISMATCH": 0,
-    "SKIP": 29
+    "SKIP": 28
   },
   "programs": [
     {
@@ -56,11 +56,12 @@
       "differential": false
     },
     {
-      "path": "code_org/library_multifile_export.carbon",
+      "path": "code_org/library_multifile_export",
       "bullet": "Code organization: Libraries",
-      "status": "SKIP",
-      "detail": "harness limitation, not a feature gap: user-written named libraries (`library \"x\";` api + `impl library \"x\";`), `export C;`, and `export import library \"x\";` need multiple compilation units, but runner.py compiles exactly one file per program; this slice is arbitrated by golden checks in toolchain/check/testdata/packages/ (export_name.carbon, export_import.carbon, fail_duplicate_api.carbon, fail_api_not_found.carbon).",
-      "differential": false
+      "status": "PASS",
+      "detail": "",
+      "differential": false,
+      "units": 5
     },
     {
       "path": "code_org/library_named_import.carbon",
@@ -896,7 +897,7 @@
       "status": "PASS",
       "gap_status": "DONE",
       "programs": [
-        "code_org/library_multifile_export.carbon",
+        "code_org/library_multifile_export",
         "code_org/library_named_import.carbon"
       ]
     },

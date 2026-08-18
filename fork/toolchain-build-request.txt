@@ -1,1 +1,1 @@
-2026-08-18T07:27Z W-067 gate (guarded default clauses; full bazel test)
+2026-08-18T09:26Z W-067 gate RE-FIRE (run 32111182653 died mid-test at runner outage ~07:33Z; full bazel test must complete)

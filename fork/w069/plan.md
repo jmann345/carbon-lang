@@ -850,7 +850,7 @@ being worked around; each is hereby ADJUDICATED and folded (veto-able):
 3.  **Chases bottoming out at constant-terminal ctor shapes (for example
     `let x: i32 = v.0` off a `var`) are declined at pre-pass time.**
     ADJUDICATION: accepted as §5 step-4 residue, recorded; a future
-    widening emits the store after the terminal's dependees instead.
+    widening emits the store after the terminal's dependents instead.
 
 ## Review-round amendments (2026-08-18)
 

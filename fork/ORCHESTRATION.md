@@ -10,8 +10,17 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-18 (post-PR #20: F8b COMPLETE — THREADING BULLET
-GREEN)._ TWENTY PRs. F8b: trivially-destructible exported classes drop
+_Last updated: 2026-08-18 (post-PR #21: F8c COMPLETE)._ TWENTY-ONE
+PRs. F8c landed adjudication-first (plan adjudication D): the
+real-header run refuted H0 live (undefined `_Ctotal.Main.2`/`.3`), the
+fix is module-symbol-table reuse in `BuildNonCppGlobalVariableDecl`
+(the global-side sibling of the function path's name-keyed dedup;
+W-022 DISCHARGED), and the fired H0-mock-divergence stop-and-explain
+path is filed per §2.3 (a strictness-review catch). 89/0/30 over 119;
+specialization-typed Carbon globals now link and run
+(`std::atomic<i64>` bumped by two bridge threads against the oracle).
+Remaining F-008: F8d only (`std::thread(carbon_fn)` — p003848
+upstream re-check first; documented-limitation degrade sanctioned)._ TWENTY PRs. F8b: trivially-destructible exported classes drop
 the C++ destructor thunk (predicate reuses CanDestroyType's
 classification; the review round's impl-population blocker resolved by
 mirrored cross-IR enumeration with a two-file falsifier golden; W-021
@@ -113,7 +122,7 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-88 PASS / 31 SKIP / 0 FAIL programs (119 total, 15 differential
+89 PASS / 30 SKIP / 0 FAIL programs (119 total, 16 differential
 C++-oracle pairs); **43/56 bullets green** (runner-side scoreboard at
 the PR #16 head; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first

@@ -2730,6 +2730,21 @@ red-first → R26 fixpoint (every untouched class/tuple copy golden
 byte-identical, create_generic included) → gate → conformance floor
 96/0/28. Veto-able.
 
+_W-075 discharge confirmation (2026-08-19, coordinator):_ every staged
+condition met — the fix-round pipeline all green (fills 32191819332,
+no-commit fixpoint 32191946652; gate 32192068700 with every untouched
+golden byte-identical including the class/generic family the regression
+had crashed; conformance 32192068450 at exactly 96/0/28 over 124, the
+restored doc-verbatim roundtrip pair one PASS). The review's fill-audit
+obligations discharged: the shadowing probe's dump binds the
+synthesized `custom_witness (%Copy.Op)` at the outside call site with
+no user-impl reference (predicted verbatim); the untouched
+CopyOfUncopyableType goldens byte-identical by the fill's own file
+list + the green gate. The design's canonical
+`var my_opt: Optional(i32) = Optional(i32).None;` now compiles and
+runs; the fork's tripwire flipped exactly as its own header predicted.
+**W-075 is DISCHARGED.** Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

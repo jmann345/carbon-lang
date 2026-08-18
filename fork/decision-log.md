@@ -890,7 +890,12 @@ DISCHARGED (ledger updated, plan §9). Veto-able.
 _F8d landing note (2026-08-18):_ the D1 fix of the approved F-008 plan
 (fork/f008/plan.md §2.4, §3 F8d) — the FIX path taken; the §2.4
 sanctioned degrade did NOT fire (no wall outside the M estimate was
-hit). _Step-0 upstream re-check (plan §2.4 mandate, standing rule 5):_
+hit). (Reconciliation, review finding F4: the same-signature
+thunk-symbol collision recorded below WAS a wall the plan's shape left
+unnamed, but it fell inside the M estimate's multi-file effort —
+thunk-name plumbing, not a re-design — so §2.4's deeper-than-M degrade
+trigger never armed.) _Step-0 upstream re-check (plan §2.4 mandate,
+standing rule 5):_
 through the 2026-08-17 weekly merge (864845c by way of dfe308d),
 p003848-lambdas remains an accepted proposal with NO implementation
 landed that a callable mapping could build on — no lambda/callable
@@ -930,7 +935,21 @@ would otherwise collide on one internal asm label — a miscompile the
 plan's shape didn't name, caught in design here). A guard in
 `MaybeModifyCppThunkCallForConstEval` (check/cpp/constant.cpp) keeps
 const-eval from zipping the shortened runtime argument list against the
-full C++ parameter list. _Negative partition (plan §5 R-7):_ generic
+full C++ parameter list. _Post-review narrowing (B-1, 2026-08-18):_ the
+mapping was initially installed in `TryMapType`, where EVERY
+`MapToCppType` consumer — exported RETURN types and exported globals
+(check/cpp/export.cpp) included — would have accepted function types
+and paired a Carbon function value's EMPTY runtime representation with
+an 8-byte `void (*)()`: an export-direction uninitialized-value
+miscompile where pre-F8d code failed cleanly with "failed to map". The
+fix round confined the mapping to the call-argument path —
+`InventPrimitiveClangArg` tests `Is<SemIR::FunctionType>` and calls
+`TryMapFunctionType`/`InventConstantFunctionArg` directly, BEFORE the
+generic `MapToCppType`, and `TryMapType` returns null for
+`SemIR::FunctionType` again (wrapped `const`/pointer forms unwrap to
+the same null) — restoring the export-direction diagnosis while the
+argument path keeps the full mechanism above. _Negative partition (plan
+§5 R-7):_ generic
 functions (`generic_id`/`specific_id`), methods (`self_param_id`), and
 `FunctionTypeWithSelfType` values fall to the same null mapping and
 keep today's `CppCallArgTypeNotSupported`; constructor- and
@@ -939,21 +958,35 @@ method-shaped exports are additionally rejected decl-side
 fail_todo_carbon_fn_as_callable.carbon flips POSITIVE as
 carbon_fn_as_callable.carbon (hand error pins dropped; runner
 autoupdate owns the CHECK content per R15/R19, dump-sem-ir regions
-around the two flipped calls) and gains the two R-7 fail_todo splits
+around the two flipped calls), gains the two R-7 fail_todo splits
 (generic fn, method value — hand-pinned best-effort per §8's fail-file
-rule, reconciled by the same autoupdate). Movement prediction: ONLY
-this golden moves — no existing golden passes a function to C++ (plan
-§4's novelty claim); any other movement is stop-and-explain.
-_Conformance:_ cpp_thread_carbon_fn_diff un-SKIPs per its own SKIP
-protocol (body uncommented — one mechanical reorder recorded: the
-sketch's `Work` preceded `RuntimeSeed`, which Carbon's
-declare-before-use rejects, so the two swapped; semantics untouched)
-and PASSes the R-6 arbiter shape: real `std::thread(Carbon fn)` with
-the observable seeded fetch_add checked after `.join()`. Floor
-90/0/29 over 119 expected; bullets stay 43/56 (plan §6 — the threading
-bullet already PASSes from F8b). **W-023 DISCHARGED** (ledger updated,
-plan §9); F-008 defect scope closes with all three fixes landed, no
-degrade, zero net-new TODO strings (plan §7). Veto-able.
+rule, reconciled by the same autoupdate), and gains the
+two_carbon_fns_one_callee split (post-review B1, 2026-08-18): TWO
+same-signature Carbon functions into the SAME constructor-template
+callee, whose regen must surface TWO DISTINCT thunk symbols (differing
+`.argN.<mangled>` suffixes) — the executable pin of the collision fix,
+autoupdate-owned like the rest. Movement prediction: ONLY this golden
+moves — no existing golden passes a function to C++ (plan §4's novelty
+claim); any other movement is stop-and-explain. _Conformance:_
+cpp_thread_carbon_fn_diff un-SKIPs per its own SKIP protocol (body
+uncommented — one mechanical reorder recorded: the sketch's `Work`
+preceded `RuntimeSeed`, which Carbon's declare-before-use rejects, so
+the two swapped; semantics untouched) and now carries the R-6 arbiter
+shape: real `std::thread(Carbon fn)` with the observable seeded
+fetch_add checked after `.join()`, plus (post-review B1) a second
+same-signature function `Work2` on a second thread whose contribution
+folds into the oracle total — a thunk-symbol collision would run one
+body twice and diverge the printed sum. Floor 90/0/29 over 119
+expected; bullets stay 43/56 (plan §6 — the threading bullet already
+PASSes from F8b). _Verification status:_ nothing in this entry is
+live-verified in-container — the golden CHECK content, the pair's PASS,
+and the floor are all pending-CI, with the autoupdate regen
+(fork/autoupdate-request.txt) and the conformance run as the arbiters.
+_Pre-stated falsifier:_ if the regen churns any hand-pinned line this
+entry had presented as settled, that is an R17 hit. **W-023 DISCHARGED
+pending those arbiters** (ledger updated, plan §9); F-008 defect scope
+closes with all three fixes landed, no degrade, zero net-new TODO
+strings (plan §7). Veto-able.
 
 ### F-009: Function overloading — **Marked `overload fn`** (2026-07-19)
 

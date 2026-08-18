@@ -247,6 +247,11 @@ static auto TryMapClassType(Context& context, SemIR::ClassType class_type)
 // declaration itself (`InventPrimitiveClangArg`), so the value is a known
 // constant. Generic and member functions stay unsupported and map to a null
 // type.
+//
+// Called ONLY from the call-argument path (`InventPrimitiveClangArg`), never
+// from `TryMapType`/`MapToCppType` — see the `FunctionType` case in
+// `TryMapType` for why the general mapping must keep rejecting function
+// types.
 static auto TryMapFunctionType(Context& context, SemIR::FunctionType fn_type)
     -> clang::QualType {
   const auto& function = context.functions().Get(fn_type.function_id);
@@ -338,8 +343,20 @@ static auto TryMapType(Context& context, SemIR::TypeId type_id)
                 clang::ArraySizeModifier::Normal, /*IndexTypeQuals=*/0);
           }};
     }
-    case CARBON_KIND(SemIR::FunctionType fn_type): {
-      return TryMapFunctionType(context, fn_type);
+    case SemIR::FunctionType::Kind: {
+      // Deliberately NOT mapped here. The function-type mapping
+      // (`TryMapFunctionType`) is confined to the call-argument path
+      // (`InventPrimitiveClangArg`), where the value is embedded into the AST
+      // as a constant and never passed at runtime. A Carbon function value
+      // has an EMPTY runtime representation, so accepting function types from
+      // the general `MapToCppType` would let export-side consumers — exported
+      // return types and exported globals (export.cpp) — pair that empty
+      // representation with an 8-byte C++ `void (*)()`, producing
+      // uninitialized values. Those paths keep failing loudly with their
+      // "failed to map" TODOs instead. Wrapped forms (`const` function types,
+      // pointers over function types formed by `&x`) unwrap to this same
+      // null, so they stay rejected on the general path too.
+      return clang::QualType();
     }
     case SemIR::SymbolicBinding::Kind: {
       auto type_inst_id = context.types().GetTypeInstId(type_id);
@@ -387,7 +404,7 @@ auto MapToCppType(Context& context, SemIR::TypeId type_id) -> clang::QualType {
 // already builds (constant.cpp). The value is embedded in the AST rather than
 // being an `OpaqueValueExpr`, so overload resolution sees a known-constant
 // function pointer, and the thunk drops the argument from its runtime
-// parameter list (thunk.cpp). Expects that `MapToCppType` succeeded for
+// parameter list (thunk.cpp). Expects that `TryMapFunctionType` succeeded for
 // `form.type_id`, which guarantees the exported declaration is registered.
 static auto InventConstantFunctionArg(Context& context, SemIR::FormInfo form)
     -> clang::Expr* {
@@ -471,6 +488,24 @@ static auto InventPrimitiveClangArg(Context& context, SemIR::FormInfo form)
     }
   }
 
+  // A function-typed argument is a known constant identified by its type: map
+  // it here — and only here — and embed a reference to the exported
+  // declaration instead of inventing an opaque value. This is the sole entry
+  // point of the function-type mapping; the general `MapToCppType` below
+  // rejects `SemIR::FunctionType` (see `TryMapType`) so that export-side
+  // consumers never pair a function value's empty runtime representation with
+  // a C++ function-pointer type.
+  if (arg_cpp_type.isNull() &&
+      context.types().Is<SemIR::FunctionType>(form.type_id)) {
+    arg_cpp_type = TryMapFunctionType(
+        context, context.types().GetAs<SemIR::FunctionType>(form.type_id));
+    if (!arg_cpp_type.isNull()) {
+      return InventConstantFunctionArg(context, form);
+    }
+    // Unsupported function values (generic, method) fall through to the
+    // diagnostic below: the general mapping is null for them too.
+  }
+
   if (arg_cpp_type.isNull()) {
     arg_cpp_type = MapToCppType(context, form.type_id);
   }
@@ -482,13 +517,6 @@ static auto InventPrimitiveClangArg(Context& context, SemIR::FormInfo form)
     context.emitter().Emit(form.loc_id, CppCallArgTypeNotSupported,
                            form.type_id);
     return nullptr;
-  }
-
-  // A function-typed argument is a known constant identified by its type:
-  // embed a reference to the exported declaration instead of inventing an
-  // opaque value.
-  if (context.types().Is<SemIR::FunctionType>(form.type_id)) {
-    return InventConstantFunctionArg(context, form);
   }
 
   // Map a value expression to a const-qualified prvalue so that overload

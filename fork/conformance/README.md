@@ -132,9 +132,10 @@ The convention, enforced by discovery (and therefore by `--self-test`):
 
 -   A directory directly containing a `main.carbon` file is **one program**;
     every `*.carbon` directly inside it is one compilation unit of that
-    program. The program's scoreboard path is the directory (for example
-    `code_org/my_program`), and the generated table marks it
-    `multi-unit (N units)`.
+    program. The marker is case-sensitive — a `Main.carbon` is not a marker,
+    and its directory's files fall to single-file semantics. The program's
+    scoreboard path is the directory (for example `code_org/my_program`), and
+    the generated table marks it `multi-unit (N units)`.
 -   **All directives live in `main.carbon`** (`CONFORMANCE-BULLET`,
     `COMPILE-ARGS`, `EXPECT-*`, `SKIP` — so SKIP stays an in-file marker,
     exactly as for single-file programs). A directive in the leading comment

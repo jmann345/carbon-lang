@@ -904,6 +904,11 @@ decision-log W69h landing note:
     existing programs. The §4 arbiter's byte-identical full-run
     scoreboard rides the next conformance run.
 
+_W69h review round complete (2026-08-18, the W69h fixer):_ both reviews
+APPROVE; the stub-toolchain execution-path coverage is committed into
+`--self-test`; the §4 arbiter PASSED — byte-identical 93/0/29-over-122
+rerun (run 32140593428, scoreboard b3f3ed2).
+
 ## Review-round amendments (2026-08-18)
 
 Both adversarial plan reviews completed 2026-08-18. Reviewer #1

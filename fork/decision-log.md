@@ -2223,6 +2223,64 @@ conformance workflow — per the plan's re-open clause, ANY movement
 stops the slice un-landed; W69b does not start until that rerun is
 clean. Veto-able.
 
+_W69h review round (2026-08-18, the W69h fixer):_ both adversarial
+reviews APPROVE. Reviewer A (zero should-fixes, 7 NITs): byte-identity
+proven three independent ways, the driver-contract claim
+(`--output` names the LAST input's object) verified against
+compile_subcommand.cpp, and ~18 discovery edge cases all fail loud.
+Reviewer B (one SHOULD-FIX + 5 NITs): the arbiter-weakening sweep came
+back clean — zero diff hunks on every comparison path, the deviation
+records verified true, and the no-flip proof CI-confirmed at b3f3ed2
+(the byte-identical 93/0/29-over-122 rerun landed; the §4 arbiter is
+DISCHARGED). _B's SHOULD-FIX, actioned:_ the landing note's stub-driven
+end-to-end verification (PASS / middle-unit COMPILE-FAIL / LINK-FAIL
+through the real execution machinery) was throwaway — run once, then
+deleted, leaving the claims unreproducible. It is now COMMITTED into
+`--self-test` as the execution-path self-check: a hermetic tempdir
+program tree plus an argv-recording stub `carbon` executable drives
+main() through the multi-unit EXECUTION path and asserts PASS with
+per-unit objects + an N-object link in unit order + the `units`
+scoreboard key, a middle-unit COMPILE-FAIL naming the unit with no
+link attempted, and a LINK-FAIL with no run — permanently
+reproducible, sub-second, and skipped gracefully where the platform
+cannot exec the stub. _Two corrections to the landing note above
+(amendment, not rewrite):_ (1) missing clause — "a single invocation
+cannot emit the library units' objects" is true only under the
+runner's `--output` shape: the no-`--output` driver mode DOES emit
+per-input objects, but scatters them next to the sources, violating
+the out-dir isolation discipline, so the per-unit `--output` shape
+remains the right choice for a different reason than impossibility;
+(2) "mirrors ... verbatim" is too strong — the runner mirrors the
+bazel rule's per-unit shape but omits `--no-include-carbon-core`
+(conformance programs want the default core for `import Core`) and
+passes no dep API files (the runner has no dependency concept).
+_Also landed this round:_ a DIRECTIVE_PREFIXES drift guard in
+`--self-test` (source-derived sync with parse_directives' dispatch
+ladder + a behavioral check that every listed prefix is genuinely
+parsed; A NIT-7 + B NIT-3); the discover_programs sort-order comment
+qualified — parts-based key matches Path sort on the current Python,
+the byte-identical-rerun arbiter is the authority (A NIT-1); the
+README multi-unit section notes the `main.carbon` marker is
+case-sensitive (`Main.carbon` falls to single-file semantics; A
+NIT-2); work-items.json W-002's stale sentences refreshed with dated
+markers (the one-file-per-program limitation is false post-W69h, the
+EXTRA-ARGS question is answered by COMPILE-ARGS, README staleness is
+now machine-checked, the runner.py line pin re-pinned).
+library_multifile_export.carbon itself is deliberately untouched: its
+SKIP-reason retext rides the adjudicated separate un-SKIP follow-up
+(plan §8-A / review N-3). _Accepted, not actioned:_ A NIT-3
+(symlinked program directories invisible to rglob — pre-existing
+discovery behavior); A NIT-4 (a directory literally named `*.carbon`
+would crash discovery — pre-existing and crash-loud); A NIT-5
+(root-level main.carbon error duplicated per rglob hit — cosmetic); A
+NIT-6 (unit-stem obj-name aliasing across programs is impossible
+given name uniqueness — harmless-atomic); B NIT-1 (request-file
+timestamp sloppiness — noted as a record-hygiene habit to keep); B
+NIT-4 (scoreboard order sorts by parts while the README table sorts
+by rel string — cosmetic, both deterministic); B NIT-5 (the runner
+reports only the first failing unit's compile error — pre-existing
+first-error-only shape). Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

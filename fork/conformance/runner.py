@@ -78,7 +78,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 # Pure python3 stdlib. No bazel, no network.
 
 import argparse
+import contextlib
+import inspect
+import io
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -390,8 +394,10 @@ def discover_programs(programs_dir, filter_substr):
             prog.diff_cpp = diff_cpp
         programs.append(prog)
     # Deterministic order across both kinds: sort by path components of the
-    # program's rel (for the pre-existing single-file corpus this equals the
-    # historical sorted-rglob order exactly).
+    # program's rel. For the pre-existing single-file corpus this
+    # parts-based key matches the historical sorted-rglob (Path) order on
+    # the current Python; the authority for that equivalence is the
+    # arbiter's byte-identical rerun, not this comment.
     programs.sort(key=lambda pr: pr.rel.split("/"))
     # Program names must be unique: obj/bin/log artifact paths derive from
     # them, and a directory program `a/b` would collide with a file program
@@ -990,6 +996,357 @@ def discovery_self_check():
     return failures
 
 
+def directive_sync_self_check():
+    """DIRECTIVE_PREFIXES must stay in sync with parse_directives.
+
+    DIRECTIVE_PREFIXES drives the stray-directive rejection in non-main
+    units (leading_comment_directives); parse_directives hardcodes the
+    same prefixes in its dispatch ladder. This check guards the drift
+    both ways: (a) the set of `"// NAME:"` string literals in
+    parse_directives' source must equal DIRECTIVE_PREFIXES (a new elif
+    branch without a DIRECTIVE_PREFIXES entry fails here), and (b) each
+    DIRECTIVE_PREFIXES entry must have an observable parsing effect (an
+    entry parse_directives silently ignores fails here). Returns a list
+    of failure strings; empty means OK.
+    """
+    failures = []
+
+    def check(cond, what):
+        if not cond:
+            failures.append(f"directive-prefix sync self-check: {what}")
+
+    # (a) Source-derived sync: parse_directives spells every directive it
+    # dispatches on as a quoted "// NAME:" literal (startswith + len()).
+    source = inspect.getsource(parse_directives)
+    recognized = set(re.findall(r'"(// [A-Z][A-Z-]*:)"', source))
+    check(
+        recognized == set(DIRECTIVE_PREFIXES),
+        f"parse_directives recognizes {sorted(recognized)} but "
+        f"DIRECTIVE_PREFIXES lists {sorted(DIRECTIVE_PREFIXES)}",
+    )
+
+    # (b) Behavioral: every listed prefix is genuinely parsed.
+    with tempfile.TemporaryDirectory() as td:
+        path = Path(td) / "prog.carbon"
+        path.write_text(
+            "// CONFORMANCE-BULLET: B\n"
+            "// COMPILE-ARGS: --x\n"
+            "// EXPECT-EXIT: 7\n"
+            "// EXPECT-STDOUT:\n"
+            "//   hi\n"
+            "// SKIP: soon\n"
+            "fn Run() {}\n",
+            encoding="utf-8",
+        )
+        prog = parse_directives(path, "prog.carbon")
+    effects = {
+        "// CONFORMANCE-BULLET:": prog.bullet == "B",
+        "// COMPILE-ARGS:": prog.compile_args == ["--x"],
+        "// EXPECT-EXIT:": prog.expect_exit == 7,
+        "// EXPECT-STDOUT:": prog.expect_stdout == "hi\n",
+        "// SKIP:": prog.skip_reason == "soon",
+    }
+    check(
+        set(effects) == set(DIRECTIVE_PREFIXES),
+        "this check's effect map drifted from DIRECTIVE_PREFIXES: "
+        f"{sorted(set(effects) ^ set(DIRECTIVE_PREFIXES))}",
+    )
+    for prefix, effect_ok in effects.items():
+        check(effect_ok, f"{prefix} directive was not parsed")
+    return failures
+
+
+def _write_stub_toolchain(stub_dir):
+    """Write an argv-recording stub `carbon` executable into stub_dir.
+
+    The stub appends one JSON line per invocation to argv.jsonl next to
+    itself, then fabricates outputs: `compile` writes a fake object for
+    the LAST input (failing instead if that input's text contains
+    STUB-COMPILE-FAIL); `link` writes a runnable fake binary that prints
+    `42` (failing instead if the output name contains `linkfail`); the
+    fake binary also records itself as kind "run". Returns
+    (stub_path, log_path).
+    """
+    log_path = stub_dir / "argv.jsonl"
+    run_bin_source = (
+        f"#!{sys.executable}\n"
+        "import json, sys\n"
+        f"with open({str(log_path)!r}, 'a', encoding='utf-8') as f:\n"
+        "    f.write(json.dumps({'kind': 'run', 'argv': sys.argv[1:]})"
+        " + '\\n')\n"
+        "sys.stdout.write('42\\n')\n"
+    )
+    stub_source = f"""#!{sys.executable}
+import json
+import sys
+from pathlib import Path
+
+LOG = {str(log_path)!r}
+RUN_BIN = {run_bin_source!r}
+
+
+def output_path(args):
+    for arg in args:
+        if arg.startswith("--output="):
+            return Path(arg[len("--output="):])
+    return None
+
+
+def main():
+    args = sys.argv[1:]
+    sub = args[0] if args else ""
+    with open(LOG, "a", encoding="utf-8") as f:
+        f.write(json.dumps({{"kind": sub, "argv": args[1:]}}) + "\\n")
+    if sub == "probe":
+        return 0
+    out = output_path(args[1:])
+    if sub == "compile":
+        target = Path(args[-1])
+        if "STUB-COMPILE-FAIL" in target.read_text(encoding="utf-8"):
+            sys.stderr.write(
+                "stub: compile failure requested by %s\\n" % target.name
+            )
+            return 1
+        out.write_text("stub object: %s\\n" % target.name, encoding="utf-8")
+        return 0
+    if sub == "link":
+        if "linkfail" in out.name:
+            sys.stderr.write("stub: link failure requested\\n")
+            return 1
+        out.write_text(RUN_BIN, encoding="utf-8")
+        out.chmod(0o755)
+        return 0
+    sys.stderr.write("stub: unknown subcommand %r\\n" % sub)
+    return 2
+
+
+sys.exit(main())
+"""
+    stub = stub_dir / "carbon"
+    stub.write_text(stub_source, encoding="utf-8")
+    stub.chmod(0o755)
+    return stub, log_path
+
+
+def execution_self_check():
+    """End-to-end coverage of the multi-unit EXECUTION path, stubbed.
+
+    Drives main() (the real run path: discovery -> per-unit compile loop
+    -> multi-object link -> run -> scoreboard) over a synthetic tempdir
+    program tree against a stub `carbon` executable that records every
+    argv line and fabricates outputs. No real toolchain, no network;
+    everything lives in one TemporaryDirectory. Scenarios pinned:
+
+      - PASS: per-unit objects on disk, one compile invocation per unit
+        (ALL units on each command line, target last), one link naming
+        all per-unit objects in unit order, `"units": N` in the
+        scoreboard entry.
+      - middle-unit COMPILE-FAIL: the detail names the unit, the compile
+        loop stops at it, and no link is attempted.
+      - LINK-FAIL: all units compile, exactly one link attempt, no run.
+
+    Returns (failures, skip_reason): skip_reason is non-None when the
+    platform cannot exec the stub script (for example a noexec temp
+    mount), in which case the check is skipped gracefully.
+    """
+    failures = []
+
+    def check(cond, what):
+        if not cond:
+            failures.append(f"execution self-check: {what}")
+
+    bullet = next(iter(load_gap_analysis_bullets(GAP_ANALYSIS)))
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        stub_dir = root / "stub"
+        stub_dir.mkdir()
+        stub, log_path = _write_stub_toolchain(stub_dir)
+        try:
+            rc, _, _, _ = run_cmd([stub, "probe"], timeout=30)
+        except OSError as e:
+            return [], f"cannot exec the stub toolchain: {e}"
+        if rc != 0:
+            return [], f"stub toolchain probe exited with {rc}"
+
+        progs_dir = root / "programs"
+        header = f"// CONFORMANCE-BULLET: {bullet}\n"
+        files = {
+            "exec/pass_multi/a_base.carbon": 'library "base";\n',
+            "exec/pass_multi/b_mid.carbon": 'library "mid";\n',
+            "exec/pass_multi/main.carbon": header
+            + "// EXPECT-STDOUT:\n//   42\nfn Run() {}\n",
+            "exec/midfail/a_base.carbon": 'library "base";\n',
+            # The marker sits after the first code line, so it is not a
+            # leading-comment directive; the stub fails this unit.
+            "exec/midfail/b_mid.carbon": (
+                'library "mid";\n// STUB-COMPILE-FAIL\n'
+            ),
+            "exec/midfail/main.carbon": header + "fn Run() {}\n",
+            "exec/linkfail_prog/a_base.carbon": 'library "base";\n',
+            "exec/linkfail_prog/main.carbon": header + "fn Run() {}\n",
+        }
+        for relpath, text in files.items():
+            path = progs_dir / relpath
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+
+        out_dir = root / "out"
+        with contextlib.redirect_stdout(io.StringIO()):
+            rc = main(
+                [
+                    "--toolchain",
+                    str(stub),
+                    "--programs",
+                    str(progs_dir),
+                    "--out",
+                    str(out_dir),
+                ]
+            )
+        check(rc == 1, f"main() exited {rc}, expected 1 (2 failing programs)")
+
+        scoreboard_path = out_dir / "scoreboard.json"
+        check(scoreboard_path.is_file(), "scoreboard.json not written")
+        entries = {}
+        if scoreboard_path.is_file():
+            scoreboard = json.loads(scoreboard_path.read_text(encoding="utf-8"))
+            entries = {e["path"]: e for e in scoreboard["programs"]}
+
+        records = []
+        if log_path.is_file():
+            records = [
+                json.loads(line)
+                for line in log_path.read_text(encoding="utf-8").splitlines()
+            ]
+        records = [r for r in records if r["kind"] != "probe"]
+        compiles = [r for r in records if r["kind"] == "compile"]
+        links = [r for r in records if r["kind"] == "link"]
+        runs = [r for r in records if r["kind"] == "run"]
+
+        def out_name(record):
+            for arg in record["argv"]:
+                if arg.startswith("--output="):
+                    return Path(arg[len("--output=") :]).name
+            return ""
+
+        # --- PASS: per-unit objects + N-object link + `units` key. ---
+        entry = entries.get("exec/pass_multi", {})
+        check(
+            entry.get("status") == PASS,
+            f"exec/pass_multi: {entry.get('status')} "
+            f"({entry.get('detail')}), expected PASS",
+        )
+        check(
+            entry.get("units") == 3,
+            f"exec/pass_multi scoreboard units = {entry.get('units')!r}, "
+            f"expected 3",
+        )
+        pass_objs = [
+            "exec_pass_multi.a_base.o",
+            "exec_pass_multi.b_mid.o",
+            "exec_pass_multi.main.o",
+        ]
+        for obj in pass_objs:
+            check(
+                (out_dir / "obj" / obj).is_file(),
+                f"per-unit object missing: obj/{obj}",
+            )
+        pass_compiles = [
+            r for r in compiles if out_name(r).startswith("exec_pass_multi.")
+        ]
+        check(
+            [out_name(r) for r in pass_compiles] == pass_objs,
+            f"per-unit compile invocations wrong: "
+            f"{[out_name(r) for r in pass_compiles]}",
+        )
+        for record in pass_compiles:
+            inputs = [
+                Path(a).name for a in record["argv"] if not a.startswith("--")
+            ]
+            check(
+                sorted(inputs)
+                == ["a_base.carbon", "b_mid.carbon", "main.carbon"],
+                f"a compile line must carry ALL units: {inputs}",
+            )
+            target = (
+                out_name(record)[len("exec_pass_multi.") : -len(".o")]
+                + ".carbon"
+            )
+            check(
+                inputs and inputs[-1] == target,
+                f"target unit not last on its compile line: "
+                f"{inputs} (target {target})",
+            )
+        pass_links = [r for r in links if out_name(r) == "exec_pass_multi"]
+        check(
+            len(pass_links) == 1,
+            f"expected exactly one link for exec/pass_multi, "
+            f"got {len(pass_links)}",
+        )
+        if pass_links:
+            objs = [
+                Path(a).name
+                for a in pass_links[0]["argv"]
+                if not a.startswith("--")
+            ]
+            check(
+                objs == pass_objs,
+                f"link must name all per-unit objects in unit order: {objs}",
+            )
+
+        # --- Middle-unit COMPILE-FAIL: unit named, no link attempted. ---
+        entry = entries.get("exec/midfail", {})
+        check(
+            entry.get("status") == COMPILE_FAIL,
+            f"exec/midfail: {entry.get('status')}, expected COMPILE-FAIL",
+        )
+        check(
+            "unit b_mid.carbon" in entry.get("detail", ""),
+            f"COMPILE-FAIL detail must name the failing unit: "
+            f"{entry.get('detail')!r}",
+        )
+        mid_compiles = [
+            out_name(r)
+            for r in compiles
+            if out_name(r).startswith("exec_midfail.")
+        ]
+        check(
+            mid_compiles == ["exec_midfail.a_base.o", "exec_midfail.b_mid.o"],
+            f"compile loop must stop AT the failing middle unit: "
+            f"{mid_compiles}",
+        )
+        check(
+            not any(out_name(r) == "exec_midfail" for r in links),
+            "COMPILE-FAIL must not attempt a link",
+        )
+
+        # --- LINK-FAIL: all units compiled, one link attempt, no run. ---
+        entry = entries.get("exec/linkfail_prog", {})
+        check(
+            entry.get("status") == LINK_FAIL,
+            f"exec/linkfail_prog: {entry.get('status')}, expected LINK-FAIL",
+        )
+        linkfail_compiles = [
+            out_name(r)
+            for r in compiles
+            if out_name(r).startswith("exec_linkfail_prog.")
+        ]
+        check(
+            linkfail_compiles
+            == ["exec_linkfail_prog.a_base.o", "exec_linkfail_prog.main.o"],
+            f"LINK-FAIL program must compile all units: {linkfail_compiles}",
+        )
+        check(
+            sum(1 for r in links if out_name(r) == "exec_linkfail_prog") == 1,
+            "LINK-FAIL program must attempt exactly one link",
+        )
+        check(
+            len(runs) == 1,
+            f"exactly one binary run expected (the PASS program), "
+            f"got {len(runs)}",
+        )
+    return failures, None
+
+
 def self_test(programs_dir, filter_substr):
     """Validate all program headers + bullet names without a toolchain."""
     ok = True
@@ -1008,6 +1365,29 @@ def self_test(programs_dir, filter_substr):
         "multi-unit discovery self-check: "
         f"{'OK' if not discovery_failures else 'ERRORS'}"
     )
+    # DIRECTIVE_PREFIXES must match what parse_directives recognizes.
+    sync_failures = directive_sync_self_check()
+    for failure in sync_failures:
+        ok = False
+        print(failure, file=sys.stderr)
+    print(
+        "directive-prefix sync self-check: "
+        f"{'OK' if not sync_failures else 'ERRORS'}"
+    )
+    # The multi-unit EXECUTION path (per-unit compile loop + multi-object
+    # link) end-to-end against a stub toolchain: PASS / middle-unit
+    # COMPILE-FAIL / LINK-FAIL.
+    exec_failures, exec_skip = execution_self_check()
+    if exec_skip is not None:
+        print(f"execution-path self-check: SKIPPED ({exec_skip})")
+    else:
+        for failure in exec_failures:
+            ok = False
+            print(failure, file=sys.stderr)
+        print(
+            "execution-path self-check: "
+            f"{'OK' if not exec_failures else 'ERRORS'}"
+        )
     bullets = load_gap_analysis_bullets(GAP_ANALYSIS)
     if not bullets:
         print(f"error: no bullets parsed from {GAP_ANALYSIS}", file=sys.stderr)

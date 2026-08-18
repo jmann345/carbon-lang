@@ -25,8 +25,8 @@ red as the predicted DIFF-MISMATCH (run 32096324806); round 3 the
 discharge run (32096689454). Two adversarial reviews folded pre-merge
 (discharge-run wiring blocker; i64 truncation blind-spot widened away;
 (a)/(b) V-3a vetoes recorded on the log; W-073 sweep surface grown to
-nine files). W-072 DISCHARGED per plan §6 in full; W-073 (Diverge-idiom
-+ comment-family sweep) unblocks as the natural successor. Scoreboard
+nine files). W-072 DISCHARGED per plan §6 in full; W-073 (the
+Diverge-idiom and comment-family sweep) unblocks next. Scoreboard
 history: ... → 88 F8b → 89 F8c → 90 F8d → 91 W72b._ TWENTY-THREE PRs. The B2a-era "hard limit" (generic `?` continue values
 untheadable as `T`) dissolved with ZERO compiler change: non-reduction
 through non-`final` impls is upstream-DESIGNED; the ratified

@@ -1,1 +1,1 @@
-2026-08-18T09:25Z W-067 review-round regen pass 2 (R26 fixpoint)
+2026-08-18T10:00Z W-068 goldens red-first regen pass 1 (five check/lower goldens)

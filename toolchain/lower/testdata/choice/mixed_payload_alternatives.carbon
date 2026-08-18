@@ -41,6 +41,9 @@ let some: MaybeInt = MakeSome(42);
 // CHECK:STDOUT: source_filename = "mixed_payload_alternatives.carbon"
 // CHECK:STDOUT:
 // CHECK:STDOUT: @MaybeInt.val.173 = internal constant <{ <{ i2, [7 x i8] }>, [8 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 1, [7 x i8] zeroinitializer }>, [8 x i8] zeroinitializer }>
+// CHECK:STDOUT: @_Cmissing.Main = global <{ <{ i2, [7 x i8] }>, [8 x i8] }> zeroinitializer
+// CHECK:STDOUT: @_Cnone.Main = global <{ <{ i2, [7 x i8] }>, [8 x i8] }> zeroinitializer
+// CHECK:STDOUT: @_Csome.Main = global <{ <{ i2, [7 x i8] }>, [8 x i8] }> zeroinitializer
 // CHECK:STDOUT: @MaybeInt.val.4b9.loc20_17.6 = internal constant <{ <{ i2, [7 x i8] }>, [8 x i8] }> zeroinitializer
 // CHECK:STDOUT: @MaybeInt.val.173.loc22_10.12 = internal constant <{ <{ i2, [7 x i8] }>, [8 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 1, [7 x i8] zeroinitializer }>, [8 x i8] zeroinitializer }>
 // CHECK:STDOUT: @llvm.global_ctors = appending global [1 x { i32, ptr, ptr }] [{ i32, ptr, ptr } { i32 0, ptr @_C__global_init.Main, ptr null }]
@@ -88,10 +91,13 @@ let some: MaybeInt = MakeSome(42);
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.loc36.temp = alloca <{ <{ i2, [7 x i8] }>, [8 x i8] }>, align 8, !dbg !27
 // CHECK:STDOUT:   %.loc37_33.temp = alloca <{ <{ i2, [7 x i8] }>, [8 x i8] }>, align 8, !dbg !28
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 @_Cmissing.Main, ptr align 8 @MaybeInt.val.173.loc22_10.12, i64 16, i1 false)
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc36.temp), !dbg !27
 // CHECK:STDOUT:   call void @_CMakeNone.Main(ptr %.loc36.temp), !dbg !27
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 @_Cnone.Main, ptr align 8 %.loc36.temp, i64 16, i1 false)
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc37_33.temp), !dbg !28
 // CHECK:STDOUT:   call void @_CMakeSome.Main(ptr %.loc37_33.temp, i64 42), !dbg !28
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 @_Csome.Main, ptr align 8 %.loc37_33.temp, i64 16, i1 false)
 // CHECK:STDOUT:   ret void, !dbg !29
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

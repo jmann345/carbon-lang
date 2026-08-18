@@ -32,6 +32,13 @@ choice P(T: type) {
   Neither
 }
 
+// CHECK:STDERR: plib.carbon:[[@LINE+7]]:37: error: cannot copy value of type `P(i64)` [CopyOfUncopyableType]
+// CHECK:STDERR: fn MakeNeither() -> P(i64) { return P(i64).Neither; }
+// CHECK:STDERR:                                     ^~~~~~~~~~~~~~
+// CHECK:STDERR: plib.carbon:[[@LINE+4]]:37: note: type `P(i64)` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
+// CHECK:STDERR: fn MakeNeither() -> P(i64) { return P(i64).Neither; }
+// CHECK:STDERR:                                     ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn MakeNeither() -> P(i64) { return P(i64).Neither; }
 
 // Runtime-bound: promoted to an object-rep global + ctor memcpy.

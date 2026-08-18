@@ -58,6 +58,7 @@ fn Use(n: i32) {
 // CHECK:STDOUT: source_filename = "payload_layout.carbon"
 // CHECK:STDOUT:
 // CHECK:STDOUT: @Sized.val = internal constant <{ <{ i2, [7 x i8] }>, [16 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 -2, [7 x i8] zeroinitializer }>, [16 x i8] zeroinitializer }>
+// CHECK:STDOUT: @_Cglobal_none.Main = global <{ <{ i2, [7 x i8] }>, [16 x i8] }> zeroinitializer
 // CHECK:STDOUT: @Sized.val.loc27_1.13 = internal constant <{ <{ i2, [7 x i8] }>, [16 x i8] }> <{ <{ i2, [7 x i8] }> <{ i2 -2, [7 x i8] zeroinitializer }>, [16 x i8] zeroinitializer }>
 // CHECK:STDOUT: @llvm.global_ctors = appending global [1 x { i32, ptr, ptr }] [{ i32, ptr, ptr } { i32 0, ptr @_C__global_init.Main, ptr null }]
 // CHECK:STDOUT:
@@ -181,8 +182,12 @@ fn Use(n: i32) {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define internal void @_C__global_init.Main() #0 !dbg !88 {
 // CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 8 @_Cglobal_none.Main, ptr align 8 @Sized.val.loc27_1.13, i64 24, i1 false)
 // CHECK:STDOUT:   ret void, !dbg !91
 // CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.memcpy.p0.p0.i64(ptr noalias writeonly captures(none), ptr noalias readonly captures(none), i64, i1 immarg) #1
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }

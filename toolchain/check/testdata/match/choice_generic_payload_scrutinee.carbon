@@ -577,8 +577,8 @@ fn Call() -> i32 {
 // CHECK:STDOUT:   %i64: type = class_type @Int, @Int(%int_64) [concrete]
 // CHECK:STDOUT:   %P.4ae: type = class_type @P, @P(%i64) [concrete]
 // CHECK:STDOUT:   %pattern_type.d17: type = pattern_type %P.4ae [concrete]
-// CHECK:STDOUT:   %MakeNeither.type: type = fn_type @MakeNeither [concrete]
-// CHECK:STDOUT:   %MakeNeither: %MakeNeither.type = struct_value () [concrete]
+// CHECK:STDOUT:   %MakeRuntime.type: type = fn_type @MakeRuntime [concrete]
+// CHECK:STDOUT:   %MakeRuntime: %MakeRuntime.type = struct_value () [concrete]
 // CHECK:STDOUT:   %tuple.type.1ac: type = tuple_type (%i64, %i64) [concrete]
 // CHECK:STDOUT:   %.58e: type = custom_layout_type {size=16, align=8, .Both@0: %tuple.type.1ac} [concrete]
 // CHECK:STDOUT:   %uninit.ccc: %.58e = uninitialized_value [concrete]
@@ -588,21 +588,21 @@ fn Call() -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
-// CHECK:STDOUT:   %.loc24_29.1: ref %P.4ae = temporary @__global_init.%.loc24, @__global_init.%MakeNeither.call
-// CHECK:STDOUT:   %.loc24_29.2: %P.4ae = acquire_value %.loc24_29.1
-// CHECK:STDOUT:   %.loc24_13: type = splice_block %P.loc24 [concrete = constants.%P.4ae] {
-// CHECK:STDOUT:     %P.ref.loc24: %P.type = name_ref P, %P.decl [concrete = constants.%P.generic]
-// CHECK:STDOUT:     %i64.loc24: type = type_literal constants.%i64 [concrete = constants.%i64]
-// CHECK:STDOUT:     %P.loc24: type = class_type @P, @P(constants.%i64) [concrete = constants.%P.4ae]
+// CHECK:STDOUT:   %.loc17_29.1: ref %P.4ae = temporary @__global_init.%.loc17, @__global_init.%MakeRuntime.call
+// CHECK:STDOUT:   %.loc17_29.2: %P.4ae = acquire_value %.loc17_29.1
+// CHECK:STDOUT:   %.loc17_13: type = splice_block %P.loc17 [concrete = constants.%P.4ae] {
+// CHECK:STDOUT:     %P.ref.loc17: %P.type = name_ref P, %P.decl [concrete = constants.%P.generic]
+// CHECK:STDOUT:     %i64.loc17: type = type_literal constants.%i64 [concrete = constants.%i64]
+// CHECK:STDOUT:     %P.loc17: type = class_type @P, @P(constants.%i64) [concrete = constants.%P.4ae]
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %g: %P.4ae = wrapper_binding g, %.loc24_29.2
+// CHECK:STDOUT:   %g: %P.4ae = wrapper_binding g, %.loc17_29.2
 // CHECK:STDOUT:   name_binding_decl {
 // CHECK:STDOUT:     %g.patt: %pattern_type.d17 = value_binding_pattern g [concrete = constants.%g.patt]
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %.loc31: type = splice_block %P.loc31 [concrete = constants.%P.4ae] {
-// CHECK:STDOUT:     %P.ref.loc31: %P.type = name_ref P, %P.decl [concrete = constants.%P.generic]
-// CHECK:STDOUT:     %i64.loc31: type = type_literal constants.%i64 [concrete = constants.%i64]
-// CHECK:STDOUT:     %P.loc31: type = class_type @P, @P(constants.%i64) [concrete = constants.%P.4ae]
+// CHECK:STDOUT:   %.loc24: type = splice_block %P.loc24 [concrete = constants.%P.4ae] {
+// CHECK:STDOUT:     %P.ref.loc24: %P.type = name_ref P, %P.decl [concrete = constants.%P.generic]
+// CHECK:STDOUT:     %i64.loc24: type = type_literal constants.%i64 [concrete = constants.%i64]
+// CHECK:STDOUT:     %P.loc24: type = class_type @P, @P(constants.%i64) [concrete = constants.%P.4ae]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %gc: %P.4ae = wrapper_binding gc, @__global_init.%Neither.ref
 // CHECK:STDOUT:   name_binding_decl {
@@ -612,14 +612,14 @@ fn Call() -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @__global_init() {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %MakeNeither.ref: %MakeNeither.type = name_ref MakeNeither, file.%MakeNeither.decl [concrete = constants.%MakeNeither]
-// CHECK:STDOUT:   %.loc24: ref %P.4ae = temporary_storage
-// CHECK:STDOUT:   %MakeNeither.call: init %P.4ae to %.loc24 = call %MakeNeither.ref()
+// CHECK:STDOUT:   %MakeRuntime.ref: %MakeRuntime.type = name_ref MakeRuntime, file.%MakeRuntime.decl [concrete = constants.%MakeRuntime]
+// CHECK:STDOUT:   %.loc17: ref %P.4ae = temporary_storage
+// CHECK:STDOUT:   %MakeRuntime.call: init %P.4ae to %.loc17 = call %MakeRuntime.ref()
 // CHECK:STDOUT:   %P.ref: %P.type = name_ref P, file.%P.decl [concrete = constants.%P.generic]
 // CHECK:STDOUT:   %i64: type = type_literal constants.%i64 [concrete = constants.%i64]
 // CHECK:STDOUT:   %P: type = class_type @P, @P(constants.%i64) [concrete = constants.%P.4ae]
-// CHECK:STDOUT:   %.loc31: %P.4ae = specific_constant @P.%.loc6_1.13, @P(constants.%i64) [concrete = constants.%P.val.c4c]
-// CHECK:STDOUT:   %Neither.ref: %P.4ae = name_ref Neither, %.loc31 [concrete = constants.%P.val.c4c]
+// CHECK:STDOUT:   %.loc24: %P.4ae = specific_constant @P.%.loc6_1.13, @P(constants.%i64) [concrete = constants.%P.val.c4c]
+// CHECK:STDOUT:   %Neither.ref: %P.4ae = name_ref Neither, %.loc24 [concrete = constants.%P.val.c4c]
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

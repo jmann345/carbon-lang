@@ -1,1 +1,1 @@
-2026-08-18T04:20Z W-073 sweep: golden comment retexts (line-count-preserving) — EXPECTED NO-OP; any non-empty regen diff is a red flag, not reconciliation
+2026-08-18T07:25Z W-067 goldens red-first regen pass 1 (three CHECK-less positives + three fail files)

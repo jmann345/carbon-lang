@@ -2465,6 +2465,26 @@ workstream residue with candidate lanes in the plan amendment. The
 AcquireValue folded-ref fix from part 1 is confirmed working (the prior
 crash site lowered past cleanly this round). Veto-able.
 
+_W-069 discharge confirmation (2026-08-18, coordinator):_ every
+criterion of fork/w069/plan.md §7 is met and **W-069 is DISCHARGED**.
+The final evidence chain: W69a mechanism + probes (gates green, two
+APPROVE reviews, hardening landed); W69h multi-unit runner capability
+(byte-identical rerun arbiter, execution coverage committed); W69b
+pointer-rep arm + the restored runtime `let g` acceptance split + BOTH
+conformance programs. The floor landed at EXACTLY **95 PASS / 0 FAIL /
+29 SKIP over 124** twice (scoreboard 889760a at the discharge-arbiter
+run; re-arbitrated green at the final round), moving only by the two
+W69b programs — including the fork's FIRST multi-unit directory
+program. The acceptance split is green in check AND lower goldens with
+real pins (354 filled lower lines: `_Cg.Main` object-rep global, ctor
+memcpy, external-decl import side, folded-constant match path, zero
+`_Cgc` symbols); autoupdate at no-commit fixpoint (32149312735); gate
+GREEN (32149634688). Three honest defect rounds rode the close: the
+plan-sketch copy error (W-075 minted), the pre-existing AcquireValue
+folded-ref crash (fixed, fenced), and the aggregate-Copy-rep
+consumption FATAL (P-10 narrowed to declaration-only, residue
+recorded). Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

@@ -9,6 +9,8 @@
 #include <iostream>
 #include <optional>
 
+#include "clang/AST/DeclCXX.h"
+#include "clang/AST/Expr.h"
 #include "clang/AST/Type.h"
 #include "clang/Basic/TargetInfo.h"
 #include "clang/Lex/Preprocessor.h"
@@ -236,6 +238,37 @@ static auto TryMapClassType(Context& context, SemIR::ClassType class_type)
   return ast_context.getCanonicalTagType(tag_decl);
 }
 
+// Maps the type of a concrete, non-generic, non-member Carbon function to a
+// pointer to the C++ type of its exported declaration, so that the function
+// can be passed where C++ expects a callable (TA-D1, W-023; fork/f008/plan.md
+// §2.4). The pointer type is the decayed form overload resolution needs to
+// deduce e.g. `std::thread`'s constructor template on `void(*)()`. The
+// corresponding argument is invented as a reference to the exported
+// declaration itself (`InventPrimitiveClangArg`), so the value is a known
+// constant. Generic and member functions stay unsupported and map to a null
+// type.
+//
+// Called ONLY from the call-argument path (`InventPrimitiveClangArg`), never
+// from `TryMapType`/`MapToCppType` — see the `FunctionType` case in
+// `TryMapType` for why the general mapping must keep rejecting function
+// types.
+static auto TryMapFunctionType(Context& context, SemIR::FunctionType fn_type)
+    -> clang::QualType {
+  const auto& function = context.functions().Get(fn_type.function_id);
+  if (function.generic_id.has_value() || fn_type.specific_id.has_value() ||
+      function.self_param_id.has_value()) {
+    return clang::QualType();
+  }
+  auto* function_decl =
+      GetOrExportFunctionDeclToCpp(context, fn_type.function_id);
+  if (!function_decl || isa<clang::CXXMethodDecl>(function_decl)) {
+    // Constructor-shaped and method-shaped exports have no addressable
+    // function pointer form.
+    return clang::QualType();
+  }
+  return context.ast_context().getPointerType(function_decl->getType());
+}
+
 // Maps a symbolic Carbon type to a C++ template parameter type.
 static auto TryMapSymbolicType(Context& context,
                                SemIR::InstId symbolic_inst_id) {
@@ -310,6 +343,21 @@ static auto TryMapType(Context& context, SemIR::TypeId type_id)
                 clang::ArraySizeModifier::Normal, /*IndexTypeQuals=*/0);
           }};
     }
+    case SemIR::FunctionType::Kind: {
+      // Deliberately NOT mapped here. The function-type mapping
+      // (`TryMapFunctionType`) is confined to the call-argument path
+      // (`InventPrimitiveClangArg`), where the value is embedded into the AST
+      // as a constant and never passed at runtime. A Carbon function value
+      // has an EMPTY runtime representation, so accepting function types from
+      // the general `MapToCppType` would let export-side consumers — exported
+      // return types and exported globals (export.cpp) — pair that empty
+      // representation with an 8-byte C++ `void (*)()`, producing
+      // uninitialized values. Those paths keep failing loudly with their
+      // "failed to map" TODOs instead. Wrapped forms (`const` function types,
+      // pointers over function types formed by `&x`) unwrap to this same
+      // null, so they stay rejected on the general path too.
+      return clang::QualType();
+    }
     case SemIR::SymbolicBinding::Kind: {
       auto type_inst_id = context.types().GetTypeInstId(type_id);
       return TryMapSymbolicType(context, type_inst_id);
@@ -348,6 +396,35 @@ auto MapToCppType(Context& context, SemIR::TypeId type_id) -> clang::QualType {
       }
     }
   }
+}
+
+// Invent the Clang argument for a Carbon function passed as a C++ callable:
+// a `DeclRefExpr` to the function's exported declaration wrapped in a
+// function-to-pointer decay cast — the shape constant evaluation of C++ calls
+// already builds (constant.cpp). The value is embedded in the AST rather than
+// being an `OpaqueValueExpr`, so overload resolution sees a known-constant
+// function pointer, and the thunk drops the argument from its runtime
+// parameter list (thunk.cpp). Expects that `TryMapFunctionType` succeeded for
+// `form.type_id`, which guarantees the exported declaration is registered.
+static auto InventConstantFunctionArg(Context& context, SemIR::FormInfo form)
+    -> clang::Expr* {
+  auto fn_type = context.types().GetAs<SemIR::FunctionType>(form.type_id);
+  const auto& function = context.functions().Get(fn_type.function_id);
+  auto* function_decl = cast<clang::FunctionDecl>(
+      context.clang_decls().Lookup(function.first_decl_id())->decl());
+
+  auto loc = GetCppLocation(context, form.loc_id);
+  auto* decl_ref_expr = clang::DeclRefExpr::Create(
+      context.ast_context(), /*QualifierLoc=*/clang::NestedNameSpecifierLoc(),
+      /*TemplateKWLoc=*/clang::SourceLocation(), function_decl,
+      /*RefersToEnclosingVariableOrCapture=*/false,
+      /*NameLoc=*/loc, function_decl->getType(), clang::VK_LValue);
+  auto function_ptr_type =
+      context.ast_context().getPointerType(function_decl->getType());
+  return clang::ImplicitCastExpr::Create(
+      context.ast_context(), function_ptr_type,
+      clang::CK_FunctionToPointerDecay, decl_ref_expr, nullptr,
+      clang::VK_PRValue, clang::FPOptionsOverride());
 }
 
 // Invent a primitive Clang argument given the form of the corresponding Carbon
@@ -409,6 +486,24 @@ static auto InventPrimitiveClangArg(Context& context, SemIR::FormInfo form)
       arg_cpp_type = context.ast_context().getIntTypeForBitwidth(
           bit_width_id.AsValue(), true);
     }
+  }
+
+  // A function-typed argument is a known constant identified by its type: map
+  // it here — and only here — and embed a reference to the exported
+  // declaration instead of inventing an opaque value. This is the sole entry
+  // point of the function-type mapping; the general `MapToCppType` below
+  // rejects `SemIR::FunctionType` (see `TryMapType`) so that export-side
+  // consumers never pair a function value's empty runtime representation with
+  // a C++ function-pointer type.
+  if (arg_cpp_type.isNull() &&
+      context.types().Is<SemIR::FunctionType>(form.type_id)) {
+    arg_cpp_type = TryMapFunctionType(
+        context, context.types().GetAs<SemIR::FunctionType>(form.type_id));
+    if (!arg_cpp_type.isNull()) {
+      return InventConstantFunctionArg(context, form);
+    }
+    // Unsupported function values (generic, method) fall through to the
+    // diagnostic below: the general mapping is null for them too.
   }
 
   if (arg_cpp_type.isNull()) {

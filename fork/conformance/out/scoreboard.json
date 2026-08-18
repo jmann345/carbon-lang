@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-17T23:58:28.230160+00:00",
+  "generated": "2026-08-18T01:15:13.597155+00:00",
   "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 11.4,
+  "elapsed_seconds": 11.2,
   "totals": {
-    "PASS": 89,
+    "PASS": 90,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
     "OUTPUT-MISMATCH": 0,
     "DIFF-MISMATCH": 0,
-    "SKIP": 30
+    "SKIP": 29
   },
   "programs": [
     {
@@ -512,8 +512,8 @@
     {
       "path": "interop/cpp_thread_carbon_fn_diff.carbon",
       "bullet": "C++ interop: threading, atomics, memory model, synchronization",
-      "status": "SKIP",
-      "detail": "defect TA-D1 (W-023) \u2014 `Cpp.std.thread.thread(Work)` with a Carbon function as the callable fails check with: error: call argument of type `<type of Work>` is not supported [CppCallArgTypeNotSupported] (measured 2026-07-19, fork/design-sprint/threading-atomics.md:101): TryMapType in check/cpp/type_mapping.cpp has no SemIR::FunctionType case, so the argument falls to `default:` and arg invention fails \u2014 the same diagnostic the F8a probe check/testdata/interop/cpp/function/import/fail_todo_carbon_fn_as_callable.carbon pins against a mock header. Un-SKIP (and uncomment the body) when F8d (fork/f008/plan.md \u00a73) lands the concrete-Carbon-fn-as-C++-callable mapping \u2014 or, under the plan's \u00a72.4 sanctioned degrade path, this pair STAYS SKIP with its text updated in place (documented limitation; un-SKIP condition becomes W-023's upstream-watch, p003848 lambdas). Never rewritten to an inline-C++ bridge spawn: a bridge oracle would pass with zero Carbon-fn-callable support (plan \u00a72.4).",
+      "status": "PASS",
+      "detail": "",
       "differential": true
     },
     {

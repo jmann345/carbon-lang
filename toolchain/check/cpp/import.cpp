@@ -1584,6 +1584,11 @@ static auto MakeParamPatternsBlockId(Context& context, SemIR::LocId loc_id,
   const auto* function_type =
       clang_decl.getType()->castAs<clang::FunctionProtoType>();
   for (auto i : llvm::seq(signature.num_params)) {
+    // A constant function argument is embedded into the C++ thunk rather than
+    // passed at runtime, so no Carbon parameter is formed for it.
+    if (signature.GetConstantFunctionArg(i)) {
+      continue;
+    }
     const auto* param = clang_decl.getNonObjectParameter(i);
     clang::QualType orig_param_type = function_type->getParamType(
         clang_decl.hasCXXExplicitFunctionObjectParameter() + i);

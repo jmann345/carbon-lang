@@ -1,1 +1,1 @@
-2026-08-18T12:10Z F8c merge gate
+2026-08-18T09:40Z F8d merge gate (post pass-3 fixpoint)

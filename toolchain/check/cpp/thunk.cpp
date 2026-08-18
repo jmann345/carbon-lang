@@ -114,6 +114,25 @@ static auto GenerateThunkMangledName(
     append_mode(mode);
   }
 
+  // Distinguish thunks that embed different constant function arguments: two
+  // Carbon functions with the same signature resolve to the same callee (for
+  // example one `std::thread` constructor instantiation), but their thunk
+  // bodies reference different exported declarations.
+  for (auto [i, constant_decl] :
+       llvm::enumerate(signature.constant_function_args)) {
+    if (!constant_decl) {
+      continue;
+    }
+    RawStringOstream constant_name_stream;
+    mangle_context.mangleName(GetGlobalDecl(constant_decl),
+                              constant_name_stream);
+    std::string constant_name = constant_name_stream.TakeStr();
+    llvm::StringRef constant_name_ref = constant_name;
+    // An asm-labelled declaration mangles to `\01<label>`; drop the marker.
+    constant_name_ref.consume_front("\01");
+    mangled_name_stream << ".arg" << i << "." << constant_name_ref;
+  }
+
   return mangled_name_stream.TakeStr();
 }
 
@@ -169,6 +188,9 @@ struct CalleeFunctionInfo {
         signature(signature),
         num_params(signature->num_params +
                    decl->hasCXXExplicitFunctionObjectParameter()) {
+    for (int i : llvm::seq(num_params)) {
+      num_constant_params += signature->GetConstantFunctionArg(i) != nullptr;
+    }
     auto& ast_context = decl->getASTContext();
     const auto* method_decl = dyn_cast<clang::CXXMethodDecl>(decl);
     bool is_ctor = isa<clang::CXXConstructorDecl>(decl);
@@ -194,23 +216,37 @@ struct CalleeFunctionInfo {
     return has_object_parameter && !has_implicit_object_parameter();
   }
 
-  // Returns the number of parameters the thunk should have.
+  // Returns whether the given callee parameter is satisfied by a constant
+  // function argument embedded into the thunk body rather than by a runtime
+  // thunk parameter.
+  auto is_constant_param(unsigned callee_param_index) const -> bool {
+    return signature->GetConstantFunctionArg(callee_param_index) != nullptr;
+  }
+
+  // Returns the number of parameters the thunk should have. Constant function
+  // arguments are embedded into the thunk body, not passed at runtime.
   auto num_thunk_params() const -> unsigned {
-    return has_implicit_object_parameter() + num_params +
+    return has_implicit_object_parameter() + num_params - num_constant_params +
            !has_simple_return_type;
   }
 
   // Returns the thunk parameter index corresponding to a given callee parameter
   // index.
   auto GetThunkParamIndex(unsigned callee_param_index) const -> unsigned {
-    return has_implicit_object_parameter() + callee_param_index;
+    CARBON_CHECK(!is_constant_param(callee_param_index));
+    unsigned num_constant_before = 0;
+    for (unsigned i : llvm::seq(callee_param_index)) {
+      num_constant_before += is_constant_param(i);
+    }
+    return has_implicit_object_parameter() + callee_param_index -
+           num_constant_before;
   }
 
   // Returns the thunk parameter index corresponding to the parameter that holds
   // the address of the return value.
   auto GetThunkReturnParamIndex() const -> unsigned {
     CARBON_CHECK(!has_simple_return_type);
-    return has_implicit_object_parameter() + num_params;
+    return has_implicit_object_parameter() + num_params - num_constant_params;
   }
 
   // The callee function.
@@ -223,6 +259,11 @@ struct CalleeFunctionInfo {
   // number of parameters that the function has if default arguments are being
   // used.
   int num_params;
+
+  // The number of parameters that are satisfied by constant function
+  // arguments embedded into the thunk body (see
+  // `ClangDeclSignature::constant_function_args`).
+  int num_constant_params = 0;
 
   // Whether the callee has an object parameter, which might be explicit or
   // implicit.
@@ -283,6 +324,12 @@ auto IsCppThunkRequired(Context& context, const SemIR::Function& function)
   // the boundary through a fenced thunk
   // (docs/design/error_handling.md#the-fenced-boundary-terminate-semantics).
   if (IsCppThunkFenceRequired(context, decl)) {
+    return true;
+  }
+
+  // A constant function argument must be embedded into a thunk body; the
+  // callee can't be called directly without it.
+  if (signature.HasConstantFunctionArgs()) {
     return true;
   }
 
@@ -362,6 +409,11 @@ static auto BuildThunkParameterTypes(clang::ASTContext& ast_context,
   const auto* function_type =
       callee_info.decl->getType()->castAs<clang::FunctionProtoType>();
   for (int i : llvm::seq(callee_info.num_params)) {
+    // Constant function arguments are embedded into the thunk body, not
+    // passed at runtime.
+    if (callee_info.is_constant_param(i)) {
+      continue;
+    }
     thunk_param_types.push_back(
         GetThunkParameterType(ast_context, function_type->getParamType(i)));
   }
@@ -398,6 +450,9 @@ static auto BuildThunkParameters(clang::ASTContext& ast_context,
   }
 
   for (int i : llvm::seq(callee_info.num_params)) {
+    if (callee_info.is_constant_param(i)) {
+      continue;
+    }
     clang::ParmVarDecl* thunk_param = clang::ParmVarDecl::Create(
         ast_context, thunk_function_decl, clang_loc, clang_loc,
         callee_info.decl->getParamDecl(i)->getIdentifier(),
@@ -569,6 +624,16 @@ static auto BuildCalleeArgs(clang::Sema& sema,
   int first_param = callee_info.has_explicit_object_parameter();
   call_args.reserve(callee_info.num_params - first_param);
   for (unsigned callee_index : llvm::seq(first_param, callee_info.num_params)) {
+    if (auto* constant_decl =
+            callee_info.signature->GetConstantFunctionArg(callee_index)) {
+      // A constant function argument: reference the embedded declaration
+      // directly instead of a thunk parameter. Sema decays the reference to
+      // the callee parameter's function pointer type.
+      call_args.push_back(sema.BuildDeclRefExpr(
+          constant_decl, constant_decl->getType(), clang::VK_LValue,
+          thunk_function_decl->getLocation()));
+      continue;
+    }
     call_args.push_back(BuildParamRefForCalleeArg(sema, thunk_function_decl,
                                                   callee_info, callee_index));
   }

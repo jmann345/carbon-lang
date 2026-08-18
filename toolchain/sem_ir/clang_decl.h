@@ -68,6 +68,15 @@ struct ClangDeclSignature : public Printable<ClangDeclSignature> {
   // TODO: Generalize this to be parameter info, not just passing mode.
   llvm::SmallVector<PassingMode, 4> passing_modes;
 
+  // For each parameter, the C++ function declaration whose address is passed
+  // as a known-constant argument (a concrete Carbon function passed as a C++
+  // callable), or null for an ordinary runtime parameter. Empty if no argument
+  // is such a constant; otherwise the same size as `num_params`. A constant
+  // function argument is embedded into the C++ thunk body as a reference to
+  // the declaration rather than being passed at runtime, and no Carbon
+  // parameter is formed for it.
+  llvm::SmallVector<clang::FunctionDecl*, 4> constant_function_args;
+
   // Convenience function to make a fixed signature.
   static auto Make(
       std::initializer_list<SemIR::ClangDeclSignature::PassingMode> modes,
@@ -87,12 +96,26 @@ struct ClangDeclSignature : public Printable<ClangDeclSignature> {
                                                           : PassingMode::ByVar;
   }
 
+  // Returns whether any argument is a known-constant function reference.
+  auto HasConstantFunctionArgs() const -> bool {
+    return !constant_function_args.empty();
+  }
+
+  // Returns the C++ function declaration embedded as the i-th argument, or
+  // null if the i-th parameter is an ordinary runtime parameter.
+  auto GetConstantFunctionArg(int32_t i) const -> clang::FunctionDecl* {
+    return i < static_cast<int32_t>(constant_function_args.size())
+               ? constant_function_args[i]
+               : nullptr;
+  }
+
   auto Print(llvm::raw_ostream& out) const -> void;
 
   auto operator==(const ClangDeclSignature& rhs) const -> bool {
     return kind == rhs.kind && num_params == rhs.num_params &&
            passing_modes == rhs.passing_modes &&
-           self_passing_mode == rhs.self_passing_mode;
+           self_passing_mode == rhs.self_passing_mode &&
+           constant_function_args == rhs.constant_function_args;
   }
 
   // Hashing for ClangDeclSignature.
@@ -104,6 +127,9 @@ struct ClangDeclSignature : public Printable<ClangDeclSignature> {
                   seed);
     for (auto mode : value.passing_modes) {
       code = HashValue(static_cast<int8_t>(mode), static_cast<uint64_t>(code));
+    }
+    for (auto* constant_decl : value.constant_function_args) {
+      code = HashValue(constant_decl, static_cast<uint64_t>(code));
     }
     return code;
   }

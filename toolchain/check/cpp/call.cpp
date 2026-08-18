@@ -72,6 +72,25 @@ auto PerformCallToCppFunction(Context& context, SemIR::LocId loc_id,
         // Preserve the `self` argument from the original callee.
         fn.self_id = self_id;
       }
+      // Arguments embedded as constants into the C++ thunk (a Carbon function
+      // passed as a callable) are not passed at runtime and have no Carbon
+      // parameter; drop them from the call.
+      llvm::SmallVector<SemIR::InstId> runtime_arg_ids;
+      const auto& function = context.functions().Get(fn.function_id);
+      if (const auto* clang_decl =
+              context.clang_decls().Lookup(function.first_decl_id());
+          clang_decl && clang_decl->key.signature_id.has_value()) {
+        const auto& signature =
+            context.clang_decl_signatures().Get(clang_decl->key.signature_id);
+        if (signature.HasConstantFunctionArgs()) {
+          for (auto [i, arg_id] : llvm::enumerate(function_arg_ids)) {
+            if (!signature.GetConstantFunctionArg(static_cast<int32_t>(i))) {
+              runtime_arg_ids.push_back(arg_id);
+            }
+          }
+          function_arg_ids = runtime_arg_ids;
+        }
+      }
       return PerformCallToFunction(context, loc_id, callee_id, fn,
                                    function_arg_ids, is_desugared);
     }

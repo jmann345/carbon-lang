@@ -43,7 +43,14 @@ file into context.
     commit.** A "ready-to-port" sketch that doesn't compile is a landmine
     for the un-skipping agent. (Origin: reviewer caught a missing
     `import Core library "io"` in `library_multifile_export.carbon`'s
-    sketch, conformance-growth run.)
+    sketch, conformance-growth run. Second occurrence: F8a's
+    `cpp_thread_carbon_fn_diff.carbon` sketch carried a declare-before-use
+    error — `Work` preceded `RuntimeSeed` — found only at the F8d un-SKIP,
+    2026-08-18. Response: commented-out future bodies in conformance
+    sketches must be arbiter-parse-checked where a toolchain for them
+    exists, and the un-SKIP commit must disclose any mechanical repair it
+    made — the F8d handling, one recorded reorder in the commit message and
+    decision log, is the template.)
 -   **R7. `CONFORMANCE-BULLET` text must match the gap-analysis table
     character-for-character** — enforced by `runner.py --self-test`; run it
     before every commit that touches programs. (Origin: harness design.)

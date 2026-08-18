@@ -266,8 +266,10 @@ class Context {
     // The scrutinee's type, which the case pattern's root alternative
     // pattern (if any) resolves its name against.
     SemIR::TypeId scrutinee_type_id;
-    // The `MatchCaseIntroducer` parse node; the preserved slice-gate
-    // diagnostics are pinned to it.
+    // The parse node the arm's context was pushed at — the
+    // `MatchCaseIntroducer` for a case arm, or the `MatchCaseGuardIntroducer`
+    // for a guarded `default` arm (which has no case introducer); the
+    // preserved slice-gate diagnostics are pinned to it.
     Parse::NodeId introducer_node_id;
     // The inst that the pattern's root leading-dot designator resolved to in
     // the scrutinee's choice scope, if any (see `AlternativePattern` in

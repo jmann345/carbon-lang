@@ -1857,8 +1857,29 @@ programs). Expected floor: EXACTLY 92 PASS / 0 FAIL / 29 SKIP over 121,
 moving only by the new program's PASS — any other movement re-opens
 W-067 (R9 hedge; status DISCHARGE-STAGED in the inventory). No lower
 change: the guarded-default CFG uses only inst kinds S2d already lowers,
-and runtime behavior is locked by the new run program next to the
-existing match_guard_diff differential pair. Veto-able.
+and runtime behavior will be locked by the new run program at the
+conformance run, next to the existing match_guard_diff differential
+pair. Veto-able.
+
+_W-067 review-round amendment (2026-08-18, the W-067 fixer):_ both
+adversarial reviews returned clean — no blockers, no code defects. Two
+coverage additions landed at the review round and ride a follow-up
+autoupdate pass: a positive falsifier subfile in check
+guarded_default.carbon (trailing_guarded_default.carbon — a choice fully
+covered by unguarded arms plus a TRAILING guarded `default`, pinning the
+guard-failure edge's convergence into the statement's top empty else
+block), and a parse recovery golden
+fail_default_guard_recovery_midlist.carbon (malformed `default` guard
+mid-list; the arm loop continues and later arms still parse). For the
+record: the parenthesized-guard spelling (`if (E)`, vs the design
+grammar's parenless `if expression`) is the inherited S2d deviation
+recorded at fork/match-replatform/plan.md §3.4 — cross-referenced here,
+not a new W-067 choice. Correcting a ledger/log drift: the
+pattern_matching.md line-cite for the `default`-guard sentence is
+813-815 (the landing note above says 814-815; the inventory already
+says 813-815). Reviewer A's process gate — discharge evidence
+outstanding at review time — rides the in-flight gate+conformance runs
+per the landing note's R9 hedge. Veto-able.
 
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 

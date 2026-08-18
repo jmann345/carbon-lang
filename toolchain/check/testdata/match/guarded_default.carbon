@@ -86,6 +86,31 @@ fn Classify(f: Flag, x: i32) -> i32 {
 }
 //@dump-sem-ir-end
 
+// --- trailing_guarded_default.carbon
+library "[[@TEST_NAME]]";
+
+//@dump-sem-ir-begin
+choice Flag {
+  Off,
+  On
+}
+
+// A choice FULLY covered by unguarded case arms with a TRAILING guarded
+// `default`: legal, because coverage is already complete without the
+// guarded arm (which records nothing toward exhaustiveness). This pins
+// the guarded `default`'s else edge when no arm follows it: the
+// guard-failure edge branches to the match statement's top empty else
+// block, converging with the other arms.
+fn Classify(f: Flag, x: i32) -> i32 {
+  match (f) {
+    case .Off => { return 0; }
+    case .On => { return 1; }
+    default if (x > 0) => { return 2; }
+  }
+  return -1;
+}
+//@dump-sem-ir-end
+
 // CHECK:STDOUT: --- basic.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

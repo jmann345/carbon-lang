@@ -235,7 +235,7 @@ fails if this table is stale):
 | `interop/cpp_template_carbon_class.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/cpp_template_on_carbon_generic.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | SKIP |
 | `interop/cpp_template_symbolic_arg.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | SKIP |
-| `interop/cpp_thread_carbon_fn_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | SKIP, differential |
+| `interop/cpp_thread_carbon_fn_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |
 | `interop/cpp_thread_condvar_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |
 | `interop/cpp_thread_mutex_raii.carbon` | C++ interop: threading, atomics, memory model, synchronization | run |
 | `interop/cpp_threading_atomics.carbon` | C++ interop: threading, atomics, memory model, synchronization | run |

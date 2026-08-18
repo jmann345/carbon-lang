@@ -1,1 +1,1 @@
-2026-08-18T11:40Z F8c R26 pass-2 fixpoint
+2026-08-18T13:30Z F8d golden autoupdate: carbon_fn_as_callable.carbon flip + R-7 fail_todo splits

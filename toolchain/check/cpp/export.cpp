@@ -1489,6 +1489,40 @@ auto ExportFunctionToCpp(Context& context, SemIR::LocId loc_id,
   return ExportNonGenericFunctionToCpp(context, loc_id, *target);
 }
 
+auto GetOrExportFunctionDeclToCpp(Context& context,
+                                  SemIR::FunctionId function_id)
+    -> clang::FunctionDecl* {
+  const SemIR::Function& function = context.functions().Get(function_id);
+  if (const auto* clang_decl =
+          context.clang_decls().Lookup(function.first_decl_id())) {
+    return dyn_cast<clang::FunctionDecl>(clang_decl->decl());
+  }
+
+  SemIR::LocId loc_id(function.first_decl_id());
+  auto target = BuildFunctionInfo(context, loc_id, function_id);
+  if (!target || target->function.generic_id.has_value()) {
+    return nullptr;
+  }
+  auto* function_decl = ExportNonGenericFunctionToCpp(context, loc_id, *target);
+  if (!function_decl) {
+    return nullptr;
+  }
+
+  // Register the exported declaration so later lookups (including the C++
+  // `Carbon` namespace lookup) reuse it.
+  SemIR::ClangDeclSignature signature;
+  signature.kind = SemIR::ClangDeclSignature::Normal;
+  signature.num_params = static_cast<int32_t>(function_decl->getNumParams());
+  signature.passing_modes.assign(
+      signature.num_params, SemIR::ClangDeclSignature::PassingMode::ByValue);
+  context.clang_decls().Add(
+      {.key = SemIR::ClangDeclKey::ForFunctionDecl(
+           function_decl,
+           context.clang_decl_signatures().Add(std::move(signature))),
+       .inst_id = function.first_decl_id()});
+  return function_decl;
+}
+
 // Returns whether the given class has any abstract methods.
 static auto HasAnyAbstractMethods(Context& context,
                                   const SemIR::Class& class_info,

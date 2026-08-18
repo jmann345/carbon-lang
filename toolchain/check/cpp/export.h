@@ -78,6 +78,15 @@ auto ExportFieldToCpp(Context& context, SemIR::InstId field_inst_id,
 auto ExportFunctionToCpp(Context& context, SemIR::LocId loc_id,
                          SemIR::FunctionId function_id) -> clang::NamedDecl*;
 
+// Returns the C++ function declaration for the given concrete, non-generic
+// Carbon function, exporting it (and registering the mapping in
+// `clang_decls()`) if it hasn't been exported yet. This is used to pass a
+// Carbon function where C++ expects a callable (TA-D1, W-023). Returns
+// nullptr if the function could not be exported.
+auto GetOrExportFunctionDeclToCpp(Context& context,
+                                  SemIR::FunctionId function_id)
+    -> clang::FunctionDecl*;
+
 // Exports a Carbon virtual function as a C++ `clang::FunctionDecl` declaration.
 // Does not emit a definition.
 auto ExportVirtualFunctionDeclToCpp(Context& context, SemIR::LocId loc_id,

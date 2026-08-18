@@ -4,6 +4,7 @@
 
 #include "toolchain/sem_ir/clang_decl.h"
 
+#include "clang/AST/Decl.h"
 #include "clang/AST/DeclBase.h"
 #include "clang/AST/TextNodeDumper.h"
 #include "common/hashtable_key_context.h"
@@ -54,6 +55,19 @@ auto ClangDeclSignature::Print(llvm::raw_ostream& out) const -> void {
   if (self_passing_mode != PassingMode::ByRef) {
     out << ", self_mode: ";
     print_mode(self_passing_mode);
+  }
+  if (!constant_function_args.empty()) {
+    out << ", constant_args: [";
+    llvm::ListSeparator sep;
+    for (const auto* constant_decl : constant_function_args) {
+      out << sep;
+      if (constant_decl) {
+        out << "\"" << constant_decl->getNameAsString() << "\"";
+      } else {
+        out << "null";
+      }
+    }
+    out << "]";
   }
   out << "}";
 }

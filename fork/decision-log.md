@@ -2529,6 +2529,22 @@ a dated marker — no remaining SKIP in the tree cites the
 one-file-per-program limitation — and its evidence pin moved from the
 deleted stub to the directory's main.carbon. Veto-able.
 
+_multifile un-SKIP review round (2026-08-18, coordinator):_ the single
+adversarial review returned NO blockers (spellings verified golden-exact
+incl. the export-library-named-"export" detail; the W-074 dodge clean;
+R16d holds with expectations provably preceding first execution by
+commit timestamps; the scoreboard push-back verified at exactly 96/0/28
+with only this program moving). Folded: the main.carbon arbitration
+comment now splits honestly — the api/impl half is runtime-load-bearing
+(visible LINK-FAIL failure mode), the export chain half is
+COMPILE-arbitrated (one merged entity, routes unattributable at
+runtime); the composed-not-single-golden merge-shape wording; the W-002
+evidence pin re-aimed at the un-SKIP paragraph. Accepted-not-actioned:
+the request-file timestamp regression (recurring cosmetic pattern);
+impl_files_impl_defined_fn.carbon's stale one-file sentence rides its
+own future un-SKIP. Comment-only edits — the landed arbitration stays
+valid. Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

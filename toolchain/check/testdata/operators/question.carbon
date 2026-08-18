@@ -278,11 +278,20 @@ fn PropagateOnly[R: Core.Try where .BreakType = i32](r: R) -> R {
 // own future discharges and the carrier's go through the choice clause.
 fn PropagateChoice[T: type, E: type](mr: MyResult(T, E), e: E)
     -> MyResult(T, E) {
-  // Known wart, recorded: the continue value types as the projection
-  // `MyResult(T, E).(Core.Try.ContinueType)`, which the impl's own `where`
-  // rewrites do not reduce to `T` at check time (the same non-reduction the
-  // B1b trailing-return correction documents), so it is consumed through
-  // the DEDUCED sink rather than a `T`-annotated binding.
+  // Deliberate NEGATIVE pin (W-072 dissolution — fork/w072/plan.md §3,
+  // P-4): through this NON-final impl the continue value types as the
+  // unreduced projection `MyResult(T, E).(Core.Try.ContinueType)`, so it
+  // is consumed through the DEDUCED sink rather than a `T`-annotated
+  // binding. That refusal is upstream-DESIGNED specialization soundness
+  // (docs/design/generics/details.md, "`final` impl declarations"; the
+  // fail_nonfinal pin in upstream's
+  // impl/lookup/specialization_with_symbolic_rewrite.carbon), not a
+  // compiler gap — a non-final parameterized impl may be specialized at
+  // monomorphization, so its `where` rewrites cannot be assumed. The
+  // sanctioned spelling for `T`-typed threading is the ratified doc's own
+  // `final impl` (docs/design/error_handling.md's `Try` sketches):
+  // question_final.carbon. Reduction firing HERE would mean
+  // specialization soundness is broken (plan risk R-2: halt).
   Discard(mr?);
   return MyResult(T, E).Err(e);
 }

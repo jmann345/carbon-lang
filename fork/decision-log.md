@@ -725,6 +725,35 @@ pair's header: it arbitrates BREAK-path propagation + per-instantiation
 layouts; continue-THREADING runtime arbitration is W-072 follow-up. The
 C++ oracle's Chain mirrors the discard semantics. Veto-able.
 
+_RETRACTION addendum (2026-08-18, W72a — fork/w072/plan.md §3,
+record-honesty sweep item 1; a dated addendum, the historical text above
+is deliberately NOT rewritten):_ two claims in the 2026-08-09 rounds above
+are OVERSTATED and are hereby corrected. Quoted: "projection-annotated
+bindings until rewrite-reduction lands" (the regen round) and "under
+symbolic arguments the continue value CANNOT be threaded as `T` at all"
+(the conformance round) — and the R17-cited restructure rationale carried
+the same overstatement. The two-part correction, per the W-072
+dissolution verdict (fork/w072/plan.md §0.1): (i) the continue value CAN
+be threaded as `T` — under the ratified doc's own `final impl` spelling
+(docs/design/error_handling.md's `Try` sketches, which have carried
+`final` since the original F-006 design commit 9fdad04) — with NO
+compiler change expected (the W72a probe goldens question_final.carbon /
+fail_question_final.carbon / lower question_generic_final.carbon, probes
+P-1..P-9); and (ii) non-final rewrite-reduction is NOT pending — it will
+never "land", being upstream-DESIGNED refusal (specialization soundness:
+docs/design/generics/details.md "`final` impl declarations";
+p000983/p002868/p005337; upstream's
+fail_nonfinal_specialized_symbolic_rewrite pin). W-072 accordingly
+reclassifies from "language gap" to "idiom gap + verification gap"; it
+stays OPEN until W72b's runtime threading arbiter lands. _Postmortem
+(plan amendment, strictness F-1):_ the `final` omission survived every
+review because testdata was reviewed against the doc's SEMANTICS, never
+diffed against the sketch's exact spelling — the non-final idiom entered
+at B1b (6b0b80e), and the third-round correction (3099532) edited the
+very lines carrying `final` without connecting the modifier to the
+behavior. The loop fix is rulebook rule R27 (code-to-sketch spelling diff
+before landing), staged in W72a. Veto-able.
+
 ### F-007: Unions - **Native `union` declaration** (2026-07-19)
 
 Rust-shaped safety surface (writes safe, reads defined byte-reinterpretation,

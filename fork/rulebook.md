@@ -76,6 +76,18 @@ file into context.
     runner and commit the reconciliation _before_ the merge gate is judged —
     a red first CI on empty goldens is expected, not a semantics failure.
     (Origin: W4 slice-1 adversarial review; fork/trial-w4/plan.md risk 1.)
+-   **R27. Testdata or conformance code implementing a design-doc sketch
+    must be DIFFED against the sketch's exact spelling before landing —
+    declaration modifiers included.** Semantic review of impl bodies is
+    not a spelling diff. (Origin: W-072 — the doc's `Try` impl sketches
+    carried `final` from the original F-006 commit 9fdad04; the B1b
+    testdata idiom (6b0b80e) dropped it, and the third-round correction
+    3099532 edited the very lines carrying `final` without noticing the
+    modifier; the omission survived every review because testdata was
+    checked against the doc's semantics, never diffed against the
+    sketch's spelling.) R6 (compile-verified sketches) points the other
+    direction — doc/sketch → compiling code; R27 covers code → sketch
+    spelling fidelity — so this is a new rule, not an R6 extension.
 
 ## Adversarial-review protocol (applies at EVERY production step)
 

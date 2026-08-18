@@ -1,1 +1,2 @@
 2026-08-18T09:00Z F8d pass-3 fixpoint (pass-2 churn was convergent renumbering from decayed_param's removed errors)
+2026-08-18T12:00Z W72a final-impl probe regen: NEW check question_final.carbon + fail_question_final.carbon, NEW lower question_generic_final.carbon (no CHECK lines on positive splits; fail pins best-effort), comment-only retext in check question.carbon generic split — expect two passes (R26; loc-only pass-2), verify Try-adjacent churn against BOTH preludes (fork/w072/plan.md §4)

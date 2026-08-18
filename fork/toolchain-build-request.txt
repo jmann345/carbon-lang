@@ -1,1 +1,1 @@
-2026-08-18T13:07Z W69a gate (runtime-let promotion mechanism; full bazel test)
+2026-08-18T14:15Z W69a hardening gate (HasLocal CHECK + Temporary demotion guard + comment reconciliations; full bazel test)

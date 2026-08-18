@@ -1,1 +1,1 @@
-2026-08-18T13:07Z W69a conformance (floor must stay EXACTLY 93/0/29 over 122 byte-for-byte - no programs added)
+2026-08-18T14:50Z W69h byte-identical rerun arbiter (runner split-file capability landed, ZERO programs added; scoreboard must reproduce EXACTLY 93/0/29 over 122 with every per-program entry byte-identical — any movement stops W69h un-landed)

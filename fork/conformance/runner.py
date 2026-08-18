@@ -18,6 +18,27 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #     <carbon> link --output=<out>/bin/<name> <out>/obj/<name>.o
 #     <out>/bin/<name>            # 30s timeout, capture exit code + stdout
 #
+# Multi-unit (split-file) programs: a program may instead be a DIRECTORY
+# under programs/ that directly contains a `main.carbon` unit; every
+# *.carbon file directly inside it is one compilation unit of that single
+# program (directives live in main.carbon only; see README.md). Compilation
+# mirrors upstream's own multi-unit build rule (bazel/carbon_rules/defs.bzl):
+# the driver writes only ONE object per invocation (`--output` names the
+# LAST input's object; toolchain/driver/compile_subcommand.cpp), so the
+# runner runs one `carbon compile` invocation per unit — ALL units on every
+# command line, the target unit last — then links all the per-unit objects:
+#
+#     for each <unit>:
+#       <carbon> compile --output=<out>/obj/<name>.<unit>.o \
+#           --output-last-input-only <other units...> <unit>.carbon
+#     <carbon> link --output=<out>/bin/<name> <per-unit objects...>
+#
+# Unit order on the command line is immaterial to import resolution:
+# Check::CheckParseTrees orders units by import dependency internally
+# (toolchain/check/check.cpp, the ready_to_check worklist), so units are
+# simply passed sorted by filename with main.carbon last. Any unit's
+# compile failure is the ordinary COMPILE-FAIL status (no new fail class).
+#
 # Differential Carbon-vs-C++ checking: a program `<name>.carbon` may have a
 # sibling `<name>.diff.cpp` — an equivalent plain C++17 program. When present,
 # after the Carbon binary runs (and passes its EXPECT-* checks, which stay
@@ -60,6 +81,7 @@ import argparse
 import json
 import subprocess
 import sys
+import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -98,6 +120,25 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_PROGRAMS_DIR = SCRIPT_DIR / "programs"
 GAP_ANALYSIS = SCRIPT_DIR.parent / "gap-analysis.md"
 
+# Multi-unit (split-file) programs: a directory directly containing a file
+# with this name is ONE program; all *.carbon files directly inside are its
+# compilation units, and this main unit (a) holds all the directives and
+# (b) compiles last. See README.md "Multi-unit (split-file) programs".
+MAIN_UNIT = "main.carbon"
+# The (single-file) differential C++ oracle of a multi-unit program.
+MAIN_DIFF_CPP = "main.diff.cpp"
+
+# Every directive `parse_directives` recognizes. Used to reject directives
+# in non-main units of a multi-unit program, where they would otherwise be
+# silently ignored.
+DIRECTIVE_PREFIXES = (
+    "// CONFORMANCE-BULLET:",
+    "// COMPILE-ARGS:",
+    "// EXPECT-EXIT:",
+    "// EXPECT-STDOUT:",
+    "// SKIP:",
+)
+
 
 class DirectiveError(Exception):
     """A program's header directives are malformed."""
@@ -105,9 +146,12 @@ class DirectiveError(Exception):
 
 class Program:
     def __init__(self, path, rel):
-        self.path = path
+        self.path = path  # the program file; for multi-unit, the main unit
         self.rel = rel  # path relative to the programs dir, POSIX style
         self.name = rel.replace("/", "_").removesuffix(".carbon")
+        # Compilation units, in compile order (single-file: just [path];
+        # multi-unit: library units sorted by filename, main unit last).
+        self.units = [path]
         self.bullet = None
         self.expect_exit = 0
         self.expect_stdout = None  # None => stdout unchecked; else exact str
@@ -195,6 +239,28 @@ def parse_directives(path, rel):
     return prog
 
 
+def leading_comment_directives(path):
+    """Directive names found in a file's leading comment block.
+
+    Used on the NON-main units of a multi-unit program: directives there
+    would be silently ignored (only main.carbon is parsed), so discovery
+    rejects them loudly instead. Mirrors parse_directives' notion of the
+    leading comment block (blank lines don't end it; the first code line
+    does).
+    """
+    found = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped == "":
+            continue
+        if not stripped.startswith("//"):
+            break  # end of leading comment block
+        for prefix in DIRECTIVE_PREFIXES:
+            if stripped.startswith(prefix):
+                found.append(prefix[len("// ") :].rstrip(":"))
+    return found
+
+
 def load_gap_analysis_bullets(gap_path):
     """Extract the milestone-bullet texts from fork/gap-analysis.md's table.
 
@@ -221,10 +287,96 @@ def load_gap_analysis_bullets(gap_path):
     return bullets
 
 
-def discover_programs(programs_dir, filter_substr):
+def discover_multi_unit_programs(programs_dir, filter_substr):
+    """Discover multi-unit program directories.
+
+    A directory under programs_dir that directly contains `main.carbon` is
+    ONE program: every *.carbon directly inside it is a compilation unit
+    (library units sorted by filename, main.carbon last — command-line
+    order is immaterial to import resolution, which check orders by
+    dependency; the fixed order just keeps objects/diagnostics
+    deterministic). Directives live in main.carbon only; the optional
+    differential oracle is `main.diff.cpp` in the same directory.
+
+    Returns (programs, errors, unit_files) where unit_files is the set of
+    all *.carbon paths consumed by program directories — these are never
+    single-file programs, even when their directory fails validation.
+    """
     programs = []
     errors = []
+    unit_files = set()
+    for main_path in sorted(programs_dir.rglob(MAIN_UNIT)):
+        prog_dir = main_path.parent
+        if prog_dir == programs_dir:
+            errors.append(
+                f"{MAIN_UNIT}: sits at the programs root; a multi-unit "
+                f"program must be a subdirectory containing it"
+            )
+            continue
+        rel = prog_dir.relative_to(programs_dir).as_posix()
+        units = sorted(prog_dir.glob("*.carbon"))
+        # Consume the units unconditionally (before filtering/validation):
+        # a unit file must never be picked up as a single-file program.
+        unit_files.update(units)
+        if filter_substr and filter_substr not in rel:
+            continue
+        subdirs = sorted(p.name for p in prog_dir.iterdir() if p.is_dir())
+        if subdirs:
+            errors.append(
+                f"{rel}: multi-unit program directory must be flat; "
+                f"found subdirectories: {', '.join(subdirs)}"
+            )
+            continue
+        if len(units) < 2:
+            errors.append(
+                f"{rel}: multi-unit program directory needs at least one "
+                f"library unit besides {MAIN_UNIT}"
+            )
+            continue
+        try:
+            prog = parse_directives(main_path, rel)
+        except DirectiveError as e:
+            errors.append(str(e))
+            continue
+        stray_directives = False
+        for unit in units:
+            if unit == main_path:
+                continue
+            stray = leading_comment_directives(unit)
+            if stray:
+                errors.append(
+                    f"{rel}/{unit.name}: program directives belong in "
+                    f"{MAIN_UNIT} only; found: {', '.join(stray)}"
+                )
+                stray_directives = True
+        if stray_directives:
+            continue
+        stray_diffs = sorted(
+            p.name
+            for p in prog_dir.glob("*.diff.cpp")
+            if p.name != MAIN_DIFF_CPP
+        )
+        if stray_diffs:
+            errors.append(
+                f"{rel}: only {MAIN_DIFF_CPP} may sit in a multi-unit "
+                f"program directory; found: {', '.join(stray_diffs)}"
+            )
+            continue
+        prog.units = [u for u in units if u != main_path] + [main_path]
+        diff_cpp = prog_dir / MAIN_DIFF_CPP
+        if diff_cpp.is_file():
+            prog.diff_cpp = diff_cpp
+        programs.append(prog)
+    return programs, errors, unit_files
+
+
+def discover_programs(programs_dir, filter_substr):
+    programs, errors, unit_files = discover_multi_unit_programs(
+        programs_dir, filter_substr
+    )
     for path in sorted(programs_dir.rglob("*.carbon")):
+        if path in unit_files:
+            continue  # a compilation unit of a multi-unit program
         rel = path.relative_to(programs_dir).as_posix()
         if filter_substr and filter_substr not in rel:
             continue
@@ -237,6 +389,21 @@ def discover_programs(programs_dir, filter_substr):
         if diff_cpp.is_file():
             prog.diff_cpp = diff_cpp
         programs.append(prog)
+    # Deterministic order across both kinds: sort by path components of the
+    # program's rel (for the pre-existing single-file corpus this equals the
+    # historical sorted-rglob order exactly).
+    programs.sort(key=lambda pr: pr.rel.split("/"))
+    # Program names must be unique: obj/bin/log artifact paths derive from
+    # them, and a directory program `a/b` would collide with a file program
+    # `a/b.carbon`.
+    by_name = {}
+    for prog in programs:
+        other = by_name.setdefault(prog.name, prog)
+        if other is not prog:
+            errors.append(
+                f"{prog.rel}: program name {prog.name!r} collides with "
+                f"{other.rel}; rename one of them"
+            )
     # Orphan differential files: every *.diff.cpp must sit next to its
     # matching *.carbon program (enforced by --self-test; reported here too
     # so a stray rename can't silently drop a differential check).
@@ -325,41 +492,56 @@ def execute_program(prog, toolchain, clangxx, out_dir, timeouts):
     log_dir = out_dir / "logs"
     obj_dir.mkdir(parents=True, exist_ok=True)
     bin_dir.mkdir(parents=True, exist_ok=True)
-    obj_path = obj_dir / f"{prog.name}.o"
     bin_path = bin_dir / prog.name
 
     # --- Compile ---
-    compile_cmd = [
-        toolchain,
-        "compile",
-        *prog.compile_args,
-        f"--output={obj_path}",
-        "--output-last-input-only",
-        prog.path,
-    ]
-    rc, out, err, timed_out = run_cmd(compile_cmd, timeouts["compile"])
-    if timed_out or rc != 0:
-        detail = (
-            "compile timed out" if timed_out else f"compile exited with {rc}"
+    # One invocation per unit, mirroring upstream's multi-unit build rule
+    # (bazel/carbon_rules/defs.bzl): the driver writes only the LAST
+    # input's object, so each unit takes its turn last while all units
+    # ride every command line (imports resolve within the invocation).
+    # Single-file programs degenerate to exactly the historical command.
+    multi_unit = len(prog.units) > 1
+    obj_paths = []
+    for unit in prog.units:
+        obj_path = obj_dir / (
+            f"{prog.name}.{unit.stem}.o" if multi_unit else f"{prog.name}.o"
         )
-        write_log(
-            log_dir,
-            prog,
-            [
-                ("command", " ".join(str(c) for c in compile_cmd)),
-                ("detail", detail),
-                ("stdout", out),
-                ("stderr", err),
-            ],
-        )
-        return COMPILE_FAIL, detail
+        obj_paths.append(obj_path)
+        compile_cmd = [
+            toolchain,
+            "compile",
+            *prog.compile_args,
+            f"--output={obj_path}",
+            "--output-last-input-only",
+            *[u for u in prog.units if u != unit],
+            unit,
+        ]
+        rc, out, err, timed_out = run_cmd(compile_cmd, timeouts["compile"])
+        if timed_out or rc != 0:
+            unit_note = f" (unit {unit.name})" if multi_unit else ""
+            detail = (
+                f"compile timed out{unit_note}"
+                if timed_out
+                else f"compile exited with {rc}{unit_note}"
+            )
+            write_log(
+                log_dir,
+                prog,
+                [
+                    ("command", " ".join(str(c) for c in compile_cmd)),
+                    ("detail", detail),
+                    ("stdout", out),
+                    ("stderr", err),
+                ],
+            )
+            return COMPILE_FAIL, detail
 
     # --- Link ---
     link_cmd = [
         toolchain,
         "link",
         f"--output={bin_path}",
-        obj_path,
+        *obj_paths,
     ]
     rc, out, err, timed_out = run_cmd(link_cmd, timeouts["link"])
     if timed_out or rc != 0:
@@ -574,6 +756,8 @@ def generate_program_table(programs):
         kind = []
         if prog.skip_reason is not None:
             kind.append("SKIP")
+        if len(prog.units) > 1:
+            kind.append(f"multi-unit ({len(prog.units)} units)")
         if prog.diff_cpp is not None:
             kind.append("differential")
         lines.append(
@@ -626,6 +810,186 @@ def update_readme_table(programs, check_only=False):
     return 0
 
 
+def discovery_self_check():
+    """Exercise multi-unit discovery on synthetic tempdir fixtures.
+
+    The tree may carry no multi-unit program at any given time, so
+    --self-test builds its own fixtures (pure tempfile, deleted on exit)
+    and runs discover_programs over them. Returns a list of failure
+    strings; empty means OK.
+    """
+    failures = []
+
+    def check(cond, what):
+        if not cond:
+            failures.append(f"discovery self-check: {what}")
+
+    def run_fixture(files):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            for relpath, text in files.items():
+                p = root / relpath
+                p.parent.mkdir(parents=True, exist_ok=True)
+                p.write_text(text, encoding="utf-8")
+            return discover_programs(root, "")
+
+    bullet = "// CONFORMANCE-BULLET: B\n"
+
+    # 1. A valid mixed tree: one multi-unit program (with directives in
+    # main.carbon, deliberately unsorted unit names, and a differential
+    # oracle) next to a single-file program in the same category.
+    programs, errors = run_fixture(
+        {
+            "cat/multi/zz_late.carbon": 'library "late";\n',
+            "cat/multi/base.carbon": 'library "base";\n',
+            "cat/multi/main.carbon": bullet
+            + "// COMPILE-ARGS: --custom-flag\n"
+            + "// EXPECT-STDOUT:\n//   42\n"
+            + "fn Run() {}\n",
+            "cat/multi/main.diff.cpp": "int main() {}\n",
+            "cat/single.carbon": bullet + "fn Run() {}\n",
+        }
+    )
+    check(not errors, f"valid fixture produced errors: {errors}")
+    check(
+        [p.rel for p in programs] == ["cat/multi", "cat/single.carbon"],
+        f"unexpected programs: {[p.rel for p in programs]}",
+    )
+    if [p.rel for p in programs] == ["cat/multi", "cat/single.carbon"]:
+        multi, single = programs
+        check(
+            [u.name for u in multi.units]
+            == ["base.carbon", "zz_late.carbon", "main.carbon"],
+            f"unit order wrong: {[u.name for u in multi.units]}",
+        )
+        check(multi.name == "cat_multi", f"bad name: {multi.name}")
+        check(multi.bullet == "B", "main.carbon directives not parsed")
+        check(
+            multi.compile_args == ["--custom-flag"],
+            "COMPILE-ARGS not parsed from main.carbon",
+        )
+        check(multi.expect_stdout == "42\n", "EXPECT-STDOUT not parsed")
+        check(
+            multi.diff_cpp is not None and multi.diff_cpp.name == MAIN_DIFF_CPP,
+            "main.diff.cpp not attached as the differential oracle",
+        )
+        check(
+            len(single.units) == 1 and single.diff_cpp is None,
+            "single-file program parsed wrong alongside a multi-unit one",
+        )
+
+    # 2. SKIP stays an in-file marker: honored from main.carbon.
+    programs, errors = run_fixture(
+        {
+            "cat/skipped/main.carbon": bullet + "// SKIP: later\n",
+            "cat/skipped/lib.carbon": 'library "l";\n',
+        }
+    )
+    check(
+        not errors
+        and len(programs) == 1
+        and programs[0].skip_reason == "later",
+        "SKIP directive in main.carbon not honored",
+    )
+
+    # 3. Directives in a library unit are rejected, not ignored.
+    programs, errors = run_fixture(
+        {
+            "cat/p/main.carbon": bullet,
+            "cat/p/lib.carbon": "// SKIP: nope\n" + 'library "l";\n',
+        }
+    )
+    check(
+        any("belong in main.carbon only" in e for e in errors),
+        f"stray directive in a library unit not rejected: {errors}",
+    )
+
+    # 4. A main.carbon-only directory is rejected.
+    programs, errors = run_fixture({"cat/p/main.carbon": bullet})
+    check(
+        any("at least one library unit" in e for e in errors),
+        f"main-only directory not rejected: {errors}",
+    )
+
+    # 5. Program directories must be flat.
+    programs, errors = run_fixture(
+        {
+            "cat/p/main.carbon": bullet,
+            "cat/p/lib.carbon": 'library "l";\n',
+            "cat/p/sub/extra.carbon": 'library "x";\n',
+        }
+    )
+    check(
+        any("must be flat" in e for e in errors),
+        f"nested program directory not rejected: {errors}",
+    )
+
+    # 6. Only main.diff.cpp may sit in a program directory.
+    programs, errors = run_fixture(
+        {
+            "cat/p/main.carbon": bullet,
+            "cat/p/lib.carbon": 'library "l";\n',
+            "cat/p/lib.diff.cpp": "int main() {}\n",
+        }
+    )
+    check(
+        any("only main.diff.cpp" in e for e in errors),
+        f"stray .diff.cpp in a program directory not rejected: {errors}",
+    )
+
+    # 7. Unit files are consumed even when their directory fails
+    # validation: they must not resurface as single-file programs (which
+    # would show up as missing-directive errors for the library unit).
+    check(
+        not any(
+            "lib.carbon" in e and "CONFORMANCE-BULLET" in e for e in errors
+        ),
+        "a unit of an invalid program directory leaked into single-file "
+        "discovery",
+    )
+
+    # 8. Artifact-name collisions between a directory program and a
+    # single-file program are rejected.
+    programs, errors = run_fixture(
+        {
+            "cat/p/main.carbon": bullet,
+            "cat/p/lib.carbon": 'library "l";\n',
+            "cat/p.carbon": bullet + "fn Run() {}\n",
+        }
+    )
+    check(
+        any("collides with" in e for e in errors),
+        f"name collision not rejected: {errors}",
+    )
+
+    # 9. --filter matches the program directory's relative path.
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        for relpath, text in {
+            "cat/multi/main.carbon": bullet,
+            "cat/multi/lib.carbon": 'library "l";\n',
+            "cat/other.carbon": bullet + "fn Run() {}\n",
+        }.items():
+            p = root / relpath
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(text, encoding="utf-8")
+        programs, errors = discover_programs(root, "multi")
+        check(
+            not errors and [p.rel for p in programs] == ["cat/multi"],
+            f"--filter over a multi-unit program broke: "
+            f"{[p.rel for p in programs]}, {errors}",
+        )
+
+    # 10. main.carbon at the programs root is rejected.
+    programs, errors = run_fixture({"main.carbon": bullet})
+    check(
+        any("programs root" in e for e in errors),
+        f"root-level main.carbon not rejected: {errors}",
+    )
+
+    return failures
+
+
 def self_test(programs_dir, filter_substr):
     """Validate all program headers + bullet names without a toolchain."""
     ok = True
@@ -634,6 +998,16 @@ def self_test(programs_dir, filter_substr):
             f"error: gap analysis not found at {GAP_ANALYSIS}", file=sys.stderr
         )
         return 1
+    # The discovery logic itself gets coverage first (synthetic fixtures;
+    # independent of the real programs tree).
+    discovery_failures = discovery_self_check()
+    for failure in discovery_failures:
+        ok = False
+        print(failure, file=sys.stderr)
+    print(
+        "multi-unit discovery self-check: "
+        f"{'OK' if not discovery_failures else 'ERRORS'}"
+    )
     bullets = load_gap_analysis_bullets(GAP_ANALYSIS)
     if not bullets:
         print(f"error: no bullets parsed from {GAP_ANALYSIS}", file=sys.stderr)
@@ -677,6 +1051,8 @@ def self_test(programs_dir, filter_substr):
                 marks.append("diff: C++")
             if prog.compile_args:
                 marks.append("args: " + " ".join(prog.compile_args))
+            if len(prog.units) > 1:
+                marks.append(f"units: {len(prog.units)}")
             marks.append(f"exit: {prog.expect_exit}")
             print(
                 f"  {prog.rel:<{width}}  ->  {prog.bullet}  "  # noqa: E501
@@ -882,6 +1258,10 @@ def main(argv=None):
                 "status": results[prog.rel][0],
                 "detail": results[prog.rel][1],
                 "differential": prog.diff_cpp is not None,
+                # `units` appears for multi-unit programs only, so
+                # single-file entries stay byte-identical to before the
+                # multi-unit harness slice (W69h).
+                **({"units": len(prog.units)} if len(prog.units) > 1 else {}),
             }
             for prog in programs
         ],

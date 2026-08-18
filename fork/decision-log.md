@@ -2168,6 +2168,61 @@ WEEKLY-MERGE WATCH ITEM); B NIT-7 (the registry's duplicate-key
 `Insert` assumption — binding_id and value_id never collide across
 bindings — stated, relied upon, unchecked). Veto-able.
 
+_W69h landing (2026-08-18, the W69h implementer):_ split-file multi-unit
+conformance-program support staged per fork/w069/plan.md §4 W69h —
+capability only, NO new programs, and the file fence held:
+fork/conformance/runner.py + fork/conformance/README.md are the only
+non-bookkeeping files touched (zero toolchain files, zero workflow yaml,
+zero program files, zero SKIP-directive edits). _Lane chosen —
+DIRECTORY programs, not an in-file `// --- name.carbon` splitter:_ a
+directory under programs/ directly containing a `main.carbon` unit is
+ONE program; every `*.carbon` directly inside is a compilation unit;
+all directives (CONFORMANCE-BULLET/COMPILE-ARGS/EXPECT-*/SKIP) live in
+main.carbon (a directive in a library unit's leading comment block is a
+discovery ERROR, never silently ignored). Why: real files are what the
+driver actually compiles — no fork-invented splitter, and the
+`// ---` convention is file_test-internal machinery. _Compile shape —
+one `carbon compile` invocation PER UNIT (all units on every command
+line, target unit last, `--output=<obj> --output-last-input-only`),
+then ONE `carbon link` of all per-unit objects:_ this mirrors
+upstream's own multi-unit build rule verbatim
+(bazel/carbon_rules/defs.bzl:64-89) because a single invocation cannot
+emit the library units' objects — compile_subcommand.cpp's
+get_output_filename gives `--output` to the LAST input only, and
+library units' lowered bodies would be dropped, guaranteeing undefined
+symbols at link. _Ordering:_ units are passed sorted by filename with
+main.carbon last, and NO numbering convention exists — command-line
+order is immaterial to import resolution because
+Check::CheckParseTrees orders units by import dependency internally
+(check.cpp's ready_to_check worklist); the fixed order only pins
+object names/diagnostics/link lines. _Fail classes:_ unchanged five —
+any unit's compile failure is the existing COMPILE-FAIL with the unit
+named in the detail (fork_conformance.yaml:84-91's hardcoded key list
+untouched); the differential oracle stays single-file as
+`main.diff.cpp` inside the program directory. _No-flip proof
+(structural):_ SKIP is an in-file marker parsed from the program's own
+header and returned before any compile, this slice edits no program
+file, and discovery treats a directory as multi-unit ONLY on a
+`main.carbon` marker — no file named main.carbon exists anywhere under
+programs/ (verified by find), so every one of the 122 existing
+programs takes the byte-identical single-file path. _Equivalence
+evidence (local python3):_ `--self-test` green at **122 programs
+parsed, 56 bullets, OK** including the new fixture-based multi-unit
+discovery self-check; a harness importing runner.py proved
+discovery metadata AND order, the generated README table, and the
+compile+link argv for all 122 existing programs byte-identical to a
+pre-change baseline snapshot; scoreboard entries gain a `units` key
+for multi-unit programs ONLY, so existing entries are byte-identical.
+A throwaway 4-unit program (base/export/reexport/main, the
+library_multifile_export sketch) driven through main() with an
+argv-recording stub toolchain exercised PASS, COMPILE-FAIL (middle
+unit, named), LINK-FAIL, OUTPUT-MISMATCH, `--filter`, and `--self-test`
+end-to-end, then was deleted. _Rides next:_ the W69h arbiter's
+byte-identical full-run scoreboard (93/0/29 over 122) on the
+conformance workflow — per the plan's re-open clause, ANY movement
+stops the slice un-landed; W69b does not start until that rerun is
+clean. Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

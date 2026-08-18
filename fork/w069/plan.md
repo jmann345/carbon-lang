@@ -859,6 +859,51 @@ being worked around; each is hereby ADJUDICATED and folded (veto-able):
     ADJUDICATION: accepted as §5 step-4 residue, recorded; a future
     widening emits the store after the terminal's dependents instead.
 
+## W69h implementation-round design record (2026-08-18, the W69h implementer)
+
+No deviation from the §4 W69h block — every fence held (runner.py +
+--self-test + README only; no toolchain files; no program files; no
+SKIP-directive edits; no new scoreboard fail-class keys). The block left
+the split-file DESIGN open; the concrete choices are recorded here as a
+dated design record (veto-able), with the full rationale in the
+decision-log W69h landing note:
+
+-   **Lane: DIRECTORY programs.** A directory under programs/ directly
+    containing a `main.carbon` unit is one program; every `*.carbon`
+    directly inside is a compilation unit; directives live in main.carbon
+    only (a directive in a library unit's leading comment block is a
+    discovery error). No in-file `// --- name.carbon` splitter — real
+    files are what the driver compiles; the `// ---` convention is
+    file_test-internal machinery.
+-   **Compile: one `carbon compile` invocation per unit** (ALL units on
+    every command line, target unit last, `--output=<obj>
+    --output-last-input-only`), then one `carbon link` of all per-unit
+    objects — upstream's own multi-unit rule verbatim
+    (bazel/carbon_rules/defs.bzl:64-89). A single multi-input invocation
+    was REJECTED on a verified driver fact: `--output` names the LAST
+    input's object only (compile_subcommand.cpp's get_output_filename),
+    so library units' lowered bodies would be dropped and the link would
+    see undefined symbols. Single-file programs degenerate to the
+    byte-identical historical command.
+-   **Order: units sorted by filename, main.carbon last; no numbering
+    convention** — command-line order is immaterial to import resolution
+    (Check::CheckParseTrees dependency-orders units internally,
+    check.cpp's ready_to_check worklist); the fixed order only pins
+    object names/diagnostics/link lines.
+-   **Fail classes: the existing five, unchanged.** Any unit's compile
+    failure is COMPILE-FAIL with the unit named in the detail; the
+    differential oracle stays single-file as `main.diff.cpp` inside the
+    program directory.
+-   **Self-test: extended with a fixture-based discovery self-check**
+    (synthetic tempdir programs; ten scenarios covering discovery,
+    ordering, directive placement, guard rails, filtering, and name
+    collisions), so the machinery keeps coverage while the tree carries
+    no multi-unit program. Local evidence: `--self-test` green at 122
+    programs; discovery metadata/order, README table, and compile+link
+    argv proven byte-identical to a pre-change baseline for all 122
+    existing programs. The §4 arbiter's byte-identical full-run
+    scoreboard rides the next conformance run.
+
 ## Review-round amendments (2026-08-18)
 
 Both adversarial plan reviews completed 2026-08-18. Reviewer #1

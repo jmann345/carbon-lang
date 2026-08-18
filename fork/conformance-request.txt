@@ -1,1 +1,1 @@
-2026-08-18T22:50Z W74a conformance confirm (floor must be EXACTLY 96/0/28 over 124 — no program changes)
+2026-08-19T02:50Z W75a conformance (floor must be EXACTLY 96/0/28 over 124 — roundtrip pair restored, stays one PASS)

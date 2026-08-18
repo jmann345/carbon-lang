@@ -1,1 +1,1 @@
-2026-08-18T13:06Z W69a regen pass 2 (R26 fixpoint)
+2026-08-18T16:10Z W69b goldens red-first regen pass 1 (import_choice + specifics falsifier + global_runtime ranges + restored acceptance split)

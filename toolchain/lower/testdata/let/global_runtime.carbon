@@ -446,3 +446,48 @@ fn UseExportName() -> i32 { return x; }
 // CHECK:STDOUT: !13 = !DILocation(line: 4, column: 1, scope: !10)
 // CHECK:STDOUT: !14 = !DILocation(line: 0, scope: !10)
 // CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'export_name.carbon'
+// CHECK:STDOUT: source_filename = "export_name.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !1 = !DIFile(filename: "export_name.carbon", directory: "")
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'import_export_name.carbon'
+// CHECK:STDOUT: source_filename = "import_export_name.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: @_Cx.Main = external global i32
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @_CUseExportName.Main() #0 !dbg !4 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %x.ref = load i32, ptr @_Cx.Main, align 4, !dbg !8
+// CHECK:STDOUT:   ret i32 %x.ref, !dbg !9
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @_CSeed.Main()
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @_CUse.Main()
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !1 = !DIFile(filename: "import_export_name.carbon", directory: "")
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !4 = distinct !DISubprogram(name: "UseExportName", linkageName: "_CUseExportName.Main", scope: null, file: !1, line: 11, type: !5, spFlags: DISPFlagDefinition, unit: !0)
+// CHECK:STDOUT: !5 = !DISubroutineType(types: !6)
+// CHECK:STDOUT: !6 = !{!7}
+// CHECK:STDOUT: !7 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !8 = !DILocation(line: 11, column: 36, scope: !4)
+// CHECK:STDOUT: !9 = !DILocation(line: 11, column: 29, scope: !4)
+// CHECK:STDOUT:

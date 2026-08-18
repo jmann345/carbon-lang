@@ -1,1 +1,1 @@
-2026-08-19T00:41Z W75a regen pass 1 (alternative_copy fills + tripwire flip)
+2026-08-19T02:41Z W75a fix-round regen pass 1 (repr-dispatch fix + mono_from_generic subfile)

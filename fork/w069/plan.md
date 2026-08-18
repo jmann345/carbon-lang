@@ -842,6 +842,16 @@ being worked around; each is hereby ADJUDICATED and folded (veto-able):
     discovered crash is minted as ledger item **W-074** (check-side
     `export` of runtime-let bindings crashes resolution) so it cannot
     silently vanish.
+    _[Dated cross-ref, 2026-08-18 (W74a): that future amendment round
+    landed as fork/w074/plan.md — the resolver now peeks through
+    `ExportDecl` in `TryResolveInstCanonical`'s non-constant branch (one
+    contiguous insertion, nothing else in import_ref.cpp), and the
+    "implemented but unpinned" ExportDecl arm is pinned:
+    lower/testdata/let/global_runtime.carbon's new
+    export_name/import_export_name subfiles stage the one-`_Cx.Main`
+    by-name-export pin, with the check-side NotConstant pins in
+    check/testdata/let/export_runtime.carbon. W-074 is DISCHARGE-STAGED
+    pending the landing runs (ledger + decision-log carry the hedge).]_
 2.  **The (a3) guard is realized as loud named `CARBON_FATAL`s at
     reference + silent declination at declaration + a post-ctor CHECK
     for dropped stores — not user diagnostics.** Lowering has no

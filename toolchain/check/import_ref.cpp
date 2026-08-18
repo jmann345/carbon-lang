@@ -4478,6 +4478,26 @@ static auto TryResolveInstCanonical(ImportRefResolver& resolver,
 
   auto inst_constant_id = resolver.import_constant_values().Get(inst_id);
   if (!inst_constant_id.is_constant()) {
+    // `export x;` of a runtime binding mints an `ExportDecl` whose constant
+    // forwards the exported value's NotConstant (see `EvalConstantInst` in
+    // eval_inst.cpp). Peek through it -- the check-side mirror of
+    // `GetCanonicalFileAndInstId`'s export arm in sem_ir/import_ir.cpp -- so
+    // the reference resolves exactly like a direct import of the binding
+    // (the `AnyBinding` case below): no importable constant, with lowering's
+    // canonical chase supplying the one backing symbol.
+    if (auto export_decl = untyped_inst.TryAs<SemIR::ExportDecl>()) {
+      // The exported value is the exporting file's own `ImportRefLoaded`
+      // (see handle_export.cpp). If the underlying bound value were
+      // constant, the eval forwarding would have made this `ExportDecl`
+      // constant too, and resolution would have taken the constant path
+      // instead of reaching this branch.
+      CARBON_CHECK(!resolver.import_constant_values()
+                        .Get(export_decl->value_id)
+                        .is_constant(),
+                   "Non-constant ExportDecl wraps constant value {0}",
+                   export_decl->value_id);
+      return ResolveResult::Done(SemIR::ConstantId::NotConstant);
+    }
     // TODO: Import of non-constant BindNames happens when importing `let`
     // declarations.
     CARBON_CHECK(resolver.import_insts().Is<SemIR::AnyBinding>(inst_id),

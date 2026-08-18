@@ -2545,6 +2545,69 @@ impl_files_impl_defined_fn.carbon's stale one-file sentence rides its
 own future un-SKIP. Comment-only edits — the landed arbitration stays
 valid. Veto-able.
 
+_W74a landing note (2026-08-18, the W74a implementer — fork/w074/plan.md,
+the single W-074 slice):_ the sanctioned import_ref.cpp amendment round
+lands the lane-(a) fix for the `export x;` runtime-`let` crash.
+_Mechanism:_ ONE contiguous insertion in
+`TryResolveInstCanonical`'s non-constant branch (toolchain/check/
+import_ref.cpp, immediately inside the `!is_constant()` branch, before
+upstream's own non-constant-BindNames TODO and the `Is<AnyBinding>`
+CHECK): `untyped_inst.TryAs<SemIR::ExportDecl>()` (the N-1 reuse; the
+check-side mirror of `GetCanonicalFileAndInstId`'s export arm in
+sem_ir/import_ir.cpp) — on match, an inner `CARBON_CHECK` states the
+eval-forwarding invariant (a non-constant `ExportDecl` cannot wrap a
+constant value, per eval_inst.cpp's constant forwarding; it firing is
+the R-3 falsifier that triggers the §2 widening amendment), then
+`return ResolveResult::Done(SemIR::ConstantId::NotConstant)` —
+identical in effect to the AnyBinding branch's runtime-`let` return
+(the importer's type arrives separately by way of GetInstForLoad/
+ResolveType). Nothing else in import_ref.cpp moves — the single-hunk
+merge posture (§2 yield rule) is load-bearing. _Probes:_ the NEW
+CHECK-less check golden toolchain/check/testdata/let/
+export_runtime.carbon distributes P-0 (constant-bound boundary chain
+const/export_const/use_export_const — the untouched constant path),
+P-1 (crash shape scalar/export_name/import_export_name), P-2 (two-hop
+export_export_name chain + importer; per-hop discharge — pre-fix the
+MIDDLE exporter's own check crashed loading the inner ExportDecl, N-3),
+P-4 (export_name.impl.carbon — the ApiForImpl route reading its api's
+`export x;`, adopted N-5), and P-5 (import_both — the dual-route
+merge, adopted N-5); the lower golden lower/testdata/let/
+global_runtime.carbon gains the P-3 export_name/import_export_name
+subfiles pinning ONE `_Cx.Main` across the by-name export route — the
+W69a "implemented but unpinned" ExportDecl-arm record is updated at
+fork/w069/plan.md Amendment 1 (dated cross-ref; the historical W69a
+decision-log records above stand unrewritten). _Red evidence:_ the
+crash is not goldenable (R17 deviation (1)'s recorded crash + a
+one-time pre-fix reproduction quoted in the PR description stand in);
+the goldens land CHECK-less and the runner autoupdate fills them
+red-first to the R26 fixpoint. _Expected golden movement:_ ONLY the
+new export_runtime.carbon fill and the lower global_runtime.carbon
+appended subfiles' fill (existing CHECK content byte-stable — the new
+source subfiles are appended after let_ref); every other golden
+byte-identical; expected pins: export + importer lines with NO
+`[concrete = ...]` (the NotConstant signature), the P-0 chain WITH its
+`[concrete = ...]`, one `_Cx.Main` external in the lower importer.
+_Floor:_ NO conformance program change (the plan's adopted decision) —
+EXACTLY **96 PASS / 0 FAIL / 28 SKIP over 124**; the two stale
+library_multifile_export "W-074 dodge" comments retexted comment-only
+(the dodge is now historical; the record stays). W-074 is
+**DISCHARGE-STAGED** (R9 hedge in the ledger): fast compile →
+autoupdate red-first → fixpoint → gate, floor unchanged; the inner
+CHECK firing, any `[concrete]` on the staged pins, or any floor
+movement re-opens the item. Veto-able.
+
+_W-074 discharge confirmation (2026-08-18, coordinator):_ every staged
+condition met — fills 32185260726 (no-commit fixpoint 32185406315; all
+six probe pins audited against pre-registered predictions and matching
+verbatim), gate GREEN 32185553936, conformance confirm GREEN
+32185553820 at exactly 96/0/28 over 124 unchanged. The implementation
+review returned APPROVE (single-hunk verified; fence held); its
+probe-placement deviation record is folded as a dated plan amendment.
+`export x;` of a runtime `let` now checks clean with the NotConstant
+import signature, the two-hop chain and ApiForImpl routes are pinned,
+and the W69a ExportDecl chase arm carries its first lower-side pin.
+**W-074 is DISCHARGED.** Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

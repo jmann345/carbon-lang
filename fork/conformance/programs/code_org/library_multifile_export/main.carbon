@@ -30,7 +30,10 @@
 // the chain's coverage is that a diagnostic in `export Rect;`, the
 // `export import`, or the route merge fails the program's per-unit
 // compile visibly. No runtime `let` is exported anywhere in this
-// program — `export x;` of a runtime `let` is the W-074 crash shape.
+// program — `export x;` of a runtime `let` WAS the W-074 crash shape,
+// fixed at W74a (2026-08-18) and golden-pinned in
+// toolchain/check/testdata/let/export_runtime.carbon (the historical
+// dodge stands recorded; this program stays class-only).
 
 import Core library "io";
 import library "geo";

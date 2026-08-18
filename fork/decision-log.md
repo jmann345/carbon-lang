@@ -1881,6 +1881,23 @@ says 813-815). Reviewer A's process gate — discharge evidence
 outstanding at review time — rides the in-flight gate+conformance runs
 per the landing note's R9 hedge. Veto-able.
 
+_W-067 discharge confirmation (2026-08-18, coordinator):_ every staged
+condition is met and **W-067 is DISCHARGED**. The evidence chain:
+autoupdate reconciled the four implementation goldens (run 32110931780,
++1033 CHECK lines) and the two review-round additions (run 32112294566,
++411 lines), each confirmed at R26 fixpoint by an empty second pass
+(32111055736 / 32121167408); the gate is GREEN
+(<https://github.com/jmann345/carbon-lang/actions/runs/32121303702>) —
+its first attempt (32111182653) died at the ~07:33Z runner outage with
+the test step mid-flight and no logs (diagnosed infra, not a test
+failure; the re-fire after the runner returned ~09:20Z passed the full
+`bazel test //toolchain/...`); the conformance run
+(<https://github.com/jmann345/carbon-lang/actions/runs/32111182558>)
+landed the floor at EXACTLY **92 PASS / 0 FAIL / 29 SKIP over 121**,
+moving only by control_flow/match_guarded_default.carbon's PASS on the
+already-PASS match bullet. Guarded `default` clauses are now a working
+fork feature under the design's own license. Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

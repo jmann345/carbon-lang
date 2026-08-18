@@ -536,6 +536,24 @@ Trace of every choice-valued flow in the `?` design:
     annotation (`T2` substituted with `Core.ControlFlow(T, E)` at the call),
     so no projection is involved.
 
+    **W-073 dated amendment (2026-08-18): the third-round correction is
+    scope-narrowed to NON-final impls.** The regen it cited ran against
+    this plan's non-`final` testdata impls; there the non-reduction is
+    upstream-designed specialization soundness
+    (docs/design/generics/details.md, "`final` impl declarations") and
+    the correction stands unchanged. Under a `final` impl — the design
+    doc's own sketch spelling since the original F-006 commit (9fdad04),
+    surfaced at the W-072 dissolution — the in-body recursive call's
+    projections DO reduce (the W72a P-9 observation,
+    toolchain/check/testdata/operators/question_final.carbon's
+    inbody_recursive_branch split; runtime-confirmed by W72b's
+    question_generic_thread_diff), so idiom (i) gains a helper-free
+    final-impl form: the interface-recursive
+    `return self.(Core.Try.Branch)();` itself. The W-073 sweep adopts
+    that form at the final-spelled sites (the doc's sketches and the
+    W72b pair, where the `Diverge` helper is deleted); non-`final`
+    impls keep the helper, which remains their only spelling.
+
 Verdict: the `?` desugar itself never value-copies a choice; the Copy gap
 constrains impl-body STYLE, which this plan adopts explicitly and pins. Choice
 `Core.Copy` synthesis stays a recorded post-0.1/W-item matter, NOT a B1

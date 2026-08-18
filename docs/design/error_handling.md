@@ -350,20 +350,31 @@ value-copy a choice (amended 2026-08-08 per fork/b1/plan.md §2.6). Each
 `Branch` body also ends with an unreachable trailing return (amended
 2026-08-08, second round): the checker's reachability analysis does not
 consult match exhaustiveness, so an exhaustive `match` alone leaves the
-function end reachable — and in a generic body, where no `ControlFlow`
-value is otherwise conjurable, the trailing return diverges through a
-helper (corrected 2026-08-08, third round: the earlier interface-recursive
+function end reachable. In a generic body, where no `ControlFlow` value is
+otherwise conjurable, the trailing return's spelling depends on the impl's
+finality (corrected 2026-08-08, third round; re-corrected 2026-08-18 per
+W-073 — the third round's blanket "does not type-check" claim was measured
+against a *non*-`final` testdata impl and is false for the `final`-spelled
+sketches below): through a **non-`final`** impl the interface-recursive
 `return self.(Try.Branch)();` does not type-check — the recursive call's
 return type carries associated-constant projections,
-`ControlFlow(Result(T, E).(Try.ContinueType), ...)`, which are not reduced
-by the impl's own `where` rewrites, so it does not convert to the declared
-`ControlFlow(T, E)`; the helper's return type is exactly the annotation):
+`ControlFlow(Result(T, E).(Try.ContinueType), ...)`, which upstream's
+specialization-soundness rules deliberately keep unreduced by the impl's
+own `where` rewrites — and such an impl must instead diverge through a
+helper whose return type is exactly the annotation
+(`fn Diverge(generic T2: type) -> T2 { return Diverge(T2); }`). Under a
+**`final`** impl — the spelling every sketch below has carried since this
+design's first commit — impl lookup applies the `where` rewrites to the
+impl's own in-body query too, the projections reduce, and the recursive
+call type-checks as the declared `ControlFlow(T, E)` (pinned statically by
+`toolchain/check/testdata/operators/question_final.carbon`'s
+`inbody_recursive_branch` split and at runtime by the W72b arbiter pair),
+so these sketches use it directly and need no helper — and if the trailing
+return were ever reached (it cannot be while the match stays exhaustive),
+the recursive call would diverge rather than diagnose, the same if-reached
+behavior as the `Diverge` helper it replaces:
 
 ```carbon
-// Unreachable trailing-return helper: returns a value of any type by never
-// returning.
-fn Diverge(generic T2: type) -> T2 { return Diverge(T2); }
-
 final impl forall [T: type, E: type] Result(T, E) as Try
     where .ContinueType = T and .BreakType = E {
   fn Branch(self) -> ControlFlow(T, E) {
@@ -371,9 +382,9 @@ final impl forall [T: type, E: type] Result(T, E) as Try
       case .Ok(v: T) => { return ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return ControlFlow(T, E).Break(e); }
     }
-    // Unreachable-terminator idiom: reachability doesn't consult match
-    // exhaustiveness.
-    return Diverge(ControlFlow(T, E));
+    // Unreachable trailing return: reachability doesn't consult match
+    // exhaustiveness; under `final` the recursive call type-collapses.
+    return self.(Try.Branch)();
   }
   fn FromBreak(b: E) -> Self { return Result(T, E).Err(b); }
 }
@@ -385,9 +396,9 @@ final impl forall [T: type] Optional(T) as Try
       case .Some(v: T) => { return ControlFlow(T, ()).Continue(v); }
       case .None => { return ControlFlow(T, ()).Break(()); }
     }
-    // Unreachable-terminator idiom: reachability doesn't consult match
-    // exhaustiveness.
-    return Diverge(ControlFlow(T, ()));
+    // Unreachable trailing return: reachability doesn't consult match
+    // exhaustiveness; under `final` the recursive call type-collapses.
+    return self.(Try.Branch)();
   }
   fn FromBreak(b: ()) -> Self { return Optional(T).None(); }
 }

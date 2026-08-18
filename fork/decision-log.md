@@ -917,6 +917,111 @@ DISCHARGED** (ledger retitled; the staging hedge's confirming condition
 fired as staged, so no re-open). W-073 (the Diverge/comment-family
 sweep, nine files) unblocks as the natural successor. Veto-able.
 
+_W-073 sweep landing note (2026-08-18, the W-073 sweep implementer —
+fork/inventory/work-items.json W-073, the P-9-fallout retext/evaluation
+sweep):_ the nine-file surface swept per the item's per-site rule
+(EVALUATE, not blanket-rewrite). Evidence chain, restated once: the P-9
+observation (question_final.carbon's inbody_recursive_branch split,
+3d261c0 regen — `return self.(Core.Try.Branch)();` compiles CLEAN inside
+a `final` impl body) falsified the "does not type-collapse" rationale
+statically FOR FINAL IMPLS; W72b's runtime arbiter
+(question_generic_thread_diff PASS at 91/0/29 over 120, run 32096689454)
+confirmed the collapse-threaded values at runtime; non-final
+non-reduction stays upstream-designed and permanently pinned. Per-site
+decisions:
+
+| # | Site | Impl finality | Decision |
+| --- | --- | --- | --- |
+| 1 | check/testdata/operators/question.carbon (4 subfiles) | non-final | retext only: scope-qualified comment; `Diverge` kept |
+| 2 | check/testdata/operators/fail_question.carbon (3 subfiles) | non-final | retext only, line-count-preserving per split |
+| 3 | lower/testdata/operators/question.carbon | non-final | retext only |
+| 4 | lower/testdata/operators/question_generic.carbon (generic split; adapter split's short comment makes no claim) | non-final | retext only |
+| 5 | conformance error_handling/control_flow_constructs.carbon | non-final | retext only; code untouched |
+| 6 | conformance error_handling/question_propagation_diff.carbon | non-final | retext only (comment-only, oracle untouched) |
+| 7 | conformance error_handling/question_generic_diff.carbon | non-final | retext only (R16: semantics pinned; SCOPE header already carried the two-regime truth) |
+| 8 | conformance error_handling/question_generic_thread_diff.carbon | FINAL | SIMPLIFIED: `return self.(Core.Try.Branch)();` replaces the `Diverge` trailing return; helper DELETED |
+| 9 | docs/design/error_handling.md | final (sketches) | re-corrected (dated 2026-08-18 fourth-round amendment) to the two-regime truth; both sketches simplified to the recursive trailing return, helper dropped |
+
+The uniform non-final retext replaces the falsified blanket claim with
+"through this NON-final impl the interface-recursive call does not
+type-collapse (upstream specialization soundness keeps its projections
+unreduced; under `final` it does — question_final.carbon)" — six comment
+lines to six, so golden line counts per split are unchanged. CODE changed
+at site 8 only: the deleted helper and the swapped trailing return are
+both unreachable-path content (the match is exhaustive), the reachable
+control flow is untouched, and the C++ oracle is untouched —
+hand-recomputed output table, both sides, unchanged: depth 0 -> `0,84`
+(i32) / `0,1` (i64, payload == 2^33 + 88); depth 1 -> `1,101`; depth 2 ->
+`1,202`. The site-8 shape is byte-for-byte the P-9 pin's (final impl
+forall, same match, same recursive return), and R27 now holds
+code-to-sketch: the pair's spelling matches the doc's simplified
+sketches. Dated-correction texts: fork/b1/plan.md §2.6 gained an
+APPENDED W-073 amendment scope-narrowing the third-round correction to
+non-final impls (history unrewritten); this log's B1/B2a correction
+records stay as-is (historical dated addenda). RESIDUE, recorded not
+actioned (outside the item's enumerated surface): question_final.carbon
+(thread/mixed/lib splits) and lower question_generic_final.carbon keep
+`Diverge` inside final impls with "retained pending W-073" comments that
+go stale at discharge — a comment refresh can ride any future touch of
+those goldens. `runner.py --self-test` OK. _Discharge staging (R9
+hedge):_ W-073 is DISCHARGE-STAGED — it discharges when this landing's
+runner autoupdate reconciles the retexted goldens at fixpoint (R26:
+loc-number shifts expected, no structural pass-2 drift), the gate is
+green, and the conformance run holds the floor at EXACTLY 91 PASS /
+0 FAIL / 29 SKIP over 120 with question_generic_thread_diff still PASS
+(the pair's PASS re-arbitrates the site-8 code change at runtime; this
+sweep must not move the floor). A non-PASS or floor movement re-opens
+the item with the run's evidence. Veto-able.
+
+_W-073 review-round amendment (2026-08-18, the W-073 review round — two
+adversarial reviews, NO code defects found; fixes applied by the R11
+fixer):_ (i) Reviewer A's BLOCKER — the landing commit 18f11a1 did not
+arm the conformance re-arbitration (no conformance-request bump rode the
+sweep; the same class as the W72b round's blocker) — was ALREADY RESOLVED
+before this round closed: the follow-up push 1e55ae7 carried the
+gate/conformance bump, and all three fired runs are in hand — autoupdate
+(<https://github.com/jmann345/carbon-lang/actions/runs/32097812689>,
+commit 18f11a1) a STRICT NO-OP with no push-back, gate
+(<https://github.com/jmann345/carbon-lang/actions/runs/32098017539>)
+green, and conformance
+(<https://github.com/jmann345/carbon-lang/actions/runs/32098017538>,
+commit 1e55ae7) green at EXACTLY **91 PASS / 0 FAIL / 29 SKIP over 120**
+with `question_generic_thread_diff` PASS inside the 4-program PASS
+bullet. (ii) That conformance run is the FIRST-EVER lowering exercise of
+the collapsed in-body recursive interface call — no lower golden pins the
+shape (lower/question_generic_final.carbon still spells `Diverge`) — and
+it passed. (iii) REGEN-WORDING CORRECTION (both reviews): the landing
+note's staging clause "(R26: loc-number shifts expected, no structural
+pass-2 drift)" and the ledger's matching "loc-shift passes expected:
+CHECK content moves but line counts per split are unchanged" were wrong
+and self-contradictory — unchanged line counts mean CHECK content does
+NOT move, so the correct prediction was a STRICT NO-OP, which is exactly
+what run 32097812689 delivered (R26 fixpoint met trivially). The ledger
+STATUS text is corrected in place (current-slice staged text); the
+landing note above stands corrected by this amendment, unrewritten.
+(iv) RESIDUE third member (review A): check
+fail_question_final.carbon (P-6/P-7 splits) also keeps `Diverge` inside
+FINAL impls — with no stale claim text, so no retext is owed — now
+recorded in the ledger's residue list alongside question_final.carbon
+and lower question_generic_final.carbon; recorded, not actioned.
+(v) RECURSION-IF-REACHED acknowledgment (review A): one sentence added
+at the pair's trailing-return comment and in the doc's fourth-round
+amendment — if the trailing return were ever reached (it cannot be while
+the match stays exhaustive), the recursive self-call diverges rather
+than diagnosing, the same if-reached behavior as the deleted `Diverge`
+helper; the pair's edit is COMMENT-ONLY, so run 32098017538's runtime
+arbitration of its semantics stays valid. (vi) NITs, recorded not
+actioned further: the landing note's "six comment lines to six"
+uniformity overstates — conformance sites 5/6 went 6 -> 7 (harmless;
+conformance programs carry no CHECK/@LINE machinery); the R27
+code-to-sketch spelling match holds modulo the necessary `Core.`
+qualification outside the prelude; the autoupdate-request timestamp
+regression is cosmetic. With the three runs in hand, all four
+DISCHARGE-STAGED conditions are hereby confirmed MET — autoupdate
+fixpoint (trivially, by strict no-op), gate green, floor exact at
+91/0/29 over 120, pair PASS — **W-073 is DISCHARGED** (ledger retitled;
+STATUS updated with the run ids and date). Veto-able.
+
 ### F-007: Unions - **Native `union` declaration** (2026-07-19)
 
 Rust-shaped safety surface (writes safe, reads defined byte-reinterpretation,

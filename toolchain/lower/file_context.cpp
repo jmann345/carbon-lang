@@ -922,6 +922,18 @@ auto FileContext::RegisterGlobalLetBindings() -> void {
             break;
           }
           case CARBON_KIND(SemIR::Temporary temporary): {
+            // The store hook lowers a `Temporary` by reading its
+            // `storage_id` (`TemporaryStorage`) local; a storage inst that
+            // is neither ctor-resident nor constant would send `GetValue`
+            // into the generic missing-value CHECK, so leave `next_id`
+            // unset and let the shape demote below.
+            if (!ctor_insts.Contains(temporary.storage_id) &&
+                !sem_ir()
+                     .constant_values()
+                     .Get(temporary.storage_id)
+                     .is_constant()) {
+              break;
+            }
             next_id = temporary.init_id;
             break;
           }
@@ -1054,6 +1066,15 @@ auto FileContext::EmitGlobalLetStores(FunctionContext& ctor_context,
         ctor_context.LowerInst(chain_id);
       }
     }
+    // The bound value must be a ctor local now: either the ctor-resident
+    // initializer itself (`key_id == binding.value_id`) or the last wrapper
+    // lowered above. Anything else would route the `GetValue` below back
+    // through `TryEmitGlobalLetValue` and store the zero-initialized global
+    // into itself while still satisfying the post-ctor store count.
+    CARBON_CHECK(ctor_context.HasLocal(binding.value_id),
+                 "No lowered bound value for promoted `let` binding {0} ({1}) "
+                 "at its `__global_init` store point",
+                 binding.binding_id, sem_ir().insts().Get(binding.binding_id));
     auto* global = GetOrCreateGlobalLetVariable(binding);
     ctor_context.StoreObject({.file = &sem_ir(), .type_id = binding.type_id},
                              ctor_context.GetValue(binding.value_id), global);

@@ -81,8 +81,8 @@ library "[[@TEST_NAME]]";
 
 fn MakeEmpty() -> () { return (); }
 
-// Empty value representation: NO `_Ce` global may appear in this module;
-// references are served as the empty value.
+// Empty value representation: NO `_Ce` global may appear. The bound value is
+// concrete at check time, so references ride the constant path (W69a fill).
 let e: () = MakeEmpty();
 
 fn UseE() -> () { return e; }

@@ -434,8 +434,11 @@ fixpoint (R15/R19/R26) + `bazel test //toolchain/...` + upstream-parity gate
 
 ### W69a — probes + the mechanism for scalar shapes (M)
 
--   **Toolchain files:** toolchain/lower/function_context.cpp (the
-    `GetValue` fall-through branch), toolchain/lower/file_context.{h,cpp}
+-   **Toolchain files:** toolchain/lower/function_context.{h,cpp} (the
+    `GetValue` fall-through branch; the header carries the
+    `TryEmitGlobalLetValue` declaration and the `HasLocal`/ctor-hook
+    plumbing) [amended at the W69a review round: function_context.h added
+    to the file list], toolchain/lower/file_context.{h,cpp}
     (promotion pre-pass, promoted-let registry, ctor-store emission,
     external-decl builder with name-keyed reuse),
     toolchain/sem_ir/mangler.{h,cpp} (`MangleGlobalLetBinding`, additive —
@@ -817,6 +820,10 @@ Slice order after adjudication: W69a (mechanism, scalar) → W69h
 runtime cross-file arbiter) → W69c contingent (generic residue).
 
 ## W69a implementation-round amendments (2026-08-18, coordinator adjudications of the implementer's R17 deviation reports)
+
+[Hygiene note, added at the W69a review round: this section POSTDATES the
+"Review-round amendments (2026-08-18)" section below it — the sections sit
+in anti-chronological order on the page.]
 
 Three deviations were reported loudly by the W69a implementer instead of
 being worked around; each is hereby ADJUDICATED and folded (veto-able):

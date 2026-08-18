@@ -2102,6 +2102,72 @@ initializer chain bottoms out in a CONSTANT reference (no ctor-resident
 key) are Declined, not promoted — recorded as in-scope-for-later residue
 under §5 step 4. Veto-able.
 
+_W69a review+fill round (2026-08-18, the W69a fixer):_ both adversarial
+implementation reviews APPROVE — reviewer A: the reachability invariant
+(`GetValue`'s fall-through entered only where the old CHECK crashed) is
+proven structurally, the mangler's two-sided agreement (defining and
+importing sides feeding the same binding-inst fingerprint input) is
+verified, no F8c-shaped name split is possible; reviewer B: the
+import_ref.cpp/runner.py fence held (zero changed lines), the three R17
+deviations are genuine discoveries, no cheating found. _CI chain:_
+runner autoupdate fill run 32136846740 (commit 535680c, +536/−12) →
+R26 NO-COMMIT fixpoint run 32136984670 → gate GREEN run 32137118870 →
+conformance GREEN run 32137118887 at the byte-exact floor **93/0/29
+over 122**. _Fill audit:_ the fill touched THREE files, not the
+predicted four — lower let/global_runtime.carbon and
+let/global_runtime_symbols.carbon filled from empty CHECK, and
+var/import.carbon regenerated (the P-6 flip produced the new `_CX.Main`
+function and no other module movement). **The landing note's "three let
+goldens fill from empty CHECK" prediction FAILED for
+check/testdata/let/global_runtime.carbon: it did not fill and remains
+CHECK-free** — the check component's default args are
+`--dump-sem-ir-ranges=only` and the file marks no `//@dump-sem-ir-begin`
+ranges, so its dump output is EMPTY and autoupdate had nothing to
+insert; the golden therefore pins clean checking only, NOT the SemIR
+shape its header claimed (header reconciled in place; adding dump
+ranges is W69b evaluation material). Load-bearing predictions HELD:
+exactly one `_Cx.Main` across the A/B/main re-export chain (one
+defining `global i32 0`, two `external global` decls); zero
+`.N`-suffixed symbols anywhere in the R-1 falsifier (the only `.2` is
+the prose citation of the F8c incident); no `_Ce`/`_Cr` globals; the
+private-let fingerprint present (`_Chidden.Main.b2b5bfc054bc42f8`, 3
+sites: definition, store, load). _P-8 (`let ref`):_ the fill records
+`UseR` loading straight from `@_Cv.Main` — the reference-category
+exclusion held and the reference rides the variable's own storage; the
+subfile comment already matched, no reconciliation needed. _P-9
+(NoStorage):_ reviewer A NIT-3's dead-arm prediction is CONFIRMED — a
+runtime call of empty tuple type converts to a value carrying
+`[concrete = constants.%empty_tuple]` (pinned in
+check/testdata/basics/dump_sem_ir_ranges.carbon), so `e`'s bound value
+is CONSTANT, fails the pre-pass NotConstant gate, never registers, and
+rides the constant path; the `NoStorage` disposition arms (pre-pass
+dispatch and `TryEmitGlobalLetValue`) are unexercised defensive
+residue, and the empty-subfile probe comments were reconciled to say
+so. _Hardening (landed THIS round, ride the NEXT gate round before
+W69h):_ (1) `EmitGlobalLetStores` now CHECKs
+`ctor_context.HasLocal(binding.value_id)` before the store, naming the
+binding — a failed chain lowering can no longer route `GetValue` back
+through `TryEmitGlobalLetValue` and store the zeroinit global into
+itself while satisfying the post-ctor count (review B SF-1); (2) the
+pre-pass chase's `Temporary` arm now demotes to Declined when the
+`storage_id` (`TemporaryStorage`) inst is neither ctor-resident nor
+constant — the shape the hook cannot lower (on-demand `GetValue` of an
+unlowered `TemporaryStorage` would hit the generic missing-value
+CHECK) now demotes at pre-pass per the plan invariant (review A SF-1;
+the fill proves the shape does not occur today). _W-074 attribution
+corrected:_ the `CARBON_CHECK(Is<AnyBinding>)` at import_ref.cpp:4483
+PREDATES W5-S3b (upstream-era CHECK at the shallow-clone boundary,
+present in the initial import of the file); S3b added only the
+bound-constant resolution logic beneath it. _Accepted, not actioned:_
+A NIT-2 (an exotic non-Value runtime binding shape keeps the old
+missing-value CHECK — loud, acceptable); A NIT-4 (the
+`global_let_ctor_stores_` linear scan per ctor inst — small n, revisit
+only if profiled); A NIT-6 (declaration-side promotion widens the
+future upstream-merge byte-surface of lower/ — recorded as a
+WEEKLY-MERGE WATCH ITEM); B NIT-7 (the registry's duplicate-key
+`Insert` assumption — binding_id and value_id never collide across
+bindings — stated, relied upon, unchecked). Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

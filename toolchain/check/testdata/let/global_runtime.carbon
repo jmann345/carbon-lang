@@ -12,11 +12,15 @@
 
 // File-scope `let` bindings bound to RUNTIME values (W-069 half (a)): these
 // check cleanly today — the binding lives in the file's top block, its bound
-// value inside `__global_init` — and this golden pins that SemIR shape so the
-// lowering-side promotion mechanism needs no check change. The slice's PR-diff
-// audit obligation: every EXISTING check golden under toolchain/**/testdata
-// stays byte-identical (constant-bound `let`s keep riding the constant path —
-// see check/testdata/let/import.carbon's `[concrete = ...]` import pins).
+// value inside `__global_init`. [Reconciled at the W69a review round:] this
+// golden pins CLEAN CHECKING ONLY, not the SemIR shape — the check-component
+// default is `--dump-sem-ir-ranges=only` and this file marks no
+// `//@dump-sem-ir-begin` ranges, so the dump (and the fill) is empty; adding
+// ranges to pin the shape is recorded W69b evaluation material. The slice's
+// PR-diff audit obligation: every EXISTING check golden under
+// toolchain/**/testdata stays byte-identical (constant-bound `let`s keep
+// riding the constant path — see check/testdata/let/import.carbon's
+// `[concrete = ...]` import pins).
 
 // --- scalar.carbon
 
@@ -84,9 +88,9 @@ library "[[@TEST_NAME]]";
 
 fn MakeEmpty() -> () { return (); }
 
-// An empty-tuple-typed runtime `let`: the value representation is `None`, so
-// no backing storage is ever minted; references are served as the empty
-// value.
+// An empty-tuple-typed `let`: the initializer runs at runtime, but the bound
+// VALUE folds to the concrete empty tuple at check time, so references ride
+// the constant path and no backing storage is ever minted.
 let e: () = MakeEmpty();
 
 fn UseE() -> () { return e; }

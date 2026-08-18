@@ -32,9 +32,13 @@
 // Payload argument values are runtime-computed (R16d), so constant folding
 // cannot fake construction; payload READBACK is W5-S3c (destructuring), so
 // the probe observes discriminants only. `var` for the call-initialized
-// locals, `let` for constants — initializing a `var` from a class value
-// would require a `Copy` impl, which choices do not have (the
-// types/choice_payload_construct.carbon precedent).
+// locals, `let` for constants — a workaround record now historical
+// (retexted 2026-08-18): when this program landed, initializing a `var`
+// from a class value required a `Copy` impl choices did not have (the
+// types/choice_payload_construct.carbon precedent); W-075's synthesized
+// choice `Core.Copy` witness lifted that, and the `let` spelling here is
+// retained as landed — the doc-verbatim `var`-from-constant shape is
+// arbitrated by control_flow/choice_generic_roundtrip_diff.carbon.
 
 import Core library "io";
 

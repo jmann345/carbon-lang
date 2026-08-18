@@ -210,6 +210,12 @@ class FunctionContext {
   auto CopyObject(TypeInFile type, llvm::Value* source_addr,
                   llvm::Value* dest_addr) -> void;
 
+  // Emits a value copy for type `type` from `source_id` to `dest_id`.
+  // `source_id` must produce a value representation for `type`, and
+  // `dest_id` must be a pointer to a `type` object.
+  auto CopyValue(TypeInFile type, SemIR::InstId source_id,
+                 SemIR::InstId dest_id) -> void;
+
   // Emits the instructions necessary to initialize the storage at `dest_id`
   // from the repr-initializing expression `source_id`. This assumes the
   // instructions for `source_id` have already been emitted, so it's a no-op if
@@ -321,12 +327,6 @@ class FunctionContext {
     // The current instruction ID.
     SemIR::InstId inst_id_ = SemIR::InstId::None;
   };
-
-  // Emits a value copy for type `type` from `source_id` to `dest_id`.
-  // `source_id` must produce a value representation for `type`, and
-  // `dest_id` must be a pointer to a `type` object.
-  auto CopyValue(TypeInFile type, SemIR::InstId source_id,
-                 SemIR::InstId dest_id) -> void;
 
   // Emits an object representation copy for type `type` from `source_id` to
   // `dest_id`. `source_id` and `dest_id` must produce pointers to `type`

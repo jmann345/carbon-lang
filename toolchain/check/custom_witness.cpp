@@ -906,6 +906,67 @@ auto BuildPrimitiveCopyWitness(
                             query_specific_interface_id, {op_id});
 }
 
+// Returns the custom witness to use for copying a choice type, or nullopt
+// for every non-choice self so that classes, tuples, and primitives keep
+// their landed behavior. See `LookupCustomWitness`. Mirrors
+// `LookupDestroyWitness` below.
+//
+// Fork (W-075, fork/w075/plan.md §2): every definable choice is trivially
+// copyable — the SF-6 slice-1 fence rejects any payload "that is not
+// trivially copyable and destructible"
+// (check/testdata/choice/fail_todo_nontrivial_payload.carbon) and enforces
+// the same allowlist per specific at monomorphization — so a choice self is
+// answered with a primitive-copy witness, the sanctioned C++-enum pattern
+// (cpp/impl_lookup.cpp `BuildCopyWitness`: "it's an enum ... Perform a
+// primitive copy"). Classes stay fenced behind the `is_choice` predicate:
+// upstream is undecided on class copyability
+// (check/testdata/var/fail_not_copyable.carbon).
+//
+// Because the custom-witness dispatch precedes candidate-impl iteration at
+// both call sites (impl_lookup.cpp: "Only consider candidates when a custom
+// witness didn't apply"), this witness SHADOWS a user out-of-line
+// `impl <choice> as Core.Copy` — the declared SF-1 consequence, the same
+// posture `Destroy` already has for choices; pinned by
+// check/testdata/choice/alternative_copy.carbon.
+//
+// W-071-style revisit note (plan §5 R-3): the triviality argument — concrete
+// and symbolic alike — is valid exactly while the SF-6 fence holds. When
+// SF-6 widens past trivially copyable payloads, this must become a real
+// per-payload Copy walk, like destroy's field walk.
+static auto LookupChoiceCopyWitness(
+    Context& context, SemIR::LocId loc_id,
+    SemIR::ConstantId query_self_const_id,
+    SemIR::SpecificInterfaceId query_specific_interface_id, bool build_witness)
+    -> std::optional<SemIR::InstId> {
+  auto self_inst_id = context.constant_values().GetInstId(
+      GetCanonicalFacetOrTypeValue(context, query_self_const_id));
+  auto class_type = context.insts().TryGetAs<SemIR::ClassType>(self_inst_id);
+  if (!class_type || !context.classes().Get(class_type->class_id).is_choice) {
+    return std::nullopt;
+  }
+
+  if (!build_witness || query_self_const_id.is_symbolic()) {
+    // The choice can be copied, but we shouldn't make a witness right now: a
+    // symbolic self defers building to each concrete monomorphization — the
+    // same posture as `LookupDestroyWitness` and `CanDestroyClass`'s choice
+    // clause, justified by the same SF-6 per-specific payload guarantee.
+    return SemIR::InstId::None;
+  }
+
+  // Mark the function with the `Copy` interface's scope as a hint to
+  // mangling, per `BuildDestroyWitness`; this does not add it to the scope.
+  // This diverges from the C++-enum precedent's `GetClassScope`
+  // (cpp/impl_lookup.cpp `BuildCopyWitness`) — a mangling-hint choice only.
+  auto query_specific_interface =
+      context.specific_interfaces().Get(query_specific_interface_id);
+  auto parent_scope_id = context.interfaces()
+                             .Get(query_specific_interface.interface_id)
+                             .scope_without_self_id;
+  return BuildPrimitiveCopyWitness(context, loc_id, parent_scope_id,
+                                   query_self_const_id,
+                                   query_specific_interface_id);
+}
+
 // Builds and returns a custom witness that performs the specified kind of
 // destruction for the given type.
 static auto BuildDestroyWitness(
@@ -1138,6 +1199,13 @@ auto LookupCustomWitness(Context& context, SemIR::LocId loc_id,
                          SemIR::SpecificInterfaceId query_specific_interface_id,
                          bool build_witness) -> std::optional<SemIR::InstId> {
   switch (core_interface) {
+    case SemIR::CoreInterface::Copy:
+      // Fork (W-075): choice types take a synthesized primitive-copy
+      // witness; every other self answers nullopt, leaving the TODO below in
+      // place for upstream's own copy/move/conversion work.
+      return LookupChoiceCopyWitness(context, loc_id, query_self_const_id,
+                                     query_specific_interface_id,
+                                     build_witness);
     case SemIR::CoreInterface::Destroy:
       return LookupDestroyWitness(context, loc_id, query_self_const_id,
                                   query_specific_interface_id, build_witness);
@@ -1149,7 +1217,6 @@ auto LookupCustomWitness(Context& context, SemIR::LocId loc_id,
                                   query_specific_interface_id, build_witness);
     case SemIR::CoreInterface::AddAssignWith:
     case SemIR::CoreInterface::AddWith:
-    case SemIR::CoreInterface::Copy:
     case SemIR::CoreInterface::CppRangeForIterate:
     case SemIR::CoreInterface::CppUnsafeDeref:
     case SemIR::CoreInterface::Dec:

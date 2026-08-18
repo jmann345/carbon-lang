@@ -983,7 +983,14 @@ landable:
     why the runtime arbiters were green while the goldens were not). The
     runtime-bound predicate distinction survives intact (verified: the
     call does not fold; the constant sibling `gc` folds `[concrete]`).
-    The copy gap itself is minted as ledger item **W-075**. The
+    The copy gap itself is minted as ledger item **W-075** [dated
+    cross-ref, 2026-08-18: discharge-staged by W75a (fork/w075/plan.md)
+    — the synthesized choice `Core.Copy` witness makes the falsified
+    sketch's shape check, and `return Pair(i64).Neither;` is pinned
+    POSITIVE at check/testdata/choice/alternative_copy.carbon; the
+    import_choice.carbon `MakeRuntime` constructor-call spelling stays
+    AS LANDED — its job is a non-folding initializer, not a copy dodge
+    (fork/w075/plan.md §3 negative pins)]. The
     implementer-record sentence above claiming the S-5/P-10 subfiles
     "landed as written … at floor 95/0/29" is CORRECTED here: the source
     subfiles landed; their pins existed only after this fix round's

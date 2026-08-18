@@ -19,11 +19,13 @@
 // shape, sum_types.md:60-89, modulo payloads until S3b). WHICH value is
 // matched is runtime-selected (a branch on a function argument, R16d), so
 // constant folding cannot fake the dispatch read. Values are `let`-bound
-// and passed by value: choices have no `Copy` impl (SF-6's recorded scope),
-// so `var`/return initialization from a constant is out — the precedent
-// types/choice_payload_construct.carbon records: initializing a `var`
-// from a class value would require a `Copy` impl, which choices do not
-// have.
+// and passed by value — a workaround record now historical (retexted
+// 2026-08-18): when this program landed, choices had no `Copy` impl
+// (SF-6's recorded scope), so `var`/return initialization from a constant
+// was out; W-075's synthesized choice `Core.Copy` witness lifted that,
+// the `let` spelling here is retained as landed, and the `var`-from-
+// constant shape is arbitrated by
+// control_flow/choice_generic_roundtrip_diff.carbon.
 // Expected prints derive from the source: First -> 0, Second -> 1, probed
 // once per alternative per specific.
 

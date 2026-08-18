@@ -2608,6 +2608,143 @@ import signature, the two-hop chain and ApiForImpl routes are pinned,
 and the W69a ExportDecl chase arm carries its first lower-side pin.
 **W-074 is DISCHARGED.** Veto-able.
 
+_W75a landing note (2026-08-18, the W75a implementer — fork/w075/plan.md,
+the single W-075 slice):_ lane (b) as adjudicated — the synthesized
+`Core.Copy` witness for choice types. _Mechanism:_ check side,
+custom_witness.cpp only: `LookupChoiceCopyWitness` mirroring
+`LookupDestroyWitness` — resolve the canonical query self to a
+`ClassType` whose `class_info.is_choice` holds (any other self answers
+nullopt, so classes/tuples/primitives keep today's behavior and the
+class-copy question stays where upstream left it); symbolic self or
+`build_witness=false` answers yes with `InstId::None` (the destroy/B2a
+deferral posture, justified by the SF-6 triviality fence); concrete self
+builds by way of `BuildPrimitiveCopyWitness` with the Copy interface's
+`scope_without_self_id` as the mangling hint (stated divergence from the
+C++-enum precedent's `GetClassScope`); dispatched from
+`LookupCustomWitness`'s Copy case, upstream's TODO comment left intact
+over the remaining nullopt block. Lower side, handle_call.cpp: the
+`PrimitiveCopy` arm gains the return-slot case (two args = value + slot,
+`PrimitiveCopy` declares one parameter) — `CopyValue` into the slot
+(memcpy for pointer-rep choices) then the trailing
+`SetLocal(inst_id, GetValue(arg_ids[1]))` per the
+CppStdInitializerListMake precedent. _Declared deviation from the plan's
+two-file toolchain diff:_ `FunctionContext::CopyValue` was PRIVATE; its
+declaration moved to the public section of lower/function_context.h
+(declaration-visibility move only, no behavior change) — the plan's
+prescribed call is impossible without it. _Declared consequences carried
+to the digest:_ SF-1 — the custom-witness dispatch PRECEDES
+candidate-impl iteration, so a user out-of-line
+`impl <choice> as Core.Copy` (sum_types.md:95-98) is SHADOWED by the
+synthesized witness, the posture Destroy already has; pinned by the new
+shadowed_user_impl probe. SF-2 — `SetCoreWitness` bypasses
+source-builtin validation and the lower arm widens `PrimitiveCopy`'s
+de-facto contract past its `PrimitiveCopyable` validator
+(sem_ir/builtin_function_kind.cpp); the R-5 weekly-merge yield rule
+covers the seam. _Probes:_ NEW check/testdata/choice/
+alternative_copy.carbon (payload_free return/var/assign round trip; the
+sum_types.md:74-75 doc_shape verbatim incl. the None-to-Some-to-None
+transition; the W69b minting shape `Pair(i64).Neither` with return slot;
+boundary `let` + value-param no-copy pins; the symbolic-deferral +
+monomorphization generic pin — the least-exercised link; the SF-1
+shadowing pin); NEW lower/testdata/choice/alternative_copy.carbon (both
+reprs: by-value `PrimitiveCopy`, pointer-rep slot memcpy, constant folds
+vs runtime calls); the P-2 tripwire FIRED as designed —
+fail_question.carbon's fail_return_choice_binding subfile (its header:
+"if this ever compiles ... §2.6 needs re-derivation") relocated to
+question.carbon as the return_choice_binding positive pin, and the
+§2.6-derived records retext (docs/design/error_handling.md:343-349
+dated amendment — the match-reconstruct `Branch` bodies STAY, `Branch`
+returns the `ControlFlow` carrier, not `Self`;
+control_flow_constructs.carbon:20; choice_generic_diff.carbon's `let`
+workaround record marked historical). All new/changed goldens land
+source-side and ride the runner autoupdate red-first to the R26
+fixpoint; every untouched class/tuple copy golden must come back
+byte-identical. _Conformance (adopted, veto-able):_ control_flow/
+choice_generic_roundtrip_diff restored to the DOC-VERBATIM shape —
+`var my_opt: Optional(i32) = Optional(i32).None;` and the full
+None-to-Some(-to-None) transition on one variable, the oracle
+`.reset()`-symmetric, churn declared; NO program count change. _Floor
+(R9 hedge):_ EXACTLY **96 PASS / 0 FAIL / 28 SKIP over 124**, the pair
+staying one PASS with coverage deepened. W-075 is **DISCHARGE-STAGED**:
+fast compile → autoupdate red-first → fixpoint → gate → conformance;
+any diagnostic on the flipped shapes, a candidate-impl binding in the
+shadowing probe's dump, or any floor movement re-opens the item with
+the run's evidence. Veto-able.
+
+_W75a fix-round addendum (2026-08-18, the R11 fixer — dated follow-up in
+the W-075 area per correctness F-3):_ the staged-discharge autoupdate
+(run 32190561198) crashed gate-grade on a PRE-EXISTING golden —
+lower/testdata/class/generic.carbon's create_generic subfile,
+`fn Make[T: Core.Copy](x: T, y: T) -> A(T)` monomorphized at `T = i32`,
+at `return {.x = x, .y = y};` — two signatures across the parallel
+tests: the `CHECK failure at toolchain/lower/function_context.cpp:482:
+value->getType() == llvm_type` (frame: `StoreObject` ← `CopyValue` ←
+`InitializeStorage` ← `HandleInst(InPlaceInit)`) and LLVM's
+`StoreInst ... "Ptr must have pointer type!"` assert. _Root cause
+(confirmed against the code, not the hypothesized orientation swap):_
+the landed arm discriminated on ARITY (`arg_ids.size() == 2` ⇒ slot
+call), but a call built against a symbolic `T: Core.Copy` carries the
+return-slot trailing arg for EVERY specific — check decided the slot
+from the symbolic (dependent) init repr — so a monomorphized by-copy
+specific (i32) also arrives with two args. The arm then took the slot
+path: its `CopyValue`'s argument ORDER was correct
+(`CopyValue(type, source_id, dest_id)`, function_context.h:213-216 —
+no swap to fix), but the trailing
+`SetLocal(inst_id, GetValue(arg_ids[1]))` published the SLOT POINTER as
+the call's value, while every by-copy consumer dispatches through
+`InitializeStorage`'s `InitRepr::ByCopy` arm (function_context.cpp:
+406-407) and hands the call's value to
+`StoreObject(type, GetValue(call), addr)` — pointer where an `i32` is
+required, exactly the :482 CHECK; the pointer-type asserts are the same
+misdispatch reaching LLVM's `StoreInst` operand checks on the sibling
+consumer paths. _The old-code behavior (a99034e~1, the green baseline
+for this exact golden):_ the pre-W75a arm was unconditionally
+`context.SetLocal(inst_id, context.GetValue(arg_ids[0]));` — the call's
+value is the SOURCE VALUE, the slot arg is left untouched at the arm,
+and the consumer's `InitializeStorage` (ByCopy → `CopyValue` →
+`StoreObject`) performs the store into the destination itself — the
+golden's own CHECK line `store i32 %x, ptr %.loc10_25.2.x` is that
+consumer store, and the corrected arm reproduces it byte-identically.
+_The corrected dispatch (handle_call.cpp, PrimitiveCopy arm):_
+discriminate on the CONCRETE type's init repr — the same discriminator
+the consumers use (`FunctionContext::InitializeStorage`'s switch,
+function_context.cpp:393-419; `GetTypeIdOfInst` maps through
+`GetTypeOfInstInSpecific`, so the specific's concrete type answers) —
+`arg_ids.size() == 2 && GetInitRepr(type).kind == InitRepr::InPlace` ⇒
+the landed slot path (`CopyValue` into the slot, `SetLocal` the slot,
+per the CppStdInitializerListMake precedent, handle_call.cpp:635-642);
+otherwise (ByCopy/None, including every monomorphized by-copy specific)
+the old arm verbatim — no slot store at the arm, matching the green
+baseline (the consumer fills the destination, which IS the call's
+storage arg per `FindStorageArgForInitializer`). The bare `InitRepr`
+spelling without a new include follows lower/handle.cpp:306-335. The
+W75a-new pointer-rep golden subfiles are unchanged in meaning
+(`Pair(i64)` is `InitRepr::InPlace`, still the slot path); the
+regression class is now pinned inside the W75a probe set as
+lower/testdata/choice/alternative_copy.carbon's NEW mono_from_generic
+subfile (one generic `Dup[T: Core.Copy]` monomorphized at a by-copy
+choice, `i32`, and a pointer-rep choice). fork/w075/plan.md §2 carries
+the dated contract correction; W-075 stays DISCHARGE-STAGED with the
+hedge intact — this fix re-enters at fast compile → autoupdate
+red-first → R26 fixpoint (every untouched class/tuple copy golden
+byte-identical, create_generic included) → gate → conformance floor
+96/0/28. Veto-able.
+
+_W-075 discharge confirmation (2026-08-19, coordinator):_ every staged
+condition met — the fix-round pipeline all green (fills 32191819332,
+no-commit fixpoint 32191946652; gate 32192068700 with every untouched
+golden byte-identical including the class/generic family the regression
+had crashed; conformance 32192068450 at exactly 96/0/28 over 124, the
+restored doc-verbatim roundtrip pair one PASS). The review's fill-audit
+obligations discharged: the shadowing probe's dump binds the
+synthesized `custom_witness (%Copy.Op)` at the outside call site with
+no user-impl reference (predicted verbatim); the untouched
+CopyOfUncopyableType goldens byte-identical by the fill's own file
+list + the green gate. The design's canonical
+`var my_opt: Optional(i32) = Optional(i32).None;` now compiles and
+runs; the fork's tripwire flipped exactly as its own header predicted.
+**W-075 is DISCHARGED.** Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

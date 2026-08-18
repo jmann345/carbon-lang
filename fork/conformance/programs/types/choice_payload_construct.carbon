@@ -65,9 +65,11 @@ fn RuntimeSpeed(x: i32) -> i32 { return x + 40; }
 fn Run() -> i32 {
   // `go` is a call-initialized local `var`: it initializes in place and its
   // scope exit executes the destroy-witness path for a payload-carrying
-  // choice repr (plan risk R-5). The constant-initialized locals use `let`:
-  // initializing a `var` from a class *value* would require a `Copy` impl,
-  // which choices do not have.
+  // choice repr (plan risk R-5). The constant-initialized locals use `let`
+  // — as landed, initializing a `var` from a class *value* required a
+  // `Copy` impl choices did not have; historical since W-075's synthesized
+  // choice `Core.Copy` witness (retexted 2026-08-18), the `let` spelling
+  // retained as landed.
   var go: Signal = Signal.Go(RuntimeSpeed(2));
   let stop: Signal = Signal.Stop;
   let wait: Signal = Signal.Wait;

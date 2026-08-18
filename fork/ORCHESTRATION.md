@@ -10,8 +10,21 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-18 (post-PR #29: the library_multifile_export
-un-SKIP — 96/0/28)._ TWENTY-NINE PRs. The adjudicated W69h follow-up
+_Last updated: 2026-08-18 (post-PR #30: W-074 — export of runtime
+lets, DISCHARGED)._ THIRTY PRs. The sanctioned import_ref.cpp amendment
+round, plan-first: one contiguous 20-line hunk peeks through
+non-constant ExportDecls in TryResolveInstCanonical (Done(NotConstant),
+the eval-forwarding invariant CHECKed; V-3a sanction proven by the
+design's export-name sentence + p003938 + upstream's own var-export
+golden). Six probes with fills audited against pre-registered
+predictions verbatim; the W69a ExportDecl chase arm got its first
+lower-side pin (one _Cx.Main across the export route). Floor UNCHANGED
+**96/0/28 over 124**, 43/56 bullets. Both reviews APPROVE; the
+probe-placement deviation recorded. Upstream's non-constant-BindNames
+TODO sits at the hunk boundary — the weekly merge surfaces any
+collision. Next: W-075 (choice alternative-constant copy gap — V-3a
+check first) or conformance depth; W-066 stays blocked on W-008._
+TWENTY-NINE PRs. The adjudicated W69h follow-up
 landed: the SKIP stub became a real 5-unit multi-unit program (api/impl
 split runtime-load-bearing with a visible LINK-FAIL failure mode; the
 export Rect + export-import chain compile-arbitrated in series; the
@@ -242,7 +255,7 @@ code). Next check: Monday 14:00 UTC.
 
 96 PASS / 28 SKIP / 0 FAIL programs (124 total, 18 differential
 C++-oracle pairs, 2 multi-unit); **43/56 bullets green** (runner-side
-scoreboard at the PR #29 head; verified from fork/conformance/out/scoreboard.json —
+scoreboard at the PR #30 head; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first
 error-handling flip, now 4 programs deep incl. the W72b threading
 arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79
@@ -271,12 +284,10 @@ fork/conformance-request.txt trigger).
 
 ### Next actions (dependency order)
 
-1.  W-074 (export-x runtime-let crash — the sanctioned import_ref
-    amendment round; upstream-hot file, small plan round first) and
-    W-075 (choice alternative-constant copy gap — check-side, V-3a
-    check first). W-066 stays blocked on W-008; conformance depth
-    (differential pairs for flipped bullets lacking one) rides
-    alongside.
+1.  W-075 (choice alternative-constant copy gap — check-side, V-3a
+    check first; the lanes are recorded on its ledger entry). W-066
+    stays blocked on W-008; conformance depth (differential pairs for
+    flipped bullets lacking one) rides alongside.
 2.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
     user's veto-digest response** (presented 2026-07-20, unanswered).
 3.  W5-S3p (prelude Result/Optional) stays GATED on the OPEN SF-9 fork

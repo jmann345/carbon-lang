@@ -15,7 +15,7 @@ synthesis, DISCHARGED)._ THIRTY-ONE PRs. The design's canonical
 `var my_opt: Optional(i32) = Optional(i32).None;` now compiles and
 runs: LookupChoiceCopyWitness mirrors the destroy witness (is_choice
 gate, symbolic deferral under the SF-6 triviality fence, concrete
-builds via BuildPrimitiveCopyWitness), the Copy dispatch case leaves
+builds by way of BuildPrimitiveCopyWitness), the Copy dispatch case leaves
 upstream's TODO block with the TODO intact, and the lower PrimitiveCopy
 arm gains the return-slot form. One genuine regression root-caused
 pre-merge (arity-vs-repr misdispatch on monomorphized slot-carrying

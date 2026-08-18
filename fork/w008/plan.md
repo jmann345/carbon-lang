@@ -347,9 +347,9 @@ not TODO). New lower goldens: lower/testdata/match/var_binding.carbon
 pattern_matching.md:773-791). Conformance: new program
 control_flow/match_var_ref_binding.carbon (owning bullet, good-switch
 string) — mutate a `var` case binding, observe the original unchanged;
-`ref` the scrutinee, observe the original changed. Floor 98 → 99 over
-127. R9 discharge as W8a, plus: the `var`/`ref` TODO string absent from
-the tree.
+`ref` the scrutinee, observe the original changed. Floor 98 → 99
+over 127. R9 discharge as W8a, plus: the `var`/`ref` TODO string
+absent from the tree.
 
 ### 3.3 W8c — disposition and gate-narrowing (S; cut-with-record allowed)
 

@@ -1,1 +1,1 @@
-2026-08-18T08:30Z F8d pass-2 fixpoint (real)
+2026-08-18T09:00Z F8d pass-3 fixpoint (pass-2 churn was convergent renumbering from decayed_param's removed errors)

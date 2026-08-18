@@ -10,7 +10,19 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-18 (post-PR #21: F8c COMPLETE)._ TWENTY-ONE
+_Last updated: 2026-08-18 (post-PR #22: F-008 COMPLETE)._ TWENTY-TWO
+PRs. F8d closed the workstream on the FIX path (degrade never needed):
+`std::thread(Carbon::Work)` constructs directly — a concrete
+non-generic non-member Carbon function maps to a pointer to its
+exported decl, argument embedded as DeclRefExpr+decay, mapping
+confined to the call-argument path (a correctness-review blocker
+narrowed it; export-side function types still diagnose), same-signature
+thunk collisions probed and fixed via mangled-suffix asm labels.
+90/0/29 over 119, 43/56 bullets. F-008 TOTALS: 4 slices, 4 PRs, 8
+adversarial reviews, 3 pre-merge blockers fixed, D1/D2/D3 all FIXED
+(W-021/022/023 discharged; W-020 doc half stays digest-gated). The
+fix's movement reached two upstream goldens whose function-argument
+cases now compile._ TWENTY-ONE
 PRs. F8c landed adjudication-first (plan adjudication D): the
 real-header run refuted H0 live (undefined `_Ctotal.Main.2`/`.3`), the
 fix is module-symbol-table reuse in `BuildNonCppGlobalVariableDecl`
@@ -122,7 +134,7 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-89 PASS / 30 SKIP / 0 FAIL programs (119 total, 16 differential
+90 PASS / 29 SKIP / 0 FAIL programs (119 total, 17 differential
 C++-oracle pairs); **43/56 bullets green** (runner-side scoreboard at
 the PR #16 head; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first

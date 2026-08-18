@@ -1,1 +1,1 @@
-2026-08-18T16:46Z W69b gate (pointer-rep promotion arm; full bazel test)
+2026-08-18T21:20Z W69b final gate (folded-ref fix + P-10 narrowing + filled acceptance pins; full bazel test)

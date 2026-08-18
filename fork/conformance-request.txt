@@ -1,1 +1,1 @@
-2026-08-18T16:46Z W69b conformance (DISCHARGE ARBITER: floor EXACTLY 95/0/29 over 124, moving only by the two new programs PASS)
+2026-08-18T21:20Z W69b final conformance (floor must be EXACTLY 95/0/29 over 124 — the discharge re-arbitration)

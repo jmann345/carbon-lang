@@ -788,6 +788,53 @@ in the W-072 area per correctness F-3):_
 
 Veto-able.
 
+_W72b landing note (2026-08-18, the W72b implementer — fork/w072/plan.md
+§3 W72b, the final W-072 slice):_ the continue-THREADING runtime arbiter
+lands as the NEW differential pair
+error_handling/question_generic_thread_diff.{carbon,diff.cpp}. _The
+arbiter's design:_ the same `final impl forall [T, E] MyResult(T, E) as
+Core.Try where .ContinueType = T and .BreakType = E` the W72a goldens
+proved statically, with the threaded continue values LOAD-BEARING in the
+observable payload — `fn Chain[T: Combinable](x: T, fail_at: i32)`
+spells the dissolved shape `let a: T = Step(x, fail_at == 1, 101)?;`
+then `let b: T = Step(a.Combine(), fail_at == 2, 202)?;` and returns
+`Ok(b)` (the plan's Combine(a)-style chaining: each step's input is
+computed from the PREVIOUS step's threaded output through the
+arbiter-verified checked_generics.carbon interface shape, Combine(x) =
+x + x, so the Ok payload is 2 * seed — computable only from correctly
+threaded values, never reconstructed from the seed, unlike the sibling
+pair's discard shape, which stays unchanged per R16: the W72a retext of
+its header/:92/.diff.cpp comments already carries the sibling pointer,
+so this slice touches it not at all). Instantiated at i32 AND i64
+(distinct monomorphized `Core.ControlFlow` carrier layouts); failure
+depths and seeds runtime-computed (R16d; RuntimeSeed = x + 20, depths
+0..2 from RuntimeSeed(-20..-18), i32 seed 42, i64 seed 44 with the
+independently computed Ok expectation 88); the C++ oracle is a function
+TEMPLATE with the same explicit early returns; byte-identical
+stdout + exit per DIFF-1, no EXPECT-STDOUT. Hand-computed output table,
+both sides: depth 0 -> `0,84` (i32) / `0,1` (i64 payload == 88); depth
+1 -> `1,101`; depth 2 -> `1,202`. _The broken-oracle drill (R-5):_ per
+the plan's declared mechanism (strictness F-5) the drill is the
+B2a-style DELIBERATE RED CI PUSH — the pair rides the PR branch once
+with step 1's injected depth flipped in the `.carbon` side only
+(`fail_at == 1` -> `fail_at == 3`), the red differential run is linked
+HERE as the drill evidence, and the flip is reverted before landing (an
+always-green pair under the flip is falsification); the mechanism is
+recorded in the pair's header. _Discharge staging (the R9 hedge):_
+W-072's ledger notes now read DISCHARGE PENDING THIS RUN — the item
+discharges when this landing's scoreboard regeneration shows the pair
+PASS (target floor **91 PASS / 0 FAIL / 29 SKIP over 120**, no SKIP
+flips, no bullet claims — the pair deepens the already-PASS "Error
+handling: dedicated control flow constructs" bullet), per the §6
+discharge criteria (whose items (i), (iii), (iv), (v) landed at W72a;
+this slice completes (ii)); a non-PASS re-opens the item with the run's
+evidence. `runner.py --self-test` OK at 120 programs; README table
+regenerated (DIFF-4); conformance-request line fired. W-072's closure
+successor note, staged for the confirming run: non-final non-reduction
+is UPSTREAM-DESIGNED behavior, permanently pinned by the negative
+probes — not a residual gap; the `FromContinue` residue lives in the
+SF-9/S3p brief (W72c cut, plan §0.3). Veto-able.
+
 ### F-007: Unions - **Native `union` declaration** (2026-07-19)
 
 Rust-shaped safety surface (writes safe, reads defined byte-reinterpretation,

@@ -1,1 +1,1 @@
-2026-08-18T09:30Z W72a conformance (floor must be UNCHANGED: 90/0/29 over 119)
+2026-08-18T12:40Z W72b conformance (target floor: 91/0/29 over 120; W-072 discharge pending this run's question_generic_thread_diff PASS)

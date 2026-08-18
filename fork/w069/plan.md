@@ -13,7 +13,7 @@ Baseline: branch trunk 2f8876c (post-PR #27, W-068 discharged; conformance
 **93 PASS / 0 FAIL / 29 SKIP over 122 programs**,
 fork/conformance/out/scoreboard.json generated 2026-08-18T09:53Z).
 Ledger authority: fork/inventory/work-items.json W-069 (half (b) —
-constant-bound lets — LANDED at W5-S3b via import_ref.cpp's
+constant-bound lets — LANDED at W5-S3b by way of import_ref.cpp's
 TryResolveInstCanonical non-constant-binding branch; this plan is the residue,
 half (a): a `let` bound to a RUNTIME value has no exported backing storage).
 Design authority: docs/design/values.md (expression categories, value
@@ -36,7 +36,7 @@ dated amendments (the b1/w072 house pattern).
 
 Is a cross-file reference to a file-scope `let` bound to a runtime value
 (i) something upstream has DESIGNED semantics for, (ii) an
-acknowledged-but-unimplemented gap, or (iii) contradicted by design (e.g. a
+acknowledged-but-unimplemented gap, or (iii) contradicted by design (for example a
 rule that a `let` binding's runtime backing is intentionally file-local)?
 
 ### 0.2 The evidence, quoted
@@ -67,7 +67,7 @@ code — twice:**
 
     Upstream names the exact missing case this plan covers: a package-scope
     value binding whose bound value is neither a constant nor a global
-    variable — i.e. a runtime `let`. Both breadcrumbs live in
+    variable — that is a runtime `let`. Both breadcrumbs live in
     `toolchain/lower/`: upstream frames this as a LOWERING problem, not a
     check/SemIR redesign.
 
@@ -166,7 +166,7 @@ chosen lane makes that retreat cheap.
 -   **Why `var` works (the parity target).** `VarStorage` is itself a
     constant instruction whose constant lowers to the named global
     (`EmitAsConstant(..., SemIR::VarStorage)` → `BuildGlobalVariableDecl`,
-    lower/constant.cpp:371-379; `BuildNonCppGlobalVariableDecl` mangles via
+    lower/constant.cpp:371-379; `BuildNonCppGlobalVariableDecl` mangles by way of
     `Mangler::MangleGlobalVariable`, lower/file_context.cpp:753-795,
     sem_ir/mangler.cpp:299-324 — name + inverse-qualified scope +
     private-to-library fingerprint). The importer reconstitutes the
@@ -177,7 +177,7 @@ chosen lane makes that retreat cheap.
     `@_Cv.Main = external global ...` + loads
     (lower/testdata/var/import.carbon:84-90). Definitions get initializers
     in `LowerGlobalVariables` (file_context.cpp:285-310) and the runtime
-    stores run in `_C__global_init` registered via `llvm.global_ctors`
+    stores run in `_C__global_init` registered by way of `llvm.global_ctors`
     (file_context.cpp:134-178) — **file-scope runtime initialization
     already exists and runs**; §5's init-order contingency starts from
     parity, not from zero.
@@ -207,7 +207,7 @@ chosen lane makes that retreat cheap.
 -   **Constraint inherited from check:** file-scope initializers cannot
     contain control flow ("Control flow expressions are currently only
     supported inside functions" — the W-024-family TODO, cited in
-    fork/inventory/work-items.json). All probes initialize via plain calls;
+    fork/inventory/work-items.json). All probes initialize by way of plain calls;
     branching lives inside the called function.
 -   **Conformance ground truth.** 93/0/29 over 122; no SKIP cites W-069,
     `let` import, or global-binding evidence (grepped) — floor movement in
@@ -270,7 +270,7 @@ this layer. Cost: lowering grows a third storage-ish path next to
 `VarStorage` and constants; the import branch must reach through
 `GetImportSource` into a foreign IR (a mechanism already exercised at
 file_context.cpp:484 and by `GetFileContext(const_ir)` in GetValue itself);
-and cross-file name agreement rests on the mangler being a pure function of
+and cross-filename agreement rests on the mangler being a pure function of
 the source IR (same property `var` already relies on — the importer mangles
 the imported pattern too).
 
@@ -336,7 +336,7 @@ first green regeneration is the mechanism's compile-validation.
 | P-3 | constant-bound cross-file let (half (b) boundary) | EXISTING check/testdata/let/import.carbon (`[concrete = constants.%empty_tuple]`) + upstream lower/testdata/var/import.carbon | already green — the boundary pin | UNTOUCHED except the P-6 TODO flip below |
 | P-4 | the `var` vehicle | EXISTING lower/testdata/var/import.carbon (`@_Cv.Main` external + ctor stores) | green | byte-identical (parity anchor for the mechanism's symbol/ctor shape) |
 | P-5 | choice-typed cross-file RUNTIME let: plib gains `fn MakeNeither() -> P(i64) { return P(i64).Neither; }` and `let g: P(i64) = MakeNeither();`; importer matches `g` | check/testdata/match/choice_generic_payload_scrutinee.carbon — the RESTORED `imported_global` subfile (W69b) | checks clean today (the crash was lowering-only); pins the acceptance shape's SemIR | plus NEW lower golden pinning the promoted object-rep global, ctor memcpy, and the importer's discriminant load |
-| P-6 | upstream's own TODO: does half (b) already discharge it? Add `fn X() -> i32 { return x; }` to lower/testdata/var/import.carbon's import subfile and delete the :47 TODO | upstream golden, autoupdate-regenerated | PREDICTED green ALREADY: `x` binds tuple element `3`, a constant — S3b's branch imports it and it lowers via the constant path (the four-goldens-improved precedent in the S3b landing note). If RED instead: the failure shape is recorded and the TODO stays until W69a's mechanism covers it — either way the probe ends with the TODO honestly resolved | green; TODO gone — the named upstream breadcrumb is discharged |
+| P-6 | upstream's own TODO: does half (b) already discharge it? Add `fn X() -> i32 { return x; }` to lower/testdata/var/import.carbon's import subfile and delete the :47 TODO | upstream golden, autoupdate-regenerated | PREDICTED green ALREADY: `x` binds tuple element `3`, a constant — S3b's branch imports it and it lowers by way of the constant path (the four-goldens-improved precedent in the S3b landing note). If RED instead: the failure shape is recorded and the TODO stays until W69a's mechanism covers it — either way the probe ends with the TODO honestly resolved | green; TODO gone — the named upstream breadcrumb is discharged |
 | P-7 | runtime TUPLE-pattern let: `let (a: i32, b: i32) = MakePair();` cross-file | subfile of the W69a goldens | checks clean | both bindings promoted independently (per-binding globals) |
 
 Negative pins: P-1/P-2's goldens each carry a companion assertion that
@@ -365,7 +365,7 @@ fixpoint (R15/R19/R26) + `bazel test //toolchain/...` + upstream-parity gate
 -   **Goldens:** NEW check/testdata/let/global_runtime.carbon (P-1/P-2/P-7
     check side), NEW lower/testdata/let/global_runtime.carbon (same shapes,
     empty-CHECK → autoupdate), upstream lower/testdata/var/import.carbon
-    P-6 TODO flip (autoupdate-regenerated — R16a: goldens change only via
+    P-6 TODO flip (autoupdate-regenerated — R16a: goldens change only by way of
     the runner autoupdate workflow).
 -   **Byte-equivalence:** every existing check golden byte-identical (SemIR
     untouched is the lane's core claim — ANY check-golden churn is
@@ -529,7 +529,7 @@ W-069 discharges at W69b.
     NOT promoted but whose reference escapes `__global_init` would read a
     dead alloca. Today that shape cannot ship silently (the CHECK fires
     first); the mechanism must preserve loud failure for uncovered shapes
-    via §5 step 4's diagnostic. FALSIFIER: any regenerated lower golden
+    by way of §5 step 4's diagnostic. FALSIFIER: any regenerated lower golden
     showing a non-ctor function deriving a pointer from a `__global_init`
     alloca.
 -   **R-7. Over-broad promotion.** The predicate (package-scope binding,
@@ -574,7 +574,7 @@ W-069 discharges at W69b.
 
 ## 8. Open questions for the coordinator (adjudicate BEFORE implementation)
 
--   **OQ-1 — cross-file RUNTIME arbitration vs. the single-file harness.**
+-   **OQ-1 — cross-file RUNTIME arbitration versus the single-file harness.**
     runner.py compiles one file per program, so the cross-file half of the
     acceptance can be arbitrated at runtime only if the harness grows
     multi-unit (split-file) program support — the same limitation that

@@ -99,6 +99,31 @@ let ref r: i32 = v;
 
 fn UseR() -> i32 { return r; }
 
+// --- export_name.carbon
+
+library "[[@TEST_NAME]]";
+
+import library "scalar";
+
+// B exports A's runtime `let` BY NAME (`export x;`, not `export import`):
+// the W-074 shape, checkable since the W74a import_ref.cpp fix (see
+// check/testdata/let/export_runtime.carbon). This subfile's own module
+// carries no `_Cx` symbol — the export mints no storage.
+export x;
+
+// --- import_export_name.carbon
+
+library "[[@TEST_NAME]]";
+
+import library "export_name";
+
+// Main imports B and reads `x` through B's `ExportDecl`: the canonical
+// resolution (SemIR::GetCanonicalFileAndInstId's ExportDecl arm, reached
+// via TryEmitGlobalLetValue — implemented at W69a, first pinned here) must
+// land on A's defining binding — ONE `_Cx.Main` external symbol, the same
+// name the defining file owns, never a symbol mangled against B's IR.
+fn UseExportName() -> i32 { return x; }
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'scalar.carbon'
 // CHECK:STDOUT: source_filename = "scalar.carbon"

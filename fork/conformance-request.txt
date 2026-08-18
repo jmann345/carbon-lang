@@ -1,1 +1,1 @@
-2026-08-18T12:40Z W72b conformance (target floor: 91/0/29 over 120; W-072 discharge pending this run's question_generic_thread_diff PASS)
+2026-08-18T03:50Z W72b drill round 2 (Destroy-constraint fix + drill flip; EXPECTED RED: question_generic_thread_diff DIFF-MISMATCH at depth 1 — the R-5 broken-oracle drill evidence)

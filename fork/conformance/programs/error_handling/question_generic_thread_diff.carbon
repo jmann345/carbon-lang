@@ -107,9 +107,15 @@ fn Step[T: type](x: T, fail: bool, tag: i32) -> MyResult(T, i32) {
 // specific, so the break path's `FromBreak` conversion stays aligned
 // (the mixed-specific `MyResult(T, i32)` configuration, question_final
 // P-3), and both carrier temporaries ride the B2a symbolic-choice
-// destroy widening per instantiation.
-fn Chain[T: Combinable](x: T, fail_at: i32) -> MyResult(T, i32) {
-  let a: T = Step(x, fail_at == 1, 101)?;
+// destroy widening per instantiation. `T` carries `& Core.Destroy`
+// because the generic body destroys T-typed temporaries (the
+// `a.Combine()` argument temp): a bare `Combinable` facet exposes only
+// `Combine`, while the `type` facet the W72a probes used carries the
+// Destroy witness implicitly (impl/custom_witness/destroy.carbon's
+// `type as Core.Destroy` pin; the combined-facet binding shape is
+// facet/call_combined_impl_witness.carbon's `G[T: A & Empty & B]`).
+fn Chain[T: Combinable & Core.Destroy](x: T, fail_at: i32) -> MyResult(T, i32) {
+  let a: T = Step(x, fail_at == 3, 101)?;
   let b: T = Step(a.Combine(), fail_at == 2, 202)?;
   return MyResult(T, i32).Ok(b);
 }

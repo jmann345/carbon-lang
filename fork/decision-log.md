@@ -835,6 +835,32 @@ is UPSTREAM-DESIGNED behavior, permanently pinned by the negative
 probes — not a residual gap; the `FromContinue` residue lives in the
 SF-9/S3p brief (W72c cut, plan §0.3). Veto-able.
 
+_W72b round-1 amendment (2026-08-18, coordinator — R17 loud-not-silent):_
+the first CI round of the drill push (run 32095993785, commit 066cdc3)
+came back red as a **COMPILE-FAIL, not the drill's DIFF-MISMATCH** — the
+pair as first authored did not compile:
+`error: cannot access member of interface Core.Destroy in type T that
+does not implement that interface` at the `a.Combine()` argument of
+step 2. _Root cause (diagnosed before any fix, per the no-slop
+directive):_ `Chain` bound its generic as `[T: Combinable]`, a bare
+user-facet — but the generic body destroys T-typed temporaries (the
+`a.Combine()` argument temp), and destroy insertion on symbolic `T`
+needs the `Core.Destroy` witness. Every W72a-proven shape used
+`[T: type]`, and the `type` facet carries that witness implicitly —
+pinned by upstream's impl/custom_witness/destroy.carbon
+(`type as Core.Destroy` succeeds); a bare `Combinable` facet exposes
+only `Combine`. _Fix:_ the precedented combined-facet spelling
+`[T: Combinable & Core.Destroy]`
+(facet/call_combined_impl_witness.carbon's `G[T: A & Empty & B]` is the
+exact binding-position shape, with member calls through the combined
+facet). This is a test-program authoring defect, not a toolchain
+defect — the diagnostic is correct behavior. The implementer's staged
+claim that the floor "confirms on this run's scoreboard" was
+aspirational and is retracted for round 1; the drill restarts with the
+fix + flip on the next push, so the DIFF-MISMATCH drill evidence and the
+green discharge run both still lie ahead. The round-1 red run is
+compile-fail evidence only. Veto-able.
+
 ### F-007: Unions - **Native `union` declaration** (2026-07-19)
 
 Rust-shaped safety surface (writes safe, reads defined byte-reinterpretation,

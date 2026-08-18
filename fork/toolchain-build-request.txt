@@ -1,1 +1,1 @@
-2026-08-18T08:40Z W72a merge gate
+2026-08-18T04:30Z W-073 sweep gate (golden comment retexts confirmed no-op by autoupdate run 32097812689; full bazel test must stay green)

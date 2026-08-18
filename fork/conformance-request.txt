@@ -1,1 +1,1 @@
-2026-08-18T04:05Z W72b landing: drill flip reverted + review-round fixes (i64 widened seeds); DISCHARGE RUN — target floor 91/0/29 over 120; W-072 discharges iff question_generic_thread_diff is PASS on this run's scoreboard
+2026-08-18T04:30Z W-073 sweep conformance (floor must stay EXACTLY 91/0/29 over 120; question_generic_thread_diff re-arbitrates the recursive trailing return)

@@ -70,7 +70,10 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     // under this `final` impl the interface-recursive call
     // type-collapses (the P-9 pin, question_final.carbon's
     // inbody_recursive_branch split), so no `Diverge` helper is needed.
-    // The match above is exhaustive; this line never executes.
+    // The match above is exhaustive; this line never executes. If it ever
+    // were reached (it cannot be while the match stays exhaustive), the
+    // self-call would diverge rather than diagnose — the same if-reached
+    // behavior as the deleted `Diverge` helper.
     return self.(Core.Try.Branch)();
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }

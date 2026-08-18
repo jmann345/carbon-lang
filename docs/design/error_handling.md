@@ -369,7 +369,10 @@ impl's own in-body query too, the projections reduce, and the recursive
 call type-checks as the declared `ControlFlow(T, E)` (pinned statically by
 `toolchain/check/testdata/operators/question_final.carbon`'s
 `inbody_recursive_branch` split and at runtime by the W72b arbiter pair),
-so these sketches use it directly and need no helper:
+so these sketches use it directly and need no helper — and if the trailing
+return were ever reached (it cannot be while the match stays exhaustive),
+the recursive call would diverge rather than diagnose, the same if-reached
+behavior as the `Diverge` helper it replaces:
 
 ```carbon
 final impl forall [T: type, E: type] Result(T, E) as Try

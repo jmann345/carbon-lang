@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-18T09:53:27.839899+00:00",
+  "generated": "2026-08-18T14:39:26.601026+00:00",
   "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 12.2,
+  "elapsed_seconds": 11.9,
   "totals": {
-    "PASS": 93,
+    "PASS": 95,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
@@ -25,6 +25,14 @@
       "status": "PASS",
       "detail": "",
       "differential": false
+    },
+    {
+      "path": "code_org/import_runtime_let",
+      "bullet": "Code organization: Importing",
+      "status": "PASS",
+      "detail": "",
+      "differential": false,
+      "units": 2
     },
     {
       "path": "code_org/importing_core_library.carbon",
@@ -120,6 +128,13 @@
     {
       "path": "control_flow/loops.carbon",
       "bullet": "Control flow: loops incl. range-based and C/C++ loop equivalents",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "control_flow/match_global_runtime_let.carbon",
+      "bullet": "Control flow: matching \u2014 sum-type consumption incl. std::variant/std::optional interop",
       "status": "PASS",
       "detail": "",
       "differential": false
@@ -897,6 +912,7 @@
       "status": "PASS",
       "gap_status": "DONE",
       "programs": [
+        "code_org/import_runtime_let",
         "code_org/importing_core_library.carbon",
         "code_org/importing_cpp_header.carbon",
         "code_org/importing_cpp_inline.carbon"
@@ -1135,6 +1151,7 @@
       "programs": [
         "control_flow/choice_generic_roundtrip_diff.carbon",
         "control_flow/choice_payload_roundtrip_diff.carbon",
+        "control_flow/match_global_runtime_let.carbon",
         "control_flow/match_single_alternative.carbon",
         "control_flow/match_sum_type_payload.carbon"
       ]

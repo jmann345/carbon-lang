@@ -44,7 +44,7 @@ import library "tuple_pattern";
 
 fn V() -> i32 { return v; }
 fn W() -> i32 { return w; }
-// TODO: Also test `x`. Right now, lowering a reference to an imported `let` asserts.
+fn X() -> i32 { return x; }
 fn Y() -> i32 { return y; }
 fn Z() -> i32 { return z; }
 
@@ -173,17 +173,23 @@ fn Z() -> i32 { return z; }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CY.Main() #0 !dbg !13 {
+// CHECK:STDOUT: define i32 @_CX.Main() #0 !dbg !13 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc9_24 = load i32, ptr @_Cy.Main, align 4, !dbg !14
-// CHECK:STDOUT:   ret i32 %.loc9_24, !dbg !15
+// CHECK:STDOUT:   ret i32 3, !dbg !14
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CZ.Main() #0 !dbg !16 {
+// CHECK:STDOUT: define i32 @_CY.Main() #0 !dbg !15 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc10_24 = load i32, ptr getelementptr inbounds nuw ({ i32, i32 }, ptr @_Cz.Main, i32 0, i32 1), align 4, !dbg !17
-// CHECK:STDOUT:   ret i32 %.loc10_24, !dbg !18
+// CHECK:STDOUT:   %.loc9_24 = load i32, ptr @_Cy.Main, align 4, !dbg !16
+// CHECK:STDOUT:   ret i32 %.loc9_24, !dbg !17
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @_CZ.Main() #0 !dbg !18 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.loc10_24 = load i32, ptr getelementptr inbounds nuw ({ i32, i32 }, ptr @_Cz.Main, i32 0, i32 1), align 4, !dbg !19
+// CHECK:STDOUT:   ret i32 %.loc10_24, !dbg !20
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
@@ -207,10 +213,12 @@ fn Z() -> i32 { return z; }
 // CHECK:STDOUT: !10 = distinct !DISubprogram(name: "W", linkageName: "_CW.Main", scope: null, file: !1, line: 7, type: !5, spFlags: DISPFlagDefinition, unit: !0)
 // CHECK:STDOUT: !11 = !DILocation(line: 7, column: 24, scope: !10)
 // CHECK:STDOUT: !12 = !DILocation(line: 7, column: 17, scope: !10)
-// CHECK:STDOUT: !13 = distinct !DISubprogram(name: "Y", linkageName: "_CY.Main", scope: null, file: !1, line: 9, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !14 = !DILocation(line: 9, column: 24, scope: !13)
-// CHECK:STDOUT: !15 = !DILocation(line: 9, column: 17, scope: !13)
-// CHECK:STDOUT: !16 = distinct !DISubprogram(name: "Z", linkageName: "_CZ.Main", scope: null, file: !1, line: 10, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !17 = !DILocation(line: 10, column: 24, scope: !16)
-// CHECK:STDOUT: !18 = !DILocation(line: 10, column: 17, scope: !16)
+// CHECK:STDOUT: !13 = distinct !DISubprogram(name: "X", linkageName: "_CX.Main", scope: null, file: !1, line: 8, type: !5, spFlags: DISPFlagDefinition, unit: !0)
+// CHECK:STDOUT: !14 = !DILocation(line: 8, column: 17, scope: !13)
+// CHECK:STDOUT: !15 = distinct !DISubprogram(name: "Y", linkageName: "_CY.Main", scope: null, file: !1, line: 9, type: !5, spFlags: DISPFlagDefinition, unit: !0)
+// CHECK:STDOUT: !16 = !DILocation(line: 9, column: 24, scope: !15)
+// CHECK:STDOUT: !17 = !DILocation(line: 9, column: 17, scope: !15)
+// CHECK:STDOUT: !18 = distinct !DISubprogram(name: "Z", linkageName: "_CZ.Main", scope: null, file: !1, line: 10, type: !5, spFlags: DISPFlagDefinition, unit: !0)
+// CHECK:STDOUT: !19 = !DILocation(line: 10, column: 24, scope: !18)
+// CHECK:STDOUT: !20 = !DILocation(line: 10, column: 17, scope: !18)
 // CHECK:STDOUT:

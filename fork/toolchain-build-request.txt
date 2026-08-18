@@ -1,1 +1,1 @@
-2026-08-18T10:02Z W-068 gate (small-choice match dispatch; full bazel test)
+2026-08-18T21:20Z W69b final gate (folded-ref fix + P-10 narrowing + filled acceptance pins; full bazel test)

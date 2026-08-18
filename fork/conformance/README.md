@@ -48,7 +48,8 @@ Outputs under `--out`:
 
 ### Toolchain invocation
 
-For each program the runner executes:
+For each (single-file) program the runner executes (multi-unit program
+directories generalize this — see "Multi-unit (split-file) programs" below):
 
 ```sh
 <carbon> compile [COMPILE-ARGS...] --output=<out>/obj/<name>.o --output-last-input-only <prog>.carbon
@@ -79,10 +80,12 @@ matter:
 
 ## Program format
 
-Programs live at `programs/**/*.carbon`. Each is a single self-contained
-`Main//default` file (no `package`/`library` declaration) with a `Run` entry
-point, 10–40 lines, arbitrating **one** concept. Directives sit in the
-leading comment block:
+Programs live at `programs/**/*.carbon`. Each is normally a single
+self-contained `Main//default` file (no `package`/`library` declaration) with
+a `Run` entry point, 10–40 lines, arbitrating **one** concept. (A program
+that needs multiple compilation units is a **directory** instead — see
+"Multi-unit (split-file) programs" below.) Directives sit in the leading
+comment block:
 
 ```carbon
 // CONFORMANCE-BULLET: <exact bullet text from the table in fork/gap-analysis.md>
@@ -110,6 +113,66 @@ leading comment block:
 -   `SKIP` exists for programs written ahead of their feature
     (write-tests-first, per process.md step 1). Keep SKIPs rare; prefer
     writing programs against constructs that already work.
+
+### Multi-unit (split-file) programs
+
+A program that arbitrates cross-file behavior (user-written libraries,
+`export`/`export import` chains, cross-file bindings) is a **directory**
+under `programs/<category>/` instead of a single file:
+
+```text
+programs/code_org/my_program/
+    base.carbon        # library unit
+    export.carbon      # library unit
+    main.carbon        # the MAIN unit — required marker; directives live here
+    main.diff.cpp      # optional single-file differential C++ oracle
+```
+
+The convention, enforced by discovery (and therefore by `--self-test`):
+
+-   A directory directly containing a `main.carbon` file is **one program**;
+    every `*.carbon` directly inside it is one compilation unit of that
+    program. The marker is case-sensitive — a `Main.carbon` is not a marker,
+    and its directory's files fall to single-file semantics. The program's
+    scoreboard path is the directory (for example `code_org/my_program`), and
+    the generated table marks it `multi-unit (N units)`.
+-   **All directives live in `main.carbon`** (`CONFORMANCE-BULLET`,
+    `COMPILE-ARGS`, `EXPECT-*`, `SKIP` — so SKIP stays an in-file marker,
+    exactly as for single-file programs). A directive in the leading comment
+    block of any other unit is an error, not silently ignored.
+-   **Compile order**: library units sorted by filename, `main.carbon` last.
+    No numbering convention is needed — command-line order is immaterial to
+    import resolution, because `Check::CheckParseTrees` orders units by
+    import dependency internally (`toolchain/check/check.cpp`); the fixed
+    order only keeps object names, diagnostics, and link lines
+    deterministic.
+-   **Compilation** mirrors upstream's own multi-unit build rule
+    (`bazel/carbon_rules/defs.bzl`). The driver writes only one object per
+    invocation — `--output` names the **last** input's object
+    (`toolchain/driver/compile_subcommand.cpp`) — so the runner runs one
+    `carbon compile` invocation per unit, passing **all** units each time
+    with the target unit last, then links all per-unit objects:
+
+    ```sh
+    # for each <unit>:
+    <carbon> compile [COMPILE-ARGS...] --output=<out>/obj/<name>.<unit>.o \
+        --output-last-input-only <other units...> <unit>.carbon
+    <carbon> link --output=<out>/bin/<name> <per-unit objects...>
+    ```
+
+-   **Fail classes are unchanged**: any unit's compile failure is the
+    ordinary `COMPILE-FAIL` (the detail names the failing unit); link, run,
+    output, and differential checking work exactly as for single-file
+    programs. No new scoreboard statuses exist.
+-   **Differential oracle**: `main.diff.cpp` inside the program directory
+    (the C++ oracle stays a single file; any other `*.diff.cpp` in the
+    directory is an error).
+-   Guard rails: the directory must be flat (no subdirectories), must hold
+    at least one library unit besides `main.carbon`, and its name must not
+    collide with a sibling single-file program's name. `--self-test`
+    additionally runs a fixture-based self-check of this discovery logic
+    itself (`multi-unit discovery self-check`), so the machinery stays
+    covered even while the tree has no multi-unit program.
 
 ### Differential Carbon-vs-C++ programs
 
@@ -166,6 +229,7 @@ fails if this table is stale):
 | --- | --- | --- |
 | `code_org/impl_files_impl_defined_fn.carbon` | Code organization: Implementation files | SKIP |
 | `code_org/impl_files_pair_in_compile.carbon` | Code organization: Implementation files | run |
+| `code_org/import_runtime_let` | Code organization: Importing | multi-unit (2 units) |
 | `code_org/importing_core_library.carbon` | Code organization: Importing | run |
 | `code_org/importing_cpp_header.carbon` | Code organization: Importing | run |
 | `code_org/importing_cpp_inline.carbon` | Code organization: Importing | run |
@@ -180,6 +244,7 @@ fails if this table is stale):
 | `control_flow/conditions.carbon` | Control flow: conditions | run |
 | `control_flow/if_let_let_else.carbon` | Control flow: matching — if-let / let-else combined match+declaration | SKIP |
 | `control_flow/loops.carbon` | Control flow: loops incl. range-based and C/C++ loop equivalents | run |
+| `control_flow/match_global_runtime_let.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | run |
 | `control_flow/match_guard_binding.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_guard_diff.carbon` | Control flow: matching — good switch equivalents | differential |
 | `control_flow/match_guarded_default.carbon` | Control flow: matching — good switch equivalents | run |
@@ -308,4 +373,7 @@ when match semantics (workstream W4) and choice payloads (W5) land.
     differential pair: add `<name>.diff.cpp` next to the program and omit
     `EXPECT-STDOUT` so the C++ side is the oracle (see "Differential
     Carbon-vs-C++ programs" above).
-5.  Run `python3 fork/conformance/runner.py --self-test`, then a full run.
+5.  Only reach for a multi-unit program directory when the concept under
+    arbitration **is** cross-file (see "Multi-unit (split-file) programs"
+    above); everything else stays single-file.
+6.  Run `python3 fork/conformance/runner.py --self-test`, then a full run.

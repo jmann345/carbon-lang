@@ -112,11 +112,27 @@ class FunctionContext {
   // Returns a value for the given instruction.
   auto GetValue(SemIR::InstId inst_id) -> llvm::Value*;
 
+  // Returns whether `GetValue(inst_id)` serves a constant's VALUE
+  // representation rather than an address. A reference-category instruction
+  // can constant-fold to a value-category constant (for example a
+  // `ClassElementAccess` into a constant-bound aggregate `let`); `LowerInst`
+  // then skips it and `GetValue` serves `FileContext::GetConstant`'s result,
+  // which for a value-category constant of non-pointer value representation
+  // is the constant's value itself, not the referenced object's address.
+  // Consumers that load from a reference operand (`AcquireValue`'s copy arm)
+  // must check this before emitting the load.
+  auto GetValueServesConstantValueRep(SemIR::InstId inst_id) -> bool;
+
   // Sets the value for the given instruction.
   auto SetLocal(SemIR::InstId inst_id, llvm::Value* value) -> void {
     bool added = locals_.Insert(inst_id, value).is_inserted();
     CARBON_CHECK(added, "Duplicate local insert: {0} {1}", inst_id,
                  sem_ir().insts().Get(inst_id));
+  }
+
+  // Returns whether a lowered value has been set for the given instruction.
+  auto HasLocal(SemIR::InstId inst_id) -> bool {
+    return static_cast<bool>(locals_.Lookup(inst_id));
   }
 
   // Returns a lowered type for the given type_id in the given file. This adds
@@ -187,6 +203,12 @@ class FunctionContext {
   // Emits a store of an object representation of type `type`.
   auto StoreObject(TypeInFile type, llvm::Value* value, llvm::Value* addr)
       -> void;
+
+  // Emits a copy of an object representation of type `type` from the object
+  // at `source_addr` to the object at `dest_addr`, as a memcpy of the
+  // object's alloc size.
+  auto CopyObject(TypeInFile type, llvm::Value* source_addr,
+                  llvm::Value* dest_addr) -> void;
 
   // Emits the instructions necessary to initialize the storage at `dest_id`
   // from the repr-initializing expression `source_id`. This assumes the
@@ -312,6 +334,13 @@ class FunctionContext {
   auto CopyObject(TypeInFile type, SemIR::InstId source_id,
                   SemIR::InstId dest_id) -> void;
 
+  // Serves a reference to a file-scope `let` binding whose bound value is a
+  // runtime value (W-069): `inst_id` is either such a binding of the current
+  // file (or its bound value), or an imported instruction whose canonical
+  // defining instruction is one. Returns null if `inst_id` is no such
+  // reference.
+  auto TryEmitGlobalLetValue(SemIR::InstId inst_id) -> llvm::Value*;
+
   // When fingerprinting for a specific, adds the global.
   auto AddGlobalToCurrentFingerprint(llvm::Value* global) -> void;
 
@@ -333,6 +362,11 @@ class FunctionContext {
 
   // The specific id, if the function is a specific.
   SemIR::SpecificId specific_id_;
+
+  // Whether the function being lowered is this file's `__global_init`, in
+  // which case `LowerInst` hooks `FileContext::EmitGlobalLetStores` after
+  // each instruction (W-069).
+  bool is_global_ctor_ = false;
 
   // Builder for creating code in this function. The insertion point is held at
   // the location of the current SemIR instruction.

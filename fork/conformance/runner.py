@@ -18,6 +18,27 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #     <carbon> link --output=<out>/bin/<name> <out>/obj/<name>.o
 #     <out>/bin/<name>            # 30s timeout, capture exit code + stdout
 #
+# Multi-unit (split-file) programs: a program may instead be a DIRECTORY
+# under programs/ that directly contains a `main.carbon` unit; every
+# *.carbon file directly inside it is one compilation unit of that single
+# program (directives live in main.carbon only; see README.md). Compilation
+# mirrors upstream's own multi-unit build rule (bazel/carbon_rules/defs.bzl):
+# the driver writes only ONE object per invocation (`--output` names the
+# LAST input's object; toolchain/driver/compile_subcommand.cpp), so the
+# runner runs one `carbon compile` invocation per unit — ALL units on every
+# command line, the target unit last — then links all the per-unit objects:
+#
+#     for each <unit>:
+#       <carbon> compile --output=<out>/obj/<name>.<unit>.o \
+#           --output-last-input-only <other units...> <unit>.carbon
+#     <carbon> link --output=<out>/bin/<name> <per-unit objects...>
+#
+# Unit order on the command line is immaterial to import resolution:
+# Check::CheckParseTrees orders units by import dependency internally
+# (toolchain/check/check.cpp, the ready_to_check worklist), so units are
+# simply passed sorted by filename with main.carbon last. Any unit's
+# compile failure is the ordinary COMPILE-FAIL status (no new fail class).
+#
 # Differential Carbon-vs-C++ checking: a program `<name>.carbon` may have a
 # sibling `<name>.diff.cpp` — an equivalent plain C++17 program. When present,
 # after the Carbon binary runs (and passes its EXPECT-* checks, which stay
@@ -57,9 +78,14 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 # Pure python3 stdlib. No bazel, no network.
 
 import argparse
+import contextlib
+import inspect
+import io
 import json
+import re
 import subprocess
 import sys
+import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -98,6 +124,25 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_PROGRAMS_DIR = SCRIPT_DIR / "programs"
 GAP_ANALYSIS = SCRIPT_DIR.parent / "gap-analysis.md"
 
+# Multi-unit (split-file) programs: a directory directly containing a file
+# with this name is ONE program; all *.carbon files directly inside are its
+# compilation units, and this main unit (a) holds all the directives and
+# (b) compiles last. See README.md "Multi-unit (split-file) programs".
+MAIN_UNIT = "main.carbon"
+# The (single-file) differential C++ oracle of a multi-unit program.
+MAIN_DIFF_CPP = "main.diff.cpp"
+
+# Every directive `parse_directives` recognizes. Used to reject directives
+# in non-main units of a multi-unit program, where they would otherwise be
+# silently ignored.
+DIRECTIVE_PREFIXES = (
+    "// CONFORMANCE-BULLET:",
+    "// COMPILE-ARGS:",
+    "// EXPECT-EXIT:",
+    "// EXPECT-STDOUT:",
+    "// SKIP:",
+)
+
 
 class DirectiveError(Exception):
     """A program's header directives are malformed."""
@@ -105,9 +150,12 @@ class DirectiveError(Exception):
 
 class Program:
     def __init__(self, path, rel):
-        self.path = path
+        self.path = path  # the program file; for multi-unit, the main unit
         self.rel = rel  # path relative to the programs dir, POSIX style
         self.name = rel.replace("/", "_").removesuffix(".carbon")
+        # Compilation units, in compile order (single-file: just [path];
+        # multi-unit: library units sorted by filename, main unit last).
+        self.units = [path]
         self.bullet = None
         self.expect_exit = 0
         self.expect_stdout = None  # None => stdout unchecked; else exact str
@@ -195,6 +243,28 @@ def parse_directives(path, rel):
     return prog
 
 
+def leading_comment_directives(path):
+    """Directive names found in a file's leading comment block.
+
+    Used on the NON-main units of a multi-unit program: directives there
+    would be silently ignored (only main.carbon is parsed), so discovery
+    rejects them loudly instead. Mirrors parse_directives' notion of the
+    leading comment block (blank lines don't end it; the first code line
+    does).
+    """
+    found = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped == "":
+            continue
+        if not stripped.startswith("//"):
+            break  # end of leading comment block
+        for prefix in DIRECTIVE_PREFIXES:
+            if stripped.startswith(prefix):
+                found.append(prefix[len("// ") :].rstrip(":"))
+    return found
+
+
 def load_gap_analysis_bullets(gap_path):
     """Extract the milestone-bullet texts from fork/gap-analysis.md's table.
 
@@ -221,10 +291,96 @@ def load_gap_analysis_bullets(gap_path):
     return bullets
 
 
-def discover_programs(programs_dir, filter_substr):
+def discover_multi_unit_programs(programs_dir, filter_substr):
+    """Discover multi-unit program directories.
+
+    A directory under programs_dir that directly contains `main.carbon` is
+    ONE program: every *.carbon directly inside it is a compilation unit
+    (library units sorted by filename, main.carbon last — command-line
+    order is immaterial to import resolution, which check orders by
+    dependency; the fixed order just keeps objects/diagnostics
+    deterministic). Directives live in main.carbon only; the optional
+    differential oracle is `main.diff.cpp` in the same directory.
+
+    Returns (programs, errors, unit_files) where unit_files is the set of
+    all *.carbon paths consumed by program directories — these are never
+    single-file programs, even when their directory fails validation.
+    """
     programs = []
     errors = []
+    unit_files = set()
+    for main_path in sorted(programs_dir.rglob(MAIN_UNIT)):
+        prog_dir = main_path.parent
+        if prog_dir == programs_dir:
+            errors.append(
+                f"{MAIN_UNIT}: sits at the programs root; a multi-unit "
+                f"program must be a subdirectory containing it"
+            )
+            continue
+        rel = prog_dir.relative_to(programs_dir).as_posix()
+        units = sorted(prog_dir.glob("*.carbon"))
+        # Consume the units unconditionally (before filtering/validation):
+        # a unit file must never be picked up as a single-file program.
+        unit_files.update(units)
+        if filter_substr and filter_substr not in rel:
+            continue
+        subdirs = sorted(p.name for p in prog_dir.iterdir() if p.is_dir())
+        if subdirs:
+            errors.append(
+                f"{rel}: multi-unit program directory must be flat; "
+                f"found subdirectories: {', '.join(subdirs)}"
+            )
+            continue
+        if len(units) < 2:
+            errors.append(
+                f"{rel}: multi-unit program directory needs at least one "
+                f"library unit besides {MAIN_UNIT}"
+            )
+            continue
+        try:
+            prog = parse_directives(main_path, rel)
+        except DirectiveError as e:
+            errors.append(str(e))
+            continue
+        stray_directives = False
+        for unit in units:
+            if unit == main_path:
+                continue
+            stray = leading_comment_directives(unit)
+            if stray:
+                errors.append(
+                    f"{rel}/{unit.name}: program directives belong in "
+                    f"{MAIN_UNIT} only; found: {', '.join(stray)}"
+                )
+                stray_directives = True
+        if stray_directives:
+            continue
+        stray_diffs = sorted(
+            p.name
+            for p in prog_dir.glob("*.diff.cpp")
+            if p.name != MAIN_DIFF_CPP
+        )
+        if stray_diffs:
+            errors.append(
+                f"{rel}: only {MAIN_DIFF_CPP} may sit in a multi-unit "
+                f"program directory; found: {', '.join(stray_diffs)}"
+            )
+            continue
+        prog.units = [u for u in units if u != main_path] + [main_path]
+        diff_cpp = prog_dir / MAIN_DIFF_CPP
+        if diff_cpp.is_file():
+            prog.diff_cpp = diff_cpp
+        programs.append(prog)
+    return programs, errors, unit_files
+
+
+def discover_programs(programs_dir, filter_substr):
+    programs, errors, unit_files = discover_multi_unit_programs(
+        programs_dir, filter_substr
+    )
     for path in sorted(programs_dir.rglob("*.carbon")):
+        if path in unit_files:
+            continue  # a compilation unit of a multi-unit program
         rel = path.relative_to(programs_dir).as_posix()
         if filter_substr and filter_substr not in rel:
             continue
@@ -237,6 +393,23 @@ def discover_programs(programs_dir, filter_substr):
         if diff_cpp.is_file():
             prog.diff_cpp = diff_cpp
         programs.append(prog)
+    # Deterministic order across both kinds: sort by path components of the
+    # program's rel. For the pre-existing single-file corpus this
+    # parts-based key matches the historical sorted-rglob (Path) order on
+    # the current Python; the authority for that equivalence is the
+    # arbiter's byte-identical rerun, not this comment.
+    programs.sort(key=lambda pr: pr.rel.split("/"))
+    # Program names must be unique: obj/bin/log artifact paths derive from
+    # them, and a directory program `a/b` would collide with a file program
+    # `a/b.carbon`.
+    by_name = {}
+    for prog in programs:
+        other = by_name.setdefault(prog.name, prog)
+        if other is not prog:
+            errors.append(
+                f"{prog.rel}: program name {prog.name!r} collides with "
+                f"{other.rel}; rename one of them"
+            )
     # Orphan differential files: every *.diff.cpp must sit next to its
     # matching *.carbon program (enforced by --self-test; reported here too
     # so a stray rename can't silently drop a differential check).
@@ -325,41 +498,56 @@ def execute_program(prog, toolchain, clangxx, out_dir, timeouts):
     log_dir = out_dir / "logs"
     obj_dir.mkdir(parents=True, exist_ok=True)
     bin_dir.mkdir(parents=True, exist_ok=True)
-    obj_path = obj_dir / f"{prog.name}.o"
     bin_path = bin_dir / prog.name
 
     # --- Compile ---
-    compile_cmd = [
-        toolchain,
-        "compile",
-        *prog.compile_args,
-        f"--output={obj_path}",
-        "--output-last-input-only",
-        prog.path,
-    ]
-    rc, out, err, timed_out = run_cmd(compile_cmd, timeouts["compile"])
-    if timed_out or rc != 0:
-        detail = (
-            "compile timed out" if timed_out else f"compile exited with {rc}"
+    # One invocation per unit, mirroring upstream's multi-unit build rule
+    # (bazel/carbon_rules/defs.bzl): the driver writes only the LAST
+    # input's object, so each unit takes its turn last while all units
+    # ride every command line (imports resolve within the invocation).
+    # Single-file programs degenerate to exactly the historical command.
+    multi_unit = len(prog.units) > 1
+    obj_paths = []
+    for unit in prog.units:
+        obj_path = obj_dir / (
+            f"{prog.name}.{unit.stem}.o" if multi_unit else f"{prog.name}.o"
         )
-        write_log(
-            log_dir,
-            prog,
-            [
-                ("command", " ".join(str(c) for c in compile_cmd)),
-                ("detail", detail),
-                ("stdout", out),
-                ("stderr", err),
-            ],
-        )
-        return COMPILE_FAIL, detail
+        obj_paths.append(obj_path)
+        compile_cmd = [
+            toolchain,
+            "compile",
+            *prog.compile_args,
+            f"--output={obj_path}",
+            "--output-last-input-only",
+            *[u for u in prog.units if u != unit],
+            unit,
+        ]
+        rc, out, err, timed_out = run_cmd(compile_cmd, timeouts["compile"])
+        if timed_out or rc != 0:
+            unit_note = f" (unit {unit.name})" if multi_unit else ""
+            detail = (
+                f"compile timed out{unit_note}"
+                if timed_out
+                else f"compile exited with {rc}{unit_note}"
+            )
+            write_log(
+                log_dir,
+                prog,
+                [
+                    ("command", " ".join(str(c) for c in compile_cmd)),
+                    ("detail", detail),
+                    ("stdout", out),
+                    ("stderr", err),
+                ],
+            )
+            return COMPILE_FAIL, detail
 
     # --- Link ---
     link_cmd = [
         toolchain,
         "link",
         f"--output={bin_path}",
-        obj_path,
+        *obj_paths,
     ]
     rc, out, err, timed_out = run_cmd(link_cmd, timeouts["link"])
     if timed_out or rc != 0:
@@ -574,6 +762,8 @@ def generate_program_table(programs):
         kind = []
         if prog.skip_reason is not None:
             kind.append("SKIP")
+        if len(prog.units) > 1:
+            kind.append(f"multi-unit ({len(prog.units)} units)")
         if prog.diff_cpp is not None:
             kind.append("differential")
         lines.append(
@@ -626,6 +816,537 @@ def update_readme_table(programs, check_only=False):
     return 0
 
 
+def discovery_self_check():
+    """Exercise multi-unit discovery on synthetic tempdir fixtures.
+
+    The tree may carry no multi-unit program at any given time, so
+    --self-test builds its own fixtures (pure tempfile, deleted on exit)
+    and runs discover_programs over them. Returns a list of failure
+    strings; empty means OK.
+    """
+    failures = []
+
+    def check(cond, what):
+        if not cond:
+            failures.append(f"discovery self-check: {what}")
+
+    def run_fixture(files):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            for relpath, text in files.items():
+                p = root / relpath
+                p.parent.mkdir(parents=True, exist_ok=True)
+                p.write_text(text, encoding="utf-8")
+            return discover_programs(root, "")
+
+    bullet = "// CONFORMANCE-BULLET: B\n"
+
+    # 1. A valid mixed tree: one multi-unit program (with directives in
+    # main.carbon, deliberately unsorted unit names, and a differential
+    # oracle) next to a single-file program in the same category.
+    programs, errors = run_fixture(
+        {
+            "cat/multi/zz_late.carbon": 'library "late";\n',
+            "cat/multi/base.carbon": 'library "base";\n',
+            "cat/multi/main.carbon": bullet
+            + "// COMPILE-ARGS: --custom-flag\n"
+            + "// EXPECT-STDOUT:\n//   42\n"
+            + "fn Run() {}\n",
+            "cat/multi/main.diff.cpp": "int main() {}\n",
+            "cat/single.carbon": bullet + "fn Run() {}\n",
+        }
+    )
+    check(not errors, f"valid fixture produced errors: {errors}")
+    check(
+        [p.rel for p in programs] == ["cat/multi", "cat/single.carbon"],
+        f"unexpected programs: {[p.rel for p in programs]}",
+    )
+    if [p.rel for p in programs] == ["cat/multi", "cat/single.carbon"]:
+        multi, single = programs
+        check(
+            [u.name for u in multi.units]
+            == ["base.carbon", "zz_late.carbon", "main.carbon"],
+            f"unit order wrong: {[u.name for u in multi.units]}",
+        )
+        check(multi.name == "cat_multi", f"bad name: {multi.name}")
+        check(multi.bullet == "B", "main.carbon directives not parsed")
+        check(
+            multi.compile_args == ["--custom-flag"],
+            "COMPILE-ARGS not parsed from main.carbon",
+        )
+        check(multi.expect_stdout == "42\n", "EXPECT-STDOUT not parsed")
+        check(
+            multi.diff_cpp is not None and multi.diff_cpp.name == MAIN_DIFF_CPP,
+            "main.diff.cpp not attached as the differential oracle",
+        )
+        check(
+            len(single.units) == 1 and single.diff_cpp is None,
+            "single-file program parsed wrong alongside a multi-unit one",
+        )
+
+    # 2. SKIP stays an in-file marker: honored from main.carbon.
+    programs, errors = run_fixture(
+        {
+            "cat/skipped/main.carbon": bullet + "// SKIP: later\n",
+            "cat/skipped/lib.carbon": 'library "l";\n',
+        }
+    )
+    check(
+        not errors
+        and len(programs) == 1
+        and programs[0].skip_reason == "later",
+        "SKIP directive in main.carbon not honored",
+    )
+
+    # 3. Directives in a library unit are rejected, not ignored.
+    programs, errors = run_fixture(
+        {
+            "cat/p/main.carbon": bullet,
+            "cat/p/lib.carbon": "// SKIP: nope\n" + 'library "l";\n',
+        }
+    )
+    check(
+        any("belong in main.carbon only" in e for e in errors),
+        f"stray directive in a library unit not rejected: {errors}",
+    )
+
+    # 4. A main.carbon-only directory is rejected.
+    programs, errors = run_fixture({"cat/p/main.carbon": bullet})
+    check(
+        any("at least one library unit" in e for e in errors),
+        f"main-only directory not rejected: {errors}",
+    )
+
+    # 5. Program directories must be flat.
+    programs, errors = run_fixture(
+        {
+            "cat/p/main.carbon": bullet,
+            "cat/p/lib.carbon": 'library "l";\n',
+            "cat/p/sub/extra.carbon": 'library "x";\n',
+        }
+    )
+    check(
+        any("must be flat" in e for e in errors),
+        f"nested program directory not rejected: {errors}",
+    )
+
+    # 6. Only main.diff.cpp may sit in a program directory.
+    programs, errors = run_fixture(
+        {
+            "cat/p/main.carbon": bullet,
+            "cat/p/lib.carbon": 'library "l";\n',
+            "cat/p/lib.diff.cpp": "int main() {}\n",
+        }
+    )
+    check(
+        any("only main.diff.cpp" in e for e in errors),
+        f"stray .diff.cpp in a program directory not rejected: {errors}",
+    )
+
+    # 7. Unit files are consumed even when their directory fails
+    # validation: they must not resurface as single-file programs (which
+    # would show up as missing-directive errors for the library unit).
+    check(
+        not any(
+            "lib.carbon" in e and "CONFORMANCE-BULLET" in e for e in errors
+        ),
+        "a unit of an invalid program directory leaked into single-file "
+        "discovery",
+    )
+
+    # 8. Artifact-name collisions between a directory program and a
+    # single-file program are rejected.
+    programs, errors = run_fixture(
+        {
+            "cat/p/main.carbon": bullet,
+            "cat/p/lib.carbon": 'library "l";\n',
+            "cat/p.carbon": bullet + "fn Run() {}\n",
+        }
+    )
+    check(
+        any("collides with" in e for e in errors),
+        f"name collision not rejected: {errors}",
+    )
+
+    # 9. --filter matches the program directory's relative path.
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        for relpath, text in {
+            "cat/multi/main.carbon": bullet,
+            "cat/multi/lib.carbon": 'library "l";\n',
+            "cat/other.carbon": bullet + "fn Run() {}\n",
+        }.items():
+            p = root / relpath
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(text, encoding="utf-8")
+        programs, errors = discover_programs(root, "multi")
+        check(
+            not errors and [p.rel for p in programs] == ["cat/multi"],
+            f"--filter over a multi-unit program broke: "
+            f"{[p.rel for p in programs]}, {errors}",
+        )
+
+    # 10. main.carbon at the programs root is rejected.
+    programs, errors = run_fixture({"main.carbon": bullet})
+    check(
+        any("programs root" in e for e in errors),
+        f"root-level main.carbon not rejected: {errors}",
+    )
+
+    return failures
+
+
+def directive_sync_self_check():
+    """DIRECTIVE_PREFIXES must stay in sync with parse_directives.
+
+    DIRECTIVE_PREFIXES drives the stray-directive rejection in non-main
+    units (leading_comment_directives); parse_directives hardcodes the
+    same prefixes in its dispatch ladder. This check guards the drift
+    both ways: (a) the set of `"// NAME:"` string literals in
+    parse_directives' source must equal DIRECTIVE_PREFIXES (a new elif
+    branch without a DIRECTIVE_PREFIXES entry fails here), and (b) each
+    DIRECTIVE_PREFIXES entry must have an observable parsing effect (an
+    entry parse_directives silently ignores fails here). Returns a list
+    of failure strings; empty means OK.
+    """
+    failures = []
+
+    def check(cond, what):
+        if not cond:
+            failures.append(f"directive-prefix sync self-check: {what}")
+
+    # (a) Source-derived sync: parse_directives spells every directive it
+    # dispatches on as a quoted "// NAME:" literal (startswith + len()).
+    source = inspect.getsource(parse_directives)
+    recognized = set(re.findall(r'"(// [A-Z][A-Z-]*:)"', source))
+    check(
+        recognized == set(DIRECTIVE_PREFIXES),
+        f"parse_directives recognizes {sorted(recognized)} but "
+        f"DIRECTIVE_PREFIXES lists {sorted(DIRECTIVE_PREFIXES)}",
+    )
+
+    # (b) Behavioral: every listed prefix is genuinely parsed.
+    with tempfile.TemporaryDirectory() as td:
+        path = Path(td) / "prog.carbon"
+        path.write_text(
+            "// CONFORMANCE-BULLET: B\n"
+            "// COMPILE-ARGS: --x\n"
+            "// EXPECT-EXIT: 7\n"
+            "// EXPECT-STDOUT:\n"
+            "//   hi\n"
+            "// SKIP: soon\n"
+            "fn Run() {}\n",
+            encoding="utf-8",
+        )
+        prog = parse_directives(path, "prog.carbon")
+    effects = {
+        "// CONFORMANCE-BULLET:": prog.bullet == "B",
+        "// COMPILE-ARGS:": prog.compile_args == ["--x"],
+        "// EXPECT-EXIT:": prog.expect_exit == 7,
+        "// EXPECT-STDOUT:": prog.expect_stdout == "hi\n",
+        "// SKIP:": prog.skip_reason == "soon",
+    }
+    check(
+        set(effects) == set(DIRECTIVE_PREFIXES),
+        "this check's effect map drifted from DIRECTIVE_PREFIXES: "
+        f"{sorted(set(effects) ^ set(DIRECTIVE_PREFIXES))}",
+    )
+    for prefix, effect_ok in effects.items():
+        check(effect_ok, f"{prefix} directive was not parsed")
+    return failures
+
+
+def _write_stub_toolchain(stub_dir):
+    """Write an argv-recording stub `carbon` executable into stub_dir.
+
+    The stub appends one JSON line per invocation to argv.jsonl next to
+    itself, then fabricates outputs: `compile` writes a fake object for
+    the LAST input (failing instead if that input's text contains
+    STUB-COMPILE-FAIL); `link` writes a runnable fake binary that prints
+    `42` (failing instead if the output name contains `linkfail`); the
+    fake binary also records itself as kind "run". Returns
+    (stub_path, log_path).
+    """
+    log_path = stub_dir / "argv.jsonl"
+    run_bin_source = (
+        f"#!{sys.executable}\n"
+        "import json, sys\n"
+        f"with open({str(log_path)!r}, 'a', encoding='utf-8') as f:\n"
+        "    f.write(json.dumps({'kind': 'run', 'argv': sys.argv[1:]})"
+        " + '\\n')\n"
+        "sys.stdout.write('42\\n')\n"
+    )
+    stub_source = f"""#!{sys.executable}
+import json
+import sys
+from pathlib import Path
+
+LOG = {str(log_path)!r}
+RUN_BIN = {run_bin_source!r}
+
+
+def output_path(args):
+    for arg in args:
+        if arg.startswith("--output="):
+            return Path(arg[len("--output="):])
+    return None
+
+
+def main():
+    args = sys.argv[1:]
+    sub = args[0] if args else ""
+    with open(LOG, "a", encoding="utf-8") as f:
+        f.write(json.dumps({{"kind": sub, "argv": args[1:]}}) + "\\n")
+    if sub == "probe":
+        return 0
+    out = output_path(args[1:])
+    if sub == "compile":
+        target = Path(args[-1])
+        if "STUB-COMPILE-FAIL" in target.read_text(encoding="utf-8"):
+            sys.stderr.write(
+                "stub: compile failure requested by %s\\n" % target.name
+            )
+            return 1
+        out.write_text("stub object: %s\\n" % target.name, encoding="utf-8")
+        return 0
+    if sub == "link":
+        if "linkfail" in out.name:
+            sys.stderr.write("stub: link failure requested\\n")
+            return 1
+        out.write_text(RUN_BIN, encoding="utf-8")
+        out.chmod(0o755)
+        return 0
+    sys.stderr.write("stub: unknown subcommand %r\\n" % sub)
+    return 2
+
+
+sys.exit(main())
+"""
+    stub = stub_dir / "carbon"
+    stub.write_text(stub_source, encoding="utf-8")
+    stub.chmod(0o755)
+    return stub, log_path
+
+
+def execution_self_check():
+    """End-to-end coverage of the multi-unit EXECUTION path, stubbed.
+
+    Drives main() (the real run path: discovery -> per-unit compile loop
+    -> multi-object link -> run -> scoreboard) over a synthetic tempdir
+    program tree against a stub `carbon` executable that records every
+    argv line and fabricates outputs. No real toolchain, no network;
+    everything lives in one TemporaryDirectory. Scenarios pinned:
+
+      - PASS: per-unit objects on disk, one compile invocation per unit
+        (ALL units on each command line, target last), one link naming
+        all per-unit objects in unit order, `"units": N` in the
+        scoreboard entry.
+      - middle-unit COMPILE-FAIL: the detail names the unit, the compile
+        loop stops at it, and no link is attempted.
+      - LINK-FAIL: all units compile, exactly one link attempt, no run.
+
+    Returns (failures, skip_reason): skip_reason is non-None when the
+    platform cannot exec the stub script (for example a noexec temp
+    mount), in which case the check is skipped gracefully.
+    """
+    failures = []
+
+    def check(cond, what):
+        if not cond:
+            failures.append(f"execution self-check: {what}")
+
+    bullet = next(iter(load_gap_analysis_bullets(GAP_ANALYSIS)))
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        stub_dir = root / "stub"
+        stub_dir.mkdir()
+        stub, log_path = _write_stub_toolchain(stub_dir)
+        try:
+            rc, _, _, _ = run_cmd([stub, "probe"], timeout=30)
+        except OSError as e:
+            return [], f"cannot exec the stub toolchain: {e}"
+        if rc != 0:
+            return [], f"stub toolchain probe exited with {rc}"
+
+        progs_dir = root / "programs"
+        header = f"// CONFORMANCE-BULLET: {bullet}\n"
+        files = {
+            "exec/pass_multi/a_base.carbon": 'library "base";\n',
+            "exec/pass_multi/b_mid.carbon": 'library "mid";\n',
+            "exec/pass_multi/main.carbon": header
+            + "// EXPECT-STDOUT:\n//   42\nfn Run() {}\n",
+            "exec/midfail/a_base.carbon": 'library "base";\n',
+            # The marker sits after the first code line, so it is not a
+            # leading-comment directive; the stub fails this unit.
+            "exec/midfail/b_mid.carbon": (
+                'library "mid";\n// STUB-COMPILE-FAIL\n'
+            ),
+            "exec/midfail/main.carbon": header + "fn Run() {}\n",
+            "exec/linkfail_prog/a_base.carbon": 'library "base";\n',
+            "exec/linkfail_prog/main.carbon": header + "fn Run() {}\n",
+        }
+        for relpath, text in files.items():
+            path = progs_dir / relpath
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+
+        out_dir = root / "out"
+        with contextlib.redirect_stdout(io.StringIO()):
+            rc = main(
+                [
+                    "--toolchain",
+                    str(stub),
+                    "--programs",
+                    str(progs_dir),
+                    "--out",
+                    str(out_dir),
+                ]
+            )
+        check(rc == 1, f"main() exited {rc}, expected 1 (2 failing programs)")
+
+        scoreboard_path = out_dir / "scoreboard.json"
+        check(scoreboard_path.is_file(), "scoreboard.json not written")
+        entries = {}
+        if scoreboard_path.is_file():
+            scoreboard = json.loads(scoreboard_path.read_text(encoding="utf-8"))
+            entries = {e["path"]: e for e in scoreboard["programs"]}
+
+        records = []
+        if log_path.is_file():
+            records = [
+                json.loads(line)
+                for line in log_path.read_text(encoding="utf-8").splitlines()
+            ]
+        records = [r for r in records if r["kind"] != "probe"]
+        compiles = [r for r in records if r["kind"] == "compile"]
+        links = [r for r in records if r["kind"] == "link"]
+        runs = [r for r in records if r["kind"] == "run"]
+
+        def out_name(record):
+            for arg in record["argv"]:
+                if arg.startswith("--output="):
+                    return Path(arg[len("--output=") :]).name
+            return ""
+
+        # --- PASS: per-unit objects + N-object link + `units` key. ---
+        entry = entries.get("exec/pass_multi", {})
+        check(
+            entry.get("status") == PASS,
+            f"exec/pass_multi: {entry.get('status')} "
+            f"({entry.get('detail')}), expected PASS",
+        )
+        check(
+            entry.get("units") == 3,
+            f"exec/pass_multi scoreboard units = {entry.get('units')!r}, "
+            f"expected 3",
+        )
+        pass_objs = [
+            "exec_pass_multi.a_base.o",
+            "exec_pass_multi.b_mid.o",
+            "exec_pass_multi.main.o",
+        ]
+        for obj in pass_objs:
+            check(
+                (out_dir / "obj" / obj).is_file(),
+                f"per-unit object missing: obj/{obj}",
+            )
+        pass_compiles = [
+            r for r in compiles if out_name(r).startswith("exec_pass_multi.")
+        ]
+        check(
+            [out_name(r) for r in pass_compiles] == pass_objs,
+            f"per-unit compile invocations wrong: "
+            f"{[out_name(r) for r in pass_compiles]}",
+        )
+        for record in pass_compiles:
+            inputs = [
+                Path(a).name for a in record["argv"] if not a.startswith("--")
+            ]
+            check(
+                sorted(inputs)
+                == ["a_base.carbon", "b_mid.carbon", "main.carbon"],
+                f"a compile line must carry ALL units: {inputs}",
+            )
+            target = (
+                out_name(record)[len("exec_pass_multi.") : -len(".o")]
+                + ".carbon"
+            )
+            check(
+                inputs and inputs[-1] == target,
+                f"target unit not last on its compile line: "
+                f"{inputs} (target {target})",
+            )
+        pass_links = [r for r in links if out_name(r) == "exec_pass_multi"]
+        check(
+            len(pass_links) == 1,
+            f"expected exactly one link for exec/pass_multi, "
+            f"got {len(pass_links)}",
+        )
+        if pass_links:
+            objs = [
+                Path(a).name
+                for a in pass_links[0]["argv"]
+                if not a.startswith("--")
+            ]
+            check(
+                objs == pass_objs,
+                f"link must name all per-unit objects in unit order: {objs}",
+            )
+
+        # --- Middle-unit COMPILE-FAIL: unit named, no link attempted. ---
+        entry = entries.get("exec/midfail", {})
+        check(
+            entry.get("status") == COMPILE_FAIL,
+            f"exec/midfail: {entry.get('status')}, expected COMPILE-FAIL",
+        )
+        check(
+            "unit b_mid.carbon" in entry.get("detail", ""),
+            f"COMPILE-FAIL detail must name the failing unit: "
+            f"{entry.get('detail')!r}",
+        )
+        mid_compiles = [
+            out_name(r)
+            for r in compiles
+            if out_name(r).startswith("exec_midfail.")
+        ]
+        check(
+            mid_compiles == ["exec_midfail.a_base.o", "exec_midfail.b_mid.o"],
+            f"compile loop must stop AT the failing middle unit: "
+            f"{mid_compiles}",
+        )
+        check(
+            not any(out_name(r) == "exec_midfail" for r in links),
+            "COMPILE-FAIL must not attempt a link",
+        )
+
+        # --- LINK-FAIL: all units compiled, one link attempt, no run. ---
+        entry = entries.get("exec/linkfail_prog", {})
+        check(
+            entry.get("status") == LINK_FAIL,
+            f"exec/linkfail_prog: {entry.get('status')}, expected LINK-FAIL",
+        )
+        linkfail_compiles = [
+            out_name(r)
+            for r in compiles
+            if out_name(r).startswith("exec_linkfail_prog.")
+        ]
+        check(
+            linkfail_compiles
+            == ["exec_linkfail_prog.a_base.o", "exec_linkfail_prog.main.o"],
+            f"LINK-FAIL program must compile all units: {linkfail_compiles}",
+        )
+        check(
+            sum(1 for r in links if out_name(r) == "exec_linkfail_prog") == 1,
+            "LINK-FAIL program must attempt exactly one link",
+        )
+        check(
+            len(runs) == 1,
+            f"exactly one binary run expected (the PASS program), "
+            f"got {len(runs)}",
+        )
+    return failures, None
+
+
 def self_test(programs_dir, filter_substr):
     """Validate all program headers + bullet names without a toolchain."""
     ok = True
@@ -634,6 +1355,39 @@ def self_test(programs_dir, filter_substr):
             f"error: gap analysis not found at {GAP_ANALYSIS}", file=sys.stderr
         )
         return 1
+    # The discovery logic itself gets coverage first (synthetic fixtures;
+    # independent of the real programs tree).
+    discovery_failures = discovery_self_check()
+    for failure in discovery_failures:
+        ok = False
+        print(failure, file=sys.stderr)
+    print(
+        "multi-unit discovery self-check: "
+        f"{'OK' if not discovery_failures else 'ERRORS'}"
+    )
+    # DIRECTIVE_PREFIXES must match what parse_directives recognizes.
+    sync_failures = directive_sync_self_check()
+    for failure in sync_failures:
+        ok = False
+        print(failure, file=sys.stderr)
+    print(
+        "directive-prefix sync self-check: "
+        f"{'OK' if not sync_failures else 'ERRORS'}"
+    )
+    # The multi-unit EXECUTION path (per-unit compile loop + multi-object
+    # link) end-to-end against a stub toolchain: PASS / middle-unit
+    # COMPILE-FAIL / LINK-FAIL.
+    exec_failures, exec_skip = execution_self_check()
+    if exec_skip is not None:
+        print(f"execution-path self-check: SKIPPED ({exec_skip})")
+    else:
+        for failure in exec_failures:
+            ok = False
+            print(failure, file=sys.stderr)
+        print(
+            "execution-path self-check: "
+            f"{'OK' if not exec_failures else 'ERRORS'}"
+        )
     bullets = load_gap_analysis_bullets(GAP_ANALYSIS)
     if not bullets:
         print(f"error: no bullets parsed from {GAP_ANALYSIS}", file=sys.stderr)
@@ -677,6 +1431,8 @@ def self_test(programs_dir, filter_substr):
                 marks.append("diff: C++")
             if prog.compile_args:
                 marks.append("args: " + " ".join(prog.compile_args))
+            if len(prog.units) > 1:
+                marks.append(f"units: {len(prog.units)}")
             marks.append(f"exit: {prog.expect_exit}")
             print(
                 f"  {prog.rel:<{width}}  ->  {prog.bullet}  "  # noqa: E501
@@ -882,6 +1638,10 @@ def main(argv=None):
                 "status": results[prog.rel][0],
                 "detail": results[prog.rel][1],
                 "differential": prog.diff_cpp is not None,
+                # `units` appears for multi-unit programs only, so
+                # single-file entries stay byte-identical to before the
+                # multi-unit harness slice (W69h).
+                **({"units": len(prog.units)} if len(prog.units) > 1 else {}),
             }
             for prog in programs
         ],

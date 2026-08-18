@@ -5,6 +5,8 @@
 #ifndef CARBON_TOOLCHAIN_LOWER_FILE_CONTEXT_H_
 #define CARBON_TOOLCHAIN_LOWER_FILE_CONTEXT_H_
 
+#include <utility>
+
 #include "toolchain/lower/context.h"
 #include "toolchain/lower/specific_coalescer.h"
 #include "toolchain/lower/type.h"
@@ -46,6 +48,63 @@ struct FunctionInfo {
   // type was incomplete. If this is set, the function should not be used to
   // emit a definition or a call.
   bool inexact;
+};
+
+class FunctionContext;
+
+// A file-scope `let` binding whose bound value is a runtime value, found by
+// `FileContext`'s pre-pass over the file's top instruction block (W-069).
+// Such a binding has no constant and no `VarStorage`, so `GetValue` would
+// otherwise have nothing to serve references with: the bound value is
+// computed inside `__global_init`, and the design licenses modeling the
+// acquired value with backing storage as long as no address is ever exposed
+// at the language level (docs/design/values.md: value expressions may or may
+// not have storage, and copies are permitted under "as-if").
+struct GlobalLetBinding {
+  // How references to the binding are served.
+  enum class Disposition : int8_t {
+    // The value representation is a copy of the object representation (the
+    // scalar case): the bound value is promoted to a named backing global
+    // that `__global_init` stores once, and every reference — same-file
+    // cross-function or cross-file — loads from it.
+    Promote,
+    // The value representation is a pointer to the object representation
+    // (classes, choices, multi-element tuples/structs): the bound value's
+    // object is promoted to a named backing global of the OBJECT
+    // representation that `__global_init` fills once with a memcpy from the
+    // bound value's pointer (the as-if copy license, docs/design/values.md),
+    // and every reference is served the global's address AS the value
+    // representation — the same shape `AcquireValue`'s pointer arm produces
+    // (handle_expr_category.cpp) and `FileContext::GetConstant`'s
+    // pointer-value-rep arm serves for constants.
+    PromoteObject,
+    // The value representation is `None` (e.g. an empty tuple type): no
+    // storage is minted, and references produce the empty value.
+    NoStorage,
+    // Any other value representation (a `Copy` that is not a copy of the
+    // object representation, or `Custom`), or an initializer shape the
+    // pre-pass could not map to a `__global_init`-resident instruction: not
+    // promoted. References fail loudly with a named message instead of
+    // tripping the generic missing-value check.
+    Declined,
+  };
+
+  // The binding instruction in the file's top instruction block.
+  SemIR::InstId binding_id;
+  // The binding's bound value (`AnyBinding::value_id`) — the instruction
+  // that `NameRef` lowering peeks through the binding to.
+  SemIR::InstId value_id;
+  // The declared type of the binding.
+  SemIR::TypeId type_id;
+  Disposition disposition;
+  // For `Promote`/`PromoteObject`: the file-top-block conversion wrapper
+  // instructions between the `__global_init`-resident initializer and
+  // `value_id`, in lowering (operand-first) order. These aren't part of any
+  // lowered block, so the ctor-store hook lowers them on demand.
+  llvm::SmallVector<SemIR::InstId, 4> chain = {};
+  // For `Promote`/`PromoteObject`: the `__global_init`-resident instruction
+  // after whose lowering the bound value can be computed and stored.
+  SemIR::InstId ctor_key_id = SemIR::InstId::None;
 };
 
 // Context and shared functionality for lowering within a SemIR file.
@@ -191,6 +250,28 @@ class FileContext {
   auto BuildNonCppGlobalVariableDecl(SemIR::VarStorage var_storage)
       -> llvm::GlobalVariable*;
 
+  // Returns the registry entry for `inst_id` if it is a file-scope runtime
+  // `let` binding of this file or such a binding's bound value, and null
+  // otherwise. See `GlobalLetBinding`.
+  auto LookupGlobalLetBinding(SemIR::InstId inst_id) const
+      -> const GlobalLetBinding*;
+
+  // Returns the named backing global for a promoted file-scope runtime `let`
+  // binding, creating a declaration if it doesn't exist yet. Reuses an
+  // existing `llvm::GlobalVariable` with the same mangled name, so the
+  // defining file's definition pass and every referencing file all yield the
+  // same object. The defining file's `PrepareGlobalLetDefinitions` adds the
+  // zero initializer that makes it a definition.
+  auto GetOrCreateGlobalLetVariable(const GlobalLetBinding& binding)
+      -> llvm::GlobalVariable*;
+
+  // Called after each instruction is lowered while building this file's
+  // `__global_init`: if `ctor_inst_id` computed the initializer of one or
+  // more promoted file-scope `let` bindings, emits the stores of their bound
+  // values into the backing globals.
+  auto EmitGlobalLetStores(FunctionContext& ctor_context,
+                           SemIR::InstId ctor_inst_id) -> void;
+
   // Builds the definition for the given function. If the function is only a
   // declaration with no definition, does nothing. If this is a generic it'll
   // only be lowered if the specific_id is specified. During this lowering of
@@ -202,6 +283,19 @@ class FileContext {
  private:
   // Lower global variables defined in `inst_block_id`.
   auto LowerGlobalVariables(SemIR::InstBlockId inst_block_id) -> void;
+
+  // Pre-pass over the file's top instruction block registering every
+  // file-scope `let` binding whose bound value is a runtime value, with the
+  // disposition its type's value representation selects. Pure SemIR
+  // analysis, run from `PrepareToLower` so the registry is available both
+  // when this file is being lowered and when another file's lowering
+  // references this file's bindings.
+  auto RegisterGlobalLetBindings() -> void;
+
+  // Converts the promoted bindings' backing globals into zero-initialized
+  // definitions and schedules their `__global_init` stores. Only run (from
+  // `LowerDefinitions`) when this file itself is being lowered.
+  auto PrepareGlobalLetDefinitions() -> void;
 
   // Notes that a C++ function has been referenced for the first time, so we
   // should ask Clang to generate a definition for it if possible.
@@ -300,6 +394,26 @@ class FileContext {
 
   // Maps global variables to their lowered variant.
   Map<SemIR::InstId, llvm::GlobalVariable*> global_variables_;
+
+  // Registry of file-scope runtime `let` bindings, in top-block order. See
+  // `GlobalLetBinding` and `RegisterGlobalLetBindings`.
+  llvm::SmallVector<GlobalLetBinding> global_let_bindings_;
+
+  // Maps both a registered binding's instruction id and its bound-value
+  // instruction id to the binding's index in `global_let_bindings_`.
+  Map<SemIR::InstId, int32_t> global_let_binding_indices_;
+
+  // Pairs of a `__global_init`-resident initializer instruction and the
+  // index of a promoted binding whose backing-global store is emitted right
+  // after that instruction lowers. Built by `PrepareGlobalLetDefinitions`;
+  // one entry per promoted binding.
+  llvm::SmallVector<std::pair<SemIR::InstId, int32_t>> global_let_ctor_stores_;
+
+  // The number of entries of `global_let_ctor_stores_` whose stores have
+  // been emitted, checked against the schedule after `__global_init` is
+  // built so no promoted binding is left as a silently zero-initialized
+  // global.
+  int global_let_stores_emitted_ = 0;
 
   // For a generic function, keep track of the specifics for which LLVM
   // function declarations were created. Those can be retrieved then from

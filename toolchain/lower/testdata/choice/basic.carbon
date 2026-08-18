@@ -29,6 +29,7 @@ fn F() {
 // CHECK:STDOUT: @VehicleType.val.025 = internal constant { i2 } zeroinitializer
 // CHECK:STDOUT: @VehicleType.val.a72 = internal constant { i2 } { i2 1 }
 // CHECK:STDOUT: @VehicleType.val.471 = internal constant { i2 } { i2 -2 }
+// CHECK:STDOUT: @_Cglobal_vehicle.Main = global { i2 } zeroinitializer
 // CHECK:STDOUT: @VehicleType.val.a72.loc15_6.10 = internal constant { i2 } { i2 1 }
 // CHECK:STDOUT: @VehicleType.val.025.loc14_7.10 = internal constant { i2 } zeroinitializer
 // CHECK:STDOUT: @llvm.global_ctors = appending global [1 x { i32, ptr, ptr }] [{ i32, ptr, ptr } { i32 0, ptr @_C__global_init.Main, ptr null }]
@@ -42,10 +43,15 @@ fn F() {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define internal void @_C__global_init.Main() #0 !dbg !8 {
 // CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 1 @_Cglobal_vehicle.Main, ptr align 1 @VehicleType.val.025.loc14_7.10, i64 1, i1 false)
 // CHECK:STDOUT:   ret void, !dbg !9
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.memcpy.p0.p0.i64(ptr noalias writeonly captures(none), ptr noalias readonly captures(none), i64, i1 immarg) #1
+// CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3}

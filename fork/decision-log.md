@@ -2037,6 +2037,454 @@ floor moved to EXACTLY **93 PASS / 0 FAIL / 29 SKIP over 122** (run
 control_flow/match_single_alternative.carbon's PASS. **W-068 is
 DISCHARGED.** Veto-able.
 
+_W-069 W69a landing (2026-08-18, the W69a implementer):_ the scalar half
+of the approved lane (a1) is staged per fork/w069/plan.md §4 —
+lowering-only, SemIR untouched, import_ref.cpp untouched. _Mechanism:_
+`FileContext::RegisterGlobalLetBindings` (a `PrepareToLower` pre-pass, so
+the registry exists in every module that can reference the file) selects
+package-scope VALUE bindings (`GetExprCategory == Value`, excluding
+`let ref`; aliases can't be runtime-valued; class-scope statics stay out
+of scope) whose bound value is NotConstant, and dispatches on
+`ValueRepr`: `IsCopyOfObjectRepr` Copy → Promote (named global, mangled
+by the new `Mangler::MangleGlobalLetBinding` — `_C` + name +
+inverse-qualified scope + private-to-library fingerprint of the BINDING
+inst, both sides feeding the same input); `None` → no storage,
+references served as the empty value; pointer/custom (or a bound-value
+chain the chase can't map to a ctor-resident initializer, or one whose
+terminal is itself constant) → Declined. `PrepareGlobalLetDefinitions`
+(defining side only) zero-initializes the definitions and schedules the
+stores; the `__global_init` `LowerInst` tail hook emits each store right
+after the binding's ctor-resident initializer lowers (so later
+initializers already observe it), lowering the file-top-block wrapper
+chain (`converted`/`value_of_initializer`/`acquire_value`/`temporary`/
+`tuple_access`/`struct_access`) on demand; a post-ctor CHECK guarantees
+no scheduled store is silently dropped (the "promoted or diagnosed,
+never a silent zeroinit" invariant); `GetValue`'s fall-through — entered
+ONLY when the constant path would have CHECK-crashed, so every
+previously-green path is bit-identical — serves same-file references by way of
+the value-id key and imported references by way of
+`SemIR::GetCanonicalFileAndInstId` (the SF-1 amendment), then loads from
+the get-before-create global (F8c discipline; R-2's
+`AddGlobalToCurrentFingerprint` on every hit). Declined shapes
+CARBON_FATAL with a named "semantics TODO ... (W-069)" message instead
+of the cryptic missing-value CHECK. _Probes staged (autoupdate fills):_
+check+lower `testdata/let/global_runtime.carbon` (P-1 scalar, P-2
+cross-file + the A/B/main re-export subfile, P-7 tuple pattern, P-8
+`let ref` exclusion pin, P-9 empty-tuple no-storage pin), lower
+`testdata/let/global_runtime_symbols.carbon` (the R-1 falsifier:
+defining file + two importers + private let — any `.N` symbol is the
+alarm), and the P-6 flip in upstream's lower/testdata/var/import.carbon
+(`fn X() -> i32 { return x; }` added, the :47 TODO deleted; prediction:
+green already by way of half (b)'s constant import — regeneration rides the
+runner per R16a). _Expected golden movement:_ the three let goldens fill
+from empty CHECK; var/import.carbon regenerates (new `X` function; no
+other module content should change); every OTHER file under
+toolchain/**/testdata must be byte-identical in the PR diff — that audit
+is this slice's negative pin. _Floor:_ no movement claimed, 93/0/29 over
+122 (goldens only; the runtime arbiters land at W69b after W69h).
+_Recorded deviations (R17, for coordinator adjudication):_ (1) the SF-1
+amendment's `export x;` re-export golden form is UNCHECKABLE today —
+`export x` of a runtime let mints an `ExportDecl` whose constant is
+NotConstant, and import_ref.cpp:4483's non-constant branch
+`CARBON_CHECK(Is<AnyBinding>...)` fails on ExportDecl — so P-2's
+re-export subfile uses the `export import library` form (import-chain
+hops; checks clean by way of half (b)); the chase's ExportDecl arm is
+implemented but not golden-pinned, and pinning it needs an import_ref.cpp
+amendment with its own review round (§5 step 3(ii) STOP honored —
+import_ref.cpp has zero changed lines). (2) The plan's "(a3) diagnostic"
+demotion is realized as loud named CARBON_FATALs plus silent
+declination at declaration (never at reference), because lowering has no
+diagnostic emitter and runs only on error-free SemIR — a true user-facing
+diagnostic would be a check-side change outside W69a's file list; if the
+coordinator wants the check-time diagnostic of §2.3, that is a dated
+plan amendment, not this slice. (3) `let x = <var member>` shapes whose
+initializer chain bottoms out in a CONSTANT reference (no ctor-resident
+key) are Declined, not promoted — recorded as in-scope-for-later residue
+under §5 step 4. Veto-able.
+
+_W69a review+fill round (2026-08-18, the W69a fixer):_ both adversarial
+implementation reviews APPROVE — reviewer A: the reachability invariant
+(`GetValue`'s fall-through entered only where the old CHECK crashed) is
+proven structurally, the mangler's two-sided agreement (defining and
+importing sides feeding the same binding-inst fingerprint input) is
+verified, no F8c-shaped name split is possible; reviewer B: the
+import_ref.cpp/runner.py fence held (zero changed lines), the three R17
+deviations are genuine discoveries, no cheating found. _CI chain:_
+runner autoupdate fill run 32136846740 (commit 535680c, +536/−12) →
+R26 NO-COMMIT fixpoint run 32136984670 → gate GREEN run 32137118870 →
+conformance GREEN run 32137118887 at the byte-exact floor **93/0/29
+over 122**. _Fill audit:_ the fill touched THREE files, not the
+predicted four — lower let/global_runtime.carbon and
+let/global_runtime_symbols.carbon filled from empty CHECK, and
+var/import.carbon regenerated (the P-6 flip produced the new `_CX.Main`
+function and no other module movement). **The landing note's "three let
+goldens fill from empty CHECK" prediction FAILED for
+check/testdata/let/global_runtime.carbon: it did not fill and remains
+CHECK-free** — the check component's default args are
+`--dump-sem-ir-ranges=only` and the file marks no `//@dump-sem-ir-begin`
+ranges, so its dump output is EMPTY and autoupdate had nothing to
+insert; the golden therefore pins clean checking only, NOT the SemIR
+shape its header claimed (header reconciled in place; adding dump
+ranges is W69b evaluation material). Load-bearing predictions HELD:
+exactly one `_Cx.Main` across the A/B/main re-export chain (one
+defining `global i32 0`, two `external global` decls); zero
+`.N`-suffixed symbols anywhere in the R-1 falsifier (the only `.2` is
+the prose citation of the F8c incident); no `_Ce`/`_Cr` globals; the
+private-let fingerprint present (`_Chidden.Main.b2b5bfc054bc42f8`, 3
+sites: definition, store, load). _P-8 (`let ref`):_ the fill records
+`UseR` loading straight from `@_Cv.Main` — the reference-category
+exclusion held and the reference rides the variable's own storage; the
+subfile comment already matched, no reconciliation needed. _P-9
+(NoStorage):_ reviewer A NIT-3's dead-arm prediction is CONFIRMED — a
+runtime call of empty tuple type converts to a value carrying
+`[concrete = constants.%empty_tuple]` (pinned in
+check/testdata/basics/dump_sem_ir_ranges.carbon), so `e`'s bound value
+is CONSTANT, fails the pre-pass NotConstant gate, never registers, and
+rides the constant path; the `NoStorage` disposition arms (pre-pass
+dispatch and `TryEmitGlobalLetValue`) are unexercised defensive
+residue, and the empty-subfile probe comments were reconciled to say
+so. _Hardening (landed THIS round, ride the NEXT gate round before
+W69h):_ (1) `EmitGlobalLetStores` now CHECKs
+`ctor_context.HasLocal(binding.value_id)` before the store, naming the
+binding — a failed chain lowering can no longer route `GetValue` back
+through `TryEmitGlobalLetValue` and store the zeroinit global into
+itself while satisfying the post-ctor count (review B SF-1); (2) the
+pre-pass chase's `Temporary` arm now demotes to Declined when the
+`storage_id` (`TemporaryStorage`) inst is neither ctor-resident nor
+constant — the shape the hook cannot lower (on-demand `GetValue` of an
+unlowered `TemporaryStorage` would hit the generic missing-value
+CHECK) now demotes at pre-pass per the plan invariant (review A SF-1;
+the fill proves the shape does not occur today). _W-074 attribution
+corrected:_ the `CARBON_CHECK(Is<AnyBinding>)` at import_ref.cpp:4483
+PREDATES W5-S3b (upstream-era CHECK at the shallow-clone boundary,
+present in the initial import of the file); S3b added only the
+bound-constant resolution logic beneath it. _Accepted, not actioned:_
+A NIT-2 (an exotic non-Value runtime binding shape keeps the old
+missing-value CHECK — loud, acceptable); A NIT-4 (the
+`global_let_ctor_stores_` linear scan per ctor inst — small n, revisit
+only if profiled); A NIT-6 (declaration-side promotion widens the
+future upstream-merge byte-surface of lower/ — recorded as a
+WEEKLY-MERGE WATCH ITEM); B NIT-7 (the registry's duplicate-key
+`Insert` assumption — binding_id and value_id never collide across
+bindings — stated, relied upon, unchecked). Veto-able.
+
+_W69h landing (2026-08-18, the W69h implementer):_ split-file multi-unit
+conformance-program support staged per fork/w069/plan.md §4 W69h —
+capability only, NO new programs, and the file fence held:
+fork/conformance/runner.py + fork/conformance/README.md are the only
+non-bookkeeping files touched (zero toolchain files, zero workflow yaml,
+zero program files, zero SKIP-directive edits). _Lane chosen —
+DIRECTORY programs, not an in-file `// --- name.carbon` splitter:_ a
+directory under programs/ directly containing a `main.carbon` unit is
+ONE program; every `*.carbon` directly inside is a compilation unit;
+all directives (CONFORMANCE-BULLET/COMPILE-ARGS/EXPECT-*/SKIP) live in
+main.carbon (a directive in a library unit's leading comment block is a
+discovery ERROR, never silently ignored). Why: real files are what the
+driver actually compiles — no fork-invented splitter, and the
+`// ---` convention is file_test-internal machinery. _Compile shape —
+one `carbon compile` invocation PER UNIT (all units on every command
+line, target unit last, `--output=<obj> --output-last-input-only`),
+then ONE `carbon link` of all per-unit objects:_ this mirrors
+upstream's own multi-unit build rule verbatim
+(bazel/carbon_rules/defs.bzl:64-89) because a single invocation cannot
+emit the library units' objects — compile_subcommand.cpp's
+get_output_filename gives `--output` to the LAST input only, and
+library units' lowered bodies would be dropped, guaranteeing undefined
+symbols at link. _Ordering:_ units are passed sorted by filename with
+main.carbon last, and NO numbering convention exists — command-line
+order is immaterial to import resolution because
+Check::CheckParseTrees orders units by import dependency internally
+(check.cpp's ready_to_check worklist); the fixed order only pins
+object names/diagnostics/link lines. _Fail classes:_ unchanged five —
+any unit's compile failure is the existing COMPILE-FAIL with the unit
+named in the detail (fork_conformance.yaml:84-91's hardcoded key list
+untouched); the differential oracle stays single-file as
+`main.diff.cpp` inside the program directory. _No-flip proof
+(structural):_ SKIP is an in-file marker parsed from the program's own
+header and returned before any compile, this slice edits no program
+file, and discovery treats a directory as multi-unit ONLY on a
+`main.carbon` marker — no file named main.carbon exists anywhere under
+programs/ (verified by find), so every one of the 122 existing
+programs takes the byte-identical single-file path. _Equivalence
+evidence (local python3):_ `--self-test` green at **122 programs
+parsed, 56 bullets, OK** including the new fixture-based multi-unit
+discovery self-check; a harness importing runner.py proved
+discovery metadata AND order, the generated README table, and the
+compile+link argv for all 122 existing programs byte-identical to a
+pre-change baseline snapshot; scoreboard entries gain a `units` key
+for multi-unit programs ONLY, so existing entries are byte-identical.
+A throwaway 4-unit program (base/export/reexport/main, the
+library_multifile_export sketch) driven through main() with an
+argv-recording stub toolchain exercised PASS, COMPILE-FAIL (middle
+unit, named), LINK-FAIL, OUTPUT-MISMATCH, `--filter`, and `--self-test`
+end-to-end, then was deleted. _Rides next:_ the W69h arbiter's
+byte-identical full-run scoreboard (93/0/29 over 122) on the
+conformance workflow — per the plan's re-open clause, ANY movement
+stops the slice un-landed; W69b does not start until that rerun is
+clean. Veto-able.
+
+_W69h review round (2026-08-18, the W69h fixer):_ both adversarial
+reviews APPROVE. Reviewer A (zero should-fixes, 7 NITs): byte-identity
+proven three independent ways, the driver-contract claim
+(`--output` names the LAST input's object) verified against
+compile_subcommand.cpp, and ~18 discovery edge cases all fail loud.
+Reviewer B (one SHOULD-FIX + 5 NITs): the arbiter-weakening sweep came
+back clean — zero diff hunks on every comparison path, the deviation
+records verified true, and the no-flip proof CI-confirmed at b3f3ed2
+(the byte-identical 93/0/29-over-122 rerun landed; the §4 arbiter is
+DISCHARGED). _B's SHOULD-FIX, actioned:_ the landing note's stub-driven
+end-to-end verification (PASS / middle-unit COMPILE-FAIL / LINK-FAIL
+through the real execution machinery) was throwaway — run once, then
+deleted, leaving the claims unreproducible. It is now COMMITTED into
+`--self-test` as the execution-path self-check: a hermetic tempdir
+program tree plus an argv-recording stub `carbon` executable drives
+main() through the multi-unit EXECUTION path and asserts PASS with
+per-unit objects + an N-object link in unit order + the `units`
+scoreboard key, a middle-unit COMPILE-FAIL naming the unit with no
+link attempted, and a LINK-FAIL with no run — permanently
+reproducible, sub-second, and skipped gracefully where the platform
+cannot exec the stub. _Two corrections to the landing note above
+(amendment, not rewrite):_ (1) missing clause — "a single invocation
+cannot emit the library units' objects" is true only under the
+runner's `--output` shape: the no-`--output` driver mode DOES emit
+per-input objects, but scatters them next to the sources, violating
+the out-dir isolation discipline, so the per-unit `--output` shape
+remains the right choice for a different reason than impossibility;
+(2) "mirrors ... verbatim" is too strong — the runner mirrors the
+bazel rule's per-unit shape but omits `--no-include-carbon-core`
+(conformance programs want the default core for `import Core`) and
+passes no dep API files (the runner has no dependency concept).
+_Also landed this round:_ a DIRECTIVE_PREFIXES drift guard in
+`--self-test` (source-derived sync with parse_directives' dispatch
+ladder + a behavioral check that every listed prefix is genuinely
+parsed; A NIT-7 + B NIT-3); the discover_programs sort-order comment
+qualified — parts-based key matches Path sort on the current Python,
+the byte-identical-rerun arbiter is the authority (A NIT-1); the
+README multi-unit section notes the `main.carbon` marker is
+case-sensitive (`Main.carbon` falls to single-file semantics; A
+NIT-2); work-items.json W-002's stale sentences refreshed with dated
+markers (the one-file-per-program limitation is false post-W69h, the
+EXTRA-ARGS question is answered by COMPILE-ARGS, README staleness is
+now machine-checked, the runner.py line pin re-pinned).
+library_multifile_export.carbon itself is deliberately untouched: its
+SKIP-reason retext rides the adjudicated separate un-SKIP follow-up
+(plan §8-A / review N-3). _Accepted, not actioned:_ A NIT-3
+(symlinked program directories invisible to rglob — pre-existing
+discovery behavior); A NIT-4 (a directory literally named `*.carbon`
+would crash discovery — pre-existing and crash-loud); A NIT-5
+(root-level main.carbon error duplicated per rglob hit — cosmetic); A
+NIT-6 (unit-stem obj-name aliasing across programs is impossible
+given name uniqueness — harmless-atomic); B NIT-1 (request-file
+timestamp sloppiness — noted as a record-hygiene habit to keep); B
+NIT-4 (scoreboard order sorts by parts while the README table sorts
+by rel string — cosmetic, both deterministic); B NIT-5 (the runner
+reports only the first failing unit's compile error — pre-existing
+first-error-only shape). Veto-able.
+
+_W-069 W69b landing (2026-08-18, the W69b implementer):_ the workstream
+closer per fork/w069/plan.md §4 W69b — the pointer-value-rep arm, the
+restored ledger acceptance split, the W69b golden set, BOTH conformance
+programs, and the W69a fill-audit residue. _Mechanism (the pointer arm):_
+`GlobalLetBinding::Disposition` gains `PromoteObject` — the
+`ValueRepr::Pointer` case (classes, choices, multi-element tuples/structs)
+now promotes instead of Declining. The dispatch is unchanged in structure:
+object-identical `Copy` → the W69a store/load `Promote`; `Pointer` →
+`PromoteObject`; `None` → `NoStorage` (still dead defensive per the W69a
+fill audit); non-object-copy `Copy`/`Custom` and unmapped chase shapes →
+`Declined` FATAL (message retexted to name what remains declined). A
+`PromoteObject` binding's backing global holds the OBJECT representation
+(`GetType(type_id)`, exactly what `GetOrCreateGlobalLetVariable` already
+built), `PrepareGlobalLetDefinitions` zero-initializes it identically, and
+the ctor hook fills it with a MEMCPY of the object's alloc size from the
+bound value's lowered pointer — mirrored precedent:
+`FunctionContext::CopyObject` (function_context.cpp), whose body is now
+shared through a new public `CopyObject(TypeInFile, llvm::Value*
+source_addr, llvm::Value* dest_addr)` overload that the inst-id form
+delegates to. The bound value's lowered value IS a pointer because
+`AcquireValue`'s `Pointer` arm forwards the acquired ref's address
+(handle_expr_category.cpp), and the source is the binding's own
+materialized temporary (nothing can alias it — values cannot have their
+address taken), so the copy rides the values.md as-if license (§6 R-3).
+References: `TryEmitGlobalLetValue`'s `PromoteObject` arm serves the
+global's ADDRESS as the value representation — the same shape
+`FileContext::GetConstant`'s pointer-value-rep arm serves for constants
+and a by-value parameter carries — with `AddGlobalToCurrentFingerprint` on
+every hit, same as the `Promote` arm. handle.cpp's NameRef comment
+retexted (copy-of-object OR pointer now served; class-scope statics and
+namespace-scope bindings still excluded). import_ref.cpp and check
+untouched; SemIR untouched. _The ledger acceptance test (OQ-3):_
+check/testdata/match/choice_generic_payload_scrutinee.carbon's
+`imported_global` subfile is RESTORED to a cross-file split — plib gains
+`fn MakeNeither() -> P(i64)` and binds `let g: P(i64) = MakeNeither();`
+(RUNTIME-bound, the form that arbitrates the residue), the importer
+matches `g` — the exact shape that CRASHED lowering at W5-S3b — plus the
+constant-bound sibling `let gc: P(i64) = P(i64).Neither;` with its own
+importing subfile (`imported_global_constant`) as the half-(b) boundary
+pin; dump ranges mark both bindings and both match fns. _W69b goldens
+(all CHECK-less or range-marked; autoupdate fills):_ NEW
+lower/testdata/let/import_choice.carbon — the acceptance split's
+lower-side pin (object-rep `_Cg.Main` global + ctor memcpy + the
+importer's external decl + discriminant load; `gc` pinned to the constant
+path with no `_Cgc` symbol; a same-file `match (g)` for the same-file
+half), the class-typed subfile with FIELD-READ consumption (S-5:
+`Pt`/`MakePt`/`let origin` + same-file and cross-file `origin.x`), and
+the P-10 whole-tuple subfile (`let t: (i32, i32) = MakePair();` consumed
+cross-file as `t.0` AND whole `t`). NEW
+lower/testdata/let/global_runtime_specifics.carbon — the R-2 falsifier in
+its nearest EXPRESSIBLE form (deviation, below). W69a residue discharged:
+check/testdata/let/global_runtime.carbon now marks
+`//@dump-sem-ir-begin`/`end` ranges around every binding and consumer
+(11 ranges), so it pins the SemIR shape — binding in the file top block
+wrapping a `@__global_init.`-qualified bound value; the importer's
+no-`[concrete]` `import_ref` — and its header is retexted back from the
+"clean checking only" reconciliation. _R17 DEVIATION, loud (for
+coordinator adjudication):_ risk R-2's falsifier as written — "two
+specifics of one generic each reading a DIFFERENT imported runtime let" —
+is STRUCTURALLY INEXPRESSIBLE: a file-scope name reference in a generic
+body resolves statically to one binding, so every specific of a generic
+references the SAME `let` set; the only specific-dependent value channel
+in `GetValue` is the constant path (`GetConstantValueInSpecific`), and a
+runtime `let` is NotConstant by definition. The falsifier golden
+therefore pins the nearest expressible shapes: (1) two specifics of one
+generic (`fn G(generic T: Reader)`, the call_different_impls.carbon
+pattern) whose witness calls reach per-type impl readers each loading a
+DIFFERENT imported runtime let — a coalesced `_CG` specific serving both
+is the alarm; (2) two specifics of one generic reading the SAME imported
+runtime let directly — the direct promoted-global load inside
+specific-function lowering, the path whose
+`AddGlobalToCurrentFingerprint` call R-2 mandates (retained: correct,
+cheap, and future-proof parity with the constant path at GetValue's
+:217, though no expressible program today can make it the deciding
+fingerprint entry). Recorded as a dated plan amendment. _Conformance
+(the discharge arbiter; recipes per §4 N-6, RuntimeSeed(x) = x + 20,
+expectations from seed arithmetic written as literals):_ (1)
+control_flow/match_global_runtime_let.carbon (single-file, deepens the
+already-PASS sum-type-consumption bullet): `let boxed: Box(i32) =
+Box(i32).Full(RuntimeSeed(1));` matched exhaustively in `Run` with the
+payload printed, and `let bias: i32 = RuntimeSeed(2);` read through a
+cross-function helper — hand-computed output: RuntimeSeed(1)=1+20=**21**,
+RuntimeSeed(2)=2+20=**22**; EXPECT-STDOUT 21,22, exit 0; a zeroinit read
+prints 0 and fails loudly. (2) code_org/import_runtime_let/ (the FIRST
+multi-unit directory program — W69h's capability exercised for real;
+deepens the already-PASS Importing bullet): library unit seeds.carbon
+binds `let scalar_from_lib: i32 = RuntimeSeed(3);` and `let opt_from_lib:
+IntOption = IntOption.Some(RuntimeSeed(4));`, main.carbon imports
+`library "seeds"` and prints the scalar then the matched payload —
+hand-computed output: RuntimeSeed(3)=3+20=**23**,
+RuntimeSeed(4)=4+20=**24**; EXPECT-STDOUT 23,24, exit 0. Directives live
+in main.carbon only; discovery verified locally (`--self-test` green at
+**124 programs parsed, 56 bullets, OK**, the program listed as
+`multi-unit (2 units)`; README table regenerated by
+`--update-readme-table`). The program COMPILES AND RUNS only on the
+runner (no local toolchain) — its first real execution is the landing
+conformance run. _Expected golden movement:_ import_choice.carbon and
+global_runtime_specifics.carbon fill from empty CHECK;
+check let/global_runtime.carbon fills its new ranges (first real fill —
+the W69a empty-dump surprise cannot recur, ranges now exist);
+check match/choice_generic_payload_scrutinee.carbon regenerates (declared
+churn per §7 criterion (2): the P-5 restore — plib gains
+MakeNeither/g/gc with ranges, imported_global re-splits, the new
+imported_global_constant subfile fills); NO other file under
+toolchain/**/testdata may move — the byte-equivalence audit obligation.
+_Floor:_ **95/0/29 over 124** (+2 by addition: the two new programs'
+PASS; no SKIP flips — library_multifile_export's stale one-file SKIP
+text stays untouched per the adjudicated separate follow-up; no bullet
+flips — both bullets were already PASS). _Ledger:_ W-069 →
+DISCHARGE-STAGED under the R9 hedge (discharges when the landing
+autoupdate reaches the R26 fixpoint over the new/changed goldens
+including the restored split, the gate runs green, and the conformance
+floor lands at EXACTLY 95/0/29 over 124 with the movement being ONLY the
+two new programs' PASS; any other movement re-opens with the run's
+evidence). Veto-able.
+
+_W69b fix round (2026-08-18, coordinator):_ both adversarial
+implementation reviews returned NEEDS-FIX on the EVIDENCE RECORD while
+finding the mechanism sound and runtime-proven (the discharge arbiters
+were already green: floor exactly 95/0/29 over 124 at scoreboard
+889760a, movement isolated to the two new programs, the multi-unit
+program's first real execution PASS). Two blockers, both root-caused:
+(1) the acceptance vehicle's `return P(i64).Neither;` pins
+CopyOfUncopyableType — the plan's own sketch shape, passed by both plan
+reviewers, falsified by the fill; fixed at f2a7274 to the
+constructor-call shape (`MakeRuntime() -> P(i64).Both(1, 2)`), the
+runtime-bound predicate intact; the copy gap minted as **W-075**.
+(2) three undeclared lower-golden movements
+(choice/{basic,mixed_payload_alternatives,payload_layout}.carbon):
+PromoteObject promotes plain-choice CONSTANT initializers because their
+bound values are SemIR-NotConstant today (generic-specific alternatives
+fold) — §3 R-7's falsifier FIRED as designed; ADJUDICATED
+accept-and-declare (no principled predicate line exists; the promotion
+is verified behavior-preserving and fixes a previously-crashing
+plain-choice cross-file shape; the three files become declared churn;
+registry comment retexted; the weekly-merge byte-surface watch item is
+now demonstrated real). Review residuals folded per the plan's fix-round
+amendment (import_choice absence-claim audit obligation named;
+same-commit-adjudication pattern acknowledged for the PR digest).
+Discharge criteria (2)/(3) re-arbitrate at the post-fix regen + gate;
+criterion (4) already met. Veto-able.
+
+_W69b post-fix crash round (2026-08-18, separate fixer per R11):_ the
+post-fix regen (autoupdate run 32146552813) crashed lowering
+import_choice.carbon's `imported_global_constant` subfile — `match (gc)`
+on the imported CONSTANT-bound generic-specific choice let, a shape whose
+lowering the f2a7274 fix un-suppressed for the first time anywhere in the
+tree (the earlier fill was masked by the plib copy error). ROOT-CAUSED BY
+READING as a PRE-EXISTING constant-lowering defect, not W69b promotion
+(gc folds `[concrete]`, the promotion gate excludes it) and not
+import-specific: the discriminant `class_element_access` folds to a
+value-category `[concrete]` int constant while staying a REF-category
+inst; `LowerInst` skips it as constant; `AcquireValue`'s Copy arm then
+loads from `GetValue`'s served value — which `FileContext::GetConstant`
+keys off the CONSTANT inst's category (value-category `IntValue`, Copy
+rep u1 → the raw scalar, not an address; file_context.cpp:230-254) — so
+`LoadObject` handed a non-pointer to `CreateLoad` ("Ptr must have pointer
+type"). No green golden ever matched on a constant scrutinee, which is
+why the defect never fired. CHOSEN LANE: the sanctioned small fenced
+lowering fix (lane (i); no check/ or import_ref surface, no W-076
+minted): the Copy arm passes the folded constant through — it IS the
+acquired value representation, the same pass-through shape as the Pointer
+arm and `GetConstant`'s value-rep return — by way of the new
+`FunctionContext::GetValueServesConstantValueRep`, which mirrors
+`GetValue`'s resolution order and `GetConstant`'s two address conventions
+line for line and answers false for every non-folded shape (no behavior
+change outside the crashing one); the branch is fingerprinted so
+specifics differing in fold-ness never coalesce. Probe extended with
+plib's `SameFileConst()` (pins import-independence); headers retexted.
+Full chain + citations in the plan's post-fix crash round amendment.
+W-069 hedge intact — discharge still waits on the rerun regen → fixpoint
+→ gate → conformance at exactly 95/0/29 over 124. Veto-able.
+
+_W69b crash round part 2 (2026-08-18, coordinator):_ the regen
+re-crashed on the mechanism's own Declined FATAL — P-10's consuming
+form references a binding the pre-pass declines (aggregate value rep;
+the amended SF-3 dispatch routes it to the loud (a3) FATAL by design).
+The probe contradicted the plan's own dispatch and is un-goldenable.
+P-10 narrowed to declaration-only (silence pinned; the FATAL pinned by
+run 32148462189's crash text); whole-aggregate consumption recorded as
+workstream residue with candidate lanes in the plan amendment. The
+AcquireValue folded-ref fix from part 1 is confirmed working (the prior
+crash site lowered past cleanly this round). Veto-able.
+
+_W-069 discharge confirmation (2026-08-18, coordinator):_ every
+criterion of fork/w069/plan.md §7 is met and **W-069 is DISCHARGED**.
+The final evidence chain: W69a mechanism + probes (gates green, two
+APPROVE reviews, hardening landed); W69h multi-unit runner capability
+(byte-identical rerun arbiter, execution coverage committed); W69b
+pointer-rep arm + the restored runtime `let g` acceptance split + BOTH
+conformance programs. The floor landed at EXACTLY **95 PASS / 0 FAIL /
+29 SKIP over 124** twice (scoreboard 889760a at the discharge-arbiter
+run; re-arbitrated green at the final round), moving only by the two
+W69b programs — including the fork's FIRST multi-unit directory
+program. The acceptance split is green in check AND lower goldens with
+real pins (354 filled lower lines: `_Cg.Main` object-rep global, ctor
+memcpy, external-decl import side, folded-constant match path, zero
+`_Cgc` symbols); autoupdate at no-commit fixpoint (32149312735); gate
+GREEN (32149634688). Three honest defect rounds rode the close: the
+plan-sketch copy error (W-075 minted), the pre-existing AcquireValue
+folded-ref crash (fixed, fenced), and the aggregate-Copy-rep
+consumption FATAL (P-10 narrowed to declaration-only, residue
+recorded). Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

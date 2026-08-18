@@ -11,6 +11,7 @@
 #include "toolchain/sem_ir/expr_info.h"
 #include "toolchain/sem_ir/file.h"
 #include "toolchain/sem_ir/generic.h"
+#include "toolchain/sem_ir/import_ir.h"
 
 namespace Carbon::Lower {
 
@@ -32,6 +33,10 @@ FunctionContext::FunctionContext(
       vlog_stream_(vlog_stream),
       function_fingerprint_(function_fingerprint) {
   function_->setSubprogram(di_subprogram_);
+  is_global_ctor_ =
+      &file_context == &specific_file_context &&
+      specific_sem_ir_function_id_.has_value() &&
+      specific_sem_ir_function_id_ == file_context.sem_ir().global_ctor_id();
 }
 
 auto FunctionContext::GetBlock(SemIR::InstBlockId block_id)
@@ -146,6 +151,14 @@ auto FunctionContext::LowerInst(SemIR::InstId inst_id) -> void {
   }
 
   builder_.getInserter().SetCurrentInstId(SemIR::InstId::None);
+
+  if (is_global_ctor_) {
+    // If this instruction computed the initializer of one or more promoted
+    // file-scope `let` bindings, store their bound values into the backing
+    // globals now, so later initializers in the ctor (and everything that
+    // runs after it) observe the stored values (W-069).
+    file_context_->EmitGlobalLetStores(*this, inst_id);
+  }
 }
 
 auto FunctionContext::GetBlockArg(SemIR::InstBlockId block_id, TypeInFile type)
@@ -185,6 +198,15 @@ auto FunctionContext::GetValue(SemIR::InstId inst_id) -> llvm::Value* {
   auto [const_ir, const_id] = GetConstantValueInSpecific(
       specific_sem_ir(), specific_id_, sem_ir(), inst_id);
   CARBON_CHECK(const_ir == &sem_ir() || const_ir == &specific_sem_ir());
+  if (!const_id.is_concrete()) {
+    // A file-scope `let` bound to a runtime value has no constant and no
+    // `VarStorage` (W-069). Serve the reference from the promoted backing
+    // global — or fail loudly for the shapes the promotion pre-pass declined
+    // — before the missing-value check below.
+    if (auto* value = TryEmitGlobalLetValue(inst_id)) {
+      return value;
+    }
+  }
   CARBON_CHECK(const_id.is_concrete(),
                "Missing value: {0} {1} in {2} has non-concrete value {3}",
                inst_id, sem_ir().insts().Get(inst_id), specific_id_, const_id);
@@ -194,6 +216,105 @@ auto FunctionContext::GetValue(SemIR::InstId inst_id) -> llvm::Value* {
       const_id, const_ir == &sem_ir() ? inst_id : SemIR::InstId::None);
   AddGlobalToCurrentFingerprint(global);
   return global;
+}
+
+auto FunctionContext::TryEmitGlobalLetValue(SemIR::InstId inst_id)
+    -> llvm::Value* {
+  const SemIR::File* let_ir = &sem_ir();
+  FileContext* let_context = file_context_;
+  const auto* binding = file_context_->LookupGlobalLetBinding(inst_id);
+  if (!binding) {
+    // A cross-file reference hands us the importer's instruction. Resolve it
+    // to the defining file's binding with `GetCanonicalFileAndInstId`, which
+    // chases import chains and peeks through `export` re-exports, so an
+    // A-defines / B-re-exports / main-imports-B chain lands on A's binding
+    // and mangles against A's IR.
+    if (!sem_ir().insts().GetImportSource(inst_id).has_value()) {
+      return nullptr;
+    }
+    auto [canonical_ir, canonical_inst_id] =
+        SemIR::GetCanonicalFileAndInstId(&sem_ir(), inst_id);
+    if (canonical_ir == &sem_ir()) {
+      return nullptr;
+    }
+    let_context = &GetFileContext(canonical_ir);
+    binding = let_context->LookupGlobalLetBinding(canonical_inst_id);
+    if (!binding) {
+      return nullptr;
+    }
+    let_ir = canonical_ir;
+  }
+
+  switch (binding->disposition) {
+    case GlobalLetBinding::Disposition::NoStorage: {
+      // The type's value representation is empty: no storage was minted;
+      // produce the empty value.
+      return llvm::Constant::getNullValue(
+          GetType({.file = let_ir, .type_id = binding->type_id}));
+    }
+    case GlobalLetBinding::Disposition::Promote: {
+      auto* global = let_context->GetOrCreateGlobalLetVariable(*binding);
+      // Include the global in the fingerprint so specifics reading different
+      // promoted bindings are never coalesced.
+      AddGlobalToCurrentFingerprint(global);
+      return LoadObject({.file = let_ir, .type_id = binding->type_id}, global);
+    }
+    case GlobalLetBinding::Disposition::PromoteObject: {
+      auto* global = let_context->GetOrCreateGlobalLetVariable(*binding);
+      // Include the global in the fingerprint so specifics reading different
+      // promoted bindings are never coalesced.
+      AddGlobalToCurrentFingerprint(global);
+      // The type's value representation is a pointer to the object: the
+      // backing global holds the object representation, so its address IS
+      // the value representation — the same shape `AcquireValue`'s pointer
+      // arm produces (handle_expr_category.cpp) and `FileContext::
+      // GetConstant`'s pointer-value-rep arm serves for constants. No
+      // language-level address is exposed: SemIR is untouched, so no
+      // address-of or mutation path exists for the binding.
+      return global;
+    }
+    case GlobalLetBinding::Disposition::Declined: {
+      CARBON_FATAL(
+          "semantics TODO: lowering a reference to the file-scope `let` "
+          "binding {0}, which the promotion pre-pass declined (a "
+          "non-object-copy or custom value representation, or an unmappable "
+          "initializer shape), is not supported yet (W-069)",
+          let_ir->insts().Get(binding->binding_id));
+    }
+  }
+  CARBON_FATAL("Unknown disposition");
+}
+
+auto FunctionContext::GetValueServesConstantValueRep(SemIR::InstId inst_id)
+    -> bool {
+  // Mirror `GetValue`'s resolution order exactly; each branch answers for
+  // what that lookup would serve.
+  if (SemIR::IsSingletonInstId(inst_id)) {
+    // Builtins are served as the empty type value, not an address.
+    return true;
+  }
+  if (HasLocal(inst_id) || file_context_->global_variables().Lookup(inst_id)) {
+    // Lowered instructions and global variables are served directly: for a
+    // reference expression, that is the referenced object's address.
+    return false;
+  }
+  auto [const_ir, const_id] = GetConstantValueInSpecific(
+      specific_sem_ir(), specific_id_, sem_ir(), inst_id);
+  if (!const_id.is_concrete()) {
+    // The promoted file-scope `let` path (W-069) serves an address-derived
+    // value per its disposition, never a folded constant.
+    return false;
+  }
+  // The remaining lookups route to `FileContext::GetConstant`, which returns
+  // an address for constant reference expressions and for pointer value
+  // representations, and the constant's value representation otherwise.
+  auto const_inst_id = const_ir->constant_values().GetInstId(const_id);
+  if (SemIR::IsRefCategory(SemIR::GetExprCategory(*const_ir, const_inst_id))) {
+    return false;
+  }
+  auto value_rep = SemIR::ValueRepr::ForType(
+      *const_ir, const_ir->insts().Get(const_inst_id).type_id());
+  return value_rep.kind != SemIR::ValueRepr::Pointer;
 }
 
 auto FunctionContext::MakeSyntheticBlock() -> llvm::BasicBlock* {
@@ -394,13 +515,18 @@ auto FunctionContext::CopyValue(TypeInFile type, SemIR::InstId source_id,
 
 auto FunctionContext::CopyObject(TypeInFile type, SemIR::InstId source_id,
                                  SemIR::InstId dest_id) -> void {
+  CopyObject(type, GetValue(source_id), GetValue(dest_id));
+}
+
+auto FunctionContext::CopyObject(TypeInFile type, llvm::Value* source_addr,
+                                 llvm::Value* dest_addr) -> void {
   const auto& layout = llvm_module().getDataLayout();
   auto* llvm_type = GetType(type);
   auto align = GetAlignment(type);
 
   // TODO: Attach !tbaa.struct metadata indicating which portions of the
   // type we actually need to copy and which are padding.
-  builder().CreateMemCpy(GetValue(dest_id), align, GetValue(source_id), align,
+  builder().CreateMemCpy(dest_addr, align, source_addr, align,
                          layout.getTypeAllocSize(llvm_type));
 }
 

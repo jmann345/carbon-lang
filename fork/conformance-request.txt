@@ -1,1 +1,1 @@
-2026-08-18T10:02Z W-068 conformance (expected floor EXACTLY 93/0/29 over 122, moving only by control_flow/match_single_alternative PASS)
+2026-08-18T21:20Z W69b final conformance (floor must be EXACTLY 95/0/29 over 124 — the discharge re-arbitration)

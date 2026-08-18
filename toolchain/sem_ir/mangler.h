@@ -44,6 +44,16 @@ class Mangler {
   // given internal linkage.
   auto MangleGlobalVariable(SemIR::InstId pattern_id) -> std::string;
 
+  // Produce a deterministically unique mangled name for the backing global of
+  // a file-scope `let` binding whose bound value is a runtime value, or an
+  // empty string if the binding doesn't declare an identifier name, in which
+  // case it can't be referenced from another file. `binding_inst_id` must be
+  // an `AnyBinding` instruction; it is also the fingerprint input for
+  // private-to-library names, so the defining and importing files — which
+  // both mangle the defining file's binding instruction — produce the same
+  // name.
+  auto MangleGlobalLetBinding(SemIR::InstId binding_inst_id) -> std::string;
+
   // Produce a deterministically unique mangled name for the specified class's
   // vtable.
   auto MangleVTable(const SemIR::Class& class_info,

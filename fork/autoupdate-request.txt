@@ -1,1 +1,1 @@
-2026-08-18T08:05Z W-067 review-round goldens (trailing-position falsifier subfile + midlist recovery fail file) red-first pass 1
+2026-08-18T09:25Z W-067 review-round regen pass 2 (R26 fixpoint)

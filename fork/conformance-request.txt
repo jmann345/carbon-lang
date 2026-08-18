@@ -1,1 +1,1 @@
-2026-08-18T09:30Z W72a conformance (floor must be UNCHANGED: 90/0/29 over 119)
+2026-08-18T04:05Z W72b landing: drill flip reverted + review-round fixes (i64 widened seeds); DISCHARGE RUN — target floor 91/0/29 over 120; W-072 discharges iff question_generic_thread_diff is PASS on this run's scoreboard

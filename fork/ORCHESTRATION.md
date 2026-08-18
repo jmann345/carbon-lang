@@ -10,8 +10,23 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-18 (post-PR #26: W-067 — guarded `default`
-clauses, DISCHARGED)._ TWENTY-SIX PRs. `default if (E) => ...` is now a
+_Last updated: 2026-08-18 (post-PR #27: W-068 — match over small
+choices, DISCHARGED)._ TWENTY-SEVEN PRs. Single-alternative and empty
+choices now pass the match scrutinee gate: the discriminant repr walk
+factored into a shared query (`IsMatchableChoiceType` — integer OR
+empty-tuple discriminant, anything else fails safe), constant-true
+dispatch (the W-067 shape) where no integer discriminant exists, real
+payload extraction (lower golden pins `br i1 true`, no icmp), and the
+S2e exhaustiveness machinery needed zero arithmetic change. Empty
+choices = lane (b): type admission only (no zero-arm grammar minted —
+design-grounded, recorded loudly with an amended-at marker after a
+review catch). Four fail_todo pins flipped, each verified sanctioned
+(R16a). Floor **93/0/29 over 122**, 43/56 bullets. Reviews: A APPROVE
+zero should-fixes; B no blockers. One-pass CI (fast compile →
+autoupdate +1311 with no-commit fixpoint → gate → conformance, exact
+floor). Hook-environment quirk recorded (distro clang-format 18.1.3 vs
+CI pin 21.1.8). Next: the W-069 plan round (cross-file runtime `let`
+lowering — upstream gap, V-3a check first)._ TWENTY-SIX PRs. `default if (E) => ...` is now a
 working fork feature under the design's own license
 (pattern_matching.md Guards; p002188): shared parse guard production
 with default+if lookahead (arms after a guarded default are reachable),
@@ -196,16 +211,16 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-92 PASS / 29 SKIP / 0 FAIL programs (121 total, 18 differential
+93 PASS / 29 SKIP / 0 FAIL programs (122 total, 18 differential
 C++-oracle pairs); **43/56 bullets green** (runner-side scoreboard at
-the PR #26 head; verified from fork/conformance/out/scoreboard.json —
+the PR #27 head; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first
 error-handling flip, now 4 programs deep incl. the W72b threading
 arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79
 at S3a → 80 at S3b → 81 at S3c → 83 at B1b
 (error_handling/control_flow_constructs flip +
 question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a
-→ 88 F8b → 89 F8c → 90 F8d → 91 W72b → 92 W-067. The scoreboard
+→ 88 F8b → 89 F8c → 90 F8d → 91 W72b → 92 W-067 → 93 W-068. The scoreboard
 regenerates on the runner (`Fork: conformance suite`,
 fork/conformance-request.txt trigger).
 
@@ -227,13 +242,11 @@ fork/conformance-request.txt trigger).
 
 ### Next actions (dependency order)
 
-1.  W-068 (fewer-than-two-alternative choices: scrutinee-gate +
-    dispatch work; the S2e coverage machinery already handles the
-    exhaustiveness half); then the W-069 plan round (cross-file runtime
-    `let` lowering — an upstream gap, V-3a check first). W-066 (match
-    usefulness diagnostics) stays blocked on W-008; conformance depth
-    (differential pairs for flipped bullets lacking one) rides
-    alongside.
+1.  The W-069 plan round (cross-file runtime `let` lowering — an
+    upstream gap, V-3a check first; size M, plan round before
+    implementation). W-066 (match usefulness diagnostics) stays blocked
+    on W-008; conformance depth (differential pairs for flipped bullets
+    lacking one) rides alongside.
 2.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
     user's veto-digest response** (presented 2026-07-20, unanswered).
 3.  W5-S3p (prelude Result/Optional) stays GATED on the OPEN SF-9 fork

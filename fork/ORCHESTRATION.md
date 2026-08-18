@@ -10,8 +10,25 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-08-18 (post-PR #24: W72b — W-072 DISCHARGED)._
-TWENTY-FOUR PRs. The continue-THREADING runtime arbiter
+_Last updated: 2026-08-18 (post-PR #25: the W-073 sweep — W-073
+DISCHARGED)._ TWENTY-FIVE PRs. The two-regime sweep landed across the
+nine-file surface: seven non-final sites got scope-qualifying retext
+only (all four golden retexts line-count-preserving — runner autoupdate
+was a STRICT NO-OP, run 32097812689); the W72b pair (final impl) took
+the simplification (`return self.(Core.Try.Branch)();` replaces the
+deleted `Diverge` helper — re-arbitrated green at runtime by
+conformance run 32098017538, the first-ever lowering exercise of the
+collapsed recursive-call shape); error_handling.md got a dated
+fourth-round re-correction and its final sketches now use the recursive
+trailing return. Floor unchanged, EXACTLY 91/0/29 over 120, 43/56
+bullets. Review round: no code defects; blocker (arbiter run not armed
+by the landing commit — same class as the W72b round, recurrence noted)
+already resolved by the follow-up bump; bookkeeping fixes landed.
+Residue recorded not actioned: question_final.carbon,
+lower/question_generic_final.carbon, and fail_question_final.carbon
+still carry `Diverge` inside final impls (comment refresh rides any
+future touch). Next: conformance depth (W-066) + residues
+W-067/W-068/W-069._ TWENTY-FOUR PRs. The continue-THREADING runtime arbiter
 (question_generic_thread_diff: `final impl forall` + load-bearing
 Combine chaining, i32 AND i64 with high-half-significant wide seeds,
 C++ template oracle) went green at exactly the target floor —
@@ -195,10 +212,10 @@ fork/conformance-request.txt trigger).
 
 ### Next actions (dependency order)
 
-1.  W-073 sweep (UNBLOCKED at PR #24): retire/retext the Diverge
-    trailing-return idiom + the "does not type-collapse" comment family
-    for FINAL impls — nine enumerated files (grown at the W72b review
-    round), gated on the W72b arbiter that is now green.
+1.  Conformance depth (W-066 match usefulness diagnostics; differential
+    pairs for flipped bullets lacking one) + residues W-067
+    (default-clause guards), W-068 (fewer-than-two-alternative
+    choices), W-069 (cross-file runtime let).
 2.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
     user's veto-digest response** (presented 2026-07-20, unanswered).
 3.  W5-S3p (prelude Result/Optional) stays GATED on the OPEN SF-9 fork

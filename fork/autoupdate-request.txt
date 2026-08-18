@@ -1,1 +1,1 @@
-2026-08-18T18:30Z W69b post-fix regen pass 1 (MakeRuntime constructor-call vehicle; import_choice must now FILL real STDOUT pins; declared churn incl. the three adjudicated choice goldens)
+2026-08-18T20:01Z W69b crash-round regen pass 1

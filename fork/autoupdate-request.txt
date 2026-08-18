@@ -1,1 +1,1 @@
-2026-08-18T16:45Z W69b regen pass 3 (pass-2 was convergent loc renumbering; this must be the no-commit fixpoint — oscillation = stop)
+2026-08-18T18:30Z W69b post-fix regen pass 1 (MakeRuntime constructor-call vehicle; import_choice must now FILL real STDOUT pins; declared churn incl. the three adjudicated choice goldens)

@@ -251,3 +251,41 @@ SF-6 triviality fence leaves the class-copy question exactly where
 upstream left it. The three adopt-unless-vetoed calls stand as written.
 All veto-able by way of the PR digest. One plan review next; on fold +
 sign-off, W75a proceeds.
+
+## Review-round amendments + sign-off (2026-08-18, coordinator)
+
+One adversarial plan review: **APPROVE with amendments** — the V-3a
+chain verified verbatim end-to-end (incl. the counter-evidence sweep:
+nothing fences choices from copyability; the Copy TODO's designed slot
+IS toolchain-side synthesis; prelude Copy is already toolchain-managed
+per-kind). Folded:
+
+1.  **SF-1 (factual correction, binding):** §2's dispatch-order sentence
+    was FALSE — the custom-witness dispatch PRECEDES candidate-impl
+    iteration at both sites (impl_lookup.cpp:1286 "Only consider
+    candidates when a custom witness didn't apply"); "no landed lookup
+    changes" holds only because no landed test declares a Copy impl
+    candidate for a choice (all landed user Core.Copy impls are on
+    classes, gated out by `is_choice`). DECLARED CONSEQUENCE, digest-
+    grade: a user out-of-line `impl <choice> as Core.Copy` (sanctioned
+    by sum_types.md:95-98) is SHADOWED by the synthesized witness —
+    the same posture Destroy already has for choices. W75a adds a probe
+    subfile pinning the shadowing.
+2.  **SF-2 (contract record):** the synthesized witness bypasses
+    source-builtin validation by way of SetCoreWitness, and the new lower arm
+    widens PrimitiveCopy's de-facto contract past its own
+    PrimitiveCopyable validator (builtin_function_kind.cpp:243-249) —
+    named here as the seam an upstream merge could tighten; the R-5
+    yield rule covers it.
+3.  Nits folded: the lower arm carries the trailing
+    `SetLocal(inst_id, GetValue(arg_ids[1]))` per the
+    CppStdInitializerListMake precedent; §5 names the
+    symbolic→monomorphization BuildPrimitiveCopyWitness link as the
+    least-exercised path (P-1 pins it); "R16a" reads R16 clause (a);
+    the error_handling.md clause is :343-349; the parent-scope choice
+    (interface scope, diverging from the enum precedent's GetClassScope)
+    is a mangling-hint choice, stated.
+
+**This plan is APPROVED for implementation** (one slice, W75a). Digest
+carries: lane (b) adoption; the shadowing consequence; the contract
+widening; the tripwire flip; the roundtrip restoration. Veto-able.

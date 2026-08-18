@@ -754,6 +754,40 @@ very lines carrying `final` without connecting the modifier to the
 behavior. The loop fix is rulebook rule R27 (code-to-sketch spelling diff
 before landing), staged in W72a. Veto-able.
 
+_W72a fix-round addenda (2026-08-18, the R11 fixer — dated follow-up lines
+in the W-072 area per correctness F-3):_
+
+-   **P-9 observed outcome: the falsification branch FIRED; W-073 MINTED.**
+    The 3d261c0 regen showed fail_question_final.carbon's
+    fail_inbody_recursive_branch split compiling CLEAN — under `final`, the
+    in-body interface-recursive `return self.(Core.Try.Branch)();`
+    type-collapses TOO, the opposite of the plan §2.2 in-body-unchanged
+    prediction (the completed definition's body no longer routes through
+    the declaring_impl_decls intercept, impl_lookup.cpp:949-963
+    `GetImplSelfWitnessInsideImplDecl`, so the ordinary candidate path
+    applies the final-impl rewrite). Processed per the plan §3 P-9 minting
+    rule, which the implementation round left unexecuted (both adversarial
+    reviews' converged BLOCKER): the split MOVED to question_final.carbon
+    as the positive inbody_recursive_branch.carbon (zero diagnostics is
+    the pin; no hand CHECK lines), and **W-073 is the minted item**
+    (fork/inventory/work-items.json) — retext the eight-file "does not
+    type-collapse" comment family plus the b1 §2.6 / B2a-era
+    dated-correction texts FOR FINAL IMPLS (non-final sites stay valid)
+    and EVALUATE retiring the `Diverge` trailing-return idiom in
+    final-spelled impls, swept once W72b's runtime arbiter confirms.
+-   **§2.4 contingency ladder: RESOLVED-CLEAN (strictness M-1).**
+    P-1/P-2/P-3/P-8 all landed POSITIVE on the 3d261c0 regen
+    (question_final.carbon's thread/mixed/lib+use splits; lower
+    question_generic_final.carbon's instantiated threading CFG) — ladder
+    step 1 taken; steps 2 (narrow machinery defect) and 3 (lane blocked)
+    were never invoked and are closed for W72a.
+-   **Deviation-2 adjudication (one line):** the prek doc-style hook's
+    auto-fixes of pre-existing fork docs LAND per the F8a convention
+    (hook-clean tree); the 6a635cd housekeeping commit is the standing
+    resolution, superseding the W72a implementer's in-commit revert.
+
+Veto-able.
+
 ### F-007: Unions - **Native `union` declaration** (2026-07-19)
 
 Rust-shaped safety surface (writes safe, reads defined byte-reinterpretation,

@@ -11,14 +11,17 @@
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/operators/fail_question_final.carbon
 
 // The W-072 dissolution probes, negative half (fork/w072/plan.md §3, W72a;
-// probes P-6, P-7, and the P-9 observation): the guardrails around the
-// `final impl` lane. P-6 pins that a disagreeing narrower impl after the
-// final impl is DIAGNOSED, never silently accepted (risk R-3); P-7 pins
-// the same-file requirement for a choice defined elsewhere; P-9 observes
-// the in-body interface-recursive call, predicted to stay a conversion
-// error under `final` (plan §2.2, correctness F-2). STDERR pins are
-// hand-written best-effort per the plan's P-6 note — the runner regen is
-// the arbiter of the exact diagnostic family and spans.
+// probes P-6 and P-7): the guardrails around the `final impl` lane. P-6
+// pins that a disagreeing narrower impl after the final impl is DIAGNOSED,
+// never silently accepted (risk R-3); P-7 pins the same-file requirement
+// for a choice defined elsewhere. STDERR pins are hand-written best-effort
+// per the plan's P-6 note — the runner regen is the arbiter of the exact
+// diagnostic family and spans. The P-9 observation split
+// (fail_inbody_recursive_branch.carbon) MOVED OUT at the W72a fix round
+// (2026-08-18): the 3d261c0 regen showed it compiling CLEAN — the in-body
+// recursive Branch call type-collapses under `final` after all — so it
+// lives in question_final.carbon as inbody_recursive_branch.carbon now
+// (the P-9 minting rule fired; the minted item is W-073).
 
 // --- fail_specialize_after_final.carbon
 library "[[@TEST_NAME]]";
@@ -54,41 +57,31 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // Silent acceptance is the falsifier (halt per risk R-3). Diagnostic
 // pinned best-effort from the final-overlap family
 // (impl/lookup/impl_overlap.carbon's fail_final_overlaps_later_non_final
-// precedent); the poisoned-query family
-// (specialization_poison.carbon's PoisonedImplLookupConcreteResult) is
-// the plan's named alternative — repin from the CI run if it differs.
+// precedent). The disagreeing `.ContinueType` is `bool`, NOT `()` (P-6
+// hygiene swap, W72a fix round 2026-08-18): a unit continue type drags in
+// the W-070 unit-payload rejection (`ChoicePayloadNotTrivialInSpecific`
+// on `Core.ControlFlow((), i32)`), coupling this overlap pin to an
+// unrelated wart — the 3d261c0 regen showed exactly that coupling, so
+// the incidental IncompleteType/ChoicePayload pins are dropped here and
+// the regen re-reconciles the overlap family alone.
+// CHECK:STDERR: fail_specialize_after_final.carbon:[[@LINE+7]]:1: error: `impl` will never be used [ImplFinalOverlapsNonFinal]
+// CHECK:STDERR: impl MyResult(i32, i32) as Core.Try
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_specialize_after_final.carbon:[[@LINE-29]]:1: note: `final impl` declared here would always be used instead [ImplFinalOverlapsNonFinalNote]
+// CHECK:STDERR: final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 impl MyResult(i32, i32) as Core.Try
-    where .ContinueType = () and .BreakType = i32 {
-  // CHECK:STDERR: fail_specialize_after_final.carbon:[[@LINE+7]]:19: error: function returns incomplete type `Core.ControlFlow((), i32)` [IncompleteTypeInFunctionReturnType]
-  // CHECK:STDERR:   fn Branch(self) -> Core.ControlFlow((), i32) {
-  // CHECK:STDERR:                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: {{.*}}/prelude/try.carbon:21:1: note: choice alternative payload type `()` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
-  // CHECK:STDERR: choice ControlFlow(C: type, B: type) {
-  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
-  fn Branch(self) -> Core.ControlFlow((), i32) {
+    where .ContinueType = bool and .BreakType = i32 {
+  fn Branch(self) -> Core.ControlFlow(bool, i32) {
     match (self) {
       // The disagreeing continue type: payloads route to `Break` so both
-      // bindings are used without conjuring an `i32` continue value.
-      // CHECK:STDERR: fail_specialize_after_final.carbon:[[@LINE+14]]:36: error: unable to monomorphize specific `Core.Break(i32)` [ResolvingSpecificHere]
-      // CHECK:STDERR:       case .Ok(v: i32) => { return Core.ControlFlow((), i32).Break(v); }
-      // CHECK:STDERR:                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      // CHECK:STDERR: {{.*}}/prelude/try.carbon:21:1: note: choice alternative payload type `()` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
-      // CHECK:STDERR: choice ControlFlow(C: type, B: type) {
-      // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      // CHECK:STDERR:
-      // CHECK:STDERR: fail_specialize_after_final.carbon:[[@LINE-20]]:1: error: `impl` will never be used [ImplFinalOverlapsNonFinal]
-      // CHECK:STDERR: impl MyResult(i32, i32) as Core.Try
-      // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      // CHECK:STDERR: fail_specialize_after_final.carbon:[[@LINE-45]]:1: note: `final impl` declared here would always be used instead [ImplFinalOverlapsNonFinalNote]
-      // CHECK:STDERR: final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
-      // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      // CHECK:STDERR:
-      case .Ok(v: i32) => { return Core.ControlFlow((), i32).Break(v); }
-      case .Err(e: i32) => { return Core.ControlFlow((), i32).Break(e); }
+      // bindings are used without conjuring a `bool` continue value.
+      case .Ok(v: i32) => { return Core.ControlFlow(bool, i32).Break(v); }
+      case .Err(e: i32) => { return Core.ControlFlow(bool, i32).Break(e); }
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6).
-    return Diverge(Core.ControlFlow((), i32));
+    return Diverge(Core.ControlFlow(bool, i32));
   }
   fn FromBreak(e: i32) -> Self { return MyResult(i32, i32).Err(e); }
 }
@@ -132,42 +125,6 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
     }
     // Unreachable-terminator idiom (fork/b1/plan.md §2.6).
     return Diverge(Core.ControlFlow(T, E));
-  }
-  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
-}
-
-// --- fail_inbody_recursive_branch.carbon
-library "[[@TEST_NAME]]";
-
-choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
-}
-
-// P-9 (OBSERVATION probe, fork/w072/plan.md §3 — no gate): does the
-// in-body interface-recursive call type-collapse under `final`?
-// Prediction: NO — in-body lookups already treated the being-defined impl
-// as final (impl_lookup.cpp `TreatImplAsFinal` via `is_being_defined`),
-// and the in-body path (`GetImplSelfWitnessInsideImplDecl`) skips the
-// deduced-specific substitution (plan §2.2, correctness F-2), so B1b's
-// recorded non-collapse — the reason the `Diverge` idiom exists
-// (fork/b1/plan.md §2.6) — stands, and the trailing interface-recursive
-// return below stays a conversion error. MINTING RULE (plan §3, P-9 row):
-// if the regen instead shows collapse (this subfile compiling clean),
-// that FALSIFIES the eight-file "does not type-collapse" comment family
-// and a follow-up work item MUST be minted to retext the family and
-// revisit the idiom — the idiom is NOT revised in this plan either way.
-final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
-    where .ContinueType = T and .BreakType = E {
-  fn Branch(self) -> Core.ControlFlow(T, E) {
-    match (self) {
-      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
-      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
-    }
-    // Best-effort pin (the fail_nonfinal_specialized_symbolic_rewrite
-    // ConversionFailure shape); the regen is the arbiter of the exact
-    // projection spelling and span.
-    return self.(Core.Try.Branch)();
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
 }

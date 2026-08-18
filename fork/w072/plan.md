@@ -95,6 +95,36 @@ review, 2026-08-18" at each touched site).
     the plan's whole horizon (no later slice of this plan touches the pair's
     program semantics). Touched: §3 W72b.
 
+## Amendment (2026-08-18, W72a fix round — post-regen outcomes)
+
+-   **P-9 outcome: the falsification branch FIRED.** The 3d261c0 regen
+    showed the in-body probe — `return self.(Core.Try.Branch)();` under the
+    final impl — compiling CLEAN: the in-body recursive call type-collapses
+    under `final` TOO. The §2.2 in-body-unchanged account (correctness
+    F-2's defusal) is empirically FALSIFIED in the collapse direction: the
+    completed definition's body does not route through the
+    `GetImplSelfWitnessInsideImplDecl` intercept (impl_lookup.cpp:949-963 —
+    it answers only while the impl decl is still being constructed, by way of
+    declaring_impl_decls), so the ordinary candidate path applies the
+    final-impl rewrite. Processed per the §3 P-9 row's minting rule: the
+    split moved OUT of fail_question_final.carbon into
+    question_final.carbon as the positive inbody_recursive_branch.carbon
+    (zero diagnostics is the pin), and **W-073 is the minted follow-up**
+    (fork/inventory/work-items.json) — the eight-file "does not
+    type-collapse" family + b1 §2.6 dated-correction retext, and the
+    EVALUATION of retiring the `Diverge` idiom in final-spelled impls,
+    gated on W72b's runtime arbiter. Non-final sites stay valid; the §0.3
+    "idiom is not revised in this plan" boundary holds — the revision is
+    W-073's, not W72a's.
+-   **§2.4 contingency ladder: RESOLVED-CLEAN.** P-1/P-2/P-3/P-8 landed
+    positive on the 3d261c0 regen; step 1 taken, steps 2/3 never invoked
+    and closed for W72a (decision-log follow-up lines carry the record).
+-   **P-6 hygiene (both reviews' minor):** the disagreeing impl's
+    `.ContinueType` is swapped `()` → `bool` so the overlap pin decouples
+    from the W-070 unit-payload wart; the incidental
+    IncompleteType/ChoicePayload pins drop and the next regen reconciles
+    the overlap family alone.
+
 ---
 
 ## 0. Scope classification — the upstream-alignment verdict (the centerpiece)

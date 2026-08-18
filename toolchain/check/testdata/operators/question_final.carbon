@@ -11,7 +11,8 @@
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/operators/question_final.carbon
 
 // The W-072 dissolution probes, positive half (fork/w072/plan.md §3, W72a;
-// probes P-1..P-3 and P-8): under the ratified doc's own `final impl`
+// probes P-1..P-3, P-8, and the P-9 observation): under the ratified doc's
+// own `final impl`
 // spelling (docs/design/error_handling.md `Try` impl sketches;
 // docs/design/generics/details.md, "`final` impl declarations"), impl
 // lookup under a SYMBOLIC query may apply the impl's `where` rewrites
@@ -21,10 +22,13 @@
 // (specialization soundness; the permanent negative pins are
 // question.carbon's generic.carbon subfile and upstream's
 // impl/lookup/specialization_with_symbolic_rewrite.carbon). Impl bodies
-// keep the match-reconstruct + `Diverge` idiom (fork/b1/plan.md §2.6): the
-// in-body path is NOT expected to change under `final` (plan §2.2,
-// correctness F-2); the in-body observation probe is
-// fail_question_final.carbon's fail_inbody_recursive_branch.carbon.
+// keep the match-reconstruct + `Diverge` idiom (fork/b1/plan.md §2.6) for
+// now: the P-9 observation probe — the inbody_recursive_branch.carbon
+// split below, MOVED here from fail_question_final.carbon at the W72a fix
+// round (2026-08-18) — showed the in-body recursive Branch call
+// type-collapsing under `final` TOO, falsifying the plan §2.2
+// in-body-unchanged account; retiring the idiom in final-spelled impls is
+// W-073's sweep to EVALUATE (after W72b's runtime arbiter confirms).
 
 // --- thread.carbon
 library "[[@TEST_NAME]]";
@@ -52,11 +56,11 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-    // Unreachable-terminator idiom (fork/b1/plan.md §2.6): in-body
-    // lookups already treated the being-defined impl as final
-    // (impl_lookup.cpp `TreatImplAsFinal`), so the B1b in-body
-    // non-collapse is expected unchanged by the `final` modifier — the
-    // observation probe lives in fail_question_final.carbon.
+    // Unreachable-terminator idiom (fork/b1/plan.md §2.6), retained
+    // pending W-073: the P-9 observation (this file's
+    // inbody_recursive_branch.carbon split) showed the in-body recursive
+    // Branch call type-collapsing under `final` — the W-073 sweep
+    // evaluates retiring `Diverge` here, after W72b's runtime arbiter.
     return Diverge(Core.ControlFlow(T, E));
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
@@ -174,6 +178,49 @@ fn ThreadImported[T: type, E: type](mr: MyResult(T, E)) -> MyResult(T, E) {
   return MyResult(T, E).Ok(v);
 }
 //@dump-sem-ir-end
+
+// --- inbody_recursive_branch.carbon
+library "[[@TEST_NAME]]";
+
+choice MyResult(T: type, E: type) {
+  Ok(v: T),
+  Err(e: E)
+}
+
+// P-9 (OBSERVATION probe, fork/w072/plan.md §3 — no gate): OUTCOME
+// RECORDED at the W72a fix round (2026-08-18). This split is the former
+// fail_inbody_recursive_branch.carbon, MOVED out of
+// fail_question_final.carbon after the 3d261c0 regen showed it compiling
+// CLEAN: under `final`, the in-body interface-recursive `Branch` call
+// type-collapses TOO. The prediction (in-body unchanged; plan §2.2,
+// correctness F-2's defusal) was empirically FALSIFIED in the collapse
+// direction — the completed definition's body no longer routes through
+// the declaring_impl_decls intercept (impl_lookup.cpp:949-963,
+// `GetImplSelfWitnessInsideImplDecl`, which answers only while the impl
+// decl is still being constructed), so the ordinary candidate path
+// applies the final-impl rewrite and the recursive call's carrier
+// reduces to `Core.ControlFlow(T, E)`. MINTING RULE (plan §3, P-9 row):
+// FIRED — the clean compile falsifies the eight-file "does not
+// type-collapse" comment family FOR FINAL IMPLS (non-final sites stay
+// valid); the minted follow-up is W-073
+// (fork/inventory/work-items.json): retext the family and EVALUATE
+// retiring the `Diverge` trailing-return idiom in final-spelled impls,
+// once W72b's runtime arbiter confirms. Deliberately NO hand CHECK
+// lines: zero diagnostics IS the pin — any diagnostic reappearing here
+// re-fires the probe's original falsifier.
+final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
+    where .ContinueType = T and .BreakType = E {
+  fn Branch(self) -> Core.ControlFlow(T, E) {
+    match (self) {
+      case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
+      case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
+    }
+    // The P-9 site: formerly a pinned ConversionFailure; under `final`
+    // the recursive call's projections reduce and this type-checks.
+    return self.(Core.Try.Branch)();
+  }
+  fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
+}
 
 // CHECK:STDOUT: --- thread.carbon
 // CHECK:STDOUT:

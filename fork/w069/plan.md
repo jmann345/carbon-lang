@@ -1,0 +1,665 @@
+<!--
+Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+Exceptions. See /LICENSE for license information.
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
+# W-069 plan: cross-file references to file-scope runtime `let` bindings — exported backing storage in lowering
+
+Status: PLAN (process step 6 — awaiting the two adversarial plan reviews and
+the coordinator's answers to §8 before any implementation).
+Drafted 2026-08-18.
+Baseline: branch trunk 2f8876c (post-PR #27, W-068 discharged; conformance
+**93 PASS / 0 FAIL / 29 SKIP over 122 programs**,
+fork/conformance/out/scoreboard.json generated 2026-08-18T09:53Z).
+Ledger authority: fork/inventory/work-items.json W-069 (half (b) —
+constant-bound lets — LANDED at W5-S3b via import_ref.cpp's
+TryResolveInstCanonical non-constant-binding branch; this plan is the residue,
+half (a): a `let` bound to a RUNTIME value has no exported backing storage).
+Design authority: docs/design/values.md (expression categories, value
+bindings, value-representation license), docs/design/pattern_matching.md;
+upstream's own TODO breadcrumbs at
+toolchain/lower/testdata/var/import.carbon:47 and
+toolchain/lower/handle.cpp:220-224. Precedent format: fork/w072/plan.md and
+fork/b2/plan.md. NO implementation in this document — planning only. No local
+bazel: all verification rides the self-hosted runner CI (golden autoupdate to
+fixpoint per R26; conformance per R9). **Where this plan and any summary
+(ORCHESTRATION.md stamps, session notes, decision-log shorthand) disagree,
+the plan wins**; divergences discovered mid-slice are folded back here as
+dated amendments (the b1/w072 house pattern).
+
+---
+
+## 0. V-3a upstream-alignment check (gating, done first)
+
+### 0.1 The question
+
+Is a cross-file reference to a file-scope `let` bound to a runtime value
+(i) something upstream has DESIGNED semantics for, (ii) an
+acknowledged-but-unimplemented gap, or (iii) contradicted by design (e.g. a
+rule that a `let` binding's runtime backing is intentionally file-local)?
+
+### 0.2 The evidence, quoted
+
+**Upstream acknowledges the gap, in its own testdata and its own lowering
+code — twice:**
+
+1.  toolchain/lower/testdata/var/import.carbon:47, inside the
+    `import_tuple_pattern` subfile that imports
+    `let (x: i32, var y: i32) = (3, 4);`:
+
+    > `// TODO: Also test `x`. Right now, lowering a reference to an
+    > imported `let` asserts.`
+
+    The `var` halves of the same declaration (`y`, and `v`/`w`/`z`) are
+    tested and pass through exported `VarStorage` globals
+    (`@_Cy.Main = external global i32`, import.carbon:158,178). The `let`
+    half is skipped with a TODO — the definition of an acknowledged,
+    unimplemented case.
+
+2.  toolchain/lower/handle.cpp:220-224, the `NameRef` lowering:
+
+    > `// `GetValue` will fail on package-scope value bindings because they
+    > aren't constants, and they aren't global variables, so as a workaround
+    > we peek through bindings here to directly access the bound value.`
+    > `// TODO: Find a way of dealing with this that still works if the
+    > bound value isn't a global variable or constant either.`
+
+    Upstream names the exact missing case this plan covers: a package-scope
+    value binding whose bound value is neither a constant nor a global
+    variable — i.e. a runtime `let`. Both breadcrumbs live in
+    `toolchain/lower/`: upstream frames this as a LOWERING problem, not a
+    check/SemIR redesign.
+
+**The design does NOT contradict exported backing storage — it licenses the
+implementation to choose any backing, provided no address is exposed:**
+
+3.  docs/design/values.md:442-444 ("Value expressions"):
+
+    > "A value cannot be mutated, cannot have its address taken, and may
+    > not have storage at all or a stable address of storage."
+
+    So a `let` binding carries no addressable-storage guarantee — and
+    equally no storage PROHIBITION. Backing storage is an implementation
+    detail as long as the language surface never yields its address.
+
+4.  docs/design/values.md:456-460 (value acquisition semantics):
+
+    > "This allows immediately reading from the object's storage into a
+    > machine register or a copy if desired, but does not require that."
+
+    and values.md:141-144: acquisition "may do this by eagerly reading that
+    value into a machine register, lazily reading that value on-demand into
+    a machine register, or in some other way modeling that abstract value."
+    A named module-scope global holding the acquired value is squarely "some
+    other way of modeling that abstract value."
+
+5.  docs/design/values.md:495-497 (the as-if copy license):
+
+    > "Carbon's values are much closer to a `const &` in C++ with extra
+    > restrictions such as allowing copies under 'as-if' and preventing
+    > taking the address."
+
+    This licenses relocating/copying the bound value into dedicated exported
+    storage: values have no identity, so the copy is unobservable.
+
+6.  **Design silence on linkage.** Neither values.md nor
+    docs/design/code_and_name_organization/ says anything about the
+    cross-library storage, linkage, or symbol semantics of file-scope
+    bindings (`let` or otherwise); there is no variables/linkage design doc,
+    and no proposal was found specifying `let` storage semantics across
+    libraries. Where upstream is silent, V-3a permits creative fork design
+    at full speed.
+
+### 0.3 The verdict (veto-able)
+
+**Classification: acknowledged upstream gap (case ii) — full speed under
+V-3a.** No accepted proposal or design doc is contradicted by giving a
+file-scope runtime `let` exported backing storage AT THE LOWERING LEVEL,
+because (a) upstream's own TODOs name the missing lowering, and (b) the
+design explicitly denies programs any way to observe whether a value binding
+has storage (no address-of, no mutation, as-if copies). The one honestly
+fork-authored artifact is ABI-shaped, not semantics-shaped: the mechanism
+mints an EXPORTED SYMBOL (`_C<name>.<package>[.<fingerprint>]`) for storage
+upstream has never named. That is a **divergence-risk register entry**
+(reviewed at each weekly upstream merge, reversible — no SemIR or language
+surface depends on the symbol's existence), and a **V-2 veto-digest item**,
+NOT an SF-grade synchronous ask: there is no design fork here, only an
+implementation-strategy choice inside a space the design deliberately leaves
+to the implementation. Honest boundary, stated: if a future upstream design
+rules that value bindings' backing is file-local (none found today), the
+fork mechanism is a lowering-only branch whose removal churns nothing
+outside `toolchain/lower/` + the new goldens — see §6 R-5 for why the
+chosen lane makes that retreat cheap.
+
+---
+
+## 1. Current state (claims re-derived from the tree at 2f8876c)
+
+-   **What a file-scope `let` produces at check.** `HandleParseNode(...,
+    Parse::LetDeclId)` (toolchain/check/handle_let_and_var.cpp:325-363) runs
+    `LocalPatternMatch` on a `value_binding_pattern` — NO `VarStorage` is
+    created anywhere on the `let` path (contrast VariablePattern's
+    `GetOrAddVarStorage`, handle_let_and_var.cpp:116). The initializer is
+    checked inside the `__global_init` pseudo-function
+    (`StartPatternInitializer` → `context.global_init().Resume()`,
+    handle_let_and_var.cpp:184-197; `UseGlobalInit` is true exactly at
+    package scope or static class scope, toolchain/check/global_init.cpp:61-64),
+    so the binding's bound-value inst LIVES in `__global_init`'s body —
+    visible in check/testdata/let/import.carbon's golden:
+    `%.loc4_14: ... = converted @__global_init.%.loc4, ...`. For a
+    pointer-value-rep type the bound value is (a value acquisition of) a
+    materialized temporary; for a scalar it is the raw runtime inst (call
+    result etc.).
+-   **How references lower, and where they die.** `NameRef` lowering peeks
+    through the binding to `bind_name->value_id` (lower/handle.cpp:225-228)
+    and calls `FunctionContext::GetValue`
+    (lower/function_context.cpp:171-197): `locals_` → the file's
+    `global_variables()` → the constant path, which
+    `CARBON_CHECK(const_id.is_concrete(), "Missing value: ... has
+    non-concrete value {3}")` (function_context.cpp:188-190). A runtime
+    bound value is in no map and has constant value `runtime` — the CHECK
+    fires. This kills BOTH the cross-file case (the importer's `NameRef`
+    points at an `ImportRefLoaded` with `NotConstant`) AND the same-file
+    cross-function case (the bound value is a local of `__global_init`, not
+    of the referencing function). The gap was never choice-specific.
+-   **Why `var` works (the parity target).** `VarStorage` is itself a
+    constant instruction whose constant lowers to the named global
+    (`EmitAsConstant(..., SemIR::VarStorage)` → `BuildGlobalVariableDecl`,
+    lower/constant.cpp:371-379; `BuildNonCppGlobalVariableDecl` mangles via
+    `Mangler::MangleGlobalVariable`, lower/file_context.cpp:753-795,
+    sem_ir/mangler.cpp:299-324 — name + inverse-qualified scope +
+    private-to-library fingerprint). The importer reconstitutes the
+    `VarStorage` constant (check/testdata/var/global_decl_import.carbon:
+    `%Main.x: ref %struct_type.v = import_ref Main//decl, x, loaded
+    [concrete = %x.var]`), its `name_ref` is REF-category so check inserts
+    value acquisition at each use, and lowering emits
+    `@_Cv.Main = external global ...` + loads
+    (lower/testdata/var/import.carbon:84-90). Definitions get initializers
+    in `LowerGlobalVariables` (file_context.cpp:285-310) and the runtime
+    stores run in `_C__global_init` registered via `llvm.global_ctors`
+    (file_context.cpp:134-178) — **file-scope runtime initialization
+    already exists and runs**; §5's init-order contingency starts from
+    parity, not from zero.
+-   **Half (b), already landed (the residue boundary).**
+    import_ref.cpp:4479-4506: a non-constant imported inst must be an
+    `AnyBinding`; if the BOUND value's constant is importable the binding
+    resolves to it ("a file-scope `let` can bind a constant initializer...
+    Resolve the imported reference to the bound value's constant"), else
+    `ResolveResult::Done(SemIR::ConstantId::NotConstant)` — and the comment
+    closes with the residue this plan owns: "A binding whose bound value is
+    non-constant — a runtime `let` — still has no importable value." Pinned
+    today by check/testdata/let/import.carbon (`import_ref ... loaded
+    [concrete = constants.%empty_tuple]`).
+-   **The ledger's displaced acceptance test.**
+    check/testdata/match/choice_generic_payload_scrutinee.carbon:50-71,
+    `imported_global` subfile: `let g: P(i64) = P(i64).Neither;` sits in
+    the IMPORTING file with the comment "The binding is local — a
+    cross-file `let` reference has no lowering story (W-069 ...)". The
+    W5-S3b landing note records the move; restoring a cross-file
+    runtime-bound `let g` is the ledger's acceptance test for the residue.
+-   **Crash pinnability.** file_test compiles in-process and `fail_`
+    goldens pin DIAGNOSTICS, not aborts (the one lowering fail golden,
+    lower/testdata/basics/fail_before_lowering.carbon, exists to show
+    "earlier errors prevent lowering, without crashing"). A `CARBON_CHECK`
+    abort kills the test binary — **the crash shape is not representable as
+    a golden**; §3 designs around that.
+-   **Constraint inherited from check:** file-scope initializers cannot
+    contain control flow ("Control flow expressions are currently only
+    supported inside functions" — the W-024-family TODO, cited in
+    fork/inventory/work-items.json). All probes initialize via plain calls;
+    branching lives inside the called function.
+-   **Conformance ground truth.** 93/0/29 over 122; no SKIP cites W-069,
+    `let` import, or global-binding evidence (grepped) — floor movement in
+    this plan is by ADDITION only. The conformance runner compiles exactly
+    ONE file per program (runner.py; the recorded harness limitation in
+    code_org/library_multifile_export.carbon's SKIP) — which caps what a
+    conformance program can arbitrate at runtime; see §8 OQ-1.
+
+---
+
+## 2. Mechanism candidates
+
+### 2.1 (a1) — VarStorage-parity promotion in LOWERING (defining file) + import routing (RECOMMENDED)
+
+**Defining file.** A pre-pass beside `LowerGlobalVariables`' walk of the
+file's top inst block finds every package-scope `AnyBinding` whose bound
+value's constant is `NotConstant` (exactly half (b)'s complement — the same
+predicate import_ref.cpp:4500-4501 already uses). For each, build a named
+`llvm::GlobalVariable` of the binding type's OBJECT representation,
+zero-initialized, mangled by a new `Mangler::MangleGlobalLetBinding` that
+reuses `MangleGlobalVariable`'s exact shape (`_C` + `MangleNameId` +
+`MangleInverseQualifiedNameScope` + the `IsPrivateToLibrary` fingerprint
+suffix, mangler.cpp:299-324) applied to the binding's entity name; register
+it in the `FileContext` keyed by the BOUND-VALUE inst id (the id `NameRef`
+peek-through yields). When the global-ctor `FunctionContext` lowers the
+binding, emit the copy into the global after the bound value is computed:
+`CreateStore` for a by-copy value rep; a memcpy of the object size from the
+bound pointer for a pointer value rep (the as-if license, §0.2 item 5;
+promote-the-temporary-in-place is the §5 step 4 optimization, not the
+baseline). Name-keyed reuse before every creation, per the F8c discipline
+already written into `BuildNonCppGlobalVariableDecl`
+(file_context.cpp:772-789).
+
+**Every reference** — same-file cross-function AND cross-file — is served by
+one new branch in `GetValue`'s fall-through (function_context.cpp, before
+the concreteness CHECK):
+
+-   local hit in the promoted-let map → produce the value representation
+    from the global (load for by-copy reps; the global's address for
+    pointer reps — mirroring `GetConstant`'s value-rep dispatch,
+    file_context.cpp:207-267);
+-   miss + the inst has an import source
+    (`sem_ir().insts().GetImportSource(inst_id)`, sem_ir/inst.h:590-595 —
+    the mechanism `FileContext` already uses at :129 and :484) whose source
+    inst is a package-scope `AnyBinding` with non-constant bound value →
+    get-or-create the EXTERNAL global declaration, mangled by running the
+    Mangler over the SOURCE IR (same inputs ⇒ same name as the defining
+    file's emission), then produce the value rep the same way. Both
+    branches call `AddGlobalToCurrentFingerprint` (coalescing, §6 R-2).
+
+`handle.cpp`'s peek-through workaround stays; its :223 TODO is retexted to
+point at the new path (the "bound value isn't a global variable or constant"
+case is now handled for package scope).
+
+Trade-offs: **SemIR is untouched** — zero check-golden churn, zero language-
+surface change (no address ever becomes expressible; values.md:442 holds by
+construction), the diff is confined to `toolchain/lower/` + one additive
+mangler entry, and upstream's two TODO breadcrumbs both point at exactly
+this layer. Cost: lowering grows a third storage-ish path next to
+`VarStorage` and constants; the import branch must reach through
+`GetImportSource` into a foreign IR (a mechanism already exercised at
+file_context.cpp:484 and by `GetFileContext(const_ir)` in GetValue itself);
+and cross-file name agreement rests on the mangler being a pure function of
+the source IR (same property `var` already relies on — the importer mangles
+the imported pattern too).
+
+### 2.2 (a2) — check-side VarStorage synthesis (upstream-shaped, NOT chosen)
+
+Give file-scope runtime `let`s a `VarStorage`-like inst at check time
+(synthesized storage + the binding routed through it), so lowering and
+import ride the existing `var` machinery unchanged. This is plausibly what
+an upstream check-side fix would look like — but it is rejected here for
+three concrete reasons. (i) **Category leak:** the `var` machinery works
+because a ref-category `name_ref` makes check insert value acquisition at
+every use (§1); a value binding's uses insert nothing. Making the let name
+ref-category under the hood would make `&x` and `x = ...` checkable —
+contradicting values.md:442 — unless a new binding kind + gates are minted:
+a real SemIR design fork, with import/export format implications, taken
+fork-locally. (ii) **Blast radius:** every file-scope `let` golden
+(upstream's included) churns SemIR shape, and import_ref.cpp — the
+single hottest upstream-merge file the fork touches — needs a matching
+resolver arm; (a1) needs neither. (iii) **Merge posture:** if upstream later
+lands its own check-side design, an (a1) fork is a dead lowering branch to
+delete; an (a2) fork is a SemIR schema to migrate. Recorded as the shape to
+RE-EVALUATE if upstream moves first (§6 R-5), not as this plan's lane.
+
+### 2.3 (a3) — reject cleanly (honest degrade; the fallback rung, and W69a's belt-and-suspenders)
+
+Turn the CHECK crash into a diagnosed limitation at check time: when a use
+site's `NameRef` binds a package-scope binding whose bound value is
+non-constant AND the reference cannot be served (imported binding resolved
+`NotConstant`; or same-file reference from outside `__global_init`), emit a
+proper diagnostic ("cannot reference file-scope `let` bound to a runtime
+value here" — or a `SemanticsTodo` while the mechanism is partial). This is
+strictly better than today for the shapes it covers (crash → diagnostic,
+`fail_` pinnable), but it fills no gap — the ledger item stays open and the
+acceptance tests stay unreachable. Used two ways in this plan: as the
+CONTINGENCY floor if (a1) is blocked (§5 step 5), and as the guard for any
+shape the promotion pre-pass declines (§5 step 4) so the "either promoted or
+diagnosed, never a silent crash or dangling alloca" invariant holds.
+
+### 2.4 Lane decision (recorded; veto-able — digest item 1)
+
+| Candidate | Upstream evidence | Disposition |
+| --- | --- | --- |
+| (a1) lowering-side promotion + import routing | Both upstream TODOs sit in `toolchain/lower/`; the `var` symbol/ctor machinery it mirrors is upstream's own; SemIR untouched keeps values.md:442 true by construction | **ADOPTED** — primary lane |
+| (a2) check-side storage synthesis | Closest to a hypothetical upstream check-side fix, but no upstream signal exists; category-leak + import-format + import_ref-churn costs are real today | Rejected; re-evaluate on upstream movement (§6 R-5) |
+| (a3) clean rejection | Honest but fills nothing | Fallback rung + partial-shape guard (§2.3, §5) |
+
+---
+
+## 3. Probes (red-first, within what is representable)
+
+The crash is not goldenable (§1), so "red-first" here means: the
+CHECK-side goldens for the crashing shapes land FIRST and pin that check
+ACCEPTS them today (proving the fix needs no check change and bounding the
+byte-equivalence claim), the working neighbors are pinned to make the
+residue boundary explicit, and the lower goldens for the crashing shapes
+land WITH the mechanism as empty-CHECK autoupdate files (R15/R19) — their
+first green regeneration is the mechanism's compile-validation.
+
+| # | Probe | Vehicle | Expected TODAY (pre-mechanism) | Expected AFTER W69a/W69b |
+| --- | --- | --- | --- | --- |
+| P-1 | same-file scalar runtime let: `fn Seed() -> i32; let x: i32 = Seed();` + `fn Use() -> i32 { return x; }` | NEW check golden check/testdata/let/global_runtime.carbon | checks clean; binding's bound value inside `@__global_init` pinned in SemIR; (lowering would abort — stated in a comment citing function_context.cpp:188-190, NOT exercised) | SemIR byte-identical; NEW lower golden pins `@_Cx.Main = global i32 0`, ctor store, `load` in `Use` |
+| P-2 | cross-file scalar runtime let (defining + importing subfiles) | same check golden, split-file | checks clean; importer pins `import_ref ... loaded` with NO `[concrete = ...]` — the NotConstant signature of the residue | SemIR byte-identical; lower golden pins `external global` + load in the importer |
+| P-3 | constant-bound cross-file let (half (b) boundary) | EXISTING check/testdata/let/import.carbon (`[concrete = constants.%empty_tuple]`) + upstream lower/testdata/var/import.carbon | already green — the boundary pin | UNTOUCHED except the P-6 TODO flip below |
+| P-4 | the `var` vehicle | EXISTING lower/testdata/var/import.carbon (`@_Cv.Main` external + ctor stores) | green | byte-identical (parity anchor for the mechanism's symbol/ctor shape) |
+| P-5 | choice-typed cross-file RUNTIME let: plib gains `fn MakeNeither() -> P(i64) { return P(i64).Neither; }` and `let g: P(i64) = MakeNeither();`; importer matches `g` | check/testdata/match/choice_generic_payload_scrutinee.carbon — the RESTORED `imported_global` subfile (W69b) | checks clean today (the crash was lowering-only); pins the acceptance shape's SemIR | plus NEW lower golden pinning the promoted object-rep global, ctor memcpy, and the importer's discriminant load |
+| P-6 | upstream's own TODO: does half (b) already discharge it? Add `fn X() -> i32 { return x; }` to lower/testdata/var/import.carbon's import subfile and delete the :47 TODO | upstream golden, autoupdate-regenerated | PREDICTED green ALREADY: `x` binds tuple element `3`, a constant — S3b's branch imports it and it lowers via the constant path (the four-goldens-improved precedent in the S3b landing note). If RED instead: the failure shape is recorded and the TODO stays until W69a's mechanism covers it — either way the probe ends with the TODO honestly resolved | green; TODO gone — the named upstream breadcrumb is discharged |
+| P-7 | runtime TUPLE-pattern let: `let (a: i32, b: i32) = MakePair();` cross-file | subfile of the W69a goldens | checks clean | both bindings promoted independently (per-binding globals) |
+
+Negative pins: P-1/P-2's goldens each carry a companion assertion that
+existing `let` goldens (check/testdata/let/*.carbon, lower/testdata/let/*)
+stay byte-identical — constant-bound lets MUST keep riding the constant
+path, not the new globals (falsifier for an over-broad promotion predicate).
+
+---
+
+## 4. Slices
+
+Each slice is one landable PR through the full R11 loop (implementer → 2
+adversarial reviewers → fixer), gated on runner golden autoupdate to
+fixpoint (R15/R19/R26) + `bazel test //toolchain/...` + upstream-parity gate
+(R21) + `uvx prek run` (R25) + conformance non-regression with
+`runner.py --self-test` (R7/R9) + scoreboard regeneration at landing.
+
+### W69a — probes + the mechanism for scalar shapes (M)
+
+-   **Toolchain files:** toolchain/lower/function_context.cpp (the
+    `GetValue` fall-through branch), toolchain/lower/file_context.{h,cpp}
+    (promotion pre-pass, promoted-let registry, ctor-store emission,
+    external-decl builder with name-keyed reuse),
+    toolchain/sem_ir/mangler.{h,cpp} (`MangleGlobalLetBinding`, additive),
+    toolchain/lower/handle.cpp (comment retext only).
+-   **Goldens:** NEW check/testdata/let/global_runtime.carbon (P-1/P-2/P-7
+    check side), NEW lower/testdata/let/global_runtime.carbon (same shapes,
+    empty-CHECK → autoupdate), upstream lower/testdata/var/import.carbon
+    P-6 TODO flip (autoupdate-regenerated — R16a: goldens change only via
+    the runner autoupdate workflow).
+-   **Byte-equivalence:** every existing check golden byte-identical (SemIR
+    untouched is the lane's core claim — ANY check-golden churn is
+    stop-and-explain); existing lower goldens byte-identical except
+    var/import.carbon (P-6, new function + TODO removal, churn declared).
+-   **Floor:** unchanged, **93/0/29 over 122** (goldens only; the runtime
+    arbiter waits for W69b so the conformance program can carry the
+    motivating choice shape — and see §8 OQ-2 on the same-file half).
+-   **Discharge criteria (slice):** P-1/P-2/P-7 lower goldens green at
+    fixpoint pinning named-global + ctor-store + external-decl + load; P-6
+    resolved either way with the record; byte-equivalence audit clean;
+    CHECK at function_context.cpp:188 no longer reachable for package-scope
+    runtime-let references (the reviewers' trace obligation).
+
+### W69b — class/choice shapes + the ledger acceptance (M)
+
+-   **Toolchain files:** the pointer-value-rep arm of the same lowering
+    paths (object-rep global + ctor memcpy + address-as-value-rep at uses).
+    Expected to be small — the plumbing lands in W69a; this slice makes the
+    rep dispatch real and proves it on the motivating types.
+-   **Goldens:** check/testdata/match/choice_generic_payload_scrutinee.carbon —
+    the `imported_global` subfile RESTORED to a cross-file split per P-5:
+    `let g` moves back to plib, bound to the runtime `MakeNeither()` call
+    (the W5-S3b re-authoring undone, upgraded to the runtime form that
+    arbitrates the residue), PLUS a constant-bound cross-file sibling
+    subfile (`let gc: P(i64) = P(i64).Neither;`) kept as the explicit half-
+    (b) boundary pin — see §8 OQ-3. NEW lower golden
+    lower/testdata/let/import_choice.carbon (or match/-side, reviewer's
+    call) pinning the promoted global's object rep, the ctor memcpy, and
+    the importing file's external decl + discriminant load; a class-typed
+    (non-choice) subfile rides along so the mechanism is pinned independent
+    of choice machinery.
+-   **Conformance:** NEW program (single-file — the harness compiles one
+    unit, §1) under
+    `CONFORMANCE-BULLET: Control flow: matching — sum-type consumption incl. std::variant/std::optional interop`
+    (deepens an existing-PASS bullet; character-exact per R7): a file-scope
+    `let` of a generic-choice specific bound to a runtime constructor call
+    (payload runtime-computed per R16d), matched exhaustively inside `Run`
+    with the payload read back — arbitrating promotion + ctor ordering +
+    readback at runtime. Ctor-order safety: `llvm.global_ctors` run before
+    `main`, so function-body readers are ordering-safe by construction; the
+    program still probes the stored payload against a runtime-derived
+    expectation so a zeroinit read (ctor never ran / wrong global) fails
+    loudly.
+-   **Floor:** **94/0/29 over 123** (+1 by addition; no SKIP flips — none
+    cites this work; no bullet flips claimed).
+-   **Discharge criteria (slice = the W-069 residue):** the restored
+    cross-file runtime `let g` split green in check AND lower goldens; the
+    conformance program PASS on the scoreboard (R9 — the report quotes
+    scoreboard.json); ledger W-069 updated to DISCHARGE-STAGED with the R9
+    hedge, flipping to discharged when the landing scoreboard regenerates.
+    Under §8 OQ-1 outcome (a), full discharge additionally waits for W69c's
+    cross-file runtime program.
+
+### W69c — CONTINGENT (S): generic/specific-typed residue + (if OQ-1 says so) the multi-file runtime arbiter
+
+Minted only if (i) W69b's traces show imported-generic-specific-typed lets
+or specific-coalescing interactions the W69b goldens don't already cover
+(the S3b `AddCanonical` import lesson says trace before assuming), or
+(ii) §8 OQ-1 resolves to extending the conformance runner with split-file
+multi-unit programs — in which case W69c adds the cross-file RUNTIME
+program (defining library + importing main), floor **95/0/29 over 124**,
+attached to `CONFORMANCE-BULLET: Code organization: Importing`, and the
+separately-scoped opportunity to un-SKIP
+code_org/library_multifile_export.carbon is NOTED for the coordinator but
+NOT claimed by this plan. If neither trigger fires, W69c is not minted and
+W-069 discharges at W69b.
+
+---
+
+## 5. Contingency ladder (pre-declared)
+
+1.  **Expected path:** promotion lands; goldens converge at R26 fixpoint;
+    proceed.
+2.  **Init-order trouble.** Investigated UP FRONT: file-scope runtime
+    initializers already exist and run — check builds `__global_init`
+    (global_init.cpp:27-59), lowering registers it in `llvm.global_ctors`
+    (file_context.cpp:134-178), and lower/testdata/var/import.carbon's
+    goldens show the ctor stores. Function-body readers run post-ctors
+    (before `main`), so the acceptance shapes are ordering-safe. The REAL
+    residual is cross-TU initializer-reads-imported-binding (static-init-
+    order-fiasco): unspecified today for `var` (all ctors priority 0), and
+    this plan takes exact PARITY — recorded, not fixed; a probe initializer
+    never reads another file's runtime binding. If CI nevertheless shows a
+    zeroinit read in the W69b program: STOP, diagnose link/ctor order on
+    the runner, and adjudicate before inventing priorities — minting ctor
+    priorities is fork ABI and needs its own digest entry.
+3.  **Import side can't identify the source binding.** The design leans on
+    `GetImportSource` returning a live `ImportIRInstId` for the importer's
+    inst (inst.h:590-595). If the loc is not preserved for the specific
+    inst `NameRef` hands over: (i) first try keying off the importer's
+    `ImportRefLoaded` table entry directly; (ii) if identification
+    genuinely requires stashing new data in import_ref.cpp, STOP — that
+    file is the highest-merge-friction surface (§6 R-5) — and take a plan
+    amendment with its own review round; (iii) if (ii) is refused,
+    cross-file drops to lane (a3) diagnostics while same-file promotion
+    stands, and W-069 is re-noted with the blocker.
+4.  **Promotion-shape fragility.** If the pre-pass cannot reliably map a
+    binding to its bound-value inst/copy point for some pattern shape
+    (deep converted-chains, exotic tuple patterns), those shapes get the
+    (a3) diagnostic instead of promotion — the invariant is "promoted OR
+    diagnosed, never a silent crash, never an escaping `__global_init`
+    alloca" (§6 R-6's falsifier). Promote-the-temporary-in-place (skipping
+    the memcpy) is an OPTIMIZATION contingency in the other direction,
+    taken only if the copy shape itself misbehaves.
+5.  **Lane fundamentally blocked** (a structural reason lowering cannot
+    serve these references): fall back to (a3) wholesale — crash becomes
+    diagnostic with `fail_` pins, the testdata split stays local with its
+    comment updated to cite the diagnostic, W-069 stays OPEN recording the
+    blocker and the (a2) re-evaluation trigger, and the W69b conformance
+    program is not written (no floor claim). This outcome is digest-worthy
+    (the item's acceptance test is abandoned for 0.1).
+
+---
+
+## 6. Risk register (falsifiable)
+
+-   **R-1. Mangling collision (the F8c lesson).** Module symbol-table reuse:
+    `BuildNonCppGlobalVariableDecl` already carries the fork's name-keyed
+    early-return precisely because double-creation silently renames to
+    `.N` and splits initializer from uses (file_context.cpp:772-789, the
+    `_Ctotal.Main.2` incident). The let path MUST ride the same
+    get-before-create discipline on both the defining and importing sides.
+    A promoted let can never collide with a same-scope `var` (one name, one
+    declaration — check diagnoses redeclaration), and private-to-library
+    bindings take the fingerprint suffix exactly as `MangleGlobalVariable`
+    does. FALSIFIER: a lower golden with a defining file + two importing
+    files, and a private-let subfile — any `.N`-suffixed symbol in the
+    regenerated golden is the alarm.
+-   **R-2. Coalescing/fingerprint hole.** Specific functions referencing
+    promoted-let globals must include them in their fingerprints or
+    `CoalesceEquivalentSpecifics` (file_context.cpp:193-197) could merge
+    specifics that touch DIFFERENT globals. The new `GetValue` branch calls
+    `AddGlobalToCurrentFingerprint` (as the constant path does at :195).
+    FALSIFIER: a golden with two specifics of one generic each reading a
+    different imported runtime let — coalesced output is the bug.
+-   **R-3. Value-semantics honesty.** The mechanism must never make backing
+    storage observable: SemIR untouched ⇒ no address-of, no mutation path
+    exists (values.md:442 by construction), and the ctor memcpy is licensed
+    by the as-if copy rule (values.md:495-497) — the one-sentence R17
+    justification. SF-6 keeps the motivating choice payloads trivially
+    copyable; for general classes the relocated object is the binding's own
+    materialized temporary, which nothing else can alias (values cannot
+    have their address taken). If a reviewer exhibits ANY language-level
+    observation channel for the copy, R17 applies: redesign (promote-in-
+    place) rather than rationalize.
+-   **R-4. Init-order / SIOF** — §5 step 2; parity with `var`, recorded.
+-   **R-5. Upstream-merge friction (weekly merges).** Exposure ranked:
+    import_ref.cpp — HOT upstream, and this lane deliberately changes ZERO
+    lines of it (half (b) already sits there; nothing new is added);
+    lower/function_context.cpp + file_context.cpp — moderate churn, small
+    additive branches, and file_context already carries fork comments (F8c,
+    B2 zeros rationale) that merge cleanly; mangler.{h,cpp} — additive
+    entry point. The pre-implementation re-check greps upstream for
+    movement on the two TODO breadcrumbs (var/import.carbon:47,
+    handle.cpp:223) and on `let` lowering generally; if upstream lands its
+    own mechanism, the fork branch YIELDS at the next merge (V-3a default
+    preference), which the SemIR-untouched property makes a lowering-only
+    deletion plus golden regeneration.
+-   **R-6. Partial promotion dangles.** A pointer-rep binding whose temp is
+    NOT promoted but whose reference escapes `__global_init` would read a
+    dead alloca. Today that shape cannot ship silently (the CHECK fires
+    first); the mechanism must preserve loud failure for uncovered shapes
+    via §5 step 4's diagnostic. FALSIFIER: any regenerated lower golden
+    showing a non-ctor function deriving a pointer from a `__global_init`
+    alloca.
+-   **R-7. Over-broad promotion.** The predicate (package-scope binding,
+    bound value NotConstant) must not catch constant-bound lets (they keep
+    the constant path — half (b) regression otherwise) nor class-scope
+    `static` bindings beyond scope. FALSIFIER: the §3 negative pins
+    (existing let goldens byte-identical).
+
+---
+
+## 7. Arbiters + discharge criteria (R9)
+
+-   **Arbiters, named:** (i) the runner autoupdate fixpoint on the new
+    lower goldens (a green regeneration IS the mechanism executing — R15);
+    (ii) `bazel test //toolchain/...` + the R21 upstream-parity gate on CI;
+    (iii) the conformance scoreboard — every floor claim in this plan
+    quotes fork/conformance/out/scoreboard.json after regeneration, never
+    an assertion; (iv) the W69b conformance program's runtime payload
+    readback (runtime-computed per R16d, so a misrouted/zeroinit global
+    changes observable output).
+-   **W-069 (residue, half (a)) discharge criteria:** (1) W69a's P-1/P-2/
+    P-7 lower goldens green at fixpoint and P-6 resolved with its record;
+    (2) the check-golden byte-equivalence audit clean across both slices;
+    (3) **the ledger acceptance test**: the restored cross-file
+    runtime-bound `let g` split in
+    check/testdata/match/choice_generic_payload_scrutinee.carbon
+    (`imported_global`) green, with its lower-side pin; (4) the W69b
+    conformance program PASS on a regenerated scoreboard at
+    **94/0/29 over 123** (plus W69c's program at 95/124 iff OQ-1(a));
+    (5) decision-log landing note recording the §0.3 verdict, the lane
+    choice, the divergence-register entry for the exported symbol shape,
+    and the W5-S3b re-authoring undone; (6) work-items.json W-069 updated
+    (DISCHARGE-STAGED under the R9 hedge until the landing scoreboard, the
+    W-067/W-068 pattern). If §5 step 5 fires instead, W-069 stays OPEN and
+    criteria (3)-(4) are replaced by the recorded blocker + `fail_` pins.
+-   **Floor expectations per slice:** W69a 93/0/29 over 122 (unchanged);
+    W69b 94/0/29 over 123; W69c (contingent) 95/0/29 over 124. FAIL stays
+    0 throughout; zero SKIP flips claimed (§1); no bullet flips claimed —
+    both additions deepen already-PASS bullets.
+
+---
+
+## 8. Open questions for the coordinator (adjudicate BEFORE implementation)
+
+-   **OQ-1 — cross-file RUNTIME arbitration vs. the single-file harness.**
+    runner.py compiles one file per program, so the cross-file half of the
+    acceptance can be arbitrated at runtime only if the harness grows
+    multi-unit (split-file) program support — the same limitation that
+    keeps code_org/library_multifile_export.carbon SKIPped. Options:
+    (a) extend the runner in a small pre-W69b harness slice (high leverage:
+    also unblocks the Libraries SKIP as separate follow-up work; but it is
+    a process/resource spend outside W-069's subsystem);
+    (b) accept lower-golden arbitration for the cross-file half (external
+    symbol + load pinned, exactly how upstream pins `var` imports) with the
+    runtime arbiter exercising the same mechanism single-file, and W-069
+    discharges at W69b. RECOMMENDATION: (a), as its own reviewed slice —
+    but this is a genuine scope/resource fork, so it is asked, not
+    auto-adopted.
+-   **OQ-2 — same-file scope-in.** The ledger text says "cross-file", but
+    the mechanism necessarily also fixes the SAME-file cross-function
+    reference (identical CHECK, §1), and the single-file runtime arbiter
+    depends on that half. Confirm the scope-in (recommended: yes; declining
+    it would leave the conformance program unwritable under OQ-1(b)).
+-   **OQ-3 — fidelity of the restored split.** The historical split bound
+    `g` to the CONSTANT `P(i64).Neither`; a faithful restoration is half-
+    (b) territory and does NOT arbitrate this item. The plan restores the
+    split RUNTIME-bound (`MakeNeither()`) and keeps a constant-bound
+    sibling as the boundary pin. Confirm this reading of "restoring the
+    `let g` split" satisfies the ledger's acceptance sentence.
+-   **OQ-4 (digest-grade, listed for visibility, default auto-adopt):**
+    (i) the V-3a divergence-register entry for the fork-minted exported
+    symbol shape `_C<name>.<package>[.<fp>]` for let-backed storage;
+    (ii) touching upstream's lower/testdata/var/import.carbon for the P-6
+    TODO flip (sanctioned route: autoupdate-regenerated, R16a); (iii) the
+    conformance-bullet attachments named in §4.
+
+## §8-A. Coordinator adjudications (2026-08-18, pre-review)
+
+Adjudicated per the V-2 delegation (all three fall inside fork-internal
+tooling scope and honest scope-extension territory — no language-design
+fork, so none rises to a blocking user ask; all three ride the eventual
+PR digest as veto-able records):
+
+-   **OQ-1 → (a), extend the runner** with split-file multi-unit program
+    support as its OWN small reviewed slice (W69h, "harness"), sequenced
+    BEFORE W69b so the cross-file half is runtime-arbitrated per the
+    house DIFF-1 standard. Grounds: runtime differential arbitration is
+    the house bar for discharge-grade evidence (lower-golden pins are
+    static); the extension is paid for once and immediately unblocks
+    follow-up work on the Libraries SKIP
+    (code_org/library_multifile_export.carbon) — high leverage inside
+    the conformance mandate the fork charter already delegates. Scope
+    guard: W69h touches ONLY fork/conformance/runner.py + its
+    --self-test + README conventions (no toolchain files), and W-069's
+    discharge does not claim the Libraries bullet — that is separate
+    follow-up.
+-   **OQ-2 → YES, same-file scope-in confirmed.** The mechanism fixes
+    both halves by construction and the single-file runtime arbiter
+    depends on it; the ledger's "cross-file" wording is the surfaced
+    SYMPTOM, not a scope fence. Recorded as an amended-at-W-069 scope
+    note for the ledger (mirror the W-068 amendment-marker discipline).
+-   **OQ-3 → CONFIRMED, the plan's reading is right.** The ledger's own
+    residue sentence says "restoring a RUNTIME-`let`-based cross-file
+    split is the acceptance test for the residue" — the runtime-bound
+    restoration (`MakeNeither()`) IS the acceptance shape; the
+    constant-bound sibling stays as the half-(b) boundary pin. A
+    byte-faithful restoration of the historical constant-bound split
+    would arbitrate nothing.
+-   **OQ-4 (i)-(iii) → auto-adopted** as listed (digest-grade).
+
+Slice order after adjudication: W69a (mechanism, scalar) → W69h
+(harness, split-file programs) → W69b (choice shapes + restored split +
+runtime cross-file arbiter) → W69c contingent (generic residue).
+
+## Approval gate
+
+This plan does not authorize implementation. Per house protocol it goes to
+TWO adversarial plan reviewers (reviewer #1 attacks §0's verdict and §2.1's
+mechanism against the tree — the GetImportSource reachability for the
+importer's NameRef inst, the value-rep dispatch claims, the mangler purity
+assumption, with concrete counter-programs; reviewer #2 attacks
+completeness — the §3 probe set for missing negatives, §4's byte-
+equivalence claims, §7's floor arithmetic, and every file:line citation),
+then the fixer folds surviving findings in as dated amendments, and the
+coordinator answers §8 before W69a starts.
+
+V-2 veto digest for this plan: (1) the §0.3 classification
+(acknowledged-gap, full speed) + the §2.4 lane adoption (a1); (2) the §2.3
+dual-use of (a3) as guard + fallback; (3) the §5 ladder as the only
+sanctioned deviation paths (step 3(ii)'s import_ref amendment and step 2's
+ctor-priority minting both STOP for adjudication); (4) OQ-4's three
+digest items; (5) floor movement §7 (addition-only, no flips). Genuine
+synchronous asks: §8 OQ-1/OQ-2/OQ-3.

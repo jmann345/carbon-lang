@@ -1,1 +1,1 @@
-2026-08-18T10:01Z W-068 regen pass 2 (R26 fixpoint)
+2026-08-18T13:05Z W69a goldens red-first regen pass 1 (three new let/global_runtime goldens + var/import.carbon P-6 flip)

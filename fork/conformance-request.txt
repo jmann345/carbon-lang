@@ -1,1 +1,1 @@
-2026-08-18T10:02Z W-068 conformance (expected floor EXACTLY 93/0/29 over 122, moving only by control_flow/match_single_alternative PASS)
+2026-08-18T13:07Z W69a conformance (floor must stay EXACTLY 93/0/29 over 122 byte-for-byte - no programs added)

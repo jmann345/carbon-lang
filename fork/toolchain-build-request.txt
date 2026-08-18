@@ -1,1 +1,1 @@
-2026-08-18T10:02Z W-068 gate (small-choice match dispatch; full bazel test)
+2026-08-18T13:07Z W69a gate (runtime-let promotion mechanism; full bazel test)

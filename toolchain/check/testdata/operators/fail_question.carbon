@@ -39,12 +39,12 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-    // Unreachable-terminator idiom (fork/b1/plan.md §2.6, dated
-    // correction): reachability doesn't consult match exhaustiveness; no
-    // generic `ControlFlow(T, E)` value is conjurable, and the
-    // interface-recursive call does not type-collapse (its return type's
-    // associated-constant projections are not reduced by this impl's own
-    // `where` rewrites), so diverge through the helper.
+    // Unreachable-terminator idiom (fork/b1/plan.md §2.6, W-073 dated
+    // amendment): reachability doesn't consult match exhaustiveness; no
+    // generic `ControlFlow(T, E)` value is conjurable, and through this
+    // NON-final impl the interface-recursive call does not type-collapse
+    // (upstream specialization soundness keeps its projections unreduced;
+    // under `final` it does — question_final.carbon), so use the helper.
     return Diverge(Core.ControlFlow(T, E));
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
@@ -101,12 +101,12 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-    // Unreachable-terminator idiom (fork/b1/plan.md §2.6, dated
-    // correction): reachability doesn't consult match exhaustiveness; no
-    // generic `ControlFlow(T, E)` value is conjurable, and the
-    // interface-recursive call does not type-collapse (its return type's
-    // associated-constant projections are not reduced by this impl's own
-    // `where` rewrites), so diverge through the helper.
+    // Unreachable-terminator idiom (fork/b1/plan.md §2.6, W-073 dated
+    // amendment): reachability doesn't consult match exhaustiveness; no
+    // generic `ControlFlow(T, E)` value is conjurable, and through this
+    // NON-final impl the interface-recursive call does not type-collapse
+    // (upstream specialization soundness keeps its projections unreduced;
+    // under `final` it does — question_final.carbon), so use the helper.
     return Diverge(Core.ControlFlow(T, E));
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
@@ -201,12 +201,12 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-    // Unreachable-terminator idiom (fork/b1/plan.md §2.6, dated
-    // correction): reachability doesn't consult match exhaustiveness; no
-    // generic `ControlFlow(T, E)` value is conjurable, and the
-    // interface-recursive call does not type-collapse (its return type's
-    // associated-constant projections are not reduced by this impl's own
-    // `where` rewrites), so diverge through the helper.
+    // Unreachable-terminator idiom (fork/b1/plan.md §2.6, W-073 dated
+    // amendment): reachability doesn't consult match exhaustiveness; no
+    // generic `ControlFlow(T, E)` value is conjurable, and through this
+    // NON-final impl the interface-recursive call does not type-collapse
+    // (upstream specialization soundness keeps its projections unreduced;
+    // under `final` it does — question_final.carbon), so use the helper.
     return Diverge(Core.ControlFlow(T, E));
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }

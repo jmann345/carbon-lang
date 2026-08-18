@@ -29,8 +29,12 @@
 // the same explicit early-return semantics, computing the expectation
 // independently. Exit code and stdout must be byte-identical per DIFF-1;
 // no EXPECT-STDOUT — C++ computes the expectation. The `Branch` impl
-// body keeps the match-reconstruct + `Diverge` idiom (fork/b1/plan.md
-// §2.6), retained pending W-073.
+// body uses the match-reconstruct style (fork/b1/plan.md §2.6) with the
+// interface-recursive unreachable trailing return — the W-073
+// simplification: under `final` the in-body recursive call
+// type-collapses (the P-9 pin, question_final.carbon's
+// inbody_recursive_branch split), so the former `Diverge` helper is
+// deleted; the reachable control flow is unchanged.
 //
 // Broken-oracle drill (R-5; mechanism declared at the 2026-08-18 plan fix
 // round, fork/w072/plan.md §3 W72b — strictness F-5): with no local
@@ -49,13 +53,6 @@ choice MyResult(T: type, E: type) {
   Err(e: E)
 }
 
-// Returns a value of any type by never returning — the unreachable
-// trailing-return helper for generic match-reconstruct bodies
-// (fork/b1/plan.md §2.6, dated correction). The explicit generic type
-// param + self-recursion is the arbiter-verified
-// function/generic/deduce.carbon `ExplicitGenericParam` shape.
-fn Diverge(generic T2: type) -> T2 { return Diverge(T2); }
-
 // The doc's sanctioned spelling: `final` exempts this impl from
 // specialization, which is exactly what licenses impl lookup to apply
 // `.ContinueType = T and .BreakType = E` under a symbolic query
@@ -68,9 +65,13 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
       case .Ok(v: T) => { return Core.ControlFlow(T, E).Continue(v); }
       case .Err(e: E) => { return Core.ControlFlow(T, E).Break(e); }
     }
-    // Unreachable-terminator idiom (fork/b1/plan.md §2.6), retained
-    // pending W-073 (the P-9 collapse observation).
-    return Diverge(Core.ControlFlow(T, E));
+    // Unreachable trailing return (reachability doesn't consult match
+    // exhaustiveness — fork/b1/plan.md §2.6, W-073 dated amendment):
+    // under this `final` impl the interface-recursive call
+    // type-collapses (the P-9 pin, question_final.carbon's
+    // inbody_recursive_branch split), so no `Diverge` helper is needed.
+    // The match above is exhaustive; this line never executes.
+    return self.(Core.Try.Branch)();
   }
   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
 }

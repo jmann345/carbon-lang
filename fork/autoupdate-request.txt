@@ -1,1 +1,1 @@
-2026-08-18T07:20Z W72a R26 pass-2 fixpoint
+2026-08-18T04:20Z W-073 sweep: golden comment retexts (line-count-preserving) — EXPECTED NO-OP; any non-empty regen diff is a red flag, not reconciliation

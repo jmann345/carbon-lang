@@ -1774,6 +1774,92 @@ live arm and stays); no SKIP flips — scoreboard stays 77 PASS / 0 FAIL /
 31 SKIP over 108 programs; runner.py --self-test OK; scoreboard
 regeneration rides the landing gate (R9). Veto-able.
 
+_W-067 landing note (2026-08-18, the W-067 implementer):_ guards on
+`default` clauses (`default if (E) => ...`), the S2d scope trade recorded
+at fork/match-replatform/plan.md §3.4 and tracked as W-067. _Design
+authority, verified before building (R17):_ pattern_matching.md:814-815
+and p002188:552-553 both say, verbatim, "For consistency, this facility is
+also available for `default` clauses, so that `default` remains equivalent
+to `case _: auto`" — no contradiction with the ledger. _Parse:_ the
+`default` introducer now takes the case arm's optional guard production —
+extracted into a shared `HandleMatchGuard(context, has_error, label_kind)`
+helper (parse/handle_match.cpp) so the `ExpectedMatchCaseGuardOpenParen`
+diagnostic stays declared once and the malformed-guard recovery is
+parameterized only by the label node kind; the unguarded `default` path is
+byte-identical to before. A guarded `default` gets its OWN label node kind
+`MatchGuardedDefault` (bracketed by `MatchDefaultIntroducer`, children =
+introducer + the existing `MatchCaseGuard` subtree, closed by the new
+`MatchGuardedDefaultStart` state), rather than an optional guard child on
+`MatchDefault`: the two arms diverge in every consumer — node-stack id
+kind (`InstBlockId` else-block entry vs solo), scope-push site, terminal
+vs continuing arm — so a distinct kind keeps every dispatch typed instead
+of threading a guarded-ness bit through the node stack (R17: the
+one-sentence version is "different behavior, different node kind", the
+`MatchCase`/`MatchDefault` split's own precedent). _Arms after a guarded
+`default`:_ ACCEPTED, by one-token `default`+`if` lookahead in
+`MatchCaseLoop` (the `.`+identifier lookahead in the same file is the
+precedent). The design's usefulness rule assumes "a guard on any pattern
+in the context set ... to evaluate to false" and speaks of "a prior
+`default`" (pattern_matching.md, "Refutability, overlap, usefulness, and
+exhaustiveness"), so arms after a guarded `default` are reachable and
+useful; only an unguarded `default` ends the arm list, keeping
+`UnreachableMatchCase` byte-identical at its site
+(fail_cases_after_default.carbon unchanged). _Check:_ exactly the ledger's
+shape — the S2d capture-splice-branch with no pattern test and no
+bindings. `MatchCaseGuardIntroducer` recognizes the `default` case by the
+introducer entry the (now node-pushing) `MatchDefaultIntroducer` handler
+leaves on the node stack, pushes the arm's Owned scope there (a case arm's
+comes from `MatchCaseIntroducer`; `MatchHandlerStart` pushes only for
+unguarded `MatchDefault`), and pushes a pattern-less case-arm context for
+the shared `MatchCaseGuard` handler to record the guard's bool-converted
+region into (scrutinee type deliberately not recorded — only case
+patterns resolve against it). `MatchGuardedDefault` then emits the
+guarded-irrefutable-arm CFG minus `NameBindingDecl` and bind pass:
+constant-`true` test entering the arm (the `MatchCase` binding-arm
+condition), `SpliceMatchCaseGuard`, `DeferCleanups`, `BranchIf` into the
+body, and `AddBranchWithCleanups` to the else block at the enclosing
+cleanup depth — the guard-failure edge discharges the arm scope's
+cleanups and falls through, first-match-wins preserved; `MatchHandler`
+and `MatchStatement` treat the arm as an ordinary case arm (else-block
+entry, convergence count). _Exhaustiveness interaction (the ledger's
+explicit requirement):_ a guarded `default` records NOTHING into
+`Context::MatchStatementContext` and never pops as `MatchDefault`, so it
+does not discharge the `default` requirement. _Dangling else edge
+(guarded `default` followed by nothing):_ the design authority is SILENT
+on the shape, so per the slice brief the diagnosis path REUSES the
+existing mandatory-default machinery unchanged (R6, no new diagnostic):
+integer scrutinee — the SemanticsTodo `` `match statement without
+`default` arm` `` gate; choice scrutinee — `MatchNonexhaustive` naming
+the uncovered alternatives; a choice fully covered by unguarded arms
+around a guarded `default` legitimately compiles (coverage sums across
+it). Recorded decision, veto-able. _Testdata:_ parse
+guarded_default.carbon (guarded defaults between arms and last),
+fail_missing_default_guard_open_paren.carbon +
+fail_missing_default_guard_close_paren.carbon (mirroring the case-guard
+fail pair); check guarded_default.carbon (basic chain with a case arm and
+a second guarded default after the first, compound `and` guard on
+`default`, choice coverage across a guarded default) and
+fail_guarded_default.carbon (integer no-covering-arm TODO pin,
+choice-uncovered MatchNonexhaustive pin, non-bool `default` guard
+ConversionFailure pin). Positive files ship with AUTOUPDATE and no CHECK
+lines; fail files carry hand-written CHECK:STDERR pins only (house
+precedent per the S2e note); all golden content rides the runner
+autoupdate to R26 fixpoint (R15/R19: red-first is expected). Expected
+golden churn: ONLY the new files — unguarded arms and unguarded defaults
+take byte-identical paths (the case-guard helper extraction and the
+`MatchDefaultIntroducer` node-stack push change no emitted SemIR).
+_Conformance:_ new run program
+control_flow/match_guarded_default.carbon (guard-true takes the `default`
+arm; guard-false falls through to a LATER case arm and the final
+unguarded `default`; inputs runtime-computed by way of the RuntimeSeed x+20
+convention, R16d); README table regenerated; --self-test OK (121
+programs). Expected floor: EXACTLY 92 PASS / 0 FAIL / 29 SKIP over 121,
+moving only by the new program's PASS — any other movement re-opens
+W-067 (R9 hedge; status DISCHARGE-STAGED in the inventory). No lower
+change: the guarded-default CFG uses only inst kinds S2d already lowers,
+and runtime behavior is locked by the new run program next to the
+existing match_guard_diff differential pair. Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

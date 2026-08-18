@@ -1895,6 +1895,10 @@ CARBON_PARSE_STATE(MatchConditionFinish)
 //              ^
 //   1. MatchDefaultIntroducer
 //   2. MatchCaseLoopAfterDefault
+// match (...) { default if ...}
+//              ^
+//   1. MatchDefaultIntroducer
+//   2. MatchCaseLoop
 CARBON_PARSE_STATE(MatchCaseLoop)
 
 // Handles `match` `case` introducer.
@@ -1960,12 +1964,19 @@ CARBON_PARSE_STATE(MatchCaseGuardFinish)
 //   (state done)
 CARBON_PARSE_STATE(MatchCaseStart)
 
-// Handles `match` default introducer, `=>` and `{` opening statements block.
+// Handles `match` default introducer, `=>` and `{` opening statements block,
+// or a guard introducer.
 //
 // match (...) { default => {...} }
 //               ^~~~~~~~~~~~
 //   1. StatementScopeLoop
 //   2. MatchHandlerFinish
+//
+// match (...) { default if (...) => {...} }
+//               ^~~~~~~~~~~
+//   1. Expr
+//   2. MatchCaseGuardFinish
+//   3. MatchGuardedDefaultStart
 //
 // match (...) { default ??? }
 //                       ^
@@ -1975,6 +1986,23 @@ CARBON_PARSE_STATE(MatchCaseStart)
 //                          ^
 //   (state done)
 CARBON_PARSE_STATE(MatchDefaultIntroducer)
+
+// Handles a guarded `match` default's `=>` and `{` opening statements block,
+// after the guard's closing `)`.
+//
+// match (...) { default if (...) => {...} }
+//                                ^~~~
+//   1. StatementScopeLoop
+//   2. MatchHandlerFinish
+//
+// match (...) { default if (...) ??? }
+//                                ^
+//   (state done)
+//
+// match (...) { default if (...) => ??? }
+//                                   ^
+//   (state done)
+CARBON_PARSE_STATE(MatchGuardedDefaultStart)
 
 // Handles `match` handler block closing `}`.
 //

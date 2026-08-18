@@ -431,6 +431,7 @@ class NodeStack {
       case Parse::NodeKind::IfExprIf:
       case Parse::NodeKind::ImplicitParamList:
       case Parse::NodeKind::MatchCase:
+      case Parse::NodeKind::MatchGuardedDefault:
       case Parse::NodeKind::WhileConditionStart:
         return Id::KindFor<SemIR::InstBlockId>();
       case Parse::NodeKind::FunctionDefinitionStart:
@@ -476,6 +477,7 @@ class NodeStack {
       case Parse::NodeKind::MatchCaseGuardStart:
       case Parse::NodeKind::MatchCaseIntroducer:
       case Parse::NodeKind::MatchDefault:
+      case Parse::NodeKind::MatchDefaultIntroducer:
       case Parse::NodeKind::MatchHandlerStart:
       case Parse::NodeKind::NamedConstraintIntroducer:
       case Parse::NodeKind::RefBindingName:
@@ -528,7 +530,6 @@ class NodeStack {
       case Parse::NodeKind::InlineImportSpecifier:
       case Parse::NodeKind::MatchCaseGuard:
       case Parse::NodeKind::MatchConditionStart:
-      case Parse::NodeKind::MatchDefaultIntroducer:
       case Parse::NodeKind::MatchFirstIntroducer:
       case Parse::NodeKind::MatchIntroducer:
       case Parse::NodeKind::NamespaceStart:

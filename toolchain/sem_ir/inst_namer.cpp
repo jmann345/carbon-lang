@@ -469,6 +469,11 @@ struct BranchNames {
                  .branch_if = "case.then",
                  .branch = "case.else"}};
 
+      case Parse::NodeKind::MatchGuardedDefault:
+        return {{.prefix = "match",
+                 .branch_if = "default.then",
+                 .branch = "default.else"}};
+
       case Parse::NodeKind::MatchStatement:
         return {{.prefix = "match", .branch = "done"}};
 

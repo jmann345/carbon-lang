@@ -67,6 +67,17 @@ namespace Carbon::Check {
 // falls through to the next arm (or `default`), preserving
 // first-match-wins.
 //
+// A `default` arm may carry a guard too (`default if (E) => ...`): `default`
+// is equivalent to `case _: auto`, and "this facility is also available for
+// `default` clauses" (docs/design/pattern_matching.md, "Guards"). A guarded
+// `default` (`MatchGuardedDefault`) is checked as a guarded irrefutable arm
+// with no pattern and no bindings: a constant-true test, then the spliced
+// guard branching into the arm's body or on to the else block, so a failed
+// guard falls through to a following arm or `default` — unlike an unguarded
+// `default`, arms after it are reachable, and parse keeps the loop open.
+// Because its guard can fail, a guarded `default` never discharges the
+// `default` requirement and records nothing toward exhaustiveness.
+//
 // Exhaustiveness (SF-7): a choice scrutinee's alternatives are a closed set,
 // so a `match` whose unguarded arms cover every alternative — one arm per
 // discriminant, or an irrefutable binding arm covering everything — needs no
@@ -77,10 +88,9 @@ namespace Carbon::Check {
 // exhaustive per docs/design/pattern_matching.md.
 //
 // TODO: Support other pattern kinds (`var`/`ref` case bindings, tuple
-// patterns, non-binding payload subpatterns), guards on `default` arms
-// (docs/design/pattern_matching.md allows them; the parser does not yet),
-// other scrutinee types (including choices with fewer than two
-// alternatives, which have no integer discriminant to dispatch on), and
+// patterns, non-binding payload subpatterns), other scrutinee types
+// (including choices with fewer than two alternatives, which have no
+// integer discriminant to dispatch on), and
 // integer exhaustiveness via an irrefutable arm or full enumeration.
 // Diagnose cases that can never match, per docs/design/pattern_matching.md.
 
@@ -469,15 +479,32 @@ static auto FinishCasePattern(Context& context) -> void {
 
 auto HandleParseNode(Context& context,
                      Parse::MatchCaseGuardIntroducerId node_id) -> bool {
-  // The arm has a guard, so the case pattern's nodes are all checked:
-  // finish the pattern and open a fresh expression region to capture the
-  // guard expression. The guard is checked in the arm's scope — the
-  // pattern's bindings are in scope in the guard
-  // (docs/design/pattern_matching.md, "Guards") — but its insts must not be
-  // emitted here in the test block, where the pattern has not yet matched
-  // and the bindings are uninitialized; `MatchCase` splices the captured
-  // region into the arm's body block after the bind pass.
-  FinishCasePattern(context);
+  if (context.node_stack().PeekIs(Parse::NodeKind::MatchDefaultIntroducer)) {
+    // A guard on a `default` arm (`default if (E) => ...`): there is no
+    // case pattern to finish. Push the arm's scope — a case arm's scope is
+    // pushed at `MatchCaseIntroducer` so the pattern's bindings cover the
+    // guard, but a `default` arm has no pattern, so its scope starts at
+    // the guard and `MatchHandlerStart` must not push a second one — and a
+    // case-arm context with no pattern, into which `MatchCaseGuard`
+    // records the guard's region; `MatchGuardedDefault` pops both. The
+    // scrutinee's type is not recorded: only case patterns resolve
+    // against it.
+    context.scope_stack().PushForSameRegion(
+        ScopeStack::CleanupScopeKind::Owned);
+    context.match_case_stack().push_back(
+        {.scrutinee_type_id = SemIR::TypeId::None,
+         .introducer_node_id = node_id});
+  } else {
+    // The arm has a guard, so the case pattern's nodes are all checked:
+    // finish the pattern and open a fresh expression region to capture the
+    // guard expression. The guard is checked in the arm's scope — the
+    // pattern's bindings are in scope in the guard
+    // (docs/design/pattern_matching.md, "Guards") — but its insts must not
+    // be emitted here in the test block, where the pattern has not yet
+    // matched and the bindings are uninitialized; `MatchCase` splices the
+    // captured region into the arm's body block after the bind pass.
+    FinishCasePattern(context);
+  }
   BeginExprRegionForPattern(context);
   context.node_stack().Push(node_id);
   return true;
@@ -678,27 +705,83 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
   return true;
 }
 
-auto HandleParseNode(Context& /*context*/,
-                     Parse::MatchDefaultIntroducerId /*node_id*/) -> bool {
+auto HandleParseNode(Context& context, Parse::MatchDefaultIntroducerId node_id)
+    -> bool {
+  // Pushed so that `MatchCaseGuardIntroducer` can recognize a `default`
+  // guard (a case guard's introducer follows the arm's pattern instead);
+  // popped by `MatchDefault` or `MatchGuardedDefault`.
+  context.node_stack().Push(node_id);
   return true;
 }
 
 auto HandleParseNode(Context& context, Parse::MatchDefaultId node_id) -> bool {
+  context.node_stack()
+      .PopAndDiscardSoloNodeId<Parse::NodeKind::MatchDefaultIntroducer>();
   // The current block is the last case arm's else block, or the enclosing
   // block if there are no case arms; either way it is where the `default`
   // arm's body should be emitted, so there is nothing to do other than note
   // the presence of the `default` arm for `MatchStatement`. Parse guarantees
-  // the `default` arm is last.
+  // the unguarded `default` arm is last.
   context.node_stack().Push(node_id);
+  return true;
+}
+
+auto HandleParseNode(Context& context, Parse::MatchGuardedDefaultId node_id)
+    -> bool {
+  context.node_stack()
+      .PopAndDiscardSoloNodeId<Parse::NodeKind::MatchDefaultIntroducer>();
+  // Copy: the case-arm context pushed by `MatchCaseGuardIntroducer` holds
+  // only the guard `MatchCaseGuard` recorded; there is no pattern and no
+  // bindings.
+  auto guard_region_id = context.match_case_stack().back().guard_region_id;
+  auto guard_node_id = context.match_case_stack().back().guard_node_id;
+  context.match_case_stack().pop_back();
+
+  // The arm records nothing toward the enclosing statement's exhaustiveness:
+  // `default` is equivalent to `case _: auto` and guarded arms never count
+  // toward coverage, so a guarded `default` does not discharge the
+  // `default` requirement (docs/design/pattern_matching.md, "Refutability,
+  // overlap, usefulness, and exhaustiveness").
+
+  // The guard is the arm's only test: `default` matches every value, so the
+  // arm's condition is a constant `true` — the CFG shape of a guarded
+  // irrefutable binding arm (`MatchCase`), minus the `NameBindingDecl` and
+  // the bind pass.
+  auto cond_value_id =
+      MakeBoolLiteral(context, node_id, SemIR::BoolValue::True);
+  auto then_block_id =
+      AddDominatedBlockAndBranchIf(context, node_id, cond_value_id);
+  auto else_block_id = AddDominatedBlockAndBranch(context, node_id);
+  context.inst_block_stack().Pop();
+  context.inst_block_stack().Push(then_block_id);
+  context.region_stack().AddToRegion(then_block_id, node_id);
+
+  // Splice the guard's captured condition region and branch on it — into
+  // the arm's body on success, and on failure to the else block, which
+  // holds the next arm's test (or the `default` body, or the statement's
+  // convergence). The failure edge leaves the arm's scope, so it discharges
+  // the scope's cleanups itself, exactly like a failed case guard.
+  auto guard_cond_id = SpliceMatchCaseGuard(context, guard_region_id);
+  context.scope_stack().DeferCleanups();
+  auto body_block_id =
+      AddDominatedBlockAndBranchIf(context, node_id, guard_cond_id);
+  AddBranchWithCleanups(context, SemIR::LocId(guard_node_id), else_block_id,
+                        context.scope_stack().enclosing_cleanup_scope_depth());
+  context.inst_block_stack().Pop();
+  context.inst_block_stack().Push(body_block_id);
+  context.region_stack().AddToRegion(body_block_id, node_id);
+
+  context.node_stack().Push(node_id, else_block_id);
   return true;
 }
 
 auto HandleParseNode(Context& context, Parse::MatchHandlerStartId node_id)
     -> bool {
   // A `case` arm's scope was pushed by `MatchCaseIntroducer`, so that pattern
-  // bindings cover the guard and the body; do not push a second one. A
-  // `default` arm has no pattern context, so its scope starts here. Either
-  // way, `MatchHandler` pops the one arm scope.
+  // bindings cover the guard and the body, and a guarded `default` arm's by
+  // `MatchCaseGuardIntroducer`, covering the guard and the body; do not push
+  // a second one. An unguarded `default` arm has neither, so its scope
+  // starts here. Either way, `MatchHandler` pops the one arm scope.
   if (context.node_stack().PeekIs(Parse::NodeKind::MatchDefault)) {
     context.scope_stack().PushForSameRegion(
         ScopeStack::CleanupScopeKind::Owned);
@@ -714,16 +797,20 @@ auto HandleParseNode(Context& context, Parse::MatchHandlerId node_id) -> bool {
       .PopAndDiscardSoloNodeId<Parse::NodeKind::MatchHandlerStart>();
 
   if (context.node_stack().PeekIs(Parse::NodeKind::MatchDefault)) {
-    // This is the `default` arm's body: leave its block on the instruction
-    // block stack for `MatchStatement` to converge, and leave the
-    // `MatchDefault` entry on the node stack.
+    // This is the unguarded `default` arm's body: leave its block on the
+    // instruction block stack for `MatchStatement` to converge, and leave
+    // the `MatchDefault` entry on the node stack.
     return true;
   }
 
-  // This is a case arm's body: leave its finished block on the instruction
-  // block stack for `MatchStatement` to converge, and start emitting the else
-  // block, which holds the next arm's test or the `default` body.
-  auto else_block_id = context.node_stack().Pop<Parse::NodeKind::MatchCase>();
+  // This is the body of a case arm or a guarded `default` arm: leave its
+  // finished block on the instruction block stack for `MatchStatement` to
+  // converge, and start emitting the else block, which holds the next arm's
+  // test or the `default` body.
+  auto else_block_id =
+      context.node_stack().PeekIs(Parse::NodeKind::MatchGuardedDefault)
+          ? context.node_stack().Pop<Parse::NodeKind::MatchGuardedDefault>()
+          : context.node_stack().Pop<Parse::NodeKind::MatchCase>();
   context.inst_block_stack().Push(else_block_id);
   context.region_stack().AddToRegion(else_block_id, node_id);
 
@@ -796,6 +883,9 @@ static auto DiagnoseNonexhaustiveMatch(
 
 auto HandleParseNode(Context& context, Parse::MatchStatementId node_id)
     -> bool {
+  // Only an unguarded `default` arm satisfies the `default` requirement: a
+  // guarded `default`'s guard can fail, so `MatchHandler` left it on the
+  // node stack as an ordinary arm entry, counted below.
   bool has_default =
       context.node_stack()
           .PopAndDiscardSoloNodeIdIf<Parse::NodeKind::MatchDefault>();
@@ -831,13 +921,13 @@ auto HandleParseNode(Context& context, Parse::MatchStatementId node_id)
                                match_context);
   }
 
-  // The instruction block stack holds one body block per case arm, plus one
-  // more block on top: the `default` arm's body block, or — without a
-  // `default` — the last arm's empty else block, whose edge from the last
-  // arm's test branches straight to the resumption block. Branch from all of
-  // them to a new resumption block. With no case arms, the `default` body
-  // was emitted directly into the enclosing block, and there is nothing to
-  // converge.
+  // The instruction block stack holds one body block per arm (`case` arms
+  // and guarded `default` arms alike), plus one more block on top: the
+  // unguarded `default` arm's body block, or — without one — the last arm's
+  // empty else block, whose edge from the last arm's test branches straight
+  // to the resumption block. Branch from all of them to a new resumption
+  // block. With no other arms, the unguarded `default` body was emitted
+  // directly into the enclosing block, and there is nothing to converge.
   int num_blocks = num_case_arms + 1;
   if (num_blocks >= 2) {
     AddConvergenceBlockAndPush(context, node_id, num_blocks);

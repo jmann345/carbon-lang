@@ -242,7 +242,10 @@ class Context {
   // Per-arm state of the `match` `case` pattern that we are currently
   // checking, pushed by `MatchCaseIntroducer` and popped by `MatchCase`. A
   // stack rather than a single optional because a case pattern's expression
-  // can itself contain a `match` (for example inside a lambda).
+  // can itself contain a `match` (for example inside a lambda). A guarded
+  // `default` arm, which has a guard but no pattern, pushes a pattern-less
+  // entry at `MatchCaseGuardIntroducer` and pops it at
+  // `MatchGuardedDefault`, so the shared guard handling can record into it.
   struct MatchCaseContext {
     // The alternative that a case pattern's root alternative pattern
     // (`.Name` or `.Name(...)`) resolved to against the scrutinee's choice

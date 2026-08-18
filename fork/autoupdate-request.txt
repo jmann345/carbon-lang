@@ -1,2 +1,1 @@
-2026-08-18T13:30Z F8d golden autoupdate: carbon_fn_as_callable.carbon flip + R-7 fail_todo splits
-2026-08-18T18:45Z F8d fix round: carbon_fn_as_callable.carbon new two_carbon_fns_one_callee split (must pin two distinct .argN.<mangled> thunk symbols) + reconcile any pin churn from the B-1 narrowing (mapping confined to InventPrimitiveClangArg; TryMapType null for FunctionType)
+2026-08-18T03:40Z F8d R26 pass-2 fixpoint

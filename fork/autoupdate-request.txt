@@ -1,1 +1,1 @@
-2026-08-18T07:50Z F8d real reconciliation (prior regen ran a broken-compile toolchain and no-op'd; fail_todo_call_params_2's first case now passes)
+2026-08-18T08:30Z F8d pass-2 fixpoint (real)

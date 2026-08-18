@@ -2608,6 +2608,69 @@ import signature, the two-hop chain and ApiForImpl routes are pinned,
 and the W69a ExportDecl chase arm carries its first lower-side pin.
 **W-074 is DISCHARGED.** Veto-able.
 
+_W75a landing note (2026-08-18, the W75a implementer — fork/w075/plan.md,
+the single W-075 slice):_ lane (b) as adjudicated — the synthesized
+`Core.Copy` witness for choice types. _Mechanism:_ check side,
+custom_witness.cpp only: `LookupChoiceCopyWitness` mirroring
+`LookupDestroyWitness` — resolve the canonical query self to a
+`ClassType` whose `class_info.is_choice` holds (any other self answers
+nullopt, so classes/tuples/primitives keep today's behavior and the
+class-copy question stays where upstream left it); symbolic self or
+`build_witness=false` answers yes with `InstId::None` (the destroy/B2a
+deferral posture, justified by the SF-6 triviality fence); concrete self
+builds by way of `BuildPrimitiveCopyWitness` with the Copy interface's
+`scope_without_self_id` as the mangling hint (stated divergence from the
+C++-enum precedent's `GetClassScope`); dispatched from
+`LookupCustomWitness`'s Copy case, upstream's TODO comment left intact
+over the remaining nullopt block. Lower side, handle_call.cpp: the
+`PrimitiveCopy` arm gains the return-slot case (two args = value + slot,
+`PrimitiveCopy` declares one parameter) — `CopyValue` into the slot
+(memcpy for pointer-rep choices) then the trailing
+`SetLocal(inst_id, GetValue(arg_ids[1]))` per the
+CppStdInitializerListMake precedent. _Declared deviation from the plan's
+two-file toolchain diff:_ `FunctionContext::CopyValue` was PRIVATE; its
+declaration moved to the public section of lower/function_context.h
+(declaration-visibility move only, no behavior change) — the plan's
+prescribed call is impossible without it. _Declared consequences carried
+to the digest:_ SF-1 — the custom-witness dispatch PRECEDES
+candidate-impl iteration, so a user out-of-line
+`impl <choice> as Core.Copy` (sum_types.md:95-98) is SHADOWED by the
+synthesized witness, the posture Destroy already has; pinned by the new
+shadowed_user_impl probe. SF-2 — `SetCoreWitness` bypasses
+source-builtin validation and the lower arm widens `PrimitiveCopy`'s
+de-facto contract past its `PrimitiveCopyable` validator
+(sem_ir/builtin_function_kind.cpp); the R-5 weekly-merge yield rule
+covers the seam. _Probes:_ NEW check/testdata/choice/
+alternative_copy.carbon (payload_free return/var/assign round trip; the
+sum_types.md:74-75 doc_shape verbatim incl. the None-to-Some-to-None
+transition; the W69b minting shape `Pair(i64).Neither` with return slot;
+boundary `let` + value-param no-copy pins; the symbolic-deferral +
+monomorphization generic pin — the least-exercised link; the SF-1
+shadowing pin); NEW lower/testdata/choice/alternative_copy.carbon (both
+reprs: by-value `PrimitiveCopy`, pointer-rep slot memcpy, constant folds
+vs runtime calls); the P-2 tripwire FIRED as designed —
+fail_question.carbon's fail_return_choice_binding subfile (its header:
+"if this ever compiles ... §2.6 needs re-derivation") relocated to
+question.carbon as the return_choice_binding positive pin, and the
+§2.6-derived records retext (docs/design/error_handling.md:343-349
+dated amendment — the match-reconstruct `Branch` bodies STAY, `Branch`
+returns the `ControlFlow` carrier, not `Self`;
+control_flow_constructs.carbon:20; choice_generic_diff.carbon's `let`
+workaround record marked historical). All new/changed goldens land
+source-side and ride the runner autoupdate red-first to the R26
+fixpoint; every untouched class/tuple copy golden must come back
+byte-identical. _Conformance (adopted, veto-able):_ control_flow/
+choice_generic_roundtrip_diff restored to the DOC-VERBATIM shape —
+`var my_opt: Optional(i32) = Optional(i32).None;` and the full
+None-to-Some(-to-None) transition on one variable, the oracle
+`.reset()`-symmetric, churn declared; NO program count change. _Floor
+(R9 hedge):_ EXACTLY **96 PASS / 0 FAIL / 28 SKIP over 124**, the pair
+staying one PASS with coverage deepened. W-075 is **DISCHARGE-STAGED**:
+fast compile → autoupdate red-first → fixpoint → gate → conformance;
+any diagnostic on the flipped shapes, a candidate-impl binding in the
+shadowing probe's dump, or any floor movement re-opens the item with
+the run's evidence. Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

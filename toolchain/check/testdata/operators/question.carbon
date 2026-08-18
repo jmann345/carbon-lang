@@ -13,10 +13,12 @@
 // Postfix `?` over user-defined generic choices (fork/b1/plan.md §3 B1b):
 // the `Core.Try` desugar — Branch call, `Core.ControlFlow` discriminant
 // dispatch, break-path `FromBreak` + early return, continue-path value.
-// Impl bodies use the match-reconstruct style throughout (plan §2.6):
-// choices have no `Core.Copy`, so `Branch` destructures `self` and rebuilds
-// the carrier alternative in return position instead of returning a
-// choice-typed binding.
+// Impl bodies use the match-reconstruct style throughout (plan §2.6;
+// reason re-derived 2026-08-18 per W-075's synthesized choice `Core.Copy`
+// witness): `Branch` destructures `self` and rebuilds the carrier
+// alternative because it returns the `ControlFlow` carrier, not `Self` —
+// the historical no-`Core.Copy` bound is discharged, and the flipped
+// tripwire pin is the return_choice_binding subfile below.
 
 // --- propagate.carbon
 library "[[@TEST_NAME]]";
@@ -389,6 +391,30 @@ fn Inner(n: i32) -> MyResult(i32, ErrA) {
 fn Outer(n: i32) -> MyResult(i32, ErrB) {
   var v: i32 = Inner(n)?;
   return MyResult(i32, ErrB).Ok(v);
+}
+//@dump-sem-ir-end
+
+// --- return_choice_binding.carbon
+library "[[@TEST_NAME]]";
+
+choice MyResult(T: type, E: type) {
+  Ok(v: T),
+  Err(e: E)
+}
+
+// The §2.6 tripwire, FIRED as designed (W-075, fork/w075/plan.md P-2): this
+// subfile lived in fail_question.carbon pinning that returning a
+// choice-typed BINDING value-copies the choice and choices had no
+// `Core.Copy`. With the W-075 synthesized choice copy witness the
+// pass-through shape compiles, and §2.6 is re-derived: the match-reconstruct
+// `Branch` bodies STAY — against the `ControlFlow` carrier a `return self;`
+// body is a type mismatch regardless of copyability — but the copy bound
+// they also relied on is discharged (docs/design/error_handling.md carries
+// the dated amendment; rewriting the prelude `Try` sketches is not W75a
+// scope).
+//@dump-sem-ir-begin
+fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
+  return r;
 }
 //@dump-sem-ir-end
 

@@ -13,9 +13,11 @@
 // Postfix `?` rejections that need a user `Core.Try` impl in scope
 // (fork/b1/plan.md §3 B1b): the operand rejection, the three
 // captured-region positions (the §2.4 region-position policy, risk R-2's
-// falsifiers), the D3 no-conversion pin, and the §2.6 no-choice-copy pin.
-// The pre-flight shapes that need no impl are in
-// fail_question_preflight.carbon.
+// falsifiers), and the D3 no-conversion pin. The §2.6 no-choice-copy pin
+// that lived here FIRED as designed (W-075 synthesized the choice
+// `Core.Copy` witness) and moved to question.carbon's
+// return_choice_binding.carbon as a positive pin. The pre-flight shapes
+// that need no impl are in fail_question_preflight.carbon.
 
 // --- fail_operand_not_try.carbon
 library "[[@TEST_NAME]]";
@@ -241,31 +243,4 @@ fn Outer(n: i32) -> MyResult(i32, ErrC) {
   // CHECK:STDERR:
   var v: i32 = Inner(n)?;
   return MyResult(i32, ErrC).Ok(v);
-}
-
-// --- fail_return_choice_binding.carbon
-library "[[@TEST_NAME]]";
-
-choice MyResult(T: type, E: type) {
-  Ok(v: T),
-  Err(e: E)
-}
-
-// The §2.6 bound (risk R-5): returning a choice-typed BINDING value-copies
-// the choice, and choices implement no `Core.Copy`. This is why every
-// `Branch` impl body uses the match-reconstruct style — and why the design
-// doc's original `fn Branch(self) -> Result(T, E) { return self; }` sketch
-// is amended: against the `ControlFlow` carrier that body is a type
-// mismatch, and the underlying copy bound it relied on is pinned here. If
-// this ever compiles, choices gained copyability and §2.6 needs
-// re-derivation.
-fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
-  // CHECK:STDERR: fail_return_choice_binding.carbon:[[@LINE+7]]:10: error: cannot copy value of type `MyResult(i32, i32)` [CopyOfUncopyableType]
-  // CHECK:STDERR:   return r;
-  // CHECK:STDERR:          ^
-  // CHECK:STDERR: fail_return_choice_binding.carbon:[[@LINE+4]]:10: note: type `MyResult(i32, i32)` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   return r;
-  // CHECK:STDERR:          ^
-  // CHECK:STDERR:
-  return r;
 }

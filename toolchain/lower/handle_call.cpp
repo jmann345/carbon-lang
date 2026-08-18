@@ -336,9 +336,25 @@ static auto HandleBuiltinCall(FunctionContext& context, SemIR::InstId inst_id,
       return;
     }
 
-    case SemIR::BuiltinFunctionKind::PrimitiveCopy:
+    case SemIR::BuiltinFunctionKind::PrimitiveCopy: {
+      // Fork (W-075, fork/w075/plan.md §2): a `PrimitiveCopy` callee whose
+      // return type uses a return slot — the synthesized choice `Copy.Op`
+      // for an in-place init repr type, such as a pointer-rep
+      // payload-carrying choice — carries the slot as the trailing arg
+      // (`PrimitiveCopy` declares exactly one parameter, so two args means a
+      // slot). Copy the value into the slot — `CopyValue` handles both the
+      // copy and pointer value reprs (memcpy by way of `CopyObject`) — then
+      // forward the slot as the call's value, per the
+      // `CppStdInitializerListMake` arm below.
+      if (arg_ids.size() == 2) {
+        context.CopyValue(context.GetTypeIdOfInst(arg_ids[0]), arg_ids[0],
+                          arg_ids[1]);
+        context.SetLocal(inst_id, context.GetValue(arg_ids[1]));
+        return;
+      }
       context.SetLocal(inst_id, context.GetValue(arg_ids[0]));
       return;
+    }
 
     case SemIR::BuiltinFunctionKind::PrintChar: {
       auto* i32_type = llvm::IntegerType::getInt32Ty(context.llvm_context());

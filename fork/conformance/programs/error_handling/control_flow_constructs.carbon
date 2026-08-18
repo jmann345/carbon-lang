@@ -17,8 +17,10 @@
 // `Doubled` through `?`, prints -1). Inputs are runtime-computed (R16d), so
 // the discriminant dispatch cannot be constant-folded; consumption is by
 // exhaustive `match` without `default`; the `Branch` impl body uses the
-// match-reconstruct style (plan §2.6 — choices have no `Copy` impl, so
-// pass-through `return self` bodies are inexpressible). Impossible arms
+// match-reconstruct style (plan §2.6; reason retexted 2026-08-18 per W-075
+// — choices now carry a synthesized `Core.Copy` witness, and the body must
+// still reconstruct because `Branch` returns the `ControlFlow` carrier,
+// not `Self`). Impossible arms
 // return their payloads, so a wrong path fails loudly by exit code, not
 // just stdout.
 

@@ -344,9 +344,14 @@ The prelude will provide the implementations when `Core.Result` and the
 `Core.Optional` rebuild land (the post-SF-9 W5-S3p stage; see
 [Implementation staging](#implementation-staging)). Their bodies use the
 match-reconstruct style — destructure `self`, rebuild the carrier
-alternative in return position — because choices have no `Core.Copy` impl,
-so the earlier `fn Branch(self) -> ... { return self; }` sketch would
-value-copy a choice (amended 2026-08-08 per fork/b1/plan.md §2.6). Each
+alternative in return position (amended 2026-08-08 per fork/b1/plan.md
+§2.6; reason re-derived 2026-08-18 per W-075, whose synthesized choice
+`Core.Copy` witness discharged the "choices have no `Core.Copy` impl"
+bound this clause originally cited: the earlier
+`fn Branch(self) -> ... { return self; }` sketch's value copy now checks,
+but against the `ControlFlow` carrier that body remains a type mismatch,
+so the match-reconstruct bodies stand as written — simplifying them is
+future material, not W75a scope). Each
 `Branch` body also ends with an unreachable trailing return (amended
 2026-08-08, second round): the checker's reachability analysis does not
 consult match exhaustiveness, so an exhaustive `match` alone leaves the

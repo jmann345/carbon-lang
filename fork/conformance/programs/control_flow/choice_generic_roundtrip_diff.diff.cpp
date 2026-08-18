@@ -5,9 +5,11 @@
 // Differential C++17 equivalent of choice_generic_roundtrip_diff.carbon:
 // the docs/design/sum_types.md `Optional(T)` example held in std::optional
 // (the doc example's semantics) — construction from empty, re-assignment
-// with a runtime-computed payload, and payload readback through the
-// has_value/None split, mirroring the Carbon side's match arms. Same
-// runtime seed arithmetic, same probe order over the two instantiations
+// with a runtime-computed payload, the return to empty via `.reset()`
+// (mirroring the Carbon side's Some-to-None `.None` re-assignment, the
+// W-075 restoration), and payload readback through the has_value/None
+// split, mirroring the Carbon side's match arms. Same runtime seed
+// arithmetic, same probe order over the two instantiations
 // (`int` / `int64_t`, mirroring `Optional(i32)` / `Optional(i64)`,
 // including the low-byte-1 collision payload 257), so byte-identical
 // output pins the round-tripped payload values per specific.
@@ -41,11 +43,17 @@ static auto InspectL(const std::optional<int64_t>& o) -> void {
 }
 
 auto main() -> int {
-  std::optional<int> start_opt = std::nullopt;
-  Inspect(start_opt);
+  // Construction from empty on ONE variable, then the empty-to-engaged
+  // transition (the Some-to-Some overwrite probe riding in front), then
+  // engaged-to-empty via `.reset()` — the doc's round trip.
+  std::optional<int> my_opt = std::nullopt;
+  Inspect(my_opt);
 
-  std::optional<int> my_opt = RuntimeSeed(-18);
+  my_opt = RuntimeSeed(-18);
   my_opt = RuntimeSeed(22);
+  Inspect(my_opt);
+
+  my_opt.reset();
   Inspect(my_opt);
 
   // The collision payload: 237 + 20 = 257, low byte 1.

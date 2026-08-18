@@ -289,3 +289,13 @@ per-kind). Folded:
 **This plan is APPROVED for implementation** (one slice, W75a). Digest
 carries: lane (b) adoption; the shadowing consequence; the contract
 widening; the tripwire flip; the roundtrip restoration. Veto-able.
+
+## W75a implementation-round adjudication (2026-08-18, coordinator)
+
+The implementer's one R17-grade deviation — `FunctionContext::CopyValue`'s
+declaration moved from the private to the public section of
+function_context.h (comment unchanged; declaration-visibility only) — is
+ADJUDICATED accepted: the plan prescribed the call, the move is the
+minimal enabler, and W69b's shared-`CopyObject` precedent already
+established the public-overload pattern for exactly this family.
+Veto-able.

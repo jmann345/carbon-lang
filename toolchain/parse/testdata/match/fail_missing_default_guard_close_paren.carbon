@@ -22,3 +22,33 @@ fn f() -> i32 {
   }
   return 0;
 }
+
+// CHECK:STDOUT: - filename: fail_missing_default_guard_close_paren.carbon
+// CHECK:STDOUT:   ╭─FileStart ''
+// CHECK:STDOUT:   │   ╭─FunctionIntroducer 'fn'
+// CHECK:STDOUT:   │   ├─IdentifierNameMaybeBeforeSignature 'f'
+// CHECK:STDOUT:   │   │ ╭─ExplicitParamListStart '('
+// CHECK:STDOUT:   │   ├─ExplicitParamList ')'
+// CHECK:STDOUT:   │   │ ╭─IntTypeLiteral 'i32'
+// CHECK:STDOUT:   │   ├─ReturnType '->'
+// CHECK:STDOUT:   │ ╭─FunctionDefinitionStart '{'
+// CHECK:STDOUT:   │ │   ╭─MatchIntroducer 'match'
+// CHECK:STDOUT:   │ │   │ ╭─MatchConditionStart '('
+// CHECK:STDOUT:   │ │   │ ├─BoolLiteralTrue 'true'
+// CHECK:STDOUT:   │ │   ├─MatchCondition ')'
+// CHECK:STDOUT:   │ │ ╭─MatchStatementStart '{'
+// CHECK:STDOUT:   │ │ │     ╭─MatchDefaultIntroducer 'default'
+// CHECK:STDOUT:   │ │ │     │ ╭─MatchCaseGuardIntroducer 'if'
+// CHECK:STDOUT:   │ │ │     │ ├─MatchCaseGuardStart '('
+// CHECK:STDOUT:   │ │ │     │ ├─BoolLiteralFalse 'false'
+// CHECK:STDOUT:   │ │ │     ├─MatchCaseGuard '=>' has_error
+// CHECK:STDOUT:   │ │ │   ╭─MatchGuardedDefault '}' has_error
+// CHECK:STDOUT:   │ │ │ ╭─MatchHandlerStart '}' has_error
+// CHECK:STDOUT:   │ │ ├─MatchHandler '}' has_error
+// CHECK:STDOUT:   │ ├─MatchStatement '}'
+// CHECK:STDOUT:   │ │ ╭─ReturnStatementStart 'return'
+// CHECK:STDOUT:   │ │ ├─IntLiteral '0'
+// CHECK:STDOUT:   │ ├─ReturnStatement ';'
+// CHECK:STDOUT:   ├─FunctionDefinition '}'
+// CHECK:STDOUT:   ├─FileEnd ''
+// CHECK:STDOUT:   (root)

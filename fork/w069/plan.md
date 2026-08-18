@@ -951,6 +951,66 @@ static-resolution fact strengthens, not weakens, the mechanism's
 safety argument). The R-2 register text stays as future-channel guard
 per the implementer's framing. Veto-able._
 
+## W69b fix round (2026-08-18, coordinator — both implementation reviews NEEDS-FIX; two blockers root-caused and adjudicated)
+
+Both W69b adversarial reviews found the MECHANISM sound and runtime-proven
+(the discharge arbiters landed green at exactly 95/0/29 over 124, movement
+isolated to the two new programs; the R-2 substitute upheld against
+independent falsifier-construction attempts) but the EVIDENCE RECORD not
+landable:
+
+1.  **BLOCKER (both reviews): the acceptance vehicle did not check.** The
+    plan's own P-5/§4 sketch `fn MakeNeither() -> P(i64) { return
+    P(i64).Neither; }` — a shape BOTH PLAN REVIEWERS passed — returns a
+    payload-free constant alternative by value, which requires
+    `Core.Copy`; choices implement none. The fill pinned
+    `CopyOfUncopyableType` in the defining split, error-suppressing ALL
+    lowering in import_choice.carbon (zero STDOUT pins — the S-5/P-10
+    subfiles were vacuous). FIXED before this amendment (commit f2a7274):
+    the library returns a constructor call (`MakeRuntime() ->
+    P(i64).Both(1, 2)`) — an initializing expression needing no copy,
+    exactly the shape both conformance programs already used (which is
+    why the runtime arbiters were green while the goldens were not). The
+    runtime-bound predicate distinction survives intact (verified: the
+    call does not fold; the constant sibling `gc` folds `[concrete]`).
+    The copy gap itself is minted as ledger item **W-075**. The
+    implementer-record sentence above claiming the S-5/P-10 subfiles
+    "landed as written … at floor 95/0/29" is CORRECTED here: the source
+    subfiles landed; their pins existed only after this fix round's
+    regen.
+2.  **BLOCKER (both reviews): three undeclared lower-golden movements.**
+    The pass-1 fill moved lower/testdata/choice/{basic,
+    mixed_payload_alternatives, payload_layout}.carbon — PromoteObject
+    promotes every pre-existing package-scope pointer-rep `let`,
+    including plain-choice CONSTANT initializers, because a plain
+    (non-generic) choice alternative's bound value is SemIR-NotConstant
+    today while generic-specific alternatives fold. §3 R-7's falsifier
+    FIRED, type-dependently — exactly its job. ADJUDICATION:
+    **accept-and-declare.** There is no principled SemIR predicate that
+    excludes plain-choice constant initializers without special-casing
+    type kinds; the promotion is verified behavior-preserving (reviewer
+    A audited the copied bytes and both reader paths; the conformance
+    floor held with zero per-program movement) and turns a
+    previously-CRASHING cross-file reference shape for plain choices
+    into a working one. The three files become DECLARED churn; the
+    registry comment is retexted to the truth (constant-bound lets ride
+    the constant path only when their bound value FOLDS; plain-choice
+    initializers do not fold today); if upstream later folds
+    plain-choice constants these promotions vanish naturally. The
+    weekly-merge byte-surface watch item (W69a NIT-6) is hereby
+    demonstrated real and stays on the watch list.
+3.  Review residuals folded: the import_choice header names the
+    reviewer-audit obligation for the "no `_Cgc` symbol" absence claim
+    (CHECK-less goldens cannot assert absence); the registry comment
+    retext (reviewer A NIT-1); reviewer A's non-findings recorded
+    (mutation-through-served-address = identical exposure to VarStorage
+    precedent; no destroy channel exists for file-scope objects
+    tree-wide; per-reference LoadObject uncached matches house style).
+    The same-commit-adjudication pattern (reviewer B) is acknowledged
+    workstream-wide: every "veto-able" stamp is self-recorded within the
+    session — the PR digest presents them for HUMAN veto, which is the
+    V-2 contract. Veto-able._
+
 ## Review-round amendments (2026-08-18)
 
 Both adversarial plan reviews completed 2026-08-18. Reviewer #1

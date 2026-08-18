@@ -841,9 +841,14 @@ auto FileContext::RegisterGlobalLetBindings() -> void {
     // category test — and runtime-valued aliases never reach lowering (check
     // rejects them) — class-scope `static` bindings by the scope walk (only
     // the top block is visited) and the scope test, and constant-bound
-    // `let`s by the constant test: those keep riding the constant path that
-    // W5-S3b's import half already serves, which is what the byte-equivalence
-    // audit over existing `let` goldens pins.
+    // `let`s by the constant test — WHEN their bound value folds to a SemIR
+    // constant (generic-specific choice alternatives fold; those ride the
+    // constant path W5-S3b's import half serves). A PLAIN choice
+    // alternative's bound value does not fold today, so
+    // source-level-constant plain-choice `let`s ARE promoted —
+    // behavior-preserving, adjudicated as declared golden churn at the W69b
+    // fix round (fork/w069/plan.md); if upstream later folds these, the
+    // promotions vanish with no other change.
     if (!binding->entity_name_id.has_value() ||
         !binding->value_id.has_value()) {
       continue;

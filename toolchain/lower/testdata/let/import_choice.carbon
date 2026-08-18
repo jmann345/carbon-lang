@@ -21,7 +21,10 @@
 // (check/testdata/match/choice_generic_payload_scrutinee.carbon): the
 // importer's `match (g)` reads the discriminant through the external
 // object-rep global. The constant-bound sibling `gc` keeps riding the
-// constant path (half (b)) — no `_Cgc` global may appear.
+// constant path (half (b)) — no `_Cgc` global may appear. (A CHECK-less
+// golden cannot assert absence: that claim is enforced by the reviewer
+// audit over this file's filled content, named here per the W69b fix
+// round.)
 
 // --- plib.carbon
 

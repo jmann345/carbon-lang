@@ -2397,6 +2397,32 @@ floor lands at EXACTLY 95/0/29 over 124 with the movement being ONLY the
 two new programs' PASS; any other movement re-opens with the run's
 evidence). Veto-able.
 
+_W69b fix round (2026-08-18, coordinator):_ both adversarial
+implementation reviews returned NEEDS-FIX on the EVIDENCE RECORD while
+finding the mechanism sound and runtime-proven (the discharge arbiters
+were already green: floor exactly 95/0/29 over 124 at scoreboard
+889760a, movement isolated to the two new programs, the multi-unit
+program's first real execution PASS). Two blockers, both root-caused:
+(1) the acceptance vehicle's `return P(i64).Neither;` pins
+CopyOfUncopyableType — the plan's own sketch shape, passed by both plan
+reviewers, falsified by the fill; fixed at f2a7274 to the
+constructor-call shape (`MakeRuntime() -> P(i64).Both(1, 2)`), the
+runtime-bound predicate intact; the copy gap minted as **W-075**.
+(2) three undeclared lower-golden movements
+(choice/{basic,mixed_payload_alternatives,payload_layout}.carbon):
+PromoteObject promotes plain-choice CONSTANT initializers because their
+bound values are SemIR-NotConstant today (generic-specific alternatives
+fold) — §3 R-7's falsifier FIRED as designed; ADJUDICATED
+accept-and-declare (no principled predicate line exists; the promotion
+is verified behavior-preserving and fixes a previously-crashing
+plain-choice cross-file shape; the three files become declared churn;
+registry comment retexted; the weekly-merge byte-surface watch item is
+now demonstrated real). Review residuals folded per the plan's fix-round
+amendment (import_choice absence-claim audit obligation named;
+same-commit-adjudication pattern acknowledged for the PR digest).
+Discharge criteria (2)/(3) re-arbitrate at the post-fix regen + gate;
+criterion (4) already met. Veto-able.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

@@ -232,15 +232,14 @@ auto GetPassingModeForCppParameter(const clang::ImplicitConversionSequence& ics,
 // If the invented argument is an embedded reference to a C++ function
 // declaration (a Carbon function passed as a C++ callable, see
 // `InventClangArg`), returns that declaration; otherwise returns null.
-static auto GetConstantFunctionArg(const clang::Expr* arg_expr)
+static auto GetConstantFunctionArg(clang::Expr* arg_expr)
     -> clang::FunctionDecl* {
-  const auto* cast_expr = dyn_cast<clang::ImplicitCastExpr>(arg_expr);
+  auto* cast_expr = dyn_cast<clang::ImplicitCastExpr>(arg_expr);
   if (!cast_expr ||
       cast_expr->getCastKind() != clang::CK_FunctionToPointerDecay) {
     return nullptr;
   }
-  const auto* decl_ref_expr =
-      dyn_cast<clang::DeclRefExpr>(cast_expr->getSubExpr());
+  auto* decl_ref_expr = dyn_cast<clang::DeclRefExpr>(cast_expr->getSubExpr());
   if (!decl_ref_expr) {
     return nullptr;
   }

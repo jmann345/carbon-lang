@@ -244,3 +244,43 @@ None blocking. Two adopt-unless-vetoed decisions restated: (i) lane (a)
 peek + `Done(NotConstant)` per the §1 design evidence; (ii) no
 conformance program change (floor stays exactly 96/0/28), with the
 runtime-arbitrated export-x unit recorded as optional follow-up material.
+
+## Review-round amendments + sign-off (2026-08-18, coordinator)
+
+One adversarial plan review: **APPROVE** — every load-bearing claim
+verified against the tree, including the §2 re-crash claim (attacked
+directly: recursion on the wrapped ImportRefLoaded provably re-enters
+the 4483 CHECK; no chase redirects `TryResolveInst`; even a hand-rolled
+chase would return the same NotConstant). Findings folded:
+
+1.  **SF-1 (misattribution corrected):** the working constant-export
+    route does NOT dispatch on the ExportDecl arm at
+    import_ref.cpp:2311-2315/4580 — it dispatches on the exported
+    value's canonical constant inst (the VarStorage arm for `export v`,
+    the route var/export_name.carbon's `[concrete = %v.var]` importer
+    pins); the ExportDecl arm is bypassed by the eval forwarding and
+    appears statically dead for these shapes. §2's parenthetical is
+    superseded by this record.
+2.  **N-2:** the insertion's true upstream-side neighbor is upstream's
+    OWN TODO at import_ref.cpp:4481-4482 ("Import of non-constant
+    BindNames…"); the S3b comment block FOLLOWS the CHECK. The yield
+    rule's trigger (upstream implementing that TODO) sits directly at
+    the hunk boundary — exactly where the weekly merge will surface it.
+3.  **N-3:** pre-fix, the two-hop chain crashes at the MIDDLE
+    exporter's own check (its `export x;` name-lookup loads the inner
+    ExportDecl), not only at the final importer — P-2's coverage is
+    per-hop, discharged file-by-file.
+4.  **N-1/N-4:** implementation may reuse `untyped_inst` by way of `TryAs`;
+    golden dialect renders `%x: %i32`.
+5.  **N-5 ADOPTED:** two probe extensions join W74a's set — **P-4** an
+    impl-file consumer (`impl library` reading its api's `export x;` of
+    a runtime let — the ApiForImpl route, nowhere pinned for runtime
+    lets) and **P-5** an import_both-shaped dual-route merge subfile
+    (main imports the defining AND the exporting library — mirrors
+    upstream's import_both pin, extending it from classes to runtime
+    lets). Same mechanism, cheap, close real coverage holes.
+
+**This plan is APPROVED for implementation** (one slice, W74a). The V-2
+digest carries: lane (a) adoption; the no-conformance-change floor
+adoption (96/0/28 unchanged); the two probe adoptions; the SF-1
+correction. Veto-able.

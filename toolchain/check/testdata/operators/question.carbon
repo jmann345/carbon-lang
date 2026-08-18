@@ -3592,3 +3592,63 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
+// CHECK:STDOUT: --- return_choice_binding.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   %MyResult.type: type = generic_class_type @MyResult [concrete]
+// CHECK:STDOUT:   %MyResult.generic: %MyResult.type = struct_value () [concrete]
+// CHECK:STDOUT:   %Copy.type: type = facet_type <@Copy> [concrete]
+// CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
+// CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
+// CHECK:STDOUT:   %MyResult.21e: type = class_type @MyResult, @MyResult(%i32, %i32) [concrete]
+// CHECK:STDOUT:   %pattern_type.90f: type = pattern_type %MyResult.21e [concrete]
+// CHECK:STDOUT:   %r.param_patt: %pattern_type.90f = value_param_pattern [concrete]
+// CHECK:STDOUT:   %r.patt: %pattern_type.90f = at_binding_pattern r, %r.param_patt [concrete]
+// CHECK:STDOUT:   %.4de: Core.Form = init_form %MyResult.21e [concrete]
+// CHECK:STDOUT:   %return.param_patt.8cb: %pattern_type.90f = out_param_pattern [concrete]
+// CHECK:STDOUT:   %return.patt.6c9: %pattern_type.90f = return_slot_pattern %return.param_patt.8cb, %MyResult.21e [concrete]
+// CHECK:STDOUT:   %Passthrough.type: type = fn_type @Passthrough [concrete]
+// CHECK:STDOUT:   %Passthrough: %Passthrough.type = struct_value () [concrete]
+// CHECK:STDOUT:   %Copy.Op.type: type = fn_type @Copy.Op [concrete]
+// CHECK:STDOUT:   %Copy.Op: %Copy.Op.type = struct_value () [concrete]
+// CHECK:STDOUT:   %custom_witness.14b: <witness> = custom_witness (%Copy.Op), @Copy [concrete]
+// CHECK:STDOUT:   %Copy.facet.b6c: %Copy.type = facet_value %MyResult.21e, (%custom_witness.14b) [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.afd: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.b6c) [concrete]
+// CHECK:STDOUT:   %.9fa: type = fn_type_with_self_type %Copy.WithSelf.Op.type.afd, %Copy.facet.b6c [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: file {
+// CHECK:STDOUT:   %Passthrough.decl: %Passthrough.type = fn_decl @Passthrough [concrete = constants.%Passthrough] {
+// CHECK:STDOUT:     %r.param_patt: %pattern_type.90f = value_param_pattern [concrete = constants.%r.param_patt]
+// CHECK:STDOUT:     %r.patt: %pattern_type.90f = at_binding_pattern r, %r.param_patt [concrete = constants.%r.patt]
+// CHECK:STDOUT:     %return.param_patt: %pattern_type.90f = out_param_pattern [concrete = constants.%return.param_patt.8cb]
+// CHECK:STDOUT:     %return.patt: %pattern_type.90f = return_slot_pattern %return.param_patt, %MyResult.loc19_59 [concrete = constants.%return.patt.6c9]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %MyResult.ref.loc19_42: %MyResult.type = name_ref MyResult, file.%MyResult.decl [concrete = constants.%MyResult.generic]
+// CHECK:STDOUT:     %i32.loc19_51: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:     %i32.loc19_56: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:     %MyResult.loc19_59: type = class_type @MyResult, @MyResult(constants.%i32, constants.%i32) [concrete = constants.%MyResult.21e]
+// CHECK:STDOUT:     %.loc19_59.2: Core.Form = init_form %MyResult.loc19_59 [concrete = constants.%.4de]
+// CHECK:STDOUT:     %r.param: %MyResult.21e = value_param call_param0
+// CHECK:STDOUT:     %.loc19_36: type = splice_block %MyResult.loc19_36 [concrete = constants.%MyResult.21e] {
+// CHECK:STDOUT:       %MyResult.ref.loc19_19: %MyResult.type = name_ref MyResult, file.%MyResult.decl [concrete = constants.%MyResult.generic]
+// CHECK:STDOUT:       %i32.loc19_28: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:       %i32.loc19_33: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:       %MyResult.loc19_36: type = class_type @MyResult, @MyResult(constants.%i32, constants.%i32) [concrete = constants.%MyResult.21e]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %r: %MyResult.21e = wrapper_binding r, %r.param
+// CHECK:STDOUT:     %return.param: ref %MyResult.21e = out_param call_param1
+// CHECK:STDOUT:     %return: ref %MyResult.21e = return_slot %return.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Passthrough(%r.param: %MyResult.21e) -> out %return.param: %MyResult.21e {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %r.ref: %MyResult.21e = name_ref r, %r
+// CHECK:STDOUT:   %impl.elem0: %.9fa = impl_witness_access constants.%custom_witness.14b, element0 [concrete = constants.%Copy.Op]
+// CHECK:STDOUT:   %bound_method: <bound method> = bound_method %r.ref, %impl.elem0
+// CHECK:STDOUT:   %.loc19_59.1: ref %MyResult.21e = splice_block %return.param {}
+// CHECK:STDOUT:   %Copy.Op.call: init %MyResult.21e to %.loc19_59.1 = call %bound_method(%r.ref)
+// CHECK:STDOUT:   return %Copy.Op.call to %return.param
+// CHECK:STDOUT: }
+// CHECK:STDOUT:

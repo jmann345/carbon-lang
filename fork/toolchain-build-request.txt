@@ -1,1 +1,1 @@
-2026-08-18T09:26Z W-067 gate RE-FIRE (run 32111182653 died mid-test at runner outage ~07:33Z; full bazel test must complete)
+2026-08-18T10:02Z W-068 gate (small-choice match dispatch; full bazel test)

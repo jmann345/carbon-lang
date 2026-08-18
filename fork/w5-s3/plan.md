@@ -497,3 +497,5 @@ veto digest carrying every sub-decision above to the user for overrule: (1) the 
 split, (2) the §2.3 diagnostic placement, (3) the §6 string narrowing, (4) Option B adoption
 itself, including the forced completion at the scrutinee gate (§2.1), (5) the sentinel-zero
 layout representation choice (§2.2), (6) the S3a conformance-program addition (§3/§8).
+
+_2026-08-18 (W-068): the fail_todo_single_alternative_choice.carbon pin named above was flipped positive at the W-068 slice (single_alternative_choice.carbon); the ledger and decision log carry the current state._

@@ -107,6 +107,28 @@ fn Classify(f: Flag) -> i32 {
   return -1;
 }
 
+// --- fail_single_alternative_guarded.carbon
+library "[[@TEST_NAME]]";
+
+choice Always {
+  TheOnlyOption
+}
+
+// W-068: a single-alternative choice is admitted at the scrutinee gate with
+// no discriminant test — but the coverage rules are unchanged, so when the
+// only arm covering the only alternative is guarded, the match is still
+// diagnosed as non-exhaustive, naming it.
+fn Classify(a: Always) -> i32 {
+  // CHECK:STDERR: fail_single_alternative_guarded.carbon:[[@LINE+4]]:3: error: `match` on choice `Always` has no `default` arm and does not cover alternative `.TheOnlyOption` [MatchNonexhaustive]
+  // CHECK:STDERR:   match (a) {
+  // CHECK:STDERR:   ^~~~~~~~~~~
+  // CHECK:STDERR:
+  match (a) {
+    case .TheOnlyOption if (true) => { return 0; }
+  }
+  return -1;
+}
+
 // --- fail_all_alternatives_rejected.carbon
 library "[[@TEST_NAME]]";
 

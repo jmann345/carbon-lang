@@ -183,43 +183,41 @@ fn F(a: P(i32), b: P(bool)) -> i32 {
   return -1;
 }
 
-// --- fail_todo_single_alternative_specific.carbon
+// --- single_alternative_specific.carbon
 library "[[@TEST_NAME]]";
 
+//@dump-sem-ir-begin
 choice Always(T: type) {
   Sunny
 }
 
-// W-068 composition on the post-deletion path: a single-alternative
-// specific's discriminant is the empty tuple, not an integer, so
-// `GetChoiceDiscriminantType` still rejects it — the fewer-than-two gate
-// composes with the lifted specifics gate and the scrutinee TODO survives.
+// W-068 composition: a single-alternative specific's discriminant is the
+// empty tuple, so the lifted fewer-than-two gate admits it through the same
+// repr read as a concrete choice — the one arm is always taken with no
+// discriminant test, and covering the only alternative discharges the
+// `default` requirement.
 fn F(a: Always(i32)) {
-  // CHECK:STDERR: fail_todo_single_alternative_specific.carbon:[[@LINE+4]]:9: error: semantics TODO: `match on unsupported scrutinee type` [SemanticsTodo]
-  // CHECK:STDERR:   match (a) {
-  // CHECK:STDERR:         ^~~
-  // CHECK:STDERR:
   match (a) {
     case .Sunny => { return; }
   }
 }
+//@dump-sem-ir-end
 
-// --- fail_todo_empty_choice_specific.carbon
+// --- empty_choice_specific.carbon
 library "[[@TEST_NAME]]";
 
+//@dump-sem-ir-begin
 choice Never(T: type) {}
 
-// The zero-alternative composition: an empty generic choice's specific also
-// keeps the scrutinee TODO (W-068).
+// The zero-alternative composition (W-068): an empty generic choice's
+// specific is admitted too; the `default` arm is dynamically dead —
+// `Never(i32)` has no constructors — and the match is vacuously exhaustive.
 fn F(n: Never(i32)) {
-  // CHECK:STDERR: fail_todo_empty_choice_specific.carbon:[[@LINE+4]]:9: error: semantics TODO: `match on unsupported scrutinee type` [SemanticsTodo]
-  // CHECK:STDERR:   match (n) {
-  // CHECK:STDERR:         ^~~
-  // CHECK:STDERR:
   match (n) {
     default => { return; }
   }
 }
+//@dump-sem-ir-end
 
 // --- fail_mixed_table_closed.carbon
 library "[[@TEST_NAME]]";
@@ -1789,5 +1787,218 @@ fn F(p: P(i32)) -> i32 {
 // CHECK:STDOUT:   %a.ref: %P.b38 = name_ref a, %a
 // CHECK:STDOUT:   %Classify.call: init %i32 = call %Classify.ref(%a.ref)
 // CHECK:STDOUT:   return %Classify.call
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- single_alternative_specific.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   %type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %.Self.frozen: %type = symbolic_binding .Self [symbolic_self]
+// CHECK:STDOUT:   %pattern_type.98f: type = pattern_type type [concrete]
+// CHECK:STDOUT:   %T.patt: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic]
+// CHECK:STDOUT:   %T: type = symbolic_binding T, 0 [symbolic]
+// CHECK:STDOUT:   %Always.type: type = generic_class_type @Always [concrete]
+// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
+// CHECK:STDOUT:   %Always.generic: %Always.type = struct_value () [concrete]
+// CHECK:STDOUT:   %Always.7a1: type = class_type @Always, @Always(%T) [symbolic]
+// CHECK:STDOUT:   %struct_type.discriminant: type = struct_type {.discriminant: %empty_tuple.type} [concrete]
+// CHECK:STDOUT:   %complete_type.a0b: <witness> = complete_type_witness %struct_type.discriminant [concrete]
+// CHECK:STDOUT:   %empty_tuple: %empty_tuple.type = tuple_value () [concrete]
+// CHECK:STDOUT:   %struct: %struct_type.discriminant = struct_value (%empty_tuple) [concrete]
+// CHECK:STDOUT:   %require_complete.a19: <witness> = require_complete_type %Always.7a1 [symbolic]
+// CHECK:STDOUT:   %Always.val.158: %Always.7a1 = struct_value (%empty_tuple) [symbolic]
+// CHECK:STDOUT:   %.4eb: ref %Always.7a1 = temporary invalid, %Always.val.158 [symbolic]
+// CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
+// CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
+// CHECK:STDOUT:   %Always.413: type = class_type @Always, @Always(%i32) [concrete]
+// CHECK:STDOUT:   %pattern_type.b4f: type = pattern_type %Always.413 [concrete]
+// CHECK:STDOUT:   %a.param_patt: %pattern_type.b4f = value_param_pattern [concrete]
+// CHECK:STDOUT:   %a.patt: %pattern_type.b4f = at_binding_pattern a, %a.param_patt [concrete]
+// CHECK:STDOUT:   %F.type: type = fn_type @F [concrete]
+// CHECK:STDOUT:   %F: %F.type = struct_value () [concrete]
+// CHECK:STDOUT:   %Always.val.792: %Always.413 = struct_value (%empty_tuple) [concrete]
+// CHECK:STDOUT:   %.d3a: ref %Always.413 = temporary invalid, %Always.val.792 [concrete]
+// CHECK:STDOUT:   %true: bool = bool_literal true [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: file {
+// CHECK:STDOUT:   %Always.decl: %Always.type = class_decl @Always [concrete = constants.%Always.generic] {
+// CHECK:STDOUT:     %T.patt.loc4_16.1: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc4_16.2 (constants.%T.patt)]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %.loc4_18.1: type = splice_block %.loc4_18.2 [concrete = type] {
+// CHECK:STDOUT:       %.Self.frozen: %type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
+// CHECK:STDOUT:       %.loc4_18.2: type = type_literal type [concrete = type]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %T.loc4_16.2: type = symbolic_binding T, 0 [symbolic = %T.loc4_16.1 (constants.%T)]
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %F.decl: %F.type = fn_decl @F [concrete = constants.%F] {
+// CHECK:STDOUT:     %a.param_patt: %pattern_type.b4f = value_param_pattern [concrete = constants.%a.param_patt]
+// CHECK:STDOUT:     %a.patt: %pattern_type.b4f = at_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %a.param: %Always.413 = value_param call_param0
+// CHECK:STDOUT:     %.loc13: type = splice_block %Always [concrete = constants.%Always.413] {
+// CHECK:STDOUT:       %Always.ref: %Always.type = name_ref Always, file.%Always.decl [concrete = constants.%Always.generic]
+// CHECK:STDOUT:       %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:       %Always: type = class_type @Always, @Always(constants.%i32) [concrete = constants.%Always.413]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %a: %Always.413 = wrapper_binding a, %a.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: generic class @Always(%T.loc4_16.2: type) {
+// CHECK:STDOUT:   %T.patt.loc4_16.2: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc4_16.2 (constants.%T.patt)]
+// CHECK:STDOUT:   %T.loc4_16.1: type = symbolic_binding T, 0 [symbolic = %T.loc4_16.1 (constants.%T)]
+// CHECK:STDOUT:
+// CHECK:STDOUT: !definition:
+// CHECK:STDOUT:   %Always: type = class_type @Always, @Always(%T.loc4_16.1) [symbolic = %Always (constants.%Always.7a1)]
+// CHECK:STDOUT:   %require_complete: <witness> = require_complete_type %Always [symbolic = %require_complete (constants.%require_complete.a19)]
+// CHECK:STDOUT:   %Always.val: @Always.%Always (%Always.7a1) = struct_value (constants.%empty_tuple) [symbolic = %Always.val (constants.%Always.val.158)]
+// CHECK:STDOUT:   %.loc6_1.13: ref @Always.%Always (%Always.7a1) = temporary invalid, %Always.val [symbolic = %.loc6_1.13 (constants.%.4eb)]
+// CHECK:STDOUT:
+// CHECK:STDOUT:   class {
+// CHECK:STDOUT:     %complete_type: <witness> = complete_type_witness constants.%struct_type.discriminant [concrete = constants.%complete_type.a0b]
+// CHECK:STDOUT:     %.loc6_1.1: %empty_tuple.type = tuple_literal () [concrete = constants.%empty_tuple]
+// CHECK:STDOUT:     %empty_tuple: %empty_tuple.type = tuple_value () [concrete = constants.%empty_tuple]
+// CHECK:STDOUT:     %.loc6_1.2: %empty_tuple.type = converted %.loc6_1.1, %empty_tuple [concrete = constants.%empty_tuple]
+// CHECK:STDOUT:     %.loc6_1.3: %struct_type.discriminant = struct_literal (%.loc6_1.2) [concrete = constants.%struct]
+// CHECK:STDOUT:     %.loc6_1.4: ref @Always.%Always (%Always.7a1) = temporary_storage
+// CHECK:STDOUT:     %.loc6_1.5: ref %empty_tuple.type = class_element_access %.loc6_1.4, element0
+// CHECK:STDOUT:     %.loc6_1.6: init %empty_tuple.type to %.loc6_1.5 = tuple_init () [concrete = constants.%empty_tuple]
+// CHECK:STDOUT:     %.loc6_1.7: init %empty_tuple.type = converted %.loc6_1.2, %.loc6_1.6 [concrete = constants.%empty_tuple]
+// CHECK:STDOUT:     %.loc6_1.8: init %empty_tuple.type to %.loc6_1.5 = in_place_init %.loc6_1.7 [concrete = constants.%empty_tuple]
+// CHECK:STDOUT:     %.loc6_1.9: init @Always.%Always (%Always.7a1) to %.loc6_1.4 = class_init (%.loc6_1.8) [symbolic = %Always.val (constants.%Always.val.158)]
+// CHECK:STDOUT:     %.loc6_1.10: init @Always.%Always (%Always.7a1) = converted %.loc6_1.3, %.loc6_1.9 [symbolic = %Always.val (constants.%Always.val.158)]
+// CHECK:STDOUT:     %.loc6_1.11: ref @Always.%Always (%Always.7a1) = temporary %.loc6_1.4, %.loc6_1.10 [symbolic = %.loc6_1.13 (constants.%.4eb)]
+// CHECK:STDOUT:     %.loc6_1.12: @Always.%Always (%Always.7a1) = acquire_value %.loc6_1.11 [symbolic = %Always.val (constants.%Always.val.158)]
+// CHECK:STDOUT:     %Sunny: @Always.%Always (%Always.7a1) = wrapper_binding Sunny, %.loc6_1.12
+// CHECK:STDOUT:     complete_type_witness = %complete_type
+// CHECK:STDOUT:
+// CHECK:STDOUT:   !members:
+// CHECK:STDOUT:     .Self = constants.%Always.7a1
+// CHECK:STDOUT:     .Sunny = %Sunny
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F(%a.param: %Always.413) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %a.ref: %Always.413 = name_ref a, %a
+// CHECK:STDOUT:   name_binding_decl {
+// CHECK:STDOUT:     %expr_patt: %pattern_type.b4f = expr_pattern %Sunny.ref in [concrete] {
+// CHECK:STDOUT:       %.loc15_10.2: %Always.413 = specific_constant @Always.%.loc6_1.12, @Always(constants.%i32) [concrete = constants.%Always.val.792]
+// CHECK:STDOUT:       %Sunny.ref: %Always.413 = name_ref Sunny, %.loc15_10.2 [concrete = constants.%Always.val.792]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %.loc15_10.1: %Always.413 = splice_block %Sunny.ref [concrete = constants.%Always.val.792] {
+// CHECK:STDOUT:     %.loc15_10.2: %Always.413 = specific_constant @Always.%.loc6_1.12, @Always(constants.%i32) [concrete = constants.%Always.val.792]
+// CHECK:STDOUT:     %Sunny.ref: %Always.413 = name_ref Sunny, %.loc15_10.2 [concrete = constants.%Always.val.792]
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %true: bool = bool_literal true [concrete = constants.%true]
+// CHECK:STDOUT:   if %true br !match.case.then else br !match.case.else
+// CHECK:STDOUT:
+// CHECK:STDOUT: !match.case.then:
+// CHECK:STDOUT:   return
+// CHECK:STDOUT:
+// CHECK:STDOUT: !match.case.else:
+// CHECK:STDOUT:   br !match.done
+// CHECK:STDOUT:
+// CHECK:STDOUT: !match.done:
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: specific @Always(constants.%T) {
+// CHECK:STDOUT:   %T.patt.loc4_16.2 => constants.%T.patt
+// CHECK:STDOUT:   %T.loc4_16.1 => constants.%T
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: specific @Always(constants.%i32) {
+// CHECK:STDOUT:   %T.patt.loc4_16.2 => constants.%T.patt
+// CHECK:STDOUT:   %T.loc4_16.1 => constants.%i32
+// CHECK:STDOUT:
+// CHECK:STDOUT: !definition:
+// CHECK:STDOUT:   %Always => constants.%Always.413
+// CHECK:STDOUT:   %require_complete => constants.%complete_type.a0b
+// CHECK:STDOUT:   %Always.val => constants.%Always.val.792
+// CHECK:STDOUT:   %.loc6_1.13 => constants.%.d3a
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- empty_choice_specific.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   %type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %.Self.frozen: %type = symbolic_binding .Self [symbolic_self]
+// CHECK:STDOUT:   %pattern_type.98f: type = pattern_type type [concrete]
+// CHECK:STDOUT:   %T.patt: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic]
+// CHECK:STDOUT:   %T: type = symbolic_binding T, 0 [symbolic]
+// CHECK:STDOUT:   %Never.type: type = generic_class_type @Never [concrete]
+// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
+// CHECK:STDOUT:   %Never.generic: %Never.type = struct_value () [concrete]
+// CHECK:STDOUT:   %Never.8b0: type = class_type @Never, @Never(%T) [symbolic]
+// CHECK:STDOUT:   %struct_type.discriminant: type = struct_type {.discriminant: %empty_tuple.type} [concrete]
+// CHECK:STDOUT:   %complete_type.a0b: <witness> = complete_type_witness %struct_type.discriminant [concrete]
+// CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
+// CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
+// CHECK:STDOUT:   %Never.0c1: type = class_type @Never, @Never(%i32) [concrete]
+// CHECK:STDOUT:   %pattern_type.790: type = pattern_type %Never.0c1 [concrete]
+// CHECK:STDOUT:   %n.param_patt: %pattern_type.790 = value_param_pattern [concrete]
+// CHECK:STDOUT:   %n.patt: %pattern_type.790 = at_binding_pattern n, %n.param_patt [concrete]
+// CHECK:STDOUT:   %F.type: type = fn_type @F [concrete]
+// CHECK:STDOUT:   %F: %F.type = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: file {
+// CHECK:STDOUT:   %Never.decl: %Never.type = class_decl @Never [concrete = constants.%Never.generic] {
+// CHECK:STDOUT:     %T.patt.loc4_15.1: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc4_15.2 (constants.%T.patt)]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %.loc4_17.1: type = splice_block %.loc4_17.2 [concrete = type] {
+// CHECK:STDOUT:       %.Self.frozen: %type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
+// CHECK:STDOUT:       %.loc4_17.2: type = type_literal type [concrete = type]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %T.loc4_15.2: type = symbolic_binding T, 0 [symbolic = %T.loc4_15.1 (constants.%T)]
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %F.decl: %F.type = fn_decl @F [concrete = constants.%F] {
+// CHECK:STDOUT:     %n.param_patt: %pattern_type.790 = value_param_pattern [concrete = constants.%n.param_patt]
+// CHECK:STDOUT:     %n.patt: %pattern_type.790 = at_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %n.param: %Never.0c1 = value_param call_param0
+// CHECK:STDOUT:     %.loc9: type = splice_block %Never [concrete = constants.%Never.0c1] {
+// CHECK:STDOUT:       %Never.ref: %Never.type = name_ref Never, file.%Never.decl [concrete = constants.%Never.generic]
+// CHECK:STDOUT:       %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:       %Never: type = class_type @Never, @Never(constants.%i32) [concrete = constants.%Never.0c1]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %n: %Never.0c1 = wrapper_binding n, %n.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: generic class @Never(%T.loc4_15.2: type) {
+// CHECK:STDOUT:   %T.patt.loc4_15.2: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc4_15.2 (constants.%T.patt)]
+// CHECK:STDOUT:   %T.loc4_15.1: type = symbolic_binding T, 0 [symbolic = %T.loc4_15.1 (constants.%T)]
+// CHECK:STDOUT:
+// CHECK:STDOUT: !definition:
+// CHECK:STDOUT:
+// CHECK:STDOUT:   class {
+// CHECK:STDOUT:     %complete_type: <witness> = complete_type_witness constants.%struct_type.discriminant [concrete = constants.%complete_type.a0b]
+// CHECK:STDOUT:     complete_type_witness = %complete_type
+// CHECK:STDOUT:
+// CHECK:STDOUT:   !members:
+// CHECK:STDOUT:     .Self = constants.%Never.8b0
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F(%n.param: %Never.0c1) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %n.ref: %Never.0c1 = name_ref n, %n
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: specific @Never(constants.%T) {
+// CHECK:STDOUT:   %T.patt.loc4_15.2 => constants.%T.patt
+// CHECK:STDOUT:   %T.loc4_15.1 => constants.%T
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: specific @Never(constants.%i32) {
+// CHECK:STDOUT:   %T.patt.loc4_15.2 => constants.%T.patt
+// CHECK:STDOUT:   %T.loc4_15.1 => constants.%i32
+// CHECK:STDOUT:
+// CHECK:STDOUT: !definition:
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

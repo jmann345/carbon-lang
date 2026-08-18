@@ -904,6 +904,19 @@ principle (rated implausible dataflow by the reviewer — accepted); the
 drill exercises the depth/tag channel only (the plan mandates exactly
 that). Veto-able.
 
+_W72b discharge confirmation (2026-08-18, coordinator):_ the post-revert
+green run
+(<https://github.com/jmann345/carbon-lang/actions/runs/32096689454>,
+commit 547aa83) regenerated the scoreboard at exactly the target floor —
+**91 PASS / 0 FAIL / 29 SKIP over 120**, `question_generic_thread_diff`
+PASS inside the rolled-up PASS "Error handling: dedicated control flow
+constructs" bullet (4 programs). All of fork/w072/plan.md §6's discharge
+criteria are now met: (i)/(iii)/(v) at W72a, (iv) completed by the
+round-2 amendment's veto record, (ii) by this run. **W-072 is
+DISCHARGED** (ledger retitled; the staging hedge's confirming condition
+fired as staged, so no re-open). W-073 (the Diverge/comment-family
+sweep, nine files) unblocks as the natural successor. Veto-able.
+
 ### F-007: Unions - **Native `union` declaration** (2026-07-19)
 
 Rust-shaped safety surface (writes safe, reads defined byte-reinterpretation,

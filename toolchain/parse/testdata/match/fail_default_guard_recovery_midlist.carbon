@@ -24,3 +24,55 @@ fn f() -> i32 {
   }
   return 0;
 }
+
+// CHECK:STDOUT: - filename: fail_default_guard_recovery_midlist.carbon
+// CHECK:STDOUT:   ╭─FileStart ''
+// CHECK:STDOUT:   │   ╭─FunctionIntroducer 'fn'
+// CHECK:STDOUT:   │   ├─IdentifierNameMaybeBeforeSignature 'f'
+// CHECK:STDOUT:   │   │ ╭─ExplicitParamListStart '('
+// CHECK:STDOUT:   │   ├─ExplicitParamList ')'
+// CHECK:STDOUT:   │   │ ╭─IntTypeLiteral 'i32'
+// CHECK:STDOUT:   │   ├─ReturnType '->'
+// CHECK:STDOUT:   │ ╭─FunctionDefinitionStart '{'
+// CHECK:STDOUT:   │ │   ╭─MatchIntroducer 'match'
+// CHECK:STDOUT:   │ │   │ ╭─MatchConditionStart '('
+// CHECK:STDOUT:   │ │   │ ├─BoolLiteralTrue 'true'
+// CHECK:STDOUT:   │ │   ├─MatchCondition ')'
+// CHECK:STDOUT:   │ │ ╭─MatchStatementStart '{'
+// CHECK:STDOUT:   │ │ │     ╭─MatchDefaultIntroducer 'default'
+// CHECK:STDOUT:   │ │ │     │ ╭─MatchCaseGuardIntroducer 'if'
+// CHECK:STDOUT:   │ │ │     │ ├─MatchCaseGuardStart 'true' has_error
+// CHECK:STDOUT:   │ │ │     │ ├─InvalidParse 'true' has_error
+// CHECK:STDOUT:   │ │ │     ├─MatchCaseGuard 'true' has_error
+// CHECK:STDOUT:   │ │ │   ╭─MatchGuardedDefault 'true' has_error
+// CHECK:STDOUT:   │ │ │ ╭─MatchHandlerStart 'true' has_error
+// CHECK:STDOUT:   │ │ ├─MatchHandler 'true' has_error
+// CHECK:STDOUT:   │ │ │     ╭─MatchCaseIntroducer 'case'
+// CHECK:STDOUT:   │ │ │     │ ╭─IdentifierNameNotBeforeSignature 'x'
+// CHECK:STDOUT:   │ │ │     │ ├─BindingPatternTypeStart ':'
+// CHECK:STDOUT:   │ │ │     │ ├─BoolTypeLiteral 'bool'
+// CHECK:STDOUT:   │ │ │     ├─LetBindingPattern ':'
+// CHECK:STDOUT:   │ │ │     │ ╭─MatchCaseGuardIntroducer 'if'
+// CHECK:STDOUT:   │ │ │     │ ├─MatchCaseGuardStart '('
+// CHECK:STDOUT:   │ │ │     │ ├─IdentifierNameExpr 'x'
+// CHECK:STDOUT:   │ │ │     ├─MatchCaseGuard ')'
+// CHECK:STDOUT:   │ │ │   ╭─MatchCase '=>'
+// CHECK:STDOUT:   │ │ │ ╭─MatchHandlerStart '{'
+// CHECK:STDOUT:   │ │ │ │ ╭─ReturnStatementStart 'return'
+// CHECK:STDOUT:   │ │ │ │ ├─IntLiteral '2'
+// CHECK:STDOUT:   │ │ │ ├─ReturnStatement ';'
+// CHECK:STDOUT:   │ │ ├─MatchHandler '}'
+// CHECK:STDOUT:   │ │ │     ╭─MatchDefaultIntroducer 'default'
+// CHECK:STDOUT:   │ │ │   ╭─MatchDefault '=>'
+// CHECK:STDOUT:   │ │ │ ╭─MatchHandlerStart '{'
+// CHECK:STDOUT:   │ │ │ │ ╭─ReturnStatementStart 'return'
+// CHECK:STDOUT:   │ │ │ │ ├─IntLiteral '3'
+// CHECK:STDOUT:   │ │ │ ├─ReturnStatement ';'
+// CHECK:STDOUT:   │ │ ├─MatchHandler '}'
+// CHECK:STDOUT:   │ ├─MatchStatement '}'
+// CHECK:STDOUT:   │ │ ╭─ReturnStatementStart 'return'
+// CHECK:STDOUT:   │ │ ├─IntLiteral '0'
+// CHECK:STDOUT:   │ ├─ReturnStatement ';'
+// CHECK:STDOUT:   ├─FunctionDefinition '}'
+// CHECK:STDOUT:   ├─FileEnd ''
+// CHECK:STDOUT:   (root)

@@ -1,1 +1,1 @@
-2026-08-24T15:00Z weekly-upstream-20260824 (cut 631f8fb) regen pass 1 — 14 upstream-taken goldens need fork renumbering; bracket-repair #7574 reshapes guarded-default parse fails
+2026-08-24T15:30Z weekly-upstream-20260824 (cut 631f8fb) regen pass 2 — R26 fixpoint check after 61-file pass 1

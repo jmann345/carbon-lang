@@ -101,36 +101,30 @@ fn Run() -> i32 {
 // CHECK:STDOUT:   ret i32 %0
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline nounwind
-// CHECK:STDOUT: define weak_odr void @"_C__destroy_thunk:thunk.C.Main"(ptr %self) #1 !dbg !13 {
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @main() #1 !dbg !13 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @"_COp.cbd14a388b4a1c25:core.Destroy.Core"(ptr %self), !dbg !19
-// CHECK:STDOUT:   ret void, !dbg !19
+// CHECK:STDOUT:   %F__carbon_thunk.call = call i32 @_Z1Fv.carbon_thunk.(), !dbg !17
+// CHECK:STDOUT:   ret i32 %F__carbon_thunk.call, !dbg !18
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef i32 @_Z1Fv.carbon_thunk.() #2 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %call = call noundef i32 @_Z1Fv()
+// CHECK:STDOUT:   ret i32 %call
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.cbd14a388b4a1c25:core.Destroy.Core"(ptr %self) #2 !dbg !20 {
+// CHECK:STDOUT: define internal void @_C__global_init.Main() #1 !dbg !19 {
 // CHECK:STDOUT: entry:
+// CHECK:STDOUT:   store i32 123, ptr @_Cx.C.Main, align 4, !dbg !22
 // CHECK:STDOUT:   ret void, !dbg !23
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @main() #2 !dbg !24 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %F.call = call i32 @_Z1Fv(), !dbg !28
-// CHECK:STDOUT:   ret i32 %F.call, !dbg !29
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define internal void @_C__global_init.Main() #2 !dbg !30 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   store i32 123, ptr @_Cx.C.Main, align 4, !dbg !33
-// CHECK:STDOUT:   ret void, !dbg !34
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #1 = { alwaysinline nounwind }
-// CHECK:STDOUT: attributes #2 = { nounwind }
+// CHECK:STDOUT: attributes #1 = { nounwind }
+// CHECK:STDOUT: attributes #2 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -149,26 +143,15 @@ fn Run() -> i32 {
 // CHECK:STDOUT: !10 = !{!"omnipotent char", !11, i64 0}
 // CHECK:STDOUT: !11 = !{!"Simple C++ TBAA"}
 // CHECK:STDOUT: !12 = !{!9, !9, i64 0}
-// CHECK:STDOUT: !13 = distinct !DISubprogram(name: "__destroy_thunk", linkageName: "_C__destroy_thunk:thunk.C.Main", scope: null, file: !1, line: 4, type: !14, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !17)
+// CHECK:STDOUT: !13 = distinct !DISubprogram(name: "Run", linkageName: "main", scope: null, file: !1, line: 14, type: !14, spFlags: DISPFlagDefinition, unit: !0)
 // CHECK:STDOUT: !14 = !DISubroutineType(types: !15)
-// CHECK:STDOUT: !15 = !{null, !16}
-// CHECK:STDOUT: !16 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
-// CHECK:STDOUT: !17 = !{!18}
-// CHECK:STDOUT: !18 = !DILocalVariable(arg: 1, scope: !13, type: !16)
-// CHECK:STDOUT: !19 = !DILocation(line: 4, column: 1, scope: !13)
-// CHECK:STDOUT: !20 = distinct !DISubprogram(name: "Op", linkageName: "_COp.cbd14a388b4a1c25:core.Destroy.Core", scope: null, file: !1, line: 4, type: !14, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !21)
-// CHECK:STDOUT: !21 = !{!22}
-// CHECK:STDOUT: !22 = !DILocalVariable(arg: 1, scope: !20, type: !16)
-// CHECK:STDOUT: !23 = !DILocation(line: 4, column: 1, scope: !20)
-// CHECK:STDOUT: !24 = distinct !DISubprogram(name: "Run", linkageName: "main", scope: null, file: !1, line: 14, type: !25, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !25 = !DISubroutineType(types: !26)
-// CHECK:STDOUT: !26 = !{!27}
-// CHECK:STDOUT: !27 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !28 = !DILocation(line: 15, column: 10, scope: !24)
-// CHECK:STDOUT: !29 = !DILocation(line: 15, column: 3, scope: !24)
-// CHECK:STDOUT: !30 = distinct !DISubprogram(name: "__global_init", linkageName: "_C__global_init.Main", scope: null, file: !1, type: !31, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !31 = !DISubroutineType(types: !32)
-// CHECK:STDOUT: !32 = !{null}
-// CHECK:STDOUT: !33 = !DILocation(line: 5, column: 10, scope: !30)
-// CHECK:STDOUT: !34 = !DILocation(line: 0, scope: !30)
+// CHECK:STDOUT: !15 = !{!16}
+// CHECK:STDOUT: !16 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !17 = !DILocation(line: 15, column: 10, scope: !13)
+// CHECK:STDOUT: !18 = !DILocation(line: 15, column: 3, scope: !13)
+// CHECK:STDOUT: !19 = distinct !DISubprogram(name: "__global_init", linkageName: "_C__global_init.Main", scope: null, file: !1, type: !20, spFlags: DISPFlagDefinition, unit: !0)
+// CHECK:STDOUT: !20 = !DISubroutineType(types: !21)
+// CHECK:STDOUT: !21 = !{null}
+// CHECK:STDOUT: !22 = !DILocation(line: 5, column: 10, scope: !19)
+// CHECK:STDOUT: !23 = !DILocation(line: 0, scope: !19)
 // CHECK:STDOUT:

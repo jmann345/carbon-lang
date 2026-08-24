@@ -52,7 +52,7 @@ fn Classify(s: Signal) -> i32 {
 // CHECK:STDOUT:   %complete_type.b1b: <witness> = complete_type_witness %struct_type.discriminant.payload.de4 [concrete]
 // CHECK:STDOUT:   %struct_type.discriminant: type = struct_type {.discriminant: %u2} [concrete]
 // CHECK:STDOUT:   %_.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %_.patt: %pattern_type.6b6 = at_binding_pattern _, %_.param_patt [concrete]
+// CHECK:STDOUT:   %_.patt: %pattern_type.6b6 = wrapper_binding_pattern _, %_.param_patt [concrete]
 // CHECK:STDOUT:   %.1d7: Core.Form = init_form %Signal [concrete]
 // CHECK:STDOUT:   %pattern_type.1de: type = pattern_type %Signal [concrete]
 // CHECK:STDOUT:   %return.param_patt.463: %pattern_type.1de = out_param_pattern [concrete]
@@ -114,7 +114,7 @@ fn Classify(s: Signal) -> i32 {
 // CHECK:STDOUT:   %Signal.val.4b5: %Signal = struct_value (%int_2.996, %uninit) [concrete]
 // CHECK:STDOUT:   %.8ce: ref %Signal = temporary invalid, %Signal.val.4b5 [concrete]
 // CHECK:STDOUT:   %s.param_patt: %pattern_type.1de = value_param_pattern [concrete]
-// CHECK:STDOUT:   %s.patt: %pattern_type.1de = at_binding_pattern s, %s.param_patt [concrete]
+// CHECK:STDOUT:   %s.patt: %pattern_type.1de = wrapper_binding_pattern s, %s.param_patt [concrete]
 // CHECK:STDOUT:   %return.patt.e1b: %pattern_type.6b6 = return_slot_pattern %return.param_patt.a9a, %i32 [concrete]
 // CHECK:STDOUT:   %Classify.type: type = fn_type @Classify [concrete]
 // CHECK:STDOUT:   %Classify: %Classify.type = struct_value () [concrete]
@@ -177,7 +177,7 @@ fn Classify(s: Signal) -> i32 {
 // CHECK:STDOUT: generated {
 // CHECK:STDOUT:   %Signal.Go.decl: %Signal.Go.type = fn_decl @Signal.Go [concrete = constants.%Signal.Go] {
 // CHECK:STDOUT:     %_.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%_.param_patt]
-// CHECK:STDOUT:     %_.patt: %pattern_type.6b6 = at_binding_pattern _, %_.param_patt [concrete = constants.%_.patt]
+// CHECK:STDOUT:     %_.patt: %pattern_type.6b6 = wrapper_binding_pattern _, %_.param_patt [concrete = constants.%_.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.1de = out_param_pattern [concrete = constants.%return.param_patt.463]
 // CHECK:STDOUT:     %return.patt: %pattern_type.1de = return_slot_pattern %return.param_patt, constants.%Signal [concrete = constants.%return.patt.a55]
 // CHECK:STDOUT:   } {
@@ -193,7 +193,7 @@ fn Classify(s: Signal) -> i32 {
 // CHECK:STDOUT:   %Signal.decl: type = class_decl @Signal [concrete = constants.%Signal] {} {}
 // CHECK:STDOUT:   %Classify.decl: %Classify.type = fn_decl @Classify [concrete = constants.%Classify] {
 // CHECK:STDOUT:     %s.param_patt: %pattern_type.1de = value_param_pattern [concrete = constants.%s.param_patt]
-// CHECK:STDOUT:     %s.patt: %pattern_type.1de = at_binding_pattern s, %s.param_patt [concrete = constants.%s.patt]
+// CHECK:STDOUT:     %s.patt: %pattern_type.1de = wrapper_binding_pattern s, %s.param_patt [concrete = constants.%s.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {

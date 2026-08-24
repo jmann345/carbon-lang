@@ -52,7 +52,7 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT:   %complete_type.697: <witness> = complete_type_witness %struct_type.discriminant.payload.898 [concrete]
 // CHECK:STDOUT:   %struct_type.discriminant: type = struct_type {.discriminant: %u1} [concrete]
 // CHECK:STDOUT:   %_.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %_.patt: %pattern_type.6b6 = at_binding_pattern _, %_.param_patt [concrete]
+// CHECK:STDOUT:   %_.patt: %pattern_type.6b6 = wrapper_binding_pattern _, %_.param_patt [concrete]
 // CHECK:STDOUT:   %.918: Core.Form = init_form %IntResult [concrete]
 // CHECK:STDOUT:   %pattern_type.e14: type = pattern_type %IntResult [concrete]
 // CHECK:STDOUT:   %return.param_patt.3e8: %pattern_type.e14 = out_param_pattern [concrete]
@@ -105,7 +105,7 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT:   %IntResult.val: %IntResult = struct_value (%int_1.233, %uninit) [concrete]
 // CHECK:STDOUT:   %.942: ref %IntResult = temporary invalid, %IntResult.val [concrete]
 // CHECK:STDOUT:   %r.param_patt: %pattern_type.e14 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %r.patt: %pattern_type.e14 = at_binding_pattern r, %r.param_patt [concrete]
+// CHECK:STDOUT:   %r.patt: %pattern_type.e14 = wrapper_binding_pattern r, %r.param_patt [concrete]
 // CHECK:STDOUT:   %return.patt.e1b: %pattern_type.6b6 = return_slot_pattern %return.param_patt.a9a, %i32 [concrete]
 // CHECK:STDOUT:   %Consume.type: type = fn_type @Consume [concrete]
 // CHECK:STDOUT:   %Consume: %Consume.type = struct_value () [concrete]
@@ -218,8 +218,8 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT:   %Core.import_ref.b44 = import_ref Core//prelude/types/uint, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %EqWith.impl_witness_table.166 = impl_witness_table (%Core.import_ref.b929, %Core.import_ref.b44), @UInt.as.EqWith.impl.f13 [concrete]
 // CHECK:STDOUT:   %Core.import_ref.b4fd3a.2 = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, unloaded
-// CHECK:STDOUT:   %Core.import_ref.6fa: @Int.as.SubWith.impl.dc8.%Int.as.SubWith.impl.Op.type.2 (%Int.as.SubWith.impl.Op.type.6f3321.1) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.SubWith.impl.dc8.%Int.as.SubWith.impl.Op.2 (constants.%Int.as.SubWith.impl.Op.a37528.1)]
-// CHECK:STDOUT:   %SubWith.impl_witness_table.038 = impl_witness_table (%Core.import_ref.b4fd3a.2, %Core.import_ref.6fa), @Int.as.SubWith.impl.dc8 [concrete]
+// CHECK:STDOUT:   %Core.import_ref.6fa8: @Int.as.SubWith.impl.dc8.%Int.as.SubWith.impl.Op.type.2 (%Int.as.SubWith.impl.Op.type.6f3321.1) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.SubWith.impl.dc8.%Int.as.SubWith.impl.Op.2 (constants.%Int.as.SubWith.impl.Op.a37528.1)]
+// CHECK:STDOUT:   %SubWith.impl_witness_table.038 = impl_witness_table (%Core.import_ref.b4fd3a.2, %Core.import_ref.6fa8), @Int.as.SubWith.impl.dc8 [concrete]
 // CHECK:STDOUT:   %Core.Op.9ff: @Int.as.SubWith.impl.dc8.%Int.as.SubWith.impl.Op.type.1 (%Int.as.SubWith.impl.Op.type.6f3321.2) = import_ref Core//prelude/types/int, Op, loaded [symbolic = @Int.as.SubWith.impl.dc8.%Int.as.SubWith.impl.Op.1 (constants.%Int.as.SubWith.impl.Op.a37528.2)]
 // CHECK:STDOUT:   %Core.import_ref.abd = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, unloaded
 // CHECK:STDOUT:   %Core.import_ref.9c3: %Core.IntLiteral.as.Negate.impl.Op.type = import_ref Core//prelude/operators/arithmetic, loc{{\d+_\d+}}, loaded [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
@@ -229,7 +229,7 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT: generated {
 // CHECK:STDOUT:   %IntResult.Ok.decl: %IntResult.Ok.type = fn_decl @IntResult.Ok [concrete = constants.%IntResult.Ok] {
 // CHECK:STDOUT:     %_.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%_.param_patt]
-// CHECK:STDOUT:     %_.patt: %pattern_type.6b6 = at_binding_pattern _, %_.param_patt [concrete = constants.%_.patt]
+// CHECK:STDOUT:     %_.patt: %pattern_type.6b6 = wrapper_binding_pattern _, %_.param_patt [concrete = constants.%_.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.e14 = out_param_pattern [concrete = constants.%return.param_patt.3e8]
 // CHECK:STDOUT:     %return.patt: %pattern_type.e14 = return_slot_pattern %return.param_patt, constants.%IntResult [concrete = constants.%return.patt.437]
 // CHECK:STDOUT:   } {
@@ -245,7 +245,7 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT:   %IntResult.decl: type = class_decl @IntResult [concrete = constants.%IntResult] {} {}
 // CHECK:STDOUT:   %Consume.decl: %Consume.type = fn_decl @Consume [concrete = constants.%Consume] {
 // CHECK:STDOUT:     %r.param_patt: %pattern_type.e14 = value_param_pattern [concrete = constants.%r.param_patt]
-// CHECK:STDOUT:     %r.patt: %pattern_type.e14 = at_binding_pattern r, %r.param_patt [concrete = constants.%r.patt]
+// CHECK:STDOUT:     %r.patt: %pattern_type.e14 = wrapper_binding_pattern r, %r.param_patt [concrete = constants.%r.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32.loc27 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {

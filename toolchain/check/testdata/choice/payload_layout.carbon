@@ -47,9 +47,9 @@ fn MakeLarge(a: i64, b: i32) -> Sized {
 // CHECK:STDOUT:   %i64: type = class_type @Int, @Int(%int_64) [concrete]
 // CHECK:STDOUT:   %pattern_type.f57: type = pattern_type %i64 [concrete]
 // CHECK:STDOUT:   %a.param_patt.089: %pattern_type.f57 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %a.patt.71e: %pattern_type.f57 = at_binding_pattern a, %a.param_patt.089 [concrete]
+// CHECK:STDOUT:   %a.patt.2bf: %pattern_type.f57 = wrapper_binding_pattern a, %a.param_patt.089 [concrete]
 // CHECK:STDOUT:   %b.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %b.patt: %pattern_type.6b6 = at_binding_pattern b, %b.param_patt [concrete]
+// CHECK:STDOUT:   %b.patt: %pattern_type.6b6 = wrapper_binding_pattern b, %b.param_patt [concrete]
 // CHECK:STDOUT:   %int_2.ecc: Core.IntLiteral = int_value 2 [concrete]
 // CHECK:STDOUT:   %u2: type = class_type @UInt, @UInt(%int_2.ecc) [concrete]
 // CHECK:STDOUT:   %tuple.type.a8a: type = tuple_type (%i32) [concrete]
@@ -59,7 +59,7 @@ fn MakeLarge(a: i64, b: i32) -> Sized {
 // CHECK:STDOUT:   %complete_type.c95: <witness> = complete_type_witness %struct_type.discriminant.payload.1c0 [concrete]
 // CHECK:STDOUT:   %struct_type.discriminant: type = struct_type {.discriminant: %u2} [concrete]
 // CHECK:STDOUT:   %_.param_patt.fb2: %pattern_type.6b6 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %_.patt.b75: %pattern_type.6b6 = at_binding_pattern _, %_.param_patt.fb2 [concrete]
+// CHECK:STDOUT:   %_.patt.c1e: %pattern_type.6b6 = wrapper_binding_pattern _, %_.param_patt.fb2 [concrete]
 // CHECK:STDOUT:   %.a72: Core.Form = init_form %Sized [concrete]
 // CHECK:STDOUT:   %pattern_type.698: type = pattern_type %Sized [concrete]
 // CHECK:STDOUT:   %return.param_patt.590: %pattern_type.698 = out_param_pattern [concrete]
@@ -92,7 +92,7 @@ fn MakeLarge(a: i64, b: i32) -> Sized {
 // CHECK:STDOUT:   %.737: type = fn_type_with_self_type %Copy.WithSelf.Op.type.381, %Copy.facet.1e1 [concrete]
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.specific_fn.287: <specific function> = specific_function %Int.as.Copy.impl.Op.4f6, @Int.as.Copy.impl.Op(%int_32) [concrete]
 // CHECK:STDOUT:   %_.param_patt.2f0: %pattern_type.f57 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %_.patt.233: %pattern_type.f57 = at_binding_pattern _, %_.param_patt.2f0 [concrete]
+// CHECK:STDOUT:   %_.patt.40c: %pattern_type.f57 = wrapper_binding_pattern _, %_.param_patt.2f0 [concrete]
 // CHECK:STDOUT:   %Sized.Large.type: type = fn_type @Sized.Large [concrete]
 // CHECK:STDOUT:   %Sized.Large: %Sized.Large.type = struct_value () [concrete]
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
@@ -125,7 +125,7 @@ fn MakeLarge(a: i64, b: i32) -> Sized {
 // CHECK:STDOUT:   %Sized.val: %Sized = struct_value (%int_2.996, %uninit) [concrete]
 // CHECK:STDOUT:   %.8a6: ref %Sized = temporary invalid, %Sized.val [concrete]
 // CHECK:STDOUT:   %n.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %n.patt: %pattern_type.6b6 = at_binding_pattern n, %n.param_patt [concrete]
+// CHECK:STDOUT:   %n.patt: %pattern_type.6b6 = wrapper_binding_pattern n, %n.param_patt [concrete]
 // CHECK:STDOUT:   %MakeSmall.type: type = fn_type @MakeSmall [concrete]
 // CHECK:STDOUT:   %MakeSmall: %MakeSmall.type = struct_value () [concrete]
 // CHECK:STDOUT:   %MakeLarge.type: type = fn_type @MakeLarge [concrete]
@@ -144,7 +144,7 @@ fn MakeLarge(a: i64, b: i32) -> Sized {
 // CHECK:STDOUT: generated {
 // CHECK:STDOUT:   %Sized.Small.decl: %Sized.Small.type = fn_decl @Sized.Small [concrete = constants.%Sized.Small] {
 // CHECK:STDOUT:     %_.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%_.param_patt.fb2]
-// CHECK:STDOUT:     %_.patt: %pattern_type.6b6 = at_binding_pattern _, %_.param_patt [concrete = constants.%_.patt.b75]
+// CHECK:STDOUT:     %_.patt: %pattern_type.6b6 = wrapper_binding_pattern _, %_.param_patt [concrete = constants.%_.patt.c1e]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.698 = out_param_pattern [concrete = constants.%return.param_patt.590]
 // CHECK:STDOUT:     %return.patt: %pattern_type.698 = return_slot_pattern %return.param_patt, constants.%Sized [concrete = constants.%return.patt.f0c]
 // CHECK:STDOUT:   } {
@@ -156,9 +156,9 @@ fn MakeLarge(a: i64, b: i32) -> Sized {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Sized.Large.decl: %Sized.Large.type = fn_decl @Sized.Large [concrete = constants.%Sized.Large] {
 // CHECK:STDOUT:     %_.param_patt.loc10_14.1: %pattern_type.f57 = value_param_pattern [concrete = constants.%_.param_patt.2f0]
-// CHECK:STDOUT:     %_.patt.loc10_14.1: %pattern_type.f57 = at_binding_pattern _, %_.param_patt.loc10_14.1 [concrete = constants.%_.patt.233]
+// CHECK:STDOUT:     %_.patt.loc10_14.1: %pattern_type.f57 = wrapper_binding_pattern _, %_.param_patt.loc10_14.1 [concrete = constants.%_.patt.40c]
 // CHECK:STDOUT:     %_.param_patt.loc10_14.2: %pattern_type.6b6 = value_param_pattern [concrete = constants.%_.param_patt.fb2]
-// CHECK:STDOUT:     %_.patt.loc10_14.2: %pattern_type.6b6 = at_binding_pattern _, %_.param_patt.loc10_14.2 [concrete = constants.%_.patt.b75]
+// CHECK:STDOUT:     %_.patt.loc10_14.2: %pattern_type.6b6 = wrapper_binding_pattern _, %_.param_patt.loc10_14.2 [concrete = constants.%_.patt.c1e]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.698 = out_param_pattern [concrete = constants.%return.param_patt.590]
 // CHECK:STDOUT:     %return.patt: %pattern_type.698 = return_slot_pattern %return.param_patt, constants.%Sized [concrete = constants.%return.patt.f0c]
 // CHECK:STDOUT:   } {
@@ -176,7 +176,7 @@ fn MakeLarge(a: i64, b: i32) -> Sized {
 // CHECK:STDOUT:   %Sized.decl: type = class_decl @Sized [concrete = constants.%Sized] {} {}
 // CHECK:STDOUT:   %MakeSmall.decl: %MakeSmall.type = fn_decl @MakeSmall [concrete = constants.%MakeSmall] {
 // CHECK:STDOUT:     %n.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%n.param_patt]
-// CHECK:STDOUT:     %n.patt: %pattern_type.6b6 = at_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
+// CHECK:STDOUT:     %n.patt: %pattern_type.6b6 = wrapper_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.698 = out_param_pattern [concrete = constants.%return.param_patt.590]
 // CHECK:STDOUT:     %return.patt: %pattern_type.698 = return_slot_pattern %return.param_patt, %Sized.ref.loc16 [concrete = constants.%return.patt.f0c]
 // CHECK:STDOUT:   } {
@@ -190,9 +190,9 @@ fn MakeLarge(a: i64, b: i32) -> Sized {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %MakeLarge.decl: %MakeLarge.type = fn_decl @MakeLarge [concrete = constants.%MakeLarge] {
 // CHECK:STDOUT:     %a.param_patt: %pattern_type.f57 = value_param_pattern [concrete = constants.%a.param_patt.089]
-// CHECK:STDOUT:     %a.patt: %pattern_type.f57 = at_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.71e]
+// CHECK:STDOUT:     %a.patt: %pattern_type.f57 = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.2bf]
 // CHECK:STDOUT:     %b.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%b.param_patt]
-// CHECK:STDOUT:     %b.patt: %pattern_type.6b6 = at_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %b.patt: %pattern_type.6b6 = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.698 = out_param_pattern [concrete = constants.%return.param_patt.590]
 // CHECK:STDOUT:     %return.patt: %pattern_type.698 = return_slot_pattern %return.param_patt, %Sized.ref.loc20 [concrete = constants.%return.patt.f0c]
 // CHECK:STDOUT:   } {

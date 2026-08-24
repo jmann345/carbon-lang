@@ -48,7 +48,7 @@ let some: MaybeInt = MakeSome(42);
 // CHECK:STDOUT:   %i64: type = class_type @Int, @Int(%int_64) [concrete]
 // CHECK:STDOUT:   %pattern_type.f57: type = pattern_type %i64 [concrete]
 // CHECK:STDOUT:   %x.param_patt: %pattern_type.f57 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %x.patt: %pattern_type.f57 = at_binding_pattern x, %x.param_patt [concrete]
+// CHECK:STDOUT:   %x.patt: %pattern_type.f57 = wrapper_binding_pattern x, %x.param_patt [concrete]
 // CHECK:STDOUT:   %int_2.ecc: Core.IntLiteral = int_value 2 [concrete]
 // CHECK:STDOUT:   %u2: type = class_type @UInt, @UInt(%int_2.ecc) [concrete]
 // CHECK:STDOUT:   %tuple.type.f67: type = tuple_type (%i64) [concrete]
@@ -99,7 +99,7 @@ let some: MaybeInt = MakeSome(42);
 // CHECK:STDOUT:   %MaybeInt.val.173: %MaybeInt = struct_value (%int_1.508, %uninit) [concrete]
 // CHECK:STDOUT:   %.9bb: ref %MaybeInt = temporary invalid, %MaybeInt.val.173 [concrete]
 // CHECK:STDOUT:   %_.param_patt: %pattern_type.f57 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %_.patt: %pattern_type.f57 = at_binding_pattern _, %_.param_patt [concrete]
+// CHECK:STDOUT:   %_.patt: %pattern_type.f57 = wrapper_binding_pattern _, %_.param_patt [concrete]
 // CHECK:STDOUT:   %MaybeInt.Some.type: type = fn_type @MaybeInt.Some [concrete]
 // CHECK:STDOUT:   %MaybeInt.Some: %MaybeInt.Some.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.6c9: <bound method> = bound_method %int_2.ecc, %Core.IntLiteral.as.ImplicitAs.impl.Convert.409 [concrete]
@@ -159,7 +159,7 @@ let some: MaybeInt = MakeSome(42);
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %MaybeInt.Some.decl: %MaybeInt.Some.type = fn_decl @MaybeInt.Some [concrete = constants.%MaybeInt.Some] {
 // CHECK:STDOUT:     %_.param_patt: %pattern_type.f57 = value_param_pattern [concrete = constants.%_.param_patt]
-// CHECK:STDOUT:     %_.patt: %pattern_type.f57 = at_binding_pattern _, %_.param_patt [concrete = constants.%_.patt]
+// CHECK:STDOUT:     %_.patt: %pattern_type.f57 = wrapper_binding_pattern _, %_.param_patt [concrete = constants.%_.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.e20 = out_param_pattern [concrete = constants.%return.param_patt.728]
 // CHECK:STDOUT:     %return.patt: %pattern_type.e20 = return_slot_pattern %return.param_patt, constants.%MaybeInt [concrete = constants.%return.patt.af0]
 // CHECK:STDOUT:   } {
@@ -189,7 +189,7 @@ let some: MaybeInt = MakeSome(42);
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %MakeSome.decl: %MakeSome.type = fn_decl @MakeSome [concrete = constants.%MakeSome] {
 // CHECK:STDOUT:     %x.param_patt: %pattern_type.f57 = value_param_pattern [concrete = constants.%x.param_patt]
-// CHECK:STDOUT:     %x.patt: %pattern_type.f57 = at_binding_pattern x, %x.param_patt [concrete = constants.%x.patt]
+// CHECK:STDOUT:     %x.patt: %pattern_type.f57 = wrapper_binding_pattern x, %x.param_patt [concrete = constants.%x.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.e20 = out_param_pattern [concrete = constants.%return.param_patt.728]
 // CHECK:STDOUT:     %return.patt: %pattern_type.e20 = return_slot_pattern %return.param_patt, %MaybeInt.ref.loc21 [concrete = constants.%return.patt.af0]
 // CHECK:STDOUT:   } {

@@ -134,6 +134,8 @@ fn GetRefs() {
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT:
 // CHECK:STDOUT: @C.val.loc19_20 = internal constant {} zeroinitializer
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
@@ -146,14 +148,14 @@ fn GetRefs() {
 // CHECK:STDOUT:   %.loc25_23.2.temp = alloca i32, align 4, !dbg !19
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %c.var), !dbg !15
 // CHECK:STDOUT:   call void @"_COp.51f3fb62cb986374:DefaultOrUnformed.Core.67b28f83c7cfd60c"(ptr %c.var), !dbg !15
-// CHECK:STDOUT:   call void @_Z8TakeCRefR1C(ptr %c.var), !dbg !20
+// CHECK:STDOUT:   call void @_Z8TakeCRefR1C.carbon_thunk.r(ptr %c.var), !dbg !20
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %_.var.1), !dbg !16
 // CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 1 %_.var.1, ptr align 1 @C.val.loc19_20, i64 0, i1 false), !dbg !16
 // CHECK:STDOUT:   call void @_Z9TakeCRRefO1C.carbon_thunk.v(ptr %_.var.1), !dbg !21
 // CHECK:STDOUT:   call void @_Z13TakeConstCRefRK1C.carbon_thunk._(ptr %c.var), !dbg !22
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %n.var), !dbg !17
 // CHECK:STDOUT:   store i32 poison, ptr %n.var, align 4, !dbg !17
-// CHECK:STDOUT:   call void @_Z10TakeIntRefRi(ptr %n.var), !dbg !23
+// CHECK:STDOUT:   call void @_Z10TakeIntRefRi.carbon_thunk.r(ptr %n.var), !dbg !23
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %_.var.2), !dbg !18
 // CHECK:STDOUT:   store i32 42, ptr %_.var.2, align 4, !dbg !18
 // CHECK:STDOUT:   call void @_Z11TakeIntRRefOi.carbon_thunk.v(ptr %_.var.2), !dbg !24
@@ -183,86 +185,182 @@ fn GetRefs() {
 // CHECK:STDOUT:   ret void, !dbg !34
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z8TakeCRefR1C(ptr noundef nonnull align 1 dereferenceable(1)) #3
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z8TakeCRefR1C.carbon_thunk.r(ptr noundef nonnull align 1 dereferenceable(1) %0) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.addr = alloca ptr, align 8
+// CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !27
+// CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !27, !nonnull !35
+// CHECK:STDOUT:   invoke void @_Z8TakeCRefR1C(ptr noundef nonnull align 1 dereferenceable(1) %1)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_Z9TakeCRRefO1C.carbon_thunk.v(ptr noundef %0) #4 {
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z9TakeCRRefO1C.carbon_thunk.v(ptr noundef %0) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.addr = alloca ptr, align 8
 // CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !27
 // CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !27
-// CHECK:STDOUT:   call void @_Z9TakeCRRefO1C(ptr noundef nonnull align 1 dereferenceable(1) %1)
+// CHECK:STDOUT:   invoke void @_Z9TakeCRRefO1C(ptr noundef nonnull align 1 dereferenceable(1) %1)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_Z13TakeConstCRefRK1C.carbon_thunk._(ptr noundef %0) #4 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z13TakeConstCRefRK1C.carbon_thunk._(ptr noundef %0) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.addr = alloca ptr, align 8
 // CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !27
 // CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !27
-// CHECK:STDOUT:   call void @_Z13TakeConstCRefRK1C(ptr noundef nonnull align 1 dereferenceable(1) %1)
+// CHECK:STDOUT:   invoke void @_Z13TakeConstCRefRK1C(ptr noundef nonnull align 1 dereferenceable(1) %1)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z10TakeIntRefRi(ptr noundef nonnull align 4 dereferenceable(4)) #3
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_Z11TakeIntRRefOi.carbon_thunk.v(ptr noundef %0) #4 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z10TakeIntRefRi.carbon_thunk.r(ptr noundef nonnull align 4 dereferenceable(4) %0) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.addr = alloca ptr, align 8
-// CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !35
-// CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !35
-// CHECK:STDOUT:   call void @_Z11TakeIntRRefOi(ptr noundef nonnull align 4 dereferenceable(4) %1)
+// CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !36
+// CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !36, !nonnull !35, !align !38
+// CHECK:STDOUT:   invoke void @_Z10TakeIntRefRi(ptr noundef nonnull align 4 dereferenceable(4) %1)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z11TakeIntRRefOi.carbon_thunk.v(ptr noundef %0) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.addr = alloca ptr, align 8
+// CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !36
+// CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !36
+// CHECK:STDOUT:   invoke void @_Z11TakeIntRRefOi(ptr noundef nonnull align 4 dereferenceable(4) %1)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.70db2d92ffddbef7:core.Destroy.Core"(ptr %self) #0 !dbg !37 {
+// CHECK:STDOUT: define weak_odr void @"_COp.70db2d92ffddbef7:core.Destroy.Core"(ptr %self) #0 !dbg !39 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !43
+// CHECK:STDOUT:   ret void, !dbg !45
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_Z15TakeConstIntRefRKi.carbon_thunk._(ptr noundef %0) #4 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z15TakeConstIntRefRKi.carbon_thunk._(ptr noundef %0) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.addr = alloca ptr, align 8
-// CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !35
-// CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !35
-// CHECK:STDOUT:   call void @_Z15TakeConstIntRefRKi(ptr noundef nonnull align 4 dereferenceable(4) %1)
+// CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !36
+// CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !36
+// CHECK:STDOUT:   invoke void @_Z15TakeConstIntRefRKi(ptr noundef nonnull align 4 dereferenceable(4) %1)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
-// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #5
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #3
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @"_COp.51f3fb62cb986374:DefaultOrUnformed.Core.67b28f83c7cfd60c"(ptr sret({}) %return) #0 !dbg !44 {
-// CHECK:STDOUT:   call void @"_COp:thunk:Default.dc3dd9c349162a91.Core:C.Cpp"(ptr %return), !dbg !46
-// CHECK:STDOUT:   ret void, !dbg !47
+// CHECK:STDOUT: define linkonce_odr void @"_COp.51f3fb62cb986374:DefaultOrUnformed.Core.67b28f83c7cfd60c"(ptr sret({}) %return) #0 !dbg !46 {
+// CHECK:STDOUT:   call void @"_COp:thunk:Default.dc3dd9c349162a91.Core:C.Cpp"(ptr %return), !dbg !48
+// CHECK:STDOUT:   ret void, !dbg !49
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
-// CHECK:STDOUT: declare void @llvm.memcpy.p0.p0.i64(ptr noalias writeonly captures(none), ptr noalias readonly captures(none), i64, i1 immarg) #5
+// CHECK:STDOUT: declare void @llvm.memcpy.p0.p0.i64(ptr noalias writeonly captures(none), ptr noalias readonly captures(none), i64, i1 immarg) #3
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z9TakeCRRefO1C(ptr noundef nonnull align 1 dereferenceable(1)) #3
+// CHECK:STDOUT: declare void @_Z8TakeCRefR1C(ptr noundef nonnull align 1 dereferenceable(1)) #4
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z13TakeConstCRefRK1C(ptr noundef nonnull align 1 dereferenceable(1)) #3
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z11TakeIntRRefOi(ptr noundef nonnull align 4 dereferenceable(4)) #3
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #5 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z15TakeConstIntRefRKi(ptr noundef nonnull align 4 dereferenceable(4)) #3
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z9TakeCRRefO1C(ptr noundef nonnull align 1 dereferenceable(1)) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z13TakeConstCRefRK1C(ptr noundef nonnull align 1 dereferenceable(1)) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z10TakeIntRefRi(ptr noundef nonnull align 4 dereferenceable(4)) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z11TakeIntRRefOi(ptr noundef nonnull align 4 dereferenceable(4)) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z15TakeConstIntRefRKi(ptr noundef nonnull align 4 dereferenceable(4)) #4
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
 // CHECK:STDOUT: uselistorder ptr @"_COp.70db2d92ffddbef7:core.Destroy.Core", { 2, 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 4, 3, 2, 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 5, 4, 3, 2, 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 5, 4, 3, 2, 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #2 = { alwaysinline nounwind }
-// CHECK:STDOUT: attributes #3 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #4 = { alwaysinline mustprogress uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #5 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT: attributes #3 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT: attributes #4 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #6 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -303,19 +401,21 @@ fn GetRefs() {
 // CHECK:STDOUT: !32 = !{!33}
 // CHECK:STDOUT: !33 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
 // CHECK:STDOUT: !34 = !DILocation(line: 5, column: 7, scope: !30)
-// CHECK:STDOUT: !35 = !{!36, !36, i64 0}
-// CHECK:STDOUT: !36 = !{!"p1 int", !29, i64 0}
-// CHECK:STDOUT: !37 = distinct !DISubprogram(name: "Op", linkageName: "_COp.70db2d92ffddbef7:core.Destroy.Core", scope: null, file: !1, line: 12, type: !38, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !41)
-// CHECK:STDOUT: !38 = !DISubroutineType(types: !39)
-// CHECK:STDOUT: !39 = !{null, !40}
-// CHECK:STDOUT: !40 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !41 = !{!42}
-// CHECK:STDOUT: !42 = !DILocalVariable(arg: 1, scope: !37, type: !40)
-// CHECK:STDOUT: !43 = !DILocation(line: 12, column: 23, scope: !37)
-// CHECK:STDOUT: !44 = distinct !DISubprogram(name: "Op", linkageName: "_COp.51f3fb62cb986374:DefaultOrUnformed.Core.67b28f83c7cfd60c", scope: null, file: !45, line: 9, type: !31, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !45 = !DIFile(filename: "min_prelude/parts/default.carbon", directory: "")
-// CHECK:STDOUT: !46 = !DILocation(line: 9, column: 28, scope: !44)
-// CHECK:STDOUT: !47 = !DILocation(line: 9, column: 21, scope: !44)
+// CHECK:STDOUT: !35 = !{}
+// CHECK:STDOUT: !36 = !{!37, !37, i64 0}
+// CHECK:STDOUT: !37 = !{!"p1 int", !29, i64 0}
+// CHECK:STDOUT: !38 = !{i64 4}
+// CHECK:STDOUT: !39 = distinct !DISubprogram(name: "Op", linkageName: "_COp.70db2d92ffddbef7:core.Destroy.Core", scope: null, file: !1, line: 12, type: !40, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !43)
+// CHECK:STDOUT: !40 = !DISubroutineType(types: !41)
+// CHECK:STDOUT: !41 = !{null, !42}
+// CHECK:STDOUT: !42 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !43 = !{!44}
+// CHECK:STDOUT: !44 = !DILocalVariable(arg: 1, scope: !39, type: !42)
+// CHECK:STDOUT: !45 = !DILocation(line: 12, column: 23, scope: !39)
+// CHECK:STDOUT: !46 = distinct !DISubprogram(name: "Op", linkageName: "_COp.51f3fb62cb986374:DefaultOrUnformed.Core.67b28f83c7cfd60c", scope: null, file: !47, line: 9, type: !31, spFlags: DISPFlagDefinition, unit: !0)
+// CHECK:STDOUT: !47 = !DIFile(filename: "min_prelude/parts/default.carbon", directory: "")
+// CHECK:STDOUT: !48 = !DILocation(line: 9, column: 28, scope: !46)
+// CHECK:STDOUT: !49 = !DILocation(line: 9, column: 21, scope: !46)
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'pass_references_via_thunk.carbon'
@@ -324,6 +424,8 @@ fn GetRefs() {
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
 // CHECK:STDOUT: %class.ForceThunk = type { i8 }
+// CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
 // CHECK:STDOUT:
 // CHECK:STDOUT: @C.val = internal constant {} zeroinitializer
 // CHECK:STDOUT: @C.val.loc20_20.3 = internal constant {} zeroinitializer
@@ -374,59 +476,109 @@ fn GetRefs() {
 // CHECK:STDOUT:   ret void, !dbg !34
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_Z8TakeCRefR1C10ForceThunk.carbon_thunk.r(ptr noundef nonnull align 1 dereferenceable(1) %0) #3 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z8TakeCRefR1C10ForceThunk.carbon_thunk.r(ptr noundef nonnull align 1 dereferenceable(1) %0) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk, align 1
 // CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !27
 // CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !27, !nonnull !35
-// CHECK:STDOUT:   call void @_Z8TakeCRefR1C10ForceThunk(ptr noundef nonnull align 1 dereferenceable(1) %1)
+// CHECK:STDOUT:   invoke void @_Z8TakeCRefR1C10ForceThunk(ptr noundef nonnull align 1 dereferenceable(1) %1)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_Z9TakeCRRefRK1C10ForceThunk.carbon_thunk._(ptr noundef %0) #3 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z9TakeCRRefRK1C10ForceThunk.carbon_thunk._(ptr noundef %0) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk, align 1
 // CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !27
 // CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !27
-// CHECK:STDOUT:   call void @_Z9TakeCRRefRK1C10ForceThunk(ptr noundef nonnull align 1 dereferenceable(1) %1)
+// CHECK:STDOUT:   invoke void @_Z9TakeCRRefRK1C10ForceThunk(ptr noundef nonnull align 1 dereferenceable(1) %1)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_Z13TakeConstCRefRK1C10ForceThunk.carbon_thunk._(ptr noundef %0) #3 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z13TakeConstCRefRK1C10ForceThunk.carbon_thunk._(ptr noundef %0) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk, align 1
 // CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !27
 // CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !27
-// CHECK:STDOUT:   call void @_Z13TakeConstCRefRK1C10ForceThunk(ptr noundef nonnull align 1 dereferenceable(1) %1)
+// CHECK:STDOUT:   invoke void @_Z13TakeConstCRefRK1C10ForceThunk(ptr noundef nonnull align 1 dereferenceable(1) %1)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_Z10TakeIntRefRi10ForceThunk.carbon_thunk.r(ptr noundef nonnull align 4 dereferenceable(4) %0) #3 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z10TakeIntRefRi10ForceThunk.carbon_thunk.r(ptr noundef nonnull align 4 dereferenceable(4) %0) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk, align 1
 // CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !36
 // CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !36, !nonnull !35, !align !38
-// CHECK:STDOUT:   call void @_Z10TakeIntRefRi10ForceThunk(ptr noundef nonnull align 4 dereferenceable(4) %1)
+// CHECK:STDOUT:   invoke void @_Z10TakeIntRefRi10ForceThunk(ptr noundef nonnull align 4 dereferenceable(4) %1)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_Z11TakeIntRRefOi10ForceThunk.carbon_thunk.v(ptr noundef %0) #3 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z11TakeIntRRefOi10ForceThunk.carbon_thunk.v(ptr noundef %0) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk, align 1
 // CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !36
 // CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !36
-// CHECK:STDOUT:   call void @_Z11TakeIntRRefOi10ForceThunk(ptr noundef nonnull align 4 dereferenceable(4) %1)
+// CHECK:STDOUT:   invoke void @_Z11TakeIntRRefOi10ForceThunk(ptr noundef nonnull align 4 dereferenceable(4) %1)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
@@ -435,19 +587,29 @@ fn GetRefs() {
 // CHECK:STDOUT:   ret void, !dbg !45
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_Z15TakeConstIntRefRKi10ForceThunk.carbon_thunk._(ptr noundef %0) #3 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z15TakeConstIntRefRKi10ForceThunk.carbon_thunk._(ptr noundef %0) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk, align 1
 // CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !36
 // CHECK:STDOUT:   %1 = load ptr, ptr %.addr, align 8, !tbaa !36
-// CHECK:STDOUT:   call void @_Z15TakeConstIntRefRKi10ForceThunk(ptr noundef nonnull align 4 dereferenceable(4) %1)
+// CHECK:STDOUT:   invoke void @_Z15TakeConstIntRefRKi10ForceThunk(ptr noundef nonnull align 4 dereferenceable(4) %1)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %2 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %2, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %3) #6
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
-// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #4
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #3
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define linkonce_odr void @"_COp.51f3fb62cb986374:DefaultOrUnformed.Core.67b28f83c7cfd60c"(ptr sret({}) %return) #0 !dbg !46 {
@@ -455,28 +617,44 @@ fn GetRefs() {
 // CHECK:STDOUT:   ret void, !dbg !49
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z8TakeCRefR1C10ForceThunk(ptr noundef nonnull align 1 dereferenceable(1)) #5
+// CHECK:STDOUT: declare void @_Z8TakeCRefR1C10ForceThunk(ptr noundef nonnull align 1 dereferenceable(1)) #4
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z9TakeCRRefRK1C10ForceThunk(ptr noundef nonnull align 1 dereferenceable(1)) #5
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z13TakeConstCRefRK1C10ForceThunk(ptr noundef nonnull align 1 dereferenceable(1)) #5
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #5 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z10TakeIntRefRi10ForceThunk(ptr noundef nonnull align 4 dereferenceable(4)) #5
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z11TakeIntRRefOi10ForceThunk(ptr noundef nonnull align 4 dereferenceable(4)) #5
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z15TakeConstIntRefRKi10ForceThunk(ptr noundef nonnull align 4 dereferenceable(4)) #5
+// CHECK:STDOUT: declare void @_Z9TakeCRRefRK1C10ForceThunk(ptr noundef nonnull align 1 dereferenceable(1)) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z13TakeConstCRefRK1C10ForceThunk(ptr noundef nonnull align 1 dereferenceable(1)) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z10TakeIntRefRi10ForceThunk(ptr noundef nonnull align 4 dereferenceable(4)) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z11TakeIntRRefOi10ForceThunk(ptr noundef nonnull align 4 dereferenceable(4)) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z15TakeConstIntRefRKi10ForceThunk(ptr noundef nonnull align 4 dereferenceable(4)) #4
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
 // CHECK:STDOUT: uselistorder ptr @"_COp.70db2d92ffddbef7:core.Destroy.Core", { 2, 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 4, 3, 2, 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 5, 4, 3, 2, 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 5, 4, 3, 2, 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #2 = { alwaysinline nounwind }
-// CHECK:STDOUT: attributes #3 = { alwaysinline mustprogress uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #4 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
-// CHECK:STDOUT: attributes #5 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #3 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT: attributes #4 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #6 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -539,32 +717,156 @@ fn GetRefs() {
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CGetRefs.Main() #0 !dbg !12 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %ReturnCRef.call = call ptr @_Z10ReturnCRefv(), !dbg !15
-// CHECK:STDOUT:   %ReturnCRRef.call = call ptr @_Z11ReturnCRRefv(), !dbg !16
-// CHECK:STDOUT:   %ReturnConstCRef.call = call ptr @_Z15ReturnConstCRefv(), !dbg !17
-// CHECK:STDOUT:   %ReturnIntRef.call = call ptr @_Z12ReturnIntRefv(), !dbg !18
-// CHECK:STDOUT:   %ReturnIntRRef.call = call ptr @_Z13ReturnIntRRefv(), !dbg !19
-// CHECK:STDOUT:   %ReturnConstIntRef.call = call ptr @_Z17ReturnConstIntRefv(), !dbg !20
+// CHECK:STDOUT:   %ReturnCRef__carbon_thunk.call = call ptr @_Z10ReturnCRefv.carbon_thunk.(), !dbg !15
+// CHECK:STDOUT:   %ReturnCRRef__carbon_thunk.call = call ptr @_Z11ReturnCRRefv.carbon_thunk.(), !dbg !16
+// CHECK:STDOUT:   %ReturnConstCRef__carbon_thunk.call = call ptr @_Z15ReturnConstCRefv.carbon_thunk.(), !dbg !17
+// CHECK:STDOUT:   %ReturnIntRef__carbon_thunk.call = call ptr @_Z12ReturnIntRefv.carbon_thunk.(), !dbg !18
+// CHECK:STDOUT:   %ReturnIntRRef__carbon_thunk.call = call ptr @_Z13ReturnIntRRefv.carbon_thunk.(), !dbg !19
+// CHECK:STDOUT:   %ReturnConstIntRef__carbon_thunk.call = call ptr @_Z17ReturnConstIntRefv.carbon_thunk.(), !dbg !20
 // CHECK:STDOUT:   ret void, !dbg !21
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef nonnull align 1 dereferenceable(1) ptr @_Z10ReturnCRefv() #1
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef nonnull align 1 dereferenceable(1) ptr @_Z10ReturnCRefv.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %call = invoke noundef nonnull align 1 dereferenceable(1) ptr @_Z10ReturnCRefv()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef nonnull align 1 dereferenceable(1) ptr @_Z11ReturnCRRefv() #1
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret ptr %call
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef nonnull align 1 dereferenceable(1) ptr @_Z15ReturnConstCRefv() #1
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #4
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef nonnull align 4 dereferenceable(4) ptr @_Z12ReturnIntRefv() #1
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef nonnull align 1 dereferenceable(1) ptr @_Z11ReturnCRRefv.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %call = invoke noundef nonnull align 1 dereferenceable(1) ptr @_Z11ReturnCRRefv()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef nonnull align 4 dereferenceable(4) ptr @_Z13ReturnIntRRefv() #1
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret ptr %call
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef nonnull align 4 dereferenceable(4) ptr @_Z17ReturnConstIntRefv() #1
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #4
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef nonnull align 1 dereferenceable(1) ptr @_Z15ReturnConstCRefv.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %call = invoke noundef nonnull align 1 dereferenceable(1) ptr @_Z15ReturnConstCRefv()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret ptr %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #4
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef nonnull align 4 dereferenceable(4) ptr @_Z12ReturnIntRefv.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %call = invoke noundef nonnull align 4 dereferenceable(4) ptr @_Z12ReturnIntRefv()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret ptr %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #4
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef nonnull align 4 dereferenceable(4) ptr @_Z13ReturnIntRRefv.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %call = invoke noundef nonnull align 4 dereferenceable(4) ptr @_Z13ReturnIntRRefv()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret ptr %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #4
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef nonnull align 4 dereferenceable(4) ptr @_Z17ReturnConstIntRefv.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %call = invoke noundef nonnull align 4 dereferenceable(4) ptr @_Z17ReturnConstIntRefv()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret ptr %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #4
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare noundef nonnull align 1 dereferenceable(1) ptr @_Z10ReturnCRefv() #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #3 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #4
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare noundef nonnull align 1 dereferenceable(1) ptr @_Z11ReturnCRRefv() #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare noundef nonnull align 1 dereferenceable(1) ptr @_Z15ReturnConstCRefv() #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare noundef nonnull align 4 dereferenceable(4) ptr @_Z12ReturnIntRefv() #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare noundef nonnull align 4 dereferenceable(4) ptr @_Z13ReturnIntRRefv() #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare noundef nonnull align 4 dereferenceable(4) ptr @_Z17ReturnConstIntRefv() #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; uselistorder directives
+// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 5, 4, 3, 2, 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 5, 4, 3, 2, 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #2 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #3 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #4 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -599,7 +901,9 @@ fn GetRefs() {
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
-// CHECK:STDOUT: %class.ForceThunk.23 = type { i8 }
+// CHECK:STDOUT: %class.ForceThunk.24 = type { i8 }
+// CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CGetRefs.Main() #0 !dbg !12 {
@@ -613,55 +917,128 @@ fn GetRefs() {
 // CHECK:STDOUT:   ret void, !dbg !21
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal noundef nonnull align 1 dereferenceable(1) ptr @_Z10ReturnCRef10ForceThunk.carbon_thunk.() #1 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef nonnull align 1 dereferenceable(1) ptr @_Z10ReturnCRef10ForceThunk.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.23, align 1
-// CHECK:STDOUT:   %call = call noundef nonnull align 1 dereferenceable(1) ptr @_Z10ReturnCRef10ForceThunk()
+// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.24, align 1
+// CHECK:STDOUT:   %call = invoke noundef nonnull align 1 dereferenceable(1) ptr @_Z10ReturnCRef10ForceThunk()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret ptr %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #4
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal noundef nonnull align 1 dereferenceable(1) ptr @_Z11ReturnCRRef10ForceThunk.carbon_thunk.() #1 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef nonnull align 1 dereferenceable(1) ptr @_Z11ReturnCRRef10ForceThunk.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.23, align 1
-// CHECK:STDOUT:   %call = call noundef nonnull align 1 dereferenceable(1) ptr @_Z11ReturnCRRef10ForceThunk()
+// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.24, align 1
+// CHECK:STDOUT:   %call = invoke noundef nonnull align 1 dereferenceable(1) ptr @_Z11ReturnCRRef10ForceThunk()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret ptr %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #4
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal noundef nonnull align 1 dereferenceable(1) ptr @_Z15ReturnConstCRef10ForceThunk.carbon_thunk.() #1 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef nonnull align 1 dereferenceable(1) ptr @_Z15ReturnConstCRef10ForceThunk.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.23, align 1
-// CHECK:STDOUT:   %call = call noundef nonnull align 1 dereferenceable(1) ptr @_Z15ReturnConstCRef10ForceThunk()
+// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.24, align 1
+// CHECK:STDOUT:   %call = invoke noundef nonnull align 1 dereferenceable(1) ptr @_Z15ReturnConstCRef10ForceThunk()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret ptr %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #4
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal noundef nonnull align 4 dereferenceable(4) ptr @_Z12ReturnIntRef10ForceThunk.carbon_thunk.() #1 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef nonnull align 4 dereferenceable(4) ptr @_Z12ReturnIntRef10ForceThunk.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.23, align 1
-// CHECK:STDOUT:   %call = call noundef nonnull align 4 dereferenceable(4) ptr @_Z12ReturnIntRef10ForceThunk()
+// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.24, align 1
+// CHECK:STDOUT:   %call = invoke noundef nonnull align 4 dereferenceable(4) ptr @_Z12ReturnIntRef10ForceThunk()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret ptr %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #4
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal noundef nonnull align 4 dereferenceable(4) ptr @_Z13ReturnIntRRef10ForceThunk.carbon_thunk.() #1 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef nonnull align 4 dereferenceable(4) ptr @_Z13ReturnIntRRef10ForceThunk.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.23, align 1
-// CHECK:STDOUT:   %call = call noundef nonnull align 4 dereferenceable(4) ptr @_Z13ReturnIntRRef10ForceThunk()
+// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.24, align 1
+// CHECK:STDOUT:   %call = invoke noundef nonnull align 4 dereferenceable(4) ptr @_Z13ReturnIntRRef10ForceThunk()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret ptr %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #4
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal noundef nonnull align 4 dereferenceable(4) ptr @_Z17ReturnConstIntRef10ForceThunk.carbon_thunk.() #1 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef nonnull align 4 dereferenceable(4) ptr @_Z17ReturnConstIntRef10ForceThunk.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.23, align 1
-// CHECK:STDOUT:   %call = call noundef nonnull align 4 dereferenceable(4) ptr @_Z17ReturnConstIntRef10ForceThunk()
+// CHECK:STDOUT:   %agg.tmp = alloca %class.ForceThunk.24, align 1
+// CHECK:STDOUT:   %call = invoke noundef nonnull align 4 dereferenceable(4) ptr @_Z17ReturnConstIntRef10ForceThunk()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret ptr %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #4
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare noundef nonnull align 1 dereferenceable(1) ptr @_Z10ReturnCRef10ForceThunk() #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #3 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #4
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare noundef nonnull align 1 dereferenceable(1) ptr @_Z11ReturnCRRef10ForceThunk() #2
 // CHECK:STDOUT:
@@ -673,9 +1050,15 @@ fn GetRefs() {
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare noundef nonnull align 4 dereferenceable(4) ptr @_Z17ReturnConstIntRef10ForceThunk() #2
 // CHECK:STDOUT:
+// CHECK:STDOUT: ; uselistorder directives
+// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 5, 4, 3, 2, 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 5, 4, 3, 2, 1, 0 }
+// CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #2 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #3 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #4 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}

@@ -58,7 +58,7 @@ fn Total(e: Event) -> i64 {
 // CHECK:STDOUT:   %complete_type.cf7: <witness> = complete_type_witness %struct_type.discriminant.payload.1c4 [concrete]
 // CHECK:STDOUT:   %struct_type.discriminant: type = struct_type {.discriminant: %u2} [concrete]
 // CHECK:STDOUT:   %_.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %_.patt: %pattern_type.6b6 = at_binding_pattern _, %_.param_patt [concrete]
+// CHECK:STDOUT:   %_.patt: %pattern_type.6b6 = wrapper_binding_pattern _, %_.param_patt [concrete]
 // CHECK:STDOUT:   %.3df: Core.Form = init_form %Event [concrete]
 // CHECK:STDOUT:   %pattern_type.afb: type = pattern_type %Event [concrete]
 // CHECK:STDOUT:   %return.param_patt.dc0: %pattern_type.afb = out_param_pattern [concrete]
@@ -122,7 +122,7 @@ fn Total(e: Event) -> i64 {
 // CHECK:STDOUT:   %Event.val.679: %Event = struct_value (%int_3.184, %uninit) [concrete]
 // CHECK:STDOUT:   %.ac9: ref %Event = temporary invalid, %Event.val.679 [concrete]
 // CHECK:STDOUT:   %e.param_patt: %pattern_type.afb = value_param_pattern [concrete]
-// CHECK:STDOUT:   %e.patt: %pattern_type.afb = at_binding_pattern e, %e.param_patt [concrete]
+// CHECK:STDOUT:   %e.patt: %pattern_type.afb = wrapper_binding_pattern e, %e.param_patt [concrete]
 // CHECK:STDOUT:   %int_64: Core.IntLiteral = int_value 64 [concrete]
 // CHECK:STDOUT:   %i64: type = class_type @Int, @Int(%int_64) [concrete]
 // CHECK:STDOUT:   %.bc0: Core.Form = init_form %i64 [concrete]
@@ -241,9 +241,9 @@ fn Total(e: Event) -> i64 {
 // CHECK:STDOUT: generated {
 // CHECK:STDOUT:   %Event.Move.decl: %Event.Move.type = fn_decl @Event.Move [concrete = constants.%Event.Move] {
 // CHECK:STDOUT:     %_.param_patt.loc20_14.1: %pattern_type.6b6 = value_param_pattern [concrete = constants.%_.param_patt]
-// CHECK:STDOUT:     %_.patt.loc20_14.1: %pattern_type.6b6 = at_binding_pattern _, %_.param_patt.loc20_14.1 [concrete = constants.%_.patt]
+// CHECK:STDOUT:     %_.patt.loc20_14.1: %pattern_type.6b6 = wrapper_binding_pattern _, %_.param_patt.loc20_14.1 [concrete = constants.%_.patt]
 // CHECK:STDOUT:     %_.param_patt.loc20_14.2: %pattern_type.6b6 = value_param_pattern [concrete = constants.%_.param_patt]
-// CHECK:STDOUT:     %_.patt.loc20_14.2: %pattern_type.6b6 = at_binding_pattern _, %_.param_patt.loc20_14.2 [concrete = constants.%_.patt]
+// CHECK:STDOUT:     %_.patt.loc20_14.2: %pattern_type.6b6 = wrapper_binding_pattern _, %_.param_patt.loc20_14.2 [concrete = constants.%_.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.afb = out_param_pattern [concrete = constants.%return.param_patt.dc0]
 // CHECK:STDOUT:     %return.patt: %pattern_type.afb = return_slot_pattern %return.param_patt, constants.%Event [concrete = constants.%return.patt.2c2]
 // CHECK:STDOUT:   } {
@@ -257,7 +257,7 @@ fn Total(e: Event) -> i64 {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Event.Set.decl: %Event.Set.type = fn_decl @Event.Set [concrete = constants.%Event.Set] {
 // CHECK:STDOUT:     %_.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%_.param_patt]
-// CHECK:STDOUT:     %_.patt: %pattern_type.6b6 = at_binding_pattern _, %_.param_patt [concrete = constants.%_.patt]
+// CHECK:STDOUT:     %_.patt: %pattern_type.6b6 = wrapper_binding_pattern _, %_.param_patt [concrete = constants.%_.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.afb = out_param_pattern [concrete = constants.%return.param_patt.dc0]
 // CHECK:STDOUT:     %return.patt: %pattern_type.afb = return_slot_pattern %return.param_patt, constants.%Event [concrete = constants.%return.patt.2c2]
 // CHECK:STDOUT:   } {
@@ -281,7 +281,7 @@ fn Total(e: Event) -> i64 {
 // CHECK:STDOUT:   %Event.decl: type = class_decl @Event [concrete = constants.%Event] {} {}
 // CHECK:STDOUT:   %Total.decl: %Total.type = fn_decl @Total [concrete = constants.%Total] {
 // CHECK:STDOUT:     %e.param_patt: %pattern_type.afb = value_param_pattern [concrete = constants.%e.param_patt]
-// CHECK:STDOUT:     %e.patt: %pattern_type.afb = at_binding_pattern e, %e.param_patt [concrete = constants.%e.patt]
+// CHECK:STDOUT:     %e.patt: %pattern_type.afb = wrapper_binding_pattern e, %e.param_patt [concrete = constants.%e.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.f57 = out_param_pattern [concrete = constants.%return.param_patt.cfc]
 // CHECK:STDOUT:     %return.patt: %pattern_type.f57 = return_slot_pattern %return.param_patt, %i64.loc27 [concrete = constants.%return.patt.178]
 // CHECK:STDOUT:   } {

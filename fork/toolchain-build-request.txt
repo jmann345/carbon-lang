@@ -1,1 +1,1 @@
-2026-08-24T15:45Z weekly-upstream-20260824 (cut 631f8fb) full gate at fixpoint e659aedd
+2026-08-24T16:10Z weekly-upstream-20260824 (cut) gate RE-FIRE — run 32741375214 evaluated stale pre-regen goldens (job attached to the bazel server 18s after the d903751 run; checkout verified correct at 5e4d643; the reported expected-side content does not exist in the tree). Fresh evaluation required.

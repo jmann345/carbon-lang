@@ -43,19 +43,25 @@ namespace Carbon::Check {
 // the `default` body as the final `else` block and all arm bodies converging
 // on a single resumption block.
 //
-// Two scrutinee shapes are supported so far: integer scrutinees with
-// constant integer expression `case` patterns, and choice scrutinees with
+// Three scrutinee shapes are supported so far: integer scrutinees with
+// constant integer expression `case` patterns; choice scrutinees with
 // leading-dot alternative patterns — payload-free (`case .Err`), whose
 // discriminant is compared against the scrutinee's `.discriminant` field,
-// and payload-destructuring (`case .Ok(value: i32)`), which additionally
-// extract the alternative's payload tuple from the scrutinee's payload
-// region in the bind pass and initialize the payload bindings from its
-// elements. Against either shape, a bare `name: type` binding pattern is
-// also supported: it is irrefutable, so the test pass contributes no real
-// condition (the arm's condition is a constant `true`), and a bind pass in
-// the arm's body block initializes the binding from the scrutinee through
-// `LocalPatternMatch`, so the binding exists only where the arm has matched.
-// Everything outside that subset produces a "semantics TODO" diagnostic.
+// and payload-destructuring (`case .Ok(value: i32)`, `case .Ok(42)`), whose
+// payload subpatterns mix bindings, constant integer expressions, and
+// nested tuples of those: expression subpatterns contribute payload-value
+// conditions in a block dominated by the discriminant test, and binding
+// subpatterns initialize in the bind pass from the alternative's payload
+// tuple, extracted from the scrutinee's payload region; and tuple
+// scrutinees (tuples of the above, recursively) with tuple `case` patterns
+// over the same element kinds, tested elementwise against the scrutinee's
+// own tuple type and folded into one condition. Against any shape, a bare
+// `name: type` binding pattern is also supported: it is irrefutable, so the
+// test pass contributes no real condition (the arm's condition is a
+// constant `true`), and a bind pass in the arm's body block initializes the
+// binding from the scrutinee through `LocalPatternMatch`, so the binding
+// exists only where the arm has matched. Everything outside that subset
+// produces a "semantics TODO" diagnostic.
 //
 // A `case` arm may carry a guard (`case P if (E) => ...`): the guard
 // expression is checked in the arm's scope (its pattern's bindings are in
@@ -97,10 +103,10 @@ namespace Carbon::Check {
 // requires at least one arm; see `MatchStatementStart` in
 // parse/handle_match.cpp).
 //
-// TODO: Support other pattern kinds (`var`/`ref` case bindings, tuple
-// patterns, non-binding payload subpatterns), other scrutinee types, and
-// integer exhaustiveness via an irrefutable arm or full enumeration.
-// Diagnose cases that can never match, per docs/design/pattern_matching.md.
+// TODO: Support other pattern kinds (`var`/`ref` case bindings), other
+// scrutinee types, and integer exhaustiveness via an irrefutable arm or
+// full enumeration. Diagnose cases that can never match, per
+// docs/design/pattern_matching.md.
 
 // Returns the scrutinee value, which is on the `MatchHandler` entry after an
 // earlier case arm, or otherwise on the `MatchStatementStart` entry.
@@ -109,6 +115,48 @@ static auto PeekScrutinee(Context& context) -> SemIR::InstId {
     return context.node_stack().Peek<Parse::NodeKind::MatchHandler>();
   }
   return context.node_stack().Peek<Parse::NodeKind::MatchStatementStart>();
+}
+
+// Returns whether `type_id` is a scrutinee type this slice can dispatch on:
+// an integer shape, a matchable choice, or a tuple whose element types are
+// recursively in-slice matchable (a tuple scrutinee dispatches elementwise,
+// so each element must itself be dispatchable, and a tuple of trivially
+// destructible element types is trivially destructible — the
+// temporary-cleanup argument at the gate extends elementwise). Iterative
+// worklist (misc-no-recursion); nothing the walk visits can form a cycle.
+static auto IsSupportedScrutineeType(Context& context, SemIR::TypeId type_id)
+    -> bool {
+  llvm::SmallVector<SemIR::TypeId> worklist = {type_id};
+  while (!worklist.empty()) {
+    auto current_type_id = worklist.pop_back_val();
+    bool is_int_scrutinee = false;
+    if (context.types().TryGetIntTypeInfo(current_type_id)) {
+      auto unqualified_type_id =
+          context.types().GetUnqualifiedType(current_type_id);
+      if (context.types().Is<SemIR::ClassType>(unqualified_type_id)) {
+        is_int_scrutinee =
+            context.types()
+                .TryGetAsIfValid<SemIR::IntType>(
+                    context.types().GetAdaptedType(unqualified_type_id))
+                .has_value();
+      } else {
+        is_int_scrutinee = true;
+      }
+    }
+    if (is_int_scrutinee || IsMatchableChoiceType(context, current_type_id)) {
+      continue;
+    }
+    auto tuple_type = context.types().TryGetAsIfValid<SemIR::TupleType>(
+        context.types().GetUnqualifiedType(current_type_id));
+    if (!tuple_type) {
+      return false;
+    }
+    for (auto element_type_id : context.types().GetBlockAsTypeIds(
+             context.inst_blocks().Get(tuple_type->type_elements_id))) {
+      worklist.push_back(element_type_id);
+    }
+  }
+  return true;
 }
 
 auto HandleParseNode(Context& /*context*/,
@@ -124,7 +172,7 @@ auto HandleParseNode(Context& context, Parse::MatchConditionId node_id)
   // use it multiple times, once per `case`.
   scrutinee_id = ConvertToValueOrRefExpr(context, scrutinee_id);
 
-  // Two scrutinee shapes are supported so far.
+  // Three scrutinee shapes are supported so far.
   //
   // Integer scrutinees: `Core.IntLiteral`, a builtin integer type, or a class
   // type directly adapting a builtin integer type, as `Int(N)` and `UInt(N)`
@@ -136,12 +184,16 @@ auto HandleParseNode(Context& context, Parse::MatchConditionId node_id)
   // alternative's index against the integer `.discriminant` field; with
   // fewer than two, the discriminant is the empty tuple and there is nothing
   // to test (W-068) — a single-alternative arm is always taken, and an empty
-  // choice is vacuously exhaustive. The temporary
-  // cleanup handling below stays trivially correct for both shapes as a type
+  // choice is vacuously exhaustive.
+  //
+  // Tuple scrutinees: tuples of the above, recursively — dispatch is
+  // elementwise (`IsSupportedScrutineeType`). The temporary
+  // cleanup handling below stays trivially correct for every shape as a type
   // property, not a syntactic one: integer values have no `destroy`
-  // functions, and an in-slice choice's payloads are restricted to trivially
+  // functions, an in-slice choice's payloads are restricted to trivially
   // copyable and destructible types when the choice's representation is
-  // completed (see handle_choice.cpp), so its destruction is a no-op.
+  // completed (see handle_choice.cpp), so its destruction is a no-op, and a
+  // tuple of such elements destroys trivially too.
   auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
 
   // Force the scrutinee's type complete before the shape checks below read
@@ -168,21 +220,7 @@ auto HandleParseNode(Context& context, Parse::MatchConditionId node_id)
     return false;
   }
 
-  bool is_int_scrutinee = false;
-  if (context.types().TryGetIntTypeInfo(scrutinee_type_id)) {
-    auto unqualified_type_id =
-        context.types().GetUnqualifiedType(scrutinee_type_id);
-    if (context.types().Is<SemIR::ClassType>(unqualified_type_id)) {
-      is_int_scrutinee =
-          context.types()
-              .TryGetAsIfValid<SemIR::IntType>(
-                  context.types().GetAdaptedType(unqualified_type_id))
-              .has_value();
-    } else {
-      is_int_scrutinee = true;
-    }
-  }
-  if (!is_int_scrutinee && !IsMatchableChoiceType(context, scrutinee_type_id)) {
+  if (!IsSupportedScrutineeType(context, scrutinee_type_id)) {
     return context.TODO(node_id, "match on unsupported scrutinee type");
   }
 
@@ -256,11 +294,12 @@ auto HandleParseNode(Context& context, Parse::AlternativePatternStartId node_id)
 // A bare `.Name` names a payload-free alternative constant: the designator
 // is resolved in the choice's scope and wrapped in an `ExprPattern`, the
 // same pattern shape a designator expression pattern produced before this
-// form had its own parse node. A parenthesized `.Name(...)` destructures the
-// alternative's payload: the subpatterns (bare `name: type` bindings in this
-// slice) become a `TuplePattern` that the bind pass matches against the
-// alternative's payload tuple, extracted from the scrutinee's payload
-// region.
+// form had its own parse node. A parenthesized `.Name(...)` destructures
+// the alternative's payload: the subpatterns — bindings, constant-integer
+// expressions, and nested tuples of those — become a `TuplePattern` matched
+// against the alternative's payload tuple, extracted from the scrutinee's
+// payload region: expression subpatterns compare in the test pass under the
+// arm's discriminant test, and bindings initialize in the bind pass.
 auto HandleParseNode(Context& context, Parse::AlternativePatternId node_id)
     -> bool {
   // Pop the optional parenthesized payload pattern list. A single
@@ -398,19 +437,22 @@ auto HandleParseNode(Context& context, Parse::AlternativePatternId node_id)
     return push_error();
   }
 
-  // In this slice, each payload subpattern must be a bare `name: type`
-  // binding (decision-log W5 SF-5); `var`/`ref`/compile-time bindings were
-  // already gated at the binding. Expression subpatterns and nested
-  // destructuring stay TODO.
+  // Payload subpatterns are bindings, constant-integer expressions, and
+  // nested tuples of those (`var`/`ref`/compile-time bindings were already
+  // gated at the binding; out-of-slice expression shapes diagnose in the
+  // refutable engine). Classify the tree's refutability while the
+  // subpatterns are in hand: an unguarded arm covers its alternative for
+  // exhaustiveness only when the tree is wholly irrefutable — a `.Some(42)`
+  // arm compares values, can fail, and records nothing
+  // (docs/design/pattern_matching.md, "Refutability, overlap, usefulness,
+  // and exhaustiveness").
+  bool payload_is_irrefutable = true;
   for (auto subpattern_id : subpattern_ids) {
     if (subpattern_id == SemIR::ErrorInst::InstId) {
       return push_error();
     }
-    if (!context.insts().Is<SemIR::ValueBindingPattern>(subpattern_id)) {
-      return context.TODO(
-          SemIR::LocId(subpattern_id),
-          "non-binding subpattern in match `case` alternative pattern");
-    }
+    payload_is_irrefutable &=
+        IsIrrefutableMatchCasePattern(context, subpattern_id);
   }
 
   // The pattern root is a `TuplePattern` over the payload subpatterns; the
@@ -446,7 +488,8 @@ auto HandleParseNode(Context& context, Parse::AlternativePatternId node_id)
   case_context.alternative = Context::MatchCaseContext::Alternative{
       .index = alternative->index,
       .payload_field_index = alternative->payload_field_index,
-      .payload_pattern_id = root_id};
+      .payload_pattern_id = root_id,
+      .payload_is_irrefutable = payload_is_irrefutable};
   context.node_stack().Push(node_id, root_id);
   return true;
 }
@@ -577,13 +620,15 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
 
   // Classify by the checked pattern inst: a parenthesized alternative
   // pattern's root (recorded in the case-arm context) tests the scrutinee's
-  // discriminant, and its payload subpatterns bind below; other expression
-  // patterns (including error recovery) are matched by the refutable engine,
-  // which returns the arm's condition; a binding-pattern root is
-  // irrefutable, so its test pass contributes no condition and the arm's
-  // condition is a constant `true` (the refutable engine prunes at
-  // binding-pattern roots, whose `bind_name_map` entries belong to the bind
-  // pass below); every other pattern root stays behind the W4 slice-gate
+  // discriminant plus any payload-value conditions, and its payload
+  // bindings bind below; other expression patterns (including error
+  // recovery) and tuple-pattern roots against a tuple-shaped scrutinee are
+  // matched by the refutable engine, which returns the arm's condition; a
+  // binding-pattern root is irrefutable, so its test pass contributes no
+  // condition and the arm's condition is a constant `true` (the refutable
+  // engine prunes at binding patterns, whose `bind_name_map` entries belong
+  // to the bind pass below); every other pattern root — a tuple pattern
+  // against a non-tuple scrutinee included — stays behind the W4 slice-gate
   // TODO. The TODO is pinned to the introducer node so the preserved
   // diagnostics keep their location.
   SemIR::InstId cond_value_id = SemIR::InstId::None;
@@ -592,11 +637,23 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
   bool is_alternative_payload_arm =
       alternative && alternative->payload_pattern_id.has_value() &&
       alternative->payload_pattern_id == pattern_id;
+  bool is_tuple_arm =
+      context.insts().Is<SemIR::TuplePattern>(pattern_id) &&
+      context.types().Is<SemIR::TupleType>(context.types().GetUnqualifiedType(
+          context.insts().Get(scrutinee_id).type_id()));
+  bool is_irrefutable_tuple_arm =
+      is_tuple_arm && IsIrrefutableMatchCasePattern(context, pattern_id);
   if (is_alternative_payload_arm) {
     cond_value_id =
         MatchCaseAlternativePatternMatch(context, scrutinee_id, node_id);
+    if (!cond_value_id.has_value()) {
+      // The engine diagnosed an unsupported payload shape with a TODO,
+      // which aborts checking.
+      return false;
+    }
   } else if (pattern_id == SemIR::ErrorInst::InstId ||
-             context.insts().Is<SemIR::ExprPattern>(pattern_id)) {
+             context.insts().Is<SemIR::ExprPattern>(pattern_id) ||
+             is_tuple_arm) {
     cond_value_id =
         MatchCasePatternMatch(context, pattern_id, scrutinee_id, node_id);
     if (!cond_value_id.has_value()) {
@@ -616,10 +673,14 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
   // exhaustiveness (SF-7). A guarded arm contributes nothing, whatever its
   // pattern: exhaustiveness assumes every guard can evaluate to false
   // (docs/design/pattern_matching.md, "Refutability, overlap, usefulness,
-  // and exhaustiveness"). An unguarded irrefutable arm covers every
-  // scrutinee value; an unguarded alternative-pattern arm covers its
-  // alternative. An arm whose pattern contained an error contributes
-  // unknowable coverage and suppresses the exhaustiveness diagnostic.
+  // and exhaustiveness"). An unguarded irrefutable arm — a binding root, or
+  // an all-binding tuple root, which is irrefutable given the arity/type
+  // the checker enforced statically — covers every scrutinee value; an
+  // unguarded alternative-pattern arm covers its alternative only when its
+  // payload tree is wholly irrefutable — a refutable payload such as
+  // `.Some(42)` records nothing (pattern_matching.md:589-594). An arm whose
+  // pattern contained an error contributes unknowable coverage and
+  // suppresses the exhaustiveness diagnostic.
   {
     auto& match_context = context.match_statement_stack().back();
     if (pattern_id == SemIR::ErrorInst::InstId ||
@@ -627,9 +688,9 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
       match_context.has_error_arm = true;
     } else if (guard_region_id.has_value()) {
       // Guarded arms never count toward coverage.
-    } else if (is_binding_arm) {
+    } else if (is_binding_arm || is_irrefutable_tuple_arm) {
       match_context.has_irrefutable_arm = true;
-    } else if (alternative) {
+    } else if (alternative && alternative->payload_is_irrefutable) {
       match_context.covered_alternatives.push_back(alternative->index);
     }
   }
@@ -663,27 +724,37 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
     LocalPatternMatch(context, pattern_id, scrutinee_id);
     context.scope_stack().DeferCleanups();
   } else if (is_alternative_payload_arm &&
-             alternative->payload_field_index >= 0) {
+             alternative->payload_field_index >= 0 &&
+             MatchCasePatternHasBindings(context, pattern_id)) {
     // Extract this alternative's payload tuple from the scrutinee's payload
     // region — field 1 of the choice's object representation, with every
     // alternative's payload tuple overlapping at offset zero (the F-007k
     // storage contract) — and initialize the payload bindings from its
-    // elements through the tuple-pattern machinery.
-    auto payload_info = GetChoicePayloadInfo(
-        context, context.insts().Get(scrutinee_id).type_id(),
+    // elements through the tuple-pattern machinery. This re-extraction of a
+    // trivially copyable payload in the arm's body block is dominated by
+    // the discriminant test, so the read is safe. A binding-free payload
+    // (`case .Ok(42)`) has no bind-pass work, so nothing is extracted.
+    auto field_ref_id = EmitChoicePayloadFieldAccess(
+        context, SemIR::LocId(node_id), scrutinee_id,
         alternative->payload_field_index);
-    CARBON_CHECK(payload_info, "Payload arm without payload field");
-    auto payload_ref_id = AddInst<SemIR::ClassElementAccess>(
-        context, node_id,
-        {.type_id = payload_info->payload_region_type_id,
-         .base_id = scrutinee_id,
-         .index = SemIR::ElementIndex(1)});
-    auto field_ref_id = AddInst<SemIR::ClassElementAccess>(
-        context, node_id,
-        {.type_id = payload_info->payload_tuple_type_id,
-         .base_id = payload_ref_id,
-         .index = SemIR::ElementIndex(alternative->payload_field_index)});
-    LocalPatternMatch(context, pattern_id, field_ref_id);
+    // All-binding payload trees keep the landed `LocalPatternMatch` path;
+    // only trees with expression subpatterns need the match-bind pruning.
+    if (alternative->payload_is_irrefutable) {
+      LocalPatternMatch(context, pattern_id, field_ref_id);
+    } else {
+      MatchCaseBindPatternMatch(context, pattern_id, field_ref_id);
+    }
+    context.scope_stack().DeferCleanups();
+  } else if (is_tuple_arm && cond_value_id != SemIR::ErrorInst::InstId &&
+             MatchCasePatternHasBindings(context, pattern_id)) {
+    // A tuple arm's bindings initialize elementwise from the scrutinee. An
+    // arm whose test errored (for example a tuple-arity mismatch) has
+    // nothing sound to bind.
+    if (is_irrefutable_tuple_arm) {
+      LocalPatternMatch(context, pattern_id, scrutinee_id);
+    } else {
+      MatchCaseBindPatternMatch(context, pattern_id, scrutinee_id);
+    }
     context.scope_stack().DeferCleanups();
   }
 

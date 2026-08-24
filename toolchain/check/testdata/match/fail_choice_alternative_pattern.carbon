@@ -10,29 +10,6 @@
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/match/fail_choice_alternative_pattern.carbon
 
-// --- fail_todo_expr_subpattern.carbon
-library "[[@TEST_NAME]]";
-
-choice IntResult {
-  Ok(value: i32),
-  Err
-}
-
-// An expression subpattern inside a payload list (a refutable payload
-// compare) is a later slice; only bare `name: type` binding subpatterns are
-// in-slice (decision-log W5 SF-5).
-fn F(r: IntResult) -> i32 {
-  match (r) {
-    // CHECK:STDERR: fail_todo_expr_subpattern.carbon:[[@LINE+4]]:14: error: semantics TODO: `non-binding subpattern in match `case` alternative pattern` [SemanticsTodo]
-    // CHECK:STDERR:     case .Ok(42) => { return 1; }
-    // CHECK:STDERR:              ^~
-    // CHECK:STDERR:
-    case .Ok(42) => { return 1; }
-    default => { return 0; }
-  }
-  return -1;
-}
-
 // --- fail_bare_payload_alternative.carbon
 library "[[@TEST_NAME]]";
 
@@ -140,17 +117,14 @@ choice IntResult {
 // A leading-dot designator inside a payload list is not an alternative
 // pattern (nested alternative patterns cannot arise in-slice: payload types
 // are scalars); it checks as an ordinary designator expression, which needs
-// `.Self` in scope.
+// `.Self` in scope. The errored element poisons the arm's condition, and
+// checking continues.
 fn F(r: IntResult) -> i32 {
   match (r) {
-    // CHECK:STDERR: fail_nested_designator_subpattern.carbon:[[@LINE+9]]:14: error: name `.Self` not found [NameNotFound]
+    // CHECK:STDERR: fail_nested_designator_subpattern.carbon:[[@LINE+5]]:14: error: name `.Self` not found [NameNotFound]
     // CHECK:STDERR:     case .Ok(.Err) => { return 1; }
     // CHECK:STDERR:              ^~~~
     // CHECK:STDERR: fail_nested_designator_subpattern.carbon: note: designator may only be used when `.Self` is in scope [NoPeriodSelfForDesignator]
-    // CHECK:STDERR:
-    // CHECK:STDERR: fail_nested_designator_subpattern.carbon:[[@LINE+4]]:14: error: semantics TODO: `non-binding subpattern in match `case` alternative pattern` [SemanticsTodo]
-    // CHECK:STDERR:     case .Ok(.Err) => { return 1; }
-    // CHECK:STDERR:              ^~~~
     // CHECK:STDERR:
     case .Ok(.Err) => { return 1; }
     default => { return 0; }

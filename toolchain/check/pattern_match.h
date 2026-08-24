@@ -91,10 +91,20 @@ auto LocalPatternMatch(Context& context, SemIR::InstId pattern_id,
 // Emits the refutable test IR for matching a `match` `case` pattern against
 // the given scrutinee into the current block, and returns a boolean condition
 // inst that is true when the arm matches. This is only the test pass of case
-// matching: it prunes at binding-pattern roots (their initialization is the
-// bind pass's job, via `LocalPatternMatch`), and the dispatch CFG (branches
-// and convergence) stays with the caller. The case-arm state pushed by
-// `MatchCaseIntroducer` must be on `Context::match_case_stack()`.
+// matching: it prunes at irrefutable subtrees (binding initialization is the
+// bind pass's job, via `LocalPatternMatch` or `MatchCaseBindPatternMatch`),
+// and the dispatch CFG (branches and convergence) stays with the caller. The
+// case-arm state pushed by `MatchCaseIntroducer` must be on
+// `Context::match_case_stack()`.
+//
+// A tuple-pattern root walks the SCRUTINEE's tuple type elementwise — the
+// pattern's own tuple type carries expression-element types such as
+// `Core.IntLiteral` and is never converted to — emitting each refutable
+// element's condition eagerly into the current block and folding the
+// collected conditions into one bool (observationally equivalent to the
+// design's short-circuit order because in-slice element reads are total and
+// case expressions are constants; W-008 plan §2.1(a)). An errored element
+// makes the whole condition `ErrorInst`.
 //
 // `case_node_id` is the `MatchCase` parse node, used as the location of the
 // emitted comparison insts. Returns `None` after diagnosing an unsupported
@@ -103,6 +113,42 @@ auto LocalPatternMatch(Context& context, SemIR::InstId pattern_id,
 auto MatchCasePatternMatch(Context& context, SemIR::InstId pattern_id,
                            SemIR::InstId scrutinee_id,
                            Parse::NodeId case_node_id) -> SemIR::InstId;
+
+// Emits the bind-pass IR for a `match` `case` arm whose pattern tree mixes
+// bindings with expression subpatterns: the irrefutable `LocalPatternMatch`
+// walk, except that subtrees without bindings prune — the test pass owns
+// expression-pattern regions (each is spliced exactly once, by the test),
+// and only bindings have work left in the arm's body block. Wholly-binding
+// trees take plain `LocalPatternMatch` instead, byte-for-byte.
+auto MatchCaseBindPatternMatch(Context& context, SemIR::InstId pattern_id,
+                               SemIR::InstId scrutinee_id) -> void;
+
+// Returns whether a `match` `case` (sub)pattern tree is wholly irrefutable:
+// binding patterns match any value, and a tuple of irrefutable elements is
+// irrefutable given its arity/type, which the checker enforces statically.
+// Expression subpatterns compare values, so any of them makes the tree
+// refutable. This is the classification exhaustiveness recording consumes
+// (`MatchCase` in handle_match.cpp), and the one W-066's usefulness work
+// builds on.
+auto IsIrrefutableMatchCasePattern(Context& context, SemIR::InstId pattern_id)
+    -> bool;
+
+// Returns whether a `match` `case` (sub)pattern tree contains any binding
+// pattern — only then does the arm have bind-pass work in its body block.
+auto MatchCasePatternHasBindings(Context& context, SemIR::InstId pattern_id)
+    -> bool;
+
+// Emits the extraction of one alternative's payload tuple from a choice
+// scrutinee: field 1 of the choice's object representation (the payload
+// region, with every alternative's payload tuple overlapping at offset zero
+// per the F-007k storage contract), then the alternative's payload tuple
+// field within it. Returns the field reference. The caller is responsible
+// for emitting this only where the alternative is known active — under the
+// arm's discriminant test (see `MatchCaseAlternativePatternMatch`) or in
+// the arm's body block.
+auto EmitChoicePayloadFieldAccess(Context& context, SemIR::LocId loc_id,
+                                  SemIR::InstId scrutinee_id,
+                                  int32_t payload_field_index) -> SemIR::InstId;
 
 // If `type_id` is a complete choice type — including a specific of a generic
 // choice — whose discriminant is an integer field, returns the discriminant's
@@ -172,9 +218,20 @@ auto EmitChoiceDiscriminantTest(Context& context, Parse::NodeId case_node_id,
 // pattern (`case .Name(...)`): a comparison of the scrutinee's discriminant
 // field against the resolved alternative's discriminant value, taken from
 // the case-arm context's `alternative` (which must be set). Returns the
-// boolean condition inst. The payload subpatterns contribute no test; their
-// initialization is the bind pass's job, via `LocalPatternMatch` against the
-// extracted payload tuple.
+// boolean condition inst. An all-binding payload contributes no test of its
+// own; binding initialization is the bind pass's job against the extracted
+// payload tuple.
+//
+// A payload with expression subpatterns (`case .Some(42)`) additionally
+// tests the payload's values — strictly under the discriminant test, in a
+// payload block this function switches to explicitly BEFORE invoking the
+// refutable engine on the payload tree: the payload region of a non-active
+// alternative is uninitialized storage, so every payload read and compare
+// must be dominated by the discriminant test (W-008 plan §4 R-2; the block
+// dominance is correctness, not style). The discriminant and payload
+// conditions merge into one bool through the failure edge's `false`
+// block_arg. Returns `None` after a "semantics TODO" diagnostic on an
+// unsupported payload shape, which aborts checking.
 auto MatchCaseAlternativePatternMatch(Context& context,
                                       SemIR::InstId scrutinee_id,
                                       Parse::NodeId case_node_id)

@@ -1431,33 +1431,42 @@ auto MatchContext::DoMatchCaseTuplePreWork(SemIR::TuplePattern tuple_pattern,
     // A nested tuple pattern against a non-tuple element (the root shape is
     // classified before the engine runs; see `MatchCase`). A real
     // pattern-type error in the design; in-slice it stays behind the W4
-    // slice gate, like the same shape at the root. An arm whose test
-    // aborted or errored never runs the bind pass (see `MatchCase`), so the
-    // bind pass reaches this shape — and the arity mismatch below — only
-    // inside a subtree the test pass pruned as wholly irrefutable, and
-    // returns without binding.
+    // slice gate, like the same shape at the root. BOTH passes diagnose —
+    // here and at the arity mismatch below — and never both for one
+    // subtree: a failing shape the test pass reaches aborts checking (the
+    // `None` fold result) or errors the arm's condition, and `MatchCase`'s
+    // guards then skip the bind pass for that arm, so the bind pass
+    // reaches a failing shape only inside a subtree the test pass pruned
+    // as wholly irrefutable — which would otherwise silently bind nothing.
+    // The arm's case context is popped before the bind pass runs, so the
+    // bind-pass diagnostic is located at the offending subpattern, not the
+    // arm's introducer.
     if (is_test_pass) {
       context_.TODO(
           context_.match_case_stack().back().introducer_node_id,
           "match `case` pattern other than an integer literal, or a case "
           "guard");
       results_stack_.AppendToTop(SemIR::InstId::None);
+    } else {
+      context_.TODO(entry.pattern_id,
+                    "match `case` pattern other than an integer literal, or "
+                    "a case guard");
     }
     return;
   }
   auto element_type_inst_ids =
       context_.inst_blocks().Get(tuple_type->type_elements_id);
   if (subpattern_ids.size() != element_type_inst_ids.size()) {
-    if (is_test_pass) {
-      CARBON_DIAGNOSTIC(MatchCaseTuplePatternWrongArity, Error,
-                        "tuple pattern expects {0} element{0:s}, but match "
-                        "scrutinee has {1}",
-                        Diagnostics::IntAsSelect, Diagnostics::IntAsSelect);
-      context_.emitter().Emit(entry.pattern_id, MatchCaseTuplePatternWrongArity,
-                              subpattern_ids.size(),
-                              element_type_inst_ids.size());
-      results_stack_.AppendToTop(SemIR::ErrorInst::InstId);
-    }
+    // Emitted by whichever pass reaches the mismatch; see the disjointness
+    // argument above.
+    CARBON_DIAGNOSTIC(MatchCaseTuplePatternWrongArity, Error,
+                      "tuple pattern expects {0} element{0:s}, but match "
+                      "scrutinee has {1}",
+                      Diagnostics::IntAsSelect, Diagnostics::IntAsSelect);
+    context_.emitter().Emit(entry.pattern_id, MatchCaseTuplePatternWrongArity,
+                            subpattern_ids.size(),
+                            element_type_inst_ids.size());
+    append_test_result(SemIR::ErrorInst::InstId);
     return;
   }
   // Emit the element accesses eagerly, each with the SCRUTINEE's element

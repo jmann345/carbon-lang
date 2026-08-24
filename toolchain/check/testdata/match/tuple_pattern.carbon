@@ -205,3 +205,28 @@ fn F(p: (i32, i32)) -> i32 {
   }
   return -1;
 }
+
+// --- fail_pruned_subtree_shape_error.carbon
+library "[[@TEST_NAME]]";
+
+// A wholly-irrefutable nested tuple against a non-tuple element: the TEST
+// pass prunes the subtree (it contributes no condition and never
+// shape-checks it), so the BIND pass — which would otherwise silently bind
+// nothing — emits the shape gate's diagnostic (W-008 W8a review fix round
+// 2). The bind-pass diagnostic is located at the offending subpattern: the
+// arm's case context is popped before the bind pass runs.
+fn F(p: (i32, i32)) -> i32 {
+  match (p) {
+    // CHECK:STDERR: fail_pruned_subtree_shape_error.carbon:[[@LINE+8]]:14: error: semantics TODO: `match `case` pattern other than an integer literal, or a case guard` [SemanticsTodo]
+    // CHECK:STDERR:     case (1, (b: i32,)) => { return 1; }
+    // CHECK:STDERR:              ^~~~~~~~~
+    // CHECK:STDERR:
+    // CHECK:STDERR: fail_pruned_subtree_shape_error.carbon:[[@LINE+4]]:15: warning: binding `b` unused [UnusedBinding]
+    // CHECK:STDERR:     case (1, (b: i32,)) => { return 1; }
+    // CHECK:STDERR:               ^~~~~~
+    // CHECK:STDERR:
+    case (1, (b: i32,)) => { return 1; }
+    default => { return 0; }
+  }
+  return -1;
+}

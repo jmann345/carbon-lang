@@ -47,7 +47,16 @@ handle_let_and_var.cpp, pattern_match.cpp):
 Also verified: the defense-in-depth string `match case pattern on
 unsupported choice alternative shape` (pattern_match.cpp:812-815) and
 the non-choice leading-dot gate (handle_match.cpp:291-295) are
-unreachable-by-design backstops, not residue.
+unreachable-by-design backstops, not residue. The one remaining TODO
+the review sweep surfaced in the four named files (finding R2-11) —
+pattern_match.cpp:341, `Control flow expressions are currently only
+supported inside functions` — is upstream non-match residue (it
+predates the fork's match work and gates control-flow exprs at file
+scope), dispositioned not-W-008. R7's pin column additionally carries
+choice_generic_payload_scrutinee.carbon's fail_all_payloads_rejected
+subfile (finding R2-6; see §2.2). R3's pin column additionally
+carries patterns/unused.carbon's fail_todo_match split (finding R2-1;
+see §2.4/§3.2).
 
 **Scoreboard truth (R9):** both W-008 scoreboard entries —
 control_flow/match_switch.carbon and
@@ -135,16 +144,34 @@ The landed machinery this rides:
     irrefutable and belong to the bind pass") and already emits the
     `==` condition for `ExprPattern` (:763-882, operand order per
     pattern_matching.md:87-88).
--   **The engine's TuplePattern walk is state-generic**
-    (:1040-1115): it converts the scrutinee to the tuple type
-    (diagnosing arity/type mismatch — `TuplePatternSizeDoesntMatchLiteral`
-    and the conversion diagnostics come free), then emits
-    `TupleAccess` subscrutinees and pushes per-element work items.
-    Upstream already CHECKS tuple patterns containing `ExprPattern`
-    leaves in `let` (check/testdata/patterns/expression.carbon's
-    fail_todo_control_flow golden shows
-    `tuple_pattern (%expr_patt, %expr_patt)` SemIR) — check-side pattern
-    construction needs NO new inst kinds.
+-   **The engine's TuplePattern walk is state-generic in its
+    TRAVERSAL, not in its typing** (:1040-1115) — CORRECTED at the
+    2026-08-24 review round (finding R1-F1, BLOCKER). The walk
+    short-circuits for a `TupleLiteral` scrutinee (:1073-1088, where
+    `TuplePatternSizeDoesntMatchLiteral` lives) and otherwise FIRST
+    converts the scrutinee to the pattern's own tuple type
+    (:1090-1093). That conversion is poisoned for W8a's shapes: an
+    expression element's `ExprPattern` carries the EXPRESSION's type
+    (pattern.cpp:68-80 — `Core.IntLiteral` for `42`), so
+    `case (1, b: i32)` has pattern-tuple type `(IntLiteral, i32)` and
+    a real `(i32, i32)` scrutinee has no conversion to it — a
+    design-valid pattern would diagnose a bogus conversion error in
+    BOTH passes. W8a therefore adds a fourth shared piece, (d): in
+    `MatchCaseState` (and match-bind mode) the tuple pre-work skips
+    the whole-tuple conversion — it arity-checks the pattern against
+    the scrutinee's own `TupleType` (minting the match-arm arity
+    diagnostic `MatchCaseTuplePatternWrongArity`, since
+    `TuplePatternSizeDoesntMatchLiteral` is literal-shortcut-only),
+    emits `TupleAccess` subscrutinees with the SCRUTINEE's element
+    types, and leaves per-leaf typing to the leaves (the `==` at expr
+    leaves and the per-binding `Convert` the bind pass already does).
+    Both passes get a golden pinned on a NON-literal tuple scrutinee
+    (a `var` local), because the literal shortcut hides exactly this
+    bug. Upstream already CHECKS tuple patterns containing
+    `ExprPattern` leaves in `let`
+    (check/testdata/patterns/expression.carbon's fail_todo_control_flow
+    golden shows `tuple_pattern (%expr_patt, %expr_patt)` SemIR) —
+    check-side pattern construction needs NO new inst kinds.
 -   **The two-pass arm contract** (handle_match.cpp:551-716): test pass
     emits one bool condition in the test block; bind pass runs
     `LocalPatternMatch` in the arm's body block; guards splice after the
@@ -152,19 +179,40 @@ The landed machinery this rides:
 
 Three shared pieces to build:
 
-(a) **Condition collection for pattern trees.** Extend the
-`MatchCaseState` traversal so a `TuplePattern` node collects its
-elements' conditions (by way of `results_stack_`, the way `DoPostWork
-TuplePattern` already collects element results at :1117-1128) and folds
-them into ONE bool. Fold shape: the `and` operator's short-circuit
-block_arg SemIR (handle_operator.cpp:410-500 is the existing in-tree
-shape) rather than a flat chain of `BranchIf`s — it yields a single
-value, preserving `MatchCase`'s one-condition CFG contract
-(AddDominatedBlockAndBranchIf at :642-644) unchanged, and it is
-design-shaped: pattern_matching.md:113-118 mandates short-circuit
-left-to-right. In-slice all case expressions are constants (R9 stays),
-so short-circuit vs eager is not observable — but the payload case (c)
-REQUIRES it, so build it once.
+(a) **Condition collection for pattern trees** — REWRITTEN at the
+2026-08-24 review round (finding R1-F2, MAJOR; OQ-1 re-adjudicated).
+The original text mandated building the `and`-shape short-circuit
+block_arg SemIR inside the engine; the review showed that is not
+implementable where the plan said: `DoMatchCaseExprPattern` emits its
+splice + `==` insts into the CURRENT block at PreWork time
+(pattern_match.cpp:766-768, 874-881) and work items process as a flat
+stack (:291-305), so by TuplePattern PostWork every element compare
+has already been emitted into one block; per-element block switching
+would need new between-element WorkItem kinds manipulating
+`inst_block_stack` — machinery the engine does not have, and the
+parse-driven `and` handler (handle_operator.cpp:410-500) switches
+blocks BEFORE checking its rhs, a luxury the engine walk lacks.
+Sanctioned design instead: (i) TUPLE-element conditions are emitted
+eagerly into the current block and folded into one bool (flat `and`
+of the collected `results_stack_` values). This is observationally
+equivalent to the design's :113-118 short-circuit BECAUSE in-slice
+tuple scrutinees are fully-initialized values (total reads — no
+poison) and in-slice case expressions are constants (no observable
+effects to order); recorded under R9/R-3 as the same class of
+approximation as the two-pass split itself, re-examined when either
+premise falls. (ii) The only MANDATORY block structure is
+discriminant-then-payload: `MatchCaseAlternativePatternMatch`
+switches blocks explicitly BEFORE invoking the engine on the payload
+tree, so every payload-region read and compare is dominated by the
+discriminant test (§2.3, §4 R-2 — that dominance is correctness, not
+style). (iii) The one-condition CFG contract
+(AddDominatedBlockAndBranchIf at :642-644) is preserved in both
+shapes by branching on the folded/final bool. Error propagation
+(review finding R1-F6): a `None`/error element result must propagate
+through the fold — the fold treats any `None` element as aborting
+the arm and any `ErrorInst` as making the whole condition
+`ErrorInst`, so `has_error_arm` keying at handle_match.cpp:625-626
+still fires.
 
 (b) **Bind-pass pruning at expression leaves.** A mixed tree
 (`case (1, b: i32)`) reaches the bind pass as a `TuplePattern`
@@ -177,14 +225,29 @@ mode on the local walk (a flag in `LocalState` set by a new
 so upstream `let`/`var` behavior is byte-identical. This also keeps the
 single-splice invariant: each `ExprPattern`'s region is spliced exactly
 once, by the test pass (`InsertHere` cannot run twice on a region,
-pattern_match.cpp:314-319).
+pattern_match.cpp:314-319). Amendment (review finding R1-F5, MAJOR):
+expression elements INSIDE tuples additionally need the
+initializer-category value conversion that root case expressions get
+from `FinishCasePattern` (handle_match.cpp:473-488) — tuple elements
+close their regions through `PatternListComma`/`TuplePatternId` →
+`EndExprRegionForPattern` (pattern.cpp:68-86), which performs no such
+conversion, so an in-slice `case (2 + 3, b: i32)` would splice an
+initializing result and violate a checked SemIR invariant. W8a
+converts at splice time in `DoMatchCaseExprPattern` (keeping the
+shared `EndExprRegionForPattern` path untouched for non-match
+callers); this touch is named in R-1's byte-identical guard.
 
 (c) **Coverage refinement** (the W-066 seam). `MatchCase`'s coverage
 recording (handle_match.cpp:615-635) gains one bit: an
 alternative-pattern arm counts toward `covered_alternatives` ONLY when
 its payload subpattern tree is wholly irrefutable (all bindings); a
 `.Some(42)` arm is refutable and records nothing
-(pattern_matching.md:589-594 — see §4 R-4, the subtle part). Tuple-root
+(pattern_matching.md:589-594 — see §4 R-4, the subtle part).
+Amendment (review finding R1-F6): the wholly-irrefutable
+classification is RECURSIVE over nested payload tuples and is
+computed where the successor of the :405-413 loop already inspects
+subpatterns — set the bit there, during pattern construction, not by
+a second walk at coverage-record time. Tuple-root
 arms record nothing on choice scrutinees (they cannot type-match one);
 on integer/tuple scrutinees the `default` requirement is unchanged (R8
 stays), so their coverage state is inert — but record the
@@ -198,6 +261,19 @@ consumes exactly this classification.
     (integer-shape, matchable choice, or tuple thereof). The
     temporary-cleanup argument at :139-144 extends elementwise: a tuple
     of trivially-destructible element types is trivially destructible.
+    Amendment (review finding R2-2, MAJOR): the scrutinee-gate half of
+    R1 has NO red pin in-tree — `fail_todo_tuple_pattern`'s subfile
+    matches a tuple pattern against an i32 scrutinee and never reaches
+    this gate, and no `match ((1, 2))`-shaped pin exists. The shape
+    diagnoses today (goldenable, not a crash), so W8a's FIRST commit
+    lands a `fail_todo_tuple_scrutinee` subfile red, before the flip —
+    the §3.1 self-evidencing claim holds only once that pin exists.
+    Amendment (review finding R2-6): the gate rewrite must also keep
+    `choice_generic_payload_scrutinee.carbon`'s
+    fail_all_payloads_rejected subfile (:132, `match on unsupported
+    scrutinee type` for a metadata-less generic choice) byte-identical
+    — it is a third pin on this exact gate, previously unlisted in R7's
+    pin column (now listed).
 -   **Root classification** (handle_match.cpp:577-613): add a
     `TuplePattern` root arm — test pass = the §2.1(a) traversal
     (all-binding trees contribute constant `true`, the existing
@@ -223,13 +299,24 @@ consumes exactly this classification.
     mixed tree.
 -   `MatchCaseAlternativePatternMatch` (pattern_match.cpp:504-526)
     currently returns only the discriminant test. Extend: discriminant
-    condition, then — **strictly under it, in the `and`-rhs block**
-    (§2.1(a)) — the payload-region `ClassElementAccess` extraction
-    (today's bind-pass shape, handle_match.cpp:672-685) and the
-    elementwise `==` conditions for expression leaves. The ordering is
-    correctness, not style: the payload region of a non-active
-    alternative is uninitialized storage, and a hoisted load feeds
-    poison to a branch (§4 R-2).
+    condition, then — **strictly under it, in a payload block the
+    function switches to explicitly BEFORE invoking the engine on the
+    payload tree** (§2.1(a)(ii), amended) — the payload-region
+    `ClassElementAccess` extraction (today's bind-pass shape,
+    handle_match.cpp:672-685) and the elementwise `==` conditions for
+    expression leaves. The ordering is correctness, not style: the
+    payload region of a non-active alternative is uninitialized
+    storage, and a hoisted load feeds poison to a branch (§4 R-2). The
+    one forbidden shape (review finding R1, angle-2 close): running
+    the shared eager walk on the payload tree in the CURRENT block —
+    the block switch must precede the engine invocation.
+    Amendment (review finding R1-F7): "elementwise `==` for expression
+    leaves" means constant-INTEGER leaves only —
+    `DoMatchCaseExprPattern`'s gates (:858-866, :836) reject bool/f64/
+    choice-constant leaves with the existing diagnostics, and that
+    restriction is recorded in W8c's ledger truth. The misleading
+    "not a constant integer" wording for for example `.Flag(true)` is
+    accepted in-slice (string polish rides W8c if wanted — not a gate).
 -   Bind pass unchanged except §2.1(b) pruning; binding elements of a
     mixed payload (`case .Pair(1, b: i32)`) still initialize in the
     arm's body block from a second extraction — the arm's body is
@@ -245,16 +332,38 @@ consumes exactly this classification.
 -   handle_binding_pattern.cpp:517-520: delete the gate; let
     `VarBindingPattern` and `is_ref` fall through to the
     NameBindingDecl-shaped binding construction (`RefBindingPattern`
-    kind, :496-498), under the case arm's implicit `let` introducer.
+    kind by way of `GetLeafBindingPatternInstKind`, :39-52/:556-557 —
+    cite corrected at review; :496-498 is the param-list arm), under
+    the case arm's implicit `let` introducer.
 -   handle_let_and_var.cpp:146-155 (`VariablePattern` under
     `MatchCaseArm`): route to `add_local_var()` — `VarPattern` +
-    `GetOrAddVarStorage` + `AddLocalVarPattern`, the NameBindingDecl
-    arm's shape. Widen the `full_pattern_stack.h` kind CHECKs
-    (`AddLocalVarPattern` :182-187, `GetLocalVarStorage` :195-201) to
-    admit `Kind::MatchCaseArm`; the stack already books var arrays for
-    it (`PushMatchCaseArm`, :105-110). Binding-free `case var 5` stays
-    behind the (now correctly-narrow) combined-string TODO — `var`
-    around a refutable pattern is a design oddity nobody has specified.
+    storage + `AddLocalVarPattern`, the NameBindingDecl arm's shape.
+    **Storage plumbing REDESIGNED at the 2026-08-24 review round
+    (finding R1-F3, MAJOR): the original "widen the two
+    full_pattern_stack.h kind CHECKs" is insufficient on two counts.**
+    (i) `MatchCase` pops the arm's full-pattern frame
+    (handle_match.cpp:637) BEFORE the bind pass runs
+    `LocalPatternMatch` (:662-688), so a bind-pass
+    `GetLocalVarStorage` (pattern_match.cpp:985-986) would read the
+    ENCLOSING frame — the "var patterns visited in unexpected order"
+    CHECK (full_pattern_stack.h:201) or silent theft of an enclosing
+    declaration's storage. (ii) `GetLocalVarStorage` requires an armed
+    `next_var_index` (:199), armed only by `StartPatternInitializer`
+    (full_pattern_stack.cpp:33) — which match arms never call and
+    which performs `InitTombstone` name-lookup stashing a match arm
+    must not do (`let`/`var` work because their LocalPatternMatch runs
+    between StartPatternInitializer and PopFullPattern,
+    handle_let_and_var.cpp:202/361; match's ordering is inverted).
+    ADOPTED design (was contingency R-5 lane (i), now PRIMARY):
+    the bind pass emits `VarStorage` ON DEMAND at each `VarPattern` it
+    visits in a match arm — the lane the full_pattern_stack.h:176-181
+    comment itself names — bypassing the frame-indexed storage lookup
+    entirely; no CHECK widening, no PopFullPattern reordering, no
+    tombstoning. The R-5 ladder keeps lane (ii) (gate composition
+    shapes, land bare `case var a: T`) as the remaining fallback.
+    Binding-free `case var 5` stays behind the combined-string TODO
+    (the string itself is re-examined at W8c — review finding R2-8:
+    the SITE narrows here but the string text does not).
 -   Root classification: `is_binding_arm` (handle_match.cpp:590-591)
     widens to `VarPattern` and ref-binding roots — irrefutable, constant
     `true` test, `has_irrefutable_arm` coverage. The bind pass needs no
@@ -269,7 +378,25 @@ consumes exactly this classification.
 -   Composition: `case var (a: i32, b: i32)` (the design's own :343
     example, modulo types) is W8a's tuple tree under W8b's `VarPattern`
     — testdata-only if the machinery composes; a gate if it does not
-    (§4 R-5).
+    (§4 R-5). Amendment (review finding R1-F4, MAJOR): composition is
+    NOT root-only — `case (var n: i32, 1)` (the design's §1.2 example,
+    pattern_matching.md:336-346) puts a `VarPattern` ELEMENT inside
+    the test-pass tuple walk, which today hits
+    `CARBON_FATAL("Found VarPattern during match case pattern match")`
+    at pattern_match.cpp:1024-1030 — a FATAL whose justifying comment
+    ("var patterns in case arms are gated at check time") W8b's gate
+    deletion falsifies. W8b turns that FATAL into the binding-style
+    test-pass prune (return without descending, the :567-573 shape)
+    and pins a golden on the design's mixed shape. The
+    `patterns/unused.carbon` `fail_todo_match` split (:159-176) is the
+    in-tree red state for this composition and flips at W8b (review
+    finding R2-1) — its `case unused var (a: i32, b: i32)` and
+    `case var unused a: i32 if (a != x)` become compiling code, the
+    :175 "ensure no warning (after match is implemented)" TODO comment
+    is resolved by asserting the expected unused-warning behavior in
+    the flipped golden (a bound-but-unused case binding warns exactly
+    as `let` bindings do; `unused`-marked ones do not), and the file
+    joins R3's pin column and W8b's probe list.
 -   Cleanups: in-slice types destroy trivially, but registration still
     goes through the arm scope (`MatchHandler`'s
     `AddAndDiscardScopeCleanups`), so the design's :776-791 destruction
@@ -305,9 +432,12 @@ keeps its NameNotFound error and loses only the trailing TODO line
 (stays a fail golden, re-pinned).
 
 New check goldens: match/tuple_pattern.carbon (all-expr, all-binding,
-mixed, nested-tuple subfiles; fail_arity pinning
-TuplePatternSizeDoesntMatchLiteral in case position; a fail_todo pin on
-whatever still reaches the :609 fallback); match/payload_subpattern.carbon
+mixed, nested-tuple subfiles; a NON-literal `var` tuple scrutinee
+subfile per §2.1's amended piece (d); fail_arity pinning
+TuplePatternSizeDoesntMatchLiteral on the literal-scrutinee path AND
+the new `MatchCaseTuplePatternWrongArity` on the non-literal path; a
+fail_todo pin on whatever still reaches the :609 fallback);
+match/payload_subpattern.carbon
 (literal, mixed, multi-element, guarded, single-alternative choice);
 **the coverage pin**: fail_nonexhaustive_payload_literal — a
 two-alternative choice matched by `case .Some(42)` + `case .None` with
@@ -316,7 +446,27 @@ New lower goldens: lower/testdata/match/tuple_pattern.carbon and
 payload_subpattern.carbon, the latter pinning the payload load's
 position under the discriminant branch (the R-2 anti-regression pin).
 All goldens ship empty-CHECK, autoupdated on the runner to fixpoint
-(R15/R19/R26).
+(R15/R19/R26) — and every new POSITIVE check golden brackets its
+match statement(s) with `//@dump-sem-ir-begin`/`//@dump-sem-ir-end`
+markers, without which autoupdate fills a green-but-EMPTY golden
+pinning nothing (the W69a failure mode; review finding R2-3). The
+stderr-pinning fail goldens need no markers.
+Touched-file discipline (review finding R2-5): W8a edits
+fail_choice_alternative_pattern.carbon (two subfiles flip) — its
+REAL-error sibling subfiles fail_bare_payload_alternative (:36),
+fail_parens_on_constant_alternative (:58), fail_wrong_arity (:80,
+which must survive the deletion of the :405-413 filter it sits
+behind), and fail_unknown_alternative (:106) keep their exact
+diagnostics, named here as must-keep. The fail_todo_tuple_pattern
+container splits: the tuple subfile moves to the new positive
+tuple_pattern.carbon, and the remaining red
+fail_todo_compile_time_binding subfile keeps the container (renamed
+fail_todo_compile_time_binding.carbon) until W8c re-strings it.
+S2e must-stay-byte-identical set, enumerated (review finding R2-7):
+exhaustive_choice.carbon, exhaustive_choice_binding.carbon,
+fail_choice_nonexhaustive.carbon, guarded_default.carbon,
+fail_guarded_default.carbon, single_alternative_choice.carbon,
+empty_choice.carbon — the cheap byte-diff that catches §2.1(c) rot.
 
 Conformance: new program control_flow/match_tuple_case_diff.carbon
 (+ .diff.cpp C++ oracle) — bullet `Control flow: matching — good switch
@@ -328,15 +478,25 @@ interop`, a runtime dispatch on payload VALUE (`.Some(42)` vs
 `.Some(n: i32)` fall-through proving first-match-wins order). Floor
 96 → 98 over 126. R9 discharge: gate green (R21 parity), both programs
 PASS on the scoreboard, every untouched match/let/param golden
-byte-identical at autoupdate fixpoint, ledger W-008 notes updated.
+byte-identical at autoupdate fixpoint, ledger W-008 notes updated,
+AND (review finding R2-4) the W-066 ledger entry edited in the same
+commit: its `blocked_by: ["W-008"]` annotated as discharged-at-W8a
+with this plan's §3.4 cited — without the machine-readable edit, a
+fresh agent reading the inventory still sees W-066 blocked.
 
 ### 3.2 W8b — `var`/`ref` case bindings (S/M)
 
 Files: toolchain/check/handle_binding_pattern.cpp,
-handle_let_and_var.cpp, full_pattern_stack.h, handle_match.cpp
-(classification only). Probes: fail_todo_var_binding.carbon and
-fail_todo_ref_binding.carbon flip to positive goldens (the TODO string
-dies entirely — grep-clean). New check goldens:
+handle_let_and_var.cpp, pattern_match.cpp (the :1024-1030 FATAL→prune,
+§2.4 amended), handle_match.cpp (classification only);
+full_pattern_stack.h only if the on-demand-storage design (§2.4
+amended) turns out to need a touch at all. Probes:
+fail_todo_var_binding.carbon and fail_todo_ref_binding.carbon flip to
+positive goldens, AND (review finding R2-1) patterns/unused.carbon's
+fail_todo_match split flips — three pins, not two; only after all
+three does the TODO string die grep-clean. The flipped unused.carbon
+golden asserts the case-binding unused-warning behavior and resolves
+the :175 TODO comment (§2.4 amended). New check goldens:
 match/var_binding.carbon (mutation through the binding observable;
 binding scoped to arm body+guard, extending fail_binding_scope's
 discipline; `case var (a: i32, b: i32)` composition), match/ref_binding.carbon
@@ -357,15 +517,22 @@ No feature work. (1) Give compile-time case bindings their own honest
 string (``compile-time binding in match `case` pattern``) at
 handle_binding_pattern.cpp:647-653, re-pinning
 fail_todo_compile_time_binding — needed anyway once W8a flips the
-sibling subfile. (2) Ledger truth: rewrite W-008's notes to the
-post-W8a/b residue — R4, R5/R6, R7 (`bool` called out as
-design-reachable), R8, R9, R10 — each with gate site and pin; file
-follow-up items for `bool` scrutinees and struct patterns if wanted.
-(3) Decision-log entries for the §1.3 equality call and the §4 R-3
-evaluation-order approximation. Alternatively (1) rides W8a and
-(2)/(3) the W8b landing note, dissolving W8c; the DEFAULT is a thin
-third slice so neither implementation slice carries ledger-rewrite
-review load.
+sibling subfile — and (review finding R2-8) re-examine the OTHER two
+sites where the combined W4 string survives post-W8a and becomes
+inaccurate: the form-binding gate (handle_binding_pattern.cpp:521-526)
+and binding-free `case var 5` (handle_let_and_var.cpp:146-155) get
+narrowed strings, while the :609 backstop keeps the combined string
+only if W8a's reachability inventory (§2.2) records it as an honest
+description of what still reaches it. (2) Ledger truth: rewrite
+W-008's notes to the post-W8a/b residue — R4, R5/R6, R7 (`bool` called
+out as design-reachable), R8, R9 (including the §2.3 integer-leaf
+restriction, review finding R1-F7), R10 — each with gate site and pin;
+FILE the follow-up items for `bool` scrutinees (mandatory per the
+OQ-4 adjudication — "if wanted" struck at review, finding R2-9) and
+struct patterns. (3) Decision-log entries for the §1.3 equality call
+and the §4 R-3 evaluation-order approximation. W8c EXISTS as a slice
+per the OQ-2 adjudication — the dissolve-into-W8a/W8b alternative is
+struck (review finding R2-9).
 
 ### 3.4 Ordering and the W-066 gate
 
@@ -396,14 +563,24 @@ cases (R9 stays) and profits from the R8 gate staying conservative.
 -   **R-2 Poison-safe payload reads (the W8a correctness core).** The
     payload region of a non-active alternative is uninitialized; loading
     it yields poison and branching on a poison-derived bool is UB. The
-    elementwise `==` for `.Some(42)` MUST be emitted in the
-    short-circuit rhs block dominated by the discriminant test — never
-    folded eagerly. Pinned by the lower golden's block structure (§3.1).
-    If review finds the `and`-shape awkward to build outside expression
-    context, the fallback is the guard-shaped two-stage CFG
-    (handle_match.cpp:701-712 is the in-tree template: BranchIf into an
-    intermediate block, failure edge to the shared else block) — same
-    dominance guarantee, two blocks instead of block_args.
+    elementwise `==` for `.Some(42)` MUST be emitted in a payload block
+    dominated by the discriminant test — the explicit block switch in
+    `MatchCaseAlternativePatternMatch` per §2.1(a)(ii) as amended;
+    never the shared eager walk in the current block. Pinned by the
+    lower golden's block structure (§3.1). STOP condition (OQ-1
+    re-adjudication folded here per review finding R2-10): if the
+    per-element or discriminant-then-payload block structure requires
+    new WorkItem kinds or `inst_block_stack` manipulation INSIDE
+    `MatchContext`, the implementer STOPS and reports (R17) rather
+    than improvising engine surgery. Recorded fallback: the
+    guard-shaped two-stage CFG (handle_match.cpp:701-712 is the
+    in-tree template) — with the review's caveat (finding R1-F2) that
+    the guard shape works because `else_block_id` already exists
+    (created at :644) when the guard splices; a two-stage PATTERN test
+    needs its failure target before `MatchCase` creates blocks, so the
+    fallback entails reordering block creation or adding a merge
+    block — same dominance guarantee, more plumbing than the original
+    text implied.
 -   **R-3 Evaluation-order approximation (record explicitly).** The
     design interleaves `var` initialization with testing
     (pattern_matching.md:776-791: `var y: X` initialized, then the
@@ -428,16 +605,18 @@ cases (R9 stays) and profits from the R8 gate staying conservative.
     the classification is still recorded for W-066. (c) A guarded
     anything still records nothing (:620-623). (d) An error-recovery
     subtree still sets `has_error_arm`.
--   **R-5 Var storage placement.** `GetOrAddVarStorage` from a case
-    arm's pattern context emits `VarStorage` inside the arm's
-    NameBindingDecl in the TEST block; lowering must alloca it exactly
-    as it does for `let var` locals. If lowering assumes
-    NameBindingDecl-in-entry shapes, the contingency ladder is: (i) emit
-    storage on demand in the bind pass (the full_pattern_stack.h:176-181
-    comment's other lane), (ii) gate `var` composition shapes
+-   **R-5 Var storage placement.** RESOLVED at the 2026-08-24 review
+    round: lane (i) — emit storage on demand in the bind pass (the
+    full_pattern_stack.h:176-181 comment's other lane) — is PROMOTED
+    from contingency to the primary §2.4 design, because the review
+    (finding R1-F3) showed the frame-indexed lookup path is
+    structurally unsound for match arms (frame popped before the bind
+    pass; index never armed without tombstoning side effects). The
+    remaining ladder: (ii) gate `var` composition shapes
     (`case var (…)`) behind a narrowed TODO and land bare `case var
     a: T` only. The lower golden lands FIRST in the slice to surface
-    this before the conformance program depends on it.
+    lowering-shape assumptions before the conformance program depends
+    on it.
 -   **R-6 Mixed-tree engine unknowns.** If the §2.1(a)/(b) split fights
     the worklist engine (results_stack_ discipline across prune
     boundaries), fall back to splitting W8a: W8a-1 lands all-expr and
@@ -492,3 +671,54 @@ cases (R9 stays) and profits from the R8 gate staying conservative.
 
 All veto-able. Two adversarial plan reviews next (M-sized, broad
 mechanism); on fold + sign-off, W8a proceeds.
+
+## Review round (2026-08-24): two adversarial reviews, folded
+
+Reviewer 1 (mechanism-correctness): verdict REWORK, scoped — the
+residue inventory, design authority, slice structure, and
+coverage/poison intent survived; the mechanism core misdescribed the
+code it reuses. Five findings, ALL folded as in-place section
+amendments above: F1 BLOCKER (tuple-walk whole-tuple conversion
+type-errors every new W8a shape on non-literal scrutinees → shared
+piece (d), scrutinee-typed walk + `MatchCaseTuplePatternWrongArity` +
+non-literal-scrutinee goldens both passes); F2 MAJOR (the `and`-shape
+fold is unbuildable inside the worklist engine as described → eager
+fold for tuples + explicit discriminant-then-payload block switch,
+OQ-1 re-adjudicated with a concrete STOP trigger, fallback caveat
+recorded in R-2); F3 MAJOR (full_pattern_stack CHECK-widening
+insufficient — frame popped pre-bind-pass, index never armed → R-5
+lane (i) on-demand storage promoted to primary in §2.4); F4 MAJOR
+(`case (var n: i32, 1)` FATALs in the test pass → prune VarPattern
+elements in `MatchCaseState`, pin the design's mixed shape); F5 MAJOR
+(initializer-category expr elements in tuples violate the splice
+invariant → convert at splice time in `DoMatchCaseExprPattern`).
+F6/F7 (coverage-bit computation site + error propagation; integer-leaf
+restriction honesty) folded into §2.1(c)/§2.1(a)/§2.3/§3.3.
+
+Reviewer 2 (completeness/process): verdict APPROVE-WITH-AMENDMENTS.
+Findings 1-4 (mandatory) folded: patterns/unused.carbon fail_todo_match
+added to R3 pins + W8b probes with the unused-warning statement (§2.4,
+§3.2, §0); fail_todo_tuple_scrutinee red pin as W8a's first commit
+(§2.2); dump-sem-ir-ranges policy for every new positive check golden
+(§3.1 — the W69a lesson); W-066 machine-readable ledger edit in W8a's
+discharge list (§3.1). Findings 5-9 folded: sibling must-keep
+subfiles + container split mechanics (§3.1); the
+choice_generic_payload_scrutinee pin (§0, §2.2); the S2e byte-identical
+enumeration (§3.1); the two other combined-string sites at W8c (§3.3);
+OQ-2/OQ-4 drift struck (§3.3). Findings 10-11 folded (§4 R-2; §0).
+Angles that survived both reviews stand as originally written.
+
+**OQ-1 re-adjudication (supersedes the 2026-08-18 entry):** tuple
+elements fold EAGERLY (recorded observational-equivalence, §2.1(a)(i));
+the discriminant-then-payload explicit block switch is the one
+mandatory structure (§2.1(a)(ii)); STOP trigger: any need for new
+WorkItem kinds or `inst_block_stack` manipulation inside
+`MatchContext` (R17 report, R-2 fallback with its recorded caveat).
+Veto-able like every recorded call.
+
+**Coordinator sign-off (2026-08-24): APPROVED as amended.** Both
+reviewers' invalidations were text-level (the plan misdescribing
+in-tree mechanism), not structure-level; W8a/W8b/W8c slicing, the
+W-066 ordering argument, and the conformance arithmetic stand. W8a
+proceeds red-first: first commit = the fail_todo_tuple_scrutinee pin;
+the flip commits follow.

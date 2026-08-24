@@ -724,6 +724,7 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
     LocalPatternMatch(context, pattern_id, scrutinee_id);
     context.scope_stack().DeferCleanups();
   } else if (is_alternative_payload_arm &&
+             cond_value_id != SemIR::ErrorInst::InstId &&
              alternative->payload_field_index >= 0 &&
              MatchCasePatternHasBindings(context, pattern_id)) {
     // Extract this alternative's payload tuple from the scrutinee's payload
@@ -733,7 +734,9 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
     // elements through the tuple-pattern machinery. This re-extraction of a
     // trivially copyable payload in the arm's body block is dominated by
     // the discriminant test, so the read is safe. A binding-free payload
-    // (`case .Ok(42)`) has no bind-pass work, so nothing is extracted.
+    // (`case .Ok(42)`) has no bind-pass work, so nothing is extracted. An
+    // arm whose test errored (for example an errored payload element) has
+    // nothing sound to bind.
     auto field_ref_id = EmitChoicePayloadFieldAccess(
         context, SemIR::LocId(node_id), scrutinee_id,
         alternative->payload_field_index);

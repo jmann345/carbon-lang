@@ -230,8 +230,10 @@ auto EmitChoiceDiscriminantTest(Context& context, Parse::NodeId case_node_id,
 // must be dominated by the discriminant test (W-008 plan §4 R-2; the block
 // dominance is correctness, not style). The discriminant and payload
 // conditions merge into one bool through the failure edge's `false`
-// block_arg. Returns `None` after a "semantics TODO" diagnostic on an
-// unsupported payload shape, which aborts checking.
+// block_arg. An errored payload condition still closes that merge (the CFG
+// stays well-formed) but the return value is `ErrorInst::InstId`, so the
+// caller records the error arm. Returns `None` after a "semantics TODO"
+// diagnostic on an unsupported payload shape, which aborts checking.
 auto MatchCaseAlternativePatternMatch(Context& context,
                                       SemIR::InstId scrutinee_id,
                                       Parse::NodeId case_node_id)

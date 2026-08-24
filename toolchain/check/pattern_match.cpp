@@ -111,6 +111,13 @@ struct MatchCaseState {
   // The `MatchCase` parse node, used as the location of the emitted
   // comparison insts.
   Parse::NodeId case_node_id;
+
+  // The root pattern inst this walk was entered with. An error-typed
+  // expression leaf BELOW the root recovers — it contributes an errored
+  // condition and checking continues — but the root itself keeps the legacy
+  // constant-integer TODO, which aborts checking (pinned by
+  // operators/fail_question.carbon's `case H(0)?`).
+  SemIR::InstId root_pattern_id;
 };
 
 using State = std::variant<CallerState*, CalleeState*, LocalState*, ThunkState*,
@@ -287,11 +294,15 @@ class MatchContext {
                                bool is_test_pass) -> void;
 
   // Emits the refutable test for an expression pattern in a `match` `case`
-  // and returns the boolean condition inst, or `None` after diagnosing an
-  // unsupported case-pattern shape with a "semantics TODO" diagnostic (which
-  // aborts checking).
+  // and returns the boolean condition inst, `ErrorInst::InstId` for an
+  // already-diagnosed error-typed leaf below the root, or `None` after
+  // diagnosing an unsupported case-pattern shape with a "semantics TODO"
+  // diagnostic (which aborts checking). `pattern_id` is the `ExprPattern`
+  // inst being matched, compared against the walk's root to scope the
+  // error-leaf recovery.
   auto DoMatchCaseExprPattern(const MatchCaseState& match_case_state,
                               SemIR::ExprPattern expr_pattern,
+                              SemIR::InstId pattern_id,
                               SemIR::InstId scrutinee_id) -> SemIR::InstId;
 
   // Asserts that there is a single inst in the top array in `results_stack_`,
@@ -630,6 +641,15 @@ auto MatchCaseAlternativePatternMatch(Context& context,
        .block_id = end_block_id});
   SetBlockArgResultBeforeConstantUse(context, result_id, disc_cond_id,
                                      payload_cond_id, false_id);
+  if (payload_cond_id == SemIR::ErrorInst::InstId) {
+    // An errored payload element (for example a NameNotFound subpattern).
+    // The merge above keeps the CFG well-formed — the errored value flows
+    // through the branch arg, the shape the short-circuit operators use —
+    // but the arm's condition must surface the error, not the merge's
+    // non-error `BlockArg`, so `MatchCase` records the error arm and the
+    // exhaustiveness analysis treats coverage as unknowable.
+    return SemIR::ErrorInst::InstId;
+  }
   return result_id;
 }
 
@@ -990,8 +1010,8 @@ auto MatchContext::DoPreWork(State state, SemIR::ExprPattern expr_pattern,
                              SemIR::InstId scrutinee_id, WorkItem entry)
     -> void {
   if (auto** match_case_state = std::get_if<MatchCaseState*>(&state)) {
-    results_stack_.AppendToTop(
-        DoMatchCaseExprPattern(**match_case_state, expr_pattern, scrutinee_id));
+    results_stack_.AppendToTop(DoMatchCaseExprPattern(
+        **match_case_state, expr_pattern, entry.pattern_id, scrutinee_id));
     return;
   }
   if (auto** local_state = std::get_if<LocalState*>(&state);
@@ -1006,7 +1026,7 @@ auto MatchContext::DoPreWork(State state, SemIR::ExprPattern expr_pattern,
 
 auto MatchContext::DoMatchCaseExprPattern(
     const MatchCaseState& match_case_state, SemIR::ExprPattern expr_pattern,
-    SemIR::InstId scrutinee_id) -> SemIR::InstId {
+    SemIR::InstId pattern_id, SemIR::InstId scrutinee_id) -> SemIR::InstId {
   const auto& case_context = context_.match_case_stack().back();
   auto introducer_node_id = case_context.introducer_node_id;
   auto case_node_id = match_case_state.case_node_id;
@@ -1079,9 +1099,14 @@ auto MatchContext::DoMatchCaseExprPattern(
   // An integer scrutinee — the whole case pattern, or one element of a
   // tuple case pattern or alternative payload against the element's
   // scrutinee.
-  if (context_.insts().Get(result_id).type_id() == SemIR::ErrorInst::TypeId) {
-    // The pattern expression failed to check; a diagnostic was already
-    // produced (for example a payload designator without `.Self`).
+  if (context_.insts().Get(result_id).type_id() == SemIR::ErrorInst::TypeId &&
+      pattern_id != match_case_state.root_pattern_id) {
+    // A NON-ROOT pattern expression failed to check; a diagnostic was
+    // already produced (for example a payload designator without `.Self`).
+    // The errored leaf poisons the arm's condition and checking continues.
+    // A ROOT case expression must instead fall through to the
+    // constant-integer TODO below, which aborts checking — the pre-W8a
+    // behavior operators/fail_question.carbon pins.
     InsertHere(context_, expr_pattern.expr_region_id);
     return SemIR::ErrorInst::InstId;
   }
@@ -1406,8 +1431,11 @@ auto MatchContext::DoMatchCaseTuplePreWork(SemIR::TuplePattern tuple_pattern,
     // A nested tuple pattern against a non-tuple element (the root shape is
     // classified before the engine runs; see `MatchCase`). A real
     // pattern-type error in the design; in-slice it stays behind the W4
-    // slice gate, like the same shape at the root. The bind pass cannot get
-    // here: its arm's test aborted or errored first.
+    // slice gate, like the same shape at the root. An arm whose test
+    // aborted or errored never runs the bind pass (see `MatchCase`), so the
+    // bind pass reaches this shape — and the arity mismatch below — only
+    // inside a subtree the test pass pruned as wholly irrefutable, and
+    // returns without binding.
     if (is_test_pass) {
       context_.TODO(
           context_.match_case_stack().back().introducer_node_id,
@@ -1867,7 +1895,8 @@ auto LocalPatternMatch(Context& context, SemIR::InstId pattern_id,
 auto MatchCasePatternMatch(Context& context, SemIR::InstId pattern_id,
                            SemIR::InstId scrutinee_id,
                            Parse::NodeId case_node_id) -> SemIR::InstId {
-  MatchCaseState state = {.case_node_id = case_node_id};
+  MatchCaseState state = {.case_node_id = case_node_id,
+                          .root_pattern_id = pattern_id};
   MatchContext match(context);
   auto cond_ids = match.MatchWithConditions(
       &state, {.pattern_id = pattern_id,

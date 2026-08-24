@@ -151,6 +151,26 @@ fn F() -> i32 {
   return -1;
 }
 
+// --- fail_error_element_recovery.carbon
+library "[[@TEST_NAME]]";
+
+// An error-typed expression ELEMENT is below the arm's root, so it recovers
+// (W-008 W8a review fix F1): the NameNotFound poisons the arm's condition,
+// checking continues past the `match`, and the constant-integer TODO — the
+// legacy abort path, which stays pinned for ROOT case expressions by
+// operators/fail_question.carbon — must not fire.
+fn F(p: (i32, i32)) -> i32 {
+  match (p) {
+    // CHECK:STDERR: fail_error_element_recovery.carbon:[[@LINE+4]]:11: error: name `undeclared` not found [NameNotFound]
+    // CHECK:STDERR:     case (undeclared, 1) => { return 1; }
+    // CHECK:STDERR:           ^~~~~~~~~~
+    // CHECK:STDERR:
+    case (undeclared, 1) => { return 1; }
+    default => { return 0; }
+  }
+  return -1;
+}
+
 // --- fail_todo_non_tuple_scrutinee.carbon
 library "[[@TEST_NAME]]";
 

@@ -118,8 +118,6 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
-// CHECK:STDOUT: $__clang_call_terminate = comdat any
-// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i8 @_CGetU8.Main() #0 !dbg !12 {
 // CHECK:STDOUT: entry:
@@ -130,25 +128,15 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:   ret i8 %0, !dbg !17
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal void @_Z8ReturnU8v.carbon_thunk.(ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
+// CHECK:STDOUT: define internal void @_Z8ReturnU8v.carbon_thunk.(ptr noundef %return) #1 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !18
 // CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !18
-// CHECK:STDOUT:   %call = invoke noundef zeroext i8 @_Z8ReturnU8v()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   %call = call noundef zeroext i8 @_Z8ReturnU8v()
 // CHECK:STDOUT:   store i8 %call, ptr %0, align 1, !tbaa !21
 // CHECK:STDOUT:   ret void
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %2) #5
-// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
@@ -161,74 +149,34 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:   ret i16 %0, !dbg !27
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal void @_Z9ReturnU16v.carbon_thunk.(ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
+// CHECK:STDOUT: define internal void @_Z9ReturnU16v.carbon_thunk.(ptr noundef %return) #1 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !28
 // CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !28
-// CHECK:STDOUT:   %call = invoke noundef zeroext i16 @_Z9ReturnU16v()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   %call = call noundef zeroext i16 @_Z9ReturnU16v()
 // CHECK:STDOUT:   store i16 %call, ptr %0, align 2, !tbaa !30
 // CHECK:STDOUT:   ret void
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %2) #5
-// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @_CGetU32.Main() #0 !dbg !32 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %ReturnU32__carbon_thunk.call = call i32 @_Z9ReturnU32v.carbon_thunk.(), !dbg !36
-// CHECK:STDOUT:   ret i32 %ReturnU32__carbon_thunk.call, !dbg !37
+// CHECK:STDOUT:   %ReturnU32.call = call i32 @_Z9ReturnU32v(), !dbg !36
+// CHECK:STDOUT:   ret i32 %ReturnU32.call, !dbg !37
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal noundef i32 @_Z9ReturnU32v.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %call = invoke noundef i32 @_Z9ReturnU32v()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret i32 %call
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #5
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
+// CHECK:STDOUT: declare noundef i32 @_Z9ReturnU32v() #2
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i64 @_CGetU64.Main() #0 !dbg !38 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %ReturnU64__carbon_thunk.call = call i64 @_Z9ReturnU64v.carbon_thunk.(), !dbg !42
-// CHECK:STDOUT:   ret i64 %ReturnU64__carbon_thunk.call, !dbg !43
+// CHECK:STDOUT:   %ReturnU64.call = call i64 @_Z9ReturnU64v(), !dbg !42
+// CHECK:STDOUT:   ret i64 %ReturnU64.call, !dbg !43
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal noundef i64 @_Z9ReturnU64v.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %call = invoke noundef i64 @_Z9ReturnU64v()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret i64 %call
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #5
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
+// CHECK:STDOUT: declare noundef i64 @_Z9ReturnU64v() #2
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i8 @_CGetI8.Main() #0 !dbg !44 {
@@ -240,25 +188,15 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:   ret i8 %0, !dbg !49
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal void @_Z8ReturnI8v.carbon_thunk.(ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
+// CHECK:STDOUT: define internal void @_Z8ReturnI8v.carbon_thunk.(ptr noundef %return) #1 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !18
 // CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !18
-// CHECK:STDOUT:   %call = invoke noundef signext i8 @_Z8ReturnI8v()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   %call = call noundef signext i8 @_Z8ReturnI8v()
 // CHECK:STDOUT:   store i8 %call, ptr %0, align 1, !tbaa !21
 // CHECK:STDOUT:   ret void
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %2) #5
-// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
@@ -271,74 +209,34 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:   ret i16 %0, !dbg !55
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal void @_Z9ReturnI16v.carbon_thunk.(ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
+// CHECK:STDOUT: define internal void @_Z9ReturnI16v.carbon_thunk.(ptr noundef %return) #1 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !28
 // CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !28
-// CHECK:STDOUT:   %call = invoke noundef signext i16 @_Z9ReturnI16v()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   %call = call noundef signext i16 @_Z9ReturnI16v()
 // CHECK:STDOUT:   store i16 %call, ptr %0, align 2, !tbaa !30
 // CHECK:STDOUT:   ret void
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %2) #5
-// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @_CGetI32.Main() #0 !dbg !56 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %ReturnI32__carbon_thunk.call = call i32 @_Z9ReturnI32v.carbon_thunk.(), !dbg !60
-// CHECK:STDOUT:   ret i32 %ReturnI32__carbon_thunk.call, !dbg !61
+// CHECK:STDOUT:   %ReturnI32.call = call i32 @_Z9ReturnI32v(), !dbg !60
+// CHECK:STDOUT:   ret i32 %ReturnI32.call, !dbg !61
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal noundef i32 @_Z9ReturnI32v.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %call = invoke noundef i32 @_Z9ReturnI32v()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret i32 %call
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #5
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
+// CHECK:STDOUT: declare noundef i32 @_Z9ReturnI32v() #2
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i64 @_CGetI64.Main() #0 !dbg !62 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %ReturnI64__carbon_thunk.call = call i64 @_Z9ReturnI64v.carbon_thunk.(), !dbg !66
-// CHECK:STDOUT:   ret i64 %ReturnI64__carbon_thunk.call, !dbg !67
+// CHECK:STDOUT:   %ReturnI64.call = call i64 @_Z9ReturnI64v(), !dbg !66
+// CHECK:STDOUT:   ret i64 %ReturnI64.call, !dbg !67
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal noundef i64 @_Z9ReturnI64v.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %call = invoke noundef i64 @_Z9ReturnI64v()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret i64 %call
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #5
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
+// CHECK:STDOUT: declare noundef i64 @_Z9ReturnI64v() #2
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @_CUse.Main(i8, i16, i32, i64, i8, i16, i32, i64)
 // CHECK:STDOUT:
@@ -355,44 +253,44 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc20_35.1.temp), !dbg !72
 // CHECK:STDOUT:   call void @_Z9ReturnU16v.carbon_thunk.(ptr %.loc20_35.1.temp), !dbg !72
 // CHECK:STDOUT:   %.loc20_35.4 = load i16, ptr %.loc20_35.1.temp, align 2, !dbg !72
-// CHECK:STDOUT:   %ReturnU32__carbon_thunk.call = call i32 @_Z9ReturnU32v.carbon_thunk.(), !dbg !75
-// CHECK:STDOUT:   %ReturnU64__carbon_thunk.call = call i64 @_Z9ReturnU64v.carbon_thunk.(), !dbg !76
+// CHECK:STDOUT:   %ReturnU32.call = call i32 @_Z9ReturnU32v(), !dbg !75
+// CHECK:STDOUT:   %ReturnU64.call = call i64 @_Z9ReturnU64v(), !dbg !76
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc24_32.1.temp), !dbg !73
 // CHECK:STDOUT:   call void @_Z8ReturnI8v.carbon_thunk.(ptr %.loc24_32.1.temp), !dbg !73
 // CHECK:STDOUT:   %.loc24_32.4 = load i8, ptr %.loc24_32.1.temp, align 1, !dbg !73
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc25_35.1.temp), !dbg !74
 // CHECK:STDOUT:   call void @_Z9ReturnI16v.carbon_thunk.(ptr %.loc25_35.1.temp), !dbg !74
 // CHECK:STDOUT:   %.loc25_35.4 = load i16, ptr %.loc25_35.1.temp, align 2, !dbg !74
-// CHECK:STDOUT:   %ReturnI32__carbon_thunk.call = call i32 @_Z9ReturnI32v.carbon_thunk.(), !dbg !77
-// CHECK:STDOUT:   %ReturnI64__carbon_thunk.call = call i64 @_Z9ReturnI64v.carbon_thunk.(), !dbg !78
-// CHECK:STDOUT:   call void @_CUse.Main(i8 %.loc19_32.4, i16 %.loc20_35.4, i32 %ReturnU32__carbon_thunk.call, i64 %ReturnU64__carbon_thunk.call, i8 %.loc24_32.4, i16 %.loc25_35.4, i32 %ReturnI32__carbon_thunk.call, i64 %ReturnI64__carbon_thunk.call), !dbg !79
-// CHECK:STDOUT:   call void @"_COp.eb6702152d47e49f:core.Destroy.Core"(ptr %.loc25_35.1.temp), !dbg !74
-// CHECK:STDOUT:   call void @"_COp.578b3934f85dbca6:core.Destroy.Core"(ptr %.loc24_32.1.temp), !dbg !73
-// CHECK:STDOUT:   call void @"_COp.6fd0ed7da7a22bb4:core.Destroy.Core"(ptr %.loc20_35.1.temp), !dbg !72
-// CHECK:STDOUT:   call void @"_COp.c3b9dc9c7e0d5d3d:core.Destroy.Core"(ptr %.loc19_32.1.temp), !dbg !71
+// CHECK:STDOUT:   %ReturnI32.call = call i32 @_Z9ReturnI32v(), !dbg !77
+// CHECK:STDOUT:   %ReturnI64.call = call i64 @_Z9ReturnI64v(), !dbg !78
+// CHECK:STDOUT:   call void @_CUse.Main(i8 %.loc19_32.4, i16 %.loc20_35.4, i32 %ReturnU32.call, i64 %ReturnU64.call, i8 %.loc24_32.4, i16 %.loc25_35.4, i32 %ReturnI32.call, i64 %ReturnI64.call), !dbg !79
+// CHECK:STDOUT:   call void @"_COp.91f16365ca65525e:core.Destroy.Core"(ptr %.loc25_35.1.temp), !dbg !74
+// CHECK:STDOUT:   call void @"_COp.136cbc434fe80552:core.Destroy.Core"(ptr %.loc24_32.1.temp), !dbg !73
+// CHECK:STDOUT:   call void @"_COp.d38552e658b9d7ce:core.Destroy.Core"(ptr %.loc20_35.1.temp), !dbg !72
+// CHECK:STDOUT:   call void @"_COp.becc1452ae1d9d7b:core.Destroy.Core"(ptr %.loc19_32.1.temp), !dbg !71
 // CHECK:STDOUT:   ret void, !dbg !80
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.eb6702152d47e49f:core.Destroy.Core"(ptr %self) #0 !dbg !81 {
+// CHECK:STDOUT: define weak_odr void @"_COp.91f16365ca65525e:core.Destroy.Core"(ptr %self) #0 !dbg !81 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !86
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.578b3934f85dbca6:core.Destroy.Core"(ptr %self) #0 !dbg !87 {
+// CHECK:STDOUT: define weak_odr void @"_COp.136cbc434fe80552:core.Destroy.Core"(ptr %self) #0 !dbg !87 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !92
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.6fd0ed7da7a22bb4:core.Destroy.Core"(ptr %self) #0 !dbg !93 {
+// CHECK:STDOUT: define weak_odr void @"_COp.d38552e658b9d7ce:core.Destroy.Core"(ptr %self) #0 !dbg !93 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !98
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.c3b9dc9c7e0d5d3d:core.Destroy.Core"(ptr %self) #0 !dbg !99 {
+// CHECK:STDOUT: define weak_odr void @"_COp.becc1452ae1d9d7b:core.Destroy.Core"(ptr %self) #0 !dbg !99 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !104
 // CHECK:STDOUT: }
@@ -413,21 +311,21 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %my_u16.var), !dbg !107
 // CHECK:STDOUT:   call void @_Z9ReturnU16v.carbon_thunk.(ptr %my_u16.var), !dbg !115
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %my_u32.var), !dbg !108
-// CHECK:STDOUT:   %ReturnU32__carbon_thunk.call = call i32 @_Z9ReturnU32v.carbon_thunk.(), !dbg !116
-// CHECK:STDOUT:   store i32 %ReturnU32__carbon_thunk.call, ptr %my_u32.var, align 4, !dbg !108
+// CHECK:STDOUT:   %ReturnU32.call = call i32 @_Z9ReturnU32v(), !dbg !116
+// CHECK:STDOUT:   store i32 %ReturnU32.call, ptr %my_u32.var, align 4, !dbg !108
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %my_u64.var), !dbg !109
-// CHECK:STDOUT:   %ReturnU64__carbon_thunk.call = call i64 @_Z9ReturnU64v.carbon_thunk.(), !dbg !117
-// CHECK:STDOUT:   store i64 %ReturnU64__carbon_thunk.call, ptr %my_u64.var, align 8, !dbg !109
+// CHECK:STDOUT:   %ReturnU64.call = call i64 @_Z9ReturnU64v(), !dbg !117
+// CHECK:STDOUT:   store i64 %ReturnU64.call, ptr %my_u64.var, align 8, !dbg !109
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %my_i8.var), !dbg !110
 // CHECK:STDOUT:   call void @_Z8ReturnI8v.carbon_thunk.(ptr %my_i8.var), !dbg !118
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %my_i16.var), !dbg !111
 // CHECK:STDOUT:   call void @_Z9ReturnI16v.carbon_thunk.(ptr %my_i16.var), !dbg !119
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %my_i32.var), !dbg !112
-// CHECK:STDOUT:   %ReturnI32__carbon_thunk.call = call i32 @_Z9ReturnI32v.carbon_thunk.(), !dbg !120
-// CHECK:STDOUT:   store i32 %ReturnI32__carbon_thunk.call, ptr %my_i32.var, align 4, !dbg !112
+// CHECK:STDOUT:   %ReturnI32.call = call i32 @_Z9ReturnI32v(), !dbg !120
+// CHECK:STDOUT:   store i32 %ReturnI32.call, ptr %my_i32.var, align 4, !dbg !112
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %my_i64.var), !dbg !113
-// CHECK:STDOUT:   %ReturnI64__carbon_thunk.call = call i64 @_Z9ReturnI64v.carbon_thunk.(), !dbg !121
-// CHECK:STDOUT:   store i64 %ReturnI64__carbon_thunk.call, ptr %my_i64.var, align 8, !dbg !113
+// CHECK:STDOUT:   %ReturnI64.call = call i64 @_Z9ReturnI64v(), !dbg !121
+// CHECK:STDOUT:   store i64 %ReturnI64.call, ptr %my_i64.var, align 8, !dbg !113
 // CHECK:STDOUT:   %.loc43_7 = load i8, ptr %my_u8.var, align 1, !dbg !122
 // CHECK:STDOUT:   %.loc43_14 = load i16, ptr %my_u16.var, align 2, !dbg !123
 // CHECK:STDOUT:   %.loc43_22 = load i32, ptr %my_u32.var, align 4, !dbg !124
@@ -437,84 +335,59 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:   %.loc43_53 = load i32, ptr %my_i32.var, align 4, !dbg !128
 // CHECK:STDOUT:   %.loc43_61 = load i64, ptr %my_i64.var, align 8, !dbg !129
 // CHECK:STDOUT:   call void @_CUse.Main(i8 %.loc43_7, i16 %.loc43_14, i32 %.loc43_22, i64 %.loc43_30, i8 %.loc43_38, i16 %.loc43_45, i32 %.loc43_53, i64 %.loc43_61), !dbg !130
-// CHECK:STDOUT:   call void @"_COp.fbec46972c1998a0:core.Destroy.Core"(ptr %my_i64.var), !dbg !113
-// CHECK:STDOUT:   call void @"_COp.5e27612b9dd31a14:core.Destroy.Core"(ptr %my_i32.var), !dbg !112
-// CHECK:STDOUT:   call void @"_COp.eb6702152d47e49f:core.Destroy.Core"(ptr %my_i16.var), !dbg !111
-// CHECK:STDOUT:   call void @"_COp.578b3934f85dbca6:core.Destroy.Core"(ptr %my_i8.var), !dbg !110
-// CHECK:STDOUT:   call void @"_COp.df57f49075d1fe6b:core.Destroy.Core"(ptr %my_u64.var), !dbg !109
-// CHECK:STDOUT:   call void @"_COp.45ecfb19e8cc5ab3:core.Destroy.Core"(ptr %my_u32.var), !dbg !108
-// CHECK:STDOUT:   call void @"_COp.6fd0ed7da7a22bb4:core.Destroy.Core"(ptr %my_u16.var), !dbg !107
-// CHECK:STDOUT:   call void @"_COp.c3b9dc9c7e0d5d3d:core.Destroy.Core"(ptr %my_u8.var), !dbg !106
+// CHECK:STDOUT:   call void @"_COp.5f42013854821c52:core.Destroy.Core"(ptr %my_i64.var), !dbg !113
+// CHECK:STDOUT:   call void @"_COp.70db2d92ffddbef7:core.Destroy.Core"(ptr %my_i32.var), !dbg !112
+// CHECK:STDOUT:   call void @"_COp.91f16365ca65525e:core.Destroy.Core"(ptr %my_i16.var), !dbg !111
+// CHECK:STDOUT:   call void @"_COp.136cbc434fe80552:core.Destroy.Core"(ptr %my_i8.var), !dbg !110
+// CHECK:STDOUT:   call void @"_COp.8423634153f3fb6c:core.Destroy.Core"(ptr %my_u64.var), !dbg !109
+// CHECK:STDOUT:   call void @"_COp.77fcb7cb81390d28:core.Destroy.Core"(ptr %my_u32.var), !dbg !108
+// CHECK:STDOUT:   call void @"_COp.d38552e658b9d7ce:core.Destroy.Core"(ptr %my_u16.var), !dbg !107
+// CHECK:STDOUT:   call void @"_COp.becc1452ae1d9d7b:core.Destroy.Core"(ptr %my_u8.var), !dbg !106
 // CHECK:STDOUT:   ret void, !dbg !131
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.fbec46972c1998a0:core.Destroy.Core"(ptr %self) #0 !dbg !132 {
+// CHECK:STDOUT: define weak_odr void @"_COp.5f42013854821c52:core.Destroy.Core"(ptr %self) #0 !dbg !132 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !137
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.5e27612b9dd31a14:core.Destroy.Core"(ptr %self) #0 !dbg !138 {
+// CHECK:STDOUT: define weak_odr void @"_COp.70db2d92ffddbef7:core.Destroy.Core"(ptr %self) #0 !dbg !138 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !143
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.df57f49075d1fe6b:core.Destroy.Core"(ptr %self) #0 !dbg !144 {
+// CHECK:STDOUT: define weak_odr void @"_COp.8423634153f3fb6c:core.Destroy.Core"(ptr %self) #0 !dbg !144 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !149
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.45ecfb19e8cc5ab3:core.Destroy.Core"(ptr %self) #0 !dbg !150 {
+// CHECK:STDOUT: define weak_odr void @"_COp.77fcb7cb81390d28:core.Destroy.Core"(ptr %self) #0 !dbg !150 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !155
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
-// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #2
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #3
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef zeroext i8 @_Z8ReturnU8v() #3
+// CHECK:STDOUT: declare noundef zeroext i8 @_Z8ReturnU8v() #2
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT: declare noundef zeroext i16 @_Z9ReturnU16v() #2
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
-// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #4 comdat {
-// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
-// CHECK:STDOUT:   call void @_ZSt9terminatev() #5
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
+// CHECK:STDOUT: declare noundef signext i8 @_Z8ReturnI8v() #2
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZSt9terminatev()
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef zeroext i16 @_Z9ReturnU16v() #3
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef i32 @_Z9ReturnU32v() #3
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef i64 @_Z9ReturnU64v() #3
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef signext i8 @_Z8ReturnI8v() #3
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef signext i16 @_Z9ReturnI16v() #3
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef i32 @_Z9ReturnI32v() #3
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef i64 @_Z9ReturnI64v() #3
+// CHECK:STDOUT: declare noundef signext i16 @_Z9ReturnI16v() #2
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
 // CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 }
-// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 7, 6, 5, 4, 3, 2, 1, 0 }
-// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 7, 6, 5, 4, 3, 2, 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #2 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
-// CHECK:STDOUT: attributes #3 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #4 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #5 = { noreturn nounwind }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #2 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #3 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -601,25 +474,25 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT: !78 = !DILocation(line: 27, column: 21, scope: !68)
 // CHECK:STDOUT: !79 = !DILocation(line: 29, column: 3, scope: !68)
 // CHECK:STDOUT: !80 = !DILocation(line: 18, column: 1, scope: !68)
-// CHECK:STDOUT: !81 = distinct !DISubprogram(name: "Op", linkageName: "_COp.eb6702152d47e49f:core.Destroy.Core", scope: null, file: !1, line: 25, type: !82, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !84)
+// CHECK:STDOUT: !81 = distinct !DISubprogram(name: "Op", linkageName: "_COp.91f16365ca65525e:core.Destroy.Core", scope: null, file: !1, line: 25, type: !82, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !84)
 // CHECK:STDOUT: !82 = !DISubroutineType(types: !83)
 // CHECK:STDOUT: !83 = !{null, !53}
 // CHECK:STDOUT: !84 = !{!85}
 // CHECK:STDOUT: !85 = !DILocalVariable(arg: 1, scope: !81, type: !53)
 // CHECK:STDOUT: !86 = !DILocation(line: 25, column: 21, scope: !81)
-// CHECK:STDOUT: !87 = distinct !DISubprogram(name: "Op", linkageName: "_COp.578b3934f85dbca6:core.Destroy.Core", scope: null, file: !1, line: 24, type: !88, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !90)
+// CHECK:STDOUT: !87 = distinct !DISubprogram(name: "Op", linkageName: "_COp.136cbc434fe80552:core.Destroy.Core", scope: null, file: !1, line: 24, type: !88, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !90)
 // CHECK:STDOUT: !88 = !DISubroutineType(types: !89)
 // CHECK:STDOUT: !89 = !{null, !47}
 // CHECK:STDOUT: !90 = !{!91}
 // CHECK:STDOUT: !91 = !DILocalVariable(arg: 1, scope: !87, type: !47)
 // CHECK:STDOUT: !92 = !DILocation(line: 24, column: 19, scope: !87)
-// CHECK:STDOUT: !93 = distinct !DISubprogram(name: "Op", linkageName: "_COp.6fd0ed7da7a22bb4:core.Destroy.Core", scope: null, file: !1, line: 20, type: !94, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !96)
+// CHECK:STDOUT: !93 = distinct !DISubprogram(name: "Op", linkageName: "_COp.d38552e658b9d7ce:core.Destroy.Core", scope: null, file: !1, line: 20, type: !94, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !96)
 // CHECK:STDOUT: !94 = !DISubroutineType(types: !95)
 // CHECK:STDOUT: !95 = !{null, !25}
 // CHECK:STDOUT: !96 = !{!97}
 // CHECK:STDOUT: !97 = !DILocalVariable(arg: 1, scope: !93, type: !25)
 // CHECK:STDOUT: !98 = !DILocation(line: 20, column: 21, scope: !93)
-// CHECK:STDOUT: !99 = distinct !DISubprogram(name: "Op", linkageName: "_COp.c3b9dc9c7e0d5d3d:core.Destroy.Core", scope: null, file: !1, line: 19, type: !100, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !102)
+// CHECK:STDOUT: !99 = distinct !DISubprogram(name: "Op", linkageName: "_COp.becc1452ae1d9d7b:core.Destroy.Core", scope: null, file: !1, line: 19, type: !100, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !102)
 // CHECK:STDOUT: !100 = !DISubroutineType(types: !101)
 // CHECK:STDOUT: !101 = !{null, !15}
 // CHECK:STDOUT: !102 = !{!103}
@@ -652,25 +525,25 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT: !129 = !DILocation(line: 43, column: 61, scope: !105)
 // CHECK:STDOUT: !130 = !DILocation(line: 43, column: 3, scope: !105)
 // CHECK:STDOUT: !131 = !DILocation(line: 32, column: 1, scope: !105)
-// CHECK:STDOUT: !132 = distinct !DISubprogram(name: "Op", linkageName: "_COp.fbec46972c1998a0:core.Destroy.Core", scope: null, file: !1, line: 41, type: !133, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !135)
+// CHECK:STDOUT: !132 = distinct !DISubprogram(name: "Op", linkageName: "_COp.5f42013854821c52:core.Destroy.Core", scope: null, file: !1, line: 41, type: !133, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !135)
 // CHECK:STDOUT: !133 = !DISubroutineType(types: !134)
 // CHECK:STDOUT: !134 = !{null, !65}
 // CHECK:STDOUT: !135 = !{!136}
 // CHECK:STDOUT: !136 = !DILocalVariable(arg: 1, scope: !132, type: !65)
 // CHECK:STDOUT: !137 = !DILocation(line: 41, column: 3, scope: !132)
-// CHECK:STDOUT: !138 = distinct !DISubprogram(name: "Op", linkageName: "_COp.5e27612b9dd31a14:core.Destroy.Core", scope: null, file: !1, line: 40, type: !139, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !141)
+// CHECK:STDOUT: !138 = distinct !DISubprogram(name: "Op", linkageName: "_COp.70db2d92ffddbef7:core.Destroy.Core", scope: null, file: !1, line: 40, type: !139, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !141)
 // CHECK:STDOUT: !139 = !DISubroutineType(types: !140)
 // CHECK:STDOUT: !140 = !{null, !59}
 // CHECK:STDOUT: !141 = !{!142}
 // CHECK:STDOUT: !142 = !DILocalVariable(arg: 1, scope: !138, type: !59)
 // CHECK:STDOUT: !143 = !DILocation(line: 40, column: 3, scope: !138)
-// CHECK:STDOUT: !144 = distinct !DISubprogram(name: "Op", linkageName: "_COp.df57f49075d1fe6b:core.Destroy.Core", scope: null, file: !1, line: 36, type: !145, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !147)
+// CHECK:STDOUT: !144 = distinct !DISubprogram(name: "Op", linkageName: "_COp.8423634153f3fb6c:core.Destroy.Core", scope: null, file: !1, line: 36, type: !145, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !147)
 // CHECK:STDOUT: !145 = !DISubroutineType(types: !146)
 // CHECK:STDOUT: !146 = !{null, !41}
 // CHECK:STDOUT: !147 = !{!148}
 // CHECK:STDOUT: !148 = !DILocalVariable(arg: 1, scope: !144, type: !41)
 // CHECK:STDOUT: !149 = !DILocation(line: 36, column: 3, scope: !144)
-// CHECK:STDOUT: !150 = distinct !DISubprogram(name: "Op", linkageName: "_COp.45ecfb19e8cc5ab3:core.Destroy.Core", scope: null, file: !1, line: 35, type: !151, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !153)
+// CHECK:STDOUT: !150 = distinct !DISubprogram(name: "Op", linkageName: "_COp.77fcb7cb81390d28:core.Destroy.Core", scope: null, file: !1, line: 35, type: !151, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !153)
 // CHECK:STDOUT: !151 = !DISubroutineType(types: !152)
 // CHECK:STDOUT: !152 = !{null, !35}
 // CHECK:STDOUT: !153 = !{!154}
@@ -685,8 +558,6 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:
 // CHECK:STDOUT: %struct.X = type { ptr, ptr }
 // CHECK:STDOUT:
-// CHECK:STDOUT: $__clang_call_terminate = comdat any
-// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CGetX.Main(ptr sret([16 x i8]) %return) #0 !dbg !12 {
 // CHECK:STDOUT: entry:
@@ -694,24 +565,14 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:   ret void, !dbg !17
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal void @_Z4Makev.carbon_thunk.(ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
+// CHECK:STDOUT: define internal void @_Z4Makev.carbon_thunk.(ptr noundef %return) #1 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !18
 // CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !18
-// CHECK:STDOUT:   invoke void @_Z4Makev(ptr dead_on_unwind writable sret(%struct.X) align 8 %0)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   call void @_Z4Makev(ptr dead_on_unwind writable sret(%struct.X) align 8 %0)
 // CHECK:STDOUT:   ret void
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %2) #6
-// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
@@ -742,29 +603,14 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @_Z4Makev(ptr dead_on_unwind writable sret(%struct.X) align 8) #4
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
-// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #5 comdat {
-// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
-// CHECK:STDOUT:   call void @_ZSt9terminatev() #6
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZSt9terminatev()
-// CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
 // CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #2 = { nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #3 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
 // CHECK:STDOUT: attributes #4 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #5 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #6 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -810,8 +656,6 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT: %class.D = type { i8 }
 // CHECK:STDOUT: %class.C = type { i8 }
 // CHECK:STDOUT:
-// CHECK:STDOUT: $__clang_call_terminate = comdat any
-// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CCall.Main(ptr sret({}) %return, ptr %x) #0 !dbg !12 {
 // CHECK:STDOUT: entry:
@@ -819,8 +663,8 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:   ret void, !dbg !19
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
-// CHECK:STDOUT: define internal void @_Z1f1D.carbon_thunk._(ptr noundef %0, ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
+// CHECK:STDOUT: define internal void @_Z1f1D.carbon_thunk._(ptr noundef %0, ptr noundef %return) #1 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
@@ -830,40 +674,15 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !23
 // CHECK:STDOUT:   %1 = load ptr, ptr %return.addr, align 8, !tbaa !23
 // CHECK:STDOUT:   %2 = load ptr, ptr %.addr, align 8, !tbaa !20
-// CHECK:STDOUT:   invoke void @_Z1f1D()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
-// CHECK:STDOUT:
-// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   call void @_Z1f1D()
 // CHECK:STDOUT:   ret void
-// CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
-// CHECK:STDOUT:   %3 = landingpad { ptr, i32 }
-// CHECK:STDOUT:           catch ptr null
-// CHECK:STDOUT:   %4 = extractvalue { ptr, i32 } %3, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %4) #4
-// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @_Z1f1D() #2
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
-// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #3 comdat {
-// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
-// CHECK:STDOUT:   call void @_ZSt9terminatev() #4
-// CHECK:STDOUT:   unreachable
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZSt9terminatev()
-// CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #2 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #3 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #4 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}

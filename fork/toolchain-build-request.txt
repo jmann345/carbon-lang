@@ -1,1 +1,1 @@
-2026-08-24T18:55Z weekly-upstream-20260824 gate attempt 4 (3h disk recheck)
+2026-08-24T21:59Z weekly-upstream-20260824 gate attempt 5 (3h disk recheck)

@@ -1,1 +1,1 @@
-2026-08-24T16:10Z weekly-upstream-20260824 (cut) gate RE-FIRE — run 32741375214 evaluated stale pre-regen goldens (job attached to the bazel server 18s after the d903751 run; checkout verified correct at 5e4d643; the reported expected-side content does not exist in the tree). Fresh evaluation required.
+2026-08-24T17:05Z weekly-upstream-20260824 gate re-fire 2 — after 80G cache-cap GC cycle (Preflight tripped at 37GB free; user.bazelrc shipped at 7814465)

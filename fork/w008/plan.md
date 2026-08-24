@@ -434,8 +434,15 @@ keeps its NameNotFound error and loses only the trailing TODO line
 New check goldens: match/tuple_pattern.carbon (all-expr, all-binding,
 mixed, nested-tuple subfiles; a NON-literal `var` tuple scrutinee
 subfile per §2.1's amended piece (d); fail_arity pinning
-TuplePatternSizeDoesntMatchLiteral on the literal-scrutinee path AND
-the new `MatchCaseTuplePatternWrongArity` on the non-literal path; a
+`MatchCaseTuplePatternWrongArity` on BOTH scrutinee paths — amended
+2026-08-24 at the W8a implementation round (impl-review-2 finding 1):
+the originally-mandated `TuplePatternSizeDoesntMatchLiteral` pin is
+UNREACHABLE from match arms, because `MatchCondition` value-converts
+the scrutinee (`ConvertToValueOrRefExpr`) and Mixed-category tuple
+literals decompose to `TupleValue` there, so the engine's
+`TupleLiteral` shortcut never fires for case patterns; disclosed in
+dd66be946's commit message, recorded here as the plan's truth, and
+carried into W8c's ledger rewrite; a
 fail_todo pin on whatever still reaches the :609 fallback);
 match/payload_subpattern.carbon
 (literal, mixed, multi-element, guarded, single-alternative choice);

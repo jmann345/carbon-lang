@@ -1,1 +1,1 @@
-2026-08-19T02:50Z W75a gate (choice Copy witness synthesis; full bazel test)
+2026-08-24T15:45Z weekly-upstream-20260824 (cut 631f8fb) full gate at fixpoint e659aedd

@@ -1,1 +1,1 @@
-2026-08-24T15:45Z weekly-upstream-20260824 (cut 631f8fb) conformance at fixpoint — floor must be non-regressing vs 96/0/28 over 124
+2026-08-24T16:40Z weekly-upstream-20260824: cycle bazel on the runner so the new 80G disk-cache cap GCs (~20G) ahead of the gate re-fire; scoreboard expected unchanged at 96/0/28 over 124

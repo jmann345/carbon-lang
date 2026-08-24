@@ -2745,6 +2745,55 @@ list + the green gate. The design's canonical
 runs; the fork's tripwire flipped exactly as its own header predicted.
 **W-075 is DISCHARGED.** Veto-able.
 
+### Weekly upstream merge 2026-08-24: cut before the template-action series; runner disk blocker (2026-08-24)
+
+The scheduled weekly merge (standing rule 5) measured upstream trunk
+2b9fdd6 (24 commits since the 2026-08-17 sync point 864845c), built the
+FULL tip merge on staging first, and caught a conformance regression:
+96/0 -> 94/2 over 124, both `generics/templates_{type,value}_param`
+newly COMPILE-FAIL with `value of type <dependent type> is not
+callable` at `return x;` under `[template T: <facet>]`. Root cause
+verified FORK-INDEPENDENT by an A/B on pure upstream nightlies (the
+mirrored arbiter tarballs): 2026.08.17 compiles both programs;
+2026.08.24 fails them with identical diagnostics. Upstream's in-flight
+template-action series (#7657 6eb900d, #7662 186a756, #7663 c41033c)
+reroutes dependent conversions through template actions with
+INITIALIZING conversions explicitly left as future work (#7662's own
+message); upstream pins the class as fail_todo_ in
+generic/template/unimplemented.carbon — acknowledged gap, V-3a. Per the
+weekly-merge non-regression rule the landed merge CUTS at 631f8fb
+(#7658), taking 17 of 24 commits and deferring seven (the three
+template commits + c588ead, 4172f4d, 40aa441, 2b9fdd6) to next week's
+merge, by which point the promised initializing-conversion follow-up
+should exist. Conflict resolutions on the cut (identical spelling to
+the measured tip merge): 14 goldens fork-side CHECK-renumbering only,
+taken upstream for runner regen; node_kind.def match family follows
+upstream's new `_STATEMENT` extraction-sharding classification with the
+three fork-only kinds alongside their siblings; clang_decl.h takes
+upstream #7642's defaulted `operator==` (member-wise covers F8d's
+`constant_function_args`). R26 fixpoint at regen pass 2 (pass pushed
+nothing); conformance at fixpoint EXACTLY 96/0/28 over 124 —
+non-regressing.
+
+**Runner disk blocker (OPEN at recording):** the F-002 gate could not
+run — the build workflow's Preflight guard trips at 37GB free vs the
+40GB cold-build threshold ($HOME 94% full on jeromehome). Two
+misleading "gate failures" first appeared as golden mismatches: with
+Preflight failed and every build/test step SKIPPED, the diagnostic
+"Print failing test logs" step dumps the PREVIOUS run's bazel-testlogs
+— content provably absent from the tested SHA. Remediation attempted
+within charter: `user.bazelrc` (upstream's own documented override
+point, force-added past the gitignore) capping the bazel disk cache GC
+at 80G, plus a bazel cycle — freed nothing (cache evidently under
+cap). Three gate attempts, then stop-per-checkpoint-rule. USER ACTION
+ASKED (push notification sent): free ~5GB on jeromehome, or bless
+lowering MIN_FREE_GB 40->30 (a CI change, so it needs the user's
+explicit blessing; 37GB demonstrably suffices for warm-cache builds —
+conformance builds the full toolchain in it). The staged merge lands
+(F-002 into trunk) as soon as one gate run is green. Veto-able:
+the cut-not-tip call, the user.bazelrc cap, and the deferred-commit
+list.
+
 ### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",

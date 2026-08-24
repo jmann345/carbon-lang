@@ -249,11 +249,13 @@ fails if this table is stale):
 | `control_flow/match_guard_diff.carbon` | Control flow: matching — good switch equivalents | differential |
 | `control_flow/match_guarded_default.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_no_fallthrough.carbon` | Control flow: matching — good switch equivalents | run |
+| `control_flow/match_payload_literal.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | run |
 | `control_flow/match_position.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_single_alternative.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | run |
 | `control_flow/match_sum_type_payload.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | SKIP |
 | `control_flow/match_switch.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_switch_diff.carbon` | Control flow: matching — good switch equivalents | differential |
+| `control_flow/match_tuple_case_diff.carbon` | Control flow: matching — good switch equivalents | differential |
 | `control_flow/range_iter_diff.carbon` | Control flow: loops incl. range-based and C/C++ loop equivalents | differential |
 | `error_handling/control_flow_constructs.carbon` | Error handling: dedicated control flow constructs | run |
 | `error_handling/cpp_exception_interop.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | SKIP |

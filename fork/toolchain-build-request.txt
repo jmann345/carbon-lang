@@ -1,1 +1,1 @@
-2026-08-24T17:05Z weekly-upstream-20260824 gate re-fire 2 — after 80G cache-cap GC cycle (Preflight tripped at 37GB free; user.bazelrc shipped at 7814465)
+2026-08-24T15:52Z weekly-upstream-20260824 gate attempt 3 (post-GC window; prior: 37GB free vs 40GB guard)

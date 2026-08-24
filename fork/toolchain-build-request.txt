@@ -1,1 +1,1 @@
-2026-08-24T15:52Z weekly-upstream-20260824 gate attempt 3 (post-GC window; prior: 37GB free vs 40GB guard)
+2026-08-24T18:55Z weekly-upstream-20260824 gate attempt 4 (3h disk recheck)

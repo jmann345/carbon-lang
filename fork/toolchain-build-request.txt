@@ -1,1 +1,1 @@
-2026-08-27T02:20Z weekly-upstream-20260824 gate attempt 22 (3h disk recheck)
+2026-08-28T04:47Z weekly-upstream-20260824 gate attempt 23 (re-queue after 24h expiry; runner offline since 08-27 02:20Z)

@@ -2745,6 +2745,31 @@ list + the green gate. The design's canonical
 runs; the fork's tripwire flipped exactly as its own header predicted.
 **W-075 is DISCHARGED.** Veto-able.
 
+### Weekly upstream merge 2026-08-31: cut HOLDS; tip now crashes the probe (2026-08-31)
+
+Fold-in to the still-unlanded 2026-08-24 staging merge (runner offline
+since 08-27 ~02:20Z; gate never ran). Measured upstream trunk f519ccc
+(12 commits since 2b9fdd6). The template-action series continued
+(#7671 constant InstActions, #7682 CallAction deferred calls) and the
+`CallToNonCallable` fail_todo pins in
+generic/template/unimplemented.carbon dropped 5 -> 0 at tip — but the
+EMPIRICAL A/B against the freshly mirrored 2026.08.31 nightly
+(version f519ccc; the mirror workflow runs GitHub-hosted, so it was
+available despite the runner outage) shows the facet-constrained
+template shape is still broken and now WORSE:
+generics/templates_type_param.carbon fails with "unable to
+monomorphize specific `Identity(i32 as Core.Copy & Core.Destroy)`"
+plus "value of type `<bound method>` is not callable", and
+generics/templates_value_param.carbon CRASHES the compiler (stack
+dump, exit 141). Verdict: the 631f8fb cut stands for another week;
+the deferred set grows to 19 commits (last week's 7 + this week's
+12 — all descendants of the in-flight series). Candidate user ask
+(digest, non-blocking): the value_param crash on pure upstream tip is
+a reportable upstream bug; filing an upstream issue is an
+outward-facing action left to the user's call. Staging branch
+otherwise unchanged; the 08-24 record's landing plan still applies
+the moment the runner returns.
+
 ### Weekly upstream merge 2026-08-24: cut before the template-action series; runner disk blocker (2026-08-24)
 
 The scheduled weekly merge (standing rule 5) measured upstream trunk

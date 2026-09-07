@@ -1,1 +1,1 @@
-2026-09-06T08:22Z weekly-upstream-20260824 gate attempt 32 (re-queue; runner offline since 08-27 02:20Z)
+2026-09-07T08:42Z weekly-upstream-20260824 gate attempt 33 (re-queue; runner offline since 08-27 02:20Z)

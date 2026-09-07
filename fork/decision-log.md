@@ -2745,6 +2745,31 @@ list + the green gate. The design's canonical
 runs; the fork's tripwire flipped exactly as its own header predicted.
 **W-075 is DISCHARGED.** Veto-able.
 
+### Weekly upstream merge 2026-09-07: cut HOLDS a third week; tip now crashes BOTH probes (2026-09-07)
+
+Fold-in to the still-unlanded 08-24 staging merge (runner jeromehome
+offline since 08-27 ~02:20Z — 11 days; the landing loop keeps a gate
+run queued). Measured upstream trunk 386327e (28 commits since
+f519ccc). The template-action series continued (#7689 TemplateInst,
+
+## 7700 splice-stepping for bound methods, #7710 call-action operand
+
+refinement — the last two aimed at exactly the `<bound method>`
+failure class measured last week). Empirical A/B against the freshly
+mirrored 2026.09.07 nightly (version 386327e; mirror is
+GitHub-hosted, unaffected by the runner outage): BOTH
+generics/templates_{type,value}_param.carbon now CRASH the compiler
+(stack dump, "Pending diagnostics:", exit 141) — last week only
+value_param crashed and type_param diagnosed. Facet-constrained
+`template T` bindings remain broken at tip, trending worse. Verdict:
+the 631f8fb cut stands a third week; the deferred set grows to 47
+commits (7 + 12 + 28), all descendants of the in-flight series. The
+09-06/09-07 upstream `match_first` and named-constraint work
+(#7713/#7714) is inside the deferred span and returns whenever the
+series stabilizes. Digest note (user's call, unchanged): the
+tip crashes are reportable upstream bugs; filing is an outward-facing
+action left to the user.
+
 ### Weekly upstream merge 2026-08-31: cut HOLDS; tip now crashes the probe (2026-08-31)
 
 Fold-in to the still-unlanded 2026-08-24 staging merge (runner offline
@@ -2770,7 +2795,7 @@ outward-facing action left to the user's call. Staging branch
 otherwise unchanged; the 08-24 record's landing plan still applies
 the moment the runner returns.
 
-### Weekly upstream merge 2026-08-24: cut before the template-action series; runner disk blocker (2026-08-24)
+#### Weekly upstream merge 2026-08-24: cut before the template-action series; runner disk blocker (2026-08-24)
 
 The scheduled weekly merge (standing rule 5) measured upstream trunk
 2b9fdd6 (24 commits since the 2026-08-17 sync point 864845c), built the
@@ -2819,7 +2844,7 @@ conformance builds the full toolchain in it). The staged merge lands
 the cut-not-tip call, the user.bazelrc cap, and the deferred-commit
 list.
 
-### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
+#### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",
 self-hosted/Linux/X64) on the fork. `.github/workflows/fork_build_toolchain.yaml`
@@ -2833,7 +2858,7 @@ repository, keep the default "require approval for outside collaborators'
 workflow runs" protection enabled so third-party PRs can't run code on the
 runner host.
 
-### F-001: What "0.1" means for this fork — **Staged official 0.1** (2026-07-19)
+#### F-001: What "0.1" means for this fork — **Staged official 0.1** (2026-07-19)
 
 Chase the full official checklist from `docs/project/milestones.md`, in
 dependency order, tagging intermediate fork milestones (`fork-0.1-alpha`,
@@ -2842,7 +2867,7 @@ the undesigned bullets is in scope. Alternatives rejected: pragmatic
 subset-0.1 (diverges from the official definition), upstream-lockstep
 (too slow, not autonomous).
 
-### F-002: Upstream relationship — **Bun-style merge gating** (2026-07-19)
+#### F-002: Upstream relationship — **Bun-style merge gating** (2026-07-19)
 
 User's words: "Follow the same approach used by the Bun zig->rust rewrite
 for merging into my fork branch." Interpretation (recorded for review):
@@ -2858,7 +2883,7 @@ Applied here:
 -   Upstream trunk merges are treated the same way: merge upstream into a
     staging branch, re-run the suite, land only when green.
 
-### F-003: First scaled track — **Design sprint + match chain in parallel** (2026-07-19)
+#### F-003: First scaled track — **Design sprint + match chain in parallel** (2026-07-19)
 
 After the conformance-harness trial (W1): agent fleets draft the missing
 designs (error handling, unions, if-let/let-else, function overloading,
@@ -2867,7 +2892,7 @@ each design fork, while the implementation loop grinds
 match semantics → choice payloads → std::variant/optional interop against
 the harness.
 
-### F-004: Arbiter toolchain source — **Upstream nightly prebuilt** (2026-07-19)
+#### F-004: Arbiter toolchain source — **Upstream nightly prebuilt** (2026-07-19)
 
 User approved adding `carbon-language/carbon-lang` to the session to
 download the nightly prebuilt toolchain tarball (Linux x86_64). This

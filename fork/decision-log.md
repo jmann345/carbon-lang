@@ -2745,6 +2745,30 @@ list + the green gate. The design's canonical
 runs; the fork's tripwire flipped exactly as its own header predicted.
 **W-075 is DISCHARGED.** Veto-able.
 
+### Weekly upstream merge 2026-09-21: cut HOLDS a fifth week; tip still half-healed (2026-09-21)
+
+Fold-in to the still-unlanded 08-24 staging merge (runner jeromehome
+offline since 08-27 ~02:20Z — 25 days; the landing loop keeps a gate
+run queued and re-bumps past GitHub's 24h queue expiry, now at
+attempt 48). Measured upstream trunk 76e7fc5 (28 commits since
+4081848). Template-adjacent work continued (#7769 removes
+`refine_inst_action` and its splices, #7768/#7804 type-sugar
+preservation in diagnostics, #7737 non-canonical default values).
+Empirical A/B against the freshly mirrored 2026.09.21 nightly
+(version 76e7fc5): generics/templates_value_param.carbon COMPILES
+CLEAN (object emitted, exit 0) — unchanged from last week — but
+generics/templates_type_param.carbon still CRASHES, now with a
+sharper signature: FATAL at toolchain/lower/handle.cpp:294
+"Unexpected category 9 for `return` expression {kind: SpliceInst,
+...}" (the SpliceInst reaches lowering with an unhandled expression
+category). Half-healed is still a regression vs the fork floor (both
+probes PASS at the 631f8fb cut), so the cut stands a fifth week; the
+deferred set grows to 119 commits (7+12+28+44+28). One deferred
+commit now touches a fork-modified file (toolchain/check/
+pattern_match.cpp), raising future-merge conflict surface for the
+W-008 family — noted for the eventual advance past the cut. The
+clang-21 note from 09-14 stands.
+
 ### Weekly upstream merge 2026-09-14: cut HOLDS a fourth week; tip half-healed (2026-09-14)
 
 Fold-in to the still-unlanded 08-24 staging merge (runner jeromehome

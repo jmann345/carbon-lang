@@ -10,19 +10,20 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-09-26 (post-PR #35: W-066 — usefulness
-diagnostics: `case` patterns that can never match now error, with
-value-domain comparison (`case 5` == `case 2 + 3` by way of IntId), prior-arm
-notes, and the choice-root union-coverage rule the two plan reviews
-independently demanded. Full R11 loop; both implementation reviews
-APPROVE with zero fixes; autoupdate touched only the eight new files
-(zero-churn prediction held); conformance unchanged 99/0/28 over 127.
-W-078 filed (default-arm usefulness + W-008 residue R8 lift; choice
-half separable). This caps a five-PR span (#31 → #35) in which the
-runner returned, the 08-24 weekly upstream merge landed, and the
-whole W-008 match round plus W-066 shipped. Next: W-076 (`bool`
-scrutinees) or W-078's choice half, per inventory priority — see
-fork/decision-log.md for the full record)._ THIRTY-FIVE PRs. The design's canonical
+_Last updated: 2026-09-26 (post-PR #36: W-076 — `bool` match
+scrutinees, and the scoreboard's FIRST TRIPLE DIGITS: 100 PASS / 0
+fail-class / 28 SKIP over 128. `case true`/`case false` dispatch,
+both-values exhaustiveness with no `default` (new
+MatchNonexhaustiveBool), BoolConst usefulness keys + the union rule
+from day one, and the positionally-global R9 widening (bool constants
+in tuple and choice-payload positions) — both plan reviews caught the
+payload unlock independently; one runner-exposed fix round on the
+plan-hedged `case 1 == 1` parse boundary (now `case (1 == 1)` +
+boundary pin). Six PRs since the runner returned (#31→#36): weekly
+upstream merge, W8a/W8b/W8c, W-066, W-076. Next: W-078's separable
+choice half (dead-`default` on choices) or the next inventory
+priority — see fork/decision-log.md for the full record)._
+THIRTY-SIX PRs. The design's canonical
 `var my_opt: Optional(i32) = Optional(i32).None;` now compiles and
 runs: LookupChoiceCopyWitness mirrors the destroy witness (is_choice
 gate, symbolic deferral under the SF-6 triviality fence, concrete

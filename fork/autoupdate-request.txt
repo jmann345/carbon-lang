@@ -1,1 +1,1 @@
-2026-09-26T00:15Z w066 regen pass 2 (R26 fixpoint check after fill 1379ded)
+2026-09-26T05:30Z w076 verification regen pass 1 (bool scrutinees; churn contract: only new files + 3 named strips)

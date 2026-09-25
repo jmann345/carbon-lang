@@ -172,7 +172,7 @@ fn ExprPattern(n: i32) -> MyResult(i32, i32) {
     // CHECK:STDERR:     case H(0)? => { return MyResult(i32, i32).Ok(n); }
     // CHECK:STDERR:          ^~~~~
     // CHECK:STDERR:
-    // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:5: error: semantics TODO: `match case expression pattern that is not a constant integer` [SemanticsTodo]
+    // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:5: error: semantics TODO: `match case expression pattern that is not a constant integer or `bool`` [SemanticsTodo]
     // CHECK:STDERR:     case H(0)? => { return MyResult(i32, i32).Ok(n); }
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR:

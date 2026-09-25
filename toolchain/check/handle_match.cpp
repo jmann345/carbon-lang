@@ -45,8 +45,13 @@ namespace Carbon::Check {
 // the `default` body as the final `else` block and all arm bodies converging
 // on a single resumption block.
 //
-// Three scrutinee shapes are supported so far: integer scrutinees with
-// constant integer expression `case` patterns; choice scrutinees with
+// Four scrutinee shapes are supported so far: integer scrutinees with
+// constant integer expression `case` patterns; bool scrutinees with
+// constant `true`/`false` expression `case` patterns — the design treats
+// `bool` like a choice type whose alternatives are `false` and `true`
+// (docs/design/pattern_matching.md), so the two values are a closed domain
+// for exhaustiveness and usefulness while dispatch stays on the expression
+// pattern's `==` lane; choice scrutinees with
 // leading-dot alternative patterns — payload-free (`case .Err`), whose
 // discriminant is compared against the scrutinee's `.discriminant` field,
 // and payload-destructuring (`case .Ok(value: i32)`, `case .Ok(42)`), whose
@@ -106,15 +111,20 @@ namespace Carbon::Check {
 // discriminant, or an irrefutable binding arm covering everything — needs no
 // `default` arm; a non-exhaustive choice `match` without `default` is an
 // error naming the uncovered alternatives. Guarded arms never count toward
-// coverage, because exhaustiveness assumes every guard can fail. Integer
+// coverage, because exhaustiveness assumes every guard can fail. A bool
+// scrutinee's domain is the closed pair `false`/`true` — the design treats
+// `bool` like a choice type (docs/design/pattern_matching.md) — so covering
+// both values with unguarded constant arms needs no `default`, and a
+// missing value diagnoses `MatchNonexhaustiveBool`. Integer
 // scrutinees keep requiring `default`: integer expression patterns are never
 // exhaustive per docs/design/pattern_matching.md.
 //
 // Usefulness (W-066): a `case` arm whose pattern can never match — every
 // value it could match is matched by prior arms — is an error at the arm,
-// with a note at the covering prior arm, or, when a union of prior
-// alternative arms fully covers a wildcard-rooted arm on a choice
-// scrutinee, one statement-level note naming the choice type. Comparison is
+// with a note at the covering prior arm, or, when a union of prior arms
+// fully covers a wildcard-rooted arm on a scrutinee with a finite root
+// domain — a choice's alternatives, or bool's `false`/`true` pair — one
+// statement-level note naming the scrutinee type. Comparison is
 // by evaluated constant value, never source form. A prior arm's guard is
 // assumed to evaluate to false, so guarded prior arms block nothing, while
 // a guarded arm whose own pattern is fully covered is still dead
@@ -145,12 +155,13 @@ static auto PeekScrutinee(Context& context) -> SemIR::InstId {
 }
 
 // Returns whether `type_id` is a scrutinee type this slice can dispatch on:
-// an integer shape, a matchable choice, or a tuple whose element types are
-// recursively in-slice matchable (a tuple scrutinee dispatches elementwise,
-// so each element must itself be dispatchable, and a tuple of trivially
-// destructible element types is trivially destructible — the
-// temporary-cleanup argument at the gate extends elementwise). Iterative
-// worklist (misc-no-recursion); nothing the walk visits can form a cycle.
+// an integer shape, plain `bool`, a matchable choice, or a tuple whose
+// element types are recursively in-slice matchable (a tuple scrutinee
+// dispatches elementwise, so each element must itself be dispatchable, and
+// a tuple of trivially destructible element types is trivially destructible
+// — the temporary-cleanup argument at the gate extends elementwise).
+// Iterative worklist (misc-no-recursion); nothing the walk visits can form
+// a cycle.
 static auto IsSupportedScrutineeType(Context& context, SemIR::TypeId type_id)
     -> bool {
   llvm::SmallVector<SemIR::TypeId> worklist = {type_id};
@@ -170,7 +181,16 @@ static auto IsSupportedScrutineeType(Context& context, SemIR::TypeId type_id)
         is_int_scrutinee = true;
       }
     }
-    if (is_int_scrutinee || IsMatchableChoiceType(context, current_type_id)) {
+    // A bool scrutinee is exactly the unqualified `SemIR::BoolType`
+    // singleton (`const bool` rides along, matching the int gate's
+    // qualifier handling above). Strict by design: a class adapting `bool`
+    // stays behind the scrutinee TODO, as int adapters beyond
+    // `Int(N)`/`UInt(N)` do, and no scrutinee-position conversion to bool
+    // is performed — `match` dispatches on the scrutinee's own type.
+    bool is_bool_scrutinee = context.types().Is<SemIR::BoolType>(
+        context.types().GetUnqualifiedType(current_type_id));
+    if (is_int_scrutinee || is_bool_scrutinee ||
+        IsMatchableChoiceType(context, current_type_id)) {
       continue;
     }
     auto tuple_type = context.types().TryGetAsIfValid<SemIR::TupleType>(
@@ -199,13 +219,19 @@ auto HandleParseNode(Context& context, Parse::MatchConditionId node_id)
   // use it multiple times, once per `case`.
   scrutinee_id = ConvertToValueOrRefExpr(context, scrutinee_id);
 
-  // Three scrutinee shapes are supported so far.
+  // Four scrutinee shapes are supported so far.
   //
   // Integer scrutinees: `Core.IntLiteral`, a builtin integer type, or a class
   // type directly adapting a builtin integer type, as `Int(N)` and `UInt(N)`
   // do. Other class types whose object representation is an integer type,
   // such as `Core.Char` or user-defined adapter classes, are excluded: they
   // have their own operator semantics.
+  //
+  // Bool scrutinees: plain `bool` only — the design treats `bool` like a
+  // choice type whose alternatives are `false` and `true`
+  // (docs/design/pattern_matching.md), so its two values are a closed
+  // domain for exhaustiveness. Classes adapting `bool` are excluded the
+  // same way int adapters beyond `Int(N)`/`UInt(N)` are.
   //
   // Choice scrutinees: with two or more alternatives, dispatch compares the
   // alternative's index against the integer `.discriminant` field; with
@@ -216,7 +242,7 @@ auto HandleParseNode(Context& context, Parse::MatchConditionId node_id)
   // Tuple scrutinees: tuples of the above, recursively — dispatch is
   // elementwise (`IsSupportedScrutineeType`). The temporary
   // cleanup handling below stays trivially correct for every shape as a type
-  // property, not a syntactic one: integer values have no `destroy`
+  // property, not a syntactic one: integer and bool values have no `destroy`
   // functions, an in-slice choice's payloads are restricted to trivially
   // copyable and destructible types when the choice's representation is
   // completed (see handle_choice.cpp), so its destruction is a no-op, and a
@@ -574,7 +600,8 @@ static auto SkipUsefulnessKeySubtree(
 // Returns whether the pattern `prior` describes subsumes the pattern `arm`
 // describes — whether every value `arm` can match, `prior` matches too. At
 // each slot: the prior is `Wildcard`; or both are `IntConst` with equal
-// canonical value; or both are `Alternative` with equal discriminant index,
+// canonical value; or both are `BoolConst` with equal value; or both are
+// `Alternative` with equal discriminant index,
 // the payload slots then comparing elementwise (a payload-free alternative
 // has zero slots and subsumes itself); or both are `Tuple`, comparing
 // elementwise. Nothing else subsumes — in particular a `Wildcard` is never
@@ -603,6 +630,12 @@ static auto UsefulnessKeySubsumes(
       case Kind::IntConst:
         if (arm_node.kind != Kind::IntConst ||
             prior_node.int_id != arm_node.int_id) {
+          return false;
+        }
+        break;
+      case Kind::BoolConst:
+        if (arm_node.kind != Kind::BoolConst ||
+            prior_node.index != arm_node.index) {
           return false;
         }
         break;
@@ -778,13 +811,18 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
         }
       }
       auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
+      auto unqualified_type_id =
+          context.types().GetUnqualifiedType(scrutinee_type_id);
+      bool is_bool_scrutinee =
+          context.types().Is<SemIR::BoolType>(unqualified_type_id);
       if (!diagnosed &&
           key->front().kind == Context::MatchStatementContext::
                                    UsefulnessKeyNode::Kind::Wildcard &&
-          IsMatchableChoiceType(context, scrutinee_type_id)) {
-        // A wildcard ROOT over a choice scrutinee is the one in-slice
+          (is_bool_scrutinee ||
+           IsMatchableChoiceType(context, scrutinee_type_id))) {
+        // A wildcard ROOT over a choice or bool scrutinee is the in-slice
         // position whose value domain is finite, so a UNION of prior
-        // alternative arms can cover it with no single prior subsuming it.
+        // constant arms can cover it with no single prior subsuming it.
         // The coverage semantics are `DiagnoseNonexhaustiveMatch`'s: a
         // payload alternative counts only when covered with a wholly
         // irrefutable payload (the recording below), and a prior
@@ -794,23 +832,36 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
         // covering priors, and an all-rejected-alternatives error-recovery
         // table makes coverage unknowable — the same two-way answer
         // `DiagnoseNonexhaustiveMatch` records.
-        auto unqualified_type_id =
-            context.types().GetUnqualifiedType(scrutinee_type_id);
-        const auto& class_info = context.classes().Get(
-            context.types()
-                .GetAs<SemIR::ClassType>(unqualified_type_id)
-                .class_id);
-        bool covers_all =
-            !class_info.choice_alternatives.empty() &&
-            llvm::all_of(
-                class_info.choice_alternatives, [&](const auto& choice_alt) {
-                  return llvm::is_contained(match_context.covered_alternatives,
-                                            choice_alt.index);
-                });
+        bool covers_all;
+        if (is_bool_scrutinee) {
+          // A bool root's `covers_all` is computed before and without the
+          // choice-metadata read below: `GetAs<SemIR::ClassType>` would
+          // CHECK-fail on the bool singleton (W-076 plan §2.4). The domain
+          // is the `false`/`true` pair, recorded as 0/1
+          // (docs/design/pattern_matching.md: `bool` is treated like a
+          // choice type whose alternatives are `false` and `true`).
+          covers_all =
+              llvm::is_contained(match_context.covered_alternatives, 0) &&
+              llvm::is_contained(match_context.covered_alternatives, 1);
+        } else {
+          const auto& class_info = context.classes().Get(
+              context.types()
+                  .GetAs<SemIR::ClassType>(unqualified_type_id)
+                  .class_id);
+          covers_all =
+              !class_info.choice_alternatives.empty() &&
+              llvm::all_of(
+                  class_info.choice_alternatives, [&](const auto& choice_alt) {
+                    return llvm::is_contained(
+                        match_context.covered_alternatives, choice_alt.index);
+                  });
+        }
         if (covers_all) {
           // No single covering arm exists, so the note is one
-          // statement-level note naming the scrutinee's choice type,
-          // stable under prior-arm reshuffles.
+          // statement-level note naming the scrutinee's type, stable under
+          // prior-arm reshuffles. For a bool scrutinee the same note reads
+          // "all alternatives of `bool`", licensed by the design's
+          // bool-as-choice rule.
           CARBON_DIAGNOSTIC(MatchCaseNeverMatchesFullCoverage, Note,
                             "all alternatives of {0} are matched by prior "
                             "arms",
@@ -843,7 +894,11 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
   // covers every scrutinee value; an
   // unguarded alternative-pattern arm covers its alternative only when its
   // payload tree is wholly irrefutable — a refutable payload such as
-  // `.Some(42)` records nothing (pattern_matching.md:589-594). An arm whose
+  // `.Some(42)` records nothing (pattern_matching.md:589-594); an unguarded
+  // constant arm on a bool scrutinee covers its value, recorded as 0/1
+  // (`SemIR::BoolValue`), the way an alternative's discriminant records —
+  // `bool` is treated like a choice type whose alternatives are `false` and
+  // `true` (docs/design/pattern_matching.md). An arm whose
   // pattern contained an error contributes unknowable coverage and
   // suppresses the exhaustiveness diagnostic.
   {
@@ -858,6 +913,17 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
       match_context.has_irrefutable_arm = true;
     } else if (alternative && alternative->payload_is_irrefutable) {
       match_context.covered_alternatives.push_back(alternative->index);
+    } else if (context.types().Is<SemIR::BoolType>(
+                   context.types().GetUnqualifiedType(
+                       context.insts().Get(scrutinee_id).type_id()))) {
+      // The constant is read exactly where the usefulness key builder
+      // reads it (`TryGetCaseBoolConstant`); a statement has one scrutinee
+      // type, so the 0/1 indices cannot collide with choice discriminants
+      // in `covered_alternatives`.
+      if (auto bool_value = TryGetCaseBoolConstant(context, pattern_id)) {
+        match_context.covered_alternatives.push_back(bool_value->ToBool() ? 1
+                                                                          : 0);
+      }
     }
   }
 
@@ -1234,11 +1300,14 @@ auto HandleParseNode(Context& context, Parse::MatchHandlerId node_id) -> bool {
   return true;
 }
 
-// Diagnoses a choice-scrutinee `match` statement with no `default` arm whose
-// arms do not cover every alternative, naming the uncovered alternatives. No
+// Diagnoses a choice- or bool-scrutinee `match` statement with no `default`
+// arm whose arms do not cover the scrutinee's closed value domain — a
+// choice's alternatives, or bool's `false`/`true` pair — naming the
+// uncovered alternatives or values. No
 // diagnostic when the arms are exhaustive: an unguarded irrefutable arm
-// covers everything, and otherwise every alternative's discriminant must be
-// covered by an unguarded alternative-pattern arm (see the coverage
+// covers everything, and otherwise every alternative's discriminant (or
+// bool value, recorded as 0/1) must be
+// covered by an unguarded arm (see the coverage
 // recording in `MatchCase`). An arm whose pattern contained an error also
 // suppresses the diagnostic — coverage is unknowable, and the arm carries
 // its own diagnostic already.
@@ -1251,6 +1320,40 @@ static auto DiagnoseNonexhaustiveMatch(
 
   auto unqualified_type_id =
       context.types().GetUnqualifiedType(scrutinee_type_id);
+
+  if (context.types().Is<SemIR::BoolType>(unqualified_type_id)) {
+    // A bool scrutinee. This branch must precede the
+    // `GetAs<SemIR::ClassType>` below, which would CHECK-fail on the bool
+    // singleton (W-076 plan §2.3, R-1). Bool values are not named
+    // alternatives, so the missing values get their own diagnostic, spelled
+    // `false`/`true` in domain order — mirroring the alternative-table
+    // order the choice branch reports in.
+    bool missing_false =
+        !llvm::is_contained(match_context.covered_alternatives, 0);
+    bool missing_true =
+        !llvm::is_contained(match_context.covered_alternatives, 1);
+    if (!missing_false && !missing_true) {
+      return;
+    }
+    RawStringOstream missing_stream;
+    llvm::ListSeparator sep;
+    if (missing_false) {
+      missing_stream << sep << "`false`";
+    }
+    if (missing_true) {
+      missing_stream << sep << "`true`";
+    }
+    CARBON_DIAGNOSTIC(MatchNonexhaustiveBool, Error,
+                      "`match` on `bool` has no `default` arm and does not "
+                      "cover value{0:s} {1}",
+                      Diagnostics::IntAsSelect, std::string);
+    context.emitter().Emit(
+        node_id, MatchNonexhaustiveBool,
+        static_cast<int>(missing_false) + static_cast<int>(missing_true),
+        missing_stream.TakeStr());
+    return;
+  }
+
   auto class_type =
       context.types().GetAs<SemIR::ClassType>(unqualified_type_id);
   const auto& class_info = context.classes().Get(class_type.class_id);
@@ -1319,18 +1422,23 @@ auto HandleParseNode(Context& context, Parse::MatchStatementId node_id)
     // A `match` whose patterns are not exhaustive and that has no `default`
     // is an error per docs/design/pattern_matching.md.
     auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
-    if (!IsMatchableChoiceType(context, scrutinee_type_id)) {
-      // An integer scrutinee. Integer expression patterns are never
+    bool is_bool_scrutinee = context.types().Is<SemIR::BoolType>(
+        context.types().GetUnqualifiedType(scrutinee_type_id));
+    if (!is_bool_scrutinee &&
+        !IsMatchableChoiceType(context, scrutinee_type_id)) {
+      // An integer or tuple scrutinee. Integer expression patterns are never
       // exhaustive — each is treated as matching a single value from an
       // infinite set (docs/design/pattern_matching.md) — so W4's rule stays:
-      // an integer `match` requires a `default` arm (SF-7). Exhaustiveness
-      // via an irrefutable arm or full enumeration of a small integer type
-      // is future work.
+      // an integer `match` requires a `default` arm (SF-7), and a tuple
+      // `match` keeps requiring one too (only closed ROOT domains extend).
+      // Exhaustiveness via an irrefutable arm or full enumeration of a
+      // small integer type is future work.
       return context.TODO(node_id, "match statement without `default` arm");
     }
-    // A choice scrutinee: the alternatives are a closed set, so full
-    // coverage discharges the `default` requirement (SF-7); otherwise
-    // diagnose, naming the uncovered alternatives. Either way the statement
+    // A choice or bool scrutinee: the alternatives — or bool's
+    // `false`/`true` pair — are a closed set, so full coverage discharges
+    // the `default` requirement (SF-7); otherwise diagnose, naming the
+    // uncovered alternatives or values. Either way the statement
     // converges below: the last arm's else edge — dynamically dead when the
     // arms are exhaustive — branches to the resumption block, the same shape
     // an empty `default` arm produces.

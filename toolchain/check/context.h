@@ -345,6 +345,12 @@ class Context {
         // (toolchain/base/int.h), so `case 5` and `case 2 + 3` key equal
         // and comparison is by value, never source form. Leaf.
         IntConst,
+        // A bool expression leaf, keyed by its evaluated constant value in
+        // `index` — 0 for `false`, 1 for `true`, matching
+        // `SemIR::BoolValue` and the `covered_alternatives` recording.
+        // Comparison is by value, never source form, the same rule
+        // `IntConst` follows. Leaf.
+        BoolConst,
         // A choice-alternative root, keyed by the alternative's
         // discriminant index; `arity` payload subpattern slots follow in
         // preorder (zero for the bare `.Name` spelling).
@@ -356,7 +362,8 @@ class Context {
       Kind kind;
       // The evaluated constant's canonical integer value. `IntConst` only.
       IntId int_id = IntId::None;
-      // The alternative's discriminant index. `Alternative` only.
+      // The alternative's discriminant index (`Alternative`), or the bool
+      // constant's value as 0/1 (`BoolConst`).
       int32_t index = -1;
       // The number of child slots following this node in preorder.
       // `Alternative` and `Tuple` only; leaves have none.
@@ -373,10 +380,15 @@ class Context {
       Parse::NodeId introducer_node_id;
     };
 
-    // The discriminant values of the choice alternatives covered by the
-    // unguarded alternative-pattern arms so far, in arm order, possibly with
-    // duplicates. Guarded arms record nothing: exhaustiveness assumes every
-    // guard can evaluate to false (docs/design/pattern_matching.md,
+    // The values of the scrutinee's closed domain covered by the unguarded
+    // arms so far, in arm order, possibly with duplicates: the discriminant
+    // values of the choice alternatives covered by alternative-pattern
+    // arms, or — on a `bool` scrutinee — the bool constant values covered
+    // by constant expression-pattern arms, as 0 for `false` and 1 for
+    // `true` (`SemIR::BoolValue`; a statement has one scrutinee type, so
+    // the two encodings cannot mix). Guarded arms record nothing:
+    // exhaustiveness assumes every guard can evaluate to false
+    // (docs/design/pattern_matching.md,
     // "Refutability, overlap, usefulness, and exhaustiveness").
     llvm::SmallVector<int32_t> covered_alternatives;
     // The UNGUARDED, non-error, not-diagnosed-dead `case` arms so far, in

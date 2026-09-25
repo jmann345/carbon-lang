@@ -28,6 +28,13 @@ choice One {
 fn F(v: One) -> i32 {
   match (v) {
     case .Only => { return 1; }
+    // CHECK:STDERR: fail_duplicate_bare_single.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case .Only => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_duplicate_bare_single.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case .Only => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case .Only => { return 2; }
   }
   return -1;
@@ -44,6 +51,13 @@ choice Boxed {
 fn F(v: Boxed) -> i32 {
   match (v) {
     case .Value(n: i32) => { return n; }
+    // CHECK:STDERR: fail_payload_subsumption_single.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case .Value(5) => { return 5; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_payload_subsumption_single.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case .Value(n: i32) => { return n; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case .Value(5) => { return 5; }
   }
   return -1;

@@ -32,6 +32,13 @@ fn F(f: Flag) -> Flag {
   match (f) {
     case .Off => { return f; }
     case .On => { return f; }
+    // CHECK:STDERR: fail_binding_after_full_coverage.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case c: Flag => { return c; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_binding_after_full_coverage.carbon:[[@LINE-6]]:10: note: all alternatives of `Flag` are matched by prior arms [MatchCaseNeverMatchesFullCoverage]
+    // CHECK:STDERR:   match (f) {
+    // CHECK:STDERR:          ^
+    // CHECK:STDERR:
     case c: Flag => { return c; }
   }
   return f;
@@ -49,6 +56,13 @@ choice One {
 fn F(v: One) -> One {
   match (v) {
     case .Only => { return v; }
+    // CHECK:STDERR: fail_single_alternative_union.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case x: One => { return x; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_single_alternative_union.carbon:[[@LINE-5]]:10: note: all alternatives of `One` are matched by prior arms [MatchCaseNeverMatchesFullCoverage]
+    // CHECK:STDERR:   match (v) {
+    // CHECK:STDERR:          ^
+    // CHECK:STDERR:
     case x: One => { return x; }
   }
   return v;
@@ -69,6 +83,13 @@ fn F(r: IntResult) -> i32 {
   match (r) {
     case .Ok(v: i32) => { return v; }
     case .Err => { return 0; }
+    // CHECK:STDERR: fail_irrefutable_payload_union.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case unused u: IntResult => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_irrefutable_payload_union.carbon:[[@LINE-6]]:10: note: all alternatives of `IntResult` are matched by prior arms [MatchCaseNeverMatchesFullCoverage]
+    // CHECK:STDERR:   match (r) {
+    // CHECK:STDERR:          ^
+    // CHECK:STDERR:
     case unused u: IntResult => { return 1; }
   }
   return -1;
@@ -89,6 +110,13 @@ fn F(f: Flag, g: bool) -> Flag {
   match (f) {
     case .Off => { return f; }
     case .On => { return f; }
+    // CHECK:STDERR: fail_guarded_after_full_coverage.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case c: Flag if (g) => { return c; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_guarded_after_full_coverage.carbon:[[@LINE-6]]:10: note: all alternatives of `Flag` are matched by prior arms [MatchCaseNeverMatchesFullCoverage]
+    // CHECK:STDERR:   match (f) {
+    // CHECK:STDERR:          ^
+    // CHECK:STDERR:
     case c: Flag if (g) => { return c; }
   }
   return f;

@@ -24,6 +24,13 @@ library "[[@TEST_NAME]]";
 fn F(x: i32) -> i32 {
   match (x) {
     case n: i32 => { return n; }
+    // CHECK:STDERR: fail_after_binding.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case 5 => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_after_binding.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case n: i32 => { return n; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case 5 => { return 1; }
     default => { return 0; }
   }
@@ -37,6 +44,13 @@ library "[[@TEST_NAME]]";
 fn F(x: i32) -> i32 {
   match (x) {
     case var a: i32 => { return a; }
+    // CHECK:STDERR: fail_after_var_binding.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case 1 => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_after_var_binding.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case var a: i32 => { return a; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case 1 => { return 1; }
     default => { return 0; }
   }
@@ -58,6 +72,13 @@ choice Signal {
 fn F(s: Signal) -> Signal {
   match (s) {
     case c: Signal => { return c; }
+    // CHECK:STDERR: fail_choice_after_binding.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case .Stop => { return s; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_choice_after_binding.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case c: Signal => { return c; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case .Stop => { return s; }
   }
   return s;
@@ -70,6 +91,13 @@ library "[[@TEST_NAME]]";
 fn F(p: (i32, i32)) -> i32 {
   match (p) {
     case (a: i32, b: i32) => { return a + b; }
+    // CHECK:STDERR: fail_after_all_binding_tuple.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case (1, 2) => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_after_all_binding_tuple.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case (a: i32, b: i32) => { return a + b; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case (1, 2) => { return 1; }
     default => { return 0; }
   }
@@ -87,6 +115,17 @@ library "[[@TEST_NAME]]";
 fn F(x: i32) -> i32 {
   match (x) {
     case n: i32 => { return n; }
+    // CHECK:STDERR: fail_dead_arm_bindings_warn.carbon:[[@LINE+11]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case var a: i32 => { return 0; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_dead_arm_bindings_warn.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case n: i32 => { return n; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
+    // CHECK:STDERR: fail_dead_arm_bindings_warn.carbon:[[@LINE+4]]:14: warning: binding `a` unused [UnusedBinding]
+    // CHECK:STDERR:     case var a: i32 => { return 0; }
+    // CHECK:STDERR:              ^~~~~~
+    // CHECK:STDERR:
     case var a: i32 => { return 0; }
     default => { return 1; }
   }

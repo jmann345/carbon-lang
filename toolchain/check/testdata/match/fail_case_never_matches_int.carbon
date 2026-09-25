@@ -26,6 +26,13 @@ library "[[@TEST_NAME]]";
 fn F(x: i32) -> i32 {
   match (x) {
     case 5 => { return 1; }
+    // CHECK:STDERR: fail_duplicate_literal.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case 5 => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_duplicate_literal.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case 5 => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case 5 => { return 2; }
     default => { return 0; }
   }
@@ -40,6 +47,13 @@ library "[[@TEST_NAME]]";
 fn F(x: i32) -> i32 {
   match (x) {
     case 5 => { return 1; }
+    // CHECK:STDERR: fail_constant_expr_duplicate.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case 2 + 3 => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_constant_expr_duplicate.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case 5 => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case 2 + 3 => { return 2; }
     default => { return 0; }
   }
@@ -53,6 +67,13 @@ library "[[@TEST_NAME]]";
 fn F(x: i32) -> i32 {
   match (x) {
     case -1 => { return 1; }
+    // CHECK:STDERR: fail_negative_duplicate.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case -(1) => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_negative_duplicate.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case -1 => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case -(1) => { return 2; }
     default => { return 0; }
   }
@@ -69,6 +90,13 @@ library "[[@TEST_NAME]]";
 fn F(x: i32, g: bool) -> i32 {
   match (x) {
     case 5 => { return 1; }
+    // CHECK:STDERR: fail_guarded_later_duplicate.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case 5 if (g) => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_guarded_later_duplicate.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case 5 => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case 5 if (g) => { return 2; }
     default => { return 0; }
   }

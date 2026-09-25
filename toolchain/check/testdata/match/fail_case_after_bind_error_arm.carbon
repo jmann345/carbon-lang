@@ -19,8 +19,22 @@
 // error on top of the arm's conversion error — intended and documented
 // behavior, pinned here. The `default` arm stays exempt (plan §1.5).
 fn F(x: i32) -> i32 {
+  // CHECK:STDERR: fail_case_after_bind_error_arm.carbon:[[@LINE+7]]:10: error: cannot implicitly convert expression of type `i32` to `bool` [ConversionFailure]
+  // CHECK:STDERR:   match (x) {
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_case_after_bind_error_arm.carbon:[[@LINE+4]]:10: note: type `i32` does not implement interface `Core.ImplicitAs(bool)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   match (x) {
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR:
   match (x) {
     case b: bool => { if (b) { return 1; } return 2; }
+    // CHECK:STDERR: fail_case_after_bind_error_arm.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case 5 => { return 3; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_case_after_bind_error_arm.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case b: bool => { if (b) { return 1; } return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case 5 => { return 3; }
     default => { return 0; }
   }

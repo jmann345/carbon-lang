@@ -27,6 +27,13 @@ choice Signal {
 fn F(s: Signal) -> i32 {
   match (s) {
     case .Stop => { return 1; }
+    // CHECK:STDERR: fail_duplicate_bare.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case .Stop => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_duplicate_bare.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case .Stop => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case .Stop => { return 2; }
     default => { return 0; }
   }
@@ -45,6 +52,13 @@ choice IntResult {
 fn F(r: IntResult) -> i32 {
   match (r) {
     case .Ok(42) => { return 1; }
+    // CHECK:STDERR: fail_duplicate_payload_constant.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case .Ok(42) => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_duplicate_payload_constant.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case .Ok(42) => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case .Ok(42) => { return 2; }
     default => { return 0; }
   }
@@ -65,6 +79,13 @@ choice IntResult {
 fn F(r: IntResult) -> i32 {
   match (r) {
     case .Ok(v: i32) => { return v; }
+    // CHECK:STDERR: fail_payload_subsumption.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case .Ok(42) => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_payload_subsumption.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case .Ok(v: i32) => { return v; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case .Ok(42) => { return 1; }
     case .Err => { return 0; }
   }
@@ -84,6 +105,13 @@ choice Shape {
 fn F(s: Shape) -> i32 {
   match (s) {
     case .Pair(1, b: i32) => { return b; }
+    // CHECK:STDERR: fail_mixed_payload_subsumption.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case .Pair(1, 2) => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_mixed_payload_subsumption.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case .Pair(1, b: i32) => { return b; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case .Pair(1, 2) => { return 2; }
     default => { return 0; }
   }
@@ -107,6 +135,17 @@ choice Letter {
 fn F(l: Letter) -> i32 {
   match (l) {
     case .A => { return 1; }
+    // CHECK:STDERR: fail_ordering_pin.carbon:[[@LINE+11]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case .A => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_ordering_pin.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case .A => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
+    // CHECK:STDERR: fail_ordering_pin.carbon:[[@LINE-9]]:3: error: `match` on choice `Letter` has no `default` arm and does not cover alternatives `.B`, `.C` [MatchNonexhaustive]
+    // CHECK:STDERR:   match (l) {
+    // CHECK:STDERR:   ^~~~~~~~~~~
+    // CHECK:STDERR:
     case .A => { return 2; }
   }
   return -1;

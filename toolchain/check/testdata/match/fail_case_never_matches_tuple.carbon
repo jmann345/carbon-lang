@@ -24,6 +24,13 @@ library "[[@TEST_NAME]]";
 fn F(p: (i32, i32)) -> i32 {
   match (p) {
     case (1, 2) => { return 1; }
+    // CHECK:STDERR: fail_duplicate_vector.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case (1, 2) => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_duplicate_vector.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case (1, 2) => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case (1, 2) => { return 2; }
     default => { return 0; }
   }
@@ -38,6 +45,13 @@ library "[[@TEST_NAME]]";
 fn F(p: (i32, i32)) -> i32 {
   match (p) {
     case (1, b: i32) => { return b; }
+    // CHECK:STDERR: fail_subsumed_by_mixed.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case (1, 2) => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_subsumed_by_mixed.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case (1, b: i32) => { return b; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case (1, 2) => { return 2; }
     default => { return 0; }
   }
@@ -51,6 +65,13 @@ library "[[@TEST_NAME]]";
 fn F(p: (i32, (i32, i32))) -> i32 {
   match (p) {
     case (1, (2, 3)) => { return 1; }
+    // CHECK:STDERR: fail_nested_duplicate.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case (1, (2, 3)) => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_nested_duplicate.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case (1, (2, 3)) => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case (1, (2, 3)) => { return 2; }
     default => { return 0; }
   }
@@ -65,6 +86,13 @@ library "[[@TEST_NAME]]";
 fn F(p: (i32, i32)) -> i32 {
   match (p) {
     case (a: i32, 2) => { return a; }
+    // CHECK:STDERR: fail_wildcard_other_element.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case (1, 2) => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_wildcard_other_element.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case (a: i32, 2) => { return a; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case (1, 2) => { return 2; }
     default => { return 0; }
   }

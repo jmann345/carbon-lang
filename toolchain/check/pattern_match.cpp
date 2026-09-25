@@ -1259,20 +1259,27 @@ auto MatchContext::DoPreWork(State state, SemIR::VarPattern var_pattern,
                              SemIR::InstId scrutinee_id, WorkItem entry)
     -> void {
   if (std::holds_alternative<MatchCaseState*>(state)) {
-    // The refutable test pass prunes at `var` subtrees the same way it
-    // prunes at binding patterns: an admitted `var` case pattern wraps a
-    // wholly irrefutable subtree, contributes no condition, and belongs to
-    // the bind pass, which emits its storage on demand (see
-    // `DoVarPreWorkImpl`). A `var` wrapping a refutable subtree is out of
-    // slice — pruning it would silently skip its element tests — so it
-    // diagnoses here rather than descending (binding-free `var` patterns
-    // are gated earlier, in handle_let_and_var.cpp).
+    // A `var` wrapping a refutable subtree is out of slice — pruning it
+    // would silently skip its element tests — so it diagnoses here rather
+    // than descending (binding-free `var` patterns are gated earlier, in
+    // handle_let_and_var.cpp).
     if (!IsIrrefutableMatchCasePattern(context_, entry.pattern_id)) {
       context_.TODO(context_.match_case_stack().back().introducer_node_id,
                     "match `case` pattern other than an integer literal, or "
                     "a case guard");
       results_stack_.AppendToTop(SemIR::InstId::None);
+      return;
     }
+    // An admitted `var` case pattern wraps a wholly irrefutable subtree,
+    // which belongs to the bind pass (storage is emitted on demand there;
+    // see `DoVarPreWorkImpl`). The test pass descends WITHOUT emitting
+    // anything: the subtree's bindings prune and contribute no condition,
+    // so the walk's only job below is the scrutinee-typed tuple shape
+    // checks — non-tuple scrutinee and arity — which a bare tuple root
+    // gets from this same walk (W8b fix round 1).
+    AddWork({.pattern_id = var_pattern.subpattern_id,
+             .work = PreWork{.scrutinee_id = scrutinee_id},
+             .allow_unmarked_ref = true});
     return;
   }
   auto scrutinee_type_id = GetScrutineeTypeInSpecific(
@@ -1325,9 +1332,31 @@ auto MatchContext::DoVarPreWorkImpl(State state,
                             : context_.full_pattern_stack().GetLocalVarStorage(
                                   entry.pattern_id);
       if (scrutinee_id.has_value()) {
-        auto init_id =
-            InitializeExisting(context_, SemIR::LocId(entry.pattern_id),
-                               storage_id, scrutinee_id, /*for_return=*/false);
+        SemIR::InstId init_id = SemIR::InstId::None;
+        if (local_state->in_match_case_bind) {
+          // `InitializeExisting`'s body minus its raw-index dominance CHECK
+          // (convert.cpp), which approximates "storage dominates the
+          // initializer insts" by inst creation order: the on-demand
+          // storage above post-dates the scrutinee inst by construction,
+          // but the scrutinee reaches this pass as a value or reference
+          // expression (`MatchCondition` value-converts it), so `Convert`
+          // emits fresh initialization insts here — after the storage,
+          // which therefore dominates them — and never back-patches the
+          // scrutinee's own storage argument (convert.h's dominance
+          // requirement). The CHECK's false positive, not a dominance bug
+          // (W-008 plan §2.4, W8b fix round 1).
+          PendingBlock target_block(&context_);
+          init_id =
+              Convert(context_, SemIR::LocId(entry.pattern_id), scrutinee_id,
+                      {.kind = ConversionTarget::Initializing,
+                       .type_id = context_.insts().Get(storage_id).type_id(),
+                       .storage_id = storage_id,
+                       .storage_access_block = &target_block});
+        } else {
+          init_id = InitializeExisting(context_, SemIR::LocId(entry.pattern_id),
+                                       storage_id, scrutinee_id,
+                                       /*for_return=*/false);
+        }
         // TODO: It's a bit weird to use an `Assign` instruction to model
         // initialization. Consider adding a different instruction for this
         // purpose.

@@ -189,6 +189,10 @@ fn UsedInBody(x: i32) -> i32 {
 
 fn Warns(x: i32) -> i32 {
   match (x) {
+    // CHECK:STDERR: match_case_bindings.carbon:[[@LINE+4]]:14: warning: binding `a` unused [UnusedBinding]
+    // CHECK:STDERR:     case var a: i32 => { return 0; }
+    // CHECK:STDERR:              ^~~~~~
+    // CHECK:STDERR:
     case var a: i32 => { return 0; }
     default => { return 4; }
   }

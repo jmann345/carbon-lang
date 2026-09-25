@@ -117,3 +117,94 @@ fn R(p: (i32, i32)) -> i32 {
   }
   return -1;
 }
+
+// --- fail_todo_nested_refutable_var.carbon
+library "[[@TEST_NAME]]";
+
+// A refutable `var` NESTED as a tuple element reaches the engine's own
+// refutable-`var` diagnosis (the root is classified in `MatchCase`, but a
+// nested element is not): same W4 slice gate, pinned at the introducer
+// (W8b fix round 1).
+
+fn N(p: ((i32, i32), i32)) -> i32 {
+  match (p) {
+    // CHECK:STDERR: fail_todo_nested_refutable_var.carbon:[[@LINE+4]]:5: error: semantics TODO: `match `case` pattern other than an integer literal, or a case guard` [SemanticsTodo]
+    // CHECK:STDERR:     case (var (5, a: i32), 1) => { return 0; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
+    case (var (5, a: i32), 1) => { return 0; }
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- fail_todo_var_non_tuple_scrutinee.carbon
+library "[[@TEST_NAME]]";
+
+// A `var`-wrapped tuple pattern against a NON-tuple scrutinee: the test
+// pass descends through the irrefutable `var`, so the engine's
+// scrutinee-typed tuple walk runs the same shape gate a bare tuple root
+// gets (tuple_pattern.carbon's fail_todo_non_tuple_scrutinee), instead of
+// the bind pass emitting a raw whole-tuple conversion error (W8b fix
+// round 1).
+
+fn F(x: i32) -> i32 {
+  match (x) {
+    // CHECK:STDERR: fail_todo_var_non_tuple_scrutinee.carbon:[[@LINE+4]]:5: error: semantics TODO: `match `case` pattern other than an integer literal, or a case guard` [SemanticsTodo]
+    // CHECK:STDERR:     case var (a: i32, b: i32) => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
+    case var (a: i32, b: i32) => { return 1; }
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- fail_var_arity.carbon
+library "[[@TEST_NAME]]";
+
+// A `var`-wrapped tuple pattern with the wrong arity: the descending test
+// pass surfaces `MatchCaseTuplePatternWrongArity` from the same
+// scrutinee-typed walk the bare tuple root uses, instead of bypassing it
+// (W8b fix round 1). The errored arm's bind pass is skipped, so the
+// binding stays unused and warns at arm scope exit, the
+// fail_pruned_subtree_shape_error shape.
+
+fn F(p: (i32, i32)) -> i32 {
+  match (p) {
+    // CHECK:STDERR: fail_var_arity.carbon:[[@LINE+8]]:14: error: tuple pattern expects 1 element, but match scrutinee has 2 [MatchCaseTuplePatternWrongArity]
+    // CHECK:STDERR:     case var (a: i32,) => { return 1; }
+    // CHECK:STDERR:              ^~~~~~~~~
+    // CHECK:STDERR:
+    // CHECK:STDERR: fail_var_arity.carbon:[[@LINE+4]]:15: warning: binding `a` unused [UnusedBinding]
+    // CHECK:STDERR:     case var (a: i32,) => { return 1; }
+    // CHECK:STDERR:               ^~~~~~
+    // CHECK:STDERR:
+    case var (a: i32,) => { return 1; }
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- fail_unused_used_in_guard.carbon
+library "[[@TEST_NAME]]";
+
+// A guard use of an `unused`-marked case binding is a reachable
+// `UnusedButUsed` error: the guard evaluates after the bind pass, with the
+// arm's bindings in scope (W-008 plan §3.2 deviation note, W8b fix
+// round 1).
+
+fn G(x: i32) -> i32 {
+  match (x) {
+    // CHECK:STDERR: fail_unused_used_in_guard.carbon:[[@LINE+7]]:21: error: variable `a` marked `unused` but used [UnusedButUsed]
+    // CHECK:STDERR:     case var unused a: i32 if (a > 0) => { return 1; }
+    // CHECK:STDERR:                     ^~~~~~
+    // CHECK:STDERR: fail_unused_used_in_guard.carbon:[[@LINE+4]]:32: note: usage here [UnusedButUsedHere]
+    // CHECK:STDERR:     case var unused a: i32 if (a > 0) => { return 1; }
+    // CHECK:STDERR:                                ^
+    // CHECK:STDERR:
+    case var unused a: i32 if (a > 0) => { return 1; }
+    default => { return 0; }
+  }
+  return -1;
+}

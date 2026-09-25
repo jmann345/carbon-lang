@@ -518,6 +518,24 @@ string) — mutate a `var` case binding, observe the original unchanged;
 over 127. R9 discharge as W8a, plus: the `var`/`ref` TODO string
 absent from the tree.
 
+Deviation note (2026-09-25, W8b fix round 1; review #1 F2 + review #2
+F5): (i) the patterns/unused.carbon flip restructured the
+fail_todo_match split's single match into FOUR functions
+(UnusedMarkedTuple, UnusedMarkedSingle, UsedInBody, Warns) rather than
+one; the split's two guard-bearing spellings were dropped because (a) a
+guard use of an `unused`-marked binding is a reachable UnusedButUsed
+ERROR — not the "ensure no warning" the :175 TODO comment expected —
+and (b) min_prelude/primitives has no ordered-comparison impls for a
+guard to use. (ii) The guard-use-of-unused behavior gets its own pin in
+full-prelude match/var_binding.carbon (subfile fail_unused_used_in_guard,
+`case var unused a: i32 if (a > 0)` → UnusedButUsed at the binding +
+UnusedButUsedHere note at the guard use). (iii) handle_match.cpp
+exceeded this section's "classification only" file list: the bind
+dispatch routes `var`-bearing and expression-bearing trees to
+`MatchCaseBindPatternMatch` — a §2.4-necessitated amendment (the
+on-demand storage design lives in the match-bind walk, so the dispatch
+must select it).
+
 ### 3.3 W8c — disposition and gate-narrowing (S; cut-with-record allowed)
 
 No feature work. (1) Give compile-time case bindings their own honest

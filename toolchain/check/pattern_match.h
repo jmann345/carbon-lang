@@ -104,7 +104,10 @@ auto LocalPatternMatch(Context& context, SemIR::InstId pattern_id,
 // collected conditions into one bool (observationally equivalent to the
 // design's short-circuit order because in-slice element reads are total and
 // case expressions are constants; W-008 plan §2.1(a)). An errored element
-// makes the whole condition `ErrorInst`.
+// makes the whole condition `ErrorInst`. A `var` root wrapping a wholly
+// irrefutable subtree contributes no condition of its own: the walk
+// descends through it so the same scrutinee-typed shape checks run, and
+// its bindings prune (W8b fix round 1).
 //
 // `case_node_id` is the `MatchCase` parse node, used as the location of the
 // emitted comparison insts. Returns `None` after diagnosing an unsupported

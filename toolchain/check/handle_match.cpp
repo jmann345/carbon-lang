@@ -633,12 +633,17 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
   // binding-pattern root — a value or `ref` binding — is irrefutable, so
   // its test pass contributes no condition and the arm's condition is a
   // constant `true` (the refutable engine prunes at binding patterns, whose
-  // `bind_name_map` entries belong to the bind pass below), and a `var`
-  // root wrapping a wholly irrefutable subtree classifies the same way;
-  // every other pattern root — a tuple pattern against a non-tuple
-  // scrutinee, and a `var` root wrapping a refutable subtree, included —
-  // stays behind the W4 slice-gate TODO. The TODO is pinned to the
-  // introducer node so the preserved diagnostics keep their location.
+  // `bind_name_map` entries belong to the bind pass below); a `var` root
+  // wrapping a wholly irrefutable subtree also runs the refutable engine —
+  // its bindings all prune, so a shape-valid arm's condition folds to the
+  // same constant `true`, while the engine's scrutinee-typed tuple walk
+  // supplies the shape checks a bare tuple root gets: a non-tuple scrutinee
+  // stays behind the W4 slice gate and an arity mismatch diagnoses
+  // `MatchCaseTuplePatternWrongArity` (W8b fix round 1); every other
+  // pattern root — a tuple pattern against a non-tuple scrutinee, and a
+  // `var` root wrapping a refutable subtree, included — stays behind the W4
+  // slice-gate TODO. The TODO is pinned to the introducer node so the
+  // preserved diagnostics keep their location.
   SemIR::InstId cond_value_id = SemIR::InstId::None;
   bool is_binding_arm =
       context.insts().Is<SemIR::ValueBindingPattern>(pattern_id) ||
@@ -665,7 +670,7 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
     }
   } else if (pattern_id == SemIR::ErrorInst::InstId ||
              context.insts().Is<SemIR::ExprPattern>(pattern_id) ||
-             is_tuple_arm) {
+             is_tuple_arm || is_irrefutable_var_arm) {
     cond_value_id =
         MatchCasePatternMatch(context, pattern_id, scrutinee_id, node_id);
     if (!cond_value_id.has_value()) {
@@ -673,7 +678,7 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
       // which aborts checking.
       return false;
     }
-  } else if (is_binding_arm || is_irrefutable_var_arm) {
+  } else if (is_binding_arm) {
     cond_value_id = MakeBoolLiteral(context, node_id, SemIR::BoolValue::True);
   } else {
     return context.TODO(
@@ -737,7 +742,8 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
   if (is_binding_arm) {
     LocalPatternMatch(context, pattern_id, scrutinee_id);
     context.scope_stack().DeferCleanups();
-  } else if (is_irrefutable_var_arm) {
+  } else if (is_irrefutable_var_arm &&
+             cond_value_id != SemIR::ErrorInst::InstId) {
     // A `var` arm's storage is emitted by the bind pass on demand, here in
     // the arm's body block, so each arm gets its own object — `var` case
     // bindings are not aliased across arms
@@ -746,7 +752,9 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
     // destroyed with the arm scope's cleanups. The match-bind walk is
     // required, not plain `LocalPatternMatch`: the arm's full-pattern
     // frame was popped above, so the frame-indexed storage lookup the
-    // `let`/`var` path uses is unusable (W-008 plan §2.4).
+    // `let`/`var` path uses is unusable (W-008 plan §2.4). An arm whose
+    // test errored (for example a tuple-arity mismatch under the `var`)
+    // has nothing sound to bind.
     MatchCaseBindPatternMatch(context, pattern_id, scrutinee_id);
     context.scope_stack().DeferCleanups();
   } else if (is_alternative_payload_arm &&

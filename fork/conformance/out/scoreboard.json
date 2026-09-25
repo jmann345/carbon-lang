@@ -1,7 +1,7 @@
 {
-  "generated": "2026-09-25T14:08:59.427735+00:00",
+  "generated": "2026-09-25T14:45:01.273646+00:00",
   "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 12.6,
+  "elapsed_seconds": 11.9,
   "totals": {
     "PASS": 99,
     "COMPILE-FAIL": 0,

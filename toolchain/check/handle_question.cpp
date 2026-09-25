@@ -170,7 +170,18 @@ static auto CheckQuestionPreflight(Context& context,
   // depth 1 and every captured region nests above it, so a depth greater
   // than 1 is diagnosed and rejected up front. Ordinary statement, argument,
   // and initializer positions run at depth 1 and are unaffected.
-  if (context.region_stack().depth() > 1) {
+  // A `case` guard has been checked inline in the arm's body block since
+  // the W8b guard reordering (fork/w008/plan.md §3.2 deviation note,
+  // 2026-09-25) — no captured region, so the depth test below no longer
+  // covers it. The ban is preserved deliberately: widening `?` into case
+  // guards is an SF-9 surface decision, not a bind-order side effect, and
+  // this keeps `case` and `default` guards symmetric (`default` guards
+  // still capture a region). A guarded case arm's context carries
+  // `else_block_id` for exactly the span of guard checking.
+  bool in_case_guard =
+      !context.match_case_stack().empty() &&
+      context.match_case_stack().back().else_block_id.has_value();
+  if (in_case_guard || context.region_stack().depth() > 1) {
     CARBON_DIAGNOSTIC(QuestionInPatternContext, Error,
                       "`?` cannot be used inside a pattern, a `case` guard, "
                       "or a binding's type expression");

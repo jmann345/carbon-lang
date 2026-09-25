@@ -17,8 +17,8 @@
 // behavior (the test pass classified the arm irrefutable before the bind
 // pass rejected it). The later `case 5` therefore STACKS a usefulness
 // error on top of the arm's conversion error — intended and documented
-// behavior, pinned here. The `default` is integer-lane exempt (R8;
-// W-078's integer half).
+// behavior, pinned here — and the `default` stacks a dead-`default`
+// error the same way (W-078b; the covering prior is the bind-error arm).
 fn F(x: i32) -> i32 {
   // CHECK:STDERR: fail_case_after_bind_error_arm.carbon:[[@LINE+7]]:10: error: cannot implicitly convert expression of type `i32` to `bool` [ConversionFailure]
   // CHECK:STDERR:   match (x) {

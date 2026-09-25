@@ -21,6 +21,14 @@
 // runtime values, not constant folds. Expected values derived by hand:
 // 2+20=22, 22+100=122 (copy printed, original still 22); 5+20=25,
 // 25+100=125 (write through the alias observed after the match).
+//
+// No `default` arms: each `match`'s single unguarded irrefutable arm
+// always matches, so a `default` would be dynamically dead — and since
+// W-078b it is statically rejected as a dead arm, per the design's
+// dead-`default` "Error: unreachable." annotation
+// (docs/design/pattern_matching.md, "Refutability, overlap, usefulness,
+// and exhaustiveness"). The arms' behavior and the EXPECT values are
+// unchanged: the dropped arms could never run.
 
 import Core library "io";
 
@@ -31,7 +39,6 @@ fn MutateCopy() -> i32 {
   var x: i32 = RuntimeSeed(2);
   match (x) {
     case var a: i32 => { a = a + 100; Core.Print(a); }
-    default => { return -1; }
   }
   return x;
 }
@@ -41,7 +48,6 @@ fn MutateThroughRef() -> i32 {
   var y: i32 = RuntimeSeed(5);
   match (y) {
     case ref r: i32 => { r = r + 100; }
-    default => { return -1; }
   }
   return y;
 }

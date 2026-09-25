@@ -24,7 +24,6 @@ fn F(x: i32) -> i32 {
     // CHECK:STDERR:                                    ^
     // CHECK:STDERR:
     case unused a: i32 => { return a; }
-    default => { return 0; }
   }
   return -1;
 }

@@ -166,7 +166,6 @@ library "[[@TEST_NAME]]";
 fn UnusedMarkedTuple(p: (i32, i32)) -> i32 {
   match (p) {
     case unused var (a: i32, b: i32) => { return 0; }
-    default => { return 4; }
   }
   return 0;
 }
@@ -174,7 +173,6 @@ fn UnusedMarkedTuple(p: (i32, i32)) -> i32 {
 fn UnusedMarkedSingle(x: i32) -> i32 {
   match (x) {
     case var unused a: i32 => { return 3; }
-    default => { return 4; }
   }
   return 0;
 }
@@ -182,7 +180,6 @@ fn UnusedMarkedSingle(x: i32) -> i32 {
 fn UsedInBody(x: i32) -> i32 {
   match (x) {
     case var a: i32 => { return a; }
-    default => { return 4; }
   }
   return 0;
 }
@@ -194,7 +191,6 @@ fn Warns(x: i32) -> i32 {
     // CHECK:STDERR:              ^~~~~~
     // CHECK:STDERR:
     case var a: i32 => { return 0; }
-    default => { return 4; }
   }
   return 0;
 }

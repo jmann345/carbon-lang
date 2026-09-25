@@ -35,7 +35,6 @@ library "[[@TEST_NAME]]";
 fn G(x: i32) -> i32 {
   match (x) {
     case b: i32 => { return b; }
-    default => { return 0; }
   }
   // CHECK:STDERR: fail_after_match.carbon:[[@LINE+4]]:10: error: name `b` not found [NameNotFound]
   // CHECK:STDERR:   return b;

@@ -249,6 +249,7 @@ fails if this table is stale):
 | `control_flow/match_guard_binding.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_guard_diff.carbon` | Control flow: matching — good switch equivalents | differential |
 | `control_flow/match_guarded_default.carbon` | Control flow: matching — good switch equivalents | run |
+| `control_flow/match_irrefutable_no_default.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_no_fallthrough.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_payload_literal.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | run |
 | `control_flow/match_position.carbon` | Control flow: matching — good switch equivalents | run |

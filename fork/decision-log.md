@@ -2792,6 +2792,34 @@ inexpressible in-slice — exactly why the approximation is safe today.
 Re-examined the day non-trivial types pass the scrutinee gate
 (handle_match.cpp:238). Veto-able.
 
+### W-066 usefulness diagnostics landed through the full loop (2026-09-26)
+
+The first post-W-008 workstream: `case` patterns that can never match
+now diagnose (MatchCaseNeverMatches, Error, per pattern_matching.md's
+own "this pattern never matches" annotation), with the covering prior
+arm noted — or, for choice-root union coverage, a statement-level
+note naming the choice. Two plan reviews independently converged on
+the same major before implementation: single-prior slot-wise
+subsumption is complete for every slot EXCEPT a choice-scrutinee case
+root, whose alternative domain is finite — `.Off`/`.On` priors kill a
+later binding-rooted arm by union, which no single prior subsumes.
+The folded plan added the step-3b full-coverage rule riding the
+landed covered_alternatives semantics (irrefutable payloads only,
+guarded arms never count). The reviews also settled canonicalization
+from the tree — IntId compares mathematical values, so `case 5` and
+`case 2 + 3` share one id and the planned APInt fallback (a
+width-mismatch assert hazard) was struck — and recorded the
+bind-pass-error carve-out (such arms count as covering, matching
+landed has_irrefutable_arm behavior). Both implementation reviews:
+APPROVE, zero required fixes; reviewer #1 hand-ran the subsumption
+truth table and proved the unconditional exhaustiveness-recording
+deviation behavior-invisible. Verified on the runner: autoupdate
+filled ONLY the eight new testdata files — the plan's zero
+existing-golden-churn claim held empirically — R26 fixpoint at pass
+2, gate green, conformance unchanged 99/0/28 over 127. W-078 filed
+(default-arm usefulness + the W-008 residue R8 lift, with the
+independence record: the choice half is unblocked and separable).
+
 ### W8c discharged: W-008 residue is honest, pinned, and filed (2026-09-25)
 
 The disposition slice closes the W-008 round: the combined W4 TODO

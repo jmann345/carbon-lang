@@ -3,8 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <optional>
+#include <utility>
 
 #include "common/raw_string_ostream.h"
+#include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringExtras.h"
@@ -108,6 +110,17 @@ namespace Carbon::Check {
 // scrutinees keep requiring `default`: integer expression patterns are never
 // exhaustive per docs/design/pattern_matching.md.
 //
+// Usefulness (W-066): a `case` arm whose pattern can never match — every
+// value it could match is matched by prior arms — is an error at the arm,
+// with a note at the covering prior arm, or, when a union of prior
+// alternative arms fully covers a wildcard-rooted arm on a choice
+// scrutinee, one statement-level note naming the choice type. Comparison is
+// by evaluated constant value, never source form. A prior arm's guard is
+// assumed to evaluate to false, so guarded prior arms block nothing, while
+// a guarded arm whose own pattern is fully covered is still dead
+// (docs/design/pattern_matching.md, "Refutability, overlap, usefulness, and
+// exhaustiveness"). `default` arms are exempt (see `MatchDefault`; W-078).
+//
 // Choices with fewer than two alternatives have no integer discriminant —
 // their discriminant field is the empty tuple (handle_choice.cpp) — so
 // there is nothing to test at dispatch: a single-alternative choice's
@@ -119,8 +132,8 @@ namespace Carbon::Check {
 // parse/handle_match.cpp).
 //
 // TODO: Support other pattern kinds, other scrutinee types, and integer
-// exhaustiveness via an irrefutable arm or full enumeration. Diagnose cases
-// that can never match, per docs/design/pattern_matching.md.
+// exhaustiveness via an irrefutable arm or full enumeration. Diagnose
+// `default` arms that can never match (W-078).
 
 // Returns the scrutinee value, which is on the `MatchHandler` entry after an
 // earlier case arm, or otherwise on the `MatchStatementStart` entry.
@@ -544,14 +557,86 @@ static auto FinishCasePattern(Context& context) -> void {
       context.node_stack().PopPattern();
 }
 
+// Returns the index just past the usefulness-key subtree rooted at `index`
+// in `key`'s preorder node list: a node with `arity` child slots is
+// followed by that many subtrees. Iterative (misc-no-recursion); keys are
+// well-formed by construction (`BuildMatchCaseUsefulnessKey`), so the walk
+// always terminates within the key.
+static auto SkipUsefulnessKeySubtree(
+    llvm::ArrayRef<Context::MatchStatementContext::UsefulnessKeyNode> key,
+    int index) -> int {
+  for (int remaining = 1; remaining > 0; ++index) {
+    remaining += key[index].arity - 1;
+  }
+  return index;
+}
+
+// Returns whether the pattern `prior` describes subsumes the pattern `arm`
+// describes — whether every value `arm` can match, `prior` matches too. At
+// each slot: the prior is `Wildcard`; or both are `IntConst` with equal
+// canonical value; or both are `Alternative` with equal discriminant index,
+// the payload slots then comparing elementwise (a payload-free alternative
+// has zero slots and subsumes itself); or both are `Tuple`, comparing
+// elementwise. Nothing else subsumes — in particular a `Wildcard` is never
+// itself subsumed by a constant, so a prior `case (1, 2)` leaves a later
+// `case (1, b: i32)` useful. Two keys for the same scrutinee are
+// structurally compatible, so a kind or arity mismatch is treated as
+// not-subsumed (defensive, should be unreachable). Lockstep iterative walk
+// over the preorder node lists (misc-no-recursion).
+static auto UsefulnessKeySubsumes(
+    llvm::ArrayRef<Context::MatchStatementContext::UsefulnessKeyNode> prior,
+    llvm::ArrayRef<Context::MatchStatementContext::UsefulnessKeyNode> arm)
+    -> bool {
+  using Kind = Context::MatchStatementContext::UsefulnessKeyNode::Kind;
+  int prior_index = 0;
+  int arm_index = 0;
+  while (prior_index < static_cast<int>(prior.size()) &&
+         arm_index < static_cast<int>(arm.size())) {
+    const auto& prior_node = prior[prior_index];
+    const auto& arm_node = arm[arm_index];
+    switch (prior_node.kind) {
+      case Kind::Wildcard:
+        // The prior covers the arm's whole subtree at this slot.
+        ++prior_index;
+        arm_index = SkipUsefulnessKeySubtree(arm, arm_index);
+        continue;
+      case Kind::IntConst:
+        if (arm_node.kind != Kind::IntConst ||
+            prior_node.int_id != arm_node.int_id) {
+          return false;
+        }
+        break;
+      case Kind::Alternative:
+        if (arm_node.kind != Kind::Alternative ||
+            prior_node.index != arm_node.index ||
+            prior_node.arity != arm_node.arity) {
+          return false;
+        }
+        break;
+      case Kind::Tuple:
+        if (arm_node.kind != Kind::Tuple ||
+            prior_node.arity != arm_node.arity) {
+          return false;
+        }
+        break;
+    }
+    ++prior_index;
+    ++arm_index;
+  }
+  // Structurally compatible keys end together; leftover nodes on either
+  // side mean the shapes diverged mid-walk (defensive, as above).
+  return prior_index == static_cast<int>(prior.size()) &&
+         arm_index == static_cast<int>(arm.size());
+}
+
 // Emits a case arm's test and bind passes, once the arm's pattern is
 // finished (`FinishCasePattern`): the pattern block's `NameBindingDecl`
 // home in the arm's test block, the classification of the checked pattern
-// root, the arm's condition, coverage recording, the then/else dispatch
-// blocks, and the bind pass in the arm's then (body) block, which is left
-// pushed as the current block. Returns the arm's else block — the next
-// test's home, which a guard's failure edge also targets — or `nullopt`
-// after a "semantics TODO" diagnostic aborted checking.
+// root, the arm's condition, the usefulness check and coverage recording,
+// the then/else dispatch blocks, and the bind pass in the arm's then (body)
+// block, which is left pushed as the current block. Returns the arm's else
+// block — the next test's home, which a guard's failure edge also targets — or
+// `nullopt` after a "semantics TODO" diagnostic aborted checking.
 //
 // Called from `MatchCase` for an unguarded arm, with the `MatchCase` node,
 // and from `MatchCaseGuardIntroducer` for a guarded arm (`is_guarded`),
@@ -644,6 +729,108 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
         introducer_node_id,
         "match `case` pattern other than an integer literal, or a case guard");
     return std::nullopt;
+  }
+
+  // Usefulness check (W-066): diagnose a `case` arm whose pattern is not
+  // useful in the context of the prior arms — every value it could match
+  // is matched by a prior arm — as an error at this arm with a note at
+  // the covering prior arm ("A pattern is not useful in the context of
+  // prior patterns", docs/design/pattern_matching.md, "Refutability,
+  // overlap, usefulness, and exhaustiveness"). Guarded and unguarded arms
+  // are checked alike — an arm whose pattern is fully covered is dead
+  // regardless of its guard, because control only reaches its test with
+  // values prior arms already consumed — but only UNGUARDED arms are
+  // recorded as context: a prior arm's guard is assumed to evaluate to
+  // false, the same rule the exhaustiveness recording below applies. An
+  // arm whose pattern or condition errored has unknowable coverage and is
+  // neither checked nor recorded, but — unlike exhaustiveness — a prior
+  // error arm does not suppress later arms' checks, which compare only
+  // against soundly recorded priors; an arm whose error surfaces only in
+  // the BIND pass (`case b: bool` on an i32 scrutinee) reaches this point
+  // with a non-error pattern and IS recorded as covering, matching
+  // `has_irrefutable_arm` below (W-066 plan §1.8). The check emits no
+  // insts, and a diagnosed arm still emits its normal SemIR
+  // (diagnose-and-proceed, like `MatchNonexhaustive`), so later arms are
+  // still checked. It runs BEFORE this arm's own coverage recording below,
+  // so the full-coverage step compares against prior arms only. `default`
+  // arms never reach this site; their deliberate exemption is recorded at
+  // `MatchDefault` and `MatchGuardedDefault` (W-066 plan §1.5, W-078).
+  if (pattern_id != SemIR::ErrorInst::InstId &&
+      cond_value_id != SemIR::ErrorInst::InstId) {
+    if (auto key =
+            BuildMatchCaseUsefulnessKey(context, pattern_id, alternative)) {
+      auto& match_context = context.match_statement_stack().back();
+      CARBON_DIAGNOSTIC(MatchCaseNeverMatches, Error,
+                        "`case` pattern never matches; every value it can "
+                        "match is matched by a prior arm");
+      bool diagnosed = false;
+      // The first covering arm wins the note (arm order; deterministic).
+      for (const auto& prior_arm : match_context.useful_arms) {
+        if (UsefulnessKeySubsumes(prior_arm.key, *key)) {
+          CARBON_DIAGNOSTIC(MatchCaseNeverMatchesPriorArm, Note,
+                            "pattern is fully covered by this prior arm");
+          context.emitter()
+              .Build(introducer_node_id, MatchCaseNeverMatches)
+              .Note(prior_arm.introducer_node_id, MatchCaseNeverMatchesPriorArm)
+              .Emit();
+          diagnosed = true;
+          break;
+        }
+      }
+      auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
+      if (!diagnosed &&
+          key->front().kind == Context::MatchStatementContext::
+                                   UsefulnessKeyNode::Kind::Wildcard &&
+          IsMatchableChoiceType(context, scrutinee_type_id)) {
+        // A wildcard ROOT over a choice scrutinee is the one in-slice
+        // position whose value domain is finite, so a UNION of prior
+        // alternative arms can cover it with no single prior subsuming it.
+        // The coverage semantics are `DiagnoseNonexhaustiveMatch`'s: a
+        // payload alternative counts only when covered with a wholly
+        // irrefutable payload (the recording below), and a prior
+        // irrefutable arm already diagnoses through the subsumption loop
+        // above. An empty alternative table stays silent: on an empty
+        // choice every arm is extensionally useless but there are no
+        // covering priors, and an all-rejected-alternatives error-recovery
+        // table makes coverage unknowable — the same two-way answer
+        // `DiagnoseNonexhaustiveMatch` records.
+        auto unqualified_type_id =
+            context.types().GetUnqualifiedType(scrutinee_type_id);
+        const auto& class_info = context.classes().Get(
+            context.types()
+                .GetAs<SemIR::ClassType>(unqualified_type_id)
+                .class_id);
+        bool covers_all =
+            !class_info.choice_alternatives.empty() &&
+            llvm::all_of(
+                class_info.choice_alternatives, [&](const auto& choice_alt) {
+                  return llvm::is_contained(match_context.covered_alternatives,
+                                            choice_alt.index);
+                });
+        if (covers_all) {
+          // No single covering arm exists, so the note is one
+          // statement-level note naming the scrutinee's choice type,
+          // stable under prior-arm reshuffles.
+          CARBON_DIAGNOSTIC(MatchCaseNeverMatchesFullCoverage, Note,
+                            "all alternatives of {0} are matched by prior "
+                            "arms",
+                            SemIR::TypeId);
+          context.emitter()
+              .Build(introducer_node_id, MatchCaseNeverMatches)
+              .Note(scrutinee_id, MatchCaseNeverMatchesFullCoverage,
+                    unqualified_type_id)
+              .Emit();
+          diagnosed = true;
+        }
+      }
+      if (!is_guarded && !diagnosed) {
+        // A diagnosed-dead arm is not recorded: a subsumed key adds no
+        // coverage, and skipping it keeps later arms' notes pointing at
+        // the FIRST covering arm.
+        match_context.useful_arms.push_back(
+            {.key = std::move(*key), .introducer_node_id = introducer_node_id});
+      }
+    }
   }
 
   // Record what this arm contributes to the enclosing statement's
@@ -943,6 +1130,15 @@ auto HandleParseNode(Context& context, Parse::MatchDefaultId node_id) -> bool {
   // arm's body should be emitted, so there is nothing to do other than note
   // the presence of the `default` arm for `MatchStatement`. Parse guarantees
   // the unguarded `default` arm is last.
+  //
+  // A `default` arm is deliberately exempt from the usefulness check
+  // (`EmitCaseArmTestAndBind`), even when an unguarded irrefutable prior
+  // arm or full alternative coverage makes it dead: the conservative
+  // integer-exhaustiveness gate in `MatchStatement` still REQUIRES a
+  // `default` arm on every integer-scrutinee `match`, so diagnosing a dead
+  // `default` would make such a `match` with an irrefutable arm unwritable
+  // (W-066 plan §1.5, W-008 residue R8). Dead-`default` usefulness is
+  // W-078.
   context.node_stack().Push(node_id);
   return true;
 }
@@ -962,7 +1158,10 @@ auto HandleParseNode(Context& context, Parse::MatchGuardedDefaultId node_id)
   // `default` is equivalent to `case _: auto` and guarded arms never count
   // toward coverage, so a guarded `default` does not discharge the
   // `default` requirement (docs/design/pattern_matching.md, "Refutability,
-  // overlap, usefulness, and exhaustiveness").
+  // overlap, usefulness, and exhaustiveness"). Like an unguarded `default`,
+  // it is exempt from the usefulness check (see `MatchDefault`; W-066 plan
+  // §1.5, W-078), and as a guarded arm it also blocks nothing for later
+  // arms' usefulness.
 
   // The guard is the arm's only test: `default` matches every value, so the
   // arm's condition is a constant `true` — the dispatch shape of a guarded

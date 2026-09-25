@@ -144,6 +144,29 @@ auto MatchCaseBindPatternMatch(Context& context, SemIR::InstId pattern_id,
 auto IsIrrefutableMatchCasePattern(Context& context, SemIR::InstId pattern_id)
     -> bool;
 
+// Builds the usefulness key for a checked `match` `case` pattern (W-066):
+// the pattern lowered, in preorder over the scrutinee's shape, to the value
+// domain usefulness comparisons run over — `Wildcard` for irrefutable
+// subtrees (per `IsIrrefutableMatchCasePattern`), evaluated integer
+// constants for expression leaves, the discriminant index plus payload
+// slots for an alternative root, and elementwise tuples (see
+// `Context::MatchStatementContext::UsefulnessKeyNode`). `alternative` is
+// the arm's resolved alternative when the pattern root is an alternative
+// pattern: the pattern insts alone do not carry the discriminant index, and
+// a bare `.Name` root's region constant is a choice value, not an
+// `IntValue`, so both spellings key through the resolved metadata.
+//
+// Runs only after the arm's test pass succeeded, so every shape it can meet
+// is one the engine just accepted; any unexpected shape yields nullopt —
+// the arm then records nothing and diagnoses nothing, never a false
+// positive (a deliberately soft path, not a CHECK, so a future pattern kind
+// added to the engine but not this walk stays silent rather than crashing).
+// Read-only: emits no insts and no diagnostics.
+auto BuildMatchCaseUsefulnessKey(
+    Context& context, SemIR::InstId pattern_id,
+    const std::optional<Context::MatchCaseContext::Alternative>& alternative)
+    -> std::optional<Context::MatchStatementContext::UsefulnessKey>;
+
 // Returns whether a `match` `case` (sub)pattern tree contains any binding
 // pattern — only then does the arm have bind-pass work in its body block.
 auto MatchCasePatternHasBindings(Context& context, SemIR::InstId pattern_id)

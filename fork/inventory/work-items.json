@@ -1175,7 +1175,7 @@
         "docs/design/pattern_matching.md:625-631"
       ],
       "blocked_by": [],
-      "notes": "Scope cut recorded from the W4 slice-1 adversarial review (finding F3): `match (n) { case 5 => {A} case 5 => {B} default => {} }` compiles cleanly with a dead second arm. Runtime SemIR is still design-correct (top-down first-match-wins, pattern_matching.md:694-695,745-747), so this is a missing diagnostic, not a mischeck; the design requires 'We will diagnose... A pattern is not useful in the context of prior patterns.' RF-4's constant-expression admission creates invisible overlaps (for example `case 5` vs `case 2 + 3` on the same scrutinee), so duplicate/overlap detection must compare evaluated constant values, not source forms. BLOCKER DISCHARGED at W8a (fork/w008/plan.md §3.4; W8a verified 2026-09-25): W8a fixed the value domain usefulness comparisons need — tuple constant vectors and alternative index + payload constants. W-066 is startable; W8b/W8c gate nothing here."
+      "notes": "Scope cut recorded from the W4 slice-1 adversarial review (finding F3): `match (n) { case 5 => {A} case 5 => {B} default => {} }` compiles cleanly with a dead second arm. Runtime SemIR is still design-correct (top-down first-match-wins, pattern_matching.md:694-695,745-747), so this is a missing diagnostic, not a mischeck; the design requires 'We will diagnose... A pattern is not useful in the context of prior patterns.' RF-4's constant-expression admission creates invisible overlaps (for example `case 5` vs `case 2 + 3` on the same scrutinee), so duplicate/overlap detection must compare evaluated constant values, not source forms. BLOCKER DISCHARGED at W8a (fork/w008/plan.md §3.4; W8a verified 2026-09-25): W8a fixed the value domain usefulness comparisons need — tuple constant vectors and alternative index + payload constants. W-066 is startable; W8b/W8c gate nothing here. DISCHARGED (2026-09-25/26, fork/w066/plan.md, full R11 loop: plan + two plan reviews with an amendment fold — the convergent major added the choice-root full-coverage rule the single-prior subsumption misses — implementer, two implementation reviews, both APPROVE with zero required fixes). Mechanism: BuildMatchCaseUsefulnessKey (pattern_match.cpp) keys arms as Wildcard/IntConst(IntId)/Alternative(index,payloads)/Tuple preorder vectors; IntId equality is exact value comparison (int.h mathematical-value canonicalization) so `case 5` == `case 2 + 3`; first-covering-prior slot-wise subsumption plus the step-3b choice-root union-coverage check (rides covered_alternatives' irrefutable-payload semantics) in EmitCaseArmTestAndBind before the coverage block; diagnostics MatchCaseNeverMatches + MatchCaseNeverMatchesPriorArm/-FullCoverage. Guarded priors excluded, guarded laters checked; bind-pass-error arms recorded as covering; default arms exempt this slice (W-078). Verified: autoupdate filled ONLY the 8 new files (zero existing-golden churn, run 36158422400), R26 fixpoint at pass 2 (36158662693), gate 36158662519 green, conformance 36158662540 unchanged 99/0/28 over 127. Note for W-076/W-078 extenders: the exhaustiveness recording block (handle_match.cpp) runs unconditionally — diagnosed-dead arms still push covered_alternatives / set has_irrefutable_arm; proven behavior-invisible today (a dead arm's contribution is always implied by its killers) but revisit if coverage semantics widen."
     },
     {
       "id": "W-067",
@@ -1357,6 +1357,23 @@
       ],
       "blocked_by": [],
       "notes": "Filed at W8c per fork/w008/plan.md §0 R6/§3.3. Struct patterns are DESIGNED (pattern_matching.md:413-468: field-subset rule, `_` wildcard, shorthand fields) and PARSE (parse/testdata/struct/struct_pattern.carbon), but check-side they are upstream-TODO in EVERY context — let/var/param as well as match — at handle_pattern_list.cpp:40 (`struct pattern start`), :138 (`struct pattern`), and :143 (`struct pattern field`), with no check-side golden pinning those TODO strings (an upstream gap, recorded here as ledger truth). Taking them on means building the whole struct-pattern check layer (pattern insts, field lookup/reorder, per-field sub-matching), not a match-arm slice; match arms would then reuse the W8a tuple-machinery shape (scrutinee-typed field walk, expression leaves via `==`, bindings via the bind pass). Not W-008 residue: nothing match-specific gates it. Watch upstream: the layer is on their own path, so the F-002 staging-merge rule applies if they land it first."
+    },
+    {
+      "id": "W-078",
+      "kind": "todo-stub",
+      "title": "Usefulness for `default` arms + the W-008 residue R8 integer-exhaustiveness lift (bundled gate, separable halves)",
+      "subsystem": "toolchain/check",
+      "size": "S",
+      "bullet": "Control flow: matching — good switch equivalents",
+      "evidence": [
+        "toolchain/check/handle_match.cpp:1130",
+        "toolchain/check/testdata/match/fail_todo_no_default.carbon:48",
+        "toolchain/check/testdata/match/exhaustive_choice.carbon:95",
+        "toolchain/check/testdata/match/usefulness_no_false_positive.carbon:1",
+        "docs/design/pattern_matching.md:627-631"
+      ],
+      "blocked_by": [],
+      "notes": "Filed at W-066 discharge per fork/w066/plan.md §1.5/§3. The design mandates diagnosing a `default` that can never match (:627-631); W-066 exempted default arms because the W-008 residue R8 conservative gate (handle_match.cpp:1130, integer scrutinees only) FORCES a dead `default` on integer matches with irrefutable arms — diagnosing would make such matches unwritable. INDEPENDENCE RECORD (plan review fold, 2026-09-25): the CHOICE-scrutinee half is NOT R8-blocked (the :1130 TODO fires only for non-choice scrutinees) and may land first or alone — exhaustive_choice.carbon:95-98 is its first golden candidate; only the integer half must land with or after the R8 lift (integer-exhaustiveness via irrefutable arms, incl. fail_todo_no_default's fail_irrefutable_binding_arm conservative-gate pin). W-066's usefulness_no_false_positive.carbon dead_default_exempt subfile is the commented negative recording the exemption. Mechanism seam: reuse W-066's useful_arms/covered_alternatives state at the default handlers; note the exhaustiveness recording block runs unconditionally for diagnosed-dead arms (see W-066 discharge note)."
     }
   ]
 }

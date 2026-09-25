@@ -6,9 +6,12 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # W-078b plan: R8 lift + dead `default` arms on integer/tuple scrutinees
 
-**Status:** PLAN (no implementation). Branch `claude/carbon-fork-0-1-w078b`
-off trunk e06a55d (post-PR #37: W-078a landed; conformance 100/0/28 over
-128 per fork/conformance/out/scoreboard.json totals).
+**Status:** APPROVED FOR IMPLEMENTATION, 2026-09-26 — two adversarial
+plan reviews returned APPROVE-WITH-AMENDMENTS; the folds are recorded
+in the "Sign-off" section at the end of this file. Branch
+`claude/carbon-fork-0-1-w078b` off trunk e06a55d (post-PR #37: W-078a
+landed; conformance 100/0/28 over 128 per
+fork/conformance/out/scoreboard.json totals).
 
 **Item:** the remaining INTEGER half of W-078 (fork/inventory/
 work-items.json), which this slice CLOSES: lift the W-008 residue R8
@@ -20,9 +23,19 @@ when an unguarded irrefutable arm makes the match genuinely exhaustive —
 and widen W-078a's `DiagnoseDeadDefault` past its integer/tuple lane
 exemption (handle_match.cpp:1237-1242, "The integer/tuple lane keeps its
 `default` exemption (R8, above)."). The in-code comment at :1549-1550
-("Exhaustiveness by way of an irrefutable arm or full enumeration of a small
-integer type is future work") names exactly this work. All line numbers in
-this plan are against trunk e06a55d.
+names exactly this work, verbatim (held between doc-style-ignore
+markers because the doc-style hook rewrites this sentence's third word
+in prose — a code span does not protect it; markers are the in-tree
+precedent, for example toolchain/docs/idioms.md):
+
+<!-- google-doc-style-ignore -->
+> Exhaustiveness via an irrefutable arm or full enumeration of a small
+> integer type is future work.
+<!-- google-doc-style-resume -->
+
+(Amended 2026-09-26, review fold: rev 2 F5 — the quotation previously
+paraphrased the code's wording; a quotation must be verbatim.) All line
+numbers in this plan are against trunk e06a55d.
 
 ## §1 Adjudications (the five design questions)
 
@@ -97,8 +110,19 @@ this plan are against trunk e06a55d.
     likewise do not extend (the landed W-076 root-only record;
     bool_tuple_scrutinee.carbon's bool_pair_keeps_default — all four
     `(bool, bool)` constants plus `default`, :41-47 — stays the standing
-    silent pin). Break condition: upstream re-annotating :598 or
-    reversing :705 — then a new work item, not this one.
+    silent pin). Post-lift boundary residue (amended 2026-09-26, review
+    fold: rev 1 F4): the same four-constant `(bool, bool)` shape WITHOUT
+    a `default` flips from the R8 TODO-abort to the new definitive
+    `MatchNonexhaustiveNoIrrefutableArm`, even though the design's
+    reduction (pattern_matching.md:589-591 — constant tuple expression
+    patterns are treated as tuple patterns, and `bool` like a choice
+    type) would make the four-pair set exhaustive. That is the landed
+    W-076 root-only record surfacing as a definitive diagnostic, not a
+    new call, and the wording holds: "no `case` arm that matches every
+    value" stays literally true — no SINGLE arm matches every value. The
+    boundary is pinned by the new fail_bool_pair_enumeration subfile
+    (§4) and carried as §7 R-6. Break condition: upstream re-annotating
+    :598 or reversing :705 — then a new work item, not this one.
 3.  **The residual no-default-no-irrefutable-arm shape gets a REAL
     diagnostic, not a TODO: new kind `MatchNonexhaustiveNoIrrefutableArm`
     (Error).** The design's own nonexhaustive example is an INTEGER
@@ -173,29 +197,35 @@ this plan are against trunk e06a55d.
     surviving comment states: exhaustiveness is an unguarded irrefutable
     arm (any lane) or full closed-domain coverage (choice/bool only);
     enumeration is design-rejected (pattern_matching.md:596-607, :705).
-2.  **`DiagnoseNonexhaustiveMatch` (:1429-1517):** two additions, in
-    order, after the `has_irrefutable_arm || has_error_arm` early return
-    (:1432-1434) and before the bool branch (:1439):
-    -   Error-scrutinee guard: `if (scrutinee_type_id ==
-        SemIR::ErrorInst::TypeId) return;` — today the R8 TODO fires
-        for error-typed scrutinees (they classify as neither bool nor
-        choice), and the lift must not replace that abort with a noise
-        diagnostic naming an error type. New negative pin in §4.
+2.  **`DiagnoseNonexhaustiveMatch` (:1429-1517):** ONE addition, after
+    the `has_irrefutable_arm || has_error_arm` early return (:1432-1434)
+    and before the bool branch (:1439). (Amended 2026-09-26, review
+    fold: rev 1 F1 + rev 2 F1/F3 — the previously specced
+    error-scrutinee guard rested on a false premise and is DROPPED: an
+    error-typed scrutinee never reaches this function, or
+    `MatchStatement` at all, because `IsSupportedScrutineeType`
+    (handle_match.cpp:171-213) rejects `ErrorInst::TypeId` —
+    `TryGetIntTypeInfo` is nullopt and the bool/choice/tuple tests are
+    all false — so ``context.TODO(node_id, "match on unsupported
+    scrutinee type")`` fires at :282-284 and aborts checking of the
+    whole `match` (`Context::TODO` returns false, context.cpp:49-53).
+    The MatchCondition gate is the real barrier; a defensive guard here
+    would be unreachable dead code. Recorded in §7 R-5.)
     -   Lane branch: `if (!is_bool && !IsMatchableChoiceType(...))`
         (`IsMatchableChoiceType` unqualifies internally, per the
         :1237-1238 comment) → emit `MatchNonexhaustiveNoIrrefutableArm`
         at `node_id` with the unqualified type; return. This keeps the
         `GetAs<SemIR::ClassType>` at :1472-1474 reachable only for
         choice types, exactly as before.
-3.  **`DiagnoseDeadDefault` (:1231-1300):** replace the entry lane gate
-    (:1237-1242) with an error-scrutinee guard (same
-    `SemIR::ErrorInst::TypeId` test — REQUIRED, not defensive: today
-    the lane gate accidentally shields the shape
-    `match (undeclared) { case n: i32 => {} default => {} }`, where the
-    binding arm records a `Wildcard` key against the error-typed
-    scrutinee and `has_error_arm` stays false since the pattern and
-    condition themselves are sound; without the guard the lift would
-    diagnose a dead `default` on an already-broken match). The
+3.  **`DiagnoseDeadDefault` (:1231-1300):** simply DELETE the entry
+    lane gate (:1237-1243) — no replacement guard. (Amended 2026-09-26,
+    review fold: rev 1 F1 + rev 2 F1/F3 — the previously specced
+    error-scrutinee guard's motivating shape
+    `match (undeclared) { case n: i32 => {} default => {} }` cannot
+    occur: the error-typed scrutinee aborts checking at MatchCondition
+    (§2.2), so no arm handler runs and `DiagnoseDeadDefault` is never
+    called for it; the binding-arm-records-a-`Wildcard`-key scenario was
+    vacuous.) The
     `has_error_arm` suppression (:1246-1257) and stage 1 (:1263-1281)
     then run for every lane; stage 2's `UnguardedArmsCoverWholeDomain`
     call + `MatchDefaultNeverMatchesFullCoverage` emission (:1283-1299)
@@ -226,7 +256,16 @@ this plan are against trunk e06a55d.
     invariant), the `MatchDefault` handler comment (:1306-1315, R8
     sentences), `DiagnoseNonexhaustiveMatch`'s doc comment (:1418-1428
     now covers three lanes), and `MatchStatement`'s comments
-    (:1544-1559).
+    (:1544-1559). Golden-header additions to the sweep (amended
+    2026-09-26, review fold: rev 1 F3 + rev 2 F5): three stale-R8
+    golden headers —
+    fail_case_never_matches_after_irrefutable.carbon:17-19, which
+    becomes actively FALSE when its own four `default` arms (:35, :55,
+    :102, :130) are dropped by §6 item 7, is rewritten to describe the
+    lift; fail_case_never_matches_int.carbon:17-20 and
+    fail_case_never_matches_tuple.carbon:17-18 keep their `default`
+    arms for the honest reason — only refutable arms, no irrefutable
+    coverage — and each gets a one-sentence rewrite saying so.
 
 ## §3 Slice plan
 
@@ -263,7 +302,21 @@ takes over the two flipped TODO pins):
 | fail_tuple_constant_arms | `(i32, i32)` scrutinee, `case (1, 2)`, no `default` | same error naming `(i32, i32)` |
 | fail_error_arm_suppresses | `case 5000000000` (pattern error), no `default` | only the arm's own error (`has_error_arm` suppression, :1432-1434) |
 | fail_bind_error_arm_no_default | `case b: bool` on `i32`, no `default` | only the conversion error — the bind-pass carve-out sets `has_irrefutable_arm` (§1.1), a documented false negative |
-| fail_error_scrutinee_no_default | `match (undeclared) { case 0 => {} }` | only `NameNotFound` (the §2.2 error-scrutinee guard) |
+| fail_bool_pair_enumeration | `(bool, bool)` scrutinee, all four constant pairs, no `default` | `MatchNonexhaustiveNoIrrefutableArm` naming `(bool, bool)` — the §1.2 W-076 root-only boundary pin |
+
+Matrix fold notes (amended 2026-09-26, review fold): the previously
+specced fail_error_scrutinee_no_default row is DELETED (rev 1 F1 +
+rev 2 F1/F3 — its "only `NameNotFound`" expectation was wrong: an
+error-typed scrutinee TODO-aborts at MatchCondition, so the actual
+output also carries the SemanticsTodo abort, a shape already pinned by
+the existing unsupported-scrutinee family, for example
+fail_todo_non_int_scrutinee.carbon and fail_todo_adapter_scrutinee
+.carbon); fail_bool_pair_enumeration is ADDED per rev 1 F4 (§1.2); and
+per the rev 2 record note, fail_guarded_irrefutable_only,
+fail_int_after_var_binding, and fail_tuple_after_all_binding must USE
+their bindings (or mark them `unused`) so no incidental UnusedBinding
+warning rides along and each subfile's golden carries only the intended
+diagnostics.
 
 **New positive `no_default_irrefutable.carbon`** with `//@dump-sem-ir`
 (the flipped conservative-gate pin, and the §1.4 SemIR CFG pin: constant-
@@ -277,11 +330,14 @@ resumption block):
 -   constants_then_binding: `case 0`, `case 1`, `case n: i32`, no
     `default`.
 -   tuple_all_binding: `case (a: i32, b: i32)`, no `default`.
--   error_scrutinee_dead_default_silent negative lives in
-    fail_int_nonexhaustive (above); the guarded-irrefutable negative for
+-   The guarded-irrefutable negative for
     the DEFAULT check is already pinned by usefulness_no_false_positive
     .carbon's guarded_irrefutable_prior (:72-81 — guarded `case n: i32`
-    prior + `default`, stays silent, now doing double duty).
+    prior + `default`, stays silent, now doing double duty). (Amended
+    2026-09-26, review fold: rev 1 F1 — a dangling cross-reference to
+    an "error_scrutinee_dead_default_silent" subfile was removed here;
+    no such subfile was ever specced, and §2.2/§2.3 record why no
+    error-scrutinee pin is needed.)
 
 **Deletions/flips:** fail_todo_no_default.carbon is DELETED (both
 subfiles superseded above). fail_guarded_default.carbon's
@@ -325,12 +381,25 @@ output where none existed — expected autoupdate growth, not drift.
     choice_payload_construct, choice_discriminant_diff,
     choice_generic_diff, choice_generic_roundtrip[_diff],
     match_global_runtime_let, import_runtime_let, control_flow_constructs
-    and the question_* family — no integer-lane dead defaults), and
-    match_sum_type_payload (SKIP, body commented).
-    most_features_missing_match.carbon no longer exists at e06a55d
-    (W-078a §5 listed it; only project/most_features_language_matrix
-    .carbon remains, and it contains no `match`) — recorded as a stale
-    reference, nothing to do.
+    and the question_* family — no integer-lane dead defaults),
+    match_sum_type_payload (SKIP, body commented),
+    choice_payload_roundtrip_diff.carbon (choice lane, no `default`)
+    and cpp_exception_interop.carbon (SKIP; its `match` is commented
+    out) — the last two added to the record 2026-09-26 (review fold:
+    rev 2 F6).
+    project/most_features_missing_match.carbon stays PASS untouched
+    (amended 2026-09-26, review fold: rev 1 F2 + rev 2 F2 — this bullet
+    previously claimed the file "no longer exists"; that was FALSE: it
+    exists at fork/conformance/programs/project/
+    most_features_missing_match.carbon, is PASS in the scoreboard, and
+    contains an integer match — `case 0`, guarded
+    `case a: i32 if (a < 0)`, `default`). The real per-arm
+    justification: the only binding arm is GUARDED, so it records
+    nothing toward exhaustiveness (handle_match.cpp:927-928) and is
+    never pushed to `useful_arms` (:895), and the `case 0` IntConst
+    prior cannot subsume the `Wildcard` key — the `default` is NOT dead
+    and the program stays PASS. W-078a §5's reference to this file was
+    accurate; the §8 discharge must NOT record it as stale.
 -   **New program (recommended, raising the floor):**
     control_flow/match_irrefutable_no_default.carbon under the existing
     bullet "Control flow: matching — good switch equivalents" (the
@@ -358,7 +427,10 @@ and the SemIR regenerates):
 2.  **check/match/var_binding.carbon** — basic (`case var a: i32` +
     default :26-27) and composition (`case var (a: i32, b: i32)` +
     default :59-60). Drop two. mixed_element (:77, `(var n: i32, 1)` —
-    refutable) keeps its default; fail_todo_* subfiles abort before the
+    refutable) keeps its default; the guard subfile (:40-43, guarded
+    `var` arm + `default` — a guarded arm records nothing, :927-928)
+    stays silent (added to the record 2026-09-26, review fold: rev 2
+    F6); fail_todo_* subfiles abort before the
     `default` node; fail_var_arity (error arm) and
     fail_unused_used_in_guard (guarded) stay silent.
 3.  **check/match/ref_binding.carbon** — `case ref a: i32` + default
@@ -380,7 +452,9 @@ pinned error → DROP the arm (the pinned diagnostics are untouched):
 7.  **check/match/fail_case_never_matches_after_irrefutable.carbon** —
     fail_after_binding (:35), fail_after_var_binding (:55),
     fail_after_all_binding_tuple (:102), fail_dead_arm_bindings_warn
-    (:130). Four drops; fail_choice_after_binding has no `default`.
+    (:130). Four drops; fail_choice_after_binding has no `default`. The
+    file header (:17-19) becomes actively FALSE after these drops and
+    is rewritten per §2.5 (amended 2026-09-26, review fold: rev 1 F3).
 8.  **check/match/fail_binding_scope.carbon** — fail_after_match's
     default (:38). One drop. (fail_sibling_arm is class 9 below.)
 9.  **check/match/fail_unused_case_binding.carbon** — default :27. One
@@ -420,7 +494,9 @@ record — every remaining match golden was arm-checked: integer
 constant-arm files (basic, converging_arms, default_only, nested,
 constant_expr_case, constant_scrutinee, negative_literal_case,
 fail_case_never_matches_int, fail_case_never_matches_tuple — constant
-priors never subsume `default`), guarded-arm files (guard.carbon — all
+priors never subsume `default`; the latter two's stale-R8 headers get
+the §2.5 one-sentence rewrite, comment-only churn — amended 2026-09-26,
+review fold: rev 1 F3), guarded-arm files (guard.carbon — all
 four fns guarded; guarded_default.carbon basic :44-53 and compound_guard
 :63-69 — the brief's direct question: NEITHER has an irrefutable arm, so
 NEITHER default becomes dead, and choice_coverage is choice-lane;
@@ -428,8 +504,12 @@ fail_guard_non_bool, fail_guard_sibling_binding,
 usefulness_no_false_positive's guarded_prior / both_guarded_twins /
 guarded_irrefutable_prior / guarded_default_mid_list), error-arm
 suppression (fail_prior_error_arm :241-255, fail_arm_conversion's other
-two subfiles, tuple_pattern's fail_ files, fail_incomplete_scrutinee —
-error-typed scrutinee, §2.3 guard), TODO-abort files (fail_todo_binding_
+two subfiles, tuple_pattern's fail_ files), fail_incomplete_scrutinee —
+aborts at MatchCondition's `RequireCompleteType`
+(handle_match.cpp:268-280): an incomplete CLASS scrutinee, diagnosed
+before any arm exists (amended 2026-09-26, review fold: rev 1 F1 —
+previously misattributed to a §2.3 error-scrutinee guard, which no
+longer exists), TODO-abort files (fail_todo_binding_
 free_var, _compile_time_binding, _form_binding, _non_constant_case,
 _alternative_non_choice, _adapter_scrutinee, _non_int_scrutinee,
 _choice_expr_case, _non_constant_bool_case — checking aborts before the
@@ -444,14 +524,30 @@ generic_payload*, payload_layout, let/import_choice, operators/
 fail_question — its integer-scrutinee ExprPattern match keeps `default`
 after an error arm), lower/match/{basic,tuple_pattern,bool_scrutinee,
 choice_*,payload_subpattern,single_alternative_choice}, and all
-parse/testdata (parse-only, no check diagnostics).
+parse/testdata (parse-only, no check diagnostics). Silent-inventory
+additions (recorded 2026-09-26, review fold: rev 2 F6 — files the sweep
+had not named explicitly, each verified silent): the question* operator
+files — check/operators/{question,question_final,fail_question_final}
+.carbon and the five lower/operators/question*.carbon files — whose
+every `match` is a choice-lane alternative dispatch, unaffected by this
+slice; and check/match's fail_error_payload_no_cascade,
+fail_nonexhaustive_payload_literal, and
+fail_case_never_matches_full_coverage — all choice-lane, outside the
+integer/tuple lanes this slice touches.
 
-Churn totals: 2 flipped-pin files, 1 deleted file, 2 new fail files
-(one an extension), 1 new positive file, 6 positive files dropping 14
-dead `default` arms (incl. 1 lower golden), 3 fail files dropping 6
-scaffolding defaults, 5 fail subfiles (4 files) gaining stacked
-dead-default errors, 1 conformance program edited, 1 conformance
-program added, plus comment-only refreshes riding autoupdate.
+Churn totals (amended 2026-09-26, review fold: rev 2 F7): 1
+flipped-pin file (fail_guarded_default), 1 deleted file
+(fail_todo_no_default), 1 subfile deletion in a kept file
+(usefulness_no_false_positive's dead_default_exempt — a deletion, not
+a pin flip), 2 new fail files (one an extension), 1 new positive file,
+6 positive files dropping 14 dead `default` arms (incl. 1 lower
+golden), 3 fail files dropping 6 scaffolding defaults, 5 fail subfiles
+across FIVE files (fail_binding_scope, fail_arm_conversion,
+fail_case_after_bind_error_arm, fail_ref_binding_value_scrutinee,
+var_binding) gaining stacked dead-default errors, 1 conformance
+program edited, 1 conformance program added, plus comment-only
+refreshes riding autoupdate (§2.5's three golden-header rewrites
+included).
 
 ## §7 Risks and rejected alternatives
 
@@ -475,12 +571,26 @@ program added, plus comment-only refreshes riding autoupdate.
     (`num_blocks`, :1571) and lower IR; pure regen, and the
     reconciliation diff must show only per-file reshapes plus the two
     abort-flip growths (§4 note).
--   **R-5 error-scrutinee guard scope creep:** the §2.3 guard changes
-    behavior for a shape that today TODO-aborts, so it cannot regress a
-    landed golden; the new negative pins its silence. Rejected
-    alternative: guarding only `DiagnoseDeadDefault` and letting
-    `DiagnoseNonexhaustiveMatch` name `<error>` types — noise after a
-    real diagnostic, violating the one-story rule (W-078a §1.5).
+-   **R-5, demoted to a record — no error-scrutinee guards (amended
+    2026-09-26, review fold: rev 1 F1 + rev 2 F1/F3):** the original
+    R-5 defended guards whose premise was vacuous. In-tree fact: an
+    error-typed scrutinee aborts at MatchCondition —
+    `IsSupportedScrutineeType` (handle_match.cpp:171-213) rejects
+    `ErrorInst::TypeId`, so the unsupported-scrutinee TODO at :282-284
+    aborts checking (context.cpp:49-53) and `MatchStatement`, the arm
+    handlers, `DiagnoseDeadDefault`, and `DiagnoseNonexhaustiveMatch`
+    are never reached. That MatchCondition gate is the real barrier; a
+    defensive guard in either diagnose function would be unreachable
+    dead code, so none is added.
+-   **R-6 `(bool, bool)` enumeration boundary (added 2026-09-26, review
+    fold: rev 1 F4):** the §1.2 post-lift residue — the four-pair
+    `(bool, bool)` no-`default` shape flips from TODO-abort to the new
+    definitive Error although the design's reduction
+    (pattern_matching.md:589-591) would make the set exhaustive. W-076
+    root-only residue; the diagnostic wording stays literally true (no
+    single arm matches every value); pinned by
+    fail_bool_pair_enumeration (§4). A future item extending tuple-root
+    union coverage retires the pin, not this diagnostic's wording.
 -   **Rejected: full-enumeration exhaustiveness for small integer
     types.** Not deferred — design-rejected (:596-607, :705); recorded
     so no future item resurrects it without a design change.
@@ -550,3 +660,64 @@ program added, plus comment-only refreshes riding autoupdate.
     must keep using shapes whose errors do NOT abort checking (bind-pass
     conversion errors; never `case template`/form-binding/non-constant
     shapes, which TODO-abort — W-078a §4's non-aborting spelling pin).
+
+## Sign-off
+
+Two adversarial plan reviews returned APPROVE-WITH-AMENDMENTS. The
+consolidated amendments were folded into this plan on 2026-09-26, each
+marked in place with a dated "(amended 2026-09-26, review fold: ...)"
+note. The folds:
+
+1.  rev 1 F1 + rev 2 F1/F3 (both reviews' top finding): the
+    error-scrutinee sub-mechanism rested on a false premise — an
+    error-typed scrutinee TODO-aborts at MatchCondition
+    (`IsSupportedScrutineeType`, handle_match.cpp:171-213, rejects
+    `ErrorInst::TypeId`; the abort fires at :282-284 by way of
+    `Context::TODO`, context.cpp:49-53), so `MatchStatement`, the arm
+    handlers, and both diagnose functions are never reached. Both
+    proposed `ErrorInst` guards dropped (§2.2, §2.3 — the
+    `DiagnoseDeadDefault` change is now "delete the :1237-1243 entry
+    lane gate, wrap stage 2 :1283-1299 in the bool/choice test"); the
+    fail_error_scrutinee_no_default row deleted and the dangling
+    error_scrutinee_dead_default_silent cross-reference removed (§4);
+    fail_incomplete_scrutinee reattributed to `RequireCompleteType`
+    (handle_match.cpp:268-280) in §6; §7 R-5 demoted to a record that
+    the MatchCondition gate is the real barrier.
+2.  rev 1 F2 + rev 2 F2: §5's "most_features_missing_match.carbon no
+    longer exists" claim was FALSE; replaced with the real per-arm
+    silence justification (the only binding arm is guarded and records
+    nothing, handle_match.cpp:927-928, :895; the program stays PASS).
+    W-078a §5's reference to the file stands accurate and is not
+    recorded as stale.
+3.  rev 1 F3 + rev 2 F5: three stale-R8 golden headers added to the
+    §2.5/§6 comment sweep —
+    fail_case_never_matches_after_irrefutable.carbon:17-19 (rewritten
+    to describe the lift once its own four defaults drop),
+    fail_case_never_matches_int.carbon:17-20 and
+    fail_case_never_matches_tuple.carbon:17-18 (one-sentence
+    honest-reason rewrites).
+4.  rev 1 F4: the `(bool, bool)` full-enumeration no-`default` boundary
+    recorded in §1.2 and §7 R-6 (W-076 root-only residue, with the
+    wording defense) and pinned by the new fail_bool_pair_enumeration
+    subfile (§4).
+5.  rev 2 F5: the intro's :1549-1550 quotation corrected to the
+    verbatim in-code text, held between google-doc-style-ignore
+    markers — a code span proved insufficient: the doc-style hook is
+    line-based and rewrote the quote's wording inside backticks, so the
+    marker form (the in-tree precedent) is used instead.
+6.  rev 2 F6: silent-inventory additions — check/match/
+    var_binding.carbon's guard subfile (:40-43), the question* operator
+    files, fail_error_payload_no_cascade /
+    fail_nonexhaustive_payload_literal /
+    fail_case_never_matches_full_coverage (§6), and
+    choice_payload_roundtrip_diff.carbon / cpp_exception_interop.carbon
+    (§5).
+7.  rev 2 F7: §6 tallies corrected — the stacked-diagnostic class spans
+    FIVE files, and usefulness_no_false_positive.carbon's change is a
+    subfile deletion, not a pin flip.
+8.  rev 2 record note: the §4 fail-matrix note that
+    fail_guarded_irrefutable_only, fail_int_after_var_binding, and
+    fail_tuple_after_all_binding must use (or mark `unused`) their
+    bindings so their goldens carry only the intended diagnostics.
+
+Status: APPROVED FOR IMPLEMENTATION, 2026-09-26.

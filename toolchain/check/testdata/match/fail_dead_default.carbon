@@ -14,7 +14,8 @@
 // whose unguarded prior arms already cover the scrutinee's whole closed
 // value domain can never match — "in a `match` statement, this happens if
 // a pattern or `default` cannot match because all cases it could cover
-// are handled by prior cases" (docs/design/pattern_matching.md,
+// are handled by prior cases [...] or a prior `default`"
+// (docs/design/pattern_matching.md,
 // "Refutability, overlap, usefulness, and exhaustiveness"; the design
 // annotates the shape "Error: unreachable."). The error is at the
 // `default` keyword, with a note at the single covering prior arm

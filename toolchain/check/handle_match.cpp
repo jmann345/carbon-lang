@@ -1234,6 +1234,8 @@ static auto DiagnoseDeadDefault(Context& context,
   auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
   auto unqualified_type_id =
       context.types().GetUnqualifiedType(scrutinee_type_id);
+  // `IsMatchableChoiceType` unqualifies internally, so passing the
+  // qualified id is not an asymmetry with the `BoolType` test.
   if (!context.types().Is<SemIR::BoolType>(unqualified_type_id) &&
       !IsMatchableChoiceType(context, scrutinee_type_id)) {
     // The integer/tuple lane keeps its `default` exemption (R8, above).

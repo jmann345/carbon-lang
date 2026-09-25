@@ -71,9 +71,18 @@ namespace Carbon::Check {
 //
 // A `case` arm may carry a guard (`case P if (E) => ...`): the guard
 // expression is checked in the arm's scope (its pattern's bindings are in
-// scope, per the design's guard rule) and converted to `bool` inside its
-// own expression region, which is spliced into the arm's body block after
-// the bind pass. The arm then branches on the guard: on success into the arm's
+// scope, per the design's guard rule). The arm's test and bind passes run
+// BEFORE the guard expression, at `MatchCaseGuardIntroducer`, and the
+// guard is then checked directly into the arm's body block and converted
+// to `bool` there — no captured expression region — so every binding the
+// guard names is already filled. (A binding's `WrapperBinding` is created
+// empty at pattern-check time and only the bind pass fills it, and SemIR's
+// expression-category query ASSUMES a value category for an unfilled
+// binding — expr_info.cpp's own TODO — which is wrong for `ref`-backed
+// bindings: a guard checked before the bind pass built comparisons on the
+// scrutinee reference without a value load.) The body block executes only
+// when the pattern matched, so the guard still runs iff the arm matched.
+// `MatchCaseGuard` then branches on the guard: on success into the arm's
 // body, on failure to the same else block the pattern test falls through
 // to, after destroying any objects the arm created — so a failed guard
 // falls through to the next arm (or `default`), preserving
@@ -503,10 +512,9 @@ auto HandleParseNode(Context& context, Parse::AlternativePatternId node_id)
 // Finishes the arm's case pattern, begun by `MatchCaseIntroducer`: a
 // leftover expression on the node stack becomes an `ExprPattern`, and the
 // checked pattern root is popped and recorded in the case-arm context.
-// Called from `MatchCaseGuardIntroducer` when the arm has a guard —
-// expression regions nest LIFO on a region stack, so the guard's region
-// could nest inside the pattern's pending one; closing the pattern's first
-// keeps them siblings (a simplicity choice) — and otherwise from `MatchCase`.
+// Called from `MatchCaseGuardIntroducer` when the arm has a guard — the
+// arm's test and bind passes run there, before the guard expression, and
+// they need the finished pattern — and otherwise from `MatchCase`.
 //
 // A `case` expression such as `2 + 3` is an initializing expression: its
 // prelude operator call returns through a return slot. Convert it to a
@@ -536,98 +544,26 @@ static auto FinishCasePattern(Context& context) -> void {
       context.node_stack().PopPattern();
 }
 
-auto HandleParseNode(Context& context,
-                     Parse::MatchCaseGuardIntroducerId node_id) -> bool {
-  if (context.node_stack().PeekIs(Parse::NodeKind::MatchDefaultIntroducer)) {
-    // A guard on a `default` arm (`default if (E) => ...`): there is no
-    // case pattern to finish. Push the arm's scope — a case arm's scope is
-    // pushed at `MatchCaseIntroducer` so the pattern's bindings cover the
-    // guard, but a `default` arm has no pattern, so its scope starts at
-    // the guard and `MatchHandlerStart` must not push a second one — and a
-    // case-arm context with no pattern, into which `MatchCaseGuard`
-    // records the guard's region; `MatchGuardedDefault` pops both. The
-    // scrutinee's type is not recorded: only case patterns resolve
-    // against it.
-    context.scope_stack().PushForSameRegion(
-        ScopeStack::CleanupScopeKind::Owned);
-    context.match_case_stack().push_back(
-        {.scrutinee_type_id = SemIR::TypeId::None,
-         .introducer_node_id = node_id});
-  } else {
-    // The arm has a guard, so the case pattern's nodes are all checked:
-    // finish the pattern and open a fresh expression region to capture the
-    // guard expression. The guard is checked in the arm's scope — the
-    // pattern's bindings are in scope in the guard
-    // (docs/design/pattern_matching.md, "Guards") — but its insts must not
-    // be emitted here in the test block, where the pattern has not yet
-    // matched and the bindings are uninitialized; `MatchCase` splices the
-    // captured region into the arm's body block after the bind pass.
-    FinishCasePattern(context);
-  }
-  BeginExprRegionForPattern(context);
-  context.node_stack().Push(node_id);
-  return true;
-}
-
-auto HandleParseNode(Context& context, Parse::MatchCaseGuardStartId node_id)
-    -> bool {
-  context.node_stack().Push(node_id);
-  return true;
-}
-
-// Branches on a spliced guard condition: into a new dominated body block on
-// success, and to `else_block_id` on failure, destroying the arm's objects
-// on the failure edge (which leaves the arm's scope). Destroy insts cannot
-// sit inside a block's `BranchIf` + `Branch` terminator sequence, so when
-// the arm owns cleanups — on-demand `var` case-binding storage (W-008 plan
-// §2.4) is the first such object — the failure edge gets its own block; a
-// cleanup-free failure edge keeps the landed two-terminator shape
-// byte-for-byte. Pops the current block and leaves the body block pushed.
-static auto BranchOnGuard(Context& context, Parse::NodeId node_id,
-                          SemIR::LocId guard_loc_id, SemIR::InstId cond_id,
-                          SemIR::InstBlockId else_block_id) -> void {
-  auto body_block_id = AddDominatedBlockAndBranchIf(context, node_id, cond_id);
-  auto depth = context.scope_stack().enclosing_cleanup_scope_depth();
-  if (!context.scope_stack().GetCleanupsSince(depth).empty()) {
-    auto fail_block_id = AddDominatedBlockAndBranch(context, node_id);
-    context.inst_block_stack().Pop();
-    context.inst_block_stack().Push(fail_block_id);
-    context.region_stack().AddToRegion(fail_block_id, node_id);
-  }
-  AddBranchWithCleanups(context, guard_loc_id, else_block_id, depth);
-  context.inst_block_stack().Pop();
-  context.inst_block_stack().Push(body_block_id);
-  context.region_stack().AddToRegion(body_block_id, node_id);
-}
-
-auto HandleParseNode(Context& context, Parse::MatchCaseGuardId node_id)
-    -> bool {
-  // Convert the guard's condition to a bool value while its expression
-  // region is still open, so the conversion insts land inside the region
-  // and the region's result is a value (the same invariant
-  // `FinishCasePattern` maintains for case expressions). A conversion
-  // failure is diagnosed at the guard expression.
-  auto [expr_node_id, cond_id] = context.node_stack().PopExprWithNodeId();
-  cond_id = ConvertToBoolValue(context, expr_node_id, cond_id);
-  auto region_id = ConsumeExprRegionForPattern(context, cond_id);
-  EndEmptyExprRegionForPattern(context);
-  context.node_stack()
-      .PopAndDiscardSoloNodeId<Parse::NodeKind::MatchCaseGuardStart>();
-  context.node_stack()
-      .PopAndDiscardSoloNodeId<Parse::NodeKind::MatchCaseGuardIntroducer>();
-
-  auto& case_context = context.match_case_stack().back();
-  case_context.guard_region_id = region_id;
-  case_context.guard_node_id = node_id;
-  return true;
-}
-
-auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
-  // Finish the pattern context begun by `MatchCaseIntroducer`, unless the
-  // arm's guard already did (`MatchCaseGuardIntroducer`).
-  if (!context.match_case_stack().back().pattern_id.has_value()) {
-    FinishCasePattern(context);
-  }
+// Emits a case arm's test and bind passes, once the arm's pattern is
+// finished (`FinishCasePattern`): the pattern block's `NameBindingDecl`
+// home in the arm's test block, the classification of the checked pattern
+// root, the arm's condition, coverage recording, the then/else dispatch
+// blocks, and the bind pass in the arm's then (body) block, which is left
+// pushed as the current block. Returns the arm's else block — the next
+// test's home, which a guard's failure edge also targets — or `nullopt`
+// after a "semantics TODO" diagnostic aborted checking.
+//
+// Called from `MatchCase` for an unguarded arm, with the `MatchCase` node,
+// and from `MatchCaseGuardIntroducer` for a guarded arm (`is_guarded`),
+// with the introducer node: a guarded arm runs both passes BEFORE its
+// guard expression, so the guard checks directly into the body block with
+// every binding filled. For a guarded arm the case-arm context is left on
+// `match_case_stack` — it carries the arm's else block to `MatchCaseGuard`
+// and `MatchCase` — and nothing beyond an error arm is recorded toward
+// coverage: exhaustiveness assumes every guard can fail.
+static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
+                                   bool is_guarded)
+    -> std::optional<SemIR::InstBlockId> {
   auto pattern_id = context.match_case_stack().back().pattern_id;
   context.node_stack()
       .PopAndDiscardSoloNodeId<Parse::NodeKind::MatchCaseIntroducer>();
@@ -642,11 +578,9 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
 
   auto introducer_node_id =
       context.match_case_stack().back().introducer_node_id;
-  // Copy: the case-arm context is popped below, before the bind pass and
-  // guard emission read the resolved alternative and the guard's region.
+  // Copy: an unguarded arm's case-arm context is popped below, before the
+  // bind pass reads the resolved alternative.
   auto alternative = context.match_case_stack().back().alternative;
-  auto guard_region_id = context.match_case_stack().back().guard_region_id;
-  auto guard_node_id = context.match_case_stack().back().guard_node_id;
   auto scrutinee_id = PeekScrutinee(context);
 
   // Classify by the checked pattern inst: a parenthesized alternative
@@ -691,7 +625,7 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
     if (!cond_value_id.has_value()) {
       // The engine diagnosed an unsupported payload shape with a TODO,
       // which aborts checking.
-      return false;
+      return std::nullopt;
     }
   } else if (pattern_id == SemIR::ErrorInst::InstId ||
              context.insts().Is<SemIR::ExprPattern>(pattern_id) ||
@@ -701,14 +635,15 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
     if (!cond_value_id.has_value()) {
       // The engine diagnosed an unsupported case-pattern shape with a TODO,
       // which aborts checking.
-      return false;
+      return std::nullopt;
     }
   } else if (is_binding_arm) {
     cond_value_id = MakeBoolLiteral(context, node_id, SemIR::BoolValue::True);
   } else {
-    return context.TODO(
+    context.TODO(
         introducer_node_id,
         "match `case` pattern other than an integer literal, or a case guard");
+    return std::nullopt;
   }
 
   // Record what this arm contributes to the enclosing statement's
@@ -729,7 +664,7 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
     if (pattern_id == SemIR::ErrorInst::InstId ||
         cond_value_id == SemIR::ErrorInst::InstId) {
       match_context.has_error_arm = true;
-    } else if (guard_region_id.has_value()) {
+    } else if (is_guarded) {
       // Guarded arms never count toward coverage.
     } else if (is_binding_arm || is_irrefutable_var_arm ||
                is_irrefutable_tuple_arm) {
@@ -740,7 +675,12 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
   }
 
   context.full_pattern_stack().PopFullPattern();
-  context.match_case_stack().pop_back();
+  if (!is_guarded) {
+    // A guarded arm's context stays on the stack, carrying the arm's else
+    // block; nothing below reads it either way — the bind pass locates its
+    // diagnostics at the offending subpattern (pattern_match.cpp).
+    context.match_case_stack().pop_back();
+  }
 
   // Create the arm's body block and the block for the next test (or the
   // `default` body), and branch to the right one.
@@ -826,25 +766,163 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
     context.scope_stack().DeferCleanups();
   }
 
-  // Guard: splice the captured condition region here, after the bind pass,
-  // so the guard evaluates with the arm's bindings initialized, and branch
-  // on it — into the arm's body on success, and on failure to the same else
-  // block the pattern test falls through to, so a failed guard tries the
-  // next arm (or `default`). Objects created by the bind pass and the guard
-  // itself are live on both edges: the success edge destroys them with the
-  // arm scope's cleanups at arm exit (`MatchHandler`), and the failure edge
-  // — which leaves the arm's scope — must destroy them itself, before
-  // branching. `DeferCleanups` keeps the body's statement-level
-  // temporary-cleanup discharge from destroying them early, the same way
-  // the bind pass defers its conversion temporaries.
-  if (guard_region_id.has_value()) {
-    auto guard_cond_id = SpliceMatchCaseGuard(context, guard_region_id);
+  return else_block_id;
+}
+
+auto HandleParseNode(Context& context,
+                     Parse::MatchCaseGuardIntroducerId node_id) -> bool {
+  if (context.node_stack().PeekIs(Parse::NodeKind::MatchDefaultIntroducer)) {
+    // A guard on a `default` arm (`default if (E) => ...`): there is no
+    // case pattern to finish. Push the arm's scope — a case arm's scope is
+    // pushed at `MatchCaseIntroducer` so the pattern's bindings cover the
+    // guard, but a `default` arm has no pattern, so its scope starts at
+    // the guard and `MatchHandlerStart` must not push a second one — and a
+    // case-arm context with no pattern, into which `MatchCaseGuard`
+    // records the guard's region; `MatchGuardedDefault` pops both. The
+    // scrutinee's type is not recorded: only case patterns resolve
+    // against it.
+    context.scope_stack().PushForSameRegion(
+        ScopeStack::CleanupScopeKind::Owned);
+    context.match_case_stack().push_back(
+        {.scrutinee_type_id = SemIR::TypeId::None,
+         .introducer_node_id = node_id});
+    // A guarded `default` keeps the capture-and-splice lane: open a fresh
+    // expression region for the guard, which `MatchGuardedDefault` splices
+    // into the arm's body block. A `default` arm has no bindings, so the
+    // early capture has no use-before-fill hazard (contrast the case-arm
+    // lane below).
+    BeginExprRegionForPattern(context);
+  } else {
+    // The arm has a guard, so the case pattern's nodes are all checked:
+    // finish the pattern, then run the arm's test and bind passes NOW,
+    // before the guard expression. The guard is checked in the arm's scope
+    // — the pattern's bindings are in scope in the guard
+    // (docs/design/pattern_matching.md, "Guards") — and it must see them
+    // FILLED: a binding's `WrapperBinding` is created empty at
+    // pattern-check time and only the bind pass fills it, and SemIR's
+    // expression-category query assumes a value category for an unfilled
+    // binding (expr_info.cpp's own TODO) — wrong for `ref`-backed
+    // bindings, whose fill is a durable reference. Running both passes
+    // here leaves the arm's body block pushed, so the guard expression
+    // checks directly into it, dominated by the pattern test — the guard
+    // still evaluates only when the arm matched. `MatchCaseGuard` branches
+    // on it; the else block rides in the arm's context until `MatchCase`
+    // hands it to the handler chain.
+    FinishCasePattern(context);
+    auto else_block_id =
+        EmitCaseArmTestAndBind(context, node_id, /*is_guarded=*/true);
+    if (!else_block_id) {
+      // A "semantics TODO" was diagnosed, which aborts checking.
+      return false;
+    }
+    context.match_case_stack().back().else_block_id = *else_block_id;
+  }
+  context.node_stack().Push(node_id);
+  return true;
+}
+
+auto HandleParseNode(Context& context, Parse::MatchCaseGuardStartId node_id)
+    -> bool {
+  context.node_stack().Push(node_id);
+  return true;
+}
+
+// Branches on a guard condition: into a new dominated body block on
+// success, and to `else_block_id` on failure, destroying the arm's objects
+// on the failure edge (which leaves the arm's scope). Destroy insts cannot
+// sit inside a block's `BranchIf` + `Branch` terminator sequence, so when
+// the arm owns cleanups — on-demand `var` case-binding storage (W-008 plan
+// §2.4) is the first such object — the failure edge gets its own block; a
+// cleanup-free failure edge keeps the landed two-terminator shape
+// byte-for-byte. Pops the current block and leaves the body block pushed.
+static auto BranchOnGuard(Context& context, Parse::NodeId node_id,
+                          SemIR::LocId guard_loc_id, SemIR::InstId cond_id,
+                          SemIR::InstBlockId else_block_id) -> void {
+  auto body_block_id = AddDominatedBlockAndBranchIf(context, node_id, cond_id);
+  auto depth = context.scope_stack().enclosing_cleanup_scope_depth();
+  if (!context.scope_stack().GetCleanupsSince(depth).empty()) {
+    auto fail_block_id = AddDominatedBlockAndBranch(context, node_id);
+    context.inst_block_stack().Pop();
+    context.inst_block_stack().Push(fail_block_id);
+    context.region_stack().AddToRegion(fail_block_id, node_id);
+  }
+  AddBranchWithCleanups(context, guard_loc_id, else_block_id, depth);
+  context.inst_block_stack().Pop();
+  context.inst_block_stack().Push(body_block_id);
+  context.region_stack().AddToRegion(body_block_id, node_id);
+}
+
+auto HandleParseNode(Context& context, Parse::MatchCaseGuardId node_id)
+    -> bool {
+  // Convert the guard's condition to a bool value. On the guarded `default`
+  // lane the guard's expression region is still open, so the conversion
+  // insts land inside the region and the region's result is a value (the
+  // same invariant `FinishCasePattern` maintains for case expressions); on
+  // the case-arm lane the conversion lands inline in the arm's body block,
+  // with the guard itself. A conversion failure is diagnosed at the guard
+  // expression either way.
+  auto [expr_node_id, cond_id] = context.node_stack().PopExprWithNodeId();
+  cond_id = ConvertToBoolValue(context, expr_node_id, cond_id);
+
+  auto else_block_id = context.match_case_stack().back().else_block_id;
+  if (else_block_id.has_value()) {
+    // A guarded case arm: the test and bind passes ran at
+    // `MatchCaseGuardIntroducer`, and the guard expression was checked
+    // directly into the arm's body block, after the bind pass, so it
+    // evaluated with the arm's bindings filled. Branch on it — into the
+    // arm's body on success, and on failure to the same else block the
+    // pattern test falls through to, so a failed guard tries the next arm
+    // (or `default`). Objects created by the bind pass and the guard
+    // itself are live on both edges: the success edge destroys them with
+    // the arm scope's cleanups at arm exit (`MatchHandler`), and the
+    // failure edge — which leaves the arm's scope — must destroy them
+    // itself, before branching (`BranchOnGuard`). `DeferCleanups` keeps
+    // the body's statement-level temporary-cleanup discharge from
+    // destroying the guard's own temporaries early, the same way the bind
+    // pass defers its conversion temporaries.
     context.scope_stack().DeferCleanups();
-    BranchOnGuard(context, node_id, SemIR::LocId(guard_node_id), guard_cond_id,
+    BranchOnGuard(context, node_id, SemIR::LocId(node_id), cond_id,
                   else_block_id);
+  } else {
+    // A guarded `default` arm: record the captured condition region, which
+    // `MatchGuardedDefault` splices into the arm's body block.
+    auto region_id = ConsumeExprRegionForPattern(context, cond_id);
+    EndEmptyExprRegionForPattern(context);
+    auto& case_context = context.match_case_stack().back();
+    case_context.guard_region_id = region_id;
+    case_context.guard_node_id = node_id;
   }
 
-  context.node_stack().Push(node_id, else_block_id);
+  context.node_stack()
+      .PopAndDiscardSoloNodeId<Parse::NodeKind::MatchCaseGuardStart>();
+  context.node_stack()
+      .PopAndDiscardSoloNodeId<Parse::NodeKind::MatchCaseGuardIntroducer>();
+  return true;
+}
+
+auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
+  // A guarded arm's test pass, bind pass, and guard branch already ran, at
+  // `MatchCaseGuardIntroducer` and `MatchCaseGuard`, and its body block is
+  // the current block; the work here is done. Pop the arm's context and
+  // expose its else block for the handler chain.
+  if (auto guarded_else_block_id =
+          context.match_case_stack().back().else_block_id;
+      guarded_else_block_id.has_value()) {
+    context.match_case_stack().pop_back();
+    context.node_stack().Push(node_id, guarded_else_block_id);
+    return true;
+  }
+
+  // An unguarded arm: finish the pattern context begun by
+  // `MatchCaseIntroducer`, then run the arm's test and bind passes.
+  FinishCasePattern(context);
+  auto else_block_id =
+      EmitCaseArmTestAndBind(context, node_id, /*is_guarded=*/false);
+  if (!else_block_id) {
+    // A "semantics TODO" was diagnosed, which aborts checking.
+    return false;
+  }
+  context.node_stack().Push(node_id, *else_block_id);
   return true;
 }
 
@@ -887,9 +965,9 @@ auto HandleParseNode(Context& context, Parse::MatchGuardedDefaultId node_id)
   // overlap, usefulness, and exhaustiveness").
 
   // The guard is the arm's only test: `default` matches every value, so the
-  // arm's condition is a constant `true` — the CFG shape of a guarded
-  // irrefutable binding arm (`MatchCase`), minus the `NameBindingDecl` and
-  // the bind pass.
+  // arm's condition is a constant `true` — the dispatch shape of a guarded
+  // irrefutable binding arm (`EmitCaseArmTestAndBind`), minus the
+  // `NameBindingDecl` and the bind pass.
   auto cond_value_id =
       MakeBoolLiteral(context, node_id, SemIR::BoolValue::True);
   auto then_block_id =

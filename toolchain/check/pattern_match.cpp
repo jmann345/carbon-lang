@@ -110,8 +110,9 @@ struct ThunkState {
 // caller folds them into the arm's single condition. See
 // `MatchCasePatternMatch`.
 struct MatchCaseState {
-  // The `MatchCase` parse node, used as the location of the emitted
-  // comparison insts.
+  // The `MatchCase` parse node for an unguarded arm, or the
+  // `MatchCaseGuardIntroducer` node for a guarded arm, used as the
+  // location of the emitted comparison insts.
   Parse::NodeId case_node_id;
 
   // The root pattern inst this walk was entered with. An error-typed
@@ -580,8 +581,8 @@ auto MatchCaseAlternativePatternMatch(Context& context,
     // payload conditions are the arm's whole condition — the one
     // alternative is always active, so its payload region reads are total
     // without a dominating discriminant test. The binding extraction in
-    // `MatchCase`'s bind pass stays real. The scrutinee gate admits only
-    // choice shapes here.
+    // the arm's bind pass (`EmitCaseArmTestAndBind`, handle_match.cpp)
+    // stays real. The scrutinee gate admits only choice shapes here.
     CARBON_CHECK(IsMatchableChoiceType(context, scrutinee_type_id),
                  "Alternative pattern with non-choice scrutinee");
     if (!payload_is_refutable) {
@@ -648,8 +649,9 @@ auto MatchCaseAlternativePatternMatch(Context& context,
     // The merge above keeps the CFG well-formed — the errored value flows
     // through the branch arg, the shape the short-circuit operators use —
     // but the arm's condition must surface the error, not the merge's
-    // non-error `BlockArg`, so `MatchCase` records the error arm and the
-    // exhaustiveness analysis treats coverage as unknowable.
+    // non-error `BlockArg`, so the arm's coverage recording
+    // (`EmitCaseArmTestAndBind`, handle_match.cpp) notes the error arm and
+    // the exhaustiveness analysis treats coverage as unknowable.
     return SemIR::ErrorInst::InstId;
   }
   return result_id;
@@ -752,7 +754,8 @@ auto EmitChoicePayloadFieldAccess(Context& context, SemIR::LocId loc_id,
 // Folds the per-leaf conditions the test pass collected into the arm's
 // single boolean condition. A `None` condition (an unsupported-shape TODO
 // was diagnosed) aborts the arm, and an errored condition poisons the whole
-// fold, so `MatchCase` still records the error arm. Multiple conditions
+// fold, so the arm's coverage recording (`EmitCaseArmTestAndBind`,
+// handle_match.cpp) still notes the error arm. Multiple conditions
 // fold as a flat `and` over already-computed bools — the short-circuit
 // `BranchIf`/`block_arg` shape of the `and` operator
 // (handle_operator.cpp), built after every condition was emitted eagerly
@@ -1519,18 +1522,21 @@ auto MatchContext::DoMatchCaseTuplePreWork(SemIR::TuplePattern tuple_pattern,
       context_.types().TryGetAsIfValid<SemIR::TupleType>(scrutinee_type_id);
   if (!tuple_type) {
     // A nested tuple pattern against a non-tuple element (the root shape is
-    // classified before the engine runs; see `MatchCase`). A real
+    // classified before the engine runs; see `EmitCaseArmTestAndBind` in
+    // handle_match.cpp). A real
     // pattern-type error in the design; in-slice it stays behind the W4
     // slice gate, like the same shape at the root. BOTH passes diagnose —
     // here and at the arity mismatch below — and never both for one
     // subtree: a failing shape the test pass reaches aborts checking (the
-    // `None` fold result) or errors the arm's condition, and `MatchCase`'s
-    // guards then skip the bind pass for that arm, so the bind pass
+    // `None` fold result) or errors the arm's condition, and the
+    // bind-dispatch guards (`EmitCaseArmTestAndBind`, handle_match.cpp)
+    // then skip the bind pass for that arm, so the bind pass
     // reaches a failing shape only inside a subtree the test pass pruned
     // as wholly irrefutable — which would otherwise silently bind nothing.
-    // The arm's case context is popped before the bind pass runs, so the
-    // bind-pass diagnostic is located at the offending subpattern, not the
-    // arm's introducer.
+    // The bind-pass diagnostic is located at the offending subpattern, not
+    // the arm's introducer: an unguarded arm's case context is already
+    // popped when its bind pass runs, and a guarded arm's — kept alive to
+    // carry the arm's else block — is never read by the bind pass.
     if (is_test_pass) {
       context_.TODO(
           context_.match_case_stack().back().introducer_node_id,

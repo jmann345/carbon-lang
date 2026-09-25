@@ -286,18 +286,32 @@ class Context {
     // The resolved alternative for a root alternative pattern, if any.
     std::optional<Alternative> alternative;
     // The checked pattern root. Populated by `MatchCaseGuardIntroducer` when
-    // the arm has a guard — the pattern is finished early so that the guard
-    // expression can capture its own expression region — and otherwise by
-    // `MatchCase`.
+    // the arm has a guard — the pattern is finished early because the arm's
+    // test and bind passes run there, before the guard expression — and
+    // otherwise by `MatchCase`.
     SemIR::InstId pattern_id = SemIR::InstId::None;
-    // The guard's captured condition region: the guard expression converted
-    // to a bool value, which `MatchCase` splices into the arm's body block
-    // after the bind pass so the guard evaluates with the arm's bindings
-    // initialized. `None` when the arm has no guard.
+    // The guard's captured condition region, used by guarded `default` arms
+    // ONLY: the guard expression converted to a bool value, which
+    // `MatchGuardedDefault` splices into the arm's body block. A guarded
+    // `case` arm captures no region — its guard is checked directly into
+    // the arm's body block after the bind pass (see `else_block_id`), so
+    // every binding the guard names is filled; a `default` arm has no
+    // bindings, so the capture-and-splice lane has no use-before-fill
+    // hazard there. `None` when the arm has no guard.
     SemIR::ExprRegionId guard_region_id = SemIR::ExprRegionId::None;
-    // The `MatchCaseGuard` parse node, used as the location of the guard's
-    // failure edge.
+    // The `MatchCaseGuard` parse node for a guarded `default` arm, used as
+    // the location of the guard's failure edge. `None` otherwise (a guarded
+    // `case` arm branches at `MatchCaseGuard` itself, with the node in
+    // hand).
     Parse::NodeId guard_node_id = Parse::NodeId::None;
+    // For a guarded `case` arm, the else block the arm falls through to
+    // when its pattern test or its guard fails. Set by
+    // `MatchCaseGuardIntroducer`, which runs the arm's test and bind
+    // passes before the guard expression is checked; `MatchCaseGuard`
+    // branches on the guard to it, and `MatchCase` pushes it for the
+    // handler chain. `None` for unguarded arms and for guarded `default`
+    // arms (which keep the region lane above).
+    SemIR::InstBlockId else_block_id = SemIR::InstBlockId::None;
   };
   auto match_case_stack() -> llvm::SmallVector<MatchCaseContext>& {
     return match_case_stack_;

@@ -1,1 +1,1 @@
-2026-09-25T18:20Z w078a regen pass 3 (R26 fixpoint check)
+2026-09-25T19:30Z w078b regen pass 1 (R8 lift goldens)

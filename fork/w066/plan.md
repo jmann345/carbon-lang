@@ -6,7 +6,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # W-066 plan: usefulness diagnostics for match case patterns
 
-Status: PLAN. Drafted 2026-09-25. Size S — one implementation slice.
+Status: PLAN, amended per review fold and APPROVED FOR IMPLEMENTATION
+2026-09-25 (see Sign-off). Drafted 2026-09-25. Size S — one implementation slice.
 Baseline: trunk 869de65 (post-W-008/W8c; conformance **99 PASS / 0
 FAIL / 28 SKIP over 127**). Authoritative record:
 fork/inventory/work-items.json W-066. NO implementation in this
@@ -108,7 +109,10 @@ that would invalidate it.
 
 -   Citation: pattern_matching.md:627-629 includes `default` in the
     mandate ("if a pattern or `default` cannot match"). HOWEVER, the
-    fork's R8 conservative gate REQUIRES a `default` arm on every
+    fork's W-008 residue R8 conservative gate (qualified throughout to
+    distinguish it from rulebook R8; likewise residue R9 vs rulebook
+    R9 — amended 2026-09-25, review fold: label disambiguation)
+    REQUIRES a `default` arm on every
     integer-scrutinee `match` even when an unguarded irrefutable arm
     makes it genuinely exhaustive (handle_match.cpp:1130, the R8 TODO
     string "match statement without 'default' arm"; pin
@@ -122,8 +126,16 @@ that would invalidate it.
     unguarded) are exempt from the usefulness check, the exemption is
     stated in the diagnostic-site comment with this citation, and a
     follow-up work item (proposed id W-078, filed as part of this
-    slice's ledger edit) bundles default-arm usefulness WITH the R8
-    lift, which must land together or in that order. Negative goldens
+    slice's ledger edit) takes default-arm usefulness. (amended
+    2026-09-25, review fold: filing truth corrected.) The R8 coupling
+    is HALF of W-078, not all of it: the residue R8 gate fires only
+    for non-choice scrutinees (handle_match.cpp:1130, inside the
+    `!IsMatchableChoiceType` branch opened at :1123), so the
+    CHOICE-side dead-`default` diagnostic is NOT blocked by R8 and may
+    land first or independently; only the INTEGER half must land
+    with-or-after the R8 lift, together or in that order. The W-078
+    filing text (§3 step 4) must record exactly this ordering fact.
+    Negative goldens
     record the exemption (§4). This also keeps five existing goldens
     byte-stable (§6: binding_pattern.carbon,
     binding_choice_scrutinee.carbon, var_binding.carbon,
@@ -143,12 +155,13 @@ that would invalidate it.
     integer leaves, the alternative's discriminant index (plus payload
     constant slots) for alternative roots, elementwise vectors for
     tuple roots. Source text never participates.
--   Break condition: R9 widening (non-constant or symbolic case
-    expressions admitted) — W-008's residue already records that R9
-    must not widen before W-066; after this slice the dependency
-    inverts and R9 widening must extend or gate the key builder first.
+-   Break condition: W-008 residue R9 widening (non-constant or
+    symbolic case expressions admitted) — W-008's residue already
+    records that residue R9 must not widen before W-066; after this
+    slice the dependency inverts and residue R9 widening must extend
+    or gate the key builder first.
 
-### 1.7 Single-prior subsumption suffices; no pattern matrix
+### 1.7 Slot-wise subsumption plus one root union check; no pattern matrix
 
 -   Citation: pattern_matching.md:588-594 — expression patterns that
     are not constant tuple/struct/choice values "are considered to
@@ -160,32 +173,66 @@ that would invalidate it.
     honesty", §2.3; bool scrutinees are gated, filed W-076, and the
     W8 OQ-4 adjudication explicitly kept them out of W-066's domain;
     struct patterns are gated, filed W-077).
--   Call: an arm is dead iff some SINGLE prior unguarded arm subsumes
-    it slot-wise (each slot: prior is wildcard, or both constant and
-    equal; alternative roots additionally require equal discriminant).
-    Argument for completeness, recordable in one paragraph: every
-    non-wildcard leaf slot draws from an infinite domain by design
-    fiat, and arms with different root alternatives are disjoint, so
-    for a finite set of priors to cover a later arm's value set, pick
-    for each wildcard slot of the later arm a value distinct from
-    every constant any prior uses at that slot — a prior matching the
-    resulting value must be wildcard-or-equal at every slot, that is it
-    subsumes the arm outright. The design's own multi-arm-union
-    example (:632-647) needs alternative patterns at tuple element
-    positions, which are out of slice. So no pattern matrix, no
-    usefulness lattice beyond slot-wise subsumption.
--   Break condition: any finite domain entering a leaf position —
-    bool scrutinees (W-076), choice-typed tuple elements or payload
-    leaves, struct patterns (W-077), or design-level "treat constant
-    choice values as alternative patterns" applied below the root.
+-   Call (amended 2026-09-25, review fold: both reviews independently
+    found the original blanket completeness claim FALSE at a
+    choice-scrutinee wildcard root; the argument is corrected and the
+    hole closed by §2.3 step 3b): an arm is dead iff some SINGLE prior
+    unguarded arm subsumes it slot-wise (each slot: prior is wildcard,
+    or both constant and equal; alternative roots additionally require
+    equal discriminant), OR the one finite-union root case of §2.3
+    step 3b holds. Corrected completeness argument: single-prior
+    slot-wise subsumption is complete for every slot EXCEPT a
+    choice-scrutinee wildcard root. Every non-wildcard leaf slot draws
+    from an infinite domain by design fiat, and arms with different
+    root alternatives are disjoint, so for a finite set of priors to
+    cover a later arm's value set, pick for each wildcard slot of the
+    later arm a value distinct from every constant any prior uses at
+    that slot — a prior matching the resulting value must be
+    wildcard-or-equal at every slot, that is it subsumes the arm
+    outright. That choice fails at exactly one slot kind: a wildcard
+    ROOT over a choice scrutinee, whose alternative domain is FINITE —
+    `.Off`/`.On` priors make a later binding-rooted arm
+    (`case c: Flag`) dead by UNION coverage that no single prior
+    subsumes; the degenerate single-alternative form is `.Only` then
+    `case x: One`, and a guarded later arm after full coverage is
+    equally dead (§1.3). The hole is root-ONLY because alternatives
+    cannot nest: only the leading-dot spelling at the root of a case
+    pattern parses as an alternative pattern (root-position-only parse
+    gating, parse/handle_match.cpp:158-166), and element-position
+    designators against a choice-element scrutinee error or TODO-abort
+    (pattern_match.cpp:1077-1081, :1119-1126, :1128-1135), so no
+    finite alternative domain ever reaches a non-root slot. §2.3 step
+    3b closes the root hole by riding the landed alternative-coverage
+    machinery. The design's own multi-arm-union example (:632-647)
+    needs alternative patterns at tuple element positions, which are
+    out of slice. So still no pattern matrix, no usefulness lattice
+    beyond slot-wise subsumption plus the one root-level union check.
+-   Break condition (amended 2026-09-25, review fold: enumerated with
+    the root hole's kin): any finite domain entering a position step
+    3b does not watch —
+    -   bool scrutinees: a finite two-value root domain. W-076's
+        ledger entry records the interaction ("if W-066 lands first,
+        its usefulness domain should include bool constant values
+        from the start"), so W-076 owes that extension when it admits
+        `bool` at the scrutinee gate.
+    -   choice-typed subpattern positions (tuple elements or payload
+        leaves), if ever admitted below the root.
+    -   struct patterns (W-077).
+    -   the empty-choice nuance, deliberate rather than a hole: on an
+        empty choice (W-068) EVERY arm is extensionally useless — no
+        value exists for any arm to match — yet the mechanism stays
+        silent, because there are no covering priors and step 3b's
+        union check is guarded by a non-empty alternative table.
+        empty_choice.carbon is `default`-only, so no golden churns.
+
     Whichever lands first must revisit this section; the accumulator
     (a per-statement vector of per-arm keys, §2.2) is the right shape
     to extend to a matrix walk, so nothing here paints that in.
 
 ### 1.8 Symbolic and generic scrutinees; error arms
 
--   Citation: R9 (pattern_match.cpp:1165-1170) already rejects
-    non-concrete constants, so symbolic integer case keys cannot
+-   Citation: W-008 residue R9 (pattern_match.cpp:1165-1170) already
+    rejects non-concrete constants, so symbolic integer case keys cannot
     arise; generic choice scrutinees that are in-slice (W5-S3) carry
     concrete alternative metadata (index), so their keys are sound;
     metadata-less generic choice shapes are behind the scrutinee gate
@@ -198,7 +245,18 @@ that would invalidate it.
     accumulated so far — no false positive is possible from checking
     against strictly-recorded priors. Unlike exhaustiveness, a prior
     error arm does not suppress later usefulness checks: usefulness
-    only ever compares against arms whose keys are known.
+    only ever compares against arms whose keys are known. (amended
+    2026-09-25, review fold: bind-pass-error carve-out made explicit.)
+    One asymmetry is deliberate: an arm whose error surfaces only in
+    the BIND pass — `case b: bool` on an i32 scrutinee, or
+    `case ref r: i32` on a value scrutinee — reaches the recording
+    hook with a NON-error pattern and a constant-true condition, and
+    IS recorded as covering, matching the landed `has_irrefutable_arm`
+    behavior exactly (handle_match.cpp:669): the test pass classified
+    the arm irrefutable before the bind pass rejected it. A later
+    `case` arm therefore stacks a usefulness error on top of the
+    arm's bind error; §4 pins that stack as intended-and-documented
+    behavior.
 -   Break condition: none; mirrors the landed suppression rule.
 
 ### 1.9 `default` before the end is already parse-blocked
@@ -238,16 +296,29 @@ pattern position:
     `DoMatchCaseExprPattern` performs at pattern_match.cpp:1165. This
     is a memoized-constant READ, not a re-evaluation: check-time
     evaluation already ran and the test pass already gated
-    non-concrete/non-`IntValue` results behind the R9 TODO (which
-    aborts the arm before any key is built). The stored key value is
-    the `IntValue`'s integer value (its `IntId`), scrutinee-
-    normalized: `case 5`, `case 2 + 3`, and `case -(4 * 4)` versus
-    `case -16` key equal iff their APInt values are equal. The
-    implementer must verify `IntId` equality is value-canonical
-    across the admitted constant types (`Core.IntLiteral` literals vs
-    typed constants) with the mixed-form duplicate golden (§4); if
-    `IntId` is not canonical across widths, compare the APInts by way of
-    `ints().Get` instead — either way the key is the VALUE.
+    non-concrete/non-`IntValue` results behind the W-008 residue R9
+    TODO (which aborts the arm before any key is built). The stored
+    key value is the `IntValue`'s integer value (its `IntId`),
+    scrutinee-normalized: `case 5`, `case 2 + 3`, and `case -(4 * 4)`
+    versus `case -16` key equal iff they denote the same mathematical
+    value. (amended 2026-09-25, review fold: SETTLED, was
+    "implementer must verify".) `IntId`/`IntStore` canonicalize by
+    mathematical value: an `IntId` represents "the abstract
+    mathematical value -- signed and regardless of the needed
+    precision" (toolchain/base/int.h:24-26), the store canonicalizes
+    with the input `APInt`'s bit width disregarded (int.h:216-231),
+    and every checked integer constant reaches its `IntId` through
+    that store (eval.cpp:429-434). So IntConst key equality IS
+    `IntId` comparison — exact across `Core.IntLiteral` literals,
+    typed constants, int-adapter-class constants, and all magnitudes;
+    `case -1` and a u32-max constant are different mathematical
+    values and never collide. The "compare APInts by way of `ints().Get`"
+    fallback is STRUCK: raw `llvm::APInt::operator==` asserts on
+    width mismatch, so that fallback was a crash hazard, not a safety
+    net. If any defensive value comparison is ever retained, it must
+    be `llvm::APInt::isSameValue` by name — never `operator==` over
+    fetched `APInt`s. The mixed-form duplicate golden (§4) still pins
+    the settled property.
 -   `Alternative(index, payload...)` — a choice-alternative root:
     the discriminant index from `MatchCaseContext::Alternative::index`
     (resolved at pattern-check time, handle_match.cpp:381-384 and
@@ -273,6 +344,11 @@ pattern_match.h (proposed name: `BuildMatchCaseUsefulnessKey`). It
 runs only after the arm's test pass succeeded, so every shape it can
 meet is one the engine just accepted; any unexpected inst kind yields
 no key (arm records nothing, diagnoses nothing) rather than a crash.
+(amended 2026-09-25, review fold: plumbing note.) The key walk needs
+the arm's resolved `MatchCaseContext::Alternative` passed in as a
+parameter: a bare `.Name` root's region constant is a choice VALUE,
+not an `IntValue`, and the pattern insts alone do not carry the
+alternative index.
 
 ### 2.2 The accumulator
 
@@ -305,7 +381,10 @@ succeeded and with `pattern_id`, the resolved `alternative`, and the
 introducer node all in hand. Order:
 
 1.  Skip entirely for error arms (`pattern_id` or `cond_value_id` is
-    `ErrorInst`), per §1.8.
+    `ErrorInst`), per §1.8. (amended 2026-09-25, review fold:
+    bind-pass-only errors do not trip this skip — their `pattern_id`
+    and `cond_value_id` are non-error at this site, so such arms
+    record as covering per §1.8's carve-out.)
 2.  Build this arm's key.
 3.  If any recorded prior key subsumes it (slot-wise, §1.7), emit the
     error at THIS arm's `introducer_node_id` with the note at the
@@ -315,6 +394,25 @@ introducer node all in hand. Order:
     aborting TODO, so a `fail_` golden still shows well-formed SemIR
     and later arms still get checked. First covering arm wins the
     note (arm order; deterministic).
+
+    3b. (amended 2026-09-25, review fold: closes the §1.7 root hole.)
+    If this arm's key root is `Wildcard` and the scrutinee is a
+    matchable choice type, the arm ALSO diagnoses when the prior
+    unguarded non-error arms' alternative coverage is COMPLETE — the
+    same semantics as `DiagnoseNonexhaustiveMatch`'s
+    `covered_alternatives` loop (handle_match.cpp:1076-1083): a
+    payload alternative counts only when covered with a wholly-
+    irrefutable payload, and `has_irrefutable_arm`-style coverage by
+    a prior binding-rooted arm also completes it (that case already
+    diagnoses by way of step 3's single-prior subsumption anyway). The
+    check is guarded by a NON-EMPTY alternative table (the empty-
+    choice nuance, §1.7). Note wording for the union case: no single
+    covering arm exists, so this path uses a second note form — one
+    STATEMENT-LEVEL note naming the scrutinee's choice type ("all
+    alternatives of `Flag` are matched by prior arms"), emitted once.
+    Per-covering-arm notes (one at each contributing prior arm) were
+    considered and rejected: the single statement-level note is
+    simpler and stable under prior-arm reshuffles.
 4.  If the arm is unguarded (and not diagnosed dead — a dead arm adds
     nothing new to the covered set by definition, so recording it is
     harmless but pointless; recommended: record only useful arms to
@@ -325,17 +423,27 @@ introducer node all in hand. Order:
 the absence of any new code there, plus a comment at each handler
 citing §1.5/W-078.
 
-Proposed diagnostics (kind.def gets two entries in the match block,
+Proposed diagnostics (kind.def gets three entries in the match block,
 alphabetically between `MatchAlternativeUnexpectedParens` and
-`MatchCaseTuplePatternWrongArity`):
+`MatchCaseTuplePatternWrongArity`; amended 2026-09-25, review fold:
+the second note kind added for step 3b's union case — the ERROR kind
+stays single, its wording accurate for both the single-prior and the
+full-coverage case):
 
 ```cpp
 CARBON_DIAGNOSTIC(MatchCaseNeverMatches, Error,
                   "`case` pattern never matches; every value it can "
                   "match is matched by a prior arm");
+CARBON_DIAGNOSTIC(MatchCaseNeverMatchesFullCoverage, Note,
+                  "all alternatives of {0} are matched by prior arms",
+                  SemIR::TypeId);
 CARBON_DIAGNOSTIC(MatchCaseNeverMatchesPriorArm, Note,
                   "pattern is fully covered by this prior arm");
 ```
+
+`MatchCaseNeverMatchesFullCoverage` attaches at statement level (the
+scrutinee's `match`), once per diagnosed union-covered arm;
+`MatchCaseNeverMatchesPriorArm` keeps its covering-arm location.
 
 Wording follows the design's own phrase ("this pattern never
 matches", :645) and the parse-layer sibling's register ("unreachable
@@ -363,9 +471,15 @@ toolchain (they compile clean today; the "red" is the review
 expectation that they SHOULD diagnose); (2) the mechanism commit; (3)
 runner autoupdate to fixpoint (R26 — new STDERR lines shift line
 numbers, expect two passes); (4) ledger edits: W-066 notes rewritten
-to landed form, W-078 filed (§1.5), and the stale
-handle_match.cpp:121-123 TODO sentence ("Diagnose cases that can
-never match") dropped from the file comment.
+to landed form, W-078 filed (§1.5 — the filing text records that the
+choice-side dead-`default` half is NOT blocked by W-008 residue R8
+and may land first or independently, while the integer half lands
+with-or-after the R8 lift), and the handle_match.cpp:121-123 TODO
+sentence ("Diagnose cases that can never match, per
+docs/design/pattern_matching.md") REPLACED, not dropped (amended
+2026-09-25, review fold): the remaining undone half keeps a marker,
+so the sentence becomes "Diagnose `default` arms that can never
+match (W-078)."
 
 ## 4. Testdata plan
 
@@ -389,17 +503,64 @@ note both pinned):
     alternative (`case .Stop` twice); duplicate payload constant
     (`case .Ok(42)` twice); payload subsumption (`case .Ok(v: i32)`
     then `case .Ok(42)`); mixed payload subsumption
-    (`case .Pair(1, b: i32)` then `case .Pair(1, 2)`).
+    (`case .Pair(1, b: i32)` then `case .Pair(1, 2)`); (amended
+    2026-09-25, review fold) a same-statement ordering pin: a choice
+    `{A, B, C}` with `.A` then `.A` and nothing else — the dead-arm
+    error fires, THEN the statement-level `MatchNonexhaustive` names
+    `B` and `C` (which also pins OQ-2's don't-record call: the dead
+    duplicate contributes no coverage).
 -   `fail_case_never_matches_after_irrefutable.carbon`: `case n: i32`
     then `case 5`; `case var a: i32` then `case 1` (var-wrapper
     wildcard); choice scrutinee `case c: Signal` then `case .Stop`;
-    an all-binding tuple arm then a constant tuple arm.
+    an all-binding tuple arm then a constant tuple arm; (amended
+    2026-09-25, review fold) a dead arm WITH bindings —
+    `case n: i32` then `case var a: i32` — pinning the recorded call
+    that the dead arm's `UnusedBinding` warning DOES still fire:
+    checking continues through diagnosed-dead arms (§2.3 step 3), and
+    `MatchHandler` pops the arm's pattern with `check_unused=true`
+    like any other.
+-   `fail_case_never_matches_full_coverage.carbon` (amended
+    2026-09-25, review fold: the §1.7 root hole's positives):
+    two-alternative full coverage then a binding root (`.Off`, `.On`,
+    then `case c: Flag` — pins the statement-level
+    `MatchCaseNeverMatchesFullCoverage` note form); the degenerate
+    single-alternative union (`.Only` then `case x: One`);
+    irrefutable-payload coverage completing the union
+    (`.Ok(v: i32)`, `.Err`, then a binding arm); a guarded later arm
+    after full coverage (`.Off`, `.On`, then `case c: Flag if (g)` —
+    dead per §1.3's second half).
+-   `fail_case_never_matches_single_alternative.carbon` (amended
+    2026-09-25, review fold): the empty-discriminant path, where
+    alternative keying could diverge — a single-alternative choice's
+    duplicate bare alternative (`case .Only` twice) and payload
+    subsumption there (`case .Value(n: i32)` then `case .Value(5)`).
+-   `fail_case_after_bind_error_arm.carbon` (amended 2026-09-25,
+    review fold: pins §1.8's carve-out): `case b: bool` on an i32
+    scrutinee (the error surfaces in the BIND pass; the arm records
+    as covering, handle_match.cpp:669), then `case 5`, then
+    `default` — the STACKED usefulness error on `case 5` is pinned as
+    intended-and-documented behavior.
 
 Negative file (`usefulness_no_false_positive.carbon`, non-fail —
 proves silence, every fn compiles clean):
 
 -   Guarded prior arm: `case 5 if (g)` then `case 5` — silent
     (§1.3).
+-   (amended 2026-09-25, review fold) Both-guarded twins:
+    `case 5 if (g)` then `case 5 if (h)` — silent (design :620-623:
+    the prior's guard is assumed false, the later's true); plus the
+    alternative-rooted twin `.Ok(42) if (g)` then `.Ok(42) if (h)` —
+    silent for the same reason.
+-   (amended 2026-09-25, review fold) Guarded-irrefutable prior:
+    `case n: i32 if (g)` then `case 5` — silent (a guarded arm never
+    enters the context, however wide its pattern).
+-   (amended 2026-09-25, review fold) Nested-match independence: an
+    outer `case 5` whose arm body contains an inner `match` with its
+    own `case 5` — silent (per-statement accumulator, §2.2).
+-   (amended 2026-09-25, review fold) Partial alternative coverage
+    then a binding arm: exhaustive_choice_binding.carbon's Signal
+    shape (3 alternatives, one covered, then `case other: Signal`)
+    stays silent — step 3b requires COMPLETE coverage.
 -   Guarded `default` mid-list then a `case` repeating nothing —
     silent (guarded_default.carbon's landed shape, restated here as
     usefulness evidence).
@@ -410,7 +571,8 @@ proves silence, every fn compiles clean):
     `.Only(7)` then `.Only(x: i32)` — silent (the asymmetry, §2.4).
 -   `default` after an unguarded irrefutable arm, and `default`
     after full alternative coverage — SILENT, with a comment citing
-    the §1.5 deferral, R8, and W-078. This is the fail_todo-style
+    the §1.5 deferral, W-008 residue R8, and W-078. This is the
+    fail_todo-style
     record for the deferred diagnostic (a `fail_todo_` file cannot
     pin the ABSENCE of a diagnostic, so the record is a commented
     negative golden plus the filed work item).
@@ -422,7 +584,16 @@ proves silence, every fn compiles clean):
 Location check for every positive: the error's caret sits at the
 arm's `case` introducer (matching the slice-gate TODO pin locations
 and parse's `UnreachableMatchCase`), the note's at the covering arm's
-introducer.
+introducer — except step 3b's `MatchCaseNeverMatchesFullCoverage`
+note, which sits at statement level (§2.3).
+
+Authoring note (amended 2026-09-25, review fold): every
+integer-scrutinee positive needs a trailing `default` arm — the
+W-008 residue R8 TODO (handle_match.cpp:1130) otherwise aborts
+checking for the rest of the FILE — and every prior arm's bindings
+must be used in its body, or the goldens carry `UnusedBinding` noise
+unrelated to the pin (the ONE deliberate exception is the
+dead-arm-with-bindings pin above, where the warning is the point).
 
 ## 5. Conformance impact
 
@@ -441,7 +612,12 @@ over 127**. Two claims, both checked against the tree at 869de65:
     `default` exempt), match_payload_literal.carbon (`.Some(42)` then
     `.Some(n: i32)` — specific-then-general, useful),
     match_guarded_default.carbon (guarded `default` mid-list, W-067's
-    own program). One WATCH item: match_sum_type_payload.carbon's
+    own program); (amended 2026-09-25, review fold: two more named)
+    control_flow/match_var_ref_binding.carbon:33-44 (unguarded
+    irrefutable `var`/`ref` arms then `default` — `default` exempt
+    per §1.5) and project/most_features_missing_match.carbon:31-33
+    (`case 0`, a guarded binding arm, then `default` — guarded prior
+    excluded, `default` exempt). One WATCH item: match_sum_type_payload.carbon's
     SKIP sketch (commented body) ends `case .None` + `default` —
     dead `default` territory for W-078, not this slice; noted in the
     W-078 filing so the un-SKIP agent is not surprised later.
@@ -454,7 +630,21 @@ lower/testdata and parse/testdata contain no shape this diagnostic
 can reach (lower tests reuse check-clean sources; the `?` desugar
 builds the shared refutable SemIR core without the `match` parse
 handlers, so `match_statement_stack` — and with it the accumulator —
-is never touched there). The inventory, file by file:
+is never touched there). (amended 2026-09-25, review fold: the
+check/testdata near-misses OUTSIDE match/ are named too.) Outside
+toolchain/check/testdata/match/, the silent near-misses are:
+check/testdata/patterns/unused.carbon (4 `match` statements, each an
+unguarded irrefutable `var`/`unused` arm then `default` —
+§1.5-exempt); check/testdata/choice/generic_payload.carbon
+(alternative arms with distinct discriminants,
+specific-then-general, and `default` tails — useful or exempt
+throughout, and no full-coverage-then-binding shape);
+check/testdata/operators/question.carbon and question_final.carbon
+(real `match` statements inside `impl ... Branch` bodies — those go
+through the ordinary handlers and stay silent as
+single-relevant-arm/distinct shapes, while the `?` desugar itself
+never touches `match_statement_stack`). The inventory, file by
+file:
 
 -   `binding_pattern.carbon` — three fns end `default` after an
     unguarded irrefutable arm (`a: i32` / `5` then `b: i32` /
@@ -471,7 +661,15 @@ is never touched there). The inventory, file by file:
     `default` on a two-alternative choice: a dead `default` by full
     coverage — §1.5-exempt (and W-078's first golden candidate).
 -   `exhaustive_choice_binding.carbon` — irrefutable arm LAST: all
-    arms useful.
+    arms useful. (amended 2026-09-25, review fold: re-adjudicated
+    under §2.3 step 3b — Signal's binding arm follows ONE covered
+    alternative of three, and Flag's binding arm has no priors at
+    all, so full-coverage union never completes; still silent. The
+    whole §6 inventory was re-swept for a
+    full-coverage-then-`case`-arm shape on a choice scrutinee; none
+    exists — the nearest, exhaustive_choice.carbon:95-98 and
+    guarded_default.carbon:105-108, end in `default`, which stays
+    §1.5-exempt.)
 -   `payload_subpattern.carbon` — `.Pair(1, 2)` then
     `.Pair(a: i32, b: i32)`, `.Ok(42) if (b)` then `.Ok(value)`,
     `.Only(7)` then `.Only(x)`: specific-then-general and
@@ -510,13 +708,20 @@ attack first.
 
 ## 7. Risks
 
--   **R-1 Int value canonicalization.** If `IntId` equality is not
-    value-canonical across `Core.IntLiteral` and typed integer
-    constants, keying on `IntId` under-reports (`case 5` vs a typed
-    constant 5). Mitigation: the mixed-form duplicate golden (§4
-    int file) is authored to force the question; fallback is APInt
-    value comparison. Under-reporting is silent-but-sound (a missed
-    diagnostic, not a wrong one); the golden decides.
+-   **R-1 APInt comparison hazard.** (amended 2026-09-25, review
+    fold: reframed — the hazard was the struck fallback, not
+    under-reporting.) Canonicalization is SETTLED, not a risk:
+    `IntId`/`IntStore` canonicalize by mathematical value
+    (toolchain/base/int.h:24-26, :216-231; eval.cpp:429-434), so
+    keying on `IntId` neither under- nor over-reports across
+    `Core.IntLiteral`, typed, and adapter constants at any magnitude
+    (§2.1). The genuine hazard was this plan's original fallback —
+    comparing `APInt`s fetched by way of `ints().Get` with `operator==`,
+    which ASSERTS on width mismatch, and the store deliberately does
+    not width-normalize what it hands back. That fallback is struck;
+    if any defensive value comparison is ever written, it must be
+    `llvm::APInt::isSameValue` by name. The mixed-form duplicate
+    golden (§4 int file) pins the settled behavior.
 -   **R-2 EqWith idealization.** RF-4 admits int-adapter-class
     constants whose `EqWith` could in principle not be value
     equality; the design's own model (:592-594) identifies an
@@ -566,11 +771,16 @@ attack first.
 ## 9. Open questions for reviewers (recorded calls, veto-able)
 
 -   **OQ-1:** §1.5's blanket `default` exemption vs a narrower one
-    (diagnose dead `default` on CHOICE scrutinees only, where R8
-    does not force it). Recorded call: blanket exemption — one rule,
-    no scrutinee-kind fork in the exemption, and the choice-side
-    dead `default` (exhaustive_choice.carbon:95-98 churn) rides
-    W-078 with the integer side. A veto splits W-078.
+    (diagnose dead `default` on CHOICE scrutinees only, where W-008
+    residue R8 does not force it). Recorded call: blanket exemption —
+    one rule, no scrutinee-kind fork in the exemption, and the
+    choice-side dead `default` (exhaustive_choice.carbon:95-98 churn)
+    rides W-078 with the integer side. A veto splits W-078. (amended
+    2026-09-25, review fold: filing truth — W-078 stays ONE item, but
+    its filing text records that the choice-side half is not
+    R8-blocked (handle_match.cpp:1130 fires only for non-choice
+    scrutinees) and may land first or independently within the item;
+    only the integer half is ordered with-or-after the R8 lift.)
 -   **OQ-2:** record dead arms' keys into the accumulator or not
     (§2.3 step 4). Recorded call: do not record — subsumed keys add
     no coverage and first-covering-arm notes stay stable. A veto is
@@ -578,10 +788,77 @@ attack first.
 -   **OQ-3:** diagnostic names/wording (§2.3). `MatchCaseNeverMatches`
     aligns with the design's phrase; `MatchCaseNotUseful` would align
     with the design's TERM. Recorded call: NeverMatches — user-facing
-    text should say what happens, not name the analysis.
--   **OQ-4:** should the W-078 filing also absorb the R8 lift's
-    other half (integer exhaustiveness by way of irrefutable arm,
-    fail_todo_no_default.carbon:48's recorded conservative gate)?
-    Recorded call: yes, one item — they are the same gate viewed
-    from two sides, and landing either alone re-creates the §1.5
-    contradiction in one direction or the other.
+    text should say what happens, not name the analysis. (amended
+    2026-09-25, review fold: a third option, echoing parse's
+    "unreachable" vocabulary (`UnreachableMatchCase`-style naming and
+    wording), was considered and REJECTED: "unreachable" describes
+    control flow, and the check layer's condition is about value
+    coverage — the design's own register, :645, says "never
+    matches".)
+-   **OQ-4:** should the W-078 filing also absorb the W-008 residue
+    R8 lift's other half (integer exhaustiveness by way of
+    irrefutable arm, fail_todo_no_default.carbon:48's recorded
+    conservative gate)? Recorded call: yes, one item — they are the
+    same gate viewed from two sides. (amended 2026-09-25, review
+    fold: the original "landing either alone re-creates the §1.5
+    contradiction in one direction or the other" overclaimed — the
+    contradiction is INTEGER-side only. The R8 gate never fires for
+    choice scrutinees (handle_match.cpp:1130, inside the
+    `!IsMatchableChoiceType` branch), so the choice-side dead-
+    `default` diagnostic may land first or independently; the W-078
+    filing text records this, per §1.5/§3.)
+
+## Sign-off
+
+Two adversarial plan reviews, both APPROVE-WITH-AMENDMENTS, folded in
+place 2026-09-25 (each edit carries a dated "review fold" amendment
+note at its site):
+
+-   The convergent MAJOR (found independently by both reviews):
+    §1.7's original completeness claim for single-prior slot-wise
+    subsumption was false at a choice-scrutinee wildcard ROOT, where
+    the finite alternative domain lets a UNION of priors kill a later
+    binding-rooted (or guarded) arm that no single prior subsumes.
+    Folded as the mechanism extension both reviews preferred: the
+    corrected root-only-hole argument in §1.7 (with break conditions
+    for bool scrutinees per W-076's ledger interaction, choice-typed
+    subpattern positions, struct patterns/W-077, and the deliberate
+    empty-choice silence), the full-coverage check as §2.3 step 3b
+    riding the landed `covered_alternatives` machinery, the second
+    note kind `MatchCaseNeverMatchesFullCoverage` (statement-level
+    single note; per-covering-arm notes recorded as considered and
+    rejected) in §2.3's diagnostics block, and the §4 positives and
+    negative for the new shapes.
+-   Review #1 amendments folded: F-2 (IntId canonicalization SETTLED
+    by mathematical value, §2.1; the crash-hazard `ints().Get` +
+    `operator==` fallback STRUCK, `llvm::APInt::isSameValue` named
+    for any defensive comparison; R-1 reframed, §7); F-3
+    (bind-pass-error arms record as covering, §1.8/§2.3, with the
+    stacked-diagnostic golden in §4); F-4 (nested-match independence,
+    same-statement ordering pin, dead-arm UnusedBinding-still-fires
+    call, guarded-irrefutable-prior negative, and the authoring note,
+    all §4); F-5 (near-miss naming, §6); F-6 (alternative-key
+    plumbing note, §2.1).
+-   Review #2 amendments folded: A2 (W-078 filing truth — the
+    choice-side dead-`default` half is not blocked by W-008 residue
+    R8 and may land first/independently; §1.5, §3, OQ-1, OQ-4); A3
+    (both-guarded twin negatives incl. the alternative-rooted pair,
+    §4); A4 (handle_match.cpp:121-123 TODO sentence REPLACED with
+    "Diagnose `default` arms that can never match (W-078)", not
+    dropped; §3); F5 (near-miss naming, §5/§6); F6
+    (single-alternative/empty-discriminant goldens, §4); N1 (residue
+    R8/R9 labels qualified as "W-008 residue" where ambiguous with
+    rulebook R8/R9); N2 (OQ-3 records parse's "unreachable"
+    vocabulary as considered-and-rejected).
+
+Every repository citation added by the fold was re-verified against the
+tree at this branch (parse/handle_match.cpp:158-166;
+pattern_match.cpp:1077-1081/:1119-1126/:1128-1135;
+check/handle_match.cpp:669, :1076-1083, :1123/:1130, :121-123;
+toolchain/base/int.h:24-26/:216-231; eval.cpp:429-434; the W-076
+ledger interaction sentence; the named conformance and testdata
+near-miss files and line ranges), and the §6 zero-churn inventory was
+re-swept under step 3b (no existing golden contains a
+full-coverage-then-`case`-arm shape on a choice scrutinee).
+
+Status: APPROVED FOR IMPLEMENTATION. 2026-09-25.

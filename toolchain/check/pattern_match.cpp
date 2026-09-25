@@ -84,13 +84,15 @@ struct CalleeState {
 
 // State for local pattern matching.
 struct LocalState {
-  // True when this walk is the bind pass of a `match` `case` arm with
-  // expression subpatterns (`MatchCaseBindPatternMatch`): subtrees without
-  // bindings prune — the test pass owns expression-pattern regions, and
-  // splicing a region twice is not supported (see `InsertHere`) — and the
-  // tuple pre-work walks the scrutinee's own tuple type instead of
-  // converting to the pattern's (see `DoMatchCaseTuplePreWork`). `let` and
-  // `var` behavior is unchanged when this is false.
+  // True when this walk is the match-bind pass of a `match` `case` arm
+  // (`MatchCaseBindPatternMatch`): subtrees without bindings prune — the
+  // test pass owns expression-pattern regions, and splicing a region twice
+  // is not supported (see `InsertHere`) — the tuple pre-work walks the
+  // scrutinee's own tuple type instead of converting to the pattern's (see
+  // `DoMatchCaseTuplePreWork`), and `VarStorage` for `var` patterns is
+  // emitted on demand instead of read from the full-pattern frame, which
+  // the arm pops before the bind pass runs (see `DoVarPreWorkImpl`). `let`
+  // and `var` behavior is unchanged when this is false.
   bool in_match_case_bind = false;
 };
 
@@ -660,9 +662,10 @@ auto SpliceMatchCaseGuard(Context& context, SemIR::ExprRegionId region_id)
 
 auto IsIrrefutableMatchCasePattern(Context& context, SemIR::InstId pattern_id)
     -> bool {
-  // Iterative worklist (misc-no-recursion). Binding patterns are the
-  // irrefutable leaves; tuples recurse; anything else — expression leaves
-  // in particular, and error recovery — is refutable.
+  // Iterative worklist (misc-no-recursion). Binding patterns — value and
+  // `ref` alike — are the irrefutable leaves; tuples and `var` wrappers
+  // recurse; anything else — expression leaves in particular, and error
+  // recovery — is refutable.
   llvm::SmallVector<SemIR::InstId> worklist = {pattern_id};
   while (!worklist.empty()) {
     auto inst_id = worklist.pop_back_val();
@@ -672,7 +675,13 @@ auto IsIrrefutableMatchCasePattern(Context& context, SemIR::InstId pattern_id)
                          context.inst_blocks().Get(tuple_pattern->elements_id));
       continue;
     }
-    if (!context.insts().Is<SemIR::ValueBindingPattern>(inst_id)) {
+    if (auto var_pattern =
+            context.insts().TryGetAs<SemIR::VarPattern>(inst_id)) {
+      worklist.push_back(var_pattern->subpattern_id);
+      continue;
+    }
+    if (!context.insts().Is<SemIR::ValueBindingPattern>(inst_id) &&
+        !context.insts().Is<SemIR::RefBindingPattern>(inst_id)) {
       return false;
     }
   }
@@ -690,8 +699,31 @@ auto MatchCasePatternHasBindings(Context& context, SemIR::InstId pattern_id)
                          context.inst_blocks().Get(tuple_pattern->elements_id));
       continue;
     }
-    if (context.insts().Is<SemIR::ValueBindingPattern>(inst_id)) {
+    if (auto var_pattern =
+            context.insts().TryGetAs<SemIR::VarPattern>(inst_id)) {
+      worklist.push_back(var_pattern->subpattern_id);
+      continue;
+    }
+    if (context.insts().Is<SemIR::ValueBindingPattern>(inst_id) ||
+        context.insts().Is<SemIR::RefBindingPattern>(inst_id)) {
       return true;
+    }
+  }
+  return false;
+}
+
+auto MatchCasePatternHasVarPattern(Context& context, SemIR::InstId pattern_id)
+    -> bool {
+  llvm::SmallVector<SemIR::InstId> worklist = {pattern_id};
+  while (!worklist.empty()) {
+    auto inst_id = worklist.pop_back_val();
+    if (context.insts().Is<SemIR::VarPattern>(inst_id)) {
+      return true;
+    }
+    if (auto tuple_pattern =
+            context.insts().TryGetAs<SemIR::TuplePattern>(inst_id)) {
+      llvm::append_range(worklist,
+                         context.inst_blocks().Get(tuple_pattern->elements_id));
     }
   }
   return false;
@@ -1226,6 +1258,23 @@ auto MatchContext::DoPostWork(State state,
 auto MatchContext::DoPreWork(State state, SemIR::VarPattern var_pattern,
                              SemIR::InstId scrutinee_id, WorkItem entry)
     -> void {
+  if (std::holds_alternative<MatchCaseState*>(state)) {
+    // The refutable test pass prunes at `var` subtrees the same way it
+    // prunes at binding patterns: an admitted `var` case pattern wraps a
+    // wholly irrefutable subtree, contributes no condition, and belongs to
+    // the bind pass, which emits its storage on demand (see
+    // `DoVarPreWorkImpl`). A `var` wrapping a refutable subtree is out of
+    // slice — pruning it would silently skip its element tests — so it
+    // diagnoses here rather than descending (binding-free `var` patterns
+    // are gated earlier, in handle_let_and_var.cpp).
+    if (!IsIrrefutableMatchCasePattern(context_, entry.pattern_id)) {
+      context_.TODO(context_.match_case_stack().back().introducer_node_id,
+                    "match `case` pattern other than an integer literal, or "
+                    "a case guard");
+      results_stack_.AppendToTop(SemIR::InstId::None);
+    }
+    return;
+  }
   auto scrutinee_type_id = GetScrutineeTypeInSpecific(
       context_, entry.pattern_id, specific_id_stack_.back());
   auto new_scrutinee_id =
@@ -1252,7 +1301,7 @@ auto MatchContext::DoVarPreWorkImpl(State state,
     case CARBON_KIND(ThunkState* _): {
       return scrutinee_id;
     }
-    case CARBON_KIND(LocalState* _): {
+    case CARBON_KIND(LocalState* local_state): {
       // TODO: Find a more efficient way to put these insts in the global_init
       // block (or drop the distinction between the global_init block and the
       // file scope?)
@@ -1261,9 +1310,20 @@ auto MatchContext::DoVarPreWorkImpl(State state,
       }
 
       // In a `var`/`let` declaration, the `VarStorage` inst is created before
-      // we start pattern matching.
-      auto storage_id =
-          context_.full_pattern_stack().GetLocalVarStorage(entry.pattern_id);
+      // we start pattern matching. In the match-bind pass of a `match`
+      // `case` arm it is instead emitted here, on demand: the arm's
+      // full-pattern frame is popped before the bind pass runs and match
+      // arms have no pattern initializer to arm the frame's storage index,
+      // so the frame-indexed lookup is unusable (W-008 plan §2.4). The
+      // storage lands in the arm's body block, giving each arm its own
+      // object — `var` case bindings are not aliased across arms
+      // (docs/design/pattern_matching.md, "Pattern match control flow") —
+      // destroyed with the arm scope's cleanups.
+      auto storage_id = local_state->in_match_case_bind
+                            ? GetOrAddVarStorage(context_, entry.pattern_id,
+                                                 /*is_returned_var=*/false)
+                            : context_.full_pattern_stack().GetLocalVarStorage(
+                                  entry.pattern_id);
       if (scrutinee_id.has_value()) {
         auto init_id =
             InitializeExisting(context_, SemIR::LocId(entry.pattern_id),
@@ -1302,10 +1362,10 @@ auto MatchContext::DoVarPreWorkImpl(State state,
       return init_result.storage_id;
     }
     case CARBON_KIND(MatchCaseState* _): {
-      // The test pass never descends past a binding-pattern root (the bind
-      // pass runs as a `LocalState` match in the arm's body block instead),
-      // and `var` patterns in `case` arms are gated behind a TODO at check
-      // time.
+      // Unreachable: the test pass prunes or diagnoses at `VarPattern`
+      // before reaching here (see the `MatchCaseState` branch in the
+      // `VarPattern` pre-work), and param patterns — the other caller —
+      // cannot appear in `case` arms.
       CARBON_FATAL("Found VarPattern during match case pattern match");
     }
   }

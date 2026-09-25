@@ -60,8 +60,14 @@ namespace Carbon::Check {
 // test pass contributes no real condition (the arm's condition is a
 // constant `true`), and a bind pass in the arm's body block initializes the
 // binding from the scrutinee through `LocalPatternMatch`, so the binding
-// exists only where the arm has matched. Everything outside that subset
-// produces a "semantics TODO" diagnostic.
+// exists only where the arm has matched. `var` and `ref` case bindings
+// check the same way — `case ref a: i32` binds the scrutinee itself, which
+// must be a durable reference, and `case var a: i32` (including the
+// composed `case var (a: i32, b: i32)` and element form
+// `case (var n: i32, 1)`) initializes per-arm storage the bind pass emits
+// on demand, so `var` bindings are not aliased across arms
+// (docs/design/pattern_matching.md, "Pattern match control flow").
+// Everything outside that subset produces a "semantics TODO" diagnostic.
 //
 // A `case` arm may carry a guard (`case P if (E) => ...`): the guard
 // expression is checked in the arm's scope (its pattern's bindings are in
@@ -103,10 +109,9 @@ namespace Carbon::Check {
 // requires at least one arm; see `MatchStatementStart` in
 // parse/handle_match.cpp).
 //
-// TODO: Support other pattern kinds (`var`/`ref` case bindings), other
-// scrutinee types, and integer exhaustiveness via an irrefutable arm or
-// full enumeration. Diagnose cases that can never match, per
-// docs/design/pattern_matching.md.
+// TODO: Support other pattern kinds, other scrutinee types, and integer
+// exhaustiveness via an irrefutable arm or full enumeration. Diagnose cases
+// that can never match, per docs/design/pattern_matching.md.
 
 // Returns the scrutinee value, which is on the `MatchHandler` entry after an
 // earlier case arm, or otherwise on the `MatchStatementStart` entry.
@@ -437,10 +442,11 @@ auto HandleParseNode(Context& context, Parse::AlternativePatternId node_id)
     return push_error();
   }
 
-  // Payload subpatterns are bindings, constant-integer expressions, and
-  // nested tuples of those (`var`/`ref`/compile-time bindings were already
-  // gated at the binding; out-of-slice expression shapes diagnose in the
-  // refutable engine). Classify the tree's refutability while the
+  // Payload subpatterns are bindings — value, `ref`, and `var`-mode alike —
+  // constant-integer expressions, and nested tuples of those (compile-time
+  // bindings were already gated at the binding; out-of-slice expression
+  // shapes diagnose in the refutable engine). Classify the tree's
+  // refutability while the
   // subpatterns are in hand: an unguarded arm covers its alternative for
   // exhaustiveness only when the tree is wholly irrefutable — a `.Some(42)`
   // arm compares values, can fail, and records nothing
@@ -624,16 +630,22 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
   // bindings bind below; other expression patterns (including error
   // recovery) and tuple-pattern roots against a tuple-shaped scrutinee are
   // matched by the refutable engine, which returns the arm's condition; a
-  // binding-pattern root is irrefutable, so its test pass contributes no
-  // condition and the arm's condition is a constant `true` (the refutable
-  // engine prunes at binding patterns, whose `bind_name_map` entries belong
-  // to the bind pass below); every other pattern root — a tuple pattern
-  // against a non-tuple scrutinee included — stays behind the W4 slice-gate
-  // TODO. The TODO is pinned to the introducer node so the preserved
-  // diagnostics keep their location.
+  // binding-pattern root — a value or `ref` binding — is irrefutable, so
+  // its test pass contributes no condition and the arm's condition is a
+  // constant `true` (the refutable engine prunes at binding patterns, whose
+  // `bind_name_map` entries belong to the bind pass below), and a `var`
+  // root wrapping a wholly irrefutable subtree classifies the same way;
+  // every other pattern root — a tuple pattern against a non-tuple
+  // scrutinee, and a `var` root wrapping a refutable subtree, included —
+  // stays behind the W4 slice-gate TODO. The TODO is pinned to the
+  // introducer node so the preserved diagnostics keep their location.
   SemIR::InstId cond_value_id = SemIR::InstId::None;
   bool is_binding_arm =
-      context.insts().Is<SemIR::ValueBindingPattern>(pattern_id);
+      context.insts().Is<SemIR::ValueBindingPattern>(pattern_id) ||
+      context.insts().Is<SemIR::RefBindingPattern>(pattern_id);
+  bool is_irrefutable_var_arm =
+      context.insts().Is<SemIR::VarPattern>(pattern_id) &&
+      IsIrrefutableMatchCasePattern(context, pattern_id);
   bool is_alternative_payload_arm =
       alternative && alternative->payload_pattern_id.has_value() &&
       alternative->payload_pattern_id == pattern_id;
@@ -661,7 +673,7 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
       // which aborts checking.
       return false;
     }
-  } else if (is_binding_arm) {
+  } else if (is_binding_arm || is_irrefutable_var_arm) {
     cond_value_id = MakeBoolLiteral(context, node_id, SemIR::BoolValue::True);
   } else {
     return context.TODO(
@@ -673,9 +685,10 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
   // exhaustiveness (SF-7). A guarded arm contributes nothing, whatever its
   // pattern: exhaustiveness assumes every guard can evaluate to false
   // (docs/design/pattern_matching.md, "Refutability, overlap, usefulness,
-  // and exhaustiveness"). An unguarded irrefutable arm — a binding root, or
-  // an all-binding tuple root, which is irrefutable given the arity/type
-  // the checker enforced statically — covers every scrutinee value; an
+  // and exhaustiveness"). An unguarded irrefutable arm — a binding root, an
+  // irrefutable `var` root, or an all-binding tuple root, which is
+  // irrefutable given the arity/type the checker enforced statically —
+  // covers every scrutinee value; an
   // unguarded alternative-pattern arm covers its alternative only when its
   // payload tree is wholly irrefutable — a refutable payload such as
   // `.Some(42)` records nothing (pattern_matching.md:589-594). An arm whose
@@ -688,7 +701,8 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
       match_context.has_error_arm = true;
     } else if (guard_region_id.has_value()) {
       // Guarded arms never count toward coverage.
-    } else if (is_binding_arm || is_irrefutable_tuple_arm) {
+    } else if (is_binding_arm || is_irrefutable_var_arm ||
+               is_irrefutable_tuple_arm) {
       match_context.has_irrefutable_arm = true;
     } else if (alternative && alternative->payload_is_irrefutable) {
       match_context.covered_alternatives.push_back(alternative->index);
@@ -723,6 +737,18 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
   if (is_binding_arm) {
     LocalPatternMatch(context, pattern_id, scrutinee_id);
     context.scope_stack().DeferCleanups();
+  } else if (is_irrefutable_var_arm) {
+    // A `var` arm's storage is emitted by the bind pass on demand, here in
+    // the arm's body block, so each arm gets its own object — `var` case
+    // bindings are not aliased across arms
+    // (docs/design/pattern_matching.md, "Pattern match control flow") —
+    // initialized from the scrutinee where the arm has matched and
+    // destroyed with the arm scope's cleanups. The match-bind walk is
+    // required, not plain `LocalPatternMatch`: the arm's full-pattern
+    // frame was popped above, so the frame-indexed storage lookup the
+    // `let`/`var` path uses is unusable (W-008 plan §2.4).
+    MatchCaseBindPatternMatch(context, pattern_id, scrutinee_id);
+    context.scope_stack().DeferCleanups();
   } else if (is_alternative_payload_arm &&
              cond_value_id != SemIR::ErrorInst::InstId &&
              alternative->payload_field_index >= 0 &&
@@ -740,9 +766,12 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
     auto field_ref_id = EmitChoicePayloadFieldAccess(
         context, SemIR::LocId(node_id), scrutinee_id,
         alternative->payload_field_index);
-    // All-binding payload trees keep the landed `LocalPatternMatch` path;
-    // only trees with expression subpatterns need the match-bind pruning.
-    if (alternative->payload_is_irrefutable) {
+    // All-binding, `var`-free payload trees keep the landed
+    // `LocalPatternMatch` path; trees with expression subpatterns need the
+    // match-bind pruning, and trees with `var` patterns need its on-demand
+    // storage (the frame-indexed lookup is unusable here; W-008 plan §2.4).
+    if (alternative->payload_is_irrefutable &&
+        !MatchCasePatternHasVarPattern(context, pattern_id)) {
       LocalPatternMatch(context, pattern_id, field_ref_id);
     } else {
       MatchCaseBindPatternMatch(context, pattern_id, field_ref_id);
@@ -752,8 +781,11 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
              MatchCasePatternHasBindings(context, pattern_id)) {
     // A tuple arm's bindings initialize elementwise from the scrutinee. An
     // arm whose test errored (for example a tuple-arity mismatch) has
-    // nothing sound to bind.
-    if (is_irrefutable_tuple_arm) {
+    // nothing sound to bind. A tree with `var` elements takes the
+    // match-bind walk for its on-demand storage even when wholly
+    // irrefutable (W-008 plan §2.4).
+    if (is_irrefutable_tuple_arm &&
+        !MatchCasePatternHasVarPattern(context, pattern_id)) {
       LocalPatternMatch(context, pattern_id, scrutinee_id);
     } else {
       MatchCaseBindPatternMatch(context, pattern_id, scrutinee_id);

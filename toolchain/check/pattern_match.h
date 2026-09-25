@@ -115,16 +115,22 @@ auto MatchCasePatternMatch(Context& context, SemIR::InstId pattern_id,
                            Parse::NodeId case_node_id) -> SemIR::InstId;
 
 // Emits the bind-pass IR for a `match` `case` arm whose pattern tree mixes
-// bindings with expression subpatterns: the irrefutable `LocalPatternMatch`
-// walk, except that subtrees without bindings prune — the test pass owns
-// expression-pattern regions (each is spliced exactly once, by the test),
-// and only bindings have work left in the arm's body block. Wholly-binding
-// trees take plain `LocalPatternMatch` instead, byte-for-byte.
+// bindings with expression subpatterns, or contains `var` patterns: the
+// irrefutable `LocalPatternMatch` walk, except that subtrees without
+// bindings prune — the test pass owns expression-pattern regions (each is
+// spliced exactly once, by the test), and only bindings have work left in
+// the arm's body block — and `VarStorage` for `var` patterns is emitted on
+// demand in the arm's body block, giving each arm its own storage (the
+// arm's full-pattern frame is popped before this runs, so the `let`/`var`
+// frame-indexed storage lookup is unusable; W-008 plan §2.4).
+// Wholly-binding, `var`-free trees take plain `LocalPatternMatch` instead,
+// byte-for-byte.
 auto MatchCaseBindPatternMatch(Context& context, SemIR::InstId pattern_id,
                                SemIR::InstId scrutinee_id) -> void;
 
 // Returns whether a `match` `case` (sub)pattern tree is wholly irrefutable:
-// binding patterns match any value, and a tuple of irrefutable elements is
+// binding patterns (value and `ref` alike) match any value, a `var` wrapper
+// is as (ir)refutable as its subtree, and a tuple of irrefutable elements is
 // irrefutable given its arity/type, which the checker enforces statically.
 // Expression subpatterns compare values, so any of them makes the tree
 // refutable. This is the classification exhaustiveness recording consumes
@@ -136,6 +142,13 @@ auto IsIrrefutableMatchCasePattern(Context& context, SemIR::InstId pattern_id)
 // Returns whether a `match` `case` (sub)pattern tree contains any binding
 // pattern — only then does the arm have bind-pass work in its body block.
 auto MatchCasePatternHasBindings(Context& context, SemIR::InstId pattern_id)
+    -> bool;
+
+// Returns whether a `match` `case` (sub)pattern tree contains a `var`
+// pattern. Such a tree's bind pass must run as `MatchCaseBindPatternMatch`
+// — never plain `LocalPatternMatch` — because its `VarStorage` is emitted
+// on demand rather than read from the popped full-pattern frame.
+auto MatchCasePatternHasVarPattern(Context& context, SemIR::InstId pattern_id)
     -> bool;
 
 // Emits the extraction of one alternative's payload tuple from a choice

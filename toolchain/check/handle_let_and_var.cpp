@@ -144,15 +144,25 @@ auto HandleParseNode(Context& context, Parse::VariablePatternId node_id)
       }
       break;
     case FullPatternStack::Kind::MatchCaseArm:
-      // `var` patterns in `match` `case` arms are a recorded later slice; a
-      // binding inside the `var` pattern is gated at the binding (the
-      // `var`/`ref` case-binding TODO in handle_binding_pattern.cpp) before
-      // reaching here, so this is the binding-free spelling, such as
-      // `case var 5`, which stays behind the W4 slice gate.
-      return context.TODO(
-          context.match_case_stack().back().introducer_node_id,
-          "match `case` pattern other than an integer literal, or a case "
-          "guard");
+      // A `var` pattern in a `match` `case` arm gets no storage here: the
+      // arm's full-pattern frame is popped before the bind pass runs and
+      // match arms have no pattern initializer, so the frame-indexed
+      // storage lookup `add_local_var()` feeds is unusable — the bind pass
+      // emits `VarStorage` on demand instead, in the arm's body block, so
+      // each arm gets its own object (W-008 plan §2.4;
+      // docs/design/pattern_matching.md, "Pattern match control flow"). The
+      // binding-free spelling, such as `case var 5`, stays behind the W4
+      // slice gate.
+      if (!MatchCasePatternHasBindings(context, subpattern_id)) {
+        return context.TODO(
+            context.match_case_stack().back().introducer_node_id,
+            "match `case` pattern other than an integer literal, or a case "
+            "guard");
+      }
+      pattern_id = AddInst<SemIR::VarPattern>(
+          context, node_id,
+          {.type_id = type_id, .subpattern_id = subpattern_id});
+      break;
     case FullPatternStack::Kind::NotInEitherParamList:
       CARBON_FATAL("Unreachable");
   }

@@ -19,6 +19,10 @@ library "[[@TEST_NAME]]";
 fn F(x: i32) {
   var y: i32 = 1;
   match (x) {
+    // CHECK:STDERR: fail_todo_runtime_var_case.carbon:[[@LINE+4]]:5: error: semantics TODO: `match case expression pattern that is not a constant integer or `bool`` [SemanticsTodo]
+    // CHECK:STDERR:     case y => { return; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case y => { return; }
     default => { return; }
   }
@@ -34,6 +38,10 @@ library "[[@TEST_NAME]]";
 fn G(x: i32) {
   let k: i32 = 5;
   match (x) {
+    // CHECK:STDERR: fail_todo_let_binding_case.carbon:[[@LINE+4]]:5: error: semantics TODO: `match case expression pattern that is not a constant integer or `bool`` [SemanticsTodo]
+    // CHECK:STDERR:     case k => { return; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case k => { return; }
     default => { return; }
   }

@@ -24,3 +24,31 @@ fn F(b: bool) {
   }
 }
 //@dump-sem-ir-end
+
+// CHECK:STDOUT: --- bool_scrutinee_default_only.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   %pattern_type: type = pattern_type bool [concrete]
+// CHECK:STDOUT:   %b.param_patt: %pattern_type = value_param_pattern [concrete]
+// CHECK:STDOUT:   %b.patt: %pattern_type = wrapper_binding_pattern b, %b.param_patt [concrete]
+// CHECK:STDOUT:   %F.type: type = fn_type @F [concrete]
+// CHECK:STDOUT:   %F: %F.type = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: file {
+// CHECK:STDOUT:   %F.decl: %F.type = fn_decl @F [concrete = constants.%F] {
+// CHECK:STDOUT:     %b.param_patt: %pattern_type = value_param_pattern [concrete = constants.%b.param_patt]
+// CHECK:STDOUT:     %b.patt: %pattern_type = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %b.param: bool = value_param call_param0
+// CHECK:STDOUT:     %.loc21: type = type_literal bool [concrete = bool]
+// CHECK:STDOUT:     %b: bool = wrapper_binding b, %b.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F(%b.param: bool) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %b.ref: bool = name_ref b, %b
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:

@@ -23,6 +23,10 @@ library "[[@TEST_NAME]]";
 // `bool as EqWith(i32)` does not exist.
 fn F(n: i32) -> i32 {
   match (n) {
+    // CHECK:STDERR: fail_bool_case_on_int.carbon:[[@LINE+4]]:5: error: cannot access member of interface `Core.EqWith(i32)` in type `bool` that does not implement that interface [MissingImplInMemberAccess]
+    // CHECK:STDERR:     case true => { return 1; }
+    // CHECK:STDERR:     ^~~~~~~~~~~~
+    // CHECK:STDERR:
     case true => { return 1; }
     default => { return 0; }
   }
@@ -35,6 +39,10 @@ library "[[@TEST_NAME]]";
 // `Core.IntLiteral as EqWith(bool)` does not exist.
 fn G(b: bool) -> i32 {
   match (b) {
+    // CHECK:STDERR: fail_int_case_on_bool.carbon:[[@LINE+4]]:5: error: cannot access member of interface `Core.EqWith(bool)` in type `Core.IntLiteral` that does not implement that interface [MissingImplInMemberAccess]
+    // CHECK:STDERR:     case 5 => { return 1; }
+    // CHECK:STDERR:     ^~~~~~~~~
+    // CHECK:STDERR:
     case 5 => { return 1; }
     default => { return 0; }
   }

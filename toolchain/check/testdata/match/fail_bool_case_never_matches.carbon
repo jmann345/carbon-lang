@@ -25,6 +25,13 @@ library "[[@TEST_NAME]]";
 fn F(b: bool) -> i32 {
   match (b) {
     case true => { return 1; }
+    // CHECK:STDERR: fail_duplicate_true.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case true => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_duplicate_true.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case true => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case true => { return 2; }
     default => { return 0; }
   }
@@ -42,6 +49,13 @@ fn G(b: bool) -> i32 {
   match (b) {
     case true => { return 1; }
     case false => { return 0; }
+    // CHECK:STDERR: fail_union_kills_binding.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case b2: bool => { if (b2) { return 3; } return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_union_kills_binding.carbon:[[@LINE-6]]:10: note: all alternatives of `bool` are matched by prior arms [MatchCaseNeverMatchesFullCoverage]
+    // CHECK:STDERR:   match (b) {
+    // CHECK:STDERR:          ^
+    // CHECK:STDERR:
     case b2: bool => { if (b2) { return 3; } return 2; }
   }
   return -1;
@@ -57,6 +71,13 @@ fn H(b: bool) -> i32 {
   match (b) {
     case true => { return 1; }
     case false => { return 0; }
+    // CHECK:STDERR: fail_union_then_duplicate.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case true => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_union_then_duplicate.carbon:[[@LINE-5]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case true => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case true => { return 2; }
   }
   return -1;
@@ -70,6 +91,13 @@ library "[[@TEST_NAME]]";
 fn T(t: (bool, i32)) -> i32 {
   match (t) {
     case (true, 1) => { return 1; }
+    // CHECK:STDERR: fail_tuple_duplicate.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case (true, 1) => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_tuple_duplicate.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case (true, 1) => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case (true, 1) => { return 2; }
     default => { return 0; }
   }

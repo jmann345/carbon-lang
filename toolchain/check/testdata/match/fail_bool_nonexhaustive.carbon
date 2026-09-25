@@ -21,6 +21,10 @@ library "[[@TEST_NAME]]";
 
 // Only `true` is covered.
 fn F(b: bool) -> i32 {
+  // CHECK:STDERR: fail_missing_false.carbon:[[@LINE+4]]:3: error: `match` on `bool` has no `default` arm and does not cover value `false` [MatchNonexhaustiveBool]
+  // CHECK:STDERR:   match (b) {
+  // CHECK:STDERR:   ^~~~~~~~~~~
+  // CHECK:STDERR:
   match (b) {
     case true => { return 1; }
   }
@@ -32,6 +36,10 @@ library "[[@TEST_NAME]]";
 
 // Only `false` is covered.
 fn G(b: bool) -> i32 {
+  // CHECK:STDERR: fail_missing_true.carbon:[[@LINE+4]]:3: error: `match` on `bool` has no `default` arm and does not cover value `true` [MatchNonexhaustiveBool]
+  // CHECK:STDERR:   match (b) {
+  // CHECK:STDERR:   ^~~~~~~~~~~
+  // CHECK:STDERR:
   match (b) {
     case false => { return 0; }
   }
@@ -44,6 +52,10 @@ library "[[@TEST_NAME]]";
 // A guarded arm never counts toward coverage — exhaustiveness assumes
 // every guard can fail — so both values are missing.
 fn H(b: bool, c: bool) -> i32 {
+  // CHECK:STDERR: fail_guarded_arm_only.carbon:[[@LINE+4]]:3: error: `match` on `bool` has no `default` arm and does not cover values `false`, `true` [MatchNonexhaustiveBool]
+  // CHECK:STDERR:   match (b) {
+  // CHECK:STDERR:   ^~~~~~~~~~~
+  // CHECK:STDERR:
   match (b) {
     case true if (c) => { return 1; }
   }
@@ -56,6 +68,10 @@ library "[[@TEST_NAME]]";
 // A guarded `default` never discharges the `default` requirement and
 // records nothing toward exhaustiveness, so both values are missing.
 fn I(b: bool, c: bool) -> i32 {
+  // CHECK:STDERR: fail_guarded_default_only.carbon:[[@LINE+4]]:3: error: `match` on `bool` has no `default` arm and does not cover values `false`, `true` [MatchNonexhaustiveBool]
+  // CHECK:STDERR:   match (b) {
+  // CHECK:STDERR:   ^~~~~~~~~~~
+  // CHECK:STDERR:
   match (b) {
     default if (c) => { return 1; }
   }

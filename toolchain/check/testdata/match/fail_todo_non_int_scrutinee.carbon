@@ -20,6 +20,10 @@
 class C {}
 
 fn F(c: C) {
+  // CHECK:STDERR: fail_todo_non_int_scrutinee.carbon:[[@LINE+4]]:9: error: semantics TODO: `match on unsupported scrutinee type` [SemanticsTodo]
+  // CHECK:STDERR:   match (c) {
+  // CHECK:STDERR:         ^~~
+  // CHECK:STDERR:
   match (c) {
     default => { return; }
   }

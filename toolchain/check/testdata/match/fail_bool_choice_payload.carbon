@@ -28,6 +28,13 @@ choice Wrap {
 fn F(w: Wrap) -> i32 {
   match (w) {
     case .Tag(true) => { return 1; }
+    // CHECK:STDERR: fail_duplicate_payload_true.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case .Tag(true) => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_duplicate_payload_true.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case .Tag(true) => { return 1; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case .Tag(true) => { return 2; }
     default => { return 0; }
   }
@@ -47,6 +54,13 @@ choice Wrap {
 fn G(w: Wrap) -> i32 {
   match (w) {
     case .Tag(v: bool) => { if (v) { return 1; } return 0; }
+    // CHECK:STDERR: fail_payload_binding_subsumes.carbon:[[@LINE+7]]:5: error: `case` pattern never matches; every value it can match is matched by a prior arm [MatchCaseNeverMatches]
+    // CHECK:STDERR:     case .Tag(true) => { return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR: fail_payload_binding_subsumes.carbon:[[@LINE-4]]:5: note: pattern is fully covered by this prior arm [MatchCaseNeverMatchesPriorArm]
+    // CHECK:STDERR:     case .Tag(v: bool) => { if (v) { return 1; } return 0; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     case .Tag(true) => { return 2; }
     default => { return 3; }
   }

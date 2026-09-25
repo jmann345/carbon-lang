@@ -475,7 +475,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
 // CHECK:STDOUT:   %n.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %n.patt: %pattern_type.6b6 = at_binding_pattern n, %n.param_patt [concrete]
+// CHECK:STDOUT:   %n.patt: %pattern_type.6b6 = wrapper_binding_pattern n, %n.param_patt [concrete]
 // CHECK:STDOUT:   %MyResult.21e: type = class_type @MyResult, @MyResult(%i32, %i32) [concrete]
 // CHECK:STDOUT:   %.4de: Core.Form = init_form %MyResult.21e [concrete]
 // CHECK:STDOUT:   %pattern_type.90f: type = pattern_type %MyResult.21e [concrete]
@@ -574,7 +574,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %v.patt.113: %pattern_type.6b6 = ref_binding_pattern v [concrete]
 // CHECK:STDOUT:   %v.var_patt: %pattern_type.6b6 = var_pattern %v.patt.113 [concrete]
 // CHECK:STDOUT:   %r.param_patt: %pattern_type.90f = value_param_pattern [concrete]
-// CHECK:STDOUT:   %r.patt: %pattern_type.90f = at_binding_pattern r, %r.param_patt [concrete]
+// CHECK:STDOUT:   %r.patt: %pattern_type.90f = wrapper_binding_pattern r, %r.param_patt [concrete]
 // CHECK:STDOUT:   %InArm.type: type = fn_type @InArm [concrete]
 // CHECK:STDOUT:   %InArm: %InArm.type = struct_value () [concrete]
 // CHECK:STDOUT:   %v.patt.424: %pattern_type.6b6 = value_binding_pattern v [concrete]
@@ -584,7 +584,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %e.patt.2e6: %pattern_type.6b6 = value_binding_pattern e [concrete]
 // CHECK:STDOUT:   %.37b: %pattern_type.e71 = tuple_pattern (%e.patt.2e6) [concrete]
 // CHECK:STDOUT:   %c.param_patt: %pattern_type.831 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %c.patt: %pattern_type.831 = at_binding_pattern c, %c.param_patt [concrete]
+// CHECK:STDOUT:   %c.patt: %pattern_type.831 = wrapper_binding_pattern c, %c.param_patt [concrete]
 // CHECK:STDOUT:   %InIfExpr.type: type = fn_type @InIfExpr [concrete]
 // CHECK:STDOUT:   %InIfExpr: %InIfExpr.type = struct_value () [concrete]
 // CHECK:STDOUT: }
@@ -621,7 +621,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %Basic.decl: %Basic.type = fn_decl @Basic [concrete = constants.%Basic] {
 // CHECK:STDOUT:     %n.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%n.param_patt]
-// CHECK:STDOUT:     %n.patt: %pattern_type.6b6 = at_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
+// CHECK:STDOUT:     %n.patt: %pattern_type.6b6 = wrapper_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.90f = out_param_pattern [concrete = constants.%return.param_patt.8cb]
 // CHECK:STDOUT:     %return.patt: %pattern_type.90f = return_slot_pattern %return.param_patt, %MyResult.loc44 [concrete = constants.%return.patt.6c9]
 // CHECK:STDOUT:   } {
@@ -638,7 +638,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Statement.decl: %Statement.type = fn_decl @Statement [concrete = constants.%Statement] {
 // CHECK:STDOUT:     %n.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%n.param_patt]
-// CHECK:STDOUT:     %n.patt: %pattern_type.6b6 = at_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
+// CHECK:STDOUT:     %n.patt: %pattern_type.6b6 = wrapper_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.90f = out_param_pattern [concrete = constants.%return.param_patt.8cb]
 // CHECK:STDOUT:     %return.patt: %pattern_type.90f = return_slot_pattern %return.param_patt, %MyResult.loc50 [concrete = constants.%return.patt.6c9]
 // CHECK:STDOUT:   } {
@@ -655,7 +655,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Chain.decl: %Chain.type = fn_decl @Chain [concrete = constants.%Chain] {
 // CHECK:STDOUT:     %n.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%n.param_patt]
-// CHECK:STDOUT:     %n.patt: %pattern_type.6b6 = at_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
+// CHECK:STDOUT:     %n.patt: %pattern_type.6b6 = wrapper_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.90f = out_param_pattern [concrete = constants.%return.param_patt.8cb]
 // CHECK:STDOUT:     %return.patt: %pattern_type.90f = return_slot_pattern %return.param_patt, %MyResult.loc58 [concrete = constants.%return.patt.6c9]
 // CHECK:STDOUT:   } {
@@ -672,7 +672,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Argument.decl: %Argument.type = fn_decl @Argument [concrete = constants.%Argument] {
 // CHECK:STDOUT:     %n.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%n.param_patt]
-// CHECK:STDOUT:     %n.patt: %pattern_type.6b6 = at_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
+// CHECK:STDOUT:     %n.patt: %pattern_type.6b6 = wrapper_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.90f = out_param_pattern [concrete = constants.%return.param_patt.8cb]
 // CHECK:STDOUT:     %return.patt: %pattern_type.90f = return_slot_pattern %return.param_patt, %MyResult.loc65 [concrete = constants.%return.patt.6c9]
 // CHECK:STDOUT:   } {
@@ -689,7 +689,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %InArm.decl: %InArm.type = fn_decl @InArm [concrete = constants.%InArm] {
 // CHECK:STDOUT:     %r.param_patt: %pattern_type.90f = value_param_pattern [concrete = constants.%r.param_patt]
-// CHECK:STDOUT:     %r.patt: %pattern_type.90f = at_binding_pattern r, %r.param_patt [concrete = constants.%r.patt]
+// CHECK:STDOUT:     %r.patt: %pattern_type.90f = wrapper_binding_pattern r, %r.param_patt [concrete = constants.%r.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.90f = out_param_pattern [concrete = constants.%return.param_patt.8cb]
 // CHECK:STDOUT:     %return.patt: %pattern_type.90f = return_slot_pattern %return.param_patt, %MyResult.loc74_53 [concrete = constants.%return.patt.6c9]
 // CHECK:STDOUT:   } {
@@ -711,9 +711,9 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %InIfExpr.decl: %InIfExpr.type = fn_decl @InIfExpr [concrete = constants.%InIfExpr] {
 // CHECK:STDOUT:     %n.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%n.param_patt]
-// CHECK:STDOUT:     %n.patt: %pattern_type.6b6 = at_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
+// CHECK:STDOUT:     %n.patt: %pattern_type.6b6 = wrapper_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
 // CHECK:STDOUT:     %c.param_patt: %pattern_type.831 = value_param_pattern [concrete = constants.%c.param_patt]
-// CHECK:STDOUT:     %c.patt: %pattern_type.831 = at_binding_pattern c, %c.param_patt [concrete = constants.%c.patt]
+// CHECK:STDOUT:     %c.patt: %pattern_type.831 = wrapper_binding_pattern c, %c.param_patt [concrete = constants.%c.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.90f = out_param_pattern [concrete = constants.%return.param_patt.8cb]
 // CHECK:STDOUT:     %return.patt: %pattern_type.90f = return_slot_pattern %return.param_patt, %MyResult.loc89 [concrete = constants.%return.patt.6c9]
 // CHECK:STDOUT:   } {
@@ -1632,13 +1632,13 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %MyResult.21e: type = class_type @MyResult, @MyResult(%i32, %i32) [concrete]
 // CHECK:STDOUT:   %pattern_type.90f: type = pattern_type %MyResult.21e [concrete]
 // CHECK:STDOUT:   %a.param_patt: %pattern_type.90f = value_param_pattern [concrete]
-// CHECK:STDOUT:   %a.patt: %pattern_type.90f = at_binding_pattern a, %a.param_patt [concrete]
+// CHECK:STDOUT:   %a.patt: %pattern_type.90f = wrapper_binding_pattern a, %a.param_patt [concrete]
 // CHECK:STDOUT:   %int_64: Core.IntLiteral = int_value 64 [concrete]
 // CHECK:STDOUT:   %i64: type = class_type @Int, @Int(%int_64) [concrete]
 // CHECK:STDOUT:   %MyResult.964: type = class_type @MyResult, @MyResult(%i64, %i32) [concrete]
 // CHECK:STDOUT:   %pattern_type.99b: type = pattern_type %MyResult.964 [concrete]
 // CHECK:STDOUT:   %b.param_patt.341: %pattern_type.99b = value_param_pattern [concrete]
-// CHECK:STDOUT:   %b.patt.402: %pattern_type.99b = at_binding_pattern b, %b.param_patt.341 [concrete]
+// CHECK:STDOUT:   %b.patt.aee: %pattern_type.99b = wrapper_binding_pattern b, %b.param_patt.341 [concrete]
 // CHECK:STDOUT:   %.b38bf: Core.Form = init_form %MyResult.964 [concrete]
 // CHECK:STDOUT:   %return.param_patt.411: %pattern_type.99b = out_param_pattern [concrete]
 // CHECK:STDOUT:   %return.patt.1d9: %pattern_type.99b = return_slot_pattern %return.param_patt.411, %MyResult.964 [concrete]
@@ -1755,9 +1755,9 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %Both.decl: %Both.type = fn_decl @Both [concrete = constants.%Both] {
 // CHECK:STDOUT:     %a.param_patt: %pattern_type.90f = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.90f = at_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
+// CHECK:STDOUT:     %a.patt: %pattern_type.90f = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
 // CHECK:STDOUT:     %b.param_patt: %pattern_type.99b = value_param_pattern [concrete = constants.%b.param_patt.341]
-// CHECK:STDOUT:     %b.patt: %pattern_type.99b = at_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.402]
+// CHECK:STDOUT:     %b.patt: %pattern_type.99b = wrapper_binding_pattern b, %b.param_patt [concrete = constants.%b.patt.aee]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.99b = out_param_pattern [concrete = constants.%return.param_patt.411]
 // CHECK:STDOUT:     %return.patt: %pattern_type.99b = return_slot_pattern %return.param_patt, %MyResult.loc38_75 [concrete = constants.%return.patt.1d9]
 // CHECK:STDOUT:   } {
@@ -2068,7 +2068,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %struct_type.discriminant.payload.76c: type = struct_type {.discriminant: %u1, .payload: %.f6f} [concrete]
 // CHECK:STDOUT:   %.d1e: type = fn_type_with_self_type %Copy.WithSelf.Op.type.f9e, %Copy.facet.aba [concrete]
 // CHECK:STDOUT:   %x.param_patt: %pattern_type.d6c = value_param_pattern [concrete]
-// CHECK:STDOUT:   %x.patt: %pattern_type.d6c = at_binding_pattern x, %x.param_patt [concrete]
+// CHECK:STDOUT:   %x.patt: %pattern_type.d6c = wrapper_binding_pattern x, %x.param_patt [concrete]
 // CHECK:STDOUT:   %Twice.type: type = fn_type @Twice [concrete]
 // CHECK:STDOUT:   %Twice: %Twice.type = struct_value () [concrete]
 // CHECK:STDOUT:   %v.patt: %pattern_type.6b6 = ref_binding_pattern v [concrete]
@@ -2130,7 +2130,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %Twice.decl: %Twice.type = fn_decl @Twice [concrete = constants.%Twice] {
 // CHECK:STDOUT:     %x.param_patt: %pattern_type.d6c = value_param_pattern [concrete = constants.%x.param_patt]
-// CHECK:STDOUT:     %x.patt: %pattern_type.d6c = at_binding_pattern x, %x.param_patt [concrete = constants.%x.patt]
+// CHECK:STDOUT:     %x.patt: %pattern_type.d6c = wrapper_binding_pattern x, %x.param_patt [concrete = constants.%x.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.d6c = out_param_pattern [concrete = constants.%return.param_patt.756]
 // CHECK:STDOUT:     %return.patt: %pattern_type.d6c = return_slot_pattern %return.param_patt, %Outer.ref.loc46_23 [concrete = constants.%return.patt.991]
 // CHECK:STDOUT:   } {
@@ -2343,7 +2343,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %pattern_type.51d1c4.1: type = pattern_type %T.67d [symbolic]
 // CHECK:STDOUT:   %pattern_type.946bb9.1: type = pattern_type %E [symbolic]
 // CHECK:STDOUT:   %e.param_patt.92c2b1.1: %pattern_type.946bb9.1 = value_param_pattern [symbolic]
-// CHECK:STDOUT:   %e.patt.1c0fff.1: %pattern_type.946bb9.1 = at_binding_pattern e, %e.param_patt.92c2b1.1 [symbolic]
+// CHECK:STDOUT:   %e.patt.814478.1: %pattern_type.946bb9.1 = wrapper_binding_pattern e, %e.param_patt.92c2b1.1 [symbolic]
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
 // CHECK:STDOUT:   %UInt.type: type = generic_class_type @UInt [concrete]
 // CHECK:STDOUT:   %UInt.generic: %UInt.type = struct_value () [concrete]
@@ -2434,7 +2434,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %R.as_type: type = facet_access_type %R [symbolic]
 // CHECK:STDOUT:   %pattern_type.239: type = pattern_type %R.as_type [symbolic]
 // CHECK:STDOUT:   %r.param_patt: %pattern_type.239 = value_param_pattern [symbolic]
-// CHECK:STDOUT:   %r.patt: %pattern_type.239 = at_binding_pattern r, %r.param_patt [symbolic]
+// CHECK:STDOUT:   %r.patt: %pattern_type.239 = wrapper_binding_pattern r, %r.param_patt [symbolic]
 // CHECK:STDOUT:   %.802: Core.Form = init_form %R.as_type [symbolic]
 // CHECK:STDOUT:   %return.param_patt.aed: %pattern_type.239 = out_param_pattern [symbolic]
 // CHECK:STDOUT:   %return.patt.0bca: %pattern_type.239 = return_slot_pattern %return.param_patt.aed, %R.as_type [symbolic]
@@ -2484,7 +2484,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %bound_method.6e0: <bound method> = bound_method %int_0.5c6, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571 [concrete]
 // CHECK:STDOUT:   %int_0.3c0: %i32 = int_value 0 [concrete]
 // CHECK:STDOUT:   %mr.param_patt: %pattern_type.6db5df.1 = value_param_pattern [symbolic]
-// CHECK:STDOUT:   %mr.patt.c42: %pattern_type.6db5df.1 = at_binding_pattern mr, %mr.param_patt [symbolic]
+// CHECK:STDOUT:   %mr.patt.8ed: %pattern_type.6db5df.1 = wrapper_binding_pattern mr, %mr.param_patt [symbolic]
 // CHECK:STDOUT:   %PropagateChoice.type: type = fn_type @PropagateChoice [concrete]
 // CHECK:STDOUT:   %PropagateChoice: %PropagateChoice.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Try.lookup_impl_witness.669: <witness> = lookup_impl_witness %MyResult.52ca24.1, @Try [symbolic]
@@ -2514,7 +2514,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %specific_impl_fn.966: <specific function> = specific_impl_function %impl.elem0.0fe, @Destroy.WithSelf.Op(%Destroy.facet.aae) [symbolic]
 // CHECK:STDOUT:   %Discard.specific_fn.e50: <specific function> = specific_function %Discard, @Discard(%impl.elem0.c83) [symbolic]
 // CHECK:STDOUT:   %t.param_patt: %pattern_type.51d1c4.1 = value_param_pattern [symbolic]
-// CHECK:STDOUT:   %t.patt: %pattern_type.51d1c4.1 = at_binding_pattern t, %t.param_patt [symbolic]
+// CHECK:STDOUT:   %t.patt: %pattern_type.51d1c4.1 = wrapper_binding_pattern t, %t.param_patt [symbolic]
 // CHECK:STDOUT:   %WidenedVar.type: type = fn_type @WidenedVar [concrete]
 // CHECK:STDOUT:   %WidenedVar: %WidenedVar.type = struct_value () [concrete]
 // CHECK:STDOUT:   %mr.patt.63f: %pattern_type.6db5df.1 = ref_binding_pattern mr [symbolic]
@@ -2630,7 +2630,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %PropagateOnly.decl: %PropagateOnly.type = fn_decl @PropagateOnly [concrete = constants.%PropagateOnly] {
 // CHECK:STDOUT:     %R.patt.loc58_19.1: %pattern_type.df6 = symbolic_binding_pattern R, 0 [symbolic = %R.patt.loc58_19.2 (constants.%R.patt)]
 // CHECK:STDOUT:     %r.param_patt.loc58_55.1: @PropagateOnly.%pattern_type.loc58 (%pattern_type.239) = value_param_pattern [symbolic = %r.param_patt.loc58_55.2 (constants.%r.param_patt)]
-// CHECK:STDOUT:     %r.patt.loc58_55.1: @PropagateOnly.%pattern_type.loc58 (%pattern_type.239) = at_binding_pattern r, %r.param_patt.loc58_55.1 [symbolic = %r.patt.loc58_55.2 (constants.%r.patt)]
+// CHECK:STDOUT:     %r.patt.loc58_55.1: @PropagateOnly.%pattern_type.loc58 (%pattern_type.239) = wrapper_binding_pattern r, %r.param_patt.loc58_55.1 [symbolic = %r.patt.loc58_55.2 (constants.%r.patt)]
 // CHECK:STDOUT:     %return.param_patt.loc58_63.1: @PropagateOnly.%pattern_type.loc58 (%pattern_type.239) = out_param_pattern [symbolic = %return.param_patt.loc58_63.2 (constants.%return.param_patt.aed)]
 // CHECK:STDOUT:     %return.patt.loc58_60.1: @PropagateOnly.%pattern_type.loc58 (%pattern_type.239) = return_slot_pattern %return.param_patt.loc58_63.1, %.loc58_63.4 [symbolic = %return.patt.loc58_60.2 (constants.%return.patt.0bca)]
 // CHECK:STDOUT:   } {
@@ -2673,9 +2673,9 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:     %T.patt.loc66_21.1: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc66_21.2 (constants.%T.patt.d47)]
 // CHECK:STDOUT:     %E.patt.loc66_30.1: %pattern_type.98f = symbolic_binding_pattern E, 1 [symbolic = %E.patt.loc66_30.2 (constants.%E.patt)]
 // CHECK:STDOUT:     %mr.param_patt.loc66_40.1: @PropagateChoice.%pattern_type.loc66_40 (%pattern_type.6db5df.1) = value_param_pattern [symbolic = %mr.param_patt.loc66_40.2 (constants.%mr.param_patt)]
-// CHECK:STDOUT:     %mr.patt.loc66_40.1: @PropagateChoice.%pattern_type.loc66_40 (%pattern_type.6db5df.1) = at_binding_pattern mr, %mr.param_patt.loc66_40.1 [symbolic = %mr.patt.loc66_40.2 (constants.%mr.patt.c42)]
+// CHECK:STDOUT:     %mr.patt.loc66_40.1: @PropagateChoice.%pattern_type.loc66_40 (%pattern_type.6db5df.1) = wrapper_binding_pattern mr, %mr.param_patt.loc66_40.1 [symbolic = %mr.patt.loc66_40.2 (constants.%mr.patt.8ed)]
 // CHECK:STDOUT:     %e.param_patt.loc66_59.1: @PropagateChoice.%pattern_type.loc66_59 (%pattern_type.946bb9.1) = value_param_pattern [symbolic = %e.param_patt.loc66_59.2 (constants.%e.param_patt.92c2b1.1)]
-// CHECK:STDOUT:     %e.patt.loc66_59.1: @PropagateChoice.%pattern_type.loc66_59 (%pattern_type.946bb9.1) = at_binding_pattern e, %e.param_patt.loc66_59.1 [symbolic = %e.patt.loc66_59.2 (constants.%e.patt.1c0fff.1)]
+// CHECK:STDOUT:     %e.patt.loc66_59.1: @PropagateChoice.%pattern_type.loc66_59 (%pattern_type.946bb9.1) = wrapper_binding_pattern e, %e.param_patt.loc66_59.1 [symbolic = %e.patt.loc66_59.2 (constants.%e.patt.814478.1)]
 // CHECK:STDOUT:     %return.param_patt.loc67_21.1: @PropagateChoice.%pattern_type.loc66_40 (%pattern_type.6db5df.1) = out_param_pattern [symbolic = %return.param_patt.loc67_21.2 (constants.%return.param_patt.296c1c.1)]
 // CHECK:STDOUT:     %return.patt.loc67_5.1: @PropagateChoice.%pattern_type.loc66_40 (%pattern_type.6db5df.1) = return_slot_pattern %return.param_patt.loc67_21.1, %MyResult.loc67 [symbolic = %return.patt.loc67_5.2 (constants.%return.patt.971efd.1)]
 // CHECK:STDOUT:   } {
@@ -2712,9 +2712,9 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:     %T.patt.loc90_16.1: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc90_16.2 (constants.%T.patt.d47)]
 // CHECK:STDOUT:     %E.patt.loc90_25.1: %pattern_type.98f = symbolic_binding_pattern E, 1 [symbolic = %E.patt.loc90_25.2 (constants.%E.patt)]
 // CHECK:STDOUT:     %t.param_patt.loc90_34.1: @WidenedVar.%pattern_type.loc90_34 (%pattern_type.51d1c4.1) = value_param_pattern [symbolic = %t.param_patt.loc90_34.2 (constants.%t.param_patt)]
-// CHECK:STDOUT:     %t.patt.loc90_34.1: @WidenedVar.%pattern_type.loc90_34 (%pattern_type.51d1c4.1) = at_binding_pattern t, %t.param_patt.loc90_34.1 [symbolic = %t.patt.loc90_34.2 (constants.%t.patt)]
+// CHECK:STDOUT:     %t.patt.loc90_34.1: @WidenedVar.%pattern_type.loc90_34 (%pattern_type.51d1c4.1) = wrapper_binding_pattern t, %t.param_patt.loc90_34.1 [symbolic = %t.patt.loc90_34.2 (constants.%t.patt)]
 // CHECK:STDOUT:     %e.param_patt.loc90_47.1: @WidenedVar.%pattern_type.loc90_47 (%pattern_type.946bb9.1) = value_param_pattern [symbolic = %e.param_patt.loc90_47.2 (constants.%e.param_patt.92c2b1.1)]
-// CHECK:STDOUT:     %e.patt.loc90_47.1: @WidenedVar.%pattern_type.loc90_47 (%pattern_type.946bb9.1) = at_binding_pattern e, %e.param_patt.loc90_47.1 [symbolic = %e.patt.loc90_47.2 (constants.%e.patt.1c0fff.1)]
+// CHECK:STDOUT:     %e.patt.loc90_47.1: @WidenedVar.%pattern_type.loc90_47 (%pattern_type.946bb9.1) = wrapper_binding_pattern e, %e.param_patt.loc90_47.1 [symbolic = %e.patt.loc90_47.2 (constants.%e.patt.814478.1)]
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %.loc90_18.1: type = splice_block %.loc90_18.2 [concrete = type] {
 // CHECK:STDOUT:       %.Self.frozen.loc90_16: %type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen.197]
@@ -2736,7 +2736,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %WidenedScrutinee.decl: %WidenedScrutinee.type = fn_decl @WidenedScrutinee [concrete = constants.%WidenedScrutinee] {
 // CHECK:STDOUT:     %T.patt.loc101_22.1: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc101_22.2 (constants.%T.patt.d47)]
 // CHECK:STDOUT:     %t.param_patt.loc101_31.1: @WidenedScrutinee.%pattern_type.loc101 (%pattern_type.51d1c4.1) = value_param_pattern [symbolic = %t.param_patt.loc101_31.2 (constants.%t.param_patt)]
-// CHECK:STDOUT:     %t.patt.loc101_31.1: @WidenedScrutinee.%pattern_type.loc101 (%pattern_type.51d1c4.1) = at_binding_pattern t, %t.param_patt.loc101_31.1 [symbolic = %t.patt.loc101_31.2 (constants.%t.patt)]
+// CHECK:STDOUT:     %t.patt.loc101_31.1: @WidenedScrutinee.%pattern_type.loc101 (%pattern_type.51d1c4.1) = wrapper_binding_pattern t, %t.param_patt.loc101_31.1 [symbolic = %t.patt.loc101_31.2 (constants.%t.patt)]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32.loc101 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {
@@ -2761,7 +2761,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %R.as_type.loc58_57.1: type = facet_access_type %R.loc58_19.1 [symbolic = %R.as_type.loc58_57.1 (constants.%R.as_type)]
 // CHECK:STDOUT:   %pattern_type.loc58: type = pattern_type %R.as_type.loc58_57.1 [symbolic = %pattern_type.loc58 (constants.%pattern_type.239)]
 // CHECK:STDOUT:   %r.param_patt.loc58_55.2: @PropagateOnly.%pattern_type.loc58 (%pattern_type.239) = value_param_pattern [symbolic = %r.param_patt.loc58_55.2 (constants.%r.param_patt)]
-// CHECK:STDOUT:   %r.patt.loc58_55.2: @PropagateOnly.%pattern_type.loc58 (%pattern_type.239) = at_binding_pattern r, %r.param_patt.loc58_55.2 [symbolic = %r.patt.loc58_55.2 (constants.%r.patt)]
+// CHECK:STDOUT:   %r.patt.loc58_55.2: @PropagateOnly.%pattern_type.loc58 (%pattern_type.239) = wrapper_binding_pattern r, %r.param_patt.loc58_55.2 [symbolic = %r.patt.loc58_55.2 (constants.%r.patt)]
 // CHECK:STDOUT:   %.loc58_63.3: Core.Form = init_form %R.as_type.loc58_57.1 [symbolic = %.loc58_63.3 (constants.%.802)]
 // CHECK:STDOUT:   %return.param_patt.loc58_63.2: @PropagateOnly.%pattern_type.loc58 (%pattern_type.239) = out_param_pattern [symbolic = %return.param_patt.loc58_63.2 (constants.%return.param_patt.aed)]
 // CHECK:STDOUT:   %return.patt.loc58_60.2: @PropagateOnly.%pattern_type.loc58 (%pattern_type.239) = return_slot_pattern %return.param_patt.loc58_63.2, %R.as_type.loc58_57.1 [symbolic = %return.patt.loc58_60.2 (constants.%return.patt.0bca)]
@@ -2900,10 +2900,10 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %MyResult.loc66_55.1: type = class_type @MyResult, @MyResult(%T.loc66_21.1, %E.loc66_30.1) [symbolic = %MyResult.loc66_55.1 (constants.%MyResult.52ca24.1)]
 // CHECK:STDOUT:   %pattern_type.loc66_40: type = pattern_type %MyResult.loc66_55.1 [symbolic = %pattern_type.loc66_40 (constants.%pattern_type.6db5df.1)]
 // CHECK:STDOUT:   %mr.param_patt.loc66_40.2: @PropagateChoice.%pattern_type.loc66_40 (%pattern_type.6db5df.1) = value_param_pattern [symbolic = %mr.param_patt.loc66_40.2 (constants.%mr.param_patt)]
-// CHECK:STDOUT:   %mr.patt.loc66_40.2: @PropagateChoice.%pattern_type.loc66_40 (%pattern_type.6db5df.1) = at_binding_pattern mr, %mr.param_patt.loc66_40.2 [symbolic = %mr.patt.loc66_40.2 (constants.%mr.patt.c42)]
+// CHECK:STDOUT:   %mr.patt.loc66_40.2: @PropagateChoice.%pattern_type.loc66_40 (%pattern_type.6db5df.1) = wrapper_binding_pattern mr, %mr.param_patt.loc66_40.2 [symbolic = %mr.patt.loc66_40.2 (constants.%mr.patt.8ed)]
 // CHECK:STDOUT:   %pattern_type.loc66_59: type = pattern_type %E.loc66_30.1 [symbolic = %pattern_type.loc66_59 (constants.%pattern_type.946bb9.1)]
 // CHECK:STDOUT:   %e.param_patt.loc66_59.2: @PropagateChoice.%pattern_type.loc66_59 (%pattern_type.946bb9.1) = value_param_pattern [symbolic = %e.param_patt.loc66_59.2 (constants.%e.param_patt.92c2b1.1)]
-// CHECK:STDOUT:   %e.patt.loc66_59.2: @PropagateChoice.%pattern_type.loc66_59 (%pattern_type.946bb9.1) = at_binding_pattern e, %e.param_patt.loc66_59.2 [symbolic = %e.patt.loc66_59.2 (constants.%e.patt.1c0fff.1)]
+// CHECK:STDOUT:   %e.patt.loc66_59.2: @PropagateChoice.%pattern_type.loc66_59 (%pattern_type.946bb9.1) = wrapper_binding_pattern e, %e.param_patt.loc66_59.2 [symbolic = %e.patt.loc66_59.2 (constants.%e.patt.814478.1)]
 // CHECK:STDOUT:   %.loc67_21.3: Core.Form = init_form %MyResult.loc66_55.1 [symbolic = %.loc67_21.3 (constants.%.6c705e.1)]
 // CHECK:STDOUT:   %return.param_patt.loc67_21.2: @PropagateChoice.%pattern_type.loc66_40 (%pattern_type.6db5df.1) = out_param_pattern [symbolic = %return.param_patt.loc67_21.2 (constants.%return.param_patt.296c1c.1)]
 // CHECK:STDOUT:   %return.patt.loc67_5.2: @PropagateChoice.%pattern_type.loc66_40 (%pattern_type.6db5df.1) = return_slot_pattern %return.param_patt.loc67_21.2, %MyResult.loc66_55.1 [symbolic = %return.patt.loc67_5.2 (constants.%return.patt.971efd.1)]
@@ -3032,10 +3032,10 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %E.loc90_25.1: type = symbolic_binding E, 1 [symbolic = %E.loc90_25.1 (constants.%E)]
 // CHECK:STDOUT:   %pattern_type.loc90_34: type = pattern_type %T.loc90_16.1 [symbolic = %pattern_type.loc90_34 (constants.%pattern_type.51d1c4.1)]
 // CHECK:STDOUT:   %t.param_patt.loc90_34.2: @WidenedVar.%pattern_type.loc90_34 (%pattern_type.51d1c4.1) = value_param_pattern [symbolic = %t.param_patt.loc90_34.2 (constants.%t.param_patt)]
-// CHECK:STDOUT:   %t.patt.loc90_34.2: @WidenedVar.%pattern_type.loc90_34 (%pattern_type.51d1c4.1) = at_binding_pattern t, %t.param_patt.loc90_34.2 [symbolic = %t.patt.loc90_34.2 (constants.%t.patt)]
+// CHECK:STDOUT:   %t.patt.loc90_34.2: @WidenedVar.%pattern_type.loc90_34 (%pattern_type.51d1c4.1) = wrapper_binding_pattern t, %t.param_patt.loc90_34.2 [symbolic = %t.patt.loc90_34.2 (constants.%t.patt)]
 // CHECK:STDOUT:   %pattern_type.loc90_47: type = pattern_type %E.loc90_25.1 [symbolic = %pattern_type.loc90_47 (constants.%pattern_type.946bb9.1)]
 // CHECK:STDOUT:   %e.param_patt.loc90_47.2: @WidenedVar.%pattern_type.loc90_47 (%pattern_type.946bb9.1) = value_param_pattern [symbolic = %e.param_patt.loc90_47.2 (constants.%e.param_patt.92c2b1.1)]
-// CHECK:STDOUT:   %e.patt.loc90_47.2: @WidenedVar.%pattern_type.loc90_47 (%pattern_type.946bb9.1) = at_binding_pattern e, %e.param_patt.loc90_47.2 [symbolic = %e.patt.loc90_47.2 (constants.%e.patt.1c0fff.1)]
+// CHECK:STDOUT:   %e.patt.loc90_47.2: @WidenedVar.%pattern_type.loc90_47 (%pattern_type.946bb9.1) = wrapper_binding_pattern e, %e.param_patt.loc90_47.2 [symbolic = %e.patt.loc90_47.2 (constants.%e.patt.814478.1)]
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete.loc90_34: <witness> = require_complete_type %T.loc90_16.1 [symbolic = %require_complete.loc90_34 (constants.%require_complete.9443dd.1)]
@@ -3098,7 +3098,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %T.loc101_22.1: type = symbolic_binding T, 0 [symbolic = %T.loc101_22.1 (constants.%T.67d)]
 // CHECK:STDOUT:   %pattern_type.loc101: type = pattern_type %T.loc101_22.1 [symbolic = %pattern_type.loc101 (constants.%pattern_type.51d1c4.1)]
 // CHECK:STDOUT:   %t.param_patt.loc101_31.2: @WidenedScrutinee.%pattern_type.loc101 (%pattern_type.51d1c4.1) = value_param_pattern [symbolic = %t.param_patt.loc101_31.2 (constants.%t.param_patt)]
-// CHECK:STDOUT:   %t.patt.loc101_31.2: @WidenedScrutinee.%pattern_type.loc101 (%pattern_type.51d1c4.1) = at_binding_pattern t, %t.param_patt.loc101_31.2 [symbolic = %t.patt.loc101_31.2 (constants.%t.patt)]
+// CHECK:STDOUT:   %t.patt.loc101_31.2: @WidenedScrutinee.%pattern_type.loc101 (%pattern_type.51d1c4.1) = wrapper_binding_pattern t, %t.param_patt.loc101_31.2 [symbolic = %t.patt.loc101_31.2 (constants.%t.patt)]
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
 // CHECK:STDOUT:   %require_complete.loc101: <witness> = require_complete_type %T.loc101_22.1 [symbolic = %require_complete.loc101 (constants.%require_complete.9443dd.1)]
@@ -3258,10 +3258,10 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %MyResult.loc66_55.1 => constants.%MyResult.52ca24.1
 // CHECK:STDOUT:   %pattern_type.loc66_40 => constants.%pattern_type.6db5df.1
 // CHECK:STDOUT:   %mr.param_patt.loc66_40.2 => constants.%mr.param_patt
-// CHECK:STDOUT:   %mr.patt.loc66_40.2 => constants.%mr.patt.c42
+// CHECK:STDOUT:   %mr.patt.loc66_40.2 => constants.%mr.patt.8ed
 // CHECK:STDOUT:   %pattern_type.loc66_59 => constants.%pattern_type.946bb9.1
 // CHECK:STDOUT:   %e.param_patt.loc66_59.2 => constants.%e.param_patt.92c2b1.1
-// CHECK:STDOUT:   %e.patt.loc66_59.2 => constants.%e.patt.1c0fff.1
+// CHECK:STDOUT:   %e.patt.loc66_59.2 => constants.%e.patt.814478.1
 // CHECK:STDOUT:   %.loc67_21.3 => constants.%.6c705e.1
 // CHECK:STDOUT:   %return.param_patt.loc67_21.2 => constants.%return.param_patt.296c1c.1
 // CHECK:STDOUT:   %return.patt.loc67_5.2 => constants.%return.patt.971efd.1
@@ -3277,7 +3277,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %t.patt.loc90_34.2 => constants.%t.patt
 // CHECK:STDOUT:   %pattern_type.loc90_47 => constants.%pattern_type.946bb9.1
 // CHECK:STDOUT:   %e.param_patt.loc90_47.2 => constants.%e.param_patt.92c2b1.1
-// CHECK:STDOUT:   %e.patt.loc90_47.2 => constants.%e.patt.1c0fff.1
+// CHECK:STDOUT:   %e.patt.loc90_47.2 => constants.%e.patt.814478.1
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: specific @WidenedScrutinee(constants.%T.67d) {
@@ -3344,7 +3344,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %ImplicitAs.WithSelf.Convert.type.487: type = fn_type @ImplicitAs.WithSelf.Convert, @ImplicitAs.WithSelf(%ErrB, %ImplicitAs.facet.53c) [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
 // CHECK:STDOUT:   %n.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %n.patt: %pattern_type.6b6 = at_binding_pattern n, %n.param_patt [concrete]
+// CHECK:STDOUT:   %n.patt: %pattern_type.6b6 = wrapper_binding_pattern n, %n.param_patt [concrete]
 // CHECK:STDOUT:   %MyResult.4a3: type = class_type @MyResult, @MyResult(%i32, %ErrA) [concrete]
 // CHECK:STDOUT:   %Inner.type: type = fn_type @Inner [concrete]
 // CHECK:STDOUT:   %Inner: %Inner.type = struct_value () [concrete]
@@ -3420,7 +3420,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %Outer.decl: %Outer.type = fn_decl @Outer [concrete = constants.%Outer] {
 // CHECK:STDOUT:     %n.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%n.param_patt]
-// CHECK:STDOUT:     %n.patt: %pattern_type.6b6 = at_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
+// CHECK:STDOUT:     %n.patt: %pattern_type.6b6 = wrapper_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.695 = out_param_pattern [concrete = constants.%return.param_patt.cc3]
 // CHECK:STDOUT:     %return.patt: %pattern_type.695 = return_slot_pattern %return.param_patt, %MyResult.loc61 [concrete = constants.%return.patt.acc]
 // CHECK:STDOUT:   } {
@@ -3603,7 +3603,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT:   %MyResult.21e: type = class_type @MyResult, @MyResult(%i32, %i32) [concrete]
 // CHECK:STDOUT:   %pattern_type.90f: type = pattern_type %MyResult.21e [concrete]
 // CHECK:STDOUT:   %r.param_patt: %pattern_type.90f = value_param_pattern [concrete]
-// CHECK:STDOUT:   %r.patt: %pattern_type.90f = at_binding_pattern r, %r.param_patt [concrete]
+// CHECK:STDOUT:   %r.patt: %pattern_type.90f = wrapper_binding_pattern r, %r.param_patt [concrete]
 // CHECK:STDOUT:   %.4de: Core.Form = init_form %MyResult.21e [concrete]
 // CHECK:STDOUT:   %return.param_patt.8cb: %pattern_type.90f = out_param_pattern [concrete]
 // CHECK:STDOUT:   %return.patt.6c9: %pattern_type.90f = return_slot_pattern %return.param_patt.8cb, %MyResult.21e [concrete]
@@ -3620,7 +3620,7 @@ fn Passthrough(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %Passthrough.decl: %Passthrough.type = fn_decl @Passthrough [concrete = constants.%Passthrough] {
 // CHECK:STDOUT:     %r.param_patt: %pattern_type.90f = value_param_pattern [concrete = constants.%r.param_patt]
-// CHECK:STDOUT:     %r.patt: %pattern_type.90f = at_binding_pattern r, %r.param_patt [concrete = constants.%r.patt]
+// CHECK:STDOUT:     %r.patt: %pattern_type.90f = wrapper_binding_pattern r, %r.param_patt [concrete = constants.%r.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.90f = out_param_pattern [concrete = constants.%return.param_patt.8cb]
 // CHECK:STDOUT:     %return.patt: %pattern_type.90f = return_slot_pattern %return.param_patt, %MyResult.loc19_59 [concrete = constants.%return.patt.6c9]
 // CHECK:STDOUT:   } {

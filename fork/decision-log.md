@@ -2745,7 +2745,154 @@ list + the green gate. The design's canonical
 runs; the fork's tripwire flipped exactly as its own header predicted.
 **W-075 is DISCHARGED.** Veto-able.
 
-### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
+### Weekly upstream merge 2026-09-21: cut HOLDS a fifth week; tip still half-healed (2026-09-21)
+
+Fold-in to the still-unlanded 08-24 staging merge (runner jeromehome
+offline since 08-27 ~02:20Z — 25 days; the landing loop keeps a gate
+run queued and re-bumps past GitHub's 24h queue expiry, now at
+attempt 48). Measured upstream trunk 76e7fc5 (28 commits since
+4081848). Template-adjacent work continued (#7769 removes
+`refine_inst_action` and its splices, #7768/#7804 type-sugar
+preservation in diagnostics, #7737 non-canonical default values).
+Empirical A/B against the freshly mirrored 2026.09.21 nightly
+(version 76e7fc5): generics/templates_value_param.carbon COMPILES
+CLEAN (object emitted, exit 0) — unchanged from last week — but
+generics/templates_type_param.carbon still CRASHES, now with a
+sharper signature: FATAL at toolchain/lower/handle.cpp:294
+"Unexpected category 9 for `return` expression {kind: SpliceInst,
+...}" (the SpliceInst reaches lowering with an unhandled expression
+category). Half-healed is still a regression vs the fork floor (both
+probes PASS at the 631f8fb cut), so the cut stands a fifth week; the
+deferred set grows to 119 commits (7+12+28+44+28). One deferred
+commit now touches a fork-modified file (toolchain/check/
+pattern_match.cpp), raising future-merge conflict surface for the
+W-008 family — noted for the eventual advance past the cut. The
+clang-21 note from 09-14 stands.
+
+### Weekly upstream merge 2026-09-14: cut HOLDS a fourth week; tip half-healed (2026-09-14)
+
+Fold-in to the still-unlanded 08-24 staging merge (runner jeromehome
+offline since 08-27 ~02:20Z — 18 days; the landing loop keeps a gate
+run queued and re-bumps past GitHub's 24h queue expiry). Measured
+upstream trunk 4081848 (44 commits since 386327e). Real template
+progress landed: #7726 SpecificInst, #7727 template LOWERING support,
+
+## 7741 template-dependent assignment, #7735/#7736 template-argument
+
+tests, #7772 out-of-line template decl fix. Empirical A/B against the
+freshly mirrored 2026.09.14 nightly (version 4081848):
+generics/templates_value_param.carbon now COMPILES CLEAN (was
+crashing) — but generics/templates_type_param.carbon still CRASHES
+(stack dump, exit 141). Half-healed is still a regression vs the
+fork floor (both probes PASS at the 631f8fb cut), so the cut stands a
+fourth week; the deferred set grows to 91 commits (7+12+28+44).
+Operational note for the runner's return: #7779 raises upstream's
+minimum toolchain to clang 21 and CI now uses it — jeromehome carried
+clang >= 19; when a post-#7779 merge is eventually attempted, the
+host may need a clang upgrade (user-visible ask at that point, not
+now; the staged 631f8fb cut predates the requirement and is
+unaffected).
+
+### Weekly upstream merge 2026-09-07: cut HOLDS a third week; tip now crashes BOTH probes (2026-09-07)
+
+Fold-in to the still-unlanded 08-24 staging merge (runner jeromehome
+offline since 08-27 ~02:20Z — 11 days; the landing loop keeps a gate
+run queued). Measured upstream trunk 386327e (28 commits since
+f519ccc). The template-action series continued (#7689 TemplateInst,
+
+### 7700 splice-stepping for bound methods, #7710 call-action operand
+
+refinement — the last two aimed at exactly the `<bound method>`
+failure class measured last week). Empirical A/B against the freshly
+mirrored 2026.09.07 nightly (version 386327e; mirror is
+GitHub-hosted, unaffected by the runner outage): BOTH
+generics/templates_{type,value}_param.carbon now CRASH the compiler
+(stack dump, "Pending diagnostics:", exit 141) — last week only
+value_param crashed and type_param diagnosed. Facet-constrained
+`template T` bindings remain broken at tip, trending worse. Verdict:
+the 631f8fb cut stands a third week; the deferred set grows to 47
+commits (7 + 12 + 28), all descendants of the in-flight series. The
+09-06/09-07 upstream `match_first` and named-constraint work
+(#7713/#7714) is inside the deferred span and returns whenever the
+series stabilizes. Digest note (user's call, unchanged): the
+tip crashes are reportable upstream bugs; filing is an outward-facing
+action left to the user.
+
+#### Weekly upstream merge 2026-08-31: cut HOLDS; tip now crashes the probe (2026-08-31)
+
+Fold-in to the still-unlanded 2026-08-24 staging merge (runner offline
+since 08-27 ~02:20Z; gate never ran). Measured upstream trunk f519ccc
+(12 commits since 2b9fdd6). The template-action series continued
+(#7671 constant InstActions, #7682 CallAction deferred calls) and the
+`CallToNonCallable` fail_todo pins in
+generic/template/unimplemented.carbon dropped 5 -> 0 at tip — but the
+EMPIRICAL A/B against the freshly mirrored 2026.08.31 nightly
+(version f519ccc; the mirror workflow runs GitHub-hosted, so it was
+available despite the runner outage) shows the facet-constrained
+template shape is still broken and now WORSE:
+generics/templates_type_param.carbon fails with "unable to
+monomorphize specific `Identity(i32 as Core.Copy & Core.Destroy)`"
+plus "value of type `<bound method>` is not callable", and
+generics/templates_value_param.carbon CRASHES the compiler (stack
+dump, exit 141). Verdict: the 631f8fb cut stands for another week;
+the deferred set grows to 19 commits (last week's 7 + this week's
+12 — all descendants of the in-flight series). Candidate user ask
+(digest, non-blocking): the value_param crash on pure upstream tip is
+a reportable upstream bug; filing an upstream issue is an
+outward-facing action left to the user's call. Staging branch
+otherwise unchanged; the 08-24 record's landing plan still applies
+the moment the runner returns.
+
+##### Weekly upstream merge 2026-08-24: cut before the template-action series; runner disk blocker (2026-08-24)
+
+The scheduled weekly merge (standing rule 5) measured upstream trunk
+2b9fdd6 (24 commits since the 2026-08-17 sync point 864845c), built the
+FULL tip merge on staging first, and caught a conformance regression:
+96/0 -> 94/2 over 124, both `generics/templates_{type,value}_param`
+newly COMPILE-FAIL with `value of type <dependent type> is not
+callable` at `return x;` under `[template T: <facet>]`. Root cause
+verified FORK-INDEPENDENT by an A/B on pure upstream nightlies (the
+mirrored arbiter tarballs): 2026.08.17 compiles both programs;
+2026.08.24 fails them with identical diagnostics. Upstream's in-flight
+template-action series (#7657 6eb900d, #7662 186a756, #7663 c41033c)
+reroutes dependent conversions through template actions with
+INITIALIZING conversions explicitly left as future work (#7662's own
+message); upstream pins the class as fail_todo_ in
+generic/template/unimplemented.carbon — acknowledged gap, V-3a. Per the
+weekly-merge non-regression rule the landed merge CUTS at 631f8fb
+(#7658), taking 17 of 24 commits and deferring seven (the three
+template commits + c588ead, 4172f4d, 40aa441, 2b9fdd6) to next week's
+merge, by which point the promised initializing-conversion follow-up
+should exist. Conflict resolutions on the cut (identical spelling to
+the measured tip merge): 14 goldens fork-side CHECK-renumbering only,
+taken upstream for runner regen; node_kind.def match family follows
+upstream's new `_STATEMENT` extraction-sharding classification with the
+three fork-only kinds alongside their siblings; clang_decl.h takes
+upstream #7642's defaulted `operator==` (member-wise covers F8d's
+`constant_function_args`). R26 fixpoint at regen pass 2 (pass pushed
+nothing); conformance at fixpoint EXACTLY 96/0/28 over 124 —
+non-regressing.
+
+**Runner disk blocker (OPEN at recording):** the F-002 gate could not
+run — the build workflow's Preflight guard trips at 37GB free vs the
+40GB cold-build threshold ($HOME 94% full on jeromehome). Two
+misleading "gate failures" first appeared as golden mismatches: with
+Preflight failed and every build/test step SKIPPED, the diagnostic
+"Print failing test logs" step dumps the PREVIOUS run's bazel-testlogs
+— content provably absent from the tested SHA. Remediation attempted
+within charter: `user.bazelrc` (upstream's own documented override
+point, force-added past the gitignore) capping the bazel disk cache GC
+at 80G, plus a bazel cycle — freed nothing (cache evidently under
+cap). Three gate attempts, then stop-per-checkpoint-rule. USER ACTION
+ASKED (push notification sent): free ~5GB on jeromehome, or bless
+lowering MIN_FREE_GB 40->30 (a CI change, so it needs the user's
+explicit blessing; 37GB demonstrably suffices for warm-cache builds —
+conformance builds the full toolchain in it). The staged merge lands
+(F-002 into trunk) as soon as one gate run is green. Veto-able:
+the cut-not-tip call, the user.bazelrc cap, and the deferred-commit
+list.
+
+##### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",
 self-hosted/Linux/X64) on the fork. `.github/workflows/fork_build_toolchain.yaml`
@@ -2759,7 +2906,7 @@ repository, keep the default "require approval for outside collaborators'
 workflow runs" protection enabled so third-party PRs can't run code on the
 runner host.
 
-### F-001: What "0.1" means for this fork — **Staged official 0.1** (2026-07-19)
+##### F-001: What "0.1" means for this fork — **Staged official 0.1** (2026-07-19)
 
 Chase the full official checklist from `docs/project/milestones.md`, in
 dependency order, tagging intermediate fork milestones (`fork-0.1-alpha`,
@@ -2768,7 +2915,7 @@ the undesigned bullets is in scope. Alternatives rejected: pragmatic
 subset-0.1 (diverges from the official definition), upstream-lockstep
 (too slow, not autonomous).
 
-### F-002: Upstream relationship — **Bun-style merge gating** (2026-07-19)
+##### F-002: Upstream relationship — **Bun-style merge gating** (2026-07-19)
 
 User's words: "Follow the same approach used by the Bun zig->rust rewrite
 for merging into my fork branch." Interpretation (recorded for review):
@@ -2784,7 +2931,7 @@ Applied here:
 -   Upstream trunk merges are treated the same way: merge upstream into a
     staging branch, re-run the suite, land only when green.
 
-### F-003: First scaled track — **Design sprint + match chain in parallel** (2026-07-19)
+##### F-003: First scaled track — **Design sprint + match chain in parallel** (2026-07-19)
 
 After the conformance-harness trial (W1): agent fleets draft the missing
 designs (error handling, unions, if-let/let-else, function overloading,
@@ -2793,7 +2940,7 @@ each design fork, while the implementation loop grinds
 match semantics → choice payloads → std::variant/optional interop against
 the harness.
 
-### F-004: Arbiter toolchain source — **Upstream nightly prebuilt** (2026-07-19)
+##### F-004: Arbiter toolchain source — **Upstream nightly prebuilt** (2026-07-19)
 
 User approved adding `carbon-language/carbon-lang` to the session to
 download the nightly prebuilt toolchain tarball (Linux x86_64). This

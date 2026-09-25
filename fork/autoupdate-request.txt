@@ -1,1 +1,1 @@
-2026-08-19T02:42Z W75a fix-round regen pass 2 (repr-dispatch fix + mono_from_generic subfile)
+2026-08-24T15:30Z weekly-upstream-20260824 (cut 631f8fb) regen pass 2 — R26 fixpoint check after 61-file pass 1

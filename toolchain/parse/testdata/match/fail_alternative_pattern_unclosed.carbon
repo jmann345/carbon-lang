@@ -13,20 +13,23 @@
 // closes with an error.
 fn F(x: i32) -> i32 {
   match (x) {
-    // CHECK:STDERR: fail_alternative_pattern_unclosed.carbon:[[@LINE+8]]:13: error: opening symbol without a corresponding closing symbol [UnmatchedOpening]
+    // CHECK:STDERR: fail_alternative_pattern_unclosed.carbon:[[@LINE+15]]:13: error: opening symbol without a corresponding closing symbol [UnmatchedOpening]
     // CHECK:STDERR:     case .Ok(value: i32 => { return 1; }
     // CHECK:STDERR:             ^
+    // CHECK:STDERR: fail_alternative_pattern_unclosed.carbon:[[@LINE+12]]:27: note: possibly missing `)` here [PossiblyMissingBracketHere]
+    // CHECK:STDERR:     case .Ok(value: i32 => { return 1; }
+    // CHECK:STDERR:                           ^
     // CHECK:STDERR:
-    // CHECK:STDERR: fail_alternative_pattern_unclosed.carbon:[[@LINE+4]]:25: error: expected `,` or `)` [UnexpectedTokenAfterListElement]
+    // CHECK:STDERR: fail_alternative_pattern_unclosed.carbon:[[@LINE+8]]:25: error: expected `,` or `)` [UnexpectedTokenAfterListElement]
     // CHECK:STDERR:     case .Ok(value: i32 => { return 1; }
     // CHECK:STDERR:                         ^~
     // CHECK:STDERR:
+    // CHECK:STDERR: fail_alternative_pattern_unclosed.carbon:[[@LINE+4]]:28: error: expected `=>` introducing statement block [ExpectedMatchCaseArrow]
+    // CHECK:STDERR:     case .Ok(value: i32 => { return 1; }
+    // CHECK:STDERR:                            ^
+    // CHECK:STDERR:
     case .Ok(value: i32 => { return 1; }
     default => { return 0; }
-  // CHECK:STDERR: fail_alternative_pattern_unclosed.carbon:[[@LINE+4]]:3: error: expected `=>` introducing statement block [ExpectedMatchCaseArrow]
-  // CHECK:STDERR:   }
-  // CHECK:STDERR:   ^
-  // CHECK:STDERR:
   }
   return -1;
 }
@@ -59,9 +62,16 @@ fn F(x: i32) -> i32 {
 // CHECK:STDOUT:   │ │ │     │ │ ├─LetBindingPattern ':'
 // CHECK:STDOUT:   │ │ │     │ ├─ParenPattern ')' has_error
 // CHECK:STDOUT:   │ │ │     ├─AlternativePattern '.'
-// CHECK:STDOUT:   │ │ │   ╭─MatchCase '}' has_error
-// CHECK:STDOUT:   │ │ │ ╭─MatchHandlerStart '}' has_error
-// CHECK:STDOUT:   │ │ ├─MatchHandler '}' has_error
+// CHECK:STDOUT:   │ │ │   ╭─MatchCase '{' has_error
+// CHECK:STDOUT:   │ │ │ ╭─MatchHandlerStart '{' has_error
+// CHECK:STDOUT:   │ │ ├─MatchHandler '{' has_error
+// CHECK:STDOUT:   │ │ │     ╭─MatchDefaultIntroducer 'default'
+// CHECK:STDOUT:   │ │ │   ╭─MatchDefault '=>'
+// CHECK:STDOUT:   │ │ │ ╭─MatchHandlerStart '{'
+// CHECK:STDOUT:   │ │ │ │ ╭─ReturnStatementStart 'return'
+// CHECK:STDOUT:   │ │ │ │ ├─IntLiteral '0'
+// CHECK:STDOUT:   │ │ │ ├─ReturnStatement ';'
+// CHECK:STDOUT:   │ │ ├─MatchHandler '}'
 // CHECK:STDOUT:   │ ├─MatchStatement '}'
 // CHECK:STDOUT:   │ │ ╭─ReturnStatementStart 'return'
 // CHECK:STDOUT:   │ │ │ ╭─IntLiteral '1'

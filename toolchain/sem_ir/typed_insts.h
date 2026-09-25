@@ -2408,6 +2408,10 @@ struct VarStorage {
 
   // If this storage was created for a `var` pattern, the pattern. Otherwise,
   // such as the implicit storage in `for`, this is `None`.
+  //
+  // TODO: remove this field, because it will almost invariably violate the
+  // topological ordering of insts. See docs/check/pattern_matching.md for
+  // details.
   AbsoluteInstId pattern_id;
 };
 
@@ -2480,7 +2484,7 @@ struct WrapperBinding {
 struct WrapperBindingPattern {
   static constexpr auto Kind =
       InstKind::WrapperBindingPattern.Define<Parse::NodeId>(
-          {.ir_name = "at_binding_pattern",
+          {.ir_name = "wrapper_binding_pattern",
            .expr_category = ExprCategory::Pattern,
            .constant_kind = InstConstantKind::Always,
            .is_lowered = false});

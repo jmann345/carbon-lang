@@ -749,7 +749,7 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:   %Copy.WithSelf.Op.type.46e: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.fb5) [concrete]
 // CHECK:STDOUT:   %.819: type = fn_type_with_self_type %Copy.WithSelf.Op.type.46e, %Copy.facet.fb5 [concrete]
 // CHECK:STDOUT:   %f.param_patt: %pattern_type.5bc = value_param_pattern [concrete]
-// CHECK:STDOUT:   %f.patt: %pattern_type.5bc = at_binding_pattern f, %f.param_patt [concrete]
+// CHECK:STDOUT:   %f.patt: %pattern_type.5bc = wrapper_binding_pattern f, %f.param_patt [concrete]
 // CHECK:STDOUT:   %CopyIt.type: type = fn_type @CopyIt [concrete]
 // CHECK:STDOUT:   %CopyIt: %CopyIt.type = struct_value () [concrete]
 // CHECK:STDOUT: }
@@ -757,7 +757,7 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %CopyIt.decl: %CopyIt.type = fn_decl @CopyIt [concrete = constants.%CopyIt] {
 // CHECK:STDOUT:     %f.param_patt: %pattern_type.5bc = value_param_pattern [concrete = constants.%f.param_patt]
-// CHECK:STDOUT:     %f.patt: %pattern_type.5bc = at_binding_pattern f, %f.param_patt [concrete = constants.%f.patt]
+// CHECK:STDOUT:     %f.patt: %pattern_type.5bc = wrapper_binding_pattern f, %f.param_patt [concrete = constants.%f.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.5bc = out_param_pattern [concrete = constants.%return.param_patt.f50]
 // CHECK:STDOUT:     %return.patt: %pattern_type.5bc = return_slot_pattern %return.param_patt, %Flag.ref.loc24_23 [concrete = constants.%return.patt.aa2]
 // CHECK:STDOUT:   } {

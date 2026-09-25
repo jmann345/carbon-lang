@@ -1,0 +1,13 @@
+# Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+# Exceptions. See /LICENSE for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# Part of jmann345's carbon-lang fork tooling (see /fork/README.md).
+#
+# Fork-committed override (upstream .bazelrc:48-51 names this exact file as
+# the override point). The self-hosted runner's disk filled to the point the
+# build gate's 40GB-free Preflight guard trips (37GB free, 2026-08-24) while
+# the bazel disk cache sits under its default 100G GC ceiling. Cap it lower
+# so the server's idle GC returns headroom; LRU keeps the hot LLVM/Clang
+# artifacts. Delete this file if the runner gains a bigger volume.
+common --experimental_disk_cache_gc_max_size=80G

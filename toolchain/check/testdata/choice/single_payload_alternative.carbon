@@ -41,13 +41,13 @@ let made: OneShot = Make(7);
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
 // CHECK:STDOUT:   %x.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %x.patt: %pattern_type.6b6 = at_binding_pattern x, %x.param_patt [concrete]
+// CHECK:STDOUT:   %x.patt: %pattern_type.6b6 = wrapper_binding_pattern x, %x.param_patt [concrete]
 // CHECK:STDOUT:   %tuple.type.a8a: type = tuple_type (%i32) [concrete]
 // CHECK:STDOUT:   %.e0f: type = custom_layout_type {size=4, align=4, .Only@0: %tuple.type.a8a} [concrete]
 // CHECK:STDOUT:   %struct_type.discriminant.payload.334: type = struct_type {.discriminant: %empty_tuple.type, .payload: %.e0f} [concrete]
 // CHECK:STDOUT:   %complete_type.9aa: <witness> = complete_type_witness %struct_type.discriminant.payload.334 [concrete]
 // CHECK:STDOUT:   %_.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %_.patt: %pattern_type.6b6 = at_binding_pattern _, %_.param_patt [concrete]
+// CHECK:STDOUT:   %_.patt: %pattern_type.6b6 = wrapper_binding_pattern _, %_.param_patt [concrete]
 // CHECK:STDOUT:   %.9bb: Core.Form = init_form %OneShot [concrete]
 // CHECK:STDOUT:   %pattern_type.bc6: type = pattern_type %OneShot [concrete]
 // CHECK:STDOUT:   %return.param_patt.9f6: %pattern_type.bc6 = out_param_pattern [concrete]
@@ -100,7 +100,7 @@ let made: OneShot = Make(7);
 // CHECK:STDOUT: generated {
 // CHECK:STDOUT:   %OneShot.Only.decl: %OneShot.Only.type = fn_decl @OneShot.Only [concrete = constants.%OneShot.Only] {
 // CHECK:STDOUT:     %_.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%_.param_patt]
-// CHECK:STDOUT:     %_.patt: %pattern_type.6b6 = at_binding_pattern _, %_.param_patt [concrete = constants.%_.patt]
+// CHECK:STDOUT:     %_.patt: %pattern_type.6b6 = wrapper_binding_pattern _, %_.param_patt [concrete = constants.%_.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.bc6 = out_param_pattern [concrete = constants.%return.param_patt.9f6]
 // CHECK:STDOUT:     %return.patt: %pattern_type.bc6 = return_slot_pattern %return.param_patt, constants.%OneShot [concrete = constants.%return.patt.941]
 // CHECK:STDOUT:   } {
@@ -116,7 +116,7 @@ let made: OneShot = Make(7);
 // CHECK:STDOUT:   %OneShot.decl: type = class_decl @OneShot [concrete = constants.%OneShot] {} {}
 // CHECK:STDOUT:   %Make.decl: %Make.type = fn_decl @Make [concrete = constants.%Make] {
 // CHECK:STDOUT:     %x.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%x.param_patt]
-// CHECK:STDOUT:     %x.patt: %pattern_type.6b6 = at_binding_pattern x, %x.param_patt [concrete = constants.%x.patt]
+// CHECK:STDOUT:     %x.patt: %pattern_type.6b6 = wrapper_binding_pattern x, %x.param_patt [concrete = constants.%x.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.bc6 = out_param_pattern [concrete = constants.%return.param_patt.9f6]
 // CHECK:STDOUT:     %return.patt: %pattern_type.bc6 = return_slot_pattern %return.param_patt, %OneShot.ref.loc12 [concrete = constants.%return.patt.941]
 // CHECK:STDOUT:   } {

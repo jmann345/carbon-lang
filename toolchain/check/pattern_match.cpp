@@ -1125,9 +1125,13 @@ auto MatchContext::DoMatchCaseExprPattern(
                     "qualified alternative pattern in match case");
       return SemIR::InstId::None;
     }
-    context_.TODO(
-        introducer_node_id,
-        "match `case` pattern other than an integer literal, or a case guard");
+    // Any other expression pattern against a choice scrutinee — for
+    // example `case 5` — names no alternative of the scrutinee's choice
+    // type. The design compares it with `==`, which in-slice choices do
+    // not implement (W-008 plan §1.3); it stays behind a dedicated TODO.
+    context_.TODO(introducer_node_id,
+                  "match case expression pattern on a choice scrutinee that "
+                  "is not an alternative");
     return SemIR::InstId::None;
   }
 

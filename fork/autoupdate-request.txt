@@ -1,1 +1,1 @@
-2026-09-25T17:20Z w008 W8b verification regen pass 2 (fixpoint check after round 4 question-guard ban)
+2026-09-25T19:40Z w008 W8c verification regen pass 1 (string narrowing + three new fail pins)

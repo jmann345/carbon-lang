@@ -2745,6 +2745,78 @@ list + the green gate. The design's canonical
 runs; the fork's tripwire flipped exactly as its own header predicted.
 **W-075 is DISCHARGED.** Veto-able.
 
+### W8c records the §1.3 all-expression alternative equality call (2026-09-25)
+
+The design (pattern_matching.md:487-497) says an alternative pattern
+whose payload list contains NO proper patterns — `case .Ok(42)` —
+"behaves like an expression pattern": whole-value `==` on the
+constructed choice value. In-slice choices implement no `Core.EqWith`,
+so the literal reading would reject every such pattern. Recorded call
+(OQ-3, adopted 2026-08-18, landed at W8a): the all-expression payload
+list is implemented IDENTICALLY to the mixed case — the discriminant
+test, then elementwise `==` on the payload in a block dominated by
+that test (`MatchCaseAlternativePatternMatch`, pattern_match.cpp:561).
+This is observationally equivalent to the specified whole-value `==`
+for choice types with structural equality, which is the only equality
+these choices could have; the equivalence breaks the day user-defined
+`EqWith` on choices exists, which is when this entry is re-examined.
+Coverage keeps the design's refutability reading
+(pattern_matching.md:589-594): a constant-payload arm such as
+`.Some(42)` is refutable and records NOTHING toward exhaustiveness
+(the `payload_is_irrefutable` classification, pinned by
+fail_nonexhaustive_payload_literal.carbon). Veto-able.
+
+### W8c records the §4 R-3 evaluation-order approximation (2026-09-25)
+
+The design interleaves pattern-match evaluation with binding
+initialization and destruction (pattern_matching.md:776-791: a
+`var y: X` element is initialized, the sibling `0` tested, `y`
+destroyed on failure) and orders side-effectful pattern evaluation
+(:834-952), with left-to-right short-circuit across tuple elements
+(:100-118). The fork's match arms instead run a two-pass split — every
+arm condition is emitted in the test pass and bindings initialize
+afterward in the bind pass (`EmitCaseArmTestAndBind`,
+handle_match.cpp:564) — and tuple-element conditions are emitted
+eagerly into one block and folded flat (`FoldMatchCaseConditions`,
+pattern_match.cpp:766) rather than short-circuited per element.
+Recorded approximation (plan §2.1(a)(i) and §4 R-3): this is
+observationally equivalent BECAUSE in-slice scrutinee and element
+types are trivially copyable integers and choices of those (total
+reads — no observable copies or destructions to mis-order) and
+in-slice case expressions are constants (no effects to sequence). The
+one ordering kept as MANDATORY structure is discriminant-then-payload
+dominance (the explicit block switch in
+`MatchCaseAlternativePatternMatch`), which is R-2 poison safety, not
+part of the approximation. The design's "Destroyed!" example is
+inexpressible in-slice — exactly why the approximation is safe today.
+Re-examined the day non-trivial types pass the scrutinee gate
+(handle_match.cpp:238). Veto-able.
+
+### W8c discharged: W-008 residue is honest, pinned, and filed (2026-09-25)
+
+The disposition slice closes the W-008 round: the combined W4 TODO
+string narrowed at FOUR sites (compile-time bindings, form bindings,
+binding-free `var`, and the choice-scrutinee expression backstop —
+the last found self-contradictory, since `case 5` IS an integer
+literal), each re-pinned or newly pinned by hand and reconciled
+byte-exact by the runner (regen pass 1 at fixpoint with zero
+push-back, run 36149421739). Exactly five combined-string backstops
+survive, each re-derived reachable and pinned — including the
+plan-§0 "unreachable-by-design" alternative-on-non-choice gate,
+which was falsified (parse routes `.Foo` roots type-blind), pinned,
+and corrected in the ledger with independent reviewer confirmation.
+W-008's ledger notes rewritten to residue form (R4-R10 with live
+gate sites, strings, pins); follow-ups filed: W-076 `bool`
+scrutinees (OQ-4 mandatory), W-077 struct patterns. Decision-log
+records added for the §1.3 all-expression equality call and the §4
+R-3 evaluation-order approximation, both with verified break
+conditions. Guard-flow comment sweep, line-count-neutral. Review
+APPROVE (one minor: completion claimed pre-arbitration — closed by
+recording the green run IDs; gate 36149524368, conformance
+36149524396 at 99/0/28 over 127 unchanged). The match statement
+workstream's implementation slices are done; remaining match work
+lives in W-066 (usefulness, now unblocked), W-076, and W-077.
+
 ### W8b verified and discharged the same day (2026-09-25)
 
 `var`/`ref` case bindings landed through the full loop: implementer,

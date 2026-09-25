@@ -516,13 +516,14 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
       // `ref` binding binds the scrutinee itself, which must be a durable
       // reference — the conversion machinery diagnoses a value scrutinee
       // (docs/design/pattern_matching.md, "`ref` binding patterns"). Form
-      // bindings in case arms stay behind the W4 slice gate, pinned to the
-      // arm's `case` token.
+      // bindings in case arms stay behind their own gate, pinned to the
+      // arm's `case` token: upstream has no local form bindings in ANY
+      // context (`support local form bindings` below), so this is not
+      // match residue (W-008 plan §0 R5).
       if (node_kind == Parse::NodeKind::FormBindingPattern) {
         return context.TODO(
             context.match_case_stack().back().introducer_node_id,
-            "match `case` pattern other than an integer literal, or a case "
-            "guard");
+            "form binding in match `case` pattern");
       }
       [[fallthrough]];
 
@@ -643,13 +644,13 @@ auto HandleParseNode(Context& context,
 
   // Gate `match` case-arm bindings before the introducer-dependent logic
   // below, which would otherwise emit the generic-`let` TODO for them; the
-  // case arm's implicit introducer is a `let`.
+  // case arm's implicit introducer is a `let`. A compile-time binding
+  // against a runtime match scrutinee is design-open (W-008 plan §1.4), so
+  // the gate is a TODO, not a rejection.
   if (context.full_pattern_stack().CurrentKind() ==
       FullPatternStack::Kind::MatchCaseArm) {
-    return context.TODO(
-        context.match_case_stack().back().introducer_node_id,
-        "match `case` pattern other than an integer literal, or a case "
-        "guard");
+    return context.TODO(context.match_case_stack().back().introducer_node_id,
+                        "compile-time binding in match `case` pattern");
   }
 
   auto node_kind = Parse::NodeKind::CompileTimeBindingPattern;

@@ -1140,13 +1140,14 @@ auto MatchContext::DoMatchCaseExprPattern(
   // the infix `==` operator: the `EqWith` interface takes a single argument
   // that is the type of the RHS operand.
   auto expr_id = InsertHere(context_, expr_pattern.expr_region_id);
-  // A tuple element's expression region closes through
-  // `EndExprRegionForPattern` (pattern.cpp), which performs no category
-  // conversion, so an initializing element such as `2 + 3` splices an
-  // initializing result here; convert it to a value so the comparison
-  // consumes one. Root case expressions were already converted inside their
-  // region by `FinishCasePattern` (handle_match.cpp), making this a no-op
-  // for them.
+  // Every expression-pattern region closes with a value-category result:
+  // tuple elements convert inside `EndExprRegionForPattern` (pattern.cpp)
+  // and root case expressions inside `FinishCasePattern`
+  // (handle_match.cpp), so this conversion is defense-in-depth for any
+  // future region producer that does not uphold that invariant — an
+  // initializing result spliced here would make the `splice_block` itself
+  // an initializing expression, which the SemIR formatter rejects (see
+  // `FindStorageArgForInitializer`).
   if (SemIR::IsInitializerCategory(
           SemIR::GetExprCategory(context_.sem_ir(), expr_id))) {
     expr_id = ConvertToValueExpr(context_, expr_id);

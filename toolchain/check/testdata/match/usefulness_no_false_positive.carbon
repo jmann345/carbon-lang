@@ -10,13 +10,17 @@
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/match/usefulness_no_false_positive.carbon
 
-// Negative pins for the usefulness check (W-066): every shape here is
-// useful and must stay SILENT. Guarded prior arms never enter the context
-// set (a prior arm's guard is assumed to evaluate to false,
-// docs/design/pattern_matching.md), constants only collide on equal
-// evaluated values, a general pattern after a specific one is useful (the
-// subsumption asymmetry), the accumulator is per-statement, and partial
-// alternative coverage never completes the full-coverage union.
+// Negative pins for the usefulness check (W-066) and the dead-`default`
+// check (W-078a): every arm here is useful and must stay SILENT (the
+// fail_ subfiles carry only their error arms' OWN diagnostics). Guarded
+// prior arms never enter the context set (a prior arm's guard is assumed
+// to evaluate to false, docs/design/pattern_matching.md), constants only
+// collide on equal evaluated values, a general pattern after a specific
+// one is useful (the subsumption asymmetry), the accumulator is
+// per-statement, partial alternative coverage never completes the
+// full-coverage union, and the `default` lane adds its own negatives:
+// guarded priors never cover, a prior error arm suppresses the check,
+// and the integer lane stays exempt (R8).
 
 // --- guarded_prior.carbon
 library "[[@TEST_NAME]]";
@@ -208,33 +212,20 @@ fn Payloads(v: Boxed) -> i32 {
 // --- dead_default_exempt.carbon
 library "[[@TEST_NAME]]";
 
-choice Flag {
-  Off,
-  On
-}
-
-// A `default` arm made dead by an unguarded irrefutable prior arm, or by
-// full alternative coverage, is deliberately NOT diagnosed in this slice:
-// the conservative integer-exhaustiveness gate (W-008 residue R8,
+// A `default` arm made dead by an unguarded irrefutable prior arm is
+// diagnosed on choice and bool scrutinees (W-078a;
+// fail_dead_default.carbon) but stays deliberately exempt on the INTEGER
+// lane: the conservative integer-exhaustiveness gate (W-008 residue R8,
 // `MatchStatement`'s "match statement without `default` arm" TODO) still
 // REQUIRES the `default` on every integer-scrutinee `match`, so
-// diagnosing it would make `IntSide` below unwritable. Dead-`default`
-// usefulness is the filed follow-up W-078 (W-066 plan §1.5); this
-// commented negative golden is its fail_todo-style record, since a
-// `fail_todo_` file cannot pin the ABSENCE of a diagnostic.
+// diagnosing it would make `IntSide` below unwritable. The integer half
+// of W-078 lands with-or-after the R8 lift; this commented negative
+// golden is its record, since a `fail_todo_` file cannot pin the ABSENCE
+// of a diagnostic.
 fn IntSide(x: i32) -> i32 {
   match (x) {
     case n: i32 => { return n; }
     default => { return 0; }
-  }
-  return -1;
-}
-
-fn ChoiceSide(f: Flag) -> i32 {
-  match (f) {
-    case .Off => { return 0; }
-    case .On => { return 1; }
-    default => { return 2; }
   }
   return -1;
 }
@@ -259,6 +250,74 @@ fn F(x: i32) -> i32 {
     case 5000000000 => { return 1; }
     case 5 => { return 2; }
     default => { return 0; }
+  }
+  return -1;
+}
+
+// --- guarded_priors_default.carbon
+library "[[@TEST_NAME]]";
+
+choice Flag {
+  Off,
+  On
+}
+
+// Every alternative is covered only by GUARDED arms, which record
+// nothing (a prior arm's guard is assumed to evaluate to false), so the
+// `default` is reachable and the dead-`default` check (W-078a) stays
+// silent — and it is the arm that keeps the match exhaustive.
+fn F(f: Flag, g: bool, h: bool) -> i32 {
+  match (f) {
+    case .Off if (g) => { return 0; }
+    case .On if (h) => { return 1; }
+    default => { return 2; }
+  }
+  return -1;
+}
+
+// --- fail_error_arm_prior_default.carbon
+library "[[@TEST_NAME]]";
+
+choice IntResult {
+  Ok(value: i32),
+  Err
+}
+
+// Full alternative coverage plus a prior ERROR arm (`.Err()` — parens on
+// a constant alternative, a non-aborting pattern error): the blanket
+// `has_error_arm` suppression keeps the dead `default` SILENT, as
+// `DiagnoseNonexhaustiveMatch` does; only the error arm's own diagnostic
+// appears (W-078a plan §1.4).
+fn F(r: IntResult) -> i32 {
+  match (r) {
+    case .Ok(v: i32) => { return v; }
+    case .Err => { return 0; }
+    case .Err() => { return 1; }
+    default => { return 2; }
+  }
+  return -1;
+}
+
+// --- fail_error_arm_wildcard_prior_default.carbon
+library "[[@TEST_NAME]]";
+
+choice IntResult {
+  Ok(value: i32),
+  Err
+}
+
+// The W-078a plan §1.4 ASYMMETRY, pinned: an error arm plus a
+// `Wildcard`-root irrefutable prior plus `default` stays silent on the
+// `default` — the blanket `has_error_arm` suppression is a deliberate
+// conservative divergence from the case-arm usefulness rule, which does
+// not suppress on prior error arms and would diagnose a `case` arm in
+// the `default`'s position against the recorded irrefutable prior. Only
+// the error arm's own diagnostic appears.
+fn F(r: IntResult) -> i32 {
+  match (r) {
+    case .Err() => { return 1; }
+    case unused c: IntResult => { return 0; }
+    default => { return 2; }
   }
   return -1;
 }

@@ -10,17 +10,18 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-09-25 (weekly upstream merge 2026-08-24 LANDED:
-F-002 merge d34ed63 brings the 631f8fb cut into trunk after five
-verified weekly holds — 09-21 A/B still shows templates_value_param
-clean but templates_type_param crashing in lowering, so the
-template-action series stays deferred, now 119 upstream commits;
-runner jeromehome returned 09-25 after ~29 days offline and disk was
-freed to 126GB; gate green at attempt 52 (run 36116293634, 46/46
-tests), conformance floor at the cut 96/0/28 over 124; next: W8a
-verification from post-merge trunk (staged at ee20c6951) — see
-fork/decision-log.md weekly entries for the full record)._
-THIRTY-ONE PRs. The design's canonical
+_Last updated: 2026-09-25 (post-PR #32: W-008 W8a — tuple case
+patterns + non-binding choice payload subpatterns, VERIFIED and
+MERGED the same day the runner returned. Earlier that day the 08-24
+weekly upstream merge landed as F-002 merge d34ed63 — the 631f8fb cut
+after five verified weekly holds, template-action series still
+deferred (119 upstream commits; type_param probe still crashes in
+lowering at tip). W8a's runner verification exposed and fixed a
+formatter FATAL (fix round 3: expression-pattern regions
+value-convert at close); conformance floor now 98/0/28 over 126;
+W-066's blocker discharged. Next: W8b (`var`/`ref` case bindings) →
+W8c on the same workstream — see fork/decision-log.md for the full
+record)._ THIRTY-TWO PRs. The design's canonical
 `var my_opt: Optional(i32) = Optional(i32).None;` now compiles and
 runs: LookupChoiceCopyWitness mirrors the destroy witness (is_choice
 gate, symbolic deferral under the SF-6 triviality fence, concrete

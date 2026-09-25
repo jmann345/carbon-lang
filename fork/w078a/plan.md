@@ -6,7 +6,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # W-078a plan: dead `default` arms on choice and bool scrutinees
 
-**Status:** PLAN (no implementation). Branch `claude/carbon-fork-0-1-w078a`
+**Status:** PLAN (no implementation), APPROVED FOR IMPLEMENTATION per the
+Sign-off below (2026-09-26). Branch `claude/carbon-fork-0-1-w078a`
 off trunk 30761b1 (post-W-076/PR #36; conformance 100/0/28 over 128).
 
 **Item:** the separable CHOICE half of W-078 (fork/inventory/work-items.json),
@@ -37,24 +38,48 @@ an arbitrary seam the design does not have.
     `default` arm is not a `case` pattern, so `MatchCaseNeverMatches`'s text
     ("`case` pattern never matches...") would be false. New primary:
     `"`default` arm never matches; every value of the scrutinee is matched by
-    prior arms"`. Notes by coverage source:
+    prior arms"`. (amended 2026-09-26, review fold: rev 2 F1, adjudication made
+    explicit) Error is the DESIGN'S OWN call, not a fork choice:
+    pattern_matching.md:238-246 annotates a dead `default` after `case _:
+    i32` as "❌ Error: unreachable." (the annotation comment is :243, on the
+    `default` arm at :244); :627-629 lists "`default` cannot match" in the
+    same diagnosed situation as the :645 Error-annotated example; :814-815
+    (`default` remains equivalent to `case _: auto`) makes a warning
+    incoherent with the landed W-066 Error for the equivalent case form; and
+    the design reserves warnings for unused bindings (:360). Break
+    condition: upstream re-annotating :243-244 or :645, or landing this
+    class as a lint/warning — fail goldens re-churn, but the §6
+    default-drops stand either way. (amended 2026-09-26, review fold: rev 2 F5,
+    log-worthy nuance) The design's :243-244 annotation says "unreachable"
+    while this diagnostic family's wording says "never matches" — a
+    deliberate uniformity choice with the landed W-066 family, recorded here
+    and in the §8 decision-log entry. Notes by coverage source:
     -   _Irrefutable prior arm_ (single covering prior): new note
         `MatchDefaultNeverMatchesPriorArm`, `"every value is matched by this
         prior arm"`, at the covering arm's introducer — the W-066 first-
         covering-arm determinism (the first recorded `Wildcard`-root arm).
     -   _Alternative union / bool value union_ (no single covering prior):
-        REUSE `MatchCaseNeverMatchesFullCoverage` ("all alternatives of {0}
-        are matched by prior arms"), hoisting its `CARBON_DIAGNOSTIC` to file
-        scope so both emission sites share one kind; the bool rendering "all
-        alternatives of `bool`" is the landed W-076 wording. (If the
-        diagnostics infra resists cross-primary note reuse, fall back to a
-        new kind with byte-identical text — cosmetic, record in §7 R-3.)
+        NEW note kind `MatchDefaultNeverMatchesFullCoverage` with
+        byte-identical text to `MatchCaseNeverMatchesFullCoverage` ("all
+        alternatives of {0} are matched by prior arms"); the bool rendering
+        "all alternatives of `bool`" is the landed W-076 wording. (amended
+        2026-09-26, review fold: rev 2 F2 + rev 1 C-5 — the former fallback is now
+        the primary plan. Cross-primary note reuse has precedent
+        (`RedeclPrevDecl`, merge.cpp:16, shared by three primaries), but
+        those precedents are NEUTRALLY named; a `[MatchCase...]`-tagged note
+        under a `default` primary is user-visibly incoherent. No hoist of
+        `MatchCaseNeverMatchesFullCoverage`; R-3 retired.)
 2.  **Guarded `default`s ARE checked.** Deadness is arm reachability: when
     priors fully cover, control reaches the arm's test only with values prior
     arms already consumed, so even a guarded `default` never runs — exactly
     W-066's guarded-LATERS rule (guarded arms are checked, only unguarded
-    arms are recorded as context). The design's worst-case guard assumption
-    (:620-623) applies to the CONTEXT arms, not the arm under test. A guarded
+    arms are recorded as context). (amended 2026-09-26, review fold: rev 2 F3,
+    mis-citation replaced) The design's worst-case guard assumption
+    (:620-623) covers BOTH sides: the arm under test's own guard is assumed
+    TRUE — which licenses checking the guarded `default` directly, since its
+    usefulness then reduces to `_: auto`'s per :814-815 in the prior
+    context — while guards on context arms are assumed false, so guarded
+    priors never cover. A guarded
     `default` may appear mid-list (parse allows it; guarded_default.carbon's
     basic subfile), and its check at `MatchGuardedDefault` compares against
     priors only — which is the definition of usefulness, so mid-list timing
@@ -69,8 +94,18 @@ an arbitrary seam the design does not have.
     recorded residue; usefulness_no_false_positive.carbon's
     `dead_default_exempt` IntSide keeps pinning it (§6).
 4.  **Error-arm suppression.** `match_context.has_error_arm` (a prior arm
-    whose pattern or condition errored) makes coverage unknowable: suppress,
-    mirroring `DiagnoseNonexhaustiveMatch`. A BIND-pass-error arm (`case
+    whose pattern or condition errored): keep the blanket suppression, as
+    `DiagnoseNonexhaustiveMatch` does. (amended 2026-09-26, review fold:
+    rev 1 A-3, rationale corrected) This is NOT a mirror of the case-arm
+    usefulness rule — it is a deliberate conservative DIVERGENCE from it:
+    the case-arm check does NOT suppress on prior error arms
+    (handle_match.cpp:777-785; the guard at :791-792 tests only the arm's
+    own error), so the blanket suppression here produces a known
+    deterministic false negative — an error arm plus a `Wildcard`-root prior
+    plus `default` stays silent where the analogous `case` arm would be
+    diagnosed. The in-code comment at the suppression must state this
+    divergence, and §4 pins the asymmetry as a negative. A BIND-pass-error
+    arm (`case
     n: i32` on a bool scrutinee) is recorded as covering (`Wildcard` key,
     W-066 §1.8 carve-out), so a `default` after it IS diagnosed — stacking,
     the same documented behavior as fail_case_after_bind_error_arm.carbon.
@@ -112,18 +147,30 @@ an arbitrary seam the design does not have.
     protocol `MatchHandler` uses at :1299):
     -   Lane gate: unqualified scrutinee type is `bool` or
         `IsMatchableChoiceType`; otherwise return (integer/tuple R8 lane).
-    -   Suppress on `has_error_arm`.
+    -   Suppress on `has_error_arm`, with an in-code comment stating the
+        deliberate divergence from the case-arm rule and its false negative
+        (amended 2026-09-26, review fold: rev 1 A-3; §1.4).
     -   Stage 1 (single-prior): scan `useful_arms` in order for the first
         arm whose key `Wildcard`-root subsumes a synthetic `{Wildcard}` key
         (equivalently: first recorded irrefutable arm — only a
         `Wildcard`-root prior subsumes `default` ≡ `case _: auto`); emit
         `MatchDefaultNeverMatches` + `MatchDefaultNeverMatchesPriorArm`.
     -   Stage 2 (union): else if `UnguardedArmsCoverWholeDomain`, emit
-        `MatchDefaultNeverMatches` + the hoisted
-        `MatchCaseNeverMatchesFullCoverage` note at the scrutinee, naming
-        the unqualified type. Guarded priors never count (they are neither
-        in `useful_arms` nor in `covered_alternatives`) — the design's
-        assumed-false rule for context guards, for free.
+        `MatchDefaultNeverMatches` + the new
+        `MatchDefaultNeverMatchesFullCoverage` note (byte-identical text to
+        `MatchCaseNeverMatchesFullCoverage`, which is NOT hoisted; amended
+        2026-09-26, review fold: rev 2 F2 + rev 1 C-5, §1.1) at the scrutinee,
+        naming the unqualified type. Guarded priors never count (they are
+        neither in `useful_arms` nor in `covered_alternatives`) — the
+        design's assumed-false rule for context guards, for free.
+    -   Kind registration (amended 2026-09-26, review fold: rev 1 A-2): the
+        three new kinds — `MatchDefaultNeverMatches`,
+        `MatchDefaultNeverMatchesFullCoverage`,
+        `MatchDefaultNeverMatchesPriorArm` — are registered in
+        toolchain/diagnostics/kind.def's Match block, alphabetized between
+        `MatchCaseTuplePatternWrongArity` (:169) and `MatchNonexhaustive`
+        (:170); the §4 fail files must cover all three, as the diagnostic
+        coverage test requires.
 3.  **Call sites.** `HandleParseNode(... MatchDefaultId ...)` and
     `HandleParseNode(... MatchGuardedDefaultId ...)` (handle_match.cpp:1191,
     :1212): change the leading
@@ -144,7 +191,9 @@ an arbitrary seam the design does not have.
 
 One slice, one PR (size S): the §2 refactor + check + diagnostics, the §4
 testdata, the §6 restructures, golden regen to fixpoint. No sub-slicing —
-the check is one function and the churn is mechanical.
+the check is one function and the churn is mechanical. Commit structure
+(amended 2026-09-26, review fold: rev 2 F7): refactor + check + kinds in commit
+1; testdata restructures + new fail files in commit 2; regen fires after.
 
 ## §4 Testdata matrix
 
@@ -158,13 +207,29 @@ New file `toolchain/check/testdata/match/fail_dead_default.carbon`, subfiles:
 | fail_bool_after_irrefutable | `case b2: bool` then `default` | error + PriorArm note |
 | fail_trailing_guarded_default | `.Off` + `.On` + `default if (x > 0)` (guarded_default trailing_guarded_default's shape, moved) | error at the guarded `default` |
 | fail_guarded_default_after_irrefutable | `case c: Flag` then `default if (g)` | error + PriorArm note |
+| fail_bool_guarded_default | `case true` + `case false` + `default if (g)` | error at the dead guarded `default` on bool + FullCoverage note (amended 2026-09-26, review fold: rev 2 F6 nit b) |
 | fail_bind_error_arm_prior | bool scrutinee, `case n: i32` (bind-pass error, recorded covering) then `default` | conversion error + stacked dead-default (the §1.4 carve-out mirror) |
+
+The fail_trailing_guarded_default subfile carries `//@dump-sem-ir` markers:
+diagnose-and-proceed still emits full SemIR, so the multi-arm guard-failure
+convergence shape keeps a SemIR pin there (amended 2026-09-26, review fold:
+rev 1 A-4; see §6.8).
 
 Negatives (silent unless noted), added to
 usefulness_no_false_positive.carbon: `guarded_priors_default` (choice whose
 every alternative is covered only by GUARDED arms, + `default` — guards never
 count); `fail_error_arm_prior_default` (choice, full coverage + an error arm +
-`default` — only the arm's own error; has_error_arm suppression). Already
+`default` — only the arm's own error; has_error_arm suppression);
+`fail_error_arm_wildcard_prior_default` (choice, an error arm + a
+`Wildcard`-root irrefutable prior + `default` — silent on the `default`,
+pinning the §1.4 asymmetry: the analogous `case` arm in that position would
+be diagnosed; amended 2026-09-26, review fold: rev 1 A-3). Error-arm spelling
+pin (amended 2026-09-26, review fold: rev 1 A-5): both error-arm negatives must
+use a non-aborting alternative-pattern error that push_error()s and
+proceeds — for example `.Err()` unexpected-parens (`MatchAlternativeUnexpectedParens`)
+or an unknown alternative name, per fail_choice_alternative_pattern.carbon's
+shapes — because `case 5` on a choice scrutinee TODO-aborts the subfile
+(fail_todo_choice_expr_case.carbon's SemanticsTodo pin). Already
 pinned in-tree and staying silent: partial coverage + `default`
 (choice_scrutinee, nested_choice_designator — which also pins nested-match
 independence on choice roots), integer irrefutable + `default`
@@ -223,6 +288,9 @@ the error shape moves to fail_ files, the positive stays positive):
     the claim holds for the VALUE-union source.
 5.  **check/match/choice_payload_guard.carbon** — unguarded `.Ok(w: i32)` +
     `.Err` cover both alternatives; DROP the dead `default`. Regen.
+    Post-drop the file becomes a near-duplicate of exhaustive_choice's
+    third subfile (guarded_duplicate) — acceptable redundancy, recorded
+    (amended 2026-09-26, review fold: rev 1 A-6).
 6.  **check/match/choice_payload_pattern.carbon** — `.Ok(value: i32)` +
     `.Err` full coverage; DROP the `default`. Regen.
 7.  **check/match/choice_payload_multi.carbon** — `.Move`/`.Set`/`.On()`/
@@ -231,10 +299,15 @@ the error shape moves to fail_ files, the positive stays positive):
     subfile is now the dead-guarded-default fail shape; MOVE it to
     fail_dead_default (fail_trailing_guarded_default) and delete the
     subfile. Its CFG pin (guard-failure edge to the statement's top else
-    block when no arm follows) survives in empty_choice.carbon's
-    guarded_default_vacuous, which has the identical last-arm shape; note
-    this relocation in the file header. basic, compound_guard (integer) and
-    choice_coverage (mid-list, partial priors) stay.
+    block when no arm follows) is kept two ways (amended 2026-09-26, review
+    fold: rev 1 A-4): primarily by the fail_trailing_guarded_default subfile
+    itself, which carries `//@dump-sem-ir` markers — diagnose-and-proceed
+    still emits full SemIR, so the multi-arm guard-failure convergence
+    shape keeps a SemIR pin — and secondarily by empty_choice.carbon's
+    guarded_default_vacuous, whose last-arm shape is similar but not
+    identical (single-arm, empty-choice context, no prior-arm convergence
+    blocks); note this relocation in the file header. basic, compound_guard
+    (integer) and choice_coverage (mid-list, partial priors) stay.
 9.  **lower/testdata/match/choice_payload.carbon** — `.Ok(value: i32)` +
     `.Err` + `default`: a check error would break this non-fail lowering
     golden outright; DROP the `default`, lowering IR regenerates. All other
@@ -258,7 +331,13 @@ converging_arms, default_only, constant_*, negative_literal_case,
 fail_case_never_matches_*, usefulness_no_false_positive's other subfiles,
 patterns/unused.carbon), empty-choice files, operators/fail_question.carbon
 and check/choice/generic_payload.carbon (no dead defaults), and all
-parse/testdata (parse-only).
+parse/testdata (parse-only). Completeness additions (amended 2026-09-26,
+review fold: rev 1 A-1 + rev 2 F6 nits): bool_scrutinee_default_only.carbon (a
+`default`-only bool match — no priors, nothing covers it),
+choice_generic_payload_scrutinee.carbon (every subfile is `default`-only or
+partial coverage — `case .Neither` + `default` on a two-alternative choice),
+and exhaustive_choice_binding.carbon (its "default" hits are comment-only;
+no `default` arm at all) are also verified silent.
 
 ## §7 Risks
 
@@ -270,18 +349,21 @@ parse/testdata (parse-only).
     after the introducer pop is derived from the handler code, not yet
     executed mid-list; the choice_coverage golden (mid-list guarded
     `default` on a choice) exercises it and must stay silent.
--   **R-3 note-kind reuse across primaries:** if hoisting
-    `MatchCaseNeverMatchesFullCoverage` to file scope trips diagnostics
-    plumbing, add `MatchDefaultNeverMatchesFullCoverage` with identical
-    text (cosmetic; record the fallback in the discharge note).
+-   **R-3 note-kind reuse across primaries: RETIRED** (amended 2026-09-26,
+    review fold: rev 2 F2 + rev 1 C-5). The former fallback — a new
+    `MatchDefaultNeverMatchesFullCoverage` kind with byte-identical text —
+    is now the §1.1 primary plan; no hoist, no reuse, nothing left to risk.
 -   **R-4 SemIR shape drift in restructured positives:** dropping `default`
     arms changes convergence-block arithmetic (`num_blocks`); pure regen,
     but the reconciliation diff must show only the expected per-file
     reshapes.
--   **R-5 guarded-default deadness contested:** adjudicated in §1.2 with
-    the W-066 guarded-laters precedent; a reviewer veto would drop the two
-    guarded fail subfiles and keep guarded defaults exempt (a smaller
-    slice, not a redesign).
+-   **R-5 guarded-default deadness contested: demoted to
+    wording-veto-at-most** (amended 2026-09-26, review fold: rev 2 F3).
+    §1.2's corrected reading of :620-623 shows the design itself assumes
+    the arm under test's guard true, so guarded-default deadness is
+    design-licensed, not a fork judgment call; the residual risk is at
+    most a wording veto on the diagnostic text, not the dropped-subfiles
+    contingency previously recorded here.
 
 ## §8 Verification and discharge
 
@@ -296,4 +378,35 @@ parse/testdata (parse-only).
     (MatchDefaultNeverMatches, fork/w078a/plan.md); the integer lane stays
     exempt behind R8 (dead_default_exempt IntSide pin); item stays OPEN for
     the integer half, which lands with-or-after the R8 lift" — plus a
-    decision-log entry for §1.1/§1.2/§1.6; the item is NOT closed.
+    decision-log entry for §1.1/§1.2/§1.6; the item is NOT closed. (amended
+    2026-09-26, review fold: rev 2 F1 + F5) The §1.1 decision-log entry must
+    carry the full severity reasoning, mirrored from §1.1: Error is the
+    design's own call (pattern_matching.md:238-246 "❌ Error: unreachable."
+    at :243-244; :627-629 with the :645 Error-annotated example; :814-815
+    `default` ≡ `case _: auto` versus the landed W-066 Error; warnings
+    reserved for unused bindings, :360), its break condition (upstream
+    re-annotating :243-244/:645 or landing this class as a lint/warning —
+    fail goldens re-churn, the §6 default-drops stand either way), and the
+    wording nuance (the design's annotation says "unreachable", the family
+    says "never matches" — deliberate uniformity choice).
+
+## Sign-off
+
+Both adversarial reviews returned APPROVE-WITH-AMENDMENTS. The one
+severity contest is settled by the design's own annotation: a dead
+`default` is "❌ Error: unreachable." at pattern_matching.md:238-246
+(:243-244), so Error is the design's call, not a fork choice (§1.1).
+Amendments 1-11 are folded above with dated "(amended 2026-09-26, review
+fold: ...)" notes: rev 2 F1 severity adjudication + rev 2 F5 wording nuance
+(§1.1, §8), rev 2 F2 + rev 1 C-5 new `MatchDefaultNeverMatchesFullCoverage` kind
+as primary plan with R-3 retired (§1.1, §2, §7), rev 2 F3 corrected
+:620-623 reading with R-5 demoted (§1.2, §7), rev 1 A-3 corrected error-arm
+suppression rationale + asymmetry negative (§1.4, §2, §4), rev 1 A-2 kind.def
+registration and coverage (§2, §4), rev 1 A-1 + rev 2 F6 verified-silent
+completeness (§6), rev 1 A-4 SemIR pin by way of `//@dump-sem-ir` in
+fail_trailing_guarded_default with the equivalence claim softened (§4,
+§6.8), rev 1 A-5 non-aborting error-arm spelling pin (§4), rev 2 F6 nit b bool
+guarded-default row (§4), rev 1 A-6 choice_payload_guard redundancy note
+(§6.5), rev 2 F7 commit-structure note (§3).
+
+**Status: APPROVED FOR IMPLEMENTATION, 2026-09-26.**

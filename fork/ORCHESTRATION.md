@@ -10,20 +10,21 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-09-25 (post-PR #33: W-008 W8b — `var`/`ref` case
-bindings, the third landing of an extraordinary day: the runner
-returned after ~29 days, the 08-24 weekly upstream merge landed
-(F-002 d34ed63, the 631f8fb cut after five verified weekly holds,
-119 upstream commits still deferred), W8a merged as PR #32
-(conformance 96/124 → 98/126), and W8b went through the full loop —
-implementer, two adversarial reviews, findings-fold fixer, three
-verification-driven fix rounds (guard-failure cleanup blocks; the
-structural guard-after-bind reorder killing the WrapperBinding
-use-before-fill miscompile; the `?`-in-guard ban re-established
-after a pin caught it lifting), delta re-review APPROVE — landing at
-conformance 99/0/28 over 127. Next: W8c (disposition, gate
-narrowing, comment sweep) — see fork/decision-log.md for the full
-record)._ THIRTY-THREE PRs. The design's canonical
+_Last updated: 2026-09-25 (post-PR #34: W-008 W8c — disposition, the
+FOURTH landing of the day and the close of the W-008 round. The full
+day: runner returned after ~29 days offline (disk freed to 126GB);
+the 08-24 weekly upstream merge landed (F-002 d34ed63, five verified
+weekly holds, 119 upstream commits deferred pending the
+template-action series healing); W8a tuple/payload case patterns
+(PR #32, 96/124 → 98/126); W8b `var`/`ref` case bindings (PR #33,
+→ 99/127) through two adversarial reviews + three verification-driven
+fix rounds including the structural guard-after-bind reorder; W8c
+honest strings/ledger residue/follow-ups (PR #34, floor unchanged,
+fixpoint in one pass). The match statement's implementation slices
+are DONE; W-066 usefulness is unblocked; W-076 (`bool` scrutinees)
+and W-077 (struct patterns) filed. Next: W-066, or the next
+scoreboard bullet per inventory priority — see fork/decision-log.md
+for the full record)._ THIRTY-FOUR PRs. The design's canonical
 `var my_opt: Optional(i32) = Optional(i32).None;` now compiles and
 runs: LookupChoiceCopyWitness mirrors the destroy witness (is_choice
 gate, symbolic deferral under the SF-6 triviality fence, concrete

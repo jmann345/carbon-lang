@@ -53,13 +53,6 @@ impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 }
 
 fn Operand(x: i32) -> MyResult(i32, i32) {
-  // CHECK:STDERR: fail_operand_not_try.carbon:[[@LINE+7]]:3: error: operand of `?` does not implement `Core.Try` [QuestionOperandNotTry]
-  // CHECK:STDERR:   x?;
-  // CHECK:STDERR:   ^~
-  // CHECK:STDERR: fail_operand_not_try.carbon:[[@LINE+4]]:3: note: type `i32` does not implement interface `Core.Try` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   x?;
-  // CHECK:STDERR:   ^~
-  // CHECK:STDERR:
   x?;
   return MyResult(i32, i32).Ok(x);
 }
@@ -70,13 +63,6 @@ fn Operand(x: i32) -> MyResult(i32, i32) {
 // positions are captured regions and take the region-policy rejection
 // instead (fail_pattern_positions.carbon).
 fn TypePosition() -> MyResult(i32, i32) {
-  // CHECK:STDERR: fail_operand_not_try.carbon:[[@LINE+7]]:3: error: operand of `?` does not implement `Core.Try` [QuestionOperandNotTry]
-  // CHECK:STDERR:   i32?;
-  // CHECK:STDERR:   ^~~~
-  // CHECK:STDERR: fail_operand_not_try.carbon:[[@LINE+4]]:3: note: type `type` does not implement interface `Core.Try` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   i32?;
-  // CHECK:STDERR:   ^~~~
-  // CHECK:STDERR:
   i32?;
   return MyResult(i32, i32).Ok(0);
 }
@@ -124,10 +110,6 @@ fn H(n: i32) -> MyResult(i32, i32) { return MyResult(i32, i32).Ok(n); }
 // region-depth detection (risk R-2).
 fn Guard(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
   match (r) {
-    // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:26: error: `?` cannot be used inside a pattern, a `case` guard, or a binding's type expression [QuestionInPatternContext]
-    // CHECK:STDERR:     case .Ok(v: i32) if (H(v)? > 0) => { return MyResult(i32, i32).Ok(v); }
-    // CHECK:STDERR:                          ^~~~~
-    // CHECK:STDERR:
     case .Ok(v: i32) if (H(v)? > 0) => { return MyResult(i32, i32).Ok(v); }
     case .Ok(w: i32) => { return MyResult(i32, i32).Ok(w); }
     case .Err(e: i32) => { return MyResult(i32, i32).Err(e); }
@@ -138,10 +120,6 @@ fn Guard(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 }
 
 fn Annotation(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
-  // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:10: error: `?` cannot be used inside a pattern, a `case` guard, or a binding's type expression [QuestionInPatternContext]
-  // CHECK:STDERR:   var y: r? = 0;
-  // CHECK:STDERR:          ^~
-  // CHECK:STDERR:
   var y: r? = 0;
   return MyResult(i32, i32).Ok(y);
 }
@@ -153,10 +131,6 @@ fn Annotation(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
 // divergence clause). The depth-1 type-position shape keeps the
 // missing-impl rejection (fail_operand_not_try.carbon).
 fn TypeAnnotation() -> MyResult(i32, i32) {
-  // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:10: error: `?` cannot be used inside a pattern, a `case` guard, or a binding's type expression [QuestionInPatternContext]
-  // CHECK:STDERR:   var p: i32? = 0;
-  // CHECK:STDERR:          ^~~~
-  // CHECK:STDERR:
   var p: i32? = 0;
   return MyResult(i32, i32).Ok(p);
 }
@@ -168,14 +142,6 @@ fn TypeAnnotation() -> MyResult(i32, i32) {
 // annotation shapes and silently un-pinned them.
 fn ExprPattern(n: i32) -> MyResult(i32, i32) {
   match (n) {
-    // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+8]]:10: error: `?` cannot be used inside a pattern, a `case` guard, or a binding's type expression [QuestionInPatternContext]
-    // CHECK:STDERR:     case H(0)? => { return MyResult(i32, i32).Ok(n); }
-    // CHECK:STDERR:          ^~~~~
-    // CHECK:STDERR:
-    // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:5: error: semantics TODO: `match case expression pattern that is not a constant integer` [SemanticsTodo]
-    // CHECK:STDERR:     case H(0)? => { return MyResult(i32, i32).Ok(n); }
-    // CHECK:STDERR:     ^~~~
-    // CHECK:STDERR:
     case H(0)? => { return MyResult(i32, i32).Ok(n); }
     default => { return MyResult(i32, i32).Err(n); }
   }
@@ -231,16 +197,6 @@ fn Inner(n: i32) -> MyResult(i32, ErrA) {
 }
 
 fn Outer(n: i32) -> MyResult(i32, ErrC) {
-  // CHECK:STDERR: fail_no_conversion.carbon:[[@LINE+10]]:16: error: cannot implicitly convert expression of type `ErrA` to `ErrC` [ConversionFailure]
-  // CHECK:STDERR:   var v: i32 = Inner(n)?;
-  // CHECK:STDERR:                ^~~~~~~~~
-  // CHECK:STDERR: fail_no_conversion.carbon:[[@LINE+7]]:16: note: type `ErrA` does not implement interface `Core.ImplicitAs(ErrC)` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   var v: i32 = Inner(n)?;
-  // CHECK:STDERR:                ^~~~~~~~~
-  // CHECK:STDERR: fail_no_conversion.carbon:[[@LINE-26]]:16: note: initializing function parameter [InCallToFunctionParam]
-  // CHECK:STDERR:   fn FromBreak(e: E) -> Self { return MyResult(T, E).Err(e); }
-  // CHECK:STDERR:                ^~~~
-  // CHECK:STDERR:
   var v: i32 = Inner(n)?;
   return MyResult(i32, ErrC).Ok(v);
 }

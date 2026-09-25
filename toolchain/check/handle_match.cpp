@@ -575,6 +575,31 @@ auto HandleParseNode(Context& context, Parse::MatchCaseGuardStartId node_id)
   return true;
 }
 
+// Branches on a spliced guard condition: into a new dominated body block on
+// success, and to `else_block_id` on failure, destroying the arm's objects
+// on the failure edge (which leaves the arm's scope). Destroy insts cannot
+// sit inside a block's `BranchIf` + `Branch` terminator sequence, so when
+// the arm owns cleanups — on-demand `var` case-binding storage (W-008 plan
+// §2.4) is the first such object — the failure edge gets its own block; a
+// cleanup-free failure edge keeps the landed two-terminator shape
+// byte-for-byte. Pops the current block and leaves the body block pushed.
+static auto BranchOnGuard(Context& context, Parse::NodeId node_id,
+                          SemIR::LocId guard_loc_id, SemIR::InstId cond_id,
+                          SemIR::InstBlockId else_block_id) -> void {
+  auto body_block_id = AddDominatedBlockAndBranchIf(context, node_id, cond_id);
+  auto depth = context.scope_stack().enclosing_cleanup_scope_depth();
+  if (!context.scope_stack().GetCleanupsSince(depth).empty()) {
+    auto fail_block_id = AddDominatedBlockAndBranch(context, node_id);
+    context.inst_block_stack().Pop();
+    context.inst_block_stack().Push(fail_block_id);
+    context.region_stack().AddToRegion(fail_block_id, node_id);
+  }
+  AddBranchWithCleanups(context, guard_loc_id, else_block_id, depth);
+  context.inst_block_stack().Pop();
+  context.inst_block_stack().Push(body_block_id);
+  context.region_stack().AddToRegion(body_block_id, node_id);
+}
+
 auto HandleParseNode(Context& context, Parse::MatchCaseGuardId node_id)
     -> bool {
   // Convert the guard's condition to a bool value while its expression
@@ -815,14 +840,8 @@ auto HandleParseNode(Context& context, Parse::MatchCaseId node_id) -> bool {
   if (guard_region_id.has_value()) {
     auto guard_cond_id = SpliceMatchCaseGuard(context, guard_region_id);
     context.scope_stack().DeferCleanups();
-    auto body_block_id =
-        AddDominatedBlockAndBranchIf(context, node_id, guard_cond_id);
-    AddBranchWithCleanups(
-        context, SemIR::LocId(guard_node_id), else_block_id,
-        context.scope_stack().enclosing_cleanup_scope_depth());
-    context.inst_block_stack().Pop();
-    context.inst_block_stack().Push(body_block_id);
-    context.region_stack().AddToRegion(body_block_id, node_id);
+    BranchOnGuard(context, node_id, SemIR::LocId(guard_node_id), guard_cond_id,
+                  else_block_id);
   }
 
   context.node_stack().Push(node_id, else_block_id);
@@ -887,13 +906,8 @@ auto HandleParseNode(Context& context, Parse::MatchGuardedDefaultId node_id)
   // the scope's cleanups itself, exactly like a failed case guard.
   auto guard_cond_id = SpliceMatchCaseGuard(context, guard_region_id);
   context.scope_stack().DeferCleanups();
-  auto body_block_id =
-      AddDominatedBlockAndBranchIf(context, node_id, guard_cond_id);
-  AddBranchWithCleanups(context, SemIR::LocId(guard_node_id), else_block_id,
-                        context.scope_stack().enclosing_cleanup_scope_depth());
-  context.inst_block_stack().Pop();
-  context.inst_block_stack().Push(body_block_id);
-  context.region_stack().AddToRegion(body_block_id, node_id);
+  BranchOnGuard(context, node_id, SemIR::LocId(guard_node_id), guard_cond_id,
+                else_block_id);
 
   context.node_stack().Push(node_id, else_block_id);
   return true;

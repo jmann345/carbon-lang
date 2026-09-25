@@ -1,1 +1,1 @@
-2026-09-26T07:00Z w076 verification conformance (expect 100/128)
+2026-09-25T18:21Z w078a conformance (floor check 100/128)

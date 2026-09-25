@@ -15,8 +15,8 @@
 // extracts the payload tuple from the payload region (offset-0 overlap per
 // F-007k) and initializes the payload binding in the arm's scope, where the
 // bound value is usable in the arm's body. Mixed arms: a payload
-// alternative, a payload-free alternative, and `default` (still required
-// until exhaustiveness lands, S2e).
+// alternative and a payload-free alternative, covering both alternatives
+// (exhaustive, so no `default` — a trailing one would be dead, W-078a).
 //@dump-sem-ir-begin
 choice IntResult {
   Ok(value: i32),
@@ -27,7 +27,6 @@ fn Consume(r: IntResult) -> i32 {
   match (r) {
     case .Ok(value: i32) => { return value; }
     case .Err => { return -1; }
-    default => { return -2; }
   }
   return -3;
 }
@@ -146,12 +145,12 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571: <specific function> = specific_function %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39, @Core.IntLiteral.as.ImplicitAs.impl.Convert.2(%int_32) [concrete]
 // CHECK:STDOUT:   %bound_method.a65: <bound method> = bound_method %int_-1.638, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571 [concrete]
 // CHECK:STDOUT:   %int_-1.4ef: %i32 = int_value -1 [concrete]
-// CHECK:STDOUT:   %int_2: Core.IntLiteral = int_value 2 [concrete]
-// CHECK:STDOUT:   %Core.IntLiteral.as.Negate.impl.Op.bound.e21: <bound method> = bound_method %int_2, %Core.IntLiteral.as.Negate.impl.Op [concrete]
-// CHECK:STDOUT:   %int_-2.962: Core.IntLiteral = int_value -2 [concrete]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.2a0: <bound method> = bound_method %int_-2.962, %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39 [concrete]
-// CHECK:STDOUT:   %bound_method.33f: <bound method> = bound_method %int_-2.962, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571 [concrete]
-// CHECK:STDOUT:   %int_-2.c83: %i32 = int_value -2 [concrete]
+// CHECK:STDOUT:   %int_3: Core.IntLiteral = int_value 3 [concrete]
+// CHECK:STDOUT:   %Core.IntLiteral.as.Negate.impl.Op.bound.64e: <bound method> = bound_method %int_3, %Core.IntLiteral.as.Negate.impl.Op [concrete]
+// CHECK:STDOUT:   %int_-3.0b0: Core.IntLiteral = int_value -3 [concrete]
+// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.451: <bound method> = bound_method %int_-3.0b0, %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39 [concrete]
+// CHECK:STDOUT:   %bound_method.6e4: <bound method> = bound_method %int_-3.0b0, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571 [concrete]
+// CHECK:STDOUT:   %int_-3.50b: %i32 = int_value -3 [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -352,18 +351,21 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT:   return %.loc29_29
 // CHECK:STDOUT:
 // CHECK:STDOUT: !match.case.else.loc29:
-// CHECK:STDOUT:   %int_2: Core.IntLiteral = int_value 2 [concrete = constants.%int_2]
-// CHECK:STDOUT:   %impl.elem1.loc30: %.758 = impl_witness_access constants.%Negate.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
-// CHECK:STDOUT:   %bound_method.loc30_25: <bound method> = bound_method %int_2, %impl.elem1.loc30 [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op.bound.e21]
-// CHECK:STDOUT:   %Core.IntLiteral.as.Negate.impl.Op.call.loc30: init Core.IntLiteral = call %bound_method.loc30_25(%int_2) [concrete = constants.%int_-2.962]
-// CHECK:STDOUT:   %impl.elem0.loc30: %.b7a = impl_witness_access constants.%ImplicitAs.impl_witness.a2a, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
-// CHECK:STDOUT:   %bound_method.loc30_27.1: <bound method> = bound_method %Core.IntLiteral.as.Negate.impl.Op.call.loc30, %impl.elem0.loc30 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.2a0]
-// CHECK:STDOUT:   %specific_fn.loc30: <specific function> = specific_function %impl.elem0.loc30, @Core.IntLiteral.as.ImplicitAs.impl.Convert.2(constants.%int_32) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571]
-// CHECK:STDOUT:   %bound_method.loc30_27.2: <bound method> = bound_method %Core.IntLiteral.as.Negate.impl.Op.call.loc30, %specific_fn.loc30 [concrete = constants.%bound_method.33f]
-// CHECK:STDOUT:   %.loc30_25.1: Core.IntLiteral = value_of_initializer %Core.IntLiteral.as.Negate.impl.Op.call.loc30 [concrete = constants.%int_-2.962]
-// CHECK:STDOUT:   %.loc30_25.2: Core.IntLiteral = converted %Core.IntLiteral.as.Negate.impl.Op.call.loc30, %.loc30_25.1 [concrete = constants.%int_-2.962]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc30: init %i32 = call %bound_method.loc30_27.2(%.loc30_25.2) [concrete = constants.%int_-2.c83]
-// CHECK:STDOUT:   %.loc30_27: init %i32 = converted %Core.IntLiteral.as.Negate.impl.Op.call.loc30, %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc30 [concrete = constants.%int_-2.c83]
-// CHECK:STDOUT:   return %.loc30_27
+// CHECK:STDOUT:   br !match.done
+// CHECK:STDOUT:
+// CHECK:STDOUT: !match.done:
+// CHECK:STDOUT:   %int_3: Core.IntLiteral = int_value 3 [concrete = constants.%int_3]
+// CHECK:STDOUT:   %impl.elem1.loc31: %.758 = impl_witness_access constants.%Negate.impl_witness, element1 [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op]
+// CHECK:STDOUT:   %bound_method.loc31_10: <bound method> = bound_method %int_3, %impl.elem1.loc31 [concrete = constants.%Core.IntLiteral.as.Negate.impl.Op.bound.64e]
+// CHECK:STDOUT:   %Core.IntLiteral.as.Negate.impl.Op.call.loc31: init Core.IntLiteral = call %bound_method.loc31_10(%int_3) [concrete = constants.%int_-3.0b0]
+// CHECK:STDOUT:   %impl.elem0.loc31: %.b7a = impl_witness_access constants.%ImplicitAs.impl_witness.a2a, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
+// CHECK:STDOUT:   %bound_method.loc31_12.1: <bound method> = bound_method %Core.IntLiteral.as.Negate.impl.Op.call.loc31, %impl.elem0.loc31 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.451]
+// CHECK:STDOUT:   %specific_fn.loc31: <specific function> = specific_function %impl.elem0.loc31, @Core.IntLiteral.as.ImplicitAs.impl.Convert.2(constants.%int_32) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571]
+// CHECK:STDOUT:   %bound_method.loc31_12.2: <bound method> = bound_method %Core.IntLiteral.as.Negate.impl.Op.call.loc31, %specific_fn.loc31 [concrete = constants.%bound_method.6e4]
+// CHECK:STDOUT:   %.loc31_10.1: Core.IntLiteral = value_of_initializer %Core.IntLiteral.as.Negate.impl.Op.call.loc31 [concrete = constants.%int_-3.0b0]
+// CHECK:STDOUT:   %.loc31_10.2: Core.IntLiteral = converted %Core.IntLiteral.as.Negate.impl.Op.call.loc31, %.loc31_10.1 [concrete = constants.%int_-3.0b0]
+// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc31: init %i32 = call %bound_method.loc31_12.2(%.loc31_10.2) [concrete = constants.%int_-3.50b]
+// CHECK:STDOUT:   %.loc31_12: init %i32 = converted %Core.IntLiteral.as.Negate.impl.Op.call.loc31, %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc31 [concrete = constants.%int_-3.50b]
+// CHECK:STDOUT:   return %.loc31_12
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

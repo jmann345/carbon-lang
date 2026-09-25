@@ -1,1 +1,1 @@
-2026-09-26T07:00Z w076 verification gate (build+test at fixpoint tip)
+2026-09-25T18:21Z w078a gate (dead-default, post-fixpoint)

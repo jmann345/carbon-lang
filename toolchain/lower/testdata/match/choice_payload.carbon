@@ -25,7 +25,6 @@ fn Consume(r: IntResult) -> i32 {
   match (r) {
     case .Ok(value: i32) => { return value; }
     case .Err => { return -1; }
-    default => { return -2; }
   }
   return -3;
 }
@@ -70,13 +69,13 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT:   %.loc27_15.4 = load i8, ptr %.loc27_15.3.discriminant, align 1, !dbg !20
 // CHECK:STDOUT:   %.loc27_15.42 = trunc i8 %.loc27_15.4 to i1, !dbg !20
 // CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call.loc27 = icmp eq i1 true, %.loc27_15.42, !dbg !20
-// CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc27, label %match.case.then.loc27, label %match.case.else.loc27, !dbg !20
+// CHECK:STDOUT:   br i1 %UInt.as.EqWith.impl.Equal.call.loc27, label %match.case.then.loc27, label %match.done, !dbg !20
 // CHECK:STDOUT:
 // CHECK:STDOUT: match.case.then.loc27:                            ; preds = %match.case.else.loc26
 // CHECK:STDOUT:   ret i32 -1, !dbg !21
 // CHECK:STDOUT:
-// CHECK:STDOUT: match.case.else.loc27:                            ; preds = %match.case.else.loc26
-// CHECK:STDOUT:   ret i32 -2, !dbg !22
+// CHECK:STDOUT: match.done:                                       ; preds = %match.case.else.loc26
+// CHECK:STDOUT:   ret i32 -3, !dbg !22
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
@@ -106,5 +105,5 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT: !19 = !DILocation(line: 26, column: 31, scope: !13)
 // CHECK:STDOUT: !20 = !DILocation(line: 27, column: 5, scope: !13)
 // CHECK:STDOUT: !21 = !DILocation(line: 27, column: 20, scope: !13)
-// CHECK:STDOUT: !22 = !DILocation(line: 28, column: 18, scope: !13)
+// CHECK:STDOUT: !22 = !DILocation(line: 29, column: 3, scope: !13)
 // CHECK:STDOUT:

@@ -129,7 +129,11 @@ namespace Carbon::Check {
 // assumed to evaluate to false, so guarded prior arms block nothing, while
 // a guarded arm whose own pattern is fully covered is still dead
 // (docs/design/pattern_matching.md, "Refutability, overlap, usefulness, and
-// exhaustiveness"). `default` arms are exempt (see `MatchDefault`; W-078).
+// exhaustiveness"). A `default` arm — guarded or not — on a choice or bool
+// scrutinee is likewise an error when the unguarded prior arms cover the
+// whole domain (W-078a; `DiagnoseDeadDefault`); on integer and tuple
+// scrutinees `default` arms stay exempt while the conservative gate below
+// still requires them (W-008 residue R8).
 //
 // Choices with fewer than two alternatives have no integer discriminant —
 // their discriminant field is the empty tuple (handle_choice.cpp) — so
@@ -143,7 +147,9 @@ namespace Carbon::Check {
 //
 // TODO: Support other pattern kinds, other scrutinee types, and integer
 // exhaustiveness via an irrefutable arm or full enumeration. Diagnose
-// `default` arms that can never match (W-078).
+// dead `default` arms on integer and tuple scrutinees once the
+// conservative `default` requirement lifts (W-078's integer half; the
+// choice and bool lanes are diagnosed, W-078a).
 
 // Returns the scrutinee value, which is on the `MatchHandler` entry after an
 // earlier case arm, or otherwise on the `MatchStatementStart` entry.
@@ -662,6 +668,43 @@ static auto UsefulnessKeySubsumes(
          arm_index == static_cast<int>(arm.size());
 }
 
+// Returns whether the unguarded arms recorded so far cover the scrutinee's
+// whole closed value domain. Only the finite root domains answer true:
+// `unqualified_scrutinee_type_id` must be plain `bool` — whose domain is
+// the `false`/`true` pair, recorded as 0/1 in `covered_alternatives`
+// (docs/design/pattern_matching.md: `bool` is treated like a choice type
+// whose alternatives are `false` and `true`) — or a matchable choice type,
+// whose every alternative index must be covered. The bool branch is
+// decided before and without the `GetAs<SemIR::ClassType>` read, which
+// would CHECK-fail on the bool singleton (W-076 plan §2.4). An empty
+// alternative table answers false, and the no-coverage answer is right for
+// both ways it arises: on an EMPTY choice there is nothing that covers,
+// and an all-rejected-alternatives error-recovery table makes coverage
+// unknowable — the same two-way answer `DiagnoseNonexhaustiveMatch`
+// records. The one coverage predicate shared by the step-3b full-coverage
+// usefulness rule (`EmitCaseArmTestAndBind`) and the dead-`default` check
+// (`DiagnoseDeadDefault`, W-078a), so the two rules cannot diverge;
+// `DiagnoseNonexhaustiveMatch` keeps its own per-value loops because it
+// must NAME the missing values.
+static auto UnguardedArmsCoverWholeDomain(
+    Context& context, SemIR::TypeId unqualified_scrutinee_type_id,
+    const Context::MatchStatementContext& match_context) -> bool {
+  if (context.types().Is<SemIR::BoolType>(unqualified_scrutinee_type_id)) {
+    return llvm::is_contained(match_context.covered_alternatives, 0) &&
+           llvm::is_contained(match_context.covered_alternatives, 1);
+  }
+  const auto& class_info = context.classes().Get(
+      context.types()
+          .GetAs<SemIR::ClassType>(unqualified_scrutinee_type_id)
+          .class_id);
+  return !class_info.choice_alternatives.empty() &&
+         llvm::all_of(
+             class_info.choice_alternatives, [&](const auto& choice_alt) {
+               return llvm::is_contained(match_context.covered_alternatives,
+                                         choice_alt.index);
+             });
+}
+
 // Emits a case arm's test and bind passes, once the arm's pattern is
 // finished (`FinishCasePattern`): the pattern block's `NameBindingDecl`
 // home in the arm's test block, the classification of the checked pattern
@@ -786,8 +829,9 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
   // (diagnose-and-proceed, like `MatchNonexhaustive`), so later arms are
   // still checked. It runs BEFORE this arm's own coverage recording below,
   // so the full-coverage step compares against prior arms only. `default`
-  // arms never reach this site; their deliberate exemption is recorded at
-  // `MatchDefault` and `MatchGuardedDefault` (W-066 plan §1.5, W-078).
+  // arms never reach this site; their own deadness check is
+  // `DiagnoseDeadDefault` (W-078a), which shares this site's
+  // `UnguardedArmsCoverWholeDomain` coverage predicate.
   if (pattern_id != SemIR::ErrorInst::InstId &&
       cond_value_id != SemIR::ErrorInst::InstId) {
     if (auto key =
@@ -827,36 +871,10 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
         // payload alternative counts only when covered with a wholly
         // irrefutable payload (the recording below), and a prior
         // irrefutable arm already diagnoses through the subsumption loop
-        // above. An empty alternative table stays silent: on an empty
-        // choice every arm is extensionally useless but there are no
-        // covering priors, and an all-rejected-alternatives error-recovery
-        // table makes coverage unknowable — the same two-way answer
-        // `DiagnoseNonexhaustiveMatch` records.
-        bool covers_all;
-        if (is_bool_scrutinee) {
-          // A bool root's `covers_all` is computed before and without the
-          // choice-metadata read below: `GetAs<SemIR::ClassType>` would
-          // CHECK-fail on the bool singleton (W-076 plan §2.4). The domain
-          // is the `false`/`true` pair, recorded as 0/1
-          // (docs/design/pattern_matching.md: `bool` is treated like a
-          // choice type whose alternatives are `false` and `true`).
-          covers_all =
-              llvm::is_contained(match_context.covered_alternatives, 0) &&
-              llvm::is_contained(match_context.covered_alternatives, 1);
-        } else {
-          const auto& class_info = context.classes().Get(
-              context.types()
-                  .GetAs<SemIR::ClassType>(unqualified_type_id)
-                  .class_id);
-          covers_all =
-              !class_info.choice_alternatives.empty() &&
-              llvm::all_of(
-                  class_info.choice_alternatives, [&](const auto& choice_alt) {
-                    return llvm::is_contained(
-                        match_context.covered_alternatives, choice_alt.index);
-                  });
-        }
-        if (covers_all) {
+        // above. An empty or all-rejected alternative table stays silent
+        // (`UnguardedArmsCoverWholeDomain`'s two-way no-coverage answer).
+        if (UnguardedArmsCoverWholeDomain(context, unqualified_type_id,
+                                          match_context)) {
           // No single covering arm exists, so the note is one
           // statement-level note naming the scrutinee's type, stable under
           // prior-arm reshuffles. For a bool scrutinee the same note reads
@@ -1188,31 +1206,130 @@ auto HandleParseNode(Context& context, Parse::MatchDefaultIntroducerId node_id)
   return true;
 }
 
+// Diagnoses a `default` arm that can never match because the unguarded
+// prior arms already cover the scrutinee's whole closed value domain
+// (W-078a): "in a `match` statement, this happens if a pattern or
+// `default` cannot match because all cases it could cover are handled by
+// prior cases or a prior `default`" (docs/design/pattern_matching.md,
+// "Refutability, overlap, usefulness, and exhaustiveness"; the design
+// annotates a dead `default` "Error: unreachable."). Called from
+// `MatchDefault` and `MatchGuardedDefault` with the arm's introducer node,
+// after the `MatchDefaultIntroducer` entry is popped, so `PeekScrutinee`
+// sees the prior `MatchHandler` / `MatchStatementStart` protocol. Guarded
+// `default` arms are checked alike: deadness is arm reachability — the arm
+// under test's own guard is assumed true, while guards on prior arms are
+// assumed false, so guarded priors never cover (they are neither in
+// `useful_arms` nor in `covered_alternatives`) — the same two-sided
+// worst-case guard rule the case-arm usefulness check applies. The check
+// fires only on choice and bool scrutinees: the conservative
+// integer-exhaustiveness gate in `MatchStatement` still REQUIRES a
+// `default` arm on every integer- or tuple-scrutinee `match`, so
+// diagnosing a dead `default` there would make such a `match` with an
+// irrefutable arm unwritable (W-008 residue R8; W-078's integer half lands
+// with-or-after the R8 lift). Emits no insts, and the arm still emits its
+// normal SemIR (diagnose-and-proceed, like `MatchCaseNeverMatches`).
+static auto DiagnoseDeadDefault(Context& context,
+                                Parse::NodeId introducer_node_id) -> void {
+  auto scrutinee_id = PeekScrutinee(context);
+  auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
+  auto unqualified_type_id =
+      context.types().GetUnqualifiedType(scrutinee_type_id);
+  // `IsMatchableChoiceType` unqualifies internally, so passing the
+  // qualified id is not an asymmetry with the `BoolType` test.
+  if (!context.types().Is<SemIR::BoolType>(unqualified_type_id) &&
+      !IsMatchableChoiceType(context, scrutinee_type_id)) {
+    // The integer/tuple lane keeps its `default` exemption (R8, above).
+    return;
+  }
+
+  const auto& match_context = context.match_statement_stack().back();
+  // Suppress on any prior error arm, as `DiagnoseNonexhaustiveMatch` does.
+  // This is a deliberate conservative DIVERGENCE from the case-arm
+  // usefulness rule, which does not suppress on prior error arms (it
+  // compares only against soundly recorded priors): the blanket
+  // suppression here is a known deterministic false negative — an error
+  // arm plus a `Wildcard`-root prior plus `default` stays silent where the
+  // analogous `case` arm in the `default`'s position would be diagnosed
+  // (W-078a plan §1.4; the asymmetry is pinned in
+  // usefulness_no_false_positive.carbon).
+  if (match_context.has_error_arm) {
+    return;
+  }
+
+  CARBON_DIAGNOSTIC(MatchDefaultNeverMatches, Error,
+                    "`default` arm never matches; every value of the "
+                    "scrutinee is matched by prior arms");
+
+  // Single-prior stage: only a `Wildcard`-root prior subsumes `default`,
+  // which is equivalent to `case _: auto`
+  // (docs/design/pattern_matching.md), keyed as the synthetic
+  // `{Wildcard}`. The first covering arm wins the note (arm order;
+  // deterministic, matching the case-arm check).
+  Context::MatchStatementContext::UsefulnessKeyNode default_key_node = {
+      .kind =
+          Context::MatchStatementContext::UsefulnessKeyNode::Kind::Wildcard};
+  for (const auto& prior_arm : match_context.useful_arms) {
+    if (UsefulnessKeySubsumes(prior_arm.key, default_key_node)) {
+      CARBON_DIAGNOSTIC(MatchDefaultNeverMatchesPriorArm, Note,
+                        "every value is matched by this prior arm");
+      context.emitter()
+          .Build(introducer_node_id, MatchDefaultNeverMatches)
+          .Note(prior_arm.introducer_node_id, MatchDefaultNeverMatchesPriorArm)
+          .Emit();
+      return;
+    }
+  }
+
+  // Union stage: no single covering prior, but the unguarded arms cover
+  // the whole domain together, so the note is one statement-level note
+  // naming the scrutinee's unqualified type — for a bool scrutinee it
+  // reads "all alternatives of `bool`", licensed by the design's
+  // bool-as-choice rule (the landed W-076 wording).
+  if (UnguardedArmsCoverWholeDomain(context, unqualified_type_id,
+                                    match_context)) {
+    CARBON_DIAGNOSTIC(MatchDefaultNeverMatchesFullCoverage, Note,
+                      "all alternatives of {0} are matched by prior "
+                      "arms",
+                      SemIR::TypeId);
+    context.emitter()
+        .Build(introducer_node_id, MatchDefaultNeverMatches)
+        .Note(scrutinee_id, MatchDefaultNeverMatchesFullCoverage,
+              unqualified_type_id)
+        .Emit();
+  }
+}
+
 auto HandleParseNode(Context& context, Parse::MatchDefaultId node_id) -> bool {
-  context.node_stack()
-      .PopAndDiscardSoloNodeId<Parse::NodeKind::MatchDefaultIntroducer>();
+  auto introducer_node_id =
+      context.node_stack()
+          .PopForSoloNodeId<Parse::NodeKind::MatchDefaultIntroducer>();
   // The current block is the last case arm's else block, or the enclosing
   // block if there are no case arms; either way it is where the `default`
   // arm's body should be emitted, so there is nothing to do other than note
-  // the presence of the `default` arm for `MatchStatement`. Parse guarantees
-  // the unguarded `default` arm is last.
-  //
-  // A `default` arm is deliberately exempt from the usefulness check
-  // (`EmitCaseArmTestAndBind`), even when an unguarded irrefutable prior
-  // arm or full alternative coverage makes it dead: the conservative
-  // integer-exhaustiveness gate in `MatchStatement` still REQUIRES a
-  // `default` arm on every integer-scrutinee `match`, so diagnosing a dead
-  // `default` would make such a `match` with an irrefutable arm unwritable
-  // (W-066 plan §1.5, W-008 residue R8). Dead-`default` usefulness is
-  // W-078.
+  // the presence of the `default` arm for `MatchStatement` — beyond
+  // diagnosing the arm if the prior arms make it dead, with the error
+  // located at the `default` keyword's introducer node. Parse guarantees
+  // the unguarded `default` arm is last, so the priors-only check sees
+  // every other arm. On an integer or tuple scrutinee the check is a
+  // no-op: the R8 gate still forces this `default`, so its exemption
+  // survives there (`DiagnoseDeadDefault`; W-078's integer half).
+  DiagnoseDeadDefault(context, introducer_node_id);
   context.node_stack().Push(node_id);
   return true;
 }
 
 auto HandleParseNode(Context& context, Parse::MatchGuardedDefaultId node_id)
     -> bool {
-  context.node_stack()
-      .PopAndDiscardSoloNodeId<Parse::NodeKind::MatchDefaultIntroducer>();
+  auto introducer_node_id =
+      context.node_stack()
+          .PopForSoloNodeId<Parse::NodeKind::MatchDefaultIntroducer>();
+  // A guarded `default` is checked for deadness like the unguarded one —
+  // its own guard is assumed true, so full prior coverage makes even the
+  // guarded arm unreachable — and mid-list timing is sound: the check
+  // compares against prior arms only, which is the definition of
+  // usefulness (`DiagnoseDeadDefault`; W-078a plan §1.2). The check emits
+  // nothing, so its ordering within this handler is free.
+  DiagnoseDeadDefault(context, introducer_node_id);
   // Copy: the case-arm context pushed by `MatchCaseGuardIntroducer` holds
   // only the guard `MatchCaseGuard` recorded; there is no pattern and no
   // bindings.
@@ -1224,10 +1341,8 @@ auto HandleParseNode(Context& context, Parse::MatchGuardedDefaultId node_id)
   // `default` is equivalent to `case _: auto` and guarded arms never count
   // toward coverage, so a guarded `default` does not discharge the
   // `default` requirement (docs/design/pattern_matching.md, "Refutability,
-  // overlap, usefulness, and exhaustiveness"). Like an unguarded `default`,
-  // it is exempt from the usefulness check (see `MatchDefault`; W-066 plan
-  // §1.5, W-078), and as a guarded arm it also blocks nothing for later
-  // arms' usefulness.
+  // overlap, usefulness, and exhaustiveness"), and as a guarded arm it
+  // also blocks nothing for later arms' usefulness.
 
   // The guard is the arm's only test: `default` matches every value, so the
   // arm's condition is a constant `true` — the dispatch shape of a guarded

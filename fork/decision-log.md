@@ -2745,6 +2745,37 @@ list + the green gate. The design's canonical
 runs; the fork's tripwire flipped exactly as its own header predicted.
 **W-075 is DISCHARGED.** Veto-able.
 
+### W8b verified and discharged the same day (2026-09-25)
+
+`var`/`ref` case bindings landed through the full loop: implementer,
+two adversarial reviews (one APPROVE-WITH-FIXES, one REWORK on a
+genuine blocker — upstream's InitializeExisting dominance CHECK
+fatals on the on-demand storage lane), a findings-fold fixer, and
+three verification-driven fix rounds. Round 2: cleanup-bearing
+guard-failure edges get their own block (the SemIR verifier rejects
+destroys inside a BranchIf+Branch terminator sequence; arm scopes
+own cleanups for the first time). Round 3, the structural one:
+case-arm guards are now checked AFTER the bind pass, inline in the
+arm's body block — the guard's captured-region checking predated the
+bind fill, and WrapperBinding's use-before-fill category assumption
+(upstream expr_info.cpp:80-90, their own TODO) miscompiled ref-backed
+bindings in guards (comparison built without a load; lowering fed a
+pointer to icmp). Value bindings had worked in guards only by
+categorical accident; the reorder makes both principled. Guarded
+defaults keep the region lane (no bindings, no hazard). Round 4: the
+fail_question.carbon pin caught the `?`-in-case-guard ban silently
+lifting (its enforcement WAS the region-depth test); the ban is
+re-established explicitly on the guard-checking window — widening `?`
+into case guards is an SF-9 surface decision, kept symmetric with
+default guards. Delta re-review of rounds 2-4 + golden fill:
+APPROVE, no defects; the guard reordering also resolved the W8a
+formatter artifact ('match.<unexpected BranchWithArg>' labels).
+Verification: R26 fixpoint with every hand pin byte-exact
+(patterns/unused.carbon Warns included), untouched non-guard goldens
+byte-identical, per-arm alloca/no-alias lower pins inspected, gate
+36145509684 green, conformance 99/0/28 over 127
+(match_var_ref_binding PASS). Floor 98/126 -> 99/127.
+
 ### W8a verified and discharged on the runner's return (2026-09-25)
 
 The runner came back (~29 days offline; disk freed 36GB -> 126GB), the

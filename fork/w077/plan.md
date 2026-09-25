@@ -6,7 +6,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # W-077 plan: struct patterns in match case position
 
-**Status:** DRAFT FOR ADVERSARIAL REVIEW, 2026-09-25. Branch
+**Status:** APPROVED FOR IMPLEMENTATION, 2026-09-26 (two adversarial
+reviews returned APPROVE-WITH-AMENDMENTS; all amendments folded below,
+each marked "(amended 2026-09-26, review fold: ...)" — see Sign-off).
+Branch
 `claude/carbon-fork-0-1-w077` off trunk c8467e1 (post-PR #38: W-078b
 landed; conformance 101 PASS / 0 FAIL / 28 SKIP over 129 per
 fork/conformance/out/scoreboard.json totals). All line numbers in this
@@ -16,7 +19,9 @@ plan are against trunk c8467e1.
 DESIGNED (docs/design/pattern_matching.md:413-468) and PARSE
 (toolchain/parse/testdata/struct/struct_pattern.carbon — 12 positive
 subfiles covering designated fields, shorthand, `ref`/`var` shorthand,
-mixed, nesting, and the trailing `_` discard, plus 24 fail subfiles),
+mixed, nesting, and the trailing `_` discard, plus 26 fail subfiles —
+38 subfiles total; the fail count corrected from 24 (amended
+2026-09-26, review fold: rev 1 F4 + rev 2 F4)),
 but check-side every struct-pattern parse node is upstream-TODO:
 `HandleParseNode(StructPatternStartId)` is
 ``context.TODO(node_id, "struct pattern start")`` at
@@ -87,8 +92,11 @@ recorded at discharge):
         guard — sees `MatchCaseArm`.
     -   The residue is recorded, not hidden: §4 adds the first-ever
         check-side pins of the surviving `struct pattern start` TODO in
-        `let` and `var` position (closing the upstream golden gap the
-        ledger recorded), and §8 files the let/var/param lane as a new
+        `let`, `var`, AND param position, plus a let-inside-arm-BODY
+        pin (closing the upstream golden gap the ledger recorded, and
+        making the pin evidence cover the residue item's full
+        "let/var/param" title — amended 2026-09-26, review fold: rev 1
+        F6 + rev 2 F6), and §8 files the let/var/param lane as a new
         work item.
 
     Break condition: reviewers rejecting the gate spelling
@@ -218,7 +226,27 @@ recorded at discharge):
     (pattern_match.cpp:1404-1430), which already diagnoses refutable
     `var` subtrees with the W4 string (:1412-1417) — a
     contains-struct-pattern test reuses that exact TODO string and
-    location. Field-level `.a = var n: i32` and `.a = ref r: i32` ride
+    location. That gate alone is NOT sufficient (amended 2026-09-26,
+    review fold: rev 1 MAJOR + rev 2 BLOCKER, lane (b)): for a NESTED
+    irrefutable `var`-wrapping-struct element — `case (var {a: i32,
+    _}, 1)` — the TEST pass prunes the whole element as irrefutable
+    (pattern_match.cpp:1716-1721) before any `VarPattern` `DoPreWork`
+    runs, so the `MatchCaseState` gate is never reached; the BIND pass
+    then meets the `VarPattern` under `LocalState` +
+    `in_match_case_bind`, builds on-demand storage typed by the SUBSET
+    struct type (`GetOrAddVarStorage` + `Convert ... Initializing`,
+    pattern_match.cpp:1475-1510), and `ConvertStructToStructOrClass`
+    (convert.cpp:664-682) emits the wrong, design-contradicting
+    unexpected-field error. Therefore the match-bind `var` entry — the
+    `in_match_case_bind` path of `DoPreWork(VarPattern)`, BEFORE
+    `GetOrAddVarStorage` runs — is gated on
+    `MatchCasePatternHasStructPattern(subtree)` with the same W4 TODO
+    string; §4 pins it (fail_todo_nested_var_struct, plus the
+    designated-field `var`-wrapping-struct variant, which parse
+    admits: `VariablePattern` is a `StructPatternFieldId` and a
+    designated field's pattern is `AnyPatternId`,
+    typed_nodes.h:1553-1556). Field-level `.a = var n: i32` and
+    `.a = ref r: i32` ride
     the landed leaf machinery (tuple parity: `(var n: i32, 1)` and the
     W8b `ref` lane) — the `var` storage there is the FIELD's scalar
     type, no aggregate conversion. Break condition: a reviewer wanting
@@ -319,17 +347,41 @@ recorded at discharge):
         argument extends fieldwise exactly as it extends elementwise
         (:255-263). Adapter classes over struct types stay behind the
         scrutinee TODO, matching the int/bool strictness (:198-205).
-8.  **Choice payloads cannot contain struct positions in-slice — no
-    payload-lane work.** `IsInSliceChoicePayloadType`
-    (toolchain/check/type.cpp:313-320) admits only int/float/bool/
-    pointer payload types; anything else is rejected at choice
-    completion (handle_choice.cpp:758-763), so no in-slice choice
-    scrutinee has a struct-typed payload element for a struct
-    subpattern to match. A struct SUBPATTERN written against a
-    non-struct payload element (`case .Some({x: i32})` on `Some(i32)`)
-    reaches the struct walk with a non-struct element scrutinee and
-    takes the same W4 slice-gate TODO as the tuple twin
-    (pattern_match.cpp:1666-1695); §4 pins it. Where a struct root
+8.  **Choice payloads: struct-TYPED elements are impossible in-slice,
+    but struct SUBPATTERNS in payload position are reachable and need
+    the fast-path reroute.** (Rewritten — amended 2026-09-26, review
+    fold: rev 1 MAJOR + rev 2 BLOCKER, lanes (a)/(c).) Two distinct
+    claims, previously conflated:
+    -   Struct-TYPED payload elements cannot exist:
+        `IsInSliceChoicePayloadType` (toolchain/check/type.cpp:313-320)
+        admits only int/float/bool/pointer payload types; anything
+        else is rejected at choice completion, so no in-slice choice
+        scrutinee has a struct-typed payload element. This is what
+        makes the usefulness builder's `TypeId::None` payload slots
+        safe (§1.6).
+    -   Struct SUBPATTERNS in payload position ARE reachable, and the
+        unamended dispatch crashes on them: for
+        `case .Some({x: i32})` on an in-slice `Some(i32)`, the payload
+        subpattern is irrefutable, so `payload_is_irrefutable` is true
+        (handle_match.cpp:517-524, with the §2.3
+        `IsIrrefutableMatchCasePattern` extension counting the struct
+        node) and the payload bind dispatch takes the
+        `LocalPatternMatch(context, pattern_id, field_ref_id)` fast
+        path (handle_match.cpp:1027-1031) — plain `LocalState`
+        WITHOUT `in_match_case_bind`, which is the §2.3
+        `CARBON_FATAL`: a compiler crash on writable source. §2.4
+        therefore adds `!MatchCasePatternHasStructPattern(...)` to the
+        payload fast-path condition, exactly parallel to the tuple
+        root's reroute, so the bind pass reaches the struct walk,
+        whose non-struct-element-scrutinee stage takes the same W4
+        slice-gate TODO as the tuple twin
+        (pattern_match.cpp:1666-1695); §4 pins it
+        (fail_todo_payload_struct_subpattern).
+    -   Residue: the BINDING-FREE payload variant `case .Some({})` is
+        pruned by BOTH passes and silently accepted — the same latent
+        class as the nested empty-aggregate hole; recorded in §7 R-2.
+
+    Where a struct root
     lands today: never in handle_match at all — a struct SCRUTINEE
     aborts first at MatchCondition's gate (`match on unsupported
     scrutinee type`, handle_match.cpp:290-292, which precedes every
@@ -347,11 +399,22 @@ recorded at discharge):
     admitted and compared with `==` in the design-mandated operand
     order (pattern_match.cpp:1284-1339); everything else stays behind
     the exact W-076-widened string ``match case expression pattern
-    that is not a constant integer or `bool` `` (:1303-1312). A named
-    STRUCT constant as a leaf (`case S_CONST`) is a concrete constant
-    whose inst is `StructValue`, not `IntValue`/`BoolLiteral` — it
-    stays behind that same gate (the design's whole-value `==` lane is
-    out of slice), pinned in §4. Error-leaf recovery scopes unchanged:
+    that is not a constant integer or `bool` `` (:1303-1312). The
+    STRUCT-constant lane, restated precisely (amended 2026-09-26,
+    review fold: rev 1 F5 + rev 2 F3): a concrete constant whose inst
+    is `StructValue` would stay behind that same gate (the design's
+    whole-value `==` lane is out of slice) — but this lane is ARGUED
+    from the gate's admission logic (only `IntValue`/`BoolLiteral`
+    concrete constants pass, :1305-1307), not pinned, because no
+    in-slice vehicle for a concrete `StructValue` leaf was found: a
+    `let`-bound named struct is NOT a constant (`let` bindings bind
+    value-category results, pattern_match.cpp:1300-1304), and a
+    brace-spelled struct literal in case position parses as a struct
+    PATTERN, not an expression leaf (parse/handle_pattern.cpp:19-23).
+    The §4 fail_todo_struct_constant_leaf subfile accordingly pins the
+    NON-CONSTANT lane (a `let`-bound struct name behind the same gate
+    string), not the `StructValue` lane. Error-leaf recovery scopes
+    unchanged:
     the walk's root is now possibly a `StructPattern`, and the
     root-vs-leaf test (:1273-1283) compares inst ids, not kinds, so a
     NameNotFound field leaf recovers into an errored condition exactly
@@ -415,13 +478,32 @@ recorded at discharge):
         1.  `_` discard: if the node stack top is an `UnderscoreName`
             entry (its handler pushes `NameId::Underscore`,
             handle_binding_pattern.cpp:32-36), pop-and-discard it and
-            set `has_trailing_discard`. Parse guarantees `_` is last
-            and comma-preceded (grammar :417-418; parse fail pins
-            :163-177), so after popping it the top is
-            `StructPatternStart` and the pending region is the empty
-            one the comma opened — `EndEmptyExprRegionForPattern`.
+            set `has_trailing_discard`. CORRECTION (amended
+            2026-09-26, review fold: rev 1 F2 + rev 2 MAJOR): the
+            prior claim "parse guarantees `_` is last and
+            comma-preceded" is half false. Parse enforces only
+            `_`-is-LAST (`HandleStructPatternUnderscore`,
+            parse/handle_pattern_list.cpp:119-151, and the parse fail
+            pins); it accepts bare `{_}`, which the grammar forbids —
+            the `_` production requires at least one preceding field
+            (`[_field-pattern_ `,`]+`, pattern_matching.md:417-418).
+            Adjudicated: DIAGNOSE bare `{_}` at inst build — empty
+            element list AND `has_trailing_discard`, a
+            context-independent check like the duplicate check — with
+            the new `StructPatternDiscardWithoutFields` (§2.5),
+            pushing `ErrorInst::InstId`; `case {_}` is pinned in §4.
+            Break condition: upstream legalizing bare `{_}` in the
+            grammar flips that one pin, nothing else. After popping a
+            comma-preceded `_` the top is `StructPatternStart` and
+            the pending region is the empty one the comma opened —
+            `EndEmptyExprRegionForPattern` (bare `{_}`'s pending
+            region is likewise the still-empty one the start opened).
             Without `_`, run the tuple handler's two-way region close
-            verbatim (:96-103).
+            verbatim (:96-103). Recorded once, as an accepted parse
+            leniency with no action here: a trailing comma
+            `{.x = y: i32,}` also parses despite the grammar
+            production (the struct_pattern_trailing_comma golden,
+            parse/testdata/struct/struct_pattern.carbon:19-21).
         2.  `refs_id = param_and_arg_refs_stack().EndAndPop(
             StructPatternStart)`; pop the solo start node.
         3.  Names: for element i of the refs block, take the recorded
@@ -486,14 +568,26 @@ recorded at discharge):
     -   Recursion extensions, one `StructPattern` arm each, shaped on
         the existing tuple arms: `IsIrrefutableMatchCasePattern`
         (:665-691), `MatchCasePatternHasBindings` (:825-847),
-        `MatchCasePatternHasVarPattern` (:849-864), plus a new static
-        `MatchCasePatternHasStructPattern` (the §1.5/§2.4 routing
-        predicate, same worklist shape).
-    -   `DoPreWork(VarPattern)` `MatchCaseState` branch (:1404-1430):
-        after the irrefutability test, a
-        `MatchCasePatternHasStructPattern(subtree)` hit diagnoses the
-        W4 TODO at the introducer (:1412-1417's exact spelling and
-        location) — §1.5.
+        `MatchCasePatternHasVarPattern` (:849-864), plus a new
+        `MatchCasePatternHasStructPattern` (the §1.5/§1.8/§2.4 routing
+        predicate, same worklist shape). NOT a static (amended
+        2026-09-26, review fold: rev 1 F3): it is consumed cross-file
+        by handle_match.cpp's fast-path reroutes, so it is declared in
+        and exported from toolchain/check/pattern_match.h, exactly
+        like `MatchCasePatternHasVarPattern` (pattern_match.h:192).
+    -   `DoPreWork(VarPattern)`, BOTH match-lane entries (amended
+        2026-09-26, review fold: rev 1 MAJOR + rev 2 BLOCKER, lane
+        (b) — §1.5): the `MatchCaseState` branch (:1404-1430), after
+        the irrefutability test, diagnoses the W4 TODO on a
+        `MatchCasePatternHasStructPattern(subtree)` hit
+        (:1412-1417's exact spelling and location); AND the
+        match-bind entry — `LocalState` with `in_match_case_bind`,
+        reached when the TEST pass pruned the irrefutable `var`
+        element before its `DoPreWork` ever ran — applies the same
+        `MatchCasePatternHasStructPattern` gate BEFORE
+        `GetOrAddVarStorage`/`DoVarPreWorkImpl` builds subset-typed
+        storage (:1475-1510), same W4 string, located at the arm's
+        introducer.
     -   `BuildMatchCaseUsefulnessKey` (:718-823): the §1.6 signature
         and worklist change (typed positions), the `Struct` node
         emission with `Wildcard` fills (a `{InstId::None, type}`
@@ -523,9 +617,18 @@ recorded at discharge):
         condition (:1041-1043) additionally requires
         `!MatchCasePatternHasStructPattern`, so a tuple root with a
         struct element takes the match-bind walk. The alternative-
-        payload branch (:1027-1032) needs no change: §1.8 makes struct
-        payload subtrees unreachable, and the reused walk would route
-        them correctly anyway.
+        payload branch's fast path (:1027-1031) gets the SAME reroute
+        (amended 2026-09-26, review fold: rev 1 MAJOR + rev 2 BLOCKER,
+        lane (a)): its condition gains
+        `!MatchCasePatternHasStructPattern(...)`, because a struct
+        subpattern in payload position makes `payload_is_irrefutable`
+        true (:517-524 with the §2.3 irrefutability extension) and the
+        unamended `LocalPatternMatch(context, pattern_id,
+        field_ref_id)` fast path would run the struct `DoPreWork`
+        under plain `LocalState` — the §2.3 `CARBON_FATAL`, a crash on
+        writable source (§1.8). Rerouted, the bind pass reaches the
+        struct walk's non-struct-element W4 TODO; §4 pins it
+        (fail_todo_payload_struct_subpattern).
     -   `UsefulnessKeySubsumes` (:627-677): the `Kind::Struct` case
         (§1.6). `UsefulnessKeyNode` (context.h:335-371): the `Struct`
         kind, documented with the normalization contract; the
@@ -559,10 +662,19 @@ recorded at discharge):
         `SemIR::NameId`; note `StructPatternNamePrevious`: ``"field
         with the same name here"`` (the `StructNameDuplicate` /
         `StructNamePrevious` twins, handle_struct.cpp:90-95).
+    -   `StructPatternDiscardWithoutFields` (Error,
+        handle_pattern_list.cpp; amended 2026-09-26, review fold:
+        rev 1 F2 + rev 2 MAJOR — the §2.2 bare-`{_}` adjudication):
+        ``"`_` in a struct pattern requires at least one named field
+        before it"`` — no args; the grammar's `_` production takes
+        one-or-more preceding fields (pattern_matching.md:417-418).
     -   kind.def placement: the two `MatchCaseStructPattern*` kinds
         between `MatchCaseNeverMatchesPriorArm` (:168) and
         `MatchCaseTuplePatternWrongArity` (:169), alphabetized; the
-        two `StructPattern*` kinds after `StructNamePrevious` (:553).
+        three `StructPattern*` kinds after `StructNamePrevious`
+        (:553), alphabetized among themselves
+        (`StructPatternDiscardWithoutFields`,
+        `StructPatternNameDuplicate`, `StructPatternNamePrevious`).
         Every kind is covered by a §4 fail file, as the diagnostic
         coverage test requires.
 6.  **Context:** the `struct_pattern_names_stack()` member (§2.2) with
@@ -603,12 +715,16 @@ template), `//@dump-sem-ir` on the positives:
 | fail_missing_fields | `case {.a = 1}` on two-field scrutinee, no `_` | `MatchCaseStructPatternMissingFields` naming `` `b` `` |
 | fail_missing_fields_all_binding | `case {a: i32}` on two-field scrutinee | same error — shape checks run at the root even for irrefutable trees (§1.4); no coverage recorded (errored condition) |
 | fail_duplicate_field | `case {.a = 1, .a = 2, _}` | `StructPatternNameDuplicate` + note |
+| fail_discard_without_fields | `case {_}` (amended 2026-09-26, review fold: rev 1 F2 + rev 2 MAJOR) | `StructPatternDiscardWithoutFields` (§2.2 step 1 — parse admits bare `{_}`; the grammar does not) |
 | fail_struct_nonexhaustive | `case {.a = 1, .b = 2}` only, no `default` | `MatchNonexhaustiveNoIrrefutableArm` naming `{.a: i32, .b: i32}` (§1.7, zero-code-change lane) |
 | fail_struct_of_bool_pairs | struct-of-two-bools scrutinee, all four constant-pair arms, no `default` | same error — the root-only open-domain record, the bool_pair_keeps_default twin (§1.7) |
 | fail_todo_non_struct_scrutinee | `case {x: i32}` on `i32` scrutinee | W4 slice-gate TODO abort (root `else`, §2.4) |
-| fail_todo_nested_non_struct | `case ({x: i32}, 1)` on `(i32, i32)` | W4 TODO from the walk (§2.3) — also the §1.8 payload-shape twin |
+| fail_todo_nested_non_struct | `case ({x: i32}, 1)` on `(i32, i32)` | W4 TODO from the walk (§2.3) |
+| fail_todo_payload_struct_subpattern | `case .Some({x: i32})` on an in-slice `Some(i32)` choice (amended 2026-09-26, review fold: rev 1 MAJOR + rev 2 BLOCKER, lane (a)) | W4 TODO from the walk after the §2.4 payload fast-path reroute — the crash lane closed by §1.8 |
 | fail_todo_var_struct | `case var {a: i32, b: i32}` | W4 TODO (§1.5 gate) |
-| fail_todo_struct_constant_leaf | `let` — a named struct constant as the case expression | R9 gate string ``match case expression pattern that is not a constant integer or `bool` `` (§1.9) |
+| fail_todo_nested_var_struct | `case (var {a: i32, _}, 1)` on `({.a: i32, .b: i32}, i32)` (amended 2026-09-26, review fold: rev 1 MAJOR + rev 2 BLOCKER, lane (b)) | W4 TODO from the §1.5 match-bind `var` gate — the test pass prunes the irrefutable element, so only that gate stands between the arm and the wrong conversion error |
+| fail_todo_var_struct_field | `case {.y = var {b: i32}, _}` on a struct-of-struct scrutinee (amended 2026-09-26, review fold: rev 1 MAJOR — parse admits `var` in field position, typed_nodes.h:1553-1556) | W4 TODO (§1.5 match-bind `var` gate, designated-field variant) |
+| fail_todo_struct_constant_leaf | `let` — a `let`-bound named struct as the case expression | R9 gate string ``match case expression pattern that is not a constant integer or `bool` `` — pins the NON-CONSTANT lane; the `StructValue` lane is argued, not pinned (§1.9, amended 2026-09-26, review fold: rev 1 F5 + rev 2 F3) |
 | fail_error_element_recovery | `case {.a = undeclared, .b = 2}` | NameNotFound + errored-arm recovery, later arms still checked (:1273-1283) |
 | fail_pruned_subtree_shape_error | `case (n: i32, {x: i32})` on `(i32, {.x: i32, .y: i32})` | test pass prunes the irrefutable struct element; the BIND pass diagnoses `MatchCaseStructPatternMissingFields` at the subpattern (the tuple fail_pruned_subtree_shape_error twin) |
 | fail_ref_binding_value_scrutinee_field | `case {.a = ref r: i32, _}` on a value scrutinee | the bind-pass ref-conversion error (W8b parity) |
@@ -633,11 +749,24 @@ gains struct_superset_then_subset (`{.a = 1, .b = 2}` prior, then
 `{.a = 1, _}` — SILENT: a constant never subsumes a `Wildcard` slot)
 and struct_different_constants (silent).
 
-**New check/testdata/let/fail_todo_struct_pattern.carbon**: `let
-{x: i32} = {.x = 1};` and `var {.x = y: i32} = {.x = 1};` — the
-FIRST check-side pins of the surviving ``struct pattern start`` TODO
-(the §1.1 slice boundary and the ledger's recorded golden gap, closed
-in the direction the slice leaves it).
+**New check/testdata/let/fail_todo_struct_pattern.carbon**: four
+subfiles, the FIRST check-side pins of the surviving ``struct pattern
+start`` TODO (the §1.1 slice boundary and the ledger's recorded golden
+gap, closed in the direction the slice leaves it):
+
+-   `let {x: i32} = {.x = 1};` and `var {.x = y: i32} = {.x = 1};` —
+    the let/var lanes.
+-   PARAM position: `fn F({x: i32});` — parses as a struct pattern
+    (parse/handle_pattern.cpp:19-23) and post-slice still aborts at
+    handle_pattern_list.cpp:40 under `Kind::ExplicitParamList`, so the
+    residue item's evidence covers its full "let/var/param" title
+    (amended 2026-09-26, review fold: rev 2 F6).
+-   `let` inside a match ARM BODY: `let {x: i32} = {.x = 1};` in an
+    arm's body — the gate is correct there because the arm's full
+    pattern pops at handle_match.cpp:958 before the body checks (the
+    body's innermost kind is `NameBindingDecl`), and this pin is the
+    regression trap for any future gate re-siting (amended
+    2026-09-26, review fold: rev 1 F6).
 
 **New lower/testdata/match/struct_pattern.carbon** (the
 lower/testdata/match/tuple_pattern.carbon twin): constants+bindings
@@ -657,7 +786,17 @@ IR with zero lower/ code change (§1.10).
     destructured by a shorthand binding arm (`case {tag: i32, val:
     i32}` — also the exhaustiveness discharge, no `default` in the
     second function), with reordered designated fields exercised; the
-    C++ mental model is `switch` on one member plus member reads. The
+    C++ mental model is `switch` on one member plus member reads.
+    Harness conventions, per the match family's precedents (amended
+    2026-09-26, review fold: rev 2 F5): runtime inputs go through the
+    `RuntimeSeed(x) = x + 20` convention so arms run against real
+    runtime values, not constant folds
+    (match_irrefutable_no_default.carbon:21-30 precedent); EXPECT
+    values are derived by hand from the C++ mental model per R16(d);
+    and every dispatch function carries the unreachable exit-code
+    belt — a trailing sentinel return that fails the program loudly
+    if a checker/lowering bug lets the match fall through
+    (match_switch.carbon:44-47 precedent). The
     gap-analysis row's stale note ("all 15 check handlers ... are
     context.TODO stubs") is refreshed in passing — the PARTIAL status
     column is re-judged at discharge against the post-W-077 tree.
@@ -681,14 +820,24 @@ reviewers can re-run it:
     handle_pattern_list.cpp:40/:138/:143 (and parse's two unrelated
     shorthand-diagnostic texts, parse/handle_pattern_list.cpp:216,
     :224, which contain the words but pin parse diagnostics this slice
-    does not touch). The `struct pattern start` string SURVIVES at its
+    does not touch — PLUS those texts' three parse GOLDEN pins,
+    parse/testdata/struct/struct_pattern.carbon:259/:267/:275, named
+    here so §8.4's reconciliation greps are mechanical; amended
+    2026-09-26, review fold: rev 1 F4 + rev 2 F4). The
+    `struct pattern start` string SURVIVES at its
     site for non-match contexts (§1.1), so even the code-side string
     only narrows, and the first goldens to pin it are §4 additions.
 2.  No check or lower golden contains a struct pattern or struct
     scrutinee: grep for `let {`, `var {`, `case {` over
-    toolchain/check/testdata and toolchain/lower/testdata is empty
+    toolchain/check/testdata and toolchain/lower/testdata, restricted
+    to SOURCE lines (excluding `CHECK` lines), is empty. Restated with
+    the false-positive class named (amended 2026-09-26, review fold:
+    rev 1 F4 + rev 2 F4): the raw `var {` grep hits 80 SemIR dump
+    CHECK lines of the form ``splice_block %x.var {}`` (verified: all
+    80 hits are CHECK lines; the source-line grep is empty) —
+    conclusion unchanged.
     (parse/testdata/struct/struct_pattern.carbon is parse-only and
-    untouched — struct-pattern PARSING does not change).
+    untouched — struct-pattern PARSING does not change.)
 3.  The additions to inst_kind.def, kind.def, typed_insts.h, and
     context.h shift no existing golden: SemIR dumps print inst
     `ir_name`s and diagnostics print kind names — neither is
@@ -697,8 +846,14 @@ reviewers can re-run it:
 
 **Compiler files touched (additive except comments):**
 toolchain/sem_ir/{inst_kind.def, typed_insts.h, pattern.cpp},
-toolchain/check/{handle_pattern_list.cpp, pattern_match.cpp,
-handle_match.cpp, context.h}, toolchain/diagnostics/kind.def. The
+toolchain/check/{handle_pattern_list.cpp, pattern_match.h,
+pattern_match.cpp, handle_match.cpp, context.h},
+toolchain/diagnostics/kind.def. pattern_match.h added to the
+inventory (amended 2026-09-26, review fold: rev 1 F3): it gains the
+exported `MatchCasePatternHasStructPattern` declaration (§2.3) and
+`BuildMatchCaseUsefulnessKey`'s declared signature at
+pattern_match.h:178-181 changes for §1.6's `scrutinee_type_id`
+parameter. The
 comment sweep (§2.4) also touches no goldens: file comments do not
 print.
 
@@ -739,11 +894,18 @@ two extended files and two passes at most for the new files.
     latent hole for nested `()` arity today (same two prune predicates,
     pattern_match.cpp:1716-1721) — this is tuple-parity residue, not
     new unsoundness (nothing binds, the arm's condition is unchanged,
-    no wrong code is emitted). ROOT-position `{}` is fully checked
+    no wrong code is emitted). The PAYLOAD lane has the same class's
+    binding-free variant (amended 2026-09-26, review fold: rev 1
+    MAJOR + rev 2 BLOCKER, lane (c)): `case .Some({})` on an in-slice
+    `Some(i32)` is pruned by BOTH passes — irrefutable for the test
+    pass, binding-free for the bind pass — so the §1.8/§2.4 reroute
+    never fires and the arm is silently accepted where the design
+    wants the W4 gate; same latent class as the tuple-root nesting,
+    same disposition. ROOT-position `{}` is fully checked
     (§2.4 routes every struct root through the engine). Recorded in
     the ledger note at discharge as shared residue with a pointer to
-    both lanes; fixing it means an unconditional shape-check pass and
-    belongs to a joint follow-up, not this slice.
+    all three lanes; fixing it means an unconditional shape-check pass
+    and belongs to a joint follow-up, not this slice.
 -   **R-3 subsumption-normalization contested.** A reviewer may push
     for name-sorted children instead of scrutinee-order children. The
     rebuttal is one sentence: sorting alone cannot restore fixed arity
@@ -765,8 +927,11 @@ two extended files and two passes at most for the new files.
     representation rather than hand-merging — their layer will differ
     at minimum in the let/var lane this slice deliberately excludes.
 -   **R-6 `MatchCasePatternHasStructPattern` reroute misses a path.**
-    The two rerouted sites (§2.4: the var gate, the tuple bind fast
-    path) were found by enumerating every `LocalPatternMatch` /
+    The rerouted sites — now FOUR (amended 2026-09-26, review fold:
+    rev 1 MAJOR + rev 2 BLOCKER: the reviews found two the draft's
+    enumeration missed): the test-pass var gate, the match-bind var
+    entry (§1.5), the tuple bind fast path, and the payload bind fast
+    path (§1.8/§2.4) — cover every `LocalPatternMatch` /
     `DoVarPreWorkImpl` entry reachable from a match arm; a missed path
     surfaces loudly as the `CARBON_FATAL` in the struct `DoPreWork`
     for non-match states (§2.3) — a crash in testing, never a silent
@@ -805,9 +970,14 @@ two extended files and two passes at most for the new files.
     miss — stop and reconcile.
 4.  Reconciliation greps at discharge: ``struct pattern start``
     survives at exactly handle_pattern_list.cpp (one site) plus the
-    new let/var pins; ``"struct pattern"`` and ``struct pattern
-    field`` survive NOWHERE in check code; the W4 gate string's site
-    count grew only by the §4 pins.
+    new let/var/param/arm-body pins (§4, amended 2026-09-26, review
+    fold: rev 1 F6 + rev 2 F6); ``"struct pattern"`` and ``struct
+    pattern field`` survive NOWHERE in check code — the residual
+    hits are parse's shorthand-diagnostic texts
+    (parse/handle_pattern_list.cpp:216/:224) and their three parse
+    golden pins (parse/testdata/struct/struct_pattern.carbon:259/
+    :267/:275, the §6.1 record); the W4 gate string's site count grew
+    only by the §4 pins.
 5.  **Ledger edits (fork/inventory/work-items.json):**
     -   W-077: notes gain the closing record — "MATCH-LANE DISCHARGED
         (fork/w077/plan.md): `SemIR::StructPattern` + match-only slice
@@ -824,7 +994,7 @@ two extended files and two passes at most for the new files.
         unreachable) recorded verbatim.
     -   NEW work item filed: struct patterns in `let`/`var`/param
         contexts (the §1.1 residue), evidence = the surviving gate
-        site + the new let/var TODO pins + §1.4's note that the
+        site + the new let/var/param TODO pins + §1.4's note that the
         irrefutable lane needs the conversion-or-walk decision this
         slice did not make; blocked_by: none.
     -   Decision-log entry "W-077: struct patterns in match case
@@ -858,3 +1028,49 @@ two extended files and two passes at most for the new files.
 -   The fail-matrix bindings must be used or `unused`-marked so no
     incidental UnusedBinding warning rides the goldens (the W-078b
     rev 2 record note; fork/w078b/plan.md §4).
+
+## Sign-off
+
+Two adversarial plan reviews (rev 1, rev 2) returned
+APPROVE-WITH-AMENDMENTS; the eight consolidated amendments are folded
+above, each marked "(amended 2026-09-26, review fold: ...)":
+
+1.  rev 2 BLOCKER + rev 1 MAJOR — the pruned-irrefutable-struct
+    fast-path family: (a) choice-payload bind fast-path reroute
+    (§1.8, §2.4, §4 fail_todo_payload_struct_subpattern), (b)
+    match-bind `var` entry gate for nested var-wrapping-struct (§1.5,
+    §2.3, §4 fail_todo_nested_var_struct +
+    fail_todo_var_struct_field), (c) §1.8 rewritten to split
+    struct-typed payload elements from struct subpatterns in payload
+    position, with the binding-free `case .Some({})` variant recorded
+    in §7 R-2 and the R-6 site enumeration corrected to four.
+2.  rev 1 F2 + rev 2 MAJOR — bare `{_}` parse leniency adjudicated:
+    diagnosed at inst build with `StructPatternDiscardWithoutFields`
+    (§2.2 step 1, §2.5, §4 fail_discard_without_fields), break
+    condition recorded; the trailing-comma leniency recorded once,
+    no action.
+3.  rev 1 F3 — `MatchCasePatternHasStructPattern` exported from
+    pattern_match.h, not a static (§2.3); pattern_match.h added to
+    the §6 touched-file inventory with the
+    `BuildMatchCaseUsefulnessKey` signature change.
+4.  rev 1 F4 + rev 2 F4 — verification-record precision: the §6.2
+    `var {` grep restated source-line-anchored (80 CHECK-line
+    false positives verified, not ~40 as the review estimated); the
+    §0 parse fail-subfile count corrected 24 → 26; the three parse
+    golden pins of the shorthand "struct pattern field" texts named
+    in §6.1 and §8.4.
+5.  rev 1 F5 + rev 2 F3 — fail_todo_struct_constant_leaf's rationale
+    corrected: it pins the non-constant lane; the `StructValue`
+    rejection is argued from the gate's admission logic, not pinned
+    (no in-slice concrete-struct-constant leaf vehicle found) (§1.9,
+    §4).
+6.  rev 1 F6 — let-inside-match-arm-body TODO pin added to the
+    fail_todo_struct_pattern.carbon spec (§4).
+7.  rev 2 F5 — §5 conformance spec gains the match family's harness
+    conventions (RuntimeSeed(x) = x + 20 inputs, hand-derived EXPECT
+    values per R16(d), exit-code belt).
+8.  rev 2 F6 — param-position slice-boundary pin added
+    (`fn F({x: i32});`), so the residue evidence covers
+    "let/var/param" (§4, §8.4, §8.5).
+
+**Status: APPROVED FOR IMPLEMENTATION, 2026-09-26.**

@@ -10,20 +10,22 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-09-26 (post-PR #36: W-076 — `bool` match
-scrutinees, and the scoreboard's FIRST TRIPLE DIGITS: 100 PASS / 0
-fail-class / 28 SKIP over 128. `case true`/`case false` dispatch,
-both-values exhaustiveness with no `default` (new
-MatchNonexhaustiveBool), BoolConst usefulness keys + the union rule
-from day one, and the positionally-global R9 widening (bool constants
-in tuple and choice-payload positions) — both plan reviews caught the
-payload unlock independently; one runner-exposed fix round on the
-plan-hedged `case 1 == 1` parse boundary (now `case (1 == 1)` +
-boundary pin). Six PRs since the runner returned (#31→#36): weekly
-upstream merge, W8a/W8b/W8c, W-066, W-076. Next: W-078's separable
-choice half (dead-`default` on choices) or the next inventory
-priority — see fork/decision-log.md for the full record)._
-THIRTY-SIX PRs. The design's canonical
+_Last updated: 2026-09-26 (post-PR #37: W-078a — dead `default`
+arms on choice and bool scrutinees now error, the design's own
+"❌ Error: unreachable." call (pattern_matching.md:243-244).
+DiagnoseDeadDefault reuses the W-066 usefulness state at both default
+handlers by way of the factored UnguardedArmsCoverWholeDomain (own guard
+assumed true, so full prior coverage kills `default if (g)` too);
+three new MatchDefaultNeverMatches* kinds; 8-subfile fail matrix;
+dead defaults dropped from seven positive suites. Integer lane stays
+R8-exempt — W-078 stays OPEN for the integer half + R8 lift. Both
+impl reviews APPROVE with zero code fixes; R26 fixpoint at pass 3;
+conformance unchanged 100/0/28 over 128, zero conformance edits.
+Seven PRs since the runner returned (#31→#37): weekly upstream merge,
+W8a/W8b/W8c, W-066, W-076, W-078a. Next: W-077 struct patterns or the
+next inventory priority; weekly cron fires Monday 2026-09-28 — see
+fork/decision-log.md for the full record)._
+THIRTY-SEVEN PRs. The design's canonical
 `var my_opt: Optional(i32) = Optional(i32).None;` now compiles and
 runs: LookupChoiceCopyWitness mirrors the destroy witness (is_choice
 gate, symbolic deferral under the SF-6 triviality fence, concrete

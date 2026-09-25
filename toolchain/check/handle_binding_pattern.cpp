@@ -508,16 +508,16 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
     }
 
     case FullPatternStack::Kind::MatchCaseArm:
-      // A bare `name: type` binding in a `match` `case` pattern checks like a
-      // `let` binding: it is irrefutable and binds the scrutinee's value in
-      // the arm's scope (re-platform plan S2b). `var`-mode and `ref` case
-      // bindings are a recorded later slice with their own TODO; form
+      // A binding in a `match` `case` pattern checks like a `let` binding:
+      // bare `name: type` is irrefutable and binds the scrutinee's value in
+      // the arm's scope (re-platform plan S2b); a `var`-mode binding becomes
+      // a `RefBindingPattern` under the arm's `VarPattern`, whose per-arm
+      // storage the bind pass emits on demand (W-008 plan §2.4); and a
+      // `ref` binding binds the scrutinee itself, which must be a durable
+      // reference — the conversion machinery diagnoses a value scrutinee
+      // (docs/design/pattern_matching.md, "`ref` binding patterns"). Form
       // bindings in case arms stay behind the W4 slice gate, pinned to the
       // arm's `case` token.
-      if (node_kind == Parse::NodeKind::VarBindingPattern || is_ref) {
-        return context.TODO(node_id,
-                            "`var` or `ref` binding in match `case` pattern");
-      }
       if (node_kind == Parse::NodeKind::FormBindingPattern) {
         return context.TODO(
             context.match_case_stack().back().introducer_node_id,

@@ -518,6 +518,53 @@ string) — mutate a `var` case binding, observe the original unchanged;
 over 127. R9 discharge as W8a, plus: the `var`/`ref` TODO string
 absent from the tree.
 
+Deviation note (2026-09-25, W8b fix round 1; review #1 F2 + review #2
+F5): (i) the patterns/unused.carbon flip restructured the
+fail_todo_match split's single match into FOUR functions
+(UnusedMarkedTuple, UnusedMarkedSingle, UsedInBody, Warns) rather than
+one; the split's two guard-bearing spellings were dropped because (a) a
+guard use of an `unused`-marked binding is a reachable UnusedButUsed
+ERROR — not the "ensure no warning" the :175 TODO comment expected —
+and (b) min_prelude/primitives has no ordered-comparison impls for a
+guard to use. (ii) The guard-use-of-unused behavior gets its own pin in
+full-prelude match/var_binding.carbon (subfile fail_unused_used_in_guard,
+`case var unused a: i32 if (a > 0)` → UnusedButUsed at the binding +
+UnusedButUsedHere note at the guard use). (iii) handle_match.cpp
+exceeded this section's "classification only" file list: the bind
+dispatch routes `var`-bearing and expression-bearing trees to
+`MatchCaseBindPatternMatch` — a §2.4-necessitated amendment (the
+on-demand storage design lives in the match-bind walk, so the dispatch
+must select it).
+
+Deviation note (2026-09-25, W8b fix round 3): case-arm guards are now
+checked AFTER the arm's bind pass, directly into the arm's body block —
+the capture-a-region-at-`MatchCaseGuard`-and-splice-at-`MatchCase` lane
+is gone for case arms. Why: the guard region was checked before the bind
+pass filled the arm's `WrapperBinding` insts (`value_id = None` until
+`ReplaceInstBeforeConstantUse` in the bind pass), and SemIR's
+expression-category query ASSUMES a value category for an unfilled
+binding (upstream expr_info.cpp:80-90, its own "TODO: Find a more robust
+solution"). W8a's value bindings matched that assumption by accident
+(the fill is a value); W8b's `var`/`ref` case bindings fill with a
+durable reference, so a guard like `case var a: i32 if (a > 9)` built
+its comparison on the storage reference without a value load and
+lowering fed a pointer to `icmp` (HandleIntComparison assert,
+lower/testdata/match/var_binding.carbon, runner run 36142599685).
+Mechanism: `MatchCaseGuardIntroducer` now runs the arm's test and bind
+passes (shared helper `EmitCaseArmTestAndBind`, factored out of
+`MatchCase`) and stashes the arm's else block in the case context's new
+`else_block_id`; the guard expression checks inline into the pushed body
+block with every binding filled — categorically correct for value and
+ref bindings alike, removing the accident, not just the bug —
+`MatchCaseGuard` converts to bool and branches by way of round 2's
+`BranchOnGuard`, and `MatchCase` just pops state and exposes the else
+block. Guarded `default` arms KEEP the capture-and-splice region lane:
+they have no bindings, so no use-before-fill exists (minimal churn;
+`guard_region_id`/`guard_node_id` are now default-lane-only). Unguarded
+arms are byte-identical; guard goldens churn (the guard's
+`splice_block` disappears, guard insts appear inline in the body
+block).
+
 ### 3.3 W8c — disposition and gate-narrowing (S; cut-with-record allowed)
 
 No feature work. (1) Give compile-time case bindings their own honest

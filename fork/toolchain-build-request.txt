@@ -1,1 +1,1 @@
-2026-09-25T12:50Z w008 W8a verification gate (build+test at post-golden tip)
+2026-09-25T17:50Z w008 W8b verification gate (build+test at fixpoint tip 78bcf8f)

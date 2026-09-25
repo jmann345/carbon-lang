@@ -104,10 +104,15 @@ auto LocalPatternMatch(Context& context, SemIR::InstId pattern_id,
 // collected conditions into one bool (observationally equivalent to the
 // design's short-circuit order because in-slice element reads are total and
 // case expressions are constants; W-008 plan §2.1(a)). An errored element
-// makes the whole condition `ErrorInst`.
+// makes the whole condition `ErrorInst`. A `var` root wrapping a wholly
+// irrefutable subtree contributes no condition of its own: the walk
+// descends through it so the same scrutinee-typed shape checks run, and
+// its bindings prune (W8b fix round 1).
 //
-// `case_node_id` is the `MatchCase` parse node, used as the location of the
-// emitted comparison insts. Returns `None` after diagnosing an unsupported
+// `case_node_id` is the `MatchCase` parse node for an unguarded arm, or the
+// `MatchCaseGuardIntroducer` node for a guarded arm (whose test pass runs
+// before the guard expression), used as the location of the emitted
+// comparison insts. Returns `None` after diagnosing an unsupported
 // case-pattern shape with a "semantics TODO" diagnostic, which aborts
 // checking.
 auto MatchCasePatternMatch(Context& context, SemIR::InstId pattern_id,
@@ -115,27 +120,40 @@ auto MatchCasePatternMatch(Context& context, SemIR::InstId pattern_id,
                            Parse::NodeId case_node_id) -> SemIR::InstId;
 
 // Emits the bind-pass IR for a `match` `case` arm whose pattern tree mixes
-// bindings with expression subpatterns: the irrefutable `LocalPatternMatch`
-// walk, except that subtrees without bindings prune — the test pass owns
-// expression-pattern regions (each is spliced exactly once, by the test),
-// and only bindings have work left in the arm's body block. Wholly-binding
-// trees take plain `LocalPatternMatch` instead, byte-for-byte.
+// bindings with expression subpatterns, or contains `var` patterns: the
+// irrefutable `LocalPatternMatch` walk, except that subtrees without
+// bindings prune — the test pass owns expression-pattern regions (each is
+// spliced exactly once, by the test), and only bindings have work left in
+// the arm's body block — and `VarStorage` for `var` patterns is emitted on
+// demand in the arm's body block, giving each arm its own storage (the
+// arm's full-pattern frame is popped before this runs, so the `let`/`var`
+// frame-indexed storage lookup is unusable; W-008 plan §2.4).
+// Wholly-binding, `var`-free trees take plain `LocalPatternMatch` instead,
+// byte-for-byte.
 auto MatchCaseBindPatternMatch(Context& context, SemIR::InstId pattern_id,
                                SemIR::InstId scrutinee_id) -> void;
 
 // Returns whether a `match` `case` (sub)pattern tree is wholly irrefutable:
-// binding patterns match any value, and a tuple of irrefutable elements is
+// binding patterns (value and `ref` alike) match any value, a `var` wrapper
+// is as (ir)refutable as its subtree, and a tuple of irrefutable elements is
 // irrefutable given its arity/type, which the checker enforces statically.
 // Expression subpatterns compare values, so any of them makes the tree
 // refutable. This is the classification exhaustiveness recording consumes
-// (`MatchCase` in handle_match.cpp), and the one W-066's usefulness work
-// builds on.
+// (`EmitCaseArmTestAndBind` in handle_match.cpp), and the one W-066's
+// usefulness work builds on.
 auto IsIrrefutableMatchCasePattern(Context& context, SemIR::InstId pattern_id)
     -> bool;
 
 // Returns whether a `match` `case` (sub)pattern tree contains any binding
 // pattern — only then does the arm have bind-pass work in its body block.
 auto MatchCasePatternHasBindings(Context& context, SemIR::InstId pattern_id)
+    -> bool;
+
+// Returns whether a `match` `case` (sub)pattern tree contains a `var`
+// pattern. Such a tree's bind pass must run as `MatchCaseBindPatternMatch`
+// — never plain `LocalPatternMatch` — because its `VarStorage` is emitted
+// on demand rather than read from the popped full-pattern frame.
+auto MatchCasePatternHasVarPattern(Context& context, SemIR::InstId pattern_id)
     -> bool;
 
 // Emits the extraction of one alternative's payload tuple from a choice
@@ -239,11 +257,14 @@ auto MatchCaseAlternativePatternMatch(Context& context,
                                       Parse::NodeId case_node_id)
     -> SemIR::InstId;
 
-// Splices a `match` `case` guard's captured condition region into the
-// current code block, and returns the region's result (the guard condition
-// as a bool value). `MatchCase` (handle_match.cpp) calls this in the arm's
-// body block after the bind pass, so the guard evaluates with the arm's
-// bindings initialized. The region may contain control flow (for example a
+// Splices a `match` guard's captured condition region into the current
+// code block, and returns the region's result (the guard condition as a
+// bool value). Only guarded `default` arms capture a region —
+// `MatchGuardedDefault` (handle_match.cpp) splices it into the arm's body
+// block; a `default` arm has no bindings, so the early capture is safe. A
+// guarded `case` arm checks its guard directly into the arm's body block
+// after the bind pass instead, so the guard evaluates with the arm's
+// bindings filled. The region may contain control flow (for example a
 // short-circuiting `and`), in which case the current block ends with a
 // branch into the region's blocks and emission resumes in the region's
 // successor block; single-block regions splice in place.

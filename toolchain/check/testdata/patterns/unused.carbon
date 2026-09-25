@@ -156,23 +156,47 @@ fn F(x: i32) {
   var unused z: i32 = y;
 }
 
-// --- fail_todo_match.carbon
+// --- match_case_bindings.carbon
 library "[[@TEST_NAME]]";
 
-fn F() -> i32 {
-  var x: i32 = 3;
-  match (x) {
-    // CHECK:STDERR: fail_todo_match.carbon:[[@LINE+4]]:22: error: semantics TODO: ``var` or `ref` binding in match `case` pattern` [SemanticsTodo]
-    // CHECK:STDERR:     case unused var (a: i32, b: i32) => { return 0; }
-    // CHECK:STDERR:                      ^~~~~~
-    // CHECK:STDERR:
+// Case bindings participate in unused-binding analysis under the arm's
+// implicit `let` introducer the same way `let` and `var` declarations do:
+// a bound-but-unused case binding warns, and `unused`-marked ones do not.
+
+fn UnusedMarkedTuple(p: (i32, i32)) -> i32 {
+  match (p) {
     case unused var (a: i32, b: i32) => { return 0; }
-    case (a: i32) if (a < 0) => { return 2; }
-    case var unused a: i32 if (a != x) => { return 3; }
     default => { return 4; }
   }
   return 0;
-  // TODO: ensure no warning (after match is implemented).
+}
+
+fn UnusedMarkedSingle(x: i32) -> i32 {
+  match (x) {
+    case var unused a: i32 => { return 3; }
+    default => { return 4; }
+  }
+  return 0;
+}
+
+fn UsedInBody(x: i32) -> i32 {
+  match (x) {
+    case var a: i32 => { return a; }
+    default => { return 4; }
+  }
+  return 0;
+}
+
+fn Warns(x: i32) -> i32 {
+  match (x) {
+    // CHECK:STDERR: match_case_bindings.carbon:[[@LINE+4]]:14: warning: binding `a` unused [UnusedBinding]
+    // CHECK:STDERR:     case var a: i32 => { return 0; }
+    // CHECK:STDERR:              ^~~~~~
+    // CHECK:STDERR:
+    case var a: i32 => { return 0; }
+    default => { return 4; }
+  }
+  return 0;
 }
 
 // --- fail_unused_decl.carbon

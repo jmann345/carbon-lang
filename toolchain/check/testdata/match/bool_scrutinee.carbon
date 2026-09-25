@@ -56,26 +56,35 @@ fn F(b: bool) -> i32 {
 library "[[@TEST_NAME]]";
 
 // A constant bool expression `case` classifies by its evaluated constant
-// (a concrete `BoolLiteral`), never its syntax: `case 1 == 1` covers
-// `true` (eval's builtin `IntLiteral` comparison folds it), and together
-// with `case false` the match is exhaustive without `default`.
+// (a concrete `BoolLiteral`), never its syntax: `case (1 == 1)` covers
+// `true` (eval's builtin `IntLiteral` comparison folds it; the parens are
+// required — see fail_unparenthesized_comparison_case.carbon — and ride
+// the W8a paren-pattern lane), and together with `case false` the match
+// is exhaustive without `default`.
 //@dump-sem-ir-begin
 fn G(b: bool) -> i32 {
   match (b) {
-    // CHECK:STDERR: constant_expr_case.carbon:[[@LINE+8]]:12: error: expected `=>` introducing statement block [ExpectedMatchCaseArrow]
-    // CHECK:STDERR:     case 1 == 1 => { return 1; }
-    // CHECK:STDERR:            ^~
-    // CHECK:STDERR:
-    // CHECK:STDERR: constant_expr_case.carbon:[[@LINE+4]]:5: error: semantics TODO: `handle invalid parse trees in `check`` [SemanticsTodo]
-    // CHECK:STDERR:     case 1 == 1 => { return 1; }
-    // CHECK:STDERR:     ^~~~~~~~~
-    // CHECK:STDERR:
-    case 1 == 1 => { return 1; }
+    case (1 == 1) => { return 1; }
     case false => { return 0; }
   }
   return -1;
 }
 //@dump-sem-ir-end
+
+// --- fail_unparenthesized_comparison_case.carbon
+library "[[@TEST_NAME]]";
+
+// The case-pattern grammar binds tighter than comparison: `case 1 == 1`
+// terminates the pattern at `1`, a pre-existing parse boundary (the int
+// suite's `case 2 + 3` parses because `+` binds tighter). Parenthesize
+// to use a comparison as a constant case expression.
+fn H(b: bool) -> i32 {
+  match (b) {
+    case 1 == 1 => { return 1; }
+    default => { return 0; }
+  }
+  return -1;
+}
 
 // --- constant_scrutinee.carbon
 library "[[@TEST_NAME]]";

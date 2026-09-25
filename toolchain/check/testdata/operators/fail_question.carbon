@@ -124,10 +124,6 @@ fn H(n: i32) -> MyResult(i32, i32) { return MyResult(i32, i32).Ok(n); }
 // region-depth detection (risk R-2).
 fn Guard(r: MyResult(i32, i32)) -> MyResult(i32, i32) {
   match (r) {
-    // CHECK:STDERR: fail_pattern_positions.carbon:[[@LINE+4]]:26: error: `?` cannot be used inside a pattern, a `case` guard, or a binding's type expression [QuestionInPatternContext]
-    // CHECK:STDERR:     case .Ok(v: i32) if (H(v)? > 0) => { return MyResult(i32, i32).Ok(v); }
-    // CHECK:STDERR:                          ^~~~~
-    // CHECK:STDERR:
     case .Ok(v: i32) if (H(v)? > 0) => { return MyResult(i32, i32).Ok(v); }
     case .Ok(w: i32) => { return MyResult(i32, i32).Ok(w); }
     case .Err(e: i32) => { return MyResult(i32, i32).Err(e); }

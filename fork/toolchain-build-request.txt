@@ -1,1 +1,1 @@
-2026-09-25T09:05Z weekly-upstream-20260824 gate attempt 52 (disk recheck; runner BACK ONLINE 09-25, blocked on 36GB<40GB free)
+2026-09-25T12:50Z w008 W8a verification gate (build+test at post-golden tip)

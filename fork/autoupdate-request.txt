@@ -1,1 +1,1 @@
-2026-09-25T12:40Z w008 W8a verification regen pass 1 retry (after fix round 3: expr-pattern region value conversion)
+2026-09-25T12:50Z w008 W8a verification regen pass 2 (R26 fixpoint check after golden fill b5e03e9)

@@ -24,9 +24,8 @@ fn F(x: i32) -> i32 {
 }
 
 // A binding arm after a literal arm: the literal arm tests first
-// (first-match-wins) and the binding arm catches everything else. `default`
-// stays required even when a binding arm makes it unreachable
-// (exhaustiveness is a later slice).
+// (first-match-wins) and the binding arm catches everything else, making the
+// match exhaustive with no `default` (W-078b).
 fn G(x: i32) -> i32 {
   match (x) {
     case 5 => { return 100; }

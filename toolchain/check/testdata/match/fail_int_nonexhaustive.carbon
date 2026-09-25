@@ -80,6 +80,17 @@ library "[[@TEST_NAME]]";
 // however the constant is fixed).
 fn F(x: i32) -> i32 {
   match (x) {
+    // CHECK:STDERR: fail_error_arm_constant_stacks.carbon:[[@LINE+11]]:10: error: integer value 5000000000 too large for type `i32` [IntTooLargeForType]
+    // CHECK:STDERR:     case 5000000000 => { return 1; }
+    // CHECK:STDERR:          ^~~~~~~~~~
+    // CHECK:STDERR: {{.*}}/prelude/types/int.carbon:124:12: note: initializing function parameter [InCallToFunctionParam]
+    // CHECK:STDERR:   fn Equal(self: Int(N), other: Int(N)) -> bool = "int.eq";
+    // CHECK:STDERR:            ^~~~~~~~~~~~
+    // CHECK:STDERR:
+    // CHECK:STDERR: fail_error_arm_constant_stacks.carbon:[[@LINE-8]]:3: error: `match` on `i32` has no `default` arm and no `case` arm that matches every value [MatchNonexhaustiveNoIrrefutableArm]
+    // CHECK:STDERR:   match (x) {
+    // CHECK:STDERR:   ^~~~~~~~~~~
+    // CHECK:STDERR:
     case 5000000000 => { return 1; }
   }
   return -1;

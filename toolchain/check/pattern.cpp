@@ -8,10 +8,12 @@
 #include "toolchain/check/action.h"
 #include "toolchain/check/class.h"
 #include "toolchain/check/control_flow.h"
+#include "toolchain/check/convert.h"
 #include "toolchain/check/inst.h"
 #include "toolchain/check/return.h"
 #include "toolchain/check/type.h"
 #include "toolchain/diagnostics/emitter.h"
+#include "toolchain/sem_ir/expr_info.h"
 #include "toolchain/sem_ir/inst.h"
 #include "toolchain/sem_ir/inst_categories.h"
 
@@ -71,6 +73,23 @@ auto EndExprRegionForPattern(Context& context, NodeStack& node_stack) -> void {
   if (maybe_expr_id) {
     // We formed an expression, not a pattern, so convert it to an expression
     // pattern now.
+    //
+    // An initializing expression, such as `2 + 3` inside a `match` tuple
+    // case pattern (its prelude operator call returns through a return
+    // slot), is converted to a value first, while the region is still open,
+    // so the conversion insts land inside the region and the region's
+    // result is a value. Splicing an initializing result would make the
+    // `splice_block` at the use site itself an initializing expression,
+    // which SemIR does not support: an initializer must carry a storage
+    // argument (see `FindStorageArgForInitializer`). This mirrors the
+    // invariant `FinishCasePattern` (handle_match.cpp) maintains for root
+    // case expressions and `MatchCaseGuard` for guards; value-category
+    // expressions, including the type expressions other pattern contexts
+    // put here, are left exactly as they are.
+    if (SemIR::IsInitializerCategory(
+            SemIR::GetExprCategory(context.sem_ir(), *maybe_expr_id))) {
+      *maybe_expr_id = ConvertToValueExpr(context, *maybe_expr_id);
+    }
     auto expr_region_id = PopExprRegion(context, *maybe_expr_id);
     auto pattern_type_id =
         GetPatternType(context, context.insts().Get(*maybe_expr_id).type_id());

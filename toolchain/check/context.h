@@ -261,6 +261,14 @@ class Context {
       // the payload subpatterns; `None` for the bare constant-alternative
       // spelling, whose pattern root is the designator's `ExprPattern`.
       SemIR::InstId payload_pattern_id = SemIR::InstId::None;
+      // Whether the payload subpattern tree is wholly irrefutable (all
+      // bindings, recursively through nested tuples): only then does an
+      // unguarded arm cover its alternative for exhaustiveness — a payload
+      // with expression subpatterns compares values and can fail
+      // (docs/design/pattern_matching.md, "Refutability, overlap,
+      // usefulness, and exhaustiveness"). `true` for a bare constant
+      // alternative, which has no payload tree.
+      bool payload_is_irrefutable = true;
     };
 
     // The scrutinee's type, which the case pattern's root alternative

@@ -83,7 +83,16 @@ struct CalleeState {
 };
 
 // State for local pattern matching.
-struct LocalState {};
+struct LocalState {
+  // True when this walk is the bind pass of a `match` `case` arm with
+  // expression subpatterns (`MatchCaseBindPatternMatch`): subtrees without
+  // bindings prune — the test pass owns expression-pattern regions, and
+  // splicing a region twice is not supported (see `InsertHere`) — and the
+  // tuple pre-work walks the scrutinee's own tuple type instead of
+  // converting to the pattern's (see `DoMatchCaseTuplePreWork`). `let` and
+  // `var` behavior is unchanged when this is false.
+  bool in_match_case_bind = false;
+};
 
 // State for thunk pattern matching.
 struct ThunkState {
@@ -93,12 +102,22 @@ struct ThunkState {
 
 // State for `match` `case` pattern matching: the refutable test pass, which
 // emits the arm's boolean condition into the current (test) block. It prunes
-// at binding-pattern roots: bindings are irrefutable and belong to the bind
-// pass, which owns their `bind_name_map` entries. See `MatchCasePatternMatch`.
+// at irrefutable subtrees: bindings are irrefutable and belong to the bind
+// pass, which owns their `bind_name_map` entries. Each refutable leaf
+// appends its condition to the flat results array the caller pushed; the
+// caller folds them into the arm's single condition. See
+// `MatchCasePatternMatch`.
 struct MatchCaseState {
   // The `MatchCase` parse node, used as the location of the emitted
   // comparison insts.
   Parse::NodeId case_node_id;
+
+  // The root pattern inst this walk was entered with. An error-typed
+  // expression leaf BELOW the root recovers — it contributes an errored
+  // condition and checking continues — but the root itself keeps the legacy
+  // constant-integer TODO, which aborts checking (pinned by
+  // operators/fail_question.carbon's `case H(0)?`).
+  SemIR::InstId root_pattern_id;
 };
 
 using State = std::variant<CallerState*, CalleeState*, LocalState*, ThunkState*,
@@ -172,6 +191,12 @@ class MatchContext {
 
   // Performs pattern matching for the given work item, and returns the result.
   auto MatchWithResult(State state, WorkItem entry) -> SemIR::InstId;
+
+  // Performs pattern matching for the given work item, and returns the flat
+  // list of collected results — the `match` `case` test pass collects one
+  // condition per refutable leaf, in element order, for the caller to fold.
+  auto MatchWithConditions(State state, WorkItem entry)
+      -> llvm::SmallVector<SemIR::InstId>;
 
  private:
   // Whether the result of the work item at the top of the stack is needed.
@@ -253,12 +278,31 @@ class MatchContext {
   // `SpecificConstant`.
   auto DoIndirectPreWorkImpl(State state, WorkItem entry) -> void;
 
+  // The tuple pre-work for both passes of a `match` `case` arm. Unlike the
+  // shared tuple pre-work, this walks the SCRUTINEE's own tuple type: the
+  // pattern's tuple type carries expression-element types such as
+  // `Core.IntLiteral` (pattern.cpp), so a design-valid `case (1, b: i32)`
+  // has no conversion from a real `(i32, i32)` scrutinee — the whole-tuple
+  // conversion is skipped, the arity is checked against the scrutinee's
+  // `TupleType`, element accesses take the scrutinee's element types, and
+  // per-leaf typing is left to the leaves (the `==` at expression leaves,
+  // the per-binding conversion in the bind pass). Subtrees the pass prunes —
+  // irrefutable ones in the test pass, binding-free ones in the bind pass —
+  // get no element access at all.
+  auto DoMatchCaseTuplePreWork(SemIR::TuplePattern tuple_pattern,
+                               SemIR::InstId scrutinee_id, WorkItem entry,
+                               bool is_test_pass) -> void;
+
   // Emits the refutable test for an expression pattern in a `match` `case`
-  // and returns the boolean condition inst, or `None` after diagnosing an
-  // unsupported case-pattern shape with a "semantics TODO" diagnostic (which
-  // aborts checking).
+  // and returns the boolean condition inst, `ErrorInst::InstId` for an
+  // already-diagnosed error-typed leaf below the root, or `None` after
+  // diagnosing an unsupported case-pattern shape with a "semantics TODO"
+  // diagnostic (which aborts checking). `pattern_id` is the `ExprPattern`
+  // inst being matched, compared against the walk's root to scope the
+  // error-leaf recovery.
   auto DoMatchCaseExprPattern(const MatchCaseState& match_case_state,
                               SemIR::ExprPattern expr_pattern,
+                              SemIR::InstId pattern_id,
                               SemIR::InstId scrutinee_id) -> SemIR::InstId;
 
   // Asserts that there is a single inst in the top array in `results_stack_`,
@@ -309,6 +353,16 @@ auto MatchContext::MatchWithResult(State state, WorkItem entry)
   results_stack_.PushArray();
   Match(state, entry);
   return PopResult();
+}
+
+auto MatchContext::MatchWithConditions(State state, WorkItem entry)
+    -> llvm::SmallVector<SemIR::InstId> {
+  results_stack_.PushArray();
+  Match(state, entry);
+  llvm::SmallVector<SemIR::InstId> conditions(
+      results_stack_.PeekArray().begin(), results_stack_.PeekArray().end());
+  results_stack_.PopArray();
+  return conditions;
 }
 
 // Inserts the given region into the current code block. If the region
@@ -505,29 +559,221 @@ auto MatchCaseAlternativePatternMatch(Context& context,
                                       SemIR::InstId scrutinee_id,
                                       Parse::NodeId case_node_id)
     -> SemIR::InstId {
-  const auto& case_context = context.match_case_stack().back();
-  CARBON_CHECK(case_context.alternative,
+  CARBON_CHECK(context.match_case_stack().back().alternative,
                "Alternative pattern arm without resolved alternative");
+  // Copy: the payload walk below checks pattern code, which could grow the
+  // case-arm stack and invalidate a reference.
+  auto alternative = *context.match_case_stack().back().alternative;
   auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
   auto disc_type_id = GetChoiceDiscriminantType(context, scrutinee_type_id);
+
+  // An all-binding payload contributes no test of its own; a payload with
+  // expression subpatterns must additionally compare the payload's values.
+  bool payload_is_refutable = alternative.payload_pattern_id.has_value() &&
+                              !alternative.payload_is_irrefutable;
+
   if (!disc_type_id) {
     // A single-alternative choice: its discriminant is the empty tuple
-    // (handle_choice.cpp), so there is nothing to test and the arm is always
-    // taken (W-068). The payload extraction in `MatchCase`'s bind pass stays
-    // real. The scrutinee gate admits only choice shapes here.
+    // (handle_choice.cpp), so there is nothing to test (W-068) and any
+    // payload conditions are the arm's whole condition — the one
+    // alternative is always active, so its payload region reads are total
+    // without a dominating discriminant test. The binding extraction in
+    // `MatchCase`'s bind pass stays real. The scrutinee gate admits only
+    // choice shapes here.
     CARBON_CHECK(IsMatchableChoiceType(context, scrutinee_type_id),
                  "Alternative pattern with non-choice scrutinee");
-    return MakeBoolLiteral(context, SemIR::LocId(case_node_id),
-                           SemIR::BoolValue::True);
+    if (!payload_is_refutable) {
+      return MakeBoolLiteral(context, SemIR::LocId(case_node_id),
+                             SemIR::BoolValue::True);
+    }
+    auto field_ref_id = EmitChoicePayloadFieldAccess(
+        context, SemIR::LocId(case_node_id), scrutinee_id,
+        alternative.payload_field_index);
+    return MatchCasePatternMatch(context, alternative.payload_pattern_id,
+                                 field_ref_id, case_node_id);
   }
-  return EmitChoiceDiscriminantTest(context, case_node_id, scrutinee_id,
-                                    *disc_type_id,
-                                    case_context.alternative->index);
+
+  auto disc_cond_id = EmitChoiceDiscriminantTest(
+      context, case_node_id, scrutinee_id, *disc_type_id, alternative.index);
+  if (!payload_is_refutable) {
+    return disc_cond_id;
+  }
+
+  // The payload's conditions are emitted in a payload block switched to
+  // explicitly BEFORE the engine runs on the payload tree, so every
+  // payload-region read and compare is strictly dominated by the
+  // discriminant test: the payload region of a non-active alternative is
+  // uninitialized storage, and a hoisted load would feed poison to a branch
+  // (W-008 plan §4 R-2 — the dominance is correctness, not style). The
+  // discriminant's failure edge carries `false` to the merge block, so the
+  // arm's condition stays a single bool.
+  CARBON_CHECK(alternative.payload_field_index >= 0,
+               "Refutable payload without payload field");
+  auto false_id = MakeBoolLiteral(context, SemIR::LocId(case_node_id),
+                                  SemIR::BoolValue::False);
+  auto payload_block_id =
+      AddDominatedBlockAndBranchIf(context, case_node_id, disc_cond_id);
+  auto end_block_id =
+      AddDominatedBlockAndBranchWithArg(context, case_node_id, false_id);
+  context.inst_block_stack().Pop();
+  context.inst_block_stack().Push(end_block_id);
+  context.inst_block_stack().Push(payload_block_id);
+  context.region_stack().AddToRegion(payload_block_id, case_node_id);
+
+  auto field_ref_id = EmitChoicePayloadFieldAccess(
+      context, SemIR::LocId(case_node_id), scrutinee_id,
+      alternative.payload_field_index);
+  auto payload_cond_id = MatchCasePatternMatch(
+      context, alternative.payload_pattern_id, field_ref_id, case_node_id);
+  if (!payload_cond_id.has_value()) {
+    // An unsupported payload shape was diagnosed with a TODO; checking
+    // aborts, so the half-built block structure is abandoned with it.
+    return SemIR::InstId::None;
+  }
+  AddInst<SemIR::BranchWithArg>(
+      context, case_node_id,
+      {.target_id = end_block_id, .arg_id = payload_cond_id});
+  context.inst_block_stack().Pop();
+  context.region_stack().AddToRegion(end_block_id, case_node_id);
+  auto result_id = AddInst<SemIR::BlockArg>(
+      context, case_node_id,
+      {.type_id = context.insts().Get(false_id).type_id(),
+       .block_id = end_block_id});
+  SetBlockArgResultBeforeConstantUse(context, result_id, disc_cond_id,
+                                     payload_cond_id, false_id);
+  if (payload_cond_id == SemIR::ErrorInst::InstId) {
+    // An errored payload element (for example a NameNotFound subpattern).
+    // The merge above keeps the CFG well-formed — the errored value flows
+    // through the branch arg, the shape the short-circuit operators use —
+    // but the arm's condition must surface the error, not the merge's
+    // non-error `BlockArg`, so `MatchCase` records the error arm and the
+    // exhaustiveness analysis treats coverage as unknowable.
+    return SemIR::ErrorInst::InstId;
+  }
+  return result_id;
 }
 
 auto SpliceMatchCaseGuard(Context& context, SemIR::ExprRegionId region_id)
     -> SemIR::InstId {
   return InsertHere(context, region_id);
+}
+
+auto IsIrrefutableMatchCasePattern(Context& context, SemIR::InstId pattern_id)
+    -> bool {
+  // Iterative worklist (misc-no-recursion). Binding patterns are the
+  // irrefutable leaves; tuples recurse; anything else — expression leaves
+  // in particular, and error recovery — is refutable.
+  llvm::SmallVector<SemIR::InstId> worklist = {pattern_id};
+  while (!worklist.empty()) {
+    auto inst_id = worklist.pop_back_val();
+    if (auto tuple_pattern =
+            context.insts().TryGetAs<SemIR::TuplePattern>(inst_id)) {
+      llvm::append_range(worklist,
+                         context.inst_blocks().Get(tuple_pattern->elements_id));
+      continue;
+    }
+    if (!context.insts().Is<SemIR::ValueBindingPattern>(inst_id)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+auto MatchCasePatternHasBindings(Context& context, SemIR::InstId pattern_id)
+    -> bool {
+  llvm::SmallVector<SemIR::InstId> worklist = {pattern_id};
+  while (!worklist.empty()) {
+    auto inst_id = worklist.pop_back_val();
+    if (auto tuple_pattern =
+            context.insts().TryGetAs<SemIR::TuplePattern>(inst_id)) {
+      llvm::append_range(worklist,
+                         context.inst_blocks().Get(tuple_pattern->elements_id));
+      continue;
+    }
+    if (context.insts().Is<SemIR::ValueBindingPattern>(inst_id)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+auto EmitChoicePayloadFieldAccess(Context& context, SemIR::LocId loc_id,
+                                  SemIR::InstId scrutinee_id,
+                                  int32_t payload_field_index)
+    -> SemIR::InstId {
+  auto payload_info =
+      GetChoicePayloadInfo(context, context.insts().Get(scrutinee_id).type_id(),
+                           payload_field_index);
+  CARBON_CHECK(payload_info, "Payload arm without payload field");
+  auto payload_ref_id = AddInst<SemIR::ClassElementAccess>(
+      context, loc_id,
+      {.type_id = payload_info->payload_region_type_id,
+       .base_id = scrutinee_id,
+       .index = SemIR::ElementIndex(1)});
+  return AddInst<SemIR::ClassElementAccess>(
+      context, loc_id,
+      {.type_id = payload_info->payload_tuple_type_id,
+       .base_id = payload_ref_id,
+       .index = SemIR::ElementIndex(payload_field_index)});
+}
+
+// Folds the per-leaf conditions the test pass collected into the arm's
+// single boolean condition. A `None` condition (an unsupported-shape TODO
+// was diagnosed) aborts the arm, and an errored condition poisons the whole
+// fold, so `MatchCase` still records the error arm. Multiple conditions
+// fold as a flat `and` over already-computed bools — the short-circuit
+// `BranchIf`/`block_arg` shape of the `and` operator
+// (handle_operator.cpp), built after every condition was emitted eagerly
+// into the entry block. This is observationally equivalent to the design's
+// left-to-right short-circuit because in-slice element reads are total and
+// in-slice case expressions are constants (W-008 plan §2.1(a); recorded
+// approximation, re-examined when either premise falls).
+static auto FoldMatchCaseConditions(Context& context, Parse::NodeId node_id,
+                                    llvm::ArrayRef<SemIR::InstId> cond_ids)
+    -> SemIR::InstId {
+  bool has_error = false;
+  for (auto cond_id : cond_ids) {
+    if (!cond_id.has_value()) {
+      return SemIR::InstId::None;
+    }
+    has_error |= cond_id == SemIR::ErrorInst::InstId;
+  }
+  if (has_error) {
+    return SemIR::ErrorInst::InstId;
+  }
+  if (cond_ids.empty()) {
+    // A wholly-irrefutable tree: every subtree pruned, so the arm always
+    // matches — the same constant-true condition a binding arm contributes.
+    return MakeBoolLiteral(context, SemIR::LocId(node_id),
+                           SemIR::BoolValue::True);
+  }
+  auto result_id = cond_ids.front();
+  for (auto cond_id : cond_ids.drop_front()) {
+    auto bool_type_id = context.insts().Get(result_id).type_id();
+    auto short_circuit_result_id = AddInst<SemIR::BoolLiteral>(
+        context, node_id,
+        {.type_id = bool_type_id, .value = SemIR::BoolValue::False});
+    auto rhs_block_id =
+        AddDominatedBlockAndBranchIf(context, node_id, result_id);
+    auto end_block_id = AddDominatedBlockAndBranchWithArg(
+        context, node_id, short_circuit_result_id);
+    context.inst_block_stack().Pop();
+    context.inst_block_stack().Push(end_block_id);
+    context.inst_block_stack().Push(rhs_block_id);
+    context.region_stack().AddToRegion(rhs_block_id, node_id);
+    // The next condition is already computed in the entry block, so the
+    // rhs block only forwards it.
+    AddInst<SemIR::BranchWithArg>(
+        context, node_id, {.target_id = end_block_id, .arg_id = cond_id});
+    context.inst_block_stack().Pop();
+    context.region_stack().AddToRegion(end_block_id, node_id);
+    auto folded_id = AddInst<SemIR::BlockArg>(
+        context, node_id, {.type_id = bool_type_id, .block_id = end_block_id});
+    SetBlockArgResultBeforeConstantUse(context, folded_id, result_id, cond_id,
+                                       short_circuit_result_id);
+    result_id = folded_id;
+  }
+  return result_id;
 }
 
 // Returns the kind of conversion to perform on the scrutinee when matching the
@@ -565,7 +811,7 @@ auto MatchContext::DoPreWork(State state,
                              SemIR::InstId scrutinee_id, WorkItem entry)
     -> void {
   if (std::holds_alternative<MatchCaseState*>(state)) {
-    // The refutable test pass prunes at binding-pattern roots: bindings are
+    // The refutable test pass prunes at binding patterns: bindings are
     // irrefutable and contribute no condition, and descending into them here
     // would consume their `bind_name_map` entries, which the bind pass still
     // needs.
@@ -764,8 +1010,15 @@ auto MatchContext::DoPreWork(State state, SemIR::ExprPattern expr_pattern,
                              SemIR::InstId scrutinee_id, WorkItem entry)
     -> void {
   if (auto** match_case_state = std::get_if<MatchCaseState*>(&state)) {
-    results_stack_.AppendToTop(
-        DoMatchCaseExprPattern(**match_case_state, expr_pattern, scrutinee_id));
+    results_stack_.AppendToTop(DoMatchCaseExprPattern(
+        **match_case_state, expr_pattern, entry.pattern_id, scrutinee_id));
+    return;
+  }
+  if (auto** local_state = std::get_if<LocalState*>(&state);
+      local_state && (*local_state)->in_match_case_bind) {
+    // The bind pass of a `match` `case` arm prunes at expression leaves:
+    // the test pass owns their regions (each region splices exactly once)
+    // and already emitted their conditions.
     return;
   }
   context_.TODO(entry.pattern_id, "expression pattern");
@@ -773,7 +1026,7 @@ auto MatchContext::DoPreWork(State state, SemIR::ExprPattern expr_pattern,
 
 auto MatchContext::DoMatchCaseExprPattern(
     const MatchCaseState& match_case_state, SemIR::ExprPattern expr_pattern,
-    SemIR::InstId scrutinee_id) -> SemIR::InstId {
+    SemIR::InstId pattern_id, SemIR::InstId scrutinee_id) -> SemIR::InstId {
   const auto& case_context = context_.match_case_stack().back();
   auto introducer_node_id = case_context.introducer_node_id;
   auto case_node_id = match_case_state.case_node_id;
@@ -843,7 +1096,22 @@ auto MatchContext::DoMatchCaseExprPattern(
     return SemIR::InstId::None;
   }
 
-  // An integer scrutinee. Any case expression whose constant value is a
+  // An integer scrutinee — the whole case pattern, or one element of a
+  // tuple case pattern or alternative payload against the element's
+  // scrutinee.
+  if (context_.insts().Get(result_id).type_id() == SemIR::ErrorInst::TypeId &&
+      pattern_id != match_case_state.root_pattern_id) {
+    // A NON-ROOT pattern expression failed to check; a diagnostic was
+    // already produced (for example a payload designator without `.Self`).
+    // The errored leaf poisons the arm's condition and checking continues.
+    // A ROOT case expression must instead fall through to the
+    // constant-integer TODO below, which aborts checking — the pre-W8a
+    // behavior operators/fail_question.carbon pins.
+    InsertHere(context_, expr_pattern.expr_region_id);
+    return SemIR::ErrorInst::InstId;
+  }
+
+  // Any case expression whose constant value is a
   // concrete `IntValue` is admitted (plan RF-4), whatever its declared type:
   // classification is by the checked expression's constant representation,
   // never its syntax, so `case -1` and `case 2 + 3` work the same way as
@@ -872,6 +1140,18 @@ auto MatchContext::DoMatchCaseExprPattern(
   // the infix `==` operator: the `EqWith` interface takes a single argument
   // that is the type of the RHS operand.
   auto expr_id = InsertHere(context_, expr_pattern.expr_region_id);
+  // Every expression-pattern region closes with a value-category result:
+  // tuple elements convert inside `EndExprRegionForPattern` (pattern.cpp)
+  // and root case expressions inside `FinishCasePattern`
+  // (handle_match.cpp), so this conversion is defense-in-depth for any
+  // future region producer that does not uphold that invariant — an
+  // initializing result spliced here would make the `splice_block` itself
+  // an initializing expression, which the SemIR formatter rejects (see
+  // `FindStorageArgForInitializer`).
+  if (SemIR::IsInitializerCategory(
+          SemIR::GetExprCategory(context_.sem_ir(), expr_id))) {
+    expr_id = ConvertToValueExpr(context_, expr_id);
+  }
   SemIR::InstId args[] = {context_.types().GetTypeInstId(scrutinee_type_id)};
   auto eq_id = BuildBinaryOperator(context_, case_node_id,
                                    {.interface_name = CoreIdentifier::EqWith,
@@ -1040,6 +1320,17 @@ auto MatchContext::DoPostWork(State /*state*/,
 auto MatchContext::DoPreWork(State state, SemIR::TuplePattern tuple_pattern,
                              SemIR::InstId scrutinee_id, WorkItem entry)
     -> void {
+  if (std::holds_alternative<MatchCaseState*>(state)) {
+    DoMatchCaseTuplePreWork(tuple_pattern, scrutinee_id, entry,
+                            /*is_test_pass=*/true);
+    return;
+  }
+  if (auto** local_state = std::get_if<LocalState*>(&state);
+      local_state && (*local_state)->in_match_case_bind) {
+    DoMatchCaseTuplePreWork(tuple_pattern, scrutinee_id, entry,
+                            /*is_test_pass=*/false);
+    return;
+  }
   if (tuple_pattern.type_id == SemIR::ErrorInst::TypeId) {
     return;
   }
@@ -1112,6 +1403,100 @@ auto MatchContext::DoPreWork(State state, SemIR::TuplePattern tuple_pattern,
                                      .index = SemIR::ElementIndex(i)}));
   }
   add_all_subscrutinees(subscrutinee_ids);
+}
+
+auto MatchContext::DoMatchCaseTuplePreWork(SemIR::TuplePattern tuple_pattern,
+                                           SemIR::InstId scrutinee_id,
+                                           WorkItem entry, bool is_test_pass)
+    -> void {
+  auto append_test_result = [&](SemIR::InstId result_id) {
+    if (is_test_pass) {
+      results_stack_.AppendToTop(result_id);
+    }
+  };
+  if (tuple_pattern.type_id == SemIR::ErrorInst::TypeId) {
+    append_test_result(SemIR::ErrorInst::InstId);
+    return;
+  }
+  auto subpattern_ids = context_.inst_blocks().Get(tuple_pattern.elements_id);
+  auto scrutinee = context_.insts().GetWithLocId(scrutinee_id);
+  auto scrutinee_type_id =
+      context_.types().GetUnqualifiedType(scrutinee.inst.type_id());
+  if (scrutinee_type_id == SemIR::ErrorInst::TypeId) {
+    append_test_result(SemIR::ErrorInst::InstId);
+    return;
+  }
+  auto tuple_type =
+      context_.types().TryGetAsIfValid<SemIR::TupleType>(scrutinee_type_id);
+  if (!tuple_type) {
+    // A nested tuple pattern against a non-tuple element (the root shape is
+    // classified before the engine runs; see `MatchCase`). A real
+    // pattern-type error in the design; in-slice it stays behind the W4
+    // slice gate, like the same shape at the root. BOTH passes diagnose —
+    // here and at the arity mismatch below — and never both for one
+    // subtree: a failing shape the test pass reaches aborts checking (the
+    // `None` fold result) or errors the arm's condition, and `MatchCase`'s
+    // guards then skip the bind pass for that arm, so the bind pass
+    // reaches a failing shape only inside a subtree the test pass pruned
+    // as wholly irrefutable — which would otherwise silently bind nothing.
+    // The arm's case context is popped before the bind pass runs, so the
+    // bind-pass diagnostic is located at the offending subpattern, not the
+    // arm's introducer.
+    if (is_test_pass) {
+      context_.TODO(
+          context_.match_case_stack().back().introducer_node_id,
+          "match `case` pattern other than an integer literal, or a case "
+          "guard");
+      results_stack_.AppendToTop(SemIR::InstId::None);
+    } else {
+      context_.TODO(entry.pattern_id,
+                    "match `case` pattern other than an integer literal, or "
+                    "a case guard");
+    }
+    return;
+  }
+  auto element_type_inst_ids =
+      context_.inst_blocks().Get(tuple_type->type_elements_id);
+  if (subpattern_ids.size() != element_type_inst_ids.size()) {
+    // Emitted by whichever pass reaches the mismatch; see the disjointness
+    // argument above.
+    CARBON_DIAGNOSTIC(MatchCaseTuplePatternWrongArity, Error,
+                      "tuple pattern expects {0} element{0:s}, but match "
+                      "scrutinee has {1}",
+                      Diagnostics::IntAsSelect, Diagnostics::IntAsSelect);
+    context_.emitter().Emit(entry.pattern_id, MatchCaseTuplePatternWrongArity,
+                            subpattern_ids.size(),
+                            element_type_inst_ids.size());
+    append_test_result(SemIR::ErrorInst::InstId);
+    return;
+  }
+  // Emit the element accesses eagerly, each with the SCRUTINEE's element
+  // type; the pruned subtrees — irrefutable ones in the test pass, which
+  // contribute no condition, and binding-free ones in the bind pass, whose
+  // regions the test pass already spliced — get none.
+  llvm::SmallVector<std::pair<SemIR::InstId, SemIR::InstId>> element_work;
+  for (auto [i, subpattern_id] : llvm::enumerate(subpattern_ids)) {
+    bool pruned = is_test_pass
+                      ? IsIrrefutableMatchCasePattern(context_, subpattern_id)
+                      : !MatchCasePatternHasBindings(context_, subpattern_id);
+    if (pruned) {
+      continue;
+    }
+    auto element_type_id =
+        context_.types().GetTypeIdForTypeInstId(element_type_inst_ids[i]);
+    auto subscrutinee_id =
+        AddInst<SemIR::TupleAccess>(context_, scrutinee.loc_id,
+                                    {.type_id = element_type_id,
+                                     .tuple_id = scrutinee_id,
+                                     .index = SemIR::ElementIndex(i)});
+    element_work.push_back({subpattern_id, subscrutinee_id});
+  }
+  // Add the work in reverse so the elements process left to right.
+  for (auto [subpattern_id, subscrutinee_id] : llvm::reverse(element_work)) {
+    AddWork({.pattern_id = subpattern_id,
+             .work = PreWork{.scrutinee_id = subscrutinee_id},
+             .allow_unmarked_ref = entry.allow_unmarked_ref});
+  }
 }
 
 auto MatchContext::DoPostWork(State /*state*/,
@@ -1520,10 +1905,21 @@ auto LocalPatternMatch(Context& context, SemIR::InstId pattern_id,
 auto MatchCasePatternMatch(Context& context, SemIR::InstId pattern_id,
                            SemIR::InstId scrutinee_id,
                            Parse::NodeId case_node_id) -> SemIR::InstId {
-  MatchCaseState state = {.case_node_id = case_node_id};
+  MatchCaseState state = {.case_node_id = case_node_id,
+                          .root_pattern_id = pattern_id};
   MatchContext match(context);
-  return match.MatchWithResult(
+  auto cond_ids = match.MatchWithConditions(
       &state, {.pattern_id = pattern_id,
+               .work = MatchContext::PreWork{.scrutinee_id = scrutinee_id}});
+  return FoldMatchCaseConditions(context, case_node_id, cond_ids);
+}
+
+auto MatchCaseBindPatternMatch(Context& context, SemIR::InstId pattern_id,
+                               SemIR::InstId scrutinee_id) -> void {
+  LocalState state = {.in_match_case_bind = true};
+  MatchContext match(context);
+  match.Match(&state,
+              {.pattern_id = pattern_id,
                .work = MatchContext::PreWork{.scrutinee_id = scrutinee_id}});
 }
 

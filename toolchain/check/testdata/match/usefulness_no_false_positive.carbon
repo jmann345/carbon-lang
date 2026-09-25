@@ -1,0 +1,257 @@
+// Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+// Exceptions. See /LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+// INCLUDE-FILE: toolchain/testing/testdata/min_prelude/full.carbon
+//
+// AUTOUPDATE
+// TIP: To test this file alone, run:
+// TIP:   bazel test //toolchain/testing:file_test --test_arg=--file_tests=toolchain/check/testdata/match/usefulness_no_false_positive.carbon
+// TIP: To dump output, run:
+// TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/match/usefulness_no_false_positive.carbon
+
+// Negative pins for the usefulness check (W-066): every shape here is
+// useful and must stay SILENT. Guarded prior arms never enter the context
+// set (a prior arm's guard is assumed to evaluate to false,
+// docs/design/pattern_matching.md), constants only collide on equal
+// evaluated values, a general pattern after a specific one is useful (the
+// subsumption asymmetry), the accumulator is per-statement, and partial
+// alternative coverage never completes the full-coverage union.
+
+// --- guarded_prior.carbon
+library "[[@TEST_NAME]]";
+
+// A guarded prior arm blocks nothing: its guard is assumed false, so the
+// later unguarded duplicate is useful (contrast the guarded-LATER shape in
+// fail_case_never_matches_int.carbon).
+fn F(x: i32, g: bool) -> i32 {
+  match (x) {
+    case 5 if (g) => { return 1; }
+    case 5 => { return 2; }
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- both_guarded_twins.carbon
+library "[[@TEST_NAME]]";
+
+// Both-guarded twins: the prior's guard is assumed false and the later's
+// true, so the later twin is useful.
+fn F(x: i32, g: bool, h: bool) -> i32 {
+  match (x) {
+    case 5 if (g) => { return 1; }
+    case 5 if (h) => { return 2; }
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- both_guarded_alternative_twins.carbon
+library "[[@TEST_NAME]]";
+
+choice IntResult {
+  Ok(value: i32),
+  Err
+}
+
+// The alternative-rooted both-guarded twins, silent for the same reason.
+fn F(r: IntResult, g: bool, h: bool) -> i32 {
+  match (r) {
+    case .Ok(42) if (g) => { return 1; }
+    case .Ok(42) if (h) => { return 2; }
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- guarded_irrefutable_prior.carbon
+library "[[@TEST_NAME]]";
+
+// A guarded arm never enters the context, however wide its pattern: the
+// irrefutable binding root does not make later arms dead while guarded.
+fn F(x: i32) -> i32 {
+  match (x) {
+    case n: i32 if (n > 0) => { return n; }
+    case 5 => { return 1; }
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- nested_match.carbon
+library "[[@TEST_NAME]]";
+
+// Nested-match independence: the usefulness context is per-statement, so
+// the inner `case 5` does not collide with the outer one.
+fn F(x: i32, y: i32) -> i32 {
+  match (x) {
+    case 5 => {
+      match (y) {
+        case 5 => { return 1; }
+        default => { return 2; }
+      }
+      return 3;
+    }
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- partial_coverage_then_binding.carbon
+library "[[@TEST_NAME]]";
+
+choice Signal {
+  Go(speed: i32),
+  Stop,
+  Wait
+}
+
+// Partial alternative coverage then a binding arm: one alternative of
+// three is covered, so the full-coverage union never completes and the
+// binding arm is useful (`.Go` and `.Wait` values reach it).
+fn F(s: Signal) -> Signal {
+  match (s) {
+    case .Stop => { return s; }
+    case other: Signal => { return other; }
+  }
+  return s;
+}
+
+// --- guarded_default_mid_list.carbon
+library "[[@TEST_NAME]]";
+
+// A guarded `default` mid-list is a guarded arm in the context sense: it
+// blocks nothing, so the `case 1` after it — repeating no prior constant —
+// is useful (guarded_default.carbon's landed shape, restated as
+// usefulness evidence).
+fn F(x: i32) -> i32 {
+  match (x) {
+    case 0 => { return 0; }
+    default if (x < 0) => { return 1; }
+    case 1 => { return 2; }
+    default => { return 3; }
+  }
+  return -1;
+}
+
+// --- different_constants.carbon
+library "[[@TEST_NAME]]";
+
+choice IntResult {
+  Ok(value: i32),
+  Err
+}
+
+choice TwoPayloads {
+  A(x: i32),
+  B(y: i32)
+}
+
+// Distinct evaluated values never collide.
+fn Tuples(p: (i32, i32)) -> i32 {
+  match (p) {
+    case (1, 2) => { return 1; }
+    case (1, 3) => { return 2; }
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// Distinct payload constants under the same alternative.
+fn Payloads(r: IntResult) -> i32 {
+  match (r) {
+    case .Ok(1) => { return 1; }
+    case .Ok(2) => { return 2; }
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// Different alternatives with equal payload constants are disjoint: the
+// discriminant differs, so the equal payload value does not collide.
+fn Alternatives(t: TwoPayloads) -> i32 {
+  match (t) {
+    case .A(42) => { return 1; }
+    case .B(42) => { return 2; }
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- specific_then_general.carbon
+library "[[@TEST_NAME]]";
+
+choice Boxed {
+  Only(x: i32)
+}
+
+// The subsumption asymmetry: a wildcard is never itself subsumed by a
+// constant, so a general pattern after a specific one is useful.
+fn Tuples(p: (i32, i32)) -> i32 {
+  match (p) {
+    case (1, 2) => { return 1; }
+    case (1, b: i32) => { return b; }
+    default => { return 0; }
+  }
+  return -1;
+}
+
+fn Payloads(v: Boxed) -> i32 {
+  match (v) {
+    case .Only(7) => { return 1; }
+    case .Only(x: i32) => { return x; }
+  }
+  return -1;
+}
+
+// --- dead_default_exempt.carbon
+library "[[@TEST_NAME]]";
+
+choice Flag {
+  Off,
+  On
+}
+
+// A `default` arm made dead by an unguarded irrefutable prior arm, or by
+// full alternative coverage, is deliberately NOT diagnosed in this slice:
+// the conservative integer-exhaustiveness gate (W-008 residue R8,
+// `MatchStatement`'s "match statement without `default` arm" TODO) still
+// REQUIRES the `default` on every integer-scrutinee `match`, so
+// diagnosing it would make `IntSide` below unwritable. Dead-`default`
+// usefulness is the filed follow-up W-078 (W-066 plan §1.5); this
+// commented negative golden is its fail_todo-style record, since a
+// `fail_todo_` file cannot pin the ABSENCE of a diagnostic.
+fn IntSide(x: i32) -> i32 {
+  match (x) {
+    case n: i32 => { return n; }
+    default => { return 0; }
+  }
+  return -1;
+}
+
+fn ChoiceSide(f: Flag) -> i32 {
+  match (f) {
+    case .Off => { return 0; }
+    case .On => { return 1; }
+    default => { return 2; }
+  }
+  return -1;
+}
+
+// --- fail_prior_error_arm.carbon
+library "[[@TEST_NAME]]";
+
+// A prior ERROR arm records no key (its coverage is unknowable), so the
+// later `case 5` is NOT diagnosed — only the error arm's own conversion
+// error appears. Unlike exhaustiveness, the prior error does not suppress
+// later usefulness checks; there is simply nothing sound to compare
+// against (W-066 plan §1.8).
+fn F(x: i32) -> i32 {
+  match (x) {
+    case 5000000000 => { return 1; }
+    case 5 => { return 2; }
+    default => { return 0; }
+  }
+  return -1;
+}

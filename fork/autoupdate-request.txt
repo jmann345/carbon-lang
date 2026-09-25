@@ -1,1 +1,1 @@
-2026-08-24T15:30Z weekly-upstream-20260824 (cut 631f8fb) regen pass 2 — R26 fixpoint check after 61-file pass 1
+2026-09-25T12:25Z w008 W8a verification regen pass 1 (post-trunk-sync fixpoint check)

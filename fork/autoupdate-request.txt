@@ -1,1 +1,1 @@
-2026-09-25T18:17Z w078a regen pass 1 (dead-default goldens)
+2026-09-25T18:19Z w078a regen pass 2 (R26 fixpoint check)

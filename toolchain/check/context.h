@@ -11,6 +11,7 @@
 #include "common/ostream.h"
 #include "llvm/ADT/SmallVector.h"
 #include "toolchain/base/canonical_value_store.h"
+#include "toolchain/base/int.h"
 #include "toolchain/base/value_store.h"
 #include "toolchain/check/core_identifier.h"
 #include "toolchain/check/cpp/context.h"
@@ -325,12 +326,68 @@ class Context {
   // (`MatchCase`); `MatchStatement` reads the accumulated coverage to decide
   // whether a `match` without a `default` arm is exhaustive (SF-7).
   struct MatchStatementContext {
+    // One node of a `case` arm's usefulness key (W-066): the arm's checked
+    // pattern lowered to the value domain usefulness comparisons run over,
+    // one node per pattern position, stored in preorder over the
+    // scrutinee's shape. Built by `BuildMatchCaseUsefulnessKey`
+    // (pattern_match.h); compared slot-wise in `EmitCaseArmTestAndBind`
+    // (handle_match.cpp).
+    struct UsefulnessKeyNode {
+      enum class Kind : uint8_t {
+        // The position is covered by an irrefutable subtree — a value or
+        // `ref` binding, a `var` wrapper over an irrefutable subtree, or
+        // an all-binding tuple — matching every value of the position's
+        // type. Leaf: whatever the subtree's internal structure, one
+        // `Wildcard` stands for the whole position.
+        Wildcard,
+        // An integer expression leaf, keyed by its evaluated constant:
+        // `IntId` canonicalizes by mathematical value
+        // (toolchain/base/int.h), so `case 5` and `case 2 + 3` key equal
+        // and comparison is by value, never source form. Leaf.
+        IntConst,
+        // A choice-alternative root, keyed by the alternative's
+        // discriminant index; `arity` payload subpattern slots follow in
+        // preorder (zero for the bare `.Name` spelling).
+        Alternative,
+        // A tuple position; `arity` element slots follow in preorder.
+        Tuple,
+      };
+
+      Kind kind;
+      // The evaluated constant's canonical integer value. `IntConst` only.
+      IntId int_id = IntId::None;
+      // The alternative's discriminant index. `Alternative` only.
+      int32_t index = -1;
+      // The number of child slots following this node in preorder.
+      // `Alternative` and `Tuple` only; leaves have none.
+      int32_t arity = 0;
+    };
+    // A `case` arm's whole usefulness key: the key tree in preorder. Never
+    // empty when the arm has a key at all.
+    using UsefulnessKey = llvm::SmallVector<UsefulnessKeyNode>;
+
+    // A recorded prior arm for the usefulness check (W-066).
+    struct UsefulArm {
+      UsefulnessKey key;
+      // The arm's introducer node, where the covering-arm note attaches.
+      Parse::NodeId introducer_node_id;
+    };
+
     // The discriminant values of the choice alternatives covered by the
     // unguarded alternative-pattern arms so far, in arm order, possibly with
     // duplicates. Guarded arms record nothing: exhaustiveness assumes every
     // guard can evaluate to false (docs/design/pattern_matching.md,
     // "Refutability, overlap, usefulness, and exhaustiveness").
     llvm::SmallVector<int32_t> covered_alternatives;
+    // The UNGUARDED, non-error, not-diagnosed-dead `case` arms so far, in
+    // arm order, each with its usefulness key: the context set later arms'
+    // usefulness is checked against (W-066). Guarded arms are excluded — a
+    // prior arm's guard is assumed to evaluate to false, the same rule
+    // `covered_alternatives` applies — and an arm with no key records
+    // nothing. An unguarded irrefutable arm's entry is an all-`Wildcard`
+    // key, which carries the arm location `has_irrefutable_arm` does not;
+    // the bool keeps its exhaustiveness role untouched.
+    llvm::SmallVector<UsefulArm> useful_arms;
     // Whether an unguarded arm's pattern is irrefutable (a binding-pattern
     // root), covering every scrutinee value.
     bool has_irrefutable_arm = false;

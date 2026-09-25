@@ -690,6 +690,106 @@ auto IsIrrefutableMatchCasePattern(Context& context, SemIR::InstId pattern_id)
   return true;
 }
 
+auto BuildMatchCaseUsefulnessKey(
+    Context& context, SemIR::InstId pattern_id,
+    const std::optional<Context::MatchCaseContext::Alternative>& alternative)
+    -> std::optional<Context::MatchStatementContext::UsefulnessKey> {
+  using Node = Context::MatchStatementContext::UsefulnessKeyNode;
+  Context::MatchStatementContext::UsefulnessKey key;
+  // Pattern positions still to key. Iterative worklist (misc-no-recursion);
+  // children are pushed in reverse so the key comes out in preorder,
+  // matching the scrutinee's element order.
+  llvm::SmallVector<SemIR::InstId> worklist;
+
+  // An alternative pattern's root is keyed from the resolved alternative
+  // rather than the pattern insts: they alone do not carry the discriminant
+  // index, and a bare `.Name` root's region constant is a choice value, not
+  // an `IntValue`. The design treats a constant choice value as an
+  // alternative pattern (docs/design/pattern_matching.md, "Refutability,
+  // overlap, usefulness, and exhaustiveness"), so both spellings key
+  // through the same node. For a parenthesized `.Name(...)`, the payload
+  // `TuplePattern` is the alternative's slot list, not a `Tuple` position
+  // of its own; the bare spelling has zero slots.
+  if (alternative) {
+    if (alternative->payload_pattern_id.has_value()) {
+      if (alternative->payload_pattern_id != pattern_id) {
+        // Defensive: the resolved alternative does not describe this
+        // pattern root, so nothing sound can be keyed.
+        return std::nullopt;
+      }
+      auto element_ids = context.inst_blocks().Get(
+          context.insts().GetAs<SemIR::TuplePattern>(pattern_id).elements_id);
+      key.push_back({.kind = Node::Kind::Alternative,
+                     .index = alternative->index,
+                     .arity = static_cast<int32_t>(element_ids.size())});
+      for (auto element_id : llvm::reverse(element_ids)) {
+        worklist.push_back(element_id);
+      }
+    } else {
+      key.push_back(
+          {.kind = Node::Kind::Alternative, .index = alternative->index});
+    }
+  } else {
+    worklist.push_back(pattern_id);
+  }
+
+  while (!worklist.empty()) {
+    auto inst_id = worklist.pop_back_val();
+    // An irrefutable subtree covers its whole position, whatever its
+    // internal structure — `IsIrrefutableMatchCasePattern` is the exact
+    // predicate — so an all-binding tuple keys as one `Wildcard`, the same
+    // as a binding root.
+    if (IsIrrefutableMatchCasePattern(context, inst_id)) {
+      key.push_back({.kind = Node::Kind::Wildcard});
+      continue;
+    }
+    if (auto tuple_pattern =
+            context.insts().TryGetAs<SemIR::TuplePattern>(inst_id)) {
+      auto element_ids = context.inst_blocks().Get(tuple_pattern->elements_id);
+      key.push_back({.kind = Node::Kind::Tuple,
+                     .arity = static_cast<int32_t>(element_ids.size())});
+      for (auto element_id : llvm::reverse(element_ids)) {
+        worklist.push_back(element_id);
+      }
+      continue;
+    }
+    if (auto expr_pattern =
+            context.insts().TryGetAs<SemIR::ExprPattern>(inst_id)) {
+      // The leaf's evaluated constant, read exactly where the test pass
+      // reads it (`DoMatchCaseExprPattern`): the region result's memoized
+      // constant value — a read, never a re-evaluation. The test pass
+      // already gated non-concrete and non-`IntValue` results behind a
+      // TODO that aborts the arm, so the nullopt paths below are
+      // defensive. The stored `IntId` is canonical by mathematical value
+      // (toolchain/base/int.h), so key equality is `IntId` comparison:
+      // `case 5` and `case 2 + 3` key equal, and distinct mathematical
+      // values never collide.
+      auto result_id = context.sem_ir()
+                           .expr_regions()
+                           .Get(expr_pattern->expr_region_id)
+                           .result_id;
+      auto pattern_const_id = context.constant_values().Get(result_id);
+      if (!pattern_const_id.is_concrete()) {
+        return std::nullopt;
+      }
+      auto int_value = context.insts().TryGetAs<SemIR::IntValue>(
+          context.constant_values().GetInstId(pattern_const_id));
+      if (!int_value) {
+        return std::nullopt;
+      }
+      key.push_back(
+          {.kind = Node::Kind::IntConst, .int_id = int_value->int_id});
+      continue;
+    }
+    // Any other pattern kind — a refutable `var` subtree, or a future
+    // engine extension this walk does not know — yields no key: the arm
+    // records nothing and diagnoses nothing, never a false positive. The
+    // soft path is deliberate forward compatibility, not a CHECK.
+    return std::nullopt;
+  }
+  return key;
+}
+
 auto MatchCasePatternHasBindings(Context& context, SemIR::InstId pattern_id)
     -> bool {
   llvm::SmallVector<SemIR::InstId> worklist = {pattern_id};

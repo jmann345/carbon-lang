@@ -121,10 +121,14 @@ choice IntResult {
 // checking continues.
 fn F(r: IntResult) -> i32 {
   match (r) {
-    // CHECK:STDERR: fail_nested_designator_subpattern.carbon:[[@LINE+5]]:14: error: name `.Self` not found [NameNotFound]
+    // CHECK:STDERR: fail_nested_designator_subpattern.carbon:[[@LINE+9]]:14: error: name `.Self` not found [NameNotFound]
     // CHECK:STDERR:     case .Ok(.Err) => { return 1; }
     // CHECK:STDERR:              ^~~~
     // CHECK:STDERR: fail_nested_designator_subpattern.carbon: note: designator may only be used when `.Self` is in scope [NoPeriodSelfForDesignator]
+    // CHECK:STDERR:
+    // CHECK:STDERR: fail_nested_designator_subpattern.carbon:[[@LINE+4]]:5: error: name `Core.EqWith` implicitly referenced here, but not found [CoreNameNotFound]
+    // CHECK:STDERR:     case .Ok(.Err) => { return 1; }
+    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~
     // CHECK:STDERR:
     case .Ok(.Err) => { return 1; }
     default => { return 0; }

@@ -1,1 +1,1 @@
-2026-09-25T19:40Z w008 W8c verification regen pass 1 (string narrowing + three new fail pins)
+2026-09-25T23:30Z w066 verification regen pass 1 (usefulness diagnostics; 8 new CHECK-free files; zero existing-golden churn predicted)

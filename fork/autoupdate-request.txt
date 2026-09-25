@@ -1,1 +1,1 @@
-2026-09-25T15:20Z w008 W8b verification regen pass 1 (post fix round 1 406a968)
+2026-09-25T15:55Z w008 W8b verification regen pass 1 retry (after fix round 2 guard-edge blocks)

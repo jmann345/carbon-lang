@@ -244,6 +244,7 @@ fails if this table is stale):
 | `control_flow/conditions.carbon` | Control flow: conditions | run |
 | `control_flow/if_let_let_else.carbon` | Control flow: matching — if-let / let-else combined match+declaration | SKIP |
 | `control_flow/loops.carbon` | Control flow: loops incl. range-based and C/C++ loop equivalents | run |
+| `control_flow/match_bool.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_global_runtime_let.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | run |
 | `control_flow/match_guard_binding.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_guard_diff.carbon` | Control flow: matching — good switch equivalents | differential |

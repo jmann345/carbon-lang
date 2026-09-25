@@ -1,1 +1,1 @@
-2026-09-25T16:45Z w008 W8b verification regen pass 1 retry 2 (after fix round 3 guard-after-bind)
+2026-09-25T17:20Z w008 W8b verification regen pass 2 (fixpoint check after round 4 question-guard ban)

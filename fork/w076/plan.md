@@ -6,7 +6,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # W-076 plan: `bool` match scrutinees
 
-Status: PLAN. Drafted 2026-09-26. Size S — one slice (W76a).
+Status: PLAN, amended per review fold and APPROVED FOR IMPLEMENTATION
+(see Sign-off). Drafted 2026-09-25 (amended 2026-09-26, review fold:
+drafted-date fix, was mis-stamped 09-26). Size S — one slice (W76a).
 Baseline: trunk a715b66 (post-PR #35, W-066 landed; conformance
 **99 PASS / 0 FAIL / 28 SKIP over 127**). Authoritative record:
 fork/inventory/work-items.json W-076. NO implementation in this document.
@@ -126,6 +128,31 @@ behind the scrutinee TODO, exactly as int adapters beyond `Int(N)`
 requiring implicit scrutinee conversion would reopen this; none exists in
 pattern_matching.md's match section.
 
+**1.7 Choice-payload bool constants: IN scope, automatic — the R9
+widening is positionally GLOBAL.** (amended 2026-09-26, review fold: the
+convergent MAJOR from both reviews — the plan undersold §2.5's blast
+radius as scrutinee-root + tuple-element only.) `DoMatchCaseExprPattern`'s
+gate (pattern_match.cpp:1265-1272) is the single shared leaf lane for
+every expression-pattern position — its own preceding comment
+(:1238-1240) says so: "the whole case pattern, or one element of a tuple
+case pattern or alternative payload against the element's scrutinee".
+And bool IS an in-slice choice payload type: `IsInSliceChoicePayloadType`
+(check/type.cpp:313-320) includes `Is<SemIR::BoolType>`. So the moment
+§2.5 admits `BoolLiteral` constants, `case .Tag(true)` on
+`choice Wrap { Tag(b: bool), None }` goes LIVE with this slice — no
+extra code, covered by the generic leaf lane exactly as tuple elements
+are (§1.5). Consequences, each riding existing machinery: coverage is
+unaffected — a `.Tag(true)` payload is refutable, so the arm records
+nothing into `covered_alternatives`, exactly the `.Some(42)` rule
+(handle_match.cpp:859 and its comment at :844-846); usefulness keys the
+payload leaf as `BoolConst` under the existing `Alternative` key node
+(context.h:351 — payload subpattern slots follow in preorder) by way of the
+generic §2.4 hook, so duplicate `.Tag(true)` arms and a `.Tag(v: bool)`
+prior subsuming a later `.Tag(true)` both diagnose. Goldens in §4 (P6,
+F8). Break: if the payload lane turns out to bypass
+`DoMatchCaseExprPattern` anywhere, this unlock is narrower than claimed
+and the discharge notes must name the bypass.
+
 ## §2 Mechanism
 
 **2.1 Gate change** (handle_match.cpp:154-188): in
@@ -171,7 +198,11 @@ is read exactly where the key builder reads it, by way of a small shared helper
 `TryGetCaseBoolConstant(context, pattern_id)`). `covered_alternatives`'s
 contract ("possibly with duplicates", context.h:377-381) is unchanged;
 indices 0/1 cannot collide with choice discriminants because a statement
-has one scrutinee type. `has_irrefutable_arm` interplay: untouched —
+has one scrutinee type. (amended 2026-09-26, review fold: the
+`covered_alternatives` doc comment at context.h:377-381 — "the
+discriminant values of the choice alternatives covered..." — becomes
+false once bool values record into it; commit 1 updates it to cover
+bool values (0/1) alongside choice discriminants.) `has_irrefutable_arm` interplay: untouched —
 binding roots keep setting it, and it short-circuits
 `DiagnoseNonexhaustiveMatch` (:1248) before any bool logic runs.
 Exhaustiveness: `MatchStatement`'s no-`default` branch (:1322-1341)
@@ -211,13 +242,24 @@ case. `UsefulnessKeySubsumes` (handle_match.cpp:586-631): add `case
 Kind::BoolConst:` — equal kind and equal `index`, else not subsumed
 (mirrors `IntConst`). Union rule: extend step 3b (:788-830) — the wildcard
 -root condition at :790-793 gains "or scrutinee is bool", with `covers_all`
-for bool = `covered_alternatives` contains 0 AND 1, and the note REUSES
+for bool = `covered_alternatives` contains 0 AND 1. (amended 2026-09-26,
+review fold: ordering constraint — the bool arm computes its
+`covers_all` BEFORE and WITHOUT the `GetAs<SemIR::ClassType>`
+/`class_info.choice_alternatives` read at handle_match.cpp:797-809; a
+literal "or scrutinee is bool" on the wildcard-root condition alone
+would CHECK-fail on `BoolType` at that `GetAs` — the F3 test's own
+shape.) The note REUSES
 `MatchCaseNeverMatchesFullCoverage` ("all alternatives of {0} are matched
 by prior arms", :814-816) with the bool TypeId — licensed one-sentence by
 pattern_matching.md:591: `bool` is treated like a choice type whose
 alternatives are `false` and `true`. (Wording flagged as open question
 OQ-1.) Guarded-prior exclusion, dead-arm non-recording into `useful_arms`,
-and the `default` exemption (W-078) all carry over untouched.
+and the `default` exemption (W-078) all carry over untouched. (amended
+2026-09-26, review fold, cosmetic: the key builder's leaf comment
+(pattern_match.cpp:758-766, "The test pass already gated non-concrete
+and non-`IntValue` results behind a TODO...") mirrors the R9 gate and
+needs its matching update when `BoolLiteral` joins the admitted set —
+same-commit comment hygiene, no behavior.)
 
 **2.5 R9 widening site + exact predicate** (pattern_match.cpp:1265-1273):
 
@@ -246,8 +288,12 @@ changes anywhere (2.2).
 One PR off trunk a715b66. Commits:
 
 1.  `W76a: admit bool match scrutinees` — all compiler changes (§2.1-§2.5:
-    handle_match.cpp, pattern_match.cpp, context.h enum + comments), no
-    testdata.
+    handle_match.cpp, pattern_match.cpp, context.h enum + comments,
+    toolchain/diagnostics/kind.def —
+    `CARBON_DIAGNOSTIC_KIND(MatchNonexhaustiveBool)` alphabetized after
+    `MatchNonexhaustive` at kind.def:170 (amended 2026-09-26, review
+    fold: file was missing from this list; every new
+    `CARBON_DIAGNOSTIC` needs its kind.def row)), no testdata.
 2.  `W76a: testdata + conformance` — new goldens with AUTOUPDATE markers
     and NO CHECK lines (R15), the repurposed pin (§4 F7), the conformance
     program + README row (§5).
@@ -263,12 +309,23 @@ authored CHECK-free per R15/R16; full prelude unless noted)
 Positives:
 
 -   **P1** `bool_scrutinee.carbon` — subfiles: (a) `case false` + `case
-    true`, no `default` (exhaustive; pattern_matching.md:610-617 shape);
+    true`, no `default` (exhaustive; pattern_matching.md:610-617 shape)
+    (amended 2026-09-26, review fold: caveat — the design example's
+    ":616 code unreachable" half is NOT delivered this slice; the
+    resumption block stays CFG-reachable, parity with
+    exhaustive_choice.carbon's trailing `return -1;` (:35), so P1(a) is
+    authored WITH a trailing return; recorded as shared pre-existing
+    residue, not new scope);
     (b) `case true` + `default`; (c) constant-expr case (`case true` with
     a runtime scrutinee and `case 1 == 1`-style bool constant if the
     expression form checks — else `true` only); (d) `match (true)`
     constant scrutinee (constant-folds by way of eval BoolEq, mirroring
-    constant_scrutinee.carbon).
+    constant_scrutinee.carbon); (e) (amended 2026-09-26, review fold)
+    `default`-only bool match on min_prelude/parts/bool.carbon — pins
+    scrutinee-gate admission with no EqWith dependency; this subfile is
+    the referent for §2.2's and R-3's "min_prelude-clean" claims (the
+    current fail_todo_non_int_scrutinee.carbon is exactly this shape
+    pre-flip).
 -   **P2** `bool_scrutinee.carbon` subfile (compose): binding arm `case
     b2: bool`, guarded arm `case true if (c) => ...` + `default`
     (guarded arm records nothing; default required and present).
@@ -281,6 +338,12 @@ Positives:
     exhaustive-by-default variant (tuple exhaustiveness itself stays
     default-requiring — only the bool ROOT rule extends, tuples still
     require `default`; pinned so the boundary is explicit).
+-   **P6** `bool_choice_payload.carbon` (amended 2026-09-26, review
+    fold: the §1.7 unlock's positive; full prelude) — `choice Wrap {
+    Tag(b: bool), None }` scrutinee, `case .Tag(true)`, `case
+    .Tag(false)`, `case .None` (coverage per §1.7: only `.None` records —
+    `.Tag(...)` payloads are refutable — so the match keeps a
+    `default`).
 
 Fails (expected diagnostics named; exact text lands by way of autoupdate):
 
@@ -316,6 +379,13 @@ Fails (expected diagnostics named; exact text lands by way of autoupdate):
     accurate name alongside fail_todo_adapter_scrutinee.carbon; the bool
     shape moves to P1 as a positive. Ledger R7 pin list updates at
     discharge.
+-   **F8** (amended 2026-09-26, review fold: §1.7's negatives) — in
+    P6's file or a `fail_` sibling: (a) duplicate `case .Tag(true)` →
+    `MatchCaseNeverMatches` + prior-arm note (`BoolConst` under the
+    `Alternative` key node); (b) `case .Tag(v: bool)` prior then `case
+    .Tag(true)` later → dead by single-prior subsumption (the
+    irrefutable payload keys `Wildcard` in the payload slot, subsuming
+    the `BoolConst`).
 
 Lowering: **L1** `toolchain/lower/testdata/match/bool_scrutinee.carbon` —
 the P1(a) exhaustive shape, showing BoolEq lowering + arm convergence
@@ -325,8 +395,10 @@ is new).
 ## §5 Conformance
 
 The good-switch bullet ("Control flow: matching — good switch
-equivalents") already PASSes on 8 programs (fork/conformance/README.md:248
--259); nothing is owed for it in gap-analysis. A bool-match program still
+equivalents") already PASSes on 9 programs (fork/conformance/README.md:248
+-259; amended 2026-09-26, review fold: count fix, was "8" — `grep -c`
+of the bullet's rows in the README table is 9); nothing is owed for it
+in gap-analysis. A bool-match program still
 strengthens the bullet at runtime (C/C++ `switch` cannot dispatch on
 `bool` cleanly — this is a Carbon-side "good switch" win): add ONE run
 program `control_flow/match_bool.carbon` under that bullet — runtime
@@ -352,7 +424,10 @@ Nothing else: no existing golden contains `case true`/`case false` or a
 bool scrutinee (grepped testdata; the only bool-scrutinee probe is the F7
 pin), the choice/int/tuple lanes are byte-identical for non-bool types
 (every change is behind a bool-type or BoolLiteral test), and parse
-testdata is untouched (parse already accepts these shapes).
+testdata is untouched (parse already accepts these shapes). (amended
+2026-09-26, review fold: the zero-existing-churn claim STANDS under the
+§1.7 unlock too — no existing golden exercises a bool-constant choice
+payload `case .X(true)`-shape either; both reviews grep-verified.)
 
 ## §7 Risks
 
@@ -378,7 +453,9 @@ testdata is untouched (parse already accepts these shapes).
 
 ## §8 Verification
 
-1.  Local: `uvx prek run` before every push (R21); bazelisk build +
+1.  Local: `uvx prek run` before every push (R25; amended 2026-09-26,
+    review fold: rule-id fix, was "R21" — prek is R25,
+    fork/rulebook.md:228); bazelisk build +
     targeted file_tests for the new/changed goldens.
 2.  Runner: autoupdate workflow fills the CHECK-free goldens; fire pass 2
     and confirm locNN-only diff (R26). Regen must touch ONLY §4's new
@@ -404,3 +481,39 @@ testdata is untouched (parse already accepts these shapes).
     a type pre-check keep a friendlier diagnostic?
 -   **OQ-4**: F7's repurposed probe type (empty class) — any preference
     for a different still-gated scrutinee (for example `f64`)?
+
+## Sign-off
+
+Two adversarial plan reviews, both APPROVE-WITH-AMENDMENTS, folded in
+place 2026-09-26 (each edit carries a dated "review fold" amendment
+note at its site):
+
+-   The convergent MAJOR (found independently by both reviews): the
+    §2.5 R9 widening is positionally GLOBAL — `DoMatchCaseExprPattern`'s
+    gate is the single shared leaf lane for root, tuple-element, AND
+    choice-alternative-payload positions, and bool is an in-slice
+    choice payload type (`IsInSliceChoicePayloadType`,
+    check/type.cpp:313-320), so `case .Tag(true)` goes live with this
+    slice. Folded as new adjudication §1.7 (in scope, generic leaf
+    lane; coverage unaffected by the `.Some(42)` refutable-payload
+    rule; usefulness keys `BoolConst` under `Alternative` by way of the
+    generic hook), §4 P6/F8 goldens, and the §6 zero-existing-churn
+    confirmation (both reviews grep-verified no existing golden
+    exercises the shape).
+-   Correctness amendments: §2.4's step-3b bool arm computes
+    `covers_all` before and without the `GetAs<SemIR::ClassType>` read
+    (handle_match.cpp:797-809, would CHECK-fail on `BoolType`); §3
+    commit 1 gains toolchain/diagnostics/kind.def
+    (`MatchNonexhaustiveBool` at kind.def:170's alphabetized slot);
+    §2.3 gains the context.h:377-381 `covered_alternatives` doc-comment
+    update (its choice-only text becomes false otherwise).
+-   Testdata amendments: §4 P1(e) `default`-only bool match on
+    min_prelude/parts/bool.carbon as the min_prelude-clean referent;
+    §4 P1(a)'s unreachable-code caveat (pattern_matching.md:616's
+    unreachability is shared pre-existing residue, not this slice).
+-   Factual fixes: §5 conformance count 8 → 9 programs; §8.1 prek rule
+    id R21 → R25; header drafted-date 2026-09-26 → 2026-09-25. Plus
+    one cosmetic note in §2.4 (the key builder's parallel IntValue-read
+    comment, pattern_match.cpp:758-766, updates alongside the gate).
+
+Status: APPROVED FOR IMPLEMENTATION, 2026-09-26.

@@ -945,3 +945,4 @@ fn Classify(f: Flag, x: i32) -> i32 {
 // CHECK:STDOUT:   %.loc20_12: init %i32 = converted %Core.IntLiteral.as.Negate.impl.Op.call, %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc20 [concrete = constants.%int_-1.4ef]
 // CHECK:STDOUT:   return %.loc20_12
 // CHECK:STDOUT: }
+// CHECK:STDOUT:

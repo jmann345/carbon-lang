@@ -2792,6 +2792,31 @@ inexpressible in-slice — exactly why the approximation is safe today.
 Re-examined the day non-trivial types pass the scrutinee gate
 (handle_match.cpp:238). Veto-able.
 
+### W-076 bool scrutinees: the scoreboard's first triple digits (2026-09-26)
+
+`match` on `bool` lands per the design's bool-as-two-alternative-choice
+sentence (pattern_matching.md:591): `case true`/`case false` dispatch
+through the existing EqWith lane, both-values coverage discharges
+exhaustiveness with no `default` (new MatchNonexhaustiveBool names the
+missing value or values otherwise), and the W-066 usefulness domain
+gained BoolConst keys plus the union rule from day one, exactly as the
+ledger demanded. Both plan reviews independently converged on the same
+major — the R9 admission widening is positionally global, so bool
+constants in choice-payload positions went live and needed pins — and
+both implementation reviews approved with zero code fixes. One
+runner-exposed fix round, on the shape the plan itself hedged:
+`case 1 == 1` does not parse (the case-pattern grammar terminates
+before `==`; `case 2 + 3` parses because `+` binds tighter), so the
+positive rides the W8a paren-pattern lane as `case (1 == 1)` and the
+bare form is pinned as an honest parse boundary. Reconciliation was
+airtight: churn confined to the new files plus the three planned
+strips, and fail_question.carbon's 44 refilled lines byte-identical
+except the single widened R9 message. Verified: R26 fixpoint, gate
+green, conformance 100 PASS / 0 fail-class / 28 SKIP over 128 —
+the first triple-digit scoreboard (99/127 -> 100/128, match_bool
+PASS). Root-only union-rule residue recorded for W-078 and
+successors.
+
 ### W-066 usefulness diagnostics landed through the full loop (2026-09-26)
 
 The first post-W-008 workstream: `case` patterns that can never match

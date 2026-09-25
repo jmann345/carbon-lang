@@ -151,13 +151,13 @@ auto HandleParseNode(Context& context, Parse::VariablePatternId node_id)
       // emits `VarStorage` on demand instead, in the arm's body block, so
       // each arm gets its own object (W-008 plan §2.4;
       // docs/design/pattern_matching.md, "Pattern match control flow"). The
-      // binding-free spelling, such as `case var 5`, stays behind the W4
-      // slice gate.
+      // binding-free spelling, such as `case var 5`, stays behind its own
+      // gate: there is nothing to bind, so the on-demand storage design
+      // has no lane for it (W-008 plan §2.4).
       if (!MatchCasePatternHasBindings(context, subpattern_id)) {
         return context.TODO(
             context.match_case_stack().back().introducer_node_id,
-            "match `case` pattern other than an integer literal, or a case "
-            "guard");
+            "binding-free `var` in match `case` pattern");
       }
       pattern_id = AddInst<SemIR::VarPattern>(
           context, node_id,

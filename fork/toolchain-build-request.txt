@@ -1,1 +1,1 @@
-2026-09-24T14:52Z weekly-upstream-20260824 gate attempt 51 (re-queue; runner offline since 08-27 02:20Z)
+2026-09-25T09:05Z weekly-upstream-20260824 gate attempt 52 (disk recheck; runner BACK ONLINE 09-25, blocked on 36GB<40GB free)

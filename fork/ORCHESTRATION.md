@@ -10,22 +10,22 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-09-26 (post-PR #37: W-078a — dead `default`
-arms on choice and bool scrutinees now error, the design's own
-"❌ Error: unreachable." call (pattern_matching.md:243-244).
-DiagnoseDeadDefault reuses the W-066 usefulness state at both default
-handlers by way of the factored UnguardedArmsCoverWholeDomain (own guard
-assumed true, so full prior coverage kills `default if (g)` too);
-three new MatchDefaultNeverMatches* kinds; 8-subfile fail matrix;
-dead defaults dropped from seven positive suites. Integer lane stays
-R8-exempt — W-078 stays OPEN for the integer half + R8 lift. Both
-impl reviews APPROVE with zero code fixes; R26 fixpoint at pass 3;
-conformance unchanged 100/0/28 over 128, zero conformance edits.
-Seven PRs since the runner returned (#31→#37): weekly upstream merge,
-W8a/W8b/W8c, W-066, W-076, W-078a. Next: W-077 struct patterns or the
-next inventory priority; weekly cron fires Monday 2026-09-28 — see
-fork/decision-log.md for the full record)._
-THIRTY-SEVEN PRs. The design's canonical
+_Last updated: 2026-09-26 (post-PR #38: W-078b — the W-008 residue
+R8 conservative gate is LIFTED and ledger item W-078 is CLOSED (both
+halves). Integer/tuple matches without `default` no longer TODO-abort:
+unguarded irrefutable arms discharge exhaustiveness, and the new
+MatchNonexhaustiveNoIrrefutableArm Error covers the rest (enumeration
+exhaustiveness recorded design-rejected). DiagnoseDeadDefault stage 1
+now serves every lane; stage 2 stays bool/choice-gated. Runner-exposed
+boundary pinned: constant-conversion errors do not set has_error_arm,
+so the nonexhaustive error stacks truthfully. First conformance-program
+edit precedent (match_var_ref_binding's dead defaults dropped) and a
+NEW FLOOR: 101 PASS / 0 fail-class / 28 SKIP over 129
+(+match_irrefutable_no_default). Eight PRs since the runner returned
+(#31→#38). Next: W-077 struct patterns (the whole upstream-missing
+check layer) or the next inventory priority; weekly cron fires Monday
+2026-09-28 — see fork/decision-log.md for the full record)._
+THIRTY-EIGHT PRs. The design's canonical
 `var my_opt: Optional(i32) = Optional(i32).None;` now compiles and
 runs: LookupChoiceCopyWitness mirrors the destroy witness (is_choice
 gate, symbolic deferral under the SF-6 triviality fence, concrete

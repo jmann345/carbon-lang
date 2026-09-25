@@ -1,1 +1,1 @@
-2026-09-25T12:25Z w008 W8a verification regen pass 1 (post-trunk-sync fixpoint check)
+2026-09-25T12:40Z w008 W8a verification regen pass 1 retry (after fix round 3: expr-pattern region value conversion)

@@ -1997,6 +1997,28 @@ struct StructLiteral {
   InstBlockId elements_id;
 };
 
+// A struct pattern, such as `{.a = 1, b: i32, _}`.
+struct StructPattern {
+  static constexpr auto Kind =
+      InstKind::StructPattern.Define<Parse::StructPatternId>(
+          {.ir_name = "struct_pattern",
+           .expr_category = ExprCategory::Pattern,
+           .constant_kind = InstConstantKind::Always,
+           .is_lowered = false});
+
+  // Always a PatternType whose scrutinee type is a struct type pairing each
+  // named field with its subpattern's scrutinee type, in pattern (lexical)
+  // order. Consumers recover name-to-element alignment by unwrapping the
+  // pattern type: its struct type's fields are index-aligned with
+  // `elements_id`.
+  TypeId type_id;
+  InstBlockId elements_id;
+  // Whether the pattern ends with the `_` field discard
+  // (docs/design/pattern_matching.md, "Struct patterns"). The discard is not
+  // an element: it only licenses unmentioned scrutinee fields.
+  BoolValue has_trailing_discard;
+};
+
 // The type of a struct.
 struct StructType {
   static constexpr auto Kind = InstKind::StructType.Define<

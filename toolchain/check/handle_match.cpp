@@ -45,7 +45,7 @@ namespace Carbon::Check {
 // the `default` body as the final `else` block and all arm bodies converging
 // on a single resumption block.
 //
-// Four scrutinee shapes are supported so far: integer scrutinees with
+// Five scrutinee shapes are supported so far: integer scrutinees with
 // constant integer expression `case` patterns; bool scrutinees with
 // constant `true`/`false` expression `case` patterns — the design treats
 // `bool` like a choice type whose alternatives are `false` and `true`
@@ -59,10 +59,17 @@ namespace Carbon::Check {
 // nested tuples of those: expression subpatterns contribute payload-value
 // conditions in a block dominated by the discriminant test, and binding
 // subpatterns initialize in the bind pass from the alternative's payload
-// tuple, extracted from the scrutinee's payload region; and tuple
+// tuple, extracted from the scrutinee's payload region; tuple
 // scrutinees (tuples of the above, recursively) with tuple `case` patterns
 // over the same element kinds, tested elementwise against the scrutinee's
-// own tuple type and folded into one condition. Against any shape, a bare
+// own tuple type and folded into one condition; and struct scrutinees
+// (structs of the above, recursively, and mixed with tuples) with struct
+// `case` patterns — designated fields (`case {.a = 1, .b = b: i32}`),
+// shorthand fields (`b: i32` means `.b = b: i32`), reordered and
+// field-subset patterns with a trailing `_` discard — whose field
+// subpatterns resolve name-keyed against the scrutinee's own struct type
+// and test in pattern order against each field's same-named scrutinee
+// element (W-077). Against any shape, a bare
 // `name: type` binding pattern is also supported: it is irrefutable, so the
 // test pass contributes no real condition (the arm's condition is a
 // constant `true`), and a bind pass in the arm's body block initializes the
@@ -115,13 +122,14 @@ namespace Carbon::Check {
 // scrutinee's domain is the closed pair `false`/`true` — the design treats
 // `bool` like a choice type (docs/design/pattern_matching.md) — so covering
 // both values with unguarded constant arms needs no `default`, and a
-// missing value diagnoses `MatchNonexhaustiveBool`. An integer or tuple
-// scrutinee's value domain is open — integer expression patterns are never
-// exhaustive per docs/design/pattern_matching.md — so an unguarded
-// irrefutable arm is the one way such a `match` is exhaustive without a
-// `default` arm (W-078b); otherwise the missing coverage diagnoses
-// `MatchNonexhaustiveNoIrrefutableArm`, naming no missing values because
-// integers cannot enumerate theirs.
+// missing value diagnoses `MatchNonexhaustiveBool`. An integer, tuple, or
+// struct scrutinee's value domain is open — integer expression patterns
+// are never exhaustive per docs/design/pattern_matching.md, and the
+// aggregate root records no per-value coverage (root-only, the W-076
+// record) — so an unguarded irrefutable arm is the one way such a `match`
+// is exhaustive without a `default` arm (W-078b); otherwise the missing
+// coverage diagnoses `MatchNonexhaustiveNoIrrefutableArm`, naming no
+// missing values because an open domain cannot enumerate theirs.
 //
 // Usefulness (W-066): a `case` arm whose pattern can never match — every
 // value it could match is matched by prior arms — is an error at the arm,
@@ -169,13 +177,15 @@ static auto PeekScrutinee(Context& context) -> SemIR::InstId {
 }
 
 // Returns whether `type_id` is a scrutinee type this slice can dispatch on:
-// an integer shape, plain `bool`, a matchable choice, or a tuple whose
-// element types are recursively in-slice matchable (a tuple scrutinee
-// dispatches elementwise, so each element must itself be dispatchable, and
-// a tuple of trivially destructible element types is trivially destructible
-// — the temporary-cleanup argument at the gate extends elementwise).
-// Iterative worklist (misc-no-recursion); nothing the walk visits can form
-// a cycle.
+// an integer shape, plain `bool`, a matchable choice, or a tuple or struct
+// whose element/field types are recursively in-slice matchable (tuple and
+// struct scrutinees dispatch elementwise/fieldwise, so each element or
+// field must itself be dispatchable, and a tuple or struct of trivially
+// destructible member types is trivially destructible — the
+// temporary-cleanup argument at the gate extends memberwise). Adapter
+// classes over struct types stay behind the scrutinee TODO, matching the
+// int/bool strictness above. Iterative worklist (misc-no-recursion);
+// nothing the walk visits can form a cycle.
 static auto IsSupportedScrutineeType(Context& context, SemIR::TypeId type_id)
     -> bool {
   llvm::SmallVector<SemIR::TypeId> worklist = {type_id};
@@ -207,15 +217,26 @@ static auto IsSupportedScrutineeType(Context& context, SemIR::TypeId type_id)
         IsMatchableChoiceType(context, current_type_id)) {
       continue;
     }
-    auto tuple_type = context.types().TryGetAsIfValid<SemIR::TupleType>(
-        context.types().GetUnqualifiedType(current_type_id));
-    if (!tuple_type) {
-      return false;
+    auto unqualified_type_id =
+        context.types().GetUnqualifiedType(current_type_id);
+    if (auto tuple_type = context.types().TryGetAsIfValid<SemIR::TupleType>(
+            unqualified_type_id)) {
+      for (auto element_type_id : context.types().GetBlockAsTypeIds(
+               context.inst_blocks().Get(tuple_type->type_elements_id))) {
+        worklist.push_back(element_type_id);
+      }
+      continue;
     }
-    for (auto element_type_id : context.types().GetBlockAsTypeIds(
-             context.inst_blocks().Get(tuple_type->type_elements_id))) {
-      worklist.push_back(element_type_id);
+    if (auto struct_type = context.types().TryGetAsIfValid<SemIR::StructType>(
+            unqualified_type_id)) {
+      for (const auto& field :
+           context.struct_type_fields().Get(struct_type->fields_id)) {
+        worklist.push_back(
+            context.types().GetTypeIdForTypeInstId(field.type_inst_id));
+      }
+      continue;
     }
+    return false;
   }
   return true;
 }
@@ -233,7 +254,7 @@ auto HandleParseNode(Context& context, Parse::MatchConditionId node_id)
   // use it multiple times, once per `case`.
   scrutinee_id = ConvertToValueOrRefExpr(context, scrutinee_id);
 
-  // Four scrutinee shapes are supported so far.
+  // Five scrutinee shapes are supported so far.
   //
   // Integer scrutinees: `Core.IntLiteral`, a builtin integer type, or a class
   // type directly adapting a builtin integer type, as `Int(N)` and `UInt(N)`
@@ -253,14 +274,15 @@ auto HandleParseNode(Context& context, Parse::MatchConditionId node_id)
   // to test (W-068) — a single-alternative arm is always taken, and an empty
   // choice is vacuously exhaustive.
   //
-  // Tuple scrutinees: tuples of the above, recursively — dispatch is
-  // elementwise (`IsSupportedScrutineeType`). The temporary
+  // Tuple and struct scrutinees: tuples and structs of the above,
+  // recursively and mixed — dispatch is elementwise/fieldwise
+  // (`IsSupportedScrutineeType`). The temporary
   // cleanup handling below stays trivially correct for every shape as a type
   // property, not a syntactic one: integer and bool values have no `destroy`
   // functions, an in-slice choice's payloads are restricted to trivially
   // copyable and destructible types when the choice's representation is
   // completed (see handle_choice.cpp), so its destruction is a no-op, and a
-  // tuple of such elements destroys trivially too.
+  // tuple or struct of such members destroys trivially too.
   auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
 
   // Force the scrutinee's type complete before the shape checks below read
@@ -618,12 +640,17 @@ static auto SkipUsefulnessKeySubtree(
 // `Alternative` with equal discriminant index,
 // the payload slots then comparing elementwise (a payload-free alternative
 // has zero slots and subsumes itself); or both are `Tuple`, comparing
-// elementwise. Nothing else subsumes — in particular a `Wildcard` is never
-// itself subsumed by a constant, so a prior `case (1, 2)` leaves a later
-// `case (1, b: i32)` useful. Two keys for the same scrutinee are
-// structurally compatible, so a kind or arity mismatch is treated as
-// not-subsumed (defensive, should be unreachable). Lockstep iterative walk
-// over the preorder node lists (misc-no-recursion).
+// elementwise; or both are `Struct`, comparing fieldwise — struct keys are
+// normalized to the scrutinee's full field set in the scrutinee's
+// canonical field order (`BuildMatchCaseUsefulnessKey`), so the slot-wise
+// walk is sound over field-subset and reordered patterns. Nothing else
+// subsumes — in particular a `Wildcard` is never itself subsumed by a
+// constant, so a prior `case (1, 2)` leaves a later `case (1, b: i32)`
+// useful, and a prior `{.a = 1, .b = 2}` leaves a later `{.a = 1, _}`
+// useful. Two keys for the same scrutinee are structurally compatible, so
+// a kind or arity mismatch is treated as not-subsumed (defensive, should
+// be unreachable). Lockstep iterative walk over the preorder node lists
+// (misc-no-recursion).
 static auto UsefulnessKeySubsumes(
     llvm::ArrayRef<Context::MatchStatementContext::UsefulnessKeyNode> prior,
     llvm::ArrayRef<Context::MatchStatementContext::UsefulnessKeyNode> arm)
@@ -662,6 +689,12 @@ static auto UsefulnessKeySubsumes(
         break;
       case Kind::Tuple:
         if (arm_node.kind != Kind::Tuple ||
+            prior_node.arity != arm_node.arity) {
+          return false;
+        }
+        break;
+      case Kind::Struct:
+        if (arm_node.kind != Kind::Struct ||
             prior_node.arity != arm_node.arity) {
           return false;
         }
@@ -756,8 +789,11 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
   // pattern's root (recorded in the case-arm context) tests the scrutinee's
   // discriminant plus any payload-value conditions, and its payload
   // bindings bind below; other expression patterns (including error
-  // recovery) and tuple-pattern roots against a tuple-shaped scrutinee are
-  // matched by the refutable engine, which returns the arm's condition; a
+  // recovery) and tuple- or struct-pattern roots against a matching-shaped
+  // scrutinee are matched by the refutable engine, which returns the arm's
+  // condition — a struct root runs the engine whether refutable or not, so
+  // its field-set shape checks (unknown fields, unmentioned fields without
+  // `_`) run at the root even for all-binding patterns; a
   // binding-pattern root — a value or `ref` binding — is irrefutable, so
   // its test pass contributes no condition and the arm's condition is a
   // constant `true` (the refutable engine prunes at binding patterns, whose
@@ -768,8 +804,9 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
   // supplies the shape checks a bare tuple root gets: a non-tuple scrutinee
   // stays behind the W4 slice gate and an arity mismatch diagnoses
   // `MatchCaseTuplePatternWrongArity` (W8b fix round 1); every other
-  // pattern root — a tuple pattern against a non-tuple scrutinee, and a
-  // `var` root wrapping a refutable subtree, included — stays behind the W4
+  // pattern root — a tuple or struct pattern against a scrutinee of the
+  // other shape, and a `var` root wrapping a refutable subtree or any
+  // struct pattern, included — stays behind the W4
   // slice-gate TODO. The TODO is pinned to the introducer node so the
   // preserved diagnostics keep their location.
   SemIR::InstId cond_value_id = SemIR::InstId::None;
@@ -788,6 +825,12 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
           context.insts().Get(scrutinee_id).type_id()));
   bool is_irrefutable_tuple_arm =
       is_tuple_arm && IsIrrefutableMatchCasePattern(context, pattern_id);
+  bool is_struct_arm =
+      context.insts().Is<SemIR::StructPattern>(pattern_id) &&
+      context.types().Is<SemIR::StructType>(context.types().GetUnqualifiedType(
+          context.insts().Get(scrutinee_id).type_id()));
+  bool is_irrefutable_struct_arm =
+      is_struct_arm && IsIrrefutableMatchCasePattern(context, pattern_id);
   if (is_alternative_payload_arm) {
     cond_value_id =
         MatchCaseAlternativePatternMatch(context, scrutinee_id, node_id);
@@ -798,7 +841,7 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
     }
   } else if (pattern_id == SemIR::ErrorInst::InstId ||
              context.insts().Is<SemIR::ExprPattern>(pattern_id) ||
-             is_tuple_arm || is_irrefutable_var_arm) {
+             is_tuple_arm || is_struct_arm || is_irrefutable_var_arm) {
     cond_value_id =
         MatchCasePatternMatch(context, pattern_id, scrutinee_id, node_id);
     if (!cond_value_id.has_value()) {
@@ -842,8 +885,9 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
   // `UnguardedArmsCoverWholeDomain` coverage predicate.
   if (pattern_id != SemIR::ErrorInst::InstId &&
       cond_value_id != SemIR::ErrorInst::InstId) {
-    if (auto key =
-            BuildMatchCaseUsefulnessKey(context, pattern_id, alternative)) {
+    if (auto key = BuildMatchCaseUsefulnessKey(
+            context, pattern_id, alternative,
+            context.insts().Get(scrutinee_id).type_id())) {
       auto& match_context = context.match_statement_stack().back();
       CARBON_DIAGNOSTIC(MatchCaseNeverMatches, Error,
                         "`case` pattern never matches; every value it can "
@@ -915,10 +959,12 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
   // pattern: exhaustiveness assumes every guard can evaluate to false
   // (docs/design/pattern_matching.md, "Refutability, overlap, usefulness,
   // and exhaustiveness"). An unguarded irrefutable arm — a binding root, an
-  // irrefutable `var` root, or an all-binding tuple root, which is
-  // irrefutable given the arity/type the checker enforced statically —
+  // irrefutable `var` root, an all-binding tuple root, or an all-binding
+  // struct root (full-set or subset+`_`), each irrefutable given the
+  // arity/type or field set the checker enforced statically —
   // covers every scrutinee value and discharges exhaustiveness on EVERY
-  // scrutinee lane: it is the one way an integer- or tuple-scrutinee
+  // scrutinee lane: it is the one way an integer-, tuple-, or
+  // struct-scrutinee
   // `match` is exhaustive without a `default` arm (W-078b); an
   // unguarded alternative-pattern arm covers its alternative only when its
   // payload tree is wholly irrefutable — a refutable payload such as
@@ -937,7 +983,7 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
     } else if (is_guarded) {
       // Guarded arms never count toward coverage.
     } else if (is_binding_arm || is_irrefutable_var_arm ||
-               is_irrefutable_tuple_arm) {
+               is_irrefutable_tuple_arm || is_irrefutable_struct_arm) {
       match_context.has_irrefutable_arm = true;
     } else if (alternative && alternative->payload_is_irrefutable) {
       match_context.covered_alternatives.push_back(alternative->index);
@@ -1020,12 +1066,19 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
     auto field_ref_id = EmitChoicePayloadFieldAccess(
         context, SemIR::LocId(node_id), scrutinee_id,
         alternative->payload_field_index);
-    // All-binding, `var`-free payload trees keep the landed
+    // All-binding, `var`-free, struct-free payload trees keep the landed
     // `LocalPatternMatch` path; trees with expression subpatterns need the
-    // match-bind pruning, and trees with `var` patterns need its on-demand
-    // storage (the frame-indexed lookup is unusable here; W-008 plan §2.4).
+    // match-bind pruning, trees with `var` patterns need its on-demand
+    // storage (the frame-indexed lookup is unusable here; W-008 plan §2.4),
+    // and trees with struct subpatterns need the match-bind walk too: a
+    // struct subpattern in payload position makes the payload irrefutable,
+    // and running it under plain `LocalState` would both attempt the
+    // impossible conversion to the pattern's subset type and hit the
+    // struct pre-work's non-match fatal (W-077 plan §1.8). Rerouted, the
+    // bind pass reaches the struct walk's non-struct-element W4 TODO.
     if (alternative->payload_is_irrefutable &&
-        !MatchCasePatternHasVarPattern(context, pattern_id)) {
+        !MatchCasePatternHasVarPattern(context, pattern_id) &&
+        !MatchCasePatternHasStructPattern(context, pattern_id)) {
       LocalPatternMatch(context, pattern_id, field_ref_id);
     } else {
       MatchCaseBindPatternMatch(context, pattern_id, field_ref_id);
@@ -1037,13 +1090,29 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
     // arm whose test errored (for example a tuple-arity mismatch) has
     // nothing sound to bind. A tree with `var` elements takes the
     // match-bind walk for its on-demand storage even when wholly
-    // irrefutable (W-008 plan §2.4).
+    // irrefutable (W-008 plan §2.4), and a tree with a struct SUBPATTERN
+    // takes it too: the `LocalPatternMatch` path converts the scrutinee to
+    // the PATTERN's tuple type, and a field-subset struct element makes
+    // that conversion structurally impossible (W-077 plan §1.4).
     if (is_irrefutable_tuple_arm &&
-        !MatchCasePatternHasVarPattern(context, pattern_id)) {
+        !MatchCasePatternHasVarPattern(context, pattern_id) &&
+        !MatchCasePatternHasStructPattern(context, pattern_id)) {
       LocalPatternMatch(context, pattern_id, scrutinee_id);
     } else {
       MatchCaseBindPatternMatch(context, pattern_id, scrutinee_id);
     }
+    context.scope_stack().DeferCleanups();
+  } else if (is_struct_arm && cond_value_id != SemIR::ErrorInst::InstId &&
+             MatchCasePatternHasBindings(context, pattern_id)) {
+    // A struct arm's bindings initialize fieldwise from the scrutinee,
+    // ALWAYS through the match-bind walk, never plain `LocalPatternMatch`:
+    // that path converts the scrutinee to the PATTERN's own struct type,
+    // and a field-subset pattern's type drops scrutinee fields, so
+    // `ConvertStructToStructOrClass` would diagnose the
+    // design-contradicting unexpected-field error instead of implementing
+    // the discard rule (W-077 plan §1.4). An arm whose test errored (for
+    // example a missing-fields shape error) has nothing sound to bind.
+    MatchCaseBindPatternMatch(context, pattern_id, scrutinee_id);
     context.scope_stack().DeferCleanups();
   }
 
@@ -1236,12 +1305,15 @@ auto HandleParseNode(Context& context, Parse::MatchDefaultIntroducerId node_id)
 // covering the whole domain — is gated on the choice and bool lanes,
 // the only closed root domains (see the union-stage comment below).
 // Invariant tying this check to `DiagnoseNonexhaustiveMatch` on the
-// integer/tuple lane: `has_irrefutable_arm` is true iff `useful_arms`
-// holds a `Wildcard`-root entry. Forward: every arm that sets the flag
+// integer/tuple/struct lane: `has_irrefutable_arm` is true iff
+// `useful_arms` holds a `Wildcard`-root entry. Forward: every arm that
+// sets the flag — binding, irrefutable `var`, all-binding tuple, and
+// all-binding struct roots alike —
 // keys as the single node `{Wildcard}` (pattern_match.cpp,
-// `BuildMatchCaseUsefulnessKey`), and the FIRST such arm cannot itself be
-// diagnosed dead on this lane — no union coverage exists for an open
-// domain, so only a prior `Wildcard` arm could kill it — so it is
+// `BuildMatchCaseUsefulnessKey`, whose irrefutability first-check runs
+// before any `Struct` node is considered), and the FIRST such arm cannot
+// itself be diagnosed dead on this lane — no union coverage exists for an
+// open domain, so only a prior `Wildcard` arm could kill it — so it is
 // recorded. Backward: only irrefutable roots key `Wildcard`. The one
 // shared carve-out: a bind-pass-error arm (`case b: bool` on an `i32`
 // scrutinee) sets the flag AND is recorded as covering (W-066 §1.8), so
@@ -1302,8 +1374,11 @@ static auto DiagnoseDeadDefault(Context& context,
   // for the closed root domains — choice and bool — so the lane test
   // gates it HERE, not at function entry: that placement is what keeps
   // `MatchDefaultNeverMatchesFullCoverage` structurally unreachable on an
-  // integer or tuple scrutinee, whose open domain no union of constant
-  // arms can cover and on whose type the `GetAs<SemIR::ClassType>` read
+  // integer, tuple, or struct scrutinee, whose open domain no union of
+  // constant arms can cover — a struct-of-bools' root is OPEN under the
+  // landed root-only record exactly as `(bool, bool)`'s is (W-076;
+  // W-078b §1.2/R-6: root-only, residue not defect) — and on whose type
+  // the `GetAs<SemIR::ClassType>` read
   // inside `UnguardedArmsCoverWholeDomain` would CHECK-fail.
   // `IsMatchableChoiceType` unqualifies internally, so passing the
   // qualified id is not an asymmetry with the `BoolType` test.
@@ -1445,13 +1520,16 @@ auto HandleParseNode(Context& context, Parse::MatchHandlerId node_id) -> bool {
 // bool's `false`/`true` pair — can be covered, every alternative's
 // discriminant (or bool value, recorded as 0/1) by an unguarded arm (see
 // the coverage recording in `MatchCase`), and the diagnostic names the
-// uncovered alternatives or values. An integer or tuple scrutinee's
-// domain is open — expression patterns are never exhaustive, and
+// uncovered alternatives or values. An integer, tuple, or struct
+// scrutinee's domain is open — expression patterns are never exhaustive,
 // enumeration-based exhaustiveness is design-rejected
-// (docs/design/pattern_matching.md) — so without an irrefutable arm the
-// `match` is nonexhaustive outright, diagnosed
-// `MatchNonexhaustiveNoIrrefutableArm` naming no missing values (an
-// integer cannot enumerate its missing values). An arm whose pattern
+// (docs/design/pattern_matching.md), and the aggregate root records no
+// per-value coverage (root-only, W-076) — so without an irrefutable arm
+// the `match` is nonexhaustive outright, diagnosed
+// `MatchNonexhaustiveNoIrrefutableArm` naming no missing values (an open
+// domain cannot enumerate its missing values, though for a struct the
+// diagnostic still names the scrutinee type, rendered with its field
+// list). An arm whose pattern
 // contained an error suppresses the diagnostic — coverage is unknowable,
 // and the arm carries its own diagnostic already.
 static auto DiagnoseNonexhaustiveMatch(
@@ -1464,7 +1542,8 @@ static auto DiagnoseNonexhaustiveMatch(
   auto unqualified_type_id =
       context.types().GetUnqualifiedType(scrutinee_type_id);
 
-  // An integer or tuple scrutinee (W-078b): no closed domain, no
+  // An integer, tuple, or struct scrutinee (W-078b; struct joins the same
+  // open-domain lane, W-077): no closed domain, no
   // irrefutable arm (the early return above), so nonexhaustive outright,
   // naming no missing values. This branch also keeps the
   // `GetAs<SemIR::ClassType>` below reachable only for choice types,
@@ -1584,8 +1663,9 @@ auto HandleParseNode(Context& context, Parse::MatchStatementId node_id)
     // is an error per docs/design/pattern_matching.md. Exhaustiveness is an
     // unguarded irrefutable arm (any scrutinee lane, W-078b) or full
     // coverage of a closed value domain — a choice's alternatives, or
-    // bool's `false`/`true` pair (choice and bool lanes only: an integer
-    // or tuple scrutinee has no closed domain, and enumeration-based
+    // bool's `false`/`true` pair (choice and bool lanes only: an integer,
+    // tuple, or struct scrutinee has no closed domain, and
+    // enumeration-based
     // exhaustiveness is design-rejected, docs/design/pattern_matching.md).
     // Otherwise diagnose (`DiagnoseNonexhaustiveMatch`). Either way the
     // statement converges below: the last arm's else edge — dynamically

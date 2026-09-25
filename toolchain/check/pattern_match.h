@@ -135,8 +135,10 @@ auto MatchCaseBindPatternMatch(Context& context, SemIR::InstId pattern_id,
 
 // Returns whether a `match` `case` (sub)pattern tree is wholly irrefutable:
 // binding patterns (value and `ref` alike) match any value, a `var` wrapper
-// is as (ir)refutable as its subtree, and a tuple of irrefutable elements is
-// irrefutable given its arity/type, which the checker enforces statically.
+// is as (ir)refutable as its subtree, and a tuple of irrefutable elements —
+// or a struct pattern of irrefutable fields — is irrefutable given its
+// arity/type or field set, which the checker enforces statically (the
+// struct walk's shape checks error the arm before any binding could fail).
 // Expression subpatterns compare values, so any of them makes the tree
 // refutable. This is the classification exhaustiveness recording consumes
 // (`EmitCaseArmTestAndBind` in handle_match.cpp), and the one W-066's
@@ -175,9 +177,18 @@ auto TryGetCaseBoolConstant(Context& context, SemIR::InstId pattern_id)
 // positive (a deliberately soft path, not a CHECK, so a future pattern kind
 // added to the engine but not this walk stays silent rather than crashing).
 // Read-only: emits no insts and no diagnostics.
+//
+// `scrutinee_type_id` is the match scrutinee's type: struct positions key
+// as `Struct` nodes NORMALIZED to the scrutinee struct type's full field
+// set — one child per scrutinee field in the scrutinee's canonical order,
+// with synthetic `Wildcard` children for fields the pattern omits (the
+// design's discard rule), so field-subset and reordered patterns compare
+// slot-wise by matched value set — and the walk threads each position's
+// scrutinee type down through tuple and struct nodes to make that possible.
 auto BuildMatchCaseUsefulnessKey(
     Context& context, SemIR::InstId pattern_id,
-    const std::optional<Context::MatchCaseContext::Alternative>& alternative)
+    const std::optional<Context::MatchCaseContext::Alternative>& alternative,
+    SemIR::TypeId scrutinee_type_id)
     -> std::optional<Context::MatchStatementContext::UsefulnessKey>;
 
 // Returns whether a `match` `case` (sub)pattern tree contains any binding
@@ -191,6 +202,18 @@ auto MatchCasePatternHasBindings(Context& context, SemIR::InstId pattern_id)
 // on demand rather than read from the popped full-pattern frame.
 auto MatchCasePatternHasVarPattern(Context& context, SemIR::InstId pattern_id)
     -> bool;
+
+// Returns whether a `match` `case` (sub)pattern tree contains a struct
+// pattern. Such a tree must never take a conversion-based path: a
+// field-subset struct pattern's own type drops scrutinee fields, so
+// converting the scrutinee (or `var` storage) to it can never implement the
+// design's discard rule. Consumers: the tuple and choice-payload bind
+// fast-path reroutes in handle_match.cpp (which fall back to
+// `MatchCaseBindPatternMatch`), and the `var` gates in the pattern-match
+// engine (which keep `var`-wrapping-struct subtrees behind the W4
+// slice-gate TODO).
+auto MatchCasePatternHasStructPattern(Context& context,
+                                      SemIR::InstId pattern_id) -> bool;
 
 // Emits the extraction of one alternative's payload tuple from a choice
 // scrutinee: field 1 of the choice's object representation (the payload

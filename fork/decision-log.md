@@ -2792,6 +2792,31 @@ inexpressible in-slice — exactly why the approximation is safe today.
 Re-examined the day non-trivial types pass the scrutinee gate
 (handle_match.cpp:238). Veto-able.
 
+### W8c discharged: W-008 residue is honest, pinned, and filed (2026-09-25)
+
+The disposition slice closes the W-008 round: the combined W4 TODO
+string narrowed at FOUR sites (compile-time bindings, form bindings,
+binding-free `var`, and the choice-scrutinee expression backstop —
+the last found self-contradictory, since `case 5` IS an integer
+literal), each re-pinned or newly pinned by hand and reconciled
+byte-exact by the runner (regen pass 1 at fixpoint with zero
+push-back, run 36149421739). Exactly five combined-string backstops
+survive, each re-derived reachable and pinned — including the
+plan-§0 "unreachable-by-design" alternative-on-non-choice gate,
+which was falsified (parse routes `.Foo` roots type-blind), pinned,
+and corrected in the ledger with independent reviewer confirmation.
+W-008's ledger notes rewritten to residue form (R4-R10 with live
+gate sites, strings, pins); follow-ups filed: W-076 `bool`
+scrutinees (OQ-4 mandatory), W-077 struct patterns. Decision-log
+records added for the §1.3 all-expression equality call and the §4
+R-3 evaluation-order approximation, both with verified break
+conditions. Guard-flow comment sweep, line-count-neutral. Review
+APPROVE (one minor: completion claimed pre-arbitration — closed by
+recording the green run IDs; gate 36149524368, conformance
+36149524396 at 99/0/28 over 127 unchanged). The match statement
+workstream's implementation slices are done; remaining match work
+lives in W-066 (usefulness, now unblocked), W-076, and W-077.
+
 ### W8b verified and discharged the same day (2026-09-25)
 
 `var`/`ref` case bindings landed through the full loop: implementer,

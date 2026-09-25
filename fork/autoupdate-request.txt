@@ -1,1 +1,1 @@
-2026-09-25T12:50Z w008 W8a verification regen pass 2 (R26 fixpoint check after golden fill b5e03e9)
+2026-09-25T15:20Z w008 W8b verification regen pass 1 (post fix round 1 406a968)

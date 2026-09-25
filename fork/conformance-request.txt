@@ -1,1 +1,1 @@
-2026-09-25T13:05Z w008 W8a verification conformance (final scoreboard at fixpoint tip c5b5493)
+2026-09-25T17:50Z w008 W8b verification conformance (expect 99/127 at fixpoint tip)

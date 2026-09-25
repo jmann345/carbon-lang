@@ -172,6 +172,7 @@ CARBON_DIAGNOSTIC_KIND(MatchDefaultNeverMatchesFullCoverage)
 CARBON_DIAGNOSTIC_KIND(MatchDefaultNeverMatchesPriorArm)
 CARBON_DIAGNOSTIC_KIND(MatchNonexhaustive)
 CARBON_DIAGNOSTIC_KIND(MatchNonexhaustiveBool)
+CARBON_DIAGNOSTIC_KIND(MatchNonexhaustiveNoIrrefutableArm)
 CARBON_DIAGNOSTIC_KIND(UnexpectedTokenInMatchCasesBlock)
 CARBON_DIAGNOSTIC_KIND(UnreachableMatchCase)
 

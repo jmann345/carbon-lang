@@ -2792,6 +2792,53 @@ inexpressible in-slice — exactly why the approximation is safe today.
 Re-examined the day non-trivial types pass the scrutinee gate
 (handle_match.cpp:238). Veto-able.
 
+### W-078b: R8 lift + integer/tuple dead `default` — W-078 closed (2026-09-26)
+
+The W-008 residue R8 conservative gate is lifted: an integer or tuple
+`match` without `default` no longer TODO-aborts. Unguarded irrefutable
+arms discharge exhaustiveness — the machinery was already landed
+(has_irrefutable_arm recording; DiagnoseNonexhaustiveMatch's early
+return), only the TODO stood in front — and a match with neither a
+`default` nor an irrefutable arm now gets the new Error
+MatchNonexhaustiveNoIrrefutableArm ("`match` on {0} has no `default`
+arm and no `case` arm that matches every value"): the design's own
+nonexhaustive Error example is an integer match
+(pattern_matching.md:657-668), and the missing-value-naming kinds
+cannot enumerate an integer domain. Enumeration-based exhaustiveness
+is recorded design-REJECTED (fully enumerated u8 "Not considered
+exhaustive", :596-607; rejected alternative :705) — the in-code
+"future work" claim was deleted, not carried. Break condition:
+upstream landing enumeration exhaustiveness re-opens only the
+diagnostic wording, not the discharge rule. UNGUARDED-ONLY (§1.1):
+guarded irrefutable arms never discharge (:620-623), with the
+agreement invariant recorded in-code (has_irrefutable_arm ⇔ a
+Wildcard-root useful_arms entry on this lane, bind-error carve-out
+consistent on both sides). MECHANISM (§1.2): DiagnoseDeadDefault's
+entry lane gate deleted — stage 1 (first-covering-arm subsumption)
+now serves every lane — while stage 2 stays bool/choice-gated, which
+is the structural guarantee that FullCoverage never names an open
+domain and the ClassType read stays unreachable for integers.
+RUNNER-EXPOSED BOUNDARY, pinned honestly (the W-076 parse-boundary
+precedent): a constant-conversion error (`case 5000000000`,
+IntTooLargeForType) does NOT set has_error_arm — the flag captures
+structural pattern errors (pattern or cond is the error inst) — so
+the nonexhaustive error stacks truthfully after it; suppressing would
+hide a diagnostic that stays true however the constant is fixed
+(fail_error_arm_constant_stacks). CONFORMANCE-EDIT PRECEDENT (§5):
+first time a landed program is edited for a new diagnostic —
+match_var_ref_binding's two dynamically-dead defaults dropped
+(EXPECTs untouched; the arms were design-mandated rejections,
+pattern_matching.md:238-246); break condition: upstream downgrading
+dead-default severity re-opens the edit, not the program. Loop: both
+plan reviews APPROVE-WITH-AMENDMENTS converging on the same top
+finding (the error-scrutinee guards rested on a false premise —
+error-typed scrutinees abort at MatchCondition, so the guards were
+dropped as dead code); both implementation reviews APPROVE (one
+comment-only fix); R26 fixpoint at pass 3; gate green; conformance
+101/0/28 over 129 — a new floor (+match_irrefutable_no_default).
+W-078 is CLOSED (choice half at W-078a, integer half + R8 lift here);
+W-008's [R8] residue line rewritten to DISCHARGED.
+
 ### W-078a dead `default` arms on choice and bool scrutinees (2026-09-26)
 
 A `default` whose unguarded prior arms already cover the whole closed

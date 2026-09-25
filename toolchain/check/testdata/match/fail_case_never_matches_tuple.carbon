@@ -14,8 +14,9 @@
 // constant vectors, and constants subsumed elementwise by a prior arm's
 // bindings — at each element the prior is a wildcard (irrefutable subtree)
 // or an equal constant. Non-literal tuple scrutinees throughout (the W8a
-// lesson: the literal shortcut hides bugs). Trailing `default` arms per the
-// W-008 residue R8 gate; `default` is usefulness-exempt (W-066 plan §1.5).
+// lesson: the literal shortcut hides bugs). The trailing `default` arms
+// are live: no arm here is irrefutable, so nothing covers the domain
+// without them (W-078b).
 
 // --- fail_duplicate_vector.carbon
 library "[[@TEST_NAME]]";

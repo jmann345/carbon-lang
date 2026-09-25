@@ -22,7 +22,6 @@ fn F() -> i32 {
   var x: i32 = 5;
   match (x) {
     case ref a: i32 => { a = 7; }
-    default => { x = 0; }
   }
   return x;
 }
@@ -66,10 +65,6 @@ fn F() -> i32 {
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.66b: <bound method> = bound_method %int_7.29f, %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39 [concrete]
 // CHECK:STDOUT:   %bound_method.7ff: <bound method> = bound_method %int_7.29f, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn [concrete]
 // CHECK:STDOUT:   %int_7.690: %i32 = int_value 7 [concrete]
-// CHECK:STDOUT:   %int_0.5c6: Core.IntLiteral = int_value 0 [concrete]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.7b4: <bound method> = bound_method %int_0.5c6, %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39 [concrete]
-// CHECK:STDOUT:   %bound_method.6e0: <bound method> = bound_method %int_0.5c6, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn [concrete]
-// CHECK:STDOUT:   %int_0.3c0: %i32 = int_value 0 [concrete]
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.ac8: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%N) [symbolic]
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.5e0: %Int.as.Copy.impl.Op.type.ac8 = struct_value () [symbolic]
 // CHECK:STDOUT:   %Copy.impl_witness.b51: <witness> = impl_witness imports.%Copy.impl_witness_table.8d2, @Int.as.Copy.impl(%int_32) [concrete]
@@ -141,25 +136,16 @@ fn F() -> i32 {
 // CHECK:STDOUT:   br !match.done
 // CHECK:STDOUT:
 // CHECK:STDOUT: !match.case.else:
-// CHECK:STDOUT:   %x.ref.loc25: ref %i32 = name_ref x, %x
-// CHECK:STDOUT:   %int_0: Core.IntLiteral = int_value 0 [concrete = constants.%int_0.5c6]
-// CHECK:STDOUT:   %impl.elem0.loc25: %.b7a = impl_witness_access constants.%ImplicitAs.impl_witness.a2a, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
-// CHECK:STDOUT:   %bound_method.loc25_20.1: <bound method> = bound_method %int_0, %impl.elem0.loc25 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.7b4]
-// CHECK:STDOUT:   %specific_fn.loc25: <specific function> = specific_function %impl.elem0.loc25, @Core.IntLiteral.as.ImplicitAs.impl.Convert(constants.%int_32) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn]
-// CHECK:STDOUT:   %bound_method.loc25_20.2: <bound method> = bound_method %int_0, %specific_fn.loc25 [concrete = constants.%bound_method.6e0]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc25: init %i32 = call %bound_method.loc25_20.2(%int_0) [concrete = constants.%int_0.3c0]
-// CHECK:STDOUT:   %.loc25: init %i32 = converted %int_0, %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc25 [concrete = constants.%int_0.3c0]
-// CHECK:STDOUT:   assign %x.ref.loc25, %.loc25
 // CHECK:STDOUT:   br !match.done
 // CHECK:STDOUT:
 // CHECK:STDOUT: !match.done:
-// CHECK:STDOUT:   %x.ref.loc27: ref %i32 = name_ref x, %x
-// CHECK:STDOUT:   %.loc27: %i32 = acquire_value %x.ref.loc27
-// CHECK:STDOUT:   %impl.elem0.loc27: %.737 = impl_witness_access constants.%Copy.impl_witness.b51, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
-// CHECK:STDOUT:   %bound_method.loc27_10.1: <bound method> = bound_method %.loc27, %impl.elem0.loc27
-// CHECK:STDOUT:   %specific_fn.loc27: <specific function> = specific_function %impl.elem0.loc27, @Int.as.Copy.impl.Op(constants.%int_32) [concrete = constants.%Int.as.Copy.impl.Op.specific_fn]
-// CHECK:STDOUT:   %bound_method.loc27_10.2: <bound method> = bound_method %.loc27, %specific_fn.loc27
-// CHECK:STDOUT:   %Int.as.Copy.impl.Op.call: init %i32 = call %bound_method.loc27_10.2(%.loc27)
+// CHECK:STDOUT:   %x.ref.loc26: ref %i32 = name_ref x, %x
+// CHECK:STDOUT:   %.loc26: %i32 = acquire_value %x.ref.loc26
+// CHECK:STDOUT:   %impl.elem0.loc26: %.737 = impl_witness_access constants.%Copy.impl_witness.b51, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
+// CHECK:STDOUT:   %bound_method.loc26_10.1: <bound method> = bound_method %.loc26, %impl.elem0.loc26
+// CHECK:STDOUT:   %specific_fn.loc26: <specific function> = specific_function %impl.elem0.loc26, @Int.as.Copy.impl.Op(constants.%int_32) [concrete = constants.%Int.as.Copy.impl.Op.specific_fn]
+// CHECK:STDOUT:   %bound_method.loc26_10.2: <bound method> = bound_method %.loc26, %specific_fn.loc26
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.call: init %i32 = call %bound_method.loc26_10.2(%.loc26)
 // CHECK:STDOUT:   %Destroy.Op.bound: <bound method> = bound_method %x.var, constants.%Destroy.Op.1a2547.2
 // CHECK:STDOUT:   %Destroy.Op.call: init %empty_tuple.type = call %Destroy.Op.bound(%x.var)
 // CHECK:STDOUT:   return %Int.as.Copy.impl.Op.call

@@ -1,1 +1,1 @@
-2026-09-25T18:21Z w078a gate (dead-default, post-fixpoint)
+2026-09-25T19:36Z w078b gate (R8 lift, post-fixpoint)

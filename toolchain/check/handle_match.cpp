@@ -115,9 +115,13 @@ namespace Carbon::Check {
 // scrutinee's domain is the closed pair `false`/`true` — the design treats
 // `bool` like a choice type (docs/design/pattern_matching.md) — so covering
 // both values with unguarded constant arms needs no `default`, and a
-// missing value diagnoses `MatchNonexhaustiveBool`. Integer
-// scrutinees keep requiring `default`: integer expression patterns are never
-// exhaustive per docs/design/pattern_matching.md.
+// missing value diagnoses `MatchNonexhaustiveBool`. An integer or tuple
+// scrutinee's value domain is open — integer expression patterns are never
+// exhaustive per docs/design/pattern_matching.md — so an unguarded
+// irrefutable arm is the one way such a `match` is exhaustive without a
+// `default` arm (W-078b); otherwise the missing coverage diagnoses
+// `MatchNonexhaustiveNoIrrefutableArm`, naming no missing values because
+// integers cannot enumerate theirs.
 //
 // Usefulness (W-066): a `case` arm whose pattern can never match — every
 // value it could match is matched by prior arms — is an error at the arm,
@@ -129,11 +133,11 @@ namespace Carbon::Check {
 // assumed to evaluate to false, so guarded prior arms block nothing, while
 // a guarded arm whose own pattern is fully covered is still dead
 // (docs/design/pattern_matching.md, "Refutability, overlap, usefulness, and
-// exhaustiveness"). A `default` arm — guarded or not — on a choice or bool
-// scrutinee is likewise an error when the unguarded prior arms cover the
-// whole domain (W-078a; `DiagnoseDeadDefault`); on integer and tuple
-// scrutinees `default` arms stay exempt while the conservative gate below
-// still requires them (W-008 residue R8).
+// exhaustiveness"). A `default` arm — guarded or not — is likewise an
+// error when a prior unguarded irrefutable arm covers every value (any
+// scrutinee lane, W-078b) or when the unguarded prior arms cover a choice
+// or bool scrutinee's whole closed domain (W-078a;
+// `DiagnoseDeadDefault`).
 //
 // Choices with fewer than two alternatives have no integer discriminant —
 // their discriminant field is the empty tuple (handle_choice.cpp) — so
@@ -145,11 +149,15 @@ namespace Carbon::Check {
 // requires at least one arm; see `MatchStatementStart` in
 // parse/handle_match.cpp).
 //
-// TODO: Support other pattern kinds, other scrutinee types, and integer
-// exhaustiveness via an irrefutable arm or full enumeration. Diagnose
-// dead `default` arms on integer and tuple scrutinees once the
-// conservative `default` requirement lifts (W-078's integer half; the
-// choice and bool lanes are diagnosed, W-078a).
+// TODO: Support other pattern kinds and other scrutinee types.
+//
+// Deliberately NOT a TODO: enumeration-based exhaustiveness for integer
+// (or integer-tuple) scrutinees is design-rejected, not future work —
+// each expression pattern is treated as matching a single value from an
+// infinite set, so a set of expression patterns is never exhaustive,
+// demonstrated on a fully enumerated `u8` annotated "Not considered
+// exhaustive." (docs/design/pattern_matching.md; rejected alternative,
+// proposal p2188).
 
 // Returns the scrutinee value, which is on the `MatchHandler` entry after an
 // earlier case arm, or otherwise on the `MatchStatementStart` entry.
@@ -909,7 +917,9 @@ static auto EmitCaseArmTestAndBind(Context& context, Parse::NodeId node_id,
   // and exhaustiveness"). An unguarded irrefutable arm — a binding root, an
   // irrefutable `var` root, or an all-binding tuple root, which is
   // irrefutable given the arity/type the checker enforced statically —
-  // covers every scrutinee value; an
+  // covers every scrutinee value and discharges exhaustiveness on EVERY
+  // scrutinee lane: it is the one way an integer- or tuple-scrutinee
+  // `match` is exhaustive without a `default` arm (W-078b); an
   // unguarded alternative-pattern arm covers its alternative only when its
   // payload tree is wholly irrefutable — a refutable payload such as
   // `.Some(42)` records nothing (pattern_matching.md:589-594); an unguarded
@@ -1207,8 +1217,8 @@ auto HandleParseNode(Context& context, Parse::MatchDefaultIntroducerId node_id)
 }
 
 // Diagnoses a `default` arm that can never match because the unguarded
-// prior arms already cover the scrutinee's whole closed value domain
-// (W-078a): "in a `match` statement, this happens if a pattern or
+// prior arms already cover every scrutinee value (W-078a, W-078b): "in a
+// `match` statement, this happens if a pattern or
 // `default` cannot match because all cases it could cover are handled by
 // prior cases or a prior `default`" (docs/design/pattern_matching.md,
 // "Refutability, overlap, usefulness, and exhaustiveness"; the design
@@ -1220,13 +1230,24 @@ auto HandleParseNode(Context& context, Parse::MatchDefaultIntroducerId node_id)
 // under test's own guard is assumed true, while guards on prior arms are
 // assumed false, so guarded priors never cover (they are neither in
 // `useful_arms` nor in `covered_alternatives`) — the same two-sided
-// worst-case guard rule the case-arm usefulness check applies. The check
-// fires only on choice and bool scrutinees: the conservative
-// integer-exhaustiveness gate in `MatchStatement` still REQUIRES a
-// `default` arm on every integer- or tuple-scrutinee `match`, so
-// diagnosing a dead `default` there would make such a `match` with an
-// irrefutable arm unwritable (W-008 residue R8; W-078's integer half lands
-// with-or-after the R8 lift). Emits no insts, and the arm still emits its
+// worst-case guard rule the case-arm usefulness check applies. Stage 1 —
+// a single `Wildcard`-root prior subsumes `default` — runs on every
+// scrutinee lane (W-078b); stage 2 — a UNION of unguarded priors
+// covering the whole domain — is gated on the choice and bool lanes,
+// the only closed root domains (see the union-stage comment below).
+// Invariant tying this check to `DiagnoseNonexhaustiveMatch` on the
+// integer/tuple lane: `has_irrefutable_arm` is true iff `useful_arms`
+// holds a `Wildcard`-root entry. Forward: every arm that sets the flag
+// keys as the single node `{Wildcard}` (pattern_match.cpp,
+// `BuildMatchCaseUsefulnessKey`), and the FIRST such arm cannot itself be
+// diagnosed dead on this lane — no union coverage exists for an open
+// domain, so only a prior `Wildcard` arm could kill it — so it is
+// recorded. Backward: only irrefutable roots key `Wildcard`. The one
+// shared carve-out: a bind-pass-error arm (`case b: bool` on an `i32`
+// scrutinee) sets the flag AND is recorded as covering (W-066 §1.8), so
+// the two rules agree there too. A future pattern kind that is
+// irrefutable but keys non-`Wildcard` would split the two rules — keep
+// them aligned. Emits no insts, and the arm still emits its
 // normal SemIR (diagnose-and-proceed, like `MatchCaseNeverMatches`).
 static auto DiagnoseDeadDefault(Context& context,
                                 Parse::NodeId introducer_node_id) -> void {
@@ -1234,13 +1255,6 @@ static auto DiagnoseDeadDefault(Context& context,
   auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
   auto unqualified_type_id =
       context.types().GetUnqualifiedType(scrutinee_type_id);
-  // `IsMatchableChoiceType` unqualifies internally, so passing the
-  // qualified id is not an asymmetry with the `BoolType` test.
-  if (!context.types().Is<SemIR::BoolType>(unqualified_type_id) &&
-      !IsMatchableChoiceType(context, scrutinee_type_id)) {
-    // The integer/tuple lane keeps its `default` exemption (R8, above).
-    return;
-  }
 
   const auto& match_context = context.match_statement_stack().back();
   // Suppress on any prior error arm, as `DiagnoseNonexhaustiveMatch` does.
@@ -1284,18 +1298,29 @@ static auto DiagnoseDeadDefault(Context& context,
   // the whole domain together, so the note is one statement-level note
   // naming the scrutinee's unqualified type — for a bool scrutinee it
   // reads "all alternatives of `bool`", licensed by the design's
-  // bool-as-choice rule (the landed W-076 wording).
-  if (UnguardedArmsCoverWholeDomain(context, unqualified_type_id,
-                                    match_context)) {
-    CARBON_DIAGNOSTIC(MatchDefaultNeverMatchesFullCoverage, Note,
-                      "all alternatives of {0} are matched by prior "
-                      "arms",
-                      SemIR::TypeId);
-    context.emitter()
-        .Build(introducer_node_id, MatchDefaultNeverMatches)
-        .Note(scrutinee_id, MatchDefaultNeverMatchesFullCoverage,
-              unqualified_type_id)
-        .Emit();
+  // bool-as-choice rule (the landed W-076 wording). The stage exists only
+  // for the closed root domains — choice and bool — so the lane test
+  // gates it HERE, not at function entry: that placement is what keeps
+  // `MatchDefaultNeverMatchesFullCoverage` structurally unreachable on an
+  // integer or tuple scrutinee, whose open domain no union of constant
+  // arms can cover and on whose type the `GetAs<SemIR::ClassType>` read
+  // inside `UnguardedArmsCoverWholeDomain` would CHECK-fail.
+  // `IsMatchableChoiceType` unqualifies internally, so passing the
+  // qualified id is not an asymmetry with the `BoolType` test.
+  if (context.types().Is<SemIR::BoolType>(unqualified_type_id) ||
+      IsMatchableChoiceType(context, scrutinee_type_id)) {
+    if (UnguardedArmsCoverWholeDomain(context, unqualified_type_id,
+                                      match_context)) {
+      CARBON_DIAGNOSTIC(MatchDefaultNeverMatchesFullCoverage, Note,
+                        "all alternatives of {0} are matched by prior "
+                        "arms",
+                        SemIR::TypeId);
+      context.emitter()
+          .Build(introducer_node_id, MatchDefaultNeverMatches)
+          .Note(scrutinee_id, MatchDefaultNeverMatchesFullCoverage,
+                unqualified_type_id)
+          .Emit();
+    }
   }
 }
 
@@ -1310,9 +1335,7 @@ auto HandleParseNode(Context& context, Parse::MatchDefaultId node_id) -> bool {
   // diagnosing the arm if the prior arms make it dead, with the error
   // located at the `default` keyword's introducer node. Parse guarantees
   // the unguarded `default` arm is last, so the priors-only check sees
-  // every other arm. On an integer or tuple scrutinee the check is a
-  // no-op: the R8 gate still forces this `default`, so its exemption
-  // survives there (`DiagnoseDeadDefault`; W-078's integer half).
+  // every other arm.
   DiagnoseDeadDefault(context, introducer_node_id);
   context.node_stack().Push(node_id);
   return true;
@@ -1415,17 +1438,22 @@ auto HandleParseNode(Context& context, Parse::MatchHandlerId node_id) -> bool {
   return true;
 }
 
-// Diagnoses a choice- or bool-scrutinee `match` statement with no `default`
-// arm whose arms do not cover the scrutinee's closed value domain — a
-// choice's alternatives, or bool's `false`/`true` pair — naming the
-// uncovered alternatives or values. No
-// diagnostic when the arms are exhaustive: an unguarded irrefutable arm
-// covers everything, and otherwise every alternative's discriminant (or
-// bool value, recorded as 0/1) must be
-// covered by an unguarded arm (see the coverage
-// recording in `MatchCase`). An arm whose pattern contained an error also
-// suppresses the diagnostic — coverage is unknowable, and the arm carries
-// its own diagnostic already.
+// Diagnoses a `match` statement with no `default` arm whose arms are not
+// exhaustive. No diagnostic when they are: an unguarded irrefutable arm
+// covers everything, on every scrutinee lane; otherwise only a choice or
+// bool scrutinee's closed value domain — a choice's alternatives, or
+// bool's `false`/`true` pair — can be covered, every alternative's
+// discriminant (or bool value, recorded as 0/1) by an unguarded arm (see
+// the coverage recording in `MatchCase`), and the diagnostic names the
+// uncovered alternatives or values. An integer or tuple scrutinee's
+// domain is open — expression patterns are never exhaustive, and
+// enumeration-based exhaustiveness is design-rejected
+// (docs/design/pattern_matching.md) — so without an irrefutable arm the
+// `match` is nonexhaustive outright, diagnosed
+// `MatchNonexhaustiveNoIrrefutableArm` naming no missing values (an
+// integer cannot enumerate its missing values). An arm whose pattern
+// contained an error suppresses the diagnostic — coverage is unknowable,
+// and the arm carries its own diagnostic already.
 static auto DiagnoseNonexhaustiveMatch(
     Context& context, Parse::NodeId node_id, SemIR::TypeId scrutinee_type_id,
     const Context::MatchStatementContext& match_context) -> void {
@@ -1435,6 +1463,24 @@ static auto DiagnoseNonexhaustiveMatch(
 
   auto unqualified_type_id =
       context.types().GetUnqualifiedType(scrutinee_type_id);
+
+  // An integer or tuple scrutinee (W-078b): no closed domain, no
+  // irrefutable arm (the early return above), so nonexhaustive outright,
+  // naming no missing values. This branch also keeps the
+  // `GetAs<SemIR::ClassType>` below reachable only for choice types,
+  // which would CHECK-fail on an integer type. `IsMatchableChoiceType`
+  // unqualifies internally, so passing the qualified id is not an
+  // asymmetry with the `BoolType` test.
+  if (!context.types().Is<SemIR::BoolType>(unqualified_type_id) &&
+      !IsMatchableChoiceType(context, scrutinee_type_id)) {
+    CARBON_DIAGNOSTIC(MatchNonexhaustiveNoIrrefutableArm, Error,
+                      "`match` on {0} has no `default` arm and no `case` "
+                      "arm that matches every value",
+                      SemIR::TypeId);
+    context.emitter().Emit(node_id, MatchNonexhaustiveNoIrrefutableArm,
+                           unqualified_type_id);
+    return;
+  }
 
   if (context.types().Is<SemIR::BoolType>(unqualified_type_id)) {
     // A bool scrutinee. This branch must precede the
@@ -1535,29 +1581,18 @@ auto HandleParseNode(Context& context, Parse::MatchStatementId node_id)
 
   if (!has_default) {
     // A `match` whose patterns are not exhaustive and that has no `default`
-    // is an error per docs/design/pattern_matching.md.
-    auto scrutinee_type_id = context.insts().Get(scrutinee_id).type_id();
-    bool is_bool_scrutinee = context.types().Is<SemIR::BoolType>(
-        context.types().GetUnqualifiedType(scrutinee_type_id));
-    if (!is_bool_scrutinee &&
-        !IsMatchableChoiceType(context, scrutinee_type_id)) {
-      // An integer or tuple scrutinee. Integer expression patterns are never
-      // exhaustive — each is treated as matching a single value from an
-      // infinite set (docs/design/pattern_matching.md) — so W4's rule stays:
-      // an integer `match` requires a `default` arm (SF-7), and a tuple
-      // `match` keeps requiring one too (only closed ROOT domains extend).
-      // Exhaustiveness via an irrefutable arm or full enumeration of a
-      // small integer type is future work.
-      return context.TODO(node_id, "match statement without `default` arm");
-    }
-    // A choice or bool scrutinee: the alternatives — or bool's
-    // `false`/`true` pair — are a closed set, so full coverage discharges
-    // the `default` requirement (SF-7); otherwise diagnose, naming the
-    // uncovered alternatives or values. Either way the statement
-    // converges below: the last arm's else edge — dynamically dead when the
-    // arms are exhaustive — branches to the resumption block, the same shape
-    // an empty `default` arm produces.
-    DiagnoseNonexhaustiveMatch(context, node_id, scrutinee_type_id,
+    // is an error per docs/design/pattern_matching.md. Exhaustiveness is an
+    // unguarded irrefutable arm (any scrutinee lane, W-078b) or full
+    // coverage of a closed value domain — a choice's alternatives, or
+    // bool's `false`/`true` pair (choice and bool lanes only: an integer
+    // or tuple scrutinee has no closed domain, and enumeration-based
+    // exhaustiveness is design-rejected, docs/design/pattern_matching.md).
+    // Otherwise diagnose (`DiagnoseNonexhaustiveMatch`). Either way the
+    // statement converges below: the last arm's else edge — dynamically
+    // dead when the arms are exhaustive — branches to the resumption
+    // block, the same shape an empty `default` arm produces.
+    DiagnoseNonexhaustiveMatch(context, node_id,
+                               context.insts().Get(scrutinee_id).type_id(),
                                match_context);
   }
 

@@ -19,8 +19,8 @@
 // one is useful (the subsumption asymmetry), the accumulator is
 // per-statement, partial alternative coverage never completes the
 // full-coverage union, and the `default` lane adds its own negatives:
-// guarded priors never cover, a prior error arm suppresses the check,
-// and the integer lane stays exempt (R8).
+// guarded priors never cover, and a prior error arm suppresses the
+// check.
 
 // --- guarded_prior.carbon
 library "[[@TEST_NAME]]";
@@ -205,27 +205,6 @@ fn Payloads(v: Boxed) -> i32 {
   match (v) {
     case .Only(7) => { return 1; }
     case .Only(x: i32) => { return x; }
-  }
-  return -1;
-}
-
-// --- dead_default_exempt.carbon
-library "[[@TEST_NAME]]";
-
-// A `default` arm made dead by an unguarded irrefutable prior arm is
-// diagnosed on choice and bool scrutinees (W-078a;
-// fail_dead_default.carbon) but stays deliberately exempt on the INTEGER
-// lane: the conservative integer-exhaustiveness gate (W-008 residue R8,
-// `MatchStatement`'s "match statement without `default` arm" TODO) still
-// REQUIRES the `default` on every integer-scrutinee `match`, so
-// diagnosing it would make `IntSide` below unwritable. The integer half
-// of W-078 lands with-or-after the R8 lift; this commented negative
-// golden is its record, since a `fail_todo_` file cannot pin the ABSENCE
-// of a diagnostic.
-fn IntSide(x: i32) -> i32 {
-  match (x) {
-    case n: i32 => { return n; }
-    default => { return 0; }
   }
   return -1;
 }

@@ -17,8 +17,8 @@
 // behavior (the test pass classified the arm irrefutable before the bind
 // pass rejected it). The later `case 5` therefore STACKS a usefulness
 // error on top of the arm's conversion error — intended and documented
-// behavior, pinned here. The `default` is integer-lane exempt (R8;
-// W-078's integer half).
+// behavior, pinned here — and the `default` stacks a dead-`default`
+// error the same way (W-078b; the covering prior is the bind-error arm).
 fn F(x: i32) -> i32 {
   // CHECK:STDERR: fail_case_after_bind_error_arm.carbon:[[@LINE+7]]:10: error: cannot implicitly convert expression of type `i32` to `bool` [ConversionFailure]
   // CHECK:STDERR:   match (x) {
@@ -37,6 +37,13 @@ fn F(x: i32) -> i32 {
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR:
     case 5 => { return 3; }
+    // CHECK:STDERR: fail_case_after_bind_error_arm.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_case_after_bind_error_arm.carbon:[[@LINE-12]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case b: bool => { if (b) { return 1; } return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     default => { return 0; }
   }
   return -1;

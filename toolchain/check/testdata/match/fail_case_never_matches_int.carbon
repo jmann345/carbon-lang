@@ -15,9 +15,8 @@
 // match — first-match-wins dispatch consumed the value — and is an error at
 // the arm, with a note at the covering prior arm. Comparison is by
 // evaluated constant value, never source form. Every fn keeps a trailing
-// `default` arm: the conservative integer-exhaustiveness gate (W-008
-// residue R8) requires one, and `default` arms are exempt from the
-// usefulness check (W-066 plan §1.5, W-078).
+// `default` arm for the honest reason: the arms are all refutable, so
+// nothing else covers the domain, and the `default` is live (W-078b).
 
 // --- fail_duplicate_literal.carbon
 library "[[@TEST_NAME]]";

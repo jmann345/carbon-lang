@@ -15,17 +15,18 @@
 // (docs/design/pattern_matching.md, "Refutability, overlap, usefulness,
 // and exhaustiveness"), so a `match` whose only `default` is guarded gets
 // the same diagnosis as one with no `default` at all — the integer
-// scrutinee's TODO gate, or the choice scrutinee's real nonexhaustive
-// error (S2e machinery, reused unchanged).
+// scrutinee's `MatchNonexhaustiveNoIrrefutableArm` error (W-078b), or
+// the choice scrutinee's nonexhaustive error naming the uncovered
+// alternatives.
 
 // --- fail_integer_no_covering_arm.carbon
 library "[[@TEST_NAME]]";
 
-// An integer `match` requires an unguarded `default` (SF-7, W4's rule);
-// a trailing guarded `default` leaves the guard-failure edge with no
-// covering arm to fall through to.
+// A trailing guarded `default` leaves the guard-failure edge with no
+// covering arm to fall through to, and no arm here is irrefutable, so
+// the `match` is nonexhaustive (W-078b).
 fn F(x: i32) {
-  // CHECK:STDERR: fail_integer_no_covering_arm.carbon:[[@LINE+4]]:3: error: semantics TODO: `match statement without `default` arm` [SemanticsTodo]
+  // CHECK:STDERR: fail_integer_no_covering_arm.carbon:[[@LINE+4]]:3: error: `match` on `i32` has no `default` arm and no `case` arm that matches every value [MatchNonexhaustiveNoIrrefutableArm]
   // CHECK:STDERR:   match (x) {
   // CHECK:STDERR:   ^~~~~~~~~~~
   // CHECK:STDERR:

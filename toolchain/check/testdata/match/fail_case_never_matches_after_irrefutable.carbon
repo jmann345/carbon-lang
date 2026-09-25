@@ -14,9 +14,10 @@
 // (W-066): a binding root, an irrefutable `var` root, or an all-binding
 // tuple root covers every scrutinee value, so any later `case` arm can
 // never match — the check-layer sibling of parse's arms-after-`default`
-// error. Integer-scrutinee fns keep a trailing `default` (the W-008
-// residue R8 gate; `default` is usefulness-exempt, W-066 plan §1.5); the
-// choice-scrutinee fn is exhaustive through its irrefutable arm.
+// error. Every fn is exhaustive through its unguarded irrefutable arm
+// alone, on every lane: W-078b lifted the R8 conservative `default`
+// requirement for integer and tuple scrutinees, and a trailing `default`
+// here would itself be a dead-arm error (fail_dead_default.carbon).
 
 // --- fail_after_binding.carbon
 library "[[@TEST_NAME]]";
@@ -32,7 +33,6 @@ fn F(x: i32) -> i32 {
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR:
     case 5 => { return 1; }
-    default => { return 0; }
   }
   return -1;
 }
@@ -52,7 +52,6 @@ fn F(x: i32) -> i32 {
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR:
     case 1 => { return 1; }
-    default => { return 0; }
   }
   return -1;
 }
@@ -99,7 +98,6 @@ fn F(p: (i32, i32)) -> i32 {
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR:
     case (1, 2) => { return 1; }
-    default => { return 0; }
   }
   return -1;
 }
@@ -127,7 +125,6 @@ fn F(x: i32) -> i32 {
     // CHECK:STDERR:              ^~~~~~
     // CHECK:STDERR:
     case var a: i32 => { return 0; }
-    default => { return 1; }
   }
   return -1;
 }

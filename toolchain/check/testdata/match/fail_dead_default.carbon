@@ -10,22 +10,24 @@
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/match/fail_dead_default.carbon
 
-// Dead `default` arms on choice and bool scrutinees (W-078a): a `default`
-// whose unguarded prior arms already cover the scrutinee's whole closed
-// value domain can never match — "in a `match` statement, this happens if
-// a pattern or `default` cannot match because all cases it could cover
+// Dead `default` arms (W-078a choice/bool lanes; W-078b integer/tuple
+// lanes): a `default` whose unguarded prior arms already cover every
+// scrutinee value can never match — "in a `match` statement, this happens
+// if a pattern or `default` cannot match because all cases it could cover
 // are handled by prior cases [...] or a prior `default`"
 // (docs/design/pattern_matching.md,
 // "Refutability, overlap, usefulness, and exhaustiveness"; the design
 // annotates the shape "Error: unreachable."). The error is at the
 // `default` keyword, with a note at the single covering prior arm
 // (`MatchDefaultNeverMatchesPriorArm`) or — when only the UNION of prior
-// arms covers — one statement-level note naming the scrutinee's type
-// (`MatchDefaultNeverMatchesFullCoverage`). Guarded `default` arms are
+// arms covers, which only the closed choice/bool domains support — one
+// statement-level note naming the scrutinee's type
+// (`MatchDefaultNeverMatchesFullCoverage`). On an integer or tuple
+// scrutinee only an unguarded irrefutable prior arm covers, so the note
+// is always the prior-arm one there. Guarded `default` arms are
 // checked alike: the arm under test's own guard is assumed true. The
-// negative pins — guarded priors never cover, prior error arms suppress,
-// the integer lane stays exempt (R8) — are in
-// usefulness_no_false_positive.carbon.
+// negative pins — guarded priors never cover, prior error arms suppress
+// — are in usefulness_no_false_positive.carbon.
 
 // --- fail_choice_full_coverage.carbon
 library "[[@TEST_NAME]]";
@@ -222,6 +224,137 @@ fn F(b: bool) -> i32 {
     // CHECK:STDERR:     ^~~~~~~
     // CHECK:STDERR: fail_bind_error_arm_prior.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
     // CHECK:STDERR:     case n: i32 => { return n; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- fail_int_after_irrefutable.carbon
+library "[[@TEST_NAME]]";
+
+// The integer lane (W-078b): an unguarded irrefutable binding arm covers
+// every value, so the `default` after it is dead — the design's own
+// dead-`default` example shape (docs/design/pattern_matching.md).
+fn F(x: i32) -> i32 {
+  match (x) {
+    case n: i32 => { return n; }
+    // CHECK:STDERR: fail_int_after_irrefutable.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_int_after_irrefutable.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case n: i32 => { return n; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- fail_int_after_var_binding.carbon
+library "[[@TEST_NAME]]";
+
+// An irrefutable `var` root covers like a value binding root.
+fn F(x: i32) -> i32 {
+  match (x) {
+    case var a: i32 => { a = a + 1; return a; }
+    // CHECK:STDERR: fail_int_after_var_binding.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_int_after_var_binding.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case var a: i32 => { a = a + 1; return a; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- fail_int_mid_constants.carbon
+library "[[@TEST_NAME]]";
+
+// Constant priors cover nothing on an open domain: the note lands on the
+// BINDING arm, not on `case 5`.
+fn F(x: i32) -> i32 {
+  match (x) {
+    case 5 => { return 1; }
+    case n: i32 => { return n; }
+    // CHECK:STDERR: fail_int_mid_constants.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_int_mid_constants.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case n: i32 => { return n; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- fail_int_guarded_default_after_irrefutable.carbon
+library "[[@TEST_NAME]]";
+
+// A guarded `default` after an irrefutable integer prior is equally dead:
+// its own guard is assumed true, and no value reaches its test.
+fn F(x: i32, g: bool) -> i32 {
+  match (x) {
+    case n: i32 => { return n; }
+    // CHECK:STDERR: fail_int_guarded_default_after_irrefutable.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default if (g) => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_int_guarded_default_after_irrefutable.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case n: i32 => { return n; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
+    default if (g) => { return 0; }
+  }
+  return -1;
+}
+
+// --- fail_tuple_after_all_binding.carbon
+library "[[@TEST_NAME]]";
+
+// The tuple lane: an all-binding tuple root keys as the same synthetic
+// `{Wildcard}` a binding root does, so it subsumes `default`.
+fn F(p: (i32, i32)) -> i32 {
+  match (p) {
+    case (a: i32, b: i32) => { return a + b; }
+    // CHECK:STDERR: fail_tuple_after_all_binding.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_tuple_after_all_binding.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case (a: i32, b: i32) => { return a + b; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- fail_int_bind_error_arm_prior.carbon
+library "[[@TEST_NAME]]";
+
+// The bind-pass-error carve-out (W-066 plan §1.8) on the integer lane:
+// `case b: bool` on an i32 scrutinee errors only in the BIND pass — it is
+// recorded as covering and `has_error_arm` stays false — so the `default`
+// after it IS diagnosed, stacking on the arm's conversion error (the
+// integer mirror of fail_bind_error_arm_prior above).
+fn F(x: i32) -> i32 {
+  // CHECK:STDERR: fail_int_bind_error_arm_prior.carbon:[[@LINE+7]]:10: error: cannot implicitly convert expression of type `i32` to `bool` [ConversionFailure]
+  // CHECK:STDERR:   match (x) {
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_int_bind_error_arm_prior.carbon:[[@LINE+4]]:10: note: type `i32` does not implement interface `Core.ImplicitAs(bool)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   match (x) {
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR:
+  match (x) {
+    case b: bool => { if (b) { return 1; } return 2; }
+    // CHECK:STDERR: fail_int_bind_error_arm_prior.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_int_bind_error_arm_prior.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case b: bool => { if (b) { return 1; } return 2; }
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR:
     default => { return 0; }

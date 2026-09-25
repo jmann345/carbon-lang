@@ -23,6 +23,13 @@ fn F(x: i32) -> i32 {
   // CHECK:STDERR:
   match (x) {
     case ref a: i32 => { return a; }
+    // CHECK:STDERR: fail_ref_binding_value_scrutinee.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_ref_binding_value_scrutinee.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case ref a: i32 => { return a; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     default => { return 0; }
   }
   return -1;

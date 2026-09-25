@@ -72,8 +72,8 @@ fn F(p: (i32, i32)) -> i32 {
 library "[[@TEST_NAME]]";
 
 // An initializing expression element (`2 + 3` returns through a return
-// slot): the refutable engine converts the spliced result to a value at
-// splice time (W-008 plan §2.1(b) amendment F5).
+// slot): the expression region value-converts the result at region close
+// (`EndExprRegionForPattern`, W8a fix round 3), so splices stay values.
 //@dump-sem-ir-begin
 fn F(p: (i32, i32)) -> i32 {
   match (p) {

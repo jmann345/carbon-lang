@@ -40,9 +40,9 @@ fn Binding(x: i32) -> i32 {
   return -1;
 }
 
-// A side-effect-free compound guard: `and` short-circuits, so the guard's
-// captured expression region is multi-block and splices into the arm's
-// body block with branches rather than a `splice_block`.
+// A side-effect-free compound guard: `and` short-circuits, so the guard —
+// checked inline in the arm's body block, after the bind pass (W8b) —
+// branches through its own short-circuit blocks there.
 fn Compound(x: i32) -> i32 {
   match (x) {
     case c: i32 if (c > 0 and c < 10) => { return 1; }
@@ -53,9 +53,9 @@ fn Compound(x: i32) -> i32 {
 
 // A guarded arm whose binding's declared type converts from the
 // scrutinee's (`n: i64` from an `i32` scrutinee): the bind pass's
-// conversion runs before the guard, its objects are deferred to the arm
-// scope's cleanups, and the guard's failure edge discharges them before
-// falling through to `default`.
+// conversion runs before the inline guard, and its objects defer to the
+// arm scope's cleanups — trivially destructible here, so the failure edge
+// branches straight to `default` with no discharge block.
 fn Converting(x: i32) -> i64 {
   match (x) {
     case n: i64 if (n > 0) => { return n; }

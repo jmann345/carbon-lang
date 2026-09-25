@@ -82,8 +82,8 @@ choice IntResult {
   Err
 }
 
-// The guard splices after the bind pass, in the arm's body block, and a
-// failed guard falls through to the next arm.
+// The guard is checked after the bind pass, inline in the arm's body
+// block, and a failed guard falls through to the next arm.
 //@dump-sem-ir-begin
 fn F(r: IntResult, b: bool) -> i32 {
   match (r) {

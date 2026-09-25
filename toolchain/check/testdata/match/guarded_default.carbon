@@ -13,12 +13,12 @@
 // Guards on `default` clauses (`default if (E) => ...`, W-067): `default`
 // is equivalent to `case _: auto`, and "this facility is also available for
 // `default` clauses" (docs/design/pattern_matching.md, "Guards";
-// p2188:552-553). A guarded `default` arm reuses the case-guard
-// capture-splice-branch shape with no pattern test and no bindings: a
-// constant-true condition enters the arm, the spliced guard branches into
-// the arm's body or on to the else block, and a failed guard falls through
-// to a following arm or `default` — so, unlike an unguarded `default`,
-// arms after it are reachable and permitted.
+// p2188:552-553). A guarded `default` keeps the captured-region
+// splice-branch lane (case-arm guards check inline since W8b; a
+// `default` has no pattern test and no bindings, so no hazard): a
+// constant-true condition enters the arm, the spliced guard branches
+// to the body or the else block, and a failed guard falls through to a
+// following arm or `default`, so arms after it are reachable.
 
 // --- basic.carbon
 library "[[@TEST_NAME]]";
@@ -29,8 +29,8 @@ library "[[@TEST_NAME]]";
 // test block holds a constant-`true` `BranchIf` into the arm-entry block,
 // where the guard's converted-to-`bool` region is spliced
 // (`splice_block`), followed by `BranchIf` into the body and a branch to
-// the else block — the guarded-irrefutable-arm CFG from guard.carbon's
-// `Binding`, minus the `NameBindingDecl`'s bindings and the bind pass.
+// the else block — the one place the region lane survives: case-arm
+// guards are instead checked inline in the body block (guard.carbon).
 // A failed guard falls through to `case 1`, then to the trailing guarded
 // `default`, then to the final unguarded `default`.
 fn Classify(x: i32) -> i32 {
@@ -51,8 +51,8 @@ library "[[@TEST_NAME]]";
 //@dump-sem-ir-begin
 // A short-circuiting guard on a `default`: the captured region is
 // multi-block, so the splice is a branch into the region's blocks rather
-// than a `splice_block` (guard.carbon's `Compound` shape, on the
-// `default` path).
+// than a `splice_block` (case-arm `and` guards, by contrast, build their
+// short-circuit blocks inline — guard.carbon's `Compound`).
 fn InRange(x: i32) -> i32 {
   match (x) {
     default if (x > 0 and x < 10) => { return 1; }

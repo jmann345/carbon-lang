@@ -690,6 +690,31 @@ auto IsIrrefutableMatchCasePattern(Context& context, SemIR::InstId pattern_id)
   return true;
 }
 
+auto TryGetCaseBoolConstant(Context& context, SemIR::InstId pattern_id)
+    -> std::optional<SemIR::BoolValue> {
+  auto expr_pattern = context.insts().TryGetAs<SemIR::ExprPattern>(pattern_id);
+  if (!expr_pattern) {
+    return std::nullopt;
+  }
+  // The region result's memoized constant value — a read, never a
+  // re-evaluation — the same hook the usefulness key builder and the test
+  // pass (`DoMatchCaseExprPattern`) read.
+  auto result_id = context.sem_ir()
+                       .expr_regions()
+                       .Get(expr_pattern->expr_region_id)
+                       .result_id;
+  auto pattern_const_id = context.constant_values().Get(result_id);
+  if (!pattern_const_id.is_concrete()) {
+    return std::nullopt;
+  }
+  auto bool_literal = context.insts().TryGetAs<SemIR::BoolLiteral>(
+      context.constant_values().GetInstId(pattern_const_id));
+  if (!bool_literal) {
+    return std::nullopt;
+  }
+  return bool_literal->value;
+}
+
 auto BuildMatchCaseUsefulnessKey(
     Context& context, SemIR::InstId pattern_id,
     const std::optional<Context::MatchCaseContext::Alternative>& alternative)
@@ -758,12 +783,15 @@ auto BuildMatchCaseUsefulnessKey(
       // The leaf's evaluated constant, read exactly where the test pass
       // reads it (`DoMatchCaseExprPattern`): the region result's memoized
       // constant value — a read, never a re-evaluation. The test pass
-      // already gated non-concrete and non-`IntValue` results behind a
+      // already gated non-concrete results, and concrete results that are
+      // neither `IntValue` nor `BoolLiteral`, behind a
       // TODO that aborts the arm, so the nullopt paths below are
       // defensive. The stored `IntId` is canonical by mathematical value
       // (toolchain/base/int.h), so key equality is `IntId` comparison:
       // `case 5` and `case 2 + 3` key equal, and distinct mathematical
-      // values never collide.
+      // values never collide. A bool constant leaf keys by its
+      // `SemIR::BoolValue` as 0/1 (`TryGetCaseBoolConstant`, the shared
+      // read the coverage recording uses too).
       auto result_id = context.sem_ir()
                            .expr_regions()
                            .Get(expr_pattern->expr_region_id)
@@ -772,14 +800,18 @@ auto BuildMatchCaseUsefulnessKey(
       if (!pattern_const_id.is_concrete()) {
         return std::nullopt;
       }
-      auto int_value = context.insts().TryGetAs<SemIR::IntValue>(
-          context.constant_values().GetInstId(pattern_const_id));
-      if (!int_value) {
-        return std::nullopt;
+      if (auto int_value = context.insts().TryGetAs<SemIR::IntValue>(
+              context.constant_values().GetInstId(pattern_const_id))) {
+        key.push_back(
+            {.kind = Node::Kind::IntConst, .int_id = int_value->int_id});
+        continue;
       }
-      key.push_back(
-          {.kind = Node::Kind::IntConst, .int_id = int_value->int_id});
-      continue;
+      if (auto bool_value = TryGetCaseBoolConstant(context, inst_id)) {
+        key.push_back({.kind = Node::Kind::BoolConst,
+                       .index = bool_value->ToBool() ? 1 : 0});
+        continue;
+      }
+      return std::nullopt;
     }
     // Any other pattern kind — a refutable `var` subtree, or a future
     // engine extension this walk does not know — yields no key: the arm
@@ -1235,8 +1267,8 @@ auto MatchContext::DoMatchCaseExprPattern(
     return SemIR::InstId::None;
   }
 
-  // An integer scrutinee — the whole case pattern, or one element of a
-  // tuple case pattern or alternative payload against the element's
+  // An integer or bool scrutinee — the whole case pattern, or one element
+  // of a tuple case pattern or alternative payload against the element's
   // scrutinee.
   if (context_.insts().Get(result_id).type_id() == SemIR::ErrorInst::TypeId &&
       pattern_id != match_case_state.root_pattern_id) {
@@ -1250,25 +1282,32 @@ auto MatchContext::DoMatchCaseExprPattern(
     return SemIR::ErrorInst::InstId;
   }
 
-  // Any case expression whose constant value is a
-  // concrete `IntValue` is admitted (plan RF-4), whatever its declared type:
+  // Any case expression whose constant value is a concrete `IntValue` or
+  // `BoolLiteral` is admitted (plan RF-4; W-076 §2.5 widened the set with
+  // bool constants), whatever its declared type:
   // classification is by the checked expression's constant representation,
   // never its syntax, so `case -1` and `case 2 + 3` work the same way as
   // `case 5`, and a constant of an int-adapter class type is admitted too —
   // if its type is not `EqWith`-compatible with the scrutinee, the comparison
-  // below produces a real missing-impl operator diagnostic. Everything else —
+  // below produces a real missing-impl operator diagnostic. The same holds
+  // for a TYPE-mismatched bool/int constant (`case true` on an `i32`
+  // scrutinee, `case 5` on a bool scrutinee): it reaches the `==` build and
+  // diagnoses the missing `EqWith` impl, RF-4's recorded behavior, not a
+  // TODO. Everything else —
   // non-constant expressions, symbolic constants, and constants not
-  // represented as `IntValue` — stays behind the SemanticsTodo. Note that
+  // represented as `IntValue` or `BoolLiteral` — stays behind the
+  // SemanticsTodo. Note that
   // `let` bindings bind value-category results and so are not constants (see
   // `WrapperBinding` in eval_inst.cpp); a case naming one stays behind it
   // too.
   auto pattern_const_id = context_.constant_values().Get(result_id);
+  auto const_inst_id = context_.constant_values().GetInstId(pattern_const_id);
   if (!pattern_const_id.is_concrete() ||
-      !context_.insts().Is<SemIR::IntValue>(
-          context_.constant_values().GetInstId(pattern_const_id))) {
+      !(context_.insts().Is<SemIR::IntValue>(const_inst_id) ||
+        context_.insts().Is<SemIR::BoolLiteral>(const_inst_id))) {
     context_.TODO(introducer_node_id,
                   "match case expression pattern that is not a constant "
-                  "integer");
+                  "integer or `bool`");
     return SemIR::InstId::None;
   }
 

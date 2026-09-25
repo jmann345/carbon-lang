@@ -144,10 +144,23 @@ auto MatchCaseBindPatternMatch(Context& context, SemIR::InstId pattern_id,
 auto IsIrrefutableMatchCasePattern(Context& context, SemIR::InstId pattern_id)
     -> bool;
 
+// If `pattern_id` is an `ExprPattern` whose expression-region result has a
+// concrete constant value represented as a `SemIR::BoolLiteral`, returns
+// that constant's value; returns nullopt otherwise. This is the one read
+// both consumers of a bool constant `case` share — the usefulness key
+// builder (`BuildMatchCaseUsefulnessKey`, keying it as `BoolConst`) and the
+// exhaustiveness coverage recording (`EmitCaseArmTestAndBind` in
+// handle_match.cpp, recording 0/1 into `covered_alternatives`) — reading
+// the region result's memoized constant exactly where the test pass reads
+// it (`DoMatchCaseExprPattern`). Read-only: emits no insts and no
+// diagnostics.
+auto TryGetCaseBoolConstant(Context& context, SemIR::InstId pattern_id)
+    -> std::optional<SemIR::BoolValue>;
+
 // Builds the usefulness key for a checked `match` `case` pattern (W-066):
 // the pattern lowered, in preorder over the scrutinee's shape, to the value
 // domain usefulness comparisons run over — `Wildcard` for irrefutable
-// subtrees (per `IsIrrefutableMatchCasePattern`), evaluated integer
+// subtrees (per `IsIrrefutableMatchCasePattern`), evaluated integer or bool
 // constants for expression leaves, the discriminant index plus payload
 // slots for an alternative root, and elementwise tuples (see
 // `Context::MatchStatementContext::UsefulnessKeyNode`). `alternative` is

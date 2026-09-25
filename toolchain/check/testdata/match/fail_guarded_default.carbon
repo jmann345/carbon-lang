@@ -26,6 +26,10 @@ library "[[@TEST_NAME]]";
 // covering arm to fall through to, and no arm here is irrefutable, so
 // the `match` is nonexhaustive (W-078b).
 fn F(x: i32) {
+  // CHECK:STDERR: fail_integer_no_covering_arm.carbon:[[@LINE+4]]:3: error: `match` on `i32` has no `default` arm and no `case` arm that matches every value [MatchNonexhaustiveNoIrrefutableArm]
+  // CHECK:STDERR:   match (x) {
+  // CHECK:STDERR:   ^~~~~~~~~~~
+  // CHECK:STDERR:
   match (x) {
     case 0 => { return; }
     default if (x < 0) => { return; }

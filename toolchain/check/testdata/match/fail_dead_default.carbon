@@ -240,6 +240,13 @@ library "[[@TEST_NAME]]";
 fn F(x: i32) -> i32 {
   match (x) {
     case n: i32 => { return n; }
+    // CHECK:STDERR: fail_int_after_irrefutable.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_int_after_irrefutable.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case n: i32 => { return n; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     default => { return 0; }
   }
   return -1;
@@ -252,6 +259,13 @@ library "[[@TEST_NAME]]";
 fn F(x: i32) -> i32 {
   match (x) {
     case var a: i32 => { a = a + 1; return a; }
+    // CHECK:STDERR: fail_int_after_var_binding.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_int_after_var_binding.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case var a: i32 => { a = a + 1; return a; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     default => { return 0; }
   }
   return -1;
@@ -266,6 +280,13 @@ fn F(x: i32) -> i32 {
   match (x) {
     case 5 => { return 1; }
     case n: i32 => { return n; }
+    // CHECK:STDERR: fail_int_mid_constants.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_int_mid_constants.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case n: i32 => { return n; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     default => { return 0; }
   }
   return -1;
@@ -279,6 +300,13 @@ library "[[@TEST_NAME]]";
 fn F(x: i32, g: bool) -> i32 {
   match (x) {
     case n: i32 => { return n; }
+    // CHECK:STDERR: fail_int_guarded_default_after_irrefutable.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default if (g) => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_int_guarded_default_after_irrefutable.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case n: i32 => { return n; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     default if (g) => { return 0; }
   }
   return -1;
@@ -292,6 +320,13 @@ library "[[@TEST_NAME]]";
 fn F(p: (i32, i32)) -> i32 {
   match (p) {
     case (a: i32, b: i32) => { return a + b; }
+    // CHECK:STDERR: fail_tuple_after_all_binding.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_tuple_after_all_binding.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case (a: i32, b: i32) => { return a + b; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     default => { return 0; }
   }
   return -1;
@@ -306,8 +341,22 @@ library "[[@TEST_NAME]]";
 // after it IS diagnosed, stacking on the arm's conversion error (the
 // integer mirror of fail_bind_error_arm_prior above).
 fn F(x: i32) -> i32 {
+  // CHECK:STDERR: fail_int_bind_error_arm_prior.carbon:[[@LINE+7]]:10: error: cannot implicitly convert expression of type `i32` to `bool` [ConversionFailure]
+  // CHECK:STDERR:   match (x) {
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_int_bind_error_arm_prior.carbon:[[@LINE+4]]:10: note: type `i32` does not implement interface `Core.ImplicitAs(bool)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   match (x) {
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR:
   match (x) {
     case b: bool => { if (b) { return 1; } return 2; }
+    // CHECK:STDERR: fail_int_bind_error_arm_prior.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_int_bind_error_arm_prior.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case b: bool => { if (b) { return 1; } return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     default => { return 0; }
   }
   return -1;

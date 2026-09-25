@@ -20,6 +20,13 @@ library "[[@TEST_NAME]]";
 fn F(x: i32) -> i32 {
   match (x) {
     case a: i32 => { return a; }
+    // CHECK:STDERR: fail_sibling_arm.carbon:[[@LINE+11]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return a; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_sibling_arm.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case a: i32 => { return a; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     // CHECK:STDERR: fail_sibling_arm.carbon:[[@LINE+4]]:25: error: name `a` not found [NameNotFound]
     // CHECK:STDERR:     default => { return a; }
     // CHECK:STDERR:                         ^

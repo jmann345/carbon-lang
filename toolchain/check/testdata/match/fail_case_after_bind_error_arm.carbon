@@ -37,6 +37,13 @@ fn F(x: i32) -> i32 {
     // CHECK:STDERR:     ^~~~
     // CHECK:STDERR:
     case 5 => { return 3; }
+    // CHECK:STDERR: fail_case_after_bind_error_arm.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_case_after_bind_error_arm.carbon:[[@LINE-12]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case b: bool => { if (b) { return 1; } return 2; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     default => { return 0; }
   }
   return -1;

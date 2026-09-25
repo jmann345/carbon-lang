@@ -2745,6 +2745,43 @@ list + the green gate. The design's canonical
 runs; the fork's tripwire flipped exactly as its own header predicted.
 **W-075 is DISCHARGED.** Veto-able.
 
+### W8a verified and discharged on the runner's return (2026-09-25)
+
+The runner came back (~29 days offline; disk freed 36GB -> 126GB), the
+08-24 weekly merge landed to trunk (F-002 merge d34ed63, gate
+36116293634 green 46/46), and W8a verification ran end to end. The
+first full-runner autoupdate of the W8a testdata crashed the SemIR
+formatter (FATAL sem_ir/expr_info.cpp:280) on tuple_pattern.carbon's
+expr_element_conversion subfile: tuple element expressions closed
+their regions through EndExprRegionForPattern with no category
+conversion, so an initializing element such as `2 + 3` made the
+splice_block itself an initializing expression, which
+FindStorageArgForInitializer rejects. Root fix (fix round 3,
+7c0e638): value-convert initializing results inside
+EndExprRegionForPattern while the region is open — the same invariant
+FinishCasePattern and MatchCaseGuard already maintain — with the F5
+post-splice conversion kept as defense-in-depth. Autoupdate then
+filled the four W8a golden files and reconciled ONE hand-pinned fail
+file: fail_choice_alternative_pattern.carbon's
+fail_nested_designator_subpattern gained a second min_prelude-only
+diagnostic (Core.EqWith CoreNameNotFound) because F2 semantics still
+key the discriminant compare for arms with errored payloads —
+adjudicated CORRECT (primary designator error leads; full-prelude
+no-cascade pin unchanged), not a wrong pin. R26 fixpoint: pass 2
+pushed nothing; every let/var/param/thunk golden byte-identical,
+proving the shared-region change a no-op outside match. R-2 lower pin
+inspected: the payload load for `case .Ok(42)` sits in a block
+dominated by the discriminant compare, phi false on the not-taken
+edge — no hoisted poison load. Gate 36135807130 green; conformance
+98 PASS / 0 fail-class / 28 SKIP over 126 (match_tuple_case_diff +
+match_payload_literal PASS; floor 96/124 -> 98/126). Ledger: W-008
+notes refreshed (stale pin filename, dead :364 reference, arity
+diagnostic recorded); W-066 blocked_by discharged per plan §3.4.
+Noted for W8b/W8c: lower merge-block namer emits the label
+"match.<unexpected BranchWithArg>" (label-only polish), the
+choice-payload bind-pass coverage nuance, and the R8 conservative
+gate.
+
 ### Weekly upstream merge 2026-09-21: cut HOLDS a fifth week; tip still half-healed (2026-09-21)
 
 Fold-in to the still-unlanded 08-24 staging merge (runner jeromehome

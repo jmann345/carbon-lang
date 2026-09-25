@@ -308,3 +308,32 @@ fn F(r: IntResult) -> i32 {
   }
   return -1;
 }
+
+// --- struct_superset_then_subset.carbon
+library "[[@TEST_NAME]]";
+
+// A constant never subsumes a wildcard slot: the prior names both fields
+// with constants, but the later subset+`_` arm leaves `.b` unconstrained
+// (a wildcard fill under the W-077 normalization), so it stays useful.
+fn Supersets(p: {.a: i32, .b: i32}) -> i32 {
+  match (p) {
+    case {.a = 1, .b = 2} => { return 1; }
+    case {.a = 1, _} => { return 2; }
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- struct_different_constants.carbon
+library "[[@TEST_NAME]]";
+
+// Distinct evaluated field values never collide, whatever the spelling
+// order.
+fn Constants(p: {.a: i32, .b: i32}) -> i32 {
+  match (p) {
+    case {.a = 1, .b = 2} => { return 1; }
+    case {.b = 3, .a = 1} => { return 2; }
+    default => { return 0; }
+  }
+  return -1;
+}

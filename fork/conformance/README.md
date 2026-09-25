@@ -254,6 +254,7 @@ fails if this table is stale):
 | `control_flow/match_payload_literal.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | run |
 | `control_flow/match_position.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_single_alternative.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | run |
+| `control_flow/match_struct_destructure.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_sum_type_payload.carbon` | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | SKIP |
 | `control_flow/match_switch.carbon` | Control flow: matching — good switch equivalents | run |
 | `control_flow/match_switch_diff.carbon` | Control flow: matching — good switch equivalents | differential |

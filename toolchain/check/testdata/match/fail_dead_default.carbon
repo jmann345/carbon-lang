@@ -362,6 +362,33 @@ fn F(x: i32) -> i32 {
   return -1;
 }
 
+// --- fail_struct_after_all_binding.carbon
+library "[[@TEST_NAME]]";
+
+// The struct lane (W-077): an all-binding struct root keys as the same
+// synthetic `{Wildcard}` a binding root does, so it subsumes `default`.
+fn F(p: {.a: i32, .b: i32}) -> i32 {
+  match (p) {
+    case {a: i32, b: i32} => { return a + b; }
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- fail_struct_after_subset_binding.carbon
+library "[[@TEST_NAME]]";
+
+// A subset+`_` all-binding struct arm is just as irrefutable — the
+// omitted field is discarded, the named one binds — so it also keys
+// `{Wildcard}` and kills the `default`.
+fn F(p: {.a: i32, .b: i32}) -> i32 {
+  match (p) {
+    case {a: i32, _} => { return a; }
+    default => { return 0; }
+  }
+  return -1;
+}
+
 // CHECK:STDOUT: --- fail_trailing_guarded_default.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

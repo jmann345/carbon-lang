@@ -2792,6 +2792,49 @@ inexpressible in-slice — exactly why the approximation is safe today.
 Re-examined the day non-trivial types pass the scrutinee gate
 (handle_match.cpp:238). Veto-able.
 
+### W-078a dead `default` arms on choice and bool scrutinees (2026-09-26)
+
+A `default` whose unguarded prior arms already cover the whole closed
+value domain (all choice alternatives, or both bool values) now
+diagnoses as dead: MatchDefaultNeverMatches at the `default` keyword,
+with a PriorArm note at the single covering irrefutable arm or a
+FullCoverage note at the scrutinee for union coverage (the new
+MatchDefaultNeverMatchesFullCoverage kind, byte-identical text to the
+case-arm one — no hoist of a [MatchCase]-tagged note under a default
+primary). SEVERITY — Error is the design's own call:
+pattern_matching.md:238-246 annotates exactly this shape
+"❌ Error: unreachable." (annotation at :243-244); :627-629 mandates
+the diagnosis with the :645 Error-annotated example; :814-815 makes
+`default` ≡ `case _: auto`, and the landed W-066 rule already errors
+on a dead `case _`; warnings are reserved for unused bindings (:360).
+Break condition: upstream re-annotating :243-244/:645 or landing this
+class as a lint/warning — the fail goldens re-churn, but the §6
+default-drops in positive suites stand either way. Wording nuance,
+recorded deliberately: the design's annotation says "unreachable",
+the diagnostic family says "never matches" — uniformity with the
+landed W-066/W-076 family wins. GUARD RULE (§1.2): a guarded
+`default`'s own guard is assumed TRUE (:620-623 — the arm under
+test's guard is assumed true, context guards assumed false), so full
+prior coverage kills even `default if (g)`; prior GUARDED arms never
+count toward coverage (unchanged W-066 semantics). MECHANISM (§1.6):
+step 3b's covers-all predicate factored into
+UnguardedArmsCoverWholeDomain — proven behavior-identical for landed
+paths by both implementation reviews — and reused by
+DiagnoseDeadDefault at both default handlers (value-keeping
+introducer pop); stage 1 scans useful_arms for a Wildcard-root
+subsumer (first-covering-arm determinism), stage 2 is union
+coverage. The blanket has_error_arm suppression is a recorded
+conservative DIVERGENCE from the case-arm rule, with the
+deterministic false negative pinned
+(fail_error_arm_wildcard_prior_default). Integer/tuple lanes stay
+exempt behind R8 (dead_default_exempt IntSide pin); the integer half
+lands with-or-after the R8 lift. Loop: both plan reviews
+APPROVE-WITH-AMENDMENTS (11 folded), both implementation reviews
+APPROVE with zero code fixes (two comment nits); R26 fixpoint at
+pass 3 (pass 2 was pure loc-relabel churn in the new fail file);
+gate green; conformance unchanged 100/0/28 over 128 with zero
+conformance edits.
+
 ### W-076 bool scrutinees: the scoreboard's first triple digits (2026-09-26)
 
 `match` on `bool` lands per the design's bool-as-two-alternative-choice

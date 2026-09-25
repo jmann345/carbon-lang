@@ -60,7 +60,7 @@ fn Construct(n: i32) -> Signal {
 // CHECK:STDOUT:   %u2: type = class_type @UInt, @UInt(%int_2.ecc) [concrete]
 // CHECK:STDOUT:   %pattern_type.1de: type = pattern_type %Signal [concrete]
 // CHECK:STDOUT:   %s.param_patt: %pattern_type.1de = value_param_pattern [concrete]
-// CHECK:STDOUT:   %s.patt: %pattern_type.1de = at_binding_pattern s, %s.param_patt [concrete]
+// CHECK:STDOUT:   %s.patt: %pattern_type.1de = wrapper_binding_pattern s, %s.param_patt [concrete]
 // CHECK:STDOUT:   %.795f: Core.Form = init_form %i32 [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
 // CHECK:STDOUT:   %return.param_patt.a9a: %pattern_type.6b6 = out_param_pattern [concrete]
@@ -115,7 +115,7 @@ fn Construct(n: i32) -> Signal {
 // CHECK:STDOUT:   %bound_method.3cb: <bound method> = bound_method %int_2.ecc, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571 [concrete]
 // CHECK:STDOUT:   %int_2.295: %i32 = int_value 2 [concrete]
 // CHECK:STDOUT:   %n.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %n.patt: %pattern_type.6b6 = at_binding_pattern n, %n.param_patt [concrete]
+// CHECK:STDOUT:   %n.patt: %pattern_type.6b6 = wrapper_binding_pattern n, %n.param_patt [concrete]
 // CHECK:STDOUT:   %.1d7: Core.Form = init_form %Signal [concrete]
 // CHECK:STDOUT:   %return.param_patt.463: %pattern_type.1de = out_param_pattern [concrete]
 // CHECK:STDOUT:   %return.patt.a55: %pattern_type.1de = return_slot_pattern %return.param_patt.463, %Signal [concrete]
@@ -141,7 +141,7 @@ fn Construct(n: i32) -> Signal {
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %Classify.decl: %Classify.type = fn_decl @Classify [concrete = constants.%Classify] {
 // CHECK:STDOUT:     %s.param_patt: %pattern_type.1de = value_param_pattern [concrete = constants.%s.param_patt]
-// CHECK:STDOUT:     %s.patt: %pattern_type.1de = at_binding_pattern s, %s.param_patt [concrete = constants.%s.patt]
+// CHECK:STDOUT:     %s.patt: %pattern_type.1de = wrapper_binding_pattern s, %s.param_patt [concrete = constants.%s.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {
@@ -155,7 +155,7 @@ fn Construct(n: i32) -> Signal {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Construct.decl: %Construct.type = fn_decl @Construct [concrete = constants.%Construct] {
 // CHECK:STDOUT:     %n.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%n.param_patt]
-// CHECK:STDOUT:     %n.patt: %pattern_type.6b6 = at_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
+// CHECK:STDOUT:     %n.patt: %pattern_type.6b6 = wrapper_binding_pattern n, %n.param_patt [concrete = constants.%n.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.1de = out_param_pattern [concrete = constants.%return.param_patt.463]
 // CHECK:STDOUT:     %return.patt: %pattern_type.1de = return_slot_pattern %return.param_patt, %Signal.ref.loc18 [concrete = constants.%return.patt.a55]
 // CHECK:STDOUT:   } {

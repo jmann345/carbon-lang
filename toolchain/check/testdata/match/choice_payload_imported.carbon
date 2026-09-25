@@ -52,7 +52,7 @@ fn Speed(s: Signal) -> i32 {
 // CHECK:STDOUT:   %u2: type = class_type @UInt, @UInt(%int_2) [concrete]
 // CHECK:STDOUT:   %pattern_type.1de: type = pattern_type %Signal [concrete]
 // CHECK:STDOUT:   %s.param_patt: %pattern_type.1de = value_param_pattern [concrete]
-// CHECK:STDOUT:   %s.patt: %pattern_type.1de = at_binding_pattern s, %s.param_patt [concrete]
+// CHECK:STDOUT:   %s.patt: %pattern_type.1de = wrapper_binding_pattern s, %s.param_patt [concrete]
 // CHECK:STDOUT:   %.795f: Core.Form = init_form %i32 [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
 // CHECK:STDOUT:   %return.param_patt.a9a: %pattern_type.6b6 = out_param_pattern [concrete]
@@ -155,7 +155,7 @@ fn Speed(s: Signal) -> i32 {
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %Speed.decl: %Speed.type = fn_decl @Speed [concrete = constants.%Speed] {
 // CHECK:STDOUT:     %s.param_patt: %pattern_type.1de = value_param_pattern [concrete = constants.%s.param_patt]
-// CHECK:STDOUT:     %s.patt: %pattern_type.1de = at_binding_pattern s, %s.param_patt [concrete = constants.%s.patt]
+// CHECK:STDOUT:     %s.patt: %pattern_type.1de = wrapper_binding_pattern s, %s.param_patt [concrete = constants.%s.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32.loc10 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {

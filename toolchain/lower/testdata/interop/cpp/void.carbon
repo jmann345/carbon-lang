@@ -73,7 +73,7 @@ fn ConvertFromConstVoidPtr(p: const Cpp.void*) -> const i32* {
 // CHECK:STDOUT:   store ptr %U.as_type.as.ImplicitAs.impl.Convert.call, ptr %.loc7_21.2.temp, align 8, !dbg !18
 // CHECK:STDOUT:   %.loc7_21.4 = load ptr, ptr %.loc7_21.2.temp, align 8, !dbg !18
 // CHECK:STDOUT:   call void @_Z13take_void_ptrPv.carbon_thunk._(ptr %.loc7_21.4), !dbg !19
-// CHECK:STDOUT:   call void @"_COp.ea394d8449861404:core.Destroy.Core"(ptr %.loc7_21.2.temp), !dbg !18
+// CHECK:STDOUT:   call void @"_COp.ab1af2e999d1dfe1:core.Destroy.Core"(ptr %.loc7_21.2.temp), !dbg !18
 // CHECK:STDOUT:   ret void, !dbg !20
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -98,19 +98,19 @@ fn ConvertFromConstVoidPtr(p: const Cpp.void*) -> const i32* {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.fd39a15e7d61228d:core.Destroy.Core"(ptr %self) #0 !dbg !23 {
+// CHECK:STDOUT: define weak_odr void @"_COp.2bb3ddafbe2fe5d2:core.Destroy.Core"(ptr %self) #0 !dbg !23 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !26
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.125695b29f2cf97c:core.Destroy.Core"(ptr %self) #0 !dbg !27 {
+// CHECK:STDOUT: define weak_odr void @"_COp.24996695b716f57d:core.Destroy.Core"(ptr %self) #0 !dbg !27 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !30
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.ea394d8449861404:core.Destroy.Core"(ptr %self) #0 !dbg !31 {
+// CHECK:STDOUT: define weak_odr void @"_COp.ab1af2e999d1dfe1:core.Destroy.Core"(ptr %self) #0 !dbg !31 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !34
 // CHECK:STDOUT: }
@@ -124,7 +124,7 @@ fn ConvertFromConstVoidPtr(p: const Cpp.void*) -> const i32* {
 // CHECK:STDOUT:   store ptr %U.as_type.as.ImplicitAs.impl.Convert.call, ptr %.loc11_21.2.temp, align 8, !dbg !38
 // CHECK:STDOUT:   %.loc11_21.4 = load ptr, ptr %.loc11_21.2.temp, align 8, !dbg !38
 // CHECK:STDOUT:   call void @_Z13take_void_ptrPv.carbon_thunk._(ptr %.loc11_21.4), !dbg !39
-// CHECK:STDOUT:   call void @"_COp.ea394d8449861404:core.Destroy.Core"(ptr %.loc11_21.2.temp), !dbg !38
+// CHECK:STDOUT:   call void @"_COp.ab1af2e999d1dfe1:core.Destroy.Core"(ptr %.loc11_21.2.temp), !dbg !38
 // CHECK:STDOUT:   ret void, !dbg !40
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -137,7 +137,7 @@ fn ConvertFromConstVoidPtr(p: const Cpp.void*) -> const i32* {
 // CHECK:STDOUT:   store ptr %U.as_type.as.ImplicitAs.impl.Convert.call, ptr %.loc15_27.2.temp, align 8, !dbg !44
 // CHECK:STDOUT:   %.loc15_27.4 = load ptr, ptr %.loc15_27.2.temp, align 8, !dbg !44
 // CHECK:STDOUT:   call void @_Z19take_const_void_ptrPKv.carbon_thunk._(ptr %.loc15_27.4), !dbg !45
-// CHECK:STDOUT:   call void @"_COp.259066d6fdc9da02:core.Destroy.Core"(ptr %.loc15_27.2.temp), !dbg !44
+// CHECK:STDOUT:   call void @"_COp.05b8ef735d2db490:core.Destroy.Core"(ptr %.loc15_27.2.temp), !dbg !44
 // CHECK:STDOUT:   ret void, !dbg !46
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -162,19 +162,19 @@ fn ConvertFromConstVoidPtr(p: const Cpp.void*) -> const i32* {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.0aac4ce7c7765bae:core.Destroy.Core"(ptr %self) #0 !dbg !47 {
+// CHECK:STDOUT: define weak_odr void @"_COp.1b9dec9ba7b5442e:core.Destroy.Core"(ptr %self) #0 !dbg !47 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !50
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.b8b38d4701ca7f8c:core.Destroy.Core"(ptr %self) #0 !dbg !51 {
+// CHECK:STDOUT: define weak_odr void @"_COp.0ca0de5f18f7d6e9:core.Destroy.Core"(ptr %self) #0 !dbg !51 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !54
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.259066d6fdc9da02:core.Destroy.Core"(ptr %self) #0 !dbg !55 {
+// CHECK:STDOUT: define weak_odr void @"_COp.05b8ef735d2db490:core.Destroy.Core"(ptr %self) #0 !dbg !55 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   ret void, !dbg !58
 // CHECK:STDOUT: }
@@ -188,7 +188,7 @@ fn ConvertFromConstVoidPtr(p: const Cpp.void*) -> const i32* {
 // CHECK:STDOUT:   store ptr %U.as_type.as.ImplicitAs.impl.Convert.call, ptr %.loc19_27.2.temp, align 8, !dbg !62
 // CHECK:STDOUT:   %.loc19_27.4 = load ptr, ptr %.loc19_27.2.temp, align 8, !dbg !62
 // CHECK:STDOUT:   call void @_Z19take_const_void_ptrPKv.carbon_thunk._(ptr %.loc19_27.4), !dbg !63
-// CHECK:STDOUT:   call void @"_COp.259066d6fdc9da02:core.Destroy.Core"(ptr %.loc19_27.2.temp), !dbg !62
+// CHECK:STDOUT:   call void @"_COp.05b8ef735d2db490:core.Destroy.Core"(ptr %.loc19_27.2.temp), !dbg !62
 // CHECK:STDOUT:   ret void, !dbg !64
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -264,7 +264,7 @@ fn ConvertFromConstVoidPtr(p: const Cpp.void*) -> const i32* {
 // CHECK:STDOUT:   store ptr poison, ptr %1, align 8, !dbg !118
 // CHECK:STDOUT:   store ptr %self, ptr %1, align 8, !dbg !119
 // CHECK:STDOUT:   %2 = load ptr, ptr %1, align 8, !dbg !120
-// CHECK:STDOUT:   call void @"_COp.125695b29f2cf97c:core.Destroy.Core"(ptr %1), !dbg !118
+// CHECK:STDOUT:   call void @"_COp.24996695b716f57d:core.Destroy.Core"(ptr %1), !dbg !118
 // CHECK:STDOUT:   ret ptr %2, !dbg !121
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -275,7 +275,7 @@ fn ConvertFromConstVoidPtr(p: const Cpp.void*) -> const i32* {
 // CHECK:STDOUT:   store ptr poison, ptr %1, align 8, !dbg !125
 // CHECK:STDOUT:   store ptr %self, ptr %1, align 8, !dbg !126
 // CHECK:STDOUT:   %2 = load ptr, ptr %1, align 8, !dbg !127
-// CHECK:STDOUT:   call void @"_COp.b8b38d4701ca7f8c:core.Destroy.Core"(ptr %1), !dbg !125
+// CHECK:STDOUT:   call void @"_COp.0ca0de5f18f7d6e9:core.Destroy.Core"(ptr %1), !dbg !125
 // CHECK:STDOUT:   ret ptr %2, !dbg !128
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -338,15 +338,15 @@ fn ConvertFromConstVoidPtr(p: const Cpp.void*) -> const i32* {
 // CHECK:STDOUT: !20 = !DILocation(line: 6, column: 1, scope: !12)
 // CHECK:STDOUT: !21 = !{!22, !22, i64 0}
 // CHECK:STDOUT: !22 = !{!"any pointer", !10, i64 0}
-// CHECK:STDOUT: !23 = distinct !DISubprogram(name: "Op", linkageName: "_COp.fd39a15e7d61228d:core.Destroy.Core", scope: null, file: !1, line: 7, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !24)
+// CHECK:STDOUT: !23 = distinct !DISubprogram(name: "Op", linkageName: "_COp.2bb3ddafbe2fe5d2:core.Destroy.Core", scope: null, file: !1, line: 7, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !24)
 // CHECK:STDOUT: !24 = !{!25}
 // CHECK:STDOUT: !25 = !DILocalVariable(arg: 1, scope: !23, type: !15)
 // CHECK:STDOUT: !26 = !DILocation(line: 7, column: 21, scope: !23)
-// CHECK:STDOUT: !27 = distinct !DISubprogram(name: "Op", linkageName: "_COp.125695b29f2cf97c:core.Destroy.Core", scope: null, file: !1, line: 7, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !28)
+// CHECK:STDOUT: !27 = distinct !DISubprogram(name: "Op", linkageName: "_COp.24996695b716f57d:core.Destroy.Core", scope: null, file: !1, line: 7, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !28)
 // CHECK:STDOUT: !28 = !{!29}
 // CHECK:STDOUT: !29 = !DILocalVariable(arg: 1, scope: !27, type: !15)
 // CHECK:STDOUT: !30 = !DILocation(line: 7, column: 21, scope: !27)
-// CHECK:STDOUT: !31 = distinct !DISubprogram(name: "Op", linkageName: "_COp.ea394d8449861404:core.Destroy.Core", scope: null, file: !1, line: 7, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !32)
+// CHECK:STDOUT: !31 = distinct !DISubprogram(name: "Op", linkageName: "_COp.ab1af2e999d1dfe1:core.Destroy.Core", scope: null, file: !1, line: 7, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !32)
 // CHECK:STDOUT: !32 = !{!33}
 // CHECK:STDOUT: !33 = !DILocalVariable(arg: 1, scope: !31, type: !15)
 // CHECK:STDOUT: !34 = !DILocation(line: 7, column: 21, scope: !31)
@@ -362,15 +362,15 @@ fn ConvertFromConstVoidPtr(p: const Cpp.void*) -> const i32* {
 // CHECK:STDOUT: !44 = !DILocation(line: 15, column: 27, scope: !41)
 // CHECK:STDOUT: !45 = !DILocation(line: 15, column: 3, scope: !41)
 // CHECK:STDOUT: !46 = !DILocation(line: 14, column: 1, scope: !41)
-// CHECK:STDOUT: !47 = distinct !DISubprogram(name: "Op", linkageName: "_COp.0aac4ce7c7765bae:core.Destroy.Core", scope: null, file: !1, line: 15, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !48)
+// CHECK:STDOUT: !47 = distinct !DISubprogram(name: "Op", linkageName: "_COp.1b9dec9ba7b5442e:core.Destroy.Core", scope: null, file: !1, line: 15, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !48)
 // CHECK:STDOUT: !48 = !{!49}
 // CHECK:STDOUT: !49 = !DILocalVariable(arg: 1, scope: !47, type: !15)
 // CHECK:STDOUT: !50 = !DILocation(line: 15, column: 27, scope: !47)
-// CHECK:STDOUT: !51 = distinct !DISubprogram(name: "Op", linkageName: "_COp.b8b38d4701ca7f8c:core.Destroy.Core", scope: null, file: !1, line: 15, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !52)
+// CHECK:STDOUT: !51 = distinct !DISubprogram(name: "Op", linkageName: "_COp.0ca0de5f18f7d6e9:core.Destroy.Core", scope: null, file: !1, line: 15, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !52)
 // CHECK:STDOUT: !52 = !{!53}
 // CHECK:STDOUT: !53 = !DILocalVariable(arg: 1, scope: !51, type: !15)
 // CHECK:STDOUT: !54 = !DILocation(line: 15, column: 27, scope: !51)
-// CHECK:STDOUT: !55 = distinct !DISubprogram(name: "Op", linkageName: "_COp.259066d6fdc9da02:core.Destroy.Core", scope: null, file: !1, line: 15, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !56)
+// CHECK:STDOUT: !55 = distinct !DISubprogram(name: "Op", linkageName: "_COp.05b8ef735d2db490:core.Destroy.Core", scope: null, file: !1, line: 15, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !56)
 // CHECK:STDOUT: !56 = !{!57}
 // CHECK:STDOUT: !57 = !DILocalVariable(arg: 1, scope: !55, type: !15)
 // CHECK:STDOUT: !58 = !DILocation(line: 15, column: 27, scope: !55)

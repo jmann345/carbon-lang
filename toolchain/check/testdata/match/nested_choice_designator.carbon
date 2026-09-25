@@ -98,10 +98,10 @@ fn F(c: Color, s: Shape) -> i32 {
 // CHECK:STDOUT:   %.d08: ref %Shape = temporary invalid, %Shape.val.c47 [concrete]
 // CHECK:STDOUT:   %pattern_type.423: type = pattern_type %Color [concrete]
 // CHECK:STDOUT:   %c.param_patt: %pattern_type.423 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %c.patt: %pattern_type.423 = at_binding_pattern c, %c.param_patt [concrete]
+// CHECK:STDOUT:   %c.patt: %pattern_type.423 = wrapper_binding_pattern c, %c.param_patt [concrete]
 // CHECK:STDOUT:   %pattern_type.6e5: type = pattern_type %Shape [concrete]
 // CHECK:STDOUT:   %s.param_patt: %pattern_type.6e5 = value_param_pattern [concrete]
-// CHECK:STDOUT:   %s.patt: %pattern_type.6e5 = at_binding_pattern s, %s.param_patt [concrete]
+// CHECK:STDOUT:   %s.patt: %pattern_type.6e5 = wrapper_binding_pattern s, %s.param_patt [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %.795f: Core.Form = init_form %i32 [concrete]
@@ -169,9 +169,9 @@ fn F(c: Color, s: Shape) -> i32 {
 // CHECK:STDOUT:   %Shape.decl: type = class_decl @Shape [concrete = constants.%Shape] {} {}
 // CHECK:STDOUT:   %F.decl: %F.type = fn_decl @F [concrete = constants.%F] {
 // CHECK:STDOUT:     %c.param_patt: %pattern_type.423 = value_param_pattern [concrete = constants.%c.param_patt]
-// CHECK:STDOUT:     %c.patt: %pattern_type.423 = at_binding_pattern c, %c.param_patt [concrete = constants.%c.patt]
+// CHECK:STDOUT:     %c.patt: %pattern_type.423 = wrapper_binding_pattern c, %c.param_patt [concrete = constants.%c.patt]
 // CHECK:STDOUT:     %s.param_patt: %pattern_type.6e5 = value_param_pattern [concrete = constants.%s.param_patt]
-// CHECK:STDOUT:     %s.patt: %pattern_type.6e5 = at_binding_pattern s, %s.param_patt [concrete = constants.%s.patt]
+// CHECK:STDOUT:     %s.patt: %pattern_type.6e5 = wrapper_binding_pattern s, %s.param_patt [concrete = constants.%s.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {

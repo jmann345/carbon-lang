@@ -1,0 +1,79 @@
+# Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+# Exceptions. See /LICENSE for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# Part of jmann345's carbon-lang fork tooling (see /fork/README.md).
+#
+# One-shot cleanup of everything the fork workflows placed on the self-hosted
+# runner host (owner request, 2026-09-26): bazel output bases for runner
+# checkouts, the fork's bazel disk cache, the libunwind host-deps archive,
+# conformance/unwind scratch under /tmp, tool caches, and the runner's own
+# work-directory checkouts. Nothing else. Keeps any bazel workspace that is not
+# a runner checkout, the actions-runner install itself, and ~/.local/bin/uv.
+
+name: 'Fork: runner host cleanup'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 30
+    steps:
+      - name: Remove fork build state from this host
+        shell: bash
+        run: |
+          set -uo pipefail
+          echo "== before =="
+          df -h "$HOME" /tmp || true
+          du -sh "$HOME"/.cache/bazel "$HOME"/.cache/carbon-lang-build-cache \
+            "$HOME"/.cache/bazelisk "$HOME"/.cache/uv "$HOME"/.cache/prek \
+            "$HOME"/.local/lib/carbon-host-deps /tmp/conformance-toolchain \
+            /tmp/unwind-build 2>/dev/null || true
+
+          echo "== 1. bazel output bases that belong to runner checkouts =="
+          for ob in "$HOME"/.cache/bazel/_bazel_*/*/; do
+            [ -f "$ob/DO_NOT_BUILD_HERE" ] || continue
+            ws=$(cat "$ob/DO_NOT_BUILD_HERE")
+            case "$ws" in
+              *"/_work/"*) echo "rm $ob  (workspace $ws)"; rm -rf "$ob" ;;
+              *) echo "KEEP $ob  (workspace $ws is not a runner checkout)" ;;
+            esac
+          done
+          echo "== 2. bazel install dirs, only if no other workspace remains =="
+          for ub in "$HOME"/.cache/bazel/_bazel_*/; do
+            [ -d "$ub" ] || continue
+            remaining=$(find "$ub" -maxdepth 2 -name DO_NOT_BUILD_HERE | wc -l)
+            if [ "$remaining" = 0 ]; then
+              echo "rm $ub  (no workspaces left)"; rm -rf "$ub"
+            else
+              echo "KEEP $ub  ($remaining other workspace(s))"
+            fi
+          done
+          rmdir "$HOME/.cache/bazel" 2>/dev/null || true
+
+          echo "== 3. fork caches, host deps, scratch, artifacts =="
+          for p in "$HOME/.cache/carbon-lang-build-cache" "$HOME/.cache/bazelisk" \
+                   "$HOME/.cache/uv" "$HOME/.cache/prek" \
+                   "$HOME/.local/lib/carbon-host-deps" \
+                   /tmp/conformance-toolchain /tmp/conformance-output.txt \
+                   /tmp/unwind-build /tmp/unwind_probe \
+                   "$RUNNER_TEMP/fork-toolchain"; do
+            if [ -e "$p" ]; then
+              echo "rm $p  ($(du -sh "$p" 2>/dev/null | cut -f1))"; rm -rf "$p"
+            fi
+          done
+
+          echo "== 4. runner work-directory checkouts from fork jobs =="
+          WORK=$(dirname "$(dirname "$GITHUB_WORKSPACE")")
+          echo "runner _work dir: $WORK"
+          du -sh "$WORK" 2>/dev/null || true
+          rm -rf "$GITHUB_WORKSPACE"/* "$GITHUB_WORKSPACE"/.[!.]* 2>/dev/null || true
+          rm -rf "$WORK/_actions" "$WORK/_tool" 2>/dev/null || true
+
+          echo "== after =="
+          df -h "$HOME" /tmp || true
+          du -sh "$WORK" 2>/dev/null || true
+          echo "Left in place on purpose: the actions-runner install itself and" \
+               "~/.local/bin/uv (may predate the fork workflows)."

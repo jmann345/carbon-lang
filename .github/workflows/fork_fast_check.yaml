@@ -7,6 +7,10 @@
 # Fast compile feedback for implementers working without a local build:
 # builds the compiler binary only — no tests, no tarball, no runtimes, no
 # publish. Warm-cache verdict in ~2 minutes vs ~10+ for the full gate.
+#
+# Request-file driven (fork/fast-check-request.txt), never on ordinary
+# pushes: the self-hosted runner is the fork owner's own machine and its use
+# is rationed (fork/rulebook.md R28).
 
 name: 'Fork: fast compile check'
 
@@ -16,10 +20,7 @@ on:
     branches:
       - 'claude/**'
     paths:
-      - '.github/workflows/fork_fast_check.yaml'
-      - 'toolchain/**'
-      - 'common/**'
-      - 'core/**'
+      - 'fork/fast-check-request.txt'
 
 concurrency:
   group: fork-fast-check-${{ github.ref }}

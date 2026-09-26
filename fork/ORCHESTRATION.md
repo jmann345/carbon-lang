@@ -10,21 +10,21 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-09-26 (post-PR #38: W-078b — the W-008 residue
-R8 conservative gate is LIFTED and ledger item W-078 is CLOSED (both
-halves). Integer/tuple matches without `default` no longer TODO-abort:
-unguarded irrefutable arms discharge exhaustiveness, and the new
-MatchNonexhaustiveNoIrrefutableArm Error covers the rest (enumeration
-exhaustiveness recorded design-rejected). DiagnoseDeadDefault stage 1
-now serves every lane; stage 2 stays bool/choice-gated. Runner-exposed
-boundary pinned: constant-conversion errors do not set has_error_arm,
-so the nonexhaustive error stacks truthfully. First conformance-program
-edit precedent (match_var_ref_binding's dead defaults dropped) and a
-NEW FLOOR: 101 PASS / 0 fail-class / 28 SKIP over 129
-(+match_irrefutable_no_default). Eight PRs since the runner returned
-(#31→#38). Next: W-077 struct patterns (the whole upstream-missing
-check layer) or the next inventory priority; weekly cron fires Monday
-2026-09-28 — see fork/decision-log.md for the full record)._
+_Last updated: 2026-09-26 (RUNNER ACCESS REVOKED mid-W-077 — the
+owner's machine is no longer for routine use; rulebook R28 is the new
+protocol: no auto-firing workflows (fast check is request-file driven
+now), and a workstream reaches the runner only after both impl reviews
+approve, in at most two rounds (one autoupdate, then gate + conformance
+together — the gate proves the fixpoint). W-077 struct patterns is IN
+FLIGHT on claude/carbon-fork-0-1-w077: plan folded (8 amendments, two
+reviews converged on the pruned-irrefutable fast-path crash lane),
+implementation pushed (ba7408b + c5cff10, fast-compile GREEN), two
+implementation reviews relaunched after a usage-limit interruption.
+Post-PR #38 state: W-078 CLOSED, R8 lifted, floor 101 PASS / 0 / 28
+SKIP over 129; eight PRs since the runner returned (#31→#38). Next:
+W-077 reviews → fixer → ONE autoupdate → gate + conformance (target
+102/130) → discharge → PR #39; weekly cron Monday 2026-09-28 — see
+fork/decision-log.md for the full record)._
 THIRTY-EIGHT PRs. The design's canonical
 `var my_opt: Optional(i32) = Optional(i32).None;` now compiles and
 runs: LookupChoiceCopyWitness mirrors the destroy witness (is_choice

@@ -24,6 +24,10 @@
 library "[[@TEST_NAME]]";
 
 fn F() {
+  // CHECK:STDERR: fail_todo_let.carbon:[[@LINE+4]]:7: error: semantics TODO: `struct pattern start` [SemanticsTodo]
+  // CHECK:STDERR:   let {x: i32} = {.x = 1};
+  // CHECK:STDERR:       ^
+  // CHECK:STDERR:
   let {x: i32} = {.x = 1};
 }
 
@@ -31,12 +35,20 @@ fn F() {
 library "[[@TEST_NAME]]";
 
 fn F() {
+  // CHECK:STDERR: fail_todo_var.carbon:[[@LINE+4]]:7: error: semantics TODO: `struct pattern start` [SemanticsTodo]
+  // CHECK:STDERR:   var {.x = y: i32} = {.x = 1};
+  // CHECK:STDERR:       ^
+  // CHECK:STDERR:
   var {.x = y: i32} = {.x = 1};
 }
 
 // --- fail_todo_param.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_param.carbon:[[@LINE+4]]:6: error: semantics TODO: `struct pattern start` [SemanticsTodo]
+// CHECK:STDERR: fn F({x: i32});
+// CHECK:STDERR:      ^
+// CHECK:STDERR:
 fn F({x: i32});
 
 // --- fail_todo_let_in_match_arm_body.carbon
@@ -48,6 +60,10 @@ library "[[@TEST_NAME]]";
 fn F(x: i32) -> i32 {
   match (x) {
     case n: i32 => {
+      // CHECK:STDERR: fail_todo_let_in_match_arm_body.carbon:[[@LINE+4]]:11: error: semantics TODO: `struct pattern start` [SemanticsTodo]
+      // CHECK:STDERR:       let {y: i32} = {.y = n};
+      // CHECK:STDERR:           ^
+      // CHECK:STDERR:
       let {y: i32} = {.y = n};
       return y;
     }

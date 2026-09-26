@@ -370,6 +370,13 @@ library "[[@TEST_NAME]]";
 fn F(p: {.a: i32, .b: i32}) -> i32 {
   match (p) {
     case {a: i32, b: i32} => { return a + b; }
+    // CHECK:STDERR: fail_struct_after_all_binding.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_struct_after_all_binding.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case {a: i32, b: i32} => { return a + b; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     default => { return 0; }
   }
   return -1;
@@ -384,6 +391,13 @@ library "[[@TEST_NAME]]";
 fn F(p: {.a: i32, .b: i32}) -> i32 {
   match (p) {
     case {a: i32, _} => { return a; }
+    // CHECK:STDERR: fail_struct_after_subset_binding.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_struct_after_subset_binding.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case {a: i32, _} => { return a; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
     default => { return 0; }
   }
   return -1;

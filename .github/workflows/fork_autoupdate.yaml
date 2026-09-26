@@ -16,11 +16,6 @@ name: 'Fork: autoupdate testdata'
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - 'claude/**'
-    paths:
-      - 'fork/autoupdate-request.txt'
 
 permissions:
   contents: write # For pushing the autoupdated goldens back to the branch.

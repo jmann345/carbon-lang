@@ -2835,6 +2835,21 @@ standard runners are free under a 6-hour cap) — a timed compile probe
 decides whether the fast check, and possibly autoupdate and the gate,
 can live there.
 
+Later the same day the owner asked for everything the fork workflows
+had put on the machine to be deleted; a one-shot owner-dispatched
+cleanup workflow removed the runner-checkout bazel output bases, the
+fork disk cache, the libunwind host deps, /tmp scratch, tool caches
+and the `_work` checkouts (run 36229750515, success) and is the last
+thing this project will ever run there. The replacement is
+fork_hosted.yaml on GitHub-hosted ubuntu-22.04 (free for the public
+fork, 6-hour cap): it reuses upstream's build-setup action so bazel
+reads upstream's public remote cache with matching keys, never
+uploads, and offers compile / autoupdate / gate / conformance modes.
+Its first compile probe (run 36230850086) took 18 minutes end to
+end — 5 of setup, 13 of compile — so the cache reads hit and the
+loop's verification survives intact on GitHub's machines; the free
+hosted minutes also remove the old reason to ration autoupdate passes.
+
 ### W-078b: R8 lift + integer/tuple dead `default` — W-078 closed (2026-09-26)
 
 The W-008 residue R8 conservative gate is lifted: an integer or tuple

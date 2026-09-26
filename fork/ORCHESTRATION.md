@@ -13,12 +13,12 @@ quantized-state files carry the deep detail).
 _Last updated: 2026-09-26 (RUNNER ACCESS REVOKED mid-W-077 — the
 owner's machine is OFF LIMITS to the agent; rulebook R28: all four
 self-hosted workflows are workflow_dispatch only and only the owner
-dispatches them. OWNER DISPATCH LIST (when you choose): none yet —
-W-077 needs `Fork: autoupdate testdata` then `Fork: build toolchain` +
-`Fork: conformance suite` on claude/carbon-fork-0-1-w077 once its
-reviews pass. Probe in flight: a GitHub-hosted compile
-(fork_hosted_compile.yaml) to see what verification can leave your
-machine entirely. W-077 struct patterns is IN
+dispatches them. The owner's machine has been wiped of fork state (cleanup
+run 36229750515) and is never used again. Verification moves to
+`Fork: hosted verification` (fork_hosted.yaml, GitHub-hosted, modes
+compile/autoupdate/gate/conformance, upstream's public remote cache
+read-only); compile probe GREEN in 18 min (run 36230850086) — the
+loop runs there now. W-077 struct patterns is IN
 FLIGHT on claude/carbon-fork-0-1-w077: plan folded (8 amendments, two
 reviews converged on the pruned-irrefutable fast-path crash lane),
 implementation pushed (ba7408b + c5cff10, fast-compile GREEN), two

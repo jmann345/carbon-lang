@@ -1,9 +1,9 @@
 {
-  "generated": "2026-09-25T19:39:41.467304+00:00",
-  "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 12.6,
+  "generated": "2026-09-26T10:28:48.489448+00:00",
+  "toolchain": "/home/runner/work/_temp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
+  "elapsed_seconds": 43.0,
   "totals": {
-    "PASS": 101,
+    "PASS": 102,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
@@ -199,6 +199,13 @@
     {
       "path": "control_flow/match_single_alternative.carbon",
       "bullet": "Control flow: matching \u2014 sum-type consumption incl. std::variant/std::optional interop",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "control_flow/match_struct_destructure.carbon",
+      "bullet": "Control flow: matching \u2014 good switch equivalents",
       "status": "PASS",
       "detail": "",
       "differential": false
@@ -1179,6 +1186,7 @@
         "control_flow/match_irrefutable_no_default.carbon",
         "control_flow/match_no_fallthrough.carbon",
         "control_flow/match_position.carbon",
+        "control_flow/match_struct_destructure.carbon",
         "control_flow/match_switch.carbon",
         "control_flow/match_switch_diff.carbon",
         "control_flow/match_tuple_case_diff.carbon",

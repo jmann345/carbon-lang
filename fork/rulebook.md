@@ -257,10 +257,11 @@ here.
     (autoupdate, gate, conformance, fast check) are `workflow_dispatch`
     ONLY — no push trigger, no request-file bump; the agent never dispatches
     them and never asks for a run on a schedule; (b) verification the agent
-    can run itself moves to GitHub-hosted runners where it fits their
-    6-hour cap (fork_hosted_compile.yaml is the feasibility probe) and to
-    fresh-context reviews with precise hand-traced golden predictions, which
-    are now the primary defect detector; (c) goldens still come only from
+    runs itself lives on GitHub-hosted runners (`Fork: hosted verification`,
+    fork_hosted.yaml — modes compile/autoupdate/gate/conformance; upstream's
+    public remote cache read-only; the first compile probe took 18 minutes
+    end to end, run 36230850086), backed by fresh-context reviews with
+    precise hand-traced golden predictions; (c) goldens still come only from
     autoupdate (R16 stands — hand-written goldens are the cheating the owner
     also forbade), so a workstream whose goldens are unfilled is parked as an
     OPEN PR labelled "awaiting owner-dispatched autoupdate + gate +

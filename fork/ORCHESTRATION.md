@@ -17,7 +17,8 @@ dispatches them. The owner's machine has been wiped of fork state (cleanup
 run 36229750515) and is never used again. Verification moves to
 `Fork: hosted verification` (fork_hosted.yaml, GitHub-hosted, modes
 compile/autoupdate/gate/conformance, upstream's public remote cache
-read-only); its first compile probe is in flight on trunk. W-077 struct patterns is IN
+read-only); compile probe GREEN in 18 min (run 36230850086) — the
+loop runs there now. W-077 struct patterns is IN
 FLIGHT on claude/carbon-fork-0-1-w077: plan folded (8 amendments, two
 reviews converged on the pruned-irrefutable fast-path crash lane),
 implementation pushed (ba7408b + c5cff10, fast-compile GREEN), two

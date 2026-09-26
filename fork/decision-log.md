@@ -2845,8 +2845,10 @@ fork_hosted.yaml on GitHub-hosted ubuntu-22.04 (free for the public
 fork, 6-hour cap): it reuses upstream's build-setup action so bazel
 reads upstream's public remote cache with matching keys, never
 uploads, and offers compile / autoupdate / gate / conformance modes.
-Its first compile probe decides whether the loop's verification
-survives intact or workstreams park as open PRs.
+Its first compile probe (run 36230850086) took 18 minutes end to
+end — 5 of setup, 13 of compile — so the cache reads hit and the
+loop's verification survives intact on GitHub's machines; the free
+hosted minutes also remove the old reason to ration autoupdate passes.
 
 ### W-078b: R8 lift + integer/tuple dead `default` — W-078 closed (2026-09-26)
 

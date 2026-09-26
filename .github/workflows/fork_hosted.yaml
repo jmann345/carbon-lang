@@ -78,9 +78,14 @@ jobs:
 
       - name: prek (lint/format acceptance)
         if: inputs.mode == 'gate'
+        # The build-setup action writes an untracked user.bazelrc into the
+        # workspace; keep it out of the copyright check, then restore it for
+        # the bazel test step.
         run: |
           set -euo pipefail
+          mv user.bazelrc "$RUNNER_TEMP/user.bazelrc"
           uvx prek run --all-files
+          mv "$RUNNER_TEMP/user.bazelrc" user.bazelrc
 
       - name: Test the toolchain
         if: inputs.mode == 'gate'
@@ -133,7 +138,8 @@ jobs:
           set -euo pipefail
           git config user.name 'jmann345'
           git config user.email 'jerrymannstan@gmail.com'
-          git add fork/conformance/out/scoreboard.json
+          # The out/ directory is gitignored; the scoreboard itself is tracked.
+          git add -f fork/conformance/out/scoreboard.json
           if git diff --cached --quiet; then
             echo "Scoreboard unchanged; nothing to commit."
             exit 0

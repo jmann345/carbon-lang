@@ -11,11 +11,14 @@ branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
 _Last updated: 2026-09-26 (RUNNER ACCESS REVOKED mid-W-077 — the
-owner's machine is no longer for routine use; rulebook R28 is the new
-protocol: no auto-firing workflows (fast check is request-file driven
-now), and a workstream reaches the runner only after both impl reviews
-approve, in at most two rounds (one autoupdate, then gate + conformance
-together — the gate proves the fixpoint). W-077 struct patterns is IN
+owner's machine is OFF LIMITS to the agent; rulebook R28: all four
+self-hosted workflows are workflow_dispatch only and only the owner
+dispatches them. OWNER DISPATCH LIST (when you choose): none yet —
+W-077 needs `Fork: autoupdate testdata` then `Fork: build toolchain` +
+`Fork: conformance suite` on claude/carbon-fork-0-1-w077 once its
+reviews pass. Probe in flight: a GitHub-hosted compile
+(fork_hosted_compile.yaml) to see what verification can leave your
+machine entirely. W-077 struct patterns is IN
 FLIGHT on claude/carbon-fork-0-1-w077: plan folded (8 amendments, two
 reviews converged on the pruned-irrefutable fast-path crash lane),
 implementation pushed (ba7408b + c5cff10, fast-compile GREEN), two

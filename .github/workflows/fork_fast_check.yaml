@@ -8,19 +8,14 @@
 # builds the compiler binary only — no tests, no tarball, no runtimes, no
 # publish. Warm-cache verdict in ~2 minutes vs ~10+ for the full gate.
 #
-# Request-file driven (fork/fast-check-request.txt), never on ordinary
-# pushes: the self-hosted runner is the fork owner's own machine and its use
-# is rationed (fork/rulebook.md R28).
+# workflow_dispatch ONLY, like every self-hosted fork workflow: the runner is
+# the fork owner's own machine, and only the owner dispatches runs on it
+# (fork/rulebook.md R28).
 
 name: 'Fork: fast compile check'
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - 'claude/**'
-    paths:
-      - 'fork/fast-check-request.txt'
 
 concurrency:
   group: fork-fast-check-${{ github.ref }}

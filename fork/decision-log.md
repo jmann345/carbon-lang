@@ -2822,6 +2822,19 @@ the owner also forbade). Same day, a usage-limit interruption killed
 both W-077 implementation reviews mid-run; they were relaunched with
 an explicit efficiency brief.
 
+Same day, superseded: the owner repeated the directive verbatim after
+the merge that introduced the request file itself fired one fast check
+(the new path filter matched the file's creation; cancelled within a
+minute). The "rationed use" reading was too generous. R28 is now
+absolute: all four self-hosted workflows are `workflow_dispatch` only,
+the agent never dispatches them, and a workstream whose goldens are
+unfilled parks as an open PR with the dispatch list stamped in
+ORCHESTRATION for the owner. The other way being probed for what the
+agent CAN run itself: GitHub-hosted runners (the fork is public, so
+standard runners are free under a 6-hour cap) — a timed compile probe
+decides whether the fast check, and possibly autoupdate and the gate,
+can live there.
+
 ### W-078b: R8 lift + integer/tuple dead `default` — W-078 closed (2026-09-26)
 
 The W-008 residue R8 conservative gate is lifted: an integer or tuple

@@ -248,20 +248,25 @@ here.
     pass-2 diff with structural changes means real nondeterminism — stop
     and diagnose instead of looping. This red-loop is what stranded the
     original b0 branch. (Origin: b0 reconstruction runs 19-22, 2026-07-27.) Superseded in part by R28: the fixpoint is now proven by the gate's file_test pass, not by a separate second autoupdate pass.
--   **R28. The self-hosted runner is the fork owner's own machine — its
-    use is rationed, never routine.** On 2026-09-26 the owner revoked
-    routine use ("You no longer have permission to use my computer for this
-    project, but you must still finish it. You can test your work more
-    sparingly."). Discipline: (a) no workflow fires on an ordinary push — the
-    fast compile check is request-file driven like the other three; (b) a
-    workstream reaches the runner only AFTER both implementation reviews
-    approve and the fixer round is done, and then in at most two rounds:
-    ONE autoupdate pass, then ONE gate build + ONE conformance run together
-    — the gate's file_test pass is the R26 fixpoint proof (a non-fixpoint
-    pass-1 fails the gate; the single permitted retry is one more autoupdate
-    pass followed by the gate again); (c) the weekly upstream cycle touches
-    the runner only when the cut actually advances; (d) fresh-context
-    reviews and hand-traced golden predictions are therefore the PRIMARY
-    defect detectors — reviewers must predict goldens precisely, and a
-    runner-exposed surprise is a review miss to be recorded. (Origin: owner
-    directive, 2026-09-26, mid-W-077.)
+-   **R28. The self-hosted runner is the fork owner's own machine — the
+    agent does not use it. Only the owner dispatches runs on it.** On
+    2026-09-26 the owner said, twice: "You no longer have permission to use
+    my computer for this project, but you must still finish it. You can test
+    your work more sparingly. [...] Figure out another way. You're no longer
+    squatting in there." Discipline: (a) all four self-hosted workflows
+    (autoupdate, gate, conformance, fast check) are `workflow_dispatch`
+    ONLY — no push trigger, no request-file bump; the agent never dispatches
+    them and never asks for a run on a schedule; (b) verification the agent
+    can run itself moves to GitHub-hosted runners where it fits their
+    6-hour cap (fork_hosted_compile.yaml is the feasibility probe) and to
+    fresh-context reviews with precise hand-traced golden predictions, which
+    are now the primary defect detector; (c) goldens still come only from
+    autoupdate (R16 stands — hand-written goldens are the cheating the owner
+    also forbade), so a workstream whose goldens are unfilled is parked as an
+    OPEN PR labelled "awaiting owner-dispatched autoupdate + gate +
+    conformance", with the exact dispatch list in fork/ORCHESTRATION.md;
+    trunk receives only verified merges; (d) R26's fixpoint rule is proven by
+    the gate's file_test pass whenever the owner does dispatch. (Origin:
+    owner directive, 2026-09-26, mid-W-077; superseding the same-day
+    "rationed use" draft after one accidental fire on a merge push, cancelled
+    within a minute.)

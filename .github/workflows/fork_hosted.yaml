@@ -11,6 +11,8 @@
 #   compile    — build the compiler binary (feasibility/timing probe).
 #   autoupdate — refill testdata goldens and push them to the dispatched ref.
 #   gate       — prek + `bazel test //toolchain/...` (the R21 merge gate).
+#   conformance — build the toolchain tarball, run fork/conformance/runner.py,
+#                 push the regenerated scoreboard to the dispatched ref.
 
 name: 'Fork: hosted verification'
 
@@ -18,14 +20,14 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'compile | autoupdate | gate'
+        description: 'compile | autoupdate | gate | conformance'
         required: true
         default: 'compile'
         type: choice
-        options: [compile, autoupdate, gate]
+        options: [compile, autoupdate, gate, conformance]
 
 permissions:
-  contents: write # autoupdate pushes goldens back to the dispatched ref.
+  contents: write # autoupdate/conformance push results back to the dispatched ref.
 
 concurrency:
   group: fork-hosted-${{ github.ref }}
@@ -85,3 +87,59 @@ jobs:
         run: |
           set -euo pipefail
           time ./scripts/run_bazel.py test //toolchain/...
+
+      - name: Build the toolchain tarball
+        if: inputs.mode == 'conformance'
+        run: |
+          set -euo pipefail
+          time ./scripts/run_bazel.py build -c opt //toolchain/install:carbon_toolchain_tar
+
+      - name: Run the conformance suite
+        if: inputs.mode == 'conformance'
+        run: |
+          set -euo pipefail
+          DEST="$RUNNER_TEMP/conformance-toolchain"
+          rm -rf "$DEST" && mkdir -p "$DEST"
+          tar xf bazel-bin/toolchain/install/carbon_toolchain-*.tar -C "$DEST"
+          CARBON=$(echo "$DEST"/carbon_toolchain-*/bin/carbon)
+          "$CARBON" version
+          python3 fork/conformance/runner.py --toolchain "$CARBON" \
+            | tee "$RUNNER_TEMP/conformance-output.txt"
+          python3 - <<'EOF'
+          import json
+          d = json.load(open('fork/conformance/out/scoreboard.json'))
+          totals = d['totals']
+          fails = sum(
+              totals.get(k, 0)
+              for k in ('COMPILE-FAIL', 'LINK-FAIL', 'RUN-FAIL',
+                        'OUTPUT-MISMATCH', 'DIFF-MISMATCH'))
+          print('totals:', totals)
+          if fails:
+              raise SystemExit(f'{fails} conformance failure(s)')
+          EOF
+
+      - name: Print conformance failure logs
+        if: inputs.mode == 'conformance' && failure()
+        run: |
+          for f in fork/conformance/out/logs/*; do
+            [ -f "$f" ] || continue
+            echo "===== $f ====="
+            sed -n '1,200p' "$f"
+          done
+
+      - name: Commit and push the scoreboard
+        if: inputs.mode == 'conformance'
+        run: |
+          set -euo pipefail
+          git config user.name 'jmann345'
+          git config user.email 'jerrymannstan@gmail.com'
+          git add fork/conformance/out/scoreboard.json
+          if git diff --cached --quiet; then
+            echo "Scoreboard unchanged; nothing to commit."
+            exit 0
+          fi
+          git commit \
+            -m "Regenerate the conformance scoreboard on a GitHub-hosted runner" \
+            -m "Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>" \
+            -m "Claude-Session: https://claude.ai/code/session_018tx3BJWJhp2yYjHPRA5fNR"
+          git push origin "HEAD:refs/heads/${GITHUB_REF_NAME}"

@@ -247,4 +247,21 @@ here.
     fire a second pass and verify it is loc-number-only before gating; a
     pass-2 diff with structural changes means real nondeterminism — stop
     and diagnose instead of looping. This red-loop is what stranded the
-    original b0 branch. (Origin: b0 reconstruction runs 19-22, 2026-07-27.)
+    original b0 branch. (Origin: b0 reconstruction runs 19-22, 2026-07-27.) Superseded in part by R28: the fixpoint is now proven by the gate's file_test pass, not by a separate second autoupdate pass.
+-   **R28. The self-hosted runner is the fork owner's own machine — its
+    use is rationed, never routine.** On 2026-09-26 the owner revoked
+    routine use ("You no longer have permission to use my computer for this
+    project, but you must still finish it. You can test your work more
+    sparingly."). Discipline: (a) no workflow fires on an ordinary push — the
+    fast compile check is request-file driven like the other three; (b) a
+    workstream reaches the runner only AFTER both implementation reviews
+    approve and the fixer round is done, and then in at most two rounds:
+    ONE autoupdate pass, then ONE gate build + ONE conformance run together
+    — the gate's file_test pass is the R26 fixpoint proof (a non-fixpoint
+    pass-1 fails the gate; the single permitted retry is one more autoupdate
+    pass followed by the gate again); (c) the weekly upstream cycle touches
+    the runner only when the cut actually advances; (d) fresh-context
+    reviews and hand-traced golden predictions are therefore the PRIMARY
+    defect detectors — reviewers must predict goldens precisely, and a
+    runner-exposed surprise is a review miss to be recorded. (Origin: owner
+    directive, 2026-09-26, mid-W-077.)

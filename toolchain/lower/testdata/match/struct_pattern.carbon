@@ -17,35 +17,11 @@
 // subset+`_` arm reads only the fields it names; the trailing all-binding
 // arm discharges exhaustiveness, so `Dispatch` needs no `default`.
 
-// CHECK:STDERR: struct_pattern.carbon:[[@LINE+4]]:29: error: expected identifier after `.`; prefix reserved word with `r#` to form a valid identifier [ExpectedIdentifierAfterPeriodOrArrow]
-// CHECK:STDERR: fn Dispatch(p: {.tag: i32, .val: i32}) -> i32 {
-// CHECK:STDERR:                             ^~~
-// CHECK:STDERR:
-fn Dispatch(p: {.tag: i32, .val: i32}) -> i32 {
+fn Dispatch(p: {.tag: i32, .value: i32}) -> i32 {
   match (p) {
     case {.tag = 1, _} => { return 100; }
-    // CHECK:STDERR: struct_pattern.carbon:[[@LINE+4]]:22: error: expected identifier after `.`; prefix reserved word with `r#` to form a valid identifier [ExpectedIdentifierAfterPeriodOrArrow]
-    // CHECK:STDERR:     case {.tag = 2, .val = v: i32} => { return v; }
-    // CHECK:STDERR:                      ^~~
-    // CHECK:STDERR:
-    case {.tag = 2, .val = v: i32} => { return v; }
-    // CHECK:STDERR: struct_pattern.carbon:[[@LINE+16]]:24: error: expected name in binding pattern; prefix reserved word with `r#` to form a valid identifier [ExpectedBindingPattern]
-    // CHECK:STDERR:     case {tag: i32, val: i32} => { return tag + val; }
-    // CHECK:STDERR:                        ^
-    // CHECK:STDERR:
-    // CHECK:STDERR: struct_pattern.carbon:[[@LINE+12]]:49: error: expected expression [ExpectedExpr]
-    // CHECK:STDERR:     case {tag: i32, val: i32} => { return tag + val; }
-    // CHECK:STDERR:                                                 ^~~
-    // CHECK:STDERR:
-    // CHECK:STDERR: struct_pattern.carbon:[[@LINE+8]]:49: error: `return` statements must end with a `;` [ExpectedStatementSemi]
-    // CHECK:STDERR:     case {tag: i32, val: i32} => { return tag + val; }
-    // CHECK:STDERR:                                                 ^~~
-    // CHECK:STDERR:
-    // CHECK:STDERR: struct_pattern.carbon:[[@LINE+4]]:49: error: semantics TODO: `handle invalid parse trees in `check`` [SemanticsTodo]
-    // CHECK:STDERR:     case {tag: i32, val: i32} => { return tag + val; }
-    // CHECK:STDERR:                                                 ^~~
-    // CHECK:STDERR:
-    case {tag: i32, val: i32} => { return tag + val; }
+    case {.tag = 2, .value = v: i32} => { return v; }
+    case {tag: i32, value: i32} => { return tag + value; }
   }
   return -2;
 }

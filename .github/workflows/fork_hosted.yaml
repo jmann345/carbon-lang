@@ -1,0 +1,87 @@
+# Part of the Carbon Language project, under the Apache License v2.0 with LLVM
+# Exceptions. See /LICENSE for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# Part of jmann345's carbon-lang fork tooling (see /fork/README.md).
+#
+# Fork verification on GitHub-hosted runners (fork/rulebook.md R28: the
+# self-hosted runner is the owner's own machine and is not used). Reuses
+# upstream's build-setup action so bazel reads upstream's public remote cache
+# with matching keys; never uploads to it. Modes:
+#   compile    — build the compiler binary (feasibility/timing probe).
+#   autoupdate — refill testdata goldens and push them to the dispatched ref.
+#   gate       — prek + `bazel test //toolchain/...` (the R21 merge gate).
+
+name: 'Fork: hosted verification'
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'compile | autoupdate | gate'
+        required: true
+        default: 'compile'
+        type: choice
+        options: [compile, autoupdate, gate]
+
+permissions:
+  contents: write # autoupdate pushes goldens back to the dispatched ref.
+
+concurrency:
+  group: fork-hosted-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 355
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Build setup (upstream action, read-only remote cache)
+        uses: ./.github/actions/build-setup-common
+        with:
+          matrix_runner: ubuntu-22.04
+          remote_cache_upload: '--noremote_upload_local_results'
+
+      - name: Compile the toolchain binary
+        if: inputs.mode == 'compile'
+        run: |
+          set -euo pipefail
+          time ./scripts/run_bazel.py build -c opt //toolchain:carbon
+
+      - name: Autoupdate testdata
+        if: inputs.mode == 'autoupdate'
+        run: |
+          set -euo pipefail
+          time python3 ./toolchain/autoupdate_testdata.py
+
+      - name: Commit and push testdata changes
+        if: inputs.mode == 'autoupdate'
+        run: |
+          set -euo pipefail
+          git config user.name 'jmann345'
+          git config user.email 'jerrymannstan@gmail.com'
+          git add -- ':(glob)toolchain/**/testdata/**'
+          if git diff --cached --quiet; then
+            echo "No testdata changes; nothing to commit."
+            exit 0
+          fi
+          git commit \
+            -m "Autoupdate testdata goldens on a GitHub-hosted runner" \
+            -m "Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>" \
+            -m "Claude-Session: https://claude.ai/code/session_018tx3BJWJhp2yYjHPRA5fNR"
+          git push origin "HEAD:refs/heads/${GITHUB_REF_NAME}"
+
+      - name: prek (lint/format acceptance)
+        if: inputs.mode == 'gate'
+        run: |
+          set -euo pipefail
+          uvx prek run --all-files
+
+      - name: Test the toolchain
+        if: inputs.mode == 'gate'
+        run: |
+          set -euo pipefail
+          time ./scripts/run_bazel.py test //toolchain/...

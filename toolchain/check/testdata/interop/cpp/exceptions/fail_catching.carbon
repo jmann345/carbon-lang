@@ -16,10 +16,14 @@
 // type that rejects `Cpp.Exception` fails the `FromBreak` argument conversion
 // with the catching-import context line; `?` on a binding holding the call's
 // value is not the direct-call form (D-EH-4); and a callee returning a class by
-// value — including a constructor — forms a `Core.Result(S, Cpp.Exception)`
-// specific that fails the SF-6 scalar payload bound, diagnosed with the
-// catching-import context naming the C++ callee. The `none` mode arm lives in
-// fail_catching_none_mode.carbon (its `EXTRA-ARGS` is file-wide).
+// value — including a constructor, spelled in this tree's static-member form
+// `Cpp.Widget.Widget(1)` — fails the SF-6 scalar payload bound BEFORE the
+// `Core.Result(S, Cpp.Exception)` specific is formed: exactly one error,
+// `CppCatchingImportNonScalarSuccess`, naming the C++ callee
+// (`may_throw_class` / `Widget::Widget`) and `Cpp.Widget`, and nothing else —
+// no specific is formed, so no monomorphization cascade follows. The `none`
+// mode arm lives in fail_catching_none_mode.carbon (its `EXTRA-ARGS` is
+// file-wide).
 
 // --- fail_noexcept_callee.carbon
 
@@ -105,58 +109,6 @@ Widget may_throw_class();
 ''';
 
 fn F() -> Core.Result(i32, Cpp.Exception) {
-  // CHECK:STDERR: fail_class_return.carbon:[[@LINE+52]]:3: error: catching import of `may_throw_class` requires a scalar success type in 0.1; `Cpp.Widget` is not one [CppCatchingImportPayloadNote]
-  // CHECK:STDERR:   Cpp.may_throw_class()?;
-  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: {{.*}}/prelude/types/result.carbon:28:1: note: choice alternative payload type `Cpp.Widget` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
-  // CHECK:STDERR: choice Result(T: type, E: type) {
-  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
-  // CHECK:STDERR: fail_class_return.carbon:[[@LINE+45]]:3: error: function returns incomplete type `Core.ControlFlow(Cpp.Widget, Cpp.Exception)` [IncompleteTypeInFunctionReturnType]
-  // CHECK:STDERR:   Cpp.may_throw_class()?;
-  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: {{.*}}/prelude/try.carbon:21:1: note: choice alternative payload type `Cpp.Widget` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
-  // CHECK:STDERR: choice ControlFlow(C: type, B: type) {
-  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: {{.*}}/prelude/types/result.carbon:42:19: note: return type declared here [IncompleteReturnTypeHere]
-  // CHECK:STDERR:   fn Branch(self) -> ControlFlow(T, E) {
-  // CHECK:STDERR:                   ^~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
-  // CHECK:STDERR: fail_class_return.carbon:[[@LINE+35]]:3: error: unable to monomorphize specific `Core.Ok(Cpp.Exception)` [ResolvingSpecificHere]
-  // CHECK:STDERR:   Cpp.may_throw_class()?;
-  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: {{.*}}/prelude/types/result.carbon:28:1: note: choice alternative payload type `Cpp.Widget` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
-  // CHECK:STDERR: choice Result(T: type, E: type) {
-  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
-  // CHECK:STDERR: fail_class_return.carbon:[[@LINE+28]]:3: error: unable to monomorphize specific `Core.Err(Cpp.Exception)` [ResolvingSpecificHere]
-  // CHECK:STDERR:   Cpp.may_throw_class()?;
-  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: {{.*}}/prelude/types/result.carbon:28:1: note: choice alternative payload type `Cpp.Widget` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
-  // CHECK:STDERR: choice Result(T: type, E: type) {
-  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
-  // CHECK:STDERR: fail_class_return.carbon:[[@LINE+21]]:3: error: unable to monomorphize specific `Branch(Cpp.Exception)` [ResolvingSpecificHere]
-  // CHECK:STDERR:   Cpp.may_throw_class()?;
-  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: {{.*}}/prelude/types/result.carbon:44:7: note: choice alternative payload type `Cpp.Widget` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
-  // CHECK:STDERR:       case .Ok(v: T) => { return ControlFlow(T, E).Continue(v); }
-  // CHECK:STDERR:       ^~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
-  // CHECK:STDERR: {{.*}}/prelude/types/result.carbon:44:34: error: unable to monomorphize specific `Core.Continue(Cpp.Exception)` [ResolvingSpecificHere]
-  // CHECK:STDERR:       case .Ok(v: T) => { return ControlFlow(T, E).Continue(v); }
-  // CHECK:STDERR:                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: {{.*}}/prelude/try.carbon:21:1: note: choice alternative payload type `Cpp.Widget` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
-  // CHECK:STDERR: choice ControlFlow(C: type, B: type) {
-  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
-  // CHECK:STDERR: {{.*}}/prelude/types/result.carbon:45:35: error: unable to monomorphize specific `Core.Break(Cpp.Exception)` [ResolvingSpecificHere]
-  // CHECK:STDERR:       case .Err(e: E) => { return ControlFlow(T, E).Break(e); }
-  // CHECK:STDERR:                                   ^~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: {{.*}}/prelude/try.carbon:21:1: note: choice alternative payload type `Cpp.Widget` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
-  // CHECK:STDERR: choice ControlFlow(C: type, B: type) {
-  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   Cpp.may_throw_class()?;
   return Core.Result(i32, Cpp.Exception).Ok(0);
 }
@@ -175,10 +127,6 @@ struct Widget {
 ''';
 
 fn F() -> Core.Result(i32, Cpp.Exception) {
-  // CHECK:STDERR: fail_ctor_return.carbon:[[@LINE+4]]:3: error: value of type `type` is not callable [CallToNonCallable]
-  // CHECK:STDERR:   Cpp.Widget(1)?;
-  // CHECK:STDERR:   ^~~~~~~~~~~~~
-  // CHECK:STDERR:
-  Cpp.Widget(1)?;
+  Cpp.Widget.Widget(1)?;
   return Core.Result(i32, Cpp.Exception).Ok(0);
 }

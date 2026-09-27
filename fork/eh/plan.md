@@ -1828,7 +1828,29 @@ now import.cpp:2114.
     enum, exceptions/fenced_thunk, extern_c, function/export/{function,generic},
     function/import/{function_decl,function_in_template,parameters,return},
     globals, globals_carbon_defined, nullptr, operators, pointer, reference,
-    share_ast, std_initializer_list, template, thunks, void. Expected churn per
+    share_ast, std_initializer_list, template, thunks, void. (Landed 2026-09-27,
+    fill e247c2700, run 36310053869: THIRTY goldens moved — the 27 above plus
+    three benign fence consequences §6.B did not enumerate:
+    check/interop/cpp/function/import/thunk_ast.carbon (the AST dump now shows
+    the `CXXTryStmt`/`CXXCatchStmt` with the write call and the rethrow),
+    lower/interop/cpp/optimize/clang_no_optimize_twice.carbon
+    (`terminate.lpad`/`__clang_call_terminate` became a real landing pad with
+    `exn`/`ehselector` slots) and lower/interop/cpp/debug_info.carbon (a
+    `DILexicalBlock` for the `try`). Two negatives in the fill were wrong and
+    were fixed at the root: `fail_class_return` cascaded five monomorphization
+    errors after the intended one because `RequireCompleteType` returned TRUE
+    for the SF-6-rejected `Core.Result(Cpp.Widget, Cpp.Exception)` — the class
+    completes with an error-valued layout — so the catching call did not
+    return `ErrorInst`; the landed code classifies `S` with the check side's
+    own `IsInSliceChoicePayloadType` BEFORE forming the specific and emits the
+    Error `CppCatchingImportNonScalarSuccess` (same text as the former context
+    note; the note kind stays as the `RequireCompleteType` belt's context, and
+    that belt now also returns `ErrorInst` when `GetObjectRepr` is `ErrorInst`).
+    `fail_ctor_return` spelled the constructor call `Cpp.Widget(1)`, which this
+    tree diagnoses as `value of type type is not callable`; the tree's spelling
+    is the static-member form `Cpp.Widget.Widget(1)` (interop/cpp/class/import/
+    constructor.carbon). §4.B's `fail_class_return`/`fail_ctor_return`
+    prediction is now exactly one error each and nothing else.) Expected churn per
     §6.B: exactly those 27 plus the six new files; any other file moving in the
     fill is a §6 miss.
 

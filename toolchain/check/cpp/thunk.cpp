@@ -1304,6 +1304,20 @@ static auto ImplementsCoreTry(Context& context, SemIR::LocId loc_id,
   return implements_try;
 }
 
+// Returns whether `success_type_id` is admitted as the success payload of a
+// catching import's `Core.Result(S, Cpp.Exception)`: the check side's own SF-6
+// choice-payload predicate (`IsInSliceChoicePayloadType`, type.cpp — int,
+// float, bool, pointer after the adapter walk, and `()`), evaluated BEFORE the
+// specific is formed. The type is completed first (without diagnosing) so an
+// adapter's foundation walk resolves, mirroring the eval_inst.cpp pre-filter; a
+// type that cannot be completed is not classifiable as a scalar.
+static auto IsCatchingSuccessTypeAdmitted(Context& context, SemIR::LocId loc_id,
+                                          SemIR::TypeId success_type_id)
+    -> bool {
+  return TryToCompleteType(context, success_type_id, loc_id) &&
+         IsInSliceChoicePayloadType(context, success_type_id);
+}
+
 // Returns the Carbon type of a call to `callee_function`: its declared return
 // type, or `()` for a `void` callee.
 static auto GetCalleeResultType(Context& context,
@@ -1341,14 +1355,32 @@ static auto PerformCppCatchingThunkCall(
   }
   CARBON_CHECK(callee_arg_ids.size() == callee_function_params.size());
 
-  // Form `Core.Result(S, Cpp.Exception)` the way `MakeOptionalType` forms
-  // `Core.Optional(T)`, and force its completion here, under the catching
-  // context: a non-scalar `S` (a class, `std::string`, a constructor's class)
-  // fails the SF-6 payload bound at the specific's resolution
-  // (`ChoicePayloadNotTrivialInSpecific`, eval_inst.cpp), and this context
-  // names the C++ callee.
+  // The SF-6 bound on the success type (fork/eh/plan.md §1.B.1): a non-scalar
+  // `S` — a class, `std::string`, a constructor's class — cannot be a payload
+  // of `Core.Result(S, Cpp.Exception)`. It is diagnosed HERE, naming the C++
+  // callee, before the specific is formed: forming it would leave a
+  // complete-with-error-layout class behind whose every later use (the `?`
+  // desugar's `Branch`, the alternative constructors) cascades into
+  // monomorphization errors.
   std::string callee_name =
       GetCalleeClangDecl(context, callee_function)->getQualifiedNameAsString();
+  if (!IsCatchingSuccessTypeAdmitted(context, loc_id, success_type_id)) {
+    CARBON_DIAGNOSTIC(CppCatchingImportNonScalarSuccess, Error,
+                      "catching import of `{0}` requires a scalar success "
+                      "type in 0.1; {1} is not one",
+                      std::string, SemIR::TypeId);
+    context.emitter().Emit(loc_id, CppCatchingImportNonScalarSuccess,
+                           callee_name, success_type_id);
+    return SemIR::ErrorInst::InstId;
+  }
+
+  // Form `Core.Result(S, Cpp.Exception)` the way `MakeOptionalType` forms
+  // `Core.Optional(T)`, and force its completion here. The predicate above
+  // has already admitted `S`, so the specific's own SF-6 check
+  // (`ChoicePayloadNotTrivialInSpecific`, eval_inst.cpp) is not expected to
+  // fire; the completion is kept as a belt, loud and final: a rejected
+  // specific completes with an error-valued layout (`GetObjectRepr` is
+  // `ErrorInst`), which ends the call here instead of cascading.
   auto exception_type = ExprAsType(
       context, loc_id,
       LookupNameInCore(context, loc_id,
@@ -1365,14 +1397,17 @@ static auto PerformCppCatchingThunkCall(
     return SemIR::ErrorInst::InstId;
   }
   if (!RequireCompleteType(
-          context, result_type.type_id, loc_id, [&](auto& builder) {
+          context, result_type.type_id, loc_id,
+          [&](auto& builder) {
             CARBON_DIAGNOSTIC(CppCatchingImportPayloadNote, Context,
                               "catching import of `{0}` requires a scalar "
                               "success type in 0.1; {1} is not one",
                               std::string, SemIR::TypeId);
             builder.Context(loc_id, CppCatchingImportPayloadNote, callee_name,
                             success_type_id);
-          })) {
+          }) ||
+      context.types().GetObjectRepr(result_type.type_id) ==
+          SemIR::ErrorInst::TypeId) {
     return SemIR::ErrorInst::InstId;
   }
 

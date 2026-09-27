@@ -9,6 +9,14 @@
 // TIP:   bazel test //toolchain/testing:file_test --test_arg=--file_tests=toolchain/check/testdata/operators/fail_question_final.carbon
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/operators/fail_question_final.carbon
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
+// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
+// CHECK:STDERR:                                          ^~~~~~~~~~
+// CHECK:STDERR:
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
+// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
+// CHECK:STDERR:                                          ^~~~~~~~~~
+// CHECK:STDERR:
 
 // The W-072 dissolution probes, negative half (fork/w072/plan.md §3, W72a;
 // probes P-6 and P-7): the guardrails around the `final impl` lane. P-6

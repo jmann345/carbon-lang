@@ -9,6 +9,14 @@
 // TIP:   bazel test //toolchain/testing:file_test --test_arg=--file_tests=toolchain/check/testdata/match/fail_nonexhaustive_payload_literal.carbon
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/match/fail_nonexhaustive_payload_literal.carbon
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
+// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
+// CHECK:STDERR:                                          ^~~~~~~~~~
+// CHECK:STDERR:
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
+// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
+// CHECK:STDERR:                                          ^~~~~~~~~~
+// CHECK:STDERR:
 
 // The coverage pin for refutable payload arms (W-008 plan §4 R-4): a
 // `.Some(42)` arm compares the payload's value, can fail, and records

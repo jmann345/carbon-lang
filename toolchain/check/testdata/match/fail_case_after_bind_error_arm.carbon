@@ -9,6 +9,14 @@
 // TIP:   bazel test //toolchain/testing:file_test --test_arg=--file_tests=toolchain/check/testdata/match/fail_case_after_bind_error_arm.carbon
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/match/fail_case_after_bind_error_arm.carbon
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
+// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
+// CHECK:STDERR:                                          ^~~~~~~~~~
+// CHECK:STDERR:
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
+// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
+// CHECK:STDERR:                                          ^~~~~~~~~~
+// CHECK:STDERR:
 
 // The bind-pass-error carve-out (W-066 plan §1.8): `case b: bool` on an
 // i32 scrutinee errors only in the BIND pass — it reaches the usefulness

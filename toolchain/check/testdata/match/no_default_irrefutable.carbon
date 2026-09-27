@@ -9,6 +9,14 @@
 // TIP:   bazel test //toolchain/testing:file_test --test_arg=--file_tests=toolchain/check/testdata/match/no_default_irrefutable.carbon
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/match/no_default_irrefutable.carbon
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
+// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
+// CHECK:STDERR:                                          ^~~~~~~~~~
+// CHECK:STDERR:
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
+// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
+// CHECK:STDERR:                                          ^~~~~~~~~~
+// CHECK:STDERR:
 
 // Integer- and tuple-scrutinee exhaustiveness through an unguarded
 // irrefutable arm (W-078b, the lifted R8 conservative gate; SF-7): these

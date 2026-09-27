@@ -9,6 +9,14 @@
 // TIP:   bazel test //toolchain/testing:file_test --test_arg=--file_tests=toolchain/check/testdata/match/empty_choice.carbon
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/match/empty_choice.carbon
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
+// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
+// CHECK:STDERR:                                          ^~~~~~~~~~
+// CHECK:STDERR:
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
+// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
+// CHECK:STDERR:                                          ^~~~~~~~~~
+// CHECK:STDERR:
 
 // An empty choice is admitted as a `match` scrutinee (W-068): its
 // discriminant field is the empty tuple, like a single-alternative choice's,

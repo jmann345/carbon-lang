@@ -28,6 +28,30 @@
 
 // --- AUTOUPDATE-SPLIT
 
+// CHECK:STDERR: /test.carbon: warning: dropping diagnostic in {{.*}}/prelude/types/optional.carbon:
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface
+// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
+// CHECK:STDERR:                                          ^~~~~~~~~~
+// CHECK:STDERR:  [LanguageServerDiagnosticInWrongFile]
+// CHECK:STDERR:
+// CHECK:STDERR: /test.carbon: warning: dropping diagnostic in {{.*}}/prelude/types/optional.carbon:
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface
+// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
+// CHECK:STDERR:                                          ^~~~~~~~~~
+// CHECK:STDERR:  [LanguageServerDiagnosticInWrongFile]
+// CHECK:STDERR:
+// CHECK:STDERR: /test.carbon: warning: dropping diagnostic in {{.*}}/prelude/types/optional.carbon:
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface
+// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
+// CHECK:STDERR:                                          ^~~~~~~~~~
+// CHECK:STDERR:  [LanguageServerDiagnosticInWrongFile]
+// CHECK:STDERR:
+// CHECK:STDERR: /test.carbon: warning: dropping diagnostic in {{.*}}/prelude/types/optional.carbon:
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface
+// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
+// CHECK:STDERR:                                          ^~~~~~~~~~
+// CHECK:STDERR:  [LanguageServerDiagnosticInWrongFile]
+// CHECK:STDERR:
 // CHECK:STDOUT: Content-Length: 352{{\r}}
 // CHECK:STDOUT: {{\r}}
 // CHECK:STDOUT: {

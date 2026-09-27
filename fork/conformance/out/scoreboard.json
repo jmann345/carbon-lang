@@ -1,9 +1,9 @@
 {
-  "generated": "2026-09-27T06:37:09.935551+00:00",
+  "generated": "2026-09-27T08:26:19.758037+00:00",
   "toolchain": "/home/runner/work/_temp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 48.0,
+  "elapsed_seconds": 50.0,
   "totals": {
-    "PASS": 102,
+    "PASS": 106,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
@@ -295,6 +295,13 @@
       "differential": false
     },
     {
+      "path": "error_handling/optional_try.carbon",
+      "bullet": "Error handling: dedicated control flow constructs",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
       "path": "error_handling/question_generic_diff.carbon",
       "bullet": "Error handling: dedicated control flow constructs",
       "status": "PASS",
@@ -314,6 +321,27 @@
       "status": "PASS",
       "detail": "",
       "differential": true
+    },
+    {
+      "path": "error_handling/result_prelude_diff.carbon",
+      "bullet": "Error handling: dedicated control flow constructs",
+      "status": "PASS",
+      "detail": "",
+      "differential": true
+    },
+    {
+      "path": "error_handling/run_result_err.carbon",
+      "bullet": "Error handling: dedicated control flow constructs",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "error_handling/run_result_ok.carbon",
+      "bullet": "Error handling: dedicated control flow constructs",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
     },
     {
       "path": "functions/forward_decl.carbon",
@@ -1226,12 +1254,16 @@
     },
     "Error handling: dedicated control flow constructs": {
       "status": "PASS",
-      "gap_status": "PARTIAL",
+      "gap_status": "DONE",
       "programs": [
         "error_handling/control_flow_constructs.carbon",
+        "error_handling/optional_try.carbon",
         "error_handling/question_generic_diff.carbon",
         "error_handling/question_generic_thread_diff.carbon",
-        "error_handling/question_propagation_diff.carbon"
+        "error_handling/question_propagation_diff.carbon",
+        "error_handling/result_prelude_diff.carbon",
+        "error_handling/run_result_err.carbon",
+        "error_handling/run_result_ok.carbon"
       ]
     },
     "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)": {

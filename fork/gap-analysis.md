@@ -16,8 +16,8 @@ with real test coverage), **PARTIAL** (works with material gaps),
 ## Scoreboard
 
 **27 DONE / 19 PARTIAL / 8 MISSING / 2 DESIGN-ONLY** across 56 milestone
-bullets (reconciled 2026-09-27 against the conformance scoreboard — 101 PASS /
-0 FAIL / 28 SKIP over 129 programs, 43/56 bullets PASS — and the
+bullets (reconciled 2026-09-27 against the conformance scoreboard — 106 PASS /
+0 FAIL / 28 SKIP over 134 programs, 43/56 bullets PASS — and the
 fork/inventory/work-items.json ledger; the original 2026-07-19 audit read
 24 / 18 / 13 / 1). The front half of the compiler is done; match, choice
 payloads, `?` error handling, exception boundaries, and threading interop

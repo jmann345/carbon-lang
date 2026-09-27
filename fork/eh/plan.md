@@ -1196,6 +1196,22 @@ header gains one sentence pointing at the boundary diagnostic's lower pin
     base/install_paths.{h,cpp}; base/clang_invocation.cpp; install/BUILD;
     install/include/carbon/expected.h new).
 
+**Churn addendum (landed 2026-09-27, EH-A, hosted verification):** the
+"exactly two existing files" prediction held for CHECK goldens, but eight
+LOWER goldens moved as well — array/iterate, for/bindings,
+for/break_continue, for/for, primitives/optional, interop/cpp/nullptr,
+interop/cpp/pointer, interop/cpp/void — every changed line a
+`DILocation`/`DISubprogram` line number (verified: zero non-debug-info
+lines changed). Cause: lowered debug info for `Optional`'s methods embeds
+their source line numbers, and `core/prelude/types/optional.carbon` gained
+one import line plus the `Try` impl above nothing (the methods sit above
+the impl, but the `import library "prelude/try";` line shifts them by one).
+Lesson for §6 inventories: any prelude edit that shifts lines ABOVE a
+method used by lowered code moves the DI line numbers of every lower golden
+that inlines or references that method — count those files (grep the
+prelude symbol's linkage name in lower goldens) before claiming zero
+collateral.
+
 ## §7 Risks and rejected alternatives (falsifiable)
 
 -   **R-1 — `Result` recognized by name collides with a user `Core`
@@ -1381,7 +1397,7 @@ header gains one sentence pointing at the boundary diagnostic's lower pin
 2.  **Gate:** mode `gate` green (prek + `bazel test //toolchain/...`;
     clang-format 21.1.8 per R18 on the C++ diff; `uvx prek run --files
     <changed>` locally before every push, R25).
-3.  **Conformance:** mode `conformance`; EH-A **105/0/28 over 133**, EH-B
+3.  **Conformance:** mode `conformance`; EH-A **105/0/28 over 133** (landed 2026-09-27: 106/0/28 over 134 after #39 added one program), EH-B
     **109/0/27 over 136** (both +1/+1 after W-077 merges); `runner.py
     --self-test` and `--update-readme-table` clean. Any other movement is
     a §5/§6 miss — stop and reconcile.

@@ -2928,9 +2928,31 @@ D-EH-1, and the `Optional` sketch carries the "signature normative MODULO
 note. EH-B's amendments (`Cpp.Exception` message clause, selection rule,
 release clause, `Carbon::Exception` mapping) are untouched.
 
-_Verification (EXPECTED at discharge; the orchestrator confirms before
-merge):_ conformance floor **105 PASS / 0 FAIL / 28 SKIP over 133**
-<!-- VERIFY: numbers --> (tree-relative, plan §5.A; +1/+1 after the W-077
+_Verification (CONFIRMED before merge, hosted-only per R28):_ gate run
+36304152824 green (`prek --all-files` + `bazel test //toolchain/...`);
+conformance run 36304154221 (scoreboard 82a382ee1): **106 PASS / 0 FAIL /
+28 SKIP over 134** — the plan's tree-relative 105/0/28 over 133 plus the
+one program W-077 (#39) added to trunk in between; the four EH-A programs
+PASS, zero SKIP flips, exactly as §5.A predicted.
+_Hosted verification record:_ the first autoupdate (run 36301020281)
+fired R-12 — every full-prelude golden gained two errors because
+Optional's `Try` impl moved a `T` payload under a bound without
+`Destroy` (fixed: `Destroy & OptionalStorage`, the file's own idiom;
+polluted fill reverted). The second (run 36301651448) fired R-3 — a
+CHECK failure in `PadToType` while emitting the folded constant
+`U.A(())` whose payload element carried the payload-tuple type against
+the byte-array region (fixed in lower/constant.cpp: a zero-sized
+constant zero-fills the region; the deeper check-side fold residual is
+recorded in plan §7 R-3) — and, because file_test isolates crashes and
+exits 0, it pushed a PARTIAL fill; the hosted autoupdate step now fails
+on any stack dump (trunk 154692b66). The third (run 36303332559) filled
+the three lower goldens as predicted (`define i32 @main()` with zero
+parameters, `declare i64 @write(i32, ptr, i64)`, the 71-byte message
+global, `store { {} } poison` for unit payloads) and moved eight
+Optional-using lower goldens by debug-info line numbers only (plan §6
+churn addendum). Two runner-exposed defects on one slice, both caught
+by the plan's own falsifiers; both are review misses under R28(d).
+ (tree-relative, plan §5.A; +1/+1 after the W-077
 merge — PR #39 landed on trunk during EH-A — that is 106/0/28 over 134 on
 the merged tree); the four new programs PASS and no SKIP flips; hosted
 autoupdate to fixpoint with the churn confined to §6.A's two existing

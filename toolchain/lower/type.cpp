@@ -19,6 +19,7 @@
 #include "toolchain/sem_ir/inst.h"
 #include "toolchain/sem_ir/inst_kind.h"
 #include "toolchain/sem_ir/pattern.h"
+#include "toolchain/sem_ir/type_info.h"
 #include "toolchain/sem_ir/typed_insts.h"
 
 namespace Carbon::Lower {
@@ -271,6 +272,10 @@ class FunctionTypeInfoBuilder {
   // attribute with this type.
   llvm::Type* sret_type_ = nullptr;
 
+  // The `Core.Result(...)` return type of a `Main.Run` entry point, if that is
+  // what is being built (see `FunctionTypeInfo::entry_point_result_type_id`).
+  SemIR::TypeId entry_point_result_type_id_ = SemIR::TypeId::None;
+
   // Whether we failed to form an exact description of the function type. This
   // can happen if a parameter or return type is incomplete. In this case, we
   // can still sometimes need to emit a declaration of the function, for example
@@ -353,6 +358,16 @@ auto FunctionTypeInfoBuilder::TryHandleReturnForm(
               SemIR::GetConstantValueInSpecific(
                   func_ctx.context->sem_ir(), func_ctx.specific_id,
                   init_form.type_component_inst_id));
+      // A `Result`-returning entry point (D10) lowers as the C ABI
+      // `i32 main()`: its return slot is not a parameter (see
+      // `TryHandleParameter`), and the exit code is derived from the returned
+      // alternative by the `ReturnExpr` epilogue (handle.cpp).
+      if (GetEntryPointResultTypeId(func_ctx.context->sem_ir(),
+                                    func_ctx.function_id)
+              .has_value()) {
+        entry_point_result_type_id_ = return_type_id;
+        return SetEntryPointReturnInt32(func_ctx);
+      }
       switch (
           SemIR::InitRepr::ForType(func_ctx.context->sem_ir(), return_type_id)
               .kind) {
@@ -451,6 +466,12 @@ auto FunctionTypeInfoBuilder::TryHandleParameter(
                              ref_lowered_types());
     }
     case SemIR::OutParamPattern::Kind: {
+      // A `Result`-returning entry point returns its `i32` exit code by copy
+      // (`TryHandleReturnForm`); the choice-typed SemIR return slot must not
+      // become a pointer parameter, or `main` would not have the C ABI type.
+      if (entry_point_result_type_id_.has_value()) {
+        return IgnoreParam(index);
+      }
       switch (SemIR::InitRepr::ForType(sem_ir, param_type_id).kind) {
         case SemIR::InitRepr::InPlace:
           return AddLoweredParam(func_ctx, index, param_pattern_id,
@@ -508,7 +529,8 @@ auto FunctionTypeInfoBuilder::Finalize() -> FunctionTypeInfo {
           .unused_param_indices = std::move(unused_param_indices_),
           .param_name_ids = std::move(param_name_ids_),
           .sret_type = sret_type_,
-          .inexact = inexact_};
+          .inexact = inexact_,
+          .entry_point_result_type_id = entry_point_result_type_id_};
 }
 
 auto FunctionTypeInfoBuilder::Abort() -> FunctionTypeInfo {
@@ -520,6 +542,7 @@ auto FunctionTypeInfoBuilder::Abort() -> FunctionTypeInfo {
   param_di_types_.clear();
   return_type_ = llvm::Type::getVoidTy(context_->llvm_context());
   param_di_types_.push_back(nullptr);
+  entry_point_result_type_id_ = SemIR::TypeId::None;
   inexact_ = true;
   return Finalize();
 }
@@ -546,6 +569,25 @@ auto FunctionTypeInfoBuilder::GetLoweredTypes(const FunctionInContext& func_ctx,
 auto BuildFunctionTypeInfo(llvm::ArrayRef<FunctionInContext> functions)
     -> FunctionTypeInfo {
   return FunctionTypeInfoBuilder(functions).Build();
+}
+
+auto GetEntryPointResultTypeId(const SemIR::File& sem_ir,
+                               SemIR::FunctionId function_id) -> SemIR::TypeId {
+  if (!SemIR::IsEntryPoint(sem_ir, function_id)) {
+    return SemIR::TypeId::None;
+  }
+  auto return_type_id =
+      sem_ir.functions().Get(function_id).GetDeclaredReturnType(sem_ir);
+  if (!return_type_id.has_value()) {
+    return SemIR::TypeId::None;
+  }
+  auto class_type = sem_ir.types().TryGetAs<SemIR::ClassType>(return_type_id);
+  if (!class_type ||
+      SemIR::RecognizedTypeInfo::ForType(sem_ir, *class_type).kind !=
+          SemIR::RecognizedTypeInfo::Result) {
+    return SemIR::TypeId::None;
+  }
+  return return_type_id;
 }
 
 // Given an LLVM type, build a corresponding type with `padding_bytes` bytes of

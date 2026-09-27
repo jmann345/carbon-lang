@@ -48,6 +48,10 @@ struct FunctionInfo {
   // type was incomplete. If this is set, the function should not be used to
   // emit a definition or a call.
   bool inexact;
+
+  // The `Core.Result(...)` return type of a `Main.Run` entry point, if this is
+  // one; see `FunctionTypeInfo::entry_point_result_type_id`.
+  SemIR::TypeId entry_point_result_type_id = SemIR::TypeId::None;
 };
 
 class FunctionContext;
@@ -236,6 +240,12 @@ class FileContext {
   }
   auto SetPrintfIntFormatString(llvm::Value* printf_int_format_string) {
     context().SetPrintfIntFormatString(printf_int_format_string);
+  }
+  auto entry_point_result_err_message() -> llvm::Value* {
+    return context().entry_point_result_err_message();
+  }
+  auto SetEntryPointResultErrMessage(llvm::Value* message) {
+    context().SetEntryPointResultErrMessage(message);
   }
 
   // Builds the global for the given instruction, which should then be cached by

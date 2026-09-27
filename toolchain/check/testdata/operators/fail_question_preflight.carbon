@@ -12,10 +12,11 @@
 
 // The postfix `?` rejections that need no `Core.Try` impl (fork/b1/plan.md
 // §2.4 step 1, §2.5): the pre-flight shapes — each diagnosed before the
-// desugar emits a single inst — plus the R-4 per-specific carrier rejection
-// (fail_unit_break_type, which pins the SF-6 eval hook and is NOT a
-// pre-flight diagnostic). All run on the minimal `try` prelude, which has
-// no `Try` impls at all — so the pre-flight rejections demonstrably fire
+// desugar emits a single inst. (The former unit-break-type subfile here,
+// which pinned the SF-6 rejection of `Core.ControlFlow(i32, ())`, was the
+// W-070 bound; it flipped positive at fork/eh/plan.md D-EH-2 and now lives
+// in choice/unit_payload.carbon.) All run on the minimal `try` prelude, which
+// has no `Try` impls at all — so the pre-flight rejections demonstrably fire
 // before any impl lookup — and omits `EqWith`, so the desugar's
 // discriminant test is never reached. The shapes needing a Try-implementing
 // operand or a return type with a user `Core.Try` impl are in
@@ -103,24 +104,3 @@ fn WithReturnedVar(x: i32) -> i32 {
   x?;
   return var;
 }
-
-// --- fail_unit_break_type.carbon
-library "[[@TEST_NAME]]";
-
-// NOT a pre-flight rejection — no `?` appears in this program; the pin
-// exercises the SF-6 per-specific eval hook on the carrier type itself, and
-// rides this file for the shared min_prelude/try combo.
-//
-// The unit-break-type bound (fork/b1/plan.md §2.7, risk R-4): `BreakType =
-// ()` needs a `ControlFlow(C, ())` specific, and the SF-6 per-specific
-// payload check rejects tuples including `()`. Pinned so the bound is
-// arbitrated, not assumed; if this ever compiles, §2.7's premise is wrong
-// and the S3p boundary item is re-scoped.
-// CHECK:STDERR: fail_unit_break_type.carbon:[[@LINE+7]]:26: error: parameter has incomplete type `Core.ControlFlow(i32, ())` in function definition [IncompleteTypeInFunctionParam]
-// CHECK:STDERR: fn TakesUnitBreak(unused c: Core.ControlFlow(i32, ())) {}
-// CHECK:STDERR:                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: min_prelude/parts/try.carbon:10:1: note: choice alternative payload type `()` is not trivially copyable and destructible in this specific [ChoicePayloadNotTrivialInSpecific]
-// CHECK:STDERR: choice ControlFlow(C: type, B: type) {
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
-fn TakesUnitBreak(unused c: Core.ControlFlow(i32, ())) {}

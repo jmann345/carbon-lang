@@ -9,6 +9,7 @@
 
 #include "common/map.h"
 #include "common/raw_string_ostream.h"
+#include "llvm/ADT/StringRef.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
@@ -298,6 +299,19 @@ class FunctionContext {
       file_context_->SetPrintfIntFormatString(format_string);
     }
     return format_string;
+  }
+
+  // The stderr diagnostic of a `Result`-returning `Main.Run` that returns
+  // `.Err` (the handle.cpp `ReturnExpr` epilogue): a private global created on
+  // first use like `printf_int_format_string`, shared by every `return` in
+  // `Run`. `message` is the same string at every call site.
+  auto entry_point_result_err_message(llvm::StringRef message) -> llvm::Value* {
+    auto* global = file_context_->entry_point_result_err_message();
+    if (!global) {
+      global = builder().CreateGlobalString(message, "main.result.err.message");
+      file_context_->SetEntryPointResultErrMessage(global);
+    }
+    return global;
   }
 
   auto GetVtable(SemIR::VtableId vtable_id, SemIR::SpecificId specific_id) const

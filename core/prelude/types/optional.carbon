@@ -9,6 +9,7 @@ import library "prelude/default";
 import library "prelude/destroy";
 import library "prelude/operators/as";
 import library "prelude/operators/bitwise";
+import library "prelude/try";
 import library "prelude/types/bool";
 import library "prelude/types/maybe_unformed";
 
@@ -50,6 +51,30 @@ impl forall [T: OptionalStorage] Optional(T) as Copy {
   fn Op(self) -> Self {
     return T.Copy(self as T.Type) as Optional(T);
   }
+}
+
+// `Optional` is a `Try` operand with the unit break type (decision D9 of
+// docs/design/error_handling.md): `o?` continues with the held value and
+// propagates absence as `()`, so there is no implicit bridge between
+// `Optional` and `Result` — an `Optional?` inside a `Result`-returning
+// function is a `()`-to-`E` conversion error. The signature is the design
+// sketch's ("The `Core.Try` interface") modulo the bound: `OptionalStorage`
+// is what this placeholder class forces on `T`, and `Destroy` is required
+// because `Branch` moves a `T` payload into `ControlFlow` (the `ImplicitAs`
+// impls below need the same); the body dispatches through the placeholder
+// `HasValue()`/`Get()` API because `Optional` is not a choice
+// (fork/eh/plan.md D-EH-1) — the sketch's `match` form applies once an
+// approved `Optional` design makes it one, and is observationally the same
+// split.
+final impl forall [T: Destroy & OptionalStorage] Optional(T) as Try
+    where .ContinueType = T and .BreakType = () {
+  fn Branch(self) -> ControlFlow(T, ()) {
+    if (self.HasValue()) {
+      return ControlFlow(T, ()).Continue(self.Get());
+    }
+    return ControlFlow(T, ()).Break(());
+  }
+  fn FromBreak(unused b: ()) -> Self { return Optional(T).None(); }
 }
 
 // Support for converting a `T` to an `Optional(U)` if `T` converts to `U`.

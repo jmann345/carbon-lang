@@ -10,24 +10,20 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-09-26 (RUNNER ACCESS REVOKED mid-W-077 — the
-owner's machine is OFF LIMITS to the agent; rulebook R28: all four
-self-hosted workflows are workflow_dispatch only and only the owner
-dispatches them. The owner's machine has been wiped of fork state (cleanup
-run 36229750515) and is never used again. Verification moves to
-`Fork: hosted verification` (fork_hosted.yaml, GitHub-hosted, modes
-compile/autoupdate/gate/conformance, upstream's public remote cache
-read-only); compile probe GREEN in 18 min (run 36230850086) — the
-loop runs there now. W-077 struct patterns is IN
-FLIGHT on claude/carbon-fork-0-1-w077: plan folded (8 amendments, two
-reviews converged on the pruned-irrefutable fast-path crash lane),
-implementation pushed (ba7408b + c5cff10, fast-compile GREEN), two
-implementation reviews relaunched after a usage-limit interruption.
-Post-PR #38 state: W-078 CLOSED, R8 lifted, floor 101 PASS / 0 / 28
-SKIP over 129; eight PRs since the runner returned (#31→#38). Next:
-W-077 reviews → fixer → ONE autoupdate → gate + conformance (target
-102/130) → discharge → PR #39; weekly cron Monday 2026-09-28 — see
-fork/decision-log.md for the full record)._
+_Last updated: 2026-09-27 (FULL AUTONOMY + THROUGHPUT PROTOCOL, rulebook
+R29: no questions, one PR per feature, two plan reviews / one impl
+review once hosted verification is green, pipelined planning. The
+owner's machine is never used (R28); all verification runs on
+`Fork: hosted verification` (GitHub-hosted; compile 18 min, autoupdate
+13 min, gate ~25 min, conformance ~20 min). F-006..F-011 STAND — W-005
+discharged, all F-0xx gates lifted. W-077 struct patterns: hosted
+autoupdate fixpoint + gate + conformance ALL GREEN at the new floor
+102 PASS / 0 / 28 SKIP over 130; single impl review in flight, then
+discharge → PR #39 → merge. W-012 if-let/let-else/while-let planner
+in flight on claude/carbon-fork-0-1-w012. Then: error handling
+W-016..W-019, unions W-009/W-015. Weekly cron Monday 2026-09-28 (the
+mirror probe is GitHub-hosted; a cut advance verifies on hosted
+runners too)._
 THIRTY-EIGHT PRs. The design's canonical
 `var my_opt: Optional(i32) = Optional(i32).None;` now compiles and
 runs: LookupChoiceCopyWitness mirrors the destroy witness (is_choice

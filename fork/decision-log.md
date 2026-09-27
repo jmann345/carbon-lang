@@ -2792,6 +2792,26 @@ inexpressible in-slice — exactly why the approximation is safe today.
 Re-examined the day non-trivial types pass the scrutinee gate
 (handle_match.cpp:238). Veto-able.
 
+### Full autonomy and the throughput protocol (2026-09-27)
+
+Owner, verbatim: "your fork output is trash. stop making excuses and
+work more efficiently." / "just finish everything without making
+mistakes basically" / "im not helping u btw ur on ur own but you have
+to finish" / "no more questions". Recorded as rulebook R29. Two
+corrections to the fork's own bookkeeping fall out: (1) the six design
+forks F-006..F-011 were never a block — they are decided here (F-006
+with owner sub-decisions a..l; F-011 ratified) and stand under V-2/V-3;
+treating the unanswered veto digest as a gate idled the error-handling,
+if-let/let-else, union, overloading and structural-conformance chains
+for two months. W-005 is discharged and every F-0xx/W-005 blocked_by
+gate is lifted. (2) The two W-077 implementation reviews launched on
+2026-09-26 died at startup (122-byte transcripts) and were waited on
+for 21 hours; R29(e) makes that a relaunch, not a wait. Next
+workstreams, in order of milestone value and unblocked state: W-012
+if-let/let-else/while-let (flips a MISSING bullet on landed match
+machinery), then the error-handling chain W-016..W-019 (Result, `?`,
+exception interop), then unions W-009/W-015.
+
 ### Runner access revoked: the sparing-verification protocol (2026-09-26)
 
 Owner directive, mid-W-077, verbatim in the parts that govern: "You no

@@ -271,3 +271,18 @@ here.
     owner directive, 2026-09-26, mid-W-077; superseding the same-day
     "rationed use" draft after one accidental fire on a merge push, cancelled
     within a minute.)
+-   **R29. Throughput rules (owner directive 2026-09-27: "work more
+    efficiently", "finish everything without making mistakes", "no more
+    questions").** (a) Autonomy: no AskUserQuestion; every fork decision
+    auto-adopts the design recommendation under V-2/V-3 and is recorded in
+    the decision log for after-the-fact veto. (b) Slice size: one PR per
+    milestone feature, not per diagnostic or sub-shape. (c) Review budget by
+    evidence: plan reviews stay TWO (they have caught a blocker in nearly
+    every round); implementation reviews drop to ONE once hosted
+    verification (autoupdate fixpoint + gate + conformance) is fully green
+    — across W-078a/W-078b/W-077 the second implementation review produced
+    only comment nits. (d) Pipelining: the next workstream's planner starts
+    while the current one is in review or verification; hosted autoupdate
+    runs concurrently with reviews (a refill after a fix is free). (e) Kill
+    detection: a review agent whose output is silent for over an hour is
+    dead — relaunch, do not wait. (Origin: owner directives, 2026-09-27.)

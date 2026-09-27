@@ -9,6 +9,7 @@
 #include "clang/AST/GlobalDecl.h"
 #include "clang/AST/Mangle.h"
 #include "clang/AST/Stmt.h"
+#include "clang/Basic/TargetInfo.h"
 #include "clang/Sema/Lookup.h"
 #include "clang/Sema/Overload.h"
 #include "clang/Sema/Sema.h"

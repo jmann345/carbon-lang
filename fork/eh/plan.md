@@ -19,6 +19,10 @@ exactly one PASS program to both sides of every equation. All toolchain
 and core line numbers are against trunk 5551790; fork/gap-analysis.md line
 numbers are against f0e1980; clang/libc++abi line numbers are against the
 LLVM checkout the toolchain builds from (`external/llvm-raw+`).
+**EH-A LANDED 2026-09-27** (a27059915 check+prelude, ea1822f66 lower,
+1918b307e testdata+conformance, c127784c4 the runner-exposed `Destroy`
+bound); discharge notes below are marked "(landed 2026-09-27, EH-A:
+...)" and leave every EH-B item untouched.
 
 **Items:** W-017 (EH-B1 prelude `Core.Result`), W-018 (EH-B2 `?` +
 `Core.Try`), W-019 (EH-B3 catching thunks + `Carbon::expected`), the SF-1
@@ -139,7 +143,18 @@ left OPEN or a bound the landing notes recorded "for S3p".
     validate_rewrite_constraints.carbon:288 (`final impl forall [T: I] T as
     J where .Y = C {}`). The bound is recorded as a dated doc amendment
     (§8.6), so nothing user-visible changes (amended 2026-09-27, review
-    fold: rev 1 MINOR-1).
+    fold: rev 1 MINOR-1). (landed 2026-09-27, EH-A: the bound is `Destroy
+    & OptionalStorage`, not `OptionalStorage` alone — the landed signature
+    is `final impl forall [T: Destroy & OptionalStorage] Optional(T) as Try
+    where .ContinueType = T and .BreakType = ()`, optional.carbon:69-70,
+    commit c127784c4. Runner-exposed (§7 R-12 landed note): inside `forall
+    [T: OptionalStorage]` a symbolic `T` carries only its declared
+    interfaces, and `Branch` moves a `T` payload into `ControlFlow(T,
+    ()).Continue(...)`, which needs `T: Destroy`; the file's own
+    `ImplicitAs` impls (optional.carbon:110, :117) use the same bound for
+    the same reason. result.carbon's `[T: type, E: type]` impl needs no
+    such bound. D-EH-1's recorded signature and W-058's §8.5 note read
+    "the sketch's modulo the `Destroy & OptionalStorage` bound".)
 -   **D-EH-2 — W-070 resolved by option (a): the zero-sized empty tuple
     `()` is admitted as a choice payload element (`IsInSliceChoicePayloadType`
     gains `|| (tuple type with zero elements)`).** This is the minimal
@@ -310,7 +325,13 @@ dependency, so per R29(b) it is two PRs:
     .ElementType = T`) and the checker golden
     facet/validate_rewrite_constraints.carbon:288 (`final impl forall [T:
     I] T as J where .Y = C {}`) for the `final` + facet-bound + rewrite
-    combination (amended 2026-09-27, review fold: rev 1 MINOR-1). optional.carbon gains `import library
+    combination (amended 2026-09-27, review fold: rev 1 MINOR-1). (landed
+    2026-09-27, EH-A: two spelling changes — the bound is `[T: Destroy &
+    OptionalStorage]` (D-EH-1 landed note; R-12), and `FromBreak` is
+    spelled `fn FromBreak(unused b: ()) -> Self` because an unreferenced
+    named binding inside the prelude diagnoses `UnusedBinding`; precedent
+    core/prelude/iterate.carbon:23, :74 — review fix (4), MINOR.)
+    optional.carbon gains `import library
     "prelude/try";` (no cycle, §1.A.1). The body differs from the sketch's
     `match (self) { case .Some ... }` because the class is not a choice
     (D-EH-1) — recorded as a dated doc amendment at §8.6, the body being
@@ -746,7 +767,19 @@ dependency, so per R29(b) it is two PRs:
         has a value, `CreateAlloca(GetType(result type))` in the entry
         block and `SetLocal(return_param_id, alloca)` — overriding the
         poison so `ReturnSlot` (handle.cpp:260-263) and the in-place
-        initializer target real storage.
+        initializer target real storage. (landed 2026-09-27, EH-A: the
+        "override the poison" sequence was unimplementable — `SetLocal`
+        CHECKs duplicate inserts (function_context.h:127-131), and
+        `CreateAlloca` needs an insert block for its `CreateLifetimeStart`.
+        Landed sequence, file_context.cpp:660-720: identify the return
+        param before the poison loop and SKIP it there; create the decl
+        block as the entry block and set the insert point; one
+        `CreateAlloca` and one `SetLocal`; then `lower_block(decl_block_id)`
+        positions into that same block. Review fix (3), MINOR. Two more
+        headers carry the plumbing: lower/context.h (the message-global
+        cache `entry_point_result_err_message_`), lower/function_context.h
+        (its accessor) and lower/file_context.h
+        (`FunctionInfo::entry_point_result_type_id`) — §6.A landed note.)
     -   lower/handle.cpp:307-315 (`ReturnExpr`, `InitRepr::InPlace`): after
         `InitializeStorage(...)`, if the function is the entry point with a
         `Result` return: `disc = load i8 (StructGEP 0,0 of the alloca)`;
@@ -1112,7 +1145,15 @@ header gains one sentence pointing at the boundary diagnostic's lower pin
     sem_ir/type_info.cpp; (8) toolchain/check/cpp/type_mapping.cpp (one
     `break`); (9) toolchain/lower/type.h; (10) toolchain/lower/type.cpp
     (two sites, §2.A.5); (11) toolchain/lower/file_context.cpp; (12)
-    toolchain/lower/handle.cpp.
+    toolchain/lower/handle.cpp. (landed 2026-09-27, EH-A: 15 source files
+    were touched, not 12 — the twelve above plus (13) toolchain/lower/
+    context.h (the `entry_point_result_err_message_` message-global
+    cache), (14) toolchain/lower/function_context.h (the accessor threading
+    it to `handle.cpp`) and (15) toolchain/lower/file_context.h
+    (`FunctionInfo::entry_point_result_type_id`); review fix (2), MINOR.
+    The two moved goldens were exactly the two predicted; c127784c4 also
+    rewrapped one 82-column comment in fail_question_preflight.carbon,
+    review fix (1).)
 
 ### §6.B EH-B
 
@@ -1173,7 +1214,12 @@ header gains one sentence pointing at the boundary diagnostic's lower pin
 -   **R-4 — entry-point epilogue versus the `ReturnSlot` inst.** `ReturnSlot`
     reads the return param's local (handle.cpp:260-263); the plan binds
     that local to an alloca AFTER the poison loop, so ordering is correct
-    by construction. Falsifier: `main_run/return_result.carbon` IR shows a
+    by construction. (landed 2026-09-27, EH-A: the local is bound ONCE,
+    not overridden — the poison loop skips the return param and the alloca
+    binding follows it, §2.A.5 landed note; ordering is still by
+    construction. Falsifier status: pending the re-dispatched refill — the
+    first fill, run 36301020281, was polluted by the R-12 event and
+    reverted at 92a6191ee.) Falsifier: `main_run/return_result.carbon` IR shows a
     `poison` operand, OR `define i32 @main(` has any parameter at all
     (the `TryHandleParameter` `OutParamPattern` arm lowering the choice
     return as a pointer param — the §2.A.5 second edit; amended
@@ -1247,6 +1293,26 @@ header gains one sentence pointing at the boundary diagnostic's lower pin
     6460af008 failure mode; hand-off note). Contingency: rewrite `Branch`
     over the discriminant with an `if` on the alternative constructor's
     equality (still `EqWith`, no `match`), which keeps the same import.
+    (landed 2026-09-27, EH-A: **the falsifier FIRED exactly as written** —
+    on optional.carbon, not result.carbon. The first hosted autoupdate (run
+    36301020281) moved ~230 goldens: every full-prelude golden gained the
+    same two errors, `optional.carbon:71: cannot access member of interface
+    Destroy in type T that does not implement that interface
+    [MissingImplInMemberAccess]`, and the lower goldens collapsed. Root
+    cause: inside `forall [T: OptionalStorage]`, `Branch` moves a `T`
+    payload into `ControlFlow(T, ()).Continue(...)`, and a symbolic `T`
+    bound by a non-`type` facet carries only its declared constraints, so
+    `T: Destroy` was unprovable; result.carbon's `[T: type, E: type]` impl
+    — and its `match`, the risk this entry named — compiled fine. Fix,
+    c127784c4: `final impl forall [T: Destroy & OptionalStorage] Optional(T)
+    as Try` — the file's own `ImplicitAs` impls (optional.carbon:110, :117)
+    already use that bound for the same reason. The polluted fill was
+    reverted (92a6191ee) and the refill re-dispatched. Recorded in the
+    decision-log EH-A entry as a review MISS (R28(d): the single
+    implementation review traced the impl and did not catch it) and as the
+    lesson: a symbolic binding bound by a non-`type` facet has only its
+    declared interfaces; moving a value of that type requires `Destroy` in
+    the bound.)
 -   **Rejected alternatives (recorded once):** re-platforming `Optional`
     (§0.3 D-EH-1); an `unsafe`/explicit catching spelling (Option A's
     wrapper, rejected by F-006); mapping `Cpp.Exception` to an imported
@@ -1306,8 +1372,11 @@ header gains one sentence pointing at the boundary diagnostic's lower pin
         when a second contender starts".
     -   W-058 → notes: "`Optional` gained a `Try` impl over the placeholder
         API at EH-A (D-EH-1); the approved-design work must keep the impl
-        signature `final impl forall [T: OptionalStorage] Optional(T) as Try
-        where .ContinueType = T and .BreakType = ()`".
+        signature `final impl forall [T: Destroy & OptionalStorage]
+        Optional(T) as Try where .ContinueType = T and .BreakType = ()`"
+        (landed 2026-09-27, EH-A: bound corrected from `[T:
+        OptionalStorage]` — the `Destroy` half was runner-exposed, §7 R-12
+        landed note; the ledger note carries the corrected signature).
     -   **Three NEW residue items, referred to BY TITLE throughout this
         plan; the ids below are PROVISIONAL (amended 2026-09-27, review
         fold: rev 1 + rev 2 ID collision).** W-079 is TAKEN by the W-077

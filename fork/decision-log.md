@@ -12,18 +12,10 @@ consequences. Undecided forks are listed as OPEN at the top.
 
 ## OPEN forks
 
--   **SF-9: identity of the existing `Core.Optional` class** (recorded OPEN at
-    the W5-S3a landing per fork/w5-s3/plan.md §0.2's landing obligation,
-    2026-08-08). Whether the prelude's placeholder `Core.Optional(T)` class is
-    re-platformed onto the generic `choice` machinery (W5-S3 family), kept as
-    an adapter over it, or left as an independent class with a redesigned API
-    (W-058), and how `Core.Result(T, E)` relates. The generic-choice slices
-    S3a-S3c have NO SF-9 dependency; the decision rides the W5-S3p (prelude)
-    AskUserQuestion round, which this entry queues — this split explicitly
-    supersedes the fork/w5-choice/plan.md §5/§7 gate ("SF-9 … must be decided
-    before S3's detailed plan is written"), which now binds W5-S3p only.
-    stdlib/optional_missing_ops.carbon's SKIP stays pinned to the placeholder
-    API until then.
+-   None. SF-9 (identity of the existing `Core.Optional` class, recorded OPEN
+    2026-08-08) was decided 2026-09-27 by D-EH-1 — see "EH-A: Core.Result,
+    Optional as Try, Result entry points" under Decided, which carries the
+    former OPEN entry verbatim.
 
 ## Decided
 
@@ -2811,6 +2803,143 @@ workstreams, in order of milestone value and unblocked state: W-012
 if-let/let-else/while-let (flips a MISSING bullet on landed match
 machinery), then the error-handling chain W-016..W-019 (Result, `?`,
 exception interop), then unions W-009/W-015.
+
+### EH-A: Core.Result, Optional as Try, Result entry points (2026-09-27)
+
+Milestone bullet "Error handling: dedicated control flow constructs" flips
+PARTIAL → DONE (fork/gap-analysis.md row 66; header 27 DONE / 19 PARTIAL /
+8 MISSING / 2 DESIGN-ONLY). Landed on claude/carbon-fork-0-1-eh in the
+four commits fork/eh/plan.md §3 fixed: a27059915 (the prelude
+`Core.Result(T, E)` choice, library "prelude/types/result", `Ok`=0/`Err`=1,
+with its `final` `Try` impl — the first `match` compiled inside package
+`Core`, needing the explicit `prelude/operators/comparison` import for the
+file-scoped `Core.EqWith` lookup; `Optional`'s `Try` impl; the `()` payload
+admission in `IsInSliceChoicePayloadType`; `RecognizedTypeInfo::Result`;
+the D10 entry-point check with the four-shape diagnostic text), ea1822f66
+(a `Result`-returning `Main.Run` lowers as `i32 main()` with NO parameters
+— the return param is ignored in `FunctionTypeInfoBuilder`, bound to a
+local alloca in `BuildFunctionBody` — and the D10 epilogue at `ReturnExpr`:
+`.Ok(())` → 0, `.Ok(code)` → code, `.Err(e)` → `write(2, ...)` naming `E`,
+exit 1), 1918b307e (CHECK-free goldens for the autoupdate to fill; the
+W-070 `fail_unit_break_type` pin moved to check/testdata/choice/
+unit_payload.carbon as a POSITIVE test with a lower twin; four conformance
+programs), c127784c4 (the runner-exposed `Destroy` bound, below). Zero new
+diagnostics; no leading-period `.Ok(...)` shorthand exists in this tree, so
+constructors are spelled `Core.Result(T, E).Ok(...)`; type_mapping.cpp's
+`case Result:` carries a TODO for EH-B. Per R29(a) the plan's §0.3
+decisions are auto-adopted design recommendations under V-2/V-3;
+veto-able after the fact.
+
+_D-EH-1 — SF-9 resolved:_ `Core.Result(T, E)` is minted as an INDEPENDENT
+prelude choice, and `Core.Optional` KEEPS its placeholder class identity —
+it is NOT re-platformed onto `choice` (that is W-058's approved-design
+work, with the pointer null-niche ABI and the entry-point
+`argv: Core.Optional(char*)*` signature to preserve); it gains a `Try` impl
+over its existing `HasValue()`/`Get()` API. "How `Core.Result` relates" is
+answered as D9 already says: no implicit bridge, two independent `Try`
+implementers. V-3 check: upstream has no `Result`; upstream's `Optional` is
+the same placeholder — no contradiction. The impl SIGNATURE landed is the
+design sketch's (error_handling.md, "The `Core.Try` interface") MODULO the
+bound: `final impl forall [T: Destroy & OptionalStorage] Optional(T) as Try
+where .ContinueType = T and .BreakType = ()` (core/prelude/types/
+optional.carbon:69-70) — `OptionalStorage` because the placeholder class
+forces it on `T` (optional.carbon:29), `Destroy` because `Branch` moves the
+`T` payload (the runner-exposed correction below; the plan had recorded
+`OptionalStorage` alone). Break condition: if W-058's approved design makes
+`Optional` a choice, the impl BODY is rewritten to the doc's `match`
+sketch; the signature stays.
+
+_D-EH-2 — W-070 resolved by option (a):_ the zero-sized empty tuple `()` is
+admitted as a choice payload element — one predicate edit
+(`IsInSliceChoicePayloadType`, toolchain/check/type.cpp) that the
+definition path and both per-specific eval-hook sites consult, so no second
+predicate exists. It keeps D9's `BreakType = ()` and D10's `Result((), E)`
+literally true, is trivially copyable and destructible (the W-071
+structural-trust note stays valid), and changes no existing choice layout
+(a `((),)` payload tuple has size 0; `ControlFlow(i32, ())` lays out as
+`<{ <{ i1, [3 x i8] }>, [4 x i8] }>`). Rejected: a scalar break carrier for
+`Optional` (contradicts D9's text). Break condition: a lowering defect on
+zero-sized payload stores flips `Optional` ONLY to the scalar carrier with
+a dated D9 amendment; `Result((), E)` is unaffected (its `()` sits in a
+two-payload region sized by `E`).
+
+_Ledger corrections at discharge (plan §0.2, verbatim):_ [1] 1. **W-017 title/kind ("design-needed", "Core.Result choice in the prelude + match-based consumption + conformance programs", blocked_by W-008/W-010):** the design is ratified (docs/design/ error_handling.md:94-124) and both blockers are landed (W-008 W8c COMPLETE 2026-09-25; W-010's payload construction/destructuring landed S1-S3c). What is actually missing is the prelude file (§0.1 row 9), and the real gate was SF-9 (OPEN, decision-log:15-26), which the ledger does not record as a blocker at all. [2] 2. **W-018 ("design-needed", "postfix `?` operator + Core.Try interface + ImplicitAs error conversion", blocked_by W-017):** everything in the title landed at B1b/B2a (§0.1 rows 4-8) — over user choices. The blocked_by edge is inverted: `?` does not wait on `Core.Result`; the prelude `Try` IMPLS (rows 10-11) do. W-018's note "Bare Question token already lexed and unused (token_kind.def:103)" is also stale — the token is at :108 and is consumed by the parser.
+[5] 5. **W-070 blocked_by "SF-9":** the unit-break bound is an SF-6 allowlist question (type.cpp:313-320); SF-9 (Optional's identity) does not decide it. This plan decides it (§0.3 D-EH-2). [7] 7. **decision-log OPEN fork SF-9 (:15-26)** was to "ride the W5-S3p AskUserQuestion round" whose ask package (fork/b2/plan.md §3 B2b, :397-420: `fork/design-sprint/s3p-ask.md`) was never written — no such file exists, `git log --all | grep -i s3p` is empty. Under R29(a) there are no more question rounds; §0.3 auto-adopts the recommendation. Applied in fork/inventory/work-items.json: W-017 and W-018
+→ `implemented`, blocked_by cleared (W-017 retitled and re-evidenced;
+W-018's token line corrected to :108); W-070 DISCHARGED at EH-A by option
+(a), blocked_by cleared; W-058's notes carry the corrected impl signature;
+W-059's notes gain the POSIX `write(2)` dependency of the entry-point
+epilogue (plan R-5). W-016/W-019/W-007 and the three residue items are
+EH-B's.
+
+_V-3a divergence-risk register entries (reviewed at each upstream merge):_
+(i) `Core.Result(T, E)` as an INDEPENDENT prelude choice with a `final`
+`Try` impl — upstream has no `Result` type and no `Try`; F-006a's `Ok`/`Err`
+spellings and B1's `Core.ControlFlow` are already on the register; the new
+surface is the library name "prelude/types/result" and the `Ok`-first
+discriminant order (Ok=0, Err=1) that the entry-point epilogue and EH-B's
+`Carbon::expected` header rely on. (ii) The `()` payload admission — a
+widening of the fork-local SF-6 payload allowlist; upstream's choice design
+has no such allowlist, so admitting `()` moves toward upstream and cannot
+contradict it; the zero-size `((),)` region layout is fork-owned until
+upstream lands a choice layout of its own.
+
+_Runner-exposed defect — a review MISS (R28(d)) and a lesson:_ plan §7
+R-12's falsifier fired exactly as written, on optional.carbon rather than
+result.carbon. The first hosted autoupdate (run 36301020281) moved ~230
+goldens — every full-prelude golden gained the same two errors,
+`optional.carbon:71: cannot access member of interface Destroy in type T
+that does not implement that interface [MissingImplInMemberAccess]`, and
+the lower goldens collapsed. Root cause: inside `forall [T:
+OptionalStorage]`, `Branch` moves a `T` payload into `ControlFlow(T,
+()).Continue(...)`, and a symbolic `T` bound by a non-`type` facet carries
+only its declared constraints, so `T: Destroy` was unprovable
+(result.carbon's `[T: type, E: type]` impl was fine). Fix, c127784c4:
+`final impl forall [T: Destroy & OptionalStorage] Optional(T) as Try` — the
+file's own `ImplicitAs` impls (optional.carbon:110, :117) already use that
+bound for the same reason. The polluted fill was reverted (92a6191ee) and
+the refill re-dispatched. The single implementation review traced the impl
+and did not catch it, so this is recorded as a review miss. LESSON: a
+symbolic binding bound by a non-`type` facet has only its declared
+interfaces; moving a value of that type requires `Destroy` in the bound.
+
+_Review record:_ one implementation review (R28), APPROVE-WITH-FIXES, all
+MINOR: (1) an 82-column comment, fixed in c127784c4; (2) plan §6.A counted
+12 source files but 15 were touched — lower/context.h, lower/
+function_context.h and lower/file_context.h carry the message-global cache
+and the `FunctionInfo` plumbing; (3) plan §2.A.5's "override the poison"
+alloca sequence was unimplementable (`SetLocal` CHECKs duplicate inserts,
+function_context.h:127-131; `CreateAlloca` needs an insert block for
+`CreateLifetimeStart`) — landed as: skip that param in the poison loop,
+create the decl block as the entry block, set the insert point, alloca,
+then `lower_block`; (4) plan §1.A.3 spelled `FromBreak(b: ())`, landed
+`unused b: ()` (in-prelude `UnusedBinding` otherwise; precedent
+iterate.carbon:23, :74). Each is a dated "(landed 2026-09-27, EH-A: ...)"
+note in the plan.
+
+_SF-9, formerly OPEN — entry moved here verbatim:_ "**SF-9: identity of the existing `Core.Optional` class** (recorded OPEN at the W5-S3a landing per fork/w5-s3/plan.md §0.2's landing obligation, 2026-08-08). Whether the prelude's placeholder `Core.Optional(T)` class is re-platformed onto the generic `choice` machinery (W5-S3 family), kept as an adapter over it, or left as an independent class with a redesigned API (W-058), and how `Core.Result(T, E)` relates. The generic-choice slices S3a-S3c have NO SF-9 dependency; the decision rides the W5-S3p (prelude) AskUserQuestion round, which this entry queues — this split explicitly supersedes the fork/w5-choice/plan.md §5/§7 gate ("SF-9 … must be decided before S3's detailed plan is written"), which now binds W5-S3p only. stdlib/optional_missing_ops.carbon's SKIP stays pinned to the placeholder API until then."
+Resolution: D-EH-1 above. stdlib/optional_missing_ops.carbon's SKIP stays
+pinned to the placeholder API; the redesign is W-058.
+
+_Docs:_ docs/design/error_handling.md gained two dated amendments (history
+unrewritten): the staging table's W5-S3p row records "landed at EH-A" and
+D-EH-1, and the `Optional` sketch carries the "signature normative MODULO
+`Destroy & OptionalStorage`; body over the placeholder API until W-058"
+note. EH-B's amendments (`Cpp.Exception` message clause, selection rule,
+release clause, `Carbon::Exception` mapping) are untouched.
+
+_Verification (EXPECTED at discharge; the orchestrator confirms before
+merge):_ conformance floor **105 PASS / 0 FAIL / 28 SKIP over 133**
+<!-- VERIFY: numbers --> (tree-relative, plan §5.A; +1/+1 after the W-077
+merge — PR #39 landed on trunk during EH-A — that is 106/0/28 over 134 on
+the merged tree); the four new programs PASS and no SKIP flips; hosted
+autoupdate to fixpoint with the churn confined to §6.A's two existing
+files plus new files — the first fill (run 36301020281) was reverted for
+the R-12 event and the refill, in flight at discharge time, is the
+fixpoint of record; gate green on it; `runner.py --self-test` clean
+(confirmed locally). No new work-item ids allocated — trunk's max id is
+W-079 (the W-077 discharge); the three residue items are allocated at the
+EH-B discharge. Veto-able.
 
 ### Runner access revoked: the sparing-verification protocol (2026-09-26)
 

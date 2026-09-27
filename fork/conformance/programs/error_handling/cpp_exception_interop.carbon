@@ -7,38 +7,52 @@
 // EXPECT-STDOUT:
 //   7
 //   -1
-// SKIP: MISSING (B3) — this body is the catching-import stage: designed FINAL as B3 in docs/design/error_handling.md#implementation-staging (decision F-006), but no `Core.Result` type exists under core/prelude/ (grep Result there hits only the arithmetic interfaces' `.Result` associated constants), toolchain/check/cpp/thunk.cpp has no catching/exception-capturing thunk path (its only exception-spec use is EST_BasicNoexcept on the placement-new helper, thunk.cpp:37), and nothing synthesizes `Cpp.Exception` anywhere in toolchain/check/cpp/. Un-SKIP (and uncomment the body) when B3's catching thunks + Core.Result + Cpp.Exception land. The B0 boundary contract (--cpp-exceptions flag, none mode, auto->catch, fenced terminate) is arbitrated by the sibling cpp_exceptions_*.carbon programs, not here.
 //
-// Write-tests-first stub. Intended future test: a throwing C++ function
-// (imported via `import Cpp inline`, block shape from
-// interop/cpp_operator_import_arithmetic.carbon) called from Carbon with
-// the thrown exception surfaced as a Carbon-consumable error value
-// (`Core.Result(T, Cpp.Exception)` per the catching-imports section of
-// docs/design/error_handling.md) on the failure path and the plain value
-// on the success path.
+// The B3 catching-import arbiter (docs/design/error_handling.md "Catching
+// imports: `Result(T, Cpp.Exception)`"; decision F-006; fork/eh/plan.md
+// §5.B.1), un-SKIPped at EH-B. A throwing C++ function is called from Carbon
+// twice: plainly (the fenced thunk, success path — prints `7`) and through
+// `?` in a `Core.Result(i32, Cpp.Exception)` helper, where the runtime input
+// `RuntimeSeed(-22)` = -2 makes it throw; the catching thunk turns the
+// exception into the `.Err` alternative, which `match` observes (prints `-1`).
+// Exit-code belt: the `.Ok` arm returns 1, so a `?` that wrongly continued
+// with a value fails by exit code, not just stdout.
+//
+// Mechanical repair of the write-tests-first stub, disclosed per R6: the
+// stub's intended body used the ANNOTATED-BINDING context
+// (`let r: Core.Result(i32, Cpp.Exception) = Cpp.PositiveOrThrow(-2);`),
+// which is the residue item "catching-import selection in binding/argument
+// contexts" (fork/eh/plan.md D-EH-4: the checker has no expected-type
+// channel); the 0.1 selection surface is `?` applied directly to the call,
+// so the call is routed through the one-line `Checked` helper. The
+// leading-period `.Ok(...)` shorthand of the stub is spelled
+// `Core.Result(T, E).Ok(...)` as in every EH-A program.
 
 import Core library "io";
-// import Cpp inline '''c++
-// #include <stdexcept>
-//
-// inline int PositiveOrThrow(int n) {
-//   if (n < 0) throw std::runtime_error("negative");
-//   return n;
-// }
-// ''';
+import Cpp inline '''c++
+#include <stdexcept>
+
+inline int PositiveOrThrow(int n) {
+  if (n < 0) throw std::runtime_error("negative");
+  return n;
+}
+''';
+
+// `?` directly on the C++ call selects the catching thunk: a thrown exception
+// becomes `.Err(Cpp.Exception)` and propagates; a returned value continues.
+fn Checked(n: i32) -> Core.Result(i32, Cpp.Exception) {
+  return Core.Result(i32, Cpp.Exception).Ok(Cpp.PositiveOrThrow(n)?);
+}
+
+fn RuntimeSeed(x: i32) -> i32 { return x + 20; }
 
 fn Run() -> i32 {
-  // Intended body once B3 lands (catching-import shape and Ok/Err naming
-  // per docs/design/error_handling.md "Catching imports:
-  // Result(T, Cpp.Exception)" and decision F-006a):
-  //   Core.Print(Cpp.PositiveOrThrow(7));
-  //   let r: Core.Result(i32, Cpp.Exception) = Cpp.PositiveOrThrow(-2);
-  //   match (r) {
-  //     case .Ok(_) => { return 1; }
-  //     case .Err(_) => { Core.Print(-1); }  // caught C++ exception
-  //   }
-  //   return 0;
-  // Guard: fails loudly (exit 1 vs EXPECT-EXIT 0) if un-SKIPped before
-  // C++ exception interop exists.
-  return 1;
+  // Success path, fenced call: 7.
+  Core.Print(Cpp.PositiveOrThrow(RuntimeSeed(-13)));
+  // Failure path: -2 throws; the exception is caught into `.Err`.
+  match (Checked(RuntimeSeed(-22))) {
+    case .Ok(v: i32) => { v; return 1; }
+    case .Err(e: Cpp.Exception) => { e; Core.Print(-1); }  // caught C++ exception
+  }
+  return 0;
 }

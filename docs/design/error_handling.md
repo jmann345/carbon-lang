@@ -552,6 +552,13 @@ process exit code is determined as follows:
     [`Cpp.Exception`](#cppexception), its message when available), then exits
     with code 1. The failure value is destroyed normally; nothing unwinds.
 
+> **Amendment (2026-09-27, landed at EH-B — fork/eh/plan.md D-EH-3):** the
+> "its message when available" clause for `E = Cpp.Exception` is deferred with
+> the accessors it depends on (see the amendment under
+> [`Cpp.Exception`](#cppexception)); in 0.1 the diagnostic names the error's
+> type only. Tracked by the residue item "`Cpp.Exception` accessors and
+> release-on-destroy".
+
 The `Result` forms exist so that `?` is usable in `Run` itself; small programs
 propagate errors all the way out and get a defined nonzero exit and diagnostic
 rather than hand-written plumbing.
@@ -704,6 +711,24 @@ ordinary interop type mapping):
     is a compile error. Their calls follow the first bullet only: `?` applies
     exactly when `S` implements `Core.Try`.
 
+> **Amendment (2026-09-27, landed at EH-B — fork/eh/plan.md D-EH-4, §1.B.1):**
+> the selection surface delivered in 0.1 is `?` applied directly to the call
+> (parentheses around the call are transparent). The other context of the
+> second bullet — a binding or argument whose EXPECTED type is
+> `Core.Result(S, Cpp.Exception)`, such as
+> `let r: Core.Result(i32, Cpp.Exception) = Cpp.parse(x);` — needs an
+> expected-type channel the checker does not have (conversions run after the
+> call is emitted) and is deferred as the residue item "catching-import
+> selection in binding/argument contexts"; the one-line workaround is a helper
+> `fn Wrap() -> Core.Result(S, Cpp.Exception) { return .Ok(Cpp.f(x)?); }`.
+> Additionally, in 0.1 a catching import requires the C++ return type to map to
+> a scalar (int, float, bool, pointer, after adapters) or `void`, because
+> `Core.Result(S, Cpp.Exception)` is a choice specific bound by SF-6
+> (`toolchain/check/type.cpp`, `IsInSliceChoicePayloadType`); a class,
+> `std::string`, or constructor return is diagnosed at the `?` with a context
+> note naming the C++ callee (`CppCatchingImportPayloadNote`). Break condition:
+> the SF-6 lift (the Sum types bullet, W-010's residue) removes this sentence.
+
 ### `Cpp.Exception`
 
 `Cpp.Exception` is the Carbon-side representation of a caught C++ exception.
@@ -763,6 +788,28 @@ Design contract:
     plainly: `Message` returns views only because there is not yet an owning
     string type to return.
 
+> **Amendment (2026-09-27, landed at EH-B — fork/eh/plan.md D-EH-3):** the
+> landed 0.1 storage is the Itanium primary exception object pointer
+> (`__cxa_current_primary_exception()`, captured inside the catching thunk
+> with its refcount incremented), held by the prelude class
+> `Core.CppCompat.Exception { adapt VoidBase*; }` and surfaced as
+> `Cpp.Exception` by the same file-less builtin path as `Cpp.nullptr`
+> (`toolchain/check/cpp/import.cpp`). On libc++abi a `std::exception_ptr` is
+> exactly that pointer, and the support header reconstitutes one losslessly
+> (`Carbon::Exception::ptr()`), so the "stored, never translated" and
+> "rethrown with full fidelity" clauses above hold as written. Two 0.1 bounds,
+> both forced by the SF-6 scalar payload rule: (i) `Cpp.Exception` is trivially
+> copyable and trivially destructible, so the release-on-destroy clause is
+> deferred — the refcount taken at capture is released only at process exit
+> (no choice payload is destroyed today; `custom_witness.cpp`'s destroy-op
+> synthesis is upstream's placeholder); (ii) the `TypeName()`/`Message()`
+> accessors sketched above are deferred — they need a synthesized C++ helper
+> that can only be built when `std::exception`/`<typeinfo>` are declared in the
+> TU — so the landed `Cpp.Exception` has no members in 0.1. Both are the
+> residue item "`Cpp.Exception` accessors and release-on-destroy"; the SF-6
+> widening past scalars reopens (i) as a real `Destroy` impl calling
+> `__cxa_decrement_exception_refcount`.
+
 ### Exporting fallible Carbon functions: `Carbon::expected`
 
 An exported Carbon function returning `Core.Result(T, E)` is visible to C++ as
@@ -791,6 +838,25 @@ C++ self with C++ semantics — in particular `Cpp.Exception` maps to
 Exporting a `Core.Result` whose success or error type is a Carbon class not
 satisfying the predicate is diagnosed at the export declaration; such types
 cross the boundary by indirection, as elsewhere in interop.
+
+> **Amendment (2026-09-27, landed at EH-B — fork/eh/plan.md §1.B.5-1.B.6,
+> V-3a register):** `Cpp.Exception` maps to the support header's
+> layout-identical wrapper `Carbon::Exception` — a struct holding the primary
+> exception object pointer — whose `.ptr()` is the `std::exception_ptr` (the
+> usage line below, `r.error().ptr()`, already assumes the wrapper) and whose
+> `[[noreturn]] rethrow()` rethrows the original object. A FOREIGN exception
+> (one not thrown by the C++ runtime) has no primary object: `ptr()` returns an
+> empty `std::exception_ptr` and `rethrow()` calls `std::terminate()`;
+> `has_value()` is unaffected. `Carbon::expected<T, E>` itself mirrors the
+> choice's object representation (a discriminant byte, `Ok` = 0 and `Err` = 1,
+> then the payload union at the payload alignment), so the mapping is a
+> reinterpretation, not a conversion; the header pins this with
+> `static_assert`s. Apple platforms: libc++ there does not re-export
+> `__cxa_rethrow_primary_exception`, so a C++ consumer calling
+> `ptr()`/`rethrow()` links `-lc++abi`. The header is found BY NAME in the C++
+> translation unit (`namespace Carbon` reopened), and an exported `Core.Result`
+> return without `#include <carbon/expected.h>` is diagnosed
+> (`CppExportResultNeedsExpectedHeader`).
 
 `Carbon::expected<T, E>` is a class template shipped as a support header in
 the toolchain install tree. It requires only C++17 — the interop target
@@ -832,7 +898,7 @@ for every stage.
 | **B0** | `--cpp-exceptions` option; fenced thunks; boundary terminate semantics                           | Nothing — implementable now; replaces today's undefined behavior                                                                                                |
 | **B1** (restaged 2026-08-08) | `Core.Try`, postfix `?`, `ImplicitAs` error conversion, arbitrated over user-defined choice types (with the `Core.ControlFlow` branch carrier); original B1's `match` consumption already landed for user choices at W5-S2/S3 | `match` semantics and choice-alternative payloads (landed, W5-S2/S3) |
 | **W5-S3p** (the original B1/B2 prelude halves, post-SF-9) — **landed at EH-A, 2026-09-27** | Prelude `Core.Result(T, E)` and its `Try` impl; the `Core.Optional` rebuild and its `Try` impl; the `Run` `Result` signatures; the unit-break-type resolution. _Landed at EH-A (fork/eh/plan.md):_ `Core.Result` in core/prelude/types/result.carbon with its `final` `Try` impl; `Optional`'s `Try` impl over the placeholder class — `Core.Optional` is NOT rebuilt (D-EH-1; see the dated amendment under the `Optional` sketch in [The `Core.Try` interface](#the-coretry-interface)); the `Run` `Result` signatures lowered as `i32 main()` with the D10 epilogue; the unit break type resolved by admitting `()` as a choice payload (D-EH-2) | SF-9 — the `Core.Optional` identity decision and "how `Core.Result(T, E)` relates" (fork/decision-log.md OPEN forks; restaging recorded in fork/b1/plan.md §0.2/§2.1). _Decided 2026-09-27 by D-EH-1 (fork/decision-log.md, entry "EH-A: Core.Result, Optional as Try, Result entry points"):_ `Core.Result` is an independent prelude choice; `Core.Optional` keeps its placeholder identity (its redesign stays W-058); no implicit bridge, per D9 |
-| **B3** | Catching thunks; `Cpp.Exception` synthesis into the `Cpp` package; `Carbon::expected` export and support header | B0, B1, W5-S3p                                                                                                                                                  |
+| **B3** — **landed at EH-B, 2026-09-27** | Catching thunks; `Cpp.Exception` synthesis into the `Cpp` package; `Carbon::expected` export and support header _Landed at EH-B (fork/eh/plan.md):_ catching thunks selected by `?` applied directly to the call (the binding/argument-context arm is the residue item "catching-import selection in binding/argument contexts"; a scalar-or-`void` success type is required, the SF-6 bound); `Cpp.Exception` as the prelude class `Core.CppCompat.Exception` over the primary exception object pointer, surfaced by the file-less builtin path (accessors and release-on-destroy deferred, the residue item "`Cpp.Exception` accessors and release-on-destroy"); `Carbon::expected<T, E>` export mapping with the layout-mirroring support header `<carbon/expected.h>` installed at `lib/carbon/include`; the SF-1 boundary-identifying fence diagnostic. The import direction (`Carbon::expected<T, E>` → `Core.Result(T, E)`) is the residue item "`Carbon::expected` import direction" | B0, B1, W5-S3p                                                                                                                                                  |
 
 Dependency notes, stated plainly:
 

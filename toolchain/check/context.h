@@ -126,6 +126,21 @@ class Context {
     return struct_type_fields_stack_;
   }
 
+  // A designated field name recorded while checking a struct pattern in
+  // `match` `case` position, keyed by the ordinal of its element within the
+  // enclosing pattern list frame; shorthand fields record nothing (their
+  // names are derived from their bindings when the pattern inst is built).
+  struct StructPatternFieldName {
+    int32_t ordinal;
+    SemIR::NameId name_id;
+  };
+  // One frame per open struct pattern (nesting pushes a fresh frame), pushed
+  // at `StructPatternStart` and popped when the `StructPattern` inst is
+  // built. See handle_pattern_list.cpp.
+  auto struct_pattern_names_stack() -> ArrayStack<StructPatternFieldName>& {
+    return struct_pattern_names_stack_;
+  }
+
   auto field_decls_stack() -> ArrayStack<SemIR::InstId>& {
     return field_decls_stack_;
   }
@@ -335,10 +350,11 @@ class Context {
     struct UsefulnessKeyNode {
       enum class Kind : uint8_t {
         // The position is covered by an irrefutable subtree — a value or
-        // `ref` binding, a `var` wrapper over an irrefutable subtree, or
-        // an all-binding tuple — matching every value of the position's
-        // type. Leaf: whatever the subtree's internal structure, one
-        // `Wildcard` stands for the whole position.
+        // `ref` binding, a `var` wrapper over an irrefutable subtree, an
+        // all-binding tuple, or an all-binding struct pattern (full-set or
+        // subset+`_`) — matching every value of the position's type. Leaf:
+        // whatever the subtree's internal structure, one `Wildcard` stands
+        // for the whole position.
         Wildcard,
         // An integer expression leaf, keyed by its evaluated constant:
         // `IntId` canonicalizes by mathematical value
@@ -357,6 +373,18 @@ class Context {
         Alternative,
         // A tuple position; `arity` element slots follow in preorder.
         Tuple,
+        // A struct position, NORMALIZED to the SCRUTINEE struct type's full
+        // field set: `arity` is the scrutinee's field count, and one child
+        // slot per scrutinee field follows in preorder, in the scrutinee's
+        // canonical field order — the keyed subpattern where the pattern
+        // names the field, a synthetic `Wildcard` where it does not (the
+        // design's discard rule). The trailing `_` never enters the key:
+        // comparison is by matched value set, never source form, so
+        // `{.a = 1, _}` and `{.a = 1, .b = b: i32}` key identically on a
+        // two-field scrutinee. Built by `BuildMatchCaseUsefulnessKey`
+        // (pattern_match.cpp) from the scrutinee's own struct type — the
+        // pattern's type is the subset and must never size the node.
+        Struct,
       };
 
       Kind kind;
@@ -366,7 +394,7 @@ class Context {
       // constant's value as 0/1 (`BoolConst`).
       int32_t index = -1;
       // The number of child slots following this node in preorder.
-      // `Alternative` and `Tuple` only; leaves have none.
+      // `Alternative`, `Tuple`, and `Struct` only; leaves have none.
       int32_t arity = 0;
     };
     // A `case` arm's whole usefulness key: the key tree in preorder. Never
@@ -759,6 +787,10 @@ class Context {
   // The stack of `match` `case` arms whose patterns are currently being
   // checked.
   llvm::SmallVector<MatchCaseContext> match_case_stack_;
+
+  // The stack of designated-field name frames for in-progress struct
+  // patterns in `match` `case` position.
+  ArrayStack<StructPatternFieldName> struct_pattern_names_stack_;
 
   // The stack of `match` statements currently being checked, tracking what
   // their arms cover for exhaustiveness.

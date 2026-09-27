@@ -166,35 +166,7 @@ union IntOrBytes {
   var word: i32;
   var bytes: array(i8, 4);
 
-  // CHECK:STDERR: method.carbon:[[@LINE+14]]:14: error: parameter has incomplete type `IntOrBytes` in function definition [IncompleteTypeInFunctionParam]
-  // CHECK:STDERR:   fn LowHalf(self) -> i32 { return self.bytes[0] as i32; }
-  // CHECK:STDERR:              ^~~~
-  // CHECK:STDERR: method.carbon:[[@LINE-7]]:1: note: class is incomplete within its definition [ClassIncompleteWithinDefinition]
-  // CHECK:STDERR: union IntOrBytes {
-  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
-  // CHECK:STDERR: method.carbon:[[@LINE+7]]:36: error: member access into object of incomplete type `IntOrBytes` [IncompleteTypeInMemberAccess]
-  // CHECK:STDERR:   fn LowHalf(self) -> i32 { return self.bytes[0] as i32; }
-  // CHECK:STDERR:                                    ^~~~
-  // CHECK:STDERR: method.carbon:[[@LINE-14]]:1: note: class is incomplete within its definition [ClassIncompleteWithinDefinition]
-  // CHECK:STDERR: union IntOrBytes {
-  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   fn LowHalf(self) -> i32 { return self.bytes[0] as i32; }
-  // CHECK:STDERR: method.carbon:[[@LINE+14]]:10: error: parameter has incomplete type `IntOrBytes` in function definition [IncompleteTypeInFunctionParam]
-  // CHECK:STDERR:   fn Set(ref self, x: i32) { self.word = x; }
-  // CHECK:STDERR:          ^~~~~~~~
-  // CHECK:STDERR: method.carbon:[[@LINE-22]]:1: note: class is incomplete within its definition [ClassIncompleteWithinDefinition]
-  // CHECK:STDERR: union IntOrBytes {
-  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
-  // CHECK:STDERR: method.carbon:[[@LINE+7]]:30: error: member access into object of incomplete type `IntOrBytes` [IncompleteTypeInMemberAccess]
-  // CHECK:STDERR:   fn Set(ref self, x: i32) { self.word = x; }
-  // CHECK:STDERR:                              ^~~~
-  // CHECK:STDERR: method.carbon:[[@LINE-29]]:1: note: class is incomplete within its definition [ClassIncompleteWithinDefinition]
-  // CHECK:STDERR: union IntOrBytes {
-  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   fn Set(ref self, x: i32) { self.word = x; }
 }
 
@@ -212,19 +184,18 @@ interface I {
   fn Get(self) -> i32;
 }
 
-// An `impl` is a permitted union member.
+// An `impl` is a permitted union member, "as in classes": `extend impl as`
+// makes the interface's members visible as members of the union
+// (check/testdata/impl/extend_impl.carbon), which is what `u.Get()` needs; a
+// plain `impl as I` is reached through the interface (`u.(I.Get)()`).
 //@dump-sem-ir-begin
 union WithImpl {
   var a: i32;
-  impl as I {
+  extend impl as I {
     fn Get(self) -> i32 { return self.a; }
   }
 }
 
-// CHECK:STDERR: impl_member.carbon:[[@LINE+4]]:41: error: member name `Get` not found in `WithImpl` [MemberNameNotFoundInInstScope]
-// CHECK:STDERR: fn UseImpl(u: WithImpl) -> i32 { return u.Get(); }
-// CHECK:STDERR:                                         ^~~~~
-// CHECK:STDERR:
 fn UseImpl(u: WithImpl) -> i32 { return u.Get(); }
 //@dump-sem-ir-end
 

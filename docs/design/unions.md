@@ -87,6 +87,12 @@ toolchain (fork workstream W5; see
 onto the overlapping-storage contract this document specifies — see
 [Relationship to choice types](#relationship-to-choice-types).
 
+> **Amendment (2026-09-27, UN-1 — fork/unions/plan.md §8.6):** payload-carrying
+> `choice` alternatives landed at W-010 (W5 slices 2 and 3), on exactly the
+> overlapping-storage contract above: their payload region is the same
+> `CustomLayoutType` representation a native `union` builds (see
+> [Layout](#layout)). The paragraph is kept as history.
+
 ## Declaring a union
 
 A union declaration consists of the `union` keyword introducer, a name, and a
@@ -115,6 +121,16 @@ union Slot(T: type) {
 
 In 0.1, generic unions are supported as they fall out of the general machinery,
 but only concrete instantiations are covered by the conformance suite.
+
+> **Amendment (2026-09-27, UN-1 — fork/unions/plan.md D-UN-3):** they do not
+> fall out. The only symbolic-layout recompute in the toolchain is the choice
+> payload hook (`EvalConstantInst` for `CustomLayoutType`), which asserts
+> tuple-typed fields and the choice payload allowlist, so the 0.1 toolchain
+> diagnoses ``semantics TODO: `generic union` `` at the definition of a union
+> that has its own parameters OR is nested in a generic scope (such as a union
+> declared inside a generic class), and completes it with an error witness.
+> The design intent above stands; the gate is tracked as the residue "generic
+> unions and unions nested in generic scopes".
 
 ### Union members
 
@@ -146,7 +162,13 @@ A union may not contain:
 -   `abstract`, `base`, or `virtual` modifiers, for the same reason.
 -   `adapt` declarations.
 -   Nested type declarations in 0.1 (including
-    [anonymous unions](#anonymous-unions) authored in Carbon).
+    [anonymous unions](#anonymous-unions) authored in Carbon). _(Amended
+    2026-09-27, UN-1 — fork/unions/plan.md D-UN-6: enforced at parse. A union
+    body is a fourth declaration context whose introducer table omits `adapt`,
+    `base`, `class`, `choice`, `constraint`, `interface` and a nested `union`,
+    so each diagnoses the generic `unrecognized declaration introducer`; the
+    `abstract`/`base`/`virtual` rules reuse the class diagnostics because a
+    union is a final class.)_
 
 A Carbon-authored union must declare at least one field. (Empty _imported_ C++
 unions are handled under [Importing C++ unions](#importing-c-unions).)
@@ -207,7 +229,14 @@ work — rather than restated at each use site:
 -   A type is **trivially copyable** if it is trivially destructible and copying
     or assigning a value is exactly copying its object representation — its
     bytes — with no user-provided or otherwise non-trivial copy operation
-    anywhere in the type or its subobjects.
+    anywhere in the type or its subobjects. _(Amended 2026-09-27, UN-1 —
+    fork/unions/plan.md D-UN-2, rev 2a: in the 0.1 toolchain "user-provided"
+    means declared outside package `Core`. The prelude is toolchain-trusted
+    code whose `Core.Copy` impls over trivially destructible shapes are bitwise
+    by construction — every one was audited in the plan — so `i32`, `T*`,
+    `Core.String` and `Core.Optional(T*)` fields are admitted while a program's
+    own `impl ... as Core.Copy`, bodied or builtin, is a user-provided copy
+    operation.)_
 
 Integer, floating-point, `bool`, and `char` types satisfy both, as do pointers,
 and arrays, tuples, structs, classes, choice types, and unions whose members
@@ -224,6 +253,23 @@ complete. These field rules (like the at-least-one-field rule
 [above](#union-members)) govern `union` declarations written in Carbon; the
 shape of an _imported_ C++ union is governed by C++'s own rules, as specified in
 [Importing C++ unions](#importing-c-unions).
+
+> **Amendment (2026-09-27, UN-1 — fork/unions/plan.md D-UN-2):** the 0.1
+> predicate is the toolchain's `IsTriviallyDestructible` walk (the F8b
+> single-owner predicate, extended with a `CustomLayoutType` arm for nested
+> unions) plus a class-keyed check for a `Core.Copy` impl declared outside
+> package `Core` anywhere in the field's type; every offending field is
+> diagnosed `UnionFieldNotTriviallyCopyable`. Three field types the design
+> permits are conservatively rejected in 0.1, each a filed residue rather than
+> a silent narrowing: a field of `choice` type (the predicate defers choices to
+> the destroy machinery; residue "union fields of choice type") and a field of
+> imported C++ class or union type (the predicate never assumes triviality for
+> a C++-owned class, so the canonical migration shape is not yet admitted;
+> residue "union fields of imported C++ type"). `str` is `Core.String` in this
+> toolchain and is admitted like every other prelude type. On "diagnosed at the
+> point where the union type is required to be complete": for a Carbon-authored
+> union the `}` of its definition is the point at which the type becomes
+> complete, so the definition-site diagnosis and the sentence above coincide.
 
 Rationale: because a union does not know which field is live, it cannot run the
 right destructor or the right copy constructor. Restricting fields to types for
@@ -281,6 +327,14 @@ on.
 > currently bails out of builtin conversion for them). Wiring it is part of this
 > design's implementation and also completes construction of _imported_ C++
 > union values, which use the same representation.
+>
+> _Amended 2026-09-27, UN-1 (fork/unions/plan.md D-UN-4):_ landed for native
+> unions as `ConvertStructToUnion` — exactly one designated field, initialized
+> in place through a one-element `ClassInit` whose constant evaluation is
+> suppressed, because a union value has no constant object representation in
+> lowering (its LLVM type is a byte array), so union initializers are always
+> runtime stores. The imported-union half lands at UN-2 once the importer marks
+> the class as a union.
 
 ## Writing and reading fields
 
@@ -319,6 +373,14 @@ Reading a field of a union is **defined byte reinterpretation**. The exact rule:
 >     erroneous behavior fail-stop semantics). It is _not_ undefined behavior:
 >     it cannot retroactively alter the meaning of other code, and the
 >     implementation may not optimize on the assumption that it does not occur.
+>
+> _Amended 2026-09-27, UN-1 (fork/unions/plan.md R-16):_ the 0.1 lowering of a
+> field read is a plain LLVM load of the field's type from the byte array, and
+> LLVM yields poison for a load whose bytes are not a valid value of that type
+> (an `i1` load of the byte `2`, say). 0.1 therefore delivers the "unspecified
+> value" outcome only where that poison does not propagate into a branch or a
+> memory access; the fail-stop half is F-007g future work (residue
+> "invalid-representation reads yield poison in 0.1").
 
 Consequences of this rule:
 

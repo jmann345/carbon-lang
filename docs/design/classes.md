@@ -2283,7 +2283,9 @@ also complicate how constructors work.
 
 Carbon will need some way for users to specify the memory layout of class types
 beyond simple ordering of fields, such as controlling the packing and alignment
-for the whole type or individual members.
+for the whole type or individual members. _(Amended 2026-09-27, UN-1 —
+fork/unions/plan.md §8.6: unions are the one place layout is guaranteed today;
+see [unions.md#layout](unions.md#layout).)_
 
 We may allow members of a derived class like to put data members in the final
 padding of its base class prefix. Tail-padding reuse has both advantages and

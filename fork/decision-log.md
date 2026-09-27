@@ -2804,6 +2804,282 @@ if-let/let-else/while-let (flips a MISSING bullet on landed match
 machinery), then the error-handling chain W-016..W-019 (Result, `?`,
 exception interop), then unions W-009/W-015.
 
+### UN-1: native `union` declarations (2026-09-27)
+
+Milestone bullet "Type system: Unions (un-discriminated) + C++ union
+mapping" flips DESIGN-ONLY → PARTIAL (fork/gap-analysis.md row 47; header
+27 DONE / 21 PARTIAL / 7 MISSING / 1 DESIGN-ONLY over 56). Landed on
+claude/carbon-fork-0-1-unions in the four commits fork/unions/plan.md §3
+fixed — bd680c842 (the `union` keyword and the class-shaped parse),
+d0cdd474e (check: a union as a `SemIR::Class` with an all-offsets-zero
+`CustomLayoutType` representation), 8a8754198 (goldens and conformance),
+b19f105e5 (dated design amendments) — plus d96369b93 (the deferral fix
+below) and e54a7e1a7 (implementation-review fixes). The plan's UN-1
+half was W-009; W-015 (UN-2, the C++ side) is next and is sequenced after
+EH-B per D-UN-7. Design authority was not reopened: F-007 with the owner's
+sub-decisions a..k and the ratified docs/design/unions.md stand; every
+decision below is an implementation choice the design leaves to the
+toolchain, auto-adopted under R29(a) and veto-able after the fact.
+
+DECISIONS, final rev 2/2a/2b spellings, each with its break condition.
+**D-UN-1** — a union is a `SemIR::Class` with the entity flag
+`ClassFields::is_union`, whose object representation is a
+`CustomLayoutType` with every field at offset zero and size/alignment by
+the max-of-fields rule; every class facility the design grants unions is
+inherited (fields as `FieldDecl`s through the unchanged class-scope path,
+methods, `impl`, `alias`, forward declaration, member-of-class,
+import/export of the entity). Break condition: none — the representation
+is design-mandated. **D-UN-2** — the 0.1 field predicate is
+`IsTriviallyDestructible` (with a new `CustomLayoutType` arm) plus a
+class-keyed `HasNonTrivialUserCopyImpl` walk, NOT the SF-6 scalar
+allowlist (which rejects the design's canonical `array(u8, 4)` field).
+The copyable half's trust boundary (rev 2a, coordinator amendment): a
+`Core.Copy` impl counts as user-provided only when declared OUTSIDE
+package `Core`, bodied or builtin; the prelude's impls are trusted as
+bitwise over trivially destructible shapes on the strength of the audit
+recorded in the plan (copy.carbon `Bool`/`CharLiteral`/`FloatLiteral`/
+`IntLiteral`/`type`/`T*` and `const T`; `Int(N)`/`UInt(N)`/`Float(N)`/
+`Char`; the six `CppCompat` adapters — all `primitive_copy`; `NullptrT`
+over `make_uninitialized`; `String`'s field-wise `{ptr, size}` copy;
+`Optional(T)` delegating to `T.Copy`, whose pointer specialization is
+`primitive_copy` — none has side effects or differs observably from a
+byte copy). Mechanism (rev 2b B-1): the local-store leg skips every
+import-materialized impl (`GetImportSource(first_decl_id).has_value()`,
+because a materialized impl's `parent_scope_id` is `None` and rev 2a's
+scope-based spelling would have diagnosed `var a: i32;` order-dependently)
+and classifies file-declared impls by `sem_ir().package_id()`; the
+imported leg classifies each `import_irs()` entry by its `package_id()`
+and matches the field's class by canonical decl identity. The
+symbolic-self shortcut of `HasUserDestroyImpl` was deliberately NOT
+mirrored (the prelude's blanket `T*`/`const T`/`Int(N)`/`Optional(T)`
+impls would disqualify every class). `Optional(T*)` is ADMITTED, as the
+design says (rev 2's "bodied impl ⇒ rejected" rule, which would have
+rejected the design's own idiom, is withdrawn with its pin, doc note and
+residue). Break conditions: a prelude `Copy` impl that is not
+observationally bitwise over an admitted shape (re-run the audit at every
+weekly upstream merge touching core/prelude; the fix is an explicit
+allowlist of prelude classes, never widening the boundary to user
+packages); a blanket `Core.Destroy` impl appearing anywhere (none exists;
+`HasUserDestroyImpl`'s shortcut then disqualifies every class and the
+predicate gains a class-keyed `Destroy` match). Falsifier: the lower
+golden of `optional_pointer_field` showing anything other than a plain
+memcpy/load-store of the storage. **D-UN-3** — generic unions are
+TODO-gated: a union with its own parameters OR nested in a generic scope
+(`generic_id.has_value()`, the broad gate, rev B F-7) diagnoses
+`SemanticsTodo` "`generic union`" at its definition and completes with an
+error witness; the only symbolic-layout recompute in the tree is the
+choice payload eval hook, which asserts tuple payloads and the SF-6
+allowlist. Break condition: none in this workstream. **D-UN-4** —
+designated single-field initialization is a `ConvertStructToUnion` arm
+inside `ConvertStructToClass`, replacing the struct-literal bailout for
+`is_union` classes, emitting a ONE-element `ClassInit`; and
+`EvalConstantInst(ClassInit)` returns `NotConstant` for a union so the
+initializer never folds into a `StructValue` (whose lowering casts to an
+`llvm::StructType`, a CHECK failure against a union's `[N x i8]`). The
+other fields are not covered with `UninitializedValue` (at offset 0 a
+cover ordered after the designated store would clobber it). Break
+condition: any autoupdate fill showing a `struct_value` of union type, or
+a lowering CHECK in `EmitAsConstant(StructValue)` — neither fired.
+**D-UN-5** — whole-union copy reuses the synthesized primitive-copy
+witness: `LookupChoiceCopyWitness`'s gate is `is_choice || (is_union &&
+!is_cpp_scope)`; an imported union keeps C++'s copy determination on the
+C++ copy-constructor path. Declared consequence (rev B F-8): the
+synthesized witness SHADOWS a user `impl as Core.Copy` written inside a
+union body, the choice precedent carried over unchanged, pinned by
+`user_copy_impl_shadowed` (check + lower). Break condition: UN-2's
+negative pin `fail_copy_nontrivial_member` compiling clean. **D-UN-6** —
+member restrictions are enforced at PARSE by a fourth `DeclContextKind`,
+`UnionContext`, whose introducer table omits `adapt`, `base`, `class`,
+`choice`, `constraint`, `interface` and a nested `union` (the interface
+context's `var` precedent), diagnosing the existing `UnrecognizedDecl`;
+`abstract`/`base` unions and `virtual`/`abstract` methods reuse the class
+modifier diagnostics; a redeclaration that flips `class`/`union`
+diagnoses `NameDeclDuplicate`/`NameDeclPrevious`. Four new diagnostics in
+total (UnionFieldNotTriviallyCopyable, UnionInitNotSingleField,
+UnionInitUnknownField, UnionWithoutFields), none for restrictions. Break
+condition: none; residue W-089 for message quality. **D-UN-7** — two PRs,
+UN-1 then UN-2, UN-2 rebased after EH-B merges; UN-1 carries a `union
+export` TODO guard in `ExportClassToCpp` (after the `clang_decls` lookup,
+so an imported union keeps returning its `TagDecl`) and in
+`ExportNameScopeToCpp`'s class branch — the two entries whose callers all
+handle nullptr — never in `ExportClassToCppInDeclContext`, whose three
+callers dereference the result (rev A B-2). Recorded pre-existing (rev
+2b m-3): `ExportClassToCpp` passes the name-scope result unchecked into
+`ExportClassToCppInDeclContext`, unreachable for unions only because
+D-UN-6 forbids nested types; any relaxation re-checks it. **D-UN-8** (a
+UN-2 decision, recorded now for completeness) — on export Carbon is the
+layout authority: `CalculateCppFieldOffsets` gets a union arm recording
+offset 0 for every field, `layoutRecordType` keeps supplying
+size/alignment from the `CustomLayoutType` block, and no `FinalAttr` is
+added for a union; rejected: letting Clang lay unions out. **D-UN-9** —
+unformed state by way of `Core.UnformedInit`: `UnformedInit` becomes a
+`CoreInterface` kind and a `CoreIdentifier`; `LookupCustomWitness` gains
+an arm calling `LookupUnionUnformedInitWitness`, which for a native
+non-C++ union returns `BuildCustomWitness(..., /*values=*/{})` (legal
+because the interface declares no associated entities), so the prelude's
+blanket `impl forall [T: UnformedInit] T as DefaultOrUnformed { fn Op()
+-> Self = "make_uninitialized"; }` applies and `var u: U;` lowers to a
+poison value with the in-place `InitializeStorage` emitting nothing;
+`LookupCppImpl`'s exhaustive switch gains `UnformedInit → None` (rev 2b
+M-1), keeping imported classes' `DefaultOrUnformed` path on the C++
+default constructor. Rejected: a synthesized `Core.Default` witness,
+which would declare the variable FORMED against unions.md's unformed
+contract. Break condition and falsifier: `ConversionFailureTypeToFacet`
+on `var u: IntOrBytes;` in `unformed_then_assign` — the exact rev 1
+failure; it did not fire.
+
+PLAN CORRECTIONS (§0.2), recorded verbatim in substance: (1) the brief's
+template path fork/w012/plan.md did not exist in the planning tree (the
+W-012 workstream was in another checkout); fork/eh, fork/w077 and
+fork/w5-choice were the templates. (2) W-009's evidence
+union_basic.carbon:6 pointed at the `EXPECT-EXIT` line; the SKIP line was
+:10. (3) W-009's "choice-pattern parse (~12 states)": `choice` has FIVE
+states, and a union body is CLASS-shaped, so the parser follows the
+`class` variant shape — five new variant states, four new node kinds, a
+fourth `DeclContextKind`. (4) W-009's "symbolic max-size/max-align (route
+b preferred)": route (b) landed at W5-S3b for choice payloads but is
+SF-6-specific; the genuinely new piece was the designated-init
+conversion and its fold suppression, and generic unions are TODO-gated.
+(5) W-015's "convert.cpp:882-885 struct-literal bailout" is the
+`ConvertStructToClass` bailout, at :1009 after UN-1 (the `is_union`
+branch precedes it at :1004-1006); items (6)-(8) — the two UN-2 export
+crash sites (`GetStructTypeFields` on a `CustomLayoutType` repr,
+`CalculateCppFieldOffsets` accumulating sequential offsets), the "needs
+the shared trivially-copyable predicate" claim (it exists since F8b; UN-1
+added its `CustomLayoutType` arm) and the stale "opaque interop types"
+note — are UN-2's to record. (9) W-007's five-way contention
+precondition is met by SEQUENCING (UN-2 rebases after EH-B), not by the
+refactor. (10) union_basic.carbon's SKIP reason "no design doc" was stale
+since F-007; the stub is replaced. (11) unions.md said choice payloads
+were unimplemented (W-010 DISCHARGED) and promised generic unions fall
+out (they do not) — both carry dated amendments. (12) W-010's W-009
+coordination line was accurate and is closed in its notes.
+
+PLAN REVIEWS. Two adversarial reviews of rev 1: rev A returned REJECT
+(blockers B-1 — `var u: U;` fails `DefaultOrUnformed`, the rev 1
+evidence was a failure golden; B-2 — the export guard inside
+`ExportClassToCppInDeclContext` would turn the CHECK into a null-pointer
+crash; majors M-1 cpp-scope fields rejected, M-2 file-scope initializer
+unpinned; minors m-1 `SkipPastLikelyEnd` recovery in the parse
+negatives, m-2 `PrintClassFields` must print `is_union`) and rev B
+returned APPROVE-WITH-AMENDMENTS (F-1 = B-1 as a blocker; F-2 the
+destructible-only predicate and a false export.cpp sentence; F-3 = M-1;
+F-4 stale counts after W-012; F-5 by-value crossings for UN-2; F-6 DONE
+needs justification; F-7 the generic gate's breadth and a citation; F-8
+an in-body `Copy` impl shadowed; F-9 UN-1 touches export.cpp; F-10
+invalid-representation reads; F-11 assignment `w = v;`; F-12
+namespace-scoped unions and unions as choice payloads; F-13 docs
+cross-references; F-14 runtime cannot observe layout). All folded as rev
+2 with two documented departures from the reviewers' text (the
+`HasUserDestroyImpl` mirror cannot be literal; the `Optional(T*)`
+reading). The coordinator's rev 2a amendment (prelude-trusted `Copy`
+impls) was auto-adopted under R29(a) because rev 2 would have rejected
+the design's own `Optional(T*)` example. The focused re-review of rev 2a
+returned SIGN-OFF-WITH-AMENDMENTS, mechanism spellings only: B-1 the
+local-leg `IsCorePackage(parent_scope_id)` misclassifying
+import-materialized impls (order-dependent false diagnostics on `i32`
+fields), M-1 the `LookupCppImpl` exhaustive switch, m-1 the second
+`fail_todo_export` subfile reaching `ExportClassToCpp` first, m-2
+`Interface::Print` does emit `core_interface`, m-3 the unchecked
+name-scope pass — folded as rev 2b, no decision changes, signed off.
+
+IMPLEMENTATION DEVIATIONS from the plan, each recorded in the plan's
+Landed notes. `str` is `Core.String` in this toolchain (check/literal.cpp
+resolves it through `CoreIdentifier::String`), so it is ADMITTED under
+the rev 2a trust boundary, not rejected — D-UN-2(ii), §4.A's planned
+failing `str` subfile and §8.6's doc text were wrong; `str` is pinned as
+accepted in `aggregate_fields` and the doc amendment says so.
+`BuildClassOrUnionDecl` also takes the popped `NameComponent`. Three
+class-shape parity sites the plan's file inventory omitted, found by
+auditing every `NodeKind::Class*` switch: the deferred-definition scope
+kinds in check/node_id_traversal.cpp, the `IsDefinitionStart` set in
+sem_ir/formatter.cpp, and the document-symbol outline in
+language_server/handle_document_symbol.cpp. check/BUILD needs no edit —
+it globs `handle_*.cpp` (the plan's §1.A.3/§2.A.4/§6.A item 16 said it
+lists sources explicitly). The tree-sitter highlight entry is commented
+on the `final`/`friend` precedent because grammar.js has no `union`
+token (residue W-091). `fail_virtual_method` uses a bodied `fn`. And ONE
+pre-existing golden moved, check/testdata/basics/raw_sem_ir/
+cpp_interop.carbon, gaining `is_choice: 0, is_union: 0` in its `classes`
+entry — the text the rev A m-2 `PrintClassFields` amendment itself
+added; the plan's §6.A "zero existing goldens move" claim was false as
+written because the m-2 fold never updated the churn inventory, and the
+rev 2b m-2 argument (no raw-dump golden mentions `UnformedInit`) looked
+at the interface tag, not the class fields. The §8.1 stop rule fired on
+that one file; it was reconciled by inspection (the diff is exactly the
+amendment's text, nothing else) rather than by halting, and commit
+8a8754198 predicted it before the fill.
+
+THE DEFERRAL REVIEW MISS. The first hosted autoupdate fill exposed one
+defect, fixed at the root in d96369b93: method bodies written directly in
+a union body were checked EAGERLY, before the union completed
+(`IncompleteTypeInFunctionParam` / `IncompleteTypeInMemberAccess`,
+blanking lower/testdata/union/basic.carbon's `method` subfile), because
+the PARSER decides deferral — `ParsingInDeferredDefinitionScope`
+(parse/context.cpp) registers a `DeferredDefinition` only when the state
+stack's top is a class/interface/regular declaration-scope loop under a
+class/impl/interface/named-constraint definition-finish state — and the
+union states were in neither list, so the check-side scope kinds UN-1
+added in node_id_traversal.cpp never saw a deferred definition to replay.
+Both lists now carry the union states, mirroring class. This is a review
+miss per R28(d): the plan named node_id_traversal.cpp's deferred scope
+as a parity site and no reviewer asked where deferral is DECIDED. The
+`impl_member` failure in the same fill was a test-spelling defect, not a
+deferral one: `u.Get()` needs `extend impl as I`, as for classes.
+
+IMPLEMENTATION REVIEW: a single review, APPROVE-WITH-FIXES, folded in
+e54a7e1a7 — the doc amendment said "Three" conservatively rejected field
+types while listing two (`str` admitted); `AddStructTypeFields`, which
+assigns each `Field::index`, now runs before the `generic union` TODO
+gate so a union that completes with the error witness never leaves a
+`None` element index in error dumps; and the discharge artifacts (this
+entry, the ledger, the gap-analysis row, the plan's Landed notes).
+
+VERIFICATION was hosted-only per R28: `Fork: hosted verification` in
+autoupdate → gate → conformance. First autoupdate run 36313187966 filled
+the 17 new goldens and surfaced the deferral defect above. Second
+autoupdate run, after d96369b93 and e54a7e1a7: <!-- VERIFY: numbers -->
+(run id and fixpoint result). Gate: <!-- VERIFY: numbers --> (run id).
+Conformance: <!-- VERIFY: numbers --> (expected delta on the post-W-012
+base PASS +2 / SKIP −1 / total +1, that is 110 PASS / 0 FAIL / 26 SKIP over
+136, 45/56 bullets; on a post-EH-B base 114/0/25 over 139). `runner.py
+--self-test` clean (136 programs, 56 bullets) and the README program
+table regenerated, confirmed locally at 8a8754198. Reconciliation greps
+run at discharge are in the plan's Landed notes; the one surprise is that
+§8.4's "two refreshed comments" grep matches one line only because
+custom_witness.cpp's refreshed comment wraps the phrase across two lines.
+
+RESIDUE, filed with blocked_by []: W-086 union fields of choice type
+(D-UN-2(i)); W-087 union fields of imported C++ type (D-UN-2(iii); the
+`CXXRecordDecl::isTriviallyCopyable()` arm, deliberately not a UN-2
+rider); W-088 generic unions and unions nested in generic scopes
+(D-UN-3); W-089 union member-restriction diagnostics (D-UN-6); W-090
+invalid-representation reads yield poison in 0.1 (R-16, F-007g future
+work); W-091 tree-sitter union grammar; W-092 union field copy predicate
+is textual-order dependent for user impls (a file-declared `Core.Copy`
+impl after the union is invisible at the union's `}`); W-093 user blanket
+`Core.Copy` impls are invisible to the union field predicate (the
+class-keyed match skips non-`ClassType` selves). Ids W-086..W-093 assume
+EH-B, which merges first, takes W-083..W-085 — verified at merge. The
+"union fields of `Core.Optional(T*)`" and "file-scope union variables"
+residues of rev 1/2 were withdrawn (admitted by rev 2a; pinned by R-14).
+Choice-side note (rev B F-12): a union as a CHOICE PAYLOAD is governed by
+the SF-6 allowlist, which rejects it — that is the Sum types bullet's
+residue, not a union item. For UN-2's eventual DONE-with-gated-residue,
+the row 44 precedent applies (Sum types is DONE with Self-dependent
+payloads and qualified alternative patterns still gated by diagnostics);
+if the by-value parameter probe of §4.B fails, the row stays PARTIAL.
+
+_V-3a divergence-risk register entries (reviewed at each upstream merge):_
+the `union` keyword, the class-shaped union declaration and the
+byte-reinterpretation read semantics are already F-007's register
+entries; UN-1 mints no new public name. Fork-local surface added by
+implementation only: `Core.UnformedInit` as a `CoreInterface` kind and
+`CoreIdentifier` (an existing prelude interface, now recognized by the
+toolchain; no library change), the `is_union` raw-dump field, and the
+four diagnostic kinds. Upstream has no `union`; p000157 leaves typed
+union versus `Storage` open — no contradiction. Veto-able.
+
 ### W-012: if-let / while-let / let-else landed (2026-09-27)
 
 The milestone's if-let / let-else bullet flips MISSING → PARTIAL: `if (let P =

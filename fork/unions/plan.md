@@ -1781,3 +1781,138 @@ SIGN-OFF-WITH-AMENDMENTS, whose five mechanism-spelling items are folded
 as rev 2b with no decision changes. Implementation proceeds UN-1 first
 (§3), UN-2 after EH-B per §0.4/R-12. Later amendments continue to be
 folded in place, each marked "(amended <date>, review fold: ...)".
+
+## Landed notes (2026-09-27)
+
+UN-1 landed on claude/carbon-fork-0-1-unions: bd680c842 (lex + parse),
+d0cdd474e (check), 8a8754198 (goldens + conformance), b19f105e5 (docs),
+then d96369b93 (deferral fix) and e54a7e1a7 (implementation-review
+fixes). Ledger, gap-analysis row and decision-log entry ("UN-1: native
+`union` declarations (2026-09-27)") are the discharge commit. UN-2 is
+next, after EH-B (§0.4, D-UN-7). Deltas from this plan, honestly:
+
+-   **`str` is `Core.String` — D-UN-2(ii), §4.A `fail_nontrivial_field`
+    and §8.6's doc text were WRONG.** check/literal.cpp resolves the
+    `str` spelling through `CoreIdentifier::String`, so a `str` field IS
+    a `Core.String` field and is admitted under the rev 2a trust
+    boundary (`String`'s `Copy` impl is declared in package `Core` over a
+    trivially destructible `{ptr, size}` repr). The planned failing
+    subfile could not be written; `str` is pinned as ACCEPTED beside
+    `Core.String` in `aggregate_fields`, and the doc amendment lists TWO
+    conservatively rejected field types (choice-typed, imported C++-typed;
+    review fix e54a7e1a7 corrected the count). The §8.5 residue list
+    loses nothing: no `str` item was planned.
+-   **check/BUILD needs no edit** — §1.A.3, §2.A.4 and §6.A item (16)
+    said check/BUILD lists sources explicitly; it globs `handle_*.cpp`
+    (check/BUILD:240-241), so handle_union.cpp was picked up without a
+    BUILD change. §6.A's "25 source files" is therefore 24 plus the three
+    parity sites below.
+-   **`BuildClassOrUnionDecl` takes the `NameComponent`** (check/class.h:
+    24-28: `(Context&, Parse::AnyClassDeclId, bool is_definition,
+    NameComponent name, DeclIntroducerState introducer, Lex::TokenKind
+    decl_kind)`); §1.A.3 omitted the popped name from the signature.
+-   **Three class-shape parity sites beyond §2.A's inventory**, found by
+    auditing every `NodeKind::Class*` switch: check/node_id_traversal.cpp
+    (`UnionDefinitionStart`/`UnionDefinition` in the deferred-definition
+    scope kinds), sem_ir/formatter.cpp (`IsDefinitionStart`, so
+    `//@dump-sem-ir` ranges cover a union body), and
+    language_server/handle_document_symbol.cpp (`SymbolKind::Struct`,
+    clangd's kind for C++ unions).
+-   **The deferral fix (d96369b93) — a review miss per R28(d).** The
+    first hosted autoupdate fill (run 36313187966, 17 new goldens) showed
+    method bodies inside a union body checked EAGERLY
+    (`IncompleteTypeInFunctionParam` / `IncompleteTypeInMemberAccess`;
+    lower/testdata/union/basic.carbon `method` blanked). The PARSER
+    decides deferral: `ParsingInDeferredDefinitionScope`
+    (parse/context.cpp:461-476) registers a `DeferredDefinition` only
+    for the class/interface/regular scope loops under the
+    class/impl/interface/named-constraint definition-finish states, and
+    the union states were in neither list — so the check-side scope
+    kinds added in node_id_traversal.cpp never saw a deferred definition
+    to replay. Both lists now include `DeclScopeLoopAsUnion` /
+    `DeclDefinitionFinishAsUnion`, mirroring class. The plan named the
+    check-side parity site and nobody asked where deferral is decided.
+    `impl_member` in the same fill was a test-spelling defect: `u.Get()`
+    needs `extend impl as I`, as for classes (the plain impl is reached as
+    `u.(I.Get)()`); the subfile now uses the design's "as in classes"
+    spelling. `fail_virtual_method` uses a bodied `fn` (its surviving
+    CHECK lines carried `@LINE` offsets relative to the stripped ones).
+-   **Tree-sitter**: utils/tree_sitter/queries/highlights.scm:134 carries
+    `; "union"` COMMENTED, on the `final`/`friend` precedent (:102, :106)
+    — grammar.js has no `union` token (`grep -c union grammar.js` = 0)
+    and an active capture for a token the grammar lacks fails query
+    loading. §0.1 row 14 listed the file as a plain keyword edit. Residue
+    "tree-sitter union grammar" (W-091).
+-   **One pre-existing golden moved — §6.A's "Existing goldens that move:
+    NONE predicted" was false as written, and the §8.1 stop rule fired.**
+    `git diff origin/trunk...HEAD --diff-filter=M -- toolchain/check/testdata
+    toolchain/lower/testdata toolchain/parse/testdata` lists exactly one
+    file: check/testdata/basics/raw_sem_ir/cpp_interop.carbon (1 line),
+    whose `classes` entry gains `is_choice: 0, is_union: 0` — the text
+    the rev A m-2 `PrintClassFields` amendment (§1.A.3) itself added. The
+    m-2 fold never updated §6.A, and the rev 2b m-2 argument ("no raw-dump
+    golden mentions `UnformedInit`") looked at the interface tag, not the
+    class fields, although the same raw_sem_ir directory prints every
+    class. Commit 8a8754198 predicted the move before the fill; the stop
+    was resolved by inspection (the diff is exactly the amendment's text)
+    rather than by halting. Every other golden in the diff is new.
+-   **§8.4 reconciliation greps, as actually run at e54a7e1a7:**
+    -   `grep -rn 'union export' toolchain` → check/cpp/export.cpp:152
+        and :290 (the two D-UN-7 guards) plus
+        check/testdata/union/fail_todo_export.carbon. As predicted (two
+        guard sites, one golden).
+    -   `grep -rn 'generic union' toolchain` → the TODO string at ONE
+        site, check/class.cpp:708 (inside `CheckCompleteUnionType`, the
+        static helper `ComputeUnionObjectRepr` calls), plus comments in
+        check/class.h:48-49, check/handle_union.cpp:27 and
+        parse/testdata/union/generic.carbon:12, and the golden
+        check/testdata/union/fail_todo_generic.carbon. §8.4 named "the
+        `ComputeUnionObjectRepr` site" — same function family, one TODO.
+    -   `grep -rn 'Builtin conversion does not apply'
+        toolchain/check/convert.cpp` → one hit, :1009 (the non-union
+        imported-class bailout), directly after the `is_union` branch at
+        :1004-1006. As predicted.
+    -   `grep -rn 'payload region of a payload-carrying choice' toolchain`
+        → ONE line, check/convert.cpp:740 (the `ChoicePayload` fill
+        comment, which is choice-specific and was not meant to change).
+        §8.4 expected "the two refreshed comments": the
+        custom_witness.cpp `CanDestroyClass` comment (:315-320) IS
+        refreshed — it now reads "the payload region of a payload-carrying
+        choice ... or the object representation of a native `union`" —
+        but the phrase wraps across two lines, so the single-line grep
+        misses it. A grep-shape miss, not a code miss.
+    -   Diagnostic-kind uniqueness: each of `UnionWithoutFields`,
+        `UnionFieldNotTriviallyCopyable` (check/class.cpp),
+        `UnionInitNotSingleField`, `UnionInitUnknownField`
+        (check/convert.cpp) has one kind.def line and one
+        `CARBON_DIAGNOSTIC` definition + one emit site in exactly one
+        .cpp (grep count 2 in that file, 1 in kind.def, 0 elsewhere).
+    -   New TODO strings: `union export` 2 sites (both deleted at UN-2),
+        `generic union` 1 site. `is_union` reads: 19 non-testdata lines
+        across sem_ir/class.h, check/import_ref.cpp, class.cpp,
+        handle_union.cpp, convert.cpp, eval_inst.cpp, custom_witness.cpp,
+        cpp/export.cpp, cpp/impl_lookup.cpp.
+-   **Verification (R28, hosted-only):** first autoupdate 36313187966
+    (17 new goldens filled, the deferral defect surfaced). Second
+    autoupdate, after d96369b93 + e54a7e1a7, run id and fixpoint result:
+    `<!-- VERIFY: numbers -->`. Gate run id:
+    `<!-- VERIFY: numbers -->`. Conformance result, expected 110/0/26
+    over 136 on the post-W-012 base (§5.A):
+    `<!-- VERIFY: numbers -->`. Implementation review: one review,
+    APPROVE-WITH-FIXES (the doc count; `Field::index` assignment moved
+    before the generic gate; discharge artifacts).
+-   **Residue ids allocated at discharge** (assuming EH-B takes
+    W-083..W-085; verified at merge): W-086 union fields of choice type;
+    W-087 union fields of imported C++ type; W-088 generic unions and
+    unions nested in generic scopes; W-089 union member-restriction
+    diagnostics; W-090 invalid-representation reads yield poison in 0.1;
+    W-091 tree-sitter union grammar; W-092 union field copy predicate is
+    textual-order dependent for user impls (the local-store leg of
+    `HasUserCopyImplOutsideCore` enumerates `impls()` at the union's `}`,
+    so a file-declared impl AFTER the union is admitted — an unpinned
+    soundness hole D-UN-2 did not foresee; `order_independent_i32` pins
+    only the import-materialized case); W-093 user blanket `Core.Copy`
+    impls are invisible to the union field predicate (the class-keyed
+    match skips non-`ClassType` selves such as `impl forall [T: type] T
+    as Copy` declared outside `Core` — the price of rejecting the
+    symbolic-self shortcut, recorded rather than papered over).

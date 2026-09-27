@@ -2971,11 +2971,15 @@ accepts and R28(d) records.
 
 _Deviations from the plan, each with its necessity:_ `fail_none_mode` is its own
 file, fail_catching_none_mode.carbon, because `EXTRA-ARGS` is file-wide, not per
-subfile (plan §4.B listed it as a subfile). The Ok/Err arms converge through the
-`if`-expression shape (`AddConvergenceBlockWithArgAndPush`, each arm's `Result`
-value materialized as a block argument) instead of §1.B.3's `InitializeExisting`
-into one shared `TemporaryStorage` — the in-tree convergence precedent, and it
-avoids a second init-in-place plumbing. `cpp_catching_call_results` is a
+subfile (plan §4.B listed it as a subfile). The Ok/Err arms converge exactly
+as §1.B.3 specified — `InitializeExisting` into one shared `TemporaryStorage`
+minted before the branch, read back with `ConvertToValueExpr` — after a first
+landing through the `if`-expression shape (`AddConvergenceBlockWithArgAndPush`)
+crashed the third hosted autoupdate (run 36308713023): lowering types a
+block-argument PHI by the OBJECT type (lower/function_context.cpp:178) while a
+value of a by-pointer type such as `Core.Result` is a `ptr`, so that shape only
+carries by-copy values (no lower golden has an `if`-expression over class
+values). Recorded as a review miss per R28(d). `cpp_catching_call_results` is a
 `Map<InstId, FunctionId>` rather than a `Set<InstId>` so the `?` break-path note
 can name the C++ callee. Reference-returning callees fail closed (a TODO plus
 the FENCED fallback, never an unfenced call) because the out-pointer would need

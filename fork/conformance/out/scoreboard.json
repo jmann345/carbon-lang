@@ -1,9 +1,9 @@
 {
-  "generated": "2026-09-25T19:39:41.467304+00:00",
-  "toolchain": "/tmp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 12.6,
+  "generated": "2026-09-27T06:37:09.935551+00:00",
+  "toolchain": "/home/runner/work/_temp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
+  "elapsed_seconds": 48.0,
   "totals": {
-    "PASS": 101,
+    "PASS": 102,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
@@ -199,6 +199,13 @@
     {
       "path": "control_flow/match_single_alternative.carbon",
       "bullet": "Control flow: matching \u2014 sum-type consumption incl. std::variant/std::optional interop",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "control_flow/match_struct_destructure.carbon",
+      "bullet": "Control flow: matching \u2014 good switch equivalents",
       "status": "PASS",
       "detail": "",
       "differential": false
@@ -1027,7 +1034,7 @@
     },
     "Type system: Sum types (discriminated unions)": {
       "status": "PASS",
-      "gap_status": "PARTIAL",
+      "gap_status": "DONE",
       "programs": [
         "types/choice_basic.carbon",
         "types/choice_discriminant_diff.carbon",
@@ -1038,7 +1045,7 @@
     },
     "Type system: Unions (un-discriminated) + C++ union mapping": {
       "status": "SKIP",
-      "gap_status": "MISSING",
+      "gap_status": "DESIGN-ONLY",
       "programs": [
         "types/union_basic.carbon"
       ]
@@ -1170,7 +1177,7 @@
     },
     "Control flow: matching \u2014 good switch equivalents": {
       "status": "PASS",
-      "gap_status": "PARTIAL",
+      "gap_status": "DONE",
       "programs": [
         "control_flow/match_bool.carbon",
         "control_flow/match_guard_binding.carbon",
@@ -1179,6 +1186,7 @@
         "control_flow/match_irrefutable_no_default.carbon",
         "control_flow/match_no_fallthrough.carbon",
         "control_flow/match_position.carbon",
+        "control_flow/match_struct_destructure.carbon",
         "control_flow/match_switch.carbon",
         "control_flow/match_switch_diff.carbon",
         "control_flow/match_tuple_case_diff.carbon",
@@ -1187,7 +1195,7 @@
     },
     "Control flow: matching \u2014 sum-type consumption incl. std::variant/std::optional interop": {
       "status": "PASS",
-      "gap_status": "MISSING",
+      "gap_status": "PARTIAL",
       "programs": [
         "control_flow/choice_generic_roundtrip_diff.carbon",
         "control_flow/choice_payload_roundtrip_diff.carbon",
@@ -1206,7 +1214,7 @@
     },
     "C++ interop: threading, atomics, memory model, synchronization": {
       "status": "PASS",
-      "gap_status": "MISSING",
+      "gap_status": "PARTIAL",
       "programs": [
         "interop/cpp_atomic_carbon_class_diff.carbon",
         "interop/cpp_atomic_global_counter_diff.carbon",
@@ -1218,7 +1226,7 @@
     },
     "Error handling: dedicated control flow constructs": {
       "status": "PASS",
-      "gap_status": "MISSING",
+      "gap_status": "PARTIAL",
       "programs": [
         "error_handling/control_flow_constructs.carbon",
         "error_handling/question_generic_diff.carbon",
@@ -1228,7 +1236,7 @@
     },
     "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)": {
       "status": "PASS",
-      "gap_status": "MISSING",
+      "gap_status": "PARTIAL",
       "programs": [
         "error_handling/cpp_exception_interop.carbon",
         "error_handling/cpp_exceptions_auto_catch.carbon",

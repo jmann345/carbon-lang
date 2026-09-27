@@ -768,6 +768,13 @@ static auto MarkPatternUnused(Context& context, SemIR::InstId inst_id) -> bool {
         }
         break;
       }
+      case CARBON_KIND(SemIR::StructPattern struct_pattern): {
+        for (auto elem_id :
+             context.inst_blocks().Get(struct_pattern.elements_id)) {
+          worklist.push_back(elem_id);
+        }
+        break;
+      }
       default:
         break;
     }

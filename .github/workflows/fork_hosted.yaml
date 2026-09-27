@@ -55,9 +55,19 @@ jobs:
 
       - name: Autoupdate testdata
         if: inputs.mode == 'autoupdate'
+        # file_test runs each test under a crash-recovery context, so a
+        # crashing test is reported inline ("!" + stack dump) while the
+        # process still exits 0. A partial fill must never be pushed
+        # silently: fail the step when any test crashed.
         run: |
           set -euo pipefail
-          time python3 ./toolchain/autoupdate_testdata.py
+          time python3 ./toolchain/autoupdate_testdata.py 2>&1 \
+            | tee "$RUNNER_TEMP/autoupdate.log"
+          if grep -qE 'Stack dump:|CHECK failure|CARBON_FATAL' \
+              "$RUNNER_TEMP/autoupdate.log"; then
+            echo "::error::a test crashed during autoupdate; refusing to push a partial fill"
+            exit 1
+          fi
 
       - name: Commit and push testdata changes
         if: inputs.mode == 'autoupdate'

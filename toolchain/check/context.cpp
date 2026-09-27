@@ -66,6 +66,7 @@ auto Context::VerifyOnFinish() const -> void {
   param_and_arg_refs_stack_.VerifyOnFinish();
   args_type_info_stack_.VerifyOnFinish();
   CARBON_CHECK(struct_type_fields_stack_.empty());
+  CARBON_CHECK(struct_pattern_names_stack_.empty());
   CARBON_CHECK(field_decls_stack_.empty());
   decl_name_stack_.VerifyOnFinish();
   decl_introducer_state_stack_.VerifyOnFinish();

@@ -10,24 +10,39 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-09-27 (post-PR #39: W-077 struct patterns in
-match case position LANDED — the first slice verified entirely on
-GitHub-hosted runners (`Fork: hosted verification`: autoupdate 13 min,
-gate ~25 min, conformance ~20 min); NEW FLOOR 102 PASS / 0 / 28 SKIP
-over 130. R28: the owner's machine is never used. R29 throughput
-protocol in force: no questions, one PR per feature, two plan reviews /
-one impl review once hosted verification is green, pipelined planning
-in separate worktrees (../carbon-trunk, ../carbon-eh, main checkout on
-the w012 branch). F-006..F-011 stand; W-005 discharged; gap-analysis
-reconciled to 26 DONE / 20 PARTIAL / 8 MISSING / 2 DESIGN-ONLY.
-IN FLIGHT: W-012 if-let/while-let/let-else — plan folded (var-alternative
-engine lane added), focused re-review running, then implement;
-EH-A (prelude Core.Result, Optional Try, `()` payloads, entry-point
-Result signatures) — plan signed off (17 amendments), implementer
-running on claude/carbon-fork-0-1-eh; EH-B (catching thunks,
-Cpp.Exception, Carbon::expected export) follows EH-A. Next after
-those: unions W-009/W-015. Weekly cron Monday 2026-09-28 (mirror probe
-is GitHub-hosted)._
+_Last updated: 2026-09-27 (post-PR #40: EH-A LANDED — prelude
+`Core.Result(T, E)` with its `Try` impl, `Core.Optional(T)` as `Try`
+(SF-9 resolved D-EH-1: independent choice, Optional keeps its placeholder
+identity), `()` admitted as a choice payload (W-070 discharged, D-EH-2),
+`Main.Run() -> Core.Result(..)` lowering to `i32 main()` with the D10
+epilogue. Gap row 66 "Error handling: dedicated control flow constructs"
+PARTIAL → DONE; header 27 DONE / 19 PARTIAL / 8 MISSING / 2 DESIGN-ONLY.
+NEW FLOOR 106 PASS / 0 / 28 SKIP over 134, 43/56 bullets. Verified
+hosted-only (R28): three autoupdate rounds (R-12 `Destroy` bound; R-3
+PadToType zero-size constant — the hosted autoupdate step now fails on
+any stack dump; clean fill), gate 36304152824, conformance
+36304154221. IN FLIGHT: W-012 if-let/while-let/let-else — implemented
+on claude/carbon-fork-0-1-w012 (main checkout), review fixes landed,
+second hosted autoupdate running after two testdata authoring fixes;
+gate + conformance next (target 108/0/28 over 136 on this trunk);
+discharge commit drafting in parallel (W-080..W-082 residue ids).
+EH-B (catching thunks, `Cpp.Exception`, `Carbon::expected` export) —
+implementer running in ../carbon-ehb on claude/carbon-fork-0-1-ehb
+(stacked on eh; rebase onto trunk before PR; residue ids W-083+).
+Next after those: unions W-009/W-015. Weekly cron Monday 2026-09-28
+(mirror probe is GitHub-hosted; the owner's machine is never used)._
+FORTY PRs. The error-handling remainder's first slice: the design's
+`Core.Result` finally exists in the prelude (the first `match`
+compiled inside package `Core`), `?` works on both `Result` and
+`Optional`, and a `Result`-returning entry point turns into an exit
+code plus a stderr line naming `E`. Two runner-exposed corrections
+recorded as review misses per R28(d): a symbolic `T` bound by a
+non-`type` facet carries only its declared interfaces (so moving it
+needs `Destroy`), and `PadToType` CHECK-failed on a folded zero-sized
+choice constant (`U.A(())`) — fixed at the root, not papered over.
+Eight lower goldens moved by debug-info line numbers only. Lesson
+banked in the workflow: file_test isolates crashes and exits 0, so the
+hosted autoupdate now greps its own log for stack dumps._
 THIRTY-NINE PRs. The design's canonical
 `var my_opt: Optional(i32) = Optional(i32).None;` now compiles and
 runs: LookupChoiceCopyWitness mirrors the destroy witness (is_choice
@@ -285,29 +300,35 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-96 PASS / 28 SKIP / 0 FAIL programs (124 total, 18 differential
-C++-oracle pairs, 2 multi-unit); **43/56 bullets green** (runner-side
-scoreboard at the PR #31 head; verified from fork/conformance/out/scoreboard.json —
+106 PASS / 28 SKIP / 0 FAIL programs (134 total); **43/56 bullets
+green** (GitHub-hosted scoreboard at the PR #40 head, run 36304154221; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first
 error-handling flip, now 4 programs deep incl. the W72b threading
 arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79
 at S3a → 80 at S3b → 81 at S3c → 83 at B1b
 (error_handling/control_flow_constructs flip +
 question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a
-→ 88 F8b → 89 F8c → 90 F8d → 91 W72b → 92 W-067 → 93 W-068 → 95 W-069 → 96 multifile. The scoreboard
-regenerates on the runner (`Fork: conformance suite`,
-fork/conformance-request.txt trigger).
+→ 88 F8b → 89 F8c → 90 F8d → 91 W72b → 92 W-067 → 93 W-068 → 95 W-069 → 96 multifile → 100 W-076 → 101 W-078 → 102 W-077 →
+106 EH-A. The scoreboard regenerates on GitHub-hosted runners only
+(`Fork: hosted verification`, mode `conformance`; R28).
 
-### CI on jmann345/carbon-lang (self-hosted runner "jeromehome", 28-core Arch)
+### CI on jmann345/carbon-lang (GitHub-hosted only — R28)
 
--   `Fork: build toolchain` — full merge gate: prek (R21) + tarball +
-    clangd-tidy (R21) + `bazel test //toolchain/...` + release. Per-ref
-    concurrency. Dispatch by way of workflow_dispatch on any ref.
--   `Fork: fast compile check` — auto-fires on toolchain/common/core pushes
-    to claude/\*\*; builds `//toolchain:carbon` only (~2 min warm).
--   `Fork: autoupdate testdata` — regenerates goldens on the runner and
-    pushes back (R15). Fire by way of push to `fork/autoupdate-request.txt`.
--   Runner offline detection: R14 (queued >10 min + nothing in_progress).
+-   `Fork: hosted verification` (`.github/workflows/fork_hosted.yaml`,
+    workflow_dispatch input `mode` ∈ compile | autoupdate | gate |
+    conformance) on ubuntu-22.04, reading upstream's public remote cache
+    through `./.github/actions/build-setup-common`: compile ~18 min,
+    autoupdate ~13 min (fails on any stack dump / CHECK failure in its
+    own log; pushes the fill back to the ref), gate ~25 min (`prek
+    --all-files` + `bazel test //toolchain/...`), conformance ~20 min
+    (commits `fork/conformance/out/scoreboard.json`). Per-ref
+    concurrency; dispatch gate + conformance only after the autoupdate
+    push, since a queued run pins the SHA at dispatch time.
+-   The four self-hosted workflows (`Fork: build toolchain`, `Fork: fast
+    compile check`, `Fork: autoupdate testdata`, `Fork: conformance
+    suite`) are workflow_dispatch-only and are NEVER dispatched: the
+    owner's machine is off limits (R28; runner files removed by the
+    one-shot `fork_runner_cleanup.yaml`, run 36229750515).
 
 ### Toolchains in the container
 

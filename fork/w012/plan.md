@@ -2215,3 +2215,85 @@ pattern_match.cpp :680-684, :740-744, :1475-1479; parse/handle_match.cpp
 :93-118; parse/context.h :28-31, :345-347; full_pattern_stack.h :155-158;
 unused.cpp :46-49; lower/function_context.cpp :325-338;
 lower/testdata/match/var_binding.carbon :50-56.
+
+## Landed notes (2026-09-27)
+
+Deltas from this plan to the landing, each verifiable from
+`git log --stat claude/carbon-fork-0-1-w012 ^origin/trunk` and
+`git diff origin/trunk...HEAD --stat` (61 files, +14021/−572 including
+this plan). Code commits after sign-off: a7d0366d4 (parse), 290522c68
+(check), df98b0aa2 (testdata skeletons), af35bf881 (conformance + docs),
+7b6257535, d77b5dd19 (review fixes), a17856ffd (hosted autoupdate fill),
+b134c2022 (testdata authoring fixes).
+
+1.  **`LetElseDecl` typed node (§1.3).** Landed with `equals` +
+    `initializer` grouped into a nested `LetElseInit` aggregate
+    (7b6257535): the §1.3 struct as written had nine fields and
+    common/struct_reflection.h caps typed parse nodes at eight — the
+    hosted autoupdate failed to compile. `init` is `std::optional`
+    (d77b5dd19): `let P else {…}` without `= e` built an error-free tree
+    whose mandatory field failed extraction (debug FATAL); the optional
+    field makes check's `ExpectedInitializerAfterLet` reachable (pinned:
+    parse let_else_missing_initializer, check fail_missing_initializer).
+    Category is `Statement | Decl`, not the plan's `Statement` alone: the
+    parser cannot tell statement `let` from file/class-scope `let`
+    (§1.9), so `File` and `ClassDefinition` must extract the node for the
+    fail_file_scope / fail_class_scope pins to reach check's
+    `LetElseOutsideFunction`.
+2.  **The `match (` gate (§1.2, §2.1).** `HandleParenCondition`'s
+    `let`/`var` peek is shared with the `match` variant; as planned it
+    produced a pattern prefix under a `MatchCondition` node and crashed
+    `Tree::Verify` (debug) or the introducer handler's CHECK (release).
+    Landed gated on `start_kind != MatchConditionStart`; `match (let …)`
+    falls to the expression path and diagnoses an expected expression
+    (d77b5dd19; parse/testdata/match/fail_let_condition.carbon).
+3.  **Testdata authoring (§4).** The hosted fill (a17856ffd) exposed two
+    positives that were wrong as authored, fixed in b134c2022:
+    nested_payload_tuple's `(i32, i32)` payload sits behind upstream's
+    "choice alternative payload that is not trivially copyable and
+    destructible" TODO — now `Pair(a: i32, b: i32)` with
+    `.Pair(1, n: i32)`; question_in_initializer's `0 as Tok` needed
+    `(0 as i32) as Tok` (no `IntLiteral → Tok` conversion). Neither is a
+    compiler defect.
+4.  **§8.1 zero-diff gate.** Holds: `git diff origin/trunk...HEAD
+    --diff-filter=M -- 'toolchain/*/testdata'` is empty — every one of
+    the 26 autoupdate-filled files is new, and the only match-directory
+    changes are the five new var_alternative / fail_var_alternative /
+    fail_let_condition files.
+5.  **§8.4 reconciliation greps, run at discharge (counts as measured):**
+    -   ``expression pattern`` TODO: ONE site, pattern_match.cpp:1363 —
+        count unchanged, but the plan's citation `:1191` was against
+        f0e1980; trunk and this branch both have it at :1363 (drift from
+        the intervening trunk merges, not a move by this slice).
+    -   New TODO strings, one code site each plus their §4 pins:
+        ``alternative pattern outside a refutable pattern context`` at
+        handle_match.cpp:291-295 (pins: let/fail_todo_alternative_root
+        .carbon, two subfiles); ``refutable pattern binding on
+        unsupported scrutinee type`` defined once at
+        refutable_binding.h:40 and emitted at refutable_binding.cpp:200
+        (pins: fail_todo_unsupported_scrutinee in fail_if_let,
+        fail_while_let and fail_let_else — three).
+    -   ``match `case` pattern other than an integer literal, or a case
+        guard``: 8 sites on trunk, 8 on the branch — handle_match.cpp:857
+        moved to refutable_binding.cpp:460; the seven pattern_match.cpp
+        sites are untouched. Unchanged.
+    -   `Kind::MatchCaseArm`: 5 code sites on trunk (plus two testdata
+        comments), 9 on the branch. The four new ones: handle_match.cpp:291
+        (the §1.13 `AlternativePattern` first branch),
+        handle_let_and_var.cpp:242 (`HandleInitializer`'s `let`-`else`
+        branch), full_pattern_stack.cpp:19 (the §1.4 CHECK relaxation) and
+        refutable_binding.h:21 (a header comment). The plan's expectation
+        — "grew only by the new handlers and the CHECK relaxation" — holds
+        with that one comment on top.
+    -   `IsSupportedScrutineeType`: ONE definition,
+        refutable_binding.cpp:83 (moved from handle_match.cpp:189;
+        declared at refutable_binding.h:77).
+6.  **§8.3 conformance:** hosted-only per R28 (ubuntu-22.04, upstream's
+    remote cache read-only); result <!-- VERIFY: numbers --> against the
+    §5 target of 104 PASS / 0 FAIL / 27 SKIP over 131.
+7.  **§8.5 ledger:** W-012 closed with the §0 corrections; W-080
+    (refutability ERROR), W-081 (let-chains), W-082 (noreturn divergence)
+    filed with `blocked_by: []`; W-012's `blocked_by` cleared;
+    gap-analysis:64 MISSING → PARTIAL (header 26 / 21 / 7 / 2). The
+    decision-log entry is "W-012: if-let / while-let / let-else landed
+    (2026-09-27)".

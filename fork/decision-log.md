@@ -2812,6 +2812,141 @@ if-let/let-else/while-let (flips a MISSING bullet on landed match
 machinery), then the error-handling chain W-016..W-019 (Result, `?`,
 exception interop), then unions W-009/W-015.
 
+### W-012: if-let / while-let / let-else landed (2026-09-27)
+
+The milestone's if-let / let-else bullet flips MISSING → PARTIAL: `if (let P =
+e)`, `while (let P = e)` and `let P = e else { diverge }`, with their `var`
+spellings, land as desugarings onto the match engine (fork/w012/plan.md; F-011
+Option A). PARSE (§1.2/§1.3): no `PatternCondition` grouping node — the `let P
+=` prefix lives directly under the existing `IfCondition`/`WhileCondition` close
+node, whose typed nodes gain an optional `PatternConditionPrefix` (break
+condition: the typed-node test rejecting an optional struct before a mandatory
+categorized field — fallback an untyped `NodeId condition`, identical tree
+output). `let`-`else` RE-KINDS its introducer to `LetElseIntroducer` when the
+parser reaches the `else`, the `ReplacePlaceholderNode` precedent (break
+condition: a reviewer rejecting node re-kinding — fallback a distinct
+`LetElseDecl` close node only, which §7 A-4 records as worse because it cannot
+resolve `.Name` roots). The `else` BUDGET entry: `else` becomes
+`CARBON_TOKEN_WITH_VIRTUAL_NODE` because a `let`-`else` needs three nodes with
+no token of their own; this contradicts the ledger's "no lexer change" literally
+but is a table constant, not a lexing rule (§7 R-3), recorded as a ledger
+correction. Parse surface, exactly: FIVE node kinds (PatternConditionIntroducer,
+PatternConditionInitializer, LetElseIntroducer, LetElse, LetElseDecl) and TWO
+states (PatternConditionAfterPattern, LetElseFinish) — the pattern conditions
+reuse `ParenConditionFinishAs(If|While)`, `let`-`else` the `CodeBlock` state.
+CHECK (§1.4): `FullPatternStack::Kind::MatchCaseArm` plus a `MatchCaseContext`
+entry ARE the refutable pattern context; a shared driver is factored out of
+`EmitCaseArmTestAndBind` into toolchain/check/refutable_binding.{h,cpp} minus
+the match-only usefulness and coverage blocks, so everything the engine admits
+the forms admit and everything it gates they gate, with the engine's own TODO
+strings (break condition: a gate site whose `MatchCaseArm` behavior is WRONG for
+the new forms — that one site tests a new `Context` flag and everything else
+stands). DEFERRED RESOLUTION (§1.6): the tree visits the pattern before the
+initializer, so `.Name` resolution against the scrutinee type moves into
+`ResolvePendingAlternative`, run by the driver once the scrutinee is known and
+called immediately by `match` — a code move, and the 70 check and 9 lower match
+goldens moved zero lines (§7 R-1's break condition, a match golden moving, did
+not fire). The bare `.Name` root is an EMPTY synthetic `TuplePattern` (break
+condition: the empty root breaking an engine CHECK — then the bare spelling
+records `payload_pattern_id = None` and the driver classifies the
+discriminant-only lane explicitly, same SemIR). TOMBSTONE RULE (§1.8,
+veto-able): `let`-`else` bindings are in the enclosing scope from pattern time
+but never initialized on the else path, so the `StartPatternInitializer`
+tombstones stay live through the else block and are released by
+`EndPatternInitializer` only at `LetElseDecl` — a use in the else block
+diagnoses `UsedBeforeInitialization`; zero new machinery. RESERVATIONS AND ROOT
+PEEK (§1.11-§1.13): `and`/`or` at the top level of a pattern-condition
+initializer is a CHECK-time error, `PatternConditionChainReserved`, because no
+precedence group expresses "all but `and`/`or`" (lifted when let-chains land,
+W-081); the if-expression ambiguity is forbidden at the `else`
+(`LetElseUnparenthesizedIfExpr`) with a targeted parse recovery that fires only
+when the token after `else {` is neither `.` nor `}`; and
+`HandleLet`/`HandleVar` peek a root `.Name` (`PushRootPattern` a root `var`
+before `.`, which is what makes `case var .Some(…)` parse), so a plain `let .X =
+e;` becomes an `AlternativePattern` root behind the TODO `alternative pattern
+outside a refutable pattern context`. §7 R-6: the recovery inspects the state
+stack (precedented, one token pair in one position); break condition: a false
+positive beyond the struct-literal else operand — drop (b) and keep (a), users
+then see the struct-literal error the design anticipated. F-011 RIDER 2,
+restated with this slice's surface: if upstream #5101 lands a different
+spelling, re-spell mechanically keeping semantics — what gets re-spelled is
+exactly the five node kinds, the two states and the single-token peek in
+`HandleParenCondition`; the check driver and SemIR are spelling-neutral.
+
+AUTO-ADOPTED under R29(a), recorded for after-the-fact veto. **R29a —
+the var-alternative lane** (§1.1): the `var`-wrapped alternative root
+(`if (var .Some(n: i32) = opt)`, `var .Some(v: i32) = o else {…}`, the
+design's own example) had NO lane in `EmitCaseArmTestAndBind`; it is
+classified by an explicit `is_var_alternative_arm` computed BEFORE
+`is_irrefutable_var_arm`, which excludes it (else `match`'s coverage
+block marks a two-alternative choice exhaustive on that arm — pinned as
+fail_nonexhaustive_var_alternative and var_alternative_then_default),
+tested through `MatchCaseAlternativePatternMatch`, bound through
+`MatchCaseBindPatternMatch` on the payload field ref with on-demand
+storage, shared with `match` (so `case var .Some(n: i32)` works as a
+side effect); bare `var .None` stays behind the binding-free-`var` TODO.
+Rejected: dropping root-`var` to a follow-up (§7 A-8). Break condition
+(§1.1): a review finding that the lane's storage must be frame-indexed
+rather than on-demand — then root-`var` in the new forms drops to a
+follow-up and everything else stands. **F-011a — else-block divergence
+= the reachability predicate (`IsCurrentPositionReachable`), overruling
+the literal return/break/continue list** (F-011 above; if-let.md:316-321).
+A DEVIATION accepting a strict superset: every block the list accepts,
+plus any block whose every path ends in `return`/`break`/`continue`
+(pinned positive: nested_all_paths_return); a nested `if` without `else`
+and `Abort()`-style calls are rejected, the latter pending a noreturn
+rule (W-082). Break condition: owner veto — fallback is a last-statement
+parse-node-kind test on the else block (one function, same diagnostic
+`LetElseBlockFallsThrough`), which then rejects the superset cases.
+**Design-paper open questions resolved** (if-let.md:569-596): Q1
+`let`-`else` terminator — NO trailing `;`, the paper's own assumption
+(§1.3; the `;` alternative is §7 A-3/R-3, rejected because it would make
+`let`-`else` the only brace-terminated construct that also needs a `;`);
+Q5 `var` forms — INCLUDED, with the root-`var` lane above (its break
+condition is R29a's); Q6 an irrefutable pattern in the combined forms —
+a Warning, `IrrefutablePatternAlwaysMatches` (§1.10, per
+if-let.md:327-329), not an error. The plan records no break condition
+for Q1 and Q6 beyond the standing R29(a) veto. Q2/Q3/Q4/Q7 were already
+fixed by §1.12, F-011a, the slice definition and §1.11.
+
+IMPLEMENTATION REVIEW FIXES (commit d77b5dd19): `HandleParenCondition`'s
+`let`/`var` peek was shared with the `match` variant, so `match (let …)`
+produced a pattern prefix under a `MatchCondition` node and crashed
+`Tree::Verify`; the peek is now gated to `if`/`while` and `match (let …)`
+diagnoses an expected expression (parse fail_let_condition). `let P else
+{…}` without `= e` built an error-free `LetElseDecl` whose mandatory init
+field failed extraction (a debug FATAL); `LetElseDecl::init` is now
+optional, the `LetDecl::initializer` precedent, so check's
+`ExpectedInitializerAfterLet` path is reachable (parse
+let_else_missing_initializer, check fail_missing_initializer). And
+(commit 7b6257535) the hosted autoupdate's compile failure: `LetElseDecl`
+had nine fields and common/struct_reflection.h caps typed parse nodes at
+eight, so `equals` + `initializer` moved into a nested `LetElseInit`
+aggregate (the `PatternConditionPrefix` precedent; check reads the node
+stack, so no consumer changed). TESTDATA AUTHORING FIXES found by the
+hosted autoupdate fill (commit b134c2022): nested_payload_tuple used a
+`(i32, i32)` payload, which is behind upstream's "choice alternative
+payload that is not trivially copyable and destructible" TODO — now a
+two-field payload `Pair(a: i32, b: i32)`; question_in_initializer
+converted an IntLiteral straight to the adapter `Tok` and needed
+`(0 as i32) as Tok`. Both are authoring errors the refill exposed, not
+compiler defects. Residue filed: W-080 (the design's refutability ERROR
+for plain `let`/`var`, replacing the `expression pattern` and
+`alternative pattern outside a refutable pattern context` TODO lanes),
+W-081 (let-chains), W-082 (noreturn divergence). W-012's `blocked_by`
+(`W-008`, `W-010`, both long landed) is cleared.
+
+VERIFICATION was hosted-only per R28: `Fork: hosted verification` on
+ubuntu-22.04 reading upstream's remote cache
+(`--noremote_upload_local_results`), autoupdate → gate → conformance. The
+autoupdate refill touched only the 26 new golden files — no pre-existing golden
+under toolchain/{parse,check,lower}/testdata moved, so the §8.1 zero-diff proof
+for the `EmitCaseArmTestAndBind` factoring holds (with the §8.1 caveat that it
+cannot see a `var`-wrapped alternative root; the two new match negatives are
+that guard). Conformance: <!-- VERIFY: numbers --> (the plan's target floor is
+104 PASS / 0 FAIL / 27 SKIP over 131: if_let_let_else un-SKIPped, while_let
+added).
+
 ### W-077: struct patterns in match case position (2026-09-27)
 
 The upstream-missing struct-pattern check layer lands for `match`

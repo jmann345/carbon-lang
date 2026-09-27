@@ -215,8 +215,8 @@
         "docs/design/pattern_matching.md:712-714",
         "fork/conformance/programs/control_flow/if_let_let_else.carbon:6"
       ],
-      "blocked_by": ["W-008", "W-010"],
-      "notes": "Absorbs the generic 'design and implement if-let/let-else' item (absent at every layer; the match design section calls itself a skeletal placeholder; the SKIP program body is a strawman). No lexer change, ~5 node kinds + ~6 states, single-token peek after '(' in paren-condition; check adds a refutable LocalPatternMatch variant with failure-block target; lowering zero (rider 1: both forms specified as one-case-match desugarings). Rider 2: if upstream #5101 lands a different surface, re-spell mechanically keeping semantics. let-else initializer must forbid unparenthesized if-expressions; else-block divergence syntactic (return/break/continue) for 0.1. Doc amendment must enumerate all three refutable contexts (coherence risk 10). W-010 is a soft blocker (motivating .Some examples). Options B/D rejected on record; C is fallback."
+      "blocked_by": [],
+      "notes": "Absorbs the generic 'design and implement if-let/let-else' item (absent at every layer; the match design section calls itself a skeletal placeholder; the SKIP program body is a strawman). No lexer change, ~5 node kinds + ~6 states, single-token peek after '(' in paren-condition; check adds a refutable LocalPatternMatch variant with failure-block target; lowering zero (rider 1: both forms specified as one-case-match desugarings). Rider 2: if upstream #5101 lands a different surface, re-spell mechanically keeping semantics. let-else initializer must forbid unparenthesized if-expressions; else-block divergence syntactic (return/break/continue) for 0.1. Doc amendment must enumerate all three refutable contexts (coherence risk 10). W-010 is a soft blocker (motivating .Some examples). Options B/D rejected on record; C is fallback. DISCHARGED (2026-09-27, fork/w012/plan.md): if-let / while-let / let-else (+ `var` spellings) as a shared refutable-binding driver factored from `EmitCaseArmTestAndBind`, on `FullPatternStack::Kind::MatchCaseArm` + `MatchCaseContext` (toolchain/check/refutable_binding.{h,cpp}); deferred alternative resolution for pattern-before-scrutinee order; if-let scope popped before the else arm; let-else divergence by `IsCurrentPositionReachable`, bindings tombstoned through the else block; zero lower/ changes; conformance <!-- VERIFY: numbers -->. §0 corrections recorded verbatim: (1) 'no lexer change' holds for lexing but not for the parse-tree size budget — `else` becomes CARBON_TOKEN_WITH_VIRTUAL_NODE (token_kind.def) so `let`-`else`'s three token-less nodes fit Tree::Verify's budget; (2) 5 node kinds (PatternConditionIntroducer, PatternConditionInitializer, LetElseIntroducer, LetElse, LetElseDecl) and 2 states (PatternConditionAfterPattern, LetElseFinish), not ~6 — the pattern conditions reuse ParenConditionFinishAs(If|While) and the IfCondition/WhileCondition close nodes; (3) no 'refutable LocalPatternMatch variant with failure-block target' — the landed test/bind passes are driven by a statement-level driver factored out of EmitCaseArmTestAndBind, plus the TWO lanes `match` never needed: deferred alternative resolution (§1.6) and the var-alternative classification lane (§1.1, R29a; `match` inherits it, so `case var .Some(n: i32)` works as a side effect); (4) the SKIP program's `.Some(let v: i32)` strawman was not p002188 grammar — body replaced wholesale (`.Some(v: i32)`); (5) the doc evidence pattern_matching.md:712-714 was the skeletal-design placeholder — the amendment target was the #1871 'second context' sentence (:670-676 at plan time), now rewritten to enumerate the three refutable contexts (:671-678) plus the new 'Refutable pattern bindings' subsection (:819); (6) both blockers W-008/W-010 were already landed — blocked_by cleared; (7) the '`let`/`var` never begin an expression' premise re-verified, not corrected; (8) refutable patterns in plain `let`/`var` are TODOs today (`expression pattern`, pattern_match.cpp; `alternative pattern outside a refutable pattern context`, handle_match.cpp), not the design's error — filed as W-080. Residue filed with blocked_by []: W-080 (refutability error), W-081 (let-chains), W-082 (noreturn divergence). Post-review and hosted-refill fixes (match( peek gate, optional let-else init, nested LetElseInit, two testdata authoring fixes) are recorded in the decision-log entry 'W-012: if-let / while-let / let-else landed (2026-09-27)'."
     },
     {
       "id": "W-013",
@@ -1383,6 +1383,59 @@
       ],
       "blocked_by": [],
       "notes": "Filed at W-077 discharge (fork/w077/plan.md §1.1/§1.4). W-077 landed struct patterns in match case position only, gated on FullPatternStack::Kind::MatchCaseArm; `let {..} = v`, `var {..} = v`, `fn F({x: i32})`, and a `let` inside a match arm body still abort at the byte-identical TODO, now pinned in four subfiles. The irrefutable lane cannot reuse the match walk's conversion story: a subset pattern's own struct type drops fields, so ConvertStructToStructOrClass (convert.cpp) would diagnose StructInitUnexpectedFieldInConversion — §1.4's conversion-or-walk decision (convert to the pattern's type after checking field subset against the initializer's type, or run a scrutinee-typed field walk in LocalPatternMatch) is the design call this item must make first. The SemIR::StructPattern inst, the field-name/ordinal handler protocol, duplicate/bare-`_` diagnostics and the parse goldens are all reusable as landed. Also carries W-077's shared residue R-2: nested empty-aggregate subpatterns (`{}`/`()` in non-root position, and `case .Some({})` in payload position) are pruned by both engine passes so their shape checks never run — tuple parity, fix once for both. Review residue (W-077 single impl review): (a) bind-pass shape errors after coverage recording — fail_pruned_subtree_shape_error records the tuple root as has_irrefutable_arm although the bind pass then errors (W-066 §1.8 carve-out class; struct adds shapes); (b) a subtree whose bind pass TODOs/shape-errors never binds its names, so a body use adds a rider diagnostic (unpinned in both lanes; all TODO pins use `return 1;` bodies); (c) no cross-file golden exercises a body TuplePattern/StructPattern through import_ref (import_ref.cpp's switch would CARBON_FATAL loudly); (d) stale pre-existing comments node_stack.h:227/:337 (\"TuplePatterns store an InstBlockId\" — they store InstId)."
+    },
+    {
+      "id": "W-080",
+      "kind": "todo-stub",
+      "title": "W-012 residue: the design's refutability ERROR for plain `let`/`var` (replacing the `expression pattern` and `alternative pattern outside a refutable pattern context` TODO lanes)",
+      "subsystem": "toolchain/check",
+      "size": "S",
+      "bullet": "Control flow: matching — if-let / let-else combined match+declaration",
+      "evidence": [
+        "toolchain/check/pattern_match.cpp:1363 (LocalPatternMatch on an ExprPattern root: the `expression pattern` TODO)",
+        "toolchain/check/handle_match.cpp:291-295 (AlternativePattern handler outside Kind::MatchCaseArm: the `alternative pattern outside a refutable pattern context` TODO)",
+        "toolchain/check/testdata/let/fail_todo_alternative_root.carbon",
+        "docs/design/pattern_matching.md:671-689",
+        "fork/w012/plan.md §0.8, §1.13, §8.5"
+      ],
+      "blocked_by": [],
+      "notes": "Filed at W-012 discharge (fork/w012/plan.md §8.5). The design (pattern_matching.md:671-689) makes a refutable pattern in a context with no fallback behavior — a plain `let`/`var` declaration, a parameter list — an ERROR ('refutable expression pattern `5` used in context requiring an irrefutable pattern'). Today both spellings stay behind TODOs: an expression-pattern root (`let 5 = x;`) hits `expression pattern` in LocalPatternMatch (pattern_match.cpp:1363, the only site; count unchanged by W-012), and since W-012's root `.Name` peek in HandleLet/HandleVar a plain `let .Some(n: i32) = e;` / `var .None = e;` parses as an AlternativePattern root and hits `alternative pattern outside a refutable pattern context` (handle_match.cpp:291-295, pinned in fail_todo_alternative_root.carbon's two subfiles). The fix is one refutability predicate over the pattern tree (IsIrrefutableMatchCasePattern is the seam, pattern_match.h) diagnosed at the pattern root under FullPatternStack::Kind::NameBindingDecl/ClassScopeVarDecl and in parameter lists, replacing both TODO sites and flipping both pin files from fail_todo to fail. Nested refutable subpatterns (`let (5, n: i32) = t;`) belong to the same lane. Not a W-012 blocker: the three refutable contexts are complete without it."
+    },
+    {
+      "id": "W-081",
+      "kind": "missing-feature",
+      "title": "W-012 residue: let-chains — `if (let P = e and c)` / `while (let P = e and c)` (reserved by check-time error today)",
+      "subsystem": "toolchain/parse + toolchain/check",
+      "size": "M",
+      "bullet": "Control flow: matching — if-let / let-else combined match+declaration",
+      "evidence": [
+        "toolchain/check/refutable_binding.cpp:618-622 (the PatternConditionChainReserved site)",
+        "toolchain/diagnostics/kind.def:457",
+        "toolchain/check/testdata/if/fail_if_let.carbon (fail_chain_reserved pins)",
+        "toolchain/check/testdata/while/fail_while_let.carbon",
+        "fork/design-sprint/if-let.md:330-334",
+        "fork/w012/plan.md §1.11, §7 R-10"
+      ],
+      "blocked_by": [],
+      "notes": "Filed at W-012 discharge (fork/w012/plan.md §8.5). F-011 reserved boolean chaining for after 0.1 (if-let.md:330-334: the grammar keeps `)` right after the initializer so a Rust-style let-chain can be added without reparsing). W-012 enforces the reservation at CHECK time, not parse time: `e and c` is a legal initializer expression and no ambient precedence excludes only `and`/`or` (LogicalAnd/LogicalOr are incomparable with As and Where, precedence.cpp), so the IfCondition/WhileCondition pattern path inspects the initializer's parse-node kind and diagnoses PatternConditionChainReserved on ShortCircuitOperatorAnd/Or roots; the parenthesized `(e and c)` passes as a ParenExpr root, and let-else initializers are not restricted. Landing chains means: parse grammar for `(let P = e and c1 and let Q = f ...)` under the pattern-condition states (PatternConditionAfterPattern), check emitting each chain link as a nested test with the bindings of earlier links in scope for later ones (the if-let scope pushed at PatternConditionIntroducer already covers the then-block), evaluation-order text extending p005545 (if-let.md open question 7), and lifting the check-time gate (its two pins flip). Design authorship is part of the item: F-011 fixed only that the grammar must not foreclose chains."
+    },
+    {
+      "id": "W-082",
+      "kind": "design-needed",
+      "title": "W-012 residue: type-based (noreturn) divergence for the `let`-`else` block, replacing the reachability rule F-011a",
+      "subsystem": "toolchain/check + docs/design",
+      "size": "M",
+      "bullet": "Control flow: matching — if-let / let-else combined match+declaration",
+      "evidence": [
+        "toolchain/check/handle_let_and_var.cpp:548-553 (LetElseDecl: IsCurrentPositionReachable → LetElseBlockFallsThrough)",
+        "toolchain/check/testdata/let/fail_let_else.carbon (fail_empty_else, fail_else_ends_in_expr, fail_else_partial_return: the LetElseBlockFallsThrough pins; the never-returning call case is unpinned)",
+        "docs/design/pattern_matching.md:819 (Refutable pattern bindings: the divergence rule as landed)",
+        "fork/design-sprint/if-let.md:316-321",
+        "fork/design-sprint/if-let.md:579-582",
+        "fork/decision-log.md:1311-1318 (F-011: type-based noreturn rule deferred)"
+      ],
+      "blocked_by": [],
+      "notes": "Filed at W-012 discharge (fork/w012/plan.md §8.5). F-011 deferred the type-based 'noreturn' divergence rule to the error-handling design and fixed a syntactic list (return/break/continue) for 0.1; W-012 landed F-011a instead — the else block diverges iff the toolchain's reachability predicate IsCurrentPositionReachable is false at its end, a strict superset of the list (every path may diverge, e.g. `else { if (c) { return 1; } else { return 2; } }`), diagnosed as LetElseBlockFallsThrough at LetElseDecl. Still rejected: a call that never returns (`else { Abort(); }`) and a nested `if` without `else`, because nothing in SemIR types a call as diverging. This item owns the rule that closes that gap once docs/design/error_handling.md (or the safe-Carbon work F-011 named) defines a noreturn/never type or function attribute: a diverging call must end the current block and push an unreachable block (the return/break/continue precedent, handle_return_statement.cpp / handle_loop_statement.cpp), after which F-011a needs no change of predicate — the pattern_matching.md 'Refutable pattern bindings' rule text changes and a new positive golden pins the call case (no fail_todo pin exists for it today). Coherence-audit risk (3) in W-006 ('assign the diverging-else/noreturn rule an owner') is discharged by this filing."
     }
   ]
 }

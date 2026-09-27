@@ -3017,8 +3017,26 @@ goldens are new and CHECK-free), so the fill of record is expected to add CHECK
 lines to those six and to move exactly the 27 lower goldens containing
 `__clang_call_terminate` (plan §6.B) by the fence diagnostic's `write` call,
 message global and `throw;` resume edge inside each fenced thunk — any other
-file moving is a §6 miss to reconcile. Review misses: the two compile misses
-above. Veto-able.
+file moving is a §6 miss to reconcile. _Fill of record (run 36310053869,
+e247c2700):_ the six new goldens filled; THIRTY existing goldens moved, the 27
+predicted plus three §6.B misses with the same benign cause — the check-side
+AST dump thunk_ast.carbon (a `CXXTryStmt`/`CXXCatchStmt` around the callee
+call), lower/optimize/clang_no_optimize_twice.carbon (its `terminate.lpad`
+became a real landing pad with `exn.slot`/`ehselector.slot`) and
+lower/debug_info.carbon (a `DILexicalBlock` for the try). Two negatives were
+wrong and fixed at the root (c214b5adf): `fail_class_return` cascaded into
+five follow-on monomorphization errors because `RequireCompleteType` returns
+TRUE for an SF-6-rejected `Core.Result(Cpp.Widget, Cpp.Exception)` specific
+(the class completes with an error-valued layout; `GetObjectRepr` is
+`ErrorInst`), so the catching call now checks `IsInSliceChoicePayloadType` on
+the success type BEFORE forming the specific and emits the new Error
+`CppCatchingImportNonScalarSuccess` (the `CppCatchingImportPayloadNote`
+context stays as a belt that also treats an error-valued object repr as
+failure) — a sixth diagnostic kind; and `fail_ctor_return` spelled the
+constructor call `Cpp.Widget(1)` instead of the tree's static-member form
+`Cpp.Widget.Widget(1)`, so it never reached the catching lane. Both are
+review misses per R28(d), alongside the two compile misses and the
+convergence shape above. Veto-able.
 
 ### W-012: if-let / while-let / let-else landed (2026-09-27)
 

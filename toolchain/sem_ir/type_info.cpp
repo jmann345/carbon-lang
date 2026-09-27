@@ -207,6 +207,7 @@ auto RecognizedTypeInfo::ForType(const File& file, ClassType class_type)
                     .Case("ULongLong64", CppULongLong64)
                     .Case("NullptrT", CppNullptrT)
                     .Case("VoidBase", CppVoidBase)
+                    .Case("Exception", CppException)
                     .Default(None);
     if (ExpectsArgs(kind) == args_id.has_value()) {
       return {.kind = kind, .args_id = args_id};
@@ -272,6 +273,12 @@ auto RecognizedTypeInfo::PrintLiteral(const File& file,
     case CppVoidBase:
       if (file.cpp_file()) {
         out << "Cpp.void";
+        return true;
+      }
+      break;
+    case CppException:
+      if (file.cpp_file()) {
+        out << "Cpp.Exception";
         return true;
       }
       break;

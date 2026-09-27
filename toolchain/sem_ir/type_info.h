@@ -376,6 +376,8 @@ struct RecognizedTypeInfo {
     CppNullptrT,
     // `Cpp.void` / `Core.CppCompat.VoidBase`.
     CppVoidBase,
+    // `Cpp.Exception` / `Core.CppCompat.Exception`.
+    CppException,
     // `Core.Optional(...)`.
     Optional,
     // `Core.Result(...)`.

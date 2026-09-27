@@ -1012,6 +1012,25 @@ static auto BuildCppToCarbonThunkFunctionType(Context& context,
       (target.return_type_id != SemIR::TypeId::None)) {
     cpp_return_type = MapToCppType(context, target.return_type_id);
     if (cpp_return_type.isNull()) {
+      // A `Core.Result(T, E)` return maps to `Carbon::expected<T', E'>`
+      // (docs/design/error_handling.md, "Exporting fallible Carbon
+      // functions"), which the C++ code must declare by including the
+      // support header shipped in the install tree.
+      if (auto class_type =
+              context.types().TryGetAs<SemIR::ClassType>(target.return_type_id);
+          class_type &&
+          SemIR::RecognizedTypeInfo::ForType(context.sem_ir(), *class_type)
+                  .kind == SemIR::RecognizedTypeInfo::Result &&
+          !LookupCppClassTemplate(context, {"Carbon", "expected"})) {
+        CARBON_DIAGNOSTIC(CppExportResultNeedsExpectedHeader, Error,
+                          "exporting {0} to C++ requires `#include "
+                          "<carbon/expected.h>` in the C++ code",
+                          InstIdAsType);
+        context.emitter().Emit(
+            loc_id, CppExportResultNeedsExpectedHeader,
+            context.types().GetTypeInstId(target.return_type_id));
+        return nullptr;
+      }
       context.TODO(loc_id, "failed to map Carbon return type to C++ type");
       return nullptr;
     }

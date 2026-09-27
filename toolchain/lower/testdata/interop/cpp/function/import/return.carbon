@@ -120,6 +120,15 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:
 // CHECK:STDOUT: $__clang_call_terminate = comdat any
 // CHECK:STDOUT:
+// CHECK:STDOUT: @.str = private unnamed_addr constant [75 x i8] c"carbon: C++ exception escaped into Carbon through `ReturnU8`; terminating\0A\00", align 1
+// CHECK:STDOUT: @.str.1 = private unnamed_addr constant [76 x i8] c"carbon: C++ exception escaped into Carbon through `ReturnU16`; terminating\0A\00", align 1
+// CHECK:STDOUT: @.str.2 = private unnamed_addr constant [76 x i8] c"carbon: C++ exception escaped into Carbon through `ReturnU32`; terminating\0A\00", align 1
+// CHECK:STDOUT: @.str.3 = private unnamed_addr constant [76 x i8] c"carbon: C++ exception escaped into Carbon through `ReturnU64`; terminating\0A\00", align 1
+// CHECK:STDOUT: @.str.4 = private unnamed_addr constant [75 x i8] c"carbon: C++ exception escaped into Carbon through `ReturnI8`; terminating\0A\00", align 1
+// CHECK:STDOUT: @.str.5 = private unnamed_addr constant [76 x i8] c"carbon: C++ exception escaped into Carbon through `ReturnI16`; terminating\0A\00", align 1
+// CHECK:STDOUT: @.str.6 = private unnamed_addr constant [76 x i8] c"carbon: C++ exception escaped into Carbon through `ReturnI32`; terminating\0A\00", align 1
+// CHECK:STDOUT: @.str.7 = private unnamed_addr constant [76 x i8] c"carbon: C++ exception escaped into Carbon through `ReturnI64`; terminating\0A\00", align 1
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i8 @_CGetU8.Main() #0 !dbg !12 {
 // CHECK:STDOUT: entry:
@@ -134,20 +143,44 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT: define internal void @_Z8ReturnU8v.carbon_thunk.(ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !18
 // CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !18
 // CHECK:STDOUT:   %call = invoke noundef zeroext i8 @_Z8ReturnU8v()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
 // CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   store i8 %call, ptr %0, align 1, !tbaa !21
-// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:   br label %try.cont
 // CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
 // CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
 // CHECK:STDOUT:           catch ptr null
 // CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %2) #5
+// CHECK:STDOUT:   store ptr %2, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %1, 1
+// CHECK:STDOUT:   store i32 %3, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %4 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call1 = call noundef i64 @write(i32 noundef 2, ptr noundef @.str, i64 noundef 74) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -165,20 +198,44 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT: define internal void @_Z9ReturnU16v.carbon_thunk.(ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !28
 // CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !28
 // CHECK:STDOUT:   %call = invoke noundef zeroext i16 @_Z9ReturnU16v()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
 // CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   store i16 %call, ptr %0, align 2, !tbaa !30
-// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:   br label %try.cont
 // CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
 // CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
 // CHECK:STDOUT:           catch ptr null
 // CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %2) #5
+// CHECK:STDOUT:   store ptr %2, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %1, 1
+// CHECK:STDOUT:   store i32 %3, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %4 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call1 = call noundef i64 @write(i32 noundef 2, ptr noundef @.str.1, i64 noundef 75) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -192,17 +249,41 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
 // CHECK:STDOUT: define internal noundef i32 @_Z9ReturnU32v.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
 // CHECK:STDOUT:   %call = invoke noundef i32 @_Z9ReturnU32v()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
 // CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret i32 %call
 // CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
 // CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
 // CHECK:STDOUT:           catch ptr null
 // CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #5
+// CHECK:STDOUT:   store ptr %1, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %0, 1
+// CHECK:STDOUT:   store i32 %2, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call1 = call noundef i64 @write(i32 noundef 2, ptr noundef @.str.2, i64 noundef 75) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; No predecessors!
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %4 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %5 = extractvalue { ptr, i32 } %4, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %5) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -216,17 +297,41 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
 // CHECK:STDOUT: define internal noundef i64 @_Z9ReturnU64v.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
 // CHECK:STDOUT:   %call = invoke noundef i64 @_Z9ReturnU64v()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
 // CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret i64 %call
 // CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
 // CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
 // CHECK:STDOUT:           catch ptr null
 // CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #5
+// CHECK:STDOUT:   store ptr %1, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %0, 1
+// CHECK:STDOUT:   store i32 %2, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call1 = call noundef i64 @write(i32 noundef 2, ptr noundef @.str.3, i64 noundef 75) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; No predecessors!
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %4 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %5 = extractvalue { ptr, i32 } %4, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %5) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -244,20 +349,44 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT: define internal void @_Z8ReturnI8v.carbon_thunk.(ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !18
 // CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !18
 // CHECK:STDOUT:   %call = invoke noundef signext i8 @_Z8ReturnI8v()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
 // CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   store i8 %call, ptr %0, align 1, !tbaa !21
-// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:   br label %try.cont
 // CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
 // CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
 // CHECK:STDOUT:           catch ptr null
 // CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %2) #5
+// CHECK:STDOUT:   store ptr %2, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %1, 1
+// CHECK:STDOUT:   store i32 %3, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %4 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call1 = call noundef i64 @write(i32 noundef 2, ptr noundef @.str.4, i64 noundef 74) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -275,20 +404,44 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT: define internal void @_Z9ReturnI16v.carbon_thunk.(ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !28
 // CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !28
 // CHECK:STDOUT:   %call = invoke noundef signext i16 @_Z9ReturnI16v()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
 // CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   store i16 %call, ptr %0, align 2, !tbaa !30
-// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:   br label %try.cont
 // CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
 // CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
 // CHECK:STDOUT:           catch ptr null
 // CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %2) #5
+// CHECK:STDOUT:   store ptr %2, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %1, 1
+// CHECK:STDOUT:   store i32 %3, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %4 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call1 = call noundef i64 @write(i32 noundef 2, ptr noundef @.str.5, i64 noundef 75) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -302,17 +455,41 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
 // CHECK:STDOUT: define internal noundef i32 @_Z9ReturnI32v.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
 // CHECK:STDOUT:   %call = invoke noundef i32 @_Z9ReturnI32v()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
 // CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret i32 %call
 // CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
 // CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
 // CHECK:STDOUT:           catch ptr null
 // CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #5
+// CHECK:STDOUT:   store ptr %1, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %0, 1
+// CHECK:STDOUT:   store i32 %2, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call1 = call noundef i64 @write(i32 noundef 2, ptr noundef @.str.6, i64 noundef 75) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; No predecessors!
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %4 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %5 = extractvalue { ptr, i32 } %4, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %5) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -326,17 +503,41 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
 // CHECK:STDOUT: define internal noundef i64 @_Z9ReturnI64v.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
 // CHECK:STDOUT:   %call = invoke noundef i64 @_Z9ReturnI64v()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
 // CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret i64 %call
 // CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
 // CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
 // CHECK:STDOUT:           catch ptr null
 // CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %1) #5
+// CHECK:STDOUT:   store ptr %1, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %0, 1
+// CHECK:STDOUT:   store i32 %2, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call1 = call noundef i64 @write(i32 noundef 2, ptr noundef @.str.7, i64 noundef 75) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; No predecessors!
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %4 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %5 = extractvalue { ptr, i32 } %4, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %5) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -479,14 +680,19 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
 // CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: declare noundef i64 @write(i32 noundef, ptr noundef, i64 noundef) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @__cxa_rethrow()
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
-// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #4 comdat {
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #5 comdat {
 // CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
-// CHECK:STDOUT:   call void @_ZSt9terminatev() #5
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #7
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @_ZSt9terminatev()
 // CHECK:STDOUT:
@@ -507,14 +713,19 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT: ; uselistorder directives
 // CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 7, 6, 5, 4, 3, 2, 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__cxa_begin_catch, { 7, 8, 6, 5, 4, 3, 2, 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @write, { 7, 6, 5, 4, 3, 2, 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__cxa_rethrow, { 7, 6, 5, 4, 3, 2, 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 7, 6, 5, 4, 3, 2, 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #2 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
 // CHECK:STDOUT: attributes #3 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #4 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #5 = { noreturn nounwind }
+// CHECK:STDOUT: attributes #4 = { nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #6 = { noreturn }
+// CHECK:STDOUT: attributes #7 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -687,6 +898,8 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:
 // CHECK:STDOUT: $__clang_call_terminate = comdat any
 // CHECK:STDOUT:
+// CHECK:STDOUT: @.str = private unnamed_addr constant [71 x i8] c"carbon: C++ exception escaped into Carbon through `Make`; terminating\0A\00", align 1
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CGetX.Main(ptr sret([16 x i8]) %return) #0 !dbg !12 {
 // CHECK:STDOUT: entry:
@@ -698,19 +911,43 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT: define internal void @_Z4Makev.carbon_thunk.(ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !18
 // CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !18
 // CHECK:STDOUT:   invoke void @_Z4Makev(ptr dead_on_unwind writable sret(%struct.X) align 8 %0)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
 // CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:   br label %try.cont
 // CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
 // CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
 // CHECK:STDOUT:           catch ptr null
 // CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %2) #6
+// CHECK:STDOUT:   store ptr %2, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %1, 1
+// CHECK:STDOUT:   store i32 %3, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %4 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call = call noundef i64 @write(i32 noundef 2, ptr noundef @.str, i64 noundef 70) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -744,14 +981,19 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
 // CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: declare noundef i64 @write(i32 noundef, ptr noundef, i64 noundef) #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @__cxa_rethrow()
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
 // CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #5 comdat {
 // CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
-// CHECK:STDOUT:   call void @_ZSt9terminatev() #6
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #7
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @_ZSt9terminatev()
 // CHECK:STDOUT:
@@ -764,7 +1006,8 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT: attributes #3 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
 // CHECK:STDOUT: attributes #4 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #5 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #6 = { noreturn nounwind }
+// CHECK:STDOUT: attributes #6 = { noreturn }
+// CHECK:STDOUT: attributes #7 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -812,6 +1055,8 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:
 // CHECK:STDOUT: $__clang_call_terminate = comdat any
 // CHECK:STDOUT:
+// CHECK:STDOUT: @.str = private unnamed_addr constant [68 x i8] c"carbon: C++ exception escaped into Carbon through `f`; terminating\0A\00", align 1
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CCall.Main(ptr sret({}) %return, ptr %x) #0 !dbg !12 {
 // CHECK:STDOUT: entry:
@@ -825,22 +1070,46 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:   %.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %agg.tmp = alloca %class.D, align 1
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
 // CHECK:STDOUT:   %undef.agg.tmp = alloca %class.C, align 1
 // CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !20
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !23
 // CHECK:STDOUT:   %1 = load ptr, ptr %return.addr, align 8, !tbaa !23
 // CHECK:STDOUT:   %2 = load ptr, ptr %.addr, align 8, !tbaa !20
 // CHECK:STDOUT:   invoke void @_Z1f1D()
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
 // CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:   br label %try.cont
 // CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
 // CHECK:STDOUT:   %3 = landingpad { ptr, i32 }
 // CHECK:STDOUT:           catch ptr null
 // CHECK:STDOUT:   %4 = extractvalue { ptr, i32 } %3, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %4) #4
+// CHECK:STDOUT:   store ptr %4, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %5 = extractvalue { ptr, i32 } %3, 1
+// CHECK:STDOUT:   store i32 %5, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %6 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call = call noundef i64 @write(i32 noundef 2, ptr noundef @.str, i64 noundef 67) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #5
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %7 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %8 = extractvalue { ptr, i32 } %7, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %8) #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -848,22 +1117,29 @@ fn Call(x: Cpp.D) -> Cpp.C {
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
 // CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: declare noundef i64 @write(i32 noundef, ptr noundef, i64 noundef) #3
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @__cxa_rethrow()
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
-// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #3 comdat {
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #4 comdat {
 // CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
-// CHECK:STDOUT:   call void @_ZSt9terminatev() #4
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #6
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @_ZSt9terminatev()
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #2 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #3 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #4 = { noreturn nounwind }
+// CHECK:STDOUT: attributes #3 = { nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #4 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noreturn }
+// CHECK:STDOUT: attributes #6 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}

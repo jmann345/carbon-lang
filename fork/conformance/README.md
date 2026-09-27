@@ -263,11 +263,14 @@ fails if this table is stale):
 | `control_flow/range_iter_diff.carbon` | Control flow: loops incl. range-based and C/C++ loop equivalents | differential |
 | `control_flow/while_let.carbon` | Control flow: matching — if-let / let-else combined match+declaration | run |
 | `error_handling/control_flow_constructs.carbon` | Error handling: dedicated control flow constructs | run |
-| `error_handling/cpp_exception_interop.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | SKIP |
+| `error_handling/cpp_exception_catch_diff.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | differential |
+| `error_handling/cpp_exception_interop.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | run |
+| `error_handling/cpp_exception_rethrow_export.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | run |
 | `error_handling/cpp_exceptions_auto_catch.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | run |
 | `error_handling/cpp_exceptions_fence_terminate.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | run |
 | `error_handling/cpp_exceptions_fence_value_diff.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | differential |
 | `error_handling/cpp_exceptions_none_mode.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | run |
+| `error_handling/cpp_expected_export.carbon` | Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions) | run |
 | `error_handling/optional_try.carbon` | Error handling: dedicated control flow constructs | run |
 | `error_handling/question_generic_diff.carbon` | Error handling: dedicated control flow constructs | differential |
 | `error_handling/question_generic_thread_diff.carbon` | Error handling: dedicated control flow constructs | differential |

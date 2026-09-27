@@ -153,6 +153,14 @@ toolchain_files(
     prefix = "core/",
 )
 
+# C++ support headers for interop, installed at `include/carbon/...` so that
+# `-isystem <root>/include` (toolchain/base/clang_invocation.cpp) resolves
+# `#include <carbon/expected.h>`. The rule strips the package path.
+toolchain_files(
+    name = "support_hdrs",
+    srcs = ["include/carbon/expected.h"],
+)
+
 toolchain_files(
     name = "clang_builtin_hdrs",
     srcs = ["@llvm-project//clang:builtin_headers_gen"],
@@ -292,6 +300,7 @@ filegroup(
         ":libcxxabi_hdrs",
         ":libunwind_hdrs",
         ":llvm_bins",
+        ":support_hdrs",
     ],
 )
 
@@ -384,6 +393,7 @@ filegroup(
         ":libcxxabi_textual_srcs",
         ":libunwind_hdrs",
         ":libunwind_srcs",
+        ":support_hdrs",
     ],
 )
 

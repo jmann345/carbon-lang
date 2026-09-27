@@ -131,6 +131,8 @@ fn InitNontrivialDtor() {
 // CHECK:STDOUT:
 // CHECK:STDOUT: @array = internal constant [3 x i32] [i32 1, i32 2, i32 3]
 // CHECK:STDOUT: @array.loc13_50.15 = internal constant [3 x i32] [i32 1, i32 2, i32 3]
+// CHECK:STDOUT: @.str = private unnamed_addr constant [91 x i8] c"carbon: C++ exception escaped into Carbon through `vector_like::vector_like`; terminating\0A\00", align 1
+// CHECK:STDOUT: @.str.1 = private unnamed_addr constant [99 x i8] c"carbon: C++ exception escaped into Carbon through `nontrivial_dtor::nontrivial_dtor`; terminating\0A\00", align 1
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @_CWithinLifetime.Main()
 // CHECK:STDOUT:
@@ -194,6 +196,8 @@ fn InitNontrivialDtor() {
 // CHECK:STDOUT:   %list.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %agg.tmp = alloca %"class.std::initializer_list", align 8
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
 // CHECK:STDOUT:   store ptr %list, ptr %list.addr, align 8, !tbaa !38
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !41
 // CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !41
@@ -204,16 +208,38 @@ fn InitNontrivialDtor() {
 // CHECK:STDOUT:   %4 = getelementptr inbounds nuw { ptr, ptr }, ptr %agg.tmp, i32 0, i32 1
 // CHECK:STDOUT:   %5 = load ptr, ptr %4, align 8
 // CHECK:STDOUT:   invoke void @_ZN11vector_likeC2ESt16initializer_listIiE(ptr noundef nonnull align 1 dereferenceable(1) %0, ptr %3, ptr %5)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
 // CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:   br label %try.cont
 // CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
 // CHECK:STDOUT:   %6 = landingpad { ptr, i32 }
 // CHECK:STDOUT:           catch ptr null
 // CHECK:STDOUT:   %7 = extractvalue { ptr, i32 } %6, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %7) #5
+// CHECK:STDOUT:   store ptr %7, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %8 = extractvalue { ptr, i32 } %6, 1
+// CHECK:STDOUT:   store i32 %8, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %9 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call = call noundef i64 @write(i32 noundef 2, ptr noundef @.str, i64 noundef 90) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %10 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %11 = extractvalue { ptr, i32 } %10, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %11) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -253,19 +279,43 @@ fn InitNontrivialDtor() {
 // CHECK:STDOUT: define internal void @_ZN15nontrivial_dtorC1Ev.carbon_thunk_tuple.(ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !51
 // CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !51
 // CHECK:STDOUT:   invoke void @_ZN15nontrivial_dtorC2Ev(ptr noundef nonnull align 1 dereferenceable(1) %0)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
 // CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:   br label %try.cont
 // CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
 // CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
 // CHECK:STDOUT:           catch ptr null
 // CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %2) #5
+// CHECK:STDOUT:   store ptr %2, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %1, 1
+// CHECK:STDOUT:   store i32 %3, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %4 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call = call noundef i64 @write(i32 noundef 2, ptr noundef @.str.1, i64 noundef 98) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -306,14 +356,19 @@ fn InitNontrivialDtor() {
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
 // CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: declare noundef i64 @write(i32 noundef, ptr noundef, i64 noundef) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @__cxa_rethrow()
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
-// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #4 comdat {
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #5 comdat {
 // CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
-// CHECK:STDOUT:   call void @_ZSt9terminatev() #5
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #7
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @_ZSt9terminatev()
 // CHECK:STDOUT:
@@ -330,14 +385,19 @@ fn InitNontrivialDtor() {
 // CHECK:STDOUT: uselistorder ptr @_ZN15nontrivial_dtorC1Ev.carbon_thunk_tuple., { 2, 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 6, 5, 4, 3, 2, 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__cxa_begin_catch, { 1, 2, 0 }
+// CHECK:STDOUT: uselistorder ptr @write, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__cxa_rethrow, { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #2 = { mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #3 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
-// CHECK:STDOUT: attributes #4 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #5 = { noreturn nounwind }
+// CHECK:STDOUT: attributes #4 = { nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #6 = { noreturn }
+// CHECK:STDOUT: attributes #7 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
@@ -421,6 +481,8 @@ fn InitNontrivialDtor() {
 // CHECK:STDOUT:
 // CHECK:STDOUT: @array = internal constant [3 x i32] [i32 1, i32 2, i32 3]
 // CHECK:STDOUT: @array.loc13_50.15 = internal constant [3 x i32] [i32 1, i32 2, i32 3]
+// CHECK:STDOUT: @.str = private unnamed_addr constant [91 x i8] c"carbon: C++ exception escaped into Carbon through `vector_like::vector_like`; terminating\0A\00", align 1
+// CHECK:STDOUT: @.str.1 = private unnamed_addr constant [99 x i8] c"carbon: C++ exception escaped into Carbon through `nontrivial_dtor::nontrivial_dtor`; terminating\0A\00", align 1
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @_CWithinLifetime.Main()
 // CHECK:STDOUT:
@@ -484,6 +546,8 @@ fn InitNontrivialDtor() {
 // CHECK:STDOUT:   %list.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %agg.tmp = alloca %"class.std::initializer_list.6", align 8
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
 // CHECK:STDOUT:   store ptr %list, ptr %list.addr, align 8, !tbaa !38
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !41
 // CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !41
@@ -494,16 +558,38 @@ fn InitNontrivialDtor() {
 // CHECK:STDOUT:   %4 = getelementptr inbounds nuw { ptr, i64 }, ptr %agg.tmp, i32 0, i32 1
 // CHECK:STDOUT:   %5 = load i64, ptr %4, align 8
 // CHECK:STDOUT:   invoke void @_ZN11vector_likeC2ESt16initializer_listIiE(ptr noundef nonnull align 1 dereferenceable(1) %0, ptr %3, i64 %5)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
 // CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:   br label %try.cont
 // CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
 // CHECK:STDOUT:   %6 = landingpad { ptr, i32 }
 // CHECK:STDOUT:           catch ptr null
 // CHECK:STDOUT:   %7 = extractvalue { ptr, i32 } %6, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %7) #5
+// CHECK:STDOUT:   store ptr %7, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %8 = extractvalue { ptr, i32 } %6, 1
+// CHECK:STDOUT:   store i32 %8, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %9 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call = call noundef i64 @write(i32 noundef 2, ptr noundef @.str, i64 noundef 90) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %10 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %11 = extractvalue { ptr, i32 } %10, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %11) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -542,19 +628,43 @@ fn InitNontrivialDtor() {
 // CHECK:STDOUT: define internal void @_ZN15nontrivial_dtorC1Ev.carbon_thunk_tuple.(ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !53
 // CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !53
 // CHECK:STDOUT:   invoke void @_ZN15nontrivial_dtorC2Ev(ptr noundef nonnull align 1 dereferenceable(1) %0)
-// CHECK:STDOUT:           to label %invoke.cont unwind label %terminate.lpad
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
 // CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
-// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:   br label %try.cont
 // CHECK:STDOUT:
-// CHECK:STDOUT: terminate.lpad:                                   ; preds = %entry
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
 // CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
 // CHECK:STDOUT:           catch ptr null
 // CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
-// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %2) #5
+// CHECK:STDOUT:   store ptr %2, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %1, 1
+// CHECK:STDOUT:   store i32 %3, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %4 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call = call noundef i64 @write(i32 noundef 2, ptr noundef @.str.1, i64 noundef 98) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -595,14 +705,19 @@ fn InitNontrivialDtor() {
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
 // CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: declare noundef i64 @write(i32 noundef, ptr noundef, i64 noundef) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @__cxa_rethrow()
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
-// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #4 comdat {
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #5 comdat {
 // CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
-// CHECK:STDOUT:   call void @_ZSt9terminatev() #5
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #7
 // CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @_ZSt9terminatev()
 // CHECK:STDOUT:
@@ -619,14 +734,19 @@ fn InitNontrivialDtor() {
 // CHECK:STDOUT: uselistorder ptr @_ZN15nontrivial_dtorC1Ev.carbon_thunk_tuple., { 2, 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 6, 5, 4, 3, 2, 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__cxa_begin_catch, { 1, 2, 0 }
+// CHECK:STDOUT: uselistorder ptr @write, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__cxa_rethrow, { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #2 = { mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #3 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
-// CHECK:STDOUT: attributes #4 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #5 = { noreturn nounwind }
+// CHECK:STDOUT: attributes #4 = { nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #6 = { noreturn }
+// CHECK:STDOUT: attributes #7 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!0}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}

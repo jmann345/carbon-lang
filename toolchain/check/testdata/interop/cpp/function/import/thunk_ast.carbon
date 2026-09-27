@@ -29,17 +29,32 @@ import Cpp library "thunk_required.h";
 // CHECK:STDOUT: |-ImportDecl {{0x[a-f0-9]+}} <import_thunk_required.carbon:[[@LINE-1]]:38> col:38 in thunk_required.h implicit thunk_required.h
 // CHECK:STDOUT: |-FunctionDecl {{0x[a-f0-9]+}} <./thunk_required.h:2:6> col:6 in import_thunk_required.carbon hidden foo__carbon_thunk 'void (short * _Nonnull) noexcept' inline internal-linkage
 // CHECK:STDOUT: | |-ParmVarDecl {{0x[a-f0-9]+}} <col:6> col:6 in import_thunk_required.carbon hidden used a 'short * _Nonnull':'short *'
-// CHECK:STDOUT: | |-ReturnStmt {{0x[a-f0-9]+}} <col:6>
-// CHECK:STDOUT: | | `-CallExpr {{0x[a-f0-9]+}} <col:6> 'void'
-// CHECK:STDOUT: | |   |-ImplicitCastExpr {{0x[a-f0-9]+}} <col:6> 'auto (*)(short) -> void' <FunctionToPointerDecay>
-// CHECK:STDOUT: | |   | `-DeclRefExpr {{0x[a-f0-9]+}} <col:6> 'auto (short) -> void' Function {{0x[a-f0-9]+}} 'foo' 'auto (short) -> void'
-// CHECK:STDOUT: | |   `-ImplicitCastExpr {{0x[a-f0-9]+}} <col:6> 'short' <LValueToRValue>
-// CHECK:STDOUT: | |     `-UnaryOperator {{0x[a-f0-9]+}} <col:6> 'short' lvalue prefix '*' cannot overflow
-// CHECK:STDOUT: | |       `-ImplicitCastExpr {{0x[a-f0-9]+}} <col:6> 'short * _Nonnull':'short *' <LValueToRValue>
-// CHECK:STDOUT: | |         `-DeclRefExpr {{0x[a-f0-9]+}} <col:6> 'short * _Nonnull':'short *' lvalue ParmVar {{0x[a-f0-9]+}} 'a' 'short * _Nonnull':'short *'
+// CHECK:STDOUT: | |-CXXTryStmt {{0x[a-f0-9]+}} <col:6>
+// CHECK:STDOUT: | | |-CompoundStmt {{0x[a-f0-9]+}} <col:6>
+// CHECK:STDOUT: | | | `-ReturnStmt {{0x[a-f0-9]+}} <col:6>
+// CHECK:STDOUT: | | |   `-CallExpr {{0x[a-f0-9]+}} <col:6> 'void'
+// CHECK:STDOUT: | | |     |-ImplicitCastExpr {{0x[a-f0-9]+}} <col:6> 'auto (*)(short) -> void' <FunctionToPointerDecay>
+// CHECK:STDOUT: | | |     | `-DeclRefExpr {{0x[a-f0-9]+}} <col:6> 'auto (short) -> void' Function {{0x[a-f0-9]+}} 'foo' 'auto (short) -> void'
+// CHECK:STDOUT: | | |     `-ImplicitCastExpr {{0x[a-f0-9]+}} <col:6> 'short' <LValueToRValue>
+// CHECK:STDOUT: | | |       `-UnaryOperator {{0x[a-f0-9]+}} <col:6> 'short' lvalue prefix '*' cannot overflow
+// CHECK:STDOUT: | | |         `-ImplicitCastExpr {{0x[a-f0-9]+}} <col:6> 'short * _Nonnull':'short *' <LValueToRValue>
+// CHECK:STDOUT: | | |           `-DeclRefExpr {{0x[a-f0-9]+}} <col:6> 'short * _Nonnull':'short *' lvalue ParmVar {{0x[a-f0-9]+}} 'a' 'short * _Nonnull':'short *'
+// CHECK:STDOUT: | | `-CXXCatchStmt {{0x[a-f0-9]+}} <col:6>
+// CHECK:STDOUT: | |   |-<<<NULL>>>
+// CHECK:STDOUT: | |   `-CompoundStmt {{0x[a-f0-9]+}} <col:6>
+// CHECK:STDOUT: | |     |-CallExpr {{0x[a-f0-9]+}} <col:6> 'long'
+// CHECK:STDOUT: | |     | |-IntegerLiteral {{0x[a-f0-9]+}} <col:6> 'int' 2
+// CHECK:STDOUT: | |     | |-ImplicitCastExpr {{0x[a-f0-9]+}} <col:6> 'const void *' <BitCast>
+// CHECK:STDOUT: | |     | | `-ImplicitCastExpr {{0x[a-f0-9]+}} <col:6> 'const char *' <ArrayToPointerDecay>
+// CHECK:STDOUT: | |     | |   `-StringLiteral {{0x[a-f0-9]+}} <col:6> 'const char[70]' lvalue "carbon: C++ exception escaped into Carbon through `foo`; terminating\n"
+// CHECK:STDOUT: | |     |   `-IntegerLiteral {{0x[a-f0-9]+}} <col:6> 'int' 69
+// CHECK:STDOUT: | |     `-CXXThrowExpr {{0x[a-f0-9]+}} <col:6> 'void'
 // CHECK:STDOUT: | |-AlwaysInlineAttr {{0x[a-f0-9]+}} <<invalid sloc>> Implicit always_inline
 // CHECK:STDOUT: | |-InternalLinkageAttr {{0x[a-f0-9]+}} <<invalid sloc>> Implicit
 // CHECK:STDOUT: | `-AsmLabelAttr {{0x[a-f0-9]+}} <col:6> Implicit "_Z3foos.carbon_thunk._"
+// CHECK:STDOUT: | |-ParmVarDecl {{0x[a-f0-9]+}} <col:6> col:6 in import_thunk_required.carbon hidden 'int'
+// CHECK:STDOUT: | |-ParmVarDecl {{0x[a-f0-9]+}} <col:6> col:6 in import_thunk_required.carbon hidden 'const void *'
+// CHECK:STDOUT: | `-AsmLabelAttr {{0x[a-f0-9]+}} <col:6> Implicit "write"
 
 fn F() {
   Cpp.foo(1 as i16);
@@ -62,14 +77,29 @@ import Cpp library "return_thunk_required.h";
 // CHECK:STDOUT: |-ImportDecl {{0x[a-f0-9]+}} <import_return_thunk_required.carbon:[[@LINE-1]]:45> col:45 in return_thunk_required.h implicit return_thunk_required.h
 // CHECK:STDOUT: |-FunctionDecl {{0x[a-f0-9]+}} <./return_thunk_required.h:2:6> col:6 in import_return_thunk_required.carbon hidden foo__carbon_thunk 'void (short * _Nonnull) noexcept' inline internal-linkage
 // CHECK:STDOUT: | |-ParmVarDecl {{0x[a-f0-9]+}} <col:6> col:6 in import_return_thunk_required.carbon hidden used return 'short * _Nonnull':'short *'
-// CHECK:STDOUT: | |-CXXNewExpr {{0x[a-f0-9]+}} <col:6> 'short *' global Function {{0x[a-f0-9]+}} 'operator new' 'void *(__size_t, void *) noexcept'
-// CHECK:STDOUT: | | |-CallExpr {{0x[a-f0-9]+}} <col:6> 'short'
-// CHECK:STDOUT: | | | `-ImplicitCastExpr {{0x[a-f0-9]+}} <col:6> 'auto (*)() -> short' <FunctionToPointerDecay>
-// CHECK:STDOUT: | | |   `-DeclRefExpr {{0x[a-f0-9]+}} <col:6> 'auto () -> short' Function {{0x[a-f0-9]+}} 'foo' 'auto () -> short'
-// CHECK:STDOUT: | | `-DeclRefExpr {{0x[a-f0-9]+}} <col:6> 'short * _Nonnull':'short *' lvalue ParmVar {{0x[a-f0-9]+}} 'return' 'short * _Nonnull':'short *'
+// CHECK:STDOUT: | |-CXXTryStmt {{0x[a-f0-9]+}} <col:6>
+// CHECK:STDOUT: | | |-CompoundStmt {{0x[a-f0-9]+}} <col:6>
+// CHECK:STDOUT: | | | `-CXXNewExpr {{0x[a-f0-9]+}} <col:6> 'short *' global Function {{0x[a-f0-9]+}} 'operator new' 'void *(__size_t, void *) noexcept'
+// CHECK:STDOUT: | | |   |-CallExpr {{0x[a-f0-9]+}} <col:6> 'short'
+// CHECK:STDOUT: | | |   | `-ImplicitCastExpr {{0x[a-f0-9]+}} <col:6> 'auto (*)() -> short' <FunctionToPointerDecay>
+// CHECK:STDOUT: | | |   |   `-DeclRefExpr {{0x[a-f0-9]+}} <col:6> 'auto () -> short' Function {{0x[a-f0-9]+}} 'foo' 'auto () -> short'
+// CHECK:STDOUT: | | |   `-DeclRefExpr {{0x[a-f0-9]+}} <col:6> 'short * _Nonnull':'short *' lvalue ParmVar {{0x[a-f0-9]+}} 'return' 'short * _Nonnull':'short *'
+// CHECK:STDOUT: | | `-CXXCatchStmt {{0x[a-f0-9]+}} <col:6>
+// CHECK:STDOUT: | |   |-<<<NULL>>>
+// CHECK:STDOUT: | |   `-CompoundStmt {{0x[a-f0-9]+}} <col:6>
+// CHECK:STDOUT: | |     |-CallExpr {{0x[a-f0-9]+}} <col:6> 'long'
+// CHECK:STDOUT: | |     | |-IntegerLiteral {{0x[a-f0-9]+}} <col:6> 'int' 2
+// CHECK:STDOUT: | |     | |-ImplicitCastExpr {{0x[a-f0-9]+}} <col:6> 'const void *' <BitCast>
+// CHECK:STDOUT: | |     | | `-ImplicitCastExpr {{0x[a-f0-9]+}} <col:6> 'const char *' <ArrayToPointerDecay>
+// CHECK:STDOUT: | |     | |   `-StringLiteral {{0x[a-f0-9]+}} <col:6> 'const char[70]' lvalue "carbon: C++ exception escaped into Carbon through `foo`; terminating\n"
+// CHECK:STDOUT: | |     |   `-IntegerLiteral {{0x[a-f0-9]+}} <col:6> 'int' 69
+// CHECK:STDOUT: | |     `-CXXThrowExpr {{0x[a-f0-9]+}} <col:6> 'void'
 // CHECK:STDOUT: | |-AlwaysInlineAttr {{0x[a-f0-9]+}} <<invalid sloc>> Implicit always_inline
 // CHECK:STDOUT: | |-InternalLinkageAttr {{0x[a-f0-9]+}} <<invalid sloc>> Implicit
 // CHECK:STDOUT: | `-AsmLabelAttr {{0x[a-f0-9]+}} <col:6> Implicit "_Z3foov.carbon_thunk."
+// CHECK:STDOUT: | |-ParmVarDecl {{0x[a-f0-9]+}} <col:6> col:6 in import_return_thunk_required.carbon hidden 'int'
+// CHECK:STDOUT: | |-ParmVarDecl {{0x[a-f0-9]+}} <col:6> col:6 in import_return_thunk_required.carbon hidden 'const void *'
+// CHECK:STDOUT: | `-AsmLabelAttr {{0x[a-f0-9]+}} <col:6> Implicit "write"
 
 fn F() -> i16 {
   return Cpp.foo();

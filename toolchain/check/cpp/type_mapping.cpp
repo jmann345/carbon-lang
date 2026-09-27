@@ -10,7 +10,9 @@
 #include <optional>
 
 #include "clang/AST/DeclCXX.h"
+#include "clang/AST/DeclTemplate.h"
 #include "clang/AST/Expr.h"
+#include "clang/AST/TemplateBase.h"
 #include "clang/AST/Type.h"
 #include "clang/Basic/TargetInfo.h"
 #include "clang/Lex/Preprocessor.h"
@@ -95,20 +97,19 @@ static auto FindIntLiteralBitWidth(Context& context, SemIR::LocId loc_id,
                                          : IntId::MakeRaw(128));
 }
 
-// Attempts to look up a type by name, and returns the corresponding `QualType`,
-// or a null type if lookup fails. `name_components` is the full path of the
-// type, including any namespaces or nested types, separated into separate
-// strings.
-static auto LookupCppType(
+// Attempts to look up a declaration by name, and returns it, or `nullptr` if
+// lookup fails. `name_components` is the full path of the declaration,
+// including any namespaces or nested types, separated into separate strings.
+static auto LookupCppDecl(
     Context& context, std::initializer_list<llvm::StringRef> name_components)
-    -> clang::QualType {
+    -> clang::Decl* {
   clang::Sema& sema = context.clang_sema();
 
   clang::Decl* decl = sema.getASTContext().getTranslationUnitDecl();
   for (auto name_component : name_components) {
     auto* scope = dyn_cast<clang::DeclContext>(decl);
     if (!scope) {
-      return clang::QualType();
+      return nullptr;
     }
 
     // TODO: Map the LocId of the lookup to a clang SourceLocation and provide
@@ -119,14 +120,64 @@ static auto LookupCppType(
         sema, clang::DeclarationNameInfo(identifier, clang::SourceLocation()),
         clang::Sema::LookupNameKind::LookupOrdinaryName);
     if (!sema.LookupQualifiedName(lookup, scope) || !lookup.isSingleResult()) {
-      return clang::QualType();
+      return nullptr;
     }
     decl = lookup.getFoundDecl();
   }
+  return decl;
+}
 
-  auto* type_decl = dyn_cast<clang::TypeDecl>(decl);
-  return type_decl ? sema.getASTContext().getTypeDeclType(type_decl)
+// Attempts to look up a type by name, and returns the corresponding `QualType`,
+// or a null type if lookup fails. `name_components` is the full path of the
+// type, including any namespaces or nested types, separated into separate
+// strings.
+static auto LookupCppType(
+    Context& context, std::initializer_list<llvm::StringRef> name_components)
+    -> clang::QualType {
+  auto* type_decl = dyn_cast_or_null<clang::TypeDecl>(
+      LookupCppDecl(context, name_components));
+  return type_decl ? context.ast_context().getTypeDeclType(type_decl)
                    : clang::QualType();
+}
+
+auto LookupCppClassTemplate(
+    Context& context, std::initializer_list<llvm::StringRef> name_components)
+    -> clang::ClassTemplateDecl* {
+  return dyn_cast_or_null<clang::ClassTemplateDecl>(
+      LookupCppDecl(context, name_components));
+}
+
+// Maps one argument of a `Core.Result(T, E)` specific to the C++ type it
+// crosses the boundary as inside `Carbon::expected<T', E'>` (F-006h;
+// docs/design/error_handling.md, "Exporting fallible Carbon functions"): `()`
+// maps to `void`, and a Carbon class must satisfy the single
+// trivially-copyable-and-trivially-destructible export predicate. Returns a
+// null type if the argument cannot be mapped.
+static auto MapResultArgToCppType(Context& context, SemIR::InstId arg_id)
+    -> clang::QualType {
+  if (auto facet = context.insts().TryGetAs<SemIR::FacetValue>(arg_id)) {
+    arg_id = facet->type_inst_id;
+  }
+  auto arg_type_id = context.types().GetTypeIdForTypeConstantId(
+      context.constant_values().Get(arg_id));
+  if (!arg_type_id.has_value() || arg_type_id == SemIR::ErrorInst::TypeId) {
+    return clang::QualType();
+  }
+  auto arg_type_inst = context.types().GetAsInst(arg_type_id);
+  if (auto tuple_type = arg_type_inst.TryAs<SemIR::TupleType>();
+      tuple_type &&
+      context.inst_blocks().Get(tuple_type->type_elements_id).empty()) {
+    return context.ast_context().VoidTy;
+  }
+  if (auto class_type = arg_type_inst.TryAs<SemIR::ClassType>()) {
+    const auto& class_info = context.classes().Get(class_type->class_id);
+    if (!SemIR::RecognizedTypeInfo::ForType(context.sem_ir(), *class_type)
+             .is_valid() &&
+        !IsTriviallyCopyableForExport(context, class_info, *class_type)) {
+      return clang::QualType();
+    }
+  }
+  return MapToCppType(context, arg_type_id);
 }
 
 // Returns the given integer type if its width is as expected. Otherwise returns
@@ -206,6 +257,13 @@ static auto TryMapClassType(Context& context, SemIR::ClassType class_type)
     case SemIR::RecognizedTypeInfo::CppVoidBase: {
       return ast_context.VoidTy;
     }
+    case SemIR::RecognizedTypeInfo::CppException: {
+      // `Cpp.Exception` crosses the boundary as the support header's
+      // layout-identical wrapper `Carbon::Exception`, whose `.ptr()` is the
+      // `std::exception_ptr` (docs/design/error_handling.md, "Exporting
+      // fallible Carbon functions"; fork/eh/plan.md §1.B.5-1.B.6).
+      return LookupCppType(context, {"Carbon", "Exception"});
+    }
     case SemIR::RecognizedTypeInfo::Optional: {
       auto args = context.inst_blocks().GetOrEmpty(type_info.args_id);
       if (args.size() == 1) {
@@ -226,9 +284,37 @@ static auto TryMapClassType(Context& context, SemIR::ClassType class_type)
       break;
     }
     case SemIR::RecognizedTypeInfo::Result: {
-      // TODO: Map `Core.Result(T, E)` to `Carbon::expected<T, E>` (F-006h,
-      // fork/eh/plan.md §1.B.5).
-      break;
+      // `Core.Result(T, E)` maps to the support header's class template
+      // `Carbon::expected<T', E'>` (`<carbon/expected.h>`), found by name in
+      // the TU and instantiated on the recursively mapped arguments. The
+      // header mirrors the choice's object representation, so the mapping is
+      // a reinterpretation, not a conversion (fork/eh/plan.md §1.B.5-1.B.6).
+      // A missing template is reported by export.cpp
+      // (`CppExportResultNeedsExpectedHeader`).
+      auto args = context.inst_blocks().GetOrEmpty(type_info.args_id);
+      if (args.size() != 2) {
+        break;
+      }
+      auto* template_decl =
+          LookupCppClassTemplate(context, {"Carbon", "expected"});
+      if (!template_decl) {
+        return clang::QualType();
+      }
+      clang::TemplateArgumentListInfo arg_list;
+      for (auto arg_id : args) {
+        auto cpp_arg_type = MapResultArgToCppType(context, arg_id);
+        if (cpp_arg_type.isNull()) {
+          return clang::QualType();
+        }
+        arg_list.addArgument(clang::TemplateArgumentLoc(
+            clang::TemplateArgument(cpp_arg_type),
+            ast_context.getTrivialTypeSourceInfo(cpp_arg_type)));
+      }
+      clang::TemplateName template_name(template_decl);
+      return context.clang_sema().CheckTemplateIdType(
+          clang::ElaboratedTypeKeyword::None, template_name,
+          /*TemplateLoc=*/clang::SourceLocation(), arg_list,
+          /*Scope=*/nullptr, /*ForNestedNameSpecifier=*/false);
     }
     case SemIR::RecognizedTypeInfo::Str: {
       return LookupCppType(context, {"std", "string_view"});

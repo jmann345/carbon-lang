@@ -10,29 +10,38 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-09-27 (post-PR #41: W-012 LANDED — `if (let P = e)`,
-`while (let P = e)`, `let P = e else { diverge }` and their `var`
-spellings as refutable pattern bindings on the match engine (five parse
-node kinds, two states; toolchain/check/refutable_binding.{h,cpp}
-factored from the match arm's test-and-bind; F-011a reachability
-divergence; seven diagnostics; zero lowering changes). Gap row 64
-MISSING → PARTIAL; header 27 DONE / 20 PARTIAL / 7 MISSING / 2
-DESIGN-ONLY. NEW FLOOR 108 PASS / 0 / 27 SKIP over 135, 44/56 bullets.
-Residue W-080 (plain `let`/`var` refutability error), W-081
-(let-chains), W-082 (noreturn divergence). IN FLIGHT: EH-B (catching
-thunks selected by `?`, `Cpp.Exception`, `Carbon::expected` export,
-boundary fence) — implemented in ../carbon-ehb on
-claude/carbon-fork-0-1-ehb, single review APPROVE-WITH-FIXES (blocker:
-catching thunk must import through the static ImportFunction path, not
-ImportCppFunctionDecl), two hosted-build compile misses fixed (missing
-TargetInfo include; a QualType returned from a Decl* function), fix
-commit pending, then autoupdate → gate → conformance (target 110/0/27
-over 137 tree-relative; residue ids W-083+). Unions W-009/W-015 — plan
-committed in ../carbon-unions on claude/carbon-fork-0-1-unions
-(fork/unions/plan.md, two slices UN-1/UN-2; UN-2 sequenced after EH-B
-merges because of import.cpp/export.cpp contention); two plan reviews
-running. Weekly cron Monday 2026-09-28 (mirror probe is GitHub-hosted;
-the owner's machine is never used)._
+_Last updated: 2026-09-27 (post-PR #42: EH-B LANDED — catching thunks
+selected by `?` (a potentially-throwing C++ call as the direct operand of
+`?` has type `Core.Result(S, Cpp.Exception)`), the `Cpp.Exception`
+prelude adapter, `Core.Result(T, E)` exporting as `Carbon::expected<T, E>`
+through the installed `<carbon/expected.h>`, and the SF-1 boundary fence
+diagnostic. Gap row 69 "C++ exception interop" stays PARTIAL (residue
+W-083..W-085). NEW FLOOR 112 PASS / 0 / 26 SKIP over 139, 44/56 bullets.
+Seven hosted autoupdate rounds and one failed gate/conformance pair, each
+root-caused (two compile misses, a PHI-typed convergence, two wrong
+negatives, two dead diagnostic kinds, a `cast<CXXRecordDecl>` on the
+`Carbon` export namespace in the external AST source) — all recorded in
+the decision log as R28(d) review misses. IN FLIGHT: UN-1 (W-009 native
+`union`) on claude/carbon-fork-0-1-unions in ../carbon-unions —
+implemented, reviewed (APPROVE-WITH-FIXES, folded), conformance green at
+110/0/26 over 136 (45/56 bullets, tree-relative to post-W-012 trunk),
+gate rerun in progress after a converged-golden refill; discharge drafted
+(residue W-086..W-093); then merge (rebase onto this trunk: expect
+114/0/25 over 140). UN-2 (W-015, union C++ interop) follows on a fresh
+branch off trunk. Overloading (W-024/W-025/W-026, `overload fn` closed
+sets, F-009) — plan committed in ../carbon-overload on
+claude/carbon-fork-0-1-overload (fork/overload/plan.md, three slices
+OV-1/OV-2/OV-3); two adversarial plan reviews running. Weekly cron Monday
+2026-09-28 (mirror probe is GitHub-hosted; the owner's machine is never
+used)._
+FORTY-TWO PRs. The error-handling remainder is closed: a C++ exception
+crossing into Carbon is either fenced (terminate, now with a message
+naming the boundary) or, when the call is the operand of `?`, caught into
+a `Cpp.Exception` that `?` propagates, and a Carbon `Result` crosses back
+into C++ as a byte-compatible `Carbon::expected`. The slice cost seven
+hosted round trips; every one was a real defect fixed at its root and
+each is written down, including the pre-existing export-namespace crash
+that only a real header could expose._
 FORTY-ONE PRs. The design's if-let family exists: a `let`/`var`
 pattern in an `if`/`while` condition or a `let … else { diverge }`
 declaration runs through the same refutable engine as a `match` arm,
@@ -313,8 +322,8 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-108 PASS / 27 SKIP / 0 FAIL programs (135 total); **44/56 bullets
-green** (GitHub-hosted scoreboard at the PR #41 head, run 36306915573; verified from fork/conformance/out/scoreboard.json —
+112 PASS / 26 SKIP / 0 FAIL programs (139 total); **44/56 bullets
+green** (GitHub-hosted scoreboard at the PR #42 head, run 36315999330; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first
 error-handling flip, now 4 programs deep incl. the W72b threading
 arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79
@@ -322,7 +331,7 @@ at S3a → 80 at S3b → 81 at S3c → 83 at B1b
 (error_handling/control_flow_constructs flip +
 question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a
 → 88 F8b → 89 F8c → 90 F8d → 91 W72b → 92 W-067 → 93 W-068 → 95 W-069 → 96 multifile → 100 W-076 → 101 W-078 → 102 W-077 →
-106 EH-A → 108 W-012. The scoreboard regenerates on GitHub-hosted runners only
+106 EH-A → 108 W-012 → 112 EH-B. The scoreboard regenerates on GitHub-hosted runners only
 (`Fork: hosted verification`, mode `conformance`; R28).
 
 ### CI on jmann345/carbon-lang (GitHub-hosted only — R28)

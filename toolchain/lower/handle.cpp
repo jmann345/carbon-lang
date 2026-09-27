@@ -2,21 +2,27 @@
 // Exceptions. See /LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <string>
+
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
 #include "llvm/Support/Casting.h"
 #include "toolchain/lower/function_context.h"
+#include "toolchain/lower/type.h"
 #include "toolchain/sem_ir/builtin_function_kind.h"
 #include "toolchain/sem_ir/entry_point.h"
 #include "toolchain/sem_ir/expr_info.h"
 #include "toolchain/sem_ir/function.h"
 #include "toolchain/sem_ir/inst.h"
+#include "toolchain/sem_ir/stringify.h"
+#include "toolchain/sem_ir/type_info.h"
 #include "toolchain/sem_ir/typed_insts.h"
 
 namespace Carbon::Lower {
@@ -276,6 +282,82 @@ auto HandleInst(FunctionContext& context, SemIR::InstId /*inst_id*/,
   context.builder().CreateRetVoid();
 }
 
+// Emits the exit-code epilogue of a `Main.Run` declared `-> Core.Result(T, E)`
+// (decision D10 of docs/design/error_handling.md, "Entry point") in place of
+// an in-place return's `ret void`: `.Ok(())` exits 0, `.Ok(code)` exits
+// `code`, and `.Err(e)` writes a diagnostic naming `E` to stderr and exits 1.
+// `result_slot` is the local alloca the return slot was bound to
+// (`FileContext::BuildFunctionBody`), already initialized with the returned
+// value. A choice lowers as `<{ <{ disc, pad }>, [P x i8] }>` with the
+// discriminant stored as an `i8` (`Ok` = 0, `Err` = 1: the declaration order in
+// core/prelude/types/result.carbon) and every payload tuple at offset 0 of the
+// region, so the `Ok(i32)` payload is an `i32` load from the region.
+static auto EmitEntryPointResultEpilogue(
+    FunctionContext& context, FunctionContext::TypeInFile result_type,
+    llvm::Value* result_slot) -> void {
+  const auto& sem_ir = *result_type.file;
+  auto class_type = sem_ir.types().GetAs<SemIR::ClassType>(result_type.type_id);
+  auto type_info = SemIR::RecognizedTypeInfo::ForType(sem_ir, class_type);
+  CARBON_CHECK(type_info.kind == SemIR::RecognizedTypeInfo::Result);
+  auto args = sem_ir.inst_blocks().Get(type_info.args_id);
+  CARBON_CHECK(args.size() == 2);
+  auto type_arg = [&](SemIR::InstId arg_id) -> SemIR::InstId {
+    if (auto facet = sem_ir.insts().TryGetAs<SemIR::FacetValue>(arg_id)) {
+      return facet->type_inst_id;
+    }
+    return arg_id;
+  };
+  auto success_type_id =
+      sem_ir.types().GetTypeIdForTypeInstId(type_arg(args[0]));
+  auto error_type_inst_id = type_arg(args[1]);
+
+  auto& builder = context.builder();
+  auto* llvm_result_type = context.GetType(result_type);
+  auto* i8_type = builder.getInt8Ty();
+  auto* i32_type = builder.getInt32Ty();
+  auto* i64_type = builder.getInt64Ty();
+
+  auto* discriminant =
+      builder.CreateLoad(i8_type,
+                         builder.CreateStructGEP(llvm_result_type, result_slot,
+                                                 0, "run.result.discriminant"),
+                         "run.result.disc");
+  auto* is_ok = builder.CreateICmpEQ(
+      discriminant, llvm::ConstantInt::get(i8_type, 0), "run.result.is_ok");
+  auto* ok_block = llvm::BasicBlock::Create(
+      context.llvm_context(), "run.result.ok", &context.llvm_function());
+  auto* err_block = llvm::BasicBlock::Create(
+      context.llvm_context(), "run.result.err", &context.llvm_function());
+  builder.CreateCondBr(is_ok, ok_block, err_block);
+
+  // `.Ok(())` exits 0; `.Ok(code)` exits `code`. The checker admits exactly
+  // these two success types (`IsValidEntryPointReturnType`).
+  builder.SetInsertPoint(ok_block);
+  if (sem_ir.types().Is<SemIR::TupleType>(success_type_id)) {
+    builder.CreateRet(builder.getInt32(0));
+  } else {
+    auto* payload = builder.CreateStructGEP(llvm_result_type, result_slot, 1,
+                                            "run.result.payload");
+    builder.CreateRet(builder.CreateLoad(i32_type, payload, "run.result.code"));
+  }
+
+  // `.Err(e)`: `write(2, message, length)` — stderr is unbuffered, and no
+  // linkable Carbon runtime object exists to call — then exit 1. The message
+  // names `E`; `Cpp.Exception`'s own message is not printed in 0.1.
+  builder.SetInsertPoint(err_block);
+  auto* ptr_type = llvm::PointerType::get(context.llvm_context(), 0);
+  llvm::FunctionCallee write = context.llvm_module().getOrInsertFunction(
+      "write", i64_type, i32_type, ptr_type, i64_type);
+  std::string message =
+      "carbon: `Main.Run` returned `.Err` of type `" +
+      SemIR::StringifyConstantInst(sem_ir, error_type_inst_id) +
+      "`; exiting with code 1\n";
+  builder.CreateCall(write, {builder.getInt32(2),
+                             context.entry_point_result_err_message(message),
+                             llvm::ConstantInt::get(i64_type, message.size())});
+  builder.CreateRet(builder.getInt32(1));
+}
+
 auto HandleInst(FunctionContext& context, SemIR::InstId /*inst_id*/,
                 SemIR::ReturnExpr inst) -> void {
   auto expr_cat = SemIR::GetExprCategory(context.sem_ir(), inst.expr_id);
@@ -315,6 +397,14 @@ auto HandleInst(FunctionContext& context, SemIR::InstId /*inst_id*/,
       // TODO: find a way to avoid the redundant call to GetInitRepr inside
       // InitializeStorage.
       context.InitializeStorage(result_type, inst.dest_id, inst.expr_id);
+      // A `Result`-returning `Main.Run` returns its exit code instead (D10).
+      if (GetEntryPointResultTypeId(context.specific_sem_ir(),
+                                    context.specific_sem_ir_function_id())
+              .has_value()) {
+        EmitEntryPointResultEpilogue(context, result_type,
+                                     context.GetValue(inst.dest_id));
+        return;
+      }
       context.builder().CreateRetVoid();
       return;
     case SemIR::InitRepr::ByCopy: {

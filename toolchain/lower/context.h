@@ -144,6 +144,15 @@ class Context {
     printf_int_format_string_ = printf_int_format_string;
   }
 
+  auto entry_point_result_err_message() -> llvm::Value* {
+    return entry_point_result_err_message_;
+  }
+  auto SetEntryPointResultErrMessage(llvm::Value* message) {
+    CARBON_CHECK(!entry_point_result_err_message_,
+                 "`Main.Run` `.Err` message already generated");
+    entry_point_result_err_message_ = message;
+  }
+
  private:
   // Create the DICompileUnit metadata for this compilation.
   auto BuildDICompileUnit(llvm::StringRef module_name,
@@ -200,6 +209,11 @@ class Context {
 
   // Global format string for `printf.int.format` used by the PrintInt builtin.
   llvm::Value* printf_int_format_string_ = nullptr;
+
+  // Global diagnostic string written to stderr when a `Result`-returning
+  // `Main.Run` returns `.Err` (the handle.cpp `ReturnExpr` epilogue). There is
+  // one entry point per compilation, so one message.
+  llvm::Value* entry_point_result_err_message_ = nullptr;
 
   // Tracks which specific functions need to have their definitions lowered.
   // This list may grow while lowering generic definitions from this list.

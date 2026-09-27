@@ -10,30 +10,37 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-09-27 (post-PR #42: EH-B LANDED — catching thunks
-selected by `?` (a potentially-throwing C++ call as the direct operand of
-`?` has type `Core.Result(S, Cpp.Exception)`), the `Cpp.Exception`
-prelude adapter, `Core.Result(T, E)` exporting as `Carbon::expected<T, E>`
-through the installed `<carbon/expected.h>`, and the SF-1 boundary fence
-diagnostic. Gap row 69 "C++ exception interop" stays PARTIAL (residue
-W-083..W-085). NEW FLOOR 112 PASS / 0 / 26 SKIP over 139, 44/56 bullets.
-Seven hosted autoupdate rounds and one failed gate/conformance pair, each
-root-caused (two compile misses, a PHI-typed convergence, two wrong
-negatives, two dead diagnostic kinds, a `cast<CXXRecordDecl>` on the
-`Carbon` export namespace in the external AST source) — all recorded in
-the decision log as R28(d) review misses. IN FLIGHT: UN-1 (W-009 native
-`union`) on claude/carbon-fork-0-1-unions in ../carbon-unions —
-implemented, reviewed (APPROVE-WITH-FIXES, folded), conformance green at
-110/0/26 over 136 (45/56 bullets, tree-relative to post-W-012 trunk),
-gate rerun in progress after a converged-golden refill; discharge drafted
-(residue W-086..W-093); then merge (rebase onto this trunk: expect
-114/0/25 over 140). UN-2 (W-015, union C++ interop) follows on a fresh
-branch off trunk. Overloading (W-024/W-025/W-026, `overload fn` closed
-sets, F-009) — plan committed in ../carbon-overload on
-claude/carbon-fork-0-1-overload (fork/overload/plan.md, three slices
-OV-1/OV-2/OV-3); two adversarial plan reviews running. Weekly cron Monday
-2026-09-28 (mirror probe is GitHub-hosted; the owner's machine is never
-used)._
+_Last updated: 2026-09-27 (post-PR #43: UN-1 LANDED — native `union`
+declarations end to end (W-009): the `union` keyword and class-shaped
+body parse with a fourth `DeclContextKind`, a union as `SemIR::Class`
+with `is_union` over an all-offsets-zero `CustomLayoutType`, the D-UN-2
+field predicate (trivially destructible + no user `Core.Copy` impl
+outside package `Core`), designated init, byte-reinterpreting reads,
+the `UnformedInit` custom witness for `var u: U;`, memcpy copies, zero
+lowering code. Gap row 47 DESIGN-ONLY → PARTIAL; header 27 DONE / 21
+PARTIAL / 7 MISSING / 1 DESIGN-ONLY. NEW FLOOR 114 PASS / 0 / 25 SKIP
+over 140, 45/56 bullets. Three autoupdate rounds (one real defect: the
+parser's deferred-definition gate lacked the union states; one
+converged golden). Residue W-086..W-093. IN FLIGHT: UN-2 (W-015, union
+C++ interop: `is_union` on import, `TagTypeKind::Union` export,
+`GetStructTypeFields` over `CustomLayoutType`, by-value round trips) —
+implementer starting on claude/carbon-fork-0-1-un2 off this trunk.
+Overloading (W-024/W-025/W-026, `overload fn` closed sets, F-009) —
+plan rev 2 in ../carbon-overload (fork/overload/plan.md): two
+adversarial reviews folded, focused re-review SIGN-OFF-WITH-AMENDMENTS
+(explicit-receiver call shape; a generic-class program body), rev 2b
+fold in progress, then OV-1 implementation; the stranded design-docs
+branch's functions_overloading.md is PORTED by OV-1 (do not re-land
+it). Weekly cron Monday 2026-09-28 14:04Z (prompt updated to the
+hosted-only protocol; the owner's machine is never used)._
+FORTY-THREE PRs. Unions exist natively: the design's write-safe,
+read-reinterpret union with C++-compatible layout by construction, its
+0.1 field rule made precise (prelude `Copy` impls are trusted; user
+`Copy`/`Destroy` impls, choice-typed and imported C++ fields rejected
+loudly), and the first `Core.UnformedInit` witness a class type ever
+synthesized. The deferral defect was a one-list omission in the parser
+that no review caught by reading — the hosted fill caught it in
+minutes, which is exactly what the fill is for._
 FORTY-TWO PRs. The error-handling remainder is closed: a C++ exception
 crossing into Carbon is either fenced (terminate, now with a message
 naming the boundary) or, when the call is the operand of `?`, caught into
@@ -317,13 +324,13 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-w5-s3{,b,c}` | MERGED by way of PRs #12/#13/#14 — W5-S3 complete. |
 | `claude/carbon-fork-0-1-match-{replatform,s2d,s2e}` and `claude/carbon-fork-0-1-upstream-2026{0728,0808}` | MERGED by way of PRs #7/#8/#9/#10 and #6. |
 | `claude/carbon-fork-0-1-w5` | MERGED by way of PR #3 (composition gate run 30 green). |
-| `claude/carbon-fork-0-1-7mwfb7-design-docs` | STRANDED source for the F-008..F-011 design docs; reconstruction is NEXT, **gated on the user's veto-digest response** (presented 2026-07-20, unanswered). Reconstruct per the recipe pattern used for b0/w5 (overlay real content onto fresh branch off trunk; targeted-merge diverged files; prek + gate + PR). |
+| `claude/carbon-fork-0-1-7mwfb7-design-docs` | STRANDED source for the F-008..F-011 design docs (the veto-digest gate dissolved under R29). The F-009 overloading page (functions_overloading.md + its cross-references) is PORTED by the OV-1/OV-3 slices — do not re-land it; the F-008/F-010/F-011 portions are ported by their own workstreams (F-011's if-let docs landed with W-012). Reconstruct per the recipe pattern used for b0/w5 (overlay real content onto fresh branch off trunk; targeted-merge diverged files; prek + gate + PR). |
 | `claude/carbon-fork-0-1-{7mwfb7,b0,7mwfb7-upstream-20260727}` and other `7mwfb7-*` | MERGED or superseded; do not stack new commits. |
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-112 PASS / 26 SKIP / 0 FAIL programs (139 total); **44/56 bullets
-green** (GitHub-hosted scoreboard at the PR #42 head, run 36315999330; verified from fork/conformance/out/scoreboard.json —
+114 PASS / 25 SKIP / 0 FAIL programs (140 total); **45/56 bullets
+green** (GitHub-hosted scoreboard at the PR #43 head, run 36318245113; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first
 error-handling flip, now 4 programs deep incl. the W72b threading
 arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79
@@ -331,7 +338,7 @@ at S3a → 80 at S3b → 81 at S3c → 83 at B1b
 (error_handling/control_flow_constructs flip +
 question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a
 → 88 F8b → 89 F8c → 90 F8d → 91 W72b → 92 W-067 → 93 W-068 → 95 W-069 → 96 multifile → 100 W-076 → 101 W-078 → 102 W-077 →
-106 EH-A → 108 W-012 → 112 EH-B. The scoreboard regenerates on GitHub-hosted runners only
+106 EH-A → 108 W-012 → 112 EH-B → 114 UN-1. The scoreboard regenerates on GitHub-hosted runners only
 (`Fork: hosted verification`, mode `conformance`; R28).
 
 ### CI on jmann345/carbon-lang (GitHub-hosted only — R28)

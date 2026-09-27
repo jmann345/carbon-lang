@@ -187,40 +187,77 @@ implementation choice the design leaves to the toolchain, or draws a
     is a `ClassType` (concrete) or a symbolic `ClassType` of the SAME
     `class_id` as the field's class — walking the local store and the
     imported stores exactly as `HasUserDestroyImpl` does (:425-497), the
-    canonical-identity match included — and whose `Op` is NOT the
-    `primitive_copy` builtin (`Function::builtin_function_kind()`,
-    sem_ir/function.h:185, :243, read through the impl's witness table
-    entry: `Impl::witness_id`, sem_ir/impl.h:70). `Int(N)`/`UInt(N)`/
-    `Float(N)`/`Char`/`Bool`/`T*`/`CppCompat` impls are all
-    `primitive_copy`-bodied (int.carbon:25-27, uint.carbon:26-28,
-    char.carbon:22-24, copy.carbon:26-47) and pass; a user class with a
-    bodied `impl as Core.Copy` is rejected with `UnionFieldNotTriviallyCopyable`
-    (pinned: §4.A `fail_user_copy_field`). **Consequence the reviewer's
-    fold text got wrong, recorded here (amended 2026-09-27, review fold:
-    rev B F-2, corrected):** `Core.Optional(T*)` is REJECTED as a union
-    field in 0.1. Rev B's claim that "`Optional(T*)` still passes because
-    its `Copy` is the `primitive_copy` builtin (optional.carbon:189-203)"
-    cites the `OptionalStorage` helper `fn Copy(value: MaybeUnformed(T*))
-    ... = "primitive_copy"` (:203), not `Core.Copy`; the class's actual
-    `impl forall [T: OptionalStorage] Optional(T) as Copy { fn Op(self)
-    -> Self { return T.Copy(self as T.Type) as Optional(T); } }`
-    (optional.carbon:50-54) is a bodied, user-provided impl, which the
-    design's own definition (:207-210, "no user-provided or otherwise
-    non-trivial copy operation anywhere in the type") excludes. The
-    design contradicts itself at :341-344 ("`Optional(T*)` — a
-    permitted, trivially copyable field type"); §8.6 records a dated note
-    there, §4.A pins `fail_optional_pointer_field`, and the residue item
-    "union fields of `Core.Optional(T*)`" names the mechanism
-    (recognizing the prelude impl as trivial once W-058 re-platforms
-    `Optional`, or a `primitive_copy` body for the pointer specialization).
-    Three further conservative exclusions follow from the predicate as it
-    stands and are recorded loudly rather than papered over: (i) a
+    canonical-identity match included — and which is declared OUTSIDE
+    package `Core` (amended 2026-09-27, rev 2a, auto-adopted under
+    R29(a): a TRUST BOUNDARY replaces rev 2's "bodied impl ⇒ rejected"
+    rule, which would have rejected the design's own canonical
+    `Optional(T*)` idiom, unions.md:341-344 — rejecting a ratified design
+    example is a user-visible contradiction, not a narrowing). The
+    prelude is toolchain-trusted code: its `Copy` impls over a
+    trivially-destructible shape are bitwise by construction, so
+    `user-provided` in the design's definition (:207-210) means
+    "declared by the program, not by the prelude". **Prelude `Core.Copy`
+    audit (every `impl ... as Copy` under core/, none outside
+    core/prelude):** copy.carbon:26-47 (`Bool`, `CharLiteral`,
+    `FloatLiteral`, `IntLiteral`, `type`, `T*`) and :22 (`const T`,
+    delegates to `T`); int.carbon:25-27, uint.carbon:26-28,
+    float.carbon:26-28, char.carbon:22-24; cpp/int.carbon:49-72 (the six
+    `CppCompat` adapters) — all `= "primitive_copy"`; cpp/nullptr.carbon:42-46
+    (`NullptrT`, `return Make()` over a `make_uninitialized` builtin — a
+    stateless type, trivially equivalent to a byte copy);
+    string.carbon:19-21 (`String`, `{.ptr = self.ptr, .size = self.size}`
+    — a field-wise copy of both fields, bitwise on the object
+    representation); optional.carbon:50-54 (`Optional(T)`, delegates to
+    `T.Copy` on the storage: the pointer specialization's `Copy` is
+    `= "primitive_copy"` (:203), and `DefaultOptionalStorage(T)`'s
+    (:174-180) rebuilds `{value, has_value}` through `Some()`/`None()` —
+    not a literal memcpy, but observationally identical to one for every
+    `T` the walk admits: same `has_value`, same `value` bytes when
+    present, no side effects, no ownership). Conclusion: NO prelude
+    `Copy` impl over an admitted shape has side effects or differs
+    observably from a byte copy of the object representation, so no
+    explicit allowlist is needed; the package test alone is the rule.
+    **Mechanism, verified:** for the local store,
+    `context.name_scopes().IsCorePackage(impl.parent_scope_id)`
+    (sem_ir/name_scope.h:404-412, the test `GetCoreInterface` already
+    applies to interfaces at custom_witness.cpp:889) — equivalently
+    `context.sem_ir().package_id() == PackageNameId::Core`
+    (sem_ir/file.h:133; the handle_interface.cpp:88 idiom); for the
+    imported stores, `import_sem_ir.package_id() == PackageNameId::Core`
+    inside the same `import_irs()` loop `HasUserDestroyImpl` walks
+    (:455-465). `Int(N)`/`UInt(N)`/`Float(N)`/`Char`/`Bool`/`T*`/
+    `CppCompat`/`String`/`Optional(T)` fields therefore pass; a user
+    class with an `impl as Core.Copy` declared outside `Core` — bodied or
+    builtin, the package is the boundary — is rejected with
+    `UnionFieldNotTriviallyCopyable` (pinned: §4.A `fail_user_copy_field`).
+    `Core.Optional(T*)` is ADMITTED (pinned: §4.A `optional_pointer_field`,
+    check + lower — the lower golden must show a plain memcpy/load-store
+    of the pointer-sized storage). **Record of the rev 2 detour, kept
+    for the log:** rev 2 read rev B F-2's "`Optional(T*)` still passes
+    because its `Copy` is the `primitive_copy` builtin
+    (optional.carbon:189-203)" as citing the `OptionalStorage` helper
+    (:203) rather than the class's `Core.Copy` impl (:50-54), which is
+    bodied, and rejected `Optional(T*)`; rev 2a's trust boundary makes
+    the reviewer's conclusion right by a different mechanism — the
+    `fail_optional_pointer_field` pin, the ":341-344 self-contradiction"
+    doc note and the residue "union fields of `Core.Optional(T*)`" are
+    WITHDRAWN. Break condition of the trust boundary: a prelude `Copy`
+    impl that is not observationally bitwise over an admitted shape
+    (re-run the audit above at every weekly upstream merge that touches
+    core/prelude; the fix is then an explicit allowlist of prelude
+    classes, never widening the boundary to user packages). Falsifier:
+    the lower golden of `optional_pointer_field` showing anything other
+    than a plain memcpy/load-store of the storage (a call to the prelude
+    `Op` there means the union copy is not the primitive copy D-UN-5
+    specifies). Three conservative exclusions follow from the predicate as
+    it stands and are recorded loudly rather than papered over: (i) a
     CHOICE-typed field is rejected (:535-538 returns false for `is_choice`,
     deferring to the destroy machinery) although the design permits
     choices whose payloads are trivial — residue "union fields of choice
-    type" (§8.5); (ii) `str`/`String` fields are rejected (`String` has a
-    bodied `impl as Copy`, string.carbon:19-21, and `str` hits the default
-    arm); (iii) an IMPORTED C++ class or union as a field is rejected,
+    type" (§8.5); (ii) `str` fields are rejected (the builtin string type
+    hits `IsTriviallyDestructible`'s default arm) — `String` fields are
+    ADMITTED under rev 2a (prelude `Copy`, string.carbon:19-21, and a
+    trivially-destructible `{ptr, size}` repr); (iii) an IMPORTED C++ class or union as a field is rejected,
     because `IsTriviallyDestructible` returns false for every
     `is_cpp_scope` class (custom_witness.cpp:528-534) — the canonical
     migration shape (unions.md:54-58, :64-66) is therefore not admitted
@@ -947,12 +984,17 @@ token_kind.def:157-241); `union` appears only as the keyword or as
     i64; }` — the `IsTriviallyDestructible` `CustomLayoutType` arm;
     predicted accepted, `size=8, align=8`); `aggregate_fields` (a struct
     field `{.a: i32, .b: i32}`, a tuple field `(i32, i16)`, a pointer
-    field, a `bool` field, a `char` field — all accepted: every prelude
-    `Core.Copy` impl they reach is `primitive_copy`-bodied, D-UN-2). The
-    rev 1 positive `optional_pointer_field` is WITHDRAWN and becomes the
-    `fail_optional_pointer_field` pin below (amended 2026-09-27, review
-    fold: rev B F-2, corrected — optional.carbon:50-54 is a bodied user
-    `Core.Copy` impl).
+    field, a `bool` field, a `char` field, a `Core.String` field — all
+    accepted: every prelude `Core.Copy` impl they reach is declared in
+    package `Core`, D-UN-2); `optional_pointer_field` (`var p:
+    Core.Optional(i32*);` — predicted ACCEPTED: `IsTriviallyDestructible`
+    walks the adapter (custom_witness.cpp:555-566) into
+    `MaybeUnformed(i32*)` (optional.carbon:189-190, :196-199) and the
+    `Core.Copy` impl at :50-54 is prelude-declared, so the copy half
+    passes; its lower twin pins the union copy as a plain `llvm.memcpy`
+    of the 8-byte storage with NO call to the prelude `Op` — the rev 2a
+    falsifier; restored as a POSITIVE subfile, amended 2026-09-27, rev
+    2a).
 -   **check/testdata/union/layout.carbon** — `union Wide { var lo: i32;
     var both: i64; }` → `size=8, align=8`; `union Odd { var a: i8; var b:
     i16; var c: array(i8, 3); }` → `size=4, align=2` (max size 3 rounded
@@ -977,11 +1019,9 @@ token_kind.def:157-241); `union` appears only as the keyword or as
     `fail_user_copy_field` (`class Counted { var n: i32; impl as
     Core.Copy { fn Op(self) -> Self { return {.n = self.n + 1}; } } }` as
     a field — the copyable half of the predicate, amended 2026-09-27,
-    review fold: rev B F-2); `fail_optional_pointer_field` (`var p:
-    Core.Optional(i32*);` — rejected through optional.carbon:50-54's
-    bodied `Core.Copy` impl; the comment cites the design contradiction
-    :341-344 versus :207-210 and the residue; amended 2026-09-27, review
-    fold: rev B F-2, corrected); `fail_cpp_class_field` (a `// ---
+    review fold: rev B F-2; the impl is declared outside `Core`, which is
+    the rev 2a boundary — a `primitive_copy`-bodied user impl would be
+    rejected too); `fail_cpp_class_field` (a `// ---
     point.h` subfile declaring `struct Point { int x; int y; };` and
     `union CppU { int a; float f; };`, then `import Cpp library
     "point.h";` with `var p: Cpp.Point;` and `var u: Cpp.CppU;` as union
@@ -1036,8 +1076,11 @@ token_kind.def:157-241); `union` appears only as the keyword or as
     `store i32 poison`; a memcpy, a call, or any non-poison store is a
     miss), `designated_init`, `copy` (two memcpys: initialization and
     the `w = v;` assignment, rev B F-11), `user_copy_impl_shadowed` (a
-    memcpy and no call to the user `Op`, rev B F-8), `method`,
-    `by_pointer`, `file_scope_union` (rev A M-2). Predicted IR: `%u.var =
+    memcpy and no call to the user `Op`, rev B F-8), `optional_pointer_field`
+    (`var q: OptPtr = p;` over `union OptPtr { var o: Core.Optional(i32*);
+    var n: i64; }` — an 8-byte `llvm.memcpy`, no call to the prelude
+    `Optional.as.Copy.impl.Op`; rev 2a), `method`, `by_pointer`,
+    `file_scope_union` (rev A M-2). Predicted IR: `%u.var =
     alloca [4 x i8], align 4`; field access `getelementptr inbounds nuw [4 x i8], ptr
     %u.var, i32 0, i32 0` for BOTH `word` and `bytes` (offset 0 each —
     the field.carbon:229 shape), `store i32 5, ptr %..., align 4` for
@@ -1349,12 +1392,12 @@ each discharge.
     silent fallback.
 -   **R-3 — the two-part field predicate rejects a design-permitted
     field type (amended 2026-09-27, review fold: rev B F-2/F-3).**
-    Predicted accepted: scalars (their prelude `Core.Copy` impls are
-    `primitive_copy`-bodied), pointers, arrays, tuples, structs,
-    non-choice classes with neither a `Destroy` impl nor a bodied `Copy`
-    impl, nested unions. Predicted rejected (recorded loudly): choice-typed
-    fields, `str`/`String`, `Optional(T*)` (bodied prelude `Copy`),
-    classes with a bodied user `Copy`, imported C++ classes/unions.
+    Predicted accepted: scalars, pointers, arrays, tuples, structs,
+    `String`, `Optional(T*)` (prelude `Copy` impls are inside the rev 2a
+    trust boundary), non-choice classes with neither a `Destroy` impl nor
+    a `Copy` impl declared outside `Core`, nested unions. Predicted
+    rejected (recorded loudly): choice-typed fields, `str`, classes with
+    a user-package `Copy` impl, imported C++ classes/unions.
     Falsifier: `aggregate_fields` or `nested_union_field` diagnosing, or
     any of the `fail_*_field` pins compiling clean. Contingency: D-UN-2's
     break condition.
@@ -1489,8 +1532,7 @@ each discharge.
         W-083+ by EH-B — never assume numbers): "union fields of choice
         type" (D-UN-2(i); mechanism: a per-payload triviality walk or the
         `CanDestroyClass` choice clause's SF-6 trust); "union fields of
-        `Core.Optional(T*)`" (D-UN-2, rev B F-2 corrected; mechanism
-        named there); "union fields of imported C++ type" (D-UN-2(iii),
+        imported C++ type" (D-UN-2(iii),
         rev A M-1 / rev B F-3; mechanism: a cpp-scope arm consulting
         `CXXRecordDecl::isTriviallyCopyable()` through `clang_decls()`);
         "generic unions and unions nested in generic scopes" (D-UN-3,
@@ -1516,8 +1558,9 @@ each discharge.
     generic scope; the design intent stands"); :148-149 (nested types
     rejected at parse in 0.1, D-UN-6); :217-226 (the 0.1 predicate is
     `IsTriviallyDestructible` plus the class-keyed non-trivial-`Copy`
-    check; choice-typed, `str`/`String`, `Optional(T*)` and imported
-    C++-typed fields are conservatively rejected, D-UN-2(i)-(iii); and a
+    check with the prelude as its trust boundary; choice-typed, `str`
+    and imported C++-typed fields are conservatively rejected,
+    D-UN-2(i)-(iii); and a
     reconciliation of :222-223 "diagnosed at the point where the union
     type is required to be complete" with the definition-site diagnosis:
     for a Carbon-authored union the `}` of its definition IS the point at
@@ -1525,9 +1568,11 @@ each discharge.
     is kept and annotated; amended 2026-09-27, review fold: rev B F-13);
     :315-321 (R-16: "0.1 lowering yields poison on an
     invalid-representation read; fail-stop tracking is F-007g future
-    work"; rev B F-10); :341-344 (the `Optional(T*)` sentence contradicts
-    :207-210 under the prelude's bodied `Copy` impl; rejected in 0.1;
-    rev B F-2); :278-283 (implementation note → "landed at UN-1 for
+    work"; rev B F-10); :207-210 (one dated sentence: "user-provided"
+    means declared outside package `Core` — the prelude's `Copy` impls
+    are trusted as bitwise, rev 2a; the rev 2 note planned for :341-344
+    is withdrawn, `Optional(T*)` is admitted as the design says);
+    :278-283 (implementation note → "landed at UN-1 for
     native unions" then "and at UN-2 for imported unions").
     docs/design/classes.md:2282-2300 ("Memory layout") gains one dated
     back-reference sentence ("Unions are the one place layout is
@@ -1542,7 +1587,7 @@ each discharge.
     single-field init, unformed-then-assign by way of a synthesized
     `UnformedInit` witness, byte-copy, methods/impls; concrete unions
     only — generic unions TODO-gated; field predicate rejects choice-,
-    `Optional(T*)`-, `str`- and C++-typed fields; 2/2 conformance
+    `str`- and C++-typed fields; 2/2 conformance
     programs PASS); C++ side: designated init of imported unions,
     `is_union` marking and union export are UN-2 (W-015)"; header delta
     DESIGN-ONLY −1 / PARTIAL +1 (27 / 21 / 7 / 1 on the post-W-012 base;
@@ -1552,8 +1597,8 @@ each discharge.
     export as `TagTypeKind::Union` with Carbon-supplied layout; round-trip
     programs in both directions, by pointer and by value, PASS (4/4).
     Gated residue, each a filed item: generic unions and unions nested in
-    generic scopes; union fields of choice, `Optional(T*)` and imported
-    C++ type; invalid-representation reads yield poison" (amended
+    generic scopes; union fields of choice and imported C++ type;
+    invalid-representation reads yield poison" (amended
     2026-09-27, review fold: rev B F-6 — DONE-with-gated-residue has the
     row 44 precedent: Sum types is DONE with Self-dependent payloads and
     qualified alternative patterns "still gated by diagnostics", cited in
@@ -1563,9 +1608,10 @@ each discharge.
     evidence and no header delta. R7: bullet TEXT untouched.
 7.  **Decision log:** entries "UN-1: native `union` declaration (date)"
     and "UN-2: C++ union interop (date)" carrying D-UN-1..9 with break
-    conditions, the §0.2 corrections verbatim, the two review-claim
-    corrections of this fold (rev B F-2's `Optional(T*)` claim; the
-    `HasUserDestroyImpl` mirror), the V-3a divergence-register line (the
+    conditions, the §0.2 corrections verbatim, the review-claim
+    correction of the rev 2 fold (the `HasUserDestroyImpl` mirror) and
+    the rev 2a trust-boundary amendment with its prelude `Copy` audit
+    (auto-adopted under R29(a), veto-able), the V-3a divergence-register line (the
     `union` keyword and byte-reinterpretation reads are already F-007's;
     nothing new is minted), the row 44 DONE-with-gated-residue precedent
     (rev B F-6), the residue items by title with the ids allocated at
@@ -1590,11 +1636,13 @@ each discharge.
     is a `ConversionFailureTypeToFacet` (rev A B-1 / rev B F-1). The
     `CoreIdentifier` entry is required or `AsCoreIdentifier` fails to
     compile (its switch is x-macro-generated over every core interface).
--   The union field predicate is TWO walks (destructible + no bodied
-    user `Copy`), class-keyed; do NOT copy `HasUserDestroyImpl`'s
-    symbolic-self shortcut into the `Copy` half — the prelude's blanket
-    `T*`/`const T`/`Int(N)`/`Optional(T)` `Copy` impls would disqualify
-    every class (D-UN-2).
+-   The union field predicate is TWO walks (destructible + no `Copy`
+    impl declared outside package `Core`), class-keyed; do NOT copy
+    `HasUserDestroyImpl`'s symbolic-self shortcut into the `Copy` half —
+    the prelude's blanket `T*`/`const T`/`Int(N)`/`Optional(T)` `Copy`
+    impls would disqualify every class — and the package test, not the
+    body, is the boundary (D-UN-2, rev 2a): `Optional(i32*)` must be
+    ADMITTED.
 -   The export guard goes in `ExportClassToCpp` and `ExportNameScopeToCpp`,
     never in `ExportClassToCppInDeclContext` (rev A B-2).
 -   Do not cover non-designated fields in the `ClassInit` (R-2's
@@ -1621,7 +1669,8 @@ evidence the departure rests on).
 | --- | --- |
 | rev A B-1 = rev B F-1 (BLOCKER): `var u: U;` fails `DefaultOrUnformed` | D-UN-9 (§0.3), §0.1 row 12b, §1.A.6, §2.A.6, §3, §4.A `unformed_then_assign` + lower `unformed_local`, §5 note, §6.A (+2 files), §7 R-15, hand-off. Synthesized-`Default` alternative rejected in D-UN-9. Verified: no in-place-class `UnformedInit` golden exists in the tree; predictions derived from the code path and the empty-tuple/witness precedents |
 | rev A B-2 (BLOCKER): guard placement null-crashes | D-UN-7 rewritten, §0.1 row 12c, §2.A.7, §2.B.2, §4.A `fail_todo_export` (both entries), §7 R-9 |
-| rev B F-2: destructible-only predicate; false export.cpp sentence | D-UN-2 rewritten: option (a) adopted as a CLASS-KEYED, `primitive_copy`-exempting walk; false sentence deleted; `fail_user_copy_field`. **Departure, with evidence:** the reviewer's "(a) mirroring `HasUserDestroyImpl`" cannot be literal — the prelude declares symbolic-self `Core.Copy` impls (copy.carbon:22, :46; int.carbon:25; uint.carbon:26; float.carbon:26; optional.carbon:50) so the :436-438 shortcut would reject every class, and `i32` is `class_type @Int`, so the exemption for builtin-bodied impls is load-bearing. **Departure, with evidence:** the reviewer's "`Optional(T*)` still passes (optional.carbon:189-203)" cites the `OptionalStorage` helper; the class's `Core.Copy` impl at :50-54 is bodied, so `Optional(T*)` is REJECTED — `fail_optional_pointer_field`, doc note at :341-344, residue |
+| rev B F-2: destructible-only predicate; false export.cpp sentence | D-UN-2 rewritten: option (a) adopted as a CLASS-KEYED, `primitive_copy`-exempting walk; false sentence deleted; `fail_user_copy_field`. **Departure, with evidence:** the reviewer's "(a) mirroring `HasUserDestroyImpl`" cannot be literal — the prelude declares symbolic-self `Core.Copy` impls (copy.carbon:22, :46; int.carbon:25; uint.carbon:26; float.carbon:26; optional.carbon:50) so the :436-438 shortcut would reject every class, and `i32` is `class_type @Int`, so the exemption for builtin-bodied impls is load-bearing. **Rev 2 departure, superseded by rev 2a:** rev 2 read the reviewer's "`Optional(T*)` still passes (optional.carbon:189-203)" as citing the `OptionalStorage` helper (the class's `Core.Copy` impl at :50-54 is bodied) and rejected `Optional(T*)`; rev 2a's prelude trust boundary admits it (see the rev 2a row) |
+| rev 2a (coordinator amendment, auto-adopted under R29(a)): prelude-trusted `Copy` impls | D-UN-2 copy half re-ruled as a package boundary (`IsCorePackage(impl.parent_scope_id)` / `package_id() == PackageNameId::Core`, verified at name_scope.h:404-412, file.h:133); prelude `Core.Copy` audit recorded in D-UN-2 (all builtin-bodied, delegating, or side-effect-free field-wise copies; no allowlist needed); `optional_pointer_field` restored as a positive subfile with a lower memcpy pin; `fail_optional_pointer_field`, the :341-344 note and the `Optional(T*)` residue withdrawn; `fail_user_copy_field` kept; R-3, §8.5, §8.6, hand-off updated |
 | rev A M-1 = rev B F-3: cpp-scope fields rejected | D-UN-2(iii), `fail_cpp_class_field`, residue with mechanism, kept out of UN-2 with the stated reason; `HasUserDestroyImpl` shortcut recorded as the break-condition mechanism |
 | rev A M-2: file-scope initializer unpinned | §4.A `file_scope_designated` + lower `file_scope_union`; R-14 now pinned; residue withdrawn |
 | rev B F-4: counts stale (W-012 landed) | Header, §5 (deltas + both bases), §5.A/§5.B titles, §8.3, §8.6 (:17 → :18; header deltas) |
@@ -1648,6 +1697,7 @@ residue-by-title, break conditions).
 
 ## Sign-off
 
-_Rev 2 folded 2026-09-27; awaiting re-review of the two blockers' folds
-(D-UN-9, D-UN-7) and the D-UN-2 departure. Amendments continue to be
+_Rev 2 folded 2026-09-27, rev 2a (prelude-trusted `Copy` impls)
+auto-adopted the same day under R29(a); awaiting re-review of the two
+blockers' folds (D-UN-9, D-UN-7) and the D-UN-2 trust boundary. Amendments continue to be
 folded in place, each marked "(amended <date>, review fold: ...)"._

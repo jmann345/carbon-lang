@@ -40,6 +40,17 @@ library "[[@TEST_NAME]]";
 
 union V {
   var a: i32;
+  // CHECK:STDERR: fail_virtual_method.carbon:[[@LINE+11]]:3: error: `virtual` not allowed; requires `abstract` or `base` class scope [ModifierVirtualNotAllowed]
+  // CHECK:STDERR:   virtual fn F(self) {}
+  // CHECK:STDERR:   ^~~~~~~
+  // CHECK:STDERR: fail_virtual_method.carbon:[[@LINE-5]]:1: note: containing definition here [ModifierNotInContext]
+  // CHECK:STDERR: union V {
+  // CHECK:STDERR: ^~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_virtual_method.carbon:[[@LINE+4]]:16: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   virtual fn F(self) {}
+  // CHECK:STDERR:                ^~~~
+  // CHECK:STDERR:
   virtual fn F(self) {}
 }
 

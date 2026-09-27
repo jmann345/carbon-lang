@@ -8,12 +8,12 @@
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/parse/testdata/union/fail_missing_definition.carbon
 
-// CHECK:STDERR: fail_missing_definition.carbon:[[@LINE+4]]:8: error: `union` declarations must either end with a `;` or have a `{ ... }` block for a definition [ExpectedDeclSemiOrDefinition]
-// CHECK:STDERR: union U
-// CHECK:STDERR:        ^
-// CHECK:STDERR:
 union U
 
+// CHECK:STDERR: fail_missing_definition.carbon:[[@LINE+10]]:26: error: `union` declarations must either end with a `;` or have a `{ ... }` block for a definition [ExpectedDeclSemiOrDefinition]
+// CHECK:STDERR: // CHECK:STDOUT:   (root)
+// CHECK:STDERR:                          ^
+// CHECK:STDERR:
 // CHECK:STDOUT: - filename: fail_missing_definition.carbon
 // CHECK:STDOUT:   ╭─FileStart ''
 // CHECK:STDOUT:   │ ╭─UnionIntroducer 'union'

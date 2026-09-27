@@ -25,6 +25,10 @@ class Boxy {
 }
 
 union U {
+  // CHECK:STDERR: fail_destroy_impl_field.carbon:[[@LINE+4]]:7: error: union field `b` has type `Boxy`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var b: Boxy;
+  // CHECK:STDERR:       ^~~~~~~
+  // CHECK:STDERR:
   var b: Boxy;
   var w: i32;
 }
@@ -41,6 +45,10 @@ choice Signal {
 }
 
 union U {
+  // CHECK:STDERR: fail_choice_field.carbon:[[@LINE+4]]:7: error: union field `s` has type `Signal`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var s: Signal;
+  // CHECK:STDERR:       ^~~~~~~~~
+  // CHECK:STDERR:
   var s: Signal;
   var w: i32;
 }
@@ -58,6 +66,10 @@ class Counted {
 }
 
 union U {
+  // CHECK:STDERR: fail_user_copy_field.carbon:[[@LINE+4]]:7: error: union field `c` has type `Counted`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var c: Counted;
+  // CHECK:STDERR:       ^~~~~~~~~~
+  // CHECK:STDERR:
   var c: Counted;
   var w: i32;
 }
@@ -73,7 +85,15 @@ class Boxy {
 }
 
 union U {
+  // CHECK:STDERR: fail_two_bad_fields.carbon:[[@LINE+4]]:7: error: union field `b1` has type `Boxy`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var b1: Boxy;
+  // CHECK:STDERR:       ^~~~~~~~
+  // CHECK:STDERR:
   var b1: Boxy;
+  // CHECK:STDERR: fail_two_bad_fields.carbon:[[@LINE+4]]:7: error: union field `b2` has type `Boxy`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var b2: Boxy;
+  // CHECK:STDERR:       ^~~~~~~~
+  // CHECK:STDERR:
   var b2: Boxy;
 }
 
@@ -98,7 +118,15 @@ import Cpp library "point.h";
 // predicate never assumes triviality for a C++-owned class (residue "union
 // fields of imported C++ type").
 union U {
+  // CHECK:STDERR: fail_cpp_class_field.carbon:[[@LINE+4]]:7: error: union field `p` has type `Cpp.Point`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var p: Cpp.Point;
+  // CHECK:STDERR:       ^~~~~~~~~~~~
+  // CHECK:STDERR:
   var p: Cpp.Point;
+  // CHECK:STDERR: fail_cpp_class_field.carbon:[[@LINE+4]]:7: error: union field `u` has type `Cpp.CppU`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var u: Cpp.CppU;
+  // CHECK:STDERR:       ^~~~~~~~~~~
+  // CHECK:STDERR:
   var u: Cpp.CppU;
   var w: i32;
 }

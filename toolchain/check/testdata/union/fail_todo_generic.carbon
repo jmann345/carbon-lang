@@ -16,6 +16,10 @@
 // --- fail_todo_generic_union.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_generic_union.carbon:[[@LINE+4]]:1: error: semantics TODO: `generic union` [SemanticsTodo]
+// CHECK:STDERR: union Slot(T: type) {
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 union Slot(T: type) {
   var value: T;
   var next_free: Slot(T)*;
@@ -25,6 +29,10 @@ union Slot(T: type) {
 library "[[@TEST_NAME]]";
 
 class Box(T: type) {
+  // CHECK:STDERR: fail_todo_nested_in_generic.carbon:[[@LINE+4]]:3: error: semantics TODO: `generic union` [SemanticsTodo]
+  // CHECK:STDERR:   union U {
+  // CHECK:STDERR:   ^~~~~~~~~
+  // CHECK:STDERR:
   union U {
     var a: i32;
   }

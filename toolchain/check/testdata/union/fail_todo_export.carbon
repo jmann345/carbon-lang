@@ -19,10 +19,33 @@ import Cpp;
 
 union U {
   var a: i32;
+  // CHECK:STDERR: fail_todo_use_type.carbon:[[@LINE+15]]:8: error: parameter has incomplete type `U` in function definition [IncompleteTypeInFunctionParam]
+  // CHECK:STDERR:   fn F(self) {}
+  // CHECK:STDERR:        ^~~~
+  // CHECK:STDERR: fail_todo_use_type.carbon:[[@LINE-5]]:1: note: class is incomplete within its definition [ClassIncompleteWithinDefinition]
+  // CHECK:STDERR: union U {
+  // CHECK:STDERR: ^~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_todo_use_type.carbon:[[@LINE+8]]:8: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   fn F(self) {}
+  // CHECK:STDERR:        ^~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_todo_use_type.carbon:[[@LINE-13]]:1: error: semantics TODO: `union export` [SemanticsTodo]
+  // CHECK:STDERR: union U {
+  // CHECK:STDERR: ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(self) {}
 }
 
 inline Cpp '''
+// CHECK:STDERR: fail_todo_use_type.carbon:[[@LINE+8]]:1: error: semantics TODO: `interop with unsupported type` [SemanticsTodo]
+// CHECK:STDERR: Carbon::U u;
+// CHECK:STDERR: ^
+// CHECK:STDERR:
+// CHECK:STDERR: fail_todo_use_type.carbon:[[@LINE+4]]:9: error: no type named 'U' in namespace 'Carbon' [CppInteropParseError]
+// CHECK:STDERR:    10 | Carbon::U u;
+// CHECK:STDERR:       | ~~~~~~~~^
+// CHECK:STDERR:
 Carbon::U u;
 ''';
 
@@ -32,11 +55,34 @@ import Cpp;
 
 union U {
   var a: i32;
+  // CHECK:STDERR: fail_todo_call_method.carbon:[[@LINE+15]]:8: error: parameter has incomplete type `U` in function definition [IncompleteTypeInFunctionParam]
+  // CHECK:STDERR:   fn F(self) {}
+  // CHECK:STDERR:        ^~~~
+  // CHECK:STDERR: fail_todo_call_method.carbon:[[@LINE-5]]:1: note: class is incomplete within its definition [ClassIncompleteWithinDefinition]
+  // CHECK:STDERR: union U {
+  // CHECK:STDERR: ^~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_todo_call_method.carbon:[[@LINE+8]]:8: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   fn F(self) {}
+  // CHECK:STDERR:        ^~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_todo_call_method.carbon:[[@LINE-13]]:1: error: semantics TODO: `union export` [SemanticsTodo]
+  // CHECK:STDERR: union U {
+  // CHECK:STDERR: ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(self) {}
 }
 
 inline Cpp '''
 void G() {
+  // CHECK:STDERR: fail_todo_call_method.carbon:[[@LINE+8]]:11: error: semantics TODO: `interop with unsupported type` [SemanticsTodo]
+  // CHECK:STDERR:   Carbon::U u;
+  // CHECK:STDERR:           ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_todo_call_method.carbon:[[@LINE+4]]:11: error: no type named 'U' in namespace 'Carbon' [CppInteropParseError]
+  // CHECK:STDERR:    11 |   Carbon::U u;
+  // CHECK:STDERR:       |   ~~~~~~~~^
+  // CHECK:STDERR:
   Carbon::U u;
   u.F();
 }

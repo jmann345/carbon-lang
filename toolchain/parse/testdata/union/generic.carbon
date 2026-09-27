@@ -15,3 +15,36 @@ union Slot(T: type) {
   var value: T;
   var next_free: Slot(T)*;
 }
+
+// CHECK:STDOUT: - filename: generic.carbon
+// CHECK:STDOUT:   ╭─FileStart ''
+// CHECK:STDOUT:   │   ╭─UnionIntroducer 'union'
+// CHECK:STDOUT:   │   ├─IdentifierNameMaybeBeforeSignature 'Slot'
+// CHECK:STDOUT:   │   │ ╭─ExplicitParamListStart '('
+// CHECK:STDOUT:   │   │ │ ╭─IdentifierNameNotBeforeSignature 'T'
+// CHECK:STDOUT:   │   │ │ ├─CompileTimeBindingPatternTypeStart ':'
+// CHECK:STDOUT:   │   │ │ ├─TypeTypeLiteral 'type'
+// CHECK:STDOUT:   │   │ ├─CompileTimeBindingPattern ':'
+// CHECK:STDOUT:   │   ├─ExplicitParamList ')'
+// CHECK:STDOUT:   │ ╭─UnionDefinitionStart '{'
+// CHECK:STDOUT:   │ │ ╭─VariableIntroducer 'var'
+// CHECK:STDOUT:   │ │ │   ╭─IdentifierNameNotBeforeSignature 'value'
+// CHECK:STDOUT:   │ │ │   ├─BindingPatternTypeStart ':'
+// CHECK:STDOUT:   │ │ │   ├─IdentifierNameExpr 'T'
+// CHECK:STDOUT:   │ │ │ ╭─VarBindingPattern ':'
+// CHECK:STDOUT:   │ │ ├─VariablePattern 'var'
+// CHECK:STDOUT:   │ ├─VariableDecl ';'
+// CHECK:STDOUT:   │ │ ╭─VariableIntroducer 'var'
+// CHECK:STDOUT:   │ │ │   ╭─IdentifierNameNotBeforeSignature 'next_free'
+// CHECK:STDOUT:   │ │ │   ├─BindingPatternTypeStart ':'
+// CHECK:STDOUT:   │ │ │   │     ╭─IdentifierNameExpr 'Slot'
+// CHECK:STDOUT:   │ │ │   │   ╭─CallExprStart '('
+// CHECK:STDOUT:   │ │ │   │   ├─IdentifierNameExpr 'T'
+// CHECK:STDOUT:   │ │ │   │ ╭─CallExpr ')'
+// CHECK:STDOUT:   │ │ │   ├─PostfixOperatorStar '*'
+// CHECK:STDOUT:   │ │ │ ╭─VarBindingPattern ':'
+// CHECK:STDOUT:   │ │ ├─VariablePattern 'var'
+// CHECK:STDOUT:   │ ├─VariableDecl ';'
+// CHECK:STDOUT:   ├─UnionDefinition '}'
+// CHECK:STDOUT:   ├─FileEnd ''
+// CHECK:STDOUT:   (root)

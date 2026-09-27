@@ -16,6 +16,10 @@
 // --- fail_abstract.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_abstract.carbon:[[@LINE+4]]:1: error: `abstract` not allowed on `union` declaration [ModifierNotAllowedOnDeclaration]
+// CHECK:STDERR: abstract union A {
+// CHECK:STDERR: ^~~~~~~~
+// CHECK:STDERR:
 abstract union A {
   var a: i32;
 }
@@ -23,6 +27,10 @@ abstract union A {
 // --- fail_base.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_base.carbon:[[@LINE+4]]:1: error: `base` not allowed on `union` declaration [ModifierNotAllowedOnDeclaration]
+// CHECK:STDERR: base union B {
+// CHECK:STDERR: ^~~~
+// CHECK:STDERR:
 base union B {
   var a: i32;
 }
@@ -32,6 +40,24 @@ library "[[@TEST_NAME]]";
 
 union V {
   var a: i32;
+  // CHECK:STDERR: fail_virtual_method.carbon:[[@LINE+18]]:3: error: `virtual` not allowed; requires `abstract` or `base` class scope [ModifierVirtualNotAllowed]
+  // CHECK:STDERR:   virtual fn F(self) {}
+  // CHECK:STDERR:   ^~~~~~~
+  // CHECK:STDERR: fail_virtual_method.carbon:[[@LINE-5]]:1: note: containing definition here [ModifierNotInContext]
+  // CHECK:STDERR: union V {
+  // CHECK:STDERR: ^~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_virtual_method.carbon:[[@LINE+11]]:16: error: parameter has incomplete type `V` in function definition [IncompleteTypeInFunctionParam]
+  // CHECK:STDERR:   virtual fn F(self) {}
+  // CHECK:STDERR:                ^~~~
+  // CHECK:STDERR: fail_virtual_method.carbon:[[@LINE-12]]:1: note: class is incomplete within its definition [ClassIncompleteWithinDefinition]
+  // CHECK:STDERR: union V {
+  // CHECK:STDERR: ^~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_virtual_method.carbon:[[@LINE+4]]:16: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   virtual fn F(self) {}
+  // CHECK:STDERR:                ^~~~
+  // CHECK:STDERR:
   virtual fn F(self) {}
 }
 
@@ -40,6 +66,13 @@ library "[[@TEST_NAME]]";
 
 class C;
 
+// CHECK:STDERR: fail_class_then_union.carbon:[[@LINE+7]]:7: error: duplicate name `C` being declared in the same scope [NameDeclDuplicate]
+// CHECK:STDERR: union C {
+// CHECK:STDERR:       ^
+// CHECK:STDERR: fail_class_then_union.carbon:[[@LINE-5]]:1: note: name is previously declared here [NameDeclPrevious]
+// CHECK:STDERR: class C;
+// CHECK:STDERR: ^~~~~~~~
+// CHECK:STDERR:
 union C {
   var a: i32;
 }
@@ -51,6 +84,13 @@ union D {
   var a: i32;
 }
 
+// CHECK:STDERR: fail_redefinition.carbon:[[@LINE+7]]:1: error: redefinition of `union D` [RedeclRedef]
+// CHECK:STDERR: union D {
+// CHECK:STDERR: ^~~~~~~~~
+// CHECK:STDERR: fail_redefinition.carbon:[[@LINE-7]]:1: note: previously defined here [RedeclPrevDef]
+// CHECK:STDERR: union D {
+// CHECK:STDERR: ^~~~~~~~~
+// CHECK:STDERR:
 union D {
   var a: i32;
 }

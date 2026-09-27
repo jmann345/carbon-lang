@@ -64,6 +64,10 @@ library "[[@TEST_NAME]]";
 union Shadowed {
   var a: i32;
   impl as Core.Copy {
+    // CHECK:STDERR: user_copy_impl_shadowed.carbon:[[@LINE+4]]:11: warning: binding `self` unused [UnusedBinding]
+    // CHECK:STDERR:     fn Op(self) -> Self { return {.a = 0}; }
+    // CHECK:STDERR:           ^~~~
+    // CHECK:STDERR:
     fn Op(self) -> Self { return {.a = 0}; }
   }
 }
@@ -93,7 +97,35 @@ union IntOrBytes {
   var word: i32;
   var bytes: array(i8, 4);
 
+  // CHECK:STDERR: method.carbon:[[@LINE+14]]:14: error: parameter has incomplete type `IntOrBytes` in function definition [IncompleteTypeInFunctionParam]
+  // CHECK:STDERR:   fn LowHalf(self) -> i32 { return self.bytes[0] as i32; }
+  // CHECK:STDERR:              ^~~~
+  // CHECK:STDERR: method.carbon:[[@LINE-7]]:1: note: class is incomplete within its definition [ClassIncompleteWithinDefinition]
+  // CHECK:STDERR: union IntOrBytes {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: method.carbon:[[@LINE+7]]:36: error: member access into object of incomplete type `IntOrBytes` [IncompleteTypeInMemberAccess]
+  // CHECK:STDERR:   fn LowHalf(self) -> i32 { return self.bytes[0] as i32; }
+  // CHECK:STDERR:                                    ^~~~
+  // CHECK:STDERR: method.carbon:[[@LINE-14]]:1: note: class is incomplete within its definition [ClassIncompleteWithinDefinition]
+  // CHECK:STDERR: union IntOrBytes {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn LowHalf(self) -> i32 { return self.bytes[0] as i32; }
+  // CHECK:STDERR: method.carbon:[[@LINE+14]]:10: error: parameter has incomplete type `IntOrBytes` in function definition [IncompleteTypeInFunctionParam]
+  // CHECK:STDERR:   fn Set(ref self, x: i32) { self.word = x; }
+  // CHECK:STDERR:          ^~~~~~~~
+  // CHECK:STDERR: method.carbon:[[@LINE-22]]:1: note: class is incomplete within its definition [ClassIncompleteWithinDefinition]
+  // CHECK:STDERR: union IntOrBytes {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: method.carbon:[[@LINE+7]]:30: error: member access into object of incomplete type `IntOrBytes` [IncompleteTypeInMemberAccess]
+  // CHECK:STDERR:   fn Set(ref self, x: i32) { self.word = x; }
+  // CHECK:STDERR:                              ^~~~
+  // CHECK:STDERR: method.carbon:[[@LINE-29]]:1: note: class is incomplete within its definition [ClassIncompleteWithinDefinition]
+  // CHECK:STDERR: union IntOrBytes {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn Set(ref self, x: i32) { self.word = x; }
 }
 

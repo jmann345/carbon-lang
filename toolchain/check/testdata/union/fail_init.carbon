@@ -22,6 +22,10 @@ union IntOrBytes {
 }
 
 fn F() -> i32 {
+  // CHECK:STDERR: fail_two_fields.carbon:[[@LINE+4]]:23: error: initializer for union `IntOrBytes` must designate exactly one field; found 2 [UnionInitNotSingleField]
+  // CHECK:STDERR:   var u: IntOrBytes = {.word = 1, .bytes = (0, 0, 0, 0)};
+  // CHECK:STDERR:                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   var u: IntOrBytes = {.word = 1, .bytes = (0, 0, 0, 0)};
   return u.word;
 }
@@ -35,6 +39,10 @@ union IntOrBytes {
 }
 
 fn F() -> i32 {
+  // CHECK:STDERR: fail_zero_fields.carbon:[[@LINE+4]]:23: error: initializer for union `IntOrBytes` must designate exactly one field; found 0 [UnionInitNotSingleField]
+  // CHECK:STDERR:   var u: IntOrBytes = {};
+  // CHECK:STDERR:                       ^~
+  // CHECK:STDERR:
   var u: IntOrBytes = {};
   return u.word;
 }
@@ -48,6 +56,10 @@ union IntOrBytes {
 }
 
 fn F() -> i32 {
+  // CHECK:STDERR: fail_unknown_field.carbon:[[@LINE+4]]:23: error: union `IntOrBytes` has no field named `nope` [UnionInitUnknownField]
+  // CHECK:STDERR:   var u: IntOrBytes = {.nope = 1};
+  // CHECK:STDERR:                       ^~~~~~~~~~~
+  // CHECK:STDERR:
   var u: IntOrBytes = {.nope = 1};
   return u.word;
 }
@@ -61,6 +73,13 @@ union IntOrBytes {
 }
 
 fn F() -> i32 {
+  // CHECK:STDERR: fail_element_conversion.carbon:[[@LINE+7]]:23: error: cannot implicitly convert expression of type `str` to `i32` [ConversionFailure]
+  // CHECK:STDERR:   var u: IntOrBytes = {.word = "text"};
+  // CHECK:STDERR:                       ^~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_element_conversion.carbon:[[@LINE+4]]:23: note: type `str` does not implement interface `Core.ImplicitAs(i32)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   var u: IntOrBytes = {.word = "text"};
+  // CHECK:STDERR:                       ^~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   var u: IntOrBytes = {.word = "text"};
   return u.word;
 }
@@ -74,6 +93,13 @@ union IntOrBytes {
 }
 
 fn F() -> i32 {
+  // CHECK:STDERR: fail_scalar_init.carbon:[[@LINE+7]]:3: error: cannot implicitly convert expression of type `Core.IntLiteral` to `IntOrBytes` [ConversionFailure]
+  // CHECK:STDERR:   var u: IntOrBytes = 5;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_scalar_init.carbon:[[@LINE+4]]:3: note: type `Core.IntLiteral` does not implement interface `Core.ImplicitAs(IntOrBytes)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   var u: IntOrBytes = 5;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   var u: IntOrBytes = 5;
   return u.word;
 }

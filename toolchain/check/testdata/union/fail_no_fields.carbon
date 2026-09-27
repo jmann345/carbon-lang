@@ -16,11 +16,19 @@
 // --- fail_empty.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_empty.carbon:[[@LINE+4]]:1: error: union `Empty` must declare at least one field [UnionWithoutFields]
+// CHECK:STDERR: union Empty {}
+// CHECK:STDERR: ^~~~~~~~~~~~~
+// CHECK:STDERR:
 union Empty {}
 
 // --- fail_only_fns.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_only_fns.carbon:[[@LINE+4]]:1: error: union `OnlyFns` must declare at least one field [UnionWithoutFields]
+// CHECK:STDERR: union OnlyFns {
+// CHECK:STDERR: ^~~~~~~~~~~~~~~
+// CHECK:STDERR:
 union OnlyFns {
   fn F() {}
 }

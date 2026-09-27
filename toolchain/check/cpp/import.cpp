@@ -2488,6 +2488,17 @@ static auto LookupBuiltinName(Context& context, SemIR::LocId loc_id,
       return GetOrAddInst<SemIR::UninitializedValue>(
           context, SemIR::LocId::None, {.type_id = type_id});
     }
+    if (*name == "Exception") {
+      // `Cpp.Exception` is the synthesized, file-less representation of a
+      // caught C++ exception (docs/design/error_handling.md,
+      // "`Cpp.Exception`"; fork/eh/plan.md D-EH-3): the prelude class
+      // `Core.CppCompat.Exception`, an adapter over the Itanium primary
+      // exception object pointer. `ImportNameFromCpp` reserves this name
+      // before Clang lookup, so a header's own `Exception` never reaches
+      // here.
+      return MakeCppCompatType(context, loc_id, CoreIdentifier::Exception)
+          .inst_id;
+    }
     return SemIR::InstId::None;
   }
 
@@ -2680,6 +2691,30 @@ auto ImportNameFromCpp(Context& context, SemIR::LocId loc_id,
       GetClangIdentifierInfo(context, name_id);
   if (!identifier_info) {
     return SemIR::ScopeLookupResult::MakeNotFound();
+  }
+
+  // `Exception` is a compiler-reserved name at the top level of the `Cpp`
+  // package (docs/design/error_handling.md, "`Cpp.Exception`"): the built-in
+  // type is imported unconditionally, BEFORE the macro and Clang lookups
+  // below, so a header's global `struct Exception` or `#define Exception`
+  // cannot shadow it. The colliding C++ entity is then unreachable under this
+  // name, which is reported as a warning at the use; the interop workaround
+  // is a C++-side alias in bridge code. No other builtin name needs this:
+  // `long`, `nullptr` and friends cannot be declared by a header.
+  if (IsTopCppScope(context, scope_id) &&
+      context.names().GetAsStringIfIdentifier(name_id) == "Exception") {
+    auto result =
+        ImportBuiltinNameIntoScope(context, loc_id, scope_id, name_id);
+    if (LookupMacro(context, scope_id, identifier_info) ||
+        ClangLookupName(context, scope_id, identifier_info)) {
+      CARBON_DIAGNOSTIC(
+          CppReservedNameShadowed, Warning,
+          "C++ entity `Exception` declared at global scope is not reachable "
+          "as `Cpp.Exception`, which names the Carbon built-in type; name it "
+          "through a C++-side alias in bridge code");
+      context.emitter().Emit(loc_id, CppReservedNameShadowed);
+    }
+    return result;
   }
 
   if (clang::MacroInfo* macro_info =

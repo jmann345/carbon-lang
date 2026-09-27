@@ -206,6 +206,11 @@ static auto TryMapClassType(Context& context, SemIR::ClassType class_type)
     case SemIR::RecognizedTypeInfo::CppVoidBase: {
       return ast_context.VoidTy;
     }
+    case SemIR::RecognizedTypeInfo::CppException: {
+      // TODO: Map `Cpp.Exception` to `Carbon::Exception` (F-006h,
+      // fork/eh/plan.md §1.B.5).
+      break;
+    }
     case SemIR::RecognizedTypeInfo::Optional: {
       auto args = context.inst_blocks().GetOrEmpty(type_info.args_id);
       if (args.size() == 1) {

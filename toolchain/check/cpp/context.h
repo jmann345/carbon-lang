@@ -55,6 +55,13 @@ class CppContext {
     placement_new_decl_ = decl;
   }
 
+  auto cxa_current_primary_exception_decl() const -> clang::FunctionDecl* {
+    return cxa_current_primary_exception_decl_;
+  }
+  void set_cxa_current_primary_exception_decl(clang::FunctionDecl* decl) {
+    cxa_current_primary_exception_decl_ = decl;
+  }
+
  private:
   // The C++ compilation domain.
   SemIR::CppDomain* domain_;
@@ -71,6 +78,10 @@ class CppContext {
 
   // The cached placement new function declaration.
   clang::FunctionDecl* placement_new_decl_ = nullptr;
+
+  // The cached `extern "C" void* __cxa_current_primary_exception() noexcept`
+  // declaration used by catching thunks (thunk.cpp).
+  clang::FunctionDecl* cxa_current_primary_exception_decl_ = nullptr;
 
   // Listener for Clang diagnostics while checking this Carbon context.
   std::unique_ptr<CppDiagnosticListener> diagnostic_listener_;

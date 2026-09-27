@@ -20,8 +20,9 @@ PARTIAL → DONE; header 27 DONE / 19 PARTIAL / 8 MISSING / 2 DESIGN-ONLY.
 NEW FLOOR 106 PASS / 0 / 28 SKIP over 134, 43/56 bullets. Verified
 hosted-only (R28): three autoupdate rounds (R-12 `Destroy` bound; R-3
 PadToType zero-size constant — the hosted autoupdate step now fails on
-any stack dump; clean fill), gate 36304152824, conformance
-36304154221. IN FLIGHT: W-012 if-let/while-let/let-else — implemented
+any stack dump; clean fill), gate run 36304152824, conformance run
+36304154221 (both green). IN FLIGHT: W-012 if-let/while-let/let-else —
+implemented
 on claude/carbon-fork-0-1-w012 (main checkout), review fixes landed,
 second hosted autoupdate running after two testdata authoring fixes;
 gate + conformance next (target 108/0/28 over 136 on this trunk);

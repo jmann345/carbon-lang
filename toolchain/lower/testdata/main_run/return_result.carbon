@@ -9,14 +9,6 @@
 // TIP:   bazel test //toolchain/testing:file_test --test_arg=--file_tests=toolchain/lower/testdata/main_run/return_result.carbon
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/lower/testdata/main_run/return_result.carbon
-// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
-// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
-// CHECK:STDERR:                                          ^~~~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
-// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
-// CHECK:STDERR:                                          ^~~~~~~~~~
-// CHECK:STDERR:
 
 // The `Result`-returning entry point, lowered (decision D10 of docs/design/
 // error_handling.md, "Entry point"; fork/eh/plan.md §2.A.5): `define i32

@@ -9,14 +9,6 @@
 // TIP:   bazel test //toolchain/testing:file_test --test_arg=--file_tests=toolchain/check/testdata/match/fail_error_payload_no_cascade.carbon
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/match/fail_error_payload_no_cascade.carbon
-// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
-// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
-// CHECK:STDERR:                                          ^~~~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
-// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
-// CHECK:STDERR:                                          ^~~~~~~~~~
-// CHECK:STDERR:
 
 // An errored payload element suppresses the exhaustiveness cascade (W-008
 // W8a review fix F2): the arm's condition surfaces as `ErrorInst`, so

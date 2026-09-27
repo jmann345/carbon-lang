@@ -9,14 +9,6 @@
 // TIP:   bazel test //toolchain/testing:file_test --test_arg=--file_tests=toolchain/check/testdata/match/fail_case_never_matches_after_irrefutable.carbon
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/match/fail_case_never_matches_after_irrefutable.carbon
-// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
-// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
-// CHECK:STDERR:                                          ^~~~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
-// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
-// CHECK:STDERR:                                          ^~~~~~~~~~
-// CHECK:STDERR:
 
 // Usefulness diagnostics for `case` arms after an unguarded irrefutable arm
 // (W-066): a binding root, an irrefutable `var` root, or an all-binding

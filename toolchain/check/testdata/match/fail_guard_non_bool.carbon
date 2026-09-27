@@ -9,14 +9,6 @@
 // TIP:   bazel test //toolchain/testing:file_test --test_arg=--file_tests=toolchain/check/testdata/match/fail_guard_non_bool.carbon
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/match/fail_guard_non_bool.carbon
-// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
-// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
-// CHECK:STDERR:                                          ^~~~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:71:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
-// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
-// CHECK:STDERR:                                          ^~~~~~~~~~
-// CHECK:STDERR:
 
 // A guard is a boolean condition: a guard expression that does not
 // implicitly convert to `bool` is a real conversion error at the guard

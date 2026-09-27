@@ -48,14 +48,6 @@ fn Run() -> i32 {
 }
 //@dump-sem-ir-end
 
-// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:[[@LINE+7]]:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
-// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
-// CHECK:STDERR:                                          ^~~~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:[[@LINE+3]]:42: error: cannot access member of interface `Destroy` in type `T` that does not implement that interface [MissingImplInMemberAccess]
-// CHECK:STDERR:       return ControlFlow(T, ()).Continue(self.Get());
-// CHECK:STDERR:                                          ^~~~~~~~~~
-// CHECK:STDERR:
 // --- destructure.carbon
 library "[[@TEST_NAME]]";
 

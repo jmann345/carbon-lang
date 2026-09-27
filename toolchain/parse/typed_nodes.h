@@ -747,6 +747,39 @@ struct VariablePattern {
   AnyPatternId inner;
 };
 
+// `let`-`else` nodes
+// ------------------
+
+// `let` or `var` opening a `let`-`else` declaration (re-kinded from
+// LetIntroducer/VariableIntroducer when the `else` is reached).
+using LetElseIntroducer =
+    LeafNode<NodeKind::LetElseIntroducer, Lex::TokenIndex>;
+using LetElse = LeafNode<NodeKind::LetElse, Lex::ElseTokenIndex>;
+
+// A `let`-`else` declaration: `let P = e else { <diverging block> }`. The
+// parser cannot tell statement `let` from file or class scope `let`, so the
+// node is admitted wherever a declaration is (`Decl` category, so `File`
+// and `ClassDefinition` extract it) and check rejects it outside a function
+// body; in a function body it is a statement.
+struct LetElseDecl {
+  static constexpr auto Kind = NodeKind::LetElseDecl.Define(
+      {.category = NodeCategory::Statement | NodeCategory::Decl,
+       .bracketed_by = LetElseIntroducer::Kind});
+
+  LetElseIntroducerId introducer;
+  llvm::SmallVector<AnyModifierId> modifiers;
+  // `returned var P = e else {...}`: the parser's `HandleVarAsReturned`
+  // shares `VarFinish`, so the re-kind reaches this form too; check rejects
+  // it (`ReturnedNotAllowedOnLetElse`). Cf. `VariableDecl::returned`.
+  std::optional<ReturnedModifierId> returned;
+  AnyPatternId pattern;  // a VariablePattern for the `var` spelling
+  NodeIdOneOf<LetInitializer, VariableInitializer> equals;
+  AnyExprId initializer;
+  LetElseId else_token;
+  CodeBlockId else_block;
+  Lex::TokenIndex token;  // the introducer token
+};
+
 // Statement nodes
 // ---------------
 
@@ -874,15 +907,31 @@ struct ForStatement {
   CodeBlockId body;
 };
 
+// `let`/`var` inside a pattern condition.
+using PatternConditionIntroducer =
+    LeafNode<NodeKind::PatternConditionIntroducer, Lex::TokenIndex>;
+using PatternConditionInitializer =
+    LeafNode<NodeKind::PatternConditionInitializer, Lex::EqualTokenIndex>;
+
+// `let P =` or `var P =` in front of a condition's expression, making the
+// condition a refutable pattern binding; see IfCondition.
+struct PatternConditionPrefix {
+  PatternConditionIntroducerId introducer;
+  AnyPatternId pattern;  // a VariablePattern for the `var` spelling
+  PatternConditionInitializerId equals;
+};
+
 using IfConditionStart =
     LeafNode<NodeKind::IfConditionStart, Lex::OpenParenTokenIndex>;
 
-// The condition portion of an `if` statement: `(expr)`.
+// The condition portion of an `if` statement: `(expr)` or `(let P = expr)`.
 struct IfCondition {
-  static constexpr auto Kind = NodeKind::IfCondition.Define(
-      {.bracketed_by = IfConditionStart::Kind, .child_count = 2});
+  static constexpr auto Kind =
+      NodeKind::IfCondition.Define({.bracketed_by = IfConditionStart::Kind});
 
   IfConditionStartId left_paren;
+  std::optional<PatternConditionPrefix> pattern;
+  // The boolean condition, or the initializer when `pattern` is set.
   AnyExprId condition;
   Lex::CloseParenTokenIndex token;
 };
@@ -909,12 +958,15 @@ struct IfStatement {
 using WhileConditionStart =
     LeafNode<NodeKind::WhileConditionStart, Lex::OpenParenTokenIndex>;
 
-// The condition portion of a `while` statement: `(expr)`.
+// The condition portion of a `while` statement: `(expr)` or
+// `(let P = expr)`.
 struct WhileCondition {
   static constexpr auto Kind = NodeKind::WhileCondition.Define(
-      {.bracketed_by = WhileConditionStart::Kind, .child_count = 2});
+      {.bracketed_by = WhileConditionStart::Kind});
 
   WhileConditionStartId left_paren;
+  std::optional<PatternConditionPrefix> pattern;
+  // The boolean condition, or the initializer when `pattern` is set.
   AnyExprId condition;
   Lex::CloseParenTokenIndex token;
 };

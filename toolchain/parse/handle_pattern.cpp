@@ -65,6 +65,41 @@ auto HandlePattern(Context& context) -> void {
   }
 }
 
+auto PushRootPattern(Context& context, bool in_var_pattern) -> void {
+  // A root `var` directly before `.Name`: the `VariablePattern` wraps the
+  // alternative pattern. `HandleVariablePattern` would route the `.` to an
+  // ordinary (expression) pattern, so the `var` is consumed here and the
+  // `FinishVariablePattern` state it would leave behind is pushed at the
+  // `var` token, which emits the wrapper node. A `var` nested in a `var`
+  // keeps the ordinary route, which diagnoses `NestedVar`.
+  if (!in_var_pattern && context.PositionIs(Lex::TokenKind::Var) &&
+      context.PositionIs(Lex::TokenKind::Period, Lookahead::NextToken)) {
+    auto var_token = context.Consume();
+    context.PushState(StateKind::FinishVariablePattern, var_token);
+    in_var_pattern = true;
+  }
+  // `.Name`, optionally followed by a parenthesized payload pattern list, is
+  // a choice alternative pattern. Only the leading-dot spelling at the root
+  // of the pattern is an alternative pattern (root-position-only parse
+  // gating, the S2c recorded deviation (1) in decision-log's S2c landing
+  // note); any other leading token parses as an ordinary pattern.
+  if (context.PositionIs(Lex::TokenKind::Period) &&
+      context.PositionKind(Lookahead::NextToken) ==
+          Lex::TokenKind::Identifier) {
+    context.PushStateForPattern(
+        StateKind::MatchCaseAlternativePattern, in_var_pattern,
+        /*in_unused_pattern=*/false,
+        /*in_field_shorthand_pattern=*/false, BindingContext::ExplicitParam,
+        PrecedenceGroup::ForTopLevelPattern());
+  } else {
+    context.PushStateForPattern(StateKind::Pattern, in_var_pattern,
+                                /*in_unused_pattern=*/false,
+                                /*in_field_shorthand_pattern=*/false,
+                                BindingContext::ExplicitParam,
+                                PrecedenceGroup::ForTopLevelPattern());
+  }
+}
+
 auto HandleExprPattern(Context& context) -> void {
   auto state = context.PopState();
 

@@ -36,6 +36,36 @@ auto HandleIfExprFinishThen(Context& context) -> void {
 
   context.AddNode(NodeKind::IfExprThen, state.token, state.has_error);
 
+  // The `let`-`else` ambiguity: when this `if` expression is the whole
+  // initializer of a `let`/`var` declaration and its `else` is followed by
+  // a code block, the `else` belongs to a `let`-`else` declaration, and the
+  // design requires the `if` expression to be parenthesized
+  // (fork/design-sprint/if-let.md, the initializer restriction). Diagnose
+  // that, leave the `else` unconsumed for the declaration, and return the
+  // expression with an error, so the user gets one diagnostic and a sane
+  // tree instead of a struct-literal error. A `{` followed by `.` or `}`
+  // is a struct literal (`{.a = 1}`, `{}`), so `... else {.a = 1};` keeps
+  // parsing as an if-expression; a code block cannot begin with `.`, and
+  // an empty else block is an error in check anyway.
+  if (context.PositionIs(Lex::TokenKind::Else) &&
+      context.PositionIs(Lex::TokenKind::OpenCurlyBrace,
+                         Lookahead::NextToken)) {
+    auto after_brace = context.PositionKind(static_cast<Lookahead>(2));
+    const auto& states = context.state_stack();
+    bool is_let_initializer =
+        states.size() >= 2 && states.back().kind == StateKind::IfExprFinish &&
+        (states[states.size() - 2].kind == StateKind::LetFinishAsRegular ||
+         states[states.size() - 2].kind == StateKind::VarFinish);
+    if (is_let_initializer && after_brace != Lex::TokenKind::Period &&
+        after_brace != Lex::TokenKind::CloseCurlyBrace) {
+      DiagnoseLetElseUnparenthesizedIfExpr(context);
+      // Add an invalid node to substitute for the final `Expr`.
+      context.AddInvalidParse(*context.position());
+      context.ReturnErrorOnState();
+      return;
+    }
+  }
+
   if (context.PositionIs(Lex::TokenKind::Else)) {
     context.PushState(StateKind::IfExprFinishElse);
     context.ConsumeChecked(Lex::TokenKind::Else);

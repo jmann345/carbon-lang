@@ -17,11 +17,11 @@ auto HandleLet(Context& context) -> void {
   context.PushState(state, StateKind::LetFinishAsRegular);
   context.PushState(state, StateKind::LetAfterPatternAsRegular);
 
-  context.PushStateForPattern(StateKind::Pattern, /*in_var_pattern=*/false,
-                              /*in_unused_pattern=*/false,
-                              /*in_field_shorthand_pattern=*/false,
-                              BindingContext::ExplicitParam,
-                              PrecedenceGroup::ForTopLevelPattern());
+  // A root `.Name` is a choice alternative pattern (a `let`-`else` such as
+  // `let .Some(port: i32) = e else {...}` needs it; the parser cannot know
+  // about the `else` yet, so plain `let .X = e;` parses the same way and
+  // check gates it); see `PushRootPattern`.
+  PushRootPattern(context, /*in_var_pattern=*/false);
 }
 
 auto HandleAssociatedConstant(Context& context) -> void {
@@ -118,7 +118,47 @@ static auto HandleLetFinish(Context& context, NodeKind node_kind) -> void {
   context.AddNode(node_kind, end_token, state.has_error);
 }
 
+auto DiagnoseLetElseUnparenthesizedIfExpr(Context& context) -> void {
+  CARBON_DIAGNOSTIC(LetElseUnparenthesizedIfExpr, Error,
+                    "`if` expression initializer of a `let`-`else` "
+                    "declaration must be parenthesized");
+  context.emitter().Emit(*context.position(), LetElseUnparenthesizedIfExpr);
+}
+
+auto StartLetElse(Context& context, Context::State state,
+                  NodeKind introducer_kind) -> void {
+  // `let P = e else { ... }`: a let-else declaration. Re-kind the introducer
+  // so check sees the refutable context from the start. An unparenthesized
+  // `if` expression initializer would swallow the `else`, so it is an
+  // error (fork/design-sprint/if-let.md, the initializer restriction); the
+  // check is gated on `!node_has_error` so a line `HandleIfExprFinishThen`
+  // already diagnosed gets exactly one diagnostic.
+  auto last = NodeId(context.tree().size() - 1);
+  if (context.tree().node_kind(last) == NodeKind::IfExprElse &&
+      !context.tree().node_has_error(last)) {
+    DiagnoseLetElseUnparenthesizedIfExpr(context);
+    state.has_error = true;
+  }
+  context.ReplaceIntroducerNode(state.subtree_start, introducer_kind,
+                                NodeKind::LetElseIntroducer);
+  context.AddLeafNode(NodeKind::LetElse,
+                      context.ConsumeChecked(Lex::TokenKind::Else));
+  context.PushState(state, StateKind::LetElseFinish);
+  context.PushState(StateKind::CodeBlock);
+}
+
+auto HandleLetElseFinish(Context& context) -> void {
+  auto state = context.PopState();
+  context.AddNode(NodeKind::LetElseDecl,
+                  context.tree().node_token(NodeId(state.subtree_start)),
+                  state.has_error);
+}
+
 auto HandleLetFinishAsRegular(Context& context) -> void {
+  if (context.PositionIs(Lex::TokenKind::Else)) {
+    StartLetElse(context, context.PopState(), NodeKind::LetIntroducer);
+    return;
+  }
   HandleLetFinish(context, NodeKind::LetDecl);
 }
 

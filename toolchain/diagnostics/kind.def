@@ -200,6 +200,10 @@ CARBON_DIAGNOSTIC_KIND(ExpectedInNotColon)
 CARBON_DIAGNOSTIC_KIND(ExpectedThenAfterIf)
 CARBON_DIAGNOSTIC_KIND(ExpectedElseAfterIf)
 
+// Pattern condition and let-else diagnostics.
+CARBON_DIAGNOSTIC_KIND(ExpectedPatternConditionInitializer)
+CARBON_DIAGNOSTIC_KIND(LetElseUnparenthesizedIfExpr)
+
 // Declaration diagnostics.
 CARBON_DIAGNOSTIC_KIND(ExpectedDeclName)
 CARBON_DIAGNOSTIC_KIND(ExpectedDeclNameAfterPeriod)

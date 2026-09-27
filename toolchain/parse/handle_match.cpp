@@ -155,27 +155,9 @@ auto HandleMatchCaseIntroducer(Context& context) -> void {
 
   context.AddLeafNode(NodeKind::MatchCaseIntroducer, context.Consume());
   context.PushState(state, StateKind::MatchCaseAfterPattern);
-  // `.Name`, optionally followed by a parenthesized payload pattern list, is
-  // a choice alternative pattern. Only the leading-dot spelling at the root
-  // of the case pattern is an alternative pattern (root-position-only parse
-  // gating, the S2c recorded deviation (1) in decision-log's S2c landing
-  // note); any other leading token parses as an ordinary pattern.
-  if (context.PositionIs(Lex::TokenKind::Period) &&
-      context.PositionKind(Lookahead::NextToken) ==
-          Lex::TokenKind::Identifier) {
-    context.PushStateForPattern(StateKind::MatchCaseAlternativePattern,
-                                /*in_var_pattern=*/false,
-                                /*in_unused_pattern=*/false,
-                                /*in_field_shorthand_pattern=*/false,
-                                BindingContext::ExplicitParam,
-                                PrecedenceGroup::ForTopLevelPattern());
-  } else {
-    context.PushStateForPattern(StateKind::Pattern, /*in_var_pattern=*/false,
-                                /*in_unused_pattern=*/false,
-                                /*in_field_shorthand_pattern=*/false,
-                                BindingContext::ExplicitParam,
-                                PrecedenceGroup::ForTopLevelPattern());
-  }
+  // A root `.Name` is a choice alternative pattern, a root `var .Name` a
+  // `var`-wrapped one; see `PushRootPattern`.
+  PushRootPattern(context, /*in_var_pattern=*/false);
 }
 
 auto HandleMatchCaseAlternativePattern(Context& context) -> void {
@@ -183,8 +165,8 @@ auto HandleMatchCaseAlternativePattern(Context& context) -> void {
 
   context.AddLeafNode(NodeKind::AlternativePatternStart,
                       context.ConsumeChecked(Lex::TokenKind::Period));
-  // `MatchCaseIntroducer` only enters this state with an identifier after
-  // the period.
+  // `PushRootPattern` only enters this state with an identifier after the
+  // period.
   context.AddLeafNode(NodeKind::IdentifierNameNotBeforeSignature,
                       context.ConsumeChecked(Lex::TokenKind::Identifier));
 

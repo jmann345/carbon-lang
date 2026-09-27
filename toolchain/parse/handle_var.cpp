@@ -25,11 +25,9 @@ static auto HandleVar(Context& context, StateKind finish_state_kind,
     context.AddLeafNode(NodeKind::ReturnedModifier, returned_token);
   }
 
-  context.PushStateForPattern(StateKind::Pattern, /*in_var_pattern=*/true,
-                              /*in_unused_pattern=*/false,
-                              /*in_field_shorthand_pattern=*/false,
-                              BindingContext::ExplicitParam,
-                              PrecedenceGroup::ForTopLevelPattern());
+  // A root `.Name` is a choice alternative pattern (for the `var`-`else`
+  // spelling `var .Some(v: i32) = e else {...}`); see `PushRootPattern`.
+  PushRootPattern(context, /*in_var_pattern=*/true);
 }
 
 auto HandleVarAsRegular(Context& context) -> void {
@@ -75,6 +73,12 @@ auto HandleVarAfterPattern(Context& context) -> void {
 
 auto HandleVarFinish(Context& context) -> void {
   auto state = context.PopState();
+
+  if (context.PositionIs(Lex::TokenKind::Else)) {
+    // `var P = e else { ... }`: the `var` spelling of a let-else declaration.
+    StartLetElse(context, state, NodeKind::VariableIntroducer);
+    return;
+  }
 
   auto end_token = state.token;
   if (context.PositionIs(Lex::TokenKind::Semi)) {

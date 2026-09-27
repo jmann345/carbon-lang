@@ -287,8 +287,64 @@ class Context {
       bool payload_is_irrefutable = true;
     };
 
+    // The refutable-binding driver's contract between its test pass and its
+    // bind pass (refutable_binding.h): the arm's condition and the
+    // classification of the checked pattern root. `match` reads the flags
+    // for its usefulness and coverage recording; a `let`-`else` parks one
+    // here (`let_else_test`) between its `else` and its close node.
+    struct RefutableBindingTest {
+      // The arm's bool condition (`ErrorInst` for an errored pattern). The
+      // bind lanes gate on `cond_id != SemIR::ErrorInst::InstId`.
+      SemIR::InstId cond_id;
+      // The classification, exactly the flags the `match` case arm computes.
+      // `match` feeds `is_binding_arm`, `is_irrefutable_var_arm`,
+      // `is_irrefutable_tuple_arm` and `is_irrefutable_struct_arm` into
+      // `has_irrefutable_arm`.
+      bool is_binding_arm = false;
+      // A `var` root over a wholly irrefutable subtree that is NOT a
+      // `var`-wrapped alternative root (`is_var_alternative_arm` excludes
+      // it: `IsIrrefutableMatchCasePattern` recurses through the `VarPattern`
+      // into an all-binding payload, and marking such an arm irrefutable
+      // would make a `match` exhaustive on one alternative).
+      bool is_irrefutable_var_arm = false;
+      bool is_irrefutable_tuple_arm = false;
+      bool is_alternative_payload_arm = false;
+      bool is_tuple_arm = false;
+      bool is_struct_arm = false;
+      bool is_irrefutable_struct_arm = false;
+      // A `VarPattern` root wrapping the resolved alternative's payload root
+      // (`var .Some(n: i32)`): tested through the alternative, bound through
+      // the payload field ref with on-demand storage.
+      bool is_var_alternative_arm = false;
+      // The warn predicate for the pattern-condition and `let`-`else`
+      // forms (`IrrefutablePatternAlwaysMatches`) — SEPARATE from the flags
+      // above: for an alternative root it is "the choice has a single
+      // alternative and the payload is irrefutable", which sets none of
+      // them.
+      bool is_irrefutable = false;
+      // The resolved alternative, copied AFTER a pending alternative is
+      // resolved: in `match` the case context is popped before the bind
+      // pass, so the bind pass reads this copy.
+      std::optional<Alternative> alternative;
+    };
+
+    // A root alternative pattern checked before its scrutinee (a pattern
+    // condition or `let`-`else`, whose initializer follows the pattern):
+    // resolved against the scrutinee's choice type by
+    // `ResolvePendingAlternative` when the test pass runs.
+    struct PendingAlternative {
+      SemIR::NameId name_id;
+      Parse::NodeId node_id;
+      bool has_parens;
+      SemIR::InstId root_id;  // the synthesized payload TuplePattern
+      bool payload_is_irrefutable;
+    };
+
     // The scrutinee's type, which the case pattern's root alternative
-    // pattern (if any) resolves its name against.
+    // pattern (if any) resolves its name against — or `None` while the
+    // scrutinee is not yet checked (a pattern condition or `let`-`else`
+    // checks its pattern before its initializer; a root alternative pattern
+    // is then recorded as `pending_alternative` and resolved at test time).
     SemIR::TypeId scrutinee_type_id;
     // The parse node the arm's context was pushed at — the
     // `MatchCaseIntroducer` for a case arm, or the `MatchCaseGuardIntroducer`
@@ -328,6 +384,14 @@ class Context {
     // handler chain. `None` for unguarded arms and for guarded `default`
     // arms (which keep the region lane above).
     SemIR::InstBlockId else_block_id = SemIR::InstBlockId::None;
+    // A root alternative pattern awaiting its scrutinee's type; see
+    // `scrutinee_type_id`. Consumed by the test pass.
+    std::optional<PendingAlternative> pending_alternative;
+    // The converted scrutinee and the test-pass result of a `let`-`else`,
+    // parked by `LetElse` for the bind pass at `LetElseDecl` (the else block
+    // is checked in between; the context stays pushed until then).
+    SemIR::InstId scrutinee_id = SemIR::InstId::None;
+    std::optional<RefutableBindingTest> let_else_test;
   };
   auto match_case_stack() -> llvm::SmallVector<MatchCaseContext>& {
     return match_case_stack_;

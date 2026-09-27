@@ -34,6 +34,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     -   [Pattern match control flow](#pattern-match-control-flow)
         -   [Alternatives considered](#alternatives-considered-6)
         -   [Guards](#guards)
+    -   [Refutable pattern bindings](#refutable-pattern-bindings)
     -   [Pattern matching in local variables](#pattern-matching-in-local-variables)
 -   [Evaluation order](#evaluation-order)
     -   [Alternatives considered](#alternatives-considered-7)
@@ -669,11 +670,12 @@ We will diagnose the following situations:
 
     -   If a refutable pattern appears in a context where only one pattern can
         be specified, such as a `let` or `var` declaration, and there is no
-        fallback behavior. This currently includes all pattern matching contexts
-        other than `match` statements, but the `var`/`let`-`else` feature in
-        [#1871](https://github.com/carbon-language/carbon-lang/pull/1871) would
-        introduce a second context permitting refutable matches, and overloaded
-        functions might introduce a third context.
+        fallback behavior. Refutable patterns are permitted in exactly three
+        contexts, each of which provides fallback behavior: a `match`
+        statement's `case`, a pattern condition of `if` or `while`, and a
+        `let`-`else` declaration (see
+        [Refutable pattern bindings](#refutable-pattern-bindings)). Overloaded
+        functions might introduce a further context.
 
         ```carbon
         fn F(n: i32) {
@@ -813,6 +815,101 @@ match (x) {
 
 For consistency, this facility is also available for `default` clauses, so that
 `default` remains equivalent to `case _: auto`.
+
+### Refutable pattern bindings
+
+Besides `match`, a refutable pattern may be bound in three combined
+match-and-declaration forms, each of which supplies the fallback behavior a
+refutable pattern needs (fork decision F-011, Option A of
+[fork/design-sprint/if-let.md](/fork/design-sprint/if-let.md)):
+
+-   _statement_ ::= `if` `(` (`let` | `var`) _full-pattern_ `=` _expression_ `)`
+    _block_ [`else` (_block_ | _if-statement_)]
+-   _statement_ ::= `while` `(` (`let` | `var`) _full-pattern_ `=` _expression_
+    `)` _block_
+-   _declaration_ ::= (`let` | `var`) _full-pattern_ `=` _expression_ `else`
+    _block_
+
+In each form the _expression_ is the scrutinee and the _full-pattern_ is
+matched against it exactly as a `match` `case` pattern is (the same
+conversion, evaluation-order, and guard-free rules): the pattern's bindings
+are initialized only when the pattern matches. The `var` spelling makes the
+whole pattern a `var` pattern, so its bindings name mutable storage
+initialized from the scrutinee on success. On failure, objects already
+created by `var` subpatterns are destroyed, as for any failed pattern match.
+
+The positive form is a _pattern condition_. In `if (let ...)`, success runs
+the then-block, whose scope owns the bindings; failure runs the `else` arm,
+if any, or falls through. Bindings are not visible in the `else` block, in a
+chained `else if` condition, or after the statement; using one there is an
+error. In `while (let ...)`, the match is the loop condition: the pattern is
+re-tested each iteration, its bindings are rebound in the body's scope, and
+the loop exits on the first failure.
+
+```carbon
+choice Optional(T: type) { None, Some(value: T) }
+
+fn UseOpt(opt: Optional(i32)) -> i32 {
+  // Bindings (`n`) are in scope only in the then-block.
+  if (let .Some(n: i32) = opt) {
+    return n * 2;
+  } else {
+    return 0;
+  }
+}
+
+fn Sum(v: Vector) -> f32 {
+  var total: f32 = 0.0;
+  // Re-matched each iteration; exits on the first failure.
+  while (let .Some(x: f32) = v.PopBack()) {
+    total += x;
+  }
+  return total;
+}
+
+fn Classify(pair: (i32, i32)) {
+  // Destructuring with an expression subpattern; `else if` chains fall out.
+  if (let (0, n: i32) = pair) {
+    Print("zero then {0}", n);
+  } else if (let (n: i32, 0) = pair) {
+    Print("{0} then zero", n);
+  }
+}
+```
+
+The negative form is a `let`-`else` declaration. Its `else` block must not
+complete normally: the end of the `else` block must be unreachable — every
+path through it ends in `return`, `break`, or `continue`. A nested `if`
+without an `else`, or one whose `else` completes normally, is rejected, and so
+is a call such as `Abort()` until a "noreturn" rule exists (the error-handling
+design's concern). After the declaration, the bindings are ordinary `let` or
+`var` bindings of the **enclosing** scope; inside the `else` block they are
+not yet initialized, and using one there is an error.
+
+```carbon
+fn ParsePort(s: str) -> i32 {
+  let .Some(port: i32) = ParseI32(s) else {
+    return -1;
+  }
+  // `port` is in scope here.
+  return port;
+}
+
+fn Mutate(opt: Optional(Widget)) {
+  var .Some(w: Widget) = opt else { return; }
+  w.Frob();  // `w` is mutable storage, per `var` pattern semantics.
+}
+```
+
+An _irrefutable_ pattern in any of these forms is valid but warns, keeping
+the degenerate case legal. Two spellings are reserved or restricted:
+
+-   `and`/`or` at the top level of a pattern condition's initializer is
+    reserved for a future pattern-chaining form (`if (let P = e and cond)`),
+    and is an error; parenthesize the expression to use it as the scrutinee.
+-   In a `let`-`else` declaration, the initializer must not be an
+    unparenthesized `if` expression, whose own `else` would be ambiguous with
+    the declaration's; parenthesize it.
 
 ### Pattern matching in local variables
 

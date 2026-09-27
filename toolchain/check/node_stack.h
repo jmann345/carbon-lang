@@ -430,6 +430,7 @@ class NodeStack {
       case Parse::NodeKind::IfCondition:
       case Parse::NodeKind::IfExprIf:
       case Parse::NodeKind::ImplicitParamList:
+      case Parse::NodeKind::LetElse:
       case Parse::NodeKind::MatchCase:
       case Parse::NodeKind::MatchGuardedDefault:
       case Parse::NodeKind::WhileConditionStart:
@@ -466,11 +467,13 @@ class NodeStack {
       case Parse::NodeKind::ExplicitParamListStart:
       case Parse::NodeKind::ForHeaderStart:
       case Parse::NodeKind::FunctionIntroducer:
+      case Parse::NodeKind::IfConditionStart:
       case Parse::NodeKind::IfStatementElse:
       case Parse::NodeKind::ImplIntroducer:
       case Parse::NodeKind::ImplicitParamListStart:
       case Parse::NodeKind::InterfaceIntroducer:
       case Parse::NodeKind::LambdaIntroducer:
+      case Parse::NodeKind::LetElseIntroducer:
       case Parse::NodeKind::LetInitializer:
       case Parse::NodeKind::LetIntroducer:
       case Parse::NodeKind::MatchCaseGuardIntroducer:
@@ -480,6 +483,8 @@ class NodeStack {
       case Parse::NodeKind::MatchDefaultIntroducer:
       case Parse::NodeKind::MatchHandlerStart:
       case Parse::NodeKind::NamedConstraintIntroducer:
+      case Parse::NodeKind::PatternConditionInitializer:
+      case Parse::NodeKind::PatternConditionIntroducer:
       case Parse::NodeKind::RefBindingName:
       case Parse::NodeKind::RuntimeBindingName:
       case Parse::NodeKind::ReturnStatementStart:
@@ -521,7 +526,6 @@ class NodeStack {
       case Parse::NodeKind::IdentifierNameQualifierWithParams:
       case Parse::NodeKind::IdentifierNameQualifierWithoutParams:
       case Parse::NodeKind::IdentifierPackageName:
-      case Parse::NodeKind::IfConditionStart:
       case Parse::NodeKind::ImportIntroducer:
       case Parse::NodeKind::IndexExprStart:
       case Parse::NodeKind::InvalidParseStart:

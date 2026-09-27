@@ -26,8 +26,50 @@ static auto HandleParenCondition(Context& context, NodeKind start_kind,
     // Expression parsing would treat the { as a struct, but instead assume it's
     // a code block and just emit an invalid parse.
     context.AddInvalidParse(*context.position());
+  } else if (start_kind != NodeKind::MatchConditionStart &&
+             (context.PositionIs(Lex::TokenKind::Let) ||
+              context.PositionIs(Lex::TokenKind::Var))) {
+    // A pattern condition: `(let P = e)` / `(var P = e)`, for `if` and
+    // `while` only — `match (let ...)` has no meaning and its `MatchCondition`
+    // node carries no pattern prefix, so `match` falls through to the
+    // expression path and diagnoses `let` as an expected expression. `let`
+    // and `var` never begin an expression (`var` occurs only after `form(`),
+    // so a single-token peek is unambiguous (fork/design-sprint/if-let.md,
+    // "Implementation realities").
+    auto introducer = context.Consume();
+    context.AddLeafNode(NodeKind::PatternConditionIntroducer, introducer);
+    context.PushState(StateKind::PatternConditionAfterPattern, introducer);
+    PushRootPattern(context, /*in_var_pattern=*/context.tokens().GetKind(
+                                 introducer) == Lex::TokenKind::Var);
   } else {
     context.PushState(StateKind::Expr);
+  }
+}
+
+auto HandlePatternConditionAfterPattern(Context& context) -> void {
+  auto state = context.PopState();
+  if (context.tokens().GetKind(state.token) == Lex::TokenKind::Var) {
+    // Mirror `var` declarations: the whole pattern is a `var` pattern.
+    context.AddNode(NodeKind::VariablePattern, state.token, state.has_error);
+  }
+  if (state.has_error) {
+    if (auto next = context.FindNextOf(
+            {Lex::TokenKind::Equal, Lex::TokenKind::CloseParen})) {
+      context.SkipTo(*next);
+    }
+  }
+  if (auto equals = context.ConsumeIf(Lex::TokenKind::Equal)) {
+    context.AddLeafNode(NodeKind::PatternConditionInitializer, *equals);
+    context.PushState(StateKind::Expr);
+  } else {
+    CARBON_DIAGNOSTIC(ExpectedPatternConditionInitializer, Error,
+                      "expected `=` after the pattern in a pattern condition");
+    context.emitter().Emit(*context.position(),
+                           ExpectedPatternConditionInitializer);
+    context.AddLeafNode(NodeKind::PatternConditionInitializer,
+                        *context.position(), /*has_error=*/true);
+    context.AddInvalidParse(*context.position());
+    context.ReturnErrorOnState();
   }
 }
 

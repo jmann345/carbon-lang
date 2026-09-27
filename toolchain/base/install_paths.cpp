@@ -178,6 +178,11 @@ auto InstallPaths::core_package() const -> std::filesystem::path {
   return root_ / "core";
 }
 
+auto InstallPaths::include_path() const -> std::filesystem::path {
+  // TODO: Adjust this to work equally well on Windows.
+  return root_ / "include";
+}
+
 auto InstallPaths::llvm_install_bin() const -> std::filesystem::path {
   // TODO: Adjust this to work equally well on Windows.
   return root_ / "llvm/bin";

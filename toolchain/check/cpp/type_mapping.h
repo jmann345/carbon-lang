@@ -10,6 +10,10 @@
 #include "toolchain/check/convert.h"
 #include "toolchain/sem_ir/ids.h"
 
+namespace clang {
+class ClassTemplateDecl;
+}  // namespace clang
+
 namespace Carbon::Check {
 
 // Converts a Carbon type to a corresponding C++ type. This uses the default
@@ -17,6 +21,15 @@ namespace Carbon::Check {
 // may not be the right mapping to use in a function signature. Returns a null
 // type if there is no mapping.
 auto MapToCppType(Context& context, SemIR::TypeId type_id) -> clang::QualType;
+
+// Looks up a C++ class template by name, and returns its declaration, or
+// `nullptr` if the lookup finds no class template. `name_components` is the
+// full path of the template, including any namespaces, separated into separate
+// strings. Used for the `Carbon::expected` support header's template
+// (docs/design/error_handling.md, "Exporting fallible Carbon functions").
+auto LookupCppClassTemplate(
+    Context& context, std::initializer_list<llvm::StringRef> name_components)
+    -> clang::ClassTemplateDecl*;
 
 // Invents a Clang argument expression to use in overload resolution to
 // represent the given Carbon argument instruction.

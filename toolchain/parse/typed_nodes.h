@@ -1667,6 +1667,47 @@ struct ClassDefinition {
   Lex::CloseCurlyBraceTokenIndex token;
 };
 
+// `union` declarations and definitions
+// ------------------------------------
+
+// `union`
+using UnionIntroducer =
+    LeafNode<NodeKind::UnionIntroducer, Lex::UnionTokenIndex>;
+
+// A union signature `union U`. A sibling of `ClassSignature` rather than a
+// further parameter on it: the introducer member type and `bracketed_by` are
+// what distinguish the two.
+template <const NodeKind& KindT, typename TokenKind,
+          NodeCategory::RawEnumType Category>
+struct UnionSignature {
+  static constexpr auto Kind = KindT.Define(
+      {.category = Category, .bracketed_by = UnionIntroducer::Kind});
+
+  UnionIntroducerId introducer;
+  llvm::SmallVector<AnyModifierId> modifiers;
+  DeclName name;
+  TokenKind token;
+};
+
+// `union U;`
+using UnionDecl = UnionSignature<NodeKind::UnionDecl, Lex::SemiTokenIndex,
+                                 NodeCategory::Decl>;
+// `union U {`
+using UnionDefinitionStart =
+    UnionSignature<NodeKind::UnionDefinitionStart,
+                   Lex::OpenCurlyBraceTokenIndex, NodeCategory::None>;
+
+// `union U { ... }`
+struct UnionDefinition {
+  static constexpr auto Kind = NodeKind::UnionDefinition.Define(
+      {.category = NodeCategory::Decl,
+       .bracketed_by = UnionDefinitionStart::Kind});
+
+  UnionDefinitionStartId signature;
+  llvm::SmallVector<AnyDeclId> members;
+  Lex::CloseCurlyBraceTokenIndex token;
+};
+
 // Adapter declaration
 // -------------------
 

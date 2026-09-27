@@ -228,6 +228,21 @@ class Context {
     return bind_name_map_;
   }
 
+  // The catching C++ thunk declarations built for this file, keyed by the
+  // C++ callee they wrap (fork/eh/plan.md §1.B.2). C++ declarations are
+  // per-file, so this is not a `SemIR::Function` field.
+  auto cpp_catching_thunk_decls() -> Map<SemIR::FunctionId, SemIR::InstId>& {
+    return cpp_catching_thunk_decls_;
+  }
+
+  // The results of catching C++ calls (`Core.Result(S, Cpp.Exception)` values
+  // built by `PerformCppThunkCall`), mapped to the C++ callee, so that `?` can
+  // name the callee when the enclosing function's break type rejects
+  // `Cpp.Exception`.
+  auto cpp_catching_call_results() -> Map<SemIR::InstId, SemIR::FunctionId>& {
+    return cpp_catching_call_results_;
+  }
+
   // During Choice typechecking, each alternative turns into a name binding on
   // the Choice type, but this can't be done until the full Choice type is
   // known. This represents each binding to be done at the end of checking the
@@ -833,6 +848,12 @@ class Context {
   // Map from an AnyBindingPattern inst to precomputed parts of the
   // pattern-match SemIR for it.
   Map<SemIR::InstId, BindingPatternInfo> bind_name_map_;
+
+  // See `cpp_catching_thunk_decls()`.
+  Map<SemIR::FunctionId, SemIR::InstId> cpp_catching_thunk_decls_;
+
+  // See `cpp_catching_call_results()`.
+  Map<SemIR::InstId, SemIR::FunctionId> cpp_catching_call_results_;
 
   // Each alternative in a Choice gets an entry here, they are stored in
   // declaration order. The vector is consumed and emptied at the end of the

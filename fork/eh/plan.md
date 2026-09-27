@@ -1705,3 +1705,200 @@ items 7, 9 and 16).
     overruns.
 
 Status: APPROVED FOR IMPLEMENTATION, 2026-09-27.
+
+## EH-B landed notes (2026-09-27)
+
+EH-A's landed notes are the inline "(landed 2026-09-27, EH-A: ...)" annotations
+above; EH-B's are collected here. Branch claude/carbon-fork-0-1-ehb, commits
+94b588847, c83d33051, 3eb4ed0e7, afccce55f, 973fd41f1, 90d49c24d, aa04ea7e0
+(plus two trunk merges); one PR, the §0.4 fallback split not invoked. Ledger ids
+allocated at discharge: the provisional W-080/W-081/W-082 of §0.3, §7 R-11, §8.5
+and §8.6 are **W-083** ("`Cpp.Exception` accessors and release-on-destroy"),
+**W-084** ("catching-import selection in binding/argument contexts") and
+**W-085** ("`Carbon::expected` import direction") — the ledger's max id at
+discharge was W-082 (the W-012 discharge took W-080..W-082 after W-077 took
+W-079). The provisional numbers in the sections above are left as written; this
+note is the mapping.
+
+**Deltas from the spec (each recorded with its reason in the decision-log entry
+"EH-B: catching thunks, Cpp.Exception, Carbon::expected export"):** the
+`fail_none_mode` arm is its own file,
+check/testdata/interop/cpp/exceptions/fail_catching_none_mode.carbon, because
+`EXTRA-ARGS` is file-wide (§4.B listed a subfile). §1.B.3's convergence is
+landed AS SPECIFIED — one shared `TemporaryStorage` minted before the branch,
+`InitializeExisting` in each block (consumed by an `Assign`, the `var x: T =
+init;` retargeting path of pattern_match.cpp / convert.cpp's
+`OverwriteTemporaryStorageArg`), `AddConvergenceBlockAndPush`, and the value
+read from the storage. The implementer's first landing deviated to the
+`if`-expression shape (`AddConvergenceBlockWithArgAndPush` over each arm's
+`Result` VALUE), claiming §1.B.3 had no precedent; that claim is WITHDRAWN —
+the precedent is the var-initializer retargeting path — and the deviation was
+wrong: the third hosted autoupdate (run 36308713023) crashed in lowering
+(`PHINode::setIncomingValue: All operands to PHI node must be the same type`)
+because a value of a pointer-value-repr type lowers as `ptr` while
+`FunctionContext::GetBlockArg` types the `phi` by the object type; no lower
+golden of an `if` expression over class values exists. A `Temporary` is not
+used because it consumes exactly one initializer (and owns the cleanup); the
+0.1 `Result(S, Cpp.Exception)` needs no cleanup (trivially destructible
+payloads). `cpp_catching_call_results` is `Map<InstId, FunctionId>`
+(§2.B.3 said a `Set<InstId>`) so the `?` note names the callee.
+Reference-returning callees fail closed (thunk.cpp:1148-1153: TODO plus the
+fenced fallback). The identifier suffix is `__carbon_catching_thunk`
+(thunk.cpp:651), not §1.B.2/§2.B.3's `__carbon_catching`. A fifth diagnostic,
+`InCppCatchingThunk` (kind.def:245), exists because `CARBON_DIAGNOSTIC` must be
+declared once and `InCppThunk` lives in import.cpp:2048. `RequireCompleteType`
+(thunk.cpp:1367) forces the `Result` specific's completion under the
+`CppCatchingImportPayloadNote` scope before any CFG is emitted. types.carbon
+exports `cpp/exception` alphabetically (types.carbon:10, before `cpp/int`), not
+"after `cpp/void`" (§1.B.4). The header adds `has_exception()`, `operator*` and
+`ok()` beyond D8's list, and `value()` is non-throwing by precondition. The
+catching thunk is imported through the new public `ImportCppThunkFunctionDecl`
+(import.h:93; `AddImportIRInst` + the static `ImportFunction`, nothing else) —
+the review blocker: §2.B.3's "importing the Clang thunk decl with
+`ImportFunction` exactly as import.cpp does for the fenced thunk" was
+implemented through `ImportCppFunctionDecl`, whose `IsCppThunkRequired` check on
+the thunk itself would have thunked the thunk for a `const C&` implicit object
+parameter and tripped `SetCppThunk`'s CHECK; the `member` subfiles pin it.
+Hosted-build misses (review misses per R28(d)): the `clang/Basic/TargetInfo.h`
+include for `getUserLabelPrefix()` (90d49c24d) and `LookupCppDecl` returning
+`clang::QualType()` from a `clang::Decl*` function (aa04ea7e0).
+
+**Stale citations found by the implementer (not corrected in place; recorded
+here):** the docs/design/error_handling.md line numbers cited throughout §1.B
+and §8.6 (:526-529, :674-678, :683-712, :701-706, :715-720, :734, :765-767,
+:774-779, :781) predate EH-A's amendments and are shifted — the landed anchors
+are the selection rule at :700-707 with its amendment at :709-720, the release
+clause at :778 with the D-EH-3 amendment at :786-801, and the mapping amendment
+at :837-845; §1.B.4's "export-imported from types.carbon after `cpp/void`"
+(alphabetical in fact); §4.B's `fail_none_mode` subfile (a file); §1.B.2/§2.B.3's
+identifier suffix `__carbon_catching` (`__carbon_catching_thunk`); §5.B.2's
+print format "`1,<value>` / `0,-1`" (the program prints each value on its own
+line with `Core.Print`, and the C++ oracle matches that); §2.B.5's back-quoted
+"exporting `{0}`" (the landed text is "exporting {0} to C++ requires ..." —
+`InstIdAsType` formats the type with its own back-quotes); and the `.Ok(...)`
+shorthand the plan writes in §1.B.3, §4.B and §5.B does not exist in this tree —
+constructors are spelled `Core.Result(S, E).Ok(...)` (the doc's own workaround
+line still uses the shorthand). Also §0.1 row 2 / §8.4's import.cpp:2103-2105 is
+now import.cpp:2114.
+
+**Reconciliation greps run at discharge (§8.4), on 6dda6a89d:**
+
+-   `grep -rn 'fail_unit_break_type' toolchain` → 0 hits.
+
+-   `grep -rln 'does not have language features dedicated to error handling'
+    docs fork` → fork/audit/2026-07-19-area-reports.json,
+    fork/audit/2026-07-19-synthesis.json, fork/eh/plan.md — history only (the
+    audit snapshots and this plan); the decision log no longer carries it.
+
+-   `Unsupported: fenced thunk` → import.cpp:2114 (the surviving site) plus its
+    16 golden pins in
+    check/testdata/interop/cpp/function/import/{class,struct,union}.carbon and
+    exceptions/fail_fence_thunk_unbuildable.carbon; `Unsupported: catching
+    thunk` → thunk.cpp:1241 (the new sibling) and the thunk.h:48 comment. Before
+    EH-B: 1 and 0 code sites; after: 1 and 1.
+
+-   `grep -rn '__cxa_' toolchain/check/cpp` → thunk.cpp:107 (the one synthesized
+    `__cxa_current_primary_exception` identifier; the call site uses the cached
+    decl, so there is no second string), plus comments at thunk.cpp:73, :990,
+    :997, :1033 and context.h:89. The `write` decl carries no `__cxa_` prefix,
+    as §8.4 says.
+
+-   Diagnostic-kind uniqueness: each of `InCppCatchingThunk` (kind.def:245),
+    `CppReservedNameShadowed` (:254), `CppCatchingImportPayloadNote` (:255),
+    `CppExportResultNeedsExpectedHeader` (:256) and
+    `QuestionCppCatchingImportNote` (:601) appears exactly once in kind.def and
+    has exactly one `CARBON_DIAGNOSTIC(...)` declaration
+    (`CppReservedNameShadowed`'s spans two lines at import.cpp:2721). Five
+    registrations, one more than §2.B.5's four (the `InCppCatchingThunk` delta
+    above).
+
+-   `git diff origin/trunk...HEAD --diff-filter=M -- toolchain/check/testdata
+    toolchain/lower/testdata toolchain/parse/testdata toolchain/lex/testdata
+    toolchain/driver/testdata` → EMPTY. The branch modifies no existing golden;
+    it adds six CHECK-free ones (check:
+    interop/cpp/exceptions/{catching_thunk,fail_catching,fail_catching_none_mode}.carbon,
+    interop/cpp/function/export/result_expected.carbon; lower:
+    interop/cpp/exceptions/catching_thunk.carbon,
+    interop/cpp/function/export/result_expected.carbon). The 27 lower goldens
+    the fence diagnostic moves (§6.B) are therefore NOT yet moved in the tree at
+    this commit — the hosted autoupdate fills them, and `grep -rl
+    __clang_call_terminate toolchain/lower/testdata` on 6dda6a89d lists exactly
+    the 27 files §6.B enumerates:
+    interop/cpp/class/import/{alignment,base,constructor,conversion,dynamic,method,virtual_base},
+    enum, exceptions/fenced_thunk, extern_c, function/export/{function,generic},
+    function/import/{function_decl,function_in_template,parameters,return},
+    globals, globals_carbon_defined, nullptr, operators, pointer, reference,
+    share_ast, std_initializer_list, template, thunks, void. (Landed 2026-09-27,
+    fill e247c2700, run 36310053869: THIRTY goldens moved — the 27 above plus
+    three benign fence consequences §6.B did not enumerate:
+    check/interop/cpp/function/import/thunk_ast.carbon (the AST dump now shows
+    the `CXXTryStmt`/`CXXCatchStmt` with the write call and the rethrow),
+    lower/interop/cpp/optimize/clang_no_optimize_twice.carbon
+    (`terminate.lpad`/`__clang_call_terminate` became a real landing pad with
+    `exn`/`ehselector` slots) and lower/interop/cpp/debug_info.carbon (a
+    `DILexicalBlock` for the `try`). Two negatives in the fill were wrong and
+    were fixed at the root: `fail_class_return` cascaded five monomorphization
+    errors after the intended one because `RequireCompleteType` returned TRUE
+    for the SF-6-rejected `Core.Result(Cpp.Widget, Cpp.Exception)` — the class
+    completes with an error-valued layout — so the catching call did not
+    return `ErrorInst`; the landed code classifies `S` with the check side's
+    own `IsInSliceChoicePayloadType` BEFORE forming the specific and emits the
+    Error `CppCatchingImportNonScalarSuccess` (same text as the former context
+    note; the note kind stays as the `RequireCompleteType` belt's context, and
+    that belt now also returns `ErrorInst` when `GetObjectRepr` is `ErrorInst`).
+    `fail_ctor_return` spelled the constructor call `Cpp.Widget(1)`, which this
+    tree diagnoses as `value of type type is not callable`; the tree's spelling
+    is the static-member form `Cpp.Widget.Widget(1)` (interop/cpp/class/import/
+    constructor.carbon). §4.B's `fail_class_return`/`fail_ctor_return`
+    prediction is now exactly one error each and nothing else. Fill b8abdb68a
+    (run 36310053869's successor) then failed the GATE and CONFORMANCE runs
+    36311895668 / 36311899697, both fixed at the root: (i)
+    `//toolchain/diagnostics:coverage_test` — `InCppCatchingThunk` and
+    `CppCatchingImportPayloadNote` appeared in no golden; the former is
+    replaced by the shared `NoteInCppThunk` helper (import.{h,cpp}: the one
+    `InCppThunk` site, used by the fenced and the catching build — no Clang
+    diagnostic is user-reachable from the catching body, whose call and store
+    the fenced build already accepted), the latter deleted: the up-front
+    `IsInSliceChoicePayloadType` predicate IS the specific's SF-6 rule, so the
+    completion is a `CARBON_CHECK` invariant (R17), not a diagnostic; (ii) both
+    conformance programs including the REAL `<carbon/expected.h>` crashed
+    `compile` (SIGSEGV in `CarbonExternalASTSource::FindExternalVisibleDeclsByName`
+    while parsing `Carbon::unexpected`): the `CXXConstructorName` arm did
+    `llvm::cast<clang::CXXRecordDecl>(decl_context)->getIdentifier()`, but a
+    constructor declarator inside a C++-declared class nested in `namespace
+    Carbon` sends Clang's unqualified redeclaration lookup to the NAMESPACE with
+    a constructor name (Clang's own `DeclareImplicitMemberFunctionsWithName`
+    uses `dyn_cast` there), so the opt build reinterpreted the `NamespaceDecl`
+    and read garbage; now `dyn_cast` with a "no external declarations" answer,
+    plus a null-identifier guard. Pinned by the new CHECK-free golden
+    check/interop/cpp/function/export/carbon_namespace_cpp_class.carbon
+    (inline method + constructor in a `Carbon`-nested C++ class, an exported
+    Carbon function called from the same block) and by result_expected.carbon's
+    skeletons, which now carry inline member definitions (its fill is stripped
+    for the refill). Goldens cannot include the real header: file_test's data
+    are the clang headers and min_prelude only (toolchain/testing/BUILD).)
+    Expected churn per
+    §6.B: exactly those 27 plus the six new files; any other file moving in the
+    fill is a §6 miss.
+
+-   Conformance (tree-relative, NOT locally executed — hosted-only per R28): the
+    un-SKIP is real in the tree (`grep -rl '^// SKIP' fork/conformance/programs`
+    drops from 28 files on origin/trunk to 27, none under error_handling/), and
+    the three new programs plus the differential's `.diff.cpp` are present.
+    Numbers: 112 PASS / 0 FAIL / 26 SKIP over 139, 44/56 bullets, run 36315999330; gate run
+    36315995464 green (§5.B's floor 109/0/27 over 136 was stated
+    before W-012 added one program to trunk).
+
+**Ledger (§8.5) as applied:** W-019 → `implemented`, DISCHARGED with the SF-6
+bound and residue in its notes, evidence re-pinned to the landed sites,
+blocked_by cleared; W-016 retitled "noexcept-spec fenced thunks", DISCHARGED
+(SF-1 landed; droppable under R-9), and W-020's stale blocked_by on it cleared;
+W-007 notes record the additive landing; W-059 notes gain the fence `write(2)`
+and macOS notes; W-083/W-084/W-085 filed. fork/gap-analysis.md's
+exception-interop row stays PARTIAL with the evidence rewritten; header counts
+untouched. Decision-log entry "EH-B: catching thunks, Cpp.Exception,
+Carbon::expected export (2026-09-27)". Contradiction with §8.5 recorded
+honestly: it says W-016's title becomes "noexcept-spec fenced thunks" although,
+since D-EH-5, the fenced thunk's BODY does contain a `try`/`catch` — the retitle
+is still right because the fence (what terminates) is the `noexcept` spec; the
+try/catch only adds the message.

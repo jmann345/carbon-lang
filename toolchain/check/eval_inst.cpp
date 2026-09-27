@@ -177,8 +177,19 @@ auto EvalConstantInst(Context& context, SemIR::ClassDecl inst)
           context.generics().GetSelfSpecific(class_info.generic_id)});
 }
 
-auto EvalConstantInst(Context& /*context*/, SemIR::ClassInit inst)
+auto EvalConstantInst(Context& context, SemIR::ClassInit inst)
     -> ConstantEvalResult {
+  // A union value has no constant object representation in lowering: its
+  // fields overlap, and a folded `ClassInit` becomes a `StructValue` whose
+  // lowering is an `llvm::ConstantStruct` over the class's LLVM type, which
+  // for a union is a byte array (lower/type.cpp). Union initializers are
+  // therefore always runtime stores (docs/design/unions.md, "Initialization
+  // and assignment"; fork/unions/plan.md D-UN-4).
+  if (auto class_type =
+          context.types().TryGetAs<SemIR::ClassType>(inst.type_id);
+      class_type && context.classes().Get(class_type->class_id).is_union) {
+    return ConstantEvalResult::NotConstant;
+  }
   // TODO: Add a `ClassValue` to represent a constant class object
   // representation instead of using a `StructValue`.
   return ConstantEvalResult::NewSamePhase(SemIR::StructValue{

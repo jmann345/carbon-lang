@@ -50,7 +50,11 @@ enum DeclContextKind : int8_t {
   RegularContext = 0,
   ClassContext = 1,
   InterfaceContext = 2,
-  MaxDeclContextKind = InterfaceContext,
+  // The body of a `union`: a class-shaped declaration scope whose member
+  // restrictions (docs/design/unions.md, "Union members") are enforced here
+  // by omitting the excluded introducers from its column of the table.
+  UnionContext = 3,
+  MaxDeclContextKind = UnionContext,
 };
 
 // The kind of declaration introduced by an introducer keyword.
@@ -72,6 +76,9 @@ static constexpr auto DeclIntroducers = [] {
   std::array<DeclIntroducerInfo, MaxDeclContextKind + 1> introducers[] = {
 #define CARBON_TOKEN(Name)                                \
   {{{.introducer_kind = DeclIntroducerKind::Unrecognized, \
+     .node_kind = NodeKind::InvalidParse,                 \
+     .state_kind = StateKind::Invalid},                   \
+    {.introducer_kind = DeclIntroducerKind::Unrecognized, \
      .node_kind = NodeKind::InvalidParse,                 \
      .state_kind = StateKind::Invalid},                   \
     {.introducer_kind = DeclIntroducerKind::Unrecognized, \
@@ -108,6 +115,12 @@ static constexpr auto DeclIntroducers = [] {
           .state_kind = state};
     }
   };
+  auto unset = [&](Lex::TokenKind token_kind, DeclContextKind context_kind) {
+    introducers[token_kind.AsInt()][context_kind] = {
+        .introducer_kind = DeclIntroducerKind::Unrecognized,
+        .node_kind = NodeKind::InvalidParse,
+        .state_kind = StateKind::Invalid};
+  };
 
   set(Lex::TokenKind::Adapt, NodeKind::AdaptIntroducer,
       StateKind::AdaptAfterIntroducer);
@@ -137,6 +150,8 @@ static constexpr auto DeclIntroducers = [] {
       StateKind::ObserveAfterIntroducer);
   set(Lex::TokenKind::Require, NodeKind::RequireIntroducer,
       StateKind::RequireAfterIntroducer);
+  set(Lex::TokenKind::Union, NodeKind::UnionIntroducer,
+      StateKind::TypeAfterIntroducerAsUnion);
   set_contextual(Lex::TokenKind::Let, RegularContext, NodeKind::LetIntroducer,
                  StateKind::Let);
   set_contextual(Lex::TokenKind::Let, ClassContext, NodeKind::LetIntroducer,
@@ -148,6 +163,22 @@ static constexpr auto DeclIntroducers = [] {
                  NodeKind::VariableIntroducer, StateKind::VarAsRegular);
   set_contextual(Lex::TokenKind::Var, ClassContext,
                  NodeKind::VariableIntroducer, StateKind::VarAsRegular);
+  set_contextual(Lex::TokenKind::Let, UnionContext, NodeKind::LetIntroducer,
+                 StateKind::Let);
+  set_contextual(Lex::TokenKind::Var, UnionContext,
+                 NodeKind::VariableIntroducer, StateKind::VarAsRegular);
+
+  // A union body may not contain nested types, `adapt`, or `base`
+  // declarations (docs/design/unions.md, "Union members"); everything else a
+  // class body admits stays admitted so that the check phase keeps owning
+  // those rules, exactly as for classes.
+  unset(Lex::TokenKind::Adapt, UnionContext);
+  unset(Lex::TokenKind::Base, UnionContext);
+  unset(Lex::TokenKind::Choice, UnionContext);
+  unset(Lex::TokenKind::Class, UnionContext);
+  unset(Lex::TokenKind::Constraint, UnionContext);
+  unset(Lex::TokenKind::Interface, UnionContext);
+  unset(Lex::TokenKind::Union, UnionContext);
 
   set(Lex::TokenKind::Inline, NodeKind::InlineIntroducer,
       StateKind::InlineDeclAfterIntroducer);
@@ -237,6 +268,7 @@ static auto ResolveAmbiguousTokenAsDeclaration(Context& context,
         case Lex::TokenKind::Library:
         case Lex::TokenKind::Namespace:
         case Lex::TokenKind::Require:
+        case Lex::TokenKind::Union:
         case Lex::TokenKind::Var:
 #define CARBON_PARSE_NODE_KIND(Name)
 #define CARBON_PARSE_NODE_KIND_TOKEN_MODIFIER(Name) case Lex::TokenKind::Name:
@@ -329,6 +361,10 @@ auto HandleDeclAsRegular(Context& context) -> void {
   HandleDecl(context, RegularContext);
 }
 
+auto HandleDeclAsUnion(Context& context) -> void {
+  HandleDecl(context, UnionContext);
+}
+
 static auto HandleDeclScopeLoop(Context& context, StateKind decl_state_kind)
     -> void {
   // This maintains the current state unless we're at the end of the scope.
@@ -352,6 +388,10 @@ auto HandleDeclScopeLoopAsInterface(Context& context) -> void {
 
 auto HandleDeclScopeLoopAsRegular(Context& context) -> void {
   HandleDeclScopeLoop(context, StateKind::DeclAsRegular);
+}
+
+auto HandleDeclScopeLoopAsUnion(Context& context) -> void {
+  HandleDeclScopeLoop(context, StateKind::DeclAsUnion);
 }
 
 }  // namespace Carbon::Parse

@@ -26,6 +26,8 @@ static auto HandleDeclOrDefinition(Context& context, NodeKind decl_kind,
     context.PushState(StateKind::DeclScopeLoopAsClass);
   } else if (decl_kind == NodeKind::InterfaceDecl) {
     context.PushState(StateKind::DeclScopeLoopAsInterface);
+  } else if (decl_kind == NodeKind::UnionDecl) {
+    context.PushState(StateKind::DeclScopeLoopAsUnion);
   } else {
     context.PushState(StateKind::DeclScopeLoopAsRegular);
   }
@@ -56,6 +58,12 @@ auto HandleDeclOrDefinitionAsNamedConstraint(Context& context) -> void {
                          StateKind::DeclDefinitionFinishAsNamedConstraint);
 }
 
+auto HandleDeclOrDefinitionAsUnion(Context& context) -> void {
+  HandleDeclOrDefinition(context, NodeKind::UnionDecl,
+                         NodeKind::UnionDefinitionStart,
+                         StateKind::DeclDefinitionFinishAsUnion);
+}
+
 // Handles parsing after the declaration scope of a type.
 static auto HandleDeclDefinitionFinish(Context& context,
                                        NodeKind definition_kind) -> void {
@@ -78,6 +86,10 @@ auto HandleDeclDefinitionFinishAsInterface(Context& context) -> void {
 
 auto HandleDeclDefinitionFinishAsNamedConstraint(Context& context) -> void {
   HandleDeclDefinitionFinish(context, NodeKind::NamedConstraintDefinition);
+}
+
+auto HandleDeclDefinitionFinishAsUnion(Context& context) -> void {
+  HandleDeclDefinitionFinish(context, NodeKind::UnionDefinition);
 }
 
 }  // namespace Carbon::Parse

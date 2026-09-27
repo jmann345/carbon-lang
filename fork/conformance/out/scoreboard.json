@@ -1,15 +1,15 @@
 {
-  "generated": "2026-09-27T09:11:29.835269+00:00",
+  "generated": "2026-09-27T12:30:10.272240+00:00",
   "toolchain": "/home/runner/work/_temp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 23.4,
+  "elapsed_seconds": 51.1,
   "totals": {
-    "PASS": 108,
+    "PASS": 114,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
     "OUTPUT-MISMATCH": 0,
     "DIFF-MISMATCH": 0,
-    "SKIP": 27
+    "SKIP": 25
   },
   "programs": [
     {
@@ -267,10 +267,24 @@
       "differential": false
     },
     {
+      "path": "error_handling/cpp_exception_catch_diff.carbon",
+      "bullet": "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)",
+      "status": "PASS",
+      "detail": "",
+      "differential": true
+    },
+    {
       "path": "error_handling/cpp_exception_interop.carbon",
       "bullet": "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)",
-      "status": "SKIP",
-      "detail": "MISSING (B3) \u2014 this body is the catching-import stage: designed FINAL as B3 in docs/design/error_handling.md#implementation-staging (decision F-006), but no `Core.Result` type exists under core/prelude/ (grep Result there hits only the arithmetic interfaces' `.Result` associated constants), toolchain/check/cpp/thunk.cpp has no catching/exception-capturing thunk path (its only exception-spec use is EST_BasicNoexcept on the placement-new helper, thunk.cpp:37), and nothing synthesizes `Cpp.Exception` anywhere in toolchain/check/cpp/. Un-SKIP (and uncomment the body) when B3's catching thunks + Core.Result + Cpp.Exception land. The B0 boundary contract (--cpp-exceptions flag, none mode, auto->catch, fenced terminate) is arbitrated by the sibling cpp_exceptions_*.carbon programs, not here.",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "error_handling/cpp_exception_rethrow_export.carbon",
+      "bullet": "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)",
+      "status": "PASS",
+      "detail": "",
       "differential": false
     },
     {
@@ -296,6 +310,13 @@
     },
     {
       "path": "error_handling/cpp_exceptions_none_mode.carbon",
+      "bullet": "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "error_handling/cpp_expected_export.carbon",
       "bullet": "Error handling: C++ exception interop (-fno-except config, calling throwing C++, exporting Carbon errors as std::expected/exceptions)",
       "status": "PASS",
       "detail": "",
@@ -941,9 +962,16 @@
     {
       "path": "types/union_basic.carbon",
       "bullet": "Type system: Unions (un-discriminated) + C++ union mapping",
-      "status": "SKIP",
-      "detail": "un-discriminated unions are MISSING at every layer \u2014 no `union` token in toolchain/lex/token_kind.def (verified by grep), no parse/check support, and no design doc; C++ unions import only as opaque interop types, so neither a native Carbon union nor member access on an imported C++ union can be written today. Un-SKIP (and uncomment the body) when a union design + implementation land.",
+      "status": "PASS",
+      "detail": "",
       "differential": false
+    },
+    {
+      "path": "types/union_pun_diff.carbon",
+      "bullet": "Type system: Unions (un-discriminated) + C++ union mapping",
+      "status": "PASS",
+      "detail": "",
+      "differential": true
     },
     {
       "path": "types/virtual_dispatch.carbon",
@@ -1079,10 +1107,11 @@
       ]
     },
     "Type system: Unions (un-discriminated) + C++ union mapping": {
-      "status": "SKIP",
-      "gap_status": "DESIGN-ONLY",
+      "status": "PASS",
+      "gap_status": "PARTIAL",
       "programs": [
-        "types/union_basic.carbon"
+        "types/union_basic.carbon",
+        "types/union_pun_diff.carbon"
       ]
     },
     "Generics: generic functions and types": {
@@ -1278,11 +1307,14 @@
       "status": "PASS",
       "gap_status": "PARTIAL",
       "programs": [
+        "error_handling/cpp_exception_catch_diff.carbon",
         "error_handling/cpp_exception_interop.carbon",
+        "error_handling/cpp_exception_rethrow_export.carbon",
         "error_handling/cpp_exceptions_auto_catch.carbon",
         "error_handling/cpp_exceptions_fence_terminate.carbon",
         "error_handling/cpp_exceptions_fence_value_diff.carbon",
-        "error_handling/cpp_exceptions_none_mode.carbon"
+        "error_handling/cpp_exceptions_none_mode.carbon",
+        "error_handling/cpp_expected_export.carbon"
       ]
     },
     "Stdlib: fundamental types (bool, iN, fN)": {

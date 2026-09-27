@@ -631,6 +631,12 @@ auto LookupCppImpl(Context& context, SemIR::LocId loc_id,
     case SemIR::CoreInterface::FloatFitsIn:
       return SemIR::InstId::None;
 
+    // `UnformedInit` is synthesized only for native `union`s
+    // (`LookupCustomWitness`); an imported C++ class reaches
+    // `DefaultOrUnformed` through `Default` (its default constructor).
+    case SemIR::CoreInterface::UnformedInit:
+      return SemIR::InstId::None;
+
     case SemIR::CoreInterface::Unknown:
       CARBON_FATAL("unexpected CoreInterface `{0}`", core_interface);
   }

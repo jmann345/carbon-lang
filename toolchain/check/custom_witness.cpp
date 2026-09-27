@@ -312,11 +312,13 @@ static auto CanDestroyType(
     }
 
     case CARBON_KIND(SemIR::CustomLayoutType custom_layout_type): {
-      // A native custom-layout type today is the payload region of a
+      // A native custom-layout type is the payload region of a
       // payload-carrying choice, whose fields are restricted to trivially
-      // destructible payload tuples at completion time; mirror the struct
-      // handling over the overlapping fields. (C++ imported classes don't get
-      // here: `CanDestroyClass` returns early for C++ scopes.)
+      // destructible payload tuples at completion time, or the object
+      // representation of a native `union`, whose fields are restricted to
+      // trivially destructible and copyable types; mirror the struct handling
+      // over the overlapping fields. (C++ imported classes don't get here:
+      // `CanDestroyClass` returns early for C++ scopes.)
       auto fields =
           context.struct_type_fields().Get(custom_layout_type.fields_id);
       if (fields.empty()) {
@@ -371,21 +373,22 @@ static auto CanDestroyType(
   }
 }
 
-// Returns true if the interface is `Core.Destroy` in the given (possibly
-// imported) IR: the read-only, per-file mirror of `GetCoreInterface` — the
-// `core_interface` tag is assigned only to interfaces declared in package
-// Core (handle_interface.cpp) and propagates through import
-// (import_ref.cpp), and the Core-package parent-scope and identifier checks
-// match `GetCoreInterface`'s.
-static auto IsCoreDestroyInterface(const SemIR::File& sem_ir,
-                                   SemIR::InterfaceId interface_id) -> bool {
+// Returns true if the interface is the given core interface (such as
+// `Core.Destroy`) in the given (possibly imported) IR: the read-only, per-file
+// mirror of `GetCoreInterface` — the `core_interface` tag is assigned only to
+// interfaces declared in package Core (handle_interface.cpp) and propagates
+// through import (import_ref.cpp), and the Core-package parent-scope and
+// identifier checks match `GetCoreInterface`'s.
+static auto IsCoreInterfaceInFile(const SemIR::File& sem_ir,
+                                  SemIR::InterfaceId interface_id,
+                                  SemIR::CoreInterface core_interface) -> bool {
   if (!interface_id.has_value()) {
     // An error occurred when type-checking the impl (the same skip
     // `ImportImplFilter::IsRelevantImpl` applies).
     return false;
   }
   const auto& interface = sem_ir.interfaces().Get(interface_id);
-  return interface.core_interface == SemIR::CoreInterface::Destroy &&
+  return interface.core_interface == core_interface &&
          sem_ir.name_scopes().IsCorePackage(interface.parent_scope_id) &&
          interface.name_id.AsIdentifierId().has_value();
 }
@@ -399,7 +402,7 @@ static auto IsCoreDestroyInterface(const SemIR::File& sem_ir,
 // `ImportImpl` and then matches them through the local store's canonical
 // constants; this scan needs only existence — no witness — so it matches
 // each imported store in place and materializes nothing:
-//   - interface identity across IRs by `IsCoreDestroyInterface` above;
+//   - interface identity across IRs by `IsCoreInterfaceInFile` above;
 //   - self identity across IRs by canonical defining declaration: two class
 //     types in different IRs denote the same class iff their defining decls
 //     canonicalize to the same (file, inst) pair (`GetCanonicalFileAndInstId`,
@@ -455,7 +458,8 @@ static auto HasUserDestroyImpl(Context& context, const SemIR::Class& class_info,
     }
     const auto& import_sem_ir = *import_ir.sem_ir;
     for (auto [_, impl] : import_sem_ir.impls().enumerate()) {
-      if (!IsCoreDestroyInterface(import_sem_ir, impl.interface.interface_id)) {
+      if (!IsCoreInterfaceInFile(import_sem_ir, impl.interface.interface_id,
+                                 SemIR::CoreInterface::Destroy)) {
         continue;
       }
       auto impl_self_const_id =
@@ -490,6 +494,188 @@ static auto HasUserDestroyImpl(Context& context, const SemIR::Class& class_info,
           class_canonical) {
         return true;
       }
+    }
+  }
+  return false;
+}
+
+// Returns true if an `impl` of `Core.Copy` declared outside package `Core`
+// covers the given class: an impl whose self is a `ClassType` of the same
+// class — concrete, or a symbolic specific of it (`impl forall [T] MyBox(T)
+// as Copy` covers a `MyBox(i32)` field). Class-keyed, deliberately NOT
+// `HasUserDestroyImpl`'s symbolic-self shortcut: the prelude declares several
+// blanket `Core.Copy` impls (`T*`, `const T`, `Int(N)`, `Optional(T)`, ...),
+// so "any symbolic-self impl in scope" would disqualify every class.
+//
+// The package of the DECLARING file is the trust boundary (docs/design/
+// unions.md, "Trivially destructible and trivially copyable types", 0.1
+// note): the prelude's `Copy` impls over trivially destructible shapes are
+// bitwise by construction, so only impls declared by the program count as
+// user-provided, bodied or builtin alike. Walks the same two impl populations
+// as `HasUserDestroyImpl`: the local store, where an impl that import
+// materialized here (its first declaration has an import source; its
+// `parent_scope_id` is `None`, so a scope-based test would misclassify it)
+// is skipped because its defining file classifies it in the imported leg; and
+// every imported IR's store, matched in place by canonical defining
+// declaration.
+static auto HasUserCopyImplOutsideCore(Context& context,
+                                       SemIR::ClassType class_type) -> bool {
+  const auto& class_info = context.classes().Get(class_type.class_id);
+
+  // The local store: impls declared in this file. Nothing declared in package
+  // `Core` counts.
+  if (context.sem_ir().package_id() != PackageNameId::Core) {
+    for (auto [_, impl] : context.impls().enumerate()) {
+      if (!impl.interface.interface_id.has_value() ||
+          GetCoreInterface(context, impl.interface.interface_id) !=
+              SemIR::CoreInterface::Copy) {
+        continue;
+      }
+      if (context.insts().GetImportSource(impl.first_decl_id()).has_value()) {
+        // Materialized from an import; classified by its defining file below.
+        continue;
+      }
+      auto impl_self_const_id = context.constant_values().Get(impl.self_id);
+      if (!impl_self_const_id.has_value()) {
+        continue;
+      }
+      auto impl_self_class_type = context.insts().TryGetAs<SemIR::ClassType>(
+          context.constant_values().GetInstId(impl_self_const_id));
+      if (impl_self_class_type &&
+          impl_self_class_type->class_id == class_type.class_id) {
+        return true;
+      }
+    }
+  }
+
+  // The imported stores, matched in place. The queried class's canonical
+  // identity is its defining file and declaration.
+  if (!class_info.first_owning_decl_id.has_value()) {
+    // A class without an owning declaration cannot be named by an imported
+    // impl.
+    return false;
+  }
+  auto class_canonical = SemIR::GetCanonicalFileAndInstId(
+      &context.sem_ir(), class_info.first_owning_decl_id);
+  for (const auto& import_ir : context.import_irs().values()) {
+    // Skips the `None` and `Cpp` slots; C++ code cannot declare a
+    // `Core.Copy` impl.
+    if (import_ir.sem_ir == nullptr) {
+      continue;
+    }
+    const auto& import_sem_ir = *import_ir.sem_ir;
+    if (import_sem_ir.package_id() == PackageNameId::Core) {
+      // The prelude's impls are inside the trust boundary.
+      continue;
+    }
+    for (auto [_, impl] : import_sem_ir.impls().enumerate()) {
+      if (!IsCoreInterfaceInFile(import_sem_ir, impl.interface.interface_id,
+                                 SemIR::CoreInterface::Copy)) {
+        continue;
+      }
+      auto impl_self_const_id =
+          import_sem_ir.constant_values().Get(impl.self_id);
+      if (!impl_self_const_id.has_value()) {
+        continue;
+      }
+      auto self_class_type = import_sem_ir.insts().TryGetAs<SemIR::ClassType>(
+          import_sem_ir.constant_values().GetInstId(impl_self_const_id));
+      if (!self_class_type) {
+        continue;
+      }
+      const auto& impl_class =
+          import_sem_ir.classes().Get(self_class_type->class_id);
+      if (!impl_class.first_owning_decl_id.has_value()) {
+        continue;
+      }
+      if (SemIR::GetCanonicalFileAndInstId(&import_sem_ir,
+                                           impl_class.first_owning_decl_id) ==
+          class_canonical) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+auto HasNonTrivialUserCopyImpl(Context& context, SemIR::TypeId type_id)
+    -> bool {
+  // Iterative worklist, mirroring `IsTriviallyDestructible`'s walk through
+  // arrays, adapters, object representations and aggregates; a class found
+  // anywhere in the shape is checked for a user `Core.Copy` impl.
+  llvm::SmallVector<SemIR::TypeId> worklist = {type_id};
+  while (!worklist.empty()) {
+    auto current_id = worklist.pop_back_val();
+    auto inst = context.types().GetAsInst(current_id);
+    CARBON_KIND_SWITCH(inst) {
+      case CARBON_KIND(SemIR::ArrayType array_type): {
+        worklist.push_back(context.types().GetTypeIdForTypeInstId(
+            array_type.element_type_inst_id));
+        continue;
+      }
+
+      case CARBON_KIND(SemIR::ClassType class_type): {
+        if (HasUserCopyImplOutsideCore(context, class_type)) {
+          return true;
+        }
+        const auto& class_info = context.classes().Get(class_type.class_id);
+        auto object_repr_id =
+            class_info.GetAdaptedType(context.sem_ir(), class_type.specific_id);
+        if (!object_repr_id.has_value()) {
+          object_repr_id = class_info.GetObjectRepr(context.sem_ir(),
+                                                    class_type.specific_id);
+        }
+        if (!object_repr_id.has_value() || !object_repr_id.is_concrete()) {
+          // Not a shape this walk knows; the destructible half rejects it.
+          continue;
+        }
+        worklist.push_back(object_repr_id);
+        continue;
+      }
+
+      case CARBON_KIND(SemIR::ConstType const_type): {
+        worklist.push_back(
+            context.types().GetTypeIdForTypeInstId(const_type.inner_id));
+        continue;
+      }
+
+      case CARBON_KIND(SemIR::MaybeUnformedType maybe_unformed_type): {
+        worklist.push_back(context.types().GetTypeIdForTypeInstId(
+            maybe_unformed_type.inner_id));
+        continue;
+      }
+
+      case CARBON_KIND(SemIR::StructType struct_type): {
+        for (const auto& field :
+             context.struct_type_fields().Get(struct_type.fields_id)) {
+          worklist.push_back(
+              context.types().GetTypeIdForTypeInstId(field.type_inst_id));
+        }
+        continue;
+      }
+
+      case CARBON_KIND(SemIR::CustomLayoutType custom_layout_type): {
+        for (const auto& field :
+             context.struct_type_fields().Get(custom_layout_type.fields_id)) {
+          worklist.push_back(
+              context.types().GetTypeIdForTypeInstId(field.type_inst_id));
+        }
+        continue;
+      }
+
+      case CARBON_KIND(SemIR::TupleType tuple_type): {
+        llvm::ArrayRef<SemIR::InstId> element_inst_ids =
+            context.inst_blocks().Get(tuple_type.type_elements_id);
+        for (auto element_type_id :
+             context.types().GetBlockAsTypeIds(element_inst_ids)) {
+          worklist.push_back(element_type_id);
+        }
+        continue;
+      }
+
+      default:
+        // Scalars, pointers and everything else contain no class.
+        continue;
     }
   }
   return false;
@@ -581,6 +767,17 @@ auto IsTriviallyDestructible(Context& context, SemIR::TypeId type_id) -> bool {
       case CARBON_KIND(SemIR::StructType struct_type): {
         for (const auto& field :
              context.struct_type_fields().Get(struct_type.fields_id)) {
+          worklist.push_back(
+              context.types().GetTypeIdForTypeInstId(field.type_inst_id));
+        }
+        continue;
+      }
+
+      case CARBON_KIND(SemIR::CustomLayoutType custom_layout_type): {
+        // The object representation of a native `union` (or a choice payload
+        // region): trivially destructible iff every overlapping field is.
+        for (const auto& field :
+             context.struct_type_fields().Get(custom_layout_type.fields_id)) {
           worklist.push_back(
               context.types().GetTypeIdForTypeInstId(field.type_inst_id));
         }
@@ -906,10 +1103,21 @@ auto BuildPrimitiveCopyWitness(
                             query_specific_interface_id, {op_id});
 }
 
-// Returns the custom witness to use for copying a choice type, or nullopt
-// for every non-choice self so that classes, tuples, and primitives keep
-// their landed behavior. See `LookupCustomWitness`. Mirrors
+// Returns the custom witness to use for copying a choice type or a native
+// `union`, or nullopt for every other self so that classes, tuples, and
+// primitives keep their landed behavior. See `LookupCustomWitness`. Mirrors
 // `LookupDestroyWitness` below.
+//
+// Unions (docs/design/unions.md, "Initialization and assignment"): because
+// every field is trivially copyable, "every union is itself trivially
+// copyable: copy initialization and assignment ... copy the union's full
+// object representation — all `size(U)` bytes", the same per-field triviality
+// argument as for choices. Only NATIVE unions take this witness: an imported
+// C++ union keeps Clang's determination and copies through the C++ copy
+// constructor (cpp/impl_lookup.cpp `BuildCopyWitness`), where a non-trivial
+// member deletes it. As for choices, this witness shadows a user `impl as
+// Core.Copy` written inside a union body (the custom-witness dispatch
+// precedes candidate-impl iteration).
 //
 // Fork (W-075, fork/w075/plan.md §2): every definable choice is trivially
 // copyable — the SF-6 slice-1 fence rejects any payload "that is not
@@ -941,7 +1149,14 @@ static auto LookupChoiceCopyWitness(
   auto self_inst_id = context.constant_values().GetInstId(
       GetCanonicalFacetOrTypeValue(context, query_self_const_id));
   auto class_type = context.insts().TryGetAs<SemIR::ClassType>(self_inst_id);
-  if (!class_type || !context.classes().Get(class_type->class_id).is_choice) {
+  if (!class_type) {
+    return std::nullopt;
+  }
+  const auto& class_info = context.classes().Get(class_type->class_id);
+  bool is_native_union =
+      class_info.is_union && class_info.scope_id.has_value() &&
+      !context.name_scopes().Get(class_info.scope_id).is_cpp_scope();
+  if (!class_info.is_choice && !is_native_union) {
     return std::nullopt;
   }
 
@@ -965,6 +1180,50 @@ static auto LookupChoiceCopyWitness(
   return BuildPrimitiveCopyWitness(context, loc_id, parent_scope_id,
                                    query_self_const_id,
                                    query_specific_interface_id);
+}
+
+// Returns the custom witness that a native `union` implements
+// `Core.UnformedInit`, or nullopt for every other self. See
+// `LookupCustomWitness`. Mirrors `LookupChoiceCopyWitness` above.
+//
+// A union variable declared without an initializer is in the unformed state
+// (docs/design/unions.md, "Initialization and assignment"): every union is
+// trivially destructible and trivially copyable under the 0.1 field rules, so
+// any in-memory representation satisfies the unformed-state requirements,
+// exactly as for `i32`. `UnformedInit` declares no associated entities, so
+// the witness table is empty; the prelude's blanket `impl forall [T:
+// UnformedInit] T as DefaultOrUnformed` then makes `var u: U;` a
+// `make_uninitialized` call. A synthesized `Default` witness would instead
+// declare the variable formed, contradicting the design. Imported C++ unions
+// are unaffected: they reach `DefaultOrUnformed` through `Default` (the C++
+// default constructor, cpp/impl_lookup.cpp).
+static auto LookupUnionUnformedInitWitness(
+    Context& context, SemIR::LocId loc_id,
+    SemIR::ConstantId query_self_const_id,
+    SemIR::SpecificInterfaceId query_specific_interface_id, bool build_witness)
+    -> std::optional<SemIR::InstId> {
+  auto self_inst_id = context.constant_values().GetInstId(
+      GetCanonicalFacetOrTypeValue(context, query_self_const_id));
+  auto class_type = context.insts().TryGetAs<SemIR::ClassType>(self_inst_id);
+  if (!class_type) {
+    return std::nullopt;
+  }
+  const auto& class_info = context.classes().Get(class_type->class_id);
+  if (!class_info.is_union || !class_info.scope_id.has_value() ||
+      context.name_scopes().Get(class_info.scope_id).is_cpp_scope()) {
+    return std::nullopt;
+  }
+
+  if (!build_witness || query_self_const_id.is_symbolic()) {
+    // The union permits unformed initialization, but we shouldn't make a
+    // witness right now; a symbolic self (unreachable for a 0.1 union, which
+    // is never generic) would defer to each concrete monomorphization, the
+    // `LookupChoiceCopyWitness` posture.
+    return SemIR::InstId::None;
+  }
+
+  return BuildCustomWitness(context, loc_id, query_self_const_id,
+                            query_specific_interface_id, /*values=*/{});
 }
 
 // Builds and returns a custom witness that performs the specified kind of
@@ -1200,12 +1459,20 @@ auto LookupCustomWitness(Context& context, SemIR::LocId loc_id,
                          bool build_witness) -> std::optional<SemIR::InstId> {
   switch (core_interface) {
     case SemIR::CoreInterface::Copy:
-      // Fork (W-075): choice types take a synthesized primitive-copy
-      // witness; every other self answers nullopt, leaving the TODO below in
-      // place for upstream's own copy/move/conversion work.
+      // Fork (W-075, W-009): choice types and native unions take a
+      // synthesized primitive-copy witness; every other self answers nullopt,
+      // leaving the TODO below in place for upstream's own
+      // copy/move/conversion work.
       return LookupChoiceCopyWitness(context, loc_id, query_self_const_id,
                                      query_specific_interface_id,
                                      build_witness);
+    case SemIR::CoreInterface::UnformedInit:
+      // Fork (W-009): native unions implement `UnformedInit` through an
+      // empty custom witness; every other self answers nullopt, so the
+      // prelude's own `UnformedInit` impls keep their landed behavior.
+      return LookupUnionUnformedInitWitness(
+          context, loc_id, query_self_const_id, query_specific_interface_id,
+          build_witness);
     case SemIR::CoreInterface::Destroy:
       return LookupDestroyWitness(context, loc_id, query_self_const_id,
                                   query_specific_interface_id, build_witness);

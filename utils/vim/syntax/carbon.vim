@@ -38,6 +38,7 @@ syn keyword carbonClassMethodDeclarationMod private virtual abstract protected i
 syn keyword carbonAliasDeclaration alias nextgroup=carbonNominalType skipwhite
 syn keyword carbonInterfaceDeclaration interface nextgroup=carbonNominalType skipwhite
 syn keyword carbonChoiceDeclaration choice nextgroup=carbonNominalType skipwhite
+syn keyword carbonUnionDeclaration union nextgroup=carbonNominalType skipwhite
 syn keyword carbonPackageDeclaration package nextgroup=carbonIdentifier skipwhite
 syn keyword carbonLibraryDeclaration library nextgroup=carbonStringLiteral skipwhite
 
@@ -91,6 +92,7 @@ hi def link carbonClassMethodDeclarationMod carbonDeclaration
 hi def link carbonAliasDeclaration carbonDeclaration
 hi def link carbonInterfaceDeclaration carbonDeclaration
 hi def link carbonChoiceDeclaration carbonDeclaration
+hi def link carbonUnionDeclaration carbonDeclaration
 hi def link carbonPackageDeclaration Include
 hi def link carbonLibraryDeclaration Include
 hi def link carbonDeclaration Structure

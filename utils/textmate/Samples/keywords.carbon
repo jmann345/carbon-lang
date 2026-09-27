@@ -14,7 +14,7 @@ default =>
 
 // --- introducer-keywords
 
-adapt alias choice class constraint fn import interface let library namespace var
+adapt alias choice class constraint fn import interface let library namespace union var
 base
 export
 impl

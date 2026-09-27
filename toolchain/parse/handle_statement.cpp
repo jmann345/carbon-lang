@@ -69,6 +69,7 @@ auto HandleStatement(Context& context) -> void {
     case Lex::TokenKind::Observe:
     // We intentionally don't handle Package here, because `package.` can be
     // used at the start of an expression, and it's not worth disambiguating it.
+    case Lex::TokenKind::Union:
     case Lex::TokenKind::Var: {
       context.PushState(StateKind::DeclAsRegular);
       break;

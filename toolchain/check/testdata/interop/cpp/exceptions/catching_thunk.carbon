@@ -17,8 +17,11 @@
 // CATCHING thunk — a second, distinctly named thunk (`__carbon_catching_thunk`,
 // asm label `.carbon_thunk_catch`) built lazily at the first such call — and
 // the call has type `Core.Result(S, Cpp.Exception)`. The SemIR shows the
-// return-slot and error temporaries, the `i32` discriminant call, the `EqWith`
-// test against 0, the two alternative-constructor calls and the convergence.
+// return-slot and error temporaries, ONE `temporary_storage` of the `Result`
+// type minted before the branch, the `i32` discriminant call, the `EqWith`
+// test against 0, each block's alternative-constructor `call` initializing
+// that storage in place (`assign`), the convergence, and the value read from
+// the storage after it.
 // The FENCED thunk is built eagerly at import, so a callee used both ways has
 // BOTH thunk declarations in `imports`. The full prelude is needed for
 // `Core.Result`.

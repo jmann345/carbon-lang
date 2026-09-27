@@ -17,7 +17,9 @@
 // returns the discriminant 1, while the success path stores the return value
 // through the return out-pointer and returns 0; the Carbon caller compares
 // the discriminant with 0 (`icmp`/`br`) and constructs the `Ok` or `Err`
-// alternative of `Core.Result(i32, Cpp.Exception)` in each block. `G` is the
+// alternative of `Core.Result(i32, Cpp.Exception)` in each block into ONE
+// shared `alloca` (no `phi`: both blocks store into the same slot, and the
+// convergence block reads it). `G` is the
 // `void` callee shape: no return out-pointer. `M` is the member-callee shape:
 // the catching thunk takes the object (`const C&` / `C&`) as its first
 // parameter and calls the method on it inside the `try`.

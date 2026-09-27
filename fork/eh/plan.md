@@ -1724,10 +1724,23 @@ note is the mapping.
 "EH-B: catching thunks, Cpp.Exception, Carbon::expected export"):** the
 `fail_none_mode` arm is its own file,
 check/testdata/interop/cpp/exceptions/fail_catching_none_mode.carbon, because
-`EXTRA-ARGS` is file-wide (§4.B listed a subfile). §1.B.3's convergence is the
-`if`-expression shape — `AddConvergenceBlockWithArgAndPush` with each arm's
-`Result` value as the block argument — not `InitializeExisting` into a shared
-`TemporaryStorage`. `cpp_catching_call_results` is `Map<InstId, FunctionId>`
+`EXTRA-ARGS` is file-wide (§4.B listed a subfile). §1.B.3's convergence is
+landed AS SPECIFIED — one shared `TemporaryStorage` minted before the branch,
+`InitializeExisting` in each block (consumed by an `Assign`, the `var x: T =
+init;` retargeting path of pattern_match.cpp / convert.cpp's
+`OverwriteTemporaryStorageArg`), `AddConvergenceBlockAndPush`, and the value
+read from the storage. The implementer's first landing deviated to the
+`if`-expression shape (`AddConvergenceBlockWithArgAndPush` over each arm's
+`Result` VALUE), claiming §1.B.3 had no precedent; that claim is WITHDRAWN —
+the precedent is the var-initializer retargeting path — and the deviation was
+wrong: the third hosted autoupdate (run 36308713023) crashed in lowering
+(`PHINode::setIncomingValue: All operands to PHI node must be the same type`)
+because a value of a pointer-value-repr type lowers as `ptr` while
+`FunctionContext::GetBlockArg` types the `phi` by the object type; no lower
+golden of an `if` expression over class values exists. A `Temporary` is not
+used because it consumes exactly one initializer (and owns the cleanup); the
+0.1 `Result(S, Cpp.Exception)` needs no cleanup (trivially destructible
+payloads). `cpp_catching_call_results` is `Map<InstId, FunctionId>`
 (§2.B.3 said a `Set<InstId>`) so the `?` note names the callee.
 Reference-returning callees fail closed (thunk.cpp:1148-1153: TODO plus the
 fenced fallback). The identifier suffix is `__carbon_catching_thunk`
@@ -1757,8 +1770,7 @@ and §8.6 (:526-529, :674-678, :683-712, :701-706, :715-720, :734, :765-767,
 are the selection rule at :700-707 with its amendment at :709-720, the release
 clause at :778 with the D-EH-3 amendment at :786-801, and the mapping amendment
 at :837-845; §1.B.4's "export-imported from types.carbon after `cpp/void`"
-(alphabetical in fact); §4.B's `fail_none_mode` subfile (a file); §1.B.3's
-shared-storage convergence (the `if`-expression shape); §1.B.2/§2.B.3's
+(alphabetical in fact); §4.B's `fail_none_mode` subfile (a file); §1.B.2/§2.B.3's
 identifier suffix `__carbon_catching` (`__carbon_catching_thunk`); §5.B.2's
 print format "`1,<value>` / `0,-1`" (the program prints each value on its own
 line with `Core.Print`, and the C++ oracle matches that); §2.B.5's back-quoted

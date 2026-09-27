@@ -1482,6 +1482,35 @@ static auto PerformCppCatchingThunkCall(
                                     .op_name = CoreIdentifier::Equal},
                                    disc_id, zero_id);
   auto cond_id = ConvertToBoolValue(context, node_id, eq_id);
+
+  // ONE shared storage for the `Result`, minted before the branch so it
+  // dominates both initializers (fork/eh/plan.md §1.B.3). Each block
+  // initializes it in place through `InitializeExisting` — the `var x: T =
+  // init;` retargeting path (pattern_match.cpp; convert.cpp's
+  // `OverwriteTemporaryStorageArg` makes the alternative constructor's call
+  // write this storage instead of its own temporary) — consumed by an `Assign`
+  // exactly as that path does (lowering of an `Assign` from an in-place
+  // initializer is a no-op). A `Temporary` is NOT used: it consumes exactly one
+  // initializer, and here there are two, one per block. The result is read
+  // from the storage after the convergence, as `ret` is read from the return
+  // slot below. A block-argument convergence of two `Result` VALUES does not
+  // lower: a value of a type with a pointer value representation is a `ptr`,
+  // while `GetBlockArg` types the `phi` by the object type.
+  auto result_storage_id = AddInst<SemIR::TemporaryStorage>(
+      context, loc_id, {.type_id = result_type.type_id});
+  auto initialize_result = [&](SemIR::InstId init_id) -> bool {
+    if (init_id == SemIR::ErrorInst::InstId) {
+      return false;
+    }
+    init_id = InitializeExisting(context, loc_id, result_storage_id, init_id);
+    if (init_id == SemIR::ErrorInst::InstId) {
+      return false;
+    }
+    AddInst<SemIR::Assign>(context, loc_id,
+                           {.lhs_id = result_storage_id, .rhs_id = init_id});
+    return true;
+  };
+
   auto ok_block_id = AddDominatedBlockAndBranchIf(context, node_id, cond_id);
   auto err_block_id = AddDominatedBlockAndBranch(context, node_id);
 
@@ -1490,7 +1519,7 @@ static auto PerformCppCatchingThunkCall(
   auto err_name_id =
       SemIR::NameId::ForIdentifier(context.identifiers().Add("Err"));
 
-  // Ok block: `Core.Result(S, Cpp.Exception).Ok(<ret>)`, as a value.
+  // Ok block: `Core.Result(S, Cpp.Exception).Ok(<ret>)` into the storage.
   context.inst_block_stack().Pop();
   context.inst_block_stack().Push(ok_block_id);
   context.region_stack().AddToRegion(ok_block_id, node_id);
@@ -1502,14 +1531,11 @@ static auto PerformCppCatchingThunkCall(
               : ConvertToValueExpr(context, return_slot_id);
   auto ok_ctor_id =
       PerformMemberAccess(context, loc_id, result_type.inst_id, ok_name_id);
-  auto ok_value_id =
-      ConvertToValueOfType(context, loc_id,
-                           PerformCall(context, loc_id, ok_ctor_id, {ok_arg_id},
-                                       /*is_desugared=*/true),
-                           result_type.type_id);
+  bool ok_initialized = initialize_result(PerformCall(
+      context, loc_id, ok_ctor_id, {ok_arg_id}, /*is_desugared=*/true));
 
-  // Err block: `Core.Result(S, Cpp.Exception).Err(err as Cpp.Exception)`, as a
-  // value. The `as` is the prelude adapter's conversion from `VoidBase*`.
+  // Err block: `Core.Result(S, Cpp.Exception).Err(err as Cpp.Exception)` into
+  // the storage. The `as` is the prelude adapter's conversion from `VoidBase*`.
   context.inst_block_stack().Push(err_block_id);
   context.region_stack().AddToRegion(err_block_id, node_id);
   auto exception_value_id = ConvertForExplicitAs(
@@ -1517,20 +1543,17 @@ static auto PerformCppCatchingThunkCall(
       exception_type.type_id, /*unsafe=*/false);
   auto err_ctor_id =
       PerformMemberAccess(context, loc_id, result_type.inst_id, err_name_id);
-  auto err_value_id = ConvertToValueOfType(
-      context, loc_id,
+  bool err_initialized = initialize_result(
       PerformCall(context, loc_id, err_ctor_id, {exception_value_id},
-                  /*is_desugared=*/true),
-      result_type.type_id);
+                  /*is_desugared=*/true));
 
-  // Converge: the `if`-expression shape, with the Err block on top.
-  if (ok_value_id == SemIR::ErrorInst::InstId ||
-      err_value_id == SemIR::ErrorInst::InstId) {
-    AddConvergenceBlockAndPush(context, node_id, 2);
+  // Converge (the Err block is on top), then the initialized storage is the
+  // call's value.
+  AddConvergenceBlockAndPush(context, node_id, 2);
+  if (!ok_initialized || !err_initialized) {
     return SemIR::ErrorInst::InstId;
   }
-  auto result_id = AddConvergenceBlockWithArgAndPush(
-      context, node_id, {err_value_id, ok_value_id});
+  auto result_id = ConvertToValueExpr(context, result_storage_id);
   context.cpp_catching_call_results().Insert(result_id, callee_function_id);
   return result_id;
 }

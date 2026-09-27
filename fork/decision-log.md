@@ -2792,6 +2792,49 @@ inexpressible in-slice — exactly why the approximation is safe today.
 Re-examined the day non-trivial types pass the scrutinee gate
 (handle_match.cpp:238). Veto-able.
 
+### W-077: struct patterns in match case position (2026-09-27)
+
+The upstream-missing struct-pattern check layer lands for `match`
+arms: `case {.a = 1, .b = n: i32}`, shorthand `{tag: i32}`, field
+reorder, subset-with-`_`, nesting, `var`/`ref` fields. SLICE (§1.1):
+match-only, gated on FullPatternStack::Kind::MatchCaseArm — two ledger
+corrections: the context kind exists (the "not a match-arm slice"
+premise was false), and the :138/:143 handler TODOs were unreachable
+dead code (the Start TODO aborts first, even for `{}`). WHY THE LANES
+SPLIT (§1.4): a subset pattern's own struct type drops fields, so the
+let/var conversion path would reject it (StructInitUnexpectedField-
+InConversion); the match lane therefore runs a scrutinee-typed
+name-keyed field walk mirroring the tuple walk, and the irrefutable
+lane keeps its byte-identical TODO, pinned check-side for the first
+time (let, var, param, let-in-arm-body) and filed as residue. Break
+condition: upstream landing its own struct-pattern layer — the F-002
+staging-merge rule applies. USEFULNESS (§1.6): a new Struct key kind
+normalized to the SCRUTINEE's field set in canonical order with
+Wildcard fills for omitted fields (trailing `_` never enters the key)
+restores the W-066 slot-wise machinery's fixed-arity premise, so
+{.a=1,_} kills {.a=1,.b=2} and reorder is by value set; all-binding
+struct patterns key {Wildcard}, extending the W-078b has_irrefutable_arm
+invariant. LANE INTEGRATION (§1.7): zero changes to exhaustiveness or
+dead-`default` — struct scrutinees take the open-domain lane, and
+struct-of-bools is root-only open exactly like (bool, bool) (pinned).
+Diagnostics: MatchCaseStructPatternUnknownField/MissingFields,
+StructPatternNameDuplicate/Previous, and StructPatternDiscardWithoutFields
+for bare `{_}` (grammar-invalid but parse-accepted; break condition:
+upstream legalizing it flips one pin). Zero lower/ changes (struct_access
+
+-   icmp already lower). PLAN REVIEWS: both APPROVE-WITH-AMENDMENTS,
+    converging on the pruned-irrefutable-struct fast-path family — the
+    choice-payload bind fast path would have CARBON_FATALed on
+    `case .Some({x: i32})` and the nested-var lane would have emitted a
+    misleading conversion error; both gated pre-implementation. SHARED
+    RESIDUE R-2: nested empty-aggregate subpatterns are pruned by both
+    passes so their shape checks never run (tuple parity; payload variant
+    `case .Some({})`), filed with the residue item. FIRST HOSTED-RUNNER
+    VERIFICATION: autoupdate (13 min) matched every hand-traced golden
+    prediction; the one runner-exposed defect was `val` being a reserved
+    word in the lower golden and conformance program (renamed); gate and
+    conformance green at the new floor 102 PASS / 0 / 28 SKIP over 130.
+
 ### Runner access revoked: the sparing-verification protocol (2026-09-26)
 
 Owner directive, mid-W-077, verbatim in the parts that govern: "You no

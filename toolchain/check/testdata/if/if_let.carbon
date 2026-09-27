@@ -143,20 +143,18 @@ fn F(b: bool) -> i32 {
 // --- nested_payload_tuple.carbon
 library "[[@TEST_NAME]]";
 
-// A payload tuple walk with an expression element under the discriminant
-// test.
+// A multi-element payload walk with an expression element under the
+// discriminant test. (A `(i32, i32)` payload is behind an upstream TODO —
+// "not trivially copyable and destructible" — so the payload is two scalar
+// fields.)
 choice Q {
-  // CHECK:STDERR: nested_payload_tuple.carbon:[[@LINE+4]]:7: error: semantics TODO: `choice alternative payload that is not trivially copyable and destructible` [SemanticsTodo]
-  // CHECK:STDERR:   Some(p: (i32, i32)),
-  // CHECK:STDERR:       ^~~~~~~~~~~~~~~
-  // CHECK:STDERR:
-  Some(p: (i32, i32)),
+  Pair(a: i32, b: i32),
   None
 }
 
 //@dump-sem-ir-begin
 fn F(q: Q) -> i32 {
-  if (let .Some((1, n: i32)) = q) {
+  if (let .Pair(1, n: i32) = q) {
     return n;
   }
   return -1;
@@ -237,14 +235,7 @@ fn G(t: Tok) -> Tok {
   if (let .Some(n: i32) = Wrap(t?)) {
     return n as Tok;
   }
-  // CHECK:STDERR: question_in_initializer.carbon:[[@LINE+7]]:10: error: cannot convert expression of type `Core.IntLiteral` to `Tok` with `as` [ConversionFailure]
-  // CHECK:STDERR:   return 0 as Tok;
-  // CHECK:STDERR:          ^~~~~~~~
-  // CHECK:STDERR: question_in_initializer.carbon:[[@LINE+4]]:10: note: type `Core.IntLiteral` does not implement interface `Core.As(Tok)` [MissingImplInMemberAccessInContext]
-  // CHECK:STDERR:   return 0 as Tok;
-  // CHECK:STDERR:          ^~~~~~~~
-  // CHECK:STDERR:
-  return 0 as Tok;
+  return (0 as i32) as Tok;
 }
 //@dump-sem-ir-end
 

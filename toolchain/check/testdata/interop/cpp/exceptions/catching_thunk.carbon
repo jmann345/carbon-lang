@@ -119,6 +119,35 @@ fn P() -> Core.Result(i32, Cpp.Exception) {
 }
 //@dump-sem-ir-end
 
+// --- member.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp;
+
+inline Cpp '''
+struct C {
+  int get() const;
+  int mutate();
+};
+''';
+
+// Member callees: the catching thunk's first parameter is the implicit object
+// parameter (`const C&` for `get`, `C&` for `mutate`), followed by the return
+// out-pointer and the error out-pointer. The thunk is imported by the bare
+// function import (`ImportCppThunkFunctionDecl`), so the non-simple-ABI
+// `const C&` parameter does not make it a thunk-requiring callee itself:
+// `imports` shows each method's fenced thunk and its catching thunk, and both
+// calls are `Call`s to the catching thunk followed by the `Result`
+// construction.
+//@dump-sem-ir-begin
+fn M(c: Cpp.C, p: Cpp.C*) -> Core.Result(i32, Cpp.Exception) {
+  var a: i32 = c.get()?;
+  var b: i32 = p->mutate()?;
+  return Core.Result(i32, Cpp.Exception).Ok(a + b);
+}
+//@dump-sem-ir-end
+
 // --- reserved_name.carbon
 
 library "[[@TEST_NAME]]";

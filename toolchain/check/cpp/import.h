@@ -5,6 +5,8 @@
 #ifndef CARBON_TOOLCHAIN_CHECK_CPP_IMPORT_H_
 #define CARBON_TOOLCHAIN_CHECK_CPP_IMPORT_H_
 
+#include <optional>
+
 #include "clang/AST/Type.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
@@ -82,6 +84,16 @@ inline auto ImportCppFunctionDecl(Context& context, SemIR::LocId loc_id,
       context, loc_id,
       SemIR::ClangDeclKey::ForFunctionDecl(clang_decl, signature_id));
 }
+
+// Imports a synthesized C++ thunk declaration (a catching thunk, thunk.cpp)
+// as a Carbon function, exactly as the fenced thunk is imported at the callee's
+// import: the bare function import, with NO thunk-requirement evaluation,
+// dependency walk, or builtin mapping of its own — a thunk is never itself
+// thunked. Returns the new function, or nullopt on failure.
+auto ImportCppThunkFunctionDecl(Context& context, SemIR::LocId loc_id,
+                                clang::FunctionDecl* thunk_clang_decl,
+                                SemIR::ClangDeclSignatureId signature_id)
+    -> std::optional<SemIR::FunctionId>;
 
 // Returns the type that intN_t or uintN_t is an alias for.
 auto GetIntNType(const clang::ASTContext& ast_context, unsigned width,

@@ -915,7 +915,8 @@ static auto WrapInBoundaryDiagnostic(CppContext& cpp_context, clang::Sema& sema,
   auto* message_literal = clang::StringLiteral::Create(
       ast_context, message, clang::StringLiteralKind::Ordinary,
       /*Pascal=*/false,
-      ast_context.getStringLiteralArrayType(ast_context.CharTy, message.size()),
+      ast_context.getStringLiteralArrayType(
+          ast_context.CharTy, static_cast<unsigned>(message.size())),
       clang_loc);
   clang::FunctionDecl* write_decl =
       GetOrCreateBoundaryWriteDecl(cpp_context, sema, clang_loc);
@@ -923,7 +924,8 @@ static auto WrapInBoundaryDiagnostic(CppContext& cpp_context, clang::Sema& sema,
       write_decl, write_decl->getType(), clang::VK_PRValue, clang_loc);
   clang::Expr* write_args[] = {
       sema.ActOnIntegerConstant(clang_loc, 2).get(), message_literal,
-      sema.ActOnIntegerConstant(clang_loc, message.size()).get()};
+      sema.ActOnIntegerConstant(clang_loc, static_cast<int64_t>(message.size()))
+          .get()};
   clang::ExprResult write_call =
       sema.BuildCallExpr(nullptr, write_ref, clang_loc, write_args, clang_loc);
   clang::StmtResult write_stmt =
@@ -1206,8 +1208,12 @@ auto GetOrBuildCppCatchingThunkDecl(Context& context, SemIR::LocId loc_id,
   if (clang::FunctionDecl* thunk_clang_decl =
           BuildCppCatchingThunk(context, callee_function)) {
     // Import the thunk exactly as the fenced thunk is imported (import.cpp,
-    // `ImportFunctionDecl`): an all-by-value signature over its own
-    // parameters.
+    // `ImportFunctionDecl`): the bare function import over an all-by-value
+    // signature. The general `ImportCppFunctionDecl` path must NOT be used:
+    // it evaluates `IsCppThunkRequired` on the thunk itself, and a member
+    // callee's implicit object parameter (`const C&` for a `const` method) is
+    // not a simple ABI type, so it would build a thunk of the thunk and mark
+    // this function `HasCppThunk` before `SetCppThunk` below.
     SemIR::ClangDeclSignature thunk_signature;
     thunk_signature.kind = SemIR::ClangDeclSignature::Normal;
     thunk_signature.num_params =
@@ -1218,15 +1224,12 @@ auto GetOrBuildCppCatchingThunkDecl(Context& context, SemIR::LocId loc_id,
     SemIR::ClangDeclSignatureId thunk_signature_id =
         context.clang_decl_signatures().Add(std::move(thunk_signature));
 
-    auto imported_decl_id = ImportCppFunctionDecl(
-        context, loc_id, thunk_clang_decl, thunk_signature_id);
-    if (imported_decl_id != SemIR::ErrorInst::InstId &&
-        imported_decl_id.has_value()) {
-      auto& thunk_function = context.functions().Get(
-          GetCalleeAsFunction(context.sem_ir(), imported_decl_id).function_id);
+    if (auto thunk_function_id = ImportCppThunkFunctionDecl(
+            context, loc_id, thunk_clang_decl, thunk_signature_id)) {
+      auto& thunk_function = context.functions().Get(*thunk_function_id);
       thunk_function.SetCppThunk(
           context.functions().Get(callee_function_id).first_owning_decl_id);
-      thunk_decl_id = imported_decl_id;
+      thunk_decl_id = thunk_function.first_owning_decl_id;
     }
   }
 
@@ -1254,7 +1257,9 @@ auto GetOrBuildCppCatchingThunkDecl(Context& context, SemIR::LocId loc_id,
 // are safe: an argument's `CallExpr` is followed by more argument nodes, never
 // directly by `?`. An import- or desugar-located call has no node.
 static auto IsCatchingCallSite(Context& context, SemIR::LocId loc_id) -> bool {
-  if (loc_id.kind() != SemIR::LocId::Kind::NodeId) {
+  // A desugared location is still `Kind::NodeId`; only a call the user wrote
+  // at that node is a candidate.
+  if (loc_id.kind() != SemIR::LocId::Kind::NodeId || loc_id.is_desugared()) {
     return false;
   }
   const auto& tree = context.parse_tree();

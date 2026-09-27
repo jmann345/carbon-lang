@@ -24,23 +24,22 @@
 // dynamic type would fall through and print -1.
 
 import Core library "io";
-import Cpp inline '''c++
+import Cpp;
+
+// Declared before the C++ block so `Carbon::Catching` is exportable there;
+// defined after it so `Cpp.Throws` is visible in the body (one inline block,
+// the interop/cpp_export_function.carbon shape).
+fn Catching(n: i32) -> Core.Result(i32, Cpp.Exception);
+
+inline Cpp '''
+#include <carbon/expected.h>
+
 #include <stdexcept>
 
 inline int Throws(int n) {
   if (n < 0) throw std::runtime_error("negative");
   return n;
 }
-''';
-
-fn Catching(n: i32) -> Core.Result(i32, Cpp.Exception) {
-  return Core.Result(i32, Cpp.Exception).Ok(Cpp.Throws(n)?);
-}
-
-inline Cpp '''
-#include <carbon/expected.h>
-
-#include <stdexcept>
 
 inline int Recover(int n) {
   Carbon::expected<int, Carbon::Exception> r = Carbon::Catching(n);
@@ -55,6 +54,10 @@ inline int Recover(int n) {
   return -1;
 }
 ''';
+
+fn Catching(n: i32) -> Core.Result(i32, Cpp.Exception) {
+  return Core.Result(i32, Cpp.Exception).Ok(Cpp.Throws(n)?);
+}
 
 fn RuntimeSeed(x: i32) -> i32 { return x + 20; }
 

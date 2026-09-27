@@ -109,7 +109,7 @@ static auto LookupCppDecl(
   for (auto name_component : name_components) {
     auto* scope = dyn_cast<clang::DeclContext>(decl);
     if (!scope) {
-      return clang::QualType();
+      return nullptr;
     }
 
     // TODO: Map the LocId of the lookup to a clang SourceLocation and provide

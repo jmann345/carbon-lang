@@ -18,7 +18,9 @@
 // through the return out-pointer and returns 0; the Carbon caller compares
 // the discriminant with 0 (`icmp`/`br`) and constructs the `Ok` or `Err`
 // alternative of `Core.Result(i32, Cpp.Exception)` in each block. `G` is the
-// `void` callee shape: no return out-pointer.
+// `void` callee shape: no return out-pointer. `M` is the member-callee shape:
+// the catching thunk takes the object (`const C&` / `C&`) as its first
+// parameter and calls the method on it inside the `try`.
 
 // --- catching_thunk.carbon
 
@@ -29,6 +31,10 @@ import Cpp;
 inline Cpp '''
 int may_throw_int();
 void may_throw();
+struct C {
+  int get() const;
+  int mutate();
+};
 ''';
 
 fn F() -> Core.Result(i32, Cpp.Exception) {
@@ -38,4 +44,10 @@ fn F() -> Core.Result(i32, Cpp.Exception) {
 fn G() -> Core.Result((), Cpp.Exception) {
   Cpp.may_throw()?;
   return Core.Result((), Cpp.Exception).Ok(());
+}
+
+fn M(c: Cpp.C, p: Cpp.C*) -> Core.Result(i32, Cpp.Exception) {
+  var a: i32 = c.get()?;
+  var b: i32 = p->mutate()?;
+  return Core.Result(i32, Cpp.Exception).Ok(a + b);
 }

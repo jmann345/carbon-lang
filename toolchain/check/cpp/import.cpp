@@ -1994,6 +1994,16 @@ static auto ImportFunction(Context& context, SemIR::LocId loc_id,
 // function signature. `signature.num_params` may be less than the number of
 // parameters that the C++ function has if default arguments are available for
 // the trailing parameters.
+auto ImportCppThunkFunctionDecl(Context& context, SemIR::LocId loc_id,
+                                clang::FunctionDecl* thunk_clang_decl,
+                                SemIR::ClangDeclSignatureId signature_id)
+    -> std::optional<SemIR::FunctionId> {
+  auto import_ir_inst_id =
+      AddImportIRInst(context.sem_ir(), thunk_clang_decl->getLocation());
+  return ImportFunction(context, loc_id, import_ir_inst_id, thunk_clang_decl,
+                        signature_id);
+}
+
 static auto ImportFunctionDecl(Context& context, SemIR::LocId loc_id,
                                clang::FunctionDecl* clang_decl,
                                SemIR::ClangDeclSignatureId signature_id)

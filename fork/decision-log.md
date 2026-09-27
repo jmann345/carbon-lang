@@ -2817,8 +2817,8 @@ surfaced as `Cpp.Exception` by the `Cpp.nullptr` builtin path;
 `Exception`/`Result` core identifiers; the `CppException` recognized kind; the
 reserved-name pre-check in `ImportNameFromCpp` with the Warning
 `CppReservedNameShadowed`), c83d33051 (catching thunks selected by `?`,
-`Core.Result(S, Cpp.Exception)` calls, the
-`CppCatchingImportPayloadNote`/`QuestionCppCatchingImportNote` context notes),
+`Core.Result(S, Cpp.Exception)` calls, the `QuestionCppCatchingImportNote`
+context note),
 3eb4ed0e7 (`Carbon::expected` export mapping by name, `<carbon/expected.h>`
 installed at `lib/carbon/include` on the default `-isystem` path,
 `CppExportResultNeedsExpectedHeader`), afccce55f (the SF-1 fence diagnostic
@@ -2859,8 +2859,8 @@ Core.Result(S, Cpp.Exception).Ok(Cpp.f(x)?); }`. A `noexcept` callee or `none`
 mode never reaches the branch, so `?` then diagnoses the usual non-`Try`
 operand. The SF-6 bound on the success type is stated in the doc amendment and
 W-019's notes: `S` must be scalar or `void`; a class, `std::string` or
-constructor return diagnoses `ChoicePayloadNotTrivialInSpecific` under the
-`CppCatchingImportPayloadNote` context naming the C++ callee. Break condition:
+constructor return diagnoses `CppCatchingImportNonScalarSuccess` naming the
+C++ callee (the SF-6 admission predicate checked up front). Break condition:
 an expected-type mechanism landing (F-011's `let ... else` work may add one)
 lifts W-084; the SF-6 lift removes the scalar bound.
 
@@ -2985,11 +2985,13 @@ can name the C++ callee. Reference-returning callees fail closed (a TODO plus
 the FENCED fallback, never an unfenced call) because the out-pointer would need
 the referent's address, not a placement-new copy. The thunk identifier is
 `<callee>__carbon_catching_thunk` (parallel to `__carbon_thunk`), not the plan's
-`__carbon_catching`. A fifth diagnostic, the `InCppCatchingThunk` note, exists
-because the diagnostics check requires each CARBON_DIAGNOSTIC to be declared
-once, so `InCppThunk` cannot be reused. `RequireCompleteType` forces the
-`Result` specific's completion before any CFG is emitted, so an SF-6 rejection
-produces `ErrorInst` with no dangling branches. types.carbon exports
+`__carbon_catching`. The catching thunk's build annotates Clang diagnostics
+with the SAME `InCppThunk` note as the fenced build through a shared helper
+(one `CARBON_DIAGNOSTIC` site); a separate `InCppCatchingThunk` note was
+landed first and deleted when the diagnostics coverage test showed it is
+unreachable (the catching body reuses the callee call the fenced build
+already accepted). An SF-6 rejection produces `ErrorInst` before any CFG
+is emitted (the predicate below). types.carbon exports
 `cpp/exception` in alphabetical position (before `cpp/int`), not "after
 `cpp/void`". The header carries `has_exception()`, `operator*` and an `ok()`
 alternative-name beyond D8's list, and `value()` is non-throwing by precondition
@@ -3030,13 +3032,26 @@ TRUE for an SF-6-rejected `Core.Result(Cpp.Widget, Cpp.Exception)` specific
 (the class completes with an error-valued layout; `GetObjectRepr` is
 `ErrorInst`), so the catching call now checks `IsInSliceChoicePayloadType` on
 the success type BEFORE forming the specific and emits the new Error
-`CppCatchingImportNonScalarSuccess` (the `CppCatchingImportPayloadNote`
-context stays as a belt that also treats an error-valued object repr as
-failure) — a sixth diagnostic kind; and `fail_ctor_return` spelled the
+`CppCatchingImportNonScalarSuccess`; the specific's completion behind it
+is a `CARBON_CHECK` invariant (a drift between the predicate and the SF-6
+rule is a toolchain bug, not a user diagnostic — the `CppCatchingImportPayloadNote`
+belt was deleted when the coverage test showed it can no longer fire); and
+`fail_ctor_return` spelled the
 constructor call `Cpp.Widget(1)` instead of the tree's static-member form
 `Cpp.Widget.Widget(1)`, so it never reached the catching lane. Both are
 review misses per R28(d), alongside the two compile misses and the
-convergence shape above. Veto-able.
+convergence shape above. _Gate + conformance of record (runs 36311895668,
+36311899697 on the fill b8abdb68a) both FAILED and were fixed at the root
+(ebf12feae): the gate on `//toolchain/diagnostics:coverage_test` (the two
+dead kinds above), the conformance suite on a SIGSEGV in
+`CarbonExternalASTSource::FindExternalVisibleDeclsByName` while Clang parsed
+`<carbon/expected.h>` — a constructor declarator inside a C++-declared class
+nested in `namespace Carbon` (the export namespace) sends a
+`CXXConstructorName` redeclaration lookup up to the namespace, and the
+source's constructor arm `cast<CXXRecordDecl>`-ed the `NamespaceDecl`; now a
+`dyn_cast` with a negative answer, pinned by
+function/export/carbon_namespace_cpp_class.carbon and by inline members in
+result_expected.carbon's skeletons. Veto-able.
 
 ### W-012: if-let / while-let / let-else landed (2026-09-27)
 

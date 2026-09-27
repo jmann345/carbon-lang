@@ -10,8 +10,11 @@
 #include <variant>
 #include <vector>
 
+#include "common/map.h"
+#include "common/raw_string_ostream.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallVector.h"
+#include "llvm/ADT/StringExtras.h"
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/check/action.h"
 #include "toolchain/check/context.h"
@@ -87,9 +90,10 @@ struct LocalState {
   // True when this walk is the match-bind pass of a `match` `case` arm
   // (`MatchCaseBindPatternMatch`): subtrees without bindings prune — the
   // test pass owns expression-pattern regions, and splicing a region twice
-  // is not supported (see `InsertHere`) — the tuple pre-work walks the
-  // scrutinee's own tuple type instead of converting to the pattern's (see
-  // `DoMatchCaseTuplePreWork`), and `VarStorage` for `var` patterns is
+  // is not supported (see `InsertHere`) — the tuple and struct pre-work
+  // walk the scrutinee's own tuple or struct type instead of converting to
+  // the pattern's (see `DoMatchCaseTuplePreWork` and
+  // `DoMatchCaseStructPreWork`), and `VarStorage` for `var` patterns is
   // emitted on demand instead of read from the full-pattern frame, which
   // the arm pops before the bind pass runs (see `DoVarPreWorkImpl`). `let`
   // and `var` behavior is unchanged when this is false.
@@ -239,6 +243,8 @@ class MatchContext {
                  SemIR::InstId scrutinee_id, WorkItem entry) -> void;
   auto DoPreWork(State state, SemIR::TuplePattern tuple_pattern,
                  SemIR::InstId scrutinee_id, WorkItem entry) -> void;
+  auto DoPreWork(State state, SemIR::StructPattern struct_pattern,
+                 SemIR::InstId scrutinee_id, WorkItem entry) -> void;
   auto DoPreWork(State state, SemIR::SpliceInst splice,
                  SemIR::InstId scrutinee_id, WorkItem entry) -> void;
   auto DoPreWork(State state, SemIR::SpecificConstant specific_constant,
@@ -295,6 +301,26 @@ class MatchContext {
   auto DoMatchCaseTuplePreWork(SemIR::TuplePattern tuple_pattern,
                                SemIR::InstId scrutinee_id, WorkItem entry,
                                bool is_test_pass) -> void;
+
+  // The struct pre-work for both passes of a `match` `case` arm, the
+  // `DoMatchCaseTuplePreWork` twin with a name-keyed field walk: the
+  // whole-aggregate conversion path is structurally unusable here, because
+  // a field-subset pattern's own struct type has FEWER fields than the
+  // scrutinee's and `ConvertStructToStructOrClass` diagnoses any source
+  // field absent from the destination — the opposite of the design's
+  // discard rule. So both passes walk the SCRUTINEE's own struct type:
+  // pattern field names (from the pattern's type) resolve against the
+  // scrutinee's field table name-keyed and order-free (each field-pattern
+  // matches "the same-named element", docs/design/pattern_matching.md,
+  // "Struct patterns"), unknown and unmentioned-without-`_` fields
+  // diagnose, and each non-pruned field gets an eager `StructAccess` with
+  // the scrutinee field's type and index, with sub-matches emitted in
+  // pattern (lexical) order. Subtrees the pass prunes — irrefutable ones in
+  // the test pass, binding-free ones in the bind pass — get no field
+  // access at all.
+  auto DoMatchCaseStructPreWork(SemIR::StructPattern struct_pattern,
+                                SemIR::InstId scrutinee_id, WorkItem entry,
+                                bool is_test_pass) -> void;
 
   // Emits the refutable test for an expression pattern in a `match` `case`
   // and returns the boolean condition inst, `ErrorInst::InstId` for an
@@ -665,9 +691,11 @@ auto SpliceMatchCaseGuard(Context& context, SemIR::ExprRegionId region_id)
 auto IsIrrefutableMatchCasePattern(Context& context, SemIR::InstId pattern_id)
     -> bool {
   // Iterative worklist (misc-no-recursion). Binding patterns — value and
-  // `ref` alike — are the irrefutable leaves; tuples and `var` wrappers
-  // recurse; anything else — expression leaves in particular, and error
-  // recovery — is refutable.
+  // `ref` alike — are the irrefutable leaves; tuples, struct patterns, and
+  // `var` wrappers recurse (a struct pattern's trailing `_` constrains
+  // nothing, and its field-set shape checks error the arm rather than
+  // failing at runtime); anything else — expression leaves in particular,
+  // and error recovery — is refutable.
   llvm::SmallVector<SemIR::InstId> worklist = {pattern_id};
   while (!worklist.empty()) {
     auto inst_id = worklist.pop_back_val();
@@ -675,6 +703,12 @@ auto IsIrrefutableMatchCasePattern(Context& context, SemIR::InstId pattern_id)
             context.insts().TryGetAs<SemIR::TuplePattern>(inst_id)) {
       llvm::append_range(worklist,
                          context.inst_blocks().Get(tuple_pattern->elements_id));
+      continue;
+    }
+    if (auto struct_pattern =
+            context.insts().TryGetAs<SemIR::StructPattern>(inst_id)) {
+      llvm::append_range(
+          worklist, context.inst_blocks().Get(struct_pattern->elements_id));
       continue;
     }
     if (auto var_pattern =
@@ -717,14 +751,29 @@ auto TryGetCaseBoolConstant(Context& context, SemIR::InstId pattern_id)
 
 auto BuildMatchCaseUsefulnessKey(
     Context& context, SemIR::InstId pattern_id,
-    const std::optional<Context::MatchCaseContext::Alternative>& alternative)
+    const std::optional<Context::MatchCaseContext::Alternative>& alternative,
+    SemIR::TypeId scrutinee_type_id)
     -> std::optional<Context::MatchStatementContext::UsefulnessKey> {
   using Node = Context::MatchStatementContext::UsefulnessKeyNode;
   Context::MatchStatementContext::UsefulnessKey key;
+  // A pattern position still to key: the pattern inst — `None` for a
+  // synthetic fill position, a scrutinee struct field the pattern omits,
+  // which keys `Wildcard` (the design's discard rule) — and the position's
+  // scrutinee type, threaded down so struct positions can normalize to the
+  // SCRUTINEE's field set (never the pattern's own subset type) and tuple
+  // positions can hand their elements' scrutinee types on. Alternative
+  // payload slots carry `TypeId::None`: no in-slice choice payload element
+  // is tuple- or struct-typed (`IsInSliceChoicePayloadType`), so only
+  // type-free node kinds are reachable below them, and the typed cases
+  // treat a missing type as a defensive nullopt.
+  struct KeyPosition {
+    SemIR::InstId inst_id;
+    SemIR::TypeId scrutinee_type_id;
+  };
   // Pattern positions still to key. Iterative worklist (misc-no-recursion);
   // children are pushed in reverse so the key comes out in preorder,
   // matching the scrutinee's element order.
-  llvm::SmallVector<SemIR::InstId> worklist;
+  llvm::SmallVector<KeyPosition> worklist;
 
   // An alternative pattern's root is keyed from the resolved alternative
   // rather than the pattern insts: they alone do not carry the discriminant
@@ -748,33 +797,122 @@ auto BuildMatchCaseUsefulnessKey(
                      .index = alternative->index,
                      .arity = static_cast<int32_t>(element_ids.size())});
       for (auto element_id : llvm::reverse(element_ids)) {
-        worklist.push_back(element_id);
+        worklist.push_back(
+            {.inst_id = element_id, .scrutinee_type_id = SemIR::TypeId::None});
       }
     } else {
       key.push_back(
           {.kind = Node::Kind::Alternative, .index = alternative->index});
     }
   } else {
-    worklist.push_back(pattern_id);
+    worklist.push_back(
+        {.inst_id = pattern_id, .scrutinee_type_id = scrutinee_type_id});
   }
 
   while (!worklist.empty()) {
-    auto inst_id = worklist.pop_back_val();
+    auto position = worklist.pop_back_val();
+    auto inst_id = position.inst_id;
+    // A synthetic fill position: the pattern omits this scrutinee struct
+    // field, leaving it unconstrained (the design's discard rule), so it
+    // keys `Wildcard`. Must precede every read of `inst_id`.
+    if (!inst_id.has_value()) {
+      key.push_back({.kind = Node::Kind::Wildcard});
+      continue;
+    }
     // An irrefutable subtree covers its whole position, whatever its
     // internal structure — `IsIrrefutableMatchCasePattern` is the exact
-    // predicate — so an all-binding tuple keys as one `Wildcard`, the same
-    // as a binding root.
+    // predicate — so an all-binding tuple, or an all-binding struct pattern
+    // (full-set or subset+`_`), keys as one `Wildcard`, the same as a
+    // binding root. This check stays FIRST, before the `Struct` case below
+    // is considered.
     if (IsIrrefutableMatchCasePattern(context, inst_id)) {
       key.push_back({.kind = Node::Kind::Wildcard});
       continue;
     }
     if (auto tuple_pattern =
             context.insts().TryGetAs<SemIR::TuplePattern>(inst_id)) {
+      // The elements' scrutinee types come from the position's scrutinee
+      // `TupleType`; a missing or mismatched type is a defensive nullopt
+      // (record-nothing, diagnose-nothing) — a shape-valid arm, the only
+      // kind that reaches key building, always matches.
+      if (!position.scrutinee_type_id.has_value()) {
+        return std::nullopt;
+      }
+      auto tuple_type = context.types().TryGetAsIfValid<SemIR::TupleType>(
+          context.types().GetUnqualifiedType(position.scrutinee_type_id));
+      if (!tuple_type) {
+        return std::nullopt;
+      }
       auto element_ids = context.inst_blocks().Get(tuple_pattern->elements_id);
+      auto element_type_inst_ids =
+          context.inst_blocks().Get(tuple_type->type_elements_id);
+      if (element_ids.size() != element_type_inst_ids.size()) {
+        return std::nullopt;
+      }
       key.push_back({.kind = Node::Kind::Tuple,
                      .arity = static_cast<int32_t>(element_ids.size())});
-      for (auto element_id : llvm::reverse(element_ids)) {
-        worklist.push_back(element_id);
+      for (auto [element_id, type_inst_id] :
+           llvm::reverse(llvm::zip_equal(element_ids, element_type_inst_ids))) {
+        worklist.push_back(
+            {.inst_id = element_id,
+             .scrutinee_type_id =
+                 context.types().GetTypeIdForTypeInstId(type_inst_id)});
+      }
+      continue;
+    }
+    if (auto struct_pattern =
+            context.insts().TryGetAs<SemIR::StructPattern>(inst_id)) {
+      // A struct position keys NORMALIZED to the SCRUTINEE struct type's
+      // full field set — never the pattern's own type, which is the subset:
+      // one child per scrutinee field, in the scrutinee's canonical field
+      // order (struct types canonicalize by field sequence, so every arm of
+      // one statement sees the same order), with the keyed subpattern where
+      // the pattern names the field and a synthetic `Wildcard` where it
+      // does not. The trailing `_` never enters the key: comparison is by
+      // matched value set, never source form. The normalization restores
+      // the fixed-arity, identical-shape premise the slot-wise subsumption
+      // walk (`UsefulnessKeySubsumes`, handle_match.cpp) rests on, which
+      // field-subset patterns would otherwise break.
+      if (!position.scrutinee_type_id.has_value()) {
+        return std::nullopt;
+      }
+      auto struct_type = context.types().TryGetAsIfValid<SemIR::StructType>(
+          context.types().GetUnqualifiedType(position.scrutinee_type_id));
+      if (!struct_type) {
+        return std::nullopt;
+      }
+      auto pattern_struct_type =
+          context.types().TryGetAsIfValid<SemIR::StructType>(
+              ExtractScrutineeType(context.sem_ir(), struct_pattern->type_id));
+      if (!pattern_struct_type) {
+        return std::nullopt;
+      }
+      auto element_ids = context.inst_blocks().Get(struct_pattern->elements_id);
+      auto pattern_fields =
+          context.struct_type_fields().Get(pattern_struct_type->fields_id);
+      if (element_ids.size() != pattern_fields.size()) {
+        return std::nullopt;
+      }
+      // The pattern's fields are index-aligned with its elements; key them
+      // by name so the scrutinee-order walk below is order-free.
+      Map<SemIR::NameId, SemIR::InstId> pattern_field_elements;
+      for (auto [field, element_id] :
+           llvm::zip_equal(pattern_fields, element_ids)) {
+        pattern_field_elements.Insert(field.name_id, element_id);
+      }
+      auto scrutinee_fields =
+          context.struct_type_fields().Get(struct_type->fields_id);
+      key.push_back({.kind = Node::Kind::Struct,
+                     .arity = static_cast<int32_t>(scrutinee_fields.size())});
+      for (const auto& field : llvm::reverse(scrutinee_fields)) {
+        auto element_id = SemIR::InstId::None;
+        if (auto lookup = pattern_field_elements.Lookup(field.name_id)) {
+          element_id = lookup.value();
+        }
+        worklist.push_back(
+            {.inst_id = element_id,
+             .scrutinee_type_id =
+                 context.types().GetTypeIdForTypeInstId(field.type_inst_id)});
       }
       continue;
     }
@@ -833,6 +971,12 @@ auto MatchCasePatternHasBindings(Context& context, SemIR::InstId pattern_id)
                          context.inst_blocks().Get(tuple_pattern->elements_id));
       continue;
     }
+    if (auto struct_pattern =
+            context.insts().TryGetAs<SemIR::StructPattern>(inst_id)) {
+      llvm::append_range(
+          worklist, context.inst_blocks().Get(struct_pattern->elements_id));
+      continue;
+    }
     if (auto var_pattern =
             context.insts().TryGetAs<SemIR::VarPattern>(inst_id)) {
       worklist.push_back(var_pattern->subpattern_id);
@@ -858,6 +1002,34 @@ auto MatchCasePatternHasVarPattern(Context& context, SemIR::InstId pattern_id)
             context.insts().TryGetAs<SemIR::TuplePattern>(inst_id)) {
       llvm::append_range(worklist,
                          context.inst_blocks().Get(tuple_pattern->elements_id));
+      continue;
+    }
+    if (auto struct_pattern =
+            context.insts().TryGetAs<SemIR::StructPattern>(inst_id)) {
+      llvm::append_range(
+          worklist, context.inst_blocks().Get(struct_pattern->elements_id));
+    }
+  }
+  return false;
+}
+
+auto MatchCasePatternHasStructPattern(Context& context,
+                                      SemIR::InstId pattern_id) -> bool {
+  llvm::SmallVector<SemIR::InstId> worklist = {pattern_id};
+  while (!worklist.empty()) {
+    auto inst_id = worklist.pop_back_val();
+    if (context.insts().Is<SemIR::StructPattern>(inst_id)) {
+      return true;
+    }
+    if (auto tuple_pattern =
+            context.insts().TryGetAs<SemIR::TuplePattern>(inst_id)) {
+      llvm::append_range(worklist,
+                         context.inst_blocks().Get(tuple_pattern->elements_id));
+      continue;
+    }
+    if (auto var_pattern =
+            context.insts().TryGetAs<SemIR::VarPattern>(inst_id)) {
+      worklist.push_back(var_pattern->subpattern_id);
     }
   }
   return false;
@@ -1416,6 +1588,21 @@ auto MatchContext::DoPreWork(State state, SemIR::VarPattern var_pattern,
       results_stack_.AppendToTop(SemIR::InstId::None);
       return;
     }
+    // A `var` wrapping a subtree that CONTAINS a struct pattern is gated
+    // out too: the match-bind pass initializes on-demand storage of the
+    // `var` subtree's own scrutinee type by conversion, and for a
+    // field-subset struct subtree that storage type drops scrutinee
+    // fields, so `ConvertStructToStructOrClass` could only produce the
+    // design-contradicting unexpected-field error (W-077 plan §1.5).
+    // Field-level `var` bindings (`.a = var n: i32`) stay in-slice: their
+    // storage is the field's own scalar type, no aggregate conversion.
+    if (MatchCasePatternHasStructPattern(context_, entry.pattern_id)) {
+      context_.TODO(context_.match_case_stack().back().introducer_node_id,
+                    "match `case` pattern other than an integer literal, or "
+                    "a case guard");
+      results_stack_.AppendToTop(SemIR::InstId::None);
+      return;
+    }
     // An admitted `var` case pattern wraps a wholly irrefutable subtree,
     // which belongs to the bind pass (storage is emitted on demand there;
     // see `DoVarPreWorkImpl`). The test pass descends WITHOUT emitting
@@ -1426,6 +1613,23 @@ auto MatchContext::DoPreWork(State state, SemIR::VarPattern var_pattern,
     AddWork({.pattern_id = var_pattern.subpattern_id,
              .work = PreWork{.scrutinee_id = scrutinee_id},
              .allow_unmarked_ref = true});
+    return;
+  }
+  if (auto** local_state = std::get_if<LocalState*>(&state);
+      local_state && (*local_state)->in_match_case_bind &&
+      MatchCasePatternHasStructPattern(context_, entry.pattern_id)) {
+    // The match-bind entry's own `var`-wrapping-struct gate: a wholly
+    // irrefutable `var` ELEMENT is pruned by the TEST pass before its
+    // `DoPreWork` ever runs, so the `MatchCaseState` gate above is never
+    // reached for it, and without this gate `DoVarPreWorkImpl` below would
+    // build on-demand storage typed by the subset struct type and diagnose
+    // the wrong, design-contradicting unexpected-field conversion error
+    // (W-077 plan §1.5). Same W4 TODO string; located at the offending
+    // subpattern, because an unguarded arm's case context is already
+    // popped when its bind pass runs (see `DoMatchCaseTuplePreWork`).
+    context_.TODO(entry.pattern_id,
+                  "match `case` pattern other than an integer literal, or "
+                  "a case guard");
     return;
   }
   auto scrutinee_type_id = GetScrutineeTypeInSpecific(
@@ -1737,6 +1941,183 @@ auto MatchContext::DoMatchCaseTuplePreWork(SemIR::TuplePattern tuple_pattern,
   }
 }
 
+auto MatchContext::DoPreWork(State state, SemIR::StructPattern struct_pattern,
+                             SemIR::InstId scrutinee_id, WorkItem entry)
+    -> void {
+  if (std::holds_alternative<MatchCaseState*>(state)) {
+    DoMatchCaseStructPreWork(struct_pattern, scrutinee_id, entry,
+                             /*is_test_pass=*/true);
+    return;
+  }
+  if (auto** local_state = std::get_if<LocalState*>(&state);
+      local_state && (*local_state)->in_match_case_bind) {
+    DoMatchCaseStructPreWork(struct_pattern, scrutinee_id, entry,
+                             /*is_test_pass=*/false);
+    return;
+  }
+  // Unreachable: the `StructPatternStart` gate (handle_pattern_list.cpp)
+  // admits struct patterns in `match` `case` position only, and every
+  // match-arm bind path that could otherwise reach a struct subtree under
+  // plain `LocalState` is rerouted or gated on
+  // `MatchCasePatternHasStructPattern` — the tuple and choice-payload bind
+  // fast paths (`EmitCaseArmTestAndBind`, handle_match.cpp) and the `var`
+  // entries above. A fatal keeps any future gate-lifter honest (contrast
+  // the reachable-by-design TODO the expression-pattern `LocalState`
+  // keeps).
+  CARBON_FATAL("Found StructPattern outside match case pattern matching");
+}
+
+auto MatchContext::DoMatchCaseStructPreWork(SemIR::StructPattern struct_pattern,
+                                            SemIR::InstId scrutinee_id,
+                                            WorkItem entry, bool is_test_pass)
+    -> void {
+  auto append_test_result = [&](SemIR::InstId result_id) {
+    if (is_test_pass) {
+      results_stack_.AppendToTop(result_id);
+    }
+  };
+  if (struct_pattern.type_id == SemIR::ErrorInst::TypeId) {
+    append_test_result(SemIR::ErrorInst::InstId);
+    return;
+  }
+  auto subpattern_ids = context_.inst_blocks().Get(struct_pattern.elements_id);
+  auto scrutinee = context_.insts().GetWithLocId(scrutinee_id);
+  auto scrutinee_type_id =
+      context_.types().GetUnqualifiedType(scrutinee.inst.type_id());
+  if (scrutinee_type_id == SemIR::ErrorInst::TypeId) {
+    append_test_result(SemIR::ErrorInst::InstId);
+    return;
+  }
+  auto struct_type =
+      context_.types().TryGetAsIfValid<SemIR::StructType>(scrutinee_type_id);
+  if (!struct_type) {
+    // A nested struct pattern against a non-struct element (the root shape
+    // is classified before the engine runs; see `EmitCaseArmTestAndBind` in
+    // handle_match.cpp). A real pattern-type error in the design; in-slice
+    // it stays behind the W4 slice gate, like the same shape at the root
+    // and like the tuple twin above, with the same emission-disjointness
+    // argument and the same per-pass locations: BOTH passes diagnose,
+    // never both for one subtree, and the bind-pass diagnostic sits at the
+    // offending subpattern because an unguarded arm's case context is
+    // popped before its bind pass runs.
+    if (is_test_pass) {
+      context_.TODO(
+          context_.match_case_stack().back().introducer_node_id,
+          "match `case` pattern other than an integer literal, or a case "
+          "guard");
+      results_stack_.AppendToTop(SemIR::InstId::None);
+    } else {
+      context_.TODO(entry.pattern_id,
+                    "match `case` pattern other than an integer literal, or "
+                    "a case guard");
+    }
+    return;
+  }
+
+  // The pattern's field names ride its own type, index-aligned with its
+  // elements; resolve each against the SCRUTINEE's field table, name-keyed
+  // and order-free — each field-pattern matches "the same-named element"
+  // (docs/design/pattern_matching.md, "Struct patterns"). These shape
+  // checks run BEFORE the per-field prune loop, so a wholly irrefutable
+  // pattern still gets them from whichever pass reaches the root, under
+  // the same disjointness as the non-struct gate above.
+  auto pattern_struct_type = context_.types().GetAs<SemIR::StructType>(
+      ExtractScrutineeType(context_.sem_ir(), struct_pattern.type_id));
+  auto pattern_fields =
+      context_.struct_type_fields().Get(pattern_struct_type.fields_id);
+  auto scrutinee_fields =
+      context_.struct_type_fields().Get(struct_type->fields_id);
+  Map<SemIR::NameId, int32_t> scrutinee_field_indices;
+  for (auto [i, field] : llvm::enumerate(scrutinee_fields)) {
+    scrutinee_field_indices.Insert(field.name_id, static_cast<int32_t>(i));
+  }
+  llvm::SmallVector<int32_t> element_scrutinee_indices;
+  element_scrutinee_indices.reserve(pattern_fields.size());
+  for (auto [field, subpattern_id] :
+       llvm::zip_equal(pattern_fields, subpattern_ids)) {
+    auto lookup = scrutinee_field_indices.Lookup(field.name_id);
+    if (!lookup) {
+      // "Every field name in the pattern must be a field name in the
+      // scrutinee" (docs/design/pattern_matching.md, "Struct patterns").
+      // Emitted by whichever pass reaches it; see the disjointness
+      // argument above.
+      CARBON_DIAGNOSTIC(MatchCaseStructPatternUnknownField, Error,
+                        "struct pattern field `{0}` is not a field of the "
+                        "match scrutinee's type {1}",
+                        SemIR::NameId, SemIR::TypeId);
+      context_.emitter().Emit(subpattern_id, MatchCaseStructPatternUnknownField,
+                              field.name_id, scrutinee_type_id);
+      append_test_result(SemIR::ErrorInst::InstId);
+      return;
+    }
+    element_scrutinee_indices.push_back(lookup.value());
+  }
+
+  // Scrutinee fields the pattern leaves unmentioned are discarded only
+  // under a trailing `_`; without one they are an error naming the missing
+  // fields in scrutinee order — a struct's field set is finite and
+  // nameable (docs/design/pattern_matching.md, "Struct patterns"). The
+  // pattern's names are distinct (duplicates errored at inst build) and
+  // each resolved to a scrutinee field above, so a size mismatch means
+  // exactly that some scrutinee field is unmentioned.
+  if (!struct_pattern.has_trailing_discard.ToBool() &&
+      pattern_fields.size() != scrutinee_fields.size()) {
+    RawStringOstream missing_stream;
+    llvm::ListSeparator sep;
+    int missing_count = 0;
+    for (auto [i, field] : llvm::enumerate(scrutinee_fields)) {
+      if (!llvm::is_contained(element_scrutinee_indices,
+                              static_cast<int32_t>(i))) {
+        missing_stream << sep << "`"
+                       << context_.names().GetFormatted(field.name_id) << "`";
+        ++missing_count;
+      }
+    }
+    CARBON_DIAGNOSTIC(MatchCaseStructPatternMissingFields, Error,
+                      "struct pattern has no trailing `_` and does not name "
+                      "field{0:s} {1} of the match scrutinee's type {2}",
+                      Diagnostics::IntAsSelect, std::string, SemIR::TypeId);
+    context_.emitter().Emit(entry.pattern_id,
+                            MatchCaseStructPatternMissingFields, missing_count,
+                            missing_stream.TakeStr(), scrutinee_type_id);
+    append_test_result(SemIR::ErrorInst::InstId);
+    return;
+  }
+
+  // Emit the field accesses eagerly, in pattern (lexical) order, each with
+  // the SCRUTINEE field's type and index; the pruned subtrees — irrefutable
+  // ones in the test pass, which contribute no condition, and binding-free
+  // ones in the bind pass, whose regions the test pass already spliced —
+  // get no field access at all. Sub-match order is pattern order against
+  // each field's named scrutinee element; the flat-`and` fold's recorded
+  // observational-equivalence premise carries over unchanged, because
+  // `StructAccess` on an in-slice scrutinee is total.
+  llvm::SmallVector<std::pair<SemIR::InstId, SemIR::InstId>> field_work;
+  for (auto [subpattern_id, scrutinee_index] :
+       llvm::zip_equal(subpattern_ids, element_scrutinee_indices)) {
+    bool pruned = is_test_pass
+                      ? IsIrrefutableMatchCasePattern(context_, subpattern_id)
+                      : !MatchCasePatternHasBindings(context_, subpattern_id);
+    if (pruned) {
+      continue;
+    }
+    auto field_type_id = context_.types().GetTypeIdForTypeInstId(
+        scrutinee_fields[scrutinee_index].type_inst_id);
+    auto subscrutinee_id = AddInst<SemIR::StructAccess>(
+        context_, scrutinee.loc_id,
+        {.type_id = field_type_id,
+         .struct_id = scrutinee_id,
+         .index = SemIR::ElementIndex(scrutinee_index)});
+    field_work.push_back({subpattern_id, subscrutinee_id});
+  }
+  // Add the work in reverse so the fields process left to right.
+  for (auto [subpattern_id, subscrutinee_id] : llvm::reverse(field_work)) {
+    AddWork({.pattern_id = subpattern_id,
+             .work = PreWork{.scrutinee_id = subscrutinee_id},
+             .allow_unmarked_ref = entry.allow_unmarked_ref});
+  }
+}
+
 auto MatchContext::DoPostWork(State /*state*/,
                               SemIR::TuplePattern /*tuple_pattern*/,
                               WorkItem entry) -> void {
@@ -1917,6 +2298,13 @@ auto MatchContext::Dispatch(State state, WorkItem entry) -> void {
         }
         case CARBON_KIND(SemIR::TuplePattern tuple_pattern): {
           DoPreWork(state, tuple_pattern, work.scrutinee_id, entry);
+          break;
+        }
+        case CARBON_KIND(SemIR::StructPattern struct_pattern): {
+          // No PostWork case is registered: none is ever scheduled — the
+          // match walks never need a struct RESULT value, the same reason
+          // the tuple match lane never schedules its PostWork.
+          DoPreWork(state, struct_pattern, work.scrutinee_id, entry);
           break;
         }
         case CARBON_KIND(SemIR::SpliceInst splice_inst): {

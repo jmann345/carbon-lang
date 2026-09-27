@@ -10,21 +10,25 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-09-27 (FULL AUTONOMY + THROUGHPUT PROTOCOL, rulebook
-R29: no questions, one PR per feature, two plan reviews / one impl
-review once hosted verification is green, pipelined planning. The
-owner's machine is never used (R28); all verification runs on
-`Fork: hosted verification` (GitHub-hosted; compile 18 min, autoupdate
-13 min, gate ~25 min, conformance ~20 min). F-006..F-011 STAND — W-005
-discharged, all F-0xx gates lifted. W-077 struct patterns: hosted
-autoupdate fixpoint + gate + conformance ALL GREEN at the new floor
-102 PASS / 0 / 28 SKIP over 130; single impl review in flight, then
-discharge → PR #39 → merge. W-012 if-let/let-else/while-let planner
-in flight on claude/carbon-fork-0-1-w012. Then: error handling
-W-016..W-019, unions W-009/W-015. Weekly cron Monday 2026-09-28 (the
-mirror probe is GitHub-hosted; a cut advance verifies on hosted
-runners too)._
-THIRTY-EIGHT PRs. The design's canonical
+_Last updated: 2026-09-27 (post-PR #39: W-077 struct patterns in
+match case position LANDED — the first slice verified entirely on
+GitHub-hosted runners (`Fork: hosted verification`: autoupdate 13 min,
+gate ~25 min, conformance ~20 min); NEW FLOOR 102 PASS / 0 / 28 SKIP
+over 130. R28: the owner's machine is never used. R29 throughput
+protocol in force: no questions, one PR per feature, two plan reviews /
+one impl review once hosted verification is green, pipelined planning
+in separate worktrees (../carbon-trunk, ../carbon-eh, main checkout on
+the w012 branch). F-006..F-011 stand; W-005 discharged; gap-analysis
+reconciled to 26 DONE / 20 PARTIAL / 8 MISSING / 2 DESIGN-ONLY.
+IN FLIGHT: W-012 if-let/while-let/let-else — plan folded (var-alternative
+engine lane added), focused re-review running, then implement;
+EH-A (prelude Core.Result, Optional Try, `()` payloads, entry-point
+Result signatures) — plan signed off (17 amendments), implementer
+running on claude/carbon-fork-0-1-eh; EH-B (catching thunks,
+Cpp.Exception, Carbon::expected export) follows EH-A. Next after
+those: unions W-009/W-015. Weekly cron Monday 2026-09-28 (mirror probe
+is GitHub-hosted)._
+THIRTY-NINE PRs. The design's canonical
 `var my_opt: Optional(i32) = Optional(i32).None;` now compiles and
 runs: LookupChoiceCopyWitness mirrors the destroy witness (is_choice
 gate, symbolic deferral under the SF-6 triviality fence, concrete

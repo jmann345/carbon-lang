@@ -362,6 +362,47 @@ fn F(x: i32) -> i32 {
   return -1;
 }
 
+// --- fail_struct_after_all_binding.carbon
+library "[[@TEST_NAME]]";
+
+// The struct lane (W-077): an all-binding struct root keys as the same
+// synthetic `{Wildcard}` a binding root does, so it subsumes `default`.
+fn F(p: {.a: i32, .b: i32}) -> i32 {
+  match (p) {
+    case {a: i32, b: i32} => { return a + b; }
+    // CHECK:STDERR: fail_struct_after_all_binding.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_struct_after_all_binding.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case {a: i32, b: i32} => { return a + b; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
+    default => { return 0; }
+  }
+  return -1;
+}
+
+// --- fail_struct_after_subset_binding.carbon
+library "[[@TEST_NAME]]";
+
+// A subset+`_` all-binding struct arm is just as irrefutable — the
+// omitted field is discarded, the named one binds — so it also keys
+// `{Wildcard}` and kills the `default`.
+fn F(p: {.a: i32, .b: i32}) -> i32 {
+  match (p) {
+    case {a: i32, _} => { return a; }
+    // CHECK:STDERR: fail_struct_after_subset_binding.carbon:[[@LINE+7]]:5: error: `default` arm never matches; every value of the scrutinee is matched by prior arms [MatchDefaultNeverMatches]
+    // CHECK:STDERR:     default => { return 0; }
+    // CHECK:STDERR:     ^~~~~~~
+    // CHECK:STDERR: fail_struct_after_subset_binding.carbon:[[@LINE-4]]:5: note: every value is matched by this prior arm [MatchDefaultNeverMatchesPriorArm]
+    // CHECK:STDERR:     case {a: i32, _} => { return a; }
+    // CHECK:STDERR:     ^~~~
+    // CHECK:STDERR:
+    default => { return 0; }
+  }
+  return -1;
+}
+
 // CHECK:STDOUT: --- fail_trailing_guarded_default.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

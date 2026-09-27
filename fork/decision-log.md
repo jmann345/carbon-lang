@@ -3044,9 +3044,12 @@ subfiles refilled clean, the only other movement being converged location
 markers. A first gate (run 36315119109) failed on ONE non-converged line —
 the Clang snippet line number a `CppInteropParseError` echoes in
 fail_todo_export.carbon still reflected the previous fill's layout — so a
-third autoupdate converged it; gate of record: GATE_RUN_ID.
-Conformance run 36315125503 (scoreboard b17874390): **110 PASS / 0 FAIL /
-26 SKIP over 136, 45/56 bullets** — the predicted delta exactly (on the post-W-012
+third autoupdate (run 36316933295) converged it. Conformance run
+36315125503 (scoreboard b17874390) on the post-W-012 base: **110 PASS / 0
+FAIL / 26 SKIP over 136, 45/56 bullets** — the predicted delta exactly. Of
+record, after merging trunk with EH-B (#42): gate run 36318283448 green;
+conformance run 36318245113 (scoreboard 06557fb21): **114 PASS / 0 FAIL /
+25 SKIP over 140, 45/56 bullets**, again the predicted delta (on the post-W-012
 base PASS +2 / SKIP −1 / total +1, that is 110 PASS / 0 FAIL / 26 SKIP over
 136, 45/56 bullets; on a post-EH-B base 114/0/25 over 139). `runner.py
 --self-test` clean (136 programs, 56 bullets) and the README program

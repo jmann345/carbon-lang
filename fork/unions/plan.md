@@ -6,11 +6,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Unions plan: native `union` (UN-1, W-009) and C++ union interop (UN-2, W-015)
 
-**Status:** PROPOSED, rev 2, 2026-09-27 — the two adversarial plan
-reviews returned REJECT (rev A: blockers B-1, B-2; minors m-1, m-2) and
-APPROVE-WITH-AMENDMENTS (rev B: F-1 blocker, F-2..F-14); every finding is
-folded below, each marked "(amended 2026-09-27, review fold: ...)", and
-the fold record is the section before Sign-off. Branch
+**Status:** SIGNED OFF FOR IMPLEMENTATION (UN-1 first), rev 2b,
+2026-09-27. The two adversarial plan reviews returned REJECT (rev A:
+blockers B-1, B-2; minors m-1, m-2) and APPROVE-WITH-AMENDMENTS (rev B:
+F-1 blocker, F-2..F-14), folded as rev 2; the coordinator's rev 2a
+amendment (prelude-trusted `Copy` impls) was auto-adopted under R29(a);
+the focused re-review of rev 2a returned SIGN-OFF-WITH-AMENDMENTS
+(mechanism spellings only: one blocker, one major, three minors), folded
+as rev 2b. Every fold is marked "(amended 2026-09-27, review fold: ...)"
+in place and listed in the fold record before Sign-off. Branch
 `claude/carbon-fork-0-1-unions` off trunk e78db5df4 (post-PR #40: EH-A
 landed). **Trunk has since moved (amended 2026-09-27, review fold: rev B
 F-4):** PR #41 landed W-012, so trunk's floor is **108 PASS / 0 FAIL / 27
@@ -217,15 +221,28 @@ implementation choice the design leaves to the toolchain, or draws a
     `Copy` impl over an admitted shape has side effects or differs
     observably from a byte copy of the object representation, so no
     explicit allowlist is needed; the package test alone is the rule.
-    **Mechanism, verified:** for the local store,
-    `context.name_scopes().IsCorePackage(impl.parent_scope_id)`
-    (sem_ir/name_scope.h:404-412, the test `GetCoreInterface` already
-    applies to interfaces at custom_witness.cpp:889) — equivalently
-    `context.sem_ir().package_id() == PackageNameId::Core`
-    (sem_ir/file.h:133; the handle_interface.cpp:88 idiom); for the
-    imported stores, `import_sem_ir.package_id() == PackageNameId::Core`
-    inside the same `import_irs()` loop `HasUserDestroyImpl` walks
-    (:455-465). `Int(N)`/`UInt(N)`/`Float(N)`/`Char`/`Bool`/`T*`/
+    **Mechanism, verified (amended 2026-09-27, review fold: rev 2b
+    B-1):** the local-store leg first SKIPS every impl that import
+    MATERIALIZED into the local store — `context.insts().GetImportSource(
+    impl.first_decl_id()).has_value()` (sem_ir/inst.h:590-594; equivalently
+    `SemIR::GetCanonicalFileAndInstId(&context.sem_ir(),
+    impl.first_decl_id()).first != &context.sem_ir()`, sem_ir/import_ir.h:81)
+    — because a materialized impl's `parent_scope_id` is `None`
+    (`GetIncompleteLocalEntityBase`, import_ref.cpp:1458-1466; the impl
+    import phases :2868-2915 set only `parent_scope_inst_id`, :2876-2877),
+    so rev 2a's `IsCorePackage(impl.parent_scope_id)` spelling would have
+    classified a materialized prelude `Int.as.Copy.impl` (routine —
+    class/basic.carbon:56-58; 178 check goldens carry `as.Copy.impl`) as a
+    USER impl and diagnosed `var a: i32;` whenever an `i32` `Copy` lookup
+    preceded the union in the file, order-dependently. The remaining
+    file-declared impls are classified by `context.sem_ir().package_id()
+    == PackageNameId::Core` (sem_ir/file.h:133; the handle_interface.cpp:88
+    idiom); the imported-store leg classifies by
+    `import_sem_ir.package_id() == PackageNameId::Core` inside the same
+    `import_irs()` loop `HasUserDestroyImpl` walks (custom_witness.cpp:455-497),
+    whose canonical-decl identity match finds `impl forall [T] MyBox(T)
+    as Copy` for a `MyBox(i32)` field (re-review verified). Order
+    independence is pinned by §4.A `order_independent_i32`. `Int(N)`/`UInt(N)`/`Float(N)`/`Char`/`Bool`/`T*`/
     `CppCompat`/`String`/`Optional(T)` fields therefore pass; a user
     class with an `impl as Core.Copy` declared outside `Core` — bodied or
     builtin, the package is the boundary — is rejected with
@@ -403,7 +420,15 @@ implementation choice the design leaves to the toolchain, or draws a
     fold: rev B F-9: UN-1 does touch export.cpp; the rebase direction is
     that UN-1 lands first and EH-B rebases over it if EH-B is still open,
     else UN-1 rebases over EH-B — either way single additive hunks; see
-    R-12's time-box). UN-2 deletes both hunks.
+    R-12's time-box). UN-2 deletes both hunks. Pre-existing, recorded
+    (amended 2026-09-27, review fold: rev 2b m-3): `ExportClassToCpp`
+    passes `ExportNameScopeToCpp`'s result UNCHECKED into
+    `ExportClassToCppInDeclContext` (export.cpp:277-280), so a nullptr
+    from the name-scope guard would still crash there; this is unreachable
+    for unions only because D-UN-6 forbids nested classes in a union body
+    (the guard fires for a union AS a name scope, which nothing can be
+    declared inside). A later D-UN-6 relaxation must re-check :277-280
+    before admitting nested types.
 -   **D-UN-8 — on export, Carbon is the layout authority for a union as
     for every exported record: `CalculateCppFieldOffsets` gets a union
     arm that records offset 0 for every field, and `layoutRecordType`
@@ -444,9 +469,19 @@ implementation choice the design leaves to the toolchain, or draws a
     query_specific_interface_id, /*values=*/{})` — legal because
     `UnformedInit` declares no associated entities (default.carbon:18-26)
     and `BuildCustomWitness` CHECKs only `assoc_entities.size() ==
-    values.size()` (:741-756). The `Op` call then resolves through the
-    blanket impl to the `MakeUninitialized` builtin, which lowers to a
-    poison value (lower/handle_call.cpp:333-336). **Rejected: a
+    values.size()` (:741-756); (4) `case SemIR::CoreInterface::UnformedInit:
+    return SemIR::InstId::None;` in `LookupCppImpl`
+    (check/cpp/impl_lookup.cpp:571-636 — an exhaustive switch with no
+    default ending in `case Unknown: CARBON_FATAL`, so the new kind
+    breaks the -Werror build without an arm; the `IntFitsIn`/`FloatFitsIn`
+    precedent is :629-632). Behaviorally `EvalLookupSingleImplWitness`
+    (check/impl_lookup.cpp:1313-1322) now calls `LookupCppImpl` for
+    concrete selves whose associated import IR is `Cpp` with this kind,
+    and `None` keeps imported C++ classes' `DefaultOrUnformed` path
+    unchanged — the "imported unions unaffected" claim below depends on
+    it (amended 2026-09-27, review fold: rev 2b M-1). The `Op` call then
+    resolves through the blanket impl to the `MakeUninitialized`
+    builtin, which lowers to a poison value (lower/handle_call.cpp:333-336). **Rejected: a
     synthesized `Core.Default` witness** — it would declare the variable
     FORMED, contradicting unions.md:245-253 ("A union variable declared
     without an initializer is in the unformed state ... The first write
@@ -813,8 +848,9 @@ R29(b) it is two PRs:
     arm (:1196-1218) (D-UN-9); comment refresh :315-318.
     **toolchain/sem_ir/core_interface_kind.def:43** — `UnformedInit`
     before `Unknown`; **toolchain/check/core_identifier.def** —
-    `UnformedInit` (D-UN-9; amended 2026-09-27, review fold: rev A B-1 /
-    rev B F-1).
+    `UnformedInit`; **toolchain/check/cpp/impl_lookup.cpp:629-632** —
+    the `UnformedInit → InstId::None` arm (D-UN-9; amended 2026-09-27,
+    review fold: rev A B-1 / rev B F-1 / rev 2b M-1).
 7.  **toolchain/check/cpp/export.cpp** — the union TODO guard at
     `ExportClassToCpp` after :270-273 and at `ExportNameScopeToCpp`'s
     class branch :143-147 (D-UN-7; amended 2026-09-27, review fold: rev A
@@ -971,6 +1007,12 @@ token_kind.def:157-241); `union` appears only as the keyword or as
     (`class C { union Inner { var a: i32; } var u: Inner; }`);
     `namespace_scoped` (`namespace N; union N.U { var a: i32; }` —
     unions.md:105-106; amended 2026-09-27, review fold: rev B F-12);
+    `order_independent_i32` (`fn Warm(x: i32) -> i32 { var y: i32 = x;
+    return y; }` — an `i32` `Core.Copy` lookup that materializes
+    `Int.as.Copy.impl` into the local store — placed textually BEFORE
+    `union U { var a: i32; }`: predicted ACCEPTED, no
+    `UnionFieldNotTriviallyCopyable`; the rev 2b B-1 pin, amended
+    2026-09-27, review fold: rev 2b B-1);
     `file_scope_designated` (`var g: IntOrBytes = {.word = 5};` at file
     scope — with D-UN-4 the initializer is `NotConstant`, so predicted:
     the variable's `var` inst has no constant initializer and the
@@ -1057,11 +1099,16 @@ token_kind.def:157-241); `union` appears only as the keyword or as
     at UN-2) — `import Cpp;` + `union U { var a: i32; fn F(self) {} }` +
     `inline Cpp ''' Carbon::U u; '''` (the `ExportClassToCpp` entry, by way of
     type_mapping.cpp:239-242) and a second subfile calling an exported
-    method so `ExportNameScopeToCpp`'s class branch is the entry
-    (export.cpp:745-749): predicted `SemanticsTodo` "semantics TODO:
-    `union export`" (D-UN-7) followed by whatever Clang reports for the
-    unresolved name; the pin is the TODO line at BOTH entries, and the
-    falsifier is a CHECK failure in `GetStructTypeFields` or a null
+    method (`Carbon::U::F`): predicted, in BOTH subfiles, the
+    `ExportClassToCpp` `SemanticsTodo` "semantics TODO: `union export`"
+    followed by generate_ast.cpp:210's "interop with unsupported type" —
+    C++ name lookup resolves the enclosing record first through
+    `MapInstIdToClangDeclOrType` → `MapToCppType` → `ExportClassToCpp`
+    (generate_ast.cpp:200-212, type_mapping.cpp:239-242), so the
+    `ExportNameScopeToCpp` class-branch guard is never the first hit and
+    stays as defense in depth (reworded; amended 2026-09-27, review fold:
+    rev 2b m-1). The pin is the `ExportClassToCpp` TODO in both subfiles;
+    the falsifier is a CHECK failure in `GetStructTypeFields` or a null
     dereference (§7 R-9; amended 2026-09-27, review fold: rev A B-2).
 -   **lower/testdata/union/basic.carbon** (full prelude) — subfiles
     mirroring `unformed_local` (a `fail_`-free twin of
@@ -1331,10 +1378,12 @@ each discharge.
 -   **Falsifier:** any pre-existing file in the autoupdate diff is a
     plan miss — stop and reconcile before gating (the R26 loc-number
     rule does not apply: no file gains lines above existing code).
--   Source files touched: 24 (amended 2026-09-27, review fold: rev A
+-   Source files touched: 25 (amended 2026-09-27, review fold: rev A
     B-1 / rev B F-1: (23) toolchain/sem_ir/core_interface_kind.def and
-    (24) toolchain/check/core_identifier.def added for D-UN-9; export.cpp
-    is now two hunks, rev A B-2) — (1) lex/token_kind.def; (2)
+    (24) toolchain/check/core_identifier.def added for D-UN-9; rev 2b
+    M-1: (25) toolchain/check/cpp/impl_lookup.cpp for the `LookupCppImpl`
+    arm — a third EH-B contention file, one three-line additive hunk;
+    export.cpp is two hunks, rev A B-2) — (1) lex/token_kind.def; (2)
     parse/node_kind.def; (3) parse/typed_nodes.h; (4) parse/node_ids.h;
     (5) parse/state.def; (6) parse/handle_type.cpp; (7)
     parse/handle_decl_definition.cpp; (8) parse/handle_decl_scope_loop.cpp;
@@ -1345,10 +1394,16 @@ each discharge.
     (19) check/custom_witness.cpp; (20) check/cpp/export.cpp (two
     three-line hunks); (21) diagnostics/kind.def; (22)
     docs/design/unions.md; (23) sem_ir/core_interface_kind.def; (24)
-    check/core_identifier.def — plus docs/design/classes.md (one dated
-    sentence), words.md and the five grammar files. The `UnformedInit`
-    core-interface tag changes no golden: `core_interface` is not
-    printed by the formatter, and no landed witness lookup keys on it.
+    check/core_identifier.def; (25) check/cpp/impl_lookup.cpp — plus
+    docs/design/classes.md (one dated sentence), words.md and the five
+    grammar files. The `UnformedInit` core-interface tag changes no
+    golden: `Interface::Print` DOES emit `core_interface` in
+    `--dump-raw-sem-ir` (sem_ir/interface.h:55-57;
+    basics/raw_sem_ir/one_file.carbon:437 shows `core_interface: Copy`),
+    but no raw-dump golden mentions `UnformedInit` (`grep -rl
+    UnformedInit toolchain/check/testdata/basics/raw_sem_ir/` is empty),
+    and no landed witness lookup keys on the new kind (rationale
+    corrected; amended 2026-09-27, review fold: rev 2b m-2).
 
 ### §6.B UN-2
 
@@ -1398,9 +1453,10 @@ each discharge.
     a `Copy` impl declared outside `Core`, nested unions. Predicted
     rejected (recorded loudly): choice-typed fields, `str`, classes with
     a user-package `Copy` impl, imported C++ classes/unions.
-    Falsifier: `aggregate_fields` or `nested_union_field` diagnosing, or
-    any of the `fail_*_field` pins compiling clean. Contingency: D-UN-2's
-    break condition.
+    Falsifier: `aggregate_fields`, `nested_union_field` or
+    `order_independent_i32` diagnosing (the last is the materialized-impl
+    misclassification of rev 2a, rev 2b B-1), or any of the `fail_*_field`
+    pins compiling clean. Contingency: D-UN-2's break condition.
 -   **R-4 — the copy-witness gate reaches imported unions.** Excluded by
     `is_cpp_scope`. Falsifier: `fail_copy_nontrivial_member` compiling
     clean or showing a `PrimitiveCopy` call.
@@ -1427,8 +1483,9 @@ each discharge.
     whose callers handle nullptr (§0.1 row 12c); `ExportClassTemplateToCpp`
     (:415-418) is unreachable for a union under D-UN-3 (a generic union
     never completes). Falsifier: `fail_todo_export` (either subfile) not
-    showing the TODO, or crashing on a null `record_decl` (amended
-    2026-09-27, review fold: rev A B-2).
+    showing the `ExportClassToCpp` TODO, or crashing on a null
+    `record_decl` (amended 2026-09-27, review fold: rev A B-2; rev 2b m-1:
+    both subfiles reach the same guard, §4.A).
 -   **R-10 — pointer/i64 sizes in check-side layout.** `GetCompleteTypeInfo`
     gives target-independent sizes for `i64` (8) and pointers (8), as
     check/testdata/choice/payload_layout.carbon relies on without a
@@ -1642,7 +1699,14 @@ each discharge.
     the prelude's blanket `T*`/`const T`/`Int(N)`/`Optional(T)` `Copy`
     impls would disqualify every class — and the package test, not the
     body, is the boundary (D-UN-2, rev 2a): `Optional(i32*)` must be
-    ADMITTED.
+    ADMITTED. In the LOCAL leg skip import-materialized impls
+    (`GetImportSource(impl.first_decl_id()).has_value()`) BEFORE the
+    package test — their `parent_scope_id` is `None`, so any scope-based
+    test misclassifies them (rev 2b B-1); `order_independent_i32` is the
+    pin.
+-   `LookupCppImpl`'s switch is exhaustive without a default: add the
+    `UnformedInit → None` arm in the same commit as the core-interface
+    kind or the -Werror build breaks (rev 2b M-1).
 -   The export guard goes in `ExportClassToCpp` and `ExportNameScopeToCpp`,
     never in `ExportClassToCppInDeclContext` (rev A B-2).
 -   Do not cover non-designated fields in the `ClassInit` (R-2's
@@ -1670,7 +1734,7 @@ evidence the departure rests on).
 | rev A B-1 = rev B F-1 (BLOCKER): `var u: U;` fails `DefaultOrUnformed` | D-UN-9 (§0.3), §0.1 row 12b, §1.A.6, §2.A.6, §3, §4.A `unformed_then_assign` + lower `unformed_local`, §5 note, §6.A (+2 files), §7 R-15, hand-off. Synthesized-`Default` alternative rejected in D-UN-9. Verified: no in-place-class `UnformedInit` golden exists in the tree; predictions derived from the code path and the empty-tuple/witness precedents |
 | rev A B-2 (BLOCKER): guard placement null-crashes | D-UN-7 rewritten, §0.1 row 12c, §2.A.7, §2.B.2, §4.A `fail_todo_export` (both entries), §7 R-9 |
 | rev B F-2: destructible-only predicate; false export.cpp sentence | D-UN-2 rewritten: option (a) adopted as a CLASS-KEYED, `primitive_copy`-exempting walk; false sentence deleted; `fail_user_copy_field`. **Departure, with evidence:** the reviewer's "(a) mirroring `HasUserDestroyImpl`" cannot be literal — the prelude declares symbolic-self `Core.Copy` impls (copy.carbon:22, :46; int.carbon:25; uint.carbon:26; float.carbon:26; optional.carbon:50) so the :436-438 shortcut would reject every class, and `i32` is `class_type @Int`, so the exemption for builtin-bodied impls is load-bearing. **Rev 2 departure, superseded by rev 2a:** rev 2 read the reviewer's "`Optional(T*)` still passes (optional.carbon:189-203)" as citing the `OptionalStorage` helper (the class's `Core.Copy` impl at :50-54 is bodied) and rejected `Optional(T*)`; rev 2a's prelude trust boundary admits it (see the rev 2a row) |
-| rev 2a (coordinator amendment, auto-adopted under R29(a)): prelude-trusted `Copy` impls | D-UN-2 copy half re-ruled as a package boundary (`IsCorePackage(impl.parent_scope_id)` / `package_id() == PackageNameId::Core`, verified at name_scope.h:404-412, file.h:133); prelude `Core.Copy` audit recorded in D-UN-2 (all builtin-bodied, delegating, or side-effect-free field-wise copies; no allowlist needed); `optional_pointer_field` restored as a positive subfile with a lower memcpy pin; `fail_optional_pointer_field`, the :341-344 note and the `Optional(T*)` residue withdrawn; `fail_user_copy_field` kept; R-3, §8.5, §8.6, hand-off updated |
+| rev 2a (coordinator amendment, auto-adopted under R29(a)): prelude-trusted `Copy` impls | D-UN-2 copy half re-ruled as a package boundary (`package_id() == PackageNameId::Core` on the declaring file, file.h:133 — rev 2a's local-leg spelling `IsCorePackage(impl.parent_scope_id)` was corrected at rev 2b B-1); prelude `Core.Copy` audit recorded in D-UN-2 (all builtin-bodied, delegating, or side-effect-free field-wise copies; no allowlist needed); `optional_pointer_field` restored as a positive subfile with a lower memcpy pin; `fail_optional_pointer_field`, the :341-344 note and the `Optional(T*)` residue withdrawn; `fail_user_copy_field` kept; R-3, §8.5, §8.6, hand-off updated |
 | rev A M-1 = rev B F-3: cpp-scope fields rejected | D-UN-2(iii), `fail_cpp_class_field`, residue with mechanism, kept out of UN-2 with the stated reason; `HasUserDestroyImpl` shortcut recorded as the break-condition mechanism |
 | rev A M-2: file-scope initializer unpinned | §4.A `file_scope_designated` + lower `file_scope_union`; R-14 now pinned; residue withdrawn |
 | rev B F-4: counts stale (W-012 landed) | Header, §5 (deltas + both bases), §5.A/§5.B titles, §8.3, §8.6 (:17 → :18; header deltas) |
@@ -1686,6 +1750,19 @@ evidence the departure rests on).
 | rev B F-14: runtime cannot observe layout | §5 arbiters paragraph (layout.carbon, `halves[1]`, embedded-Clang `static_assert`, runner.py:43-52/:628-638) |
 | rev A m-1: `SkipPastLikelyEnd` recovery | §4.A `fail_members` authoring rule (context.cpp:159-189) |
 | rev A m-2: `PrintClassFields` | §1.A.3: prints `is_choice` and `is_union` |
+| rev 2b B-1 (BLOCKER, re-review): local-leg `IsCorePackage(parent_scope_id)` misclassifies import-materialized impls (`parent_scope_id` None, import_ref.cpp:1458-1466, :2876-2877) — order-dependent false `UnionFieldNotTriviallyCopyable` on `i32` fields | D-UN-2 mechanism respelled: skip `GetImportSource(...).has_value()` impls in the local leg, classify file-declared impls by `sem_ir().package_id()`, imported leg unchanged; §4.A `order_independent_i32`; R-3 falsifier; hand-off; rev 2a row corrected |
+| rev 2b M-1 (MAJOR): `LookupCppImpl`'s exhaustive switch needs an `UnformedInit` arm (-Werror) | D-UN-9 step (4) (`return InstId::None`, the :629-632 precedent; keeps imported classes' `DefaultOrUnformed` path unchanged through `EvalLookupSingleImplWitness` :1313-1322); §2.A.6; §6.A 24 → 25 files; hand-off |
+| rev 2b m-1: second `fail_todo_export` subfile reaches `ExportClassToCpp` first (generate_ast.cpp:200-212) | §4.A pin reworded to "the `ExportClassToCpp` TODO in both subfiles" + generate_ast.cpp:210's follow-on; R-9; the name-scope guard kept as defense in depth |
+| rev 2b m-2: `Interface::Print` does emit `core_interface` in raw dumps | §6.A rationale corrected (interface.h:55-57; one_file.carbon:437); conclusion stands — no raw-dump golden mentions `UnformedInit` |
+| rev 2b m-3: `ExportClassToCpp` :277-280 passes the name-scope result unchecked (pre-existing) | D-UN-7 records it, unreachable for unions only under D-UN-6; re-check on any D-UN-6 relaxation |
+
+Re-review (rev 2a) items verified with no change, recorded: D-UN-9's
+mechanics (a)-(d) including `BuildCustomWitness` with empty values, the
+blanket impl's constraint path through `EvalLookupSingleImplWitness`,
+and `MakeUninitialized` → poison with the in-place `InitializeStorage`
+emitting nothing; D-UN-7's callers null-check; the imported leg's
+canonical-decl identity finds `impl forall [T] MyBox(T) as Copy` for
+`MyBox(i32)`; the §5 deltas are consistent.
 
 Findings verified and accepted without change: everything both reviews
 listed as verified (VARIANTS5, the three-entry `DeclIntroducers` table,
@@ -1697,7 +1774,10 @@ residue-by-title, break conditions).
 
 ## Sign-off
 
-_Rev 2 folded 2026-09-27, rev 2a (prelude-trusted `Copy` impls)
-auto-adopted the same day under R29(a); awaiting re-review of the two
-blockers' folds (D-UN-9, D-UN-7) and the D-UN-2 trust boundary. Amendments continue to be
-folded in place, each marked "(amended <date>, review fold: ...)"._
+**SIGNED OFF FOR IMPLEMENTATION, 2026-09-27 (rev 2b).** Rev 2 folded
+the two adversarial reviews; rev 2a (prelude-trusted `Copy` impls) was
+auto-adopted under R29(a); the focused re-review of rev 2a returned
+SIGN-OFF-WITH-AMENDMENTS, whose five mechanism-spelling items are folded
+as rev 2b with no decision changes. Implementation proceeds UN-1 first
+(§3), UN-2 after EH-B per §0.4/R-12. Later amendments continue to be
+folded in place, each marked "(amended <date>, review fold: ...)".

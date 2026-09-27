@@ -169,6 +169,22 @@ fn F(p: {.a: i32, .b: i32}) -> i32 {
 }
 //@dump-sem-ir-end
 
+// --- unused_struct_root.carbon
+library "[[@TEST_NAME]]";
+
+// `unused` on a whole struct pattern marks every field binding unused, so
+// neither `UnusedPatternNoBindings` nor `UnusedBinding` fires (tuple parity:
+// `MarkPatternUnused` walks struct elements like tuple elements).
+//@dump-sem-ir-begin
+fn F(s: {.a: i32, .b: i32}) -> i32 {
+  match (s) {
+    case unused {a: i32, _} => { return 1; }
+    default => { return 0; }
+  }
+  return -1;
+}
+//@dump-sem-ir-end
+
 // --- empty_struct.carbon
 library "[[@TEST_NAME]]";
 

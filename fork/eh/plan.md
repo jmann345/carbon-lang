@@ -967,6 +967,19 @@ five commits:**
     a `store { {} } ...` into the region field — a legal zero-size store
     LLVM accepts; a CARBON_FATAL/crash is the R-3 falsifier (prediction
     rewritten; amended 2026-09-27, review fold: rev 1 MINOR-6).
+    **Amended 2026-09-27 after the falsifier fired (§7 R-3 note):** that
+    prediction holds for the GENERIC `Core.ControlFlow(i32, ()).Break(())`
+    only (symbolic payload → cover-then-update → runtime `store { {} }`).
+    For the non-generic `U.A(())` the constructor folds: expect
+    `@U.val = internal constant <{ <{ i1, [3 x i8] }>, [4 x i8] }>
+    <{ <{ i1, [3 x i8] }> zeroinitializer, [4 x i8] zeroinitializer }>`
+    (or `zeroinitializer` as a whole, since discriminant 0 + zero region
+    is all-zero) and `@U.A` is a `llvm.memcpy` of that template into the
+    `sret` return slot, 8 bytes — the alternative_copy.carbon `@Flag.val`
+    shape; `@U.B` is unchanged runtime construction. The new
+    `multi_unit_payload` subfile predicts the same for `V.C((), ())`
+    (`{ {}, {} }` in a `[4 x i8]` region; `V`'s discriminant is `i1`,
+    two alternatives).
 
 ### §4.B EH-B
 
@@ -1211,6 +1224,45 @@ header gains one sentence pointing at the boundary diagnostic's lower pin
     a non-zero-size region. Contingency: the
     D-EH-2 break condition (scalar carrier for `Optional`, `Result((), E)`
     unaffected).
+    **2026-09-27 — falsifier FIRED (run 36301651448; `PadToType` CHECK
+    in `EmitAggregateConstant<llvm::ConstantStruct>`, reached from
+    `LowerConstants()` ← `FileContext::PrepareToLower()`).** Root cause:
+    the prediction above covered only the RUNTIME regime. On the
+    non-generic `choice U { A(x: ()), B(y: i32) }` the payload tuple
+    `((),)` has exactly one value, so inside `@U.A` the parameter's
+    conversion (`converted %_.param, tuple_init ()`) is a concrete
+    constant and `EvalConstantInst(ClassInit)` (eval_inst.cpp) folds the
+    constructor's `class_init` to `%U.val: %U = struct_value (%int_0,
+    %tuple)` — a `StructValue` whose payload element carries the payload
+    TUPLE type `((),)` (LLVM `{ {} }`) because handle_choice.cpp's
+    non-symbolic arm initializes the alternative's tuple FIELD inside the
+    `CustomLayoutType` region (a sub-object), not the region field itself
+    (check golden unit_payload.carbon:123). `LowerConstants` lowers every
+    concrete constant eagerly; `PadToType({ {} } zeroinitializer,
+    [4 x i8])` had no arm for a constant that is neither the element type
+    nor its tail-padded wrapper → CHECK. Non-zero-sized payloads never
+    fold (they depend on the parameter), every pre-existing choice
+    constant covers the region with `%uninit` OF the region type (exact
+    type match, for example `%Sized.val = struct_value (%int_2, %uninit)`), and
+    generic choices (`Core.ControlFlow`, `Core.Result`) take the symbolic
+    cover-then-`UpdateInit` path — so the shape is reachable ONLY through
+    D-EH-2's `()` admission on a non-generic choice, exactly what the
+    falsifier was for. Fix (toolchain/lower/constant.cpp `PadToType`,
+    now taking the `DataLayout`): a zero-sized constant placed in a byte
+    region `[N x i8]` contributes no bytes → the region's zero filler
+    (identical to the `EmitAsConstant(UninitializedValue)` cover and to
+    what the runtime zero-size `store` leaves behind); the residual
+    `cast<StructType>` became `dyn_cast` folded into the CHECK so any
+    OTHER mismatch stays loud instead of tripping LLVM's cast assertion
+    first. Zero churn for existing goldens: the new arm runs only when
+    `constant->getType() != llvm_type`, which no pre-existing constant
+    satisfies. Contingency NOT taken: the fix is 4 lines and general
+    (any all-zero-sized payload tuple, `((), ())` included — pinned by the
+    new `multi_unit_payload` subfile). Residual (documented, not fixed
+    here): the folded `%U.val` is ill-typed at element 1 in SemIR
+    (`EvalConstantInst(ClassInit)`'s `ClassValue` TODO); no check-side
+    consumer reaches it since calls do not fold, so lowering is the
+    single consumer and now handles it.
 -   **R-4 — entry-point epilogue versus the `ReturnSlot` inst.** `ReturnSlot`
     reads the return param's local (handle.cpp:260-263); the plan binds
     that local to an alloca AFTER the poison loop, so ordering is correct

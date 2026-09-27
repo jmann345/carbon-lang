@@ -6,6 +6,7 @@
 
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/IR/Constants.h"
+#include "llvm/IR/DataLayout.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Value.h"
 #include "toolchain/base/kind_switch.h"
@@ -124,14 +125,38 @@ static auto GetElementType(llvm::ArrayType* array_type, int /*index*/)
 
 // Add padding if necessary to convert the given constant to the specified,
 // possibly-padded LLVM type. The type of the constant will either already be
-// `llvm_type`, or will be a tail-padded type `<{llvm_type, [i8 x N]}>`.
-static auto PadToType(llvm::Constant* constant, llvm::Type* llvm_type)
+// `llvm_type`, or will be a tail-padded type `<{llvm_type, [i8 x N]}>`, or --
+// the one shape where an aggregate constant's element is a sub-object of the
+// field rather than the field itself -- a zero-sized constant placed in a
+// byte region `[N x i8]`.
+//
+// That last shape is a choice alternative constructor's `ClassInit` folded
+// to a `StructValue` (eval_inst.cpp `EvalConstantInst(ClassInit)`): the
+// payload element initializes the alternative's payload TUPLE field inside
+// the `CustomLayoutType` region (handle_choice.cpp, the non-symbolic
+// `InitializeElementInPlace` arm), so the folded element carries the tuple's
+// type, not the region's. It folds only when the tuple's every element is
+// zero-sized (`((),)`, `((), ())`: the empty tuple has one value, so the
+// conversion of the parameter is itself a constant); a non-zero-sized payload
+// depends on the parameter and never folds, and a generic choice's
+// constructor takes the symbolic `UninitializedValue`-cover path instead. A
+// zero-sized constant contributes no bytes, so the region's constant is its
+// zero filler -- the same bytes `EmitAsConstant(UninitializedValue)` emits for
+// the region cover and the runtime zero-size `store` leaves untouched. Any
+// other mismatch is a lowering bug and stays loud.
+static auto PadToType(const llvm::DataLayout& data_layout,
+                      llvm::Constant* constant, llvm::Type* llvm_type)
     -> llvm::Constant* {
   if (constant->getType() == llvm_type) {
     return constant;
   }
-  auto* padded = cast<llvm::StructType>(llvm_type);
-  CARBON_CHECK(padded->getNumElements() == 2 &&
+  if (auto* region = dyn_cast<llvm::ArrayType>(llvm_type);
+      region && region->getElementType()->isIntegerTy(8) &&
+      data_layout.getTypeAllocSize(constant->getType()).isZero()) {
+    return llvm::Constant::getNullValue(llvm_type);
+  }
+  auto* padded = dyn_cast<llvm::StructType>(llvm_type);
+  CARBON_CHECK(padded && padded->getNumElements() == 2 &&
                    padded->getElementType(0) == constant->getType(),
                "Unexpected type {0} for constant {1}", *llvm_type, *constant);
   // Zeros for the same covering-copy reason as
@@ -151,10 +176,11 @@ static auto EmitAggregateConstant(ConstantContext& context,
   auto refs = context.sem_ir().inst_blocks().Get(refs_id);
   llvm::SmallVector<llvm::Constant*> elements;
   elements.reserve(refs.size());
+  const auto& data_layout = context.llvm_module().getDataLayout();
   for (auto [i, ref] : llvm::enumerate(refs)) {
     if (auto* constant = context.GetConstant(ref)) {
       auto* elem_type = GetElementType(llvm_type, i);
-      elements.push_back(PadToType(constant, elem_type));
+      elements.push_back(PadToType(data_layout, constant, elem_type));
     } else {
       return nullptr;
     }

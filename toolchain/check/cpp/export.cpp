@@ -144,6 +144,14 @@ auto ExportNameScopeToCpp(Context& context, SemIR::LocId loc_id,
     } else if (auto class_type =
                    context.insts().TryGetAs<SemIR::ClassType>(const_inst_id)) {
       const auto& class_info = context.classes().Get(class_type->class_id);
+      if (class_info.is_union) {
+        // TODO: Export unions as `TagTypeKind::Union` with Carbon-supplied
+        // layout (fork/unions/plan.md UN-2); until then a union's
+        // `CustomLayoutType` representation must not reach
+        // `GetStructTypeFields`.
+        context.TODO(loc_id, "union export");
+        return nullptr;
+      }
       decl_context = ExportClassToCppInDeclContext(
           context, decl_context, class_info, class_type->specific_id);
     } else {
@@ -272,6 +280,15 @@ auto ExportClassToCpp(Context& context, SemIR::ClassType class_type)
   if (const auto* clang_decl =
           context.clang_decls().Lookup(class_info.first_decl_id())) {
     return cast<clang::TagDecl>(clang_decl->decl());
+  }
+
+  if (class_info.is_union) {
+    // TODO: Export unions as `TagTypeKind::Union` with Carbon-supplied layout
+    // (fork/unions/plan.md UN-2); until then a union's `CustomLayoutType`
+    // representation must not reach `GetStructTypeFields`. Every caller of
+    // this function handles a null result.
+    context.TODO(loc_id, "union export");
+    return nullptr;
   }
 
   auto* decl_context =

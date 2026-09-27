@@ -2017,6 +2017,7 @@ static auto ImportIncompleteClass(ImportContext& context,
         .inheritance_kind = import_class.inheritance_kind,
         .is_dynamic = import_class.is_dynamic,
         .is_choice = import_class.is_choice,
+        .is_union = import_class.is_union,
         .scope_id = import_class.is_complete()
                         ? AddPlaceholderNameScope(context)
                         : SemIR::NameScopeId::None}});
@@ -4185,8 +4186,9 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
 
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
                                 SemIR::CustomLayoutType inst) -> ResolveResult {
-  // A native custom-layout type: today, the payload region of a
-  // payload-carrying choice. (Custom layouts of imported C++ classes are
+  // A native custom-layout type: the payload region of a payload-carrying
+  // choice, or the object representation of a native `union` (every field at
+  // offset zero). (Custom layouts of imported C++ classes are
   // rebuilt from the Clang AST instead of resolving through here.) The
   // resolution mirrors `StructType`, plus a copy of the layout block, which
   // contains only sizes and offsets — no cross-file ids.

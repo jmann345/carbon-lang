@@ -165,6 +165,13 @@ auto HandleDocumentSymbol(
       case Parse::NodeKind::ChoiceDefinitionStart:
         symbol_kind = clang::clangd::SymbolKind::Enum;
         break;
+      case Parse::NodeKind::UnionDecl:
+        is_leaf = true;
+        symbol_kind = clang::clangd::SymbolKind::Struct;
+        break;
+      case Parse::NodeKind::UnionDefinitionStart:
+        symbol_kind = clang::clangd::SymbolKind::Struct;
+        break;
 
       case Parse::NodeKind::FunctionDefinition:
       case Parse::NodeKind::FunctionTerseDefinition:
@@ -172,7 +179,8 @@ auto HandleDocumentSymbol(
       case Parse::NodeKind::NamedConstraintDefinition:
       case Parse::NodeKind::InterfaceDefinition:
       case Parse::NodeKind::ClassDefinition:
-      case Parse::NodeKind::ChoiceDefinition: {
+      case Parse::NodeKind::ChoiceDefinition:
+      case Parse::NodeKind::UnionDefinition: {
         if (symbols.HasOpenSymbol()) {
           // Symbols definition has completed, pop it from stack and add to
           // parent/root.

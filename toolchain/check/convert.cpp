@@ -883,6 +883,99 @@ static auto ConvertStructToStruct(Context& context, SemIR::StructType src_type,
       /*get_default=*/[](SemIR::NameId) { return SemIR::InstId::None; });
 }
 
+// Performs the designated single-field initialization of a `union` from a
+// struct literal or struct value: `{.word = 5}` initializes exactly the named
+// field, in place, and produces a one-element `ClassInit`
+// (docs/design/unions.md, "Initialization and assignment"). The union's object
+// representation is a `CustomLayoutType` with every field at offset zero, so
+// there is no whole-union aggregate initialization: zero or several designated
+// fields are diagnosed. The other fields are deliberately not covered: at
+// offset zero a cover's store would clobber the designated value, and the
+// element-count convention exists for the constant fold, which
+// `EvalConstantInst` for `ClassInit` never performs for a union. This function
+// only converts the type, and does not perform a final conversion to the
+// requested expression category.
+static auto ConvertStructToUnion(Context& context, SemIR::StructType src_type,
+                                 SemIR::CustomLayoutType dest_repr,
+                                 SemIR::InstId value_id,
+                                 ConversionTarget target) -> SemIR::InstId {
+  auto& sem_ir = context.sem_ir();
+  PendingBlock target_block(&context);
+
+  // If we're trying to create a union value, form temporary storage to hold
+  // the initializer.
+  if (!target.is_initializer()) {
+    target.kind = ConversionTarget::Initializing;
+    target.storage_access_block = &target_block;
+    target.storage_id = target_block.AddInst<SemIR::TemporaryStorage>(
+        SemIR::LocId(value_id), {.type_id = target.type_id});
+  }
+
+  SemIR::LocId value_loc_id(value_id);
+  auto src_elem_fields = sem_ir.struct_type_fields().Get(src_type.fields_id);
+  if (src_elem_fields.size() != 1) {
+    if (target.diagnose) {
+      CARBON_DIAGNOSTIC(UnionInitNotSingleField, Error,
+                        "initializer for union {0} must designate exactly one "
+                        "field; found {1}",
+                        SemIR::TypeId, int);
+      context.emitter().Emit(value_loc_id, UnionInitNotSingleField,
+                             target.type_id,
+                             static_cast<int>(src_elem_fields.size()));
+    }
+    return SemIR::ErrorInst::InstId;
+  }
+  auto src_field = src_elem_fields.front();
+
+  auto dest_elem_fields = sem_ir.struct_type_fields().Get(dest_repr.fields_id);
+  const auto* dest_field_it =
+      llvm::find_if(dest_elem_fields, [&](const SemIR::StructTypeField& field) {
+        return field.name_id == src_field.name_id;
+      });
+  if (dest_field_it == dest_elem_fields.end()) {
+    if (target.diagnose) {
+      CARBON_DIAGNOSTIC(UnionInitUnknownField, Error,
+                        "union {0} has no field named `{1}`", SemIR::TypeId,
+                        SemIR::NameId);
+      context.emitter().Emit(value_loc_id, UnionInitUnknownField,
+                             target.type_id, src_field.name_id);
+    }
+    return SemIR::ErrorInst::InstId;
+  }
+  auto dest_field = *dest_field_it;
+  auto dest_field_index =
+      static_cast<size_t>(dest_field_it - dest_elem_fields.begin());
+
+  // If we're initializing from a struct literal, we will use its element
+  // directly. Otherwise, materialize a temporary if needed and index into the
+  // result.
+  llvm::ArrayRef<SemIR::InstId> literal_elems;
+  if (auto struct_literal =
+          sem_ir.insts().Get(value_id).TryAs<SemIR::StructLiteral>()) {
+    literal_elems = sem_ir.inst_blocks().Get(struct_literal->elements_id);
+  } else {
+    value_id = MaterializeIfInitializer(context, value_id);
+  }
+
+  ConversionTarget::Kind inner_kind =
+      GetAggregateElementConversionTargetKind(sem_ir, target);
+  auto init_id =
+      ConvertAggregateElement<SemIR::StructAccess, SemIR::ClassElementAccess>(
+          context, value_loc_id, value_id, src_field.type_inst_id,
+          literal_elems, inner_kind, target.storage_id, dest_field.type_inst_id,
+          target.storage_access_block, /*src_field_index=*/0, dest_field_index);
+  if (init_id == SemIR::ErrorInst::InstId) {
+    return SemIR::ErrorInst::InstId;
+  }
+
+  target.storage_access_block->InsertHere();
+  return AddInst<SemIR::ClassInit>(
+      context, value_loc_id,
+      {.type_id = target.type_id,
+       .elements_id = sem_ir.inst_blocks().Add({init_id}),
+       .dest_id = target.storage_id});
+}
+
 // Performs a conversion from a struct to a class type. This function only
 // converts the type, and does not perform a final conversion to the requested
 // expression category.
@@ -906,7 +999,13 @@ static auto ConvertStructToClass(Context& context, SemIR::StructType src_type,
   if (object_repr_id == SemIR::ErrorInst::TypeId) {
     return SemIR::ErrorInst::InstId;
   }
-  if (context.types().Is<SemIR::CustomLayoutType>(object_repr_id)) {
+  if (auto custom_layout_type =
+          context.types().TryGetAs<SemIR::CustomLayoutType>(object_repr_id)) {
+    if (dest_class_info.is_union) {
+      // A union initializes exactly one designated field.
+      return ConvertStructToUnion(context, src_type, *custom_layout_type,
+                                  value_id, target);
+    }
     // Builtin conversion does not apply.
     return value_id;
   }

@@ -2982,7 +2982,7 @@ fn R() -> Core.Result(i32, Cpp.Exception) {
 // CHECK:STDOUT:   %.cfb: type = fn_type_with_self_type %Try.WithSelf.FromBreak.type.cf1, %Try.facet.51d [concrete]
 // CHECK:STDOUT:   %Result.as.Try.impl.FromBreak.specific_fn: <specific function> = specific_function %Result.as.Try.impl.FromBreak.c94, @Result.as.Try.impl.FromBreak(%i32, %Cpp.Exception) [concrete]
 // CHECK:STDOUT:   %Destroy.type: type = facet_type <@Destroy> [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.11: type = fn_type @Destroy.Op.loc18_64.11 [concrete]
+// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.11: type = fn_type @Destroy.Op.loc25_64.11 [concrete]
 // CHECK:STDOUT:   %Destroy.Op.1a2547.11: %Destroy.Op.type.1d8f74.11 = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -3046,15 +3046,15 @@ fn R() -> Core.Result(i32, Cpp.Exception) {
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %R.decl: %R.type = fn_decl @R [concrete = constants.%R] {
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.5d9 = out_param_pattern [concrete = constants.%return.param_patt.8a0]
-// CHECK:STDOUT:     %return.patt: %pattern_type.5d9 = return_slot_pattern %return.param_patt, %Result.loc17 [concrete = constants.%return.patt.dd6]
+// CHECK:STDOUT:     %return.patt: %pattern_type.5d9 = return_slot_pattern %return.param_patt, %Result.loc24 [concrete = constants.%return.patt.dd6]
 // CHECK:STDOUT:   } {
-// CHECK:STDOUT:     %Core.ref.loc17: <namespace> = name_ref Core, imports.%Core [concrete = imports.%Core]
-// CHECK:STDOUT:     %Result.ref.loc17: %Result.type = name_ref Result, imports.%Core.Result [concrete = constants.%Result.generic]
-// CHECK:STDOUT:     %i32.loc17: type = type_literal constants.%i32 [concrete = constants.%i32]
-// CHECK:STDOUT:     %Cpp.ref.loc17: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
-// CHECK:STDOUT:     %Exception.ref.loc17: type = name_ref Exception, constants.%Cpp.Exception [concrete = constants.%Cpp.Exception]
-// CHECK:STDOUT:     %Result.loc17: type = class_type @Result, @Result(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.900]
-// CHECK:STDOUT:     %.loc17_41.3: Core.Form = init_form %Result.loc17 [concrete = constants.%.c19]
+// CHECK:STDOUT:     %Core.ref.loc24: <namespace> = name_ref Core, imports.%Core [concrete = imports.%Core]
+// CHECK:STDOUT:     %Result.ref.loc24: %Result.type = name_ref Result, imports.%Core.Result [concrete = constants.%Result.generic]
+// CHECK:STDOUT:     %i32.loc24: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:     %Cpp.ref.loc24: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:     %Exception.ref.loc24: type = name_ref Exception, constants.%Cpp.Exception [concrete = constants.%Cpp.Exception]
+// CHECK:STDOUT:     %Result.loc24: type = class_type @Result, @Result(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.900]
+// CHECK:STDOUT:     %.loc24_41.3: Core.Form = init_form %Result.loc24 [concrete = constants.%.c19]
 // CHECK:STDOUT:     %return.param: ref %Result.900 = out_param call_param0
 // CHECK:STDOUT:     %return: ref %Result.900 = return_slot %return.param
 // CHECK:STDOUT:   }
@@ -3062,162 +3062,162 @@ fn R() -> Core.Result(i32, Cpp.Exception) {
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @R() -> out %return.param: %Result.900 {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %Core.ref.loc18: <namespace> = name_ref Core, imports.%Core [concrete = imports.%Core]
-// CHECK:STDOUT:   %Result.ref.loc18: %Result.type = name_ref Result, imports.%Core.Result [concrete = constants.%Result.generic]
-// CHECK:STDOUT:   %i32.loc18: type = type_literal constants.%i32 [concrete = constants.%i32]
-// CHECK:STDOUT:   %Cpp.ref.loc18_27: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
-// CHECK:STDOUT:   %Exception.ref.loc18: type = name_ref Exception, constants.%Cpp.Exception [concrete = constants.%Cpp.Exception]
-// CHECK:STDOUT:   %Result.loc18_40: type = class_type @Result, @Result(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.900]
-// CHECK:STDOUT:   %.loc18_41: %Result.Ok.type.977 = specific_constant imports.%Core.import_ref.597, @Result(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.Ok.789]
-// CHECK:STDOUT:   %Ok.ref.loc18_41: %Result.Ok.type.977 = name_ref Ok, %.loc18_41 [concrete = constants.%Result.Ok.789]
-// CHECK:STDOUT:   %Cpp.ref.loc18_45: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %Core.ref.loc25: <namespace> = name_ref Core, imports.%Core [concrete = imports.%Core]
+// CHECK:STDOUT:   %Result.ref.loc25: %Result.type = name_ref Result, imports.%Core.Result [concrete = constants.%Result.generic]
+// CHECK:STDOUT:   %i32.loc25: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:   %Cpp.ref.loc25_27: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %Exception.ref.loc25: type = name_ref Exception, constants.%Cpp.Exception [concrete = constants.%Cpp.Exception]
+// CHECK:STDOUT:   %Result.loc25_40: type = class_type @Result, @Result(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.900]
+// CHECK:STDOUT:   %.loc25_41: %Result.Ok.type.977 = specific_constant imports.%Core.import_ref.597, @Result(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.Ok.789]
+// CHECK:STDOUT:   %Ok.ref.loc25_41: %Result.Ok.type.977 = name_ref Ok, %.loc25_41 [concrete = constants.%Result.Ok.789]
+// CHECK:STDOUT:   %Cpp.ref.loc25_45: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %may_throw_int.ref: %may_throw_int.cpp_overload_set.type = name_ref may_throw_int, imports.%may_throw_int.cpp_overload_set.value [concrete = constants.%may_throw_int.cpp_overload_set.value]
-// CHECK:STDOUT:   %Result.loc18_63: type = class_type @Result, @Result(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.900]
-// CHECK:STDOUT:   %.loc18_63.1: ref %i32 = temporary_storage
-// CHECK:STDOUT:   %addr.loc18_63.1: %ptr.d08 = addr_of %.loc18_63.1
-// CHECK:STDOUT:   %.loc18_63.2: ref %ptr.00a = temporary_storage
-// CHECK:STDOUT:   %addr.loc18_63.2: %ptr.6f9 = addr_of %.loc18_63.2
-// CHECK:STDOUT:   %may_throw_int__carbon_catching_thunk.call: init %i32 = call imports.%may_throw_int__carbon_catching_thunk.decl(%addr.loc18_63.1, %addr.loc18_63.2)
+// CHECK:STDOUT:   %Result.loc25_63: type = class_type @Result, @Result(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.900]
+// CHECK:STDOUT:   %.loc25_63.1: ref %i32 = temporary_storage
+// CHECK:STDOUT:   %addr.loc25_63.1: %ptr.d08 = addr_of %.loc25_63.1
+// CHECK:STDOUT:   %.loc25_63.2: ref %ptr.00a = temporary_storage
+// CHECK:STDOUT:   %addr.loc25_63.2: %ptr.6f9 = addr_of %.loc25_63.2
+// CHECK:STDOUT:   %may_throw_int__carbon_catching_thunk.call: init %i32 = call imports.%may_throw_int__carbon_catching_thunk.decl(%addr.loc25_63.1, %addr.loc25_63.2)
 // CHECK:STDOUT:   %int_0: Core.IntLiteral = int_value 0 [concrete = constants.%int_0.5c6]
-// CHECK:STDOUT:   %impl.elem0.loc18_63.1: %.b7a = impl_witness_access constants.%ImplicitAs.impl_witness.a2a, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
-// CHECK:STDOUT:   %bound_method.loc18_63.1: <bound method> = bound_method %int_0, %impl.elem0.loc18_63.1 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.7b4]
-// CHECK:STDOUT:   %specific_fn.loc18_63.1: <specific function> = specific_function %impl.elem0.loc18_63.1, @Core.IntLiteral.as.ImplicitAs.impl.Convert.1(constants.%int_32) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571]
-// CHECK:STDOUT:   %bound_method.loc18_63.2: <bound method> = bound_method %int_0, %specific_fn.loc18_63.1 [concrete = constants.%bound_method.6e0]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc18_63: init %i32 = call %bound_method.loc18_63.2(%int_0) [concrete = constants.%int_0.3c0]
-// CHECK:STDOUT:   %.loc18_63.3: %i32 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc18_63 [concrete = constants.%int_0.3c0]
-// CHECK:STDOUT:   %.loc18_63.4: %i32 = converted %int_0, %.loc18_63.3 [concrete = constants.%int_0.3c0]
-// CHECK:STDOUT:   %impl.elem0.loc18_63.2: %.a79 = impl_witness_access constants.%EqWith.impl_witness.34c, element0 [concrete = constants.%Int.as.EqWith.impl.Equal.34f]
-// CHECK:STDOUT:   %bound_method.loc18_63.3: <bound method> = bound_method %may_throw_int__carbon_catching_thunk.call, %impl.elem0.loc18_63.2
-// CHECK:STDOUT:   %specific_fn.loc18_63.2: <specific function> = specific_function %impl.elem0.loc18_63.2, @Int.as.EqWith.impl.Equal.1(constants.%int_32, constants.%int_32) [concrete = constants.%Int.as.EqWith.impl.Equal.specific_fn.12d]
-// CHECK:STDOUT:   %bound_method.loc18_63.4: <bound method> = bound_method %may_throw_int__carbon_catching_thunk.call, %specific_fn.loc18_63.2
-// CHECK:STDOUT:   %.loc18_63.5: %i32 = value_of_initializer %may_throw_int__carbon_catching_thunk.call
-// CHECK:STDOUT:   %.loc18_63.6: %i32 = converted %may_throw_int__carbon_catching_thunk.call, %.loc18_63.5
-// CHECK:STDOUT:   %Int.as.EqWith.impl.Equal.call: init bool = call %bound_method.loc18_63.4(%.loc18_63.6, %.loc18_63.4)
-// CHECK:STDOUT:   %.loc18_63.7: bool = value_of_initializer %Int.as.EqWith.impl.Equal.call
-// CHECK:STDOUT:   %.loc18_63.8: bool = converted %Int.as.EqWith.impl.Equal.call, %.loc18_63.7
-// CHECK:STDOUT:   %.loc18_63.9: ref %Result.900 = temporary_storage
-// CHECK:STDOUT:   if %.loc18_63.8 br !.loc18_63.1 else br !.loc18_63.2
+// CHECK:STDOUT:   %impl.elem0.loc25_63.1: %.b7a = impl_witness_access constants.%ImplicitAs.impl_witness.a2a, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
+// CHECK:STDOUT:   %bound_method.loc25_63.1: <bound method> = bound_method %int_0, %impl.elem0.loc25_63.1 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.7b4]
+// CHECK:STDOUT:   %specific_fn.loc25_63.1: <specific function> = specific_function %impl.elem0.loc25_63.1, @Core.IntLiteral.as.ImplicitAs.impl.Convert.1(constants.%int_32) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571]
+// CHECK:STDOUT:   %bound_method.loc25_63.2: <bound method> = bound_method %int_0, %specific_fn.loc25_63.1 [concrete = constants.%bound_method.6e0]
+// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc25_63: init %i32 = call %bound_method.loc25_63.2(%int_0) [concrete = constants.%int_0.3c0]
+// CHECK:STDOUT:   %.loc25_63.3: %i32 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc25_63 [concrete = constants.%int_0.3c0]
+// CHECK:STDOUT:   %.loc25_63.4: %i32 = converted %int_0, %.loc25_63.3 [concrete = constants.%int_0.3c0]
+// CHECK:STDOUT:   %impl.elem0.loc25_63.2: %.a79 = impl_witness_access constants.%EqWith.impl_witness.34c, element0 [concrete = constants.%Int.as.EqWith.impl.Equal.34f]
+// CHECK:STDOUT:   %bound_method.loc25_63.3: <bound method> = bound_method %may_throw_int__carbon_catching_thunk.call, %impl.elem0.loc25_63.2
+// CHECK:STDOUT:   %specific_fn.loc25_63.2: <specific function> = specific_function %impl.elem0.loc25_63.2, @Int.as.EqWith.impl.Equal.1(constants.%int_32, constants.%int_32) [concrete = constants.%Int.as.EqWith.impl.Equal.specific_fn.12d]
+// CHECK:STDOUT:   %bound_method.loc25_63.4: <bound method> = bound_method %may_throw_int__carbon_catching_thunk.call, %specific_fn.loc25_63.2
+// CHECK:STDOUT:   %.loc25_63.5: %i32 = value_of_initializer %may_throw_int__carbon_catching_thunk.call
+// CHECK:STDOUT:   %.loc25_63.6: %i32 = converted %may_throw_int__carbon_catching_thunk.call, %.loc25_63.5
+// CHECK:STDOUT:   %Int.as.EqWith.impl.Equal.call: init bool = call %bound_method.loc25_63.4(%.loc25_63.6, %.loc25_63.4)
+// CHECK:STDOUT:   %.loc25_63.7: bool = value_of_initializer %Int.as.EqWith.impl.Equal.call
+// CHECK:STDOUT:   %.loc25_63.8: bool = converted %Int.as.EqWith.impl.Equal.call, %.loc25_63.7
+// CHECK:STDOUT:   %.loc25_63.9: ref %Result.900 = temporary_storage
+// CHECK:STDOUT:   if %.loc25_63.8 br !.loc25_63.1 else br !.loc25_63.2
 // CHECK:STDOUT:
-// CHECK:STDOUT: !.loc18_63.1:
-// CHECK:STDOUT:   %.loc18_63.10: %i32 = acquire_value %.loc18_63.1
-// CHECK:STDOUT:   %.loc18_63.11: %Result.Ok.type.977 = specific_constant imports.%Core.import_ref.597, @Result(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.Ok.789]
-// CHECK:STDOUT:   %Ok.ref.loc18_63: %Result.Ok.type.977 = name_ref Ok, %.loc18_63.11 [concrete = constants.%Result.Ok.789]
-// CHECK:STDOUT:   %Result.Ok.specific_fn.loc18_63: <specific function> = specific_function %Ok.ref.loc18_63, @Result.Ok(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.Ok.specific_fn]
-// CHECK:STDOUT:   %.loc18_63.12: ref %Result.900 = splice_block %.loc18_63.9 {}
-// CHECK:STDOUT:   %Result.Ok.call.loc18_63: init %Result.900 to %.loc18_63.12 = call %Result.Ok.specific_fn.loc18_63(%.loc18_63.10)
-// CHECK:STDOUT:   assign %.loc18_63.9, %Result.Ok.call.loc18_63
-// CHECK:STDOUT:   br !.loc18_63.3
+// CHECK:STDOUT: !.loc25_63.1:
+// CHECK:STDOUT:   %.loc25_63.10: %i32 = acquire_value %.loc25_63.1
+// CHECK:STDOUT:   %.loc25_63.11: %Result.Ok.type.977 = specific_constant imports.%Core.import_ref.597, @Result(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.Ok.789]
+// CHECK:STDOUT:   %Ok.ref.loc25_63: %Result.Ok.type.977 = name_ref Ok, %.loc25_63.11 [concrete = constants.%Result.Ok.789]
+// CHECK:STDOUT:   %Result.Ok.specific_fn.loc25_63: <specific function> = specific_function %Ok.ref.loc25_63, @Result.Ok(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.Ok.specific_fn]
+// CHECK:STDOUT:   %.loc25_63.12: ref %Result.900 = splice_block %.loc25_63.9 {}
+// CHECK:STDOUT:   %Result.Ok.call.loc25_63: init %Result.900 to %.loc25_63.12 = call %Result.Ok.specific_fn.loc25_63(%.loc25_63.10)
+// CHECK:STDOUT:   assign %.loc25_63.9, %Result.Ok.call.loc25_63
+// CHECK:STDOUT:   br !.loc25_63.3
 // CHECK:STDOUT:
-// CHECK:STDOUT: !.loc18_63.2:
-// CHECK:STDOUT:   %.loc18_63.13: %ptr.00a = acquire_value %.loc18_63.2
-// CHECK:STDOUT:   %.loc18_63.14: %Cpp.Exception = as_compatible %.loc18_63.13
-// CHECK:STDOUT:   %.loc18_63.15: %Cpp.Exception = converted %.loc18_63.13, %.loc18_63.14
-// CHECK:STDOUT:   %.loc18_63.16: %Result.Err.type.a4b = specific_constant imports.%Core.import_ref.bfc4, @Result(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.Err.7cb]
-// CHECK:STDOUT:   %Err.ref: %Result.Err.type.a4b = name_ref Err, %.loc18_63.16 [concrete = constants.%Result.Err.7cb]
+// CHECK:STDOUT: !.loc25_63.2:
+// CHECK:STDOUT:   %.loc25_63.13: %ptr.00a = acquire_value %.loc25_63.2
+// CHECK:STDOUT:   %.loc25_63.14: %Cpp.Exception = as_compatible %.loc25_63.13
+// CHECK:STDOUT:   %.loc25_63.15: %Cpp.Exception = converted %.loc25_63.13, %.loc25_63.14
+// CHECK:STDOUT:   %.loc25_63.16: %Result.Err.type.a4b = specific_constant imports.%Core.import_ref.bfc4, @Result(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.Err.7cb]
+// CHECK:STDOUT:   %Err.ref: %Result.Err.type.a4b = name_ref Err, %.loc25_63.16 [concrete = constants.%Result.Err.7cb]
 // CHECK:STDOUT:   %Result.Err.specific_fn: <specific function> = specific_function %Err.ref, @Result.Err(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.Err.specific_fn.031]
-// CHECK:STDOUT:   %.loc18_63.17: ref %Result.900 = splice_block %.loc18_63.9 {}
-// CHECK:STDOUT:   %Result.Err.call: init %Result.900 to %.loc18_63.17 = call %Result.Err.specific_fn(%.loc18_63.15)
-// CHECK:STDOUT:   assign %.loc18_63.9, %Result.Err.call
-// CHECK:STDOUT:   br !.loc18_63.3
+// CHECK:STDOUT:   %.loc25_63.17: ref %Result.900 = splice_block %.loc25_63.9 {}
+// CHECK:STDOUT:   %Result.Err.call: init %Result.900 to %.loc25_63.17 = call %Result.Err.specific_fn(%.loc25_63.15)
+// CHECK:STDOUT:   assign %.loc25_63.9, %Result.Err.call
+// CHECK:STDOUT:   br !.loc25_63.3
 // CHECK:STDOUT:
-// CHECK:STDOUT: !.loc18_63.3:
-// CHECK:STDOUT:   %.loc18_63.18: %Result.900 = acquire_value %.loc18_63.9
+// CHECK:STDOUT: !.loc25_63.3:
+// CHECK:STDOUT:   %.loc25_63.18: %Result.900 = acquire_value %.loc25_63.9
 // CHECK:STDOUT:   %impl.elem2: %.8bc = impl_witness_access constants.%Try.impl_witness.d5a, element2 [concrete = constants.%Result.as.Try.impl.Branch.1b9]
-// CHECK:STDOUT:   %bound_method.loc18_64.1: <bound method> = bound_method %.loc18_63.18, %impl.elem2
-// CHECK:STDOUT:   %specific_fn.loc18_64.1: <specific function> = specific_function %impl.elem2, @Result.as.Try.impl.Branch(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.as.Try.impl.Branch.specific_fn.2e1]
-// CHECK:STDOUT:   %bound_method.loc18_64.2: <bound method> = bound_method %.loc18_63.18, %specific_fn.loc18_64.1
-// CHECK:STDOUT:   %.loc18_64.1: ref %ControlFlow.bd1 = temporary_storage
-// CHECK:STDOUT:   %Result.as.Try.impl.Branch.call: init %ControlFlow.bd1 to %.loc18_64.1 = call %bound_method.loc18_64.2(%.loc18_63.18)
-// CHECK:STDOUT:   %.loc18_64.2: ref %ControlFlow.bd1 = temporary %.loc18_64.1, %Result.as.Try.impl.Branch.call
+// CHECK:STDOUT:   %bound_method.loc25_64.1: <bound method> = bound_method %.loc25_63.18, %impl.elem2
+// CHECK:STDOUT:   %specific_fn.loc25_64.1: <specific function> = specific_function %impl.elem2, @Result.as.Try.impl.Branch(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.as.Try.impl.Branch.specific_fn.2e1]
+// CHECK:STDOUT:   %bound_method.loc25_64.2: <bound method> = bound_method %.loc25_63.18, %specific_fn.loc25_64.1
+// CHECK:STDOUT:   %.loc25_64.1: ref %ControlFlow.bd1 = temporary_storage
+// CHECK:STDOUT:   %Result.as.Try.impl.Branch.call: init %ControlFlow.bd1 to %.loc25_64.1 = call %bound_method.loc25_64.2(%.loc25_63.18)
+// CHECK:STDOUT:   %.loc25_64.2: ref %ControlFlow.bd1 = temporary %.loc25_64.1, %Result.as.Try.impl.Branch.call
 // CHECK:STDOUT:   %int_1: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
-// CHECK:STDOUT:   %impl.elem0.loc18_64.1: %.e74 = impl_witness_access constants.%ImplicitAs.impl_witness.f4c, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a]
-// CHECK:STDOUT:   %bound_method.loc18_64.3: <bound method> = bound_method %int_1, %impl.elem0.loc18_64.1 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.320]
-// CHECK:STDOUT:   %specific_fn.loc18_64.2: <specific function> = specific_function %impl.elem0.loc18_64.1, @Core.IntLiteral.as.ImplicitAs.impl.Convert.2(constants.%int_1.5b8) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.e93]
-// CHECK:STDOUT:   %bound_method.loc18_64.4: <bound method> = bound_method %int_1, %specific_fn.loc18_64.2 [concrete = constants.%bound_method.d7a]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc18_64: init %u1 = call %bound_method.loc18_64.4(%int_1) [concrete = constants.%int_1.233]
-// CHECK:STDOUT:   %.loc18_64.3: %u1 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc18_64 [concrete = constants.%int_1.233]
-// CHECK:STDOUT:   %.loc18_64.4: %u1 = converted %int_1, %.loc18_64.3 [concrete = constants.%int_1.233]
-// CHECK:STDOUT:   %.loc18_64.5: ref %u1 = class_element_access %.loc18_64.2, element0
-// CHECK:STDOUT:   %impl.elem0.loc18_64.2: %.9eb = impl_witness_access constants.%EqWith.impl_witness.7b3, element0 [concrete = constants.%UInt.as.EqWith.impl.Equal.ba4]
-// CHECK:STDOUT:   %bound_method.loc18_64.5: <bound method> = bound_method %.loc18_64.4, %impl.elem0.loc18_64.2 [concrete = constants.%UInt.as.EqWith.impl.Equal.bound]
-// CHECK:STDOUT:   %specific_fn.loc18_64.3: <specific function> = specific_function %impl.elem0.loc18_64.2, @UInt.as.EqWith.impl.Equal.1(constants.%int_1.5b8, constants.%int_1.5b8) [concrete = constants.%UInt.as.EqWith.impl.Equal.specific_fn.6b6]
-// CHECK:STDOUT:   %bound_method.loc18_64.6: <bound method> = bound_method %.loc18_64.4, %specific_fn.loc18_64.3 [concrete = constants.%bound_method.a82]
-// CHECK:STDOUT:   %.loc18_64.6: %u1 = acquire_value %.loc18_64.5
-// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call: init bool = call %bound_method.loc18_64.6(%.loc18_64.4, %.loc18_64.6)
-// CHECK:STDOUT:   %.loc18_64.7: bool = value_of_initializer %UInt.as.EqWith.impl.Equal.call
-// CHECK:STDOUT:   %.loc18_64.8: bool = converted %UInt.as.EqWith.impl.Equal.call, %.loc18_64.7
-// CHECK:STDOUT:   if %.loc18_64.8 br !.loc18_64.1 else br !.loc18_64.2
+// CHECK:STDOUT:   %impl.elem0.loc25_64.1: %.e74 = impl_witness_access constants.%ImplicitAs.impl_witness.f4c, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e4a]
+// CHECK:STDOUT:   %bound_method.loc25_64.3: <bound method> = bound_method %int_1, %impl.elem0.loc25_64.1 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound.320]
+// CHECK:STDOUT:   %specific_fn.loc25_64.2: <specific function> = specific_function %impl.elem0.loc25_64.1, @Core.IntLiteral.as.ImplicitAs.impl.Convert.2(constants.%int_1.5b8) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.e93]
+// CHECK:STDOUT:   %bound_method.loc25_64.4: <bound method> = bound_method %int_1, %specific_fn.loc25_64.2 [concrete = constants.%bound_method.d7a]
+// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc25_64: init %u1 = call %bound_method.loc25_64.4(%int_1) [concrete = constants.%int_1.233]
+// CHECK:STDOUT:   %.loc25_64.3: %u1 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call.loc25_64 [concrete = constants.%int_1.233]
+// CHECK:STDOUT:   %.loc25_64.4: %u1 = converted %int_1, %.loc25_64.3 [concrete = constants.%int_1.233]
+// CHECK:STDOUT:   %.loc25_64.5: ref %u1 = class_element_access %.loc25_64.2, element0
+// CHECK:STDOUT:   %impl.elem0.loc25_64.2: %.9eb = impl_witness_access constants.%EqWith.impl_witness.7b3, element0 [concrete = constants.%UInt.as.EqWith.impl.Equal.ba4]
+// CHECK:STDOUT:   %bound_method.loc25_64.5: <bound method> = bound_method %.loc25_64.4, %impl.elem0.loc25_64.2 [concrete = constants.%UInt.as.EqWith.impl.Equal.bound]
+// CHECK:STDOUT:   %specific_fn.loc25_64.3: <specific function> = specific_function %impl.elem0.loc25_64.2, @UInt.as.EqWith.impl.Equal.1(constants.%int_1.5b8, constants.%int_1.5b8) [concrete = constants.%UInt.as.EqWith.impl.Equal.specific_fn.6b6]
+// CHECK:STDOUT:   %bound_method.loc25_64.6: <bound method> = bound_method %.loc25_64.4, %specific_fn.loc25_64.3 [concrete = constants.%bound_method.a82]
+// CHECK:STDOUT:   %.loc25_64.6: %u1 = acquire_value %.loc25_64.5
+// CHECK:STDOUT:   %UInt.as.EqWith.impl.Equal.call: init bool = call %bound_method.loc25_64.6(%.loc25_64.4, %.loc25_64.6)
+// CHECK:STDOUT:   %.loc25_64.7: bool = value_of_initializer %UInt.as.EqWith.impl.Equal.call
+// CHECK:STDOUT:   %.loc25_64.8: bool = converted %UInt.as.EqWith.impl.Equal.call, %.loc25_64.7
+// CHECK:STDOUT:   if %.loc25_64.8 br !.loc25_64.1 else br !.loc25_64.2
 // CHECK:STDOUT:
-// CHECK:STDOUT: !.loc18_64.1:
-// CHECK:STDOUT:   %.loc18_64.9: ref %.337 = class_element_access %.loc18_64.2, element1
-// CHECK:STDOUT:   %.loc18_64.10: ref %tuple.type.b42 = class_element_access %.loc18_64.9, element1
-// CHECK:STDOUT:   %tuple.elem0.loc18_64.1: ref %Cpp.Exception = tuple_access %.loc18_64.10, element0
-// CHECK:STDOUT:   %.loc18_64.11: %Cpp.Exception = acquire_value %tuple.elem0.loc18_64.1
+// CHECK:STDOUT: !.loc25_64.1:
+// CHECK:STDOUT:   %.loc25_64.9: ref %.337 = class_element_access %.loc25_64.2, element1
+// CHECK:STDOUT:   %.loc25_64.10: ref %tuple.type.b42 = class_element_access %.loc25_64.9, element1
+// CHECK:STDOUT:   %tuple.elem0.loc25_64.1: ref %Cpp.Exception = tuple_access %.loc25_64.10, element0
+// CHECK:STDOUT:   %.loc25_64.11: %Cpp.Exception = acquire_value %tuple.elem0.loc25_64.1
 // CHECK:STDOUT:   %Try.facet: %Try.type = facet_value constants.%Result.900, (constants.%Try.impl_witness.d5a) [concrete = constants.%Try.facet.51d]
-// CHECK:STDOUT:   %.loc18_64.12: %Try.type = converted constants.%Result.900, %Try.facet [concrete = constants.%Try.facet.51d]
+// CHECK:STDOUT:   %.loc25_64.12: %Try.type = converted constants.%Result.900, %Try.facet [concrete = constants.%Try.facet.51d]
 // CHECK:STDOUT:   %impl.elem3: %.cfb = impl_witness_access constants.%Try.impl_witness.d5a, element3 [concrete = constants.%Result.as.Try.impl.FromBreak.c94]
-// CHECK:STDOUT:   %specific_fn.loc18_64.4: <specific function> = specific_function %impl.elem3, @Result.as.Try.impl.FromBreak(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.as.Try.impl.FromBreak.specific_fn]
-// CHECK:STDOUT:   %.loc17_41.1: ref %Result.900 = splice_block %return.param {}
-// CHECK:STDOUT:   %Result.as.Try.impl.FromBreak.call: init %Result.900 to %.loc17_41.1 = call %specific_fn.loc18_64.4(%.loc18_64.11)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc18_64.1: <bound method> = bound_method %.loc18_64.2, constants.%Destroy.Op.1a2547.11
-// CHECK:STDOUT:   %Destroy.Op.call.loc18_64.1: init %empty_tuple.type = call %Destroy.Op.bound.loc18_64.1(%.loc18_64.2)
+// CHECK:STDOUT:   %specific_fn.loc25_64.4: <specific function> = specific_function %impl.elem3, @Result.as.Try.impl.FromBreak(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.as.Try.impl.FromBreak.specific_fn]
+// CHECK:STDOUT:   %.loc24_41.1: ref %Result.900 = splice_block %return.param {}
+// CHECK:STDOUT:   %Result.as.Try.impl.FromBreak.call: init %Result.900 to %.loc24_41.1 = call %specific_fn.loc25_64.4(%.loc25_64.11)
+// CHECK:STDOUT:   %Destroy.Op.bound.loc25_64.1: <bound method> = bound_method %.loc25_64.2, constants.%Destroy.Op.1a2547.11
+// CHECK:STDOUT:   %Destroy.Op.call.loc25_64.1: init %empty_tuple.type = call %Destroy.Op.bound.loc25_64.1(%.loc25_64.2)
 // CHECK:STDOUT:   return %Result.as.Try.impl.FromBreak.call to %return.param
 // CHECK:STDOUT:
-// CHECK:STDOUT: !.loc18_64.2:
-// CHECK:STDOUT:   %.loc18_64.13: ref %.337 = class_element_access %.loc18_64.2, element1
-// CHECK:STDOUT:   %.loc18_64.14: ref %tuple.type.a8a = class_element_access %.loc18_64.13, element0
-// CHECK:STDOUT:   %tuple.elem0.loc18_64.2: ref %i32 = tuple_access %.loc18_64.14, element0
-// CHECK:STDOUT:   %.loc18_64.15: %i32 = acquire_value %tuple.elem0.loc18_64.2
-// CHECK:STDOUT:   %Result.Ok.specific_fn.loc18_41: <specific function> = specific_function %Ok.ref.loc18_41, @Result.Ok(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.Ok.specific_fn]
-// CHECK:STDOUT:   %.loc17_41.2: ref %Result.900 = splice_block %return.param {}
-// CHECK:STDOUT:   %Result.Ok.call.loc18_65: init %Result.900 to %.loc17_41.2 = call %Result.Ok.specific_fn.loc18_41(%.loc18_64.15)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc18_64.2: <bound method> = bound_method %.loc18_64.2, constants.%Destroy.Op.1a2547.11
-// CHECK:STDOUT:   %Destroy.Op.call.loc18_64.2: init %empty_tuple.type = call %Destroy.Op.bound.loc18_64.2(%.loc18_64.2)
-// CHECK:STDOUT:   return %Result.Ok.call.loc18_65 to %return.param
+// CHECK:STDOUT: !.loc25_64.2:
+// CHECK:STDOUT:   %.loc25_64.13: ref %.337 = class_element_access %.loc25_64.2, element1
+// CHECK:STDOUT:   %.loc25_64.14: ref %tuple.type.a8a = class_element_access %.loc25_64.13, element0
+// CHECK:STDOUT:   %tuple.elem0.loc25_64.2: ref %i32 = tuple_access %.loc25_64.14, element0
+// CHECK:STDOUT:   %.loc25_64.15: %i32 = acquire_value %tuple.elem0.loc25_64.2
+// CHECK:STDOUT:   %Result.Ok.specific_fn.loc25_41: <specific function> = specific_function %Ok.ref.loc25_41, @Result.Ok(constants.%i32, constants.%Cpp.Exception) [concrete = constants.%Result.Ok.specific_fn]
+// CHECK:STDOUT:   %.loc24_41.2: ref %Result.900 = splice_block %return.param {}
+// CHECK:STDOUT:   %Result.Ok.call.loc25_65: init %Result.900 to %.loc24_41.2 = call %Result.Ok.specific_fn.loc25_41(%.loc25_64.15)
+// CHECK:STDOUT:   %Destroy.Op.bound.loc25_64.2: <bound method> = bound_method %.loc25_64.2, constants.%Destroy.Op.1a2547.11
+// CHECK:STDOUT:   %Destroy.Op.call.loc25_64.2: init %empty_tuple.type = call %Destroy.Op.bound.loc25_64.2(%.loc25_64.2)
+// CHECK:STDOUT:   return %Result.Ok.call.loc25_65 to %return.param
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc18_64.1(%self.param: ref %u1.builtin) = "no_op";
+// CHECK:STDOUT: fn @Destroy.Op.loc25_64.1(%self.param: ref %u1.builtin) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc18_64.2(%self.param: ref %u1) {
+// CHECK:STDOUT: fn @Destroy.Op.loc25_64.2(%self.param: ref %u1) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc18_64.3(%self.param: ref %i32.builtin) = "no_op";
+// CHECK:STDOUT: fn @Destroy.Op.loc25_64.3(%self.param: ref %i32.builtin) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc18_64.4(%self.param: ref %i32) {
+// CHECK:STDOUT: fn @Destroy.Op.loc25_64.4(%self.param: ref %i32) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc18_64.5(%self.param: ref %tuple.type.a8a) {
+// CHECK:STDOUT: fn @Destroy.Op.loc25_64.5(%self.param: ref %tuple.type.a8a) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc18_64.6(%self.param: ref %ptr.00a) = "no_op";
+// CHECK:STDOUT: fn @Destroy.Op.loc25_64.6(%self.param: ref %ptr.00a) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc18_64.7(%self.param: ref %Cpp.Exception) {
+// CHECK:STDOUT: fn @Destroy.Op.loc25_64.7(%self.param: ref %Cpp.Exception) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc18_64.8(%self.param: ref %tuple.type.b42) {
+// CHECK:STDOUT: fn @Destroy.Op.loc25_64.8(%self.param: ref %tuple.type.b42) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc18_64.9(%self.param: ref %.337) {
+// CHECK:STDOUT: fn @Destroy.Op.loc25_64.9(%self.param: ref %.337) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc18_64.10(%self.param: ref %struct_type.discriminant.payload.b51) {
+// CHECK:STDOUT: fn @Destroy.Op.loc25_64.10(%self.param: ref %struct_type.discriminant.payload.b51) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc18_64.11(%self.param: ref %ControlFlow.bd1) {
+// CHECK:STDOUT: fn @Destroy.Op.loc25_64.11(%self.param: ref %ControlFlow.bd1) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }

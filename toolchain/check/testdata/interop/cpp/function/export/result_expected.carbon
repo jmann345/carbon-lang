@@ -148,7 +148,7 @@ fn F(n: i32) -> Core.Result(i32, i32) {
 
 inline Cpp '''
 // CHECK:STDERR: fail_no_header.carbon:[[@LINE+4]]:35: error: no member named 'F' in namespace 'Carbon' [CppInteropParseError]
-// CHECK:STDERR:    11 | inline int Use() { return Carbon::F(1).disc; }
+// CHECK:STDERR:    19 | inline int Use() { return Carbon::F(1).disc; }
 // CHECK:STDERR:       |                                   ^
 // CHECK:STDERR:
 inline int Use() { return Carbon::F(1).disc; }

@@ -109,6 +109,10 @@ Widget may_throw_class();
 ''';
 
 fn F() -> Core.Result(i32, Cpp.Exception) {
+  // CHECK:STDERR: fail_class_return.carbon:[[@LINE+4]]:3: error: catching import of `may_throw_class` requires a scalar success type in 0.1; `Cpp.Widget` is not one [CppCatchingImportNonScalarSuccess]
+  // CHECK:STDERR:   Cpp.may_throw_class()?;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   Cpp.may_throw_class()?;
   return Core.Result(i32, Cpp.Exception).Ok(0);
 }
@@ -127,6 +131,10 @@ struct Widget {
 ''';
 
 fn F() -> Core.Result(i32, Cpp.Exception) {
+  // CHECK:STDERR: fail_ctor_return.carbon:[[@LINE+4]]:3: error: catching import of `Widget::Widget` requires a scalar success type in 0.1; `Cpp.Widget` is not one [CppCatchingImportNonScalarSuccess]
+  // CHECK:STDERR:   Cpp.Widget.Widget(1)?;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   Cpp.Widget.Widget(1)?;
   return Core.Result(i32, Cpp.Exception).Ok(0);
 }

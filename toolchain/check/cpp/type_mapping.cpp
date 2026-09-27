@@ -225,6 +225,11 @@ static auto TryMapClassType(Context& context, SemIR::ClassType class_type)
       }
       break;
     }
+    case SemIR::RecognizedTypeInfo::Result: {
+      // TODO: Map `Core.Result(T, E)` to `Carbon::expected<T, E>` (F-006h,
+      // fork/eh/plan.md §1.B.5).
+      break;
+    }
     case SemIR::RecognizedTypeInfo::Str: {
       return LookupCppType(context, {"std", "string_view"});
     }

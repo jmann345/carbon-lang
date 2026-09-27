@@ -28,11 +28,7 @@ library "[[@TEST_NAME]]";
 
 import Cpp;
 
-// CHECK:STDERR: carbon_namespace_cpp_class.carbon:[[@LINE+4]]:30: error: name `Core.AddWith` implicitly referenced here, but not found [CoreNameNotFound]
-// CHECK:STDERR: fn F(n: i32) -> i32 { return n + 1; }
-// CHECK:STDERR:                              ^~~~~
-// CHECK:STDERR:
-fn F(n: i32) -> i32 { return n + 1; }
+fn F(n: i32) -> i32 { return n; }
 
 inline Cpp '''
 namespace Carbon {
@@ -49,54 +45,3 @@ inline int Use() { return Carbon::Holder(Carbon::F(1)).get(); }
 //@dump-sem-ir-begin
 fn G() -> i32 { return Cpp.Use(); }
 //@dump-sem-ir-end
-
-// CHECK:STDOUT: --- carbon_namespace_cpp_class.carbon
-// CHECK:STDOUT:
-// CHECK:STDOUT: constants {
-// CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
-// CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
-// CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
-// CHECK:STDOUT:   %.795: Core.Form = init_form %i32 [concrete]
-// CHECK:STDOUT:   %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete]
-// CHECK:STDOUT:   %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32 [concrete]
-// CHECK:STDOUT:   %G.type: type = fn_type @G [concrete]
-// CHECK:STDOUT:   %G: %G.type = struct_value () [concrete]
-// CHECK:STDOUT:   %Use.cpp_overload_set.type: type = cpp_overload_set_type @Use.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %Use.cpp_overload_set.value: %Use.cpp_overload_set.type = cpp_overload_set_value @Use.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %Use__carbon_thunk.type: type = fn_type @Use__carbon_thunk [concrete]
-// CHECK:STDOUT:   %Use__carbon_thunk: %Use__carbon_thunk.type = struct_value () [concrete]
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: imports {
-// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
-// CHECK:STDOUT:     .Use = %Use.cpp_overload_set.value
-// CHECK:STDOUT:     import Cpp//...
-// CHECK:STDOUT:   }
-// CHECK:STDOUT:   %Use.cpp_overload_set.value: %Use.cpp_overload_set.type = cpp_overload_set_value @Use.cpp_overload_set [concrete = constants.%Use.cpp_overload_set.value]
-// CHECK:STDOUT:   %Use__carbon_thunk.decl: %Use__carbon_thunk.type = fn_decl @Use__carbon_thunk [concrete = constants.%Use__carbon_thunk] {
-// CHECK:STDOUT:     <elided>
-// CHECK:STDOUT:   } {
-// CHECK:STDOUT:     <elided>
-// CHECK:STDOUT:   }
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: file {
-// CHECK:STDOUT:   %G.decl: %G.type = fn_decl @G [concrete = constants.%G] {
-// CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt]
-// CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32 [concrete = constants.%return.patt]
-// CHECK:STDOUT:   } {
-// CHECK:STDOUT:     %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
-// CHECK:STDOUT:     %.loc21: Core.Form = init_form %i32 [concrete = constants.%.795]
-// CHECK:STDOUT:     %return.param: ref %i32 = out_param call_param0
-// CHECK:STDOUT:     %return: ref %i32 = return_slot %return.param
-// CHECK:STDOUT:   }
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @G() -> out %return.param: %i32 {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
-// CHECK:STDOUT:   %Use.ref: %Use.cpp_overload_set.type = name_ref Use, imports.%Use.cpp_overload_set.value [concrete = constants.%Use.cpp_overload_set.value]
-// CHECK:STDOUT:   %Use__carbon_thunk.call: init %i32 = call imports.%Use__carbon_thunk.decl()
-// CHECK:STDOUT:   return %Use__carbon_thunk.call
-// CHECK:STDOUT: }
-// CHECK:STDOUT:

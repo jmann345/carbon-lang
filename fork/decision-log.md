@@ -3086,6 +3086,259 @@ toolchain; no library change), the `is_union` raw-dump field, and the
 four diagnostic kinds. Upstream has no `union`; p000157 leaves typed
 union versus `Storage` open — no contradiction. Veto-able.
 
+### EH-B: catching thunks, Cpp.Exception, Carbon::expected export (2026-09-27)
+
+Milestone bullet "Error handling: C++ exception interop (-fno-except config,
+calling throwing C++, exporting Carbon errors as std::expected/exceptions)"
+STAYS PARTIAL (fork/gap-analysis.md, evidence rewritten; header counts
+unchanged), exactly as fork/eh/plan.md §8.6 fixed: B3 landed, three residue
+items remain. Landed on claude/carbon-fork-0-1-ehb in the plan's five commits
+plus the review round: 94b588847 (the `Cpp.Exception` prelude class
+`Core.CppCompat.Exception { adapt VoidBase*; }` with `Copy`/`UnformedInit`,
+surfaced as `Cpp.Exception` by the `Cpp.nullptr` builtin path;
+`Exception`/`Result` core identifiers; the `CppException` recognized kind; the
+reserved-name pre-check in `ImportNameFromCpp` with the Warning
+`CppReservedNameShadowed`), c83d33051 (catching thunks selected by `?`,
+`Core.Result(S, Cpp.Exception)` calls, the `QuestionCppCatchingImportNote`
+context note),
+3eb4ed0e7 (`Carbon::expected` export mapping by name, `<carbon/expected.h>`
+installed at `lib/carbon/include` on the default `-isystem` path,
+`CppExportResultNeedsExpectedHeader`), afccce55f (the SF-1 fence diagnostic
+inside the fenced thunk — the last, droppable commit), 973fd41f1 (CHECK-free
+goldens, the conformance un-SKIP plus three programs, the dated doc amendments),
+90d49c24d and aa04ea7e0 (the hosted-build and review fixes below). Per R29(a)
+the plan's decisions are auto-adopted design recommendations under V-2/V-3;
+veto-able after the fact. The §0.4 fallback split (two M PRs) was NOT invoked:
+EH-B is one PR.
+
+_D-EH-3 — `Cpp.Exception` storage:_ the 0.1 storage is the Itanium primary
+exception object pointer (`__cxa_current_primary_exception()`, refcount +1 at
+capture) held in a prelude adapter over `VoidBase*` — which IS "stores the
+exception_ptr": on libc++abi a `std::exception_ptr` is exactly that pointer with
+refcounting, and `Carbon::Exception::ptr()` in the support header reconstitutes
+a real `std::exception_ptr` losslessly (D7). Two honest bounds, both forced by
+SF-6 (a choice payload must be a scalar after adapters): `Cpp.Exception` is
+trivially copyable and trivially destructible, so the refcount is released only
+at process exit (the D7 release-on-destroy clause is deferred to the
+choice-payload destroy-synthesis work; `MakeDestroyOpBody` is still upstream's
+placeholder), and the lazy `TypeName()`/`Message()` accessors are deferred (they
+need a synthesized C++ helper buildable only when `std::exception` is declared
+in the TU). Both are the residue item W-083. Break condition: an SF-6 widening
+past scalars (W-010's residue) reopens the release half as a real `Destroy` impl
+calling `__cxa_decrement_exception_refcount`.
+
+_D-EH-4 — the selection surface is `?` directly on the call:_
+`PerformCppThunkCall` keys on the call's own parse node — when the postorder
+successor of the `CallExpr`, walking up through `ParenExpr` nodes, is
+`PostfixOperatorQuestion`, the callee is fence-required, and the mapped return
+type does not itself implement `Core.Try`, the call goes through the catching
+thunk and has type `Core.Result(S, Cpp.Exception)`. The other context the design
+names — a binding or argument whose EXPECTED type is `Core.Result(S,
+Cpp.Exception)` — needs an expected-type channel the checker does not have
+(conversions run after the call is emitted) and is the residue item W-084, with
+the workaround `fn Wrap() -> Core.Result(S, Cpp.Exception) { return
+Core.Result(S, Cpp.Exception).Ok(Cpp.f(x)?); }`. A `noexcept` callee or `none`
+mode never reaches the branch, so `?` then diagnoses the usual non-`Try`
+operand. The SF-6 bound on the success type is stated in the doc amendment and
+W-019's notes: `S` must be scalar or `void`; a class, `std::string` or
+constructor return diagnoses `CppCatchingImportNonScalarSuccess` naming the
+C++ callee (the SF-6 admission predicate checked up front). Break condition:
+an expected-type mechanism landing (F-011's `let ... else` work may add one)
+lifts W-084; the SF-6 lift removes the scalar bound.
+
+_D-EH-5 — the SF-1 boundary-identifying diagnostic:_ delivered as `try { <call>
+} catch (...) { __carbon_boundary_write(2, "carbon: C++ exception escaped into
+Carbon through `<callee qualified name>`; terminating\n", len); throw; }` INSIDE
+the still-`noexcept` fenced thunk, so the rethrow reaches the existing terminate
+landing pad and B0's contract is unchanged; `write(2)` because `abort()` drops
+buffered stdout and no linkable Carbon runtime object exists; the decl keeps a
+distinct identifier with the asm label `getUserLabelPrefix() + "write"`
+(macOS-portable). This closes the B0 SF-1..5 entry's item (1)
+("boundary-identifying diagnostic recorded as a B3 follow-up") and W-016's
+recorded DEVIATION. Drop rule (plan §7 R-9): if the commit fails hosted
+verification twice after one fix round it is reverted alone and W-016's SF-1
+line reopens citing the run. The "## OPEN forks" section stays empty: SF-9 was
+already moved under Decided by the EH-A entry, and no other OPEN fork touched
+EH-B.
+
+_D-EH-6 — the split:_ EH-B is the second of the two sequential PRs (EH-A merged
+as #40); dependency honored (`Core.Result` and `RecognizedTypeInfo::Result` came
+from EH-A).
+
+_Ledger corrections at discharge (plan §0.2, verbatim):_ [3] 3. **W-019
+blocked_by W-007 ("five-way contention refactor plan before any two of these
+start"):** W-007 is unblocked, S-sized, and still unwritten; none of the other
+four contenders (W-015 unions, W-026, W-021/W-023 threading — the last two
+DISCHARGED at F8b/F8d) is in flight. The precondition of W-007 ("before any two
+start concurrently") is not met, so it does not gate this PR; §1.B.9 states the
+additive landing shape that makes the refactor unnecessary now. [4] 4. **W-016
+notes ("fenced (try/catch-terminate) thunks")** — the fence is the `noexcept`
+exception spec, not a `try`/`catch` (thunk.cpp:529-533; the notes' own DEVIATION
+line says so two sentences later). The title should not say try/catch. [6] the
+row-67 half of item 6: the evidence rewrite of the exception-interop row (stays
+PARTIAL). Applied in fork/inventory/work-items.json: W-019 → `implemented`,
+DISCHARGED with its residue filed, blocked_by cleared; W-016 retitled to
+"noexcept-spec fenced thunks" and DISCHARGED (its only residue was the SF-1
+line; the fail_fence_thunk_unbuildable golden the runner was to fill is filled),
+and W-020's stale blocked_by on W-016 cleared; W-007's notes record that EH-B
+landed additively without the refactor (every edit a new function or switch arm;
+the one factoring is `BuildThunkBody`'s call construction split into
+`BuildCalleeCallExpr` + `BuildReturnValueStore`, reused by the catching body)
+and that the item re-evaluates when a second contender starts; W-059's notes
+gain the fence diagnostic's `write(2)` dependency and the macOS notes (asm
+labels need `getUserLabelPrefix()`; libc++ on Apple does not re-export
+`__cxa_rethrow_primary_exception`, so `<carbon/expected.h>` consumers link
+`-lc++abi` there). Residue ids allocated by verifying the ledger's max id
+(W-082, the W-012 discharge): **W-083** "`Cpp.Exception` accessors and
+release-on-destroy" (blocked_by W-010 for the release half only), **W-084**
+"catching-import selection in binding/argument contexts", **W-085**
+"`Carbon::expected` import direction" — the plan's provisional W-080/W-081/W-082
+renumbered everywhere they are cited here and in the gap-analysis row; the plan
+text keeps the provisional numbers with its landed notes recording the mapping.
+
+_V-3a divergence-risk register entries (reviewed at each upstream merge):_ (i)
+the doc's "`Cpp.Exception` maps to `std::exception_ptr`" sentence is landed as
+the layout-identical wrapper `Carbon::Exception { void* primary_; }` whose
+`.ptr()` is the `std::exception_ptr` (the doc's own usage line already assumed
+the wrapper; dated amendment). (ii) `<carbon/expected.h>` mirrors the fork-owned
+choice layout — `unsigned char disc_` (0 = Ok, 1 = Err, the alternative order)
+at offset 0, then `union { T ok; E err; }` at `alignof(Payload)` — so the export
+is a reinterpretation, not a conversion; `static_assert`s pin
+`offsetof(expected, payload_) == alignof(Payload)`, `sizeof(expected) ==
+alignof(Payload) + sizeof(Payload)` and trivial copyability, so any future
+non-scalar payload or layout change fails loudly at the header, not at runtime.
+The header is C++17 (`std::expected` conversions only under `__cplusplus >=
+202302L`), and the `Exception` members exist only with exceptions enabled, so
+`--cpp-exceptions=none` builds see the same mapping. Foreign-exception contract:
+`__cxa_current_primary_exception` returns NULL for an exception not thrown by
+the C++ runtime, so the thunk still returns `Err` with a NULL primary;
+`Exception::ptr()` then yields an EMPTY `std::exception_ptr` and `rethrow()`
+calls `std::terminate()` (both commented in the header; `has_value()` is
+unaffected). (iii) The catching thunk's identifier
+`<callee>__carbon_catching_thunk` and asm label
+`<mangled>.carbon_thunk_catch.<modes>` are fork-local names beside B0's
+`__carbon_thunk`.
+
+_Review record and the blocker:_ one implementation review (R28),
+APPROVE-WITH-FIXES. BLOCKER: the catching thunk was imported through the public
+`ImportCppFunctionDecl` path, which evaluates `IsCppThunkRequired` on the thunk
+ITSELF — a member callee's implicit object parameter (`const C&` for a `const`
+method) is not a simple ABI type, so `ImportFunctionDecl` would have built a
+thunk-of-the-thunk and marked the function `HasCppThunk`, and the later
+`SetCppThunk` would have tripped its CARBON_CHECK on `Cpp.obj.ConstMethod()?`.
+Root-cause fix (aa04ea7e0): a new public `ImportCppThunkFunctionDecl`
+(cpp/import.{h,cpp}) that does exactly what the fenced-thunk import does —
+`AddImportIRInst` plus the static `ImportFunction`, nothing else — used from
+`GetOrBuildCppCatchingThunkDecl`, with a CHECK-free `member` subfile (a `?` on a
+potentially-throwing `const` method and on a non-const method through a pointer)
+in the check golden and its `M` twin in the lower golden. MINOR fixes:
+`IsCatchingCallSite` also rejects a desugared `LocId`;
+cpp_exception_rethrow_export.carbon reshaped to `import Cpp;` plus a single
+`inline Cpp` block (the interop/cpp_export_function.carbon shape). Finding 4
+checked, no change: an SF-6-rejected `Core.Result` specific leaves the class
+incomplete, so `RequireCompleteType` returns false and the catching call returns
+`ErrorInst` before emitting any CFG.
+
+_Two hosted-build compile misses, recorded as review misses (R28(d)):_ (1)
+thunk.cpp called `getTargetInfo().getUserLabelPrefix()` on a forward-declared
+`clang::TargetInfo`; the hosted autoupdate build failed and 90d49c24d added the
+`clang/Basic/TargetInfo.h` include. (2) type_mapping.cpp's `LookupCppDecl`
+returned `clang::QualType()` from a `clang::Decl*` function (run 36307696501);
+aa04ea7e0 returns `nullptr` (`LookupCppType`/`LookupCppClassTemplate` wrap it
+with `dyn_cast_or_null`) and two `size_t` narrowings in the fence diagnostic
+were made explicit after a mental-compile pass over the whole C++ diff against
+the LLVM checkout. The single review traced the Sema construction and caught
+neither; both are the class "no local build, hosted-only compile" that R28
+accepts and R28(d) records.
+
+_Deviations from the plan, each with its necessity:_ `fail_none_mode` is its own
+file, fail_catching_none_mode.carbon, because `EXTRA-ARGS` is file-wide, not per
+subfile (plan §4.B listed it as a subfile). The Ok/Err arms converge exactly
+as §1.B.3 specified — `InitializeExisting` into one shared `TemporaryStorage`
+minted before the branch, read back with `ConvertToValueExpr` — after a first
+landing through the `if`-expression shape (`AddConvergenceBlockWithArgAndPush`)
+crashed the third hosted autoupdate (run 36308713023): lowering types a
+block-argument PHI by the OBJECT type (lower/function_context.cpp:178) while a
+value of a by-pointer type such as `Core.Result` is a `ptr`, so that shape only
+carries by-copy values (no lower golden has an `if`-expression over class
+values). Recorded as a review miss per R28(d). `cpp_catching_call_results` is a
+`Map<InstId, FunctionId>` rather than a `Set<InstId>` so the `?` break-path note
+can name the C++ callee. Reference-returning callees fail closed (a TODO plus
+the FENCED fallback, never an unfenced call) because the out-pointer would need
+the referent's address, not a placement-new copy. The thunk identifier is
+`<callee>__carbon_catching_thunk` (parallel to `__carbon_thunk`), not the plan's
+`__carbon_catching`. The catching thunk's build annotates Clang diagnostics
+with the SAME `InCppThunk` note as the fenced build through a shared helper
+(one `CARBON_DIAGNOSTIC` site); a separate `InCppCatchingThunk` note was
+landed first and deleted when the diagnostics coverage test showed it is
+unreachable (the catching body reuses the callee call the fenced build
+already accepted). An SF-6 rejection produces `ErrorInst` before any CFG
+is emitted (the predicate below). types.carbon exports
+`cpp/exception` in alphabetical position (before `cpp/int`), not "after
+`cpp/void`". The header carries `has_exception()`, `operator*` and an `ok()`
+alternative-name beyond D8's list, and `value()` is non-throwing by precondition
+(unlike `std::expected::value()`) so the header is usable with exceptions
+disabled.
+
+_Docs:_ docs/design/error_handling.md gained dated EH-B amendments (history
+unrewritten): the entry point's `Cpp.Exception` message clause deferred (W-083);
+the catching selection rule's binding/argument arm deferred (W-084) plus the
+SF-6 scalar-or-`void` bound with its break condition; the `Cpp.Exception`
+storage, release-on-destroy and accessor deferrals (D-EH-3); the
+`std::exception_ptr` mapping sentence amended to `Carbon::Exception` with
+`.ptr()`, the foreign-exception and Apple `-lc++abi` notes; the staging table's
+B3 row marked landed. Residue items are referred to by title in the doc; the ids
+above are allocated here.
+
+_Verification (hosted-only per R28):_ gate and conformance are the hosted runs;
+local verification is limited to `uvx prek` on the bookkeeping files.
+Conformance of record (run 36315999330, scoreboard 3d398fe6f, after the fixes
+below): **112 PASS / 0 FAIL / 26 SKIP over 139**, 44/56 bullets — plan §5.B's
+tree-relative 109/136 plus W-012's one program, PASS +4 / SKIP −1 / total +3
+exactly (the
+un-SKIP of cpp_exception_interop plus three new programs, zero other movement;
+`runner.py --self-test` and `--update-readme-table` clean per the implementer);
+gate of record run 36315995464 green on the same head (32d93701d).
+Hosted autoupdate: the branch itself modifies ZERO existing goldens (`git diff
+origin/trunk...HEAD --diff-filter=M` over the testdata trees is empty; the six
+goldens are new and CHECK-free), so the fill of record is expected to add CHECK
+lines to those six and to move exactly the 27 lower goldens containing
+`__clang_call_terminate` (plan §6.B) by the fence diagnostic's `write` call,
+message global and `throw;` resume edge inside each fenced thunk — any other
+file moving is a §6 miss to reconcile. _Fill of record (run 36310053869,
+e247c2700):_ the six new goldens filled; THIRTY existing goldens moved, the 27
+predicted plus three §6.B misses with the same benign cause — the check-side
+AST dump thunk_ast.carbon (a `CXXTryStmt`/`CXXCatchStmt` around the callee
+call), lower/optimize/clang_no_optimize_twice.carbon (its `terminate.lpad`
+became a real landing pad with `exn.slot`/`ehselector.slot`) and
+lower/debug_info.carbon (a `DILexicalBlock` for the try). Two negatives were
+wrong and fixed at the root (c214b5adf): `fail_class_return` cascaded into
+five follow-on monomorphization errors because `RequireCompleteType` returns
+TRUE for an SF-6-rejected `Core.Result(Cpp.Widget, Cpp.Exception)` specific
+(the class completes with an error-valued layout; `GetObjectRepr` is
+`ErrorInst`), so the catching call now checks `IsInSliceChoicePayloadType` on
+the success type BEFORE forming the specific and emits the new Error
+`CppCatchingImportNonScalarSuccess`; the specific's completion behind it
+is a `CARBON_CHECK` invariant (a drift between the predicate and the SF-6
+rule is a toolchain bug, not a user diagnostic — the `CppCatchingImportPayloadNote`
+belt was deleted when the coverage test showed it can no longer fire); and
+`fail_ctor_return` spelled the
+constructor call `Cpp.Widget(1)` instead of the tree's static-member form
+`Cpp.Widget.Widget(1)`, so it never reached the catching lane. Both are
+review misses per R28(d), alongside the two compile misses and the
+convergence shape above. _Gate + conformance of record (runs 36311895668,
+36311899697 on the fill b8abdb68a) both FAILED and were fixed at the root
+(ebf12feae): the gate on `//toolchain/diagnostics:coverage_test` (the two
+dead kinds above), the conformance suite on a SIGSEGV in
+`CarbonExternalASTSource::FindExternalVisibleDeclsByName` while Clang parsed
+`<carbon/expected.h>` — a constructor declarator inside a C++-declared class
+nested in `namespace Carbon` (the export namespace) sends a
+`CXXConstructorName` redeclaration lookup up to the namespace, and the
+source's constructor arm `cast<CXXRecordDecl>`-ed the `NamespaceDecl`; now a
+`dyn_cast` with a negative answer, pinned by
+function/export/carbon_namespace_cpp_class.carbon and by inline members in
+result_expected.carbon's skeletons. Veto-able.
+
 ### W-012: if-let / while-let / let-else landed (2026-09-27)
 
 The milestone's if-let / let-else bullet flips MISSING → PARTIAL: `if (let P =

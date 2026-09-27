@@ -178,6 +178,11 @@ auto AppendDefaultClangArgs(const InstallPaths& install_paths,
     args.push_back(
         llvm::formatv("-stdlib++-isystem{0}", runtime_path / "include").str());
   }
+
+  // The C++ support headers shipped in the install tree (`<carbon/expected.h>`,
+  // docs/design/error_handling.md "Exporting fallible Carbon functions").
+  args.push_back(
+      llvm::formatv("-isystem{0}", install_paths.include_path()).str());
 }
 
 }  // namespace Carbon

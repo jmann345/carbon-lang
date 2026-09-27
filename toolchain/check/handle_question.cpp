@@ -313,6 +313,14 @@ auto HandleParseNode(Context& context, Parse::PostfixOperatorQuestionId node_id)
     context.node_stack().Push(node_id, SemIR::ErrorInst::InstId);
     return true;
   }
+  // A catching C++ call (`Cpp.f()?`, docs/design/error_handling.md "Catching
+  // imports") records its result so the break path below can name the C++
+  // callee when the enclosing function's break type rejects `Cpp.Exception`.
+  auto catching_callee_id = SemIR::FunctionId::None;
+  if (auto catching_call =
+          context.cpp_catching_call_results().Lookup(operand_id)) {
+    catching_callee_id = catching_call.value();
+  }
 
   // Step 1: everything is diagnosed before the first inst exists.
   auto preflight = CheckQuestionPreflight(context, node_id);
@@ -406,6 +414,21 @@ auto HandleParseNode(Context& context, Parse::PostfixOperatorQuestionId node_id)
     auto from_break_decl_id = PerformMemberAccess(
         context, implicit_loc_id, preflight.try_interface_id,
         context.core_identifiers().AddNameId(CoreIdentifier::FromBreak));
+    // For a catching C++ call, the `Cpp.Exception` break payload's conversion
+    // to the return type's break type gets this context line when it fails.
+    Diagnostics::ContextScope catching_context(
+        &context.emitter(), [&](auto& builder) {
+          if (!catching_callee_id.has_value()) {
+            return;
+          }
+          CARBON_DIAGNOSTIC(QuestionCppCatchingImportNote, Context,
+                            "operand of `?` is a call to potentially-throwing "
+                            "C++ function `{0}`; a thrown exception propagates "
+                            "as `Cpp.Exception`",
+                            SemIR::NameId);
+          builder.Context(node_id, QuestionCppCatchingImportNote,
+                          context.functions().Get(catching_callee_id).name_id);
+        });
     auto bound_from_break_id = PerformCompoundMemberAccess(
         context, SemIR::LocId(node_id),
         context.types().GetTypeInstId(return_type_id), from_break_decl_id);

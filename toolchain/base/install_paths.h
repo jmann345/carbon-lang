@@ -103,6 +103,10 @@ class InstallPaths {
   // The directory containing the `Core` package. Computed on demand.
   auto core_package() const -> std::filesystem::path;
 
+  // The directory containing the C++ support headers (`<carbon/expected.h>`),
+  // added to the C++ system include path. Computed on demand.
+  auto include_path() const -> std::filesystem::path;
+
   // The directory containing LLVM install binaries. Computed on demand.
   auto llvm_install_bin() const -> std::filesystem::path;
 

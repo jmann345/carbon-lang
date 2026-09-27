@@ -6,8 +6,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Overloading plan: `overload fn` closed sets (OV-1 W-024, OV-2 W-025, OV-3 W-026)
 
-**Status:** REV 1, READY FOR THE TWO ADVERSARIAL PLAN REVIEWS (R29(c)),
-2026-09-27. Branch `claude/carbon-fork-0-1-overload` off trunk c9708a0ea
+**Status:** REV 2, REVIEW FOLD, 2026-09-27. The two adversarial plan
+reviews returned REJECT (rev A: blockers A1 cleanup leak and A2 `self`
+misalignment in D-OV-4; majors A3-A7) and APPROVE-WITH-AMENDMENTS (rev B:
+B1-B14, incl. the port of the stranded design page); every finding is
+folded below, each marked "(amended 2026-09-27, review fold: rev A n /
+rev B n)", and the coordinator's [R29(a)] rulings (A2/rev B F3 mixed
+`self` gate, A3 literal pre-test, B1 port, B4 template gate, B5 lifting
+the generic-scope gate in OV-2, B11 `export` exclusivity) are recorded
+with break conditions. The fold record precedes Sign-off. Branch `claude/carbon-fork-0-1-overload` off trunk c9708a0ea
 (post-PR #41: W-012 landed). Trunk's floor is **108 PASS / 0 FAIL / 27
 SKIP over 135**, 44/56 bullets, gap-analysis header (fork/gap-analysis.md:18)
 27 DONE / 20 PARTIAL / 7 MISSING / 2 DESIGN-ONLY. EH-B (../carbon-ehb) and
@@ -42,12 +49,19 @@ fork/design-sprint/function-overloading.md, Option A (:190-261) with the
 recommendation (:348-389) and the open questions the paper answers with a
 recommendation (:416-450); the paper is the research record and is not
 edited. **There is no ratified docs/design page:** the F-008..F-011 design
-docs are STRANDED on `claude/carbon-fork-0-1-7mwfb7-design-docs`
-(fork/ORCHESTRATION.md:311, gated on an unanswered veto digest), and
-docs/design/functions.md has no overloading section (its headings, :46-903,
-go from "Redeclaration matching" :607 to "Function types and values"
-:631). This workstream therefore authors the normative section itself as a
-dated amendment (D-OV-8, §8.6), under R29(a).
+docs are STRANDED on `claude/carbon-fork-0-1-7mwfb7-design-docs` (tip
+481e08c24; fork/ORCHESTRATION.md:311, gated on an unanswered veto digest),
+and trunk's docs/design/functions.md has no overloading section (its
+headings, :46-903, go from "Redeclaration matching" :607 to "Function
+types and values" :631). **The stranded branch DOES carry a complete
+page** — `git show 481e08c24:docs/design/functions_overloading.md` is 906
+lines with thirteen OPEN sub-forks F-009a..m — plus a four-line link block
+in functions.md (:879-882 there), rewrites of pattern_matching.md:696 and
+:1063, an interop README "### Overload resolution" section and the
+README.md:3878 text (amended 2026-09-27, review fold: rev B B1; rev 1
+wrongly said no page existed). This workstream therefore PORTS that page
+and those edits as dated amendments, closing each sub-fork in place with
+the D-OV decision that resolves it (D-OV-8, §8.6), under R29(a).
 
 **Milestone bullet this plan flips** (fork/gap-analysis.md:57): "Functions:
 function overloading (Carbon-native)" — MISSING → PARTIAL at OV-1 → PARTIAL
@@ -75,7 +89,7 @@ character-for-character into every conformance header.
 | 13 | Language server | NO CHANGE NEEDED | handle_document_symbol.cpp:132-175 keys on `FunctionDecl`/`FunctionDefinitionStart` node kinds; a modifier leaf is never a symbol; UN-1's parity audit of every `NodeKind::Class*` switch has no analogue here because no node kind is added |
 | 14 | Implicit conversions the first-match rule is observed through | VERIFIED in the prelude | `Int(From) as ImplicitAs(Int(To))` for `From: IntFitsIn(Int(To))` (core/prelude/types/int.carbon:62-68) — `i32 → i64` widens implicitly; `IntLiteral as ImplicitAs(Int(To))` (:31-33); NO `Bool as ImplicitAs(...)`, NO integer-to-float implicit conversion (`grep -rn 'as ImplicitAs' core/prelude`, the only non-int impls are `CharLiteral as ImplicitAs(Char)`, `Optional`, `CppCompat`) — the §5 EXPECT values rest on these three facts |
 | 15 | Conformance | SKIP stub | fork/conformance/programs/functions/overloading_native.carbon: bullet :5, EXPECT lines :6-9, SKIP line :10 (says "MISSING with no design" — stale since F-009), strawman :22-23 commented, guard body returns 1 (:25-33) |
-| 16 | Docs | MISSING everywhere the ledger points | docs/design/functions.md has no section; docs/design/pattern_matching.md:696 still says "We do not yet have an approved design for overloaded functions"; docs/design/interoperability/README.md:210 is `### TODO: Overload resolution`; docs/design/README.md:3878-3881 is the "Pattern matching as function overload resolution" placeholder (the ledger says :3822 — §0.2 item 3); docs/design/lexical_conventions/words.md keyword list (:47-104; `or` :86, `override` :87) lacks `overload`; grammars: utils/vim/syntax/carbon.vim:37 (`carbonClassMethodDeclarationMod private virtual abstract protected impl`), utils/vscode/carbon.tmLanguage.json:417 and utils/textmate/Syntaxes/carbon.tmLanguage:524 (the `auto|destructor|forall|friend|observe|override|require` alternation), utils/textmate/Samples/keywords.carbon:35, utils/tree_sitter/queries/highlights.scm:121 (`; "override"` COMMENTED — the UN-1 landed lesson: grammar.js lacks the token) |
+| 16 | Docs | MISSING on trunk; COMPLETE on the stranded branch (amended 2026-09-27, review fold: rev B B1) | `git show 481e08c24:docs/design/functions_overloading.md` (906 lines: Overview :47, Declaring :103-291, Redeclaration rules :293-390, Overload resolution :392-535, Interaction with checked generics :537-597, C++ interoperability :599-726, Future work :728, Decisions D1-D5 :758-790, Open sub-forks F-009a..m :813-876) and the sibling edits (functions.md +4 at :879-882, pattern_matching.md :696 and :1063 hunks, interoperability/README.md `### Overload resolution`, README.md:3878 note); on trunk docs/design/functions.md has no section; docs/design/pattern_matching.md:696 still says "We do not yet have an approved design for overloaded functions"; docs/design/interoperability/README.md:210 is `### TODO: Overload resolution`; docs/design/README.md:3878-3881 is the "Pattern matching as function overload resolution" placeholder (the ledger says :3822 — §0.2 item 3); docs/design/pattern_matching.md:1063-1066 is a SECOND placeholder of the same title ("Need to flesh out specific details of how overload selection leverages the pattern matching machinery") that W-065's evidence (:712-714, now :714-716) does not list (amended 2026-09-27, review fold: rev B B7); docs/design/lexical_conventions/words.md keyword list (:47-104; `or` :86, `override` :87) lacks `overload`; grammars: utils/vim/syntax/carbon.vim:37 (`carbonClassMethodDeclarationMod private virtual abstract protected impl`), utils/vscode/carbon.tmLanguage.json:417 and utils/textmate/Syntaxes/carbon.tmLanguage:524 (the `auto|destructor|forall|friend|observe|override|require` alternation), utils/textmate/Samples/keywords.carbon:35, utils/tree_sitter/queries/highlights.scm:121 (`; "override"` COMMENTED — the UN-1 landed lesson: grammar.js lacks the token) |
 
 ### §0.2 Ledger and paper claims found stale (each corrected at §8.5 discharge)
 
@@ -133,6 +147,28 @@ character-for-character into every conformance header.
 10. **Paper :163 "non-diagnosing `DeduceGenericCallArguments`":** the
     `DeductionContext` already has the flag (§0.1 row 8); OV-2's change is a
     parameter on the entry point and the discard scope, not a new variant.
+11. **This plan's rev 1 header ("there is no ratified docs/design page ...
+    authors the normative section itself")** was wrong about the stranded
+    branch's contents (§0.1 row 16): the page exists and is ported, not
+    re-authored (D-OV-8; amended 2026-09-27, review fold: rev B B1).
+12. **W-065 evidence `pattern_matching.md:712-714`** names the `match`
+    placeholder (now :714-716) and misses the second overload placeholder
+    at :1063-1066; both overload placeholders (README.md:3878,
+    pattern_matching.md:1063) are retired by the port (§8.6; amended
+    2026-09-27, review fold: rev B B7).
+13. **Rev 1's testdata spelled the implementation-file marker `library
+    "x" impl;`**; the working spelling is `impl library "x";`
+    (check/testdata/function/declaration/no_definition_in_impl_file.carbon:9,
+    :16) — corrected throughout §4 (R3; amended 2026-09-27, self-caught
+    while verifying rev B B13).
+14. **The stranded page's "Linkage and mangling" (:713-726)** prescribes a
+    signature fingerprint and says "Exported members are unaffected by
+    Carbon-internal mangling" — the first is superseded by D-OV-5 (§0.1
+    row 9), the second is false: export.cpp:893-899 attaches
+    `AsmLabelAttr(MangleWithPlatform(...))` to every exported thunk, so an
+    exported member's C++ symbol IS its Carbon mangled name. Both are
+    corrected while porting (§8.6; amended 2026-09-27, review fold: rev B
+    B1).
 
 ### §0.3 Decisions this plan auto-adopts (R29(a): design recommendation under V-2/V-3, veto-able after the fact)
 
@@ -168,17 +204,36 @@ second, export third", :253-255).
     is mutually exclusive with `virtual`/`abstract`/`override`/`impl`/
     `default`/`final`/`export`/`returned` through the existing
     `ModifierNotAllowedWith` ("`{0}` not allowed on declaration with `{1}`",
-    handle_modifier.cpp:25-35) — no virtual overload sets and no
-    interface-member overload sets in 0.1 (the paper already excludes
-    interface members, :225-226; virtual sets would need vtable-slot
-    disambiguation by signature, which `RequestVtableIfVirtual`
-    handle_function.cpp:491-528 keys by name). Rejected: a seventh order
-    group (resizes `ordered_modifier_node_ids` decl_introducer_state.h:31-34,
+    handle_modifier.cpp:25-35) — no virtual overload sets, no `impl fn`
+    members, no `default`/`final` members, no `export overload fn` and no
+    interface-member overload sets in 0.1, each pinned (§4.A
+    `fail_modifiers`: `fail_with_virtual`, `fail_with_impl`,
+    `fail_with_export`; amended 2026-09-27, review fold: rev A A7 / rev B
+    B11). **Declined recommendation, recorded (amended 2026-09-27, review
+    fold: rev B B2, sub-fork F-009d):** the stranded page recommends YES
+    for `overload` with `virtual`/`abstract`/`impl` ("overload resolution
+    selects a member statically first, and virtual dispatch then applies",
+    :280-286, :834-837) and consequently a NEW standalone modifier group
+    (:148-162: "`overload` cannot join the existing `Decl` group"). This
+    plan declines it for 0.1: `RequestVtableIfVirtual`
+    (handle_function.cpp:491-528) and vtable construction key a virtual
+    function by NAME within the class, so two virtual members of one name
+    need signature-keyed vtable slots and override matching by signature
+    — a vtable-layout change no 0.1 program needs — and the seventh order
+    group (resizing `ordered_modifier_node_ids` decl_introducer_state.h:31-34,
     the exhaustive `ModifierOrderAsSet` switch modifiers.cpp:54-69 under
-    -Werror, and `HandleModifier`'s if-chain :47-69) for a combination no
-    0.1 program needs. Break condition: a design ruling that `virtual
-    overload fn` is required — then the seventh group, recorded as a
-    titled residue "virtual members of overload sets" (§8.5).
+    -Werror, and `HandleModifier`'s if-chain :47-69) would land without a
+    consumer. Sub-fork F-009m (modifier position, :119-124, :873-876) is
+    MOOT under this choice: `overload` sits in the Decl slot, after
+    access/`extern`/`extend` and exclusive with the other Decl modifiers, so
+    no relative order among them arises. `export overload fn` is likewise
+    exclusive in 0.1 [R29(a), rev B B11]: an exported set reaches importers
+    through the ordinary name path once sets import (OV-2), and C++ through
+    OV-3, so `export` on a member has no meaning to give. Residue "virtual
+    members of overload sets" (§8.5) names the mechanism. Break condition:
+    a design ruling that `virtual overload fn` is required — then the
+    seventh group and signature-keyed vtable slots, never a silent
+    relaxation of the exclusivity.
 -   **D-OV-2 — the entity is `SemIR::OverloadSet`, a mirror of
     `CppOverloadSet`, and the name-lookup result for an overloaded name is
     an `OverloadSetValue` inst of type `OverloadSetType`.** Store shape
@@ -205,8 +260,15 @@ second, export third", :253-255).
     `GetCallee` already identifies a set by its callee's TYPE
     (function.cpp:58-69), and `PerformInstanceBinding` already treats a set
     callee as a possible instance method (member_access.cpp:63-81), so
-    method sets and `alias` of a set fall out. Break condition: none — the
-    mirror is the paper's own recommendation (:161, :369-370).
+    method sets and `alias` of a set fall out. The set value inst is
+    `AddInst`ed into the CURRENT block at the first member's declaration,
+    right after the member's placeholder `FunctionDecl`
+    (handle_function.cpp:598-602), so it has a location and a block like
+    every declaration; rev 1's `AddInstInNoBlock` was wrong — the C++
+    precedent adds its no-block inst to `context.imports()`
+    (cpp/import.cpp:2516-2522), which a declaration has no business doing
+    (amended 2026-09-27, review fold: rev A A4). Break condition: none —
+    the mirror is the paper's own recommendation (:161, :369-370).
 -   **D-OV-3 — member identity is parameter-TYPE equality; the marker must
     be on every declaration of the name or on none; each member keeps
     p003763 redeclaration matching.** At a `fn F` declaration whose
@@ -261,6 +323,17 @@ second, export third", :253-255).
         cascade). This is paper open question 4's recommendation
         ("explicit parameters only; `self`-shape overloading deferred",
         :430-435).
+    -   A declaration whose parameters carry an already-diagnosed error
+        never type-matches (`EntityHasParamError`, merge.cpp:185-200 makes
+        `CheckRedeclParamsMatch` return false) and so silently becomes a NEW
+        member; nothing further is diagnosed (the error was), and the
+        member is unreachable only in the sense that its erroneous
+        parameter rejects every probe (amended 2026-09-27, review fold: rev
+        A minor, recorded as no-change).
+    -   Members that disagree on whether they declare `self` at all
+        (`F(self, x: i32)` vs `F(x: i32)` in one class body) are TODO-gated
+        [R29(a): D-OV-6 gate (x); amended 2026-09-27, review fold: rev A A2
+        / rev B B2 sub-fork F-009l, whose recommendation is "no in 0.1"].
         Rationale for "types, not syntax" as identity: with syntax as identity,
         `overload fn F(a: i32); overload fn F(b: i32);` would form a two-member
         set whose second member is unreachable, and p003763's typo catching
@@ -276,29 +349,93 @@ second, export third", :253-255).
         erroneous arguments: fail_param_type.carbon:89-90 shows `converted
         %float, <error>` feeding `call %G.ref(<error>)`).
     2.  For each member decl id in `member_decl_ids`: F = its function.
-        (a) Arity: `[min, max]` from `GetExplicitArityRange(function)` — a
-        static returning `{n, n}` with `n = param_patterns.size() -
-        (self_id.has_value() ? 1 : 0)` (the call.cpp:61-64 rule) and a
-        comment naming W-013 variadics as the reason the check is a range
-        (paper :403-406). Mismatch → reason 0, next member. (b) Generic
-        member (OV-2 only; OV-1 never sees one, D-OV-6): non-diagnosing
-        `DeduceGenericCallArguments(..., /*diagnose=*/false)` inside the
-        discard scope; `None` → reason 2, next member. (c) Conversion probe
-        inside the discard scope — `context.inst_block_stack().Push();
+        (a) Receiver alignment (amended 2026-09-27, review fold: rev A A2):
+        if `F.self_param_id.has_value() != self_id.has_value()` → reason 3
+        ("is an instance method, but the call provides no receiver") or 4
+        ("is not an instance method, but the call provides a receiver"),
+        next member. `CallerPatternMatch` CHECKs `self_pattern_id` whenever
+        a `self_arg_id` is passed (pattern_match.cpp:2489-2494), so
+        committing a non-method member with a receiver would CHECK-crash
+        and committing a method member without one would misalign every
+        argument by one; with D-OV-6 gate (x) every member of a 0.1 set
+        agrees on `self`, so this step is the belt behind the gate and
+        fires only when binding and members disagree (§4.A
+        `fail_static_member_via_instance`, `class_scope_call`). (b) Arity:
+        `[min, max]` from `GetExplicitArityRange(function)` — a static
+        returning `{n, n}` with `n = param_patterns.size() -
+        (F.self_param_id.has_value() ? 1 : 0)` (the call.cpp:61-64 rule)
+        and a comment naming W-013 variadics as the reason the check is a
+        range (paper :403-406); Carbon has no default arguments, so the
+        range is exact (stranded sub-fork F-009j's recommendation, :450-457,
+        adopted; amended 2026-09-27, review fold: rev B B2). Mismatch →
+        reason 0, next member. (c) Template-dependent arguments (amended
+        2026-09-27, review fold: rev B B4 [R29(a)]): if any argument's type
+        constant has `constant_values().GetDependence(...) ==
+        ConstantDependence::Template` (sem_ir/constant.h:19-31, :246-250),
+        D-OV-6 gate (xi) fires ("overload resolution with
+        template-dependent arguments") and the call returns `ErrorInst`;
+        checked-generic (`Checked`) dependence is NOT gated — see step 7.
+        (d) Generic member (OV-2 only; OV-1 never sees one, D-OV-6):
+        non-diagnosing `DeduceGenericCallArguments(..., /*diagnose=*/false)`
+        inside the discard scope of (e) — deduction converts runtime
+        deduced arguments through `TryConvertToValueOfType`
+        (deduce.cpp:572-576), so it gets the same cleanup wrap (amended
+        2026-09-27, review fold: rev A A1); `None` → reason 2, next member.
+        (e) Conversion probe inside the DISCARD SCOPE, which is the
+        `DeduceImplArguments` idiom (deduce.cpp:666-678) EXTENDED with a
+        cleanup snapshot (amended 2026-09-27, review fold: rev A A1, a
+        BLOCKER): before the probe, `auto enclosing_size =
+        context.inst_block_stack().PeekCurrentBlockContents().size(); auto
+        cleanup_depth = context.scope_stack().cleanup_scope_depth();`
+        (scope_stack.h:290-293), then `context.inst_block_stack().Push();
         context.generic_region_stack().Push({.generic_id =
-        SemIR::GenericId::None});` — for each explicit parameter pattern
-        after `self` in order, `TryConvertToValueOfType(context, loc_id,
-        arg, GetTypeOfInstInSpecific(sem_ir, specific_id, param_pattern))`
-        (the merge.cpp:280-282 type read; every 0.1 member's explicit
-        parameters are by-value patterns, D-OV-6); the first
-        `ErrorInst::InstId` result → reason 1; then always
-        `context.generic_region_stack().Pop();
-        context.inst_block_stack().PopAndDiscard();` (deduce.cpp:672-678,
-        verbatim order). Constants and specifics minted by a failed probe
+        SemIR::GenericId::None});`; the probe zips
+        `concat(self_refs, arg_ids)` against ALL of `F.param_patterns_id`
+        exactly as `CallerPatternMatch` does (pattern_match.cpp:2489-2498):
+        for the `self` pattern nothing is converted (presence was checked in
+        (a); `ref self`/`addr self` binding is the commit's job — a value
+        conversion of the receiver would be the R-1 divergence), and for
+        each explicit pattern `TryConvertToValueOfType(context, loc_id, arg,
+        GetTypeOfInstInSpecific(sem_ir, specific_id, param_pattern))` (the
+        merge.cpp:280-282 type read; every 0.1 member's explicit parameters
+        are by-value patterns, D-OV-6 (iii)); BEFORE that conversion, when
+        the argument's constant is an `IntValue` of type `Core.IntLiteral`
+        and the parameter type has `TryGetIntTypeInfo` (eval.cpp:1415), an
+        `IntFitsIn`-style range pre-test replicates the two checks of
+        `PerformCheckedIntConvert` (eval.cpp:1425-1443: negative into
+        unsigned; `getSignificantBits() - 1 + is_signed > width`) and
+        rejects the member SILENTLY on failure [R29(a); amended 2026-09-27,
+        review fold: rev A A3] — because constant evaluation of
+        `int.convert_checked` emits `IntTooLargeForType` /
+        `NegativeIntInUnsignedType` UNCONDITIONALLY and still returns a
+        value, a bare probe would ACCEPT `F(300)` for an `i8` member and
+        diagnose it twice; the first `ErrorInst::InstId` result → reason 1.
+        On EVERY exit path (success, reasons 1/2, an early error) the scope
+        is unwound in this order: `context.generic_region_stack().Pop();
+        context.inst_block_stack().PopAndDiscard();
+        context.scope_stack().DiscardCleanupsSince(cleanup_depth);`
+        (scope_stack.h:277-288) — the third call is load-bearing: an
+        initializing argument (`F(G())`, or `Describe(RuntimeSeed(-13))` in
+        §5.A) converted to a value inside the probe goes through
+        `MaterializeTemporary` → `AddInstWithCleanup<Temporary>` →
+        `PushCleanupFor` (convert.cpp:79-102, control_flow.h:76-83,
+        control_flow.cpp:142-148, scope_stack.h:255-259) onto
+        `destroy_id_stack_`, which `PopAndDiscard` never touches, and the
+        statement's `AddCleanups` would then emit a `Destroy` call in the
+        ENCLOSING block over a `Temporary` that is in no block — a lowering
+        `CARBON_CHECK` "Missing value" (lower/function_context.cpp:190-212).
+        The cited `DeduceImplArguments` idiom never ran a runtime conversion
+        (deduce.cpp:346-347), which is why it needed no such call. Then, as
+        a RULE (R-2's contingency promoted): `CARBON_CHECK(
+        context.inst_block_stack().PeekCurrentBlockContents().size() ==
+        enclosing_size && context.scope_stack().cleanup_scope_depth() ==
+        cleanup_depth)`. Constants and specifics minted by a failed probe
         (an `ImplicitAs` impl lookup, a `SpecificFunction`) stay in the
         constants block exactly as failed impl lookups leave them today;
         they are not in any inst block and do not print in a
-        `--dump-sem-ir` block.
+        `--dump-sem-ir` block. Pins: §4.A `init_arg` (check + lower twin)
+        and `destroy_arg` — exactly ONE `temporary_storage`/`temporary`/
+        `Destroy.Op` triple per call.
     3.  First member that passes → COMMIT: `callee_id =
         BuildNameRef(context, loc_id, set.name_id, member_decl_id,
         enclosing_specific_id)` (check/inst.h:224-226; the thunk precedent
@@ -313,7 +450,7 @@ second, export third", :253-255).
         a plan miss (§7 R-1).
     4.  No member passes → `OverloadNoMatch` at the call, then one
         `OverloadCandidateRejected` note per member with the recorded
-        reason (0/1/2) at `SemIR::LocId(member_decl_id)`; return
+        reason (0-4) at `SemIR::LocId(member_decl_id)`; return
         `ErrorInst::InstId`. This is the paper's "lists every candidate
         with its first failure reason" (:229-230) at the granularity the
         loop knows for free.
@@ -332,13 +469,42 @@ second, export third", :253-255).
         `PerformCall` raw), so calls are unaffected. `DiscardExpr` (:2417)
         goes through the same entry, so a bare `F;` statement diagnoses too.
         C++ sets (`CppOverloadSetType`) are NOT keyed — upstream behavior
-        untouched (V-3).
+        untouched (V-3). Other non-call uses reach OTHER landed diagnostics
+        first and are pinned as such rather than claimed for this kind
+        (amended 2026-09-27, review fold: rev B B12): `&F` → `AddrOfNonRef`
+        (handle_operator.cpp:269-285 tests the category before any
+        conversion; a set value's category is `Value`); `F.member` → the
+        member-access family (`QualifiedExprNameNotFound` /
+        `QualifiedExprUnsupported`, member_access.cpp:671-683 — the fill
+        decides which); `match (F) {...}` → the match scrutinee gate's
+        `SemanticsTodo` if the scrutinee is gated before conversion, else
+        `OverloadSetNotCallee`; `if (let x: auto = F) {...}` → the
+        initializer conversion → `OverloadSetNotCallee`; `alias G = F;` is
+        NOT a conversion (handle_alias.cpp:59-78 converts only initializing
+        / mixed / dependent categories; a set value is `Value`), which is
+        what keeps D-OV-10 zero-code.
+    7.  Calls from CHECKED-GENERIC bodies resolve ONCE, at the definition,
+        against the symbolic argument types (amended 2026-09-27, review
+        fold: rev B B4; paper constraint 4 :117-121; stranded page :537-569
+        "never deferred to instantiation"): the probe's
+        `TryConvertToValueOfType` on a symbolic `T` succeeds exactly when
+        `T`'s constraints guarantee the `ImplicitAs` impl (the constraint
+        path of impl lookup) and fails otherwise — so a
+        constraint-guaranteed member is selected once and every specific
+        of the enclosing function calls that member (`call_from_generic_body`,
+        predicted NO per-specific re-resolution: the committed `Call` is in
+        the generic's definition region and specifics substitute it), while
+        an unconstrained `T` yields `OverloadNoMatch` with reason 1
+        (`fail_call_from_generic_no_match`). The stranded page's third case
+        — a candidate whose match status depends on the specific — cannot
+        arise from this probe: a symbolic conversion either resolves
+        through a constraint or fails; there is no "maybe". Template
+        dependence is gated (step 2(c)).
         Break condition: a member that the probe accepts and the commit rejects
-        (R-1), or a probe that leaves an inst in the current block (the
-        `LoadImportRef` CHECK idiom import_ref.cpp:5113-5120 is the model for
-        a `CARBON_CHECK` the loop adds in debug builds: the discarded block is
-        popped, so nothing to check — the falsifier is a stray `converted`
-        line in a §4.A dump before the `call`).
+        (R-1); the block-size/cleanup-depth CHECK firing (R-2, now a CHECK, not
+        a contingency); a probe emitting any diagnostic (R-15, amended
+        2026-09-27, review fold: rev A A3) — the falsifier is a stray
+        `converted`/`Destroy` line or an unexpected `error:` in a §4.A dump.
 -   **D-OV-5 — mangling by set-relative index, not by fingerprint.**
     `Mangler::MangleImpl` (mangler.cpp:190-259) emits, immediately after
     `MangleNameId(os, function.name_id)` (:210) and before the special-kind
@@ -375,8 +541,11 @@ second, export third", :253-255).
     — inside a generic class, interface or impl; the value that would have
     to flow into `OverloadSetType.specific_id` the way
     `GetFunctionType(..., PeekSpecificId())` :635-637 does for functions):
-    "`overload fn` in a generic scope" — stays gated through OV-3, titled
-    residue "overload sets in generic scopes" (§8.5); (iii) an explicit
+    "`overload fn` in a generic scope" — LIFTED IN OV-2 [R29(a); amended
+    2026-09-27, review fold: rev B B5: overloaded methods of a generic
+    class are the canonical migration shape] by the mechanism §1.B.5 names;
+    if OV-2 finds it infeasible the gap row stays PARTIAL through OV-3 and
+    the residue "overload sets in generic scopes" is filed; (iii) an explicit
     parameter after `self` whose leaf pattern is not a `ValueParamPattern`
     (`ref`/`var` parameters; the handle_function.cpp:321-331 shape
     check): "`overload fn` with a non-value explicit parameter" — the probe
@@ -397,7 +566,16 @@ second, export third", :253-255).
     `InterfaceWithSelfDecl` scope, the handle_function.cpp:285-287 test):
     "`overload fn` in an interface" — the paper excludes interface members
     (:225-226), and `overload` is already exclusive with `default`/`final`
-    by D-OV-1. Every string is
+    by D-OV-1; (x) a marked declaration whose `self` presence differs from
+    the set's existing members (`F.self_param_id.has_value()` differs):
+    "`overload fn` members that disagree on `self`" [R29(a); amended
+    2026-09-27, review fold: rev A A2 / rev B B2 sub-fork F-009l] — the
+    declaration still becomes a member (no cascade); (xi) a call to a set
+    with a template-dependent argument (D-OV-4 step 2(c)): "overload
+    resolution with template-dependent arguments" [R29(a); amended
+    2026-09-27, review fold: rev B B4] — titled residue "overload
+    resolution with template-dependent arguments" names the mechanism
+    (resolve after substitution, the stranded page :587-597). Every string is
     grep-reconciled at discharge (§8.4). Break condition per gate: the
     lifting slice deletes the gate and its `fail_todo_*` pin in the same
     commit (R16(b) citation: this decision).
@@ -410,19 +588,51 @@ second, export third", :253-255).
     `ResolveResult::Done(ErrorInst::ConstantId, ErrorInst::InstId)`);
     OV-2 replaces them with real resolution (§1.B.2). Break condition:
     none.
--   **D-OV-8 — this workstream authors the normative docs/design text as
-    dated amendments (functions.md section at OV-1, generic/cross-library
-    paragraphs at OV-2, interop README section and design README
-    placeholder at OV-3).** The F-009 docs are stranded (fork/ORCHESTRATION.md:311)
-    with reconstruction gated on a veto digest the owner has not
-    answered; R29(a) forbids waiting on a question. The section is written
-    from F-009 and the paper's Option A rules (:214-233) using the working
-    syntax (§0.2 item 9), marked "(fork amendment 2026-09-27, F-009)"; if
-    the stranded branch is later reconstructed, its overloading text is
-    reconciled AGAINST this section (this section wins on any point the
-    toolchain pins). Break condition: the owner's veto digest answer
-    naming a different spelling — then a doc-only follow-up, never a
-    toolchain reopen without a new F-decision.
+-   **D-OV-8 — this workstream PORTS the stranded design page
+    docs/design/functions_overloading.md (481e08c24, 906 lines) and its
+    sibling edits by `git show` as dated amendments, closing each OPEN
+    sub-fork F-009a..m in place with the D-OV decision that resolves it
+    [R29(a): ADOPT PORT; amended 2026-09-27, review fold: rev B B1 — rev 1
+    would have authored a parallel functions.md section].** Port
+    schedule: OV-1 lands the page (whole, with a dated status paragraph
+    saying which sections are toolchain-landed per slice: same-file sets at
+    OV-1, import/generic at OV-2, export at OV-3), the functions.md link
+    block (stranded :879-882), the pattern_matching.md :696 and :1063
+    rewrites (both reference the page, which exists from OV-1), and
+    words.md; OV-3 lands the interop README `### Overload resolution`
+    section and the README.md:3878 note (their text describes export as
+    landed). The other hunks in the stranded pattern_matching.md/README.md
+    diffs are pre-W-012 content and are NOT ported. Two corrections while
+    porting (§0.2 item 14): "Linkage and mangling" is rewritten to D-OV-5's
+    `:overload<N>` index (superseding the signature fingerprint, with the
+    §0.1 row 9 reason), and "Exported members are unaffected by
+    Carbon-internal mangling" is replaced by the true statement that every
+    exported member's C++ declaration carries its Carbon mangled name as an
+    asm label (export.cpp:893-899). Every "OPEN (sub-fork F-009x)"
+    paragraph becomes "CLOSED by D-OV-n (fork amendment 2026-09-27)" with
+    the mapping (amended 2026-09-27, review fold: rev B B2): a single-member
+    sets legal → D-OV-3 (pinned `single_member`); b same-file rule with
+    impl files defining only → D-OV-7 + `OverloadSetFrozen`; c `self`-shape
+    → D-OV-3's `self`-only gate; d `overload` with `virtual` → DECLINED, the
+    stranded YES recorded with the vtable reason in D-OV-1; e interface
+    members → gate (ix); f diagnostic depth → D-OV-4 step 4 (per-candidate
+    notes); g naming outside a call → step 6; h alias whole-set and
+    transitive through `export import` → D-OV-10 (rule added); i partially
+    exportable sets → §1.C.1 (export the subset; the per-function
+    `SemanticsTodo` on the omitted member is the note); j default
+    arguments → none in 0.1, arity exact (step 2(b)); k type-identical,
+    token-different → D-OV-3 (`fail_name_differs`); l mixed methods and
+    non-methods → gate (x); m modifier position → moot (D-OV-1). One
+    divergence from the page is named rather than papered over: the page
+    says a call from another file "resolves against the visible members
+    only" (:189-191, private members hidden), while gate (vi) requires
+    uniform access across a 0.1 set, so visibility is all-or-nothing; the
+    residue "per-member access in overload sets" (§8.5) carries the page's
+    rule. fork/ORCHESTRATION.md:311's stranded-branch row gains
+    "overloading portion ported by OV-1/OV-3; do not re-land" at OV-1
+    discharge (§8.7). Break condition: the owner's veto digest answer
+    changing a sub-fork ruling — then a doc-only amendment of the ported
+    text, never a toolchain reopen without a new F-decision.
 -   **D-OV-9 — W-007 is discharged for OV-3 by the EH-B/UN-2 precedent:
     additive hunks plus sequencing.** OV-3's C++-side edits are (1) the
     `OverloadSetValue` arm of `MapInstIdToClangDeclOrType` returning a
@@ -444,9 +654,20 @@ second, export third", :253-255).
     (paper open question 8's recommendation, :448-450); `export name` is
     untouched.** `alias G = F;` binds `G` to the `OverloadSetValue` inst
     (the alias machinery binds the looked-up inst; name_poisoning.carbon
-    `alias N.F2 = F1` precedent), so `G(...)` resolves over the same
-    members — pinned positive (§4.A `alias_of_set`), zero code. Break
-    condition: none.
+    `alias N.F2 = F1` precedent; handle_alias.cpp:59-78 does not convert a
+    `Value`-category operand), so `G(...)` resolves over the same members
+    — pinned positive (§4.A `alias_of_set`), zero code. **Transitivity
+    (amended 2026-09-27, review fold: rev B B2 sub-fork F-009h; paper Q8
+    :448-450):** a set re-exported through `export import` (or an `alias`
+    in an api file) is re-exported like any other name — the importing
+    library's scope entry is an `ImportRefUnloaded` to the set value, which
+    OV-2's resolver localizes as a whole set — so the set stays closed and
+    whole; pinned by the multi-unit golden §4.B `export_import_of_set`.
+    `export overload fn` is excluded by D-OV-1. Break condition: an
+    `export import` chain that drops or splits the set (a localized set
+    with fewer members than the source, or a per-member scope entry) —
+    the falsifier is `export_import_of_set` showing fewer `fn_decl`s than
+    the source set or a `MemberNameNotFound` on a member.
 
 ### §0.4 The split decision: three PR-sized workstreams, sequential
 
@@ -472,10 +693,14 @@ sequencing constraint, so per R29(b) it is three PRs:
     merge; a NEW member declared in an impl file or in an importing library
     diagnoses `OverloadSetFrozen` — p000998's "signatures defined together
     in the same library", paper :216-223), `extern overload fn` handling,
-    generic members (non-diagnosing deduction + the loop's step (b)),
-    goldens, two conformance programs (one multi-unit directory program),
-    docs paragraphs. Size M. Touches check/import_ref.cpp, deduce.cpp,
-    call.cpp, handle_function.cpp — none of the W-007 files.
+    generic members (non-diagnosing deduction + the loop's step 2(d)),
+    sets in generic scopes (gate (ii) lifted, §1.B.5; amended 2026-09-27,
+    review fold: rev B B5), the api-member missing-definition check
+    (§1.B.7), goldens, three conformance programs (one multi-unit
+    directory program), the ported page's status paragraph. Size M.
+    Touches check/import_ref.cpp, deduce.cpp, call.cpp,
+    handle_function.cpp, check_unit.cpp, type.cpp, sem_ir/function.cpp —
+    none of the W-007 files.
 -   **OV-3 (W-026, "export + documented divergence + docs completion"):**
     the generate_ast.cpp set arm (D-OV-9), two export conformance programs
     asserting both directions' resolution (one where they agree, one where
@@ -508,8 +733,11 @@ sequencing constraint, so per R29(b) it is three PRs:
     `Modifier`, so it lands in `FunctionSignature::modifiers` :577),
     `TryHandleAsModifier` (handle_decl_scope_loop.cpp:271-275),
     `ResolveAmbiguousTokenAsDeclaration`'s next-token list (:240-244 — so
-    `export overload fn` and `base overload fn` still parse `export`/`base`
-    as modifiers), `HandleStatement`'s modifier-led `DeclAsRegular`
+    `export overload fn` and `base overload fn` still PARSE `export`/`base`
+    as modifiers; the check layer then rejects both combinations,
+    `ModifierNotAllowedWith` for `export` under D-OV-1 and
+    `ModifierNotAllowedOnDeclaration` for `base` on a function — parse
+    accepts, check diagnoses; amended 2026-09-27, review fold: rev B B11), `HandleStatement`'s modifier-led `DeclAsRegular`
     dispatch (handle_statement.cpp:54-56 — an `overload fn` inside a
     function body parses as a declaration, D-OV-1's local-set pin). Parse
     coverage: parse/coverage_test.cpp:17-30 requires every node kind in
@@ -545,7 +773,12 @@ sequencing constraint, so per R29(b) it is three PRs:
     tests `TryGetAs<OverloadSetType>` right after the C++ test and
     returns it with `fn.self_id` (`resolved_specific_id` CHECKed empty, as
     :64-65); (c) member_access.cpp:63-81 — `CalleeOverloadSet` arm
-    returning `overload.self_id`; (d) sem_ir/expr_info.cpp:89-95 —
+    returning `overload.self_id` ONLY IF some member `IsInstanceMethod`
+    (:53-57; under gate (x) "some" equals "all"), else `nullopt`, so a set
+    of non-methods reached through an object is NOT wrapped in a
+    `BoundMethod` — unlike the C++ arm (:73-81), whose "treat every set as
+    possibly-instance" posture relies on Clang sorting it out (amended
+    2026-09-27, review fold: rev A A2); (d) sem_ir/expr_info.cpp:89-95 —
     `CalleeOverloadSet` arm returning `ExprCategory::ReprInitializing`
     (the C++ arm's value; a resolved Carbon call is re-categorized by its
     committed `Call` inst, so the set-callee category is only consulted
@@ -555,7 +788,9 @@ sequencing constraint, so per R29(b) it is three PRs:
     and lower/type.cpp:862-872 — `OverloadSetType` in both requires-lists
     (empty value representation, empty LLVM struct); (g)
     sem_ir/type_iterator.cpp:131-142 — `case OverloadSetType::Kind:` in the
-    concrete-types group; (h) lower/constant.cpp:303-307 —
+    concrete-types group, whose `default:` is a RUNTIME `CARBON_FATAL`
+    ("Unhandled type instruction", :304-307) that the compile probe cannot
+    catch (amended 2026-09-27, review fold: rev A A5); (h) lower/constant.cpp:303-307 —
     `EmitAsConstant(ConstantContext&, OverloadSetValue)` returning
     `GetLiteralAsValue()`; (i) inst_namer.h:57-61 — `OverloadSetId` in
     `ScopeIdTypeEnum` plus the `GetScopeFor` if-chain arm (:69-100 —
@@ -605,12 +840,15 @@ sequencing constraint, so per R29(b) it is three PRs:
     context.overload_sets().Add({.name_id = name_context.name_id,
     .parent_scope_id = name_context.parent_scope_id, .member_decl_ids =
     {decl_id}})`; `functions().Get(function_id).overload_set_id = set_id`;
-    `set_value_id = AddInstInNoBlock<SemIR::OverloadSetValue>(context,
+    `set_value_id = AddInst<SemIR::OverloadSetValue>(context,
     node_id, {.type_id = GetOverloadSetType(context, set_id,
     context.scope_stack().PeekSpecificId()), .overload_set_id = set_id})`
-    (the cpp/import.cpp:2516-2520 shape; the inst is a constant so it
-    needs no block, and `AddInstInNoBlock` keeps `LoadImportRef`-style
-    "no new insts in the current block" invariants for later probes);
+    — into the CURRENT block, immediately after the member's placeholder
+    `FunctionDecl` (:598-602), so the set value sits in the file (or
+    class) block with a location (amended 2026-09-27, review fold: rev A
+    A4: rev 1's `AddInstInNoBlock` copied the C++ importer, whose no-block
+    inst is pushed into `context.imports()`, cpp/import.cpp:2516-2522; a
+    declaration has no such home);
     `MaybeAddToNameLookup(context, name_context, introducer.modifier_set,
     parent_scope_id, set_value_id)` — the SET VALUE is the name-lookup
     result (and the `exports()` entry, decl_name_stack.cpp:163-168; the
@@ -629,7 +867,8 @@ sequencing constraint, so per R29(b) it is three PRs:
     ...)` site in convert.cpp.
 7.  **Mangling** (D-OV-5): mangler.cpp:210-214, one hunk; sem_ir/mangler.h
     needs no signature change (`MangleImpl` reads `sem_ir().overload_sets()`).
-8.  **Diagnostics: exactly four new kinds, one site each** (kind.def
+8.  **Diagnostics: exactly five new kinds (three errors, two notes), one
+    site each** (kind.def
     entries: `OverloadMarkerMismatch`/`OverloadMarkerPrevious` after the
     `Redecl*` block :280-296; `OverloadNoMatch`/`OverloadCandidateRejected`
     in the "Function call checking" block :301-312;
@@ -643,7 +882,11 @@ sequencing constraint, so per R29(b) it is three PRs:
         (Note): a `Diagnostics::IntAsSelect` over the recorded reason —
         0 "candidate takes a different number of arguments", 1 "candidate
         has a parameter its argument cannot implicitly convert to", 2
-        "candidate has generic parameters that could not be deduced" (the
+        "candidate has generic parameters that could not be deduced", 3
+        "candidate is an instance method, but the call provides no
+        receiver", 4 "candidate is not an instance method, but the call
+        provides a receiver" (reasons 3-4 amended 2026-09-27, review fold:
+        rev A A2; the
         `{0:=0:...|=1:...|=2:...}` select form of `CallArgCountMismatch`,
         call.cpp:66-72; reason 2 is emitted only from OV-2 but the select is
         written once).
@@ -692,9 +935,13 @@ sequencing constraint, so per R29(b) it is three PRs:
     import_ir_inst.ir_id()` so `MergeFunctionRedecl` → `DiagnoseIfInvalidRedecl`
     takes its `ApiForImpl` branch (merge.cpp:121-140: a forward declaration
     in the impl is allowed, a redefinition diagnosed) and
-    `ReplacePrevInstForMerge` (:171-181) is NOT called (the scope entry
-    stays the set value — the member's `FunctionDecl` is reached through the
-    set, never through the name). No identity match → `OverloadSetFrozen`
+    `ReplacePrevInstForMerge` (:171-181) is NOT called — today
+    `MergeFunctionRedecl` calls it UNCONDITIONALLY whenever
+    `prev_import_ir_id` has a value (handle_function.cpp:181-185), so OV-2
+    threads an explicit `bool replace_prev_inst` parameter, true on the
+    existing path and false for set members (the scope entry stays the set
+    value — the member's `FunctionDecl` is reached through the set, never
+    through the name; amended 2026-09-27, review fold: rev A A6). No identity match → `OverloadSetFrozen`
     (Error, new): "overload set `{0}` is closed; new members may only be
     declared in the API file of its library" (`SemIR::NameId`) with
     `OverloadSetDeclaredHere` (Note) "overload set declared here" at the
@@ -729,9 +976,68 @@ sequencing constraint, so per R29(b) it is three PRs:
     deduplicated lookup). Declaration-order first-match over mixed
     generic/non-generic members is pure order (D-OV-4 step 5; open question
     2).
-5.  **Sets in generic scopes stay gated** (gate (ii)); titled residue.
+5.  **Sets in generic scopes are LIFTED** (gate (ii) deleted; [R29(a)],
+    amended 2026-09-27, review fold: rev B B5). Mechanism, all on landed
+    paths: `OverloadSetType.specific_id` is a `SpecificId` operand, and
+    every `SpecificId` operand of an inst is substituted under the current
+    specific by `GetConstantValue(EvalContext&, SemIR::SpecificId, Phase*)`
+    (eval.cpp:702) inside `ReplaceAllFieldsWithConstantValues`
+    (eval.cpp:3136-3138) — the same path that turns `FunctionType.specific_id`
+    into the per-specific function type when `Box(i32).F` is named, since
+    `GetOverloadSetType(context, set_id, PeekSpecificId())` records the
+    enclosing self specific exactly as `GetFunctionType(...,
+    PeekSpecificId())` does (handle_function.cpp:635-637). `GetCallee`'s
+    set arm then carries `enclosing_specific_id =
+    overload_set_type->specific_id` into `CalleeOverloadSet`; the loop
+    reads each member's parameter types through it
+    (`GetTypeOfInstInSpecific(sem_ir, enclosing_specific_id, pattern)`) and
+    the commit passes it to `PerformCallToFunction` as
+    `callee_function.enclosing_specific_id` (call.cpp:221-224 already
+    threads it into `ResolveCalleeInCall`). Members of a generic class are
+    "effectively non-generic within the specific" (`IsGenericFunction`,
+    handle_function.cpp:466-488), so step 2(d) is not engaged for them.
+    Pins: §4.B `generic_class_method_set` (check + lower: two `define`s
+    per specific with the marker AND the specific fingerprint,
+    `@_CAdd:overload0.Box.Main.<16 hex>`) and §5.B's third program. If
+    hosted verification refutes the mechanism (a `specific_id` that does
+    not substitute, or a CHECK in `GetCallee`), the gate stays, the residue
+    "overload sets in generic scopes" is filed by title, the program is
+    parked SKIP citing the diagnostic (R10), and the gap row stays PARTIAL
+    through OV-3 — never DONE with that gate (B5's rule).
 6.  **One new diagnostic kind pair in OV-2** (`OverloadSetFrozen` +
     `OverloadSetDeclaredHere`), one site in handle_function.cpp.
+7.  **Marked-signature typo across api/impl (amended 2026-09-27, review
+    fold: rev B B6).** F-009's stated reason for the marker is p003763's
+    typo catching; inside a set, `overload fn G(x: i64) -> i64;` followed
+    by the definition `overload fn G(x: u64) -> i64 {...}` legally declares
+    a two-member set whose first member is never defined. Today an
+    api-declared function without a definition is ACCEPTED at compile time
+    and fails at LINK (no_definition_in_impl_file.carbon `decl_only_in_api`;
+    `definitions_required_by_decl` is fed only for impl-file declarations,
+    handle_function.cpp:669-671, and `CheckRequiredDefinitions`
+    check_unit.cpp:459-476 checks only those). OV-1 pins today's behavior
+    (`marked_typo_undefined_member`: a positive check golden with a comment
+    naming the link-time failure) and the ported page's "0.1 limits"
+    sentence says so. OV-2 extends the check to api-declared set members:
+    in the impl file's `CheckRequiredDefinitions`, walk the `ApiForImpl`
+    IR's `overload_sets()` and, for each member whose api `Function` has
+    no `definition_id` and whose local merged `Function` (found through the
+    localized set's `member_decl_ids`) has none either, emit
+    `MissingDefinitionInImpl` at the member's imported decl (the
+    `FunctionDecl` arm's shape, :469-475) — an overload-set-specific rule
+    justified by the marker's contract (the general "any api decl without
+    a definition" gap is #3762's and stays out of scope). If verification
+    shows the api IR's functions are not reachable there (an
+    `ImportRefUnloaded` never loaded), the residue "marked members without
+    a definition" is filed by title with this mechanism. Pins: §4.B
+    `fail_member_undefined_in_impl` (api declares two members, impl defines
+    one → `MissingDefinitionInImpl` at the other's decl) and
+    `impl_defines_all` (positive).
+8.  **Re-export of a set through `export import` / api `alias`** is
+    D-OV-10's transitivity rule; the resolver of §1.B.1 localizes the
+    whole set wherever the `ImportRefUnloaded` came from, so nothing is
+    set-specific — pinned by §4.B `export_import_of_set` (amended
+    2026-09-27, review fold: rev B B2 sub-fork F-009h).
 
 ### §1.C OV-3 — export and documented divergence
 
@@ -747,7 +1053,13 @@ sequencing constraint, so per R29(b) it is three PRs:
     that fails to export (nullptr from `ExportFunctionToCpp` — a
     `SemanticsTodo` already emitted by the existing per-function paths)
     is dropped from the list, and if the list is empty the arm returns
-    nullptr as the single-function case does.
+    nullptr as the single-function case does — the stranded sub-fork
+    F-009i recommendation ("export the exportable members and omit the
+    rest", :670-676), with the existing per-function `SemanticsTodo` on the
+    omitted member serving as its note (amended 2026-09-27, review fold: rev
+    B B2). Pinned by §4.C `partial_export` (one member with a parameter
+    type that has no C++ mapping: predicted the TODO for that member, the
+    other member callable from C++).
 2.  **C++ resolves with C++ rules; the divergence is documented, not
     prevented** (F-009; paper :235-243, open question 3). No export-side
     coherence check. Each member's thunk symbol is its own mangled name
@@ -790,8 +1102,12 @@ sequencing constraint, so per R29(b) it is three PRs:
     TODO arm ("overload set export"), four lines on the :210 precedent
     (D-OV-6 (viii)).
 8.  **toolchain/diagnostics/kind.def** — five kinds (§1.A.8).
-9.  **Docs and grammars** (§8.6): docs/design/functions.md (new section +
-    TOC :11-42 entry), docs/design/pattern_matching.md:696 (dated note),
+9.  **Docs and grammars** (§8.6; amended 2026-09-27, review fold: rev B
+    B1): docs/design/functions_overloading.md (NEW, ported by `git show
+    481e08c24:docs/design/functions_overloading.md` then edited per
+    D-OV-8), docs/design/functions.md:879-882 (the ported four-line link
+    block under "Functions in other features"),
+    docs/design/pattern_matching.md:696 and :1063 (the ported hunks),
     docs/design/lexical_conventions/words.md:86-87 (`overload` between
     `or` and `override`), utils/vim/syntax/carbon.vim:37,
     utils/vscode/carbon.tmLanguage.json:417,
@@ -807,20 +1123,26 @@ sequencing constraint, so per R29(b) it is three PRs:
 1.  **toolchain/check/import_ref.cpp** — real `TryResolveTypedInst` arms
     (§1.B.1) replacing :2254-2279's TODO bodies; the switch arms stay.
 2.  **toolchain/check/handle_function.cpp:229-251** — the `ImportRefLoaded`
-    `OverloadSetValue` case (§1.B.2); the `extern` rule (§1.B.3); gates
-    (i), (iv), (vii) deleted.
+    `OverloadSetValue` case (§1.B.2) with the `replace_prev_inst` flag on
+    `MergeFunctionRedecl` (:151-187); the `extern` rule (§1.B.3); gates
+    (i), (ii), (iv), (vii) deleted. **toolchain/check/check_unit.cpp:459-476**
+    — the api-member arm of `CheckRequiredDefinitions` (§1.B.7).
+    **toolchain/check/type.cpp / sem_ir/function.cpp** — the enclosing
+    specific through `CalleeOverloadSet` (§1.B.5).
 3.  **toolchain/check/deduce.h:14-21, deduce.cpp:619-647** — `diagnose`
     parameter (§1.B.4). **call.cpp** — step (b) of the loop.
 4.  **toolchain/diagnostics/kind.def** — `OverloadSetFrozen`,
     `OverloadSetDeclaredHere`.
-5.  **Docs:** functions.md paragraphs (§8.6).
+5.  **Docs:** the ported page's status paragraph (import/generic landed)
+    (§8.6).
 
 ### §2.C OV-3 (file by file)
 
 1.  **toolchain/check/cpp/generate_ast.cpp:165-166, :199-256, :396-405** —
     §1.C.1; the OV-1 TODO arm deleted.
-2.  **Docs:** docs/design/interoperability/README.md:210,
-    docs/design/README.md:3878-3881, functions.md export paragraph.
+2.  **Docs:** docs/design/interoperability/README.md:210 and
+    docs/design/README.md:3878-3881 (the ported hunks), the ported page's
+    status paragraph (export landed).
 
 ## §3 Commit structure
 
@@ -834,16 +1156,19 @@ sequencing constraint, so per R29(b) it is three PRs:
 3.  check + lower goldens of §4.A (AUTOUPDATE, empty CHECK lines, R15/R19)
     -   §5.A conformance (`overloading_native` rewritten, `overloading_methods`
         new) + gap-analysis row 57 PARTIAL + ledger.
-4.  discharge: decision-log entry, functions.md section and
-    pattern_matching.md note (§8.6), ORCHESTRATION stamp, residue items
+4.  discharge: decision-log entry, the docs port (functions_overloading.md,
+    functions.md link block, pattern_matching.md :696/:1063 hunks; §8.6),
+    ORCHESTRATION stamp incl. the stranded-branch row note, residue items
     (ids allocated then, §8.5).
 
 **OV-2 (PR "OV-2: overload-set import and generic members"), three
 commits:** (1) import resolution + `TryMergeRedecl` import arm + frozen
-diagnostic + `extern` rule; (2) non-diagnosing deduction + loop step (b) +
+diagnostic + `extern` rule + the api-member missing-definition arm; (2)
+non-diagnosing deduction + loop step 2(d) + the generic-scope lifting +
 gate deletions + §4.B goldens (the OV-1 `fail_todo_impl_file`,
-`fail_todo_generic_member`, `fail_todo_extern` pins deleted, R16(b)
-citation: D-OV-6) + §5.B conformance + ledger; (3) discharge.
+`fail_todo_generic_member`, `fail_todo_generic_scope`, `fail_todo_extern`
+pins deleted, R16(b) citation: D-OV-6) + §5.B conformance + ledger; (3)
+discharge (incl. the ported page's status paragraph).
 
 **OV-3 (PR "OV-3: overload-set export"), two commits (after UN-2 merges;
 rebase first):** (1) generate_ast.cpp arm + §4.C goldens (OV-1
@@ -888,10 +1213,13 @@ erroring subfile blanks a lower golden's IR. `EXTRA-ARGS` is file-wide
     predicted a single scope entry `.Describe = %Describe.overload_set.value`
     (NOT `%Describe.decl`), two `fn_decl` insts `%Describe.decl.<suffix>`
     named with disambiguating suffixes as same-named functions are today,
-    the constant `%Describe.overload_set.value: %Describe.overload_set.type
-    = overload_set_value @Describe.overload_set [concrete]`, and in `Use` a
+    and — in the `file {}` block, immediately after the FIRST member's
+    `fn_decl` (A4: the set value is `AddInst`ed at that declaration) —
+    `%Describe.overload_set.value: %Describe.overload_set.type =
+    overload_set_value @Describe.overload_set [concrete]`, and in `Use` a
     `%Describe.ref: %Describe.overload_set.type = name_ref Describe,
-    file.%Describe.overload_set.value` followed for the FIRST call by a
+    file.%Describe.overload_set.value [concrete =
+    constants.%Describe.overload_set.value]` followed for the FIRST call by a
     second name reference to member 0's `fn_decl` (the committed callee,
     D-OV-4 step 3) and `call %Describe.ref.<n>(%int_7...)`, and for the
     second call a reference to member 1 and `call ...(%true)`; NO
@@ -940,7 +1268,44 @@ erroring subfile blanks a lower golden's IR. `EXTRA-ARGS` is file-wide
     first member fails on an `ImplicitAs` lookup and whose second member
     matches: predicted the `constants` block may carry the failed lookup's
     specifics (as failed impl lookups do today) but the dumped function
-    block has no `converted`/`call` for member 0 (the D-OV-4 falsifier).
+    block has no `converted`/`call` for member 0 (the D-OV-4 falsifier);
+    `init_arg` (amended 2026-09-27, review fold: rev A A1) — `class C {
+    var n: i32; } fn G() -> C { return {.n = 1}; } overload fn F(b: bool)
+    -> i32 { return 1; } overload fn F(c: C) -> i32 { return c.n; } fn Use()
+    -> i32 { return F(G()); }`: member 0 is probed against an INITIALIZING
+    argument (`G()` returns a class by in-place initialization) and
+    rejected; predicted EXACTLY ONE `temporary_storage` / `temporary` pair
+    for the argument and, at statement end, exactly one `Destroy.Op`-style
+    cleanup call over it (the commit's materialization), NEVER two — a
+    second `temporary` or a `Destroy` over an inst that appears in no block
+    is the A1 leak; `destroy_arg` — the same with `class D { var n: i32;
+    fn destroy[addr self: Self*]() {} }` as the argument type (the
+    class/destroy_calls.carbon spelling), predicted one user-`destroy`
+    call per statement; `literal_range` (amended 2026-09-27, review fold:
+    rev A A3) — `overload fn N(x: i8) -> i32 { return 1; } overload fn N(x:
+    i32) -> i32 { return 2; } overload fn U(x: u8) -> i32 { return 1; }
+    overload fn U(x: i32) -> i32 { return 2; }` with `N(300)` and `U(-1)`:
+    predicted member 1 for both, with NO `IntTooLargeForType` /
+    `NegativeIntInUnsignedType` diagnostic anywhere in the golden (a
+    POSITIVE subfile; the pre-test rejects the `i8`/`u8` members
+    silently); `class_scope_call` (amended 2026-09-27, review fold: rev A
+    A2) — `class K { overload fn S(x: i32) -> i32 { return 1; } overload fn
+    S(b: bool) -> i32 { return 2; } fn Use() -> i32 { return K.S(true) +
+    S(1); } }` — a non-method set called through the class scope and
+    unqualified: predicted no `bound_method`, members resolve by
+    conversion; `call_from_generic_body` (amended 2026-09-27, review fold:
+    rev B B4) — `overload fn P(x: i32) -> i32 { return 1; } overload fn
+    P(b: bool) -> i32 { return 2; } fn Gen[T:! Core.ImplicitAs(i32)](x: T)
+    -> i32 { return P(x); } fn Use() -> i32 { return Gen(7 as i16); }`:
+    predicted member 0 committed ONCE inside `@Gen`'s definition (the
+    `call` names member 0's decl with a symbolic `ImplicitAs` conversion
+    of `%x`), and the `specific @Gen(...)` block shows the substituted
+    conversion, not a re-resolution; `marked_typo_undefined_member`
+    (amended 2026-09-27, review fold: rev B B6) — `overload fn G(x: i64)
+    -> i64; overload fn G(x: u64) -> i64 { return 1; }` with a call
+    `G(1 as u64)`: predicted ACCEPTED with two members and no diagnostic
+    (today's api-decl behavior; the missing definition surfaces at link),
+    with a comment naming §1.B.7's OV-2 rule.
 -   **check/testdata/function/overload/fail_marker_mismatch.carbon** —
     `fail_unmarked_second`: `overload fn F(x: i32); fn F(b: bool);` →
     `OverloadMarkerMismatch` ("`overload` must appear on every declaration
@@ -970,22 +1335,49 @@ erroring subfile blanks a lower golden's IR. `EXTRA-ARGS` is file-wide
     both reason 1 ("has a parameter its argument cannot implicitly convert
     to"); `fail_arity`: `F(1, 2)` against the same set → two notes with
     reason 0; `fail_error_arg`: `F(undeclared)` → only `NameNotFound`, no
-    `OverloadNoMatch` (D-OV-4 step 1).
+    `OverloadNoMatch` (D-OV-4 step 1); `fail_static_member_via_instance`
+    (amended 2026-09-27, review fold: rev A A2) — `class K { overload fn
+    M(self, x: i32) -> i32 { return 1; } overload fn M(self, b: bool) ->
+    i32 { return 2; } } fn Use(k: K) -> i32 { return K.M(k, 1); }` — the
+    method set named through the CLASS scope with the receiver passed
+    explicitly: predicted `OverloadNoMatch` + two notes with reason 3
+    ("is an instance method, but the call provides no receiver") and NO
+    CHECK failure (the belt of step 2(a)); `fail_call_from_generic_no_match`
+    (amended 2026-09-27, review fold: rev B B4) — `fn Gen[T:! type](x: T)
+    -> i32 { return F(x); }` against the `i32`/`bool` set → `OverloadNoMatch`
+    at the definition with two reason-1 notes (an unconstrained `T` has no
+    `ImplicitAs` impl to any parameter type).
 -   **check/testdata/function/overload/fail_set_as_value.carbon** —
     `fail_let`: `overload fn F(x: i32); overload fn F(b: bool); let g:
     auto = F;` → `OverloadSetNotCallee` ("overload set `F` can only be used
     as the callee of a call"); `fail_discard`: `F;` as a statement → the
     same kind (D-OV-4 step 6); `fail_arg`: `G(F)` for `fn G(f: i32)` →
-    the same kind, not `ConversionFailure`.
+    the same kind, not `ConversionFailure`; `fail_if_let`: `if (let x: auto
+    = F) {}` → `OverloadSetNotCallee` (the initializer converts);
+    `fail_addr_of`: `&F` → the landed `AddrOfNonRef` ("cannot take the
+    address of non-reference expression", handle_operator.cpp:279-282 —
+    category test precedes conversion); `fail_member_of_set`: `F.x` → the
+    landed member-access family (`QualifiedExprNameNotFound` /
+    `QualifiedExprUnsupported`, member_access.cpp:671-683; the fill
+    decides); `fail_match_scrutinee`: `match (F) { default => {} }` → the
+    match scrutinee gate's `SemanticsTodo` or `OverloadSetNotCallee`
+    (whichever the scrutinee path reaches first; pinned as the fill shows,
+    both loud). `F(x)?` needs no pin — the call resolves before `?` sees a
+    value (amended 2026-09-27, review fold: rev B B12).
 -   **check/testdata/function/overload/fail_modifiers.carbon** —
     `fail_on_class`: `overload class C {}` → `ModifierNotAllowedOnDeclaration`
     "`overload` not allowed on `class` declaration"; `fail_with_virtual`:
     `class B { virtual overload fn F(self); }` → `ModifierNotAllowedWith`
     "`overload` not allowed on declaration with `virtual`" +
-    `ModifierPrevious` (D-OV-1's narrowing, pinned); `fail_order`: `overload
-    private fn H();` → `ModifierMustAppearBefore` "`private` must appear
-    before `overload`"; `fail_repeated`: `overload overload fn I();` →
-    `ModifierRepeated`; `fail_on_interface_member`: `interface I { overload
+    `ModifierPrevious` (D-OV-1's narrowing, pinned); `fail_with_impl`:
+    `class B2 { impl overload fn F(self); }` → `ModifierNotAllowedWith`
+    "`overload` not allowed on declaration with `impl`" (amended
+    2026-09-27, review fold: rev A A7); `fail_with_export`: `export
+    overload fn E();` → `ModifierNotAllowedWith` "`overload` not allowed on
+    declaration with `export`" (amended 2026-09-27, review fold: rev B
+    B11); `fail_order`: `overload private fn H();` →
+    `ModifierMustAppearBefore` "`private` must appear before `overload`";
+    `fail_repeated`: `overload overload fn I();` → `ModifierRepeated`; `fail_on_interface_member`: `interface I { overload
     fn M(self); }` → NOT a modifier error (the function allowed set admits
     the marker) and NOT the D-OV-3 `AssociatedEntity` mismatch (a FIRST
     marked declaration has no previous inst); it would create a set inside
@@ -1006,16 +1398,29 @@ erroring subfile blanks a lower golden's IR. `EXTRA-ARGS` is file-wide
     i32); private overload fn F(b: bool);`), `fail_todo_self_only`
     (`class C { overload fn F(self, x: i32); overload fn F(ref self, x:
     i32); }` → "`overload fn` members distinguished only by `self`"),
-    `fail_todo_interface` (gate (ix)).
+    `fail_todo_interface` (gate (ix)); `fail_todo_mixed_self` (gate (x);
+    amended 2026-09-27, review fold: rev A A2 / rev B B2) — `class C {
+    overload fn F(self, x: i32); overload fn F(b: bool); }` → "`overload
+    fn` members that disagree on `self`" at the second; `fail_todo_template_dependent`
+    (gate (xi); amended 2026-09-27, review fold: rev B B4) — `fn T2[template
+    T:! type](x: T) -> i32 { return F(x); }` → "overload resolution with
+    template-dependent arguments" at the call.
 -   **check/testdata/function/overload/fail_todo_impl_file.carbon** —
     `// --- api.carbon` (`library "[[@TEST_NAME]]";` declaring `overload fn
     F(x: i32) -> i32; overload fn F(b: bool) -> i32;`) and `// ---
-    fail_impl.carbon` (`library "[[@TEST_NAME]]" impl;` defining `overload
-    fn F(x: i32) -> i32 { return x; }`): predicted, in the impl subfile,
+    fail_impl.impl.carbon` (`impl library "[[@TEST_NAME]]";` — the
+    no_definition_in_impl_file.carbon:9 spelling — defining `overload fn
+    F(x: i32) -> i32 { return x; }`): predicted, in the impl subfile,
     `SemanticsTodo` "semantics TODO: `overload set import`" (emitted with
     no location, the `HandleUnsupportedCppOverloadSet` precedent) followed
     by `NameDeclDuplicate` "duplicate name `F` being declared in the same
-    scope" + `NameDeclPrevious` (D-OV-3's import case). Deleted at OV-2.
+    scope" + `NameDeclPrevious` (D-OV-3's import case). Deleted at OV-2. A
+    third subfile `impl_local.impl.carbon` (amended 2026-09-27, review
+    fold: rev B B13) declares a set WHOLLY inside the impl file under a name
+    the api does not declare (`overload fn L(x: i32) -> i32 {...} overload
+    fn L(b: bool) -> i32 {...}` + a call): predicted ACCEPTED in OV-1 — no
+    `ImportRef` is involved, so the same-file path runs (this positive
+    subfile survives OV-2 as `impl_local_set`).
 -   **check/testdata/function/overload/fail_todo_export.carbon** —
     `import Cpp;` + `overload fn F(x: i32) -> i32 { return 1; } overload fn
     F(b: bool) -> i32 { return 2; }` + `inline Cpp ''' int Use() { return
@@ -1026,7 +1431,15 @@ erroring subfile blanks a lower golden's IR. `EXTRA-ARGS` is file-wide
     Clang text decided by the fill. Deleted at OV-3.
 -   **lower/testdata/function/overload/basic.carbon** (full prelude) —
     positive twins of `two_members`, `first_match_order`, `arity_dispatch`,
-    `method_set`, `alias_of_set`, `local_set`. Predicted IR: `define i32
+    `method_set`, `alias_of_set`, `local_set`, `init_arg`, `destroy_arg`,
+    `literal_range`, `call_from_generic_body` (amended 2026-09-27, review
+    fold: rev A A1 / A3, rev B B4). Predicted IR for `init_arg`: ONE
+    `alloca` for the temporary, ONE call to `@_CG.Main` storing into it,
+    ONE call to member 1 and ONE destroy sequence (for `destroy_arg`, one
+    `call void @_Cdestroy.D.Main`) — a second alloca/destroy or a "Missing
+    value" CHECK is the A1 leak; `call_from_generic_body`: the specific
+    `@_CGen.Main.<16 hex>` calls `@_CP:overload0.Main` (never member 1).
+    Predicted IR for the rest: `define i32
     @_CDescribe:overload0.Main(i32 %n)` and `define i32
     @_CDescribe:overload1.Main(i1 %b)` — two distinct definitions; in
     `Use`, `call i32 @_CDescribe:overload0.Main(i32 7)` then `call i32
@@ -1069,7 +1482,33 @@ erroring subfile blanks a lower golden's IR. `EXTRA-ARGS` is file-wide
     `fail_import_unmarked`: `fn F(x: i32) -> i32 {...}` in the impl file →
     `OverloadMarkerMismatch`; `extern_member` (positive): `extern overload
     fn F(x: i32) -> i32;` in an importing library naming an existing
-    member → accepted; `fail_extern_non_member` → `OverloadSetFrozen`.
+    member → accepted; `fail_extern_non_member` → `OverloadSetFrozen`;
+    `fail_member_undefined_in_impl` and `impl_defines_all` (§1.B.7; amended
+    2026-09-27, review fold: rev B B6): api declares two members, the impl
+    subfile defines one → `MissingDefinitionInImpl` ("no definition found
+    for declaration in impl file") at the undefined member's imported
+    decl; defining both → clean. Every impl subfile uses the `impl library
+    "[[@TEST_NAME]]";` spelling (§0.2 item 13).
+-   **check/testdata/function/overload/export_import.carbon** (amended
+    2026-09-27, review fold: rev B B2 sub-fork F-009h / D-OV-10) — `// ---
+    base.carbon` declares and defines the set; `// --- reexport.carbon`
+    does `export import library "base";`; `// --- use.carbon` imports
+    `reexport` and calls both members: predicted the set arrives whole
+    (one `import_ref` to the set value through the re-exporting library,
+    two member `fn_decl`s), both calls resolve; the falsifier is fewer
+    members or a `MemberNameNotFound` — D-OV-10's break condition.
+-   **check/testdata/function/overload/generic_class_method_set.carbon**
+    (amended 2026-09-27, review fold: rev B B5) — `class Box(T:! type) {
+    var v: T; overload fn Add(ref self, x: i32) { ... } overload fn
+    Add(ref self, b: bool) { ... } }` with `var b: Box(i64) = ...; b.Add(1);
+    b.Add(true);`: predicted `%Add.overload_set.value` inside `@Box`'s
+    definition with an `OverloadSetType` whose `specific_id` is the self
+    specific, the bound set naming `Box(i64)`'s substituted set value, and
+    the two committed callees as `specific_fn`-shaped members of the
+    `Box(i64)` specific; `fail_todo_generic_scope` is deleted in the same
+    commit. If the fill shows a `SemanticsTodo` or CHECK instead, §1.B.5's
+    fallback applies and this file is renamed `fail_todo_generic_scope`
+    again with the diagnostic pinned (R16(b) citation: §1.B.5).
 -   **check/testdata/function/overload/generic.carbon** — `overload fn
     Kind(x: i32) -> i32 { return 1; } overload fn Kind[T:! type](x: T) ->
     i32 { return 2; }`: `Kind(5)` → member 0 (IntLiteral → i32);
@@ -1081,15 +1520,21 @@ erroring subfile blanks a lower golden's IR. `EXTRA-ARGS` is file-wide
     Core.IntLiteral`; `fail_deduce_all`: a set whose only members are
     generic with constraints no argument satisfies → `OverloadNoMatch` +
     notes with reason 2 ("has generic parameters that could not be
-    deduced"); `fail_todo_generic_scope` stays (gate (ii)).
+    deduced"); `fail_todo_generic_scope` is DELETED here (gate (ii) lifted,
+    §1.B.5; amended 2026-09-27, review fold: rev B B5).
 -   **lower/testdata/function/overload/generic.carbon** — the specific's
     mangled name carries both the marker and the specific fingerprint:
     `@_CKind:overload1.Main.<16 hex>` beside `@_CKind:overload0.Main`.
 -   **lower/testdata/function/overload/import.carbon** — the cross-file
     call names `@_CF:overload1.Lib`-shaped symbols identical in the
     defining and using subfiles (D-OV-5's stability pin).
--   **Deleted:** `fail_todo_impl_file.carbon`, the `fail_todo_generic_member`
-    and `fail_todo_extern` subfiles.
+-   **lower/testdata/function/overload/generic_class.carbon** — the
+    `Box(i64)` members as `@_CAdd:overload0.Box.Main.<16 hex>` and
+    `@_CAdd:overload1.Box.Main.<16 hex>` (marker THEN specific
+    fingerprint, mangler.cpp:249-258 order) — two `define`s per specific.
+-   **Deleted:** `fail_todo_impl_file.carbon` (its `impl_local` subfile
+    survives as `impl_local_set`), the `fail_todo_generic_member`,
+    `fail_todo_generic_scope` and `fail_todo_extern` subfiles.
 
 ### §4.C OV-3
 
@@ -1100,11 +1545,22 @@ erroring subfile blanks a lower golden's IR. `EXTRA-ARGS` is file-wide
     plus Carbon calls of both: predicted a clean compile, the `imports` block
     showing both exported thunks (asm labels `_CF:overload0.Main`,
     `_CF:overload1.Main`), and Clang's resolution selecting `F(bool)` for
-    `true` (exact) and `F(long)` for `7` (integral conversion `int → long`,
-    the only viable candidate since `int → bool` is a boolean conversion,
-    [over.ics.rank]/4: both are conversions of the same rank — this pin's
-    fill decides; if Clang reports ambiguity the C++ test argument becomes
-    `7L`, recorded); `divergence`: `overload fn Pick(x: i64) -> i32 {
+    `true` (exact) and `F(long)` for `7L` (exact) — the positive subfile
+    passes `7L`, because `Carbon::F(7)` with an `int` argument is
+    AMBIGUOUS under C++ rules: `int → long` (integral conversion) and `int
+    → bool` (boolean conversion) are both Conversion rank, and
+    [over.ics.rank]/4.1 demotes only pointer/member-pointer → `bool`
+    (amended 2026-09-27, review fold: rev B B9; rev 1 predicted `F(long)`
+    would win — wrong); `fail_cpp_ambiguous` pins that: `int CallWithPlainInt() {
+    return Carbon::F(7); }` → Clang "call to 'F' is ambiguous" (exact text
+    from the fill) — the "whether" half of the documented divergence
+    (paper :237-240: "Carbon picks the first candidate; C++ rejects the
+    call as ambiguous"); `partial_export` (amended 2026-09-27, review fold:
+    rev B B2 sub-fork F-009i) — a set whose second member takes a parameter
+    of a type with no C++ mapping (a Carbon `choice`, the landed
+    per-function `SemanticsTodo` "failed to map Carbon type to C++",
+    export.cpp:875-878): predicted that TODO for the second member and a
+    clean C++ call of the first; `divergence`: `overload fn Pick(x: i64) -> i32 {
     return 1; } overload fn Pick(x: i32) -> i32 { return 2; }` + `inline
     Cpp ''' int FromCpp(int v) { return Carbon::Pick(v); } '''` → C++
     selects `Pick(int)` (exact match, [over.ics.rank]) — member 1 — while
@@ -1119,11 +1575,13 @@ erroring subfile blanks a lower golden's IR. `EXTRA-ARGS` is file-wide
 All under bullet "Functions: function overloading (Carbon-native)"
 (fork/gap-analysis.md:57; R7: exact string; `runner.py --self-test` before
 every commit that touches programs). **Counts are deltas:** OV-1 is PASS
-+2, SKIP −1, total +1, bullets +1; OV-2 is PASS +2, total +2 (one of them
-a multi-unit directory program, counted once); OV-3 is PASS +2, total +2.
-Absolutes on the post-W-012 base (108/0/27 over 135, 44/56): OV-1 →
-**110/0/26 over 136, 45/56**; OV-2 → **112/0/26 over 138**; OV-3 →
-**114/0/26 over 140**. Rebase rule: add EH-B's and UN-1/UN-2's landed
++2, SKIP −1, total +1, bullets +1; OV-2 is PASS +3, total +3 (one of them
+a multi-unit directory program, counted once; the third is the
+generic-class program of §1.B.5, which parks as SKIP +1 / PASS +2 if the
+lifting is refuted — amended 2026-09-27, review fold: rev B B5); OV-3 is
+PASS +2, total +2. Absolutes on the post-W-012 base (108/0/27 over 135,
+44/56): OV-1 → **110/0/26 over 136, 45/56**; OV-2 → **113/0/26 over
+139**; OV-3 → **115/0/26 over 141**. Rebase rule: add EH-B's and UN-1/UN-2's landed
 deltas (fork/eh/plan.md §5.B: +4 PASS / −1 SKIP / +3 total expected;
 fork/unions/plan.md §5: UN-1 +2 / −1 / +1, UN-2 +2 / 0 / +2) to both sides
 of every equation; never hard-code. Harness conventions (fork/w077/plan.md
@@ -1220,7 +1678,7 @@ Zero landed programs move: no program in fork/conformance/programs uses
 `overload` as an identifier (D-OV-1's grep), and OV-1 changes no
 diagnostic a landed program triggers.
 
-### §5.B OV-2 — two new programs (one multi-unit); delta PASS +2 / total +2
+### §5.B OV-2 — three new programs (one multi-unit); delta PASS +3 / total +3
 
 1.  **functions/overloading_generic.carbon (new)** — `overload fn Kind(x:
     i32) -> i32 { return 1; } overload fn Kind[T:! type](x: T) -> i32 {
@@ -1233,13 +1691,29 @@ diagnostic a landed program triggers.
 2.  **functions/overloading_cross_library/ (new directory program,
     fork/conformance/README.md:117-140)** — `geometry.carbon` (`library
     "geometry";` api: `overload fn Dist(a: i32, b: i32) -> i32; overload fn
-    Dist(a: i64, b: i64) -> i32;`), `geometry.impl.carbon` (`library
-    "geometry" impl;` defining both members: `|a - b|` as i32; the i64
-    member returns `(a - b) as i32` doubled to make the member observable),
+    Dist(a: i64, b: i64) -> i32;`), `geometry.impl.carbon` (`impl library
+    "geometry";` defining both members with the absolute difference in
+    BOTH, the `i64` member doubled to make it observable — amended
+    2026-09-27, review fold: rev B B10, rev 1's `(a - b)` gave −14):
+    member 0 `if (a < b) { return b - a; } return a - b;`, member 1 `if (a
+    < b) { return ((b - a) * 2) as i32; } return ((a - b) * 2) as i32;`),
     `main.carbon` importing `geometry` and printing `Dist(RuntimeSeed(-17),
-    RuntimeSeed(-10))` → member 0 → `7`; `Dist(RuntimeSeed(-17) as i64,
-    RuntimeSeed(-10) as i64)` → member 1 → `14`. EXPECT-STDOUT: `7`, `14`.
-    Scoreboard path `functions/overloading_cross_library`.
+    RuntimeSeed(-10))` → member 0, |3 − 10| → `7`; `Dist(RuntimeSeed(-17) as
+    i64, RuntimeSeed(-10) as i64)` → member 1, 2 × |3 − 10| → `14`.
+    EXPECT-STDOUT: `7`, `14`. Scoreboard path
+    `functions/overloading_cross_library`.
+3.  **functions/overloading_generic_class.carbon (new; amended 2026-09-27,
+    review fold: rev B B5)** — `class Box(T:! type) { var v: T; fn
+    Make(x: T) -> Box(T) { return {.v = x}; } overload fn Add(ref self, n:
+    i32) { self.v = self.v + n; } overload fn Add(ref self, b: bool) { if
+    (b) { self.v = self.v + 100; } } fn Get(self) -> T { return self.v; }
+    }` over `Box(i32)` (the member bodies need `T` to admit `+ i32` and
+    the literal, so the program instantiates `Box(i32)` only): `var b:
+    Box(i32) = Box(i32).Make(RuntimeSeed(-15)); b.Add(RuntimeSeed(-18));
+    b.Add(true); Core.Print(b.Get());` → 5 + 2 + 100 → `107`; a second
+    `Box(i32)` with `Add(false)` → `5`. EXPECT-STDOUT: `107`, `5`. If
+    §1.B.5's lifting is refuted, this program lands SKIP citing the exact
+    gate diagnostic (R10) and the deltas are PASS +2 / SKIP +1 / total +3.
 
 ### §5.C OV-3 — two new programs; delta PASS +2 / total +2
 
@@ -1260,8 +1734,13 @@ diagnostic a landed program triggers.
     states the divergence rule (F-009; functions.md section) and the
     rulebook rule the paper proposed ("every exported-overload conformance
     test asserts both directions' resolution", :242-243) is added to
-    fork/rulebook.md as R30 at OV-3 discharge, citing this program as its
-    origin.
+    fork/rulebook.md at OV-3 discharge under the next free number
+    (allocate at discharge, never assume R30 — amended 2026-09-27, review
+    fold: rev B B14), citing this program as its origin. Neither §5.C
+    program has a `.diff.cpp` sibling, deliberately: a divergence test
+    cannot use an equality oracle, and the agreeing program's C++ side is
+    already the oracle for its own two lines (amended 2026-09-27, review
+    fold: rev B B9).
 
 The bullet's runner status flips SKIP → PASS at OV-1 (bullets +1);
 `gap_status` follows the gap-analysis row (PARTIAL at OV-1 and OV-2, DONE
@@ -1311,7 +1790,11 @@ each discharge.
     OV-1 :218 — disjoint lines), node_kind.def (UN-1 after the `ClassDecl`
     kinds, OV-1 inside the modifier block — disjoint), kind.def (disjoint
     blocks), no shared .cpp file. Contention with EH-B: none (EH-B's files
-    are cpp/{thunk,import,export,type_mapping}.cpp).
+    are cpp/{thunk,import,export,type_mapping}.cpp). Contention with UN-2
+    (amended 2026-09-27, review fold: rev B B8): UN-2 edits
+    cpp/generate_ast.cpp at :452-457 (`CompleteType`'s `FinalAttr`,
+    fork/unions/plan.md §1.B.2/§2.B.4) while OV-1's TODO arm is at
+    :216-255 — disjoint hunks in one file, rebase-mechanical.
 
 ### §6.B OV-2
 
@@ -1319,9 +1802,11 @@ each discharge.
     parameter defaults to true; the import arms replace TODO bodies no
     landed golden reaches; the `ImportRefLoaded` arm keys on
     `OverloadSetValue`.
--   Source files touched: 6 — check/import_ref.cpp, check/handle_function.cpp,
-    check/deduce.h, check/deduce.cpp, check/call.cpp, diagnostics/kind.def
-    (+ functions.md).
+-   Source files touched: 9 — check/import_ref.cpp, check/handle_function.cpp,
+    check/deduce.h, check/deduce.cpp, check/call.cpp, check/check_unit.cpp,
+    check/type.cpp, sem_ir/function.cpp, diagnostics/kind.def (+ the
+    ported page's status paragraph; amended 2026-09-27, review fold: rev B
+    B5/B6).
 
 ### §6.C OV-3
 
@@ -1337,27 +1822,48 @@ each discharge.
     `CallerPatternMatch` through `ConvertCallArgs` (convert.cpp:2288-2301),
     which also applies parameter-pattern rules (`ref` tags, `var`
     parameters, `unused`). D-OV-6 (iii) confines 0.1 members to by-value
-    explicit parameters so the two agree. Falsifier: any §4.A positive
-    subfile showing a `ConversionFailure`/`RefParamNoRefTag` after a
-    committed callee. Contingency: extend the probe with the pattern-kind
+    explicit parameters so the two agree; the receiver is never
+    value-converted in the probe and its presence is checked in step 2(a)
+    (amended 2026-09-27, review fold: rev A A2). Falsifier: any §4.A
+    positive subfile showing a `ConversionFailure`/`RefParamNoRefTag`
+    after a committed callee, or a CHECK in `CallerPatternMatch`
+    (pattern_match.cpp:2494) on `fail_static_member_via_instance` /
+    `method_set`. Contingency: extend the probe with the pattern-kind
     check, never weaken the commit.
--   **R-2 — the discard scope leaks.** `PopAndDiscard` drops the scratch
-    block, but a probe that MATERIALIZES a specific or an `ImportRef` load
-    outside the block (constants, `imports`) is by design; a probe that
-    adds an inst to the ENCLOSING block would be a leak. Falsifier: a
-    `converted` or `call` line for a rejected member in a dumped function
-    block (§4.A `discard_probe_constants`). Contingency: the
-    `LoadImportRef` style CHECK on the enclosing block's size around the
-    probe.
+-   **R-2 — the discard scope leaks (rev A's A1 BLOCKER; amended
+    2026-09-27, review fold: rev A A1).** `PopAndDiscard` drops the scratch
+    block but not the CLEANUP stack: a value conversion of an initializing
+    argument materializes a `Temporary` and registers its cleanup on
+    `destroy_id_stack_` (convert.cpp:79-102, control_flow.cpp:142-148,
+    scope_stack.h:255-259), which the statement's `AddCleanups` later emits
+    into the ENCLOSING block as a `Destroy` over an inst that is in no
+    block — lowering's "Missing value" CHECK
+    (lower/function_context.cpp:210-212). D-OV-4 step 2(e) therefore
+    snapshots `cleanup_scope_depth()` and calls `DiscardCleanupsSince` on
+    every exit, and CHECKs both the enclosing block size and the cleanup
+    depth after each probe — rev 1's "contingency" is the rule. Probes that
+    MATERIALIZE a specific or an `ImportRef` load outside the block
+    (constants, `imports`) remain by design. Falsifier: `init_arg` /
+    `destroy_arg` (check + lower) showing two temporaries, two destroy
+    calls, a `Destroy` over an unlisted inst, or the CHECK firing; a
+    `converted`/`call` line for a rejected member in a dumped function
+    block (`discard_probe_constants`). Contingency: none silent — a CHECK
+    here is a stop.
 -   **R-3 — exhaustive switches and x-macro dispatch under -Werror (the
     baked lesson).** Every site in §1.A.3 is enumerated from a grep of
     `CppOverloadSet`; a missed `requires`-list entry fails at compile
     (lower/type.cpp `BuildTypeForInst`, type_completion.cpp
     `BuildInfoForInst`), a missed `EvalConstantInst` fails at LINK
     (eval_inst.h:185-188), a missed import_ref.cpp switch arm CRASHES at
-    runtime (`CARBON_FATAL` :4784-4790), a missed inst_namer chain term
-    misnumbers scopes silently. Falsifier: the hosted compile probe (R28(b)
-    mode `compile`) — run it BEFORE the autoupdate, the F8/EH-B discipline.
+    runtime (`CARBON_FATAL` :4784-4790), a missed sem_ir/type_iterator.cpp
+    arm CRASHES at runtime too (its `default:` is `CARBON_FATAL("Unhandled
+    type instruction")`, :304-307 — amended 2026-09-27, review fold: rev A
+    A5), a missed inst_namer chain term misnumbers scopes silently.
+    Falsifier: the hosted compile probe (R28(b) mode `compile`) for the
+    compile-time class — run it BEFORE the autoupdate, the F8/EH-B
+    discipline — and basic.carbon's fill for the two runtime fatals (a
+    stack dump in the autoupdate log, which the hosted workflow greps for
+    since EH-A).
 -   **R-4 — mangling collision is silent in lowering.**
     `FileContext::GetOrCreateFunction`'s `getFunction(mangled_name)`
     early return (lower/file_context.cpp:394-416) reuses an existing LLVM
@@ -1387,7 +1893,9 @@ each discharge.
     (handle_decl_scope_loop.cpp:72-84) is untouched. Falsifier: parse golden
     showing `UnrecognizedDecl` at `overload fn`.
 -   **R-9 — file_test split-file rule (baked lesson).** Positive lower
-    subfiles never share a file with a `fail_` subfile (§4 preamble).
+    subfiles never share a file with a `fail_` subfile (§4 preamble;
+    the rule is testing/file_test/README.md:74-83 at the repository root
+    — amended 2026-09-27, review fold: rev A minor / rev B B14).
     Falsifier: a lower golden with blank IR for a positive subfile.
 -   **R-10 — OV-3 needs a W-007 file after all.** `GetOrExportFunctionToCpp`
     dedups by `function.first_decl_id()` and `ExportFunctionToCpp` exports
@@ -1416,6 +1924,30 @@ each discharge.
     (a non-generic class at file scope) diagnosing the generic-scope TODO.
     Contingency: gate on the parent scope's entity `generic_id` instead
     (the handle_choice.cpp:645-646 predicate the union plan cites).
+-   **R-15 — probes are not diagnostic-free (rev A A3; amended
+    2026-09-27, review fold: rev A A3).** Constant evaluation inside a
+    `TryConvertToValueOfType` can emit unconditionally: `int.convert_checked`
+    diagnoses `IntTooLargeForType` / `NegativeIntInUnsignedType` and still
+    returns a value (eval.cpp:1425-1445), so without the pre-test of step
+    2(e) `N(300)` would SELECT the `i8` member and diagnose twice. The
+    pre-test covers the IntLiteral → Int case; other unconditional
+    constant-evaluation diagnostics (float-literal range,
+    `FloatLiteralTooLargeForType`; compile-time arithmetic faults) are NOT
+    intercepted — recorded as the residue "unconditional constant-evaluation
+    diagnostics inside overload probes" (§8.5) [R29(a)]. Falsifier:
+    `literal_range` showing any diagnostic, or selecting member 0.
+-   **R-16 — the generic-scope lifting of OV-2 (rev B B5) does not fall
+    out.** `OverloadSetType.specific_id` must substitute like
+    `FunctionType.specific_id` (eval.cpp:702 through :3136-3138). Falsifier:
+    `generic_class_method_set` showing a `SemanticsTodo`/CHECK, or a
+    committed member whose specific is the generic's self specific rather
+    than `Box(i64)`'s. Contingency: §1.B.5's fallback (gate stays, residue
+    filed, program parked SKIP, row PARTIAL through OV-3).
+-   **R-17 — the api-member missing-definition arm (rev B B6) cannot see
+    the api IR's functions from `CheckRequiredDefinitions`.** Falsifier:
+    `fail_member_undefined_in_impl` compiling clean. Contingency: the
+    residue "marked members without a definition" by title, with the
+    mechanism named in §1.B.7.
 -   **Rejected alternatives (not risks):** unmarked sets (Option B,
     F-009 rejected); ranking/best-match (open question 2); the anchor
     `FunctionDecl` entity (D-OV-2); decl-fingerprint mangling (D-OV-5);
@@ -1443,12 +1975,16 @@ each discharge.
     '`overload fn` with generic parameters\|`overload fn` in a generic
     scope\|non-value explicit parameter\|`extern overload fn`\|`overload`
     on the entry point\|members with differing access\|distinguished only
-    by `self`\|`overload fn` in an interface' toolchain` hits one site each
-    in handle_function.cpp plus fail_todo_gates.carbon; after OV-2 the
-    import, generic-member and extern strings are gone; after OV-3 the
-    export string is gone; each of the five OV-1 kinds and two OV-2 kinds
-    has one kind.def line, one `CARBON_DIAGNOSTIC` and one emit site
-    (`check_diagnostics.py`).
+    by `self`\|`overload fn` in an interface\|members that disagree on
+    `self`' toolchain` hits one site each in handle_function.cpp plus
+    fail_todo_gates.carbon, and `grep -rn 'template-dependent arguments'
+    toolchain` hits the call.cpp gate plus fail_todo_gates.carbon; after
+    OV-2 the import, generic-member, generic-scope and extern strings are
+    gone; after OV-3 the export string is gone; each of the five OV-1
+    kinds and two OV-2 kinds has one kind.def line, one `CARBON_DIAGNOSTIC`
+    and one emit site (`check_diagnostics.py`); `grep -rn
+    DiscardCleanupsSince toolchain/check/call.cpp` hits every exit path of
+    the probe (amended 2026-09-27, review fold: rev A A1).
 5.  **Ledger edits (fork/inventory/work-items.json):**
     -   W-024 → kind `implemented`, evidence = token_kind.def line, the
         parse/check/lower goldens, `overloading_native` +
@@ -1478,10 +2014,7 @@ each discharge.
         discharge** by `grep -oE '"id": ?"W-[0-9]+"'
         fork/inventory/work-items.json | sort -t- -k2 -n | tail -1` on
         trunk at that moment (W-083..W-085 are being taken by EH-B and
-        W-086..W-093 by UN-1 — never assume numbers): "overload sets in
-        generic scopes" (D-OV-6 (ii); mechanism: `OverloadSetType.specific_id`
-        substitution as `FunctionType.specific_id` is substituted, then the
-        loop's `enclosing_specific_id`); "virtual members of overload sets"
+        W-086..W-093 by UN-1 — never assume numbers): "virtual members of overload sets"
         (D-OV-1; mechanism: a seventh modifier order group and
         signature-keyed vtable slots); "members of overload sets with
         non-value parameters" (D-OV-6 (iii); mechanism: a pattern-kind-aware
@@ -1489,36 +2022,67 @@ each discharge.
         overloading" (D-OV-3; paper open question 4, upstream #3154);
         "overload sets in interfaces" (gate (ix)); "per-candidate failure
         notes at Clang granularity" (paper open question 7 — the 0.1 notes
-        carry a three-way reason); and, only if §1.B.3's fallback fires,
-        "extern members of overload sets". The pattern-dispatch future
-        (Option C) stays in the doc, not the ledger.
-6.  **Docs:** docs/design/functions.md — a new `## Function overloading`
-    section between "Forward declarations" (:577-629) and "Function types
-    and values" (:631), with a TOC entry (:32-34), marked "(fork amendment
-    2026-09-27, F-009)", stating: the `overload` modifier on every member
-    and the mismatch error; a set is closed to its library, `api`-file
-    order is resolution order, `impl` files may only define members (OV-2
-    landed note); member identity is parameter types (redeclaration
-    matching per member; no overloading on return type); resolution is
-    first match in declaration order over arity, deduction, then implicit
-    conversions, with the `Pick(i64)/Pick(i32)` example and the sentence
-    "a later member with an exact match is never considered once an
-    earlier member accepts the arguments"; the no-match diagnostic lists
-    candidates; a set is not a value in 0.1 (the p002875 `Call`-impls
-    model is the future path); methods overload the same way with `self`
-    as the first explicit parameter; `alias` re-exports the set; 0.1
-    limits (D-OV-6 list) as a dated paragraph; and, at OV-3, "Exported
-    sets are resolved by C++ under C++ rules; where the two rules disagree
-    the divergence is documented and conformance-tested in both
-    directions" with the divergence example. docs/design/pattern_matching.md:696
-    gains a dated note ("F-009 (fork, 2026-09-27) fixed declaration order
-    for overloaded functions; see functions.md#function-overloading").
-    docs/design/README.md:3878-3881 (OV-3): the placeholder becomes a
-    two-sentence summary pointing at the section (the "Error handling"
-    entry :3884-3888 is the fork-note shape). docs/design/interoperability/README.md:210
-    (OV-3): "Overload resolution" filled: import direction Clang-exact
-    (:66-69 restated), export direction C++ rules, divergence rule, the
-    two program names. **fork/gap-analysis.md:57** — OV-1: MISSING →
+        carry a five-way reason); "mixed method/non-method overload sets"
+        (gate (x); rev A A2 / rev B B2 F-009l; mechanism: per-member
+        receiver alignment in the loop is already the belt, so lifting is
+        deleting the gate once binding is decided per member); "per-member
+        access in overload sets" (gate (vi) vs the ported page's
+        "visible members only", D-OV-8); "overload resolution with
+        template-dependent arguments" (gate (xi), rev B B4; mechanism:
+        resolve after substitution); "unconditional constant-evaluation
+        diagnostics inside overload probes" (R-15, rev A A3); and, only if
+        their fallbacks fire, "extern members of overload sets" (§1.B.3),
+        "overload sets in generic scopes" (§1.B.5 — otherwise NOT a
+        residue, the gate is lifted at OV-2) and "marked members without a
+        definition" (§1.B.7). The pattern-dispatch future (Option C) stays
+        in the doc, not the ledger.
+6.  **Docs (D-OV-8, the PORT; amended 2026-09-27, review fold: rev B
+    B1/B2/B6/B7):** at OV-1, `git show
+    481e08c24:docs/design/functions_overloading.md >
+    docs/design/functions_overloading.md`, then edit in place: a dated
+    status paragraph after the Overview ("fork amendment 2026-09-27, F-009;
+    ported from the stranded design-docs branch 481e08c24; toolchain
+    status: same-file sets landed at OV-1, import and generic members at
+    OV-2, export at OV-3"); every "OPEN (sub-fork F-009x)" paragraph and
+    its "Open sub-forks" entry rewritten to "CLOSED (fork amendment
+    2026-09-27) by D-OV-n: ..." per the D-OV-8 mapping — a: legal
+    (single_member); b: yes, impl files define only, `OverloadSetFrozen`;
+    c: no, TODO-gated; d: NO in 0.1 (the page's YES declined with the
+    vtable reason; residue); e: no, TODO-gated; f: per-candidate notes with
+    a five-way reason; g: hard error `OverloadSetNotCallee`; h: yes,
+    whole-set and transitive through `export import`; i: export the
+    exportable subset; j: no default arguments, arity exact; k: invalid
+    redeclaration of the type-identical member; l: no, TODO-gated; m: moot
+    (Decl group, exclusive with `virtual`/`abstract`/`impl`); the
+    "Linkage and mangling" section rewritten to D-OV-5 with the §0.1 row 9
+    reason and the asm-label truth (§0.2 item 14); the "Which functions may
+    be overloaded" list narrowed by the 0.1 gates (`virtual`/`impl`/
+    `export` members, non-value parameters, mixed `self`, generic scopes
+    until OV-2, interfaces) as a dated "0.1 limits" paragraph that also
+    states the marked-signature-typo limit (an api-declared member without
+    a definition fails at link until OV-2's check; §1.B.7); the "Closed,
+    same-library sets" paragraph's "visible members only" sentence
+    annotated with gate (vi); the "Interaction with checked generics"
+    section annotated: the third case ("depends on the specific") cannot
+    arise from the probe (D-OV-4 step 7), template-dependent calls are
+    TODO-gated (gate (xi)); the method example already uses `ref self`
+    (:241-244, the working syntax). Also at OV-1: docs/design/functions.md
+    gains the ported four-line link block after "Member functions" in
+    "Functions in other features" (:879-882 on the stranded branch);
+    docs/design/pattern_matching.md:696 and :1063-1066 get the ported
+    hunks (the :696 bullet → "For overloaded functions, declaration order
+    is used, per fork decision F-009 ..."; :1063 → "For 0.1, overload
+    selection is fixed by fork decision F-009 and specified in Function
+    overloading: declaration-order first-match over signatures containing
+    only irrefutable patterns ..."), each followed by "(fork amendment
+    2026-09-27)"; no other hunk of the stranded pattern_matching.md diff is
+    ported (they predate W-012). At OV-2: the status paragraph.
+    At OV-3: docs/design/interoperability/README.md:210 gets the ported
+    `### Overload resolution` section and TOC line (NOT the stranded
+    threading/inline-Cpp hunks); docs/design/README.md:3878-3881 gets the
+    ported note + paragraph (the "Error handling" entry :3884-3888 shape);
+    the status paragraph. W-065's evidence for the two retired
+    placeholders is refreshed at OV-3 (§0.2 item 12). **fork/gap-analysis.md:57** — OV-1: MISSING →
     **PARTIAL** with evidence "Carbon-native `overload fn` closed sets:
     marker keyword, `OverloadSet` SemIR entity, declaration-order
     first-match resolution with implicit conversions, per-member
@@ -1528,14 +2092,18 @@ each discharge.
     programs PASS"; header delta MISSING −1 / PARTIAL +1. OV-2: PARTIAL
     with the evidence rewritten ("+ set import across api/impl and
     libraries with the closed-set rule, generic members by non-diagnosing
-    deduction; export TODO-gated; 4/4 PASS"); no header delta. OV-3: →
+    deduction, overloaded methods of generic classes; export TODO-gated;
+    5/5 PASS"); no header delta. OV-3: →
     **DONE** with evidence "OV-2 text + exported sets resolve under C++
     rules with the documented divergence conformance-tested both ways
-    (6/6 PASS). Gated residue, each a filed item: overload sets in
-    generic scopes and interfaces, virtual members, non-value parameters,
-    `self`-shape overloading" (the row 44 DONE-with-gated-residue
-    precedent fork/unions/plan.md §8.6 cites); header delta PARTIAL −1 /
-    DONE +1. R7: bullet TEXT untouched.
+    (7/7 PASS). Gated residue, each a filed item: overload sets in
+    interfaces, virtual members, non-value parameters, `self`-shape
+    overloading, mixed method/non-method sets, template-dependent
+    arguments" (the row 44 DONE-with-gated-residue precedent
+    fork/unions/plan.md §8.6 cites); header delta PARTIAL −1 / DONE +1.
+    **If §1.B.5's generic-scope lifting is refuted, the row stays PARTIAL
+    at OV-3** with that gate named in its evidence and no header delta
+    (rev B B5's rule). R7: bullet TEXT untouched.
 7.  **Decision log:** entries "OV-1: `overload fn` closed sets (date)",
     "OV-2: overload-set import and generic members (date)", "OV-3:
     overload-set export (date)" carrying D-OV-1..10 with break
@@ -1544,9 +2112,13 @@ each discharge.
     the `OverloadSet*` inst kinds are fork spellings; upstream's
     `overloaded` placeholder is a rename away), the residue items by
     title with the ids allocated at that discharge, and the R29(a)
-    auto-adoption note. fork/rulebook.md gains R30 at OV-3 (§5.C.2).
-    fork/ORCHESTRATION.md header, branch table and scoreboard line stamped
-    per PR.
+    auto-adoption notes (rev 2's coordinator rulings included).
+    fork/rulebook.md gains the bidirectional-assertion rule at OV-3 under
+    the next free number (§5.C.2). fork/ORCHESTRATION.md header, branch
+    table and scoreboard line stamped per PR; at OV-1 discharge the
+    stranded-branch row (:311) gains "overloading portion ported by
+    OV-1/OV-3; do not re-land" (amended 2026-09-27, review fold: rev B
+    B1).
 
 ## Hand-off notes for the implementer
 
@@ -1565,9 +2137,19 @@ each discharge.
     check_syntax=false)`; commit to the FIRST type-equal member and let
     `MergeFunctionRedecl` diagnose everything else. Never compare
     signatures by syntax for identity.
--   The probe is the `DeduceImplArguments` idiom verbatim (push block +
-    push `GenericId::None` region; pop region, then `PopAndDiscard`) — in
-    that order, on every exit path including "reason" early-outs.
+-   The probe is the `DeduceImplArguments` idiom PLUS the cleanup snapshot
+    (record block size and `cleanup_scope_depth()`; push block; push
+    `GenericId::None` region; probe; pop region; `PopAndDiscard`;
+    `DiscardCleanupsSince(depth)`; CHECK size and depth) — in that order,
+    on every exit path including "reason" early-outs. The idiom alone
+    leaks temporaries' cleanups into the enclosing block (rev A A1).
+-   Never value-convert the receiver in the probe; check receiver
+    presence against `self_param_id` first (rev A A2), and run the
+    IntLiteral range pre-test before converting a literal (rev A A3).
+-   The set value is `AddInst`ed into the current block right after the
+    first member's placeholder `fn_decl` (rev A A4).
+-   Port the stranded page with `git show 481e08c24:...`; do not write a
+    parallel section; close every sub-fork paragraph in place (rev B B1).
 -   Commit by RE-RUNNING `PerformCallToFunction` on a fresh `BuildNameRef`
     to the member; do not reuse any inst the probe produced.
 -   Mangling is `:overload<index>` after the name; no fingerprint (§0.1
@@ -1584,11 +2166,40 @@ each discharge.
     before every conformance commit (R7); `uvx prek run --files` before
     every push (R25).
 
-## Review fold record
+## Review fold record (rev 2, 2026-09-27)
 
-None yet — rev 1. Every fold will be marked "(amended <date>, review fold:
-...)" in place and listed here before Sign-off.
+Every finding of the two rev 1 reviews and where it was folded; the
+coordinator's [R29(a)] rulings are marked.
+
+| Finding | Fold |
+| --- | --- |
+| rev A A1 (BLOCKER): the probe leaks temporaries' cleanups into the enclosing block → lowering "Missing value" CHECK | D-OV-4 step 2(e) (cleanup snapshot, `DiscardCleanupsSince`, mandatory CHECK on block size + cleanup depth), step 2(d) (same wrap for OV-2 deduction), §7 R-2 rewritten, §4.A `init_arg` + `destroy_arg` (check + lower), §8.4 grep, hand-off |
+| rev A A2 (BLOCKER): `self` misalignment (unconditional `BoundMethod` wrap; `CallerPatternMatch` CHECK; misaligned probe) | D-OV-4 step 2(a) receiver alignment with reasons 3/4, step 2(e) probe over `concat(self_refs, arg_ids)` with no receiver conversion, §1.A.3(c) `GetSelfIfInstanceMethod` arm keyed on `IsInstanceMethod`, §1.A.8 five-way select, §4.A `fail_static_member_via_instance` + `class_scope_call`, §7 R-1; [R29(a)] gate (x) mixed `self` (`fail_todo_mixed_self`, residue "mixed method/non-method overload sets") |
+| rev A A3 (MAJOR): probes are not diagnostic-free (`int.convert_checked`) | [R29(a)] IntLiteral range pre-test in step 2(e), §4.A `literal_range`, §7 R-15, residue "unconditional constant-evaluation diagnostics inside overload probes" |
+| rev A A4 (MAJOR): set value must be `AddInst`ed at declaration, not `AddInstInNoBlock` | D-OV-2, §1.A.4, §4.A dump shapes, hand-off |
+| rev A A5 (MAJOR): type_iterator.cpp `default: CARBON_FATAL` is a runtime fatal | §1.A.3(g), §7 R-3 (runtime-fatal class, basic.carbon's fill as falsifier) |
+| rev A A6 (MAJOR): `ReplacePrevInstForMerge` is unconditional on imported prev | §1.B.2 `replace_prev_inst` flag, §2.B.2 |
+| rev A A7 (MAJOR): `overload` also exclusive with `impl`/`default`/`final` | D-OV-1 list, §4.A `fail_with_impl` |
+| rev A minor (verified, no change): x-macro consumers, mirror list complete, `TryMergeRedecl` flag semantics (erroneous member becomes a new member), mangling, diagnostics, EXPECT derivations, README path | D-OV-3 `EntityHasParamError` note; §7 R-9 path; otherwise recorded here |
+| rev B B1 [R29(a): ADOPT PORT]: stranded page exists (481e08c24) | header, §0.1 row 16, §0.2 items 11/14, D-OV-8 rewritten, §2.A.9, §2.B.5, §2.C.2, §3, §8.6, §8.7 ORCHESTRATION row, hand-off |
+| rev B B2: sub-fork mapping F-009a..m; declined F-009d; access-kind divergence | D-OV-8 mapping and divergence note, D-OV-1 (declined recommendation with the vtable reason, F-009m moot), D-OV-3 (F-009l gate), D-OV-4 step 2(b) (F-009j), D-OV-10 (F-009h transitivity + `export_import_of_set`), §1.C.1 (F-009i `partial_export`), §8.5 residue "per-member access in overload sets" |
+| rev B B4: calls from checked-generic bodies; template-dependent arguments | D-OV-4 step 7 (resolve once at the definition; no "depends on the specific" case), step 2(c) + gate (xi) [R29(a)], §4.A `call_from_generic_body` / `fail_call_from_generic_no_match` / `fail_todo_template_dependent`, residue |
+| rev B B5 [R29(a)]: lift the generic-scope gate in OV-2 | D-OV-6 (ii), §1.B.5 mechanism (eval.cpp:702 specific substitution), §4.B `generic_class_method_set` + lower twin, §5.B third program, §5 deltas (+3), §7 R-16, §8.6 PARTIAL rule |
+| rev B B6: marked-signature typo across api/impl | §1.B.7 (OV-1 pin `marked_typo_undefined_member`; OV-2 api-member arm of `CheckRequiredDefinitions`, fallback residue), §4.B `fail_member_undefined_in_impl` / `impl_defines_all`, §7 R-17, docs "0.1 limits" sentence |
+| rev B B7: second placeholder pattern_matching.md:1063 | §0.1 row 16, §0.2 item 12, §8.6 |
+| rev B B8: generate_ast.cpp is a UN-2 file (:452-457) | §6.A contention paragraph |
+| rev B B9: `Carbon::F(7)` is ambiguous; no `.diff.cpp` for divergence | §4.C rewritten (`7L`, `fail_cpp_ambiguous`), §5.C note |
+| rev B B10: EXPECT `14` not derivable | §5.B.2 both members `|a − b|`, i64 member doubled |
+| rev B B11 [R29(a)]: `export overload fn` exclusivity stands | D-OV-1, §1.A.2, D-OV-10, §4.A `fail_with_export` |
+| rev B B12: more non-callee shapes | D-OV-4 step 6 (pinned alternatives), §4.A `fail_set_as_value` additions |
+| rev B B13: set declared wholly inside an impl file | §4.A `impl_local` subfile → `impl_local_set` |
+| rev B B14: R30 hard-coded; D-OV-10 break condition; README path | §5.C.2 / §8.7 "allocate at discharge", D-OV-10 break condition, §7 R-9 |
+| rev B verified-no-change: §0.2 items 1, 3, 4, 5, 9, 10; counts as deltas; `Pick(n)` prints 1 as the arbiter | recorded here |
+| self-caught while folding B13: impl-file marker spelling | §0.2 item 13; every impl subfile spelled `impl library "...";` |
 
 ## Sign-off
 
-Pending the two adversarial plan reviews (R29(c)).
+Rev 2 folds every finding of the two rev 1 reviews; the coordinator's
+[R29(a)] rulings are recorded with break conditions in D-OV-1, D-OV-4,
+D-OV-6, D-OV-8 and §1.B.5. Pending the focused re-review of rev 2
+(R29(c)).

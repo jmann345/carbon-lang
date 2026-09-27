@@ -3896,10 +3896,10 @@ alternative names `Ok`/`Err` were decided by the user — sub-decision F-006a;
 the illustrative `IntResult` example [above](#choice-types) uses
 `Success`/`Failure` and is not `Core.Result`.)
 Results are consumed with [`match`](#match) and with the combined match
-control-flow forms `if (let ...)` and `let ... else` — adopted in fork decision
-[F-011](/fork/decision-log.md) and shown applied to `Result` in
-[Error handling](error_handling.md), with their own design doc to land with the
-control-flow work — and propagated with the postfix
+control-flow forms
+[`if (let ...)` and `let ... else`](pattern_matching.md#refutable-pattern-bindings)
+— adopted in fork decision [F-011](/fork/decision-log.md) and shown applied to
+`Result` in [Error handling](error_handling.md) — and propagated with the postfix
 [`?` operator](error_handling.md#error-propagation-the-postfix--operator), which
 unwraps a success value or returns the failure to the caller, converting the
 error with [implicit conversions](expressions/implicit_conversions.md). `?`

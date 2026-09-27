@@ -200,6 +200,10 @@ CARBON_DIAGNOSTIC_KIND(ExpectedInNotColon)
 CARBON_DIAGNOSTIC_KIND(ExpectedThenAfterIf)
 CARBON_DIAGNOSTIC_KIND(ExpectedElseAfterIf)
 
+// Pattern condition and let-else diagnostics.
+CARBON_DIAGNOSTIC_KIND(ExpectedPatternConditionInitializer)
+CARBON_DIAGNOSTIC_KIND(LetElseUnparenthesizedIfExpr)
+
 // Declaration diagnostics.
 CARBON_DIAGNOSTIC_KIND(ExpectedDeclName)
 CARBON_DIAGNOSTIC_KIND(ExpectedDeclNameAfterPeriod)
@@ -449,6 +453,13 @@ CARBON_DIAGNOSTIC_KIND(ObserveInWrongScope)
 
 // Let declaration checking.
 CARBON_DIAGNOSTIC_KIND(ExpectedInitializerAfterLet)
+
+// Refutable pattern binding checking (if-let, while-let, let-else).
+CARBON_DIAGNOSTIC_KIND(IrrefutablePatternAlwaysMatches)
+CARBON_DIAGNOSTIC_KIND(LetElseBlockFallsThrough)
+CARBON_DIAGNOSTIC_KIND(LetElseOutsideFunction)
+CARBON_DIAGNOSTIC_KIND(PatternConditionChainReserved)
+CARBON_DIAGNOSTIC_KIND(ReturnedNotAllowedOnLetElse)
 
 // Qualified declaration name checking.
 CARBON_DIAGNOSTIC_KIND(QualifiedDeclOutsidePackage)

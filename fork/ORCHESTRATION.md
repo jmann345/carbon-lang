@@ -10,28 +10,40 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-09-27 (post-PR #40: EH-A LANDED — prelude
-`Core.Result(T, E)` with its `Try` impl, `Core.Optional(T)` as `Try`
-(SF-9 resolved D-EH-1: independent choice, Optional keeps its placeholder
-identity), `()` admitted as a choice payload (W-070 discharged, D-EH-2),
-`Main.Run() -> Core.Result(..)` lowering to `i32 main()` with the D10
-epilogue. Gap row 66 "Error handling: dedicated control flow constructs"
-PARTIAL → DONE; header 27 DONE / 19 PARTIAL / 8 MISSING / 2 DESIGN-ONLY.
-NEW FLOOR 106 PASS / 0 / 28 SKIP over 134, 43/56 bullets. Verified
-hosted-only (R28): three autoupdate rounds (R-12 `Destroy` bound; R-3
-PadToType zero-size constant — the hosted autoupdate step now fails on
-any stack dump; clean fill), gate run 36304152824, conformance run
-36304154221 (both green). IN FLIGHT: W-012 if-let/while-let/let-else —
-implemented
-on claude/carbon-fork-0-1-w012 (main checkout), review fixes landed,
-second hosted autoupdate running after two testdata authoring fixes;
-gate + conformance next (target 108/0/28 over 136 on this trunk);
-discharge commit drafting in parallel (W-080..W-082 residue ids).
-EH-B (catching thunks, `Cpp.Exception`, `Carbon::expected` export) —
-implementer running in ../carbon-ehb on claude/carbon-fork-0-1-ehb
-(stacked on eh; rebase onto trunk before PR; residue ids W-083+).
-Next after those: unions W-009/W-015. Weekly cron Monday 2026-09-28
-(mirror probe is GitHub-hosted; the owner's machine is never used)._
+_Last updated: 2026-09-27 (post-PR #41: W-012 LANDED — `if (let P = e)`,
+`while (let P = e)`, `let P = e else { diverge }` and their `var`
+spellings as refutable pattern bindings on the match engine (five parse
+node kinds, two states; toolchain/check/refutable_binding.{h,cpp}
+factored from the match arm's test-and-bind; F-011a reachability
+divergence; seven diagnostics; zero lowering changes). Gap row 64
+MISSING → PARTIAL; header 27 DONE / 20 PARTIAL / 7 MISSING / 2
+DESIGN-ONLY. NEW FLOOR 108 PASS / 0 / 27 SKIP over 135, 44/56 bullets.
+Residue W-080 (plain `let`/`var` refutability error), W-081
+(let-chains), W-082 (noreturn divergence). IN FLIGHT: EH-B (catching
+thunks selected by `?`, `Cpp.Exception`, `Carbon::expected` export,
+boundary fence) — implemented in ../carbon-ehb on
+claude/carbon-fork-0-1-ehb, single review APPROVE-WITH-FIXES (blocker:
+catching thunk must import through the static ImportFunction path, not
+ImportCppFunctionDecl), two hosted-build compile misses fixed (missing
+TargetInfo include; a QualType returned from a Decl* function), fix
+commit pending, then autoupdate → gate → conformance (target 110/0/27
+over 137 tree-relative; residue ids W-083+). Unions W-009/W-015 — plan
+committed in ../carbon-unions on claude/carbon-fork-0-1-unions
+(fork/unions/plan.md, two slices UN-1/UN-2; UN-2 sequenced after EH-B
+merges because of import.cpp/export.cpp contention); two plan reviews
+running. Weekly cron Monday 2026-09-28 (mirror probe is GitHub-hosted;
+the owner's machine is never used)._
+FORTY-ONE PRs. The design's if-let family exists: a `let`/`var`
+pattern in an `if`/`while` condition or a `let … else { diverge }`
+declaration runs through the same refutable engine as a `match` arm,
+so every pattern form `match` accepts (alternatives with payloads,
+tuples, literals, `var`/`ref` bindings, structs) works there too and
+gains nothing new to maintain. Two authoring errors in the positive
+goldens were caught by the hosted fill and fixed at the source; the
+second autoupdate round converged the location markers the first
+fill's inserted CHECK lines had shifted (a known two-pass property of
+autoupdate — always run it twice when a fill inserts STDERR lines
+above dumped code). Existing match goldens: byte-identical._
 FORTY PRs. The error-handling remainder's first slice: the design's
 `Core.Result` finally exists in the prelude (the first `match`
 compiled inside package `Core`), `?` works on both `Result` and
@@ -301,8 +313,8 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-106 PASS / 28 SKIP / 0 FAIL programs (134 total); **43/56 bullets
-green** (GitHub-hosted scoreboard at the PR #40 head, run 36304154221; verified from fork/conformance/out/scoreboard.json —
+108 PASS / 27 SKIP / 0 FAIL programs (135 total); **44/56 bullets
+green** (GitHub-hosted scoreboard at the PR #41 head, run 36306915573; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first
 error-handling flip, now 4 programs deep incl. the W72b threading
 arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79
@@ -310,7 +322,7 @@ at S3a → 80 at S3b → 81 at S3c → 83 at B1b
 (error_handling/control_flow_constructs flip +
 question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a
 → 88 F8b → 89 F8c → 90 F8d → 91 W72b → 92 W-067 → 93 W-068 → 95 W-069 → 96 multifile → 100 W-076 → 101 W-078 → 102 W-077 →
-106 EH-A. The scoreboard regenerates on GitHub-hosted runners only
+106 EH-A → 108 W-012. The scoreboard regenerates on GitHub-hosted runners only
 (`Fork: hosted verification`, mode `conformance`; R28).
 
 ### CI on jmann345/carbon-lang (GitHub-hosted only — R28)

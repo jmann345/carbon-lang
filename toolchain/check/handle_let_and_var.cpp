@@ -7,6 +7,7 @@
 #include "toolchain/check/call.h"
 #include "toolchain/check/class.h"
 #include "toolchain/check/context.h"
+#include "toolchain/check/control_flow.h"
 #include "toolchain/check/convert.h"
 #include "toolchain/check/core_identifier.h"
 #include "toolchain/check/decl_introducer_state.h"
@@ -19,6 +20,7 @@
 #include "toolchain/check/name_lookup.h"
 #include "toolchain/check/pattern.h"
 #include "toolchain/check/pattern_match.h"
+#include "toolchain/check/refutable_binding.h"
 #include "toolchain/check/type.h"
 #include "toolchain/diagnostics/emitter.h"
 #include "toolchain/diagnostics/format_providers.h"
@@ -93,6 +95,35 @@ auto HandleParseNode(Context& context,
 auto HandleParseNode(Context& context, Parse::VariableIntroducerId node_id)
     -> bool {
   return HandleIntroducer<Lex::TokenKind::Var>(context, node_id);
+}
+
+// `let P = e else { ... }` / `var P = e else { ... }` (W-012,
+// fork/design-sprint/if-let.md Option A): a refutable pattern binding whose
+// else block must not complete normally, with the bindings landing in the
+// ENCLOSING scope. Checked on the `match` case-arm machinery
+// (refutable_binding.h): the pattern is checked first, with an unknown
+// scrutinee type; the initializer follows; `LetElse` tests and branches;
+// the else block is checked; and `LetElseDecl` binds on the success path.
+auto HandleParseNode(Context& context, Parse::LetElseIntroducerId node_id)
+    -> bool {
+  // The else block must `return`, `break` or `continue`, none of which exists
+  // outside a function body; the parser cannot tell statement `let` from
+  // file or class scope `let`, so the form is gated here. Returning false
+  // aborts checking the file.
+  if (!context.scope_stack().IsInFunctionScope()) {
+    CARBON_DIAGNOSTIC(LetElseOutsideFunction, Error,
+                      "`let`-`else` declaration can only be used inside a "
+                      "function body");
+    context.emitter().Emit(node_id, LetElseOutsideFunction);
+    return false;
+  }
+  // No scope is pushed: the bindings belong to the enclosing scope, the
+  // `let` discipline. `BeginRefutableBinding` pushes the `Let` introducer
+  // state for both spellings (the `var` spelling's pattern is a
+  // `VariablePattern`, which is what makes it `var`).
+  BeginRefutableBinding(context, node_id);
+  context.node_stack().Push(node_id);
+  return true;
 }
 
 auto HandleParseNode(Context& context, Parse::VariablePatternId node_id)
@@ -207,6 +238,15 @@ static auto EndPatternInitializer(Context& context) -> void {
 }
 
 static auto HandleInitializer(Context& context, Parse::NodeId node_id) -> bool {
+  if (context.full_pattern_stack().CurrentKind() ==
+      FullPatternStack::Kind::MatchCaseArm) {
+    // The `=` of a `let`-`else` declaration: the pattern root stays on the
+    // node stack beneath this solo node, and the initializer checks with the
+    // bindings tombstoned.
+    EndRefutableBindingPattern(context);
+    context.node_stack().Push(node_id);
+    return true;
+  }
   EndFullPattern(context);
   context.node_stack().Push(node_id);
   StartPatternInitializer(context);
@@ -332,6 +372,16 @@ static auto HandleDecl(Context& context, Parse::NodeId node_id) -> DeclInfo {
   return decl_info;
 }
 
+// Diagnoses a `let` declaration (or `let`-`else` declaration) without an
+// initializer, at the declaration's token.
+static auto DiagnoseExpectedInitializerAfterLet(Context& context,
+                                                Parse::NodeId node_id) -> void {
+  CARBON_DIAGNOSTIC(ExpectedInitializerAfterLet, Error,
+                    "expected `=`; `let` declaration must have an initializer");
+  context.emitter().Emit(LocIdForDiagnostics::TokenOnly(node_id),
+                         ExpectedInitializerAfterLet);
+}
+
 auto HandleParseNode(Context& context, Parse::LetDeclId node_id) -> bool {
   auto decl_info =
       HandleDecl<Lex::TokenKind::Let, Parse::NodeKind::LetIntroducer,
@@ -352,11 +402,7 @@ auto HandleParseNode(Context& context, Parse::LetDeclId node_id) -> bool {
   if (decl_info.init_id.has_value()) {
     LocalPatternMatch(context, decl_info.pattern_id, decl_info.init_id);
   } else {
-    CARBON_DIAGNOSTIC(
-        ExpectedInitializerAfterLet, Error,
-        "expected `=`; `let` declaration must have an initializer");
-    context.emitter().Emit(LocIdForDiagnostics::TokenOnly(node_id),
-                           ExpectedInitializerAfterLet);
+    DiagnoseExpectedInitializerAfterLet(context, node_id);
   }
 
   auto pattern_block_id = context.pattern_block_stack().Pop();
@@ -425,6 +471,131 @@ auto HandleParseNode(Context& context, Parse::AssociatedConstantDeclId node_id)
   ReplaceInstPreservingConstantValue(context, decl_info.pattern_id, decl);
 
   context.inst_block_stack().AddInstId(decl_info.pattern_id);
+  return true;
+}
+
+auto HandleParseNode(Context& context, Parse::LetElseId node_id) -> bool {
+  // The initializer, then the initializer's solo node (either spelling), the
+  // pattern root — exactly once, the root `EndRefutableBindingPattern` left
+  // — and the introducer's solo node. The `Let` introducer STATE stays:
+  // `LetElseDecl`'s modifier checks read it.
+  if (!context.node_stack().PeekIs(Parse::NodeCategory::Expr) ||
+      !(context.node_stack().PeekNextIs(Parse::NodeKind::LetInitializer) ||
+        context.node_stack().PeekNextIs(
+            Parse::NodeKind::VariableInitializer))) {
+    // `let P else { ... }`: the design's grammar requires `= e`
+    // (fork/design-sprint/if-let.md). Diagnose as a `let` without an
+    // initializer and abort: the pattern's tombstones were never armed, so
+    // the declaration cannot be completed.
+    DiagnoseExpectedInitializerAfterLet(context, node_id);
+    return false;
+  }
+  auto [init_node_id, init_id] = context.node_stack().PopExprWithNodeId();
+  if (!context.node_stack()
+           .PopAndDiscardSoloNodeIdIf<Parse::NodeKind::LetInitializer>()) {
+    context.node_stack()
+        .PopAndDiscardSoloNodeId<Parse::NodeKind::VariableInitializer>();
+  }
+  auto pattern_id = context.node_stack().PopPattern();
+  context.node_stack()
+      .PopAndDiscardSoloNodeId<Parse::NodeKind::LetElseIntroducer>();
+
+  // The scrutinee gate (its diagnostics point at the initializer
+  // expression), then the test pass (warning on an irrefutable pattern). The
+  // tombstones stay live through the else block: the bindings are never
+  // initialized on that path, so a use there diagnoses
+  // `UsedBeforeInitialization`; `LetElseDecl` ends the initializer.
+  auto scrutinee_id = CheckRefutableScrutinee(context, init_node_id, init_id,
+                                              RefutableBindingScrutineeTodo);
+  if (!scrutinee_id.has_value()) {
+    return false;
+  }
+  auto test = EmitRefutableBindingTest(context, node_id, pattern_id,
+                                       scrutinee_id, /*warn_irrefutable=*/true);
+  if (!test) {
+    return false;
+  }
+
+  // The `?` desugar's shape: test, the diverging (else) block emitted
+  // first, the continuation (the success block) after it.
+  auto then_block_id =
+      AddDominatedBlockAndBranchIf(context, node_id, test->cond_id);
+  auto else_block_id = AddDominatedBlockAndBranch(context, node_id);
+  context.inst_block_stack().Pop();
+  context.inst_block_stack().Push(else_block_id);
+  context.region_stack().AddToRegion(else_block_id, node_id);
+
+  // Park the pattern, the scrutinee and the test result in the case context,
+  // which stays pushed until `LetElseDecl` runs the bind pass.
+  auto& case_context = context.match_case_stack().back();
+  case_context.pattern_id = pattern_id;
+  case_context.scrutinee_id = scrutinee_id;
+  case_context.let_else_test = *test;
+
+  context.node_stack().Push(node_id, then_block_id);
+  return true;
+}
+
+auto HandleParseNode(Context& context, Parse::LetElseDeclId node_id) -> bool {
+  auto [else_node_id, then_block_id] =
+      context.node_stack().PopWithNodeId<Parse::NodeKind::LetElse>();
+
+  // Divergence = the reachability predicate (F-011a): the end of the else
+  // block must be unreachable — every path through it ends in `return`,
+  // `break` or `continue` (each of which ends its block and pushes an
+  // unreachable one). Diagnose and proceed; the branch keeps the CFG
+  // well-formed either way.
+  if (IsCurrentPositionReachable(context)) {
+    CARBON_DIAGNOSTIC(LetElseBlockFallsThrough, Error,
+                      "`else` block of a `let`-`else` declaration must not "
+                      "complete normally; end it with `return`, `break`, or "
+                      "`continue`");
+    context.emitter().Emit(else_node_id, LetElseBlockFallsThrough);
+  }
+  AddInst<SemIR::Branch>(context, node_id, {.target_id = then_block_id});
+
+  // Start emitting the success block: the only path that continues.
+  context.inst_block_stack().Pop();
+  context.inst_block_stack().Push(then_block_id);
+  context.region_stack().AddToRegion(then_block_id, node_id);
+
+  // The initializer is complete (the tombstones lift), and the bindings are
+  // initialized here, in the enclosing scope; their objects live until the
+  // end of that scope (`DeferCleanups` in the bind lanes, the `let` rule).
+  context.full_pattern_stack().EndPatternInitializer();
+  {
+    const auto& case_context = context.match_case_stack().back();
+    EmitRefutableBindingBind(context, node_id, case_context.pattern_id,
+                             case_context.scrutinee_id,
+                             *case_context.let_else_test);
+  }
+  context.full_pattern_stack().PopFullPattern();
+  context.match_case_stack().pop_back();
+
+  // Modifier checks, as `LetDecl` runs them (same calls, same order, same
+  // mask), after the `returned` rejection: `returned` is filed under the
+  // `Decl` modifier group, and the refutable `var` lane never reads it, so
+  // without the rejection it would be silently dropped.
+  auto introducer = context.decl_introducer_state_stack().innermost();
+  if (introducer.modifier_set.HasAnyOf(KeywordModifierSet::Returned)) {
+    CARBON_DIAGNOSTIC(ReturnedNotAllowedOnLetElse, Error,
+                      "`returned` not allowed on a `let`-`else` declaration");
+    context.emitter().Emit(introducer.modifier_node_id(ModifierOrder::Decl),
+                           ReturnedNotAllowedOnLetElse);
+    introducer.modifier_set.Remove(KeywordModifierSet::Returned);
+  }
+  auto parent_scope_inst =
+      context.name_scopes()
+          .GetInstIfValid(context.scope_stack().PeekNameScopeId())
+          .second;
+  CheckAccessModifiersOnDecl(context, introducer, parent_scope_inst);
+  context.decl_introducer_state_stack().Pop<Lex::TokenKind::Let>();
+  LimitModifiersOnDecl(
+      context, introducer,
+      KeywordModifierSet::Access | KeywordModifierSet::Interface);
+  RequireDefaultFinalOnlyInInterfaces(context, introducer,
+                                      SemIR::NameScopeId::None,
+                                      /*is_definition=*/false);
   return true;
 }
 

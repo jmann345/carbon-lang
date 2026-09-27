@@ -14,6 +14,7 @@
 #include "toolchain/check/operator.h"
 #include "toolchain/check/pattern.h"
 #include "toolchain/check/pattern_match.h"
+#include "toolchain/check/refutable_binding.h"
 #include "toolchain/check/type.h"
 #include "toolchain/sem_ir/absolute_node_ref.h"
 #include "toolchain/sem_ir/expr_info.h"
@@ -102,7 +103,39 @@ auto HandleParseNode(Context& context, Parse::WhileConditionStartId node_id)
 
 auto HandleParseNode(Context& context, Parse::WhileConditionId node_id)
     -> bool {
-  auto cond_value_id = context.node_stack().PopExpr();
+  auto [cond_node_id, cond_value_id] = context.node_stack().PopExprWithNodeId();
+
+  if (context.node_stack().PeekIs(
+          Parse::NodeKind::PatternConditionInitializer)) {
+    // while-let (W-012): the loop header re-evaluates the initializer and
+    // re-tests the pattern each iteration; the bindings are rebound in the
+    // body block and end with the loop scope (`FinishLoopBody` pops it).
+    auto result = CheckPatternConditionInitializer(context, node_id,
+                                                   cond_node_id, cond_value_id);
+    if (!result) {
+      // A diagnostic that aborts checking was emitted.
+      return false;
+    }
+    // Nothing later needs the introducer node: the loop scope is popped by
+    // `FinishLoopBody`.
+    context.node_stack()
+        .PopAndDiscardSoloNodeId<Parse::NodeKind::PatternConditionIntroducer>();
+    auto loop_header_id =
+        context.node_stack().Pop<Parse::NodeKind::WhileConditionStart>();
+
+    // Branch to either the loop body or the loop exit block on the pattern's
+    // condition, start emitting the loop body, and bind the pattern there.
+    BranchAndStartLoopBody(
+        context, node_id, loop_header_id,
+        context.scope_stack().enclosing_cleanup_scope_depth(),
+        result->test.cond_id);
+    EmitRefutableBindingBind(context, node_id, result->pattern_id,
+                             result->scrutinee_id, result->test);
+    context.full_pattern_stack().PopFullPattern();
+    context.match_case_stack().pop_back();
+    return true;
+  }
+
   auto loop_header_id =
       context.node_stack().Pop<Parse::NodeKind::WhileConditionStart>();
 

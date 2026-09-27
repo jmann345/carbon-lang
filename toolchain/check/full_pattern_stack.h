@@ -45,7 +45,9 @@ class FullPatternStack {
     // A `var` field declaration inside a class.
     ClassScopeVarDecl,
 
-    // The pattern of a `match` statement's `case` arm.
+    // The pattern of a `match` `case` arm, a pattern condition
+    // (`if (let P = e)`, `while (let P = e)`), or a `let`-`else`
+    // declaration — the refutable contexts (refutable_binding.h).
     MatchCaseArm,
 
     // The implicit parameter list of a function or impl declaration.

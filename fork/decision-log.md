@@ -2935,9 +2935,11 @@ autoupdate refill touched only the 26 new golden files — no pre-existing golde
 under toolchain/{parse,check,lower}/testdata moved, so the §8.1 zero-diff proof
 for the `EmitCaseArmTestAndBind` factoring holds (with the §8.1 caveat that it
 cannot see a `var`-wrapped alternative root; the two new match negatives are
-that guard). Conformance: <!-- VERIFY: numbers --> (the plan's target floor is
-104 PASS / 0 FAIL / 27 SKIP over 131: if_let_let_else un-SKIPped, while_let
-added).
+that guard). Conformance (run 36306915573, scoreboard f8ee67837): **108
+PASS / 0 FAIL / 27 SKIP over 135**, 44/56 bullets — the plan's
+tree-relative target of 104/0/27 over 131 (if_let_let_else un-SKIPped,
+while_let added) plus EH-A's four programs, since trunk (#40) was merged
+in before the gate. Gate run 36306909481 green on the same merge.
 
 ### EH-A: Core.Result, Optional as Try, Result entry points (2026-09-27)
 

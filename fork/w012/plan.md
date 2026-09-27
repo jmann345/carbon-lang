@@ -2289,8 +2289,9 @@ b134c2022 (testdata authoring fixes).
         refutable_binding.cpp:83 (moved from handle_match.cpp:189;
         declared at refutable_binding.h:77).
 6.  **§8.3 conformance:** hosted-only per R28 (ubuntu-22.04, upstream's
-    remote cache read-only); result <!-- VERIFY: numbers --> against the
-    §5 target of 104 PASS / 0 FAIL / 27 SKIP over 131.
+    remote cache read-only); result 108 PASS / 0 FAIL / 27 SKIP over 135
+    against the §5 target of 104 PASS / 0 FAIL / 27 SKIP over 131 (the
+    delta is EH-A's four programs, merged in from trunk before the gate).
 7.  **§8.5 ledger:** W-012 closed with the §0 corrections; W-080
     (refutability ERROR), W-081 (let-chains), W-082 (noreturn divergence)
     filed with `blocked_by: []`; W-012's `blocked_by` cleared;

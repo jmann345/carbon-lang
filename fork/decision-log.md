@@ -2811,6 +2811,7 @@ workstreams, in order of milestone value and unblocked state: W-012
 if-let/let-else/while-let (flips a MISSING bullet on landed match
 machinery), then the error-handling chain W-016..W-019 (Result, `?`,
 exception interop), then unions W-009/W-015.
+
 ### W-077: struct patterns in match case position (2026-09-27)
 
 The upstream-missing struct-pattern check layer lands for `match`

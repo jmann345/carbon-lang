@@ -9,6 +9,7 @@
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/IR/DebugInfoMetadata.h"
 #include "llvm/IR/DerivedTypes.h"
+#include "toolchain/sem_ir/file.h"
 #include "toolchain/sem_ir/ids.h"
 
 namespace Carbon::Lower {
@@ -50,12 +51,26 @@ struct FunctionTypeInfo {
   // Whether the function type information is inexact, because some component
   // type was incomplete.
   bool inexact;
+
+  // When the function is the `Main.Run` entry point declared with a
+  // `Core.Result(...)` return type (decision D10 of
+  // docs/design/error_handling.md), that return type. Such a function lowers
+  // with the C ABI `i32 main()`: no return parameter, the SemIR return slot
+  // bound to a local alloca by `FileContext::BuildFunctionBody`, and the exit
+  // code derived by the `ReturnExpr` epilogue in handle.cpp.
+  SemIR::TypeId entry_point_result_type_id = SemIR::TypeId::None;
 };
 
 // Builds and returns a FunctionTypeInfo from the accumulated information in the
 // given functions.
 auto BuildFunctionTypeInfo(llvm::ArrayRef<FunctionInContext> functions)
     -> FunctionTypeInfo;
+
+// Returns the declared return type of `function_id` when it is the `Main.Run`
+// entry point and that type is a `Core.Result(...)` specific (the D10
+// exit-code shapes), and `None` otherwise.
+auto GetEntryPointResultTypeId(const SemIR::File& sem_ir,
+                               SemIR::FunctionId function_id) -> SemIR::TypeId;
 
 struct LoweredTypes {
   llvm::Type* llvm_ir_type;

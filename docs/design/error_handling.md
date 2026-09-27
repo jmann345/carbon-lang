@@ -416,6 +416,30 @@ That bound is recorded as an open work item at the B1 landing; W5-S3p
 decides between admitting the zero-sized `()` payload and giving the
 `Optional` impl a scalar break carrier (fork/b1/plan.md §2.7).
 
+> **Amendment (2026-09-27, landed at EH-A — fork/eh/plan.md):** both open
+> points above are resolved and landed; the history is left as written.
+> (1) The unit break type exists: W-070 was discharged by option (a) — the
+> zero-sized empty tuple `()` is admitted as a choice payload
+> (`IsInSliceChoicePayloadType`, toolchain/check/type.cpp; plan D-EH-2), so
+> `ControlFlow(T, ())` and `Core.Result((), E)` are ordinary specifics and
+> `BreakType = ()` is spelled as this section says. (2) The `Optional` impl's
+> SIGNATURE above is normative MODULO its bound: `Core.Optional` was NOT
+> rebuilt as a choice (plan D-EH-1 — SF-9 resolved as "keep the placeholder
+> class"; the redesign stays W-058), and the placeholder class forces
+> `T: OptionalStorage` (core/prelude/types/optional.carbon:29), while moving
+> the `T` payload in `Branch` requires `T: Destroy` (a symbolic `T` bound by a
+> non-`type` facet proves only its declared interfaces — exposed by the first
+> hosted autoupdate, every full-prelude golden failing at once, and fixed in
+> c127784c4). The landed signature is therefore
+> `final impl forall [T: Destroy & OptionalStorage] Optional(T) as Try where .ContinueType = T and .BreakType = ()`
+> (optional.carbon:69-70). Its body dispatches through the placeholder
+> `HasValue()`/`Get()` API with an `if` — observationally the same two-way
+> split as the `match` above — and `FromBreak` takes `unused b: ()`; the
+> `match` body above applies verbatim once W-058 makes `Optional` a choice.
+> The `Result` impl landed byte-for-byte as sketched
+> (core/prelude/types/result.carbon), the `Try`/`ControlFlow` qualification
+> being unnecessary inside package `Core`.
+
 The `Optional` impl depends on `Core.Optional` being a payload-carrying choice
 type with alternatives `.Some(value: T)` and `.None`. Today's prelude
 `Optional` is a self-described placeholder — a class adapting an
@@ -807,7 +831,7 @@ for every stage.
 | ------ | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **B0** | `--cpp-exceptions` option; fenced thunks; boundary terminate semantics                           | Nothing — implementable now; replaces today's undefined behavior                                                                                                |
 | **B1** (restaged 2026-08-08) | `Core.Try`, postfix `?`, `ImplicitAs` error conversion, arbitrated over user-defined choice types (with the `Core.ControlFlow` branch carrier); original B1's `match` consumption already landed for user choices at W5-S2/S3 | `match` semantics and choice-alternative payloads (landed, W5-S2/S3) |
-| **W5-S3p** (the original B1/B2 prelude halves, post-SF-9) | Prelude `Core.Result(T, E)` and its `Try` impl; the `Core.Optional` rebuild and its `Try` impl; the `Run` `Result` signatures; the unit-break-type resolution | SF-9 — the `Core.Optional` identity decision and "how `Core.Result(T, E)` relates" (fork/decision-log.md OPEN forks; restaging recorded in fork/b1/plan.md §0.2/§2.1) |
+| **W5-S3p** (the original B1/B2 prelude halves, post-SF-9) — **landed at EH-A, 2026-09-27** | Prelude `Core.Result(T, E)` and its `Try` impl; the `Core.Optional` rebuild and its `Try` impl; the `Run` `Result` signatures; the unit-break-type resolution. _Landed at EH-A (fork/eh/plan.md):_ `Core.Result` in core/prelude/types/result.carbon with its `final` `Try` impl; `Optional`'s `Try` impl over the placeholder class — `Core.Optional` is NOT rebuilt (D-EH-1; see the dated amendment under the `Optional` sketch in [The `Core.Try` interface](#the-coretry-interface)); the `Run` `Result` signatures lowered as `i32 main()` with the D10 epilogue; the unit break type resolved by admitting `()` as a choice payload (D-EH-2) | SF-9 — the `Core.Optional` identity decision and "how `Core.Result(T, E)` relates" (fork/decision-log.md OPEN forks; restaging recorded in fork/b1/plan.md §0.2/§2.1). _Decided 2026-09-27 by D-EH-1 (fork/decision-log.md, entry "EH-A: Core.Result, Optional as Try, Result entry points"):_ `Core.Result` is an independent prelude choice; `Core.Optional` keeps its placeholder identity (its redesign stays W-058); no implicit bridge, per D9 |
 | **B3** | Catching thunks; `Cpp.Exception` synthesis into the `Cpp` package; `Carbon::expected` export and support header | B0, B1, W5-S3p                                                                                                                                                  |
 
 Dependency notes, stated plainly:

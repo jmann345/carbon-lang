@@ -315,6 +315,17 @@ auto IsInSliceChoicePayloadType(Context& context, SemIR::TypeId type_id)
   auto adapted_type_id = context.types().GetTransitiveAdaptedType(
       context.types().GetUnqualifiedType(type_id));
   auto inst = context.types().GetAsInst(adapted_type_id);
+  if (auto tuple_type = inst.TryAs<SemIR::TupleType>()) {
+    // The zero-sized empty tuple `()` is admitted (W-070 option (a),
+    // fork/eh/plan.md D-EH-2): it is trivially copyable and destructible,
+    // adds nothing to the payload region, and is what `Try`'s unit break
+    // type (`Core.ControlFlow(T, ())`) and `Core.Result((), E)` spell. This
+    // is the one predicate all three SF-6 sites consult — the definition
+    // path (handle_choice.cpp) and the per-specific evaluation hook's
+    // pre-filter and post-completion checks (eval_inst.cpp) — so no site
+    // special-cases it.
+    return context.inst_blocks().Get(tuple_type->type_elements_id).empty();
+  }
   return inst.Is<SemIR::IntType>() || inst.Is<SemIR::FloatType>() ||
          inst.Is<SemIR::BoolType>() || inst.Is<SemIR::PointerType>();
 }

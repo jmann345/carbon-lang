@@ -31,6 +31,7 @@
 #include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/inst.h"
 #include "toolchain/sem_ir/pattern.h"
+#include "toolchain/sem_ir/type_info.h"
 #include "toolchain/sem_ir/typed_insts.h"
 
 namespace Carbon::Check {
@@ -368,6 +369,40 @@ static auto IsValidEntryPointParamList(Context& context, Parse::NodeId node_id,
   return true;
 }
 
+// Returns whether the given type is a `Core.Result(T, E)` specific whose
+// success type `T` is exactly `()` or `i32` — the two `Result` entry-point
+// shapes of decision D10 (docs/design/error_handling.md, "Entry point"); `E`
+// is unconstrained. `T` is matched by `TypeId` equality like the plain
+// `-> i32` shape, so an adapter over `i32` is rejected in both positions
+// alike. Lowering gives such a `Run` the C ABI `i32 main()` and derives the
+// exit code from the returned alternative (toolchain/lower/handle.cpp).
+static auto IsEntryPointResultReturnType(Context& context,
+                                         Parse::NodeId node_id,
+                                         SemIR::TypeId return_type_id) -> bool {
+  auto class_type = context.types().TryGetAs<SemIR::ClassType>(return_type_id);
+  if (!class_type) {
+    return false;
+  }
+  auto type_info =
+      SemIR::RecognizedTypeInfo::ForType(context.sem_ir(), *class_type);
+  if (type_info.kind != SemIR::RecognizedTypeInfo::Result) {
+    return false;
+  }
+  auto args = context.inst_blocks().GetOrEmpty(type_info.args_id);
+  if (args.size() != 2) {
+    return false;
+  }
+  auto success_inst_id = args[0];
+  if (auto facet =
+          context.insts().TryGetAs<SemIR::FacetValue>(success_inst_id)) {
+    success_inst_id = facet->type_inst_id;
+  }
+  auto success_type_id =
+      context.types().GetTypeIdForTypeInstId(success_inst_id);
+  return success_type_id == GetTupleType(context, {}) ||
+         IsI32(context, node_id, success_type_id);
+}
+
 // Returns whether the given return type is valid for the entry point
 // function `Main.Run`.
 static auto IsValidEntryPointReturnType(Context& context, Parse::NodeId node_id,
@@ -383,6 +418,11 @@ static auto IsValidEntryPointReturnType(Context& context, Parse::NodeId node_id,
 
   if (IsI32(context, node_id, return_type_id)) {
     // Explicit return type of `i32` or an adapter for it is OK.
+    return true;
+  }
+
+  // `Core.Result((), E)` and `Core.Result(i32, E)` are OK (D10).
+  if (IsEntryPointResultReturnType(context, node_id, return_type_id)) {
     return true;
   }
 
@@ -416,7 +456,9 @@ static auto ValidateForEntryPoint(Context& context,
                  function_info.GetDeclaredReturnType(context.sem_ir()))) {
     CARBON_DIAGNOSTIC(InvalidMainRunReturnType, Error,
                       "invalid return type for `Main.Run` function; expected "
-                      "`fn (...)` or `fn (...) -> i32`");
+                      "`fn (...)`, `fn (...) -> i32`, "
+                      "`fn (...) -> Core.Result((), E)`, or "
+                      "`fn (...) -> Core.Result(i32, E)`");
     context.emitter().Emit(node_id, InvalidMainRunReturnType);
   }
 }

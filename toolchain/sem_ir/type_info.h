@@ -378,6 +378,8 @@ struct RecognizedTypeInfo {
     CppVoidBase,
     // `Core.Optional(...)`.
     Optional,
+    // `Core.Result(...)`.
+    Result,
     // `str` / `Core.String`.
     // TODO: Rename `Core.String` to `Core.Str`.
     Str,

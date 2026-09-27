@@ -488,7 +488,9 @@ auto FileContext::BuildFunctionDecl(SemIR::FunctionId function_id,
            .unused_param_indices =
                std::move(function_type_info.unused_param_indices),
            .llvm_function = llvm_function,
-           .inexact = function_type_info.inexact}};
+           .inexact = function_type_info.inexact,
+           .entry_point_result_type_id =
+               function_type_info.entry_point_result_type_id}};
 }
 
 // Find the file and function ID describing the definition of a function.
@@ -655,11 +657,25 @@ auto FileContext::BuildFunctionBody(SemIR::FunctionId function_id,
         function_info->llvm_function->getArg(llvm_index));
   }
 
+  // A `Result`-returning entry point (D10) has no LLVM return parameter — its
+  // LLVM type is `i32 main()` (type.cpp) — so its SemIR return parameter is
+  // bound to a local alloca below instead of a poison value.
+  auto result_return_param_id = SemIR::InstId::None;
+  if (function_info->entry_point_result_type_id.has_value()) {
+    CARBON_CHECK(definition_function.call_param_ranges.return_size() == 1);
+    result_return_param_id =
+        call_param_ids[definition_function.call_param_ranges.return_begin()
+                           .index];
+  }
+
   // Add local variables for the SemIR parameters that aren't LLVM parameters.
   // These shouldn't actually be used, so they're set to poison values.
   for (auto [llvm_index, index] :
        llvm::enumerate(function_info->unused_param_indices)) {
     auto param_id = call_param_ids[index.index];
+    if (param_id == result_return_param_id) {
+      continue;
+    }
     function_lowering.SetLocal(
         param_id,
         llvm::PoisonValue::get(function_lowering.GetTypeOfInst(param_id)));
@@ -687,6 +703,21 @@ auto FileContext::BuildFunctionBody(SemIR::FunctionId function_id,
   };
 
   CARBON_CHECK(function_lowering.llvm_function().isDeclaration());
+  if (result_return_param_id.has_value()) {
+    // The alloca needs the entry block to exist: create the decl block as the
+    // entry block here (`lower_block` below positions into this same block)
+    // and give the return slot real storage, which the in-place initializer
+    // targets and the `ReturnExpr` epilogue reads the alternative back from.
+    auto* entry_block = function_lowering.GetBlock(decl_block_id);
+    entry_block->moveBefore(function_info->llvm_function->end());
+    function_lowering.builder().SetInsertPoint(entry_block);
+    function_lowering.SetLocal(
+        result_return_param_id,
+        function_lowering.CreateAlloca(
+            {.file = &sem_ir(),
+             .type_id = function_info->entry_point_result_type_id},
+            "return"));
+  }
   lower_block(decl_block_id);
 
   // If the decl block is empty, reuse it as the first body block. We don't do

@@ -360,7 +360,7 @@ fn ConvertNullptrConstant() -> Core.Optional(i32*) {
 // CHECK:STDOUT: !79 = !DILocalVariable(arg: 1, scope: !74, type: !26)
 // CHECK:STDOUT: !80 = !DILocation(line: 52, column: 14, scope: !74)
 // CHECK:STDOUT: !81 = !DILocation(line: 52, column: 7, scope: !74)
-// CHECK:STDOUT: !82 = distinct !DISubprogram(name: "None", linkageName: "_CNone.Optional.Core.6e9e957697159b53", scope: null, file: !83, line: 30, type: !53, spFlags: DISPFlagDefinition, unit: !0)
+// CHECK:STDOUT: !82 = distinct !DISubprogram(name: "None", linkageName: "_CNone.Optional.Core.6e9e957697159b53", scope: null, file: !83, line: 31, type: !53, spFlags: DISPFlagDefinition, unit: !0)
 // CHECK:STDOUT: !83 = !DIFile(filename: "{{.*}}/prelude/types/optional.carbon", directory: "")
-// CHECK:STDOUT: !84 = !DILocation(line: 31, column: 5, scope: !82)
+// CHECK:STDOUT: !84 = !DILocation(line: 32, column: 5, scope: !82)
 // CHECK:STDOUT:

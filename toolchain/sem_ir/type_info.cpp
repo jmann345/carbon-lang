@@ -146,7 +146,8 @@ auto NumericTypeLiteralInfo::PrintLiteral(const File& file,
 // Returns whether this kind of recognized type should have a generic argument
 // list.
 static auto ExpectsArgs(RecognizedTypeInfo::Kind kind) -> bool {
-  return kind == RecognizedTypeInfo::Optional;
+  return kind == RecognizedTypeInfo::Optional ||
+         kind == RecognizedTypeInfo::Result;
 }
 
 auto RecognizedTypeInfo::ForType(const File& file, ClassType class_type)
@@ -186,6 +187,7 @@ auto RecognizedTypeInfo::ForType(const File& file, ClassType class_type)
     Kind kind = llvm::StringSwitch<Kind>(*name_ident)
                     .Case("Char", Char)
                     .Case("Optional", Optional)
+                    .Case("Result", Result)
                     .Case("String", Str)
                     .Default(None);
     if (ExpectsArgs(kind) == args_id.has_value()) {
@@ -274,6 +276,7 @@ auto RecognizedTypeInfo::PrintLiteral(const File& file,
       }
       break;
     case Optional:
+    case Result:
       break;
     case Str:
       out << "str";

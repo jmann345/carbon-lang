@@ -3010,9 +3010,13 @@ above are allocated here.
 
 _Verification (hosted-only per R28):_ gate and conformance are the hosted runs;
 local verification is limited to `uvx prek` on the bookkeeping files.
-Conformance floor per plan §5.B, tree-relative: <!-- VERIFY: numbers --> (the
+Conformance of record (run 36315999330, scoreboard 3d398fe6f, after the fixes
+below): **112 PASS / 0 FAIL / 26 SKIP over 139**, 44/56 bullets — plan §5.B's
+tree-relative 109/136 plus W-012's one program, PASS +4 / SKIP −1 / total +3
+exactly (the
 un-SKIP of cpp_exception_interop plus three new programs, zero other movement;
-`runner.py --self-test` and `--update-readme-table` clean per the implementer).
+`runner.py --self-test` and `--update-readme-table` clean per the implementer);
+gate of record run 36315995464 green on the same head (32d93701d).
 Hosted autoupdate: the branch itself modifies ZERO existing goldens (`git diff
 origin/trunk...HEAD --diff-filter=M` over the testdata trees is empty; the six
 goldens are new and CHECK-free), so the fill of record is expected to add CHECK

@@ -85,6 +85,11 @@ inline auto ImportCppFunctionDecl(Context& context, SemIR::LocId loc_id,
       SemIR::ClangDeclKey::ForFunctionDecl(clang_decl, signature_id));
 }
 
+// Adds the "in thunk for C++ function used here" note anchoring Clang
+// diagnostics produced while building a C++ thunk (the fenced thunk at import,
+// the catching thunk at its first `?`-selected call) to the Carbon use.
+auto NoteInCppThunk(DiagnosticBuilder& builder, SemIR::LocId loc_id) -> void;
+
 // Imports a synthesized C++ thunk declaration (a catching thunk, thunk.cpp)
 // as a Carbon function, exactly as the fenced thunk is imported at the callee's
 // import: the bare function import, with NO thunk-requirement evaluation,

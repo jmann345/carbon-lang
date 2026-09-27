@@ -372,13 +372,24 @@ auto CarbonExternalASTSource::FindExternalVisibleDeclsByName(
     }
     case clang::DeclarationName::CXXConstructorName: {
       // The Carbon counterpart of a constructor is a function whose name
-      // matches the class name.
-      identifier =
-          llvm::cast<clang::CXXRecordDecl>(decl_context)->getIdentifier();
+      // matches the class name. A constructor name also reaches NON-class
+      // contexts: Clang's unqualified redeclaration lookup for a constructor
+      // declarator walks the enclosing scopes, so a C++-declared class nested
+      // in `namespace Carbon` (the `<carbon/expected.h>` support header's
+      // `unexpected(E)`, for one) asks this source about the namespace with a
+      // constructor name. No Carbon entity answers that; it is not a class.
+      auto* record_decl = dyn_cast<clang::CXXRecordDecl>(decl_context);
+      if (!record_decl) {
+        return false;
+      }
+      identifier = record_decl->getIdentifier();
       break;
     }
     default:
       return false;
+  }
+  if (!identifier) {
+    return false;
   }
 
   auto name_id = AddIdentifierName(*context_, identifier->getName());

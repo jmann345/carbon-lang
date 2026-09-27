@@ -1994,6 +1994,11 @@ static auto ImportFunction(Context& context, SemIR::LocId loc_id,
 // function signature. `signature.num_params` may be less than the number of
 // parameters that the C++ function has if default arguments are available for
 // the trailing parameters.
+auto NoteInCppThunk(DiagnosticBuilder& builder, SemIR::LocId loc_id) -> void {
+  CARBON_DIAGNOSTIC(InCppThunk, Note, "in thunk for C++ function used here");
+  builder.Note(loc_id, InCppThunk);
+}
+
 auto ImportCppThunkFunctionDecl(Context& context, SemIR::LocId loc_id,
                                 clang::FunctionDecl* thunk_clang_decl,
                                 SemIR::ClangDeclSignatureId signature_id)
@@ -2044,11 +2049,8 @@ static auto ImportFunctionDecl(Context& context, SemIR::LocId loc_id,
   SemIR::Function& function_info = context.functions().Get(*function_id);
   if (IsCppThunkRequired(context, function_info)) {
     Diagnostics::AnnotationScope annotate_diagnostics(
-        &context.emitter(), [&](auto& builder) {
-          CARBON_DIAGNOSTIC(InCppThunk, Note,
-                            "in thunk for C++ function used here");
-          builder.Note(loc_id, InCppThunk);
-        });
+        &context.emitter(),
+        [&](auto& builder) { NoteInCppThunk(builder, loc_id); });
 
     bool thunk_attached = false;
     if (clang::FunctionDecl* thunk_clang_decl =

@@ -721,7 +721,7 @@ ordinary interop type mapping):
 > `Core.Result(S, Cpp.Exception)` is a choice specific bound by SF-6
 > (`toolchain/check/type.cpp`, `IsInSliceChoicePayloadType`); a class,
 > `std::string`, or constructor return is diagnosed at the `?` with a context
-> note naming the C++ callee (`CppCatchingImportPayloadNote`). Break condition:
+> note naming the C++ callee (`CppCatchingImportNonScalarSuccess`). Break condition:
 > the SF-6 lift (the Sum types bullet, W-010's residue) removes this sentence.
 
 ### `Cpp.Exception`

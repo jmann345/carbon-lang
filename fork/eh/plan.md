@@ -1850,7 +1850,34 @@ now import.cpp:2114.
     tree diagnoses as `value of type type is not callable`; the tree's spelling
     is the static-member form `Cpp.Widget.Widget(1)` (interop/cpp/class/import/
     constructor.carbon). §4.B's `fail_class_return`/`fail_ctor_return`
-    prediction is now exactly one error each and nothing else.) Expected churn per
+    prediction is now exactly one error each and nothing else. Fill b8abdb68a
+    (run 36310053869's successor) then failed the GATE and CONFORMANCE runs
+    36311895668 / 36311899697, both fixed at the root: (i)
+    `//toolchain/diagnostics:coverage_test` — `InCppCatchingThunk` and
+    `CppCatchingImportPayloadNote` appeared in no golden; the former is
+    replaced by the shared `NoteInCppThunk` helper (import.{h,cpp}: the one
+    `InCppThunk` site, used by the fenced and the catching build — no Clang
+    diagnostic is user-reachable from the catching body, whose call and store
+    the fenced build already accepted), the latter deleted: the up-front
+    `IsInSliceChoicePayloadType` predicate IS the specific's SF-6 rule, so the
+    completion is a `CARBON_CHECK` invariant (R17), not a diagnostic; (ii) both
+    conformance programs including the REAL `<carbon/expected.h>` crashed
+    `compile` (SIGSEGV in `CarbonExternalASTSource::FindExternalVisibleDeclsByName`
+    while parsing `Carbon::unexpected`): the `CXXConstructorName` arm did
+    `llvm::cast<clang::CXXRecordDecl>(decl_context)->getIdentifier()`, but a
+    constructor declarator inside a C++-declared class nested in `namespace
+    Carbon` sends Clang's unqualified redeclaration lookup to the NAMESPACE with
+    a constructor name (Clang's own `DeclareImplicitMemberFunctionsWithName`
+    uses `dyn_cast` there), so the opt build reinterpreted the `NamespaceDecl`
+    and read garbage; now `dyn_cast` with a "no external declarations" answer,
+    plus a null-identifier guard. Pinned by the new CHECK-free golden
+    check/interop/cpp/function/export/carbon_namespace_cpp_class.carbon
+    (inline method + constructor in a `Carbon`-nested C++ class, an exported
+    Carbon function called from the same block) and by result_expected.carbon's
+    skeletons, which now carry inline member definitions (its fill is stripped
+    for the refill). Goldens cannot include the real header: file_test's data
+    are the clang headers and min_prelude only (toolchain/testing/BUILD).)
+    Expected churn per
     §6.B: exactly those 27 plus the six new files; any other file moving in the
     fill is a §6 miss.
 

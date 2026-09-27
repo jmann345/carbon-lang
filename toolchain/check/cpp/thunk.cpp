@@ -1196,12 +1196,14 @@ auto GetOrBuildCppCatchingThunkDecl(Context& context, SemIR::LocId loc_id,
     return cached.value();
   }
 
+  // The note anchor shared with the fenced thunk's build. No Clang diagnostic
+  // is known to be reachable here from user code — the call expression is the
+  // one the fenced thunk already built at import, the store is the same
+  // placement new (or a `void` expression statement), and the handler is
+  // synthesized — so this is defense in depth, not a pinned lane.
   Diagnostics::AnnotationScope annotate_diagnostics(
-      &context.emitter(), [&](auto& builder) {
-        CARBON_DIAGNOSTIC(InCppCatchingThunk, Note,
-                          "in catching thunk for C++ function used here");
-        builder.Note(loc_id, InCppCatchingThunk);
-      });
+      &context.emitter(),
+      [&](auto& builder) { NoteInCppThunk(builder, loc_id); });
 
   auto& callee_function = context.functions().Get(callee_function_id);
   SemIR::InstId thunk_decl_id = SemIR::InstId::None;
@@ -1375,12 +1377,13 @@ static auto PerformCppCatchingThunkCall(
   }
 
   // Form `Core.Result(S, Cpp.Exception)` the way `MakeOptionalType` forms
-  // `Core.Optional(T)`, and force its completion here. The predicate above
-  // has already admitted `S`, so the specific's own SF-6 check
-  // (`ChoicePayloadNotTrivialInSpecific`, eval_inst.cpp) is not expected to
-  // fire; the completion is kept as a belt, loud and final: a rejected
-  // specific completes with an error-valued layout (`GetObjectRepr` is
-  // `ErrorInst`), which ends the call here instead of cascading.
+  // `Core.Optional(T)`, and complete it here. The predicate above IS the
+  // specific's own SF-6 admission rule (`ChoicePayloadNotTrivialInSpecific`,
+  // eval_inst.cpp, tests `IsInSliceChoicePayloadType` too), so the specific
+  // cannot fail to complete; a drift between the two would be a toolchain
+  // invariant violation, checked loudly rather than diagnosed (a rejected
+  // specific completes with an error-valued layout, so `GetObjectRepr` is
+  // tested as well).
   auto exception_type = ExprAsType(
       context, loc_id,
       LookupNameInCore(context, loc_id,
@@ -1396,20 +1399,15 @@ static auto PerformCppCatchingThunkCall(
       exception_type.type_id == SemIR::ErrorInst::TypeId) {
     return SemIR::ErrorInst::InstId;
   }
-  if (!RequireCompleteType(
-          context, result_type.type_id, loc_id,
-          [&](auto& builder) {
-            CARBON_DIAGNOSTIC(CppCatchingImportPayloadNote, Context,
-                              "catching import of `{0}` requires a scalar "
-                              "success type in 0.1; {1} is not one",
-                              std::string, SemIR::TypeId);
-            builder.Context(loc_id, CppCatchingImportPayloadNote, callee_name,
-                            success_type_id);
-          }) ||
-      context.types().GetObjectRepr(result_type.type_id) ==
-          SemIR::ErrorInst::TypeId) {
-    return SemIR::ErrorInst::InstId;
-  }
+  auto no_diagnostic_context =
+      [](DiagnosticContextBuilder& /*builder*/) -> void {};
+  CARBON_CHECK(RequireCompleteType(context, result_type.type_id, loc_id,
+                                   no_diagnostic_context) &&
+                   context.types().GetObjectRepr(result_type.type_id) !=
+                       SemIR::ErrorInst::TypeId,
+               "catching success type {0} passed IsInSliceChoicePayloadType "
+               "but Core.Result({0}, Cpp.Exception) did not complete",
+               success_type_id);
 
   // The catching thunk, built lazily and cached per file.
   auto thunk_decl_id =

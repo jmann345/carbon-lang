@@ -358,6 +358,12 @@ CARBON_DIAGNOSTIC_KIND(OverrideWithoutVirtualInBase)
 CARBON_DIAGNOSTIC_KIND(OverrideCandidateArityMismatch)
 CARBON_DIAGNOSTIC_KIND(VirtualWithoutSelf)
 
+// Union checking.
+CARBON_DIAGNOSTIC_KIND(UnionFieldNotTriviallyCopyable)
+CARBON_DIAGNOSTIC_KIND(UnionInitNotSingleField)
+CARBON_DIAGNOSTIC_KIND(UnionInitUnknownField)
+CARBON_DIAGNOSTIC_KIND(UnionWithoutFields)
+
 // Deduction.
 CARBON_DIAGNOSTIC_KIND(DeductionIncomplete)
 CARBON_DIAGNOSTIC_KIND(DeductionInconsistent)

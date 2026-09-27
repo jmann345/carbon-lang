@@ -97,6 +97,7 @@ static auto IsStartOfDeferredDefinitionScope(Parse::NodeKind kind) -> bool {
     case Parse::NodeKind::ImplDefinitionStart:
     case Parse::NodeKind::InterfaceDefinitionStart:
     case Parse::NodeKind::NamedConstraintDefinitionStart:
+    case Parse::NodeKind::UnionDefinitionStart:
       // TODO: Mixins.
       return true;
     default:
@@ -111,6 +112,7 @@ static auto IsEndOfDeferredDefinitionScope(Parse::NodeKind kind) -> bool {
     case Parse::NodeKind::ImplDefinition:
     case Parse::NodeKind::InterfaceDefinition:
     case Parse::NodeKind::NamedConstraintDefinition:
+    case Parse::NodeKind::UnionDefinition:
       // TODO: Mixins.
       return true;
     default:

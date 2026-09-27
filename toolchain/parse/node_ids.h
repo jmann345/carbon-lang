@@ -174,7 +174,11 @@ using AnyClassDeclId =
                 // TODO: This may be wrong? But we have choice types produce a
                 // class, so they are a form of class decls. This avoids
                 // duplicating all of SemIR::ClassDecl.
-                ChoiceDefinitionStartId>;
+                ChoiceDefinitionStartId,
+                // A `union` also produces a class (`SemIR::Class` with
+                // `is_union`), for the same reason.
+                UnionDeclId, UnionDefinitionStartId>;
+using AnyUnionDeclId = NodeIdOneOf<UnionDeclId, UnionDefinitionStartId>;
 using AnyFunctionDeclId = NodeIdOneOf<FunctionDeclId, FunctionDefinitionStartId,
                                       BuiltinFunctionDefinitionStartId>;
 using AnyFunctionDefinitionId =

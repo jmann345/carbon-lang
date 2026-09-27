@@ -366,7 +366,7 @@
       "patterns": [
         {
           "name": "storage.type.carbon",
-          "match": "\\b(adapt|alias|choice|class|constraint|fn|import|inline|interface|let|library|namespace|var)\\b"
+          "match": "\\b(adapt|alias|choice|class|constraint|fn|import|inline|interface|let|library|namespace|union|var)\\b"
         },
         {
           "name": "storage.type.carbon",

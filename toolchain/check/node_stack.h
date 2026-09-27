@@ -441,6 +441,8 @@ class NodeStack {
       case Parse::NodeKind::ChoiceDefinitionStart:
         // TODO: Should we have a separate SemIR::ChoiceId?
       case Parse::NodeKind::ClassDefinitionStart:
+      // A union is a `SemIR::Class` with `is_union`.
+      case Parse::NodeKind::UnionDefinitionStart:
         return Id::KindFor<SemIR::ClassId>();
       case Parse::NodeKind::InterfaceDefinitionStart:
         return Id::KindFor<SemIR::InterfaceId>();
@@ -463,6 +465,7 @@ class NodeStack {
       case Parse::NodeKind::BuiltinName:
       case Parse::NodeKind::ChoiceIntroducer:
       case Parse::NodeKind::ClassIntroducer:
+      case Parse::NodeKind::UnionIntroducer:
       case Parse::NodeKind::CodeBlockStart:
       case Parse::NodeKind::ExplicitParamListStart:
       case Parse::NodeKind::ForHeaderStart:

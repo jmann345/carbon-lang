@@ -463,14 +463,16 @@ static auto ParsingInDeferredDefinitionScope(Context& context) -> bool {
   if (stack.size() < 2 ||
       (stack.back().kind != StateKind::DeclScopeLoopAsClass &&
        stack.back().kind != StateKind::DeclScopeLoopAsInterface &&
-       stack.back().kind != StateKind::DeclScopeLoopAsRegular)) {
+       stack.back().kind != StateKind::DeclScopeLoopAsRegular &&
+       stack.back().kind != StateKind::DeclScopeLoopAsUnion)) {
     return false;
   }
   auto kind = stack[stack.size() - 2].kind;
   return kind == StateKind::DeclDefinitionFinishAsClass ||
          kind == StateKind::DeclDefinitionFinishAsImpl ||
          kind == StateKind::DeclDefinitionFinishAsInterface ||
-         kind == StateKind::DeclDefinitionFinishAsNamedConstraint;
+         kind == StateKind::DeclDefinitionFinishAsNamedConstraint ||
+         kind == StateKind::DeclDefinitionFinishAsUnion;
 }
 
 auto Context::AddFunctionDefinitionStart(Lex::TokenIndex token, bool has_error)

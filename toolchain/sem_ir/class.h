@@ -84,6 +84,13 @@ struct ClassFields {
   // the representation's field names.
   bool is_choice = false;
 
+  // Whether this class was declared as a `union`. Its object representation
+  // is a `CustomLayoutType` with every field at offset zero, sized and aligned
+  // by the max-of-fields rule (docs/design/unions.md, "Layout"). Like
+  // `is_choice`, this is entity-level truth, not inferred from the
+  // representation.
+  bool is_union = false;
+
   // For a `choice`, its alternatives' name-to-index metadata in declaration
   // order; set when the definition completes. Empty for non-choice classes.
   llvm::SmallVector<ChoiceAlternative, 0> choice_alternatives = {};
@@ -132,7 +139,8 @@ struct ClassFields {
         out << "Final";
         break;
     }
-    out << ", is_dynamic: " << is_dynamic << ", scope_id: " << scope_id
+    out << ", is_dynamic: " << is_dynamic << ", is_choice: " << is_choice
+        << ", is_union: " << is_union << ", scope_id: " << scope_id
         << ", body_block_id: " << body_block_id << ", adapt_id: " << adapt_id
         << ", base_id: " << base_id
         << ", complete_type_witness_id: " << complete_type_witness_id

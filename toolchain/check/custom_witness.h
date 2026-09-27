@@ -70,6 +70,19 @@ auto HasTrivialClassShapeForExport(const SemIR::Class& class_info) -> bool;
 // §2.2).
 auto IsTriviallyDestructible(Context& context, SemIR::TypeId type_id) -> bool;
 
+// Returns true if a value of the given concrete, complete type contains,
+// anywhere in its object representation, a class covered by an `impl` of
+// `Core.Copy` that is declared outside package `Core` — the "user-provided
+// copy operation" half of the union field rule (docs/design/unions.md,
+// "Trivially destructible and trivially copyable types"). The prelude's own
+// `Copy` impls are trusted as bitwise over trivially destructible shapes, so
+// `i32`, `T*`, `Core.String` and `Core.Optional(T*)` fields all answer false.
+// Non-class kinds answer false; the destructible half
+// (`IsTriviallyDestructible`) already rejects the kinds this walk does not
+// know. Consumer: the union field rule (`ComputeUnionObjectRepr`,
+// check/class.cpp).
+auto HasNonTrivialUserCopyImpl(Context& context, SemIR::TypeId type_id) -> bool;
+
 // Given an interface, returns the corresponding enum if it's covered by
 // `CoreInterface`, or `Unknown` if it's some other interface.
 auto GetCoreInterface(Context& context, SemIR::InterfaceId interface_id)

@@ -99,6 +99,7 @@ The following words are interpreted as keywords:
 -   `template`
 -   `then`
 -   `type`
+-   `union`
 -   `var`
 -   `virtual`
 -   `where`

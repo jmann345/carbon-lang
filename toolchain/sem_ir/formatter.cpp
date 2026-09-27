@@ -172,6 +172,7 @@ static auto IsDefinitionStart(Parse::NodeKind node_kind) -> bool {
     case Parse::NodeKind::ImplDefinitionStart:
     case Parse::NodeKind::InterfaceDefinitionStart:
     case Parse::NodeKind::NamedConstraintDefinitionStart:
+    case Parse::NodeKind::UnionDefinitionStart:
       return true;
     default:
       return false;

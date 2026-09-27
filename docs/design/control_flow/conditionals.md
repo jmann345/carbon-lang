@@ -25,6 +25,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 > [ `else if (` _boolean expression_ `) {` _statements_ `}` ] ...
 >
 > [ `else {` _statements_ `}` ]
+>
+> `if (` `let` | `var` _pattern_ `=` _expression_ `) {` _statements_ `}`
+
+The last form is a _pattern condition_: the condition succeeds when the
+pattern matches the expression, and the pattern's bindings are in scope in
+the then-block only; see
+[refutable pattern bindings](../pattern_matching.md#refutable-pattern-bindings).
 
 Only one group of statements will execute:
 

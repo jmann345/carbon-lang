@@ -163,8 +163,8 @@ fn Report(name: str) {
 ### Consuming results with `let ... else` and `if (let ...)`
 
 When only one alternative is interesting, the combined match control-flow forms
-from fork decision
-[F-011](/fork/decision-log.md)
+of fork decision F-011
+([refutable pattern bindings](pattern_matching.md#refutable-pattern-bindings))
 apply to `Result` like to any other choice type. The negative form binds in the
 enclosing scope and requires the failure arm to diverge:
 
@@ -187,15 +187,10 @@ if (let .Ok(f: File) = Open(name)) {
 }
 ```
 
-These forms are fixed by fork decision
-[F-011](/fork/decision-log.md), whose grammar and semantics are recorded in
-[fork/design-sprint/if-let.md](/fork/design-sprint/if-let.md); their design-doc
-write-up — including amending
-[pattern matching](pattern_matching.md#refutability-overlap-usefulness-and-exhaustiveness)'s
-enumeration of contexts that permit refutable patterns — is a deliverable of
-the F-011 workstream, sequenced alongside this document. This document only
-fixes that `Result` is consumed through the one shared pattern grammar — there
-is no `Result`-specific unwrapping syntax besides `?`.
+These forms are specified in
+[refutable pattern bindings](pattern_matching.md#refutable-pattern-bindings).
+This document only fixes that `Result` is consumed through the one shared
+pattern grammar — there is no `Result`-specific unwrapping syntax besides `?`.
 
 ## Error propagation: the postfix `?` operator
 
@@ -830,9 +825,7 @@ Dependency notes, stated plainly:
 
 Until the W5-S3p stage lands, prelude `Core.Result` cannot be defined or
 consumed (user-defined `Result`-shaped choices, and `?` over them, work as of
-the restaged B1); until
-F-011's implementation lands, the `let ... else` / `if (let ...)` consumption
-forms are design-only. Windows support will additionally need the boundary
+the restaged B1). Windows support will additionally need the boundary
 thunks reworked for MSVC's exception model; that changes the thunk
 implementation, not this design.
 

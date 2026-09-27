@@ -25,6 +25,10 @@ choice OptInt {
 }
 
 fn F(opt: OptInt) {
+  // CHECK:STDERR: fail_let_root.carbon:[[@LINE+4]]:7: error: semantics TODO: `alternative pattern outside a refutable pattern context` [SemanticsTodo]
+  // CHECK:STDERR:   let .Some(n: i32) = opt;
+  // CHECK:STDERR:       ^~~~~~~~~~~~~
+  // CHECK:STDERR:
   let .Some(n: i32) = opt;
 }
 
@@ -37,5 +41,9 @@ choice OptInt {
 }
 
 fn F(opt: OptInt) {
+  // CHECK:STDERR: fail_var_root.carbon:[[@LINE+4]]:7: error: semantics TODO: `alternative pattern outside a refutable pattern context` [SemanticsTodo]
+  // CHECK:STDERR:   var .None = opt;
+  // CHECK:STDERR:       ^~~~~
+  // CHECK:STDERR:
   var .None = opt;
 }

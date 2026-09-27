@@ -27,6 +27,10 @@ fn Next(n: i32) -> OptInt {
   return OptInt.None;
 }
 
+// CHECK:STDERR: fail_binding_after_loop.carbon:[[@LINE+4]]:8: warning: binding `n` unused [UnusedBinding]
+// CHECK:STDERR: fn Use(n: i32) {}
+// CHECK:STDERR:        ^~~~~~
+// CHECK:STDERR:
 fn Use(n: i32) {}
 
 fn F(start: i32) {
@@ -34,6 +38,10 @@ fn F(start: i32) {
   while (let .Some(x: i32) = Next(cur)) {
     cur = x;
   }
+  // CHECK:STDERR: fail_binding_after_loop.carbon:[[@LINE+4]]:7: error: name `x` not found [NameNotFound]
+  // CHECK:STDERR:   Use(x);
+  // CHECK:STDERR:       ^
+  // CHECK:STDERR:
   Use(x);
 }
 
@@ -42,6 +50,10 @@ library "[[@TEST_NAME]]";
 
 fn F(start: i32) -> i32 {
   var cur: i32 = start;
+  // CHECK:STDERR: irrefutable.carbon:[[@LINE+4]]:10: warning: pattern always matches, so this binding cannot fail [IrrefutablePatternAlwaysMatches]
+  // CHECK:STDERR:   while (let n: i32 = cur) {
+  // CHECK:STDERR:          ^~~
+  // CHECK:STDERR:
   while (let n: i32 = cur) {
     cur = n - 1;
     if (cur < 0) {
@@ -55,6 +67,10 @@ fn F(start: i32) -> i32 {
 library "[[@TEST_NAME]]";
 
 fn F(a: bool, b: bool) {
+  // CHECK:STDERR: fail_chain_reserved.carbon:[[@LINE+4]]:21: error: `and`/`or` at the top level of a pattern condition's initializer is reserved for pattern chaining; parenthesize the expression [PatternConditionChainReserved]
+  // CHECK:STDERR:   while (let true = a and b) {
+  // CHECK:STDERR:                     ^~~~~~~
+  // CHECK:STDERR:
   while (let true = a and b) {
     break;
   }

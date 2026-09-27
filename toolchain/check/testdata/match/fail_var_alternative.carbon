@@ -23,9 +23,17 @@ choice OptInt {
   None
 }
 
+// CHECK:STDERR: fail_nonexhaustive_var_alternative.carbon:[[@LINE+4]]:8: warning: binding `n` unused [UnusedBinding]
+// CHECK:STDERR: fn Use(n: i32) {}
+// CHECK:STDERR:        ^~~~~~
+// CHECK:STDERR:
 fn Use(n: i32) {}
 
 fn F(o: OptInt) -> i32 {
+  // CHECK:STDERR: fail_nonexhaustive_var_alternative.carbon:[[@LINE+4]]:3: error: `match` on choice `OptInt` has no `default` arm and does not cover alternative `.None` [MatchNonexhaustive]
+  // CHECK:STDERR:   match (o) {
+  // CHECK:STDERR:   ^~~~~~~~~~~
+  // CHECK:STDERR:
   match (o) {
     case var .Some(n: i32) => { Use(n); }
   }

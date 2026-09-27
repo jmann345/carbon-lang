@@ -211,6 +211,13 @@ class Context {
                               Lex::TokenIndex token, bool has_error = false)
       -> void;
 
+  // Re-kinds the introducer node at `position` from `old_kind` to `new_kind`,
+  // keeping its token and error flag. Used when the parser learns what a
+  // declaration is only after its introducer node was added, as for a
+  // `let`-`else` declaration at its `else`.
+  auto ReplaceIntroducerNode(int32_t position, NodeKind old_kind,
+                             NodeKind new_kind) -> void;
+
   // Returns the current position and moves past it.
   auto Consume() -> Lex::TokenIndex { return *(position_++); }
 

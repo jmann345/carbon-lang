@@ -1,15 +1,15 @@
 {
-  "generated": "2026-09-27T08:26:19.758037+00:00",
+  "generated": "2026-09-27T09:11:29.835269+00:00",
   "toolchain": "/home/runner/work/_temp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 50.0,
+  "elapsed_seconds": 23.4,
   "totals": {
-    "PASS": 106,
+    "PASS": 108,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
     "OUTPUT-MISMATCH": 0,
     "DIFF-MISMATCH": 0,
-    "SKIP": 28
+    "SKIP": 27
   },
   "programs": [
     {
@@ -122,8 +122,8 @@
     {
       "path": "control_flow/if_let_let_else.carbon",
       "bullet": "Control flow: matching \u2014 if-let / let-else combined match+declaration",
-      "status": "SKIP",
-      "detail": "MISSING and not even designed \u2014 absent at every layer (no tokens, parse states, or check support) and absent from docs/design/pattern_matching.md; there is no accepted syntax for a combined match+declaration, so the `if (let ...)` / `let ... else` forms below are strawmen to be replaced by the accepted design. Un-SKIP (and uncomment the body) when an if-let/let-else design is accepted and implemented (depends on W4 match semantics).",
+      "status": "PASS",
+      "detail": "",
       "differential": false
     },
     {
@@ -251,6 +251,13 @@
       "status": "PASS",
       "detail": "",
       "differential": true
+    },
+    {
+      "path": "control_flow/while_let.carbon",
+      "bullet": "Control flow: matching \u2014 if-let / let-else combined match+declaration",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
     },
     {
       "path": "error_handling/control_flow_constructs.carbon",
@@ -1234,10 +1241,11 @@
       ]
     },
     "Control flow: matching \u2014 if-let / let-else combined match+declaration": {
-      "status": "SKIP",
-      "gap_status": "MISSING",
+      "status": "PASS",
+      "gap_status": "PARTIAL",
       "programs": [
-        "control_flow/if_let_let_else.carbon"
+        "control_flow/if_let_let_else.carbon",
+        "control_flow/while_let.carbon"
       ]
     },
     "C++ interop: threading, atomics, memory model, synchronization": {

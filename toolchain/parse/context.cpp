@@ -52,6 +52,16 @@ auto Context::ReplacePlaceholderNode(int32_t position, NodeKind kind,
   *node_impl = Tree::NodeImpl(kind, has_error, token);
 }
 
+auto Context::ReplaceIntroducerNode(int32_t position, NodeKind old_kind,
+                                    NodeKind new_kind) -> void {
+  CARBON_CHECK(position >= 0 && position < tree_->size(),
+               "position: {0} size: {1}", position, tree_->size());
+  auto* node_impl = &tree_->node_impls_[position];
+  CARBON_CHECK(node_impl->kind() == old_kind, "{0}", node_impl->kind());
+  *node_impl =
+      Tree::NodeImpl(new_kind, node_impl->has_error(), node_impl->token());
+}
+
 auto Context::ConsumeAndAddOpenCurlyBrace(Lex::TokenIndex default_token,
                                           NodeKind start_kind)
     -> std::optional<Lex::TokenIndex> {

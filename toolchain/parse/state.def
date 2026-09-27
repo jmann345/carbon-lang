@@ -1160,6 +1160,19 @@ CARBON_PARSE_STATE_VARIANTS3(ParenCondition, If, While, Match)
 //   (state done)
 CARBON_PARSE_STATE_VARIANTS3(ParenConditionFinish, If, While, Match)
 
+// Handles a pattern condition after its pattern: adds the VariablePattern
+// wrapper for the `var` spelling, then the `=` and the initializer.
+//
+// if/while ( let ... = ...
+//                   ^
+//   1. Expr
+//   2. ParenConditionFinishAs(If|While)
+//
+// if/while ( let ... ???
+//                   ^
+//   2. ParenConditionFinishAs(If|While)   (state done, error)
+CARBON_PARSE_STATE(PatternConditionAfterPattern)
+
 // Handles compound member access `(` after `->` or `.`
 //
 // ( ... )
@@ -1793,6 +1806,13 @@ CARBON_PARSE_STATE_VARIANTS2(LetAfterPattern, Regular, AssociatedConstant)
 //         ^~~~~
 //   (state done)
 CARBON_PARSE_STATE_VARIANTS2(LetFinish, Regular, AssociatedConstant)
+
+// Handles the end of a `let`-`else` declaration after its else block.
+//
+// let ... = ... else { ... }
+//                           ^
+//   (state done)
+CARBON_PARSE_STATE(LetElseFinish)
 
 // Handles the start of an associated constant declaration (`let` in an
 // interface context).

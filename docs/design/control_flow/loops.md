@@ -35,6 +35,13 @@ Carbon provides loops using the `while` and `for` statements. Within a loop, the
 Syntax is:
 
 > `while (` _boolean expression_ `) {` _statements_ `}`
+>
+> `while (` `let` | `var` _pattern_ `=` _expression_ `) {` _statements_ `}`
+
+The second form is a _pattern condition_: the loop continues for as long as
+the pattern matches the expression, which is re-evaluated and re-matched each
+iteration, with the pattern's bindings rebound in the body; see
+[refutable pattern bindings](../pattern_matching.md#refutable-pattern-bindings).
 
 For example, this prints `0`, `1`, `2`, then `Done!`:
 

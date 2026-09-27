@@ -62,6 +62,13 @@ class CppContext {
     cxa_current_primary_exception_decl_ = decl;
   }
 
+  auto boundary_write_decl() const -> clang::FunctionDecl* {
+    return boundary_write_decl_;
+  }
+  void set_boundary_write_decl(clang::FunctionDecl* decl) {
+    boundary_write_decl_ = decl;
+  }
+
  private:
   // The C++ compilation domain.
   SemIR::CppDomain* domain_;
@@ -82,6 +89,11 @@ class CppContext {
   // The cached `extern "C" void* __cxa_current_primary_exception() noexcept`
   // declaration used by catching thunks (thunk.cpp).
   clang::FunctionDecl* cxa_current_primary_exception_decl_ = nullptr;
+
+  // The cached `__carbon_boundary_write` declaration (POSIX `write(2)` under a
+  // distinct identifier) used by the fenced thunks' boundary diagnostic
+  // (thunk.cpp).
+  clang::FunctionDecl* boundary_write_decl_ = nullptr;
 
   // Listener for Clang diagnostics while checking this Carbon context.
   std::unique_ptr<CppDiagnosticListener> diagnostic_listener_;

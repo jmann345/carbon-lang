@@ -113,6 +113,64 @@ static auto GetOrCreateCxaCurrentPrimaryExceptionDecl(
   return function_decl;
 }
 
+// Returns the synthesized declaration of POSIX `write(2)` used by the fenced
+// thunks' boundary diagnostic (docs/design/error_handling.md, "The fenced
+// boundary"; fork/eh/plan.md D-EH-5, §1.B.8):
+//
+//   long __carbon_boundary_write(int, const void*, __SIZE_TYPE__)
+//       asm("<user label prefix>write");
+//
+// The identifier differs from any user-visible `write`, so a header's own
+// `<unistd.h>` declaration (with its own `ssize_t` spelling) can never surface
+// a redeclaration diagnostic inside a thunk; the asm label names libc's symbol
+// and carries the target's user label prefix (`_` on Darwin, empty on ELF)
+// because a synthesized label is emitted literally on every target. `write`
+// is chosen over `printf` because `abort()` drops buffered stdout, and over a
+// Carbon runtime helper because no linkable Carbon runtime object exists.
+// Cached on `CppContext`.
+static auto GetOrCreateBoundaryWriteDecl(CppContext& cpp_context,
+                                         clang::Sema& sema,
+                                         clang::SourceLocation clang_loc)
+    -> clang::FunctionDecl* {
+  if (auto* decl = cpp_context.boundary_write_decl()) {
+    return decl;
+  }
+  clang::ASTContext& ast_context = sema.getASTContext();
+  clang::TranslationUnitDecl* tu_decl = ast_context.getTranslationUnitDecl();
+
+  clang::QualType param_types[] = {
+      ast_context.IntTy,
+      ast_context.getPointerType(ast_context.VoidTy.withConst()),
+      ast_context.getSizeType()};
+  auto ext_info = clang::FunctionProtoType::ExtProtoInfo();
+  ext_info.ExceptionSpec.Type = clang::EST_BasicNoexcept;
+  clang::QualType function_type =
+      ast_context.getFunctionType(ast_context.LongTy, param_types, ext_info);
+
+  clang::FunctionDecl* function_decl = clang::FunctionDecl::Create(
+      ast_context, tu_decl, clang_loc, clang_loc,
+      clang::DeclarationName(
+          &ast_context.Idents.get("__carbon_boundary_write")),
+      function_type, ast_context.getTrivialTypeSourceInfo(function_type),
+      clang::SC_Extern);
+  llvm::SmallVector<clang::ParmVarDecl*> params;
+  for (clang::QualType param_type : param_types) {
+    params.push_back(clang::ParmVarDecl::Create(
+        ast_context, function_decl, clang_loc, clang_loc, nullptr, param_type,
+        nullptr, clang::SC_None, nullptr));
+  }
+  function_decl->setParams(params);
+  tu_decl->addDecl(function_decl);
+
+  std::string label = ast_context.getTargetInfo().getUserLabelPrefix();
+  label += "write";
+  function_decl->addAttr(
+      clang::AsmLabelAttr::CreateImplicit(ast_context, label, clang_loc));
+
+  cpp_context.set_boundary_write_decl(function_decl);
+  return function_decl;
+}
+
 // Returns the GlobalDecl to use to represent the given function declaration.
 // TODO: Refactor with `Lower::CreateGlobalDecl`.
 static auto GetGlobalDecl(const clang::FunctionDecl* decl)
@@ -829,13 +887,75 @@ static auto BuildReturnValueStore(CppContext& cpp_context, clang::Sema& sema,
   return sema.ActOnExprStmt(placement_new, /*DiscardedValue=*/true);
 }
 
+// Wraps the fenced thunk's statement in the boundary-identifying diagnostic
+// (fork/eh/plan.md D-EH-5, SF-1):
+//
+//   try { <stmt> } catch (...) {
+//     __carbon_boundary_write(2, "<message>", <length>);
+//     throw;
+//   }
+//
+// The rethrow leaves the handler inside the still-`noexcept` thunk, so it
+// reaches the same terminate landing pad as before (B0's contract unchanged;
+// libc++abi's verbose terminate additionally names the exception type), and
+// the message names the C++ callee. The `CompoundStmt` wrappers are
+// load-bearing (`ActOnCXXTryBlock` casts its try block to `CompoundStmt`).
+static auto WrapInBoundaryDiagnostic(CppContext& cpp_context, clang::Sema& sema,
+                                     clang::SourceLocation clang_loc,
+                                     CalleeFunctionInfo callee_info,
+                                     clang::Stmt* stmt) -> clang::StmtResult {
+  clang::ASTContext& ast_context = sema.getASTContext();
+  clang::CompoundStmt* try_block = clang::CompoundStmt::Create(
+      ast_context, {stmt}, clang::FPOptionsOverride(), clang_loc, clang_loc);
+
+  std::string message = "carbon: C++ exception escaped into Carbon through `" +
+                        callee_info.decl->getQualifiedNameAsString() +
+                        "`; terminating\n";
+  auto* message_literal = clang::StringLiteral::Create(
+      ast_context, message, clang::StringLiteralKind::Ordinary,
+      /*Pascal=*/false,
+      ast_context.getStringLiteralArrayType(ast_context.CharTy, message.size()),
+      clang_loc);
+  clang::FunctionDecl* write_decl =
+      GetOrCreateBoundaryWriteDecl(cpp_context, sema, clang_loc);
+  clang::Expr* write_ref = sema.BuildDeclRefExpr(
+      write_decl, write_decl->getType(), clang::VK_PRValue, clang_loc);
+  clang::Expr* write_args[] = {
+      sema.ActOnIntegerConstant(clang_loc, 2).get(), message_literal,
+      sema.ActOnIntegerConstant(clang_loc, message.size()).get()};
+  clang::ExprResult write_call =
+      sema.BuildCallExpr(nullptr, write_ref, clang_loc, write_args, clang_loc);
+  clang::StmtResult write_stmt =
+      sema.ActOnExprStmt(write_call, /*DiscardedValue=*/true);
+  if (!write_stmt.isUsable()) {
+    return clang::StmtError();
+  }
+  clang::StmtResult rethrow_stmt =
+      sema.ActOnExprStmt(sema.BuildCXXThrow(clang_loc, /*Ex=*/nullptr,
+                                            /*IsThrownVarInScope=*/false),
+                         /*DiscardedValue=*/true);
+  if (!rethrow_stmt.isUsable()) {
+    return clang::StmtError();
+  }
+  clang::CompoundStmt* handler_block = clang::CompoundStmt::Create(
+      ast_context, {write_stmt.get(), rethrow_stmt.get()},
+      clang::FPOptionsOverride(), clang_loc, clang_loc);
+  clang::StmtResult catch_stmt =
+      sema.ActOnCXXCatchBlock(clang_loc, /*ExDecl=*/nullptr, handler_block);
+  if (!catch_stmt.isUsable()) {
+    return clang::StmtError();
+  }
+  return sema.ActOnCXXTryBlock(clang_loc, try_block, {catch_stmt.get()});
+}
+
 // Builds the thunk function body which calls the callee function using the call
-// args and returns the callee function return value. Returns nullptr on
-// failure.
+// args and returns the callee function return value. When `fence_required`,
+// the statement is wrapped in the boundary-identifying diagnostic. Returns
+// nullptr on failure.
 static auto BuildThunkBody(CppContext& cpp_context, clang::Sema& sema,
                            clang::SourceLocation clang_loc,
                            clang::FunctionDecl* thunk_function_decl,
-                           CalleeFunctionInfo callee_info)
+                           CalleeFunctionInfo callee_info, bool fence_required)
     -> clang::StmtResult {
   // TODO: Consider building a CompoundStmt holding our created statement to
   // make our result more closely resemble a real C++ function.
@@ -845,12 +965,16 @@ static auto BuildThunkBody(CppContext& cpp_context, clang::Sema& sema,
     return clang::StmtError();
   }
 
-  if (callee_info.has_simple_return_type) {
-    return sema.BuildReturnStmt(clang_loc, call.get());
+  clang::StmtResult stmt =
+      callee_info.has_simple_return_type
+          ? sema.BuildReturnStmt(clang_loc, call.get())
+          : BuildReturnValueStore(cpp_context, sema, clang_loc,
+                                  thunk_function_decl, callee_info, call.get());
+  if (!stmt.isUsable() || !fence_required) {
+    return stmt;
   }
-
-  return BuildReturnValueStore(cpp_context, sema, clang_loc,
-                               thunk_function_decl, callee_info, call.get());
+  return WrapInBoundaryDiagnostic(cpp_context, sema, clang_loc, callee_info,
+                                  stmt.get());
 }
 
 // Builds the body of a catching thunk (docs/design/error_handling.md,
@@ -978,9 +1102,9 @@ auto BuildCppThunk(Context& context, const SemIR::Function& callee_function)
   clang::Sema& sema = context.clang_sema();
   clang::Sema::ContextRAII context_raii(sema, thunk_function_decl);
   sema.ActOnStartOfFunctionDef(nullptr, thunk_function_decl);
-  clang::StmtResult body =
-      BuildThunkBody(*context.cpp_context(), sema, clang_loc,
-                     thunk_function_decl, callee_info);
+  clang::StmtResult body = BuildThunkBody(
+      *context.cpp_context(), sema, clang_loc, thunk_function_decl, callee_info,
+      IsCppThunkFenceRequired(context, callee_function_decl));
   sema.ActOnFinishFunctionBody(thunk_function_decl, body.get());
   if (body.isInvalid()) {
     return nullptr;

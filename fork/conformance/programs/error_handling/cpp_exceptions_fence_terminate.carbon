@@ -32,6 +32,11 @@
 // (invoke + terminate landing pad inside the thunk; nounwind Carbon
 // caller) and toolchain/check/testdata/interop/cpp/exceptions/
 // {fail_throw_in_none,catch_overrides_clang_arg}.carbon (mode semantics).
+// Since EH-B (fork/eh/plan.md D-EH-5, the SF-1 follow-up) the fenced thunk
+// also writes a boundary-identifying message to stderr before terminating
+// ("carbon: C++ exception escaped into Carbon through `AlwaysThrows`;
+// terminating"); the runner does not assert stderr, and that `write(2)` call
+// is pinned by the same lower golden.
 //
 // Inline-C++ block shape from interop/cpp_operator_import_arithmetic.carbon.
 

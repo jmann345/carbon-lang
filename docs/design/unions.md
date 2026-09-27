@@ -259,7 +259,7 @@ shape of an _imported_ C++ union is governed by C++'s own rules, as specified in
 > single-owner predicate, extended with a `CustomLayoutType` arm for nested
 > unions) plus a class-keyed check for a `Core.Copy` impl declared outside
 > package `Core` anywhere in the field's type; every offending field is
-> diagnosed `UnionFieldNotTriviallyCopyable`. Three field types the design
+> diagnosed `UnionFieldNotTriviallyCopyable`. Two field types the design
 > permits are conservatively rejected in 0.1, each a filed residue rather than
 > a silent narrowing: a field of `choice` type (the predicate defers choices to
 > the destroy machinery; residue "union fields of choice type") and a field of

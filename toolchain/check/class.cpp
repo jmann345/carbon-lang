@@ -689,6 +689,15 @@ static auto CheckCompleteUnionType(
   CARBON_CHECK(!class_info.adapt_id.has_value() &&
                !class_info.base_id.has_value() && vtable_contents.empty());
 
+  // This also assigns each field's element index, which `ClassElementAccess`
+  // and the lowered byte-offset access index by; it runs before any early
+  // return below so that no field is left with a `None` element index, even
+  // in a union that completes with the error witness.
+  llvm::SmallVector<SemIR::StructTypeField> struct_type_fields;
+  struct_type_fields.reserve(field_decls.size());
+  auto fields_id =
+      AddStructTypeFields(context, struct_type_fields, field_decls);
+
   // TODO: A union with its own parameters or inside a generic scope has a
   // layout that depends on its arguments; the only symbolic-layout recompute
   // today is the choice payload hook (`EvalConstantInst` for
@@ -699,13 +708,6 @@ static auto CheckCompleteUnionType(
     context.TODO(class_info.definition_id, "generic union");
     return SemIR::ErrorInst::InstId;
   }
-
-  // This also assigns each field's element index, which `ClassElementAccess`
-  // and the lowered byte-offset access index by.
-  llvm::SmallVector<SemIR::StructTypeField> struct_type_fields;
-  struct_type_fields.reserve(field_decls.size());
-  auto fields_id =
-      AddStructTypeFields(context, struct_type_fields, field_decls);
 
   if (field_decls.empty()) {
     CARBON_DIAGNOSTIC(UnionWithoutFields, Error,

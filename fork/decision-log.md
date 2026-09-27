@@ -2854,6 +2854,22 @@ upstream legalizing it flips one pin). Zero lower/ changes (struct_access
     prediction; the one runner-exposed defect was `val` being a reserved
     word in the lower golden and conformance program (renamed); gate and
     conformance green at the new floor 102 PASS / 0 / 28 SKIP over 130.
+    REVIEW (single implementation review per R29c, after both first
+    launches died): APPROVE-WITH-FIXES — one real bug, `MarkPatternUnused`
+    lacked a StructPattern case so `case unused {a: i32, _}` emitted a
+    false UnusedPatternNoBindings warning (fixed, pinned as
+    unused_struct_root); the pin's first spelling carried a dead `default`
+    after the irrefutable arm, which the W-078 machinery correctly
+    diagnosed — an authoring error caught by the hosted refill, not a
+    compiler defect. Review residue recorded with W-079: bind-pass shape
+    errors after coverage recording (the W-066 §1.8 carve-out class gains
+    struct shapes), names left unbound by a TODO'd subtree add rider
+    diagnostics on body use (unpinned in both lanes), no cross-file golden
+    exercises a body TuplePattern/StructPattern through import_ref (a miss
+    there would CARBON_FATAL loudly), and node_stack.h:227/:337's stale
+    "TuplePatterns store an InstBlockId" comments predate this slice.
+    Lesson worth a lint: `val` and 60 siblings are CARBON_KEYWORD_TOKENs
+    (token_kind.def) — testdata field/binding names must avoid them.
 
 ### Runner access revoked: the sparing-verification protocol (2026-09-26)
 

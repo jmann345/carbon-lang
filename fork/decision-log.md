@@ -3013,7 +3013,8 @@ amendment's text, nothing else) rather than by halting, and commit
 THE DEFERRAL REVIEW MISS. The first hosted autoupdate fill exposed one
 defect, fixed at the root in d96369b93: method bodies written directly in
 a union body were checked EAGERLY, before the union completed
-(`IncompleteTypeInFunctionParam` / `IncompleteTypeInMemberAccess`,
+(`IncompleteTypeInFunctionParam` / `IncompleteTypeInMemberAccess` with
+`ClassIncompleteWithinDefinition` notes,
 blanking lower/testdata/union/basic.carbon's `method` subfile), because
 the PARSER decides deferral — `ParsingInDeferredDefinitionScope`
 (parse/context.cpp) registers a `DeferredDefinition` only when the state
@@ -3038,9 +3039,14 @@ entry, the ledger, the gap-analysis row, the plan's Landed notes).
 VERIFICATION was hosted-only per R28: `Fork: hosted verification` in
 autoupdate → gate → conformance. First autoupdate run 36313187966 filled
 the 17 new goldens and surfaced the deferral defect above. Second
-autoupdate run, after d96369b93 and e54a7e1a7: <!-- VERIFY: numbers -->
-(run id and fixpoint result). Gate: <!-- VERIFY: numbers --> (run id).
-Conformance: <!-- VERIFY: numbers --> (expected delta on the post-W-012
+autoupdate run 36314113850, after d96369b93: the method/impl_member/lower
+subfiles refilled clean, the only other movement being converged location
+markers. A first gate (run 36315119109) failed on ONE non-converged line —
+the Clang snippet line number a `CppInteropParseError` echoes in
+fail_todo_export.carbon still reflected the previous fill's layout — so a
+third autoupdate converged it; gate of record: GATE_RUN_ID.
+Conformance run 36315125503 (scoreboard b17874390): **110 PASS / 0 FAIL /
+26 SKIP over 136, 45/56 bullets** — the predicted delta exactly (on the post-W-012
 base PASS +2 / SKIP −1 / total +1, that is 110 PASS / 0 FAIL / 26 SKIP over
 136, 45/56 bullets; on a post-EH-B base 114/0/25 over 139). `runner.py
 --self-test` clean (136 programs, 56 bullets) and the README program

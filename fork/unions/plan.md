@@ -1894,11 +1894,12 @@ next, after EH-B (§0.4, D-UN-7). Deltas from this plan, honestly:
         cpp/export.cpp, cpp/impl_lookup.cpp.
 -   **Verification (R28, hosted-only):** first autoupdate 36313187966
     (17 new goldens filled, the deferral defect surfaced). Second
-    autoupdate, after d96369b93 + e54a7e1a7, run id and fixpoint result:
-    `<!-- VERIFY: numbers -->`. Gate run id:
-    `<!-- VERIFY: numbers -->`. Conformance result, expected 110/0/26
-    over 136 on the post-W-012 base (§5.A):
-    `<!-- VERIFY: numbers -->`. Implementation review: one review,
+    autoupdate, after d96369b93, run 36314113850: refilled clean. A first
+    gate (run 36315119109) failed on one non-converged Clang snippet line
+    number in fail_todo_export.carbon (the previous fill's layout); a third
+    autoupdate converged it. Gate of record: GATE_RUN_ID. Conformance run
+    36315125503: 110/0/26 over 136, 45/56 bullets, exactly the §5.A delta
+    on the post-W-012 base. Implementation review: one review,
     APPROVE-WITH-FIXES (the doc count; `Field::index` assignment moved
     before the generic gate; discharge artifacts).
 -   **Residue ids allocated at discharge** (assuming EH-B takes

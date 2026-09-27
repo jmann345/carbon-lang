@@ -26,11 +26,15 @@ static auto HandleParenCondition(Context& context, NodeKind start_kind,
     // Expression parsing would treat the { as a struct, but instead assume it's
     // a code block and just emit an invalid parse.
     context.AddInvalidParse(*context.position());
-  } else if (context.PositionIs(Lex::TokenKind::Let) ||
-             context.PositionIs(Lex::TokenKind::Var)) {
-    // A pattern condition: `(let P = e)` / `(var P = e)`. `let` and `var`
-    // never begin an expression (`var` occurs only after `form(`), so a
-    // single-token peek is unambiguous (fork/design-sprint/if-let.md,
+  } else if (start_kind != NodeKind::MatchConditionStart &&
+             (context.PositionIs(Lex::TokenKind::Let) ||
+              context.PositionIs(Lex::TokenKind::Var))) {
+    // A pattern condition: `(let P = e)` / `(var P = e)`, for `if` and
+    // `while` only — `match (let ...)` has no meaning and its `MatchCondition`
+    // node carries no pattern prefix, so `match` falls through to the
+    // expression path and diagnoses `let` as an expected expression. `let`
+    // and `var` never begin an expression (`var` occurs only after `form(`),
+    // so a single-token peek is unambiguous (fork/design-sprint/if-let.md,
     // "Implementation realities").
     auto introducer = context.Consume();
     context.AddLeafNode(NodeKind::PatternConditionIntroducer, introducer);

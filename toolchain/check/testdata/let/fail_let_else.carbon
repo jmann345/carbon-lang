@@ -155,3 +155,19 @@ fn F(c: C) -> i32 {
   let n: C = c else { return 0; }
   return 1;
 }
+
+// --- fail_missing_initializer.carbon
+library "[[@TEST_NAME]]";
+
+choice OptInt {
+  Some(x: i32),
+  None
+}
+
+// `let P else {...}` without `= e`: the design's grammar requires the
+// initializer; diagnosed like a `let` without one, then the file aborts (the
+// pattern's tombstones were never armed), so output is truncated.
+fn F(o: OptInt) -> i32 {
+  let .Some(n: i32) else { return 0; }
+  return n;
+}

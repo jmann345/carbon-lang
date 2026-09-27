@@ -756,11 +756,6 @@ using LetElseIntroducer =
     LeafNode<NodeKind::LetElseIntroducer, Lex::TokenIndex>;
 using LetElse = LeafNode<NodeKind::LetElse, Lex::ElseTokenIndex>;
 
-// A `let`-`else` declaration: `let P = e else { <diverging block> }`. The
-// parser cannot tell statement `let` from file or class scope `let`, so the
-// node is admitted wherever a declaration is (`Decl` category, so `File`
-// and `ClassDefinition` extract it) and check rejects it outside a function
-// body; in a function body it is a statement.
 // The `= expr` part of a `let`-`else` declaration, grouped so `LetElseDecl`
 // stays within struct reflection's eight-field limit
 // (common/struct_reflection.h).
@@ -769,6 +764,11 @@ struct LetElseInit {
   AnyExprId initializer;
 };
 
+// A `let`-`else` declaration: `let P = e else { <diverging block> }`. The
+// parser cannot tell statement `let` from file or class scope `let`, so the
+// node is admitted wherever a declaration is (`Decl` category, so `File`
+// and `ClassDefinition` extract it) and check rejects it outside a function
+// body; in a function body it is a statement.
 struct LetElseDecl {
   static constexpr auto Kind = NodeKind::LetElseDecl.Define(
       {.category = NodeCategory::Statement | NodeCategory::Decl,
@@ -781,7 +781,9 @@ struct LetElseDecl {
   // it (`ReturnedNotAllowedOnLetElse`). Cf. `VariableDecl::returned`.
   std::optional<ReturnedModifierId> returned;
   AnyPatternId pattern;  // a VariablePattern for the `var` spelling
-  LetElseInit init;
+  // Absent for `let P else {...}`; check diagnoses the missing initializer
+  // (`ExpectedInitializerAfterLet`), like `LetDecl::initializer`.
+  std::optional<LetElseInit> init;
   LetElseId else_token;
   CodeBlockId else_block;
   Lex::TokenIndex token;  // the introducer token

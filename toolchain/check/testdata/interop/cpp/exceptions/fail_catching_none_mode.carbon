@@ -25,5 +25,12 @@ int may_throw_int();
 // thunk is ever selected: `?` sees a plain `i32` operand (fail_catching.carbon
 // holds the other arms; this one needs its own file-wide `EXTRA-ARGS`).
 fn F() -> Core.Result(i32, Cpp.Exception) {
+  // CHECK:STDERR: fail_none_mode.carbon:[[@LINE+7]]:45: error: operand of `?` does not implement `Core.Try` [QuestionOperandNotTry]
+  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Ok(Cpp.may_throw_int()?);
+  // CHECK:STDERR:                                             ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_none_mode.carbon:[[@LINE+4]]:45: note: type `i32` does not implement interface `Core.Try` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Ok(Cpp.may_throw_int()?);
+  // CHECK:STDERR:                                             ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return Core.Result(i32, Cpp.Exception).Ok(Cpp.may_throw_int()?);
 }

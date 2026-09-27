@@ -45,7 +45,7 @@ fn Call() -> i32 {
 // CHECK:STDOUT: define internal noundef i32 @_Z1fv.carbon_thunk.() #2 !dbg !22 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %call = call noundef i32 @_Z1fv(), !dbg !23
-// CHECK:STDOUT:   ret i32 %call, !dbg !24
+// CHECK:STDOUT:   ret i32 %call, !dbg !25
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
@@ -79,6 +79,7 @@ fn Call() -> i32 {
 // CHECK:STDOUT: !20 = !DILocation(line: 22, column: 10, scope: !19)
 // CHECK:STDOUT: !21 = !DILocation(line: 22, column: 3, scope: !19)
 // CHECK:STDOUT: !22 = distinct !DISubprogram(name: "f__carbon_thunk", linkageName: "_Z1fv.carbon_thunk.", scope: !3, file: !3, line: 18, type: !15, scopeLine: 18, flags: DIFlagPrototyped | DIFlagAllCallsDescribed, spFlags: DISPFlagLocalToUnit | DISPFlagDefinition | DISPFlagOptimized, unit: !0, keyInstructions: true)
-// CHECK:STDOUT: !23 = !DILocation(line: 18, column: 5, scope: !22, atomGroup: 1, atomRank: 2)
-// CHECK:STDOUT: !24 = !DILocation(line: 18, column: 5, scope: !22, atomGroup: 1, atomRank: 1)
+// CHECK:STDOUT: !23 = !DILocation(line: 18, column: 5, scope: !24, atomGroup: 1, atomRank: 2)
+// CHECK:STDOUT: !24 = distinct !DILexicalBlock(scope: !22, file: !3, line: 18, column: 5)
+// CHECK:STDOUT: !25 = !DILocation(line: 18, column: 5, scope: !24, atomGroup: 1, atomRank: 1)
 // CHECK:STDOUT:

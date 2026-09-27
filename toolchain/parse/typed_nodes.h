@@ -761,6 +761,14 @@ using LetElse = LeafNode<NodeKind::LetElse, Lex::ElseTokenIndex>;
 // node is admitted wherever a declaration is (`Decl` category, so `File`
 // and `ClassDefinition` extract it) and check rejects it outside a function
 // body; in a function body it is a statement.
+// The `= expr` part of a `let`-`else` declaration, grouped so `LetElseDecl`
+// stays within struct reflection's eight-field limit
+// (common/struct_reflection.h).
+struct LetElseInit {
+  NodeIdOneOf<LetInitializer, VariableInitializer> equals;
+  AnyExprId initializer;
+};
+
 struct LetElseDecl {
   static constexpr auto Kind = NodeKind::LetElseDecl.Define(
       {.category = NodeCategory::Statement | NodeCategory::Decl,
@@ -773,8 +781,7 @@ struct LetElseDecl {
   // it (`ReturnedNotAllowedOnLetElse`). Cf. `VariableDecl::returned`.
   std::optional<ReturnedModifierId> returned;
   AnyPatternId pattern;  // a VariablePattern for the `var` spelling
-  NodeIdOneOf<LetInitializer, VariableInitializer> equals;
-  AnyExprId initializer;
+  LetElseInit init;
   LetElseId else_token;
   CodeBlockId else_block;
   Lex::TokenIndex token;  // the introducer token

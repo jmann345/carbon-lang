@@ -30,4 +30,8 @@ auto HandleTypeAfterIntroducerAsNamedConstraint(Context& context) -> void {
                             StateKind::DeclOrDefinitionAsNamedConstraint);
 }
 
+auto HandleTypeAfterIntroducerAsUnion(Context& context) -> void {
+  HandleTypeAfterIntroducer(context, StateKind::DeclOrDefinitionAsUnion);
+}
+
 }  // namespace Carbon::Parse

@@ -411,6 +411,10 @@ CARBON_PARSE_STATE(DeclNameAndParamsAfterParams)
 // ^~~~~~~
 //   1. ObserveAfterIntroducer
 //
+// union ...
+// ^~~~~
+//   1. TypeAfterIntroducerAsUnion
+//
 // var ...        (variant is Regular)
 // ^~~
 //   1. VarAsRegular
@@ -422,7 +426,7 @@ CARBON_PARSE_STATE(DeclNameAndParamsAfterParams)
 // ??? ;
 // ^~~~~
 //   (state done)
-CARBON_PARSE_STATE_VARIANTS3(Decl, Class, Interface, Regular)
+CARBON_PARSE_STATE_VARIANTS4(Decl, Class, Interface, Regular, Union)
 
 // Handles processing of a declaration scope, which contains a sequence of
 // declarations.
@@ -435,10 +439,10 @@ CARBON_PARSE_STATE_VARIANTS3(Decl, Class, Interface, Regular)
 //
 //  ...
 // ^
-//   1. DeclAs(Class|Interface|Regular)
-//   2. DeclScopeLoopAs(Class|Interface|Regular)
+//   1. DeclAs(Class|Interface|Regular|Union)
+//   2. DeclScopeLoopAs(Class|Interface|Regular|Union)
 //
-CARBON_PARSE_STATE_VARIANTS3(DeclScopeLoop, Class, Interface, Regular)
+CARBON_PARSE_STATE_VARIANTS4(DeclScopeLoop, Class, Interface, Regular, Union)
 
 // Handles processing of an inline declaration.
 //
@@ -1560,35 +1564,35 @@ CARBON_PARSE_STATE(StatementWhileBlockFinish)
 
 // Handles parsing after the declaration scope of a type.
 //
-// class/impl/interface/constraint ... { ... }
-//                                           ^
+// class/impl/interface/constraint/union ... { ... }
+//                                                 ^
 //   (state done)
-CARBON_PARSE_STATE_VARIANTS4(DeclDefinitionFinish, Class, Impl, Interface,
-                             NamedConstraint)
+CARBON_PARSE_STATE_VARIANTS5(DeclDefinitionFinish, Class, Impl, Interface,
+                             NamedConstraint, Union)
 
 // Handles processing of a type after its introducer.
 //
-// class/interface/constraint ...
-//                           ^
+// class/interface/constraint/union ...
+//                                 ^
 //   1. DeclNameAndParams
-//   2. DeclOrDefinitionAs(Class|Interface|NamedConstraint)
-CARBON_PARSE_STATE_VARIANTS3(TypeAfterIntroducer, Class, Interface,
-                             NamedConstraint)
+//   2. DeclOrDefinitionAs(Class|Interface|NamedConstraint|Union)
+CARBON_PARSE_STATE_VARIANTS4(TypeAfterIntroducer, Class, Interface,
+                             NamedConstraint, Union)
 
 // Handles processing of a type after its optional parameters.
 //
-// class/impl/interface/constraint name ( ... ) {
-//                                              ^
-//   1. DeclScopeLoopAs(Class|Regular)
-//   2. DeclDefinitionFinishAs(Class|Impl|Interface|NamedConstraint)
+// class/impl/interface/constraint/union name ( ... ) {
+//                                                    ^
+//   1. DeclScopeLoopAs(Class|Regular|Union)
+//   2. DeclDefinitionFinishAs(Class|Impl|Interface|NamedConstraint|Union)
 //
-// class/impl/interface/constraint name ( ... ) ;
-//                                              ^
-// class/impl/interface/constraint name ( ... ) ???
-//                                              ^
+// class/impl/interface/constraint/union name ( ... ) ;
+//                                                    ^
+// class/impl/interface/constraint/union name ( ... ) ???
+//                                                    ^
 //   (state done)
-CARBON_PARSE_STATE_VARIANTS4(DeclOrDefinition, Class, Impl, Interface,
-                             NamedConstraint)
+CARBON_PARSE_STATE_VARIANTS5(DeclOrDefinition, Class, Impl, Interface,
+                             NamedConstraint, Union)
 
 // Handles processing of an `adapt T` declaration after the introducer.
 //

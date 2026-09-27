@@ -131,6 +131,7 @@
   "template"
   "then"
   "type"
+  ; "union"
   "var"
   "virtual"
   "where"

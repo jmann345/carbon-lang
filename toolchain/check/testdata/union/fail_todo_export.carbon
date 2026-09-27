@@ -36,7 +36,7 @@ inline Cpp '''
 // CHECK:STDERR: ^
 // CHECK:STDERR:
 // CHECK:STDERR: fail_todo_use_type.carbon:[[@LINE+4]]:9: error: no type named 'U' in namespace 'Carbon' [CppInteropParseError]
-// CHECK:STDERR:    33 | Carbon::U u;
+// CHECK:STDERR:    26 | Carbon::U u;
 // CHECK:STDERR:       | ~~~~~~~~^
 // CHECK:STDERR:
 Carbon::U u;
@@ -66,7 +66,7 @@ void G() {
   // CHECK:STDERR:           ^
   // CHECK:STDERR:
   // CHECK:STDERR: fail_todo_call_method.carbon:[[@LINE+4]]:11: error: no type named 'U' in namespace 'Carbon' [CppInteropParseError]
-  // CHECK:STDERR:    34 |   Carbon::U u;
+  // CHECK:STDERR:    27 |   Carbon::U u;
   // CHECK:STDERR:       |   ~~~~~~~~^
   // CHECK:STDERR:
   Carbon::U u;

@@ -15,8 +15,8 @@
 // desugar emits a single inst. (The former unit-break-type subfile here,
 // which pinned the SF-6 rejection of `Core.ControlFlow(i32, ())`, was the
 // W-070 bound; it flipped positive at fork/eh/plan.md D-EH-2 and now lives
-// in choice/unit_payload.carbon.) All run on the minimal `try` prelude, which has
-// no `Try` impls at all — so the pre-flight rejections demonstrably fire
+// in choice/unit_payload.carbon.) All run on the minimal `try` prelude, which
+// has no `Try` impls at all — so the pre-flight rejections demonstrably fire
 // before any impl lookup — and omits `EqWith`, so the desugar's
 // discriminant test is never reached. The shapes needing a Try-implementing
 // operand or a return type with a user `Core.Try` impl are in

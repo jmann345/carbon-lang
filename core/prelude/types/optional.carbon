@@ -58,13 +58,15 @@ impl forall [T: OptionalStorage] Optional(T) as Copy {
 // propagates absence as `()`, so there is no implicit bridge between
 // `Optional` and `Result` — an `Optional?` inside a `Result`-returning
 // function is a `()`-to-`E` conversion error. The signature is the design
-// sketch's ("The `Core.Try` interface") modulo the `OptionalStorage` bound
-// this placeholder class forces on `T`; the body dispatches through the
-// placeholder `HasValue()`/`Get()` API because `Optional` is not a choice
+// sketch's ("The `Core.Try` interface") modulo the bound: `OptionalStorage`
+// is what this placeholder class forces on `T`, and `Destroy` is required
+// because `Branch` moves a `T` payload into `ControlFlow` (the `ImplicitAs`
+// impls below need the same); the body dispatches through the placeholder
+// `HasValue()`/`Get()` API because `Optional` is not a choice
 // (fork/eh/plan.md D-EH-1) — the sketch's `match` form applies once an
 // approved `Optional` design makes it one, and is observationally the same
 // split.
-final impl forall [T: OptionalStorage] Optional(T) as Try
+final impl forall [T: Destroy & OptionalStorage] Optional(T) as Try
     where .ContinueType = T and .BreakType = () {
   fn Branch(self) -> ControlFlow(T, ()) {
     if (self.HasValue()) {

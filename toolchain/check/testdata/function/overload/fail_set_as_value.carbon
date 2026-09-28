@@ -23,6 +23,10 @@ library "[[@TEST_NAME]]";
 overload fn F(x: i32);
 overload fn F(b: bool);
 
+// CHECK:STDERR: fail_let.carbon:[[@LINE+4]]:32: error: overload set `F` can only be used as the callee of a call [OverloadSetNotCallee]
+// CHECK:STDERR: fn Use() { let unused g: i32 = F; }
+// CHECK:STDERR:                                ^
+// CHECK:STDERR:
 fn Use() { let unused g: i32 = F; }
 
 // --- fail_discard.carbon

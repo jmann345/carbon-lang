@@ -30,7 +30,7 @@ inline Cpp '''
 // CHECK:STDERR:                            ^
 // CHECK:STDERR:
 // CHECK:STDERR: fail_export.carbon:[[@LINE+4]]:28: error: no member named 'F' in namespace 'Carbon' [CppInteropParseError]
-// CHECK:STDERR:    10 | int Use() { return Carbon::F(true); }
+// CHECK:STDERR:    18 | int Use() { return Carbon::F(true); }
 // CHECK:STDERR:       |                            ^
 // CHECK:STDERR:
 int Use() { return Carbon::F(true); }

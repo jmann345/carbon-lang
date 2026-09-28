@@ -25,9 +25,21 @@ overload fn F(x: i32) -> i32;
 overload fn F(b: bool) -> i32;
 
 // --- fail_set.impl.carbon
+// CHECK:STDERR: fail_set.impl.carbon: error: semantics TODO: `overload set import` [SemanticsTodo]
+// CHECK:STDERR:
+// CHECK:STDERR: fail_set.impl.carbon: error: semantics TODO: `overload set import` [SemanticsTodo]
+// CHECK:STDERR:
 
 impl library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_set.impl.carbon:[[@LINE+8]]:13: error: duplicate name `F` being declared in the same scope [NameDeclDuplicate]
+// CHECK:STDERR: overload fn F(x: i32) -> i32 { return x; }
+// CHECK:STDERR:             ^
+// CHECK:STDERR: fail_set.impl.carbon:[[@LINE-5]]:1: in import [InImport]
+// CHECK:STDERR: set.carbon:4:1: note: name is previously declared here [NameDeclPrevious]
+// CHECK:STDERR: overload fn F(x: i32) -> i32;
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 overload fn F(x: i32) -> i32 { return x; }
 
 // --- local.carbon

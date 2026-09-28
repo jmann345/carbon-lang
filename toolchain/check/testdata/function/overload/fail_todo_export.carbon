@@ -25,6 +25,14 @@ overload fn F(unused x: i32) -> i32 { return 1; }
 overload fn F(unused b: bool) -> i32 { return 2; }
 
 inline Cpp '''
+// CHECK:STDERR: fail_export.carbon:[[@LINE+8]]:28: error: semantics TODO: `overload set export` [SemanticsTodo]
+// CHECK:STDERR: int Use() { return Carbon::F(true); }
+// CHECK:STDERR:                            ^
+// CHECK:STDERR:
+// CHECK:STDERR: fail_export.carbon:[[@LINE+4]]:28: error: no member named 'F' in namespace 'Carbon' [CppInteropParseError]
+// CHECK:STDERR:    10 | int Use() { return Carbon::F(true); }
+// CHECK:STDERR:       |                            ^
+// CHECK:STDERR:
 int Use() { return Carbon::F(true); }
 ''';
 

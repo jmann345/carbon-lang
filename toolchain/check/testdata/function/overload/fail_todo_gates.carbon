@@ -20,6 +20,10 @@
 
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_generic_member.carbon:[[@LINE+4]]:1: error: semantics TODO: ``overload fn` with generic parameters` [SemanticsTodo]
+// CHECK:STDERR: overload fn F[T: type](x: T);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 overload fn F[T: type](x: T);
 
 // --- fail_todo_generic_scope.carbon
@@ -27,6 +31,10 @@ overload fn F[T: type](x: T);
 library "[[@TEST_NAME]]";
 
 class Box(T: type) {
+  // CHECK:STDERR: fail_todo_generic_scope.carbon:[[@LINE+4]]:3: error: semantics TODO: ``overload fn` in a generic scope` [SemanticsTodo]
+  // CHECK:STDERR:   overload fn F(self);
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   overload fn F(self);
 }
 
@@ -34,18 +42,30 @@ class Box(T: type) {
 
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_ref_param.carbon:[[@LINE+4]]:15: error: semantics TODO: ``overload fn` with a non-value explicit parameter` [SemanticsTodo]
+// CHECK:STDERR: overload fn F(ref x: i32);
+// CHECK:STDERR:               ^~~~~~~~~~
+// CHECK:STDERR:
 overload fn F(ref x: i32);
 
 // --- fail_todo_extern.carbon
 
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_extern.carbon:[[@LINE+4]]:1: error: semantics TODO: ``extern overload fn`` [SemanticsTodo]
+// CHECK:STDERR: extern overload fn F(x: i32);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 extern overload fn F(x: i32);
 
 // --- fail_todo_entry_point.carbon
 
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_entry_point.carbon:[[@LINE+4]]:1: error: semantics TODO: ``overload` on the entry point` [SemanticsTodo]
+// CHECK:STDERR: overload fn Run() -> i32 { return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 overload fn Run() -> i32 { return 0; }
 
 // --- fail_todo_access.carbon
@@ -53,6 +73,10 @@ overload fn Run() -> i32 { return 0; }
 library "[[@TEST_NAME]]";
 
 overload fn F(x: i32);
+// CHECK:STDERR: fail_todo_access.carbon:[[@LINE+4]]:1: error: semantics TODO: ``overload fn` members with differing access` [SemanticsTodo]
+// CHECK:STDERR: private overload fn F(b: bool);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 private overload fn F(b: bool);
 
 // --- fail_todo_self_only.carbon
@@ -61,6 +85,10 @@ library "[[@TEST_NAME]]";
 
 class C {
   overload fn F(self, x: i32);
+  // CHECK:STDERR: fail_todo_self_only.carbon:[[@LINE+4]]:3: error: semantics TODO: ``overload fn` members distinguished only by `self`` [SemanticsTodo]
+  // CHECK:STDERR:   overload fn F(ref self, x: i32);
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   overload fn F(ref self, x: i32);
 }
 
@@ -69,6 +97,10 @@ class C {
 library "[[@TEST_NAME]]";
 
 interface I {
+  // CHECK:STDERR: fail_todo_interface.carbon:[[@LINE+4]]:3: error: semantics TODO: ``overload fn` in an interface` [SemanticsTodo]
+  // CHECK:STDERR:   overload fn M(self);
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   overload fn M(self);
 }
 
@@ -78,6 +110,10 @@ library "[[@TEST_NAME]]";
 
 class C {
   overload fn F(self, x: i32);
+  // CHECK:STDERR: fail_todo_mixed_self.carbon:[[@LINE+4]]:3: error: semantics TODO: ``overload fn` members that disagree on `self`` [SemanticsTodo]
+  // CHECK:STDERR:   overload fn F(b: bool);
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   overload fn F(b: bool);
 }
 
@@ -88,6 +124,10 @@ library "[[@TEST_NAME]]";
 overload fn F(unused x: i32) -> i32 { return 1; }
 overload fn F(unused b: bool) -> i32 { return 2; }
 
+// CHECK:STDERR: fail_todo_template_dependent.carbon:[[@LINE+4]]:47: error: semantics TODO: `overload resolution with template-dependent arguments` [SemanticsTodo]
+// CHECK:STDERR: fn T2(template T: type, x: T) -> i32 { return F(x); }
+// CHECK:STDERR:                                               ^~~~
+// CHECK:STDERR:
 fn T2(template T: type, x: T) -> i32 { return F(x); }
 
 // --- fail_todo_explicit_ref_receiver.carbon
@@ -101,6 +141,10 @@ class R {
 }
 
 // The same call through `r.Bump(1)` is the positive `method_set` shape.
+// CHECK:STDERR: fail_todo_explicit_ref_receiver.carbon:[[@LINE+4]]:16: error: semantics TODO: `explicit receiver for a `ref self`/`addr self` overload member` [SemanticsTodo]
+// CHECK:STDERR: fn Use(r: R) { R.Bump(r, 1); }
+// CHECK:STDERR:                ^~~~~~~~~~~~
+// CHECK:STDERR:
 fn Use(r: R) { R.Bump(r, 1); }
 
 // --- fail_todo_impl_body.carbon
@@ -113,6 +157,10 @@ interface I {
 
 class D {
   extend impl as I {
+    // CHECK:STDERR: fail_todo_impl_body.carbon:[[@LINE+4]]:5: error: semantics TODO: ``overload fn` in an `impl` body` [SemanticsTodo]
+    // CHECK:STDERR:     overload fn Get(unused self) -> i32 { return 1; }
+    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // CHECK:STDERR:
     overload fn Get(unused self) -> i32 { return 1; }
   }
 }

@@ -10,33 +10,34 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-09-27 (post-PR #43: UN-1 LANDED — native `union`
-declarations end to end (W-009): the `union` keyword and class-shaped
-body parse with a fourth `DeclContextKind`, a union as `SemIR::Class`
-with `is_union` over an all-offsets-zero `CustomLayoutType`, the D-UN-2
-field predicate (trivially destructible + no user `Core.Copy` impl
-outside package `Core`), designated init, byte-reinterpreting reads,
-the `UnformedInit` custom witness for `var u: U;`, memcpy copies, zero
-lowering code. Gap row 47 DESIGN-ONLY → PARTIAL; header 27 DONE / 21
-PARTIAL / 7 MISSING / 1 DESIGN-ONLY. NEW FLOOR 114 PASS / 0 / 25 SKIP
-over 139, 45/56 bullets. Three autoupdate rounds (one real defect: the
-parser's deferred-definition gate lacked the union states; one
-converged golden). Residue W-086..W-093. IN FLIGHT: UN-2 (W-015, union
-C++ interop: `is_union` on import, `TagTypeKind::Union` export,
-`GetStructTypeFields` over `CustomLayoutType`, by-value round trips) —
-implementer starting on claude/carbon-fork-0-1-un2 off this trunk.
-Overloading (W-024/W-025/W-026, `overload fn` closed sets, F-009) —
-plan rev 2 in ../carbon-overload (fork/overload/plan.md): two
-adversarial reviews folded, focused re-review SIGN-OFF-WITH-AMENDMENTS
-(explicit-receiver call shape; a generic-class program body), rev 2b
-fold in progress, then OV-1 implementation; the stranded design-docs
-branch's functions_overloading.md is PORTED by OV-1 (do not re-land
-it). Weekly cron ran 2026-09-28 14:15Z under the hosted-only protocol:
-the 631f8fb cut HOLDS a sixth week (templates_type_param still crashes on
-the 09.28 nightly, new lowering signature; 137 deferred commits, 157
-overlapping files — advancing the cut is now a workstream, see the
-decision log); next cron Monday 2026-10-05; the owner's machine is never
-used._
+_Last updated: 2026-09-28 (post-PR #44: UN-2 LANDED — union C++
+interop (W-015): imported unions carry `is_union` (designated init gated
+to C++ aggregates), Carbon unions export as `TagTypeKind::Union` with the
+offset-0 external layout (pinned by `static_assert(sizeof/alignof/
+__is_union)` in the embedded Clang), by-pointer and by-value crossings
+both ways. Gap row 47 PARTIAL → DONE; header 28 DONE / 20 PARTIAL / 7
+MISSING / 1 DESIGN-ONLY. NEW FLOOR 116 PASS / 0 / 25 SKIP over 141 (totals
+quoted from scoreboard.json — the EH-B/UN-1 records were corrected by one
+on 2026-09-28), 45/56 bullets. The weekly upstream check ran hosted-only:
+the 631f8fb cut HOLDS a sixth week (137 deferred commits; advancing it is
+now a workstream). IN FLIGHT: OV-1 (W-024, same-file `overload fn`
+closed sets, F-009) on claude/carbon-fork-0-1-overload in
+../carbon-overload — implemented, reviewed (APPROVE-WITH-FIXES, folded
+incl. the stored `overload_index` so imported members mangle
+correctly), four autoupdate rounds (one runtime-fatal mirror site,
+check/import.cpp `GetImportName`, found by the fill), discharge drafted
+(residue W-094..W-104), gate + conformance running (expected +2 PASS −1
+SKIP +1 total → 118/0/24 over 142, 46/56). Then OV-2/OV-3. Slices
+(W-055/W-056, SL-1 Core.Slice + heap allocation, SL-2 std::span mapping)
+— planner running in ../carbon-slices. Next cron Monday 2026-10-05; the
+owner's machine is never used._
+FORTY-FOUR PRs. Unions are closed out end to end: native declaration,
+layout by construction, and a C++ round trip that the embedded Clang
+itself asserts (`sizeof`, `alignof`, `__is_union`) — plus the first
+Carbon-side call through a return-address thunk for a Carbon-owned
+record, which the plan had mis-cited as precedented and the fill proved
+anyway. One design-fidelity hole caught by review (non-aggregate imported
+unions were initializable from Carbon) closed at the root._
 FORTY-THREE PRs. Unions exist natively: the design's write-safe,
 read-reinterpret union with C++-compatible layout by construction, its
 0.1 field rule made precise (prelude `Copy` impls are trusted; user
@@ -333,8 +334,8 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-114 PASS / 25 SKIP / 0 FAIL programs (139 total); **45/56 bullets
-green** (GitHub-hosted scoreboard at the PR #43 head, run 36318245113; verified from fork/conformance/out/scoreboard.json —
+116 PASS / 25 SKIP / 0 FAIL programs (141 total); **45/56 bullets
+green** (GitHub-hosted scoreboard at the PR #44 head, run 36447037687; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first
 error-handling flip, now 4 programs deep incl. the W72b threading
 arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79
@@ -342,7 +343,7 @@ at S3a → 80 at S3b → 81 at S3c → 83 at B1b
 (error_handling/control_flow_constructs flip +
 question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a
 → 88 F8b → 89 F8c → 90 F8d → 91 W72b → 92 W-067 → 93 W-068 → 95 W-069 → 96 multifile → 100 W-076 → 101 W-078 → 102 W-077 →
-106 EH-A → 108 W-012 → 112 EH-B → 114 UN-1. The scoreboard regenerates on GitHub-hosted runners only
+106 EH-A → 108 W-012 → 112 EH-B → 114 UN-1 → 116 UN-2. The scoreboard regenerates on GitHub-hosted runners only
 (`Fork: hosted verification`, mode `conformance`; R28).
 
 ### CI on jmann345/carbon-lang (GitHub-hosted only — R28)

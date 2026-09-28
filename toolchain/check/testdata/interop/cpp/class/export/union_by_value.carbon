@@ -40,3 +40,41 @@ fn F(w: Wide) -> i32 {
   return Cpp.SumLo(w);
   //@dump-sem-ir-end
 }
+
+// CHECK:STDOUT: --- by_value_param.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   %Wide: type = class_type @Wide [concrete]
+// CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
+// CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
+// CHECK:STDOUT:   %SumLo.cpp_overload_set.type: type = cpp_overload_set_type @SumLo.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %SumLo.cpp_overload_set.value: %SumLo.cpp_overload_set.type = cpp_overload_set_value @SumLo.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %ptr.567: type = ptr_type %Wide [concrete]
+// CHECK:STDOUT:   %SumLo__carbon_thunk.type: type = fn_type @SumLo__carbon_thunk [concrete]
+// CHECK:STDOUT:   %SumLo__carbon_thunk: %SumLo__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .SumLo = %SumLo.cpp_overload_set.value
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %SumLo.cpp_overload_set.value: %SumLo.cpp_overload_set.type = cpp_overload_set_value @SumLo.cpp_overload_set [concrete = constants.%SumLo.cpp_overload_set.value]
+// CHECK:STDOUT:   %SumLo__carbon_thunk.decl: %SumLo__carbon_thunk.type = fn_decl @SumLo__carbon_thunk [concrete = constants.%SumLo__carbon_thunk] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F(%w.param: %Wide) -> out %return.param: %i32 {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %SumLo.ref: %SumLo.cpp_overload_set.type = name_ref SumLo, imports.%SumLo.cpp_overload_set.value [concrete = constants.%SumLo.cpp_overload_set.value]
+// CHECK:STDOUT:   %w.ref: %Wide = name_ref w, %w
+// CHECK:STDOUT:   %.loc15: ref %Wide = value_as_ref %w.ref
+// CHECK:STDOUT:   %addr: %ptr.567 = addr_of %.loc15
+// CHECK:STDOUT:   %SumLo__carbon_thunk.call: init %i32 = call imports.%SumLo__carbon_thunk.decl(%addr)
+// CHECK:STDOUT:   return %SumLo__carbon_thunk.call
+// CHECK:STDOUT: }
+// CHECK:STDOUT:

@@ -31,6 +31,10 @@ library "[[@TEST_NAME]]";
 import Cpp library "pair.h";
 
 fn F() {
+  // CHECK:STDERR: fail_init_two_fields.carbon:[[@LINE+4]]:28: error: initializer for union `Cpp.Pair` must designate exactly one field; found 2 [UnionInitNotSingleField]
+  // CHECK:STDERR:   var unused u: Cpp.Pair = {.a = 1, .b = 2};
+  // CHECK:STDERR:                            ^~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   var unused u: Cpp.Pair = {.a = 1, .b = 2};
 }
 
@@ -41,6 +45,10 @@ library "[[@TEST_NAME]]";
 import Cpp library "pair.h";
 
 fn F() {
+  // CHECK:STDERR: fail_init_unknown_field.carbon:[[@LINE+4]]:28: error: union `Cpp.Pair` has no field named `nope` [UnionInitUnknownField]
+  // CHECK:STDERR:   var unused u: Cpp.Pair = {.nope = 1};
+  // CHECK:STDERR:                            ^~~~~~~~~~~
+  // CHECK:STDERR:
   var unused u: Cpp.Pair = {.nope = 1};
 }
 
@@ -63,5 +71,13 @@ library "[[@TEST_NAME]]";
 import Cpp library "nontrivial_member.h";
 
 fn F(a: Cpp.U) -> Cpp.U {
+  // CHECK:STDERR: fail_copy_nontrivial_member.carbon:[[@LINE+8]]:10: error: attempt to use a deleted function [CppInteropParseError]
+  // CHECK:STDERR:     7 |   return a;
+  // CHECK:STDERR:       |          ^
+  // CHECK:STDERR: fail_copy_nontrivial_member.carbon:[[@LINE-6]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./nontrivial_member.h:8:6: note: copy constructor of 'U' is implicitly deleted because variant field 'nt' has a non-trivial copy constructor [CppInteropParseNote]
+  // CHECK:STDERR:     8 |   NT nt;
+  // CHECK:STDERR:       |      ^
+  // CHECK:STDERR:
   return a;
 }

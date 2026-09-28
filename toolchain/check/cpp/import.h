@@ -159,6 +159,13 @@ auto GetAsClangVarDecl(Context& context, SemIR::InstId inst_id)
 
 // Maps a Clang name to a Carbon `NameId`.
 auto AddIdentifierName(Context& context, llvm::StringRef name) -> SemIR::NameId;
+
+// Returns whether `class_info` is a class imported from C++ whose definition is
+// a C++ aggregate, so that Carbon may initialize it from a struct literal
+// without bypassing a user-provided constructor. Returns false for a class not
+// imported from C++, for an import with no definition, and for a non-aggregate.
+auto IsImportedCppAggregate(Context& context, const SemIR::Class& class_info)
+    -> bool;
 }  // namespace Carbon::Check
 
 #endif  // CARBON_TOOLCHAIN_CHECK_CPP_IMPORT_H_

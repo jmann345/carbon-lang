@@ -184,11 +184,20 @@ auto EvalConstantInst(Context& context, SemIR::ClassInit inst)
   // lowering is an `llvm::ConstantStruct` over the class's LLVM type, which
   // for a union is a byte array (lower/type.cpp). Union initializers are
   // therefore always runtime stores (docs/design/unions.md, "Initialization
-  // and assignment"; fork/unions/plan.md D-UN-4).
+  // and assignment"; fork/unions/plan.md D-UN-4). The gate is the
+  // representation, not the flag alone: an empty imported C++ union keeps the
+  // empty `StructType` representation, which lowers to an empty struct and
+  // folds as before.
   if (auto class_type =
-          context.types().TryGetAs<SemIR::ClassType>(inst.type_id);
-      class_type && context.classes().Get(class_type->class_id).is_union) {
-    return ConstantEvalResult::NotConstant;
+          context.types().TryGetAs<SemIR::ClassType>(inst.type_id)) {
+    const auto& class_info = context.classes().Get(class_type->class_id);
+    auto object_repr_id =
+        class_info.GetObjectRepr(context.sem_ir(), class_type->specific_id);
+    if (class_info.is_union && object_repr_id.has_value() &&
+        object_repr_id != SemIR::ErrorInst::TypeId &&
+        context.types().Is<SemIR::CustomLayoutType>(object_repr_id)) {
+      return ConstantEvalResult::NotConstant;
+    }
   }
   // TODO: Add a `ClassValue` to represent a constant class object
   // representation instead of using a `StructValue`.

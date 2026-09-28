@@ -74,9 +74,15 @@ static auto ExportClassToCppInDeclContext(Context& context,
                class_info.name_id);
 
   auto clang_loc = GetCppLocation(context, loc_id);
+  // A Carbon `union` is a genuine C++ union (docs/design/unions.md, "Exporting
+  // Carbon unions to C++"): Carbon stays the layout authority through
+  // `ReadOnlyASTSource::layoutRecordType`, which supplies the union's size,
+  // alignment and an offset of zero for every field.
+  auto tag_kind = class_info.is_union ? clang::TagTypeKind::Union
+                                      : clang::TagTypeKind::Class;
   auto* record_decl = clang::CXXRecordDecl::Create(
-      context.ast_context(), clang::TagTypeKind::Class, decl_context, clang_loc,
-      clang_loc, identifier_info);
+      context.ast_context(), tag_kind, decl_context, clang_loc, clang_loc,
+      identifier_info);
   // If this is a member class, set its access.
   if (isa<clang::CXXRecordDecl>(decl_context)) {
     // TODO: Map Carbon access to C++ access.
@@ -144,14 +150,6 @@ auto ExportNameScopeToCpp(Context& context, SemIR::LocId loc_id,
     } else if (auto class_type =
                    context.insts().TryGetAs<SemIR::ClassType>(const_inst_id)) {
       const auto& class_info = context.classes().Get(class_type->class_id);
-      if (class_info.is_union) {
-        // TODO: Export unions as `TagTypeKind::Union` with Carbon-supplied
-        // layout (fork/unions/plan.md UN-2); until then a union's
-        // `CustomLayoutType` representation must not reach
-        // `GetStructTypeFields`.
-        context.TODO(loc_id, "union export");
-        return nullptr;
-      }
       decl_context = ExportClassToCppInDeclContext(
           context, decl_context, class_info, class_type->specific_id);
     } else {
@@ -280,15 +278,6 @@ auto ExportClassToCpp(Context& context, SemIR::ClassType class_type)
   if (const auto* clang_decl =
           context.clang_decls().Lookup(class_info.first_decl_id())) {
     return cast<clang::TagDecl>(clang_decl->decl());
-  }
-
-  if (class_info.is_union) {
-    // TODO: Export unions as `TagTypeKind::Union` with Carbon-supplied layout
-    // (fork/unions/plan.md UN-2); until then a union's `CustomLayoutType`
-    // representation must not reach `GetStructTypeFields`. Every caller of
-    // this function handles a null result.
-    context.TODO(loc_id, "union export");
-    return nullptr;
   }
 
   auto* decl_context =

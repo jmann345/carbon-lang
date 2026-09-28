@@ -66,6 +66,14 @@ auto Class::GetStructTypeFields(const File& sem_ir,
   if (object_repr_type_id == SemIR::ErrorInst::TypeId) {
     return {};
   }
+  // A native `union`'s object representation is a `CustomLayoutType` (every
+  // field at offset zero); it carries its fields the same way a `StructType`
+  // does.
+  if (auto custom_layout_type =
+          sem_ir.types().TryGetAs<SemIR::CustomLayoutType>(
+              object_repr_type_id)) {
+    return sem_ir.struct_type_fields().Get(custom_layout_type->fields_id);
+  }
   auto struct_type =
       sem_ir.types().GetAs<SemIR::StructType>(object_repr_type_id);
   return sem_ir.struct_type_fields().Get(struct_type.fields_id);

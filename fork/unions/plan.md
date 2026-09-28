@@ -1919,3 +1919,111 @@ next, after EH-B (§0.4, D-UN-7). Deltas from this plan, honestly:
     match skips non-`ClassType` selves such as `impl forall [T: type] T
     as Copy` declared outside `Core` — the price of rejecting the
     symbolic-self shortcut, recorded rather than papered over).
+
+## UN-2 landed notes (2026-09-28)
+
+UN-2 landed on claude/carbon-fork-0-1-un2, cut from trunk at c0c57285f
+(after EH-B #42 and UN-1 #43 had merged — the §0.4/D-UN-7 sequencing,
+met without a rebase): 23fc16583 (check/cpp + sem_ir), f0970f148
+(goldens + conformance), ad2367435 (docs), then the 2026-09-28 weekly
+trunk sync 46f9d2112, the hosted autoupdate fill 4f005ecdd and the
+implementation-review fixes 3f89d7caa. Ledger, gap-analysis row and
+decision-log entry ("UN-2: union C++ interop (2026-09-28)") are the
+discharge commit. Deltas from this plan, honestly:
+
+-   **The import subfiles are a NEW file, not appended to
+    class/import/union.carbon as §4.B wrote.** The landed file uses the
+    `convert` minimal prelude (`INCLUDE-FILE:
+    toolchain/testing/testdata/min_prelude/convert.carbon`, `as` and copy
+    parts only), which lacks `Core.Destroy`, `Core.Optional` and the
+    `IntLiteral` → `i32` conversion that `var u: Cpp.Pair = {.a = 1}`
+    and the by-value calls need under the full prelude. So the positives
+    are check/interop/cpp/class/import/union_init.carbon
+    (designated_init, empty_init, copy, by_value) and the negatives are
+    fail_union_init.carbon (fail_init_two_fields, fail_init_unknown_field,
+    fail_copy_nontrivial_member, and the review's fail_init_non_aggregate)
+    — fail_ subfiles never share a positive file, per the fork golden
+    rule. The by-value probe `SumLo(Carbon::Wide)` is its own file,
+    export/union_by_value.carbon, so a `fail_` rename would not have
+    touched the positives; it was not needed.
+-   **§4.B's precedent citation for `MakeWide` was WRONG.**
+    function/export/generic.carbon:41-46 defines `Carbon::B G()` inside
+    the inline C++ block, and nothing in that file calls it from Carbon
+    (`grep -n 'Cpp\.G' generic.carbon` is empty; the only `Cpp.` hits are
+    the namespace import). `Cpp.MakeWide(1)` (check/export/union.carbon;
+    conformance union_cpp_export) is therefore the first Carbon-side call
+    through a return-address thunk for a Carbon-owned record. The fill
+    passed it (a `MakeWide__carbon_thunk` declaration and an ordinary
+    call), so nothing was restructured and no residue is filed — but the
+    claim is recorded because a failure would have been misread as a
+    union defect.
+-   **`[4 x i8]`, not `[8 x i8]`, for the lower import golden.** §4.B's
+    "`alloca [8 x i8]`" for lower/interop/cpp/class/import/union_init.carbon
+    belongs to the conformance program's three-member `Pair` (`int a;
+    int b; int* p;`); the golden's `Pair` is `{int a; int b;}`, 4 bytes,
+    so the fill shows `alloca [4 x i8], align 4` and offset-zero GEPs
+    over `[4 x i8]`. The exported `Wide` is `[8 x i8]` as planned.
+-   **The aggregate gate (review MAJOR, 3f89d7caa).** As landed in
+    23fc16583, `is_union` on import let every imported union take the
+    `ConvertStructToUnion` arm, so a union with a user-provided
+    constructor (`union U { U() : a(0) {} int a; float f; };`) was
+    designated-initializable from Carbon — contradicting unions.md's
+    "Carbon code is never _more_ permitted than C++ code with such a
+    union" (:555-558) while the landed `{}` path admits aggregates only.
+    §1.B.1's "identically to native unions" was read too literally: the
+    design's identity is about the conversion, not about which unions
+    admit it. Fixed at the root: `IsImportedCppAggregate`
+    (check/cpp/import.{h,cpp}: `clang_decls().Lookup` of the first
+    declaration, `getDefinition()`, `isAggregate()`) gates the arm for
+    cpp-scope classes (convert.cpp:1005-1016); a non-aggregate falls
+    through to the `Builtin conversion does not apply` bailout and the
+    ordinary `ConversionFailure`. Two MINORs in the same commit: the
+    `ClassInit` fold suppression keys on a `CustomLayoutType` repr, not
+    `is_union` alone (the empty imported union's `StructType{}`
+    initializer keeps folding); import.cpp says `is_union` is set on
+    definition import only.
+-   **`static_method` subfile added** to export/union.carbon
+    (`Carbon::Wide::Zero()`, the union as a C++ name scope) beyond §4.B's
+    single `exported` subfile — it pins the `ExportNameScopeToCpp` path
+    whose UN-1 guard was deleted.
+-   **§8.4 reconciliation greps, as actually run at 3f89d7caa:**
+    -   `grep -rn 'union export' toolchain` → empty. As predicted (both
+        guards and fail_todo_export.carbon gone).
+    -   `grep -rn 'Builtin conversion does not apply'
+        toolchain/check/convert.cpp` → one hit, :1020 (the non-union
+        imported-class bailout, now also the non-aggregate union's
+        landing). As predicted; the line moved from :1009 with the gate.
+    -   `git diff origin/trunk...HEAD --diff-filter=M --
+        toolchain/check/testdata toolchain/lower/testdata
+        toolchain/parse/testdata` → empty. §6.B's "existing goldens that
+        move: NONE" held (UN-1's one raw_sem_ir move is already on
+        trunk).
+    -   `grep -rn 'generic union' toolchain` → unchanged from UN-1 (the
+        one TODO site check/class.cpp:708, its comments and golden).
+    -   `grep -rnE 'Carbon::[A-Z][A-Za-z]* [a-z_]*[,)]'
+        toolchain/check/testdata/interop/cpp` minus the union goldens →
+        still empty: `SumLo` remains the only by-value-parameter crossing
+        of an exported Carbon record in the tree.
+-   **Verification (R28, hosted-only):** autoupdate run 36438032097
+    filled the six new goldens (4f005ecdd) with zero pre-existing goldens
+    moved; the R-11 arbiter (`static_assert(__is_union/sizeof/alignof)`)
+    and the by-value probe both PASSED, so D-UN-8's contingency and rev B
+    F-5's drop rule were not exercised. Second autoupdate after
+    3f89d7caa: run 36445060391, success (refill of
+    fail_init_non_aggregate and empty_init). Gate run
+    36447075548 green (a first gate, 36440202472, failed on one
+    unconverged Clang snippet line number). Conformance run 36447037687:
+    116/0/25 over 141, 45/56 bullets — the expected delta (the plan's
+    "over 142" assumed a 140 base; the base was 139)
+    (the §5.B delta PASS +2 / total +2 on UN-1's post-EH-B base 114/0/25
+    over 139; the unions bullet was already PASS at UN-1, so the bullet
+    count is unchanged). Implementation review: one review,
+    APPROVE-WITH-FIXES (the aggregate gate; the repr-keyed fold
+    suppression; the `is_union` comment).
+-   **Residue: none new.** Every §8.5 item was filed at UN-1
+    (W-086..W-093); the conditional "exported union passed by value into
+    C++" did not arise. W-087 (union fields of imported C++ type) is NOT
+    lifted: `IsImportedCppAggregate` serves the initialization gate only,
+    and the field predicate's cpp-scope arm is still the separate review.
+    §0.2 items 5-8 are recorded verbatim in W-015's notes; item 9 in
+    W-007's.

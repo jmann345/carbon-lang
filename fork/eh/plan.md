@@ -1885,7 +1885,7 @@ now import.cpp:2114.
     un-SKIP is real in the tree (`grep -rl '^// SKIP' fork/conformance/programs`
     drops from 28 files on origin/trunk to 27, none under error_handling/), and
     the three new programs plus the differential's `.diff.cpp` are present.
-    Numbers: 112 PASS / 0 FAIL / 26 SKIP over 139, 44/56 bullets, run 36315999330; gate run
+    Numbers: 112 PASS / 0 FAIL / 26 SKIP over 138, 44/56 bullets, run 36315999330; gate run
     36315995464 green (§5.B's floor 109/0/27 over 136 was stated
     before W-012 added one program to trunk).
 

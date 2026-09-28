@@ -34,7 +34,7 @@ syn keyword carbonFunctionDeclaration fn
 syn keyword carbonClassDeclaration class  nextgroup=carbonNominalType skipwhite
 syn keyword carbonClassDeclarationMod base abstract final
 syn keyword carbonClassMethodDeclaration fn destructor
-syn keyword carbonClassMethodDeclarationMod private virtual abstract protected impl
+syn keyword carbonClassMethodDeclarationMod private virtual abstract protected impl overload
 syn keyword carbonAliasDeclaration alias nextgroup=carbonNominalType skipwhite
 syn keyword carbonInterfaceDeclaration interface nextgroup=carbonNominalType skipwhite
 syn keyword carbonChoiceDeclaration choice nextgroup=carbonNominalType skipwhite

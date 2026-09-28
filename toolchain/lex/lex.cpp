@@ -1963,6 +1963,7 @@ static auto CollectMismatchedBracketTokens(const TokenizedBuffer& buffer)
       case TokenKind::Inline:
       case TokenKind::MustEval:
       case TokenKind::Observe:
+      case TokenKind::Overload:
       case TokenKind::Override:
       case TokenKind::Private:
       case TokenKind::Protected:

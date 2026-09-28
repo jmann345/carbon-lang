@@ -21,6 +21,16 @@ library "[[@TEST_NAME]]";
 overload fn F(x: i32);
 overload fn F(b: bool);
 
+// CHECK:STDERR: fail_no_candidate.carbon:[[@LINE+10]]:12: error: no member of overload set `F` accepts this call [OverloadNoMatch]
+// CHECK:STDERR: fn Use() { F(1.5); }
+// CHECK:STDERR:            ^~~~~~
+// CHECK:STDERR: fail_no_candidate.carbon:[[@LINE-6]]:1: note: candidate has a parameter its argument cannot implicitly convert to [OverloadCandidateRejected]
+// CHECK:STDERR: overload fn F(x: i32);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_no_candidate.carbon:[[@LINE-8]]:1: note: candidate has a parameter its argument cannot implicitly convert to [OverloadCandidateRejected]
+// CHECK:STDERR: overload fn F(b: bool);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Use() { F(1.5); }
 
 // --- fail_arity.carbon
@@ -30,6 +40,16 @@ library "[[@TEST_NAME]]";
 overload fn F(x: i32);
 overload fn F(b: bool);
 
+// CHECK:STDERR: fail_arity.carbon:[[@LINE+10]]:12: error: no member of overload set `F` accepts this call [OverloadNoMatch]
+// CHECK:STDERR: fn Use() { F(1, 2); }
+// CHECK:STDERR:            ^~~~~~~
+// CHECK:STDERR: fail_arity.carbon:[[@LINE-6]]:1: note: candidate takes a different number of arguments [OverloadCandidateRejected]
+// CHECK:STDERR: overload fn F(x: i32);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_arity.carbon:[[@LINE-8]]:1: note: candidate takes a different number of arguments [OverloadCandidateRejected]
+// CHECK:STDERR: overload fn F(b: bool);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Use() { F(1, 2); }
 
 // --- fail_error_arg.carbon
@@ -40,15 +60,47 @@ overload fn F(x: i32);
 overload fn F(b: bool);
 
 // An erroneous argument is diagnosed where it arises; the call stays silent.
+// CHECK:STDERR: fail_error_arg.carbon:[[@LINE+14]]:14: error: name `undeclared` not found [NameNotFound]
+// CHECK:STDERR: fn Use() { F(undeclared); }
+// CHECK:STDERR:              ^~~~~~~~~~
+// CHECK:STDERR:
+// CHECK:STDERR: fail_error_arg.carbon:[[@LINE+10]]:12: error: no member of overload set `F` accepts this call [OverloadNoMatch]
+// CHECK:STDERR: fn Use() { F(undeclared); }
+// CHECK:STDERR:            ^~~~~~~~~~~~~
+// CHECK:STDERR: fail_error_arg.carbon:[[@LINE-11]]:1: note: candidate has a parameter its argument cannot implicitly convert to [OverloadCandidateRejected]
+// CHECK:STDERR: overload fn F(x: i32);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_error_arg.carbon:[[@LINE-13]]:1: note: candidate has a parameter its argument cannot implicitly convert to [OverloadCandidateRejected]
+// CHECK:STDERR: overload fn F(b: bool);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Use() { F(undeclared); }
 
 // --- fail_call_from_generic_no_match.carbon
 
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_call_from_generic_no_match.carbon:[[@LINE+4]]:15: warning: binding `x` unused [UnusedBinding]
+// CHECK:STDERR: overload fn F(x: i32) -> i32 { return 1; }
+// CHECK:STDERR:               ^~~~~~
+// CHECK:STDERR:
 overload fn F(x: i32) -> i32 { return 1; }
+// CHECK:STDERR: fail_call_from_generic_no_match.carbon:[[@LINE+4]]:15: warning: binding `b` unused [UnusedBinding]
+// CHECK:STDERR: overload fn F(b: bool) -> i32 { return 2; }
+// CHECK:STDERR:               ^~~~~~~
+// CHECK:STDERR:
 overload fn F(b: bool) -> i32 { return 2; }
 
 // An unconstrained `T` has no `ImplicitAs` impl to any parameter type, so the
 // call is diagnosed once, at the definition.
+// CHECK:STDERR: fail_call_from_generic_no_match.carbon:[[@LINE+10]]:39: error: no member of overload set `F` accepts this call [OverloadNoMatch]
+// CHECK:STDERR: fn Gen[T: type](x: T) -> i32 { return F(x); }
+// CHECK:STDERR:                                       ^~~~
+// CHECK:STDERR: fail_call_from_generic_no_match.carbon:[[@LINE-12]]:1: note: candidate has a parameter its argument cannot implicitly convert to [OverloadCandidateRejected]
+// CHECK:STDERR: overload fn F(x: i32) -> i32 { return 1; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_call_from_generic_no_match.carbon:[[@LINE-10]]:1: note: candidate has a parameter its argument cannot implicitly convert to [OverloadCandidateRejected]
+// CHECK:STDERR: overload fn F(b: bool) -> i32 { return 2; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Gen[T: type](x: T) -> i32 { return F(x); }

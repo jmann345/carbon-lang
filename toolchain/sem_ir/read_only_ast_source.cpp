@@ -17,6 +17,10 @@ static auto CalculateCppFieldOffsets(
   auto class_info = sem_ir.classes().Get(class_type.class_id);
   const auto& class_scope = sem_ir.name_scopes().Get(class_info.scope_id);
 
+  // Every field of a `union` is at offset zero; the layout is not advanced
+  // between fields (docs/design/unions.md, "Layout"). The record's size and
+  // alignment come from `GetCompleteTypeInfo` in `layoutRecordType`, which
+  // for a union reads the `CustomLayoutType` block.
   auto class_layout = SemIR::ObjectLayout::Empty();
   for (const auto& struct_field :
        class_info.GetStructTypeFields(sem_ir, class_type.specific_id)) {
@@ -39,10 +43,15 @@ static auto CalculateCppFieldOffsets(
 
       auto* cpp_field_decl = cast<clang::FieldDecl>(clang_decl->decl());
       field_offsets.insert(
-          {cpp_field_decl, class_layout.FieldOffset(field_layout).bits()});
+          {cpp_field_decl,
+           class_info.is_union
+               ? 0
+               : class_layout.FieldOffset(field_layout).bits()});
     }
 
-    class_layout.AppendField(field_layout);
+    if (!class_info.is_union) {
+      class_layout.AppendField(field_layout);
+    }
   }
 
   return true;

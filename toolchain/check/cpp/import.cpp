@@ -949,6 +949,13 @@ static auto BuildClassDefinition(Context& context,
 
   class_info.inheritance_kind = GetInheritanceKind(clang_def);
 
+  // An imported C++ union is a Carbon union (docs/design/unions.md, "Importing
+  // C++ unions"): the flag routes a struct literal to the designated
+  // single-field initialization of `ConvertStructToUnion`. Its copy stays on
+  // the C++ copy-constructor path (`LookupCppImpl`), so Clang's deletions for a
+  // union with a non-trivial member are preserved.
+  class_info.is_union = clang_def->isUnion();
+
   class_info.is_dynamic = clang_def->isDynamicClass();
 
   // Compute the class's object representation.

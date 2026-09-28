@@ -2945,14 +2945,15 @@ the six new goldens (fill 4f005ecdd); ZERO existing goldens moved, as
 §6.B predicted (`git diff origin/trunk...HEAD --diff-filter=M` over the
 check/lower/parse testdata is empty), and both probes — R-11's layout
 `static_assert`s and the by-value `SumLo` — PASSED. Second autoupdate,
-after the review fix 3f89d7caa: run <!-- VERIFY: numbers --> (the refill
+after the review fix 3f89d7caa (rebased as 0ec762ad2): run 36445060391, success (the refill
 of `fail_init_non_aggregate` and `empty_init`; predicted: the
 non_aggregate_init.carbon pair — `ConversionFailure` plus the
 `MissingImplInMemberAccessInContext` note — and `class_init () [concrete
-= constants.%Bar.val]`). Gate run <!-- VERIFY: numbers -->, expected
-green. Conformance run <!-- VERIFY: numbers --> (scoreboard
-<!-- VERIFY: numbers -->): **<!-- VERIFY: numbers --> PASS / 0 FAIL / 25
-SKIP over 142, 45/56 bullets** — expected 116/0/25 over 142, the §5.B
+= constants.%Bar.val]`). Gate run 36447075548, green (a first gate,
+36440202472, failed only on a not-yet-converged Clang snippet line number
+in fail_union_init.carbon, converged by the refill). Conformance run
+36447037687 (scoreboard
+6e6e4c7a9): **116 PASS / 0 FAIL / 25 SKIP over 141, 45/56 bullets** — the §5.B delta exactly (the plan wrote "over 142" from a miscounted 140 base; the trunk base was 139), the §5.B
 delta PASS +2 / total +2 on UN-1's post-EH-B base of 114/0/25 over 140;
 bullets stay 45/56 because the unions bullet was already PASS at UN-1
 (fork/conformance/out/scoreboard.json at 06557fb21: `status: PASS`,

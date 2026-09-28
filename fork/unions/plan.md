@@ -2009,10 +2009,12 @@ discharge commit. Deltas from this plan, honestly:
     moved; the R-11 arbiter (`static_assert(__is_union/sizeof/alignof)`)
     and the by-value probe both PASSED, so D-UN-8's contingency and rev B
     F-5's drop rule were not exercised. Second autoupdate after
-    3f89d7caa: run <!-- VERIFY: numbers --> (refill of
+    3f89d7caa: run 36445060391, success (refill of
     fail_init_non_aggregate and empty_init). Gate run
-    <!-- VERIFY: numbers -->. Conformance run <!-- VERIFY: numbers -->:
-    <!-- VERIFY: numbers --> — expected 116/0/25 over 142, 45/56 bullets
+    36447075548 green (a first gate, 36440202472, failed on one
+    unconverged Clang snippet line number). Conformance run 36447037687:
+    116/0/25 over 141, 45/56 bullets — the expected delta (the plan's
+    "over 142" assumed a 140 base; the base was 139)
     (the §5.B delta PASS +2 / total +2 on UN-1's post-EH-B base 114/0/25
     over 140; the unions bullet was already PASS at UN-1, so the bullet
     count is unchanged). Implementation review: one review,

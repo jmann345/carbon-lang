@@ -10,27 +10,36 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-09-28 (post-PR #44: UN-2 LANDED — union C++
-interop (W-015): imported unions carry `is_union` (designated init gated
-to C++ aggregates), Carbon unions export as `TagTypeKind::Union` with the
-offset-0 external layout (pinned by `static_assert(sizeof/alignof/
-__is_union)` in the embedded Clang), by-pointer and by-value crossings
-both ways. Gap row 47 PARTIAL → DONE; header 28 DONE / 20 PARTIAL / 7
-MISSING / 1 DESIGN-ONLY. NEW FLOOR 116 PASS / 0 / 25 SKIP over 141 (totals
-quoted from scoreboard.json — the EH-B/UN-1 records were corrected by one
-on 2026-09-28), 45/56 bullets. The weekly upstream check ran hosted-only:
-the 631f8fb cut HOLDS a sixth week (137 deferred commits; advancing it is
-now a workstream). IN FLIGHT: OV-1 (W-024, same-file `overload fn`
-closed sets, F-009) on claude/carbon-fork-0-1-overload in
-../carbon-overload — implemented, reviewed (APPROVE-WITH-FIXES, folded
-incl. the stored `overload_index` so imported members mangle
-correctly), four autoupdate rounds (one runtime-fatal mirror site,
-check/import.cpp `GetImportName`, found by the fill), discharge drafted
-(residue W-094..W-104), gate + conformance running (expected +2 PASS −1
-SKIP +1 total → 118/0/24 over 142, 46/56). Then OV-2/OV-3. Slices
-(W-055/W-056, SL-1 Core.Slice + heap allocation, SL-2 std::span mapping)
-— planner running in ../carbon-slices. Next cron Monday 2026-10-05; the
-owner's machine is never used._
+_Last updated: 2026-09-28 (post-PR #45: OV-1 LANDED — Carbon-native
+function overloading as marked, closed, same-file `overload fn` sets
+(W-024, F-009 Option A): an `OverloadSet` SemIR entity, declaration-order
+first-match resolution by probing each member inside a discard scope,
+`:overload<N>` mangling keyed on an index stored on the `Function`
+(mirrored on import, so an imported generic's specific links against the
+defining library), thirteen loud 0.1 gates, the design page ported from
+the stranded branch. Gap row 57 MISSING → PARTIAL; header 28 DONE / 21
+PARTIAL / 6 MISSING / 1 DESIGN-ONLY. NEW FLOOR 118 PASS / 0 / 24 SKIP
+over 142 (quoted from scoreboard.json, run 36455269810), 46/56 bullets.
+IN FLIGHT: OV-2 (W-025, set import + generic members + sets in generic
+scopes + `extern` members + the api-member missing-definition check) on
+claude/carbon-fork-0-1-ov2 in ../carbon-ov2 — implemented (three
+commits), implementation review and first hosted autoupdate running
+(expected +3 PASS / +3 total → 121/0/24 over 145, 46/56). Then OV-3
+(export). Slices (W-055/W-056): plan drafted, two adversarial reviews
+both APPROVE-WITH-AMENDMENTS (Buf+UnformedInit would free garbage; the
+heap.allocate lowering must unwrap the MaybeUnformed adapter; a second
+exhaustive RecognizedTypeInfo switch; a macOS `ULong64 as As(i64)` hole;
+DI-line churn between SL-1 and SL-2), fold to rev 2 running in
+../carbon-slices. Next cron Monday 2026-10-05; the owner's machine is
+never used._
+FORTY-FIVE PRs. Overloading exists in Carbon proper: the design's
+marked, closed sets with first-match resolution, landed with the loop's
+one real invariant (every probe exit restores block, region and cleanup
+depth under CHECK) and with the one mirror site no review caught — the
+export-name switch — found by the hosted fill as a runtime fatal, exactly
+where a compile probe is blind. The imported-member mangling collapse was
+first gated, then its pin filled EMPTY and proved the gate unreachable,
+so the gate went and the root fix (the stored index) landed instead._
 FORTY-FOUR PRs. Unions are closed out end to end: native declaration,
 layout by construction, and a C++ round trip that the embedded Clang
 itself asserts (`sizeof`, `alignof`, `__is_union`) — plus the first
@@ -334,8 +343,8 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-116 PASS / 25 SKIP / 0 FAIL programs (141 total); **45/56 bullets
-green** (GitHub-hosted scoreboard at the PR #44 head, run 36447037687; verified from fork/conformance/out/scoreboard.json —
+118 PASS / 24 SKIP / 0 FAIL programs (142 total); **46/56 bullets
+green** (GitHub-hosted scoreboard at the PR #45 merged head, run 36455269810; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first
 error-handling flip, now 4 programs deep incl. the W72b threading
 arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79
@@ -343,7 +352,7 @@ at S3a → 80 at S3b → 81 at S3c → 83 at B1b
 (error_handling/control_flow_constructs flip +
 question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a
 → 88 F8b → 89 F8c → 90 F8d → 91 W72b → 92 W-067 → 93 W-068 → 95 W-069 → 96 multifile → 100 W-076 → 101 W-078 → 102 W-077 →
-106 EH-A → 108 W-012 → 112 EH-B → 114 UN-1 → 116 UN-2. The scoreboard regenerates on GitHub-hosted runners only
+106 EH-A → 108 W-012 → 112 EH-B → 114 UN-1 → 116 UN-2 → 118 OV-1. The scoreboard regenerates on GitHub-hosted runners only
 (`Fork: hosted verification`, mode `conformance`; R28).
 
 ### CI on jmann345/carbon-lang (GitHub-hosted only — R28)

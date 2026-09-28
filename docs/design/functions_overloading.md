@@ -48,13 +48,16 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 ## Overview
 
 > **Fork amendment 2026-09-27 (F-009; ported from the stranded design-docs
-> branch 481e08c24 by workstream OV-1, fork/overload/plan.md D-OV-8).**
-> Toolchain status: same-file `overload fn` sets landed at OV-1 (W-024);
-> set import across api/impl and libraries and generic members land at OV-2
-> (W-025); export to C++ lands at OV-3 (W-026). Every sub-fork this page
-> left OPEN is CLOSED in place below by the OV decision that resolves it,
-> and the [0.1 limits](#01-limits) paragraph lists every gate the landed
-> toolchain enforces as a semantics TODO.
+> branch 481e08c24 by workstream OV-1, fork/overload/plan.md D-OV-8; status
+> updated 2026-09-28 by OV-2).** Toolchain status: same-file `overload fn`
+> sets landed at OV-1 (W-024); set import across api/impl and libraries
+> (with the closed-set rule, `OverloadSetFrozen`), generic members by
+> non-diagnosing deduction, overloaded methods of generic classes, `extern`
+> members and the api-member missing-definition check landed at OV-2 (W-025);
+> export to C++ lands at OV-3 (W-026). Every sub-fork this page left OPEN is
+> CLOSED in place below by the OV decision that resolves it, and the
+> [0.1 limits](#01-limits) paragraph lists every gate the landed toolchain
+> enforces as a semantics TODO.
 
 _Function overloading_ lets several function definitions share one name, with
 the callee chosen by the arguments at each call site. Carbon's overloading is
@@ -230,11 +233,13 @@ in the same library". Consequences:
 set is declared in one file (the API file, for a set visible outside the
 library; sets declared wholly inside one implementation file are also fine),
 and implementation files may _define_ members forward-declared in the API
-file but not add members (diagnosed as `OverloadSetFrozen` at OV-2). This
-keeps a set's declaration order readable in one place and avoids order
-questions between files; relaxing it later is purely additive. Until OV-2, a
-set reached through any import — including the API file seen from its
-implementation file — is a semantics TODO ("overload set import").
+file but not add members (diagnosed as `OverloadSetFrozen`, landed at OV-2,
+with a note at the set's first member; the same diagnostic covers a member
+declared in an importing library). This keeps a set's declaration order
+readable in one place and avoids order questions between files; relaxing it
+later is purely additive. Since OV-2, a set reached through any import —
+including the API file seen from its implementation file — is imported whole,
+with its member list in declaration order.
 
 ### Declaration order is API
 
@@ -344,17 +349,21 @@ declaration (or, for the two call-site gates, at the call), so that overload
 resolution only ever sees supported members; each lifting slice deletes its
 gate and the gate's golden in the same commit:
 
--   (i) a generic member (`overload fn F[T: type](x: T)`) — until OV-2;
+-   (i) a generic member (`overload fn F[T: type](x: T)`) — LIFTED at OV-2
+    (non-diagnosing deduction inside the candidate probe);
 -   (ii) a set declared inside a generic scope (a generic class, interface
-    or impl) — until OV-2;
+    or impl) — LIFTED at OV-2 (the set's type records the enclosing self
+    specific; interfaces and impls remain gates (ix) and (xiii));
 -   (iii) an explicit parameter after `self` that is not a single by-value
     binding (`ref` or `var` parameters, and destructuring tuple or struct
     parameter patterns);
--   (iv) `extern overload fn` — until OV-2;
+-   (iv) `extern overload fn` — LIFTED at OV-2 (an `extern overload fn`
+    must name an existing member of the imported set, and the per-member
+    `extern` ownership rules then apply);
 -   (v) `overload` on the entry point `Main.Run`;
 -   (vi) members whose access modifier differs from the set's;
 -   (vii) a set reached through any import, including the API file seen from
-    its implementation file — until OV-2;
+    its implementation file — LIFTED at OV-2 (the set is imported whole);
 -   (viii) C++ lookup of a Carbon set (export) — until OV-3;
 -   (ix) a marked declaration directly in an `interface` body;
 -   (x) members that disagree on whether they declare `self`;
@@ -367,8 +376,11 @@ gate and the gate's golden in the same commit:
 Also excluded in 0.1, as hard errors rather than TODOs: `overload` with
 `virtual`, `abstract`, `override`, `impl`, `default`, `final`, `export` or
 `returned` (D-OV-1, `ModifierNotAllowedWith`). And one limit that is not a
-diagnostic: an API-declared member without a definition (the marked-signature
-typo above) is accepted and fails at link time until OV-2's check.
+diagnostic until OV-2: an API-declared member without a definition (the
+marked-signature typo above) was accepted and failed at link time; since
+OV-2, checking a library's implementation file diagnoses every API-declared
+member that neither file defines (`MissingDefinitionInImpl` at the member's
+API declaration).
 
 ## Redeclaration rules
 
@@ -466,9 +478,10 @@ catch remain caught:
     trade C++'s unmarked overloading loses on both counts. _Fork amendment
     2026-09-27:_ OV-1 pins today's behavior (an api-declared member without
     a definition is accepted and fails at link; golden
-    `marked_typo_undefined_member`); OV-2 adds the missing-definition check
+    `marked_typo_undefined_member`); OV-2 landed the missing-definition check
     for api-declared set members in the implementation file
-    (fork/overload/plan.md §1.B.7).
+    (fork/overload/plan.md §1.B.7; golden `import.carbon`,
+    `fail_undefined.impl.carbon`).
 
 -   **Marked parameter-name typo** — a marked pair differing only in a
     binding name never declares a new member, because members must have
@@ -632,7 +645,8 @@ changing any call-site semantics.
 the set's name aliases the whole set as a unit (never an individual member;
 golden `alias_of_set`), and re-export through
 [`export import`](code_and_name_organization/README.md) carries the whole
-set (pinned at OV-2); the set stays closed, since an alias adds no members.
+set (golden `export_import.carbon`, OV-2); the set stays closed, since an
+alias adds no members.
 
 ## Interaction with checked generics
 
@@ -949,8 +963,8 @@ carry the detail.
     D-OV-3 (golden `single_member`).
 -   **F-009b — Same-file rule** (see
     [Closed, same-library sets](#closed-same-library-sets)): yes in 0.1;
-    implementation files only define (`OverloadSetFrozen` at OV-2). CLOSED by
-    D-OV-7.
+    implementation files only define (`OverloadSetFrozen`, landed at OV-2).
+    CLOSED by D-OV-7.
 -   **F-009c — `self`-shape overloading** (see
     [Which functions may be overloaded](#which-functions-may-be-overloaded)):
     no in 0.1, a semantics TODO. CLOSED by D-OV-3.

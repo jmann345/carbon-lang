@@ -335,6 +335,13 @@ on.
 > lowering (its LLVM type is a byte array), so union initializers are always
 > runtime stores. The imported-union half lands at UN-2 once the importer marks
 > the class as a union.
+>
+> _Amended 2026-09-28, UN-2 (fork/unions/plan.md §1.B):_ landed for imported
+> unions. The importer's `BuildClassDefinition` marks an imported C++ union
+> `is_union`, so a struct literal on `Cpp.U` takes the same
+> `ConvertStructToUnion` path — identically to native unions, as
+> [Importing C++ unions](#importing-c-unions) requires — while the copy of an
+> imported union stays on C++'s copy constructor, preserving Clang's deletions.
 
 ## Writing and reading fields
 
@@ -565,6 +572,19 @@ Given the 0.1 [field rules](#field-rules-in-01), every exportable Carbon union
 is trivially copyable and trivially destructible, so C++ sees an ordinary
 trivial union with no deleted special members. Carbon methods on the union
 export under the same rules as class methods.
+
+> **Amendment (2026-09-28, UN-2 — fork/unions/plan.md D-UN-8):** landed. The
+> export machinery creates the record with `TagTypeKind::Union`, and Carbon
+> stays the layout authority for a union as for every exported record: the
+> toolchain's read-only AST source supplies the size and alignment from the
+> union's `CustomLayoutType` block and an offset of zero for every field, rather
+> than letting Clang lay the union out. No `final` attribute is attached (it is
+> meaningless on a C++ union) and, because every 0.1 union is trivially
+> copyable for export, no destructor is declared, so Clang's implicit special
+> members stay trivial. "Agree by construction" is checked, not assumed: the
+> conformance program's `static_assert(__is_union(...))` and
+> `static_assert(sizeof/alignof)` lines run in the embedded Clang while the
+> Carbon program compiles, so a disagreement is a compile failure.
 
 ### Round-trip guarantee
 

@@ -1,7 +1,7 @@
 {
-  "generated": "2026-09-28T16:37:27.186000+00:00",
+  "generated": "2026-09-28T16:09:28.433453+00:00",
   "toolchain": "/home/runner/work/_temp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 26.5,
+  "elapsed_seconds": 49.5,
   "totals": {
     "PASS": 116,
     "COMPILE-FAIL": 0,
@@ -9,7 +9,7 @@
     "RUN-FAIL": 0,
     "OUTPUT-MISMATCH": 0,
     "DIFF-MISMATCH": 0,
-    "SKIP": 24
+    "SKIP": 25
   },
   "programs": [
     {
@@ -379,17 +379,10 @@
       "differential": false
     },
     {
-      "path": "functions/overloading_methods.carbon",
-      "bullet": "Functions: function overloading (Carbon-native)",
-      "status": "PASS",
-      "detail": "",
-      "differential": false
-    },
-    {
       "path": "functions/overloading_native.carbon",
       "bullet": "Functions: function overloading (Carbon-native)",
-      "status": "PASS",
-      "detail": "",
+      "status": "SKIP",
+      "detail": "MISSING with no design \u2014 docs/design/pattern_matching.md:696: \"We do not yet have an approved design for overloaded functions\"; there is no design and no implementation of Carbon-side overloading, so a second `fn Describe` with a different signature is rejected as a redeclaration today (only imported C++ overload sets work, per interop/cpp_overload_set_by_type.carbon). Un-SKIP (and uncomment the body) when an overloading design is accepted and implemented.",
       "differential": false
     },
     {
@@ -974,6 +967,20 @@
       "differential": false
     },
     {
+      "path": "types/union_cpp_export.carbon",
+      "bullet": "Type system: Unions (un-discriminated) + C++ union mapping",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "types/union_cpp_import.carbon",
+      "bullet": "Type system: Unions (un-discriminated) + C++ union mapping",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
       "path": "types/union_pun_diff.carbon",
       "bullet": "Type system: Unions (un-discriminated) + C++ union mapping",
       "status": "PASS",
@@ -1115,9 +1122,11 @@
     },
     "Type system: Unions (un-discriminated) + C++ union mapping": {
       "status": "PASS",
-      "gap_status": "PARTIAL",
+      "gap_status": "DONE",
       "programs": [
         "types/union_basic.carbon",
+        "types/union_cpp_export.carbon",
+        "types/union_cpp_import.carbon",
         "types/union_pun_diff.carbon"
       ]
     },
@@ -1192,10 +1201,9 @@
       ]
     },
     "Functions: function overloading (Carbon-native)": {
-      "status": "PASS",
-      "gap_status": "PARTIAL",
+      "status": "SKIP",
+      "gap_status": "MISSING",
       "programs": [
-        "functions/overloading_methods.carbon",
         "functions/overloading_native.carbon"
       ]
     },

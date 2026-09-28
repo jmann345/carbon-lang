@@ -468,7 +468,11 @@ auto CarbonExternalASTSource::CompleteType(clang::TagDecl* tag_decl) -> void {
 
   // If the Carbon class is final, mark the C++ class as also being `final`.
   // Abstract classes are handled when generating the destructor declaration.
-  if (class_info.inheritance_kind == SemIR::Class::InheritanceKind::Final) {
+  // A `union` is always `Final` on the Carbon side, but `final` is meaningless
+  // on a C++ union, so the attribute is not added (fork/unions/plan.md
+  // D-UN-8): C++ sees an ordinary trivial union.
+  if (class_info.inheritance_kind == SemIR::Class::InheritanceKind::Final &&
+      !class_info.is_union) {
     // TODO: Find the location of the `final` modifier and use it here.
     class_decl->addAttr(clang::FinalAttr::Create(
         context_->ast_context(),

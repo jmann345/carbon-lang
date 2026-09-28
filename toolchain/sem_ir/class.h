@@ -189,7 +189,8 @@ struct Class : public EntityWithParamsBase,
   // is not yet defined.
   auto GetObjectRepr(const File& file, SpecificId specific_id) const -> TypeId;
 
-  // Get the `StructTypeField`s from a class's object repr.
+  // Get the `StructTypeField`s from a class's object repr: a `StructType`, or
+  // the all-offsets-zero `CustomLayoutType` of a `union`.
   auto GetStructTypeFields(const File& sem_ir, SpecificId specific_id) const
       -> llvm::ArrayRef<SemIR::StructTypeField>;
 };

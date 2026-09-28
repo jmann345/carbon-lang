@@ -364,6 +364,8 @@ fails if this table is stale):
 | `types/operator_overloading.carbon` | Type system: Operator overloading | run |
 | `types/operator_overloading_diff.carbon` | Type system: Operator overloading | differential |
 | `types/union_basic.carbon` | Type system: Unions (un-discriminated) + C++ union mapping | run |
+| `types/union_cpp_export.carbon` | Type system: Unions (un-discriminated) + C++ union mapping | run |
+| `types/union_cpp_import.carbon` | Type system: Unions (un-discriminated) + C++ union mapping | run |
 | `types/union_pun_diff.carbon` | Type system: Unions (un-discriminated) + C++ union mapping | differential |
 | `types/virtual_dispatch.carbon` | Type system: Virtual dispatch | run |
 | `types/virtual_dispatch_diff.carbon` | Type system: Virtual dispatch | differential |

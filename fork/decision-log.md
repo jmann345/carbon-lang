@@ -3016,6 +3016,12 @@ counts, off by one). Delta PASS +2 / SKIP −1 / total +1 as plan §5.A
 predicted; `git diff origin/trunk...HEAD --diff-filter=M` over the
 check, lower and parse testdata trees is empty (no pre-existing golden
 moved).
+Of record on the trunk merge 490ee40cd (UN-2 #44 in): conformance run
+36455269810 (scoreboard 3c9df53f7) READ FROM
+fork/conformance/out/scoreboard.json: **118 PASS / 0 FAIL / 24 SKIP over
+142, 46/56 bullets** — the same +2 / −1 / +1 delta over UN-2's 116 / 0 /
+25 over 141 (the programs list has 142 entries); gate run 36455321083
+green.
 
 RESIDUE, filed with blocked_by []: W-094 virtual members of overload
 sets (D-OV-1); W-095 members of overload sets with non-value parameters

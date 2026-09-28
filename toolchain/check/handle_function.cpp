@@ -729,23 +729,16 @@ static auto DiagnoseOverloadInInterfaceOrImpl(
 }
 
 // Diagnoses the 0.1 restrictions on `overload fn` members (D-OV-6 gates
-// (i)-(vi)) as semantics TODOs at the declaration, so that overload resolution
-// only ever sees supported members. The declaration is still a member.
+// (iii), (v) and (vi); OV-2 lifted (i) generic members, (ii) sets in generic
+// scopes and (iv) `extern` members) as semantics TODOs at the declaration, so
+// that overload resolution only ever sees supported members. The declaration
+// is still a member.
 static auto DiagnoseOverloadGates(
     Context& context, Parse::AnyFunctionDeclId node_id,
     const KeywordModifierSet& modifier_set,
     const DeclNameStack::NameContext& name_context,
     SemIR::FunctionId function_id) -> void {
   const auto& function = context.functions().Get(function_id);
-  // (ii) Sets declared inside a generic scope (lifted at OV-2). A member
-  // function of a generic class has its own `generic_id`, so this takes
-  // precedence over (i) to diagnose once.
-  if (context.scope_stack().PeekSpecificId().has_value()) {
-    context.TODO(node_id, "`overload fn` in a generic scope");
-  } else if (function.generic_id.has_value()) {
-    // (i) Generic members (lifted at OV-2).
-    context.TODO(node_id, "`overload fn` with generic parameters");
-  }
   // (iii) Explicit parameters after `self` must be by-value binding patterns:
   // the resolution probe is a value conversion, so `ref` and `var` members
   // would be accepted by the probe and rejected by the commit. This also gates
@@ -768,10 +761,6 @@ static auto DiagnoseOverloadGates(
                    "`overload fn` with a non-value explicit parameter");
       break;
     }
-  }
-  // (iv) `extern` members belong to another library's set (OV-2).
-  if (modifier_set.HasAnyOf(KeywordModifierSet::Extern)) {
-    context.TODO(node_id, "`extern overload fn`");
   }
   // (v) The entry point mangles to `main`, so every member would alias it.
   if (SemIR::IsEntryPoint(context.sem_ir(), function_id)) {

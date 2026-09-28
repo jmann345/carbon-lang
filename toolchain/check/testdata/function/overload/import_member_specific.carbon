@@ -13,10 +13,11 @@
 
 // A MEMBER of an `overload fn` set reached through an import: the member
 // selected inside an imported generic's body is resolved when the importing
-// library instantiates the generic. The set itself is not imported (D-OV-7,
-// gated until OV-2), but the member's `overload_index` is mirrored on import,
-// so the specific's call names the member's own `:overload<N>` symbol (see the
-// lower twin) and no diagnostic is emitted.
+// library instantiates the generic. The member is imported on its own, before
+// (or without) its set: its `overload_index` is mirrored on import, so the
+// specific's call names the member's own `:overload<N>` symbol (see the lower
+// twin) and no diagnostic is emitted. Importing the set itself is pinned by
+// import.carbon (OV-2).
 
 // --- lib.carbon
 

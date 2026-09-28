@@ -37,6 +37,7 @@
 #include "toolchain/sem_ir/function.h"
 #include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/import_ir.h"
+#include "toolchain/sem_ir/overload_set.h"
 #include "toolchain/sem_ir/typed_insts.h"
 
 namespace Carbon::Check {
@@ -496,6 +497,51 @@ auto CheckUnit::CheckRequiredDefinitions() -> void {
       default: {
         CARBON_FATAL("Unexpected inst in definitions_required_by_decl: {0}",
                      decl_inst);
+      }
+    }
+  }
+
+  // Every member of an `overload fn` set declared in the API file must be
+  // defined by the API file or this implementation file (fork/overload/plan.md
+  // §1.B.7): the marker's contract is that a marked-signature typo across the
+  // two files is diagnosed, rather than silently declaring a member that is
+  // never defined and fails only at link time. The member's local function,
+  // if this file loaded it, is found through the constant of its API
+  // declaration (a `StructValue` of the function's type); a member this file
+  // never loaded has no definition here.
+  if (const auto* api_ir =
+          context_.import_irs().Get(SemIR::ImportIRId::ApiForImpl).sem_ir) {
+    const auto& api_constant_values =
+        context_
+            .import_ir_constant_values()[SemIR::ImportIRId::ApiForImpl.index];
+    for (const auto& api_overload_set : api_ir->overload_sets().values()) {
+      for (auto api_member_decl_id : api_overload_set.member_decl_ids) {
+        const auto& api_function = api_ir->functions().Get(
+            api_ir->insts()
+                .GetAs<SemIR::FunctionDecl>(api_member_decl_id)
+                .function_id);
+        if (api_function.definition_id.has_value() || api_function.is_extern) {
+          continue;
+        }
+        bool has_definition = false;
+        if (auto local_const_id = api_constant_values.Get(api_member_decl_id);
+            local_const_id.is_constant()) {
+          auto local_inst = context_.insts().Get(
+              context_.constant_values().GetInstId(local_const_id));
+          if (auto function_type =
+                  context_.types().TryGetAs<SemIR::FunctionType>(
+                      local_inst.type_id())) {
+            has_definition = context_.functions()
+                                 .Get(function_type->function_id)
+                                 .definition_id.has_value();
+          }
+        }
+        if (!has_definition) {
+          emitter_.Emit(
+              SemIR::LocId(context_.import_ir_insts().Add(SemIR::ImportIRInst(
+                  SemIR::ImportIRId::ApiForImpl, api_member_decl_id))),
+              MissingDefinitionInImpl);
+        }
       }
     }
   }

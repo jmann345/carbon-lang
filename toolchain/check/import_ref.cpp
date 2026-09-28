@@ -36,6 +36,7 @@
 #include "toolchain/sem_ir/inst_kind.h"
 #include "toolchain/sem_ir/name_scope.h"
 #include "toolchain/sem_ir/observe.h"
+#include "toolchain/sem_ir/overload_set.h"
 #include "toolchain/sem_ir/specific_interface.h"
 #include "toolchain/sem_ir/specific_named_constraint.h"
 #include "toolchain/sem_ir/type_info.h"
@@ -2279,27 +2280,138 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
   return HandleUnsupportedCppOverloadSet(resolver, inst.overload_set_id);
 }
 
-// Importing a Carbon `overload fn` set is not supported yet (D-OV-7: OV-1
-// delivers same-file sets; the api/impl and cross-library import resolution
-// lands with OV-2). This is reached both through `ApiForImpl` and through an
-// importing library.
-static auto HandleUnsupportedOverloadSet(ImportRefResolver& resolver)
-    -> ResolveResult {
-  resolver.local_context().TODO(SemIR::LocId::None, "overload set import");
-  return ResolveResult::Done(SemIR::ErrorInst::ConstantId,
-                             SemIR::ErrorInst::InstId);
+namespace {
+// The result of localizing an imported `overload fn` set.
+struct LocalOverloadSetResult {
+  // The local set, or `None` if the resolver has new work or a member could
+  // not be localized.
+  SemIR::OverloadSetId overload_set_id = SemIR::OverloadSetId::None;
+  // Whether a member's local constant is an error, in which case the set
+  // resolves to an error too.
+  bool is_error = false;
+};
+}  // namespace
+
+// Localizes an imported `overload fn` set (fork/overload/plan.md §1.B.1, the
+// two-phase shape of `FunctionDecl`): every member's declaration and the
+// parent scope are required dependencies, so a set is never partially
+// imported (p000998's closed set). On the phase where every dependency is
+// resolved, the local `OverloadSet` is created with the localized member
+// declarations in the imported order, and `Function::overload_set_id` is
+// written on each local member here (the member's own resolver cannot, as the
+// set may not exist yet; `overload_index` was mirrored by `ImportFunctionDecl`,
+// which is what keeps a member's `:overload<N>` mangling stable across files,
+// D-OV-5). The set type and value resolvers both come through here, so the
+// second one finds the set already recorded on the first member.
+static auto GetLocalOverloadSet(ImportRefResolver& resolver,
+                                SemIR::OverloadSetId import_overload_set_id)
+    -> LocalOverloadSetResult {
+  const auto& import_overload_set =
+      resolver.import_ir().overload_sets().Get(import_overload_set_id);
+  CARBON_CHECK(!import_overload_set.member_decl_ids.empty());
+
+  llvm::SmallVector<SemIR::ConstantId, 4> member_const_ids;
+  member_const_ids.reserve(import_overload_set.member_decl_ids.size());
+  for (auto import_member_decl_id : import_overload_set.member_decl_ids) {
+    member_const_ids.push_back(
+        GetLocalConstantId(resolver, import_member_decl_id));
+  }
+  auto parent_scope_id =
+      GetLocalNameScopeId(resolver, import_overload_set.parent_scope_id);
+  if (resolver.HasNewWork()) {
+    return {};
+  }
+
+  // The constant value of a `FunctionDecl` is a `StructValue` of the
+  // function's type; the member entry is the local declaration behind it.
+  llvm::SmallVector<SemIR::InstId, 4> member_decl_ids;
+  member_decl_ids.reserve(member_const_ids.size());
+  for (auto member_const_id : member_const_ids) {
+    auto member_inst_id =
+        resolver.local_constant_values().GetInstIdIfValid(member_const_id);
+    if (!member_inst_id.has_value() ||
+        member_inst_id == SemIR::ErrorInst::InstId) {
+      return {.is_error = true};
+    }
+    auto function_type = resolver.local_types().TryGetAs<SemIR::FunctionType>(
+        resolver.local_insts().Get(member_inst_id).type_id());
+    if (!function_type) {
+      return {.is_error = true};
+    }
+    member_decl_ids.push_back(resolver.local_functions()
+                                  .Get(function_type->function_id)
+                                  .first_decl_id());
+  }
+
+  auto get_member_function =
+      [&](SemIR::InstId member_decl_id) -> SemIR::Function& {
+    return resolver.local_functions().Get(
+        resolver.local_insts()
+            .GetAs<SemIR::FunctionDecl>(member_decl_id)
+            .function_id);
+  };
+
+  // Already localized through the other of the set's type and value insts.
+  if (auto existing_id =
+          get_member_function(member_decl_ids.front()).overload_set_id;
+      existing_id.has_value()) {
+    return {.overload_set_id = existing_id};
+  }
+
+  auto local_overload_set_id = resolver.local_ir().overload_sets().Add(
+      {.name_id = GetLocalNameId(resolver, import_overload_set.name_id),
+       .parent_scope_id = parent_scope_id,
+       .member_decl_ids = member_decl_ids});
+  for (auto [index, member_decl_id] : llvm::enumerate(member_decl_ids)) {
+    auto& member_function = get_member_function(member_decl_id);
+    CARBON_CHECK(!member_function.overload_set_id.has_value(),
+                 "Imported overload set member already belongs to a set");
+    CARBON_CHECK(member_function.overload_index == static_cast<int32_t>(index),
+                 "Imported overload set member index {0} differs from its "
+                 "position {1} in the set",
+                 member_function.overload_index, index);
+    member_function.overload_set_id = local_overload_set_id;
+  }
+  return {.overload_set_id = local_overload_set_id};
 }
 
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
-                                SemIR::OverloadSetType /*inst*/)
-    -> ResolveResult {
-  return HandleUnsupportedOverloadSet(resolver);
+                                SemIR::OverloadSetType inst) -> ResolveResult {
+  CARBON_CHECK(inst.type_id == SemIR::TypeType::TypeId);
+  auto local_overload_set = GetLocalOverloadSet(resolver, inst.overload_set_id);
+  auto specific_data = GetLocalSpecificData(resolver, inst.specific_id);
+  if (resolver.HasNewWork()) {
+    return ResolveResult::Retry();
+  }
+  if (local_overload_set.is_error) {
+    return ResolveResult::Done(SemIR::ErrorInst::ConstantId,
+                               SemIR::ErrorInst::InstId);
+  }
+  // As for `FunctionType`, the type constant is added directly rather than
+  // through `GetOverloadSetType`, which would evaluate it while the specific's
+  // value block may still be pending.
+  return ResolveResult::Deduplicated<SemIR::OverloadSetType>(
+      resolver, {.type_id = SemIR::TypeType::TypeId,
+                 .overload_set_id = local_overload_set.overload_set_id,
+                 .specific_id = GetOrAddLocalSpecific(
+                     resolver, inst.specific_id, specific_data)});
 }
 
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
-                                SemIR::OverloadSetValue /*inst*/)
-    -> ResolveResult {
-  return HandleUnsupportedOverloadSet(resolver);
+                                SemIR::OverloadSetValue inst) -> ResolveResult {
+  auto type_const_id = GetLocalConstantId(resolver, inst.type_id);
+  auto local_overload_set = GetLocalOverloadSet(resolver, inst.overload_set_id);
+  if (resolver.HasNewWork()) {
+    return ResolveResult::Retry();
+  }
+  if (local_overload_set.is_error) {
+    return ResolveResult::Done(SemIR::ErrorInst::ConstantId,
+                               SemIR::ErrorInst::InstId);
+  }
+  return ResolveResult::Deduplicated<SemIR::OverloadSetValue>(
+      resolver, {.type_id = resolver.local_types().GetTypeIdForTypeConstantId(
+                     type_const_id),
+                 .overload_set_id = local_overload_set.overload_set_id});
 }
 
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
@@ -2432,8 +2544,9 @@ static auto ImportFunctionDecl(ImportContext& context,
         .virtual_index = import_function.virtual_index,
         .evaluation_mode = import_function.evaluation_mode,
         .interface_modifier = import_function.interface_modifier,
-        // The set itself is not imported (D-OV-7), only the member's position
-        // in it, which is what mangling needs.
+        // The member's position in its `overload fn` set is what mangling
+        // needs; the set itself (`overload_set_id`) is written by the set's
+        // resolver, which may run after this member's.
         .overload_index = import_function.overload_index}});
 
   // Directly add the function type constant. Don't use `GetFunctionType`

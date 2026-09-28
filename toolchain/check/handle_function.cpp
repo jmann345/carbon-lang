@@ -147,6 +147,11 @@ static auto GetInterfaceModifier(const KeywordModifierSet& modifier_set)
 // have a definition even if one is upcoming, set is_definition to indicate the
 // planned result.
 //
+// When the previous declaration was imported, `replace_prev_inst` says whether
+// the name's scope entry is replaced by the new declaration. That is the rule
+// for a plain function; a member of an `overload fn` set is reached through
+// the set value, never through the name, so the entry stays the set value.
+//
 // If merging is successful, returns true and may update the previous function.
 // Otherwise, returns false. Prints a diagnostic when appropriate.
 static auto MergeFunctionRedecl(Context& context,
@@ -154,7 +159,8 @@ static auto MergeFunctionRedecl(Context& context,
                                 SemIR::Function& new_function,
                                 bool new_is_definition,
                                 SemIR::FunctionId prev_function_id,
-                                SemIR::ImportIRId prev_import_ir_id) -> bool {
+                                SemIR::ImportIRId prev_import_ir_id,
+                                bool replace_prev_inst) -> bool {
   auto& prev_function = context.functions().Get(prev_function_id);
 
   if (!CheckFunctionTypeMatches(context, new_function, prev_function)) {
@@ -179,7 +185,7 @@ static auto MergeFunctionRedecl(Context& context,
     // match IDs in the signature.
     prev_function.MergeDefinition(new_function);
   }
-  if (prev_import_ir_id.has_value()) {
+  if (replace_prev_inst && prev_import_ir_id.has_value()) {
     ReplacePrevInstForMerge(context, new_function.parent_scope_id,
                             prev_function.name_id,
                             new_function.first_owning_decl_id);
@@ -207,16 +213,22 @@ static auto DiagnoseOverloadMarkerMismatch(Context& context,
 }
 
 // Handles a function declaration whose name resolves to an `overload fn` set
-// declared in this file (D-OV-3). Member identity is parameter-type equality:
-// the first type-equal member is the one being redeclared and is merged into
-// through the ordinary redeclaration path; otherwise the declaration is a new
-// member, recorded by setting `function_info.overload_set_id` (the caller
-// appends the declaration once the function exists).
+// (D-OV-3). Member identity is parameter-type equality: the first type-equal
+// member is the one being redeclared and is merged into through the ordinary
+// redeclaration path. Otherwise, for a set declared in this file, the
+// declaration is a new member, recorded by setting
+// `function_info.overload_set_id` (the caller appends the declaration once the
+// function exists); for a set reached through an import
+// (`prev_import_ir_id` has a value: the API file seen from its implementation
+// file, or an importing library), the set is closed and the declaration is
+// diagnosed (fork/overload/plan.md §1.B.2: implementation files may only
+// define members, and no library may add to another's set).
 static auto TryMergeIntoOverloadSet(
     Context& context, Parse::AnyFunctionDeclId node_id,
     const DeclNameStack::NameContext& name_context, bool is_overload,
     SemIR::OverloadSetId overload_set_id, SemIR::FunctionDecl& function_decl,
-    SemIR::Function& function_info, bool is_definition) -> void {
+    SemIR::Function& function_info, bool is_definition,
+    SemIR::ImportIRId prev_import_ir_id) -> void {
   const auto& overload_set = context.overload_sets().Get(overload_set_id);
   CARBON_CHECK(!overload_set.member_decl_ids.empty());
   auto first_member_decl_id = overload_set.member_decl_ids.front();
@@ -240,12 +252,33 @@ static auto TryMergeIntoOverloadSet(
       continue;
     }
     // This is a redeclaration of `member_function`. The ordinary path
-    // diagnoses differing binding names, return types, and redefinitions.
+    // diagnoses differing binding names, return types, and redefinitions, and
+    // for an imported member applies the api/impl and cross-library rules
+    // (incl. the `extern` ownership rules, §1.B.3). The name's scope entry is
+    // never replaced: the member is reached through the set.
     if (MergeFunctionRedecl(context, node_id, function_info, is_definition,
-                            member_function_id, SemIR::ImportIRId::None)) {
+                            member_function_id, prev_import_ir_id,
+                            /*replace_prev_inst=*/false)) {
       function_decl.function_id = member_function_id;
       function_decl.type_id = context.insts().Get(member_decl_id).type_id();
     }
+    return;
+  }
+
+  if (prev_import_ir_id.has_value()) {
+    // No type-equal member of an imported set: the set is closed. The
+    // declaration continues as a plain function that is not added to name
+    // lookup, so nothing cascades.
+    CARBON_DIAGNOSTIC(OverloadSetFrozen, Error,
+                      "overload set `{0}` is closed; new members may only be "
+                      "declared in the API file of its library",
+                      SemIR::NameId);
+    CARBON_DIAGNOSTIC(OverloadSetDeclaredHere, Note,
+                      "overload set declared here");
+    context.emitter()
+        .Build(node_id, OverloadSetFrozen, name_context.name_id)
+        .Note(SemIR::LocId(first_member_decl_id), OverloadSetDeclaredHere)
+        .Emit();
     return;
   }
 
@@ -306,13 +339,12 @@ static auto TryMergeRedecl(Context& context, Parse::AnyFunctionDeclId node_id,
   }
 
   // A previous declaration that is an `overload fn` set declared in this file.
-  // A set reached through an import resolves to `ErrorInst` in OV-1 (D-OV-7)
-  // and is diagnosed as a duplicate name below.
   if (auto overload_set_value =
           context.insts().TryGetAs<SemIR::OverloadSetValue>(prev_id)) {
     TryMergeIntoOverloadSet(context, node_id, name_context, is_overload,
                             overload_set_value->overload_set_id, function_decl,
-                            function_info, is_definition);
+                            function_info, is_definition,
+                            SemIR::ImportIRId::None);
     return;
   }
 
@@ -335,10 +367,31 @@ static auto TryMergeRedecl(Context& context, Parse::AnyFunctionDeclId node_id,
     }
     case SemIR::ImportRefLoaded::Kind: {
       auto import_ir_inst = GetCanonicalImportIRInst(context, prev_id);
-
-      // Verify the decl so that things like aliases are name conflicts.
       const auto* import_ir =
           context.import_irs().Get(import_ir_inst.ir_id()).sem_ir;
+
+      // An `overload fn` set reached through an import (not through an
+      // alias, which is a name conflict like any other): the import resolver
+      // localized it whole, so its constant is the local set value (§1.B.2).
+      if (import_ir->insts().Is<SemIR::OverloadSetValue>(
+              import_ir_inst.inst_id())) {
+        auto const_inst_id =
+            context.constant_values().GetConstantInstId(prev_id);
+        if (auto overload_set_value =
+                const_inst_id.has_value()
+                    ? context.insts().TryGetAs<SemIR::OverloadSetValue>(
+                          const_inst_id)
+                    : std::nullopt) {
+          TryMergeIntoOverloadSet(context, node_id, name_context, is_overload,
+                                  overload_set_value->overload_set_id,
+                                  function_decl, function_info, is_definition,
+                                  import_ir_inst.ir_id());
+          return;
+        }
+        break;
+      }
+
+      // Verify the decl so that things like aliases are name conflicts.
       if (!import_ir->insts().Is<SemIR::FunctionDecl>(
               import_ir_inst.inst_id())) {
         break;
@@ -376,7 +429,8 @@ static auto TryMergeRedecl(Context& context, Parse::AnyFunctionDeclId node_id,
   }
 
   if (MergeFunctionRedecl(context, node_id, function_info, is_definition,
-                          prev_function_id, prev_import_ir_id)) {
+                          prev_function_id, prev_import_ir_id,
+                          /*replace_prev_inst=*/true)) {
     // When merging, use the existing function rather than adding a new one.
     function_decl.function_id = prev_function_id;
     function_decl.type_id = prev_type_id;

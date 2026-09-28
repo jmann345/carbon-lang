@@ -79,8 +79,8 @@ static auto GetImportName(const SemIR::File& import_sem_ir,
     }
 
     case CARBON_KIND(SemIR::OverloadSetValue overload_set_value): {
-      // An `overload fn` set is exported under its name; resolving the value
-      // on import is gated (`overload set import`, OV-2) in import_ref.cpp.
+      // An `overload fn` set is exported under its name; import_ref.cpp
+      // localizes the value with its whole member list (OV-2).
       return GetImportNameForEntity(import_sem_ir.overload_sets().Get(
           overload_set_value.overload_set_id));
     }

@@ -1,9 +1,9 @@
 {
-  "generated": "2026-09-27T12:30:10.272240+00:00",
+  "generated": "2026-09-28T15:13:14.317397+00:00",
   "toolchain": "/home/runner/work/_temp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 51.1,
+  "elapsed_seconds": 36.8,
   "totals": {
-    "PASS": 114,
+    "PASS": 116,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
@@ -967,6 +967,20 @@
       "differential": false
     },
     {
+      "path": "types/union_cpp_export.carbon",
+      "bullet": "Type system: Unions (un-discriminated) + C++ union mapping",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "types/union_cpp_import.carbon",
+      "bullet": "Type system: Unions (un-discriminated) + C++ union mapping",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
       "path": "types/union_pun_diff.carbon",
       "bullet": "Type system: Unions (un-discriminated) + C++ union mapping",
       "status": "PASS",
@@ -1111,6 +1125,8 @@
       "gap_status": "PARTIAL",
       "programs": [
         "types/union_basic.carbon",
+        "types/union_cpp_export.carbon",
+        "types/union_cpp_import.carbon",
         "types/union_pun_diff.carbon"
       ]
     },

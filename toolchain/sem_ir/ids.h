@@ -295,6 +295,13 @@ struct CppOverloadSetId : public IdBase<CppOverloadSetId> {
   using IdBase::IdBase;
 };
 
+// The ID of a Carbon `overload fn` set.
+struct OverloadSetId : public IdBase<OverloadSetId> {
+  static constexpr llvm::StringLiteral Label = "overload_set";
+
+  using IdBase::IdBase;
+};
+
 // The ID of a function.
 struct FunctionId : public IdBase<FunctionId> {
   static constexpr llvm::StringLiteral Label = "function";

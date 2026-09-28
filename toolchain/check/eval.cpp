@@ -1403,6 +1403,23 @@ static auto PerformIntConvert(Context& context, SemIR::InstId arg_id,
                        std::move(arg_val));
 }
 
+auto IntIsNegativeInUnsignedType(const llvm::APInt& value, bool is_signed)
+    -> bool {
+  return !is_signed && value.isNegative();
+}
+
+auto IntExceedsIntTypeWidth(const llvm::APInt& value, bool is_signed,
+                            uint64_t width) -> bool {
+  unsigned non_sign_bits = value.getSignificantBits() - 1;
+  return non_sign_bits + (is_signed ? 1 : 0) > width;
+}
+
+auto IntFitsInIntType(const llvm::APInt& value, bool is_signed, uint64_t width)
+    -> bool {
+  return !IntIsNegativeInUnsignedType(value, is_signed) &&
+         !IntExceedsIntTypeWidth(value, is_signed, width);
+}
+
 // Performs a conversion between integer types, diagnosing if the value doesn't
 // fit in the destination type.
 static auto PerformCheckedIntConvert(Context& context, SemIR::LocId loc_id,
@@ -1422,7 +1439,7 @@ static auto PerformCheckedIntConvert(Context& context, SemIR::LocId loc_id,
                    ? context.ints().Get(bit_width_id).getZExtValue()
                    : arg_val.getBitWidth();
 
-  if (!is_signed && arg_val.isNegative()) {
+  if (IntIsNegativeInUnsignedType(arg_val, is_signed)) {
     CARBON_DIAGNOSTIC(
         NegativeIntInUnsignedType, Error,
         "negative integer value {0} converted to unsigned type {1}", TypedInt,
@@ -1432,8 +1449,7 @@ static auto PerformCheckedIntConvert(Context& context, SemIR::LocId loc_id,
                            dest_type_id);
   }
 
-  unsigned arg_non_sign_bits = arg_val.getSignificantBits() - 1;
-  if (arg_non_sign_bits + is_signed > width) {
+  if (IntExceedsIntTypeWidth(arg_val, is_signed, width)) {
     CARBON_DIAGNOSTIC(IntTooLargeForType, Error,
                       "integer value {0} too large for type {1}", TypedInt,
                       SemIR::TypeId);

@@ -118,6 +118,7 @@
   "not"
   ; "observe"
   "or"
+  ; "overload"
   ; "override"
   "package"
   ; "partial"

@@ -200,6 +200,10 @@ auto InstNamer::GetScopeIdOffset(ScopeIdTypeEnum id_enum) const -> int {
       [[fallthrough]];
     case ScopeIdTypeEnum::For<ObserveId>:
 
+      offset += sem_ir_->overload_sets().size();
+      [[fallthrough]];
+    case ScopeIdTypeEnum::For<OverloadSetId>:
+
       offset += sem_ir_->require_impls().size();
       [[fallthrough]];
     case ScopeIdTypeEnum::For<RequireImplsId>:
@@ -752,6 +756,20 @@ auto InstNamer::PushEntity(CppOverloadSetId cpp_overload_set_id,
                     sem_ir_->names().GetIRBaseName(overload_set.name_id)));
 }
 
+auto InstNamer::PushEntity(OverloadSetId overload_set_id, ScopeId /*scope_id*/,
+                           Scope& scope) -> void {
+  const OverloadSet& overload_set =
+      sem_ir_->overload_sets().Get(overload_set_id);
+  uint64_t fingerprint = fingerprinter_.GetOrCompute(sem_ir_, overload_set_id);
+
+  auto scope_prefix = GetNameForParentNameScope(overload_set.parent_scope_id);
+  scope.name = globals_.AllocateName(
+      *this, fingerprint,
+      llvm::formatv("{0}{1}{2}.overload_set", scope_prefix,
+                    scope_prefix.empty() ? "" : ".",
+                    sem_ir_->names().GetIRBaseName(overload_set.name_id)));
+}
+
 auto InstNamer::PushEntity(ImplId impl_id, ScopeId scope_id, Scope& scope)
     -> void {
   const auto& impl = sem_ir_->impls().Get(impl_id);
@@ -1196,6 +1214,14 @@ auto InstNamer::NamingContext::NameInst() -> void {
       return;
     }
     case CARBON_KIND(CppOverloadSetType inst): {
+      AddEntityNameAndMaybePush(inst.overload_set_id, ".type");
+      return;
+    }
+    case CARBON_KIND(OverloadSetValue inst): {
+      AddEntityNameAndMaybePush(inst.overload_set_id, ".value");
+      return;
+    }
+    case CARBON_KIND(OverloadSetType inst): {
       AddEntityNameAndMaybePush(inst.overload_set_id, ".type");
       return;
     }

@@ -40,6 +40,7 @@
 #include "toolchain/sem_ir/name_scope.h"
 #include "toolchain/sem_ir/named_constraint.h"
 #include "toolchain/sem_ir/observe.h"
+#include "toolchain/sem_ir/overload_set.h"
 #include "toolchain/sem_ir/require_impls.h"
 #include "toolchain/sem_ir/singleton_insts.h"
 #include "toolchain/sem_ir/specific_interface.h"
@@ -173,6 +174,10 @@ class File : public Printable<File> {
   }
   auto cpp_overload_sets() const -> const CppOverloadSetStore& {
     return cpp_overload_sets_;
+  }
+  auto overload_sets() -> OverloadSetStore& { return overload_sets_; }
+  auto overload_sets() const -> const OverloadSetStore& {
+    return overload_sets_;
   }
   auto thunks() -> ThunkStore& { return thunks_; }
   auto thunks() const -> const ThunkStore& { return thunks_; }
@@ -364,6 +369,9 @@ class File : public Printable<File> {
 
   // Storage for CppOverloadSet.
   CppOverloadSetStore cpp_overload_sets_;
+
+  // Storage for Carbon `overload fn` sets.
+  OverloadSetStore overload_sets_;
 
   // Storage for thunk info records.
   ThunkStore thunks_;

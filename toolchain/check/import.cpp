@@ -78,6 +78,13 @@ static auto GetImportName(const SemIR::File& import_sem_ir,
           named_constraint_decl.named_constraint_id));
     }
 
+    case CARBON_KIND(SemIR::OverloadSetValue overload_set_value): {
+      // An `overload fn` set is exported under its name; resolving the value
+      // on import is gated (`overload set import`, OV-2) in import_ref.cpp.
+      return GetImportNameForEntity(import_sem_ir.overload_sets().Get(
+          overload_set_value.overload_set_id));
+    }
+
     default:
       CARBON_FATAL("Unsupported export kind: {0}", import_inst);
   }

@@ -250,6 +250,12 @@ auto CarbonExternalASTSource::MapInstIdToClangDeclOrType(LookupResult lookup)
     case CARBON_KIND(SemIR::VarStorage var_storage): {
       return ExportVarToCpp(*context_, target_inst_id, var_storage);
     }
+    case SemIR::OverloadSetValue::Kind: {
+      // D-OV-6 gate (viii): exporting a Carbon `overload fn` set lands with
+      // OV-3, which returns every member as a decl list.
+      context_->TODO(GetCurrentCppLocId(), "overload set export");
+      return nullptr;
+    }
     default:
       return nullptr;
   }

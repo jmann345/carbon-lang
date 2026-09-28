@@ -84,6 +84,7 @@ The following words are interpreted as keywords:
 -   `not`
 -   `observe`
 -   `or`
+-   `overload`
 -   `override`
 -   `package`
 -   `partial`

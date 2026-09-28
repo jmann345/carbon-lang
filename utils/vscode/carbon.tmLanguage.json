@@ -414,7 +414,7 @@
       "patterns": [
         {
           "name": "keyword.other.carbon",
-          "match": "\\b(auto|destructor|forall|friend|observe|override|require)\\b"
+          "match": "\\b(auto|destructor|forall|friend|observe|overload|override|require)\\b"
         },
         {
           "name": "keyword.other.carbon",

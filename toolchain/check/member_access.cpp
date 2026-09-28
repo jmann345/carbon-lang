@@ -80,6 +80,22 @@ static auto GetSelfIfInstanceMethod(const SemIR::File& sem_ir,
       return overload.self_id;
     }
 
+    case CARBON_KIND(SemIR::CalleeOverloadSet overload): {
+      // Every member of a 0.1 set agrees on whether it has `self` (D-OV-6 gate
+      // (x)), so the first member decides whether the set binds a receiver.
+      const auto& overload_set =
+          sem_ir.overload_sets().Get(overload.overload_set_id);
+      for (auto member_decl_id : overload_set.member_decl_ids) {
+        if (IsInstanceMethod(sem_ir,
+                             sem_ir.insts()
+                                 .GetAs<SemIR::FunctionDecl>(member_decl_id)
+                                 .function_id)) {
+          return overload.self_id;
+        }
+      }
+      return std::nullopt;
+    }
+
     case CARBON_KIND(SemIR::CalleeError _): {
       return std::nullopt;
     }

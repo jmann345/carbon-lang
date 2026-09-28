@@ -91,7 +91,8 @@ static auto DiagnoseModifiers(Context& context,
       context, introducer,
       KeywordModifierSet::Access | KeywordModifierSet::Extern |
           KeywordModifierSet::Export | KeywordModifierSet::Method |
-          KeywordModifierSet::Interface | KeywordModifierSet::Evaluation);
+          KeywordModifierSet::Interface | KeywordModifierSet::Evaluation |
+          KeywordModifierSet::Overload);
   RestrictExternModifierOnDecl(context, introducer, parent_scope_inst,
                                is_definition);
   CheckMethodModifiersOnFunction(context, introducer, parent_scope_inst_id,
@@ -186,10 +187,105 @@ static auto MergeFunctionRedecl(Context& context,
   return true;
 }
 
+// Diagnoses a declaration of `name_id` that disagrees with a previous
+// declaration on whether it carries the `overload` marker (D-OV-3: the marker
+// must be on every declaration of the name or on none).
+static auto DiagnoseOverloadMarkerMismatch(Context& context,
+                                           Parse::AnyFunctionDeclId node_id,
+                                           SemIR::NameId name_id,
+                                           SemIR::LocId prev_loc_id) -> void {
+  CARBON_DIAGNOSTIC(
+      OverloadMarkerMismatch, Error,
+      "`overload` must appear on every declaration of `{0}` or on none",
+      SemIR::NameId);
+  CARBON_DIAGNOSTIC(OverloadMarkerPrevious, Note,
+                    "previous declaration of `{0}` here", SemIR::NameId);
+  context.emitter()
+      .Build(node_id, OverloadMarkerMismatch, name_id)
+      .Note(prev_loc_id, OverloadMarkerPrevious, name_id)
+      .Emit();
+}
+
+// Handles a function declaration whose name resolves to an `overload fn` set
+// declared in this file (D-OV-3). Member identity is parameter-type equality:
+// the first type-equal member is the one being redeclared and is merged into
+// through the ordinary redeclaration path; otherwise the declaration is a new
+// member, recorded by setting `function_info.overload_set_id` (the caller
+// appends the declaration once the function exists).
+static auto TryMergeIntoOverloadSet(
+    Context& context, Parse::AnyFunctionDeclId node_id,
+    const DeclNameStack::NameContext& name_context, bool is_overload,
+    SemIR::OverloadSetId overload_set_id, SemIR::FunctionDecl& function_decl,
+    SemIR::Function& function_info, bool is_definition) -> void {
+  const auto& overload_set = context.overload_sets().Get(overload_set_id);
+  CARBON_CHECK(!overload_set.member_decl_ids.empty());
+  auto first_member_decl_id = overload_set.member_decl_ids.front();
+
+  if (!is_overload) {
+    // Diagnose once, then recover as if the marker were present so that a
+    // definition still merges into its member and calls still resolve.
+    DiagnoseOverloadMarkerMismatch(context, node_id, name_context.name_id,
+                                   SemIR::LocId(first_member_decl_id));
+  }
+
+  DeclParams new_params(function_info);
+  for (auto member_decl_id : overload_set.member_decl_ids) {
+    auto member_function_id =
+        context.insts().GetAs<SemIR::FunctionDecl>(member_decl_id).function_id;
+    const auto& member_function = context.functions().Get(member_function_id);
+    if (!CheckRedeclParamsMatch(context, new_params,
+                                DeclParams(member_function),
+                                SemIR::SpecificId::None, /*diagnose=*/false,
+                                /*check_syntax=*/false)) {
+      continue;
+    }
+    // This is a redeclaration of `member_function`. The ordinary path
+    // diagnoses differing binding names, return types, and redefinitions.
+    if (MergeFunctionRedecl(context, node_id, function_info, is_definition,
+                            member_function_id, SemIR::ImportIRId::None)) {
+      function_decl.function_id = member_function_id;
+      function_decl.type_id = context.insts().Get(member_decl_id).type_id();
+    }
+    return;
+  }
+
+  // No type-equal member: this declaration is a new member.
+  const auto& first_member_function = context.functions().Get(
+      context.insts()
+          .GetAs<SemIR::FunctionDecl>(first_member_decl_id)
+          .function_id);
+  if (function_info.self_param_id.has_value() !=
+      first_member_function.self_param_id.has_value()) {
+    // D-OV-6 gate (x).
+    context.TODO(node_id, "`overload fn` members that disagree on `self`");
+  } else if (function_info.self_param_id.has_value()) {
+    // D-OV-3: members distinguished only by their `self` pattern (`self` vs
+    // `ref self`) are not supported; the explicit parameters after `self`
+    // decide.
+    for (auto member_decl_id : overload_set.member_decl_ids) {
+      const auto& member_function = context.functions().Get(
+          context.insts()
+              .GetAs<SemIR::FunctionDecl>(member_decl_id)
+              .function_id);
+      if (CheckRedeclExplicitParamsAfterSelfMatch(
+              context, new_params, DeclParams(member_function))) {
+        context.TODO(node_id,
+                     "`overload fn` members distinguished only by `self`");
+        break;
+      }
+    }
+  }
+  function_info.overload_set_id = overload_set_id;
+  // The caller appends the declaration once the function exists (D-OV-3), so
+  // the new member's index is the current size.
+  function_info.overload_index =
+      static_cast<int32_t>(overload_set.member_decl_ids.size());
+}
+
 // Check whether this is a redeclaration, merging if needed.
 static auto TryMergeRedecl(Context& context, Parse::AnyFunctionDeclId node_id,
                            const DeclNameStack::NameContext& name_context,
-                           SemIR::FunctionDecl& function_decl,
+                           bool is_overload, SemIR::FunctionDecl& function_decl,
                            SemIR::Function& function_info, bool is_definition)
     -> void {
   // Diagnose if we are declaring a poisoned name. However, don't diagnose at
@@ -206,6 +302,17 @@ static auto TryMergeRedecl(Context& context, Parse::AnyFunctionDeclId node_id,
 
   auto prev_id = name_context.prev_inst_id();
   if (!prev_id.has_value()) {
+    return;
+  }
+
+  // A previous declaration that is an `overload fn` set declared in this file.
+  // A set reached through an import resolves to `ErrorInst` in OV-1 (D-OV-7)
+  // and is diagnosed as a duplicate name below.
+  if (auto overload_set_value =
+          context.insts().TryGetAs<SemIR::OverloadSetValue>(prev_id)) {
+    TryMergeIntoOverloadSet(context, node_id, name_context, is_overload,
+                            overload_set_value->overload_set_id, function_decl,
+                            function_info, is_definition);
     return;
   }
 
@@ -256,6 +363,15 @@ static auto TryMergeRedecl(Context& context, Parse::AnyFunctionDeclId node_id,
   if (!prev_function_id.has_value()) {
     DiagnoseDuplicateName(context, name_context.name_id, name_context.loc_id,
                           SemIR::LocId(prev_id));
+    return;
+  }
+
+  if (is_overload) {
+    // D-OV-3: a marked declaration against a plain function. Diagnose and do
+    // not merge; the declaration gets its own function and is not added to
+    // name lookup, so no redeclaration diagnostics are emitted on top.
+    DiagnoseOverloadMarkerMismatch(context, node_id, name_context.name_id,
+                                   SemIR::LocId(prev_id));
     return;
   }
 
@@ -540,6 +656,87 @@ static auto DiagnosePositionalParams(Context& context,
   function_info.param_patterns_id = SemIR::InstBlockId::Empty;
 }
 
+// D-OV-6 gates (ix) and (xiii): returns whether `parent_scope_id` is an
+// interface or an `impl` body, where an `overload fn` set is not supported in
+// 0.1, diagnosing the gate if so.
+static auto DiagnoseOverloadInInterfaceOrImpl(
+    Context& context, Parse::AnyFunctionDeclId node_id,
+    SemIR::NameScopeId parent_scope_id) -> bool {
+  if (context.name_scopes().InstIs<SemIR::InterfaceWithSelfDecl>(
+          parent_scope_id)) {
+    context.TODO(node_id, "`overload fn` in an interface");
+    return true;
+  }
+  if (context.name_scopes().InstIs<SemIR::ImplDecl>(parent_scope_id)) {
+    context.TODO(node_id, "`overload fn` in an `impl` body");
+    return true;
+  }
+  return false;
+}
+
+// Diagnoses the 0.1 restrictions on `overload fn` members (D-OV-6 gates
+// (i)-(vi)) as semantics TODOs at the declaration, so that overload resolution
+// only ever sees supported members. The declaration is still a member.
+static auto DiagnoseOverloadGates(
+    Context& context, Parse::AnyFunctionDeclId node_id,
+    const KeywordModifierSet& modifier_set,
+    const DeclNameStack::NameContext& name_context,
+    SemIR::FunctionId function_id) -> void {
+  const auto& function = context.functions().Get(function_id);
+  // (ii) Sets declared inside a generic scope (lifted at OV-2). A member
+  // function of a generic class has its own `generic_id`, so this takes
+  // precedence over (i) to diagnose once.
+  if (context.scope_stack().PeekSpecificId().has_value()) {
+    context.TODO(node_id, "`overload fn` in a generic scope");
+  } else if (function.generic_id.has_value()) {
+    // (i) Generic members (lifted at OV-2).
+    context.TODO(node_id, "`overload fn` with generic parameters");
+  }
+  // (iii) Explicit parameters after `self` must be by-value binding patterns:
+  // the resolution probe is a value conversion, so `ref` and `var` members
+  // would be accepted by the probe and rejected by the commit. This also gates
+  // destructuring tuple and struct parameter patterns, whose leaf is not a
+  // single `ValueParamPattern`.
+  for (auto param_pattern_id :
+       context.inst_blocks().GetOrEmpty(function.param_patterns_id)) {
+    if (param_pattern_id == function.self_param_id ||
+        param_pattern_id == SemIR::ErrorInst::InstId) {
+      continue;
+    }
+    bool is_value_param = false;
+    if (auto binding = context.insts().TryGetAs<SemIR::WrapperBindingPattern>(
+            param_pattern_id)) {
+      is_value_param =
+          context.insts().Is<SemIR::ValueParamPattern>(binding->subpattern_id);
+    }
+    if (!is_value_param) {
+      context.TODO(param_pattern_id,
+                   "`overload fn` with a non-value explicit parameter");
+      break;
+    }
+  }
+  // (iv) `extern` members belong to another library's set (OV-2).
+  if (modifier_set.HasAnyOf(KeywordModifierSet::Extern)) {
+    context.TODO(node_id, "`extern overload fn`");
+  }
+  // (v) The entry point mangles to `main`, so every member would alias it.
+  if (SemIR::IsEntryPoint(context.sem_ir(), function_id)) {
+    context.TODO(node_id, "`overload` on the entry point");
+  }
+  // (vi) Every member shares the set's name-scope entry, so the access kind
+  // is fixed by the first member. Block scopes have no entry.
+  if (name_context.parent_scope_id.has_value()) {
+    const auto& name_scope =
+        context.name_scopes().Get(name_context.parent_scope_id);
+    if (auto entry_id = name_scope.Lookup(name_context.name_id)) {
+      if (name_scope.GetEntry(*entry_id).result.access_kind() !=
+          modifier_set.GetAccessKind()) {
+        context.TODO(node_id, "`overload fn` members with differing access");
+      }
+    }
+  }
+}
+
 // Build a FunctionDecl describing the signature of a function. This
 // handles the common logic shared by function declaration syntax and function
 // definition syntax.
@@ -591,6 +788,8 @@ static auto BuildFunctionDecl(Context& context,
                     name_context.parent_scope_id, parent_scope_inst_id,
                     parent_scope_inst, self_param_id);
   bool is_extern = introducer.modifier_set.HasAnyOf(KeywordModifierSet::Extern);
+  bool is_overload =
+      introducer.modifier_set.HasAnyOf(KeywordModifierSet::Overload);
   auto virtual_modifier = GetVirtualModifier(introducer.modifier_set);
   auto evaluation_mode = GetEvaluationMode(introducer.modifier_set);
   auto interface_modifier = GetInterfaceModifier(introducer.modifier_set);
@@ -622,8 +821,16 @@ static auto BuildFunctionDecl(Context& context,
 
   DiagnosePositionalParams(context, function_info);
 
-  TryMergeRedecl(context, node_id, name_context, function_decl, function_info,
-                 is_definition);
+  // D-OV-6 gates (ix) and (xiii): a marked declaration directly in an
+  // interface or `impl` body. The marker is diagnosed and then ignored, so the
+  // declaration is checked as a plain function.
+  if (is_overload && DiagnoseOverloadInInterfaceOrImpl(
+                         context, node_id, name_context.parent_scope_id)) {
+    is_overload = false;
+  }
+
+  TryMergeRedecl(context, node_id, name_context, is_overload, function_decl,
+                 function_info, is_definition);
 
   // Create a new function if this isn't a valid redeclaration.
   if (!function_decl.function_id.has_value()) {
@@ -635,6 +842,12 @@ static auto BuildFunctionDecl(Context& context,
     function_decl.type_id =
         GetFunctionType(context, function_decl.function_id,
                         context.scope_stack().PeekSpecificId());
+    if (function_info.overload_set_id.has_value()) {
+      // A new member of an existing set (D-OV-3).
+      context.overload_sets()
+          .Get(function_info.overload_set_id)
+          .member_decl_ids.push_back(decl_id);
+    }
   } else {
     auto prev_decl_generic_id =
         context.functions().Get(function_decl.function_id).generic_id;
@@ -659,9 +872,38 @@ static auto BuildFunctionDecl(Context& context,
                            DefinedAbstractFunction);
   }
 
+  // A first marked declaration of a name creates its `overload fn` set
+  // (D-OV-2, D-OV-3). The set value is added to the current block right after
+  // the member's `FunctionDecl`, and it — not the member — is the name lookup
+  // result.
+  auto lookup_result_id = decl_id;
+  if (is_overload &&
+      name_context.state != DeclNameStack::NameContext::State::Error &&
+      !function_info.overload_set_id.has_value() &&
+      (name_context.state == DeclNameStack::NameContext::State::Poisoned ||
+       !name_context.prev_inst_id().has_value())) {
+    auto overload_set_id = context.overload_sets().Add(
+        {.name_id = name_context.name_id,
+         .parent_scope_id = name_context.parent_scope_id,
+         .member_decl_ids = {decl_id}});
+    auto& first_member = context.functions().Get(function_decl.function_id);
+    first_member.overload_set_id = overload_set_id;
+    first_member.overload_index = 0;
+    lookup_result_id = AddInst<SemIR::OverloadSetValue>(
+        context, node_id,
+        {.type_id = GetOverloadSetType(context, overload_set_id,
+                                       context.scope_stack().PeekSpecificId()),
+         .overload_set_id = overload_set_id});
+  }
+
   // Add to name lookup if needed, now that the decl is built.
   MaybeAddToNameLookup(context, name_context, introducer.modifier_set,
-                       name_context.parent_scope_id, decl_id);
+                       name_context.parent_scope_id, lookup_result_id);
+
+  if (is_overload) {
+    DiagnoseOverloadGates(context, node_id, introducer.modifier_set,
+                          name_context, function_decl.function_id);
+  }
 
   ValidateForEntryPoint(context, node_id, function_decl.function_id,
                         function_info);

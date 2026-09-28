@@ -42,6 +42,10 @@ class InstFingerprinterTemplate {
   auto GetOrCompute(const File* file, CppOverloadSetId overload_set_id)
       -> ResultType;
 
+  // Gets or computes a fingerprint for the given Carbon overload set.
+  auto GetOrCompute(const File* file, OverloadSetId overload_set_id)
+      -> ResultType;
+
  private:
   std::unique_ptr<StoreT> store_;
 };

@@ -333,6 +333,25 @@ static auto CheckRedeclParam(Context& context, bool is_implicit_param,
   return true;
 }
 
+// Returns false if any pair of corresponding parameter patterns differs for a
+// redeclaration. The two lists must have the same size.
+static auto CheckRedeclParamLists(
+    Context& context, llvm::ArrayRef<SemIR::InstId> new_param_pattern_ids,
+    llvm::ArrayRef<SemIR::InstId> prev_param_pattern_ids,
+    bool is_implicit_param, SemIR::SpecificId prev_specific_id, bool diagnose,
+    bool check_syntax) -> bool {
+  CARBON_CHECK(new_param_pattern_ids.size() == prev_param_pattern_ids.size());
+  for (auto [index, new_param_pattern_id, prev_param_pattern_id] :
+       llvm::enumerate(new_param_pattern_ids, prev_param_pattern_ids)) {
+    if (!CheckRedeclParam(context, is_implicit_param, index,
+                          new_param_pattern_id, prev_param_pattern_id,
+                          prev_specific_id, diagnose, check_syntax)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 // Returns false if the param refs differ for a redeclaration.
 static auto CheckRedeclParams(Context& context, SemIR::LocId new_decl_loc_id,
                               SemIR::InstBlockId new_param_patterns_id,
@@ -397,15 +416,9 @@ static auto CheckRedeclParams(Context& context, SemIR::LocId new_decl_loc_id,
         .Emit();
     return false;
   }
-  for (auto [index, new_param_pattern_id, prev_param_pattern_id] :
-       llvm::enumerate(new_param_pattern_ids, prev_param_pattern_ids)) {
-    if (!CheckRedeclParam(context, is_implicit_param, index,
-                          new_param_pattern_id, prev_param_pattern_id,
-                          prev_specific_id, diagnose, check_syntax)) {
-      return false;
-    }
-  }
-  return true;
+  return CheckRedeclParamLists(context, new_param_pattern_ids,
+                               prev_param_pattern_ids, is_implicit_param,
+                               prev_specific_id, diagnose, check_syntax);
 }
 
 // Returns true if the two nodes represent the same syntax.
@@ -526,6 +539,33 @@ static auto CheckRedeclParamSyntax(Context& context,
   }
 
   return true;
+}
+
+auto CheckRedeclExplicitParamsAfterSelfMatch(Context& context,
+                                             const DeclParams& new_entity,
+                                             const DeclParams& prev_entity)
+    -> bool {
+  if (EntityHasParamError(context, new_entity) ||
+      EntityHasParamError(context, prev_entity)) {
+    return false;
+  }
+  if (!new_entity.param_patterns_id.has_value() ||
+      !prev_entity.param_patterns_id.has_value()) {
+    return false;
+  }
+  auto new_param_pattern_ids =
+      context.inst_blocks().Get(new_entity.param_patterns_id);
+  auto prev_param_pattern_ids =
+      context.inst_blocks().Get(prev_entity.param_patterns_id);
+  if (new_param_pattern_ids.empty() || prev_param_pattern_ids.empty() ||
+      new_param_pattern_ids.size() != prev_param_pattern_ids.size()) {
+    return false;
+  }
+  return CheckRedeclParamLists(context, new_param_pattern_ids.drop_front(),
+                               prev_param_pattern_ids.drop_front(),
+                               /*is_implicit_param=*/false,
+                               SemIR::SpecificId::None,
+                               /*diagnose=*/false, /*check_syntax=*/false);
 }
 
 auto CheckRedeclParamsMatch(Context& context, const DeclParams& new_entity,

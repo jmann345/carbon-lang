@@ -306,6 +306,12 @@ static auto EmitAsConstant(ConstantContext& context,
   return context.GetLiteralAsValue();
 }
 
+static auto EmitAsConstant(ConstantContext& context,
+                           SemIR::OverloadSetValue /*inst*/)
+    -> llvm::Constant* {
+  return context.GetLiteralAsValue();
+}
+
 static auto EmitAsConstant(ConstantContext& context, SemIR::FieldDecl inst)
     -> llvm::Constant* {
   return context.GetUnusedConstant(inst.type_id);

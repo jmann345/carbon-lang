@@ -651,6 +651,9 @@ class Context {
   auto cpp_overload_sets() -> SemIR::CppOverloadSetStore& {
     return sem_ir().cpp_overload_sets();
   }
+  auto overload_sets() -> SemIR::OverloadSetStore& {
+    return sem_ir().overload_sets();
+  }
   auto functions() -> SemIR::FunctionStore& { return sem_ir().functions(); }
   auto thunks() -> SemIR::ThunkStore& { return sem_ir().thunks(); }
   auto classes() -> SemIR::ClassStore& { return sem_ir().classes(); }

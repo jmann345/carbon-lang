@@ -5,7 +5,10 @@
 #include "toolchain/check/call.h"
 
 #include <optional>
+#include <utility>
 
+#include "llvm/ADT/STLExtras.h"
+#include "llvm/ADT/SmallVector.h"
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/check/context.h"
 #include "toolchain/check/control_flow.h"
@@ -13,8 +16,10 @@
 #include "toolchain/check/cpp/call.h"
 #include "toolchain/check/cpp/thunk.h"
 #include "toolchain/check/deduce.h"
+#include "toolchain/check/eval.h"
 #include "toolchain/check/facet_type.h"
 #include "toolchain/check/function.h"
+#include "toolchain/check/generic.h"
 #include "toolchain/check/import_ref.h"
 #include "toolchain/check/inst.h"
 #include "toolchain/check/thunk.h"
@@ -25,6 +30,7 @@
 #include "toolchain/sem_ir/function.h"
 #include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/inst.h"
+#include "toolchain/sem_ir/overload_set.h"
 #include "toolchain/sem_ir/pattern.h"
 #include "toolchain/sem_ir/typed_insts.h"
 
@@ -305,6 +311,280 @@ auto PerformCallToFunction(Context& context, SemIR::LocId loc_id,
   }
 }
 
+namespace {
+// Why a candidate member of an `overload fn` set was rejected, for the
+// `OverloadCandidateRejected` note. Converted to an int for a select.
+enum class OverloadRejectReason : uint8_t {
+  Arity = 0,
+  Conversion = 1,
+  Deduction = 2,
+  ReceiverOnNonMethod = 3,
+};
+
+// The outcome of probing one candidate member.
+struct OverloadProbeResult {
+  // Why the candidate was rejected; `nullopt` if it was accepted.
+  std::optional<OverloadRejectReason> reject_reason;
+  // Whether a 0.1 gate was diagnosed, in which case the whole call is an
+  // error and no further candidate is tried.
+  bool gated = false;
+};
+}  // namespace
+
+// Returns the range of explicit argument counts a member accepts, keyed on
+// whether the call binds a receiver, exactly as `ResolveCalleeInCall` computes
+// the expected count. Carbon has no default arguments, so the range is exact;
+// it is a range so that variadic members (W-013) can widen it.
+static auto GetExplicitArityRange(Context& context,
+                                  const SemIR::Function& function,
+                                  SemIR::InstId self_id)
+    -> std::pair<size_t, size_t> {
+  auto param_patterns =
+      context.inst_blocks().GetOrEmpty(function.param_patterns_id);
+  size_t expected_args_size =
+      param_patterns.size() - (self_id.has_value() ? 1 : 0);
+  return {expected_args_size, expected_args_size};
+}
+
+// Returns the leaf parameter pattern of a parameter pattern, looking through
+// binding and `var` wrappers, or `None` if there is none.
+static auto GetLeafParamPattern(Context& context, SemIR::InstId pattern_id)
+    -> SemIR::InstId {
+  while (true) {
+    auto inst = context.insts().Get(pattern_id);
+    if (inst.Is<SemIR::AnyLeafParamPattern>()) {
+      return pattern_id;
+    }
+    if (auto binding = inst.TryAs<SemIR::WrapperBindingPattern>()) {
+      pattern_id = binding->subpattern_id;
+    } else if (auto var_pattern = inst.TryAs<SemIR::AnyVarPattern>()) {
+      pattern_id = var_pattern->subpattern_id;
+    } else {
+      return SemIR::InstId::None;
+    }
+  }
+}
+
+// D-OV-4 step 2(e)'s literal pre-test: returns false when `arg_id` is an
+// integer literal constant that does not fit `param_type_id`. Constant
+// evaluation of `int.convert_checked` diagnoses an out-of-range literal
+// unconditionally and still produces a value, so a bare non-diagnosing
+// conversion would both accept the member and diagnose; the pre-test rejects
+// the member silently instead, through the same range checks the builtin uses.
+static auto IntLiteralArgFitsParam(Context& context, SemIR::InstId arg_id,
+                                   SemIR::TypeId param_type_id) -> bool {
+  auto const_inst_id = context.constant_values().GetConstantInstId(arg_id);
+  if (!const_inst_id.has_value()) {
+    return true;
+  }
+  auto int_value = context.insts().TryGetAs<SemIR::IntValue>(const_inst_id);
+  if (!int_value ||
+      !context.types().Is<SemIR::IntLiteralType>(int_value->type_id)) {
+    return true;
+  }
+  auto param_int_info = context.types().TryGetIntTypeInfo(param_type_id);
+  if (!param_int_info) {
+    return true;
+  }
+  const auto& value = context.ints().Get(int_value->int_id);
+  uint64_t width =
+      param_int_info->bit_width.has_value()
+          ? context.ints().Get(param_int_info->bit_width).getZExtValue()
+          : value.getBitWidth();
+  return IntFitsInIntType(value, param_int_info->is_signed, width);
+}
+
+// Probes whether every argument of a call converts to the corresponding
+// parameter of `function`, without diagnosing and without leaving any
+// instruction, cleanup, or generic-region state behind (D-OV-4 step 2(e)).
+// `arg_ids` is `self` (if bound) followed by the explicit arguments, zipped
+// against all of the function's parameter patterns as `CallerPatternMatch`
+// does. A bound receiver is never converted here: its presence was checked by
+// the caller, and binding it is the commit's job.
+static auto ProbeOverloadCandidate(Context& context, SemIR::LocId loc_id,
+                                   const SemIR::Function& function,
+                                   SemIR::SpecificId enclosing_specific_id,
+                                   SemIR::InstId self_id,
+                                   llvm::ArrayRef<SemIR::InstId> arg_ids)
+    -> OverloadProbeResult {
+  auto param_pattern_ids =
+      context.inst_blocks().GetOrEmpty(function.param_patterns_id);
+  CARBON_CHECK(param_pattern_ids.size() == arg_ids.size());
+
+  // Snapshot the enclosing block and the cleanup stack, then open a scratch
+  // block and a fresh generic region so that conversions the probe performs
+  // are discarded rather than added to the enclosing block or generic.
+  auto enclosing_size =
+      context.inst_block_stack().PeekCurrentBlockContents().size();
+  auto cleanup_depth = context.scope_stack().cleanup_scope_depth();
+  context.inst_block_stack().Push();
+  context.generic_region_stack().Push({.generic_id = SemIR::GenericId::None});
+
+  OverloadProbeResult result;
+  for (auto [index, arg_id, param_pattern_id] :
+       llvm::enumerate(arg_ids, param_pattern_ids)) {
+    if (index == 0 && self_id.has_value()) {
+      // The bound receiver.
+      continue;
+    }
+    auto param_type_id = GetScrutineeTypeInSpecific(context, param_pattern_id,
+                                                    enclosing_specific_id);
+    if (param_pattern_id == function.self_param_id) {
+      // An explicit receiver for a method member reached without a bound
+      // receiver, such as `C.M(c, 1)`: argument 0 is matched against the
+      // `self` pattern. A by-value `self` is a value conversion; a `ref self`
+      // or `addr self` receiver is D-OV-6 gate (xii).
+      auto leaf_id = GetLeafParamPattern(context, param_pattern_id);
+      if (!leaf_id.has_value() ||
+          !context.insts().Is<SemIR::ValueParamPattern>(leaf_id)) {
+        context.TODO(loc_id,
+                     "explicit receiver for a `ref self`/`addr self` "
+                     "overload member");
+        result.reject_reason = OverloadRejectReason::Conversion;
+        result.gated = true;
+        break;
+      }
+    } else if (!IntLiteralArgFitsParam(context, arg_id, param_type_id)) {
+      result.reject_reason = OverloadRejectReason::Conversion;
+      break;
+    }
+    if (TryConvertToValueOfType(context, SemIR::LocId(arg_id), arg_id,
+                                param_type_id) == SemIR::ErrorInst::InstId) {
+      result.reject_reason = OverloadRejectReason::Conversion;
+      break;
+    }
+  }
+
+  // Unwind on every exit path: the scratch block, the generic region, and any
+  // cleanups a materialized temporary registered during the probe (which
+  // `PopAndDiscard` does not touch and the statement's cleanup emission would
+  // otherwise `Destroy` in the enclosing block).
+  context.generic_region_stack().Pop();
+  context.inst_block_stack().PopAndDiscard();
+  context.scope_stack().DiscardCleanupsSince(cleanup_depth);
+  CARBON_CHECK(context.inst_block_stack().PeekCurrentBlockContents().size() ==
+                       enclosing_size &&
+                   context.scope_stack().cleanup_scope_depth() == cleanup_depth,
+               "Overload resolution probe leaked into the enclosing block");
+  return result;
+}
+
+// Performs a call where the callee is a Carbon `overload fn` set: resolves the
+// call to the first member, in declaration order, that accepts the arguments
+// (F-009, D-OV-4), then performs the ordinary call to that member.
+static auto PerformCallToOverloadSet(Context& context, SemIR::LocId loc_id,
+                                     const SemIR::CalleeOverloadSet& overload,
+                                     llvm::ArrayRef<SemIR::InstId> arg_ids,
+                                     bool is_desugared) -> SemIR::InstId {
+  // Erroneous arguments were diagnosed where they arose; the ordinary call
+  // path stays silent on them too.
+  if (llvm::is_contained(arg_ids, SemIR::ErrorInst::InstId)) {
+    return SemIR::ErrorInst::InstId;
+  }
+
+  // D-OV-6 gate (xi): resolution over template-dependent arguments happens
+  // after substitution, which is not supported yet.
+  for (auto arg_id : arg_ids) {
+    auto type_dependence = context.constant_values().GetDependence(
+        context.types().GetConstantId(context.insts().Get(arg_id).type_id()));
+    auto value_dependence = context.constant_values().GetDependence(
+        context.constant_values().Get(arg_id));
+    if (type_dependence == SemIR::ConstantDependence::Template ||
+        value_dependence == SemIR::ConstantDependence::Template) {
+      context.TODO(loc_id,
+                   "overload resolution with template-dependent arguments");
+      return SemIR::ErrorInst::InstId;
+    }
+  }
+
+  // Copy what the loop needs out of the store: the commit path below may add
+  // instructions and entities.
+  const auto& overload_set =
+      context.overload_sets().Get(overload.overload_set_id);
+  auto name_id = overload_set.name_id;
+  auto member_decl_ids = overload_set.member_decl_ids;
+  auto self_id = overload.self_id;
+  llvm::ArrayRef<SemIR::InstId> self_refs = {};
+  if (self_id.has_value()) {
+    self_refs = self_id;
+  }
+  auto all_arg_ids =
+      llvm::to_vector<8>(llvm::concat<const SemIR::InstId>(self_refs, arg_ids));
+
+  llvm::SmallVector<OverloadRejectReason, 4> reject_reasons;
+  for (auto member_decl_id : member_decl_ids) {
+    auto function_id =
+        context.insts().GetAs<SemIR::FunctionDecl>(member_decl_id).function_id;
+    const auto& function = context.functions().Get(function_id);
+
+    // (a) A bound receiver needs a member with a `self` pattern. The reverse
+    // combination — a method member reached without a bound receiver — is a
+    // legal call shape (`C.M(c, 1)`), matched by the probe.
+    if (self_id.has_value() && !function.self_param_id.has_value()) {
+      reject_reasons.push_back(OverloadRejectReason::ReceiverOnNonMethod);
+      continue;
+    }
+
+    // (b) Arity, keyed on the call's receiver as the ordinary call path is.
+    auto [min_args, max_args] =
+        GetExplicitArityRange(context, function, self_id);
+    if (arg_ids.size() < min_args || arg_ids.size() > max_args) {
+      reject_reasons.push_back(OverloadRejectReason::Arity);
+      continue;
+    }
+
+    // (e) The conversion probe. (Generic members are gated in 0.1, so there is
+    // no deduction step here; OV-2 adds it inside the same discard scope.)
+    auto probe = ProbeOverloadCandidate(context, loc_id, function,
+                                        overload.enclosing_specific_id, self_id,
+                                        all_arg_ids);
+    if (probe.gated) {
+      return SemIR::ErrorInst::InstId;
+    }
+    if (probe.reject_reason) {
+      reject_reasons.push_back(*probe.reject_reason);
+      continue;
+    }
+
+    // Commit: name the member afresh and run the ordinary call path on it,
+    // reusing nothing the probe produced.
+    auto callee_id = BuildNameRef(context, loc_id, name_id, member_decl_id,
+                                  overload.enclosing_specific_id);
+    if (self_id.has_value()) {
+      callee_id = GetOrAddInst<SemIR::BoundMethod>(
+          context, loc_id,
+          {.type_id =
+               GetSingletonType(context, SemIR::BoundMethodType::TypeInstId),
+           .object_id = self_id,
+           .function_decl_id = callee_id});
+    }
+    return PerformCallToFunction(
+        context, loc_id, callee_id,
+        GetCalleeAsFunction(context.sem_ir(), callee_id), arg_ids,
+        is_desugared);
+  }
+
+  CARBON_DIAGNOSTIC(OverloadNoMatch, Error,
+                    "no member of overload set `{0}` accepts this call",
+                    SemIR::NameId);
+  CARBON_DIAGNOSTIC(OverloadCandidateRejected, Note,
+                    "candidate {0:=0:takes a different number of arguments"
+                    "|=1:has a parameter its argument cannot implicitly "
+                    "convert to"
+                    "|=2:has generic parameters that could not be deduced"
+                    "|=3:is not an instance method, but the call provides a "
+                    "receiver}",
+                    Diagnostics::IntAsSelect);
+  auto builder = context.emitter().Build(loc_id, OverloadNoMatch, name_id);
+  for (auto [member_decl_id, reason] :
+       llvm::zip_equal(member_decl_ids, reject_reasons)) {
+    builder.Note(SemIR::LocId(member_decl_id), OverloadCandidateRejected,
+                 static_cast<int>(reason));
+  }
+  builder.Emit();
+  return SemIR::ErrorInst::InstId;
+}
+
 // Performs a call where the callee is a generic type. If it's not a generic
 // type, produces a diagnostic.
 static auto PerformCallToNonFunction(Context& context, SemIR::LocId loc_id,
@@ -363,6 +643,10 @@ auto PerformCall(Context& context, SemIR::LocId loc_id, SemIR::InstId callee_id,
       return PerformCallToCppFunction(context, loc_id,
                                       overload.cpp_overload_set_id,
                                       overload.self_id, arg_ids, is_desugared);
+    }
+    case CARBON_KIND(SemIR::CalleeOverloadSet overload): {
+      return PerformCallToOverloadSet(context, loc_id, overload, arg_ids,
+                                      is_desugared);
     }
   }
 }

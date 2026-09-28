@@ -46,6 +46,7 @@ enum class ModifierOrder : int8_t {
   X(Export)                                                                  \
   X(Final)                                                                   \
   X(Impl)                                                                    \
+  X(Overload)                                                                \
   X(Override)                                                                \
   X(Returned)                                                                \
   X(Virtual)                                                                 \
@@ -149,7 +150,8 @@ inline constexpr KeywordModifierSet KeywordModifierSet::Interface(Default |
 inline constexpr KeywordModifierSet KeywordModifierSet::Decl(Class | Method |
                                                              MatchFirst | Impl |
                                                              Interface |
-                                                             Export | Returned);
+                                                             Export | Returned |
+                                                             Overload);
 inline constexpr KeywordModifierSet KeywordModifierSet::Evaluation(Eval |
                                                                    MustEval);
 

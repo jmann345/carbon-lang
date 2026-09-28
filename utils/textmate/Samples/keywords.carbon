@@ -32,7 +32,7 @@ impl package
 
 // --- misc-keywords
 
-auto destructor forall friend observe override require
+auto destructor forall friend observe overload override require
 .base
 
 // --- self-keywords

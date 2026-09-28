@@ -5,6 +5,7 @@
 #ifndef CARBON_TOOLCHAIN_CHECK_EVAL_H_
 #define CARBON_TOOLCHAIN_CHECK_EVAL_H_
 
+#include "llvm/ADT/APInt.h"
 #include "toolchain/check/context.h"
 #include "toolchain/sem_ir/generic.h"
 #include "toolchain/sem_ir/ids.h"
@@ -12,6 +13,25 @@
 #include "toolchain/sem_ir/inst_kind.h"
 
 namespace Carbon::Check {
+
+// The two range checks of the checked integer conversion builtin
+// (`PerformCheckedIntConvert`), shared with the overload resolution probe so
+// that the probe's silent rejection of a candidate and the builtin's
+// diagnostics cannot drift apart (D-OV-4 step 2(e)).
+
+// Returns whether `value` is negative and the destination type is unsigned.
+auto IntIsNegativeInUnsignedType(const llvm::APInt& value, bool is_signed)
+    -> bool;
+
+// Returns whether `value`'s significant bits (plus a sign bit for a signed
+// destination) exceed the destination's bit `width`.
+auto IntExceedsIntTypeWidth(const llvm::APInt& value, bool is_signed,
+                            uint64_t width) -> bool;
+
+// Returns whether `value` fits in an integer type with the given signedness and
+// bit width, that is, whether neither check above fails.
+auto IntFitsInIntType(const llvm::APInt& value, bool is_signed, uint64_t width)
+    -> bool;
 
 // Adds a `ConstantId` for a constant that has been imported from another IR.
 // Does not evaluate the instruction, instead trusting that it is already in a

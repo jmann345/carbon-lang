@@ -25,6 +25,7 @@
 #include "toolchain/sem_ir/entity_with_params_base.h"
 #include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/name_scope.h"
+#include "toolchain/sem_ir/overload_set.h"
 #include "toolchain/sem_ir/typed_insts.h"
 
 namespace Carbon::SemIR {
@@ -216,8 +217,9 @@ struct Worklist {
   // The file containing the instruction we're currently processing.
   const File* sem_ir = nullptr;
   // The instructions we need to compute fingerprints for.
-  llvm::SmallVector<std::pair<
-      const File*, std::variant<InstId, InstBlockId, ImplId, CppOverloadSetId>>>
+  llvm::SmallVector<
+      std::pair<const File*, std::variant<InstId, InstBlockId, ImplId,
+                                          CppOverloadSetId, OverloadSetId>>>
       todo;
   // Known cached instruction fingerprints.
   StoreT* store;
@@ -427,6 +429,13 @@ struct Worklist {
         sem_ir->cpp_overload_sets().Get(cpp_overload_set_id);
     Add(cpp_overload_set.name_id);
     Add(cpp_overload_set.parent_scope_id);
+  }
+
+  auto Add(OverloadSetId overload_set_id) -> void {
+    const OverloadSet& overload_set =
+        sem_ir->overload_sets().Get(overload_set_id);
+    Add(overload_set.name_id);
+    Add(overload_set.parent_scope_id);
   }
 
   auto Add(ClangDeclId /*decl_id*/) -> void {
@@ -696,6 +705,9 @@ struct Worklist {
           case CARBON_KIND(CppOverloadSetId overload_set_id):
             Add(overload_set_id);
             break;
+          case CARBON_KIND(OverloadSetId overload_set_id):
+            Add(overload_set_id);
+            break;
         }
 
         // If we didn't add any more work, then we have a fingerprint for the
@@ -809,6 +821,14 @@ auto InstFingerprinterTemplate<StoreT, ResultT>::GetOrCompute(const File* file,
 template <typename StoreT, typename ResultT>
 auto InstFingerprinterTemplate<StoreT, ResultT>::GetOrCompute(
     const File* file, CppOverloadSetId overload_set_id) -> ResultT {
+  Worklist<StoreT> worklist = {.todo = {{file, overload_set_id}},
+                               .store = store_.get()};
+  return worklist.Run();
+}
+
+template <typename StoreT, typename ResultT>
+auto InstFingerprinterTemplate<StoreT, ResultT>::GetOrCompute(
+    const File* file, OverloadSetId overload_set_id) -> ResultT {
   Worklist<StoreT> worklist = {.todo = {{file, overload_set_id}},
                                .store = store_.get()};
   return worklist.Run();

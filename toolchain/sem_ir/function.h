@@ -181,6 +181,18 @@ struct FunctionFields {
   // `param_patterns_id` (from EntityWithParamsBase).
   InstId self_param_id = InstId::None;
 
+  // The `overload fn` set this function is a member of, if any. Not set on
+  // an imported member: the set itself is not imported (its value and type
+  // resolve to a semantics TODO until OV-2), only its members are, so the
+  // mangler keys on `overload_index` instead.
+  OverloadSetId overload_set_id = OverloadSetId::None;
+
+  // The function's position in its `overload fn` set's `member_decl_ids`, or
+  // -1 if it is not a member. Assigned when the member is appended to the set
+  // and mirrored on import, so a member's mangled name (`:overload<N>`,
+  // D-OV-5) is the same in every file that reaches it.
+  int32_t overload_index = -1;
+
   // Data that is specific to the special function kind. Use
   // `builtin_function_kind()`, `thunk_decl_id()` or `cpp_thunk_decl_id()` to
   // access this.
@@ -257,6 +269,12 @@ struct Function : public EntityWithParamsBase,
     }
     if (interface_modifier != InterfaceModifier::None) {
       out << ", interface_modifier: " << interface_modifier;
+    }
+    if (overload_set_id.has_value()) {
+      out << ", overload_set_id: " << overload_set_id;
+    }
+    if (overload_index >= 0) {
+      out << ", overload_index: " << overload_index;
     }
     if (!body_block_ids.empty()) {
       out << llvm::formatv(
@@ -378,6 +396,16 @@ struct CalleeCppOverloadSet {
   InstId self_id;
 };
 
+// Information about a callee that's a Carbon `overload fn` set.
+struct CalleeOverloadSet {
+  // The overload set.
+  OverloadSetId overload_set_id;
+  // The specific that contains the set.
+  SpecificId enclosing_specific_id;
+  // The bound `self` parameter. `None` if not bound.
+  InstId self_id;
+};
+
 // Information about a callee that's `ErrorInst`.
 struct CalleeError {};
 
@@ -402,7 +430,7 @@ struct CalleeNonFunction {};
 
 // A variant combining the callee forms.
 using Callee = std::variant<CalleeCppOverloadSet, CalleeError, CalleeFunction,
-                            CalleeNonFunction>;
+                            CalleeNonFunction, CalleeOverloadSet>;
 
 // Returns information for the function corresponding to callee_id in
 // caller_specific_id.

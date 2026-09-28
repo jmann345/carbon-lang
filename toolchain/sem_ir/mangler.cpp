@@ -15,6 +15,7 @@
 #include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/inst_categories.h"
 #include "toolchain/sem_ir/name_scope.h"
+#include "toolchain/sem_ir/overload_set.h"
 #include "toolchain/sem_ir/pattern.h"
 #include "toolchain/sem_ir/specific_interface.h"
 #include "toolchain/sem_ir/specific_named_constraint.h"
@@ -208,6 +209,21 @@ auto Mangler::MangleImpl(SemIR::FunctionId function_id,
   os << "_C";
 
   MangleNameId(os, function.name_id);
+  if (function.overload_index >= 0) {
+    // Members of an `overload fn` set share a name; distinguish them by their
+    // position in the set (D-OV-5). The index is declaration order in the api
+    // file and is mirrored on import, so it is the same in every file that
+    // reaches the member; no fingerprint is involved. A set declared in this
+    // file must agree with the stored index.
+    if (function.overload_set_id.has_value()) {
+      CARBON_CHECK(
+          SemIR::GetOverloadMemberIndex(
+              sem_ir(), sem_ir().overload_sets().Get(function.overload_set_id),
+              function_id) == function.overload_index,
+          "Overload member index disagrees with its set");
+    }
+    os << ":overload" << function.overload_index;
+  }
   char separator = '.';
 
   // For a special function, add a marker to disambiguate.

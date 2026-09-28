@@ -1459,6 +1459,31 @@ struct OutParamPattern {
   NameId pretty_name_id;
 };
 
+// The type of a Carbon `overload fn` set. `specific_id` is the enclosing
+// specific the set was declared in (the self specific of an enclosing generic),
+// as for `FunctionType`.
+struct OverloadSetType {
+  static constexpr auto Kind = InstKind::OverloadSetType.Define<Parse::NodeId>(
+      {.ir_name = "overload_set_type",
+       .is_type = InstIsType::Always,
+       .constant_kind = InstConstantKind::WheneverPossible});
+
+  TypeId type_id;
+  OverloadSetId overload_set_id;
+  SpecificId specific_id;
+};
+
+// The value that name lookup of an overloaded name resolves to. It is only
+// usable as the callee of a call; overload resolution selects the member.
+struct OverloadSetValue {
+  static constexpr auto Kind = InstKind::OverloadSetValue.Define<Parse::NodeId>(
+      {.ir_name = "overload_set_value",
+       .constant_kind = InstConstantKind::Always});
+
+  TypeId type_id;
+  OverloadSetId overload_set_id;
+};
+
 // Indicates `partial` on a type, such as `partial MyClass`.
 struct PartialType {
   static constexpr auto Kind =

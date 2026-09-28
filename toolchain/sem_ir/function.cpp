@@ -68,6 +68,16 @@ auto GetCallee(const File& sem_ir, InstId callee_id,
         .self_id = fn.self_id};
   }
 
+  if (auto overload_set_type =
+          sem_ir.insts().TryGetAs<OverloadSetType>(fn_type_inst_id)) {
+    CARBON_CHECK(!fn.resolved_specific_id.has_value(),
+                 "Only `SpecificFunction` will be resolved, not overload sets");
+    return CalleeOverloadSet{
+        .overload_set_id = overload_set_type->overload_set_id,
+        .enclosing_specific_id = overload_set_type->specific_id,
+        .self_id = fn.self_id};
+  }
+
   if (auto impl_fn_type =
           sem_ir.insts().TryGetAs<FunctionTypeWithSelfType>(fn_type_inst_id)) {
     // Combine the associated function's `Self` with the interface function

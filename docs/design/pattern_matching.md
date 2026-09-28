@@ -695,8 +695,12 @@ We will diagnose the following situations:
 
     -   For `match` statements, patterns are matched top-down, so overlap is
         permitted.
-    -   We do not yet have an approved design for overloaded functions, but it
-        is anticipated that declaration order will be used in that case too.
+    -   For [overloaded functions](functions_overloading.md), declaration order
+        is used, per fork decision
+        [F-009](/fork/decision-log.md):
+        candidates are tried in declaration order and the first match is
+        selected, so overlap between members is permitted (fork amendment
+        2026-09-27).
     -   For a set of `impl`s that match a given `impl` lookup, argument
         deduction is used rather than pattern matching, but `impl`s with the
         same type structure are an error unless a `match_first` declaration is
@@ -1062,8 +1066,16 @@ nested value pattern matching, or whether we shouldn't do so.
 
 ### Pattern matching as function overload resolution
 
-Need to flesh out specific details of how overload selection leverages the
-pattern matching machinery, what (if any) restrictions are imposed, etc.
+For 0.1, overload selection is fixed by fork decision
+[F-009](/fork/decision-log.md)
+and specified in [Function overloading](functions_overloading.md):
+declaration-order first-match over signatures containing only irrefutable
+patterns — the compile-time subset of pattern dispatch, chosen so that
+declaration order coincides with match-case order. What remains open is the
+future extension to refutable value patterns in overload signatures, which would
+leverage the full pattern matching machinery described here; see
+[Function overloading: future work](functions_overloading.md#future-work)
+(fork amendment 2026-09-27).
 
 ## Alternatives considered
 

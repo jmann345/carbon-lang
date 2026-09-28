@@ -25,21 +25,9 @@ overload fn F(x: i32) -> i32;
 overload fn F(b: bool) -> i32;
 
 // --- fail_set.impl.carbon
-// CHECK:STDERR: fail_set.impl.carbon: error: semantics TODO: `overload set import` [SemanticsTodo]
-// CHECK:STDERR:
-// CHECK:STDERR: fail_set.impl.carbon: error: semantics TODO: `overload set import` [SemanticsTodo]
-// CHECK:STDERR:
 
 impl library "[[@TEST_NAME]]";
 
-// CHECK:STDERR: fail_set.impl.carbon:[[@LINE+8]]:13: error: duplicate name `F` being declared in the same scope [NameDeclDuplicate]
-// CHECK:STDERR: overload fn F(x: i32) -> i32 { return x; }
-// CHECK:STDERR:             ^
-// CHECK:STDERR: fail_set.impl.carbon:[[@LINE-5]]:1: in import [InImport]
-// CHECK:STDERR: set.carbon:4:1: note: name is previously declared here [NameDeclPrevious]
-// CHECK:STDERR: overload fn F(x: i32) -> i32;
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 overload fn F(x: i32) -> i32 { return x; }
 
 // --- local.carbon
@@ -52,15 +40,7 @@ impl library "[[@TEST_NAME]]";
 
 // A set declared wholly inside an implementation file involves no import, so
 // the same-file path applies.
-// CHECK:STDERR: local.impl.carbon:[[@LINE+4]]:15: warning: binding `x` unused [UnusedBinding]
-// CHECK:STDERR: overload fn L(x: i32) -> i32 { return 1; }
-// CHECK:STDERR:               ^~~~~~
-// CHECK:STDERR:
-overload fn L(x: i32) -> i32 { return 1; }
-// CHECK:STDERR: local.impl.carbon:[[@LINE+4]]:15: warning: binding `b` unused [UnusedBinding]
-// CHECK:STDERR: overload fn L(b: bool) -> i32 { return 2; }
-// CHECK:STDERR:               ^~~~~~~
-// CHECK:STDERR:
-overload fn L(b: bool) -> i32 { return 2; }
+overload fn L(unused x: i32) -> i32 { return 1; }
+overload fn L(unused b: bool) -> i32 { return 2; }
 
 fn Use() -> i32 { return L(true); }

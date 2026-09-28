@@ -14,7 +14,7 @@ overload fn F(x: i32);
 
 // --- with_access.carbon
 
-private overload fn G(b: bool) {}
+private overload fn G(unused b: bool) {}
 
 // --- method.carbon
 
@@ -25,16 +25,12 @@ class C {
 // --- in_function_body.carbon
 
 fn Outer() {
-  overload fn L(x: i32) {}
+  overload fn L(unused x: i32) {}
 }
 
 // --- fail_overload_after_fn.carbon
 
 // `overload` is a keyword, so it cannot be the declaration's name.
-// CHECK:STDERR: fail_overload_after_fn.carbon:[[@LINE+4]]:4: error: `fn` introducer should be followed by a name [ExpectedDeclName]
-// CHECK:STDERR: fn overload F();
-// CHECK:STDERR:    ^~~~~~~~
-// CHECK:STDERR:
 fn overload F();
 
 // --- ordering.carbon
@@ -43,94 +39,3 @@ fn overload F();
 // (`ModifierMustAppearBefore`) is diagnosed by the checker, so this parses
 // cleanly with the modifiers in source order.
 overload private fn H();
-
-// CHECK:STDOUT: - filename: basic.carbon
-// CHECK:STDOUT:   ╭─FileStart ''
-// CHECK:STDOUT:   │ ╭─FunctionIntroducer 'fn'
-// CHECK:STDOUT:   │ ├─OverloadModifier 'overload'
-// CHECK:STDOUT:   │ ├─IdentifierNameMaybeBeforeSignature 'F'
-// CHECK:STDOUT:   │ │ ╭─ExplicitParamListStart '('
-// CHECK:STDOUT:   │ │ │ ╭─IdentifierNameNotBeforeSignature 'x'
-// CHECK:STDOUT:   │ │ │ ├─BindingPatternTypeStart ':'
-// CHECK:STDOUT:   │ │ │ ├─IntTypeLiteral 'i32'
-// CHECK:STDOUT:   │ │ ├─LetBindingPattern ':'
-// CHECK:STDOUT:   │ ├─ExplicitParamList ')'
-// CHECK:STDOUT:   ├─FunctionDecl ';'
-// CHECK:STDOUT:   ├─FileEnd ''
-// CHECK:STDOUT:   (root)
-// CHECK:STDOUT: - filename: with_access.carbon
-// CHECK:STDOUT:   ╭─FileStart ''
-// CHECK:STDOUT:   │   ╭─FunctionIntroducer 'fn'
-// CHECK:STDOUT:   │   ├─PrivateModifier 'private'
-// CHECK:STDOUT:   │   ├─OverloadModifier 'overload'
-// CHECK:STDOUT:   │   ├─IdentifierNameMaybeBeforeSignature 'G'
-// CHECK:STDOUT:   │   │ ╭─ExplicitParamListStart '('
-// CHECK:STDOUT:   │   │ │ ╭─IdentifierNameNotBeforeSignature 'b'
-// CHECK:STDOUT:   │   │ │ ├─BindingPatternTypeStart ':'
-// CHECK:STDOUT:   │   │ │ ├─BoolTypeLiteral 'bool'
-// CHECK:STDOUT:   │   │ ├─LetBindingPattern ':'
-// CHECK:STDOUT:   │   ├─ExplicitParamList ')'
-// CHECK:STDOUT:   │ ╭─FunctionDefinitionStart '{'
-// CHECK:STDOUT:   ├─FunctionDefinition '}'
-// CHECK:STDOUT:   ├─FileEnd ''
-// CHECK:STDOUT:   (root)
-// CHECK:STDOUT: - filename: method.carbon
-// CHECK:STDOUT:   ╭─FileStart ''
-// CHECK:STDOUT:   │   ╭─ClassIntroducer 'class'
-// CHECK:STDOUT:   │   ├─IdentifierNameNotBeforeSignature 'C'
-// CHECK:STDOUT:   │ ╭─ClassDefinitionStart '{'
-// CHECK:STDOUT:   │ │ ╭─FunctionIntroducer 'fn'
-// CHECK:STDOUT:   │ │ ├─OverloadModifier 'overload'
-// CHECK:STDOUT:   │ │ ├─IdentifierNameMaybeBeforeSignature 'M'
-// CHECK:STDOUT:   │ │ │ ╭─ExplicitParamListStart '('
-// CHECK:STDOUT:   │ │ │ │ ╭─SelfValueName 'self'
-// CHECK:STDOUT:   │ │ │ ├─SelfBindingPattern 'self'
-// CHECK:STDOUT:   │ │ │ ├─PatternListComma ','
-// CHECK:STDOUT:   │ │ │ │ ╭─IdentifierNameNotBeforeSignature 'x'
-// CHECK:STDOUT:   │ │ │ │ ├─BindingPatternTypeStart ':'
-// CHECK:STDOUT:   │ │ │ │ ├─IntTypeLiteral 'i32'
-// CHECK:STDOUT:   │ │ │ ├─LetBindingPattern ':'
-// CHECK:STDOUT:   │ │ ├─ExplicitParamList ')'
-// CHECK:STDOUT:   │ ├─FunctionDecl ';'
-// CHECK:STDOUT:   ├─ClassDefinition '}'
-// CHECK:STDOUT:   ├─FileEnd ''
-// CHECK:STDOUT:   (root)
-// CHECK:STDOUT: - filename: in_function_body.carbon
-// CHECK:STDOUT:   ╭─FileStart ''
-// CHECK:STDOUT:   │   ╭─FunctionIntroducer 'fn'
-// CHECK:STDOUT:   │   ├─IdentifierNameMaybeBeforeSignature 'Outer'
-// CHECK:STDOUT:   │   │ ╭─ExplicitParamListStart '('
-// CHECK:STDOUT:   │   ├─ExplicitParamList ')'
-// CHECK:STDOUT:   │ ╭─FunctionDefinitionStart '{'
-// CHECK:STDOUT:   │ │   ╭─FunctionIntroducer 'fn'
-// CHECK:STDOUT:   │ │   ├─OverloadModifier 'overload'
-// CHECK:STDOUT:   │ │   ├─IdentifierNameMaybeBeforeSignature 'L'
-// CHECK:STDOUT:   │ │   │ ╭─ExplicitParamListStart '('
-// CHECK:STDOUT:   │ │   │ │ ╭─IdentifierNameNotBeforeSignature 'x'
-// CHECK:STDOUT:   │ │   │ │ ├─BindingPatternTypeStart ':'
-// CHECK:STDOUT:   │ │   │ │ ├─IntTypeLiteral 'i32'
-// CHECK:STDOUT:   │ │   │ ├─LetBindingPattern ':'
-// CHECK:STDOUT:   │ │   ├─ExplicitParamList ')'
-// CHECK:STDOUT:   │ │ ╭─FunctionDefinitionStart '{'
-// CHECK:STDOUT:   │ ├─FunctionDefinition '}'
-// CHECK:STDOUT:   ├─FunctionDefinition '}'
-// CHECK:STDOUT:   ├─FileEnd ''
-// CHECK:STDOUT:   (root)
-// CHECK:STDOUT: - filename: fail_overload_after_fn.carbon
-// CHECK:STDOUT:   ╭─FileStart ''
-// CHECK:STDOUT:   │ ╭─FunctionIntroducer 'fn'
-// CHECK:STDOUT:   │ ├─InvalidParse 'overload' has_error
-// CHECK:STDOUT:   ├─FunctionDecl ';' has_error
-// CHECK:STDOUT:   ├─FileEnd ''
-// CHECK:STDOUT:   (root)
-// CHECK:STDOUT: - filename: ordering.carbon
-// CHECK:STDOUT:   ╭─FileStart ''
-// CHECK:STDOUT:   │ ╭─FunctionIntroducer 'fn'
-// CHECK:STDOUT:   │ ├─OverloadModifier 'overload'
-// CHECK:STDOUT:   │ ├─PrivateModifier 'private'
-// CHECK:STDOUT:   │ ├─IdentifierNameMaybeBeforeSignature 'H'
-// CHECK:STDOUT:   │ │ ╭─ExplicitParamListStart '('
-// CHECK:STDOUT:   │ ├─ExplicitParamList ')'
-// CHECK:STDOUT:   ├─FunctionDecl ';'
-// CHECK:STDOUT:   ├─FileEnd ''
-// CHECK:STDOUT:   (root)

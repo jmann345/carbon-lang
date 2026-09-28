@@ -22,8 +22,8 @@
 
 library "[[@TEST_NAME]]";
 
-overload fn P(x: i32) -> i32 { return 1; }
-overload fn P(b: bool) -> i32 { return 2; }
+overload fn P(unused x: i32) -> i32 { return 1; }
+overload fn P(unused b: bool) -> i32 { return 2; }
 
 fn Gen[T: Core.ImplicitAs(i32)](x: T) -> i32 { return P(x); }
 

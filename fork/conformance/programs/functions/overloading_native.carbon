@@ -34,14 +34,14 @@
 
 import Core library "io";
 
-overload fn Describe(n: i32) -> i32 { return 1; }
-overload fn Describe(b: bool) -> i32 { return 2; }
+overload fn Describe(unused n: i32) -> i32 { return 1; }
+overload fn Describe(unused b: bool) -> i32 { return 2; }
 
 // Declaration order decides: `i32` widens implicitly to `i64`
 // (core/prelude/types/int.carbon), so the first member wins for an `i32`
 // argument even though the second is an exact match.
-overload fn Pick(x: i64) -> i32 { return 1; }
-overload fn Pick(x: i32) -> i32 { return 2; }
+overload fn Pick(unused x: i64) -> i32 { return 1; }
+overload fn Pick(unused x: i32) -> i32 { return 2; }
 
 overload fn Sum(a: i32) -> i32 { return a; }
 overload fn Sum(a: i32, b: i32) -> i32 { return a + b; }

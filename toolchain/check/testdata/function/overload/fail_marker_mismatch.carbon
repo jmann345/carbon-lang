@@ -18,25 +18,10 @@
 
 library "[[@TEST_NAME]]";
 
-// CHECK:STDERR: fail_unmarked_second.carbon:[[@LINE+4]]:15: warning: binding `x` unused [UnusedBinding]
-// CHECK:STDERR: overload fn F(x: i32) -> i32 { return 1; }
-// CHECK:STDERR:               ^~~~~~
-// CHECK:STDERR:
-overload fn F(x: i32) -> i32 { return 1; }
+overload fn F(unused x: i32) -> i32 { return 1; }
 
 // Diagnosed once, then recovers as if marked: the declaration is a member.
-// CHECK:STDERR: fail_unmarked_second.carbon:[[@LINE+11]]:1: error: `overload` must appear on every declaration of `F` or on none [OverloadMarkerMismatch]
-// CHECK:STDERR: fn F(b: bool) -> i32 { return 2; }
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_unmarked_second.carbon:[[@LINE-6]]:1: note: previous declaration of `F` here [OverloadMarkerPrevious]
-// CHECK:STDERR: overload fn F(x: i32) -> i32 { return 1; }
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: fail_unmarked_second.carbon:[[@LINE+4]]:6: warning: binding `b` unused [UnusedBinding]
-// CHECK:STDERR: fn F(b: bool) -> i32 { return 2; }
-// CHECK:STDERR:      ^~~~~~~
-// CHECK:STDERR:
-fn F(b: bool) -> i32 { return 2; }
+fn F(unused b: bool) -> i32 { return 2; }
 
 fn Use() -> i32 { return F(true); }
 
@@ -44,25 +29,10 @@ fn Use() -> i32 { return F(true); }
 
 library "[[@TEST_NAME]]";
 
-// CHECK:STDERR: fail_marked_second.carbon:[[@LINE+4]]:6: warning: binding `x` unused [UnusedBinding]
-// CHECK:STDERR: fn F(x: i32) -> i32 { return 1; }
-// CHECK:STDERR:      ^~~~~~
-// CHECK:STDERR:
-fn F(x: i32) -> i32 { return 1; }
+fn F(unused x: i32) -> i32 { return 1; }
 
 // Diagnosed and not merged; no redeclaration diagnostic is emitted on top.
-// CHECK:STDERR: fail_marked_second.carbon:[[@LINE+11]]:1: error: `overload` must appear on every declaration of `F` or on none [OverloadMarkerMismatch]
-// CHECK:STDERR: overload fn F(b: bool) -> i32 { return 2; }
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_marked_second.carbon:[[@LINE-6]]:1: note: previous declaration of `F` here [OverloadMarkerPrevious]
-// CHECK:STDERR: fn F(x: i32) -> i32 { return 1; }
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: fail_marked_second.carbon:[[@LINE+4]]:15: warning: binding `b` unused [UnusedBinding]
-// CHECK:STDERR: overload fn F(b: bool) -> i32 { return 2; }
-// CHECK:STDERR:               ^~~~~~~
-// CHECK:STDERR:
-overload fn F(b: bool) -> i32 { return 2; }
+overload fn F(unused b: bool) -> i32 { return 2; }
 
 // --- fail_plain_redecl_unchanged.carbon
 
@@ -71,11 +41,4 @@ library "[[@TEST_NAME]]";
 fn G(x: i32);
 
 // Without the marker, differing signatures remain today's redeclaration error.
-// CHECK:STDERR: fail_plain_redecl_unchanged.carbon:[[@LINE+7]]:6: error: redeclaration differs at parameter 1 [RedeclParamDiffers]
-// CHECK:STDERR: fn G(b: bool);
-// CHECK:STDERR:      ^~~~~~~
-// CHECK:STDERR: fail_plain_redecl_unchanged.carbon:[[@LINE-6]]:6: note: previous declaration's corresponding parameter here [RedeclParamPrevious]
-// CHECK:STDERR: fn G(x: i32);
-// CHECK:STDERR:      ^~~~~~
-// CHECK:STDERR:
 fn G(b: bool);

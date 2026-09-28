@@ -2804,6 +2804,214 @@ if-let/let-else/while-let (flips a MISSING bullet on landed match
 machinery), then the error-handling chain W-016..W-019 (Result, `?`,
 exception interop), then unions W-009/W-015.
 
+### UN-2: union C++ interop (2026-09-28)
+
+Milestone bullet "Type system: Unions (un-discriminated) + C++ union
+mapping" flips PARTIAL → DONE (fork/gap-analysis.md row 47; header 28
+DONE / 20 PARTIAL / 7 MISSING / 1 DESIGN-ONLY over 56). Landed on
+claude/carbon-fork-0-1-un2, branched from trunk at c0c57285f after EH-B
+(#42) and UN-1 (#43) had merged — the D-UN-7 sequencing, met by cutting
+the branch after the merge rather than by a rebase — in the three commits
+fork/unions/plan.md §3 fixed: 23fc16583 (check/cpp and sem_ir: `is_union`
+on import, `TagTypeKind::Union` on export, the layout arm), f0970f148
+(goldens and the two conformance programs), ad2367435 (dated design
+amendments), then the 2026-09-28 weekly trunk sync 46f9d2112, 4f005ecdd
+(the hosted autoupdate fill) and 3f89d7caa (implementation-review fixes).
+W-015 is DISCHARGED; the plan's B half is complete and no union item
+remains open beyond the UN-1 residue W-086..W-093. Design authority was
+not reopened: F-007 and the ratified docs/design/unions.md stand; both
+decisions below are implementation choices the design leaves to the
+toolchain, auto-adopted under R29(a) and veto-able after the fact.
+
+DECISIONS, as landed, each with its break condition. **D-UN-7**
+(completed) — the export path creates a union's record with
+`clang::TagTypeKind::Union` (`ExportClassToCppInDeclContext`,
+export.cpp:81-82), and the two UN-1 placeholder guards — the `union
+export` `SemanticsTodo` in `ExportClassToCpp` after the `clang_decls`
+lookup and in `ExportNameScopeToCpp`'s class branch — are deleted, so
+`grep -rn 'union export' toolchain` is empty and
+check/testdata/union/fail_todo_export.carbon, whose only pin was the
+guard, is deleted with them. The rev 2b m-3 pre-existing note stands
+unchanged: `ExportClassToCpp` still passes the name-scope result
+unchecked into `ExportClassToCppInDeclContext`, unreachable for unions
+because D-UN-6 forbids nested types. Break condition: a D-UN-6
+relaxation admitting nested types in a union body re-checks that call
+before landing. **D-UN-8** — on export Carbon is the layout authority
+for a union as for every exported record: `Class::GetStructTypeFields`
+(sem_ir/class.cpp) returns the fields of a `CustomLayoutType` object
+representation as it does for a `StructType` (both carry a
+`StructTypeFieldsId`), so `ExportAllFieldsToCpp` and
+`CalculateCppFieldOffsets` enumerate union fields instead of
+CHECK-failing; `CalculateCppFieldOffsets` (sem_ir/read_only_ast_source.cpp)
+records offset zero for every field of a union and does not advance the
+layout; `layoutRecordType` is unchanged, supplying size and alignment
+from `GetCompleteTypeInfo`, which for a union reads the
+`CustomLayoutType` block; `CompleteType` (check/cpp/generate_ast.cpp)
+adds no `FinalAttr` for a union; and no destructor thunk is declared,
+because `IsTriviallyCopyableForExport` walks the union's
+`CustomLayoutType` repr and answers true for every 0.1 union, so Clang's
+implicit special members stay trivial. The R-11 trace outcome: the
+arbiters `static_assert(__is_union(Carbon::Wide))` and
+`static_assert(sizeof(Carbon::Wide) == 8 && alignof(Carbon::Wide) == 8)`
+in check/interop/cpp/class/export/union.carbon compiled in the hosted
+fill, so Clang's `ASTRecordLayoutBuilder` accepted the external layout
+and D-UN-8's rejected alternative (returning `false` from
+`layoutRecordType` for unions, a two-regime exception) was never needed.
+Break condition: any exported union whose `static_assert`s fail or that
+trips a Clang layout assertion; the contingency is still the rejected
+alternative, recorded loudly as a two-regime exception.
+
+THE BY-VALUE CROSSINGS (rev B F-5) and a corrected precedent claim. The
+plan made `Cpp.SumLo(w)` — an exported Carbon union passed BY VALUE into
+C++ — a PROBE in its own golden (union_by_value.carbon), with a drop
+rule: on a `SemanticsTodo` the `SumLo` line leaves union_cpp_export and
+a residue is filed. The probe PASSED in the fill (a `SumLo__carbon_thunk`
+declaration and an ordinary call), as did the import direction
+(`ReadA(Pair)` in, `MakePair` out) and the by-value return `MakeWide`,
+so the drop rule was not exercised, no by-value residue exists and the
+DONE row carries no by-value caveat. The plan's precedent claim for
+`MakeWide` was WRONG: §4.B cited function/export/generic.carbon:41-46 as
+"an exported class returned by value from inline C++", but that file's
+`G()` is defined inside the inline C++ block and never called from
+Carbon, so `Cpp.MakeWide(1)` (check/export/union.carbon; conformance
+union_cpp_export) is the first Carbon-side call through a
+return-address thunk for a Carbon-owned record. The fill passed it, so
+nothing was restructured and no residue is filed; the claim is recorded
+as wrong because a failing probe would have been misdiagnosed as a union
+defect instead of a thunk gap.
+
+THE AGGREGATE GATE, a review-caught design-fidelity fix. As landed in
+23fc16583, `is_union` on import let EVERY imported union take UN-1's
+`ConvertStructToUnion` arm, so `union U { U() : a(0) {} int a; float f;
+};` accepted `var u: Cpp.U = {.f = 1.0};` from Carbon — bypassing the C++
+constructor and contradicting docs/design/unions.md:555-558 ("the import
+preserves exactly Clang's determination. Carbon code is never _more_
+permitted than C++ code with such a union") while the landed `{}` path
+for empty imported classes admits aggregates only
+(`ImportClassObjectRepr`). Fixed at the root in 3f89d7caa: the union arm
+of `ConvertStructToClass` (convert.cpp:1005-1016) is taken for a
+cpp-scope class only when the new `IsImportedCppAggregate`
+(check/cpp/import.{h,cpp}) — `clang_decls().Lookup` of the class's first
+declaration, the accessor `ExportClassToCpp` uses for imported classes,
+then `getDefinition()` and `isAggregate()` — says so; otherwise the
+literal falls through to the existing "Builtin conversion does not
+apply" bailout and the ordinary `ConversionFailure`, exactly as for a
+non-aggregate class (non_aggregate_init.carbon). Pinned by the new
+`fail_init_non_aggregate` subfile of fail_union_init.carbon, CHECK-free
+until the refill. The gate is a fidelity fix, not a design change: the
+sentence it enforces was ratified at F-007, and the UN-2 doc amendment
+(unions.md:345-348) records the gate in one sentence. Two minor fixes in
+the same commit: the `EvalConstantInst(ClassInit)` fold suppression now
+keys on a `CustomLayoutType` repr rather than `is_union` alone, so an
+empty imported union's `StructType{}` initializer keeps folding
+(union_init.carbon `empty_init`, its CHECK block stripped for the
+refill); and import.cpp carries the comment that `is_union` is set on
+definition import only, so a forward-declared-only imported union keeps
+`is_union == false` and any later class-versus-union redeclaration check
+must account for it.
+
+IMPLEMENTATION DEVIATIONS from the plan, each recorded in the plan's
+UN-2 landed notes. The import subfiles are a NEW
+check/interop/cpp/class/import/union_init.carbon (designated_init,
+empty_init, copy, by_value) plus fail_union_init.carbon
+(fail_init_two_fields, fail_init_unknown_field,
+fail_copy_nontrivial_member, fail_init_non_aggregate) beside the landed
+class/import/union.carbon rather than appended to it: that file uses the
+`convert` minimal prelude (min_prelude/convert.carbon: `as` and copy
+parts only), which lacks `Core.Destroy`, `Core.Optional` and the
+`IntLiteral` → `i32` conversion the local-variable shapes need, and
+fail_ subfiles never share a positive file. The by-value probe is its own
+file, union_by_value.carbon, so a `fail_` rename would not have touched
+the positives. The lower `Pair` is `{int a; int b;}` (4 bytes), so
+lower/interop/cpp/class/import/union_init.carbon shows `alloca [4 x
+i8]`, not the `[8 x i8]` §4.B wrote — that size belongs to the
+conformance program's three-member `Pair` (`int a; int b; int* p;`); the
+exported `Wide` is `[8 x i8]` as planned. fail_todo_export.carbon is
+deleted, and W-009's evidence entry citing it is re-pinned to
+check/interop/cpp/class/export/union.carbon. Zero new diagnostics, as
+§1.B.4 required: every negative pin reuses a landed kind
+(`UnionInitNotSingleField`, `UnionInitUnknownField`,
+`CppInteropParseError` for the deleted copy constructor,
+`ConversionFailure` for the non-aggregate).
+
+IMPLEMENTATION REVIEW: a single review, APPROVE-WITH-FIXES on the fill
+4f005ecdd — the MAJOR aggregate gate and the two MINORs above, folded in
+3f89d7caa; and the discharge artifacts (this entry, the ledger, the
+gap-analysis row, the plan's landed notes).
+
+VERIFICATION was hosted-only per R28: `Fork: hosted verification` in
+autoupdate → gate → conformance. First autoupdate run 36438032097 filled
+the six new goldens (fill 4f005ecdd); ZERO existing goldens moved, as
+§6.B predicted (`git diff origin/trunk...HEAD --diff-filter=M` over the
+check/lower/parse testdata is empty), and both probes — R-11's layout
+`static_assert`s and the by-value `SumLo` — PASSED. Second autoupdate,
+after the review fix 3f89d7caa: run <!-- VERIFY: numbers --> (the refill
+of `fail_init_non_aggregate` and `empty_init`; predicted: the
+non_aggregate_init.carbon pair — `ConversionFailure` plus the
+`MissingImplInMemberAccessInContext` note — and `class_init () [concrete
+= constants.%Bar.val]`). Gate run <!-- VERIFY: numbers -->, expected
+green. Conformance run <!-- VERIFY: numbers --> (scoreboard
+<!-- VERIFY: numbers -->): **<!-- VERIFY: numbers --> PASS / 0 FAIL / 25
+SKIP over 142, 45/56 bullets** — expected 116/0/25 over 142, the §5.B
+delta PASS +2 / total +2 on UN-1's post-EH-B base of 114/0/25 over 140;
+bullets stay 45/56 because the unions bullet was already PASS at UN-1
+(fork/conformance/out/scoreboard.json at 06557fb21: `status: PASS`,
+`gap_status: PARTIAL`, now DONE), so the two new programs add PASSes,
+not a bullet. `runner.py --self-test` clean and the README program table
+regenerated at f0970f148. Reconciliation greps (§8.4), as run at
+3f89d7caa: `union export` empty; `Builtin conversion does not apply` one
+hit, convert.cpp:1020; `generic union` unchanged from UN-1 (one TODO
+site, class.cpp:708).
+
+THE DONE JUSTIFICATION (rev B F-6). The row's evidence is the UN-1 text
+plus the UN-2 sentence and names every gated item by ledger id: generic
+unions and unions nested in generic scopes behind the `generic union`
+TODO (W-088); choice-typed (W-086) and imported-C++-typed (W-087) union
+fields rejected by the 0.1 predicate; member-restriction message quality
+(W-089); invalid-representation reads yielding poison rather than the
+design's fail-stop (W-090); the copy predicate's textual-order
+dependence for user impls (W-092) and its blindness to user blanket
+`Core.Copy` impls (W-093). DONE-with-gated-residue has the row 44
+precedent: Sum types is DONE with Self-dependent payloads and qualified
+alternative patterns "still gated by diagnostics". The one condition
+that would have kept the row PARTIAL — the by-value probe failing — did
+not occur. W-087 is explicitly NOT lifted by UN-2:
+`IsImportedCppAggregate` consults `clang_decls()` for the initialization
+gate only, and the field predicate's cpp-scope arm remains the separate
+review W-087 names.
+
+PLAN CORRECTIONS (§0.2 items 5-8), recorded verbatim in the ledger: (5)
+W-015's "convert.cpp:882-885 struct-literal bailout" was the
+`ConvertStructToClass` bailout at :909-912 in the planning tree (:1020
+today, after the gated union arm); the option paper's lower/type.cpp and
+import.cpp ranges and its export.cpp record-creation sites had likewise
+moved. (6) W-015's notes omitted two hard blockers on export —
+`GetStructTypeFields` CHECK-failing on a `CustomLayoutType` repr and
+`CalculateCppFieldOffsets` accumulating sequential offsets — and its
+"layout agrees by construction" held only once Carbon supplied offset 0
+for every union field (D-UN-8); both landed. (7) W-015's "needs the
+shared trivially-copyable predicate (coherence risk 7, W-006)": it has
+existed since F8b (2026-08-18) as `IsTriviallyDestructible` /
+`IsTriviallyCopyableForExport`; only its `CustomLayoutType` arm was
+missing, added at UN-1. (8) W-015's "gap-analysis row 32's 'opaque
+interop types' claim is stale": `grep -n opaque fork/gap-analysis.md` is
+empty — the reconciliation of 2026-09-27 removed it — so the note was
+itself stale and is dropped from the ledger. Item 9 (W-007's contention
+precondition met by sequencing) is closed in W-007's notes.
+
+RESIDUE: none new. Every §8.5 item was filed at UN-1 (W-086..W-093) and
+the conditional "exported union passed by value into C++" did not arise;
+no ids are allocated and W-093 remains the highest id.
+
+_V-3a divergence-risk register entries (reviewed at each upstream
+merge):_ upstream imports C++ unions (the `CustomLayoutType` importer
+this fork inherited) but has no `union` declaration and never exports a
+Carbon union; `TagTypeKind::Union` on the export side and the
+offset-zero layout arm are fork-local implementation surface with no
+upstream counterpart to contradict. The `union` keyword and the
+byte-reinterpretation reads remain F-007's register entries; UN-2 mints
+no new public name and no new diagnostic. Veto-able.
+
 ### UN-1: native `union` declarations (2026-09-27)
 
 Milestone bullet "Type system: Unions (un-discriminated) + C++ union

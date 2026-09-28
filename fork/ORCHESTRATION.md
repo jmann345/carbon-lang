@@ -19,7 +19,7 @@ outside package `Core`), designated init, byte-reinterpreting reads,
 the `UnformedInit` custom witness for `var u: U;`, memcpy copies, zero
 lowering code. Gap row 47 DESIGN-ONLY → PARTIAL; header 27 DONE / 21
 PARTIAL / 7 MISSING / 1 DESIGN-ONLY. NEW FLOOR 114 PASS / 0 / 25 SKIP
-over 140, 45/56 bullets. Three autoupdate rounds (one real defect: the
+over 139, 45/56 bullets. Three autoupdate rounds (one real defect: the
 parser's deferred-definition gate lacked the union states; one
 converged golden). Residue W-086..W-093. IN FLIGHT: UN-2 (W-015, union
 C++ interop: `is_union` on import, `TagTypeKind::Union` export,
@@ -333,7 +333,7 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-114 PASS / 25 SKIP / 0 FAIL programs (140 total); **45/56 bullets
+114 PASS / 25 SKIP / 0 FAIL programs (139 total); **45/56 bullets
 green** (GitHub-hosted scoreboard at the PR #43 head, run 36318245113; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first
 error-handling flip, now 4 programs deep incl. the W72b threading

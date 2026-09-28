@@ -1901,7 +1901,7 @@ next, after EH-B (§0.4, D-UN-7). Deltas from this plan, honestly:
     36315125503: 110/0/26 over 136, 45/56 bullets, exactly the §5.A delta
     on the post-W-012 base. Of record after merging trunk with EH-B:
     gate run 36318283448 green, conformance run 36318245113 at 114/0/25
-    over 140, 45/56 bullets (the same delta on the post-EH-B base). Implementation review: one review,
+    over 139, 45/56 bullets (the same delta on the post-EH-B base). Implementation review: one review,
     APPROVE-WITH-FIXES (the doc count; `Field::index` assignment moved
     before the generic gate; discharge artifacts).
 -   **Residue ids allocated at discharge** (assuming EH-B takes
@@ -2016,7 +2016,7 @@ discharge commit. Deltas from this plan, honestly:
     116/0/25 over 141, 45/56 bullets — the expected delta (the plan's
     "over 142" assumed a 140 base; the base was 139)
     (the §5.B delta PASS +2 / total +2 on UN-1's post-EH-B base 114/0/25
-    over 140; the unions bullet was already PASS at UN-1, so the bullet
+    over 139; the unions bullet was already PASS at UN-1, so the bullet
     count is unchanged). Implementation review: one review,
     APPROVE-WITH-FIXES (the aggregate gate; the repr-keyed fold
     suppression; the `is_union` comment).

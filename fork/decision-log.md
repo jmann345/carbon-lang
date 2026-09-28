@@ -2954,7 +2954,7 @@ non_aggregate_init.carbon pair — `ConversionFailure` plus the
 in fail_union_init.carbon, converged by the refill). Conformance run
 36447037687 (scoreboard
 6e6e4c7a9): **116 PASS / 0 FAIL / 25 SKIP over 141, 45/56 bullets** — the §5.B delta exactly (the plan wrote "over 142" from a miscounted 140 base; the trunk base was 139), the §5.B
-delta PASS +2 / total +2 on UN-1's post-EH-B base of 114/0/25 over 140;
+delta PASS +2 / total +2 on UN-1's post-EH-B base of 114/0/25 over 139;
 bullets stay 45/56 because the unions bullet was already PASS at UN-1
 (fork/conformance/out/scoreboard.json at 06557fb21: `status: PASS`,
 `gap_status: PARTIAL`, now DONE), so the two new programs add PASSes,
@@ -3012,6 +3012,20 @@ offset-zero layout arm are fork-local implementation surface with no
 upstream counterpart to contradict. The `union` keyword and the
 byte-reinterpretation reads remain F-007's register entries; UN-2 mints
 no new public name and no new diagnostic. Veto-able.
+
+### Scoreboard totals corrected: EH-B was 138 programs, UN-1 139 (2026-09-28)
+
+An audit of the committed scoreboards (`totals.PASS + totals.SKIP` equals
+the `programs` list length in every one) found the orchestrator's recorded
+program TOTALS off by one for the last two landings: PR #42 (EH-B) is 112
+PASS / 0 FAIL / 26 SKIP over **138** (recorded as 139) and PR #43 (UN-1)
+is 114 / 0 / 25 over **139** (recorded as 140); the PASS/SKIP counts and
+bullet counts were right, only the sums were miscomputed. Corrected in
+place in the EH-B and UN-1 entries, ORCHESTRATION, the gap-analysis
+header, the W-019 ledger notes and both plans' landed notes, and in the
+two PR descriptions. Rule going forward: quote totals from
+`scoreboard.json` (`PASS + SKIP + failures`), never from mental
+arithmetic on deltas.
 
 ### UN-1: native `union` declarations (2026-09-27)
 
@@ -3258,9 +3272,9 @@ third autoupdate (run 36316933295) converged it. Conformance run
 FAIL / 26 SKIP over 136, 45/56 bullets** — the predicted delta exactly. Of
 record, after merging trunk with EH-B (#42): gate run 36318283448 green;
 conformance run 36318245113 (scoreboard 06557fb21): **114 PASS / 0 FAIL /
-25 SKIP over 140, 45/56 bullets**, again the predicted delta (on the post-W-012
+25 SKIP over 139, 45/56 bullets**, again the predicted delta (on the post-W-012
 base PASS +2 / SKIP −1 / total +1, that is 110 PASS / 0 FAIL / 26 SKIP over
-136, 45/56 bullets; on a post-EH-B base 114/0/25 over 139). `runner.py
+136, 45/56 bullets; on a post-EH-B base 114/0/25 over 139 — as landed). `runner.py
 --self-test` clean (136 programs, 56 bullets) and the README program
 table regenerated, confirmed locally at 8a8754198. Reconciliation greps
 run at discharge are in the plan's Landed notes; the one surprise is that
@@ -3505,7 +3519,7 @@ above are allocated here.
 _Verification (hosted-only per R28):_ gate and conformance are the hosted runs;
 local verification is limited to `uvx prek` on the bookkeeping files.
 Conformance of record (run 36315999330, scoreboard 3d398fe6f, after the fixes
-below): **112 PASS / 0 FAIL / 26 SKIP over 139**, 44/56 bullets — plan §5.B's
+below): **112 PASS / 0 FAIL / 26 SKIP over 138**, 44/56 bullets — plan §5.B's
 tree-relative 109/136 plus W-012's one program, PASS +4 / SKIP −1 / total +3
 exactly (the
 un-SKIP of cpp_exception_interop plus three new programs, zero other movement;
@@ -4223,7 +4237,7 @@ Missing value: inst… {kind: StructLiteral, …, type: type(symbolic_constant�
 (a symbolic struct literal reaches lowering without a concrete value; the
 09-21 signature was an unhandled SpliceInst category at lower/handle.cpp:294).
 Half-healed is still a regression against the fork floor (both probes PASS
-at the cut, which now stands at 114/0/25 over 140), so the cut holds a
+at the cut, which now stands at 114/0/25 over 139), so the cut holds a
 sixth week; the deferred set is 137 commits. Conflict surface has grown
 from one fork-modified file to the twenty-odd above: advancing the cut is
 no longer a weekly fold but a workstream of its own (recommendation:

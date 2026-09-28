@@ -2804,6 +2804,244 @@ if-let/let-else/while-let (flips a MISSING bullet on landed match
 machinery), then the error-handling chain W-016..W-019 (Result, `?`,
 exception interop), then unions W-009/W-015.
 
+### OV-1: `overload fn` closed sets, first-match resolution (2026-09-28)
+
+Milestone bullet "Functions: function overloading (Carbon-native)" flips
+MISSING → PARTIAL (fork/gap-analysis.md row 57; header 27 DONE / 22
+PARTIAL / 6 MISSING / 1 DESIGN-ONLY over 56). Landed on
+claude/carbon-fork-0-1-overload in the four commits fork/overload/plan.md
+§3 fixed — f18daf9e5 (the `overload` keyword and declaration modifier),
+495b58274 (the `OverloadSet` SemIR entity, declaration merging and
+first-match resolution), 51f831638 (check and lower goldens, conformance
+programs), f3daa13e1 (the ported design page and its sibling edits) —
+plus cd6d97a42 (the export-name switch arm, below) and ad2cb5031
+(implementation-review fixes). The plan's OV-1 slice was W-024; W-025
+(OV-2, set import and generic members) is next and W-026 (OV-3, export)
+follows UN-2 per D-OV-7/D-OV-9. Design authority was not reopened: F-009
+and the option paper fork/design-sprint/function-overloading.md Option A
+stand; every decision below is an implementation choice the design
+leaves to the toolchain, auto-adopted under R29(a) and veto-able after
+the fact.
+
+DECISIONS, rev 2b spellings, each with its break condition. **D-OV-1** —
+`overload` is a new `CARBON_KEYWORD_TOKEN` and a declaration modifier in
+the `Decl` order group, so it is mutually exclusive with `virtual`,
+`abstract`, `override`, `impl`, `default`, `final`, `export` and
+`returned` through the existing `ModifierNotAllowedWith`; the stranded
+page's YES for `overload` with `virtual` (sub-fork F-009d) is DECLINED
+for 0.1 because vtable slots are keyed by name, and F-009m (modifier
+position) is moot. Break condition: a design ruling that `virtual
+overload fn` is required — then a seventh order group and
+signature-keyed vtable slots, never a silent relaxation. **D-OV-2** — the
+entity is `SemIR::OverloadSet` mirroring `CppOverloadSet` (`{name_id,
+parent_scope_id, member_decl_ids}` in declaration order); name lookup
+binds an `OverloadSetValue` inst of type `OverloadSetType`, `AddInst`ed
+into the current block right after the first member's `fn_decl`;
+`Function` gains `overload_set_id`, printed only when set; the store is
+not in `OutputYaml`, so the raw_sem_ir goldens did not move. Break
+condition: none. **D-OV-3** — member identity is parameter-TYPE equality
+(`CheckRedeclParamsMatch(diagnose=false, check_syntax=false)`); the
+first type-equal member is the one being redeclared and
+`MergeFunctionRedecl` diagnoses everything else (p003763 preserved per
+member); the marker must be on every declaration of the name or on none
+(`OverloadMarkerMismatch` + `OverloadMarkerPrevious`; an unmarked later
+declaration recovers AS IF marked, a marked declaration against a plain
+function is not merged); members distinguished only by `self` are
+TODO-gated. Break condition: none. **D-OV-4** — resolution is a
+first-match loop in declaration order: receiver alignment (reason 3;
+only a receiver bound to a non-method is illegal — the explicit receiver
+`C.M(c, ...)` is a legal landed shape), exact arity through
+`GetExplicitArityRange` (a range for W-013 variadics; reason 0), the
+template-dependence gate, then a value-conversion probe inside the
+`DeduceImplArguments` discard scope extended with a cleanup-depth
+snapshot and `DiscardCleanupsSince` on every exit plus a mandatory
+block-size/cleanup-depth CHECK, with an `IntLiteral` range pre-test
+through the shared `IntFitsInIntType` predicate (reason 1); commit by a
+fresh `BuildNameRef` (re-wrapped as `BoundMethod` when the callee was
+bound) into the unchanged `PerformCallToFunction`; `OverloadNoMatch`
+plus one `OverloadCandidateRejected` note per member otherwise; no
+ranking; `Convert` diagnoses `OverloadSetNotCallee` for every non-call
+use; calls from checked-generic bodies resolve once, at the definition.
+Break conditions: a member the probe accepts and the commit rejects
+(R-1); the CHECK firing (R-2); a probe diagnostic outside the R-15
+residue's enumerated cases. **D-OV-5** — mangling by set-relative index:
+`:overload<N>` after the name (`_CPick:overload0.Main`), no fingerprint
+(inst fingerprints are not cross-file stable, plan §0.1 row 9; the W-024
+title's mechanism is recorded as rejected). Break condition: two members
+mangling equal — impossible by construction; falsifier: one `define` for
+two members. **D-OV-6** — thirteen 0.1 gates, each a `SemanticsTodo`
+with a fixed string: (i) generic members, (ii) sets in generic scopes,
+(iii) non-value explicit parameters, (iv) `extern` members, (v) the
+entry point, (vi) differing access, (vii) set import incl. api/impl,
+(viii) export, (ix) interfaces, (x) mixed `self`, (xi)
+template-dependent arguments, (xii) explicit `ref self`/`addr self`
+receivers, (xiii) `impl` bodies (covers destructors, which are `impl as
+Core.Destroy`). Break condition per gate: the lifting slice deletes the
+gate and its `fail_todo_*` pin in the same commit. **D-OV-7** — three
+PRs: OV-1 same-FILE sets (the api/impl half of "same library" is the
+import resolver, so it is gated on the `HandleUnsupportedCppOverloadSet`
+precedent and lifted together with cross-library import at OV-2), OV-2,
+then OV-3 after UN-2. Break condition: none. **D-OV-8** — the stranded
+design page (481e08c24) is PORTED, not re-authored (below). Break
+condition: the owner's veto digest changing a sub-fork ruling — then a
+doc-only amendment, never a toolchain reopen without a new F-decision.
+**D-OV-9** — W-007 is discharged for OV-3 by the EH-B/UN-2 precedent
+(additive arms in cpp/generate_ast.cpp plus sequencing after UN-2; no
+W-007 file); the W-026 edge on W-007 is cleared at OV-3 discharge, not
+now. Break condition: an export-machinery refactor landing first — OV-3
+rebases over it. **D-OV-10** — `alias` of a set re-exports the whole set
+(zero code; pinned `alias_of_set`), transitively through `export import`
+(OV-2's `export_import_of_set`). Break condition: an `export import`
+chain that drops or splits the set.
+
+REVIEWS. Two adversarial plan reviews of rev 1: rev A REJECT (blockers
+A1 the probe's cleanup leak, A2 `self` misalignment; majors A3-A7) and
+rev B APPROVE-WITH-AMENDMENTS (B1-B14, incl. the port of the stranded
+page), folded as rev 2 with the coordinator's R29(a) rulings (A2/F-009l
+mixed `self` gate, A3 literal pre-test, B1 port, B4 template gate, B5
+lifting the generic-scope gate in OV-2, B11 `export` exclusivity). A
+focused re-review of rev 2 returned SIGN-OFF-WITH-AMENDMENTS (0
+blockers; M1 the explicit receiver is a legal shape, which added gate
+(xii); M2 the generic-class test shape; m1-m6), folded as rev 2b. One
+implementation review, APPROVE-WITH-FIXES. MAJOR-1: an imported set
+MEMBER named in an imported generic's body resolved through the plain
+`FunctionDecl` arm without its `overload_set_id` (an un-indexed mangled
+name collapsing onto its siblings'); it now routes through
+`HandleUnsupportedOverloadSet` like the set itself — three reach sites,
+one string — pinned by fail_todo_import_member.carbon, which OV-2
+deletes. MAJOR-2: the ported page's heading levels were corrupted by a
+line-leading `#3763` (prettier turned it into a `##` heading and demoted
+every following H2); repaired with heading parity to the stranded page
+proven by diffing `grep '^#'` against `git show 481e08c24:...` (the only
+difference is the added `### 0.1 limits`). Minors: gate (ii) takes
+precedence over gate (i) (`else if`; one TODO for a method of a generic
+class); the R-15 residue wording is "unconditional constant-evaluation
+diagnostics inside overload probes: literal→float, abstract-init and
+aggregate-literal element conversions"; an IWYU include in
+sem_ir/overload_set.h; the plan's comma in `OverloadCandidateRejected`
+reason 3.
+
+THE EXPORT-SWITCH CRASH — a review miss per R28(d). check/import.cpp
+`GetImportName` is a runtime-fatal switch over EXPORTED inst kinds
+(`default: CARBON_FATAL("Unsupported export kind: {0}")`) that neither
+the plan's R-3 mirror list nor the implementer's `CppOverloadSet` grep
+named: a C++ set is never exported by name, so it has no arm there to
+mirror. The first hosted autoupdate (run 36441457310) FAILED on an
+api-scope `overload fn` set with "Unsupported export kind:
+OverloadSetValue"; cd6d97a42 adds the arm (the set value maps to its
+`OverloadSet` entity's name and parent scope; resolving it on import
+stays gated in import_ref.cpp). The plan's landed notes add it to the
+R-3 list as the third runtime-fatal class beside sem_ir/type_iterator.cpp
+and the import_ref.cpp switch, and record that R-3's falsifier
+(basic.carbon's fill) could not reach it — only a multi-file golden with
+an api-scope set does.
+
+DEVIATIONS from the plan, each in fork/overload/plan.md's landed notes:
+`IntFitsInIntType` is a non-static function declared in eval.h (a
+`static` cannot be shared across translation units), built from two
+shared predicates so `PerformCheckedIntConvert` keeps emitting
+`NegativeIntInUnsignedType` and `IntTooLargeForType` independently;
+gates (ix) and (xiii) diagnose and then treat the declaration as an
+UNMARKED function (a set value cannot be wrapped by
+`BuildAssociatedEntity`), where the plan said the member is still added;
+gate (xii) aborts the whole resolution (`ErrorInst`, no further
+candidate tried) rather than rejecting one member; two mirror sites
+beyond the plan's list — cpp/call.cpp's exhaustive `Callee` variant
+switch (a `CalleeOverloadSet` arm) and lex/lex.cpp's hand-written
+bracket-recovery modifier list — plus the `GetImportName` arm above;
+spellings to this tree's working syntax (generic parameters are `[T:
+type]` / `template T: type` because the plan's `T:! type` does not lex
+here; the user destructor is `impl as Core.Destroy { fn Op(unused ref
+self) {} }`; `fail_no_candidate` passes `1.5`; the api/impl pair is
+`set.carbon` / `fail_set.impl.carbon`); the parse subfile
+`fail_ordering` is `ordering` (its error is check-side); the doc links
+to the em-dash decision-log headings carry no fragment (the check-links
+hook percent-encodes the dash in the link but not in the anchor, so no
+spelling validates — recorded in an HTML comment at the first link).
+
+DOCS PORT (D-OV-8). docs/design/functions_overloading.md is `git show
+481e08c24:docs/design/functions_overloading.md` edited in place: a dated
+status paragraph after the Overview; every "OPEN (sub-fork F-009x)"
+paragraph and sub-forks entry rewritten "CLOSED (fork amendment
+2026-09-27) by D-OV-n" — a single-member sets legal (D-OV-3), b
+same-file rule with impl files defining only (D-OV-7 +
+`OverloadSetFrozen` at OV-2), c `self`-shape gated, d `virtual` DECLINED
+with the vtable reason, e interface members gated, f per-candidate
+notes, g `OverloadSetNotCallee`, h whole-set alias transitive through
+`export import`, i export the exportable subset, j exact arity, k
+invalid redeclaration of the type-identical member, l mixed `self`
+gated, m modifier position moot; the two §0.2 item 14 corrections
+("Linkage and mangling" rewritten to the `:overload<N>` index with the
+§0.1 row 9 reason; exported members DO carry their Carbon mangled name
+as an asm label); the rev 2b m3 rewrites (Decl-group placement, the
+false `i32 → f64` divergence example replaced by `Pick`, the
+marker-mismatch behavior, unions pinned and destructors under gate
+(xiii), the full "0.1 limits" gate list, the R-15 probe annotation, the
+checked-generics annotations, the template-dependent gate); and the
+heading repair of MAJOR-2. docs/design/functions.md gains the ported
+link block; docs/design/pattern_matching.md:696 and :1063 get the ported
+hunks, each "(fork amendment 2026-09-27)"; words.md gains `overload`.
+The interop README section and the README.md:3878 note are OV-3's. The
+fork/ORCHESTRATION.md stranded-branch row gains "overloading portion
+ported by OV-1/OV-3; do not re-land" — the owner's edit, not this
+commit's.
+
+VERIFICATION is hosted-only (the container's clang 18 cannot build the
+toolchain; R28(b)). First autoupdate: run 36441457310 FAILED at the
+`GetImportName` crash. Second autoupdate (after cd6d97a42): run
+<!-- VERIFY: run id --> <!-- VERIFY: result -->, filling every golden of
+commits 1-3. Third autoupdate (after ad2cb5031): run
+<!-- VERIFY: run id --> <!-- VERIFY: result -->; it fills
+fail_todo_import_member.carbon (no CHECK lines yet) and is expected to
+drop the second TODO line of fail_todo_gates.carbon's
+`fail_todo_generic_scope` subfile (the gate-ordering fix). Gate:
+<!-- VERIFY: run id and result -->. Conformance:
+<!-- VERIFY: run id and result --> — expected 116 PASS / 0 FAIL / 24 SKIP
+over 140 programs, 46/56 bullets, from the trunk c0c57285f base READ FROM
+fork/conformance/out/scoreboard.json: 114 PASS / 0 FAIL / 25 SKIP over
+139 programs (the totals sum to 139 and the programs list has 139
+entries; the plan's and the gap-analysis header's "over 140" were hand
+counts, off by one). Delta PASS +2 / SKIP −1 / total +1 as plan §5.A
+predicted; `git diff origin/trunk...HEAD --diff-filter=M` over the
+check, lower and parse testdata trees is empty (no pre-existing golden
+moved).
+
+RESIDUE, filed with blocked_by []: W-094 virtual members of overload
+sets (D-OV-1); W-095 members of overload sets with non-value parameters
+(gate (iii)); W-096 `self`-shape overloading (D-OV-3; paper open
+question 4); W-097 overload sets in interfaces (gate (ix)); W-098
+per-candidate failure notes at Clang granularity (paper open question
+7); W-099 mixed method/non-method overload sets (gate (x)); W-100
+per-member access in overload sets (gate (vi) versus the ported page's
+"visible members only"); W-101 overload resolution with
+template-dependent arguments (gate (xi)); W-102 explicit receiver for
+`ref self`/`addr self` overload members (gate (xii)); W-103 overload
+sets in `impl` bodies (gate (xiii)); W-104 unconditional
+constant-evaluation diagnostics inside overload probes: literal→float,
+abstract-init and aggregate-literal element conversions (R-15). Ids
+W-094..W-104 follow the ledger max W-093 on trunk c0c57285f (UN-2's
+discharge allocated none). The conditional residues "extern members of
+overload sets", "overload sets in generic scopes" and "marked members
+without a definition" are filed only if OV-2's fallbacks fire.
+
+PLAN §0.2 CORRECTIONS carried into the ledger (items 1, 2, 6, 9 per
+§8.5): the W-024 evidence pointed at overloading_native.carbon's
+EXPECT-EXIT line, not the SKIP line :10; the title's
+"signature-fingerprint mangling" is rejected (not cross-file stable) in
+favor of the set-relative index; "same-library" is re-cut to same-FILE
+at OV-1 with api/impl at OV-2 (the titles gain a note, not a rewrite);
+the paper's `overload fn Append[addr self: Self*]` method spelling is
+replaced by the working `fn F(self)` / `fn G(ref self)` throughout.
+
+_V-3a divergence-risk register entries (reviewed at each upstream
+merge):_ upstream has no native function overloading; its p002875
+placeholder spells `overloaded fn`, so the fork-only `overload` keyword
+is a rename away. Fork-local surface added by implementation: the
+`:overload<N>` mangling marker, the `OverloadSet*` inst kinds and the
+`OverloadSetId` store, the five diagnostic kinds and the
+`overload_set_id` field of `Function::Print`. F-009's register entries
+(closed sets, first-match, the marker) stand. Veto-able.
+
 ### UN-1: native `union` declarations (2026-09-27)
 
 Milestone bullet "Type system: Unions (un-discriminated) + C++ union

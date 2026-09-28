@@ -15,16 +15,17 @@ with real test coverage), **PARTIAL** (works with material gaps),
 
 ## Scoreboard
 
-**27 DONE / 21 PARTIAL / 7 MISSING / 1 DESIGN-ONLY** across 56 milestone
+**27 DONE / 22 PARTIAL / 6 MISSING / 1 DESIGN-ONLY** across 56 milestone
 bullets (reconciled 2026-09-27 against the conformance scoreboard — 114 PASS /
 0 FAIL / 25 SKIP over 140 programs, 45/56 bullets PASS — and the
 fork/inventory/work-items.json ledger; the original 2026-07-19 audit read
 24 / 18 / 13 / 1; the if-let / let-else row flipped MISSING → PARTIAL at the
 W-012 landing later the same day). The front half of the compiler is done;
 match, choice payloads, `?` error handling, exception boundaries, threading
-interop, if-let / while-let / let-else and native unions have since landed,
-leaving variadics, union C++ interop, overloading, slices, and the
-build-system/documentation rows as the open back half.
+interop, if-let / while-let / let-else, native unions and same-file `overload
+fn` sets have since landed, leaving variadics, union C++ interop, overload-set
+import and export, slices, and the build-system/documentation rows as the open
+back half.
 
 ## Per-bullet status
 
@@ -54,7 +55,7 @@ build-system/documentation rows as the open back half.
 | Generics: C++ interop — exporting Carbon templates/checked generics as C++ templates | PARTIAL | check/cpp/export.cpp creates clang FunctionTemplateDecls for type-parameter checked generics; non-type and enclosing-scope generics fail_todo; no Carbon-template export. |
 | Generics: C++ interop — C++20 concepts <-> named predicates mapping | PARTIAL | Concepts import as compile-time predicates (interop/cpp/template/concept.carbon passes); the export direction (Carbon predicates as C++20 concepts) has no trace. |
 | Functions: separate declaration and definition | DONE | Parsed and checked with redeclaration matching; tested in parse/testdata/function/ and check suites. |
-| Functions: function overloading (Carbon-native) | MISSING | Design decided F-009 (marked `overload fn` closed sets, declaration-order first-match; fork/design-sprint/function-overloading.md, 483 lines) but no docs/design page has landed (pattern_matching.md:696 still says 'We do not yet have an approved design for overloaded functions') and nothing is implemented — a second `fn Describe` with a different signature is a redeclaration error (functions/overloading_native SKIP; W-024..W-026 open). |
+| Functions: function overloading (Carbon-native) | PARTIAL | OV-1 landed (W-024 DISCHARGED 2026-09-28, fork/overload/plan.md): Carbon-native `overload fn` closed sets — marker keyword, `OverloadSet` SemIR entity, declaration-order first-match resolution with implicit conversions, per-member redeclaration matching, distinct mangling per member (`:overload<N>`), method sets and aliases (parse/check/lower goldens under testdata/function/overload/; docs/design/functions_overloading.md ported from the stranded design branch with every F-009 sub-fork closed in place); same-file sets only — api/impl and cross-library import, generic members and export are TODO-gated (OV-2/OV-3); 2/2 conformance programs PASS (functions/overloading_native SKIP -> PASS, functions/overloading_methods; hosted run <!-- VERIFY: conformance run id -->). Gated, each a semantics TODO and, where it outlives OV-3, a filed item: (i) generic members and (ii) sets in generic scopes (OV-2), (iii) non-value explicit parameters (W-095), (iv) `extern` members (OV-2), (v) `overload` on the entry point, (vi) differing access (W-100), (vii) set import incl. api/impl (OV-2, W-025), (viii) export (OV-3, W-026), (ix) interfaces (W-097), (x) mixed `self` (W-099), (xi) template-dependent arguments (W-101), (xii) explicit `ref self`/`addr self` receivers (W-102), (xiii) `impl` bodies (W-103); plus `self`-shape overloading (W-096) and `virtual` members (W-094, a hard error by D-OV-1). OV-2 (W-025) is next; OV-3 (W-026) flips the row DONE. |
 | Functions: C++ interop — importing/calling C++ functions and methods | DONE | Free functions, methods, ctors, extern C imported with auto-generated ABI thunks, verified through LLVM IR goldens (lower/testdata/interop/cpp/). |
 | Functions: C++ interop — exporting Carbon functions/methods to C++ | DONE | Reverse interop lets inline C++ call Carbon functions/methods/statics with thunk machinery (check/cpp/export.cpp, 1202 lines; weak_odr thunks landed July 2026). |
 | Functions: C++ interop — importing C++ overload sets | DONE | Real Clang Sema overload resolution incl. default arguments and literal-driven resolution (check/cpp/ overload tests). |

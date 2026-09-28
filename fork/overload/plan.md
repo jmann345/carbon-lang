@@ -2385,3 +2385,149 @@ shape). Implementation proceeds OV-1 first (§3) on trunk c0c57285f, OV-2
 when OV-1's hosted verification is green, OV-3 after UN-2 per §0.4/D-OV-9.
 Later amendments continue to be folded in place, each marked "(amended
 <date>, review fold: ...)".
+
+## Landed notes (2026-09-28)
+
+OV-1 landed on claude/carbon-fork-0-1-overload: f18daf9e5 (lex + parse),
+495b58274 (sem_ir + check), 51f831638 (goldens + conformance), f3daa13e1
+(docs port), then cd6d97a42 (the `GetImportName` arm) and ad2cb5031
+(implementation-review fixes). Ledger, gap-analysis row and decision-log
+entry ("OV-1: `overload fn` closed sets, first-match resolution
+(2026-09-28)") are the discharge commit; the fork/ORCHESTRATION.md
+stranded-branch row (§8.7) is the owner's edit. OV-2 is next (§0.4).
+Deltas from this plan, honestly:
+
+-   **`IntFitsInIntType` is not `static`.** D-OV-4 step 2(e) asked for a
+    `static` helper "extracted in eval.cpp and declared in eval.h"; a
+    static cannot be shared across translation units. It is a non-static
+    function (eval.h:33, eval.cpp:1417) built from two shared predicates
+    (negative into unsigned; significant bits versus width), so
+    `PerformCheckedIntConvert` keeps emitting `NegativeIntInUnsignedType`
+    and `IntTooLargeForType` independently, as before, and the probe
+    (call.cpp:394) cannot drift from it.
+-   **Gates (ix)/(xiii) diagnose and then treat the declaration as
+    UNMARKED** (handle_function.cpp:823-826). D-OV-6 said the member "is
+    still added"; an interface member's inst is wrapped by
+    `BuildAssociatedEntity`, which cannot wrap a set value, so after the
+    TODO the declaration continues as a plain function. One diagnostic, no
+    cascade; the gate's purpose (the loop never sees such a member) holds.
+-   **Gate (xii) aborts the resolution** (call.cpp:441-445,
+    `OverloadProbeResult::gated`): the plan's "and `ErrorInst`" is read as
+    "the whole call is an error and no further candidate is tried", so a
+    later by-value member does not silently win after the TODO.
+-   **Gate ordering (i)/(ii)** (implementation-review minor): a method of
+    a generic class has its own `generic_id`, so (ii) takes precedence
+    (`else if`, handle_function.cpp:685-690) and one TODO fires. The
+    `fail_todo_generic_scope` CHECK lines filled by the second autoupdate
+    still show both strings (fail_todo_gates.carbon:34 and :38); the third
+    autoupdate drops :34.
+-   **Mirror sites the §1.A.3 / R-3 inventory missed — two compile-time,
+    one RUNTIME FATAL.** (1) cpp/call.cpp `PerformCallToCppFunction`'s
+    exhaustive `Callee` variant switch needs a `CalleeOverloadSet` arm
+    (`CARBON_FATAL`, like `CalleeNonFunction`). (2) lex/lex.cpp
+    `CollectMismatchedBracketTokens`' hand-written modifier-keyword list
+    (the bracket-recovery statement-introducer set) gains
+    `TokenKind::Overload` beside `Override`; behavior-preserving for every
+    existing input. (3) check/import.cpp `GetImportName`'s switch over
+    EXPORTED inst kinds has `default: CARBON_FATAL("Unsupported export
+    kind: {0}")`, and neither this plan nor the implementer's
+    `CppOverloadSet` grep found it — a C++ set is never exported by name,
+    so it has no arm there to mirror. The first hosted autoupdate (run
+    36441457310) crashed there on the api-scope set of
+    fail_todo_impl_file.carbon ("Unsupported export kind:
+    OverloadSetValue"); cd6d97a42 adds the arm (the set value maps to its
+    `OverloadSet` entity's name and parent scope; resolving it on import
+    stays gated in import_ref.cpp). R-3's runtime-fatal class is therefore
+    THREE sites (sem_ir/type_iterator.cpp, the import_ref.cpp switch,
+    `GetImportName`), and R-3's falsifier "basic.carbon's fill" was
+    insufficient: only a multi-file golden with an api-scope set reaches
+    `GetImportName`. A review miss per R28(d).
+-   **Implementation-review MAJOR-1: imported set MEMBERS.**
+    import_ref.cpp's `TryResolveTypedInst(FunctionDecl)` would have built
+    a local `Function` for a member named inside an imported generic's
+    body (resolved when the importer instantiates the generic) without
+    its `overload_set_id`, so it would mangle un-indexed and collapse onto
+    its siblings' LLVM declaration. The member arm (import_ref.cpp:
+    2464-2466) now routes through `HandleUnsupportedOverloadSet` like the
+    set type and value arms (:2296, :2302) — three reach sites, ONE
+    string. New golden fail_todo_import_member.carbon (no CHECK lines
+    until the third autoupdate); OV-2 deletes it with the gate.
+-   **§8.4's "two resolver arms" is one helper.** The grep hits the single
+    `context.TODO(LocId::None, "overload set import")` in
+    `HandleUnsupportedOverloadSet` (:2288); the three arms share it.
+-   **Spellings to working syntax (R3).** Generic parameters are `[T:
+    type]` / `template T: type` (the plan's `T:! type` does not lex in
+    this tree); the user destructor is `impl as Core.Destroy { fn
+    Op(unused ref self) {} }`; `fail_no_candidate` passes `1.5` (no
+    string-literal parameter precedent); the api/impl pairs are
+    `set.carbon` / `fail_set.impl.carbon` and `local.carbon` /
+    `local.impl.carbon` so `[[@TEST_NAME]]` matches across each pair; the
+    parse subfile `fail_ordering` is `ordering` (file_test requires
+    `fail_` iff the subfile errors; the order error is check-side).
+-   **Docs port.** The F-009k closure sentence had `#3763` at a line
+    start; prettier read it as a `##` heading and demoted every following
+    H2 (review MAJOR-2). Rejoined in ad2cb5031; heading parity with the
+    stranded page proven by `grep '^#'` against `git show 481e08c24:...`
+    (only `### 0.1 limits` is new). Links to the em-dash decision-log
+    headings carry no fragment: check-links percent-encodes the dash in
+    the link but keeps it raw in the anchor, so no spelling validates
+    (HTML comment at functions_overloading.md:65). The candidate-match
+    annotation's residue text adds aggregate-literal element conversions
+    (an out-of-range literal element of a struct/tuple literal against a
+    narrow integer field still runs `int.convert_checked`); the §8.5
+    residue title is widened to match (W-104). Gate (iii) also covers
+    destructuring tuple/struct parameter patterns (their leaf is not a
+    single `ValueParamPattern`) — the gate comment and "0.1 limits" say
+    so.
+-   **Scoreboard base.** This plan's "114/0/25 over 140" (header, §0.4,
+    §5, §8.3) is a hand count: fork/conformance/out/scoreboard.json at
+    c0c57285f sums to 139 (PASS 114 + SKIP 25; 139 programs listed).
+    OV-1's expected absolutes are therefore 116/0/24 over 140, 46/56
+    bullets; the delta (+2 / −1 / +1) §5.A predicted is unchanged.
+
+Reconciliation greps (§8.4), run at ad2cb5031:
+
+-   `grep -rn 'overload set import' toolchain`: two hits in sources —
+    import_ref.cpp:2288 (the TODO emitter) and import.cpp:83 (the comment
+    on the `GetImportName` arm) — and three in two goldens:
+    fail_todo_impl_file.carbon:28 and :30 (CHECK lines) and
+    fail_todo_import_member.carbon:17 (its header comment; no CHECK lines
+    yet). The three REACH sites are import_ref.cpp:2296, :2302, :2465.
+-   `grep -rn 'overload set export' toolchain`: cpp/generate_ast.cpp:256
+    and fail_todo_export.carbon:36. As planned.
+-   The nine declaration-gate strings: each exactly once in
+    handle_function.cpp (:260 disagree on `self`, :273 distinguished only
+    by `self`, :663 interface, :686 generic scope, :689 generic
+    parameters, :710 non-value parameter, :716 `extern`, :720 entry point,
+    :730 differing access) plus fail_todo_gates.carbon; gate (ix)'s string
+    is in exactly ONE golden (fail_todo_gates.carbon:104, rev 2b m5). The
+    generic-parameters string appears twice in the golden (:23, and the
+    stale :34 the third autoupdate removes).
+-   `grep -rn 'template-dependent arguments\|explicit receiver for a'
+    toolchain`: call.cpp:441 and :495 (plus their comments :433, :485) and
+    fail_todo_gates.carbon:139, :164. As planned.
+-   `` grep -rn '`overload fn` in an `impl` body' toolchain ``:
+    handle_function.cpp:667 and fail_todo_gates.carbon:180. As planned.
+-   The five kinds: one kind.def line each (:300, :301, :309, :310, :311),
+    one `CARBON_DIAGNOSTIC` each (handle_function.cpp:198 and :201,
+    call.cpp:567 and :570, convert.cpp:2103), one emit site each
+    (`DiagnoseOverloadMarkerMismatch` :204-205, called from :227 and :369;
+    call.cpp:578 and :581; convert.cpp:2107); each fires in a golden
+    (fail_marker_mismatch, fail_no_match and basic, fail_set_as_value).
+-   `grep -n DiscardCleanupsSince toolchain/check/call.cpp`: ONE hit
+    (:464). The probe's loop exits only by `break`, never `return`, so
+    every exit path funnels through the single unwind sequence (`Pop`,
+    `PopAndDiscard`, `DiscardCleanupsSince`, the CHECK at :465-468); §8.4's
+    "every exit path" is met by structure, not repetition.
+-   `git diff origin/trunk...HEAD --diff-filter=M -- toolchain/check/testdata
+    toolchain/lower/testdata toolchain/parse/testdata`: empty. No
+    pre-existing golden moved (§6.A's zero-churn claim holds, unlike UN-1).
+-   Ledger max id on trunk c0c57285f: W-093 (by script); W-094..W-104
+    allocated to the eleven §8.5 residues (UN-2's discharge took none).
+
+Hosted verification of record (R28(b); the container cannot build the
+toolchain): first autoupdate run 36441457310 FAILED (the `GetImportName`
+crash); second autoupdate <!-- VERIFY: run id and result -->; third
+autoupdate, after ad2cb5031, <!-- VERIFY: run id and result -->; gate
+<!-- VERIFY: run id and result -->; conformance <!-- VERIFY: run id and
+result --> against the expected 116 / 0 / 24 over 140, 46/56.

@@ -830,6 +830,31 @@ constexpr BuiltinInfo PointerUnsafeConvert = {
     "pointer.unsafe_convert",
     ValidateSignature<auto(PointerTo<AnyType>)->PointerTo<AnyType>>};
 
+// "pointer.offset": the address of the element `n` positions after `*p`; the
+// caller guarantees the result stays inside one allocation. Runtime-only; the
+// prelude's slice and buffer types are its only intended callers.
+constexpr BuiltinInfo PointerOffset = {
+    "pointer.offset",
+    ValidateSignature<auto(PointerTo<TypeParam<0, AnyType>>, AnySizedInt)
+                          ->PointerTo<TypeParam<0, AnyType>>>};
+
+// "fail_stop": writes the given `Core.String` message to stderr and aborts the
+// program. The call does not return; the message names the failed operation.
+constexpr BuiltinInfo FailStop = {
+    "fail_stop", ValidateSignature<auto(CoreStringType)->NoReturn>};
+
+// "heap.allocate": allocates uninitialized storage for `count` values of the
+// pointee type of the result, or a null pointer when the allocation fails. The
+// element type is a `generic` parameter of the declaration and is not a call
+// parameter.
+constexpr BuiltinInfo HeapAllocate = {
+    "heap.allocate",
+    ValidateSignature<auto(AnySizedInt)->MaybeUnformed<PointerTo<AnyType>>>};
+
+// "heap.free": releases storage obtained from "heap.allocate".
+constexpr BuiltinInfo HeapFree = {
+    "heap.free", ValidateSignature<auto(PointerTo<AnyType>)->NoReturn>};
+
 // "type.and": facet type combination.
 constexpr BuiltinInfo TypeAnd = {"type.and",
                                  ValidateSignature<auto(Type, Type)->Type>};

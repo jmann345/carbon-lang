@@ -951,9 +951,13 @@ static auto BuildClassDefinition(Context& context,
 
   // An imported C++ union is a Carbon union (docs/design/unions.md, "Importing
   // C++ unions"): the flag routes a struct literal to the designated
-  // single-field initialization of `ConvertStructToUnion`. Its copy stays on
-  // the C++ copy-constructor path (`LookupCppImpl`), so Clang's deletions for a
-  // union with a non-trivial member are preserved.
+  // single-field initialization of `ConvertStructToUnion` (only for a C++
+  // aggregate; see `IsImportedCppAggregate`). Its copy stays on the C++
+  // copy-constructor path (`LookupCppImpl`), so Clang's deletions for a union
+  // with a non-trivial member are preserved. The flag is set here, on
+  // definition import only: a forward-declared-only imported union keeps
+  // `is_union == false` (its `SemIR::Class` never reaches this function), and a
+  // future class-versus-union redeclaration check must account for that.
   class_info.is_union = clang_def->isUnion();
 
   class_info.is_dynamic = clang_def->isDynamicClass();
@@ -2829,6 +2833,27 @@ auto GetAsClangVarDecl(Context& context, SemIR::InstId inst_id)
   }
 
   return nullptr;
+}
+
+auto IsImportedCppAggregate(Context& context, const SemIR::Class& class_info)
+    -> bool {
+  if (!class_info.scope_id.has_value() ||
+      !context.name_scopes().Get(class_info.scope_id).is_cpp_scope()) {
+    return false;
+  }
+  // An imported class maps its first declaration to the Clang declaration
+  // (`ImportTagDecl`), which need not be the definition.
+  const auto* clang_decl =
+      context.clang_decls().Lookup(class_info.first_decl_id());
+  if (!clang_decl) {
+    return false;
+  }
+  auto* record_decl = dyn_cast<clang::CXXRecordDecl>(clang_decl->decl());
+  if (!record_decl) {
+    return false;
+  }
+  auto* record_def = record_decl->getDefinition();
+  return record_def && record_def->isAggregate();
 }
 
 }  // namespace Carbon::Check

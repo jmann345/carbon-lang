@@ -15,7 +15,11 @@
 // an imported one (`UnionInitNotSingleField`, `UnionInitUnknownField`), and a
 // union whose member has a non-trivial copy constructor keeps C++'s deleted
 // copy constructor — the copy is never the synthesized primitive copy
-// (D-UN-5's `is_cpp_scope` exclusion; the positive twin is union_init.carbon).
+// (D-UN-5's `is_cpp_scope` exclusion), and a union that is not a C++ aggregate
+// (it declares a constructor) is not designated-initializable from Carbon, so
+// Carbon never bypasses the constructor ("Carbon code is never more permitted
+// than C++ code"; the same gate the `{}` path applies at import). The positive
+// twin is union_init.carbon.
 
 // --- pair.h
 
@@ -80,4 +84,25 @@ fn F(a: Cpp.U) -> Cpp.U {
   // CHECK:STDERR:       |      ^
   // CHECK:STDERR:
   return a;
+}
+
+// --- non_aggregate.h
+
+union U {
+  U() : a(0) {}
+  int a;
+  float f;
+};
+
+// --- fail_init_non_aggregate.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp library "non_aggregate.h";
+
+// Not an aggregate: the struct literal falls through to the imported-class
+// bailout and the ordinary conversion failure, exactly as for a non-aggregate
+// class (non_aggregate_init.carbon).
+fn F() {
+  var unused u: Cpp.U = {.a = 1};
 }

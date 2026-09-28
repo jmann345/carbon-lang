@@ -342,6 +342,10 @@ on.
 > `ConvertStructToUnion` path — identically to native unions, as
 > [Importing C++ unions](#importing-c-unions) requires — while the copy of an
 > imported union stays on C++'s copy constructor, preserving Clang's deletions.
+> The struct-literal path is taken only for a union that is a C++ aggregate: a
+> union with a user-provided constructor rejects designated initialization from
+> Carbon, so Carbon is never more permitted than C++ (implementation review of
+> UN-2).
 
 ## Writing and reading fields
 

@@ -16,6 +16,7 @@
 #include "toolchain/check/context.h"
 #include "toolchain/check/control_flow.h"
 #include "toolchain/check/core_identifier.h"
+#include "toolchain/check/cpp/import.h"
 #include "toolchain/check/diagnostic_helpers.h"
 #include "toolchain/check/eval.h"
 #include "toolchain/check/impl_lookup.h"
@@ -1002,9 +1003,19 @@ static auto ConvertStructToClass(Context& context, SemIR::StructType src_type,
   if (auto custom_layout_type =
           context.types().TryGetAs<SemIR::CustomLayoutType>(object_repr_id)) {
     if (dest_class_info.is_union) {
-      // A union initializes exactly one designated field.
-      return ConvertStructToUnion(context, src_type, *custom_layout_type,
-                                  value_id, target);
+      // A union initializes exactly one designated field. An imported C++
+      // union takes this path only when it is a C++ aggregate, so Carbon never
+      // bypasses a user-provided constructor (docs/design/unions.md,
+      // "Importing C++ unions": Carbon code is never more permitted than C++
+      // code); the `{}` initialization of an empty imported class is gated the
+      // same way at import (`ImportClassObjectRepr`).
+      bool is_cpp_class =
+          dest_class_info.scope_id.has_value() &&
+          context.name_scopes().Get(dest_class_info.scope_id).is_cpp_scope();
+      if (!is_cpp_class || IsImportedCppAggregate(context, dest_class_info)) {
+        return ConvertStructToUnion(context, src_type, *custom_layout_type,
+                                    value_id, target);
+      }
     }
     // Builtin conversion does not apply.
     return value_id;

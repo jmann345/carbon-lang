@@ -14,7 +14,8 @@
 // C++ unions"; fork/unions/plan.md UN-2, §4.B). With `is_union` set on import,
 // a struct literal takes the designated single-field initialization of a
 // native union (`ConvertStructToUnion`: one `class_element_access` and a
-// one-element `class_init`, never a `struct_value` of the union type), the
+// one-element `class_init`, never a `struct_value` of a union type with a
+// byte-array representation — only the empty union's `StructType{}` folds), the
 // copy keeps C++'s copy constructor (D-UN-5's `is_cpp_scope` exclusion), and
 // by-value crossings in both directions follow function/import/union.carbon.
 // The negative pins are in fail_union_init.carbon.
@@ -50,7 +51,9 @@ library "[[@TEST_NAME]]";
 import Cpp library "empty.h";
 
 // An empty aggregate keeps its landed `StructType{}` representation, so `{}`
-// stays accepted: the union arm sits inside the `CustomLayoutType` branch.
+// stays accepted (the union arm sits inside the `CustomLayoutType` branch) and
+// its `class_init` still folds: the fold suppression keys on the byte-array
+// representation, not on `is_union` alone.
 fn F() {
   //@dump-sem-ir-begin
   var unused b: Cpp.Bar = {};
@@ -195,49 +198,6 @@ fn F() -> i32 {
 // CHECK:STDOUT:   %Pair.cpp_destructor.bound: <bound method> = bound_method %u.var, constants.%Pair.cpp_destructor
 // CHECK:STDOUT:   %Pair.cpp_destructor.call: init %empty_tuple.type = call %Pair.cpp_destructor.bound(%u.var)
 // CHECK:STDOUT:   return %Int.as.Copy.impl.Op.call
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: --- empty_init.carbon
-// CHECK:STDOUT:
-// CHECK:STDOUT: constants {
-// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
-// CHECK:STDOUT:   %Bar: type = class_type @Bar [concrete]
-// CHECK:STDOUT:   %empty_struct_type: type = struct_type {} [concrete]
-// CHECK:STDOUT:   %pattern_type.3db: type = pattern_type %Bar [concrete]
-// CHECK:STDOUT:   %b.patt: %pattern_type.3db = ref_binding_pattern b [concrete]
-// CHECK:STDOUT:   %b.var_patt: %pattern_type.3db = var_pattern %b.patt [concrete]
-// CHECK:STDOUT:   %empty_struct: %empty_struct_type = struct_value () [concrete]
-// CHECK:STDOUT:   %Bar.cpp_destructor.type: type = fn_type @Bar.cpp_destructor [concrete]
-// CHECK:STDOUT:   %Bar.cpp_destructor: %Bar.cpp_destructor.type = struct_value () [concrete]
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: imports {
-// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
-// CHECK:STDOUT:     .Bar = %Bar.decl
-// CHECK:STDOUT:     import Cpp//...
-// CHECK:STDOUT:   }
-// CHECK:STDOUT:   %Bar.decl: type = class_decl @Bar [concrete = constants.%Bar] {} {}
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @F() {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %b.var: ref %Bar = var_storage %b.var_patt
-// CHECK:STDOUT:   %.loc10_28.1: %empty_struct_type = struct_literal () [concrete = constants.%empty_struct]
-// CHECK:STDOUT:   %.loc10_28.2: init %Bar to %b.var = class_init ()
-// CHECK:STDOUT:   %.loc10_3: init %Bar = converted %.loc10_28.1, %.loc10_28.2
-// CHECK:STDOUT:   assign %b.var, %.loc10_3
-// CHECK:STDOUT:   %.loc10_20: type = splice_block %Bar.ref [concrete = constants.%Bar] {
-// CHECK:STDOUT:     %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
-// CHECK:STDOUT:     %Bar.ref: type = name_ref Bar, imports.%Bar.decl [concrete = constants.%Bar]
-// CHECK:STDOUT:   }
-// CHECK:STDOUT:   %b: ref %Bar = wrapper_binding b, %b.var
-// CHECK:STDOUT:   name_binding_decl {
-// CHECK:STDOUT:     %b.patt: %pattern_type.3db = ref_binding_pattern b [concrete = constants.%b.patt]
-// CHECK:STDOUT:     %b.var_patt: %pattern_type.3db = var_pattern %b.patt [concrete = constants.%b.var_patt]
-// CHECK:STDOUT:   }
-// CHECK:STDOUT:   %Bar.cpp_destructor.bound: <bound method> = bound_method %b.var, constants.%Bar.cpp_destructor
-// CHECK:STDOUT:   %Bar.cpp_destructor.call: init %empty_tuple.type = call %Bar.cpp_destructor.bound(%b.var)
-// CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- copy.carbon

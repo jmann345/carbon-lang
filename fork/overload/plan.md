@@ -2534,7 +2534,8 @@ Reconciliation greps (§8.4), run at ad2cb5031:
 
 Hosted verification of record (R28(b); the container cannot build the
 toolchain): first autoupdate run 36441457310 FAILED (the `GetImportName`
-crash); second autoupdate <!-- VERIFY: run id and result -->; third
-autoupdate, after ad2cb5031, <!-- VERIFY: run id and result -->; gate
-<!-- VERIFY: run id and result -->; conformance <!-- VERIFY: run id and
-result --> against the expected 116 / 0 / 24 over 140, 46/56.
+crash); second autoupdate 36444528619 success; third
+autoupdate, after ad2cb5031, 36446922583 success (the member-gate pin
+filled empty); fourth, after 1baec5d70, 36449480945 success; gate
+36451253811 green; conformance 36451200115: 116 / 0 / 24 over 140, 46/56
+bullets, exactly the expected 116 / 0 / 24 over 140, 46/56.

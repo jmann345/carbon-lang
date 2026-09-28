@@ -3003,10 +3003,11 @@ pre-existing goldens moved. Third autoupdate (after ad2cb5031): run
 36446922583, success — every positive warning-free, `fail_todo_generic_scope`
 down to one TODO, and the member-gate pin filled EMPTY (the finding
 above). Fourth autoupdate (after 1baec5d70): run
-<!-- VERIFY: run id --> <!-- VERIFY: result -->, filling
-import_member_specific.carbon (check + lower). Gate:
-<!-- VERIFY: run id and result -->. Conformance:
-<!-- VERIFY: run id and result --> — expected 116 PASS / 0 FAIL / 24 SKIP
+36449480945, success, filling import_member_specific.carbon (check +
+lower) — the importer's specific calls `_CP:overload0.Main` (the
+falsifier `_CP.Main` did not appear). Gate: run 36451253811, green.
+Conformance: run 36451200115 (scoreboard d8dce1343), **116 PASS / 0 FAIL
+/ 24 SKIP over 140, 46/56 bullets** — the expected 116 PASS / 0 FAIL / 24 SKIP
 over 140 programs, 46/56 bullets, from the trunk c0c57285f base READ FROM
 fork/conformance/out/scoreboard.json: 114 PASS / 0 FAIL / 25 SKIP over
 139 programs (the totals sum to 139 and the programs list has 139

@@ -2443,15 +2443,22 @@ Deltas from this plan, honestly:
     insufficient: only a multi-file golden with an api-scope set reaches
     `GetImportName`. A review miss per R28(d).
 -   **Implementation-review MAJOR-1: imported set MEMBERS.**
-    import_ref.cpp's `TryResolveTypedInst(FunctionDecl)` would have built
-    a local `Function` for a member named inside an imported generic's
-    body (resolved when the importer instantiates the generic) without
-    its `overload_set_id`, so it would mangle un-indexed and collapse onto
-    its siblings' LLVM declaration. The member arm (import_ref.cpp:
-    2464-2466) now routes through `HandleUnsupportedOverloadSet` like the
-    set type and value arms (:2296, :2302) — three reach sites, ONE
-    string. New golden fail_todo_import_member.carbon (no CHECK lines
-    until the third autoupdate); OV-2 deletes it with the gate.
+    import_ref.cpp's `TryResolveTypedInst(FunctionDecl)` builds a local
+    `Function` for a member named inside an imported generic's body
+    (resolved when the importer instantiates the generic) without its
+    `overload_set_id`, so it mangled un-indexed and collapsed onto its
+    siblings' LLVM declaration. A first fix gated that arm with the OV-2
+    TODO; its pin (fail_todo_import_member.carbon) filled EMPTY on the
+    third autoupdate — the specific never imports the set, so the gate was
+    unreachable and the collapse was live. Root fix (1baec5d70):
+    `FunctionFields::overload_index` (assigned when a member joins its
+    set, mirrored by `ImportFunctionDecl`), the mangler keys
+    `:overload<N>` on it (a CHECK ties it to `GetOverloadMemberIndex` for
+    local sets), and the member arm is no longer gated. Pins: the POSITIVE
+    check golden import_member_specific.carbon and its lower twin (the
+    importer's specific must call `_CP:overload0.Main`; `_CP.Main` is the
+    falsifier). The "overload set import" string is reached at TWO sites
+    (the set type and value resolver arms).
 -   **§8.4's "two resolver arms" is one helper.** The grep hits the single
     `context.TODO(LocId::None, "overload set import")` in
     `HandleUnsupportedOverloadSet` (:2288); the three arms share it.
@@ -2489,10 +2496,10 @@ Reconciliation greps (§8.4), run at ad2cb5031:
 
 -   `grep -rn 'overload set import' toolchain`: two hits in sources —
     import_ref.cpp:2288 (the TODO emitter) and import.cpp:83 (the comment
-    on the `GetImportName` arm) — and three in two goldens:
-    fail_todo_impl_file.carbon:28 and :30 (CHECK lines) and
-    fail_todo_import_member.carbon:17 (its header comment; no CHECK lines
-    yet). The three REACH sites are import_ref.cpp:2296, :2302, :2465.
+    on the `GetImportName` arm) — and two CHECK lines in one golden,
+    fail_todo_impl_file.carbon:28 and :30. The two REACH sites are the
+    set type and value resolver arms (import_ref.cpp:2296, :2302); the
+    member arm is not gated (see the MAJOR-1 note above).
 -   `grep -rn 'overload set export' toolchain`: cpp/generate_ast.cpp:256
     and fail_todo_export.carbon:36. As planned.
 -   The nine declaration-gate strings: each exactly once in

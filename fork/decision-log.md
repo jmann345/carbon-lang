@@ -2905,11 +2905,20 @@ blockers; M1 the explicit receiver is a legal shape, which added gate
 (xii); M2 the generic-class test shape; m1-m6), folded as rev 2b. One
 implementation review, APPROVE-WITH-FIXES. MAJOR-1: an imported set
 MEMBER named in an imported generic's body resolved through the plain
-`FunctionDecl` arm without its `overload_set_id` (an un-indexed mangled
-name collapsing onto its siblings'); it now routes through
-`HandleUnsupportedOverloadSet` like the set itself — three reach sites,
-one string — pinned by fail_todo_import_member.carbon, which OV-2
-deletes. MAJOR-2: the ported page's heading levels were corrupted by a
+`FunctionDecl` arm without its `overload_set_id`, so the specific
+instantiated in the importing file would call an un-indexed mangled name
+that collapses onto its siblings' — an undefined symbol at link with no
+diagnostic. First fixed by gating the member import (the OV-2 "overload
+set import" TODO), but the pin for that gate compiled CLEAN: the specific
+of an imported generic reaches the member without ever importing the set,
+so the gate was unreachable and the collapse live. Fixed at the root
+instead (1baec5d70): the member's index is stored on `SemIR::Function`
+(`overload_index`, mirrored by `ImportFunctionDecl`) and the mangler keys
+`:overload<N>` on it, so an imported member mangles exactly as its
+defining library did; the set entity itself stays un-imported until OV-2.
+Pinned by the positive import_member_specific.carbon check golden and its
+LOWER twin, whose falsifier is an un-indexed `_CP.Main` call in the
+importing file's specific. MAJOR-2: the ported page's heading levels were corrupted by a
 line-leading `#3763` (prettier turned it into a `##` heading and demoted
 every following H2); repaired with heading parity to the stranded page
 proven by diffing `grep '^#'` against `git show 481e08c24:...` (the only
@@ -2989,12 +2998,13 @@ commit's.
 VERIFICATION is hosted-only (the container's clang 18 cannot build the
 toolchain; R28(b)). First autoupdate: run 36441457310 FAILED at the
 `GetImportName` crash. Second autoupdate (after cd6d97a42): run
-<!-- VERIFY: run id --> <!-- VERIFY: result -->, filling every golden of
-commits 1-3. Third autoupdate (after ad2cb5031): run
-<!-- VERIFY: run id --> <!-- VERIFY: result -->; it fills
-fail_todo_import_member.carbon (no CHECK lines yet) and is expected to
-drop the second TODO line of fail_todo_gates.carbon's
-`fail_todo_generic_scope` subfile (the gate-ordering fix). Gate:
+36444528619, success, filling every golden of commits 1-3 with zero
+pre-existing goldens moved. Third autoupdate (after ad2cb5031): run
+36446922583, success — every positive warning-free, `fail_todo_generic_scope`
+down to one TODO, and the member-gate pin filled EMPTY (the finding
+above). Fourth autoupdate (after 1baec5d70): run
+<!-- VERIFY: run id --> <!-- VERIFY: result -->, filling
+import_member_specific.carbon (check + lower). Gate:
 <!-- VERIFY: run id and result -->. Conformance:
 <!-- VERIFY: run id and result --> — expected 116 PASS / 0 FAIL / 24 SKIP
 over 140 programs, 46/56 bullets, from the trunk c0c57285f base READ FROM

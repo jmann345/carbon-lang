@@ -7,25 +7,53 @@
 // EXPECT-STDOUT:
 //   1
 //   2
-// SKIP: MISSING with no design — docs/design/pattern_matching.md:696: "We do not yet have an approved design for overloaded functions"; there is no design and no implementation of Carbon-side overloading, so a second `fn Describe` with a different signature is rejected as a redeclaration today (only imported C++ overload sets work, per interop/cpp_overload_set_by_type.carbon). Un-SKIP (and uncomment the body) when an overloading design is accepted and implemented.
+//   1
+//   3
+//   7
 //
-// Write-tests-first stub. Intended future test: two Carbon-native overloads
-// of the same function name distinguished by parameter type, with call-site
-// selection observable at runtime. The declaration shape below is the
-// natural strawman; replace it with the accepted design's syntax when that
-// exists.
+// Carbon-native `overload fn` closed sets (fork decision F-009;
+// docs/design/functions_overloading.md): every member carries the marker,
+// and a call selects the FIRST member in declaration order whose parameters
+// accept the arguments through implicit conversions — no best-match ranking.
+// Un-SKIPped by OV-1 (fork/overload/plan.md §5.A): the stub's
+// `Describe(n: i32)` / `Describe(b: bool)` strawman is kept as the first pair
+// with the accepted `overload` marker; the guard body is replaced.
+//
+// EXPECT values, hand-derived from the first-match rule and the prelude's
+// implicit conversions (core/prelude/types/int.carbon: `Int(From) as
+// ImplicitAs(Int(To))` only when `From` fits in `To`; no `bool` conversion):
+//   1  `Describe(i32)`: member 0 converts exactly.
+//   2  `Describe(true)`: `bool` has no implicit conversion to `i32`, so
+//      member 0 is rejected and member 1 matches.
+//   1  `Pick(n: i32)`: `i32` widens implicitly to `i64`, so the FIRST member
+//      wins even though the second is an exact match — a best-match resolver
+//      would print 2. This line is the F-009 rule observed natively.
+//   3  `Sum(3)`: arity 1.
+//   7  `Sum(3, 4)`: arity 2.
+// Runtime inputs go through `RuntimeSeed` so nothing constant-folds.
 
 import Core library "io";
 
-// fn Describe(n: i32) -> i32 { return 1; }
-// fn Describe(b: bool) -> i32 { return 2; }
+overload fn Describe(n: i32) -> i32 { return 1; }
+overload fn Describe(b: bool) -> i32 { return 2; }
+
+// Declaration order decides: `i32` widens implicitly to `i64`
+// (core/prelude/types/int.carbon), so the first member wins for an `i32`
+// argument even though the second is an exact match.
+overload fn Pick(x: i64) -> i32 { return 1; }
+overload fn Pick(x: i32) -> i32 { return 2; }
+
+overload fn Sum(a: i32) -> i32 { return a; }
+overload fn Sum(a: i32, b: i32) -> i32 { return a + b; }
+
+fn RuntimeSeed(x: i32) -> i32 { return x + 20; }
 
 fn Run() -> i32 {
-  // Intended body once the feature lands:
-  //   Core.Print(Describe(7));
-  //   Core.Print(Describe(true));
-  //   return 0;
-  // Guard: fails loudly (exit 1 vs EXPECT-EXIT 0) if un-SKIPped before
-  // Carbon-native overloading exists.
-  return 1;
+  Core.Print(Describe(RuntimeSeed(-13)));
+  Core.Print(Describe(true));
+  var n: i32 = RuntimeSeed(-19);
+  Core.Print(Pick(n));
+  Core.Print(Sum(RuntimeSeed(-17)));
+  Core.Print(Sum(RuntimeSeed(-17), RuntimeSeed(-16)));
+  return 0;
 }

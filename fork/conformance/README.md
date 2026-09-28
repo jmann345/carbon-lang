@@ -279,7 +279,8 @@ fails if this table is stale):
 | `error_handling/run_result_err.carbon` | Error handling: dedicated control flow constructs | run |
 | `error_handling/run_result_ok.carbon` | Error handling: dedicated control flow constructs | run |
 | `functions/forward_decl.carbon` | Functions: separate declaration and definition | run |
-| `functions/overloading_native.carbon` | Functions: function overloading (Carbon-native) | SKIP |
+| `functions/overloading_methods.carbon` | Functions: function overloading (Carbon-native) | run |
+| `functions/overloading_native.carbon` | Functions: function overloading (Carbon-native) | run |
 | `generics/checked_generics.carbon` | Generics: Checked generics | run |
 | `generics/generic_class.carbon` | Generics: generic functions and types | run |
 | `generics/structural_conformance.carbon` | Generics: Template-style structural conformance to nominal constraints | SKIP |

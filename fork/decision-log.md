@@ -3991,6 +3991,37 @@ Noted for W8b/W8c: lower merge-block namer emits the label
 choice-payload bind-pass coverage nuance, and the R8 conservative
 gate.
 
+### Weekly upstream merge 2026-09-28: cut HOLDS a sixth week; tip half-healed with a new crash signature (2026-09-28)
+
+First weekly check run entirely under R28 (no runner): the nightly is
+mirrored by the GitHub-hosted `Fork: mirror upstream nightly toolchain`
+workflow (release arbiter-v0.0.0-0.nightly.2026.09.28, upstream 1579d4e)
+and the A/B probes run in the sandbox against that tarball. Measured
+upstream trunk: 137 commits since the 631f8fb cut (2026-08-20); 1435
+upstream files touched, 157 of them also modified by the fork since the
+cut — including the check core the last four slices landed on
+(class.cpp, custom_witness.cpp/.h, convert.cpp, eval.cpp/.h, eval_inst.cpp,
+pattern_match.cpp, pattern.cpp, handle_function.cpp, handle_class.cpp,
+import_ref.cpp, member_access.cpp, scope_stack.*, node_stack.h, type.cpp,
+cpp/import.cpp, cpp/export.cpp/.h, cpp/generate_ast.cpp,
+cpp/impl_lookup.cpp, cpp/overload_resolution.cpp, cpp/call.cpp,
+cpp/constant.cpp) and docs/design/{README,classes,pattern_matching}.md.
+Empirical A/B: generics/templates_value_param.carbon compiles, links and
+runs clean (prints 9 10 20, exit 0 — unchanged); generics/
+templates_type_param.carbon still CRASHES, with a NEW signature — `CHECK
+failure at toolchain/lower/function_context.cpp:198: const_id.is_concrete():
+Missing value: inst… {kind: StructLiteral, …, type: type(symbolic_constant…)}`
+(a symbolic struct literal reaches lowering without a concrete value; the
+09-21 signature was an unhandled SpliceInst category at lower/handle.cpp:294).
+Half-healed is still a regression against the fork floor (both probes PASS
+at the cut, which now stands at 114/0/25 over 140), so the cut holds a
+sixth week; the deferred set is 137 commits. Conflict surface has grown
+from one fork-modified file to the twenty-odd above: advancing the cut is
+no longer a weekly fold but a workstream of its own (recommendation:
+schedule an "upstream advance" slice once the OV/UN-2 slices land, with
+its own plan and two reviews, rather than folding it into a cron run).
+The staging branch was not created (no merge was attempted).
+
 ### Weekly upstream merge 2026-09-21: cut HOLDS a fifth week; tip still half-healed (2026-09-21)
 
 Fold-in to the still-unlanded 08-24 staging merge (runner jeromehome

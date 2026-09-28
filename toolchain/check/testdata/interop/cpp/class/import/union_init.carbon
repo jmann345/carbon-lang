@@ -200,6 +200,50 @@ fn F() -> i32 {
 // CHECK:STDOUT:   return %Int.as.Copy.impl.Op.call
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
+// CHECK:STDOUT: --- empty_init.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
+// CHECK:STDOUT:   %Bar: type = class_type @Bar [concrete]
+// CHECK:STDOUT:   %empty_struct_type: type = struct_type {} [concrete]
+// CHECK:STDOUT:   %pattern_type.3db: type = pattern_type %Bar [concrete]
+// CHECK:STDOUT:   %b.patt: %pattern_type.3db = ref_binding_pattern b [concrete]
+// CHECK:STDOUT:   %b.var_patt: %pattern_type.3db = var_pattern %b.patt [concrete]
+// CHECK:STDOUT:   %empty_struct: %empty_struct_type = struct_value () [concrete]
+// CHECK:STDOUT:   %Bar.val: %Bar = struct_value () [concrete]
+// CHECK:STDOUT:   %Bar.cpp_destructor.type: type = fn_type @Bar.cpp_destructor [concrete]
+// CHECK:STDOUT:   %Bar.cpp_destructor: %Bar.cpp_destructor.type = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .Bar = %Bar.decl
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Bar.decl: type = class_decl @Bar [concrete = constants.%Bar] {} {}
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F() {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %b.var: ref %Bar = var_storage %b.var_patt
+// CHECK:STDOUT:   %.loc12_28.1: %empty_struct_type = struct_literal () [concrete = constants.%empty_struct]
+// CHECK:STDOUT:   %.loc12_28.2: init %Bar to %b.var = class_init () [concrete = constants.%Bar.val]
+// CHECK:STDOUT:   %.loc12_3: init %Bar = converted %.loc12_28.1, %.loc12_28.2 [concrete = constants.%Bar.val]
+// CHECK:STDOUT:   assign %b.var, %.loc12_3
+// CHECK:STDOUT:   %.loc12_20: type = splice_block %Bar.ref [concrete = constants.%Bar] {
+// CHECK:STDOUT:     %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:     %Bar.ref: type = name_ref Bar, imports.%Bar.decl [concrete = constants.%Bar]
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %b: ref %Bar = wrapper_binding b, %b.var
+// CHECK:STDOUT:   name_binding_decl {
+// CHECK:STDOUT:     %b.patt: %pattern_type.3db = ref_binding_pattern b [concrete = constants.%b.patt]
+// CHECK:STDOUT:     %b.var_patt: %pattern_type.3db = var_pattern %b.patt [concrete = constants.%b.var_patt]
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Bar.cpp_destructor.bound: <bound method> = bound_method %b.var, constants.%Bar.cpp_destructor
+// CHECK:STDOUT:   %Bar.cpp_destructor.call: init %empty_tuple.type = call %Bar.cpp_destructor.bound(%b.var)
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
 // CHECK:STDOUT: --- copy.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

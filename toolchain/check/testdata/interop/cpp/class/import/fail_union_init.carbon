@@ -76,7 +76,7 @@ import Cpp library "nontrivial_member.h";
 
 fn F(a: Cpp.U) -> Cpp.U {
   // CHECK:STDERR: fail_copy_nontrivial_member.carbon:[[@LINE+8]]:10: error: attempt to use a deleted function [CppInteropParseError]
-  // CHECK:STDERR:     7 |   return a;
+  // CHECK:STDERR:    15 |   return a;
   // CHECK:STDERR:       |          ^
   // CHECK:STDERR: fail_copy_nontrivial_member.carbon:[[@LINE-6]]:10: in file included here [InCppInclude]
   // CHECK:STDERR: ./nontrivial_member.h:8:6: note: copy constructor of 'U' is implicitly deleted because variant field 'nt' has a non-trivial copy constructor [CppInteropParseNote]
@@ -104,5 +104,12 @@ import Cpp library "non_aggregate.h";
 // bailout and the ordinary conversion failure, exactly as for a non-aggregate
 // class (non_aggregate_init.carbon).
 fn F() {
+  // CHECK:STDERR: fail_init_non_aggregate.carbon:[[@LINE+7]]:3: error: cannot implicitly convert expression of type `{.a: Core.IntLiteral}` to `Cpp.U` [ConversionFailure]
+  // CHECK:STDERR:   var unused u: Cpp.U = {.a = 1};
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_init_non_aggregate.carbon:[[@LINE+4]]:3: note: type `{.a: Core.IntLiteral}` does not implement interface `Core.ImplicitAs(Cpp.U)` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   var unused u: Cpp.U = {.a = 1};
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   var unused u: Cpp.U = {.a = 1};
 }

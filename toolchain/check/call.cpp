@@ -572,7 +572,7 @@ static auto PerformCallToOverloadSet(Context& context, SemIR::LocId loc_id,
                     "|=1:has a parameter its argument cannot implicitly "
                     "convert to"
                     "|=2:has generic parameters that could not be deduced"
-                    "|=3:is not an instance method but the call provides a "
+                    "|=3:is not an instance method, but the call provides a "
                     "receiver}",
                     Diagnostics::IntAsSelect);
   auto builder = context.emitter().Build(loc_id, OverloadNoMatch, name_id);

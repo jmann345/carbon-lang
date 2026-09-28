@@ -8,6 +8,7 @@
 #include "common/ostream.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallVector.h"
+#include "llvm/ADT/StringExtras.h"
 #include "toolchain/base/value_store.h"
 #include "toolchain/sem_ir/ids.h"
 

@@ -679,17 +679,20 @@ static auto DiagnoseOverloadGates(
     const DeclNameStack::NameContext& name_context,
     SemIR::FunctionId function_id) -> void {
   const auto& function = context.functions().Get(function_id);
-  // (i) Generic members (lifted at OV-2).
-  if (function.generic_id.has_value()) {
-    context.TODO(node_id, "`overload fn` with generic parameters");
-  }
-  // (ii) Sets declared inside a generic scope (lifted at OV-2).
+  // (ii) Sets declared inside a generic scope (lifted at OV-2). A member
+  // function of a generic class has its own `generic_id`, so this takes
+  // precedence over (i) to diagnose once.
   if (context.scope_stack().PeekSpecificId().has_value()) {
     context.TODO(node_id, "`overload fn` in a generic scope");
+  } else if (function.generic_id.has_value()) {
+    // (i) Generic members (lifted at OV-2).
+    context.TODO(node_id, "`overload fn` with generic parameters");
   }
-  // (iii) Explicit parameters after `self` must be by-value: the resolution
-  // probe is a value conversion, so `ref` and `var` members would be accepted
-  // by the probe and rejected by the commit.
+  // (iii) Explicit parameters after `self` must be by-value binding patterns:
+  // the resolution probe is a value conversion, so `ref` and `var` members
+  // would be accepted by the probe and rejected by the commit. This also gates
+  // destructuring tuple and struct parameter patterns, whose leaf is not a
+  // single `ValueParamPattern`.
   for (auto param_pattern_id :
        context.inst_blocks().GetOrEmpty(function.param_patterns_id)) {
     if (param_pattern_id == function.self_param_id ||

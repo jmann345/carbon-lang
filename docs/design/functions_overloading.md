@@ -20,29 +20,28 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     -   [0.1 limits](#01-limits)
 -   [Redeclaration rules](#redeclaration-rules)
     -   [New member versus redeclaration](#new-member-versus-redeclaration)
--   [3763's own diagnostics (`RedeclParamDiffers`, `RedeclParamSyntaxDiffers`](#3763s-own-diagnostics-redeclparamdiffers-redeclparamsyntaxdiffers)
     -   [Preserved diagnostics](#preserved-diagnostics)
-    -   [Overload resolution](#overload-resolution)
-        -   [First match in declaration order](#first-match-in-declaration-order)
-        -   [The candidate match test](#the-candidate-match-test)
-        -   [No ranking, no subsumption](#no-ranking-no-subsumption)
-        -   [No overloading on return type](#no-overloading-on-return-type)
-        -   [Diagnostics](#diagnostics)
-        -   [Naming an overload set](#naming-an-overload-set)
-    -   [Interaction with checked generics](#interaction-with-checked-generics)
-        -   [Calls from checked-generic bodies](#calls-from-checked-generic-bodies)
-        -   [Generic and constrained members](#generic-and-constrained-members)
-        -   [Calls from template code](#calls-from-template-code)
-    -   [C++ interoperability](#c-interoperability)
-        -   [Importing C++ overload sets](#importing-c-overload-sets)
-        -   [Exporting Carbon overload sets to C++](#exporting-carbon-overload-sets-to-c)
-        -   [Documented divergence: two resolution rules](#documented-divergence-two-resolution-rules)
-        -   [Linkage and mangling](#linkage-and-mangling)
-    -   [Future work](#future-work)
-    -   [Decisions within this design](#decisions-within-this-design)
-    -   [Alternatives considered](#alternatives-considered)
-    -   [Sub-forks](#sub-forks)
-    -   [References](#references)
+-   [Overload resolution](#overload-resolution)
+    -   [First match in declaration order](#first-match-in-declaration-order)
+    -   [The candidate match test](#the-candidate-match-test)
+    -   [No ranking, no subsumption](#no-ranking-no-subsumption)
+    -   [No overloading on return type](#no-overloading-on-return-type)
+    -   [Diagnostics](#diagnostics)
+    -   [Naming an overload set](#naming-an-overload-set)
+-   [Interaction with checked generics](#interaction-with-checked-generics)
+    -   [Calls from checked-generic bodies](#calls-from-checked-generic-bodies)
+    -   [Generic and constrained members](#generic-and-constrained-members)
+    -   [Calls from template code](#calls-from-template-code)
+-   [C++ interoperability](#c-interoperability)
+    -   [Importing C++ overload sets](#importing-c-overload-sets)
+    -   [Exporting Carbon overload sets to C++](#exporting-carbon-overload-sets-to-c)
+    -   [Documented divergence: two resolution rules](#documented-divergence-two-resolution-rules)
+    -   [Linkage and mangling](#linkage-and-mangling)
+-   [Future work](#future-work)
+-   [Decisions within this design](#decisions-within-this-design)
+-   [Alternatives considered](#alternatives-considered)
+-   [Sub-forks](#sub-forks)
+-   [References](#references)
 
 <!-- tocstop -->
 
@@ -62,6 +61,11 @@ the callee chosen by the arguments at each call site. Carbon's overloading is
 deliberately narrower than C++'s, in three ways that were each fixed by fork
 decision
 [F-009](/fork/decision-log.md):
+
+<!-- Links to /fork/decision-log.md carry no `#f-009-...`/`#f-010-...`
+fragment: those headings contain an em dash, which the check-links hook
+percent-encodes in a link but keeps raw in the heading's anchor, so no
+spelling of the fragment validates. -->
 
 -   **Overloading is marked.** Every declaration of every member of an overload
     set carries the `overload` declaration modifier. A name is either a single
@@ -343,8 +347,9 @@ gate and the gate's golden in the same commit:
 -   (i) a generic member (`overload fn F[T: type](x: T)`) — until OV-2;
 -   (ii) a set declared inside a generic scope (a generic class, interface
     or impl) — until OV-2;
--   (iii) an explicit parameter after `self` that is not a by-value
-    parameter (`ref` or `var`);
+-   (iii) an explicit parameter after `self` that is not a single by-value
+    binding (`ref` or `var` parameters, and destructuring tuple or struct
+    parameter patterns);
 -   (iv) `extern overload fn` — until OV-2;
 -   (v) `overload` on the entry point `Main.Run`;
 -   (vi) members whose access modifier differs from the set's;
@@ -411,11 +416,10 @@ For a declaration `D` of name `F` in a scope where `F` is already declared:
 whose parameter list is type-identical to an existing member's without the
 signatures being token-identical — for example, a binding-name-only
 difference: `overload fn G(x: i64);` then `overload fn G(y: i64) { ... }` —
-is an invalid redeclaration of that member, diagnosed at `D` with proposal
-
-## 3763's own diagnostics (`RedeclParamDiffers`, `RedeclParamSyntaxDiffers`
-
-`FunctionRedeclReturnTypeDiffers`, `RedeclRedef`, `RedeclRedundant`;
+is an invalid redeclaration of that member, diagnosed at `D` with the
+diagnostics of proposal #3763 (`RedeclParamDiffers`,
+`RedeclParamSyntaxDiffers`, `FunctionRedeclReturnTypeDiffers`, `RedeclRedef`,
+`RedeclRedundant`;
 [functions: redeclaration matching](functions.md#redeclaration-matching)),
 never a silently unreachable member. Member identity is parameter-type
 equality: the first type-equal member is the one being redeclared.
@@ -472,9 +476,9 @@ catch remain caught:
     redeclaration is
     [sub-fork F-009k](#new-member-versus-redeclaration).
 
-### Overload resolution
+## Overload resolution
 
-#### First match in declaration order
+### First match in declaration order
 
 A direct call whose callee names an overload set is resolved as follows:
 
@@ -496,7 +500,7 @@ also the same ordered-candidates model the toolchain already implements for
 `match_first` impl blocks
 ([generics: prioritization rule](generics/details.md#prioritization-rule)).
 
-#### The candidate match test
+### The candidate match test
 
 A candidate _matches_ a call when all of the following succeed, tried in
 order and without emitting diagnostics — a failure at any step means "try the
@@ -506,9 +510,12 @@ discarded instruction block, with an integer-literal range pre-test so that an
 out-of-range literal rejects an integer member silently. Two conversions still
 emit through constant evaluation even when the candidate is rejected — an
 integer or float literal converted to a `Float` type that cannot represent
-it, and a struct or tuple literal initializing an abstract class — recorded
-as the residue item "unconditional constant-evaluation diagnostics inside
-overload probes".)
+it, a struct or tuple literal initializing an abstract class, and an
+out-of-range literal _element_ of a struct or tuple literal converted to a
+narrow integer field of an aggregate parameter (the literal pre-test covers
+only a top-level integer literal) — recorded as the residue item
+"unconditional constant-evaluation diagnostics inside overload probes:
+literal→float, abstract-init and aggregate-literal element conversions".)
 
 1.  **Arity.** The number of arguments is within the candidate's accepted
     range; for method calls, the receiver binds to `self` and the
@@ -546,7 +553,7 @@ _imported_ C++ functions keep working (they participate in Clang-side
 resolution; see [Importing C++ overload sets](#importing-c-overload-sets)).
 Revisit as its own design fork if a need appears.
 
-#### No ranking, no subsumption
+### No ranking, no subsumption
 
 There is deliberately no notion of a _better_ match:
 
@@ -576,7 +583,7 @@ source of exponential type-checker blowups), and the semantics forward-map
 onto pattern matching: declaration-order first-match _is_ match-case order,
 which keeps [value-pattern members](#future-work) a compatible extension.
 
-#### No overloading on return type
+### No overloading on return type
 
 Members of a set may not differ only in return type, and the return type
 plays no part in the match test: no type information propagates from the
@@ -587,7 +594,7 @@ parameter list is type-identical to an existing member's never declares a new
 member, whatever its return clause (see
 [New member versus redeclaration](#new-member-versus-redeclaration)).
 
-#### Diagnostics
+### Diagnostics
 
 When no candidate matches, the call is diagnosed at the call site. The
 diagnostic names the overload set and its declaration location.
@@ -601,7 +608,7 @@ cannot implicitly convert to, generic parameters that could not be deduced,
 or a receiver provided to a non-method — the granularity the resolution loop
 knows for free. Clang-granularity notes are a filed residue item.
 
-#### Naming an overload set
+### Naming an overload set
 
 In 0.1, an overload set may be named only as the callee of a
 [direct call](functions.md#direct-calls) (including method calls, where the
@@ -627,7 +634,7 @@ golden `alias_of_set`), and re-export through
 [`export import`](code_and_name_organization/README.md) carries the whole
 set (pinned at OV-2); the set stays closed, since an alias adds no members.
 
-### Interaction with checked generics
+## Interaction with checked generics
 
 The governing constraint, from the
 [generics goals](generics/goals.md#checked-generics-instead-of-open-overloading-and-adl):
@@ -635,7 +642,7 @@ a checked-generic function is type-checked once, from its definition alone.
 Overloading must never break that, so overload resolution is never deferred
 to instantiation for checked generics.
 
-#### Calls from checked-generic bodies
+### Calls from checked-generic bodies
 
 A call to an overload set inside a checked-generic body is resolved during
 the single type-checking of that body, against the symbolic types of the
@@ -665,7 +672,7 @@ from being typechecked from its definition alone" — the normative behavior,
 and it guarantees monomorphization-independence: which member a call invokes
 never varies between specifics of the same checked-generic function.
 
-#### Generic and constrained members
+### Generic and constrained members
 
 Generic members participate in sets through step 2 and step 3 of the
 [match test](#the-candidate-match-test): a generic candidate matches when
@@ -681,7 +688,7 @@ a witness; only its individual members are functions. Interface-driven
 dispatch (including operator overloading by way of the `Core` operator interfaces)
 is a separate mechanism and is unchanged by this design.
 
-#### Calls from template code
+### Calls from template code
 
 Inside a function with [`template` parameters](templates.md), a call whose
 arguments involve template-dependent types is resolved after substitution,
@@ -695,7 +702,7 @@ resolution differs, never the algorithm. _Fork amendment 2026-09-27:_ in 0.1
 such a call is D-OV-6 gate (xi), a semantics TODO ("overload resolution with
 template-dependent arguments"); the mechanism is filed as a residue item.
 
-### C++ interoperability
+## C++ interoperability
 
 Both directions are required by the
 [0.1 milestone](/docs/project/milestones.md#functions-statements-expressions-etc).
@@ -703,7 +710,7 @@ They are asymmetric
 by design: each language's call sites use that language's own resolution
 rules.
 
-#### Importing C++ overload sets
+### Importing C++ overload sets
 
 Importing C++ overload sets into Carbon **already works** and is unchanged by
 this design; this section documents the mapping.
@@ -736,7 +743,7 @@ The two resolution rules never mix: a callee is either a Carbon set (Carbon
 first-match) or an imported C++ set (Clang best-match). No call resolves
 against a merged candidate list.
 
-#### Exporting Carbon overload sets to C++
+### Exporting Carbon overload sets to C++
 
 An exported Carbon overload set is visible to C++ as an ordinary C++ overload
 set. Each exported member is exported through the existing per-function
@@ -776,7 +783,7 @@ to export the whole set unless every member maps, would make one exotic
 member remove an entire API from C++. Until OV-3, C++ lookup of any Carbon
 set is D-OV-6 gate (viii), a semantics TODO ("overload set export").
 
-#### Documented divergence: two resolution rules
+### Documented divergence: two resolution rules
 
 The same argument list can resolve differently on the two sides of the
 boundary, because Carbon call sites use first-match and C++ call sites use
@@ -816,7 +823,7 @@ directions' resolution: the Carbon-side selection by first-match and the
 C++-side selection (or rejection) under C++ rules, so the divergence is
 pinned by tests rather than lore.
 
-#### Linkage and mangling
+### Linkage and mangling
 
 Two members of a Carbon set are distinct functions and need distinct linkage
 names. The toolchain's mangler derives names from the qualified name plus a
@@ -841,7 +848,7 @@ label (`toolchain/check/cpp/export.cpp`), so the C++ symbol of a member _is_
 its `:overload<N>` name and C++ sees N distinct symbols behind N same-named
 declarations.
 
-### Future work
+## Future work
 
 -   **Value-pattern members.** The
     [pattern matching design](pattern_matching.md#pattern-matching-as-function-overload-resolution)
@@ -871,7 +878,7 @@ declarations.
     the keyword or adjusting the marker is a mechanical migration, and every
     semantic rule here matches upstream's recorded intent.
 
-### Decisions within this design
+## Decisions within this design
 
 The core of this design was fixed by fork decision
 [F-009](/fork/decision-log.md),
@@ -905,7 +912,7 @@ Points this document leaves genuinely open are collected under
 [Sub-forks](#sub-forks) and decided by the user, never silently by
 this document.
 
-### Alternatives considered
+## Alternatives considered
 
 The alternatives for this area were researched in the option paper
 ([fork/design-sprint/function-overloading.md](/fork/design-sprint/function-overloading.md))
@@ -926,7 +933,7 @@ and rejected in fork decision
 That decision is final; this document specifies the chosen design rather than
 relitigating it.
 
-### Sub-forks
+## Sub-forks
 
 Per the fork's process rule that every sub-decision with more than one
 defensible answer goes to the user
@@ -980,7 +987,7 @@ carry the detail.
     sits in the `Decl` slot and is exclusive with the other `Decl` modifiers.
     CLOSED by D-OV-1.
 
-### References
+## References
 
 -   [Milestones: functions](/docs/project/milestones.md#functions-statements-expressions-etc)
     — the 0.1 bullets this design closes, including the "closed overloading"

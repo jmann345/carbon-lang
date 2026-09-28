@@ -2457,6 +2457,14 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
   const auto& import_function =
       resolver.import_functions().Get(inst.function_id);
 
+  // A member of an `overload fn` set is reached only through its set, whose
+  // import is gated (D-OV-7); gate the member the same way rather than build
+  // a local function without its `overload_set_id`, whose mangled name would
+  // collapse onto its siblings'.
+  if (import_function.overload_set_id.has_value()) {
+    return HandleUnsupportedOverloadSet(resolver);
+  }
+
   SemIR::FunctionId function_id = SemIR::FunctionId::None;
   if (!function_const_id.has_value()) {
     auto import_specific_id = resolver.import_types()

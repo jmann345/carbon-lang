@@ -276,6 +276,10 @@ static auto TryMergeIntoOverloadSet(
     }
   }
   function_info.overload_set_id = overload_set_id;
+  // The caller appends the declaration once the function exists (D-OV-3), so
+  // the new member's index is the current size.
+  function_info.overload_index =
+      static_cast<int32_t>(overload_set.member_decl_ids.size());
 }
 
 // Check whether this is a redeclaration, merging if needed.
@@ -882,8 +886,9 @@ static auto BuildFunctionDecl(Context& context,
         {.name_id = name_context.name_id,
          .parent_scope_id = name_context.parent_scope_id,
          .member_decl_ids = {decl_id}});
-    context.functions().Get(function_decl.function_id).overload_set_id =
-        overload_set_id;
+    auto& first_member = context.functions().Get(function_decl.function_id);
+    first_member.overload_set_id = overload_set_id;
+    first_member.overload_index = 0;
     lookup_result_id = AddInst<SemIR::OverloadSetValue>(
         context, node_id,
         {.type_id = GetOverloadSetType(context, overload_set_id,

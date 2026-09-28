@@ -2431,7 +2431,10 @@ static auto ImportFunctionDecl(ImportContext& context,
         .virtual_modifier = import_function.virtual_modifier,
         .virtual_index = import_function.virtual_index,
         .evaluation_mode = import_function.evaluation_mode,
-        .interface_modifier = import_function.interface_modifier}});
+        .interface_modifier = import_function.interface_modifier,
+        // The set itself is not imported (D-OV-7), only the member's position
+        // in it, which is what mangling needs.
+        .overload_index = import_function.overload_index}});
 
   // Directly add the function type constant. Don't use `GetFunctionType`
   // because that will evaluate the function type, which we can't do if the
@@ -2456,14 +2459,6 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
     -> ResolveResult {
   const auto& import_function =
       resolver.import_functions().Get(inst.function_id);
-
-  // A member of an `overload fn` set is reached only through its set, whose
-  // import is gated (D-OV-7); gate the member the same way rather than build
-  // a local function without its `overload_set_id`, whose mangled name would
-  // collapse onto its siblings'.
-  if (import_function.overload_set_id.has_value()) {
-    return HandleUnsupportedOverloadSet(resolver);
-  }
 
   SemIR::FunctionId function_id = SemIR::FunctionId::None;
   if (!function_const_id.has_value()) {

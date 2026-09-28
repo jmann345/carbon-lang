@@ -181,8 +181,17 @@ struct FunctionFields {
   // `param_patterns_id` (from EntityWithParamsBase).
   InstId self_param_id = InstId::None;
 
-  // The `overload fn` set this function is a member of, if any.
+  // The `overload fn` set this function is a member of, if any. Not set on
+  // an imported member: the set itself is not imported (its value and type
+  // resolve to a semantics TODO until OV-2), only its members are, so the
+  // mangler keys on `overload_index` instead.
   OverloadSetId overload_set_id = OverloadSetId::None;
+
+  // The function's position in its `overload fn` set's `member_decl_ids`, or
+  // -1 if it is not a member. Assigned when the member is appended to the set
+  // and mirrored on import, so a member's mangled name (`:overload<N>`,
+  // D-OV-5) is the same in every file that reaches it.
+  int32_t overload_index = -1;
 
   // Data that is specific to the special function kind. Use
   // `builtin_function_kind()`, `thunk_decl_id()` or `cpp_thunk_decl_id()` to
@@ -263,6 +272,9 @@ struct Function : public EntityWithParamsBase,
     }
     if (overload_set_id.has_value()) {
       out << ", overload_set_id: " << overload_set_id;
+    }
+    if (overload_index >= 0) {
+      out << ", overload_index: " << overload_index;
     }
     if (!body_block_ids.empty()) {
       out << llvm::formatv(

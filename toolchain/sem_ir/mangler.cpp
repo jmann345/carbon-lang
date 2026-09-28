@@ -209,16 +209,20 @@ auto Mangler::MangleImpl(SemIR::FunctionId function_id,
   os << "_C";
 
   MangleNameId(os, function.name_id);
-  if (function.overload_set_id.has_value()) {
+  if (function.overload_index >= 0) {
     // Members of an `overload fn` set share a name; distinguish them by their
     // position in the set (D-OV-5). The index is declaration order in the api
-    // file, so it is stable across files; no fingerprint is involved.
-    const auto& overload_set =
-        sem_ir().overload_sets().Get(function.overload_set_id);
-    auto index =
-        SemIR::GetOverloadMemberIndex(sem_ir(), overload_set, function_id);
-    CARBON_CHECK(index >= 0, "Function is not a member of its overload set");
-    os << ":overload" << index;
+    // file and is mirrored on import, so it is the same in every file that
+    // reaches the member; no fingerprint is involved. A set declared in this
+    // file must agree with the stored index.
+    if (function.overload_set_id.has_value()) {
+      CARBON_CHECK(
+          SemIR::GetOverloadMemberIndex(
+              sem_ir(), sem_ir().overload_sets().Get(function.overload_set_id),
+              function_id) == function.overload_index,
+          "Overload member index disagrees with its set");
+    }
+    os << ":overload" << function.overload_index;
   }
   char separator = '.';
 

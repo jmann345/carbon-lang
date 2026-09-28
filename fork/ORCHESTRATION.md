@@ -31,8 +31,12 @@ adversarial reviews folded, focused re-review SIGN-OFF-WITH-AMENDMENTS
 (explicit-receiver call shape; a generic-class program body), rev 2b
 fold in progress, then OV-1 implementation; the stranded design-docs
 branch's functions_overloading.md is PORTED by OV-1 (do not re-land
-it). Weekly cron Monday 2026-09-28 14:04Z (prompt updated to the
-hosted-only protocol; the owner's machine is never used)._
+it). Weekly cron ran 2026-09-28 14:15Z under the hosted-only protocol:
+the 631f8fb cut HOLDS a sixth week (templates_type_param still crashes on
+the 09.28 nightly, new lowering signature; 137 deferred commits, 157
+overlapping files — advancing the cut is now a workstream, see the
+decision log); next cron Monday 2026-10-05; the owner's machine is never
+used._
 FORTY-THREE PRs. Unions exist natively: the design's write-safe,
 read-reinterpret union with C++-compatible layout by construction, its
 0.1 field rule made precise (prelude `Copy` impls are trusted; user

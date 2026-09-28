@@ -52,6 +52,11 @@ auto GetCppOverloadSetType(Context& context,
                            SemIR::CppOverloadSetId overload_set_id,
                            SemIR::SpecificId specific_id) -> SemIR::TypeId;
 
+// Gets the type of a Carbon `overload fn` set. The returned type will be
+// complete.
+auto GetOverloadSetType(Context& context, SemIR::OverloadSetId overload_set_id,
+                        SemIR::SpecificId specific_id) -> SemIR::TypeId;
+
 // Gets a C++ template name type. The returned type will be complete.
 auto GetCppTemplateNameType(Context& context, SemIR::EntityNameId name_id,
                             SemIR::ClangDeclId decl_id) -> SemIR::TypeId;

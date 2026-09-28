@@ -42,6 +42,7 @@ File::File(const Parse::Tree* parse_tree, CheckIRId check_ir_id,
       entity_names_(check_ir_id),
       functions_(check_ir_id),
       cpp_overload_sets_(check_ir_id),
+      overload_sets_(check_ir_id),
       thunks_(check_ir_id),
       classes_(check_ir_id),
       fields_(check_ir_id),
@@ -197,6 +198,8 @@ auto File::CollectMemUsage(MemUsage& mem_usage, llvm::StringRef label) const
   mem_usage.Collect(MemUsage::ConcatLabel(label, "entity_names_"),
                     entity_names_);
   mem_usage.Collect(MemUsage::ConcatLabel(label, "functions_"), functions_);
+  mem_usage.Collect(MemUsage::ConcatLabel(label, "overload_sets_"),
+                    overload_sets_);
   mem_usage.Collect(MemUsage::ConcatLabel(label, "thunks_"), thunks_);
   mem_usage.Collect(MemUsage::ConcatLabel(label, "classes_"), classes_);
   mem_usage.Collect(MemUsage::ConcatLabel(label, "interfaces_"), interfaces_);

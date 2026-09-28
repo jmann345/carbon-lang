@@ -2279,6 +2279,29 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
   return HandleUnsupportedCppOverloadSet(resolver, inst.overload_set_id);
 }
 
+// Importing a Carbon `overload fn` set is not supported yet (D-OV-7: OV-1
+// delivers same-file sets; the api/impl and cross-library import resolution
+// lands with OV-2). This is reached both through `ApiForImpl` and through an
+// importing library.
+static auto HandleUnsupportedOverloadSet(ImportRefResolver& resolver)
+    -> ResolveResult {
+  resolver.local_context().TODO(SemIR::LocId::None, "overload set import");
+  return ResolveResult::Done(SemIR::ErrorInst::ConstantId,
+                             SemIR::ErrorInst::InstId);
+}
+
+static auto TryResolveTypedInst(ImportRefResolver& resolver,
+                                SemIR::OverloadSetType /*inst*/)
+    -> ResolveResult {
+  return HandleUnsupportedOverloadSet(resolver);
+}
+
+static auto TryResolveTypedInst(ImportRefResolver& resolver,
+                                SemIR::OverloadSetValue /*inst*/)
+    -> ResolveResult {
+  return HandleUnsupportedOverloadSet(resolver);
+}
+
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
                                 SemIR::CustomWitness inst) -> ResolveResult {
   CARBON_CHECK(resolver.import_types().GetTypeInstId(inst.type_id) ==
@@ -4685,6 +4708,12 @@ static auto TryResolveInstCanonical(ImportRefResolver& resolver,
       return TryResolveTypedInst(resolver, inst, constant_inst_id);
     }
     case CARBON_KIND(SemIR::OutParamPattern inst): {
+      return TryResolveTypedInst(resolver, inst);
+    }
+    case CARBON_KIND(SemIR::OverloadSetType inst): {
+      return TryResolveTypedInst(resolver, inst);
+    }
+    case CARBON_KIND(SemIR::OverloadSetValue inst): {
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::PartialType inst): {

@@ -144,6 +144,7 @@ auto TypeIterator::ProcessType(InstId inst_id) -> std::optional<Step> {
     case GenericNamedConstraintType::Kind:
     case IntLiteralType::Kind:
     case NamespaceType::Kind:
+    case OverloadSetType::Kind:
     case RequireSpecificDefinitionType::Kind:
     case TypeType::Kind:
     case UnboundElementType::Kind:

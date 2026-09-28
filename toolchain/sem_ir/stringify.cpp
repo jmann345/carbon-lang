@@ -406,6 +406,15 @@ class Stringifier {
                       ">");
   }
 
+  auto StringifyInst(InstId /*inst_id*/, OverloadSetType inst) -> void {
+    const auto& overload_set =
+        sem_ir_->overload_sets().Get(inst.overload_set_id);
+    *out_ << "<type of ";
+    step_stack_->Push(StepStack::QualifiedNameItem{overload_set.parent_scope_id,
+                                                   overload_set.name_id},
+                      ">");
+  }
+
   auto StringifyInst(InstId /*inst_id*/, FunctionType inst) -> void {
     const auto& fn = sem_ir_->functions().Get(inst.function_id);
     *out_ << "<type of ";

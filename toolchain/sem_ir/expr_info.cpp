@@ -93,6 +93,11 @@ static auto GetExprCategoryImpl(const File* ir, InstId inst_id)
             // TODO: support `ref` returns from C++.
             return ExprCategory::ReprInitializing;
           }
+          case CARBON_KIND(SemIR::CalleeOverloadSet _): {
+            // A resolved call names the selected member directly, so this is
+            // only consulted for an unresolved set callee.
+            return ExprCategory::ReprInitializing;
+          }
         }
       } else if constexpr (std::same_as<TypedInstT, SpliceInst>) {
         auto action = ir->insts().Get(inst.inst_id);

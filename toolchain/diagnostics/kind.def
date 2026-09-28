@@ -297,6 +297,8 @@ CARBON_DIAGNOSTIC_KIND(ExternLibraryInImporter)
 CARBON_DIAGNOSTIC_KIND(ExternLibraryIncorrect)
 CARBON_DIAGNOSTIC_KIND(ExternLibraryExpected)
 CARBON_DIAGNOSTIC_KIND(ExternRequiresDeclInApiFile)
+CARBON_DIAGNOSTIC_KIND(OverloadMarkerMismatch)
+CARBON_DIAGNOSTIC_KIND(OverloadMarkerPrevious)
 
 // Namespace checking.
 CARBON_DIAGNOSTIC_KIND(NamespaceDeclNotAtTopLevel)
@@ -304,6 +306,9 @@ CARBON_DIAGNOSTIC_KIND(NamespaceDeclNotAtTopLevel)
 // Function call checking.
 CARBON_DIAGNOSTIC_KIND(CallArgCountMismatch)
 CARBON_DIAGNOSTIC_KIND(CallToNonCallable)
+CARBON_DIAGNOSTIC_KIND(OverloadCandidateRejected)
+CARBON_DIAGNOSTIC_KIND(OverloadNoMatch)
+CARBON_DIAGNOSTIC_KIND(OverloadSetNotCallee)
 CARBON_DIAGNOSTIC_KIND(CppCallArgTypeNotSupported)
 CARBON_DIAGNOSTIC_KIND(CppCallFieldNameNotSupported)
 CARBON_DIAGNOSTIC_KIND(GenericParamMustBeConstant)

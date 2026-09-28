@@ -181,6 +181,9 @@ struct FunctionFields {
   // `param_patterns_id` (from EntityWithParamsBase).
   InstId self_param_id = InstId::None;
 
+  // The `overload fn` set this function is a member of, if any.
+  OverloadSetId overload_set_id = OverloadSetId::None;
+
   // Data that is specific to the special function kind. Use
   // `builtin_function_kind()`, `thunk_decl_id()` or `cpp_thunk_decl_id()` to
   // access this.
@@ -257,6 +260,9 @@ struct Function : public EntityWithParamsBase,
     }
     if (interface_modifier != InterfaceModifier::None) {
       out << ", interface_modifier: " << interface_modifier;
+    }
+    if (overload_set_id.has_value()) {
+      out << ", overload_set_id: " << overload_set_id;
     }
     if (!body_block_ids.empty()) {
       out << llvm::formatv(
@@ -378,6 +384,16 @@ struct CalleeCppOverloadSet {
   InstId self_id;
 };
 
+// Information about a callee that's a Carbon `overload fn` set.
+struct CalleeOverloadSet {
+  // The overload set.
+  OverloadSetId overload_set_id;
+  // The specific that contains the set.
+  SpecificId enclosing_specific_id;
+  // The bound `self` parameter. `None` if not bound.
+  InstId self_id;
+};
+
 // Information about a callee that's `ErrorInst`.
 struct CalleeError {};
 
@@ -402,7 +418,7 @@ struct CalleeNonFunction {};
 
 // A variant combining the callee forms.
 using Callee = std::variant<CalleeCppOverloadSet, CalleeError, CalleeFunction,
-                            CalleeNonFunction>;
+                            CalleeNonFunction, CalleeOverloadSet>;
 
 // Returns information for the function corresponding to callee_id in
 // caller_specific_id.

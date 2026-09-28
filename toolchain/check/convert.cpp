@@ -2093,6 +2093,25 @@ auto Convert(Context& context, SemIR::LocId loc_id, SemIR::InstId expr_id,
     return SemIR::ErrorInst::InstId;
   }
 
+  // An `overload fn` set is only usable as the callee of a call (F-009,
+  // D-OV-4 step 6): whatever the target, converting the set value is an error.
+  // The callee of a call never passes through here, so calls are unaffected.
+  if (auto overload_set_type =
+          sem_ir.types().TryGetAsIfValid<SemIR::OverloadSetType>(
+              sem_ir.insts().Get(expr_id).type_id())) {
+    if (target.diagnose) {
+      CARBON_DIAGNOSTIC(OverloadSetNotCallee, Error,
+                        "overload set `{0}` can only be used as the callee of "
+                        "a call",
+                        SemIR::NameId);
+      context.emitter().Emit(expr_id, OverloadSetNotCallee,
+                             sem_ir.overload_sets()
+                                 .Get(overload_set_type->overload_set_id)
+                                 .name_id);
+    }
+    return SemIR::ErrorInst::InstId;
+  }
+
   if (target.kind == ConversionTarget::NoOp) {
     CARBON_CHECK(target.type_id == sem_ir.insts().Get(expr_id).type_id());
     return expr_id;

@@ -57,8 +57,8 @@ class InstNamer {
   using ScopeIdTypeEnum =
       TypeEnum<AssociatedConstantId, ClassId, CppOverloadSetId, FunctionId,
                ImplId, InterfaceId, InterfaceWithSelfId, NamedConstraintId,
-               NamedConstraintWithSelfId, ObserveId, RequireImplsId,
-               SpecificInterfaceId, VtableId>;
+               NamedConstraintWithSelfId, ObserveId, OverloadSetId,
+               RequireImplsId, SpecificInterfaceId, VtableId>;
 
   // Construct the instruction namer, and assign names to all instructions in
   // the provided file.
@@ -90,6 +90,8 @@ class InstNamer {
       index = sem_ir_->named_constraints().GetRawIndex(id.id);
     } else if constexpr (std::is_same_v<IdT, ObserveId>) {
       index = sem_ir_->observes().GetRawIndex(id);
+    } else if constexpr (std::is_same_v<IdT, OverloadSetId>) {
+      index = sem_ir_->overload_sets().GetRawIndex(id);
     } else if constexpr (std::is_same_v<IdT, RequireImplsId>) {
       index = sem_ir_->require_impls().GetRawIndex(id);
     } else if constexpr (std::is_same_v<IdT, SpecificInterfaceId>) {
@@ -246,6 +248,8 @@ class InstNamer {
       -> void;
   auto PushEntity(CppOverloadSetId cpp_overload_set_id, ScopeId scope_id,
                   Scope& scope) -> void;
+  auto PushEntity(OverloadSetId overload_set_id, ScopeId scope_id, Scope& scope)
+      -> void;
   auto PushEntity(ImplId impl_id, ScopeId scope_id, Scope& scope) -> void;
   auto PushEntity(InterfaceId interface_id, ScopeId scope_id, Scope& scope)
       -> void;

@@ -101,6 +101,17 @@ auto CheckRedeclParamsMatch(Context& context, const DeclParams& new_entity,
                             SemIR::SpecificId prev_specific_id, bool diagnose,
                             bool check_syntax) -> bool;
 
+// Returns whether the explicit parameters AFTER the leading `self` parameter of
+// two method declarations have matching types (binding names and syntax are
+// ignored, and nothing is diagnosed). Used by `overload fn` member identity to
+// detect members that differ only in their `self` pattern (D-OV-3). Both
+// entities must have a non-empty explicit parameter list; returns false
+// otherwise or if either has an erroneous parameter.
+auto CheckRedeclExplicitParamsAfterSelfMatch(Context& context,
+                                             const DeclParams& new_entity,
+                                             const DeclParams& prev_entity)
+    -> bool;
+
 inline auto CheckRedeclParamsMatch(Context& context,
                                    const DeclParams& new_entity,
                                    const DeclParams& prev_entity) -> bool {

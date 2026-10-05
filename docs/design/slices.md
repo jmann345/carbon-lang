@@ -291,7 +291,13 @@ import, a C++ function taking or returning `std::span<T>` takes or returns
 by name in the translation unit, which must therefore `#include <span>` (a
 translation unit without it diagnoses the signature as unmappable). A
 static-extent `std::span<T, N>` is a pointer only, so it is not mapped and
-imports as an ordinary class.
+imports as an ordinary class. The element must satisfy `Core.Slice`'s
+`Copy & Destroy` bound: a `std::span<T>` whose `T` is a Carbon class with no
+`Copy` impl imports as an ordinary class too, while a C++ `T` whose copy
+constructor is deleted (`std::span<std::unique_ptr<int>>`) does satisfy it —
+the deleted constructor is imported as the `Copy` witness — and maps to a
+`Core.Slice(T')` whose elements cannot be copied, so `s[i]` fails at the use
+site, not at the header.
 
 **Views are explicit on the Carbon side (D-SL-2).** A Carbon array reaches a
 `std::span<const int>` parameter as `Cpp.SumSpan(Core.Slice(i32).FromArray(&a))`,
@@ -312,10 +318,12 @@ such a container implicitly convertible to `Core.Slice(Element)`, where
 `const` and a non-`const` `data()`, the `const` one is selected, so a
 `std::vector<int>` views as `Core.Slice(const i32)` — exactly the type a
 `std::span<const int>` parameter imports as. The size converts in two steps,
-`ImplicitAs(u64)` then `As(i64)`, so that `size_t` is accepted as
-`Core.CppCompat.ULong64` (the import of `unsigned long`, which `size_t` is on
-Linux and macOS) or as `u64` itself; a signed `size()` has no `ImplicitAs(u64)`
-and forms no view. So, for a `std::vector<int>` `v` made in C++:
+`ImplicitAs(u64)` then `As(i64)`, so that `size_t` is accepted both where it
+imports as `u64` (LP64 Linux and LLP64 Windows, where it is `uint64_t`) and
+where it imports as `Core.CppCompat.ULong64` (Darwin, whose `unsigned long` is
+not `uint64_t`; `ULong64` has `ImplicitAs(u64)` but no `As(i64)`); a signed
+`size()` has no `ImplicitAs(u64)` and forms no view. So, for a
+`std::vector<int>` `v` made in C++:
 
 ```carbon
 let view: Core.Slice(const i32) = v;   // owning -> view, no copy

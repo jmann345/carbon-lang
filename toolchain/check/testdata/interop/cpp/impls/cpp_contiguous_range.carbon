@@ -17,15 +17,20 @@
 // shape: a test prelude declares the interface so the synthesis fires for it.
 // `data()` returns `_Nonnull` pointers here because the primitives prelude has
 // no `Core.Optional` for a nullable pointer to map to; the nullable (real
-// `std::vector`) shape is stdlib/vector_view.carbon's. `size()` returns
-// `unsigned int` (`u32`), not `unsigned long`: that type imports as
-// `Core.CppCompat.ULong64` (import.cpp `MapBuiltinIntegerType`, every target), which
-// the primitives prelude does not declare -- the first hosted fill left this
-// golden unfilled, the `CoreNameNotFound` error type reaching the result-type
-// `CARBON_CHECK` that the round-1 fix turned into a graceful decline. The
-// witness is indifferent to the size type; the `ImplicitAs(u64)` requirement
-// belongs to the full prelude's `CppContiguous` constraint, exercised by
-// stdlib/vector_view.carbon.
+// `std::vector`) shape is stdlib/vector_view.carbon's. `--target` pins
+// `unsigned long` to `u64`: on x86_64-linux-gnu `uint64_t` IS `unsigned long`
+// (import.cpp `MapBuiltinIntegerType` maps the `uintN_t` type of each width to
+// `uN` first; `Core.CppCompat.ULong64` is reached only where `uint64_t` is
+// `unsigned long long`, that is Darwin -- primitive_types/long_and_long_long.
+// {lp64,darwin,llp64}.carbon pin all three targets). The primitives prelude
+// declares `u64` (prelude/parts/uint), so no `CppCompat` name is needed.
+//
+// Why this golden carried no CHECK lines after the first two hosted fills: the
+// check component runs with `--dump-sem-ir-ranges=only`, so a file with no
+// `//@dump-sem-ir-begin` range prints no SemIR, and a run with no diagnostics
+// prints no stderr -- a clean PASS writes nothing (the precedent's positive
+// splits are the same; its CHECK lines are all in `fail_todo_` splits). The
+// ranges below make the witness visible in the fill.
 
 // --- cpp_contiguous_range.carbon
 package Core library "cpp_contiguous_range";
@@ -61,18 +66,21 @@ class V {
  public:
   const int* _Nonnull data() const;
   int* _Nonnull data();
-  unsigned int size() const;
+  unsigned long size() const;
 };
 ''';
 
-// Predicted: the witness is built; with two `data` overloads the const filter
-// (impl_lookup.cpp `LookupCppMethod`) picks `data() const`, so `DataType` is
-// `const i32*`.
+// Predicted: the witness is built (a `custom_witness` constant naming the two
+// member decls); with two `data` overloads the const filter (impl_lookup.cpp
+// `LookupCppMethod`) picks `data() const`, so `DataType` is `const i32*`, and
+// `SizeType` is `u64` under the `--target` pin.
+//@dump-sem-ir-begin
 fn Test() {
   Core.AssertIsContiguous(Cpp.V);
   let _: Core.CppContiguousRange where
-    .DataType = const i32* and .SizeType = u32 = Cpp.V;
+    .DataType = const i32* and .SizeType = u64 = Cpp.V;
 }
+//@dump-sem-ir-end
 
 // --- missing_size.carbon
 library "[[@TEST_NAME]]";
@@ -87,9 +95,11 @@ class N {
 ''';
 
 // Predicted: no `size` member, no witness.
+//@dump-sem-ir-begin
 fn Test() {
   Core.AssertIsNotContiguous(Cpp.N);
 }
+//@dump-sem-ir-end
 
 // --- non_const_only.carbon
 library "[[@TEST_NAME]]";
@@ -100,14 +110,16 @@ import Cpp inline '''c++
 class M {
  public:
   int* _Nonnull data();
-  unsigned int size();
+  unsigned long size();
 };
 ''';
 
 // Predicted: single non-const overloads are taken as-is, so `DataType` is
 // `i32*`.
+//@dump-sem-ir-begin
 fn Test() {
   Core.AssertIsContiguous(Cpp.M);
   let _: Core.CppContiguousRange where
-    .DataType = i32* and .SizeType = u32 = Cpp.M;
+    .DataType = i32* and .SizeType = u64 = Cpp.M;
 }
+//@dump-sem-ir-end

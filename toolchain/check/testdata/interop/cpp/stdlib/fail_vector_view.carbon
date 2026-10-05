@@ -25,7 +25,7 @@
 
 class NoSize {
  public:
-  int* data();
+  int* _Nonnull data();
 };
 
 // --- fail_no_size.carbon

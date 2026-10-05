@@ -53,10 +53,13 @@ impl forall [T: type] Optional(T*) as CppDataPointer where .Element = T {
 }
 
 // The `i64` size behind a C++ `size()` result. Two steps, `ImplicitAs(u64)`
-// then `As(i64)`, never `As(i64)` directly: `CppCompat.ULong64` (`size_t`
-// where it is `unsigned long`, that is Linux and macOS) has no `As(i64)` impl
-// (D-SL-9). A signed `size()` (`int`, the Qt shape) has no `ImplicitAs(u64)`
-// and so no view; the conversion fails gracefully.
+// then `As(i64)`, never `As(i64)` directly: `size_t` imports as `u64` where it
+// is `uint64_t` (LP64 Linux, where `unsigned long` is `uint64_t`; LLP64
+// Windows, where `unsigned long long` is), but as `CppCompat.ULong64` on
+// Darwin (`unsigned long` there is not `uint64_t`), and `ULong64` has
+// `ImplicitAs(u64)` but no `As(i64)` impl (D-SL-9). A signed `size()` (`int`,
+// the Qt shape) has no `ImplicitAs(u64)` and so no view; the conversion fails
+// gracefully.
 interface CppSizeToI64 {
   fn Op(self) -> i64;
 }

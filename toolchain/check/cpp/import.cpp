@@ -1269,10 +1269,15 @@ static auto MapBuiltinType(Context& context, SemIR::LocId loc_id,
 
 // Returns whether the type `element_type_inst_id` satisfies the bound of
 // `Core.Slice`'s element parameter (`T: Copy & Destroy`, slice.carbon), without
-// diagnosing. The bound is read from `Slice`'s own generic binding so that it
-// cannot drift from the prelude. An element that fails it -- a Carbon class
-// with no `Copy` impl, say -- leaves `std::span<T>` an ordinary class import
-// rather than diagnosing at the header's `span` declaration.
+// diagnosing the bound. (Finding the witness for a C++ element may still
+// require a complete type and diagnose that, as any `Copy` lookup does.) The
+// bound is read from `Slice`'s own generic binding so that it cannot drift
+// from the prelude. An element that fails it -- a Carbon class with no `Copy`
+// impl, say -- leaves `std::span<T>` an ordinary class import rather than
+// diagnosing at the header's `span` declaration; a C++ element whose copy
+// constructor is deleted does NOT fail it (the deleted decl is imported as the
+// `Copy` witness), so such a `std::span<T>` maps to a `Core.Slice(T)` whose
+// element copies fail at the use site.
 static auto SliceElementSatisfiesBound(Context& context, SemIR::LocId loc_id,
                                        SemIR::InstId element_type_inst_id)
     -> bool {
@@ -1284,7 +1289,7 @@ static auto SliceElementSatisfiesBound(Context& context, SemIR::LocId loc_id,
   }
   const auto& generic = context.generics().Get(
       context.classes().Get(generic_class_type->class_id).generic_id);
-  auto bindings = context.inst_blocks().Get(generic.bindings_id);
+  auto bindings = context.inst_blocks().GetOrEmpty(generic.bindings_id);
   if (bindings.size() != 1) {
     return false;
   }

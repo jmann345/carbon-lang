@@ -19,8 +19,10 @@
 // `CppContiguousRange` witness. The header mocks the member shape of
 // `std::vector<int>` (D-SL-14; the real one is the conformance program's),
 // nullability-complete so that the dump carries no Clang warning. `--target`
-// pins `std::size_t` to `unsigned long`, which imports as
-// `Core.CppCompat.ULong64`. Positives only.
+// pins `std::size_t` to `unsigned long`, which imports as `u64` on
+// x86_64-linux-gnu (`uint64_t` is `unsigned long` there, import.cpp
+// `MapBuiltinIntegerType`; `Core.CppCompat.ULong64` is its Darwin import).
+// Positives only.
 //
 // The projection `C.Element` in the interface argument is the shape of
 // impl/lookup/access.carbon (`impl forall [T: Z where .Z1 impls Y] T as
@@ -57,9 +59,13 @@ import Cpp library "vector_like.h";
 // `CppContiguousRange` witness (a `custom_witness` constant naming the `data`
 // and `size` function decls); `data() const` is selected by the const filter
 // and returns `Optional(const i32*)`, so `CppDataPointer` is the
-// `Optional(T*)` impl and `Element` is `const i32`; the size converts through
-// `CppSizeToI64` -- `CppCompat.ULong64 as ImplicitAs(u64)` (cpp/int.carbon's
-// final impl) then `u64 as As(i64)` -- and the `Data()`/`Size()` temporaries
+// `Optional(T*)` impl and `Element` is `const i32`; the size (`u64` under the
+// `--target` pin) converts through `CppSizeToI64` -- `u64 as ImplicitAs(u64)`,
+// which the first two fills showed resolving to uint.carbon's `UInt(From) as
+// ImplicitAs(To)` over `FromUInt(u64)` (`AnyUInt & IntFitsIn(u64)`), not to
+// as.carbon's `T: Copy` identity -- then `u64 as As(i64)` (uint.carbon's final
+// impl); on Darwin the first step would be cpp/int.carbon's `final impl
+// CppCompat.ULong64 as ImplicitAs(u64)`. The `Data()`/`Size()` temporaries
 // destroy through the `CppContiguous` constraint's `Destroy` requirements.
 //@dump-sem-ir-begin
 fn View(v: Cpp.VectorLike) -> Core.Slice(const i32) {

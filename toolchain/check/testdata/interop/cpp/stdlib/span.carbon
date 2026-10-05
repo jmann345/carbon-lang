@@ -15,9 +15,10 @@
 // `std::span<T>` imports as `Core.Slice(T')`; a static extent stays a class.
 // The header MOCKS `std::span` (as string_view.carbon mocks
 // `basic_string_view`) so the golden is hermetic and pins the exact layout
-// premise; `--target` pins the mock's `size_t` field to `unsigned long`
-// (`Core.CppCompat.ULong64`) where the class import's layout reaches the dump.
-// Positives only.
+// premise; `--target` pins the mock's `size_t` field to `unsigned long`, which
+// imports as `u64` on x86_64-linux-gnu (`uint64_t` is `unsigned long` there;
+// `Core.CppCompat.ULong64` is Darwin's import of it), where the class import's
+// layout reaches the dump. Positives only.
 
 // --- span.h
 

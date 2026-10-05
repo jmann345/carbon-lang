@@ -2923,17 +2923,26 @@ amendments; W-056 notes):
     of prelude/iterate.carbon, whose `Inc & Destroy` serves `++cursor->0`
     through the same facet-type route (`CollectFacetWitnessSources` reads the
     binding's identified facet type).
--   **impls/cpp_contiguous_range.carbon came back unfilled** (every other new
-    golden filled): its mock `unsigned long size()` imports as
-    `Core.CppCompat.ULong64` on every target (import.cpp
-    `MapBuiltinIntegerType`; the golden's "`--target` pins `unsigned long` to
-    `u64`" was wrong), the primitives min-prelude has no `CppCompat`, the
-    result type was the `CoreNameNotFound` error, and
-    `LookupCppMemberWithResultType`'s `CARBON_CHECK` on it — copied from the
-    `CppRangeForIterate` builder — aborted file_test (the review's MAJOR 2,
-    reachable from every `ImplicitAs(Slice(...))` conversion of a C++ class
-    with a `void data()`). Lesson for fill reading: a positive split left
-    unfilled beside filled `fail_` splits is a crash signature.
+-   **impls/cpp_contiguous_range.carbon came back with no CHECK lines**
+    (every other new golden filled) — unexplained at the time. Round 1
+    attributed it to its mock `unsigned long size()` importing as
+    `Core.CppCompat.ULong64`, absent from the primitives min-prelude, and so
+    to `LookupCppMemberWithResultType`'s `CARBON_CHECK` aborting file_test;
+    that attribution was FALSE (corrected at round 2, 2026-10-05): with
+    `--target=x86_64-linux-gnu`, `unsigned long` is `uint64_t` and
+    `MapBuiltinIntegerType` maps it to `u64` (the golden's original
+    "`--target` pins `unsigned long` to `u64`" was right; `ULong64` is
+    Darwin's import, `ULong32` LLP64's — long_and_long_long.{lp64,darwin,
+    llp64}.carbon), and the run log shows no crash (1898 tests ran, no
+    `Stack dump:`, the push happened). Root cause, read from the harness:
+    the check component runs `--dump-sem-ir-ranges=only`
+    (toolchain/testing/file_test.cpp), the golden had no
+    `//@dump-sem-ir-begin` range and no split produced a diagnostic, so the
+    test passed with empty stdout and stderr and the autoupdater had nothing
+    to write — exactly the precedent's positive splits. The `CARBON_CHECK`
+    was still a real ICE for `void data(); void size();` (the review's MAJOR
+    2, reachable from every `ImplicitAs(Slice(...))` conversion of such a
+    class), and the round-1 fix of it stands.
 
 Fix (this round): the helpers stay in cpp/slice.carbon as public Core names
 with a new `CppSizeToI64` interface hiding `u64`; slice.carbon's
@@ -2962,6 +2971,26 @@ MINOR 6 `{T*, size_t}` wording + `--target` pins on span/fail_span; MINOR 7
 `Core.Print(Cpp.SumSpan(v))` added to cpp_span_view (EXPECT 10 6 12); MINOR
 8 the precedent cited, fallback comment dropped; MINOR 9 the note prediction
 dropped.
+
+Round 2 (2026-10-05, after the second fill 18e2165c1 on fd9cdd5da; re-review
+APPROVE-WITH-FIXES, 2 MAJOR, 3 MINOR): the second fill touched exactly the
+seven filled goldens and no pre-existing one; vector_view.carbon's positive
+splits are clean and show `custom_witness (%Optional.f0c, %u64, ...)` —
+`size_t` as `u64` — with the `ImplicitAs(u64)` step resolving to uint.carbon's
+`UInt(From) as ImplicitAs(To)` over `FromUInt(u64)`; the lower span thunk is
+`@_Z7ConsumeNSt3__14spanIKiLm18446744073709551615EEE.carbon_thunk._` (R-8);
+`noncopyable_element_is_a_class` shows `class_type @span` for `Cpp.NoCopySpan`;
+`fail_no_size`/`fail_void_members`/`fail_static_extent_from_slice`/
+`fail_no_span_header` carry the predicted diagnostics and no nullability
+warning. Fixes: the `ULong64` story corrected in the seven records (above,
+plan §1.B step 4 / R-9 / hand-off, W-056, the four golden and prelude
+comments, slices.md); the silent golden explained (above) and given dump
+ranges with `unsigned long`/`u64` restored; the gap row back to PARTIAL with
+the header at 28 / 22 / 5 / 1 until the run of record (R9); `_Nonnull` on
+`no_size.h`; `GetOrEmpty` on `Slice`'s bindings in
+`SliceElementSatisfiesBound`; the deleted-copy-constructor consequence
+(`std::span<std::unique_ptr<int>>` maps to a `Core.Slice` whose element
+copies fail at the use site) recorded in slices.md, W-056 and import.cpp.
 
 ### SL-1: Core.Slice, Core.Buf, heap allocation, fail-stop (2026-10-05)
 

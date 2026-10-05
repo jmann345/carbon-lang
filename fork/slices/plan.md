@@ -389,12 +389,22 @@ written at SL-1 discharge (§8.5) with these sub-decisions verbatim.
     (amended 2026-09-28, review fold: rev A A2). `size_t` maps to `u64` where
     `uint64_t` is `unsigned long` (Linux) and to `Core.CppCompat.ULong64`
     where it is `unsigned long long` (macOS; type_info.h:363-365). *Amended
-    2026-10-05 (SL-2 round 1): wrong on both counts — import.cpp
-    `MapBuiltinIntegerType` maps `unsigned long` to `Core.CppCompat.ULong64`
-    on every 64-bit target and never to `u64`, so `size_t` is `ULong64` on
-    Linux and macOS alike; `ImplicitAs(u64)` holds either way (cpp/int.carbon
-    `final impl CppCompat.ULong64 as ImplicitAs(u64)`), and the helper
-    interface is now the public `CppDataPointer` (round-1 note, §2.B.9).*
+    2026-10-05 (SL-2 round 2): the per-target reading above is RIGHT, and the
+    round-1 amendment that called it "wrong on both counts" is withdrawn —
+    import.cpp `MapBuiltinIntegerType` first asks `GetIntNType(64, unsigned)`
+    = the target's `uint64_t` and maps to `u64` on `hasSameType`; x86_64
+    Linux has `Int64Type = SignedLong`, so `unsigned long` IS `uint64_t`
+    there and imports as `u64`; the `ULong64` arm is reached only on Darwin
+    (`Int64Type = SignedLongLong`), and `ULong32` on LLP64 (upstream pins:
+    primitive_types/long_and_long_long.{lp64,darwin,llp64}.carbon). The
+    second fill's vector_view.carbon shows `custom_witness (%Optional.f0c,
+    %u64, ...)` on the hosted runner. `ImplicitAs(u64)` holds on every
+    target — `u64` through uint.carbon's `UInt(From) as ImplicitAs(To)` over
+    `FromUInt(u64)` (what the fill resolved; as.carbon's `T: Copy` identity
+    is the other candidate), `ULong64` through cpp/int.carbon:173, `ULong32`
+    through :124, `u32` through uint.carbon — and the two-step spelling is
+    justified by Darwin alone. The helper interface is the public
+    `CppDataPointer` (round-1 note, §2.B.9).*
     `u64` has
     `As(Int(64))` (uint.carbon:97-99) but `ULong64` does NOT: cpp/int.carbon
     :150-176 gives it only `ImplicitAs(IntLiteral)` (comptime
@@ -2065,16 +2075,27 @@ Zero landed programs move (no landed program includes `<span>` or names
     which consults `LookupCppImpl` for a concrete C++ self — the same
     evaluation that resolves `.ElementType = T.ValueType` for `for` over
     a C++ range (range_for.carbon). The primary spelling is kept; the rev
-    B B9 fallback is not applied. Step 4's `u64`/`ULong64` reading is
-    corrected at D-SL-9 (`size_t` is `ULong64` on both platforms).
-    Falsifier (i) also fired, silently: impls/cpp_contiguous_range.carbon
-    came back UNFILLED — its mock `unsigned long size()` imports as
-    `Core.CppCompat.ULong64`, which the primitives min-prelude lacks, so
-    the result type was the `CoreNameNotFound` error and
-    `LookupCppMemberWithResultType`'s `CARBON_CHECK` (copied from the
-    `CppRangeForIterate` precedent) aborted file_test; the fix declines
-    gracefully (`void` → `None`, error → propagated) and the mock sizes are
-    `unsigned int` (`u32`).
+    B B9 fallback is not applied. **Amended 2026-10-05 (SL-2 round 2).**
+    Step 4's original per-target reading stands (`size_t` is `u64` on LP64
+    Linux and LLP64 Windows, `ULong64` on Darwin; §1.B step 4). Falsifier (i)
+    did NOT fire: impls/cpp_contiguous_range.carbon came back with no CHECK
+    lines from both fills, which round 1 read as a crash and attributed to
+    `ULong64` reaching `LookupCppMemberWithResultType`'s `CARBON_CHECK` —
+    unexplained at the time; root cause, read from the harness: the check
+    component runs `--dump-sem-ir-ranges=only` (toolchain/testing/file_test.cpp
+    `GetDefaultArgs`), the golden had no `//@dump-sem-ir-begin` range and its
+    three splits produced no diagnostic, so stdout and stderr were empty and
+    `FileTestAutoupdater` had nothing to write (both runs: "Ran 1898 tests"
+    = 1896 `.carbon` + 2 driver `.cpp`, no `<test>: <error>` line, a `.`
+    not a `!` for it). That is a clean PASS of `AssertIsContiguous(Cpp.V)`
+    and `let _: ... .SizeType = u64 = Cpp.V` with `unsigned long size()` —
+    positive evidence for `u64`, not against it. The precedent's positive
+    splits are empty the same way (its 110 CHECK lines are all in
+    `fail_todo_`/`fail_deleted` splits). Round 2 restores `unsigned long`
+    and `.SizeType = u64` and adds dump ranges around the three `Test()`
+    bodies so the next fill shows the witness; the round-1 code change
+    (`void` → `None`, error → propagated) stays, as a real ICE fix for
+    `void data(); void size();`.
 -   **R-10 — `Cpp.std.vector(i32)` itself does not import** (a real
     libc++ class template with allocator/compressed-pair members).
     Precedents: `std::atomic<int>` and `std::mutex` import and destroy
@@ -2368,12 +2389,17 @@ Zero landed programs move (no landed program includes `<span>` or names
     synthesized witness supplies associated constants as bare `type`s, so
     `Destroy`/`Copy` on them are stated as `require Self.(X) impls ...` on
     the constraint, not as bounds on the interface's `let`s. `unsigned
-    long` imports as `Core.CppCompat.ULong64` on every target — a
-    primitives-prelude golden must not name it (no `CppCompat` there),
-    and a result-type `CARBON_CHECK` in a witness builder is an ICE for
-    `void` members. Read fill-time
-    "`fail_` split filled, positive split unfilled" as a crash, not a
-    pass.
+    long` imports per target — `u64` on x86_64-linux-gnu (it is `uint64_t`
+    there), `Core.CppCompat.ULong64` only on Darwin, `ULong32` on LLP64 —
+    so a `--target=x86_64-linux-gnu` primitives-prelude golden may name
+    `u64` for it; a result-type `CARBON_CHECK` in a witness builder is an
+    ICE for `void` members. Read fill-time "no CHECK lines" with the
+    harness in hand before calling it a crash: a check golden with no
+    `//@dump-sem-ir-begin` range and no diagnostic is a clean PASS that
+    writes nothing (`--dump-sem-ir-ranges=only`), and the log shows a
+    crash as `Stack dump:`/`CHECK failure` and an abort before "Ran N
+    tests", never as a quiet `.`; give every positive split a dump range
+    if its evidence must be visible.
 -   Out-of-class impls (`IndexWith`, `ImplicitAs(Slice(const T))`, the
     §1.B.3 interop impl) touch public API only (`Data`, `Size`, `Get`,
     `UnsafeMake`); `Buf.AsSlice` uses `UnsafeMake`. If you reach for a

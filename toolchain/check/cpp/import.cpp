@@ -1267,13 +1267,24 @@ static auto MapBuiltinType(Context& context, SemIR::LocId loc_id,
   return TypeExpr::None;
 }
 
+// Returns the type `Core.Slice(T)`, where `T` is described by
+// `element_type_inst_id`. The shape of `MakeOptionalType` below.
+static auto MakeSliceType(Context& context, SemIR::LocId loc_id,
+                          SemIR::InstId element_type_inst_id) -> TypeExpr {
+  auto fn_inst_id = LookupNameInCore(context, loc_id, CoreIdentifier::Slice);
+  auto call_id =
+      PerformCall(context, loc_id, fn_inst_id, {element_type_inst_id});
+  return ExprAsType(context, loc_id, call_id);
+}
+
 // Determines whether record_decl is a C++ class that has a custom mapping into
 // Carbon, and if so, returns the corresponding Carbon type. Otherwise returns
 // None.
 static auto LookupCustomRecordType(Context& context,
                                    const clang::CXXRecordDecl* record_decl)
     -> TypeExpr {
-  switch (GetCustomCppTypeMapping(record_decl)) {
+  auto mapping = GetCustomCppTypeMapping(record_decl);
+  switch (mapping.kind) {
     case CustomCppTypeMapping::None:
       return TypeExpr::None;
 
@@ -1281,6 +1292,26 @@ static auto LookupCustomRecordType(Context& context,
       return MakeStringType(
           context,
           AddImportIRInst(context.sem_ir(), record_decl->getLocation()));
+
+    case CustomCppTypeMapping::Span: {
+      // A dynamic-extent `std::span<T>` maps to `Core.Slice(T')`, both being
+      // a pointer followed by a size (fork/slices/plan.md D-SL-8). The
+      // element type maps recursively, so `std::span<const int>` is
+      // `Core.Slice(const i32)`.
+      auto loc_id =
+          AddImportIRInst(context.sem_ir(), record_decl->getLocation());
+      auto element = ImportCppType(context, loc_id, mapping.element_type);
+      if (!element.inst_id.has_value()) {
+        // The element type has no Carbon mapping; the specialization is
+        // imported as an ordinary class instead.
+        return TypeExpr::None;
+      }
+      if (element.type_id == SemIR::ErrorInst::TypeId) {
+        // Already diagnosed while importing the element type.
+        return element;
+      }
+      return MakeSliceType(context, loc_id, element.inst_id);
+    }
   }
 }
 

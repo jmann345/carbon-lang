@@ -382,6 +382,8 @@ struct RecognizedTypeInfo {
     Optional,
     // `Core.Result(...)`.
     Result,
+    // `Core.Slice(...)`.
+    Slice,
     // `str` / `Core.String`.
     // TODO: Rename `Core.String` to `Core.Str`.
     Str,

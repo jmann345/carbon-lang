@@ -147,7 +147,8 @@ auto NumericTypeLiteralInfo::PrintLiteral(const File& file,
 // list.
 static auto ExpectsArgs(RecognizedTypeInfo::Kind kind) -> bool {
   return kind == RecognizedTypeInfo::Optional ||
-         kind == RecognizedTypeInfo::Result;
+         kind == RecognizedTypeInfo::Result ||
+         kind == RecognizedTypeInfo::Slice;
 }
 
 auto RecognizedTypeInfo::ForType(const File& file, ClassType class_type)
@@ -188,6 +189,7 @@ auto RecognizedTypeInfo::ForType(const File& file, ClassType class_type)
                     .Case("Char", Char)
                     .Case("Optional", Optional)
                     .Case("Result", Result)
+                    .Case("Slice", Slice)
                     .Case("String", Str)
                     .Default(None);
     if (ExpectsArgs(kind) == args_id.has_value()) {
@@ -284,6 +286,8 @@ auto RecognizedTypeInfo::PrintLiteral(const File& file,
       break;
     case Optional:
     case Result:
+    case Slice:
+      // No literal spelling; printed through the ordinary class path.
       break;
     case Str:
       out << "str";

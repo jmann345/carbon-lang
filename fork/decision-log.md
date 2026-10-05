@@ -3176,16 +3176,38 @@ accepted and disclosed — `i64` IS `Core.Int(64)` and a discarded inst block
 cannot undo file-level import state. The plan's R-12 and R-5 were decidable
 from the tree; rounds 1 and 4(b)/(d) were not: a name lookup's residue in
 the file (`import_ref`s, scope poison) is state no probe can discard.
+Round 5 (fill a6cae2bab on 713eddc7a, the fill the round-4 movers list was
+written against; found at the discharge merge): check/for/actual.carbon
+moved by 81/81 lines of pure name disambiguation (`%N` → `%N.fe9`, `%N.patt`
+→ `%N.patt.aa5`, `%Iterate_where.type` → `.131`, `%Iterate.impl_witness` →
+`.195`, the `Optional.{Some,None}.specific_fn`, `Convert.{bound,specific_fn}`
+and `%bound_method` suffixes, `%Core.import_ref.84b` → `.84ba`; every
+reference renamed, no instruction added or removed). Cause, read from the
+tree: lib.carbon declares a local `impl as Core.Iterate`, so
+`ImportFinalImplsWithImplInFile` (impl_validation.cpp:473) imports every
+`final impl` of `Iterate` — since D-SL-18, `Slice(T) as Iterate` — and that
+import's closure brings a second, unprinted `symbolic_binding N` into the
+file's constant namespace (not the impl's own `forall [T]`: the `N`-named
+bindings reachable through `Slice(T)` are `Slice.FromArray[N: IntLiteral]`
+and slice.carbon's file-scope `ArrayData[T, N]`; its fingerprint differs
+from the printed `N, 0`, so it is not `Int(N)`'s), beside a second `Iterate
+where ...` facet type and witness; trivial.carbon, with no local `Iterate`
+impl, keeps `%N` bare. Same class as 4(b) — the `final` qualifier widened
+the import footprint from "every file that looks `Iterate` up" to "every
+file with a local `Iterate` impl", and the round-4 prediction grepped the
+former only. Accepted and disclosed, not fixed: the import is the
+final-impl validation D-SL-18 relies on.
 
 DEVIATIONS from the plan, each in fork/slices/plan.md's "Landed notes (SL-1,
 2026-10-05)": the builtin arms live at handle_call.cpp:660-810 (the plan's
 :649 anchor moved) and the runtime-fatal `default` is :812; `IndexWith(i64)`
 only, not the rev 2 blanket (D-SL-17); `final` on three impls (D-SL-18); the
 checker hook and the one diagnostic kind the plan's §6.A had said did not
-exist (D-SL-15); fourteen pre-existing goldens move where §6.A(a) predicted
+exist (D-SL-15); fifteen pre-existing goldens move where §6.A(a) predicted
 none (six for D-SL-16, four `for`/iterate lower goldens plus range_for for
-the `Iterate` footprint, two index goldens for the `Core.Int` load, and
-function/overload/basic.carbon); check/slice/basic.carbon's `unformed` split
+the `Iterate` footprint, two index goldens for the `Core.Int` load,
+function/overload/basic.carbon, and check/for/actual.carbon for the `final`
+impl's import by `ImportFinalImplsWithImplInFile`, fill a6cae2bab); check/slice/basic.carbon's `unformed` split
 keeps its `UnusedBinding` STDERR pin; slices_bounds_fail_stop.carbon's
 subscript is `s[RuntimeSeed(-18) as i64]`; `index_runtime_subscript` takes
 `i: i64`; the W-055 subsystem is "core/prelude + toolchain/sem_ir +

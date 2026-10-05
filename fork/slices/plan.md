@@ -2379,7 +2379,7 @@ D-SL-15..20) are the discharge commit. SL-2 is next (§0.4; it inherits the
 literal-subscript rule and W-108). Deltas from this plan, honestly:
 
 -   **§6.A(a) "no existing golden moves" was wrong four times over.**
-    Fourteen pre-existing goldens move: six because declared `Destroy`
+    Fifteen pre-existing goldens move: six because declared `Destroy`
     impls are now selected (round 2: lower var/param,
     var/destroy_control_flow, function/overload/basic `destroy_arg`,
     operators/question_generic `adapter_payload`; check
@@ -2394,7 +2394,26 @@ literal-subscript rule and W-108). Deltas from this plan, honestly:
     operators/overloaded/index_with_prelude); and
     check/function/overload/basic.carbon a second time (its
     `union_scope_set` split took the round-3 regression's pins and is
-    cleared, not restored). The 13 union/export goldens the round-3 fill
+    cleared, not restored); and a fifteenth the round-4 fixer did not
+    predict, caught by the hosted fill a6cae2bab (on 713eddc7a):
+    check/for/actual.carbon, 81/81 lines of pure name disambiguation
+    (`%N` → `%N.fe9`, `%N.patt` → `%N.patt.aa5`, `%Iterate_where.type` →
+    `.131`, `%Iterate.impl_witness` → `.195`, the `Optional.{Some,None}.
+    specific_fn`, `IntLiteral...Convert.{bound,specific_fn}` and
+    `%bound_method` suffixes, `%Core.import_ref.84b` → `.84ba`; every
+    reference renamed; no instruction added or removed). Cause, read from
+    the tree: its lib.carbon declares a local `impl as Core.Iterate`, so
+    `ImportFinalImplsWithImplInFile` (impl_validation.cpp:473) imports
+    every `final impl` of `Iterate` — since D-SL-18, the `Slice(T) as
+    Iterate` impl — and that import's closure puts a second, unprinted
+    `symbolic_binding N` into lib.carbon's constant namespace (NOT the
+    impl's own `forall [T]`; the `N`-named bindings reachable through
+    `Slice(T)` are `Slice.FromArray[N: IntLiteral]` and slice.carbon's
+    file-scope `ArrayData[T, N]` — its fingerprint differs from the
+    `N, 0` printed, so it is not `Int(N)`'s), beside a second `Iterate
+    where ...` facet type and witness; the formatter suffixes the local
+    ones. trivial.carbon, with no local `Iterate` impl, keeps `%N` bare.
+    The 13 union/export goldens the round-3 fill
     broke are restored from ee434b2b3~3 and are byte-identical at HEAD
     (`git diff ee434b2b3~3 HEAD -- toolchain/check/testdata/union
     toolchain/lower/testdata/union` is empty). Lesson, recorded in the
@@ -2494,7 +2513,8 @@ Reconciliation greps (§8.4), run at 713eddc7a:
 -   `git diff ee434b2b3~3 HEAD -- toolchain/check/testdata/union
     toolchain/lower/testdata/union`: empty (round 4(a)'s falsifier).
 -   `git diff 0bba39de2..HEAD --stat` over the testdata trees names exactly
-    the fourteen pre-existing goldens listed above plus the new SL-1 files;
+    the fifteen pre-existing goldens listed above plus the new SL-1 files
+    (fourteen at 713eddc7a; check/for/actual.carbon joined in a6cae2bab);
     no raw_sem_ir golden moved (§6.A(c)).
 -   The one kind: kind.def:533, one `CARBON_DIAGNOSTIC` and one emit site
     (call.cpp:276-280), fired by the two `fail_incomplete_pointee` splits.

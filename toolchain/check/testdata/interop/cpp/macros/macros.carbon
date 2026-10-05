@@ -66,7 +66,7 @@ fn F() {
   // CHECK:STDERR: fail_import_bad_suffix.carbon:[[@LINE+20]]:6: error: invalid digit 'f' in decimal constant [CppInteropParseError]
   // CHECK:STDERR:    27 |   Cpp.CONFIG_VALUE;
   // CHECK:STDERR:       |      ^
-  // CHECK:STDERR:     2 | #define CONFIG_VALUE 42f
+  // CHECK:STDERR:     6 | #define CONFIG_VALUE 42f
   // CHECK:STDERR:       |                        ^
   // CHECK:STDERR: fail_import_bad_suffix.carbon:[[@LINE+15]]:3: note: in `Cpp` name lookup for `CONFIG_VALUE` [InCppNameLookup]
   // CHECK:STDERR:   Cpp.CONFIG_VALUE;

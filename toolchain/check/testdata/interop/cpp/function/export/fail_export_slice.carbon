@@ -55,7 +55,7 @@ inline Cpp '''
 inline int F() {
   int a[2] = {1, 2};
   // CHECK:STDERR: fail_no_span_header.carbon:[[@LINE+4]]:18: error: no member named 'Sum' in namespace 'Carbon' [CppInteropParseError]
-  // CHECK:STDERR:    19 |   return Carbon::Sum(a);
+  // CHECK:STDERR:    27 |   return Carbon::Sum(a);
   // CHECK:STDERR:       |                  ^~~
   // CHECK:STDERR:
   return Carbon::Sum(a);

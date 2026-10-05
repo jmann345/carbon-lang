@@ -152,7 +152,7 @@ fn ViewNonNull(v: Cpp.NonNullLike) -> Core.Slice(const i32) {
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %const.6a8: type = const_type %i32 [concrete]
 // CHECK:STDOUT:   %i32.builtin: type = int_type signed, %int_32 [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.3: type = fn_type @Destroy.Op.loc13_51.3 [concrete]
+// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.3: type = fn_type @Destroy.Op.loc32_51.3 [concrete]
 // CHECK:STDOUT:   %Destroy.Op.1a2547.3: %Destroy.Op.type.1d8f74.3 = struct_value () [concrete]
 // CHECK:STDOUT:   %custom_witness.df9cc1.3: <witness> = custom_witness (%Destroy.Op.1a2547.3), @Destroy [concrete]
 // CHECK:STDOUT:   %Copy.impl_witness.b51: <witness> = impl_witness imports.%Copy.impl_witness_table.8d2, @Int.as.Copy.impl(%int_32) [concrete]
@@ -202,11 +202,11 @@ fn ViewNonNull(v: Cpp.NonNullLike) -> Core.Slice(const i32) {
 // CHECK:STDOUT:     %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:     %const: type = const_type %i32 [concrete = constants.%const.6a8]
 // CHECK:STDOUT:     %facet_value: %facet_type.f48 = facet_value %const, (constants.%custom_witness.df9cc1.3, constants.%Copy.impl_witness.ae2) [concrete = constants.%facet_value.d9e]
-// CHECK:STDOUT:     %.loc13_51.1: %facet_type.f48 = converted %const, %facet_value [concrete = constants.%facet_value.d9e]
+// CHECK:STDOUT:     %.loc32_51.1: %facet_type.f48 = converted %const, %facet_value [concrete = constants.%facet_value.d9e]
 // CHECK:STDOUT:     %Slice: type = class_type @Slice, @Slice(constants.%facet_value.d9e) [concrete = constants.%Slice.2ea]
-// CHECK:STDOUT:     %.loc13_51.2: Core.Form = init_form %Slice [concrete = constants.%.3e4]
+// CHECK:STDOUT:     %.loc32_51.2: Core.Form = init_form %Slice [concrete = constants.%.3e4]
 // CHECK:STDOUT:     %v.param: %VectorLike = value_param call_param0
-// CHECK:STDOUT:     %.loc13_15: type = splice_block %VectorLike.ref [concrete = constants.%VectorLike] {
+// CHECK:STDOUT:     %.loc32_15: type = splice_block %VectorLike.ref [concrete = constants.%VectorLike] {
 // CHECK:STDOUT:       %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:       %VectorLike.ref: type = name_ref VectorLike, imports.%VectorLike.decl [concrete = constants.%VectorLike]
 // CHECK:STDOUT:     }
@@ -216,14 +216,14 @@ fn ViewNonNull(v: Cpp.NonNullLike) -> Core.Slice(const i32) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc13_51.1(%self.param: ref %i32.builtin) = "no_op";
+// CHECK:STDOUT: fn @Destroy.Op.loc32_51.1(%self.param: ref %i32.builtin) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc13_51.2(%self.param: ref %i32) {
+// CHECK:STDOUT: fn @Destroy.Op.loc32_51.2(%self.param: ref %i32) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc13_51.3(%self.param: ref %const.6a8) {
+// CHECK:STDOUT: fn @Destroy.Op.loc32_51.3(%self.param: ref %const.6a8) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
@@ -231,7 +231,7 @@ fn ViewNonNull(v: Cpp.NonNullLike) -> Core.Slice(const i32) {
 // CHECK:STDOUT: fn @View(%v.param: %VectorLike) -> out %return.param: %Slice.2ea {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %v.ref: %VectorLike = name_ref v, %v
-// CHECK:STDOUT:   %.loc14: %Slice.2ea = converted %v.ref, <error> [concrete = <error>]
+// CHECK:STDOUT:   %.loc40: %Slice.2ea = converted %v.ref, <error> [concrete = <error>]
 // CHECK:STDOUT:   return <error> to %return.param
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -254,7 +254,7 @@ fn ViewNonNull(v: Cpp.NonNullLike) -> Core.Slice(const i32) {
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %const.6a8: type = const_type %i32 [concrete]
 // CHECK:STDOUT:   %i32.builtin: type = int_type signed, %int_32 [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.3: type = fn_type @Destroy.Op.loc10_59.3 [concrete]
+// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.3: type = fn_type @Destroy.Op.loc25_59.3 [concrete]
 // CHECK:STDOUT:   %Destroy.Op.1a2547.3: %Destroy.Op.type.1d8f74.3 = struct_value () [concrete]
 // CHECK:STDOUT:   %custom_witness.df9cc1.3: <witness> = custom_witness (%Destroy.Op.1a2547.3), @Destroy [concrete]
 // CHECK:STDOUT:   %Copy.impl_witness.b51: <witness> = impl_witness imports.%Copy.impl_witness_table.8d2, @Int.as.Copy.impl(%int_32) [concrete]
@@ -304,11 +304,11 @@ fn ViewNonNull(v: Cpp.NonNullLike) -> Core.Slice(const i32) {
 // CHECK:STDOUT:     %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:     %const: type = const_type %i32 [concrete = constants.%const.6a8]
 // CHECK:STDOUT:     %facet_value: %facet_type.f48 = facet_value %const, (constants.%custom_witness.df9cc1.3, constants.%Copy.impl_witness.ae2) [concrete = constants.%facet_value.d9e]
-// CHECK:STDOUT:     %.loc10_59.1: %facet_type.f48 = converted %const, %facet_value [concrete = constants.%facet_value.d9e]
+// CHECK:STDOUT:     %.loc25_59.1: %facet_type.f48 = converted %const, %facet_value [concrete = constants.%facet_value.d9e]
 // CHECK:STDOUT:     %Slice: type = class_type @Slice, @Slice(constants.%facet_value.d9e) [concrete = constants.%Slice.2ea]
-// CHECK:STDOUT:     %.loc10_59.2: Core.Form = init_form %Slice [concrete = constants.%.3e4]
+// CHECK:STDOUT:     %.loc25_59.2: Core.Form = init_form %Slice [concrete = constants.%.3e4]
 // CHECK:STDOUT:     %v.param: %NonNullLike = value_param call_param0
-// CHECK:STDOUT:     %.loc10_22: type = splice_block %NonNullLike.ref [concrete = constants.%NonNullLike] {
+// CHECK:STDOUT:     %.loc25_22: type = splice_block %NonNullLike.ref [concrete = constants.%NonNullLike] {
 // CHECK:STDOUT:       %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:       %NonNullLike.ref: type = name_ref NonNullLike, imports.%NonNullLike.decl [concrete = constants.%NonNullLike]
 // CHECK:STDOUT:     }
@@ -318,14 +318,14 @@ fn ViewNonNull(v: Cpp.NonNullLike) -> Core.Slice(const i32) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc10_59.1(%self.param: ref %i32.builtin) = "no_op";
+// CHECK:STDOUT: fn @Destroy.Op.loc25_59.1(%self.param: ref %i32.builtin) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc10_59.2(%self.param: ref %i32) {
+// CHECK:STDOUT: fn @Destroy.Op.loc25_59.2(%self.param: ref %i32) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc10_59.3(%self.param: ref %const.6a8) {
+// CHECK:STDOUT: fn @Destroy.Op.loc25_59.3(%self.param: ref %const.6a8) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
@@ -333,7 +333,7 @@ fn ViewNonNull(v: Cpp.NonNullLike) -> Core.Slice(const i32) {
 // CHECK:STDOUT: fn @ViewNonNull(%v.param: %NonNullLike) -> out %return.param: %Slice.2ea {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %v.ref: %NonNullLike = name_ref v, %v
-// CHECK:STDOUT:   %.loc11: %Slice.2ea = converted %v.ref, <error> [concrete = <error>]
+// CHECK:STDOUT:   %.loc33: %Slice.2ea = converted %v.ref, <error> [concrete = <error>]
 // CHECK:STDOUT:   return <error> to %return.param
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

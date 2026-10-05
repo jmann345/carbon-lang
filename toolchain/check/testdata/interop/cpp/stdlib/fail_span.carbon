@@ -71,7 +71,7 @@ import Cpp library "span.h";
 // naming `std::span<int, 3>`.
 fn F(p: i32*) {
   // CHECK:STDERR: fail_static_extent_from_slice.carbon:[[@LINE+8]]:53: error: no matching function for call to 'ConsumeStatic' [CppInteropParseError]
-  // CHECK:STDERR:    13 |   Cpp.ConsumeStatic(Core.Slice(i32).UnsafeMake(p, 3));
+  // CHECK:STDERR:    21 |   Cpp.ConsumeStatic(Core.Slice(i32).UnsafeMake(p, 3));
   // CHECK:STDERR:       |                                                     ^
   // CHECK:STDERR: fail_static_extent_from_slice.carbon:[[@LINE-12]]:10: in file included here [InCppInclude]
   // CHECK:STDERR: ./span.h:29:6: note: candidate function not viable: no known conversion from 'span<[...], (default) dynamic_extent aka 18446744073709551615>' to 'span<[...], 3>' for 1st argument [CppInteropParseNote]

@@ -2532,5 +2532,5 @@ incomplete-pointee crashes; fix c200e6b81); second autoupdate run
 ee434b2b3); third autoupdate run 37335213696 success — fill 50cd6c82c (40
 files where 18 were predicted) and the convergence pass 84315a5d4
 (`.loc`-only); fourth autoupdate, after 7b69e540b and 713eddc7a, run
-FILL_RUN; gate GATE_RUN green; conformance CONF_RUN: CONF_NUMBERS, against
+37341482411 (and 37345524695 on the trunk merge, which changed nothing); gate 37347712964 green; conformance 37347619141: 124 PASS / 0 FAIL / 23 SKIP over 147, 47/56 bullets, against
 the expected 121 / 0 / 23 over 144, 47/56.

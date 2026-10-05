@@ -3220,12 +3220,12 @@ ee434b2b3): run 37329946461 FAILED (the comptime-only conversion in
 `Slice.At`). Third autoupdate (after ee434b2b3): run 37335213696, success —
 fill 50cd6c82c (40 files) and the convergence pass 84315a5d4 (8 files,
 `.loc`-only), the 13-file regression and the three disclosed footprints
-above. Fourth autoupdate (after 7b69e540b and 713eddc7a): run FILL_RUN,
+above. Fourth autoupdate (after 7b69e540b and 713eddc7a): run 37341482411 (and 37345524695 on the trunk merge, which changed nothing),
 filling the four slice goldens and check/function/overload/basic.carbon with
-the union goldens unmoved. Gate: run GATE_RUN, green (prek, `bazel test
+the union goldens unmoved. Gate: run 37347712964, green (prek, `bazel test
 //toolchain/...`, the diagnostics coverage test with
 `IncompleteTypeInBuiltinCall` covered by the filled `fail_incomplete_pointee`
-splits). Conformance: run CONF_RUN, **CONF_NUMBERS** — expected 121 PASS / 0
+splits). Conformance: run 37347619141, **124 PASS / 0 FAIL / 23 SKIP over 147, 47/56 bullets** — expected 121 PASS / 0
 FAIL / 23 SKIP over 144 programs, 47/56 bullets ("Stdlib: Slices" SKIP →
 PASS), from the branch base READ FROM fork/conformance/out/scoreboard.json
 (3c9df53f7, generated 2026-09-28T17:19:40Z: 118 PASS / 0 FAIL / 24 SKIP over

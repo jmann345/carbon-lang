@@ -29,8 +29,24 @@
 // check component runs with `--dump-sem-ir-ranges=only`, so a file with no
 // `//@dump-sem-ir-begin` range prints no SemIR, and a run with no diagnostics
 // prints no stderr -- a clean PASS writes nothing (the precedent's positive
-// splits are the same; its CHECK lines are all in `fail_todo_` splits). The
-// ranges below make the witness visible in the fill.
+// splits are the same; its CHECK lines are all in `fail_todo_` splits).
+//
+// Why the two positive splits still have NO dump range (SL-2 round 3): the
+// fill that first dumped them (hosted run 37367343836, on 58c08be07) HUNG in
+// the file_test run -- 32+ minutes against ~40 s for all 1898 tests the fill
+// before, no `Stack dump:`, cancelled -- and the formatter runs only when a
+// range exists, so dumping is what changed. The same witness dumps fine in
+// stdlib/vector_view.carbon (`custom_witness (%Optional.f0c, %u64,
+// %VectorLike.Data, %VectorLike.Size), @CppContiguousRange`), so what is
+// first dumped HERE is a `let` facet value typed `CppContiguousRange where
+// .DataType = ... and .SizeType = ...` over a synthesized witness and the
+// `final impl forall [T: CppContiguousRange]` specific whose argument is that
+// witness's facet value. No loop was found by reading (W-121; the inst
+// namer's fingerprint worklist, sem_ir/inst_fingerprinter.cpp `Run`, is the
+// one unbounded walk on that path and has no cycle guard). Until the hang is
+// reproduced the witness evidence stays with vector_view.carbon and only the
+// negative split below is dumped; a clean PASS of the positive splits writes
+// nothing, as before.
 
 // --- cpp_contiguous_range.carbon
 package Core library "cpp_contiguous_range";
@@ -73,14 +89,13 @@ class V {
 // Predicted: the witness is built (a `custom_witness` constant naming the two
 // member decls); with two `data` overloads the const filter (impl_lookup.cpp
 // `LookupCppMethod`) picks `data() const`, so `DataType` is `const i32*`, and
-// `SizeType` is `u64` under the `--target` pin.
-//@dump-sem-ir-begin
+// `SizeType` is `u64` under the `--target` pin. No dump range (see the
+// header): a clean PASS writes nothing.
 fn Test() {
   Core.AssertIsContiguous(Cpp.V);
   let _: Core.CppContiguousRange where
     .DataType = const i32* and .SizeType = u64 = Cpp.V;
 }
-//@dump-sem-ir-end
 
 // --- missing_size.carbon
 library "[[@TEST_NAME]]";
@@ -94,7 +109,9 @@ class N {
 };
 ''';
 
-// Predicted: no `size` member, no witness.
+// Predicted: no `size` member, no witness: the `final impl` does not match
+// and the blanket `impl forall [T: type]` supplies `.Result = false`. The one
+// dump range of this golden (see the header).
 //@dump-sem-ir-begin
 fn Test() {
   Core.AssertIsNotContiguous(Cpp.N);
@@ -115,11 +132,9 @@ class M {
 ''';
 
 // Predicted: single non-const overloads are taken as-is, so `DataType` is
-// `i32*`.
-//@dump-sem-ir-begin
+// `i32*`. No dump range (see the header): a clean PASS writes nothing.
 fn Test() {
   Core.AssertIsContiguous(Cpp.M);
   let _: Core.CppContiguousRange where
     .DataType = i32* and .SizeType = u64 = Cpp.M;
 }
-//@dump-sem-ir-end

@@ -2100,7 +2100,11 @@ Zero landed programs move (no landed program includes `<span>` or names
     and `.SizeType = u64` and adds dump ranges around the three `Test()`
     bodies so the next fill shows the witness; the round-1 code change
     (`void` → `None`, error → propagated) stays, as a real ICE fix for
-    `void data(); void size();`.
+    `void data(); void size();`. **Amended 2026-10-05 (SL-2 round 3).**
+    That fill (run 37367343836) HUNG in the file_test run and was
+    cancelled (W-121); round 3 keeps one dump range, on `missing_size`
+    only, and the witness evidence stays with vector_view.carbon's `view`
+    split — see the hand-off notes.
 -   **R-10 — `Cpp.std.vector(i32)` itself does not import** (a real
     libc++ class template with allocator/compressed-pair members).
     Precedents: `std::atomic<int>` and `std::mutex` import and destroy
@@ -2405,6 +2409,30 @@ Zero landed programs move (no landed program includes `<span>` or names
     crash as `Stack dump:`/`CHECK failure` and an abort before "Ran N
     tests", never as a quiet `.`; give every positive split a dump range
     if its evidence must be visible.
+-   Amended 2026-10-05 (SL-2 round 3, after hosted autoupdate run
+    37367343836 hung): the round-2 fill that first dumped impls/
+    cpp_contiguous_range.carbon's three `Test()` bodies ran 32+ minutes in
+    the file_test step (every earlier fill: ~12 min build + ~40 s for all
+    1898 tests) with no `Stack dump:` and was cancelled. The formatter and
+    inst namer run only when a `//@dump-sem-ir-begin` range exists
+    (check.cpp `MaybeDumpFormattedSemIR`), so the dump is what changed; the
+    only other deltas since the clean fill — `unsigned int` → `unsigned
+    long` (`u64` on this target, which span.carbon and vector_view.carbon
+    already dump), `_Nonnull` on fail_vector_view's `data()`, and
+    `GetOrEmpty` on `Slice`'s bindings block (a read of a block that is
+    never `None`) — cannot loop. The same witness dumps cleanly in
+    vector_view.carbon, so the first-dumped shapes are the `let` facet
+    value typed `CppContiguousRange where .DataType = … and .SizeType = …`
+    over a synthesized witness and the `final impl forall [T:
+    CppContiguousRange]` specific whose argument is that facet value. No
+    loop was found by reading (the namer's fingerprint worklist,
+    sem_ir/inst_fingerprinter.cpp `Run`, is the one unbounded walk on the
+    naming path and has no cycle guard — a hypothesis, not a finding), so
+    the plan's testdata fallback applies: ONE range, on `missing_size`,
+    the split where no witness is built; the positives pass silently as
+    before; W-121 holds the residue with the run id. Rule: a dump range on
+    a shape no filled golden dumps is itself a fill risk — bisect it one
+    range at a time, and a hang in one test blocks the whole 2-thread run.
 -   Out-of-class impls (`IndexWith`, `ImplicitAs(Slice(const T))`, the
     §1.B.3 interop impl) touch public API only (`Data`, `Size`, `Get`,
     `UnsafeMake`); `Buf.AsSlice` uses `UnsafeMake`. If you reach for a
@@ -2742,8 +2770,9 @@ this plan, honestly:
     template with a non-type argument from Carbon; the impls golden's mock
     `data()` members return `_Nonnull` pointers (the primitives min-prelude
     has no `Optional`), restore `unsigned long size()` with `.SizeType = u64`
-    under the `--target=x86_64-linux-gnu` pin, and since round 2 wrap their
-    three `Test()` bodies in `//@dump-sem-ir-begin/end` ranges (below);
+    under the `--target=x86_64-linux-gnu` pin, and since round 3 wrap ONE
+    `Test()` body — `missing_size`'s — in a `//@dump-sem-ir-begin/end`
+    range (round 2 wrapped all three; the fill hung, below);
     span.carbon and fail_span.carbon carry the same `--target` pin (MINOR 6)
     and fail_span's header declares `ConsumeStatic` only (MINOR 5);
     span.carbon gains `noncopyable_element_is_a_class`, fail_vector_view
@@ -2783,8 +2812,13 @@ this plan, honestly:
     autoupdater had nothing to write — a clean PASS and positive evidence for
     `u64` (both runs: "Ran 1898 tests", no `<test>: <error>` line, no `Stack
     dump:`). The precedent cpp_range_for_iterate.carbon's positive splits are
-    empty the same way. Round 2 added the dump ranges so FILL_RUN shows the
-    witness.
+    empty the same way. Round 2 added dump ranges around all three `Test()`
+    bodies so the fill would show the witness; that fill (run 37367343836)
+    HUNG in the file_test run — 32+ minutes against ~40 s for all 1898 tests
+    the fill before, no `Stack dump:` — and was cancelled. Round 3 keeps the
+    range on `missing_size` only (no witness is built there) and files
+    W-121; the witness evidence is vector_view.carbon's `view` split, which
+    dumps the same `custom_witness` cleanly. FILL_RUN fills the one range.
 -   **§7 outcomes.** R-6 not refuted at the IR level (the 16-byte thunk load;
     the runtime half is CONF_RUN's). R-7 not refuted: function/export/slice
     .carbon filled with `std::span<const int>` through the mock's inline

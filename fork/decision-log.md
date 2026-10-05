@@ -3227,9 +3227,29 @@ positive splits are empty the same way. Lesson, in the hand-off notes: read
 or `CHECK failure` and an abort before "Ran N tests", never as a quiet `.` —
 and give every positive split whose evidence must be visible a dump range.
 The round-1 code change the false story motivated (hardening (a)) stands on
-its own as a real ICE fix for `void` members. Round 3 (FILL_RUN, after
-58c08be07): predicted impls/cpp_contiguous_range.carbon only, now with its
-dump ranges showing the synthesized witness; everything else byte-identical.
+its own as a real ICE fix for `void` members. Round 3 (run 37367343836 on
+58c08be07, CANCELLED; fix in the round-3 commit): the fill that first dumped
+impls/cpp_contiguous_range.carbon's three `Test()` bodies HUNG in the
+file_test step — 32+ minutes where every earlier fill took ~12 min to build
+and ~40 s for all 1898 tests, no `Stack dump:`, no `<test>: <error>` — and
+was cancelled before the job log could show which test. The miss is of a new
+class: a dump range on a shape no filled golden dumps is itself a fill risk.
+Decidable from the tree only in part: the formatter and inst namer run only
+when a range exists (check.cpp `MaybeDumpFormattedSemIR`), the other deltas
+since the clean fill (`unsigned long`, `_Nonnull`, `GetOrEmpty`) cannot loop,
+and the same witness dumps cleanly in vector_view.carbon's `view` split, so
+the first-dumped shapes are the `let` facet value typed `CppContiguousRange
+where .DataType = … and .SizeType = …` over a synthesized witness and the
+`final impl forall [T: CppContiguousRange]` specific whose argument is that
+facet value; the one unbounded walk on the naming path, the fingerprint
+worklist in sem_ir/inst_fingerprinter.cpp `Run`, has no cycle guard — but no
+cycle was found by reading, so no toolchain change is made and the plan's
+testdata fallback applies: ONE range, on `missing_size` (no witness is built
+there), the positives passing silently as before, W-121 filed with the run
+id. Predicted fill (FILL_RUN): impls/cpp_contiguous_range.carbon only, the
+`missing_size` range showing the blanket `impl_witness` with `.Result =
+false`; everything else byte-identical; if it hangs again the cycle is in the
+test library's import, not the witness.
 
 DEVIATIONS from the plan, each in fork/slices/plan.md's "Landed notes (SL-2,
 2026-10-05)": the prelude section was first landed in a new library and
@@ -3247,7 +3267,8 @@ static-extent golden names `std::span<int, 3>` through a header alias
 rather than `Cpp.std.span(i32, 3)`, since no golden instantiates a C++ class
 template with a non-type argument from Carbon; the impls golden's mock
 `data()` members return `_Nonnull` pointers (the primitives min-prelude has
-no `Optional`) and carry dump ranges; span.carbon gains
+no `Optional`) and carry one dump range, on `missing_size` (round 3; W-121);
+span.carbon gains
 `noncopyable_element_is_a_class`, fail_vector_view.carbon gains
 `fail_void_members`, vector_view.carbon has `view` and `nonnull_data`;
 `cpp_span_view` prints THREE values (`10 6 12`), not §5.B's two, and both
@@ -3261,8 +3282,9 @@ files: the broken prelude) and its convergence pass 2c21f6e24 (40 files,
 `.loc`-only). Second autoupdate (after fd9cdd5da): run 37362980320, fill
 18e2165c1 (the seven output-producing goldens, no pre-existing mover) and the
 convergence run 37365683022, 0c9924049 (two `CHECK:STDERR` line numbers).
-Third autoupdate (after 58c08be07): run FILL_RUN (impls/cpp_contiguous_range
-.carbon's dump ranges). Gate: run GATE_RUN (prek, `bazel test //toolchain/...`;
+Third autoupdate (after 58c08be07): run 37367343836 HUNG in the file_test
+step and was cancelled (W-121). Fourth autoupdate (after the round-3 commit):
+run FILL_RUN (impls/cpp_contiguous_range.carbon's one dump range). Gate: run GATE_RUN (prek, `bazel test //toolchain/...`;
 no new diagnostic kind, so the coverage test is unchanged). Conformance: run
 CONF_RUN, **CONF_NUMBERS** — expected 126 PASS / 0 FAIL / 22 SKIP over 148
 programs, 48/56 bullets ("Stdlib C++ interop: transparent non-owning

@@ -113,7 +113,7 @@ fn ViewNonNull(v: Cpp.NonNullLike) -> Core.Slice(const i32) {
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %const.6a8: type = const_type %i32 [concrete]
 // CHECK:STDOUT:   %i32.builtin: type = int_type signed, %int_32 [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.3: type = fn_type @Destroy.Op.loc15_51.3 [concrete]
+// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.3: type = fn_type @Destroy.Op.loc19_51.3 [concrete]
 // CHECK:STDOUT:   %Destroy.Op.1a2547.3: %Destroy.Op.type.1d8f74.3 = struct_value () [concrete]
 // CHECK:STDOUT:   %custom_witness.df9cc1.3: <witness> = custom_witness (%Destroy.Op.1a2547.3), @Destroy [concrete]
 // CHECK:STDOUT:   %Copy.impl_witness.b51: <witness> = impl_witness imports.%Copy.impl_witness_table.8d2, @Int.as.Copy.impl(%int_32) [concrete]
@@ -169,10 +169,10 @@ fn ViewNonNull(v: Cpp.NonNullLike) -> Core.Slice(const i32) {
 // CHECK:STDOUT:   %Optional.as.CppDataPointer.impl.Raw.type.2db: type = fn_type @Optional.as.CppDataPointer.impl.Raw, @Optional.as.CppDataPointer.impl(%T.67d) [symbolic]
 // CHECK:STDOUT:   %Optional.as.CppDataPointer.impl.Raw.cea: %Optional.as.CppDataPointer.impl.Raw.type.2db = struct_value () [symbolic]
 // CHECK:STDOUT:   %CppDataPointer.impl_witness.2da: <witness> = impl_witness imports.%CppDataPointer.impl_witness_table.b0a, @Optional.as.CppDataPointer.impl(%const.6a8) [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.7: type = fn_type @Destroy.Op.loc16_11.3 [concrete]
+// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.7: type = fn_type @Destroy.Op.loc20_11.3 [concrete]
 // CHECK:STDOUT:   %Destroy.Op.1a2547.7: %Destroy.Op.type.1d8f74.7 = struct_value () [concrete]
 // CHECK:STDOUT:   %custom_witness.df9cc1.7: <witness> = custom_witness (%Destroy.Op.1a2547.7), @Destroy [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.9: type = fn_type @Destroy.Op.loc16_11.5 [concrete]
+// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.9: type = fn_type @Destroy.Op.loc20_11.5 [concrete]
 // CHECK:STDOUT:   %Destroy.Op.1a2547.9: %Destroy.Op.type.1d8f74.9 = struct_value () [concrete]
 // CHECK:STDOUT:   %custom_witness.df9cc1.9: <witness> = custom_witness (%Destroy.Op.1a2547.9), @Destroy [concrete]
 // CHECK:STDOUT:   %ImplicitAs.type.14f: type = facet_type <@ImplicitAs, @ImplicitAs(%u64)> [concrete]
@@ -269,12 +269,12 @@ fn ViewNonNull(v: Cpp.NonNullLike) -> Core.Slice(const i32) {
 // CHECK:STDOUT:     %Slice.ref: %Slice.type = name_ref Slice, imports.%Core.Slice [concrete = constants.%Slice.generic]
 // CHECK:STDOUT:     %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:     %const: type = const_type %i32 [concrete = constants.%const.6a8]
-// CHECK:STDOUT:     %facet_value.loc15: %facet_type.f48 = facet_value %const, (constants.%custom_witness.df9cc1.3, constants.%Copy.impl_witness.ae2) [concrete = constants.%facet_value.d9e]
-// CHECK:STDOUT:     %.loc15_51.2: %facet_type.f48 = converted %const, %facet_value.loc15 [concrete = constants.%facet_value.d9e]
+// CHECK:STDOUT:     %facet_value.loc19: %facet_type.f48 = facet_value %const, (constants.%custom_witness.df9cc1.3, constants.%Copy.impl_witness.ae2) [concrete = constants.%facet_value.d9e]
+// CHECK:STDOUT:     %.loc19_51.2: %facet_type.f48 = converted %const, %facet_value.loc19 [concrete = constants.%facet_value.d9e]
 // CHECK:STDOUT:     %Slice: type = class_type @Slice, @Slice(constants.%facet_value.d9e) [concrete = constants.%Slice.2ea]
-// CHECK:STDOUT:     %.loc15_51.3: Core.Form = init_form %Slice [concrete = constants.%.3e4]
+// CHECK:STDOUT:     %.loc19_51.3: Core.Form = init_form %Slice [concrete = constants.%.3e4]
 // CHECK:STDOUT:     %v.param: %VectorLike = value_param call_param0
-// CHECK:STDOUT:     %.loc15_15: type = splice_block %VectorLike.ref [concrete = constants.%VectorLike] {
+// CHECK:STDOUT:     %.loc19_15: type = splice_block %VectorLike.ref [concrete = constants.%VectorLike] {
 // CHECK:STDOUT:       %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:       %VectorLike.ref: type = name_ref VectorLike, imports.%VectorLike.decl [concrete = constants.%VectorLike]
 // CHECK:STDOUT:     }
@@ -284,14 +284,14 @@ fn ViewNonNull(v: Cpp.NonNullLike) -> Core.Slice(const i32) {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc15_51.1(%self.param: ref %i32.builtin) = "no_op";
+// CHECK:STDOUT: fn @Destroy.Op.loc19_51.1(%self.param: ref %i32.builtin) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc15_51.2(%self.param: ref %i32) {
+// CHECK:STDOUT: fn @Destroy.Op.loc19_51.2(%self.param: ref %i32) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc15_51.3(%self.param: ref %const.6a8) {
+// CHECK:STDOUT: fn @Destroy.Op.loc19_51.3(%self.param: ref %const.6a8) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
@@ -300,37 +300,37 @@ fn ViewNonNull(v: Cpp.NonNullLike) -> Core.Slice(const i32) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %v.ref: %VectorLike = name_ref v, %v
 // CHECK:STDOUT:   %impl.elem0: %.0b5 = impl_witness_access constants.%ImplicitAs.impl_witness.359, element0 [concrete = constants.%C.as_type.as.ImplicitAs.impl.Convert.c81]
-// CHECK:STDOUT:   %bound_method.loc16_11.1: <bound method> = bound_method %v.ref, %impl.elem0
-// CHECK:STDOUT:   %facet_value.loc16_11.1: %CppContiguous_where.type.d682d6.1 = facet_value constants.%VectorLike, (constants.%custom_witness.dd1, constants.%custom_witness.df9cc1.3, constants.%Copy.impl_witness.ae2, constants.%custom_witness.df9cc1.7, constants.%CppDataPointer.impl_witness.2da, constants.%custom_witness.df9cc1.9, constants.%CppSizeToI64.impl_witness.da2) [concrete = constants.%facet_value.d41]
-// CHECK:STDOUT:   %.loc16_11.1: %CppContiguous_where.type.d682d6.1 = converted constants.%VectorLike, %facet_value.loc16_11.1 [concrete = constants.%facet_value.d41]
-// CHECK:STDOUT:   %facet_value.loc16_11.2: %CppContiguous_where.type.d682d6.1 = facet_value constants.%VectorLike, (constants.%custom_witness.dd1, constants.%custom_witness.df9cc1.3, constants.%Copy.impl_witness.ae2, constants.%custom_witness.df9cc1.7, constants.%CppDataPointer.impl_witness.2da, constants.%custom_witness.df9cc1.9, constants.%CppSizeToI64.impl_witness.da2) [concrete = constants.%facet_value.d41]
-// CHECK:STDOUT:   %.loc16_11.2: %CppContiguous_where.type.d682d6.1 = converted constants.%VectorLike, %facet_value.loc16_11.2 [concrete = constants.%facet_value.d41]
+// CHECK:STDOUT:   %bound_method.loc20_11.1: <bound method> = bound_method %v.ref, %impl.elem0
+// CHECK:STDOUT:   %facet_value.loc20_11.1: %CppContiguous_where.type.d682d6.1 = facet_value constants.%VectorLike, (constants.%custom_witness.dd1, constants.%custom_witness.df9cc1.3, constants.%Copy.impl_witness.ae2, constants.%custom_witness.df9cc1.7, constants.%CppDataPointer.impl_witness.2da, constants.%custom_witness.df9cc1.9, constants.%CppSizeToI64.impl_witness.da2) [concrete = constants.%facet_value.d41]
+// CHECK:STDOUT:   %.loc20_11.1: %CppContiguous_where.type.d682d6.1 = converted constants.%VectorLike, %facet_value.loc20_11.1 [concrete = constants.%facet_value.d41]
+// CHECK:STDOUT:   %facet_value.loc20_11.2: %CppContiguous_where.type.d682d6.1 = facet_value constants.%VectorLike, (constants.%custom_witness.dd1, constants.%custom_witness.df9cc1.3, constants.%Copy.impl_witness.ae2, constants.%custom_witness.df9cc1.7, constants.%CppDataPointer.impl_witness.2da, constants.%custom_witness.df9cc1.9, constants.%CppSizeToI64.impl_witness.da2) [concrete = constants.%facet_value.d41]
+// CHECK:STDOUT:   %.loc20_11.2: %CppContiguous_where.type.d682d6.1 = converted constants.%VectorLike, %facet_value.loc20_11.2 [concrete = constants.%facet_value.d41]
 // CHECK:STDOUT:   %specific_fn: <specific function> = specific_function %impl.elem0, @C.as_type.as.ImplicitAs.impl.Convert(constants.%facet_value.d41) [concrete = constants.%C.as_type.as.ImplicitAs.impl.Convert.specific_fn]
-// CHECK:STDOUT:   %bound_method.loc16_11.2: <bound method> = bound_method %v.ref, %specific_fn
-// CHECK:STDOUT:   %.loc15_51.1: ref %Slice.2ea = splice_block %return.param {}
-// CHECK:STDOUT:   %C.as_type.as.ImplicitAs.impl.Convert.call: init %Slice.2ea to %.loc15_51.1 = call %bound_method.loc16_11.2(%v.ref)
-// CHECK:STDOUT:   %.loc16_11.3: init %Slice.2ea = converted %v.ref, %C.as_type.as.ImplicitAs.impl.Convert.call
-// CHECK:STDOUT:   return %.loc16_11.3 to %return.param
+// CHECK:STDOUT:   %bound_method.loc20_11.2: <bound method> = bound_method %v.ref, %specific_fn
+// CHECK:STDOUT:   %.loc19_51.1: ref %Slice.2ea = splice_block %return.param {}
+// CHECK:STDOUT:   %C.as_type.as.ImplicitAs.impl.Convert.call: init %Slice.2ea to %.loc19_51.1 = call %bound_method.loc20_11.2(%v.ref)
+// CHECK:STDOUT:   %.loc20_11.3: init %Slice.2ea = converted %v.ref, %C.as_type.as.ImplicitAs.impl.Convert.call
+// CHECK:STDOUT:   return %.loc20_11.3 to %return.param
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc16_11.1(%self.param: ref %.f60) {
+// CHECK:STDOUT: fn @Destroy.Op.loc20_11.1(%self.param: ref %.f60) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc16_11.2(%self.param: ref %MaybeUnformed.416) {
+// CHECK:STDOUT: fn @Destroy.Op.loc20_11.2(%self.param: ref %MaybeUnformed.416) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc16_11.3(%self.param: ref %Optional.f0c) {
+// CHECK:STDOUT: fn @Destroy.Op.loc20_11.3(%self.param: ref %Optional.f0c) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc16_11.4(%self.param: ref %u64.builtin) = "no_op";
+// CHECK:STDOUT: fn @Destroy.Op.loc20_11.4(%self.param: ref %u64.builtin) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc16_11.5(%self.param: ref %u64) {
+// CHECK:STDOUT: fn @Destroy.Op.loc20_11.5(%self.param: ref %u64) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }

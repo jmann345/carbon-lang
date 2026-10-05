@@ -138,3 +138,62 @@ fn Test() {
   let _: Core.CppContiguousRange where
     .DataType = i32* and .SizeType = u64 = Cpp.M;
 }
+
+// CHECK:STDOUT: --- missing_size.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   %Test.type: type = fn_type @Test [concrete]
+// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
+// CHECK:STDOUT:   %Test: %Test.type = struct_value () [concrete]
+// CHECK:STDOUT:   %AssertIsNotContiguous.type: type = fn_type @AssertIsNotContiguous [concrete]
+// CHECK:STDOUT:   %AssertIsNotContiguous: %AssertIsNotContiguous.type = struct_value () [concrete]
+// CHECK:STDOUT:   %false: bool = bool_literal false [concrete]
+// CHECK:STDOUT:   %IsContiguous.type: type = facet_type <@IsContiguous> [concrete]
+// CHECK:STDOUT:   %.Self: %IsContiguous.type = symbolic_binding .Self [symbolic_self]
+// CHECK:STDOUT:   %IsContiguous.lookup_impl_witness: <witness> = lookup_impl_witness %.Self, @IsContiguous [symbolic_self]
+// CHECK:STDOUT:   %impl.elem0.1b1: bool = impl_witness_access %IsContiguous.lookup_impl_witness, element0 [symbolic_self]
+// CHECK:STDOUT:   %IsContiguous_where.type: type = facet_type <@IsContiguous where %impl.elem0.1b1 = %false> [concrete]
+// CHECK:STDOUT:   %N.531: type = class_type @N [concrete]
+// CHECK:STDOUT:   %Int.type: type = generic_class_type @Int [concrete]
+// CHECK:STDOUT:   %Int.generic: %Int.type = struct_value () [concrete]
+// CHECK:STDOUT:   %IsContiguous.impl_witness.862: <witness> = impl_witness imports.%IsContiguous.impl_witness_table.0b0, @T.as.IsContiguous.impl(%N.531) [concrete]
+// CHECK:STDOUT:   %facet_value: %IsContiguous_where.type = facet_value %N.531, (%IsContiguous.impl_witness.862) [concrete]
+// CHECK:STDOUT:   %AssertIsNotContiguous.specific_fn: <specific function> = specific_function %AssertIsNotContiguous, @AssertIsNotContiguous(%facet_value) [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Core: <namespace> = namespace file.%Core.import, [concrete] {
+// CHECK:STDOUT:     .AssertIsNotContiguous = %Core.AssertIsNotContiguous
+// CHECK:STDOUT:     .Int = %Core.Int
+// CHECK:STDOUT:     import Core//prelude
+// CHECK:STDOUT:     import Core//cpp_contiguous_range
+// CHECK:STDOUT:     import Core//prelude/...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .N = %N.decl
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Core.AssertIsNotContiguous: %AssertIsNotContiguous.type = import_ref Core//cpp_contiguous_range, AssertIsNotContiguous, loaded [concrete = constants.%AssertIsNotContiguous]
+// CHECK:STDOUT:   %N.decl: type = class_decl @N [concrete = constants.%N.531] {} {}
+// CHECK:STDOUT:   %Core.import_ref.d18: bool = import_ref Core//cpp_contiguous_range, loc{{\d+_\d+}}, loaded [concrete = constants.%false]
+// CHECK:STDOUT:   %IsContiguous.impl_witness_table.0b0 = impl_witness_table (%Core.import_ref.d18), @T.as.IsContiguous.impl [concrete]
+// CHECK:STDOUT:   %Core.Int: %Int.type = import_ref Core//prelude/parts/int, Int, loaded [concrete = constants.%Int.generic]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: file {
+// CHECK:STDOUT:   %Test.decl: %Test.type = fn_decl @Test [concrete = constants.%Test] {} {}
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Test() {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Core.ref: <namespace> = name_ref Core, imports.%Core [concrete = imports.%Core]
+// CHECK:STDOUT:   %AssertIsNotContiguous.ref: %AssertIsNotContiguous.type = name_ref AssertIsNotContiguous, imports.%Core.AssertIsNotContiguous [concrete = constants.%AssertIsNotContiguous]
+// CHECK:STDOUT:   %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %N.ref: type = name_ref N, imports.%N.decl [concrete = constants.%N.531]
+// CHECK:STDOUT:   %facet_value: %IsContiguous_where.type = facet_value %N.ref, (constants.%IsContiguous.impl_witness.862) [concrete = constants.%facet_value]
+// CHECK:STDOUT:   %.loc17: %IsContiguous_where.type = converted %N.ref, %facet_value [concrete = constants.%facet_value]
+// CHECK:STDOUT:   %AssertIsNotContiguous.specific_fn: <specific function> = specific_function %AssertIsNotContiguous.ref, @AssertIsNotContiguous(constants.%facet_value) [concrete = constants.%AssertIsNotContiguous.specific_fn]
+// CHECK:STDOUT:   %AssertIsNotContiguous.call: init %empty_tuple.type = call %AssertIsNotContiguous.specific_fn()
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:

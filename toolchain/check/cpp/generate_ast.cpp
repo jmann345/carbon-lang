@@ -268,9 +268,11 @@ auto CarbonExternalASTSource::MapInstIdToClangDeclOrType(LookupResult lookup)
       // accepts, but each member is its own declaration with its own symbol,
       // so no call crosses the boundary with the wrong ABI. A member whose
       // signature has no C++ mapping is dropped from the list after the
-      // per-function export path has emitted its semantics TODO, so the
-      // exportable subset stays callable (sub-fork F-009i); an empty list is
-      // the single-function "no declarations" outcome.
+      // per-function export path has emitted its semantics TODO (an error:
+      // the unit is rejected until the member maps); the mappable members
+      // are still delivered to Clang, so that TODO is the only diagnostic
+      // and no spurious "no member named" cascade follows (sub-fork F-009i).
+      // An empty list is the single-function "no declarations" outcome.
       const auto& overload_set =
           context_->overload_sets().Get(set_value.overload_set_id);
       NamedDeclList member_decls;

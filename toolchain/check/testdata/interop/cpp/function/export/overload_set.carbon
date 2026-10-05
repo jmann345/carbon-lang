@@ -134,8 +134,10 @@ import Cpp;
 
 // A member whose signature has no C++ mapping (a tuple-typed parameter) is
 // omitted from the exported set after the per-function export path emits its
-// semantics TODO; the other member stays callable from C++ (sub-fork F-009i,
-// fork/overload/plan.md §1.C.1).
+// semantics TODO, which is an error: the unit is rejected until the member
+// maps. The mappable member is still delivered to Clang, so the TODO is the
+// only diagnostic — `Carbon::F(7)` resolves and no "no member named 'F'"
+// cascade follows (sub-fork F-009i, fork/overload/plan.md §1.C.1).
 overload fn F(unused x: i32) -> i32 { return 1; }
 // CHECK:STDERR: fail_todo_partial_export.carbon:[[@LINE+4]]:1: error: semantics TODO: `failed to map C++ type to Carbon` [SemanticsTodo]
 // CHECK:STDERR: overload fn F(unused p: (i32, i32)) -> i32 { return 2; }
@@ -468,3 +470,27 @@ fn Use() -> i32 { return Cpp.CallInt(); }
 // CHECK:STDOUT:   return %Drive__carbon_thunk.call
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
+
+// --- fail_todo_generic_class_set.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp;
+
+// A set in a generic class (OV-2) reached from C++ through a specialization
+// of the exported class template: the per-function export path stops at the
+// generic class's scope with a semantics TODO for EVERY member it is asked
+// to export — one diagnostic per member, as `constructor.carbon`'s
+// `fail_todo_call_generic_class_constructor` gets one for its one function —
+// and the empty list is the single-function "no declarations" outcome, so
+// Clang then reports the missing member. The N-fold TODO is recorded
+// residue, not a diagnostic of OV-3's own.
+class Box(T: type) {
+  var total: i32;
+  overload fn Add(ref self, n: i32) { self.total = self.total + n; }
+  overload fn Add(ref self, b: bool) { if (b) { self.total = self.total + 100; } }
+}
+
+inline Cpp '''
+inline void Drive(Carbon::Box<int>& b) { b.Add(1); }
+''';

@@ -885,14 +885,12 @@ Exported members are **not** unaffected by Carbon-internal mangling: an
 exported member reaches C++ as an inline C++ function of the member's name
 whose body calls the member's generated Carbon thunk through a declaration
 carrying that thunk's Carbon mangled name as an asm label
-(`toolchain/check/cpp/export.cpp`). _Fork amendment 2026-10-05 (OV-3):_ the
-thunk is a generated function, not a set member, so the `:overload<N>` marker
-does not reach it by itself; the thunk's _name_ carries the member's index
-instead (`Pick__carbon_thunk__overload0`, mangled
-`_CPick__carbon_thunk__overload0.Main`), and the thunk calls the member's own
-`_CPick:overload0.Main`. Either way C++ sees N distinct symbol pairs behind N
-same-named declarations, and the member that C++ resolution selects is the
-member that runs (lower golden
+(`toolchain/check/cpp/export.cpp`). _Fork amendment 2026-10-05 (OV-3):_ a set
+member's thunk carries the member's index too, so it mangles
+`_CPick__carbon_thunk:overload0.Main` and calls the member's own
+`_CPick:overload0.Main`: C++ sees N distinct symbol pairs behind N same-named
+declarations, and the member that C++ resolution selects is the member that
+runs (lower golden
 `toolchain/lower/testdata/interop/cpp/function/export/overload_set.carbon`).
 
 ## Future work

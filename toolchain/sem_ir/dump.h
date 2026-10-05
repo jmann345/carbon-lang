@@ -48,6 +48,7 @@ auto Dump(const File& file, const NameScope& name_scope) -> std::string;
 auto Dump(const File& file, NameScopeId name_scope_id) -> std::string;
 auto Dump(const File& file, NamedConstraintId named_constraint_id)
     -> std::string;
+auto Dump(const File& file, OverloadSetId overload_set_id) -> std::string;
 auto Dump(const File& file, RequireImplsBlockId require_impls_block_id)
     -> std::string;
 auto Dump(const File& file, RequireImplsId require_impls_id) -> std::string;

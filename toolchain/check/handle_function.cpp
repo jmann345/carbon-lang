@@ -469,6 +469,12 @@ static auto TryMergeOverloadDecl(Context& context,
                                  SemIR::FunctionDecl& function_decl,
                                  SemIR::Function& function_info,
                                  bool is_definition) -> bool {
+  // A poisoned name has no previous instruction to merge into (and
+  // `prev_inst_id()` is a fatal error for it); upstream's `TryMergeRedecl`
+  // diagnoses the poisoning.
+  if (name_context.state == DeclNameStack::NameContext::State::Poisoned) {
+    return false;
+  }
   auto prev_id = name_context.prev_inst_id();
   if (!prev_id.has_value()) {
     return false;

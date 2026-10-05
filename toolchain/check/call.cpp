@@ -249,7 +249,7 @@ static auto RequireBuiltinCallPointeeComplete(
     SemIR::TypeId return_type_id, SemIR::InstBlockId args_id) -> void {
   auto pointer_type_id = SemIR::TypeId::None;
   llvm::StringLiteral builtin_name = "";
-  switch (callee.builtin_function_kind()) {
+  switch (callee.GetBuiltinFunctionKind(context.sem_ir())) {
     case SemIR::BuiltinFunctionKind::PointerOffset: {
       auto arg_ids = context.inst_blocks().GetOrEmpty(args_id);
       if (arg_ids.empty()) {
@@ -798,6 +798,12 @@ static auto PerformCallToCppFunctionPointer(
     llvm::ArrayRef<SemIR::InstId> arg_ids) -> SemIR::InstId {
   auto pointer_info =
       ImportFunctionPointerInvoke(context, loc_id, fn_ptr.function_type_id);
+  if (pointer_info.decl_id == SemIR::ErrorInst::InstId) {
+    // The pointer's `__invoke` function could not be imported (diagnosed;
+    // fork D-UA-7: its fence thunk could not be built), so there is no
+    // callee to call.
+    return SemIR::ErrorInst::InstId;
+  }
   SemIR::CalleeFunction callee_function = {
       .function_id = pointer_info.function_id,
       .enclosing_specific_id = SemIR::SpecificId::None,

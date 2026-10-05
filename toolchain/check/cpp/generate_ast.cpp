@@ -277,8 +277,8 @@ auto CarbonExternalASTSource::MapInstIdToClangDeclOrType(LookupResult lookup)
         auto function_id = context_->insts()
                                .GetAs<SemIR::FunctionDecl>(member_decl_id)
                                .function_id;
-        if (auto* member_decl =
-                GetOrExportFunctionToCpp(member_decl_id, function_id)) {
+        if (auto* member_decl = GetOrExportFunctionToCpp(
+                *context_, SemIR::LocId(member_decl_id), function_id)) {
           member_decls.push_back(member_decl);
         }
       }

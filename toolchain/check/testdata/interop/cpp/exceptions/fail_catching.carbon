@@ -138,3 +138,23 @@ fn F() -> Core.Result(i32, Cpp.Exception) {
   Cpp.Widget.Widget(1)?;
   return Core.Result(i32, Cpp.Exception).Ok(0);
 }
+
+// --- fail_todo_fn_pointer_catching.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp;
+
+inline Cpp '''
+using IntFnPtr = int (*)();
+IntFnPtr get_fn_ptr() noexcept;
+''';
+
+// A call THROUGH a C++ function pointer under `?`: the catching thunk is built
+// from the callee's Clang declaration, which the pointer's `__invoke` function
+// has none of, so a catching call through a pointer is a 0.1 gate (fork
+// D-UA-7). The call falls through to the FENCED thunk, and `?` then diagnoses
+// its `i32` operand.
+fn F() -> Core.Result(i32, Cpp.Exception) {
+  return Core.Result(i32, Cpp.Exception).Ok(Cpp.get_fn_ptr()()?);
+}

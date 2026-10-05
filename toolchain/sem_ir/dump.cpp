@@ -255,6 +255,19 @@ LLVM_DUMP_METHOD auto Dump(const File& file, CppOverloadSetId overload_set_id)
   return out.TakeStr();
 }
 
+// Fork (OV-1): the Carbon `overload fn` set, beside the C++ one; the
+// fingerprinter's cycle-detector dump visits both.
+LLVM_DUMP_METHOD auto Dump(const File& file, OverloadSetId overload_set_id)
+    -> std::string {
+  RawStringOstream out;
+  out << overload_set_id;
+  if (overload_set_id.has_value()) {
+    const auto& overload_set = file.overload_sets().Get(overload_set_id);
+    out << ": " << overload_set;
+  }
+  return out.TakeStr();
+}
+
 LLVM_DUMP_METHOD auto Dump(const File& file,
                            DeclaredFacetTypeId declared_facet_type_id)
     -> std::string {

@@ -2052,3 +2052,42 @@ should read first:
 -   **Pre-fill fence counts are not comparable yet:** 71 cleared goldens
     include most thunk goldens, so `__clang_call_terminate` appears in 5
     lower goldens today (was 30); the ≥ 30 falsifier applies AFTER the fill.
+-   **Compile round 1 (pre-push, local `clang++-19 -fsyntax-only` under the
+    toolchain's `-Werror` set over every fork-changed toolchain source and every
+    unchanged source that includes a fork-changed header).** The hosted probe
+    (run 37381466829) stopped at call.cpp:252 (`builtin_function_kind()`,
+    removed by upstream #7729 → `GetBuiltinFunctionKind(context.sem_ir())`).
+    Three more errors the same probe would have reached in later rounds were
+    found by reading and fixed to upstream's idiom: convert.cpp
+    `ConvertStructToUnion` (UN-1) passes upstream's `LiteralElements` and
+    `target.template_storage_args` to `ConvertAggregateElement` (#7776-era
+    signature); cpp/generate_ast.cpp's OV-3 arm calls
+    `GetOrExportFunctionToCpp(*context_, SemIR::LocId(member_decl_id),
+    function_id)`; `Dump(const File&, OverloadSetId)` is added beside the
+    `CppOverloadSetId` one because upstream's new fingerprinter cycle-detector
+    `std::visit`s `Dump` over the worklist variant the fork extends. Review
+    folds (ua1_impl_review): `TryMergeOverloadDecl` returns false on a poisoned
+    name before `prev_inst_id()` (upstream's name_poisoning.carbon would have
+    `CARBON_FATAL`ed); `PerformCppThunkCall` gates a catching `?` call through a
+    C++ function pointer with a TODO ("catching thunk for a C++ function
+    pointer", new split `fail_todo_fn_pointer_catching` in
+    exceptions/fail_catching.carbon, CHECKs empty for the fill) instead of
+    CHECK-failing in `GetCalleeClangDecl`; `PerformCallToCppFunctionPointer`
+    returns `ErrorInst` when the pointer's `__invoke` import failed instead of
+    calling `functions().Get(None)`. D-UA-8 break condition, corrected: a plain
+    `git revert 5a6f54229` does NOT compile (it restores `static
+    TryMapFunctionType`, whose only caller — the `case
+    SemIR::FunctionType::Kind:` arm of `TryMapType` — was removed in the MERGE
+    commit, so `-Werror=unused-function` fires) and does not restore the thunk's
+    constant-parameter plumbing dropped in 3d4c0e37a (`num_constant_params`,
+    `is_constant_param`, `GetThunkParamIndex`/`GetThunkReturnParamIndex`, the
+    `BuildThunkParameterTypes`/`BuildThunkParameters` skips, `BuildCalleeArgs`'
+    constant substitution, the `HasConstantFunctionArgs` early return in
+    `IsCppThunkRequired` — about 60 lines, 1de4bb49d
+    thunk.cpp:311-368/:451/:533/:573-580/:770-775): the honest path is a revert
+    followed by re-adding the `TryMapType` arm and re-expressing those lines on
+    upstream's `CalleeFunctionInfo`. Not verifiable by reading: bazel's
+    `layering_check` (fork-added includes vs BUILD deps; every fork BUILD dep
+    survived the merge, the only removed lines are upstream's own), and
+    link-time definitions (every fork-added inst/node/state kind has its
+    handler; the x-macro consumers are compile-time dispatched).

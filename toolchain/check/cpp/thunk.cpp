@@ -1062,15 +1062,28 @@ auto BuildCppThunk(Context& context, const CalleeFunctionInfo& callee_info)
 }
 
 // Returns the Clang declaration of the C++ function `callee_function` was
+// imported from, or null if it has none. A C++ function pointer's `__invoke`
+// function (cpp/import.cpp, `ImportFunctionPointerInvoke`) is never registered
+// in `clang_decls`: it is a Carbon function over a function type, with no
+// declaration to name or wrap.
+static auto TryGetCalleeClangDecl(Context& context,
+                                  const SemIR::Function& callee_function)
+    -> clang::FunctionDecl* {
+  const auto* clang_decl =
+      context.clang_decls().Lookup(callee_function.first_decl_id());
+  if (!clang_decl) {
+    return nullptr;
+  }
+  return clang_decl->key.decl->getAsFunction();
+}
+
+// Returns the Clang declaration of the C++ function `callee_function` was
 // imported from.
 static auto GetCalleeClangDecl(Context& context,
                                const SemIR::Function& callee_function)
     -> clang::FunctionDecl* {
-  auto* clang_decl =
-      context.clang_decls().Lookup(callee_function.first_decl_id());
-  CARBON_CHECK(clang_decl);
   clang::FunctionDecl* callee_function_decl =
-      clang_decl->key.decl->getAsFunction();
+      TryGetCalleeClangDecl(context, callee_function);
   CARBON_CHECK(callee_function_decl);
   return callee_function_decl;
 }
@@ -1546,10 +1559,19 @@ auto PerformCppThunkCall(Context& context, SemIR::LocId loc_id,
   // operand error.
   if (IsCatchingCallSite(context, loc_id)) {
     const auto& callee_function = context.functions().Get(callee_function_id);
-    if (IsCppThunkFenceRequired(context,
-                                GetCalleeClangDecl(context, callee_function)) &&
-        !ImplementsCoreTry(context, loc_id,
-                           GetCalleeResultType(context, callee_function))) {
+    clang::FunctionDecl* callee_function_decl =
+        TryGetCalleeClangDecl(context, callee_function);
+    if (!callee_function_decl) {
+      // A call through a C++ function pointer (D-UA-7): the catching thunk
+      // is built from the callee's Clang declaration, which a pointer's
+      // `__invoke` function has none of. Gated in 0.1; the call falls through
+      // to the fenced thunk below, and `?` then diagnoses its operand.
+      context.TODO(loc_id,
+                   "Unsupported: catching thunk for a C++ function pointer");
+    } else if (IsCppThunkFenceRequired(context, callee_function_decl) &&
+               !ImplementsCoreTry(
+                   context, loc_id,
+                   GetCalleeResultType(context, callee_function))) {
       auto result_id = PerformCppCatchingThunkCall(
           context, loc_id, callee_function_id, callee_arg_ids);
       if (result_id.has_value()) {

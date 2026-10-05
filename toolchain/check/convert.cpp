@@ -1123,11 +1123,9 @@ static auto ConvertStructToUnion(Context& context, SemIR::StructType src_type,
   // If we're initializing from a struct literal, we will use its element
   // directly. Otherwise, materialize a temporary if needed and index into the
   // result.
-  llvm::ArrayRef<SemIR::InstId> literal_elems;
-  if (auto struct_literal =
-          sem_ir.insts().Get(value_id).TryAs<SemIR::StructLiteral>()) {
-    literal_elems = sem_ir.inst_blocks().Get(struct_literal->elements_id);
-  } else {
+  auto literal =
+      GetAggregateLiteralElements<SemIR::StructLiteral>(context, value_id);
+  if (!literal.has_value()) {
     value_id = MaterializeIfInitializer(context, value_id);
   }
 
@@ -1135,9 +1133,10 @@ static auto ConvertStructToUnion(Context& context, SemIR::StructType src_type,
       GetAggregateElementConversionTargetKind(sem_ir, target);
   auto init_id =
       ConvertAggregateElement<SemIR::StructAccess, SemIR::ClassElementAccess>(
-          context, value_loc_id, value_id, src_field.type_inst_id,
-          literal_elems, inner_kind, target.storage_id, dest_field.type_inst_id,
-          target.storage_access_block, /*src_field_index=*/0, dest_field_index);
+          context, value_loc_id, value_id, src_field.type_inst_id, literal,
+          inner_kind, target.storage_id, dest_field.type_inst_id,
+          target.storage_access_block, target.template_storage_args,
+          /*src_field_index=*/0, dest_field_index);
   if (init_id == SemIR::ErrorInst::InstId) {
     return SemIR::ErrorInst::InstId;
   }

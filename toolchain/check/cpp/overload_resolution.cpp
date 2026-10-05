@@ -229,23 +229,6 @@ auto GetPassingModeForCppParameter(const clang::ImplicitConversionSequence& ics,
   CARBON_FATAL("Unexpected kind of implicit conversion sequence");
 }
 
-// If the invented argument is an embedded reference to a C++ function
-// declaration (a Carbon function passed as a C++ callable, see
-// `InventClangArg`), returns that declaration; otherwise returns null.
-static auto GetConstantFunctionArg(clang::Expr* arg_expr)
-    -> clang::FunctionDecl* {
-  auto* cast_expr = dyn_cast<clang::ImplicitCastExpr>(arg_expr);
-  if (!cast_expr ||
-      cast_expr->getCastKind() != clang::CK_FunctionToPointerDecay) {
-    return nullptr;
-  }
-  auto* decl_ref_expr = dyn_cast<clang::DeclRefExpr>(cast_expr->getSubExpr());
-  if (!decl_ref_expr) {
-    return nullptr;
-  }
-  return dyn_cast<clang::FunctionDecl>(decl_ref_expr->getDecl());
-}
-
 // Computes the signature for a C++ function candidate based on the conversions
 // performed on the arguments.
 auto ComputeClangDeclSignatureFromBestViableFunction(
@@ -258,12 +241,6 @@ auto ComputeClangDeclSignatureFromBestViableFunction(
   signature.passing_modes.reserve(signature.num_params);
 
   for (auto [i, arg_expr] : llvm::enumerate(arg_exprs)) {
-    // A constant function argument is embedded into the thunk rather than
-    // passed at runtime; record which declaration it references.
-    if (auto* constant_decl = GetConstantFunctionArg(arg_expr)) {
-      signature.constant_function_args.resize(signature.num_params);
-      signature.constant_function_args[i] = constant_decl;
-    }
     // Compute which conversion sequence corresponds to this argument.
     // TODO: Clang should expose a way to compute this.
     int conversion_index = i;

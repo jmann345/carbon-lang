@@ -56,19 +56,6 @@ auto ClangDeclSignature::Print(llvm::raw_ostream& out) const -> void {
     out << ", self_mode: ";
     print_mode(self_passing_mode);
   }
-  if (!constant_function_args.empty()) {
-    out << ", constant_args: [";
-    llvm::ListSeparator sep;
-    for (const auto* constant_decl : constant_function_args) {
-      out << sep;
-      if (constant_decl) {
-        out << "\"" << constant_decl->getNameAsString() << "\"";
-      } else {
-        out << "null";
-      }
-    }
-    out << "]";
-  }
   out << "}";
 }
 

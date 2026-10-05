@@ -238,25 +238,6 @@ static auto GenerateThunkMangledName(
     append_mode(mode);
   }
 
-  // Distinguish thunks that embed different constant function arguments: two
-  // Carbon functions with the same signature resolve to the same callee (for
-  // example one `std::thread` constructor instantiation), but their thunk
-  // bodies reference different exported declarations.
-  for (auto [i, constant_decl] :
-       llvm::enumerate(signature.constant_function_args)) {
-    if (!constant_decl) {
-      continue;
-    }
-    RawStringOstream constant_name_stream;
-    mangle_context.mangleName(GetGlobalDecl(constant_decl),
-                              constant_name_stream);
-    std::string constant_name = constant_name_stream.TakeStr();
-    llvm::StringRef constant_name_ref = constant_name;
-    // An asm-labelled declaration mangles to `\01<label>`; drop the marker.
-    constant_name_ref.consume_front("\01");
-    mangled_name_stream << ".arg" << i << "." << constant_name_ref;
-  }
-
   return mangled_name_stream.TakeStr();
 }
 

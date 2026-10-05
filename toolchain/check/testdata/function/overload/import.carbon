@@ -203,6 +203,122 @@ overload fn L(unused b: bool) -> i32 { return 2; }
 
 fn Use() -> i32 { return L(true); }
 
+// --- api_imports_set.carbon
+
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+// An API file that uses another library's set inline. The set is localized
+// into this file's store, with placeholder member declarations that carry no
+// definition: they are `lib`'s members, declared and defined there.
+fn UseBoth(x: i32) -> i32 { return F(x) + F(true); }
+
+// --- api_imports_set.impl.carbon
+
+impl library "[[@TEST_NAME]]";
+
+// Checking the implementation file walks the API file's sets for members
+// without a definition (§1.B.7); a set the API file merely imported is
+// skipped, so nothing is diagnosed.
+fn Use() -> i32 { return UseBoth(3); }
+
+// --- untouched.carbon
+
+library "[[@TEST_NAME]]";
+
+overload fn U(x: i32) -> i32;
+overload fn U(b: bool) -> i32;
+
+// --- fail_untouched.impl.carbon
+
+impl library "[[@TEST_NAME]]";
+
+// The implementation file never names the set, so no member is loaded here
+// and both are diagnosed at their API declarations.
+fn Other() -> i32 { return 0; }
+
+// --- extern_two_file_lib.carbon
+
+library "[[@TEST_NAME]]";
+
+extern library "extern_two_file" overload fn D(x: i32) -> i32;
+extern library "extern_two_file" overload fn D(b: bool) -> i32;
+
+// --- extern_two_file.carbon
+
+library "[[@TEST_NAME]]";
+
+import library "extern_two_file_lib";
+
+// The owning library's API file redeclares each member without a definition;
+// the definitions are in its implementation file (the two-file shape of
+// function/definition/extern_library.carbon's `two_file`). The name stays
+// bound to the imported set value, so the implementation file finds these
+// owning declarations through the API file's localized set, member by member.
+extern overload fn D(x: i32) -> i32;
+extern overload fn D(b: bool) -> i32;
+
+// --- extern_two_file.impl.carbon
+
+impl library "[[@TEST_NAME]]";
+
+extern overload fn D(x: i32) -> i32 { return x; }
+extern overload fn D(b: bool) -> i32 { if (b) { return 1; } return 0; }
+
+fn Use() -> i32 { return D(1) + D(true); }
+
+// --- extern_unowned_lib.carbon
+
+library "[[@TEST_NAME]]";
+
+extern library "extern_unowned" overload fn N(x: i32) -> i32;
+
+// --- fail_extern_unowned.carbon
+
+library "[[@TEST_NAME]]";
+
+// The owning library's API file imports the set but declares no member. As
+// for a plain function, the non-owning member is loaded at the import and its
+// missing owning declaration is diagnosed.
+import library "extern_unowned_lib";
+
+// --- fail_extern_unowned.impl.carbon
+
+impl library "[[@TEST_NAME]]";
+
+// Without an owning declaration in the API file, the implementation file
+// cannot define the member of another library's set: the API file imported
+// the set, but this redeclaration is checked against the set's own library.
+extern overload fn N(x: i32) -> i32 { return x; }
+
+// --- extern_partial_lib.carbon
+
+library "[[@TEST_NAME]]";
+
+extern library "extern_partial" overload fn P(x: i32) -> i32;
+extern library "extern_partial" overload fn P(b: bool) -> i32;
+
+// --- fail_extern_partial.carbon
+
+library "[[@TEST_NAME]]";
+
+// Only the first member gets an owning declaration here; the second's is
+// missing, diagnosed at the import as for a plain function.
+import library "extern_partial_lib";
+
+extern overload fn P(x: i32) -> i32;
+
+// --- fail_extern_partial.impl.carbon
+
+impl library "[[@TEST_NAME]]";
+
+// Where a member was previously declared is decided per member: the first
+// member's definition merges with its API declaration, the second has no
+// declaration in the API file.
+extern overload fn P(x: i32) -> i32 { return x; }
+extern overload fn P(b: bool) -> i32 { if (b) { return 1; } return 0; }
+
 // CHECK:STDOUT: --- use.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

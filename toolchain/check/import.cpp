@@ -22,6 +22,7 @@
 #include "toolchain/sem_ir/import_ir.h"
 #include "toolchain/sem_ir/inst.h"
 #include "toolchain/sem_ir/name_scope.h"
+#include "toolchain/sem_ir/overload_set.h"
 #include "toolchain/sem_ir/typed_insts.h"
 
 namespace Carbon::Check {
@@ -383,6 +384,24 @@ static auto AddImportRefOrMerge(Context& context, SemIR::ImportIRId ir_id,
           context, import_sem_ir,
           import_sem_ir.functions().Get(function_decl->function_id),
           import_ref);
+    } else if (auto overload_set_value =
+                   import_sem_ir.insts().TryGetAs<SemIR::OverloadSetValue>(
+                       import_inst_id)) {
+      // The members of an `overload fn` set are exported through the set
+      // value (fork/overload/plan.md §1.B.3); loading the set loads every
+      // member, so a non-owning member owned by this library is checked by
+      // `CheckRequiredDeclarations` as a plain function is.
+      for (auto member_decl_id : import_sem_ir.overload_sets()
+                                     .Get(overload_set_value->overload_set_id)
+                                     .member_decl_ids) {
+        LoadImportForOwningFunction(
+            context, import_sem_ir,
+            import_sem_ir.functions().Get(
+                import_sem_ir.insts()
+                    .GetAs<SemIR::FunctionDecl>(member_decl_id)
+                    .function_id),
+            import_ref);
+      }
     }
     return;
   }

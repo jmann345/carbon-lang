@@ -515,6 +515,16 @@ auto CheckUnit::CheckRequiredDefinitions() -> void {
         context_
             .import_ir_constant_values()[SemIR::ImportIRId::ApiForImpl.index];
     for (const auto& api_overload_set : api_ir->overload_sets().values()) {
+      // The API file's store also holds every set the API file loaded from an
+      // import, localized whole with placeholder member declarations that
+      // carry no definition. Those are another library's members, declared
+      // and defined there; only a set the API file declares is checked. A set
+      // is localized whole, so the first member decides for the set.
+      if (api_ir->insts()
+              .GetImportSource(api_overload_set.member_decl_ids.front())
+              .has_value()) {
+        continue;
+      }
       for (auto api_member_decl_id : api_overload_set.member_decl_ids) {
         const auto& api_function = api_ir->functions().Get(
             api_ir->insts()
@@ -523,9 +533,14 @@ auto CheckUnit::CheckRequiredDefinitions() -> void {
         if (api_function.definition_id.has_value() || api_function.is_extern) {
           continue;
         }
+        auto local_const_id = api_constant_values.Get(api_member_decl_id);
+        if (local_const_id == SemIR::ErrorInst::ConstantId) {
+          // The member could not be localized; that was diagnosed already.
+          continue;
+        }
         bool has_definition = false;
-        if (auto local_const_id = api_constant_values.Get(api_member_decl_id);
-            local_const_id.is_constant()) {
+        // `None` when this file never loaded the member.
+        if (local_const_id.has_value() && local_const_id.is_constant()) {
           auto local_inst = context_.insts().Get(
               context_.constant_values().GetInstId(local_const_id));
           if (auto function_type =

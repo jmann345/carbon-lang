@@ -41,6 +41,25 @@ import library "reexport";
 fn Use() -> i32 { return F(7) + F(true); }
 //@dump-sem-ir-end
 
+// --- reexport_twice.carbon
+
+library "[[@TEST_NAME]]";
+
+export import library "reexport";
+
+// --- use_two_hops.carbon
+
+library "[[@TEST_NAME]]";
+
+import library "reexport_twice";
+
+// Two steps of `export import`: the canonical import of the set value is
+// walked through both re-exporting libraries to `base`, and the set still
+// arrives whole.
+//@dump-sem-ir-begin
+fn UseTwoHops() -> i32 { return F(7) + F(true); }
+//@dump-sem-ir-end
+
 // CHECK:STDOUT: --- use.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

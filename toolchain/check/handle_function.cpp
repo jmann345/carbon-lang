@@ -5,6 +5,7 @@
 #include <optional>
 #include <utility>
 
+#include "llvm/ADT/STLExtras.h"
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/check/context.h"
 #include "toolchain/check/control_flow.h"
@@ -27,9 +28,11 @@
 #include "toolchain/parse/node_ids.h"
 #include "toolchain/sem_ir/builtin_function_kind.h"
 #include "toolchain/sem_ir/entry_point.h"
+#include "toolchain/sem_ir/file.h"
 #include "toolchain/sem_ir/function.h"
 #include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/inst.h"
+#include "toolchain/sem_ir/overload_set.h"
 #include "toolchain/sem_ir/pattern.h"
 #include "toolchain/sem_ir/type_info.h"
 #include "toolchain/sem_ir/typed_insts.h"
@@ -212,23 +215,92 @@ static auto DiagnoseOverloadMarkerMismatch(Context& context,
       .Emit();
 }
 
+namespace {
+// Where the members of an `overload fn` set reached through an import were
+// previously declared, which selects the api/impl or cross-library rules of
+// `DiagnoseIfInvalidRedecl` per member (fork/overload/plan.md §1.B.2-3).
+struct ImportedOverloadSetSource {
+  // Returns the IR that previously declared member `index`.
+  auto GetMemberImportIRId(size_t index) const -> SemIR::ImportIRId {
+    if (api_overload_set) {
+      CARBON_CHECK(index < api_overload_set->member_decl_ids.size());
+      const auto& api_function = api_ir->functions().Get(
+          api_ir->insts()
+              .GetAs<SemIR::FunctionDecl>(
+                  api_overload_set->member_decl_ids[index])
+              .function_id);
+      if (api_function.first_owning_decl_id.has_value()) {
+        return SemIR::ImportIRId::ApiForImpl;
+      }
+    }
+    return canonical_ir_id;
+  }
+
+  // The IR that declares the set: the canonical import of the set value.
+  SemIR::ImportIRId canonical_ir_id;
+  // In an implementation file whose API file imported the set from another
+  // library: the API file's IR and its localized copy of the set, so that a
+  // member the API file redeclared — an owning `extern overload fn`
+  // declaration, §1.B.3 — is treated as previously declared by the API file
+  // rather than by the set's library. Null otherwise.
+  const SemIR::File* api_ir = nullptr;
+  const SemIR::OverloadSet* api_overload_set = nullptr;
+};
+}  // namespace
+
+// Returns where the members of the imported `overload fn` set named by
+// `prev_id` (an `ImportRefLoaded`) were previously declared; `canonical_ir_id`
+// is the IR that declares the set. In an implementation file the import ref
+// comes from the API file; when the API file itself imported the set from
+// another library, its own redeclarations of members are not in name lookup
+// (the entry stays the set value), so they are found through the API IR's
+// localized set: the member at the same index whose API `Function` has an
+// owning declaration. A set the API file never loaded has no such members.
+static auto GetImportedOverloadSetSource(Context& context,
+                                         SemIR::InstId prev_id,
+                                         SemIR::ImportIRId canonical_ir_id)
+    -> ImportedOverloadSetSource {
+  ImportedOverloadSetSource source = {.canonical_ir_id = canonical_ir_id};
+  if (canonical_ir_id == SemIR::ImportIRId::ApiForImpl) {
+    return source;
+  }
+  auto import_ir_inst = context.import_ir_insts().Get(
+      context.insts().GetAs<SemIR::ImportRefLoaded>(prev_id).import_ir_inst_id);
+  if (import_ir_inst.ir_id() != SemIR::ImportIRId::ApiForImpl) {
+    return source;
+  }
+  const auto* api_ir =
+      context.import_irs().Get(SemIR::ImportIRId::ApiForImpl).sem_ir;
+  auto api_const_id = api_ir->constant_values().Get(import_ir_inst.inst_id());
+  if (!api_const_id.has_value() || !api_const_id.is_constant()) {
+    return source;
+  }
+  if (auto api_set_value = api_ir->insts().TryGetAs<SemIR::OverloadSetValue>(
+          api_ir->constant_values().GetInstId(api_const_id))) {
+    source.api_ir = api_ir;
+    source.api_overload_set =
+        &api_ir->overload_sets().Get(api_set_value->overload_set_id);
+  }
+  return source;
+}
+
 // Handles a function declaration whose name resolves to an `overload fn` set
 // (D-OV-3). Member identity is parameter-type equality: the first type-equal
 // member is the one being redeclared and is merged into through the ordinary
 // redeclaration path. Otherwise, for a set declared in this file, the
 // declaration is a new member, recorded by setting
 // `function_info.overload_set_id` (the caller appends the declaration once the
-// function exists); for a set reached through an import
-// (`prev_import_ir_id` has a value: the API file seen from its implementation
-// file, or an importing library), the set is closed and the declaration is
-// diagnosed (fork/overload/plan.md §1.B.2: implementation files may only
-// define members, and no library may add to another's set).
+// function exists); for a set reached through an import (`import_source` has
+// a value: the API file seen from its implementation file, or an importing
+// library), the set is closed and the declaration is diagnosed
+// (fork/overload/plan.md §1.B.2: implementation files may only define
+// members, and no library may add to another's set).
 static auto TryMergeIntoOverloadSet(
     Context& context, Parse::AnyFunctionDeclId node_id,
     const DeclNameStack::NameContext& name_context, bool is_overload,
     SemIR::OverloadSetId overload_set_id, SemIR::FunctionDecl& function_decl,
     SemIR::Function& function_info, bool is_definition,
-    SemIR::ImportIRId prev_import_ir_id) -> void {
+    std::optional<ImportedOverloadSetSource> import_source) -> void {
   const auto& overload_set = context.overload_sets().Get(overload_set_id);
   CARBON_CHECK(!overload_set.member_decl_ids.empty());
   auto first_member_decl_id = overload_set.member_decl_ids.front();
@@ -241,7 +313,8 @@ static auto TryMergeIntoOverloadSet(
   }
 
   DeclParams new_params(function_info);
-  for (auto member_decl_id : overload_set.member_decl_ids) {
+  for (auto [index, member_decl_id] :
+       llvm::enumerate(overload_set.member_decl_ids)) {
     auto member_function_id =
         context.insts().GetAs<SemIR::FunctionDecl>(member_decl_id).function_id;
     const auto& member_function = context.functions().Get(member_function_id);
@@ -254,8 +327,12 @@ static auto TryMergeIntoOverloadSet(
     // This is a redeclaration of `member_function`. The ordinary path
     // diagnoses differing binding names, return types, and redefinitions, and
     // for an imported member applies the api/impl and cross-library rules
-    // (incl. the `extern` ownership rules, §1.B.3). The name's scope entry is
-    // never replaced: the member is reached through the set.
+    // (incl. the `extern` ownership rules, §1.B.3) according to where THIS
+    // member was previously declared. The name's scope entry is never
+    // replaced: the member is reached through the set.
+    auto prev_import_ir_id = import_source
+                                 ? import_source->GetMemberImportIRId(index)
+                                 : SemIR::ImportIRId::None;
     if (MergeFunctionRedecl(context, node_id, function_info, is_definition,
                             member_function_id, prev_import_ir_id,
                             /*replace_prev_inst=*/false)) {
@@ -265,7 +342,7 @@ static auto TryMergeIntoOverloadSet(
     return;
   }
 
-  if (prev_import_ir_id.has_value()) {
+  if (import_source) {
     // No type-equal member of an imported set: the set is closed. The
     // declaration continues as a plain function that is not added to name
     // lookup, so nothing cascades.
@@ -344,7 +421,7 @@ static auto TryMergeRedecl(Context& context, Parse::AnyFunctionDeclId node_id,
     TryMergeIntoOverloadSet(context, node_id, name_context, is_overload,
                             overload_set_value->overload_set_id, function_decl,
                             function_info, is_definition,
-                            SemIR::ImportIRId::None);
+                            /*import_source=*/std::nullopt);
     return;
   }
 
@@ -372,23 +449,27 @@ static auto TryMergeRedecl(Context& context, Parse::AnyFunctionDeclId node_id,
 
       // An `overload fn` set reached through an import (not through an
       // alias, which is a name conflict like any other): the import resolver
-      // localized it whole, so its constant is the local set value (§1.B.2).
+      // localized it whole, so its constant is the local set value (§1.B.2),
+      // or `ErrorInst` when a member could not be localized — already
+      // diagnosed, so nothing is said about this declaration.
       if (import_ir->insts().Is<SemIR::OverloadSetValue>(
               import_ir_inst.inst_id())) {
         auto const_inst_id =
             context.constant_values().GetConstantInstId(prev_id);
-        if (auto overload_set_value =
-                const_inst_id.has_value()
-                    ? context.insts().TryGetAs<SemIR::OverloadSetValue>(
-                          const_inst_id)
-                    : std::nullopt) {
-          TryMergeIntoOverloadSet(context, node_id, name_context, is_overload,
-                                  overload_set_value->overload_set_id,
-                                  function_decl, function_info, is_definition,
-                                  import_ir_inst.ir_id());
+        auto overload_set_value =
+            const_inst_id.has_value()
+                ? context.insts().TryGetAs<SemIR::OverloadSetValue>(
+                      const_inst_id)
+                : std::nullopt;
+        if (!overload_set_value) {
           return;
         }
-        break;
+        TryMergeIntoOverloadSet(context, node_id, name_context, is_overload,
+                                overload_set_value->overload_set_id,
+                                function_decl, function_info, is_definition,
+                                GetImportedOverloadSetSource(
+                                    context, prev_id, import_ir_inst.ir_id()));
+        return;
       }
 
       // Verify the decl so that things like aliases are name conflicts.

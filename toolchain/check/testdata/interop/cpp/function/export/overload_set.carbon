@@ -114,7 +114,7 @@ fn Use() -> i32 { return F(7); }
 
 inline Cpp '''
 // CHECK:STDERR: fail_cpp_ambiguous.carbon:[[@LINE+10]]:40: error: call to 'F' is ambiguous [CppInteropParseError]
-// CHECK:STDERR:    17 | inline int CallWithPlainInt() { return Carbon::F(7); }
+// CHECK:STDERR:    27 | inline int CallWithPlainInt() { return Carbon::F(7); }
 // CHECK:STDERR:       |                                        ^~~~~~~~~
 // CHECK:STDERR: fail_cpp_ambiguous.carbon:[[@LINE-9]]:37: note: candidate function [CppInteropParseNote]
 // CHECK:STDERR:    11 | overload fn F(unused x: i64) -> i32 { return 1; }
@@ -150,6 +150,43 @@ inline int CallInt() { return Carbon::F(7); }
 ''';
 
 fn Use() -> i32 { return Cpp.CallInt(); }
+
+
+// --- fail_todo_generic_class_set.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp;
+
+// A set in a generic class (OV-2) reached from C++ through a specialization
+// of the exported class template: the per-function export path stops at the
+// generic class's scope with a semantics TODO for EVERY member it is asked
+// to export — one diagnostic per member, as `constructor.carbon`'s
+// `fail_todo_call_generic_class_constructor` gets one for its one function —
+// and the empty list is the single-function "no declarations" outcome, so
+// Clang then reports the missing member. The N-fold TODO is recorded
+// residue, not a diagnostic of OV-3's own.
+class Box(T: type) {
+  var total: i32;
+  // CHECK:STDERR: fail_todo_generic_class_set.carbon:[[@LINE+4]]:3: error: semantics TODO: `non-class non-namespace name scope` [SemanticsTodo]
+  // CHECK:STDERR:   overload fn Add(ref self, n: i32) { self.total = self.total + n; }
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  overload fn Add(ref self, n: i32) { self.total = self.total + n; }
+  // CHECK:STDERR: fail_todo_generic_class_set.carbon:[[@LINE+4]]:3: error: semantics TODO: `non-class non-namespace name scope` [SemanticsTodo]
+  // CHECK:STDERR:   overload fn Add(ref self, b: bool) { if (b) { self.total = self.total + 100; } }
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  overload fn Add(ref self, b: bool) { if (b) { self.total = self.total + 100; } }
+}
+
+inline Cpp '''
+// CHECK:STDERR: fail_todo_generic_class_set.carbon:[[@LINE+4]]:44: error: no member named 'Add' in 'Carbon::Box<int>' [CppInteropParseError]
+// CHECK:STDERR:    21 | inline void Drive(Carbon::Box<int>& b) { b.Add(1); }
+// CHECK:STDERR:       |                                          ~ ^
+// CHECK:STDERR:
+inline void Drive(Carbon::Box<int>& b) { b.Add(1); }
+''';
 
 // CHECK:STDOUT: --- overload_set.carbon
 // CHECK:STDOUT:
@@ -470,27 +507,3 @@ fn Use() -> i32 { return Cpp.CallInt(); }
 // CHECK:STDOUT:   return %Drive__carbon_thunk.call
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-
-// --- fail_todo_generic_class_set.carbon
-
-library "[[@TEST_NAME]]";
-
-import Cpp;
-
-// A set in a generic class (OV-2) reached from C++ through a specialization
-// of the exported class template: the per-function export path stops at the
-// generic class's scope with a semantics TODO for EVERY member it is asked
-// to export — one diagnostic per member, as `constructor.carbon`'s
-// `fail_todo_call_generic_class_constructor` gets one for its one function —
-// and the empty list is the single-function "no declarations" outcome, so
-// Clang then reports the missing member. The N-fold TODO is recorded
-// residue, not a diagnostic of OV-3's own.
-class Box(T: type) {
-  var total: i32;
-  overload fn Add(ref self, n: i32) { self.total = self.total + n; }
-  overload fn Add(ref self, b: bool) { if (b) { self.total = self.total + 100; } }
-}
-
-inline Cpp '''
-inline void Drive(Carbon::Box<int>& b) { b.Add(1); }
-''';

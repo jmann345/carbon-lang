@@ -3036,8 +3036,8 @@ VERIFICATION is hosted-only (R28(b)). Autoupdate: run 36459794418 (fill
 the planned fail_todo_gates.carbon subfile deletions and the
 import_member_specific.carbon comment), run 37325822499 (fill fc3a74dce
 after 24cacacf3; the three refuted predictions above), run 37331151699 (fill
-657bbe634 after 843d20244; one pass). Gate: run GATE_RUN. Conformance: run
-CONF_RUN, **CONF_NUMBERS** — expected 121 PASS / 0 FAIL / 24 SKIP over 145
+657bbe634 after 843d20244; one pass). Gate: run 37333625063. Conformance: run
+37333428997, **121 PASS / 0 FAIL / 24 SKIP over 145, 46/56 bullets** — expected 121 PASS / 0 FAIL / 24 SKIP over 145
 programs, 46/56 bullets, from the trunk of-record base READ FROM
 origin/trunk's fork/conformance/out/scoreboard.json (3c9df53f7, OV-1
 merged: 118 PASS / 0 FAIL / 24 SKIP over 142; this branch's in-tree copy is

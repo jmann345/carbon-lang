@@ -2705,5 +2705,5 @@ fc3a74dce, after 24cacacf3) refuted three predicted fills — import_class_scope
 (iii) × 2) and `fail_extern_partial` (gate (iii) beside the predicted
 `MissingOwningDeclarationInApi`) — fixed at the root in 843d20244; third
 autoupdate run 37331151699 (fill 657bbe634) matched every prediction in one
-pass. Gate GATE_RUN; conformance CONF_RUN: CONF_NUMBERS, against the
+pass. Gate 37333625063; conformance 37333428997: 121 PASS / 0 FAIL / 24 SKIP over 145, 46/56 bullets, against the
 expected 121 / 0 / 24 over 145, 46/56.

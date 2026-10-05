@@ -1178,7 +1178,8 @@ its symbolic-self shortcut treated the prelude's own `impl as Destroy` in
 `class Buf(T)` (self `Buf(T)`, symbolic, in every file's import set) as a
 blanket, so `IsTriviallyDestructible` — the union field rule and the C++
 export predicate — rejected every class, `i32` (`Core.Int(32)`) included;
-13 union/export goldens broke. Now a class-typed impl self, concrete or a
+13 union/export goldens broke, plus the `union_scope_set` split of
+check/function/overload/basic.carbon. Now a class-typed impl self, concrete or a
 symbolic specific, is keyed on its class, and only `impl forall [T: type] T
 as Destroy` is a blanket; the 13 goldens return byte-identical. (b)
 Disclosed, kept: the appended `Slice(T) as Iterate` impl is imported into

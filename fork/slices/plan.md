@@ -1673,7 +1673,10 @@ Zero landed programs move (no landed program includes `<span>` or names
     lost whole modules), and the exported `A`/`OneArg`/union records grew
     `__destroy_thunk`s (lower interop/cpp/issue7142, function/export/
     constructor, class/export/union; check class/export/union,
-    union_by_value). The round-2 bullet's "`grep -rn 'as Destroy' core/`,
+    union_by_value), and a 14th file, check/function/overload/basic.carbon
+    (its `union_scope_set` split gained the same two field errors; it is
+    cleared for the fill rather than restored, since its `destroy_arg`
+    content is the legitimate round-2 move). The round-2 bullet's "`grep -rn 'as Destroy' core/`,
     so no other prelude type changes behavior" looked at the wrong
     predicate: `CanDestroyClass`'s yield IS class-keyed, but the impl it
     added was the one `HasUserDestroyImpl`'s shortcut matches for every

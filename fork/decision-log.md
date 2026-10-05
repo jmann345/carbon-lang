@@ -4469,6 +4469,34 @@ Noted for W8b/W8c: lower merge-block namer emits the label
 choice-payload bind-pass coverage nuance, and the R8 conservative
 gate.
 
+### Weekly upstream merge 2026-10-05: cut HOLDS a seventh week; a dry-run merge conflicts in 99 files (2026-10-05)
+
+Hosted-only check (R28). Measured upstream trunk d31a8b67d
+(2026-10-03, "Update tree-sitter grammar (#7885)"): 181 commits since the
+631f8fb cut (2026-08-20; 137 last week), 1530 upstream files touched, 189
+of them also modified by the fork since the cut (157 last week). New this
+week: a dry-run `git merge --no-commit` of upstream trunk into trunk
+0187198fa in a throwaway worktree, aborted after counting — 99 conflicted
+files: 30 sources/docs (check/call.cpp, convert.cpp, core_identifier.def,
+cpp/export.cpp, cpp/import.cpp/.h, cpp/thunk.cpp/.h, custom_witness.cpp,
+eval.cpp/.h, function.cpp/.h, generic.cpp, handle_class.cpp,
+handle_function.cpp, handle_pattern_list.cpp, member_access.cpp,
+lower/function_context.cpp, lower/type.cpp, sem_ir/expr_info.cpp,
+sem_ir/function.h, sem_ir/generic.cpp, sem_ir/stringify.cpp,
+docs/design/lexical_conventions/words.md, and the five editor-syntax
+files that carry the fork's `union`/`overload` keywords) plus 69 goldens
+(which a hosted autoupdate would refill, but only after the sources
+merge). The A/B probes were not re-run this week (the session was out of
+usage credits from 09-28 until this check fired; the mirror workflow was
+not dispatched to save credits for the in-flight slices) — the 09-28
+reading stands: the tip was still a regression against the floor. The cut
+holds a seventh week; the deferred set is 181 commits. Recommendation
+unchanged and firmer: an "upstream advance" workstream with its own plan
+and two reviews, scheduled after OV-2 and SL-1 land (both in flight on
+their branches), since every week adds conflicts to the same check-core
+files those slices touch. No staging branch was pushed; the dry-run
+worktree was removed.
+
 ### Weekly upstream merge 2026-09-28: cut HOLDS a sixth week; tip half-healed with a new crash signature (2026-09-28)
 
 First weekly check run entirely under R28 (no runner): the nightly is

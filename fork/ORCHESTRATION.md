@@ -10,7 +10,7 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-09-28 (post-PR #45: OV-1 LANDED — Carbon-native
+_Last updated: 2026-10-05 (weekly upstream check: the 631f8fb cut HOLDS a seventh week — 181 deferred commits, a dry-run merge conflicts in 99 files; recorded in the decision log, no staging branch; the session was out of usage credits 09-28 → 10-05, so OV-2's review fixes and SL-1's implementation restarted today. Previous stamp, post-PR #45: OV-1 LANDED — Carbon-native
 function overloading as marked, closed, same-file `overload fn` sets
 (W-024, F-009 Option A): an `OverloadSet` SemIR entity, declaration-order
 first-match resolution by probing each member inside a discard scope,
@@ -23,14 +23,17 @@ over 142 (quoted from scoreboard.json, run 36455269810), 46/56 bullets.
 IN FLIGHT: OV-2 (W-025, set import + generic members + sets in generic
 scopes + `extern` members + the api-member missing-definition check) on
 claude/carbon-fork-0-1-ov2 in ../carbon-ov2 — implemented (three
-commits), implementation review and first hosted autoupdate running
+commits), hosted fill converged first pass with every predicted
+diagnostic, implementation review REJECT (a blocker: the api-member
+missing-definition arm also walks sets the api merely imported; a major:
+the two-file `extern` owner shape) — fixer running
 (expected +3 PASS / +3 total → 121/0/24 over 145, 46/56). Then OV-3
-(export). Slices (W-055/W-056): plan drafted, two adversarial reviews
-both APPROVE-WITH-AMENDMENTS (Buf+UnformedInit would free garbage; the
+(export). Slices (W-055/W-056): plan rev 2 signed off and rebased onto
+this trunk; SL-1 implementer running in ../carbon-slices (commit 1, the
+four builtins, is in). Reviews were both APPROVE-WITH-AMENDMENTS (Buf+UnformedInit would free garbage; the
 heap.allocate lowering must unwrap the MaybeUnformed adapter; a second
 exhaustive RecognizedTypeInfo switch; a macOS `ULong64 as As(i64)` hole;
-DI-line churn between SL-1 and SL-2), fold to rev 2 running in
-../carbon-slices. Next cron Monday 2026-10-05; the owner's machine is
+DI-line churn between SL-1 and SL-2), folded as rev 2. Next cron Monday 2026-10-12; the owner's machine is
 never used._
 FORTY-FIVE PRs. Overloading exists in Carbon proper: the design's
 marked, closed sets with first-match resolution, landed with the loop's

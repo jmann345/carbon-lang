@@ -316,7 +316,8 @@ fails if this table is stale):
 | `interop/cpp_overload_set_literals.carbon` | Functions: C++ interop — importing C++ overload sets | run |
 | `interop/cpp_range_adl_begin_end_iterate.carbon` | Functions: C++ interop — open overload sets as extension points (swap etc.) | run |
 | `interop/cpp_range_member_begin_end_iterate.carbon` | Functions: C++ interop — open overload sets as extension points (swap etc.) | run |
-| `interop/cpp_span_view.carbon` | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | SKIP |
+| `interop/cpp_span_roundtrip_diff.carbon` | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | differential |
+| `interop/cpp_span_view.carbon` | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | run |
 | `interop/cpp_template_builtins.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/cpp_template_carbon_class.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/cpp_template_on_carbon_generic.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | SKIP |

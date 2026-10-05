@@ -1,9 +1,9 @@
 {
-  "generated": "2026-09-28T17:19:40.538744+00:00",
+  "generated": "2026-10-05T15:48:15.416527+00:00",
   "toolchain": "/home/runner/work/_temp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 51.7,
+  "elapsed_seconds": 52.4,
   "totals": {
-    "PASS": 118,
+    "PASS": 121,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
@@ -374,6 +374,28 @@
     {
       "path": "functions/forward_decl.carbon",
       "bullet": "Functions: separate declaration and definition",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "functions/overloading_cross_library",
+      "bullet": "Functions: function overloading (Carbon-native)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false,
+      "units": 3
+    },
+    {
+      "path": "functions/overloading_generic.carbon",
+      "bullet": "Functions: function overloading (Carbon-native)",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "functions/overloading_generic_class.carbon",
+      "bullet": "Functions: function overloading (Carbon-native)",
       "status": "PASS",
       "detail": "",
       "differential": false
@@ -1211,6 +1233,9 @@
       "status": "PASS",
       "gap_status": "PARTIAL",
       "programs": [
+        "functions/overloading_cross_library",
+        "functions/overloading_generic.carbon",
+        "functions/overloading_generic_class.carbon",
         "functions/overloading_methods.carbon",
         "functions/overloading_native.carbon"
       ]

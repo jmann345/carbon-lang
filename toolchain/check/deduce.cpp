@@ -621,10 +621,9 @@ auto DeduceGenericCallArguments(
     SemIR::SpecificId enclosing_specific_id,
     [[maybe_unused]] SemIR::InstBlockId implicit_param_patterns_id,
     SemIR::InstBlockId param_patterns_id, SemIR::InstId self_id,
-    llvm::ArrayRef<SemIR::InstId> arg_ids) -> SemIR::SpecificId {
+    llvm::ArrayRef<SemIR::InstId> arg_ids, bool diagnose) -> SemIR::SpecificId {
   DeductionContext deduction(&context, loc_id, generic_id,
-                             enclosing_specific_id,
-                             /*diagnose=*/true);
+                             enclosing_specific_id, diagnose);
 
   // Prepare to perform deduction of the parameters against the explicit
   // arguments. When `self` is provided as the method-call receiver it is

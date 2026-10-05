@@ -2542,3 +2542,171 @@ bullets, exactly the expected 116 / 0 / 24 over 140, 46/56.
 Of record on the trunk merge 490ee40cd (UN-2 in): gate 36455321083 green;
 conformance 36455269810 (scoreboard 3c9df53f7): 118 / 0 / 24 over 142,
 46/56 bullets — the same delta over UN-2's 116 / 0 / 25 over 141.
+
+## Landed notes (OV-2, 2026-10-05)
+
+OV-2 landed on claude/carbon-fork-0-1-ov2: 255314a06 (import of the set,
+the closed-set rule, api-member definitions), 90a603a38 (generic members,
+sets in generic scopes, goldens, conformance, ledger), b1cdf9e16 (the
+ported page's status paragraph), then 24cacacf3 (implementation-review
+fixes) and 843d20244 (round-2 fixes), with the hosted fills 71fa9bb1a,
+fc3a74dce and 657bbe634 between them. Ledger, gap-analysis row and
+decision-log entry ("OV-2: overload-set import, generic members, api/impl
+definitions (2026-10-05)", D-OV-11..16) are the discharge commit. OV-3 is
+next (§0.4; UN-2 is in, so D-OV-9's sequencing is met). Deltas from this
+plan, honestly:
+
+-   **`impl_defines_all` is folded into `api_impl`.** §4.B asked for an
+    `api_impl` pair (definitions merge, no diagnostic) and a separate
+    `impl_defines_all` positive for §1.B.7; they are the same program, so
+    import.carbon's `api_impl` / `api_impl.impl` pair is the one positive
+    and `fail_undefined.impl` (api declares two, impl defines one) is the
+    negative. The class-scope twin is import_class_scope.carbon's
+    `api_impl` pair.
+-   **Subfile spellings.** `[[@TEST_NAME]]` strips `fail_` and the first
+    extension, so every api/impl pair is `<name>.carbon` /
+    `[fail_]<name>.impl.carbon`: §4.B's `fail_impl_adds_member` is
+    `frozen` / `fail_frozen.impl`, `fail_import_unmarked` is `unmarked` /
+    `fail_unmarked.impl`, `extern_member` is `extern_lib` /
+    `extern_owner`, `fail_member_undefined_in_impl` is `undefined` /
+    `fail_undefined.impl`; `export_import_of_set` is export_import.carbon
+    (`base` / `reexport` / `use`, plus `reexport_twice` / `use_two_hops`);
+    generic.carbon's main subfile is `generic_second` beside
+    `generic_first` and `fail_deduce_all`. Every `fail_` unit is the
+    emitting unit (per-unit `success()`), which is why
+    `fail_undefined.impl.carbon` carries the prefix although its diagnostic
+    points into the api file. `unused` marks every unused runtime binding
+    so positives carry no warnings (the OV-1 discipline).
+-   **§1.B.5 lifted by deletion alone — AND step 2(d) runs for
+    generic-class members (D-OV-15).** `OverloadSetType.specific_id`
+    already records the enclosing self specific and `GetCallee` already
+    carries it as `CalleeOverloadSet.enclosing_specific_id`, so lifting
+    gate (ii) was deleting it: neither check/type.cpp nor
+    sem_ir/function.cpp changed (§6.B listed both). §1.B.5's "members of a
+    generic class are effectively non-generic within the specific, so step
+    2(d) is not engaged" is wrong in its second half: such a member has its
+    own `generic_id` carrying the class's bindings, so the probe deduces it
+    non-diagnosing against `enclosing_specific_id` exactly as
+    `ResolveCalleeInCall` does for a plain method (call.cpp
+    `ProbeOverloadCandidateInScratchScope`). `MakeSpecific` deduplicates,
+    so the lower pins still show exactly two `define`s per specific
+    (`@"_CAdd:overload0.Box.Main.5d388d3559e392d2"`, lower/generic_class
+    and lower/import_generic_class). The §1.B.5 fallback did not fire: no
+    residue, and the gap row's DONE at OV-3 is not foreclosed.
+-   **§1.B.3's `extern` lifted FULLY, two-file owner shape included
+    (D-OV-11, D-OV-12).** The gate is gone and no "extern members of
+    overload sets" residue is filed. The first implementation did only the
+    one-file shape (the owner's api defines inline, `extern_owner`); the
+    two-file shape — the owner's api redeclares `extern overload fn`
+    without a body, its impl defines (function/definition/
+    extern_library.carbon's `two_file`) — falsely emitted
+    `ExternRequiresDeclInApiFile`, because the impl's import ref
+    canonicalizes to the set's library and the api's owning redeclarations
+    are not in name lookup (the entry stays the set value, rev A A6).
+    `ImportedOverloadSetSource` now decides per MEMBER (the api IR's
+    localized copy of the set at the same index has
+    `first_owning_decl_id` → `ApiForImpl` rules) and supplies the api
+    member's facts (`MakeApiMemberRedeclInfo` → `prev_decl_override` on
+    `MergeFunctionRedecl`), so the api/impl rules see the api file's
+    declaration as they do for a plain function (`RedeclRedef` /
+    `RedeclRedundant`). import.cpp `AddImportRefOrMerge` loads the set's
+    members eagerly when one is owned by the current library, so
+    `MissingOwningDeclarationInApi` fires for set members. Pins:
+    `extern_two_file` (check + lower), `fail_extern_unowned`,
+    `fail_extern_partial`, `extern_api_defined`.
+-   **An arm the plan never anticipated: `ResolveAsScope` for an
+    api-declared class (D-OV-13).** `fn D.G(x: i32) -> i32 {...}` out of
+    line in an implementation file hit `QualifiedNameInNonScope`: an impl
+    file reaches the api's classes only through import refs and
+    `DeclNameStack::ResolveAsScope` had no arm for one — no landed golden
+    had `fn C.F` in an impl file (a trunk-level gap, `overload` or not).
+    decl_name_stack.cpp `GetApiClassDeclForQualifier` resolves an
+    `ApiForImpl` import ref whose api inst is a `ClassDecl` to the
+    localized class's declaration; a class the api merely imported stays a
+    non-scope. Found by the second fill, not by review.
+-   **Gate (iii) keyed on the declaration being checked (D-OV-16).**
+    `DiagnoseOverloadGates` read the merged function's `param_patterns_id`;
+    for a declaration-only redeclaration of an imported member that block is
+    `ImportRefLoaded`s, never a `WrapperBindingPattern`, so the two-file
+    owner's api fired the non-value-parameter TODO at `x: i32`. The gate
+    now walks `function_info`. Also found by the second fill.
+-   **§1.B.7 landed with one more rule.** The api IR's `overload_sets()`
+    also holds every set the api file merely loaded from an import
+    (localized whole, placeholder members without `definition_id`), so the
+    arm skips a set whose first member carries an import source; it also
+    tolerates a member this file never loaded (`ConstantId::None` —
+    `is_constant()` would have DCHECKed) and an `ErrorInst` member. The
+    "marked members without a definition" fallback did not fire.
+-   **Spellings to working syntax (R3).** `class Box(T: Core.Copy)`
+    (D-OV-14) for the generic-class shapes, because `Make` copies its `t:
+    T` parameter into the `tag` field; generic members are `[T: type]`;
+    every impl subfile is `impl library "[[@TEST_NAME]]";` (§0.2 item 13).
+-   **§6.B's file count holds, the list does not.** Nine source files:
+    call.cpp, check_unit.cpp, decl_name_stack.cpp, deduce.cpp, deduce.h,
+    handle_function.cpp, import.cpp, import_ref.cpp, kind.def — import.cpp
+    and decl_name_stack.cpp in place of type.cpp and sem_ir/function.cpp.
+    Pre-existing goldens that moved: fail_todo_gates.carbon (the three
+    gated subfiles deleted, as planned) and import_member_specific.carbon
+    (comment only); fail_todo_impl_file.carbon deleted with its
+    `impl_local` pair surviving as import.carbon `impl_local_set`. Nothing
+    else.
+-   **Residue the reviews added (filed at discharge, blocked_by []):**
+    W-105 probe-minted specifics evaluated before conversion decides
+    (`DeduceGenericCallArguments` ends in `MakeSpecific` →
+    `ResolveSpecificDecl`, so a deduction-accepted / conversion-rejected
+    candidate's declaration block is evaluated and may diagnose — the
+    `discard_probe_constants` shape); W-106 `diagnose=false` deduction
+    accepts an `ErrorInst` argument; W-107 an impl-file `extern overload
+    fn` against an `ErrorInst` set (or a rejected redefinition) still gets
+    `ExternRequiresDeclInApiFile` from the plain no-merge path (trunk
+    recovery parity; `fail_extern_api_defined.impl` pins it). The three
+    conditional residues of §8.5 are NOT filed.
+-   **Scoreboard base.** The base of record is origin/trunk's
+    fork/conformance/out/scoreboard.json after the OV-1 merge (3c9df53f7):
+    118 PASS / 0 FAIL / 24 SKIP over 142, 46/56 bullets. This branch's
+    in-tree copy is the UN-2-era 6e6e4c7a9 (116 / 0 / 25 over 141, with
+    overloading_native still SKIP), which the orchestrator's scoreboard
+    push replaces. §5.B's delta (+3 PASS / 0 SKIP / +3 programs) applies to
+    the base of record: expected 121 / 0 / 24 over 145, 46/56.
+
+Reconciliation greps (§8.4), run at 657bbe634:
+
+-   `grep -rn 'overload set import' toolchain`: ZERO hits — sources and
+    goldens. `HandleUnsupportedOverloadSet` is gone; `GetLocalOverloadSet`
+    and the two resolver arms replace it.
+-   The generic-parameters, generic-scope and `extern overload fn` gate
+    strings: gone from handle_function.cpp and from fail_todo_gates.carbon
+    (the phrase `extern overload fn` survives in two comments,
+    handle_function.cpp:264 and :273, describing the owning redeclaration
+    — not a TODO). The nine remaining gates are one site each:
+    handle_function.cpp:422 (x), :435 `self`-only, :855 (ix), :859 (xiii),
+    :902 (iii), :908 (v), :918 (vi), call.cpp:453 (xii), :535 (xi), plus
+    fail_todo_gates.carbon.
+-   `grep -rn 'overload set export' toolchain`: cpp/generate_ast.cpp:256
+    and fail_todo_export.carbon:28. As planned, OV-3's.
+-   The two OV-2 kinds: kind.def:302-303, one `CARBON_DIAGNOSTIC` each
+    (handle_function.cpp:401, :405), one emit site (:408-409); each fires
+    in `fail_frozen.impl`, `fail_cross_library_adds_member` and
+    `fail_extern_non_member`. Reason 2 of `OverloadCandidateRejected` fires
+    in `fail_deduce_all`.
+-   `grep -n DiscardCleanupsSince toolchain/check/call.cpp`: ONE hit
+    (:504); `ProbeOverloadCandidate` owns the single unwind and
+    `ProbeOverloadCandidateInScratchScope` returns into it from every exit.
+-   `git diff 490ee40cd...HEAD --diff-filter=M -- toolchain/check/testdata
+    toolchain/lower/testdata toolchain/parse/testdata`: fail_todo_gates.carbon
+    and import_member_specific.carbon only, both intended.
+-   Ledger max id on this branch: W-104; W-105..W-107 allocated to the
+    three residues (the slices branch allocates independently; renumbered
+    at merge if they collide).
+
+Hosted verification of record (R28(b); the container cannot build the
+toolchain): first autoupdate run 36459794418 (fill 71fa9bb1a) converged in
+one pass over commits 1-3; second autoupdate run 37325822499 (fill
+fc3a74dce, after 24cacacf3) refuted three predicted fills — import_class_scope
+`api_impl.impl` (`QualifiedNameInNonScope` × 2 plus two
+`MissingDefinitionInImpl` cascades), import.carbon `extern_two_file` (gate
+(iii) × 2) and `fail_extern_partial` (gate (iii) beside the predicted
+`MissingOwningDeclarationInApi`) — fixed at the root in 843d20244; third
+autoupdate run 37331151699 (fill 657bbe634) matched every prediction in one
+pass. Gate 37333625063; conformance 37333428997: 121 PASS / 0 FAIL / 24 SKIP over 145, 46/56 bullets, against the
+expected 121 / 0 / 24 over 145, 46/56.

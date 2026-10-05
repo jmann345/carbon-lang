@@ -439,6 +439,54 @@ static auto DiagnoseQualifiedDeclInNonScope(
       .Emit();
 }
 
+// Returns the local declaration of a class the API file declares when
+// `resolved_inst_id` is the implementation file's import ref to it, or `None`.
+// An implementation file reaches the API file's declarations only through
+// import refs, and defining a member of an API-declared class out of line
+// (`fn C.F() {...}`, docs/design/classes.md "out-of-line function
+// definition") qualifies by one; the class behind the import ref is the
+// localized class, and its declaration is what `ResolveAsScope` resolves. A
+// class the API file merely imported is another library's: its API inst is
+// itself an import ref, not a `ClassDecl`, so it stays a non-scope here, as
+// does every import ref in an API file.
+static auto GetApiClassDeclForQualifier(Context& context,
+                                        SemIR::InstId resolved_inst_id)
+    -> SemIR::InstId {
+  auto import_ref =
+      context.insts().TryGetAs<SemIR::ImportRefLoaded>(resolved_inst_id);
+  if (!import_ref) {
+    return SemIR::InstId::None;
+  }
+  auto import_ir_inst =
+      context.import_ir_insts().Get(import_ref->import_ir_inst_id);
+  if (import_ir_inst.ir_id() != SemIR::ImportIRId::ApiForImpl) {
+    return SemIR::InstId::None;
+  }
+  const auto* api_ir =
+      context.import_irs().Get(SemIR::ImportIRId::ApiForImpl).sem_ir;
+  if (!api_ir->insts().Is<SemIR::ClassDecl>(import_ir_inst.inst_id())) {
+    return SemIR::InstId::None;
+  }
+
+  // The import ref's constant is the class type or, for a generic class, a
+  // value of the generic class type; either names the localized class. An
+  // `ErrorInst` constant (the class could not be localized) names none.
+  auto decl_value = context.insts().Get(
+      context.constant_values().GetConstantInstId(resolved_inst_id));
+  auto class_id = SemIR::ClassId::None;
+  if (auto class_type = decl_value.TryAs<SemIR::ClassType>()) {
+    class_id = class_type->class_id;
+  } else if (auto generic_class_type =
+                 context.types().TryGetAs<SemIR::GenericClassType>(
+                     decl_value.type_id())) {
+    class_id = generic_class_type->class_id;
+  }
+  if (!class_id.has_value()) {
+    return SemIR::InstId::None;
+  }
+  return context.classes().Get(class_id).first_decl_id();
+}
+
 auto DeclNameStack::ResolveAsScope(const NameContext& name_context,
                                    const NameComponent& name) const
     -> std::pair<SemIR::NameScopeId, SemIR::GenericId> {
@@ -457,11 +505,19 @@ auto DeclNameStack::ResolveAsScope(const NameContext& name_context,
       name.name_loc_id, name.first_param_node_id, name.last_param_node_id,
       name.implicit_param_patterns_id, name.param_patterns_id);
 
-  // Find the scope corresponding to the resolved instruction.
+  // Find the scope corresponding to the resolved instruction. In an
+  // implementation file, a class the API file declares is resolved through
+  // its import ref to the localized class's declaration.
+  auto resolved_inst_id = name_context.resolved_inst_id;
+  if (auto api_class_decl_id =
+          GetApiClassDeclForQualifier(*context_, resolved_inst_id);
+      api_class_decl_id.has_value()) {
+    resolved_inst_id = api_class_decl_id;
+  }
   // TODO: When diagnosing qualifiers on names, print a diagnostic that talks
   // about qualifiers instead of redeclarations. Maybe also rename
   // CheckRedeclParamsMatch.
-  CARBON_KIND_SWITCH(context_->insts().Get(name_context.resolved_inst_id)) {
+  CARBON_KIND_SWITCH(context_->insts().Get(resolved_inst_id)) {
     case CARBON_KIND(SemIR::ClassDecl class_decl): {
       const auto& class_info = context_->classes().Get(class_decl.class_id);
       if (!CheckRedeclParamsMatch(*context_, new_params,

@@ -299,6 +299,8 @@ CARBON_DIAGNOSTIC_KIND(ExternLibraryExpected)
 CARBON_DIAGNOSTIC_KIND(ExternRequiresDeclInApiFile)
 CARBON_DIAGNOSTIC_KIND(OverloadMarkerMismatch)
 CARBON_DIAGNOSTIC_KIND(OverloadMarkerPrevious)
+CARBON_DIAGNOSTIC_KIND(OverloadSetDeclaredHere)
+CARBON_DIAGNOSTIC_KIND(OverloadSetFrozen)
 
 // Namespace checking.
 CARBON_DIAGNOSTIC_KIND(NamespaceDeclNotAtTopLevel)

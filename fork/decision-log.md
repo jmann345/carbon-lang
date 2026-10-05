@@ -3249,7 +3249,55 @@ there), the positives passing silently as before, W-121 filed with the run
 id. Predicted fill (FILL_RUN): impls/cpp_contiguous_range.carbon only, the
 `missing_size` range showing the blanket `impl_witness` with `.Result =
 false`; everything else byte-identical; if it hangs again the cycle is in the
-test library's import, not the witness.
+test library's import, not the witness. Round 4 (hosted conformance run
+37378790657 on 76c695db4, the first of-record conformance run, FAILED both
+new programs; fix in the round-4 commit): neither failure is in the mapping
+the reviews traced — both the review and the re-review traced the span ABI
+claim and it holds (the thunk's `span* _Nonnull` parameter and out-pointer
+return, the `{ptr, i64}` register return stored field-wise into the Carbon
+slot). (a) cpp_span_view: ICE `Casting inst {kind: ClassType, …} to wrong
+kind ClassDecl` at `let view: Core.Slice(const i32) = v;`. With `<span>` in
+the TU, the `ImplicitAs` operator lookup's C++ half (operators.cpp
+`LookupCppConversion`) maps the destination to `std::span<const int>`, Clang
+selects `span`'s range constructor for the `std::vector<int>` source, and
+import.cpp `GetFunctionName` casts the constructor's parent inst — the mapped
+`Core.Slice(const i32)` `ClassType` — to `ClassDecl`. Decidable from the tree
+(`BuildUnaryOperator`'s `LookupCppOperator` call, the cast, and `std::span`'s
+range constructor are all readable) and a review miss of the fixture class:
+every golden mocks the container in a header WITHOUT `std::span`, so the C++
+map was null and Clang never ran; §7's R-11 named `<span>` under `-std=c++20`
+as CONF_RUN-arbitrated without naming the conversion-lookup interaction.
+Fix: `LookupCppConversion` declines constructors of custom-mapped classes
+(no Carbon declaration owns such a member; the conversion is the prelude's
+by design, D-SL-9) and falls through to the blanket impl;
+stdlib/vector_view_span.carbon (the mock `span` WITH the range constructor,
+a `VecLike<T>` template through `VecLikeInt`, splits `view` and `argument`)
+pins it. (b) cpp_span_roundtrip_diff: `2 / -724362768 / 18`. The size
+crossed and the element did not, which pointed at the pointer field; it was
+not the pointer. Every link of the span path is correct in the lowered IR
+(span.carbon's `Convert`/`Data`/`UnsafeMake` bodies, `Consume`'s 16-byte
+load, `Produce`'s field-wise store into the return slot), and the exported
+`Sum` reads `s[i]` through the identical `Slice(const i32).Get` specific;
+what is garbage is `a[1]`. `var a: array(i32, 3) = (RuntimeSeed(-19), 2, 3)`
+is the only mixed constant/runtime tuple-to-array initializer in the suite
+and in every golden, and lower/handle.cpp `HandleInst(ArrayInit)` only
+forwarded its destination: `LowerInst` skips the constant elements'
+`in_place_init`s (they have constant values), the non-constant `array_init`
+makes the `var`'s `Assign` copy nothing, so `a[1]` and `a[2]` were never
+stored and `t[0]` read a stale stack word (`0xD4D22C70`). An upstream latent
+defect, exposed by the program's `RuntimeSeed` (kept):
+`EmitAggregateInitializer`'s `InPlace` arm finishes constant fields for
+struct/tuple/class inits and says so in its comment; arrays lacked the twin.
+Fix: `HandleInst(ArrayInit)` finishes constant element inits the same way;
+array/mixed_constant_init.carbon pins the two constant stores; no existing
+golden moves (an all-constant `array_init` is a constant and never reaches
+the handler). The review miss here is of the plan class: §5.B.2's
+hand-derived expectation treated `a` as given, and no reviewer asked which
+lowering path initializes a mixed literal. Predicted fill (FILL_RUN,
+re-predicted): impls/cpp_contiguous_range.carbon's one range plus the two
+new goldens (vector_view_span.carbon's two dump ranges,
+mixed_constant_init.carbon's one function); everything else byte-identical.
+Predicted conformance (CONF_RUN): both programs PASS, EXPECTs unchanged.
 
 DEVIATIONS from the plan, each in fork/slices/plan.md's "Landed notes (SL-2,
 2026-10-05)": the prelude section was first landed in a new library and
@@ -3284,9 +3332,19 @@ files: the broken prelude) and its convergence pass 2c21f6e24 (40 files,
 convergence run 37365683022, 0c9924049 (two `CHECK:STDERR` line numbers).
 Third autoupdate (after 58c08be07): run 37367343836 HUNG in the file_test
 step and was cancelled (W-121). Fourth autoupdate (after the round-3 commit):
-run FILL_RUN (impls/cpp_contiguous_range.carbon's one dump range). Gate: run GATE_RUN (prek, `bazel test //toolchain/...`;
-no new diagnostic kind, so the coverage test is unchanged). Conformance: run
-CONF_RUN, **CONF_NUMBERS** — expected 126 PASS / 0 FAIL / 22 SKIP over 148
+run FILL_RUN (impls/cpp_contiguous_range.carbon's one dump range, plus the
+round-4 goldens stdlib/vector_view_span.carbon and
+array/mixed_constant_init.carbon). Gate: run GATE_RUN (prek, `bazel test //toolchain/...`;
+no new diagnostic kind, so the coverage test is unchanged). Conformance: the
+first of-record run, 37378790657 on 76c695db4 (the trunk merge), FAILED both
+new programs — cpp_span_view COMPILE-FAIL (exit -6, the `ClassDecl` cast
+ICE) and cpp_span_roundtrip_diff OUTPUT-MISMATCH (`2 / -724362768 / 18`) —
+with every landed program unmoved: 126 PASS / 2 FAIL / 22 SKIP over 150
+programs, bullets 47 PASS / 1 FAIL / 8 SKIP — trunk's 126 / 0 / 23 over 149
+plus the two new programs failing; see FILL-CAUGHT MISSES round 4. After the
+round-4 commit the of-record run must show 128 PASS / 0 FAIL / 22 SKIP over
+150, 48/56 bullets (the same +2 / −1 / +1 delta over the merged trunk base):
+run CONF_RUN, **CONF_NUMBERS** — pre-merge expectation 126 PASS / 0 FAIL / 22 SKIP over 148
 programs, 48/56 bullets ("Stdlib C++ interop: transparent non-owning
 contiguous container mapping (incl. owning->view)" SKIP → PASS, 2/2 programs),
 from the branch base READ FROM fork/conformance/out/scoreboard.json at

@@ -9,6 +9,7 @@
 #include "clang/Sema/Sema.h"
 #include "toolchain/check/convert.h"
 #include "toolchain/check/core_identifier.h"
+#include "toolchain/check/cpp/custom_type_mapping.h"
 #include "toolchain/check/cpp/import.h"
 #include "toolchain/check/cpp/location.h"
 #include "toolchain/check/cpp/overload_resolution.h"
@@ -414,13 +415,31 @@ static auto LookupCppConversion(Context& context, SemIR::LocId loc_id,
       case clang::InitializationSequence::
           SK_ConstructorInitializationFromList: {
         if (auto* ctor =
-                dyn_cast<clang::CXXConstructorDecl>(step.Function.Function);
-            ctor && ctor->isCopyOrMoveConstructor()) {
-          // Skip copy / move constructor calls. They shouldn't be performed
-          // this way because they're not considered conversions in Carbon, and
-          // will frequently lead to infinite recursion because we'll end up
-          // back here when attempting to convert the argument.
-          continue;
+                dyn_cast<clang::CXXConstructorDecl>(step.Function.Function)) {
+          if (ctor->isCopyOrMoveConstructor()) {
+            // Skip copy / move constructor calls. They shouldn't be performed
+            // this way because they're not considered conversions in Carbon,
+            // and will frequently lead to infinite recursion because we'll end
+            // up back here when attempting to convert the argument.
+            continue;
+          }
+          // Fork (SL-2 round 4): a constructor of a C++ class that maps to a
+          // Carbon type (`std::span<T>` -> `Core.Slice(T')`, `std::string_view`
+          // -> `str`; custom_type_mapping.h) is not a conversion Carbon can
+          // import. The class has no Carbon declaration of its own -- its
+          // `ClangDecl` inst is the mapped `ClassType` -- so importing the
+          // constructor would cast that inst to a `ClassDecl` (import.cpp
+          // `GetFunctionName`, an ICE) and then add the member to the prelude
+          // class's scope. `std::span`'s range constructor is selected here
+          // for every `std::vector<T>` -> `Core.Slice(const T')` conversion
+          // once the TU includes `<span>`; the conversion belongs to the
+          // Carbon type's own impls (slice.carbon's blanket `ImplicitAs` over
+          // the synthesized `CppContiguousRange` witness), which
+          // `BuildUnaryOperator` consults when no C++ operator is found.
+          if (GetCustomCppTypeMapping(ctor->getParent()).kind !=
+              CustomCppTypeMapping::None) {
+            return SemIR::InstId::None;
+          }
         }
 
         if (sema.DiagnoseUseOfOverloadedDecl(step.Function.Function, loc)) {

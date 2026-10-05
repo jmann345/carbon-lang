@@ -2433,6 +2433,58 @@ Zero landed programs move (no landed program includes `<span>` or names
     before; W-121 holds the residue with the run id. Rule: a dump range on
     a shape no filled golden dumps is itself a fill risk — bisect it one
     range at a time, and a hang in one test blocks the whole 2-thread run.
+-   **Amended 2026-10-05 (SL-2 round 4, after hosted conformance run
+    37378790657).** The first of-record conformance run (on 76c695db4, the
+    trunk merge) FAILED both new programs, and neither failure is in the
+    §1.B mapping the reviews traced: both the implementation review and the
+    re-review traced the span ABI claim as fine (R28(d)), and it IS fine --
+    the thunk takes `std::span<const int>* _Nonnull`, returns through the
+    out-pointer, and copies the `{ptr, i64}` register return field-wise
+    into the Carbon slot (span.carbon's lowered `Produce` thunk). The
+    misses are elsewhere. (a) `cpp_span_view` COMPILE-FAIL: an ICE at
+    `let view: Core.Slice(const i32) = v;` (`Casting inst {kind: ClassType
+    ...} to wrong kind ClassDecl`, import.cpp `GetFunctionName`). With
+    `<span>` in the TU, `MapToCppType(Core.Slice(const i32))` is
+    `std::span<const int>`, so the `ImplicitAs` lookup's C++ half
+    (operators.cpp `LookupCppConversion`) runs Clang's initialization
+    sequence, which selects `span`'s RANGE CONSTRUCTOR for the
+    `std::vector<int>` source; importing that constructor casts its
+    parent's inst -- the mapped `Core.Slice(const i32)` `ClassType`, not a
+    `ClassDecl` -- to `ClassDecl`. No golden reached the path: every
+    container mock sits in a header WITHOUT `std::span`, so the C++ map is
+    null and the lookup declines before Clang runs. Fix at the root:
+    `LookupCppConversion` declines every constructor of a class with a
+    custom Carbon mapping (`std::span`, `std::string_view`; the mapped
+    class has no Carbon declaration to own a member), and
+    `BuildUnaryOperator` falls through to the prelude's blanket impl as
+    D-SL-9 designs. New golden stdlib/vector_view_span.carbon: the mock
+    `span` WITH the range constructor plus a `VecLike<T>` class template
+    named through `VecLikeInt` (the specialization shape), splits `view`
+    (the `let`) and `argument` (`Cpp.Consume(v)`), AUTOUPDATE-filled.
+    (b) `cpp_span_roundtrip_diff` OUTPUT-MISMATCH `2 / -724362768 / 18`:
+    `t.Size()` right, `t[0]` garbage. Every link of the span path is
+    correct in the lowered IR (the `Slice(T) as ImplicitAs(Slice(const
+    T))` body, `Data`/`UnsafeMake`, the thunk parameter and return), and
+    the exported `Sum` reads `s[i]` through the identical
+    `Slice(const i32).Get` specific correctly -- the garbage is `a[1]`.
+    Root cause, upstream and latent: `var a: array(i32, 3) =
+    (RuntimeSeed(-19), 2, 3)` is the only mixed constant/runtime
+    tuple-to-array initializer in the suite and in every golden, and
+    lower/handle.cpp `HandleInst(ArrayInit)` only forwarded the
+    destination -- `LowerInst` skips the constant elements'
+    `in_place_init`s as constants and the non-constant `array_init` makes
+    the `var`'s `Assign` copy nothing, so `a[1]`, `a[2]` were never stored
+    and `t[0]` read a stale stack word (`0xD4D22C70`).
+    `EmitAggregateInitializer`'s `InPlace` arm already finishes constant
+    fields for struct/tuple/class inits; `HandleInst(ArrayInit)` now does
+    the same. New lower golden array/mixed_constant_init.carbon pins the
+    two constant stores. The program's EXPECT (`2 / 2 / 18`) and its
+    `RuntimeSeed` are unchanged. No existing golden moves: an all-constant
+    `array_init` is itself a constant and never reaches the handler, and
+    the all-runtime shape has no constant element. The failed run's totals
+    were 126 PASS / 2 FAIL / 22 SKIP over 150 (bullets 47 / 1 / 8), every
+    landed program unmoved; the next of-record run must show 128 PASS /
+    0 FAIL / 22 SKIP over 150, 48/56 bullets.
 -   Out-of-class impls (`IndexWith`, `ImplicitAs(Slice(const T))`, the
     §1.B.3 interop impl) touch public API only (`Data`, `Size`, `Get`,
     `UnsafeMake`); `Buf.AsSlice` uses `UnsafeMake`. If you reach for a
@@ -2827,7 +2879,14 @@ this plan, honestly:
     never listed (the orphan), (i) did NOT fire (the silent golden was a
     PASS), the chain resolved at the second fill; (iii), R-10 and R-11 have
     no golden (the real libc++ `std::vector<int>` and `<span>` under
-    `-std=c++20`) and are arbitrated by CONF_RUN.
+    `-std=c++20`) and are arbitrated by CONF_RUN. Round 4: the first
+    of-record conformance run (37378790657) did not refute R-10
+    (`Cpp.std.vector(i32)` imported; the ICE was downstream, in the
+    conversion lookup) or R-11 (`std::span<const int>` mapped -- the
+    crash's `ClassType` IS the mapping), but failed both programs on two
+    defects outside §7's list, recorded in the §6.A round-4 amendment:
+    the conversion lookup importing `span`'s range constructor, and the
+    mixed constant/runtime array initializer never storing its constants.
 -   **§8.5 residue.** W-119 (static-extent `std::span` mapping) and W-120
     (ADL `data`/`size` sources) filed at the landing, blocked_by [], ids
     after OV-3's W-117/W-118 (confirmed against trunk 923c2f2af at

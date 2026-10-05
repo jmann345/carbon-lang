@@ -10,6 +10,13 @@
 
 namespace Carbon::LanguageServer {
 
+// Locates where the entity named at a position was declared.
+auto HandleDeclaration(
+    Context& context, const clang::clangd::TextDocumentPositionParams& params,
+    llvm::function_ref<
+        auto(llvm::Expected<std::vector<clang::clangd::Location>>)->void>
+        on_done) -> void;
+
 // Locates the entity named at a position.
 auto HandleDefinition(
     Context& context, const clang::clangd::TextDocumentPositionParams& params,
@@ -44,10 +51,24 @@ auto HandleDocumentSymbol(
         auto(llvm::Expected<std::vector<clang::clangd::DocumentSymbol>>)->void>
         on_done) -> void;
 
+// Formats a document.
+auto HandleFormatting(
+    Context& context, const clang::clangd::DocumentFormattingParams& params,
+    llvm::function_ref<
+        auto(llvm::Expected<std::vector<clang::clangd::TextEdit>>)->void>
+        on_done) -> void;
+
 // Provides the type of the entity at a position.
 auto HandleHover(
     Context& context, const clang::clangd::TextDocumentPositionParams& params,
     llvm::function_ref<auto(llvm::Expected<clang::clangd::Hover>)->void>
+        on_done) -> void;
+
+// Locates the implementations of the entity named at a position.
+auto HandleImplementation(
+    Context& context, const clang::clangd::TextDocumentPositionParams& params,
+    llvm::function_ref<
+        auto(llvm::Expected<std::vector<clang::clangd::Location>>)->void>
         on_done) -> void;
 
 // Tells the client what features are supported, and negotiates the position

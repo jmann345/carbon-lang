@@ -58,7 +58,7 @@ auto HandleParseNode(Context& context, Parse::FunctionIntroducerId node_id)
 static auto HandleReturnDecl(Context& context, Parse::AnyReturnDeclId node_id)
     -> bool {
   auto [expr_node_id, expr_inst_id] = context.node_stack().PopExprWithNodeId();
-  Context::FormExpr form_expr = [&]() {
+  Context::FormExpr form_expr = [&] {
     if (context.parse_tree().node_kind(node_id) == Parse::ReturnTypeId::Kind) {
       return ReturnExprAsForm(context, expr_node_id, expr_inst_id);
     } else {
@@ -146,14 +146,23 @@ static auto GetInterfaceModifier(const KeywordModifierSet& modifier_set)
       .Default(None);
 }
 
-// Tries to merge new_function into prev_function_id. Since new_function won't
-// have a definition even if one is upcoming, set is_definition to indicate the
-// planned result.
+// Tries to merge new_function into the `overload fn` set MEMBER
+// prev_function_id. Since new_function won't have a definition even if one is
+// upcoming, set is_definition to indicate the planned result.
 //
-// When the previous declaration was imported, `replace_prev_inst` says whether
-// the name's scope entry is replaced by the new declaration. That is the rule
-// for a plain function; a member of an `overload fn` set is reached through
-// the set value, never through the name, so the entry stays the set value.
+// Fork (D-UA-6): this mirrors `TryMergeRedecl<SemIR::Function>`'s body
+// (merge.cpp: `CheckFunctionTypeMatches` → `DiagnoseIfInvalidRedecl` →
+// `MergeDefinition`) for a set member merged against a SPECIFIC member, not
+// the name's prev inst. The template derives its previous entity from
+// `name_context.prev_inst_id()` and its import IR from an `ImportRefLoaded`
+// prev inst; a set member needs the member's own function id, the member's
+// own import IR id and, for a member the API file redeclared, the API file's
+// declaration facts (`prev_decl_override`) — so it is called only from
+// `TryMergeIntoOverloadSet`. A plain function goes through the template.
+//
+// The name's scope entry is never replaced: a member of an `overload fn` set
+// is reached through the set value, never through the name, so the entry stays
+// the set value (the template's `ReplacePrevInstForMerge` step is absent).
 //
 // The redeclaration rules are applied to the previous declaration's facts:
 // `prev_function`'s own, unless `prev_decl_override` carries them. A member
@@ -165,12 +174,11 @@ static auto GetInterfaceModifier(const KeywordModifierSet& modifier_set)
 //
 // If merging is successful, returns true and may update the previous function.
 // Otherwise, returns false. Prints a diagnostic when appropriate.
-static auto MergeFunctionRedecl(
+static auto MergeOverloadMemberRedecl(
     Context& context, Parse::AnyFunctionDeclId node_id,
     SemIR::Function& new_function, bool new_is_definition,
     SemIR::FunctionId prev_function_id, SemIR::ImportIRId prev_import_ir_id,
-    bool replace_prev_inst, std::optional<RedeclInfo> prev_decl_override)
-    -> bool {
+    std::optional<RedeclInfo> prev_decl_override) -> bool {
   auto& prev_function = context.functions().Get(prev_function_id);
 
   if (!CheckFunctionTypeMatches(context, new_function, prev_function)) {
@@ -197,11 +205,6 @@ static auto MergeFunctionRedecl(
     // Track the signature from the definition, so that IDs in the body
     // match IDs in the signature.
     prev_function.MergeDefinition(new_function);
-  }
-  if (replace_prev_inst && prev_import_ir_id.has_value()) {
-    ReplacePrevInstForMerge(context, new_function.parent_scope_id,
-                            prev_function.name_id,
-                            new_function.first_owning_decl_id);
   }
   return true;
 }
@@ -385,9 +388,9 @@ static auto TryMergeIntoOverloadSet(
             MakeApiMemberRedeclInfo(context, *member_source.api_function);
       }
     }
-    if (MergeFunctionRedecl(context, node_id, function_info, is_definition,
-                            member_function_id, prev_import_ir_id,
-                            /*replace_prev_inst=*/false, prev_decl_override)) {
+    if (MergeOverloadMemberRedecl(context, node_id, function_info,
+                                  is_definition, member_function_id,
+                                  prev_import_ir_id, prev_decl_override)) {
       function_decl.function_id = member_function_id;
       function_decl.type_id = context.insts().Get(member_decl_id).type_id();
     }
@@ -444,54 +447,50 @@ static auto TryMergeIntoOverloadSet(
       static_cast<int32_t>(overload_set.member_decl_ids.size());
 }
 
-// Check whether this is a redeclaration, merging if needed.
-static auto TryMergeRedecl(Context& context, Parse::AnyFunctionDeclId node_id,
-                           const DeclNameStack::NameContext& name_context,
-                           bool is_overload, SemIR::FunctionDecl& function_decl,
-                           SemIR::Function& function_info, bool is_definition)
-    -> void {
-  // Diagnose if we are declaring a poisoned name. However, don't diagnose at
-  // impl scope: if the name was referenced before being declared, we will have
-  // produced an error already.
-  if (name_context.state == DeclNameStack::NameContext::State::Poisoned) {
-    if (!context.name_scopes().InstIs<SemIR::ImplDecl>(
-            name_context.parent_scope_id)) {
-      DiagnosePoisonedName(context, name_context.name_id_for_new_inst(),
-                           name_context.poisoning_loc_id, name_context.loc_id);
-    }
-    return;
-  }
-
+// Fork (D-UA-6): the `overload fn` set half of redeclaration handling, run
+// BEFORE upstream's `TryMergeRedecl<SemIR::Function>`. Returns true when this
+// declaration was handled here (merged into a set member, recorded as a new
+// member, or diagnosed), so the caller skips the template; false hands the
+// declaration to the template unchanged. The poisoned-name check is the
+// template's. In order:
+//   (1) the previous inst is an `overload fn` set declared in this file;
+//   (2) the previous inst is an import ref whose import-IR inst is a set —
+//       the import resolver localized it whole, so its constant is the local
+//       set value (fork/overload/plan.md §1.B.2), or `ErrorInst` when a
+//       member could not be localized (already diagnosed: nothing is said);
+//   (3) a marked declaration against a previous inst that resolves to a plain
+//       FUNCTION (D-OV-3: the marker must be on every declaration or none);
+//   (4) otherwise the template decides — including a previous inst that is
+//       not a function at all, which it diagnoses as a duplicate name.
+static auto TryMergeOverloadDecl(Context& context,
+                                 Parse::AnyFunctionDeclId node_id,
+                                 const DeclNameStack::NameContext& name_context,
+                                 bool is_overload,
+                                 SemIR::FunctionDecl& function_decl,
+                                 SemIR::Function& function_info,
+                                 bool is_definition) -> bool {
   auto prev_id = name_context.prev_inst_id();
   if (!prev_id.has_value()) {
-    return;
+    return false;
   }
 
-  // A previous declaration that is an `overload fn` set declared in this file.
+  // (1) A previous declaration that is an `overload fn` set declared in this
+  // file.
   if (auto overload_set_value =
           context.insts().TryGetAs<SemIR::OverloadSetValue>(prev_id)) {
     TryMergeIntoOverloadSet(context, node_id, name_context, is_overload,
                             overload_set_value->overload_set_id, function_decl,
                             function_info, is_definition,
                             /*import_source=*/std::nullopt);
-    return;
+    return true;
   }
 
-  auto prev_function_id = SemIR::FunctionId::None;
-  auto prev_type_id = SemIR::TypeId::None;
-  auto prev_import_ir_id = SemIR::ImportIRId::None;
+  bool prev_is_function = false;
   CARBON_KIND_SWITCH(context.insts().Get(prev_id)) {
-    case CARBON_KIND(SemIR::AssociatedEntity assoc_entity): {
-      // This is a function in an interface definition scope.
-      auto function_decl =
-          context.insts().GetAs<SemIR::FunctionDecl>(assoc_entity.decl_id);
-      prev_function_id = function_decl.function_id;
-      prev_type_id = function_decl.type_id;
-      break;
-    }
-    case CARBON_KIND(SemIR::FunctionDecl function_decl): {
-      prev_function_id = function_decl.function_id;
-      prev_type_id = function_decl.type_id;
+    case SemIR::AssociatedEntity::Kind:
+    case SemIR::FunctionDecl::Kind: {
+      // A function, in an interface definition scope or elsewhere.
+      prev_is_function = true;
       break;
     }
     case SemIR::ImportRefLoaded::Kind: {
@@ -499,11 +498,8 @@ static auto TryMergeRedecl(Context& context, Parse::AnyFunctionDeclId node_id,
       const auto* import_ir =
           context.import_irs().Get(import_ir_inst.ir_id()).sem_ir;
 
-      // An `overload fn` set reached through an import (not through an
-      // alias, which is a name conflict like any other): the import resolver
-      // localized it whole, so its constant is the local set value (§1.B.2),
-      // or `ErrorInst` when a member could not be localized — already
-      // diagnosed, so nothing is said about this declaration.
+      // (2) An `overload fn` set reached through an import (not through an
+      // alias, which is a name conflict like any other).
       if (import_ir->insts().Is<SemIR::OverloadSetValue>(
               import_ir_inst.inst_id())) {
         auto const_inst_id =
@@ -513,62 +509,37 @@ static auto TryMergeRedecl(Context& context, Parse::AnyFunctionDeclId node_id,
                 ? context.insts().TryGetAs<SemIR::OverloadSetValue>(
                       const_inst_id)
                 : std::nullopt;
-        if (!overload_set_value) {
-          return;
+        if (overload_set_value) {
+          TryMergeIntoOverloadSet(
+              context, node_id, name_context, is_overload,
+              overload_set_value->overload_set_id, function_decl, function_info,
+              is_definition,
+              GetImportedOverloadSetSource(context, prev_id,
+                                           import_ir_inst.ir_id()));
         }
-        TryMergeIntoOverloadSet(context, node_id, name_context, is_overload,
-                                overload_set_value->overload_set_id,
-                                function_decl, function_info, is_definition,
-                                GetImportedOverloadSetSource(
-                                    context, prev_id, import_ir_inst.ir_id()));
-        return;
+        return true;
       }
 
       // Verify the decl so that things like aliases are name conflicts.
-      if (!import_ir->insts().Is<SemIR::FunctionDecl>(
-              import_ir_inst.inst_id())) {
-        break;
-      }
-
-      // Use the type to get the ID.
-      if (auto struct_value = context.insts().TryGetAs<SemIR::StructValue>(
-              context.constant_values().GetConstantInstId(prev_id))) {
-        if (auto function_type = context.types().TryGetAs<SemIR::FunctionType>(
-                struct_value->type_id)) {
-          prev_function_id = function_type->function_id;
-          prev_type_id = struct_value->type_id;
-          prev_import_ir_id = import_ir_inst.ir_id();
-        }
-      }
+      prev_is_function =
+          import_ir->insts().Is<SemIR::FunctionDecl>(import_ir_inst.inst_id());
       break;
     }
     default:
       break;
   }
 
-  if (!prev_function_id.has_value()) {
-    DiagnoseDuplicateName(context, name_context.name_id, name_context.loc_id,
-                          SemIR::LocId(prev_id));
-    return;
-  }
-
-  if (is_overload) {
-    // D-OV-3: a marked declaration against a plain function. Diagnose and do
-    // not merge; the declaration gets its own function and is not added to
-    // name lookup, so no redeclaration diagnostics are emitted on top.
+  // (3) D-OV-3: a marked declaration against a plain function. Diagnose and
+  // do not merge; the declaration gets its own function and is not added to
+  // name lookup, so no redeclaration diagnostics are emitted on top.
+  if (prev_is_function && is_overload) {
     DiagnoseOverloadMarkerMismatch(context, node_id, name_context.name_id,
                                    SemIR::LocId(prev_id));
-    return;
+    return true;
   }
 
-  if (MergeFunctionRedecl(context, node_id, function_info, is_definition,
-                          prev_function_id, prev_import_ir_id,
-                          /*replace_prev_inst=*/true,
-                          /*prev_decl_override=*/std::nullopt)) {
-    // When merging, use the existing function rather than adding a new one.
-    function_decl.function_id = prev_function_id;
-    function_decl.type_id = prev_type_id;
-  }
+  // (4) The template's business: a plain redeclaration, or a duplicate name.
+  return false;
 }
 
 // Adds the declaration to name lookup when appropriate.
@@ -921,6 +892,152 @@ static auto DiagnoseOverloadGates(
   }
 }
 
+// For the top-level parameter patterns list, and for any level of nested tuple
+// patterns, ensure that if a subpattern provides a default value, all
+// subsequent patterns at that level of nesting must provide a default value as
+// well. Returns the number of default values provided at the top level of the
+// function parameter, useful for efficient arity checking in callers later on.
+//
+// TODO: per https://github.com/carbon-language/carbon-lang/issues/7529, this
+// should also consider automatically supplied defaults for fully-specified
+// tuple subpatterns, and consider them as having a default for the purposes
+// of the out-of-order detection. It will also need to detect the error
+// condition when a default is also specified for those fully-specified tuple
+// subpatterns.
+static auto CheckDefaults(Context& context, SemIR::Function& function)
+    -> int32_t {
+  if (!function.param_patterns_id.has_value()) {
+    return 0;
+  }
+
+  struct PatternLevelState {
+    // The inst ids of the subpatterns on this level of tuple subpattern
+    // nesting, treated as a work list, so in reverse order of declaration.
+    llvm::SmallVector<SemIR::InstId> subpattern_ids;
+
+    // If patterns at this level of nesting have default values, this refers
+    // to the first instruction to specify a default, useful for diagnostics.
+    SemIR::InstId first_pattern_with_default = SemIR::InstId::None;
+
+    // If we encounter a tuple-pattern during processing, we suspend processing
+    // of this pattern level, in the middle of processing a single pattern from
+    // root to leaves. So we record the current state of processing of a single
+    // pattern to return to it after processing any tuple subpatterns.
+
+    // True if the current pattern being processed has a default value
+    // specified.
+    bool current_pattern_has_default = false;
+
+    // The current pattern we are processing, stored separately since it's been
+    // popped from the `pattern_work_list` and already processed, just may need
+    // subsequent processing.
+    SemIR::InstId current_id = SemIR::InstId::None;
+
+    // A work list of patterns to be processed at this level of nesting.
+    llvm::SmallVector<SemIR::InstId> pattern_work_list;
+
+    // A list of subpatterns missing required defaults, to coalesce error
+    // reporting into a single diagnostic.
+    llvm::SmallVector<SemIR::InstId> patterns_missing_defaults;
+
+    // A count of the number of patterns on this level that have defaults.
+    int32_t default_count = 0;
+  };
+
+  llvm::SmallVector<PatternLevelState> level_state_stack;
+  size_t default_count = 0;
+  level_state_stack.push_back({});
+  llvm::append_range(
+      level_state_stack.back().subpattern_ids,
+      llvm::reverse(context.inst_blocks().Get(function.param_patterns_id)));
+
+  while (!level_state_stack.empty()) {
+    PatternLevelState* state = &level_state_stack.back();
+    while (!state->subpattern_ids.empty() ||
+           !state->pattern_work_list.empty() || state->current_id.has_value()) {
+      // If we're not resuming processing a pattern from a nested state, start
+      // processing the next subpattern.
+      if (!state->current_id.has_value()) {
+        state->pattern_work_list.push_back(
+            state->subpattern_ids.pop_back_val());
+        state->current_pattern_has_default = false;
+      }
+      while (!state->pattern_work_list.empty()) {
+        state->current_id = state->pattern_work_list.pop_back_val();
+        auto inst = context.insts().Get(state->current_id);
+        CARBON_KIND_SWITCH(inst) {
+          case CARBON_KIND(SemIR::DefaultValuePattern default_value_pattern): {
+            state->current_pattern_has_default = true;
+            state->default_count += 1;
+            state->pattern_work_list.push_back(
+                default_value_pattern.subpattern_id);
+            break;
+          }
+          case CARBON_KIND(
+              SemIR::WrapperBindingPattern wrapper_binding_pattern): {
+            state->pattern_work_list.push_back(
+                wrapper_binding_pattern.subpattern_id);
+            break;
+          }
+          case CARBON_KIND(SemIR::TuplePattern tuple_pattern): {
+            auto elements =
+                context.inst_blocks().Get(tuple_pattern.elements_id);
+            if (!elements.empty()) {
+              // Start a new state for the nested tuple pattern elements.
+              level_state_stack.push_back({});
+              state = &level_state_stack.back();
+              llvm::append_range(state->subpattern_ids,
+                                 llvm::reverse(elements));
+            }
+            break;
+          }
+          default:
+            // We only process patterns containing subpatterns, so this is an
+            // intentional no-op.
+            break;
+        }
+      }
+      // Finished processing this subpattern, detect a missing default if
+      // required.
+      if (state->current_pattern_has_default &&
+          !state->first_pattern_with_default.has_value()) {
+        state->first_pattern_with_default = state->current_id;
+      } else if (!state->current_pattern_has_default &&
+                 state->first_pattern_with_default.has_value()) {
+        state->patterns_missing_defaults.push_back(state->current_id);
+      }
+      state->current_id = SemIR::InstId::None;
+    }
+    // Finished processing this tuple-pattern, emit diagnostics if any.
+    if (!state->patterns_missing_defaults.empty()) {
+      CARBON_DIAGNOSTIC(RequiredPatternDefaultValueMissing, Error,
+                        "this pattern is missing a required default value.");
+      CARBON_DIAGNOSTIC(RequiredPatternDefaultValueFirstDefault, Note,
+                        "all patterns to the right of this first pattern with "
+                        "a default value must also specify a default value.");
+      CARBON_DIAGNOSTIC(
+          RequiredPatternDefaultValueMissingAdditional, Note,
+          "this pattern is also missing a required default value.");
+      auto inst_ref = llvm::ArrayRef(state->patterns_missing_defaults);
+      auto builder = context.emitter().Build(
+          inst_ref.consume_front(), RequiredPatternDefaultValueMissing);
+      for (auto inst_id : inst_ref) {
+        builder.Note(inst_id, RequiredPatternDefaultValueMissingAdditional);
+      }
+      builder.Note(state->first_pattern_with_default,
+                   RequiredPatternDefaultValueFirstDefault);
+      builder.Emit();
+    }
+
+    // Extract the count from the level we just completed, overwriting any
+    // nested level value extracted previously.
+    default_count = level_state_stack.back().default_count;
+    level_state_stack.pop_back();
+  }
+
+  return default_count;
+}
+
 // Build a FunctionDecl describing the signature of a function. This
 // handles the common logic shared by function declaration syntax and function
 // definition syntax.
@@ -989,19 +1106,23 @@ static auto BuildFunctionDecl(Context& context,
   auto function_info =
       SemIR::Function{name_context.MakeEntityWithParamsBase(
                           name, decl_id, is_extern, introducer.extern_library),
-                      {.call_param_patterns_id = name.call_param_patterns_id,
-                       .call_params_id = name.call_params_id,
-                       .call_param_ranges = name.param_ranges,
-                       .return_type_inst_id = return_type_inst_id,
-                       .return_form_inst_id = return_form_inst_id,
-                       .return_pattern_id = return_pattern_id,
-                       .virtual_modifier = virtual_modifier,
-                       .evaluation_mode = evaluation_mode,
-                       .interface_modifier = interface_modifier,
-                       .self_param_id = self_param_id}};
+                      {
+                          .call_param_patterns_id = name.call_param_patterns_id,
+                          .call_params_id = name.call_params_id,
+                          .call_param_ranges = name.param_ranges,
+                          .return_type_inst_id = return_type_inst_id,
+                          .return_form_inst_id = return_form_inst_id,
+                          .return_pattern_id = return_pattern_id,
+                          .virtual_modifier = virtual_modifier,
+                          .evaluation_mode = evaluation_mode,
+                          .interface_modifier = interface_modifier,
+                          .self_param_id = self_param_id,
+                      }};
   if (is_definition) {
     function_info.definition_id = decl_id;
   }
+
+  function_info.default_value_arity = CheckDefaults(context, function_info);
 
   DiagnosePositionalParams(context, function_info);
 
@@ -1013,8 +1134,16 @@ static auto BuildFunctionDecl(Context& context,
     is_overload = false;
   }
 
-  TryMergeRedecl(context, node_id, name_context, is_overload, function_decl,
-                 function_info, is_definition);
+  // Fork (D-UA-6): the `overload fn` set decision runs first; a declaration it
+  // does not claim is a plain redeclaration for upstream's template.
+  if (!TryMergeOverloadDecl(context, node_id, name_context, is_overload,
+                            function_decl, function_info, is_definition)) {
+    TryMergeRedecl(
+        context, name_context, std::nullopt,
+        MergeRedeclEntityInfo<SemIR::Function>{.new_entity_decl = function_decl,
+                                               .new_entity = function_info},
+        is_definition);
+  }
 
   // Create a new function if this isn't a valid redeclaration.
   if (!function_decl.function_id.has_value()) {
@@ -1138,6 +1267,10 @@ static auto CheckUnusedBindingsInPattern(Context& context,
         for (auto element_id : llvm::reverse(elements)) {
           work_list.push_back(element_id);
         }
+        break;
+      }
+      case CARBON_KIND(SemIR::DefaultValuePattern default_value_pattern): {
+        work_list.push_back(default_value_pattern.subpattern_id);
         break;
       }
       default:

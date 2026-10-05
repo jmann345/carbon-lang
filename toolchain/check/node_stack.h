@@ -518,6 +518,7 @@ class NodeStack {
       case Parse::NodeKind::ContinueStatementStart:
       case Parse::NodeKind::CorePackageName:
       case Parse::NodeKind::CppPackageName:
+      case Parse::NodeKind::DefaultValueExprStart:
       case Parse::NodeKind::ExportIntroducer:
       case Parse::NodeKind::FileEnd:
       case Parse::NodeKind::FileStart:
@@ -526,6 +527,7 @@ class NodeStack {
       case Parse::NodeKind::Forall:
       case Parse::NodeKind::FormLiteralKeyword:
       case Parse::NodeKind::FormLiteralOpenParen:
+      case Parse::NodeKind::FriendIntroducer:
       case Parse::NodeKind::IdentifierNameQualifierWithParams:
       case Parse::NodeKind::IdentifierNameQualifierWithoutParams:
       case Parse::NodeKind::IdentifierPackageName:
@@ -553,6 +555,8 @@ class NodeStack {
       case Parse::NodeKind::StructTypeLiteralComma:
       case Parse::NodeKind::TerseBodyArrow:
       case Parse::NodeKind::TupleLiteralComma:
+      case Parse::NodeKind::TypeOfExprKeyword:
+      case Parse::NodeKind::TypeOfExprOpenParen:
       case Parse::NodeKind::WhereOperand:
       case Parse::NodeKind::WhileCondition:
         return Id::Kind::Invalid;

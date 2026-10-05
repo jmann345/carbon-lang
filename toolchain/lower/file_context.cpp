@@ -64,7 +64,9 @@ FileContext::FileContext(Context& context, const SemIR::File& sem_ir,
                          llvm::SmallVector<SemIR::SpecificId>()),
       coalescer_(vlog_stream_, sem_ir.specifics()),
       vtables_(decltype(vtables_)::MakeForOverwrite(sem_ir.vtables())),
-      specific_vtables_(sem_ir.specifics(), nullptr) {
+      specific_vtables_(sem_ir.specifics(), nullptr),
+      mangler_(sem_ir, context.total_ir_count(),
+               context.mangle_string_fingerprint()) {
   CARBON_CHECK(!sem_ir.has_errors(),
                "Generating LLVM IR from invalid SemIR::File is unsupported.");
 }
@@ -134,9 +136,11 @@ auto FileContext::LowerDefinitions() -> void {
 
   // Lower function definitions.
   for (auto [id, fn_info] : sem_ir_->functions().enumerate()) {
-    // If we created a declaration and the function definition is not imported,
-    // build a definition.
+    // If we created a declaration and the function definition is needed but not
+    // imported, build a definition.
     if (functions_.Get(id) && fn_info.definition_id.has_value() &&
+        fn_info.special_function_kind !=
+            SemIR::Function::SpecialFunctionKind::CppFunctionPointerThunk &&
         !sem_ir().insts().GetImportSource(fn_info.definition_id).has_value()) {
       BuildFunctionDefinition(id);
     }
@@ -388,9 +392,7 @@ auto FileContext::GetOrCreateLLVMFunction(
     }
   }
 
-  SemIR::Mangler m(sem_ir(), context().total_ir_count(),
-                   context().mangle_string_fingerprint());
-  std::string mangled_name = m.Mangle(function_id, specific_id);
+  std::string mangled_name = mangler_.Mangle(function_id, specific_id);
   if (auto* existing = llvm_module().getFunction(mangled_name)) {
     // We might have already lowered this function while lowering a different
     // file. That's OK, but a specific must still get a type fingerprint in
@@ -458,7 +460,8 @@ auto FileContext::BuildFunctionDecl(SemIR::FunctionId function_id,
   }
 
   // Don't lower builtins.
-  if (function.builtin_function_kind() != SemIR::BuiltinFunctionKind::None) {
+  if (function.GetBuiltinFunctionKind(sem_ir()) !=
+      SemIR::BuiltinFunctionKind::None) {
     return std::nullopt;
   }
 
@@ -478,8 +481,13 @@ auto FileContext::BuildFunctionDecl(SemIR::FunctionId function_id,
       {fallback_file, fallback_function_id, fallback_specific_id}};
   auto function_type_info =
       BuildFunctionTypeInfo(llvm::ArrayRef(func_infos, fallback_file ? 2 : 1));
-  auto* llvm_function =
-      GetOrCreateLLVMFunction(function_type_info, function_id, specific_id);
+  llvm::Function* llvm_function = nullptr;
+  // If we're calling a function pointer, we don't need an LLVM function.
+  if (function.special_function_kind !=
+      SemIR::Function::SpecialFunctionKind::CppFunctionPointerThunk) {
+    llvm_function =
+        GetOrCreateLLVMFunction(function_type_info, function_id, specific_id);
+  }
 
   return {{.type = function_type_info.type,
            .di_type = function_type_info.di_type,
@@ -598,11 +606,11 @@ auto FileContext::BuildFunctionBody(SemIR::FunctionId function_id,
     // Specific functions are emitted in each file they are referenced in.
     linkage = llvm::Function::LinkOnceODRLinkage;
   } else if (declaration_function.special_function_kind ==
-                 SemIR::Function::SpecialFunctionKind::CoreWitness ||
+                 SemIR::Function::SpecialFunctionKind::Generated ||
              declaration_function.special_function_kind ==
                  SemIR::Function::SpecialFunctionKind::Thunk) {
-    // TODO: Emit CoreWitness functions and thunks in files where they're called
-    // instead of in files where they're defined. That should allow
+    // TODO: Emit custom witness functions and thunks in files where they're
+    // called instead of in files where they're defined. That should allow
     // LinkOnceODRLinkage.
     linkage = llvm::Function::WeakODRLinkage;
   }
@@ -806,9 +814,7 @@ auto FileContext::BuildGlobalVariableDecl(SemIR::VarStorage var_storage)
 
 auto FileContext::BuildNonCppGlobalVariableDecl(SemIR::VarStorage var_storage)
     -> llvm::GlobalVariable* {
-  SemIR::Mangler m(sem_ir(), context().total_ir_count(),
-                   context().mangle_string_fingerprint());
-  auto mangled_name = m.MangleGlobalVariable(var_storage.pattern_id);
+  auto mangled_name = mangler_.MangleGlobalVariable(var_storage.pattern_id);
   auto linkage = llvm::GlobalVariable::ExternalLinkage;
 
   // If the variable doesn't have an externally-visible name, demote it to
@@ -1149,8 +1155,11 @@ auto FileContext::BuildVtable(const SemIR::Vtable& vtable,
     -> llvm::Constant* {
   const auto& class_info = sem_ir().classes().Get(vtable.class_id);
   if (!vtable.carbon_native_vtable) {
-    auto* cxx_record_decl = cast<clang::CXXRecordDecl>(
-        sem_ir().clang_decls().Lookup(class_info.latest_decl_id())->key.decl);
+    const auto* clang_decl =
+        sem_ir().clang_decls().Lookup(class_info.first_decl_id());
+    CARBON_CHECK(clang_decl, "Missing Clang declaration for class {0}",
+                 class_info.name_id);
+    auto* cxx_record_decl = cast<clang::CXXRecordDecl>(clang_decl->key.decl);
     // TODO: This code generator can be for the wrong AST if we're not using
     // --share-cpp-ast.
     return context().cpp_code_generator()->GetAddrOfVTable(
@@ -1159,9 +1168,7 @@ auto FileContext::BuildVtable(const SemIR::Vtable& vtable,
         cxx_record_decl);
   }
 
-  SemIR::Mangler m(sem_ir(), context().total_ir_count(),
-                   context().mangle_string_fingerprint());
-  std::string mangled_name = m.MangleVTable(class_info, specific_id);
+  std::string mangled_name = mangler_.MangleVTable(class_info, specific_id);
 
   if (sem_ir()
           .insts()

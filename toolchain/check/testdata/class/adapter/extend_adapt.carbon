@@ -145,6 +145,7 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT: --- basic.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %SomeClassAdapter: type = class_type @SomeClassAdapter [concrete]
 // CHECK:STDOUT:   %SomeClass: type = class_type @SomeClass [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
@@ -163,7 +164,7 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT:   %struct_type.a.b: type = struct_type {.a: %i32, .b: %i32} [concrete]
 // CHECK:STDOUT:   %complete_type.7b9: <witness> = complete_type_witness %struct_type.a.b [concrete]
 // CHECK:STDOUT:   %a.param_patt: %pattern_type.54b = value_param_pattern [concrete]
-// CHECK:STDOUT:   %a.patt.80b: %pattern_type.54b = wrapper_binding_pattern a, %a.param_patt [concrete]
+// CHECK:STDOUT:   %a.patt: %pattern_type.54b = wrapper_binding_pattern a, %a.param_patt [concrete]
 // CHECK:STDOUT:   %TestStaticMemberFunction.type: type = fn_type @TestStaticMemberFunction [concrete]
 // CHECK:STDOUT:   %TestStaticMemberFunction: %TestStaticMemberFunction.type = struct_value () [concrete]
 // CHECK:STDOUT:   %TestAdapterMethod.type: type = fn_type @TestAdapterMethod [concrete]
@@ -193,7 +194,7 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT:   %SomeClassAdapter.decl.loc15: type = class_decl @SomeClassAdapter [concrete = constants.%SomeClassAdapter] {} {}
 // CHECK:STDOUT:   %TestStaticMemberFunction.decl: %TestStaticMemberFunction.type = fn_decl @TestStaticMemberFunction [concrete = constants.%TestStaticMemberFunction] {
 // CHECK:STDOUT:     %a.param_patt: %pattern_type.54b = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.54b = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.80b]
+// CHECK:STDOUT:     %a.patt: %pattern_type.54b = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %a.param: %SomeClassAdapter = value_param call_param0
 // CHECK:STDOUT:     %SomeClassAdapter.ref: type = name_ref SomeClassAdapter, file.%SomeClassAdapter.decl.loc4 [concrete = constants.%SomeClassAdapter]
@@ -201,7 +202,7 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %TestAdapterMethod.decl: %TestAdapterMethod.type = fn_decl @TestAdapterMethod [concrete = constants.%TestAdapterMethod] {
 // CHECK:STDOUT:     %a.param_patt: %pattern_type.54b = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.54b = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.80b]
+// CHECK:STDOUT:     %a.patt: %pattern_type.54b = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %a.param: %SomeClassAdapter = value_param call_param0
 // CHECK:STDOUT:     %SomeClassAdapter.ref: type = name_ref SomeClassAdapter, file.%SomeClassAdapter.decl.loc4 [concrete = constants.%SomeClassAdapter]
@@ -224,8 +225,12 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: class @SomeClass {
-// CHECK:STDOUT:   %.loc7: %SomeClass.elem = field_decl a, element0 [concrete]
-// CHECK:STDOUT:   %.loc8: %SomeClass.elem = field_decl b, element1 [concrete]
+// CHECK:STDOUT:   %field_decl.loc7: %SomeClass.elem = field_decl a, element0, %i32.loc7 in [concrete] {
+// CHECK:STDOUT:     %i32.loc7: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %field_decl.loc8: %SomeClass.elem = field_decl b, element1, %i32.loc8 in [concrete] {
+// CHECK:STDOUT:     %i32.loc8: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %SomeClass.StaticMemberFunction.decl: %SomeClass.StaticMemberFunction.type = fn_decl @SomeClass.StaticMemberFunction [concrete = constants.%SomeClass.StaticMemberFunction] {} {}
 // CHECK:STDOUT:   %SomeClass.AdapterMethod.decl: %SomeClass.AdapterMethod.type = fn_decl @SomeClass.AdapterMethod [concrete = constants.%SomeClass.AdapterMethod] {
 // CHECK:STDOUT:     %self.param_patt: %pattern_type.54b = value_param_pattern [concrete = constants.%self.param_patt]
@@ -240,8 +245,8 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT: !members:
 // CHECK:STDOUT:   .Self = constants.%SomeClass
-// CHECK:STDOUT:   .a = %.loc7
-// CHECK:STDOUT:   .b = %.loc8
+// CHECK:STDOUT:   .a = %field_decl.loc7
+// CHECK:STDOUT:   .b = %field_decl.loc8
 // CHECK:STDOUT:   .StaticMemberFunction = %SomeClass.StaticMemberFunction.decl
 // CHECK:STDOUT:   .SomeClassAdapter = <poisoned>
 // CHECK:STDOUT:   .AdapterMethod = %SomeClass.AdapterMethod.decl
@@ -271,6 +276,7 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT: --- fail_todo_method_access.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %SomeClass: type = class_type @SomeClass [concrete]
 // CHECK:STDOUT:   %pattern_type.b5d: type = pattern_type %SomeClass [concrete]
 // CHECK:STDOUT:   %self.param_patt.1e7: %pattern_type.b5d = value_param_pattern [concrete]
@@ -364,6 +370,7 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT: --- fail_todo_field_access.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %SomeClass: type = class_type @SomeClass [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %Int.type: type = generic_class_type @Int [concrete]
@@ -376,7 +383,7 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT:   %SomeClassAdapter: type = class_type @SomeClassAdapter [concrete]
 // CHECK:STDOUT:   %pattern_type.54b: type = pattern_type %SomeClassAdapter [concrete]
 // CHECK:STDOUT:   %a.param_patt: %pattern_type.54b = value_param_pattern [concrete]
-// CHECK:STDOUT:   %a.patt.80b: %pattern_type.54b = wrapper_binding_pattern a, %a.param_patt [concrete]
+// CHECK:STDOUT:   %a.patt: %pattern_type.54b = wrapper_binding_pattern a, %a.param_patt [concrete]
 // CHECK:STDOUT:   %.795: Core.Form = init_form %i32 [concrete]
 // CHECK:STDOUT:   %return.param_patt.a9a: %pattern_type.6b6 = out_param_pattern [concrete]
 // CHECK:STDOUT:   %return.patt.e1b: %pattern_type.6b6 = return_slot_pattern %return.param_patt.a9a, %i32 [concrete]
@@ -409,7 +416,7 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT:   %SomeClassAdapter.decl: type = class_decl @SomeClassAdapter [concrete = constants.%SomeClassAdapter] {} {}
 // CHECK:STDOUT:   %F.decl: %F.type = fn_decl @F [concrete = constants.%F] {
 // CHECK:STDOUT:     %a.param_patt: %pattern_type.54b = value_param_pattern [concrete = constants.%a.param_patt]
-// CHECK:STDOUT:     %a.patt: %pattern_type.54b = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt.80b]
+// CHECK:STDOUT:     %a.patt: %pattern_type.54b = wrapper_binding_pattern a, %a.param_patt [concrete = constants.%a.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {
@@ -424,15 +431,19 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: class @SomeClass {
-// CHECK:STDOUT:   %.loc5: %SomeClass.elem = field_decl a, element0 [concrete]
-// CHECK:STDOUT:   %.loc6: %SomeClass.elem = field_decl b, element1 [concrete]
+// CHECK:STDOUT:   %field_decl.loc5: %SomeClass.elem = field_decl a, element0, %i32.loc5 in [concrete] {
+// CHECK:STDOUT:     %i32.loc5: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %field_decl.loc6: %SomeClass.elem = field_decl b, element1, %i32.loc6 in [concrete] {
+// CHECK:STDOUT:     %i32.loc6: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %complete_type: <witness> = complete_type_witness constants.%struct_type.a.b [concrete = constants.%complete_type.7b9]
 // CHECK:STDOUT:   complete_type_witness = %complete_type
 // CHECK:STDOUT:
 // CHECK:STDOUT: !members:
 // CHECK:STDOUT:   .Self = constants.%SomeClass
-// CHECK:STDOUT:   .a = %.loc5
-// CHECK:STDOUT:   .b = %.loc6
+// CHECK:STDOUT:   .a = %field_decl.loc5
+// CHECK:STDOUT:   .b = %field_decl.loc6
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: class @SomeClassAdapter {
@@ -451,7 +462,7 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT: fn @F(%a.param: %SomeClassAdapter) -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %a.ref: %SomeClassAdapter = name_ref a, %a
-// CHECK:STDOUT:   %b.ref: %SomeClass.elem = name_ref b, @SomeClass.%.loc6 [concrete = @SomeClass.%.loc6]
+// CHECK:STDOUT:   %b.ref: %SomeClass.elem = name_ref b, @SomeClass.%field_decl.loc6 [concrete = @SomeClass.%field_decl.loc6]
 // CHECK:STDOUT:   %.loc21_11.1: %SomeClass = converted %a.ref, <error> [concrete = <error>]
 // CHECK:STDOUT:   %.loc21_11.2: %i32 = class_element_access <error>, element1 [concrete = <error>]
 // CHECK:STDOUT:   return <error>
@@ -460,6 +471,7 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT: --- fail_todo_adapt_struct.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %StructAdapter: type = class_type @StructAdapter [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %Int.type: type = generic_class_type @Int [concrete]
@@ -535,13 +547,14 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT: --- fail_todo_adapt_tuple.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %TupleAdapter: type = class_type @TupleAdapter [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %Int.type: type = generic_class_type @Int [concrete]
 // CHECK:STDOUT:   %Int.generic: %Int.type = struct_value () [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
-// CHECK:STDOUT:   %tuple.type.24b: type = tuple_type (type, type) [concrete]
-// CHECK:STDOUT:   %tuple: %tuple.type.24b = tuple_value (%i32, %i32) [concrete]
+// CHECK:STDOUT:   %tuple.type.693: type = tuple_type (type, type) [concrete]
+// CHECK:STDOUT:   %tuple: %tuple.type.693 = tuple_value (%i32, %i32) [concrete]
 // CHECK:STDOUT:   %tuple.type.e55: type = tuple_type (%i32, %i32) [concrete]
 // CHECK:STDOUT:   %complete_type.6c4: <witness> = complete_type_witness %tuple.type.e55 [concrete]
 // CHECK:STDOUT:   %pattern_type.59f: type = pattern_type %TupleAdapter [concrete]
@@ -592,7 +605,7 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT: class @TupleAdapter {
 // CHECK:STDOUT:   %i32.loc5_17: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:   %i32.loc5_22: type = type_literal constants.%i32 [concrete = constants.%i32]
-// CHECK:STDOUT:   %.loc5_25: %tuple.type.24b = tuple_literal (%i32.loc5_17, %i32.loc5_22) [concrete = constants.%tuple]
+// CHECK:STDOUT:   %.loc5_25: %tuple.type.693 = tuple_literal (%i32.loc5_17, %i32.loc5_22) [concrete = constants.%tuple]
 // CHECK:STDOUT:   %.loc5_26: type = converted %.loc5_25, constants.%tuple.type.e55 [concrete = constants.%tuple.type.e55]
 // CHECK:STDOUT:   adapt_decl %.loc5_26 [concrete]
 // CHECK:STDOUT:   %complete_type: <witness> = complete_type_witness constants.%tuple.type.e55 [concrete = constants.%complete_type.6c4]
@@ -613,13 +626,14 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT: --- fail_adapt_builtin.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %pattern_type.dc0: type = pattern_type Core.IntLiteral [concrete]
 // CHECK:STDOUT:   %N.param_patt: %pattern_type.dc0 = value_param_pattern [concrete]
 // CHECK:STDOUT:   %N.patt.4a4: %pattern_type.dc0 = wrapper_binding_pattern N, %N.param_patt [concrete]
-// CHECK:STDOUT:   %.805: Core.Form = init_form type [concrete]
-// CHECK:STDOUT:   %pattern_type.98f: type = pattern_type type [concrete]
-// CHECK:STDOUT:   %return.param_patt.70e: %pattern_type.98f = out_param_pattern [concrete]
-// CHECK:STDOUT:   %return.patt.3ae: %pattern_type.98f = return_slot_pattern %return.param_patt.70e, type [concrete]
+// CHECK:STDOUT:   %.576: Core.Form = init_form type [concrete]
+// CHECK:STDOUT:   %pattern_type.9a5: type = pattern_type type [concrete]
+// CHECK:STDOUT:   %return.param_patt.90b: %pattern_type.9a5 = out_param_pattern [concrete]
+// CHECK:STDOUT:   %return.patt.718: %pattern_type.9a5 = return_slot_pattern %return.param_patt.90b, type [concrete]
 // CHECK:STDOUT:   %MakeInt.type: type = fn_type @MakeInt [concrete]
 // CHECK:STDOUT:   %MakeInt: %MakeInt.type = struct_value () [concrete]
 // CHECK:STDOUT:   %IntAdapter: type = class_type @IntAdapter [concrete]
@@ -662,11 +676,11 @@ fn F(a: IntAdapter) -> i32 {
 // CHECK:STDOUT:   %MakeInt.decl: %MakeInt.type = fn_decl @MakeInt [concrete = constants.%MakeInt] {
 // CHECK:STDOUT:     %N.param_patt: %pattern_type.dc0 = value_param_pattern [concrete = constants.%N.param_patt]
 // CHECK:STDOUT:     %N.patt: %pattern_type.dc0 = wrapper_binding_pattern N, %N.param_patt [concrete = constants.%N.patt.4a4]
-// CHECK:STDOUT:     %return.param_patt: %pattern_type.98f = out_param_pattern [concrete = constants.%return.param_patt.70e]
-// CHECK:STDOUT:     %return.patt: %pattern_type.98f = return_slot_pattern %return.param_patt, %.loc4_35.1 [concrete = constants.%return.patt.3ae]
+// CHECK:STDOUT:     %return.param_patt: %pattern_type.9a5 = out_param_pattern [concrete = constants.%return.param_patt.90b]
+// CHECK:STDOUT:     %return.patt: %pattern_type.9a5 = return_slot_pattern %return.param_patt, %.loc4_35.1 [concrete = constants.%return.patt.718]
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %.loc4_35.1: type = type_literal type [concrete = type]
-// CHECK:STDOUT:     %.loc4_35.2: Core.Form = init_form %.loc4_35.1 [concrete = constants.%.805]
+// CHECK:STDOUT:     %.loc4_35.2: Core.Form = init_form %.loc4_35.1 [concrete = constants.%.576]
 // CHECK:STDOUT:     %N.param: Core.IntLiteral = value_param call_param0
 // CHECK:STDOUT:     %.loc4_19: type = splice_block %IntLiteral.ref [concrete = Core.IntLiteral] {
 // CHECK:STDOUT:       %Core.ref: <namespace> = name_ref Core, imports.%Core [concrete = imports.%Core]

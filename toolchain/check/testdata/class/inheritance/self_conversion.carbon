@@ -39,6 +39,7 @@ fn Call(p: Derived*) -> i32 {
 // CHECK:STDOUT: --- self_conversion.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %Base: type = class_type @Base [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %Int.type: type = generic_class_type @Int [concrete]
@@ -170,13 +171,15 @@ fn Call(p: Derived*) -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: class @Base {
-// CHECK:STDOUT:   %.loc16: %Base.elem = field_decl a, element0 [concrete]
+// CHECK:STDOUT:   %field_decl: %Base.elem = field_decl a, element0, %i32 in [concrete] {
+// CHECK:STDOUT:     %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %complete_type: <witness> = complete_type_witness constants.%struct_type.a [concrete = constants.%complete_type.388]
 // CHECK:STDOUT:   complete_type_witness = %complete_type
 // CHECK:STDOUT:
 // CHECK:STDOUT: !members:
 // CHECK:STDOUT:   .Self = constants.%Base
-// CHECK:STDOUT:   .a = %.loc16
+// CHECK:STDOUT:   .a = %field_decl
 // CHECK:STDOUT:   .Base = <poisoned>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -220,7 +223,7 @@ fn Call(p: Derived*) -> i32 {
 // CHECK:STDOUT: fn @Derived.SelfBase(%self.param.loc26: %Base) -> out %return.param.loc26: %i32 {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %self.ref: %Base = name_ref self, %self.loc26
-// CHECK:STDOUT:   %a.ref: %Base.elem = name_ref a, @Base.%.loc16 [concrete = @Base.%.loc16]
+// CHECK:STDOUT:   %a.ref: %Base.elem = name_ref a, @Base.%field_decl [concrete = @Base.%field_decl]
 // CHECK:STDOUT:   %.loc27_14.1: ref %i32 = class_element_access %self.ref, element0
 // CHECK:STDOUT:   %.loc27_14.2: %i32 = acquire_value %.loc27_14.1
 // CHECK:STDOUT:   %impl.elem0: %.737 = impl_witness_access constants.%Copy.impl_witness.b51, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
@@ -234,7 +237,7 @@ fn Call(p: Derived*) -> i32 {
 // CHECK:STDOUT: fn @Derived.RefSelfBase(%self.param.loc30: ref %Base) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %self.ref: ref %Base = name_ref self, %self.loc30
-// CHECK:STDOUT:   %a.ref: %Base.elem = name_ref a, @Base.%.loc16 [concrete = @Base.%.loc16]
+// CHECK:STDOUT:   %a.ref: %Base.elem = name_ref a, @Base.%field_decl [concrete = @Base.%field_decl]
 // CHECK:STDOUT:   %.loc31_7: ref %i32 = class_element_access %self.ref, element0
 // CHECK:STDOUT:   %int_1: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
 // CHECK:STDOUT:   %impl.elem0: %.b7a = impl_witness_access constants.%ImplicitAs.impl_witness.a2a, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
@@ -253,19 +256,17 @@ fn Call(p: Derived*) -> i32 {
 // CHECK:STDOUT:   %.loc35_4.1: ref %Derived = deref %p.ref.loc35
 // CHECK:STDOUT:   %RefSelfBase.ref: %Derived.RefSelfBase.type = name_ref RefSelfBase, @Derived.%Derived.RefSelfBase.decl [concrete = constants.%Derived.RefSelfBase]
 // CHECK:STDOUT:   %Derived.RefSelfBase.bound: <bound method> = bound_method %.loc35_4.1, %RefSelfBase.ref
-// CHECK:STDOUT:   %.loc35_4.2: ref %Base = as_compatible %.loc35_4.1
-// CHECK:STDOUT:   %.loc35_4.3: ref %Base = class_element_access %.loc35_4.2, element0
-// CHECK:STDOUT:   %.loc35_4.4: ref %Base = converted %.loc35_4.1, %.loc35_4.3
-// CHECK:STDOUT:   %Derived.RefSelfBase.call: init %empty_tuple.type = call %Derived.RefSelfBase.bound(%.loc35_4.4)
+// CHECK:STDOUT:   %.loc35_4.2: ref %Base = class_element_access %.loc35_4.1, element0
+// CHECK:STDOUT:   %.loc35_4.3: ref %Base = converted %.loc35_4.1, %.loc35_4.2
+// CHECK:STDOUT:   %Derived.RefSelfBase.call: init %empty_tuple.type = call %Derived.RefSelfBase.bound(%.loc35_4.3)
 // CHECK:STDOUT:   %p.ref.loc36: %ptr.64c = name_ref p, %p
 // CHECK:STDOUT:   %.loc36_11.1: ref %Derived = deref %p.ref.loc36
 // CHECK:STDOUT:   %SelfBase.ref: %Derived.SelfBase.type = name_ref SelfBase, @Derived.%Derived.SelfBase.decl [concrete = constants.%Derived.SelfBase]
 // CHECK:STDOUT:   %Derived.SelfBase.bound: <bound method> = bound_method %.loc36_11.1, %SelfBase.ref
-// CHECK:STDOUT:   %.loc36_11.2: ref %Base = as_compatible %.loc36_11.1
-// CHECK:STDOUT:   %.loc36_11.3: ref %Base = class_element_access %.loc36_11.2, element0
-// CHECK:STDOUT:   %.loc36_11.4: ref %Base = converted %.loc36_11.1, %.loc36_11.3
-// CHECK:STDOUT:   %.loc36_11.5: %Base = acquire_value %.loc36_11.4
-// CHECK:STDOUT:   %Derived.SelfBase.call: init %i32 = call %Derived.SelfBase.bound(%.loc36_11.5)
+// CHECK:STDOUT:   %.loc36_11.2: ref %Base = class_element_access %.loc36_11.1, element0
+// CHECK:STDOUT:   %.loc36_11.3: ref %Base = converted %.loc36_11.1, %.loc36_11.2
+// CHECK:STDOUT:   %.loc36_11.4: %Base = acquire_value %.loc36_11.3
+// CHECK:STDOUT:   %Derived.SelfBase.call: init %i32 = call %Derived.SelfBase.bound(%.loc36_11.4)
 // CHECK:STDOUT:   return %Derived.SelfBase.call
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

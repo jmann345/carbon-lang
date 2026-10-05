@@ -8,7 +8,6 @@
 #include <tuple>
 
 #include "llvm/ADT/STLExtras.h"
-#include "toolchain/base/kind_switch.h"
 #include "toolchain/check/context.h"
 #include "toolchain/check/convert.h"
 #include "toolchain/check/cpp/export.h"
@@ -36,132 +35,6 @@
 #include "toolchain/sem_ir/typed_insts.h"
 
 namespace Carbon::Check {
-
-// Tries to merge new_class into prev_class_id. Since new_class won't have a
-// definition even if one is upcoming, set is_definition to indicate the planned
-// result.
-//
-// If merging is successful, returns true and may update the previous class.
-// Otherwise, returns false. Prints a diagnostic when appropriate.
-static auto MergeClassRedecl(Context& context, Parse::AnyClassDeclId node_id,
-                             Lex::TokenKind decl_kind, SemIR::Class& new_class,
-                             bool new_is_definition,
-                             SemIR::ClassId prev_class_id,
-                             SemIR::ImportIRId prev_import_ir_id) -> bool {
-  auto& prev_class = context.classes().Get(prev_class_id);
-  SemIR::LocId prev_loc_id(prev_class.latest_decl_id());
-
-  // Check the generic parameters match, if they were specified.
-  if (!CheckRedeclParamsMatch(context, DeclParams(new_class),
-                              DeclParams(prev_class))) {
-    return false;
-  }
-
-  DiagnoseIfInvalidRedecl(
-      context, decl_kind, prev_class.name_id,
-      RedeclInfo(new_class, node_id, new_is_definition),
-      RedeclInfo(prev_class, prev_loc_id, prev_class.has_definition_started()),
-      prev_import_ir_id);
-
-  if (new_is_definition && prev_class.has_definition_started()) {
-    // Don't attempt to merge multiple definitions.
-    return false;
-  }
-
-  if (new_is_definition) {
-    prev_class.MergeDefinition(new_class);
-  }
-
-  if (prev_import_ir_id.has_value() ||
-      (prev_class.is_extern && !new_class.is_extern)) {
-    prev_class.first_owning_decl_id = new_class.first_owning_decl_id;
-    ReplacePrevInstForMerge(context, new_class.parent_scope_id,
-                            prev_class.name_id, new_class.first_owning_decl_id);
-  }
-  return true;
-}
-
-// Adds the name to name lookup. If there's a conflict, tries to merge. May
-// update class_decl and class_info when merging.
-static auto MergeOrAddName(Context& context, Parse::AnyClassDeclId node_id,
-                           Lex::TokenKind decl_kind,
-                           const DeclNameStack::NameContext& name_context,
-                           SemIR::InstId class_decl_id,
-                           SemIR::ClassDecl& class_decl,
-                           SemIR::Class& class_info, bool is_definition,
-                           SemIR::AccessKind access_kind) -> void {
-  SemIR::ScopeLookupResult lookup_result =
-      context.decl_name_stack().LookupOrAddName(name_context, class_decl_id,
-                                                access_kind);
-  if (lookup_result.is_poisoned()) {
-    // This is a declaration of a poisoned name.
-    DiagnosePoisonedName(context, name_context.name_id_for_new_inst(),
-                         lookup_result.poisoning_loc_id(), name_context.loc_id);
-    return;
-  }
-
-  if (!lookup_result.is_found()) {
-    return;
-  }
-
-  SemIR::InstId prev_id = lookup_result.target_inst_id();
-
-  auto prev_class_id = SemIR::ClassId::None;
-  auto prev_import_ir_id = SemIR::ImportIRId::None;
-  auto prev = context.insts().Get(prev_id);
-  CARBON_KIND_SWITCH(prev) {
-    case CARBON_KIND(SemIR::ClassDecl class_decl): {
-      prev_class_id = class_decl.class_id;
-      break;
-    }
-    case CARBON_KIND(SemIR::ImportRefLoaded import_ref): {
-      auto import_ir_inst =
-          context.import_ir_insts().Get(import_ref.import_ir_inst_id);
-
-      // Verify the decl so that things like aliases are name conflicts.
-      const auto* import_ir =
-          context.import_irs().Get(import_ir_inst.ir_id()).sem_ir;
-      if (!import_ir->insts().Is<SemIR::ClassDecl>(import_ir_inst.inst_id())) {
-        break;
-      }
-
-      // Use the constant value to get the ID.
-      auto decl_value = context.insts().Get(
-          context.constant_values().GetConstantInstId(prev_id));
-      if (auto class_type = decl_value.TryAs<SemIR::ClassType>()) {
-        prev_class_id = class_type->class_id;
-        prev_import_ir_id = import_ir_inst.ir_id();
-      } else if (auto generic_class_type =
-                     context.types().TryGetAs<SemIR::GenericClassType>(
-                         decl_value.type_id())) {
-        prev_class_id = generic_class_type->class_id;
-        prev_import_ir_id = import_ir_inst.ir_id();
-      }
-      break;
-    }
-    default:
-      break;
-  }
-
-  if (!prev_class_id.has_value() ||
-      context.classes().Get(prev_class_id).is_union != class_info.is_union) {
-    // This is a redeclaration of something other than a class, or a
-    // redeclaration that changes between `class` and `union`.
-    DiagnoseDuplicateName(context, name_context.name_id, name_context.loc_id,
-                          SemIR::LocId(prev_id));
-    return;
-  }
-
-  // TODO: Fix `extern` logic. It doesn't work correctly, but doesn't seem worth
-  // ripping out because existing code may incrementally help.
-  if (MergeClassRedecl(context, node_id, decl_kind, class_info, is_definition,
-                       prev_class_id, prev_import_ir_id)) {
-    // When merging, use the existing entity rather than adding a new one.
-    class_decl.class_id = prev_class_id;
-    class_decl.type_id = prev.type_id();
-    // TODO: Validate that the redeclaration doesn't set an access modifier.
-  }
-}
 
 auto BuildClassOrUnionDecl(Context& context, Parse::AnyClassDeclId node_id,
                            bool is_definition, NameComponent name,
@@ -222,9 +95,17 @@ auto BuildClassOrUnionDecl(Context& context, Parse::AnyClassDeclId node_id,
 
   DiagnoseIfGenericMissingExplicitParameters(context, class_info);
 
-  MergeOrAddName(context, node_id, decl_kind, name_context, class_decl_id,
-                 class_decl, class_info, is_definition,
-                 introducer.modifier_set.GetAccessKind());
+  // Merge into a previous declaration through upstream's `TryMergeRedecl`
+  // (D-UA-6); the `class`/`union` flip check (D-UN-6) and the `union`
+  // diagnostic spelling live inside the template, keyed on
+  // `class_info.is_union`.
+  SemIR::ScopeLookupResult lookup_result =
+      context.decl_name_stack().LookupOrAddName(
+          name_context, class_decl_id, introducer.modifier_set.GetAccessKind());
+  TryMergeRedecl(context, name_context, lookup_result,
+                 MergeRedeclEntityInfo<SemIR::Class>{
+                     .new_entity_decl = class_decl, .new_entity = class_info},
+                 is_definition);
 
   // Create a new class if this isn't a valid redeclaration.
   bool is_new_class = !class_decl.class_id.has_value();
@@ -356,7 +237,7 @@ static auto AddStructTypeFields(
         SemIR::ElementIndex{static_cast<int>(struct_type_fields.size())};
     if (field_decl.type_id == SemIR::ErrorInst::TypeId) {
       struct_type_fields.push_back(
-          {.name_id = field_decl.name_id,
+          {.name_id = field.name_id,
            .type_inst_id = SemIR::ErrorInst::TypeInstId});
       continue;
     }
@@ -364,7 +245,7 @@ static auto AddStructTypeFields(
         context.sem_ir().types().GetAs<SemIR::UnboundElementType>(
             field_decl.type_id);
     struct_type_fields.push_back(
-        {.name_id = field_decl.name_id,
+        {.name_id = field.name_id,
          .type_inst_id = unbound_element_type.element_type_inst_id});
   }
   auto fields_id =
@@ -407,13 +288,15 @@ static auto CompareVirtualWithOverrider(const SemIR::Function& base_fn,
   return OverrideMatchResult::Match;
 }
 
-// Builds and returns a vtable for the current class. Assumes that the virtual
-// functions for the class are listed as the top element of the `vtable_stack`.
+// Builds and returns a vtable for the current class, along with a bool
+// indicating whether it is a Carbon-native vtable (false for a foreign vtable
+// inherited from a C++ base class). Assumes that the virtual functions for the
+// class are listed as the top element of the `vtable_stack`.
 static auto BuildVtable(Context& context, Parse::ClassDefinitionId node_id,
                         SemIR::ClassId class_id,
                         std::optional<SemIR::ClassType> base_class_type,
                         llvm::ArrayRef<SemIR::InstId> vtable_contents)
-    -> SemIR::VtableId {
+    -> std::pair<SemIR::VtableId, bool> {
   auto base_vtable_id = SemIR::VtableId::None;
   auto base_class_specific_id = SemIR::SpecificId::None;
 
@@ -455,7 +338,7 @@ static auto BuildVtable(Context& context, Parse::ClassDefinitionId node_id,
   };
 
   llvm::SmallVector<SemIR::InstId> vtable;
-  Set<SemIR::FunctionId> implemented_impls;
+  Set<SemIR::FunctionId, 16> implemented_impls;
   bool carbon_native_vtable = true;
 
   // Add vtable entries from the base class, updating them to point to a derived
@@ -591,10 +474,11 @@ static auto BuildVtable(Context& context, Parse::ClassDefinitionId node_id,
     }
   }
 
-  return context.vtables().Add(
+  auto vtable_id = context.vtables().Add(
       {{.class_id = class_id,
         .virtual_functions_id = context.inst_blocks().Add(vtable),
         .carbon_native_vtable = carbon_native_vtable}});
+  return {vtable_id, carbon_native_vtable};
 }
 
 // Checks that the specified finished class definition is valid and builds and
@@ -644,9 +528,11 @@ static auto CheckCompleteClassType(
         {.name_id = SemIR::NameId::Base, .type_inst_id = base_type_inst_id});
   }
 
+  bool foreign_vtable = false;
   if (class_info.is_dynamic) {
-    auto vtable_id = BuildVtable(context, node_id, class_id, base_class_type,
-                                 vtable_contents);
+    auto [vtable_id, carbon_native_vtable] = BuildVtable(
+        context, node_id, class_id, base_class_type, vtable_contents);
+    foreign_vtable = !carbon_native_vtable;
     auto vptr_type_id = GetPointerType(context, SemIR::VtableType::TypeInstId);
     class_info.vtable_decl_id = AddInst<SemIR::VtableDecl>(
         context, node_id, {.type_id = vptr_type_id, .vtable_id = vtable_id});
@@ -655,11 +541,25 @@ static auto CheckCompleteClassType(
   auto struct_type_id = GetStructType(
       context, AddStructTypeFields(context, struct_type_fields, field_decls));
 
-  return AddInst<SemIR::CompleteTypeWitness>(
+  auto complete_type_witness_id = AddInst<SemIR::CompleteTypeWitness>(
       context, node_id,
       {.type_id = GetSingletonType(context, SemIR::WitnessType::TypeInstId),
        .object_repr_type_inst_id =
            context.types().GetTypeInstId(struct_type_id)});
+  class_info.complete_type_witness_id = complete_type_witness_id;
+
+  if (foreign_vtable) {
+    if (class_info.generic_id.has_value()) {
+      context.TODO(class_info.first_decl_id(),
+                   "generic class deriving from C++ virtual class");
+    } else {
+      ExportAndCompleteClassToCpp(
+          context,
+          context.types().GetAs<SemIR::ClassType>(class_info.self_type_id));
+    }
+  }
+
+  return complete_type_witness_id;
 }
 
 auto ComputeClassObjectRepr(Context& context, Parse::ClassDefinitionId node_id,

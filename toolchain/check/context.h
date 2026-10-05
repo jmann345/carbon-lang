@@ -600,10 +600,10 @@ class Context {
   // TODO: consider moving this out of Context.
   struct FormExpr {
     static const FormExpr Error;
+    static const FormExpr None;
 
-    // The inst ID of the form expression itself. This is always a form inst,
-    // such as InitForm or RefForm.
-    // TODO: Consider creating an AnyForm inst category to refer to those insts.
+    // The inst ID of the form expression itself. This is always an inst in the
+    // AnyPrimitiveForm category.
     SemIR::InstId form_inst_id;
     // The inst ID of the form expression's type component.
     SemIR::TypeInstId type_component_inst_id;
@@ -632,6 +632,8 @@ class Context {
 
   auto core_identifiers() -> CoreIdentifierCache& { return core_identifiers_; }
 
+  auto access_context() -> SemIR::NameScopeId& { return access_context_; }
+
   // --------------------------------------------------------------------------
   // Directly expose SemIR::File data accessors for brevity in calls.
   // --------------------------------------------------------------------------
@@ -655,6 +657,9 @@ class Context {
     return sem_ir().overload_sets();
   }
   auto functions() -> SemIR::FunctionStore& { return sem_ir().functions(); }
+  auto generated_functions() -> SemIR::GeneratedFunctionStore& {
+    return sem_ir().generated_functions();
+  }
   auto thunks() -> SemIR::ThunkStore& { return sem_ir().thunks(); }
   auto classes() -> SemIR::ClassStore& { return sem_ir().classes(); }
   auto fields() -> SemIR::FieldStore& { return sem_ir().fields(); }
@@ -727,6 +732,14 @@ class Context {
   auto total_ir_count() const -> int { return total_ir_count_; }
   auto mangle_string_fingerprint() const -> bool {
     return mangle_string_fingerprint_;
+  }
+
+  auto clang_function_pointer_types() -> SemIR::ClangFunctionPointerTypeStore& {
+    return sem_ir().clang_function_pointer_types();
+  }
+  auto clang_function_pointer_types() const
+      -> const SemIR::ClangFunctionPointerTypeStore& {
+    return sem_ir().clang_function_pointer_types();
   }
 
   // --------------------------------------------------------------------------
@@ -924,12 +937,24 @@ class Context {
   CoreIdentifierCache core_identifiers_;
 
   bool mangle_string_fingerprint_;
+
+  // Scope for querying member access. For example, when checking a class
+  // method, this would be set to the scope of that method's class.
+  //
+  // This is updated by `DeclNameStack`. During monomorphization, it is updated
+  // by `TryEvalBlockForSpecific`.
+  SemIR::NameScopeId access_context_ = SemIR::NameScopeId::None;
 };
 
 inline constexpr Context::FormExpr Context::FormExpr::Error = {
     .form_inst_id = SemIR::ErrorInst::InstId,
     .type_component_inst_id = SemIR::ErrorInst::TypeInstId,
     .type_component_id = SemIR::ErrorInst::TypeId};
+
+inline constexpr Context::FormExpr Context::FormExpr::None = {
+    .form_inst_id = SemIR::InstId::None,
+    .type_component_inst_id = SemIR::TypeInstId::None,
+    .type_component_id = SemIR::TypeId::None};
 
 }  // namespace Carbon::Check
 

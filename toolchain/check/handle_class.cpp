@@ -26,6 +26,7 @@
 #include "toolchain/check/type_completion.h"
 #include "toolchain/diagnostics/emitter.h"
 #include "toolchain/parse/node_ids.h"
+#include "toolchain/sem_ir/class.h"
 #include "toolchain/sem_ir/function.h"
 #include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/inst.h"
@@ -358,6 +359,15 @@ auto HandleParseNode(Context& context, Parse::BaseDeclId node_id) -> bool {
     }
   }
   return true;
+}
+
+auto HandleParseNode(Context& context, Parse::FriendIntroducerId node_id)
+    -> bool {
+  return context.TODO(node_id, "friend decl not supported in check");
+}
+
+auto HandleParseNode(Context& context, Parse::FriendDeclId node_id) -> bool {
+  return context.TODO(node_id, "friend decl not supported in check");
 }
 
 auto HandleParseNode(Context& context, Parse::ClassDefinitionId node_id)

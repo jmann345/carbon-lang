@@ -399,8 +399,34 @@ static auto TryMapType(Context& context, SemIR::TypeId type_id)
             return inner_type.withConst();
           }};
     }
+    case CARBON_KIND(SemIR::CppFunctionPointerType fn_type): {
+      return clang::QualType(context.clang_function_pointer_types()
+                                 .Get(fn_type.clang_type_id)
+                                 .clang_type,
+                             /*Quals=*/0);
+    }
     case SemIR::FloatLiteralType::Kind: {
       return context.ast_context().DoubleTy;
+    }
+    case CARBON_KIND(SemIR::FunctionType function_type): {
+      auto decl_id =
+          context.functions().Get(function_type.function_id).first_decl_id();
+      const auto* clang_decl = GetOrExportFunctionToCpp(
+          context, SemIR::LocId(decl_id), function_type.function_id);
+      if (clang_decl == nullptr) {
+        return clang::QualType();
+      }
+      clang::QualType clang_fn_type(clang_decl->getFunctionType(), /*Quals=*/0);
+      clang::QualType clang_ptr_type;
+      if (const auto* method_decl =
+              llvm::dyn_cast<clang::CXXMethodDecl>(clang_decl)) {
+        clang_ptr_type = context.ast_context().getMemberPointerType(
+            clang_fn_type, std::nullopt, method_decl->getParent());
+      } else {
+        clang_ptr_type = context.ast_context().getPointerType(clang_fn_type);
+      }
+      return context.ast_context().getAttributedType(
+          clang::attr::TypeNonNull, clang_ptr_type, clang_ptr_type);
     }
     case CARBON_KIND(SemIR::PointerType pointer_type): {
       return WrappedType{
@@ -433,21 +459,6 @@ static auto TryMapType(Context& context, SemIR::TypeId type_id)
                 inner_type, context.ints().Get(int_id), /*SizeExpr=*/nullptr,
                 clang::ArraySizeModifier::Normal, /*IndexTypeQuals=*/0);
           }};
-    }
-    case SemIR::FunctionType::Kind: {
-      // Deliberately NOT mapped here. The function-type mapping
-      // (`TryMapFunctionType`) is confined to the call-argument path
-      // (`InventPrimitiveClangArg`), where the value is embedded into the AST
-      // as a constant and never passed at runtime. A Carbon function value
-      // has an EMPTY runtime representation, so accepting function types from
-      // the general `MapToCppType` would let export-side consumers — exported
-      // return types and exported globals (export.cpp) — pair that empty
-      // representation with an 8-byte C++ `void (*)()`, producing
-      // uninitialized values. Those paths keep failing loudly with their
-      // "failed to map" TODOs instead. Wrapped forms (`const` function types,
-      // pointers over function types formed by `&x`) unwrap to this same
-      // null, so they stay rejected on the general path too.
-      return clang::QualType();
     }
     case SemIR::SymbolicBinding::Kind: {
       auto type_inst_id = context.types().GetTypeInstId(type_id);

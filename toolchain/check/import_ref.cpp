@@ -25,8 +25,10 @@
 #include "toolchain/check/type.h"
 #include "toolchain/check/type_completion.h"
 #include "toolchain/parse/node_ids.h"
+#include "toolchain/sem_ir/builtin_function_kind.h"
 #include "toolchain/sem_ir/constant.h"
 #include "toolchain/sem_ir/file.h"
+#include "toolchain/sem_ir/function.h"
 #include "toolchain/sem_ir/identified_facet_type.h"
 #include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/impl.h"
@@ -37,6 +39,7 @@
 #include "toolchain/sem_ir/name_scope.h"
 #include "toolchain/sem_ir/observe.h"
 #include "toolchain/sem_ir/overload_set.h"
+#include "toolchain/sem_ir/singleton_insts.h"
 #include "toolchain/sem_ir/specific_interface.h"
 #include "toolchain/sem_ir/specific_named_constraint.h"
 #include "toolchain/sem_ir/type_info.h"
@@ -181,6 +184,9 @@ class ImportContext {
   auto import_entity_names() -> const SemIR::EntityNameStore& {
     return import_ir().entity_names();
   }
+  auto import_expr_regions() -> const SemIR::ExprRegionStore& {
+    return import_ir().expr_regions();
+  }
   auto import_facet_types() -> const SemIR::DeclaredFacetTypeStore& {
     return import_ir().declared_facet_types();
   }
@@ -265,6 +271,9 @@ class ImportContext {
   }
   auto local_entity_names() -> SemIR::EntityNameStore& {
     return local_ir().entity_names();
+  }
+  auto local_expr_regions() -> SemIR::ExprRegionStore& {
+    return local_ir().expr_regions();
   }
   auto local_facet_types() -> SemIR::DeclaredFacetTypeStore& {
     return local_ir().declared_facet_types();
@@ -1521,28 +1530,30 @@ static auto AddAssociatedEntities(ImportContext& context,
   for (auto inst_id : associated_entities) {
     // Determine the name of the associated entity, by switching on its kind.
     SemIR::NameId import_name_id = SemIR::NameId::None;
-    if (auto assoc_const_decl =
-            context.import_insts().TryGetAs<SemIR::AssociatedConstantDecl>(
-                inst_id)) {
-      const auto& assoc_const = context.import_associated_constants().Get(
-          assoc_const_decl->assoc_const_id);
-      import_name_id = assoc_const.name_id;
-    } else if (auto function_decl =
-                   context.import_insts().TryGetAs<SemIR::FunctionDecl>(
-                       inst_id)) {
-      const auto& function =
-          context.import_functions().Get(function_decl->function_id);
-      import_name_id = function.name_id;
-    } else if (auto import_ref =
-                   context.import_insts().TryGetAs<SemIR::AnyImportRef>(
-                       inst_id)) {
-      import_name_id =
-          context.import_entity_names().Get(import_ref->entity_name_id).name_id;
-    } else {
-      // We don't need `GetWithAttachedType` here because we don't access the
-      // type.
-      CARBON_FATAL("Unhandled associated entity kind: {0}",
-                   context.import_insts().Get(inst_id).kind());
+    // We don't need `GetWithAttachedType` here because we don't access the
+    // type.
+    auto inst = context.import_insts().Get(inst_id);
+    CARBON_KIND_SWITCH(inst) {
+      case CARBON_KIND(SemIR::AssociatedConstantDecl assoc_const_decl): {
+        const auto& assoc_const = context.import_associated_constants().Get(
+            assoc_const_decl.assoc_const_id);
+        import_name_id = assoc_const.name_id;
+        break;
+      }
+      case CARBON_KIND(SemIR::FunctionDecl function_decl): {
+        const auto& function =
+            context.import_functions().Get(function_decl.function_id);
+        import_name_id = function.name_id;
+        break;
+      }
+      case CARBON_KIND_ANY(SemIR::AnyImportRef, import_ref): {
+        import_name_id = context.import_entity_names()
+                             .Get(import_ref.entity_name_id)
+                             .name_id;
+        break;
+      }
+      default:
+        CARBON_FATAL("Unhandled associated entity kind: {0}", inst.kind());
     }
     auto name_id = GetLocalNameId(context, import_name_id);
     auto entity_name_id = context.local_entity_names().Add(
@@ -2445,6 +2456,25 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
 }
 
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
+                                SemIR::DefaultValuePattern inst)
+    -> ResolveResult {
+  auto subpattern = GetLocalImportRefInfo(resolver, inst.subpattern_id);
+  auto value = GetLocalImportRefInfo(resolver, inst.value_id);
+  if (resolver.HasNewWork()) {
+    return ResolveResult::Retry();
+  }
+
+  return ResolveResult::Deduplicated<SemIR::DefaultValuePattern>(
+      resolver,
+      {
+          .type_id = resolver.local_types().GetTypeIdForTypeConstantId(
+              subpattern.local_type_const_id),
+          .subpattern_id = AddLoadedImportRef(resolver, subpattern),
+          .value_id = AddLoadedImportRef(resolver, value),
+      });
+}
+
+static auto TryResolveTypedInst(ImportRefResolver& resolver,
                                 SemIR::ExportDecl inst) -> ResolveResult {
   auto value_id = GetLocalConstantId(resolver, inst.value_id);
   return ResolveResult::RetryOrDone(resolver, value_id);
@@ -2453,6 +2483,11 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
                                 SemIR::FieldDecl inst,
                                 SemIR::InstId import_inst_id) -> ResolveResult {
+  auto import_expr_region =
+      resolver.import_expr_regions().Get(inst.type_region_id);
+  SemIR::ExprRegion expr_region{
+      .result_id = AddImportRef(resolver, import_expr_region.result_id)};
+
   auto const_id = GetLocalConstantId(resolver, inst.type_id);
   const auto& import_field = resolver.import_ir().fields().Get(inst.field_id);
   auto initializer_id =
@@ -2461,13 +2496,20 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
     return ResolveResult::Retry();
   }
 
+  auto type_region_id = resolver.local_expr_regions().Add(expr_region);
+
   auto field_id = resolver.local_ir().fields().Add(
-      {.index = import_field.index, .initializer_id = initializer_id});
+      {.index = import_field.index,
+       .name_id = GetLocalNameId(resolver, import_field.name_id),
+       .initializer_id = initializer_id});
   return ResolveResult::Unique<SemIR::FieldDecl>(
       resolver, import_inst_id,
-      {.type_id = resolver.local_types().GetTypeIdForTypeConstantId(const_id),
-       .name_id = GetLocalNameId(resolver, inst.name_id),
-       .field_id = field_id});
+      {
+          .type_id =
+              resolver.local_types().GetTypeIdForTypeConstantId(const_id),
+          .field_id = field_id,
+          .type_region_id = type_region_id,
+      });
 }
 
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
@@ -2520,9 +2562,10 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
 
 // Make a declaration of a function. This is done as a separate step from
 // importing the function declaration in order to resolve cycles.
-static auto ImportFunctionDecl(ImportContext& context,
-                               const SemIR::Function& import_function,
-                               SemIR::SpecificId specific_id)
+static auto ImportFunctionDecl(
+    ImportContext& context, const SemIR::Function& import_function,
+    SemIR::SpecificId specific_id,
+    SemIR::GeneratedFunction::CanonicalKey generated_function_key)
     -> std::pair<SemIR::FunctionId, SemIR::ConstantId> {
   SemIR::FunctionDecl function_decl = {
       .type_id = SemIR::TypeId::None,
@@ -2563,7 +2606,66 @@ static auto ImportFunctionDecl(ImportContext& context,
   // Write the function ID and type into the FunctionDecl.
   auto function_const_id =
       ReplacePlaceholderImportedInst(context, function_decl_id, function_decl);
+
+  if (generated_function_key.specific_interface_id.has_value()) {
+    const auto& import_generated =
+        context.import_ir().generated_functions().Get(
+            import_function.generated_function_id());
+    context.local_functions()
+        .Get(function_decl.function_id)
+        .SetGenerated(context.local_ir().generated_functions().Add({
+            .canonical_key = generated_function_key,
+            .function_id = function_decl.function_id,
+            .decl_id = function_decl_id,
+            .builtin_function_kind = import_generated.builtin_function_kind,
+        }));
+  }
+
   return {function_decl.function_id, function_const_id};
+}
+
+struct GeneratedFunctionData {
+  SemIR::SpecificInterface import_specific_interface;
+  SpecificInterfaceData specific_data;
+  SemIR::ConstantId self_type_const_id;
+  SemIR::NameId name_id;
+};
+
+static auto GetLocalGeneratedFunctionKeyData(
+    ImportRefResolver& resolver,
+    SemIR::GeneratedFunctionId import_generated_function_id)
+    -> std::optional<GeneratedFunctionData> {
+  if (!import_generated_function_id.has_value()) {
+    return std::nullopt;
+  }
+
+  const auto& import_key = resolver.import_ir()
+                               .generated_functions()
+                               .Get(import_generated_function_id)
+                               .canonical_key;
+
+  auto import_specific_interface = resolver.import_specific_interfaces().Get(
+      import_key.specific_interface_id);
+  auto specific_data =
+      GetLocalSpecificInterfaceData(resolver, import_specific_interface);
+  auto self_type_const_id =
+      GetLocalConstantId(resolver, import_key.self_type_id);
+  auto name_id = GetLocalNameId(resolver, import_key.name_id);
+  return {
+      {import_specific_interface, specific_data, self_type_const_id, name_id}};
+}
+
+static auto GetLocalGeneratedFunctionKey(ImportRefResolver& resolver,
+                                         const SemIR::Function& import_function,
+                                         const GeneratedFunctionData& data)
+    -> SemIR::GeneratedFunction::CanonicalKey {
+  CARBON_CHECK(import_function.generated_function_id().has_value());
+  auto specific_interface = GetLocalSpecificInterface(
+      resolver, data.import_specific_interface, data.specific_data);
+  auto self_type_id = resolver.local_types().GetTypeIdForTypeConstantId(
+      data.self_type_const_id);
+  return {resolver.local_specific_interfaces().Add(specific_interface),
+          self_type_id, data.name_id};
 }
 
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
@@ -2579,17 +2681,41 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
                                   .GetAs<SemIR::FunctionType>(inst.type_id)
                                   .specific_id;
     auto specific_data = GetLocalSpecificData(resolver, import_specific_id);
+    auto generated_function_data = GetLocalGeneratedFunctionKeyData(
+        resolver, import_function.generated_function_id());
     if (resolver.HasNewWork()) {
       // This is the end of the first phase. Don't make a new function yet if
       // we already have new work.
       return ResolveResult::Retry();
     }
 
+    // If the canonical Function for this generated function already exists,
+    // we dedupe by using it. Otherwise, we record the imported canonicalization
+    // key with the function.
+    auto generated_function_key = SemIR::GeneratedFunction::CanonicalKey{
+        SemIR::SpecificInterfaceId::None, SemIR::TypeId::None,
+        SemIR::NameId::None};
+    if (generated_function_data) {
+      // Generated functions are not generic.
+      CARBON_CHECK(!import_function.generic_id.has_value());
+
+      generated_function_key = GetLocalGeneratedFunctionKey(
+          resolver, import_function, *generated_function_data);
+      auto generated_id = resolver.local_ir().generated_functions().Lookup(
+          generated_function_key);
+      if (generated_id.has_value()) {
+        const auto& generated =
+            resolver.local_ir().generated_functions().Get(generated_id);
+        return ResolveResult::Done(
+            resolver.local_constant_values().Get(generated.decl_id));
+      }
+    }
+
     // On the second phase, create a forward declaration of the function.
     auto specific_id =
         GetOrAddLocalSpecific(resolver, import_specific_id, specific_data);
-    std::tie(function_id, function_const_id) =
-        ImportFunctionDecl(resolver, import_function, specific_id);
+    std::tie(function_id, function_const_id) = ImportFunctionDecl(
+        resolver, import_function, specific_id, generated_function_key);
   } else {
     // On the third phase, compute the function ID from the constant value of
     // the declaration.
@@ -2641,6 +2767,11 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
   auto thunk_specific_data = GetLocalSpecificData(
       resolver, import_thunk_info ? import_thunk_info->specific_id
                                   : SemIR::SpecificId::None);
+  auto thunk_override_self_type_const_id = SemIR::ConstantId::None;
+  if (import_thunk_info) {
+    thunk_override_self_type_const_id =
+        GetLocalConstantId(resolver, import_thunk_info->override_self_type_id);
+  }
 
   auto& new_function = resolver.local_functions().Get(function_id);
   if (resolver.HasNewWork()) {
@@ -2672,6 +2803,7 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
   if (import_function.definition_id.has_value()) {
     new_function.definition_id = new_function.first_owning_decl_id;
   }
+  new_function.default_value_arity = import_function.default_value_arity;
 
   switch (import_function.special_function_kind) {
     case SemIR::Function::SpecialFunctionKind::CppThunk:
@@ -2679,11 +2811,13 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
       break;
     }
     case SemIR::Function::SpecialFunctionKind::Builtin: {
-      new_function.SetBuiltinFunction(import_function.builtin_function_kind());
+      new_function.SetBuiltinFunction(
+          import_function.non_generated_builtin_function_kind());
       break;
     }
-    case SemIR::Function::SpecialFunctionKind::CoreWitness: {
-      new_function.SetCoreWitness(import_function.builtin_function_kind());
+    case SemIR::Function::SpecialFunctionKind::Generated: {
+      // Generated function data is set during phase one when constructing the
+      // FunctionDecl.
       break;
     }
     case SemIR::Function::SpecialFunctionKind::Thunk: {
@@ -2703,6 +2837,11 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
         local_thunk_info.specific_id = GetOrAddLocalSpecific(
             resolver, import_thunk_info->specific_id, thunk_specific_data);
       }
+      if (thunk_override_self_type_const_id.has_value()) {
+        local_thunk_info.override_self_type_id =
+            resolver.local_types().GetTypeIdForTypeConstantId(
+                thunk_override_self_type_const_id);
+      }
       new_function.SetThunk(resolver.local_ir().thunks().Add(local_thunk_info));
       break;
     }
@@ -2710,6 +2849,12 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
       resolver.local_context().TODO(SemIR::LocId::None,
                                     "Unsupported: Importing C++ functions that "
                                     "require thunks indirectly");
+      break;
+    }
+    case SemIR::Function::SpecialFunctionKind::CppFunctionPointerThunk: {
+      CARBON_FATAL(
+          "Function pointer thunks are always file-local, and should never be "
+          "imported.");
     }
   }
 
@@ -4676,8 +4821,9 @@ static auto TryResolveInstCanonical(ImportRefResolver& resolver,
                 "Constant value of constant instruction should refer to "
                 "the same instruction");
 
-  if (SemIR::IsSingletonInstId(constant_inst_id)) {
-    // Constants for builtins can be directly copied.
+  if (SemIR::IsSingletonInstId(constant_inst_id) ||
+      constant_inst_id == SemIR::TypeType::TypeInstId) {
+    // Constants for singletons and TypeType can be directly copied.
     return ResolveResult::Done(
         resolver.local_constant_values().Get(constant_inst_id));
   }
@@ -4737,6 +4883,9 @@ static auto TryResolveInstCanonical(ImportRefResolver& resolver,
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::CustomWitness inst): {
+      return TryResolveTypedInst(resolver, inst);
+    }
+    case CARBON_KIND(SemIR::DefaultValuePattern inst): {
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::ExportDecl inst): {
@@ -5089,15 +5238,21 @@ auto ImportRefResolver::ResolveType(SemIR::TypeId import_type_id)
   auto import_type_const_id = import_ir().types().GetConstantId(import_type_id);
   CARBON_CHECK(import_type_const_id.has_value());
 
-  if (auto import_type_inst_id = import_ir().types().GetAsTypeInstId(
-          import_ir().constant_values().GetInstId(import_type_const_id));
-      SemIR::IsSingletonInstId(import_type_inst_id)) {
-    // Builtins don't require constant resolution; we can use them directly.
+  auto import_type_inst_id = import_ir().types().GetAsTypeInstId(
+      import_ir().constant_values().GetInstId(import_type_const_id));
+
+  // Builtin types don't require constant resolution; we can use them directly.
+  if (SemIR::IsSingletonInstId(import_type_inst_id)) {
+    // Singletons are all types, and need to go through GetSingletonType to
+    // complete them.
     return GetSingletonType(local_context(), import_type_inst_id);
-  } else {
-    return local_types().GetTypeIdForTypeConstantId(
-        ResolveConstant(import_type_id.AsConstantId()));
+  } else if (import_type_inst_id == SemIR::TypeType::TypeInstId) {
+    // TypeType is the other builtin type, and is already complete.
+    return SemIR::TypeType::TypeId;
   }
+
+  return local_types().GetTypeIdForTypeConstantId(
+      ResolveConstant(import_type_id.AsConstantId()));
 }
 
 auto ImportRefResolver::HasNewWork() -> bool {

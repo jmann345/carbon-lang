@@ -21,7 +21,7 @@
 
 // CHECK:STDERR: /test.carbon: warning: unknown file requested [LanguageServerFileUnknown]
 // CHECK:STDERR:
-// CHECK:STDOUT: Content-Length: 352{{\r}}
+// CHECK:STDOUT: Content-Length: 432{{\r}}
 // CHECK:STDOUT: {{\r}}
 // CHECK:STDOUT: {
 // CHECK:STDOUT:   "id": 1,
@@ -30,8 +30,10 @@
 // CHECK:STDOUT:     "capabilities": {
 // CHECK:STDOUT:       "declarationProvider": true,
 // CHECK:STDOUT:       "definitionProvider": true,
+// CHECK:STDOUT:       "documentFormattingProvider": true,
 // CHECK:STDOUT:       "documentSymbolProvider": true,
 // CHECK:STDOUT:       "hoverProvider": true,
+// CHECK:STDOUT:       "implementationProvider": true,
 // CHECK:STDOUT:       "positionEncoding": "utf-16",
 // CHECK:STDOUT:       "referencesProvider": true,
 // CHECK:STDOUT:       "textDocumentSync": 2,

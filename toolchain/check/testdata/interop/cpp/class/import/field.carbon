@@ -93,12 +93,12 @@ fn GetF(a: Cpp.A) -> i32 { return a.f_4; }
 
 // --- with_bitfields.h
 
-struct Struct {
+struct BitfieldStruct {
   int a;
   int b : 2;
 };
 
-union Union {
+union BitfieldUnion {
   int c;
   int d : 3;
 };
@@ -109,13 +109,13 @@ library "[[@TEST_NAME]]";
 
 import Cpp library "with_bitfields.h";
 
-fn F(s: Cpp.Struct) -> i32 {
+fn F(s: Cpp.BitfieldStruct) -> i32 {
   //@dump-sem-ir-begin
   return s.a;
   //@dump-sem-ir-end
 }
 
-fn G(s: Cpp.Union) -> i32 {
+fn G(s: Cpp.BitfieldUnion) -> i32 {
   //@dump-sem-ir-begin
   return s.c;
   //@dump-sem-ir-end
@@ -131,7 +131,7 @@ library "[[@TEST_NAME]]";
 // CHECK:STDERR:       ^
 import Cpp library "with_bitfields.h";
 
-fn F(s: Cpp.Struct) -> i32 {
+fn F(s: Cpp.BitfieldStruct) -> i32 {
   //@dump-sem-ir-begin
   // CHECK:STDERR: fail_todo_use_bitfields.carbon:[[@LINE+8]]:10: note: in `Cpp` name lookup for `b` [InCppNameLookup]
   // CHECK:STDERR:   return s.b;
@@ -145,7 +145,7 @@ fn F(s: Cpp.Struct) -> i32 {
   //@dump-sem-ir-end
 }
 
-fn G(s: Cpp.Union) -> i32 {
+fn G(s: Cpp.BitfieldUnion) -> i32 {
   //@dump-sem-ir-begin
   // CHECK:STDERR: fail_todo_use_bitfields.carbon:[[@LINE+4]]:10: note: in `Cpp` name lookup for `d` [InCppNameLookup]
   // CHECK:STDERR:   return s.d;
@@ -200,6 +200,7 @@ fn Test(m: Cpp.UnsupportedMembers*) {
 // CHECK:STDOUT: --- use_struct_fields.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %Struct: type = class_type @Struct [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
@@ -257,20 +258,20 @@ fn Test(m: Cpp.UnsupportedMembers*) {
 // CHECK:STDOUT: fn @F(%s.param: %Struct) -> out %return.param: %tuple.type.ccd {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %s.ref.loc8_11: %Struct = name_ref s, %s
-// CHECK:STDOUT:   %a.ref: %Struct.elem.da9 = name_ref a, @Struct.%.1 [concrete = @Struct.%.1]
+// CHECK:STDOUT:   %a.ref: %Struct.elem.da9 = name_ref a, @Struct.%field_decl.1 [concrete = @Struct.%field_decl.1]
 // CHECK:STDOUT:   %.loc8_12.1: ref %i32 = class_element_access %s.ref.loc8_11, element0
 // CHECK:STDOUT:   %.loc8_12.2: %i32 = acquire_value %.loc8_12.1
 // CHECK:STDOUT:   %s.ref.loc8_16: %Struct = name_ref s, %s
-// CHECK:STDOUT:   %b.ref: %Struct.elem.da9 = name_ref b, @Struct.%.2 [concrete = @Struct.%.2]
+// CHECK:STDOUT:   %b.ref: %Struct.elem.da9 = name_ref b, @Struct.%field_decl.2 [concrete = @Struct.%field_decl.2]
 // CHECK:STDOUT:   %.loc8_17.1: ref %i32 = class_element_access %s.ref.loc8_16, element1
 // CHECK:STDOUT:   %.loc8_17.2: %i32 = acquire_value %.loc8_17.1
 // CHECK:STDOUT:   %s.ref.loc8_22: %Struct = name_ref s, %s
-// CHECK:STDOUT:   %p.ref: %Struct.elem.905 = name_ref p, @Struct.%.3 [concrete = @Struct.%.3]
+// CHECK:STDOUT:   %p.ref: %Struct.elem.905 = name_ref p, @Struct.%field_decl.3 [concrete = @Struct.%field_decl.3]
 // CHECK:STDOUT:   %.loc8_23.1: ref %ptr.d08 = class_element_access %s.ref.loc8_22, element2
 // CHECK:STDOUT:   %.loc8_23.2: %ptr.d08 = acquire_value %.loc8_23.1
 // CHECK:STDOUT:   %.loc8_21.1: ref %i32 = deref %.loc8_23.2
 // CHECK:STDOUT:   %s.ref.loc8_28: %Struct = name_ref s, %s
-// CHECK:STDOUT:   %q.ref: %Struct.elem.a19 = name_ref q, @Struct.%.5 [concrete = @Struct.%.5]
+// CHECK:STDOUT:   %q.ref: %Struct.elem.a19 = name_ref q, @Struct.%field_decl.4 [concrete = @Struct.%field_decl.4]
 // CHECK:STDOUT:   %.loc8_29.1: ref %Optional.5b3 = class_element_access %s.ref.loc8_28, element3
 // CHECK:STDOUT:   %.loc8_29.2: %Optional.5b3 = acquire_value %.loc8_29.1
 // CHECK:STDOUT:   %.loc8_31: %Optional.Get.type.76f = specific_constant imports.%Core.import_ref.497, @Optional(constants.%OptionalStorage.facet) [concrete = constants.%Optional.Get.d19]
@@ -283,7 +284,7 @@ fn Test(m: Cpp.UnsupportedMembers*) {
 // CHECK:STDOUT:   %.loc8_36.2: %ptr.d08 = converted %Optional.Get.call, %.loc8_36.1
 // CHECK:STDOUT:   %.loc8_27.1: ref %i32 = deref %.loc8_36.2
 // CHECK:STDOUT:   %s.ref.loc8_40: %Struct = name_ref s, %s
-// CHECK:STDOUT:   %r.ref: %Struct.elem.6a0 = name_ref r, @Struct.%.6 [concrete = @Struct.%.6]
+// CHECK:STDOUT:   %r.ref: %Struct.elem.6a0 = name_ref r, @Struct.%field_decl.5 [concrete = @Struct.%field_decl.5]
 // CHECK:STDOUT:   %.loc8_41.1: ref %const.e2a = class_element_access %s.ref.loc8_40, element4
 // CHECK:STDOUT:   %.loc8_41.2: %const.e2a = acquire_value %.loc8_41.1
 // CHECK:STDOUT:   %.loc8_39.1: ref %i32 = deref %.loc8_41.2
@@ -334,6 +335,7 @@ fn Test(m: Cpp.UnsupportedMembers*) {
 // CHECK:STDOUT: --- use_union_fields.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %Union: type = class_type @Union [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
@@ -361,7 +363,7 @@ fn Test(m: Cpp.UnsupportedMembers*) {
 // CHECK:STDOUT: fn @F(%u.param: %Union) -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %u.ref: %Union = name_ref u, %u
-// CHECK:STDOUT:   %a.ref: %Union.elem.291 = name_ref a, @Union.%.1 [concrete = @Union.%.1]
+// CHECK:STDOUT:   %a.ref: %Union.elem.291 = name_ref a, @Union.%field_decl.1 [concrete = @Union.%field_decl.1]
 // CHECK:STDOUT:   %.loc8_11.1: ref %i32 = class_element_access %u.ref, element0
 // CHECK:STDOUT:   %.loc8_11.2: %i32 = acquire_value %.loc8_11.1
 // CHECK:STDOUT:   %impl.elem0: %.737 = impl_witness_access constants.%Copy.impl_witness.b51, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
@@ -375,7 +377,7 @@ fn Test(m: Cpp.UnsupportedMembers*) {
 // CHECK:STDOUT: fn @G(%u.param: %Union) -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %u.ref: %Union = name_ref u, %u
-// CHECK:STDOUT:   %b.ref: %Union.elem.291 = name_ref b, @Union.%.2 [concrete = @Union.%.2]
+// CHECK:STDOUT:   %b.ref: %Union.elem.291 = name_ref b, @Union.%field_decl.2 [concrete = @Union.%field_decl.2]
 // CHECK:STDOUT:   %.loc14_11.1: ref %i32 = class_element_access %u.ref, element1
 // CHECK:STDOUT:   %.loc14_11.2: %i32 = acquire_value %.loc14_11.1
 // CHECK:STDOUT:   %impl.elem0: %.737 = impl_witness_access constants.%Copy.impl_witness.b51, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
@@ -389,7 +391,7 @@ fn Test(m: Cpp.UnsupportedMembers*) {
 // CHECK:STDOUT: fn @H(%u.param: %Union) -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %u.ref: %Union = name_ref u, %u
-// CHECK:STDOUT:   %p.ref: %Union.elem.d1f = name_ref p, @Union.%.3 [concrete = @Union.%.3]
+// CHECK:STDOUT:   %p.ref: %Union.elem.d1f = name_ref p, @Union.%field_decl.3 [concrete = @Union.%field_decl.3]
 // CHECK:STDOUT:   %.loc20_12.1: ref %ptr.d08 = class_element_access %u.ref, element2
 // CHECK:STDOUT:   %.loc20_12.2: %ptr.d08 = acquire_value %.loc20_12.1
 // CHECK:STDOUT:   %.loc20_10.1: ref %i32 = deref %.loc20_12.2
@@ -405,11 +407,12 @@ fn Test(m: Cpp.UnsupportedMembers*) {
 // CHECK:STDOUT: --- use_non_bitfields_in_type_with_bitfields.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
-// CHECK:STDOUT:   %Struct: type = class_type @Struct [concrete]
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %BitfieldStruct: type = class_type @BitfieldStruct [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
-// CHECK:STDOUT:   %Struct.elem: type = unbound_element_type %Struct, %i32 [concrete]
+// CHECK:STDOUT:   %BitfieldStruct.elem: type = unbound_element_type %BitfieldStruct, %i32 [concrete]
 // CHECK:STDOUT:   %Copy.type: type = facet_type <@Copy> [concrete]
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.ac8: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%N) [symbolic]
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.5e0: %Int.as.Copy.impl.Op.type.ac8 = struct_value () [symbolic]
@@ -420,8 +423,8 @@ fn Test(m: Cpp.UnsupportedMembers*) {
 // CHECK:STDOUT:   %Copy.WithSelf.Op.type.381: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet) [concrete]
 // CHECK:STDOUT:   %.737: type = fn_type_with_self_type %Copy.WithSelf.Op.type.381, %Copy.facet [concrete]
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.specific_fn: <specific function> = specific_function %Int.as.Copy.impl.Op.4f6, @Int.as.Copy.impl.Op(%int_32) [concrete]
-// CHECK:STDOUT:   %Union: type = class_type @Union [concrete]
-// CHECK:STDOUT:   %Union.elem: type = unbound_element_type %Union, %i32 [concrete]
+// CHECK:STDOUT:   %BitfieldUnion: type = class_type @BitfieldUnion [concrete]
+// CHECK:STDOUT:   %BitfieldUnion.elem: type = unbound_element_type %BitfieldUnion, %i32 [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -429,10 +432,10 @@ fn Test(m: Cpp.UnsupportedMembers*) {
 // CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.cd6), @Int.as.Copy.impl [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @F(%s.param: %Struct) -> out %return.param: %i32 {
+// CHECK:STDOUT: fn @F(%s.param: %BitfieldStruct) -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %s.ref: %Struct = name_ref s, %s
-// CHECK:STDOUT:   %a.ref: %Struct.elem = name_ref a, @Struct.%.1 [concrete = @Struct.%.1]
+// CHECK:STDOUT:   %s.ref: %BitfieldStruct = name_ref s, %s
+// CHECK:STDOUT:   %a.ref: %BitfieldStruct.elem = name_ref a, @BitfieldStruct.%field_decl [concrete = @BitfieldStruct.%field_decl]
 // CHECK:STDOUT:   %.loc8_11.1: ref %i32 = class_element_access %s.ref, element0
 // CHECK:STDOUT:   %.loc8_11.2: %i32 = acquire_value %.loc8_11.1
 // CHECK:STDOUT:   %impl.elem0: %.737 = impl_witness_access constants.%Copy.impl_witness.b51, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
@@ -443,10 +446,10 @@ fn Test(m: Cpp.UnsupportedMembers*) {
 // CHECK:STDOUT:   return %Int.as.Copy.impl.Op.call
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @G(%s.param: %Union) -> out %return.param: %i32 {
+// CHECK:STDOUT: fn @G(%s.param: %BitfieldUnion) -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %s.ref: %Union = name_ref s, %s
-// CHECK:STDOUT:   %c.ref: %Union.elem = name_ref c, @Union.%.1 [concrete = @Union.%.1]
+// CHECK:STDOUT:   %s.ref: %BitfieldUnion = name_ref s, %s
+// CHECK:STDOUT:   %c.ref: %BitfieldUnion.elem = name_ref c, @BitfieldUnion.%field_decl [concrete = @BitfieldUnion.%field_decl]
 // CHECK:STDOUT:   %.loc14_11.1: ref %i32 = class_element_access %s.ref, element0
 // CHECK:STDOUT:   %.loc14_11.2: %i32 = acquire_value %.loc14_11.1
 // CHECK:STDOUT:   %impl.elem0: %.737 = impl_witness_access constants.%Copy.impl_witness.b51, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
@@ -460,22 +463,23 @@ fn Test(m: Cpp.UnsupportedMembers*) {
 // CHECK:STDOUT: --- fail_todo_use_bitfields.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
-// CHECK:STDOUT:   %Struct: type = class_type @Struct [concrete]
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %BitfieldStruct: type = class_type @BitfieldStruct [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
-// CHECK:STDOUT:   %Union: type = class_type @Union [concrete]
+// CHECK:STDOUT:   %BitfieldUnion: type = class_type @BitfieldUnion [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @F(%s.param: %Struct) -> out %return.param: %i32 {
+// CHECK:STDOUT: fn @F(%s.param: %BitfieldStruct) -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %s.ref: %Struct = name_ref s, %s
+// CHECK:STDOUT:   %s.ref: %BitfieldStruct = name_ref s, %s
 // CHECK:STDOUT:   %b.ref: <error> = name_ref b, <error> [concrete = <error>]
 // CHECK:STDOUT:   return <error>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @G(%s.param: %Union) -> out %return.param: %i32 {
+// CHECK:STDOUT: fn @G(%s.param: %BitfieldUnion) -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %s.ref: %Union = name_ref s, %s
+// CHECK:STDOUT:   %s.ref: %BitfieldUnion = name_ref s, %s
 // CHECK:STDOUT:   %d.ref: <error> = name_ref d, <error> [concrete = <error>]
 // CHECK:STDOUT:   return <error>
 // CHECK:STDOUT: }

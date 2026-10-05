@@ -226,6 +226,8 @@ class Formatter {
 
   // Standard formatting for a declaration instruction's arguments.
   template <typename IdT>
+  // TODO: Recursive cycle when we format any decls inside the RHS.
+  // NOLINTNEXTLINE(misc-no-recursion)
   auto FormatDeclRhs(IdT decl_id, InstBlockId pattern_block_id,
                      InstBlockId decl_block_id) {
     FormatArgs(decl_id);
@@ -287,6 +289,8 @@ class Formatter {
   auto FormatArg(RealId id) -> void;
   auto FormatArg(StringLiteralValueId id) -> void;
   auto FormatArg(ConstantId id) -> void { FormatConstant(id); }
+  auto FormatArg(ClangDeclId id) -> void;
+  auto FormatArg(ClangFunctionPointerTypeId id) -> void;
 
   template <typename BundleT>
   auto FormatArg(BundleId<BundleT> bundle_id) -> void {

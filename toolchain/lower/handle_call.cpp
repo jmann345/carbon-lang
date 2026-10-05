@@ -875,8 +875,8 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
   // list.
   FunctionContext::InstInFile callee = {.file = &context.sem_ir(),
                                         .inst_id = inst.callee_id};
-  if (auto bound_method = context.sem_ir().insts().TryGetAs<SemIR::BoundMethod>(
-          callee.inst_id)) {
+  if (auto bound_method = SemIR::TryGetCalleeAsBoundMethod(
+          context.sem_ir(), callee.inst_id, SemIR::SpecificId::None)) {
     callee.inst_id = bound_method->function_decl_id;
   }
 
@@ -893,7 +893,9 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
         callee.inst_id);
     callee.file = const_file;
     callee.inst_id = const_file->constant_values().GetInstIdIfValid(const_id);
-    CARBON_CHECK(callee.inst_id.has_value());
+    CARBON_CHECK(callee.inst_id.has_value(),
+                 "Missing callee lowering call to {0}",
+                 context.sem_ir().insts().Get(inst.callee_id));
   }
 
   auto callee_function =
@@ -902,7 +904,7 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
   const SemIR::Function& function =
       callee.file->functions().Get(callee_function.function_id);
 
-  if (auto builtin_kind = function.builtin_function_kind();
+  if (auto builtin_kind = function.GetBuiltinFunctionKind(*callee.file);
       builtin_kind != SemIR::BuiltinFunctionKind::None) {
     // A builtin call is expanded inline: no LLVM function for the callee
     // specific exists in the module, so its specific_id must not be recorded
@@ -947,7 +949,11 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
   // order.
   std::vector<llvm::Value*> args;
   bool args_ok = true;
-  auto* callee_type = function_info->llvm_function->getFunctionType();
+  // TODO: We should be able to use function_info->type unconditionally, but
+  // that seems to sometimes have the wrong value for C++ thunks.
+  auto* callee_type = function_info->llvm_function != nullptr
+                          ? function_info->llvm_function->getFunctionType()
+                          : function_info->type;
   for (auto index : function_info->lowered_param_indices) {
     args.push_back(context.GetValue(arg_ids[index.index]));
 
@@ -976,7 +982,15 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
       return out.TakeStr();
     };
     CARBON_CHECK(args_ok, "Argument mismatch: {0}", describe_call());
-    call = context.builder().CreateCall(llvm_callee, args);
+    if (function.special_function_kind ==
+        SemIR::Function::SpecialFunctionKind::CppFunctionPointerThunk) {
+      llvm::ArrayRef<llvm::Value*> args_ref = args;
+      llvm::Value* callee_ptr = args_ref.consume_front();
+      call =
+          context.builder().CreateCall(function_info->type, callee_ptr, args);
+    } else {
+      call = context.builder().CreateCall(llvm_callee, args);
+    }
   } else {
     call = HandleVirtualCall(context, args, function, *function_info);
   }

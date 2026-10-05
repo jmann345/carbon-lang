@@ -2804,6 +2804,301 @@ if-let/let-else/while-let (flips a MISSING bullet on landed match
 machinery), then the error-handling chain W-016..W-019 (Result, `?`,
 exception interop), then unions W-009/W-015.
 
+### OV-2: overload-set import, generic members, api/impl definitions (2026-10-05)
+
+Milestone bullet "Functions: function overloading (Carbon-native)" stays
+PARTIAL (fork/gap-analysis.md row 58; header 28 DONE / 21 PARTIAL / 6
+MISSING / 1 DESIGN-ONLY over 56, unchanged — OV-3 flips the row). Landed on
+claude/carbon-fork-0-1-ov2 in the three commits fork/overload/plan.md §3
+fixed — 255314a06 (import of the set, the closed-set rule, api-member
+definitions), 90a603a38 (generic members, sets in generic scopes, goldens,
+conformance, ledger), b1cdf9e16 (the ported page's status paragraph) — plus
+24cacacf3 (implementation-review fixes) and 843d20244 (round-2 fixes), with
+the hosted fills 71fa9bb1a, fc3a74dce and 657bbe634 between them. The plan's
+OV-2 slice was W-025; W-026 (OV-3, export) is next, after UN-2 per
+D-OV-7/D-OV-9 (UN-2 is in). Design authority was not reopened: F-009, Option
+A and D-OV-1..10 stand; every decision below is an implementation choice the
+plan left open or got wrong, auto-adopted under R29(a) and veto-able after
+the fact.
+
+WHAT LANDED, by mechanism. (1) Import of a set, whole: check/import_ref.cpp
+`GetLocalOverloadSet` replaces `HandleUnsupportedOverloadSet` (gate (vii))
+and localizes an imported set in the two-phase shape of `FunctionDecl` —
+every member declaration and the parent scope are required dependencies
+(retry while any is pending), the local `OverloadSet` keeps the imported
+member order, `Function::overload_set_id` is written on every localized
+member by the set's resolver (`overload_index` stays mirrored by
+`ImportFunctionDecl`, D-OV-5), and the `OverloadSetType`/`OverloadSetValue`
+resolvers share one localization keyed on the first member; the type
+resolver localizes the specific like `FunctionType` and adds the constant
+directly. The set arrives whole through `export import` (one hop and two —
+`CollectTransitiveImports` flattens the chain; D-OV-10 holds), from a class
+scope (`C.F(...)` through an import) and from a generic class
+(`OverloadSetType.specific_id` through `GetLocalSpecificData`). (2)
+Definitions in the implementation file and the closed-set rule:
+check/handle_function.cpp `TryMergeRedecl`'s `ImportRefLoaded` arm keys on
+the loaded constant being an `OverloadSetValue` and runs the D-OV-3 identity
+scan (`TryMergeIntoOverloadSet`) with the import's IR id; a type-equal
+member merges through `MergeFunctionRedecl` with `replace_prev_inst=false`
+(the name's scope entry stays the set value), so `DiagnoseIfInvalidRedecl`'s
+`ApiForImpl` and cross-library `extern` branches apply per member; no
+identity match → `OverloadSetFrozen` ("overload set `{0}` is closed; new
+members may only be declared in the API file of its library") +
+`OverloadSetDeclaredHere` at the set's first member — one site for the
+implementation file and for an importing library — and the declaration
+continues as a plain function kept out of name lookup; an unmarked
+declaration against an imported set is `OverloadMarkerMismatch` recovering
+as marked. `fn D.G(...)` out of line in an implementation file against an
+api-declared class resolves through check/decl_name_stack.cpp
+`GetApiClassDeclForQualifier` (D-OV-13). (3) `extern` members (gate (iv)
+lifted in full): `extern library "owner" overload fn` members and the
+owner's `extern overload fn` redeclarations go through the same identity
+scan, in the one-file owner shape (the owner's api defines inline) and the
+two-file shape (the owner's api redeclares, its impl defines), with
+per-member ownership (D-OV-11) and the eager load that makes
+`MissingOwningDeclarationInApi` fire for set members (D-OV-12). (4) Generic
+members (gate (i) lifted): check/deduce.h/.cpp `DeduceGenericCallArguments(
+..., bool diagnose = true)` threaded into the `DeductionContext` flag it
+already had (plan §0.2 item 10); check/call.cpp `ProbeOverloadCandidate` /
+`ProbeOverloadCandidateInScratchScope` run D-OV-4 step 2(d) inside the
+discard scope — non-diagnosing deduction against the enclosing specific,
+`None` is reason 2 ("has generic parameters that could not be deduced"),
+success carries the specific into the parameter-type reads
+(`GetScrutineeTypeInSpecific`); the commit re-deduces diagnosing and
+`MakeSpecific` deduplicates. Pure declaration order over mixed
+generic/non-generic members (`generic_first`: the generic member swallows
+`Kind(5)` with `T = Core.IntLiteral`). (5) Sets in generic scopes (gate (ii)
+lifted by DELETION ALONE; §1.B.5 confirmed): `OverloadSetType.specific_id`
+already records the enclosing self specific and `GetCallee` already carries
+it as `CalleeOverloadSet.enclosing_specific_id`; neither check/type.cpp nor
+sem_ir/function.cpp needed an edit. Two `define`s per specific, marker then
+fingerprint (`@"_CAdd:overload0.Box.Main.5d388d3559e392d2"`), in
+lower/generic_class.carbon and lower/import_generic_class.carbon. (6) The
+api-member missing-definition check (§1.B.7): check/check_unit.cpp
+`CheckRequiredDefinitions` walks the `ApiForImpl` IR's `overload_sets()`,
+skips a set whose first member carries an import source (another library's
+set the api merely loaded), and emits `MissingDefinitionInImpl` at the api
+declaration (an `ImportIRInst` location) of every non-`extern` member
+neither file defines. OV-1's three conditional residues ("extern members of
+overload sets", "overload sets in generic scopes", "marked members without a
+definition") are NOT filed — no fallback fired. (7) Two new diagnostic
+kinds, `OverloadSetFrozen` and `OverloadSetDeclaredHere` (kind.def:302-303;
+one `CARBON_DIAGNOSTIC` and one emit site each, handle_function.cpp:401-409).
+Nine source files: call.cpp, check_unit.cpp, decl_name_stack.cpp,
+deduce.cpp, deduce.h, handle_function.cpp, import.cpp, import_ref.cpp,
+kind.def.
+
+DECISIONS beyond the plan, each with its break condition. **D-OV-11** —
+per-member `ApiForImpl` selection. In an implementation file whose api file
+imported a set from another library and redeclared some of its members
+(`extern overload fn`, the owner side of §1.B.3), the impl's import ref
+canonicalizes to the set's library and the api's owning redeclarations are
+not in name lookup (the entry stays the set value, by D-OV-3 / rev A A6), so
+a per-SET rule cannot be right: `ImportedOverloadSetSource::GetMember`
+decides per member — when the member at the same index in the api IR's
+localized copy of the set has `first_owning_decl_id`, the `ApiForImpl` rules
+apply, with the previous declaration's FACTS taken from the api member's
+`Function` (`MakeApiMemberRedeclInfo`: definition started, latest api
+declaration for the note, no `extern library`) and passed as
+`prev_decl_override` into `MergeFunctionRedecl`; otherwise the set's own
+library's rules, so an impl can never silently define another library's
+member, and an impl redefinition of a member the api defined inline is
+`RedeclRedef`, not a silent merge (the re-review's MAJOR: rules chosen from
+IR A applied to facts from IR B). Index parity holds because both copies are
+localized from the same source set in source order and `member_decl_ids` is
+append-only; a `CARBON_CHECK(index < size)` pins it. Break condition: that
+CHECK firing, or `fail_extern_unowned.impl`'s `ExternRequiresDeclInApiFile`
+or `fail_extern_api_defined.impl`'s `RedeclRedef` disappearing from a fill
+(an impl silently owning or redefining). **D-OV-12** — eager load of
+owner-library set members. check/import.cpp `AddImportRefOrMerge` loads an
+imported set's members when one is a non-owning declaration (`extern
+library`) owned by the CURRENT library, as it does for a plain
+`FunctionDecl`, so `CheckRequiredDeclarations`'
+`MissingOwningDeclarationInApi` fires for a member the owner never
+redeclared (`fail_extern_unowned`, `fail_extern_partial`). It fires only
+when `extern_library_id` names the current library; a library that merely
+imports an `extern library` set is untouched (`fail_extern_non_member`'s
+filled lines did not move). Break condition: a dump range or diagnostic
+appearing in an importing library that never names the set. **D-OV-13** —
+an api-declared class as a qualifier in an implementation file.
+`DeclNameStack::ResolveAsScope` had no arm for an `ImportRefLoaded`, so `fn
+C.F(...) {...}` out of line in an impl file against a class its api declares
+was `QualifiedNameInNonScope` — `overload` or not; a trunk-level gap (no
+landed golden had `fn C.F` in an impl file, and `class C;` in the impl is
+`RedeclRedundant`). `GetApiClassDeclForQualifier` resolves an `ApiForImpl`
+import ref whose api inst is a `ClassDecl` to the localized class's first
+declaration (through the ref's constant: the class type, or a value of the
+generic class type); a class the api merely imported (its api inst is itself
+an import ref) stays a non-scope, as does every import ref in an api file.
+Break condition: an impl file qualifying by a class its api merely imported
+being accepted, or any qualifier resolution in an api file changing.
+**D-OV-14** — `class Box(T: Core.Copy)` is the generic-class spelling (R3):
+`Make` copies its `t: T` parameter into the `tag` field, which `T: type`
+cannot (class/generic/member_type.carbon is the precedent); the plan's `T:!
+type` does not lex here (OV-1's landed note). Break condition: none —
+spelling. **D-OV-15** — step 2(d) DOES run for members of a generic class.
+§1.B.5 said they are "effectively non-generic within the specific, so step
+2(d) is not engaged"; a method of a generic class has its own `generic_id`
+carrying the class's bindings, so the probe deduces it against
+`enclosing_specific_id` exactly as `ResolveCalleeInCall` does for a plain
+method, and reads parameter types through the resulting specific. Break
+condition: the probe's specific differing from the commit's for the same
+arguments — impossible by construction (`MakeSpecific` deduplicates);
+falsifier: a third `define` for an `Add` member of one `Box` specific.
+**D-OV-16** — gate (iii) is keyed on the declaration being checked.
+`DiagnoseOverloadGates` read the MERGED function's `param_patterns_id`,
+which for a declaration-only redeclaration of an imported member is the
+localized block of `ImportRefLoaded`s (`AddLoadedImportRefBlock`) and never
+a `WrapperBindingPattern`, so `extern library "x" overload fn D(x: i32)`
+redeclared without a body in its owner's api fired the non-value-parameter
+TODO at a by-value parameter; `extern library` was never the discriminator —
+a definition passed only because `MergeDefinition` had copied the local
+patterns first. The gate now walks `function_info` (this declaration's own
+patterns). Break condition: fail_todo_gates.carbon's `fail_todo_ref_param`
+moving, or a `ref`/`var` member reaching the probe through an import.
+
+REVIEWS. One implementation review (R29(c): hosted verification was not yet
+green) returned REJECT. BLOCKER 1 — the api-member arm of
+`CheckRequiredDefinitions` walked `api_ir->overload_sets()`, which also
+holds every set the api file merely LOADED from an import (localized whole,
+placeholder members without `definition_id`), so any library whose api used
+another library's set inline and had an implementation file got spurious
+`MissingDefinitionInImpl` errors at the other library's declarations — a
+shape no golden or conformance program reached. MAJOR 2 — the two-file
+`extern` owner shape falsely emitted `ExternRequiresDeclInApiFile` (the
+impl's canonicalized ref reaches the set's library, never `ApiForImpl`), and
+§1.B.3's loud fallback had not been applied either. Minors 3-7: the
+unrecorded §1.B.5 deviation, the probe-minted-specific side effect, two
+`ErrorInst` cascades, the ledger's base numbers, three coverage gaps.
+24cacacf3 fixed each at the root: the import-source skip plus a
+`has_value()` guard on a never-loaded member constant (`is_constant()` would
+have DCHECKed — a latent crash the review did not name); D-OV-11 and
+D-OV-12; silent returns on `ErrorInst`; goldens `api_imports_set`,
+`fail_untouched`, `extern_two_file`, `fail_extern_unowned`,
+`fail_extern_partial`, import_class_scope.carbon and
+import_generic_class.carbon (check + lower), `reexport_twice`/`use_two_hops`.
+The focused re-review of that commit returned APPROVE-WITH-FIXES. MAJOR 1 —
+the per-member rule chose the `ApiForImpl` rule set from the api IR but
+applied it to the impl-local member localized from the SET's library (no
+body), so an impl redefining a member the api had defined inline merged
+silently and would fail at link with a duplicate symbol (the plain-function
+twin is `RedeclRedef`). Minors: the still-unaddressed landed-notes items;
+`use_two_hops`' comment claiming a walk that `CollectTransitiveImports`
+flattens away; no lower pin for the `extern` shapes. 843d20244 fixed the
+MAJOR with `MakeApiMemberRedeclInfo` / `prev_decl_override` (D-OV-11's
+second half; pin: the `extern_api_defined` trio — `RedeclRedef` +
+`RedeclPrevDef`, `RedeclRedundant` + `RedeclPrevDecl`), reworded the
+comment, added the lower trio, and fixed the two fill-caught root causes
+below.
+
+FILL-CAUGHT MISSES — review misses per R28(d), one line each. The second
+hosted autoupdate (run 37325822499, fill fc3a74dce) refuted three predicted
+fills that both the implementation review and the re-review had traced:
+(a) import_class_scope.carbon `api_impl.impl` — `fn D.G(x: i32) -> i32
+{...}` out of line diagnosed `QualifiedNameInNonScope` twice (with two
+`MissingDefinitionInImpl` cascades) where the re-review had predicted
+"positives; the `fn D.G` out-of-line path canonicalizes to `ApiForImpl` and
+returns early" — the arm `ResolveAsScope` lacked (D-OV-13), a trunk-level
+gap no landed golden covered; (b) import.carbon `extern_two_file` —
+predicted clean, filled with two gate (iii) `SemanticsTodo`s at the `extern
+library` members' by-value parameters (D-OV-16); (c) import.carbon
+`fail_extern_partial` — predicted `MissingOwningDeclarationInApi` alone,
+filled with gate (iii) at the redeclared member too (the same root cause as
+(b)). The third fill (run 37331151699, 657bbe634) matched 843d20244's
+predictions in one pass: `fail_extern_partial` down to the one
+`MissingOwningDeclarationInApi`; `fail_extern_api_defined.impl` exactly the
+`RedeclRedef` / `ExternRequiresDeclInApiFile` / `RedeclRedundant` triple
+(the middle one is the plain path's recovery for a rejected `extern`
+redeclaration in an impl file, W-107); `extern_two_file` and `api_impl.impl`
+diagnostic-free with one `define` per member. The first fill (run
+36459794418, 71fa9bb1a) had converged in one pass over commits 1-3.
+
+DEVIATIONS from the plan, each in fork/overload/plan.md's "Landed notes
+(OV-2, 2026-10-05)": `impl_defines_all` is folded into the `api_impl` pair
+(defining both members IS the positive); subfile spellings forced by
+`[[@TEST_NAME]]` pairing (`frozen`/`fail_frozen.impl`,
+`unmarked`/`fail_unmarked.impl`, `extern_lib`/`extern_owner`,
+`undefined`/`fail_undefined.impl`; generic.carbon's main subfile is
+`generic_second` beside `generic_first`; `export_import_of_set` is
+export_import.carbon); §1.B.5 lifted by deletion alone AND step 2(d) runs
+for generic-class members (D-OV-15); §1.B.3's `extern` lifted fully
+including the two-file owner shape (D-OV-11/12) — no residue; §1.B.7 landed
+with the import-sourced skip — no residue; the `ResolveAsScope` arm the plan
+never anticipated (D-OV-13); §6.B's nine files are nine, but import.cpp and
+decl_name_stack.cpp replace type.cpp and sem_ir/function.cpp; `unused` on
+every unused runtime binding so positives carry no warnings. W-025 notes
+corrected: the OV-1 hand-off sentence claiming import_member_specific.carbon
+is deleted at OV-2 was wrong (it is kept; comment edit only), and the base
+numbers are restated against the trunk of-record scoreboard.
+
+VERIFICATION is hosted-only (R28(b)). Autoupdate: run 36459794418 (fill
+71fa9bb1a, one pass over commits 1-3; no pre-existing golden moved beyond
+the planned fail_todo_gates.carbon subfile deletions and the
+import_member_specific.carbon comment), run 37325822499 (fill fc3a74dce
+after 24cacacf3; the three refuted predictions above), run 37331151699 (fill
+657bbe634 after 843d20244; one pass). Gate: run GATE_RUN. Conformance: run
+CONF_RUN, **CONF_NUMBERS** — expected 121 PASS / 0 FAIL / 24 SKIP over 145
+programs, 46/56 bullets, from the trunk of-record base READ FROM
+origin/trunk's fork/conformance/out/scoreboard.json (3c9df53f7, OV-1
+merged: 118 PASS / 0 FAIL / 24 SKIP over 142; this branch's in-tree copy is
+the UN-2-era 6e6e4c7a9, 116/0/25 over 141, which predates OV-1's of-record
+run and is replaced by the orchestrator's scoreboard push). Delta PASS +3 /
+SKIP 0 / total +3 as plan §5.B predicted — §1.B.5 was not refuted, so the
++2/+1/+3 fallback does not apply. Reconciliation greps (§8.4) at 657bbe634:
+`overload set import` has ZERO hits in toolchain (sources and goldens); the
+generic-parameters, generic-scope and `extern overload fn` TODO strings are
+gone from sources (the phrase `extern overload fn` survives only in two
+comments, handle_function.cpp:264 and :273, describing the owning
+redeclaration) and from fail_todo_gates.carbon; the remaining gates are one
+site each — handle_function.cpp:422 (x), :435 `self`-only, :855 (ix), :859
+(xiii), :902 (iii), :908 (v), :918 (vi), call.cpp:453 (xii), :535 (xi) —
+plus fail_todo_gates.carbon; `overload set export` is generate_ast.cpp:256
+and fail_todo_export.carbon:28; the two OV-2 kinds have one kind.def line,
+one `CARBON_DIAGNOSTIC` and one emit site each and fire in
+`fail_frozen.impl`, `fail_cross_library_adds_member` and
+`fail_extern_non_member`; `DiscardCleanupsSince` is ONE hit (call.cpp:504;
+the probe exits through a single unwind); `git diff 490ee40cd...HEAD
+--diff-filter=M` over the testdata trees lists only fail_todo_gates.carbon
+(three subfiles deleted, as planned) and import_member_specific.carbon
+(comment); fail_todo_impl_file.carbon is deleted (its `impl_local` pair
+survives as import.carbon `impl_local_set`).
+
+RESIDUE, filed with blocked_by [] (ids follow this branch's ledger max
+W-104; the slices branch allocates independently, so the orchestrator
+renumbers at merge if they collide): W-105 probe-minted specifics evaluated
+before conversion decides (`ProbeOverloadCandidateInScratchScope` →
+`DeduceGenericCallArguments` → `MakeSpecific` → `ResolveSpecificDecl`: a
+candidate that deduction accepts and conversion rejects has its declaration
+block evaluated into `specifics()`, and that evaluation may diagnose — the
+`discard_probe_constants` shape; `DeduceImplArguments` mints only after
+success); W-106 `diagnose=false` deduction accepts an `ErrorInst` argument
+(deduce.cpp's `RuntimeConversionDuringCompTimeDeduction` path and the
+incomplete-deduction path substitute `ErrorInst` and succeed when not
+diagnosing, so the probe can accept a member the commit then diagnoses —
+inherited from trunk's `diagnose_` design); W-107 an impl-file `extern
+overload fn` whose set localized to `ErrorInst` (or whose redefinition was
+rejected) still gets `ExternRequiresDeclInApiFile` from the plain path
+(handle_function.cpp:1022 on the no-merge path — the recovery trunk's plain
+functions share; `fail_extern_api_defined.impl` pins the
+rejected-redefinition case).
+
+PLAN §0.2 CORRECTIONS carried into the ledger (items 6, 10 and 13 per
+§8.5): "cross-library" covers the api/impl half of "same library" (both go
+through the import resolver and are lifted together — the W-025 title's
+note); `DeductionContext` already carried `diagnose_`, so the change is an
+entry-point parameter plus the discard scope; the implementation-file
+marker is `impl library "x";` throughout.
+
+_V-3a divergence-risk register entries (reviewed at each upstream merge):_
+OV-1's entries stand; OV-2 adds the two diagnostic kinds
+`OverloadSetFrozen`/`OverloadSetDeclaredHere`, the
+`replace_prev_inst`/`prev_decl_override` parameters of
+`MergeFunctionRedecl`, the `diagnose` parameter of
+`DeduceGenericCallArguments`, the `GetApiClassDeclForQualifier` arm of
+`ResolveAsScope` (a trunk-level fix upstream may land differently — on
+merge, keep whichever resolves `fn C.F` in an impl file and drop the other)
+and the `OverloadSetValue` arm of `AddImportRefOrMerge`. Veto-able.
+
 ### OV-1: `overload fn` closed sets, first-match resolution (2026-09-28)
 
 Milestone bullet "Functions: function overloading (Carbon-native)" flips

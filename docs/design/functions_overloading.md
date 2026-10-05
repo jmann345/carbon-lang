@@ -49,13 +49,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 > **Fork amendment 2026-09-27 (F-009; ported from the stranded design-docs
 > branch 481e08c24 by workstream OV-1, fork/overload/plan.md D-OV-8; status
-> updated 2026-09-28 by OV-2).** Toolchain status: same-file `overload fn`
+> updated 2026-10-05 by OV-2).** Toolchain status: same-file `overload fn`
 > sets landed at OV-1 (W-024); set import across api/impl and libraries
-> (with the closed-set rule, `OverloadSetFrozen`), generic members by
-> non-diagnosing deduction, overloaded methods of generic classes, `extern`
-> members and the api-member missing-definition check landed at OV-2 (W-025);
-> export to C++ lands at OV-3 (W-026). Every sub-fork this page left OPEN is
-> CLOSED in place below by the OV decision that resolves it, and the
+> (with the closed-set rule, `OverloadSetFrozen`; class-scope sets and
+> out-of-line member definitions in implementation files included), generic
+> members by non-diagnosing deduction, overloaded methods of generic classes,
+> `extern` members in both the one-file and the two-file `extern library`
+> owner shape, and the api-member missing-definition check landed at OV-2
+> (W-025); export to C++ lands at OV-3 (W-026). Every sub-fork this page left
+> OPEN is CLOSED in place below by the OV decision that resolves it, and the
 > [0.1 limits](#01-limits) paragraph lists every gate the landed toolchain
 > enforces as a semantics TODO.
 

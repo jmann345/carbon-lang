@@ -347,10 +347,16 @@ static auto GetExplicitArityRange(Context& context,
 }
 
 // Returns the leaf parameter pattern of a parameter pattern, looking through
-// binding and `var` wrappers, or `None` if there is none.
+// binding and `var` wrappers (and, for an imported member, the import refs
+// that carry its patterns), or `None` if there is none.
 static auto GetLeafParamPattern(Context& context, SemIR::InstId pattern_id)
     -> SemIR::InstId {
   while (true) {
+    if (auto const_inst_id =
+            context.constant_values().GetConstantInstId(pattern_id);
+        const_inst_id.has_value()) {
+      pattern_id = const_inst_id;
+    }
     auto inst = context.insts().Get(pattern_id);
     if (inst.Is<SemIR::AnyLeafParamPattern>()) {
       return pattern_id;
@@ -394,45 +400,51 @@ static auto IntLiteralArgFitsParam(Context& context, SemIR::InstId arg_id,
   return IntFitsInIntType(value, param_int_info->is_signed, width);
 }
 
-// Probes whether every argument of a call converts to the corresponding
-// parameter of `function`, without diagnosing and without leaving any
-// instruction, cleanup, or generic-region state behind (D-OV-4 step 2(e)).
-// `arg_ids` is `self` (if bound) followed by the explicit arguments, zipped
-// against all of the function's parameter patterns as `CallerPatternMatch`
-// does. A bound receiver is never converted here: its presence was checked by
-// the caller, and binding it is the commit's job.
-static auto ProbeOverloadCandidate(Context& context, SemIR::LocId loc_id,
-                                   const SemIR::Function& function,
-                                   SemIR::SpecificId enclosing_specific_id,
-                                   SemIR::InstId self_id,
-                                   llvm::ArrayRef<SemIR::InstId> arg_ids)
-    -> OverloadProbeResult {
+// The body of `ProbeOverloadCandidate`, run inside its scratch scope: deduces
+// a generic member's arguments (D-OV-4 step 2(d)), then converts each explicit
+// argument to its parameter type in the resulting specific (step 2(e)).
+static auto ProbeOverloadCandidateInScratchScope(
+    Context& context, SemIR::LocId loc_id, const SemIR::Function& function,
+    SemIR::SpecificId enclosing_specific_id, SemIR::InstId self_id,
+    llvm::ArrayRef<SemIR::InstId> arg_ids) -> OverloadProbeResult {
   auto param_pattern_ids =
       context.inst_blocks().GetOrEmpty(function.param_patterns_id);
   CARBON_CHECK(param_pattern_ids.size() == arg_ids.size());
 
-  // Snapshot the enclosing block and the cleanup stack, then open a scratch
-  // block and a fresh generic region so that conversions the probe performs
-  // are discarded rather than added to the enclosing block or generic.
-  auto enclosing_size =
-      context.inst_block_stack().PeekCurrentBlockContents().size();
-  auto cleanup_depth = context.scope_stack().cleanup_scope_depth();
-  context.inst_block_stack().Push();
-  context.generic_region_stack().Push({.generic_id = SemIR::GenericId::None});
-
   OverloadProbeResult result;
+
+  // (d) A generic member (or a member of a generic class, which carries the
+  // class's bindings): non-diagnosing deduction, whose `Converted`
+  // instructions the scratch scope discards. The commit re-deduces the same
+  // arguments diagnosing; `MakeSpecific` deduplicates the specific.
+  auto specific_id = enclosing_specific_id;
+  if (function.generic_id.has_value()) {
+    specific_id = DeduceGenericCallArguments(
+        context, loc_id, function.generic_id, enclosing_specific_id,
+        function.implicit_param_patterns_id, function.param_patterns_id,
+        self_id, arg_ids.drop_front(self_id.has_value() ? 1 : 0),
+        /*diagnose=*/false);
+    if (!specific_id.has_value()) {
+      result.reject_reason = OverloadRejectReason::Deduction;
+      return result;
+    }
+  }
+
   for (auto [index, arg_id, param_pattern_id] :
        llvm::enumerate(arg_ids, param_pattern_ids)) {
     if (index == 0 && self_id.has_value()) {
       // The bound receiver.
       continue;
     }
-    auto param_type_id = GetScrutineeTypeInSpecific(context, param_pattern_id,
-                                                    enclosing_specific_id);
-    if (param_pattern_id == function.self_param_id) {
+    auto param_type_id =
+        GetScrutineeTypeInSpecific(context, param_pattern_id, specific_id);
+    if (index == 0 && function.self_param_id.has_value()) {
       // An explicit receiver for a method member reached without a bound
       // receiver, such as `C.M(c, 1)`: argument 0 is matched against the
-      // `self` pattern. A by-value `self` is a value conversion; a `ref self`
+      // `self` pattern, which is positionally first as `CallerPatternMatch`
+      // assumes (an imported member's `self_param_id` is a distinct import
+      // ref from the entry in its parameter block, so position, not identity,
+      // identifies it). A by-value `self` is a value conversion; a `ref self`
       // or `addr self` receiver is D-OV-6 gate (xii).
       auto leaf_id = GetLeafParamPattern(context, param_pattern_id);
       if (!leaf_id.has_value() ||
@@ -442,18 +454,46 @@ static auto ProbeOverloadCandidate(Context& context, SemIR::LocId loc_id,
                      "overload member");
         result.reject_reason = OverloadRejectReason::Conversion;
         result.gated = true;
-        break;
+        return result;
       }
     } else if (!IntLiteralArgFitsParam(context, arg_id, param_type_id)) {
       result.reject_reason = OverloadRejectReason::Conversion;
-      break;
+      return result;
     }
     if (TryConvertToValueOfType(context, SemIR::LocId(arg_id), arg_id,
                                 param_type_id) == SemIR::ErrorInst::InstId) {
       result.reject_reason = OverloadRejectReason::Conversion;
-      break;
+      return result;
     }
   }
+  return result;
+}
+
+// Probes whether a call's arguments select `function` — deducing a generic
+// member's arguments and converting every argument to the corresponding
+// parameter — without diagnosing and without leaving any instruction, cleanup,
+// or generic-region state behind (D-OV-4 steps 2(d) and 2(e)). `arg_ids` is
+// `self` (if bound) followed by the explicit arguments, zipped against all of
+// the function's parameter patterns as `CallerPatternMatch` does. A bound
+// receiver is never converted here: its presence was checked by the caller,
+// and binding it is the commit's job.
+static auto ProbeOverloadCandidate(Context& context, SemIR::LocId loc_id,
+                                   const SemIR::Function& function,
+                                   SemIR::SpecificId enclosing_specific_id,
+                                   SemIR::InstId self_id,
+                                   llvm::ArrayRef<SemIR::InstId> arg_ids)
+    -> OverloadProbeResult {
+  // Snapshot the enclosing block and the cleanup stack, then open a scratch
+  // block and a fresh generic region so that conversions the probe performs
+  // are discarded rather than added to the enclosing block or generic.
+  auto enclosing_size =
+      context.inst_block_stack().PeekCurrentBlockContents().size();
+  auto cleanup_depth = context.scope_stack().cleanup_scope_depth();
+  context.inst_block_stack().Push();
+  context.generic_region_stack().Push({.generic_id = SemIR::GenericId::None});
+
+  auto result = ProbeOverloadCandidateInScratchScope(
+      context, loc_id, function, enclosing_specific_id, self_id, arg_ids);
 
   // Unwind on every exit path: the scratch block, the generic region, and any
   // cleanups a materialized temporary registered during the probe (which
@@ -533,8 +573,8 @@ static auto PerformCallToOverloadSet(Context& context, SemIR::LocId loc_id,
       continue;
     }
 
-    // (e) The conversion probe. (Generic members are gated in 0.1, so there is
-    // no deduction step here; OV-2 adds it inside the same discard scope.)
+    // (d) Deduction for a generic member and (e) the conversion probe, both
+    // inside one discard scope.
     auto probe = ProbeOverloadCandidate(context, loc_id, function,
                                         overload.enclosing_specific_id, self_id,
                                         all_arg_ids);

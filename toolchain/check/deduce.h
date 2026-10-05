@@ -10,15 +10,19 @@
 
 namespace Carbon::Check {
 
-// Deduces the generic arguments to use in a call to a generic.
+// Deduces the generic arguments to use in a call to a generic. Returns `None`
+// if deduction fails. If `diagnose` is false, nothing is diagnosed on failure;
+// the caller is then responsible for discarding the instructions deduction
+// generates (as `DeduceImplArguments` does), since a failed probe must leave
+// nothing behind.
 auto DeduceGenericCallArguments(Context& context, SemIR::LocId loc_id,
                                 SemIR::GenericId generic_id,
                                 SemIR::SpecificId enclosing_specific_id,
                                 SemIR::InstBlockId implicit_param_patterns_id,
                                 SemIR::InstBlockId param_patterns_id,
                                 SemIR::InstId self_id,
-                                llvm::ArrayRef<SemIR::InstId> arg_ids)
-    -> SemIR::SpecificId;
+                                llvm::ArrayRef<SemIR::InstId> arg_ids,
+                                bool diagnose = true) -> SemIR::SpecificId;
 
 // Deduces the impl arguments to use in a use of a parameterized impl. Returns
 // `None` if deduction fails.

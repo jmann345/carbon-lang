@@ -14,29 +14,9 @@
 // The 0.1 gates of fork/overload/plan.md D-OV-6, one subfile per gate. Each is
 // a semantics TODO at the declaration (or, for the two call-site gates, at
 // the call) so that overload resolution only ever sees supported members.
-// OV-2 lifts (i), (ii) and (iv) and deletes those subfiles in the same commit.
-
-// --- fail_todo_generic_member.carbon
-
-library "[[@TEST_NAME]]";
-
-// CHECK:STDERR: fail_todo_generic_member.carbon:[[@LINE+4]]:1: error: semantics TODO: ``overload fn` with generic parameters` [SemanticsTodo]
-// CHECK:STDERR: overload fn F[T: type](x: T);
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
-overload fn F[T: type](x: T);
-
-// --- fail_todo_generic_scope.carbon
-
-library "[[@TEST_NAME]]";
-
-class Box(T: type) {
-  // CHECK:STDERR: fail_todo_generic_scope.carbon:[[@LINE+4]]:3: error: semantics TODO: ``overload fn` in a generic scope` [SemanticsTodo]
-  // CHECK:STDERR:   overload fn F(self);
-  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
-  overload fn F(self);
-}
+// OV-2 lifted (i) generic members, (ii) sets in generic scopes and (iv)
+// `extern` members, and deleted their subfiles (generic.carbon,
+// generic_class_method_set.carbon and import.carbon pin the lifted shapes).
 
 // --- fail_todo_ref_param.carbon
 
@@ -47,16 +27,6 @@ library "[[@TEST_NAME]]";
 // CHECK:STDERR:               ^~~~~~~~~~
 // CHECK:STDERR:
 overload fn F(ref x: i32);
-
-// --- fail_todo_extern.carbon
-
-library "[[@TEST_NAME]]";
-
-// CHECK:STDERR: fail_todo_extern.carbon:[[@LINE+4]]:1: error: semantics TODO: ``extern overload fn`` [SemanticsTodo]
-// CHECK:STDERR: extern overload fn F(x: i32);
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
-extern overload fn F(x: i32);
 
 // --- fail_todo_entry_point.carbon
 

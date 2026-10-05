@@ -2539,6 +2539,9 @@ autoupdate, after ad2cb5031, 36446922583 success (the member-gate pin
 filled empty); fourth, after 1baec5d70, 36449480945 success; gate
 36451253811 green; conformance 36451200115: 116 / 0 / 24 over 140, 46/56
 bullets, exactly the expected 116 / 0 / 24 over 140, 46/56.
+Of record on the trunk merge 490ee40cd (UN-2 in): gate 36455321083 green;
+conformance 36455269810 (scoreboard 3c9df53f7): 118 / 0 / 24 over 142,
+46/56 bullets — the same delta over UN-2's 116 / 0 / 25 over 141.
 
 ## Landed notes (OV-2, 2026-10-05)
 

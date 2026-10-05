@@ -217,16 +217,16 @@ class Acc {
 // CHECK:STDOUT: |   |       `-DeclRefExpr {{0x[a-f0-9]+}} <col:12, col:25> 'Carbon::Acc ()' lvalue CXXMethod {{0x[a-f0-9]+}} 'Make' 'Carbon::Acc ()'
 // CHECK:STDOUT: |   |         `-NestedNameSpecifier TypeSpec 'Carbon::Acc'
 // CHECK:STDOUT: |   |-CXXMemberCallExpr {{0x[a-f0-9]+}} <line:129:3, col:10> 'void'
-// CHECK:STDOUT: |   | |-MemberExpr {{0x[a-f0-9]+}} <col:3, col:5> '<bound member function type>' .Add 0x7f5b79a99308
+// CHECK:STDOUT: |   | |-MemberExpr {{0x[a-f0-9]+}} <col:3, col:5> '<bound member function type>' .Add {{0x[a-f0-9]+}}
 // CHECK:STDOUT: |   | | `-DeclRefExpr {{0x[a-f0-9]+}} <col:3> 'Carbon::Acc' lvalue Var {{0x[a-f0-9]+}} 'a' 'Carbon::Acc'
 // CHECK:STDOUT: |   | `-IntegerLiteral {{0x[a-f0-9]+}} <col:9> 'int' 1
 // CHECK:STDOUT: |   |-CXXMemberCallExpr {{0x[a-f0-9]+}} <line:130:3, col:13> 'void'
-// CHECK:STDOUT: |   | |-MemberExpr {{0x[a-f0-9]+}} <col:3, col:5> '<bound member function type>' .Add 0x7f5b79a99a08
+// CHECK:STDOUT: |   | |-MemberExpr {{0x[a-f0-9]+}} <col:3, col:5> '<bound member function type>' .Add {{0x[a-f0-9]+}}
 // CHECK:STDOUT: |   | | `-DeclRefExpr {{0x[a-f0-9]+}} <col:3> 'Carbon::Acc' lvalue Var {{0x[a-f0-9]+}} 'a' 'Carbon::Acc'
 // CHECK:STDOUT: |   | `-CXXBoolLiteralExpr {{0x[a-f0-9]+}} <col:9> 'bool' true
 // CHECK:STDOUT: |   `-ReturnStmt {{0x[a-f0-9]+}} <line:131:3, col:16>
 // CHECK:STDOUT: |     `-CXXMemberCallExpr {{0x[a-f0-9]+}} <col:10, col:16> 'int'
-// CHECK:STDOUT: |       `-MemberExpr {{0x[a-f0-9]+}} <col:10, col:12> '<bound member function type>' .Get 0x7f5b79a9cbd0
+// CHECK:STDOUT: |       `-MemberExpr {{0x[a-f0-9]+}} <col:10, col:12> '<bound member function type>' .Get {{0x[a-f0-9]+}}
 // CHECK:STDOUT: |         `-ImplicitCastExpr {{0x[a-f0-9]+}} <col:10> 'const Carbon::Acc' lvalue <NoOp>
 // CHECK:STDOUT: |           `-DeclRefExpr {{0x[a-f0-9]+}} <col:10> 'Carbon::Acc' lvalue Var {{0x[a-f0-9]+}} 'a' 'Carbon::Acc'
 // CHECK:STDOUT: |-FunctionDecl {{0x[a-f0-9]+}} <line:127:12> col:12 in method_set.carbon hidden Drive__carbon_thunk 'int () noexcept' inline internal-linkage

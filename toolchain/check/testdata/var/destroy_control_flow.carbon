@@ -138,13 +138,16 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %Use: %Use.type = struct_value () [concrete]
 // CHECK:STDOUT:   %b.patt: %pattern_type.397 = ref_binding_pattern b [concrete]
 // CHECK:STDOUT:   %b.var_patt: %pattern_type.397 = var_pattern %b.patt [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.2: type = fn_type @Destroy.Op.loc10_5.2 [concrete]
-// CHECK:STDOUT:   %Destroy.Op.1a2547.2: %Destroy.Op.type.1d8f74.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.type.43d658.1: type = fn_type @Destructible.as.Destroy.impl.Op.1 [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.cc70d5.1: %Destructible.as.Destroy.impl.Op.type.43d658.1 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.type.43d658.2: type = fn_type @Destructible.as.Destroy.impl.Op.2 [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.cc70d5.2: %Destructible.as.Destroy.impl.Op.type.43d658.2 = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Main.Destructible: type = import_ref Main//destructible, Destructible, loaded [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %Main.Use: %Use.type = import_ref Main//destructible, Use, loaded [concrete = constants.%Use]
+// CHECK:STDOUT:   %Main.Op: %Destructible.as.Destroy.impl.Op.type.43d658.2 = import_ref Main//destructible, Op, loaded [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @IfThen(%cond.param: bool) {
@@ -152,8 +155,8 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %a.var: ref %Destructible = var_storage %a.var_patt
 // CHECK:STDOUT:   %.loc7_26.1: %empty_struct_type = struct_literal () [concrete = constants.%empty_struct]
 // CHECK:STDOUT:   %.loc7_26.2: init %Destructible to %a.var = class_init () [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   %.loc7_3: init %Destructible = converted %.loc7_26.1, %.loc7_26.2 [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   assign %a.var, %.loc7_3
+// CHECK:STDOUT:   %.loc7_3.1: init %Destructible = converted %.loc7_26.1, %.loc7_26.2 [concrete = constants.%Destructible.val]
+// CHECK:STDOUT:   assign %a.var, %.loc7_3.1
 // CHECK:STDOUT:   %Destructible.ref.loc7: type = name_ref Destructible, imports.%Main.Destructible [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %a: ref %Destructible = wrapper_binding a, %a.var
 // CHECK:STDOUT:   name_binding_decl {
@@ -171,8 +174,8 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %b.var: ref %Destructible = var_storage %b.var_patt
 // CHECK:STDOUT:   %.loc10_28.1: %empty_struct_type = struct_literal () [concrete = constants.%empty_struct]
 // CHECK:STDOUT:   %.loc10_28.2: init %Destructible to %b.var = class_init () [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   %.loc10_5: init %Destructible = converted %.loc10_28.1, %.loc10_28.2 [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   assign %b.var, %.loc10_5
+// CHECK:STDOUT:   %.loc10_5.1: init %Destructible = converted %.loc10_28.1, %.loc10_28.2 [concrete = constants.%Destructible.val]
+// CHECK:STDOUT:   assign %b.var, %.loc10_5.1
 // CHECK:STDOUT:   %Destructible.ref.loc10: type = name_ref Destructible, imports.%Main.Destructible [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %b: ref %Destructible = wrapper_binding b, %b.var
 // CHECK:STDOUT:   name_binding_decl {
@@ -183,8 +186,11 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %b.ref: ref %Destructible = name_ref b, %b
 // CHECK:STDOUT:   %.loc11: %Destructible = ref_tag %b.ref
 // CHECK:STDOUT:   %Use.call.loc11: init %empty_tuple.type = call %Use.ref.loc11(%b.ref)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc10: <bound method> = bound_method %b.var, constants.%Destroy.Op.1a2547.2
-// CHECK:STDOUT:   %Destroy.Op.call.loc10: init %empty_tuple.type = call %Destroy.Op.bound.loc10(%b.var)
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc10_5.1: <bound method> = bound_method %b.var, constants.%Destructible.as.Destroy.impl.Op.cc70d5.1
+// CHECK:STDOUT:   %Op.ref.loc10: %Destructible.as.Destroy.impl.Op.type.43d658.2 = name_ref Op, imports.%Main.Op [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc10_5.2: <bound method> = bound_method %b.var, %Op.ref.loc10
+// CHECK:STDOUT:   %.loc10_5.2: %Destructible = acquire_value %b.var
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.call.loc10: init %empty_tuple.type = call %Destructible.as.Destroy.impl.Op.bound.loc10_5.2(%.loc10_5.2)
 // CHECK:STDOUT:   br !if.else
 // CHECK:STDOUT:
 // CHECK:STDOUT: !if.else:
@@ -192,16 +198,12 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %a.ref.loc13: ref %Destructible = name_ref a, %a
 // CHECK:STDOUT:   %.loc13: %Destructible = ref_tag %a.ref.loc13
 // CHECK:STDOUT:   %Use.call.loc13: init %empty_tuple.type = call %Use.ref.loc13(%a.ref.loc13)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc7: <bound method> = bound_method %a.var, constants.%Destroy.Op.1a2547.2
-// CHECK:STDOUT:   %Destroy.Op.call.loc7: init %empty_tuple.type = call %Destroy.Op.bound.loc7(%a.var)
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc7_3.1: <bound method> = bound_method %a.var, constants.%Destructible.as.Destroy.impl.Op.cc70d5.1
+// CHECK:STDOUT:   %Op.ref.loc7: %Destructible.as.Destroy.impl.Op.type.43d658.2 = name_ref Op, imports.%Main.Op [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc7_3.2: <bound method> = bound_method %a.var, %Op.ref.loc7
+// CHECK:STDOUT:   %.loc7_3.2: %Destructible = acquire_value %a.var
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.call.loc7: init %empty_tuple.type = call %Destructible.as.Destroy.impl.Op.bound.loc7_3.2(%.loc7_3.2)
 // CHECK:STDOUT:   <elided>
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc10_5.1(%self.param: ref %empty_struct_type) = "no_op";
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc10_5.2(%self.param: ref %Destructible) {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- if_else.carbon
@@ -219,8 +221,10 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %Use: %Use.type = struct_value () [concrete]
 // CHECK:STDOUT:   %b.patt: %pattern_type.397 = ref_binding_pattern b [concrete]
 // CHECK:STDOUT:   %b.var_patt: %pattern_type.397 = var_pattern %b.patt [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.2: type = fn_type @Destroy.Op.loc10_5.2 [concrete]
-// CHECK:STDOUT:   %Destroy.Op.1a2547.2: %Destroy.Op.type.1d8f74.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.type.43d658.1: type = fn_type @Destructible.as.Destroy.impl.Op.1 [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.cc70d5.1: %Destructible.as.Destroy.impl.Op.type.43d658.1 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.type.43d658.2: type = fn_type @Destructible.as.Destroy.impl.Op.2 [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.cc70d5.2: %Destructible.as.Destroy.impl.Op.type.43d658.2 = struct_value () [concrete]
 // CHECK:STDOUT:   %c.patt: %pattern_type.397 = ref_binding_pattern c [concrete]
 // CHECK:STDOUT:   %c.var_patt: %pattern_type.397 = var_pattern %c.patt [concrete]
 // CHECK:STDOUT: }
@@ -228,6 +232,7 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Main.Destructible: type = import_ref Main//destructible, Destructible, loaded [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %Main.Use: %Use.type = import_ref Main//destructible, Use, loaded [concrete = constants.%Use]
+// CHECK:STDOUT:   %Main.Op: %Destructible.as.Destroy.impl.Op.type.43d658.2 = import_ref Main//destructible, Op, loaded [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @IfElse(%cond.param: bool) {
@@ -235,8 +240,8 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %a.var: ref %Destructible = var_storage %a.var_patt
 // CHECK:STDOUT:   %.loc7_26.1: %empty_struct_type = struct_literal () [concrete = constants.%empty_struct]
 // CHECK:STDOUT:   %.loc7_26.2: init %Destructible to %a.var = class_init () [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   %.loc7_3: init %Destructible = converted %.loc7_26.1, %.loc7_26.2 [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   assign %a.var, %.loc7_3
+// CHECK:STDOUT:   %.loc7_3.1: init %Destructible = converted %.loc7_26.1, %.loc7_26.2 [concrete = constants.%Destructible.val]
+// CHECK:STDOUT:   assign %a.var, %.loc7_3.1
 // CHECK:STDOUT:   %Destructible.ref.loc7: type = name_ref Destructible, imports.%Main.Destructible [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %a: ref %Destructible = wrapper_binding a, %a.var
 // CHECK:STDOUT:   name_binding_decl {
@@ -254,8 +259,8 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %b.var: ref %Destructible = var_storage %b.var_patt
 // CHECK:STDOUT:   %.loc10_28.1: %empty_struct_type = struct_literal () [concrete = constants.%empty_struct]
 // CHECK:STDOUT:   %.loc10_28.2: init %Destructible to %b.var = class_init () [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   %.loc10_5: init %Destructible = converted %.loc10_28.1, %.loc10_28.2 [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   assign %b.var, %.loc10_5
+// CHECK:STDOUT:   %.loc10_5.1: init %Destructible = converted %.loc10_28.1, %.loc10_28.2 [concrete = constants.%Destructible.val]
+// CHECK:STDOUT:   assign %b.var, %.loc10_5.1
 // CHECK:STDOUT:   %Destructible.ref.loc10: type = name_ref Destructible, imports.%Main.Destructible [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %b: ref %Destructible = wrapper_binding b, %b.var
 // CHECK:STDOUT:   name_binding_decl {
@@ -266,16 +271,19 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %b.ref: ref %Destructible = name_ref b, %b
 // CHECK:STDOUT:   %.loc11: %Destructible = ref_tag %b.ref
 // CHECK:STDOUT:   %Use.call.loc11: init %empty_tuple.type = call %Use.ref.loc11(%b.ref)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc10: <bound method> = bound_method %b.var, constants.%Destroy.Op.1a2547.2
-// CHECK:STDOUT:   %Destroy.Op.call.loc10: init %empty_tuple.type = call %Destroy.Op.bound.loc10(%b.var)
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc10_5.1: <bound method> = bound_method %b.var, constants.%Destructible.as.Destroy.impl.Op.cc70d5.1
+// CHECK:STDOUT:   %Op.ref.loc10: %Destructible.as.Destroy.impl.Op.type.43d658.2 = name_ref Op, imports.%Main.Op [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc10_5.2: <bound method> = bound_method %b.var, %Op.ref.loc10
+// CHECK:STDOUT:   %.loc10_5.2: %Destructible = acquire_value %b.var
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.call.loc10: init %empty_tuple.type = call %Destructible.as.Destroy.impl.Op.bound.loc10_5.2(%.loc10_5.2)
 // CHECK:STDOUT:   br !if.done
 // CHECK:STDOUT:
 // CHECK:STDOUT: !if.else:
 // CHECK:STDOUT:   %c.var: ref %Destructible = var_storage %c.var_patt
 // CHECK:STDOUT:   %.loc13_28.1: %empty_struct_type = struct_literal () [concrete = constants.%empty_struct]
 // CHECK:STDOUT:   %.loc13_28.2: init %Destructible to %c.var = class_init () [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   %.loc13_5: init %Destructible = converted %.loc13_28.1, %.loc13_28.2 [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   assign %c.var, %.loc13_5
+// CHECK:STDOUT:   %.loc13_5.1: init %Destructible = converted %.loc13_28.1, %.loc13_28.2 [concrete = constants.%Destructible.val]
+// CHECK:STDOUT:   assign %c.var, %.loc13_5.1
 // CHECK:STDOUT:   %Destructible.ref.loc13: type = name_ref Destructible, imports.%Main.Destructible [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %c: ref %Destructible = wrapper_binding c, %c.var
 // CHECK:STDOUT:   name_binding_decl {
@@ -286,8 +294,11 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %c.ref: ref %Destructible = name_ref c, %c
 // CHECK:STDOUT:   %.loc14: %Destructible = ref_tag %c.ref
 // CHECK:STDOUT:   %Use.call.loc14: init %empty_tuple.type = call %Use.ref.loc14(%c.ref)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc13: <bound method> = bound_method %c.var, constants.%Destroy.Op.1a2547.2
-// CHECK:STDOUT:   %Destroy.Op.call.loc13: init %empty_tuple.type = call %Destroy.Op.bound.loc13(%c.var)
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc13_5.1: <bound method> = bound_method %c.var, constants.%Destructible.as.Destroy.impl.Op.cc70d5.1
+// CHECK:STDOUT:   %Op.ref.loc13: %Destructible.as.Destroy.impl.Op.type.43d658.2 = name_ref Op, imports.%Main.Op [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc13_5.2: <bound method> = bound_method %c.var, %Op.ref.loc13
+// CHECK:STDOUT:   %.loc13_5.2: %Destructible = acquire_value %c.var
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.call.loc13: init %empty_tuple.type = call %Destructible.as.Destroy.impl.Op.bound.loc13_5.2(%.loc13_5.2)
 // CHECK:STDOUT:   br !if.done
 // CHECK:STDOUT:
 // CHECK:STDOUT: !if.done:
@@ -295,16 +306,12 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %a.ref.loc16: ref %Destructible = name_ref a, %a
 // CHECK:STDOUT:   %.loc16: %Destructible = ref_tag %a.ref.loc16
 // CHECK:STDOUT:   %Use.call.loc16: init %empty_tuple.type = call %Use.ref.loc16(%a.ref.loc16)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc7: <bound method> = bound_method %a.var, constants.%Destroy.Op.1a2547.2
-// CHECK:STDOUT:   %Destroy.Op.call.loc7: init %empty_tuple.type = call %Destroy.Op.bound.loc7(%a.var)
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc7_3.1: <bound method> = bound_method %a.var, constants.%Destructible.as.Destroy.impl.Op.cc70d5.1
+// CHECK:STDOUT:   %Op.ref.loc7: %Destructible.as.Destroy.impl.Op.type.43d658.2 = name_ref Op, imports.%Main.Op [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc7_3.2: <bound method> = bound_method %a.var, %Op.ref.loc7
+// CHECK:STDOUT:   %.loc7_3.2: %Destructible = acquire_value %a.var
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.call.loc7: init %empty_tuple.type = call %Destructible.as.Destroy.impl.Op.bound.loc7_3.2(%.loc7_3.2)
 // CHECK:STDOUT:   <elided>
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc10_5.1(%self.param: ref %empty_struct_type) = "no_op";
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc10_5.2(%self.param: ref %Destructible) {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- if_return.carbon
@@ -322,13 +329,16 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %Use: %Use.type = struct_value () [concrete]
 // CHECK:STDOUT:   %b.patt: %pattern_type.397 = ref_binding_pattern b [concrete]
 // CHECK:STDOUT:   %b.var_patt: %pattern_type.397 = var_pattern %b.patt [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.2: type = fn_type @Destroy.Op.loc10_5.2 [concrete]
-// CHECK:STDOUT:   %Destroy.Op.1a2547.2: %Destroy.Op.type.1d8f74.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.type.43d658.1: type = fn_type @Destructible.as.Destroy.impl.Op.1 [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.cc70d5.1: %Destructible.as.Destroy.impl.Op.type.43d658.1 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.type.43d658.2: type = fn_type @Destructible.as.Destroy.impl.Op.2 [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.cc70d5.2: %Destructible.as.Destroy.impl.Op.type.43d658.2 = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Main.Destructible: type = import_ref Main//destructible, Destructible, loaded [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %Main.Use: %Use.type = import_ref Main//destructible, Use, loaded [concrete = constants.%Use]
+// CHECK:STDOUT:   %Main.Op: %Destructible.as.Destroy.impl.Op.type.43d658.2 = import_ref Main//destructible, Op, loaded [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @IfReturn(%cond.param: bool) {
@@ -336,8 +346,8 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %a.var: ref %Destructible = var_storage %a.var_patt
 // CHECK:STDOUT:   %.loc7_26.1: %empty_struct_type = struct_literal () [concrete = constants.%empty_struct]
 // CHECK:STDOUT:   %.loc7_26.2: init %Destructible to %a.var = class_init () [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   %.loc7_3: init %Destructible = converted %.loc7_26.1, %.loc7_26.2 [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   assign %a.var, %.loc7_3
+// CHECK:STDOUT:   %.loc7_3.1: init %Destructible = converted %.loc7_26.1, %.loc7_26.2 [concrete = constants.%Destructible.val]
+// CHECK:STDOUT:   assign %a.var, %.loc7_3.1
 // CHECK:STDOUT:   %Destructible.ref.loc7: type = name_ref Destructible, imports.%Main.Destructible [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %a: ref %Destructible = wrapper_binding a, %a.var
 // CHECK:STDOUT:   name_binding_decl {
@@ -355,8 +365,8 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %b.var: ref %Destructible = var_storage %b.var_patt
 // CHECK:STDOUT:   %.loc10_28.1: %empty_struct_type = struct_literal () [concrete = constants.%empty_struct]
 // CHECK:STDOUT:   %.loc10_28.2: init %Destructible to %b.var = class_init () [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   %.loc10_5: init %Destructible = converted %.loc10_28.1, %.loc10_28.2 [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   assign %b.var, %.loc10_5
+// CHECK:STDOUT:   %.loc10_5.1: init %Destructible = converted %.loc10_28.1, %.loc10_28.2 [concrete = constants.%Destructible.val]
+// CHECK:STDOUT:   assign %b.var, %.loc10_5.1
 // CHECK:STDOUT:   %Destructible.ref.loc10: type = name_ref Destructible, imports.%Main.Destructible [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %b: ref %Destructible = wrapper_binding b, %b.var
 // CHECK:STDOUT:   name_binding_decl {
@@ -367,23 +377,25 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %b.ref: ref %Destructible = name_ref b, %b
 // CHECK:STDOUT:   %.loc11: %Destructible = ref_tag %b.ref
 // CHECK:STDOUT:   %Use.call.loc11: init %empty_tuple.type = call %Use.ref.loc11(%b.ref)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc10: <bound method> = bound_method %b.var, constants.%Destroy.Op.1a2547.2
-// CHECK:STDOUT:   %Destroy.Op.call.loc10: init %empty_tuple.type = call %Destroy.Op.bound.loc10(%b.var)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc7_3.1: <bound method> = bound_method %a.var, constants.%Destroy.Op.1a2547.2
-// CHECK:STDOUT:   %Destroy.Op.call.loc7_3.1: init %empty_tuple.type = call %Destroy.Op.bound.loc7_3.1(%a.var)
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc10_5.1: <bound method> = bound_method %b.var, constants.%Destructible.as.Destroy.impl.Op.cc70d5.1
+// CHECK:STDOUT:   %Op.ref.loc10: %Destructible.as.Destroy.impl.Op.type.43d658.2 = name_ref Op, imports.%Main.Op [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc10_5.2: <bound method> = bound_method %b.var, %Op.ref.loc10
+// CHECK:STDOUT:   %.loc10_5.2: %Destructible = acquire_value %b.var
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.call.loc10: init %empty_tuple.type = call %Destructible.as.Destroy.impl.Op.bound.loc10_5.2(%.loc10_5.2)
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc7_3.1: <bound method> = bound_method %a.var, constants.%Destructible.as.Destroy.impl.Op.cc70d5.1
+// CHECK:STDOUT:   %Op.ref.loc7_3.1: %Destructible.as.Destroy.impl.Op.type.43d658.2 = name_ref Op, imports.%Main.Op [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc7_3.2: <bound method> = bound_method %a.var, %Op.ref.loc7_3.1
+// CHECK:STDOUT:   %.loc7_3.2: %Destructible = acquire_value %a.var
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.call.loc7_3.1: init %empty_tuple.type = call %Destructible.as.Destroy.impl.Op.bound.loc7_3.2(%.loc7_3.2)
 // CHECK:STDOUT:   return
 // CHECK:STDOUT:
 // CHECK:STDOUT: !if.else:
-// CHECK:STDOUT:   %Destroy.Op.bound.loc7_3.2: <bound method> = bound_method %a.var, constants.%Destroy.Op.1a2547.2
-// CHECK:STDOUT:   %Destroy.Op.call.loc7_3.2: init %empty_tuple.type = call %Destroy.Op.bound.loc7_3.2(%a.var)
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc7_3.3: <bound method> = bound_method %a.var, constants.%Destructible.as.Destroy.impl.Op.cc70d5.1
+// CHECK:STDOUT:   %Op.ref.loc7_3.2: %Destructible.as.Destroy.impl.Op.type.43d658.2 = name_ref Op, imports.%Main.Op [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc7_3.4: <bound method> = bound_method %a.var, %Op.ref.loc7_3.2
+// CHECK:STDOUT:   %.loc7_3.3: %Destructible = acquire_value %a.var
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.call.loc7_3.2: init %empty_tuple.type = call %Destructible.as.Destroy.impl.Op.bound.loc7_3.4(%.loc7_3.3)
 // CHECK:STDOUT:   <elided>
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc10_5.1(%self.param: ref %empty_struct_type) = "no_op";
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc10_5.2(%self.param: ref %Destructible) {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- while_break.carbon
@@ -403,13 +415,16 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %b.var_patt: %pattern_type.397 = var_pattern %b.patt [concrete]
 // CHECK:STDOUT:   %c.patt: %pattern_type.397 = ref_binding_pattern c [concrete]
 // CHECK:STDOUT:   %c.var_patt: %pattern_type.397 = var_pattern %c.patt [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.2: type = fn_type @Destroy.Op.loc14_7.2 [concrete]
-// CHECK:STDOUT:   %Destroy.Op.1a2547.2: %Destroy.Op.type.1d8f74.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.type.43d658.1: type = fn_type @Destructible.as.Destroy.impl.Op.1 [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.cc70d5.1: %Destructible.as.Destroy.impl.Op.type.43d658.1 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.type.43d658.2: type = fn_type @Destructible.as.Destroy.impl.Op.2 [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.cc70d5.2: %Destructible.as.Destroy.impl.Op.type.43d658.2 = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Main.Destructible: type = import_ref Main//destructible, Destructible, loaded [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %Main.Use: %Use.type = import_ref Main//destructible, Use, loaded [concrete = constants.%Use]
+// CHECK:STDOUT:   %Main.Op: %Destructible.as.Destroy.impl.Op.type.43d658.2 = import_ref Main//destructible, Op, loaded [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @WhileBreak(%cond.param: bool) {
@@ -417,8 +432,8 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %a.var: ref %Destructible = var_storage %a.var_patt
 // CHECK:STDOUT:   %.loc7_26.1: %empty_struct_type = struct_literal () [concrete = constants.%empty_struct]
 // CHECK:STDOUT:   %.loc7_26.2: init %Destructible to %a.var = class_init () [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   %.loc7_3: init %Destructible = converted %.loc7_26.1, %.loc7_26.2 [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   assign %a.var, %.loc7_3
+// CHECK:STDOUT:   %.loc7_3.1: init %Destructible = converted %.loc7_26.1, %.loc7_26.2 [concrete = constants.%Destructible.val]
+// CHECK:STDOUT:   assign %a.var, %.loc7_3.1
 // CHECK:STDOUT:   %Destructible.ref.loc7: type = name_ref Destructible, imports.%Main.Destructible [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %a: ref %Destructible = wrapper_binding a, %a.var
 // CHECK:STDOUT:   name_binding_decl {
@@ -443,8 +458,8 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %b.var: ref %Destructible = var_storage %b.var_patt
 // CHECK:STDOUT:   %.loc11_28.1: %empty_struct_type = struct_literal () [concrete = constants.%empty_struct]
 // CHECK:STDOUT:   %.loc11_28.2: init %Destructible to %b.var = class_init () [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   %.loc11_5: init %Destructible = converted %.loc11_28.1, %.loc11_28.2 [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   assign %b.var, %.loc11_5
+// CHECK:STDOUT:   %.loc11_5.1: init %Destructible = converted %.loc11_28.1, %.loc11_28.2 [concrete = constants.%Destructible.val]
+// CHECK:STDOUT:   assign %b.var, %.loc11_5.1
 // CHECK:STDOUT:   %Destructible.ref.loc11: type = name_ref Destructible, imports.%Main.Destructible [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %b: ref %Destructible = wrapper_binding b, %b.var
 // CHECK:STDOUT:   name_binding_decl {
@@ -462,8 +477,8 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %c.var: ref %Destructible = var_storage %c.var_patt
 // CHECK:STDOUT:   %.loc14_30.1: %empty_struct_type = struct_literal () [concrete = constants.%empty_struct]
 // CHECK:STDOUT:   %.loc14_30.2: init %Destructible to %c.var = class_init () [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   %.loc14_7: init %Destructible = converted %.loc14_30.1, %.loc14_30.2 [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   assign %c.var, %.loc14_7
+// CHECK:STDOUT:   %.loc14_7.1: init %Destructible = converted %.loc14_30.1, %.loc14_30.2 [concrete = constants.%Destructible.val]
+// CHECK:STDOUT:   assign %c.var, %.loc14_7.1
 // CHECK:STDOUT:   %Destructible.ref.loc14: type = name_ref Destructible, imports.%Main.Destructible [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %c: ref %Destructible = wrapper_binding c, %c.var
 // CHECK:STDOUT:   name_binding_decl {
@@ -474,15 +489,24 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %c.ref: ref %Destructible = name_ref c, %c
 // CHECK:STDOUT:   %.loc15: %Destructible = ref_tag %c.ref
 // CHECK:STDOUT:   %Use.call.loc15: init %empty_tuple.type = call %Use.ref.loc15(%c.ref)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc14: <bound method> = bound_method %c.var, constants.%Destroy.Op.1a2547.2
-// CHECK:STDOUT:   %Destroy.Op.call.loc14: init %empty_tuple.type = call %Destroy.Op.bound.loc14(%c.var)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc11_5.1: <bound method> = bound_method %b.var, constants.%Destroy.Op.1a2547.2
-// CHECK:STDOUT:   %Destroy.Op.call.loc11_5.1: init %empty_tuple.type = call %Destroy.Op.bound.loc11_5.1(%b.var)
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc14_7.1: <bound method> = bound_method %c.var, constants.%Destructible.as.Destroy.impl.Op.cc70d5.1
+// CHECK:STDOUT:   %Op.ref.loc14: %Destructible.as.Destroy.impl.Op.type.43d658.2 = name_ref Op, imports.%Main.Op [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc14_7.2: <bound method> = bound_method %c.var, %Op.ref.loc14
+// CHECK:STDOUT:   %.loc14_7.2: %Destructible = acquire_value %c.var
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.call.loc14: init %empty_tuple.type = call %Destructible.as.Destroy.impl.Op.bound.loc14_7.2(%.loc14_7.2)
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc11_5.1: <bound method> = bound_method %b.var, constants.%Destructible.as.Destroy.impl.Op.cc70d5.1
+// CHECK:STDOUT:   %Op.ref.loc11_5.1: %Destructible.as.Destroy.impl.Op.type.43d658.2 = name_ref Op, imports.%Main.Op [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc11_5.2: <bound method> = bound_method %b.var, %Op.ref.loc11_5.1
+// CHECK:STDOUT:   %.loc11_5.2: %Destructible = acquire_value %b.var
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.call.loc11_5.1: init %empty_tuple.type = call %Destructible.as.Destroy.impl.Op.bound.loc11_5.2(%.loc11_5.2)
 // CHECK:STDOUT:   br !while.done
 // CHECK:STDOUT:
 // CHECK:STDOUT: !if.else:
-// CHECK:STDOUT:   %Destroy.Op.bound.loc11_5.2: <bound method> = bound_method %b.var, constants.%Destroy.Op.1a2547.2
-// CHECK:STDOUT:   %Destroy.Op.call.loc11_5.2: init %empty_tuple.type = call %Destroy.Op.bound.loc11_5.2(%b.var)
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc11_5.3: <bound method> = bound_method %b.var, constants.%Destructible.as.Destroy.impl.Op.cc70d5.1
+// CHECK:STDOUT:   %Op.ref.loc11_5.2: %Destructible.as.Destroy.impl.Op.type.43d658.2 = name_ref Op, imports.%Main.Op [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc11_5.4: <bound method> = bound_method %b.var, %Op.ref.loc11_5.2
+// CHECK:STDOUT:   %.loc11_5.3: %Destructible = acquire_value %b.var
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.call.loc11_5.2: init %empty_tuple.type = call %Destructible.as.Destroy.impl.Op.bound.loc11_5.4(%.loc11_5.3)
 // CHECK:STDOUT:   br !while.cond
 // CHECK:STDOUT:
 // CHECK:STDOUT: !while.done:
@@ -490,16 +514,12 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %a.ref.loc19: ref %Destructible = name_ref a, %a
 // CHECK:STDOUT:   %.loc19: %Destructible = ref_tag %a.ref.loc19
 // CHECK:STDOUT:   %Use.call.loc19: init %empty_tuple.type = call %Use.ref.loc19(%a.ref.loc19)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc7: <bound method> = bound_method %a.var, constants.%Destroy.Op.1a2547.2
-// CHECK:STDOUT:   %Destroy.Op.call.loc7: init %empty_tuple.type = call %Destroy.Op.bound.loc7(%a.var)
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc7_3.1: <bound method> = bound_method %a.var, constants.%Destructible.as.Destroy.impl.Op.cc70d5.1
+// CHECK:STDOUT:   %Op.ref.loc7: %Destructible.as.Destroy.impl.Op.type.43d658.2 = name_ref Op, imports.%Main.Op [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc7_3.2: <bound method> = bound_method %a.var, %Op.ref.loc7
+// CHECK:STDOUT:   %.loc7_3.2: %Destructible = acquire_value %a.var
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.call.loc7: init %empty_tuple.type = call %Destructible.as.Destroy.impl.Op.bound.loc7_3.2(%.loc7_3.2)
 // CHECK:STDOUT:   <elided>
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc14_7.1(%self.param: ref %empty_struct_type) = "no_op";
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc14_7.2(%self.param: ref %Destructible) {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- while_continue.carbon
@@ -519,13 +539,16 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %b.var_patt: %pattern_type.397 = var_pattern %b.patt [concrete]
 // CHECK:STDOUT:   %c.patt: %pattern_type.397 = ref_binding_pattern c [concrete]
 // CHECK:STDOUT:   %c.var_patt: %pattern_type.397 = var_pattern %c.patt [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.2: type = fn_type @Destroy.Op.loc14_7.2 [concrete]
-// CHECK:STDOUT:   %Destroy.Op.1a2547.2: %Destroy.Op.type.1d8f74.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.type.43d658.1: type = fn_type @Destructible.as.Destroy.impl.Op.1 [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.cc70d5.1: %Destructible.as.Destroy.impl.Op.type.43d658.1 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.type.43d658.2: type = fn_type @Destructible.as.Destroy.impl.Op.2 [concrete]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.cc70d5.2: %Destructible.as.Destroy.impl.Op.type.43d658.2 = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Main.Destructible: type = import_ref Main//destructible, Destructible, loaded [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %Main.Use: %Use.type = import_ref Main//destructible, Use, loaded [concrete = constants.%Use]
+// CHECK:STDOUT:   %Main.Op: %Destructible.as.Destroy.impl.Op.type.43d658.2 = import_ref Main//destructible, Op, loaded [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @WhileContinue(%cond.param: bool) {
@@ -533,8 +556,8 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %a.var: ref %Destructible = var_storage %a.var_patt
 // CHECK:STDOUT:   %.loc7_26.1: %empty_struct_type = struct_literal () [concrete = constants.%empty_struct]
 // CHECK:STDOUT:   %.loc7_26.2: init %Destructible to %a.var = class_init () [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   %.loc7_3: init %Destructible = converted %.loc7_26.1, %.loc7_26.2 [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   assign %a.var, %.loc7_3
+// CHECK:STDOUT:   %.loc7_3.1: init %Destructible = converted %.loc7_26.1, %.loc7_26.2 [concrete = constants.%Destructible.val]
+// CHECK:STDOUT:   assign %a.var, %.loc7_3.1
 // CHECK:STDOUT:   %Destructible.ref.loc7: type = name_ref Destructible, imports.%Main.Destructible [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %a: ref %Destructible = wrapper_binding a, %a.var
 // CHECK:STDOUT:   name_binding_decl {
@@ -559,8 +582,8 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %b.var: ref %Destructible = var_storage %b.var_patt
 // CHECK:STDOUT:   %.loc11_28.1: %empty_struct_type = struct_literal () [concrete = constants.%empty_struct]
 // CHECK:STDOUT:   %.loc11_28.2: init %Destructible to %b.var = class_init () [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   %.loc11_5: init %Destructible = converted %.loc11_28.1, %.loc11_28.2 [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   assign %b.var, %.loc11_5
+// CHECK:STDOUT:   %.loc11_5.1: init %Destructible = converted %.loc11_28.1, %.loc11_28.2 [concrete = constants.%Destructible.val]
+// CHECK:STDOUT:   assign %b.var, %.loc11_5.1
 // CHECK:STDOUT:   %Destructible.ref.loc11: type = name_ref Destructible, imports.%Main.Destructible [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %b: ref %Destructible = wrapper_binding b, %b.var
 // CHECK:STDOUT:   name_binding_decl {
@@ -578,8 +601,8 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %c.var: ref %Destructible = var_storage %c.var_patt
 // CHECK:STDOUT:   %.loc14_30.1: %empty_struct_type = struct_literal () [concrete = constants.%empty_struct]
 // CHECK:STDOUT:   %.loc14_30.2: init %Destructible to %c.var = class_init () [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   %.loc14_7: init %Destructible = converted %.loc14_30.1, %.loc14_30.2 [concrete = constants.%Destructible.val]
-// CHECK:STDOUT:   assign %c.var, %.loc14_7
+// CHECK:STDOUT:   %.loc14_7.1: init %Destructible = converted %.loc14_30.1, %.loc14_30.2 [concrete = constants.%Destructible.val]
+// CHECK:STDOUT:   assign %c.var, %.loc14_7.1
 // CHECK:STDOUT:   %Destructible.ref.loc14: type = name_ref Destructible, imports.%Main.Destructible [concrete = constants.%Destructible]
 // CHECK:STDOUT:   %c: ref %Destructible = wrapper_binding c, %c.var
 // CHECK:STDOUT:   name_binding_decl {
@@ -590,15 +613,24 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %c.ref: ref %Destructible = name_ref c, %c
 // CHECK:STDOUT:   %.loc15: %Destructible = ref_tag %c.ref
 // CHECK:STDOUT:   %Use.call.loc15: init %empty_tuple.type = call %Use.ref.loc15(%c.ref)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc14: <bound method> = bound_method %c.var, constants.%Destroy.Op.1a2547.2
-// CHECK:STDOUT:   %Destroy.Op.call.loc14: init %empty_tuple.type = call %Destroy.Op.bound.loc14(%c.var)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc11_5.1: <bound method> = bound_method %b.var, constants.%Destroy.Op.1a2547.2
-// CHECK:STDOUT:   %Destroy.Op.call.loc11_5.1: init %empty_tuple.type = call %Destroy.Op.bound.loc11_5.1(%b.var)
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc14_7.1: <bound method> = bound_method %c.var, constants.%Destructible.as.Destroy.impl.Op.cc70d5.1
+// CHECK:STDOUT:   %Op.ref.loc14: %Destructible.as.Destroy.impl.Op.type.43d658.2 = name_ref Op, imports.%Main.Op [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc14_7.2: <bound method> = bound_method %c.var, %Op.ref.loc14
+// CHECK:STDOUT:   %.loc14_7.2: %Destructible = acquire_value %c.var
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.call.loc14: init %empty_tuple.type = call %Destructible.as.Destroy.impl.Op.bound.loc14_7.2(%.loc14_7.2)
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc11_5.1: <bound method> = bound_method %b.var, constants.%Destructible.as.Destroy.impl.Op.cc70d5.1
+// CHECK:STDOUT:   %Op.ref.loc11_5.1: %Destructible.as.Destroy.impl.Op.type.43d658.2 = name_ref Op, imports.%Main.Op [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc11_5.2: <bound method> = bound_method %b.var, %Op.ref.loc11_5.1
+// CHECK:STDOUT:   %.loc11_5.2: %Destructible = acquire_value %b.var
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.call.loc11_5.1: init %empty_tuple.type = call %Destructible.as.Destroy.impl.Op.bound.loc11_5.2(%.loc11_5.2)
 // CHECK:STDOUT:   br !while.cond
 // CHECK:STDOUT:
 // CHECK:STDOUT: !if.else:
-// CHECK:STDOUT:   %Destroy.Op.bound.loc11_5.2: <bound method> = bound_method %b.var, constants.%Destroy.Op.1a2547.2
-// CHECK:STDOUT:   %Destroy.Op.call.loc11_5.2: init %empty_tuple.type = call %Destroy.Op.bound.loc11_5.2(%b.var)
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc11_5.3: <bound method> = bound_method %b.var, constants.%Destructible.as.Destroy.impl.Op.cc70d5.1
+// CHECK:STDOUT:   %Op.ref.loc11_5.2: %Destructible.as.Destroy.impl.Op.type.43d658.2 = name_ref Op, imports.%Main.Op [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc11_5.4: <bound method> = bound_method %b.var, %Op.ref.loc11_5.2
+// CHECK:STDOUT:   %.loc11_5.3: %Destructible = acquire_value %b.var
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.call.loc11_5.2: init %empty_tuple.type = call %Destructible.as.Destroy.impl.Op.bound.loc11_5.4(%.loc11_5.3)
 // CHECK:STDOUT:   br !while.cond
 // CHECK:STDOUT:
 // CHECK:STDOUT: !while.done:
@@ -606,15 +638,11 @@ fn WhileContinue(cond: bool) {
 // CHECK:STDOUT:   %a.ref.loc19: ref %Destructible = name_ref a, %a
 // CHECK:STDOUT:   %.loc19: %Destructible = ref_tag %a.ref.loc19
 // CHECK:STDOUT:   %Use.call.loc19: init %empty_tuple.type = call %Use.ref.loc19(%a.ref.loc19)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc7: <bound method> = bound_method %a.var, constants.%Destroy.Op.1a2547.2
-// CHECK:STDOUT:   %Destroy.Op.call.loc7: init %empty_tuple.type = call %Destroy.Op.bound.loc7(%a.var)
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc7_3.1: <bound method> = bound_method %a.var, constants.%Destructible.as.Destroy.impl.Op.cc70d5.1
+// CHECK:STDOUT:   %Op.ref.loc7: %Destructible.as.Destroy.impl.Op.type.43d658.2 = name_ref Op, imports.%Main.Op [concrete = constants.%Destructible.as.Destroy.impl.Op.cc70d5.2]
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.bound.loc7_3.2: <bound method> = bound_method %a.var, %Op.ref.loc7
+// CHECK:STDOUT:   %.loc7_3.2: %Destructible = acquire_value %a.var
+// CHECK:STDOUT:   %Destructible.as.Destroy.impl.Op.call.loc7: init %empty_tuple.type = call %Destructible.as.Destroy.impl.Op.bound.loc7_3.2(%.loc7_3.2)
 // CHECK:STDOUT:   <elided>
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc14_7.1(%self.param: ref %empty_struct_type) = "no_op";
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc14_7.2(%self.param: ref %Destructible) {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

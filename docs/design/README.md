@@ -885,7 +885,9 @@ var a: array(i32, 3) = (i, i, i);
 ```
 
 A heap-allocated dynamically sized array is written `buf(T)`, which is a
-shorthand for the library type `Core.Buf(T)`.
+shorthand for the library type `Core.Buf(T)` (the fork implements
+`Core.Buf(T)` without the shorthand, see [Slices](#slices); fork amendment
+2026-09-28, F-012).
 
 Elements of an `array` or `buf` may be accessed using square brackets
 (`[`...`]`), as in `a[i]`:
@@ -911,7 +913,20 @@ Core.Print(a[0]);
 
 ### Slices
 
-> **TODO:** Slices
+A _slice_ is a non-owning view of a contiguous region of values: the prelude
+type `Core.Slice(T)`, a pointer and a size, formed explicitly from a pointer to
+an array (`Core.Slice(i32).FromArray(&a)`), from a heap buffer (`b.AsSlice()`),
+or as a sub-view (`s.Subslice(1, 3)`), and never implicitly from an array value.
+Indexing reads elements by value (`s[i]`) with a runtime bounds check that
+fails-stop on violation, and slices iterate with `for`. The owning counterpart
+is `Core.Buf(T)`, a heap-allocated buffer freed by its destructor; see
+[Slices](slices.md) for the full design, including the 0.1 limits (fork
+amendment 2026-09-28, F-012).
+
+> References:
+>
+> -   [Slices](slices.md)
+> -   [Indexing](expressions/indexing.md)
 
 ## Expressions
 

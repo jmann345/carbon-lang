@@ -15,16 +15,17 @@ with real test coverage), **PARTIAL** (works with material gaps),
 
 ## Scoreboard
 
-**29 DONE / 20 PARTIAL / 6 MISSING / 1 DESIGN-ONLY** across 56 milestone
+**29 DONE / 21 PARTIAL / 5 MISSING / 1 DESIGN-ONLY** across 56 milestone
 bullets (reconciled 2026-10-05 against the conformance scoreboard —
 CONF_NUMBERS_HEADER — and the fork/inventory/work-items.json ledger; the
 original 2026-07-19 audit read 24 / 18 / 13 / 1; the if-let / let-else row
-flipped MISSING → PARTIAL at the W-012 landing later the same day). The front half of the compiler is done;
-match, choice payloads, `?` error handling, exception boundaries, threading
-interop, if-let / while-let / let-else, native unions and `overload fn` sets
-with import, api/impl definitions, generic members and C++ export have since
-landed, leaving variadics, slices, and the build-system/documentation rows as
-the open back half.
+flipped MISSING → PARTIAL at the W-012 landing later the same day). The front
+half of the compiler is done; match, choice payloads, `?` error handling,
+exception boundaries, threading interop, if-let / while-let / let-else, native
+unions, `overload fn` sets with import, api/impl definitions, generic members
+and C++ export, and `Core.Slice`/`Core.Buf` with the runtime bounds fail-stop
+have since landed, leaving variadics, the `std::span` mapping, and the
+build-system/documentation rows as the open back half.
 
 ## Per-bullet status
 
@@ -71,9 +72,9 @@ the open back half.
 | Stdlib: tuple/array library parts | PARTIAL | array Iterate impl works; tuple Copy hand-written only for arities 0-3 with 'TODO: Implement tuple copy as a variadic generic impl'; no tuple Eq/Ordered — blocked on variadics. |
 | Stdlib: pointer types | DONE | Pointer Copy/UnformedInit/const conversions, UnsafeAs casts, Optional(T*) null-niche for C++ ABI (core/prelude/). |
 | Stdlib: interfaces powering language syntax (operators, conversions) | DONE | AddWith/EqWith/OrderedWith/IndexWith/ImplicitAs/As/UnsafeAs/Copy/Iterate etc. all present and powering syntax, though several shapes are workarounds pending interface extension. |
-| Stdlib: String and string-literal types | PARTIAL | String is a 33-line non-owning {Char*, u64} with Size/Copy/indexing only — no equality, concatenation, or owning variant (core/prelude/types/string.carbon). |
+| Stdlib: String and string-literal types | PARTIAL | String is a 33-line non-owning {Char*, i64} (string.carbon:23-25 declares `size: i64`; the `u64` is the min_prelude part's) with Size/Copy/indexing only — no equality, concatenation, or owning variant (core/prelude/types/string.carbon). |
 | Stdlib: Optional | PARTIAL | Working Some/None/HasValue/Get with pointer niche (stdlib/optional_basic, optional_pointer_niche PASS), but the file states 'We don't have an approved design... The API here is a placeholder' (optional.carbon:27-28); no comparison support (optional_missing_ops SKIP). Its identity — re-platform onto the generic `choice` machinery versus redesign (W-058) — was OPEN sub-fork SF-9, resolved 2026-09-27 at EH-A (fork/eh/plan.md D-EH-1: the placeholder class is KEPT and gained a `Try` impl, `final impl forall [T: Destroy & OptionalStorage] Optional(T) as Try`; the API redesign stays W-058). |
-| Stdlib: Slices | MISSING | grep for Slice in core/ returns nothing; no slice type anywhere; heap allocation likewise absent. |
+| Stdlib: Slices | PARTIAL | SL-1 landed (W-055 DISCHARGED 2026-10-05, fork/slices/plan.md, decision-log "SL-1: Core.Slice, Core.Buf, heap allocation, fail-stop"): `Core.Slice(T)` (core/prelude/types/slice.carbon, `{ptr: T*, size: i64}`, `T: Copy & Destroy`) formed explicitly from a pointer to an array (`FromArray(&a)`), from a heap buffer (`b.AsSlice()`), from a raw pointer and size (`UnsafeMake`) or as a sub-view (`Subslice`), never from an array value; `s[i]` reads by value through a `final impl ... as IndexWith(i64)` with a runtime bounds check that fails-stop (one stderr line, `abort()`, SIGABRT) and iterates with `for` (`final impl Slice(T) as Iterate`, `.CursorType = i64`); `Core.Slice(T)` converts implicitly to `Core.Slice(const T)`. `Core.Buf(T)` (core/prelude/types/buf.carbon) owns a `malloc` block — `Make(size, fill)` initializes every element, `Set` writes bounds-checked, the in-class `impl as Destroy` frees it (destroy lookup now selects a class's declared `Destroy` impl over the synthesized witness, D-SL-16), not `Copy`, not `UnformedInit`. Four runtime-only builtins behind them (`pointer.offset`, `fail_stop`, `heap.allocate` with an `umul.with.overflow` guard, `heap.free`), the pointee-completeness requirement at their calls (`IncompleteTypeInBuiltinCall`), and the literal-subscript rule (an integer literal subscript converts to `i64` when the operand implements `IndexWith(i64)` and not `IndexWith(Core.IntLiteral)`). 0.1 limits, each a filed item: slices are read-only (`s[i] = v` diagnoses; no `IndirectIndexWith`/`ref` returns, W-109); `i32` subscripts need `as i64` (W-116); no `buf(T)` shorthand (W-110); `Buf` runs no element destructors and takes no `Allocator` (W-111); over-aligned elements unsupported (W-112); the fail-stop message names the operation, not the index (W-113); no unchecked access (the release-build opt-out, W-114); `var b: Core.Buf(i32);` is an error (W-115); a `Buf` held in a field is not freed — aggregate destroy ops are still the member-destruction placeholder (W-108). Conformance: 3/3 programs PASS (stdlib/slices_basic SKIP -> PASS, slices_heap_buf, slices_bounds_fail_stop with `EXPECT-EXIT: -6`; hosted run 37347619141, 124 PASS / 0 FAIL / 23 SKIP over 147, 47/56 bullets). SL-2 (W-056, the `std::span` mapping and owning-container views) is next; it flips row 81 and leaves this row PARTIAL until write-through indexing lands. |
 | Stdlib C++ interop: transparent fundamental-type mapping | DONE | bool/char/iN/uN/fN map plus CppCompat.Long32/ULongLong64 adapters (core/prelude/types/cpp/, check/cpp/type_mapping.cpp). |
 | Stdlib C++ interop: transparent non-owning string mapping | DONE | str <-> std::string_view bidirectional transparent mapping implemented and tested (check/cpp/custom_type_mapping.cpp, proposal p006177). |
 | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | MISSING | No Carbon slice type and no std::span/vector view mapping — only ordinary API import of containers works. |
@@ -158,9 +159,9 @@ Interop machinery is strong (thunks, overload sets, inheritance) but the 0.1 bul
 
 ### W9. Standard library buildout: slices, heap allocation, String, Optional, span mapping [L]
 
-**Depends on:** Definition-checked variadics implementation, Sum types with payloads, native unions, and std::variant/optional interop
+**Depends on:** Definition-checked variadics implementation, Sum types with payloads, native unions, and std::variant/optional interop — for the String and Optional halves only; none of the four is a dependency of the slice, heap-allocation or span-mapping halves (W-055/W-056; fork/slices/plan.md §0.2 item 5, corrected at the SL-1 discharge 2026-10-05).
 
-Close the 'types with important language support' half of the stdlib checklist: slices (missing entirely), heap allocation (missing), owning/comparable String, a designed (non-placeholder) Optional, and the non-owning contiguous-container interop mapping. Several APIs are currently workarounds pending variadics and interface extension.
+Close the 'types with important language support' half of the stdlib checklist: slices and heap allocation landed at SL-1 (`Core.Slice(T)`, `Core.Buf(T)`, the runtime bounds fail-stop; W-055 DISCHARGED 2026-10-05), the `std::span` / owning-container->view mapping is SL-2 (W-056); owning/comparable String and a designed (non-placeholder) Optional remain. Several APIs are currently workarounds pending variadics and interface extension.
 
 **Arbiter:** A core/ test suite (compiled AND executed by way of the run harness) covering: a slice type with runtime bounds behavior, heap allocation, an approved-design Optional and String with comparison/ownership story, and transparent std::span/owning-container->view mapping round-tripping with C++.
 

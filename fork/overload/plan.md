@@ -2803,14 +2803,13 @@ complete (§0.4). Deltas from this plan, honestly:
     ambiguous [CppInteropParseError]" plus two `candidate function` notes);
     `unused` on every unused runtime binding; the conformance programs seed
     runtime values through `RuntimeSeed` so nothing constant-folds.
--   **Residue the review added (filed at discharge, blocked_by [], ids
-    PROVISIONAL):** this branch's ledger max is W-107 (trunk's) and the
-    slices branch brings W-108..W-116, so OV-3 allocates W-117 (generic-class
-    sets: one TODO per member, no export) and W-118 (two members with one
-    C++ signature — `Core.CppCompat.Long64` beside `i64` on LP64, `Core.Char`
-    beside the char-literal type — ambiguous at every C++ call; the
-    `hasSameType` belt not added). The orchestrator renumbers at merge if
-    they collide. No other §8.5 item fired.
+-   **Residue the review added (filed at discharge, blocked_by []):** the
+    slices branch (SL-1) brought W-108..W-116 to trunk first, so OV-3's ids
+    are W-117 (generic-class sets: one TODO per member, no export) and W-118
+    (two members with one C++ signature — `Core.CppCompat.Long64` beside
+    `i64` on LP64, `Core.Char` beside the char-literal type — ambiguous at
+    every C++ call; the `hasSameType` belt not added), final at the trunk
+    merge. No other §8.5 item fired.
 -   **Scoreboard base.** The base of record is origin/trunk's
     fork/conformance/out/scoreboard.json after the OV-2 merge (18410df07):
     121 PASS / 0 FAIL / 24 SKIP over 145, 46/56 bullets — this branch's
@@ -2840,8 +2839,8 @@ Reconciliation greps (§8.4), run at 3a7bc00d3:
     two new rows are in the README table (`interop/cpp_export_overload_set`,
     `interop/cpp_export_overload_set_divergence`, bullet "Functions: function
     overloading (Carbon-native)", mode `run`).
--   Ledger max id on this branch: W-107; W-117..W-118 allocated provisionally
-    (see above).
+-   Ledger max id on this branch: W-107; W-117..W-118 allocated after SL-1's
+    W-108..W-116 (final at the trunk merge; see above).
 
 Hosted verification of record (R28(b); the container cannot build the
 toolchain): first autoupdate (fill 88b863220) over 13aa792bc and 4033adc75,

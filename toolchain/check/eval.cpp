@@ -2645,6 +2645,10 @@ static auto MakeConstantForBuiltinCall(EvalContext& eval_context,
     case SemIR::BuiltinFunctionKind::PointerMakeNull:
     case SemIR::BuiltinFunctionKind::PointerIsNull:
     case SemIR::BuiltinFunctionKind::PointerUnsafeConvert:
+    case SemIR::BuiltinFunctionKind::PointerOffset:
+    case SemIR::BuiltinFunctionKind::FailStop:
+    case SemIR::BuiltinFunctionKind::HeapAllocate:
+    case SemIR::BuiltinFunctionKind::HeapFree:
     case SemIR::BuiltinFunctionKind::CppStdInitializerListMake: {
       // These are runtime-only builtins.
       // TODO: Consider tracking this on the `BuiltinFunctionKind`.

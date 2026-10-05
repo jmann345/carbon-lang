@@ -70,6 +70,8 @@ fn For() {
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare void @"_COp.6f4dee545ed23f91:core.Destroy.Core"(ptr)
 // CHECK:STDOUT:
+// CHECK:STDOUT: declare void @"_COp.41b89bfca5f3c7d4:core.Destroy.Core"(ptr)
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define weak_odr void @"_COp.70db2d92ffddbef7:core.Destroy.Core"(ptr %self) #0 !dbg !14 {
 // CHECK:STDOUT: entry:

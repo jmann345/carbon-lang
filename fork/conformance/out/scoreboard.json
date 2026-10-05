@@ -1,15 +1,15 @@
 {
-  "generated": "2026-10-05T15:48:15.416527+00:00",
+  "generated": "2026-10-05T17:37:12.359310+00:00",
   "toolchain": "/home/runner/work/_temp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 52.4,
+  "elapsed_seconds": 54.4,
   "totals": {
-    "PASS": 121,
+    "PASS": 124,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
     "OUTPUT-MISMATCH": 0,
     "DIFF-MISMATCH": 0,
-    "SKIP": 24
+    "SKIP": 23
   },
   "programs": [
     {
@@ -900,8 +900,22 @@
     {
       "path": "stdlib/slices_basic.carbon",
       "bullet": "Stdlib: Slices",
-      "status": "SKIP",
-      "detail": "MISSING \u2014 grep for Slice in core/ returns nothing: no slice type exists anywhere in the Core package (and heap allocation is likewise absent), so a non-owning contiguous view over an array cannot be expressed today. Un-SKIP (and uncomment the body) when W9 delivers a Core slice type with construction-from-array, indexing, and size.",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "stdlib/slices_bounds_fail_stop.carbon",
+      "bullet": "Stdlib: Slices",
+      "status": "PASS",
+      "detail": "",
+      "differential": false
+    },
+    {
+      "path": "stdlib/slices_heap_buf.carbon",
+      "bullet": "Stdlib: Slices",
+      "status": "PASS",
+      "detail": "",
       "differential": false
     },
     {
@@ -1415,10 +1429,12 @@
       ]
     },
     "Stdlib: Slices": {
-      "status": "SKIP",
-      "gap_status": "MISSING",
+      "status": "PASS",
+      "gap_status": "PARTIAL",
       "programs": [
-        "stdlib/slices_basic.carbon"
+        "stdlib/slices_basic.carbon",
+        "stdlib/slices_bounds_fail_stop.carbon",
+        "stdlib/slices_heap_buf.carbon"
       ]
     },
     "Stdlib C++ interop: transparent fundamental-type mapping": {

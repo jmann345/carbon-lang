@@ -5,6 +5,7 @@
 package Core library "prelude/types";
 
 export import library "prelude/types/bool";
+export import library "prelude/types/buf";
 export import library "prelude/types/char";
 export import library "prelude/types/char_literal";
 export import library "prelude/types/cpp/exception";
@@ -18,5 +19,6 @@ export import library "prelude/types/int_literal";
 export import library "prelude/types/maybe_unformed";
 export import library "prelude/types/optional";
 export import library "prelude/types/result";
+export import library "prelude/types/slice";
 export import library "prelude/types/string";
 export import library "prelude/types/uint";

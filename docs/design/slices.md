@@ -33,8 +33,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 > allocation, fail-stop (2026-10-05)" for D-SL-15..20).** `Core.Slice(T)` and
 > `Core.Buf(T)` as implemented. Toolchain status: SL-1 (the two prelude types,
 > the runtime bounds fail-stop and the four builtins behind them) landed
-> 2026-10-05; the `std::span` mapping and owning-container views land at SL-2
-> (W-056), when the [Interop](#interop) section is filled in. The
+> 2026-10-05; SL-2 (W-056: the `std::span` mapping and owning-container views,
+> the [Interop](#interop) section) is implemented as of 2026-10-05 with its
+> hosted verification pending. The
 > [0.1 limits](#01-limits) section lists every deviation from the target
 > design together with the condition under which it is removed.
 
@@ -273,14 +274,62 @@ its own: `for (x: T in b.AsSlice())` is the idiom. The impl lives in
 
 ## Interop
 
-> Filled at SL-2 (W-056). The planned rule: `std::span<T, std::dynamic_extent>`
-> maps to `Core.Slice(T')` in both directions on the premise that both are a
-> pointer followed by a size, `std::span<const int>` ↔ `Core.Slice(const i32)`;
-> static-extent spans stay ordinary class imports; an owning C++ container with
-> `data()` and `size()` members converts implicitly to a slice of its elements.
-> Until then, a Carbon array reaches a C++ `std::span<const int>` parameter
-> only through an explicit view, `Core.Slice(i32).FromArray(&a)`, once the
-> mapping exists.
+> SL-2 (W-056, 2026-10-05; fork/slices/plan.md §1.B, decisions D-SL-8, D-SL-9,
+> D-SL-10, D-SL-14). The C++ side of this section is also recorded in
+> [Interoperability: `std::span` and `Core.Slice`](interoperability/README.md#stdspan-and-coreslice).
+
+**`std::span` ↔ `Core.Slice` (D-SL-8).** The dynamic-extent
+`std::span<T, std::dynamic_extent>` maps to `Core.Slice(T')` in both directions
+on the premise that both are a pointer followed by a size — `Core.Slice(T)` is
+`{T*, i64}` and a dynamic-extent span is `{T*, size_t}`, 16 bytes on the
+supported 64-bit targets — so the mapping is a reinterpretation, with no
+conversion at the boundary (the `str` ↔ `std::string_view` rule). The element
+type maps recursively: `std::span<const int>` ↔ `Core.Slice(const i32)`. On
+import, a C++ function taking or returning `std::span<T>` takes or returns
+`Core.Slice(T')`; on export, a Carbon function whose signature names
+`Core.Slice(T)` is declared to C++ with `std::span<T'>` in that position, found
+by name in the translation unit, which must therefore `#include <span>` (a
+translation unit without it diagnoses the signature as unmappable). A
+static-extent `std::span<T, N>` is a pointer only, so it is not mapped and
+imports as an ordinary class.
+
+**Views are explicit on the Carbon side (D-SL-2).** A Carbon array reaches a
+`std::span<const int>` parameter as `Cpp.SumSpan(Core.Slice(i32).FromArray(&a))`,
+never as `Cpp.SumSpan(a)`: the view is formed from a pointer to the array. A
+`Core.Slice(T)` argument converts to a `Core.Slice(const T)` parameter
+implicitly (D-SL-10), as `std::span<T>` converts to `std::span<const T>`.
+
+**Owning containers form views implicitly (D-SL-9).** A C++ class with `data()`
+and `size()` member functions — `std::vector<T>`, `std::array<T, N>`,
+`std::string` — implements the prelude's private `CppContiguousRange`
+interface through a witness the toolchain synthesizes from those two members
+(the `CppRangeForIterate` mechanism behind `for` over C++ ranges), and the
+prelude's blanket impl in `core/prelude/types/cpp/slice.carbon` makes such a
+container implicitly convertible to `Core.Slice(Element)`, where `Element` is
+the pointee of `data()`'s result. When the container has both a `const` and a
+non-`const` `data()`, the `const` one is selected, so a `std::vector<int>`
+views as `Core.Slice(const i32)` — exactly the type a `std::span<const int>`
+parameter imports as. The size converts in two steps, `ImplicitAs(u64)` then
+`As(i64)`, so that `size_t` is accepted whether it maps to `u64` (Linux) or to
+`Core.CppCompat.ULong64` (macOS). So, for a `std::vector<int>` `v` made in C++:
+
+```carbon
+let view: Core.Slice(const i32) = v;   // owning -> view, no copy
+Core.Print(view[2]);
+Core.Print(Cpp.SumSpan(v));            // the vector passes as std::span<const int>
+```
+
+The view owns nothing and is valid while the container is; an empty
+container yields a zero-size view whose pointer is never dereferenced. Only
+member `data()`/`size()` are consulted; free (ADL) `data`/`size` functions are
+not (a 0.1 limit below).
+
+**`-std=c++20`.** `<span>` is a C++20 header and the toolchain's embedded Clang
+defaults to C++17, so a translation unit that uses the mapping compiles with
+`--clang-arg=-std=c++20` (the fork's conformance programs
+`interop/cpp_span_view.carbon` and `interop/cpp_span_roundtrip_diff.carbon`
+carry it as `COMPILE-ARGS`). Toolchain tests mock `std::span` with the
+pointer-then-size layout so they stay hermetic (D-SL-14).
 
 ## 0.1 limits
 
@@ -334,6 +383,15 @@ which it is removed:
 -   **No compile-time evaluation of slice reads.** All four builtins are
     runtime-only; a constant `Core.Slice` never forms because `&a` of a local
     is not constant.
+-   **Static-extent `std::span<T, N>` is not mapped** (W-119). Its object
+    representation is a pointer only, so it imports as an ordinary class and
+    no Carbon type exports to it. Removed if a static-extent view type is
+    specified, or by a thunk-side conversion in the `std::initializer_list`
+    style.
+-   **Owning -> view consults member `data()`/`size()` only** (W-120). A
+    container whose contiguous access comes only from free `data(x)`/`size(x)`
+    functions gets no view conversion. Removed by adding the ADL stage the
+    `for`-over-C++-ranges synthesis already has.
 
 ## Alternatives considered
 

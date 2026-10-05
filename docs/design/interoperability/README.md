@@ -35,6 +35,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -   [TODO: Advanced type mapping: pointers, references, and `const`](#todo-advanced-type-mapping-pointers-references-and-const)
 -   [Bi-directional type mapping: standard library types](#bi-directional-type-mapping-standard-library-types)
     -   [`std::string_view` and `str`](#stdstring_view-and-str)
+    -   [`std::span` and `Core.Slice`](#stdspan-and-coreslice)
 -   [TODO: The operator interoperability model](#todo-the-operator-interoperability-model)
 
 <!-- tocstop -->
@@ -248,8 +249,11 @@ interoperability, though bits will be interpreted differently in each language.
 
 ## Bi-directional type mapping: standard library types
 
-TODO: C++ view types such as `std::span` and other standard library types will
-have corresponding types in Carbon.
+C++ view types map to the corresponding Carbon view types where the two share
+an object representation: `std::string_view` to `str` and the dynamic-extent
+`std::span<T>` to `Core.Slice(T)`. Other standard library types are imported
+as ordinary classes (fork amendment 2026-10-05, SL-2; the sentence this
+paragraph replaces was a TODO naming `std::span` as future work).
 
 ### `std::string_view` and `str`
 
@@ -270,5 +274,46 @@ default until layout compatibility is established.
 >
 > -   Proposal
 >     [#6177: C++ Interop: Mapping `std::string_view` to `Core.Str`](https://github.com/carbon-language/carbon-lang/pull/6177)
+
+### `std::span` and `Core.Slice`
+
+> **Fork amendment 2026-10-05 (SL-2, W-056; fork/slices/plan.md §1.B,
+> decisions D-SL-8, D-SL-9, D-SL-10, D-SL-14).** As implemented in the fork
+> toolchain; see [Slices](../slices.md#interop) for the Carbon-side API.
+
+C++'s dynamic-extent `std::span<T>` (that is, `std::span<T, std::dynamic_extent>`)
+maps directly to Carbon's [`Core.Slice(T)`](../slices.md) in both directions,
+on the same premise as the `std::string_view` mapping: both are a pointer to
+the first element followed by a size, so the Carbon compiler treats the span
+specialization as `Core.Slice(T)` at the ABI level and no conversion runs at
+the boundary. The element type maps recursively, so `std::span<const int>` is
+`Core.Slice(const i32)`, and a Carbon `Core.Slice(T)` converts implicitly to
+`Core.Slice(const T)` as a `std::span<T>` converts to `std::span<const T>`.
+
+-   Importing: a C++ function taking or returning `std::span<T>` takes or
+    returns `Core.Slice(T)` in Carbon. A Carbon array reaches such a parameter
+    through an explicit view -- `Cpp.SumSpan(Core.Slice(i32).FromArray(&a))` --
+    never from the array value itself, because a view of a value could alias a
+    copy.
+-   Exporting: a Carbon function whose signature names `Core.Slice(T)` is
+    exported with `std::span<T>` in that position, provided the C++
+    translation unit has declared `std::span` (`#include <span>`); without it
+    the export is diagnosed as unmappable.
+-   Owning containers: a C++ class with `data()` and `size()` member functions
+    -- `std::vector<T>`, `std::array<T, N>`, `std::string` -- converts
+    implicitly to `Core.Slice` of its elements (`let view: Core.Slice(const
+    i32) = v;` for a `std::vector<int>` `v`, and `v` passes directly to a
+    `std::span<const int>` parameter). When the container has both a `const`
+    and a non-`const` `data()`, the `const` one is used, so the view's element
+    type is `const T`. The conversion is a view: it owns nothing and is valid
+    while the container is.
+
+A static-extent `std::span<T, N>` has a different representation (a pointer
+only) and is imported as an ordinary class; it is not mapped to `Core.Slice`.
+`<span>` requires C++20, so a translation unit using the mapping compiles with
+`-std=c++20` or later (the fork's conformance programs pass
+`--clang-arg=-std=c++20`). As for `std::string_view`, the mapping assumes a
+64-bit target whose standard library lays out the span as pointer then size
+(libc++ and libstdc++ both do).
 
 ## TODO: The operator interoperability model

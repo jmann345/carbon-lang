@@ -10,31 +10,40 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-10-05 (weekly upstream check: the 631f8fb cut HOLDS a seventh week — 181 deferred commits, a dry-run merge conflicts in 99 files; recorded in the decision log, no staging branch; the session was out of usage credits 09-28 → 10-05, so OV-2's review fixes and SL-1's implementation restarted today. Previous stamp, post-PR #45: OV-1 LANDED — Carbon-native
-function overloading as marked, closed, same-file `overload fn` sets
-(W-024, F-009 Option A): an `OverloadSet` SemIR entity, declaration-order
-first-match resolution by probing each member inside a discard scope,
-`:overload<N>` mangling keyed on an index stored on the `Function`
-(mirrored on import, so an imported generic's specific links against the
-defining library), thirteen loud 0.1 gates, the design page ported from
-the stranded branch. Gap row 57 MISSING → PARTIAL; header 28 DONE / 21
-PARTIAL / 6 MISSING / 1 DESIGN-ONLY. NEW FLOOR 118 PASS / 0 / 24 SKIP
-over 142 (quoted from scoreboard.json, run 36455269810), 46/56 bullets.
-IN FLIGHT: OV-2 (W-025, set import + generic members + sets in generic
-scopes + `extern` members + the api-member missing-definition check) on
-claude/carbon-fork-0-1-ov2 in ../carbon-ov2 — implemented (three
-commits), hosted fill converged first pass with every predicted
-diagnostic, implementation review REJECT (a blocker: the api-member
-missing-definition arm also walks sets the api merely imported; a major:
-the two-file `extern` owner shape) — fixer running
-(expected +3 PASS / +3 total → 121/0/24 over 145, 46/56). Then OV-3
-(export). Slices (W-055/W-056): plan rev 2 signed off and rebased onto
-this trunk; SL-1 implementer running in ../carbon-slices (commit 1, the
-four builtins, is in). Reviews were both APPROVE-WITH-AMENDMENTS (Buf+UnformedInit would free garbage; the
-heap.allocate lowering must unwrap the MaybeUnformed adapter; a second
-exhaustive RecognizedTypeInfo switch; a macOS `ULong64 as As(i64)` hole;
-DI-line churn between SL-1 and SL-2), folded as rev 2. Next cron Monday 2026-10-12; the owner's machine is
-never used._
+_Last updated: 2026-10-05 (post-PR #46: OV-2 LANDED — overload sets
+import whole across libraries and across a library's api/impl pair
+(`GetLocalOverloadSet`, the closed-set rule `OverloadSetFrozen`, the
+api-member missing-definition check), take generic members (non-diagnosing
+deduction inside the probe's discard scope) and work in generic classes and
+class scopes; `extern library` owners in the one- and two-file shapes by a
+per-member ownership rule; and a trunk-level gap closed on the way — an impl
+file can now define `fn C.F` out of line against an api-declared class
+(`DeclNameStack::ResolveAsScope` had no arm for an api import ref). Gap row
+57 stays PARTIAL (OV-3 export flips it). NEW FLOOR 121 PASS / 0 / 24 SKIP
+over 145 (quoted from scoreboard.json, run 37333428997), 46/56 bullets.
+Review loop: REJECT → fix → focused re-review APPROVE-WITH-FIXES → fix; the
+second hosted fill refuted three predictions both reviews had traced as
+clean, recorded per R28(d). Earlier today: the weekly upstream check — the
+631f8fb cut HOLDS a seventh week (181 deferred commits, a dry-run merge
+conflicts in 99 files; decision log), and the session was out of usage
+credits 09-28 → 10-05. IN FLIGHT: SL-1 (W-055, Core.Slice + Core.Buf + four
+runtime builtins) on claude/carbon-fork-0-1-slices in ../carbon-slices —
+implemented, review REJECT (user `Destroy` impls were inert in the
+toolchain, so `Buf` never freed) fixed at the root by letting a declared
+`Destroy` impl win the lookup, plus a checker completeness hook for
+builtin pointees and a literal-subscript rule (`IntLiteral` → `i64` when
+the container has no `IndexWith(IntLiteral)` impl); the first clean fill
+moved 40 goldens where 18 were predicted (every union golden lost its
+completion witness; prelude/interop destroy selection changed) — round-4
+fixer root-causing. OV-3 (W-026, overload-set export) starting off this
+trunk in ../carbon-ov3. Next cron Monday 2026-10-12; the owner's machine
+is never used._
+FORTY-SIX PRs. Overload sets now cross library boundaries the way the
+design asks — whole, closed, with the api/impl rules reading the api
+file's facts — and the slice's two review rounds plus three hosted fills
+each caught something the previous layer had traced as clean, which is
+the loop working rather than failing: every miss is written down with its
+root cause._
 FORTY-FIVE PRs. Overloading exists in Carbon proper: the design's
 marked, closed sets with first-match resolution, landed with the loop's
 one real invariant (every probe exit restores block, region and cleanup
@@ -346,8 +355,8 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-118 PASS / 24 SKIP / 0 FAIL programs (142 total); **46/56 bullets
-green** (GitHub-hosted scoreboard at the PR #45 merged head, run 36455269810; verified from fork/conformance/out/scoreboard.json —
+121 PASS / 24 SKIP / 0 FAIL programs (145 total); **46/56 bullets
+green** (GitHub-hosted scoreboard at the PR #46 head, run 37333428997; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first
 error-handling flip, now 4 programs deep incl. the W72b threading
 arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79
@@ -355,7 +364,7 @@ at S3a → 80 at S3b → 81 at S3c → 83 at B1b
 (error_handling/control_flow_constructs flip +
 question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a
 → 88 F8b → 89 F8c → 90 F8d → 91 W72b → 92 W-067 → 93 W-068 → 95 W-069 → 96 multifile → 100 W-076 → 101 W-078 → 102 W-077 →
-106 EH-A → 108 W-012 → 112 EH-B → 114 UN-1 → 116 UN-2 → 118 OV-1. The scoreboard regenerates on GitHub-hosted runners only
+106 EH-A → 108 W-012 → 112 EH-B → 114 UN-1 → 116 UN-2 → 118 OV-1 → 121 OV-2. The scoreboard regenerates on GitHub-hosted runners only
 (`Fork: hosted verification`, mode `conformance`; R28).
 
 ### CI on jmann345/carbon-lang (GitHub-hosted only — R28)

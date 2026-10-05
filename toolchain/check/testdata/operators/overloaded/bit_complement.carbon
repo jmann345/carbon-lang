@@ -11,18 +11,6 @@
 // TIP:   bazel test //toolchain/testing:file_test --test_arg=--file_tests=toolchain/check/testdata/operators/overloaded/bit_complement.carbon
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/operators/overloaded/bit_complement.carbon
-// CHECK:STDERR: {{.*}}/prelude/types/cpp/slice.carbon:69:9: error: cannot access member of interface `Destroy` in type `C.(CppContiguousRange.SizeType)` that does not implement that interface [MissingImplInMemberAccess]
-// CHECK:STDERR:         self.Size().(ImplicitAs(u64).Convert)().(As(i64).Convert)());
-// CHECK:STDERR:         ^~~~~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: {{.*}}/prelude/types/cpp/slice.carbon:68:9: error: cannot access member of interface `Destroy` in type `C.(CppContiguousRange.DataType)` that does not implement that interface [MissingImplInMemberAccess]
-// CHECK:STDERR:         self.Data().(CppDataPointer.Raw)(),
-// CHECK:STDERR:         ^~~~~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: {{.*}}/prelude/types/cpp/slice.carbon:64:1: error: orphan `impl` found; something in the self-type or constraint must be defined in the same file [ImplIsOrphan]
-// CHECK:STDERR: impl forall [C: CppContiguous where .Element impls Copy & Destroy]
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 
 // This file was generated from unary_op.carbon.tmpl. Run make_tests.sh to regenerate.
 
@@ -61,7 +49,7 @@ fn TestOp(a: C) -> C {
 // CHECK:STDOUT:   %impl.elem1: %.71a = impl_witness_access constants.%BitComplement.impl_witness, element1 [concrete = constants.%C.as.BitComplement.impl.Op]
 // CHECK:STDOUT:   %bound_method: <bound method> = bound_method %a.ref, %impl.elem1
 // CHECK:STDOUT:   <elided>
-// CHECK:STDOUT:   %C.as.BitComplement.impl.Op.call: init %C to %.loc39_20.1 = call %bound_method(%a.ref)
+// CHECK:STDOUT:   %C.as.BitComplement.impl.Op.call: init %C to %.loc27_20.1 = call %bound_method(%a.ref)
 // CHECK:STDOUT:   return %C.as.BitComplement.impl.Op.call to %return.param
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

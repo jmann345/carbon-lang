@@ -8,6 +8,7 @@
 // EXPECT-STDOUT:
 //   10
 //   6
+//   12
 //
 // Both directions of the transparent mapping (SL-2, fork/slices/plan.md
 // §5.B.1; D-SL-8, D-SL-9, D-SL-14): (1) a Carbon array reaches a C++
@@ -16,9 +17,13 @@
 // no copy; (2) owning -> view: a `std::vector<int>` made in C++ converts
 // implicitly to `Core.Slice(const i32)` (the synthesized
 // `Core.CppContiguousRange` witness over its `data()`/`size()` members plus
-// the prelude's blanket `ImplicitAs` impl, core/prelude/types/cpp/slice.carbon)
-// and an element is read through the view. `<span>` needs C++20
-// (COMPILE-ARGS; the toolchain's Clang defaults to gnu++17).
+// the prelude's blanket `ImplicitAs` impl in core/prelude/types/slice.carbon
+// over the helpers of core/prelude/types/cpp/slice.carbon), an element is read
+// through the view, and (3) the same vector passes DIRECTLY to the
+// `std::span<const int>` parameter -- the blanket impl selected during
+// argument conversion to an imported parameter type, a distinct shape from the
+// `let`. `<span>` needs C++20 (COMPILE-ARGS; the toolchain's Clang defaults
+// to gnu++17).
 //
 // Un-SKIPped from the write-tests-first stub; two strawman rewrites are
 // disclosed (plan §0.2 item 7): `Cpp.SumSpan(a)` on an array VALUE became
@@ -30,7 +35,8 @@
 // Hand-derived expectations (R16(d)): `a` is {1, 2, 3, 4}, so
 // `std::accumulate` over the span prints 1 + 2 + 3 + 4 = 10; `MakeVector()`
 // is {2, 4, 6}, so `view[2]` prints 6 (`const i32` -> `i32` for `Core.Print`
-// by the prelude's `const U as ImplicitAs(T)` impl).
+// by the prelude's `const U as ImplicitAs(T)` impl) and `SumSpan(v)` prints
+// 2 + 4 + 6 = 12.
 
 import Core library "io";
 import Cpp inline '''c++
@@ -58,5 +64,7 @@ fn Run() -> i32 {
   var v: Cpp.std.vector(i32) = Cpp.MakeVector();
   let view: Core.Slice(const i32) = v;
   Core.Print(view[2]);
+  // The vector itself passes as std::span<const int>.
+  Core.Print(Cpp.SumSpan(v));
   return 0;
 }

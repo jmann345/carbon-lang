@@ -17,8 +17,15 @@
 // shape: a test prelude declares the interface so the synthesis fires for it.
 // `data()` returns `_Nonnull` pointers here because the primitives prelude has
 // no `Core.Optional` for a nullable pointer to map to; the nullable (real
-// `std::vector`) shape is stdlib/vector_view.carbon's. `--target` pins
-// `unsigned long` to `u64`.
+// `std::vector`) shape is stdlib/vector_view.carbon's. `size()` returns
+// `unsigned int` (`u32`), not `unsigned long`: that type imports as
+// `Core.CppCompat.ULong64` (import.cpp `MapBuiltinIntegerType`, every target), which
+// the primitives prelude does not declare -- the first hosted fill left this
+// golden unfilled, the `CoreNameNotFound` error type reaching the result-type
+// `CARBON_CHECK` that the round-1 fix turned into a graceful decline. The
+// witness is indifferent to the size type; the `ImplicitAs(u64)` requirement
+// belongs to the full prelude's `CppContiguous` constraint, exercised by
+// stdlib/vector_view.carbon.
 
 // --- cpp_contiguous_range.carbon
 package Core library "cpp_contiguous_range";
@@ -54,7 +61,7 @@ class V {
  public:
   const int* _Nonnull data() const;
   int* _Nonnull data();
-  unsigned long size() const;
+  unsigned int size() const;
 };
 ''';
 
@@ -64,7 +71,7 @@ class V {
 fn Test() {
   Core.AssertIsContiguous(Cpp.V);
   let _: Core.CppContiguousRange where
-    .DataType = const i32* and .SizeType = u64 = Cpp.V;
+    .DataType = const i32* and .SizeType = u32 = Cpp.V;
 }
 
 // --- missing_size.carbon
@@ -93,7 +100,7 @@ import Cpp inline '''c++
 class M {
  public:
   int* _Nonnull data();
-  unsigned long size();
+  unsigned int size();
 };
 ''';
 
@@ -102,5 +109,5 @@ class M {
 fn Test() {
   Core.AssertIsContiguous(Cpp.M);
   let _: Core.CppContiguousRange where
-    .DataType = i32* and .SizeType = u64 = Cpp.M;
+    .DataType = i32* and .SizeType = u32 = Cpp.M;
 }

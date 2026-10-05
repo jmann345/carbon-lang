@@ -388,7 +388,14 @@ written at SL-1 discharge (§8.5) with these sub-decisions verbatim.
     and whose `Size` converts in TWO steps, `ImplicitAs(u64)` then `As(i64)`
     (amended 2026-09-28, review fold: rev A A2). `size_t` maps to `u64` where
     `uint64_t` is `unsigned long` (Linux) and to `Core.CppCompat.ULong64`
-    where it is `unsigned long long` (macOS; type_info.h:363-365). `u64` has
+    where it is `unsigned long long` (macOS; type_info.h:363-365). *Amended
+    2026-10-05 (SL-2 round 1): wrong on both counts — import.cpp
+    `MapBuiltinIntegerType` maps `unsigned long` to `Core.CppCompat.ULong64`
+    on every 64-bit target and never to `u64`, so `size_t` is `ULong64` on
+    Linux and macOS alike; `ImplicitAs(u64)` holds either way (cpp/int.carbon
+    `final impl CppCompat.ULong64 as ImplicitAs(u64)`), and the helper
+    interface is now the public `CppDataPointer` (round-1 note, §2.B.9).*
+    `u64` has
     `As(Int(64))` (uint.carbon:97-99) but `ULong64` does NOT: cpp/int.carbon
     :150-176 gives it only `ImplicitAs(IntLiteral)` (comptime
     `int.convert_checked`), `ImplicitAs(u64)` (:172-174) and the `IntLiteral →
@@ -1034,6 +1041,47 @@ Carbon side uses `FromArray(&Cpp.arr)`); `std::mdspan`.
     APPENDED after the last SL-1 line; the `prelude/types/optional`
     import is already in the SL-1 header (§1.A.2), so no existing line
     moves (amended 2026-09-28, review fold: rev A A4).
+    -   **Amended 2026-10-05 (SL-2 round 1, after hosted autoupdate run
+        37356848697 moved 306 files; R28(d) review miss, the plan's own
+        placement was right).** The implementation put the whole section,
+        blanket impl included, in a NEW library
+        core/prelude/types/cpp/slice.carbon because `u64` (the rev A A2
+        constraint) is not nameable in slice.carbon and the import line
+        would move the SL-1 lower goldens' DI lines. That broke the
+        prelude for every full-prelude program: `impl forall [C:
+        CppContiguous ...] C as ImplicitAs(Slice(C.Element))` is an
+        orphan there (impl_validation.cpp `DiagnoseOrphanImpl` walks the
+        SELF type and the INTERFACE SPECIFIC for a class of the same
+        library — `Slice` is prelude/types/slice's; a facet-type bound on
+        the self binding does not count), and even had it type-checked,
+        impl lookup imports candidates only from the IRs owning the
+        query's self/interface/arguments (impl_lookup.cpp
+        `FindAssociatedImportIRs`, `CollectCandidateImplsForQuery`), so
+        an impl in cpp/slice would never have been a candidate for
+        `Cpp.VectorLike as ImplicitAs(Slice(const i32))`. Two more errors
+        rode along: the impl body's `self.Data()`/`self.Size()`
+        temporaries need `Destroy`, and `CppContiguousRange` declares bare
+        `let DataType: type; let SizeType: type;` (a synthesized witness
+        can provide no other associated-constant type:
+        custom_witness.cpp `BuildCustomWitness` TODOs on it), so the
+        requirement is stated on the constraint, the `CppIterator`
+        shape (`require Self.(DataType) impls CppDataPointer & Destroy;
+        require Self.(SizeType) impls CppSizeToI64 & Destroy;`). The
+        landed layout, zero DI churn (the review's variant): the helpers
+        stay in cpp/slice.carbon as PUBLIC Core names (`CppContiguousRange`,
+        `CppDataPointer`, `CppContiguous`, the `CppUnsafeDeref` precedent)
+        plus a new `interface CppSizeToI64 { fn Op(self) -> i64; }` with
+        `impl forall [T: ImplicitAs(u64)] T as CppSizeToI64` (keeps `u64`
+        out of slice.carbon); cpp/slice.carbon no longer imports
+        prelude/types/slice; slice.carbon's SL-1-reserved
+        `prelude/types/optional` import line (unused there) became
+        `import library "prelude/types/cpp/slice";` at the same line
+        count (`class Slice` stays at :24), and the blanket impl is
+        appended to slice.carbon with `self.Size().(CppSizeToI64.Op)()`.
+        Import graph acyclic: cpp/slice imports copy, destroy, operators,
+        types/int, types/optional, types/uint, none of which reach
+        types/slice (only prelude/types, prelude/iterate and types/buf
+        do). The §1.B.3 sketch is otherwise the landed text.
 10. **Goldens:** §4.B. **Conformance:** §5.B. **Docs:** interop README
     paragraph + slices.md status line (§8.6).
 
@@ -1780,6 +1828,21 @@ Zero landed programs move (no landed program includes `<span>` or names
     and those goldens are predicted byte-identical.
 -   **min_prelude parts:** none (parts/iterate.carbon does not carry the
     interop section; the vector_view golden uses `full.carbon`).
+-   **Amended 2026-10-05 (SL-2 round 1).** The first hosted fill (run
+    37356848697) moved 306 files — every full-prelude golden took the
+    broken prelude's three errors (§2.B.9 amendment); all are restored
+    byte-identical to 12a2143d2 at the fix, the SL-1 lower slice goldens
+    included (the zero-churn layout keeps `class Slice` at :24 and every
+    method's line). Predicted after the fix: the ten new goldens fill;
+    nothing pre-existing moves, with one hedge — appending an `ImplicitAs`
+    impl to slice.carbon widens the import footprint of every
+    `ImplicitAs` query whose associated IRs include prelude/types/slice
+    (`ImportImplFilter` imports by interface only), so
+    check/testdata/slice/{basic,fail_basic,buf}.carbon and
+    lower/testdata/slice/{basic,buf}.carbon may renumber constants (the
+    SL-1 round-4(b) `range_for` class; the new impl matches none of their
+    queries, so no witness table or `declare` is added). Any other mover,
+    or a content change beyond renumbering, is a §8.1 stop.
 -   **Interop README:** one dated paragraph; docs prek only.
 -   **Diagnostics coverage:** no new kind (D-SL-8's failure path reuses
     `SemanticsTodo`).
@@ -1988,7 +2051,30 @@ Zero landed programs move (no landed program includes `<span>` or names
     Contingency (loud, D-SL-9): the PR lands without commit 2; the
     program stays SKIP with the refreshed reason; the bullet is PARTIAL;
     residue "owning C++ container to Core.Slice view" carries the
-    refuting run id and the last step reached.
+    refuting run id and the last step reached. **Amended 2026-10-05 (SL-2
+    round 1).** The first fill (run 37356848697) diagnosed falsifier (ii)'s
+    text for a reason this risk never listed: the impl was an orphan in
+    cpp/slice.carbon and unreachable by lookup from there (§2.B.9
+    amendment, R28(d)). The projection step itself stands, and "no in-tree
+    precedent" was stale: impl/lookup/access.carbon:26 `impl forall [T: Z
+    where .Z1 impls Y] T as X(T.Z1.(Y.Y1))` is the shape (two nested
+    `ImplWitnessAccess` in the interface argument, type structure `? as
+    X(?)`, a concrete query resolving in that file's `F`), and the
+    post-deduction check `GetImplInterfaceInSpecific(...) == query
+    specific` evaluates `C.Element` through `EvalLookupSingleFinalWitness`,
+    which consults `LookupCppImpl` for a concrete C++ self — the same
+    evaluation that resolves `.ElementType = T.ValueType` for `for` over
+    a C++ range (range_for.carbon). The primary spelling is kept; the rev
+    B B9 fallback is not applied. Step 4's `u64`/`ULong64` reading is
+    corrected at D-SL-9 (`size_t` is `ULong64` on both platforms).
+    Falsifier (i) also fired, silently: impls/cpp_contiguous_range.carbon
+    came back UNFILLED — its mock `unsigned long size()` imports as
+    `Core.CppCompat.ULong64`, which the primitives min-prelude lacks, so
+    the result type was the `CoreNameNotFound` error and
+    `LookupCppMemberWithResultType`'s `CARBON_CHECK` (copied from the
+    `CppRangeForIterate` precedent) aborted file_test; the fix declines
+    gracefully (`void` → `None`, error → propagated) and the mock sizes are
+    `unsigned int` (`u32`).
 -   **R-10 — `Cpp.std.vector(i32)` itself does not import** (a real
     libc++ class template with allocator/compressed-pair members).
     Precedents: `std::atomic<int>` and `std::mutex` import and destroy
@@ -2269,6 +2355,25 @@ Zero landed programs move (no landed program includes `<span>` or names
     (`import_ref`s, scope poison) that `inst_block_stack` cannot discard —
     probe only where the dispatch itself looks the name up, and when a
     load is unavoidable, say which goldens show it.
+-   Amended 2026-10-05 (SL-2 round 1, after hosted autoupdate run
+    37356848697 moved 306 files): the orphan rule is a PLACEMENT rule for
+    blanket impls — `impl forall [C: SomeConstraint] C as I(Slice(...))`
+    must live in the library of a class in its self type or interface
+    arguments (`Slice`'s), never in the library of the constraint; and
+    impl lookup only ever imports impls from the libraries of the query's
+    own types, so an impl that the orphan rule would reject is also one
+    lookup would never find. When a prelude impl needs a name its file
+    does not import, put the NAME behind a local interface in the helper
+    library (`CppSizeToI64` hides `u64`) rather than moving the impl. A
+    synthesized witness supplies associated constants as bare `type`s, so
+    `Destroy`/`Copy` on them are stated as `require Self.(X) impls ...` on
+    the constraint, not as bounds on the interface's `let`s. `unsigned
+    long` imports as `Core.CppCompat.ULong64` on every target — a
+    primitives-prelude golden must not name it (no `CppCompat` there),
+    and a result-type `CARBON_CHECK` in a witness builder is an ICE for
+    `void` members. Read fill-time
+    "`fail_` split filled, positive split unfilled" as a crash, not a
+    pass.
 -   Out-of-class impls (`IndexWith`, `ImplicitAs(Slice(const T))`, the
     §1.B.3 interop impl) touch public API only (`Data`, `Size`, `Get`,
     `UnsafeMake`); `Buf.AsSlice` uses `UnsafeMake`. If you reach for a

@@ -9,27 +9,27 @@ import library "prelude/destroy";
 import library "prelude/operators";
 import library "prelude/types/int";
 import library "prelude/types/optional";
-import library "prelude/types/slice";
 import library "prelude/types/uint";
 
-// Owning C++ container -> `Core.Slice` view (fork/slices/plan.md §1.B.3,
-// D-SL-9). A C++ class with member functions `data()` and `size()` -- an
-// owning contiguous container such as `std::vector<T>` or `std::array<T, N>`
-// -- implements `CppContiguousRange` through a witness the toolchain
-// synthesizes (check/cpp/impl_lookup.cpp), the `CppRangeForIterate` mechanism
-// of prelude/iterate.carbon. The blanket impl below then converts such a
-// container implicitly to `Core.Slice(Element)`, where `Element` is the
-// pointee of `data()`'s result: when the container has both a `const` and a
-// non-`const` `data()`, the synthesized witness selects the `const` one, so a
-// `std::vector<int>` views as `Core.Slice(const i32)` -- the type a
-// `std::span<const int>` parameter imports as.
+// The helpers behind the owning C++ container -> `Core.Slice` view
+// (fork/slices/plan.md §1.B.3, D-SL-9). A C++ class with member functions
+// `data()` and `size()` -- an owning contiguous container such as
+// `std::vector<T>` or `std::array<T, N>` -- implements `CppContiguousRange`
+// through a witness the toolchain synthesizes (check/cpp/impl_lookup.cpp), the
+// `CppRangeForIterate` mechanism of prelude/iterate.carbon.
 //
-// This library lives beside the other C++-compat prelude types rather than in
-// prelude/types/slice.carbon because the `Size` conversion names `u64`, which
-// that file does not import; adding an import line there would move every
-// `Slice` method's source line (the DI-line churn rule, plan §6.B).
+// The blanket `ImplicitAs(Slice(C.Element))` impl that uses these helpers
+// lives in prelude/types/slice.carbon, beside `Slice`, not here: the orphan
+// rule (check/impl_validation.cpp `DiagnoseOrphanImpl`) anchors an impl on a
+// class of its self type or of its interface arguments, and impl lookup
+// imports candidates only from the libraries that own the query's types
+// (check/impl_lookup.cpp `FindAssociatedImportIRs`) -- a facet-type bound on
+// the self binding is neither. So this library imports no `Slice` (slice.carbon
+// imports it), and `CppSizeToI64` keeps the `u64` of the size conversion out
+// of slice.carbon. The names are public Core names, as `CppUnsafeDeref`
+// (prelude/operators/deref.carbon) is, because slice.carbon's impl names them.
 
-private interface CppContiguousRange {
+interface CppContiguousRange {
   let DataType: type;
   let SizeType: type;
   // TODO: self must be ref-qualified (as CppRangeForIterate).
@@ -39,7 +39,7 @@ private interface CppContiguousRange {
 
 // The element type behind a C++ `data()` result, which maps to `T*` when
 // `_Nonnull` and to `Optional(T*)` otherwise.
-private interface CppDataPointer {
+interface CppDataPointer {
   let Element: type;
   fn Raw(self) -> Element*;
 }
@@ -52,20 +52,29 @@ impl forall [T: type] Optional(T*) as CppDataPointer where .Element = T {
   fn Raw(self) -> T* { return self.Get(); }
 }
 
-private constraint CppContiguous {
-  extend require impls CppContiguousRange;
-  require Self.(DataType) impls CppDataPointer;
-  // `ImplicitAs(u64)`, not `As(i64)`: `CppCompat.ULong64` (macOS `size_t`)
-  // has no `As(i64)` impl (D-SL-9).
-  require Self.(SizeType) impls ImplicitAs(u64);
-  alias Element = Self.(DataType).(CppDataPointer.Element);
+// The `i64` size behind a C++ `size()` result. Two steps, `ImplicitAs(u64)`
+// then `As(i64)`, never `As(i64)` directly: `CppCompat.ULong64` (`size_t`
+// where it is `unsigned long`, that is Linux and macOS) has no `As(i64)` impl
+// (D-SL-9). A signed `size()` (`int`, the Qt shape) has no `ImplicitAs(u64)`
+// and so no view; the conversion fails gracefully.
+interface CppSizeToI64 {
+  fn Op(self) -> i64;
+}
+impl forall [T: ImplicitAs(u64)] T as CppSizeToI64 {
+  fn Op(self) -> i64 {
+    return self.(ImplicitAs(u64).Convert)().(As(i64).Convert)();
+  }
 }
 
-impl forall [C: CppContiguous where .Element impls Copy & Destroy]
-    C as ImplicitAs(Slice(C.Element)) {
-  fn Convert(self) -> Slice(C.Element) {
-    return Slice(C.Element).UnsafeMake(
-        self.Data().(CppDataPointer.Raw)(),
-        self.Size().(ImplicitAs(u64).Convert)().(As(i64).Convert)());
-  }
+constraint CppContiguous {
+  extend require impls CppContiguousRange;
+  // `Destroy` on both: the `Data()` and `Size()` results are temporaries in
+  // the blanket impl's `Convert` body, and a synthesized witness provides the
+  // associated types as bare `type`s (custom_witness.cpp `BuildCustomWitness`
+  // supports no other associated-constant type), so the destroy requirement
+  // is stated here -- the `CppIterator` shape of prelude/iterate.carbon, whose
+  // `Inc & Destroy` serves `++cursor->0` the same way.
+  require Self.(DataType) impls CppDataPointer & Destroy;
+  require Self.(SizeType) impls CppSizeToI64 & Destroy;
+  alias Element = Self.(DataType).(CppDataPointer.Element);
 }

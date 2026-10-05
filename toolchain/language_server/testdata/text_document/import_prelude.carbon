@@ -28,42 +28,6 @@
 
 // --- AUTOUPDATE-SPLIT
 
-// CHECK:STDERR: /test.carbon: warning: dropping diagnostic in {{.*}}/prelude/types/cpp/slice.carbon:
-// CHECK:STDERR: {{.*}}/prelude/types/cpp/slice.carbon:69:9: error: cannot access member of interface `Destroy` in type `C.(CppContiguousRange.SizeType)` that does not implement that interface
-// CHECK:STDERR:         self.Size().(ImplicitAs(u64).Convert)().(As(i64).Convert)());
-// CHECK:STDERR:         ^~~~~~~~~~~
-// CHECK:STDERR:  [LanguageServerDiagnosticInWrongFile]
-// CHECK:STDERR:
-// CHECK:STDERR: /test.carbon: warning: dropping diagnostic in {{.*}}/prelude/types/cpp/slice.carbon:
-// CHECK:STDERR: {{.*}}/prelude/types/cpp/slice.carbon:68:9: error: cannot access member of interface `Destroy` in type `C.(CppContiguousRange.DataType)` that does not implement that interface
-// CHECK:STDERR:         self.Data().(CppDataPointer.Raw)(),
-// CHECK:STDERR:         ^~~~~~~~~~~
-// CHECK:STDERR:  [LanguageServerDiagnosticInWrongFile]
-// CHECK:STDERR:
-// CHECK:STDERR: /test.carbon: warning: dropping diagnostic in {{.*}}/prelude/types/cpp/slice.carbon:
-// CHECK:STDERR: {{.*}}/prelude/types/cpp/slice.carbon:64:1: error: orphan `impl` found; something in the self-type or constraint must be defined in the same file
-// CHECK:STDERR: impl forall [C: CppContiguous where .Element impls Copy & Destroy]
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:  [LanguageServerDiagnosticInWrongFile]
-// CHECK:STDERR:
-// CHECK:STDERR: /test.carbon: warning: dropping diagnostic in {{.*}}/prelude/types/cpp/slice.carbon:
-// CHECK:STDERR: {{.*}}/prelude/types/cpp/slice.carbon:69:9: error: cannot access member of interface `Destroy` in type `C.(CppContiguousRange.SizeType)` that does not implement that interface
-// CHECK:STDERR:         self.Size().(ImplicitAs(u64).Convert)().(As(i64).Convert)());
-// CHECK:STDERR:         ^~~~~~~~~~~
-// CHECK:STDERR:  [LanguageServerDiagnosticInWrongFile]
-// CHECK:STDERR:
-// CHECK:STDERR: /test.carbon: warning: dropping diagnostic in {{.*}}/prelude/types/cpp/slice.carbon:
-// CHECK:STDERR: {{.*}}/prelude/types/cpp/slice.carbon:68:9: error: cannot access member of interface `Destroy` in type `C.(CppContiguousRange.DataType)` that does not implement that interface
-// CHECK:STDERR:         self.Data().(CppDataPointer.Raw)(),
-// CHECK:STDERR:         ^~~~~~~~~~~
-// CHECK:STDERR:  [LanguageServerDiagnosticInWrongFile]
-// CHECK:STDERR:
-// CHECK:STDERR: /test.carbon: warning: dropping diagnostic in {{.*}}/prelude/types/cpp/slice.carbon:
-// CHECK:STDERR: {{.*}}/prelude/types/cpp/slice.carbon:64:1: error: orphan `impl` found; something in the self-type or constraint must be defined in the same file
-// CHECK:STDERR: impl forall [C: CppContiguous where .Element impls Copy & Destroy]
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:  [LanguageServerDiagnosticInWrongFile]
-// CHECK:STDERR:
 // CHECK:STDOUT: Content-Length: 352{{\r}}
 // CHECK:STDOUT: {{\r}}
 // CHECK:STDOUT: {

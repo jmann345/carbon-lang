@@ -564,7 +564,13 @@ static auto BuildCppRangeForIterateWitness(
 // Looks up the C++ member function `name` of `class_decl` and returns the
 // `FunctionDecl` inst for it together with its return type inst, or
 // `InstId::None`/`ErrorInst::InstId` in the two components when no single
-// such member exists (`LookupCppMethod` reports an unresolvable overload set).
+// such member exists (`LookupCppMethod` reports an unresolvable overload set),
+// when the member returns `void` (no result type; `None`, so the class is not
+// a contiguous range and a conversion through it fails gracefully), or when
+// its result type has no Carbon mapping (the import already diagnosed it;
+// `ErrorInst` propagates). Unlike `BuildCppRangeForIterateWitnessImpl`'s
+// CHECKs, this path is reached from every `ImplicitAs(Slice(...))` conversion
+// of a C++ class, so it must not be an ICE for `void data();`.
 static auto LookupCppMemberWithResultType(Context& context, SemIR::LocId loc_id,
                                           llvm::StringRef name,
                                           clang::CXXRecordDecl* class_decl,
@@ -582,8 +588,12 @@ static auto LookupCppMemberWithResultType(Context& context, SemIR::LocId loc_id,
       context.functions()
           .Get(context.insts().GetAs<SemIR::FunctionDecl>(fn_id).function_id)
           .return_type_inst_id;
-  CARBON_CHECK(result_type_id != SemIR::ErrorInst::InstId &&
-               result_type_id != SemIR::InstId::None);
+  if (!result_type_id.has_value()) {
+    return {SemIR::InstId::None, SemIR::InstId::None};
+  }
+  if (result_type_id == SemIR::ErrorInst::InstId) {
+    return {SemIR::ErrorInst::InstId, SemIR::ErrorInst::InstId};
+  }
   return {fn_id, result_type_id};
 }
 

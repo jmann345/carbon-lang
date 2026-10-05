@@ -301,17 +301,21 @@ implicitly (D-SL-10), as `std::span<T>` converts to `std::span<const T>`.
 
 **Owning containers form views implicitly (D-SL-9).** A C++ class with `data()`
 and `size()` member functions — `std::vector<T>`, `std::array<T, N>`,
-`std::string` — implements the prelude's private `CppContiguousRange`
-interface through a witness the toolchain synthesizes from those two members
-(the `CppRangeForIterate` mechanism behind `for` over C++ ranges), and the
-prelude's blanket impl in `core/prelude/types/cpp/slice.carbon` makes such a
-container implicitly convertible to `Core.Slice(Element)`, where `Element` is
-the pointee of `data()`'s result. When the container has both a `const` and a
-non-`const` `data()`, the `const` one is selected, so a `std::vector<int>`
-views as `Core.Slice(const i32)` — exactly the type a `std::span<const int>`
-parameter imports as. The size converts in two steps, `ImplicitAs(u64)` then
-`As(i64)`, so that `size_t` is accepted whether it maps to `u64` (Linux) or to
-`Core.CppCompat.ULong64` (macOS). So, for a `std::vector<int>` `v` made in C++:
+`std::string` — implements the prelude's `Core.CppContiguousRange` interface
+through a witness the toolchain synthesizes from those two members (the
+`CppRangeForIterate` mechanism behind `for` over C++ ranges), and the
+prelude's blanket impl beside `Slice` in `core/prelude/types/slice.carbon`
+(its helpers — `CppContiguousRange`, `CppDataPointer`, `CppSizeToI64`, the
+`CppContiguous` constraint — are `core/prelude/types/cpp/slice.carbon`'s) makes
+such a container implicitly convertible to `Core.Slice(Element)`, where
+`Element` is the pointee of `data()`'s result. When the container has both a
+`const` and a non-`const` `data()`, the `const` one is selected, so a
+`std::vector<int>` views as `Core.Slice(const i32)` — exactly the type a
+`std::span<const int>` parameter imports as. The size converts in two steps,
+`ImplicitAs(u64)` then `As(i64)`, so that `size_t` is accepted as
+`Core.CppCompat.ULong64` (the import of `unsigned long`, which `size_t` is on
+Linux and macOS) or as `u64` itself; a signed `size()` has no `ImplicitAs(u64)`
+and forms no view. So, for a `std::vector<int>` `v` made in C++:
 
 ```carbon
 let view: Core.Slice(const i32) = v;   // owning -> view, no copy

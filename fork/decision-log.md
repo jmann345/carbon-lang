@@ -2886,6 +2886,83 @@ if-let/let-else/while-let (flips a MISSING bullet on landed match
 machinery), then the error-handling chain W-016..W-019 (Result, `?`,
 exception interop), then unions W-009/W-015.
 
+### SL-2 round-1 note: the prelude interop impl was an orphan (2026-10-05)
+
+The first hosted autoupdate of SL-2 (run 37356848697, fill 0790c7428 on
+12a2143d2) moved 306 files for ten predicted: core/prelude/types/cpp/slice.carbon
+failed to type-check and every program including the full prelude carried its
+three errors. Root causes, read from the tree (fork/slices/plan.md §2.B.9/R-9
+amendments; W-056 notes):
+
+-   **`ImplIsOrphan` at cpp/slice.carbon:64** — the blanket `impl forall [C:
+    CppContiguous where .Element impls Copy & Destroy] C as
+    ImplicitAs(Slice(C.Element))` lived in the helpers' library, not
+    `Slice`'s. `DiagnoseOrphanImpl` (check/impl_validation.cpp) walks the
+    impl's SELF type and INTERFACE SPECIFIC for a class, generic class,
+    generic interface or generic named constraint of the same library; the
+    facet-type bound on the self binding (`CppContiguous`, local) is not
+    visited, and `Slice` is prelude/types/slice's. The deeper invariant, from
+    the implementation review (REJECT, BLOCKER 1): impl lookup imports
+    candidates only from the IRs owning the query's self, interface and
+    arguments (`FindAssociatedImportIRs`, `CollectCandidateImplsForQuery`),
+    so an impl in cpp/slice would never have been a candidate for
+    `Cpp.VectorLike as ImplicitAs(Slice(const i32))` even had it compiled.
+    The plan's §2.B.9 placement was right; the implementer moved the section
+    because the rev A A2 `u64` spelling is not nameable in slice.carbon and
+    an import line would have moved the SL-1 lower goldens' DI lines (R28(d):
+    a review miss — the deviation was disclosed in one sentence and the
+    reviewer of record did not run the orphan walk over it).
+-   **`MissingImplInMemberAccess` for `Destroy` at :68/:69** — the
+    `self.Data()`/`self.Size()` temporaries of `Convert` need `Destroy`, and
+    `CppContiguousRange` declares bare `let DataType: type; let SizeType:
+    type;`. A synthesized witness cannot supply bounded associated constants
+    (custom_witness.cpp `BuildCustomWitness` TODOs on any associated-constant
+    type other than `type`), so the requirement goes on the constraint —
+    `require Self.(DataType) impls CppDataPointer & Destroy; require
+    Self.(SizeType) impls CppSizeToI64 & Destroy;` — the `CppIterator` shape
+    of prelude/iterate.carbon, whose `Inc & Destroy` serves `++cursor->0`
+    through the same facet-type route (`CollectFacetWitnessSources` reads the
+    binding's identified facet type).
+-   **impls/cpp_contiguous_range.carbon came back unfilled** (every other new
+    golden filled): its mock `unsigned long size()` imports as
+    `Core.CppCompat.ULong64` on every target (import.cpp
+    `MapBuiltinIntegerType`; the golden's "`--target` pins `unsigned long` to
+    `u64`" was wrong), the primitives min-prelude has no `CppCompat`, the
+    result type was the `CoreNameNotFound` error, and
+    `LookupCppMemberWithResultType`'s `CARBON_CHECK` on it — copied from the
+    `CppRangeForIterate` builder — aborted file_test (the review's MAJOR 2,
+    reachable from every `ImplicitAs(Slice(...))` conversion of a C++ class
+    with a `void data()`). Lesson for fill reading: a positive split left
+    unfilled beside filled `fail_` splits is a crash signature.
+
+Fix (this round): the helpers stay in cpp/slice.carbon as public Core names
+with a new `CppSizeToI64` interface hiding `u64`; slice.carbon's
+SL-1-reserved `prelude/types/optional` import line (unused there) becomes
+`import library "prelude/types/cpp/slice";` at the same line count, and the
+blanket impl is appended beside `Slice` — zero DI churn, orphan walk anchored
+on `Slice`, import graph acyclic. `LookupCppMemberWithResultType` declines on
+`void` and propagates an error type; the `Span` import arm tests the element
+against `Slice`'s own `Copy & Destroy` binding without diagnostics
+(`SliceElementSatisfiesBound`) so `std::span<NonCopyable>` is a class import,
+not a header-site error (MAJOR 3). D-SL-9's primary spelling is kept: the
+projection-in-interface-argument shape has the in-tree precedent
+impl/lookup/access.carbon:26 (MINOR 8), and the post-deduction specific
+comparison evaluates it through `EvalLookupSingleFinalWitness` →
+`LookupCppImpl` exactly as `for` over a C++ range evaluates `.ElementType =
+T.ValueType`. The 299 pre-existing goldens the fill moved are restored
+byte-identical from 12a2143d2 (the SL-1 lower slice goldens included); the
+ten new goldens ship empty again. Review dispositions (REJECT → all nine
+addressed): BLOCKER 1 fixed as above; MAJOR 2 fixed + `fail_void_members`;
+MAJOR 3 fixed + `noncopyable_element_is_a_class` (a Carbon class with no
+`Copy` impl as the element — a deleted C++ copy constructor would NOT fail
+the bound, `BuildCopyWitness` imports the deleted decl); MAJOR 4: the gap row
+says "PASS pending the hosted conformance run of record", stamped at
+discharge; MINOR 5 fail_span.carbon's header reduced to `ConsumeStatic`;
+MINOR 6 `{T*, size_t}` wording + `--target` pins on span/fail_span; MINOR 7
+`Core.Print(Cpp.SumSpan(v))` added to cpp_span_view (EXPECT 10 6 12); MINOR
+8 the precedent cited, fallback comment dropped; MINOR 9 the note prediction
+dropped.
+
 ### SL-1: Core.Slice, Core.Buf, heap allocation, fail-stop (2026-10-05)
 
 Milestone bullet "Stdlib: Slices" flips MISSING → PARTIAL

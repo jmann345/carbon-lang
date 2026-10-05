@@ -1267,6 +1267,32 @@ static auto MapBuiltinType(Context& context, SemIR::LocId loc_id,
   return TypeExpr::None;
 }
 
+// Returns whether the type `element_type_inst_id` satisfies the bound of
+// `Core.Slice`'s element parameter (`T: Copy & Destroy`, slice.carbon), without
+// diagnosing. The bound is read from `Slice`'s own generic binding so that it
+// cannot drift from the prelude. An element that fails it -- a Carbon class
+// with no `Copy` impl, say -- leaves `std::span<T>` an ordinary class import
+// rather than diagnosing at the header's `span` declaration.
+static auto SliceElementSatisfiesBound(Context& context, SemIR::LocId loc_id,
+                                       SemIR::InstId element_type_inst_id)
+    -> bool {
+  auto slice_inst_id = LookupNameInCore(context, loc_id, CoreIdentifier::Slice);
+  auto generic_class_type = context.types().TryGetAs<SemIR::GenericClassType>(
+      context.insts().Get(slice_inst_id).type_id());
+  if (!generic_class_type) {
+    return false;
+  }
+  const auto& generic = context.generics().Get(
+      context.classes().Get(generic_class_type->class_id).generic_id);
+  auto bindings = context.inst_blocks().Get(generic.bindings_id);
+  if (bindings.size() != 1) {
+    return false;
+  }
+  auto bound_type_id = context.insts().Get(bindings[0]).type_id();
+  return TryConvertToValueOfType(context, loc_id, element_type_inst_id,
+                                 bound_type_id) != SemIR::ErrorInst::InstId;
+}
+
 // Returns the type `Core.Slice(T)`, where `T` is described by
 // `element_type_inst_id`. The shape of `MakeOptionalType` below.
 static auto MakeSliceType(Context& context, SemIR::LocId loc_id,
@@ -1309,6 +1335,11 @@ static auto LookupCustomRecordType(Context& context,
       if (element.type_id == SemIR::ErrorInst::TypeId) {
         // Already diagnosed while importing the element type.
         return element;
+      }
+      if (!SliceElementSatisfiesBound(context, loc_id, element.inst_id)) {
+        // `Slice(T)` requires `T: Copy & Destroy`; a specialization on an
+        // element outside the bound is imported as an ordinary class.
+        return TypeExpr::None;
       }
       return MakeSliceType(context, loc_id, element.inst_id);
     }

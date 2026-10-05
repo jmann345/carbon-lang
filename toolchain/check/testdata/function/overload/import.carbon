@@ -232,6 +232,16 @@ overload fn U(b: bool) -> i32;
 
 // --- fail_untouched.impl.carbon
 
+// CHECK:STDERR: fail_untouched.impl.carbon:[[@LINE+10]]:1: in import [InImport]
+// CHECK:STDERR: untouched.carbon:4:1: error: no definition found for declaration in impl file [MissingDefinitionInImpl]
+// CHECK:STDERR: overload fn U(x: i32) -> i32;
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
+// CHECK:STDERR: fail_untouched.impl.carbon:[[@LINE+5]]:1: in import [InImport]
+// CHECK:STDERR: untouched.carbon:5:1: error: no definition found for declaration in impl file [MissingDefinitionInImpl]
+// CHECK:STDERR: overload fn U(b: bool) -> i32;
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 impl library "[[@TEST_NAME]]";
 
 // The implementation file never names the set, so no member is loaded here
@@ -249,6 +259,16 @@ extern library "extern_two_file" overload fn D(b: bool) -> i32;
 
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: extern_two_file.carbon:[[@LINE+10]]:1: in import [InImport]
+// CHECK:STDERR: extern_two_file_lib.carbon:4:48: error: semantics TODO: ``overload fn` with a non-value explicit parameter` [SemanticsTodo]
+// CHECK:STDERR: extern library "extern_two_file" overload fn D(x: i32) -> i32;
+// CHECK:STDERR:                                                ^~~~~~
+// CHECK:STDERR:
+// CHECK:STDERR: extern_two_file.carbon:[[@LINE+5]]:1: in import [InImport]
+// CHECK:STDERR: extern_two_file_lib.carbon:5:48: error: semantics TODO: ``overload fn` with a non-value explicit parameter` [SemanticsTodo]
+// CHECK:STDERR: extern library "extern_two_file" overload fn D(b: bool) -> i32;
+// CHECK:STDERR:                                                ^~~~~~~
+// CHECK:STDERR:
 import library "extern_two_file_lib";
 
 // The owning library's API file redeclares each member without a definition;
@@ -281,6 +301,11 @@ library "[[@TEST_NAME]]";
 // The owning library's API file imports the set but declares no member. As
 // for a plain function, the non-owning member is loaded at the import and its
 // missing owning declaration is diagnosed.
+// CHECK:STDERR: fail_extern_unowned.carbon:[[@LINE+5]]:1: in import [InImport]
+// CHECK:STDERR: extern_unowned_lib.carbon:4:1: error: owning declaration required for non-owning declaration [MissingOwningDeclarationInApi]
+// CHECK:STDERR: extern library "extern_unowned" overload fn N(x: i32) -> i32;
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "extern_unowned_lib";
 
 // --- fail_extern_unowned.impl.carbon
@@ -290,6 +315,10 @@ impl library "[[@TEST_NAME]]";
 // Without an owning declaration in the API file, the implementation file
 // cannot define the member of another library's set: the API file imported
 // the set, but this redeclaration is checked against the set's own library.
+// CHECK:STDERR: fail_extern_unowned.impl.carbon:[[@LINE+4]]:1: error: `extern` entities must have a declaration in the API file [ExternRequiresDeclInApiFile]
+// CHECK:STDERR: extern overload fn N(x: i32) -> i32 { return x; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 extern overload fn N(x: i32) -> i32 { return x; }
 
 // --- extern_partial_lib.carbon
@@ -305,6 +334,16 @@ library "[[@TEST_NAME]]";
 
 // Only the first member gets an owning declaration here; the second's is
 // missing, diagnosed at the import as for a plain function.
+// CHECK:STDERR: fail_extern_partial.carbon:[[@LINE+10]]:1: in import [InImport]
+// CHECK:STDERR: extern_partial_lib.carbon:4:47: error: semantics TODO: ``overload fn` with a non-value explicit parameter` [SemanticsTodo]
+// CHECK:STDERR: extern library "extern_partial" overload fn P(x: i32) -> i32;
+// CHECK:STDERR:                                               ^~~~~~
+// CHECK:STDERR:
+// CHECK:STDERR: fail_extern_partial.carbon:[[@LINE+5]]:1: in import [InImport]
+// CHECK:STDERR: extern_partial_lib.carbon:5:1: error: owning declaration required for non-owning declaration [MissingOwningDeclarationInApi]
+// CHECK:STDERR: extern library "extern_partial" overload fn P(b: bool) -> i32;
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "extern_partial_lib";
 
 extern overload fn P(x: i32) -> i32;
@@ -317,6 +356,10 @@ impl library "[[@TEST_NAME]]";
 // member's definition merges with its API declaration, the second has no
 // declaration in the API file.
 extern overload fn P(x: i32) -> i32 { return x; }
+// CHECK:STDERR: fail_extern_partial.impl.carbon:[[@LINE+4]]:1: error: `extern` entities must have a declaration in the API file [ExternRequiresDeclInApiFile]
+// CHECK:STDERR: extern overload fn P(b: bool) -> i32 { if (b) { return 1; } return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 extern overload fn P(b: bool) -> i32 { if (b) { return 1; } return 0; }
 
 // CHECK:STDOUT: --- use.carbon

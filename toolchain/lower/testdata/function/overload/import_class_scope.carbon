@@ -45,9 +45,35 @@ class D {
 
 // --- api_impl.impl.carbon
 
+// CHECK:STDERR: api_impl.impl.carbon:[[@LINE+10]]:1: in import [InImport]
+// CHECK:STDERR: api_impl.carbon:5:3: error: no definition found for declaration in impl file [MissingDefinitionInImpl]
+// CHECK:STDERR:   overload fn G(x: i32) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
+// CHECK:STDERR: api_impl.impl.carbon:[[@LINE+5]]:1: in import [InImport]
+// CHECK:STDERR: api_impl.carbon:6:3: error: no definition found for declaration in impl file [MissingDefinitionInImpl]
+// CHECK:STDERR:   overload fn G(b: bool) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 impl library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: api_impl.impl.carbon:[[@LINE+8]]:13: error: name qualifiers are only allowed for entities that provide a scope [QualifiedNameInNonScope]
+// CHECK:STDERR: overload fn D.G(x: i32) -> i32 { return x; }
+// CHECK:STDERR:             ^
+// CHECK:STDERR: api_impl.impl.carbon:[[@LINE-5]]:1: in import [InImport]
+// CHECK:STDERR: api_impl.carbon:4:1: note: referenced non-scope entity declared here [QualifiedNameNonScopeEntity]
+// CHECK:STDERR: class D {
+// CHECK:STDERR: ^~~~~~~~~
+// CHECK:STDERR:
 overload fn D.G(x: i32) -> i32 { return x; }
+// CHECK:STDERR: api_impl.impl.carbon:[[@LINE+8]]:13: error: name qualifiers are only allowed for entities that provide a scope [QualifiedNameInNonScope]
+// CHECK:STDERR: overload fn D.G(b: bool) -> i32 { if (b) { return 1; } return 0; }
+// CHECK:STDERR:             ^
+// CHECK:STDERR: api_impl.impl.carbon:[[@LINE-14]]:1: in import [InImport]
+// CHECK:STDERR: api_impl.carbon:4:1: note: referenced non-scope entity declared here [QualifiedNameNonScopeEntity]
+// CHECK:STDERR: class D {
+// CHECK:STDERR: ^~~~~~~~~
+// CHECK:STDERR:
 overload fn D.G(b: bool) -> i32 { if (b) { return 1; } return 0; }
 
 fn Use() -> i32 { return D.G(3) + D.G(true); }

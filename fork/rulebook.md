@@ -314,3 +314,36 @@ here.
     (Origin: the rule the overloading paper proposed and fork/overload/plan.md
     §5.C.2 asked OV-3 to allocate at discharge under the next free number;
     OV-3 discharge, 2026-10-05.)
+-   **R31. Never let a `#NNNN` reference or a cron field start a markdown
+    line; verify heading counts per level before and after any reflow.** The
+    wrapping hooks are not token-neutral: prettier (`proseWrap: always`) and
+    rumdl's MD013 reflow break prose at spaces — inside code spans too — and
+    the second rumdl pass then "fixes" what landed at a line start: a
+    paragraph line beginning `#7784, #7813 …` trips MD018 ("No space after #
+    in heading") and becomes an H2, after which every following heading in
+    the file is one level deeper; a cron tail `* * 1` trips MD004/MD069 and
+    becomes a list item. The damage is silent (prek exits green) and
+    cumulative (each reflow can add a heading). A continuation line indented
+    under a list item is NOT parsed as a heading (probed 2026-10-05), so the
+    hazard is column-0 paragraph text. Discipline: (a) in paragraphs, write
+    PR and issue references so no wrap can put `#` first — as bare numbers in
+    dense lists ("PRs 7784, 7813") or attached to the preceding word — and
+    spell cron schedules out in words or put them in a fenced block, never in
+    a prose code span; (b) before and after any commit that reflows markdown
+    (a lint-config change, a `--all-files` prek run, a rumdl version bump),
+    record per-file heading counts per level (`grep -c '^## '`, `'^### '`, …)
+    and list-item counts and diff them — a changed count is a manufactured
+    heading or list item to repair by rephrasing, never by reverting the
+    whole file's reflow; (c) grep the diff for new lines matching
+    `^\+#{1,6} [0-9]|^\+-   |^\+[0-9]+\.` as the mechanical check. The R12
+    hook does not catch this class (it runs no heading-structure check), so
+    the count diff is the detector. (Origin: upstream-advance plan review,
+    rev B B3, 2026-10-05 — the fork's own pipeline had already turned two PR
+    lists in fork/upstream/plan.md §0.2 into headings reading "7784, #7813,
+    …" and "7689, #7700, …" and the weekly Routine's cron `0 14 * * 1` into a
+    list item, the decision log carries a heading reading "7741
+    template-dependent assignment, …" at :5562 from the same mechanism, and a
+    reflow experiment under upstream's `.rumdl.toml` re-levelled every H3 of
+    fork/ORCHESTRATION.md to H4 behind a manufactured "12/#13/#14: S3a …"
+    heading; second occurrence of the class after the R25 rumdl miss, so a
+    rule.)

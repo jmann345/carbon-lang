@@ -350,7 +350,9 @@ fails if this table is stale):
 | `stdlib/optional_missing_ops.carbon` | Stdlib: Optional | SKIP |
 | `stdlib/optional_pointer_niche.carbon` | Stdlib: Optional | run |
 | `stdlib/pointers.carbon` | Stdlib: pointer types | run |
-| `stdlib/slices_basic.carbon` | Stdlib: Slices | SKIP |
+| `stdlib/slices_basic.carbon` | Stdlib: Slices | run |
+| `stdlib/slices_bounds_fail_stop.carbon` | Stdlib: Slices | run |
+| `stdlib/slices_heap_buf.carbon` | Stdlib: Slices | run |
 | `stdlib/string_basic.carbon` | Stdlib: String and string-literal types | run |
 | `stdlib/string_missing_ops.carbon` | Stdlib: String and string-literal types | SKIP |
 | `stdlib/tuples_arrays_structs.carbon` | Stdlib: tuple/array library parts | run |

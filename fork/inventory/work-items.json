@@ -1036,17 +1036,22 @@
     },
     {
       "id": "W-055",
-      "title": "W9a: implement Core slice type and heap allocation",
-      "kind": "missing-feature",
-      "subsystem": "core/prelude (+ check support as needed)",
+      "title": "SL-1 (IMPLEMENTED 2026-10-05, hosted verification pending): W9a — Core slice type and heap allocation: `Core.Slice(T)`, `Core.Buf(T)`, the runtime bounds fail-stop, four runtime-only builtins",
+      "kind": "implemented",
+      "subsystem": "core/prelude + toolchain/sem_ir + toolchain/check (eval) + toolchain/lower",
       "size": "L",
       "bullet": "Stdlib: Slices",
       "evidence": [
-        "fork/conformance/programs/stdlib/slices_basic.carbon:6",
-        "fork/gap-analysis.md:61"
+        "toolchain/sem_ir/builtin_function_kind.def:154 (`PointerOffset`), :157 (`FailStop`), :160-161 (`HeapAllocate`, `HeapFree`); builtin_function_kind.cpp:836-856 (the four `BuiltinInfo` signatures); toolchain/check/eval.cpp:2648-2651 (the runtime-only list); toolchain/lower/handle_call.cpp:659-769 (the four lowering arms)",
+        "core/prelude/types/slice.carbon (`class Slice(T: Copy & Destroy)`); core/prelude/types/buf.carbon (`class Buf(T: Copy & Destroy)`); core/prelude/types.carbon (two `export import` lines); core/prelude/iterate.carbon:84-96 (the appended `Slice(T) as Iterate` impl)",
+        "toolchain/check/testdata/builtins/pointer/offset.carbon, builtins/failstop.carbon, builtins/heap/allocate_free.carbon; toolchain/lower/testdata/builtins/pointer_offset.carbon, builtins/failstop.carbon, builtins/heap.carbon",
+        "toolchain/check/testdata/slice/basic.carbon, slice/fail_basic.carbon, slice/buf.carbon, slice/fail_buf.carbon; toolchain/lower/testdata/slice/basic.carbon, slice/buf.carbon",
+        "fork/conformance/programs/stdlib/slices_basic.carbon (SKIP -> PASS), stdlib/slices_heap_buf.carbon, stdlib/slices_bounds_fail_stop.carbon (EXPECT-EXIT -6)",
+        "fork/gap-analysis.md:77 (the `Stdlib: Slices` row)",
+        "fork/slices/plan.md (rev 2, signed off 2026-09-28; §1.A, §4.A, §5.A)"
       ],
       "blocked_by": [],
-      "notes": "grep -rn Slice in core/ returns nothing (verified); no slice type exists anywhere in the Core package, and heap allocation is likewise absent. Un-SKIP condition: a Core slice type with construction-from-array, indexing, and size. Heap allocation is the same workstream's sibling gap (no separate SKIP program exists for it)."
+      "notes": "IMPLEMENTED at SL-1 (fork/slices/plan.md, branch claude/carbon-fork-0-1-slices, 2026-10-05; goldens CHECK-free pending the hosted autoupdate fill, conformance delta +3 PASS / -1 SKIP / +2 total pending the hosted conformance run). Not prelude-only: four `BuiltinFunctionKind`s — `pointer.offset`, `fail_stop`, `heap.allocate`, `heap.free` — each with signature validation, an eval runtime-only arm and a lowering arm (`getelementptr inbounds`; `write(2, msg, len)` + `abort` declared `noreturn` with no terminator emitted; `malloc(count * sizeof(T))` with a zero-length guard, the element type unwrapped from the `Core.MaybeUnformed(T*)` adapter class; `free`). Decisions (recorded for F-012): D-SL-1 `Core.Slice(T)` is a prelude class `{ptr: T*, size: i64}` with `T: Copy & Destroy`, layout-identical to `String` and to dynamic-extent `std::span`; D-SL-2 views are formed from POINTERS to arrays (`FromArray(&a)`), from `Buf` (`AsSlice`), from pointer+size (`UnsafeMake`) and from slices (`Subslice`) — no array-VALUE conversion (pinned by fail_array_value_no_conversion); D-SL-3 indexing is `IndexWith.At` by value, bounds-checked, read-only in 0.1 (`s[i] = v` is `AssignmentToNonAssignable`, pinned by fail_write_through; break: `IndirectIndexWith`/`ref` returns); D-SL-4 a bounds violation fails-stop (one stderr line, `abort()`, SIGABRT) unconditionally — the debug-build promise of safety/README.md:229-232 adopted as the single 0.1 mode; D-SL-5 the four private runtime-only builtins; D-SL-6 `Core.Buf(T)` over malloc/free, `Make`/`Size`/`Get`/`Set`/`AsSlice`, in-class `Destroy` frees, not `Copy` (fail_copy), not `UnformedInit` (`Destroy` on `var` storage is unconditional, so an unformed `Buf` would free garbage — fail_unformed pins the refusal), element destructors not run; D-SL-7 `Slice(T) as Iterate` with `.CursorType = i64`, appended to iterate.carbon; D-SL-10 `Slice(T)` implicitly converts to `Slice(const T)`; D-SL-11 `UnsafeMake` is public; D-SL-12 the fail-stop program asserts `EXPECT-EXIT: -6`; D-SL-13 docs/design/slices.md + the README amendment. Stale claims corrected (plan §0.2): item 1 — the old evidence `slices_basic.carbon:6` pointed at the EXPECT-EXIT line (the SKIP line was :10) and `gap-analysis.md:61` was the open-overload-sets row (the Slices row is :77 in this tree); item 3 — the subsystem was never prelude-only; item 4 — no separate heap-allocation SKIP program existed and none is invented (R7): `slices_heap_buf` attaches to `Stdlib: Slices`, whose arbiter is a slice over heap storage. Residue titles (ids allocated at discharge, §8.5): write-through slice indexing (`IndirectIndexWith`, `ref` returns); `buf(T)` keyword shorthand; `Core.Buf` element destructors and an `Allocator` parameter; over-aligned `Core.Buf` element types; runtime bounds diagnostics with the offending index; unchecked slice access (the release-build enforcement opt-out, safety/README.md:222-224); `Core.Buf` unformed declarations (needs unformed-state-aware destroy). W-056 (SL-2: std::span mapping and owning->view) is unblocked once this lands."
     },
     {
       "id": "W-056",

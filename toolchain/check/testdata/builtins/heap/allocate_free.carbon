@@ -33,6 +33,22 @@ fn G(p: i32*) {
 }
 //@dump-sem-ir-end
 
+// --- fail_incomplete_pointee.carbon
+
+library "[[@TEST_NAME]]";
+
+class Incomplete;
+
+fn Alloc(generic T: type, n: i64) -> Core.MaybeUnformed(T*) = "heap.allocate";
+
+// Predicted: `IncompleteTypeInBuiltinCall` "pointee type `Incomplete` is
+// incomplete in call to builtin function heap.allocate", with the
+// `ClassForwardDeclaredHere` note — the lowering multiplies the count by the
+// pointee's size, so the call requires it complete.
+fn F(n: i64) -> Core.MaybeUnformed(Incomplete*) {
+  return Alloc(Incomplete, n);
+}
+
 // --- fail_allocate_plain_pointer.carbon
 
 library "[[@TEST_NAME]]";

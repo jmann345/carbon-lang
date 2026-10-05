@@ -1957,6 +1957,27 @@ Zero landed programs move (no landed program includes `<span>` or names
     a `MaybeUnformedType`, then take the pointee (§1.A.1 row 3; rev B
     B2). `arg_ids.size() == 1`; `arg_ids[0]` is the count, sign-extended
     to `i64` before the multiply; the zero guard is a `select`.
+-   Amended 2026-10-05 after the first hosted autoupdate (run
+    37324972577): both pointee-sized arms need the pointee COMPLETE in
+    the specific's file, and nothing at such a call completed it — a
+    pointer type is complete without its pointee, so in heap.carbon's
+    `A` and pointer_offset.carbon's `F` the type `i32` (`Core.Int(32)`,
+    an adapter class) was never completed; lowering represents an
+    incomplete type as the unsized opaque struct
+    (`FileContext::GetTypeAndDIType`), which asserted in
+    `getTypeAllocSize` ("Cannot get layout of opaque structs",
+    heap.carbon) and failed the IR verifier with "GEP into unsized
+    type!" (pointer_offset.carbon — the second crash of that run, not
+    R-1: the `fail_stop` block shape was not refuted). Fixed at the
+    root in the checker, where completeness requirements belong:
+    `PerformCallToFunction` requires the pointee complete at every
+    `pointer.offset`/`heap.allocate` call
+    (`RequireBuiltinCallPointeeComplete`, check/call.cpp; a symbolic
+    pointee records a `RequireCompleteType` in the enclosing generic,
+    enforced per specific), with the new Context diagnostic
+    `IncompleteTypeInBuiltinCall` and `fail_incomplete_pointee` splits
+    in both check goldens; both lower arms `CARBON_CHECK` `isSized()`.
+    The B2 unwrapping shape stands unchanged.
 -   Out-of-class impls (`IndexWith`, `ImplicitAs(Slice(const T))`, the
     §1.B.3 interop impl) touch public API only (`Data`, `Size`, `Get`,
     `UnsafeMake`); `Buf.AsSlice` uses `UnsafeMake`. If you reach for a

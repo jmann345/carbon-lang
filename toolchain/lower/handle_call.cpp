@@ -659,9 +659,16 @@ static auto HandleBuiltinCall(FunctionContext& context, SemIR::InstId inst_id,
     case SemIR::BuiltinFunctionKind::PointerOffset: {
       // Fork (SL-1, fork/slices/plan.md D-SL-5): the address of the element
       // `n` positions after `*p`. The element type is the pointee of the
-      // argument's pointer type, lowered as an array's element type is.
-      auto* elem_type =
-          context.GetType(context.GetTypeIdOfInst(arg_ids[0]).GetPointeeType());
+      // argument's pointer type, lowered as an array's element type is. The
+      // checker completes the pointee at the call
+      // (`RequireBuiltinCallPointeeComplete`, check/call.cpp): an incomplete
+      // type lowers to the unsized opaque struct, which the LLVM verifier
+      // rejects as a GEP source element type ("GEP into unsized type!").
+      auto pointee_type = context.GetTypeIdOfInst(arg_ids[0]).GetPointeeType();
+      auto* elem_type = context.GetType(pointee_type);
+      CARBON_CHECK(elem_type->isSized(),
+                   "`pointer.offset` pointee {0} is incomplete in the specific",
+                   pointee_type.file->types().GetAsInst(pointee_type.type_id));
       auto* i64_type = llvm::IntegerType::getInt64Ty(context.llvm_context());
       llvm::Value* offset = context.builder().CreateSExtOrTrunc(
           context.GetValue(arg_ids[1]), i64_type);
@@ -726,9 +733,17 @@ static auto HandleBuiltinCall(FunctionContext& context, SemIR::InstId inst_id,
                    result_type.type_id);
       auto pointer_type_id =
           result_types.GetTypeIdForTypeInstId(maybe_unformed->inner_id);
-      auto* elem_type = context.GetType(
-          {.file = result_type.file,
-           .type_id = result_type.file->GetPointeeType(pointer_type_id)});
+      FunctionContext::TypeInFile pointee_type = {
+          .file = result_type.file,
+          .type_id = result_type.file->GetPointeeType(pointer_type_id)};
+      auto* elem_type = context.GetType(pointee_type);
+      // The checker completes the pointee at the call
+      // (`RequireBuiltinCallPointeeComplete`, check/call.cpp); an incomplete
+      // type lowers to the opaque struct, whose alloc size is an LLVM
+      // assertion ("Cannot get layout of opaque structs").
+      CARBON_CHECK(elem_type->isSized(),
+                   "`heap.allocate` pointee {0} is incomplete in the specific",
+                   pointee_type.file->types().GetAsInst(pointee_type.type_id));
 
       auto* i64_type = llvm::IntegerType::getInt64Ty(context.llvm_context());
       llvm::Value* count = context.builder().CreateSExtOrTrunc(

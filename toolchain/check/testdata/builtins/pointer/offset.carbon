@@ -42,6 +42,23 @@ fn Store[T: Core.Copy](p: T*, v: T) {
 }
 //@dump-sem-ir-end
 
+// --- fail_incomplete_pointee.carbon
+
+library "[[@TEST_NAME]]";
+
+class Incomplete;
+
+fn Offset[T: type](p: T*, n: i64) -> T* = "pointer.offset";
+
+// Predicted: `IncompleteTypeInBuiltinCall` "pointee type `Incomplete` is
+// incomplete in call to builtin function pointer.offset", with the
+// `ClassForwardDeclaredHere` note — the lowering strides by the pointee's
+// size, so the call requires it complete (an incomplete type would lower to
+// an unsized opaque struct and fail the LLVM verifier).
+fn F(p: Incomplete*) -> Incomplete* {
+  return Offset(p, 1);
+}
+
 // --- fail_mismatched_pointee.carbon
 
 library "[[@TEST_NAME]]";

@@ -1976,3 +1976,79 @@ observations made while verifying are recorded in the last rows.
     verification` compile → autoupdate → gate → conformance after the
     implementer's hand-back; no self-hosted run, no workflow dispatched by
     the implementer)
+
+### Landed notes (UA-1, in progress)
+
+Commits on `claude/carbon-fork-0-1-upstream-advance` (SL-2 re-merge pending;
+hosted compile → autoupdate → gate → conformance not yet dispatched):
+1de4bb49d sign-off, 3d4c0e37a merge (commit 1), 5a6f54229 F8d retirement
+(commit 1b), 119b35439 reflow (commit 2). The 105 conflicts of §0.3
+reproduced exactly; goldens went 71 `--theirs` / 2 hand-merged / 1 deleted,
+all 73 with CHECK lines cleared (46088 lines) for the hosted fill.
+Deviations from the plan as written, and observations the hosted runs
+should read first:
+
+-   **function.{h,cpp} (§2.1 "keep both") needed a fork-only field.**
+    Upstream replaced `FunctionDeclArgs::return_type_id` with a caller-built
+    `return_form` and `param_kind` with a `param_kinds` array (`#7654` is
+    not the cause; the form change is upstream's). The fork's `build_generic`
+    re-add of a symbolic return type must run INSIDE the generic declaration
+    region that `MakeGeneratedFunctionDecl` opens, so `FunctionDeclArgs`
+    keeps `return_type_id` as a fork-only alternative to `return_form`
+    (`CARBON_CHECK`ed exclusive), used only by the generic choice
+    constructors (handle_choice.cpp, which now passes a `param_kinds`
+    vector). Every other caller uses upstream's fields.
+-   **The thunk's constant-parameter plumbing was dropped in commit 1, not
+    1b.** It lived inside the hunks that upstream's `CalleeFunctionInfo`
+    rewrite replaces whole; re-expressing it on the new struct only to delete
+    it in 1b was not done. Consequence for D-UA-8's break condition: a `git
+    revert` of 5a6f54229 restores the type-mapping, export and `clang_decl`
+    halves of F8d but NOT the thunk embedding (about 40 lines against
+    upstream's struct would have to be re-added by hand). The R-4 falsifier
+    is unchanged (cpp_thread_carbon_fn_diff.carbon and its three siblings).
+-   **D-UA-6 class half gained a second two-line clause.** Upstream's
+    template diagnoses every class redeclaration as `class`; the fork's union
+    goldens pin "redefinition of `union D`" (union/fail_modifiers_and_redecl
+    .carbon `fail_redefinition`), so `TryMergeRedecl` passes
+    `Lex::TokenKind::Union` to `DiagnoseIfInvalidRedecl` when
+    `new_entity.is_union`, beside the D-UN-6 flip check.
+-   **§0.4 item 5's grep differs by design.** eval.cpp's `Callee` switch is
+    upstream's with a `default:` arm, so no `CalleeOverloadSet` arm was
+    added there (an unresolved set callee is never constant-evaluated; a
+    resolved call names the member). The two `-l` file sets therefore differ
+    by eval.cpp only. Every other switch carries both arms.
+-   **§8.4 `is_choice` count is six, not five:** the four pre-existing hits
+    (one a comment), the new `MakeSubobjectDestroyOpBody` clause, and a
+    comment in `CanDestroyClass`'s W-071 note that now names the clauses.
+-   **§2.7's location note for lower/var/import.carbon was loose:** the
+    fork's edit replaces the `TODO: Also test x` line of the
+    `import_tuple_pattern.carbon` split with `fn X() -> i32 { return x; }`;
+    there is no `use.carbon` split. Applied as the fork had it.
+-   **`BuildPrimitiveCopyWitness` had no fork delta** (the "W-075 return-slot
+    form" phrase in §0.4 item 4 / §2.2 was imprecise: fork equals the cut);
+    upstream's canonicalized version is taken and `LookupChoiceCopyWitness`
+    no longer passes a mangling-hint scope.
+-   **Reflow (commit 2):** D-UA-4's two predicted manufactured headings
+    appeared and were repaired; a third was not predicted — fork/unions/
+    plan.md gained an H2 and a stray fence from a list-item continuation
+    whose code span crossed lines, on the SECOND rumdl pass after the
+    residue hand-wrap. Both manufactured H2s also demoted every following
+    heading one level (24 headings in two files); the per-file heading-count
+    diff caught it and the levels were restored from HEAD. Detector note for
+    R31(c): a set comparison of heading LINES against the pre-reflow file
+    (`comm -13`) catches a manufactured heading whatever its text starts
+    with; the digit-anchored grep could not have caught the unions one.
+    Three paragraphs rumdl 0.2.78's reflow refuses to wrap for reasons a
+    token probe could not make content-neutral (a code span glued to
+    punctuation, context-dependent) are hand-wrapped inside
+    `<!-- rumdl-disable MD013 -->` / `<!-- rumdl-enable MD013 -->` regions
+    (upstream precedent: proposals/p000198-comments.md:381, p001083:533,
+    p002760:313): fork/decision-log.md's S2c landing note and two
+    fork/overload/plan.md items (D-OV-4 step 2, the fail_todo_gates row).
+    A fourth bazel-backed prek hook exists beyond the plan's SKIP list:
+    `forbid-llvm-googletest` (`scripts/forbid_llvm_googletest.py`, a `bazel
+    query` over BUILD files) — it fails in the container only because clang
+    18 cannot configure the toolchain; the hosted gate is its authority.
+-   **Pre-fill fence counts are not comparable yet:** 71 cleared goldens
+    include most thunk goldens, so `__clang_call_terminate` appears in 5
+    lower goldens today (was 30); the ≥ 30 falsifier applies AFTER the fill.

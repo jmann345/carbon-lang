@@ -6,7 +6,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Upstream-advance plan: cut 631f8fb → c1e83b0b7 (UA-1 merge, UA-2 reconciliation)
 
-**Status:** rev 3 — folded; final re-check pending. Rev 2's focused
+**Status:** rev 3 — signed off 2026-10-05; UA-1 in progress. The final
+count-and-grep re-check of rev 3 returned APPROVE-WITH-AMENDMENTS (three
+MINORs, applied in the sign-off commit and marked "(amended 2026-10-05,
+final re-check M<n>)"). Rev 2's focused
 re-review (R29(c); REJECT — 1 BLOCKER, 3 MAJOR, 4 MINOR) is folded in place
 below, each mark reading "(amended 2026-10-05, review fold: rev 3 F<n>)" and
 tabled in the Review fold record; its BLOCKER (F1) showed that upstream's
@@ -764,8 +767,9 @@ nightly could be fetched here).
     choice goldens with `var`s — check/testdata/choice/{alternative_copy,
     payload_construct, fail_generic_payload, fail_todo_nontrivial_payload}
     .carbon, lower/testdata/choice/{alternative_copy, payload_layout,
-    single_payload_alternative}.carbon; the nine match/ goldens with `var`s
-    (check + lower); the nine union goldens with `var`s (rev 3 F1 — `grep -l
+    single_payload_alternative}.carbon; the 17 match/ goldens with `var`s
+    (13 check + 4 lower; amended 2026-10-05, final re-check M3 — rev 2
+    counted nine); the nine union goldens with `var`s (rev 3 F1 — `grep -l
     "var " toolchain/*/testdata/union/*.carbon` lists 14, of which the five
     parse/ goldens never reach check): check/testdata/union/{basic,
     fail_init, fail_modifiers_and_redecl, fail_nontrivial_field,
@@ -796,8 +800,9 @@ nightly could be fetched here).
     .carbon every `_COp.<hash>:core.Destroy.Core` define (:132-174 today; the
     call at :127) is replaced by upstream's `SubobjectDestroy`/`SelfDestruct`
     pairs — a rename-and-reshape, not a disappearance (R-2). §8.4 greps:
-    `grep -n 'is_choice' toolchain/check/custom_witness.cpp` → a hit inside
-    `MakeSubobjectDestroyOpBody`; `grep -n 'CustomLayoutType'
+    `grep -n 'is_choice' toolchain/check/custom_witness.cpp` → five hits, one
+    inside `MakeSubobjectDestroyOpBody` (final re-check M3); `grep -n
+    'CustomLayoutType'
     toolchain/check/custom_witness.cpp` → hits inside BOTH `CanDestroyType`
     and `MakeSubobjectDestroyOpBody`. Risk ranking: this is R-17, the
     top-ranked risk of §7, covering choices AND unions. **Rename (A2):** the
@@ -980,9 +985,12 @@ landed steps are "trunk at c1e83b0b7" and "trunk reconciled to it".
     — and check that each shape has an arm in `CanDestroyType` AND, when that
     arm can answer `NonTrivial`, in `MakeSubobjectDestroyOpBody`. Done at
     this fold (fork sem_ir/inst_kind.def vs upstream's; fork `CanDestroyType`
-    arms vs upstream's): the fork adds four inst kinds (`OverloadSetType`,
-    `OverloadSetValue`, `RefineTypeAction`, `StructPattern`), of which only
-    `OverloadSetType` is a type, and ONE fork-only USE of an upstream kind —
+    arms vs upstream's): the fork adds three inst kinds relative to the cut
+    (`OverloadSetType`, `OverloadSetValue`, `StructPattern`; amended
+    2026-10-05, final re-check M1 — rev 3 said four and listed
+    `RefineTypeAction`, which is in the cut and REMOVED by upstream, as is
+    the `TypeType` kind), of which only `OverloadSetType` is a type, and ONE
+    fork-only USE of an upstream kind —
     `CustomLayoutType` as a native object representation (handle_choice.cpp
     :828 choice payload region, class.cpp:774 union repr, re-evaluated at
     monomorphization by eval_inst.cpp:371; upstream's only producer is
@@ -998,11 +1006,14 @@ landed steps are "trunk at c1e83b0b7" and "trunk reconciled to it".
     .carbon; no arm on either side, never hit); `MaybeUnformed(Union)` is
     upstream's kind with upstream's arms on both sides (`CanDestroyType` →
     `HasWitnessForOneField(inner)` → the union, covered above;
-    `MakeSubobjectDestroyOpBody` returns early); `TypeType` exists on both
-    sides — #7813 canonicalizes it to an empty `FacetType`, so the fork's
-    `TypeType::Kind` builtin arm (:153, inherited from the cut's :299) goes
-    with the hunk and upstream's `IsBuiltinWithTrivialDestruction` list is
-    taken. The fork's other `CustomLayoutType` arms (`HasNonTrivialUserCopyImpl`
+    `MakeSubobjectDestroyOpBody` returns early); upstream removed
+    `RefineTypeAction` and the `TypeType` inst kind (#7813 keeps only the
+    `TypeType` namespace constants, typed_insts.h:2381-2387, and
+    canonicalizes the type to an empty `FacetType`), and no fork-added code
+    references either (merged tree checked at the final re-check), so the
+    fork's `TypeType::Kind` builtin arm (:396, inherited from the cut's :299;
+    amended 2026-10-05, final re-check M1) goes with the hunk and upstream's
+    `IsBuiltinWithTrivialDestruction` list is taken. The fork's other `CustomLayoutType` arms (`HasNonTrivialUserCopyImpl`
     :719, `IsTriviallyDestructible` :835) are worklist predicates that call no
     `LookupImplWitness`; they survive in the hunk unchanged. The enumeration
     is restated in the merge commit message. (c) `CanDestroyClass` keeps
@@ -1343,7 +1354,9 @@ GIT_COMMITTER_EMAIL=noreply@anthropic.com` and the standing trailers.
     payload (empty), payload tuples (element walk) — and `SelfDestruct` calls
     in place of its `_COp.<hash>:core.Destroy.Core` defines, and every union
     golden with a `var` (D-UA-9's nine) gains one for the class (field walk)
-    and one for the `CustomLayoutType` repr (empty) — no stack dump, no new
+    and one for the `CustomLayoutType` repr (empty), and the 17 match/
+    goldens with `var`s (13 check + 4 lower; final re-check M3) move with
+    their scrutinee's choice — no stack dump, no new
     STDERR (R-17; rev A A1, amended 2026-10-05, review fold: rev 3 F1); the
     OV mangling `:overload<N>` and
     `_CF__carbon_thunk:overload<N>` lines are unchanged; the S3b
@@ -1456,7 +1469,8 @@ the fork's replaced code did not, and names the fork shape it first meets.
     `HasWitnessForOneField(object_repr)`), before any `ClassType` arm runs;
     without the `is_choice` clause a choice then hits a name-lookup error on
     `ChoiceDiscriminant`. Falsifier: the fill on the seven choice goldens
-    with `var`s, the nine match goldens, the nine union goldens, the 12
+    with `var`s, the 17 match goldens (13 check + 4 lower; final re-check
+    M3), the nine union goldens, the 12
     `Core.Result` goldens and the 31 conformance programs of D-UA-9; `grep -n
     is_choice toolchain/check/custom_witness.cpp` hits inside
     `MakeSubobjectDestroyOpBody` and `grep -n CustomLayoutType` there hits
@@ -1732,9 +1746,12 @@ B3 / B5 / B9; the long grep lines are split so none exceeds MD013's limit.)
     → the definition plus exactly one call inside `TryMergeIntoOverloadSet`
     (rev A A4; rev 1's grep would have deleted the correct solution).
 -   D-UA-9 (rev A A1 / rev 3 F1): `grep -n 'is_choice'
-    toolchain/check/custom_witness.cpp` → a hit inside
-    `MakeSubobjectDestroyOpBody` (and the surviving W-071 clause in
-    `CanDestroyClass`); `grep -n 'CustomLayoutType'
+    toolchain/check/custom_witness.cpp` → five hits after the merge (amended
+    2026-10-05, final re-check M3 — the fork has four today, :225/:785/:1218
+    plus a comment): the new one inside `MakeSubobjectDestroyOpBody` plus the
+    surviving fork clauses in `CanDestroyClass` (W-071),
+    `IsTriviallyDestructible` and `LookupChoiceCopyWitness`; `grep -n
+    'CustomLayoutType'
     toolchain/check/custom_witness.cpp` → hits inside BOTH `CanDestroyType`
     (the surviving fork arm) and `MakeSubobjectDestroyOpBody` (the new arm),
     plus the predicate arms in `HasNonTrivialUserCopyImpl` and
@@ -1806,8 +1823,9 @@ review once hosted verification is green.
 ### Hand-off notes for the implementer
 
 1.  **Setup.** Work only in `/home/user/carbon-upstream` on
-    `claude/carbon-fork-0-1-upstream-advance` (HEAD = this plan's rev 2
-    commit on top of trunk 923c2f2af; `upstream-trunk` = c1e83b0b7). Never touch `/home/user/carbon-lang`, `/home/user/carbon-sl2`
+    `claude/carbon-fork-0-1-upstream-advance` (HEAD = this plan's rev 3
+    commits 95fba4661, 5d461be07 on top of trunk 923c2f2af; amended
+    2026-10-05, final re-check M2; `upstream-trunk` = c1e83b0b7). Never touch `/home/user/carbon-lang`, `/home/user/carbon-sl2`
     or `/home/user/carbon-trunk`. Do not dispatch any workflow (the
     orchestrator does; R28). The container cannot build: your evidence before
     the push is `git`, reading, and the §8.4 greps.
@@ -1958,5 +1976,14 @@ observations made while verifying are recorded in the last rows.
 -   Correctness review (rev 1, rev A): REJECT — folded as rev 2
 -   Strictness review (rev 1, rev B): APPROVE-WITH-AMENDMENTS — folded as rev 2
 -   Focused re-review (rev 2): REJECT — folded as rev 3; final count-and-grep
-    re-check of rev 3 _pending_ (R29(c))
--   Coordinator sign-off for implementation: _pending_
+    re-check of rev 3 (R29(c), 2026-10-05): APPROVE-WITH-AMENDMENTS — three
+    MINORs (M1 §2.2 (b') kind count and `TypeType` wording; M2 hand-off 1's
+    HEAD; M3 the §8.4 `is_choice` hit set and the 17 match goldens), applied
+    in the sign-off commit, marked "(amended 2026-10-05, final re-check
+    M<n>)"
+-   Coordinator sign-off for implementation: signed off 2026-10-05; UA-1 in
+    progress on `claude/carbon-fork-0-1-upstream-advance`; verification is
+    hosted-only per R28 (the orchestrator dispatches `Fork: hosted
+    verification` compile → autoupdate → gate → conformance after the
+    implementer's hand-back; no self-hosted run, no workflow dispatched by
+    the implementer)

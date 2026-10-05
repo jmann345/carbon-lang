@@ -6,7 +6,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Upstream-advance plan: cut 631f8fb → c1e83b0b7 (UA-1 merge, UA-2 reconciliation)
 
-**Status:** rev 2 — folded; focused re-review pending (rev A REJECTed). The
+**Status:** rev 3 — folded; final re-check pending. Rev 2's focused
+re-review (R29(c); REJECT — 1 BLOCKER, 3 MAJOR, 4 MINOR) is folded in place
+below, each mark reading "(amended 2026-10-05, review fold: rev 3 F<n>)" and
+tabled in the Review fold record; its BLOCKER (F1) showed that upstream's
+destroy walk meets the fork's shapes one level earlier than rev 2 assumed —
+inside the witness QUERY, not at the `var`'s own type — so D-UA-9 gains a
+`CustomLayoutType` arm and §2.2 an enumeration step (b'). The
 two adversarial reviews of rev 1 (R29(c)) returned REJECT (rev A,
 fork-mechanism fidelity: BLOCKER A1 — D-UA-9 as written crashes every destroy
 of a payload-carrying choice under upstream's real `MakeSubobjectDestroyOpBody`;
@@ -16,7 +22,9 @@ in place below, each marked "(amended 2026-10-05, review fold: rev A A<n> / rev
 B B<n>)", and tabled in the Review fold record before Sign-off; the fixer
 re-opened every cited source (the fork tree at HEAD 5f65f35ba, `git show
 upstream-trunk:<path>`, and the merged tree f2c06b2ae from `git merge-tree
---write-tree HEAD upstream-trunk`) before folding, and no finding was declined.
+--write-tree HEAD upstream-trunk`) before folding, and no finding was declined;
+the rev 3 fixer re-opened every rev-3 citation the same way (HEAD 60d19948d,
+merged tree 498f1b962) and again none is declined.
 Numbering note (rev B B14): this plan's decisions live at §0.7 (the sibling
 plans put them at §0.3); discharge entries cite "§0.7 D-UA-n". Branch
 `claude/carbon-fork-0-1-upstream-advance` in the worktree
@@ -69,39 +77,41 @@ implementation choice auto-adopted under R29(a) and veto-able after the fact.
 
 1.  **Templates (the series the cut was taken before):** #7657 compound member
     access action, #7662 templated conversions, #7663 actions read the
-    specific, #7671 constant InstActions, #7682 CallAction, #7689 TemplateInst,
-    #7700 splice-stepping for bound methods, #7710 call-action operands, #7726
-    SpecificInst, #7727 **template lowering**, #7735/#7736 tests, #7741
-    dependent assignment, #7772, #7780 protected members from template-derived
-    classes, #7801 dependent initialization, #7879 **SpliceInst storage-arg
-    crash fix**, #7880 **SpecificInst lowering crash fix** (§0.5).
+    specific, #7671 constant InstActions, #7682 CallAction, #7689
+    TemplateInst, #7700 splice-stepping for bound methods, #7710 call-action
+    operands, #7726 SpecificInst, #7727 **template lowering**, #7735/#7736
+    tests, #7741 dependent assignment, #7772, #7780 protected members from
+    template-derived classes, #7801 dependent initialization, #7879 **SpliceInst
+    storage-arg crash fix**, #7880 **SpecificInst lowering crash fix** (§0.5).
 2.  **Destruction (`Destroy.SubobjectDestroy`):** #7773 (interface reshaped:
     `Op`, `final fn SubobjectDestroy`, `final fn SelfDestruct`; prelude
     destroy.carbon; core_identifier.def; custom_witness.cpp), #7824
-    `BuildSelfDestructCall`, #7829 struct fields, #7842 tuples, #7844 arrays,
-    #7848 constants, #7840 class fields, #7845 non-trivial preparation,
-    #7846/#7847 triviality classification, #7855 desugared LocIds.
+    `BuildSelfDestructCall`, #7829 struct fields, #7842 tuples, #7844
+    arrays, #7848 constants, #7840 class fields, #7845 non-trivial
+    preparation, #7846/#7847 triviality classification, #7855 desugared LocIds.
 3.  **C++ function pointers and the thunk refactor:** #7787 `CalleeFunctionInfo`
     generalized and moved to cpp/thunk.h, #7788 function pointers, #7789
     Carbon function → C++ function pointer conversion, #7881 pointers to
     Carbon methods, #7865 NRVO export, #7891, #7897 plain identifiers.
 4.  **Redeclarations and default values:** #7632 **unified `TryMergeRedecl`**
     (handle_function.cpp/handle_class.cpp bodies moved into merge.cpp), #7695
-    redundant impl-file redeclarations diagnosed, #7631/#7649/#7665/#7737/
-    #7800/#7810/#7837 pattern default values, #7716 nested tuple-pattern crash,
-    #7654 `MakeGeneratedFunctionDecl` parameter forms, #7786.
+    redundant impl-file redeclarations diagnosed, pattern default values in
+    PRs 7631/7649/7665/7737/7800/7810/7837, #7716 nested tuple-pattern crash,
+    and #7654 `MakeGeneratedFunctionDecl` parameter forms, #7786.
 5.  **Specifics and facets:** #7717 **specifics initialized in place**, #7729
     canonical generated functions, #7784 `SpecificInterface` through witness
     generation, #7813 `TypeType` as empty `FacetType`, #7866, #7819, #7817.
-6.  **Prelude and language:** #7713/#7711/#7712 `match_first` in the prelude,
-    #7714 `Eq`/`Ordered` named constraints, #7858 `typeof`, #7651 positional
-    params lexing/parsing, #7889 `friend` parsing, #7861 words.md keywords.
-7.  **Diagnostics and SemIR text:** #7768/#7804 type sugar preserved, #7827/
-    #7833/#7867 stringify, #7771 SSA verifier, #7860, #7882, #7706.
-8.  **Infrastructure:** #7779 **clang 21 minimum + CI**, #7781/#7856 llvm
-    rolls, ~20 clang-tidy-24 NOLINT/disable commits, #7667 **rumdl line
-    length**, #7692/#7742/#7809/#7877 autoupdate script, #7803 LSP SemIR,
-    #7746/#7762/#7885 editor grammars, benchmarks, jj scripts, AGENTS skills.
+6.  **Prelude and language:** #7713/#7711/#7712 `match_first` in the
+    prelude, #7714 `Eq`/`Ordered` named constraints, #7858 `typeof`, #7651
+    positional params lexing/parsing, #7889 `friend` parsing, #7861 words.md
+    keywords.
+7.  **Diagnostics and SemIR text:** #7768/#7804 type sugar preserved, PRs
+    7827/7833/7867 stringify, #7771 SSA verifier, #7860, #7882, #7706.
+8.  **Infrastructure:** #7779 **clang 21 minimum + CI**, #7781/#7856 llvm rolls,
+    ~20 clang-tidy-24 NOLINT/disable commits, #7667 **rumdl line
+    length**, #7692/#7742/#7809/#7877 autoupdate script, #7803 LSP
+    SemIR, #7746/#7762/#7885 editor grammars, benchmarks, jj scripts, AGENTS
+    skills.
 9.  **Interop misc:** #7673 **Carbon generic types as C++ template
     parameters**, #7745 virtual-base lowering crash, #7783 derived-to-base
     SemIR fix, #7792 imported class/vtable instantiation, #7763 indirect C++
@@ -145,7 +155,7 @@ Marker counts are from the dry run (`++<<<<<<<` per file).
 | check/cpp/import.h | 1 | A | fork's `NoteInCppThunk`/`ImportCppThunkFunctionDecl` vs upstream's `ImportFunctionPointerInvoke` | keep both |
 | check/cpp/thunk.cpp | 12 | **B** | fork's anonymous-namespace `CalleeFunctionInfo` (+constant params, `is_catching`, fence, `BuildCatchingThunkBody`, `WrapInBoundaryDiagnostic`, `IsCppThunkFenceRequired`) vs upstream's public `CalleeFunctionInfo` with `SelfParamKind` (incl. `FunctionPointer`) and `BuildCppThunk(context, callee_info)` | upstream's struct and signatures; fork's fence/catching machinery re-expressed on them; D-UA-7 |
 | check/cpp/thunk.h | 1 | **B** | same | upstream's struct; fork's `IsCppThunkFenceRequired`, `BuildCppCatchingThunk`, `GetOrBuildCppCatchingThunkDecl` declared beside it |
-| check/custom_witness.cpp | 5 | **B** | `CanDestroyClass` signature (fork: `SpecificInterfaceId` + `query_is_symbolic`; upstream: `SpecificInterface`), its two call sites, and one 600-line hunk where the fork's impl-population scans (`HasUserDestroyImpl`, `HasClassKeyedImpl`, `HasNonTrivialUserCopyImpl`, `IsTriviallyDestructible`, `HasTrivialClassShapeForExport`) and the fork's `CanDestroyType` `CustomLayoutType` arm (:343) sit against upstream's `DestroyStructFields`/`MakeSubobjectDestroyOpBody`/`MakeDestroySelfDestructFunction` | upstream's `SpecificInterface` parameter type and three-entry Destroy witness; the fork's predicates, `query_is_symbolic` threading, `CustomLayoutType` arm, choice-copy and union-unformed witnesses survive; the choice shape upstream has never destroyed gets an explicit `is_choice` clause (amended 2026-10-05, review fold: rev A A1); the two clean-merging `GetCanonicalFacetOrTypeValue` calls at merged :1557/:1613 are renamed (rev A A2); D-UA-9 |
+| check/custom_witness.cpp | 5 | **B** | `CanDestroyClass` signature (fork: `SpecificInterfaceId` + `query_is_symbolic`; upstream: `SpecificInterface`), its two call sites, and one 600-line hunk where the fork's impl-population scans (`HasUserDestroyImpl`, `HasClassKeyedImpl`, `HasNonTrivialUserCopyImpl`, `IsTriviallyDestructible`, `HasTrivialClassShapeForExport`) and the fork's `CanDestroyType` `CustomLayoutType` arm (:343) sit against upstream's `DestroyStructFields`/`MakeSubobjectDestroyOpBody`/`MakeDestroySelfDestructFunction` | upstream's `SpecificInterface` parameter type and three-entry Destroy witness; the fork's predicates, `query_is_symbolic` threading, `CustomLayoutType` arm, choice-copy and union-unformed witnesses survive; the choice shape upstream has never destroyed gets an explicit `is_choice` clause and a `CustomLayoutType` arm in `MakeSubobjectDestroyOpBody` (amended 2026-10-05, review fold: rev A A1 / rev 3 F1); the two clean-merging `GetCanonicalFacetOrTypeValue` calls at merged :1557/:1613 are renamed (rev A A2); D-UA-9 |
 | check/eval.cpp, eval.h | 3, 1 | **C** | fork's `TryEvalBlockForSpecific(..., publish_block_id) -> pair<InstBlockId,bool>` (S3b incremental publication) vs upstream's in-place value block (#7717) | take upstream; D-UA-10 |
 | check/generic.cpp, sem_ir/generic.cpp | 1, 1 | **C** | fork's pre-sized placeholder + loud CHECKs in `GetConstantInSpecific` vs upstream's `NotConstant` for unreached entries | take upstream; D-UA-10 |
 | check/function.cpp, function.h | 1, 1 | A | upstream's return-form fields (`return_form`, `param_kinds`) land where the fork's generated-function changes (W-075 return slot, overload index) sit | keep both |
@@ -231,11 +241,19 @@ report; the plan pre-registers them so the merge commit already resolves them.
     `GetOrBuildCppCatchingThunkDecl`. The catching path's real dependencies
     are `BuildCppCatchingThunk` constructing `CalleeFunctionInfo
     callee_info(callee_function_decl, &signature)` at thunk.cpp:1146 — inside
-    the conflict hunk, so it is rebuilt on upstream's struct — and the two
-    decl-taking `IsCppThunkFenceRequired(context, <FunctionDecl*>)` calls at
-    thunk.cpp:1110 (`BuildCppCatchingThunk`) and :1607 (`PerformCppThunkCall`
-    through `GetCalleeClangDecl`), both clean hunks, which keep compiling only
-    if the refactored predicate keeps a `FunctionDecl*`-taking overload; §2.4.)
+    the conflict hunk, so it is rebuilt on upstream's struct — and the
+    decl-taking `IsCppThunkFenceRequired(context, <FunctionDecl*>)` calls.
+    Corrected 2026-10-05, review fold: rev 3 F6 — the fork's callers are :445
+    (`IsCppThunkRequired`), :1110 (`BuildCppThunk(Context&, const
+    SemIR::Function&)`, the fork's own thunk builder feeding `BuildThunkBody`;
+    rev 2 mis-filed it under `BuildCppCatchingThunk`, which never calls the
+    predicate — a catching thunk is fenced unconditionally), :1607
+    (`PerformCppThunkCall` through `GetCalleeClangDecl`) and import.cpp:2125
+    (`ImportFunctionDecl`). The fork's `BuildCppThunk` is replaced whole by
+    upstream's `BuildCppThunk(context, callee_info)`, so the :1110 call becomes
+    §2.4's `IsCppThunkFenceRequired(callee_info.function_type,
+    callee_info.decl)`; only :1607 keeps compiling through a
+    `FunctionDecl*`-taking overload; §2.4.)
 8.  **rumdl MD013:** upstream's `.rumdl.toml` (not fork-modified, so it arrives
     verbatim) enables line-length enforcement with reflow; the gate's `uvx prek
     run --all-files` would reflow 34 fork-authored documents and fail on the
@@ -305,7 +323,7 @@ nightly could be fetched here).
 | W-046 / row 43 (SKIP interop/inherit_multiple_bases.carbon) | #7745 virtual-base lowering crash, #7783 derived-to-base SemIR fix | **stays SKIP** (amended 2026-10-05, review fold: rev B B8): upstream-trunk:toolchain/check/testdata/interop/cpp/class/import/base.carbon:152 still carries the split `fail_todo_use_multiple_inheritance.carbon` with the identical `cannot implicitly convert expression of type `C*` to `Cpp.A*` [ConversionFailure]` / `MissingImplInMemberAccessInContext` lines the SKIP quotes (:159-173); #7745 fixes a `BuildVtable` crash and #7783 reorders qualification vs derived-to-base conversion — neither adds non-zero base offsets | no probe; the W-046 note cites the tip pin (base.carbon:152) as the still-standing blocker |
 | W-037 lambdas/positional params | #7651 lexing and parsing of positional params | parse half present; check still stubs | title note only |
 | W-030 interface `default`/`final` members | #7817 eval block, #7773 `final fn` bodies in interfaces | partial | note; no un-SKIP |
-| W-083 `Cpp.Exception` release-on-destroy | #7845 prepares non-trivial `SubobjectDestroy` | still open; the choice-payload destroy synthesis it waits on is closer, and D-UA-9's `is_choice` clause (rev A A1) now states the limit explicitly in code: a payload-carrying choice runs NO payload destructor, exactly as the fork's placeholder did | note; the D-UA-15 residue "choice-payload destroy synthesis" names it |
+| W-083 `Cpp.Exception` release-on-destroy | #7845 prepares non-trivial `SubobjectDestroy` | still open; the choice-payload destroy synthesis it waits on is closer, and D-UA-9's `is_choice` clause and `CustomLayoutType` arm (rev A A1 / rev 3 F1) now state the limit explicitly in code: a payload-carrying choice runs NO payload destructor, exactly as the fork's placeholder did | note; the D-UA-15 residue "choice-payload destroy synthesis" names it |
 | W-091 tree-sitter `union` | #7885 grammar update | unchanged (no `union` token) | grep grammar.js |
 | W-065 DOCS-1 / row 89 | #7823 member access, #7839 redeclaration, #7875 generics, #7869 tracked updates | upstream closed placeholders the row's evidence may cite | re-read the row |
 | Divergence-risk register (ten blocks) | #7897 (names in C++ no longer use `GetFormatted`), #7773 (interface shape), #7714 (`Eq`/`Ordered` constraints beside `EqWith`, which `Core.Result` imports — still present at upstream comparison.carbon:12) | each entry re-checked; the `_CF__carbon_thunk:overload<N>` asm label (D-OV-17) is a Carbon mangled name, untouched by #7897 | the decision-log entry lists every register entry with HOLDS / MOVED |
@@ -384,10 +402,37 @@ nightly could be fetched here).
     list-marker fixes; and, while THIS paragraph was linted, a continuation
     line beginning with a plus sign became a list item that swallowed the
     rest of the paragraph — the hazard set is `#`, `*`, `+`, `-` and `N.` at
-    a line start. The fork's own pipeline (prettier `proseWrap: always` and
-    the R12 hook's rumdl) had ALREADY done this to rev 1 of this plan (two
-    headings reading "7784, #7813, …" and "7689, #7700, …" in §0.2 and the
-    weekly cron mangled into a list item in §8.3 — both repaired in rev 2)
+    a line start, column 0 OR list-continuation indent (amended 2026-10-05,
+    review fold: rev 3 F4; re-probed with rumdl 0.2.78 under upstream's
+    `.rumdl.toml`, two `--fix` passes: an indented continuation beginning
+    `#7784, #7813` stays text, so only `#` is safe when indented; indented
+    continuations beginning with a plus sign, with the cron tail or with a
+    dash become nested dash-marker items that swallow the rest of the sentence,
+    and one beginning with a digit and a period is a nested ordered item).
+    Mechanism, corrected (rev 3 F4): the prek `prettier` hook is `types_or:
+    [html, javascript, json, yaml]` (.pre-commit-config.yaml:94-101, both
+    trees) and the R12 hook (.claude/hooks/post_edit_invariants.sh:120-131)
+    runs prettier on `*.json|*.yaml` only and no rumdl — prettier never
+    touches markdown in this repository. Rev 1's headings were made by hand-wrapped
+    text that put `#7784`/`#7689` at column 0 plus the pre-commit `rumdl`
+    hook's MD018/MD004 fixes (the hook runs twice, .pre-commit-config.yaml
+    :34-38 and :53-57; the fork's `.rumdl.toml` has MD013 off but
+    MD018/MD004/MD069 on). The reflow commit's wrapping is upstream's
+    `.rumdl.toml` (`[MD013] reflow = true`) applied through that same rumdl
+    hook: the first pass wraps, the second pass "fixes" what the wrap landed
+    at a line start. A second non-neutral hook, found at the rev 3 fold
+    (F2): check-google-doc-style substitutes words inside code spans and
+    fenced blocks alike (Google's word list: the Latin abbreviations, the
+    three-letter synonym of "by way of", the short forms of "repository" —
+    the GitHub REST path segment included), honoring only its column-0
+    `<!-- google-doc-style-ignore -->` /
+    `<!-- google-doc-style-resume -->` line pairs — it rewrote §8.2's `gh
+    api` path into the refused form in rev 1, rev 2 and the rev 3 draft, so
+    §8.2 and the fold-record tables now sit between those markers, and the
+    reflow commit's step (e) diff is read with this hook in mind. The rumdl
+    hook had ALREADY done this to rev 1 of this plan
+    (two headings reading "7784, #7813, …" and "7689, #7700, …" in §0.2 and
+    the weekly cron mangled into a list item in §8.3 — both repaired in rev 2)
     and to the decision log (decision-log.md:5562, a heading reading "7741
     template-dependent assignment, …" at HEAD — repaired by the reflow
     commit, which is the first commit allowed to touch that file). Fenced
@@ -395,11 +440,17 @@ nightly could be fetched here).
     ZERO changed fences; tables: zero table lines touched. So the hazard is
     headings and list items manufactured from a list or heading marker at a
     line start, not code or tables. Procedure and falsifier: §3 commit 2 and
-    R-9 (per-file heading count per level unchanged; no new list items; the
-    `git diff -U0` grep for added lines that begin with a heading marker plus
-    a digit, a list marker, or a digit plus a period is empty after
-    rephrasing each hit). Rulebook rule R31 (allocated at this fold,
-    fork/rulebook.md) carries the lesson. Rejected: a fork-local MD013 opt-out
+    R-9 (per-file heading count per level and list-item count — indented
+    items included, `grep -cE '^\s*-   '` and `grep -cE '^\s*[0-9]+\. '` —
+    unchanged; the `git diff -U0` grep `^\+\s*#{1,6} [0-9]|^\+#[0-9]` for
+    manufactured headings and un-converted column-0 `#NNNN` precursors empty
+    after rephrasing each hit; list manufacture detected by the count diff
+    alone, since a grep for added dash-marker lines matches every re-wrapped
+    first line of an existing item — 146 hits, 1 real, on the measured copy;
+    rev 3
+    F5). Rulebook rule R31 (allocated at this fold, fork/rulebook.md;
+    scope, attribution and probe nuance corrected at the rev 3 fold) carries
+    the lesson. Rejected: a fork-local MD013 opt-out
     for `fork/` (a second lint regime, R21 parity). Break condition: a reflow
     that changes a token other than the enumerated benign classes — rev 1's
     "revert that file's reflow" is unworkable for ORCHESTRATION.md and the
@@ -462,10 +513,20 @@ nightly could be fetched here).
     is not an `OverloadSetValue` (`ErrorInst`: a member could not be localized,
     already diagnosed) — rev 1's "or its loaded import constant" keyed on the
     wrong inst and would have let upstream's template `DiagnoseDuplicateName`
-    it (W-107's shape); (3) `is_overload` against anything else (:551-559) →
-    `DiagnoseOverloadMarkerMismatch`, NO merge, the declaration gets its own
-    function and is not added to name lookup (D-OV-3: "a marked declaration
-    against a plain function is not merged") — rev 1's pre-step would have
+    it (W-107's shape); (3) `is_overload` against a previous inst that
+    RESOLVES TO A FUNCTION (:555-560; the fork's :483-547 resolution: a
+    `FunctionDecl`, an `AssociatedEntity`, or an `ImportRefLoaded` whose
+    import-IR inst is a `FunctionDecl`) → `DiagnoseOverloadMarkerMismatch`,
+    NO merge, the declaration gets its own function and is not added to name
+    lookup (D-OV-3: "a marked declaration against a plain function is not
+    merged"); when the previous inst is NOT a function (a class, a namespace,
+    …) the pre-step returns false whatever `is_overload` says and upstream's
+    template emits `DiagnoseDuplicateName` (merge.cpp:804-808) — the fork's
+    own order at handle_function.cpp:549-552 (non-function previous →
+    duplicate name, BEFORE the marker check at :555), so `class F; overload
+    fn F()` stays `DuplicateName` (amended 2026-10-05, review fold: rev 3 F7;
+    unpinned — no overload golden carries `DuplicateName`) — rev 1's
+    pre-step would have
     sent `fn F(x: i32)` then `overload fn F(b: bool)` into the template, where
     `CheckFunctionTypeMatches` fails on the parameter types and upstream's
     redeclaration diagnostics replace the fork's; (4) otherwise upstream's
@@ -492,10 +553,17 @@ nightly could be fetched here).
     clang::EST_BasicNoexcept` under `CXXExceptions` (decision-log EH-B ledger
     correction [4]: "the fence is the `noexcept` exception spec, not a
     `try`/`catch`"). Upstream's `CreateThunkFunctionDecl` (thunk.cpp:429-475)
-    builds a default `ExtProtoInfo` with NO exception spec, and the function
-    is inside a conflict hunk, so the implementer re-adds the spec by hand on
-    upstream's version, for BOTH the decl path and the `FunctionPointer`
-    constructor path (one function serves both). (2) `WrapInBoundaryDiagnostic`
+    builds a default `ExtProtoInfo` with NO exception spec. The function
+    carries a conflict hunk, but in the merged tree (498f1b962) that hunk
+    (thunk.cpp:761-767) is the `GetDeclNameForThunk` call alone — fork
+    `callee_info.decl->getDeclName()` plus `is_catching` vs upstream
+    `callee_info.decl_name` (#7897) — and the fork's spec lines and
+    `is_catching` parameter auto-merge OUTSIDE it (merged :756-774); the
+    implementer resolves the hunk to `GetDeclNameForThunk(ast_context,
+    callee_info.decl_name, is_catching)` and VERIFIES the spec is still there
+    afterwards rather than re-adding it, for BOTH the decl path and the
+    `FunctionPointer` constructor path (one function serves both)
+    (observation at the rev 3 fold, F3). (2) `WrapInBoundaryDiagnostic`
     (fork :904-957, `try { … } catch (...) { write; throw; }`) applied in
     `BuildThunkBody` under `IsCppThunkFenceRequired(callee_info.function_type,
     callee_info.decl_or_null)` — its rethrow reaches `terminate` ONLY because
@@ -508,8 +576,12 @@ nightly could be fetched here).
     refactored to `IsCppThunkFenceRequired(Context&, const
     clang::FunctionProtoType*, const clang::FunctionDecl* decl_or_null)` (the
     decl, when present, for `ResolveExceptionSpec`) and KEEPS a
-    `FunctionDecl*`-taking overload for the two clean-hunk callers
-    (thunk.cpp:1110, :1607 — rev A A6, §0.4 item 7). **Function-pointer path
+    `FunctionDecl*`-taking overload for the one clean-hunk caller that
+    survives, `PerformCppThunkCall` (thunk.cpp:1607, through
+    `GetCalleeClangDecl`); the :1110 caller sits inside the fork's
+    `BuildCppThunk`, which upstream's `BuildCppThunk(context, callee_info)`
+    replaces whole (rev A A6, §0.4 item 7; corrected 2026-10-05, review fold:
+    rev 3 F6). **Function-pointer path
     (A7):** upstream's `ImportFunctionPointerInvoke` (import.cpp:2127-2160)
     never calls `IsCppThunkRequired` — it calls `DefineAsThunkCall`
     unconditionally (:2157), so component (3) fences nothing there; only (1)
@@ -625,28 +697,80 @@ nightly could be fetched here).
     `SubobjectDestroy`; the fork has seven. The autoupdate's stack-dump gate
     would fail on the first such file and hide the rest of the fill behind it
     (the "decidable from the tree" planning-miss class the SL-1 entry names).
-    **Decision:** `MakeSubobjectDestroyOpBody`'s `ClassType` arm returns early
-    for `class_info.is_choice` — one clause, commented "Fork (D-UA-9, W-083):
-    a choice's repr fields are not scope members; payload destructors do not
-    run — placeholder semantics preserved; TODO: choice-payload destroy
+    **Decision (amended 2026-10-05, review fold: rev 3 F1 BLOCKER — two
+    clauses, not one):** (i) `MakeSubobjectDestroyOpBody`'s `ClassType` arm
+    returns early for `class_info.is_choice` — commented "Fork (D-UA-9,
+    W-083): a choice's repr fields are not scope members; payload destructors
+    do not run — placeholder semantics preserved; TODO: choice-payload destroy
     synthesis (D-UA-15 residue)" — so a choice's `SubobjectDestroy.Op` is an
     empty body, exactly the fork's placeholder behavior (W-083 and the W-071
     note already record this limit; the S1 admitted-exception adapter payload
-    keeps its declared-impl `Op` through `SelfDestruct` as before). The
-    alternative (ii), `CanDestroyClass` answering `Trivial` for an `is_choice`
-    whose repr fields all pass `IsBuiltinWithTrivialDestruction`, is rejected
-    for UA-1: it needs a second walk over the payload region and still needs
-    (i) for the `NonTrivial` case — two clauses where one suffices (R17); it
-    is recorded as the UA-2 refinement if the fill shows empty
-    `SubobjectDestroy` defines are noisier than `NoOp`. In the same hunk the
-    fork's `CanDestroyType` `CustomLayoutType` arm (:343-368) MUST survive
+    keeps its declared-impl `Op` through `SelfDestruct` as before); AND (ii)
+    the same switch gains `case CARBON_KIND(SemIR::CustomLayoutType
+    custom_layout_type): { (void)custom_layout_type; return; }` beside it,
+    commented "Fork (D-UA-9, W-083): a native custom-layout type is a choice
+    payload region or a union representation; its fields are restricted to
+    trivially destructible types (SF-6 allowlist, D-UN-2), so nothing runs —
+    placeholder semantics preserved; TODO: choice-payload destroy synthesis
+    (D-UA-15)". **Why (i) alone is not enough (rev 3 F1):** rev 2 assumed the
+    walk meets fork shapes at the `var`'s own type; the tree says it meets
+    them one level EARLIER, inside the witness QUERY. Upstream's
+    `CanDestroyClass` (custom_witness.cpp:246-248) calls
+    `HasWitnessForOneField(object_repr)` on the class's object representation
+    BEFORE its `GetStructTypeFields().empty()` short-circuit (:253-256);
+    `HasWitnessForOneField` (:207-220) → `HasWitnessForRepeatedField`
+    (:168-174, byte-identical in the fork) → `LookupImplWitness`, and for a
+    concrete query that is `EvalOrAddInst<SemIR::LookupImplWitness>`
+    (impl_lookup.cpp:1053-1060) → the evaluator →
+    `EvalLookupSingleFinalWitness` (:1182) → `LookupCustomWitness(…,
+    /*build_witness=*/true)` (:1286-1288):
+    the field type's Destroy witness, `SubobjectDestroy.Op` body included, is
+    BUILT during the query (upstream's own golden shows it:
+    check/testdata/class/destroy_calls.carbon:266 defines a `SubobjectDestroy`
+    for the class's repr struct). So for `var r: IntResult = …`: `AddCleanups`
+    → `BuildSelfDestructCall(r)` → `CanDestroyClass(IntResult)` →
+    `HasWitnessForOneField(repr struct)` → build →
+    `CanDestroyType(StructType)` → `NonTrivial` →
+    `MakeSubobjectDestroyOpBody(StructType)` (:493-497) →
+    `DestroyStructFields([ChoiceDiscriminant, ChoicePayload])` →
+    `PerformMemberAccess(self: ref struct, ChoicePayload)` resolves through
+    member_access.cpp:632-647's `StructType` fallback (the base is not a name
+    scope; the special `NameId` compares equal) →
+    `BuildSelfDestructCall(payload)` → `CanDestroyType(CustomLayoutType)` (the
+    fork arm, :343-368) → `NonTrivial` →
+    `MakeSubobjectDestroyOpBody(CustomLayoutType)` → `default: CARBON_FATAL`
+    (:505) — the `ClassType` arm with clause (i) is never entered. The same
+    path fires for every native `union`: fork class.cpp:774 builds a
+    `CustomLayoutType` as the union's object representation, so
+    `CanDestroyClass(union)` → `HasWitnessForOneField(object_repr =
+    CustomLayoutType)` → build → `CanDestroyType(CustomLayoutType)` →
+    `NonTrivial` → the same `CARBON_FATAL`; rev 2's "a union reaches the
+    `ClassType` arm and walks ITS repr fields" described the SECOND lookup,
+    not the first. Clause (i) stays necessary: if the class arm ran for a
+    choice, `PerformMemberAccess(self: ref IntResult, ChoiceDiscriminant)`
+    would do class-scope lookup and emit `QualifiedExprNameNotFound` (path
+    (a) above). A field walk inside (ii) is not an option:
+    `PerformMemberAccess` has no `CustomLayoutType` fallback
+    (member_access.cpp:632 handles `StructType` only), so a walking arm would
+    need a new access path (R17). The alternative (iii),
+    `CanDestroyType(CustomLayoutType)` answering `Trivial` (NoOp, no body), is
+    rejected for UA-1: it still needs (ii) for the S1 admitted-exception
+    adapter payload (`NonTrivial`), so the arm is the one-clause answer; rev
+    2's alternative (ii) — a `Trivial` answer from `CanDestroyClass` — never
+    reaches this site at all and is withdrawn. In the same hunk the fork's
+    `CanDestroyType` `CustomLayoutType` arm (:343-368) MUST survive
     (upstream's `CanDestroyType` has no such arm and `CARBON_FATAL`s at :388
     on the payload field during the witness query). **Pins:** the seven
     choice goldens with `var`s — check/testdata/choice/{alternative_copy,
     payload_construct, fail_generic_payload, fail_todo_nontrivial_payload}
     .carbon, lower/testdata/choice/{alternative_copy, payload_layout,
     single_payload_alternative}.carbon; the nine match/ goldens with `var`s
-    (check + lower); every EH-A/EH-B golden that holds a `Core.Result` value
+    (check + lower); the nine union goldens with `var`s (rev 3 F1 — `grep -l
+    "var " toolchain/*/testdata/union/*.carbon` lists 14, of which the five
+    parse/ goldens never reach check): check/testdata/union/{basic,
+    fail_init, fail_modifiers_and_redecl, fail_nontrivial_field,
+    fail_todo_generic, import, layout}.carbon and lower/testdata/union/{basic,
+    layout}.carbon; every EH-A/EH-B golden that holds a `Core.Result` value
     (12 files: check+lower interop/cpp/exceptions/catching_thunk.carbon,
     check interop/cpp/exceptions/{fail_catching, fail_catching_none_mode}
     .carbon, check+lower interop/cpp/function/export/result_expected.carbon,
@@ -656,23 +780,37 @@ nightly could be fetched here).
     temporaries and `Run`'s result are cleanup-scoped storage, so each reaches
     `AddCleanups`); and the 31 conformance programs referencing `Core.Result` or
     `choice` (`grep -rlE 'Core\.Result|\bchoice\b' fork/conformance/programs
-    | wc -l` = 31). Pre-registered golden shape: every `_COp.<hash>:core
-    .Destroy.Core` define in lower/testdata/choice/payload_layout.carbon
-    (:127-174 today) is replaced by upstream's `SubobjectDestroy`/`SelfDestruct`
-    pair with an empty subobject body — a rename-and-reshape, not a
-    disappearance (R-2). §8.4 grep: `grep -n 'is_choice'
-    toolchain/check/custom_witness.cpp` → a hit inside
-    `MakeSubobjectDestroyOpBody`. Risk ranking: this is now R-17, the
-    top-ranked risk of §7. **Rename (A2):** the two clean-merging
+    | wc -l` = 31). Pre-registered golden shape (rev 3 F1, replacing rev 2's
+    "one empty body"): every payload-carrying choice golden shows
+    `SubobjectDestroy` functions for FOUR self types — the class (empty,
+    clause (i)), the repr struct (a body calling the payload's and the
+    discriminant's `SelfDestruct`), the `CustomLayoutType` payload region
+    (empty, clause (ii)) and the payload tuples (element walk) — the same
+    four self types that carry `Destroy.Op` defines today
+    (check/testdata/choice/payload_construct.carbon:287-302:
+    `%tuple.type.a8a`, `%.2a5`, `%struct_type.discriminant.payload.898`,
+    `%IntResult`); a union golden shows one for the class (field walk over
+    its real `FieldDecl`s through the fork's `GetStructTypeFields`
+    `CustomLayoutType` arm, sem_ir/class.cpp +8, clean merge) and one for the
+    `CustomLayoutType` repr (empty). In lower/testdata/choice/payload_layout
+    .carbon every `_COp.<hash>:core.Destroy.Core` define (:132-174 today; the
+    call at :127) is replaced by upstream's `SubobjectDestroy`/`SelfDestruct`
+    pairs — a rename-and-reshape, not a disappearance (R-2). §8.4 greps:
+    `grep -n 'is_choice' toolchain/check/custom_witness.cpp` → a hit inside
+    `MakeSubobjectDestroyOpBody`; `grep -n 'CustomLayoutType'
+    toolchain/check/custom_witness.cpp` → hits inside BOTH `CanDestroyType`
+    and `MakeSubobjectDestroyOpBody`. Risk ranking: this is R-17, the
+    top-ranked risk of §7, covering choices AND unions. **Rename (A2):** the
+    two clean-merging
     `GetCanonicalFacetOrTypeValue` calls (`LookupChoiceCopyWitness`,
     `LookupUnionUnformedInitWitness`; §0.4 item 11) become `GetCanonicalFacet`
     in the merge commit. Break condition: the slice/buf lower golden or
     stdlib/slices_heap_buf.carbon no longer shows exactly one `free` per `Buf`
     (double free through `SelfDestruct` + a field walk, or none) — fixed at
-    the root before merge; AND any choice or match golden's fill carrying a
-    `SubobjectDestroy`-related diagnostic or stack dump — fixed at the root
-    (the `is_choice` clause or the surviving `CustomLayoutType` arm), never
-    by editing the golden.
+    the root before merge; AND any choice, match or union golden's fill
+    carrying a `SubobjectDestroy`-related diagnostic or stack dump — fixed at
+    the root (clause (i), clause (ii) or the surviving `CanDestroyType` arm),
+    never by editing the golden.
 -   **D-UA-10 — Specific resolution.** Upstream's in-place value block (#7717)
     replaces the fork's S3b incremental publication; the `publish_block_id`
     parameter, the pre-sized placeholder in `ResolveSpecificDefinition` and the
@@ -691,9 +829,10 @@ nightly could be fetched here).
     {generic, generic_payload, fail_generic_payload}.carbon,
     lower/testdata/choice/{generic_payload, generic_payload_imported}.carbon,
     and the S3c match pair check+lower
-    match/choice_generic_payload_pattern.carbon (plus
-    match/choice_generic_payload_scrutinee.carbon and
-    match/choice_generic_scrutinee.carbon, check + lower).
+    match/choice_generic_payload_pattern.carbon (plus check
+    match/choice_generic_payload_scrutinee.carbon — no lower twin exists —
+    and check+lower match/choice_generic_scrutinee.carbon; corrected
+    2026-10-05, review fold: rev 3 F8).
 -   **D-UA-11 — `GetValue`.** Keep both: the fork's `TryEmitGlobalLetValue`
     early return for non-concrete constants (W-069) runs before upstream's
     `require_value`-conditional CHECK and `nullptr` return. Break: none.
@@ -712,8 +851,9 @@ nightly could be fetched here).
 -   **D-UA-15 — Residues filed, not fixed, in UA-1:** the function-pointer
     catching-thunk gate (D-UA-7), the function-pointer fence-unbuildable TODO
     (D-UA-7, rev A A7), choice-payload destroy synthesis under upstream's real
-    `SubobjectDestroy` walk (D-UA-9's `is_choice` clause, rev A A1 — the
-    W-083 dependency made explicit), any fork golden whose fill shows an
+    `SubobjectDestroy` walk (D-UA-9's `is_choice` clause and
+    `CustomLayoutType` arm, rev A A1 / rev 3 F1 — the W-083 dependency made
+    explicit), any fork golden whose fill shows an
     upstream-intended diagnostic the fork's design did not anticipate (R-11),
     and the F8d retirement note. Each gets a W-item at UA-2 with file:line
     evidence. (Amended 2026-10-05, review fold: rev A A1 / rev A A7.)
@@ -742,8 +882,8 @@ landed steps are "trunk at c1e83b0b7" and "trunk reconciled to it".
 1.  **Textual resolution order (sources first):** core_identifier.def →
     sem_ir/function.h (`Callee`) → sem_ir/generic.cpp, generic.cpp, eval.{h,cpp}
     (D-UA-10, take theirs) → custom_witness.cpp (D-UA-9, incl. the `is_choice`
-    clause and the two `GetCanonicalFacet` renames outside the hunks — rev A
-    A1/A2) → handle_class.cpp +
+    clause, the `CustomLayoutType` arm and the two `GetCanonicalFacet` renames
+    outside the hunks — rev A A1/A2, rev 3 F1) → handle_class.cpp +
     class.cpp, handle_function.cpp + merge.{h,cpp} (D-UA-6) → cpp/thunk.{h,cpp},
     cpp/import.{h,cpp}, cpp/export.cpp (+export.h, type_mapping.cpp,
     constant.cpp, overload_resolution.cpp, cpp/call.cpp, sem_ir/clang_decl.
@@ -815,18 +955,60 @@ landed steps are "trunk at c1e83b0b7" and "trunk reconciled to it".
     is kept verbatim on upstream's `SpecificInterface` parameter — upstream's
     `CanDestroyType` has no arm for it and would `CARBON_FATAL` at its `default`
     (:388) on a choice's payload field or a native union's repr; (b) upstream's
-    `MakeSubobjectDestroyOpBody` `ClassType` arm gains, before
+    `MakeSubobjectDestroyOpBody` gains TWO arms (amended 2026-10-05, review
+    fold: rev 3 F1 — rev 2's "its `default: CARBON_FATAL` stays" and its
+    `is_union` contingency are withdrawn): in the `ClassType` arm, before
     `DestroyStructFields`, `if (class_info.is_choice) { return; }` with the
-    D-UA-9 comment; its `default: CARBON_FATAL` stays — a native `union`'s repr
-    is a `CustomLayoutType` too, but unions are classes with `is_union` whose
-    repr fields are trivially destructible by D-UN-2, so a union reaches the
-    `ClassType` arm and walks ITS repr fields; if the fill shows that walk
-    reaching the `CustomLayoutType` `default` for a union, the same early
-    return is extended to `is_union` (pre-registered second clause, pins
-    check/union/*.carbon and lower/union/*.carbon with `var`s); (c)
-    `CanDestroyClass` keeps upstream's `GetStructTypeFields(…).empty() →
-    Trivial` short-circuit (fires for no choice: the discriminant field is
-    always present).
+    D-UA-9 clause-(i) comment; and a new `case
+    CARBON_KIND(SemIR::CustomLayoutType custom_layout_type): {
+    (void)custom_layout_type; return; }` with the clause-(ii) comment, placed
+    beside it, before `default`. The union case is PRIMARY, not a contingency:
+    a native `union`'s object representation is a `CustomLayoutType` (fork
+    class.cpp:774) and upstream's `CanDestroyClass` builds the repr's witness
+    FIRST (`HasWitnessForOneField(object_repr)`, :246-248) — without the arm
+    every union `var` reaches the `default` during the query, before the
+    class arm's walk over the union's real `FieldDecl`s (which the fork's
+    `GetStructTypeFields` `CustomLayoutType` arm, sem_ir/class.cpp +8, clean
+    merge, makes work) ever runs. Pins: the nine union goldens of D-UA-9.
+    (b') Enumeration step (rev 3 F1): before the push, list every fork-only
+    type shape a concrete `LookupImplWitness` can build a Destroy witness for
+    — the entry points are `AddCleanups` (`var`s and cleanup-scoped
+    temporaries), `CanDestroyClass`'s object-repr query, the per-field
+    queries of `CanDestroyType`'s `StructType`, `TupleType`,
+    `CustomLayoutType`, `ArrayType` and `MaybeUnformedType` arms, and the
+    per-subobject `BuildSelfDestructCall`s inside `MakeSubobjectDestroyOpBody`
+    — and check that each shape has an arm in `CanDestroyType` AND, when that
+    arm can answer `NonTrivial`, in `MakeSubobjectDestroyOpBody`. Done at
+    this fold (fork sem_ir/inst_kind.def vs upstream's; fork `CanDestroyType`
+    arms vs upstream's): the fork adds four inst kinds (`OverloadSetType`,
+    `OverloadSetValue`, `RefineTypeAction`, `StructPattern`), of which only
+    `OverloadSetType` is a type, and ONE fork-only USE of an upstream kind —
+    `CustomLayoutType` as a native object representation (handle_choice.cpp
+    :828 choice payload region, class.cpp:774 union repr, re-evaluated at
+    monomorphization by eval_inst.cpp:371; upstream's only producer is
+    cpp/import.cpp:884 for C++ classes, which `CanDestroyClass` rejects at
+    :235-237 `is_cpp_scope()` before any repr query — the reason upstream has
+    no arm). Result: `CustomLayoutType` is the only fork shape a concrete
+    query reaches — through the choice repr struct's field query, the repr
+    struct's body walk, and the union's object-repr query — and clause (ii)
+    covers all three entries; `OverloadSetType` is unreachable
+    (convert.cpp:2111-2125 rejects every value use of an overload set with
+    `OverloadSetNotCallee` and `ErrorInst`, so no `var`, field or temporary
+    has that type; pin check/testdata/function/overload/fail_set_as_value
+    .carbon; no arm on either side, never hit); `MaybeUnformed(Union)` is
+    upstream's kind with upstream's arms on both sides (`CanDestroyType` →
+    `HasWitnessForOneField(inner)` → the union, covered above;
+    `MakeSubobjectDestroyOpBody` returns early); `TypeType` exists on both
+    sides — #7813 canonicalizes it to an empty `FacetType`, so the fork's
+    `TypeType::Kind` builtin arm (:153, inherited from the cut's :299) goes
+    with the hunk and upstream's `IsBuiltinWithTrivialDestruction` list is
+    taken. The fork's other `CustomLayoutType` arms (`HasNonTrivialUserCopyImpl`
+    :719, `IsTriviallyDestructible` :835) are worklist predicates that call no
+    `LookupImplWitness`; they survive in the hunk unchanged. The enumeration
+    is restated in the merge commit message. (c) `CanDestroyClass` keeps
+    upstream's `GetStructTypeFields(…).empty() → Trivial` short-circuit
+    (fires for no choice: the discriminant field is always present — and
+    never before the repr query).
 -   `LookupChoiceCopyWitness`, `LookupUnionUnformedInitWitness`,
     `BuildPrimitiveCopyWitness`, `LookupCustomWitness`: `SpecificInterface`
     parameters; the two `GetCanonicalFacetOrTypeValue(context,
@@ -871,9 +1053,14 @@ landed steps are "trunk at c1e83b0b7" and "trunk reconciled to it".
     template does it), and its body is the four-step decision of D-UA-6 —
     local `OverloadSetValue` → set path, return true; `ImportRefLoaded` over an
     import-IR `OverloadSetValue` → set path or silent return on a non-set
-    localized constant, return true; `is_overload` against anything else →
-    `DiagnoseOverloadMarkerMismatch`, return true (no merge, not added to name
-    lookup — the existing behavior); otherwise return false. In
+    localized constant, return true; `is_overload` against a previous inst
+    that resolves to a function (`FunctionDecl`, `AssociatedEntity`, or an
+    imported `FunctionDecl`; fork :483-547) →
+    `DiagnoseOverloadMarkerMismatch`, return true (no merge, not added to
+    name lookup — the existing behavior);
+    otherwise — including `is_overload` against a non-function previous inst
+    — return false, so the template's `DiagnoseDuplicateName` fires as the
+    fork's :549-552 does today (rev 3 F7). In
     `BuildFunctionDecl`, after upstream's `CheckDefaults` and
     `DiagnosePositionalParams`: `if (!TryMergeOverloadDecl(…)) {
     TryMergeRedecl(context, name_context, std::nullopt,
@@ -919,20 +1106,43 @@ landed steps are "trunk at c1e83b0b7" and "trunk reconciled to it".
     `_catch` thunks is unaffected.
 -   **check/cpp/thunk.{h,cpp}, import.{h,cpp}:** per D-UA-7 (amended
     2026-10-05, review fold: rev A A3 / A6 / A7). Concretely, in order of the
-    fence components: (1) `CreateThunkFunctionDecl` (upstream :429-475, inside
-    a conflict hunk) re-gains the fork's `if
+    fence components: (1) `CreateThunkFunctionDecl` (upstream :429-475) keeps
+    the fork's `if
     (ast_context.getLangOpts().CXXExceptions) {
     ext_proto_info.ExceptionSpec.Type = clang::EST_BasicNoexcept; }` (fork
     :666-671) before `getFunctionType`, plus the fork's `is_catching`
-    parameter (catching thunks return `int` and carry the `_catch` name) — the
-    §8.4 grep `grep -n EST_BasicNoexcept toolchain/check/cpp/thunk.cpp` → one
-    hit inside `CreateThunkFunctionDecl`. (2) `IsCppThunkFenceRequired(Context&,
+    parameter (catching thunks return `int` and carry the `_catch` name).
+    Observation at the rev 3 fold (F3): in the merged tree (498f1b962) the
+    function's one conflict hunk (thunk.cpp:761-767) is the
+    `GetDeclNameForThunk` call alone — fork `callee_info.decl->getDeclName()`
+    plus `is_catching` vs upstream `callee_info.decl_name` (#7897) — and the
+    spec lines and the `is_catching` parameter auto-merge OUTSIDE it (merged
+    :756-774), so the hand work is `GetDeclNameForThunk(ast_context,
+    callee_info.decl_name, is_catching)` plus a check that the spec is still
+    there afterwards, not a re-add. The §8.4 grep `grep -n EST_BasicNoexcept
+    toolchain/check/cpp/thunk.cpp` → FOUR hits (amended 2026-10-05, review
+    fold: rev 3 F3 — rev 2's "one hit" was never the right count): the three
+    fork-only helpers `GeneratePlacementNewFunctionDecl` (:46),
+    `GetOrCreateCxaCurrentPrimaryExceptionDecl` (:100) and
+    `GetOrCreateBoundaryWriteDecl` (:147), outside every hunk and at the same
+    lines in the merged tree, plus exactly one inside `CreateThunkFunctionDecl`
+    (:671 today) — `awk '/^static auto CreateThunkFunctionDecl/,/^}/'
+    toolchain/check/cpp/thunk.cpp | grep -c EST_BasicNoexcept` → 1; three hits
+    with that count 0 is the fence LOST (R-5(a)), and a bare non-empty grep
+    cannot tell the two apart. (2) `IsCppThunkFenceRequired(Context&,
     const clang::FunctionProtoType*, const clang::FunctionDecl* decl_or_null)`
     is the primary predicate, and a thin `IsCppThunkFenceRequired(Context&,
     const clang::FunctionDecl*)` overload (`decl->getType()->getAs<
-    clang::FunctionProtoType>(), decl`) stays declared in thunk.h for the two
-    clean-hunk callers (thunk.cpp:1110 in `BuildCppCatchingThunk`, :1607 in
-    `PerformCppThunkCall` through `GetCalleeClangDecl`) and import.cpp:2125;
+    clang::FunctionProtoType>(), decl`) stays declared in thunk.h for the
+    callers that still hold a `FunctionDecl*`: thunk.cpp:1607 in
+    `PerformCppThunkCall` (through `GetCalleeClangDecl`) and import.cpp:2125
+    in `ImportFunctionDecl` (corrected 2026-10-05, review fold: rev 3 F6 —
+    the fork's :1110 call is inside `BuildCppThunk(Context&, const
+    SemIR::Function&)`, not `BuildCppCatchingThunk`, which never calls the
+    predicate, a catching thunk being fenced unconditionally; that function
+    is replaced whole by upstream's `BuildCppThunk(context, callee_info)`, so
+    the call becomes the `(callee_info.function_type, callee_info.decl)` form
+    below);
     `BuildThunkBody(…, callee_info)` wraps through `WrapInBoundaryDiagnostic`
     under `IsCppThunkFenceRequired(callee_info.function_type, callee_info.decl)`
     (the message names `callee_info.decl_name` when `decl` is null —
@@ -1033,7 +1243,8 @@ hand; the fill moves them.
     arm, §0.4 item 1, and nothing else of F8d); its message lists the class-C
     deletions with the superseding upstream commits (D-UA-10; D-UA-8 is
     deferred to 1b) and the class-B re-expressions by decision id, incl. the
-    `is_choice` clause (D-UA-9), `MergeOverloadMemberRedecl` and the D-UN-6
+    `is_choice` clause and the `CustomLayoutType` arm with the §2.2 (b')
+    enumeration (D-UA-9), `MergeOverloadMemberRedecl` and the D-UN-6
     template clause (D-UA-6), the three fence components (D-UA-7) and the
     `GetCanonicalFacet` renames (§0.4 item 11).
     1b. **F8d retirement commit** `Retire the F8d constant-function-argument
@@ -1052,16 +1263,27 @@ hand; the fill moves them.
     rev B B2 / B3 / B5): (a) record per-file heading counts per level for
     every `*.md` under fork/ and the four docs/design pages (`for l in 1 2 3
     4 5 6; do grep -c "^$(printf '#%.0s' $(seq 1 $l)) " <f>; done`) and the
-    list-item count (`grep -c '^-   '`); (b) run the markdown hooks by id
+    list-item counts, indented items included (`grep -cE '^\s*-   '` and
+    `grep -cE '^\s*[0-9]+\. '`; amended 2026-10-05, review fold: rev 3 F4 /
+    F5); (b) run the markdown hooks by id
     first — `SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps uvx prek
     run rumdl prettier markdown-toc check-google-doc-style --all-files` — to a
-    fixpoint; (c) `git diff -U0 | grep -nE '^\+#{1,6} [0-9]|^\+-   |^\+[0-9]+\.
-    '` → each hit is rephrased so no line begins with `#NNNN` or a bare `*`
-    (for example "PRs 12/13/14" or the reference moved after a word), and the
-    pre-existing decision-log.md:5562 `## 7741 …` heading is repaired the same
-    way; (d) re-run (b); (e) re-count (a) and diff — every file's heading
-    counts per level and list-item count must be unchanged (the one allowed
-    change is a count that the repair in (c) deliberately restores); (f) `uvx
+    fixpoint; (c) `git diff -U0 | grep -nE '^\+\s*#{1,6} [0-9]|^\+#[0-9]'` —
+    manufactured headings, and the latent form: an un-converted column-0
+    `#NNNN` that the NEXT reflow would convert — → each hit is rephrased so
+    no line begins with `#NNNN` (for example "PRs 12/13/14" or the reference
+    moved after a word), and the pre-existing decision-log.md:5562 `## 7741
+    …` heading is repaired the same way (rev 3 F5: rev 2's grep also matched
+    added dash-marker and `N.`-marker lines, which on the copy gave 146 hits of
+    which ONE was manufactured — the other 145 were first lines of existing
+    list items that merely re-wrapped — so list manufacture is NOT detected
+    by grep); (d) re-run (b); (e) re-count (a) and diff — every file's
+    heading counts per level and list-item counts (indented items included)
+    must be unchanged; a changed list count is the sole detector of a
+    manufactured item (an indented `*`, `+`, `-` or `N.` continuation becomes
+    a nested item under rumdl, rev 3 F4) and is repaired by rephrasing (the
+    one allowed change is a count that the repair in (c) deliberately
+    restores); (f) `uvx
     rumdl check` (post-fix, the R-9 falsifier) → the ~30 MD013 residue lines
     of D-UA-4 are rewritten by hand, then (d)-(f) again until `rumdl check`
     exits 0; (g) the full `SKIP=… uvx prek run --all-files`; (h) commit. The
@@ -1102,8 +1324,9 @@ GIT_COMMITTER_EMAIL=noreply@anthropic.com` and the standing trailers.
     compiler. Expect the pass-1 fill to touch most of the fork's 331 goldens
     (upstream's `Destroy` reshaping alone adds `SubobjectDestroy`/`SelfDestruct`
     entries to every `destroy` dump; #7768/#7804 change diagnostic type text;
-    #7897 changes exported C++ names only for keyword-named functions — none in
-    fork tests) plus the 71 taken-theirs conflicts (which re-acquire the fork's
+    and #7897 changes exported C++ names only for keyword-named functions —
+    none in fork tests) plus the 71 taken-theirs conflicts (which re-acquire
+    the fork's
     thunk/`Cpp.Exception`/overload lines). A fill touching a golden with NO
     fork mechanism and NO upstream change in its directory is the R-12
     falsifier.
@@ -1114,10 +1337,15 @@ GIT_COMMITTER_EMAIL=noreply@anthropic.com` and the standing trailers.
     secondary: it survives the loss of the `noexcept` spec; amended
     2026-10-05, review fold: rev A A3; R-5); upstream's function_ptr goldens
     GAIN them (D-UA-7); slice/buf lower golden keeps exactly one `free` per
-    `Buf` (R-3); every choice golden with a `var` (D-UA-9's seven) gains an
-    EMPTY `SubobjectDestroy.Op` define and a `SelfDestruct` call in place of
-    its `_COp.<hash>:core.Destroy.Core` define — no stack dump, no new STDERR
-    (R-17; rev A A1); the OV mangling `:overload<N>` and
+    `Buf` (R-3); every payload-carrying choice golden with a `var` (D-UA-9's
+    seven) gains `SubobjectDestroy` defines for four self types — class
+    (empty), repr struct (two `SelfDestruct` calls), `CustomLayoutType`
+    payload (empty), payload tuples (element walk) — and `SelfDestruct` calls
+    in place of its `_COp.<hash>:core.Destroy.Core` defines, and every union
+    golden with a `var` (D-UA-9's nine) gains one for the class (field walk)
+    and one for the `CustomLayoutType` repr (empty) — no stack dump, no new
+    STDERR (R-17; rev A A1, amended 2026-10-05, review fold: rev 3 F1); the
+    OV mangling `:overload<N>` and
     `_CF__carbon_thunk:overload<N>` lines are unchanged; the S3b
     generic-choice goldens (D-UA-10's pin family) move by `.loc` only (R-8);
     fail_fence_thunk_unbuildable.carbon stays a `fail_` with the SemanticsTodo;
@@ -1146,9 +1374,8 @@ GIT_COMMITTER_EMAIL=noreply@anthropic.com` and the standing trailers.
     default values, #7651/#7837), `fail_todo_entry_point` (if #7800's default
     values reach `Run`), `fail_todo_generic_fn_as_callable`/
     `fail_todo_method_as_callable` (#7881 pointers to Carbon methods, #7789),
-    and any split whose TODO text cites a `TryMergeRedecl` behavior (#7632/
-
-    #7695). A flip to passing is retriaged by dropping the prefix; a flip
+    and any split whose TODO text cites a `TryMergeRedecl` behavior (PRs
+    7632/7695). A flip to passing is retriaged by dropping the prefix; a flip
     the other way (a positive turning `fail_`) is a regression to root-cause
     first (R16(b)).
 
@@ -1197,8 +1424,9 @@ GIT_COMMITTER_EMAIL=noreply@anthropic.com` and the standing trailers.
     commit 1b), S3b publication (~90 lines across four files),
     `MergeClassRedecl`/`MergeOrAddName` copies (~100 lines), fork
     `MakeDestroyOpBody`/`BuildDestroyWitness` (~60 lines).
--   Added fork-local clauses in upstream code: `is_choice` early return in
-    `MakeSubobjectDestroyOpBody` (D-UA-9), `is_union` flip check in
+-   Added fork-local clauses in upstream code: `is_choice` early return and
+    `CustomLayoutType` arm in `MakeSubobjectDestroyOpBody` (D-UA-9),
+    `is_union` flip check in
     `TryMergeRedecl` (D-UA-6), `EST_BasicNoexcept` + fence wrap + fence
     clause in thunk.cpp (D-UA-7), the function-pointer fence-unbuildable TODO
     in import.cpp (D-UA-7).
@@ -1207,8 +1435,9 @@ GIT_COMMITTER_EMAIL=noreply@anthropic.com` and the standing trailers.
 
 ### §7 Risks and rejected alternatives (each with its falsifier)
 
-Ranking (amended 2026-10-05, review fold: rev A A1): R-17 (choice destroy
-under upstream's real subobject walk — decidable from the tree, and a
+Ranking (amended 2026-10-05, review fold: rev A A1 / rev 3 F1): R-17 (choice
+AND union destroy under upstream's real subobject walk, which meets fork
+shapes inside the witness query — decidable from the tree, and a
 predictable crash costs a full hosted round while hiding the rest of the fill
 behind the stack-dump gate) > R-1 (build breaks, now incl. §0.4 item 11) >
 R-5 (silently disabled mechanisms, now incl. the `noexcept` spec) > R-3 >
@@ -1218,15 +1447,22 @@ class-B item before the merge commit (rev A's "riskiest assumption"): the
 implementer lists, per D-UA-6/7/9, which upstream function now DOES something
 the fork's replaced code did not, and names the fork shape it first meets.
 
--   **R-17 Choice destroy under upstream's `MakeSubobjectDestroyOpBody`**
-    (D-UA-9; rev A A1): without the `is_choice` clause every destroy of a
-    payload-carrying choice — `Core.Result` included — hits a name-lookup
-    error on `ChoiceDiscriminant` or the `CustomLayoutType` `CARBON_FATAL`.
-    Falsifier: the fill on the seven choice goldens with `var`s, the nine
-    match goldens, the 12 `Core.Result` goldens and the 31 conformance
-    programs of D-UA-9; `grep -n is_choice toolchain/check/custom_witness.cpp`
-    hits inside `MakeSubobjectDestroyOpBody` before the push. Mitigation: the
-    clause is in the merge commit, not a fix commit.
+-   **R-17 Choice and union destroy under upstream's
+    `MakeSubobjectDestroyOpBody`** (D-UA-9; rev A A1, amended 2026-10-05,
+    review fold: rev 3 F1): without the `CustomLayoutType` arm the FIRST
+    payload-carrying choice `var` and the FIRST union `var` hit
+    `MakeSubobjectDestroyOpBody(CustomLayoutType)`'s `CARBON_FATAL` while the
+    witness is built inside the query (`CanDestroyClass` →
+    `HasWitnessForOneField(object_repr)`), before any `ClassType` arm runs;
+    without the `is_choice` clause a choice then hits a name-lookup error on
+    `ChoiceDiscriminant`. Falsifier: the fill on the seven choice goldens
+    with `var`s, the nine match goldens, the nine union goldens, the 12
+    `Core.Result` goldens and the 31 conformance programs of D-UA-9; `grep -n
+    is_choice toolchain/check/custom_witness.cpp` hits inside
+    `MakeSubobjectDestroyOpBody` and `grep -n CustomLayoutType` there hits
+    inside both `CanDestroyType` and `MakeSubobjectDestroyOpBody` before the
+    push; the §2.2 (b') enumeration is restated in the merge commit message.
+    Mitigation: both clauses are in the merge commit, not a fix commit.
 -   **R-1 Build breaks the dry run cannot see** (§0.4 items 1-7, 9, 11).
     Falsifier: the first hosted `compile` run. Mitigation: §2 resolves each
     before the push; the implementer greps §8.4 before pushing. Note (rev B
@@ -1304,12 +1540,16 @@ the fork's replaced code did not, and names the fork shape it first meets.
 -   **R-9 rumdl reflow alters content** (amended 2026-10-05, review fold: rev
     B B2 / B3): measured on a copy — tables and fences untouched, but
     `#NNNN`/`*` tokens wrapped to a line start become headings/list items
-    through MD018/MD004 on the second rumdl pass, and ~30 MD013 lines stay
-    unfixable. Falsifier: per-file heading count per level or list-item
-    count changed after the reflow (§3 commit 2 step (e)); `git diff -U0 |
-    grep -nE '^\+#{1,6} [0-9]|^\+-   |^\+[0-9]+\. '` non-empty; `uvx rumdl
-    check` not exiting 0 AFTER `--fix`. Each hit is rephrased, never
-    reverted wholesale (D-UA-4).
+    through MD018/MD004/MD069 on the second rumdl pass — at column 0 and,
+    for `*`/`+`/`-`/`N.`, at list-continuation indent too (rev 3 F4) — and
+    ~30 MD013 lines stay unfixable. Falsifier: per-file heading count per
+    level or list-item count (indented items included) changed after the
+    reflow (§3 commit 2 step (e)); `git diff -U0 | grep -nE
+    '^\+\s*#{1,6} [0-9]|^\+#[0-9]'` non-empty (rev 3 F5: the list-marker
+    alternatives are dropped — 146 hits, 1 real, on the copy; the count diff
+    is the list detector); `uvx rumdl check` not exiting 0 AFTER `--fix`.
+    Each heading hit or count change is rephrased, never reverted wholesale
+    (D-UA-4).
 -   **R-10 x-macro ordering tests** (typed-node categorization, kind.def
     registration #7660, keyword sort). Falsifier: gate failures in parse/lex/
     diagnostics unit tests.
@@ -1381,6 +1621,15 @@ the fork's replaced code did not, and names the fork shape it first meets.
 
 #### §8.2 A/B probe plan for the two template programs
 
+<!-- google-doc-style-ignore -->
+
+(This section sits between `google-doc-style-ignore`/`-resume` markers:
+the check-google-doc-style hook substitutes words inside code spans too —
+the GitHub REST path segment `repos` becomes `repositories`, `via` becomes
+`by way of` — and that substitution is what turned the correct `gh api`
+path into the refused one in rev 1 AND in rev 2's B6 fold; found at the
+rev 3 fold, F2, when prek rewrote the corrected path a third time.)
+
 -   **Instrument:** `.github/workflows/fork_mirror_nightly.yaml` (workflow_
     dispatch, or a push to `claude/**` touching the workflow or
     fork/conformance/arbiter-request.txt — so a request-file bump on the
@@ -1392,13 +1641,21 @@ the fork's replaced code did not, and names the fork shape it first meets.
     dispatched by this plan; the orchestrator runs it when a nightly ≥
     `v0.0.0-0.nightly.2026.10.02` exists (the fixes landed 10-01: #7879 at
     19:13Z, #7880 at 19:17Z).
--   **In the container** (amended 2026-10-05, review fold: rev B B6 — rev 1's
-    `repositories/…` path is refused by the session's proxy with HTTP 403
-    "Numeric-ID repository paths are not supported"; `repositories/{owner}/{repository}/…`
-    works and lists `arbiter-v0.0.0-0.nightly.2026.09.28` as the newest
-    mirror): `gh api repositories/jmann345/carbon-lang/releases/tags/arbiter-<TAG>` →
-    asset id → `gh api -H "Accept: application/octet-stream"
-    repositories/jmann345/carbon-lang/releases/assets/<id> > tc.tar.gz`, extract
+-   **In the container** (amended 2026-10-05, review fold: rev B B6,
+    corrected rev 3 F2 — the session's proxy refuses EVERY `repositories/…`
+    path with HTTP 403 "Numeric-ID repository paths (repositories/{id}/...)
+    are not supported through this proxy. Use repos/{owner}/{repo}/...
+    endpoints instead", including the `repositories/{owner}/{repo}/…`
+    spelling rev 2 carried and marked "reproduced"; the mechanism is the
+    check-google-doc-style hook, which rewrote `repos/` to `repositories/`
+    inside these code spans in rev 1, in rev 2 and again while rev 3 was
+    linted — hence the markers around this section; reproduced at this fold:
+    `gh api
+    "repos/jmann345/carbon-lang/releases?per_page=1"` → 200 listing the
+    newest mirror, the `repositories/…` form → 403): `gh api
+    repos/jmann345/carbon-lang/releases/tags/arbiter-<TAG>` → asset id → `gh
+    api -H "Accept: application/octet-stream"
+    repos/jmann345/carbon-lang/releases/assets/<id> > tc.tar.gz`, extract
     under /home/user/arbiter/, RECORD `<dir>/bin/carbon version` (the
     nightly's commit) in the matrix, then `python3 fork/conformance/runner.py
     --toolchain <dir>/bin/carbon --filter generics/templates_ --out
@@ -1406,7 +1663,8 @@ the fork's replaced code did not, and names the fork shape it first meets.
     `/home/user/arbiter/carbon_toolchain-0.0.0-0.nightly.2026.07.19/bin/carbon`
     (both PASS at the cut; the baseline).
 -   **Nightly ≠ cut** (amended 2026-10-05, review fold: rev B B7): upstream's
-    nightly builds at `cron: '0 2 * * *'` UTC and the mirror takes `gh release
+    nightly builds daily at 02:00 UTC (nightly_release.yaml's cron schedule,
+    spelled out per R31) and the mirror takes `gh release
     list --limit 1`; c1e83b0b7 (#7897) landed 2026-10-05 17:44Z and 8f258eaaa
     (#7889) 17:30Z, both after that day's 02:00Z build, so the 2026.10.05
     nightly is two commits short of the cut and any later nightly is past it.
@@ -1424,6 +1682,8 @@ the fork's replaced code did not, and names the fork shape it first meets.
     upstream FAIL + merged-fork PASS → a fork mechanism masks an upstream bug
     (record in the decision-log entry; the advance proceeds, since the fork's
     arbiter is the merged toolchain, D-UA-14).
+
+<!-- google-doc-style-resume -->
 
 #### §8.3 Discharge (UA-1)
 
@@ -1470,21 +1730,30 @@ B3 / B5 / B9; the long grep lines are split so none exceeds MD013's limit.)
     `grep -n 'MergeOverloadMemberRedecl' toolchain/check/handle_function.cpp`
     → the definition plus exactly one call inside `TryMergeIntoOverloadSet`
     (rev A A4; rev 1's grep would have deleted the correct solution).
--   D-UA-9 (rev A A1): `grep -n 'is_choice' toolchain/check/custom_witness.cpp`
-    → a hit inside `MakeSubobjectDestroyOpBody` (and the surviving W-071
-    clause in `CanDestroyClass`); `grep -n 'CustomLayoutType'
-    toolchain/check/custom_witness.cpp` → the `CanDestroyType` arm present.
+-   D-UA-9 (rev A A1 / rev 3 F1): `grep -n 'is_choice'
+    toolchain/check/custom_witness.cpp` → a hit inside
+    `MakeSubobjectDestroyOpBody` (and the surviving W-071 clause in
+    `CanDestroyClass`); `grep -n 'CustomLayoutType'
+    toolchain/check/custom_witness.cpp` → hits inside BOTH `CanDestroyType`
+    (the surviving fork arm) and `MakeSubobjectDestroyOpBody` (the new arm),
+    plus the predicate arms in `HasNonTrivialUserCopyImpl` and
+    `IsTriviallyDestructible`.
 -   §0.4 item 11 (rev A A2): `grep -rn GetCanonicalFacetOrTypeValue toolchain`
     → empty.
 -   `grep -rn 'CalleeCppFunctionPointer' toolchain --include=*.cpp -l` and
     `grep -rn 'CalleeOverloadSet' toolchain --include=*.cpp -l` → the same
     file set (§0.4 item 5).
--   D-UA-7 (rev A A3): `grep -n EST_BasicNoexcept toolchain/check/cpp/thunk.cpp`
-    → one hit inside `CreateThunkFunctionDecl`; `grep -n
-    'IsCppThunkFenceRequired' toolchain/check/cpp/thunk.cpp` → called from
-    `IsCppThunkRequired`, `BuildThunkBody`, `BuildCppCatchingThunk` and
-    `PerformCppThunkCall`, with the `FunctionDecl*` overload declared in
-    thunk.h; `grep -n 'fenced thunk' toolchain/check/cpp/import.cpp` → two
+-   D-UA-7 (rev A A3, amended rev 3 F3 / F6): `grep -c EST_BasicNoexcept
+    toolchain/check/cpp/thunk.cpp` → 4 (the fork helpers at :46/:100/:147
+    plus `CreateThunkFunctionDecl`) AND `awk '/^static auto
+    CreateThunkFunctionDecl/,/^}/' toolchain/check/cpp/thunk.cpp | grep -c
+    EST_BasicNoexcept` → 1 — a total of 3 with the awk count 0 is the fence
+    lost (R-5a); `grep -n 'IsCppThunkFenceRequired'
+    toolchain/check/cpp/thunk.cpp toolchain/check/cpp/import.cpp` → called
+    from `IsCppThunkRequired`, `BuildThunkBody` (through `BuildCppThunk`),
+    `PerformCppThunkCall`, `ImportFunctionDecl` and
+    `ImportFunctionPointerInvoke`, with the `FunctionDecl*` overload declared
+    in thunk.h; `grep -n 'fenced thunk' toolchain/check/cpp/import.cpp` → two
     TODO sites (`ImportFunctionDecl`, `ImportFunctionPointerInvoke`) (R-5a).
 -   D-UA-6 (rev A A4 / A5): `grep -n 'TryMergeOverloadDecl\|TryMergeRedecl'
     toolchain/check/handle_function.cpp` → the overload decision precedes the
@@ -1507,8 +1776,9 @@ B3 / B5 / B9; the long grep lines are split so none exceeds MD013's limit.)
     toolchain/lower/testdata` lists ≥ 30 files (primary); `grep -rl
     'personality ptr @__gxx_personality_v0' toolchain/lower/testdata` lists
     ≥ 30 files (secondary).
--   Reflow (rev B B3): per-file heading counts per level and list-item counts
-    unchanged before/after the reflow commit (§3 commit 2 step (e)).
+-   Reflow (rev B B3 / rev 3 F4 / F5): per-file heading counts per level and
+    list-item counts, indented items included, unchanged before/after the
+    reflow commit (§3 commit 2 step (e)); the heading grep of step (c) empty.
 -   `SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps uvx prek run
     --all-files` → clean in the container (rev B B5; the three skipped hooks
     are the hosted gate's); `uvx rumdl check` → exit 0; `python3
@@ -1572,8 +1842,9 @@ review once hosted verification is green.
     rules and trailers; record the skipped hooks in the message. Then commit
     1b (F8d) with its own §8.4 greps.
 3.  **Reflow.** Follow §3 commit 2's procedure (a)-(h) exactly: heading and
-    list counts before, markdown hooks by id with the SKIP list, the
-    `#NNNN`/`*` line-start grep and rephrasings, re-count, the ~30 MD013
+    list counts before (indented items included), markdown hooks by id with
+    the SKIP list, the `#NNNN` heading grep and the list-count diff with
+    rephrasings (rev 3 F4 / F5), re-count, the ~30 MD013
     hand-rewrites measured by `uvx rumdl check` AFTER `--fix`, then the full
     `SKIP=… uvx prek run --all-files`; inspect `git diff --word-diff --stat`
     and spot-check the decision log's tables; commit (amended 2026-10-05,
@@ -1606,11 +1877,12 @@ review once hosted verification is green.
     test fails (R-10); whether the W-108 field-destroy claim holds (§0.6).
     Each is pre-registered with its falsifier so the hosted runs answer it,
     not an agent's assertion. What rev 1 wrongly filed here and rev 2 decided
-    from the tree: the choice-destroy crash (D-UA-9, rev A A1), the four knobs
+    from the tree: the choice-destroy crash and its union twin inside the
+    witness query (D-UA-9, rev A A1 / rev 3 F1), the four knobs
     of the member merge (D-UA-6, rev A A4), the fence's `noexcept` spec
     (D-UA-7, rev A A3) and the reflow's heading damage (D-UA-4, rev B B3).
 
-### Review fold record (rev 2, 2026-10-05)
+### Review fold record (rev 2 and rev 3, 2026-10-05)
 
 Every finding of the two rev 1 reviews (rev A: fork-mechanism fidelity,
 REJECT — 1 BLOCKER, 4 MAJOR, 5 MINOR; rev B: mechanics/verification,
@@ -1621,6 +1893,8 @@ upstream-trunk:<path>`, the merged tree f2c06b2ae from `git merge-tree
 under the scratchpad) before folding; every finding reproduced, so none is
 declined. One extra instance of B3's damage was found while verifying and is
 recorded for the reflow commit (decision-log.md:5562 at HEAD).
+
+<!-- google-doc-style-ignore -->
 
 | Finding | Disposition |
 | --- | --- |
@@ -1640,7 +1914,7 @@ recorded for the reflow commit (decision-log.md:5562 at HEAD).
 | rev B B3 (MAJOR): reflow manufactures headings/list items from `#NNNN`/`*` at line start (ORCHESTRATION.md H3 5 → 1, H4 0 → 5; plan.md's own `## 7784…`/`## 7689…` and the cron `* * 1`) | folded: plan.md §0.2 and §8.3 repaired (PR refs as bare numbers; cron spelled out); D-UA-4 token-damage paragraph with the probe result; §3 commit 2 steps (a)/(c)/(e) heading-count-per-level check; R-9 falsifier extended; §8.4; decision-log.md:5562 `## 7741 …` found at HEAD and assigned to the reflow commit; rulebook **R31** allocated (fork/rulebook.md) |
 | rev B B4 (MAJOR): #7877's "Problems that require manual fixes" (`fail_` prefix / NOAUTOUPDATE mismatches) are not caught by fork_hosted.yaml's crash grep; the gate fails on them | folded: §3 commit 3b retriage step before each gate dispatch (R16(b) satisfied by citing the upstream cause), §4 autoupdate paragraph with the fork's 14 fail_todo goldens / 45 splits and the pre-registered likely flips, §8.1 step 3 |
 | rev B B5 (MAJOR): `uvx prek run` in the container triggers bazel-backed hooks against the new llvm pin | folded: hand-off 2/3 `SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps`, markdown hooks by id for the reflow commit, skipped hooks recorded in the message; §3 commit 2 (b)/(g); §8.4 |
-| rev B B6 (MINOR): `gh api repositories/...` is refused (403 Numeric-ID) | folded (reproduced): §8.2 uses `repositories/jmann345/carbon-lang/...` |
+| rev B B6 (MINOR): `gh api repositories/...` is refused (403 Numeric-ID) | folded: §8.2 used `repositories/jmann345/carbon-lang/...` — marked "reproduced" in error; superseded by rev 3 F2 (`repos/…`) |
 | rev B B7 (MINOR): nightly ≠ cut (02:00Z build; #7889/#7897 landed 17:30Z/17:44Z) | folded: §8.2 records `carbon version`, "nightly ≠ cut" paragraph, matrix reading admits "fixed/regressed after the cut" |
 | rev B B8 (MINOR): inherit_multiple_bases un-SKIP speculative (base.carbon:152 unchanged at tip); Box(T) return-type caveat | folded: §0.6 W-046 and W-043 rows, §5 (129/0/20, three probes), §8.5 |
 | rev B B9 (MINOR): guard grep covers two of six | folded: §2.8 lists all six; §8.4 expects six hits |
@@ -1652,9 +1926,36 @@ recorded for the reflow commit (decision-log.md:5562 at HEAD).
 | rev B B15 (MINOR): push race with the workflow's un-rebased push; arbiter-request.txt trigger | folded: §8.1 steps 1 and 3, hand-off 4 |
 | rev B "checks that passed" (measurements except B1, §0.4 spot checks, `--dump-sem-ir-ranges`, `.rumdl.toml` verbatim, gate runtime, scoreboard/SKIP list, runner flags) | recorded |
 
+**Rev 3 (2026-10-05).** The focused re-review of rev 2 (R29(c); REJECT — 1
+BLOCKER, 3 MAJOR, 4 MINOR) and where each finding was folded. The fixer
+re-opened every cited location before folding (fork tree at HEAD 60d19948d,
+`git show upstream-trunk:<path>`, the merged tree 498f1b962 from `git
+merge-tree --write-tree HEAD upstream-trunk`; the `gh api` pair re-run; the
+indented-continuation probe re-run with rumdl 0.2.78 under upstream's
+`.rumdl.toml`); every finding reproduced, so none is declined. Two
+observations made while verifying are recorded in the last rows.
+
+| Finding | Disposition |
+| --- | --- |
+| rev 3 F1 (BLOCKER): the `is_choice` clause is never reached first — `CanDestroyClass` builds the object repr's witness inside the QUERY (`HasWitnessForOneField` → `LookupImplWitness` → `EvalLookupSingleFinalWitness` → `LookupCustomWitness(build_witness=true)`), the repr struct's body walks `[ChoiceDiscriminant, ChoicePayload]` through member_access.cpp:632's `StructType` fallback and `BuildSelfDestructCall(payload)` reaches `MakeSubobjectDestroyOpBody(CustomLayoutType)` → `default: CARBON_FATAL` (:505); the same for every native `union` (class.cpp:774) | folded (every citation re-opened): D-UA-9 decision rewritten as two clauses — (i) `is_choice` early return, (ii) a `case CustomLayoutType: return;` arm with the W-083 placeholder comment — with the query-time path traced, rev 2's alternative (ii) withdrawn and the `Trivial`-from-`CanDestroyType` alternative rejected; the union contingency rewritten as a primary clause in §2.2 (b); the nine union goldens with `var`s named as pins (D-UA-9, R-17, §4); the four-self-type shape pre-registered (§4, D-UA-9); §8.4 `CustomLayoutType` grep → both functions; §7 ranking and R-17 updated; the "one level earlier, inside the witness query" observation recorded in the header, D-UA-9 and hand-off 6; new §2.2 (b') enumeration step with its result: `CustomLayoutType` is the only fork shape a concrete query reaches (three entries, all covered by (ii)); `OverloadSetType` unreachable (`OverloadSetNotCallee`); `MaybeUnformed(Union)` covered by upstream's arms; `TypeType` not fork-only (#7813); §0.3 row, §1, §3 commit 1, §6, §0.6 W-083, D-UA-15 |
+| rev 3 F2 (MAJOR): §8.2 installed the refused `gh api repositories/{owner}/{repo}/…` path and marked B6 "reproduced" | folded (reproduced: `repos/…` → 200, `repositories/…` → 403): §8.2 both commands and the explanatory sentence; the B6 row annotated; root cause found and fenced — the check-google-doc-style hook's `repos` → `repositories` substitution inside code spans (§8.2 now between ignore/resume markers) |
+| rev 3 F3 (MAJOR): the `EST_BasicNoexcept` grep is green with the fence missing — four sites (:46/:100/:147 fork helpers + :671 in `CreateThunkFunctionDecl`), so "one hit" was never the count and three hits is the loss | folded: §2.4 (1) and §8.4 expect four hits AND `awk` count 1 inside `CreateThunkFunctionDecl`, named by function; R-5(a) unchanged in substance |
+| rev 3 F4 (MAJOR): R31 misstates the hazard's scope (indented `*`/`+` continuations DO become nested items; only `#` is safe when indented), misattributes the mechanism (prettier is html/javascript/json/yaml only; the R12 hook has no rumdl) and carries two literal cron spans | folded (probe reproduced): R31 rewritten — hazard set at any line start, probe nuance, attribution to the pre-commit rumdl hook's MD018/MD004/MD069 fixes with upstream's `.rumdl.toml` MD013 reflow as the wrapper, the two cron spans spelled in prose, clause (b) counts indented items, clause (c) grep narrowed to headings; mirrored in D-UA-4, §3 commit 2 (a)/(c)/(e), R-9, §8.4, hand-off 3 |
+| rev 3 F5 (MINOR): §3 commit 2 step (c)'s grep is 99% noise (146 hits, 1 real); :1149-1151's `#7695).` continuation is the first-stage artifact | folded: step (c) greps headings and column-0 `#NNNN` precursors only, step (e)'s count diff (indented items included) is the list detector; "(PRs 7632/7695)"; R-9, D-UA-4, R31(c) |
+| rev 3 F6 (MINOR): thunk.cpp:1110 is in `BuildCppThunk`, not `BuildCppCatchingThunk` (which never calls the predicate) | folded: §0.4 item 7, D-UA-7, §2.4 (2) and §8.4 caller list (`IsCppThunkRequired`, `BuildThunkBody` through `BuildCppThunk`, `PerformCppThunkCall`, `ImportFunctionDecl`, `ImportFunctionPointerInvoke`); the decl-taking overload kept for `PerformCppThunkCall` and `ImportFunctionDecl` |
+| rev 3 F7 (MINOR): D-UA-6 step (3) would route `class F; overload fn F()` to `DiagnoseOverloadMarkerMismatch`; the fork's :549-552 emits `DuplicateName` first | folded: D-UA-6 step (3) and §2.3 apply only when the previous inst resolves to a function (fork :483-547); otherwise return false and let the template's `DiagnoseDuplicateName` fire; recorded as unpinned |
+| rev 3 F8 (MINOR): pin lower/testdata/match/choice_generic_payload_scrutinee.carbon does not exist | folded (verified: only the check golden exists; the other named files exist): D-UA-10 pin family corrected |
+| rev 3 "checks that passed" (A1 pins real and complete; A4/A5 citations; A3/A7 citations; B1-B5 counts; cross-section numbers; `TryMapFunctionType` caller) | recorded |
+| observation (F3 verification): in the merged tree the fork's `EST_BasicNoexcept` spec and `is_catching` parameter in `CreateThunkFunctionDecl` auto-merge OUTSIDE the function's one hunk (:761-767 is the `GetDeclNameForThunk` call); the hand work is that call, and the grep guards against losing the spec while resolving it | recorded in D-UA-7 (1) and §2.4 (1) |
+| observation (F1 enumeration): `CustomLayoutType` is an upstream inst kind (upstream's producer is cpp/import.cpp:884 for C++ classes, rejected by `CanDestroyClass` at :235-237 before any repr query); what is fork-only is its NATIVE use (handle_choice.cpp:828, class.cpp:774, eval_inst.cpp:371) — the reason upstream has no arm and the fork needs one | recorded in §2.2 (b') |
+| hygiene (this fold): the §0.2 list items whose continuation lines began with `#NNNN` (safe under rumdl when indented, but outside R31(a)'s discipline) re-wrapped so no line starts with `#`; §4's `#7897` continuation likewise; §8.2's nightly cron literal spelled out (R31(a)); §8.2 and these tables placed between `google-doc-style-ignore`/`-resume` markers because the check-google-doc-style hook rewrites `repos` to `repositories` inside code spans (the actual cause of B6/F2 — it rewrote rev 3's corrected path too, caught by diffing the pre- and post-prek files) | plan-local; R31 and D-UA-4 name the hook |
+
+<!-- google-doc-style-resume -->
+
 ### Sign-off
 
--   Correctness review (rev 1, rev A): REJECT — folded as rev 2; focused
-    re-review of rev 2 _pending_ (R29(c): a REJECT requires it)
+-   Correctness review (rev 1, rev A): REJECT — folded as rev 2
 -   Strictness review (rev 1, rev B): APPROVE-WITH-AMENDMENTS — folded as rev 2
+-   Focused re-review (rev 2): REJECT — folded as rev 3; final count-and-grep
+    re-check of rev 3 _pending_ (R29(c))
 -   Coordinator sign-off for implementation: _pending_

@@ -127,8 +127,8 @@ fn Use() -> i32 {
 // CHECK:STDOUT: imports {
 // CHECK:STDOUT:   %Main.IntOrBytes: type = import_ref Main//lib, IntOrBytes, loaded [concrete = constants.%IntOrBytes]
 // CHECK:STDOUT:   %Main.Read: %Read.type = import_ref Main//lib, Read, loaded [concrete = constants.%Read]
-// CHECK:STDOUT:   %Main.import_ref.766: %IntOrBytes.elem.a3f = import_ref Main//lib, loc4_11, loaded [concrete = %.d82]
-// CHECK:STDOUT:   %Main.import_ref.77e: %IntOrBytes.elem.ff6 = import_ref Main//lib, loc5_12, loaded [concrete = %.207]
+// CHECK:STDOUT:   %Main.import_ref.766: %IntOrBytes.elem.a3f = import_ref Main//lib, loc8_11, loaded [concrete = %.d82]
+// CHECK:STDOUT:   %Main.import_ref.77e: %IntOrBytes.elem.ff6 = import_ref Main//lib, loc13_12, loaded [concrete = %.207]
 // CHECK:STDOUT:   %.207: %IntOrBytes.elem.ff6 = field_decl bytes, element1 [concrete]
 // CHECK:STDOUT:   %Core.import_ref.edf: @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert.type (%Core.IntLiteral.as.ImplicitAs.impl.Convert.type.e74) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Core.IntLiteral.as.ImplicitAs.impl.0e9.%Core.IntLiteral.as.ImplicitAs.impl.Convert (constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.845)]
 // CHECK:STDOUT:   %ImplicitAs.impl_witness_table.1aa = impl_witness_table (%Core.import_ref.edf), @Core.IntLiteral.as.ImplicitAs.impl.0e9 [concrete]

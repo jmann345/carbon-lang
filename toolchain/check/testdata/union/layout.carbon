@@ -98,48 +98,48 @@ union Ptr {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: class @Wide {
-// CHECK:STDOUT:   %.loc19: %Wide.elem.9fb = field_decl lo, element0 [concrete]
-// CHECK:STDOUT:   %.loc20: %Wide.elem.98e = field_decl both, element1 [concrete]
+// CHECK:STDOUT:   %.loc23: %Wide.elem.9fb = field_decl lo, element0 [concrete]
+// CHECK:STDOUT:   %.loc28: %Wide.elem.98e = field_decl both, element1 [concrete]
 // CHECK:STDOUT:   complete_type_witness = <error>
 // CHECK:STDOUT:
 // CHECK:STDOUT: !members:
 // CHECK:STDOUT:   .Self = constants.%Wide
-// CHECK:STDOUT:   .lo = %.loc19
-// CHECK:STDOUT:   .both = %.loc20
+// CHECK:STDOUT:   .lo = %.loc23
+// CHECK:STDOUT:   .both = %.loc28
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: class @Odd {
-// CHECK:STDOUT:   %.loc24: %Odd.elem.808 = field_decl a, element0 [concrete]
-// CHECK:STDOUT:   %.loc25: %Odd.elem.2b6 = field_decl b, element1 [concrete]
-// CHECK:STDOUT:   %.loc26: %Odd.elem.b4a = field_decl c, element2 [concrete]
+// CHECK:STDOUT:   %.loc36: %Odd.elem.808 = field_decl a, element0 [concrete]
+// CHECK:STDOUT:   %.loc41: %Odd.elem.2b6 = field_decl b, element1 [concrete]
+// CHECK:STDOUT:   %.loc46: %Odd.elem.b4a = field_decl c, element2 [concrete]
 // CHECK:STDOUT:   complete_type_witness = <error>
 // CHECK:STDOUT:
 // CHECK:STDOUT: !members:
 // CHECK:STDOUT:   .Self = constants.%Odd
-// CHECK:STDOUT:   .a = %.loc24
-// CHECK:STDOUT:   .b = %.loc25
-// CHECK:STDOUT:   .c = %.loc26
+// CHECK:STDOUT:   .a = %.loc36
+// CHECK:STDOUT:   .b = %.loc41
+// CHECK:STDOUT:   .c = %.loc46
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: class @OneByte {
-// CHECK:STDOUT:   %.loc30: %OneByte.elem = field_decl b, element0 [concrete]
-// CHECK:STDOUT:   %.loc31: type = custom_layout_type {size=1, align=1, .b@0: bool} [concrete = constants.%.b2d]
-// CHECK:STDOUT:   %complete_type: <witness> = complete_type_witness %.loc31 [concrete = constants.%complete_type.17b]
+// CHECK:STDOUT:   %.loc50: %OneByte.elem = field_decl b, element0 [concrete]
+// CHECK:STDOUT:   %.loc51: type = custom_layout_type {size=1, align=1, .b@0: bool} [concrete = constants.%.b2d]
+// CHECK:STDOUT:   %complete_type: <witness> = complete_type_witness %.loc51 [concrete = constants.%complete_type.17b]
 // CHECK:STDOUT:   complete_type_witness = %complete_type
 // CHECK:STDOUT:
 // CHECK:STDOUT: !members:
 // CHECK:STDOUT:   .Self = constants.%OneByte
-// CHECK:STDOUT:   .b = %.loc30
+// CHECK:STDOUT:   .b = %.loc50
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: class @Ptr {
-// CHECK:STDOUT:   %.loc34: %Ptr.elem.b01 = field_decl p, element0 [concrete]
-// CHECK:STDOUT:   %.loc35: %Ptr.elem.98a = field_decl n, element1 [concrete]
+// CHECK:STDOUT:   %.loc54: %Ptr.elem.b01 = field_decl p, element0 [concrete]
+// CHECK:STDOUT:   %.loc59: %Ptr.elem.98a = field_decl n, element1 [concrete]
 // CHECK:STDOUT:   complete_type_witness = <error>
 // CHECK:STDOUT:
 // CHECK:STDOUT: !members:
 // CHECK:STDOUT:   .Self = constants.%Ptr
-// CHECK:STDOUT:   .p = %.loc34
-// CHECK:STDOUT:   .n = %.loc35
+// CHECK:STDOUT:   .p = %.loc54
+// CHECK:STDOUT:   .n = %.loc59
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

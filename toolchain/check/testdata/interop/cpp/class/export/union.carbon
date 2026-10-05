@@ -42,10 +42,10 @@ union Wide {
 inline Cpp '''
 static_assert(__is_union(Carbon::Wide), "kind");
 // CHECK:STDERR: exported.carbon:[[@LINE+7]]:15: error: static assertion failed due to requirement 'sizeof(Carbon::Wide) == 8': layout [CppInteropParseError]
-// CHECK:STDERR:    12 | static_assert(sizeof(Carbon::Wide) == 8 && alignof(Carbon::Wide) == 8,
+// CHECK:STDERR:    27 | static_assert(sizeof(Carbon::Wide) == 8 && alignof(Carbon::Wide) == 8,
 // CHECK:STDERR:       |               ^~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR: exported.carbon:[[@LINE+4]]:36: note: expression evaluates to '0 == 8' [CppInteropParseNote]
-// CHECK:STDERR:    12 | static_assert(sizeof(Carbon::Wide) == 8 && alignof(Carbon::Wide) == 8,
+// CHECK:STDERR:    27 | static_assert(sizeof(Carbon::Wide) == 8 && alignof(Carbon::Wide) == 8,
 // CHECK:STDERR:       |               ~~~~~~~~~~~~~~~~~~~~~^~~~
 // CHECK:STDERR:
 static_assert(sizeof(Carbon::Wide) == 8 && alignof(Carbon::Wide) == 8,
@@ -53,7 +53,7 @@ static_assert(sizeof(Carbon::Wide) == 8 && alignof(Carbon::Wide) == 8,
 
 int Use(Carbon::Wide* w) {
   // CHECK:STDERR: exported.carbon:[[@LINE+4]]:6: error: no member named 'lo' in 'Carbon::Wide' [CppInteropParseError]
-  // CHECK:STDERR:    16 |   w->lo = 3;
+  // CHECK:STDERR:    35 |   w->lo = 3;
   // CHECK:STDERR:       |   ~  ^
   // CHECK:STDERR:
   w->lo = 3;
@@ -63,7 +63,7 @@ int Use(Carbon::Wide* w) {
 Carbon::Wide MakeWide(int v) {
   Carbon::Wide w;
   // CHECK:STDERR: exported.carbon:[[@LINE+4]]:5: error: no member named 'lo' in 'Carbon::Wide' [CppInteropParseError]
-  // CHECK:STDERR:    22 |   w.lo = v;
+  // CHECK:STDERR:    45 |   w.lo = v;
   // CHECK:STDERR:       |   ~ ^
   // CHECK:STDERR:
   w.lo = v;
@@ -180,7 +180,7 @@ fn F() -> i32 {
 // CHECK:STDOUT:   %ImplicitAs.WithSelf.Convert.type.4e5: type = fn_type @ImplicitAs.WithSelf.Convert, @ImplicitAs.WithSelf(%Optional.738, %ImplicitAs.facet.369) [concrete]
 // CHECK:STDOUT:   %.4dd: type = fn_type_with_self_type %ImplicitAs.WithSelf.Convert.type.4e5, %ImplicitAs.facet.369 [concrete]
 // CHECK:STDOUT:   %U.as_type.as.ImplicitAs.impl.Convert.specific_fn: <specific function> = specific_function %U.as_type.as.ImplicitAs.impl.Convert.6e6, @U.as_type.as.ImplicitAs.impl.Convert.2(%OptionalStorage.facet.bad, %OptionalAs.facet) [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.5: type = fn_type @Destroy.Op.loc30_18.3 [concrete]
+// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.5: type = fn_type @Destroy.Op.loc53_18.3 [concrete]
 // CHECK:STDOUT:   %Destroy.Op.1a2547.5: %Destroy.Op.type.1d8f74.5 = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -210,9 +210,9 @@ fn F() -> i32 {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
-// CHECK:STDOUT:     %.loc30_20.1: type = splice_block %Optional [concrete = constants.%Optional.738] {
+// CHECK:STDOUT:     %.loc53_20.1: type = splice_block %Optional [concrete = constants.%Optional.738] {
 // CHECK:STDOUT:       %OptionalStorage.facet: %OptionalStorage.type = facet_value constants.%ptr.567, (constants.%OptionalStorage.impl_witness.6cd) [concrete = constants.%OptionalStorage.facet.bad]
-// CHECK:STDOUT:       %.loc30_20.2: %OptionalStorage.type = converted constants.%ptr.567, %OptionalStorage.facet [concrete = constants.%OptionalStorage.facet.bad]
+// CHECK:STDOUT:       %.loc53_20.2: %OptionalStorage.type = converted constants.%ptr.567, %OptionalStorage.facet [concrete = constants.%OptionalStorage.facet.bad]
 // CHECK:STDOUT:       %Optional: type = class_type @Optional, @Optional(constants.%OptionalStorage.facet.bad) [concrete = constants.%Optional.738]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     <elided>
@@ -226,59 +226,59 @@ fn F() -> i32 {
 // CHECK:STDOUT: fn @F() -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %w.var: ref %Wide = var_storage %w.var_patt
-// CHECK:STDOUT:   %Cpp.ref.loc29: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %Cpp.ref.loc52: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %MakeWide.ref: %MakeWide.cpp_overload_set.type = name_ref MakeWide, imports.%MakeWide.cpp_overload_set.value [concrete = constants.%MakeWide.cpp_overload_set.value]
 // CHECK:STDOUT:   %int_1: Core.IntLiteral = int_value 1 [concrete = constants.%int_1.5b8]
-// CHECK:STDOUT:   %.loc29_3: ref %Wide = splice_block %w.var {}
-// CHECK:STDOUT:   %impl.elem0.loc29: %.b7a = impl_witness_access constants.%ImplicitAs.impl_witness.a2a, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
-// CHECK:STDOUT:   %bound_method.loc29_30.1: <bound method> = bound_method %int_1, %impl.elem0.loc29 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound]
-// CHECK:STDOUT:   %specific_fn.loc29: <specific function> = specific_function %impl.elem0.loc29, @Core.IntLiteral.as.ImplicitAs.impl.Convert(constants.%int_32) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn]
-// CHECK:STDOUT:   %bound_method.loc29_30.2: <bound method> = bound_method %int_1, %specific_fn.loc29 [concrete = constants.%bound_method]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %i32 = call %bound_method.loc29_30.2(%int_1) [concrete = constants.%int_1.0c6]
-// CHECK:STDOUT:   %.loc29_30.1: %i32 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call [concrete = constants.%int_1.0c6]
-// CHECK:STDOUT:   %.loc29_30.2: %i32 = converted %int_1, %.loc29_30.1 [concrete = constants.%int_1.0c6]
-// CHECK:STDOUT:   %addr.loc29: %ptr.567 = addr_of %.loc29_3
-// CHECK:STDOUT:   %MakeWide__carbon_thunk.call: init %empty_tuple.type = call imports.%MakeWide__carbon_thunk.decl(%.loc29_30.2, %addr.loc29)
-// CHECK:STDOUT:   %.loc29_31: init %Wide to %.loc29_3 = mark_in_place_init %MakeWide__carbon_thunk.call
-// CHECK:STDOUT:   assign %w.var, %.loc29_31
+// CHECK:STDOUT:   %.loc52_3: ref %Wide = splice_block %w.var {}
+// CHECK:STDOUT:   %impl.elem0.loc52: %.b7a = impl_witness_access constants.%ImplicitAs.impl_witness.a2a, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
+// CHECK:STDOUT:   %bound_method.loc52_30.1: <bound method> = bound_method %int_1, %impl.elem0.loc52 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound]
+// CHECK:STDOUT:   %specific_fn.loc52: <specific function> = specific_function %impl.elem0.loc52, @Core.IntLiteral.as.ImplicitAs.impl.Convert(constants.%int_32) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn]
+// CHECK:STDOUT:   %bound_method.loc52_30.2: <bound method> = bound_method %int_1, %specific_fn.loc52 [concrete = constants.%bound_method]
+// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %i32 = call %bound_method.loc52_30.2(%int_1) [concrete = constants.%int_1.0c6]
+// CHECK:STDOUT:   %.loc52_30.1: %i32 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call [concrete = constants.%int_1.0c6]
+// CHECK:STDOUT:   %.loc52_30.2: %i32 = converted %int_1, %.loc52_30.1 [concrete = constants.%int_1.0c6]
+// CHECK:STDOUT:   %addr.loc52: %ptr.567 = addr_of %.loc52_3
+// CHECK:STDOUT:   %MakeWide__carbon_thunk.call: init %empty_tuple.type = call imports.%MakeWide__carbon_thunk.decl(%.loc52_30.2, %addr.loc52)
+// CHECK:STDOUT:   %.loc52_31: init %Wide to %.loc52_3 = mark_in_place_init %MakeWide__carbon_thunk.call
+// CHECK:STDOUT:   assign %w.var, %.loc52_31
 // CHECK:STDOUT:   %Wide.ref: type = name_ref Wide, file.%Wide.decl [concrete = constants.%Wide]
 // CHECK:STDOUT:   %w: ref %Wide = wrapper_binding w, %w.var
 // CHECK:STDOUT:   name_binding_decl {
 // CHECK:STDOUT:     %w.patt: %pattern_type.f3d = ref_binding_pattern w [concrete = constants.%w.patt.f4a]
 // CHECK:STDOUT:     %w.var_patt: %pattern_type.f3d = var_pattern %w.patt [concrete = constants.%w.var_patt]
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %Cpp.ref.loc30: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %Cpp.ref.loc53: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %Use.ref: %Use.cpp_overload_set.type = name_ref Use, imports.%Use.cpp_overload_set.value [concrete = constants.%Use.cpp_overload_set.value]
 // CHECK:STDOUT:   %w.ref: ref %Wide = name_ref w, %w
-// CHECK:STDOUT:   %addr.loc30: %ptr.567 = addr_of %w.ref
-// CHECK:STDOUT:   %impl.elem0.loc30: %.4dd = impl_witness_access constants.%ImplicitAs.impl_witness.50b, element0 [concrete = constants.%U.as_type.as.ImplicitAs.impl.Convert.6e6]
-// CHECK:STDOUT:   %bound_method.loc30_18.1: <bound method> = bound_method %addr.loc30, %impl.elem0.loc30
-// CHECK:STDOUT:   %specific_fn.loc30: <specific function> = specific_function %impl.elem0.loc30, @U.as_type.as.ImplicitAs.impl.Convert.2(constants.%OptionalStorage.facet.bad, constants.%OptionalAs.facet) [concrete = constants.%U.as_type.as.ImplicitAs.impl.Convert.specific_fn]
-// CHECK:STDOUT:   %bound_method.loc30_18.2: <bound method> = bound_method %addr.loc30, %specific_fn.loc30
-// CHECK:STDOUT:   %U.as_type.as.ImplicitAs.impl.Convert.call: init %Optional.738 = call %bound_method.loc30_18.2(%addr.loc30)
-// CHECK:STDOUT:   %.loc30_18.1: init %Optional.738 = converted %addr.loc30, %U.as_type.as.ImplicitAs.impl.Convert.call
-// CHECK:STDOUT:   %.loc30_18.2: ref %Optional.738 = temporary_storage
-// CHECK:STDOUT:   %.loc30_18.3: ref %Optional.738 = temporary %.loc30_18.2, %.loc30_18.1
-// CHECK:STDOUT:   %.loc30_18.4: %Optional.738 = acquire_value %.loc30_18.3
-// CHECK:STDOUT:   %Use__carbon_thunk.call: init %i32 = call imports.%Use__carbon_thunk.decl(%.loc30_18.4)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc30: <bound method> = bound_method %.loc30_18.3, constants.%Destroy.Op.1a2547.5
-// CHECK:STDOUT:   %Destroy.Op.call.loc30: init %empty_tuple.type = call %Destroy.Op.bound.loc30(%.loc30_18.3)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc29: <bound method> = bound_method %w.var, constants.%Destroy.Op.1a2547.1
-// CHECK:STDOUT:   %Destroy.Op.call.loc29: init %empty_tuple.type = call %Destroy.Op.bound.loc29(%w.var)
+// CHECK:STDOUT:   %addr.loc53: %ptr.567 = addr_of %w.ref
+// CHECK:STDOUT:   %impl.elem0.loc53: %.4dd = impl_witness_access constants.%ImplicitAs.impl_witness.50b, element0 [concrete = constants.%U.as_type.as.ImplicitAs.impl.Convert.6e6]
+// CHECK:STDOUT:   %bound_method.loc53_18.1: <bound method> = bound_method %addr.loc53, %impl.elem0.loc53
+// CHECK:STDOUT:   %specific_fn.loc53: <specific function> = specific_function %impl.elem0.loc53, @U.as_type.as.ImplicitAs.impl.Convert.2(constants.%OptionalStorage.facet.bad, constants.%OptionalAs.facet) [concrete = constants.%U.as_type.as.ImplicitAs.impl.Convert.specific_fn]
+// CHECK:STDOUT:   %bound_method.loc53_18.2: <bound method> = bound_method %addr.loc53, %specific_fn.loc53
+// CHECK:STDOUT:   %U.as_type.as.ImplicitAs.impl.Convert.call: init %Optional.738 = call %bound_method.loc53_18.2(%addr.loc53)
+// CHECK:STDOUT:   %.loc53_18.1: init %Optional.738 = converted %addr.loc53, %U.as_type.as.ImplicitAs.impl.Convert.call
+// CHECK:STDOUT:   %.loc53_18.2: ref %Optional.738 = temporary_storage
+// CHECK:STDOUT:   %.loc53_18.3: ref %Optional.738 = temporary %.loc53_18.2, %.loc53_18.1
+// CHECK:STDOUT:   %.loc53_18.4: %Optional.738 = acquire_value %.loc53_18.3
+// CHECK:STDOUT:   %Use__carbon_thunk.call: init %i32 = call imports.%Use__carbon_thunk.decl(%.loc53_18.4)
+// CHECK:STDOUT:   %Destroy.Op.bound.loc53: <bound method> = bound_method %.loc53_18.3, constants.%Destroy.Op.1a2547.5
+// CHECK:STDOUT:   %Destroy.Op.call.loc53: init %empty_tuple.type = call %Destroy.Op.bound.loc53(%.loc53_18.3)
+// CHECK:STDOUT:   %Destroy.Op.bound.loc52: <bound method> = bound_method %w.var, constants.%Destroy.Op.1a2547.1
+// CHECK:STDOUT:   %Destroy.Op.call.loc52: init %empty_tuple.type = call %Destroy.Op.bound.loc52(%w.var)
 // CHECK:STDOUT:   return %Use__carbon_thunk.call
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc30_18.1(%self.param: ref %.d0e) {
+// CHECK:STDOUT: fn @Destroy.Op.loc53_18.1(%self.param: ref %.d0e) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc30_18.2(%self.param: ref %MaybeUnformed.e77) {
+// CHECK:STDOUT: fn @Destroy.Op.loc53_18.2(%self.param: ref %MaybeUnformed.e77) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc30_18.3(%self.param: ref %Optional.738) {
+// CHECK:STDOUT: fn @Destroy.Op.loc53_18.3(%self.param: ref %Optional.738) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }

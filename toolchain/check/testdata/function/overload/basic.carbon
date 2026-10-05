@@ -3258,13 +3258,13 @@ fn Use() -> i64 { return G(1 as u64); }
 // CHECK:STDOUT:   %self.patt.6d9: %pattern_type.3db = wrapper_binding_pattern self, %self.param_patt.512 [concrete]
 // CHECK:STDOUT:   %x.param_patt.cee: %pattern_type.6b6 = value_param_pattern [concrete]
 // CHECK:STDOUT:   %x.patt.e3b: %pattern_type.6b6 = wrapper_binding_pattern x, %x.param_patt.cee [concrete]
-// CHECK:STDOUT:   %U.Set.type.9ad8dd.1: type = fn_type @U.Set.loc9 [concrete]
+// CHECK:STDOUT:   %U.Set.type.9ad8dd.1: type = fn_type @U.Set.loc17 [concrete]
 // CHECK:STDOUT:   %U.Set.afb1c8.1: %U.Set.type.9ad8dd.1 = struct_value () [concrete]
 // CHECK:STDOUT:   %U.Set.overload_set.type: type = overload_set_type @U.Set.overload_set [concrete]
 // CHECK:STDOUT:   %U.Set.overload_set.value: %U.Set.overload_set.type = overload_set_value @U.Set.overload_set [concrete]
 // CHECK:STDOUT:   %x.param_patt.7b8: %pattern_type.f57 = value_param_pattern [concrete]
 // CHECK:STDOUT:   %x.patt.5d3: %pattern_type.f57 = wrapper_binding_pattern x, %x.param_patt.7b8 [concrete]
-// CHECK:STDOUT:   %U.Set.type.9ad8dd.2: type = fn_type @U.Set.loc10 [concrete]
+// CHECK:STDOUT:   %U.Set.type.9ad8dd.2: type = fn_type @U.Set.loc18 [concrete]
 // CHECK:STDOUT:   %U.Set.afb1c8.2: %U.Set.type.9ad8dd.2 = struct_value () [concrete]
 // CHECK:STDOUT:   %Copy.type: type = facet_type <@Copy> [concrete]
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.ac8: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%N) [symbolic]
@@ -3338,9 +3338,9 @@ fn Use() -> i64 { return G(1 as u64); }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: class @U {
-// CHECK:STDOUT:   %.loc7: %U.elem.012 = field_decl a, element0 [concrete]
-// CHECK:STDOUT:   %.loc8: %U.elem.457 = field_decl b, element1 [concrete]
-// CHECK:STDOUT:   %U.Set.decl.loc9: %U.Set.type.9ad8dd.1 = fn_decl @U.Set.loc9 [concrete = constants.%U.Set.afb1c8.1] {
+// CHECK:STDOUT:   %.loc11: %U.elem.012 = field_decl a, element0 [concrete]
+// CHECK:STDOUT:   %.loc16: %U.elem.457 = field_decl b, element1 [concrete]
+// CHECK:STDOUT:   %U.Set.decl.loc17: %U.Set.type.9ad8dd.1 = fn_decl @U.Set.loc17 [concrete = constants.%U.Set.afb1c8.1] {
 // CHECK:STDOUT:     %self.param_patt: %pattern_type.3db = ref_param_pattern [concrete = constants.%self.param_patt.512]
 // CHECK:STDOUT:     %self.patt: %pattern_type.3db = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.6d9]
 // CHECK:STDOUT:     %x.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%x.param_patt.cee]
@@ -3354,7 +3354,7 @@ fn Use() -> i64 { return G(1 as u64); }
 // CHECK:STDOUT:     %x: %i32 = wrapper_binding x, %x.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %U.Set.overload_set.value: %U.Set.overload_set.type = overload_set_value @U.Set.overload_set [concrete = constants.%U.Set.overload_set.value]
-// CHECK:STDOUT:   %U.Set.decl.loc10: %U.Set.type.9ad8dd.2 = fn_decl @U.Set.loc10 [concrete = constants.%U.Set.afb1c8.2] {
+// CHECK:STDOUT:   %U.Set.decl.loc18: %U.Set.type.9ad8dd.2 = fn_decl @U.Set.loc18 [concrete = constants.%U.Set.afb1c8.2] {
 // CHECK:STDOUT:     %self.param_patt: %pattern_type.3db = ref_param_pattern [concrete = constants.%self.param_patt.512]
 // CHECK:STDOUT:     %self.patt: %pattern_type.3db = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.6d9]
 // CHECK:STDOUT:     %x.param_patt: %pattern_type.f57 = value_param_pattern [concrete = constants.%x.param_patt.7b8]
@@ -3371,38 +3371,38 @@ fn Use() -> i64 { return G(1 as u64); }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !members:
 // CHECK:STDOUT:   .Self = constants.%U.951
-// CHECK:STDOUT:   .a = %.loc7
-// CHECK:STDOUT:   .b = %.loc8
+// CHECK:STDOUT:   .a = %.loc11
+// CHECK:STDOUT:   .b = %.loc16
 // CHECK:STDOUT:   .Set = %U.Set.overload_set.value
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @U.Set.loc9(%self.param: ref %U.951, %x.param: %i32) {
+// CHECK:STDOUT: fn @U.Set.loc17(%self.param: ref %U.951, %x.param: %i32) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %self.ref: ref %U.951 = name_ref self, %self
-// CHECK:STDOUT:   %a.ref: %U.elem.012 = name_ref a, @U.%.loc7 [concrete = @U.%.loc7]
-// CHECK:STDOUT:   %.loc9: ref %i32 = class_element_access %self.ref, element0
+// CHECK:STDOUT:   %a.ref: %U.elem.012 = name_ref a, @U.%.loc11 [concrete = @U.%.loc11]
+// CHECK:STDOUT:   %.loc17: ref %i32 = class_element_access %self.ref, element0
 // CHECK:STDOUT:   %x.ref: %i32 = name_ref x, %x
 // CHECK:STDOUT:   %impl.elem0: %.737 = impl_witness_access constants.%Copy.impl_witness.b51, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
-// CHECK:STDOUT:   %bound_method.loc9_48.1: <bound method> = bound_method %x.ref, %impl.elem0
+// CHECK:STDOUT:   %bound_method.loc17_48.1: <bound method> = bound_method %x.ref, %impl.elem0
 // CHECK:STDOUT:   %specific_fn: <specific function> = specific_function %impl.elem0, @Int.as.Copy.impl.Op(constants.%int_32) [concrete = constants.%Int.as.Copy.impl.Op.specific_fn.287]
-// CHECK:STDOUT:   %bound_method.loc9_48.2: <bound method> = bound_method %x.ref, %specific_fn
-// CHECK:STDOUT:   %Int.as.Copy.impl.Op.call: init %i32 = call %bound_method.loc9_48.2(%x.ref)
-// CHECK:STDOUT:   assign %.loc9, %Int.as.Copy.impl.Op.call
+// CHECK:STDOUT:   %bound_method.loc17_48.2: <bound method> = bound_method %x.ref, %specific_fn
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.call: init %i32 = call %bound_method.loc17_48.2(%x.ref)
+// CHECK:STDOUT:   assign %.loc17, %Int.as.Copy.impl.Op.call
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @U.Set.loc10(%self.param: ref %U.951, %x.param: %i64) {
+// CHECK:STDOUT: fn @U.Set.loc18(%self.param: ref %U.951, %x.param: %i64) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %self.ref: ref %U.951 = name_ref self, %self
-// CHECK:STDOUT:   %b.ref: %U.elem.457 = name_ref b, @U.%.loc8 [concrete = @U.%.loc8]
-// CHECK:STDOUT:   %.loc10: ref %i64 = class_element_access %self.ref, element1
+// CHECK:STDOUT:   %b.ref: %U.elem.457 = name_ref b, @U.%.loc16 [concrete = @U.%.loc16]
+// CHECK:STDOUT:   %.loc18: ref %i64 = class_element_access %self.ref, element1
 // CHECK:STDOUT:   %x.ref: %i64 = name_ref x, %x
 // CHECK:STDOUT:   %impl.elem0: %.826 = impl_witness_access constants.%Copy.impl_witness.8cc, element0 [concrete = constants.%Int.as.Copy.impl.Op.d73]
-// CHECK:STDOUT:   %bound_method.loc10_48.1: <bound method> = bound_method %x.ref, %impl.elem0
+// CHECK:STDOUT:   %bound_method.loc18_48.1: <bound method> = bound_method %x.ref, %impl.elem0
 // CHECK:STDOUT:   %specific_fn: <specific function> = specific_function %impl.elem0, @Int.as.Copy.impl.Op(constants.%int_64) [concrete = constants.%Int.as.Copy.impl.Op.specific_fn.b95]
-// CHECK:STDOUT:   %bound_method.loc10_48.2: <bound method> = bound_method %x.ref, %specific_fn
-// CHECK:STDOUT:   %Int.as.Copy.impl.Op.call: init %i64 = call %bound_method.loc10_48.2(%x.ref)
-// CHECK:STDOUT:   assign %.loc10, %Int.as.Copy.impl.Op.call
+// CHECK:STDOUT:   %bound_method.loc18_48.2: <bound method> = bound_method %x.ref, %specific_fn
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.call: init %i64 = call %bound_method.loc18_48.2(%x.ref)
+// CHECK:STDOUT:   assign %.loc18, %Int.as.Copy.impl.Op.call
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -3410,7 +3410,7 @@ fn Use() -> i64 { return G(1 as u64); }
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %u.var: ref %U.951 = var_storage %u.var_patt
 // CHECK:STDOUT:   %int_1: Core.IntLiteral = int_value 1 [concrete = constants.%int_1]
-// CHECK:STDOUT:   %.loc14: %struct_type.a = struct_literal (%int_1) [concrete = constants.%struct]
+// CHECK:STDOUT:   %.loc22: %struct_type.a = struct_literal (%int_1) [concrete = constants.%struct]
 // CHECK:STDOUT:   assign %u.var, <error>
 // CHECK:STDOUT:   %U.ref: type = name_ref U, file.%U.decl [concrete = constants.%U.951]
 // CHECK:STDOUT:   %u: ref %U.951 = wrapper_binding u, %u.var
@@ -3418,35 +3418,35 @@ fn Use() -> i64 { return G(1 as u64); }
 // CHECK:STDOUT:     %u.patt: %pattern_type.3db = ref_binding_pattern u [concrete = constants.%u.patt]
 // CHECK:STDOUT:     %u.var_patt: %pattern_type.3db = var_pattern %u.patt [concrete = constants.%u.var_patt]
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %u.ref.loc15: ref %U.951 = name_ref u, %u
-// CHECK:STDOUT:   %Set.ref.loc15_4: %U.Set.overload_set.type = name_ref Set, @U.%U.Set.overload_set.value [concrete = constants.%U.Set.overload_set.value]
-// CHECK:STDOUT:   %bound_method.loc15_4: <bound method> = bound_method %u.ref.loc15, %Set.ref.loc15_4
+// CHECK:STDOUT:   %u.ref.loc23: ref %U.951 = name_ref u, %u
+// CHECK:STDOUT:   %Set.ref.loc23_4: %U.Set.overload_set.type = name_ref Set, @U.%U.Set.overload_set.value [concrete = constants.%U.Set.overload_set.value]
+// CHECK:STDOUT:   %bound_method.loc23_4: <bound method> = bound_method %u.ref.loc23, %Set.ref.loc23_4
 // CHECK:STDOUT:   %int_2: Core.IntLiteral = int_value 2 [concrete = constants.%int_2.ecc]
-// CHECK:STDOUT:   %Set.ref.loc15_10: %U.Set.type.9ad8dd.1 = name_ref Set, @U.%U.Set.decl.loc9 [concrete = constants.%U.Set.afb1c8.1]
-// CHECK:STDOUT:   %U.Set.bound.loc15: <bound method> = bound_method %u.ref.loc15, %Set.ref.loc15_10
-// CHECK:STDOUT:   %impl.elem0.loc15: %.b7a = impl_witness_access constants.%ImplicitAs.impl_witness.a2a, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
-// CHECK:STDOUT:   %bound_method.loc15_9.1: <bound method> = bound_method %int_2, %impl.elem0.loc15 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound]
-// CHECK:STDOUT:   %specific_fn.loc15: <specific function> = specific_function %impl.elem0.loc15, @Core.IntLiteral.as.ImplicitAs.impl.Convert(constants.%int_32) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn]
-// CHECK:STDOUT:   %bound_method.loc15_9.2: <bound method> = bound_method %int_2, %specific_fn.loc15 [concrete = constants.%bound_method.3cb]
-// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %i32 = call %bound_method.loc15_9.2(%int_2) [concrete = constants.%int_2.295]
-// CHECK:STDOUT:   %.loc15_9.1: %i32 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call [concrete = constants.%int_2.295]
-// CHECK:STDOUT:   %.loc15_9.2: %i32 = converted %int_2, %.loc15_9.1 [concrete = constants.%int_2.295]
-// CHECK:STDOUT:   %U.Set.call.loc15: init %empty_tuple.type = call %U.Set.bound.loc15(%u.ref.loc15, %.loc15_9.2)
-// CHECK:STDOUT:   %u.ref.loc16: ref %U.951 = name_ref u, %u
-// CHECK:STDOUT:   %Set.ref.loc16_4: %U.Set.overload_set.type = name_ref Set, @U.%U.Set.overload_set.value [concrete = constants.%U.Set.overload_set.value]
-// CHECK:STDOUT:   %bound_method.loc16_4: <bound method> = bound_method %u.ref.loc16, %Set.ref.loc16_4
+// CHECK:STDOUT:   %Set.ref.loc23_10: %U.Set.type.9ad8dd.1 = name_ref Set, @U.%U.Set.decl.loc17 [concrete = constants.%U.Set.afb1c8.1]
+// CHECK:STDOUT:   %U.Set.bound.loc23: <bound method> = bound_method %u.ref.loc23, %Set.ref.loc23_10
+// CHECK:STDOUT:   %impl.elem0.loc23: %.b7a = impl_witness_access constants.%ImplicitAs.impl_witness.a2a, element0 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.e39]
+// CHECK:STDOUT:   %bound_method.loc23_9.1: <bound method> = bound_method %int_2, %impl.elem0.loc23 [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.bound]
+// CHECK:STDOUT:   %specific_fn.loc23: <specific function> = specific_function %impl.elem0.loc23, @Core.IntLiteral.as.ImplicitAs.impl.Convert(constants.%int_32) [concrete = constants.%Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn]
+// CHECK:STDOUT:   %bound_method.loc23_9.2: <bound method> = bound_method %int_2, %specific_fn.loc23 [concrete = constants.%bound_method.3cb]
+// CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %i32 = call %bound_method.loc23_9.2(%int_2) [concrete = constants.%int_2.295]
+// CHECK:STDOUT:   %.loc23_9.1: %i32 = value_of_initializer %Core.IntLiteral.as.ImplicitAs.impl.Convert.call [concrete = constants.%int_2.295]
+// CHECK:STDOUT:   %.loc23_9.2: %i32 = converted %int_2, %.loc23_9.1 [concrete = constants.%int_2.295]
+// CHECK:STDOUT:   %U.Set.call.loc23: init %empty_tuple.type = call %U.Set.bound.loc23(%u.ref.loc23, %.loc23_9.2)
+// CHECK:STDOUT:   %u.ref.loc24: ref %U.951 = name_ref u, %u
+// CHECK:STDOUT:   %Set.ref.loc24_4: %U.Set.overload_set.type = name_ref Set, @U.%U.Set.overload_set.value [concrete = constants.%U.Set.overload_set.value]
+// CHECK:STDOUT:   %bound_method.loc24_4: <bound method> = bound_method %u.ref.loc24, %Set.ref.loc24_4
 // CHECK:STDOUT:   %int_3: Core.IntLiteral = int_value 3 [concrete = constants.%int_3.1ba]
 // CHECK:STDOUT:   %i64: type = type_literal constants.%i64 [concrete = constants.%i64]
-// CHECK:STDOUT:   %impl.elem0.loc16: %.8fd = impl_witness_access constants.%As.impl_witness.0fe, element0 [concrete = constants.%Core.IntLiteral.as.As.impl.Convert.3d9]
-// CHECK:STDOUT:   %bound_method.loc16_11.1: <bound method> = bound_method %int_3, %impl.elem0.loc16 [concrete = constants.%Core.IntLiteral.as.As.impl.Convert.bound]
-// CHECK:STDOUT:   %specific_fn.loc16: <specific function> = specific_function %impl.elem0.loc16, @Core.IntLiteral.as.As.impl.Convert(constants.%int_64) [concrete = constants.%Core.IntLiteral.as.As.impl.Convert.specific_fn]
-// CHECK:STDOUT:   %bound_method.loc16_11.2: <bound method> = bound_method %int_3, %specific_fn.loc16 [concrete = constants.%bound_method.2c8]
-// CHECK:STDOUT:   %Core.IntLiteral.as.As.impl.Convert.call: init %i64 = call %bound_method.loc16_11.2(%int_3) [concrete = constants.%int_3.bd2]
-// CHECK:STDOUT:   %.loc16_11.1: %i64 = value_of_initializer %Core.IntLiteral.as.As.impl.Convert.call [concrete = constants.%int_3.bd2]
-// CHECK:STDOUT:   %.loc16_11.2: %i64 = converted %int_3, %.loc16_11.1 [concrete = constants.%int_3.bd2]
-// CHECK:STDOUT:   %Set.ref.loc16_17: %U.Set.type.9ad8dd.2 = name_ref Set, @U.%U.Set.decl.loc10 [concrete = constants.%U.Set.afb1c8.2]
-// CHECK:STDOUT:   %U.Set.bound.loc16: <bound method> = bound_method %u.ref.loc16, %Set.ref.loc16_17
-// CHECK:STDOUT:   %U.Set.call.loc16: init %empty_tuple.type = call %U.Set.bound.loc16(%u.ref.loc16, %.loc16_11.2)
+// CHECK:STDOUT:   %impl.elem0.loc24: %.8fd = impl_witness_access constants.%As.impl_witness.0fe, element0 [concrete = constants.%Core.IntLiteral.as.As.impl.Convert.3d9]
+// CHECK:STDOUT:   %bound_method.loc24_11.1: <bound method> = bound_method %int_3, %impl.elem0.loc24 [concrete = constants.%Core.IntLiteral.as.As.impl.Convert.bound]
+// CHECK:STDOUT:   %specific_fn.loc24: <specific function> = specific_function %impl.elem0.loc24, @Core.IntLiteral.as.As.impl.Convert(constants.%int_64) [concrete = constants.%Core.IntLiteral.as.As.impl.Convert.specific_fn]
+// CHECK:STDOUT:   %bound_method.loc24_11.2: <bound method> = bound_method %int_3, %specific_fn.loc24 [concrete = constants.%bound_method.2c8]
+// CHECK:STDOUT:   %Core.IntLiteral.as.As.impl.Convert.call: init %i64 = call %bound_method.loc24_11.2(%int_3) [concrete = constants.%int_3.bd2]
+// CHECK:STDOUT:   %.loc24_11.1: %i64 = value_of_initializer %Core.IntLiteral.as.As.impl.Convert.call [concrete = constants.%int_3.bd2]
+// CHECK:STDOUT:   %.loc24_11.2: %i64 = converted %int_3, %.loc24_11.1 [concrete = constants.%int_3.bd2]
+// CHECK:STDOUT:   %Set.ref.loc24_17: %U.Set.type.9ad8dd.2 = name_ref Set, @U.%U.Set.decl.loc18 [concrete = constants.%U.Set.afb1c8.2]
+// CHECK:STDOUT:   %U.Set.bound.loc24: <bound method> = bound_method %u.ref.loc24, %Set.ref.loc24_17
+// CHECK:STDOUT:   %U.Set.call.loc24: init %empty_tuple.type = call %U.Set.bound.loc24(%u.ref.loc24, %.loc24_11.2)
 // CHECK:STDOUT:   %Destroy.Op.bound: <bound method> = bound_method %u.var, constants.%Destroy.Op
 // CHECK:STDOUT:   %Destroy.Op.call: init %empty_tuple.type = call %Destroy.Op.bound(%u.var)
 // CHECK:STDOUT:   return

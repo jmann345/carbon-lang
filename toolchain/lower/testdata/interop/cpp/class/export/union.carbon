@@ -38,7 +38,7 @@ union Wide {
 inline Cpp '''
 int Use(Carbon::Wide* w) {
   // CHECK:STDERR: export.carbon:[[@LINE+4]]:6: error: no member named 'lo' in 'Carbon::Wide' [CppInteropParseError]
-  // CHECK:STDERR:    13 |   w->lo = 3;
+  // CHECK:STDERR:    25 |   w->lo = 3;
   // CHECK:STDERR:       |   ~  ^
   // CHECK:STDERR:
   w->lo = 3;

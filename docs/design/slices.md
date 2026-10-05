@@ -34,8 +34,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 > `Core.Buf(T)` as implemented. Toolchain status: SL-1 (the two prelude types,
 > the runtime bounds fail-stop and the four builtins behind them) landed
 > 2026-10-05; SL-2 (W-056: the `std::span` mapping and owning-container views,
-> the [Interop](#interop) section) is implemented as of 2026-10-05 with its
-> hosted verification pending. The
+> the [Interop](#interop) section) landed 2026-10-05 (the decision-log entry
+> "SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)"
+> for D-SL-21..27). The
 > [0.1 limits](#01-limits) section lists every deviation from the target
 > design together with the condition under which it is removed.
 
@@ -275,7 +276,11 @@ its own: `for (x: T in b.AsSlice())` is the idiom. The impl lives in
 ## Interop
 
 > SL-2 (W-056, 2026-10-05; fork/slices/plan.md §1.B, decisions D-SL-8, D-SL-9,
-> D-SL-10, D-SL-14). The C++ side of this section is also recorded in
+> D-SL-10, D-SL-14, and D-SL-21..27 of the decision-log entry "SL-2: std::span
+> ↔ Core.Slice mapping, owning-container views (2026-10-05)" for the landed
+> prelude layout, the constraint bounds, the size conversion, the element
+> bound, nullable `data()` and static extents). The C++ side of this section
+> is also recorded in
 > [Interoperability: `std::span` and `Core.Slice`](interoperability/README.md#stdspan-and-coreslice).
 
 **`std::span` ↔ `Core.Slice` (D-SL-8).** The dynamic-extent

@@ -6,7 +6,12 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Slices plan: `Core.Slice(T)` + heap allocation (SL-1, W-055) and `std::span` mapping (SL-2, W-056)
 
-**Status:** rev 2 — folded, signed off (2026-09-28). The two adversarial plan
+**Status:** rev 2 — folded, signed off (2026-09-28); both slices landed
+2026-10-05 — SL-1 verified of record (conformance run 37347619141; "Landed
+notes (SL-1, 2026-10-05)" at the end of this file) and SL-2 landed pending its
+hosted verification of record ("Landed notes (SL-2, 2026-10-05)" after it,
+with the placeholders FILL_RUN / GATE_RUN / CONF_RUN the orchestrator stamps).
+The two adversarial plan
 reviews (R29(c); rev A, design fidelity: 4 MAJOR + 6 MINOR; rev B, toolchain
 reality: 4 MAJOR + 7 MINOR; both APPROVE-WITH-AMENDMENTS) are folded in place,
 each amendment marked "(amended 2026-09-28, review fold: rev A An / rev B Bn)"
@@ -2665,3 +2670,187 @@ files where 18 were predicted) and the convergence pass 84315a5d4
 (`.loc`-only); fourth autoupdate, after 7b69e540b and 713eddc7a, run
 37341482411 (and 37345524695 on the trunk merge, which changed nothing); gate 37347712964 green; conformance 37347619141: 124 PASS / 0 FAIL / 23 SKIP over 147, 47/56 bullets, against
 the expected 121 / 0 / 23 over 144, 47/56.
+
+## Landed notes (SL-2, 2026-10-05)
+
+SL-2 landed on claude/carbon-fork-0-1-sl2 (off trunk 9e5dd5f75): 65338a7b7
+(the import and export mapping, five goldens), 17d506e2e (the synthesized
+`CppContiguousRange`, the prelude interop library, three goldens), 677d0e4b2
+(conformance + gap row + ledger), 12a2143d2 (slices.md's Interop section, the
+interop README subsection), then the fix rounds fd9cdd5da (round 1) and
+58c08be07 (round 2), with the hosted fills 0790c7428 + 2c21f6e24 (the run
+37356848697 pair) and 18e2165c1 + 0c9924049 (runs 37362980320 and
+37365683022) between them. Ledger closure, the gap-analysis row and the decision-log entry
+("SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)",
+the second half of the F-012 record, D-SL-21..27) are the discharge commit;
+the mid-stream "SL-2 round-1 note" stays in the log beneath it. Deltas from
+this plan, honestly:
+
+-   **§2.B.9's placement was right, was deviated from, and was restored at
+    round 1.** The implementer put the whole interop section, blanket impl
+    included, in a NEW library core/prelude/types/cpp/slice.carbon to keep
+    `u64` (the rev A A2 constraint) out of slice.carbon without an import
+    line that would move the SL-1 lower goldens' DI lines (§6.B, rev A A4).
+    The blanket impl is an orphan there and unreachable by impl lookup
+    (§2.B.9 amendment; D-SL-21), and the first hosted fill took every
+    full-prelude golden down (306 files). The landed layout is the
+    implementation review's zero-churn variant: the helpers stay in
+    cpp/slice.carbon as PUBLIC Core names (the §1.B.3 sketch said `private`;
+    `CppUnsafeDeref` is the public precedent), a new `interface CppSizeToI64`
+    hides `u64` there (D-SL-23), slice.carbon's SL-1-reserved
+    `prelude/types/optional` import line — unused there — became `import
+    library "prelude/types/cpp/slice";` at the same line count (`class
+    Slice` at :24, every method on its line), and the impl is appended beside
+    `Slice` (slice.carbon:85-106). The lesson is a RULE now (D-SL-21 and the
+    hand-off notes), where §2.B.9 had stated a placement without its reason.
+-   **§1.B.3's constraint carries the bounds.** `require Self.(DataType) impls
+    CppDataPointer & Destroy; require Self.(SizeType) impls CppSizeToI64 &
+    Destroy;` where the sketch had `CppDataPointer` and `ImplicitAs(u64)`
+    with no `Destroy`: the `Convert` body's `self.Data()`/`self.Size()`
+    results are temporaries, and a synthesized witness supplies
+    associated constants as bare `type`s (`BuildCustomWitness` TODOs on any
+    other), so the bound cannot sit on the interface's `let`s (D-SL-22). The
+    `Convert` body calls `.(CppSizeToI64.Op)()` for the two-step size
+    conversion. §1.B.3's per-target reading of the size type (`u64` on Linux,
+    `Core.CppCompat.ULong64` on macOS) STANDS: round 1 overwrote it with
+    "`ULong64` on every 64-bit target" to explain an unfilled golden, the
+    re-review refuted that from the target tables (`X86_64TargetInfo`
+    `Int64Type = SignedLong`; long_and_long_long.{lp64,darwin,llp64}.carbon),
+    and round 2 restored it everywhere (§1.B, §7 R-9, the hand-off notes).
+-   **§1.B.1's `Span` arm gained two hardenings the plan did not have.**
+    `SliceElementSatisfiesBound` tests the element against `Slice`'s own `T:
+    Copy & Destroy` binding without diagnosing (`TryConvertToValueOfType`,
+    bindings read with `GetOrEmpty`) and falls back to the class import —
+    the plan's `PerformCall` converted WITH diagnostics, a header-site error
+    for `std::span<NonCopyable>` (D-SL-24; `noncopyable_element_is_a_class`);
+    an already-diagnosed element error is propagated rather than returned as
+    `TypeExpr::None`, which would have imported the specialization as a
+    class and diagnosed twice. A deleted C++ copy constructor does NOT fail
+    the bound (`BuildCopyWitness` imports the deleted decl), so such a span
+    maps to a `Core.Slice` whose element copies fail at the use site —
+    disclosed in slices.md, W-056 and import.cpp, not filed.
+-   **§1.B.3's witness builder declines `void` members.**
+    `LookupCppMemberWithResultType` returns `None` for a `void` `data()`/
+    `size()` and propagates an unmappable result type where the
+    `CppRangeForIterate` precedent `CARBON_CHECK`s; reached from every
+    `ImplicitAs(Slice(...))` conversion of a C++ class, that CHECK was an
+    ICE (the implementation review's MAJOR 2; `fail_void_members`).
+-   **§4.B spellings to working syntax (R3) and splits the reviews added.**
+    `static_extent_is_a_class` names `std::span<int, 3>` through a header
+    alias `IntSpan3` (the class/import/template.carbon `using Ai32 = A<int>`
+    spelling), not `Cpp.std.span(i32, 3)` — no golden instantiates a C++ class
+    template with a non-type argument from Carbon; the impls golden's mock
+    `data()` members return `_Nonnull` pointers (the primitives min-prelude
+    has no `Optional`), restore `unsigned long size()` with `.SizeType = u64`
+    under the `--target=x86_64-linux-gnu` pin, and since round 2 wrap their
+    three `Test()` bodies in `//@dump-sem-ir-begin/end` ranges (below);
+    span.carbon and fail_span.carbon carry the same `--target` pin (MINOR 6)
+    and fail_span's header declares `ConsumeStatic` only (MINOR 5);
+    span.carbon gains `noncopyable_element_is_a_class`, fail_vector_view
+    .carbon gains `fail_void_members`, vector_view.carbon's splits are `view`
+    and `nonnull_data`, and `fail_no_size` fills with `ConversionFailure`
+    alone, as MINOR 9 said it would. The lower thunk is exactly the §4.B
+    prediction — `@_Z7ConsumeNSt3__14spanIKiLm18446744073709551615EEE
+    .carbon_thunk._`, `4span` and the all-ones extent in the mangling, the
+    `Slice` storage address in, a by-value `span` load out, no `memcpy`
+    between differently sized types. EIGHT golden files, not the "ten" the
+    round records counted (`git diff --stat 9e5dd5f75..HEAD` over the two
+    testdata trees: check stdlib/{span, fail_span, vector_view,
+    fail_vector_view}, function/export/{slice, fail_export_slice},
+    impls/cpp_contiguous_range; lower interop/cpp/span).
+-   **§5.B.1 prints three values, not two.** `Core.Print(Cpp.SumSpan(v))` →
+    `12` joins cpp_span_view (the implementation review's MINOR 7: the vector
+    passed DIRECTLY to a `std::span<const int>` parameter is the
+    argument-conversion shape, distinct from the `let`), so EXPECT is `10 6
+    12`; both programs pin the R-6 layout premise with `static_assert(sizeof
+    (std::span<const int>) == 16)`. The D-SL-9 fallback (`cpp_span_view`
+    SKIP with a refreshed reason, +1 / 0 / +1, PARTIAL) was NOT taken: the
+    chain resolved at the second fill, and CONF_RUN arbitrates it at runtime.
+-   **§6.B held once the impl was where §2.B.9 put it.** The first fill's 306
+    movers were the orphan, not churn; the second fill moved no pre-existing
+    golden, and §6.B's round-1 hedge — that check/lower slice goldens might
+    renumber constants under the wider `ImplicitAs` import footprint — did
+    NOT fire (the impl's type structure `? as ImplicitAs(Slice(?))` is never a
+    candidate for their queries). The convergence pass 0c9924049 renumbered
+    two Clang-echoed source lines in `CHECK:STDERR` (fail_export_slice,
+    fail_span), R26's shape.
+-   **The silent golden was a reading error, not a crash.** impls/
+    cpp_contiguous_range.carbon came back without CHECK lines from both
+    fills. Root cause, read from the harness at round 2: the check component
+    runs `--dump-sem-ir-ranges=only` (toolchain/testing/file_test.cpp
+    `GetDefaultArgs`), the golden had no dump range and none of its three
+    splits produced a diagnostic, so stdout and stderr were empty and the
+    autoupdater had nothing to write — a clean PASS and positive evidence for
+    `u64` (both runs: "Ran 1898 tests", no `<test>: <error>` line, no `Stack
+    dump:`). The precedent cpp_range_for_iterate.carbon's positive splits are
+    empty the same way. Round 2 added the dump ranges so FILL_RUN shows the
+    witness.
+-   **§7 outcomes.** R-6 not refuted at the IR level (the 16-byte thunk load;
+    the runtime half is CONF_RUN's). R-7 not refuted: function/export/slice
+    .carbon filled with `std::span<const int>` through the mock's inline
+    `__1`. R-8 not refuted: no Clang diagnostic inside the synthesized thunk
+    body. R-9: falsifier (ii) fired at the first fill for a reason the risk
+    never listed (the orphan), (i) did NOT fire (the silent golden was a
+    PASS), the chain resolved at the second fill; (iii), R-10 and R-11 have
+    no golden (the real libc++ `std::vector<int>` and `<span>` under
+    `-std=c++20`) and are arbitrated by CONF_RUN.
+-   **§8.5 residue.** W-119 (static-extent `std::span` mapping) and W-120
+    (ADL `data`/`size` sources) filed at the landing, blocked_by [], ids
+    after OV-3's W-117/W-118 (confirmed against trunk 923c2f2af at
+    discharge). "owning C++ container to Core.Slice view" is NOT filed (the
+    D-SL-9 fallback did not fire). The deleted-copy element case is
+    disclosed, not filed (`BuildCopyWitness`'s pre-existing policy).
+-   **Scoreboard base.** The branch's in-tree fork/conformance/out/scoreboard
+    .json is the SL-1 run of record (last written by e76b8052f, generated
+    2026-10-05T17:37:12Z): `totals.PASS = 124`, `totals.SKIP = 23`, every
+    fail class 0, 147 programs listed, 47/56 bullets. §5.B's delta (+2 PASS /
+    −1 SKIP / +1 program; the contiguous-container bullet SKIP → PASS) gives
+    the expected 126 / 0 / 22 over 148, 48/56. Trunk has since taken OV-3
+    (126 / 0 / 23 over 149, 47/56), so the of-record numbers on the trunk
+    merge are that base plus the same delta. Of record: run CONF_RUN,
+    CONF_NUMBERS.
+
+Reconciliation greps (§8.4), run at 58c08be07:
+
+-   `grep -rn 'CppContiguousRange' toolchain core` outside testdata:
+    core_interface_kind.def:22, core_identifier.def:37, impl_lookup.cpp:600
+    (the builder's comment), :610 (`BuildCppContiguousRangeWitness`), :706-707
+    (the `LookupCppImpl` case) — the "two sites" predicted, as two
+    definitions — custom_witness.cpp:1546 (one), and TWO prelude files where
+    §8.4 said slice.carbon alone: cpp/slice.carbon:17/:32/:73 (the round-1
+    split) and slice.carbon:87 (the impl's comment). Three goldens name it
+    (impls/cpp_contiguous_range, stdlib/vector_view, stdlib/fail_vector_view)
+    where §8.4 said one.
+-   `grep -rn 'CustomCppTypeMapping::Str' toolchain`: custom_type_mapping.cpp
+    :128 and import.cpp:1322 — the two switch arms. As planned.
+-   `grep -rn 'RecognizedTypeInfo::Slice' toolchain`: type_mapping.cpp:319
+    once, plus type_info.cpp:151 (`ExpectsArgs`, qualified in its own file;
+    counted under the next grep). As planned.
+-   `grep -n 'Slice' toolchain/sem_ir/type_info.cpp`: :151, :192, :289 — the
+    three lines (rev B B4). As planned.
+-   `grep -rln 'Slice' core/prelude`: buf.carbon, cpp/slice.carbon,
+    slice.carbon, iterate.carbon — cpp/slice.carbon joins SL-1's three
+    through its comments (it names no `Slice` in code: D-SL-21).
+-   `git grep -ln 'span\b' 9e5dd5f75 -- toolchain/check/testdata/interop`:
+    empty — §6.B's premise that no pre-existing golden named a span held.
+-   `git diff --stat 9e5dd5f75..HEAD -- toolchain/check/testdata toolchain/
+    lower/testdata`: exactly the eight new files; no pre-existing golden
+    moved (§6.B).
+-   `ls toolchain/*/testdata/builtins/ | grep fail_stop`: empty (SL-1's rev B
+    B3, unchanged).
+-   `runner.py --self-test`: "148 programs parsed, 56 bullets in table, OK";
+    the README table carries `cpp_span_view` as `run` and
+    `cpp_span_roundtrip_diff` as `differential`.
+-   Ledger max id on this branch: W-120; trunk's max is W-118 (OV-3's
+    discharge), so W-119/W-120 stand and no id is renumbered.
+
+Hosted verification of record (R28(b); the container cannot build the
+toolchain): first autoupdate run 37356848697 — fill 0790c7428 (306 files: the
+orphaned prelude impl) and its convergence pass 2c21f6e24 (40 files,
+`.loc`-only); fix fd9cdd5da. Second autoupdate run 37362980320 — fill
+18e2165c1 (the seven output-producing goldens, no pre-existing mover) and
+convergence run 37365683022, 0c9924049 (two `CHECK:STDERR` line numbers);
+fix 58c08be07 (records and dump ranges; one `_Nonnull`, one `GetOrEmpty`).
+Third autoupdate, after 58c08be07: run FILL_RUN (impls/cpp_contiguous_range
+.carbon only); gate GATE_RUN; conformance CONF_RUN: CONF_NUMBERS, against the
+expected 126 / 0 / 22 over 148, 48/56 on this branch's base.

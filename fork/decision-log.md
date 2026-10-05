@@ -2886,6 +2886,442 @@ if-let/let-else/while-let (flips a MISSING bullet on landed match
 machinery), then the error-handling chain W-016..W-019 (Result, `?`,
 exception interop), then unions W-009/W-015.
 
+### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
+
+Milestone bullet "Stdlib C++ interop: transparent non-owning contiguous
+container mapping (incl. owning->view)" flips MISSING → DONE
+(fork/gap-analysis.md row 82; this branch's header 29 DONE / 22 PARTIAL / 4
+MISSING / 1 DESIGN-ONLY over 56 — trunk's header after OV-3 reads 29 / 21 / 5
+/ 1, so the merged header is 30 / 21 / 4 / 1, reconciled by the orchestrator at
+the trunk merge) on the conformance run of record CONF_RUN (CONF_NUMBERS).
+Landed on claude/carbon-fork-0-1-sl2 off trunk 9e5dd5f75 in the four commits
+fork/slices/plan.md §3 fixed — 65338a7b7 (the import and export mapping with
+five goldens), 17d506e2e (the synthesized `CppContiguousRange`, the prelude
+interop library, three goldens), 677d0e4b2 (conformance: `cpp_span_view` SKIP
+→ PASS, `cpp_span_roundtrip_diff` with its C++17 oracle; gap row; ledger),
+12a2143d2 (docs/design/slices.md's Interop section, the interop README
+subsection) — plus fd9cdd5da (round 1: the owning→view impl moved beside
+`Slice`, 299 goldens restored byte-identical, the implementation review's
+REJECT folded) and 58c08be07 (round 2: the silent golden explained, the
+`size_t` story corrected, the gap row held at PARTIAL), with the hosted fills
+0790c7428 + 2c21f6e24 (run 37356848697, the broken prelude) and 18e2165c1 +
+0c9924049 (runs 37362980320 and 37365683022, clean) between them. The plan's
+SL-1 slice was W-055 (its entry below); this is W-056, the second half of the
+F-012 record. The "SL-2 round-1 note" entry below is the round-level record
+written mid-stream; its content is folded here and the note stays in place.
+Design authority was not reopened: milestones.md:201-214's bullet text, the
+`str` ↔ `std::string_view` precedent of interoperability/README.md and
+D-SL-8/9/10/14 as adopted at plan §0.3 stand; every decision below is an
+R29(a) fill or an implementation choice, recorded for after-the-fact veto.
+
+WHAT LANDED, by mechanism. (1) IMPORT (check/cpp/custom_type_mapping.{h,cpp},
+import.cpp). `CustomCppTypeMapping` is a struct — `Kind {None, Str, Span}` plus
+the `element_type` payload — and `GetCustomCppTypeMapping` fills it from two
+new matchers beside `StdStringView`: `DynamicExtent` (an integral template
+argument whose `APInt` `isAllOnes()`: `std::dynamic_extent` is
+`static_cast<size_t>(-1)` in libc++ and libstdc++ alike) and `StdSpan`
+(`StdClassTemplate("span", TemplateArgumentsAre({TypeTemplateArgument(AnyType),
+DynamicExtent}))`), so `std::span<T, 3>` fails the matcher and imports as an
+ordinary class. `LookupCustomRecordType`'s `Span` arm imports the element
+(`ImportCppType`), tests it against `Slice`'s bound (`SliceElementSatisfiesBound`,
+below) and builds `Core.Slice(T')` with `MakeSliceType` (`LookupNameInCore(Slice)` +
+`PerformCall` + `ExprAsType`, the `MakeOptionalType` shape); the element maps
+recursively, so `std::span<const int>` is `Core.Slice(const i32)`. The thunk
+path is the `str` one — `std::span` is not a simple ABI type, so the import
+thunk takes the `Slice` object's address; lower interop/cpp/span.carbon's
+thunk is `@_Z7ConsumeNSt3__14spanIKiLm18446744073709551615EEE.carbon_thunk._`,
+the all-ones extent in the mangling, with the out-pointer form for the
+`std::span<int>` return. (2) EXPORT (sem_ir/type_info.{h,cpp},
+check/cpp/type_mapping.cpp). `RecognizedTypeInfo::Kind` gains `Slice` — a
+Core-root class named `Slice` with one argument (`ExpectsArgs` :151, the name
+switch :192, and `case Slice: break;` at :289 in `PrintLiteral`, the second
+exhaustive switch rev B B4 named) — and `TryMapClassType`'s exhaustive switch
+gains the `Slice` arm (:319): a `WrappedType` whose `wrap_fn` runs late, after
+the element has mapped, finding `std::span` by `LookupCppClassTemplate(context,
+{"std", "span"})` (through libc++'s inline `__1`) and instantiating it with
+`CheckTemplateIdType` on the mapped element. A translation unit without
+`<span>` maps to the null type, which the existing `failed to map Carbon type
+to C++` TODO paths report (`fail_no_span_header`) — no new diagnostic kind.
+(3) OWNING → VIEW (sem_ir/core_interface_kind.def:22, check/core_identifier
+.def:37 and :84, check/cpp/impl_lookup.cpp, check/custom_witness.cpp:1546, the
+prelude). `BuildCppContiguousRangeWitness` (impl_lookup.cpp:610) looks up the
+member functions `data` and `size` with `LookupCppMethod` only — the const
+filter keeps `data() const` when both overloads exist; no ADL stage — through
+`LookupCppMemberWithResultType` (:574), and hands `BuildCustomWitness` the
+table `{DataType, SizeType, Data, Size}` in interface member order;
+`LookupCppImpl`'s exhaustive switch dispatches it (:706) and
+`LookupCustomWitness` answers nullopt for it as for `CppRangeForIterate`.
+core/prelude/types/cpp/slice.carbon (library `prelude/types/cpp/slice`,
+exported from types.carbon:14) holds the public helpers: `interface
+CppContiguousRange { let DataType: type; let SizeType: type; fn Data(self) ->
+DataType; fn Size(self) -> SizeType; }`, `interface CppDataPointer` with impls
+for `T*` and `Optional(T*)` (`None` → the null pointer), `interface
+CppSizeToI64 { fn Op(self) -> i64; }` with `impl forall [T: ImplicitAs(u64)] T
+as CppSizeToI64` (the two-step `ImplicitAs(u64)` then `As(i64)` conversion of
+rev A A2, keeping `u64` out of slice.carbon), and `constraint CppContiguous {
+extend require impls CppContiguousRange; require Self.(DataType) impls
+CppDataPointer & Destroy; require Self.(SizeType) impls CppSizeToI64 &
+Destroy; alias Element = Self.(DataType).(CppDataPointer.Element); }`.
+core/prelude/types/slice.carbon's SL-1-reserved `prelude/types/optional`
+import line (unused there) became `import library "prelude/types/cpp/slice";`
+at the same line count (`class Slice` stays at :24, every method on its line)
+and the blanket `impl forall [C: CppContiguous where .Element impls Copy &
+Destroy] C as ImplicitAs(Slice(C.Element))` is APPENDED beside `Slice` (:85-
+106, comment and impl), its `Convert` body `Slice(C.Element).UnsafeMake(self.Data()
+.(CppDataPointer.Raw)(), self.Size().(CppSizeToI64.Op)())` — public `Slice`
+API only. For a `std::vector<int>` `v`: `data() const` → `Optional(const
+i32*)` → `Element = const i32`; `size() const` → `u64` on x86_64-linux-gnu;
+`v` converts to `Core.Slice(const i32)`, the type a `std::span<const int>`
+parameter imports as, so both `let view: Core.Slice(const i32) = v;` and
+`Cpp.SumSpan(v)` resolve. (4) THREE TOOLCHAIN HARDENINGS the rounds forced:
+(a) `LookupCppMemberWithResultType` returns `{None, None}` for a `void` member
+and `{ErrorInst, ErrorInst}` for an unmappable result type where the
+`CppRangeForIterate` precedent `CARBON_CHECK`s — reached from every
+`ImplicitAs(Slice(...))` conversion of a C++ class, that CHECK was an ICE for
+`class W { void data(); void size(); };` (pinned `fail_void_members`); (b)
+`SliceElementSatisfiesBound` (import.cpp:1281) tests the element against
+`Slice`'s own `T: Copy & Destroy` binding with `TryConvertToValueOfType`,
+without diagnosing, reading the bindings with `GetOrEmpty`, so a `std::span<T>`
+over an element outside the bound is an ordinary class import rather than a
+conversion error at the header's `span` declaration (pinned
+`noncopyable_element_is_a_class`); (c) the `Span` arm propagates an
+already-diagnosed element error (`element.type_id == ErrorInst`) instead of the
+plan's `TypeExpr::None`, which would have imported the specialization as a
+class and diagnosed a second time. (5) GOLDENS, eight files (the in-flight
+records said "ten"; `git diff --stat 9e5dd5f75..HEAD` over the two testdata
+trees lists exactly these and no pre-existing mover): check
+interop/cpp/stdlib/span.carbon (`pass_and_return`, `static_extent_is_a_class`,
+`noncopyable_element_is_a_class`), stdlib/fail_span.carbon
+(`fail_static_extent_from_slice`), stdlib/vector_view.carbon (`view`,
+`nonnull_data`), stdlib/fail_vector_view.carbon (`fail_no_size`,
+`fail_void_members`), function/export/slice.carbon,
+function/export/fail_export_slice.carbon (`fail_no_span_header`),
+impls/cpp_contiguous_range.carbon (`member_data_size`, `missing_size`,
+`non_const_only`, with `//@dump-sem-ir-begin/end` ranges since round 2); lower
+interop/cpp/span.carbon. Every golden mocks `std::span` with the
+pointer-then-size layout (D-SL-14) and the four that name `size_t` or a
+mangled extent pin `--target=x86_64-linux-gnu`. (6) CONFORMANCE: the two
+programs of plan §5.B under the bullet — interop/cpp_span_view.carbon (SKIP →
+PASS; hand-derived `10` = 1+2+3+4 through `std::accumulate` over an explicit
+`FromArray(&a)` view, `6` = `view[2]` of a C++-made `{2, 4, 6}` vector viewed
+as `Core.Slice(const i32)`, `12` = `Cpp.SumSpan(v)` with the vector passed
+DIRECTLY to the `std::span<const int>` parameter — the review's MINOR 7) and
+interop/cpp_span_roundtrip_diff.carbon + .diff.cpp (new; `2 2 18`: a Carbon
+view into C++'s `Tail`, the returned span imported, and a C++-made span
+summed by the EXPORTED Carbon `Sum`; the oracle spells the same three steps
+with pointer+size arithmetic in C++17); both carry `COMPILE-ARGS:
+--clang-arg=-std=c++20` (`<span>` is C++20; the embedded Clang defaults to
+gnu++17) and a `static_assert(sizeof(std::span<const int>) == 16)` pinning the
+R-6 layout premise; `runner.py --self-test`: "148 programs parsed, 56 bullets
+in table, OK". (7) DOCS: docs/design/slices.md's Interop section (D-SL-8
+both directions and the `#include <span>` requirement on export, D-SL-2
+explicit views, D-SL-9 with the const-`data()` selection and the per-target
+size story, the deleted-copy-constructor consequence, `-std=c++20`, D-SL-14
+mocks), its "0.1 limits" (W-119, W-120) and Overview status;
+docs/design/interoperability/README.md's "C++ view types such as `std::span`
+... will have corresponding types" TODO replaced by a dated paragraph and a
+`std::span` and `Core.Slice` subsection beside the `std::string_view` one.
+Ten toolchain source files: custom_type_mapping.{h,cpp}, import.cpp,
+type_mapping.cpp, cpp/impl_lookup.cpp, custom_witness.cpp,
+core_identifier.def, core_interface_kind.def, type_info.{h,cpp}.
+
+DECISIONS. D-SL-8 (the dynamic-extent `std::span<T>` ↔ `Core.Slice(T')`
+reinterpretation mapping, static extents excluded), D-SL-9 (the synthesized
+`CppContiguousRange` over member `data()`/`size()`, the blanket `ImplicitAs`
+impl, the two-step size conversion), D-SL-10 (`Slice(T)` → `Slice(const T)`
+implicitly, which is how a `Slice(i32)` argument reaches `std::span<const
+int>`) and D-SL-14 (goldens mock `std::span`; conformance uses the real header
+under `-std=c++20`) are adopted as plan §0.3 wrote them, each with its break
+condition there. The rounds forced seven more, numbered after SL-1's D-SL-20:
+**D-SL-21** — the owning→view impl lives beside `Slice`; the helpers do not.
+The orphan rule (check/impl_validation.cpp `DiagnoseOrphanImpl`) anchors a
+non-final impl on a class, generic class, generic interface or generic named
+constraint reachable from its SELF type or its INTERFACE SPECIFIC in the same
+library — the facet-type bound on the self binding is never visited — and
+impl lookup imports candidates only from the IRs owning the query's self,
+interface and arguments (check/impl_lookup.cpp `FindAssociatedImportIRs`,
+`CollectCandidateImplsForQuery`), so an impl the orphan rule would reject is
+also one lookup would never find: the two are one invariant. The rule this
+makes for the prelude: a blanket `impl forall [C: SomeConstraint] C as
+I(X(...))` lives in the library of a class in its self type or interface
+arguments (`Slice`'s), never in the constraint's library; a name the impl
+needs but its file cannot import goes behind a local interface in the helper
+library (D-SL-23) rather than moving the impl; and helpers another Core
+library's impl names are public Core names (`CppUnsafeDeref`,
+prelude/operators/deref.carbon, is the precedent — this amends D-SL-9's
+"private helper interface" wording). Break condition: upstream widens
+`DiagnoseOrphanImpl` and `FindAssociatedImportIRs` to the self binding's
+constraint libraries — the section may then consolidate in one file;
+falsifier: `ImplIsOrphan` in any full-prelude golden, or vector_view.carbon's
+`view` split diagnosing `ConversionFailure`. **D-SL-22** — bounds on a
+synthesized witness's associated types are stated on the constraint, not the
+interface. `BuildCustomWitness` (check/custom_witness.cpp) supplies
+associated constants as bare `type`s and TODOs on any other
+associated-constant type, so `CppContiguousRange` declares `let DataType:
+type; let SizeType: type;` and `CppContiguous` carries `require Self.(DataType)
+impls CppDataPointer & Destroy; require Self.(SizeType) impls CppSizeToI64 &
+Destroy;` — the `CppIterator` shape of prelude/iterate.carbon, whose `Inc &
+Destroy` serves `++cursor->0` through the same route
+(`CollectFacetWitnessSources` reads the binding's identified facet type). The
+`Destroy` halves exist because `Convert`'s `self.Data()`/`self.Size()` results
+are temporaries (the first fill's `MissingImplInMemberAccess`). Break
+condition: `BuildCustomWitness` learns bounded associated constants — the
+bounds move onto the interface's `let`s. **D-SL-23** — the size conversion is
+`CppSizeToI64`, two steps behind a local interface. `size_t` imports per
+target: `u64` where it is `uint64_t` (LP64 Linux — `unsigned long` IS
+`uint64_t` there, `MapBuiltinIntegerType` maps it first; LLP64 Windows through
+`unsigned long long`), `Core.CppCompat.ULong64` on Darwin (`unsigned long` is
+not `uint64_t` there), `ULong32`/`u32` on 32-bit `long`; every one of them has
+`ImplicitAs(u64)` (as.carbon:37's identity, cpp/int.carbon:173, :124,
+uint.carbon:70) while `ULong64` has no `As(i64)`, so the constraint is
+`ImplicitAs(u64)` and `u64 as As(i64)` (uint.carbon:97) finishes; `impl forall
+[T: ImplicitAs(u64)] T as CppSizeToI64` is anchored by its local interface and
+keeps `u64` out of slice.carbon, whose header has no `prelude/types/uint`
+import and whose line count the SL-1 lower goldens pin. A signed `size()`
+(`int size() const`, the Qt shape) has no `ImplicitAs(u64)` and forms no view;
+the conversion fails gracefully at the use site. Break condition: `ULong64`
+gains `As(i64)`, or a golden regeneration makes slice.carbon's import line
+count free — then the two steps may inline. **D-SL-24** — an element outside
+`Slice`'s bound makes `std::span<T>` an ordinary class import, decided without
+diagnostics against `Slice`'s own generic binding (so the bound cannot drift
+from the prelude); a C++ `T` whose copy constructor is deleted does NOT fail
+it (`BuildCopyWitness` imports the deleted decl as the `Copy` witness), so
+`std::span<std::unique_ptr<int>>` maps to a `Core.Slice(T')` whose element
+copies — `Get`, `s[i]` — fail at the use site, not at the header; recorded in
+slices.md, W-056 and import.cpp. (Finding the `Copy` witness of a C++ element
+may still require a complete type and diagnose that, as any `Copy` lookup
+does; pre-existing.) Break condition: `BuildCopyWitness` declines deleted copy
+constructors — those spans become class imports too and slices.md's sentence
+flips. **D-SL-25** — a nullable `data()` (`Optional(T*)`, the import of a
+pointer without `_Nonnull`) yields the null pointer for `None`
+(`Optional(T*).Get()` is `value unsafe as T*`) and the view has `Size()` 0, so
+the pointer is never dereferenced; a container reporting `data() == nullptr`
+with `size() > 0` is undefined on either side of the boundary and not a
+`Slice` concern. Break condition: `Core.Slice` acquires a non-null `Data()`
+invariant — the `None` arm must then substitute an aligned dangling pointer.
+**D-SL-26** — static extents stay class imports in both directions: `std::span<T,
+N>` fails `DynamicExtent` (`static_extent_is_a_class`: `class_type @span`) and
+no Carbon type exports to it, so a `Core.Slice(i32)` argument to a
+`std::span<int, 3>` parameter is Clang's forwarded "no matching function"
+(`fail_static_extent_from_slice`) — honestly unmapped, W-119; the mocks keep
+`{T*, size_t}` for every extent, immaterial to the goldens' one assertion. Break
+condition: W-119's mechanism (a thunk-side conversion in the
+`std::initializer_list` style, or an `array(T, N)*`-keyed mapping). **D-SL-27**
+— the roundtrip program keeps BOTH its hand-derived `EXPECT-STDOUT` and its
+`.diff.cpp` oracle: the values `2 2 18` are re-derivable by hand (R16(d)) and
+DIFF-MISMATCH is the falsifier for drift in either direction, while the oracle
+spells `std::span`/`subspan` as pointer+size arithmetic because the runner
+compiles oracles with `-std=c++17`, where `<span>` does not exist. Break
+condition: the runner compiles oracles as C++20 — the oracle may then use
+`std::span` itself; the EXPECT lines stay.
+
+REVIEWS. One implementation review of the four plan commits (R29(c): hosted
+verification was not green) returned REJECT — 1 BLOCKER, 3 MAJOR, 5 MINOR.
+BLOCKER 1: the blanket `ImplicitAs(Slice(C.Element))` impl was an orphan in
+the new library core/prelude/types/cpp/slice.carbon — `DiagnoseOrphanImpl`'s
+walk anchors on nothing there (self is the bare binding `C`, `ImplicitAs` is
+prelude/operators/as's, `Slice` is prelude/types/slice's; the exact shape of
+the pinned negative impl/orphan.carbon:83-87), so every program including the
+full prelude fails, and independently `FindAssociatedImportIRs` would never
+have imported it for `Cpp.VectorLike as ImplicitAs(Slice(const i32))` even had
+it compiled — the implementer's disclosed deviation from plan §2.B.9 (to keep
+`u64` out of slice.carbon without an import line moving the SL-1 lower
+goldens' DI lines) traded a churn concern for a correctness invariant (R17:
+the justification needed a paragraph). MAJOR 2: `LookupCppMemberWithResultType`'s
+result-type `CARBON_CHECK` was an ICE for `void data(); void size();` and for
+an unmappable result, on a path every `ImplicitAs(Slice(...))` conversion of
+a C++ class reaches. MAJOR 3: `MakeSliceType` converted the element to `Copy &
+Destroy` WITH diagnostics, a header-site error for `std::span<NonCopyable>`
+where the plan and ledger promised the class-import fallback. MAJOR 4: the gap
+row read DONE and the header 29 / 22 / 4 / 1 before any scoreboard said PASS
+(R9). MINOR 5: fail_span.carbon's header carried three unused declarations
+Clang's notes would cite; MINOR 6: the static-extent comments misdescribed the
+mock and the `size_t` field wanted `--target` pins; MINOR 7: `Cpp.SumSpan(v)`
+was claimed in three places and exercised nowhere; MINOR 8: R-9's "no in-tree
+precedent" was stale (impl/lookup/access.carbon:26 is the projection-in-
+interface-argument shape) so the rev B B9 fallback is not needed; MINOR 9:
+fail_vector_view predicted a note the plain `ConversionFailure` path never
+emits. fd9cdd5da (round 1) took the review's own zero-churn fix for the
+BLOCKER (D-SL-21/22/23: helpers public, `CppSizeToI64`, the import-line swap,
+the impl appended beside `Slice`, `require ... & Destroy`), fixed MAJOR 2
+(hardening (a), `fail_void_members`) and MAJOR 3 (hardening (b),
+`noncopyable_element_is_a_class`), reworded the gap row to "PASS pending the
+hosted conformance run of record" (MAJOR 4, incompletely — below), and folded
+MINOR 5-9 (`ConsumeStatic` only; `{T*, size_t}` wording and the pins;
+`Core.Print(Cpp.SumSpan(v))` with EXPECT `10 6 12`; the precedent cited and
+the fallback comment dropped; the note prediction dropped). The focused
+re-review of fd9cdd5da returned APPROVE-WITH-FIXES — 2 MAJOR, 3 MINOR. MAJOR
+1: round 1's root-cause story for the unfilled impls/cpp_contiguous_range
+.carbon — `unsigned long` → `Core.CppCompat.ULong64` on "every 64-bit target",
+absent from the primitives min-prelude, hence the result-type CHECK — was
+FALSE and had been written into seven records, inverting the golden's correct
+original "`--target` pins `unsigned long` to `u64`": `MapBuiltinIntegerType`
+maps the target's `uint64_t` first and on x86_64-linux-gnu that is `unsigned
+long` (`X86_64TargetInfo` `Int64Type = SignedLong`; the upstream goldens
+long_and_long_long.{lp64,darwin,llp64}.carbon pin `u64`/`ULong64`/`ULong32`
+respectively), so the CHECK never ran on the hosted runner and the crash was
+unexplained. MAJOR 2: the row's status cell still read DONE and the header
+still counted 29 / 22 / 4 / 1 (the original MAJOR 4 not addressed). MINOR 3:
+`no_size.h`'s `int* data();` would echo Clang's nullability warning into
+`fail_no_size`; MINOR 4: `SliceElementSatisfiesBound` should read `Slice`'s
+bindings with `GetOrEmpty`; MINOR 5: the deleted-copy-constructor consequence
+was recorded only in the decision log. 58c08be07 (round 2) read the harness
+and explained the silent golden (below), corrected the `size_t` story in all
+seven records to the per-target reading (plan §1.B/§7 R-9/hand-off, the
+round-1 note, W-056, the golden and prelude comments, slices.md), restored
+`unsigned long`/`.SizeType = u64` in the impls golden and gave its three
+`Test()` bodies dump ranges, put the gap row back to PARTIAL and the header to
+28 / 22 / 5 / 1 until the run of record, made `no_size.h`'s `data()`
+`_Nonnull`, switched to `GetOrEmpty`, and recorded the deleted-copy case in
+slices.md, W-056 and import.cpp (D-SL-24). The re-reviewer named the riskiest
+remaining edit "the one nobody made": the only positive golden exercising the
+synthesized witness in isolation had come back empty from a run that could
+not have reached the removed CHECK, and the first in-tree `require Self.(X)
+impls A & B` on a non-Self subject is arbitrated only by a fill.
+
+FILL-CAUGHT MISSES — review misses per R28(d), one per hosted round. Round 1
+(run 37356848697, fill 0790c7428 and its convergence pass 2c21f6e24; fix
+fd9cdd5da): 306 files moved for eight new goldens — core/prelude/types/cpp
+/slice.carbon failed to type-check (`ImplIsOrphan` at its :64, two
+`MissingImplInMemberAccess` for `Destroy` at :68/:69) and every golden that
+includes the full prelude carried the three errors in place of its SemIR.
+The orphan placement was DECIDABLE FROM THE TREE: `DiagnoseOrphanImpl`'s walk
+is thirty lines, impl/orphan.carbon:83-87 pins the identical shape, and
+`FindAssociatedImportIRs` states the reachability half — it was caught twice,
+by the hosted fill and by the implementation review running concurrently
+(R29(d) pipelining), and is a review miss of the plan-review class: the
+deviation from §2.B.9 was disclosed in one sentence of the W-056 notes and
+neither reviewer of record ran the orphan walk over it, because §2.B.9 stated
+a placement without stating the placement RULE (now D-SL-21 and a hand-off
+lesson). The `Destroy` requirement on the temporaries (D-SL-22) was decidable
+too — `BuildCustomWitness`'s TODO is in the tree — and the plan's §1.B.3
+sketch, which bounded nothing, was reviewed twice without it. Round 2 (run
+37362980320, fill 18e2165c1, and its convergence pass 37365683022, 0c9924049;
+fix 58c08be07): the fill matched every prediction — exactly the seven goldens
+that produce output filled, no pre-existing golden moved (§6.B's hedge that
+the check/lower slice goldens might renumber under the wider `ImplicitAs`
+import footprint did NOT fire: the impl's type structure `? as
+ImplicitAs(Slice(?))` is never a candidate for their queries), vector_view's
+`view` split shows `custom_witness (%Optional.f0c, %u64, %VectorLike.Data,
+%VectorLike.Size), @CppContiguousRange` with the `ImplicitAs(u64)` step
+resolving to uint.carbon's `UInt(From) as ImplicitAs(To)` over `FromUInt(u64)`,
+`noncopyable_element_is_a_class` shows `class_type @span`, the four `fail_`
+splits carry the predicted diagnostics and no nullability warning, and the
+convergence pass renumbered two Clang-echoed source lines in `CHECK:STDERR`
+(fail_export_slice :19 → :27, fail_span :12 → :20 — R26's shape: the
+inserted CHECK lines shift the source below them). The one miss of this round
+was a READING error, not a defect: impls/cpp_contiguous_range.carbon came
+back without CHECK lines from both fills, round 1 called it a crash and
+attributed it to the `ULong64` chain, and the attribution was false (the
+re-review's MAJOR 1). Root cause, read from the harness at round 2: the check
+component runs `--dump-sem-ir-ranges=only` (toolchain/testing/file_test.cpp
+`GetDefaultArgs`), the golden had no `//@dump-sem-ir-begin` range and none of
+its three splits produced a diagnostic, so stdout and stderr were empty and
+`FileTestAutoupdater` had nothing to write — a clean PASS of
+`AssertIsContiguous(Cpp.V)` and of `let _: ... .SizeType = u64 = Cpp.V` with
+`unsigned long size()`, which is POSITIVE evidence for `u64`; both runs ran
+1898 tests (1896 `.carbon` + 2 driver `.cpp`) with no `<test>: <error>` line
+and no `Stack dump:`, and the precedent cpp_range_for_iterate.carbon's
+positive splits are empty the same way. Lesson, in the hand-off notes: read
+"no CHECK lines" with the harness in hand — a crash shows as `Stack dump:`
+or `CHECK failure` and an abort before "Ran N tests", never as a quiet `.` —
+and give every positive split whose evidence must be visible a dump range.
+The round-1 code change the false story motivated (hardening (a)) stands on
+its own as a real ICE fix for `void` members. Round 3 (FILL_RUN, after
+58c08be07): predicted impls/cpp_contiguous_range.carbon only, now with its
+dump ranges showing the synthesized witness; everything else byte-identical.
+
+DEVIATIONS from the plan, each in fork/slices/plan.md's "Landed notes (SL-2,
+2026-10-05)": the prelude section was first landed in a new library and
+moved back beside `Slice` at round 1 — the landed layout keeps the helpers in
+core/prelude/types/cpp/slice.carbon as PUBLIC names (the §1.B.3 sketch said
+`private`) with the new `CppSizeToI64` interface, and the constraint reads
+`require Self.(DataType) impls CppDataPointer & Destroy; require
+Self.(SizeType) impls CppSizeToI64 & Destroy;` where the sketch had
+`CppDataPointer` and `ImplicitAs(u64)` unbounded by `Destroy`; the `Span`
+import arm tests the element bound without diagnosing (`SliceElementSatisfiesBound`,
+not in the plan) and propagates an already-diagnosed element error instead of
+`TypeExpr::None`; `LookupCppMemberWithResultType` declines on `void`; the
+static-extent golden names `std::span<int, 3>` through a header alias
+`IntSpan3` (the class/import/template.carbon `using Ai32 = A<int>` spelling)
+rather than `Cpp.std.span(i32, 3)`, since no golden instantiates a C++ class
+template with a non-type argument from Carbon; the impls golden's mock
+`data()` members return `_Nonnull` pointers (the primitives min-prelude has
+no `Optional`) and carry dump ranges; span.carbon gains
+`noncopyable_element_is_a_class`, fail_vector_view.carbon gains
+`fail_void_members`, vector_view.carbon has `view` and `nonnull_data`;
+`cpp_span_view` prints THREE values (`10 6 12`), not §5.B's two, and both
+programs carry a `static_assert` on `sizeof(std::span<const int>)`; eight
+golden files, not the "ten" the in-flight records counted; the §W9 paragraph
+of the gap analysis is corrected rather than merely stamped.
+
+VERIFICATION is hosted-only (the container's clang cannot build the
+toolchain; R28(b)). First autoupdate: run 37356848697, fill 0790c7428 (306
+files: the broken prelude) and its convergence pass 2c21f6e24 (40 files,
+`.loc`-only). Second autoupdate (after fd9cdd5da): run 37362980320, fill
+18e2165c1 (the seven output-producing goldens, no pre-existing mover) and the
+convergence run 37365683022, 0c9924049 (two `CHECK:STDERR` line numbers).
+Third autoupdate (after 58c08be07): run FILL_RUN (impls/cpp_contiguous_range
+.carbon's dump ranges). Gate: run GATE_RUN (prek, `bazel test //toolchain/...`;
+no new diagnostic kind, so the coverage test is unchanged). Conformance: run
+CONF_RUN, **CONF_NUMBERS** — expected 126 PASS / 0 FAIL / 22 SKIP over 148
+programs, 48/56 bullets ("Stdlib C++ interop: transparent non-owning
+contiguous container mapping (incl. owning->view)" SKIP → PASS, 2/2 programs),
+from the branch base READ FROM fork/conformance/out/scoreboard.json at
+9e5dd5f75 (last written by e76b8052f, generated 2026-10-05T17:37:12Z: 124
+PASS / 0 FAIL / 23 SKIP over 147 programs, 47/56); delta PASS +2 / SKIP −1 /
+total +1 as plan §5.B predicted, the D-SL-9 fallback (+1 / 0 / +1, PARTIAL)
+not taken; zero landed programs move (no landed program includes `<span>` or
+names `Slice`). Trunk meanwhile carries OV-3's 126 / 0 / 23 over 149 (47/56),
+so the of-record numbers on the trunk merge are the same delta over that
+base.
+
+RESIDUE, filed with blocked_by [] (ids: trunk's OV-3 discharge took
+W-117/W-118, as the ledger's `source` sentence assumed and the trunk checkout
+923c2f2af confirms, so W-119/W-120 stand): W-119 static-extent `std::span<T,
+N>` mapping — `std::span<T, 3>` imports as an ordinary class and no Carbon
+type exports to it (D-SL-8, D-SL-26; mechanism: a thunk-side conversion in the
+`std::initializer_list` style, or an `array(T, N)*`-keyed mapping); W-120 ADL
+`data`/`size` sources for `Core.CppContiguousRange` — a class whose
+contiguous access comes only from free `data(x)`/`size(x)` functions or a base
+class member lookup does not see gets no view (§1.B.3; the one-function
+`LookupCppUnqualified` second stage `BuildCppRangeForIterateWitness` already
+has), with the non-const-`size()`-beside-two-`data()` and the signed-`size()`
+shapes noted there. Not filed: "owning C++ container to Core.Slice view" —
+§8.5 files it only if the D-SL-9 fallback fires, and it did not (the chain
+resolved at the second fill; CONF_RUN is its arbiter at runtime); "array-value
+to slice conversion" (D-SL-2, SL-1's rule stands). Disclosed, not filed,
+because the mechanism it would file against is `BuildCopyWitness`'s
+pre-existing policy and not SL-2's: a `std::span<T>` over a C++ `T` with a
+deleted copy constructor maps to a `Core.Slice` whose element copies fail at
+the use site (D-SL-24; slices.md Interop, W-056 notes, import.cpp:1271-1280).
+
+PLAN §0.2 CORRECTIONS carried into the ledger (items 2, 7, 9 per §8.5): W-056's
+original evidence named only the IMPORT half of the mapping — the export half
+is `RecognizedTypeInfo::Slice` + type_mapping.cpp and the owning→view half is
+impl_lookup.cpp's synthesized-impl machinery (item 2); the `cpp_span_view`
+strawman's `Cpp.SumSpan(a)` on an array VALUE and `v.AsSlice()` on an imported
+class were rewritten per D-SL-2 and D-SL-9 and disclosed in the program's
+header (item 7); the mapping needed an element-type payload on
+`CustomCppTypeMapping` and excludes static extents (item 9). W-056's two
+stale citations (`cpp_span_view.carbon:6` → :10; `custom_type_mapping.cpp
+:92-104` → the landed :105-139) were corrected at the SL-1 discharge and the
+landing. The gap analysis's §W9 paragraph now reads both halves as landed;
+String and Optional remain.
+
+_V-3a divergence-risk register entries (reviewed at each upstream merge):_
+upstream maps `std::string_view` ↔ `str` only (custom_type_mapping.cpp's
+`StdStringView`; interoperability/README.md's TODO named `std::span` as
+future work) and has no `Slice` class, no `RecognizedTypeInfo::Slice`, no
+`CoreInterface::CppContiguousRange` — the `Span` mapping kind, the export arm,
+the synthesized interface and both prelude interop sections are fork-local.
+If upstream names its slice type or maps `std::span` to it, D-SL-8 renames
+with the layout premise unchanged; if upstream synthesizes contiguous-range
+access another way (a concept-driven import, or an ADL stage), D-SL-9's
+witness follows it and W-120 closes; D-SL-21 applies upstream's own orphan
+rule and is a fork convention, not a divergence; if upstream's C++ `Copy`
+import declines deleted copy constructors, D-SL-24's sentence flips. Veto-able.
+
 ### SL-2 round-1 note: the prelude interop impl was an orphan (2026-10-05)
 
 The first hosted autoupdate of SL-2 (run 37356848697, fill 0790c7428 on

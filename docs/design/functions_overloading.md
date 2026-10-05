@@ -373,7 +373,8 @@ gate and the gate's golden in the same commit:
     its implementation file — LIFTED at OV-2 (the set is imported whole);
 -   (viii) C++ lookup of a Carbon set (export) — LIFTED at OV-3 (every
     exportable member is exported; a member whose signature has no C++
-    mapping is omitted after the per-function semantics TODO);
+    mapping is omitted after the per-function semantics TODO, which rejects
+    the unit until the member maps);
 -   (ix) a marked declaration directly in an `interface` body;
 -   (x) members that disagree on whether they declare `self`;
 -   (xi) a call with a template-dependent argument;
@@ -808,7 +809,11 @@ landed as specified — C++ name lookup of a set's name
 (`toolchain/check/cpp/generate_ast.cpp`) exports every member through the
 per-function export path and hands Clang the exportable members as one
 overload set; the semantics TODO the per-function path emits for an
-unmappable member names the omission (golden
+unmappable member names the omission — and, being an error, rejects the
+unit until that member maps, so "C++ sees a subset" describes the
+declarations Clang is handed, not a callable program; what the subset buys
+is that the TODO is the only diagnostic, with no "no member named" cascade
+(golden
 `toolchain/check/testdata/interop/cpp/function/export/overload_set.carbon`,
 `fail_todo_partial_export`). Until OV-3, C++ lookup of any Carbon set was
 D-OV-6 gate (viii), a semantics TODO ("overload set export"), deleted with its

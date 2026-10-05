@@ -286,3 +286,31 @@ here.
     runs concurrently with reviews (a refill after a fix is free). (e) Kill
     detection: a review agent whose output is silent for over an hour is
     dead — relaunch, do not wait. (Origin: owner directives, 2026-09-27.)
+-   **R30. Bidirectional assertions: a conformance program that pins a
+    documented divergence between Carbon and C++ semantics asserts BOTH
+    sides' results in one program, and never carries a `.diff.cpp` oracle
+    that would make the two agree.** An exported Carbon `overload fn` set is
+    resolved by Carbon callers by declaration-order first-match and by C++
+    callers under C++'s best-viable-match rules (fork decision F-009), so the
+    same argument can select a different member on each side, or be rejected
+    by C++ where Carbon accepts it. That divergence is a documented property,
+    and a property is pinned by asserting it, not by averaging it away: the
+    program prints the Carbon-side selection and the C++-side selection (or
+    the C++-side rejection goes in a `fail_` golden) as separate EXPECT lines,
+    hand-derived from each side's own rules, and the header states the rule
+    that makes them differ. A `.diff.cpp` differential oracle is the wrong
+    instrument here by construction — it asserts that a C++ program and the
+    Carbon program agree, so it can only pass by hiding the divergence or
+    by not exercising it — and the agreeing direction needs no oracle either,
+    because its C++ side is already the oracle for its own lines. Discipline:
+    (a) every program that exercises an exported overload set asserts both
+    directions, the agreeing case and the diverging case in sibling programs
+    with cross-referencing headers; (b) no `.diff.cpp` sibling for either; (c)
+    a change that makes the diverging program's two sides agree is a design
+    change to F-009, recorded in the decision log before the EXPECT moves,
+    never a test fix. Precedent:
+    fork/conformance/programs/interop/cpp_export_overload_set_divergence.carbon
+    (Carbon 1, C++ 2) beside cpp_export_overload_set.carbon (1 2 2 1).
+    (Origin: the rule the overloading paper proposed and fork/overload/plan.md
+    §5.C.2 asked OV-3 to allocate at discharge under the next free number;
+    OV-3 discharge, 2026-10-05.)

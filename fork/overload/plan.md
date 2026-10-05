@@ -1134,7 +1134,13 @@ line shifts in the four shared files are now concrete (§6.A).
     omitted member serving as its note (amended 2026-09-27, review fold: rev
     B B2). Pinned by §4.C `partial_export` (one member with a parameter
     type that has no C++ mapping: predicted the TODO for that member, the
-    other member callable from C++).
+    other member callable from C++). _Amended 2026-10-05 (OV-3 landed
+    notes, D-OV-18):_ "the other member callable from C++" is false as
+    landed — the per-function `SemanticsTodo` is an error, so the unit is
+    rejected until the member maps; what holds is that the mappable members
+    are still delivered to Clang, so the TODO is the only diagnostic and no
+    "no member named" cascade follows (pin `fail_todo_partial_export`; the
+    TODO text is `failed to map C++ type to Carbon`).
 2.  **C++ resolves with C++ rules; the divergence is documented, not
     prevented** (F-009; paper :235-243, open question 3). No export-side
     coherence check. Each member's thunk symbol is its own mangled name
@@ -2710,3 +2716,140 @@ fc3a74dce, after 24cacacf3) refuted three predicted fills — import_class_scope
 autoupdate run 37331151699 (fill 657bbe634) matched every prediction in one
 pass. Gate 37333625063; conformance 37333428997: 121 PASS / 0 FAIL / 24 SKIP over 145, 46/56 bullets, against the
 expected 121 / 0 / 24 over 145, 46/56.
+
+## Landed notes (OV-3, 2026-10-05)
+
+OV-3 landed on claude/carbon-fork-0-1-ov3, cut from trunk ae157438d (OV-2
+and UN-2 merged): 13aa792bc (the generate_ast.cpp `OverloadSetValue` arm,
+goldens, conformance programs, ledger), 4033adc75 (docs: interop README
+overload-resolution section, design README placeholder, W-007 note), the
+hosted fill 88b863220, then 3a7bc00d3 (implementation-review fixes), with
+the refill of the fixer's cleared and new subfiles as the fill of record
+(FILL_RUN). Ledger, gap-analysis row and header, decision-log entry ("OV-3:
+overload-set export, documented divergence (2026-10-05)", D-OV-17..20) and
+rulebook R30 are the discharge commit. The overloading workstream is
+complete (§0.4). Deltas from this plan, honestly:
+
+-   **R-10 FIRED; D-OV-9's fallback applied (D-OV-17).** The per-member
+    Carbon thunk is a generated function, not a set member, so D-OV-5's
+    `:overload<N>` marker never reached it: every member's thunk mangled
+    `_CF__carbon_thunk.Main`, and lower/file_context.cpp's name-keyed
+    `GetOrCreateFunction` early return would have handed member 0's thunk
+    to member 1's C++ declaration — the R-4 wrong-member call, silently.
+    §7 R-10's falsifier named "a `SemanticsTodo` or a Clang redeclaration
+    error"; the real symptom was neither — it was a symbol collision one
+    layer down, found by the implementer's trace, not by a fill (a filled
+    lower golden would have shown one `define` where two were predicted).
+    Fix: ONE additive hunk in export.cpp `BuildCarbonToCarbonThunk` sets the
+    thunk's `overload_index` to the member's, so the mangler keys it as it
+    keys the member (`_CF__carbon_thunk:overload<N>.Main`). The first cut
+    suffixed the thunk NAME with `__overload<N>` (identifier-spellable — a
+    user `fn F__carbon_thunk__overload1` would collide); the review's root
+    fix replaced it. §0.2 item 7's "touches NONE of W-007's three files" is
+    false by this hunk; thunk.cpp and type_mapping.cpp are untouched, and
+    the hunk landed after UN-2 merged, as D-OV-9 requires. §6.C's "source
+    files touched: 1" is 2.
+-   **§1.C.1's "the other member callable from C++" is FALSE (D-OV-18).**
+    The omitted member's note is a `SemanticsTodo`, which is an error, so
+    the unit is rejected; nothing is callable from a rejected unit. What the
+    arm buys is narrower and true: the mappable members are still delivered
+    to Clang, so the TODO is the only diagnostic — `Carbon::F(7)` resolves
+    and no "no member named 'F'" cascade follows. §1.C.1 is amended in place
+    with a dated marker; §4.C's `partial_export` prediction ("a clean C++
+    call of the first") is corrected here, not in place.
+-   **The omitted-member TODO text and its pin.** The TODO is `failed to
+    map C++ type to Carbon` (export.cpp `BuildCppToCarbonThunkFunctionType`,
+    the thunk-signature path that runs first — trunk's misnomer), not §4.C's
+    predicted `failed to map Carbon type to C++` (the later
+    `BuildCppFunctionDeclForNonGenericCarbonFn` path). The unmappable
+    parameter is a tuple `(i32, i32)`, not the plan's `choice`: a choice is
+    a `ClassType` that `TryMapClassType` exports as a C++ class, so it is
+    not unmappable.
+-   **Subfile naming.** §4.C's `partial_export` is `fail_todo_partial_export`
+    — file_test requires `fail_` on an erroring subfile — and the review
+    added `fail_todo_generic_class_set`, so §4.C's "`fail_todo_...`: none" is
+    off by two.
+-   **What the check golden can pin.** §4.C predicted "the `imports` block
+    showing both exported thunks (asm labels ...)"; a
+    `--dump-sem-ir-ranges=only` golden dumps only the bracketed ranges and
+    the exported thunks are generated functions outside them. The check
+    golden therefore pins the Carbon side's selections (the committed
+    callee is a `name_ref F, %F.decl.loc<N>` retargeted at the chosen
+    member: `F(7)` → the `i64` member, `F(true)` → the `bool` member,
+    `Pick(n)` → the `i64` member with the `i32 → i64` conversion visible)
+    and the diagnostics; the lower twin pins the C++ side's callee symbols
+    (the two different `_CPick:overload<N>.Main` callees in one golden).
+-   **A sibling golden the plan did not list.** overload_set_ast.carbon
+    (`--dump-cpp-ast`, the thunk_ast.carbon precedent; subfiles
+    overload_set and method_set) pins what Clang is handed: two same-named
+    `FunctionDecl`s in `namespace Carbon`, or two `CXXMethodDecl`s of the
+    exported class, lvalue-ref-qualified (`&`) for `ref self` members, each
+    with its own `_CF__carbon_thunk:overload<N>` asm label. Review MINOR 3:
+    `method_set`'s C++-side claims had been pinned only by "it compiled".
+-   **`method_set` in both goldens (extra).** Members in class scope export
+    as C++ member-function overloads of the exported class (`Acc.Add(i32)` /
+    `Acc.Add(bool)`, `a.Add(1); a.Add(true)` calling different members
+    behind `_CAdd:overload<N>.Acc.Main` and
+    `_CAdd__carbon_thunk:overload<N>.Acc.Main`); §4.C listed no class-scope
+    shape.
+-   **Generic-class sets (D-OV-20, W-117).** A set in a generic class
+    reached through `Carbon::Box<int>` hits export.cpp's generic-member
+    TODO once PER MEMBER, then the empty list is the single-function "no
+    declarations" outcome and Clang reports the missing member. Pinned
+    (`fail_todo_generic_class_set`), filed, not deduped.
+-   **Spellings to working syntax (R3).** `7L` for the exact `long` match
+    (a plain `7` is ambiguous under C++ rules — §4.C rev B B9 holds, and
+    `fail_cpp_ambiguous` pins it with Clang's exact text, "call to 'F' is
+    ambiguous [CppInteropParseError]" plus two `candidate function` notes);
+    `unused` on every unused runtime binding; the conformance programs seed
+    runtime values through `RuntimeSeed` so nothing constant-folds.
+-   **Residue the review added (filed at discharge, blocked_by [], ids
+    PROVISIONAL):** this branch's ledger max is W-107 (trunk's) and the
+    slices branch brings W-108..W-116, so OV-3 allocates W-117 (generic-class
+    sets: one TODO per member, no export) and W-118 (two members with one
+    C++ signature — `Core.CppCompat.Long64` beside `i64` on LP64, `Core.Char`
+    beside the char-literal type — ambiguous at every C++ call; the
+    `hasSameType` belt not added). The orchestrator renumbers at merge if
+    they collide. No other §8.5 item fired.
+-   **Scoreboard base.** The base of record is origin/trunk's
+    fork/conformance/out/scoreboard.json after the OV-2 merge (18410df07):
+    121 PASS / 0 FAIL / 24 SKIP over 145, 46/56 bullets — this branch's
+    in-tree copy is the same file. §5.C's delta (+2 PASS / 0 SKIP / +2
+    programs; the overloading bullet is already PASS) gives 123 / 0 / 24
+    over 147, 46/56. If SL-1 (slices) merges first, the base moves and the
+    of-record absolute on the trunk merge differs: the claim is the same +2
+    / 0 / +2 delta over the trunk base at merge.
+
+Reconciliation greps (§8.4), run at 3a7bc00d3:
+
+-   `grep -rn 'overload set export' toolchain`: ZERO hits — the
+    generate_ast.cpp TODO arm and fail_todo_export.carbon are gone. As
+    planned ("after OV-3 the export string is gone").
+-   `grep -rn 'overload set import' toolchain`: still ZERO (OV-2).
+-   The nine remaining gates are one site each: handle_function.cpp:422 (x),
+    :434 `self`-only, :855 (ix), :859 (xiii), :901 (iii), :908 (v), :918
+    (vi), call.cpp:452 (xii), :534 (xi), plus fail_todo_gates.carbon. OV-3
+    lifted none of them (none was in scope) and added no diagnostic kind, so
+    the kind.def / `CARBON_DIAGNOSTIC` / emit-site counts of OV-1 and OV-2
+    are unchanged.
+-   `grep -n DiscardCleanupsSince toolchain/check/call.cpp`: ONE hit (:504).
+-   `git diff ae157438d...HEAD --diff-filter=M -- toolchain/check/testdata
+    toolchain/lower/testdata toolchain/parse/testdata`: EMPTY. No
+    pre-existing golden moved (§6.C's zero-churn claim holds).
+-   `python3 fork/conformance/runner.py --self-test`: OK; 147 programs; the
+    two new rows are in the README table (`interop/cpp_export_overload_set`,
+    `interop/cpp_export_overload_set_divergence`, bullet "Functions: function
+    overloading (Carbon-native)", mode `run`).
+-   Ledger max id on this branch: W-107; W-117..W-118 allocated provisionally
+    (see above).
+
+Hosted verification of record (R28(b); the container cannot build the
+toolchain): first autoupdate (fill 88b863220) over 13aa792bc and 4033adc75,
+at fixpoint with the Clang-echoed source lines of `fail_cpp_ambiguous`
+included (those lines embed CHECK-stripped line numbers, the R26 two-pass
+shape); the review's APPROVE-WITH-FIXES followed, and 3a7bc00d3 cleared the
+lower golden's CHECK lines (symbol change) and added overload_set_ast.carbon
+and `fail_todo_generic_class_set` with empty CHECK lines; second autoupdate
+FILL_RUN (the refill). Gate GATE_RUN; conformance CONF_RUN: CONF_NUMBERS,
+against the expected 123 / 0 / 24 over 147, 46/56 — or the same +2 / 0 / +2
+delta over the trunk base at merge if SL-1 lands first.

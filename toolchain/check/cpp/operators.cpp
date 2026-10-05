@@ -423,12 +423,13 @@ static auto LookupCppConversion(Context& context, SemIR::LocId loc_id,
             // up back here when attempting to convert the argument.
             continue;
           }
-          // Fork (SL-2 round 4): a constructor of a C++ class that maps to a
-          // Carbon type (`std::span<T>` -> `Core.Slice(T')`, `std::string_view`
-          // -> `str`; custom_type_mapping.h) is not a conversion Carbon can
-          // import. The class has no Carbon declaration of its own -- its
-          // `ClangDecl` inst is the mapped `ClassType` -- so importing the
-          // constructor would cast that inst to a `ClassDecl` (import.cpp
+          // Fork (SL-2 round 4, re-keyed round 5): a constructor of a C++
+          // class that the importer mapped to a Carbon type (`std::span<T>`
+          // -> `Core.Slice(T')`, `std::string_view` -> `str`;
+          // custom_type_mapping.h) is not a conversion Carbon can import. Such
+          // a specialization has no Carbon class declaration of its own -- its
+          // `ClangDecl` inst is the mapped type's `ClassType` -- so importing
+          // the constructor would cast that inst to a `ClassDecl` (import.cpp
           // `GetFunctionName`, an ICE) and then add the member to the prelude
           // class's scope. `std::span`'s range constructor is selected here
           // for every `std::vector<T>` -> `Core.Slice(const T')` conversion
@@ -436,9 +437,34 @@ static auto LookupCppConversion(Context& context, SemIR::LocId loc_id,
           // Carbon type's own impls (slice.carbon's blanket `ImplicitAs` over
           // the synthesized `CppContiguousRange` witness), which
           // `BuildUnaryOperator` consults when no C++ operator is found.
-          if (GetCustomCppTypeMapping(ctor->getParent()).kind !=
+          //
+          // The decision is the IMPORTER's, not the matcher's: `MapTagType`
+          // applies the `std::span` mapping only when the element type maps
+          // and satisfies `Slice`'s `Copy & Destroy` bound (import.cpp
+          // `LookupCustomRecordType`), and otherwise imports the
+          // specialization as an ordinary class (span.carbon's
+          // `noncopyable_element_is_a_class`), whose constructors import as
+          // they always did. So import the parent type first, which registers
+          // its `ClangDeclKey` either way, and decline only when the
+          // registered inst is not a `ClassDecl`. The matcher check in front
+          // keeps every unmapped class on the untouched path.
+          auto* parent = ctor->getParent();
+          if (GetCustomCppTypeMapping(parent).kind !=
               CustomCppTypeMapping::None) {
-            return SemIR::InstId::None;
+            auto parent_type = ImportCppType(
+                context, loc_id,
+                context.ast_context().getCanonicalTagType(parent));
+            if (parent_type.type_id == SemIR::ErrorInst::TypeId) {
+              // Already diagnosed while importing the parent (for `std::span`,
+              // its element type).
+              return SemIR::ErrorInst::InstId;
+            }
+            auto parent_inst_id =
+                LookupClangDeclInstId(context, SemIR::ClangDeclKey(parent));
+            if (!parent_inst_id.has_value() ||
+                !context.insts().Is<SemIR::ClassDecl>(parent_inst_id)) {
+              return SemIR::InstId::None;
+            }
           }
         }
 

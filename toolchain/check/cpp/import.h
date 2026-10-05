@@ -73,6 +73,16 @@ auto ImportCppConstantFromFile(Context& context, SemIR::LocId loc_id,
 auto ImportCppDecl(Context& context, SemIR::LocId loc_id,
                    SemIR::ClangDeclKey key) -> SemIR::InstId;
 
+// If the declaration identified by `key` was already mapped to an instruction,
+// returns that instruction (the variable's storage for a variable). Otherwise
+// returns `None`. A C++ class with a custom Carbon mapping (`std::span<T>` ->
+// `Core.Slice(T')`, `std::string_view` -> `str`; custom_type_mapping.h) maps
+// to the mapped Carbon type's inst, not to a `ClassDecl` of its own, which is
+// how a caller tells whether the importer applied the mapping to a given
+// specialization (fork, SL-2).
+auto LookupClangDeclInstId(Context& context, SemIR::ClangDeclKey key)
+    -> SemIR::InstId;
+
 // Imports a function declaration from Clang to Carbon. If successful, returns
 // the new Carbon function declaration `InstId`. If the declaration was already
 // imported, returns the mapped instruction.

@@ -3177,7 +3177,31 @@ slices.md, W-056 and import.cpp (D-SL-24). The re-reviewer named the riskiest
 remaining edit "the one nobody made": the only positive golden exercising the
 synthesized witness in isolation had come back empty from a run that could
 not have reached the removed CHECK, and the first in-tree `require Self.(X)
-impls A & B` on a non-Self subject is arbitrated only by a fill.
+impls A & B` on a non-Self subject is arbitrated only by a fill. The
+round-4 re-review (438f77b45 on 76c695db4, read against the fill b89020c8a)
+returned APPROVE-WITH-FIXES — HIGH, MEDIUM, LOW — and round 5 folds all
+three. HIGH: vector_view_span.carbon never selected the range constructor —
+both splits convert a parameter binding, a Carbon value invented as a C++
+prvalue (`InventPrimitiveClangArg`), which the mock's `R&` cannot bind, so
+`InitializationSequence` failed and the lookup declined before the gate; the
+fill's CHECK lines were the pre-gate output and the golden passes on
+76c695db4 unchanged. Round 5: the mock takes the real header's `R&&`, a
+`var_source` split carries the conformance program's lvalue category, CHECK
+lines cleared. MEDIUM: the gate keyed on the matcher
+(`GetCustomCppTypeMapping`) while the importer applies the `std::span`
+mapping conditionally (`LookupCustomRecordType`: unmappable element, or one
+outside `Slice`'s bound, imports as an ordinary class), so for
+span.carbon's `NoCopySpan` shape — a `ClassDecl` parent, the pre-round-4
+import fine — the gate turned a working conversion into "cannot implicitly
+convert". Round 5: the gate imports the parent type (registering its
+`ClangDeclKey` either way) and declines iff the registered inst is not a
+`ClassDecl` (`LookupClangDeclInstId`, declared in import.h); new split
+`noncopyable_element_class_constructor` (`VecLike<Carbon::NoCopy>` →
+`Cpp.NoCopySpan`, predicted to import and call the constructor). LOW: the
+"no Carbon declaration owns such a member" wording narrowed, above. The
+re-reviewer named the riskiest edit the gate itself — the only change that
+meets the real `<span>` header, and until round 5 exercised only by the
+hosted conformance run.
 
 FILL-CAUGHT MISSES — review misses per R28(d), one per hosted round. Round 1
 (run 37356848697, fill 0790c7428 and its convergence pass 2c21f6e24; fix
@@ -3267,9 +3291,10 @@ range constructor are all readable) and a review miss of the fixture class:
 every golden mocks the container in a header WITHOUT `std::span`, so the C++
 map was null and Clang never ran; §7's R-11 named `<span>` under `-std=c++20`
 as CONF_RUN-arbitrated without naming the conversion-lookup interaction.
-Fix: `LookupCppConversion` declines constructors of custom-mapped classes
-(no Carbon declaration owns such a member; the conversion is the prelude's
-by design, D-SL-9) and falls through to the blanket impl;
+Fix: `LookupCppConversion` declines constructors of a class whose
+`ClangDecl` inst is the mapped Carbon type rather than a `ClassDecl` (round
+5 narrowed this from "custom-mapped classes", the matcher; the conversion is
+the prelude's by design, D-SL-9) and falls through to the blanket impl;
 stdlib/vector_view_span.carbon (the mock `span` WITH the range constructor,
 a `VecLike<T>` template through `VecLikeInt`, splits `view` and `argument`)
 pins it. (b) cpp_span_roundtrip_diff: `2 / -724362768 / 18`. The size
@@ -3334,7 +3359,9 @@ Third autoupdate (after 58c08be07): run 37367343836 HUNG in the file_test
 step and was cancelled (W-121). Fourth autoupdate (after the round-3 commit):
 run FILL_RUN (impls/cpp_contiguous_range.carbon's one dump range, plus the
 round-4 goldens stdlib/vector_view_span.carbon and
-array/mixed_constant_init.carbon). Gate: run GATE_RUN (prek, `bazel test //toolchain/...`;
+array/mixed_constant_init.carbon; the round-4 fill b89020c8a filled
+vector_view_span.carbon without reaching the gate, so the fill after round
+5 rewrites that file's four ranges and nothing else). Gate: run GATE_RUN (prek, `bazel test //toolchain/...`;
 no new diagnostic kind, so the coverage test is unchanged). Conformance: the
 first of-record run, 37378790657 on 76c695db4 (the trunk merge), FAILED both
 new programs — cpp_span_view COMPILE-FAIL (exit -6, the `ClassDecl` cast

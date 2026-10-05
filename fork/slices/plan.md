@@ -2453,9 +2453,11 @@ Zero landed programs move (no landed program includes `<span>` or names
     `ClassDecl` -- to `ClassDecl`. No golden reached the path: every
     container mock sits in a header WITHOUT `std::span`, so the C++ map is
     null and the lookup declines before Clang runs. Fix at the root:
-    `LookupCppConversion` declines every constructor of a class with a
-    custom Carbon mapping (`std::span`, `std::string_view`; the mapped
-    class has no Carbon declaration to own a member), and
+    `LookupCppConversion` declines every constructor of a class whose
+    `ClangDecl` inst is the mapped Carbon type rather than a `ClassDecl`
+    (`std::span<T>` when the importer maps it, `std::string_view`; round 5
+    narrowed this from "a class with a custom Carbon mapping", the
+    matcher), and
     `BuildUnaryOperator` falls through to the prelude's blanket impl as
     D-SL-9 designs. New golden stdlib/vector_view_span.carbon: the mock
     `span` WITH the range constructor plus a `VecLike<T>` class template
@@ -2485,6 +2487,43 @@ Zero landed programs move (no landed program includes `<span>` or names
     were 126 PASS / 2 FAIL / 22 SKIP over 150 (bullets 47 / 1 / 8), every
     landed program unmoved; the next of-record run must show 128 PASS /
     0 FAIL / 22 SKIP over 150, 48/56 bullets.
+-   **Amended 2026-10-05 (SL-2 round 5, after the round-4 re-review,
+    APPROVE-WITH-FIXES: HIGH, MEDIUM, LOW; no hosted run between).** (HIGH)
+    vector_view_span.carbon never reached the gate it pins: both splits
+    convert a PARAMETER binding `v`, a Carbon value that
+    `InventPrimitiveClangArg` invents as a C++ prvalue, and the round-4
+    mock's range constructor took `R&`, which cannot bind one -- so
+    `InitializationSequence` failed, `LookupCppConversion` declined before
+    the step loop, and the fill b89020c8a showed the blanket impl for the
+    wrong reason (the golden passes on 76c695db4 unchanged). The mock now
+    takes the real header's forwarding reference `R&&`, the file gains
+    `var_source` (`var v: Cpp.VecLikeInt = Cpp.MakeVecLike();`, the
+    conformance program's lvalue category), and every CHECK line is
+    cleared. By reading: on 76c695db4, `view`, `var_source` and `argument`
+    now select the range constructor and ICE in `GetFunctionName`'s
+    `GetAs<ClassDecl>`; with the gate they fall through to the blanket
+    impl. (MEDIUM) The gate keyed on the MATCHER
+    (`GetCustomCppTypeMapping(parent).kind != None`), but the importer
+    applies the mapping conditionally: `LookupCustomRecordType` imports
+    `std::span<T>` as an ordinary class when `T` is unmappable or fails
+    `Slice`'s `Copy & Destroy` bound (span.carbon's `NoCopySpan`), and for
+    that destination the constructor's parent IS a `ClassDecl` and the
+    pre-round-4 import was fine -- the gate turned a working conversion
+    into "cannot implicitly convert" for every `std::span<S>` over a C++
+    class `S` (imported classes do not impl `Copy`). The gate now keys on
+    the importer's decision: when the matcher fires it imports the parent
+    type (`MapTagType` registers the `ClangDeclKey` either way) and
+    declines iff the registered inst is not a `ClassDecl`
+    (`LookupClangDeclInstId`, now declared in import.h); an
+    already-diagnosed parent returns the error inst, and unmapped classes
+    never enter the branch (no existing golden can move). New split
+    `noncopyable_element_class_constructor`: `VecLike<Carbon::NoCopy>` ->
+    `Cpp.NoCopySpan`, predicted to import and call the range constructor
+    (impls/as.carbon's `Dest2__carbon_thunk` shape), as before round 4.
+    (LOW) This amendment's and the decision log's "no Carbon declaration"
+    wording narrowed to the registered inst's kind. No conformance program
+    moves (both already take the mapped path); the next fill rewrites
+    vector_view_span.carbon's four ranges and nothing else.
 -   Out-of-class impls (`IndexWith`, `ImplicitAs(Slice(const T))`, the
     §1.B.3 interop impl) touch public API only (`Data`, `Size`, `Get`,
     `UnsafeMake`); `Buf.AsSlice` uses `UnsafeMake`. If you reach for a
@@ -2887,6 +2926,18 @@ this plan, honestly:
     defects outside §7's list, recorded in the §6.A round-4 amendment:
     the conversion lookup importing `span`'s range constructor, and the
     mixed constant/runtime array initializer never storing its constants.
+-   **Round 5 (the round-4 re-review, APPROVE-WITH-FIXES; no hosted run
+    between).** The round-4 golden pinned nothing: a parameter source is a
+    C++ prvalue and the mock's `R&` range constructor could not bind it, so
+    the fill b89020c8a showed the blanket impl with the gate never reached
+    (its CHECK lines were the pre-gate output). The mock now takes `R&&` as
+    the real header does, a `var_source` split carries the conformance
+    program's lvalue category, and the gate keys on the importer's
+    registered inst (`ClassDecl` or not) instead of the matcher, which had
+    declined the constructors of `std::span<T>` specializations that import
+    as ordinary classes (`NoCopySpan`); pinned by a
+    `noncopyable_element_class_constructor` split (`VecLike<Carbon::NoCopy>`
+    -> `Cpp.NoCopySpan`). The hand-off amendment above has the mechanism.
 -   **§8.5 residue.** W-119 (static-extent `std::span` mapping) and W-120
     (ADL `data`/`size` sources) filed at the landing, blocked_by [], ids
     after OV-3's W-117/W-118 (confirmed against trunk 923c2f2af at
@@ -2945,5 +2996,8 @@ orphaned prelude impl) and its convergence pass 2c21f6e24 (40 files,
 convergence run 37365683022, 0c9924049 (two `CHECK:STDERR` line numbers);
 fix 58c08be07 (records and dump ranges; one `_Nonnull`, one `GetOrEmpty`).
 Third autoupdate, after 58c08be07: run FILL_RUN (impls/cpp_contiguous_range
-.carbon only); gate GATE_RUN; conformance CONF_RUN: CONF_NUMBERS, against the
-expected 126 / 0 / 22 over 148, 48/56 on this branch's base.
+.carbon only). The round-4 fill b89020c8a filled vector_view_span.carbon
+WITHOUT reaching the gate (round 5); the fill after round 5 rewrites that
+file's four ranges and nothing else. Gate GATE_RUN; conformance CONF_RUN:
+CONF_NUMBERS, against the expected 128 / 0 / 22 over 150, 48/56 on the
+merged trunk base (126 / 0 / 22 over 148 on this branch's own base).

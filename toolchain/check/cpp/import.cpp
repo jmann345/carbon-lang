@@ -454,7 +454,7 @@ static auto IsClangDeclImported(Context& context, SemIR::ClangDeclKey key)
 
 // If `decl` already mapped to an instruction, returns that instruction.
 // Otherwise returns `None`.
-static auto LookupClangDeclInstId(Context& context, SemIR::ClangDeclKey key)
+auto LookupClangDeclInstId(Context& context, SemIR::ClangDeclKey key)
     -> SemIR::InstId {
   const auto& clang_decls = context.clang_decls();
   if (auto context_clang_decl_id = clang_decls.LookupId(key);

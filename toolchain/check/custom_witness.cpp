@@ -143,6 +143,11 @@ static auto HasWitnessForOneField(
   return has_witness ? DestroyFormat::NonTrivial : DestroyFormat::NoDestroy;
 }
 
+// Defined below with the other impl-population scans.
+static auto HasClassKeyedImpl(Context& context, SemIR::ClassType class_type,
+                              SemIR::CoreInterface core_interface,
+                              bool outside_core_only) -> bool;
+
 // Returns true if `class_type` should impl `Destroy`. `query_is_symbolic` is
 // whether the QUERY constant is symbolic — the same
 // `query_self_const_id.is_symbolic()` fact `LookupDestroyWitness` branches on
@@ -165,6 +170,29 @@ static auto CanDestroyClass(
     return DestroyFormat::NoDestroy;
   }
 
+  // Fork (SL-1, fork/slices/plan.md R-12): a class that declares its own
+  // `Destroy` impl — in its body or out of class, concrete or `forall` over
+  // its own parameters, in this file or in its defining library — is
+  // destroyed by that impl, never by the synthesized witness. Impl lookup
+  // consults the custom witness FIRST and considers declared impls only when
+  // it declines (impl_lookup.cpp, `EvalLookupSingleFinalWitness`), so the
+  // yield is this `NoDestroy`: `LookupDestroyWitness` then answers `nullopt`
+  // and lookup selects the declared impl (`impl forall [T: Copy & Destroy]
+  // Buf(T) as Destroy` for `Buf(i32)`). The scan is keyed on the CLASS, not
+  // on `HasUserDestroyImpl`'s symbolic-self shortcut: a blanket `impl forall
+  // [T: type] T as Destroy` in scope must not disable the witness for every
+  // class. A `partial` self is excepted — the declared impl's self is the
+  // class type, which a `partial` query never matches, so a base subobject
+  // keeps the synthesized witness. An impl declared textually AFTER a
+  // concrete lookup in the same file is not seen by that lookup (the
+  // custom-witness result is not poison-tracked); the design's in-class
+  // spelling (classes.md) never hits this.
+  if (!is_partial &&
+      HasClassKeyedImpl(context, class_type, SemIR::CoreInterface::Destroy,
+                        /*outside_core_only=*/false)) {
+    return DestroyFormat::NoDestroy;
+  }
+
   // Fork (W-071 discharge, fork/b2/plan.md §2.2): a `choice` specific under a
   // symbolic query is destroyable, answered STRUCTURALLY rather than by the
   // object-repr field walk below. The justification is SF-6's per-specific
@@ -180,9 +208,10 @@ static auto CanDestroyClass(
   // `LookupDestroyWitness` declines to BUILD a witness for symbolic selves,
   // and each concrete monomorphization re-derives the real format from its
   // concrete fields (the S1 admitted-exception adapter shape — a payload
-  // adapter with a user `Core.Destroy` impl — is genuinely `NonTrivial`
-  // concretely, so a cached `Trivial` would be wrong for it). Concrete choice
-  // specifics take the unchanged field walk below.
+  // adapter with a user `Core.Destroy` impl — makes the concrete choice
+  // genuinely `NonTrivial`: the field walk finds the adapter's DECLARED
+  // witness through impl lookup, so a cached `Trivial` would be wrong for
+  // it). Concrete choice specifics take the unchanged field walk below.
   //
   // W-071 revisit note: this structural trust is valid exactly while SF-6's
   // per-specific allowlist holds and destroy-op synthesis stays a placeholder
@@ -415,16 +444,17 @@ static auto IsCoreInterfaceInFile(const SemIR::File& sem_ir,
 // without a structure match. Known same-file ordering hole: an impl textually
 // after the class's first clang completion is not yet in the local store when
 // this scan runs, where real lookup would poison and diagnose the
-// use-before-declaration — inert today because a predicate-trivial class's
-// destroy lookup is answered by the custom witness anyway and synthesized
-// destroy ops are no-op placeholders.
+// use-before-declaration.
 //
-// Today a user `Core.Destroy` impl on a class is inert (the custom witness
-// wins the lookup), so this scan is a forward-looking guard: it keeps a class
-// that declares destruction work — in its own file or in its defining
-// library — out of the trivially-destructible set before destroy-op
-// synthesis makes that work real, and keeps the exported record's triviality
-// identical across the defining and importing TUs.
+// This is the EXPORT predicate's scan, deliberately broader than the destroy
+// lookup's own yield (`CanDestroyClass` → `HasClassKeyedImpl`, which keys on
+// the class and ignores blanket impls): a class covered by any user `Destroy`
+// impl, blanket or class-keyed, declares destruction work and stays out of
+// the trivially-destructible set, so the exported record's triviality is
+// identical across the defining and importing TUs. Since SL-1 a class-keyed
+// user impl is selected by destroy lookup and its `Op` runs at scope exit;
+// the synthesized `Destroy.Op` of an AGGREGATE holding such a class is still
+// the placeholder (`MakeDestroyOpBody`), which runs no member destructors.
 static auto HasUserDestroyImpl(Context& context, const SemIR::Class& class_info,
                                SemIR::ConstantId self_const_id) -> bool {
   // The local store: impls declared in this file, plus any already
@@ -499,36 +529,42 @@ static auto HasUserDestroyImpl(Context& context, const SemIR::Class& class_info,
   return false;
 }
 
-// Returns true if an `impl` of `Core.Copy` declared outside package `Core`
-// covers the given class: an impl whose self is a `ClassType` of the same
-// class — concrete, or a symbolic specific of it (`impl forall [T] MyBox(T)
-// as Copy` covers a `MyBox(i32)` field). Class-keyed, deliberately NOT
-// `HasUserDestroyImpl`'s symbolic-self shortcut: the prelude declares several
-// blanket `Core.Copy` impls (`T*`, `const T`, `Int(N)`, `Optional(T)`, ...),
-// so "any symbolic-self impl in scope" would disqualify every class.
+// Returns true if a declared `impl` of the given core interface covers the
+// given class: an impl whose self is a `ClassType` of the same class —
+// concrete, or a symbolic specific of it (`impl forall [T] MyBox(T) as Copy`
+// covers a `MyBox(i32)` field; `impl as Destroy` inside `class Buf(T)` covers
+// `Buf(i32)`). Class-keyed, deliberately NOT `HasUserDestroyImpl`'s
+// symbolic-self shortcut: the prelude declares several blanket `Core.Copy`
+// impls (`T*`, `const T`, `Int(N)`, `Optional(T)`, ...), so "any
+// symbolic-self impl in scope" would disqualify every class.
 //
-// The package of the DECLARING file is the trust boundary (docs/design/
-// unions.md, "Trivially destructible and trivially copyable types", 0.1
-// note): the prelude's `Copy` impls over trivially destructible shapes are
-// bitwise by construction, so only impls declared by the program count as
-// user-provided, bodied or builtin alike. Walks the same two impl populations
-// as `HasUserDestroyImpl`: the local store, where an impl that import
-// materialized here (its first declaration has an import source; its
+// With `outside_core_only`, impls declared in package `Core` do not count —
+// the package of the DECLARING file is the trust boundary of the union field
+// rule (docs/design/unions.md, "Trivially destructible and trivially copyable
+// types", 0.1 note): the prelude's `Copy` impls over trivially destructible
+// shapes are bitwise by construction, so only impls declared by the program
+// count as user-provided, bodied or builtin alike. The destroy lookup's
+// yield (`CanDestroyClass`) passes false: the prelude's own `Core.Buf(T)`
+// frees its block through its declared impl. Walks the same two impl
+// populations as `HasUserDestroyImpl`: the local store, where an impl that
+// import materialized here (its first declaration has an import source; its
 // `parent_scope_id` is `None`, so a scope-based test would misclassify it)
 // is skipped because its defining file classifies it in the imported leg; and
 // every imported IR's store, matched in place by canonical defining
-// declaration.
-static auto HasUserCopyImplOutsideCore(Context& context,
-                                       SemIR::ClassType class_type) -> bool {
+// declaration — read-only, materializing nothing (`ImportImpl` would add
+// `import_ref`s to every file that destroys a class).
+static auto HasClassKeyedImpl(Context& context, SemIR::ClassType class_type,
+                              SemIR::CoreInterface core_interface,
+                              bool outside_core_only) -> bool {
   const auto& class_info = context.classes().Get(class_type.class_id);
 
-  // The local store: impls declared in this file. Nothing declared in package
-  // `Core` counts.
-  if (context.sem_ir().package_id() != PackageNameId::Core) {
+  // The local store: impls declared in this file.
+  if (!outside_core_only ||
+      context.sem_ir().package_id() != PackageNameId::Core) {
     for (auto [_, impl] : context.impls().enumerate()) {
       if (!impl.interface.interface_id.has_value() ||
           GetCoreInterface(context, impl.interface.interface_id) !=
-              SemIR::CoreInterface::Copy) {
+              core_interface) {
         continue;
       }
       if (context.insts().GetImportSource(impl.first_decl_id()).has_value()) {
@@ -558,19 +594,20 @@ static auto HasUserCopyImplOutsideCore(Context& context,
   auto class_canonical = SemIR::GetCanonicalFileAndInstId(
       &context.sem_ir(), class_info.first_owning_decl_id);
   for (const auto& import_ir : context.import_irs().values()) {
-    // Skips the `None` and `Cpp` slots; C++ code cannot declare a
-    // `Core.Copy` impl.
+    // Skips the `None` and `Cpp` slots; C++ code cannot declare an impl of a
+    // `Core` interface.
     if (import_ir.sem_ir == nullptr) {
       continue;
     }
     const auto& import_sem_ir = *import_ir.sem_ir;
-    if (import_sem_ir.package_id() == PackageNameId::Core) {
+    if (outside_core_only &&
+        import_sem_ir.package_id() == PackageNameId::Core) {
       // The prelude's impls are inside the trust boundary.
       continue;
     }
     for (auto [_, impl] : import_sem_ir.impls().enumerate()) {
       if (!IsCoreInterfaceInFile(import_sem_ir, impl.interface.interface_id,
-                                 SemIR::CoreInterface::Copy)) {
+                                 core_interface)) {
         continue;
       }
       auto impl_self_const_id =
@@ -615,7 +652,8 @@ auto HasNonTrivialUserCopyImpl(Context& context, SemIR::TypeId type_id)
       }
 
       case CARBON_KIND(SemIR::ClassType class_type): {
-        if (HasUserCopyImplOutsideCore(context, class_type)) {
+        if (HasClassKeyedImpl(context, class_type, SemIR::CoreInterface::Copy,
+                              /*outside_core_only=*/true)) {
           return true;
         }
         const auto& class_info = context.classes().Get(class_type.class_id);

@@ -1123,6 +1123,28 @@ precedent), the pins are marked best-effort in-file, no pre-existing CHECK
 line was touched, and the red-first runner autoupdate reconciliation
 (fork/autoupdate-request.txt refreshed) is the arbiter. Veto-able.
 
+_SL-1 round-2 note (2026-10-05), superseding "(3)" above in part:_ a
+user `Core.Destroy` impl is no longer inert. The SL-1 implementation review
+(fork/slices/plan.md §6.A amendment) found `Core.Buf(T)`'s in-class `impl
+as Destroy` was never selected — impl lookup consults the destroy custom
+witness first (check/impl_lookup.cpp `EvalLookupSingleFinalWitness`) and
+`CanDestroyClass` never looked for a declared impl — so every `Buf` leaked
+behind a synthesized `ret void`. Fixed at the root: `CanDestroyClass`
+answers `NoDestroy` for a class covered by a CLASS-KEYED declared `Destroy`
+impl (`HasClassKeyedImpl`, the union rule's `HasUserCopyImplOutsideCore`
+scan generalized over the interface and the `Core` trust boundary; blanket
+symbolic-self impls do not count, `partial` selves keep the synthesized
+witness), and impl lookup then selects the declared impl. `HasUserDestroyImpl`
+(the export predicate's scan, with its symbolic-self shortcut) is unchanged
+and now strictly broader than the lookup's yield, which keeps the exported
+record's triviality conservative. The "same-file ordering hole" stays as
+described (a lookup before a same-file out-of-class impl's declaration is
+answered by the synthesized witness; the design's in-class spelling never
+hits it). Synthesized AGGREGATE destroy ops remain the member-destruction
+placeholder (`MakeDestroyOpBody`) — residue W-105. Six existing goldens
+move (all those holding a user `Destroy` impl with a dumped or lowered
+destroy); the thunk-path goldens of this note do not.
+
 _F8c landing note (2026-08-18):_ the D3 fix of the approved F-008 plan
 (fork/f008/plan.md §2.3, §3 F8c). _Adjudication verdict (step 1, plan
 adjudication D, run 32079343005, 2026-08-17T23:11Z): H0 REFUTED — and the plan's pre-declared H0-mock-divergence

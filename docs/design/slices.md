@@ -218,9 +218,13 @@ A `Core.Buf(T)` owns one `malloc` block of `Size()` elements:
     `Set` (see [0.1 limits](#01-limits)).
 -   `AsSlice()` views the block; the view is valid while the `Buf` lives.
 -   The in-class `impl as Destroy` frees the block when the `Buf` goes out of
-    scope. Element destructors are **not** run (the element types are `Copy &
+    scope: the toolchain's destroy lookup selects a class's own declared
+    `Destroy` impl over the synthesized destructor it would otherwise build,
+    so a `Buf` local variable or temporary is freed exactly once at scope
+    exit. Element destructors are **not** run (the element types are `Copy &
     Destroy`; this mirrors what `Optional(T)` and `MaybeUnformed(T)` already
-    do).
+    do). A `Buf` held **inside** another object is not freed in 0.1 (see
+    [0.1 limits](#01-limits)).
 -   `Buf` is **not** `Copy`: `var c: Core.Buf(i32) = b;` is a compile-time
     error (`CopyOfUncopyableType`), never a double free. Passing a `Buf` to a
     by-value parameter does not copy it (value bindings of a non-`Copy` class
@@ -287,8 +291,18 @@ which it is removed:
     `Destructible` facets the toolchain lacks. Removed when explicit destroy
     calls or a `TrivialDestructor` facet, and an `Allocator` design, land;
     `Buf` then gains an allocator parameter defaulting to the global one.
+-   **A `Core.Buf` stored in a field is not freed.** A class, struct, tuple,
+    choice payload or array that holds a `Buf` destroys it through the
+    toolchain's synthesized destructor for aggregates, whose body is still a
+    placeholder that runs no member destructors; only a `Buf` that is itself a
+    local variable or a temporary runs `impl as Destroy` and frees its block.
+    Removed when destroy-op synthesis destroys members.
 -   **Over-aligned element types** (alignment above `max_align_t`) are not
     supported: `malloc` guarantees 16 bytes.
+-   **A byte count that overflows fails-stop.** `Make(size, fill)` computes
+    `size * sizeof(T)` with overflow detection (`llvm.umul.with.overflow`); a
+    count whose byte size does not fit in 64 bits takes the failed-allocation
+    path ("heap allocation failed") rather than allocating a wrapped size.
 -   **`var b: Core.Buf(i32);` is an error.** Removed when destroy becomes
     unformed-state-aware.
 -   **`Buf.Resize`/`Push` do not exist.** The design's "mutable size" names the

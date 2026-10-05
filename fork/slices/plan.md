@@ -789,7 +789,9 @@ rev B B1); `Buf.Resize`/`Push` (the design's "Mutable Size" is the
 STORAGE class, not an API promise, p004682:316); array-value → slice
 conversion (D-SL-2); comptime evaluation of slice reads (all four
 builtins are runtime-only; a constant `Core.Slice` never forms because
-`&a` of a local is not constant).
+`&a` of a local is not constant); freeing a `Buf` held in a FIELD of
+another type (synthesized aggregate destroy ops are the member-destruction
+placeholder — W-105; amended 2026-10-05, round-2 fix).
 
 ### §1.B SL-2 — `std::span` mapping and owning-container views
 
@@ -1591,6 +1593,59 @@ Zero landed programs move (no landed program includes `<span>` or names
     driver/testdata/stdin.carbon run `--no-prelude-import`. Two new
     `prelude/types/*` libraries cannot appear in any `import_ir` table, so a
     raw diff at fill is a STOP (§8.1), never a reconciliation.
+-   **Amended 2026-10-05 (round-2 fix after the implementation review;
+    R28(d): a review miss recorded in place) — SIX existing goldens
+    move, and this bullet's "none predicted" was wrong.** The review's
+    BLOCKER: `Buf(T)`'s `impl as Destroy` was dead code — impl lookup
+    consults the custom witness first (impl_lookup.cpp
+    `EvalLookupSingleFinalWitness`, "Only consider candidates when a
+    custom witness didn't apply") and `CanDestroyClass` never looked for
+    a declared impl, so the synthesized `ret void` placeholder won and
+    every `Buf` leaked while this plan, the docs and the goldens claimed
+    `free`. Decidable from the tree, like rev B B1 (decision-log W-021
+    note: "a user `Core.Destroy` impl is inert today"). Fix (a) of the
+    review, at the root: `CanDestroyClass` answers `NoDestroy` for a
+    class covered by a class-keyed declared `Destroy` impl
+    (`HasClassKeyedImpl`, the generalized former
+    `HasUserCopyImplOutsideCore`: local store plus every imported IR's
+    store, matched read-only by class / canonical defining declaration,
+    blanket symbolic-self impls ignored, `partial` selves excepted), so
+    `LookupDestroyWitness` returns `nullopt` and lookup selects the
+    declared impl. This makes EVERY in-tree user `Destroy` impl real, so
+    the goldens that hold one move (cleared to CHECK-free for the fill):
+    lower/testdata/var/param.carbon (the destroy of `%c.var` now calls
+    `@"_COp.C.Main:Destroy.Core"`; the `weak_odr` placeholder definition
+    and its DI entries vanish), lower/testdata/var/destroy_control_flow
+    .carbon (every `Destructible` destroy calls the user `fn Op(self)`
+    through its thunk; the `_COp.474c…` placeholder vanishes),
+    lower/testdata/function/overload/basic.carbon `destroy_arg` (the
+    temporary's destroy calls `@"_COp.D.Main:Destroy.Core"`),
+    lower/testdata/operators/question_generic.carbon `adapter_payload`
+    (`MyResult(Tag, i32)`'s field walk now finds `Tag`'s declared
+    witness, so the synthesized `_COp…` definition for `Tag` is no longer
+    built or emitted; the `MyResult`/`ControlFlow` placeholder calls on
+    the propagation path are unchanged — its comments are rewritten),
+    and the check twins check/testdata/var/destroy_control_flow.carbon
+    and check/testdata/function/overload/basic.carbon (`destroy_arg`:
+    the dumped `Destroy.Op.bound`/`call` reference the user impl's `Op`
+    instead of `@Destroy.Op.loc…` with the `"no_op"`/placeholder
+    definition). Predicted UNCHANGED although they hold a user impl:
+    check/testdata/interop/cpp/class/export/fail_atomic_of_nontrivial
+    _carbon_class.carbon and check/testdata/union/fail_nontrivial_field
+    .carbon (no dump ranges; diagnostics come from the export/union
+    predicates, which keep `HasUserDestroyImpl`), check/testdata/impl/
+    lookup/fail_poison_custom_witness.carbon (its impl is a blanket
+    `forall [T: type] T as Destroy`, not class-keyed), impl/custom_witness/
+    destroy.carbon and impl/lookup/impl_overlap_wrapped_types.carbon (no
+    user impl; `as Core.Destroy` appears only in expressions/dumps).
+    Prelude-wide: `Buf` is the only prelude class with a declared
+    `Destroy` impl (`grep -rn 'as Destroy' core/`), so no other prelude
+    type changes behavior. MINOR 2 of the same review (the
+    `heap.allocate` byte count wraps) is fixed in the lowering arm with
+    `llvm.umul.with.overflow.i64`, the wrap bit selecting a null result
+    (the prelude's existing fail-stop path); lower/testdata/builtins/
+    heap.carbon and slice/buf.carbon are CHECK-free, so no further golden
+    moves.
 -   **Builtin tables:** `CARBON_DEFINE_ENUM_CLASS_NAMES` and
     `ForBuiltinName` are generated; no golden prints the enum.
 -   **min_prelude parts:** unchanged (no test combines a part with
@@ -1799,7 +1854,19 @@ Zero landed programs move (no landed program includes `<span>` or names
     level that keeps `ptr` private (an out-of-class `impl forall [T] Buf(T) as
     Destroy` cannot read `self.ptr`, R-13) — a witness failure on the specific
     is a checker defect in the design's own destructor spelling (classes.md),
-    fixed in the same PR if one round, disclosed in the fold.
+    fixed in the same PR if one round, disclosed in the fold. **Amended
+    2026-10-05: the falsifier FIRED at the implementation review, not at
+    the fill, and was decidable from the tree** — the user impl inside the
+    generic class is well-formed, but no user `Destroy` impl was ever
+    SELECTED: the destroy custom witness preempted declared impls
+    (impl_lookup.cpp) and `CanDestroyClass` never looked for one. Fixed in
+    the same PR (one round) at the root — `CanDestroyClass` yields to a
+    class-keyed declared impl (§6.A amendment lists the six goldens that
+    move). The arbiters (check slice/buf.carbon `make_get_set`'s
+    `@Buf.as.Destroy.impl` call; lower slice/buf.carbon's `call void
+    @free` inside the destroy specific) now mean what their comments say.
+    New limit disclosed in slices.md: a `Buf` held in a FIELD is not freed
+    (aggregate destroy ops are still the member-destruction placeholder).
 -   **R-13 — private field access from an out-of-class impl.** Caught
     at planning (§1.A.2's paragraph): every out-of-class impl routes
     through `Data()`/`Size()`/`Get`/`UnsafeMake`. Falsifier: any
@@ -1978,6 +2045,28 @@ Zero landed programs move (no landed program includes `<span>` or names
     `IncompleteTypeInBuiltinCall` and `fail_incomplete_pointee` splits
     in both check goldens; both lower arms `CARBON_CHECK` `isSized()`.
     The B2 unwrapping shape stands unchanged.
+-   Amended 2026-10-05 after the implementation review (REJECT: one
+    BLOCKER, two MINOR): `Buf`'s `impl as Destroy` was never selected —
+    the destroy custom witness wins impl lookup unless it declines, and
+    `CanDestroyClass` did not decline for a class with a declared impl.
+    Root fix in check/custom_witness.cpp: `CanDestroyClass` returns
+    `NoDestroy` when `HasClassKeyedImpl(class, Destroy)` holds — the
+    class-keyed two-population scan generalized from the union rule's
+    `HasUserCopyImplOutsideCore` (NOT `HasUserDestroyImpl`'s symbolic-self
+    shortcut, which would let any blanket impl disable the witness for
+    every class); `partial` selves keep the synthesized witness (a
+    declared impl's self never matches `partial C`). Lookup then selects
+    `impl forall [T: Copy & Destroy] Buf(T) as Destroy`; `AddCleanups`
+    (control_flow.cpp) builds the `Destroy` unary operator on `%b.var`,
+    which binds the impl's `fn Op(ref self)` to the var storage (a user
+    `fn Op(self)` is adapted by the impl's signature thunk), and the
+    specific `Buf(i32).as.Destroy.impl.Op` lowers `HeapFree` to `call void
+    @free`. Six existing goldens move (§6.A amendment). `heap.allocate`
+    now multiplies with `llvm.umul.with.overflow.i64` and selects a null
+    block on wrap (MINOR 2). The W-055 ledger notes, slices.md and the
+    decision-log carry the same record; residue W-105 files the
+    member-held `Buf` leak (synthesized aggregate destroy ops run no
+    member destructors).
 -   Out-of-class impls (`IndexWith`, `ImplicitAs(Slice(const T))`, the
     §1.B.3 interop impl) touch public API only (`Data`, `Size`, `Get`,
     `UnsafeMake`); `Buf.AsSlice` uses `UnsafeMake`. If you reach for a

@@ -10,6 +10,7 @@
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Function.h"
+#include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
 #include "llvm/Support/Casting.h"
@@ -752,8 +753,19 @@ static auto HandleBuiltinCall(FunctionContext& context, SemIR::InstId inst_id,
                                .getDataLayout()
                                .getTypeAllocSize(elem_type)
                                .getFixedValue();
-      llvm::Value* bytes = context.builder().CreateMul(
-          count, llvm::ConstantInt::get(i64_type, elem_size), "heap.bytes");
+      // `count * sizeof(T)` with the wrap detected: a count whose byte size
+      // does not fit in `i64` must fail the allocation, not shrink it to the
+      // wrapped size and let the caller's fill loop write past the block. The
+      // overflow bit joins the null-`malloc` path (a null result), which the
+      // prelude turns into the "heap allocation failed" fail-stop
+      // (core/prelude/types/buf.carbon `Make`).
+      llvm::Value* mul = context.builder().CreateBinaryIntrinsic(
+          llvm::Intrinsic::umul_with_overflow, count,
+          llvm::ConstantInt::get(i64_type, elem_size), {}, "heap.bytes.mul");
+      llvm::Value* bytes =
+          context.builder().CreateExtractValue(mul, {0}, "heap.bytes");
+      llvm::Value* overflow =
+          context.builder().CreateExtractValue(mul, {1}, "heap.bytes.overflow");
       // `malloc(0)` may return null; a zero-length or zero-sized request still
       // yields a unique non-null block.
       llvm::Value* is_zero = context.builder().CreateICmpEQ(
@@ -766,8 +778,12 @@ static auto HandleBuiltinCall(FunctionContext& context, SemIR::InstId inst_id,
       llvm::FunctionCallee malloc_fn =
           context.llvm_module().getOrInsertFunction("malloc", ptr_type,
                                                     i64_type);
-      context.SetLocal(inst_id, context.builder().CreateCall(malloc_fn, {bytes},
-                                                             "heap.block"));
+      llvm::Value* block =
+          context.builder().CreateCall(malloc_fn, {bytes}, "heap.block");
+      context.SetLocal(inst_id,
+                       context.builder().CreateSelect(
+                           overflow, llvm::ConstantPointerNull::get(ptr_type),
+                           block, "heap.result"));
       return;
     }
 

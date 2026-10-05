@@ -26,23 +26,46 @@ library "[[@TEST_NAME]]";
 import Cpp;
 
 union Wide {
+  // CHECK:STDERR: exported.carbon:[[@LINE+4]]:7: error: union field `lo` has type `i32`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var lo: i32;
+  // CHECK:STDERR:       ^~~~~~~
+  // CHECK:STDERR:
   var lo: i32;
+  // CHECK:STDERR: exported.carbon:[[@LINE+4]]:7: error: union field `both` has type `i64`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var both: i64;
+  // CHECK:STDERR:       ^~~~~~~~~
+  // CHECK:STDERR:
   var both: i64;
   fn Low(self) -> i32 { return self.lo; }
 }
 
 inline Cpp '''
 static_assert(__is_union(Carbon::Wide), "kind");
+// CHECK:STDERR: exported.carbon:[[@LINE+7]]:15: error: static assertion failed due to requirement 'sizeof(Carbon::Wide) == 8': layout [CppInteropParseError]
+// CHECK:STDERR:    12 | static_assert(sizeof(Carbon::Wide) == 8 && alignof(Carbon::Wide) == 8,
+// CHECK:STDERR:       |               ^~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: exported.carbon:[[@LINE+4]]:36: note: expression evaluates to '0 == 8' [CppInteropParseNote]
+// CHECK:STDERR:    12 | static_assert(sizeof(Carbon::Wide) == 8 && alignof(Carbon::Wide) == 8,
+// CHECK:STDERR:       |               ~~~~~~~~~~~~~~~~~~~~~^~~~
+// CHECK:STDERR:
 static_assert(sizeof(Carbon::Wide) == 8 && alignof(Carbon::Wide) == 8,
               "layout");
 
 int Use(Carbon::Wide* w) {
+  // CHECK:STDERR: exported.carbon:[[@LINE+4]]:6: error: no member named 'lo' in 'Carbon::Wide' [CppInteropParseError]
+  // CHECK:STDERR:    16 |   w->lo = 3;
+  // CHECK:STDERR:       |   ~  ^
+  // CHECK:STDERR:
   w->lo = 3;
   return w->Low();
 }
 
 Carbon::Wide MakeWide(int v) {
   Carbon::Wide w;
+  // CHECK:STDERR: exported.carbon:[[@LINE+4]]:5: error: no member named 'lo' in 'Carbon::Wide' [CppInteropParseError]
+  // CHECK:STDERR:    22 |   w.lo = v;
+  // CHECK:STDERR:       |   ~ ^
+  // CHECK:STDERR:
   w.lo = v;
   return w;
 }
@@ -62,7 +85,15 @@ import Cpp;
 // The union as a C++ name scope (`Carbon::Wide::Zero`), the entry the UN-1
 // placeholder guarded in `ExportNameScopeToCpp`.
 union Wide {
+  // CHECK:STDERR: static_method.carbon:[[@LINE+4]]:7: error: union field `lo` has type `i32`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var lo: i32;
+  // CHECK:STDERR:       ^~~~~~~
+  // CHECK:STDERR:
   var lo: i32;
+  // CHECK:STDERR: static_method.carbon:[[@LINE+4]]:7: error: union field `both` has type `i64`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var both: i64;
+  // CHECK:STDERR:       ^~~~~~~~~
+  // CHECK:STDERR:
   var both: i64;
   fn Zero() -> i32 { return 0; }
 }
@@ -84,14 +115,12 @@ fn F() -> i32 {
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
-// CHECK:STDOUT:   %i32.builtin: type = int_type signed, %int_32 [concrete]
-// CHECK:STDOUT:   %int_64: Core.IntLiteral = int_value 64 [concrete]
-// CHECK:STDOUT:   %i64: type = class_type @Int, @Int(%int_64) [concrete]
-// CHECK:STDOUT:   %i64.builtin: type = int_type signed, %int_64 [concrete]
 // CHECK:STDOUT:   %pattern_type.f3d: type = pattern_type %Wide [concrete]
-// CHECK:STDOUT:   %.54e: type = custom_layout_type {size=8, align=8, .lo@0: %i32, .both@0: %i64} [concrete]
 // CHECK:STDOUT:   %T.67d: type = symbolic_binding T, 0 [symbolic]
 // CHECK:STDOUT:   %ptr.e8f: type = ptr_type %T.67d [symbolic]
+// CHECK:STDOUT:   %Destroy.type: type = facet_type <@Destroy> [concrete]
+// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.1: type = fn_type @Destroy.Op.loc4 [concrete]
+// CHECK:STDOUT:   %Destroy.Op.1a2547.1: %Destroy.Op.type.1d8f74.1 = struct_value () [concrete]
 // CHECK:STDOUT:   %w.patt.f4a: %pattern_type.f3d = ref_binding_pattern w [concrete]
 // CHECK:STDOUT:   %w.var_patt: %pattern_type.f3d = var_pattern %w.patt.f4a [concrete]
 // CHECK:STDOUT:   %MakeWide.cpp_overload_set.type: type = cpp_overload_set_type @MakeWide.cpp_overload_set [concrete]
@@ -118,16 +147,15 @@ fn F() -> i32 {
 // CHECK:STDOUT:   %Use.cpp_overload_set.value: %Use.cpp_overload_set.type = cpp_overload_set_value @Use.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %OptionalStorage.type: type = facet_type <@OptionalStorage> [concrete]
 // CHECK:STDOUT:   %T.220: %OptionalStorage.type = symbolic_binding T, 0 [symbolic]
-// CHECK:STDOUT:   %Destroy.type: type = facet_type <@Destroy> [concrete]
 // CHECK:STDOUT:   %Destroy.lookup_impl_witness.781: <witness> = lookup_impl_witness %ptr.e8f, @Destroy [symbolic]
 // CHECK:STDOUT:   %Destroy.facet.e46: %Destroy.type = facet_value %ptr.e8f, (%Destroy.lookup_impl_witness.781) [symbolic]
 // CHECK:STDOUT:   %MaybeUnformed.ddb: type = class_type @MaybeUnformed, @MaybeUnformed(%Destroy.facet.e46) [symbolic]
 // CHECK:STDOUT:   %ptr.as.OptionalStorage.impl.Some.type.71e: type = fn_type @ptr.as.OptionalStorage.impl.Some, @ptr.as.OptionalStorage.impl(%T.67d) [symbolic]
 // CHECK:STDOUT:   %ptr.as.OptionalStorage.impl.Some.caa: %ptr.as.OptionalStorage.impl.Some.type.71e = struct_value () [symbolic]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.1: type = fn_type @Destroy.Op.1 [concrete]
-// CHECK:STDOUT:   %Destroy.Op.1a2547.1: %Destroy.Op.type.1d8f74.1 = struct_value () [concrete]
-// CHECK:STDOUT:   %custom_witness.df9cc1.1: <witness> = custom_witness (%Destroy.Op.1a2547.1), @Destroy [concrete]
-// CHECK:STDOUT:   %Destroy.facet.bf3: %Destroy.type = facet_value %ptr.567, (%custom_witness.df9cc1.1) [concrete]
+// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.2: type = fn_type @Destroy.Op.1 [concrete]
+// CHECK:STDOUT:   %Destroy.Op.1a2547.2: %Destroy.Op.type.1d8f74.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %custom_witness.df9cc1.2: <witness> = custom_witness (%Destroy.Op.1a2547.2), @Destroy [concrete]
+// CHECK:STDOUT:   %Destroy.facet.bf3: %Destroy.type = facet_value %ptr.567, (%custom_witness.df9cc1.2) [concrete]
 // CHECK:STDOUT:   %MaybeUnformed.e77: type = class_type @MaybeUnformed, @MaybeUnformed(%Destroy.facet.bf3) [concrete]
 // CHECK:STDOUT:   %OptionalStorage.impl_witness.6cd: <witness> = impl_witness imports.%OptionalStorage.impl_witness_table.110, @ptr.as.OptionalStorage.impl(%Wide) [concrete]
 // CHECK:STDOUT:   %.d0e: type = maybe_unformed_type %ptr.567 [concrete]
@@ -152,10 +180,8 @@ fn F() -> i32 {
 // CHECK:STDOUT:   %ImplicitAs.WithSelf.Convert.type.4e5: type = fn_type @ImplicitAs.WithSelf.Convert, @ImplicitAs.WithSelf(%Optional.738, %ImplicitAs.facet.369) [concrete]
 // CHECK:STDOUT:   %.4dd: type = fn_type_with_self_type %ImplicitAs.WithSelf.Convert.type.4e5, %ImplicitAs.facet.369 [concrete]
 // CHECK:STDOUT:   %U.as_type.as.ImplicitAs.impl.Convert.specific_fn: <specific function> = specific_function %U.as_type.as.ImplicitAs.impl.Convert.6e6, @U.as_type.as.ImplicitAs.impl.Convert.2(%OptionalStorage.facet.bad, %OptionalAs.facet) [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.4: type = fn_type @Destroy.Op.loc30_18.3 [concrete]
-// CHECK:STDOUT:   %Destroy.Op.1a2547.4: %Destroy.Op.type.1d8f74.4 = struct_value () [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.10: type = fn_type @Destroy.Op.loc29_3.6 [concrete]
-// CHECK:STDOUT:   %Destroy.Op.1a2547.10: %Destroy.Op.type.1d8f74.10 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.5: type = fn_type @Destroy.Op.loc30_18.3 [concrete]
+// CHECK:STDOUT:   %Destroy.Op.1a2547.5: %Destroy.Op.type.1d8f74.5 = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -235,9 +261,9 @@ fn F() -> i32 {
 // CHECK:STDOUT:   %.loc30_18.3: ref %Optional.738 = temporary %.loc30_18.2, %.loc30_18.1
 // CHECK:STDOUT:   %.loc30_18.4: %Optional.738 = acquire_value %.loc30_18.3
 // CHECK:STDOUT:   %Use__carbon_thunk.call: init %i32 = call imports.%Use__carbon_thunk.decl(%.loc30_18.4)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc30: <bound method> = bound_method %.loc30_18.3, constants.%Destroy.Op.1a2547.4
+// CHECK:STDOUT:   %Destroy.Op.bound.loc30: <bound method> = bound_method %.loc30_18.3, constants.%Destroy.Op.1a2547.5
 // CHECK:STDOUT:   %Destroy.Op.call.loc30: init %empty_tuple.type = call %Destroy.Op.bound.loc30(%.loc30_18.3)
-// CHECK:STDOUT:   %Destroy.Op.bound.loc29: <bound method> = bound_method %w.var, constants.%Destroy.Op.1a2547.10
+// CHECK:STDOUT:   %Destroy.Op.bound.loc29: <bound method> = bound_method %w.var, constants.%Destroy.Op.1a2547.1
 // CHECK:STDOUT:   %Destroy.Op.call.loc29: init %empty_tuple.type = call %Destroy.Op.bound.loc29(%w.var)
 // CHECK:STDOUT:   return %Use__carbon_thunk.call
 // CHECK:STDOUT: }
@@ -253,30 +279,6 @@ fn F() -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @Destroy.Op.loc30_18.3(%self.param: ref %Optional.738) {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc29_3.1(%self.param: ref %i32.builtin) = "no_op";
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc29_3.2(%self.param: ref %i32) {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc29_3.3(%self.param: ref %i64.builtin) = "no_op";
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc29_3.4(%self.param: ref %i64) {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc29_3.5(%self.param: ref %.54e) {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc29_3.6(%self.param: ref %Wide) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }

@@ -21,6 +21,10 @@ library "[[@TEST_NAME]]";
 // CHECK:STDERR: ^~~~~~~~
 // CHECK:STDERR:
 abstract union A {
+  // CHECK:STDERR: fail_abstract.carbon:[[@LINE+4]]:7: error: union field `a` has type `i32`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var a: i32;
+  // CHECK:STDERR:       ^~~~~~
+  // CHECK:STDERR:
   var a: i32;
 }
 
@@ -32,6 +36,10 @@ library "[[@TEST_NAME]]";
 // CHECK:STDERR: ^~~~
 // CHECK:STDERR:
 base union B {
+  // CHECK:STDERR: fail_base.carbon:[[@LINE+4]]:7: error: union field `a` has type `i32`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var a: i32;
+  // CHECK:STDERR:       ^~~~~~
+  // CHECK:STDERR:
   var a: i32;
 }
 
@@ -40,12 +48,16 @@ library "[[@TEST_NAME]]";
 
 union V {
   var a: i32;
-  // CHECK:STDERR: fail_virtual_method.carbon:[[@LINE+11]]:3: error: `virtual` not allowed; requires `abstract` or `base` class scope [ModifierVirtualNotAllowed]
+  // CHECK:STDERR: fail_virtual_method.carbon:[[@LINE+15]]:3: error: `virtual` not allowed; requires `abstract` or `base` class scope [ModifierVirtualNotAllowed]
   // CHECK:STDERR:   virtual fn F(self) {}
   // CHECK:STDERR:   ^~~~~~~
   // CHECK:STDERR: fail_virtual_method.carbon:[[@LINE-5]]:1: note: containing definition here [ModifierNotInContext]
   // CHECK:STDERR: union V {
   // CHECK:STDERR: ^~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_virtual_method.carbon:[[@LINE-8]]:7: error: union field `a` has type `i32`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var a: i32;
+  // CHECK:STDERR:       ^~~~~~
   // CHECK:STDERR:
   // CHECK:STDERR: fail_virtual_method.carbon:[[@LINE+4]]:16: warning: binding `self` unused [UnusedBinding]
   // CHECK:STDERR:   virtual fn F(self) {}
@@ -67,6 +79,10 @@ class C;
 // CHECK:STDERR: ^~~~~~~~
 // CHECK:STDERR:
 union C {
+  // CHECK:STDERR: fail_class_then_union.carbon:[[@LINE+4]]:7: error: union field `a` has type `i32`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var a: i32;
+  // CHECK:STDERR:       ^~~~~~
+  // CHECK:STDERR:
   var a: i32;
 }
 
@@ -74,16 +90,24 @@ union C {
 library "[[@TEST_NAME]]";
 
 union D {
+  // CHECK:STDERR: fail_redefinition.carbon:[[@LINE+4]]:7: error: union field `a` has type `i32`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var a: i32;
+  // CHECK:STDERR:       ^~~~~~
+  // CHECK:STDERR:
   var a: i32;
 }
 
 // CHECK:STDERR: fail_redefinition.carbon:[[@LINE+7]]:1: error: redefinition of `union D` [RedeclRedef]
 // CHECK:STDERR: union D {
 // CHECK:STDERR: ^~~~~~~~~
-// CHECK:STDERR: fail_redefinition.carbon:[[@LINE-7]]:1: note: previously defined here [RedeclPrevDef]
+// CHECK:STDERR: fail_redefinition.carbon:[[@LINE-11]]:1: note: previously defined here [RedeclPrevDef]
 // CHECK:STDERR: union D {
 // CHECK:STDERR: ^~~~~~~~~
 // CHECK:STDERR:
 union D {
+  // CHECK:STDERR: fail_redefinition.carbon:[[@LINE+4]]:7: error: union field `a` has type `i32`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var a: i32;
+  // CHECK:STDERR:       ^~~~~~
+  // CHECK:STDERR:
   var a: i32;
 }

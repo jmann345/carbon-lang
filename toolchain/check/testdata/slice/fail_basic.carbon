@@ -21,6 +21,10 @@ library "[[@TEST_NAME]]";
 // through a slice diagnoses `AssignmentToNonAssignable` "expression is not
 // assignable". The pin is deleted when `IndirectIndexWith`/`ref` returns land.
 fn W(s: Core.Slice(i32)) {
+  // CHECK:STDERR: fail_write_through.carbon:[[@LINE+4]]:3: error: expression is not assignable [AssignmentToNonAssignable]
+  // CHECK:STDERR:   s[0] = 5;
+  // CHECK:STDERR:   ^~~~
+  // CHECK:STDERR:
   s[0] = 5;
 }
 
@@ -34,6 +38,10 @@ library "[[@TEST_NAME]]";
 // `Core.IndexWith(i32)` in type `Core.Slice(i32)` that does not implement that
 // interface".
 fn I(s: Core.Slice(i32), i: i32) -> i32 {
+  // CHECK:STDERR: fail_subscript_i32.carbon:[[@LINE+4]]:10: error: cannot access member of interface `Core.IndexWith(i32)` in type `Core.Slice(i32 as Core.Destroy & Core.Copy)` that does not implement that interface [MissingImplInMemberAccess]
+  // CHECK:STDERR:   return s[i];
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR:
   return s[i];
 }
 
@@ -45,6 +53,17 @@ library "[[@TEST_NAME]]";
 // are formed from `&a`. Predicted `ConversionFailure` "cannot implicitly
 // convert expression of type `array(i32, 4)` to `Core.Slice(i32)`".
 fn V(a: array(i32, 4)) {
+  // CHECK:STDERR: fail_array_value_no_conversion.carbon:[[@LINE+11]]:28: error: cannot implicitly convert expression of type `array(i32, 4)` to `Core.Slice(i32 as Core.Destroy & Core.Copy)` [ConversionFailure]
+  // CHECK:STDERR:   let s: Core.Slice(i32) = a;
+  // CHECK:STDERR:                            ^
+  // CHECK:STDERR: fail_array_value_no_conversion.carbon:[[@LINE+8]]:28: note: type `array(i32, 4)` does not implement interface `Core.ImplicitAs(Core.Slice(i32 as Core.Destroy & Core.Copy))` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   let s: Core.Slice(i32) = a;
+  // CHECK:STDERR:                            ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_array_value_no_conversion.carbon:[[@LINE+4]]:7: warning: binding `s` unused [UnusedBinding]
+  // CHECK:STDERR:   let s: Core.Slice(i32) = a;
+  // CHECK:STDERR:       ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   let s: Core.Slice(i32) = a;
 }
 
@@ -57,4 +76,11 @@ library "[[@TEST_NAME]]";
 // implementing `Core.Copy & Core.Destroy`".
 class NoCopy {}
 
+// CHECK:STDERR: fail_non_copy_element.carbon:[[@LINE+7]]:9: error: cannot convert type `NoCopy` into type implementing `Core.Destroy & Core.Copy` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn N(s: Core.Slice(NoCopy));
+// CHECK:STDERR:         ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: {{.*}}/prelude/types/slice.carbon:24:13: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+// CHECK:STDERR: class Slice(T: Copy & Destroy) {
+// CHECK:STDERR:             ^~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn N(s: Core.Slice(NoCopy));

@@ -45,3 +45,90 @@ fn F(var c: C);
 fn G() {
   F({});
 }
+
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'with_cleanup.carbon'
+// CHECK:STDOUT: source_filename = "with_cleanup.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @"_COp.C.Main:Destroy.Core"(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_CMake.C.Main(ptr sret({}))
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_CF.Main(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CG.Main() #0 !dbg !4 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %c.var = alloca {}, align 1, !dbg !7
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %c.var), !dbg !7
+// CHECK:STDOUT:   call void @_CMake.C.Main(ptr %c.var), !dbg !8
+// CHECK:STDOUT:   call void @_CF.Main(ptr %c.var), !dbg !9
+// CHECK:STDOUT:   call void @"_COp.C.Main:Destroy.Core"(ptr %c.var), !dbg !7
+// CHECK:STDOUT:   ret void, !dbg !10
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !1 = !DIFile(filename: "with_cleanup.carbon", directory: "")
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !4 = distinct !DISubprogram(name: "G", linkageName: "_CG.Main", scope: null, file: !1, line: 15, type: !5, spFlags: DISPFlagDefinition, unit: !0)
+// CHECK:STDOUT: !5 = !DISubroutineType(types: !6)
+// CHECK:STDOUT: !6 = !{null}
+// CHECK:STDOUT: !7 = !DILocation(line: 13, column: 6, scope: !4)
+// CHECK:STDOUT: !8 = !DILocation(line: 16, column: 5, scope: !4)
+// CHECK:STDOUT: !9 = !DILocation(line: 16, column: 3, scope: !4)
+// CHECK:STDOUT: !10 = !DILocation(line: 15, column: 1, scope: !4)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'struct_literal_cleanup.carbon'
+// CHECK:STDOUT: source_filename = "struct_literal_cleanup.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: @C.val.loc11 = internal constant {} zeroinitializer
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @"_COp.C.Main:Destroy.Core"(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_CF.Main(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CG.Main() #0 !dbg !4 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %c.var = alloca {}, align 1, !dbg !7
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %c.var), !dbg !7
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 1 %c.var, ptr align 1 @C.val.loc11, i64 0, i1 false), !dbg !7
+// CHECK:STDOUT:   call void @_CF.Main(ptr %c.var), !dbg !8
+// CHECK:STDOUT:   call void @"_COp.C.Main:Destroy.Core"(ptr %c.var), !dbg !7
+// CHECK:STDOUT:   ret void, !dbg !9
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.memcpy.p0.p0.i64(ptr noalias writeonly captures(none), ptr noalias readonly captures(none), i64, i1 immarg) #1
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !1 = !DIFile(filename: "struct_literal_cleanup.carbon", directory: "")
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !4 = distinct !DISubprogram(name: "G", linkageName: "_CG.Main", scope: null, file: !1, line: 13, type: !5, spFlags: DISPFlagDefinition, unit: !0)
+// CHECK:STDOUT: !5 = !DISubroutineType(types: !6)
+// CHECK:STDOUT: !6 = !{null}
+// CHECK:STDOUT: !7 = !DILocation(line: 11, column: 6, scope: !4)
+// CHECK:STDOUT: !8 = !DILocation(line: 14, column: 3, scope: !4)
+// CHECK:STDOUT: !9 = !DILocation(line: 13, column: 1, scope: !4)
+// CHECK:STDOUT:

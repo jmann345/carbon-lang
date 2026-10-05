@@ -22,6 +22,17 @@ library "[[@TEST_NAME]]";
 // `Core.Buf(i32)`" with the `MissingImplInMemberAccessInContext` note "type
 // `Core.Buf(i32)` does not implement interface `Core.Copy`".
 fn C(b: Core.Buf(i32)) {
+  // CHECK:STDERR: fail_copy.carbon:[[@LINE+11]]:26: error: cannot copy value of type `Core.Buf(i32 as Core.Copy & Core.Destroy)` [CopyOfUncopyableType]
+  // CHECK:STDERR:   var c: Core.Buf(i32) = b;
+  // CHECK:STDERR:                          ^
+  // CHECK:STDERR: fail_copy.carbon:[[@LINE+8]]:26: note: type `Core.Buf(i32 as Core.Copy & Core.Destroy)` does not implement interface `Core.Copy` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   var c: Core.Buf(i32) = b;
+  // CHECK:STDERR:                          ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_copy.carbon:[[@LINE+4]]:7: warning: binding `c` unused [UnusedBinding]
+  // CHECK:STDERR:   var c: Core.Buf(i32) = b;
+  // CHECK:STDERR:       ^~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   var c: Core.Buf(i32) = b;
 }
 
@@ -34,5 +45,13 @@ library "[[@TEST_NAME]]";
 // `ConversionFailureTypeToFacet` "cannot convert type `Core.Buf(i32)` into
 // type implementing `Core.DefaultOrUnformed`".
 fn U() {
+  // CHECK:STDERR: fail_unformed.carbon:[[@LINE+8]]:3: error: cannot convert type `Core.Buf(i32 as Core.Copy & Core.Destroy)` into type implementing `Core.DefaultOrUnformed` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   var b: Core.Buf(i32);
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_unformed.carbon:[[@LINE+4]]:7: warning: binding `b` unused [UnusedBinding]
+  // CHECK:STDERR:   var b: Core.Buf(i32);
+  // CHECK:STDERR:       ^~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   var b: Core.Buf(i32);
 }

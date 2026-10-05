@@ -30,6 +30,10 @@ union U {
   // CHECK:STDERR:       ^~~~~~~
   // CHECK:STDERR:
   var b: Boxy;
+  // CHECK:STDERR: fail_destroy_impl_field.carbon:[[@LINE+4]]:7: error: union field `w` has type `i32`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var w: i32;
+  // CHECK:STDERR:       ^~~~~~
+  // CHECK:STDERR:
   var w: i32;
 }
 
@@ -50,6 +54,10 @@ union U {
   // CHECK:STDERR:       ^~~~~~~~~
   // CHECK:STDERR:
   var s: Signal;
+  // CHECK:STDERR: fail_choice_field.carbon:[[@LINE+4]]:7: error: union field `w` has type `i32`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var w: i32;
+  // CHECK:STDERR:       ^~~~~~
+  // CHECK:STDERR:
   var w: i32;
 }
 
@@ -71,6 +79,10 @@ union U {
   // CHECK:STDERR:       ^~~~~~~~~~
   // CHECK:STDERR:
   var c: Counted;
+  // CHECK:STDERR: fail_user_copy_field.carbon:[[@LINE+4]]:7: error: union field `w` has type `i32`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var w: i32;
+  // CHECK:STDERR:       ^~~~~~
+  // CHECK:STDERR:
   var w: i32;
 }
 
@@ -128,5 +140,9 @@ union U {
   // CHECK:STDERR:       ^~~~~~~~~~~
   // CHECK:STDERR:
   var u: Cpp.CppU;
+  // CHECK:STDERR: fail_cpp_class_field.carbon:[[@LINE+4]]:7: error: union field `w` has type `i32`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
+  // CHECK:STDERR:   var w: i32;
+  // CHECK:STDERR:       ^~~~~~
+  // CHECK:STDERR:
   var w: i32;
 }

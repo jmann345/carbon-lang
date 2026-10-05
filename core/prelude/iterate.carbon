@@ -80,3 +80,17 @@ impl forall [T: CppRange where .ValueType impls Copy]
     return Optional(ElementType).None();
   }
 }
+
+impl forall [T: Copy & Destroy]
+    Slice(T) as Iterate
+    where .ElementType = T and .CursorType = i64 {
+  fn NewCursor(unused self) -> i64 { return 0; }
+  fn Next(self, cursor: i64*) -> Optional(T) {
+    if (*cursor < self.Size()) {
+      ++*cursor;
+      return Optional(T).Some(self.Get(*cursor - 1));
+    } else {
+      return Optional(T).None();
+    }
+  }
+}

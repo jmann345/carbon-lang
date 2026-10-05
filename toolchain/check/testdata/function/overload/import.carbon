@@ -259,16 +259,6 @@ extern library "extern_two_file" overload fn D(b: bool) -> i32;
 
 library "[[@TEST_NAME]]";
 
-// CHECK:STDERR: extern_two_file.carbon:[[@LINE+10]]:1: in import [InImport]
-// CHECK:STDERR: extern_two_file_lib.carbon:4:48: error: semantics TODO: ``overload fn` with a non-value explicit parameter` [SemanticsTodo]
-// CHECK:STDERR: extern library "extern_two_file" overload fn D(x: i32) -> i32;
-// CHECK:STDERR:                                                ^~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: extern_two_file.carbon:[[@LINE+5]]:1: in import [InImport]
-// CHECK:STDERR: extern_two_file_lib.carbon:5:48: error: semantics TODO: ``overload fn` with a non-value explicit parameter` [SemanticsTodo]
-// CHECK:STDERR: extern library "extern_two_file" overload fn D(b: bool) -> i32;
-// CHECK:STDERR:                                                ^~~~~~~
-// CHECK:STDERR:
 import library "extern_two_file_lib";
 
 // The owning library's API file redeclares each member without a definition;
@@ -334,16 +324,6 @@ library "[[@TEST_NAME]]";
 
 // Only the first member gets an owning declaration here; the second's is
 // missing, diagnosed at the import as for a plain function.
-// CHECK:STDERR: fail_extern_partial.carbon:[[@LINE+10]]:1: in import [InImport]
-// CHECK:STDERR: extern_partial_lib.carbon:4:47: error: semantics TODO: ``overload fn` with a non-value explicit parameter` [SemanticsTodo]
-// CHECK:STDERR: extern library "extern_partial" overload fn P(x: i32) -> i32;
-// CHECK:STDERR:                                               ^~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: fail_extern_partial.carbon:[[@LINE+5]]:1: in import [InImport]
-// CHECK:STDERR: extern_partial_lib.carbon:5:1: error: owning declaration required for non-owning declaration [MissingOwningDeclarationInApi]
-// CHECK:STDERR: extern library "extern_partial" overload fn P(b: bool) -> i32;
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
 import library "extern_partial_lib";
 
 extern overload fn P(x: i32) -> i32;
@@ -361,6 +341,36 @@ extern overload fn P(x: i32) -> i32 { return x; }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 extern overload fn P(b: bool) -> i32 { if (b) { return 1; } return 0; }
+
+// --- extern_api_defined_lib.carbon
+
+library "[[@TEST_NAME]]";
+
+extern library "extern_api_defined" overload fn A(x: i32) -> i32;
+extern library "extern_api_defined" overload fn A(b: bool) -> i32;
+
+// --- extern_api_defined.carbon
+
+library "[[@TEST_NAME]]";
+
+import library "extern_api_defined_lib";
+
+// The owning library's API file defines both members inline (the one-file
+// shape of `extern_owner`), and also has an implementation file.
+extern overload fn A(x: i32) -> i32 { return x; }
+extern overload fn A(b: bool) -> i32 { if (b) { return 1; } return 0; }
+
+// --- fail_extern_api_defined.impl.carbon
+
+impl library "[[@TEST_NAME]]";
+
+// The api/impl rules are applied to the API file's declaration of each member,
+// not to the member as localized from the set's library (which has no body):
+// a definition here is a redefinition, and a declaration is redundant, as for
+// a plain function defined in the API file (function/definition/
+// implicit_import.carbon's `fail_redef_after_def` and `fail_redecl_after_def`).
+extern overload fn A(x: i32) -> i32 { return x + 1; }
+extern overload fn A(b: bool) -> i32;
 
 // CHECK:STDOUT: --- use.carbon
 // CHECK:STDOUT:

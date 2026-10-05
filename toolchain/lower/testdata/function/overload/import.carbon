@@ -15,7 +15,12 @@
 // the member's position in the set, mirrored on import, never a fingerprint of
 // any instruction. The defining file's `define`s and the using file's `call`s
 // name identical symbols; an api/impl pair defines each member once, in the
-// implementation file, under the API-declared index.
+// implementation file, under the API-declared index. The two-file `extern`
+// owner shape (fork/overload/plan.md §1.B.3) defines each member in the owning
+// library's implementation file after an owning declaration in its API file,
+// into a member localized from the set's `extern library` declaration;
+// lowering reads neither `is_extern` nor `extern_library_id`, so the `define`s
+// are emitted under the same symbols.
 
 // --- lib.carbon
 
@@ -47,6 +52,31 @@ overload fn G(x: i32) -> i32 { return x; }
 overload fn G(b: bool) -> i32 { if (b) { return 1; } return 0; }
 
 fn Use() -> i32 { return G(3) + G(true); }
+
+// --- extern_two_file_lib.carbon
+
+library "[[@TEST_NAME]]";
+
+extern library "extern_two_file" overload fn D(x: i32) -> i32;
+extern library "extern_two_file" overload fn D(b: bool) -> i32;
+
+// --- extern_two_file.carbon
+
+library "[[@TEST_NAME]]";
+
+import library "extern_two_file_lib";
+
+extern overload fn D(x: i32) -> i32;
+extern overload fn D(b: bool) -> i32;
+
+// --- extern_two_file.impl.carbon
+
+impl library "[[@TEST_NAME]]";
+
+extern overload fn D(x: i32) -> i32 { return x; }
+extern overload fn D(b: bool) -> i32 { if (b) { return 1; } return 0; }
+
+fn Use() -> i32 { return D(1) + D(true); }
 
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'lib.carbon'

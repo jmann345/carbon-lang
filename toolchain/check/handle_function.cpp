@@ -155,28 +155,38 @@ static auto GetInterfaceModifier(const KeywordModifierSet& modifier_set)
 // for a plain function; a member of an `overload fn` set is reached through
 // the set value, never through the name, so the entry stays the set value.
 //
+// The redeclaration rules are applied to the previous declaration's facts:
+// `prev_function`'s own, unless `prev_decl_override` carries them. A member
+// of an imported `overload fn` set that the API file redeclared is localized
+// here from the set's library, so whatever the API file did to it (defined it
+// inline, in particular) is visible only in the API IR; the caller passes
+// those facts, and the rules then see the API file's declaration, as they do
+// for a plain function (fork/overload/plan.md §1.B.2-3).
+//
 // If merging is successful, returns true and may update the previous function.
 // Otherwise, returns false. Prints a diagnostic when appropriate.
-static auto MergeFunctionRedecl(Context& context,
-                                Parse::AnyFunctionDeclId node_id,
-                                SemIR::Function& new_function,
-                                bool new_is_definition,
-                                SemIR::FunctionId prev_function_id,
-                                SemIR::ImportIRId prev_import_ir_id,
-                                bool replace_prev_inst) -> bool {
+static auto MergeFunctionRedecl(
+    Context& context, Parse::AnyFunctionDeclId node_id,
+    SemIR::Function& new_function, bool new_is_definition,
+    SemIR::FunctionId prev_function_id, SemIR::ImportIRId prev_import_ir_id,
+    bool replace_prev_inst, std::optional<RedeclInfo> prev_decl_override)
+    -> bool {
   auto& prev_function = context.functions().Get(prev_function_id);
 
   if (!CheckFunctionTypeMatches(context, new_function, prev_function)) {
     return false;
   }
 
-  DiagnoseIfInvalidRedecl(
-      context, Lex::TokenKind::Fn, prev_function.name_id,
-      RedeclInfo(new_function, node_id, new_is_definition),
-      RedeclInfo(prev_function, SemIR::LocId(prev_function.latest_decl_id()),
-                 prev_function.has_definition_started()),
-      prev_import_ir_id);
-  if (new_is_definition && prev_function.has_definition_started()) {
+  RedeclInfo prev_decl =
+      prev_decl_override
+          ? *prev_decl_override
+          : RedeclInfo(prev_function,
+                       SemIR::LocId(prev_function.latest_decl_id()),
+                       prev_function.has_definition_started());
+  DiagnoseIfInvalidRedecl(context, Lex::TokenKind::Fn, prev_function.name_id,
+                          RedeclInfo(new_function, node_id, new_is_definition),
+                          prev_decl, prev_import_ir_id);
+  if (new_is_definition && prev_decl.is_definition) {
     return false;
   }
 
@@ -220,8 +230,18 @@ namespace {
 // previously declared, which selects the api/impl or cross-library rules of
 // `DiagnoseIfInvalidRedecl` per member (fork/overload/plan.md §1.B.2-3).
 struct ImportedOverloadSetSource {
-  // Returns the IR that previously declared member `index`.
-  auto GetMemberImportIRId(size_t index) const -> SemIR::ImportIRId {
+  // The previous declaration of one member.
+  struct Member {
+    // The IR that previously declared the member.
+    SemIR::ImportIRId import_ir_id;
+    // When that is the API file (`ApiForImpl`) and the API file redeclared a
+    // member of a set it imported: the API IR's `Function` for the member,
+    // whose state is what the API file declared. Null otherwise.
+    const SemIR::Function* api_function = nullptr;
+  };
+
+  // Returns the previous declaration of member `index`.
+  auto GetMember(size_t index) const -> Member {
     if (api_overload_set) {
       CARBON_CHECK(index < api_overload_set->member_decl_ids.size());
       const auto& api_function = api_ir->functions().Get(
@@ -230,10 +250,11 @@ struct ImportedOverloadSetSource {
                   api_overload_set->member_decl_ids[index])
               .function_id);
       if (api_function.first_owning_decl_id.has_value()) {
-        return SemIR::ImportIRId::ApiForImpl;
+        return {.import_ir_id = SemIR::ImportIRId::ApiForImpl,
+                .api_function = &api_function};
       }
     }
-    return canonical_ir_id;
+    return {.import_ir_id = canonical_ir_id};
   }
 
   // The IR that declares the set: the canonical import of the set value.
@@ -247,6 +268,27 @@ struct ImportedOverloadSetSource {
   const SemIR::OverloadSet* api_overload_set = nullptr;
 };
 }  // namespace
+
+// Returns the previous-declaration facts of a member of an imported `overload
+// fn` set that the API file redeclared (an owning `extern overload fn`,
+// §1.B.3), for `DiagnoseIfInvalidRedecl`'s api/impl rules: whether the API
+// file defined the member, and its latest API declaration for the note. The
+// member's local `Function` cannot supply them: it was localized from the
+// set's library, whose declaration has no body. The API file's own
+// redeclaration names no `extern library` (it is the owner), so that field is
+// `None`, as for a plain function's owning declaration; the set library's
+// value carried on the API `Function` lives in the API IR's string store.
+static auto MakeApiMemberRedeclInfo(Context& context,
+                                    const SemIR::Function& api_function)
+    -> RedeclInfo {
+  RedeclInfo prev_decl(
+      api_function,
+      SemIR::LocId(context.import_ir_insts().Add(SemIR::ImportIRInst(
+          SemIR::ImportIRId::ApiForImpl, api_function.latest_decl_id()))),
+      api_function.has_definition_started());
+  prev_decl.extern_library_id = SemIR::LibraryNameId::None;
+  return prev_decl;
+}
 
 // Returns where the members of the imported `overload fn` set named by
 // `prev_id` (an `ImportRefLoaded`) were previously declared; `canonical_ir_id`
@@ -328,14 +370,24 @@ static auto TryMergeIntoOverloadSet(
     // diagnoses differing binding names, return types, and redefinitions, and
     // for an imported member applies the api/impl and cross-library rules
     // (incl. the `extern` ownership rules, §1.B.3) according to where THIS
-    // member was previously declared. The name's scope entry is never
-    // replaced: the member is reached through the set.
-    auto prev_import_ir_id = import_source
-                                 ? import_source->GetMemberImportIRId(index)
-                                 : SemIR::ImportIRId::None;
+    // member was previously declared, to THAT declaration's facts: a member
+    // the API file redeclared is judged against the API file's declaration,
+    // not against the local member localized from the set's library. The
+    // name's scope entry is never replaced: the member is reached through the
+    // set.
+    auto prev_import_ir_id = SemIR::ImportIRId::None;
+    std::optional<RedeclInfo> prev_decl_override;
+    if (import_source) {
+      auto member_source = import_source->GetMember(index);
+      prev_import_ir_id = member_source.import_ir_id;
+      if (member_source.api_function) {
+        prev_decl_override =
+            MakeApiMemberRedeclInfo(context, *member_source.api_function);
+      }
+    }
     if (MergeFunctionRedecl(context, node_id, function_info, is_definition,
                             member_function_id, prev_import_ir_id,
-                            /*replace_prev_inst=*/false)) {
+                            /*replace_prev_inst=*/false, prev_decl_override)) {
       function_decl.function_id = member_function_id;
       function_decl.type_id = context.insts().Get(member_decl_id).type_id();
     }
@@ -511,7 +563,8 @@ static auto TryMergeRedecl(Context& context, Parse::AnyFunctionDeclId node_id,
 
   if (MergeFunctionRedecl(context, node_id, function_info, is_definition,
                           prev_function_id, prev_import_ir_id,
-                          /*replace_prev_inst=*/true)) {
+                          /*replace_prev_inst=*/true,
+                          /*prev_decl_override=*/std::nullopt)) {
     // When merging, use the existing function rather than adding a new one.
     function_decl.function_id = prev_function_id;
     function_decl.type_id = prev_type_id;
@@ -814,20 +867,27 @@ static auto DiagnoseOverloadInInterfaceOrImpl(
 // scopes and (iv) `extern` members) as semantics TODOs at the declaration, so
 // that overload resolution only ever sees supported members. The declaration
 // is still a member.
+//
+// `function_info` is the declaration being checked and `function_id` the
+// function it declares or redeclares; the two differ when the declaration
+// merged into a previous one.
 static auto DiagnoseOverloadGates(
     Context& context, Parse::AnyFunctionDeclId node_id,
     const KeywordModifierSet& modifier_set,
     const DeclNameStack::NameContext& name_context,
-    SemIR::FunctionId function_id) -> void {
-  const auto& function = context.functions().Get(function_id);
+    const SemIR::Function& function_info, SemIR::FunctionId function_id)
+    -> void {
   // (iii) Explicit parameters after `self` must be by-value binding patterns:
   // the resolution probe is a value conversion, so `ref` and `var` members
   // would be accepted by the probe and rejected by the commit. This also gates
   // destructuring tuple and struct parameter patterns, whose leaf is not a
-  // single `ValueParamPattern`.
+  // single `ValueParamPattern`. The patterns are this declaration's own: a
+  // redeclaration of an imported member merges into a `Function` whose
+  // pattern block holds import refs to the declaring file's patterns, which
+  // say nothing about the parameter kind here.
   for (auto param_pattern_id :
-       context.inst_blocks().GetOrEmpty(function.param_patterns_id)) {
-    if (param_pattern_id == function.self_param_id ||
+       context.inst_blocks().GetOrEmpty(function_info.param_patterns_id)) {
+    if (param_pattern_id == function_info.self_param_id ||
         param_pattern_id == SemIR::ErrorInst::InstId) {
       continue;
     }
@@ -1026,7 +1086,8 @@ static auto BuildFunctionDecl(Context& context,
 
   if (is_overload) {
     DiagnoseOverloadGates(context, node_id, introducer.modifier_set,
-                          name_context, function_decl.function_id);
+                          name_context, function_info,
+                          function_decl.function_id);
   }
 
   ValidateForEntryPoint(context, node_id, function_decl.function_id,

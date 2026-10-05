@@ -23,7 +23,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     -   [Importing C++ macros](#importing-c-macros)
 -   [Calling C++ code from Carbon](#calling-c-code-from-carbon)
     -   [Function call syntax and semantics](#function-call-syntax-and-semantics)
-    -   [TODO: Overload resolution](#todo-overload-resolution)
+    -   [Overload resolution](#overload-resolution)
     -   [TODO: Constructors](#todo-constructors)
     -   [TODO: Struct literals](#todo-struct-literals)
 -   [TODO: Accessing C++ classes, structs, and members](#todo-accessing-c-classes-structs-and-members)
@@ -207,7 +207,33 @@ fn Run() {
 }
 ```
 
-### TODO: Overload resolution
+### Overload resolution
+
+A call from Carbon to an imported C++ overload set is resolved under **C++'s
+rules, exactly**: the toolchain hands the candidate set to Clang Sema and
+performs genuine C++ overload resolution, including implicit conversion
+ranking, ambiguity diagnostics, default arguments, and the
+[literal conversion rules](literals.md) for Carbon literal arguments. In the
+other direction, an exported Carbon
+[overload set](../functions_overloading.md) appears to C++ as an ordinary C++
+overload set — every member is its own C++ declaration under the shared name,
+a function in the mapped namespace or a member function in the mapped class —
+which C++ callers also resolve under C++'s rules: a documented divergence from
+Carbon's own declaration-order first-match rule. The same argument list can
+therefore select a different member on each side of the boundary (a set
+declared `i64` first and `i32` second: Carbon's `Pick(n)` for `n: i32` takes
+the first member by widening, C++'s `Carbon::Pick(v)` for `int v` takes the
+exact match), or be rejected by C++ as ambiguous where Carbon accepts it
+(`Carbon::F(7)` against `F(i64)` and `F(bool)`: `int → long` and `int → bool`
+are both Conversion rank). The divergence is bounded to _which_ member runs, or
+whether the call compiles — each member carries its own symbol, so no call
+crosses the boundary with the wrong ABI. Both directions of the mapping, and
+the divergence, are specified in
+[Function overloading: C++ interoperability](../functions_overloading.md#c-interoperability)
+(fork decision [F-009](/fork/decision-log.md); fork amendment 2026-10-05: the
+export direction landed with workstream OV-3, conformance-tested in both
+directions by `fork/conformance/programs/interop/cpp_export_overload_set.carbon`
+and `cpp_export_overload_set_divergence.carbon`).
 
 ### TODO: Constructors
 

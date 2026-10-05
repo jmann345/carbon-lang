@@ -49,15 +49,20 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 > **Fork amendment 2026-09-27 (F-009; ported from the stranded design-docs
 > branch 481e08c24 by workstream OV-1, fork/overload/plan.md D-OV-8; status
-> updated 2026-10-05 by OV-2).** Toolchain status: same-file `overload fn`
-> sets landed at OV-1 (W-024); set import across api/impl and libraries
-> (with the closed-set rule, `OverloadSetFrozen`; class-scope sets and
-> out-of-line member definitions in implementation files included), generic
-> members by non-diagnosing deduction, overloaded methods of generic classes,
-> `extern` members in both the one-file and the two-file `extern library`
-> owner shape, and the api-member missing-definition check landed at OV-2
-> (W-025); export to C++ lands at OV-3 (W-026). Every sub-fork this page left
-> OPEN is CLOSED in place below by the OV decision that resolves it, and the
+> updated 2026-10-05 by OV-2 and OV-3).** Toolchain status: same-file
+> `overload fn` sets landed at OV-1 (W-024); set import across api/impl and
+> libraries (with the closed-set rule, `OverloadSetFrozen`; class-scope sets
+> and out-of-line member definitions in implementation files included),
+> generic members by non-diagnosing deduction, overloaded methods of generic
+> classes, `extern` members in both the one-file and the two-file `extern
+> library` owner shape, and the api-member missing-definition check landed at
+> OV-2 (W-025); export to C++ landed at OV-3 (W-026): C++ name lookup of a set
+> receives every exportable member as its own C++ declaration (members in
+> class scope as member-function overloads), C++ callers resolve the set under
+> C++'s rules, and the resulting
+> [documented divergence](#documented-divergence-two-resolution-rules) is
+> conformance-tested in both directions. Every sub-fork this page left OPEN is
+> CLOSED in place below by the OV decision that resolves it, and the
 > [0.1 limits](#01-limits) paragraph lists every gate the landed toolchain
 > enforces as a semantics TODO.
 
@@ -366,7 +371,9 @@ gate and the gate's golden in the same commit:
 -   (vi) members whose access modifier differs from the set's;
 -   (vii) a set reached through any import, including the API file seen from
     its implementation file — LIFTED at OV-2 (the set is imported whole);
--   (viii) C++ lookup of a Carbon set (export) — until OV-3;
+-   (viii) C++ lookup of a Carbon set (export) — LIFTED at OV-3 (every
+    exportable member is exported; a member whose signature has no C++
+    mapping is omitted after the per-function semantics TODO);
 -   (ix) a marked declaration directly in an `interface` body;
 -   (x) members that disagree on whether they declare `self`;
 -   (xi) a call with a template-dependent argument;
@@ -796,8 +803,16 @@ are exported and the rest omitted — matching how per-function export already
 behaves — so C++ sees a subset of the set; the existing per-function
 semantics TODO on each omitted member is its note. The alternative, refusing
 to export the whole set unless every member maps, would make one exotic
-member remove an entire API from C++. Until OV-3, C++ lookup of any Carbon
-set is D-OV-6 gate (viii), a semantics TODO ("overload set export").
+member remove an entire API from C++. _Fork amendment 2026-10-05 (OV-3):_
+landed as specified — C++ name lookup of a set's name
+(`toolchain/check/cpp/generate_ast.cpp`) exports every member through the
+per-function export path and hands Clang the exportable members as one
+overload set; the semantics TODO the per-function path emits for an
+unmappable member names the omission (golden
+`toolchain/check/testdata/interop/cpp/function/export/overload_set.carbon`,
+`fail_todo_partial_export`). Until OV-3, C++ lookup of any Carbon set was
+D-OV-6 gate (viii), a semantics TODO ("overload set export"), deleted with its
+pin.
 
 ### Documented divergence: two resolution rules
 
@@ -824,7 +839,15 @@ using the `Dist` set above (members declared `i64` first, `f64` second):
     2026-09-27:_ this page's original example used `i32 → f64`, which is not
     an implicit conversion in the prelude — the integer-to-float `ImplicitAs`
     impls are not enabled — so the shape is restated with the `Pick` set that
-    OV-3's conformance program asserts in both directions.)
+    OV-3's conformance program
+    `fork/conformance/programs/interop/cpp_export_overload_set_divergence.carbon`
+    asserts in both directions: Carbon prints 1, C++ prints 2. The agreeing
+    direction — a `Describe` set declared `i32` first, `bool` second, where
+    an `int` and a `bool` argument select the same member on both sides by
+    exact match — is `cpp_export_overload_set.carbon`. The first shape is
+    pinned by the `fail_cpp_ambiguous` golden: `Carbon::F(7)` against
+    `F(i64)`/`F(bool)` is ambiguous under C++ rules, where Carbon's
+    first-match selects `F(i64)`.)
 
 The divergence is bounded: it affects only _which member is selected, or
 whether the call compiles_. It can never produce a wrong-ABI call — each
@@ -858,11 +881,19 @@ imported declaration is fingerprinted with an empty declaration block, which
 is why the library-private fingerprint already fails to separate two
 libraries' functions of one name
 (`toolchain/lower/testdata/function/generic/cross_library_name_collision_private.carbon`).
-Exported members are **not** unaffected by Carbon-internal mangling: every
-exported member's C++ declaration carries its Carbon mangled name as an asm
-label (`toolchain/check/cpp/export.cpp`), so the C++ symbol of a member _is_
-its `:overload<N>` name and C++ sees N distinct symbols behind N same-named
-declarations.
+Exported members are **not** unaffected by Carbon-internal mangling: an
+exported member reaches C++ as an inline C++ function of the member's name
+whose body calls the member's generated Carbon thunk through a declaration
+carrying that thunk's Carbon mangled name as an asm label
+(`toolchain/check/cpp/export.cpp`). _Fork amendment 2026-10-05 (OV-3):_ the
+thunk is a generated function, not a set member, so the `:overload<N>` marker
+does not reach it by itself; the thunk's _name_ carries the member's index
+instead (`Pick__carbon_thunk__overload0`, mangled
+`_CPick__carbon_thunk__overload0.Main`), and the thunk calls the member's own
+`_CPick:overload0.Main`. Either way C++ sees N distinct symbol pairs behind N
+same-named declarations, and the member that C++ resolution selects is the
+member that runs (lower golden
+`toolchain/lower/testdata/interop/cpp/function/export/overload_set.carbon`).
 
 ## Future work
 
@@ -1024,7 +1055,7 @@ carry the detail.
     / Proposal
     [#875](https://github.com/carbon-language/carbon-lang/pull/875)
 -   [Generics goals: checked generics instead of open overloading and ADL](generics/goals.md#checked-generics-instead-of-open-overloading-and-adl)
--   [Interoperability: overload resolution](interoperability/README.md#todo-overload-resolution)
+-   [Interoperability: overload resolution](interoperability/README.md#overload-resolution)
 -   Fork decision
     [F-009: Function overloading — marked `overload fn`](/fork/decision-log.md)
     and the

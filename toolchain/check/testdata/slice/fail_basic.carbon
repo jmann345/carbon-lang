@@ -24,6 +24,19 @@ fn W(s: Core.Slice(i32)) {
   s[0] = 5;
 }
 
+// --- fail_subscript_i32.carbon
+
+library "[[@TEST_NAME]]";
+
+// Subscripts are `i64`; only an integer LITERAL converts (the literal-subscript
+// rule, check/handle_index.cpp), so an `i32` value needs an explicit `as i64`.
+// Predicted `MissingImplInMemberAccess` "cannot access member of interface
+// `Core.IndexWith(i32)` in type `Core.Slice(i32)` that does not implement that
+// interface".
+fn I(s: Core.Slice(i32), i: i32) -> i32 {
+  return s[i];
+}
+
 // --- fail_array_value_no_conversion.carbon
 
 library "[[@TEST_NAME]]";

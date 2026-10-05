@@ -7,7 +7,10 @@
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/check/context.h"
 #include "toolchain/check/convert.h"
+#include "toolchain/check/facet_type.h"
+#include "toolchain/check/generic.h"
 #include "toolchain/check/handle.h"
+#include "toolchain/check/impl_lookup.h"
 #include "toolchain/check/inst.h"
 #include "toolchain/check/literal.h"
 #include "toolchain/check/name_lookup.h"
@@ -15,6 +18,7 @@
 #include "toolchain/check/type.h"
 #include "toolchain/diagnostics/diagnostic.h"
 #include "toolchain/sem_ir/expr_info.h"
+#include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/inst.h"
 #include "toolchain/sem_ir/typed_insts.h"
 
@@ -40,6 +44,96 @@ static auto PerformIndexWith(Context& context, Parse::NodeId node_id,
               .op_name = CoreIdentifier::At};
   return BuildBinaryOperator(context, node_id, op, operand_inst_id,
                              index_inst_id);
+}
+
+// Fork (SL-1, fork/slices/plan.md R-5, amended 2026-10-05). Returns whether
+// `operand_type_id` implements `Core.IndexWith(subscript_type_id)`, from a
+// non-diagnosing impl lookup, or `nullopt` when the question cannot be asked
+// without diagnosing: no `Core.IndexWith`, or one that is not a generic
+// interface over a single `type` parameter (the shapes
+// operators/overloaded/index.carbon pins), which the ordinary dispatch then
+// reports exactly once. The probe emits nothing and leaves no instructions:
+// the facet type is built from the interface and a specific (a constant), and
+// the lookup's scratch instructions are discarded.
+static auto HasIndexWithImpl(Context& context, SemIR::LocId loc_id,
+                             SemIR::TypeId operand_type_id,
+                             SemIR::TypeId subscript_type_id)
+    -> std::optional<bool> {
+  auto interface_inst_id =
+      TryLookupNameInCore(context, loc_id, CoreIdentifier::IndexWith);
+  if (!interface_inst_id.has_value()) {
+    return std::nullopt;
+  }
+  auto generic_interface =
+      context.types().TryGetAs<SemIR::GenericInterfaceType>(
+          context.insts().Get(interface_inst_id).type_id());
+  if (!generic_interface ||
+      generic_interface->enclosing_specific_id.has_value()) {
+    return std::nullopt;
+  }
+  const auto& interface =
+      context.interfaces().Get(generic_interface->interface_id);
+  if (!interface.generic_id.has_value()) {
+    return std::nullopt;
+  }
+  auto bindings = context.inst_blocks().Get(
+      context.generics().Get(interface.generic_id).bindings_id);
+  if (bindings.size() != 1 ||
+      context.insts().Get(bindings[0]).type_id() != SemIR::TypeType::TypeId) {
+    return std::nullopt;
+  }
+
+  context.inst_block_stack().Push();
+  SemIR::InstId args[] = {context.types().GetTypeInstId(subscript_type_id)};
+  auto specific_id = MakeSpecific(context, loc_id, interface.generic_id, args);
+  auto facet_type_const_id = EvalOrAddInst<SemIR::FacetType>(
+      context, loc_id,
+      FacetTypeFromInterface(context, generic_interface->interface_id,
+                             specific_id));
+  auto result = LookupImplWitness(
+      context, loc_id, context.types().GetConstantId(operand_type_id),
+      facet_type_const_id, /*diagnose=*/false);
+  context.inst_block_stack().PopAndDiscard();
+  return result.has_value() && !result.has_error_value();
+}
+
+// Fork (SL-1, fork/slices/plan.md R-5, amended 2026-10-05): the
+// literal-subscript rule. An integer literal subscript on an operand that
+// implements `IndexWith(i64)` and has no `IndexWith(Core.IntLiteral)` impl
+// converts to `i64` before dispatch — the array arm's hardcoded subscript
+// conversion below, decided by impl lookup. Returns the target type, or
+// `nullopt` to dispatch the literal as written. A blanket `impl forall [U:
+// ImplicitAs(i64)] ... as IndexWith(U)` cannot serve literals instead:
+// `IntLiteral`'s `ImplicitAs(Int(To)).Convert` is compile-time only
+// (`int.convert_checked`), and a runtime `subscript: U` has no constant in
+// the `U = IntLiteral` specific, so that specific cannot lower
+// (lower/handle_call.cpp, "Missing constant value for call to comptime-only
+// function"); `Core.String`'s blanket impl lowers only because its `At` is
+// itself a builtin, lowered at the call site. An operand with its own
+// `IndexWith(Core.IntLiteral)` impl, and one with neither impl, dispatch as
+// written, so their results and diagnostics are unchanged.
+static auto LiteralSubscriptTargetType(Context& context, Parse::NodeId node_id,
+                                       SemIR::TypeId operand_type_id,
+                                       SemIR::TypeId literal_type_id)
+    -> std::optional<SemIR::TypeId> {
+  auto loc_id = SemIR::LocId(node_id);
+  auto has_literal_impl =
+      HasIndexWithImpl(context, loc_id, operand_type_id, literal_type_id);
+  if (!has_literal_impl || *has_literal_impl) {
+    return std::nullopt;
+  }
+  // Only the type is needed; the `i64` type expression's instruction is
+  // discarded.
+  context.inst_block_stack().Push();
+  auto i64_type_id = MakeIntType(context, node_id, SemIR::IntKind::Signed,
+                                 context.ints().Add(64));
+  context.inst_block_stack().PopAndDiscard();
+  auto has_i64_impl =
+      HasIndexWithImpl(context, loc_id, operand_type_id, i64_type_id);
+  if (!has_i64_impl || !*has_i64_impl) {
+    return std::nullopt;
+  }
+  return i64_type_id;
 }
 
 auto HandleParseNode(Context& context, Parse::IndexExprId node_id) -> bool {
@@ -85,6 +179,15 @@ auto HandleParseNode(Context& context, Parse::IndexExprId node_id) -> bool {
     }
 
     default: {
+      auto index_type_id = context.insts().Get(index_inst_id).type_id();
+      if (context.types().Is<SemIR::IntLiteralType>(index_type_id)) {
+        if (auto target_type_id = LiteralSubscriptTargetType(
+                context, node_id, operand_type_id, index_type_id)) {
+          index_inst_id =
+              ConvertToValueOfType(context, SemIR::LocId(index_inst_id),
+                                   index_inst_id, *target_type_id);
+        }
+      }
       auto elem_id =
           PerformIndexWith(context, node_id, operand_inst_id, index_inst_id);
       context.node_stack().Push(node_id, elem_id);

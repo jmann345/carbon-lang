@@ -31,8 +31,9 @@ fn RuntimeSeed(x: i32) -> i32 { return x + 20; }
 fn Run() -> i32 {
   var a: array(i32, 2) = (1, 2);
   let s: Core.Slice(i32) = Core.Slice(i32).FromArray(&a);
-  // Index 2 on a two-element view: fails-stop before any output.
-  let bad: i32 = s[RuntimeSeed(-18)];
+  // Index 2 on a two-element view: fails-stop before any output. Subscripts
+  // are `i64` (only a literal converts implicitly), hence the `as i64`.
+  let bad: i32 = s[RuntimeSeed(-18) as i64];
   Core.Print(bad);
   return 0;
 }

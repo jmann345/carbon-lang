@@ -1145,6 +1145,31 @@ placeholder (`MakeDestroyOpBody`) — residue W-105. Six existing goldens
 move (all those holding a user `Destroy` impl with a dumped or lowered
 destroy); the thunk-path goldens of this note do not.
 
+_SL-1 round-3 note (2026-10-05), the literal-subscript rule:_ the hosted
+autoupdate of the round-2 tree (run 37329946461) crashed lowering
+`Slice.At(i32, Core.IntLiteral as ImplicitAs(i64))` — "Missing constant
+value for call to comptime-only function" — because the rev 2 blanket
+`impl forall [U: ImplicitAs(i64)] Slice(T) as IndexWith(U)` calls
+`subscript.Convert()` on a runtime parameter, and `IntLiteral`'s
+`ImplicitAs(Int(To)).Convert` is `"int.convert_checked"`, compile-time only.
+Plan R-5 cited `Core.String`'s identical blanket impl as precedent; that
+impl lowers only because its `At` is itself a builtin (`"string.at"`) lowered
+at the call site with the call site's constant — a review miss (R28(d),
+recorded at R-5). Decision: `Slice(T)`/`Buf(T)` implement `IndexWith(i64)`
+only, and check/handle_index.cpp applies a literal-subscript rule — an
+`IntLiteral`-typed subscript converts to `i64` before dispatch when the
+operand type implements `IndexWith(i64)` and has no
+`IndexWith(Core.IntLiteral)` impl (a non-diagnosing `LookupImplWitness`
+probe over a facet type built directly from the `Core.IndexWith` decl, found
+with the new `TryLookupNameInCore`; the array arm's hardcoded subscript
+conversion, decided by lookup). The "and implements `IndexWith(i64)`" half is
+deliberate: it keeps every existing `IndexWith` golden byte-identical (types
+with neither impl still diagnose `Core.IndexWith(Core.IntLiteral)`; String
+and user `IndexWith(Core.IntLiteral)` impls dispatch as written; the
+missing/wrong-`Core.IndexWith` splits are not probed). Cost accepted: an
+`i32` subscript on a slice is an error (`s[i as i64]`), pinned by
+`fail_subscript_i32` and listed in slices.md "0.1 limits".
+
 _F8c landing note (2026-08-18):_ the D3 fix of the approved F-008 plan
 (fork/f008/plan.md §2.3, §3 F8c). _Adjudication verdict (step 1, plan
 adjudication D, run 32079343005, 2026-08-17T23:11Z): H0 REFUTED — and the plan's pre-declared H0-mock-divergence

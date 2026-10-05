@@ -18,8 +18,11 @@
 library "[[@TEST_NAME]]";
 
 // Predicted: a `FromArray` specific with `N = 4` deduced from
-// `array(i32, 4)*`; the `Slice(i32) as IndexWith(Core.IntLiteral)` witness
-// for the literal subscript; an `At` call producing a value of type `i32`.
+// `array(i32, 4)*`; the literal subscript converted to `i64` by the
+// literal-subscript rule (check/handle_index.cpp: `Slice(i32)` implements
+// `IndexWith(i64)` and not `IndexWith(Core.IntLiteral)`), so the
+// `Slice(i32) as IndexWith(i64)` witness and an `At` call with an `i64`
+// argument producing a value of type `i32`.
 //@dump-sem-ir-begin
 fn F() -> i32 {
   var a: array(i32, 4) = (1, 2, 3, 4);
@@ -32,9 +35,11 @@ fn F() -> i32 {
 
 library "[[@TEST_NAME]]";
 
-// Predicted: the same blanket `IndexWith(U)` impl with `U = i32`.
+// Predicted: an `i64` subscript dispatches `IndexWith(i64)` directly, with no
+// conversion of `i` (an `i32` subscript is the `fail_subscript_i32` pin in
+// fail_basic.carbon).
 //@dump-sem-ir-begin
-fn G(s: Core.Slice(i32), i: i32) -> i32 {
+fn G(s: Core.Slice(i32), i: i64) -> i32 {
   return s[i];
 }
 //@dump-sem-ir-end
@@ -94,7 +99,9 @@ fn U() {
 
 library "[[@TEST_NAME]]";
 
-// Predicted: a symbolic `IndexWith` lookup deferred to the specific.
+// Predicted: the literal converts to `i64` (the `IndexWith(i64)` impl is a
+// candidate for the symbolic `Slice(T)`, `IndexWith(Core.IntLiteral)` has
+// none) and the symbolic `IndexWith(i64)` lookup is deferred to the specific.
 //@dump-sem-ir-begin
 fn First[T: Core.Copy & Core.Destroy](s: Core.Slice(T)) -> T {
   return s[0];

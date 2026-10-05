@@ -66,7 +66,9 @@ class Buf(T: Copy & Destroy) {
 // No `UnformedInit`: `Destroy` runs unconditionally on `var` storage, so an
 // unformed `Buf` would free a garbage pointer (D-SL-6).
 
-impl forall [T: Copy & Destroy, U: ImplicitAs(i64)]
-    Buf(T) as IndexWith(U) where .ElementType = T {
-  fn At(self, subscript: U) -> T { return self.Get(subscript.Convert()); }
+// `i64` subscripts, as for `Slice` (an integer literal converts at the index
+// expression, check/handle_index.cpp).
+impl forall [T: Copy & Destroy] Buf(T) as IndexWith(i64)
+    where .ElementType = T {
+  fn At(self, subscript: i64) -> T { return self.Get(subscript); }
 }

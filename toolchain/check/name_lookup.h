@@ -128,6 +128,19 @@ inline auto LookupNameInCore(Context& context, SemIR::LocId loc_id,
   return LookupNameInCore(context, loc_id, llvm::ArrayRef{identifier});
 }
 
+// Fork (SL-1): as `LookupNameInCore`, but returns `None` without diagnosing
+// when package `Core` or the name is not found. For probes whose caller
+// diagnoses (or re-looks the name up) itself; `loc_id` is used only for the
+// lookup's bookkeeping.
+auto TryLookupNameInCore(Context& context, SemIR::LocId loc_id,
+                         llvm::ArrayRef<CoreIdentifier> qualifiers)
+    -> SemIR::InstId;
+
+inline auto TryLookupNameInCore(Context& context, SemIR::LocId loc_id,
+                                CoreIdentifier identifier) -> SemIR::InstId {
+  return TryLookupNameInCore(context, loc_id, llvm::ArrayRef{identifier});
+}
+
 // Checks whether a name is accessible in the given access context. Produces a
 // diagnostic if not.
 auto CheckAccess(Context& context, SemIR::LocId loc_id,

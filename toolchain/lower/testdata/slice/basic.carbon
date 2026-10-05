@@ -23,6 +23,6 @@ fn F() -> i32 {
   return s[1];
 }
 
-fn G(s: Core.Slice(i32), i: i32) -> i32 {
+fn G(s: Core.Slice(i32), i: i64) -> i32 {
   return s[i];
 }

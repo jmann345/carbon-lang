@@ -599,9 +599,11 @@ class Slice(T: Copy & Destroy) {
 
 impl forall [T: Copy & Destroy] Slice(T) as UnformedInit {}
 
-impl forall [T: Copy & Destroy, U: ImplicitAs(i64)]
-    Slice(T) as IndexWith(U) where .ElementType = T {
-  fn At(self, subscript: U) -> T { return self.Get(subscript.Convert()); }
+// Amended 2026-10-05 (round 3, R-5): `IndexWith(i64)` only — the blanket
+// `U: ImplicitAs(i64)` impl of rev 2 cannot lower for `U = IntLiteral`.
+impl forall [T: Copy & Destroy] Slice(T) as IndexWith(i64)
+    where .ElementType = T {
+  fn At(self, subscript: i64) -> T { return self.Get(subscript); }
 }
 
 // `const` can be added to the element type (D-SL-10).
@@ -624,10 +626,12 @@ amended 2026-09-28, review fold: rev A A10), so the
 argument's class to be complete. `self.ptr as const T*` is as.carbon
 :57-59 (`T* as As(const T*)`); `.size = N` converts the symbolic
 `IntLiteral` `N` to `i64` through int.carbon:31-33 inside a generic body
-exactly as iterate.carbon:25 compares `*cursor < N`. `subscript.Convert()`
-on a `U: ImplicitAs(i64)` value is optional.carbon:110-115/:128-133's
-shape (:79-83 is a comment block; amended 2026-09-28, review fold: rev A
-A10).
+exactly as iterate.carbon:25 compares `*cursor < N` — `N` is a GENERIC
+parameter, a constant in every specific, so its `int.convert_checked` folds
+(the round-3 crash class is a RUNTIME value of type `IntLiteral`; amended
+2026-10-05). The rev 2 `subscript.Convert()` on a `U: ImplicitAs(i64)`
+parameter (cited to optional.carbon:110-115/:128-133 and to String) was
+exactly that class and is gone — R-5's 2026-10-05 amendment.
 Returning `*PointerOffset(...)` (a durable reference of symbolic type
 `T`) from a `-> T` function copies through `Copy` as optional.carbon
 :170-172 (`return value.value unsafe as T;`) does — the nearest
@@ -725,9 +729,10 @@ class Buf(T: Copy & Destroy) {
 // No `UnformedInit`: `Destroy` runs unconditionally on `var` storage, so an
 // unformed `Buf` would free a garbage pointer (D-SL-6).
 
-impl forall [T: Copy & Destroy, U: ImplicitAs(i64)]
-    Buf(T) as IndexWith(U) where .ElementType = T {
-  fn At(self, subscript: U) -> T { return self.Get(subscript.Convert()); }
+// Amended 2026-10-05 (round 3, R-5): `IndexWith(i64)` only, as for `Slice`.
+impl forall [T: Copy & Destroy] Buf(T) as IndexWith(i64)
+    where .ElementType = T {
+  fn At(self, subscript: i64) -> T { return self.Get(subscript); }
 }
 ```
 
@@ -1128,13 +1133,18 @@ prelude is excluded from the dump.
         return s[1]; }`. Predicted: a `FromArray` call whose specific
         carries `N = 4` deduced from `array(i32, 4)*` (a
         `specific_function` line naming `@FromArray` with the `int_4`
-        constant), the `IndexWith` impl witness for
-        `Slice(i32) as IndexWith(Core.IntLiteral)` selected for the
-        `IntLiteral` subscript, and an `At` call producing a value of
-        type `%i32` (not a reference). No diagnostics.
-    -   `index_runtime_subscript`: `fn G(s: Core.Slice(i32), i: i32) ->
-        i32 { return s[i]; }` — predicted the same impl with `U = i32`
-        (the `i32 → i64` widening bound satisfied by int.carbon:62-68).
+        constant), the literal subscript converted to `i64` by the
+        literal-subscript rule (handle_index.cpp; amended 2026-10-05,
+        round 3) so the `Slice(i32) as IndexWith(i64)` witness is
+        selected, and an `At` call producing a value of type `%i32` (not
+        a reference). No diagnostics.
+    -   `index_runtime_subscript`: `fn G(s: Core.Slice(i32), i: i64) ->
+        i32 { return s[i]; }` — predicted a direct `IndexWith(i64)`
+        dispatch with no subscript conversion (amended 2026-10-05: rev
+        2's `i: i32` / `U = i32` is now the `fail_subscript_i32` pin in
+        fail_basic.carbon — `MissingImplInMemberAccess` "cannot access
+        member of interface `Core.IndexWith(i32)` in type
+        `Core.Slice(i32)` that does not implement that interface").
     -   `subslice_and_size`: `fn H(s: Core.Slice(i32)) -> i64 { return
         s.Subslice(1, 3).Size(); }` — predicted two method calls, no
         diagnostics.
@@ -1759,7 +1769,45 @@ Zero landed programs move (no landed program includes `<span>` or names
     `"abc"[0]` work (io.impl.carbon:10). Falsifier: `from_array_index`
     diagnosing "no impl of `Core.IndexWith(Core.IntLiteral)`" or an
     ambiguity. Contingency: a second concrete impl for `IntLiteral`
-    (the int.carbon:31/:42 pair pattern).
+    (the int.carbon:31/:42 pair pattern). **Amended 2026-10-05 (round
+    3; R28(d): a review miss recorded in place) — the precedent was
+    misapplied and the risk fired at the hosted fill (run 37329946461:
+    `FATAL ... Missing constant value for call to comptime-only
+    function` lowering `Slice.At(i32, Core.IntLiteral as ImplicitAs(i64))`).**
+    The blanket impl matched; what cannot work is its BODY for `U =
+    IntLiteral`: `IntLiteral as ImplicitAs(Int(To)).Convert` is
+    `"int.convert_checked"`, compile-time only (eval.cpp
+    `IsCompTimeOnly`), and `subscript` is a runtime parameter with no
+    constant in that specific. string.carbon:30-31 is NOT a precedent for
+    this shape: its `At` IS a builtin (`"string.at"`), lowered at the
+    CALL site with the call site's constant argument. Neither
+    contingency (a second IntLiteral impl would hit the same body
+    problem) applies. Root fix in the toolchain, not a narrowing of the
+    API: (1) slice.carbon/buf.carbon declare `IndexWith(i64)` only, `At`
+    calling `Get` directly; (2) check/handle_index.cpp applies the
+    literal-subscript rule — an `IntLiteral`-typed subscript on an
+    operand that implements `IndexWith(i64)` and has no
+    `IndexWith(Core.IntLiteral)` impl converts to `i64` before dispatch
+    (`ConvertToValueOfType`, the array arm's hardcoded conversion decided
+    by a non-diagnosing `LookupImplWitness(..., diagnose=false)` probe
+    whose facet type is built from the interface decl and a specific, so
+    the probe emits nothing and adds no instructions; `Core.IndexWith`
+    is resolved with the new non-diagnosing `TryLookupNameInCore`). The
+    refinement "and implements `IndexWith(i64)`" (not in the round-3
+    brief) is what keeps every existing `IndexWith` golden byte-identical:
+    a literal subscript on a type with neither impl still diagnoses
+    `Core.IndexWith(Core.IntLiteral)` (index/fail_invalid_base,
+    index/fail_non_tuple_access, operators/overloaded/index_with_prelude
+    `fail_invalid_subscript_type`/`fail_index_with_not_implemented`), a
+    type with its own `IndexWith(Core.IntLiteral)` impl (String,
+    index_with_prelude `overloaded_builtin`) is dispatched as written, and
+    the missing/wrong `Core.IndexWith` splits of operators/overloaded/
+    index.carbon are not probed (`nullopt`), so they diagnose once as
+    before. Consequence: an `i32` subscript on a `Slice`/`Buf` is an
+    error (`fail_subscript_i32`); slices_bounds_fail_stop.carbon's
+    `s[RuntimeSeed(-18)]` becomes `s[RuntimeSeed(-18) as i64]`; the
+    `index_runtime_subscript` positives take `i: i64`. Recorded as a fork
+    decision in slices.md ("The API", "0.1 limits").
 -   **R-6 — the `{T*, i64}` ↔ `std::span` layout premise.** libc++'s
     dynamic-extent `span` is `_Tp* __data_; size_type __size_;`,
     libstdc++'s is `pointer _M_ptr; __extent_storage<dynamic_extent>
@@ -2067,6 +2115,20 @@ Zero landed programs move (no landed program includes `<span>` or names
     decision-log carry the same record; residue W-105 files the
     member-held `Buf` leak (synthesized aggregate destroy ops run no
     member destructors).
+-   Amended 2026-10-05 (round 3, after hosted autoupdate run 37329946461
+    crashed in lower/testdata/slice/basic.carbon): a RUNTIME value of type
+    `Core.IntLiteral` cannot exist in lowered code — every `IntLiteral`
+    conversion is a comptime-only builtin — so no prelude generic may take
+    a `U: ImplicitAs(i64)` (or any facet `IntLiteral` satisfies) parameter
+    and convert it at runtime unless the body is itself a builtin lowered
+    at the call site (String's `At`). `Slice`/`Buf` take `IndexWith(i64)`
+    only, and the literal-subscript rule in check/handle_index.cpp
+    converts a literal to `i64` when the operand implements `IndexWith(i64)`
+    but not `IndexWith(Core.IntLiteral)` (R-5 amendment). Re-audit of
+    slice.carbon/buf.carbon/iterate.carbon for the same class: `.size = N`
+    in `FromArray` is a GENERIC `N` (constant per specific, folds, the
+    iterate.carbon:25 precedent); `*cursor - 1`, `i < size`, `0`, `1` are
+    literal constants — nothing else is a runtime `IntLiteral`.
 -   Out-of-class impls (`IndexWith`, `ImplicitAs(Slice(const T))`, the
     §1.B.3 interop impl) touch public API only (`Data`, `Size`, `Get`,
     `UnsafeMake`); `Buf.AsSlice` uses `UnsafeMake`. If you reach for a

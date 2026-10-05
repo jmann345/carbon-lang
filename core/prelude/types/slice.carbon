@@ -61,9 +61,16 @@ class Slice(T: Copy & Destroy) {
 
 impl forall [T: Copy & Destroy] Slice(T) as UnformedInit {}
 
-impl forall [T: Copy & Destroy, U: ImplicitAs(i64)]
-    Slice(T) as IndexWith(U) where .ElementType = T {
-  fn At(self, subscript: U) -> T { return self.Get(subscript.Convert()); }
+// Subscripts are `i64`. An integer literal subscript converts to `i64` at the
+// index expression (check/handle_index.cpp, the literal-subscript rule), so
+// `s[1]` and `s[i]` with `i: i64` both reach this impl. Not a blanket
+// `IndexWith(U: ImplicitAs(i64))` impl: for `U = IntLiteral` its `At` would
+// call a compile-time-only conversion on a runtime `subscript`, which cannot
+// be lowered (`String`'s blanket impl lowers only because its `At` is itself a
+// builtin).
+impl forall [T: Copy & Destroy] Slice(T) as IndexWith(i64)
+    where .ElementType = T {
+  fn At(self, subscript: i64) -> T { return self.Get(subscript); }
 }
 
 // `const` can be added to the element type (D-SL-10).

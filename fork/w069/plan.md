@@ -34,10 +34,10 @@ dated amendments (the b1/w072 house pattern).
 
 ### 0.1 The question
 
-Is a cross-file reference to a file-scope `let` bound to a runtime value
-(i) something upstream has DESIGNED semantics for, (ii) an
-acknowledged-but-unimplemented gap, or (iii) contradicted by design (for example a
-rule that a `let` binding's runtime backing is intentionally file-local)?
+Is a cross-file reference to a file-scope `let` bound to a runtime value (i)
+something upstream has DESIGNED semantics for, (ii) an
+acknowledged-but-unimplemented gap, or (iii) contradicted by design (for example
+a rule that a `let` binding's runtime backing is intentionally file-local)?
 
 ### 0.2 The evidence, quoted
 
@@ -186,24 +186,23 @@ stops being true, R17 applies (redesign, not rationalize).
     points at an `ImportRefLoaded` with `NotConstant`) AND the same-file
     cross-function case (the bound value is a local of `__global_init`, not
     of the referencing function). The gap was never choice-specific.
--   **Why `var` works (the parity target).** `VarStorage` is itself a
-    constant instruction whose constant lowers to the named global
-    (`EmitAsConstant(..., SemIR::VarStorage)` → `BuildGlobalVariableDecl`,
-    lower/constant.cpp:371-379; `BuildNonCppGlobalVariableDecl` mangles by way of
+-   **Why `var` works (the parity target).** `VarStorage` is itself a constant
+    instruction whose constant lowers to the named global (`EmitAsConstant(...,
+    SemIR::VarStorage)` → `BuildGlobalVariableDecl`, lower/constant.cpp:371-379;
+    `BuildNonCppGlobalVariableDecl` mangles by way of
     `Mangler::MangleGlobalVariable`, lower/file_context.cpp:753-795,
     sem_ir/mangler.cpp:299-324 — name + inverse-qualified scope +
-    private-to-library fingerprint). The importer reconstitutes the
-    `VarStorage` constant (check/testdata/var/global_decl_import.carbon:
-    `%Main.x: ref %struct_type.v = import_ref Main//decl, x, loaded
-    [concrete = %x.var]`), its `name_ref` is REF-category so check inserts
-    value acquisition at each use, and lowering emits
-    `@_Cv.Main = external global ...` + loads
-    (lower/testdata/var/import.carbon:84-90). Definitions get initializers
-    in `LowerGlobalVariables` (file_context.cpp:285-310) and the runtime
-    stores run in `_C__global_init` registered by way of `llvm.global_ctors`
-    (file_context.cpp:134-178) — **file-scope runtime initialization
-    already exists and runs**; §5's init-order contingency starts from
-    parity, not from zero.
+    private-to-library fingerprint). The importer reconstitutes the `VarStorage`
+    constant (check/testdata/var/global_decl_import.carbon: `%Main.x: ref
+    %struct_type.v = import_ref Main//decl, x, loaded [concrete = %x.var]`), its
+    `name_ref` is REF-category so check inserts value acquisition at each use,
+    and lowering emits `@_Cv.Main = external global ...` + loads
+    (lower/testdata/var/import.carbon:84-90). Definitions get initializers in
+    `LowerGlobalVariables` (file_context.cpp:285-310) and the runtime stores run
+    in `_C__global_init` registered by way of `llvm.global_ctors`
+    (file_context.cpp:134-178) — **file-scope runtime initialization already
+    exists and runs**; §5's init-order contingency starts from parity, not from
+    zero.
 -   **Half (b), already landed (the residue boundary).**
     import_ref.cpp:4479-4506: a non-constant imported inst must be an
     `AnyBinding`; if the BOUND value's constant is importable the binding
@@ -529,13 +528,13 @@ fixpoint (R15/R19/R26) + `bazel test //toolchain/...` + upstream-parity gate
     2026-08-18, review round — reviewer #2 S-4].
 -   **Conformance** [renormalized 2026-08-18, review round — reviewer #2
     B-1: W69h lands first, so THIS slice carries BOTH programs]:
-    1.  the SINGLE-FILE runtime arbiter, under
-        `CONFORMANCE-BULLET: Control flow: matching — sum-type consumption incl. std::variant/std::optional interop`
-        (deepens an existing-PASS bullet; character-exact per R7): a
+    1.  the SINGLE-FILE runtime arbiter, under `CONFORMANCE-BULLET: Control
+        flow: matching — sum-type consumption incl. std::variant/std::optional
+        interop` (deepens an existing-PASS bullet; character-exact per R7): a
         file-scope `let` of a generic-choice specific bound to a runtime
         constructor call (payload runtime-computed per R16d), matched
-        exhaustively inside `Run` with the payload read back —
-        arbitrating promotion + ctor ordering + readback at runtime.
+        exhaustively inside `Run` with the payload read back — arbitrating
+        promotion + ctor ordering + readback at runtime.
     2.  the SPLIT-FILE cross-file runtime arbiter (defining library +
         importing main, riding W69h's multi-unit support), under
         `CONFORMANCE-BULLET: Code organization: Importing` — the

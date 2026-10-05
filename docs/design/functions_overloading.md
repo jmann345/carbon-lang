@@ -481,16 +481,15 @@ catch remain caught:
     (`toolchain/check/testdata/function/declaration/no_definition_in_impl_file.carbon`),
     so the error would surface only at link time. This design therefore
     **depends on adding a library-boundary missing-definition check for
-    overload-set members**: every member of a set must be defined by the end
-    of the set's library, diagnosed at compile time. With that check, the
-    error moves from the second declaration to the library boundary but
-    never reaches link time and never silently changes call resolution — the
-    trade C++'s unmarked overloading loses on both counts. _Fork amendment
-    2026-09-27:_ OV-1 pins today's behavior (an api-declared member without
-    a definition is accepted and fails at link; golden
-    `marked_typo_undefined_member`); OV-2 landed the missing-definition check
-    for api-declared set members in the implementation file
-    (fork/overload/plan.md §1.B.7; golden `import.carbon`,
+    overload-set members**: every member of a set must be defined by the end of
+    the set's library, diagnosed at compile time. With that check, the error
+    moves from the second declaration to the library boundary but never reaches
+    link time and never silently changes call resolution — the trade C++'s
+    unmarked overloading loses on both counts. _Fork amendment 2026-09-27:_ OV-1
+    pins today's behavior (an api-declared member without a definition is
+    accepted and fails at link; golden `marked_typo_undefined_member`); OV-2
+    landed the missing-definition check for api-declared set members in the
+    implementation file (fork/overload/plan.md §1.B.7; golden `import.carbon`,
     `fail_undefined.impl.carbon`).
 
 -   **Marked parameter-name typo** — a marked pair differing only in a
@@ -637,19 +636,19 @@ In 0.1, an overload set may be named only as the callee of a
 [direct call](functions.md#direct-calls) (including method calls, where the
 bound-method machinery applies to the selected member).
 
-**CLOSED (fork amendment 2026-09-27) by D-OV-4 step 6:** any use that
-converts the set value — using it as an initializer (`let f: auto = Dist;`),
-passing it as an argument, discarding it as a statement — is the hard error
-`OverloadSetNotCallee` ("overload set `Dist` can only be used as the callee
-of a call"); there are no arguments to resolve against. Other non-call uses
-reach the landed diagnostic that precedes any conversion (`&Dist` is
-`AddrOfNonRef`; `Dist.x` is the member-access family). The
-forward-compatible path is
-[proposal #2875](/proposals/p002875-functions-function-types-and-function-calls.md)'s
-model of an overload set as a single function type with one
-[`Call` impl](functions.md#indirect-calls-and-the-call-interface) per member
-in a `match_first` block, which would make sets first-class later without
-changing any call-site semantics.
+**CLOSED (fork amendment 2026-09-27) by D-OV-4 step 6:** any use that converts
+the set value — using it as an initializer (`let f: auto = Dist;`), passing it
+as an argument, discarding it as a statement — is the hard error
+`OverloadSetNotCallee` ("overload set `Dist` can only be used as the callee of a
+call"); there are no arguments to resolve against. Other non-call uses reach the
+landed diagnostic that precedes any conversion (`&Dist` is `AddrOfNonRef`;
+`Dist.x` is the member-access family). The forward-compatible path is
+[proposal #2875][p2875]'s model of an overload set as a single function type
+with one [`Call` impl](functions.md#indirect-calls-and-the-call-interface) per
+member in a `match_first` block, which would make sets first-class later
+without changing any call-site semantics.
+
+[p2875]: /proposals/p002875-functions-function-types-and-function-calls.md
 
 **CLOSED (fork amendment 2026-09-27) by D-OV-10:** yes — an `alias` for
 the set's name aliases the whole set as a unit (never an individual member;
@@ -707,10 +706,10 @@ function would. Mixed sets — non-generic and generic members, or members with
 different constraints — follow declaration order like any other set, with
 [no specificity preference](#no-ranking-no-subsumption).
 
-An overload set is not an entity that can implement an interface or appear as
-a witness; only its individual members are functions. Interface-driven
-dispatch (including operator overloading by way of the `Core` operator interfaces)
-is a separate mechanism and is unchanged by this design.
+An overload set is not an entity that can implement an interface or appear as a
+witness; only its individual members are functions. Interface-driven dispatch
+(including operator overloading by way of the `Core` operator interfaces) is a
+separate mechanism and is unchanged by this design.
 
 ### Calls from template code
 
@@ -833,26 +832,24 @@ using the `Dist` set above (members declared `i64` first, `f64` second):
     selects the first member (`i32` converts to `i64`). A C++ call
     `Dist(int{4}, int{4})` is an **ambiguity error**: `int → int64_t` and
     `int → double` are equal-rank standard conversions under C++'s rules.
--   **The two sides pick different members.** For a set declared `i64`
-    first, `i32` second — `overload fn Pick(x: i64) -> i32; overload fn
-    Pick(x: i32) -> i32;` — a Carbon call with an `i32` argument selects the
-    _first_ member (`i32 → i64` is an
-    [implicit conversion](expressions/implicit_conversions.md): the integer
-    widens), while the C++ call `Pick(int{4})` selects the _`i32`_ member:
-    on supported targets `int` is `int32_t`, an exact match, which outranks
-    the `int → long` conversion under C++'s rules. (_Fork amendment
-    2026-09-27:_ this page's original example used `i32 → f64`, which is not
-    an implicit conversion in the prelude — the integer-to-float `ImplicitAs`
-    impls are not enabled — so the shape is restated with the `Pick` set that
-    OV-3's conformance program
+-   **The two sides pick different members.** For a set declared `i64` first,
+    `i32` second — `overload fn Pick(x: i64) -> i32; overload fn Pick(x: i32) ->
+    i32;` — a Carbon call with an `i32` argument selects the _first_ member (`i32
+    → i64` is an [implicit conversion](expressions/implicit_conversions.md): the
+    integer widens), while the C++ call `Pick(int{4})` selects the _`i32`_
+    member: on supported targets `int` is `int32_t`, an exact match, which
+    outranks the `int → long` conversion under C++'s rules. (_Fork amendment
+    2026-09-27:_ this page's original example used `i32 → f64`, which is not an
+    implicit conversion in the prelude — the integer-to-float `ImplicitAs` impls
+    are not enabled — so the shape is restated with the `Pick` set that OV-3's
+    conformance program
     `fork/conformance/programs/interop/cpp_export_overload_set_divergence.carbon`
     asserts in both directions: Carbon prints 1, C++ prints 2. The agreeing
-    direction — a `Describe` set declared `i32` first, `bool` second, where
-    an `int` and a `bool` argument select the same member on both sides by
-    exact match — is `cpp_export_overload_set.carbon`. The first shape is
-    pinned by the `fail_cpp_ambiguous` golden: `Carbon::F(7)` against
-    `F(i64)`/`F(bool)` is ambiguous under C++ rules, where Carbon's
-    first-match selects `F(i64)`.)
+    direction — a `Describe` set declared `i32` first, `bool` second, where an
+    `int` and a `bool` argument select the same member on both sides by exact
+    match — is `cpp_export_overload_set.carbon`. The first shape is pinned by
+    the `fail_cpp_ambiguous` golden: `Carbon::F(7)` against `F(i64)`/`F(bool)`
+    is ambiguous under C++ rules, where Carbon's first-match selects `F(i64)`.)
 
 The divergence is bounded: it affects only _which member is selected, or
 whether the call compiles_. It can never produce a wrong-ABI call — each
@@ -872,30 +869,28 @@ pinned by tests rather than lore.
 Two members of a Carbon set are distinct functions and need distinct linkage
 names. The toolchain's mangler derives names from the qualified name plus a
 generic-specific fingerprint — plus, for library-private names only, a
-fingerprint of the first declaration (`toolchain/sem_ir/mangler.cpp`) — so
-two _public_ non-generic members of one set would collide. _Fork amendment
+fingerprint of the first declaration (`toolchain/sem_ir/mangler.cpp`) — so two
+_public_ non-generic members of one set would collide. _Fork amendment
 2026-09-27 (D-OV-5):_ the mangled name of an overload-set member carries the
 member's **set-relative index** immediately after its name — `overload fn
-Pick(x: i64)` at file scope in package `Main` mangles to
-`_CPick:overload0.Main` and its sibling to `_CPick:overload1.Main`. The index
-is the member's position in declaration order, which is api order and the
-same in every file that sees the set, so no fingerprint of any instruction
-is involved; a signature fingerprint (this page's original mechanism) was
-rejected because instruction fingerprints are not stable across files — an
-imported declaration is fingerprinted with an empty declaration block, which
-is why the library-private fingerprint already fails to separate two
-libraries' functions of one name
+Pick(x: i64)` at file scope in package `Main` mangles to `_CPick:overload0.Main`
+and its sibling to `_CPick:overload1.Main`. The index is the member's position
+in declaration order, which is api order and the same in every file that sees
+the set, so no fingerprint of any instruction is involved; a signature
+fingerprint (this page's original mechanism) was rejected because instruction
+fingerprints are not stable across files — an imported declaration is
+fingerprinted with an empty declaration block, which is why the library-private
+fingerprint already fails to separate two libraries' functions of one name
 (`toolchain/lower/testdata/function/generic/cross_library_name_collision_private.carbon`).
-Exported members are **not** unaffected by Carbon-internal mangling: an
-exported member reaches C++ as an inline C++ function of the member's name
-whose body calls the member's generated Carbon thunk through a declaration
-carrying that thunk's Carbon mangled name as an asm label
-(`toolchain/check/cpp/export.cpp`). _Fork amendment 2026-10-05 (OV-3):_ a set
-member's thunk carries the member's index too, so it mangles
-`_CPick__carbon_thunk:overload0.Main` and calls the member's own
-`_CPick:overload0.Main`: C++ sees N distinct symbol pairs behind N same-named
-declarations, and the member that C++ resolution selects is the member that
-runs (lower golden
+Exported members are **not** unaffected by Carbon-internal mangling: an exported
+member reaches C++ as an inline C++ function of the member's name whose body
+calls the member's generated Carbon thunk through a declaration carrying that
+thunk's Carbon mangled name as an asm label (`toolchain/check/cpp/export.cpp`).
+_Fork amendment 2026-10-05 (OV-3):_ a set member's thunk carries the member's
+index too, so it mangles `_CPick__carbon_thunk:overload0.Main` and calls the
+member's own `_CPick:overload0.Main`: C++ sees N distinct symbol pairs behind N
+same-named declarations, and the member that C++ resolution selects is the
+member that runs (lower golden
 `toolchain/lower/testdata/interop/cpp/function/export/overload_set.carbon`).
 
 ## Future work

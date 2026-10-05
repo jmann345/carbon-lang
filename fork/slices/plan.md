@@ -11,75 +11,71 @@ reviews (R29(c); rev A, design fidelity: 4 MAJOR + 6 MINOR; rev B, toolchain
 reality: 4 MAJOR + 7 MINOR; both APPROVE-WITH-AMENDMENTS) are folded in place,
 each amendment marked "(amended 2026-09-28, review fold: rev A An / rev B Bn)"
 and tabled in the Review fold record before Sign-off. Branch
-`claude/carbon-fork-0-1-slices` off trunk 8e32108f8 (post-PR #43: UN-1
-landed; the weekly cut holds a sixth week). **Base at rebase:**
-fork/conformance/out/scoreboard.json on this trunk reads
-`totals.PASS = 114`, `totals.SKIP = 25`, every fail class 0, so
-`totals.PASS + totals.SKIP = 139` programs (generated
-2026-09-27T12:30:10Z on the hosted-verification toolchain); the
-gap-analysis header (fork/gap-analysis.md:18-20) agrees: 114 PASS / 0
-FAIL / 25 SKIP over 139, 45/56 bullets, 27 DONE / 21 PARTIAL / 7 MISSING
-/ 1 DESIGN-ONLY. OV-1 (+2 PASS / −1 SKIP / +1 total; source: the fork/decision-log.md entry
-"OV-1: `overload fn` closed sets, first-match resolution (2026-09-28)" on
-branch claude/carbon-fork-0-1-overload — 116 PASS / 0 FAIL / 24 SKIP over 140
-on its own c0c57285f base, run 36451200115) and UN-2 (+2 PASS / +2 total;
-source: the fork/decision-log.md entry "UN-2: union C++ interop (2026-09-28)",
-merged to trunk 50839d68e — 116 PASS / 0 FAIL / 25 SKIP over 141, run
-36447037687) land before this workstream, so the expected absolute base when
-SL-1 rebases is **118 PASS / 0 FAIL / 24 SKIP over 142** (the OV-1 entry's own
-post-merge reading of scoreboard.json); every count below is stated as a DELTA
-and the absolutes are re-quoted from scoreboard.json at rebase time, never
-derived (R9 — the last two records were off by one from mental arithmetic)
+`claude/carbon-fork-0-1-slices` off trunk 8e32108f8 (post-PR #43: UN-1 landed;
+the weekly cut holds a sixth week). **Base at rebase:**
+fork/conformance/out/scoreboard.json on this trunk reads `totals.PASS = 114`,
+`totals.SKIP = 25`, every fail class 0, so `totals.PASS + totals.SKIP = 139`
+programs (generated 2026-09-27T12:30:10Z on the hosted-verification toolchain);
+the gap-analysis header (fork/gap-analysis.md:18-20) agrees: 114 PASS / 0 FAIL /
+25 SKIP over 139, 45/56 bullets, 27 DONE / 21 PARTIAL / 7 MISSING / 1
+DESIGN-ONLY. OV-1 (+2 PASS / −1 SKIP / +1 total; source: the
+fork/decision-log.md entry "OV-1: `overload fn` closed sets, first-match
+resolution (2026-09-28)" on branch claude/carbon-fork-0-1-overload — 116 PASS /
+0 FAIL / 24 SKIP over 140 on its own c0c57285f base, run 36451200115) and UN-2
+(+2 PASS / +2 total; source: the fork/decision-log.md entry "UN-2: union C++
+interop (2026-09-28)", merged to trunk 50839d68e — 116 PASS / 0 FAIL / 25 SKIP
+over 141, run 36447037687) land before this workstream, so the expected absolute
+base when SL-1 rebases is **118 PASS / 0 FAIL / 24 SKIP over 142** (the OV-1
+entry's own post-merge reading of scoreboard.json); every count below is stated
+as a DELTA and the absolutes are re-quoted from scoreboard.json at rebase time,
+never derived (R9 — the last two records were off by one from mental arithmetic)
 (amended 2026-09-28, review fold: rev A A8: the deltas had no source in this
-tree). All toolchain, core, docs and fork line
-numbers are against 8e32108f8 and were re-verified for this plan; stale
-ledger citations are corrected in §0.2. The container cannot build the
-toolchain (clang 18 < 19), so every golden and diagnostic outcome is
-pre-registered for the hosted autoupdate to confirm or refute (R28(b)).
+tree). All toolchain, core, docs and fork line numbers are against 8e32108f8 and
+were re-verified for this plan; stale ledger citations are corrected in §0.2.
+The container cannot build the toolchain (clang 18 < 19), so every golden and
+diagnostic outcome is pre-registered for the hosted autoupdate to confirm or
+refute (R28(b)).
 
-**Items:** W-055 ("W9a: implement Core slice type and heap allocation",
-size L, subsystem core/prelude + check support) and W-056 ("W9b:
-transparent std::span / contiguous-container view mapping", size M,
-blocked_by W-055). **Design authority:** there is no fork design-sprint
-page for slices (`ls fork/design-sprint`: error-handling,
-function-overloading, if-let, reading-list, structural-conformance,
-threading-atomics, unions) and no decision-log entry mentions slices,
-heap allocation or `std::span` (`grep -in 'slice\|heap\|span'
-fork/decision-log.md` hits only choice-work "slice" in the PR sense), so
-this plan establishes what UPSTREAM's design says (§0.3, D-SL-1..14) and
-applies R29(a) where it is silent, never contradicting its direction
-(V-3). The upstream sources, each cited where used: docs/design/README.md
-:872-916 ("Arrays and buffers": `array(T, N)` = `Core.Array(T, N)`,
-`buf(T)` = `Core.Buf(T)` "heap-allocated dynamically sized array";
-"Slices": `> **TODO:** Slices`, :912-914); docs/design/expressions/
-indexing.md (the `IndexWith`/`IndirectIndexWith` rewrite rules and the
-`class Span(T: type) { impl as IndirectIndexWith(like i64) ... }` example,
-:61-63, :116-121); docs/design/values.md:1125-1131 (pointers "cannot be
-indexed or have pointer arithmetic performed on them ... Slice or view
-style types are expected to provide access to indexable regions ... raw
-pointer arithmetic ... through specialized constructs"); docs/design/safety/README.md:218-224 (the RELEASE build: "bounds checking is
+**Items:** W-055 ("W9a: implement Core slice type and heap allocation", size L,
+subsystem core/prelude + check support) and W-056 ("W9b: transparent std::span /
+contiguous-container view mapping", size M, blocked_by W-055). **Design
+authority:** there is no fork design-sprint page for slices (`ls
+fork/design-sprint`: error-handling, function-overloading, if-let, reading-list,
+structural-conformance, threading-atomics, unions) and no decision-log entry
+mentions slices, heap allocation or `std::span` (`grep -in 'slice\|heap\|span'
+fork/decision-log.md` hits only choice-work "slice" in the PR sense), so this
+plan establishes what UPSTREAM's design says (§0.3, D-SL-1..14) and applies
+R29(a) where it is silent, never contradicting its direction (V-3). The upstream
+sources, each cited where used: docs/design/README.md :872-916 ("Arrays and
+buffers": `array(T, N)` = `Core.Array(T, N)`, `buf(T)` = `Core.Buf(T)`
+"heap-allocated dynamically sized array"; "Slices": `> **TODO:** Slices`,
+:912-914); docs/design/expressions/ indexing.md (the `IndexWith`/`IndirectIndexWith`
+rewrite rules and the `class Span(T: type) { impl as IndirectIndexWith(like i64)
+... }` example, :61-63, :116-121); docs/design/values.md:1125-1131 (pointers
+"cannot be indexed or have pointer arithmetic performed on them ... Slice or
+view style types are expected to provide access to indexable regions ... raw
+pointer arithmetic ... through specialized constructs");
+docs/design/safety/README.md:218-224 (the RELEASE build: "bounds checking is
 enabled in the release build", plus an unsafe opt-out "that disables the
 run-time enforcement") and :229-232 (the DEBUG build: detectable bugs get
 "[fail-stop] behavior and provide detailed diagnostics" — the promise D-SL-4
 adopts as the single 0.1 mode; amended 2026-09-28, review fold: rev A A3) with
 safety/terminology.md:98-102 (fail-stop = "immediately terminating the
-program"); docs/design/
-classes.md:1849-1875 (the `Allocator` interface with `Delete`/
-`UnsafeDelete` over `Deletable`/`Destructible` facets, none of which the
-toolchain has); docs/project/milestones.md:69 ("heap allocation" as an
+program"); docs/design/ classes.md:1849-1875 (the `Allocator` interface with
+`Delete`/ `UnsafeDelete` over `Deletable`/`Destructible` facets, none of which
+the toolchain has); docs/project/milestones.md:69 ("heap allocation" as an
 example library component), :201-214 (the 0.1 stdlib list: "Slices";
-"Transparent mapping between Carbon and C++ _non-owning_ contiguous
-container types — Includes starting from an owning container and forming
-the non-owning view and then transparently mapping that between
-languages"); proposals/p004682:310-332 (the owning-buffer vocabulary
-table: `Core.Buf(T)` is the "Indirect, Mutable Size" row; "Carbon does
-not have proposed names for heap-allocated storage, so we use some
-placeholders"); proposals/p002274:44-51 (a slice "refers to some region
-of an array ... such as `std::string_view` or `std::span`") and :258-272
-(read-only subscripting is an open problem). The prelude's closest
-existing view type is `core/prelude/types/string.carbon:16-25`
-(`class String { private var ptr: Char*; private var size: i64; }`) with
-its indexing done by the builtin `"string.at"` (:31-33).
+"Transparent mapping between Carbon and C++ _non-owning_ contiguous container
+types — Includes starting from an owning container and forming the non-owning
+view and then transparently mapping that between languages");
+proposals/p004682:310-332 (the owning-buffer vocabulary table: `Core.Buf(T)` is
+the "Indirect, Mutable Size" row; "Carbon does not have proposed names for
+heap-allocated storage, so we use some placeholders"); proposals/p002274:44-51
+(a slice "refers to some region of an array ... such as `std::string_view` or
+`std::span`") and :258-272 (read-only subscripting is an open problem). The
+prelude's closest existing view type is `core/prelude/types/string.carbon:16-25`
+(`class String { private var ptr: Char*; private var size: i64; }`) with its
+indexing done by the builtin `"string.at"` (:31-33).
 
 **Milestone bullets this plan flips** (R7: copied character-for-character
 into every conformance header): fork/gap-analysis.md:76 "Stdlib: Slices"
@@ -147,11 +143,11 @@ the hosted fill (§5.B, §7 R-9).
     payloads, unions or the variant/optional mapping); the line describes
     W9's OTHER halves (String/Optional). Recorded, not edited (the header
     is a W9-level statement).
-6.  **gap-analysis row 74 "String is a 33-line non-owning {Char*, u64}"**
-    — string.carbon:23-25 declares `size: i64` (the `u64` is the
-    min_prelude PART, toolchain/testing/testdata/min_prelude/parts/
-    string.carbon:14-17; amended 2026-09-28, review fold: rev A A10). Corrected in the row text at discharge (the
-    `String`/`Slice` layout twin-ship matters for D-SL-8).
+6.  **gap-analysis row 74 "String is a 33-line non-owning {Char*, u64}"** —
+    string.carbon:23-25 declares `size: i64` (the `u64` is the min_prelude PART,
+    toolchain/testing/testdata/min_prelude/parts/ string.carbon:14-17; amended
+    2026-09-28, review fold: rev A A10). Corrected in the row text at discharge
+    (the `String`/`Slice` layout twin-ship matters for D-SL-8).
 7.  **cpp_span_view.carbon's strawman `Cpp.SumSpan(a)`** (array value
     passed as a span) contradicts values.md:1125-1131's explicit-view
     philosophy and would alias a value binding that the design allows to
@@ -230,9 +226,9 @@ written at SL-1 discharge (§8.5) with these sub-decisions verbatim.
     `IndirectIndexWith`/`ref`-returning methods land in the toolchain;
     `Core.Slice` then switches to indexing.md's `Span` shape and the
     pin is deleted.
--   **D-SL-4 — a bounds violation is a fail-stop: one line on stderr,
-    then `abort()`; unconditional in 0.1 (no build modes).**
-    Attribution, stated precisely (amended 2026-09-28, review fold: rev A A3):
+-   **D-SL-4 — a bounds violation is a fail-stop: one line on stderr, then
+    `abort()`; unconditional in 0.1 (no build modes).** Attribution, stated
+    precisely (amended 2026-09-28, review fold: rev A A3):
     safety/README.md:218-221 says of the RELEASE build only that "bounds
     checking is enabled in the release build", and :222-224 that Carbon "will
     provide ways to write unsafe code that disables the run-time enforcement";
@@ -241,30 +237,29 @@ written at SL-1 discharge (§8.5) with these sub-decisions verbatim.
     [fail-stop] behavior and provide detailed diagnostics"
     (safety/terminology.md:98-102 defines fail-stop). The toolchain has no
     build-mode notion (README.md:379-385 is design text only), so 0.1 has ONE
-    mode, and this plan adopts the debug-build promise as that mode — an
-    R29(a) fill under a missing notion, not behavior the release text
-    mandates; the check is always on. The release paragraph's enforcement
-    opt-out is upstream-specified residue this plan does not implement
-    (`UnsafeMake`/`Data()` form views; they do not provide an unchecked READ),
-    filed by title as "unchecked slice access (the release-build enforcement
-    opt-out, safety/README.md:222-224)" in §1.A.6/§8.5. Mechanism: the prelude tests `i < 0 or i >=
-    self.size` in Carbon and calls the `fail_stop` builtin (D-SL-5),
-    which lowers as `write(2, message.ptr, message.size)` (the exact
-    `write` declaration of lower/handle.cpp:349-350, so both sites share
-    one module-level declaration) followed by a call to `abort` marked
-    `noreturn`. No `unreachable` is emitted after the call: the checker
-    still emits the branch to the merge block after the `if` body, and a
-    terminator mid-block would be invalid IR — a `noreturn` call followed
-    by dead code is valid and the optimizer folds it (R-1 falsifier
-    below). The message names the operation, not the index (no integer
-    formatting at this level; `printf` from a generic prelude body is not
-    available): `carbon: Core.Slice index out of bounds; terminating`,
-    `carbon: Core.Slice.Subslice range out of bounds; terminating`,
-    `carbon: Core.Buf index out of bounds; terminating`, `carbon: Core.Buf
-    size is negative; terminating`, `carbon: heap allocation failed;
-    terminating`. Exit is SIGABRT (6). Break condition: build modes land
-    (the check becomes mode-gated) or a `CARBON_DIAGNOSTIC`-style runtime
-    diagnostics facility exists (message gains the index).
+    mode, and this plan adopts the debug-build promise as that mode — an R29(a)
+    fill under a missing notion, not behavior the release text mandates; the
+    check is always on. The release paragraph's enforcement opt-out is
+    upstream-specified residue this plan does not implement (`UnsafeMake`/`Data()`
+    form views; they do not provide an unchecked READ), filed by title as
+    "unchecked slice access (the release-build enforcement opt-out,
+    safety/README.md:222-224)" in §1.A.6/§8.5. Mechanism: the prelude tests `i <
+    0 or i >= self.size` in Carbon and calls the `fail_stop` builtin (D-SL-5),
+    which lowers as `write(2, message.ptr, message.size)` (the exact `write`
+    declaration of lower/handle.cpp:349-350, so both sites share one
+    module-level declaration) followed by a call to `abort` marked `noreturn`.
+    No `unreachable` is emitted after the call: the checker still emits the
+    branch to the merge block after the `if` body, and a terminator mid-block
+    would be invalid IR — a `noreturn` call followed by dead code is valid and
+    the optimizer folds it (R-1 falsifier below). The message names the
+    operation, not the index (no integer formatting at this level; `printf` from
+    a generic prelude body is not available): `carbon: Core.Slice index out of
+    bounds; terminating`, `carbon: Core.Slice.Subslice range out of bounds;
+    terminating`, `carbon: Core.Buf index out of bounds; terminating`, `carbon:
+    Core.Buf size is negative; terminating`, `carbon: heap allocation failed;
+    terminating`. Exit is SIGABRT (6). Break condition: build modes land (the
+    check becomes mode-gated) or a `CARBON_DIAGNOSTIC`-style runtime diagnostics
+    facility exists (message gains the index).
 -   **D-SL-5 — four new builtins, all runtime-only, declared `private`
     in the prelude: `"pointer.offset"` (`fn PointerOffset[T: type](p: T*,
     n: i64) -> T*`), `"fail_stop"` (`fn FailStop(message: str)`),
@@ -286,65 +281,62 @@ written at SL-1 discharge (§8.5) with these sub-decisions verbatim.
     reveal the pointer with `unsafe as T*` exactly as optional.carbon
     :196-202 does. Break condition: upstream adds pointer-offset or
     allocation builtins under other names — rename, one line each.
--   **D-SL-6 — heap allocation is the owning class `Core.Buf(T: Copy &
-    Destroy)` (`{ptr: T*, size: i64}`) over libc `malloc`/`free`:
-    `Make(size: i64, fill: T)`, `Size(self)`, `Get(self, i)`, `Set(self,
-    i, value)`, `AsSlice(self)`, `impl as Destroy` frees; not `Copy`, not
-    `UnformedInit`; no `buf(T)` keyword; no `Allocator` interface; element destructors are
-    NOT run.** README.md:887-889 names `Core.Buf(T)` (with `buf(T)` as
-    the shorthand) as THE heap-allocated dynamically sized array —
+-   **D-SL-6 — heap allocation is the owning class `Core.Buf(T: Copy & Destroy)`
+    (`{ptr: T*, size: i64}`) over libc `malloc`/`free`:
+    `Make(size: i64, fill: T)`, `Size(self)`, `Get(self, i)`,
+    `Set(self, i, value)`, `AsSlice(self)`, `impl as Destroy` frees; not `Copy`,
+    not `UnformedInit`; no `buf(T)` keyword; no `Allocator` interface; element
+    destructors are NOT run.** README.md:887-889 names `Core.Buf(T)` (with
+    `buf(T)` as the shorthand) as THE heap-allocated dynamically sized array —
     p004682:316-322 calls the name a placeholder, but it is the only
-    heap-storage spelling upstream's design text carries, so V-3 says use
-    it. The `buf` shorthand would be a lexer/parser change for a
-    placeholder name: residue. classes.md:1849-1875's `Allocator` needs
-    `Deletable`/`Destructible` facets the toolchain lacks: residue,
-    mechanism named. Every element is initialized from `fill` (no
-    unformed elements escape: `MaybeUnformed` never leaves `Make`), the
-    fill loop assigns through `*PointerOffset(ptr, i) = fill` — an
-    `InitializeExisting` into a `Deref` of symbolic `T`, whose nearest
-    precedent is the optional.carbon:162 adapter-cast store; R-4 names
-    the shape and its isolating golden lines (amended 2026-09-28, review
-    fold: rev A A5). `Set(self, ...)` takes `self`
-    by value on purpose: the storage is the heap block the pointer names,
-    so no `ref self` is needed, and D-SL-3's const hazard does not arise
-    (heap memory is writable; `Buf(const T)` is legal but pointless).
-    Element destructors: `Buf(T)`'s `Destroy` frees the block without
-    running `T`'s destructor per element, mirroring what
-    `Optional(T)`/`MaybeUnformed(T)` already do (maybe_unformed.carbon
-    :12-16 adapts a builtin that the destroy walk treats as trivial,
+    heap-storage spelling upstream's design text carries, so V-3 says use it.
+    The `buf` shorthand would be a lexer/parser change for a placeholder name:
+    residue. classes.md:1849-1875's `Allocator` needs `Deletable`/`Destructible`
+    facets the toolchain lacks: residue, mechanism named. Every element is
+    initialized from `fill` (no unformed elements escape: `MaybeUnformed` never
+    leaves `Make`), the fill loop assigns through `*PointerOffset(ptr, i) =
+    fill` — an `InitializeExisting` into a `Deref` of symbolic `T`, whose
+    nearest precedent is the optional.carbon:162 adapter-cast store; R-4 names
+    the shape and its isolating golden lines (amended 2026-09-28, review fold:
+    rev A A5). `Set(self, ...)` takes `self` by value on purpose: the storage is
+    the heap block the pointer names, so no `ref self` is needed, and D-SL-3's
+    const hazard does not arise (heap memory is writable; `Buf(const T)` is
+    legal but pointless). Element destructors: `Buf(T)`'s `Destroy` frees the
+    block without running `T`'s destructor per element, mirroring what
+    `Optional(T)`/`MaybeUnformed(T)` already do (maybe_unformed.carbon :12-16
+    adapts a builtin that the destroy walk treats as trivial,
     custom_witness.cpp:277-281, :641-645) — there is no precedent for an
     explicit `Destroy.Op` call in Carbon source (`grep -rn 'Destroy.Op)()'
-    toolchain/check/testdata core` is empty). Residue with the break
-    condition "explicit destroy calls or `TrivialDestructor` facets land
-    (generics/details.md:4190-4192)". `Buf` has no `Copy` impl, so copying
-    is a compile error (`CopyOfUncopyableType`, §4.A `fail_copy`), never a
-    double free — custom_witness.cpp:1461-1467 synthesizes `Copy` only for
-    choice and union self types, so nothing is synthesized for `Buf`.
-    **`Buf` is NOT
-    `UnformedInit`** (amended 2026-09-28, review fold: rev B B1 / rev A A9):
-    the toolchain runs `Destroy` on every `var` UNCONDITIONALLY —
+    toolchain/check/testdata core` is empty). Residue with the break condition
+    "explicit destroy calls or `TrivialDestructor` facets land
+    (generics/details.md:4190-4192)". `Buf` has no `Copy` impl, so copying is a
+    compile error (`CopyOfUncopyableType`, §4.A `fail_copy`), never a double
+    free — custom_witness.cpp:1461-1467 synthesizes `Copy` only for choice and
+    union self types, so nothing is synthesized for `Buf`. **`Buf` is NOT
+    `UnformedInit`** (amended 2026-09-28, review fold: rev B B1 / rev A A9): the
+    toolchain runs `Destroy` on every `var` UNCONDITIONALLY —
     pattern_match.cpp:1727 registers the cleanup
     (`AddInstWithCleanup<SemIR::VarStorage>`) BEFORE `Initialize` runs (the
     `GetOrAddVarStorage` path at :1680 likewise); control_flow.h:75-83 →
-    `MaybeAddCleanupForInst` (control_flow.cpp:143-148) →
-    scope_stack.h:256-258 `PushCleanupFor`; control_flow.cpp:151-158
-    `AddCleanups` builds a `Destroy` call for every registered id; there is no
-    unformed-state tracking anywhere (`grep -n unformed` over
-    pattern_match.cpp, control_flow.cpp and handle_let_and_var.cpp is empty;
-    lower/testdata/var/param.carbon:62-66 shows the unconditional destroy call
-    on a `var`). The design's "destroy is skipped for unformed variables" rule
-    is therefore UNIMPLEMENTED, and an `UnformedInit` `Buf` would let `var b:
-    Core.Buf(i32);` compile and then `free()` stack garbage at scope exit —
-    nothing in §4/§5 executes that path, so it would have shipped green.
-    Instead `var b: Core.Buf(i32);` is a compile-time `DefaultOrUnformed`
-    failure, pinned as `fail_unformed` (§4.A), and the residue title
-    "`Core.Buf` unformed declarations (needs unformed-state-aware destroy)" is
-    filed (§8.5). `Slice` keeps its `UnformedInit`: it has no user `Destroy`
-    and its `{T*, i64}` fields are trivially destroyed, so an unformed `Slice`
-    is as harmless as an unformed `String` (string.carbon:28).
-    Over-aligned `T` (alignment > `max_align_t`) is residue (`malloc`
-    only guarantees 16). Break condition: an upstream proposal names the
-    heap types — rename; an `Allocator` design lands — `Buf` gains an
+    `MaybeAddCleanupForInst` (control_flow.cpp:143-148) → scope_stack.h:256-258
+    `PushCleanupFor`; control_flow.cpp:151-158 `AddCleanups` builds a `Destroy`
+    call for every registered id; there is no unformed-state tracking anywhere
+    (`grep
+    -n unformed` over pattern_match.cpp, control_flow.cpp and
+    handle_let_and_var.cpp is empty; lower/testdata/var/param.carbon:62-66 shows
+    the unconditional destroy call on a `var`). The design's "destroy is skipped
+    for unformed variables" rule is therefore UNIMPLEMENTED, and an
+    `UnformedInit` `Buf` would let `var b: Core.Buf(i32);` compile and then
+    `free()` stack garbage at scope exit — nothing in §4/§5 executes that path,
+    so it would have shipped green. Instead `var b: Core.Buf(i32);` is a
+    compile-time `DefaultOrUnformed` failure, pinned as `fail_unformed` (§4.A),
+    and the residue title "`Core.Buf` unformed declarations (needs
+    unformed-state-aware destroy)" is filed (§8.5). `Slice` keeps its
+    `UnformedInit`: it has no user `Destroy` and its `{T*, i64}` fields are
+    trivially destroyed, so an unformed `Slice` is as harmless as an unformed
+    `String` (string.carbon:28). Over-aligned `T` (alignment > `max_align_t`) is
+    residue (`malloc` only guarantees 16). Break condition: an upstream proposal
+    names the heap types — rename; an `Allocator` design lands — `Buf` gains an
     allocator parameter defaulting to the global one.
 -   **D-SL-7 — `Core.Slice(T)` implements `Iterate`** (`.CursorType =
     i64`, mirroring iterate.carbon:20-32 for arrays) so `for (x: T in s)`
@@ -1042,13 +1034,13 @@ Carbon side uses `FromArray(&Cpp.arr)`); `std::mdspan`.
 **SL-1 (PR "SL-1: Core.Slice, Core.Buf and the runtime bounds
 fail-stop"), four commits:**
 
-1.  sem_ir + eval + lower: the four builtins (§2.A.1-4) + their builtin
-    goldens (check/testdata/builtins/{pointer/offset, failstop,
+1.  sem_ir + eval + lower: the four builtins (§2.A.1-4) + their builtin goldens
+    (check/testdata/builtins/{pointer/offset, failstop,
     heap/allocate_free}.carbon; lower/testdata/builtins/{pointer_offset,
-    failstop, heap}.carbon — named after the builtin WITHOUT the `fail_`
-    prefix, which file_test reserves for diagnosing files; amended
-    2026-09-28, review fold: rev B B3), CHECK-free. Run the hosted `compile` probe
-    on this commit alone (R-3 hand-off).
+    failstop, heap}.carbon — named after the builtin WITHOUT the `fail_` prefix,
+    which file_test reserves for diagnosing files; amended 2026-09-28, review
+    fold: rev B B3), CHECK-free. Run the hosted `compile` probe on this commit
+    alone (R-3 hand-off).
 2.  prelude: slice.carbon, buf.carbon, types.carbon, iterate.carbon
     (§2.A.5-8) + check/lower goldens for the types (§4.A), CHECK-free.
 3.  conformance (§5.A: `slices_basic` rewritten, `slices_heap_buf`,
@@ -1074,43 +1066,42 @@ views"), four commits (after UN-2 merges; rebase first):**
 
 ## §4 Testdata matrix (R16: no hand-written goldens; autoupdate fills)
 
-Rules baked in from the recent landings: every golden ships with
-`// AUTOUPDATE` and EMPTY CHECK lines; in LOWER goldens, positives never share
-a file with `fail_` subfiles (one erroring subfile blanks the lower golden of
-a split file) — CHECK goldens MAY mix positive and `fail_` subfiles, since
-file_test judges each split on its own `per_file_success`
-(file_test_base.cpp:238-248; testing/file_test/README.md:81-83) and upstream
-check testdata does so everywhere, which is what §4.A's pointer/offset,
-failstop and heap/allocate_free files do (amended 2026-09-28, review fold: rev
-B B7); no golden FILE or split carries the `fail_` prefix unless it diagnoses
-— `CompareFailPrefix` (file_test_base.cpp:126-135, applied to the main file at
-:233-256 whenever no split fails) fails a passing test whose name starts with
-`fail_` (amended 2026-09-28, review fold: rev B B3); a `fail_` subfile's predicted diagnostic names the KIND and
-the message so the fill is a confirm/refute, not a discovery; identifiers
-never collide with the words.md:47-104 keyword list (`base`, `default`,
-`destroy`, `like`, `runtime`, `then`, `union` are the traps — none is
-used below); `//@dump-sem-ir-begin/end` brackets every positive so the
-prelude is excluded from the dump.
+Rules baked in from the recent landings: every golden ships with `// AUTOUPDATE`
+and EMPTY CHECK lines; in LOWER goldens, positives never share a file with
+`fail_` subfiles (one erroring subfile blanks the lower golden of a split file)
+— CHECK goldens MAY mix positive and `fail_` subfiles, since file_test judges
+each split on its own `per_file_success` (file_test_base.cpp:238-248;
+testing/file_test/README.md:81-83) and upstream check testdata does so
+everywhere, which is what §4.A's pointer/offset, failstop and heap/allocate_free
+files do (amended 2026-09-28, review fold: rev B B7); no golden FILE or split
+carries the `fail_` prefix unless it diagnoses — `CompareFailPrefix`
+(file_test_base.cpp:126-135, applied to the main file at :233-256 whenever no
+split fails) fails a passing test whose name starts with `fail_` (amended
+2026-09-28, review fold: rev B B3); a `fail_` subfile's predicted diagnostic
+names the KIND and the message so the fill is a confirm/refute, not a discovery;
+identifiers never collide with the words.md:47-104 keyword list (`base`,
+`default`, `destroy`, `like`, `runtime`, `then`, `union` are the traps — none is
+used below); `//@dump-sem-ir-begin/end` brackets every positive so the prelude
+is excluded from the dump.
 
 ### §4.A SL-1
 
 -   **check/testdata/builtins/pointer/offset.carbon** (`min_prelude/int
-    .carbon`; the pointer/is_null.carbon shape with user-declared
-    builtins): `fn Offset[T: type](p: T*, n: i64) -> T* =
-    "pointer.offset";` and `fn F(p: i32*) -> i32* { return Offset(p, 1);
-    }`. Predicted: a `%Offset.specific_fn` call in `@F` with `%p` and the
-    `int_1` constant converted to `i64`; no diagnostics. Two ISOLATING lines for R-4's symbolic-pointer shapes (amended 2026-09-28,
-    review fold: rev A A5): `fn Load[T: Core.Copy](p: T*) -> T { return *p; }`
-    (`ConvertToValueExpr` on a `Deref` of symbolic `T` → `Copy` witness) and
-    `fn Store[T: Core.Copy](p: T*, v: T) { *p = v; }` (`InitializeExisting`
+    .carbon`; the pointer/is_null.carbon shape with user-declared builtins): `fn
+    Offset[T: type](p: T*, n: i64) -> T* = "pointer.offset";` and `fn F(p: i32*)
+    -> i32* { return Offset(p, 1); }`. Predicted: a `%Offset.specific_fn` call
+    in `@F` with `%p` and the `int_1` constant converted to `i64`; no
+    diagnostics. Two ISOLATING lines for R-4's symbolic-pointer shapes (amended
+    2026-09-28, review fold: rev A A5): `fn Load[T: Core.Copy](p: T*) -> T {
+    return *p; }` (`ConvertToValueExpr` on a `Deref` of symbolic `T` → `Copy`
+    witness) and `fn Store[T: Core.Copy](p: T*, v: T) { *p = v; }` (`InitializeExisting`
     into a `Deref` of symbolic `T`; `Core.Copy` is in min_prelude/int.carbon
     through parts/copy.carbon). Predicted: in `@Load` a `Copy.Op` witness call
     on the dereferenced value, in `@Store` an `assign` through the `deref`; no
     diagnostics. If the prelude compile (commit 2) fails on the same shapes,
-    this golden's fill from commit 1 attributes the failure to the shape, not
-    to the prelude body.
-    Subfiles `fail_mismatched_pointee` (`fn Bad[T: type, U: type](p: T*,
-    n: i64) -> U* = "pointer.offset";`) and `fail_non_pointer` (`fn
+    this golden's fill from commit 1 attributes the failure to the shape, not to
+    the prelude body. Subfiles `fail_mismatched_pointee` (`fn Bad[T: type, U:
+    type](p: T*, n: i64) -> U* = "pointer.offset";`) and `fail_non_pointer` (`fn
     Bad(p: i64, n: i64) -> i64 = "pointer.offset";`): predicted
     `InvalidBuiltinSignature` "invalid signature for builtin function
     \"pointer.offset\"" (handle_function.cpp:862-865) at each `fn`.
@@ -1324,33 +1315,33 @@ dumped code — expect a second pass that only renumbers `loc` markers.
     (`class M { public: int* data(); unsigned long size(); };` →
     `AssertIsContiguous(Cpp.M)` compiles: single non-const overloads are
     taken as-is).
--   **check/testdata/interop/cpp/stdlib/vector_view.carbon** (`full
-    .carbon`; mock `class VectorLike { public: const int* data() const;
-    int* data(); std::size_t size() const; };` with `using size_t =
-    __SIZE_TYPE__` in `std`): `fn View(v: Cpp.VectorLike) ->
-    Core.Slice(const i32) { return v; }` — predicted the blanket
-    `ImplicitAs` witness over the synthesized `CppContiguousRange`
-    witness (a `custom_witness` constant naming `data`/`size` function
-    decls) and the two-step `ImplicitAs(u64)` (the as.carbon:37 identity
-    on `u64`) then `As(i64)` conversion of the size (D-SL-9; amended
-    2026-09-28, review fold: rev A A2); no diagnostics. **fail_no_size** (own file): `class NoSize { public:
-    int* data(); };` → `ConversionFailure` "cannot implicitly convert
-    expression of type `Cpp.NoSize` to `Core.Slice(i32)`".
--   **lower/testdata/interop/cpp/span.carbon** (`full.carbon`, the mock
-    header): twin of `pass_and_return` — predicted: a thunk definition
-    named `@<Itanium-mangled Consume>.carbon_thunk._` — the import-side
-    thunk IS named after the callee's mangling plus that suffix
+-   **check/testdata/interop/cpp/stdlib/vector_view.carbon** (`full .carbon`;
+    mock `class VectorLike { public: const int* data() const; int* data();
+    std::size_t size() const; };` with `using size_t = __SIZE_TYPE__` in `std`):
+    `fn View(v: Cpp.VectorLike) -> Core.Slice(const i32) { return v; }` —
+    predicted the blanket `ImplicitAs` witness over the synthesized
+    `CppContiguousRange` witness (a `custom_witness` constant naming `data`/`size`
+    function decls) and the two-step `ImplicitAs(u64)` (the as.carbon:37
+    identity on `u64`) then `As(i64)` conversion of the size (D-SL-9; amended
+    2026-09-28, review fold: rev A A2); no diagnostics. **fail_no_size** (own
+    file): `class NoSize { public: int* data(); };` → `ConversionFailure`
+    "cannot implicitly convert expression of type `Cpp.NoSize` to
+    `Core.Slice(i32)`".
+-   **lower/testdata/interop/cpp/span.carbon** (`full.carbon`, the mock header):
+    twin of `pass_and_return` — predicted: a thunk definition named
+    `@<Itanium-mangled Consume>.carbon_thunk._` — the import-side thunk IS named
+    after the callee's mangling plus that suffix
     (lower/testdata/interop/cpp/thunks.carbon:117/:122
     `@_ZN9NeedThunkC1ERKS_.carbon_thunk._`, template.carbon:116
-    `@_Z8identityIiET_S0_.carbon_thunk._`), so the name contains `4span`
-    and the all-ones extent `18446744073709551615` from the mangled
-    `std::span<const int, 18446744073709551615>` parameter (rev B B6's
-    IR-name half declined on that evidence: `_CF__carbon_thunk.Main`,
-    array.carbon:59/:90, is the EXPORT-direction thunk of a Carbon `F`,
-    not this shape); the thunk takes `ptr` (the `Slice` storage address)
-    and calls the real `Consume` with a by-value `span` load; for `Produce`, the out-pointer thunk writing 16
-    bytes into the Carbon return slot. No `memcpy` between differently
-    sized types (the layout premise's IR-level check).
+    `@_Z8identityIiET_S0_.carbon_thunk._`), so the name contains `4span` and the
+    all-ones extent `18446744073709551615` from the mangled `std::span<const
+    int, 18446744073709551615>` parameter (rev B B6's IR-name half declined on
+    that evidence: `_CF__carbon_thunk.Main`, array.carbon:59/:90, is the
+    EXPORT-direction thunk of a Carbon `F`, not this shape); the thunk takes
+    `ptr` (the `Slice` storage address) and calls the real `Consume` with a
+    by-value `span` load; for `Produce`, the out-pointer thunk writing 16 bytes
+    into the Carbon return slot. No `memcpy` between differently sized types
+    (the layout premise's IR-level check).
 
 ## §5 Conformance
 
@@ -1395,8 +1386,8 @@ gap-analysis.md:76 and :79 (R7), `runner.py --self-test` before commit.
     `a[2]`), `30` (after `a[2] = 30`, read through the view), `32` (2 +
     30). Four lines (the stub's first two are unchanged). `s.Size() as
     i32` is int.carbon:70-77's `Int(From) as As(Int(To))`.
-2.  **stdlib/slices_heap_buf.carbon (new, bullet "Stdlib: Slices").**
-    Heap storage viewed and mutated through the slice API:
+2.  **stdlib/slices_heap_buf.carbon (new, bullet "Stdlib: Slices").** Heap
+    storage viewed and mutated through the slice API:
 
     ```carbon
     import Core library "io";
@@ -1427,18 +1418,17 @@ gap-analysis.md:76 and :79 (R7), `runner.py --self-test` before commit.
     }
     ```
 
-    EXPECT-STDOUT: `3` (size), `7` (the fill value), `12` (10 + 2 after
-    `Fill` writes 10, 11, 12), `33` (10 + 11 + 12). Four lines. `b` is
-    passed by value to `Fill` without a copy (value bindings of a
-    non-`Copy` class are references — README.md:1301-1303 — and, at the
-    toolchain level, a by-value PARAMETER binding is not an initializer
-    target, so `Convert` takes the `Done{expr_id}` path with no
-    `PerformCopy`: convert.cpp:2027-2038 copies only for initializer and
-    `CppThunkRef` targets — amended 2026-09-28, review fold: rev A A6 /
-    rev B B8; `Set` writes through the shared heap block, and the
-    program's third line is the proof). `Destroy` frees at `Run`'s exit; a leak is not
-    observable, a double free would abort — exit 0 is the check.
-    `i as i32` is `Int(64) as As(Int(32))` (int.carbon:70).
+    EXPECT-STDOUT: `3` (size), `7` (the fill value), `12` (10 + 2 after `Fill`
+    writes 10, 11, 12), `33` (10 + 11 + 12). Four lines. `b` is passed by value
+    to `Fill` without a copy (value bindings of a non-`Copy` class are
+    references — README.md:1301-1303 — and, at the toolchain level, a by-value
+    PARAMETER binding is not an initializer target, so `Convert` takes the
+    `Done{expr_id}` path with no `PerformCopy`: convert.cpp:2027-2038 copies
+    only for initializer and `CppThunkRef` targets — amended 2026-09-28, review
+    fold: rev A A6 / rev B B8; `Set` writes through the shared heap block, and
+    the program's third line is the proof). `Destroy` frees at `Run`'s exit; a
+    leak is not observable, a double free would abort — exit 0 is the check. `i
+    as i32` is `Int(64) as As(Int(32))` (int.carbon:70).
 3.  **stdlib/slices_bounds_fail_stop.carbon (new, bullet "Stdlib:
     Slices").** `EXPECT-EXIT: -6` (D-SL-12), no `EXPECT-STDOUT`:
 
@@ -1587,28 +1577,27 @@ Zero landed programs move (no landed program includes `<span>` or names
 
 ### §6.A SL-1
 
--   **Existing goldens that move: none predicted.** (a) Check dumps
-    exclude the prelude (`//@dump-sem-ir` ranges) and SemIR names are
-    symbolic, so two NEW prelude files and two `export import` lines
-    change no existing check golden — the try.carbon precedent (commit
-    6b0b80e, fork/eh/plan.md:1138-1142). (b) The EH-A lesson (:1199-1215):
-    a prelude edit that shifts lines ABOVE a method that lowered code
-    references moves every lower golden's `DILocation`s for that method.
-    SL-1's only edits to EXISTING prelude files are types.carbon (no
-    functions) and an APPEND to iterate.carbon after its last line
-    (:82), so no existing method moves; `grep -rn 'Iterate.Core\|
-    IntRange' toolchain/lower/testdata` lists the goldens that would
-    have moved (array/iterate, for/*, interop/cpp/range_for-adjacent) and
-    they are predicted byte-identical. (c) Raw goldens: ZERO move, decided from the tree, not by the fill (amended
-    2026-09-28, review fold: rev B B10). No raw golden includes the full
-    prelude: `grep -n INCLUDE-FILE
+-   **Existing goldens that move: none predicted.** (a) Check dumps exclude the
+    prelude (`//@dump-sem-ir` ranges) and SemIR names are symbolic, so two NEW
+    prelude files and two `export import` lines change no existing check golden
+    — the try.carbon precedent (commit 6b0b80e, fork/eh/plan.md:1138-1142). (b)
+    The EH-A lesson (:1199-1215): a prelude edit that shifts lines ABOVE a
+    method that lowered code references moves every lower golden's `DILocation`s
+    for that method. SL-1's only edits to EXISTING prelude files are
+    types.carbon (no functions) and an APPEND to iterate.carbon after its last
+    line (:82), so no existing method moves; `grep -rn 'Iterate.Core\| IntRange'
+    toolchain/lower/testdata` lists the goldens that would have moved
+    (array/iterate, for/*, interop/cpp/range_for-adjacent) and they are
+    predicted byte-identical. (c) Raw goldens: ZERO move, decided from the tree,
+    not by the fill (amended 2026-09-28, review fold: rev B B10). No raw golden
+    includes the full prelude: `grep -n INCLUDE-FILE
     toolchain/check/testdata/basics/raw_sem_ir/*` gives
     `min_prelude/none.carbon` (five files), `form.carbon` (bundle) and
     `convert.carbon` (one_file, whose `import_irs` table at :32-36 lists only
     that minimal prelude's IRs); non_core_interfaces.carbon and
     driver/testdata/stdin.carbon run `--no-prelude-import`. Two new
-    `prelude/types/*` libraries cannot appear in any `import_ir` table, so a
-    raw diff at fill is a STOP (§8.1), never a reconciliation.
+    `prelude/types/*` libraries cannot appear in any `import_ir` table, so a raw
+    diff at fill is a STOP (§8.1), never a reconciliation.
 -   **Amended 2026-10-05 (round-2 fix after the implementation review;
     R28(d): a review miss recorded in place) — SIX existing goldens
     move, and this bullet's "none predicted" was wrong.** The review's
@@ -1662,84 +1651,76 @@ Zero landed programs move (no landed program includes `<span>` or names
     (the prelude's existing fail-stop path); lower/testdata/builtins/
     heap.carbon and slice/buf.carbon are CHECK-free, so no further golden
     moves.
--   **Amended 2026-10-05 (round 4, after hosted autoupdate run
-    37335213696 moved 40 files where 18 were predicted; R28(d): review
-    misses recorded in place) — four root causes.**
-    **(a) REGRESSION, every union and C++-export golden (13 files).**
-    `HasUserDestroyImpl` — the scan behind `IsTriviallyDestructible`,
-    which is both the union field rule and the export triviality
-    predicate — treated EVERY symbolic impl self as a blanket covering
-    every class. The prelude's new in-class `impl as Destroy` of
-    `class Buf(T)` has the symbolic self `Buf(T)` and sits in every
-    file's import set, so every class left the trivially-destructible
-    set — `i32` included, since it is the class `Core.Int(32)`:
-    `UnionFieldNotTriviallyCopyable` on `i32`/`array(i8, 4)` fields
-    (check/union/{basic,fail_init,fail_modifiers_and_redecl,
-    fail_nontrivial_field,import,layout}; lower/union/{basic,layout}
-    lost whole modules), and the exported `A`/`OneArg`/union records grew
+-   **Amended 2026-10-05 (round 4, after hosted autoupdate run 37335213696 moved
+    40 files where 18 were predicted; R28(d): review misses recorded in place) —
+    four root causes.** **(a) REGRESSION, every union and C++-export golden (13
+    files).** `HasUserDestroyImpl` — the scan behind `IsTriviallyDestructible`,
+    which is both the union field rule and the export triviality predicate —
+    treated EVERY symbolic impl self as a blanket covering every class. The
+    prelude's new in-class `impl as Destroy` of `class Buf(T)` has the symbolic
+    self `Buf(T)` and sits in every file's import set, so every class left the
+    trivially-destructible set — `i32` included, since it is the class
+    `Core.Int(32)`: `UnionFieldNotTriviallyCopyable` on `i32`/`array(i8, 4)`
+    fields (check/union/{basic,fail_init,fail_modifiers_and_redecl,
+    fail_nontrivial_field,import,layout}; lower/union/{basic,layout} lost whole
+    modules), and the exported `A`/`OneArg`/union records grew
     `__destroy_thunk`s (lower interop/cpp/issue7142, function/export/
-    constructor, class/export/union; check class/export/union,
-    union_by_value), and a 14th file, check/function/overload/basic.carbon
-    (its `union_scope_set` split gained the same two field errors; it is
-    cleared for the fill rather than restored, since its `destroy_arg`
-    content is the legitimate round-2 move). The round-2 bullet's "`grep -rn 'as Destroy' core/`,
-    so no other prelude type changes behavior" looked at the wrong
-    predicate: `CanDestroyClass`'s yield IS class-keyed, but the impl it
-    added was the one `HasUserDestroyImpl`'s shortcut matches for every
-    class. Fix at the root (custom_witness.cpp `HasUserDestroyImpl`): a
-    class-typed impl self, concrete or a symbolic specific, is keyed on
-    its class (local `class_id`; imported canonical defining
-    declaration); only a non-class symbolic self (`impl forall [T: type]
-    T as Destroy`, impl/lookup/fail_poison_custom_witness.carbon) is a
-    blanket. The 13 goldens are restored from the pre-SL-1 tree
-    (ee434b2b3~3) and predicted byte-identical: `git diff ee434b2b3~3 --
-    toolchain/check/testdata/union` must be empty after the next fill.
-    **(b) UNPREDICTED, disclosed and kept: the `Iterate` import
-    footprint.** lower/for/{for,bindings,break_continue} and lower/array/
-    iterate gained an uncalled `declare void @"_COp.41b89bfca5f3c7d4:core
-    .Destroy.Core"(ptr)` (iterate.carbon's second split:
-    `5f42013854821c52`), and check/interop/cpp/range_for renumbered
-    `custom_witness.df9cc1.3` → `.4` and split its `i.patt` constant
-    (`.ea1`). This is not a destroy-selection change — no class in those
-    files has a declared impl, and `CanDestroyClass`'s yield selects
-    nothing new. `ImportImplFilter::IsRelevantImpl` (impl_lookup.cpp)
-    filters imported impls by INTERFACE only, so every file that looks
-    `Iterate` up materializes every prelude `Iterate` impl; the appended
-    `Slice(T) as Iterate where .CursorType = i64` carries the `i64 as
-    Destroy` facet value of its rewrite, whose `Op` is iterate.carbon's
-    own synthesized witness — exactly the footprint the array impl's
-    `.CursorType = i32` already leaves as the pre-existing uncalled
+    constructor, class/export/union; check class/export/union, union_by_value),
+    and a 14th file, check/function/overload/basic.carbon (its `union_scope_set`
+    split gained the same two field errors; it is cleared for the fill rather
+    than restored, since its `destroy_arg` content is the legitimate round-2
+    move). The round-2 bullet's "`grep -rn 'as Destroy' core/`, so no other
+    prelude type changes behavior" looked at the wrong predicate:
+    `CanDestroyClass`'s yield IS class-keyed, but the impl it added was the one
+    `HasUserDestroyImpl`'s shortcut matches for every class. Fix at the root
+    (custom_witness.cpp `HasUserDestroyImpl`): a class-typed impl self, concrete
+    or a symbolic specific, is keyed on its class (local `class_id`; imported
+    canonical defining declaration); only a non-class symbolic self (`impl
+    forall [T: type] T as Destroy`,
+    impl/lookup/fail_poison_custom_witness.carbon) is a blanket. The 13 goldens
+    are restored from the pre-SL-1 tree (ee434b2b3~3) and predicted
+    byte-identical: `git diff ee434b2b3~3 -- toolchain/check/testdata/union`
+    must be empty after the next fill. **(b) UNPREDICTED, disclosed and kept:
+    the `Iterate` import footprint.** lower/for/{for,bindings,break_continue}
+    and lower/array/ iterate gained an uncalled `declare void
+    @"_COp.41b89bfca5f3c7d4:core .Destroy.Core"(ptr)` (iterate.carbon's second
+    split: `5f42013854821c52`), and check/interop/cpp/range_for renumbered
+    `custom_witness.df9cc1.3` → `.4` and split its `i.patt` constant (`.ea1`).
+    This is not a destroy-selection change — no class in those files has a
+    declared impl, and `CanDestroyClass`'s yield selects nothing new.
+    `ImportImplFilter::IsRelevantImpl` (impl_lookup.cpp) filters imported impls
+    by INTERFACE only, so every file that looks `Iterate` up materializes every
+    prelude `Iterate` impl; the appended `Slice(T) as Iterate where .CursorType =
+    i64` carries the `i64 as Destroy` facet value of its rewrite, whose `Op` is
+    iterate.carbon's own synthesized witness — exactly the footprint the array
+    impl's `.CursorType = i32` already leaves as the pre-existing uncalled
     `declare @"_COp.6f4dee545ed23f91:core.Destroy.Core"` in the SAME four
-    goldens and no others. Unavoidable while the impl lives in
-    iterate.carbon (slice.carbon cannot import `prelude/iterate`: cycle,
-    hand-off notes); the four lower goldens and range_for are kept as
-    filled.
-    **(c) DEFECT in a positive golden.** check/slice/basic.carbon
-    `generic_element` pinned `cannot implicitly convert ...
-    Core.Slice(T).(Core.IndexWith(i64).ElementType) to T`: a symbolic
-    query resolves only FINAL impls (`EvalLookupSingleFinalWitness`), so a
-    non-final impl's `where .ElementType = T` rewrite is unknown in a
-    generic body. Root fix: `final impl forall` on `Slice(T)`/`Buf(T) as
-    IndexWith(i64)` and on `Slice(T) as Iterate` (precedent `final impl
-    forall [T: Destroy & OptionalStorage] Optional(T) as Try`,
-    optional.carbon:69). Checked against impl_validation.cpp:
-    `FinalImplInvalidFile` holds (slice.carbon/buf.carbon hold the root
-    self type, iterate.carbon the interface); no non-final impl's query
-    matches them (`ImplFinalOverlapsNonFinal`: `String`'s blanket is
-    keyed on `String`, the `CppRange` blanket's self is a facet binding,
-    `array(T, N)` is not a `Slice`); `ImportFinalImplsWithImplInFile`
-    enumerates only the INTERFACE's own IR, so no golden with a local
-    `IndexWith` impl imports the Slice/Buf impls, and every `for` golden
-    already imported the `Iterate` impl at lookup (check/for/{basic,
-    pattern} use min_prelude/for, which has no `Slice`). The split is
-    re-predicted clean; the four slice goldens move and are cleared for
-    the fill — check slice/basic, slice/buf (the imported impl entity
-    prints as `final impl @…`), lower slice/basic, slice/buf (DI `line:`
-    shifts from the prelude comment lines).
-    **(d) The literal-subscript probe's footprint** — see the R-5
-    amendment (round 4): gated off erroneous operands (two goldens
-    restored), the `Core.Int` import_ref residue disclosed (two goldens
-    kept as filled).
+    goldens and no others. Unavoidable while the impl lives in iterate.carbon
+    (slice.carbon cannot import `prelude/iterate`: cycle, hand-off notes); the
+    four lower goldens and range_for are kept as filled. **(c) DEFECT in a
+    positive golden.** check/slice/basic.carbon `generic_element` pinned `cannot
+    implicitly convert ... Core.Slice(T).(Core.IndexWith(i64).ElementType) to
+    T`: a symbolic query resolves only FINAL impls
+    (`EvalLookupSingleFinalWitness`), so a non-final impl's `where .ElementType =
+    T` rewrite is unknown in a generic body. Root fix: `final impl forall` on
+    `Slice(T)`/`Buf(T) as IndexWith(i64)` and on `Slice(T) as Iterate`
+    (precedent `final impl forall [T: Destroy & OptionalStorage] Optional(T) as
+    Try`, optional.carbon:69). Checked against impl_validation.cpp:
+    `FinalImplInvalidFile` holds (slice.carbon/buf.carbon hold the root self
+    type, iterate.carbon the interface); no non-final impl's query matches them
+    (`ImplFinalOverlapsNonFinal`: `String`'s blanket is keyed on `String`, the
+    `CppRange` blanket's self is a facet binding, `array(T, N)` is not a
+    `Slice`); `ImportFinalImplsWithImplInFile` enumerates only the INTERFACE's
+    own IR, so no golden with a local `IndexWith` impl imports the Slice/Buf
+    impls, and every `for` golden already imported the `Iterate` impl at lookup
+    (check/for/{basic, pattern} use min_prelude/for, which has no `Slice`). The
+    split is re-predicted clean; the four slice goldens move and are cleared for
+    the fill — check slice/basic, slice/buf (the imported impl entity prints as
+    `final impl @…`), lower slice/basic, slice/buf (DI `line:` shifts from the
+    prelude comment lines). **(d) The literal-subscript probe's footprint** —
+    see the R-5 amendment (round 4): gated off erroneous operands (two goldens
+    restored), the `Core.Int` import_ref residue disclosed (two goldens kept as
+    filled).
 -   **Builtin tables:** `CARBON_DEFINE_ENUM_CLASS_NAMES` and
     `ForBuiltinName` are generated; no golden prints the enum.
 -   **min_prelude parts:** unchanged (no test combines a part with
@@ -1948,47 +1929,47 @@ Zero landed programs move (no landed program includes `<span>` or names
     puts `span` directly in `std` for the golden (as string_view.carbon
     does with `__1` — it uses `inline namespace __1` and passes) and the
     real-header case is the conformance program's job.
--   **R-8 — the thunk (`Consume__carbon_thunk` in SemIR, `@<mangled
-    Consume>.carbon_thunk._` in IR; amended 2026-09-28, review fold: rev
-    B B6) for a `std::span` parameter needs the span to be
-    copy-constructible from the pointer-passed object.** It is (trivially copyable). Falsifier: Clang diagnostics
-    inside the synthesized thunk body in span.carbon's fill.
--   **R-9 — the D-SL-9 owning→view chain (five steps: member lookup with the const
-    filter → witness → `CppDataPointer` selection on `Optional(const i32*)` →
-    `ImplicitAs(u64)` on `u64`/`ULong64` then `As(i64)` on `u64` (D-SL-9;
-    amended 2026-09-28, review fold: rev A A2) → blanket
+-   **R-8 — the thunk (`Consume__carbon_thunk` in SemIR,
+    `@<mangled Consume>.carbon_thunk._` in IR; amended 2026-09-28, review fold:
+    rev B B6) for a `std::span` parameter needs the span to be
+    copy-constructible from the pointer-passed object.** It is (trivially
+    copyable). Falsifier: Clang diagnostics inside the synthesized thunk body in
+    span.carbon's fill.
+-   **R-9 — the D-SL-9 owning→view chain (five steps: member lookup with the
+    const filter → witness → `CppDataPointer` selection on
+    `Optional(const i32*)` → `ImplicitAs(u64)` on `u64`/`ULong64` then `As(i64)`
+    on `u64` (D-SL-9; amended 2026-09-28, review fold: rev A A2) → blanket
     `ImplicitAs(Slice(C.Element))` with a projection in the interface
     argument).** Precedents per step are cited in §1.B.3; the untested
     composition is the risk. The last step's mechanism (amended 2026-09-28,
     review fold: rev B B9): `TryGetSpecificWitnessIdForImpl`
     (impl_lookup.cpp:245-290) runs `DeduceImplArguments` (deduce.cpp:649-664),
     which adds Self and the interface specific to the worklist; `Deduce()`
-    (:462-480) does not FAIL on a non-binding symbolic param such as
-    `C.Element` (it `continue`s), and the match is then verified by
+    (:462-480) does not FAIL on a non-binding symbolic param such as `C.Element`
+    (it `continue`s), and the match is then verified by
     `GetImplInterfaceInSpecific(...) == query specific` (:278-284) after
-    substitution — which requires evaluating `C.Element` (a
-    `CppContiguousRange` lookup, then a `CppDataPointer` lookup) inside
-    specific resolution. Viable, not proven: no in-tree impl has a projection
-    in its interface-argument list (grep over core/ and check/testdata is
-    empty). Falsifiers, in order: (i) `member_data_size` failing
-    `AssertIsContiguous` (witness not built); (ii) `vector_view.carbon`
-    diagnosing "no impl of `Core.ImplicitAs(Core.Slice(const i32))`" (the
-    constraint or the projection) — contingency for (ii), one line and no
-    PR-shape change: the deducible-parameter spelling `impl forall [E: Copy &
-    Destroy, C: CppContiguous where .Element = E] C as ImplicitAs(Slice(E))`,
-    where `E` is deduced from `Slice(const i32)` through `ClassType`
-    (`deduce_through`, sem_ir/typed_insts.h:502-507) and the rewrite
-    constraint is checked in `CheckDeductionIsComplete`; if (ii) names the
-    `Size` step instead, the second contingency is the appended `impl
-    CppCompat.ULong64 as As(i64)` of D-SL-9's rejected alternative; (iii) `cpp_span_view` COMPILE-FAIL on the real
-    `std::vector<int>` (real-header member overload sets: libc++'s
-    `data()` has exactly two overloads, `size()` one — but `size()` on
-    libc++ is `size() const noexcept`; if `LookupCppMethod` reports
-    "overload sets unsupported" the filter did not reduce to one).
-    Contingency (loud, D-SL-9): the PR lands without commit 2; the
-    program stays SKIP with the refreshed reason; the bullet is PARTIAL;
-    residue "owning C++ container to Core.Slice view" carries the
-    refuting run id and the last step reached.
+    substitution — which requires evaluating `C.Element` (a `CppContiguousRange`
+    lookup, then a `CppDataPointer` lookup) inside specific resolution. Viable,
+    not proven: no in-tree impl has a projection in its interface-argument list
+    (grep over core/ and check/testdata is empty). Falsifiers, in order: (i)
+    `member_data_size` failing `AssertIsContiguous` (witness not built); (ii)
+    `vector_view.carbon` diagnosing "no impl of
+    `Core.ImplicitAs(Core.Slice(const i32))`" (the constraint or the projection)
+    — contingency for (ii), one line and no PR-shape change: the
+    deducible-parameter spelling `impl forall [E: Copy & Destroy, C:
+    CppContiguous where .Element = E] C as ImplicitAs(Slice(E))`, where `E` is
+    deduced from `Slice(const i32)` through `ClassType` (`deduce_through`,
+    sem_ir/typed_insts.h:502-507) and the rewrite constraint is checked in
+    `CheckDeductionIsComplete`; if (ii) names the `Size` step instead, the
+    second contingency is the appended `impl CppCompat.ULong64 as As(i64)` of
+    D-SL-9's rejected alternative; (iii) `cpp_span_view` COMPILE-FAIL on the
+    real `std::vector<int>` (real-header member overload sets: libc++'s `data()`
+    has exactly two overloads, `size()` one — but `size()` on libc++ is `size()
+    const noexcept`; if `LookupCppMethod` reports "overload sets unsupported"
+    the filter did not reduce to one). Contingency (loud, D-SL-9): the PR lands
+    without commit 2; the program stays SKIP with the refreshed reason; the
+    bullet is PARTIAL; residue "owning C++ container to Core.Slice view" carries
+    the refuting run id and the last step reached.
 -   **R-10 — `Cpp.std.vector(i32)` itself does not import** (a real
     libc++ class template with allocator/compressed-pair members).
     Precedents: `std::atomic<int>` and `std::mutex` import and destroy
@@ -2148,32 +2129,28 @@ Zero landed programs move (no landed program includes `<span>` or names
         mapping" (D-SL-8); "owning C++ container to Core.Slice view" —
         ONLY if the D-SL-9 fallback fires; "ADL `data`/`size` sources
         for `CppContiguousRange`" (§1.B.3).
-6.  **Docs (D-SL-13):** at SL-1, new docs/design/slices.md with the
-    status paragraph "fork amendment 2026-09-28 (F-012): `Core.Slice(T)`
-    and `Core.Buf(T)` as implemented; toolchain status: SL-1 landed
-    <date>; interop mapping at SL-2", sections: Overview (view semantics,
-    explicit formation from `&a`, D-SL-2), the API (§1.A.2/§1.A.3
-    signatures), Bounds behavior (D-SL-4 with the safety citations, saying that the
-    fail-stop-with-message is the DEBUG-build promise adopted as the
-    single 0.1 mode and naming the release opt-out residue — amended
-    2026-09-28, review fold: rev A A3),
-    Heap buffers (D-SL-6 with the p004682 placeholder-name note),
-    Iteration, Interop (filled at SL-2: D-SL-8/9/10, the
-    `std::span<const int>` ↔ `Core.Slice(const i32)` rule, the
-    `-std=c++20` note), "0.1 limits" (every residue title with its break
-    condition), Alternatives considered (the §7 rejected list),
-    References (README.md arrays section, indexing.md, values.md,
-    safety README, p002274, p004682, milestones.md). README.md:912-914
-    becomes a three-sentence summary + link, marked "(fork amendment
-    2026-09-28, F-012)"; README.md:887-889's `buf(T)` sentence gains a
-    parenthetical "(the fork implements `Core.Buf(T)` without the
-    shorthand, see Slices)". At SL-2, docs/design/interoperability/
-    README.md:251-252's TODO ("C++ view types such as `std::span` and
-    other standard library types will have corresponding types in
-    Carbon") is REPLACED by the dated paragraph, as a subsection titled
-    `std::span` and `Core.Slice` beside the existing `std::string_view`
-    and `str` subsection (:254) (amended 2026-09-28, review fold: rev A
-    A10).
+6.  **Docs (D-SL-13):** at SL-1, new docs/design/slices.md with the status
+    paragraph "fork amendment 2026-09-28 (F-012): `Core.Slice(T)` and
+    `Core.Buf(T)` as implemented; toolchain status: SL-1 landed <date>; interop
+    mapping at SL-2", sections: Overview (view semantics, explicit formation
+    from `&a`, D-SL-2), the API (§1.A.2/§1.A.3 signatures), Bounds behavior
+    (D-SL-4 with the safety citations, saying that the fail-stop-with-message is
+    the DEBUG-build promise adopted as the single 0.1 mode and naming the
+    release opt-out residue — amended 2026-09-28, review fold: rev A A3), Heap
+    buffers (D-SL-6 with the p004682 placeholder-name note), Iteration, Interop
+    (filled at SL-2: D-SL-8/9/10, the `std::span<const int>` ↔ `Core.Slice(const
+    i32)` rule, the `-std=c++20` note), "0.1 limits" (every residue title with
+    its break condition), Alternatives considered (the §7 rejected list),
+    References (README.md arrays section, indexing.md, values.md, safety README,
+    p002274, p004682, milestones.md). README.md:912-914 becomes a three-sentence
+    summary + link, marked "(fork amendment 2026-09-28, F-012)";
+    README.md:887-889's `buf(T)` sentence gains a parenthetical "(the fork
+    implements `Core.Buf(T)` without the shorthand, see Slices)". At SL-2,
+    docs/design/interoperability/ README.md:251-252's TODO ("C++ view types such
+    as `std::span` and other standard library types will have corresponding
+    types in Carbon") is REPLACED by the dated paragraph, as a subsection titled
+    `std::span` and `Core.Slice` beside the existing `std::string_view` and
+    `str` subsection (:254) (amended 2026-09-28, review fold: rev A A10).
 7.  **ORCHESTRATION stamp** per landing (status paragraph, the floor,
     the PR count, the R28 dispatch list if goldens are parked); the
     weekly-cut rows are untouched.
@@ -2526,11 +2503,12 @@ Reconciliation greps (§8.4), run at 713eddc7a:
     W-109..W-116 are allocated after it.
 
 Hosted verification of record (R28(b); the container cannot build the
-toolchain): first autoupdate run 37324972577 FAILED (the two
-incomplete-pointee crashes; fix c200e6b81); second autoupdate run
-37329946461 FAILED (the comptime-only conversion in `Slice.At`; fix
-ee434b2b3); third autoupdate run 37335213696 success — fill 50cd6c82c (40
-files where 18 were predicted) and the convergence pass 84315a5d4
-(`.loc`-only); fourth autoupdate, after 7b69e540b and 713eddc7a, run
-37341482411 (and 37345524695 on the trunk merge, which changed nothing); gate 37347712964 green; conformance 37347619141: 124 PASS / 0 FAIL / 23 SKIP over 147, 47/56 bullets, against
-the expected 121 / 0 / 23 over 144, 47/56.
+toolchain): first autoupdate run 37324972577 FAILED (the two incomplete-pointee
+crashes; fix c200e6b81); second autoupdate run 37329946461 FAILED (the
+comptime-only conversion in `Slice.At`; fix ee434b2b3); third autoupdate run
+37335213696 success — fill 50cd6c82c (40 files where 18 were predicted) and the
+convergence pass 84315a5d4 (`.loc`-only); fourth autoupdate, after 7b69e540b and
+713eddc7a, run 37341482411 (and 37345524695 on the trunk merge, which changed
+nothing); gate 37347712964 green; conformance 37347619141: 124 PASS / 0 FAIL /
+23 SKIP over 147, 47/56 bullets, against the expected 121 / 0 / 23 over 144,
+47/56.

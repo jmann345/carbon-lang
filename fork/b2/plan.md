@@ -234,23 +234,24 @@ fix round" — that is here:
 predicate below holds, answer `DestroyFormat::NonTrivial` instead of walking
 to NoDestroy. Notes, each load-bearing:
 
--   **Detection predicate, pinned (revised after plan review, 2026-08-09):
-    the QUERY constant is symbolic** — the same
-    `query_self_const_id.is_symbolic()` fact `LookupDestroyWitness` already
-    branches on at :658 (threaded down or re-derived from the canonical type
-    constant at the `CanDestroyType` entry; a mechanical parameter, not new
-    state). Chosen over the alternative — probing the object REPR's fields
-    for symbolic constants — for two reasons: (i) yes/no and build/defer
-    must key on ONE predicate, or a type could be trusted structurally yet
-    still attempt witness building (or the other way around); (ii) the repr under
-    symbolic args may be the S3b dependent-layout sentinel or a partially
-    substituted `CustomLayoutType` — probing it is exactly the walk that
-    fails today, and keying on a derived artifact invites divergence.
-    MIXED-specific edge behavior, named: a specific with any symbolic
-    argument (`ControlFlow(i32, T)`) has a symbolic type constant, so the
-    clause fires and the concrete monomorphization re-derives per specific;
-    a fully concrete specific (`ControlFlow(i32, i32)`) is non-symbolic, so
-    the field walk runs unchanged — concrete behavior does not move.
+-   **Detection predicate, pinned (revised after plan review, 2026-08-09): the
+    QUERY constant is symbolic** — the same `query_self_const_id.is_symbolic()`
+    fact `LookupDestroyWitness` already branches on at :658 (threaded down or
+    re-derived from the canonical type constant at the `CanDestroyType` entry; a
+    mechanical parameter, not new state). Chosen over the alternative — probing
+    the object REPR's fields for symbolic constants — for two reasons: (i)
+    yes/no and build/defer must key on ONE predicate, or a type could be trusted
+    structurally yet still attempt witness building (or the other way around);
+    (ii) the repr under symbolic args may be the S3b dependent-layout sentinel
+    or a partially substituted `CustomLayoutType` — probing it is exactly the
+    walk that fails today, and keying on a derived artifact invites divergence.
+    MIXED-specific edge behavior, named: a specific with any symbolic argument
+    (`ControlFlow(i32,
+    T)`) has a symbolic type constant, so the clause fires and the concrete
+    monomorphization re-derives per specific; a fully concrete specific
+    (`ControlFlow(i32,
+    i32)`) is non-symbolic, so the field walk runs unchanged — concrete behavior
+    does not move.
 -   **Clause site, resolved (revised after plan review, 2026-08-09):
     `CanDestroyClass` hosts the clause**, before the object-repr field walk
     — the one frame where `is_choice` is readable off `class_info` and both

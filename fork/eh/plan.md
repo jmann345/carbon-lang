@@ -608,16 +608,15 @@ dependency, so per R29(b) it is two PRs:
     `return_storage` of the mapped type and passes it by reference to the
     Carbon thunk, whose `ref` return parameter (:1263-1316) writes the
     Carbon `Result` object into it.
-6.  **The header `<carbon/expected.h>` mirrors the choice layout, which is
-    what makes the mapping a reinterpretation, not a conversion.**
-    Carbon's `Result(T, E)` lowers as the packed struct
-    `<{ <{ iN, [A-1 x i8] }>, [P x i8] }>` (lower/testdata/choice/
-    payload_layout.carbon:66-73: discriminant sub-struct padded to the
-    payload alignment `A`, then the max-of-fields region `P`; discriminant
-    stored/loaded as `i8`, :73/:109; `UInt(1)` for two alternatives,
-    handle_choice.cpp:618-641). For scalar `T`/`E` (all SF-6 admits), `P =
-    max(sizeof T, sizeof E)` is a multiple of `A = max(alignof T, alignof
-    E)`, so the C++ standard-layout class
+6.  **The header `<carbon/expected.h>` mirrors the choice layout, which is what
+    makes the mapping a reinterpretation, not a conversion.** Carbon's
+    `Result(T, E)` lowers as the packed struct `<{ <{ iN, [A-1 x i8] }>, [P x
+    i8] }>` (lower/testdata/choice/ payload_layout.carbon:66-73: discriminant
+    sub-struct padded to the payload alignment `A`, then the max-of-fields
+    region `P`; discriminant stored/loaded as `i8`, :73/:109; `UInt(1)` for two
+    alternatives, handle_choice.cpp:618-641). For scalar `T`/`E` (all SF-6
+    admits), `P = max(sizeof T, sizeof E)` is a multiple of `A = max(alignof T,
+    alignof E)`, so the C++ standard-layout class
 
     ```cpp
     template <typename T, typename E> class expected {
@@ -630,35 +629,32 @@ dependency, so per R29(b) it is two PRs:
     ```
 
     is byte-identical (`static_assert`s in the header pin
-    `is_trivially_copyable<T>` and `offsetof(expected, ok_) ==
-    alignof(union)`). API per D8 (:774-779): `has_value()`, `operator
-    bool`, `value()`, `error()`, `value_or()`, `operator==`, a
-    `Carbon::unexpected<E>` constructor for C++-side construction, and
-    under `__cplusplus >= 202302L` conversions to/from `std::expected`.
-    `Exception::ptr()` = `if (!primary_) return std::exception_ptr();
-    try { __cxa_rethrow_primary_exception(primary_); } catch (...) {
-    return std::current_exception(); }` (cxa_exception.cpp:756-770
-    increments the refcount, so the stored pointer stays valid —
-    lossless, D7). **NULL primary (amended 2026-09-27, review fold: rev 2
-    F9):** `__cxa_current_primary_exception` returns NULL for a FOREIGN
-    exception (one not thrown by the C++ runtime; cxa_exception.cpp:721-722
-    "no way to refcount it") and `__cxa_rethrow_primary_exception(NULL)`
-    is a no-op (:758 guards on `thrown_object != NULL`) — so the header
-    must not rely on the rethrow to leave the function: `ptr()` returns an
-    empty `std::exception_ptr` and `rethrow()` calls `std::terminate()`
-    when `primary_` is null, both commented as the foreign-exception case
-    (`has_value()` on the Carbon side is unaffected: the discriminant is
-    `Err` regardless). **Apple link note (amended 2026-09-27, review fold:
-    rev 2 F2):** libc++ on Apple platforms does NOT re-export
-    `__cxa_rethrow_primary_exception` (libcxxabi/lib/
-    symbols-not-reexported.exp:13), so a C++ consumer of
-    `<carbon/expected.h>` that calls `ptr()`/`rethrow()` needs `-lc++abi`
-    there; recorded in the header comment, §7 R-5 and W-059's notes
-    (§8.5). Deviation recorded (V-3a register): the doc says
-    `Cpp.Exception` "maps to `std::exception_ptr`" (:765-767) while the
-    landed mapping is the layout-identical wrapper `Carbon::Exception`
-    whose `.ptr()` is the `std::exception_ptr` — the doc's own usage line
-    (:781, `r.error().ptr()`) already assumes the wrapper.
+    `is_trivially_copyable<T>` and `offsetof(expected, ok_) == alignof(union)`).
+    API per D8 (:774-779): `has_value()`, `operator bool`, `value()`, `error()`,
+    `value_or()`, `operator==`, a `Carbon::unexpected<E>` constructor for
+    C++-side construction, and under `__cplusplus >= 202302L` conversions
+    to/from `std::expected`. `Exception::ptr()` = `if (!primary_) return
+    std::exception_ptr(); try { __cxa_rethrow_primary_exception(primary_); }
+    catch (...) { return std::current_exception(); }` (cxa_exception.cpp:756-770
+    increments the refcount, so the stored pointer stays valid — lossless, D7).
+    **NULL primary (amended 2026-09-27, review fold: rev 2 F9):**
+    `__cxa_current_primary_exception` returns NULL for a FOREIGN exception (one
+    not thrown by the C++ runtime; cxa_exception.cpp:721-722 "no way to refcount
+    it") and `__cxa_rethrow_primary_exception(NULL)` is a no-op (:758 guards on
+    `thrown_object != NULL`) — so the header must not rely on the rethrow to
+    leave the function: `ptr()` returns an empty `std::exception_ptr` and
+    `rethrow()` calls `std::terminate()` when `primary_` is null, both commented
+    as the foreign-exception case (`has_value()` on the Carbon side is
+    unaffected: the discriminant is `Err` regardless). **Apple link note
+    (amended 2026-09-27, review fold: rev 2 F2):** libc++ on Apple platforms
+    does NOT re-export `__cxa_rethrow_primary_exception` (libcxxabi/lib/
+    symbols-not-reexported.exp:13), so a C++ consumer of `<carbon/expected.h>`
+    that calls `ptr()`/`rethrow()` needs `-lc++abi` there; recorded in the
+    header comment, §7 R-5 and W-059's notes (§8.5). Deviation recorded (V-3a
+    register): the doc says `Cpp.Exception` "maps to `std::exception_ptr`"
+    (:765-767) while the landed mapping is the layout-identical wrapper
+    `Carbon::Exception` whose `.ptr()` is the `std::exception_ptr` — the doc's
+    own usage line (:781, `r.error().ptr()`) already assumes the wrapper.
 7.  **Install + include path:** the header ships at
     `lib/carbon/include/carbon/expected.h` (a `toolchain_files` target in
     toolchain/install/BUILD next to `:core` :145-148, added to
@@ -984,25 +980,24 @@ five commits:**
 ### §4.B EH-B
 
 -   **check/testdata/interop/cpp/exceptions/catching_thunk.carbon**
-    (min_prelude/none is NOT enough — `Core.Result` needs the full
-    prelude; use `INCLUDE-FILE: min_prelude/full.carbon`): `question_select`
-    (`fn F() -> Core.Result(i32, Cpp.Exception) { return .Ok(Cpp.may_throw_int()?); }`
-    — SemIR shows the `.carbon_thunk_catch` decl, both temporaries, the
-    `EqWith` test, two alternative-constructor calls and the convergence),
-    `void_callee` (`Cpp.may_throw()?` in a `Result((), Cpp.Exception)`
-    function — no `ret` temporary), `nested_argument` (`Cpp.f(Cpp.g())?` —
-    only `f` catching, `g` fenced), `same_callee_both_ways` (one `Cpp.f()`
-    fenced, another `Cpp.f()?` catching — the per-call-site rule :657-661;
-    the `imports` block shows BOTH thunk decls with distinct identifiers,
-    §1.B.2), `paren_operand` (`(Cpp.may_throw_int())?` and
-    `((Cpp.may_throw_int()))?` both select the catching thunk — the
-    `ParenExpr` walk-up of §1.B.1; amended 2026-09-27, review fold: rev 2
-    F6), `reserved_name` (inline C++ declares `struct Exception {}`;
-    `Cpp.Exception` still names the Carbon class — :701-706 — and the
-    `CppReservedNameShadowed` warning is emitted at the use; amended
-    2026-09-27, review fold: rev 2 F1). `question_select`'s `imports`
-    block shows both the eagerly built fenced thunk decl and the catching
-    thunk decl (§1.B.2; amended 2026-09-27, review fold: rev 2 F7).
+    (min_prelude/none is NOT enough — `Core.Result` needs the full prelude; use
+    `INCLUDE-FILE: min_prelude/full.carbon`): `question_select` (`fn F() ->
+    Core.Result(i32, Cpp.Exception) { return .Ok(Cpp.may_throw_int()?); }` —
+    SemIR shows the `.carbon_thunk_catch` decl, both temporaries, the `EqWith`
+    test, two alternative-constructor calls and the convergence), `void_callee`
+    (`Cpp.may_throw()?` in a `Result((), Cpp.Exception)` function — no `ret`
+    temporary), `nested_argument` (`Cpp.f(Cpp.g())?` — only `f` catching, `g`
+    fenced), `same_callee_both_ways` (one `Cpp.f()` fenced, another `Cpp.f()?`
+    catching — the per-call-site rule :657-661; the `imports` block shows BOTH
+    thunk decls with distinct identifiers, §1.B.2), `paren_operand` (`(Cpp.may_throw_int())?`
+    and `((Cpp.may_throw_int()))?` both select the catching thunk — the
+    `ParenExpr` walk-up of §1.B.1; amended 2026-09-27, review fold: rev 2 F6),
+    `reserved_name` (inline C++ declares `struct Exception {}`; `Cpp.Exception`
+    still names the Carbon class — :701-706 — and the `CppReservedNameShadowed`
+    warning is emitted at the use; amended 2026-09-27, review fold: rev 2 F1).
+    `question_select`'s `imports` block shows both the eagerly built fenced
+    thunk decl and the catching thunk decl (§1.B.2; amended 2026-09-27, review
+    fold: rev 2 F7).
 -   **check/testdata/interop/cpp/exceptions/fail_catching.carbon:**
     `fail_noexcept_callee` (`Cpp.cannot_throw()?` → `QuestionOperandNotTry`),
     `fail_none_mode` (`EXTRA-ARGS: --cpp-exceptions=none`, same diagnostic),
@@ -1045,10 +1040,11 @@ five commits:**
 
 ### §5.A EH-A — four new programs, zero SKIP flips; floor **105 PASS / 0 FAIL / 28 SKIP over 133** (tree-relative)
 
-All under bullet "Error handling: dedicated control flow constructs" (R7:
-exact string; `runner.py --self-test` before commit). Harness conventions
-(fork/w077/plan.md §5 on branch claude/carbon-fork-0-1-w077, merging as PR #39): `RuntimeSeed(x) = x + 20` inputs, EXPECT
-values hand-derived (R16(d)), exit-code belt on every dispatch.
+All under bullet "Error handling: dedicated control flow constructs" (R7: exact
+string; `runner.py --self-test` before commit). Harness conventions
+(fork/w077/plan.md §5 on branch claude/carbon-fork-0-1-w077, merging as PR #39):
+`RuntimeSeed(x) = x + 20` inputs, EXPECT values hand-derived (R16(d)), exit-code
+belt on every dispatch.
 
 1.  **error_handling/result_prelude_diff.carbon + .diff.cpp** — the
     question_propagation_diff shape (3-deep `?` chain, runtime-selected
@@ -1144,12 +1140,12 @@ header gains one sentence pointing at the boundary diagnostic's lower pin
     fork` is empty), and the 41 lower goldens defining `@main` keep their
     `i32`/void paths byte-identical (the epilogue is gated on the `Result`
     return).
--   **min_prelude parts:** unchanged. parts/optional.carbon is a curated
-    copy (it diverges from core already, see the `diff`), and no test
-    combines it with `Try`; parts/try.carbon stays (the pre-flight golden's
-    "no Try impl exists" load-bearing premise, toolchain/testing/testdata/
-    min_prelude/try.carbon:12-21, is preserved because the impls live in result.carbon
-    and optional.carbon, not try.carbon).
+-   **min_prelude parts:** unchanged. parts/optional.carbon is a curated copy
+    (it diverges from core already, see the `diff`), and no test combines it
+    with `Try`; parts/try.carbon stays (the pre-flight golden's "no Try impl
+    exists" load-bearing premise, toolchain/testing/testdata/
+    min_prelude/try.carbon:12-21, is preserved because the impls live in
+    result.carbon and optional.carbon, not try.carbon).
 -   Source files touched: 12 (count corrected 9 → 12; amended 2026-09-27,
     review fold: rev 1 MINOR-4): (1) core/prelude/types/result.carbon
     (new); (2) core/prelude/types.carbon; (3) core/prelude/types/
@@ -1280,18 +1276,17 @@ collateral.
     consumer reaches it since calls do not fold, so lowering is the
     single consumer and now handles it.
 -   **R-4 — entry-point epilogue versus the `ReturnSlot` inst.** `ReturnSlot`
-    reads the return param's local (handle.cpp:260-263); the plan binds
-    that local to an alloca AFTER the poison loop, so ordering is correct
-    by construction. (landed 2026-09-27, EH-A: the local is bound ONCE,
-    not overridden — the poison loop skips the return param and the alloca
-    binding follows it, §2.A.5 landed note; ordering is still by
-    construction. Falsifier status: pending the re-dispatched refill — the
-    first fill, run 36301020281, was polluted by the R-12 event and
-    reverted at 92a6191ee.) Falsifier: `main_run/return_result.carbon` IR shows a
-    `poison` operand, OR `define i32 @main(` has any parameter at all
-    (the `TryHandleParameter` `OutParamPattern` arm lowering the choice
-    return as a pointer param — the §2.A.5 second edit; amended
-    2026-09-27, review fold: rev 1 MAJOR-2).
+    reads the return param's local (handle.cpp:260-263); the plan binds that
+    local to an alloca AFTER the poison loop, so ordering is correct by
+    construction. (landed 2026-09-27, EH-A: the local is bound ONCE, not
+    overridden — the poison loop skips the return param and the alloca binding
+    follows it, §2.A.5 landed note; ordering is still by construction. Falsifier
+    status: pending the re-dispatched refill — the first fill, run 36301020281,
+    was polluted by the R-12 event and reverted at 92a6191ee.) Falsifier:
+    `main_run/return_result.carbon` IR shows a `poison` operand, OR `define i32
+    @main(` has any parameter at all (the `TryHandleParameter` `OutParamPattern`
+    arm lowering the choice return as a pointer param — the §2.A.5 second edit;
+    amended 2026-09-27, review fold: rev 1 MAJOR-2).
 -   **R-5 — `write` on non-POSIX, and symbol prefixes on macOS.** V-1
     scopes 0.1 to Linux/macOS; W10 (Windows) already budgets the boundary
     thunks' MSVC variant (error_handling.md:835-837) — add "the entry-point
@@ -1319,12 +1314,12 @@ collateral.
     `3`/`10`). If a future SF-6 widening admits non-scalar payloads, the
     header's `static_assert(sizeof(expected) == A + P)` style checks fail
     to compile, loudly.
--   **R-8 — `Cpp.Exception` accessors deferred** (D-EH-3(ii)). The gap-
-    analysis row says PARTIAL for this reason; the work item names the
-    mechanism (a Sema-built helper `const char* __carbon_exception_what(void*)`
-    with `try { __cxa_rethrow_primary_exception } catch (const std::exception& e)
-    { return e.what(); } catch (...) { return nullptr; }`, buildable only
-    when `std::exception` is declared in the TU).
+-   **R-8 — `Cpp.Exception` accessors deferred** (D-EH-3(ii)). The gap- analysis
+    row says PARTIAL for this reason; the work item names the mechanism (a
+    Sema-built helper `const char* __carbon_exception_what(void*)` with `try {
+    __cxa_rethrow_primary_exception } catch (const std::exception& e) { return
+    e.what(); } catch (...) { return nullptr; }`, buildable only when
+    `std::exception` is declared in the TU).
 -   **R-9 — fence-diagnostic commit fails hosted verification** (Sema
     try/catch construction is the least-precedented code in the PR). Drop
     rule: after one fix round, if the gate is still red on that commit,
@@ -1397,10 +1392,11 @@ collateral.
 2.  **Gate:** mode `gate` green (prek + `bazel test //toolchain/...`;
     clang-format 21.1.8 per R18 on the C++ diff; `uvx prek run --files
     <changed>` locally before every push, R25).
-3.  **Conformance:** mode `conformance`; EH-A **105/0/28 over 133** (landed 2026-09-27: 106/0/28 over 134 after #39 added one program), EH-B
-    **109/0/27 over 136** (both +1/+1 after W-077 merges); `runner.py
-    --self-test` and `--update-readme-table` clean. Any other movement is
-    a §5/§6 miss — stop and reconcile.
+3.  **Conformance:** mode `conformance`; EH-A **105/0/28 over 133** (landed
+    2026-09-27: 106/0/28 over 134 after #39 added one program), EH-B **109/0/27
+    over 136** (both +1/+1 after W-077 merges); `runner.py --self-test` and
+    `--update-readme-table` clean. Any other movement is a §5/§6 miss — stop and
+    reconcile.
 4.  **Reconciliation greps at discharge:** `grep -rn 'fail_unit_break_type'
     toolchain` is empty; `grep -rn 'does not have language features
     dedicated to error handling' docs fork` hits only history in this plan
@@ -1770,16 +1766,16 @@ and §8.6 (:526-529, :674-678, :683-712, :701-706, :715-720, :734, :765-767,
 are the selection rule at :700-707 with its amendment at :709-720, the release
 clause at :778 with the D-EH-3 amendment at :786-801, and the mapping amendment
 at :837-845; §1.B.4's "export-imported from types.carbon after `cpp/void`"
-(alphabetical in fact); §4.B's `fail_none_mode` subfile (a file); §1.B.2/§2.B.3's
-identifier suffix `__carbon_catching` (`__carbon_catching_thunk`); §5.B.2's
-print format "`1,<value>` / `0,-1`" (the program prints each value on its own
-line with `Core.Print`, and the C++ oracle matches that); §2.B.5's back-quoted
-"exporting `{0}`" (the landed text is "exporting {0} to C++ requires ..." —
-`InstIdAsType` formats the type with its own back-quotes); and the `.Ok(...)`
-shorthand the plan writes in §1.B.3, §4.B and §5.B does not exist in this tree —
-constructors are spelled `Core.Result(S, E).Ok(...)` (the doc's own workaround
-line still uses the shorthand). Also §0.1 row 2 / §8.4's import.cpp:2103-2105 is
-now import.cpp:2114.
+(alphabetical in fact); §4.B's `fail_none_mode` subfile (a file);
+§1.B.2/§2.B.3's identifier suffix `__carbon_catching`
+(`__carbon_catching_thunk`); §5.B.2's print format "`1,<value>` / `0,-1`" (the
+program prints each value on its own line with `Core.Print`, and the C++ oracle
+matches that); §2.B.5's back-quoted "exporting `{0}`" (the landed text is
+"exporting {0} to C++ requires ..." — `InstIdAsType` formats the type with its
+own back-quotes); and the `.Ok(...)` shorthand the plan writes in §1.B.3, §4.B
+and §5.B does not exist in this tree — constructors are spelled `Core.Result(S,
+E).Ok(...)` (the doc's own workaround line still uses the shorthand). Also §0.1
+row 2 / §8.4's import.cpp:2103-2105 is now import.cpp:2114.
 
 **Reconciliation greps run at discharge (§8.4), on 6dda6a89d:**
 
@@ -1833,19 +1829,19 @@ now import.cpp:2114.
     three benign fence consequences §6.B did not enumerate:
     check/interop/cpp/function/import/thunk_ast.carbon (the AST dump now shows
     the `CXXTryStmt`/`CXXCatchStmt` with the write call and the rethrow),
-    lower/interop/cpp/optimize/clang_no_optimize_twice.carbon
-    (`terminate.lpad`/`__clang_call_terminate` became a real landing pad with
-    `exn`/`ehselector` slots) and lower/interop/cpp/debug_info.carbon (a
-    `DILexicalBlock` for the `try`). Two negatives in the fill were wrong and
-    were fixed at the root: `fail_class_return` cascaded five monomorphization
-    errors after the intended one because `RequireCompleteType` returned TRUE
-    for the SF-6-rejected `Core.Result(Cpp.Widget, Cpp.Exception)` — the class
-    completes with an error-valued layout — so the catching call did not
-    return `ErrorInst`; the landed code classifies `S` with the check side's
-    own `IsInSliceChoicePayloadType` BEFORE forming the specific and emits the
-    Error `CppCatchingImportNonScalarSuccess` (same text as the former context
-    note; the note kind stays as the `RequireCompleteType` belt's context, and
-    that belt now also returns `ErrorInst` when `GetObjectRepr` is `ErrorInst`).
+    lower/interop/cpp/optimize/clang_no_optimize_twice.carbon (`terminate.lpad`/`__clang_call_terminate`
+    became a real landing pad with `exn`/`ehselector` slots) and
+    lower/interop/cpp/debug_info.carbon (a `DILexicalBlock` for the `try`). Two
+    negatives in the fill were wrong and were fixed at the root:
+    `fail_class_return` cascaded five monomorphization errors after the intended
+    one because `RequireCompleteType` returned TRUE for the SF-6-rejected
+    `Core.Result(Cpp.Widget, Cpp.Exception)` — the class completes with an
+    error-valued layout — so the catching call did not return `ErrorInst`; the
+    landed code classifies `S` with the check side's own
+    `IsInSliceChoicePayloadType` BEFORE forming the specific and emits the Error
+    `CppCatchingImportNonScalarSuccess` (same text as the former context note;
+    the note kind stays as the `RequireCompleteType` belt's context, and that
+    belt now also returns `ErrorInst` when `GetObjectRepr` is `ErrorInst`).
     `fail_ctor_return` spelled the constructor call `Cpp.Widget(1)`, which this
     tree diagnoses as `value of type type is not callable`; the tree's spelling
     is the static-member form `Cpp.Widget.Widget(1)` (interop/cpp/class/import/
@@ -1854,16 +1850,17 @@ now import.cpp:2114.
     (run 36310053869's successor) then failed the GATE and CONFORMANCE runs
     36311895668 / 36311899697, both fixed at the root: (i)
     `//toolchain/diagnostics:coverage_test` — `InCppCatchingThunk` and
-    `CppCatchingImportPayloadNote` appeared in no golden; the former is
-    replaced by the shared `NoteInCppThunk` helper (import.{h,cpp}: the one
-    `InCppThunk` site, used by the fenced and the catching build — no Clang
-    diagnostic is user-reachable from the catching body, whose call and store
-    the fenced build already accepted), the latter deleted: the up-front
+    `CppCatchingImportPayloadNote` appeared in no golden; the former is replaced
+    by the shared `NoteInCppThunk` helper (import.{h,cpp}: the one `InCppThunk`
+    site, used by the fenced and the catching build — no Clang diagnostic is
+    user-reachable from the catching body, whose call and store the fenced build
+    already accepted), the latter deleted: the up-front
     `IsInSliceChoicePayloadType` predicate IS the specific's SF-6 rule, so the
     completion is a `CARBON_CHECK` invariant (R17), not a diagnostic; (ii) both
     conformance programs including the REAL `<carbon/expected.h>` crashed
-    `compile` (SIGSEGV in `CarbonExternalASTSource::FindExternalVisibleDeclsByName`
-    while parsing `Carbon::unexpected`): the `CXXConstructorName` arm did
+    `compile` (SIGSEGV in
+    `CarbonExternalASTSource::FindExternalVisibleDeclsByName` while parsing
+    `Carbon::unexpected`): the `CXXConstructorName` arm did
     `llvm::cast<clang::CXXRecordDecl>(decl_context)->getIdentifier()`, but a
     constructor declarator inside a C++-declared class nested in `namespace
     Carbon` sends Clang's unqualified redeclaration lookup to the NAMESPACE with
@@ -1871,23 +1868,22 @@ now import.cpp:2114.
     uses `dyn_cast` there), so the opt build reinterpreted the `NamespaceDecl`
     and read garbage; now `dyn_cast` with a "no external declarations" answer,
     plus a null-identifier guard. Pinned by the new CHECK-free golden
-    check/interop/cpp/function/export/carbon_namespace_cpp_class.carbon
-    (inline method + constructor in a `Carbon`-nested C++ class, an exported
-    Carbon function called from the same block) and by result_expected.carbon's
+    check/interop/cpp/function/export/carbon_namespace_cpp_class.carbon (inline
+    method + constructor in a `Carbon`-nested C++ class, an exported Carbon
+    function called from the same block) and by result_expected.carbon's
     skeletons, which now carry inline member definitions (its fill is stripped
     for the refill). Goldens cannot include the real header: file_test's data
     are the clang headers and min_prelude only (toolchain/testing/BUILD).)
-    Expected churn per
-    §6.B: exactly those 27 plus the six new files; any other file moving in the
-    fill is a §6 miss.
+    Expected churn per §6.B: exactly those 27 plus the six new files; any other
+    file moving in the fill is a §6 miss.
 
 -   Conformance (tree-relative, NOT locally executed — hosted-only per R28): the
     un-SKIP is real in the tree (`grep -rl '^// SKIP' fork/conformance/programs`
     drops from 28 files on origin/trunk to 27, none under error_handling/), and
     the three new programs plus the differential's `.diff.cpp` are present.
-    Numbers: 112 PASS / 0 FAIL / 26 SKIP over 138, 44/56 bullets, run 36315999330; gate run
-    36315995464 green (§5.B's floor 109/0/27 over 136 was stated
-    before W-012 added one program to trunk).
+    Numbers: 112 PASS / 0 FAIL / 26 SKIP over 138, 44/56 bullets, run
+    36315999330; gate run 36315995464 green (§5.B's floor 109/0/27 over 136 was
+    stated before W-012 added one program to trunk).
 
 **Ledger (§8.5) as applied:** W-019 → `implemented`, DISCHARGED with the SF-6
 bound and residue in its notes, evidence re-pinned to the landed sites,

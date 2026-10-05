@@ -51,11 +51,11 @@ Already mostly exists — this is Carbon's superpower for an AI-driven push:
 -   Toolchain conventions: `toolchain/docs/**`, `CONTRIBUTING.md`, style
     docs, SemIR documentation.
 -   Fork-local additions: `fork/rulebook.md` (created during the trial run)
-    collects process rules the way the migration rulebook did — for example "every
-    new SemIR inst kind needs a formatter test", "diagnostics need
-    `CARBON_DIAGNOSTIC` naming pattern X". When an adversarial reviewer
-    catches the same class of mistake twice, it becomes a rule here, and
-    affected work is regenerated, not hand-patched.
+    collects process rules the way the migration rulebook did — for example
+    "every new SemIR inst kind needs a formatter test", "diagnostics need
+    `CARBON_DIAGNOSTIC` naming pattern X". When an adversarial reviewer catches
+    the same class of mistake twice, it becomes a rule here, and affected work
+    is regenerated, not hand-patched.
 
 ### 3. Dependency map
 
@@ -127,19 +127,19 @@ minimal external material second, and the one load-bearing concept named
 explicitly — so the decider is always equipped to overrule the
 recommendation.
 
-**Sub-forks: veto-digest model (V-2, 2026-07-20, superseding the
-2026-07-19 always-ask directive).** The synchronous-question test is
-DECISION ENTROPY, not importance: ask live only when the user's answer is
-genuinely unpredictable, or the item reverses a user directive, spends
-user resources, or redefines scope. A high-stakes item with one realistic
-answer goes in the digest with the alternative as a standing veto. Genuine forks — design divergence
-from upstream, scope trades, north-star tension — still come to the user
-synchronously by way of AskUserQuestion. Mundane sub-decisions (naming,
-spellings, defaults) auto-adopt the drafter's recommendation, are
-recorded in the decision log as auto-adopted, and appear in a compact
-veto digest presented with each merge; anything the user vetoes is
-reworked before the next merge. Drafting agents still mark every such
-point rather than silently deciding — the digest must be complete.
+**Sub-forks: veto-digest model (V-2, 2026-07-20, superseding the 2026-07-19
+always-ask directive).** The synchronous-question test is DECISION ENTROPY, not
+importance: ask live only when the user's answer is genuinely unpredictable, or
+the item reverses a user directive, spends user resources, or redefines scope. A
+high-stakes item with one realistic answer goes in the digest with the
+alternative as a standing veto. Genuine forks — design divergence from upstream,
+scope trades, north-star tension — still come to the user synchronously by way
+of AskUserQuestion. Mundane sub-decisions (naming, spellings, defaults)
+auto-adopt the drafter's recommendation, are recorded in the decision log as
+auto-adopted, and appear in a compact veto digest presented with each merge;
+anything the user vetoes is reworked before the next merge. Drafting agents
+still mark every such point rather than silently deciding — the digest must be
+complete.
 
 **Never re-ask a decided fork.** Before any AskUserQuestion round, the
 orchestrator checks `fork/decision-log.md` for already-decided IDs; a

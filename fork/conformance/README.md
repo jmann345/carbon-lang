@@ -98,8 +98,9 @@ comment block:
 ```
 
 -   `CONFORMANCE-BULLET` is **required** and must match a first-column cell of
-    the "Per-bullet status" table in [`fork/gap-analysis.md`](../gap-analysis.md)
-    character-for-character (`--self-test` enforces this).
+    the "Per-bullet status" table in
+    [`fork/gap-analysis.md`](../gap-analysis.md) character-for-character (`--self-test`
+    enforces this).
 -   `EXPECT-STDOUT` continuation lines are `//` + three spaces + the literal
     expected line; the captured stdout must equal the lines joined with
     newlines (each line newline-terminated). Note `Core.Print(x)` prints

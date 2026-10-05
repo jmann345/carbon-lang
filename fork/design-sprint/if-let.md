@@ -479,16 +479,15 @@ fn ParsePort(s: str) -> i32 {
 Advantages: zero design and implementation cost beyond W4; no divergence
 risk; everything remains expressible.
 
-Disadvantages: fails the milestone bullet _as written_ — it explicitly names both
-combined forms, and the audit already scored this row MISSING against
-that wording; the escape hatch requires arguing `match` "addresses the
-use cases", but the use case _is_ ergonomics (a guard clause becomes
-5 lines of nesting with a mandatory `default`, and the "translate C++
-into obvious and unsurprising Carbon" goal, `milestones.md:57-61`, is
-hurt for every `if (opt)` in the source corpus); and it would leave
-`pattern_matching.md`'s #1871 forward-reference dangling, failing the
-"no placeholders" documentation bar. Cost **S** (prose only). Evolution
-risk: none now, guaranteed rework when upstream lands #5101.
+Disadvantages: fails the milestone bullet _as written_ — it explicitly names
+both combined forms, and the audit already scored this row MISSING against that
+wording; the escape hatch requires arguing `match` "addresses the use cases",
+but the use case _is_ ergonomics (a guard clause becomes 5 lines of nesting with
+a mandatory `default`, and the "translate C++ into obvious and unsurprising
+Carbon" goal, `milestones.md:57-61`, is hurt for every `if (opt)` in the source
+corpus); and it would leave `pattern_matching.md`'s #1871 forward-reference
+dangling, failing the "no placeholders" documentation bar. Cost **S** (prose
+only). Evolution risk: none now, guaranteed rework when upstream lands #5101.
 
 ## Recommendation
 

@@ -47,13 +47,12 @@ exception interop story. Today, upstream (and therefore this fork at trunk
 -   The prelude has no `Result` type (`core/prelude/` — verified), and
     `Optional` is a self-described placeholder
     (`core/prelude/types/optional.carbon:27-28`).
--   The toolchain has zero exception-handling configuration: the embedded
-    Clang invocation (`toolchain/base/clang_invocation.cpp`) sets no
+-   The toolchain has zero exception-handling configuration: the embedded Clang
+    invocation (`toolchain/base/clang_invocation.cpp`) sets no
     `-f[no-]exceptions` state, Carbon lowering emits only `CreateCall` — never
-    `invoke`/landingpads (`toolchain/lower/handle_call.cpp`, verified by
-    grep for `invoke|landingpad|personality` across `toolchain/lower/*.cpp`),
-    and the interop philosophy doc explicitly disclaims seamless exception
-    interop
+    `invoke`/landingpads (`toolchain/lower/handle_call.cpp`, verified by grep
+    for `invoke|landingpad|personality` across `toolchain/lower/*.cpp`), and the
+    interop philosophy doc explicitly disclaims seamless exception interop
     (`docs/design/interoperability/philosophy_and_goals.md#support-for-c-exceptions-without-bridge-code`).
 
 Practical consequence today: inline/imported C++ is compiled by the embedded
@@ -103,14 +102,15 @@ operator" (`docs/project/principles/error_handling.md:44-47`).
 
 From `docs/project/goals.md` and accepted principles:
 
--   **Errors are values** (p000301): recoverable failure is reported by way of a sum
-    type in the return position; no implicit propagation; no
+-   **Errors are values** (p000301): recoverable failure is reported by way of a
+    sum type in the return position; no implicit propagation; no
     `noexcept`/`throws`-style effect annotations — fallibility lives in the
-    return type. Any option violating this needs the user to knowingly
-    overturn an accepted upstream principle.
--   **Performance-critical software** (`goals.md#performance-critical-software`):
-    no hidden allocations, no mandatory unwinder machinery on the happy path,
-    zero-overhead interop where possible.
+    return type. Any option violating this needs the user to knowingly overturn
+    an accepted upstream principle.
+-   **Performance-critical software**
+    (`goals.md#performance-critical-software`): no hidden allocations, no
+    mandatory unwinder machinery on the happy path, zero-overhead interop where
+    possible.
 -   **Code that is easy to read** + the progressive-disclosure principle
     (p005661): the success path must stay legible; propagation boilerplate is
     explicitly called out as a readability hazard by p000301.
@@ -284,8 +284,8 @@ destination.
 ### Option B: `Core.Result` + postfix `?` propagation by way of a `Core.Try` interface
 
 Option A plus the single control-flow construct upstream's own principle doc
-names: a postfix `?` operator that unwraps success or early-returns the
-failure, made open by way of an interface so `Optional` and user types participate
+names: a postfix `?` operator that unwraps success or early-returns the failure,
+made open by way of an interface so `Optional` and user types participate
 (Rust's `Try` trait, adapted to Carbon's interface style).
 
 Design sketch:
@@ -566,9 +566,9 @@ merge-conflict surface).
     `Try` (Rust rule); what that means for `Main` and terse `=>` bodies.
 8.  **Deferred sugar.** Take `try { }` blocks / `catch`-expressions now, or
     explicitly defer post-0.1 (recommended: defer; record in decision log).
-9.  **Panic vs error split.** Unrecoverable failures are out of scope here,
-    but the boundary doc must define what a Carbon abort does with C++
-    frames on the stack (and the other way around) — here or in the safety workstream.
+9.  **Panic vs error split.** Unrecoverable failures are out of scope here, but
+    the boundary doc must define what a Carbon abort does with C++ frames on the
+    stack (and the other way around) — here or in the safety workstream.
 
 ## References
 

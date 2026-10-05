@@ -10,318 +10,280 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-10-05 (post-PR #48: OV-3 LANDED — an exported
-`overload fn` set is a C++ overload set (every member delivered to Clang
-through `SetExternalVisibleDeclsForName`, each with its own
-`:overload<N>` symbol and a thunk that now carries the member's
-`overload_index`), resolved by C++ callers under C++'s best-match rules —
-the documented divergence from Carbon's first-match, asserted in both
-directions by one program (rulebook R30). Gap row 57 PARTIAL → DONE: the
-overloading workstream (OV-1/2/3, F-009) is closed; header 29 DONE / 21
-PARTIAL / 5 MISSING / 1 DESIGN-ONLY. NEW FLOOR 126 PASS / 0 / 23 SKIP
-over 149 (quoted from scoreboard.json, run 37357609478), 47/56 bullets.
-Also fixed on the way: the file_test autoupdater never normalized a Clang
-declaration id that ends a line. Earlier today: SL-1 (#47, floor 124),
-OV-2 (#46, floor 121), the weekly upstream check (cut holds a seventh
-week). IN FLIGHT: SL-2 (W-056, `std::span` ↔ `Core.Slice` mapping +
-owning-container views) on claude/carbon-fork-0-1-sl2 in ../carbon-sl2 —
-implemented, review REJECT (the blanket `ImplicitAs` impl was placed in a
-new prelude library and is an orphan there, which took every
-full-prelude golden down in the first fill; an ICE on `void data()`
-members; an unchecked `Copy & Destroy` bound on span elements) — fixer
-running. Then the "upstream advance" workstream (181 deferred commits, 99
-conflicting files at the last dry run), variadics, CMake integration,
-safe-Carbon design. Next cron Monday 2026-10-12; the owner's machine is
-never used._
-FORTY-EIGHT PRs. Function overloading is finished end to end — same-file
-sets, import across libraries and api/impl, generic members, and export
-to C++ — with the one divergence from C++ written down and tested rather
-than papered over. The thunk-symbol collision that review found (every
-member's thunk mangled alike; lowering would have run member 0 for every
-C++ overload) is the kind of silent wrong-member bug the hosted fill
-alone would never have shown._
-FORTY-SEVEN PRs. Slices exist, and so — for the first time — do user
+Last updated: 2026-10-05 (post-PR #48: OV-3 LANDED — an exported `overload fn`
+set is a C++ overload set (every member delivered to Clang through
+`SetExternalVisibleDeclsForName`, each with its own `:overload<N>` symbol and a
+thunk that now carries the member's `overload_index`), resolved by C++ callers
+under C++'s best-match rules — the documented divergence from Carbon's
+first-match, asserted in both directions by one program (rulebook R30). Gap row
+57 PARTIAL → DONE: the overloading workstream (OV-1/2/3, F-009) is closed;
+header 29 DONE / 21 PARTIAL / 5 MISSING / 1 DESIGN-ONLY. NEW FLOOR 126 PASS / 0
+/ 23 SKIP over 149 (quoted from scoreboard.json, run 37357609478), 47/56
+bullets. Also fixed on the way: the file_test autoupdater never normalized a
+Clang declaration id that ends a line. Earlier today: SL-1 (#47, floor 124),
+OV-2 (#46, floor 121), the weekly upstream check (cut holds a seventh week). IN
+FLIGHT: SL-2 (W-056, `std::span` ↔ `Core.Slice` mapping + owning-container
+views) on claude/carbon-fork-0-1-sl2 in ../carbon-sl2 — implemented, review
+REJECT (the blanket `ImplicitAs` impl was placed in a new prelude library and is
+an orphan there, which took every full-prelude golden down in the first fill; an
+ICE on `void data()` members; an unchecked `Copy & Destroy` bound on span
+elements) — fixer running. Then the "upstream advance" workstream (181 deferred
+commits, 99 conflicting files at the last dry run), variadics, CMake
+integration, safe-Carbon design. Next cron Monday 2026-10-12; the owner's
+machine is never used. FORTY-EIGHT PRs. Function overloading is finished end to
+end — same-file sets, import across libraries and api/impl, generic members, and
+export to C++ — with the one divergence from C++ written down and tested rather
+than papered over. The thunk-symbol collision that review found (every member's
+thunk mangled alike; lowering would have run member 0 for every C++ overload) is
+the kind of silent wrong-member bug the hosted fill alone would never have
+shown._ FORTY-SEVEN PRs. Slices exist, and so — for the first time — do user
 destructors: the slice that needed `free` to run found that no declared
-`Destroy` impl had ever been selected, and fixed that at the root rather
-than documenting a leak. Four hosted rounds for one slice is the loop
-earning its keep; each miss is written down with why review did not see
-it._
-FORTY-SIX PRs. Overload sets now cross library boundaries the way the
-design asks — whole, closed, with the api/impl rules reading the api
-file's facts — and the slice's two review rounds plus three hosted fills
-each caught something the previous layer had traced as clean, which is
-the loop working rather than failing: every miss is written down with its
-root cause._
-FORTY-FIVE PRs. Overloading exists in Carbon proper: the design's
-marked, closed sets with first-match resolution, landed with the loop's
-one real invariant (every probe exit restores block, region and cleanup
-depth under CHECK) and with the one mirror site no review caught — the
-export-name switch — found by the hosted fill as a runtime fatal, exactly
-where a compile probe is blind. The imported-member mangling collapse was
-first gated, then its pin filled EMPTY and proved the gate unreachable,
-so the gate went and the root fix (the stored index) landed instead._
-FORTY-FOUR PRs. Unions are closed out end to end: native declaration,
-layout by construction, and a C++ round trip that the embedded Clang
-itself asserts (`sizeof`, `alignof`, `__is_union`) — plus the first
-Carbon-side call through a return-address thunk for a Carbon-owned
-record, which the plan had mis-cited as precedented and the fill proved
-anyway. One design-fidelity hole caught by review (non-aggregate imported
-unions were initializable from Carbon) closed at the root._
-FORTY-THREE PRs. Unions exist natively: the design's write-safe,
-read-reinterpret union with C++-compatible layout by construction, its
-0.1 field rule made precise (prelude `Copy` impls are trusted; user
-`Copy`/`Destroy` impls, choice-typed and imported C++ fields rejected
-loudly), and the first `Core.UnformedInit` witness a class type ever
-synthesized. The deferral defect was a one-list omission in the parser
-that no review caught by reading — the hosted fill caught it in
-minutes, which is exactly what the fill is for._
-FORTY-TWO PRs. The error-handling remainder is closed: a C++ exception
-crossing into Carbon is either fenced (terminate, now with a message
-naming the boundary) or, when the call is the operand of `?`, caught into
-a `Cpp.Exception` that `?` propagates, and a Carbon `Result` crosses back
-into C++ as a byte-compatible `Carbon::expected`. The slice cost seven
-hosted round trips; every one was a real defect fixed at its root and
-each is written down, including the pre-existing export-namespace crash
-that only a real header could expose._
-FORTY-ONE PRs. The design's if-let family exists: a `let`/`var`
-pattern in an `if`/`while` condition or a `let … else { diverge }`
-declaration runs through the same refutable engine as a `match` arm,
-so every pattern form `match` accepts (alternatives with payloads,
-tuples, literals, `var`/`ref` bindings, structs) works there too and
-gains nothing new to maintain. Two authoring errors in the positive
-goldens were caught by the hosted fill and fixed at the source; the
-second autoupdate round converged the location markers the first
-fill's inserted CHECK lines had shifted (a known two-pass property of
-autoupdate — always run it twice when a fill inserts STDERR lines
-above dumped code). Existing match goldens: byte-identical._
-FORTY PRs. The error-handling remainder's first slice: the design's
-`Core.Result` finally exists in the prelude (the first `match`
-compiled inside package `Core`), `?` works on both `Result` and
-`Optional`, and a `Result`-returning entry point turns into an exit
-code plus a stderr line naming `E`. Two runner-exposed corrections
-recorded as review misses per R28(d): a symbolic `T` bound by a
-non-`type` facet carries only its declared interfaces (so moving it
-needs `Destroy`), and `PadToType` CHECK-failed on a folded zero-sized
-choice constant (`U.A(())`) — fixed at the root, not papered over.
-Eight lower goldens moved by debug-info line numbers only. Lesson
-banked in the workflow: file_test isolates crashes and exits 0, so the
-hosted autoupdate now greps its own log for stack dumps._
-THIRTY-NINE PRs. The design's canonical
-`var my_opt: Optional(i32) = Optional(i32).None;` now compiles and
-runs: LookupChoiceCopyWitness mirrors the destroy witness (is_choice
-gate, symbolic deferral under the SF-6 triviality fence, concrete
+`Destroy` impl had ever been selected, and fixed that at the root rather than
+documenting a leak. Four hosted rounds for one slice is the loop earning its
+keep; each miss is written down with why review did not see it._ FORTY-SIX PRs.
+Overload sets now cross library boundaries the way the design asks — whole,
+closed, with the api/impl rules reading the api file's facts — and the slice's
+two review rounds plus three hosted fills each caught something the previous
+layer had traced as clean, which is the loop working rather than failing: every
+miss is written down with its root cause._ FORTY-FIVE PRs. Overloading exists in
+Carbon proper: the design's marked, closed sets with first-match resolution,
+landed with the loop's one real invariant (every probe exit restores block,
+region and cleanup depth under CHECK) and with the one mirror site no review
+caught — the export-name switch — found by the hosted fill as a runtime fatal,
+exactly where a compile probe is blind. The imported-member mangling collapse
+was first gated, then its pin filled EMPTY and proved the gate unreachable, so
+the gate went and the root fix (the stored index) landed instead._ FORTY-FOUR
+PRs. Unions are closed out end to end: native declaration, layout by
+construction, and a C++ round trip that the embedded Clang itself asserts
+(`sizeof`, `alignof`, `__is_union`) — plus the first Carbon-side call through a
+return-address thunk for a Carbon-owned record, which the plan had mis-cited as
+precedented and the fill proved anyway. One design-fidelity hole caught by
+review (non-aggregate imported unions were initializable from Carbon) closed at
+the root._ FORTY-THREE PRs. Unions exist natively: the design's write-safe,
+read-reinterpret union with C++-compatible layout by construction, its 0.1 field
+rule made precise (prelude `Copy` impls are trusted; user `Copy`/`Destroy`
+impls, choice-typed and imported C++ fields rejected loudly), and the first
+`Core.UnformedInit` witness a class type ever synthesized. The deferral defect
+was a one-list omission in the parser that no review caught by reading — the
+hosted fill caught it in minutes, which is exactly what the fill is for._
+FORTY-TWO PRs. The error-handling remainder is closed: a C++ exception crossing
+into Carbon is either fenced (terminate, now with a message naming the boundary)
+or, when the call is the operand of `?`, caught into a `Cpp.Exception` that `?`
+propagates, and a Carbon `Result` crosses back into C++ as a byte-compatible
+`Carbon::expected`. The slice cost seven hosted round trips; every one was a
+real defect fixed at its root and each is written down, including the
+pre-existing export-namespace crash that only a real header could expose._
+FORTY-ONE PRs. The design's if-let family exists: a `let`/`var` pattern in an
+`if`/`while` condition or a `let … else { diverge }` declaration runs through
+the same refutable engine as a `match` arm, so every pattern form `match`
+accepts (alternatives with payloads, tuples, literals, `var`/`ref` bindings,
+structs) works there too and gains nothing new to maintain. Two authoring errors
+in the positive goldens were caught by the hosted fill and fixed at the source;
+the second autoupdate round converged the location markers the first fill's
+inserted CHECK lines had shifted (a known two-pass property of autoupdate —
+always run it twice when a fill inserts STDERR lines above dumped code).
+Existing match goldens: byte-identical._ FORTY PRs. The error-handling
+remainder's first slice: the design's `Core.Result` finally exists in the
+prelude (the first `match` compiled inside package `Core`), `?` works on both
+`Result` and `Optional`, and a `Result`-returning entry point turns into an exit
+code plus a stderr line naming `E`. Two runner-exposed corrections recorded as
+review misses per R28(d): a symbolic `T` bound by a non-`type` facet carries
+only its declared interfaces (so moving it needs `Destroy`), and `PadToType`
+CHECK-failed on a folded zero-sized choice constant (`U.A(())`) — fixed at the
+root, not papered over. Eight lower goldens moved by debug-info line numbers
+only. Lesson banked in the workflow: file_test isolates crashes and exits 0, so
+the hosted autoupdate now greps its own log for stack dumps._ THIRTY-NINE PRs.
+The design's canonical `var my_opt: Optional(i32) = Optional(i32).None;` now
+compiles and runs: LookupChoiceCopyWitness mirrors the destroy witness
+(is_choice gate, symbolic deferral under the SF-6 triviality fence, concrete
 builds by way of BuildPrimitiveCopyWitness), the Copy dispatch case leaves
-upstream's TODO block with the TODO intact, and the lower PrimitiveCopy
-arm gains the return-slot form. One genuine regression root-caused
-pre-merge (arity-vs-repr misdispatch on monomorphized slot-carrying
-calls — lesson: repr questions are answered at call sites, not
-signatures; mono_from_generic pins the class). The fork's tripwire
-flipped exactly as its header predicted (§2.6 re-derived). Declared +
-pinned: user out-of-line choice Copy impls are shadowed by the
-synthesized witness (the Destroy posture). Floor UNCHANGED **96/0/28
-over 124**, 43/56 bullets; the roundtrip pair restored doc-verbatim.
-Next: conformance depth or a W-008 slice (unblocks W-066)._
-THIRTY PRs. The sanctioned import_ref.cpp amendment
-round, plan-first: one contiguous 20-line hunk peeks through
-non-constant ExportDecls in TryResolveInstCanonical (Done(NotConstant),
-the eval-forwarding invariant CHECKed; V-3a sanction proven by the
-design's export-name sentence + p003938 + upstream's own var-export
-golden). Six probes with fills audited against pre-registered
-predictions verbatim; the W69a ExportDecl chase arm got its first
-lower-side pin (one _Cx.Main across the export route). Floor UNCHANGED
-**96/0/28 over 124**, 43/56 bullets. Both reviews APPROVE; the
-probe-placement deviation recorded. Upstream's non-constant-BindNames
-TODO sits at the hunk boundary — the weekly merge surfaces any
-collision. Next: W-075 (choice alternative-constant copy gap — V-3a
-check first) or conformance depth; W-066 stays blocked on W-008._
-TWENTY-NINE PRs. The adjudicated W69h follow-up
-landed: the SKIP stub became a real 5-unit multi-unit program (api/impl
-split runtime-load-bearing with a visible LINK-FAIL failure mode; the
-export Rect + export-import chain compile-arbitrated in series; the
-W-074 crash shape deliberately dodged). Floor **96/0/28 over 124**
-(this one program SKIP→PASS, verified line-by-line; the Libraries
-bullet was already PASS). One clean adversarial review; comment-only
-folds. Next: W-074 (import_ref amendment round — upstream-hot, small
-plan round first), W-075 (choice alternative-constant copy — V-3a
-check), conformance depth; W-066 stays blocked on W-008._
-TWENTY-EIGHT PRs. The
-three-slice workstream closed an upstream-acknowledged gap: W69a's
-lowering-side promotion (lane a1 — exported backing storage minted at
-lowering, SemIR/import_ref untouched, GetValue routing reachable only
-where the old CHECK crashed), W69h's multi-unit conformance capability
-(directory programs, per-unit compile mirroring upstream's bazel rule,
-byte-identical rerun arbiter), and W69b's pointer-rep arm + the
-restored runtime `let g` acceptance split + BOTH discharge arbiters
-incl. the fork's FIRST multi-unit program. Floor **95/0/29 over 124**
-(evidenced twice, addition-only), 43/56 bullets. Twelve review rounds;
-three honest defect rounds rode the close (W-074 export-x crash minted;
-W-075 alternative-constant copy gap minted; the pre-existing
-AcquireValue folded-ref crash FIXED fenced; aggregate-consumption
-residue recorded). The _C<name>.<package> let-storage symbol shape is a
-divergence-register entry reviewed at each weekly merge; the
-three-golden PromoteObject churn was adjudicated accept-and-declare
-(R-7's falsifier fired as designed). Next: W-074/W-075 (new S
-candidates), the library_multifile_export un-SKIP follow-up (unblocked
-by W69h), conformance depth; W-066 stays blocked on W-008._
-TWENTY-SEVEN PRs. Single-alternative and empty
-choices now pass the match scrutinee gate: the discriminant repr walk
-factored into a shared query (`IsMatchableChoiceType` — integer OR
-empty-tuple discriminant, anything else fails safe), constant-true
-dispatch (the W-067 shape) where no integer discriminant exists, real
-payload extraction (lower golden pins `br i1 true`, no icmp), and the
-S2e exhaustiveness machinery needed zero arithmetic change. Empty
-choices = lane (b): type admission only (no zero-arm grammar minted —
-design-grounded, recorded loudly with an amended-at marker after a
-review catch). Four fail_todo pins flipped, each verified sanctioned
-(R16a). Floor **93/0/29 over 122**, 43/56 bullets. Reviews: A APPROVE
-zero should-fixes; B no blockers. One-pass CI (fast compile →
-autoupdate +1311 with no-commit fixpoint → gate → conformance, exact
-floor). Hook-environment quirk recorded (distro clang-format 18.1.3 vs
-CI pin 21.1.8). Next: the W-069 plan round (cross-file runtime `let`
-lowering — upstream gap, V-3a check first)._ TWENTY-SIX PRs. `default if (E) => ...` is now a
-working fork feature under the design's own license
-(pattern_matching.md Guards; p002188): shared parse guard production
-with default+if lookahead (arms after a guarded default are reachable),
-check-side guarded-irrefutable-arm CFG (constant-true test + spliced
-guard; failure edge line-for-line the case-guard shape), and the
+upstream's TODO block with the TODO intact, and the lower PrimitiveCopy arm
+gains the return-slot form. One genuine regression root-caused pre-merge
+(arity-vs-repr misdispatch on monomorphized slot-carrying calls — lesson: repr
+questions are answered at call sites, not signatures; mono_from_generic pins the
+class). The fork's tripwire flipped exactly as its header predicted (§2.6
+re-derived). Declared + pinned: user out-of-line choice Copy impls are shadowed
+by the synthesized witness (the Destroy posture). Floor UNCHANGED **96/0/28 over
+124**, 43/56 bullets; the roundtrip pair restored doc-verbatim. Next:
+conformance depth or a W-008 slice (unblocks W-066)._ THIRTY PRs. The sanctioned
+import_ref.cpp amendment round, plan-first: one contiguous 20-line hunk peeks
+through non-constant ExportDecls in TryResolveInstCanonical (Done(NotConstant),
+the eval-forwarding invariant CHECKed; V-3a sanction proven by the design's
+export-name sentence + p003938 + upstream's own var-export golden). Six probes
+with fills audited against pre-registered predictions verbatim; the W69a
+ExportDecl chase arm got its first lower-side pin (one _Cx.Main across the
+export route). Floor UNCHANGED **96/0/28 over 124**, 43/56 bullets. Both reviews
+APPROVE; the probe-placement deviation recorded. Upstream's
+non-constant-BindNames TODO sits at the hunk boundary — the weekly merge
+surfaces any collision. Next: W-075 (choice alternative-constant copy gap — V-3a
+check first) or conformance depth; W-066 stays blocked on W-008._ TWENTY-NINE
+PRs. The adjudicated W69h follow-up landed: the SKIP stub became a real 5-unit
+multi-unit program (api/impl split runtime-load-bearing with a visible LINK-FAIL
+failure mode; the export Rect + export-import chain compile-arbitrated in
+series; the W-074 crash shape deliberately dodged). Floor **96/0/28 over 124**
+(this one program SKIP→PASS, verified line-by-line; the Libraries bullet was
+already PASS). One clean adversarial review; comment-only folds. Next: W-074
+(import_ref amendment round — upstream-hot, small plan round first), W-075
+(choice alternative-constant copy — V-3a check), conformance depth; W-066 stays
+blocked on W-008._ TWENTY-EIGHT PRs. The three-slice workstream closed an
+upstream-acknowledged gap: W69a's lowering-side promotion (lane a1 — exported
+backing storage minted at lowering, SemIR/import_ref untouched, GetValue routing
+reachable only where the old CHECK crashed), W69h's multi-unit conformance
+capability (directory programs, per-unit compile mirroring upstream's bazel
+rule, byte-identical rerun arbiter), and W69b's pointer-rep arm + the restored
+runtime `let g` acceptance split + BOTH discharge arbiters incl. the fork's
+FIRST multi-unit program. Floor **95/0/29 over 124** (evidenced twice,
+addition-only), 43/56 bullets. Twelve review rounds; three honest defect rounds
+rode the close (W-074 export-x crash minted; W-075 alternative-constant copy gap
+minted; the pre-existing AcquireValue folded-ref crash FIXED fenced;
+aggregate-consumption residue recorded). The C<name>.<package> let-storage
+symbol shape is a divergence-register entry reviewed at each weekly merge; the
+three-golden PromoteObject churn was adjudicated accept-and-declare (R-7's
+falsifier fired as designed). Next: W-074/W-075 (new S candidates), the
+library_multifile_export un-SKIP follow-up (unblocked by W69h), conformance
+depth; W-066 stays blocked on W-008. TWENTY-SEVEN PRs. Single-alternative and
+empty choices now pass the match scrutinee gate: the discriminant repr walk
+factored into a shared query (`IsMatchableChoiceType` — integer OR empty-tuple
+discriminant, anything else fails safe), constant-true dispatch (the W-067
+shape) where no integer discriminant exists, real payload extraction (lower
+golden pins `br i1 true`, no icmp), and the S2e exhaustiveness machinery needed
+zero arithmetic change. Empty choices = lane (b): type admission only (no
+zero-arm grammar minted — design-grounded, recorded loudly with an amended-at
+marker after a review catch). Four fail_todo pins flipped, each verified
+sanctioned (R16a). Floor **93/0/29 over 122**, 43/56 bullets. Reviews: A APPROVE
+zero should-fixes; B no blockers. One-pass CI (fast compile → autoupdate +1311
+with no-commit fixpoint → gate → conformance, exact floor). Hook-environment
+quirk recorded (distro clang-format 18.1.3 vs CI pin 21.1.8). Next: the W-069
+plan round (cross-file runtime `let` lowering — upstream gap, V-3a check
+first)._ TWENTY-SIX PRs. `default if (E) => ...` is now a working fork feature
+under the design's own license (pattern_matching.md Guards; p002188): shared
+parse guard production with default+if lookahead (arms after a guarded default
+are reachable), check-side guarded-irrefutable-arm CFG (constant-true test +
+spliced guard; failure edge line-for-line the case-guard shape), and the
 exhaustiveness pin — a guarded default never discharges the `default`
-requirement, enforced structurally and falsified by two red-line fail
-goldens. Zero new diagnostics (R6). Floor **92/0/29 over 121** (moved
-only by control_flow/match_guarded_default.carbon on the already-PASS
-match bullet), 43/56 bullets. Reviews clean; coverage falsifiers added
-at the review round. Mid-slice the self-hosted runner died ~07:33Z
-(killed the first gate attempt mid-test — diagnosed infra by step-level
-evidence, re-fired green after the runner returned ~09:20Z; recorded,
-CI unchanged). Next: W-068 (fewer-than-two-alternative choices), then
-the W-069 plan round._ TWENTY-FIVE PRs. The two-regime sweep landed across the
-nine-file surface: seven non-final sites got scope-qualifying retext
-only (all four golden retexts line-count-preserving — runner autoupdate
-was a STRICT NO-OP, run 32097812689); the W72b pair (final impl) took
-the simplification (`return self.(Core.Try.Branch)();` replaces the
-deleted `Diverge` helper — re-arbitrated green at runtime by
-conformance run 32098017538, the first-ever lowering exercise of the
-collapsed recursive-call shape); error_handling.md got a dated
-fourth-round re-correction and its final sketches now use the recursive
-trailing return. Floor unchanged, EXACTLY 91/0/29 over 120, 43/56
-bullets. Review round: no code defects; blocker (arbiter run not armed
-by the landing commit — same class as the W72b round, recurrence noted)
-already resolved by the follow-up bump; bookkeeping fixes landed.
-Residue recorded not actioned: question_final.carbon,
-lower/question_generic_final.carbon, and fail_question_final.carbon
-still carry `Diverge` inside final impls (comment refresh rides any
-future touch). Next: conformance depth (W-066) + residues
+requirement, enforced structurally and falsified by two red-line fail goldens.
+Zero new diagnostics (R6). Floor **92/0/29 over 121** (moved only by
+control_flow/match_guarded_default.carbon on the already-PASS match bullet),
+43/56 bullets. Reviews clean; coverage falsifiers added at the review round.
+Mid-slice the self-hosted runner died ~07:33Z (killed the first gate attempt
+mid-test — diagnosed infra by step-level evidence, re-fired green after the
+runner returned ~09:20Z; recorded, CI unchanged). Next: W-068
+(fewer-than-two-alternative choices), then the W-069 plan round._ TWENTY-FIVE
+PRs. The two-regime sweep landed across the nine-file surface: seven non-final
+sites got scope-qualifying retext only (all four golden retexts
+line-count-preserving — runner autoupdate was a STRICT NO-OP, run 32097812689);
+the W72b pair (final impl) took the simplification (`return
+self.(Core.Try.Branch)();` replaces the deleted `Diverge` helper — re-arbitrated
+green at runtime by conformance run 32098017538, the first-ever lowering
+exercise of the collapsed recursive-call shape); error_handling.md got a dated
+fourth-round re-correction and its final sketches now use the recursive trailing
+return. Floor unchanged, EXACTLY 91/0/29 over 120, 43/56 bullets. Review round:
+no code defects; blocker (arbiter run not armed by the landing commit — same
+class as the W72b round, recurrence noted) already resolved by the follow-up
+bump; bookkeeping fixes landed. Residue recorded not actioned:
+question_final.carbon, lower/question_generic_final.carbon, and
+fail_question_final.carbon still carry `Diverge` inside final impls (comment
+refresh rides any future touch). Next: conformance depth (W-066) + residues
 W-067/W-068/W-069._ TWENTY-FOUR PRs. The continue-THREADING runtime arbiter
-(question_generic_thread_diff: `final impl forall` + load-bearing
-Combine chaining, i32 AND i64 with high-half-significant wide seeds,
-C++ template oracle) went green at exactly the target floor —
-**91/0/29 over 120**, bullet count still 43/56 (the pair deepens the
-already-PASS error-handling bullet to 4 programs). Three CI rounds, all
-honest: round 1 COMPILE-FAIL root-caused to the bare `[T: Combinable]`
-facet lacking the implicit Destroy witness the `type` facet carries
-(fixed with the precedented `& Core.Destroy` conjunct — a test-authoring
-defect, not a toolchain defect); round 2 the R-5 broken-oracle drill,
-red as the predicted DIFF-MISMATCH (run 32096324806); round 3 the
+(question_generic_thread_diff: `final impl forall` + load-bearing Combine
+chaining, i32 AND i64 with high-half-significant wide seeds, C++ template
+oracle) went green at exactly the target floor — **91/0/29 over 120**, bullet
+count still 43/56 (the pair deepens the already-PASS error-handling bullet to 4
+programs). Three CI rounds, all honest: round 1 COMPILE-FAIL root-caused to the
+bare `[T: Combinable]` facet lacking the implicit Destroy witness the `type`
+facet carries (fixed with the precedented `& Core.Destroy` conjunct — a
+test-authoring defect, not a toolchain defect); round 2 the R-5 broken-oracle
+drill, red as the predicted DIFF-MISMATCH (run 32096324806); round 3 the
 discharge run (32096689454). Two adversarial reviews folded pre-merge
-(discharge-run wiring blocker; i64 truncation blind-spot widened away;
-(a)/(b) V-3a vetoes recorded on the log; W-073 sweep surface grown to
-nine files). W-072 DISCHARGED per plan §6 in full; W-073 (the
-Diverge-idiom and comment-family sweep) unblocks next. Scoreboard
-history: ... → 88 F8b → 89 F8c → 90 F8d → 91 W72b._ TWENTY-THREE PRs. The B2a-era "hard limit" (generic `?` continue values
-untheadable as `T`) dissolved with ZERO compiler change: non-reduction
-through non-`final` impls is upstream-DESIGNED; the ratified
-error_handling.md sketches spell `final impl` and B1b's testdata
-dropped the keyword (R17 postmortem + new rule R27 landed —
-sketch-implementing testdata is diffed against the sketch's exact
-spelling). `let v: T = mr?;` now compiles clean (direct/mixed/import,
-SemIR-pinned as genuine reduction). P-9 SURPRISE: the in-body
-recursive-Branch call ALSO collapses under `final` — W-073 minted
-(evaluate retiring the Diverge idiom + the eight-file comment family).
-W72c (Try success ctor) parked in the SF-9/S3p brief with the
-`final`-spelling recurrence flag. Floor unchanged 90/0/29 over 119;
-W-072 stays OPEN until W72b's continue-THREADING runtime differential
-(91/0/29 over 120) goes green._ TWENTY-TWO
-PRs. F8d closed the workstream on the FIX path (degrade never needed):
-`std::thread(Carbon::Work)` constructs directly — a concrete
-non-generic non-member Carbon function maps to a pointer to its
-exported decl, argument embedded as DeclRefExpr+decay, mapping
-confined to the call-argument path (a correctness-review blocker
-narrowed it; export-side function types still diagnose), same-signature
-thunk collisions probed and fixed by way of mangled-suffix asm labels.
-90/0/29 over 119, 43/56 bullets. F-008 TOTALS: 4 slices, 4 PRs, 8
-adversarial reviews, 3 pre-merge blockers fixed, D1/D2/D3 all FIXED
-(W-021/022/023 discharged; W-020 doc half stays digest-gated). The
-fix's movement reached two upstream goldens whose function-argument
-cases now compile._ TWENTY-ONE
-PRs. F8c landed adjudication-first (plan adjudication D): the
-real-header run refuted H0 live (undefined `_Ctotal.Main.2`/`.3`), the
-fix is module-symbol-table reuse in `BuildNonCppGlobalVariableDecl`
-(the global-side sibling of the function path's name-keyed dedup;
-W-022 DISCHARGED), and the fired H0-mock-divergence stop-and-explain
-path is filed per §2.3 (a strictness-review catch). 89/0/30 over 119;
-specialization-typed Carbon globals now link and run
-(`std::atomic<i64>` bumped by two bridge threads against the oracle).
-Remaining F-008: F8d only (`std::thread(carbon_fn)` — p003848
-upstream re-check first; documented-limitation degrade sanctioned)._ TWENTY PRs. F8b: trivially-destructible exported classes drop
-the C++ destructor thunk (predicate reuses CanDestroyType's
-classification; the review round's impl-population blocker resolved by
-mirrored cross-IR enumeration with a two-file falsifier golden; W-021
-DISCHARGED); std::atomic(CarbonClass) runs store/exchange/load against
-its C++ oracle at runtime; the threading/atomics bullet flips —
-**43/56 bullets**, 88/0/31 over 119. Remaining F-008: F8c
+(discharge-run wiring blocker; i64 truncation blind-spot widened away; (a)/(b)
+V-3a vetoes recorded on the log; W-073 sweep surface grown to nine files). W-072
+DISCHARGED per plan §6 in full; W-073 (the Diverge-idiom and comment-family
+sweep) unblocks next. Scoreboard history: ... → 88 F8b → 89 F8c → 90 F8d → 91
+W72b._ TWENTY-THREE PRs. The B2a-era "hard limit" (generic `?` continue values
+untheadable as `T`) dissolved with ZERO compiler change: non-reduction through
+non-`final` impls is upstream-DESIGNED; the ratified error_handling.md sketches
+spell `final impl` and B1b's testdata dropped the keyword (R17 postmortem + new
+rule R27 landed — sketch-implementing testdata is diffed against the sketch's
+exact spelling). `let v: T = mr?;` now compiles clean (direct/mixed/import,
+SemIR-pinned as genuine reduction). P-9 SURPRISE: the in-body recursive-Branch
+call ALSO collapses under `final` — W-073 minted (evaluate retiring the Diverge
+idiom + the eight-file comment family). W72c (Try success ctor) parked in the
+SF-9/S3p brief with the `final`-spelling recurrence flag. Floor unchanged
+90/0/29 over 119; W-072 stays OPEN until W72b's continue-THREADING runtime
+differential (91/0/29 over 120) goes green._ TWENTY-TWO PRs. F8d closed the
+workstream on the FIX path (degrade never needed): `std::thread(Carbon::Work)`
+constructs directly — a concrete non-generic non-member Carbon function maps to
+a pointer to its exported decl, argument embedded as DeclRefExpr+decay, mapping
+confined to the call-argument path (a correctness-review blocker narrowed it;
+export-side function types still diagnose), same-signature thunk collisions
+probed and fixed by way of mangled-suffix asm labels. 90/0/29 over 119, 43/56
+bullets. F-008 TOTALS: 4 slices, 4 PRs, 8 adversarial reviews, 3 pre-merge
+blockers fixed, D1/D2/D3 all FIXED (W-021/022/023 discharged; W-020 doc half
+stays digest-gated). The fix's movement reached two upstream goldens whose
+function-argument cases now compile._ TWENTY-ONE PRs. F8c landed
+adjudication-first (plan adjudication D): the real-header run refuted H0 live
+(undefined `_Ctotal.Main.2`/`.3`), the fix is module-symbol-table reuse in
+`BuildNonCppGlobalVariableDecl` (the global-side sibling of the function path's
+name-keyed dedup; W-022 DISCHARGED), and the fired H0-mock-divergence
+stop-and-explain path is filed per §2.3 (a strictness-review catch). 89/0/30
+over 119; specialization-typed Carbon globals now link and run (`std::atomic<i64>`
+bumped by two bridge threads against the oracle). Remaining F-008: F8d only (`std::thread(carbon_fn)`
+— p003848 upstream re-check first; documented-limitation degrade sanctioned)._
+TWENTY PRs. F8b: trivially-destructible exported classes drop the C++ destructor
+thunk (predicate reuses CanDestroyType's classification; the review round's
+impl-population blocker resolved by mirrored cross-IR enumeration with a
+two-file falsifier golden; W-021 DISCHARGED); std::atomic(CarbonClass) runs
+store/exchange/load against its C++ oracle at runtime; the threading/atomics
+bullet flips — **43/56 bullets**, 88/0/31 over 119. Remaining F-008: F8c
 (specialization-global link; real-header adjudication run FIRST), F8d
-(std::thread(carbon_fn); documented-limitation degrade sanctioned)._
-NINETEEN PRs. F-008 is underway per fork/f008/plan.md: F8a landed the
-zero-flip harness (two green thread programs on already-PASS bullets —
-H-P pthread linkage CONFIRMED live; three SKIP defect arbiters quoting
-the measured diagnostics; -pthread oracle line; 86/0/33 over 119).
-Next slice F8b: std::atomic(CarbonClass) destructor-thunk fix — the
-threading bullet flips there; then F8c (specialization-global link,
-real-header adjudication first), F8d (std::thread(carbon_fn), degrade
-path sanctioned)._
-EIGHTEEN PRs merged. B2a landed as PR #18: the language-wide
-symbolic-choice destroy widening (W-071 discharged, the `?`
-symbolic-operand gate deleted), PLUS the mixed-width miscompile its
-differential arbiter caught — root-caused per the no-slop directive to
-POISON covering-template filler (`EmitAsConstant(UninitializedValue)`,
-upstream-authored; SROA whole-scalar poison under partial overwrite;
-fixed to zeros, p000257-sanctioned, flagged upstreamable) after two
-implemented-then-refuted candidates (full three-round record in
-fork/b2/mixed-width-diagnosis.md), PLUS coalescer hardening (sret
-pointee in type fingerprints; absent-fingerprint pairs never merge;
-builtin callees fingerprinted by value — upstream dedup goldens
-restored). Scoreboard 84/0/30 over 114; W-072 minted (projection
-non-reduction, Try success-constructor gap). B2b = the SF-9 brief in
-PR #18's body (options a/b/c; default (c) defer). OPEN user asks: SF-9
-brief, Trivial→NonTrivial ratification (PR #18 digest item 1),
-design-docs veto digest (2026-07-20). Next workstream: F-008 threading
-fixes per the approved amended plan (coordinator sign-off 2026-08-17)._
-SIXTEEN PRs MERGED to `trunk`. B1 is complete across PRs #15/#16:
-postfix `?` parses, desugars through the fork's FIRST prelude additions
-(`Core.ControlFlow(C, B)` + `Core.Try` in `prelude/try`), and
-propagates at runtime over user-defined generic-choice Results —
-`Ok(v)?` yields `v`, `Err(e)?` converts and early-returns, verified
-against a C++ early-return oracle. B1b took four golden cycles (prelude
-`ImplicitAs` import for the first prelude `choice`; trailing unreachable
-returns after exhaustive matches — reachability ignores exhaustiveness;
-the projection-non-reduction trailing-return correction plus the
-symbolic-operand narrowing W-071: `?` on SYMBOLIC-typed operands is
-TODO-gated pending a `Destroy` bound decision on `Try`'s associated
-constants — future fork material). `Check Dependent PRs` is now guarded
-upstream-only (it hardcodes upstream and passed by number coincidence). W5-S3 is COMPLETE across PRs #12/#13/#14:
-S3a (payload-free generic-choice specifics as match scrutinees), S3b
+(std::thread(carbon_fn); documented-limitation degrade sanctioned)._ NINETEEN
+PRs. F-008 is underway per fork/f008/plan.md: F8a landed the zero-flip harness
+(two green thread programs on already-PASS bullets — H-P pthread linkage
+CONFIRMED live; three SKIP defect arbiters quoting the measured diagnostics;
+-pthread oracle line; 86/0/33 over 119). Next slice F8b:
+std::atomic(CarbonClass) destructor-thunk fix — the threading bullet flips
+there; then F8c (specialization-global link, real-header adjudication first),
+F8d (std::thread(carbon_fn), degrade path sanctioned)._ EIGHTEEN PRs merged. B2a
+landed as PR #18: the language-wide symbolic-choice destroy widening (W-071
+discharged, the `?` symbolic-operand gate deleted), PLUS the mixed-width
+miscompile its differential arbiter caught — root-caused per the no-slop
+directive to POISON covering-template filler
+(`EmitAsConstant(UninitializedValue)`, upstream-authored; SROA whole-scalar
+poison under partial overwrite; fixed to zeros, p000257-sanctioned, flagged
+upstreamable) after two implemented-then-refuted candidates (full three-round
+record in fork/b2/mixed-width-diagnosis.md), PLUS coalescer hardening (sret
+pointee in type fingerprints; absent-fingerprint pairs never merge; builtin
+callees fingerprinted by value — upstream dedup goldens restored). Scoreboard
+84/0/30 over 114; W-072 minted (projection non-reduction, Try
+success-constructor gap). B2b = the SF-9 brief in PR #18's body (options a/b/c;
+default (c) defer). OPEN user asks: SF-9 brief, Trivial→NonTrivial ratification
+(PR #18 digest item 1), design-docs veto digest (2026-07-20). Next workstream:
+F-008 threading fixes per the approved amended plan (coordinator sign-off
+2026-08-17)._ SIXTEEN PRs MERGED to `trunk`. B1 is complete across PRs #15/#16:
+postfix `?` parses, desugars through the fork's FIRST prelude additions (`Core.ControlFlow`
+and `Core.Try` in `prelude/try`), and propagates at runtime over user-defined
+generic-choice Results — `Ok(v)?` yields `v`, `Err(e)?` converts and
+early-returns, verified against a C++ early-return oracle. B1b took four golden
+cycles (prelude `ImplicitAs` import for the first prelude `choice`; trailing
+unreachable returns after exhaustive matches — reachability ignores
+exhaustiveness; the projection-non-reduction trailing-return correction plus the
+symbolic-operand narrowing W-071: `?` on SYMBOLIC-typed operands is TODO-gated
+pending a `Destroy` bound decision on `Try`'s associated constants — future fork
+material). `Check Dependent PRs` is now guarded upstream-only (it hardcodes
+upstream and passed by number coincidence). W5-S3 is COMPLETE across PRs
+12/13/14: S3a (payload-free generic-choice specifics as match scrutinees), S3b
 (payload synthesis + per-specific layout — five CI cycles, each defect
-root-caused before the next push, see the decision-log five-cycle
-addendum; headline sub-decision: `ResolveSpecificDefinition` recursion
-guard redesigned to incremental publication; imported-binding constants
-advance upstream's let-import TODO; W-069 records the cross-file
-runtime-let gap), and S3c (payload destructuring on specifics +
-`sum_types.md:60-89` landing as a runtime differential — declaration and
-no-`default` match verbatim, construction adapted per the disclosed
-`Core.Copy` gap; W-010 generic residue CLOSED, W-011 choice half
-closed). `Optional(T: type) { Some(value: T), None }` now declares,
+root-caused before the next push, see the decision-log five-cycle addendum;
+headline sub-decision: `ResolveSpecificDefinition` recursion guard redesigned to
+incremental publication; imported-binding constants advance upstream's
+let-import TODO; W-069 records the cross-file runtime-let gap), and S3c (payload
+destructuring on specifics + `sum_types.md:60-89` landing as a runtime
+differential — declaration and no-`default` match verbatim, construction adapted
+per the disclosed `Core.Copy` gap; W-010 generic residue CLOSED, W-011 choice
+half closed). `Optional(T: type) { Some(value: T), None }` now declares,
 constructs, matches, and destructures through specifics at runtime with
-per-specific layouts. Go-forward: **one workstream = one branch off
-`trunk` = one focused PR**.
+per-specific layouts. Go-forward: **one workstream = one branch off `trunk` =
+one focused PR**.
 
 **Weekly upstream-merge outcome (standing rule 5, 2026-08-17, PR #17):**
 upstream `864845c` (15 commits over e7050af, covering the 08-10 AND 08-17
@@ -363,17 +325,18 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-126 PASS / 23 SKIP / 0 FAIL programs (149 total); **47/56 bullets
-green** (GitHub-hosted scoreboard at the PR #48 head, run 37357609478; verified from fork/conformance/out/scoreboard.json —
-the error-handling control-flow bullet is the fork's first
-error-handling flip, now 4 programs deep incl. the W72b threading
-arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79
-at S3a → 80 at S3b → 81 at S3c → 83 at B1b
-(error_handling/control_flow_constructs flip +
-question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a
-→ 88 F8b → 89 F8c → 90 F8d → 91 W72b → 92 W-067 → 93 W-068 → 95 W-069 → 96 multifile → 100 W-076 → 101 W-078 → 102 W-077 →
-106 EH-A → 108 W-012 → 112 EH-B → 114 UN-1 → 116 UN-2 → 118 OV-1 → 121 OV-2 → 124 SL-1 → 126 OV-3. The scoreboard regenerates on GitHub-hosted runners only
-(`Fork: hosted verification`, mode `conformance`; R28).
+126 PASS / 23 SKIP / 0 FAIL programs (149 total); **47/56 bullets green**
+(GitHub-hosted scoreboard at the PR #48 head, run 37357609478; verified from
+fork/conformance/out/scoreboard.json — the error-handling control-flow bullet is
+the fork's first error-handling flip, now 4 programs deep incl. the W72b
+threading arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79 at S3a → 80
+at S3b → 81 at S3c → 83 at B1b (error_handling/control_flow_constructs flip +
+question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a → 88 F8b
+→ 89 F8c → 90 F8d → 91 W72b → 92 W-067 → 93 W-068 → 95 W-069 → 96 multifile →
+100 W-076 → 101 W-078 → 102 W-077 → 106 EH-A → 108 W-012 → 112 EH-B → 114 UN-1 →
+116 UN-2 → 118 OV-1 → 121 OV-2 → 124 SL-1 → 126 OV-3. The scoreboard regenerates
+on GitHub-hosted runners only (`Fork: hosted verification`, mode `conformance`;
+R28).
 
 ### CI on jmann345/carbon-lang (GitHub-hosted only — R28)
 
@@ -395,8 +358,10 @@ question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a
 
 ### Toolchains in the container
 
--   `/home/user/arbiter/carbon_toolchain-0.0.0-0.nightly.2026.07.19/bin/carbon` — upstream nightly
--   `/home/user/trial-tc/carbon_toolchain-0.0.0-0.dev/bin/carbon` — fork-built with match
+-   `/home/user/arbiter/carbon_toolchain-0.0.0-0.nightly.2026.07.19/bin/carbon`
+    — upstream nightly
+-   `/home/user/trial-tc/carbon_toolchain-0.0.0-0.dev/bin/carbon` — fork-built
+    with match
 
 ### Next actions (dependency order)
 

@@ -336,13 +336,14 @@ the case where the never-exercised combination — final impl × generic choice 
     identifying facet types (impl_lookup.cpp:335-361; :1240-1242), with an
     upstream TODO admitting it "prevents some legitimate code" — a candidate
     root cause if a probe unexpectedly fails to reduce.
--   **`Core.Try` today** (core/prelude/try.carbon): `ContinueType`,
-    `BreakType`, `Branch`, `FromBreak` — no success constructor. Tree-wide
-    `as Core.Try` impl sites (the sweep surface of the CUT W72c, kept here as
-    the parked brief item's ground truth — 9 files):
+-   **`Core.Try` today** (core/prelude/try.carbon): `ContinueType`, `BreakType`,
+    `Branch`, `FromBreak` — no success constructor. Tree-wide `as Core.Try` impl
+    sites (the sweep surface of the CUT W72c, kept here as the parked brief
+    item's ground truth — 9 files):
     check/testdata/operators/{question,fail_question}.carbon,
     lower/testdata/operators/{question,question_generic,question_generic_mixed,question_generic_crossfile}.carbon,
-    conformance error_handling/{control_flow_constructs,question_propagation_diff,question_generic_diff}.carbon.
+    conformance
+    error_handling/{control_flow_constructs,question_propagation_diff,question_generic_diff}.carbon.
     All fork-owned; no prelude impls exist (S3p-gated).
 -   **Conformance ground truth.** 90 PASS / 0 FAIL / 29 SKIP over 119
     (fork/conformance/out/scoreboard.json, regenerated post-PR #22). No SKIP
@@ -400,17 +401,16 @@ With `final impl forall [T: type, E: type] MyResult(T, E) as Core.Try where
     specific → `GetConstantValueInSpecific`) — a different code path whose
     behavior the B1b observation predicts nothing about. P-9 remains the
     honest probe of the in-body side.
--   **Choice-self precedents (added after plan review, 2026-08-18 —
-    correctness F-3).** The "never-exercised combination" is narrower than
-    it looks:
+-   **Choice-self precedents (added after plan review, 2026-08-18 — correctness
+    F-3).** The "never-exercised combination" is narrower than it looks:
     toolchain/check/testdata/impl/lookup/specialization_with_symbolic_rewrite.carbon:26,65
     pins bare-`T` reduction through a final impl AND the designed non-final
-    FAIL; validate_impl_constraints.carbon:94 pins a final impl whose self
-    is a PARAMETERIZED CLASS specific; and a choice IS a class in SemIR
+    FAIL; validate_impl_constraints.carbon:94 pins a final impl whose self is a
+    PARAMETERIZED CLASS specific; and a choice IS a class in SemIR
     (sem_ir/class.h:85 `is_choice`) — impl_validation.cpp's `ClassStart` arm
-    (:112-131) accepts a choice root self for the same-file check. The
-    genuinely novel residue is only the composition with the `?` desugar and
-    generic eval regions — exactly what P-1..P-3 probe.
+    (:112-131) accepts a choice root self for the same-file check. The genuinely
+    novel residue is only the composition with the `?` desugar and generic eval
+    regions — exactly what P-1..P-3 probe.
 -   **Semantic cost, stated:** marking an impl `final` forbids specialization
     of `MyResult(T, E) as Core.Try` for specific arguments. That is the
     POINT, matches Rust's sole blanket `Try for Result` impl, and matches the
@@ -430,15 +430,15 @@ the plan pre-declares outcomes for failure shapes rather than improvising.
 
 1.  **Probe compiles and reduces (expected):** proceed; wart comments flip to
     positive/negative pins as specified in §3.
-2.  **Probe fails with a NARROW machinery defect** (for example the :335-361 cycle
-    guard suppressing a legitimate reduction; a deduction failure specific to
-    choice specifics; an import-parity gap per the W-069 precedent): STOP,
-    record the failing input in the decision log, and re-scope W72a to a
-    minimal upstream-ALIGNED fix slice (fixing final-impl reduction is
-    implementing upstream's documented semantics — the aligned direction) with
-    its own adversarial review round. This is a recorded deviation with a
-    plan amendment, not a silent ride. Upstream is checked FIRST for the same
-    defect and any in-flight fix (standing rule 5).
+2.  **Probe fails with a NARROW machinery defect** (for example the :335-361
+    cycle guard suppressing a legitimate reduction; a deduction failure specific
+    to choice specifics; an import-parity gap per the W-069 precedent): STOP,
+    record the failing input in the decision log, and re-scope W72a to a minimal
+    upstream-ALIGNED fix slice (fixing final-impl reduction is implementing
+    upstream's documented semantics — the aligned direction) with its own
+    adversarial review round. This is a recorded deviation with a plan
+    amendment, not a silent ride. Upstream is checked FIRST for the same defect
+    and any in-flight fix (standing rule 5).
 3.  **Probe reveals the lane fundamentally blocked** (reduction lands but the
     desugar's carrier types don't pick it up, or finality is rejected for
     choice selves): fall back to candidate (c) — the wart stays documented,
@@ -473,10 +473,11 @@ slices only — W72c is cut (§0.3).
 
 Scope: NEW check golden toolchain/check/testdata/operators/question_final.carbon
 (positive subfiles), NEW fail golden fail_question_final.carbon (STDERR-pinned
-probes), NEW lower golden lower/testdata/operators/question_generic_final.carbon;
-comment retext in question.carbon's generic.carbon subfile; ledger + decision-log
-updates; PLUS (added after plan review, 2026-08-18) the rulebook amendment and
-the record-honesty sweep below.
+probes), NEW lower golden
+lower/testdata/operators/question_generic_final.carbon; comment retext in
+question.carbon's generic.carbon subfile; ledger + decision-log updates; PLUS
+(added after plan review, 2026-08-18) the rulebook amendment and the
+record-honesty sweep below.
 
 **Rulebook amendment staged in W72a (strictness F-1 loop fix).** A new rule,
 in rulebook style, appended as:
@@ -541,17 +542,16 @@ Probe table (each row is a falsification probe; N = negative):
 | P-8 | import parity: lib.carbon declares choice + final impl; use.carbon threads `let v: T = mr?;` (the question_generic_crossfile shape) | reduction survives import (import_final.carbon precedent) | import-side non-reduction ⇒ W-069-family gap, §2.4 step 2 |
 | P-9 (obs.) | inside the final impl's own body: does `return self.(Core.Try.Branch)();` now collapse? | observation only — either way recorded; the b1 §2.6 `Diverge` idiom is NOT revised here. MINTING RULE (added after plan review, 2026-08-18, strictness F-3): if the observation FALSIFIES the eight-file "does not type-collapse" comment family (W72a sweep item 5), a follow-up work item is MINTED to retext the family and revisit the idiom — not merely observed | no gate, but minting is mandatory on falsification |
 
-Exit criteria: P-1..P-3 positive CHECK content by way of autoupdate; P-4/P-5 pinned
-by the EXISTING goldens staying semantically identical (generic.carbon's wart
-comment at :281-285 retexted into a deliberate negative pin citing
+Exit criteria: P-1..P-3 positive CHECK content by way of autoupdate; P-4/P-5
+pinned by the EXISTING goldens staying semantically identical (generic.carbon's
+wart comment at :281-285 retexted into a deliberate negative pin citing
 details.md's specialization doctrine and pointing at question_final.carbon —
 comment-only, loc-number churn declared per R26); P-6/P-7 STDERR pins
 hand-written from the CI run; lower golden pins the instantiated threading CFG
 (the monomorphized continue value flowing into the `T`-typed binding and the
-`Ok` construction — falsified by a `Discard`-shaped dead value or absent
-flow) with the SAME no-op destroy-call shape as the B2a baseline. Conformance
-floor: **unchanged, 90/0/29 over 119** (goldens only). W-072 stays OPEN until
-W72b.
+`Ok` construction — falsified by a `Discard`-shaped dead value or absent flow)
+with the SAME no-op destroy-call shape as the B2a baseline. Conformance floor:
+**unchanged, 90/0/29 over 119** (goldens only). W-072 stays OPEN until W72b.
 
 ### W72b — continue-threading runtime arbitration (S)
 
@@ -685,19 +685,18 @@ recurrence flag, and the re-staging instruction — see §0.3.
 
 ## 7. Testdata & golden flow
 
-House rules as at B1/B2: new fail subfiles ship hand-written CHECK:STDERR
-pins; positive CHECK content rides the runner autoupdate (R15/R19), two-pass
-to fixpoint where line counts shift (R26); clang-format by way of hooks (R12/R18);
+House rules as at B1/B2: new fail subfiles ship hand-written CHECK:STDERR pins;
+positive CHECK content rides the runner autoupdate (R15/R19), two-pass to
+fixpoint where line counts shift (R26); clang-format by way of hooks (R12/R18);
 `runner.py --self-test` before conformance-touching commits (R7); private
 `--out` dirs (R5); `uvx prek run --all-files` before every push (R25);
 conformance program bodies compile-verified against the fork toolchain before
 commit (R1 PrintStr / R2 core-units traps apply); differential pairs follow
-DIFF-1..4; `.diff.cpp` oracles stay out of clangd-tidy (R24). Golden
-placement: NEW FILES for all positive content (question_final,
-fail_question_final, question_generic_final, the W72b pair), keeping existing
-goldens byte-identical except the declared comment-only edits
-(generic.carbon at W72a; the existing pair's three comment sites at W72b —
-revised after plan review, 2026-08-18).
+DIFF-1..4; `.diff.cpp` oracles stay out of clangd-tidy (R24). Golden placement:
+NEW FILES for all positive content (question_final, fail_question_final,
+question_generic_final, the W72b pair), keeping existing goldens byte-identical
+except the declared comment-only edits (generic.carbon at W72a; the existing
+pair's three comment sites at W72b — revised after plan review, 2026-08-18).
 
 ## 8. Conformance floor arithmetic
 

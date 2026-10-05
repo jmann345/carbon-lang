@@ -6,14 +6,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # W-066 plan: usefulness diagnostics for match case patterns
 
-Status: PLAN, amended per review fold and APPROVED FOR IMPLEMENTATION
-2026-09-25 (see Sign-off). Drafted 2026-09-25. Size S — one implementation slice.
-Baseline: trunk 869de65 (post-W-008/W8c; conformance **99 PASS / 0
-FAIL / 28 SKIP over 127**). Authoritative record:
-fork/inventory/work-items.json W-066. NO implementation in this
-document. All verification rides self-hosted runner CI (autoupdate to
-fixpoint per R26; gate per R21; conformance per R9). The W-008 blocker
-is discharged: W8a fixed the value domain usefulness comparisons need —
+Status: PLAN, amended per review fold and APPROVED FOR IMPLEMENTATION 2026-09-25
+(see Sign-off). Drafted 2026-09-25. Size S — one implementation slice. Baseline:
+trunk 869de65 (post-W-008/W8c; conformance **99 PASS / 0 FAIL / 28 SKIP over
+127**). Authoritative record: fork/inventory/work-items.json W-066. NO
+implementation in this document. All verification rides self-hosted runner CI
+(autoupdate to fixpoint per R26; gate per R21; conformance per R9). The W-008
+blocker is discharged: W8a fixed the value domain usefulness comparisons need —
 tuple constant vectors and alternative index + payload constants
 (fork/w008/plan.md §3.4, verified 2026-09-25).
 

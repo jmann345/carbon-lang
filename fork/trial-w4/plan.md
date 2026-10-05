@@ -9,19 +9,20 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 Status: PLAN (trial run, process step 5). Author context: fork/process.md +
 fork/rulebook.md loaded; design authority docs/design/pattern_matching.md and
 docs/design/control_flow/. Work item: fork/inventory/work-items.json W4 entry
-("all 14 check handlers are TODO stubs", toolchain/check/handle_match.cpp:13-77).
+("all 14 check handlers are TODO stubs",
+toolchain/check/handle_match.cpp:13-77).
 
 ## 0. Slice boundary (restated as checkable behavior)
 
-In slice: `match (<int-expr>) { case <int-literal> => { ... } ... default => { ... } }`
-as a _statement_. Everything else — binding patterns, tuple patterns,
+In slice: `match (<int-expr>) { case <int-literal> => { ... } ... default => {
+... } }` as a _statement_. Everything else — binding patterns, tuple patterns,
 `unused`/`var` patterns, guards (`if (...)`), choice/variant patterns, missing
-`default`, non-integer scrutinee — must keep producing a clean
-`semantics TODO: ...` error (Context::TODO → emit + return false, which aborts
-the file check in CheckUnit::ProcessNodeIds, toolchain/check/check_unit.cpp:417-423).
-No crash, no silent mischeck. There is no expression-form `match` in the parse
-tree (only `NodeKind::MatchStatement`, category Statement — parse/typed_nodes.h:999),
-so nothing to guard there.
+`default`, non-integer scrutinee — must keep producing a clean `semantics TODO:
+...` error (Context::TODO → emit + return false, which aborts the file check in
+CheckUnit::ProcessNodeIds, toolchain/check/check_unit.cpp:417-423). No crash, no
+silent mischeck. There is no expression-form `match` in the parse tree (only
+`NodeKind::MatchStatement`, category Statement — parse/typed_nodes.h:999), so
+nothing to guard there.
 
 ## 1. Parse-side facts the checker consumes (verified in worktree)
 
@@ -75,9 +76,10 @@ All Match* node kinds currently sit in the `Id::Kind::Invalid` group of
 — pushing any of them CHECK-fails. Move:
 
 -   → `Id::KindFor<SemIR::InstId>` group (with CallExprStart, node_stack.h:417):
-    `MatchCondition`, `MatchStatementStart`, `MatchHandler` (payload: scrutinee value).
--   → `Id::KindFor<SemIR::InstBlockId>` group (with IfCondition, node_stack.h:427):
-    `MatchCase` (payload: the arm's else/next-test block).
+    `MatchCondition`, `MatchStatementStart`, `MatchHandler` (payload: scrutinee
+    value).
+-   → `Id::KindFor<SemIR::InstBlockId>` group (with IfCondition,
+    node_stack.h:427): `MatchCase` (payload: the arm's else/next-test block).
 -   → `Id::Kind::None` (solo) group (with CodeBlockStart, node_stack.h:456):
     `MatchCaseIntroducer`, `MatchHandlerStart`, `MatchDefault`.
 -   Stay `Invalid` (never pushed): `MatchIntroducer`, `MatchConditionStart`,
@@ -100,14 +102,15 @@ H1 `MatchIntroducer` — no-op, `return true` (mirror IfConditionStart).
 
 H2 `MatchConditionStart` — no-op, `return true`.
 
-H3 `MatchCondition` — pop the scrutinee expr
-(`node_stack().PopExpr()`), `ConvertToValueOrRefExpr` (loop_statement.cpp:181
-precedent: "so that we can use it multiple times"). Slice gate: if
+H3 `MatchCondition` — pop the scrutinee expr (`node_stack().PopExpr()`),
+`ConvertToValueOrRefExpr` (loop_statement.cpp:181 precedent: "so that we can use
+it multiple times"). Slice gate: if
 `!context.types().TryGetIntTypeInfo(type_id)` (sem_ir/type.cpp:170 — sees
 through the `i32`/`u32` class adapters by way of object repr, and accepts
-`Core.IntLiteral`) → `return context.TODO(node_id, "match on non-integer scrutinee")`.
-Then `AddAndDiscardTemporaryCleanups` (mirror IfCondition; safe because integer
-values have no cleanups). Push `(MatchCondition, scrutinee_inst_id)`.
+`Core.IntLiteral`) → `return context.TODO(node_id, "match on non-integer
+scrutinee")`. Then `AddAndDiscardTemporaryCleanups` (mirror IfCondition; safe
+because integer values have no cleanups). Push `(MatchCondition,
+scrutinee_inst_id)`.
 
 H4 `MatchStatementStart` — `Pop<Parse::NodeKind::MatchCondition>()` →
 scrutinee; push `(MatchStatementStart, scrutinee)`. No scope, no blocks.
@@ -172,7 +175,8 @@ H10 `MatchDefaultIntroducer` — no-op, `return true`.
 H11 `MatchDefault` — `context.node_stack().Push(node_id)` (solo). No emission:
 after the last case's MatchHandler (H13), the current block is already that
 case's else block, which IS the default body. Parse guarantees default is last
-(UnreachableMatchCase, parse/handle_match.cpp:120-138; error trees abort per §1).
+(UnreachableMatchCase, parse/handle_match.cpp:120-138; error trees abort per
+§1).
 
 H12 `MatchHandlerStart` — arm body scope, mirror CodeBlockStart
 (handle_codeblock.cpp:12-17):
@@ -245,7 +249,8 @@ block stack (their own convergence restores that invariant).
 fn F(n: i32) { match (n) { case 1 => { A(); } case 2 => { B(); } default => { C(); } } D(); }
 ```
 
-is checked into exactly the SemIR of `if (n == 1) { A(); } else if (n == 2) { B(); } else { C(); } D();`:
+is checked into exactly the SemIR of `if (n == 1) { A(); } else if (n == 2) {
+B(); } else { C(); } D();`:
 
 ```
 !entry:
@@ -331,8 +336,8 @@ New goldens to ADD (all with AUTOUPDATE):
     `constant_scrutinee.carbon` (`match (3)`, IntLiteral-typed scrutinee).
 -   `toolchain/check/testdata/match/fail_todo_binding_pattern.carbon`,
     `fail_todo_guard.carbon`, `fail_todo_no_default.carbon`,
-    `fail_todo_non_int_scrutinee.carbon`, `fail_todo_non_int_literal_case.carbon`
-    (float/bool/negative literal cases).
+    `fail_todo_non_int_scrutinee.carbon`,
+    `fail_todo_non_int_literal_case.carbon` (float/bool/negative literal cases).
 -   `toolchain/lower/testdata/match/basic.carbon` — locks the "no lower changes"
     claim as an executable golden (icmp eq + br chain).
 
@@ -361,17 +366,19 @@ New goldens to ADD (all with AUTOUPDATE):
 
 ## 8. Files touched (complete list)
 
--   `toolchain/check/handle_match.cpp` — implement H1-H5, H9-H14; keep H6-H8 stubs.
+-   `toolchain/check/handle_match.cpp` — implement H1-H5, H9-H14; keep H6-H8
+    stubs.
 -   `toolchain/check/node_stack.h` — recategorize 6 match node kinds (§2).
 -   `toolchain/sem_ir/inst_namer.cpp` — optional block labels (§4).
 -   `toolchain/check/testdata/patterns/unused.carbon` — golden update (§6).
--   `toolchain/check/testdata/match/*` + `toolchain/lower/testdata/match/basic.carbon` — new.
+-   `toolchain/check/testdata/match/*` +
+    `toolchain/lower/testdata/match/basic.carbon` — new.
 -   `fork/conformance/programs/control_flow/match_switch.carbon`,
     `fork/conformance/programs/project/most_features_missing_match.carbon`,
     `fork/conformance/programs/control_flow/match_sum_type_payload.carbon`,
     plus new `match_guard_binding.carbon` — §7.
--   `fork/inventory/work-items.json`, `fork/decision-log.md` (scope-trade entry),
-    `fork/conformance/out/scoreboard.json` (regenerated).
+-   `fork/inventory/work-items.json`, `fork/decision-log.md` (scope-trade
+    entry), `fork/conformance/out/scoreboard.json` (regenerated).
 
 No changes to: toolchain/parse/*, toolchain/lower/* (source),
 toolchain/sem_ir/* except optional inst_namer, any BUILD file.
@@ -398,11 +405,11 @@ toolchain/sem_ir/* except optional inst_namer, any BUILD file.
     AddAndDiscardTemporaryCleanups and the absence of per-case temporary cleanup
     are NOT correct for class-typed scrutinees — the H3 integer gate is what
     makes this sound. Future slices must revisit before widening the gate.
-5.  **Missing usefulness/redundancy diagnostics**: design
-    (pattern_matching.md §"Refutability, overlap, usefulness") requires errors
-    for never-matching cases (for example duplicate `case 0`); slice 1 accepts them
-    (runtime first-match-wins is still correct). Deviation must be recorded as
-    a follow-up work item, not silently.
+5.  **Missing usefulness/redundancy diagnostics**: design (pattern_matching.md
+    §"Refutability, overlap, usefulness") requires errors for never-matching
+    cases (for example duplicate `case 0`); slice 1 accepts them (runtime
+    first-match-wins is still correct). Deviation must be recorded as a
+    follow-up work item, not silently.
 6.  **`match (n)` with errored scrutinee** (ErrorInst type) hits the H3 TODO,
     adding a second diagnostic after the real one. Noisy but safe; golden for
     this case optional.

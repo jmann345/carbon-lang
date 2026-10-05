@@ -202,7 +202,8 @@ has one scrutinee type. (amended 2026-09-26, review fold: the
 `covered_alternatives` doc comment at context.h:377-381 — "the
 discriminant values of the choice alternatives covered..." — becomes
 false once bool values record into it; commit 1 updates it to cover
-bool values (0/1) alongside choice discriminants.) `has_irrefutable_arm` interplay: untouched —
+bool values (0/1) alongside choice discriminants.) `has_irrefutable_arm`
+interplay: untouched —
 binding roots keep setting it, and it short-circuits
 `DiagnoseNonexhaustiveMatch` (:1248) before any bool logic runs.
 Exhaustiveness: `MatchStatement`'s no-`default` branch (:1322-1341)

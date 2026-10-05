@@ -29,10 +29,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 ## Overview
 
 > **Fork amendment 2026-09-28 (F-012; fork/slices/plan.md, decisions
-> D-SL-1..14).** `Core.Slice(T)` and `Core.Buf(T)` as implemented. Toolchain
-> status: SL-1 (the two prelude types, the runtime bounds fail-stop and the
-> four builtins behind them) implemented 2026-10-05, hosted verification
-> pending; the `std::span` mapping and owning-container views land at SL-2
+> D-SL-1..14, and the decision-log entry "SL-1: Core.Slice, Core.Buf, heap
+> allocation, fail-stop (2026-10-05)" for D-SL-15..20).** `Core.Slice(T)` and
+> `Core.Buf(T)` as implemented. Toolchain status: SL-1 (the two prelude types,
+> the runtime bounds fail-stop and the four builtins behind them) landed
+> 2026-10-05; the `std::span` mapping and owning-container views land at SL-2
 > (W-056), when the [Interop](#interop) section is filled in. The
 > [0.1 limits](#01-limits) section lists every deviation from the target
 > design together with the condition under which it is removed.
@@ -108,7 +109,7 @@ class Slice(T: Copy & Destroy) {
 
 impl forall [T: Copy & Destroy] Slice(T) as UnformedInit {}
 
-impl forall [T: Copy & Destroy] Slice(T) as IndexWith(i64)
+final impl forall [T: Copy & Destroy] Slice(T) as IndexWith(i64)
     where .ElementType = T;
 
 impl forall [T: Copy & Destroy] Slice(T) as ImplicitAs(Slice(const T));
@@ -154,7 +155,7 @@ class Buf(T: Copy & Destroy) {
   impl as Destroy;  // frees the block
 }
 
-impl forall [T: Copy & Destroy] Buf(T) as IndexWith(i64)
+final impl forall [T: Copy & Destroy] Buf(T) as IndexWith(i64)
     where .ElementType = T;
 ```
 
@@ -176,7 +177,10 @@ constant-evaluated) and each a "specialized construct" in the sense of
 
 A builtin body `= "name"` is accepted in any file, exactly as for the existing
 `"pointer.unsafe_convert"`, so these add no new surface class; users get no `+`
-on pointers.
+on pointers. A call to `pointer.offset` or `heap.allocate` requires the pointee
+type to be complete (`IncompleteTypeInBuiltinCall`): both lowerings need its
+size, and a pointer type is complete without its pointee, so the call is where
+the requirement is checked — per specific, for a symbolic pointee.
 
 ## Bounds behavior
 
@@ -315,8 +319,8 @@ which it is removed:
     choice payload or array that holds a `Buf` destroys it through the
     toolchain's synthesized destructor for aggregates, whose body is still a
     placeholder that runs no member destructors; only a `Buf` that is itself a
-    local variable or a temporary runs `impl as Destroy` and frees its block.
-    Removed when destroy-op synthesis destroys members.
+    local variable or a temporary runs `impl as Destroy` and frees its block
+    (W-108). Removed when destroy-op synthesis destroys members.
 -   **Over-aligned element types** (alignment above `max_align_t`) are not
     supported: `malloc` guarantees 16 bytes.
 -   **A byte count that overflows fails-stop.** `Make(size, fill)` computes

@@ -601,7 +601,9 @@ impl forall [T: Copy & Destroy] Slice(T) as UnformedInit {}
 
 // Amended 2026-10-05 (round 3, R-5): `IndexWith(i64)` only — the blanket
 // `U: ImplicitAs(i64)` impl of rev 2 cannot lower for `U = IntLiteral`.
-impl forall [T: Copy & Destroy] Slice(T) as IndexWith(i64)
+// Amended 2026-10-05 (round 4, D-SL-18): `final`, so the `where` rewrite is
+// known in a generic body (a symbolic lookup resolves only final impls).
+final impl forall [T: Copy & Destroy] Slice(T) as IndexWith(i64)
     where .ElementType = T {
   fn At(self, subscript: i64) -> T { return self.Get(subscript); }
 }
@@ -729,8 +731,9 @@ class Buf(T: Copy & Destroy) {
 // No `UnformedInit`: `Destroy` runs unconditionally on `var` storage, so an
 // unformed `Buf` would free a garbage pointer (D-SL-6).
 
-// Amended 2026-10-05 (round 3, R-5): `IndexWith(i64)` only, as for `Slice`.
-impl forall [T: Copy & Destroy] Buf(T) as IndexWith(i64)
+// Amended 2026-10-05 (round 3, R-5): `IndexWith(i64)` only, as for `Slice`;
+// round 4 (D-SL-18): `final`, as for `Slice`.
+final impl forall [T: Copy & Destroy] Buf(T) as IndexWith(i64)
     where .ElementType = T {
   fn At(self, subscript: i64) -> T { return self.Get(subscript); }
 }
@@ -755,7 +758,9 @@ The `Buf` class has no `Copy` impl, so `var c: Buf(i32) = b;` diagnoses
 #### §1.A.4 `Iterate` for slices (appended to core/prelude/iterate.carbon after :82)
 
 ```carbon
-impl forall [T: Copy & Destroy]
+// Amended 2026-10-05 (round 4, D-SL-18): `final`, as the `IndexWith(i64)`
+// impls are, so `for (x: T in s)` in a generic body binds `T`.
+final impl forall [T: Copy & Destroy]
     Slice(T) as Iterate
     where .ElementType = T and .CursorType = i64 {
   fn NewCursor(unused self) -> i64 { return 0; }
@@ -796,7 +801,8 @@ conversion (D-SL-2); comptime evaluation of slice reads (all four
 builtins are runtime-only; a constant `Core.Slice` never forms because
 `&a` of a local is not constant); freeing a `Buf` held in a FIELD of
 another type (synthesized aggregate destroy ops are the member-destruction
-placeholder — W-105; amended 2026-10-05, round-2 fix).
+placeholder — W-108, filed as W-105 at the round-2 fix and renumbered at
+discharge; amended 2026-10-05).
 
 ### §1.B SL-2 — `std::span` mapping and owning-container views
 
@@ -2229,7 +2235,8 @@ Zero landed programs move (no landed program includes `<span>` or names
     @free`. Six existing goldens move (§6.A amendment). `heap.allocate`
     now multiplies with `llvm.umul.with.overflow.i64` and selects a null
     block on wrap (MINOR 2). The W-055 ledger notes, slices.md and the
-    decision-log carry the same record; residue W-105 files the
+    decision-log carry the same record; residue W-108 (W-105 before the
+    discharge renumbering) files the
     member-held `Buf` leak (synthesized aggregate destroy ops run no
     member destructors).
 -   Amended 2026-10-05 (round 3, after hosted autoupdate run 37329946461
@@ -2356,3 +2363,154 @@ trunk of that day (50839d68e or later; absolutes re-quoted from
 scoreboard.json at rebase, R9), SL-2 when SL-1's hosted verification is
 green (UN-2 has already merged, §0.4). Later amendments are folded in
 place, each marked "(amended <date>, review fold: ...)".
+
+## Landed notes (SL-1, 2026-10-05)
+
+SL-1 landed on claude/carbon-fork-0-1-slices: 2adc95742 (the four builtins
+and their goldens), 2633b769e (slice.carbon, buf.carbon, types.carbon, the
+`Iterate` impl, the prelude goldens), 55706e3eb (conformance + ledger),
+0c88bddf5 (slices.md + the README amendment), then the fix rounds c200e6b81
+(round 1), 24ef65c1c (round 2), ee434b2b3 (round 3), 7b69e540b and 713eddc7a
+(round 4), with the hosted fills 50cd6c82c and 84315a5d4 between rounds 3
+and 4. Ledger, gap-analysis row and decision-log entry ("SL-1: Core.Slice,
+Core.Buf, heap allocation, fail-stop (2026-10-05)", the F-012 record with
+D-SL-15..20) are the discharge commit. SL-2 is next (§0.4; it inherits the
+`optional` import already in slice.carbon's header, the `final` impls, the
+literal-subscript rule and W-108). Deltas from this plan, honestly:
+
+-   **§6.A(a) "no existing golden moves" was wrong four times over.**
+    Fourteen pre-existing goldens move: six because declared `Destroy`
+    impls are now selected (round 2: lower var/param,
+    var/destroy_control_flow, function/overload/basic `destroy_arg`,
+    operators/question_generic `adapter_payload`; check
+    var/destroy_control_flow, function/overload/basic); five for the
+    `Iterate` import footprint (round 4(b): lower for/{for, bindings,
+    break_continue}, array/iterate — one uncalled `declare` of
+    iterate.carbon's synthesized `Destroy.Op` for the `i64 as Destroy`
+    facet of the appended impl's rewrite, beside the `i32` twin the array
+    impl already left there; check interop/cpp/range_for — two constants
+    renumbered); two for the literal-subscript rule's `Core.Int` load
+    (round 4(d): index/fail_non_tuple_access,
+    operators/overloaded/index_with_prelude); and
+    check/function/overload/basic.carbon a second time (its
+    `union_scope_set` split took the round-3 regression's pins and is
+    cleared, not restored). The 13 union/export goldens the round-3 fill
+    broke are restored from ee434b2b3~3 and are byte-identical at HEAD
+    (`git diff ee434b2b3~3 HEAD -- toolchain/check/testdata/union
+    toolchain/lower/testdata/union` is empty). Lesson, recorded in the
+    hand-off notes: a `grep 'as Destroy' core/` is not a prediction when
+    the impl being added is in the result set and every prelude impl is in
+    every file's import set.
+-   **One diagnostic kind, not none.** §6.A's coverage bullet said "no
+    diagnostic kind" until the re-review's finding 3;
+    `IncompleteTypeInBuiltinCall` (kind.def:533) exists and is covered by
+    the `fail_incomplete_pointee` splits of
+    check/testdata/builtins/heap/allocate_free.carbon and
+    builtins/pointer/offset.carbon, filled at run 37335213696.
+-   **`IndexWith(i64)` only (D-SL-17), not rev 2's blanket `IndexWith(U:
+    ImplicitAs(i64))`.** R-5's `Core.String` precedent was misapplied: its
+    `At` is a call-site-lowered builtin, so a runtime `IntLiteral`
+    parameter never exists there; `Slice.At`'s Carbon body would call a
+    compile-time-only conversion on a runtime value. The literal-subscript
+    rule in check/handle_index.cpp replaces the blanket impl for literals;
+    an `i32` subscript is an error (`fail_subscript_i32`, W-116);
+    `index_runtime_subscript` takes `i: i64`;
+    slices_bounds_fail_stop.carbon reads `s[RuntimeSeed(-18) as i64]`.
+-   **`final` on three prelude impls (D-SL-18).** `Slice(T)`/`Buf(T) as
+    IndexWith(i64)` and `Slice(T) as Iterate` are `final impl forall`; §1.A
+    wrote plain `impl forall`. A symbolic lookup resolves only final impls,
+    so without `final` the `where .ElementType = T` rewrite is unknown in a
+    generic body and `generic_element` (a positive) filled with a
+    `ConversionFailure`. The §1.A.2/§1.A.3/§1.A.4 sketches are amended in
+    place.
+-   **The pointee-completeness hook (D-SL-15).** Neither §1.A.1 nor the
+    hand-off notes anticipated that a pointer type is complete without its
+    pointee: `fn A(n: i64) -> Core.MaybeUnformed(i32*) { return Alloc(i32,
+    n); }` never completed `i32`, and lowering represented it as the unsized
+    opaque struct. `RequireBuiltinCallPointeeComplete` (check/call.cpp)
+    runs after `ConvertCallArgs` for every `Builtin` callee; the rev B B2
+    unwrapping shape stands.
+-   **Declared `Destroy` impls win destroy lookup (D-SL-16) and
+    `HasUserDestroyImpl` is class-keyed (D-SL-19).** R-12 said the user
+    impl inside a generic class was "the first in the tree" and gave a
+    fill-time falsifier; the falsifier would have fired with certainty (no
+    user `Destroy` impl was ever SELECTED — decision-log W-021 note), so
+    R-12 was a planning miss of the rev B B1 class, caught by the
+    implementation review instead. The round-2 fix then exposed the
+    symbolic-self shortcut in the export/union predicate (round 4(a)).
+-   **`heap.allocate` detects overflow (D-SL-20).** §1.A.1's arm multiplied
+    without a check; `llvm.umul.with.overflow.i64`'s wrap bit joins the
+    null-block path. lower/testdata/builtins/heap.carbon's comment predicts
+    the shape; the IR is the fill's.
+-   **Source anchors moved.** The lowering arms are handle_call.cpp:660
+    (`PointerOffset`), :682 (`FailStop`), :719 (`HeapAllocate`), :790
+    (`HeapFree`) and the runtime-fatal `default` is :812 (the plan's :649
+    and :664); the x-macro entries are .def:154, :157, :160-161; eval's
+    runtime-only arms are :2648-2651. Twelve toolchain source files, not the
+    §2.A four: builtin_function_kind.{def,cpp}, eval.cpp, handle_call.cpp,
+    call.cpp, custom_witness.{h,cpp}, handle_index.cpp, impl_lookup.cpp,
+    name_lookup.{h,cpp}, kind.def.
+-   **Spellings to working syntax (R3).** The §1.A sketches already used
+    `[T: type]`; the only spelling deltas are the `final` modifiers above.
+    check/slice/basic.carbon's `unformed` split keeps its `UnusedBinding`
+    STDERR pin (the implementation review's MINOR 3; confirmed by the
+    fill). `failstop.carbon`, not `fail_stop.carbon`, in both suites (rev B
+    B3 held).
+-   **Residue the slice added (filed at discharge, blocked_by []):** W-108
+    the member-held `Buf` (filed as W-105 at the round-2 fix; renumbered
+    because trunk's OV-2 discharge took W-105..W-107 — every citation on
+    this branch now reads W-108); W-116 integer subscripts other than `i64`
+    and literals (D-SL-17). The §8.5 titles are W-109..W-115 (write-through
+    indexing, `buf(T)`, element destructors + `Allocator`, over-aligned
+    elements, the index in the fail-stop message, unchecked access,
+    unformed `Buf`). "array-value to slice conversion" is NOT filed (D-SL-2:
+    only if upstream specifies it).
+-   **Scoreboard base.** The branch's in-tree
+    fork/conformance/out/scoreboard.json is 3c9df53f7 (generated
+    2026-09-28T17:19:40Z): `totals.PASS = 118`, `totals.SKIP = 24`, every
+    fail class 0, 142 programs listed, 46/56 bullets — the OV-1 entry's
+    post-merge reading the header predicted. §5.A's delta (+3 PASS / −1
+    SKIP / +2 programs; "Stdlib: Slices" SKIP → PASS) gives the expected
+    121 / 0 / 23 over 144, 47/56. Trunk has since taken OV-2 (121 / 0 / 24
+    over 145, 46/56), so the of-record numbers on the trunk merge are that
+    base plus the same delta.
+
+Reconciliation greps (§8.4), run at 713eddc7a:
+
+-   `grep -rn '"pointer.offset"\|"fail_stop"\|"heap.allocate"\|"heap.free"'
+    toolchain core` outside testdata: builtin_function_kind.cpp once each
+    (:837, :844, :851, :856); the prelude declarations slice.carbon:19-20
+    and buf.carbon:17-21; plus call.cpp:245 and :260 — the
+    `RequireBuiltinCallPointeeComplete` names for the diagnostic, not
+    anticipated by the grep's expectation and correct. The builtin goldens
+    carry the rest.
+-   `grep -rn 'Unsupported builtin call' toolchain/lower`: one hit,
+    handle_call.cpp:812. As planned.
+-   `grep -rln 'Slice' core/prelude`: buf.carbon, slice.carbon,
+    iterate.carbon — and types.carbon through its `export import` line
+    (`grep -rn` lists it). As planned.
+-   `ls toolchain/*/testdata/builtins/ | grep fail_stop`: empty; the goldens
+    are `failstop.carbon` in both suites (rev B B3).
+-   `git diff ee434b2b3~3 HEAD -- toolchain/check/testdata/union
+    toolchain/lower/testdata/union`: empty (round 4(a)'s falsifier).
+-   `git diff 0bba39de2..HEAD --stat` over the testdata trees names exactly
+    the fourteen pre-existing goldens listed above plus the new SL-1 files;
+    no raw_sem_ir golden moved (§6.A(c)).
+-   The one kind: kind.def:533, one `CARBON_DIAGNOSTIC` and one emit site
+    (call.cpp:276-280), fired by the two `fail_incomplete_pointee` splits.
+-   `runner.py --self-test`: "144 programs parsed, 56 bullets in table,
+    OK" (the implementation review's run); the README table carries the
+    three programs as `run`.
+-   Ledger max id on this branch before discharge: W-105 (the round-2
+    residue); trunk's max is W-107 (OV-2), so W-105 is renumbered W-108 and
+    W-109..W-116 are allocated after it.
+
+Hosted verification of record (R28(b); the container cannot build the
+toolchain): first autoupdate run 37324972577 FAILED (the two
+incomplete-pointee crashes; fix c200e6b81); second autoupdate run
+37329946461 FAILED (the comptime-only conversion in `Slice.At`; fix
+ee434b2b3); third autoupdate run 37335213696 success — fill 50cd6c82c (40
+files where 18 were predicted) and the convergence pass 84315a5d4
+(`.loc`-only); fourth autoupdate, after 7b69e540b and 713eddc7a, run
+FILL_RUN; gate GATE_RUN green; conformance CONF_RUN: CONF_NUMBERS, against
+the expected 121 / 0 / 23 over 144, 47/56.

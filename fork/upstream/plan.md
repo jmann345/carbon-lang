@@ -1703,7 +1703,8 @@ rev 3 fold, F2, when prek rewrote the corrected path a third time.)
 -   **Weekly Routine** (`Weekly upstream-merge check (carbon fork)`, which
     fires Mondays at 14:00 UTC — cron minute 0, hour 14, day-of-week 1; the
     expression is spelled out because rev 1's wrap split its code span and
-    the `* * 1` tail became a list item, amended 2026-10-05, review fold: rev B
+    the trailing three cron fields became a list item, amended 2026-10-05,
+    review fold: rev B
     B3 — next 2026-10-12): no prompt edit (D-UA-13); its first post-advance
     firing should report a small deferred set and no fork-modified overlap
     beyond the usual check-core files.

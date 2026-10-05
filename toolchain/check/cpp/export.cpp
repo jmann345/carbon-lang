@@ -1658,8 +1658,17 @@ auto ExportFunctionToCppPointerConversion(
     return false;
   }
 
-  CARBON_CHECK(!src_clang_decl->isTemplateDecl(),
-               "can't form a pointer to a template");
+  // A generic function with only type bindings exports as a
+  // `clang::FunctionTemplateDecl`, which has no function type to point to (a
+  // generic with a non-type binding fails inside the export above instead).
+  // Diagnose rather than assert, as the `specific_id` case does.
+  if (!llvm::isa<clang::FunctionDecl>(src_clang_decl)) {
+    if (diagnose) {
+      context.TODO(src_id,
+                   "can't convert generic function to a C++ function pointer");
+    }
+    return false;
+  }
 
   clang::QualType src_fn_type(src_clang_decl->getFunctionType(), /*Quals=*/0);
   clang::QualType src_ptr_type;

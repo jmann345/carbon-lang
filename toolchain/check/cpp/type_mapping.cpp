@@ -378,14 +378,29 @@ static auto TryMapType(Context& context, SemIR::TypeId type_id)
       return context.ast_context().DoubleTy;
     }
     case CARBON_KIND(SemIR::FunctionType function_type): {
-      auto decl_id =
-          context.functions().Get(function_type.function_id).first_decl_id();
-      const auto* clang_decl = GetOrExportFunctionToCpp(
-          context, SemIR::LocId(decl_id), function_type.function_id);
+      const auto& function = context.functions().Get(function_type.function_id);
+      // A generic function (or a specific of one) exports as a
+      // `clang::FunctionTemplateDecl`, which has no function type and no
+      // pointer form: `Decl::getFunctionType()` is null for it and
+      // `getPointerType(null)` would assert. The mapping fails instead, so the
+      // caller's "cannot map" path diagnoses (`CppCallArgTypeNotSupported`
+      // for a call argument), matching `ExportFunctionToCppPointerConversion`,
+      // which also leaves generic functions unsupported.
+      if (function.generic_id.has_value() ||
+          function_type.specific_id.has_value()) {
+        return clang::QualType();
+      }
+      auto decl_id = function.first_decl_id();
+      const auto* clang_decl =
+          llvm::dyn_cast_or_null<clang::FunctionDecl>(GetOrExportFunctionToCpp(
+              context, SemIR::LocId(decl_id), function_type.function_id));
       if (clang_decl == nullptr) {
         return clang::QualType();
       }
       clang::QualType clang_fn_type(clang_decl->getFunctionType(), /*Quals=*/0);
+      if (clang_fn_type.isNull()) {
+        return clang::QualType();
+      }
       clang::QualType clang_ptr_type;
       if (const auto* method_decl =
               llvm::dyn_cast<clang::CXXMethodDecl>(clang_decl)) {

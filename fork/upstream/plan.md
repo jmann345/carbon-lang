@@ -2093,3 +2093,40 @@ should read first:
     survived the merge, the only removed lines are upstream's own), and
     link-time definitions (every fork-added inst/node/state kind has its
     handler; the x-macro consumers are compile-time dispatched).
+-   **Fill round 1 (hosted autoupdate run 37385396872: toolchain built, one
+    test crashed).** `carbon_fn_as_callable.carbon`'s
+    `fail_todo_generic_fn_as_callable` split (`Cpp.invoke(GenericWork)`, a
+    generic Carbon function as a call argument) hit Clang's "Cannot retrieve
+    a NULL type pointer" assertion in `TryMapType`'s `FunctionType` arm
+    (type_mapping.cpp:395 as merged). Root cause by comparison: the fork's
+    `TryMapFunctionType` (923c2f2af) returned null up front for
+    `generic_id`/`specific_id`/`self_param_id`; D-UA-8 retired it for
+    upstream's arm (c1e83b0b7 type_mapping.cpp:287-305), which calls
+    `GetOrExportFunctionToCpp` unguarded — for a generic function that
+    returns a `clang::FunctionTemplateDecl`, whose `Decl::getFunctionType()`
+    is null, so `getPointerType(null)` asserts. An upstream latent bug
+    (upstream's only generic-function pin, function_ptr.carbon
+    `fail_convert_generic_arg`, uses a NON-TYPE binding that fails inside the
+    export before a template exists) that the fork's F8d negative-partition
+    golden exposes. NOT R-4's break condition: the `_Nonnull`/`void (*&&)()`
+    deduction (the concrete `thread(Work)` splits) did not fail — the process
+    died before producing their output, so the residual stays undecided until
+    the next fill. Fixed at the root, not reverted: the arm returns a null
+    type for `generic_id`/`specific_id` functions and `dyn_cast_or_null`s the
+    exported decl to `clang::FunctionDecl` (plus an `isNull` guard on the
+    function type), so the caller's `CppCallArgTypeNotSupported` path
+    diagnoses; the sibling conversion path
+    (`ExportFunctionToCppPointerConversion`) replaced its
+    `CARBON_CHECK(!isTemplateDecl())` — the same template-decl shape, reached
+    by `var p: Cpp.Callback = GenericWork` — with a semantics TODO, pinned by
+    the new `fail_todo_generic_fn_to_fn_ptr` split. The golden's header and
+    split comments were rewritten for the merged mechanism (F8d's
+    `.argN.<mangled>` thunk-symbol claim no longer holds: the pointer is a
+    runtime `CppAddrOfFunction` argument and the two same-signature calls
+    share one thunk; the method split is now rejected by C++ overload
+    resolution on a member pointer, #7881) and its CHECK lines cleared for the
+    fill. No other null-unchecked path was found in `MapToCppType`/
+    `TryMapType`/`InventClangArg`: every other arm returns a null `QualType`
+    on failure and `MapToCppType` skips the wrap chain on null; the other
+    `GetOrExportFunctionToCpp` callers (generate_ast.cpp:239/:280) keep the
+    `NamedDecl*` without casting.

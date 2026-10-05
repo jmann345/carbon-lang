@@ -1075,7 +1075,10 @@ declaration order coincides with match-case order. What remains open is the
 future extension to refutable value patterns in overload signatures, which would
 leverage the full pattern matching machinery described here; see
 [Function overloading: future work](functions_overloading.md#future-work)
-(fork amendment 2026-09-27).
+(fork amendment 2026-09-27). The rule's C++ half — an exported set is resolved
+by C++ callers under C++'s rules, a
+[documented divergence](functions_overloading.md#documented-divergence-two-resolution-rules)
+from first-match — landed with workstream OV-3 (fork amendment 2026-10-05).
 
 ## Alternatives considered
 

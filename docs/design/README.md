@@ -3892,10 +3892,27 @@ preprocessing of source text such as C and C++ do.
 
 ### Pattern matching as function overload resolution
 
-> **TODO:** References need to be evolved. Needs a detailed design and a high
-> level summary provided inline.
+> **Note:** Function overloading for 0.1 is no longer provisional: it is fixed
+> by fork decision [F-009](/fork/decision-log.md) and specified normatively in
+> [Function overloading](functions_overloading.md) (fork amendment 2026-10-05,
+> workstream OV-3).
 
-> References: [Pattern matching](pattern_matching.md)
+Carbon supports closed function overloading: every member of an overload set
+carries the `overload` declaration modifier, all members are declared in the
+same library, and calls resolve by trying the candidates in declaration order
+and taking the first that matches — the function-call analog of top-down `match`
+semantics, with no best-match ranking. Imported C++ overload sets resolve under
+C++'s own rules, and exported Carbon sets are resolved by C++ callers under
+C++'s rules; the resulting divergence is documented and conformance-tested in
+both directions
+([C++ interoperability](functions_overloading.md#c-interoperability)). Overload
+signatures in 0.1 use ordinary irrefutable parameter patterns; extending
+overload selection to refutable value patterns (true "pattern matching as
+overload resolution") remains
+[future work](functions_overloading.md#future-work).
+
+> References: [Function overloading](functions_overloading.md);
+> [Pattern matching](pattern_matching.md)
 
 ### Error handling
 

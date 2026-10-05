@@ -1330,6 +1330,19 @@ static auto BuildCarbonToCarbonThunk(Context& context, SemIR::LocId loc_id,
            .param_kind = ParamPatternKind::Ref})
           .second;
 
+  // The members of an `overload fn` set share a name, and this thunk is a
+  // generated function of its own — not a set member — so the member's
+  // `:overload<N>` mangling marker (D-OV-5) does not reach the thunk's symbol
+  // by itself: two members' thunks would mangle equal, and lowering's
+  // `GetOrCreateFunction` would silently reuse the first member's thunk for
+  // the second (fork/overload/plan.md R-4, R-10; the additive hunk D-OV-9
+  // allows). Carry the member's set-relative index on the thunk so the
+  // mangler keys it the same way it keys the member (`_CF__carbon_thunk:
+  // overload<N>...`, unspellable in Carbon source). The thunk is not a set
+  // member, so `overload_set_id` stays unset.
+  context.functions().Get(carbon_thunk_function_id).overload_index =
+      target.function.overload_index;
+
   BuildThunkDefinitionForExport(
       context, carbon_thunk_function_id, target.function_id,
       context.functions().Get(carbon_thunk_function_id).first_decl_id(),

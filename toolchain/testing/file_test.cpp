@@ -337,10 +337,12 @@ static auto DoClangASTCheckReplacements(std::string& check_line) -> void {
     return;
   }
 
-  // Replace the ids.
-  static const RE2 clang_decl_id_re(llvm::formatv(" {0} ", ClangDeclIdRegex));
+  // Replace the ids. An id is followed by a space or ends the line (a
+  // `MemberExpr` prints its member declaration's id last).
+  static const RE2 clang_decl_id_re(
+      llvm::formatv(" {0}( |$)", ClangDeclIdRegex));
   static const std::string& clang_decl_id_replacement =
-      *new std::string(llvm::formatv(" {{{{{0}}} ", ClangDeclIdRegex));
+      *new std::string(llvm::formatv(" {{{{{0}}}\\1", ClangDeclIdRegex));
   RE2::GlobalReplace(&check_line, clang_decl_id_re, clang_decl_id_replacement);
 }
 

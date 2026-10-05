@@ -10,35 +10,36 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-10-05 (post-PR #47: SL-1 LANDED — `Core.Slice(T)`
-(`{ptr, size}`, bounds-checked `Get`/`Subslice`, `IndexWith(i64)`,
-`Iterate`, const views), `Core.Buf(T)` (one `malloc` block, `Destroy`
-frees), the runtime fail-stop (`write(2, …)` + `abort`), and four
-runtime-only builtins (`pointer.offset`, `fail_stop`, `heap.allocate`,
-`heap.free`) — plus three toolchain rules the slice forced: a class's
-declared `Destroy` impl now WINS destroy lookup (every user
-`impl as Destroy` in the tree was inert before; six goldens moved), the
-builtin-pointee completeness requirement, and the literal-subscript rule
-(`IntLiteral` → `i64` when the container has no `IndexWith(IntLiteral)`
-impl). Gap row 76 MISSING → PARTIAL; header 28 DONE / 22 PARTIAL / 5
-MISSING / 1 DESIGN-ONLY. NEW FLOOR 124 PASS / 0 / 23 SKIP over 147
-(quoted from scoreboard.json, run 37347619141), 47/56 bullets ("Stdlib:
-Slices" PASS). Review loop: REJECT (Buf's destructor was dead code —
-decidable from the tree, a planning miss) → fix → focused re-review
-APPROVE-WITH-FIXES → fix; four hosted rounds each caught a real defect
-(incomplete-pointee crashes; the comptime-only `IntLiteral` conversion in a
-Carbon-bodied `At`; a 40-file fill where the `HasUserDestroyImpl`
-symbolic-self rule broke every union golden), all recorded per R28(d).
-Earlier today: OV-2 (#46, floor 121) and the weekly upstream check (cut
-holds a seventh week). IN FLIGHT: OV-3 (W-026, overload-set export to
-C++ + the documented first-match/best-match divergence, rulebook R30) on
-claude/carbon-fork-0-1-ov3 in ../carbon-ov3 — implemented, review
-APPROVE-WITH-FIXES folded (thunk `overload_index` propagation), fills
-converged, discharge drafted; merging this trunk then verifying of record
-(expected +2 PASS / +2 total → 126/0/23 over 149, 47/56; gap row 57 →
-DONE). Then SL-2 (W-056, `std::span` mapping) and the "upstream advance"
-workstream. Next cron Monday 2026-10-12; the owner's machine is never
-used._
+_Last updated: 2026-10-05 (post-PR #48: OV-3 LANDED — an exported
+`overload fn` set is a C++ overload set (every member delivered to Clang
+through `SetExternalVisibleDeclsForName`, each with its own
+`:overload<N>` symbol and a thunk that now carries the member's
+`overload_index`), resolved by C++ callers under C++'s best-match rules —
+the documented divergence from Carbon's first-match, asserted in both
+directions by one program (rulebook R30). Gap row 57 PARTIAL → DONE: the
+overloading workstream (OV-1/2/3, F-009) is closed; header 29 DONE / 21
+PARTIAL / 5 MISSING / 1 DESIGN-ONLY. NEW FLOOR 126 PASS / 0 / 23 SKIP
+over 149 (quoted from scoreboard.json, run 37357609478), 47/56 bullets.
+Also fixed on the way: the file_test autoupdater never normalized a Clang
+declaration id that ends a line. Earlier today: SL-1 (#47, floor 124),
+OV-2 (#46, floor 121), the weekly upstream check (cut holds a seventh
+week). IN FLIGHT: SL-2 (W-056, `std::span` ↔ `Core.Slice` mapping +
+owning-container views) on claude/carbon-fork-0-1-sl2 in ../carbon-sl2 —
+implemented, review REJECT (the blanket `ImplicitAs` impl was placed in a
+new prelude library and is an orphan there, which took every
+full-prelude golden down in the first fill; an ICE on `void data()`
+members; an unchecked `Copy & Destroy` bound on span elements) — fixer
+running. Then the "upstream advance" workstream (181 deferred commits, 99
+conflicting files at the last dry run), variadics, CMake integration,
+safe-Carbon design. Next cron Monday 2026-10-12; the owner's machine is
+never used._
+FORTY-EIGHT PRs. Function overloading is finished end to end — same-file
+sets, import across libraries and api/impl, generic members, and export
+to C++ — with the one divergence from C++ written down and tested rather
+than papered over. The thunk-symbol collision that review found (every
+member's thunk mangled alike; lowering would have run member 0 for every
+C++ overload) is the kind of silent wrong-member bug the hosted fill
+alone would never have shown._
 FORTY-SEVEN PRs. Slices exist, and so — for the first time — do user
 destructors: the slice that needed `free` to run found that no declared
 `Destroy` impl had ever been selected, and fixed that at the root rather
@@ -362,8 +363,8 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-124 PASS / 23 SKIP / 0 FAIL programs (147 total); **47/56 bullets
-green** (GitHub-hosted scoreboard at the PR #47 head, run 37347619141; verified from fork/conformance/out/scoreboard.json —
+126 PASS / 23 SKIP / 0 FAIL programs (149 total); **47/56 bullets
+green** (GitHub-hosted scoreboard at the PR #48 head, run 37357609478; verified from fork/conformance/out/scoreboard.json —
 the error-handling control-flow bullet is the fork's first
 error-handling flip, now 4 programs deep incl. the W72b threading
 arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79
@@ -371,7 +372,7 @@ at S3a → 80 at S3b → 81 at S3c → 83 at B1b
 (error_handling/control_flow_constructs flip +
 question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a
 → 88 F8b → 89 F8c → 90 F8d → 91 W72b → 92 W-067 → 93 W-068 → 95 W-069 → 96 multifile → 100 W-076 → 101 W-078 → 102 W-077 →
-106 EH-A → 108 W-012 → 112 EH-B → 114 UN-1 → 116 UN-2 → 118 OV-1 → 121 OV-2 → 124 SL-1. The scoreboard regenerates on GitHub-hosted runners only
+106 EH-A → 108 W-012 → 112 EH-B → 114 UN-1 → 116 UN-2 → 118 OV-1 → 121 OV-2 → 124 SL-1 → 126 OV-3. The scoreboard regenerates on GitHub-hosted runners only
 (`Fork: hosted verification`, mode `conformance`; R28).
 
 ### CI on jmann345/carbon-lang (GitHub-hosted only — R28)

@@ -63,8 +63,12 @@ auto HasTrivialClassShapeForExport(const SemIR::Class& class_info) -> bool;
 // imported destructor), choice types, classes failing
 // `HasTrivialClassShapeForExport` (at any nesting depth), and classes covered
 // by a user-declared `Core.Destroy` impl — in this file or in any imported
-// IR's impl store (see `HasUserDestroyImpl`) — are never trivially
-// destructible. Consumer: the C++ export triviality predicate
+// IR's impl store, keyed on the class for a class-typed impl self (concrete
+// or a symbolic specific, so the prelude's `Buf(T)` impl covers only `Buf`)
+// and covering every class only for a blanket `impl forall [T] T as Destroy`
+// (see `HasUserDestroyImpl`) — are never trivially destructible. Consumers:
+// the union field rule (`ComputeUnionObjectRepr`, check/class.cpp) and the
+// C++ export triviality predicate
 // (`IsTriviallyCopyableForExport`, check/cpp/export.cpp) — the single
 // trivially-copyable predicate of W-006 coherence risk 7 (fork/f008/plan.md
 // §2.2).

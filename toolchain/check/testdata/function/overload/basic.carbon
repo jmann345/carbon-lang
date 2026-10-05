@@ -2374,7 +2374,6 @@ fn Use() -> i64 { return G(1 as u64); }
 // CHECK:STDOUT:   %Int.generic: %Int.type = struct_value () [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
-// CHECK:STDOUT:   %i32.builtin: type = int_type signed, %int_32 [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
 // CHECK:STDOUT:   %D.elem: type = unbound_element_type %D, %i32 [concrete]
 // CHECK:STDOUT:   %Destroy.type: type = facet_type <@Destroy> [concrete]
@@ -2438,8 +2437,6 @@ fn Use() -> i64 { return G(1 as u64); }
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.specific_fn: <specific function> = specific_function %Int.as.Copy.impl.Op.4f6, @Int.as.Copy.impl.Op(%int_32) [concrete]
 // CHECK:STDOUT:   %Use.type: type = fn_type @Use [concrete]
 // CHECK:STDOUT:   %Use: %Use.type = struct_value () [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.4: type = fn_type @Destroy.Op.loc19_34.4 [concrete]
-// CHECK:STDOUT:   %Destroy.Op.1a2547.4: %Destroy.Op.type.1d8f74.4 = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -2606,26 +2603,9 @@ fn Use() -> i64 { return G(1 as u64); }
 // CHECK:STDOUT:   %.loc19_34.2: ref %D = temporary %.loc19_34.1, %MakeD.call
 // CHECK:STDOUT:   %.loc19_34.3: %D = acquire_value %.loc19_34.2
 // CHECK:STDOUT:   %F.call: init %i32 = call %F.ref.loc19_35(%.loc19_34.3)
-// CHECK:STDOUT:   %Destroy.Op.bound: <bound method> = bound_method %.loc19_34.2, constants.%Destroy.Op.1a2547.4
-// CHECK:STDOUT:   %Destroy.Op.call: init %empty_tuple.type = call %Destroy.Op.bound(%.loc19_34.2)
+// CHECK:STDOUT:   %D.as.Destroy.impl.Op.bound: <bound method> = bound_method %.loc19_34.2, constants.%D.as.Destroy.impl.Op
+// CHECK:STDOUT:   %D.as.Destroy.impl.Op.call: init %empty_tuple.type = call %D.as.Destroy.impl.Op.bound(%.loc19_34.2)
 // CHECK:STDOUT:   return %F.call
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc19_34.1(%self.param: ref %i32.builtin) = "no_op";
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc19_34.2(%self.param: ref %i32) {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc19_34.3(%self.param: ref %struct_type.n.9ed) {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc19_34.4(%self.param: ref %D) {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- literal_range.carbon

@@ -1283,7 +1283,9 @@ auto EvalLookupSingleFinalWitness(Context& context, SemIR::LocId loc_id,
     }
   }
 
-  // Only consider candidates when a custom witness didn't apply.
+  // Only consider candidates when a custom witness didn't apply. The `Destroy`
+  // custom witness declines for a class with a declared `Destroy` impl of its
+  // own (custom_witness.cpp `CanDestroyClass`), so that impl is selected here.
   if (!used_custom_witness) {
     for (const auto& candidate : candidates.impls) {
       auto impl_id = candidate.impl_id;

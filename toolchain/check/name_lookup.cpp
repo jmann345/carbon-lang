@@ -619,8 +619,8 @@ static auto GetCoreQualifiedName(llvm::ArrayRef<CoreIdentifier> qualifiers)
 // TODO: Consider tracking the Core package in SemIR so we don't need to use
 // name lookup to find it.
 static auto GetCorePackage(Context& context, SemIR::LocId loc_id,
-                           llvm::ArrayRef<CoreIdentifier> qualifiers)
-    -> SemIR::NameScopeId {
+                           llvm::ArrayRef<CoreIdentifier> qualifiers,
+                           bool diagnose) -> SemIR::NameScopeId {
   if (context.name_scopes().IsCorePackage(SemIR::NameScopeId::Package)) {
     return SemIR::NameScopeId::Package;
   }
@@ -638,23 +638,28 @@ static auto GetCorePackage(Context& context, SemIR::LocId loc_id,
     }
   }
 
-  CARBON_DIAGNOSTIC(
-      CoreNotFound, Error,
-      "`{0}` implicitly referenced here, but package `Core` not found",
-      std::string);
-  context.emitter().Emit(loc_id, CoreNotFound,
-                         GetCoreQualifiedName(qualifiers));
+  if (diagnose) {
+    CARBON_DIAGNOSTIC(
+        CoreNotFound, Error,
+        "`{0}` implicitly referenced here, but package `Core` not found",
+        std::string);
+    context.emitter().Emit(loc_id, CoreNotFound,
+                           GetCoreQualifiedName(qualifiers));
+  }
   return SemIR::NameScopeId::None;
 }
 
-auto LookupNameInCore(Context& context, SemIR::LocId loc_id,
-                      llvm::ArrayRef<CoreIdentifier> qualifiers)
-    -> SemIR::InstId {
+// The shared body of `LookupNameInCore` and `TryLookupNameInCore`: with
+// `diagnose`, a name that is not found is diagnosed and `ErrorInst` returned;
+// without it, `None` is returned silently.
+static auto LookupNameInCoreImpl(Context& context, SemIR::LocId loc_id,
+                                 llvm::ArrayRef<CoreIdentifier> qualifiers,
+                                 bool diagnose) -> SemIR::InstId {
   CARBON_CHECK(!qualifiers.empty());
 
-  auto core_package_id = GetCorePackage(context, loc_id, qualifiers);
+  auto core_package_id = GetCorePackage(context, loc_id, qualifiers, diagnose);
   if (!core_package_id.has_value()) {
-    return SemIR::ErrorInst::InstId;
+    return diagnose ? SemIR::ErrorInst::InstId : SemIR::InstId::None;
   }
 
   auto inst_id = SemIR::InstId::None;
@@ -677,6 +682,9 @@ auto LookupNameInCore(Context& context, SemIR::LocId loc_id,
                                      context.name_scopes().Get(scope_id))
             : SemIR::ScopeLookupResult::MakeNotFound();
     if (!scope_result.is_found()) {
+      if (!diagnose) {
+        return SemIR::InstId::None;
+      }
       CARBON_DIAGNOSTIC(CoreNameNotFound, Error,
                         "name `{0}` implicitly referenced here, but not found",
                         std::string);
@@ -691,6 +699,18 @@ auto LookupNameInCore(Context& context, SemIR::LocId loc_id,
   }
 
   return inst_id;
+}
+
+auto LookupNameInCore(Context& context, SemIR::LocId loc_id,
+                      llvm::ArrayRef<CoreIdentifier> qualifiers)
+    -> SemIR::InstId {
+  return LookupNameInCoreImpl(context, loc_id, qualifiers, /*diagnose=*/true);
+}
+
+auto TryLookupNameInCore(Context& context, SemIR::LocId loc_id,
+                         llvm::ArrayRef<CoreIdentifier> qualifiers)
+    -> SemIR::InstId {
+  return LookupNameInCoreImpl(context, loc_id, qualifiers, /*diagnose=*/false);
 }
 
 auto DiagnoseDuplicateName(Context& context, SemIR::NameId name_id,

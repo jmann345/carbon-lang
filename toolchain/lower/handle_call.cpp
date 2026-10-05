@@ -6,8 +6,14 @@
 #include <vector>
 
 #include "common/raw_string_ostream.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
+#include "llvm/Support/Casting.h"
 #include "toolchain/lower/aggregate.h"
 #include "toolchain/lower/function_context.h"
 #include "toolchain/sem_ir/builtin_function_kind.h"
@@ -648,6 +654,148 @@ static auto HandleBuiltinCall(FunctionContext& context, SemIR::InstId inst_id,
 
     case SemIR::BuiltinFunctionKind::PointerUnsafeConvert: {
       context.SetLocal(inst_id, context.GetValue(arg_ids[0]));
+      return;
+    }
+
+    case SemIR::BuiltinFunctionKind::PointerOffset: {
+      // Fork (SL-1, fork/slices/plan.md D-SL-5): the address of the element
+      // `n` positions after `*p`. The element type is the pointee of the
+      // argument's pointer type, lowered as an array's element type is. The
+      // checker completes the pointee at the call
+      // (`RequireBuiltinCallPointeeComplete`, check/call.cpp): an incomplete
+      // type lowers to the unsized opaque struct, which the LLVM verifier
+      // rejects as a GEP source element type ("GEP into unsized type!").
+      auto pointee_type = context.GetTypeIdOfInst(arg_ids[0]).GetPointeeType();
+      auto* elem_type = context.GetType(pointee_type);
+      CARBON_CHECK(elem_type->isSized(),
+                   "`pointer.offset` pointee {0} is incomplete in the specific",
+                   pointee_type.file->types().GetAsInst(pointee_type.type_id));
+      auto* i64_type = llvm::IntegerType::getInt64Ty(context.llvm_context());
+      llvm::Value* offset = context.builder().CreateSExtOrTrunc(
+          context.GetValue(arg_ids[1]), i64_type);
+      context.SetLocal(inst_id, context.builder().CreateInBoundsGEP(
+                                    elem_type, context.GetValue(arg_ids[0]),
+                                    offset, "ptr.offset"));
+      return;
+    }
+
+    case SemIR::BuiltinFunctionKind::FailStop: {
+      // Fork (SL-1, fork/slices/plan.md D-SL-4): write the message to stderr,
+      // then abort. The `str` value is loaded as `StringAt` does above, and
+      // `write` is declared with the signature the `Core.Result` entry-point
+      // epilogue uses (lower/handle.cpp), so both sites share one module-level
+      // declaration. No terminator is emitted here: `abort` is `noreturn`, and
+      // the checker's own branch after the enclosing `if` body terminates the
+      // block.
+      auto string_inst_id = arg_ids[0];
+      auto* string_type =
+          context.GetType(context.GetTypeIdOfInst(string_inst_id));
+      auto* string_value = context.builder().CreateLoad(
+          string_type, context.GetValue(string_inst_id), "fail_stop.load");
+      auto* message_ptr = context.builder().CreateExtractValue(
+          string_value, {0}, "fail_stop.ptr");
+      auto* message_size = context.builder().CreateExtractValue(
+          string_value, {1}, "fail_stop.size");
+
+      auto* i32_type = llvm::IntegerType::getInt32Ty(context.llvm_context());
+      auto* i64_type = llvm::IntegerType::getInt64Ty(context.llvm_context());
+      auto* ptr_type = llvm::PointerType::get(context.llvm_context(), 0);
+      llvm::FunctionCallee write = context.llvm_module().getOrInsertFunction(
+          "write", i64_type, i32_type, ptr_type, i64_type);
+      context.builder().CreateCall(
+          write, {llvm::ConstantInt::get(i32_type, 2), message_ptr,
+                  context.builder().CreateSExtOrTrunc(message_size, i64_type)});
+
+      llvm::FunctionCallee abort_fn = context.llvm_module().getOrInsertFunction(
+          "abort", llvm::Type::getVoidTy(context.llvm_context()));
+      llvm::cast<llvm::Function>(abort_fn.getCallee())->setDoesNotReturn();
+      context.builder().CreateCall(abort_fn);
+      // TODO: Add a helper to get a "no value representation" value.
+      context.SetLocal(inst_id,
+                       llvm::PoisonValue::get(context.GetTypeOfInst(inst_id)));
+      return;
+    }
+
+    case SemIR::BuiltinFunctionKind::HeapAllocate: {
+      // Fork (SL-1, fork/slices/plan.md D-SL-6): `malloc(count * sizeof(T))`.
+      // The `generic T` of the declaration is not a call parameter, so the
+      // only argument is the count. The element type comes from the RESULT
+      // type, which in the prelude is the adapter class
+      // `Core.MaybeUnformed(T*)`: unwrap the adapters to the
+      // `MaybeUnformedType`, then take the pointee of its inner pointer type.
+      CARBON_CHECK(arg_ids.size() == 1,
+                   "`heap.allocate` takes only the element count");
+      auto result_type = context.GetTypeIdOfInst(inst_id);
+      const auto& result_types = result_type.file->types();
+      auto maybe_unformed = result_types.TryGetAs<SemIR::MaybeUnformedType>(
+          result_types.GetTransitiveAdaptedType(result_type.type_id));
+      CARBON_CHECK(maybe_unformed,
+                   "`heap.allocate` result is not a `MaybeUnformed(T*)`: {0}",
+                   result_type.type_id);
+      auto pointer_type_id =
+          result_types.GetTypeIdForTypeInstId(maybe_unformed->inner_id);
+      FunctionContext::TypeInFile pointee_type = {
+          .file = result_type.file,
+          .type_id = result_type.file->GetPointeeType(pointer_type_id)};
+      auto* elem_type = context.GetType(pointee_type);
+      // The checker completes the pointee at the call
+      // (`RequireBuiltinCallPointeeComplete`, check/call.cpp); an incomplete
+      // type lowers to the opaque struct, whose alloc size is an LLVM
+      // assertion ("Cannot get layout of opaque structs").
+      CARBON_CHECK(elem_type->isSized(),
+                   "`heap.allocate` pointee {0} is incomplete in the specific",
+                   pointee_type.file->types().GetAsInst(pointee_type.type_id));
+
+      auto* i64_type = llvm::IntegerType::getInt64Ty(context.llvm_context());
+      llvm::Value* count = context.builder().CreateSExtOrTrunc(
+          context.GetValue(arg_ids[0]), i64_type);
+      uint64_t elem_size = context.llvm_module()
+                               .getDataLayout()
+                               .getTypeAllocSize(elem_type)
+                               .getFixedValue();
+      // `count * sizeof(T)` with the wrap detected: a count whose byte size
+      // does not fit in `i64` must fail the allocation, not shrink it to the
+      // wrapped size and let the caller's fill loop write past the block. The
+      // overflow bit joins the null-`malloc` path (a null result), which the
+      // prelude turns into the "heap allocation failed" fail-stop
+      // (core/prelude/types/buf.carbon `Make`).
+      llvm::Value* mul = context.builder().CreateBinaryIntrinsic(
+          llvm::Intrinsic::umul_with_overflow, count,
+          llvm::ConstantInt::get(i64_type, elem_size), {}, "heap.bytes.mul");
+      llvm::Value* bytes =
+          context.builder().CreateExtractValue(mul, {0}, "heap.bytes");
+      llvm::Value* overflow =
+          context.builder().CreateExtractValue(mul, {1}, "heap.bytes.overflow");
+      // `malloc(0)` may return null; a zero-length or zero-sized request still
+      // yields a unique non-null block.
+      llvm::Value* is_zero = context.builder().CreateICmpEQ(
+          bytes, llvm::ConstantInt::get(i64_type, 0), "heap.bytes.is_zero");
+      bytes = context.builder().CreateSelect(
+          is_zero, llvm::ConstantInt::get(i64_type, 1), bytes,
+          "heap.bytes.nonzero");
+
+      auto* ptr_type = llvm::PointerType::get(context.llvm_context(), 0);
+      llvm::FunctionCallee malloc_fn =
+          context.llvm_module().getOrInsertFunction("malloc", ptr_type,
+                                                    i64_type);
+      llvm::Value* block =
+          context.builder().CreateCall(malloc_fn, {bytes}, "heap.block");
+      context.SetLocal(inst_id,
+                       context.builder().CreateSelect(
+                           overflow, llvm::ConstantPointerNull::get(ptr_type),
+                           block, "heap.result"));
+      return;
+    }
+
+    case SemIR::BuiltinFunctionKind::HeapFree: {
+      // Fork (SL-1): `free(p)`.
+      auto* ptr_type = llvm::PointerType::get(context.llvm_context(), 0);
+      llvm::FunctionCallee free_fn = context.llvm_module().getOrInsertFunction(
+          "free", llvm::Type::getVoidTy(context.llvm_context()), ptr_type);
+      context.builder().CreateCall(free_fn, {context.GetValue(arg_ids[0])});
+      // TODO: Add a helper to get a "no value representation" value.
+      context.SetLocal(inst_id,
+                       llvm::PoisonValue::get(context.GetTypeOfInst(inst_id)));
       return;
     }
 

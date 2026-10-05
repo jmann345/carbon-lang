@@ -9,6 +9,7 @@
 
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallVector.h"
+#include "llvm/ADT/StringRef.h"
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/check/context.h"
 #include "toolchain/check/control_flow.h"
@@ -24,6 +25,7 @@
 #include "toolchain/check/inst.h"
 #include "toolchain/check/thunk.h"
 #include "toolchain/check/type.h"
+#include "toolchain/check/type_completion.h"
 #include "toolchain/diagnostics/format_providers.h"
 #include "toolchain/sem_ir/builtin_function_kind.h"
 #include "toolchain/sem_ir/entity_with_params_base.h"
@@ -217,6 +219,68 @@ static auto BuildCalleeSpecificFunction(
   return callee_id;
 }
 
+// Fork (SL-1, fork/slices/plan.md §1.A.1 row 3, R-1): requires the pointee
+// type that a builtin call's lowering must size to be complete at the call.
+// `pointer.offset` strides by the pointee of its first parameter and
+// `heap.allocate` multiplies the count by the pointee of its result's inner
+// pointer; lowering represents an incomplete type as an opaque LLVM struct with
+// no size (`FileContext::GetTypeAndDIType`), which nothing downstream can
+// recover from. Nothing else at such a call completes the pointee: a pointer
+// type is complete without its pointee, so `fn A(n: i64) -> MaybeUnformed(i32*)
+// { return Alloc(i32, n); }` otherwise never completes `i32`. For a symbolic
+// pointee this records a `RequireCompleteType` in the enclosing generic, so the
+// requirement is enforced on each specific, in the specific's file.
+static auto RequireBuiltinCallPointeeComplete(
+    Context& context, SemIR::LocId loc_id, const SemIR::Function& callee,
+    SemIR::TypeId return_type_id, SemIR::InstBlockId args_id) -> void {
+  auto pointer_type_id = SemIR::TypeId::None;
+  llvm::StringLiteral builtin_name = "";
+  switch (callee.builtin_function_kind()) {
+    case SemIR::BuiltinFunctionKind::PointerOffset: {
+      auto arg_ids = context.inst_blocks().GetOrEmpty(args_id);
+      if (arg_ids.empty()) {
+        return;
+      }
+      pointer_type_id = context.insts().Get(arg_ids[0]).type_id();
+      builtin_name = "pointer.offset";
+      break;
+    }
+    case SemIR::BuiltinFunctionKind::HeapAllocate: {
+      // The result is `MaybeUnformed(T*)`; in the prelude an adapter class
+      // (`Core.MaybeUnformed`), so unwrap adapters first. The return type was
+      // just completed by `CheckFunctionReturnPatternType`, so the adapted
+      // type is resolved in the callee's specific.
+      auto maybe_unformed = context.types().TryGetAs<SemIR::MaybeUnformedType>(
+          context.types().GetTransitiveAdaptedType(return_type_id));
+      if (!maybe_unformed) {
+        return;
+      }
+      pointer_type_id =
+          context.types().GetTypeIdForTypeInstId(maybe_unformed->inner_id);
+      builtin_name = "heap.allocate";
+      break;
+    }
+    default:
+      return;
+  }
+  auto pointer_type =
+      context.types().TryGetAs<SemIR::PointerType>(pointer_type_id);
+  if (!pointer_type) {
+    // An earlier error, or a signature the builtin's validation rejected.
+    return;
+  }
+  auto pointee_type_id =
+      context.types().GetTypeIdForTypeInstId(pointer_type->pointee_id);
+  RequireCompleteType(context, pointee_type_id, loc_id, [&](auto& builder) {
+    CARBON_DIAGNOSTIC(
+        IncompleteTypeInBuiltinCall, Context,
+        "pointee type {0} is incomplete in call to builtin function {1}",
+        SemIR::TypeId, std::string);
+    builder.Context(loc_id, IncompleteTypeInBuiltinCall, pointee_type_id,
+                    builtin_name.str());
+  });
+}
+
 auto PerformCallToFunction(Context& context, SemIR::LocId loc_id,
                            SemIR::InstId callee_id,
                            const SemIR::CalleeFunction& callee_function,
@@ -269,6 +333,11 @@ auto PerformCallToFunction(Context& context, SemIR::LocId loc_id,
   auto converted_args_id =
       ConvertCallArgs(context, callee_function.self_id, arg_ids, return_arg_id,
                       callee, *callee_specific_id, is_desugared);
+  if (callee.special_function_kind ==
+      SemIR::Function::SpecialFunctionKind::Builtin) {
+    RequireBuiltinCallPointeeComplete(context, loc_id, callee, return_type_id,
+                                      converted_args_id);
+  }
   switch (callee.special_function_kind) {
     case SemIR::Function::SpecialFunctionKind::Thunk: {
       // If we're about to form a direct call to a thunk, inline it.

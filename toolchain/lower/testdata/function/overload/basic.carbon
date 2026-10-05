@@ -730,26 +730,8 @@ fn Use() -> i32 { return Gen(7 as i16); }
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc16_34.1.temp), !dbg !31
 // CHECK:STDOUT:   call void @_CMakeD.Main(ptr %.loc16_34.1.temp), !dbg !31
 // CHECK:STDOUT:   %F.call = call i32 @"_CF:overload1.Main"(ptr %.loc16_34.1.temp), !dbg !32
-// CHECK:STDOUT:   call void @"_COp.86bfabb7802f32e5:core.Destroy.Core"(ptr %.loc16_34.1.temp), !dbg !31
+// CHECK:STDOUT:   call void @"_COp.D.Main:Destroy.Core"(ptr %.loc16_34.1.temp), !dbg !31
 // CHECK:STDOUT:   ret i32 %F.call, !dbg !33
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.70db2d92ffddbef7:core.Destroy.Core"(ptr %self) #0 !dbg !34 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !39
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.b1b85bf5fbbbeec6:core.Destroy.Core"(ptr %self) #0 !dbg !40 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !43
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_COp.86bfabb7802f32e5:core.Destroy.Core"(ptr %self) #0 !dbg !44 {
-// CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !47
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
@@ -798,20 +780,6 @@ fn Use() -> i32 { return Gen(7 as i16); }
 // CHECK:STDOUT: !31 = !DILocation(line: 16, column: 28, scope: !28)
 // CHECK:STDOUT: !32 = !DILocation(line: 16, column: 26, scope: !28)
 // CHECK:STDOUT: !33 = !DILocation(line: 16, column: 19, scope: !28)
-// CHECK:STDOUT: !34 = distinct !DISubprogram(name: "Op", linkageName: "_COp.70db2d92ffddbef7:core.Destroy.Core", scope: null, file: !1, line: 16, type: !35, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !37)
-// CHECK:STDOUT: !35 = !DISubroutineType(types: !36)
-// CHECK:STDOUT: !36 = !{null, !19}
-// CHECK:STDOUT: !37 = !{!38}
-// CHECK:STDOUT: !38 = !DILocalVariable(arg: 1, scope: !34, type: !19)
-// CHECK:STDOUT: !39 = !DILocation(line: 16, column: 28, scope: !34)
-// CHECK:STDOUT: !40 = distinct !DISubprogram(name: "Op", linkageName: "_COp.b1b85bf5fbbbeec6:core.Destroy.Core", scope: null, file: !1, line: 16, type: !5, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !41)
-// CHECK:STDOUT: !41 = !{!42}
-// CHECK:STDOUT: !42 = !DILocalVariable(arg: 1, scope: !40, type: !7)
-// CHECK:STDOUT: !43 = !DILocation(line: 16, column: 28, scope: !40)
-// CHECK:STDOUT: !44 = distinct !DISubprogram(name: "Op", linkageName: "_COp.86bfabb7802f32e5:core.Destroy.Core", scope: null, file: !1, line: 16, type: !5, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !45)
-// CHECK:STDOUT: !45 = !{!46}
-// CHECK:STDOUT: !46 = !DILocalVariable(arg: 1, scope: !44, type: !7)
-// CHECK:STDOUT: !47 = !DILocation(line: 16, column: 28, scope: !44)
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'literal_range.carbon'

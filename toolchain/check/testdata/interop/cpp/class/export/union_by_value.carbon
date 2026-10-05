@@ -27,23 +27,11 @@ library "[[@TEST_NAME]]";
 import Cpp;
 
 union Wide {
-  // CHECK:STDERR: by_value_param.carbon:[[@LINE+4]]:7: error: union field `lo` has type `i32`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
-  // CHECK:STDERR:   var lo: i32;
-  // CHECK:STDERR:       ^~~~~~~
-  // CHECK:STDERR:
   var lo: i32;
-  // CHECK:STDERR: by_value_param.carbon:[[@LINE+4]]:7: error: union field `both` has type `i64`, which is not trivially copyable and destructible [UnionFieldNotTriviallyCopyable]
-  // CHECK:STDERR:   var both: i64;
-  // CHECK:STDERR:       ^~~~~~~~~
-  // CHECK:STDERR:
   var both: i64;
 }
 
 inline Cpp '''
-// CHECK:STDERR: by_value_param.carbon:[[@LINE+4]]:38: error: no member named 'lo' in 'Carbon::Wide' [CppInteropParseError]
-// CHECK:STDERR:    22 | int SumLo(Carbon::Wide w) { return w.lo + 1; }
-// CHECK:STDERR:       |                                    ~ ^
-// CHECK:STDERR:
 int SumLo(Carbon::Wide w) { return w.lo + 1; }
 ''';
 
@@ -61,7 +49,7 @@ fn F(w: Wide) -> i32 {
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %SumLo.cpp_overload_set.type: type = cpp_overload_set_type @SumLo.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %SumLo.cpp_overload_set.value: %SumLo.cpp_overload_set.type = cpp_overload_set_value @SumLo.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %ptr: type = ptr_type %Wide [concrete]
+// CHECK:STDOUT:   %ptr.567: type = ptr_type %Wide [concrete]
 // CHECK:STDOUT:   %SumLo__carbon_thunk.type: type = fn_type @SumLo__carbon_thunk [concrete]
 // CHECK:STDOUT:   %SumLo__carbon_thunk: %SumLo__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
@@ -84,8 +72,8 @@ fn F(w: Wide) -> i32 {
 // CHECK:STDOUT:   %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %SumLo.ref: %SumLo.cpp_overload_set.type = name_ref SumLo, imports.%SumLo.cpp_overload_set.value [concrete = constants.%SumLo.cpp_overload_set.value]
 // CHECK:STDOUT:   %w.ref: %Wide = name_ref w, %w
-// CHECK:STDOUT:   %.loc27: ref %Wide = value_as_ref %w.ref
-// CHECK:STDOUT:   %addr: %ptr = addr_of %.loc27
+// CHECK:STDOUT:   %.loc15: ref %Wide = value_as_ref %w.ref
+// CHECK:STDOUT:   %addr: %ptr.567 = addr_of %.loc15
 // CHECK:STDOUT:   %SumLo__carbon_thunk.call: init %i32 = call imports.%SumLo__carbon_thunk.decl(%addr)
 // CHECK:STDOUT:   return %SumLo__carbon_thunk.call
 // CHECK:STDOUT: }

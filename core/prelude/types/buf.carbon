@@ -67,8 +67,9 @@ class Buf(T: Copy & Destroy) {
 // unformed `Buf` would free a garbage pointer (D-SL-6).
 
 // `i64` subscripts, as for `Slice` (an integer literal converts at the index
-// expression, check/handle_index.cpp).
-impl forall [T: Copy & Destroy] Buf(T) as IndexWith(i64)
+// expression, check/handle_index.cpp); `final` for the same reason — `b[i]`
+// on a `Buf(T)` in a generic body has type `T`.
+final impl forall [T: Copy & Destroy] Buf(T) as IndexWith(i64)
     where .ElementType = T {
   fn At(self, subscript: i64) -> T { return self.Get(subscript); }
 }

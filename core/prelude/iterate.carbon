@@ -81,7 +81,9 @@ impl forall [T: CppRange where .ValueType impls Copy]
   }
 }
 
-impl forall [T: Copy & Destroy]
+// `final`, as `Slice(T)`'s `IndexWith(i64)` impl is: iterating a `Slice(T)` in
+// a generic body yields `T`, not the abstract `Slice(T).(Iterate.ElementType)`.
+final impl forall [T: Copy & Destroy]
     Slice(T) as Iterate
     where .ElementType = T and .CursorType = i64 {
   fn NewCursor(unused self) -> i64 { return 0; }

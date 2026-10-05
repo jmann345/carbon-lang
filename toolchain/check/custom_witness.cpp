@@ -440,10 +440,19 @@ static auto IsCoreInterfaceInFile(const SemIR::File& sem_ir,
 // Divergences from the collection, both in the conservative (non-trivial)
 // direction: ALL import IRs are walked, a superset of its
 // orphan-rule-filtered `FindAssociatedImportIRs` set; and a symbolic impl
-// self (an `impl forall` blanket, local or imported) is treated as covering
-// without a structure match. Known same-file ordering hole: an impl textually
-// after the class's first clang completion is not yet in the local store when
-// this scan runs, where real lookup would poison and diagnose the
+// self that is NOT a class type (a blanket `impl forall [T: type] T as
+// Destroy`, local or imported) is treated as covering without a structure
+// match. A symbolic self that IS a class type — `impl forall [T] MyBox(T) as
+// Destroy`, or the prelude's in-class `impl as Destroy` of `Core.Buf(T)` —
+// is keyed on its class exactly like a concrete self: a specific of another
+// class is never this class, so it does not cover it. (Amended 2026-10-05,
+// SL-1 round 4: with the shortcut applied to EVERY symbolic self, `Buf(T)`'s
+// impl — in every file's import set through the prelude — put every class
+// outside the trivially-destructible set, `i32` included since it is the
+// class `Int(32)`, breaking the union field rule and the C++ export
+// predicate.) Known same-file ordering hole: an impl textually after the
+// class's first clang completion is not yet in the local store when this
+// scan runs, where real lookup would poison and diagnose the
 // use-before-declaration.
 //
 // This is the EXPORT predicate's scan, deliberately broader than the destroy
@@ -455,10 +464,11 @@ static auto IsCoreInterfaceInFile(const SemIR::File& sem_ir,
 // user impl is selected by destroy lookup and its `Op` runs at scope exit;
 // the synthesized `Destroy.Op` of an AGGREGATE holding such a class is still
 // the placeholder (`MakeDestroyOpBody`), which runs no member destructors.
-static auto HasUserDestroyImpl(Context& context, const SemIR::Class& class_info,
-                               SemIR::ConstantId self_const_id) -> bool {
+static auto HasUserDestroyImpl(Context& context, SemIR::ClassType class_type,
+                               const SemIR::Class& class_info) -> bool {
   // The local store: impls declared in this file, plus any already
-  // materialized here from imports.
+  // materialized here from imports (whose classes are deduplicated into this
+  // file's class store, so `class_id` identity holds for them too).
   for (auto [_, impl] : context.impls().enumerate()) {
     if (!impl.interface.interface_id.has_value() ||
         GetCoreInterface(context, impl.interface.interface_id) !=
@@ -466,8 +476,19 @@ static auto HasUserDestroyImpl(Context& context, const SemIR::Class& class_info,
       continue;
     }
     auto impl_self_const_id = context.constant_values().Get(impl.self_id);
-    if (impl_self_const_id.is_symbolic() ||
-        impl_self_const_id == self_const_id) {
+    if (!impl_self_const_id.has_value()) {
+      continue;
+    }
+    if (auto impl_self_class_type = context.insts().TryGetAs<SemIR::ClassType>(
+            context.constant_values().GetInstId(impl_self_const_id))) {
+      // Class-keyed: concrete, or a symbolic specific of the class.
+      if (impl_self_class_type->class_id == class_type.class_id) {
+        return true;
+      }
+      continue;
+    }
+    if (impl_self_const_id.is_symbolic()) {
+      // A blanket impl covers every class.
       return true;
     }
   }
@@ -497,23 +518,26 @@ static auto HasUserDestroyImpl(Context& context, const SemIR::Class& class_info,
       if (!impl_self_const_id.has_value()) {
         continue;
       }
-      if (impl_self_const_id.is_symbolic()) {
-        return true;
+      auto self_inst_id =
+          import_sem_ir.constant_values().GetInstId(impl_self_const_id);
+      auto self_class_type =
+          import_sem_ir.insts().TryGetAs<SemIR::ClassType>(self_inst_id);
+      if (!self_class_type) {
+        if (impl_self_const_id.is_symbolic()) {
+          // A blanket impl covers every class.
+          return true;
+        }
+        // A concrete non-class self (a tuple, a pointer, ...) is not a class.
+        continue;
       }
       if (class_canonical.first == nullptr) {
         // A class without an owning declaration cannot be named by an
         // imported impl; only the blanket case above can cover it.
         continue;
       }
-      // A concrete impl self covers the class iff it is a class type whose
-      // defining declaration canonicalizes to the queried class's.
-      auto self_inst_id =
-          import_sem_ir.constant_values().GetInstId(impl_self_const_id);
-      auto self_class_type =
-          import_sem_ir.insts().TryGetAs<SemIR::ClassType>(self_inst_id);
-      if (!self_class_type) {
-        continue;
-      }
+      // A class-typed impl self — concrete or a symbolic specific — covers
+      // the class iff its defining declaration canonicalizes to the queried
+      // class's.
       const auto& impl_class =
           import_sem_ir.classes().Get(self_class_type->class_id);
       if (!impl_class.first_owning_decl_id.has_value()) {
@@ -769,10 +793,7 @@ auto IsTriviallyDestructible(Context& context, SemIR::TypeId type_id) -> bool {
         if (!HasTrivialClassShapeForExport(class_info)) {
           return false;
         }
-        if (HasUserDestroyImpl(
-                context, class_info,
-                context.constant_values().Get(
-                    context.types().GetTypeInstId(current_id)))) {
+        if (HasUserDestroyImpl(context, class_type, class_info)) {
           return false;
         }
         // Walk into the adapted type or the object representation — the

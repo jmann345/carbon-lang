@@ -1170,6 +1170,38 @@ missing/wrong-`Core.IndexWith` splits are not probed). Cost accepted: an
 `i32` subscript on a slice is an error (`s[i as i64]`), pinned by
 `fail_subscript_i32` and listed in slices.md "0.1 limits".
 
+_SL-1 round-4 note (2026-10-05), after hosted autoupdate run 37335213696
+moved 40 files where 18 were predicted (fork/slices/plan.md §6.A round-4
+amendment, R-5 amendment):_ (a) REGRESSION fixed — the round-2 note's
+"`HasUserDestroyImpl` is unchanged and now strictly broader" was the bug:
+its symbolic-self shortcut treated the prelude's own `impl as Destroy` in
+`class Buf(T)` (self `Buf(T)`, symbolic, in every file's import set) as a
+blanket, so `IsTriviallyDestructible` — the union field rule and the C++
+export predicate — rejected every class, `i32` (`Core.Int(32)`) included;
+13 union/export goldens broke. Now a class-typed impl self, concrete or a
+symbolic specific, is keyed on its class, and only `impl forall [T: type] T
+as Destroy` is a blanket; the 13 goldens return byte-identical. (b)
+Disclosed, kept: the appended `Slice(T) as Iterate` impl is imported into
+every file that looks `Iterate` up (the import filter is interface-keyed)
+and carries the `i64 as Destroy` facet of its rewrite, so the four
+`for`-over-array lower goldens gain one uncalled `declare` of
+iterate.carbon's synthesized `Op` — the array impl's `i32` twin of which
+they already carried — and check/interop/cpp/range_for renumbers two
+constants; not a destroy-selection change. (c) Decision: `Slice(T)`/`Buf(T)
+as IndexWith(i64)` and `Slice(T) as Iterate` are `final impl`s (the
+`Optional(T) as Try` precedent), because a symbolic lookup resolves only
+final impls and a non-final impl's `where .ElementType = T` rewrite is
+unknown in a generic body — the `generic_element` split had pinned
+`cannot implicitly convert ... (Core.IndexWith(i64).ElementType) to T` in
+a POSITIVE golden; re-predicted clean, the four slice goldens cleared. (d)
+The literal-subscript probe is skipped for an `ErrorInst` operand (two
+index goldens return byte-identical); the `Core.Int` import_ref it must
+load to name `i64` is accepted and disclosed for index/fail_non_tuple_access
+and operators/overloaded/index_with_prelude (semantically inert,
+unavoidable). The round-3 re-review's three findings (APPROVE-WITH-FIXES:
+the false byte-identity claim, the unguarded `Core.Int` lookup, the stale
+"no diagnostic kind" bullets) are folded.
+
 _F8c landing note (2026-08-18):_ the D3 fix of the approved F-008 plan
 (fork/f008/plan.md §2.3, §3 F8c). _Adjudication verdict (step 1, plan
 adjudication D, run 32079343005, 2026-08-17T23:11Z): H0 REFUTED — and the plan's pre-declared H0-mock-divergence

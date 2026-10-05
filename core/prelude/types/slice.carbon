@@ -67,8 +67,11 @@ impl forall [T: Copy & Destroy] Slice(T) as UnformedInit {}
 // `IndexWith(U: ImplicitAs(i64))` impl: for `U = IntLiteral` its `At` would
 // call a compile-time-only conversion on a runtime `subscript`, which cannot
 // be lowered (`String`'s blanket impl lowers only because its `At` is itself a
-// builtin).
-impl forall [T: Copy & Destroy] Slice(T) as IndexWith(i64)
+// builtin). `final`, so that in a generic body `s[i]` on a `Slice(T)` has type
+// `T` — a symbolic query resolves only final impls, and through a non-final
+// impl `.ElementType` stays the abstract
+// `Slice(T).(IndexWith(i64).ElementType)` (the `Optional(T) as Try` pattern).
+final impl forall [T: Copy & Destroy] Slice(T) as IndexWith(i64)
     where .ElementType = T {
   fn At(self, subscript: i64) -> T { return self.Get(subscript); }
 }

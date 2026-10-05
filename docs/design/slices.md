@@ -123,7 +123,11 @@ impl — the array indexing rule's hardcoded subscript conversion, decided by
 impl lookup instead — so `s[1]` and `s[i]` with `i: i64` work, while an `i32`
 subscript must be written `s[i as i64]` (see [0.1 limits](#01-limits)). A
 container with its own `IndexWith(Core.IntLiteral)` impl, such as `Core.String`,
-is dispatched as written. `Slice` deliberately does not copy `String`'s blanket
+is dispatched as written. The `IndexWith(i64)` impls of `Slice` and `Buf` are
+`final`, so in a generic body `s[i]` on a `Core.Slice(T)` has type `T`: a
+symbolic impl lookup resolves only final impls, and through a non-final impl
+the element type would stay the abstract
+`Core.Slice(T).(Core.IndexWith(i64).ElementType)`. `Slice` deliberately does not copy `String`'s blanket
 `IndexWith(U: ImplicitAs(i64))` impl: for `U = Core.IntLiteral` its `At` would
 apply a compile-time-only conversion to a runtime `subscript`, which cannot be
 lowered; `String`'s works only because its `At` is itself a builtin, lowered at
@@ -257,7 +261,9 @@ for (x: i32 in s) {
 }
 ```
 
-reads each element by value in order. `Core.Buf(T)` has no `Iterate` impl of
+reads each element by value in order. The impl is `final`, like the
+`IndexWith(i64)` impl, so `for (x: T in s)` in a generic body binds `T`.
+`Core.Buf(T)` has no `Iterate` impl of
 its own: `for (x: T in b.AsSlice())` is the idiom. The impl lives in
 `core/prelude/iterate.carbon`, next to the array and C++ range impls.
 

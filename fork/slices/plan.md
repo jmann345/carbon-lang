@@ -1656,13 +1656,94 @@ Zero landed programs move (no landed program includes `<span>` or names
     (the prelude's existing fail-stop path); lower/testdata/builtins/
     heap.carbon and slice/buf.carbon are CHECK-free, so no further golden
     moves.
+-   **Amended 2026-10-05 (round 4, after hosted autoupdate run
+    37335213696 moved 40 files where 18 were predicted; R28(d): review
+    misses recorded in place) — four root causes.**
+    **(a) REGRESSION, every union and C++-export golden (13 files).**
+    `HasUserDestroyImpl` — the scan behind `IsTriviallyDestructible`,
+    which is both the union field rule and the export triviality
+    predicate — treated EVERY symbolic impl self as a blanket covering
+    every class. The prelude's new in-class `impl as Destroy` of
+    `class Buf(T)` has the symbolic self `Buf(T)` and sits in every
+    file's import set, so every class left the trivially-destructible
+    set — `i32` included, since it is the class `Core.Int(32)`:
+    `UnionFieldNotTriviallyCopyable` on `i32`/`array(i8, 4)` fields
+    (check/union/{basic,fail_init,fail_modifiers_and_redecl,
+    fail_nontrivial_field,import,layout}; lower/union/{basic,layout}
+    lost whole modules), and the exported `A`/`OneArg`/union records grew
+    `__destroy_thunk`s (lower interop/cpp/issue7142, function/export/
+    constructor, class/export/union; check class/export/union,
+    union_by_value). The round-2 bullet's "`grep -rn 'as Destroy' core/`,
+    so no other prelude type changes behavior" looked at the wrong
+    predicate: `CanDestroyClass`'s yield IS class-keyed, but the impl it
+    added was the one `HasUserDestroyImpl`'s shortcut matches for every
+    class. Fix at the root (custom_witness.cpp `HasUserDestroyImpl`): a
+    class-typed impl self, concrete or a symbolic specific, is keyed on
+    its class (local `class_id`; imported canonical defining
+    declaration); only a non-class symbolic self (`impl forall [T: type]
+    T as Destroy`, impl/lookup/fail_poison_custom_witness.carbon) is a
+    blanket. The 13 goldens are restored from the pre-SL-1 tree
+    (ee434b2b3~3) and predicted byte-identical: `git diff ee434b2b3~3 --
+    toolchain/check/testdata/union` must be empty after the next fill.
+    **(b) UNPREDICTED, disclosed and kept: the `Iterate` import
+    footprint.** lower/for/{for,bindings,break_continue} and lower/array/
+    iterate gained an uncalled `declare void @"_COp.41b89bfca5f3c7d4:core
+    .Destroy.Core"(ptr)` (iterate.carbon's second split:
+    `5f42013854821c52`), and check/interop/cpp/range_for renumbered
+    `custom_witness.df9cc1.3` → `.4` and split its `i.patt` constant
+    (`.ea1`). This is not a destroy-selection change — no class in those
+    files has a declared impl, and `CanDestroyClass`'s yield selects
+    nothing new. `ImportImplFilter::IsRelevantImpl` (impl_lookup.cpp)
+    filters imported impls by INTERFACE only, so every file that looks
+    `Iterate` up materializes every prelude `Iterate` impl; the appended
+    `Slice(T) as Iterate where .CursorType = i64` carries the `i64 as
+    Destroy` facet value of its rewrite, whose `Op` is iterate.carbon's
+    own synthesized witness — exactly the footprint the array impl's
+    `.CursorType = i32` already leaves as the pre-existing uncalled
+    `declare @"_COp.6f4dee545ed23f91:core.Destroy.Core"` in the SAME four
+    goldens and no others. Unavoidable while the impl lives in
+    iterate.carbon (slice.carbon cannot import `prelude/iterate`: cycle,
+    hand-off notes); the four lower goldens and range_for are kept as
+    filled.
+    **(c) DEFECT in a positive golden.** check/slice/basic.carbon
+    `generic_element` pinned `cannot implicitly convert ...
+    Core.Slice(T).(Core.IndexWith(i64).ElementType) to T`: a symbolic
+    query resolves only FINAL impls (`EvalLookupSingleFinalWitness`), so a
+    non-final impl's `where .ElementType = T` rewrite is unknown in a
+    generic body. Root fix: `final impl forall` on `Slice(T)`/`Buf(T) as
+    IndexWith(i64)` and on `Slice(T) as Iterate` (precedent `final impl
+    forall [T: Destroy & OptionalStorage] Optional(T) as Try`,
+    optional.carbon:69). Checked against impl_validation.cpp:
+    `FinalImplInvalidFile` holds (slice.carbon/buf.carbon hold the root
+    self type, iterate.carbon the interface); no non-final impl's query
+    matches them (`ImplFinalOverlapsNonFinal`: `String`'s blanket is
+    keyed on `String`, the `CppRange` blanket's self is a facet binding,
+    `array(T, N)` is not a `Slice`); `ImportFinalImplsWithImplInFile`
+    enumerates only the INTERFACE's own IR, so no golden with a local
+    `IndexWith` impl imports the Slice/Buf impls, and every `for` golden
+    already imported the `Iterate` impl at lookup (check/for/{basic,
+    pattern} use min_prelude/for, which has no `Slice`). The split is
+    re-predicted clean; the four slice goldens move and are cleared for
+    the fill — check slice/basic, slice/buf (the imported impl entity
+    prints as `final impl @…`), lower slice/basic, slice/buf (DI `line:`
+    shifts from the prelude comment lines).
+    **(d) The literal-subscript probe's footprint** — see the R-5
+    amendment (round 4): gated off erroneous operands (two goldens
+    restored), the `Core.Int` import_ref residue disclosed (two goldens
+    kept as filled).
 -   **Builtin tables:** `CARBON_DEFINE_ENUM_CLASS_NAMES` and
     `ForBuiltinName` are generated; no golden prints the enum.
 -   **min_prelude parts:** unchanged (no test combines a part with
     `Slice`).
 -   **Diagnostics coverage test** (toolchain/diagnostics/coverage_test
-    .cpp, `TEST(Coverage, Kind)` :82): SL-1 adds NO diagnostic kind, so
-    nothing to cover. **Parse coverage test:** no parse change.
+    .cpp, `TEST(Coverage, Kind)` :82): SL-1 adds ONE diagnostic kind,
+    `IncompleteTypeInBuiltinCall` (c200e6b81, kind.def), covered by the
+    `fail_incomplete_pointee` splits of check/testdata/builtins/heap/
+    allocate_free.carbon and builtins/pointer/offset.carbon once the fill
+    writes their `[IncompleteTypeInBuiltinCall]` CHECK:STDERR lines (the
+    pipeline runs autoupdate before the gate). *Amended 2026-10-05
+    (round 4, re-review finding 3): this bullet said "NO diagnostic kind"
+    after the kind had landed.* **Parse coverage test:** no parse change.
 -   **Formatter/`InstNamer`:** no new inst kinds (builtins are `Call`
     insts); no new `SemIR::Inst` → the type_iterator.cpp / import_ref.cpp
     / `GetImportName` switches are untouched (recorded because the recent
@@ -1807,7 +1888,38 @@ Zero landed programs move (no landed program includes `<span>` or names
     error (`fail_subscript_i32`); slices_bounds_fail_stop.carbon's
     `s[RuntimeSeed(-18)]` becomes `s[RuntimeSeed(-18) as i64]`; the
     `index_runtime_subscript` positives take `i: i64`. Recorded as a fork
-    decision in slices.md ("The API", "0.1 limits").
+    decision in slices.md ("The API", "0.1 limits"). **Amended 2026-10-05
+    (round 4; R28(d)) — "every existing `IndexWith` golden
+    byte-identical" was wrong on four files, and hosted autoupdate run
+    37335213696 moved them:** index/fail_invalid_base (two `IndexWith`
+    constants reordered), index/fail_name_not_found (`.IndexWith =
+    <poisoned>`), index/fail_non_tuple_access (`%Core.Int ... import_ref
+    ... loaded`, `.Int = %Core.Int`, `%Int.type`/`%Int.generic`),
+    operators/overloaded/index_with_prelude (the same `Int` import plus a
+    `%complete_type.357` renumbering). Two causes. (1) The probe ran on
+    operands the dispatch rejects BEFORE any lookup: `BuildBinaryOperator`
+    exits for an `ErrorInst` operand (`N[0]`, `F[1]` —
+    `UseOfNonExprAsValue`; `a[0]` with `a` unresolved), so the probe's
+    `TryLookupNameInCore(IndexWith)` loaded (the reordering) or poisoned
+    (`fail_name_not_found`) the name where the dispatch never did. Fixed:
+    no probe for an `ErrorInst` operand; both goldens restored and
+    predicted byte-identical. (2) `MakeIntType` → `LookupNameInCore(Int)`
+    loads the `Core.Int` import_ref into the file, and the `Int`
+    generic's constants with it; a discarded inst block cannot undo
+    file-level import state, and `i64` IS `Core.Int(64)` — there is no
+    way to name it without that load (re-review finding 1; its option
+    (b) is impossible). Disclosed and kept as filled: fail_non_tuple_access
+    (`0[1]` is the file's only integer-typed expression) and
+    index_with_prelude (`fail_invalid_subscript_type` /
+    `fail_index_with_not_implemented`: `C` has no
+    `IndexWith(Core.IntLiteral)` impl, so the `i64` leg runs). Semantics
+    are unchanged in all four — the dispatch still diagnoses
+    `Core.IndexWith(Core.IntLiteral)`. Re-review finding 2 folded:
+    `TryLookupNameInCore(Int)` guards `MakeIntType`, so a `Core` with a
+    one-parameter `IndexWith` but no `Int` emits no spurious
+    `CoreNameNotFound`. Round-3 audit miss: it reasoned per golden about
+    the `i64` leg's associated IRs and never asked what a name lookup
+    leaves behind.
 -   **R-6 — the `{T*, i64}` ↔ `std::span` layout premise.** libc++'s
     dynamic-extent `span` is `_Tp* __data_; size_type __size_;`,
     libstdc++'s is `pointer _M_ptr; __extent_storage<dynamic_extent>
@@ -1959,8 +2071,10 @@ Zero landed programs move (no landed program includes `<span>` or names
 2.  **Gate:** mode `gate` green (prek + `bazel test //toolchain/...`;
     clang-format 21.1.8 per R18; `uvx prek run --files <changed>` locally
     before every push, R25). The diagnostics coverage test and the parse
-    coverage test are part of the gate (no new kinds, so no new
-    coverage obligations — a reviewer should still diff kind.def).
+    coverage test are part of the gate (one new kind,
+    `IncompleteTypeInBuiltinCall`, covered by the filled
+    `fail_incomplete_pointee` splits — amended 2026-10-05, round 4; a
+    reviewer should still diff kind.def).
 3.  **Conformance:** mode `conformance`; deltas per §5 (SL-1 +3 PASS /
     −1 SKIP / +2 total; SL-2 +2 / −1 / +1, or +1 / 0 / +1 under the
     D-SL-9 fallback) on whatever base trunk has at rebase time — on the
@@ -2129,6 +2243,22 @@ Zero landed programs move (no landed program includes `<span>` or names
     in `FromArray` is a GENERIC `N` (constant per specific, folds, the
     iterate.carbon:25 precedent); `*cursor - 1`, `i < size`, `0`, `1` are
     literal constants — nothing else is a runtime `IntLiteral`.
+-   Amended 2026-10-05 (round 4, after hosted autoupdate run 37335213696
+    moved 40 files for 18 predicted; §6.A(a)-(d) and R-5 hold the
+    records). Lessons for the next fixer: a `grep 'as Destroy'` over
+    core/ is not a prediction — the impl you are ADDING is in the result
+    set, and every prelude impl is in every file's import set, so any
+    predicate keyed on "some symbolic self exists" (`HasUserDestroyImpl`
+    was) is reached by it in every TU; `ImportImplFilter` imports by
+    interface only, so appending a prelude `Iterate` impl changes the
+    lowered output of every `for` golden over the full prelude (an
+    uncalled `declare` of each concrete `Destroy` facet in its rewrites);
+    a `where` rewrite is known in a generic body only through a `final
+    impl` (the Slice/Buf `IndexWith(i64)` and `Slice` `Iterate` impls are
+    `final`); a non-diagnosing probe's name lookups are file-level state
+    (`import_ref`s, scope poison) that `inst_block_stack` cannot discard —
+    probe only where the dispatch itself looks the name up, and when a
+    load is unavoidable, say which goldens show it.
 -   Out-of-class impls (`IndexWith`, `ImplicitAs(Slice(const T))`, the
     §1.B.3 interop impl) touch public API only (`Data`, `Size`, `Get`,
     `UnsafeMake`); `Buf.AsSlice` uses `UnsafeMake`. If you reach for a

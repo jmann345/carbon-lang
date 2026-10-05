@@ -54,7 +54,12 @@ static auto PerformIndexWith(Context& context, Parse::NodeId node_id,
 // operators/overloaded/index.carbon pins), which the ordinary dispatch then
 // reports exactly once. The probe emits nothing and leaves no instructions:
 // the facet type is built from the interface and a specific (a constant), and
-// the lookup's scratch instructions are discarded.
+// the lookup's scratch instructions are discarded. It does share the
+// dispatch's file-level footprint — the `Core.IndexWith` name lookup loads
+// (or poisons) that name in the `Core` scope exactly as `GetOperatorOpFunction`
+// does — so callers probe only where the dispatch itself would look the name
+// up (never for an erroneous operand, which `BuildBinaryOperator` rejects
+// before any lookup).
 static auto HasIndexWithImpl(Context& context, SemIR::LocId loc_id,
                              SemIR::TypeId operand_type_id,
                              SemIR::TypeId subscript_type_id)
@@ -122,8 +127,21 @@ static auto LiteralSubscriptTargetType(Context& context, Parse::NodeId node_id,
   if (!has_literal_impl || *has_literal_impl) {
     return std::nullopt;
   }
+  // `i64` is the class `Core.Int(64)`; forming it needs `Core.Int`. Probe
+  // for the name first so a `Core` without it gets no spurious
+  // `CoreNameNotFound` (the diagnosing dispatch then reports as before).
+  if (!TryLookupNameInCore(context, loc_id, CoreIdentifier::Int).has_value()) {
+    return std::nullopt;
+  }
   // Only the type is needed; the `i64` type expression's instruction is
-  // discarded.
+  // discarded. What cannot be discarded is the `Core.Int` import_ref the
+  // name lookup loads into this file (and the `Int` generic's constants): a
+  // file whose only integer-typed expression is a literal subscript on a
+  // type with neither `IndexWith` impl gains exactly that import_ref in its
+  // SemIR dump (`import_ref Core//prelude/types/int, Int, loaded`). Its
+  // semantics are unchanged — the dispatch still diagnoses
+  // `Core.IndexWith(Core.IntLiteral)` — and there is no way to name `i64`
+  // without it; disclosed in fork/slices/plan.md R-5 (round 4).
   context.inst_block_stack().Push();
   auto i64_type_id = MakeIntType(context, node_id, SemIR::IntKind::Signed,
                                  context.ints().Add(64));
@@ -179,8 +197,14 @@ auto HandleParseNode(Context& context, Parse::IndexExprId node_id) -> bool {
     }
 
     default: {
+      // The literal-subscript probe runs only where `PerformIndexWith` would
+      // itself look `Core.IndexWith` up: `BuildBinaryOperator` exits before
+      // any lookup for an erroneous operand (a namespace or function used as
+      // a value, an unresolved name), and probing there would load or poison
+      // the name in the `Core` scope where the dispatch never does.
       auto index_type_id = context.insts().Get(index_inst_id).type_id();
-      if (context.types().Is<SemIR::IntLiteralType>(index_type_id)) {
+      if (operand_inst_id != SemIR::ErrorInst::InstId &&
+          context.types().Is<SemIR::IntLiteralType>(index_type_id)) {
         if (auto target_type_id = LiteralSubscriptTargetType(
                 context, node_id, operand_type_id, index_type_id)) {
           index_inst_id =

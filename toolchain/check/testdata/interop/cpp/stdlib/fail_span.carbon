@@ -53,5 +53,13 @@ import Cpp library "span.h";
 // a matching extent. Predicted: Clang's forwarded "no matching function for
 // call to 'ConsumeStatic'" with the candidate note naming `std::span<int, 3>`.
 fn F(p: i32*) {
+  // CHECK:STDERR: fail_static_extent_from_slice.carbon:[[@LINE+8]]:53: error: no matching function for call to 'ConsumeStatic' [CppInteropParseError]
+  // CHECK:STDERR:    12 |   Cpp.ConsumeStatic(Core.Slice(i32).UnsafeMake(p, 3));
+  // CHECK:STDERR:       |                                                     ^
+  // CHECK:STDERR: fail_static_extent_from_slice.carbon:[[@LINE-11]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./span.h:24:6: note: candidate function not viable: no known conversion from 'span<[...], (default) dynamic_extent aka 18446744073709551615>' to 'span<[...], 3>' for 1st argument [CppInteropParseNote]
+  // CHECK:STDERR:    24 | auto ConsumeStatic(std::span<int, 3> s) -> void;
+  // CHECK:STDERR:       |      ^             ~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   Cpp.ConsumeStatic(Core.Slice(i32).UnsafeMake(p, 3));
 }

@@ -25,6 +25,10 @@ library "[[@TEST_NAME]]";
 
 import Cpp;
 
+// CHECK:STDERR: fail_no_span_header.carbon:[[@LINE+4]]:1: error: semantics TODO: `failed to map C++ type to Carbon` [SemanticsTodo]
+// CHECK:STDERR: fn Sum(s: Core.Slice(const i32)) -> i32 {
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Sum(s: Core.Slice(const i32)) -> i32 {
   var total: i32 = 0;
   var i: i64 = 0;
@@ -38,6 +42,10 @@ fn Sum(s: Core.Slice(const i32)) -> i32 {
 inline Cpp '''
 inline int F() {
   int a[2] = {1, 2};
+  // CHECK:STDERR: fail_no_span_header.carbon:[[@LINE+4]]:18: error: no member named 'Sum' in namespace 'Carbon' [CppInteropParseError]
+  // CHECK:STDERR:    19 |   return Carbon::Sum(a);
+  // CHECK:STDERR:       |                  ^~~
+  // CHECK:STDERR:
   return Carbon::Sum(a);
 }
 ''';

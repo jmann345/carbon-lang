@@ -182,7 +182,7 @@ class Box(T: type) {
 
 inline Cpp '''
 // CHECK:STDERR: fail_todo_generic_class_set.carbon:[[@LINE+4]]:44: error: no member named 'Add' in 'Carbon::Box<int>' [CppInteropParseError]
-// CHECK:STDERR:    21 | inline void Drive(Carbon::Box<int>& b) { b.Add(1); }
+// CHECK:STDERR:    33 | inline void Drive(Carbon::Box<int>& b) { b.Add(1); }
 // CHECK:STDERR:       |                                          ~ ^
 // CHECK:STDERR:
 inline void Drive(Carbon::Box<int>& b) { b.Add(1); }

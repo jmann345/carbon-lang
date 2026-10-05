@@ -324,6 +324,11 @@ library "[[@TEST_NAME]]";
 
 // Only the first member gets an owning declaration here; the second's is
 // missing, diagnosed at the import as for a plain function.
+// CHECK:STDERR: fail_extern_partial.carbon:[[@LINE+5]]:1: in import [InImport]
+// CHECK:STDERR: extern_partial_lib.carbon:5:1: error: owning declaration required for non-owning declaration [MissingOwningDeclarationInApi]
+// CHECK:STDERR: extern library "extern_partial" overload fn P(b: bool) -> i32;
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "extern_partial_lib";
 
 extern overload fn P(x: i32) -> i32;
@@ -369,7 +374,27 @@ impl library "[[@TEST_NAME]]";
 // a definition here is a redefinition, and a declaration is redundant, as for
 // a plain function defined in the API file (function/definition/
 // implicit_import.carbon's `fail_redef_after_def` and `fail_redecl_after_def`).
+// CHECK:STDERR: fail_extern_api_defined.impl.carbon:[[@LINE+12]]:1: error: redefinition of `fn A` [RedeclRedef]
+// CHECK:STDERR: extern overload fn A(x: i32) -> i32 { return x + 1; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_extern_api_defined.impl.carbon:[[@LINE-10]]:1: in import [InImport]
+// CHECK:STDERR: extern_api_defined.carbon:8:1: note: previously defined here [RedeclPrevDef]
+// CHECK:STDERR: extern overload fn A(x: i32) -> i32 { return x; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
+// CHECK:STDERR: fail_extern_api_defined.impl.carbon:[[@LINE+4]]:1: error: `extern` entities must have a declaration in the API file [ExternRequiresDeclInApiFile]
+// CHECK:STDERR: extern overload fn A(x: i32) -> i32 { return x + 1; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 extern overload fn A(x: i32) -> i32 { return x + 1; }
+// CHECK:STDERR: fail_extern_api_defined.impl.carbon:[[@LINE+8]]:1: error: redeclaration of `fn A` is redundant [RedeclRedundant]
+// CHECK:STDERR: extern overload fn A(b: bool) -> i32;
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_extern_api_defined.impl.carbon:[[@LINE-23]]:1: in import [InImport]
+// CHECK:STDERR: extern_api_defined.carbon:9:1: note: previously declared here [RedeclPrevDecl]
+// CHECK:STDERR: extern overload fn A(b: bool) -> i32 { if (b) { return 1; } return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 extern overload fn A(b: bool) -> i32;
 
 // CHECK:STDOUT: --- use.carbon

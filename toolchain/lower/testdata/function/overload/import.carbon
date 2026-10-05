@@ -231,3 +231,98 @@ fn Use() -> i32 { return D(1) + D(true); }
 // CHECK:STDOUT: !24 = !DILocation(line: 7, column: 33, scope: !20)
 // CHECK:STDOUT: !25 = !DILocation(line: 7, column: 19, scope: !20)
 // CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'extern_two_file_lib.carbon'
+// CHECK:STDOUT: source_filename = "extern_two_file_lib.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @"_CD:overload0.Main"()
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @"_CD:overload1.Main"()
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !1 = !DIFile(filename: "extern_two_file_lib.carbon", directory: "")
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'extern_two_file.carbon'
+// CHECK:STDOUT: source_filename = "extern_two_file.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @"_CD:overload1.Main"()
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @"_CD:overload0.Main"()
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !1 = !DIFile(filename: "extern_two_file.carbon", directory: "")
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'extern_two_file.impl.carbon'
+// CHECK:STDOUT: source_filename = "extern_two_file.impl.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @"_CD:overload1.Main"(i1 %b) #0 !dbg !4 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   br i1 %b, label %if.then, label %if.else, !dbg !11
+// CHECK:STDOUT:
+// CHECK:STDOUT: if.then:                                          ; preds = %entry
+// CHECK:STDOUT:   ret i32 1, !dbg !12
+// CHECK:STDOUT:
+// CHECK:STDOUT: if.else:                                          ; preds = %entry
+// CHECK:STDOUT:   ret i32 0, !dbg !13
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @"_CD:overload0.Main"(i32 %x) #0 !dbg !14 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret i32 %x, !dbg !19
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @_CUse.Main() #0 !dbg !20 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %D.call.loc7_29 = call i32 @"_CD:overload0.Main"(i32 1), !dbg !23
+// CHECK:STDOUT:   %D.call.loc7_39 = call i32 @"_CD:overload1.Main"(i1 true), !dbg !24
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call = add i32 %D.call.loc7_29, %D.call.loc7_39, !dbg !23
+// CHECK:STDOUT:   ret i32 %Int.as.AddWith.impl.Op.call, !dbg !25
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !1 = !DIFile(filename: "extern_two_file.impl.carbon", directory: "")
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !4 = distinct !DISubprogram(name: "D", linkageName: "_CD:overload1.Main", scope: null, file: !1, line: 5, type: !5, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !9)
+// CHECK:STDOUT: !5 = !DISubroutineType(types: !6)
+// CHECK:STDOUT: !6 = !{!7, !8}
+// CHECK:STDOUT: !7 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !8 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !9 = !{!10}
+// CHECK:STDOUT: !10 = !DILocalVariable(arg: 1, scope: !4, type: !8)
+// CHECK:STDOUT: !11 = !DILocation(line: 5, column: 43, scope: !4)
+// CHECK:STDOUT: !12 = !DILocation(line: 5, column: 49, scope: !4)
+// CHECK:STDOUT: !13 = !DILocation(line: 5, column: 61, scope: !4)
+// CHECK:STDOUT: !14 = distinct !DISubprogram(name: "D", linkageName: "_CD:overload0.Main", scope: null, file: !1, line: 4, type: !15, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !17)
+// CHECK:STDOUT: !15 = !DISubroutineType(types: !16)
+// CHECK:STDOUT: !16 = !{!7, !7}
+// CHECK:STDOUT: !17 = !{!18}
+// CHECK:STDOUT: !18 = !DILocalVariable(arg: 1, scope: !14, type: !7)
+// CHECK:STDOUT: !19 = !DILocation(line: 4, column: 39, scope: !14)
+// CHECK:STDOUT: !20 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !1, line: 7, type: !21, spFlags: DISPFlagDefinition, unit: !0)
+// CHECK:STDOUT: !21 = !DISubroutineType(types: !22)
+// CHECK:STDOUT: !22 = !{!7}
+// CHECK:STDOUT: !23 = !DILocation(line: 7, column: 26, scope: !20)
+// CHECK:STDOUT: !24 = !DILocation(line: 7, column: 33, scope: !20)
+// CHECK:STDOUT: !25 = !DILocation(line: 7, column: 19, scope: !20)
+// CHECK:STDOUT:

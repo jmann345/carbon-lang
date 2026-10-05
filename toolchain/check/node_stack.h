@@ -486,6 +486,7 @@ class NodeStack {
       case Parse::NodeKind::MatchDefaultIntroducer:
       case Parse::NodeKind::MatchHandlerStart:
       case Parse::NodeKind::NamedConstraintIntroducer:
+      case Parse::NodeKind::PackExpansionStart:
       case Parse::NodeKind::PatternConditionInitializer:
       case Parse::NodeKind::PatternConditionIntroducer:
       case Parse::NodeKind::RefBindingName:

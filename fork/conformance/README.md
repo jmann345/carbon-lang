@@ -299,6 +299,8 @@ fails if this table is stale):
 | `interop/cpp_concept_import_predicate.carbon` | Generics: C++ interop — C++20 concepts <-> named predicates mapping | SKIP |
 | `interop/cpp_export_function.carbon` | Functions: C++ interop — exporting Carbon functions/methods to C++ | run |
 | `interop/cpp_export_method.carbon` | Functions: C++ interop — exporting Carbon functions/methods to C++ | run |
+| `interop/cpp_export_overload_set.carbon` | Functions: function overloading (Carbon-native) | run |
+| `interop/cpp_export_overload_set_divergence.carbon` | Functions: function overloading (Carbon-native) | run |
 | `interop/cpp_fundamental_types.carbon` | Stdlib C++ interop: transparent fundamental-type mapping | run |
 | `interop/cpp_generic_export_deduced_builtin.carbon` | Generics: C++ interop — exporting Carbon templates/checked generics as C++ templates | run |
 | `interop/cpp_generic_export_interface_dispatch.carbon` | Generics: C++ interop — exporting Carbon templates/checked generics as C++ templates | run |

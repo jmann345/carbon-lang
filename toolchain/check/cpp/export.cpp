@@ -5,6 +5,7 @@
 #include "toolchain/check/cpp/export.h"
 
 #include <optional>
+#include <string>
 #include <string_view>
 
 #include "clang/AST/ASTConsumer.h"
@@ -1294,6 +1295,18 @@ static auto BuildCarbonToCarbonThunk(Context& context, SemIR::LocId loc_id,
       context.names().GetFormatted(target.function.name_id);
   thunk_name += "__carbon_thunk";
   thunk_name += extra_name;
+  // The members of an `overload fn` set share a name, and this thunk is a
+  // generated function of its own — not a set member — so the member's
+  // `:overload<N>` mangling marker does not reach the thunk's symbol. Without
+  // a per-member suffix, two members' thunks would mangle equal and lowering's
+  // `GetOrCreateFunction` would silently reuse the first member's thunk for
+  // the second (fork/overload/plan.md R-4, R-10; the additive hunk D-OV-9
+  // allows). The suffix is the member's set-relative index, which is
+  // declaration order and the same in every file that sees the set.
+  if (target.function.overload_index >= 0) {
+    thunk_name += "__overload";
+    thunk_name += std::to_string(target.function.overload_index);
+  }
   auto& ident = context.ast_context().Idents.get(thunk_name);
   auto thunk_name_id =
       SemIR::NameId::ForIdentifier(context.identifiers().Add(ident.getName()));

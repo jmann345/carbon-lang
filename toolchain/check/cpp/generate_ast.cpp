@@ -50,6 +50,7 @@
 #include "toolchain/sem_ir/cpp_domain.h"
 #include "toolchain/sem_ir/cpp_file.h"
 #include "toolchain/sem_ir/ids.h"
+#include "toolchain/sem_ir/overload_set.h"
 #include "toolchain/sem_ir/read_only_ast_source.h"
 #include "toolchain/sem_ir/typed_insts.h"
 
@@ -160,10 +161,15 @@ class CarbonExternalASTSource : public SemIR::ReadOnlyASTSource {
   }
 
  private:
+  // The C++ declarations of the members of a Carbon `overload fn` set, in
+  // declaration order: the one name-lookup result that is a list.
+  using NamedDeclList = llvm::SmallVector<clang::NamedDecl*, 4>;
+
   // Map a Carbon entity to a Clang NamedDecl. Returns null if the entity cannot
-  // currently be represented in C++.
+  // currently be represented in C++. A Carbon `overload fn` set maps to the
+  // list of its exportable members' declarations.
   auto MapInstIdToClangDeclOrType(LookupResult lookup)
-      -> std::variant<clang::NamedDecl*, clang::QualType>;
+      -> std::variant<clang::NamedDecl*, clang::QualType, NamedDeclList>;
 
   auto GetOrExportFunctionToCpp(SemIR::InstId target_inst_id,
                                 SemIR::FunctionId function_id)
@@ -197,7 +203,7 @@ char CarbonExternalASTSource::id;
 }  // namespace
 
 auto CarbonExternalASTSource::MapInstIdToClangDeclOrType(LookupResult lookup)
-    -> std::variant<clang::NamedDecl*, clang::QualType> {
+    -> std::variant<clang::NamedDecl*, clang::QualType, NamedDeclList> {
   auto target_inst_id = lookup.scope_result.target_inst_id();
   auto target_const_id = context_->constant_values().Get(target_inst_id);
   auto target_inst = context_->constant_values().GetInst(target_const_id);
@@ -250,11 +256,37 @@ auto CarbonExternalASTSource::MapInstIdToClangDeclOrType(LookupResult lookup)
     case CARBON_KIND(SemIR::VarStorage var_storage): {
       return ExportVarToCpp(*context_, target_inst_id, var_storage);
     }
-    case SemIR::OverloadSetValue::Kind: {
-      // D-OV-6 gate (viii): exporting a Carbon `overload fn` set lands with
-      // OV-3, which returns every member as a decl list.
-      context_->TODO(GetCurrentCppLocId(), "overload set export");
-      return nullptr;
+    case CARBON_KIND(SemIR::OverloadSetValue set_value): {
+      // Every member of a Carbon `overload fn` set is exported as its own C++
+      // declaration under the shared name — a function in the mapped
+      // namespace, a member function in the mapped class — so C++ sees an
+      // ordinary C++ overload set and resolves calls to it under C++'s rules.
+      // That is the documented divergence from Carbon's declaration-order
+      // first-match (fork decision F-009; docs/design/functions_overloading.md
+      // "Documented divergence"; fork/overload/plan.md §1.C, D-OV-9): the two
+      // sides may select different members, or C++ may reject a call Carbon
+      // accepts, but each member is its own declaration with its own symbol,
+      // so no call crosses the boundary with the wrong ABI. A member whose
+      // signature has no C++ mapping is dropped from the list after the
+      // per-function export path has emitted its semantics TODO, so the
+      // exportable subset stays callable (sub-fork F-009i); an empty list is
+      // the single-function "no declarations" outcome.
+      const auto& overload_set =
+          context_->overload_sets().Get(set_value.overload_set_id);
+      NamedDeclList member_decls;
+      for (auto member_decl_id : overload_set.member_decl_ids) {
+        auto function_id = context_->insts()
+                               .GetAs<SemIR::FunctionDecl>(member_decl_id)
+                               .function_id;
+        if (auto* member_decl =
+                GetOrExportFunctionToCpp(member_decl_id, function_id)) {
+          member_decls.push_back(member_decl);
+        }
+      }
+      if (member_decls.empty()) {
+        return nullptr;
+      }
+      return member_decls;
     }
     default:
       return nullptr;
@@ -436,6 +468,14 @@ auto CarbonExternalASTSource::FindExternalVisibleDeclsByName(
             MapToCppAccess(result.scope_result.access_kind()));
       }
       SetExternalVisibleDeclsForName(decl_context, decl_name, {typedef_decl});
+      return true;
+    }
+
+    case CARBON_KIND(NamedDeclList member_decls): {
+      // The members of a Carbon `overload fn` set, which C++ name lookup
+      // receives as one overload set.
+      CARBON_CHECK(!member_decls.empty());
+      SetExternalVisibleDeclsForName(decl_context, decl_name, member_decls);
       return true;
     }
   }

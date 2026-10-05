@@ -363,6 +363,7 @@ auto HandleParseNode(Context& context, Parse::InterfaceDefinitionId node_id)
       case SemIR::CoreInterface::OrderedWith:
       case SemIR::CoreInterface::SubAssignWith:
       case SemIR::CoreInterface::SubWith:
+      case SemIR::CoreInterface::UnformedInit:
       case SemIR::CoreInterface::Unknown:
         // TODO: validate other core interfaces
         return true;

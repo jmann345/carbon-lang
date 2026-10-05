@@ -2065,18 +2065,20 @@ should read first:
     `GetOrExportFunctionToCpp(*context_, SemIR::LocId(member_decl_id),
     function_id)`; `Dump(const File&, OverloadSetId)` is added beside the
     `CppOverloadSetId` one because upstream's new fingerprinter cycle-detector
-    `std::visit`s `Dump` over the worklist variant the fork extends. Review
-    folds (ua1_impl_review): `TryMergeOverloadDecl` returns false on a poisoned
-    name before `prev_inst_id()` (upstream's name_poisoning.carbon would have
-    `CARBON_FATAL`ed); `PerformCppThunkCall` gates a catching `?` call through a
-    C++ function pointer with a TODO ("catching thunk for a C++ function
-    pointer", new split `fail_todo_fn_pointer_catching` in
-    exceptions/fail_catching.carbon, CHECKs empty for the fill) instead of
-    CHECK-failing in `GetCalleeClangDecl`; `PerformCallToCppFunctionPointer`
-    returns `ErrorInst` when the pointer's `__invoke` import failed instead of
-    calling `functions().Get(None)`. D-UA-8 break condition, corrected: a plain
-    `git revert 5a6f54229` does NOT compile (it restores `static
-    TryMapFunctionType`, whose only caller — the `case
+    `std::visit`s `Dump` over the worklist variant the fork extends;
+    check/handle_interface.cpp's new exhaustive `CoreInterface` switch
+    (upstream's Core-package validation) gains the fork's `UnformedInit` arm
+    (`-Werror=switch`). Review folds (ua1_impl_review): `TryMergeOverloadDecl`
+    returns false on a poisoned name before `prev_inst_id()` (upstream's
+    name_poisoning.carbon would have `CARBON_FATAL`ed); `PerformCppThunkCall`
+    gates a catching `?` call through a C++ function pointer with a TODO
+    ("catching thunk for a C++ function pointer", new split
+    `fail_todo_fn_pointer_catching` in exceptions/fail_catching.carbon, CHECKs
+    empty for the fill) instead of CHECK-failing in `GetCalleeClangDecl`;
+    `PerformCallToCppFunctionPointer` returns `ErrorInst` when the pointer's
+    `__invoke` import failed instead of calling `functions().Get(None)`. D-UA-8
+    break condition, corrected: a plain `git revert 5a6f54229` does NOT compile
+    (it restores `static TryMapFunctionType`, whose only caller — the `case
     SemIR::FunctionType::Kind:` arm of `TryMapType` — was removed in the MERGE
     commit, so `-Werror=unused-function` fires) and does not restore the thunk's
     constant-parameter plumbing dropped in 3d4c0e37a (`num_constant_params`,

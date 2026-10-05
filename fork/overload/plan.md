@@ -2725,7 +2725,7 @@ goldens, conformance programs, ledger), 4033adc75 (docs: interop README
 overload-resolution section, design README placeholder, W-007 note), the
 hosted fill 88b863220, then 3a7bc00d3 (implementation-review fixes), with
 the refill of the fixer's cleared and new subfiles as the fill of record
-(FILL_RUN). Ledger, gap-analysis row and header, decision-log entry ("OV-3:
+(37346182494 (refill after the review fixes), 37353176048 on the trunk merge (SL-1 in; one id line in the AST dump moved, which exposed an unnormalized Clang id at end of line — fixed in the file_test autoupdater) and 37355767908 (converged)). Ledger, gap-analysis row and header, decision-log entry ("OV-3:
 overload-set export, documented divergence (2026-10-05)", D-OV-17..20) and
 rulebook R30 are the discharge commit. The overloading workstream is
 complete (§0.4). Deltas from this plan, honestly:
@@ -2849,6 +2849,6 @@ included (those lines embed CHECK-stripped line numbers, the R26 two-pass
 shape); the review's APPROVE-WITH-FIXES followed, and 3a7bc00d3 cleared the
 lower golden's CHECK lines (symbol change) and added overload_set_ast.carbon
 and `fail_todo_generic_class_set` with empty CHECK lines; second autoupdate
-FILL_RUN (the refill). Gate GATE_RUN; conformance CONF_RUN: CONF_NUMBERS,
+37346182494 (refill after the review fixes), 37353176048 on the trunk merge (SL-1 in; one id line in the AST dump moved, which exposed an unnormalized Clang id at end of line — fixed in the file_test autoupdater) and 37355767908 (converged) (the refill). Gate 37357704620; conformance 37357609478: 126 PASS / 0 FAIL / 23 SKIP over 149, 47/56 bullets,
 against the expected 123 / 0 / 24 over 147, 46/56 — or the same +2 / 0 / +2
 delta over the trunk base at merge if SL-1 lands first.

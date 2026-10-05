@@ -2899,7 +2899,7 @@ generate_ast.cpp export arm, goldens, conformance programs, ledger) and
 4033adc75 (docs: the interop README overload-resolution section, the design
 README placeholder, the W-007 note), with the hosted fill 88b863220 between
 them and 3a7bc00d3 (implementation-review fixes) after; the refill of the
-fixer's cleared and new subfiles is the fill of record (FILL_RUN). The plan's
+fixer's cleared and new subfiles is the fill of record (37346182494 (refill after the review fixes), 37353176048 on the trunk merge (SL-1 in; one id line in the AST dump moved, which exposed an unnormalized Clang id at end of line — fixed in the file_test autoupdater) and 37355767908 (converged)). The plan's
 OV-3 slice was W-026, the last of the three (§0.4); the overloading
 workstream is complete. Design authority was not reopened: F-009, Option A
 and D-OV-1..16 stand; every decision below is an implementation choice the
@@ -3037,7 +3037,7 @@ to the fill: "call to 'F' is ambiguous [CppInteropParseError]" with two
 which the inserted STDERR lines shift, so that subfile needs the R26
 two-pass convergence; the committed fill is at fixpoint (echo numbers
 verified against the stripped subfile at 3a7bc00d3). The fill of record
-FILL_RUN refills the lower golden (its CHECK lines were cleared for D-OV-17's
+37346182494 (refill after the review fixes), 37353176048 on the trunk merge (SL-1 in; one id line in the AST dump moved, which exposed an unnormalized Clang id at end of line — fixed in the file_test autoupdater) and 37355767908 (converged) refills the lower golden (its CHECK lines were cleared for D-OV-17's
 symbol change), overload_set_ast.carbon and `fail_todo_generic_class_set`.
 No fill-caught review miss: the review ran after the first fill.
 
@@ -3057,9 +3057,9 @@ callee symbols; a `--dump-cpp-ast` sibling golden the plan did not list; a
 files touched: 1" is 2.
 
 VERIFICATION is hosted-only (R28(b)). Autoupdate: the first run (fill
-88b863220, at fixpoint with the Clang-echoed lines included) and FILL_RUN
-(the refill after 3a7bc00d3). Gate: GATE_RUN. Conformance: CONF_RUN,
-**CONF_NUMBERS** — expected 123 PASS / 0 FAIL / 24 SKIP over 147 programs,
+88b863220, at fixpoint with the Clang-echoed lines included) and 37346182494 (refill after the review fixes), 37353176048 on the trunk merge (SL-1 in; one id line in the AST dump moved, which exposed an unnormalized Clang id at end of line — fixed in the file_test autoupdater) and 37355767908 (converged)
+(the refill after 3a7bc00d3). Gate: 37357704620. Conformance: 37357609478,
+**126 PASS / 0 FAIL / 23 SKIP over 149, 47/56 bullets** — expected 123 PASS / 0 FAIL / 24 SKIP over 147 programs,
 46/56 bullets, from the trunk of-record base READ FROM origin/trunk's
 fork/conformance/out/scoreboard.json (18410df07, OV-2 merged: 121 / 0 / 24
 over 145, 46/56; this branch's in-tree copy is the same file). Delta PASS +2

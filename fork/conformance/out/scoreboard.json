@@ -1,15 +1,15 @@
 {
-  "generated": "2026-10-05T18:52:59.860083+00:00",
+  "generated": "2026-10-05T23:30:22.365326+00:00",
   "toolchain": "/home/runner/work/_temp/conformance-toolchain/carbon_toolchain-0.0.0-0.dev/lib/carbon/carbon-busybox",
-  "elapsed_seconds": 37.6,
+  "elapsed_seconds": 55.5,
   "totals": {
-    "PASS": 126,
+    "PASS": 128,
     "COMPILE-FAIL": 0,
     "LINK-FAIL": 0,
     "RUN-FAIL": 0,
     "OUTPUT-MISMATCH": 0,
     "DIFF-MISMATCH": 0,
-    "SKIP": 23
+    "SKIP": 22
   },
   "programs": [
     {
@@ -653,10 +653,17 @@
       "differential": false
     },
     {
+      "path": "interop/cpp_span_roundtrip_diff.carbon",
+      "bullet": "Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view)",
+      "status": "PASS",
+      "detail": "",
+      "differential": true
+    },
+    {
       "path": "interop/cpp_span_view.carbon",
       "bullet": "Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view)",
-      "status": "SKIP",
-      "detail": "MISSING \u2014 no Carbon slice type exists (grep for Slice in core/ returns nothing) and there is no std::span/vector view mapping: only ordinary API import of containers works, so a Carbon array cannot be passed transparently as std::span and an owning std::vector cannot be viewed as a Carbon slice. Un-SKIP (and uncomment the body) when the Core slice type (W9) and its contiguous-container interop mapping land.",
+      "status": "PASS",
+      "detail": "",
       "differential": false
     },
     {
@@ -1470,9 +1477,10 @@
       ]
     },
     "Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view)": {
-      "status": "SKIP",
-      "gap_status": "MISSING",
+      "status": "PASS",
+      "gap_status": "DONE",
       "programs": [
+        "interop/cpp_span_roundtrip_diff.carbon",
         "interop/cpp_span_view.carbon"
       ]
     },

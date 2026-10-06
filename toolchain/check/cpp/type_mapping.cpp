@@ -316,6 +316,47 @@ static auto TryMapClassType(Context& context, SemIR::ClassType class_type)
           /*TemplateLoc=*/clang::SourceLocation(), arg_list,
           /*Scope=*/nullptr, /*ForNestedNameSpecifier=*/false);
     }
+    case SemIR::RecognizedTypeInfo::Slice: {
+      // `Core.Slice(T)` maps to the dynamic-extent `std::span<T'>` found by
+      // name in the TU and instantiated on the recursively mapped element
+      // type: both are a pointer followed by a size, so the mapping is a
+      // reinterpretation, as for `str` and `std::string_view`
+      // (fork/slices/plan.md D-SL-8). A TU without `<span>` maps to the null
+      // type, which the callers' existing "failed to map Carbon type to C++"
+      // paths report.
+      auto args = context.inst_blocks().GetOrEmpty(type_info.args_id);
+      if (args.size() != 1) {
+        break;
+      }
+      auto arg_id = args[0];
+      if (auto facet = context.insts().TryGetAs<SemIR::FacetValue>(arg_id)) {
+        arg_id = facet->type_inst_id;
+      }
+      auto element_type_id = context.types().GetTypeIdForTypeConstantId(
+          context.constant_values().Get(arg_id));
+      if (!element_type_id.has_value() ||
+          element_type_id == SemIR::ErrorInst::TypeId) {
+        break;
+      }
+      return WrappedType{
+          .inner_type_id = element_type_id,
+          .wrap_fn = [](Context& context, clang::QualType inner_type) {
+            auto* template_decl =
+                LookupCppClassTemplate(context, {"std", "span"});
+            if (!template_decl) {
+              return clang::QualType();
+            }
+            clang::TemplateArgumentListInfo arg_list;
+            arg_list.addArgument(clang::TemplateArgumentLoc(
+                clang::TemplateArgument(inner_type),
+                context.ast_context().getTrivialTypeSourceInfo(inner_type)));
+            clang::TemplateName template_name(template_decl);
+            return context.clang_sema().CheckTemplateIdType(
+                clang::ElaboratedTypeKeyword::None, template_name,
+                /*TemplateLoc=*/clang::SourceLocation(), arg_list,
+                /*Scope=*/nullptr, /*ForNestedNameSpecifier=*/false);
+          }};
+    }
     case SemIR::RecognizedTypeInfo::Str: {
       return LookupCppType(context, {"std", "string_view"});
     }

@@ -4,11 +4,14 @@
 
 #include "toolchain/check/cpp/impl_lookup.h"
 
+#include <utility>
+
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Lex/Preprocessor.h"
 #include "clang/Sema/Lookup.h"
 #include "clang/Sema/Overload.h"
 #include "clang/Sema/Sema.h"
+#include "llvm/ADT/StringRef.h"
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/check/context.h"
 #include "toolchain/check/convert.h"
@@ -558,6 +561,80 @@ static auto BuildCppRangeForIterateWitness(
       query_specific_interface_id);
 }
 
+// Looks up the C++ member function `name` of `class_decl` and returns the
+// `FunctionDecl` inst for it together with its return type inst, or
+// `InstId::None`/`ErrorInst::InstId` in the two components when no single
+// such member exists (`LookupCppMethod` reports an unresolvable overload set),
+// when the member returns `void` (no result type; `None`, so the class is not
+// a contiguous range and a conversion through it fails gracefully), or when
+// its result type has no Carbon mapping (the import already diagnosed it;
+// `ErrorInst` propagates). Unlike `BuildCppRangeForIterateWitnessImpl`'s
+// CHECKs, this path is reached from every `ImplicitAs(Slice(...))` conversion
+// of a C++ class, so it must not be an ICE for `void data();`.
+static auto LookupCppMemberWithResultType(Context& context, SemIR::LocId loc_id,
+                                          llvm::StringRef name,
+                                          clang::CXXRecordDecl* class_decl,
+                                          SemIR::ConstantId query_self_const_id)
+    -> std::pair<SemIR::InstId, SemIR::InstId> {
+  auto& clang_sema = context.clang_sema();
+  auto name_info = clang::DeclarationNameInfo(
+      &clang_sema.PP.getIdentifierTable().get(name), clang::SourceLocation());
+  auto fn_id = LookupCppMethod(context, clang_sema, loc_id, name_info,
+                               class_decl, query_self_const_id);
+  if (fn_id == SemIR::InstId::None || fn_id == SemIR::ErrorInst::InstId) {
+    return {fn_id, fn_id};
+  }
+  auto result_type_id =
+      context.functions()
+          .Get(context.insts().GetAs<SemIR::FunctionDecl>(fn_id).function_id)
+          .return_type_inst_id;
+  if (!result_type_id.has_value()) {
+    return {SemIR::InstId::None, SemIR::InstId::None};
+  }
+  if (result_type_id == SemIR::ErrorInst::InstId) {
+    return {SemIR::ErrorInst::InstId, SemIR::ErrorInst::InstId};
+  }
+  return {fn_id, result_type_id};
+}
+
+// Builds the witness for `Core.CppContiguousRange` (fork/slices/plan.md
+// §1.B.3, D-SL-9): a C++ class with member functions `data()` and `size()`
+// -- the owning containers `std::vector`, `std::array`, `std::string` -- is a
+// contiguous range whose elements the prelude views as a `Core.Slice`.
+// Members only: when several overloads exist `LookupCppMethod` keeps the
+// `const`-qualified one, so a `std::vector<int>` yields `data() const` and
+// `Core.Slice(const i32)`. ADL `data`/`size` sources are not consulted (a
+// filed residue; the design's owning containers all have members). The
+// witness table follows the interface's member order: `DataType`, `SizeType`,
+// `Data`, `Size`.
+static auto BuildCppContiguousRangeWitness(
+    Context& context, SemIR::LocId loc_id,
+    SemIR::ConstantId query_self_const_id,
+    SemIR::SpecificInterfaceId query_specific_interface_id) -> SemIR::InstId {
+  auto* class_decl = TypeAsClassDecl(context, query_self_const_id);
+  if (!class_decl) {
+    return SemIR::InstId::None;
+  }
+
+  auto [data_fn_id, data_result_type_id] = LookupCppMemberWithResultType(
+      context, loc_id, "data", class_decl, query_self_const_id);
+  if (data_fn_id == SemIR::InstId::None ||
+      data_fn_id == SemIR::ErrorInst::InstId) {
+    return data_fn_id;
+  }
+
+  auto [size_fn_id, size_result_type_id] = LookupCppMemberWithResultType(
+      context, loc_id, "size", class_decl, query_self_const_id);
+  if (size_fn_id == SemIR::InstId::None ||
+      size_fn_id == SemIR::ErrorInst::InstId) {
+    return size_fn_id;
+  }
+
+  return BuildCustomWitness(
+      context, loc_id, query_self_const_id, query_specific_interface_id,
+      {data_result_type_id, size_result_type_id, data_fn_id, size_fn_id});
+}
+
 auto LookupCppImpl(Context& context, SemIR::LocId loc_id,
                    SemIR::CoreInterface core_interface,
                    SemIR::ConstantId query_self_const_id,
@@ -624,6 +701,10 @@ auto LookupCppImpl(Context& context, SemIR::LocId loc_id,
 
     case SemIR::CoreInterface::CppRangeForIterate:
       return BuildCppRangeForIterateWitness(
+          context, loc_id, query_self_const_id, query_specific_interface_id);
+
+    case SemIR::CoreInterface::CppContiguousRange:
+      return BuildCppContiguousRangeWitness(
           context, loc_id, query_self_const_id, query_specific_interface_id);
 
     // *FitsIn are implemented only by Carbon primitive types.

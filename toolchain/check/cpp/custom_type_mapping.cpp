@@ -6,6 +6,9 @@
 
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/DeclTemplate.h"
+#include "clang/AST/TemplateBase.h"
+#include "clang/AST/Type.h"
+#include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/StringRef.h"
 
@@ -97,15 +100,44 @@ static auto StdStringView(const clang::CXXRecordDecl* record_decl) -> bool {
                             TypeTemplateArgument(StdCharTraitsChar)}))(
       record_decl);
 }
+
+// A matcher that matches any type.
+static auto AnyType(clang::QualType /*type*/) -> bool { return true; }
+
+// A matcher that determines whether the given template argument is the
+// integral value `std::dynamic_extent`, which is `static_cast<size_t>(-1)` --
+// all ones -- in every standard library implementation. A static extent
+// (`std::span<T, 3>`) has a different representation (`{T*}` only) and is not
+// mapped (fork/slices/plan.md D-SL-8).
+static auto DynamicExtent(clang::TemplateArgument arg) -> bool {
+  return arg.getKind() == clang::TemplateArgument::Integral &&
+         arg.getAsIntegral().isAllOnes();
+}
+
+// A matcher for a dynamic-extent `std::span<T>`.
+static auto StdSpan(const clang::CXXRecordDecl* record_decl) -> bool {
+  return StdClassTemplate(
+      "span", TemplateArgumentsAre(
+                  {TypeTemplateArgument(AnyType), DynamicExtent}))(record_decl);
+}
 }  // end namespace Matchers
 
 auto GetCustomCppTypeMapping(const clang::CXXRecordDecl* record_decl)
     -> CustomCppTypeMapping {
   if (Matchers::StdStringView(record_decl)) {
-    return CustomCppTypeMapping::Str;
+    return {.kind = CustomCppTypeMapping::Str};
   }
 
-  return CustomCppTypeMapping::None;
+  if (Matchers::StdSpan(record_decl)) {
+    // `StdSpan` matched, so this is a specialization whose first argument is
+    // a type.
+    const auto& args = cast<clang::ClassTemplateSpecializationDecl>(record_decl)
+                           ->getTemplateArgs();
+    return {.kind = CustomCppTypeMapping::Span,
+            .element_type = args[0].getAsType()};
+  }
+
+  return {.kind = CustomCppTypeMapping::None};
 }
 
 }  // namespace Carbon::Check

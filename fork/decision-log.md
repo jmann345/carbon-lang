@@ -6289,7 +6289,7 @@ Pass 5, after the re-merge of trunk, run 37401156556 → 606a99c5a: 12 goldens
 `SubobjectDestroy` reshapes in lower interop/cpp/span.carbon, upstream's
 unqualified type-name printing in two `fail_` diagnostics, inst-namer
 disambiguation) plus two round-3 pass-2 movers; no manual-fix list. The R26
-fixpoint on 606a99c5a is proven by the gate GATE_RUN (R28(d)), not by a
+fixpoint on 606a99c5a is proven by the gate 37403008794 (R28(d)), not by a
 separate pass. Pre-merge checkpoint: gate run 37399160122 PASSED (prek
 `--all-files` and `bazel test //toolchain/...`), the first full gate of the
 merged tree.
@@ -6301,10 +6301,10 @@ programs — trunk's pre-SL-2 floor exactly, all five thread programs PASS
 `std::thread`'s `F&&` deduction on upstream's `_Nonnull` function-pointer
 argument, R-4's last residual, is settled — the F8d retirement stands, no
 revert), both template probes PASS, stdlib/slices_heap_buf.carbon PASS (R-3). Of
-record, on 606a99c5a: CONF_RUN — CONF_NUMBERS (quoted from
-fork/conformance/out/scoreboard.json as pushed by that run; the bar is trunk's
-floor 128 / 0 / 22 over 150, 48/56 bullets, non-regressing; D-UA-12: no program
-changed status in UA-1).
+record, on 606a99c5a: 37402970811 — 128 PASS / 0 FAIL / 22 SKIP over 150
+programs, 48/56 bullets (quoted from fork/conformance/out/scoreboard.json as
+pushed by that run; the bar is trunk's floor 128 / 0 / 22 over 150, 48/56
+bullets, non-regressing; D-UA-12: no program changed status in UA-1).
 
 DIVERGENCE-RISK REGISTER REVIEW (standing rule 7 / V-3a; the ten register
 blocks, each entry HOLDS or MOVED with the upstream commit). (1) B1

@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 # Upstream-advance plan: cut 631f8fb → c1e83b0b7 (UA-1 merge, UA-2 reconciliation)
 
 **Status:** rev 3 — signed off 2026-10-05; UA-1 landed 2026-10-06 (see the
-Landed notes; verification of record GATE_RUN / CONF_RUN). The final
+Landed notes; verification of record 37403008794 / 37402970811). The final
 count-and-grep re-check of rev 3 returned APPROVE-WITH-AMENDMENTS (three
 MINORs, applied in the sign-off commit and marked "(amended 2026-10-05,
 final re-check M<n>)"). Rev 2's focused
@@ -2376,35 +2376,35 @@ hides a non-`NodeId` location; the sequence is pre-merge).
     heading of the R31 class that commit 2's digit-anchored grep and
     heading-count diff could not see because it predates the reflow.
 
--   **Discharge, 2026-10-06 (decision-log entry "Upstream advance 2026-10:
-    cut 631f8fb → c1e83b0b7 (2026-10-06)"; ORCHESTRATION; ledger W-001,
-    W-023, W-069, W-123..W-125).** Hosted sequence as it ran (R28; every run
-    `Fork: hosted verification` on GitHub-hosted ubuntu-22.04): compile probe
+-   **Discharge, 2026-10-06 (decision-log entry "Upstream advance 2026-10: cut
+    631f8fb → c1e83b0b7 (2026-10-06)"; ORCHESTRATION; ledger W-001, W-023,
+    W-069, W-123..W-125).** Hosted sequence as it ran (R28; every run `Fork:
+    hosted verification` on GitHub-hosted ubuntu-22.04): compile probe
     37381466829 (red at call.cpp:252, compile round 1 above); autoupdate
-    37385396872 (built; crashed, fill round 1); autoupdate 37388566542
-    (built; crashed, fill round 2); autoupdate 37393341208 → b430984d2 (225
-    goldens, one manual-fix entry, fill round 3); autoupdate 37397937554 →
-    775de300d (22 goldens: the round-3 predictions and the R26 pass-2
-    snippet numbers; no manual-fix list); conformance 37399118672 →
-    85b0feb2c (126 PASS / 0 FAIL / 23 SKIP over 149 — trunk's pre-SL-2 floor
-    exactly; generics/templates_type_param.carbon and templates_value_param
-    .carbon PASS, so D-UA-1's break condition did not fire; all five thread
-    programs PASS, so R-4's `F&&` residual is settled and the F8d retirement
-    stands; stdlib/slices_heap_buf.carbon PASS, R-3); gate 37399160122
-    PASSED (pre-merge); then the re-merge b51094c44 of trunk 59f1c30d5,
-    autoupdate 37401156556 → 606a99c5a (12 goldens: SL-2's ten under the
-    upstream base plus two round-3 pass-2 movers; no manual-fix list); gate
-    GATE_RUN and conformance CONF_RUN on 606a99c5a: CONF_NUMBERS (bar: 128 /
-    0 / 22 over 150, 48/56 bullets, non-regressing; D-UA-12: no status
-    change in UA-1). The R26 fixpoint on 606a99c5a is proven by GATE_RUN's
-    file_test pass (R28(d)), not by a separate autoupdate pass. §8.2's
-    mirrored-nightly A/B was NOT run (no nightly at or after 2026.10.02 was
-    mirrored; the mirror workflow was never dispatched during UA-1, and the
-    staging branch did not touch its triggers per §8.1 step 1); D-UA-14's
-    arbiter — the hosted conformance of the merged toolchain — ran both
-    template probes green, so the matrix had nothing to attribute. §8.4
-    greps re-run at discharge on 606a99c5a (expected → actual; a deviation is
-    a finding, recorded, not papered over):
+    37385396872 (built; crashed, fill round 1); autoupdate 37388566542 (built;
+    crashed, fill round 2); autoupdate 37393341208 → b430984d2 (225 goldens, one
+    manual-fix entry, fill round 3); autoupdate 37397937554 → 775de300d (22
+    goldens: the round-3 predictions and the R26 pass-2 snippet numbers; no
+    manual-fix list); conformance 37399118672 → 85b0feb2c (126 PASS / 0 FAIL /
+    23 SKIP over 149 — trunk's pre-SL-2 floor exactly;
+    generics/templates_type_param.carbon and templates_value_param .carbon PASS,
+    so D-UA-1's break condition did not fire; all five thread programs PASS, so
+    R-4's `F&&` residual is settled and the F8d retirement stands;
+    stdlib/slices_heap_buf.carbon PASS, R-3); gate 37399160122 PASSED
+    (pre-merge); then the re-merge b51094c44 of trunk 59f1c30d5, autoupdate
+    37401156556 → 606a99c5a (12 goldens: SL-2's ten under the upstream base plus
+    two round-3 pass-2 movers; no manual-fix list); gate 37403008794 and
+    conformance 37402970811 on 606a99c5a: 128 PASS / 0 FAIL / 22 SKIP over 150
+    programs, 48/56 bullets (bar: 128 / 0 / 22 over 150, 48/56 bullets,
+    non-regressing; D-UA-12: no status change in UA-1). The R26 fixpoint on
+    606a99c5a is proven by 37403008794's file_test pass (R28(d)), not by a
+    separate autoupdate pass. §8.2's mirrored-nightly A/B was NOT run (no
+    nightly at or after 2026.10.02 was mirrored; the mirror workflow was never
+    dispatched during UA-1, and the staging branch did not touch its triggers
+    per §8.1 step 1); D-UA-14's arbiter — the hosted conformance of the merged
+    toolchain — ran both template probes green, so the matrix had nothing to
+    attribute. §8.4 greps re-run at discharge on 606a99c5a (expected → actual; a
+    deviation is a finding, recorded, not papered over):
 
 | Grep (§8.4) | Expected | Actual at 606a99c5a | Verdict |
 | --- | --- | --- | --- |

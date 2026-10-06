@@ -40,70 +40,71 @@ the cut — no regression, one `fail_todo` retriaged; the post-merge fill refill
 SL-2's goldens under the upstream base with no manual-fix list), re-merged with
 trunk 59f1c30d5 (SL-2), pre-merge scoreboard 126/0/23 over 149 (run 37399118672:
 trunk's pre-SL-2 floor exactly, both template probes and all five thread
-programs PASS — the R-4/D-UA-8 break condition did not fire), gate GATE_RUN and
-conformance CONF_RUN (CONF_NUMBERS; bar 128/0/22 over 150 non-regressing) on
-606a99c5a, discharged (decision-log entry "Upstream advance 2026-10", ledger
-W-001/W-023/W-069, residues W-123..W-125). Next: the PR, then UA-2
-reconciliation (un-SKIP probes, the W-108 pin, ledger re-cites;
-fork/upstream/plan.md §8.5). Then variadics, CMake integration, safe-Carbon
-design. Next cron Monday 2026-10-12; the owner's machine is never used.
-FORTY-NINE PRs. The slice now crosses the C++ boundary in both directions, and
-the two bugs that the of-record conformance run surfaced after a green gate — a
-conversion-lookup ICE and a lowering path that left constant array elements
-uninitialized — are exactly why the runtime suite is the bar and the golden fill
-is not: both goldens were green, both programs were wrong._ FORTY-EIGHT PRs.
-Function overloading is finished end to end — same-file sets, import across
-libraries and api/impl, generic members, and export to C++ — with the one
-divergence from C++ written down and tested rather than papered over. The
-thunk-symbol collision that review found (every member's thunk mangled alike;
-lowering would have run member 0 for every C++ overload) is the kind of silent
-wrong-member bug the hosted fill alone would never have shown._ FORTY-SEVEN PRs.
-Slices exist, and so — for the first time — do user destructors: the slice that
-needed `free` to run found that no declared `Destroy` impl had ever been
-selected, and fixed that at the root rather than documenting a leak. Four hosted
-rounds for one slice is the loop earning its keep; each miss is written down
-with why review did not see it._ FORTY-SIX PRs. Overload sets now cross library
-boundaries the way the design asks — whole, closed, with the api/impl rules
-reading the api file's facts — and the slice's two review rounds plus three
-hosted fills each caught something the previous layer had traced as clean, which
-is the loop working rather than failing: every miss is written down with its
-root cause._ FORTY-FIVE PRs. Overloading exists in Carbon proper: the design's
-marked, closed sets with first-match resolution, landed with the loop's one real
-invariant (every probe exit restores block, region and cleanup depth under
-CHECK) and with the one mirror site no review caught — the export-name switch —
-found by the hosted fill as a runtime fatal, exactly where a compile probe is
-blind. The imported-member mangling collapse was first gated, then its pin
-filled EMPTY and proved the gate unreachable, so the gate went and the root fix
-(the stored index) landed instead._ FORTY-FOUR PRs. Unions are closed out end to
-end: native declaration, layout by construction, and a C++ round trip that the
-embedded Clang itself asserts (`sizeof`, `alignof`, `__is_union`) — plus the
-first Carbon-side call through a return-address thunk for a Carbon-owned record,
-which the plan had mis-cited as precedented and the fill proved anyway. One
-design-fidelity hole caught by review (non-aggregate imported unions were
-initializable from Carbon) closed at the root._ FORTY-THREE PRs. Unions exist
-natively: the design's write-safe, read-reinterpret union with C++-compatible
-layout by construction, its 0.1 field rule made precise (prelude `Copy` impls
-are trusted; user `Copy`/`Destroy` impls, choice-typed and imported C++ fields
-rejected loudly), and the first `Core.UnformedInit` witness a class type ever
-synthesized. The deferral defect was a one-list omission in the parser that no
-review caught by reading — the hosted fill caught it in minutes, which is
-exactly what the fill is for._ FORTY-TWO PRs. The error-handling remainder is
-closed: a C++ exception crossing into Carbon is either fenced (terminate, now
-with a message naming the boundary) or, when the call is the operand of `?`,
-caught into a `Cpp.Exception` that `?` propagates, and a Carbon `Result` crosses
-back into C++ as a byte-compatible `Carbon::expected`. The slice cost seven
-hosted round trips; every one was a real defect fixed at its root and each is
-written down, including the pre-existing export-namespace crash that only a real
-header could expose._ FORTY-ONE PRs. The design's if-let family exists: a `let`/`var`
-pattern in an `if`/`while` condition or a `let … else { diverge }` declaration
-runs through the same refutable engine as a `match` arm, so every pattern form
-`match` accepts (alternatives with payloads, tuples, literals, `var`/`ref`
-bindings, structs) works there too and gains nothing new to maintain. Two
-authoring errors in the positive goldens were caught by the hosted fill and
-fixed at the source; the second autoupdate round converged the location markers
-the first fill's inserted CHECK lines had shifted (a known two-pass property of
-autoupdate — always run it twice when a fill inserts STDERR lines above dumped
-code). Existing match goldens: byte-identical._ FORTY PRs. The error-handling
+programs PASS — the R-4/D-UA-8 break condition did not fire), gate 37403008794
+and conformance 37402970811 (128 PASS / 0 FAIL / 22 SKIP over 150 programs,
+48/56 bullets; bar 128/0/22 over 150 non-regressing) on 606a99c5a, discharged
+(decision-log entry "Upstream advance 2026-10", ledger W-001/W-023/W-069,
+residues W-123..W-125). Next: the PR, then UA-2 reconciliation (un-SKIP probes,
+the W-108 pin, ledger re-cites; fork/upstream/plan.md §8.5). Then variadics,
+CMake integration, safe-Carbon design. Next cron Monday 2026-10-12; the owner's
+machine is never used. FORTY-NINE PRs. The slice now crosses the C++ boundary in
+both directions, and the two bugs that the of-record conformance run surfaced
+after a green gate — a conversion-lookup ICE and a lowering path that left
+constant array elements uninitialized — are exactly why the runtime suite is the
+bar and the golden fill is not: both goldens were green, both programs were
+wrong._ FORTY-EIGHT PRs. Function overloading is finished end to end — same-file
+sets, import across libraries and api/impl, generic members, and export to C++ —
+with the one divergence from C++ written down and tested rather than papered
+over. The thunk-symbol collision that review found (every member's thunk mangled
+alike; lowering would have run member 0 for every C++ overload) is the kind of
+silent wrong-member bug the hosted fill alone would never have shown._
+FORTY-SEVEN PRs. Slices exist, and so — for the first time — do user
+destructors: the slice that needed `free` to run found that no declared
+`Destroy` impl had ever been selected, and fixed that at the root rather than
+documenting a leak. Four hosted rounds for one slice is the loop earning its
+keep; each miss is written down with why review did not see it._ FORTY-SIX PRs.
+Overload sets now cross library boundaries the way the design asks — whole,
+closed, with the api/impl rules reading the api file's facts — and the slice's
+two review rounds plus three hosted fills each caught something the previous
+layer had traced as clean, which is the loop working rather than failing: every
+miss is written down with its root cause._ FORTY-FIVE PRs. Overloading exists in
+Carbon proper: the design's marked, closed sets with first-match resolution,
+landed with the loop's one real invariant (every probe exit restores block,
+region and cleanup depth under CHECK) and with the one mirror site no review
+caught — the export-name switch — found by the hosted fill as a runtime fatal,
+exactly where a compile probe is blind. The imported-member mangling collapse
+was first gated, then its pin filled EMPTY and proved the gate unreachable, so
+the gate went and the root fix (the stored index) landed instead._ FORTY-FOUR
+PRs. Unions are closed out end to end: native declaration, layout by
+construction, and a C++ round trip that the embedded Clang itself asserts
+(`sizeof`, `alignof`, `__is_union`) — plus the first Carbon-side call through a
+return-address thunk for a Carbon-owned record, which the plan had mis-cited as
+precedented and the fill proved anyway. One design-fidelity hole caught by
+review (non-aggregate imported unions were initializable from Carbon) closed at
+the root._ FORTY-THREE PRs. Unions exist natively: the design's write-safe,
+read-reinterpret union with C++-compatible layout by construction, its 0.1 field
+rule made precise (prelude `Copy` impls are trusted; user `Copy`/`Destroy`
+impls, choice-typed and imported C++ fields rejected loudly), and the first
+`Core.UnformedInit` witness a class type ever synthesized. The deferral defect
+was a one-list omission in the parser that no review caught by reading — the
+hosted fill caught it in minutes, which is exactly what the fill is for._
+FORTY-TWO PRs. The error-handling remainder is closed: a C++ exception crossing
+into Carbon is either fenced (terminate, now with a message naming the boundary)
+or, when the call is the operand of `?`, caught into a `Cpp.Exception` that `?`
+propagates, and a Carbon `Result` crosses back into C++ as a byte-compatible
+`Carbon::expected`. The slice cost seven hosted round trips; every one was a
+real defect fixed at its root and each is written down, including the
+pre-existing export-namespace crash that only a real header could expose._
+FORTY-ONE PRs. The design's if-let family exists: a `let`/`var` pattern in an
+`if`/`while` condition or a `let … else { diverge }` declaration runs through
+the same refutable engine as a `match` arm, so every pattern form `match`
+accepts (alternatives with payloads, tuples, literals, `var`/`ref` bindings,
+structs) works there too and gains nothing new to maintain. Two authoring errors
+in the positive goldens were caught by the hosted fill and fixed at the source;
+the second autoupdate round converged the location markers the first fill's
+inserted CHECK lines had shifted (a known two-pass property of autoupdate —
+always run it twice when a fill inserts STDERR lines above dumped code).
+Existing match goldens: byte-identical._ FORTY PRs. The error-handling
 remainder's first slice: the design's `Core.Result` finally exists in the
 prelude (the first `match` compiled inside package `Core`), `?` works on both
 `Result` and `Optional`, and a `Result`-returning entry point turns into an exit
@@ -309,18 +310,18 @@ one focused PR**.
 **Upstream advance (2026-10; standing rule 5, D-UA-13):** the cut is upstream
 `c1e83b0b7` (2026-10-05, PR 7897) as of the UA-1 merge; the deferred set is
 EMPTY at the merge. Staged on claude/carbon-fork-0-1-upstream-advance per
-fork/upstream/plan.md (183 commits, 105 conflicts, five hosted fill passes,
-four fix/triage rounds), pre-merge scoreboard 126/0/23 over 149 (run
-37399118672), gate GATE_RUN and conformance CONF_RUN (CONF_NUMBERS) on
-606a99c5a; full record in the decision-log entry "Upstream advance 2026-10:
-cut 631f8fb → c1e83b0b7 (2026-10-06)". Weekly check: the Routine `Weekly
-upstream-merge check (carbon fork)` keeps its prompt (it measures from `git
-merge-base`, D-UA-13); its first post-advance firing, Monday 2026-10-12, should
-report a SMALL deferred set (upstream's commits since c1e83b0b7, one week's
-worth) and no fork-modified overlap beyond the usual check-core files; a large
-count or a conflict in a non-check-core file is the signal to look at. The
-PREVIOUS outcomes (2026-08-17 and 2026-08-08) are retained below for the
-record.
+fork/upstream/plan.md (183 commits, 105 conflicts, five hosted fill passes, four
+fix/triage rounds), pre-merge scoreboard 126/0/23 over 149 (run 37399118672),
+gate 37403008794 and conformance 37402970811 (128 PASS / 0 FAIL / 22 SKIP over
+150 programs, 48/56 bullets) on 606a99c5a; full record in the decision-log entry
+"Upstream advance 2026-10: cut 631f8fb → c1e83b0b7 (2026-10-06)". Weekly check:
+the Routine `Weekly upstream-merge check (carbon fork)` keeps its prompt (it
+measures from `git merge-base`, D-UA-13); its first post-advance firing, Monday
+2026-10-12, should report a SMALL deferred set (upstream's commits since
+c1e83b0b7, one week's worth) and no fork-modified overlap beyond the usual
+check-core files; a large count or a conflict in a non-check-core file is the
+signal to look at. The PREVIOUS outcomes (2026-08-17 and 2026-08-08) are
+retained below for the record.
 
 **Weekly upstream-merge outcome (standing rule 5, 2026-08-17, PR #17):**
 upstream `864845c` (15 commits over e7050af, covering the 08-10 AND 08-17
@@ -352,7 +353,7 @@ code). Next check: Monday 14:00 UTC.
 
 | Branch | State |
 | --- | --- |
-| `claude/carbon-fork-0-1-upstream-advance` | MERGED-PENDING — UA-1 (cut 631f8fb → c1e83b0b7); worktree ../carbon-upstream; head 606a99c5a + the discharge commit; gate GATE_RUN / conformance CONF_RUN; the PR stamp flips this row to MERGED and cuts UA-2 from the new trunk. |
+| `claude/carbon-fork-0-1-upstream-advance` | MERGED-PENDING — UA-1 (cut 631f8fb → c1e83b0b7); worktree ../carbon-upstream; head 606a99c5a + the discharge commit; gate 37403008794 / conformance 37402970811; the PR stamp flips this row to MERGED and cuts UA-2 from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |
 | `claude/carbon-fork-0-1-w5-s3{,b,c}` | MERGED by way of PRs #12/#13/#14 — W5-S3 complete. |

@@ -11,6 +11,7 @@ export import library "prelude/types/char_literal";
 export import library "prelude/types/cpp/exception";
 export import library "prelude/types/cpp/int";
 export import library "prelude/types/cpp/nullptr";
+export import library "prelude/types/cpp/slice";
 export import library "prelude/types/cpp/void";
 export import library "prelude/types/float";
 export import library "prelude/types/float_literal";

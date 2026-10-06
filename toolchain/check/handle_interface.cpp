@@ -345,6 +345,7 @@ auto HandleParseNode(Context& context, Parse::InterfaceDefinitionId node_id)
       case SemIR::CoreInterface::AddAssignWith:
       case SemIR::CoreInterface::AddWith:
       case SemIR::CoreInterface::Copy:
+      case SemIR::CoreInterface::CppContiguousRange:
       case SemIR::CoreInterface::CppRangeForIterate:
       case SemIR::CoreInterface::CppUnsafeDeref:
       case SemIR::CoreInterface::Dec:

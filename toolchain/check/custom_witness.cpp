@@ -1855,6 +1855,7 @@ auto LookupCustomWitness(Context& context, SemIR::LocId loc_id,
                                   query_specific_interface, build_witness);
     case SemIR::CoreInterface::AddAssignWith:
     case SemIR::CoreInterface::AddWith:
+    case SemIR::CoreInterface::CppContiguousRange:
     case SemIR::CoreInterface::CppRangeForIterate:
     case SemIR::CoreInterface::CppUnsafeDeref:
     case SemIR::CoreInterface::Dec:

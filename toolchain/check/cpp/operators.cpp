@@ -10,6 +10,7 @@
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/check/convert.h"
 #include "toolchain/check/core_identifier.h"
+#include "toolchain/check/cpp/custom_type_mapping.h"
 #include "toolchain/check/cpp/import.h"
 #include "toolchain/check/cpp/location.h"
 #include "toolchain/check/cpp/overload_resolution.h"
@@ -419,13 +420,57 @@ static auto LookupCppConversion(Context& context, SemIR::LocId loc_id,
       case clang::InitializationSequence::
           SK_ConstructorInitializationFromList: {
         if (auto* ctor =
-                dyn_cast<clang::CXXConstructorDecl>(step.Function.Function);
-            ctor && ctor->isCopyOrMoveConstructor()) {
-          // Skip copy / move constructor calls. They shouldn't be performed
-          // this way because they're not considered conversions in Carbon, and
-          // will frequently lead to infinite recursion because we'll end up
-          // back here when attempting to convert the argument.
-          continue;
+                dyn_cast<clang::CXXConstructorDecl>(step.Function.Function)) {
+          if (ctor->isCopyOrMoveConstructor()) {
+            // Skip copy / move constructor calls. They shouldn't be performed
+            // this way because they're not considered conversions in Carbon,
+            // and will frequently lead to infinite recursion because we'll end
+            // up back here when attempting to convert the argument.
+            continue;
+          }
+          // Fork (SL-2 round 4, re-keyed round 5): a constructor of a C++
+          // class that the importer mapped to a Carbon type (`std::span<T>`
+          // -> `Core.Slice(T')`, `std::string_view` -> `str`;
+          // custom_type_mapping.h) is not a conversion Carbon can import. Such
+          // a specialization has no Carbon class declaration of its own -- its
+          // `ClangDecl` inst is the mapped type's `ClassType` -- so importing
+          // the constructor would cast that inst to a `ClassDecl` (import.cpp
+          // `GetFunctionName`, an ICE) and then add the member to the prelude
+          // class's scope. `std::span`'s range constructor is selected here
+          // for every `std::vector<T>` -> `Core.Slice(const T')` conversion
+          // once the TU includes `<span>`; the conversion belongs to the
+          // Carbon type's own impls (slice.carbon's blanket `ImplicitAs` over
+          // the synthesized `CppContiguousRange` witness), which
+          // `BuildUnaryOperator` consults when no C++ operator is found.
+          //
+          // The decision is the IMPORTER's, not the matcher's: `MapTagType`
+          // applies the `std::span` mapping only when the element type maps
+          // and satisfies `Slice`'s `Copy & Destroy` bound (import.cpp
+          // `LookupCustomRecordType`), and otherwise imports the
+          // specialization as an ordinary class (span.carbon's
+          // `noncopyable_element_is_a_class`), whose constructors import as
+          // they always did. So import the parent type first, which registers
+          // its `ClangDeclKey` either way, and decline only when the
+          // registered inst is not a `ClassDecl`. The matcher check in front
+          // keeps every unmapped class on the untouched path.
+          auto* parent = ctor->getParent();
+          if (GetCustomCppTypeMapping(parent).kind !=
+              CustomCppTypeMapping::None) {
+            auto parent_type = ImportCppType(
+                context, loc_id,
+                context.ast_context().getCanonicalTagType(parent));
+            if (parent_type.type_id == SemIR::ErrorInst::TypeId) {
+              // Already diagnosed while importing the parent (for `std::span`,
+              // its element type).
+              return SemIR::ErrorInst::InstId;
+            }
+            auto parent_inst_id =
+                LookupClangDeclInstId(context, SemIR::ClangDeclKey(parent));
+            if (!parent_inst_id.has_value() ||
+                !context.insts().Is<SemIR::ClassDecl>(parent_inst_id)) {
+              return SemIR::InstId::None;
+            }
+          }
         }
 
         if (sema.DiagnoseUseOfOverloadedDecl(step.Function.Function, loc)) {

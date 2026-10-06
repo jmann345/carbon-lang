@@ -3,42 +3,68 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // CONFORMANCE-BULLET: Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view)
+// COMPILE-ARGS: --clang-arg=-std=c++20
 // EXPECT-EXIT: 0
 // EXPECT-STDOUT:
 //   10
 //   6
-// SKIP: MISSING — no Carbon slice type exists (grep for Slice in core/ returns nothing) and there is no std::span/vector view mapping: only ordinary API import of containers works, so a Carbon array cannot be passed transparently as std::span and an owning std::vector cannot be viewed as a Carbon slice. Un-SKIP (and uncomment the body) when the Core slice type (W9) and its contiguous-container interop mapping land.
+//   12
 //
-// Write-tests-first stub. Intended future test, both directions of the
-// mapping: (1) pass a Carbon array to a C++ function taking
-// std::span<const int> without copying; (2) owning->view — obtain an
-// owning Cpp.std.vector from C++ and view it as a Carbon slice, reading
-// an element through the view. C++ block shape from
-// interop/cpp_operator_import_arithmetic.carbon; the Carbon-side slice
-// spelling is a strawman pending the approved design.
+// Both directions of the transparent mapping (SL-2, fork/slices/plan.md
+// §5.B.1; D-SL-8, D-SL-9, D-SL-14): (1) a Carbon array reaches a C++
+// `std::span<const int>` parameter through an explicit view,
+// `Core.Slice(i32).FromArray(&a)`, which imports/exports as `std::span` with
+// no copy; (2) owning -> view: a `std::vector<int>` made in C++ converts
+// implicitly to `Core.Slice(const i32)` (the synthesized
+// `Core.CppContiguousRange` witness over its `data()`/`size()` members plus
+// the prelude's blanket `ImplicitAs` impl in core/prelude/types/slice.carbon
+// over the helpers of core/prelude/types/cpp/slice.carbon), an element is read
+// through the view, and (3) the same vector passes DIRECTLY to the
+// `std::span<const int>` parameter -- the blanket impl selected during
+// argument conversion to an imported parameter type, a distinct shape from the
+// `let`. `<span>` needs C++20 (COMPILE-ARGS; the toolchain's Clang defaults
+// to gnu++17).
+//
+// Un-SKIPped from the write-tests-first stub; two strawman rewrites are
+// disclosed (plan §0.2 item 7): `Cpp.SumSpan(a)` on an array VALUE became
+// `Cpp.SumSpan(Core.Slice(i32).FromArray(&a))` -- views are formed from a
+// pointer to the array, never from a value (D-SL-2) -- and `v.AsSlice()`
+// (Carbon cannot add methods to an imported class) became the conversion
+// `let view: Core.Slice(const i32) = v;` (D-SL-9).
+//
+// Hand-derived expectations (R16(d)): `a` is {1, 2, 3, 4}, so
+// `std::accumulate` over the span prints 1 + 2 + 3 + 4 = 10; `MakeVector()`
+// is {2, 4, 6}, so `view[2]` prints 6 (`const i32` -> `i32` for `Core.Print`
+// by the prelude's `const U as ImplicitAs(T)` impl) and `SumSpan(v)` prints
+// 2 + 4 + 6 = 12.
 
 import Core library "io";
-// import Cpp inline '''c++
-// #include <numeric>
-// #include <span>
-// #include <vector>
-//
-// inline int SumSpan(std::span<const int> s) {
-//   return std::accumulate(s.begin(), s.end(), 0);
-// }
-//
-// inline std::vector<int> MakeVector() { return {2, 4, 6}; }
-// ''';
+import Cpp inline '''c++
+#include <numeric>
+#include <span>
+#include <vector>
+
+// The layout premise of the transparent mapping (plan D-SL-1, R-6):
+// `Core.Slice(T)` is `{T*, i64}`, 16 bytes, and so is a dynamic-extent span.
+static_assert(sizeof(std::span<const int>) == 16,
+              "std::span<T> must be a pointer and a size");
+
+inline int SumSpan(std::span<const int> s) {
+  return std::accumulate(s.begin(), s.end(), 0);
+}
+
+inline std::vector<int> MakeVector() { return {2, 4, 6}; }
+''';
 
 fn Run() -> i32 {
-  // Intended body once the feature lands (strawman slice spelling):
-  //   var a: array(i32, 4) = (1, 2, 3, 4);
-  //   Core.Print(Cpp.SumSpan(a));                 // Carbon array -> std::span
-  //   var v: Cpp.std.vector(i32) = Cpp.MakeVector();
-  //   let view: Core.Slice(i32) = v.AsSlice();    // owning -> non-owning view
-  //   Core.Print(view[2]);                        // 6
-  //   return 0;
-  // Guard: fails loudly (exit 1 vs EXPECT-EXIT 0) if un-SKIPped before the
-  // contiguous-container mapping exists.
-  return 1;
+  var a: array(i32, 4) = (1, 2, 3, 4);
+  // The view is formed explicitly (`&a`) and crosses as std::span.
+  Core.Print(Cpp.SumSpan(Core.Slice(i32).FromArray(&a)));
+  // Owning -> view: the vector converts to a slice of its elements.
+  var v: Cpp.std.vector(i32) = Cpp.MakeVector();
+  let view: Core.Slice(const i32) = v;
+  Core.Print(view[2]);
+  // The vector itself passes as std::span<const int>.
+  Core.Print(Cpp.SumSpan(v));
+  return 0;
 }

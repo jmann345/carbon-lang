@@ -460,7 +460,7 @@ static auto IsImported(Context& context, ImportKey key) -> bool {
 
 // If `decl` already mapped to an instruction, returns that instruction.
 // Otherwise returns `None`.
-static auto LookupClangDeclInstId(Context& context, SemIR::ClangDeclKey key)
+auto LookupClangDeclInstId(Context& context, SemIR::ClangDeclKey key)
     -> SemIR::InstId {
   const auto& clang_decls = context.clang_decls();
   if (auto context_clang_decl_id = clang_decls.LookupId(key);
@@ -1286,13 +1286,55 @@ static auto MapBuiltinType(Context& context, SemIR::LocId loc_id,
   return TypeExpr::None;
 }
 
+// Returns whether the type `element_type_inst_id` satisfies the bound of
+// `Core.Slice`'s element parameter (`T: Copy & Destroy`, slice.carbon), without
+// diagnosing the bound. (Finding the witness for a C++ element may still
+// require a complete type and diagnose that, as any `Copy` lookup does.) The
+// bound is read from `Slice`'s own generic binding so that it cannot drift
+// from the prelude. An element that fails it -- a Carbon class with no `Copy`
+// impl, say -- leaves `std::span<T>` an ordinary class import rather than
+// diagnosing at the header's `span` declaration; a C++ element whose copy
+// constructor is deleted does NOT fail it (the deleted decl is imported as the
+// `Copy` witness), so such a `std::span<T>` maps to a `Core.Slice(T)` whose
+// element copies fail at the use site.
+static auto SliceElementSatisfiesBound(Context& context, SemIR::LocId loc_id,
+                                       SemIR::InstId element_type_inst_id)
+    -> bool {
+  auto slice_inst_id = LookupNameInCore(context, loc_id, CoreIdentifier::Slice);
+  auto generic_class_type = context.types().TryGetAs<SemIR::GenericClassType>(
+      context.insts().Get(slice_inst_id).type_id());
+  if (!generic_class_type) {
+    return false;
+  }
+  const auto& generic = context.generics().Get(
+      context.classes().Get(generic_class_type->class_id).generic_id);
+  auto bindings = context.inst_blocks().GetOrEmpty(generic.bindings_id);
+  if (bindings.size() != 1) {
+    return false;
+  }
+  auto bound_type_id = context.insts().Get(bindings[0]).type_id();
+  return TryConvertToValueOfType(context, loc_id, element_type_inst_id,
+                                 bound_type_id) != SemIR::ErrorInst::InstId;
+}
+
+// Returns the type `Core.Slice(T)`, where `T` is described by
+// `element_type_inst_id`. The shape of `MakeOptionalType` below.
+static auto MakeSliceType(Context& context, SemIR::LocId loc_id,
+                          SemIR::InstId element_type_inst_id) -> TypeExpr {
+  auto fn_inst_id = LookupNameInCore(context, loc_id, CoreIdentifier::Slice);
+  auto call_id =
+      PerformCall(context, loc_id, fn_inst_id, {element_type_inst_id});
+  return ExprAsType(context, loc_id, call_id);
+}
+
 // Determines whether record_decl is a C++ class that has a custom mapping into
 // Carbon, and if so, returns the corresponding Carbon type. Otherwise returns
 // None.
 static auto LookupCustomRecordType(Context& context,
                                    const clang::CXXRecordDecl* record_decl)
     -> TypeExpr {
-  switch (GetCustomCppTypeMapping(record_decl)) {
+  auto mapping = GetCustomCppTypeMapping(record_decl);
+  switch (mapping.kind) {
     case CustomCppTypeMapping::None:
       return TypeExpr::None;
 
@@ -1300,6 +1342,31 @@ static auto LookupCustomRecordType(Context& context,
       return MakeStringType(
           context,
           AddImportIRInst(context.sem_ir(), record_decl->getLocation()));
+
+    case CustomCppTypeMapping::Span: {
+      // A dynamic-extent `std::span<T>` maps to `Core.Slice(T')`, both being
+      // a pointer followed by a size (fork/slices/plan.md D-SL-8). The
+      // element type maps recursively, so `std::span<const int>` is
+      // `Core.Slice(const i32)`.
+      auto loc_id =
+          AddImportIRInst(context.sem_ir(), record_decl->getLocation());
+      auto element = ImportCppType(context, loc_id, mapping.element_type);
+      if (!element.inst_id.has_value()) {
+        // The element type has no Carbon mapping; the specialization is
+        // imported as an ordinary class instead.
+        return TypeExpr::None;
+      }
+      if (element.type_id == SemIR::ErrorInst::TypeId) {
+        // Already diagnosed while importing the element type.
+        return element;
+      }
+      if (!SliceElementSatisfiesBound(context, loc_id, element.inst_id)) {
+        // `Slice(T)` requires `T: Copy & Destroy`; a specialization on an
+        // element outside the bound is imported as an ordinary class.
+        return TypeExpr::None;
+      }
+      return MakeSliceType(context, loc_id, element.inst_id);
+    }
   }
 }
 

@@ -75,6 +75,22 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
 
 auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
                 SemIR::ArrayInit inst) -> void {
+  // Finish the initialization of the constant elements. `LowerInst` skipped
+  // their `in_place_init`s because they have constant values, and the array
+  // initializes in place, so its `Assign` copies nothing: without this, the
+  // constant elements of a mixed constant/runtime initializer such as
+  // `(F(), 2, 3)` were never stored (fork, SL-2 round 4; the shape has no
+  // golden upstream). This is `EmitAggregateInitializer`'s `InPlace` arm for
+  // struct, tuple and class inits. An all-constant `array_init` is itself a
+  // constant, never reaches here, and is copied whole by its `Assign`.
+  for (auto init_id : context.sem_ir().inst_blocks().Get(inst.inits_id)) {
+    if (context.sem_ir().constant_values().Get(init_id).is_constant()) {
+      auto dest_id =
+          SemIR::FindStorageArgForInitializer(context.sem_ir(), init_id);
+      context.InitializeStorage(context.GetTypeIdOfInst(dest_id), dest_id,
+                                init_id);
+    }
+  }
   // The result of initialization is the return slot of the initializer.
   context.SetLocal(inst_id, context.GetValue(inst.dest_id));
 }

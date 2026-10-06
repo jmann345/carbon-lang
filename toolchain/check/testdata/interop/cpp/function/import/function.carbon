@@ -86,7 +86,7 @@ import Cpp library "special_name.h";
 
 fn MyF() {
   // CHECK:STDERR: fail_import_special_name_call_escaped_no_match.carbon:[[@LINE+8]]:15: error: no matching function for call to 'base' [CppInteropParseError]
-  // CHECK:STDERR:     7 |   Cpp.r#base(1);
+  // CHECK:STDERR:    15 |   Cpp.r#base(1);
   // CHECK:STDERR:       |               ^
   // CHECK:STDERR: fail_import_special_name_call_escaped_no_match.carbon:[[@LINE-6]]:10: in file included here [InCppInclude]
   // CHECK:STDERR: ./special_name.h:2:6: note: candidate function not viable: requires 0 arguments, but 1 was provided [CppInteropParseNote]
@@ -149,10 +149,10 @@ fn F() {
 
 // TODO: Promote this warning to an error by default.
 // CHECK:STDERR: ./static.h:[[@LINE+7]]:13: warning: function 'static_foo' has internal linkage but is not defined [CppInteropParseWarning]
-// CHECK:STDERR:     3 | static auto static_foo() -> void;
+// CHECK:STDERR:    10 | static auto static_foo() -> void;
 // CHECK:STDERR:       |             ^
 // CHECK:STDERR: ./static.h:[[@LINE+4]]:13: note: used here [CppInteropParseNote]
-// CHECK:STDERR:     3 | static auto static_foo() -> void;
+// CHECK:STDERR:    10 | static auto static_foo() -> void;
 // CHECK:STDERR:       |             ^
 // CHECK:STDERR:
 static auto static_foo() -> void;

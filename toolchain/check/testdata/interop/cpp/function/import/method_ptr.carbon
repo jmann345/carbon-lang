@@ -75,6 +75,31 @@ library "[[@TEST_NAME]]";
 import Cpp library "method_ptr.h";
 
 fn F(c: Cpp.C) {
+  // CHECK:STDERR: fail_todo_call_method_ptr.carbon:[[@LINE+25]]:3: error: member name of type `<C++ type void (C::*)(void) const>` in compound member access is not an instance member or an interface member [CompoundMemberAccessDoesNotUseBase]
+  // CHECK:STDERR:   c.(Cpp.GetMethodPtr())(42);
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_todo_call_method_ptr.carbon:[[@LINE+21]]:3: error: semantics TODO: `invoking a C++ member function pointer is unsupported` [SemanticsTodo]
+  // CHECK:STDERR:   c.(Cpp.GetMethodPtr())(42);
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_todo_call_method_ptr.carbon:[[@LINE+17]]:3: error: semantics TODO: `Unsupported: fenced thunk for potentially-throwing C++ function pointer could not be built` [SemanticsTodo]
+  // CHECK:STDERR:   c.(Cpp.GetMethodPtr())(42);
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_todo_call_method_ptr.carbon:[[@LINE+14]]:3: note: in thunk for C++ function pointer type used here [InCppFunctionPointerThunk]
+  // CHECK:STDERR:   c.(Cpp.GetMethodPtr())(42);
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: error: called object type 'void (C::*)() const' is not a function or function pointer [CppInteropParseError]
+  // CHECK:STDERR: fail_todo_call_method_ptr.carbon:[[@LINE+9]]:3: note: in thunk for C++ function pointer type used here [InCppFunctionPointerThunk]
+  // CHECK:STDERR:   c.(Cpp.GetMethodPtr())(42);
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_todo_call_method_ptr.carbon:[[@LINE+5]]:3: error: 1 argument passed to function expecting 0 arguments [CallArgCountMismatch]
+  // CHECK:STDERR:   c.(Cpp.GetMethodPtr())(42);
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_todo_call_method_ptr.carbon: note: calling function declared here [InCallToEntity]
+  // CHECK:STDERR:
   c.(Cpp.GetMethodPtr())(42);
 }
 

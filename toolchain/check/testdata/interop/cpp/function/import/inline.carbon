@@ -38,10 +38,10 @@ fn MyF() {
 
 // TODO: Promote this warning to an error by default.
 // CHECK:STDERR: ./without_definition.h:[[@LINE+7]]:13: warning: inline function 'inline_without_def' is not defined [CppInteropParseWarning]
-// CHECK:STDERR:     3 | inline void inline_without_def();
+// CHECK:STDERR:    10 | inline void inline_without_def();
 // CHECK:STDERR:       |             ^
 // CHECK:STDERR: ./without_definition.h:[[@LINE+4]]:13: note: used here [CppInteropParseNote]
-// CHECK:STDERR:     3 | inline void inline_without_def();
+// CHECK:STDERR:    10 | inline void inline_without_def();
 // CHECK:STDERR:       |             ^
 // CHECK:STDERR:
 inline void inline_without_def();

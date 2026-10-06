@@ -713,7 +713,7 @@ fn F() {
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @F(%c.param: %NonCopyableClass) {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %Cpp.ref.loc8: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %Cpp.ref.loc31: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %foo_non_copyable_param.ref: %foo_non_copyable_param.cpp_overload_set.type = name_ref foo_non_copyable_param, imports.%foo_non_copyable_param.cpp_overload_set.value [concrete = constants.%foo_non_copyable_param.cpp_overload_set.value]
 // CHECK:STDOUT:   %c.ref: %NonCopyableClass = name_ref c, %c
 // CHECK:STDOUT:   %foo_non_copyable_param.call: init %empty_tuple.type = call imports.%foo_non_copyable_param.decl(%c.ref)

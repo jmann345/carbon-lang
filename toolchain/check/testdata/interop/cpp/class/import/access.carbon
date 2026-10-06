@@ -318,7 +318,7 @@ class Derived {
     //@dump-sem-ir-begin
     // TODO: It should be possible to call protected methods in the base class.
     // CHECK:STDERR: fail_todo_import_function_member_protected_extend_call_instance_in_member.carbon:[[@LINE+8]]:22: error: no matching function for call to 'instance_fn' [CppInteropParseError]
-    // CHECK:STDERR:    11 |     self.instance_fn();
+    // CHECK:STDERR:    19 |     self.instance_fn();
     // CHECK:STDERR:       |                      ^
     // CHECK:STDERR: fail_todo_import_function_member_protected_extend_call_instance_in_member.carbon:[[@LINE-10]]:10: in file included here [InCppInclude]
     // CHECK:STDERR: ./function_member_protected.h:4:8: note: candidate function not viable: cannot convert argument of incomplete type 'const Carbon::Derived' to 'FunctionMemberProtected' for object argument [CppInteropParseNote]

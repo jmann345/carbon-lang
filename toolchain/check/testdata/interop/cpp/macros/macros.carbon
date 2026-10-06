@@ -52,9 +52,9 @@ import Cpp library "bad_suffix.h";
 
 fn F() {
   // CHECK:STDERR: fail_import_bad_suffix.carbon:[[@LINE+20]]:6: error: invalid digit 'f' in decimal constant [CppInteropParseError]
-  // CHECK:STDERR:     7 |   Cpp.CONFIG_VALUE;
+  // CHECK:STDERR:    27 |   Cpp.CONFIG_VALUE;
   // CHECK:STDERR:       |      ^
-  // CHECK:STDERR:     1 | #define CONFIG_VALUE 42f
+  // CHECK:STDERR:     2 | #define CONFIG_VALUE 42f
   // CHECK:STDERR:       |                        ^
   // CHECK:STDERR: fail_import_bad_suffix.carbon:[[@LINE+15]]:3: note: in `Cpp` name lookup for `CONFIG_VALUE` [InCppNameLookup]
   // CHECK:STDERR:   Cpp.CONFIG_VALUE;
@@ -86,9 +86,9 @@ import Cpp library "integer_literal_too_big.h";
 
 fn F() {
   // CHECK:STDERR: fail_import_integer_literal_too_big.carbon:[[@LINE+9]]:6: error: integer literal is too large to be represented in any integer type [CppInteropParseError]
-  // CHECK:STDERR:     7 |   Cpp.CONFIG_VALUE;
+  // CHECK:STDERR:    16 |   Cpp.CONFIG_VALUE;
   // CHECK:STDERR:       |      ^
-  // CHECK:STDERR:     1 | #define CONFIG_VALUE 18446744073709551616
+  // CHECK:STDERR:     2 | #define CONFIG_VALUE 18446744073709551616
   // CHECK:STDERR:       |                      ^
   // CHECK:STDERR: fail_import_integer_literal_too_big.carbon:[[@LINE+4]]:3: note: in `Cpp` name lookup for `CONFIG_VALUE` [InCppNameLookup]
   // CHECK:STDERR:   Cpp.CONFIG_VALUE;
@@ -469,9 +469,9 @@ import Cpp library "multiple_characters.h";
 
 fn F() {
  // CHECK:STDERR: import_multiple_characters.carbon:[[@LINE+9]]:25: warning: multi-character character constant [CppInteropParseWarning]
- // CHECK:STDERR:     7 |  let unused a: i32 = Cpp.MULTIPLE_CHARS;
+ // CHECK:STDERR:    16 |  let unused a: i32 = Cpp.MULTIPLE_CHARS;
  // CHECK:STDERR:       |                         ^
- // CHECK:STDERR:     2 | #define MULTIPLE_CHARS 'AB'
+ // CHECK:STDERR:     3 | #define MULTIPLE_CHARS 'AB'
  // CHECK:STDERR:       |                        ^
  // CHECK:STDERR: import_multiple_characters.carbon:[[@LINE+4]]:22: note: in `Cpp` name lookup for `MULTIPLE_CHARS` [InCppNameLookup]
  // CHECK:STDERR:  let unused a: i32 = Cpp.MULTIPLE_CHARS;
@@ -2283,7 +2283,7 @@ let _: C(1) = {} as C(Cpp.COUNT);
 // CHECK:STDOUT:   %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT:   %TWICE_DEF.ref: %i32 = name_ref TWICE_DEF, constants.%int_2 [concrete = constants.%int_2]
-// CHECK:STDOUT:   %i32.loc8: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:   %i32.loc17: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:   %a: %i32 = wrapper_binding a, %TWICE_DEF.ref
 // CHECK:STDOUT:   name_binding_decl {
 // CHECK:STDOUT:     %a.patt: %pattern_type.6b6 = value_binding_pattern a [concrete = constants.%a.patt]

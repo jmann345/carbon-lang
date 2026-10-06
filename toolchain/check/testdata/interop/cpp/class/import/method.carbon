@@ -60,7 +60,7 @@ import Cpp library "object_param_qualifiers.h";
 
 fn Value(v: Cpp.HasQualifiers) {
   // CHECK:STDERR: fail_bad_object_param_qualifiers_by_value.carbon:[[@LINE+8]]:11: error: no matching function for call to 'plain' [CppInteropParseError]
-  // CHECK:STDERR:     7 |   v.plain();
+  // CHECK:STDERR:    15 |   v.plain();
   // CHECK:STDERR:       |           ^
   // CHECK:STDERR: fail_bad_object_param_qualifiers_by_value.carbon:[[@LINE-6]]:10: in file included here [InCppInclude]
   // CHECK:STDERR: ./object_param_qualifiers.h:3:8: note: candidate function not viable: 'this' argument has type 'const HasQualifiers', but method is not marked const [CppInteropParseNote]
@@ -71,7 +71,7 @@ fn Value(v: Cpp.HasQualifiers) {
 
   // TODO: This should remain invalid once we support `volatile`.
   // CHECK:STDERR: fail_bad_object_param_qualifiers_by_value.carbon:[[@LINE+8]]:19: error: no matching function for call to 'volatile_this' [CppInteropParseError]
-  // CHECK:STDERR:    10 |   v.volatile_this();
+  // CHECK:STDERR:    26 |   v.volatile_this();
   // CHECK:STDERR:       |                   ^
   // CHECK:STDERR: fail_bad_object_param_qualifiers_by_value.carbon:[[@LINE-17]]:10: in file included here [InCppInclude]
   // CHECK:STDERR: ./object_param_qualifiers.h:5:8: note: candidate function not viable: 'this' argument has type 'const HasQualifiers', but method is not marked const [CppInteropParseNote]
@@ -81,7 +81,7 @@ fn Value(v: Cpp.HasQualifiers) {
   v.volatile_this();
 
   // CHECK:STDERR: fail_bad_object_param_qualifiers_by_value.carbon:[[@LINE+8]]:14: error: no matching function for call to 'ref_this' [CppInteropParseError]
-  // CHECK:STDERR:    12 |   v.ref_this();
+  // CHECK:STDERR:    36 |   v.ref_this();
   // CHECK:STDERR:       |              ^
   // CHECK:STDERR: fail_bad_object_param_qualifiers_by_value.carbon:[[@LINE-27]]:10: in file included here [InCppInclude]
   // CHECK:STDERR: ./object_param_qualifiers.h:7:8: note: candidate function not viable: 'this' argument has type 'const HasQualifiers', but method is not marked const [CppInteropParseNote]
@@ -91,7 +91,7 @@ fn Value(v: Cpp.HasQualifiers) {
   v.ref_this();
 
   // CHECK:STDERR: fail_bad_object_param_qualifiers_by_value.carbon:[[@LINE+8]]:18: error: no matching function for call to 'ref_ref_this' [CppInteropParseError]
-  // CHECK:STDERR:    14 |   v.ref_ref_this();
+  // CHECK:STDERR:    46 |   v.ref_ref_this();
   // CHECK:STDERR:       |                  ^
   // CHECK:STDERR: fail_bad_object_param_qualifiers_by_value.carbon:[[@LINE-37]]:10: in file included here [InCppInclude]
   // CHECK:STDERR: ./object_param_qualifiers.h:10:8: note: candidate function not viable: 'this' argument has type 'const HasQualifiers', but method is not marked const [CppInteropParseNote]
@@ -124,7 +124,7 @@ import Cpp library "object_param_qualifiers.h";
 
 fn Ref(p: Cpp.HasQualifiers*) {
   // CHECK:STDERR: fail_bad_object_param_qualifiers_ref_ref.carbon:[[@LINE+8]]:19: error: no matching function for call to 'ref_ref_this' [CppInteropParseError]
-  // CHECK:STDERR:     7 |   p->ref_ref_this();
+  // CHECK:STDERR:    15 |   p->ref_ref_this();
   // CHECK:STDERR:       |                   ^
   // CHECK:STDERR: fail_bad_object_param_qualifiers_ref_ref.carbon:[[@LINE-6]]:10: in file included here [InCppInclude]
   // CHECK:STDERR: ./object_param_qualifiers.h:10:8: note: candidate function not viable: expects an rvalue for object argument [CppInteropParseNote]
@@ -134,7 +134,7 @@ fn Ref(p: Cpp.HasQualifiers*) {
   p->ref_ref_this();
 
   // CHECK:STDERR: fail_bad_object_param_qualifiers_ref_ref.carbon:[[@LINE+8]]:25: error: no matching function for call to 'const_ref_ref_this' [CppInteropParseError]
-  // CHECK:STDERR:     9 |   p->const_ref_ref_this();
+  // CHECK:STDERR:    25 |   p->const_ref_ref_this();
   // CHECK:STDERR:       |                         ^
   // CHECK:STDERR: fail_bad_object_param_qualifiers_ref_ref.carbon:[[@LINE-16]]:10: in file included here [InCppInclude]
   // CHECK:STDERR: ./object_param_qualifiers.h:11:8: note: candidate function not viable: expects an rvalue for object argument [CppInteropParseNote]
@@ -154,7 +154,7 @@ fn Make() -> Cpp.HasQualifiers;
 
 fn F() {
   // CHECK:STDERR: fail_bad_object_param_qualifiers_for_temporary.carbon:[[@LINE+8]]:19: error: no matching function for call to 'ref_this' [CppInteropParseError]
-  // CHECK:STDERR:     9 |   Make().ref_this();
+  // CHECK:STDERR:    17 |   Make().ref_this();
   // CHECK:STDERR:       |                   ^
   // CHECK:STDERR: fail_bad_object_param_qualifiers_for_temporary.carbon:[[@LINE-8]]:10: in file included here [InCppInclude]
   // CHECK:STDERR: ./object_param_qualifiers.h:7:8: note: candidate function not viable: expects an lvalue for object argument [CppInteropParseNote]

@@ -120,7 +120,7 @@ fn H() {
   // which does not convert to the function-pointer parameter: the call is
   // rejected by C++ overload resolution rather than by the type mapping.
   // CHECK:STDERR: fail_todo_method_as_callable.carbon:[[@LINE+8]]:24: error: no matching function for call to 'invoke' [CppInteropParseError]
-  // CHECK:STDERR:    14 |   Cpp.invoke(Widget.Get);
+  // CHECK:STDERR:    22 |   Cpp.invoke(Widget.Get);
   // CHECK:STDERR:       |                        ^
   // CHECK:STDERR: fail_todo_method_as_callable.carbon:[[@LINE-13]]:10: in file included here [InCppInclude]
   // CHECK:STDERR: ./callable.h:7:6: note: candidate function not viable: no known conversion from 'void (Carbon::Widget::* _Nonnull)() const' to 'void (*)()' for 1st argument [CppInteropParseNote]

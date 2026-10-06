@@ -13,6 +13,7 @@
 #include "toolchain/check/operator.h"
 #include "toolchain/check/scope_stack.h"
 #include "toolchain/sem_ir/ids.h"
+#include "toolchain/sem_ir/type_info.h"
 #include "toolchain/sem_ir/typed_insts.h"
 
 namespace Carbon::Check {
@@ -169,6 +170,45 @@ auto AddAndDiscardScopeCleanups(Context& context) -> void {
   auto depth = context.scope_stack().enclosing_cleanup_scope_depth();
   AddCleanups(context, depth);
   context.scope_stack().DiscardCleanupsSince(depth);
+}
+
+auto BeginConditionalExprOperand(Context& context) -> void {
+  if (!context.scope_stack().IsInFunctionScope()) {
+    return;
+  }
+  // An owned cleanup scope whose ambient depth is the cleanup depth at the
+  // start of the operand, so `AddAndDiscardTemporaryCleanups` destroys exactly
+  // the operand's temporaries. Nothing within an expression defers cleanups,
+  // so that depth stays put.
+  context.scope_stack().PushForSameRegion(ScopeStack::CleanupScopeKind::Owned);
+}
+
+auto EndConditionalExprOperand(Context& context, Parse::NodeId node_id,
+                               SemIR::InstId value_id) -> bool {
+  if (!context.scope_stack().IsInFunctionScope()) {
+    return true;
+  }
+  bool has_cleanups =
+      !context.scope_stack()
+           .GetCleanupsSince(
+               context.scope_stack().ambient_cleanup_scope_depth())
+           .empty();
+  if (has_cleanups && value_id != SemIR::ErrorInst::InstId) {
+    auto value_repr = SemIR::ValueRepr::ForType(
+        context.sem_ir(), context.insts().Get(value_id).type_id());
+    if (value_repr.kind != SemIR::ValueRepr::Copy &&
+        value_repr.kind != SemIR::ValueRepr::None) {
+      // The scopes are left unbalanced: a `false` return ends checking of
+      // this file before anything verifies them.
+      return context.TODO(
+          node_id,
+          "destroying temporaries of a conditionally evaluated operand whose "
+          "value is not passed by copy");
+    }
+  }
+  AddAndDiscardTemporaryCleanups(context);
+  context.scope_stack().Pop();
+  return true;
 }
 
 // TODO: When we have multiple branches or returns in the same function, share

@@ -437,11 +437,13 @@ static auto HandleShortCircuitOperand(Context& context, Parse::NodeId node_id,
   context.node_stack().Push(cond_node, short_circuit_result_id);
 
   // Push the resumption and the right-hand side blocks, and start emitting the
-  // right-hand operand.
+  // right-hand operand, which owns the cleanups registered within it; see
+  // `BeginConditionalExprOperand`.
   context.inst_block_stack().Pop();
   context.inst_block_stack().Push(end_block_id);
   context.inst_block_stack().Push(rhs_block_id);
   context.region_stack().AddToRegion(rhs_block_id, node_id);
+  BeginConditionalExprOperand(context);
 
   // HandleShortCircuitOperator will follow, and doesn't need the operand on the
   // node stack.
@@ -473,8 +475,12 @@ static auto HandleShortCircuitOperator(Context& context, Parse::NodeId node_id)
 
   // The first operand is wrapped in a ShortCircuitOperand, which we
   // already handled by creating a RHS block and a resumption block, which
-  // are the current block and its enclosing block.
+  // are the current block and its enclosing block. Finish the right-hand
+  // operand by destroying its temporaries.
   rhs_id = ConvertToBoolValue(context, node_id, rhs_id);
+  if (!EndConditionalExprOperand(context, node_id, rhs_id)) {
+    return false;
+  }
 
   // When the second operand is evaluated, the result of `and` and `or` is
   // its value.

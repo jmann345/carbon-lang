@@ -2130,3 +2130,84 @@ should read first:
     on failure and `MapToCppType` skips the wrap chain on null; the other
     `GetOrExportFunctionToCpp` callers (generate_ast.cpp:239/:280) keep the
     `NamedDecl*` without casting.
+-   **Fill round 2 (hosted autoupdate run 37388566542: toolchain built, one
+    test crashed).** `operators/question.carbon`'s `propagate.carbon` split
+    died in `Context::VerifyOnFinish` (context.cpp:86): "Operand (temporary)
+    used by instruction (bound_method) ... is not dominated by any evaluation
+    and is not constant". Provenance: upstream's SemIR SSA verifier
+    (toolchain/sem_ir/dominance.h and dominance.cpp, PR 7771, commit
+    c2d9cde67, an ancestor of the merged c1e83b0b7; it runs in `file_test`'s
+    fastbuild, which is not NDEBUG), absent from the cut 923c2f2af. Root
+    cause, read off the pre-merge golden rather than waited for: not the `?`
+    desugar's own blocks (every straight-line `?` in the split is dominated,
+    entry then break or continue) but `InIfExpr`'s
+    `if c then Open(n)? else Open(n + 1)?`. The desugar's two temporaries
+    (the `MyResult` operand and the `ControlFlow` carrier) are created in an
+    `if`-expression ARM and registered in the statement's cleanup scope, so
+    their `Destroy` calls (`bound_method %temporary`) were emitted in the
+    OTHER arm's break block and in `if.expr.result`, neither dominated by the
+    arm — a miscompile too (destroying an unconstructed object on the other
+    path), not only invalid SSA. That is upstream's own open TODO in
+    handle_if_expr.cpp ("conditionalize the cleanups so they run in the same
+    cases where the corresponding `if` arm was taken"), latent upstream
+    because no upstream test puts a destructible temporary in an arm
+    (if_expr/\*.carbon arms are `i32` calls, refs and constants); the fork's
+    `?` is simply the first construct to do so, and the short-circuit
+    right-hand operand in handle_operator.cpp has the identical shape. Fix,
+    in upstream's files, after upstream's own `if`-statement precedent
+    (handle_if_statement.cpp destroys the condition's temporaries before
+    branching) and the fork's W8b guard precedent (`BranchOnGuard` destroys
+    arm-owned objects on the edge that leaves the arm):
+    `BeginConditionalExprOperand` and `EndConditionalExprOperand`
+    (control_flow.h and control_flow.cpp) give each `if`-expression arm and
+    each short-circuit right-hand operand an `Owned` same-region cleanup scope
+    (the handle_codeblock.cpp idiom) and destroy its temporaries at the end of
+    its own block, before the branch to the convergence block. An operand that
+    registered cleanups and whose value type is not passed by copy
+    (`ValueRepr::ForType(...).kind` other than `Copy` or `None`; such a value
+    refers into the arm's temporary per docs/design/values.md) is a semantics
+    TODO instead of a dangling value — upstream's `file_test` could not
+    compile that shape either (the verifier fires), so no accepted program is
+    lost. handle_question.cpp is unchanged: in straight-line code the
+    desugar's temporaries keep statement lifetime, the design doc's
+    match-scrutinee desugar. Audit for the same invariant: a textual
+    dominance checker (per-function CFG, iterative dominators, operand
+    definitions by block, constants and never-defined names exempt as in
+    dominance.cpp) over the 200 fork-touched check goldens at 923c2f2af, 125
+    of them with function bodies, found exactly the `InIfExpr` violation and
+    nothing else; the same checker over the 895 upstream-owned goldens at HEAD
+    found only its own parser artifacts (template `!definition` actions,
+    nested `splice_block` results), as expected for IR that already passes
+    the verifier. Blocks printed as `<elided>` under
+    `--dump-sem-ir-ranges=only` are not checked; the block-building sites of
+    every fork lowering were read instead (table below). Goldens the next
+    fill changes: operators/question.carbon (CHECK lines cleared; the
+    `propagate.carbon` split gains `InShortCircuit`, and `InIfExpr`'s destroy
+    calls move from `if.expr.result` and the other arm's break block into
+    each arm's continue block), the new if_expr/arm_temporary.carbon (splits
+    `member_of_temporary` and `fail_todo_by_ref_result`, CHECK lines empty)
+    and the new operators/builtin/short_circuit_temporary.carbon (CHECK lines
+    empty). No upstream golden changes: no upstream arm or right-hand operand
+    registers a cleanup, so no destroy call moves. Not an R-4 or D-UA-8 break
+    condition: the thunk, export and type-mapping halves are untouched, and
+    the crash preceded the `cpp_thread_carbon_fn_diff` splits, so the R-4
+    residual stays undecided until the next fill.
+
+Fill round 2 audit of multi-block or cross-block fork lowerings against the
+SSA-dominance verifier (site, then verdict):
+
+| Site | Can it violate dominance? | Why |
+| --- | --- | --- |
+| `?` desugar in straight-line position (handle_question.cpp) | No | Operand and carrier temporaries are created before the `branch_if`; the break block returns through `AddReturnInstWithCleanups` and the continue block is the fall-through, both dominated by their creation. |
+| `?` inside an `if`-expression arm or a short-circuit right-hand operand | Yes (fixed) | Upstream's unconditionalized arm cleanups; the arm now owns and discharges them (`EndConditionalExprOperand`). |
+| `?` in a generic body, verified per specific (question.carbon `generic.carbon` split) | No | Same block shape; the spliced instructions resolve to constants or to the body's own blocks. |
+| `match` case arms, guards, `?`-in-guard ban (handle_match.cpp) | No | Scrutinee temporaries are destroyed right after the scrutinee (refutable_binding.cpp); arm scopes are `Owned`; a failed guard destroys arm-owned objects on its own edge (`BranchOnGuard`). |
+| Guarded `default` with a multi-block region (`and`/`or` in the guard) | No | The region's blocks are branched into, not spliced (guarded_default.carbon `compound_guard`), so the CFG builder, which does not descend into `splice_block`, sees every edge. |
+| if-let, let-else, while-let (handle_if_statement.cpp, handle_let_and_var.cpp, handle_loop_statement.cpp, refutable_binding.cpp) | No | Bindings' scopes are popped in the block where the bindings are live; scrutinee temporaries are destroyed in the header block, which dominates body and exit. |
+| W75a choice `Core.Copy` and `Destroy` witness synthesis (custom_witness.cpp) | No | Straight-line generated bodies; its three `inst_block_stack().Push()` calls are scratch blocks, no branches. |
+| EH-B catching thunk call site, the `Core.Result(S, Cpp.Exception)` convergence built for a catching call (cpp/thunk.cpp, the helper `PerformCppThunkCall` calls) | No | One shared `temporary_storage` is minted before the `branch_if` and initialized in place in both blocks; the value is read after the convergence (catching_thunk.carbon shows the shape). |
+| Fenced thunks, thunk bodies (thunk.cpp, cpp/thunk.cpp elsewhere) | No | Single-block bodies. |
+| Overload-set resolution, OV-1 to OV-3 (call.cpp, merge.cpp, cpp/export.cpp) | No | No control flow emitted. |
+| SL-1/SL-2 literal subscript and builtin completeness (handle_index.cpp, call.cpp) | No | No control flow emitted. |
+| Union conversions, `ConvertStructToUnion` (convert.cpp) | No | Straight-line conversion sequence. |
+| TryMapType and C++ export (round 1) | No | Type mapping produces no function-body instructions; recompiled under the harness, unaffected. |

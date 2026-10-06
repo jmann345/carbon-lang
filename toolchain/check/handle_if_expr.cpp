@@ -23,14 +23,12 @@ auto HandleParseNode(Context& context, Parse::IfExprIfId node_id) -> bool {
       AddDominatedBlockAndBranchIf(context, if_node, cond_value_id);
   auto else_block_id = AddDominatedBlockAndBranch(context, if_node);
 
-  // Start emitting the `then` block.
-  // TODO: Track the condition on the scope stack so that it can be associated
-  // with any cleanups that are registered within this arm of the `if`. We want
-  // to conditionalize the cleanups so they run in the same cases where the
-  // corresponding `if` arm was taken.
+  // Start emitting the `then` block. The arm owns the cleanups registered
+  // within it; see `BeginConditionalExprOperand`.
   context.inst_block_stack().Pop();
   context.inst_block_stack().Push(then_block_id);
   context.region_stack().AddToRegion(then_block_id, node_id);
+  BeginConditionalExprOperand(context);
 
   context.node_stack().Push(if_node, else_block_id);
   return true;
@@ -55,13 +53,18 @@ auto HandleParseNode(Context& context, Parse::IfExprThenId node_id) -> bool {
   auto then_value_id = context.node_stack().PopExpr();
   auto else_block_id = context.node_stack().Peek<Parse::NodeKind::IfExprIf>();
 
-  // Convert the first operand to a value.
+  // Convert the first operand to a value, and finish the `then` arm by
+  // destroying its temporaries.
   then_value_id = ConvertToValueExpr(context, then_value_id);
   then_value_id = DecayIntLiteralToSizedInt(context, node_id, then_value_id);
+  if (!EndConditionalExprOperand(context, node_id, then_value_id)) {
+    return false;
+  }
 
-  // Start emitting the `else` block.
+  // Start emitting the `else` block, which owns its cleanups likewise.
   context.inst_block_stack().Push(else_block_id);
   context.region_stack().AddToRegion(else_block_id, node_id);
+  BeginConditionalExprOperand(context);
 
   context.node_stack().Push(node_id, then_value_id);
   return true;
@@ -88,6 +91,9 @@ auto HandleParseNode(Context& context, Parse::IfExprElseId node_id) -> bool {
   auto result_type_id = context.insts().Get(then_value_id).type_id();
   else_value_id =
       ConvertToValueOfType(context, else_node, else_value_id, result_type_id);
+  if (!EndConditionalExprOperand(context, else_node, else_value_id)) {
+    return false;
+  }
 
   // Create a resumption block and branches to it.
   auto chosen_value_id = AddConvergenceBlockWithArgAndPush(

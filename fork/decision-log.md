@@ -2893,7 +2893,7 @@ container mapping (incl. owning->view)" flips MISSING → DONE
 (fork/gap-analysis.md row 82; this branch's header 29 DONE / 22 PARTIAL / 4
 MISSING / 1 DESIGN-ONLY over 56 — trunk's header after OV-3 reads 29 / 21 / 5
 / 1, so the merged header is 30 / 21 / 4 / 1, reconciled by the orchestrator at
-the trunk merge) on the conformance run of record CONF_RUN (CONF_NUMBERS).
+the trunk merge) on the conformance run of record 37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit) (128 PASS / 0 FAIL / 22 SKIP over 150 programs, 48/56 bullets).
 Landed on claude/carbon-fork-0-1-sl2 off trunk 9e5dd5f75 in the four commits
 fork/slices/plan.md §3 fixed — 65338a7b7 (the import and export mapping with
 five goldens), 17d506e2e (the synthesized `CppContiguousRange`, the prelude
@@ -3270,7 +3270,7 @@ worklist in sem_ir/inst_fingerprinter.cpp `Run`, has no cycle guard — but no
 cycle was found by reading, so no toolchain change is made and the plan's
 testdata fallback applies: ONE range, on `missing_size` (no witness is built
 there), the positives passing silently as before, W-121 filed with the run
-id. Predicted fill (FILL_RUN): impls/cpp_contiguous_range.carbon only, the
+id. Predicted fill (37373875153 (fill 1d0c65f09)): impls/cpp_contiguous_range.carbon only, the
 `missing_size` range showing the blanket `impl_witness` with `.Result =
 false`; everything else byte-identical; if it hangs again the cycle is in the
 test library's import, not the witness. Round 4 (hosted conformance run
@@ -3290,7 +3290,7 @@ import.cpp `GetFunctionName` casts the constructor's parent inst — the mapped
 range constructor are all readable) and a review miss of the fixture class:
 every golden mocks the container in a header WITHOUT `std::span`, so the C++
 map was null and Clang never ran; §7's R-11 named `<span>` under `-std=c++20`
-as CONF_RUN-arbitrated without naming the conversion-lookup interaction.
+as 37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit)-arbitrated without naming the conversion-lookup interaction.
 Fix: `LookupCppConversion` declines constructors of a class whose
 `ClangDecl` inst is the mapped Carbon type rather than a `ClassDecl` (round
 5 narrowed this from "custom-mapped classes", the matcher; the conversion is
@@ -3318,11 +3318,11 @@ array/mixed_constant_init.carbon pins the two constant stores; no existing
 golden moves (an all-constant `array_init` is a constant and never reaches
 the handler). The review miss here is of the plan class: §5.B.2's
 hand-derived expectation treated `a` as given, and no reviewer asked which
-lowering path initializes a mixed literal. Predicted fill (FILL_RUN,
+lowering path initializes a mixed literal. Predicted fill (37373875153 (fill 1d0c65f09),
 re-predicted): impls/cpp_contiguous_range.carbon's one range plus the two
 new goldens (vector_view_span.carbon's two dump ranges,
 mixed_constant_init.carbon's one function); everything else byte-identical.
-Predicted conformance (CONF_RUN): both programs PASS, EXPECTs unchanged.
+Predicted conformance (37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit)): both programs PASS, EXPECTs unchanged.
 
 DEVIATIONS from the plan, each in fork/slices/plan.md's "Landed notes (SL-2,
 2026-10-05)": the prelude section was first landed in a new library and
@@ -3357,11 +3357,14 @@ files: the broken prelude) and its convergence pass 2c21f6e24 (40 files,
 convergence run 37365683022, 0c9924049 (two `CHECK:STDERR` line numbers).
 Third autoupdate (after 58c08be07): run 37367343836 HUNG in the file_test
 step and was cancelled (W-121). Fourth autoupdate (after the round-3 commit):
-run FILL_RUN (impls/cpp_contiguous_range.carbon's one dump range, plus the
+run 37373875153, fill 1d0c65f09 (also renumbered prelude `.loc`s in
+stdlib/vector_view.carbon; impls/cpp_contiguous_range.carbon's one dump range, plus the
 round-4 goldens stdlib/vector_view_span.carbon and
 array/mixed_constant_init.carbon; the round-4 fill b89020c8a filled
-vector_view_span.carbon without reaching the gate, so the fill after round
-5 rewrites that file's four ranges and nothing else). Gate: run GATE_RUN (prek, `bazel test //toolchain/...`;
+vector_view_span.carbon without reaching the gate, so the round-4 fill was run
+37385761799, its conformance 37387226286 pushed 85f1c03f1 at 128 / 0 / 22
+over 150, and the round-5 fill, run 37389055212 (affa54e8a), rewrote that
+file's four ranges and nothing else, as predicted). Gate: run 37395916761 (on 556a8669d; the first gate, 37390683098, failed only on the round-5 fill's own `.loc` renumbering inside vector_view_span.carbon, the two-pass convergence of R26, and convergence run 37394549957 pushed 556a8669d, 130 `.loc` lines and nothing else) (prek, `bazel test //toolchain/...`;
 no new diagnostic kind, so the coverage test is unchanged). Conformance: the
 first of-record run, 37378790657 on 76c695db4 (the trunk merge), FAILED both
 new programs — cpp_span_view COMPILE-FAIL (exit -6, the `ClassDecl` cast
@@ -3371,7 +3374,7 @@ programs, bullets 47 PASS / 1 FAIL / 8 SKIP — trunk's 126 / 0 / 23 over 149
 plus the two new programs failing; see FILL-CAUGHT MISSES round 4. After the
 round-4 commit the of-record run must show 128 PASS / 0 FAIL / 22 SKIP over
 150, 48/56 bullets (the same +2 / −1 / +1 delta over the merged trunk base):
-run CONF_RUN, **CONF_NUMBERS** — pre-merge expectation 126 PASS / 0 FAIL / 22 SKIP over 148
+run 37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit), **128 PASS / 0 FAIL / 22 SKIP over 150 programs, 48/56 bullets** — pre-merge expectation 126 PASS / 0 FAIL / 22 SKIP over 148
 programs, 48/56 bullets ("Stdlib C++ interop: transparent non-owning
 contiguous container mapping (incl. owning->view)" SKIP → PASS, 2/2 programs),
 from the branch base READ FROM fork/conformance/out/scoreboard.json at
@@ -3396,7 +3399,7 @@ class member lookup does not see gets no view (§1.B.3; the one-function
 has), with the non-const-`size()`-beside-two-`data()` and the signed-`size()`
 shapes noted there. Not filed: "owning C++ container to Core.Slice view" —
 §8.5 files it only if the D-SL-9 fallback fires, and it did not (the chain
-resolved at the second fill; CONF_RUN is its arbiter at runtime); "array-value
+resolved at the second fill; 37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit) is its arbiter at runtime); "array-value
 to slice conversion" (D-SL-2, SL-1's rule stands). Disclosed, not filed,
 because the mechanism it would file against is `BuildCopyWitness`'s
 pre-existing policy and not SL-2's: a `std::span<T>` over a C++ `T` with a

@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 2026-10-05 — SL-1 verified of record (conformance run 37347619141; "Landed
 notes (SL-1, 2026-10-05)" at the end of this file) and SL-2 landed pending its
 hosted verification of record ("Landed notes (SL-2, 2026-10-05)" after it,
-with the placeholders FILL_RUN / GATE_RUN / CONF_RUN the orchestrator stamps).
+with the placeholders 37373875153 (fill 1d0c65f09) / 37395916761 (on 556a8669d; the first gate, 37390683098, failed only on the round-5 fill's own `.loc` renumbering inside vector_view_span.carbon, the two-pass convergence of R26, and convergence run 37394549957 pushed 556a8669d, 130 `.loc` lines and nothing else) / 37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit) the orchestrator stamps).
 The two adversarial plan
 reviews (R29(c); rev A, design fidelity: 4 MAJOR + 6 MINOR; rev B, toolchain
 reality: 4 MAJOR + 7 MINOR; both APPROVE-WITH-AMENDMENTS) are folded in place,
@@ -2885,7 +2885,7 @@ this plan, honestly:
     12`; both programs pin the R-6 layout premise with `static_assert(sizeof
     (std::span<const int>) == 16)`. The D-SL-9 fallback (`cpp_span_view`
     SKIP with a refreshed reason, +1 / 0 / +1, PARTIAL) was NOT taken: the
-    chain resolved at the second fill, and CONF_RUN arbitrates it at runtime.
+    chain resolved at the second fill, and 37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit) arbitrates it at runtime.
 -   **§6.B held once the impl was where §2.B.9 put it.** The first fill's 306
     movers were the orphan, not churn; the second fill moved no pre-existing
     golden, and §6.B's round-1 hedge — that check/lower slice goldens might
@@ -2909,16 +2909,16 @@ this plan, honestly:
     the fill before, no `Stack dump:` — and was cancelled. Round 3 keeps the
     range on `missing_size` only (no witness is built there) and files
     W-121; the witness evidence is vector_view.carbon's `view` split, which
-    dumps the same `custom_witness` cleanly. FILL_RUN fills the one range.
+    dumps the same `custom_witness` cleanly. 37373875153 (fill 1d0c65f09) fills the one range.
 -   **§7 outcomes.** R-6 not refuted at the IR level (the 16-byte thunk load;
-    the runtime half is CONF_RUN's). R-7 not refuted: function/export/slice
+    the runtime half is 37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit)'s). R-7 not refuted: function/export/slice
     .carbon filled with `std::span<const int>` through the mock's inline
     `__1`. R-8 not refuted: no Clang diagnostic inside the synthesized thunk
     body. R-9: falsifier (ii) fired at the first fill for a reason the risk
     never listed (the orphan), (i) did NOT fire (the silent golden was a
     PASS), the chain resolved at the second fill; (iii), R-10 and R-11 have
     no golden (the real libc++ `std::vector<int>` and `<span>` under
-    `-std=c++20`) and are arbitrated by CONF_RUN. Round 4: the first
+    `-std=c++20`) and are arbitrated by 37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit). Round 4: the first
     of-record conformance run (37378790657) did not refute R-10
     (`Cpp.std.vector(i32)` imported; the ICE was downstream, in the
     conversion lookup) or R-11 (`std::span<const int>` mapped -- the
@@ -2951,8 +2951,8 @@ this plan, honestly:
     −1 SKIP / +1 program; the contiguous-container bullet SKIP → PASS) gives
     the expected 126 / 0 / 22 over 148, 48/56. Trunk has since taken OV-3
     (126 / 0 / 23 over 149, 47/56), so the of-record numbers on the trunk
-    merge are that base plus the same delta. Of record: run CONF_RUN,
-    CONF_NUMBERS.
+    merge are that base plus the same delta. Of record: run 37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit),
+    128 PASS / 0 FAIL / 22 SKIP over 150 programs, 48/56 bullets.
 
 Reconciliation greps (§8.4), run at 58c08be07:
 
@@ -2995,9 +2995,15 @@ orphaned prelude impl) and its convergence pass 2c21f6e24 (40 files,
 18e2165c1 (the seven output-producing goldens, no pre-existing mover) and
 convergence run 37365683022, 0c9924049 (two `CHECK:STDERR` line numbers);
 fix 58c08be07 (records and dump ranges; one `_Nonnull`, one `GetOrEmpty`).
-Third autoupdate, after 58c08be07: run FILL_RUN (impls/cpp_contiguous_range
-.carbon only). The round-4 fill b89020c8a filled vector_view_span.carbon
-WITHOUT reaching the gate (round 5); the fill after round 5 rewrites that
-file's four ranges and nothing else. Gate GATE_RUN; conformance CONF_RUN:
-CONF_NUMBERS, against the expected 128 / 0 / 22 over 150, 48/56 on the
+Third autoupdate, after 58c08be07: run 37367343836 HUNG and was cancelled
+(W-121); the round-3 fill, run 37373875153 (1d0c65f09), filled
+impls/cpp_contiguous_range.carbon's one range and renumbered prelude `.loc`s
+in stdlib/vector_view.carbon (slice.carbon's round-2 edit moved the blanket
+impl four lines). The merged head 76c695db4 converged with no changes (run
+37376348469) and its gate 37378838866 passed; the of-record conformance
+37378790657 FAILED both new programs (round 4). Round-4 fill: run
+37385761799 (b89020c8a); conformance 37387226286 (85f1c03f1) 128 / 0 / 22
+over 150. Round-5 fill: run 37389055212 (affa54e8a, vector_view_span.carbon
+only, as predicted). Gate 37395916761 (on 556a8669d; the first gate, 37390683098, failed only on the round-5 fill's own `.loc` renumbering inside vector_view_span.carbon, the two-pass convergence of R26, and convergence run 37394549957 pushed 556a8669d, 130 `.loc` lines and nothing else); conformance 37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit):
+128 PASS / 0 FAIL / 22 SKIP over 150 programs, 48/56 bullets, against the expected 128 / 0 / 22 over 150, 48/56 on the
 merged trunk base (126 / 0 / 22 over 148 on this branch's own base).

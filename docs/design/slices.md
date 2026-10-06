@@ -383,12 +383,20 @@ which it is removed:
     `Destructible` facets the toolchain lacks. Removed when explicit destroy
     calls or a `TrivialDestructor` facet, and an `Allocator` design, land;
     `Buf` then gains an allocator parameter defaulting to the global one.
--   **A `Core.Buf` stored in a field is not freed.** A class, struct, tuple,
-    choice payload or array that holds a `Buf` destroys it through the
-    toolchain's synthesized destructor for aggregates, whose body is still a
-    placeholder that runs no member destructors; only a `Buf` that is itself a
-    local variable or a temporary runs `impl as Destroy` and frees its block
-    (W-108). Removed when destroy-op synthesis destroys members.
+-   **A `Core.Buf` stored in a field of a class that declares its own
+    `impl as Destroy`, or in a choice payload, is not freed.** A class, struct,
+    tuple or array that holds a `Buf` and declares no `Destroy` impl destroys
+    it through the toolchain's synthesized `SubobjectDestroy` walk, which calls
+    each field's `Destroy.SelfDestruct` and so `Buf`'s `impl as Destroy`
+    (since the 2026-10 upstream advance; pinned by
+    toolchain/lower/testdata/slice/buf_field.carbon, where the owner's destroy
+    sequence reaches `call void @free`). An owner that declares its own
+    `impl as Destroy` runs that impl's `Op` and the `Destroy` interface's
+    placeholder `SubobjectDestroy`, so its `Buf` field leaks (the same
+    golden's `declared_owner` split has no `free`); a `Buf` in a choice payload
+    is not destroyed either (W-125). Removed when the toolchain's `Destroy`
+    interface gains the `require impls SubobjectDestroy` entry its prelude TODO
+    names, so a declared impl's subobjects are walked too.
 -   **Over-aligned element types** (alignment above `max_align_t`) are not
     supported: `malloc` guarantees 16 bytes.
 -   **A byte count that overflows fails-stop.** `Make(size, fill)` computes

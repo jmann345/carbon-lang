@@ -17,6 +17,8 @@
 // only `CARBON_FATAL` left in lower/handle.cpp is "Cross-file template
 // lowering not implemented yet" (:513), which this program does not reach —
 // `GetN` is instantiated in the file that defines it. Prediction: PASS, 42.
+// Measured 2026-10-06: PASS on hosted conformance run 37407530104 (UA-2
+// round 1) — the W-014 probe flipped.
 //
 // The slice this program pins: template-dependent member access. Shape
 // verbatim from toolchain/check/testdata/generic/template/member_access.carbon

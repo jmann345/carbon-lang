@@ -10,29 +10,42 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-_Last updated: 2026-10-05 (post-PR #48: OV-3 LANDED — an exported
-`overload fn` set is a C++ overload set (every member delivered to Clang
-through `SetExternalVisibleDeclsForName`, each with its own
-`:overload<N>` symbol and a thunk that now carries the member's
-`overload_index`), resolved by C++ callers under C++'s best-match rules —
-the documented divergence from Carbon's first-match, asserted in both
-directions by one program (rulebook R30). Gap row 57 PARTIAL → DONE: the
-overloading workstream (OV-1/2/3, F-009) is closed; header 29 DONE / 21
-PARTIAL / 5 MISSING / 1 DESIGN-ONLY. NEW FLOOR 126 PASS / 0 / 23 SKIP
-over 149 (quoted from scoreboard.json, run 37357609478), 47/56 bullets.
-Also fixed on the way: the file_test autoupdater never normalized a Clang
-declaration id that ends a line. Earlier today: SL-1 (#47, floor 124),
-OV-2 (#46, floor 121), the weekly upstream check (cut holds a seventh
-week). IN FLIGHT: SL-2 (W-056, `std::span` ↔ `Core.Slice` mapping +
-owning-container views) on claude/carbon-fork-0-1-sl2 in ../carbon-sl2 —
-implemented, review REJECT (the blanket `ImplicitAs` impl was placed in a
-new prelude library and is an orphan there, which took every
-full-prelude golden down in the first fill; an ICE on `void data()`
-members; an unchecked `Copy & Destroy` bound on span elements) — fixer
-running. Then the "upstream advance" workstream (181 deferred commits, 99
-conflicting files at the last dry run), variadics, CMake integration,
-safe-Carbon design. Next cron Monday 2026-10-12; the owner's machine is
-never used._
+_Last updated: 2026-10-06 (post-PR #49: SL-2 LANDED — the dynamic-extent
+`std::span<T>` imports as `Core.Slice(T')` and `Core.Slice` exports as
+`std::span` (one reinterpretation of the shared pointer-then-size
+layout), and a C++ owning container with `data()`/`size()` converts to
+a `Core.Slice` view through the synthesized `Core.CppContiguousRange`
+and a blanket `ImplicitAs` impl beside `Slice`. Gap row 82 MISSING →
+DONE; header 30 DONE / 21 PARTIAL / 4 MISSING / 1 DESIGN-ONLY. NEW FLOOR
+128 PASS / 0 / 22 SKIP over 150 (quoted from scoreboard.json, run
+37390640614), 48/56 bullets. Five hosted rounds: review REJECT (orphan
+blanket impl in a new prelude library), a false `ULong64` story caught
+by re-review, a hung file_test on dump ranges (W-121), and the
+of-record conformance run that FAILED both new programs — a `ClassDecl`
+cast ICE when C++ conversion lookup met a custom-mapped class's
+constructors, and an upstream latent lowering bug that skipped constant
+elements of a mixed array literal — both fixed at the root, the gate
+re-keyed on the importer's registered inst at round 5. IN FLIGHT: the
+upstream advance (UA-1, cut 631f8fb → c1e83b0b7, 183 commits, 105
+conflicts) on claude/carbon-fork-0-1-upstream-advance in
+../carbon-upstream — merged, compile-fixed, reviewed, and through three
+fill rounds on the hosted runner (round 1: a null `QualType` in the
+generic-function arm of `TryMapType`; round 2: upstream's new SSA
+verifier caught the fork's `?` inside an `if`-expression arm, root
+cause upstream's own unconditionalized arm cleanups, fixed in
+handle_if_expr/handle_operator with pins; round 3: the 225-golden fill
+classified line by line against upstream and the cut — no regression,
+one `fail_todo` retriaged); the round-3 fill is running, then
+convergence, gate, conformance (bar: 128/0/22 over 150 non-regressing),
+re-merge of trunk, discharge, PR, UA-2 reconciliation. Then variadics,
+CMake integration, safe-Carbon design. Next cron Monday 2026-10-12; the
+owner's machine is never used._
+FORTY-NINE PRs. The slice now crosses the C++ boundary in both
+directions, and the two bugs that the of-record conformance run
+surfaced after a green gate — a conversion-lookup ICE and a lowering
+path that left constant array elements uninitialized — are exactly why
+the runtime suite is the bar and the golden fill is not: both goldens
+were green, both programs were wrong._
 FORTY-EIGHT PRs. Function overloading is finished end to end — same-file
 sets, import across libraries and api/impl, generic members, and export
 to C++ — with the one divergence from C++ written down and tested rather
@@ -372,7 +385,7 @@ at S3a → 80 at S3b → 81 at S3c → 83 at B1b
 (error_handling/control_flow_constructs flip +
 question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a
 → 88 F8b → 89 F8c → 90 F8d → 91 W72b → 92 W-067 → 93 W-068 → 95 W-069 → 96 multifile → 100 W-076 → 101 W-078 → 102 W-077 →
-106 EH-A → 108 W-012 → 112 EH-B → 114 UN-1 → 116 UN-2 → 118 OV-1 → 121 OV-2 → 124 SL-1 → 126 OV-3. The scoreboard regenerates on GitHub-hosted runners only
+106 EH-A → 108 W-012 → 112 EH-B → 114 UN-1 → 116 UN-2 → 118 OV-1 → 121 OV-2 → 124 SL-1 → 126 OV-3 → 128 SL-2. The scoreboard regenerates on GitHub-hosted runners only
 (`Fork: hosted verification`, mode `conformance`; R28).
 
 ### CI on jmann345/carbon-lang (GitHub-hosted only — R28)
@@ -397,6 +410,14 @@ question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a
 
 -   `/home/user/arbiter/carbon_toolchain-0.0.0-0.nightly.2026.07.19/bin/carbon` — upstream nightly
 -   `/home/user/trial-tc/carbon_toolchain-0.0.0-0.dev/bin/carbon` — fork-built with match
+-   The container's clang 18 cannot build the toolchain, but `clang++-19`
+    with libc++ (installed 2026-10-05) and the tablegen outputs built from
+    the bazel-cached llvm-project give a `-fsyntax-only -std=c++20` check
+    under the toolchain's `-Werror` set: the harness is
+    `scratchpad/syn/check_one.sh <path>` (per-worktree variants). It
+    catches compile errors in a fix round before the hosted autoupdate
+    does; it proves nothing about behavior, and the hosted runs stay the
+    arbiter (R28).
 
 ### Next actions (dependency order)
 

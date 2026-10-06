@@ -24,21 +24,32 @@ conformance run that FAILED both new programs — a `ClassDecl` cast ICE when C+
 conversion lookup met a custom-mapped class's constructors, and an upstream
 latent lowering bug that skipped constant elements of a mixed array literal —
 both fixed at the root, the gate re-keyed on the importer's registered inst at
-round 5. IN FLIGHT: the upstream advance (UA-1, cut 631f8fb → c1e83b0b7, 183
-commits, 105 conflicts) on claude/carbon-fork-0-1-upstream-advance in
-../carbon-upstream — merged, compile-fixed, reviewed, and through three fill
-rounds on the hosted runner (round 1: a null `QualType` in the generic-function
-arm of `TryMapType`; round 2: upstream's new SSA verifier caught the fork's `?`
-inside an `if`-expression arm, root cause upstream's own unconditionalized arm
-cleanups, fixed in handle_if_expr/handle_operator with pins; round 3: the
-225-golden fill classified line by line against upstream and the cut — no
-regression, one `fail_todo` retriaged); the round-3 fill is running, then
-convergence, gate, conformance (bar: 128/0/22 over 150 non-regressing), re-merge
-of trunk, discharge, PR, UA-2 reconciliation. Then variadics, CMake integration,
-safe-Carbon design. Next cron Monday 2026-10-12; the owner's machine is never
-used. FORTY-NINE PRs. The slice now crosses the C++ boundary in both directions,
-and the two bugs that the of-record conformance run surfaced after a green gate
-— a conversion-lookup ICE and a lowering path that left constant array elements
+round 5. UPSTREAM ADVANCE (UA-1) MERGED-PENDING: the cut moved from 631f8fb to
+upstream c1e83b0b7 (183 commits, 105 conflicts: 31 sources and docs, 74 goldens)
+on claude/carbon-fork-0-1-upstream-advance in ../carbon-upstream — merged with
+every class-B mechanism re-expressed inside upstream's structure (D-UA-6
+redeclarations, D-UA-7 thunk fence, D-UA-9 destroy witnesses) and two class-C
+deletions (S3b publication, the F8d embedding), compile-fixed, reviewed (one
+implementation review REJECT folded; one round-2 review APPROVE-WITH-FIXES
+folded), through five hosted fill passes (round 1: a null `QualType` in the
+generic-function arm of `TryMapType`; round 2: upstream's new SSA verifier
+caught the fork's `?` inside an `if`-expression arm — root cause upstream's own
+unconditionalized arm cleanups, a latent miscompile, fixed in control_flow with
+pins; round 3: the 225-golden fill classified line by line against upstream and
+the cut — no regression, one `fail_todo` retriaged; the post-merge fill refilled
+SL-2's goldens under the upstream base with no manual-fix list), re-merged with
+trunk 59f1c30d5 (SL-2), pre-merge scoreboard 126/0/23 over 149 (run 37399118672:
+trunk's pre-SL-2 floor exactly, both template probes and all five thread
+programs PASS — the R-4/D-UA-8 break condition did not fire), gate GATE_RUN and
+conformance CONF_RUN (CONF_NUMBERS; bar 128/0/22 over 150 non-regressing) on
+606a99c5a, discharged (decision-log entry "Upstream advance 2026-10", ledger
+W-001/W-023/W-069, residues W-123..W-125). Next: the PR, then UA-2
+reconciliation (un-SKIP probes, the W-108 pin, ledger re-cites;
+fork/upstream/plan.md §8.5). Then variadics, CMake integration, safe-Carbon
+design. Next cron Monday 2026-10-12; the owner's machine is never used.
+FORTY-NINE PRs. The slice now crosses the C++ boundary in both directions, and
+the two bugs that the of-record conformance run surfaced after a green gate — a
+conversion-lookup ICE and a lowering path that left constant array elements
 uninitialized — are exactly why the runtime suite is the bar and the golden fill
 is not: both goldens were green, both programs were wrong._ FORTY-EIGHT PRs.
 Function overloading is finished end to end — same-file sets, import across
@@ -295,6 +306,22 @@ constructs, matches, and destructures through specifics at runtime with
 per-specific layouts. Go-forward: **one workstream = one branch off `trunk` =
 one focused PR**.
 
+**Upstream advance (2026-10; standing rule 5, D-UA-13):** the cut is upstream
+`c1e83b0b7` (2026-10-05, PR 7897) as of the UA-1 merge; the deferred set is
+EMPTY at the merge. Staged on claude/carbon-fork-0-1-upstream-advance per
+fork/upstream/plan.md (183 commits, 105 conflicts, five hosted fill passes,
+four fix/triage rounds), pre-merge scoreboard 126/0/23 over 149 (run
+37399118672), gate GATE_RUN and conformance CONF_RUN (CONF_NUMBERS) on
+606a99c5a; full record in the decision-log entry "Upstream advance 2026-10:
+cut 631f8fb → c1e83b0b7 (2026-10-06)". Weekly check: the Routine `Weekly
+upstream-merge check (carbon fork)` keeps its prompt (it measures from `git
+merge-base`, D-UA-13); its first post-advance firing, Monday 2026-10-12, should
+report a SMALL deferred set (upstream's commits since c1e83b0b7, one week's
+worth) and no fork-modified overlap beyond the usual check-core files; a large
+count or a conflict in a non-check-core file is the signal to look at. The
+PREVIOUS outcomes (2026-08-17 and 2026-08-08) are retained below for the
+record.
+
 **Weekly upstream-merge outcome (standing rule 5, 2026-08-17, PR #17):**
 upstream `864845c` (15 commits over e7050af, covering the 08-10 AND 08-17
 firings — the session was credit-suspended between them) staged, 9
@@ -325,6 +352,7 @@ code). Next check: Monday 14:00 UTC.
 
 | Branch | State |
 | --- | --- |
+| `claude/carbon-fork-0-1-upstream-advance` | MERGED-PENDING — UA-1 (cut 631f8fb → c1e83b0b7); worktree ../carbon-upstream; head 606a99c5a + the discharge commit; gate GATE_RUN / conformance CONF_RUN; the PR stamp flips this row to MERGED and cuts UA-2 from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |
 | `claude/carbon-fork-0-1-w5-s3{,b,c}` | MERGED by way of PRs #12/#13/#14 — W5-S3 complete. |

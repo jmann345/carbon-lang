@@ -6,7 +6,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Upstream-advance plan: cut 631f8fb → c1e83b0b7 (UA-1 merge, UA-2 reconciliation)
 
-**Status:** rev 3 — signed off 2026-10-05; UA-1 in progress. The final
+**Status:** rev 3 — signed off 2026-10-05; UA-1 landed 2026-10-06 (see the
+Landed notes; verification of record GATE_RUN / CONF_RUN). The final
 count-and-grep re-check of rev 3 returned APPROVE-WITH-AMENDMENTS (three
 MINORs, applied in the sign-off commit and marked "(amended 2026-10-05,
 final re-check M<n>)"). Rev 2's focused
@@ -1977,11 +1978,12 @@ observations made while verifying are recorded in the last rows.
     implementer's hand-back; no self-hosted run, no workflow dispatched by
     the implementer)
 
-### Landed notes (UA-1, in progress)
+### Landed notes (UA-1, 2026-10-06)
 
 Commits on `claude/carbon-fork-0-1-upstream-advance` (SL-2 re-merged
-2026-10-06, the last bullet; three hosted fills landed, gate and conformance
-not yet dispatched):
+2026-10-06; five hosted fill passes, the pre-merge scoreboard, the gate and
+conformance of record — the discharge bullet at the end of this section is the
+summary of record):
 1de4bb49d sign-off, 3d4c0e37a merge (commit 1), 5a6f54229 F8d retirement
 (commit 1b), 119b35439 reflow (commit 2). The 105 conflicts of §0.3
 reproduced exactly; goldens went 71 `--theirs` / 2 hand-merged / 1 deleted,
@@ -2373,3 +2375,77 @@ hides a non-`NodeId` location; the sequence is pre-merge).
     methods, …" (an H3 at the cut's :5585) is a pre-existing manufactured
     heading of the R31 class that commit 2's digit-anchored grep and
     heading-count diff could not see because it predates the reflow.
+
+-   **Discharge, 2026-10-06 (decision-log entry "Upstream advance 2026-10:
+    cut 631f8fb → c1e83b0b7 (2026-10-06)"; ORCHESTRATION; ledger W-001,
+    W-023, W-069, W-123..W-125).** Hosted sequence as it ran (R28; every run
+    `Fork: hosted verification` on GitHub-hosted ubuntu-22.04): compile probe
+    37381466829 (red at call.cpp:252, compile round 1 above); autoupdate
+    37385396872 (built; crashed, fill round 1); autoupdate 37388566542
+    (built; crashed, fill round 2); autoupdate 37393341208 → b430984d2 (225
+    goldens, one manual-fix entry, fill round 3); autoupdate 37397937554 →
+    775de300d (22 goldens: the round-3 predictions and the R26 pass-2
+    snippet numbers; no manual-fix list); conformance 37399118672 →
+    85b0feb2c (126 PASS / 0 FAIL / 23 SKIP over 149 — trunk's pre-SL-2 floor
+    exactly; generics/templates_type_param.carbon and templates_value_param
+    .carbon PASS, so D-UA-1's break condition did not fire; all five thread
+    programs PASS, so R-4's `F&&` residual is settled and the F8d retirement
+    stands; stdlib/slices_heap_buf.carbon PASS, R-3); gate 37399160122
+    PASSED (pre-merge); then the re-merge b51094c44 of trunk 59f1c30d5,
+    autoupdate 37401156556 → 606a99c5a (12 goldens: SL-2's ten under the
+    upstream base plus two round-3 pass-2 movers; no manual-fix list); gate
+    GATE_RUN and conformance CONF_RUN on 606a99c5a: CONF_NUMBERS (bar: 128 /
+    0 / 22 over 150, 48/56 bullets, non-regressing; D-UA-12: no status
+    change in UA-1). The R26 fixpoint on 606a99c5a is proven by GATE_RUN's
+    file_test pass (R28(d)), not by a separate autoupdate pass. §8.2's
+    mirrored-nightly A/B was NOT run (no nightly at or after 2026.10.02 was
+    mirrored; the mirror workflow was never dispatched during UA-1, and the
+    staging branch did not touch its triggers per §8.1 step 1); D-UA-14's
+    arbiter — the hosted conformance of the merged toolchain — ran both
+    template probes green, so the matrix had nothing to attribute. §8.4
+    greps re-run at discharge on 606a99c5a (expected → actual; a deviation is
+    a finding, recorded, not papered over):
+
+| Grep (§8.4) | Expected | Actual at 606a99c5a | Verdict |
+| --- | --- | --- | --- |
+| D-UA-8: `constant_function_args`, `HasConstantFunctionArgs`, `InventConstantFunctionArg`, `GetOrExportFunctionDeclToCpp`, `TryMapFunctionType` over toolchain/ | each empty | 0 / 0 / 0 / 0 / 0 | OK |
+| D-UA-10/9/6: `publish_block_id`, `MergeClassRedecl`, `MergeOrAddName`, `MakeDestroyOpBody`, `MergeFunctionRedecl` over toolchain/check | each empty | 0 / 0 / 0 / 0 / 0 | OK |
+| `MergeOverloadMemberRedecl` in handle_function.cpp | definition + one call inside `TryMergeIntoOverloadSet` | :177 definition, :391 the one call (inside `TryMergeIntoOverloadSet`) | OK |
+| `is_choice` in custom_witness.cpp | five (plan) / six (landed note) | six: :297 comment and :305 clause in `CanDestroyClass` (W-071), :872 `IsTriviallyDestructible`, :1021 `MakeSubobjectDestroyOpBody` (the new clause), :1516 comment in `BuildDestroyWitness`, :1546 `LookupChoiceCopyWitness` | OK (six, as the landed note; the plan's five predates the W-071 comment) |
+| `CustomLayoutType` in custom_witness.cpp | arms inside BOTH `CanDestroyType` and `MakeSubobjectDestroyOpBody`, plus `HasNonTrivialUserCopyImpl` and `IsTriviallyDestructible` | :440 `CanDestroyType`, :806 `HasNonTrivialUserCopyImpl`, :922 `IsTriviallyDestructible`, :1047 `MakeSubobjectDestroyOpBody` (plus comments :280/:285/:297) | OK |
+| `GetCanonicalFacetOrTypeValue` over toolchain/ | empty | 0 | OK |
+| `-l` file sets of `CalleeCppFunctionPointer` and `CalleeOverloadSet` (`*.cpp`) | identical | differ by toolchain/check/eval.cpp only (upstream's switch there has a `default:` arm) | OK by the landed-note deviation (§0.4 item 5) |
+| `grep -c EST_BasicNoexcept thunk.cpp`; awk over `CreateThunkFunctionDecl` | 4; 1 | 4; 1 | OK (fence present, R-5a) |
+| `IsCppThunkFenceRequired` callers | `IsCppThunkRequired`, `BuildThunkBody` through `BuildCppThunk`, `PerformCppThunkCall`, `ImportFunctionDecl`, `ImportFunctionPointerInvoke`; `FunctionDecl*` overload in thunk.h | thunk.cpp:407 `IsCppThunkRequired`, :1052 `BuildCppThunk`, :1571 `PerformCppThunkCall`; import.cpp:2212 `ImportFunctionDecl`, :2316 `ImportFunctionPointerInvoke`; thunk.h:174 and :180 (both overloads declared) | OK |
+| `fenced thunk` in import.cpp | two TODO sites | two TODO strings (:2214 `ImportFunctionDecl`, :2319 `ImportFunctionPointerInvoke`) plus two comments (:2119, :2313) | OK |
+| `TryMergeOverloadDecl\|TryMergeRedecl` order in handle_function.cpp | overload decision precedes the template call | :1145 `TryMergeOverloadDecl(...)` then :1147 `TryMergeRedecl(` in `BuildFunctionDecl` (definition :465) | OK (R-5b) |
+| `DiagnoseOverloadMarkerMismatch` in handle_function.cpp | definition + two emit sites | :215 definition, :356 (`TryMergeIntoOverloadSet`), :542 (`TryMergeOverloadDecl`) | OK |
+| `is_union` in merge.cpp | the D-UN-6 clause inside `TryMergeRedecl` | :868 (the flip check) and :894 (the `union` token kind for `DiagnoseIfInvalidRedecl`), both inside `TryMergeRedecl` | OK (two clauses, per the landed note; R-7) |
+| `HasClassKeyedImpl` in custom_witness.cpp | called inside `CanDestroyClass` | :270 inside `CanDestroyClass` (also :766 `HasNonTrivialUserCopyImpl`; :225 declaration, :667 definition) | OK (R-5c) |
+| `github.repository == 'carbon-language/carbon-lang'` in .github/workflows | exactly six | six (auto_label_prs:22, check_dependent_pr:26, gh_pages_ci:25, gh_pages_deploy:27 and :76, nightly_release:40) | OK |
+| §0.4 item 10 declaration-only `fn` in the two impl files | empty | empty | OK |
+| `__clang_call_terminate` files in lower/testdata; `personality` files | ≥ 30; ≥ 30 | 35; 35 (round 3: 34; +lower/interop/cpp/span.carbon from SL-2's refill) | OK (R-5a) |
+| Reflow counts (commit 2) | heading counts per level and list counts unchanged; step (c) grep empty | recorded in 119b35439 (the deliberate decision-log H2 3 → 2 repair the only change) and re-checked at the re-merge | OK |
+| prek on the touched files (fix-cc-deps, check-build-graph, check-bazel-mod-deps, forbid-llvm-googletest skipped, R22); `runner.py --self-test` | clean; OK | clean at a fixpoint; 150 programs, 56 bullets, OK | OK |
+
+Discrepancies between the plan's predictions and what landed, consolidated
+(each already recorded in the bullets above): the function.{h,cpp}
+`return_type_id` alternative; the thunk constant-parameter plumbing
+dropped in commit 1 (so D-UA-8's break action is a revert plus two
+re-additions, never a plain revert); the second D-UA-6 class clause (the
+`union` token kind); eval.cpp's `default:` arm; six `is_choice` hits;
+`BuildPrimitiveCopyWitness` had no fork delta; the third manufactured
+heading of the reflow (fork/unions/plan.md) and the `forbid-llvm-googletest`
+hook the SKIP list missed; the compile-probe method rename (PR 7729) the
+§8.4 greps could not see; the generic-function null `QualType` in
+upstream's `TryMapType` arm; the SSA verifier (PR 7771) rejecting the `?`
+desugar inside an `if`-expression arm; the fence TODO hiding upstream's
+follow-on diagnostics on two function-pointer splits. None is a plan
+rollback: every D-UA decision stands as adopted, with D-UA-7's
+function-pointer clause amended to keep the imported `__invoke`. Not
+done in UA-1 and handed to UA-2 (§8.5): the §8.2 matrix for the record,
+the §0.6 un-SKIP probes, the W-108 pin golden, the ledger re-cites, the
+gap-analysis row re-cites, the declared-impl destroy IR clutter, the
+pre-existing manufactured decision-log heading ("7700 splice-stepping
+…"), and the Toolchains list in ORCHESTRATION (no new mirrored arbiter,
+since the A/B did not run).

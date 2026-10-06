@@ -6124,6 +6124,375 @@ Noted for W8b/W8c: lower merge-block namer emits the label
 choice-payload bind-pass coverage nuance, and the R8 conservative
 gate.
 
+### Upstream advance 2026-10: cut 631f8fb → c1e83b0b7 (2026-10-06)
+
+The fork's upstream cut advances from 631f8fb6d (2026-08-20, "Modularize driver
+subcommands and prune unused dependencies", PR 7658 — the cut the seven weekly
+entries below held) to upstream trunk c1e83b0b78b6bf648661f4c448c01f11d74af115
+(2026-10-05, "Use the plain identifier for Carbon names in C++", PR 7897), in
+ONE staged merge PR per fork/upstream/plan.md rev 3 (W-001, the F-002 staging
+flow operationalized for the first non-weekly-sized merge; D-UA-1). Landed on
+claude/carbon-fork-0-1-upstream-advance, cut from trunk 923c2f2af (post-PR 48)
+and re-merged with trunk 59f1c30d5 (post-PR 49, SL-2) before discharge:
+1de4bb49d plan sign-off (rev 3); 3d4c0e37a the merge commit (§3 commit 1 — every
+textual and semantic resolution of §2 except the F8d embedding); 5a6f54229 the
+F8d retirement (commit 1b, D-UA-8); 119b35439 the rumdl reflow (commit 2,
+D-UA-4); da91ddb45 the landed notes; 3d39ec8c2 and f28528990 compile fixes
+(round 1); ad13c57bd fill fixes (round 1); 1f69cf8fe fill fixes (round 2);
+b430984d2 the first complete hosted fill (225 goldens); dd8b9649e fill triage
+(round 3); 775de300d the round-3 fill; 85b0feb2c the pre-merge conformance
+scoreboard; b51094c44 the merge of origin/trunk 59f1c30d5 (SL-2); 929667a50 its
+landed note; 5795a773a the scoreboard merged across; 606a99c5a the post-merge
+fill. §0.1 numbers, as measured and as they reproduced at the merge: 183
+deferred upstream commits (`git rev-list --count 631f8fb..upstream-trunk`); 1533
+upstream files changed (1091 goldens); 762 fork files changed since the cut
+(toolchain 482, fork/ 230); 202 overlapping files (112 non-testdata, 90
+goldens); 105 dry-run conflicts = 31 non-testdata (25 toolchain sources,
+docs/design/lexical_conventions/words.md, five editor syntax files) + 74 goldens
+(73 content conflicts, 1 upstream-deleted); 13 upstream deletions and 1 rename;
+607 MD013 findings in 34 fork-authored markdown files under upstream's new
+`.rumdl.toml`. The merge commit's `git merge` reproduced exactly the 105 paths
+the plan's `merge-tree` dry run listed. Design authority not reopened: F-002,
+standing rule 7 / V-3a, R16, R26/R28(d), R29(b); every D-UA decision is an
+R29(a) implementation choice recorded for after-the-fact veto.
+
+CONFLICT CLASSIFICATION AS LANDED (§0.3 classes; the upstream commit that
+forced each class-B re-expression or class-C deletion). Class A, keep both
+(sixteen files): call.cpp, convert.cpp, core_identifier.def, cpp/import.h,
+function.{h,cpp}, handle_pattern_list.cpp, import_ref.cpp, member_access.cpp,
+lower/function_context.cpp (D-UA-11: the W-069 `TryEmitGlobalLetValue` early
+return before upstream's `require_value` CHECK, PR 7880), lower/type.cpp
+(upstream's placeholder list plus `OverloadSetType`; `FacetType` left with PR
+7734), sem_ir/expr_info.cpp, sem_ir/function.h (six `Callee` alternatives),
+sem_ir/stringify.cpp, words.md (`typeof`/`unused`/`val` from PR 7861 beside the
+fork's `union`), tree-sitter highlights (fork lines stay commented, W-091).
+Class B, upstream's structure with the fork mechanism re-expressed inside it:
+D-UA-9 custom_witness.cpp against PR 7784 (`SpecificInterface` query
+parameter), PR 7773 (the three-entity `Destroy` interface) and PRs 7829, 7840,
+7842, 7844, 7845 (the synthesized `SubobjectDestroy.Op` walk) — the fork's
+`CanDestroyClass(…, query_is_symbolic)` threading, `HasClassKeyedImpl`
+(D-SL-16), `HasUserDestroyImpl`, `IsTriviallyDestructible`,
+`HasNonTrivialUserCopyImpl`, the `CanDestroyType` `CustomLayoutType` arm, the
+choice-copy and union-unformed witnesses survive on `SpecificInterface`
+parameters, and `MakeSubobjectDestroyOpBody` carries clause (i) (`is_choice`
+early return in its `ClassType` arm) and clause (ii) (a `CustomLayoutType` arm
+that walks nothing), both commented as the W-083 placeholder with the D-UA-15
+residue named; D-UA-6 handle_function.cpp, class.cpp and merge.cpp against PR
+7632 (`TryMergeRedecl<EntityT>`) — `TryMergeRedecl` is the only merge path for
+plain functions and classes, the fork's full set-path decision runs first as
+`TryMergeOverloadDecl` (local set, imported set, the D-OV-3 marker-mismatch
+rule, the `ErrorInst`-localized silent return, a poisoned name returned to the
+template per the implementation review), set members merge through the fork's
+`MergeFunctionRedecl` renamed `MergeOverloadMemberRedecl` (one caller,
+`TryMergeIntoOverloadSet`), `BuildClassOrUnionDecl` dropped its copied
+`MergeClassRedecl`/`MergeOrAddName` (126 lines) for `LookupOrAddName` +
+`TryMergeRedecl<SemIR::Class>`, and the D-UN-6 `class`/`union` flip check moved
+INTO the template as an `if constexpr (IsClass)` clause beside a second
+two-line clause that spells a union's redeclaration diagnostics as `union`
+(merge.cpp:868 and :894); D-UA-7 cpp/thunk.{h,cpp} and cpp/import.{h,cpp}
+against PRs 7787, 7788, 7789 (public `CalleeFunctionInfo`,
+`SelfParamKind::FunctionPointer`, `BuildCppThunk(context, callee_info)`) and
+PR 7897 (`decl_name`) — the fence's three components re-expressed on
+upstream's struct: `EST_BasicNoexcept` on `CreateThunkFunctionDecl` (serving
+the decl and the function-pointer constructors; grep count 4, awk count 1),
+`IsCppThunkFenceRequired(Context&, const FunctionProtoType*, const
+FunctionDecl* decl_or_null)` with a `FunctionDecl*` overload, and the fence
+clause of `IsCppThunkRequired`; the fence-unbuildable TODO after
+`DefineAsThunkCall` in `ImportFunctionDecl` and, new, in
+`ImportFunctionPointerInvoke`; the catching thunk rebuilt on upstream's
+constructor with the `_catch` marker; D-UA-5 the five editor files against PR
+7746 (grammar overhaul) — `union` in each introducer alternation, `overload` in
+each `storage.modifier` alternation, vim's `carbonUnionDeclaration` kept.
+Class C, upstream's mechanism with the fork goldens and programs kept as pins:
+D-UA-10 eval.{h,cpp}, check/generic.cpp, sem_ir/generic.cpp against PR 7717
+(in-place specific value block) — the S3b `publish_block_id` incremental
+publication, the pre-sized placeholder and the two loud CHECKs in
+`GetConstantInSpecific` deleted, upstream's `NotConstant` for unreached entries
+adopted (rev A A9: upstream's `TryEvalBlockForSpecific` publishes the block
+before evaluating, so S3b's mechanism is upstream's now and only the fork's
+forward-reference CHECK is lost); D-UA-8 against PRs 7788, 7789 and 7881 — the
+F8d constant-function-argument embedding deleted in its own commit 5a6f54229
+(`ClangDeclSignature::constant_function_args` with its hashing, equality and
+`Print`, `InventConstantFunctionArg`, `TryMapFunctionType`, the
+`HasConstantFunctionArgs` branches in cpp/call.cpp, constant.cpp and
+overload_resolution.cpp, the `.arg<i>.<mangled>` thunk-name suffix,
+`GetOrExportFunctionDeclToCpp`), the duplicate `case SemIR::FunctionType::Kind:`
+arm of `TryMapType` deleted in the merge commit so that commit compiles (§0.4
+item 1), and the thunk's constant-parameter plumbing dropped in the merge
+commit rather than 1b because it lived inside the hunks upstream's struct
+rewrite replaced whole — so D-UA-8's break action is a revert of 5a6f54229
+PLUS re-adding the `TryMapType` arm and re-expressing about 60 lines of thunk
+plumbing on upstream's struct, not a plain `git revert` (the implementation
+review's finding 5; W-023 note). §0.4 item 11 against PR 7813: the two
+clean-merging `GetCanonicalFacetOrTypeValue` calls (`LookupChoiceCopyWitness`,
+`LookupUnionUnformedInitWitness`) renamed `GetCanonicalFacet` in the merge
+commit. Goldens (D-UA-3): 71 refill-only conflicts took upstream's text, the 2
+fork-source-edited goldens (check/let/fail_generic_import.carbon's
+`implicit.impl.carbon` split name; lower/var/import.carbon's `fn X() -> i32 {
+return x; }`) took upstream's text with the fork edit re-applied, all 73 with
+their CHECK lines cleared (46088 lines) for the hosted fill, and
+lower/interop/cpp/std_initializer_list.carbon was deleted with upstream.
+Reflow (D-UA-4, PR 7667): 35 of 48 measured files reflowed under upstream's
+`.rumdl.toml`; the 29 MD013 residue lines rewritten by hand; three paragraphs
+rumdl refuses to wrap fenced with the upstream-precedented
+`rumdl-disable MD013` pair; the two manufactured headings D-UA-4 predicted
+(fork/ORCHESTRATION.md's "12/#13/#14" and the decision log's "7741
+template-dependent assignment" heading at :5428 pre-reflow) repaired, plus one
+it did not (fork/unions/plan.md, from a list-item continuation whose code span
+crossed lines on the SECOND rumdl pass); each repair restored the demoted
+heading levels from HEAD (24 headings in two files), caught by the per-file
+heading-count diff, and the unions one only by a set comparison of heading
+lines — the detector R31(c) now needs. Deviations from the plan as written,
+each recorded in the plan's landed notes: function.{h,cpp} needed a fork-only
+`return_type_id` alternative to upstream's `return_form` in `FunctionDeclArgs`
+(the generic choice constructors re-add a symbolic return type INSIDE the
+generic region `MakeGeneratedFunctionDecl` opens); the §0.4 item 5 `-l` file
+sets differ by eval.cpp by design (upstream's `Callee` switch there has a
+`default:` arm and an unresolved set is never constant-evaluated); the §8.4
+`is_choice` count is six, not five (one more comment); and
+`BuildPrimitiveCopyWitness` had no fork delta.
+
+A/B MATRIX (§8.2): NOT RUN. No nightly at or after `v0.0.0-0.nightly.2026.10.02`
+was mirrored — the fork's newest mirror is `arbiter-v0.0.0-0.nightly.2026.09.28`
+(upstream 1579d4e, before the 10-01 fixes PRs 7879 and 7880), the mirror
+workflow was not dispatched during UA-1, and §8.1 step 1 forbids the staging
+branch from touching fork/conformance/arbiter-request.txt or the mirror workflow
+(a push to either would have fired it). The reading D-UA-14 makes authoritative
+is available instead: the hosted conformance of the MERGED fork toolchain ran
+both template probes green — generics/templates_type_param .carbon and
+generics/templates_value_param.carbon PASS on the pre-merge scoreboard (run
+37399118672, quoted below), the programs whose 09-21 and 09-28 crash signatures
+(`lower/handle.cpp:294 Unexpected category 9 for return expression {kind:
+SpliceInst}`; `function_context.cpp:198 const_id.is_concrete()`) the weekly
+entries refused to land — so upstream's fixes f1bf78948 and 3dadff7d0 (inside
+the deferred range) hold at the merged tip, and D-UA-1's break condition did not
+fire. What the matrix would have added — attributing a FAILURE to upstream or to
+the merge — was not needed, since there was none; UA-2 may run it for the record
+when a newer nightly is mirrored, with the nightly's own commit recorded as the
+09-28 entry did.
+
+FILL STATISTICS (hosted autoupdate, `Fork: hosted verification`, files per
+pass from `git show --stat`). Pass 1, run 37385396872: toolchain built, one
+test crashed (carbon_fn_as_callable.carbon, round 1 below), no fill pushed.
+Pass 2, run 37388566542: toolchain built, one test crashed
+(operators/question.carbon, round 2 below), no fill pushed. Pass 3, run
+37393341208 → b430984d2: 225 goldens (120 check, 1 driver, 104 lower; +86945 /
+−12682 lines), no crash, one `Problems that require manual fixes` entry
+(round 3 below). Pass 4, run 37397937554 → 775de300d: 22 goldens (+1067 /
+−537) — the round-3 predictions (fail_todo_gates `template_dependent`'s per-
+specific resolution, arm_temporary `typeof_operand`, function_ptr
+`fail_use_forward_decl`, method_ptr `fail_todo_call_method_ptr`) plus the R26
+pass-2 Clang snippet numbers in nine upstream goldens; no manual-fix list.
+Pass 5, after the re-merge of trunk, run 37401156556 → 606a99c5a: 12 goldens
+(+1995 / −590) — SL-2's ten refilled under the upstream base (the fence's
+`__carbon_thunk` call lines for the span mocks, D-UA-9's `SelfDestruct`/
+`SubobjectDestroy` reshapes in lower interop/cpp/span.carbon, upstream's
+unqualified type-name printing in two `fail_` diagnostics, inst-namer
+disambiguation) plus two round-3 pass-2 movers; no manual-fix list. The R26
+fixpoint on 606a99c5a is proven by the gate GATE_RUN (R28(d)), not by a
+separate pass. Pre-merge checkpoint: gate run 37399160122 PASSED (prek
+`--all-files` and `bazel test //toolchain/...`), the first full gate of the
+merged tree.
+
+SCOREBOARD AT FIXPOINT. Pre-merge (on 775de300d, run 37399118672, committed as
+85b0feb2c and merged across in 5795a773a): 126 PASS / 0 FAIL / 23 SKIP over 149
+programs — trunk's pre-SL-2 floor exactly, all five thread programs PASS
+(interop/cpp_thread_carbon_fn_diff.carbon in particular: the real
+`std::thread`'s `F&&` deduction on upstream's `_Nonnull` function-pointer
+argument, R-4's last residual, is settled — the F8d retirement stands, no
+revert), both template probes PASS, stdlib/slices_heap_buf.carbon PASS (R-3). Of
+record, on 606a99c5a: CONF_RUN — CONF_NUMBERS (quoted from
+fork/conformance/out/scoreboard.json as pushed by that run; the bar is trunk's
+floor 128 / 0 / 22 over 150, 48/56 bullets, non-regressing; D-UA-12: no program
+changed status in UA-1).
+
+DIVERGENCE-RISK REGISTER REVIEW (standing rule 7 / V-3a; the ten register
+blocks, each entry HOLDS or MOVED with the upstream commit). (1) B1
+(Core.ControlFlow, continue-first `ControlFlow(C, B)`, the `Try` member
+spellings): HOLDS — upstream's prelude at c1e83b0b7 has no `ControlFlow` and no
+`Try` (`git grep` over upstream-trunk's core/ is empty). (2) EH-A (`Core.Result`
+as an independent prelude choice with a `final` `Try` impl, Ok-first
+discriminant, the `()` payload admission): HOLDS — upstream has no `Result`
+type; under D-UA-9 every `Core.Result` golden gained `SubobjectDestroy`/
+`SelfDestruct` functions (a reshape, R-2's falsifier did not fire) and no
+layout changed. (3) EH-B (`Carbon::Exception` wrapper, `<carbon/expected.h>`
+layout, the foreign-exception contract, the `noexcept` fence): HOLDS — the
+fence MOVED in mechanism, not in surface: re-expressed on upstream's
+`CalleeFunctionInfo` (PRs 7787-7789, D-UA-7), `__clang_call_terminate` now in
+35 lower goldens (floor 30; gained upstream's function_ptr/method_ptr/
+destroy_from_thunk and SL-2's span). (4) UN-1 (`union` keyword,
+`Core.UnformedInit` as a `CoreInterface` kind, the `is_union` dump field, four
+diagnostics): HOLDS — upstream has no `union`; two mechanism moves: the
+D-UN-6 flip check now lives inside upstream's `TryMergeRedecl` (PR 7632, D-UA-6)
+and upstream's new exhaustive `CoreInterface` switch in handle_interface.cpp
+gained the `UnformedInit` arm (compile round 1). (5) UN-2 (`TagTypeKind::Union`
+export, offset-zero layout arm): HOLDS (export.cpp:82 unchanged in meaning
+under PR 7897's naming change). (6) OV-1 (`overload` keyword, `:overload<N>`
+mangling marker, `OverloadSet*` inst kinds and store, five diagnostic kinds,
+`overload_set_id`): HOLDS — upstream's token_kind.def has no `overload`, its
+only mention is the sem_ir/function.h:489 TODO "to support overloaded
+functions"; the `_CF__carbon_thunk:overload<N>` asm label is a Carbon mangled
+name PR 7897 did not touch. (7) OV-2 (`OverloadSetFrozen`/
+`OverloadSetDeclaredHere`, the `replace_prev_inst`/`prev_decl_override`
+parameters of `MergeFunctionRedecl`, the `diagnose` parameter of
+`DeduceGenericCallArguments`, `GetApiClassDeclForQualifier`, the
+`OverloadSetValue` arm of `AddImportRefOrMerge`): one entry MOVED — the
+`MergeFunctionRedecl` parameters are now `MergeOverloadMemberRedecl`'s, with
+`replace_prev_inst` dropped as dead under PR
+7632's `TryMergeRedecl` (D-UA-6, recorded as the V-3a convergence D-UA-6's break
+condition anticipates in part); the other four HOLD (decl_name_stack.cpp:462
+still resolves `fn C.F` in an impl file the fork's way; upstream landed no
+counterpart). (8) OV-3 (`NamedDeclList` alternative of
+`MapInstIdToClangDeclOrType`, `overload_index` on a generated thunk): HOLDS
+(PR 7897 changed how a Carbon name prints in C++, not the thunk keying; the
+OV-3 export goldens refilled with identical member selection). (9) SL-1 (the
+four builtins, `Core.Slice`/`Core.Buf`, the `Iterate` impl, D-SL-15..20):
+HOLDS, with the register's own trigger PARTIALLY MET — "if upstream's
+destroy-op synthesis starts calling declared impls, D-SL-16's yield and
+D-SL-19's keying are dropped in favor of it": upstream's synthesized
+`SubobjectDestroy.Op` (PRs 7829/7840/7842/7844) now calls each field's
+`Destroy.SelfDestruct`, and whether that reaches a `Buf` field's declared `Op`
+is §0.6's W-108 probe, UA-2's to run (R-3 held: lower/slice/buf.carbon shows
+three `free` calls for its three `Buf` objects, as at the cut; D-SL-16's
+selection is still what makes a `Buf` LOCAL free, visible as the two
+`facet_value` + `converted` pairs in every declared-impl destroy sequence,
+now in six goldens — an IR-clutter reconciliation candidate for UA-2). (10)
+SL-2 (`std::span` ↔ `Core.Slice`, `RecognizedTypeInfo::Slice`,
+`CoreInterface::CppContiguousRange`, both prelude interop sections): HOLDS —
+upstream's custom_type_mapping.cpp at c1e83b0b7 still names only
+`StdStringView` (zero `span` hits); SL-2's `BuildCppContiguousRangeWitness` was
+ported to `SpecificInterface` at the re-merge. The design-fork entries these
+blocks extend (F-006a `Ok`/`Err`, F-007's `union`, F-009's marked closed sets)
+stand with them. No entry is retired by this merge.
+
+RESIDUES FILED (D-UA-15; ids allocated after W-122, the round-3 item). W-123:
+a catching (`?`) thunk over a C++ function-pointer callee is a semantics TODO
+("Unsupported: catching thunk for a C++ function pointer",
+toolchain/check/cpp/thunk.cpp:1570 in `PerformCppThunkCall`; pin
+check/testdata/interop/cpp/exceptions/fail_catching.carbon
+`fail_todo_fn_pointer_catching`) — the call falls through to the fenced thunk
+and `?` then diagnoses the `i32` operand. W-124: a potentially-throwing C++
+function-pointer type whose fenced `__invoke` thunk cannot be built is a
+semantics TODO instead of upstream's unfenced direct call
+(toolchain/check/cpp/import.cpp:2316-2319 in `ImportFunctionPointerInvoke`,
+keyed on `IsCppThunkFenceRequired(callee_info.function_type, nullptr)`; the
+imported `__invoke` is KEPT so upstream's follow-on diagnostics still fire —
+pins function_ptr.carbon `fail_use_forward_decl` and method_ptr.carbon
+`fail_todo_call_method_ptr`, both shapes upstream's own thunk build also fails).
+W-125: choice-payload destroy synthesis under upstream's real
+`SubobjectDestroy` walk — `MakeSubobjectDestroyOpBody`'s `is_choice` early
+return (custom_witness.cpp:1021) and `CustomLayoutType` arm (:1047) preserve
+the placeholder semantics (no payload destructor runs), the W-083 release-on-
+destroy dependency made explicit in code; pins the seven choice goldens with
+`var`s, payload_layout.carbon's `SubobjectDestroy`/`SelfDestruct` pairs and the
+union goldens. The R-11 class ("an upstream-intended diagnostic the fork's
+design did not anticipate") produced NO new item: the one prefix flip,
+fail_todo_gates.carbon's `template_dependent` (upstream's `CallAction`, PRs
+7682/7727, defers a template-dependent call per specific), is recorded on
+W-101, and every other new STDERR line of the 225-golden fill equals
+upstream's golden or the cut's (the round-3 classification table in the plan's
+landed notes). The F8d retirement note is W-023's. W-001 gains its landed note
+(this flow); W-069 and the S3b record gain the D-UA-10 line. UA-2 also
+inherits: the pre-existing manufactured H3 "7700 splice-stepping for bound
+methods, …" at the cut's decision-log :5585 (both parents carry it; R31
+class, predates the reflow); the declared-impl destroy IR clutter above; the
+§0.6 un-SKIP probes (W-014/row 52, W-043/rows 40 and 54), the W-108 pin golden,
+the W-046 tip-pin note, and the ledger notes for W-037, W-030, W-083, W-091,
+W-065.
+
+REVIEW FOLD. Plan: two adversarial reviews of rev 1 — rev A (fork-mechanism
+fidelity) REJECT with BLOCKER A1 (D-UA-9 as written crashed every destroy of a
+payload-carrying choice under upstream's real `MakeSubobjectDestroyOpBody`),
+MAJORs A2-A5, MINORs A6-A10; rev B (mechanics/verification)
+APPROVE-WITH-AMENDMENTS with MAJORs B1-B5, MINORs B6-B15 — folded as rev 2; a
+focused re-review of rev 2 REJECT with BLOCKER F1 (the destroy walk meets the
+fork's shapes one level earlier than rev 2 assumed, inside the witness QUERY,
+so D-UA-9 needed the `CustomLayoutType` arm as a second clause), MAJORs F2-F4,
+MINORs F5-F8 — folded as rev 3; the final count-and-grep re-check of rev 3
+APPROVE-WITH-AMENDMENTS (M1-M3, applied in the sign-off commit). The plan
+reviews earned their two rounds (R29(c)): without A1 and F1 the first fill
+would have died on the first choice `var`, hiding the rest of the fill behind
+the stack-dump gate. Implementation: one review of da91ddb45 (ua1_impl_review)
+REJECT — two BLOCKERs (call.cpp:252 `builtin_function_kind()` removed by PR
+7729, the one fork-called method whose declaration changed between cut and
+tip without a textual conflict; `TryMergeOverloadDecl` calling
+`prev_inst_id()` on a poisoned name, a `CARBON_FATAL` upstream's own
+name_poisoning.carbon would have hit), one MAJOR (`ptr(args)?` through a C++
+function pointer CHECK-failing instead of the D-UA-7 TODO), two MINORs (the
+`FunctionId::None` callee after a failed `__invoke` import; the D-UA-8 revert
+recipe) — every finding folded in 3d39ec8c2, and the review's compile
+prediction ("the first error out of //toolchain/check is finding 1") was
+exactly what the hosted probe reported; the round-2 fix 1f69cf8fe reviewed
+APPROVE-WITH-FIXES (F1 `typeof` scope demotion applied with the
+`typeof_operand` pin, F2 filed as W-122, F3 recorded there, F4 applied). Two
+reviews were not repeated after the green fills (R29(c)).
+
+FILL-CAUGHT MISSES — review misses per R28(d), with why review did not see
+each. Compile round 1 (hosted compile probe 37381466829, fix 3d39ec8c2 +
+f28528990): `Function::builtin_function_kind()` gone (PR 7729); the plan's
+§8.4 greps covered free functions and switches but no METHOD renames, and the
+SL-1 hunk merged clean three functions away from upstream's conflicting one —
+the implementation review found it by diffing the declarations of every
+fork-called name between cut and tip, the method the §8.4 list lacked. Three
+more errors found the same way before the next probe (`ConvertStructToUnion`'s
+`ConvertAggregateElement` signature, the OV-3 `GetOrExportFunctionToCpp`
+call, `Dump(const File&, OverloadSetId)` for upstream's fingerprinter) and one
+`-Werror=switch` in a file the merge did not touch (handle_interface.cpp's
+exhaustive `CoreInterface` switch lacked `UnformedInit`) — found by a local
+`clang++-19 -fsyntax-only` pass over every unchanged source that includes a
+fork-changed header, the first time the container could compile-check at all.
+Fill round 1 (run 37385396872, fix ad13c57bd): a null `QualType` in
+`TryMapType`'s `FunctionType` arm for a GENERIC Carbon function
+(`Cpp.invoke(GenericWork)`): upstream's arm, taken verbatim under D-UA-8, calls
+`GetOrExportFunctionToCpp` unguarded and a generic function exports as a
+`FunctionTemplateDecl` whose `getFunctionType()` is null — an upstream latent
+bug the fork's F8d negative-partition golden exposed; review did not see it
+because D-UA-8 reviewed what upstream's mechanism DOES for the positive shape
+(rev A A8 traced each piece of the `thread(Work)` deduction) and never asked
+what it does for the fork's negative pins, and upstream's only generic pin
+fails earlier, inside the export. Fill round 2 (run 37388566542, fix
+1f69cf8fe): upstream's new SemIR SSA verifier (PR 7771, dominance.cpp) caught
+the `?` desugar's temporaries inside an `if`-expression arm being destroyed in
+the other arm's break block and in `if.expr.result` — upstream's own
+unconditionalized arm cleanups (its open TODO in handle_if_expr.cpp), a latent
+MISCOMPILE at the cut (an unconstructed temporary destroyed on the other path),
+fixed in upstream's files with `BeginConditionalExprOperand`/
+`EndConditionalExprOperand` and pinned by if_expr/arm_temporary.carbon and
+operators/builtin/short_circuit_temporary.carbon; review did not see it because
+the verifier was a new GATE, not a new mechanism — §0.2's subsystem list named
+it nowhere, no §7 risk asked "which fork IR shapes does upstream's verifier
+reject", and the violation was decidable from the pre-merge golden by a
+dominance check nobody had reason to run until the gate existed (a textual
+dominance checker over the 200 fork-touched check goldens then found exactly
+this one). Fill round 3 (run 37393341208, fix dd8b9649e): the predicted §4
+prefix flip (`fail_todo_template_dependent` passing under upstream's
+`CallAction`) retriaged per §3 commit 3b with an instantiating pin; and the
+function-pointer fence TODO's `result.decl_id = ErrorInst` HID upstream's
+follow-on diagnostics (`IncompleteTypeInFunctionReturnType`,
+`CallArgCountMismatch`) on two upstream splits — review did not see it because
+D-UA-7 (rev A A7) specified `ErrorInst` and no pin existed for the clause; the
+fill supplied the two pins. Post-merge fill (run 37401156556): no manual-fix
+list, every prediction of the re-merge note matched — no miss. Four fix
+rounds for a 183-commit merge; each is a real defect fixed at its root, none
+a golden edit (R16), and the two that upstream shares (the null `QualType`,
+the arm-cleanup miscompile) are upstreamable.
+
+_V-3a divergence-risk register entries (reviewed at each upstream merge):_
+this entry adds no new fork surface; it re-expresses existing entries on
+upstream's structures (D-UA-6/7/9) and retires the F8d embedding (W-023). The
+fork-local code the merge introduced INSIDE upstream's functions is the
+register's new watch list: the `if constexpr (IsClass)` union clauses in
+`TryMergeRedecl` (merge.cpp:868/:894), `TryMergeOverloadDecl` before
+`TryMergeRedecl` in `BuildFunctionDecl`, the `is_choice`/`CustomLayoutType`
+clauses in `MakeSubobjectDestroyOpBody`, the fork-only `return_type_id`
+alternative in `FunctionDeclArgs`, `BeginConditionalExprOperand`/
+`EndConditionalExprOperand` in control_flow.{h,cpp}, and the null guards in
+`TryMapType`'s `FunctionType` arm and `ExportFunctionToCppPointerConversion` —
+each marked "Fork (D-UA-n)" in code, each a V-3a convergence candidate when
+upstream lands its own (upstream's `TryMergeRedecl<Function>` growing a
+member-targeted entry point retires `MergeOverloadMemberRedecl`; upstream
+conditionalizing arm cleanups retires the W-122 guard). Veto-able.
+
 ### Weekly upstream merge 2026-10-05: cut HOLDS a seventh week; a dry-run merge conflicts in 99 files (2026-10-05)
 
 Hosted-only check (R28). Measured upstream trunk d31a8b67d

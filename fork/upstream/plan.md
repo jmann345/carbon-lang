@@ -1979,8 +1979,9 @@ observations made while verifying are recorded in the last rows.
 
 ### Landed notes (UA-1, in progress)
 
-Commits on `claude/carbon-fork-0-1-upstream-advance` (SL-2 re-merge pending;
-hosted compile → autoupdate → gate → conformance not yet dispatched):
+Commits on `claude/carbon-fork-0-1-upstream-advance` (SL-2 re-merged
+2026-10-06, the last bullet; three hosted fills landed, gate and conformance
+not yet dispatched):
 1de4bb49d sign-off, 3d4c0e37a merge (commit 1), 5a6f54229 F8d retirement
 (commit 1b), 119b35439 reflow (commit 2). The 105 conflicts of §0.3
 reproduced exactly; goldens went 71 `--theirs` / 2 hand-merged / 1 deleted,
@@ -2307,3 +2308,68 @@ show that `PerformCallToOverloadSet` sees concrete argument types there. Not
 decidable by reading: that, the R-4 `F&&` residual, and which instruction the
 `<elided>` line of the declared-impl destroy sequence stands for (`ShouldFormatInst`
 hides a non-`NodeId` location; the sequence is pre-merge).
+
+-   **Re-merge of trunk (SL-2), 2026-10-06 (b51094c44, a true merge of
+    origin/trunk 59f1c30d5 -- PR 49 "SL-2: std::span <-> Core.Slice mapping,
+    owning-container views" plus the ORCHESTRATION stamp -- into 775de300d).**
+    Five textual conflicts, none a golden: core_identifier.def (upstream's
+    `SelfDestruct` beside SL-2's `Slice`, both kept) and four records
+    (ORCHESTRATION.md, gap-analysis.md, slices/plan.md: this branch had only
+    REFLOWED them, so trunk's text is taken whole and reflowed again by prek,
+    with ORCHESTRATION.md's four R31 repairs of commit 2 re-applied;
+    work-items.json: trunk's W-056 closure and W-119..W-121 plus this branch's
+    W-101 refresh and W-122, whose id did not collide, both `source`
+    sentences in date order). NO CHECK line was cleared -- no golden
+    conflicted. Three semantic ports in the auto-merged toolchain sources,
+    each found by reading the merged hunks against the upstream API and
+    confirmed by `clang-19 -fsyntax-only` under the toolchain's `-Werror`
+    set: `BuildCppContiguousRangeWitness` and its `LookupCppImpl` arm
+    (cpp/impl_lookup.cpp:610/:706) moved from the cut's
+    `SpecificInterfaceId` to upstream's `SpecificInterface`, the type
+    `BuildCustomWitness` and `LookupCppImpl` now take; upstream's exhaustive
+    `CoreInterface` switch in handle_interface.cpp (:348, the one UA-1 gave
+    `UnformedInit`) gains `CppContiguousRange`; and lower/handle.cpp's
+    `HandleInst(ArrayInit)` keeps SL-2's constant-element stores as the ONE
+    implementation, because upstream c1e83b0b7's handler is still the
+    two-line `SetLocal` (its calls are upstream's own
+    `EmitAggregateInitializer` InPlace idiom, aggregate.cpp:228-233). The
+    rest of SL-2 -- the `Span` arm of `LookupCustomRecordType`,
+    `SliceElementSatisfiesBound`, `MakeSliceType`, the `RecognizedTypeInfo::
+    Slice` arm with its late `std::span` `wrap_fn`, the `CustomCppTypeMapping`
+    struct, `LookupCppConversion`'s constructor gate on
+    `LookupClangDeclInstId` (already spelled on `getCanonicalTagType`), the
+    prelude's interop section -- merged clean and compiles as written; no
+    other switch over `RecognizedTypeInfo::Kind` or `CoreInterface` exists.
+    SL-2's ten goldens arrive with trunk's CHECK lines, filled on the cut's
+    toolchain, and their SOURCE lines need no edit under the upstream base
+    (read against upstream's goldens: `let _:`, `unused`, `let unused`, the
+    dump ranges, the `--target` pins, the mock headers; export.cpp still
+    carries the "failed to map Carbon type to C++" TODO that
+    fail_export_slice pins). Prek to a fixpoint over the 39 merged files
+    (the four bazel-backed hooks skipped, R22); R31 heading counts per level,
+    list-item counts and heading-line SETS unchanged for every reflowed
+    file; `runner.py --self-test`: 150 programs, 56 bullets, OK. Goldens the
+    next fill changes: the round-3 predictions above (fail_todo_gates
+    `template_dependent`, arm_temporary `typeof_operand`, function_ptr
+    `fail_use_forward_decl`, method_ptr `fail_todo_call_method_ptr`, the
+    pass-2 snippet numbers) PLUS whatever the upstream base changes in
+    SL-2's ten -- the predicted shapes are the fence's `__carbon_thunk`
+    call lines for `Consume`/`Produce`/the range constructor (string_view
+    .carbon's `Consume__carbon_thunk` built clean under the fence in fill
+    round 3, the same non-simple-ABI by-address path), D-UA-9's
+    `SelfDestruct`/`SubobjectDestroy` reshapes in the lower span golden's
+    destroy sequences, and inst-namer disambiguation; a `fail_` prefix
+    mismatch in them would be a retriage, not a hand edit. Expected
+    conformance after the fill: trunk's floor, 128 PASS / 0 FAIL / 22 SKIP
+    over 150 (the two span programs compile the real `<span>` under
+    `-std=c++20` through upstream's `GetOrExportFunctionToCpp` export and the
+    fenced import thunk -- the one path only the conformance run exercises).
+    Riskiest resolution: none of the three ports; it is the UNCHANGED gate
+    in `LookupCppConversion`, which under the upstream base runs before
+    upstream's constructor import for `std::span`'s range constructor and
+    whose only arbiter is vector_view_span.carbon's fill and the conformance
+    run. Found and left alone (both parents carry it, UA-2's to repair):
+    fork/decision-log.md's heading reading "7700 splice-stepping for bound
+    methods, …" (an H3 at the cut's :5585) is a pre-existing manufactured
+    heading of the R31 class that commit 2's digit-anchored grep and
+    heading-count diff could not see because it predates the reflow.

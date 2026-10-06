@@ -94,10 +94,6 @@ library "[[@TEST_NAME]]";
 overload fn F(unused x: i32) -> i32 { return 1; }
 overload fn F(unused b: bool) -> i32 { return 2; }
 
-// CHECK:STDERR: fail_todo_template_dependent.carbon:[[@LINE+4]]:47: error: semantics TODO: `overload resolution with template-dependent arguments` [SemanticsTodo]
-// CHECK:STDERR: fn T2(template T: type, x: T) -> i32 { return F(x); }
-// CHECK:STDERR:                                               ^~~~
-// CHECK:STDERR:
 fn T2(template T: type, x: T) -> i32 { return F(x); }
 
 // --- fail_todo_explicit_ref_receiver.carbon

@@ -156,5 +156,16 @@ IntFnPtr get_fn_ptr() noexcept;
 // D-UA-7). The call falls through to the FENCED thunk, and `?` then diagnoses
 // its `i32` operand.
 fn F() -> Core.Result(i32, Cpp.Exception) {
+  // CHECK:STDERR: fail_todo_fn_pointer_catching.carbon:[[@LINE+11]]:45: error: semantics TODO: `Unsupported: catching thunk for a C++ function pointer` [SemanticsTodo]
+  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Ok(Cpp.get_fn_ptr()()?);
+  // CHECK:STDERR:                                             ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_todo_fn_pointer_catching.carbon:[[@LINE+7]]:45: error: operand of `?` does not implement `Core.Try` [QuestionOperandNotTry]
+  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Ok(Cpp.get_fn_ptr()()?);
+  // CHECK:STDERR:                                             ^~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_todo_fn_pointer_catching.carbon:[[@LINE+4]]:45: note: type `i32` does not implement interface `Core.Try` [MissingImplInMemberAccessInContext]
+  // CHECK:STDERR:   return Core.Result(i32, Cpp.Exception).Ok(Cpp.get_fn_ptr()()?);
+  // CHECK:STDERR:                                             ^~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return Core.Result(i32, Cpp.Exception).Ok(Cpp.get_fn_ptr()()?);
 }

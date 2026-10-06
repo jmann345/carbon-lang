@@ -60,6 +60,7 @@ fn H(p: (i32, i32)) -> i32 {
 // CHECK:STDOUT: --- binding_only.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
@@ -178,6 +179,7 @@ fn H(p: (i32, i32)) -> i32 {
 // CHECK:STDOUT: --- constants_then_binding.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
 // CHECK:STDOUT:   %Int.67af24.1: type = class_type @Int, @Int(%N) [symbolic]
@@ -418,11 +420,12 @@ fn H(p: (i32, i32)) -> i32 {
 // CHECK:STDOUT: --- tuple_all_binding.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
-// CHECK:STDOUT:   %tuple.type.24b: type = tuple_type (type, type) [concrete]
-// CHECK:STDOUT:   %tuple: %tuple.type.24b = tuple_value (%i32, %i32) [concrete]
+// CHECK:STDOUT:   %tuple.type.693: type = tuple_type (type, type) [concrete]
+// CHECK:STDOUT:   %tuple: %tuple.type.693 = tuple_value (%i32, %i32) [concrete]
 // CHECK:STDOUT:   %tuple.type.e55: type = tuple_type (%i32, %i32) [concrete]
 // CHECK:STDOUT:   %pattern_type.394: type = pattern_type %tuple.type.e55 [concrete]
 // CHECK:STDOUT:   %p.param_patt: %pattern_type.394 = value_param_pattern [concrete]
@@ -497,7 +500,7 @@ fn H(p: (i32, i32)) -> i32 {
 // CHECK:STDOUT:     %.loc4_18.1: type = splice_block %.loc4_18.3 [concrete = constants.%tuple.type.e55] {
 // CHECK:STDOUT:       %i32.loc4_10: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:       %i32.loc4_15: type = type_literal constants.%i32 [concrete = constants.%i32]
-// CHECK:STDOUT:       %.loc4_18.2: %tuple.type.24b = tuple_literal (%i32.loc4_10, %i32.loc4_15) [concrete = constants.%tuple]
+// CHECK:STDOUT:       %.loc4_18.2: %tuple.type.693 = tuple_literal (%i32.loc4_10, %i32.loc4_15) [concrete = constants.%tuple]
 // CHECK:STDOUT:       %.loc4_18.3: type = converted %.loc4_18.2, constants.%tuple.type.e55 [concrete = constants.%tuple.type.e55]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     %p: %tuple.type.e55 = wrapper_binding p, %p.param

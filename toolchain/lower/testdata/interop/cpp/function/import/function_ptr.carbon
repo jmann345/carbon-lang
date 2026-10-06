@@ -139,24 +139,144 @@ fn F() {
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: @.str = private unnamed_addr constant [78 x i8] c"carbon: C++ exception escaped into Carbon through `GetCallback`; terminating\0A\00", align 1
+// CHECK:STDOUT: @.str.1 = private unnamed_addr constant [79 x i8] c"carbon: C++ exception escaped into Carbon through `TakeCallback`; terminating\0A\00", align 1
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CF.Main() #0 !dbg !13 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %GetCallback.call = call ptr @_Z11GetCallbackv(), !dbg !14
-// CHECK:STDOUT:   call void @_Z12TakeCallbackPFifE(ptr %GetCallback.call), !dbg !15
+// CHECK:STDOUT:   %GetCallback__carbon_thunk.call = call ptr @_Z11GetCallbackv.carbon_thunk.(), !dbg !14
+// CHECK:STDOUT:   call void @_Z12TakeCallbackPFifE.carbon_thunk._(ptr %GetCallback__carbon_thunk.call), !dbg !15
 // CHECK:STDOUT:   ret void, !dbg !16
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef ptr @_Z11GetCallbackv() #1
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef ptr @_Z11GetCallbackv.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
+// CHECK:STDOUT:   %call = invoke noundef ptr @_Z11GetCallbackv()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z12TakeCallbackPFifE(ptr noundef) #1
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret ptr %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   store ptr %1, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %0, 1
+// CHECK:STDOUT:   store i32 %2, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call1 = call noundef i64 @write(i32 noundef 2, ptr noundef @.str, i64 noundef 77) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #5
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; No predecessors!
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %4 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %5 = extractvalue { ptr, i32 } %4, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %5) #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z12TakeCallbackPFifE.carbon_thunk._(ptr noundef %callback) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %callback.addr = alloca ptr, align 8
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
+// CHECK:STDOUT:   store ptr %callback, ptr %callback.addr, align 8, !tbaa !20
+// CHECK:STDOUT:   %0 = load ptr, ptr %callback.addr, align 8, !tbaa !20
+// CHECK:STDOUT:   invoke void @_Z12TakeCallbackPFifE(ptr noundef %0)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   br label %try.cont
+// CHECK:STDOUT:
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
+// CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
+// CHECK:STDOUT:   store ptr %2, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %1, 1
+// CHECK:STDOUT:   store i32 %3, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %4 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call = call noundef i64 @write(i32 noundef 2, ptr noundef @.str.1, i64 noundef 78) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #5
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare noundef ptr @_Z11GetCallbackv() #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: declare noundef i64 @write(i32 noundef, ptr noundef, i64 noundef) #3
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @__cxa_rethrow()
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #4 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z12TakeCallbackPFifE(ptr noundef) #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; uselistorder directives
+// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__cxa_begin_catch, { 1, 2, 0 }
+// CHECK:STDOUT: uselistorder ptr @write, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__cxa_rethrow, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #2 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #3 = { nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #4 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noreturn }
+// CHECK:STDOUT: attributes #6 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!5}
-// CHECK:STDOUT: !llvm.module.flags = !{!17, !18, !19, !2, !3}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!24}
+// CHECK:STDOUT: !llvm.module.flags = !{!21, !22, !23, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!26}
 // CHECK:STDOUT:
 // CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
 // CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
@@ -168,14 +288,16 @@ fn F() {
 // CHECK:STDOUT: !14 = !DILocation(line: 6, column: 20, scope: !13)
 // CHECK:STDOUT: !15 = !DILocation(line: 6, column: 3, scope: !13)
 // CHECK:STDOUT: !16 = !DILocation(line: 5, column: 1, scope: !13)
-// CHECK:STDOUT: !17 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !18 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !19 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !20 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !21 = !{!"omnipotent char", !20, i64 0}
-// CHECK:STDOUT: !22 = !{!"int", !21, i64 0}
-// CHECK:STDOUT: !23 = !{!"__libc_errno", !22, i64 0}
-// CHECK:STDOUT: !24 = !{!23, !22, i64 0}
+// CHECK:STDOUT: !17 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !18 = !{!"omnipotent char", !17, i64 0}
+// CHECK:STDOUT: !19 = !{!"any pointer", !18, i64 0}
+// CHECK:STDOUT: !20 = !{!19, !19, i64 0}
+// CHECK:STDOUT: !21 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !22 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !23 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !24 = !{!"int", !18, i64 0}
+// CHECK:STDOUT: !25 = !{!"__libc_errno", !24, i64 0}
+// CHECK:STDOUT: !26 = !{!25, !24, i64 0}
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'convert_fn_ptr.carbon'
@@ -186,28 +308,28 @@ fn F() {
 // CHECK:STDOUT: declare i32 @_CMyCallback.Main(float)
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CF.Main() #0 !dbg !32 {
+// CHECK:STDOUT: define void @_CF.Main() #0 !dbg !34 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %fn_ptr.var = alloca ptr, align 8, !dbg !33
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %fn_ptr.var), !dbg !33
-// CHECK:STDOUT:   store ptr @_CMyCallback.Main, ptr %fn_ptr.var, align 8, !dbg !33
-// CHECK:STDOUT:   call void @"_CSelfDestruct.659d177172b60c17:core.Destroy.Core"(ptr %fn_ptr.var), !dbg !33
-// CHECK:STDOUT:   ret void, !dbg !35
+// CHECK:STDOUT:   %fn_ptr.var = alloca ptr, align 8, !dbg !35
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %fn_ptr.var), !dbg !35
+// CHECK:STDOUT:   store ptr @_CMyCallback.Main, ptr %fn_ptr.var, align 8, !dbg !35
+// CHECK:STDOUT:   call void @"_CSelfDestruct.659d177172b60c17:core.Destroy.Core"(ptr %fn_ptr.var), !dbg !35
+// CHECK:STDOUT:   ret void, !dbg !37
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CMyCallback__carbon_thunk.Main(ptr %_, ptr %_1) #0 !dbg !36 {
+// CHECK:STDOUT: define void @_CMyCallback__carbon_thunk.Main(ptr %_, ptr %_1) #0 !dbg !38 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc8 = load float, ptr %_, align 4, !dbg !39
-// CHECK:STDOUT:   %MyCallback.call = call i32 @_CMyCallback.Main(float %.loc8), !dbg !40
-// CHECK:STDOUT:   store i32 %MyCallback.call, ptr %_1, align 4, !dbg !39
-// CHECK:STDOUT:   ret void, !dbg !40
+// CHECK:STDOUT:   %.loc8 = load float, ptr %_, align 4, !dbg !41
+// CHECK:STDOUT:   %MyCallback.call = call i32 @_CMyCallback.Main(float %.loc8), !dbg !42
+// CHECK:STDOUT:   store i32 %MyCallback.call, ptr %_1, align 4, !dbg !41
+// CHECK:STDOUT:   ret void, !dbg !42
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.659d177172b60c17:core.Destroy.Core"(ptr %self) #0 !dbg !42 {
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.659d177172b60c17:core.Destroy.Core"(ptr %self) #0 !dbg !44 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !44
+// CHECK:STDOUT:   ret void, !dbg !46
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
@@ -216,9 +338,9 @@ fn F() {
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
 // CHECK:STDOUT:
-// CHECK:STDOUT: !llvm.dbg.cu = !{!26}
-// CHECK:STDOUT: !llvm.module.flags = !{!17, !18, !19, !2, !3}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!24}
+// CHECK:STDOUT: !llvm.dbg.cu = !{!28}
+// CHECK:STDOUT: !llvm.module.flags = !{!21, !22, !23, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!26}
 // CHECK:STDOUT:
 // CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
 // CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
@@ -227,32 +349,32 @@ fn F() {
 // CHECK:STDOUT: !8 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
 // CHECK:STDOUT: !11 = !{null, !8}
 // CHECK:STDOUT: !12 = !DISubroutineType(types: !11)
-// CHECK:STDOUT: !17 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !18 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !19 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !20 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !21 = !{!"omnipotent char", !20, i64 0}
-// CHECK:STDOUT: !22 = !{!"int", !21, i64 0}
-// CHECK:STDOUT: !23 = !{!"__libc_errno", !22, i64 0}
-// CHECK:STDOUT: !24 = !{!23, !22, i64 0}
-// CHECK:STDOUT: !25 = !DIFile(filename: "convert_fn_ptr.carbon", directory: "")
-// CHECK:STDOUT: !26 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !25, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
-// CHECK:STDOUT: !27 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !30 = !{null, !8, !27}
-// CHECK:STDOUT: !31 = !DISubroutineType(types: !30)
-// CHECK:STDOUT: !32 = distinct !DISubprogram(name: "F", linkageName: "_CF.Main", scope: null, file: !25, line: 7, type: !7, spFlags: DISPFlagDefinition, unit: !26)
-// CHECK:STDOUT: !33 = !DILocation(line: 8, column: 3, scope: !32)
-// CHECK:STDOUT: !35 = !DILocation(line: 7, column: 1, scope: !32)
-// CHECK:STDOUT: !36 = distinct !DISubprogram(name: "MyCallback__carbon_thunk", linkageName: "_CMyCallback__carbon_thunk.Main", scope: null, file: !25, line: 8, type: !31, spFlags: DISPFlagDefinition, unit: !26, retainedNodes: !41)
-// CHECK:STDOUT: !37 = !DILocalVariable(arg: 1, scope: !36, type: !8)
-// CHECK:STDOUT: !38 = !DILocalVariable(arg: 2, scope: !36, type: !27)
-// CHECK:STDOUT: !39 = !DILocation(line: 8, column: 41, scope: !36)
-// CHECK:STDOUT: !40 = !DILocation(line: 5, column: 1, scope: !36)
-// CHECK:STDOUT: !41 = !{!37, !38}
-// CHECK:STDOUT: !42 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.659d177172b60c17:core.Destroy.Core", scope: null, file: !25, line: 8, type: !12, spFlags: DISPFlagDefinition, unit: !26, retainedNodes: !45)
-// CHECK:STDOUT: !43 = !DILocalVariable(arg: 1, scope: !42, type: !8)
-// CHECK:STDOUT: !44 = !DILocation(line: 8, column: 3, scope: !42)
-// CHECK:STDOUT: !45 = !{!43}
+// CHECK:STDOUT: !17 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !18 = !{!"omnipotent char", !17, i64 0}
+// CHECK:STDOUT: !21 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !22 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !23 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !24 = !{!"int", !18, i64 0}
+// CHECK:STDOUT: !25 = !{!"__libc_errno", !24, i64 0}
+// CHECK:STDOUT: !26 = !{!25, !24, i64 0}
+// CHECK:STDOUT: !27 = !DIFile(filename: "convert_fn_ptr.carbon", directory: "")
+// CHECK:STDOUT: !28 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !27, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !29 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !32 = !{null, !8, !29}
+// CHECK:STDOUT: !33 = !DISubroutineType(types: !32)
+// CHECK:STDOUT: !34 = distinct !DISubprogram(name: "F", linkageName: "_CF.Main", scope: null, file: !27, line: 7, type: !7, spFlags: DISPFlagDefinition, unit: !28)
+// CHECK:STDOUT: !35 = !DILocation(line: 8, column: 3, scope: !34)
+// CHECK:STDOUT: !37 = !DILocation(line: 7, column: 1, scope: !34)
+// CHECK:STDOUT: !38 = distinct !DISubprogram(name: "MyCallback__carbon_thunk", linkageName: "_CMyCallback__carbon_thunk.Main", scope: null, file: !27, line: 8, type: !33, spFlags: DISPFlagDefinition, unit: !28, retainedNodes: !43)
+// CHECK:STDOUT: !39 = !DILocalVariable(arg: 1, scope: !38, type: !8)
+// CHECK:STDOUT: !40 = !DILocalVariable(arg: 2, scope: !38, type: !29)
+// CHECK:STDOUT: !41 = !DILocation(line: 8, column: 41, scope: !38)
+// CHECK:STDOUT: !42 = !DILocation(line: 5, column: 1, scope: !38)
+// CHECK:STDOUT: !43 = !{!39, !40}
+// CHECK:STDOUT: !44 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.659d177172b60c17:core.Destroy.Core", scope: null, file: !27, line: 8, type: !12, spFlags: DISPFlagDefinition, unit: !28, retainedNodes: !47)
+// CHECK:STDOUT: !45 = !DILocalVariable(arg: 1, scope: !44, type: !8)
+// CHECK:STDOUT: !46 = !DILocation(line: 8, column: 3, scope: !44)
+// CHECK:STDOUT: !47 = !{!45}
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'pass_fn_ptr.carbon'
@@ -260,59 +382,132 @@ fn F() {
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: @.str = private unnamed_addr constant [79 x i8] c"carbon: C++ exception escaped into Carbon through `TakeCallback`; terminating\0A\00", align 1
+// CHECK:STDOUT:
 // CHECK:STDOUT: declare i32 @_CMyCallback.Main(float)
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CF.Main() #0 !dbg !48 {
+// CHECK:STDOUT: define void @_CF.Main() #0 !dbg !50 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @_Z12TakeCallbackPFifE(ptr @_CMyCallback.Main), !dbg !49
-// CHECK:STDOUT:   ret void, !dbg !50
+// CHECK:STDOUT:   call void @_Z12TakeCallbackPFifE.carbon_thunk._(ptr @_CMyCallback.Main), !dbg !51
+// CHECK:STDOUT:   ret void, !dbg !52
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CMyCallback__carbon_thunk.Main(ptr %_, ptr %_1) #0 !dbg !51 {
+// CHECK:STDOUT: define void @_CMyCallback__carbon_thunk.Main(ptr %_, ptr %_1) #0 !dbg !53 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc5 = load float, ptr %_, align 4, !dbg !54
-// CHECK:STDOUT:   %MyCallback.call = call i32 @_CMyCallback.Main(float %.loc5), !dbg !54
-// CHECK:STDOUT:   store i32 %MyCallback.call, ptr %_1, align 4, !dbg !54
-// CHECK:STDOUT:   ret void, !dbg !54
+// CHECK:STDOUT:   %.loc5 = load float, ptr %_, align 4, !dbg !56
+// CHECK:STDOUT:   %MyCallback.call = call i32 @_CMyCallback.Main(float %.loc5), !dbg !56
+// CHECK:STDOUT:   store i32 %MyCallback.call, ptr %_1, align 4, !dbg !56
+// CHECK:STDOUT:   ret void, !dbg !56
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z12TakeCallbackPFifE(ptr noundef) #1
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z12TakeCallbackPFifE.carbon_thunk._(ptr noundef %callback) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %callback.addr = alloca ptr, align 8
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
+// CHECK:STDOUT:   store ptr %callback, ptr %callback.addr, align 8, !tbaa !20
+// CHECK:STDOUT:   %0 = load ptr, ptr %callback.addr, align 8, !tbaa !20
+// CHECK:STDOUT:   invoke void @_Z12TakeCallbackPFifE(ptr noundef %0)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   br label %try.cont
+// CHECK:STDOUT:
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
+// CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
+// CHECK:STDOUT:   store ptr %2, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %1, 1
+// CHECK:STDOUT:   store i32 %3, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %4 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call = call noundef i64 @write(i32 noundef 2, ptr noundef @.str, i64 noundef 78) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #5
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z12TakeCallbackPFifE(ptr noundef) #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: declare noundef i64 @write(i32 noundef, ptr noundef, i64 noundef) #3
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @__cxa_rethrow()
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #4 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #2 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #3 = { nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #4 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noreturn }
+// CHECK:STDOUT: attributes #6 = { noreturn nounwind }
 // CHECK:STDOUT:
-// CHECK:STDOUT: !llvm.dbg.cu = !{!47}
-// CHECK:STDOUT: !llvm.module.flags = !{!17, !18, !19, !2, !3}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!24}
+// CHECK:STDOUT: !llvm.dbg.cu = !{!49}
+// CHECK:STDOUT: !llvm.module.flags = !{!21, !22, !23, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!26}
 // CHECK:STDOUT:
 // CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
 // CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
 // CHECK:STDOUT: !6 = !{null}
 // CHECK:STDOUT: !7 = !DISubroutineType(types: !6)
 // CHECK:STDOUT: !8 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
-// CHECK:STDOUT: !17 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !18 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !19 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !20 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !21 = !{!"omnipotent char", !20, i64 0}
-// CHECK:STDOUT: !22 = !{!"int", !21, i64 0}
-// CHECK:STDOUT: !23 = !{!"__libc_errno", !22, i64 0}
-// CHECK:STDOUT: !24 = !{!23, !22, i64 0}
-// CHECK:STDOUT: !27 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !30 = !{null, !8, !27}
-// CHECK:STDOUT: !31 = !DISubroutineType(types: !30)
-// CHECK:STDOUT: !46 = !DIFile(filename: "pass_fn_ptr.carbon", directory: "")
-// CHECK:STDOUT: !47 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !46, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
-// CHECK:STDOUT: !48 = distinct !DISubprogram(name: "F", linkageName: "_CF.Main", scope: null, file: !46, line: 7, type: !7, spFlags: DISPFlagDefinition, unit: !47)
-// CHECK:STDOUT: !49 = !DILocation(line: 8, column: 3, scope: !48)
-// CHECK:STDOUT: !50 = !DILocation(line: 7, column: 1, scope: !48)
-// CHECK:STDOUT: !51 = distinct !DISubprogram(name: "MyCallback__carbon_thunk", linkageName: "_CMyCallback__carbon_thunk.Main", scope: null, file: !46, line: 5, type: !31, spFlags: DISPFlagDefinition, unit: !47, retainedNodes: !55)
-// CHECK:STDOUT: !52 = !DILocalVariable(arg: 1, scope: !51, type: !8)
-// CHECK:STDOUT: !53 = !DILocalVariable(arg: 2, scope: !51, type: !27)
-// CHECK:STDOUT: !54 = !DILocation(line: 5, column: 1, scope: !51)
-// CHECK:STDOUT: !55 = !{!52, !53}
+// CHECK:STDOUT: !17 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !18 = !{!"omnipotent char", !17, i64 0}
+// CHECK:STDOUT: !19 = !{!"any pointer", !18, i64 0}
+// CHECK:STDOUT: !20 = !{!19, !19, i64 0}
+// CHECK:STDOUT: !21 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !22 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !23 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !24 = !{!"int", !18, i64 0}
+// CHECK:STDOUT: !25 = !{!"__libc_errno", !24, i64 0}
+// CHECK:STDOUT: !26 = !{!25, !24, i64 0}
+// CHECK:STDOUT: !29 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !32 = !{null, !8, !29}
+// CHECK:STDOUT: !33 = !DISubroutineType(types: !32)
+// CHECK:STDOUT: !48 = !DIFile(filename: "pass_fn_ptr.carbon", directory: "")
+// CHECK:STDOUT: !49 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !48, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !50 = distinct !DISubprogram(name: "F", linkageName: "_CF.Main", scope: null, file: !48, line: 7, type: !7, spFlags: DISPFlagDefinition, unit: !49)
+// CHECK:STDOUT: !51 = !DILocation(line: 8, column: 3, scope: !50)
+// CHECK:STDOUT: !52 = !DILocation(line: 7, column: 1, scope: !50)
+// CHECK:STDOUT: !53 = distinct !DISubprogram(name: "MyCallback__carbon_thunk", linkageName: "_CMyCallback__carbon_thunk.Main", scope: null, file: !48, line: 5, type: !33, spFlags: DISPFlagDefinition, unit: !49, retainedNodes: !57)
+// CHECK:STDOUT: !54 = !DILocalVariable(arg: 1, scope: !53, type: !8)
+// CHECK:STDOUT: !55 = !DILocalVariable(arg: 2, scope: !53, type: !29)
+// CHECK:STDOUT: !56 = !DILocation(line: 5, column: 1, scope: !53)
+// CHECK:STDOUT: !57 = !{!54, !55}
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'call_fn_ptr.carbon'
@@ -320,65 +515,171 @@ fn F() {
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT:
 // CHECK:STDOUT: @float.943 = internal constant float 1.000000e+00
+// CHECK:STDOUT: @.str = private unnamed_addr constant [78 x i8] c"carbon: C++ exception escaped into Carbon through `GetCallback`; terminating\0A\00", align 1
+// CHECK:STDOUT: @.str.1 = private unnamed_addr constant [75 x i8] c"carbon: C++ exception escaped into Carbon through `__invoke`; terminating\0A\00", align 1
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CF.Main() #0 !dbg !62 {
+// CHECK:STDOUT: define void @_CF.Main() #0 !dbg !64 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %x.var = alloca i32, align 4, !dbg !63
-// CHECK:STDOUT:   %.loc6_41.3.temp = alloca float, align 4, !dbg !65
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %x.var), !dbg !63
-// CHECK:STDOUT:   %GetCallback.call = call ptr @_Z11GetCallbackv(), !dbg !64
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc6_41.3.temp), !dbg !65
-// CHECK:STDOUT:   %__invoke__carbon_thunk.call = call i32 @.carbon_thunk.__(ptr %GetCallback.call, ptr @float.943), !dbg !64
-// CHECK:STDOUT:   store i32 %__invoke__carbon_thunk.call, ptr %x.var, align 4, !dbg !63
-// CHECK:STDOUT:   call void @"_CSelfDestruct.c73f6eecd880c71a:core.Destroy.Core"(ptr @float.943), !dbg !65
-// CHECK:STDOUT:   call void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %x.var), !dbg !63
-// CHECK:STDOUT:   ret void, !dbg !67
+// CHECK:STDOUT:   %x.var = alloca i32, align 4, !dbg !65
+// CHECK:STDOUT:   %.loc6_41.3.temp = alloca float, align 4, !dbg !67
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %x.var), !dbg !65
+// CHECK:STDOUT:   %GetCallback__carbon_thunk.call = call ptr @_Z11GetCallbackv.carbon_thunk.(), !dbg !66
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc6_41.3.temp), !dbg !67
+// CHECK:STDOUT:   %__invoke__carbon_thunk.call = call i32 @.carbon_thunk.__(ptr %GetCallback__carbon_thunk.call, ptr @float.943), !dbg !66
+// CHECK:STDOUT:   store i32 %__invoke__carbon_thunk.call, ptr %x.var, align 4, !dbg !65
+// CHECK:STDOUT:   call void @"_CSelfDestruct.c73f6eecd880c71a:core.Destroy.Core"(ptr @float.943), !dbg !67
+// CHECK:STDOUT:   call void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %x.var), !dbg !65
+// CHECK:STDOUT:   ret void, !dbg !69
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef ptr @_Z11GetCallbackv() #1
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef ptr @_Z11GetCallbackv.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
+// CHECK:STDOUT:   %call = invoke noundef ptr @_Z11GetCallbackv()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal noundef i32 @.carbon_thunk.__(ptr noundef %this, ptr noundef %0) #2 {
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret ptr %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   store ptr %1, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %0, 1
+// CHECK:STDOUT:   store i32 %2, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call1 = call noundef i64 @write(i32 noundef 2, ptr noundef @.str, i64 noundef 77) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; No predecessors!
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %4 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %5 = extractvalue { ptr, i32 } %4, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %5) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef i32 @.carbon_thunk.__(ptr noundef %this, ptr noundef %0) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %this.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %.addr = alloca ptr, align 8
-// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !77
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
+// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !20
 // CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !80
-// CHECK:STDOUT:   %1 = load ptr, ptr %this.addr, align 8, !tbaa !77
+// CHECK:STDOUT:   %1 = load ptr, ptr %this.addr, align 8, !tbaa !20
 // CHECK:STDOUT:   %2 = load ptr, ptr %.addr, align 8, !tbaa !80
 // CHECK:STDOUT:   %3 = load float, ptr %2, align 4, !tbaa !81
-// CHECK:STDOUT:   %call = call noundef i32 %1(float noundef %3)
+// CHECK:STDOUT:   %call = invoke noundef i32 %1(float noundef %3)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
 // CHECK:STDOUT:   ret i32 %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
+// CHECK:STDOUT:   %4 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %5 = extractvalue { ptr, i32 } %4, 0
+// CHECK:STDOUT:   store ptr %5, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %4, 1
+// CHECK:STDOUT:   store i32 %6, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %7 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call1 = call noundef i64 @write(i32 noundef 2, ptr noundef @.str.1, i64 noundef 74) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; No predecessors!
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %8 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %9 = extractvalue { ptr, i32 } %8, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %9) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.c73f6eecd880c71a:core.Destroy.Core"(ptr %self) #0 !dbg !68 {
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.c73f6eecd880c71a:core.Destroy.Core"(ptr %self) #0 !dbg !70 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !70
+// CHECK:STDOUT:   ret void, !dbg !72
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %self) #0 !dbg !72 {
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.f58524831c37807e:core.Destroy.Core"(ptr %self) #0 !dbg !74 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret void, !dbg !74
+// CHECK:STDOUT:   ret void, !dbg !76
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
-// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #3
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare noundef ptr @_Z11GetCallbackv() #3
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: declare noundef i64 @write(i32 noundef, ptr noundef, i64 noundef) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @__cxa_rethrow()
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #5 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
 // CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__cxa_begin_catch, { 1, 2, 0 }
+// CHECK:STDOUT: uselistorder ptr @write, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__cxa_rethrow, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #2 = { alwaysinline mustprogress uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #3 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #2 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT: attributes #3 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #4 = { nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #6 = { noreturn }
+// CHECK:STDOUT: attributes #7 = { noreturn nounwind }
 // CHECK:STDOUT:
-// CHECK:STDOUT: !llvm.dbg.cu = !{!57}
-// CHECK:STDOUT: !llvm.module.flags = !{!17, !18, !19, !2, !3}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!24}
+// CHECK:STDOUT: !llvm.dbg.cu = !{!59}
+// CHECK:STDOUT: !llvm.module.flags = !{!21, !22, !23, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!26}
 // CHECK:STDOUT:
 // CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
 // CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
@@ -387,36 +688,36 @@ fn F() {
 // CHECK:STDOUT: !8 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
 // CHECK:STDOUT: !11 = !{null, !8}
 // CHECK:STDOUT: !12 = !DISubroutineType(types: !11)
-// CHECK:STDOUT: !17 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !18 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !19 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !20 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !21 = !{!"omnipotent char", !20, i64 0}
-// CHECK:STDOUT: !22 = !{!"int", !21, i64 0}
-// CHECK:STDOUT: !23 = !{!"__libc_errno", !22, i64 0}
-// CHECK:STDOUT: !24 = !{!23, !22, i64 0}
-// CHECK:STDOUT: !27 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !56 = !DIFile(filename: "call_fn_ptr.carbon", directory: "")
-// CHECK:STDOUT: !57 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !56, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
-// CHECK:STDOUT: !60 = !{null, !27}
-// CHECK:STDOUT: !61 = !DISubroutineType(types: !60)
-// CHECK:STDOUT: !62 = distinct !DISubprogram(name: "F", linkageName: "_CF.Main", scope: null, file: !56, line: 5, type: !7, spFlags: DISPFlagDefinition, unit: !57)
-// CHECK:STDOUT: !63 = !DILocation(line: 6, column: 3, scope: !62)
-// CHECK:STDOUT: !64 = !DILocation(line: 6, column: 23, scope: !62)
-// CHECK:STDOUT: !65 = !DILocation(line: 6, column: 41, scope: !62)
-// CHECK:STDOUT: !67 = !DILocation(line: 5, column: 1, scope: !62)
-// CHECK:STDOUT: !68 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.c73f6eecd880c71a:core.Destroy.Core", scope: null, file: !56, line: 6, type: !12, spFlags: DISPFlagDefinition, unit: !57, retainedNodes: !71)
-// CHECK:STDOUT: !69 = !DILocalVariable(arg: 1, scope: !68, type: !8)
-// CHECK:STDOUT: !70 = !DILocation(line: 6, column: 41, scope: !68)
-// CHECK:STDOUT: !71 = !{!69}
-// CHECK:STDOUT: !72 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.f58524831c37807e:core.Destroy.Core", scope: null, file: !56, line: 6, type: !61, spFlags: DISPFlagDefinition, unit: !57, retainedNodes: !75)
-// CHECK:STDOUT: !73 = !DILocalVariable(arg: 1, scope: !72, type: !27)
-// CHECK:STDOUT: !74 = !DILocation(line: 6, column: 3, scope: !72)
-// CHECK:STDOUT: !75 = !{!73}
-// CHECK:STDOUT: !76 = !{!"any pointer", !21, i64 0}
-// CHECK:STDOUT: !77 = !{!76, !76, i64 0}
-// CHECK:STDOUT: !78 = !{!"float", !21, i64 0}
-// CHECK:STDOUT: !79 = !{!"p1 float", !76, i64 0}
+// CHECK:STDOUT: !17 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !18 = !{!"omnipotent char", !17, i64 0}
+// CHECK:STDOUT: !19 = !{!"any pointer", !18, i64 0}
+// CHECK:STDOUT: !20 = !{!19, !19, i64 0}
+// CHECK:STDOUT: !21 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !22 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !23 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !24 = !{!"int", !18, i64 0}
+// CHECK:STDOUT: !25 = !{!"__libc_errno", !24, i64 0}
+// CHECK:STDOUT: !26 = !{!25, !24, i64 0}
+// CHECK:STDOUT: !29 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !58 = !DIFile(filename: "call_fn_ptr.carbon", directory: "")
+// CHECK:STDOUT: !59 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !58, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !62 = !{null, !29}
+// CHECK:STDOUT: !63 = !DISubroutineType(types: !62)
+// CHECK:STDOUT: !64 = distinct !DISubprogram(name: "F", linkageName: "_CF.Main", scope: null, file: !58, line: 5, type: !7, spFlags: DISPFlagDefinition, unit: !59)
+// CHECK:STDOUT: !65 = !DILocation(line: 6, column: 3, scope: !64)
+// CHECK:STDOUT: !66 = !DILocation(line: 6, column: 23, scope: !64)
+// CHECK:STDOUT: !67 = !DILocation(line: 6, column: 41, scope: !64)
+// CHECK:STDOUT: !69 = !DILocation(line: 5, column: 1, scope: !64)
+// CHECK:STDOUT: !70 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.c73f6eecd880c71a:core.Destroy.Core", scope: null, file: !58, line: 6, type: !12, spFlags: DISPFlagDefinition, unit: !59, retainedNodes: !73)
+// CHECK:STDOUT: !71 = !DILocalVariable(arg: 1, scope: !70, type: !8)
+// CHECK:STDOUT: !72 = !DILocation(line: 6, column: 41, scope: !70)
+// CHECK:STDOUT: !73 = !{!71}
+// CHECK:STDOUT: !74 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.f58524831c37807e:core.Destroy.Core", scope: null, file: !58, line: 6, type: !63, spFlags: DISPFlagDefinition, unit: !59, retainedNodes: !77)
+// CHECK:STDOUT: !75 = !DILocalVariable(arg: 1, scope: !74, type: !29)
+// CHECK:STDOUT: !76 = !DILocation(line: 6, column: 3, scope: !74)
+// CHECK:STDOUT: !77 = !{!75}
+// CHECK:STDOUT: !78 = !{!"float", !18, i64 0}
+// CHECK:STDOUT: !79 = !{!"p1 float", !19, i64 0}
 // CHECK:STDOUT: !80 = !{!79, !79, i64 0}
 // CHECK:STDOUT: !81 = !{!78, !78, i64 0}
 // CHECK:STDOUT:
@@ -426,37 +727,159 @@ fn F() {
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: @.str = private unnamed_addr constant [85 x i8] c"carbon: C++ exception escaped into Carbon through `GetComplexCallback`; terminating\0A\00", align 1
+// CHECK:STDOUT: @.str.1 = private unnamed_addr constant [86 x i8] c"carbon: C++ exception escaped into Carbon through `TakeComplexCallback`; terminating\0A\00", align 1
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CF.Main() #0 !dbg !84 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %GetComplexCallback.call = call ptr @_Z18GetComplexCallbackv(), !dbg !85
-// CHECK:STDOUT:   call void @_Z19TakeComplexCallbackPF1CS_E(ptr %GetComplexCallback.call), !dbg !86
+// CHECK:STDOUT:   %GetComplexCallback__carbon_thunk.call = call ptr @_Z18GetComplexCallbackv.carbon_thunk.(), !dbg !85
+// CHECK:STDOUT:   call void @_Z19TakeComplexCallbackPF1CS_E.carbon_thunk._(ptr %GetComplexCallback__carbon_thunk.call), !dbg !86
 // CHECK:STDOUT:   ret void, !dbg !87
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef ptr @_Z18GetComplexCallbackv() #1
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef ptr @_Z18GetComplexCallbackv.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
+// CHECK:STDOUT:   %call = invoke noundef ptr @_Z18GetComplexCallbackv()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z19TakeComplexCallbackPF1CS_E(ptr noundef) #1
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret ptr %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   store ptr %1, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %0, 1
+// CHECK:STDOUT:   store i32 %2, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call1 = call noundef i64 @write(i32 noundef 2, ptr noundef @.str, i64 noundef 84) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #5
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; No predecessors!
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %4 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %5 = extractvalue { ptr, i32 } %4, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %5) #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z19TakeComplexCallbackPF1CS_E.carbon_thunk._(ptr noundef %callback) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %callback.addr = alloca ptr, align 8
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
+// CHECK:STDOUT:   store ptr %callback, ptr %callback.addr, align 8, !tbaa !20
+// CHECK:STDOUT:   %0 = load ptr, ptr %callback.addr, align 8, !tbaa !20
+// CHECK:STDOUT:   invoke void @_Z19TakeComplexCallbackPF1CS_E(ptr noundef %0)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   br label %try.cont
+// CHECK:STDOUT:
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
+// CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
+// CHECK:STDOUT:   store ptr %2, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %1, 1
+// CHECK:STDOUT:   store i32 %3, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %4 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call = call noundef i64 @write(i32 noundef 2, ptr noundef @.str.1, i64 noundef 85) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #5
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare noundef ptr @_Z18GetComplexCallbackv() #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: declare noundef i64 @write(i32 noundef, ptr noundef, i64 noundef) #3
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @__cxa_rethrow()
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #4 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z19TakeComplexCallbackPF1CS_E(ptr noundef) #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; uselistorder directives
+// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__cxa_begin_catch, { 1, 2, 0 }
+// CHECK:STDOUT: uselistorder ptr @write, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__cxa_rethrow, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #2 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #3 = { nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #4 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noreturn }
+// CHECK:STDOUT: attributes #6 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!83}
-// CHECK:STDOUT: !llvm.module.flags = !{!17, !18, !19, !2, !3}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!24}
+// CHECK:STDOUT: !llvm.module.flags = !{!21, !22, !23, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!26}
 // CHECK:STDOUT:
 // CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
 // CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
 // CHECK:STDOUT: !6 = !{null}
 // CHECK:STDOUT: !7 = !DISubroutineType(types: !6)
-// CHECK:STDOUT: !17 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !18 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !19 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !20 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !21 = !{!"omnipotent char", !20, i64 0}
-// CHECK:STDOUT: !22 = !{!"int", !21, i64 0}
-// CHECK:STDOUT: !23 = !{!"__libc_errno", !22, i64 0}
-// CHECK:STDOUT: !24 = !{!23, !22, i64 0}
+// CHECK:STDOUT: !17 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !18 = !{!"omnipotent char", !17, i64 0}
+// CHECK:STDOUT: !19 = !{!"any pointer", !18, i64 0}
+// CHECK:STDOUT: !20 = !{!19, !19, i64 0}
+// CHECK:STDOUT: !21 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !22 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !23 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !24 = !{!"int", !18, i64 0}
+// CHECK:STDOUT: !25 = !{!"__libc_errno", !24, i64 0}
+// CHECK:STDOUT: !26 = !{!25, !24, i64 0}
 // CHECK:STDOUT: !82 = !DIFile(filename: "relay_complex_fn_ptr.carbon", directory: "")
 // CHECK:STDOUT: !83 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !82, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
 // CHECK:STDOUT: !84 = distinct !DISubprogram(name: "F", linkageName: "_CF.Main", scope: null, file: !82, line: 5, type: !7, spFlags: DISPFlagDefinition, unit: !83)
@@ -502,8 +925,8 @@ fn F() {
 // CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!89}
-// CHECK:STDOUT: !llvm.module.flags = !{!17, !18, !19, !2, !3}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!24}
+// CHECK:STDOUT: !llvm.module.flags = !{!21, !22, !23, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!26}
 // CHECK:STDOUT:
 // CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
 // CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
@@ -512,14 +935,14 @@ fn F() {
 // CHECK:STDOUT: !8 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
 // CHECK:STDOUT: !11 = !{null, !8}
 // CHECK:STDOUT: !12 = !DISubroutineType(types: !11)
-// CHECK:STDOUT: !17 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !18 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !19 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !20 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !21 = !{!"omnipotent char", !20, i64 0}
-// CHECK:STDOUT: !22 = !{!"int", !21, i64 0}
-// CHECK:STDOUT: !23 = !{!"__libc_errno", !22, i64 0}
-// CHECK:STDOUT: !24 = !{!23, !22, i64 0}
+// CHECK:STDOUT: !17 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !18 = !{!"omnipotent char", !17, i64 0}
+// CHECK:STDOUT: !21 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !22 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !23 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !24 = !{!"int", !18, i64 0}
+// CHECK:STDOUT: !25 = !{!"__libc_errno", !24, i64 0}
+// CHECK:STDOUT: !26 = !{!25, !24, i64 0}
 // CHECK:STDOUT: !88 = !DIFile(filename: "convert_complex_fn_ptr.carbon", directory: "")
 // CHECK:STDOUT: !89 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !88, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
 // CHECK:STDOUT: !92 = !{null, !8, !8}
@@ -543,12 +966,16 @@ fn F() {
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: @.str = private unnamed_addr constant [86 x i8] c"carbon: C++ exception escaped into Carbon through `TakeComplexCallback`; terminating\0A\00", align 1
+// CHECK:STDOUT:
 // CHECK:STDOUT: declare void @_CMyCallback.Main(ptr sret([4 x i8]), ptr)
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CF.Main() #0 !dbg !110 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @_Z19TakeComplexCallbackPF1CS_E(ptr @_CMyCallback.Main), !dbg !111
+// CHECK:STDOUT:   call void @_Z19TakeComplexCallbackPF1CS_E.carbon_thunk._(ptr @_CMyCallback.Main), !dbg !111
 // CHECK:STDOUT:   ret void, !dbg !112
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -559,28 +986,97 @@ fn F() {
 // CHECK:STDOUT:   ret void, !dbg !116
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_Z19TakeComplexCallbackPF1CS_E(ptr noundef) #1
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_Z19TakeComplexCallbackPF1CS_E.carbon_thunk._(ptr noundef %callback) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %callback.addr = alloca ptr, align 8
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
+// CHECK:STDOUT:   store ptr %callback, ptr %callback.addr, align 8, !tbaa !20
+// CHECK:STDOUT:   %0 = load ptr, ptr %callback.addr, align 8, !tbaa !20
+// CHECK:STDOUT:   invoke void @_Z19TakeComplexCallbackPF1CS_E(ptr noundef %0)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   br label %try.cont
+// CHECK:STDOUT:
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
+// CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
+// CHECK:STDOUT:   store ptr %2, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %1, 1
+// CHECK:STDOUT:   store i32 %3, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %4 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call = call noundef i64 @write(i32 noundef 2, ptr noundef @.str, i64 noundef 85) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #5
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_Z19TakeComplexCallbackPF1CS_E(ptr noundef) #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: declare noundef i64 @write(i32 noundef, ptr noundef, i64 noundef) #3
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @__cxa_rethrow()
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #4 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #6
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #2 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #3 = { nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #4 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noreturn }
+// CHECK:STDOUT: attributes #6 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!109}
-// CHECK:STDOUT: !llvm.module.flags = !{!17, !18, !19, !2, !3}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!24}
+// CHECK:STDOUT: !llvm.module.flags = !{!21, !22, !23, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!26}
 // CHECK:STDOUT:
 // CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
 // CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
 // CHECK:STDOUT: !6 = !{null}
 // CHECK:STDOUT: !7 = !DISubroutineType(types: !6)
 // CHECK:STDOUT: !8 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
-// CHECK:STDOUT: !17 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !18 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !19 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !20 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !21 = !{!"omnipotent char", !20, i64 0}
-// CHECK:STDOUT: !22 = !{!"int", !21, i64 0}
-// CHECK:STDOUT: !23 = !{!"__libc_errno", !22, i64 0}
-// CHECK:STDOUT: !24 = !{!23, !22, i64 0}
+// CHECK:STDOUT: !17 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !18 = !{!"omnipotent char", !17, i64 0}
+// CHECK:STDOUT: !19 = !{!"any pointer", !18, i64 0}
+// CHECK:STDOUT: !20 = !{!19, !19, i64 0}
+// CHECK:STDOUT: !21 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !22 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !23 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !24 = !{!"int", !18, i64 0}
+// CHECK:STDOUT: !25 = !{!"__libc_errno", !24, i64 0}
+// CHECK:STDOUT: !26 = !{!25, !24, i64 0}
 // CHECK:STDOUT: !92 = !{null, !8, !8}
 // CHECK:STDOUT: !93 = !DISubroutineType(types: !92)
 // CHECK:STDOUT: !108 = !DIFile(filename: "pass_complex_fn_ptr.carbon", directory: "")
@@ -602,49 +1098,165 @@ fn F() {
 // CHECK:STDOUT:
 // CHECK:STDOUT: %class.C = type { i32 }
 // CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: @.str = private unnamed_addr constant [85 x i8] c"carbon: C++ exception escaped into Carbon through `GetComplexCallback`; terminating\0A\00", align 1
+// CHECK:STDOUT: @.str.1 = private unnamed_addr constant [71 x i8] c"carbon: C++ exception escaped into Carbon through `C::C`; terminating\0A\00", align 1
+// CHECK:STDOUT: @.str.2 = private unnamed_addr constant [75 x i8] c"carbon: C++ exception escaped into Carbon through `__invoke`; terminating\0A\00", align 1
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CF.Main() #0 !dbg !122 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %x.var = alloca [4 x i8], align 4, !dbg !123
 // CHECK:STDOUT:   %.loc6_58.1.temp = alloca [4 x i8], align 4, !dbg !125
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %x.var), !dbg !123
-// CHECK:STDOUT:   %GetComplexCallback.call = call ptr @_Z18GetComplexCallbackv(), !dbg !124
+// CHECK:STDOUT:   %GetComplexCallback__carbon_thunk.call = call ptr @_Z18GetComplexCallbackv.carbon_thunk.(), !dbg !124
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc6_58.1.temp), !dbg !125
 // CHECK:STDOUT:   call void @_ZN1CC1Ev.carbon_thunk.(ptr %.loc6_58.1.temp), !dbg !125
-// CHECK:STDOUT:   call void @.carbon_thunk.__(ptr %GetComplexCallback.call, ptr %.loc6_58.1.temp, ptr %x.var), !dbg !124
+// CHECK:STDOUT:   call void @.carbon_thunk.__(ptr %GetComplexCallback__carbon_thunk.call, ptr %.loc6_58.1.temp, ptr %x.var), !dbg !124
 // CHECK:STDOUT:   call void @"_CSelfDestruct.417eccf5eb8addbd:core.Destroy.Core"(ptr %.loc6_58.1.temp), !dbg !125
 // CHECK:STDOUT:   call void @"_CSelfDestruct.417eccf5eb8addbd:core.Destroy.Core"(ptr %x.var), !dbg !123
 // CHECK:STDOUT:   ret void, !dbg !127
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef ptr @_Z18GetComplexCallbackv() #1
-// CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @_ZN1CC1Ev.carbon_thunk.(ptr noundef %return) #2 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef ptr @_Z18GetComplexCallbackv.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %return.addr = alloca ptr, align 8
-// CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !133
-// CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !133
-// CHECK:STDOUT:   call void @_ZN1CC1Ev(ptr noundef nonnull align 4 dereferenceable(4) %0)
-// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
+// CHECK:STDOUT:   %call = invoke noundef ptr @_Z18GetComplexCallbackv()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret ptr %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   store ptr %1, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %0, 1
+// CHECK:STDOUT:   store i32 %2, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call1 = call noundef i64 @write(i32 noundef 2, ptr noundef @.str, i64 noundef 84) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; No predecessors!
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %4 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %5 = extractvalue { ptr, i32 } %4, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %5) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress uwtable
-// CHECK:STDOUT: define internal void @.carbon_thunk.__(ptr noundef %this, ptr noundef %0, ptr noundef %return) #2 {
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_ZN1CC1Ev.carbon_thunk.(ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %return.addr = alloca ptr, align 8
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
+// CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !133
+// CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !133
+// CHECK:STDOUT:   invoke void @_ZN1CC1Ev(ptr noundef nonnull align 4 dereferenceable(4) %0)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   br label %try.cont
+// CHECK:STDOUT:
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
+// CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
+// CHECK:STDOUT:   store ptr %2, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %1, 1
+// CHECK:STDOUT:   store i32 %3, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %4 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call = call noundef i64 @write(i32 noundef 2, ptr noundef @.str.1, i64 noundef 70) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @.carbon_thunk.__(ptr noundef %this, ptr noundef %0, ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %this.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %return.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %agg.tmp = alloca %class.C, align 4
-// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !77
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
+// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !20
 // CHECK:STDOUT:   store ptr %0, ptr %.addr, align 8, !tbaa !133
 // CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !133
 // CHECK:STDOUT:   %1 = load ptr, ptr %return.addr, align 8, !tbaa !133
-// CHECK:STDOUT:   %2 = load ptr, ptr %this.addr, align 8, !tbaa !77
+// CHECK:STDOUT:   %2 = load ptr, ptr %this.addr, align 8, !tbaa !20
 // CHECK:STDOUT:   %3 = load ptr, ptr %.addr, align 8, !tbaa !133
-// CHECK:STDOUT:   call void @_ZN1CC1ERKS_(ptr noundef nonnull align 4 dereferenceable(4) %agg.tmp, ptr noundef nonnull align 4 dereferenceable(4) %3)
-// CHECK:STDOUT:   call void %2(ptr dead_on_unwind writable sret(%class.C) align 4 %1, ptr nofreeobj noundef align 4 dead_on_return dereferenceable(4) %agg.tmp)
+// CHECK:STDOUT:   invoke void @_ZN1CC1ERKS_(ptr noundef nonnull align 4 dereferenceable(4) %agg.tmp, ptr noundef nonnull align 4 dereferenceable(4) %3)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   invoke void %2(ptr dead_on_unwind writable sret(%class.C) align 4 %1, ptr nofreeobj noundef align 4 dead_on_return dereferenceable(4) %agg.tmp)
+// CHECK:STDOUT:           to label %invoke.cont1 unwind label %lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont1:                                     ; preds = %invoke.cont
+// CHECK:STDOUT:   br label %try.cont
+// CHECK:STDOUT:
+// CHECK:STDOUT: lpad:                                             ; preds = %invoke.cont, %entry
+// CHECK:STDOUT:   %4 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %5 = extractvalue { ptr, i32 } %4, 0
+// CHECK:STDOUT:   store ptr %5, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %4, 1
+// CHECK:STDOUT:   store i32 %6, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %7 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call = call noundef i64 @write(i32 noundef 2, ptr noundef @.str.2, i64 noundef 74) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont1
 // CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %8 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %9 = extractvalue { ptr, i32 } %8, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %9) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
+// CHECK:STDOUT:   unreachable
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
@@ -654,24 +1266,53 @@ fn F() {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
-// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #3
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #2
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZN1CC1Ev(ptr noundef nonnull align 4 dereferenceable(4)) unnamed_addr #1
+// CHECK:STDOUT: declare noundef ptr @_Z18GetComplexCallbackv() #3
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare void @_ZN1CC1ERKS_(ptr noundef nonnull align 4 dereferenceable(4), ptr noundef nonnull align 4 dereferenceable(4)) unnamed_addr #1
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: declare noundef i64 @write(i32 noundef, ptr noundef, i64 noundef) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @__cxa_rethrow()
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #5 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZN1CC1Ev(ptr noundef nonnull align 4 dereferenceable(4)) unnamed_addr #3
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZN1CC1ERKS_(ptr noundef nonnull align 4 dereferenceable(4), ptr noundef nonnull align 4 dereferenceable(4)) unnamed_addr #3
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
 // CHECK:STDOUT: uselistorder ptr @"_CSelfDestruct.417eccf5eb8addbd:core.Destroy.Core", { 1, 0 }
 // CHECK:STDOUT: uselistorder ptr @llvm.lifetime.start.p0, { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__gxx_personality_v0, { 2, 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__cxa_begin_catch, { 2, 3, 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @write, { 2, 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__cxa_rethrow, { 2, 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @__clang_call_terminate, { 2, 1, 0 }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #2 = { alwaysinline mustprogress uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-// CHECK:STDOUT: attributes #3 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #2 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT: attributes #3 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #4 = { nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #6 = { noreturn }
+// CHECK:STDOUT: attributes #7 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!119}
-// CHECK:STDOUT: !llvm.module.flags = !{!17, !18, !19, !2, !3}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!24}
+// CHECK:STDOUT: !llvm.module.flags = !{!21, !22, !23, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!26}
 // CHECK:STDOUT:
 // CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
 // CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
@@ -680,16 +1321,16 @@ fn F() {
 // CHECK:STDOUT: !8 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
 // CHECK:STDOUT: !11 = !{null, !8}
 // CHECK:STDOUT: !12 = !DISubroutineType(types: !11)
-// CHECK:STDOUT: !17 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !18 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !19 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !20 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !21 = !{!"omnipotent char", !20, i64 0}
-// CHECK:STDOUT: !22 = !{!"int", !21, i64 0}
-// CHECK:STDOUT: !23 = !{!"__libc_errno", !22, i64 0}
-// CHECK:STDOUT: !24 = !{!23, !22, i64 0}
-// CHECK:STDOUT: !76 = !{!"any pointer", !21, i64 0}
-// CHECK:STDOUT: !77 = !{!76, !76, i64 0}
+// CHECK:STDOUT: !17 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !18 = !{!"omnipotent char", !17, i64 0}
+// CHECK:STDOUT: !19 = !{!"any pointer", !18, i64 0}
+// CHECK:STDOUT: !20 = !{!19, !19, i64 0}
+// CHECK:STDOUT: !21 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !22 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !23 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !24 = !{!"int", !18, i64 0}
+// CHECK:STDOUT: !25 = !{!"__libc_errno", !24, i64 0}
+// CHECK:STDOUT: !26 = !{!25, !24, i64 0}
 // CHECK:STDOUT: !118 = !DIFile(filename: "call_complex_fn_ptr.carbon", directory: "")
 // CHECK:STDOUT: !119 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !118, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
 // CHECK:STDOUT: !122 = distinct !DISubprogram(name: "F", linkageName: "_CF.Main", scope: null, file: !118, line: 5, type: !7, spFlags: DISPFlagDefinition, unit: !119)
@@ -701,7 +1342,7 @@ fn F() {
 // CHECK:STDOUT: !129 = !DILocalVariable(arg: 1, scope: !128, type: !8)
 // CHECK:STDOUT: !130 = !DILocation(line: 6, column: 50, scope: !128)
 // CHECK:STDOUT: !131 = !{!129}
-// CHECK:STDOUT: !132 = !{!"p1 _ZTS1C", !76, i64 0}
+// CHECK:STDOUT: !132 = !{!"p1 _ZTS1C", !19, i64 0}
 // CHECK:STDOUT: !133 = !{!132, !132, i64 0}
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; ---
@@ -710,18 +1351,61 @@ fn F() {
 // CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 // CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
 // CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: @.str = private unnamed_addr constant [81 x i8] c"carbon: C++ exception escaped into Carbon through `ReturnCallback`; terminating\0A\00", align 1
+// CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define void @_CF.Main() #0 !dbg !137 {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %callback.var = alloca ptr, align 8, !dbg !138
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %callback.var), !dbg !138
-// CHECK:STDOUT:   %ReturnCallback.call = call ptr @_Z14ReturnCallbackv(), !dbg !139
-// CHECK:STDOUT:   store ptr %ReturnCallback.call, ptr %callback.var, align 8, !dbg !138
+// CHECK:STDOUT:   %ReturnCallback__carbon_thunk.call = call ptr @_Z14ReturnCallbackv.carbon_thunk.(), !dbg !139
+// CHECK:STDOUT:   store ptr %ReturnCallback__carbon_thunk.call, ptr %callback.var, align 8, !dbg !138
 // CHECK:STDOUT:   call void @"_CSelfDestruct.659d177172b60c17:core.Destroy.Core"(ptr %callback.var), !dbg !138
 // CHECK:STDOUT:   ret void, !dbg !141
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: declare noundef ptr @_Z14ReturnCallbackv() #1
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal noundef ptr @_Z14ReturnCallbackv.carbon_thunk.() #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
+// CHECK:STDOUT:   %call = invoke noundef ptr @_Z14ReturnCallbackv()
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   ret ptr %call
+// CHECK:STDOUT:
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
+// CHECK:STDOUT:   %0 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %1 = extractvalue { ptr, i32 } %0, 0
+// CHECK:STDOUT:   store ptr %1, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %0, 1
+// CHECK:STDOUT:   store i32 %2, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call1 = call noundef i64 @write(i32 noundef 2, ptr noundef @.str, i64 noundef 80) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #6
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; No predecessors!
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %4 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %5 = extractvalue { ptr, i32 } %4, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %5) #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.659d177172b60c17:core.Destroy.Core"(ptr %self) #0 !dbg !142 {
@@ -732,13 +1416,38 @@ fn F() {
 // CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
 // CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #2
 // CHECK:STDOUT:
+// CHECK:STDOUT: declare noundef ptr @_Z14ReturnCallbackv() #3
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: declare noundef i64 @write(i32 noundef, ptr noundef, i64 noundef) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @__cxa_rethrow()
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #5 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #7
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
+// CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
-// CHECK:STDOUT: attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT: attributes #2 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT: attributes #3 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #4 = { nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #6 = { noreturn }
+// CHECK:STDOUT: attributes #7 = { noreturn nounwind }
 // CHECK:STDOUT:
 // CHECK:STDOUT: !llvm.dbg.cu = !{!136}
-// CHECK:STDOUT: !llvm.module.flags = !{!17, !18, !19, !2, !3}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!24}
+// CHECK:STDOUT: !llvm.module.flags = !{!21, !22, !23, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!26}
 // CHECK:STDOUT:
 // CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
 // CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
@@ -747,14 +1456,14 @@ fn F() {
 // CHECK:STDOUT: !8 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
 // CHECK:STDOUT: !11 = !{null, !8}
 // CHECK:STDOUT: !12 = !DISubroutineType(types: !11)
-// CHECK:STDOUT: !17 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !18 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !19 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !20 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !21 = !{!"omnipotent char", !20, i64 0}
-// CHECK:STDOUT: !22 = !{!"int", !21, i64 0}
-// CHECK:STDOUT: !23 = !{!"__libc_errno", !22, i64 0}
-// CHECK:STDOUT: !24 = !{!23, !22, i64 0}
+// CHECK:STDOUT: !17 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !18 = !{!"omnipotent char", !17, i64 0}
+// CHECK:STDOUT: !21 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !22 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !23 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !24 = !{!"int", !18, i64 0}
+// CHECK:STDOUT: !25 = !{!"__libc_errno", !24, i64 0}
+// CHECK:STDOUT: !26 = !{!25, !24, i64 0}
 // CHECK:STDOUT: !135 = !DIFile(filename: "mention_forward_decl.carbon", directory: "")
 // CHECK:STDOUT: !136 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !135, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
 // CHECK:STDOUT: !137 = distinct !DISubprogram(name: "F", linkageName: "_CF.Main", scope: null, file: !135, line: 5, type: !7, spFlags: DISPFlagDefinition, unit: !136)

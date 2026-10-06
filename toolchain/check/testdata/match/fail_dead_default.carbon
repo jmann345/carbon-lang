@@ -406,6 +406,7 @@ fn F(p: {.a: i32, .b: i32}) -> i32 {
 // CHECK:STDOUT: --- fail_trailing_guarded_default.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %Flag: type = class_type @Flag [concrete]
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]

@@ -68,33 +68,33 @@ fn G(n: i32) -> i32 { return Cpp.Use(n); }
 // CHECK:STDOUT: @.str = private unnamed_addr constant [70 x i8] c"carbon: C++ exception escaped into Carbon through `Use`; terminating\0A\00", align 1
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CF.Main(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %n) #0 !dbg !12 {
+// CHECK:STDOUT: define void @_CF.Main(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %n) #0 !dbg !15 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %Int.as.OrderedWith.impl.Less.call = icmp slt i32 %n, 0, !dbg !19
-// CHECK:STDOUT:   br i1 %Int.as.OrderedWith.impl.Less.call, label %if.then, label %if.else, !dbg !20
+// CHECK:STDOUT:   %Int.as.OrderedWith.impl.Less.call = icmp slt i32 %n, 0, !dbg !20
+// CHECK:STDOUT:   br i1 %Int.as.OrderedWith.impl.Less.call, label %if.then, label %if.else, !dbg !21
 // CHECK:STDOUT:
 // CHECK:STDOUT: if.then:                                          ; preds = %entry
-// CHECK:STDOUT:   call void @_CErr.Result.Core.8122a03446648385(ptr %return, i32 %n), !dbg !21
-// CHECK:STDOUT:   ret void, !dbg !22
+// CHECK:STDOUT:   call void @_CErr.Result.Core.8122a03446648385(ptr %return, i32 %n), !dbg !23
+// CHECK:STDOUT:   ret void, !dbg !24
 // CHECK:STDOUT:
 // CHECK:STDOUT: if.else:                                          ; preds = %entry
-// CHECK:STDOUT:   call void @_COk.Result.Core.8122a03446648385(ptr %return, i32 %n), !dbg !23
-// CHECK:STDOUT:   ret void, !dbg !24
+// CHECK:STDOUT:   call void @_COk.Result.Core.8122a03446648385(ptr %return, i32 %n), !dbg !26
+// CHECK:STDOUT:   ret void, !dbg !27
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CF__carbon_thunk.Main(ptr %_, ptr %_1) #0 !dbg !25 {
+// CHECK:STDOUT: define void @_CF__carbon_thunk.Main(ptr %_, ptr %_1) #0 !dbg !29 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc6_39.2 = load i32, ptr %_, align 4, !dbg !31
-// CHECK:STDOUT:   call void @_CF.Main(ptr %_1, i32 %.loc6_39.2), !dbg !31
-// CHECK:STDOUT:   ret void, !dbg !31
+// CHECK:STDOUT:   %.loc6_39.2 = load i32, ptr %_, align 4, !dbg !32
+// CHECK:STDOUT:   call void @_CF.Main(ptr %_1, i32 %.loc6_39.2), !dbg !32
+// CHECK:STDOUT:   ret void, !dbg !32
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CG.Main(i32 %n) #0 !dbg !32 {
+// CHECK:STDOUT: define i32 @_CG.Main(i32 %n) #0 !dbg !34 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %Use__carbon_thunk.call = call i32 @_Z3Usei.carbon_thunk._(i32 %n), !dbg !37
-// CHECK:STDOUT:   ret i32 %Use__carbon_thunk.call, !dbg !38
+// CHECK:STDOUT:   %Use__carbon_thunk.call = call i32 @_Z3Usei.carbon_thunk._(i32 %n), !dbg !40
+// CHECK:STDOUT:   ret i32 %Use__carbon_thunk.call, !dbg !41
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
@@ -103,8 +103,8 @@ fn G(n: i32) -> i32 { return Cpp.Use(n); }
 // CHECK:STDOUT:   %n.addr = alloca i32, align 4
 // CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
 // CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
-// CHECK:STDOUT:   store i32 %n, ptr %n.addr, align 4, !tbaa !39
-// CHECK:STDOUT:   %0 = load i32, ptr %n.addr, align 4, !tbaa !39
+// CHECK:STDOUT:   store i32 %n, ptr %n.addr, align 4, !tbaa !56
+// CHECK:STDOUT:   %0 = load i32, ptr %n.addr, align 4, !tbaa !56
 // CHECK:STDOUT:   %call = invoke noundef i32 @_Z3Usei(i32 noundef %0)
 // CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
@@ -142,29 +142,29 @@ fn G(n: i32) -> i32 { return Cpp.Use(n); }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @_CErr.Result.Core.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !40 {
-// CHECK:STDOUT:   %discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 0, !dbg !44
-// CHECK:STDOUT:   %payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 1, !dbg !44
-// CHECK:STDOUT:   %Err = getelementptr inbounds nuw [4 x i8], ptr %payload, i32 0, i32 0, !dbg !44
-// CHECK:STDOUT:   %tuple.init = insertvalue { i32 } poison, i32 %_, 0, !dbg !44
-// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @Result.val.d4e.anon, i64 8, i1 false), !dbg !44
-// CHECK:STDOUT:   store { i32 } %tuple.init, ptr %Err, align 4, !dbg !44
-// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i32 }, ptr %Err, i32 0, i32 0, !dbg !44
-// CHECK:STDOUT:   store i32 %_, ptr %tuple.elem, align 4, !dbg !44
-// CHECK:STDOUT:   ret void, !dbg !44
+// CHECK:STDOUT: define linkonce_odr void @_CErr.Result.Core.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !44 {
+// CHECK:STDOUT:   %discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 0, !dbg !46
+// CHECK:STDOUT:   %payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 1, !dbg !46
+// CHECK:STDOUT:   %Err = getelementptr inbounds nuw [4 x i8], ptr %payload, i32 0, i32 0, !dbg !46
+// CHECK:STDOUT:   %tuple.init = insertvalue { i32 } poison, i32 %_, 0, !dbg !46
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @Result.val.d4e.anon, i64 8, i1 false), !dbg !46
+// CHECK:STDOUT:   store { i32 } %tuple.init, ptr %Err, align 4, !dbg !46
+// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i32 }, ptr %Err, i32 0, i32 0, !dbg !46
+// CHECK:STDOUT:   store i32 %_, ptr %tuple.elem, align 4, !dbg !46
+// CHECK:STDOUT:   ret void, !dbg !46
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr void @_COk.Result.Core.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !45 {
-// CHECK:STDOUT:   %discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 0, !dbg !48
-// CHECK:STDOUT:   %payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 1, !dbg !48
-// CHECK:STDOUT:   %Ok = getelementptr inbounds nuw [4 x i8], ptr %payload, i32 0, i32 0, !dbg !48
-// CHECK:STDOUT:   %tuple.init = insertvalue { i32 } poison, i32 %_, 0, !dbg !49
-// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @Result.val.ad4.anon, i64 8, i1 false), !dbg !48
-// CHECK:STDOUT:   store { i32 } %tuple.init, ptr %Ok, align 4, !dbg !48
-// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i32 }, ptr %Ok, i32 0, i32 0, !dbg !49
-// CHECK:STDOUT:   store i32 %_, ptr %tuple.elem, align 4, !dbg !49
-// CHECK:STDOUT:   ret void, !dbg !48
+// CHECK:STDOUT: define linkonce_odr void @_COk.Result.Core.8122a03446648385(ptr sret(<{ <{ i1, [3 x i8] }>, [4 x i8] }>) %return, i32 %_) #0 !dbg !48 {
+// CHECK:STDOUT:   %discriminant = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 0, !dbg !50
+// CHECK:STDOUT:   %payload = getelementptr inbounds nuw <{ <{ i1, [3 x i8] }>, [4 x i8] }>, ptr %return, i32 0, i32 1, !dbg !50
+// CHECK:STDOUT:   %Ok = getelementptr inbounds nuw [4 x i8], ptr %payload, i32 0, i32 0, !dbg !50
+// CHECK:STDOUT:   %tuple.init = insertvalue { i32 } poison, i32 %_, 0, !dbg !51
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @Result.val.ad4.anon, i64 8, i1 false), !dbg !50
+// CHECK:STDOUT:   store { i32 } %tuple.init, ptr %Ok, align 4, !dbg !50
+// CHECK:STDOUT:   %tuple.elem = getelementptr inbounds nuw { i32 }, ptr %Ok, i32 0, i32 0, !dbg !51
+// CHECK:STDOUT:   store i32 %_, ptr %tuple.elem, align 4, !dbg !51
+// CHECK:STDOUT:   ret void, !dbg !50
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
@@ -175,25 +175,25 @@ fn G(n: i32) -> i32 { return Cpp.Use(n); }
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %n.addr = alloca i32, align 4
 // CHECK:STDOUT:   %r = alloca %"struct.Carbon::expected", align 4
-// CHECK:STDOUT:   store i32 %n, ptr %n.addr, align 4, !tbaa !39
+// CHECK:STDOUT:   store i32 %n, ptr %n.addr, align 4, !tbaa !56
 // CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %r) #0
-// CHECK:STDOUT:   %0 = load i32, ptr %n.addr, align 4, !tbaa !39
+// CHECK:STDOUT:   %0 = load i32, ptr %n.addr, align 4, !tbaa !56
 // CHECK:STDOUT:   %call = call i64 @_ZN6CarbonL1FEi(i32 noundef %0)
 // CHECK:STDOUT:   store i64 %call, ptr %r, align 4
 // CHECK:STDOUT:   %disc = getelementptr inbounds nuw %"struct.Carbon::expected", ptr %r, i32 0, i32 0
-// CHECK:STDOUT:   %1 = load i8, ptr %disc, align 4, !tbaa !50
+// CHECK:STDOUT:   %1 = load i8, ptr %disc, align 4, !tbaa !58
 // CHECK:STDOUT:   %conv = zext i8 %1 to i32
 // CHECK:STDOUT:   %cmp = icmp eq i32 %conv, 0
 // CHECK:STDOUT:   br i1 %cmp, label %cond.true, label %cond.false
 // CHECK:STDOUT:
 // CHECK:STDOUT: cond.true:                                        ; preds = %entry
 // CHECK:STDOUT:   %2 = getelementptr inbounds nuw %"struct.Carbon::expected", ptr %r, i32 0, i32 1
-// CHECK:STDOUT:   %3 = load i32, ptr %2, align 4, !tbaa !52
+// CHECK:STDOUT:   %3 = load i32, ptr %2, align 4, !tbaa !59
 // CHECK:STDOUT:   br label %cond.end
 // CHECK:STDOUT:
 // CHECK:STDOUT: cond.false:                                       ; preds = %entry
 // CHECK:STDOUT:   %4 = getelementptr inbounds nuw %"struct.Carbon::expected", ptr %r, i32 0, i32 1
-// CHECK:STDOUT:   %5 = load i32, ptr %4, align 4, !tbaa !52
+// CHECK:STDOUT:   %5 = load i32, ptr %4, align 4, !tbaa !59
 // CHECK:STDOUT:   br label %cond.end
 // CHECK:STDOUT:
 // CHECK:STDOUT: cond.end:                                         ; preds = %cond.false, %cond.true
@@ -228,7 +228,7 @@ fn G(n: i32) -> i32 { return Cpp.Use(n); }
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %retval = alloca %"struct.Carbon::expected", align 4
 // CHECK:STDOUT:   %.addr = alloca i32, align 4
-// CHECK:STDOUT:   store i32 %0, ptr %.addr, align 4, !tbaa !39
+// CHECK:STDOUT:   store i32 %0, ptr %.addr, align 4, !tbaa !56
 // CHECK:STDOUT:   call void @_CF__carbon_thunk.Main(ptr noundef nonnull align 4 dereferenceable(4) %.addr, ptr noundef nonnull align 4 dereferenceable(8) %retval)
 // CHECK:STDOUT:   %1 = load i64, ptr %retval, align 4
 // CHECK:STDOUT:   ret i64 %1
@@ -249,61 +249,61 @@ fn G(n: i32) -> i32 { return Cpp.Use(n); }
 // CHECK:STDOUT: attributes #6 = { noreturn }
 // CHECK:STDOUT: attributes #7 = { noreturn nounwind }
 // CHECK:STDOUT:
-// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
-// CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!7}
+// CHECK:STDOUT: !llvm.dbg.cu = !{!5}
+// CHECK:STDOUT: !llvm.module.flags = !{!60, !61, !62, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!64}
 // CHECK:STDOUT:
-// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
-// CHECK:STDOUT: !1 = !DIFile(filename: "result_expected.carbon", directory: "")
-// CHECK:STDOUT: !2 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !3 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !4 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !5 = !{i32 7, !"Dwarf Version", i32 5}
-// CHECK:STDOUT: !6 = !{i32 2, !"Debug Info Version", i32 3}
-// CHECK:STDOUT: !7 = !{!8, !9, i64 0}
-// CHECK:STDOUT: !8 = !{!"__libc_errno", !9, i64 0}
-// CHECK:STDOUT: !9 = !{!"int", !10, i64 0}
-// CHECK:STDOUT: !10 = !{!"omnipotent char", !11, i64 0}
-// CHECK:STDOUT: !11 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !12 = distinct !DISubprogram(name: "F", linkageName: "_CF.Main", scope: null, file: !1, line: 6, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !17)
-// CHECK:STDOUT: !13 = !DISubroutineType(types: !14)
-// CHECK:STDOUT: !14 = !{!15, !16}
-// CHECK:STDOUT: !15 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
-// CHECK:STDOUT: !16 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !17 = !{!18}
-// CHECK:STDOUT: !18 = !DILocalVariable(arg: 1, scope: !12, type: !16)
-// CHECK:STDOUT: !19 = !DILocation(line: 7, column: 7, scope: !12)
-// CHECK:STDOUT: !20 = !DILocation(line: 7, column: 6, scope: !12)
-// CHECK:STDOUT: !21 = !DILocation(line: 7, column: 23, scope: !12)
-// CHECK:STDOUT: !22 = !DILocation(line: 7, column: 16, scope: !12)
-// CHECK:STDOUT: !23 = !DILocation(line: 8, column: 10, scope: !12)
-// CHECK:STDOUT: !24 = !DILocation(line: 8, column: 3, scope: !12)
-// CHECK:STDOUT: !25 = distinct !DISubprogram(name: "F__carbon_thunk", linkageName: "_CF__carbon_thunk.Main", scope: null, file: !1, line: 6, type: !26, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !28)
-// CHECK:STDOUT: !26 = !DISubroutineType(types: !27)
-// CHECK:STDOUT: !27 = !{null, !16, !15}
-// CHECK:STDOUT: !28 = !{!29, !30}
-// CHECK:STDOUT: !29 = !DILocalVariable(arg: 1, scope: !25, type: !16)
-// CHECK:STDOUT: !30 = !DILocalVariable(arg: 2, scope: !25, type: !15)
-// CHECK:STDOUT: !31 = !DILocation(line: 6, column: 1, scope: !25)
-// CHECK:STDOUT: !32 = distinct !DISubprogram(name: "G", linkageName: "_CG.Main", scope: null, file: !1, line: 29, type: !33, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !35)
-// CHECK:STDOUT: !33 = !DISubroutineType(types: !34)
-// CHECK:STDOUT: !34 = !{!16, !16}
-// CHECK:STDOUT: !35 = !{!36}
-// CHECK:STDOUT: !36 = !DILocalVariable(arg: 1, scope: !32, type: !16)
-// CHECK:STDOUT: !37 = !DILocation(line: 29, column: 30, scope: !32)
-// CHECK:STDOUT: !38 = !DILocation(line: 29, column: 23, scope: !32)
-// CHECK:STDOUT: !39 = !{!9, !9, i64 0}
-// CHECK:STDOUT: !40 = distinct !DISubprogram(name: "Err", linkageName: "_CErr.Result.Core.8122a03446648385", scope: null, file: !41, line: 28, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !42)
-// CHECK:STDOUT: !41 = !DIFile(filename: "{{.*}}/prelude/types/result.carbon", directory: "")
-// CHECK:STDOUT: !42 = !{!43}
-// CHECK:STDOUT: !43 = !DILocalVariable(arg: 1, scope: !40, type: !16)
-// CHECK:STDOUT: !44 = !DILocation(line: 28, column: 1, scope: !40)
-// CHECK:STDOUT: !45 = distinct !DISubprogram(name: "Ok", linkageName: "_COk.Result.Core.8122a03446648385", scope: null, file: !41, line: 28, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !46)
-// CHECK:STDOUT: !46 = !{!47}
-// CHECK:STDOUT: !47 = !DILocalVariable(arg: 1, scope: !45, type: !16)
-// CHECK:STDOUT: !48 = !DILocation(line: 28, column: 1, scope: !45)
-// CHECK:STDOUT: !49 = !DILocation(line: 29, column: 15, scope: !45)
-// CHECK:STDOUT: !50 = !{!51, !10, i64 0}
-// CHECK:STDOUT: !51 = !{!"_ZTSN6Carbon8expectedIiiEE", !10, i64 0, !10, i64 4}
-// CHECK:STDOUT: !52 = !{!10, !10, i64 0}
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !4 = !DIFile(filename: "result_expected.carbon", directory: "")
+// CHECK:STDOUT: !5 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !4, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !8 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !9 = !{!8, !6}
+// CHECK:STDOUT: !10 = !DISubroutineType(types: !9)
+// CHECK:STDOUT: !11 = !{null, !6, !8}
+// CHECK:STDOUT: !12 = !DISubroutineType(types: !11)
+// CHECK:STDOUT: !13 = !{!6, !6}
+// CHECK:STDOUT: !14 = !DISubroutineType(types: !13)
+// CHECK:STDOUT: !15 = distinct !DISubprogram(name: "F", linkageName: "_CF.Main", scope: null, file: !4, line: 6, type: !10, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !28)
+// CHECK:STDOUT: !16 = !DILocalVariable(arg: 1, scope: !15, type: !6)
+// CHECK:STDOUT: !20 = !DILocation(line: 7, column: 7, scope: !15)
+// CHECK:STDOUT: !21 = !DILocation(line: 7, column: 6, scope: !15)
+// CHECK:STDOUT: !23 = !DILocation(line: 7, column: 23, scope: !15)
+// CHECK:STDOUT: !24 = !DILocation(line: 7, column: 16, scope: !15)
+// CHECK:STDOUT: !26 = !DILocation(line: 8, column: 10, scope: !15)
+// CHECK:STDOUT: !27 = !DILocation(line: 8, column: 3, scope: !15)
+// CHECK:STDOUT: !28 = !{!16}
+// CHECK:STDOUT: !29 = distinct !DISubprogram(name: "F__carbon_thunk", linkageName: "_CF__carbon_thunk.Main", scope: null, file: !4, line: 6, type: !12, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !33)
+// CHECK:STDOUT: !30 = !DILocalVariable(arg: 1, scope: !29, type: !6)
+// CHECK:STDOUT: !31 = !DILocalVariable(arg: 2, scope: !29, type: !8)
+// CHECK:STDOUT: !32 = !DILocation(line: 6, column: 1, scope: !29)
+// CHECK:STDOUT: !33 = !{!30, !31}
+// CHECK:STDOUT: !34 = distinct !DISubprogram(name: "G", linkageName: "_CG.Main", scope: null, file: !4, line: 29, type: !14, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !42)
+// CHECK:STDOUT: !35 = !DILocalVariable(arg: 1, scope: !34, type: !6)
+// CHECK:STDOUT: !40 = !DILocation(line: 29, column: 30, scope: !34)
+// CHECK:STDOUT: !41 = !DILocation(line: 29, column: 23, scope: !34)
+// CHECK:STDOUT: !42 = !{!35}
+// CHECK:STDOUT: !43 = !DIFile(filename: "{{.*}}/prelude/types/result.carbon", directory: "")
+// CHECK:STDOUT: !44 = distinct !DISubprogram(name: "Err", linkageName: "_CErr.Result.Core.8122a03446648385", scope: null, file: !43, line: 28, type: !10, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !47)
+// CHECK:STDOUT: !45 = !DILocalVariable(arg: 1, scope: !44, type: !6)
+// CHECK:STDOUT: !46 = !DILocation(line: 28, column: 1, scope: !44)
+// CHECK:STDOUT: !47 = !{!45}
+// CHECK:STDOUT: !48 = distinct !DISubprogram(name: "Ok", linkageName: "_COk.Result.Core.8122a03446648385", scope: null, file: !43, line: 28, type: !10, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !52)
+// CHECK:STDOUT: !49 = !DILocalVariable(arg: 1, scope: !48, type: !6)
+// CHECK:STDOUT: !50 = !DILocation(line: 28, column: 1, scope: !48)
+// CHECK:STDOUT: !51 = !DILocation(line: 29, column: 15, scope: !48)
+// CHECK:STDOUT: !52 = !{!49}
+// CHECK:STDOUT: !53 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !54 = !{!"omnipotent char", !53, i64 0}
+// CHECK:STDOUT: !55 = !{!"int", !54, i64 0}
+// CHECK:STDOUT: !56 = !{!55, !55, i64 0}
+// CHECK:STDOUT: !57 = !{!"_ZTSN6Carbon8expectedIiiEE", !54, i64 0, !54, i64 4}
+// CHECK:STDOUT: !58 = !{!57, !54, i64 0}
+// CHECK:STDOUT: !59 = !{!54, !54, i64 0}
+// CHECK:STDOUT: !60 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !61 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !62 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !63 = !{!"__libc_errno", !55, i64 0}
+// CHECK:STDOUT: !64 = !{!63, !55, i64 0}
 // CHECK:STDOUT:

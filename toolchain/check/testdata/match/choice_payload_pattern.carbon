@@ -35,6 +35,7 @@ fn Consume(r: IntResult) -> i32 {
 // CHECK:STDOUT: --- choice_payload_pattern.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %IntResult: type = class_type @IntResult [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]

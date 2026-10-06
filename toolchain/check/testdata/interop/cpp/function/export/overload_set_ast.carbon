@@ -45,7 +45,8 @@ overload fn F(unused x: i64) -> i32 { return 1; }
 // CHECK:STDOUT: | | | | `-ImplicitCastExpr {{0x[a-f0-9]+}} <col:37> 'const int' lvalue <NoOp>
 // CHECK:STDOUT: | | | |   `-DeclRefExpr {{0x[a-f0-9]+}} <col:37> 'int' lvalue Var {{0x[a-f0-9]+}} 'return_storage' 'int'
 // CHECK:STDOUT: | | | `-ReturnStmt {{0x[a-f0-9]+}} <col:37> nrvo_candidate(Var {{0x[a-f0-9]+}} 'return_storage' 'int')
-// CHECK:STDOUT: | | |   `-DeclRefExpr {{0x[a-f0-9]+}} <col:37> 'int' lvalue Var {{0x[a-f0-9]+}} 'return_storage' 'int'
+// CHECK:STDOUT: | | |   `-ImplicitCastExpr {{0x[a-f0-9]+}} <col:37> 'int' <LValueToRValue>
+// CHECK:STDOUT: | | |     `-DeclRefExpr {{0x[a-f0-9]+}} <col:37> 'int' lvalue Var {{0x[a-f0-9]+}} 'return_storage' 'int'
 // CHECK:STDOUT: | | |-AlwaysInlineAttr {{0x[a-f0-9]+}} <<invalid sloc>> Implicit always_inline
 // CHECK:STDOUT: | | `-InternalLinkageAttr {{0x[a-f0-9]+}} <<invalid sloc>> Implicit
 // CHECK:STDOUT: | `-FunctionDecl {{0x[a-f0-9]+}} <line:102:38> col:38 used F 'int (bool)' inline internal-linkage
@@ -61,7 +62,8 @@ overload fn F(unused x: i64) -> i32 { return 1; }
 // CHECK:STDOUT: |   | | `-ImplicitCastExpr {{0x[a-f0-9]+}} <col:38> 'const int' lvalue <NoOp>
 // CHECK:STDOUT: |   | |   `-DeclRefExpr {{0x[a-f0-9]+}} <col:38> 'int' lvalue Var {{0x[a-f0-9]+}} 'return_storage' 'int'
 // CHECK:STDOUT: |   | `-ReturnStmt {{0x[a-f0-9]+}} <col:38> nrvo_candidate(Var {{0x[a-f0-9]+}} 'return_storage' 'int')
-// CHECK:STDOUT: |   |   `-DeclRefExpr {{0x[a-f0-9]+}} <col:38> 'int' lvalue Var {{0x[a-f0-9]+}} 'return_storage' 'int'
+// CHECK:STDOUT: |   |   `-ImplicitCastExpr {{0x[a-f0-9]+}} <col:38> 'int' <LValueToRValue>
+// CHECK:STDOUT: |   |     `-DeclRefExpr {{0x[a-f0-9]+}} <col:38> 'int' lvalue Var {{0x[a-f0-9]+}} 'return_storage' 'int'
 // CHECK:STDOUT: |   |-AlwaysInlineAttr {{0x[a-f0-9]+}} <<invalid sloc>> Implicit always_inline
 // CHECK:STDOUT: |   `-InternalLinkageAttr {{0x[a-f0-9]+}} <<invalid sloc>> Implicit
 // CHECK:STDOUT: |-FunctionDecl {{0x[a-f0-9]+}} <line:105:1, col:49> col:12 in overload_set.carbon hidden used CallBool 'int ()' inline external-linkage
@@ -205,7 +207,8 @@ class Acc {
 // CHECK:STDOUT: |     | | `-ImplicitCastExpr {{0x[a-f0-9]+}} <col:23> 'const int' lvalue <NoOp>
 // CHECK:STDOUT: |     | |   `-DeclRefExpr {{0x[a-f0-9]+}} <col:23> 'int' lvalue Var {{0x[a-f0-9]+}} 'return_storage' 'int'
 // CHECK:STDOUT: |     | `-ReturnStmt {{0x[a-f0-9]+}} <col:23> nrvo_candidate(Var {{0x[a-f0-9]+}} 'return_storage' 'int')
-// CHECK:STDOUT: |     |   `-DeclRefExpr {{0x[a-f0-9]+}} <col:23> 'int' lvalue Var {{0x[a-f0-9]+}} 'return_storage' 'int'
+// CHECK:STDOUT: |     |   `-ImplicitCastExpr {{0x[a-f0-9]+}} <col:23> 'int' <LValueToRValue>
+// CHECK:STDOUT: |     |     `-DeclRefExpr {{0x[a-f0-9]+}} <col:23> 'int' lvalue Var {{0x[a-f0-9]+}} 'return_storage' 'int'
 // CHECK:STDOUT: |     |-AlwaysInlineAttr {{0x[a-f0-9]+}} <<invalid sloc>> Implicit always_inline
 // CHECK:STDOUT: |     `-InternalLinkageAttr {{0x[a-f0-9]+}} <<invalid sloc>> Implicit
 // CHECK:STDOUT: |-FunctionDecl {{0x[a-f0-9]+}} <line:127:1, line:132:1> line:127:12 in method_set.carbon hidden used Drive 'int ()' inline external-linkage

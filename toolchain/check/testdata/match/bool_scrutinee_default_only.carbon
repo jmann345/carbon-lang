@@ -28,6 +28,7 @@ fn F(b: bool) {
 // CHECK:STDOUT: --- bool_scrutinee_default_only.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %pattern_type: type = pattern_type bool [concrete]
 // CHECK:STDOUT:   %b.param_patt: %pattern_type = value_param_pattern [concrete]
 // CHECK:STDOUT:   %b.patt: %pattern_type = wrapper_binding_pattern b, %b.param_patt [concrete]

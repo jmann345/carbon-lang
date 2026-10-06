@@ -9,7 +9,6 @@
 // TIP:   bazel test //toolchain/testing:file_test --test_arg=--file_tests=toolchain/check/testdata/interop/cpp/function/import/function_ptr.carbon
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/interop/cpp/function/import/function_ptr.carbon
-// CHECK:STDERR: error: calling function with incomplete return type 'C' [CppInteropParseError]
 
 // --- simple_callback.h
 
@@ -147,25 +146,24 @@ fn F() {
 // --- fail_use_forward_decl.carbon
 library "[[@TEST_NAME]]";
 
-// CHECK:STDERR: fail_use_forward_decl.carbon:[[@LINE+4]]:10: in file included here [InCppInclude]
-// CHECK:STDERR: ./forward_decl.h:2:7: note: forward declaration of 'C' [CppInteropParseNote]
-// CHECK:STDERR:     2 | class C;
-// CHECK:STDERR:       |       ^
 import Cpp library "forward_decl.h";
 
 fn F() {
+  // CHECK:STDERR: fail_use_forward_decl.carbon:[[@LINE+16]]:3: error: semantics TODO: `Unsupported: fenced thunk for potentially-throwing C++ function pointer could not be built` [SemanticsTodo]
+  // CHECK:STDERR:   Cpp.ReturnCallback()();
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR: fail_use_forward_decl.carbon:[[@LINE+13]]:3: note: in thunk for C++ function pointer type used here [InCppFunctionPointerThunk]
   // CHECK:STDERR:   Cpp.ReturnCallback()();
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
-  // CHECK:STDERR: fail_use_forward_decl.carbon:[[@LINE+9]]:3: error: function returns incomplete type `Cpp.C` [IncompleteTypeInFunctionReturnType]
+  // CHECK:STDERR: error: calling function with incomplete return type 'C' [CppInteropParseError]
+  // CHECK:STDERR: fail_use_forward_decl.carbon:[[@LINE-11]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./forward_decl.h:2:7: note: forward declaration of 'C' [CppInteropParseNote]
+  // CHECK:STDERR:     2 | class C;
+  // CHECK:STDERR:       |       ^
+  // CHECK:STDERR: fail_use_forward_decl.carbon:[[@LINE+4]]:3: note: in thunk for C++ function pointer type used here [InCppFunctionPointerThunk]
   // CHECK:STDERR:   Cpp.ReturnCallback()();
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: fail_use_forward_decl.carbon:[[@LINE-10]]:10: in file included here [InCppInclude]
-  // CHECK:STDERR: ./forward_decl.h:2:7: note: class was forward declared here [ClassForwardDeclaredHere]
-  // CHECK:STDERR: class C;
-  // CHECK:STDERR:       ^
-  // CHECK:STDERR: note: return type declared here [IncompleteReturnTypeHere]
   // CHECK:STDERR:
   Cpp.ReturnCallback()();
 }
@@ -229,11 +227,11 @@ fn F() {
 // CHECK:STDOUT:   %TakeCallback.cpp_overload_set.value: %TakeCallback.cpp_overload_set.type = cpp_overload_set_value @TakeCallback.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %GetCallback.cpp_overload_set.type: type = cpp_overload_set_type @GetCallback.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %GetCallback.cpp_overload_set.value: %GetCallback.cpp_overload_set.type = cpp_overload_set_value @GetCallback.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type7E000000 [concrete]
-// CHECK:STDOUT:   %GetCallback.type: type = fn_type @GetCallback [concrete]
-// CHECK:STDOUT:   %GetCallback: %GetCallback.type = struct_value () [concrete]
-// CHECK:STDOUT:   %TakeCallback.type: type = fn_type @TakeCallback [concrete]
-// CHECK:STDOUT:   %TakeCallback: %TakeCallback.type = struct_value () [concrete]
+// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type49000000 [concrete]
+// CHECK:STDOUT:   %GetCallback__carbon_thunk.type: type = fn_type @GetCallback__carbon_thunk [concrete]
+// CHECK:STDOUT:   %GetCallback__carbon_thunk: %GetCallback__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT:   %TakeCallback__carbon_thunk.type: type = fn_type @TakeCallback__carbon_thunk [concrete]
+// CHECK:STDOUT:   %TakeCallback__carbon_thunk: %TakeCallback__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -244,12 +242,12 @@ fn F() {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %TakeCallback.cpp_overload_set.value: %TakeCallback.cpp_overload_set.type = cpp_overload_set_value @TakeCallback.cpp_overload_set [concrete = constants.%TakeCallback.cpp_overload_set.value]
 // CHECK:STDOUT:   %GetCallback.cpp_overload_set.value: %GetCallback.cpp_overload_set.type = cpp_overload_set_value @GetCallback.cpp_overload_set [concrete = constants.%GetCallback.cpp_overload_set.value]
-// CHECK:STDOUT:   %GetCallback.decl: %GetCallback.type = fn_decl @GetCallback [concrete = constants.%GetCallback] {
+// CHECK:STDOUT:   %GetCallback__carbon_thunk.decl: %GetCallback__carbon_thunk.type = fn_decl @GetCallback__carbon_thunk [concrete = constants.%GetCallback__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %TakeCallback.decl: %TakeCallback.type = fn_decl @TakeCallback [concrete = constants.%TakeCallback] {
+// CHECK:STDOUT:   %TakeCallback__carbon_thunk.decl: %TakeCallback__carbon_thunk.type = fn_decl @TakeCallback__carbon_thunk [concrete = constants.%TakeCallback__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -262,10 +260,10 @@ fn F() {
 // CHECK:STDOUT:   %TakeCallback.ref: %TakeCallback.cpp_overload_set.type = name_ref TakeCallback, imports.%TakeCallback.cpp_overload_set.value [concrete = constants.%TakeCallback.cpp_overload_set.value]
 // CHECK:STDOUT:   %Cpp.ref.loc7_20: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %GetCallback.ref: %GetCallback.cpp_overload_set.type = name_ref GetCallback, imports.%GetCallback.cpp_overload_set.value [concrete = constants.%GetCallback.cpp_overload_set.value]
-// CHECK:STDOUT:   %GetCallback.call: init %.659 = call imports.%GetCallback.decl()
-// CHECK:STDOUT:   %.loc7_36.1: %.659 = value_of_initializer %GetCallback.call
-// CHECK:STDOUT:   %.loc7_36.2: %.659 = converted %GetCallback.call, %.loc7_36.1
-// CHECK:STDOUT:   %TakeCallback.call: init %empty_tuple.type = call imports.%TakeCallback.decl(%.loc7_36.2)
+// CHECK:STDOUT:   %GetCallback__carbon_thunk.call: init %.659 = call imports.%GetCallback__carbon_thunk.decl()
+// CHECK:STDOUT:   %.loc7_36.1: %.659 = value_of_initializer %GetCallback__carbon_thunk.call
+// CHECK:STDOUT:   %.loc7_36.2: %.659 = converted %GetCallback__carbon_thunk.call, %.loc7_36.1
+// CHECK:STDOUT:   %TakeCallback__carbon_thunk.call: init %empty_tuple.type = call imports.%TakeCallback__carbon_thunk.decl(%.loc7_36.2)
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -279,7 +277,7 @@ fn F() {
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %MyCallback.type: type = fn_type @MyCallback [concrete]
 // CHECK:STDOUT:   %MyCallback: %MyCallback.type = struct_value () [concrete]
-// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type41000000 [concrete]
+// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type69000000 [concrete]
 // CHECK:STDOUT:   %pattern_type.4b7: type = pattern_type %.659 [concrete]
 // CHECK:STDOUT:   %fn_ptr.patt: %pattern_type.4b7 = ref_binding_pattern fn_ptr [concrete]
 // CHECK:STDOUT:   %fn_ptr.var_patt: %pattern_type.4b7 = var_pattern %fn_ptr.patt [concrete]
@@ -380,9 +378,9 @@ fn F() {
 // CHECK:STDOUT:   %MyCallback: %MyCallback.type = struct_value () [concrete]
 // CHECK:STDOUT:   %TakeCallback.cpp_overload_set.type: type = cpp_overload_set_type @TakeCallback.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %TakeCallback.cpp_overload_set.value: %TakeCallback.cpp_overload_set.type = cpp_overload_set_value @TakeCallback.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type61000000 [concrete]
-// CHECK:STDOUT:   %TakeCallback.type: type = fn_type @TakeCallback [concrete]
-// CHECK:STDOUT:   %TakeCallback: %TakeCallback.type = struct_value () [concrete]
+// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type59000000 [concrete]
+// CHECK:STDOUT:   %TakeCallback__carbon_thunk.type: type = fn_type @TakeCallback__carbon_thunk [concrete]
+// CHECK:STDOUT:   %TakeCallback__carbon_thunk: %TakeCallback__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %.fc9: %.659 = cpp_addr_of_fn %MyCallback, @MyCallback [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -392,7 +390,7 @@ fn F() {
 // CHECK:STDOUT:     import Cpp//...
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %TakeCallback.cpp_overload_set.value: %TakeCallback.cpp_overload_set.type = cpp_overload_set_value @TakeCallback.cpp_overload_set [concrete = constants.%TakeCallback.cpp_overload_set.value]
-// CHECK:STDOUT:   %TakeCallback.decl: %TakeCallback.type = fn_decl @TakeCallback [concrete = constants.%TakeCallback] {
+// CHECK:STDOUT:   %TakeCallback__carbon_thunk.decl: %TakeCallback__carbon_thunk.type = fn_decl @TakeCallback__carbon_thunk [concrete = constants.%TakeCallback__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -406,7 +404,7 @@ fn F() {
 // CHECK:STDOUT:   %MyCallback.ref: %MyCallback.type = name_ref MyCallback, file.%MyCallback.decl [concrete = constants.%MyCallback]
 // CHECK:STDOUT:   %.loc9_20.1: %.659 = cpp_addr_of_fn %MyCallback.ref, @MyCallback [concrete = constants.%.fc9]
 // CHECK:STDOUT:   %.loc9_20.2: %.659 = converted %MyCallback.ref, %.loc9_20.1 [concrete = constants.%.fc9]
-// CHECK:STDOUT:   %TakeCallback.call: init %empty_tuple.type = call imports.%TakeCallback.decl(%.loc9_20.2)
+// CHECK:STDOUT:   %TakeCallback__carbon_thunk.call: init %empty_tuple.type = call imports.%TakeCallback__carbon_thunk.decl(%.loc9_20.2)
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -423,9 +421,9 @@ fn F() {
 // CHECK:STDOUT:   %x.var_patt: %pattern_type.6b6 = var_pattern %x.patt [concrete]
 // CHECK:STDOUT:   %GetCallback.cpp_overload_set.type: type = cpp_overload_set_type @GetCallback.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %GetCallback.cpp_overload_set.value: %GetCallback.cpp_overload_set.type = cpp_overload_set_value @GetCallback.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type51000000 [concrete]
-// CHECK:STDOUT:   %GetCallback.type: type = fn_type @GetCallback [concrete]
-// CHECK:STDOUT:   %GetCallback: %GetCallback.type = struct_value () [concrete]
+// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type79000000 [concrete]
+// CHECK:STDOUT:   %GetCallback__carbon_thunk.type: type = fn_type @GetCallback__carbon_thunk [concrete]
+// CHECK:STDOUT:   %GetCallback__carbon_thunk: %GetCallback__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %float.6da: Core.FloatLiteral = float_literal_value 10e-1 [concrete]
 // CHECK:STDOUT:   %f32.c73: type = class_type @Float, @Float(%int_32) [concrete]
 // CHECK:STDOUT:   %pattern_type.240: type = pattern_type %f32.c73 [concrete]
@@ -484,7 +482,7 @@ fn F() {
 // CHECK:STDOUT:     import Cpp//...
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %GetCallback.cpp_overload_set.value: %GetCallback.cpp_overload_set.type = cpp_overload_set_value @GetCallback.cpp_overload_set [concrete = constants.%GetCallback.cpp_overload_set.value]
-// CHECK:STDOUT:   %GetCallback.decl: %GetCallback.type = fn_decl @GetCallback [concrete = constants.%GetCallback] {
+// CHECK:STDOUT:   %GetCallback__carbon_thunk.decl: %GetCallback__carbon_thunk.type = fn_decl @GetCallback__carbon_thunk [concrete = constants.%GetCallback__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -536,10 +534,10 @@ fn F() {
 // CHECK:STDOUT:   %x.var: ref %i32 = var_storage %x.var_patt
 // CHECK:STDOUT:   %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %GetCallback.ref: %GetCallback.cpp_overload_set.type = name_ref GetCallback, imports.%GetCallback.cpp_overload_set.value [concrete = constants.%GetCallback.cpp_overload_set.value]
-// CHECK:STDOUT:   %GetCallback.call: init %.659 = call imports.%GetCallback.decl()
+// CHECK:STDOUT:   %GetCallback__carbon_thunk.call: init %.659 = call imports.%GetCallback__carbon_thunk.decl()
 // CHECK:STDOUT:   %float: Core.FloatLiteral = float_literal_value 10e-1 [concrete = constants.%float.6da]
-// CHECK:STDOUT:   %.loc7_39.1: %.659 = value_of_initializer %GetCallback.call
-// CHECK:STDOUT:   %.loc7_39.2: %.659 = converted %GetCallback.call, %.loc7_39.1
+// CHECK:STDOUT:   %.loc7_39.1: %.659 = value_of_initializer %GetCallback__carbon_thunk.call
+// CHECK:STDOUT:   %.loc7_39.2: %.659 = converted %GetCallback__carbon_thunk.call, %.loc7_39.1
 // CHECK:STDOUT:   %impl.elem0.loc7_41.1: %.7fe = impl_witness_access constants.%ImplicitAs.impl_witness.2fa, element0 [concrete = constants.%Core.FloatLiteral.as.ImplicitAs.impl.Convert.b37]
 // CHECK:STDOUT:   %bound_method.loc7_41.1: <bound method> = bound_method %float, %impl.elem0.loc7_41.1 [concrete = constants.%Core.FloatLiteral.as.ImplicitAs.impl.Convert.bound]
 // CHECK:STDOUT:   %specific_fn.loc7_41.1: <specific function> = specific_function %impl.elem0.loc7_41.1, @Core.FloatLiteral.as.ImplicitAs.impl.Convert(constants.%int_32) [concrete = constants.%Core.FloatLiteral.as.ImplicitAs.impl.Convert.specific_fn]
@@ -600,11 +598,11 @@ fn F() {
 // CHECK:STDOUT:   %TakeComplexCallback.cpp_overload_set.value: %TakeComplexCallback.cpp_overload_set.type = cpp_overload_set_value @TakeComplexCallback.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %GetComplexCallback.cpp_overload_set.type: type = cpp_overload_set_type @GetComplexCallback.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %GetComplexCallback.cpp_overload_set.value: %GetComplexCallback.cpp_overload_set.type = cpp_overload_set_value @GetComplexCallback.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type71000000 [concrete]
-// CHECK:STDOUT:   %GetComplexCallback.type: type = fn_type @GetComplexCallback [concrete]
-// CHECK:STDOUT:   %GetComplexCallback: %GetComplexCallback.type = struct_value () [concrete]
-// CHECK:STDOUT:   %TakeComplexCallback.type: type = fn_type @TakeComplexCallback [concrete]
-// CHECK:STDOUT:   %TakeComplexCallback: %TakeComplexCallback.type = struct_value () [concrete]
+// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type45000000 [concrete]
+// CHECK:STDOUT:   %GetComplexCallback__carbon_thunk.type: type = fn_type @GetComplexCallback__carbon_thunk [concrete]
+// CHECK:STDOUT:   %GetComplexCallback__carbon_thunk: %GetComplexCallback__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT:   %TakeComplexCallback__carbon_thunk.type: type = fn_type @TakeComplexCallback__carbon_thunk [concrete]
+// CHECK:STDOUT:   %TakeComplexCallback__carbon_thunk: %TakeComplexCallback__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -615,12 +613,12 @@ fn F() {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %TakeComplexCallback.cpp_overload_set.value: %TakeComplexCallback.cpp_overload_set.type = cpp_overload_set_value @TakeComplexCallback.cpp_overload_set [concrete = constants.%TakeComplexCallback.cpp_overload_set.value]
 // CHECK:STDOUT:   %GetComplexCallback.cpp_overload_set.value: %GetComplexCallback.cpp_overload_set.type = cpp_overload_set_value @GetComplexCallback.cpp_overload_set [concrete = constants.%GetComplexCallback.cpp_overload_set.value]
-// CHECK:STDOUT:   %GetComplexCallback.decl: %GetComplexCallback.type = fn_decl @GetComplexCallback [concrete = constants.%GetComplexCallback] {
+// CHECK:STDOUT:   %GetComplexCallback__carbon_thunk.decl: %GetComplexCallback__carbon_thunk.type = fn_decl @GetComplexCallback__carbon_thunk [concrete = constants.%GetComplexCallback__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %TakeComplexCallback.decl: %TakeComplexCallback.type = fn_decl @TakeComplexCallback [concrete = constants.%TakeComplexCallback] {
+// CHECK:STDOUT:   %TakeComplexCallback__carbon_thunk.decl: %TakeComplexCallback__carbon_thunk.type = fn_decl @TakeComplexCallback__carbon_thunk [concrete = constants.%TakeComplexCallback__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -633,10 +631,10 @@ fn F() {
 // CHECK:STDOUT:   %TakeComplexCallback.ref: %TakeComplexCallback.cpp_overload_set.type = name_ref TakeComplexCallback, imports.%TakeComplexCallback.cpp_overload_set.value [concrete = constants.%TakeComplexCallback.cpp_overload_set.value]
 // CHECK:STDOUT:   %Cpp.ref.loc7_27: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %GetComplexCallback.ref: %GetComplexCallback.cpp_overload_set.type = name_ref GetComplexCallback, imports.%GetComplexCallback.cpp_overload_set.value [concrete = constants.%GetComplexCallback.cpp_overload_set.value]
-// CHECK:STDOUT:   %GetComplexCallback.call: init %.659 = call imports.%GetComplexCallback.decl()
-// CHECK:STDOUT:   %.loc7_50.1: %.659 = value_of_initializer %GetComplexCallback.call
-// CHECK:STDOUT:   %.loc7_50.2: %.659 = converted %GetComplexCallback.call, %.loc7_50.1
-// CHECK:STDOUT:   %TakeComplexCallback.call: init %empty_tuple.type = call imports.%TakeComplexCallback.decl(%.loc7_50.2)
+// CHECK:STDOUT:   %GetComplexCallback__carbon_thunk.call: init %.659 = call imports.%GetComplexCallback__carbon_thunk.decl()
+// CHECK:STDOUT:   %.loc7_50.1: %.659 = value_of_initializer %GetComplexCallback__carbon_thunk.call
+// CHECK:STDOUT:   %.loc7_50.2: %.659 = converted %GetComplexCallback__carbon_thunk.call, %.loc7_50.1
+// CHECK:STDOUT:   %TakeComplexCallback__carbon_thunk.call: init %empty_tuple.type = call imports.%TakeComplexCallback__carbon_thunk.decl(%.loc7_50.2)
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -648,7 +646,7 @@ fn F() {
 // CHECK:STDOUT:   %MyCallback.type: type = fn_type @MyCallback [concrete]
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %MyCallback: %MyCallback.type = struct_value () [concrete]
-// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type49000000 [concrete]
+// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type65000000 [concrete]
 // CHECK:STDOUT:   %pattern_type.4b7: type = pattern_type %.659 [concrete]
 // CHECK:STDOUT:   %fn_ptr.patt: %pattern_type.4b7 = ref_binding_pattern fn_ptr [concrete]
 // CHECK:STDOUT:   %fn_ptr.var_patt: %pattern_type.4b7 = var_pattern %fn_ptr.patt [concrete]
@@ -753,9 +751,9 @@ fn F() {
 // CHECK:STDOUT:   %MyCallback: %MyCallback.type = struct_value () [concrete]
 // CHECK:STDOUT:   %TakeComplexCallback.cpp_overload_set.type: type = cpp_overload_set_type @TakeComplexCallback.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %TakeComplexCallback.cpp_overload_set.value: %TakeComplexCallback.cpp_overload_set.type = cpp_overload_set_value @TakeComplexCallback.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type69000000 [concrete]
-// CHECK:STDOUT:   %TakeComplexCallback.type: type = fn_type @TakeComplexCallback [concrete]
-// CHECK:STDOUT:   %TakeComplexCallback: %TakeComplexCallback.type = struct_value () [concrete]
+// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type55000000 [concrete]
+// CHECK:STDOUT:   %TakeComplexCallback__carbon_thunk.type: type = fn_type @TakeComplexCallback__carbon_thunk [concrete]
+// CHECK:STDOUT:   %TakeComplexCallback__carbon_thunk: %TakeComplexCallback__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %.fc9: %.659 = cpp_addr_of_fn %MyCallback, @MyCallback [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -767,7 +765,7 @@ fn F() {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %C.decl: type = class_decl @C [concrete = constants.%C] {} {}
 // CHECK:STDOUT:   %TakeComplexCallback.cpp_overload_set.value: %TakeComplexCallback.cpp_overload_set.type = cpp_overload_set_value @TakeComplexCallback.cpp_overload_set [concrete = constants.%TakeComplexCallback.cpp_overload_set.value]
-// CHECK:STDOUT:   %TakeComplexCallback.decl: %TakeComplexCallback.type = fn_decl @TakeComplexCallback [concrete = constants.%TakeComplexCallback] {
+// CHECK:STDOUT:   %TakeComplexCallback__carbon_thunk.decl: %TakeComplexCallback__carbon_thunk.type = fn_decl @TakeComplexCallback__carbon_thunk [concrete = constants.%TakeComplexCallback__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -781,7 +779,7 @@ fn F() {
 // CHECK:STDOUT:   %MyCallback.ref: %MyCallback.type = name_ref MyCallback, file.%MyCallback.decl [concrete = constants.%MyCallback]
 // CHECK:STDOUT:   %.loc9_27.1: %.659 = cpp_addr_of_fn %MyCallback.ref, @MyCallback [concrete = constants.%.fc9]
 // CHECK:STDOUT:   %.loc9_27.2: %.659 = converted %MyCallback.ref, %.loc9_27.1 [concrete = constants.%.fc9]
-// CHECK:STDOUT:   %TakeComplexCallback.call: init %empty_tuple.type = call imports.%TakeComplexCallback.decl(%.loc9_27.2)
+// CHECK:STDOUT:   %TakeComplexCallback__carbon_thunk.call: init %empty_tuple.type = call imports.%TakeComplexCallback__carbon_thunk.decl(%.loc9_27.2)
 // CHECK:STDOUT:   <elided>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -796,9 +794,9 @@ fn F() {
 // CHECK:STDOUT:   %x.var_patt: %pattern_type.bbc = var_pattern %x.patt [concrete]
 // CHECK:STDOUT:   %GetComplexCallback.cpp_overload_set.type: type = cpp_overload_set_type @GetComplexCallback.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %GetComplexCallback.cpp_overload_set.value: %GetComplexCallback.cpp_overload_set.type = cpp_overload_set_value @GetComplexCallback.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type59000000 [concrete]
-// CHECK:STDOUT:   %GetComplexCallback.type: type = fn_type @GetComplexCallback [concrete]
-// CHECK:STDOUT:   %GetComplexCallback: %GetComplexCallback.type = struct_value () [concrete]
+// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type75000000 [concrete]
+// CHECK:STDOUT:   %GetComplexCallback__carbon_thunk.type: type = fn_type @GetComplexCallback__carbon_thunk [concrete]
+// CHECK:STDOUT:   %GetComplexCallback__carbon_thunk: %GetComplexCallback__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %C.C.cpp_overload_set.type: type = cpp_overload_set_type @C.C.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %C.C.cpp_overload_set.value: %C.C.cpp_overload_set.type = cpp_overload_set_value @C.C.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %ptr.0a2: type = ptr_type %C [concrete]
@@ -824,7 +822,7 @@ fn F() {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %C.decl: type = class_decl @C [concrete = constants.%C] {} {}
 // CHECK:STDOUT:   %GetComplexCallback.cpp_overload_set.value: %GetComplexCallback.cpp_overload_set.type = cpp_overload_set_value @GetComplexCallback.cpp_overload_set [concrete = constants.%GetComplexCallback.cpp_overload_set.value]
-// CHECK:STDOUT:   %GetComplexCallback.decl: %GetComplexCallback.type = fn_decl @GetComplexCallback [concrete = constants.%GetComplexCallback] {
+// CHECK:STDOUT:   %GetComplexCallback__carbon_thunk.decl: %GetComplexCallback__carbon_thunk.type = fn_decl @GetComplexCallback__carbon_thunk [concrete = constants.%GetComplexCallback__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -862,7 +860,7 @@ fn F() {
 // CHECK:STDOUT:   %x.var: ref %C = var_storage %x.var_patt
 // CHECK:STDOUT:   %Cpp.ref.loc7_25: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %GetComplexCallback.ref: %GetComplexCallback.cpp_overload_set.type = name_ref GetComplexCallback, imports.%GetComplexCallback.cpp_overload_set.value [concrete = constants.%GetComplexCallback.cpp_overload_set.value]
-// CHECK:STDOUT:   %GetComplexCallback.call: init %.659 = call imports.%GetComplexCallback.decl()
+// CHECK:STDOUT:   %GetComplexCallback__carbon_thunk.call: init %.659 = call imports.%GetComplexCallback__carbon_thunk.decl()
 // CHECK:STDOUT:   %Cpp.ref.loc7_50: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %C.ref.loc7_53: type = name_ref C, imports.%C.decl [concrete = constants.%C]
 // CHECK:STDOUT:   %C.ref.loc7_55: %C.C.cpp_overload_set.type = name_ref C, imports.%C.C.cpp_overload_set.value [concrete = constants.%C.C.cpp_overload_set.value]
@@ -871,8 +869,8 @@ fn F() {
 // CHECK:STDOUT:   %C__carbon_thunk.call: init %empty_tuple.type = call imports.%C__carbon_thunk.decl(%addr.loc7_58)
 // CHECK:STDOUT:   %.loc7_58.2: init %C to %.loc7_58.1 = mark_in_place_init %C__carbon_thunk.call
 // CHECK:STDOUT:   %.loc7_3: ref %C = splice_block %x.var {}
-// CHECK:STDOUT:   %.loc7_48.1: %.659 = value_of_initializer %GetComplexCallback.call
-// CHECK:STDOUT:   %.loc7_48.2: %.659 = converted %GetComplexCallback.call, %.loc7_48.1
+// CHECK:STDOUT:   %.loc7_48.1: %.659 = value_of_initializer %GetComplexCallback__carbon_thunk.call
+// CHECK:STDOUT:   %.loc7_48.2: %.659 = converted %GetComplexCallback__carbon_thunk.call, %.loc7_48.1
 // CHECK:STDOUT:   %.loc7_58.3: ref %C = temporary %.loc7_58.1, %.loc7_58.2
 // CHECK:STDOUT:   %.loc7_58.4: %C = acquire_value %.loc7_58.3
 // CHECK:STDOUT:   %.loc7_58.5: ref %C = value_as_ref %.loc7_58.4
@@ -911,14 +909,14 @@ fn F() {
 // CHECK:STDOUT: constants {
 // CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
-// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type79000000 [concrete]
+// CHECK:STDOUT:   %.659: type = cpp_fn_ptr_type clang_function_pointer_type4D000000 [concrete]
 // CHECK:STDOUT:   %pattern_type.4b7: type = pattern_type %.659 [concrete]
 // CHECK:STDOUT:   %callback.patt: %pattern_type.4b7 = ref_binding_pattern callback [concrete]
 // CHECK:STDOUT:   %callback.var_patt: %pattern_type.4b7 = var_pattern %callback.patt [concrete]
 // CHECK:STDOUT:   %ReturnCallback.cpp_overload_set.type: type = cpp_overload_set_type @ReturnCallback.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %ReturnCallback.cpp_overload_set.value: %ReturnCallback.cpp_overload_set.type = cpp_overload_set_value @ReturnCallback.cpp_overload_set [concrete]
-// CHECK:STDOUT:   %ReturnCallback.type: type = fn_type @ReturnCallback [concrete]
-// CHECK:STDOUT:   %ReturnCallback: %ReturnCallback.type = struct_value () [concrete]
+// CHECK:STDOUT:   %ReturnCallback__carbon_thunk.type: type = fn_type @ReturnCallback__carbon_thunk [concrete]
+// CHECK:STDOUT:   %ReturnCallback__carbon_thunk: %ReturnCallback__carbon_thunk.type = struct_value () [concrete]
 // CHECK:STDOUT:   %self.param_patt.952: %pattern_type.4b7 = ref_param_pattern [concrete]
 // CHECK:STDOUT:   %self.patt.a35: %pattern_type.4b7 = wrapper_binding_pattern self, %self.param_patt.952 [concrete]
 // CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfc: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc7 [concrete]
@@ -936,7 +934,7 @@ fn F() {
 // CHECK:STDOUT:     import Cpp//...
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %ReturnCallback.cpp_overload_set.value: %ReturnCallback.cpp_overload_set.type = cpp_overload_set_value @ReturnCallback.cpp_overload_set [concrete = constants.%ReturnCallback.cpp_overload_set.value]
-// CHECK:STDOUT:   %ReturnCallback.decl: %ReturnCallback.type = fn_decl @ReturnCallback [concrete = constants.%ReturnCallback] {
+// CHECK:STDOUT:   %ReturnCallback__carbon_thunk.decl: %ReturnCallback__carbon_thunk.type = fn_decl @ReturnCallback__carbon_thunk [concrete = constants.%ReturnCallback__carbon_thunk] {
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
@@ -965,8 +963,8 @@ fn F() {
 // CHECK:STDOUT:   %callback.var: ref %.659 = var_storage %callback.var_patt
 // CHECK:STDOUT:   %Cpp.ref.loc7_43: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:   %ReturnCallback.ref: %ReturnCallback.cpp_overload_set.type = name_ref ReturnCallback, imports.%ReturnCallback.cpp_overload_set.value [concrete = constants.%ReturnCallback.cpp_overload_set.value]
-// CHECK:STDOUT:   %ReturnCallback.call: init %.659 = call imports.%ReturnCallback.decl()
-// CHECK:STDOUT:   assign %callback.var, %ReturnCallback.call
+// CHECK:STDOUT:   %ReturnCallback__carbon_thunk.call: init %.659 = call imports.%ReturnCallback__carbon_thunk.decl()
+// CHECK:STDOUT:   assign %callback.var, %ReturnCallback__carbon_thunk.call
 // CHECK:STDOUT:   %.loc7: type = splice_block %CallbackType.ref [concrete = constants.%.659] {
 // CHECK:STDOUT:     %Cpp.ref.loc7_24: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
 // CHECK:STDOUT:     %CallbackType.ref: type = name_ref CallbackType, constants.%.659 [concrete = constants.%.659]

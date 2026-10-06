@@ -148,31 +148,98 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT: --- payload_free.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %Flag: type = class_type @Flag [concrete]
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %u1: type = class_type @UInt, @UInt(%int_1.5b8) [concrete]
 // CHECK:STDOUT:   %struct_type.discriminant: type = struct_type {.discriminant: %u1} [concrete]
-// CHECK:STDOUT:   %u1.builtin: type = int_type unsigned, %int_1.5b8 [concrete]
 // CHECK:STDOUT:   %Copy.type: type = facet_type <@Copy> [concrete]
+// CHECK:STDOUT:   %pattern_type.322: type = pattern_type %u1 [concrete]
 // CHECK:STDOUT:   %.97d: Core.Form = init_form %Flag [concrete]
 // CHECK:STDOUT:   %pattern_type.5bc: type = pattern_type %Flag [concrete]
 // CHECK:STDOUT:   %return.param_patt.f50: %pattern_type.5bc = out_param_pattern [concrete]
 // CHECK:STDOUT:   %return.patt.aa2: %pattern_type.5bc = return_slot_pattern %return.param_patt.f50, %Flag [concrete]
 // CHECK:STDOUT:   %MakeOn.type: type = fn_type @MakeOn [concrete]
 // CHECK:STDOUT:   %MakeOn: %MakeOn.type = struct_value () [concrete]
-// CHECK:STDOUT:   %Copy.Op.type: type = fn_type @Copy.Op [concrete]
-// CHECK:STDOUT:   %Copy.Op: %Copy.Op.type = struct_value () [concrete]
-// CHECK:STDOUT:   %custom_witness.14b: <witness> = custom_witness (%Copy.Op), @Copy [concrete]
-// CHECK:STDOUT:   %Copy.facet.fb5: %Copy.type = facet_value %Flag, (%custom_witness.14b) [concrete]
-// CHECK:STDOUT:   %Copy.WithSelf.Op.type.46e: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.fb5) [concrete]
-// CHECK:STDOUT:   %.819: type = fn_type_with_self_type %Copy.WithSelf.Op.type.46e, %Copy.facet.fb5 [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.7f5: type = fn_type @Copy.WithSelf.Op.2 [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.416: %Copy.WithSelf.Op.type.7f5 = struct_value () [concrete]
+// CHECK:STDOUT:   %custom_witness.bab: <witness> = custom_witness (%Copy.WithSelf.Op.416), @Copy [concrete]
+// CHECK:STDOUT:   %Copy.facet.ef9: %Copy.type = facet_value %Flag, (%custom_witness.bab) [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.778: type = fn_type @Copy.WithSelf.Op.1, @Copy.WithSelf(%Copy.facet.ef9) [concrete]
+// CHECK:STDOUT:   %.62b: type = fn_type_with_self_type %Copy.WithSelf.Op.type.778, %Copy.facet.ef9 [concrete]
 // CHECK:STDOUT:   %RoundTrip.type: type = fn_type @RoundTrip [concrete]
 // CHECK:STDOUT:   %RoundTrip: %RoundTrip.type = struct_value () [concrete]
 // CHECK:STDOUT:   %f.patt: %pattern_type.5bc = ref_binding_pattern f [concrete]
 // CHECK:STDOUT:   %f.var_patt: %pattern_type.5bc = var_pattern %f.patt [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.4: type = fn_type @Destroy.Op.loc17_3.4 [concrete]
-// CHECK:STDOUT:   %Destroy.Op.1a2547.4: %Destroy.Op.type.1d8f74.4 = struct_value () [concrete]
+// CHECK:STDOUT:   %self.param_patt.7c1: %pattern_type.322 = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.945: %pattern_type.322 = wrapper_binding_pattern self, %self.param_patt.7c1 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.1: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc17_3.1 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.1: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.1 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.1: type = fn_type @Destroy.WithSelf.Op.loc17_3.1 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.1: %Destroy.WithSelf.Op.type.ef016f.1 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbceb5.1: type = fn_type @Destroy.WithSelf.SelfDestruct.loc17_3.1 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3fdb.1: %Destroy.WithSelf.SelfDestruct.type.fbceb5.1 = struct_value () [concrete]
+// CHECK:STDOUT:   %pattern_type.ae2: type = pattern_type %struct_type.discriminant [concrete]
+// CHECK:STDOUT:   %self.param_patt.00d: %pattern_type.ae2 = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.587: %pattern_type.ae2 = wrapper_binding_pattern self, %self.param_patt.00d [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.2: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc17_3.2 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.2: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.2: type = fn_type @Destroy.WithSelf.Op.loc17_3.2 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.2: %Destroy.WithSelf.Op.type.ef016f.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %self.param_patt.3cb: %pattern_type.5bc = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.b92: %pattern_type.5bc = wrapper_binding_pattern self, %self.param_patt.3cb [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.3: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc17_3.3 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.3: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.3 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.3: type = fn_type @Destroy.WithSelf.Op.loc17_3.3 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.3: %Destroy.WithSelf.Op.type.ef016f.3 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbceb5.3: type = fn_type @Destroy.WithSelf.SelfDestruct.loc17_3.3 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3fdb.3: %Destroy.WithSelf.SelfDestruct.type.fbceb5.3 = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: generated {
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.1: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.1 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc17_3.1 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.1] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.322 = ref_param_pattern [concrete = constants.%self.param_patt.7c1]
+// CHECK:STDOUT:     %self.patt: %pattern_type.322 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.945]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %u1 = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %u1 = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.1: %Destroy.WithSelf.Op.type.ef016f.1 = fn_decl @Destroy.WithSelf.Op.loc17_3.1 [concrete = constants.%Destroy.WithSelf.Op.403171.1] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.322 = ref_param_pattern [concrete = constants.%self.param_patt.7c1]
+// CHECK:STDOUT:     %self.patt: %pattern_type.322 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.945]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %u1 = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %u1 = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.2: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.2 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc17_3.2 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.2] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.ae2 = ref_param_pattern [concrete = constants.%self.param_patt.00d]
+// CHECK:STDOUT:     %self.patt: %pattern_type.ae2 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.587]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %struct_type.discriminant = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %struct_type.discriminant = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.2: %Destroy.WithSelf.Op.type.ef016f.2 = fn_decl @Destroy.WithSelf.Op.loc17_3.2 [concrete = constants.%Destroy.WithSelf.Op.403171.2] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.ae2 = ref_param_pattern [concrete = constants.%self.param_patt.00d]
+// CHECK:STDOUT:     %self.patt: %pattern_type.ae2 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.587]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %struct_type.discriminant = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %struct_type.discriminant = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.3: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.3 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc17_3.3 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.3] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.5bc = ref_param_pattern [concrete = constants.%self.param_patt.3cb]
+// CHECK:STDOUT:     %self.patt: %pattern_type.5bc = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.b92]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %Flag = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %Flag = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.3: %Destroy.WithSelf.Op.type.ef016f.3 = fn_decl @Destroy.WithSelf.Op.loc17_3.3 [concrete = constants.%Destroy.WithSelf.Op.403171.3] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.5bc = ref_param_pattern [concrete = constants.%self.param_patt.3cb]
+// CHECK:STDOUT:     %self.patt: %pattern_type.5bc = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.b92]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %Flag = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %Flag = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
@@ -200,11 +267,12 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %Flag.ref.loc11_30: type = name_ref Flag, file.%Flag.decl [concrete = constants.%Flag]
 // CHECK:STDOUT:   %On.ref: %Flag = name_ref On, @Flag.%On
-// CHECK:STDOUT:   %impl.elem0: %.819 = impl_witness_access constants.%custom_witness.14b, element0 [concrete = constants.%Copy.Op]
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT:   %impl.elem0: %.62b = impl_witness_access constants.%custom_witness.bab, element0 [concrete = constants.%Copy.WithSelf.Op.416]
 // CHECK:STDOUT:   %bound_method: <bound method> = bound_method %On.ref, %impl.elem0
 // CHECK:STDOUT:   %.loc11_16.1: ref %Flag = splice_block %return.param {}
-// CHECK:STDOUT:   %Copy.Op.call: init %Flag to %.loc11_16.1 = call %bound_method(%On.ref)
-// CHECK:STDOUT:   return %Copy.Op.call to %return.param
+// CHECK:STDOUT:   %Copy.WithSelf.Op.call: init %Flag to %.loc11_16.1 = call %bound_method(%On.ref)
+// CHECK:STDOUT:   return %Copy.WithSelf.Op.call to %return.param
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @RoundTrip() -> out %return.param: %Flag {
@@ -212,11 +280,11 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:   %f.var: ref %Flag = var_storage %f.var_patt
 // CHECK:STDOUT:   %Flag.ref.loc17_17: type = name_ref Flag, file.%Flag.decl [concrete = constants.%Flag]
 // CHECK:STDOUT:   %Off.ref: %Flag = name_ref Off, @Flag.%Off
-// CHECK:STDOUT:   %impl.elem0.loc17: %.819 = impl_witness_access constants.%custom_witness.14b, element0 [concrete = constants.%Copy.Op]
+// CHECK:STDOUT:   %impl.elem0.loc17: %.62b = impl_witness_access constants.%custom_witness.bab, element0 [concrete = constants.%Copy.WithSelf.Op.416]
 // CHECK:STDOUT:   %bound_method.loc17: <bound method> = bound_method %Off.ref, %impl.elem0.loc17
 // CHECK:STDOUT:   %.loc17: ref %Flag = splice_block %f.var {}
-// CHECK:STDOUT:   %Copy.Op.call.loc17: init %Flag to %.loc17 = call %bound_method.loc17(%Off.ref)
-// CHECK:STDOUT:   assign %f.var, %Copy.Op.call.loc17
+// CHECK:STDOUT:   %Copy.WithSelf.Op.call.loc17: init %Flag to %.loc17 = call %bound_method.loc17(%Off.ref)
+// CHECK:STDOUT:   assign %f.var, %Copy.WithSelf.Op.call.loc17
 // CHECK:STDOUT:   %Flag.ref.loc17_10: type = name_ref Flag, file.%Flag.decl [concrete = constants.%Flag]
 // CHECK:STDOUT:   %f: ref %Flag = wrapper_binding f, %f.var
 // CHECK:STDOUT:   name_binding_decl {
@@ -226,42 +294,68 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:   %f.ref.loc18: ref %Flag = name_ref f, %f
 // CHECK:STDOUT:   %Flag.ref.loc18: type = name_ref Flag, file.%Flag.decl [concrete = constants.%Flag]
 // CHECK:STDOUT:   %On.ref: %Flag = name_ref On, @Flag.%On
-// CHECK:STDOUT:   %impl.elem0.loc18: %.819 = impl_witness_access constants.%custom_witness.14b, element0 [concrete = constants.%Copy.Op]
+// CHECK:STDOUT:   %impl.elem0.loc18: %.62b = impl_witness_access constants.%custom_witness.bab, element0 [concrete = constants.%Copy.WithSelf.Op.416]
 // CHECK:STDOUT:   %bound_method.loc18: <bound method> = bound_method %On.ref, %impl.elem0.loc18
 // CHECK:STDOUT:   %.loc18: ref %Flag = splice_block %f.ref.loc18 {}
-// CHECK:STDOUT:   %Copy.Op.call.loc18: init %Flag to %.loc18 = call %bound_method.loc18(%On.ref)
-// CHECK:STDOUT:   assign %f.ref.loc18, %Copy.Op.call.loc18
+// CHECK:STDOUT:   %Copy.WithSelf.Op.call.loc18: init %Flag to %.loc18 = call %bound_method.loc18(%On.ref)
+// CHECK:STDOUT:   assign %f.ref.loc18, %Copy.WithSelf.Op.call.loc18
 // CHECK:STDOUT:   %f.ref.loc19: ref %Flag = name_ref f, %f
 // CHECK:STDOUT:   %.loc19: %Flag = acquire_value %f.ref.loc19
-// CHECK:STDOUT:   %impl.elem0.loc19: %.819 = impl_witness_access constants.%custom_witness.14b, element0 [concrete = constants.%Copy.Op]
+// CHECK:STDOUT:   %impl.elem0.loc19: %.62b = impl_witness_access constants.%custom_witness.bab, element0 [concrete = constants.%Copy.WithSelf.Op.416]
 // CHECK:STDOUT:   %bound_method.loc19: <bound method> = bound_method %.loc19, %impl.elem0.loc19
 // CHECK:STDOUT:   %.loc16_19.1: ref %Flag = splice_block %return.param {}
-// CHECK:STDOUT:   %Copy.Op.call.loc19: init %Flag to %.loc16_19.1 = call %bound_method.loc19(%.loc19)
-// CHECK:STDOUT:   %Destroy.Op.bound: <bound method> = bound_method %f.var, constants.%Destroy.Op.1a2547.4
-// CHECK:STDOUT:   %Destroy.Op.call: init %empty_tuple.type = call %Destroy.Op.bound(%f.var)
-// CHECK:STDOUT:   return %Copy.Op.call.loc19 to %return.param
+// CHECK:STDOUT:   %Copy.WithSelf.Op.call.loc19: init %Flag to %.loc16_19.1 = call %bound_method.loc19(%.loc19)
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound: <bound method> = bound_method %f.var, constants.%Destroy.WithSelf.SelfDestruct.db3fdb.3
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound(%f.var)
+// CHECK:STDOUT:   return %Copy.WithSelf.Op.call.loc19 to %return.param
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc17_3.1(%self.param: ref %u1.builtin) = "no_op";
+// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc17_3.1(%self.param: ref %u1) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc17_3.2(%self.param: ref %u1) {
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc17_3.1(%self.param: ref %u1) = "no_op";
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc17_3.1(%self.param: ref %u1) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl.5f94cf.1(%self.param)
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.SubobjectDestroy.decl.763c71.1(%self.param)
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc17_3.2(%self.param: ref %struct_type.discriminant) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %.loc17: ref %u1 = struct_access %self.param, element0
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound: <bound method> = bound_method %.loc17, constants.%Destroy.WithSelf.SelfDestruct.db3fdb.1
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound(%.loc17)
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc17_3.2(%self.param: ref %struct_type.discriminant) = "no_op";
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc17_3.2(%self.param: ref %struct_type.discriminant) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl.5f94cf.2(%self.param)
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.SubobjectDestroy.decl.763c71.2(%self.param)
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc17_3.3(%self.param: ref %Flag) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc17_3.3(%self.param: ref %struct_type.discriminant) {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
-// CHECK:STDOUT: }
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc17_3.3(%self.param: ref %Flag) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc17_3.4(%self.param: ref %Flag) {
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc17_3.3(%self.param: ref %Flag) {
 // CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl.5f94cf.3(%self.param)
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.SubobjectDestroy.decl.763c71.3(%self.param)
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- doc_shape.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %T.67d: type = symbolic_binding T, 0 [symbolic]
 // CHECK:STDOUT:   %Optional.type: type = generic_class_type @Optional [concrete]
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
@@ -270,9 +364,10 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:   %u1: type = class_type @UInt, @UInt(%int_1.5b8) [concrete]
 // CHECK:STDOUT:   %Optional.Some.type.d69: type = fn_type @Optional.Some, @Optional(%T.67d) [symbolic]
 // CHECK:STDOUT:   %Optional.Some.424: %Optional.Some.type.d69 = struct_value () [symbolic]
-// CHECK:STDOUT:   %u1.builtin: type = int_type unsigned, %int_1.5b8 [concrete]
+// CHECK:STDOUT:   %int_0.5c6: Core.IntLiteral = int_value 0 [concrete]
 // CHECK:STDOUT:   %To.fe9: Core.IntLiteral = symbolic_binding To, 0 [symbolic]
 // CHECK:STDOUT:   %Copy.type: type = facet_type <@Copy> [concrete]
+// CHECK:STDOUT:   %pattern_type.322: type = pattern_type %u1 [concrete]
 // CHECK:STDOUT:   %int_1.233: %u1 = int_value 1 [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
@@ -283,7 +378,7 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:   %return.patt.882: %pattern_type.e8f = return_slot_pattern %return.param_patt.f4f, %Optional.d7e [concrete]
 // CHECK:STDOUT:   %DocShape.type: type = fn_type @DocShape [concrete]
 // CHECK:STDOUT:   %DocShape: %DocShape.type = struct_value () [concrete]
-// CHECK:STDOUT:   %i32.builtin: type = int_type signed, %int_32 [concrete]
+// CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
 // CHECK:STDOUT:   %tuple.type.a8a: type = tuple_type (%i32) [concrete]
 // CHECK:STDOUT:   %.e8e: type = custom_layout_type {size=4, align=4, .Some@0: %tuple.type.a8a} [concrete]
 // CHECK:STDOUT:   %struct_type.discriminant.payload.e99: type = struct_type {.discriminant: %u1, .payload: %.e8e} [concrete]
@@ -293,13 +388,13 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:   %Optional.val.dae: %Optional.d7e = struct_value (%int_1.233, %uninit.060) [concrete]
 // CHECK:STDOUT:   %my_opt.patt: %pattern_type.e8f = ref_binding_pattern my_opt [concrete]
 // CHECK:STDOUT:   %my_opt.var_patt: %pattern_type.e8f = var_pattern %my_opt.patt [concrete]
-// CHECK:STDOUT:   %Copy.Op.type: type = fn_type @Copy.Op [concrete]
-// CHECK:STDOUT:   %Copy.Op: %Copy.Op.type = struct_value () [concrete]
-// CHECK:STDOUT:   %custom_witness.14b: <witness> = custom_witness (%Copy.Op), @Copy [concrete]
-// CHECK:STDOUT:   %Copy.facet.78c: %Copy.type = facet_value %Optional.d7e, (%custom_witness.14b) [concrete]
-// CHECK:STDOUT:   %Copy.WithSelf.Op.type.ed6: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.78c) [concrete]
-// CHECK:STDOUT:   %.db3: type = fn_type_with_self_type %Copy.WithSelf.Op.type.ed6, %Copy.facet.78c [concrete]
-// CHECK:STDOUT:   %Copy.Op.bound: <bound method> = bound_method %Optional.val.dae, %Copy.Op [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.7f5: type = fn_type @Copy.WithSelf.Op.2 [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.416: %Copy.WithSelf.Op.type.7f5 = struct_value () [concrete]
+// CHECK:STDOUT:   %custom_witness.bab: <witness> = custom_witness (%Copy.WithSelf.Op.416), @Copy [concrete]
+// CHECK:STDOUT:   %Copy.facet.70d: %Copy.type = facet_value %Optional.d7e, (%custom_witness.bab) [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.780: type = fn_type @Copy.WithSelf.Op.1, @Copy.WithSelf(%Copy.facet.70d) [concrete]
+// CHECK:STDOUT:   %.bf1: type = fn_type_with_self_type %Copy.WithSelf.Op.type.780, %Copy.facet.70d [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.bound: <bound method> = bound_method %Optional.val.dae, %Copy.WithSelf.Op.416 [concrete]
 // CHECK:STDOUT:   %int_42.20e: Core.IntLiteral = int_value 42 [concrete]
 // CHECK:STDOUT:   %Optional.Some.specific_fn: <specific function> = specific_function %Optional.Some.f27, @Optional.Some(%i32) [concrete]
 // CHECK:STDOUT:   %ImplicitAs.type.914: type = facet_type <@ImplicitAs, @ImplicitAs(%i32)> [concrete]
@@ -315,8 +410,53 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:   %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571: <specific function> = specific_function %Core.IntLiteral.as.ImplicitAs.impl.Convert.e39, @Core.IntLiteral.as.ImplicitAs.impl.Convert.2(%int_32) [concrete]
 // CHECK:STDOUT:   %bound_method.098: <bound method> = bound_method %int_42.20e, %Core.IntLiteral.as.ImplicitAs.impl.Convert.specific_fn.571 [concrete]
 // CHECK:STDOUT:   %int_42.ac4: %i32 = int_value 42 [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.8: type = fn_type @Destroy.Op.loc14_3.8 [concrete]
-// CHECK:STDOUT:   %Destroy.Op.1a2547.8: %Destroy.Op.type.1d8f74.8 = struct_value () [concrete]
+// CHECK:STDOUT:   %self.param_patt.7c1: %pattern_type.322 = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.945: %pattern_type.322 = wrapper_binding_pattern self, %self.param_patt.7c1 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.1: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc14_3.1 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.1: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.1 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.1: type = fn_type @Destroy.WithSelf.Op.loc14_3.1 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.1: %Destroy.WithSelf.Op.type.ef016f.1 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbceb5.1: type = fn_type @Destroy.WithSelf.SelfDestruct.loc14_3.1 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3fdb.1: %Destroy.WithSelf.SelfDestruct.type.fbceb5.1 = struct_value () [concrete]
+// CHECK:STDOUT:   %self.param_patt.705: %pattern_type.6b6 = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.70d: %pattern_type.6b6 = wrapper_binding_pattern self, %self.param_patt.705 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.2: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc14_3.2 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.2: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.2: type = fn_type @Destroy.WithSelf.Op.loc14_3.2 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.2: %Destroy.WithSelf.Op.type.ef016f.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbceb5.2: type = fn_type @Destroy.WithSelf.SelfDestruct.loc14_3.2 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3fdb.2: %Destroy.WithSelf.SelfDestruct.type.fbceb5.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %pattern_type.e71: type = pattern_type %tuple.type.a8a [concrete]
+// CHECK:STDOUT:   %self.param_patt.bad: %pattern_type.e71 = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.216: %pattern_type.e71 = wrapper_binding_pattern self, %self.param_patt.bad [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.3: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc14_3.3 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.3: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.3 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.3: type = fn_type @Destroy.WithSelf.Op.loc14_3.3 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.3: %Destroy.WithSelf.Op.type.ef016f.3 = struct_value () [concrete]
+// CHECK:STDOUT:   %pattern_type.409: type = pattern_type %.e8e [concrete]
+// CHECK:STDOUT:   %self.param_patt.a48: %pattern_type.409 = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.fd2: %pattern_type.409 = wrapper_binding_pattern self, %self.param_patt.a48 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.4: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc14_3.4 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.4: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.4 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.4: type = fn_type @Destroy.WithSelf.Op.loc14_3.4 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.4: %Destroy.WithSelf.Op.type.ef016f.4 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbceb5.4: type = fn_type @Destroy.WithSelf.SelfDestruct.loc14_3.4 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3fdb.4: %Destroy.WithSelf.SelfDestruct.type.fbceb5.4 = struct_value () [concrete]
+// CHECK:STDOUT:   %pattern_type.6cf: type = pattern_type %struct_type.discriminant.payload.e99 [concrete]
+// CHECK:STDOUT:   %self.param_patt.909: %pattern_type.6cf = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.1f0: %pattern_type.6cf = wrapper_binding_pattern self, %self.param_patt.909 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.5: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc14_3.5 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.5: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.5 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.5: type = fn_type @Destroy.WithSelf.Op.loc14_3.5 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.5: %Destroy.WithSelf.Op.type.ef016f.5 = struct_value () [concrete]
+// CHECK:STDOUT:   %self.param_patt.666: %pattern_type.e8f = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.256: %pattern_type.e8f = wrapper_binding_pattern self, %self.param_patt.666 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.6: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc14_3.6 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.6: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.6 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.6: type = fn_type @Destroy.WithSelf.Op.loc14_3.6 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.6: %Destroy.WithSelf.Op.type.ef016f.6 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbceb5.6: type = fn_type @Destroy.WithSelf.SelfDestruct.loc14_3.6 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3fdb.6: %Destroy.WithSelf.SelfDestruct.type.fbceb5.6 = struct_value () [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -329,6 +469,90 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.1: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.1 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc14_3.1 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.1] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.322 = ref_param_pattern [concrete = constants.%self.param_patt.7c1]
+// CHECK:STDOUT:     %self.patt: %pattern_type.322 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.945]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %u1 = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %u1 = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.1: %Destroy.WithSelf.Op.type.ef016f.1 = fn_decl @Destroy.WithSelf.Op.loc14_3.1 [concrete = constants.%Destroy.WithSelf.Op.403171.1] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.322 = ref_param_pattern [concrete = constants.%self.param_patt.7c1]
+// CHECK:STDOUT:     %self.patt: %pattern_type.322 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.945]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %u1 = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %u1 = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.2: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.2 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc14_3.2 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.2] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.6b6 = ref_param_pattern [concrete = constants.%self.param_patt.705]
+// CHECK:STDOUT:     %self.patt: %pattern_type.6b6 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.70d]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %i32 = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %i32 = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.2: %Destroy.WithSelf.Op.type.ef016f.2 = fn_decl @Destroy.WithSelf.Op.loc14_3.2 [concrete = constants.%Destroy.WithSelf.Op.403171.2] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.6b6 = ref_param_pattern [concrete = constants.%self.param_patt.705]
+// CHECK:STDOUT:     %self.patt: %pattern_type.6b6 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.70d]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %i32 = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %i32 = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.3: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.3 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc14_3.3 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.3] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.e71 = ref_param_pattern [concrete = constants.%self.param_patt.bad]
+// CHECK:STDOUT:     %self.patt: %pattern_type.e71 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.216]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %tuple.type.a8a = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %tuple.type.a8a = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.3: %Destroy.WithSelf.Op.type.ef016f.3 = fn_decl @Destroy.WithSelf.Op.loc14_3.3 [concrete = constants.%Destroy.WithSelf.Op.403171.3] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.e71 = ref_param_pattern [concrete = constants.%self.param_patt.bad]
+// CHECK:STDOUT:     %self.patt: %pattern_type.e71 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.216]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %tuple.type.a8a = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %tuple.type.a8a = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.4: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.4 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc14_3.4 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.4] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.409 = ref_param_pattern [concrete = constants.%self.param_patt.a48]
+// CHECK:STDOUT:     %self.patt: %pattern_type.409 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.fd2]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %.e8e = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %.e8e = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.4: %Destroy.WithSelf.Op.type.ef016f.4 = fn_decl @Destroy.WithSelf.Op.loc14_3.4 [concrete = constants.%Destroy.WithSelf.Op.403171.4] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.409 = ref_param_pattern [concrete = constants.%self.param_patt.a48]
+// CHECK:STDOUT:     %self.patt: %pattern_type.409 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.fd2]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %.e8e = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %.e8e = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.5: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.5 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc14_3.5 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.5] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.6cf = ref_param_pattern [concrete = constants.%self.param_patt.909]
+// CHECK:STDOUT:     %self.patt: %pattern_type.6cf = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.1f0]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %struct_type.discriminant.payload.e99 = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %struct_type.discriminant.payload.e99 = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.5: %Destroy.WithSelf.Op.type.ef016f.5 = fn_decl @Destroy.WithSelf.Op.loc14_3.5 [concrete = constants.%Destroy.WithSelf.Op.403171.5] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.6cf = ref_param_pattern [concrete = constants.%self.param_patt.909]
+// CHECK:STDOUT:     %self.patt: %pattern_type.6cf = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.1f0]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %struct_type.discriminant.payload.e99 = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %struct_type.discriminant.payload.e99 = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.6: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.6 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc14_3.6 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.6] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.e8f = ref_param_pattern [concrete = constants.%self.param_patt.666]
+// CHECK:STDOUT:     %self.patt: %pattern_type.e8f = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.256]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %Optional.d7e = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %Optional.d7e = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.6: %Destroy.WithSelf.Op.type.ef016f.6 = fn_decl @Destroy.WithSelf.Op.loc14_3.6 [concrete = constants.%Destroy.WithSelf.Op.403171.6] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.e8f = ref_param_pattern [concrete = constants.%self.param_patt.666]
+// CHECK:STDOUT:     %self.patt: %pattern_type.e8f = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.256]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %Optional.d7e = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %Optional.d7e = wrapper_binding self, %self.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -354,11 +578,12 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:   %Optional.loc14_43: type = class_type @Optional, @Optional(constants.%i32) [concrete = constants.%Optional.d7e]
 // CHECK:STDOUT:   %.loc14_44: %Optional.d7e = specific_constant @Optional.%.loc10_1.13, @Optional(constants.%i32) [concrete = constants.%Optional.val.dae]
 // CHECK:STDOUT:   %None.ref.loc14: %Optional.d7e = name_ref None, %.loc14_44 [concrete = constants.%Optional.val.dae]
-// CHECK:STDOUT:   %impl.elem0.loc14: %.db3 = impl_witness_access constants.%custom_witness.14b, element0 [concrete = constants.%Copy.Op]
-// CHECK:STDOUT:   %bound_method.loc14: <bound method> = bound_method %None.ref.loc14, %impl.elem0.loc14 [concrete = constants.%Copy.Op.bound]
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT:   %impl.elem0.loc14: %.bf1 = impl_witness_access constants.%custom_witness.bab, element0 [concrete = constants.%Copy.WithSelf.Op.416]
+// CHECK:STDOUT:   %bound_method.loc14: <bound method> = bound_method %None.ref.loc14, %impl.elem0.loc14 [concrete = constants.%Copy.WithSelf.Op.bound]
 // CHECK:STDOUT:   %.loc14_3: ref %Optional.d7e = splice_block %my_opt.var {}
-// CHECK:STDOUT:   %Copy.Op.call.loc14: init %Optional.d7e to %.loc14_3 = call %bound_method.loc14(%None.ref.loc14) [concrete = constants.%Optional.val.dae]
-// CHECK:STDOUT:   assign %my_opt.var, %Copy.Op.call.loc14
+// CHECK:STDOUT:   %Copy.WithSelf.Op.call.loc14: init %Optional.d7e to %.loc14_3 = call %bound_method.loc14(%None.ref.loc14) [concrete = constants.%Optional.val.dae]
+// CHECK:STDOUT:   assign %my_opt.var, %Copy.WithSelf.Op.call.loc14
 // CHECK:STDOUT:   %.loc14_27: type = splice_block %Optional.loc14_27 [concrete = constants.%Optional.d7e] {
 // CHECK:STDOUT:     %Optional.ref.loc14_15: %Optional.type = name_ref Optional, file.%Optional.decl [concrete = constants.%Optional.generic]
 // CHECK:STDOUT:     %i32.loc14_24: type = type_literal constants.%i32 [concrete = constants.%i32]
@@ -393,59 +618,114 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:   %Optional.loc18: type = class_type @Optional, @Optional(constants.%i32) [concrete = constants.%Optional.d7e]
 // CHECK:STDOUT:   %.loc18_25: %Optional.d7e = specific_constant @Optional.%.loc10_1.13, @Optional(constants.%i32) [concrete = constants.%Optional.val.dae]
 // CHECK:STDOUT:   %None.ref.loc18: %Optional.d7e = name_ref None, %.loc18_25 [concrete = constants.%Optional.val.dae]
-// CHECK:STDOUT:   %impl.elem0.loc18: %.db3 = impl_witness_access constants.%custom_witness.14b, element0 [concrete = constants.%Copy.Op]
-// CHECK:STDOUT:   %bound_method.loc18: <bound method> = bound_method %None.ref.loc18, %impl.elem0.loc18 [concrete = constants.%Copy.Op.bound]
+// CHECK:STDOUT:   %impl.elem0.loc18: %.bf1 = impl_witness_access constants.%custom_witness.bab, element0 [concrete = constants.%Copy.WithSelf.Op.416]
+// CHECK:STDOUT:   %bound_method.loc18: <bound method> = bound_method %None.ref.loc18, %impl.elem0.loc18 [concrete = constants.%Copy.WithSelf.Op.bound]
 // CHECK:STDOUT:   %.loc18_3: ref %Optional.d7e = splice_block %my_opt.ref.loc18 {}
-// CHECK:STDOUT:   %Copy.Op.call.loc18: init %Optional.d7e to %.loc18_3 = call %bound_method.loc18(%None.ref.loc18) [concrete = constants.%Optional.val.dae]
-// CHECK:STDOUT:   assign %my_opt.ref.loc18, %Copy.Op.call.loc18
+// CHECK:STDOUT:   %Copy.WithSelf.Op.call.loc18: init %Optional.d7e to %.loc18_3 = call %bound_method.loc18(%None.ref.loc18) [concrete = constants.%Optional.val.dae]
+// CHECK:STDOUT:   assign %my_opt.ref.loc18, %Copy.WithSelf.Op.call.loc18
 // CHECK:STDOUT:   %my_opt.ref.loc19: ref %Optional.d7e = name_ref my_opt, %my_opt
 // CHECK:STDOUT:   %.loc19: %Optional.d7e = acquire_value %my_opt.ref.loc19
-// CHECK:STDOUT:   %impl.elem0.loc19: %.db3 = impl_witness_access constants.%custom_witness.14b, element0 [concrete = constants.%Copy.Op]
+// CHECK:STDOUT:   %impl.elem0.loc19: %.bf1 = impl_witness_access constants.%custom_witness.bab, element0 [concrete = constants.%Copy.WithSelf.Op.416]
 // CHECK:STDOUT:   %bound_method.loc19: <bound method> = bound_method %.loc19, %impl.elem0.loc19
 // CHECK:STDOUT:   %.loc13_30.1: ref %Optional.d7e = splice_block %return.param {}
-// CHECK:STDOUT:   %Copy.Op.call.loc19: init %Optional.d7e to %.loc13_30.1 = call %bound_method.loc19(%.loc19)
-// CHECK:STDOUT:   %Destroy.Op.bound: <bound method> = bound_method %my_opt.var, constants.%Destroy.Op.1a2547.8
-// CHECK:STDOUT:   %Destroy.Op.call: init %empty_tuple.type = call %Destroy.Op.bound(%my_opt.var)
-// CHECK:STDOUT:   return %Copy.Op.call.loc19 to %return.param
+// CHECK:STDOUT:   %Copy.WithSelf.Op.call.loc19: init %Optional.d7e to %.loc13_30.1 = call %bound_method.loc19(%.loc19)
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound: <bound method> = bound_method %my_opt.var, constants.%Destroy.WithSelf.SelfDestruct.db3fdb.6
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound(%my_opt.var)
+// CHECK:STDOUT:   return %Copy.WithSelf.Op.call.loc19 to %return.param
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc14_3.1(%self.param: ref %u1.builtin) = "no_op";
+// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc14_3.1(%self.param: ref %u1) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc14_3.2(%self.param: ref %u1) {
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc14_3.1(%self.param: ref %u1) = "no_op";
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc14_3.1(%self.param: ref %u1) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl.5f94cf.1(%self.param)
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.SubobjectDestroy.decl.763c71.1(%self.param)
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc14_3.2(%self.param: ref %i32) = "no_op";
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc14_3.2(%self.param: ref %i32) = "no_op";
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc14_3.2(%self.param: ref %i32) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl.5f94cf.2(%self.param)
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.SubobjectDestroy.decl.763c71.2(%self.param)
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc14_3.3(%self.param: ref %tuple.type.a8a) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %int_0: Core.IntLiteral = int_value 0 [concrete = constants.%int_0.5c6]
+// CHECK:STDOUT:   %tuple.elem0: ref %i32 = tuple_access %self.param, element0
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound: <bound method> = bound_method %tuple.elem0, constants.%Destroy.WithSelf.SelfDestruct.db3fdb.2
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound(%tuple.elem0)
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc14_3.3(%self.param: ref %tuple.type.a8a) = "no_op";
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc14_3.3(%self.param: ref %tuple.type.a8a) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl.5f94cf.3(%self.param)
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.SubobjectDestroy.decl.763c71.3(%self.param)
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc14_3.4(%self.param: ref %.e8e) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc14_3.3(%self.param: ref %i32.builtin) = "no_op";
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc14_3.4(%self.param: ref %.e8e) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc14_3.4(%self.param: ref %i32) {
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc14_3.4(%self.param: ref %.e8e) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl.5f94cf.4(%self.param)
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.SubobjectDestroy.decl.763c71.4(%self.param)
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc14_3.5(%self.param: ref %struct_type.discriminant.payload.e99) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %.loc14_3.1: ref %.e8e = struct_access %self.param, element1
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound.loc14_3.1: <bound method> = bound_method %.loc14_3.1, constants.%Destroy.WithSelf.SelfDestruct.db3fdb.4
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call.loc14_3.1: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound.loc14_3.1(%.loc14_3.1)
+// CHECK:STDOUT:   %.loc14_3.2: ref %u1 = struct_access %self.param, element0
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound.loc14_3.2: <bound method> = bound_method %.loc14_3.2, constants.%Destroy.WithSelf.SelfDestruct.db3fdb.1
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call.loc14_3.2: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound.loc14_3.2(%.loc14_3.2)
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc14_3.5(%self.param: ref %struct_type.discriminant.payload.e99) = "no_op";
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc14_3.5(%self.param: ref %struct_type.discriminant.payload.e99) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl.5f94cf.5(%self.param)
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.SubobjectDestroy.decl.763c71.5(%self.param)
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc14_3.6(%self.param: ref %Optional.d7e) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc14_3.5(%self.param: ref %tuple.type.a8a) {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
-// CHECK:STDOUT: }
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc14_3.6(%self.param: ref %Optional.d7e) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc14_3.6(%self.param: ref %.e8e) {
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc14_3.6(%self.param: ref %Optional.d7e) {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc14_3.7(%self.param: ref %struct_type.discriminant.payload.e99) {
-// CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   return
-// CHECK:STDOUT: }
-// CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc14_3.8(%self.param: ref %Optional.d7e) {
-// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl.5f94cf.6(%self.param)
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.SubobjectDestroy.decl.763c71.6(%self.param)
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- payload_free_of_payload_choice.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %Pair.type: type = generic_class_type @Pair [concrete]
 // CHECK:STDOUT:   %Pair.generic: %Pair.type = struct_value () [concrete]
 // CHECK:STDOUT:   %int_1.5b8: Core.IntLiteral = int_value 1 [concrete]
@@ -465,13 +745,13 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:   %.58e: type = custom_layout_type {size=16, align=8, .Both@0: %tuple.type.1ac} [concrete]
 // CHECK:STDOUT:   %uninit.ccc: %.58e = uninitialized_value [concrete]
 // CHECK:STDOUT:   %Pair.val.765: %Pair.01a = struct_value (%int_1.233, %uninit.ccc) [concrete]
-// CHECK:STDOUT:   %Copy.Op.type: type = fn_type @Copy.Op [concrete]
-// CHECK:STDOUT:   %Copy.Op: %Copy.Op.type = struct_value () [concrete]
-// CHECK:STDOUT:   %custom_witness.14b: <witness> = custom_witness (%Copy.Op), @Copy [concrete]
-// CHECK:STDOUT:   %Copy.facet.7f8: %Copy.type = facet_value %Pair.01a, (%custom_witness.14b) [concrete]
-// CHECK:STDOUT:   %Copy.WithSelf.Op.type.4da: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.7f8) [concrete]
-// CHECK:STDOUT:   %.129: type = fn_type_with_self_type %Copy.WithSelf.Op.type.4da, %Copy.facet.7f8 [concrete]
-// CHECK:STDOUT:   %Copy.Op.bound: <bound method> = bound_method %Pair.val.765, %Copy.Op [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.7f5: type = fn_type @Copy.WithSelf.Op.2 [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.416: %Copy.WithSelf.Op.type.7f5 = struct_value () [concrete]
+// CHECK:STDOUT:   %custom_witness.bab: <witness> = custom_witness (%Copy.WithSelf.Op.416), @Copy [concrete]
+// CHECK:STDOUT:   %Copy.facet.84e: %Copy.type = facet_value %Pair.01a, (%custom_witness.bab) [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.76c: type = fn_type @Copy.WithSelf.Op.1, @Copy.WithSelf(%Copy.facet.84e) [concrete]
+// CHECK:STDOUT:   %.6b5: type = fn_type_with_self_type %Copy.WithSelf.Op.type.76c, %Copy.facet.84e [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.bound: <bound method> = bound_method %Pair.val.765, %Copy.WithSelf.Op.416 [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
@@ -495,16 +775,18 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:   %Pair.loc13_48: type = class_type @Pair, @Pair(constants.%i64) [concrete = constants.%Pair.01a]
 // CHECK:STDOUT:   %.loc13_49: %Pair.01a = specific_constant @Pair.%.loc10_1.13, @Pair(constants.%i64) [concrete = constants.%Pair.val.765]
 // CHECK:STDOUT:   %Neither.ref: %Pair.01a = name_ref Neither, %.loc13_49 [concrete = constants.%Pair.val.765]
-// CHECK:STDOUT:   %impl.elem0: %.129 = impl_witness_access constants.%custom_witness.14b, element0 [concrete = constants.%Copy.Op]
-// CHECK:STDOUT:   %bound_method: <bound method> = bound_method %Neither.ref, %impl.elem0 [concrete = constants.%Copy.Op.bound]
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT:   %impl.elem0: %.6b5 = impl_witness_access constants.%custom_witness.bab, element0 [concrete = constants.%Copy.WithSelf.Op.416]
+// CHECK:STDOUT:   %bound_method: <bound method> = bound_method %Neither.ref, %impl.elem0 [concrete = constants.%Copy.WithSelf.Op.bound]
 // CHECK:STDOUT:   %.loc13_29.1: ref %Pair.01a = splice_block %return.param {}
-// CHECK:STDOUT:   %Copy.Op.call: init %Pair.01a to %.loc13_29.1 = call %bound_method(%Neither.ref) [concrete = constants.%Pair.val.765]
-// CHECK:STDOUT:   return %Copy.Op.call to %return.param
+// CHECK:STDOUT:   %Copy.WithSelf.Op.call: init %Pair.01a to %.loc13_29.1 = call %bound_method(%Neither.ref) [concrete = constants.%Pair.val.765]
+// CHECK:STDOUT:   return %Copy.WithSelf.Op.call to %return.param
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- boundary.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %Flag: type = class_type @Flag [concrete]
 // CHECK:STDOUT:   %pattern_type.5bc: type = pattern_type %Flag [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
@@ -556,10 +838,10 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT: --- generic.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
-// CHECK:STDOUT:   %type: type = facet_type <type> [concrete]
-// CHECK:STDOUT:   %.Self.frozen: %type = symbolic_binding .Self [symbolic_self]
-// CHECK:STDOUT:   %pattern_type.98f: type = pattern_type type [concrete]
-// CHECK:STDOUT:   %T.patt.d47: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic]
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %.Self.frozen: type = symbolic_binding .Self [symbolic_self]
+// CHECK:STDOUT:   %pattern_type.9a5: type = pattern_type type [concrete]
+// CHECK:STDOUT:   %T.patt.3a0: %pattern_type.9a5 = symbolic_binding_pattern T, 0 [symbolic]
 // CHECK:STDOUT:   %T.67d: type = symbolic_binding T, 0 [symbolic]
 // CHECK:STDOUT:   %Opt.type: type = generic_class_type @Opt [concrete]
 // CHECK:STDOUT:   %Opt.generic: %Opt.type = struct_value () [concrete]
@@ -581,11 +863,11 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:   %Make: %Make.type = struct_value () [concrete]
 // CHECK:STDOUT:   %Copy.lookup_impl_witness.f2c: <witness> = lookup_impl_witness %Opt.ba7, @Copy [symbolic]
 // CHECK:STDOUT:   %Copy.facet.9cd: %Copy.type = facet_value %Opt.ba7, (%Copy.lookup_impl_witness.f2c) [symbolic]
-// CHECK:STDOUT:   %Copy.WithSelf.Op.type.f44: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.9cd) [symbolic]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.f44: type = fn_type @Copy.WithSelf.Op.1, @Copy.WithSelf(%Copy.facet.9cd) [symbolic]
 // CHECK:STDOUT:   %.c8e: type = fn_type_with_self_type %Copy.WithSelf.Op.type.f44, %Copy.facet.9cd [symbolic]
 // CHECK:STDOUT:   %impl.elem0.a1a: %.c8e = impl_witness_access %Copy.lookup_impl_witness.f2c, element0 [symbolic]
 // CHECK:STDOUT:   %bound_method.50a: <bound method> = bound_method %Opt.val.a5e, %impl.elem0.a1a [symbolic]
-// CHECK:STDOUT:   %specific_impl_fn.84c: <specific function> = specific_impl_function %impl.elem0.a1a, @Copy.WithSelf.Op(%Copy.facet.9cd) [symbolic]
+// CHECK:STDOUT:   %specific_impl_fn.84c: <specific function> = specific_impl_function %impl.elem0.a1a, @Copy.WithSelf.Op.1(%Copy.facet.9cd) [symbolic]
 // CHECK:STDOUT:   %bound_method.8fd: <bound method> = bound_method %Opt.val.a5e, %specific_impl_fn.84c [symbolic]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
@@ -603,18 +885,18 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:   %uninit.060: %.e8e = uninitialized_value [concrete]
 // CHECK:STDOUT:   %Opt.val.b51: %Opt.46d = struct_value (%int_1.233, %uninit.060) [concrete]
 // CHECK:STDOUT:   %Make.specific_fn: <specific function> = specific_function %Make, @Make(%i32) [concrete]
-// CHECK:STDOUT:   %Copy.Op.type: type = fn_type @Copy.Op [concrete]
-// CHECK:STDOUT:   %Copy.Op: %Copy.Op.type = struct_value () [concrete]
-// CHECK:STDOUT:   %custom_witness.14b: <witness> = custom_witness (%Copy.Op), @Copy [concrete]
-// CHECK:STDOUT:   %Copy.facet.468: %Copy.type = facet_value %Opt.46d, (%custom_witness.14b) [concrete]
-// CHECK:STDOUT:   %Copy.WithSelf.Op.type.6b2: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.468) [concrete]
-// CHECK:STDOUT:   %.ea1: type = fn_type_with_self_type %Copy.WithSelf.Op.type.6b2, %Copy.facet.468 [concrete]
-// CHECK:STDOUT:   %Copy.Op.bound: <bound method> = bound_method %Opt.val.b51, %Copy.Op [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.7f5: type = fn_type @Copy.WithSelf.Op.2 [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.416: %Copy.WithSelf.Op.type.7f5 = struct_value () [concrete]
+// CHECK:STDOUT:   %custom_witness.bab: <witness> = custom_witness (%Copy.WithSelf.Op.416), @Copy [concrete]
+// CHECK:STDOUT:   %Copy.facet.2d6: %Copy.type = facet_value %Opt.46d, (%custom_witness.bab) [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.837: type = fn_type @Copy.WithSelf.Op.1, @Copy.WithSelf(%Copy.facet.2d6) [concrete]
+// CHECK:STDOUT:   %.6dd: type = fn_type_with_self_type %Copy.WithSelf.Op.type.837, %Copy.facet.2d6 [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.bound: <bound method> = bound_method %Opt.val.b51, %Copy.WithSelf.Op.416 [concrete]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %Make.decl: %Make.type = fn_decl @Make [concrete = constants.%Make] {
-// CHECK:STDOUT:     %T.patt.loc13_18.1: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc13_18.2 (constants.%T.patt.d47)]
+// CHECK:STDOUT:     %T.patt.loc13_18.1: %pattern_type.9a5 = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc13_18.2 (constants.%T.patt.3a0)]
 // CHECK:STDOUT:     %return.param_patt.loc13_34.1: @Make.%pattern_type (%pattern_type.86b) = out_param_pattern [symbolic = %return.param_patt.loc13_34.2 (constants.%return.param_patt.e2a)]
 // CHECK:STDOUT:     %return.patt.loc13_26.1: @Make.%pattern_type (%pattern_type.86b) = return_slot_pattern %return.param_patt.loc13_34.1, %Opt.loc13_34.2 [symbolic = %return.patt.loc13_26.2 (constants.%return.patt.ac3)]
 // CHECK:STDOUT:   } {
@@ -623,7 +905,7 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:     %Opt.loc13_34.2: type = class_type @Opt, @Opt(constants.%T.67d) [symbolic = %Opt.loc13_34.1 (constants.%Opt.ba7)]
 // CHECK:STDOUT:     %.loc13_34.3: Core.Form = init_form %Opt.loc13_34.2 [symbolic = %.loc13_34.2 (constants.%.3c3)]
 // CHECK:STDOUT:     %.loc13_20.1: type = splice_block %.loc13_20.2 [concrete = type] {
-// CHECK:STDOUT:       %.Self.frozen: %type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
+// CHECK:STDOUT:       %.Self.frozen: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
 // CHECK:STDOUT:       %.loc13_20.2: type = type_literal type [concrete = type]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     %T.loc13_18.2: type = symbolic_binding T, 0 [symbolic = %T.loc13_18.1 (constants.%T.67d)]
@@ -644,7 +926,7 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: generic fn @Make(%T.loc13_18.2: type) {
-// CHECK:STDOUT:   %T.patt.loc13_18.2: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc13_18.2 (constants.%T.patt.d47)]
+// CHECK:STDOUT:   %T.patt.loc13_18.2: %pattern_type.9a5 = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc13_18.2 (constants.%T.patt.3a0)]
 // CHECK:STDOUT:   %T.loc13_18.1: type = symbolic_binding T, 0 [symbolic = %T.loc13_18.1 (constants.%T.67d)]
 // CHECK:STDOUT:   %Opt.loc13_34.1: type = class_type @Opt, @Opt(%T.loc13_18.1) [symbolic = %Opt.loc13_34.1 (constants.%Opt.ba7)]
 // CHECK:STDOUT:   %.loc13_34.2: Core.Form = init_form %Opt.loc13_34.1 [symbolic = %.loc13_34.2 (constants.%.3c3)]
@@ -660,11 +942,11 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:   %Opt.val: @Make.%Opt.loc13_34.1 (%Opt.ba7) = struct_value (constants.%int_1.233, %uninit) [symbolic = %Opt.val (constants.%Opt.val.a5e)]
 // CHECK:STDOUT:   %Copy.lookup_impl_witness: <witness> = lookup_impl_witness %Opt.loc13_34.1, @Copy [symbolic = %Copy.lookup_impl_witness (constants.%Copy.lookup_impl_witness.f2c)]
 // CHECK:STDOUT:   %Copy.facet.loc13_51.3: %Copy.type = facet_value %Opt.loc13_34.1, (%Copy.lookup_impl_witness) [symbolic = %Copy.facet.loc13_51.3 (constants.%Copy.facet.9cd)]
-// CHECK:STDOUT:   %Copy.WithSelf.Op.type: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.loc13_51.3) [symbolic = %Copy.WithSelf.Op.type (constants.%Copy.WithSelf.Op.type.f44)]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type: type = fn_type @Copy.WithSelf.Op.1, @Copy.WithSelf(%Copy.facet.loc13_51.3) [symbolic = %Copy.WithSelf.Op.type (constants.%Copy.WithSelf.Op.type.f44)]
 // CHECK:STDOUT:   %.loc13_51.5: type = fn_type_with_self_type %Copy.WithSelf.Op.type, %Copy.facet.loc13_51.3 [symbolic = %.loc13_51.5 (constants.%.c8e)]
 // CHECK:STDOUT:   %impl.elem0.loc13_51.2: @Make.%.loc13_51.5 (%.c8e) = impl_witness_access %Copy.lookup_impl_witness, element0 [symbolic = %impl.elem0.loc13_51.2 (constants.%impl.elem0.a1a)]
 // CHECK:STDOUT:   %bound_method.loc13_51.3: <bound method> = bound_method %Opt.val, %impl.elem0.loc13_51.2 [symbolic = %bound_method.loc13_51.3 (constants.%bound_method.50a)]
-// CHECK:STDOUT:   %specific_impl_fn.loc13_51.2: <specific function> = specific_impl_function %impl.elem0.loc13_51.2, @Copy.WithSelf.Op(%Copy.facet.loc13_51.3) [symbolic = %specific_impl_fn.loc13_51.2 (constants.%specific_impl_fn.84c)]
+// CHECK:STDOUT:   %specific_impl_fn.loc13_51.2: <specific function> = specific_impl_function %impl.elem0.loc13_51.2, @Copy.WithSelf.Op.1(%Copy.facet.loc13_51.3) [symbolic = %specific_impl_fn.loc13_51.2 (constants.%specific_impl_fn.84c)]
 // CHECK:STDOUT:   %bound_method.loc13_51.4: <bound method> = bound_method %Opt.val, %specific_impl_fn.loc13_51.2 [symbolic = %bound_method.loc13_51.4 (constants.%bound_method.8fd)]
 // CHECK:STDOUT:
 // CHECK:STDOUT:   fn() -> out %return.param: @Make.%Opt.loc13_34.1 (%Opt.ba7) {
@@ -680,7 +962,7 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:     %.loc13_51.2: %Copy.type = converted constants.%Opt.ba7, %Copy.facet.loc13_51.1 [symbolic = %Copy.facet.loc13_51.3 (constants.%Copy.facet.9cd)]
 // CHECK:STDOUT:     %Copy.facet.loc13_51.2: %Copy.type = facet_value constants.%Opt.ba7, (constants.%Copy.lookup_impl_witness.f2c) [symbolic = %Copy.facet.loc13_51.3 (constants.%Copy.facet.9cd)]
 // CHECK:STDOUT:     %.loc13_51.3: %Copy.type = converted constants.%Opt.ba7, %Copy.facet.loc13_51.2 [symbolic = %Copy.facet.loc13_51.3 (constants.%Copy.facet.9cd)]
-// CHECK:STDOUT:     %specific_impl_fn.loc13_51.1: <specific function> = specific_impl_function %impl.elem0.loc13_51.1, @Copy.WithSelf.Op(constants.%Copy.facet.9cd) [symbolic = %specific_impl_fn.loc13_51.2 (constants.%specific_impl_fn.84c)]
+// CHECK:STDOUT:     %specific_impl_fn.loc13_51.1: <specific function> = specific_impl_function %impl.elem0.loc13_51.1, @Copy.WithSelf.Op.1(constants.%Copy.facet.9cd) [symbolic = %specific_impl_fn.loc13_51.2 (constants.%specific_impl_fn.84c)]
 // CHECK:STDOUT:     %bound_method.loc13_51.2: <bound method> = bound_method %None.ref, %specific_impl_fn.loc13_51.1 [symbolic = %bound_method.loc13_51.4 (constants.%bound_method.8fd)]
 // CHECK:STDOUT:     %.loc13_34.1: ref @Make.%Opt.loc13_34.1 (%Opt.ba7) = splice_block %return.param {}
 // CHECK:STDOUT:     %Copy.WithSelf.Op.call: init @Make.%Opt.loc13_34.1 (%Opt.ba7) to %.loc13_34.1 = call %bound_method.loc13_51.2(%None.ref)
@@ -699,7 +981,7 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: specific @Make(constants.%T.67d) {
-// CHECK:STDOUT:   %T.patt.loc13_18.2 => constants.%T.patt.d47
+// CHECK:STDOUT:   %T.patt.loc13_18.2 => constants.%T.patt.3a0
 // CHECK:STDOUT:   %T.loc13_18.1 => constants.%T.67d
 // CHECK:STDOUT:   %Opt.loc13_34.1 => constants.%Opt.ba7
 // CHECK:STDOUT:   %.loc13_34.2 => constants.%.3c3
@@ -709,7 +991,7 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: specific @Make(constants.%i32) {
-// CHECK:STDOUT:   %T.patt.loc13_18.2 => constants.%T.patt.d47
+// CHECK:STDOUT:   %T.patt.loc13_18.2 => constants.%T.patt.3a0
 // CHECK:STDOUT:   %T.loc13_18.1 => constants.%i32
 // CHECK:STDOUT:   %Opt.loc13_34.1 => constants.%Opt.46d
 // CHECK:STDOUT:   %.loc13_34.2 => constants.%.bda
@@ -723,31 +1005,32 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT:   %.loc13_51.4 => constants.%.e8e
 // CHECK:STDOUT:   %uninit => constants.%uninit.060
 // CHECK:STDOUT:   %Opt.val => constants.%Opt.val.b51
-// CHECK:STDOUT:   %Copy.lookup_impl_witness => constants.%custom_witness.14b
-// CHECK:STDOUT:   %Copy.facet.loc13_51.3 => constants.%Copy.facet.468
-// CHECK:STDOUT:   %Copy.WithSelf.Op.type => constants.%Copy.WithSelf.Op.type.6b2
-// CHECK:STDOUT:   %.loc13_51.5 => constants.%.ea1
-// CHECK:STDOUT:   %impl.elem0.loc13_51.2 => constants.%Copy.Op
-// CHECK:STDOUT:   %bound_method.loc13_51.3 => constants.%Copy.Op.bound
-// CHECK:STDOUT:   %specific_impl_fn.loc13_51.2 => constants.%Copy.Op
-// CHECK:STDOUT:   %bound_method.loc13_51.4 => constants.%Copy.Op.bound
+// CHECK:STDOUT:   %Copy.lookup_impl_witness => constants.%custom_witness.bab
+// CHECK:STDOUT:   %Copy.facet.loc13_51.3 => constants.%Copy.facet.2d6
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type => constants.%Copy.WithSelf.Op.type.837
+// CHECK:STDOUT:   %.loc13_51.5 => constants.%.6dd
+// CHECK:STDOUT:   %impl.elem0.loc13_51.2 => constants.%Copy.WithSelf.Op.416
+// CHECK:STDOUT:   %bound_method.loc13_51.3 => constants.%Copy.WithSelf.Op.bound
+// CHECK:STDOUT:   %specific_impl_fn.loc13_51.2 => constants.%Copy.WithSelf.Op.416
+// CHECK:STDOUT:   %bound_method.loc13_51.4 => constants.%Copy.WithSelf.Op.bound
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: --- shadowed_user_impl.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %Flag: type = class_type @Flag [concrete]
 // CHECK:STDOUT:   %Copy.type: type = facet_type <@Copy> [concrete]
 // CHECK:STDOUT:   %pattern_type.5bc: type = pattern_type %Flag [concrete]
 // CHECK:STDOUT:   %.97d: Core.Form = init_form %Flag [concrete]
 // CHECK:STDOUT:   %return.param_patt.f50: %pattern_type.5bc = out_param_pattern [concrete]
 // CHECK:STDOUT:   %return.patt.aa2: %pattern_type.5bc = return_slot_pattern %return.param_patt.f50, %Flag [concrete]
-// CHECK:STDOUT:   %Copy.Op.type: type = fn_type @Copy.Op [concrete]
-// CHECK:STDOUT:   %Copy.Op: %Copy.Op.type = struct_value () [concrete]
-// CHECK:STDOUT:   %custom_witness.14b: <witness> = custom_witness (%Copy.Op), @Copy [concrete]
-// CHECK:STDOUT:   %Copy.facet.fb5: %Copy.type = facet_value %Flag, (%custom_witness.14b) [concrete]
-// CHECK:STDOUT:   %Copy.WithSelf.Op.type.46e: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.fb5) [concrete]
-// CHECK:STDOUT:   %.819: type = fn_type_with_self_type %Copy.WithSelf.Op.type.46e, %Copy.facet.fb5 [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.7f5: type = fn_type @Copy.WithSelf.Op.2 [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.416: %Copy.WithSelf.Op.type.7f5 = struct_value () [concrete]
+// CHECK:STDOUT:   %custom_witness.bab: <witness> = custom_witness (%Copy.WithSelf.Op.416), @Copy [concrete]
+// CHECK:STDOUT:   %Copy.facet.ef9: %Copy.type = facet_value %Flag, (%custom_witness.bab) [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.778: type = fn_type @Copy.WithSelf.Op.1, @Copy.WithSelf(%Copy.facet.ef9) [concrete]
+// CHECK:STDOUT:   %.62b: type = fn_type_with_self_type %Copy.WithSelf.Op.type.778, %Copy.facet.ef9 [concrete]
 // CHECK:STDOUT:   %f.param_patt: %pattern_type.5bc = value_param_pattern [concrete]
 // CHECK:STDOUT:   %f.patt: %pattern_type.5bc = wrapper_binding_pattern f, %f.param_patt [concrete]
 // CHECK:STDOUT:   %CopyIt.type: type = fn_type @CopyIt [concrete]
@@ -774,10 +1057,10 @@ fn CopyIt(f: Flag) -> Flag { return f; }
 // CHECK:STDOUT: fn @CopyIt(%f.param: %Flag) -> out %return.param: %Flag {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %f.ref: %Flag = name_ref f, %f
-// CHECK:STDOUT:   %impl.elem0: %.819 = impl_witness_access constants.%custom_witness.14b, element0 [concrete = constants.%Copy.Op]
+// CHECK:STDOUT:   %impl.elem0: %.62b = impl_witness_access constants.%custom_witness.bab, element0 [concrete = constants.%Copy.WithSelf.Op.416]
 // CHECK:STDOUT:   %bound_method: <bound method> = bound_method %f.ref, %impl.elem0
 // CHECK:STDOUT:   %.loc24_23.1: ref %Flag = splice_block %return.param {}
-// CHECK:STDOUT:   %Copy.Op.call: init %Flag to %.loc24_23.1 = call %bound_method(%f.ref)
-// CHECK:STDOUT:   return %Copy.Op.call to %return.param
+// CHECK:STDOUT:   %Copy.WithSelf.Op.call: init %Flag to %.loc24_23.1 = call %bound_method(%f.ref)
+// CHECK:STDOUT:   return %Copy.WithSelf.Op.call to %return.param
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

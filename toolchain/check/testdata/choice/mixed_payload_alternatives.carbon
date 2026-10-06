@@ -42,6 +42,7 @@ let some: MaybeInt = MakeSome(42);
 // CHECK:STDOUT: --- mixed_payload_alternatives.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %MaybeInt: type = class_type @MaybeInt [concrete]
 // CHECK:STDOUT:   %int_64: Core.IntLiteral = int_value 64 [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]

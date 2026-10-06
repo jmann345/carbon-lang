@@ -160,9 +160,9 @@ fn Test() {
 // CHECK:STDOUT: !13 = !{null, !6}
 // CHECK:STDOUT: !14 = !DISubroutineType(types: !13)
 // CHECK:STDOUT: !15 = !DIFile(filename: "{{.*}}/prelude/types/optional.carbon", directory: "")
-// CHECK:STDOUT: !16 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.d088c7eb746488be:core.Destroy.Core", scope: null, file: !15, line: 164, type: !10, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !19)
+// CHECK:STDOUT: !16 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.d088c7eb746488be:core.Destroy.Core", scope: null, file: !15, line: 189, type: !10, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !19)
 // CHECK:STDOUT: !17 = !DILocalVariable(arg: 1, scope: !16, type: !8)
-// CHECK:STDOUT: !18 = !DILocation(line: 164, column: 19, scope: !16)
+// CHECK:STDOUT: !18 = !DILocation(line: 189, column: 19, scope: !16)
 // CHECK:STDOUT: !19 = !{!17}
 // CHECK:STDOUT: !20 = distinct !DISubprogram(name: "Test", linkageName: "_CTest.Main", scope: null, file: !4, line: 24, type: !12, spFlags: DISPFlagDefinition, unit: !5)
 // CHECK:STDOUT: !21 = !DILocation(line: 25, column: 22, scope: !20)

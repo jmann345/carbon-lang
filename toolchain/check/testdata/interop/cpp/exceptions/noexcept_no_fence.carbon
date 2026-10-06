@@ -31,6 +31,7 @@ fn F() {
 // CHECK:STDOUT: --- noexcept_no_fence.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %cannot_throw.cpp_overload_set.type: type = cpp_overload_set_type @cannot_throw.cpp_overload_set [concrete]
 // CHECK:STDOUT:   %cannot_throw.cpp_overload_set.value: %cannot_throw.cpp_overload_set.type = cpp_overload_set_value @cannot_throw.cpp_overload_set [concrete]

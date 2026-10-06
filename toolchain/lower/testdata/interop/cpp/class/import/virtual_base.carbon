@@ -61,3 +61,238 @@ fn AccessD(d: Cpp.D) -> i32 {
   // This should read an i32 at offset 28.
   return d.d;
 }
+
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'use_diamond.carbon'
+// CHECK:STDOUT: source_filename = "use_diamond.carbon"
+// CHECK:STDOUT: target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+// CHECK:STDOUT: target triple = "x86_64-unknown-linux-gnu"
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZN1DC1Ev = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $__clang_call_terminate = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZTV1D = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZTV1C = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZTV1B = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZTT1D = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZTC1D0_1B = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZTI1B = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZTS1B = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZTI1A = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZTS1A = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZTC1D16_1C = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZTI1C = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZTS1C = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZTI1D = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZTS1D = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZTT1C = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: $_ZTT1B = comdat any
+// CHECK:STDOUT:
+// CHECK:STDOUT: @_ZTV1D = linkonce_odr dso_local constant { [3 x ptr], [3 x ptr] } { [3 x ptr] [ptr inttoptr (i64 32 to ptr), ptr null, ptr @_ZTI1D], [3 x ptr] [ptr inttoptr (i64 16 to ptr), ptr inttoptr (i64 -16 to ptr), ptr @_ZTI1D] }, comdat, align 8
+// CHECK:STDOUT: @_ZTV1C = linkonce_odr dso_local constant { [3 x ptr] } { [3 x ptr] [ptr inttoptr (i64 12 to ptr), ptr null, ptr @_ZTI1C] }, comdat, align 8
+// CHECK:STDOUT: @_ZTV1B = linkonce_odr dso_local constant { [3 x ptr] } { [3 x ptr] [ptr inttoptr (i64 12 to ptr), ptr null, ptr @_ZTI1B] }, comdat, align 8
+// CHECK:STDOUT: @_ZTT1D = linkonce_odr dso_local unnamed_addr constant [4 x ptr] [ptr getelementptr inbounds inrange(-24, 0) (i8, ptr @_ZTV1D, i64 24), ptr getelementptr inbounds inrange(-24, 0) (i8, ptr @_ZTC1D0_1B, i64 24), ptr getelementptr inbounds inrange(-24, 0) (i8, ptr @_ZTC1D16_1C, i64 24), ptr getelementptr inbounds inrange(-24, 0) (i8, ptr @_ZTV1D, i64 48)], comdat, align 8
+// CHECK:STDOUT: @_ZTC1D0_1B = linkonce_odr dso_local constant { [3 x ptr] } { [3 x ptr] [ptr inttoptr (i64 32 to ptr), ptr null, ptr @_ZTI1B] }, comdat, align 8
+// CHECK:STDOUT: @_ZTI1B = linkonce_odr dso_local constant { ptr, ptr, i32, i32, ptr, i64 } { ptr getelementptr inbounds (i8, ptr @_ZTVN10__cxxabiv121__vmi_class_type_infoE, i64 16), ptr @_ZTS1B, i32 0, i32 1, ptr @_ZTI1A, i64 -6141 }, comdat, align 8
+// CHECK:STDOUT: @_ZTVN10__cxxabiv121__vmi_class_type_infoE = external global [0 x ptr]
+// CHECK:STDOUT: @_ZTS1B = linkonce_odr dso_local constant [3 x i8] c"1B\00", comdat, align 1
+// CHECK:STDOUT: @_ZTI1A = linkonce_odr dso_local constant { ptr, ptr } { ptr getelementptr inbounds (i8, ptr @_ZTVN10__cxxabiv117__class_type_infoE, i64 16), ptr @_ZTS1A }, comdat, align 8
+// CHECK:STDOUT: @_ZTVN10__cxxabiv117__class_type_infoE = external global [0 x ptr]
+// CHECK:STDOUT: @_ZTS1A = linkonce_odr dso_local constant [3 x i8] c"1A\00", comdat, align 1
+// CHECK:STDOUT: @_ZTC1D16_1C = linkonce_odr dso_local constant { [3 x ptr] } { [3 x ptr] [ptr inttoptr (i64 16 to ptr), ptr null, ptr @_ZTI1C] }, comdat, align 8
+// CHECK:STDOUT: @_ZTI1C = linkonce_odr dso_local constant { ptr, ptr, i32, i32, ptr, i64 } { ptr getelementptr inbounds (i8, ptr @_ZTVN10__cxxabiv121__vmi_class_type_infoE, i64 16), ptr @_ZTS1C, i32 0, i32 1, ptr @_ZTI1A, i64 -6141 }, comdat, align 8
+// CHECK:STDOUT: @_ZTS1C = linkonce_odr dso_local constant [3 x i8] c"1C\00", comdat, align 1
+// CHECK:STDOUT: @_ZTI1D = linkonce_odr dso_local constant { ptr, ptr, i32, i32, ptr, i64, ptr, i64 } { ptr getelementptr inbounds (i8, ptr @_ZTVN10__cxxabiv121__vmi_class_type_infoE, i64 16), ptr @_ZTS1D, i32 2, i32 2, ptr @_ZTI1B, i64 2, ptr @_ZTI1C, i64 4098 }, comdat, align 8
+// CHECK:STDOUT: @_ZTS1D = linkonce_odr dso_local constant [3 x i8] c"1D\00", comdat, align 1
+// CHECK:STDOUT: @_ZTT1C = linkonce_odr dso_local unnamed_addr constant [1 x ptr] [ptr getelementptr inbounds inrange(-24, 0) (i8, ptr @_ZTV1C, i64 24)], comdat, align 8
+// CHECK:STDOUT: @_ZTT1B = linkonce_odr dso_local unnamed_addr constant [1 x ptr] [ptr getelementptr inbounds inrange(-24, 0) (i8, ptr @_ZTV1B, i64 24)], comdat, align 8
+// CHECK:STDOUT: @.str = private unnamed_addr constant [71 x i8] c"carbon: C++ exception escaped into Carbon through `D::D`; terminating\0A\00", align 1
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CMake.Main() #0 !dbg !28 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %_.var = alloca [40 x i8], align 8, !dbg !29
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %_.var), !dbg !29
+// CHECK:STDOUT:   call void @_ZN1DC1Ev.carbon_thunk.(ptr %_.var), !dbg !30
+// CHECK:STDOUT:   call void @"_CSelfDestruct.87042109e4175f46:core.Destroy.Core"(ptr %_.var), !dbg !29
+// CHECK:STDOUT:   ret void, !dbg !32
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
+// CHECK:STDOUT: define internal void @_ZN1DC1Ev.carbon_thunk.(ptr noundef %return) #1 personality ptr @__gxx_personality_v0 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %return.addr = alloca ptr, align 8
+// CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
+// CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
+// CHECK:STDOUT:   store ptr %return, ptr %return.addr, align 8, !tbaa !49
+// CHECK:STDOUT:   %0 = load ptr, ptr %return.addr, align 8, !tbaa !49
+// CHECK:STDOUT:   invoke void @_ZN1DC1Ev(ptr noundef nonnull align 8 dereferenceable(32) %0)
+// CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: invoke.cont:                                      ; preds = %entry
+// CHECK:STDOUT:   br label %try.cont
+// CHECK:STDOUT:
+// CHECK:STDOUT: lpad:                                             ; preds = %entry
+// CHECK:STDOUT:   %1 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %2 = extractvalue { ptr, i32 } %1, 0
+// CHECK:STDOUT:   store ptr %2, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %3 = extractvalue { ptr, i32 } %1, 1
+// CHECK:STDOUT:   store i32 %3, ptr %ehselector.slot, align 4
+// CHECK:STDOUT:   br label %catch
+// CHECK:STDOUT:
+// CHECK:STDOUT: catch:                                            ; preds = %lpad
+// CHECK:STDOUT:   %exn = load ptr, ptr %exn.slot, align 8
+// CHECK:STDOUT:   %4 = call ptr @__cxa_begin_catch(ptr %exn) #0
+// CHECK:STDOUT:   %call = call noundef i64 @write(i32 noundef 2, ptr noundef @.str, i64 noundef 70) #0
+// CHECK:STDOUT:   invoke void @__cxa_rethrow() #7
+// CHECK:STDOUT:           to label %unreachable unwind label %terminate.lpad
+// CHECK:STDOUT:
+// CHECK:STDOUT: try.cont:                                         ; preds = %invoke.cont
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT:
+// CHECK:STDOUT: terminate.lpad:                                   ; preds = %catch
+// CHECK:STDOUT:   %5 = landingpad { ptr, i32 }
+// CHECK:STDOUT:           catch ptr null
+// CHECK:STDOUT:   %6 = extractvalue { ptr, i32 } %5, 0
+// CHECK:STDOUT:   call void @__clang_call_terminate(ptr %6) #8
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT:
+// CHECK:STDOUT: unreachable:                                      ; preds = %catch
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.87042109e4175f46:core.Destroy.Core"(ptr %self) #0 !dbg !33 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret void, !dbg !35
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @_CAccessD.Main(ptr %d) #0 !dbg !37 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.loc16_11.1.d = getelementptr inbounds nuw [40 x i8], ptr %d, i32 0, i32 28, !dbg !42
+// CHECK:STDOUT:   %.loc16_11.2 = load i32, ptr %.loc16_11.1.d, align 4, !dbg !42
+// CHECK:STDOUT:   ret i32 %.loc16_11.2, !dbg !43
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #2
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: inlinehint mustprogress uwtable
+// CHECK:STDOUT: define linkonce_odr dso_local void @_ZN1DC1Ev(ptr noundef nonnull align 8 dereferenceable(32) %this) unnamed_addr #3 comdat align 2 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %this.addr = alloca ptr, align 8
+// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !49
+// CHECK:STDOUT:   %this1 = load ptr, ptr %this.addr, align 8
+// CHECK:STDOUT:   %0 = getelementptr inbounds i8, ptr %this1, i64 32
+// CHECK:STDOUT:   call void @_ZN1AC2Ev(ptr noundef nonnull align 4 dereferenceable(4) %0)
+// CHECK:STDOUT:   call void @_ZN1BC2Ev(ptr noundef nonnull align 8 dereferenceable(12) %this1, ptr noundef getelementptr inbounds nuw (i8, ptr @_ZTT1D, i64 8))
+// CHECK:STDOUT:   %1 = getelementptr inbounds i8, ptr %this1, i64 16
+// CHECK:STDOUT:   call void @_ZN1CC2Ev(ptr noundef nonnull align 8 dereferenceable(12) %1, ptr noundef getelementptr inbounds nuw (i8, ptr @_ZTT1D, i64 16))
+// CHECK:STDOUT:   store ptr getelementptr inbounds inrange(-24, 0) (i8, ptr @_ZTV1D, i64 24), ptr %this1, align 8, !tbaa !51
+// CHECK:STDOUT:   %add.ptr = getelementptr inbounds i8, ptr %this1, i64 16
+// CHECK:STDOUT:   store ptr getelementptr inbounds inrange(-24, 0) (i8, ptr @_ZTV1D, i64 48), ptr %add.ptr, align 8, !tbaa !51
+// CHECK:STDOUT:   ret void
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare i32 @__gxx_personality_v0(...)
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare ptr @__cxa_begin_catch(ptr)
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: declare noundef i64 @write(i32 noundef, ptr noundef, i64 noundef) #4
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @__cxa_rethrow()
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: noinline noreturn nounwind uwtable
+// CHECK:STDOUT: define linkonce_odr hidden void @__clang_call_terminate(ptr noundef %0) #5 comdat {
+// CHECK:STDOUT:   %2 = call ptr @__cxa_begin_catch(ptr %0) #0
+// CHECK:STDOUT:   call void @_ZSt9terminatev() #8
+// CHECK:STDOUT:   unreachable
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZSt9terminatev()
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZN1AC2Ev(ptr noundef nonnull align 4 dereferenceable(4)) unnamed_addr #6
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZN1BC2Ev(ptr noundef nonnull align 8 dereferenceable(12), ptr noundef) unnamed_addr #6
+// CHECK:STDOUT:
+// CHECK:STDOUT: declare void @_ZN1CC2Ev(ptr noundef nonnull align 8 dereferenceable(12), ptr noundef) unnamed_addr #6
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; uselistorder directives
+// CHECK:STDOUT: uselistorder ptr inttoptr (i64 32 to ptr), { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr inttoptr (i64 16 to ptr), { 1, 0 }
+// CHECK:STDOUT: uselistorder ptr @_ZTI1B, { 1, 0, 2 }
+// CHECK:STDOUT: uselistorder ptr @_ZTI1C, { 1, 0, 2 }
+// CHECK:STDOUT: uselistorder ptr @_ZTI1D, { 1, 0 }
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT: attributes #1 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #2 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT: attributes #3 = { inlinehint mustprogress uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #4 = { nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #5 = { noinline noreturn nounwind uwtable "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #6 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+// CHECK:STDOUT: attributes #7 = { noreturn }
+// CHECK:STDOUT: attributes #8 = { noreturn nounwind }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!19}
+// CHECK:STDOUT: !llvm.module.flags = !{!52, !53, !54, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!57}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !18 = !DIFile(filename: "use_diamond.carbon", directory: "")
+// CHECK:STDOUT: !19 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !18, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !20 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !21 = !{null}
+// CHECK:STDOUT: !22 = !DISubroutineType(types: !21)
+// CHECK:STDOUT: !23 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !24 = !{null, !23}
+// CHECK:STDOUT: !25 = !DISubroutineType(types: !24)
+// CHECK:STDOUT: !26 = !{!20, !23}
+// CHECK:STDOUT: !27 = !DISubroutineType(types: !26)
+// CHECK:STDOUT: !28 = distinct !DISubprogram(name: "Make", linkageName: "_CMake.Main", scope: null, file: !18, line: 6, type: !22, spFlags: DISPFlagDefinition, unit: !19)
+// CHECK:STDOUT: !29 = !DILocation(line: 11, column: 3, scope: !28)
+// CHECK:STDOUT: !30 = !DILocation(line: 11, column: 18, scope: !28)
+// CHECK:STDOUT: !32 = !DILocation(line: 6, column: 1, scope: !28)
+// CHECK:STDOUT: !33 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.87042109e4175f46:core.Destroy.Core", scope: null, file: !18, line: 11, type: !25, spFlags: DISPFlagDefinition, unit: !19, retainedNodes: !36)
+// CHECK:STDOUT: !34 = !DILocalVariable(arg: 1, scope: !33, type: !23)
+// CHECK:STDOUT: !35 = !DILocation(line: 11, column: 3, scope: !33)
+// CHECK:STDOUT: !36 = !{!34}
+// CHECK:STDOUT: !37 = distinct !DISubprogram(name: "AccessD", linkageName: "_CAccessD.Main", scope: null, file: !18, line: 14, type: !27, spFlags: DISPFlagDefinition, unit: !19, retainedNodes: !44)
+// CHECK:STDOUT: !38 = !DILocalVariable(arg: 1, scope: !37, type: !23)
+// CHECK:STDOUT: !42 = !DILocation(line: 16, column: 10, scope: !37)
+// CHECK:STDOUT: !43 = !DILocation(line: 16, column: 3, scope: !37)
+// CHECK:STDOUT: !44 = !{!38}
+// CHECK:STDOUT: !45 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !46 = !{!"omnipotent char", !45, i64 0}
+// CHECK:STDOUT: !47 = !{!"any pointer", !46, i64 0}
+// CHECK:STDOUT: !48 = !{!"p1 _ZTS1D", !47, i64 0}
+// CHECK:STDOUT: !49 = !{!48, !48, i64 0}
+// CHECK:STDOUT: !50 = !{!"vtable pointer", !45, i64 0}
+// CHECK:STDOUT: !51 = !{!50, !50, i64 0}
+// CHECK:STDOUT: !52 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !53 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !54 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !55 = !{!"int", !46, i64 0}
+// CHECK:STDOUT: !56 = !{!"__libc_errno", !55, i64 0}
+// CHECK:STDOUT: !57 = !{!56, !55, i64 0}
+// CHECK:STDOUT:

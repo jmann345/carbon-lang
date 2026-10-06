@@ -25,10 +25,72 @@ auto foo2(ForwardDeclaredUnion) -> void;
 
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_import_decl_value_param_type.carbon:[[@LINE+8]]:10: in file included here [InCppInclude]
+// CHECK:STDERR: ./decl_value_param_type.h:4:6: error: argument type 'ForwardDeclaredUnion' is incomplete [CppInteropParseError]
+// CHECK:STDERR:     4 | auto foo1(ForwardDeclaredUnion) -> void;
+// CHECK:STDERR:       |      ^~~~
+// CHECK:STDERR: fail_import_decl_value_param_type.carbon:[[@LINE+4]]:10: in file included here [InCppInclude]
+// CHECK:STDERR: ./decl_value_param_type.h:2:7: note: forward declaration of 'ForwardDeclaredUnion' [CppInteropParseNote]
+// CHECK:STDERR:     2 | union ForwardDeclaredUnion;
+// CHECK:STDERR:       |       ^
 import Cpp library "decl_value_param_type.h";
 
 fn F(p: Cpp.ForwardDeclaredUnion*) {
+  // CHECK:STDERR: fail_import_decl_value_param_type.carbon:[[@LINE+12]]:3: note: in thunk for C++ function used here [InCppThunk]
+  // CHECK:STDERR:   Cpp.foo1(*p);
+  // CHECK:STDERR:   ^~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_import_decl_value_param_type.carbon:[[@LINE-7]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./decl_value_param_type.h:5:6: error: argument type 'ForwardDeclaredUnion' is incomplete [CppInteropParseError]
+  // CHECK:STDERR:     5 | auto foo2(ForwardDeclaredUnion) -> void;
+  // CHECK:STDERR:       |      ^~~~
+  // CHECK:STDERR: fail_import_decl_value_param_type.carbon:[[@LINE-11]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./decl_value_param_type.h:2:7: note: forward declaration of 'ForwardDeclaredUnion' [CppInteropParseNote]
+  // CHECK:STDERR:     2 | union ForwardDeclaredUnion;
+  // CHECK:STDERR:       |       ^
   Cpp.foo1(*p);
+  // CHECK:STDERR: fail_import_decl_value_param_type.carbon:[[@LINE+42]]:3: note: in thunk for C++ function used here [InCppThunk]
+  // CHECK:STDERR:   Cpp.foo2(*p);
+  // CHECK:STDERR:   ^~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_import_decl_value_param_type.carbon:[[@LINE-5]]:3: error: semantics TODO: `Unsupported: fenced thunk for potentially-throwing C++ function could not be built` [SemanticsTodo]
+  // CHECK:STDERR:   Cpp.foo1(*p);
+  // CHECK:STDERR:   ^~~~~~~~~~~~
+  // CHECK:STDERR: fail_import_decl_value_param_type.carbon:[[@LINE-8]]:3: note: in thunk for C++ function used here [InCppThunk]
+  // CHECK:STDERR:   Cpp.foo1(*p);
+  // CHECK:STDERR:   ^~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_import_decl_value_param_type.carbon:[[@LINE-12]]:12: error: forming value of incomplete type `Cpp.ForwardDeclaredUnion` [IncompleteTypeInValueConversion]
+  // CHECK:STDERR:   Cpp.foo1(*p);
+  // CHECK:STDERR:            ^~
+  // CHECK:STDERR: fail_import_decl_value_param_type.carbon:[[@LINE-30]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./decl_value_param_type.h:2:7: note: class was forward declared here [ClassForwardDeclaredHere]
+  // CHECK:STDERR: union ForwardDeclaredUnion;
+  // CHECK:STDERR:       ^
+  // CHECK:STDERR: fail_import_decl_value_param_type.carbon:[[@LINE-34]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./decl_value_param_type.h:4:31: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: auto foo1(ForwardDeclaredUnion) -> void;
+  // CHECK:STDERR:                               ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_import_decl_value_param_type.carbon:[[@LINE+19]]:3: error: semantics TODO: `Unsupported: fenced thunk for potentially-throwing C++ function could not be built` [SemanticsTodo]
+  // CHECK:STDERR:   Cpp.foo2(*p);
+  // CHECK:STDERR:   ^~~~~~~~~~~~
+  // CHECK:STDERR: fail_import_decl_value_param_type.carbon:[[@LINE+16]]:3: note: in thunk for C++ function used here [InCppThunk]
+  // CHECK:STDERR:   Cpp.foo2(*p);
+  // CHECK:STDERR:   ^~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_import_decl_value_param_type.carbon:[[@LINE+12]]:12: error: forming value of incomplete type `Cpp.ForwardDeclaredUnion` [IncompleteTypeInValueConversion]
+  // CHECK:STDERR:   Cpp.foo2(*p);
+  // CHECK:STDERR:            ^~
+  // CHECK:STDERR: fail_import_decl_value_param_type.carbon:[[@LINE-49]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./decl_value_param_type.h:2:7: note: class was forward declared here [ClassForwardDeclaredHere]
+  // CHECK:STDERR: union ForwardDeclaredUnion;
+  // CHECK:STDERR:       ^
+  // CHECK:STDERR: fail_import_decl_value_param_type.carbon:[[@LINE-53]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./decl_value_param_type.h:5:31: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: auto foo2(ForwardDeclaredUnion) -> void;
+  // CHECK:STDERR:                               ^
+  // CHECK:STDERR:
   Cpp.foo2(*p);
 }
 
@@ -234,6 +296,14 @@ library "[[@TEST_NAME]]";
 import Cpp library "incomplete.h";
 
 fn F() {
+  // CHECK:STDERR: fail_import_incomplete.carbon:[[@LINE+8]]:3: error: member access into incomplete class `Cpp.IncompleteUnion` [QualifiedExprInIncompleteClassScope]
+  // CHECK:STDERR:   Cpp.IncompleteUnion.foo();
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_import_incomplete.carbon:[[@LINE-6]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./incomplete.h:2:7: note: class was forward declared here [ClassForwardDeclaredHere]
+  // CHECK:STDERR: union IncompleteUnion;
+  // CHECK:STDERR:       ^
+  // CHECK:STDERR:
   Cpp.IncompleteUnion.foo();
 }
 
@@ -295,9 +365,44 @@ auto foo_decl_value_return() -> DeclValueReturnUnion;
 
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_import_decl_value_return_type.carbon:[[@LINE+12]]:10: in file included here [InCppInclude]
+// CHECK:STDERR: ./decl_value_return_type.h:4:6: error: calling 'foo_decl_value_return' with incomplete return type 'DeclValueReturnUnion' [CppInteropParseError]
+// CHECK:STDERR:     4 | auto foo_decl_value_return() -> DeclValueReturnUnion;
+// CHECK:STDERR:       |      ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_import_decl_value_return_type.carbon:[[@LINE+8]]:10: in file included here [InCppInclude]
+// CHECK:STDERR: ./decl_value_return_type.h:4:6: note: 'foo_decl_value_return' declared here [CppInteropParseNote]
+// CHECK:STDERR:     4 | auto foo_decl_value_return() -> DeclValueReturnUnion;
+// CHECK:STDERR:       |      ^
+// CHECK:STDERR: fail_import_decl_value_return_type.carbon:[[@LINE+4]]:10: in file included here [InCppInclude]
+// CHECK:STDERR: ./decl_value_return_type.h:2:7: note: forward declaration of 'DeclValueReturnUnion' [CppInteropParseNote]
+// CHECK:STDERR:     2 | union DeclValueReturnUnion;
+// CHECK:STDERR:       |       ^
 import Cpp library "decl_value_return_type.h";
 
 fn F() {
+  // CHECK:STDERR: fail_import_decl_value_return_type.carbon:[[@LINE+23]]:3: note: in thunk for C++ function used here [InCppThunk]
+  // CHECK:STDERR:   Cpp.foo_decl_value_return();
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_import_decl_value_return_type.carbon:[[@LINE+19]]:3: error: semantics TODO: `Unsupported: fenced thunk for potentially-throwing C++ function could not be built` [SemanticsTodo]
+  // CHECK:STDERR:   Cpp.foo_decl_value_return();
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_import_decl_value_return_type.carbon:[[@LINE+16]]:3: note: in thunk for C++ function used here [InCppThunk]
+  // CHECK:STDERR:   Cpp.foo_decl_value_return();
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_import_decl_value_return_type.carbon:[[@LINE+12]]:3: error: function returns incomplete type `Cpp.DeclValueReturnUnion` [IncompleteTypeInFunctionReturnType]
+  // CHECK:STDERR:   Cpp.foo_decl_value_return();
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_import_decl_value_return_type.carbon:[[@LINE-17]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./decl_value_return_type.h:2:7: note: class was forward declared here [ClassForwardDeclaredHere]
+  // CHECK:STDERR: union DeclValueReturnUnion;
+  // CHECK:STDERR:       ^
+  // CHECK:STDERR: fail_import_decl_value_return_type.carbon:[[@LINE-21]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./decl_value_return_type.h:4:33: note: return type declared here [IncompleteReturnTypeHere]
+  // CHECK:STDERR: auto foo_decl_value_return() -> DeclValueReturnUnion;
+  // CHECK:STDERR:                                 ^
+  // CHECK:STDERR:
   Cpp.foo_decl_value_return();
 }
 
@@ -366,3 +471,700 @@ fn F() {
   Cpp.foo_def_pointer_return();
   //@dump-sem-ir-end
 }
+
+// CHECK:STDOUT: --- import_definition_no_data_members_value_param_type.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %EmptyUnion: type = class_type @EmptyUnion [concrete]
+// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
+// CHECK:STDOUT:   %foo_empty.cpp_overload_set.type: type = cpp_overload_set_type @foo_empty.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %foo_empty.cpp_overload_set.value: %foo_empty.cpp_overload_set.type = cpp_overload_set_value @foo_empty.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %ptr.73e: type = ptr_type %EmptyUnion [concrete]
+// CHECK:STDOUT:   %foo_empty__carbon_thunk.type: type = fn_type @foo_empty__carbon_thunk [concrete]
+// CHECK:STDOUT:   %foo_empty__carbon_thunk: %foo_empty__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .EmptyUnion = %EmptyUnion.decl
+// CHECK:STDOUT:     .foo_empty = %foo_empty.cpp_overload_set.value
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %EmptyUnion.decl: type = class_decl @EmptyUnion [concrete = constants.%EmptyUnion] {} {}
+// CHECK:STDOUT:   %foo_empty.cpp_overload_set.value: %foo_empty.cpp_overload_set.type = cpp_overload_set_value @foo_empty.cpp_overload_set [concrete = constants.%foo_empty.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo_empty__carbon_thunk.decl: %foo_empty__carbon_thunk.type = fn_decl @foo_empty__carbon_thunk [concrete = constants.%foo_empty__carbon_thunk] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F(%u.param: %EmptyUnion) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Cpp.ref.loc8: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo_empty.ref: %foo_empty.cpp_overload_set.type = name_ref foo_empty, imports.%foo_empty.cpp_overload_set.value [concrete = constants.%foo_empty.cpp_overload_set.value]
+// CHECK:STDOUT:   %u.ref: %EmptyUnion = name_ref u, %u
+// CHECK:STDOUT:   %.loc8: ref %EmptyUnion = value_as_ref %u.ref
+// CHECK:STDOUT:   %addr: %ptr.73e = addr_of %.loc8
+// CHECK:STDOUT:   %foo_empty__carbon_thunk.call: init %empty_tuple.type = call imports.%foo_empty__carbon_thunk.decl(%addr)
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- import_definition_single_data_member_value_param_type.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %SingleMemberUnion: type = class_type @SingleMemberUnion [concrete]
+// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
+// CHECK:STDOUT:   %foo_single_member.cpp_overload_set.type: type = cpp_overload_set_type @foo_single_member.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %foo_single_member.cpp_overload_set.value: %foo_single_member.cpp_overload_set.type = cpp_overload_set_value @foo_single_member.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %ptr.6f8: type = ptr_type %SingleMemberUnion [concrete]
+// CHECK:STDOUT:   %foo_single_member__carbon_thunk.type: type = fn_type @foo_single_member__carbon_thunk [concrete]
+// CHECK:STDOUT:   %foo_single_member__carbon_thunk: %foo_single_member__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .SingleMemberUnion = %SingleMemberUnion.decl
+// CHECK:STDOUT:     .foo_single_member = %foo_single_member.cpp_overload_set.value
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %SingleMemberUnion.decl: type = class_decl @SingleMemberUnion [concrete = constants.%SingleMemberUnion] {} {}
+// CHECK:STDOUT:   %foo_single_member.cpp_overload_set.value: %foo_single_member.cpp_overload_set.type = cpp_overload_set_value @foo_single_member.cpp_overload_set [concrete = constants.%foo_single_member.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo_single_member__carbon_thunk.decl: %foo_single_member__carbon_thunk.type = fn_decl @foo_single_member__carbon_thunk [concrete = constants.%foo_single_member__carbon_thunk] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F(%u.param: %SingleMemberUnion) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Cpp.ref.loc8: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo_single_member.ref: %foo_single_member.cpp_overload_set.type = name_ref foo_single_member, imports.%foo_single_member.cpp_overload_set.value [concrete = constants.%foo_single_member.cpp_overload_set.value]
+// CHECK:STDOUT:   %u.ref: %SingleMemberUnion = name_ref u, %u
+// CHECK:STDOUT:   %.loc8: ref %SingleMemberUnion = value_as_ref %u.ref
+// CHECK:STDOUT:   %addr: %ptr.6f8 = addr_of %.loc8
+// CHECK:STDOUT:   %foo_single_member__carbon_thunk.call: init %empty_tuple.type = call imports.%foo_single_member__carbon_thunk.decl(%addr)
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- import_definition_multiple_data_members_value_param_type.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %MultipleMembersUnion: type = class_type @MultipleMembersUnion [concrete]
+// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
+// CHECK:STDOUT:   %foo_multiple_members.cpp_overload_set.type: type = cpp_overload_set_type @foo_multiple_members.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %foo_multiple_members.cpp_overload_set.value: %foo_multiple_members.cpp_overload_set.type = cpp_overload_set_value @foo_multiple_members.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %ptr.f0d: type = ptr_type %MultipleMembersUnion [concrete]
+// CHECK:STDOUT:   %foo_multiple_members__carbon_thunk.type: type = fn_type @foo_multiple_members__carbon_thunk [concrete]
+// CHECK:STDOUT:   %foo_multiple_members__carbon_thunk: %foo_multiple_members__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .MultipleMembersUnion = %MultipleMembersUnion.decl
+// CHECK:STDOUT:     .foo_multiple_members = %foo_multiple_members.cpp_overload_set.value
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %MultipleMembersUnion.decl: type = class_decl @MultipleMembersUnion [concrete = constants.%MultipleMembersUnion] {} {}
+// CHECK:STDOUT:   %foo_multiple_members.cpp_overload_set.value: %foo_multiple_members.cpp_overload_set.type = cpp_overload_set_value @foo_multiple_members.cpp_overload_set [concrete = constants.%foo_multiple_members.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo_multiple_members__carbon_thunk.decl: %foo_multiple_members__carbon_thunk.type = fn_decl @foo_multiple_members__carbon_thunk [concrete = constants.%foo_multiple_members__carbon_thunk] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F(%u.param: %MultipleMembersUnion) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Cpp.ref.loc8: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo_multiple_members.ref: %foo_multiple_members.cpp_overload_set.type = name_ref foo_multiple_members, imports.%foo_multiple_members.cpp_overload_set.value [concrete = constants.%foo_multiple_members.cpp_overload_set.value]
+// CHECK:STDOUT:   %u.ref: %MultipleMembersUnion = name_ref u, %u
+// CHECK:STDOUT:   %.loc8: ref %MultipleMembersUnion = value_as_ref %u.ref
+// CHECK:STDOUT:   %addr: %ptr.f0d = addr_of %.loc8
+// CHECK:STDOUT:   %foo_multiple_members__carbon_thunk.call: init %empty_tuple.type = call imports.%foo_multiple_members__carbon_thunk.decl(%addr)
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- import_definition_in_namespace_value_param_type.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %InNamespaceUnion: type = class_type @InNamespaceUnion [concrete]
+// CHECK:STDOUT:   %pattern_type.007: type = pattern_type %InNamespaceUnion [concrete]
+// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
+// CHECK:STDOUT:   %foo_in_namespace.cpp_overload_set.type: type = cpp_overload_set_type @foo_in_namespace.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %foo_in_namespace.cpp_overload_set.value: %foo_in_namespace.cpp_overload_set.type = cpp_overload_set_value @foo_in_namespace.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %ptr.e1a: type = ptr_type %InNamespaceUnion [concrete]
+// CHECK:STDOUT:   %foo_in_namespace__carbon_thunk.type: type = fn_type @foo_in_namespace__carbon_thunk [concrete]
+// CHECK:STDOUT:   %foo_in_namespace__carbon_thunk: %foo_in_namespace__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT:   %x.patt: %pattern_type.007 = ref_binding_pattern x [concrete]
+// CHECK:STDOUT:   %x.var_patt: %pattern_type.007 = var_pattern %x.patt [concrete]
+// CHECK:STDOUT:   %DefaultOrUnformed.type: type = facet_type <@DefaultOrUnformed> [concrete]
+// CHECK:STDOUT:   %Default.type: type = facet_type <@Default> [concrete]
+// CHECK:STDOUT:   %T.b09: %Default.type = symbolic_binding T, 0 [symbolic]
+// CHECK:STDOUT:   %T.as_type.as.DefaultOrUnformed.impl.Op.type.0c9: type = fn_type @T.as_type.as.DefaultOrUnformed.impl.Op, @T.as_type.as.DefaultOrUnformed.impl(%T.b09) [symbolic]
+// CHECK:STDOUT:   %T.as_type.as.DefaultOrUnformed.impl.Op.cfe: %T.as_type.as.DefaultOrUnformed.impl.Op.type.0c9 = struct_value () [symbolic]
+// CHECK:STDOUT:   %InNamespaceUnion.Op.type: type = fn_type @InNamespaceUnion.Op [concrete]
+// CHECK:STDOUT:   %InNamespaceUnion.Op: %InNamespaceUnion.Op.type = struct_value () [concrete]
+// CHECK:STDOUT:   %custom_witness.85f: <witness> = custom_witness (%InNamespaceUnion.Op), @Default [concrete]
+// CHECK:STDOUT:   %Default.facet.c4a: %Default.type = facet_value %InNamespaceUnion, (%custom_witness.85f) [concrete]
+// CHECK:STDOUT:   %DefaultOrUnformed.impl_witness.ee1: <witness> = impl_witness imports.%DefaultOrUnformed.impl_witness_table.162, @T.as_type.as.DefaultOrUnformed.impl(%Default.facet.c4a) [concrete]
+// CHECK:STDOUT:   %DefaultOrUnformed.facet: %DefaultOrUnformed.type = facet_value %InNamespaceUnion, (%DefaultOrUnformed.impl_witness.ee1) [concrete]
+// CHECK:STDOUT:   %self.param_patt.ef9: %pattern_type.007 = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.0ed: %pattern_type.007 = wrapper_binding_pattern self, %self.param_patt.ef9 [concrete]
+// CHECK:STDOUT:   %InNamespaceUnion.cpp_destructor.type: type = fn_type @InNamespaceUnion.cpp_destructor [concrete]
+// CHECK:STDOUT:   %InNamespaceUnion.cpp_destructor: %InNamespaceUnion.cpp_destructor.type = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef0: type = fn_type @Destroy.WithSelf.Op.loc10 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.403: %Destroy.WithSelf.Op.type.ef0 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbc: type = fn_type @Destroy.WithSelf.SelfDestruct.loc10 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3: %Destroy.WithSelf.SelfDestruct.type.fbc = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .N = %N
+// CHECK:STDOUT:     .foo_in_namespace = %foo_in_namespace.cpp_overload_set.value
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %N: <namespace> = namespace [concrete] {
+// CHECK:STDOUT:     .InNamespaceUnion = %InNamespaceUnion.decl
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %InNamespaceUnion.decl: type = class_decl @InNamespaceUnion [concrete = constants.%InNamespaceUnion] {} {}
+// CHECK:STDOUT:   %foo_in_namespace.cpp_overload_set.value: %foo_in_namespace.cpp_overload_set.type = cpp_overload_set_value @foo_in_namespace.cpp_overload_set [concrete = constants.%foo_in_namespace.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo_in_namespace__carbon_thunk.decl: %foo_in_namespace__carbon_thunk.type = fn_decl @foo_in_namespace__carbon_thunk [concrete = constants.%foo_in_namespace__carbon_thunk] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Core.import_ref.c2f: @T.as_type.as.DefaultOrUnformed.impl.%T.as_type.as.DefaultOrUnformed.impl.Op.type (%T.as_type.as.DefaultOrUnformed.impl.Op.type.0c9) = import_ref Core//prelude/parts/default, loc{{\d+_\d+}}, loaded [symbolic = @T.as_type.as.DefaultOrUnformed.impl.%T.as_type.as.DefaultOrUnformed.impl.Op (constants.%T.as_type.as.DefaultOrUnformed.impl.Op.cfe)]
+// CHECK:STDOUT:   %DefaultOrUnformed.impl_witness_table.162 = impl_witness_table (%Core.import_ref.c2f), @T.as_type.as.DefaultOrUnformed.impl [concrete]
+// CHECK:STDOUT:   %InNamespaceUnion.cpp_destructor.decl: %InNamespaceUnion.cpp_destructor.type = fn_decl @InNamespaceUnion.cpp_destructor [concrete = constants.%InNamespaceUnion.cpp_destructor] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: generated {
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.decl: %Destroy.WithSelf.Op.type.ef0 = fn_decl @Destroy.WithSelf.Op.loc10 [concrete = constants.%Destroy.WithSelf.Op.403] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.007 = ref_param_pattern [concrete = constants.%self.param_patt.ef9]
+// CHECK:STDOUT:     %self.patt: %pattern_type.007 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.0ed]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %InNamespaceUnion = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %InNamespaceUnion = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F(%u.param: %InNamespaceUnion) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Cpp.ref.loc8: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo_in_namespace.ref: %foo_in_namespace.cpp_overload_set.type = name_ref foo_in_namespace, imports.%foo_in_namespace.cpp_overload_set.value [concrete = constants.%foo_in_namespace.cpp_overload_set.value]
+// CHECK:STDOUT:   %u.ref: %InNamespaceUnion = name_ref u, %u
+// CHECK:STDOUT:   %.loc8: ref %InNamespaceUnion = value_as_ref %u.ref
+// CHECK:STDOUT:   %addr: %ptr.e1a = addr_of %.loc8
+// CHECK:STDOUT:   %foo_in_namespace__carbon_thunk.call: init %empty_tuple.type = call imports.%foo_in_namespace__carbon_thunk.decl(%addr)
+// CHECK:STDOUT:   %x.var: ref %InNamespaceUnion = var_storage %x.var_patt
+// CHECK:STDOUT:   %DefaultOrUnformed.facet: %DefaultOrUnformed.type = facet_value constants.%InNamespaceUnion, (constants.%DefaultOrUnformed.impl_witness.ee1) [concrete = constants.%DefaultOrUnformed.facet]
+// CHECK:STDOUT:   %.loc10_39.1: %DefaultOrUnformed.type = converted constants.%InNamespaceUnion, %DefaultOrUnformed.facet [concrete = constants.%DefaultOrUnformed.facet]
+// CHECK:STDOUT:   %as_type: type = facet_access_type %.loc10_39.1 [concrete = constants.%InNamespaceUnion]
+// CHECK:STDOUT:   %.loc10_39.2: type = converted %.loc10_39.1, %as_type [concrete = constants.%InNamespaceUnion]
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT:   %.loc10_3: ref %InNamespaceUnion = splice_block %x.var {}
+// CHECK:STDOUT:   %T.as_type.as.DefaultOrUnformed.impl.Op.call: init %InNamespaceUnion to %.loc10_3 = call %T.as_type.as.DefaultOrUnformed.impl.Op.specific_fn()
+// CHECK:STDOUT:   assign %x.var, %T.as_type.as.DefaultOrUnformed.impl.Op.call
+// CHECK:STDOUT:   %.loc10_22: type = splice_block %InNamespaceUnion.ref.loc10 [concrete = constants.%InNamespaceUnion] {
+// CHECK:STDOUT:     %Cpp.ref.loc10: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:     %N.ref.loc10: <namespace> = name_ref N, imports.%N [concrete = imports.%N]
+// CHECK:STDOUT:     %InNamespaceUnion.ref.loc10: type = name_ref InNamespaceUnion, imports.%InNamespaceUnion.decl [concrete = constants.%InNamespaceUnion]
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %x: ref %InNamespaceUnion = wrapper_binding x, %x.var
+// CHECK:STDOUT:   name_binding_decl {
+// CHECK:STDOUT:     %x.patt: %pattern_type.007 = ref_binding_pattern x [concrete = constants.%x.patt]
+// CHECK:STDOUT:     %x.var_patt: %pattern_type.007 = var_pattern %x.patt [concrete = constants.%x.var_patt]
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound: <bound method> = bound_method %x.var, constants.%Destroy.WithSelf.SelfDestruct.db3
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound(%x.var)
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc10(%self.param: ref %InNamespaceUnion) = "no_op";
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc10(%self.param: ref %InNamespaceUnion) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl(%self.param)
+// CHECK:STDOUT:   %InNamespaceUnion.cpp_destructor.call: init %empty_tuple.type = call imports.%InNamespaceUnion.cpp_destructor.decl(%self.param)
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- import_definition_in_relative_namespace_value_param_type.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %InRelativeNamespaceUnion: type = class_type @InRelativeNamespaceUnion [concrete]
+// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
+// CHECK:STDOUT:   %foo.cpp_overload_set.type: type = cpp_overload_set_type @foo.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %foo.cpp_overload_set.value: %foo.cpp_overload_set.type = cpp_overload_set_value @foo.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %ptr.cfd: type = ptr_type %InRelativeNamespaceUnion [concrete]
+// CHECK:STDOUT:   %foo__carbon_thunk.type: type = fn_type @foo__carbon_thunk [concrete]
+// CHECK:STDOUT:   %foo__carbon_thunk: %foo__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .N1 = %N1
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %N1: <namespace> = namespace [concrete] {
+// CHECK:STDOUT:     .N2 = %N2
+// CHECK:STDOUT:     .foo = %foo.cpp_overload_set.value
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %N2: <namespace> = namespace [concrete] {
+// CHECK:STDOUT:     .InRelativeNamespaceUnion = %InRelativeNamespaceUnion.decl
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %InRelativeNamespaceUnion.decl: type = class_decl @InRelativeNamespaceUnion [concrete = constants.%InRelativeNamespaceUnion] {} {}
+// CHECK:STDOUT:   %foo.cpp_overload_set.value: %foo.cpp_overload_set.type = cpp_overload_set_value @foo.cpp_overload_set [concrete = constants.%foo.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo__carbon_thunk.decl: %foo__carbon_thunk.type = fn_decl @foo__carbon_thunk [concrete = constants.%foo__carbon_thunk] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F(%u.param: %InRelativeNamespaceUnion) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Cpp.ref.loc8: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %N1.ref.loc8: <namespace> = name_ref N1, imports.%N1 [concrete = imports.%N1]
+// CHECK:STDOUT:   %foo.ref: %foo.cpp_overload_set.type = name_ref foo, imports.%foo.cpp_overload_set.value [concrete = constants.%foo.cpp_overload_set.value]
+// CHECK:STDOUT:   %u.ref: %InRelativeNamespaceUnion = name_ref u, %u
+// CHECK:STDOUT:   %.loc8: ref %InRelativeNamespaceUnion = value_as_ref %u.ref
+// CHECK:STDOUT:   %addr: %ptr.cfd = addr_of %.loc8
+// CHECK:STDOUT:   %foo__carbon_thunk.call: init %empty_tuple.type = call imports.%foo__carbon_thunk.decl(%addr)
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- import_definition_in_outer_definition.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %OuterUnion: type = class_type @OuterUnion [concrete]
+// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
+// CHECK:STDOUT:   %InnerUnion: type = class_type @InnerUnion [concrete]
+// CHECK:STDOUT:   %foo_in_outer.cpp_overload_set.type: type = cpp_overload_set_type @foo_in_outer.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %foo_in_outer.cpp_overload_set.value: %foo_in_outer.cpp_overload_set.type = cpp_overload_set_value @foo_in_outer.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %ptr.63b: type = ptr_type %InnerUnion [concrete]
+// CHECK:STDOUT:   %foo_in_outer__carbon_thunk.type: type = fn_type @foo_in_outer__carbon_thunk [concrete]
+// CHECK:STDOUT:   %foo_in_outer__carbon_thunk: %foo_in_outer__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT:   %pattern_type.89d: type = pattern_type %OuterUnion [concrete]
+// CHECK:STDOUT:   %x.patt: %pattern_type.89d = ref_binding_pattern x [concrete]
+// CHECK:STDOUT:   %x.var_patt: %pattern_type.89d = var_pattern %x.patt [concrete]
+// CHECK:STDOUT:   %DefaultOrUnformed.type: type = facet_type <@DefaultOrUnformed> [concrete]
+// CHECK:STDOUT:   %Default.type: type = facet_type <@Default> [concrete]
+// CHECK:STDOUT:   %T.b09: %Default.type = symbolic_binding T, 0 [symbolic]
+// CHECK:STDOUT:   %T.as_type.as.DefaultOrUnformed.impl.Op.type.0c9: type = fn_type @T.as_type.as.DefaultOrUnformed.impl.Op, @T.as_type.as.DefaultOrUnformed.impl(%T.b09) [symbolic]
+// CHECK:STDOUT:   %T.as_type.as.DefaultOrUnformed.impl.Op.cfe: %T.as_type.as.DefaultOrUnformed.impl.Op.type.0c9 = struct_value () [symbolic]
+// CHECK:STDOUT:   %OuterUnion.Op.type: type = fn_type @OuterUnion.Op [concrete]
+// CHECK:STDOUT:   %OuterUnion.Op: %OuterUnion.Op.type = struct_value () [concrete]
+// CHECK:STDOUT:   %custom_witness.9b4: <witness> = custom_witness (%OuterUnion.Op), @Default [concrete]
+// CHECK:STDOUT:   %Default.facet.a9b: %Default.type = facet_value %OuterUnion, (%custom_witness.9b4) [concrete]
+// CHECK:STDOUT:   %DefaultOrUnformed.impl_witness.661: <witness> = impl_witness imports.%DefaultOrUnformed.impl_witness_table.162, @T.as_type.as.DefaultOrUnformed.impl(%Default.facet.a9b) [concrete]
+// CHECK:STDOUT:   %DefaultOrUnformed.facet: %DefaultOrUnformed.type = facet_value %OuterUnion, (%DefaultOrUnformed.impl_witness.661) [concrete]
+// CHECK:STDOUT:   %self.param_patt.47b: %pattern_type.89d = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.67b: %pattern_type.89d = wrapper_binding_pattern self, %self.param_patt.47b [concrete]
+// CHECK:STDOUT:   %OuterUnion.cpp_destructor.type: type = fn_type @OuterUnion.cpp_destructor [concrete]
+// CHECK:STDOUT:   %OuterUnion.cpp_destructor: %OuterUnion.cpp_destructor.type = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef0: type = fn_type @Destroy.WithSelf.Op.loc9 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.403: %Destroy.WithSelf.Op.type.ef0 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbc: type = fn_type @Destroy.WithSelf.SelfDestruct.loc9 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3: %Destroy.WithSelf.SelfDestruct.type.fbc = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .OuterUnion = %OuterUnion.decl
+// CHECK:STDOUT:     .foo_in_outer = %foo_in_outer.cpp_overload_set.value
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %OuterUnion.decl: type = class_decl @OuterUnion [concrete = constants.%OuterUnion] {} {}
+// CHECK:STDOUT:   %foo_in_outer.cpp_overload_set.value: %foo_in_outer.cpp_overload_set.type = cpp_overload_set_value @foo_in_outer.cpp_overload_set [concrete = constants.%foo_in_outer.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo_in_outer__carbon_thunk.decl: %foo_in_outer__carbon_thunk.type = fn_decl @foo_in_outer__carbon_thunk [concrete = constants.%foo_in_outer__carbon_thunk] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Core.import_ref.c2f: @T.as_type.as.DefaultOrUnformed.impl.%T.as_type.as.DefaultOrUnformed.impl.Op.type (%T.as_type.as.DefaultOrUnformed.impl.Op.type.0c9) = import_ref Core//prelude/parts/default, loc{{\d+_\d+}}, loaded [symbolic = @T.as_type.as.DefaultOrUnformed.impl.%T.as_type.as.DefaultOrUnformed.impl.Op (constants.%T.as_type.as.DefaultOrUnformed.impl.Op.cfe)]
+// CHECK:STDOUT:   %DefaultOrUnformed.impl_witness_table.162 = impl_witness_table (%Core.import_ref.c2f), @T.as_type.as.DefaultOrUnformed.impl [concrete]
+// CHECK:STDOUT:   %OuterUnion.cpp_destructor.decl: %OuterUnion.cpp_destructor.type = fn_decl @OuterUnion.cpp_destructor [concrete = constants.%OuterUnion.cpp_destructor] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: generated {
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.decl: %Destroy.WithSelf.Op.type.ef0 = fn_decl @Destroy.WithSelf.Op.loc9 [concrete = constants.%Destroy.WithSelf.Op.403] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.89d = ref_param_pattern [concrete = constants.%self.param_patt.47b]
+// CHECK:STDOUT:     %self.patt: %pattern_type.89d = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.67b]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %OuterUnion = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %OuterUnion = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F(%u.param: %InnerUnion) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Cpp.ref.loc8: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo_in_outer.ref: %foo_in_outer.cpp_overload_set.type = name_ref foo_in_outer, imports.%foo_in_outer.cpp_overload_set.value [concrete = constants.%foo_in_outer.cpp_overload_set.value]
+// CHECK:STDOUT:   %u.ref: %InnerUnion = name_ref u, %u
+// CHECK:STDOUT:   %.loc8: ref %InnerUnion = value_as_ref %u.ref
+// CHECK:STDOUT:   %addr: %ptr.63b = addr_of %.loc8
+// CHECK:STDOUT:   %foo_in_outer__carbon_thunk.call: init %empty_tuple.type = call imports.%foo_in_outer__carbon_thunk.decl(%addr)
+// CHECK:STDOUT:   %x.var: ref %OuterUnion = var_storage %x.var_patt
+// CHECK:STDOUT:   %DefaultOrUnformed.facet: %DefaultOrUnformed.type = facet_value constants.%OuterUnion, (constants.%DefaultOrUnformed.impl_witness.661) [concrete = constants.%DefaultOrUnformed.facet]
+// CHECK:STDOUT:   %.loc9_31.1: %DefaultOrUnformed.type = converted constants.%OuterUnion, %DefaultOrUnformed.facet [concrete = constants.%DefaultOrUnformed.facet]
+// CHECK:STDOUT:   %as_type: type = facet_access_type %.loc9_31.1 [concrete = constants.%OuterUnion]
+// CHECK:STDOUT:   %.loc9_31.2: type = converted %.loc9_31.1, %as_type [concrete = constants.%OuterUnion]
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT:   %.loc9_3: ref %OuterUnion = splice_block %x.var {}
+// CHECK:STDOUT:   %T.as_type.as.DefaultOrUnformed.impl.Op.call: init %OuterUnion to %.loc9_3 = call %T.as_type.as.DefaultOrUnformed.impl.Op.specific_fn()
+// CHECK:STDOUT:   assign %x.var, %T.as_type.as.DefaultOrUnformed.impl.Op.call
+// CHECK:STDOUT:   %.loc9_20: type = splice_block %OuterUnion.ref.loc9 [concrete = constants.%OuterUnion] {
+// CHECK:STDOUT:     %Cpp.ref.loc9: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:     %OuterUnion.ref.loc9: type = name_ref OuterUnion, imports.%OuterUnion.decl [concrete = constants.%OuterUnion]
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %x: ref %OuterUnion = wrapper_binding x, %x.var
+// CHECK:STDOUT:   name_binding_decl {
+// CHECK:STDOUT:     %x.patt: %pattern_type.89d = ref_binding_pattern x [concrete = constants.%x.patt]
+// CHECK:STDOUT:     %x.var_patt: %pattern_type.89d = var_pattern %x.patt [concrete = constants.%x.var_patt]
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound: <bound method> = bound_method %x.var, constants.%Destroy.WithSelf.SelfDestruct.db3
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound(%x.var)
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc9(%self.param: ref %OuterUnion) = "no_op";
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc9(%self.param: ref %OuterUnion) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl(%self.param)
+// CHECK:STDOUT:   %OuterUnion.cpp_destructor.call: init %empty_tuple.type = call imports.%OuterUnion.cpp_destructor.decl(%self.param)
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- import_definition_and_static_method_call_before.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %StaticMethodUnion: type = class_type @StaticMethodUnion [concrete]
+// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
+// CHECK:STDOUT:   %StaticMethodUnion.bar.cpp_overload_set.type: type = cpp_overload_set_type @StaticMethodUnion.bar.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %StaticMethodUnion.bar.cpp_overload_set.value: %StaticMethodUnion.bar.cpp_overload_set.type = cpp_overload_set_value @StaticMethodUnion.bar.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %bar__carbon_thunk.type: type = fn_type @bar__carbon_thunk [concrete]
+// CHECK:STDOUT:   %bar__carbon_thunk: %bar__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT:   %foo_static_method.cpp_overload_set.type: type = cpp_overload_set_type @foo_static_method.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %foo_static_method.cpp_overload_set.value: %foo_static_method.cpp_overload_set.type = cpp_overload_set_value @foo_static_method.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %ptr.9f6: type = ptr_type %StaticMethodUnion [concrete]
+// CHECK:STDOUT:   %foo_static_method__carbon_thunk.type: type = fn_type @foo_static_method__carbon_thunk [concrete]
+// CHECK:STDOUT:   %foo_static_method__carbon_thunk: %foo_static_method__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .StaticMethodUnion = %StaticMethodUnion.decl
+// CHECK:STDOUT:     .foo_static_method = %foo_static_method.cpp_overload_set.value
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %StaticMethodUnion.decl: type = class_decl @StaticMethodUnion [concrete = constants.%StaticMethodUnion] {} {}
+// CHECK:STDOUT:   %StaticMethodUnion.bar.cpp_overload_set.value: %StaticMethodUnion.bar.cpp_overload_set.type = cpp_overload_set_value @StaticMethodUnion.bar.cpp_overload_set [concrete = constants.%StaticMethodUnion.bar.cpp_overload_set.value]
+// CHECK:STDOUT:   %bar__carbon_thunk.decl: %bar__carbon_thunk.type = fn_decl @bar__carbon_thunk [concrete = constants.%bar__carbon_thunk] {} {}
+// CHECK:STDOUT:   %foo_static_method.cpp_overload_set.value: %foo_static_method.cpp_overload_set.type = cpp_overload_set_value @foo_static_method.cpp_overload_set [concrete = constants.%foo_static_method.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo_static_method__carbon_thunk.decl: %foo_static_method__carbon_thunk.type = fn_decl @foo_static_method__carbon_thunk [concrete = constants.%foo_static_method__carbon_thunk] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F(%u.param: %StaticMethodUnion) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Cpp.ref.loc8: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %StaticMethodUnion.ref.loc8: type = name_ref StaticMethodUnion, imports.%StaticMethodUnion.decl [concrete = constants.%StaticMethodUnion]
+// CHECK:STDOUT:   %bar.ref: %StaticMethodUnion.bar.cpp_overload_set.type = name_ref bar, imports.%StaticMethodUnion.bar.cpp_overload_set.value [concrete = constants.%StaticMethodUnion.bar.cpp_overload_set.value]
+// CHECK:STDOUT:   %bar__carbon_thunk.call: init %empty_tuple.type = call imports.%bar__carbon_thunk.decl()
+// CHECK:STDOUT:   %Cpp.ref.loc9: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo_static_method.ref: %foo_static_method.cpp_overload_set.type = name_ref foo_static_method, imports.%foo_static_method.cpp_overload_set.value [concrete = constants.%foo_static_method.cpp_overload_set.value]
+// CHECK:STDOUT:   %u.ref: %StaticMethodUnion = name_ref u, %u
+// CHECK:STDOUT:   %.loc9: ref %StaticMethodUnion = value_as_ref %u.ref
+// CHECK:STDOUT:   %addr: %ptr.9f6 = addr_of %.loc9
+// CHECK:STDOUT:   %foo_static_method__carbon_thunk.call: init %empty_tuple.type = call imports.%foo_static_method__carbon_thunk.decl(%addr)
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- import_definition_and_static_method_call_after.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %StaticMethodUnion: type = class_type @StaticMethodUnion [concrete]
+// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
+// CHECK:STDOUT:   %foo_static_method.cpp_overload_set.type: type = cpp_overload_set_type @foo_static_method.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %foo_static_method.cpp_overload_set.value: %foo_static_method.cpp_overload_set.type = cpp_overload_set_value @foo_static_method.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %ptr.9f6: type = ptr_type %StaticMethodUnion [concrete]
+// CHECK:STDOUT:   %foo_static_method__carbon_thunk.type: type = fn_type @foo_static_method__carbon_thunk [concrete]
+// CHECK:STDOUT:   %foo_static_method__carbon_thunk: %foo_static_method__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT:   %StaticMethodUnion.bar.cpp_overload_set.type: type = cpp_overload_set_type @StaticMethodUnion.bar.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %StaticMethodUnion.bar.cpp_overload_set.value: %StaticMethodUnion.bar.cpp_overload_set.type = cpp_overload_set_value @StaticMethodUnion.bar.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %bar__carbon_thunk.type: type = fn_type @bar__carbon_thunk [concrete]
+// CHECK:STDOUT:   %bar__carbon_thunk: %bar__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .StaticMethodUnion = %StaticMethodUnion.decl
+// CHECK:STDOUT:     .foo_static_method = %foo_static_method.cpp_overload_set.value
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %StaticMethodUnion.decl: type = class_decl @StaticMethodUnion [concrete = constants.%StaticMethodUnion] {} {}
+// CHECK:STDOUT:   %foo_static_method.cpp_overload_set.value: %foo_static_method.cpp_overload_set.type = cpp_overload_set_value @foo_static_method.cpp_overload_set [concrete = constants.%foo_static_method.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo_static_method__carbon_thunk.decl: %foo_static_method__carbon_thunk.type = fn_decl @foo_static_method__carbon_thunk [concrete = constants.%foo_static_method__carbon_thunk] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %StaticMethodUnion.bar.cpp_overload_set.value: %StaticMethodUnion.bar.cpp_overload_set.type = cpp_overload_set_value @StaticMethodUnion.bar.cpp_overload_set [concrete = constants.%StaticMethodUnion.bar.cpp_overload_set.value]
+// CHECK:STDOUT:   %bar__carbon_thunk.decl: %bar__carbon_thunk.type = fn_decl @bar__carbon_thunk [concrete = constants.%bar__carbon_thunk] {} {}
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F(%u.param: %StaticMethodUnion) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Cpp.ref.loc8: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo_static_method.ref: %foo_static_method.cpp_overload_set.type = name_ref foo_static_method, imports.%foo_static_method.cpp_overload_set.value [concrete = constants.%foo_static_method.cpp_overload_set.value]
+// CHECK:STDOUT:   %u.ref: %StaticMethodUnion = name_ref u, %u
+// CHECK:STDOUT:   %.loc8: ref %StaticMethodUnion = value_as_ref %u.ref
+// CHECK:STDOUT:   %addr: %ptr.9f6 = addr_of %.loc8
+// CHECK:STDOUT:   %foo_static_method__carbon_thunk.call: init %empty_tuple.type = call imports.%foo_static_method__carbon_thunk.decl(%addr)
+// CHECK:STDOUT:   %Cpp.ref.loc9: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %StaticMethodUnion.ref.loc9: type = name_ref StaticMethodUnion, imports.%StaticMethodUnion.decl [concrete = constants.%StaticMethodUnion]
+// CHECK:STDOUT:   %bar.ref: %StaticMethodUnion.bar.cpp_overload_set.type = name_ref bar, imports.%StaticMethodUnion.bar.cpp_overload_set.value [concrete = constants.%StaticMethodUnion.bar.cpp_overload_set.value]
+// CHECK:STDOUT:   %bar__carbon_thunk.call: init %empty_tuple.type = call imports.%bar__carbon_thunk.decl()
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- import_decl_pointer_param_type.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %DeclPointerParamUnion: type = class_type @DeclPointerParamUnion [concrete]
+// CHECK:STDOUT:   %ptr: type = ptr_type %DeclPointerParamUnion [concrete]
+// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
+// CHECK:STDOUT:   %foo_decl_pointer_param.cpp_overload_set.type: type = cpp_overload_set_type @foo_decl_pointer_param.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %foo_decl_pointer_param.cpp_overload_set.value: %foo_decl_pointer_param.cpp_overload_set.type = cpp_overload_set_value @foo_decl_pointer_param.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %foo_decl_pointer_param__carbon_thunk.type: type = fn_type @foo_decl_pointer_param__carbon_thunk [concrete]
+// CHECK:STDOUT:   %foo_decl_pointer_param__carbon_thunk: %foo_decl_pointer_param__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .DeclPointerParamUnion = %DeclPointerParamUnion.decl
+// CHECK:STDOUT:     .foo_decl_pointer_param = %foo_decl_pointer_param.cpp_overload_set.value
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %DeclPointerParamUnion.decl: type = class_decl @DeclPointerParamUnion [concrete = constants.%DeclPointerParamUnion] {} {}
+// CHECK:STDOUT:   %foo_decl_pointer_param.cpp_overload_set.value: %foo_decl_pointer_param.cpp_overload_set.type = cpp_overload_set_value @foo_decl_pointer_param.cpp_overload_set [concrete = constants.%foo_decl_pointer_param.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo_decl_pointer_param__carbon_thunk.decl: %foo_decl_pointer_param__carbon_thunk.type = fn_decl @foo_decl_pointer_param__carbon_thunk [concrete = constants.%foo_decl_pointer_param__carbon_thunk] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F(%u.param: %ptr) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Cpp.ref.loc8: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo_decl_pointer_param.ref: %foo_decl_pointer_param.cpp_overload_set.type = name_ref foo_decl_pointer_param, imports.%foo_decl_pointer_param.cpp_overload_set.value [concrete = constants.%foo_decl_pointer_param.cpp_overload_set.value]
+// CHECK:STDOUT:   %u.ref: %ptr = name_ref u, %u
+// CHECK:STDOUT:   %foo_decl_pointer_param__carbon_thunk.call: init %empty_tuple.type = call imports.%foo_decl_pointer_param__carbon_thunk.decl(%u.ref)
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- import_definition_pointer_param_type.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %DefPointerParamUnion: type = class_type @DefPointerParamUnion [concrete]
+// CHECK:STDOUT:   %ptr: type = ptr_type %DefPointerParamUnion [concrete]
+// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
+// CHECK:STDOUT:   %foo_def_pointer_param.cpp_overload_set.type: type = cpp_overload_set_type @foo_def_pointer_param.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %foo_def_pointer_param.cpp_overload_set.value: %foo_def_pointer_param.cpp_overload_set.type = cpp_overload_set_value @foo_def_pointer_param.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %foo_def_pointer_param__carbon_thunk.type: type = fn_type @foo_def_pointer_param__carbon_thunk [concrete]
+// CHECK:STDOUT:   %foo_def_pointer_param__carbon_thunk: %foo_def_pointer_param__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .DefPointerParamUnion = %DefPointerParamUnion.decl
+// CHECK:STDOUT:     .foo_def_pointer_param = %foo_def_pointer_param.cpp_overload_set.value
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %DefPointerParamUnion.decl: type = class_decl @DefPointerParamUnion [concrete = constants.%DefPointerParamUnion] {} {}
+// CHECK:STDOUT:   %foo_def_pointer_param.cpp_overload_set.value: %foo_def_pointer_param.cpp_overload_set.type = cpp_overload_set_value @foo_def_pointer_param.cpp_overload_set [concrete = constants.%foo_def_pointer_param.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo_def_pointer_param__carbon_thunk.decl: %foo_def_pointer_param__carbon_thunk.type = fn_decl @foo_def_pointer_param__carbon_thunk [concrete = constants.%foo_def_pointer_param__carbon_thunk] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F(%u.param: %ptr) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Cpp.ref.loc8: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo_def_pointer_param.ref: %foo_def_pointer_param.cpp_overload_set.type = name_ref foo_def_pointer_param, imports.%foo_def_pointer_param.cpp_overload_set.value [concrete = constants.%foo_def_pointer_param.cpp_overload_set.value]
+// CHECK:STDOUT:   %u.ref: %ptr = name_ref u, %u
+// CHECK:STDOUT:   %foo_def_pointer_param__carbon_thunk.call: init %empty_tuple.type = call imports.%foo_def_pointer_param__carbon_thunk.decl(%u.ref)
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- import_definition_value_return_type.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
+// CHECK:STDOUT:   %foo_def_value_return.cpp_overload_set.type: type = cpp_overload_set_type @foo_def_value_return.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %foo_def_value_return.cpp_overload_set.value: %foo_def_value_return.cpp_overload_set.type = cpp_overload_set_value @foo_def_value_return.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %DefValueReturnUnion: type = class_type @DefValueReturnUnion [concrete]
+// CHECK:STDOUT:   %pattern_type.133: type = pattern_type %DefValueReturnUnion [concrete]
+// CHECK:STDOUT:   %ptr.5e5: type = ptr_type %DefValueReturnUnion [concrete]
+// CHECK:STDOUT:   %foo_def_value_return__carbon_thunk.type: type = fn_type @foo_def_value_return__carbon_thunk [concrete]
+// CHECK:STDOUT:   %foo_def_value_return__carbon_thunk: %foo_def_value_return__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT:   %self.param_patt.0ca: %pattern_type.133 = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.00d: %pattern_type.133 = wrapper_binding_pattern self, %self.param_patt.0ca [concrete]
+// CHECK:STDOUT:   %DefValueReturnUnion.cpp_destructor.type: type = fn_type @DefValueReturnUnion.cpp_destructor [concrete]
+// CHECK:STDOUT:   %DefValueReturnUnion.cpp_destructor: %DefValueReturnUnion.cpp_destructor.type = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef0: type = fn_type @Destroy.WithSelf.Op.loc8 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.403: %Destroy.WithSelf.Op.type.ef0 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbc: type = fn_type @Destroy.WithSelf.SelfDestruct.loc8 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3: %Destroy.WithSelf.SelfDestruct.type.fbc = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .foo_def_value_return = %foo_def_value_return.cpp_overload_set.value
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %foo_def_value_return.cpp_overload_set.value: %foo_def_value_return.cpp_overload_set.type = cpp_overload_set_value @foo_def_value_return.cpp_overload_set [concrete = constants.%foo_def_value_return.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo_def_value_return__carbon_thunk.decl: %foo_def_value_return__carbon_thunk.type = fn_decl @foo_def_value_return__carbon_thunk [concrete = constants.%foo_def_value_return__carbon_thunk] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %DefValueReturnUnion.cpp_destructor.decl: %DefValueReturnUnion.cpp_destructor.type = fn_decl @DefValueReturnUnion.cpp_destructor [concrete = constants.%DefValueReturnUnion.cpp_destructor] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: generated {
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.decl: %Destroy.WithSelf.Op.type.ef0 = fn_decl @Destroy.WithSelf.Op.loc8 [concrete = constants.%Destroy.WithSelf.Op.403] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.133 = ref_param_pattern [concrete = constants.%self.param_patt.0ca]
+// CHECK:STDOUT:     %self.patt: %pattern_type.133 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.00d]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %DefValueReturnUnion = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %DefValueReturnUnion = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F() {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo_def_value_return.ref: %foo_def_value_return.cpp_overload_set.type = name_ref foo_def_value_return, imports.%foo_def_value_return.cpp_overload_set.value [concrete = constants.%foo_def_value_return.cpp_overload_set.value]
+// CHECK:STDOUT:   %.loc8_28.1: ref %DefValueReturnUnion = temporary_storage
+// CHECK:STDOUT:   %addr: %ptr.5e5 = addr_of %.loc8_28.1
+// CHECK:STDOUT:   %foo_def_value_return__carbon_thunk.call: init %empty_tuple.type = call imports.%foo_def_value_return__carbon_thunk.decl(%addr)
+// CHECK:STDOUT:   %.loc8_28.2: init %DefValueReturnUnion to %.loc8_28.1 = mark_in_place_init %foo_def_value_return__carbon_thunk.call
+// CHECK:STDOUT:   %.loc8_28.3: ref %DefValueReturnUnion = temporary %.loc8_28.1, %.loc8_28.2
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound: <bound method> = bound_method %.loc8_28.3, constants.%Destroy.WithSelf.SelfDestruct.db3
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound(%.loc8_28.3)
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc8(%self.param: ref %DefValueReturnUnion) = "no_op";
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc8(%self.param: ref %DefValueReturnUnion) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl(%self.param)
+// CHECK:STDOUT:   %DefValueReturnUnion.cpp_destructor.call: init %empty_tuple.type = call imports.%DefValueReturnUnion.cpp_destructor.decl(%self.param)
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- import_decl_pointer_return_type.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %foo_decl_pointer_return.cpp_overload_set.type: type = cpp_overload_set_type @foo_decl_pointer_return.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %foo_decl_pointer_return.cpp_overload_set.value: %foo_decl_pointer_return.cpp_overload_set.type = cpp_overload_set_value @foo_decl_pointer_return.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %DeclPointerReturnUnion: type = class_type @DeclPointerReturnUnion [concrete]
+// CHECK:STDOUT:   %ptr: type = ptr_type %DeclPointerReturnUnion [concrete]
+// CHECK:STDOUT:   %foo_decl_pointer_return__carbon_thunk.type: type = fn_type @foo_decl_pointer_return__carbon_thunk [concrete]
+// CHECK:STDOUT:   %foo_decl_pointer_return__carbon_thunk: %foo_decl_pointer_return__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .foo_decl_pointer_return = %foo_decl_pointer_return.cpp_overload_set.value
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %foo_decl_pointer_return.cpp_overload_set.value: %foo_decl_pointer_return.cpp_overload_set.type = cpp_overload_set_value @foo_decl_pointer_return.cpp_overload_set [concrete = constants.%foo_decl_pointer_return.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo_decl_pointer_return__carbon_thunk.decl: %foo_decl_pointer_return__carbon_thunk.type = fn_decl @foo_decl_pointer_return__carbon_thunk [concrete = constants.%foo_decl_pointer_return__carbon_thunk] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F() {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo_decl_pointer_return.ref: %foo_decl_pointer_return.cpp_overload_set.type = name_ref foo_decl_pointer_return, imports.%foo_decl_pointer_return.cpp_overload_set.value [concrete = constants.%foo_decl_pointer_return.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo_decl_pointer_return__carbon_thunk.call: init %ptr = call imports.%foo_decl_pointer_return__carbon_thunk.decl()
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: --- import_definition_pointer_return_type.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %foo_def_pointer_return.cpp_overload_set.type: type = cpp_overload_set_type @foo_def_pointer_return.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %foo_def_pointer_return.cpp_overload_set.value: %foo_def_pointer_return.cpp_overload_set.type = cpp_overload_set_value @foo_def_pointer_return.cpp_overload_set [concrete]
+// CHECK:STDOUT:   %DefPointerReturnUnion: type = class_type @DefPointerReturnUnion [concrete]
+// CHECK:STDOUT:   %ptr: type = ptr_type %DefPointerReturnUnion [concrete]
+// CHECK:STDOUT:   %foo_def_pointer_return__carbon_thunk.type: type = fn_type @foo_def_pointer_return__carbon_thunk [concrete]
+// CHECK:STDOUT:   %foo_def_pointer_return__carbon_thunk: %foo_def_pointer_return__carbon_thunk.type = struct_value () [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Cpp: <namespace> = namespace file.%Cpp.import_cpp, [concrete] {
+// CHECK:STDOUT:     .foo_def_pointer_return = %foo_def_pointer_return.cpp_overload_set.value
+// CHECK:STDOUT:     import Cpp//...
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %foo_def_pointer_return.cpp_overload_set.value: %foo_def_pointer_return.cpp_overload_set.type = cpp_overload_set_value @foo_def_pointer_return.cpp_overload_set [concrete = constants.%foo_def_pointer_return.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo_def_pointer_return__carbon_thunk.decl: %foo_def_pointer_return__carbon_thunk.type = fn_decl @foo_def_pointer_return__carbon_thunk [concrete = constants.%foo_def_pointer_return__carbon_thunk] {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     <elided>
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @F() {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Cpp.ref: <namespace> = name_ref Cpp, imports.%Cpp [concrete = imports.%Cpp]
+// CHECK:STDOUT:   %foo_def_pointer_return.ref: %foo_def_pointer_return.cpp_overload_set.type = name_ref foo_def_pointer_return, imports.%foo_def_pointer_return.cpp_overload_set.value [concrete = constants.%foo_def_pointer_return.cpp_overload_set.value]
+// CHECK:STDOUT:   %foo_def_pointer_return__carbon_thunk.call: init %ptr = call imports.%foo_def_pointer_return__carbon_thunk.decl()
+// CHECK:STDOUT:   <elided>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:

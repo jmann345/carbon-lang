@@ -2234,16 +2234,23 @@ auto ImportFunctionPointerInvoke(
     // (lower/handle_call.cpp, `CppFunctionPointerThunk`), which for a
     // potentially-throwing pointer type would be the unfenced call the design
     // forbids — so, as for a declared callee, a failed fence-thunk build is
-    // an error, never a fallback (D-UA-15 residue: no pin exists yet, because
-    // no shape is known to make this thunk's build fail).
+    // an error, never a fallback. The error is the TODO itself: nothing is
+    // lowered after it, so the imported `__invoke` is kept rather than
+    // replaced by `ErrorInst`, and the call site's own diagnosis of the
+    // shape that made the thunk unbuildable still runs (upstream's
+    // `IncompleteTypeInFunctionReturnType` for a pointer returning an
+    // incomplete class, function_ptr.carbon `fail_use_forward_decl`;
+    // `CallArgCountMismatch` after the member-pointer TODO above,
+    // method_ptr.carbon `fail_todo_call_method_ptr`). Both shapes fail
+    // upstream's thunk build the same way (the same Clang error is in its
+    // goldens), so no fenced thunk is lost here; the TODO only replaces
+    // upstream's silent fallback.
     if (!invoke_function.cpp_thunk_decl_id().has_value() &&
         IsCppThunkFenceRequired(context, callee_info.function_type,
                                 /*decl_or_null=*/nullptr)) {
       context.TODO(loc_id,
                    "Unsupported: fenced thunk for potentially-throwing C++ "
                    "function pointer could not be built");
-      result.decl_id = SemIR::ErrorInst::InstId;
-      result.function_id = SemIR::FunctionId::None;
     }
   }
   context.clang_function_pointer_types().Update(clang_type_id, result);

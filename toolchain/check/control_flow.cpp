@@ -179,8 +179,14 @@ auto BeginConditionalExprOperand(Context& context) -> void {
   // An owned cleanup scope whose ambient depth is the cleanup depth at the
   // start of the operand, so `AddAndDiscardTemporaryCleanups` destroys exactly
   // the operand's temporaries. Nothing within an expression defers cleanups,
-  // so that depth stays put.
-  context.scope_stack().PushForSameRegion(ScopeStack::CleanupScopeKind::Owned);
+  // so that depth stays put. Inside a scope that tracks no cleanups (the
+  // operand of `typeof`, handle_typeof.cpp) the arm tracks none either, as
+  // `PushForSameRegion` demotes an `Inherited` scope: the arm's temporaries
+  // are never destroyed because the operand is never evaluated.
+  context.scope_stack().PushForSameRegion(
+      context.scope_stack().IsCleanupScope()
+          ? ScopeStack::CleanupScopeKind::Owned
+          : ScopeStack::CleanupScopeKind::None);
 }
 
 auto EndConditionalExprOperand(Context& context, Parse::NodeId node_id,

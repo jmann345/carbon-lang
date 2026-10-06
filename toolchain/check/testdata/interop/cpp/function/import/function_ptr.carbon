@@ -149,22 +149,6 @@ library "[[@TEST_NAME]]";
 import Cpp library "forward_decl.h";
 
 fn F() {
-  // CHECK:STDERR: fail_use_forward_decl.carbon:[[@LINE+16]]:3: error: semantics TODO: `Unsupported: fenced thunk for potentially-throwing C++ function pointer could not be built` [SemanticsTodo]
-  // CHECK:STDERR:   Cpp.ReturnCallback()();
-  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR: fail_use_forward_decl.carbon:[[@LINE+13]]:3: note: in thunk for C++ function pointer type used here [InCppFunctionPointerThunk]
-  // CHECK:STDERR:   Cpp.ReturnCallback()();
-  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
-  // CHECK:STDERR: error: calling function with incomplete return type 'C' [CppInteropParseError]
-  // CHECK:STDERR: fail_use_forward_decl.carbon:[[@LINE-11]]:10: in file included here [InCppInclude]
-  // CHECK:STDERR: ./forward_decl.h:2:7: note: forward declaration of 'C' [CppInteropParseNote]
-  // CHECK:STDERR:     2 | class C;
-  // CHECK:STDERR:       |       ^
-  // CHECK:STDERR: fail_use_forward_decl.carbon:[[@LINE+4]]:3: note: in thunk for C++ function pointer type used here [InCppFunctionPointerThunk]
-  // CHECK:STDERR:   Cpp.ReturnCallback()();
-  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   Cpp.ReturnCallback()();
 }
 

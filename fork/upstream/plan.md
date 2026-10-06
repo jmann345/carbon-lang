@@ -2151,7 +2151,7 @@ should read first:
     handle_if_expr.cpp ("conditionalize the cleanups so they run in the same
     cases where the corresponding `if` arm was taken"), latent upstream
     because no upstream test puts a destructible temporary in an arm
-    (if_expr/\*.carbon arms are `i32` calls, refs and constants); the fork's
+    (`if_expr/*.carbon` arms are `i32` calls, refs and constants); the fork's
     `?` is simply the first construct to do so, and the short-circuit
     right-hand operand in handle_operator.cpp has the identical shape. Fix,
     in upstream's files, after upstream's own `if`-statement precedent
@@ -2211,3 +2211,99 @@ SSA-dominance verifier (site, then verdict):
 | SL-1/SL-2 literal subscript and builtin completeness (handle_index.cpp, call.cpp) | No | No control flow emitted. |
 | Union conversions, `ConvertStructToUnion` (convert.cpp) | No | Straight-line conversion sequence. |
 | TryMapType and C++ export (round 1) | No | Type mapping produces no function-body instructions; recompiled under the harness, unaffected. |
+
+-   **Fill round 3 triage (hosted autoupdate run 37393341208 → b430984d2:
+    toolchain built, 225 goldens refilled, no crash).** The log's "Problems
+    that require manual fixes" list has exactly one entry: fail_todo_gates
+    .carbon's split `fail_todo_template_dependent` succeeded — §4's first
+    pre-registered flip. Cause: upstream's `CallAction` (PR 7682, with the
+    template lowering of PR 7727) defers a call whose argument is
+    template-dependent (`IsCallPerformable`, call.cpp) and performs it per
+    specific, so `PerformCallToOverloadSet`'s gate (xi) is no longer reached
+    at the definition. Retriaged per §3 commit 3b: the split is now
+    `template_dependent.carbon` and gains an instantiating caller inside a
+    dump range (`T2(i32, 1) + T2(bool, true)`), so the next fill pins member
+    selection per specific instead of a vacuous pass; the gate itself stays
+    for a call that is not deferred (W-101's notes record it). A local audit
+    of all 1959 goldens under toolchain/*/testdata (a `fail_` or `fail_todo_`
+    file or split with no `error:` CHECK line, or a non-`fail_` split with
+    one) agrees with the log: no other prefix mismatch exists. Round 2 review
+    folds (ua1_round2_review, APPROVE-WITH-FIXES): F1 applied —
+    `BeginConditionalExprOperand` pushes `Owned` only inside a cleanup scope
+    and `None` otherwise (the `PushForSameRegion` demotion idiom), so an
+    `if`-expression arm or short-circuit operand under `typeof` registers no
+    cleanups and is never diagnosed; pinned by the new `typeof_operand` split
+    of if_expr/arm_temporary.carbon (CHECK lines empty: `Make(1).x`, `c and
+    Make(2).b` and a class-valued arm, each under `typeof` in a function). F2
+    filed as W-122 (the guard is a type-based over-approximation: `if c then
+    arr[Make(1).x] else arr[0]` returning a tuple is a TODO although the
+    value is durable); F3 recorded there too (class-valued arms with a
+    materialized temporary are a hard TODO; the pre-merge fork compiled and
+    miscompiled them). F4 applied (the round 2 note's escaped glob is now a
+    code span). Classification method: every CHECK line of the 225 refilled
+    goldens, normalized (`locNN`, `[[@LINE±N]]`, `!N` metadata, line:col,
+    Clang snippet line numbers, namer hash suffixes), compared with
+    upstream's version where one exists (82 goldens) and with the cut's
+    otherwise (141; 2 are new); (a) = upstream's golden at c1e83b0b7 carries
+    the line at the same site, (b) = the fork's golden at 923c2f2af carried
+    it, (c) = new since the merge.
+
+Fill round 3 classification (signal, then class, then action):
+
+| Signal | Class | Action |
+| --- | --- | --- |
+| 14 × "Unsupported: fenced thunk for potentially-throwing C++ function could not be built" — check interop/cpp/function/import/{class,struct,union}.carbon, splits `fail_import_decl_value_param_type` (two calls each), `fail_import_decl_value_return_type`, `fail_import_non_copyable_param_type`, and class.carbon's `fail_pass_move_only_param_{ref,value}` and `fail_todo_pass_move_only_param_ref_by_move` | (b): the same TODO at the same sites at 923c2f2af. Upstream's thunk build fails identically (its goldens carry the same Clang error under the same `InCppThunk` note) and then falls back to an unfenced direct call, the shape EH-B forbids; the fork's TODO is the EH-B fence-unbuildable rule, not a merge regression. No `__clang_call_terminate` was lost (below). | None. |
+| 2 × "… C++ function pointer could not be built" — function_ptr.carbon `fail_use_forward_decl` (pointer returning the forward-declared `C`), method_ptr.carbon `fail_todo_call_method_ptr` (member function pointer) | (c), by design: D-UA-7's function-pointer clause (rev A A7), which had no pin. Neither shape ever had a working thunk — upstream's goldens carry the identical location-less Clang errors ("calling function with incomplete return type 'C'", "called object type … is not a function or function pointer") from the same failed build — but `result.decl_id = ErrorInst` hid upstream's follow-on diagnostics: `IncompleteTypeInFunctionReturnType` and `CallArgCountMismatch`. | Fixed (import.cpp): the TODO stays and the imported `__invoke` is kept — the TODO is itself an error, so nothing is lowered and no unfenced call is reachable, while the call site still diagnoses its own shape. Deviation from D-UA-7 as written, recorded here; D-UA-15's "no pin exists yet" now has two pins. Both splits' STDERR cleared for the fill. |
+| "Unsupported: catching thunk for a C++ function pointer" plus `QuestionOperandNotTry` (fail_catching.carbon `fail_todo_fn_pointer_catching`) | (c), by design: round 1's split, exactly its header's prediction (the call falls through to the fenced thunk; `?` diagnoses the `i32` operand). | None. |
+| "can't convert generic function to a C++ function pointer" (carbon_fn_as_callable.carbon `fail_todo_generic_fn_to_fn_ptr`); `fail_todo_method_as_callable` now Clang's "no matching function for call to 'invoke'" with the candidate note naming `void (Carbon::Widget::* _Nonnull)() const` | (c), by design: round 1 (D-UA-8; upstream PR 7881 maps a method value to a member pointer). | None. |
+| "destroying temporaries of a conditionally evaluated operand whose value is not passed by copy" (if_expr/arm_temporary.carbon `fail_todo_by_ref_result`) | (c), by design: round 2's pin. | F1 fix and `typeof_operand` pin, W-122 (above). |
+| 3 × "handle invalid parse trees in `check`", `ExpectedExprSemi`, `BinaryOperatorRequiresWhitespace`, `ExpectedExpr` (operators.carbon `fail_prefix_calling_postfix`, `fail_todo_import_unsupported_{unary,binary}_operators`) | (a): byte-identical to upstream's golden; the parse errors come from upstream's own test source (C++ operators Carbon has no spelling for), not from a merge artifact. | None. |
+| "non-class non-namespace name scope", "binding maps to a non-type template parameter", "failed to import C++ type" (export/generic.carbon); "lvalue path contains an array type", "… a base class subobject", "macro with 0 replacement tokens", "macro evaluated to a constant of type: wchar_t / char16_t / char32_t / long double", "string literal type: const wchar_t[6] / char16_t[6] / char32_t[6]" (macros.carbon); "return type: auto" (return.carbon); "parameter type: volatile struct HasQualifiers &", "parameter type: _BitInt(23)" (class/import/method.carbon); "Variadic function" (function.carbon); "builtin type: long double" (arithmetic.carbon); the operator-rewrite TODOs (operators.carbon, range_for.carbon) | (a). | None. |
+| "`let` compile time binding outside function or interface" (let/fail_generic_import.carbon `fail_implicit`) | (a). Its sibling split is `implicit.impl.carbon` where upstream has `fail_implicit.impl.carbon` with two `TypeExprEvaluationFailure`s: (b), W-069's imported file-scope `let`, renamed at the cut (one of §0.3's two source-edited goldens). | None. |
+| `ClassInvalidMemberAccess` × 108 (access.carbon), `ConversionFailure` × 22, `MemberNameNotFoundInInstScope` × 20, `ConversionFailureTypeToFacet` × 14, `ImplLookupInUnidentifiedFacetType` × 11, `MissingImplInMemberAccess` × 9, `IncompleteTypeInValueConversion` × 6, `CppInteropParseError` for TakesRValue / TakesLValue / TakesConstRValue (reference.carbon), ref_this / ref_ref_this (class/import/method.carbon) and MoveOnlyClass's copy constructor (function/import/class.carbon) | (a): every STDERR line of every refilled upstream-owned golden equals upstream's, except the rows above and the snippet numbers below; every one sits in a `fail_` or `fail_todo_` split (no non-`fail_` split carries an error). | None. |
+| Clang's "used here" note for `todo_fail_import_static` (function.carbon) and `todo_fail_import_without_definition` (inline.carbon) points at the header declaration, upstream's at the Carbon call | (b): the fence thunk (D-UA-7 component 3) is the referencing use; the cut's goldens show the same. | None. |
+| Clang snippet line numbers (`NN \|`) in access, class/import/method, export/generic, decayed_param, default_arg, pointer, reference, macros and operators .carbon differ from upstream's by the number of CHECK lines the fill inserted above them (access.carbon: `11 \|` for upstream's `19 \|`, the source line being 19 in both files after the fill) | R26 pass-2 churn: computed on the cleared files, so stale by exactly the shift. | None; the next fill rewrites them to upstream's numbers (expected delta). |
+| `__clang_call_terminate` in 34 lower goldens, `personality` in 34 (floor 30) | Fence intact: gained class/export/destroy_from_thunk, function/import/function_ptr and method_ptr (D-UA-7's predicted upstream GAIN), std_initializer_list_pointer_{pointer,size}; lost only the upstream-deleted std_initializer_list.carbon. | None. |
+| lower/operators/question.carbon, 1188 changed lines | Not moved `Destroy` calls — the lower test has no `InIfExpr`. Normalized: 398 debug-metadata renumberings, 113 destroy-reshape lines (`_COp.<hash>:core.Destroy.Core` → `_CSelfDestruct.<hash>` calls and 14 new `SubobjectDestroy`/`SelfDestruct` defines), 61 other destroy lines, 118 lines of the new defines' boilerplate — D-UA-9's expected shape (§4). | None. |
+| Fork-only instructions in every destroy of a class with a declared `impl as Destroy`: two `facet_value` + `converted` pairs and one `<elided>` (non-`NodeId`-located) instruction between the interface's `bound_method` and the impl's (var/destroy_control_flow.carbon × 13, overload/basic, question*, slice/buf); the `generated` blocks for such classes are smaller than upstream's and the lower symbols are `_CSelfDestruct.Destroy.Core.<hash>` + `_COp:thunk:…` rather than `_CSelfDestruct.<hash>:core.Destroy.Core` | (b): SL-1's D-SL-16 declared-impl selection; the cut's question_result.carbon shows the same 12 lines. Constants, no runtime effect; now visible in six goldens (upstream added destroy_control_flow). | None in UA-1; UA-2 reconciliation candidate (IR clutter). |
+| Inst-namer differences against upstream in for/actual.carbon, range_for.carbon and others (`%N.fe9`, `@Destroy.WithSelf.SelfDestruct.1`, `%Core.048aa3.1`; equal add/remove counts) | (b): disambiguation only — the fork's prelude adds same-named entities; 16 files carry `%Core.048aa3` at the cut and now, 14 upstream. | None. |
+| 23 fork goldens changed by `.loc` renumbering and debug metadata only; `__carbon_thunk` call lines replacing upstream's direct-call lines in 60-odd upstream interop goldens | `.loc` movers (R26) and the fence's component 3 (b). | None. |
+
+Fill round 3 verdicts. R-4 / D-UA-8: no `file_test` golden carries a
+`std::thread`, but carbon_fn_as_callable.carbon's two positive splits compile —
+`Cpp.thread.thread(Work)` deduces the mock `template <typename F> thread(F f)`
+on the `_Nonnull` function-pointer argument and calls `thread__carbon_thunk`
+with `cpp_addr_of_fn @Work` (the two same-signature functions share the one
+instantiation), so the by-value `F` deduction shape is intact, and the
+`_Nonnull` attribute surfaces only in the method split's candidate note, where
+the rejection is the member-pointer mismatch. The break condition (a deduction
+failure naming `_Nonnull` or `void (*&&)()`) did NOT fire; the `F&&` shape of
+the real `std::thread` is pinned only by conformance
+interop/cpp_thread_carbon_fn_diff.carbon and its three siblings, so the residual
+stays undecided until the conformance run. R-17 pins: no new STDERR and no stack
+dump in the seven choice, 17 match, nine union and 12 `Core.Result` goldens;
+payload_layout (lower) carries 15 `SubobjectDestroy` and 22 `SelfDestruct` lines
+and no `_COp.<hash>:core.Destroy.Core` define; R-3 holds
+(lower/slice/buf.carbon: three `free` calls, as at the cut, for its three `Buf`
+objects). D-UA-6 pins untouched by the fill and intact:
+fail_marker_mismatch.carbon has `OverloadMarkerMismatch` on exactly
+`fail_unmarked_second` and `fail_marked_second` and `RedeclParamDiffers` on
+`fail_plain_redecl_unchanged`; union/fail_modifiers_and_redecl.carbon has
+"redefinition of `union D`" and `NameDeclDuplicate` on `fail_class_then_union`.
+Goldens the next fill changes: function/overload/fail_todo_gates.carbon (`template_dependent.carbon`
+gains the `Use` dump, `F` resolving to the first member for `i32` and the second
+for `bool`; a `?` here is a regression in resolution at instantiation to
+root-cause); if_expr/arm_temporary.carbon (`typeof_operand` gains STDOUT with no
+`Destroy` call and no STDERR); function_ptr.carbon `fail_use_forward_decl`
+(STDERR: the fence TODO, the Clang incomplete-return-type error, then upstream's
+`IncompleteTypeInFunctionReturnType` with its two notes); method_ptr.carbon
+`fail_todo_call_method_ptr` (STDERR: `CompoundMemberAccessDoesNotUseBase`, the
+member-pointer TODO, the fence TODO, the Clang error, then upstream's
+`CallArgCountMismatch` and `InCallToEntity`); the pass-2 snippet numbers above;
+no lower golden. Riskiest edit: the instantiating caller in
+`template_dependent.carbon` — it is the first fork call of an overload set
+performed through upstream's `CallAction` per specific, and only the fill can
+show that `PerformCallToOverloadSet` sees concrete argument types there. Not
+decidable by reading: that, the R-4 `F&&` residual, and which instruction the
+`<elided>` line of the declared-impl destroy sequence stands for (`ShouldFormatInst`
+hides a non-`NodeId` location; the sequence is pre-merge).

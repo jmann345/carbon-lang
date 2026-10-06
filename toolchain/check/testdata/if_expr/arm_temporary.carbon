@@ -53,6 +53,38 @@ fn G(c: bool) {
   Use(if c then Make(1) else Make(2));
 }
 
+// --- typeof_operand.carbon
+
+library "[[@TEST_NAME]]";
+
+class C {
+  var x: i32;
+  var b: bool;
+}
+
+fn Make(x: i32) -> C { return {.x = x, .b = true}; }
+
+// The operand of `typeof` is never evaluated and tracks no cleanups, so an
+// `if`-expression arm or a short-circuit right-hand operand inside it tracks
+// none either: the arm's `Make(...)` temporary gets no `Destroy` call in the
+// never-evaluated region, and a class-valued arm is not diagnosed.
+//@dump-sem-ir-begin
+fn F(c: bool) -> i32 {
+  var v: typeof(if c then Make(1).x else 0) = 0;
+  return v;
+}
+
+fn G(c: bool) -> bool {
+  var w: typeof(c and Make(2).b) = c;
+  return w;
+}
+
+fn H(c: bool) -> i32 {
+  var u: typeof((if c then Make(1) else Make(2)).x) = 0;
+  return u;
+}
+//@dump-sem-ir-end
+
 // CHECK:STDOUT: --- member_of_temporary.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

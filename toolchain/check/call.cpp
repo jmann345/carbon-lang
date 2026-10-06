@@ -799,9 +799,10 @@ static auto PerformCallToCppFunctionPointer(
   auto pointer_info =
       ImportFunctionPointerInvoke(context, loc_id, fn_ptr.function_type_id);
   if (pointer_info.decl_id == SemIR::ErrorInst::InstId) {
-    // The pointer's `__invoke` function could not be imported (diagnosed;
-    // fork D-UA-7: its fence thunk could not be built), so there is no
-    // callee to call.
+    // The pointer's `__invoke` function could not be imported (diagnosed), so
+    // there is no callee to call. A fence thunk that could not be built (fork
+    // D-UA-7) is diagnosed in `ImportFunctionPointerInvoke` and keeps the
+    // imported `__invoke`, so the call below still diagnoses its own shape.
     return SemIR::ErrorInst::InstId;
   }
   SemIR::CalleeFunction callee_function = {

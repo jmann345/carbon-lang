@@ -17,6 +17,11 @@
 // OV-2 lifted (i) generic members, (ii) sets in generic scopes and (iv)
 // `extern` members, and deleted their subfiles (generic.carbon,
 // generic_class_method_set.carbon and import.carbon pin the lifted shapes).
+// Gate (xi), template-dependent arguments, is bypassed since the UA-1 merge:
+// upstream defers a call with a template-dependent argument as a `CallAction`
+// and performs it per specific, where the argument types are concrete, so the
+// `template_dependent.carbon` subfile below is a positive pin of resolution
+// at instantiation (the gate itself remains for a call that is not deferred).
 
 // --- fail_todo_ref_param.carbon
 
@@ -87,14 +92,23 @@ class C {
   overload fn F(b: bool);
 }
 
-// --- fail_todo_template_dependent.carbon
+// --- template_dependent.carbon
 
 library "[[@TEST_NAME]]";
 
 overload fn F(unused x: i32) -> i32 { return 1; }
 overload fn F(unused b: bool) -> i32 { return 2; }
 
+// The call is deferred at the definition (its argument's type is the template
+// parameter) and resolved for each specific: `i32` selects the first member,
+// `bool` the second, by declaration order (F-009, D-OV-4).
 fn T2(template T: type, x: T) -> i32 { return F(x); }
+
+//@dump-sem-ir-begin
+fn Use() -> i32 {
+  return T2(i32, 1) + T2(bool, true);
+}
+//@dump-sem-ir-end
 
 // --- fail_todo_explicit_ref_receiver.carbon
 

@@ -288,7 +288,7 @@ fails if this table is stale):
 | `generics/checked_generics.carbon` | Generics: Checked generics | run |
 | `generics/generic_class.carbon` | Generics: generic functions and types | run |
 | `generics/structural_conformance.carbon` | Generics: Template-style structural conformance to nominal constraints | SKIP |
-| `generics/templates_dependent_member.carbon` | Generics: Integrated templates | SKIP |
+| `generics/templates_dependent_member.carbon` | Generics: Integrated templates | run |
 | `generics/templates_type_param.carbon` | Generics: Integrated templates | run |
 | `generics/templates_value_param.carbon` | Generics: Integrated templates | run |
 | `generics/variadics_each.carbon` | Generics: Definition-checked variadics | SKIP |
@@ -323,8 +323,8 @@ fails if this table is stale):
 | `interop/cpp_span_view.carbon` | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | run |
 | `interop/cpp_template_builtins.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/cpp_template_carbon_class.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
-| `interop/cpp_template_on_carbon_generic.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | SKIP |
-| `interop/cpp_template_symbolic_arg.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | SKIP |
+| `interop/cpp_template_on_carbon_generic.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | run |
+| `interop/cpp_template_symbolic_arg.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/cpp_thread_carbon_fn_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |
 | `interop/cpp_thread_condvar_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |
 | `interop/cpp_thread_mutex_raii.carbon` | C++ interop: threading, atomics, memory model, synchronization | run |

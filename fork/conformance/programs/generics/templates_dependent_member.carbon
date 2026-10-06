@@ -6,17 +6,27 @@
 // EXPECT-EXIT: 0
 // EXPECT-STDOUT:
 //   42
-// SKIP: dependent member access `x.n` type-checks via deferred actions but compile aborts: FATAL failure at toolchain/lower/handle.cpp:363: Template lowering not implemented yet (SpliceInst; crash context "Lowering splice_inst" at the `x.n` line) — verified against this arbiter toolchain 2026-07-19
 //
-// The missing slice of the PARTIAL bullet: template-dependent member access.
-// Shape verbatim from toolchain/check/testdata/generic/template/
-// member_access.carbon (`fn F[template T: type](x: T) -> i32 { let n: i32 =
-// x.n; ... }`), which passes *checking* — monomorphization of the specific
-// succeeds and bad members are diagnosed ("unable to monomorphize specific")
-// — but lowering of the resolved specific still hits the SpliceInst
-// CARBON_FATAL. Dependent conversions (`let n: i32 = x;` from generic/
-// template/convert.carbon) abort identically. Un-SKIP when template lowering
-// (workstream W7) lands.
+// Un-SKIPped 2026-10-06 (UA-2 probe, fork/upstream/plan.md §0.6 W-014 row
+// and §8.5). The SKIP (2026-07-19) cited `FATAL failure at
+// toolchain/lower/handle.cpp:363: Template lowering not implemented yet`
+// (SpliceInst; crash context "Lowering splice_inst" at the `x.n` line).
+// Upstream PR 7727 landed template lowering: the resolved specific's
+// instructions are lowered per specific (upstream goldens
+// toolchain/lower/testdata/template/{convert,operator,class}.carbon), and the
+// only `CARBON_FATAL` left in lower/handle.cpp is "Cross-file template
+// lowering not implemented yet" (:513), which this program does not reach —
+// `GetN` is instantiated in the file that defines it. Prediction: PASS, 42.
+//
+// The slice this program pins: template-dependent member access. Shape
+// verbatim from toolchain/check/testdata/generic/template/member_access.carbon
+// (`simple_member_access.carbon`: `fn F[template T: type](x: T) -> i32 { let
+// n: i32 = x.n; ... }` called on a class with a field `n`), which passed
+// *checking* at the 2026-07-19 cut — monomorphization of the specific
+// succeeded and bad members were diagnosed ("unable to monomorphize
+// specific") — while lowering of the resolved specific hit the SpliceInst
+// CARBON_FATAL; dependent conversions (`let n: i32 = x;` from generic/
+// template/convert.carbon) aborted identically.
 
 import Core library "io";
 

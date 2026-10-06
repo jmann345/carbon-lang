@@ -6124,6 +6124,82 @@ Noted for W8b/W8c: lower merge-block namer emits the label
 choice-payload bind-pass coverage nuance, and the R8 conservative
 gate.
 
+### Upstream reconciliation 2026-10 (UA-2)
+
+The reconciliation PR fork/upstream/plan.md §8.5 specifies (its plan IS that
+section, R29(c): no plan reviews), on claude/carbon-fork-0-1-ua2 cut from trunk
+8068151ed (post-PR 50, the upstream advance). Round 1 (this record's first
+state) lands the un-SKIP probes, the W-108 pin golden pair and the ledger
+note; round 2 reverts failed probes with the measured diagnostic (R10),
+decides W-108 from the fill (R-3), re-cites the ledger and gap rows, and
+repairs the pre-existing manufactured decision-log heading. Design authority
+not reopened; every choice below is an R29(a) implementation decision.
+
+PROBE PLAN AND PREDICTIONS (round 1; one hosted conformance per round, R28;
+the measured results replace the placeholders in round 2). Three SKIP lines
+removed, each header rewritten as history with its prediction:
+generics/templates_dependent_member.carbon (W-014; the SKIP cited
+`lower/handle.cpp:363 Template lowering not implemented yet`; upstream PR 7727
+lowers the resolved specific per specific, upstream goldens
+lower/testdata/template/{convert,operator,class}.carbon, and the one
+`CARBON_FATAL` left in lower/handle.cpp is the cross-file TODO at :513, which a
+same-file instantiation never reaches) — predicted PASS, stdout `42`;
+interop/cpp_template_symbolic_arg.carbon and
+interop/cpp_template_on_carbon_generic.carbon (W-043; the SKIPs cited
+`unsupported type used as template argument` at `var b: Cpp.Box(T);`, the
+TODO of the `fail_todo_generic_call` split that upstream PR 7673 lifted (a
+deferred `CallCppTemplateAction`) and PR 7700 (after PR 7689's `TemplateInst`)
+made pass, dropping the prefix — upstream-trunk's
+check/testdata/interop/cpp/template/generic_call.carbon:27-28 pins
+`fn F[T: type](unused x: T) { var unused v: Cpp.S(T); }` with no `fail_todo`,
+instantiated per specific) — predicted PASS, stdout `7` each, with the
+pre-registered residual (plan §0.6, rev B B8) that both programs also return
+`Cpp.Box(T)` by value from the generic (`-> Cpp.Box(T)`), a shape upstream's
+pin does not cover; if that fails, the candidate diagnostic by reading is
+return.cpp's `support nontrivial conversions between symbolic forms` TODO
+(:218/:229, the only TODO on the return path for a dependent return form) or
+a Clang instantiation error at the specific — the fill measures, round 2
+writes it into the SKIP line. interop/inherit_multiple_bases.carbon stays
+SKIP (W-046): upstream-trunk's
+check/testdata/interop/cpp/class/import/base.carbon:152 still carries the
+`fail_todo_use_multiple_inheritance.carbon` split with the identical
+`ConversionFailure` / `MissingImplInMemberAccessInContext` lines the SKIP
+quotes (:159-177). Expected ceiling if all three flip: 131 PASS / 0 FAIL / 19
+SKIP over 150 (the floor is 128 / 0 / 22; §8.5's "129 / 0 / 20 over 149"
+predates SL-2's program). Of record: CONF_RUN_1 — CONF_NUMBERS_1.
+
+W-108 PIN (round 1; the fill decides, R-3). New goldens
+toolchain/check/testdata/slice/buf_field.carbon and
+toolchain/lower/testdata/slice/buf_field.carbon, beside SL-1's buf.carbon pair
+(same `min_prelude/full.carbon` include, no `--target` pin, check dump ranges
+only around the function bodies per W-121), CHECK lines empty for the hosted
+autoupdate. Two splits each: `synthesized_owner` — `class Owner { var b:
+Core.Buf(i32); }` with no impl, destroyed at `F`'s scope end — and
+`declared_owner` — `OwnerWithOp` with the same field plus `impl as
+Core.Destroy { fn Op(unused ref self) {} }`. Predictions, traced in
+custom_witness.cpp as merged: `Owner` has no class-keyed impl, so
+`CanDestroyClass` runs the field walk, `HasWitnessForOneField` finds
+`Buf(i32)`'s declared witness and the format is `NonTrivial`; upstream's
+`MakeSubobjectDestroyOpBody` (PR 7840, `DestroyStructFields` →
+`BuildSelfDestructCall`) emits `self.b.(Destroy.SelfDestruct)`, which for
+`Buf(i32)` is the interface's `final` `SelfDestruct` bound through the
+declared impl (D-SL-16) — `self.Op()` is `HeapFree`, so the lower
+`synthesized_owner` module should carry `call void @free` inside
+`_COp.Buf...:Destroy.Core...`, reached from `_CSubobjectDestroy.<hash>:core
+.Destroy.Core` through `_CSelfDestruct.Destroy.Core.<hash>`. `OwnerWithOp` is
+class-keyed, so lookup selects its impl and its `SubobjectDestroy` is the
+interface's `final` placeholder (PR 7773's stated limit, prelude/destroy
+.carbon: "This function body is ignored by the toolchain"), so the
+`declared_owner` module should carry NO `free` and no `_COp.Buf...` define:
+the `Make` block leaks. If the fill shows `free` in `synthesized_owner`,
+round 2 discharges W-108 for aggregates without a user impl and narrows the
+0.1 limit to owners that declare `impl as Destroy` (plus W-125's choice
+payloads); if not, W-108 stays with the measured shape. Fill of record:
+FILL_RUN_1.
+
+Veto-able. Round 2 appends the measured results, the ledger and gap-row
+re-cites, the heading repair and the of-record numbers.
+
 ### Upstream advance 2026-10: cut 631f8fb → c1e83b0b7 (2026-10-06)
 
 The fork's upstream cut advances from 631f8fb6d (2026-08-20, "Modularize driver

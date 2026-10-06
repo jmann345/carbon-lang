@@ -35,7 +35,7 @@ library "[[@TEST_NAME]]";
 import Cpp library "no_size.h";
 
 fn View(v: Cpp.NoSize) -> Core.Slice(i32) {
-  // CHECK:STDERR: fail_no_size.carbon:[[@LINE+7]]:3: error: cannot implicitly convert expression of type `Cpp.NoSize` to `Core.Slice(i32 as Core.Destroy & Core.Copy)` [ConversionFailure]
+  // CHECK:STDERR: fail_no_size.carbon:[[@LINE+7]]:3: error: cannot implicitly convert expression of type `NoSize` to `Core.Slice(i32 as Core.Destroy & Core.Copy)` [ConversionFailure]
   // CHECK:STDERR:   return v;
   // CHECK:STDERR:   ^~~~~~~~~
   // CHECK:STDERR: fail_no_size.carbon:[[@LINE+4]]:3: note: type `Cpp.NoSize` does not implement interface `Core.ImplicitAs(Core.Slice(i32 as Core.Destroy & Core.Copy))` [MissingImplInMemberAccessInContext]
@@ -60,7 +60,7 @@ library "[[@TEST_NAME]]";
 import Cpp library "void_members.h";
 
 fn View(v: Cpp.VoidMembers) -> Core.Slice(i32) {
-  // CHECK:STDERR: fail_void_members.carbon:[[@LINE+7]]:3: error: cannot implicitly convert expression of type `Cpp.VoidMembers` to `Core.Slice(i32 as Core.Destroy & Core.Copy)` [ConversionFailure]
+  // CHECK:STDERR: fail_void_members.carbon:[[@LINE+7]]:3: error: cannot implicitly convert expression of type `VoidMembers` to `Core.Slice(i32 as Core.Destroy & Core.Copy)` [ConversionFailure]
   // CHECK:STDERR:   return v;
   // CHECK:STDERR:   ^~~~~~~~~
   // CHECK:STDERR: fail_void_members.carbon:[[@LINE+4]]:3: note: type `Cpp.VoidMembers` does not implement interface `Core.ImplicitAs(Core.Slice(i32 as Core.Destroy & Core.Copy))` [MissingImplInMemberAccessInContext]

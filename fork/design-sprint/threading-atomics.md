@@ -198,8 +198,8 @@ option:
     0.1 provides no compile-time race detection; that is the 0.2+ safe-Carbon
     design (`safety/README.md:136,154-177`). Dynamic detection is
     Debug+TSan (`safety/README.md:245`).
-3.  **Atomicity is a property of the object's type**, obtained exclusively by way of
-    imported C++ types (`Cpp.std.atomic(T)`, `Cpp.std.atomic_flag`,
+3.  **Atomicity is a property of the object's type**, obtained exclusively by
+    way of imported C++ types (`Cpp.std.atomic(T)`, `Cpp.std.atomic_flag`,
     `Cpp.std.atomic_ref(T)` under C++20). Carbon adds no per-access atomic
     syntax in 0.1 and has no `volatile`.
 4.  **Synchronization operations compose across the language boundary.** A
@@ -344,9 +344,9 @@ F-005 gives us the build runner); each is small enough to also send upstream.
 **Evolution risk vs upstream: low, and convergent.** All three fixes make
 existing general interop machinery more complete — no new syntax, no new
 semantics beyond what upstream's own machinery implies. Upstream is highly
-likely to want each fix (D1 in particular matches
-"minimize bridge code"); upstream landing a different D1 (for example by way of their
-lambda work, p003848) would supersede rather than conflict with ours.
+likely to want each fix (D1 in particular matches "minimize bridge code");
+upstream landing a different D1 (for example by way of their lambda work,
+p003848) would supersede rather than conflict with ours.
 
 ### Option C: Option B + a `Core.Sync` veneer library
 
@@ -533,8 +533,9 @@ wrong today. Rejected unless the user wants to pull 0.2 work forward.
     `overload_resolution.cpp`, `thunk.cpp`) — the machinery the options
     build on; `toolchain/docs/check/cpp/thunks.md`
 -   `toolchain/check/testdata/interop/cpp/template/class_template.carbon` —
-    template import form; `toolchain/lower/testdata/interop/cpp/reference.carbon`
-    — `ref` arguments to C++ `T&` (p005434)
+    template import form;
+    `toolchain/lower/testdata/interop/cpp/reference.carbon` — `ref` arguments to
+    C++ `T&` (p005434)
 -   `toolchain/driver/clang_runtimes.cpp` — bundled libc++/runtimes
 -   proposals p000175, p005914, p005434, p006357, p006358, p006177, p003848,
     p005233

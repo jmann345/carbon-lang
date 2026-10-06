@@ -14,6 +14,7 @@
 #include "toolchain/sem_ir/file.h"
 #include "toolchain/sem_ir/ids.h"
 #include "toolchain/sem_ir/inst_namer.h"
+#include "toolchain/sem_ir/mangler.h"
 
 namespace clang {
 class CodeGenerator;
@@ -232,6 +233,7 @@ class FileContext {
   auto sem_ir() const -> const SemIR::File& { return *sem_ir_; }
   auto cpp_file() -> const SemIR::CppFile* { return sem_ir().cpp_file(); }
   auto inst_namer() -> const SemIR::InstNamer* { return inst_namer_; }
+  auto mangler() -> SemIR::Mangler& { return mangler_; }
   auto global_variables() -> const Map<SemIR::InstId, llvm::GlobalVariable*>& {
     return global_variables_;
   }
@@ -438,6 +440,8 @@ class FileContext {
       vtables_;
   FixedSizeValueStore<SemIR::SpecificId, llvm::Constant*, Tag<SemIR::CheckIRId>>
       specific_vtables_;
+
+  SemIR::Mangler mangler_;
 };
 
 }  // namespace Carbon::Lower

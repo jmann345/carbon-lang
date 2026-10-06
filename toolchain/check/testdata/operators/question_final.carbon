@@ -225,12 +225,12 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT: --- thread.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
-// CHECK:STDOUT:   %type: type = facet_type <type> [concrete]
-// CHECK:STDOUT:   %.Self.frozen.197: %type = symbolic_binding .Self [symbolic_self]
-// CHECK:STDOUT:   %pattern_type.98f: type = pattern_type type [concrete]
-// CHECK:STDOUT:   %T.patt.d47: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic]
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %.Self.frozen.e58: type = symbolic_binding .Self [symbolic_self]
+// CHECK:STDOUT:   %pattern_type.9a5: type = pattern_type type [concrete]
+// CHECK:STDOUT:   %T.patt.3a0: %pattern_type.9a5 = symbolic_binding_pattern T, 0 [symbolic]
 // CHECK:STDOUT:   %T.67d: type = symbolic_binding T, 0 [symbolic]
-// CHECK:STDOUT:   %E.patt: %pattern_type.98f = symbolic_binding_pattern E, 1 [symbolic]
+// CHECK:STDOUT:   %E.patt: %pattern_type.9a5 = symbolic_binding_pattern E, 1 [symbolic]
 // CHECK:STDOUT:   %E: type = symbolic_binding E, 1 [symbolic]
 // CHECK:STDOUT:   %MyResult.type: type = generic_class_type @MyResult [concrete]
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
@@ -302,12 +302,12 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:   %.226: type = fn_type_with_self_type %Try.WithSelf.FromBreak.type.d1a, %Try.facet [symbolic]
 // CHECK:STDOUT:   %MyResult.as.Try.impl.FromBreak.specific_fn: <specific function> = specific_function %MyResult.as.Try.impl.FromBreak, @MyResult.as.Try.impl.FromBreak(%T.67d, %E) [symbolic]
 // CHECK:STDOUT:   %Destroy.type: type = facet_type <@Destroy> [concrete]
-// CHECK:STDOUT:   %Destroy.lookup_impl_witness: <witness> = lookup_impl_witness %ControlFlow.eda317.2, @Destroy [symbolic]
-// CHECK:STDOUT:   %Destroy.facet: %Destroy.type = facet_value %ControlFlow.eda317.2, (%Destroy.lookup_impl_witness) [symbolic]
-// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.16c: type = fn_type @Destroy.WithSelf.Op, @Destroy.WithSelf(%Destroy.facet) [symbolic]
-// CHECK:STDOUT:   %.9db: type = fn_type_with_self_type %Destroy.WithSelf.Op.type.16c, %Destroy.facet [symbolic]
-// CHECK:STDOUT:   %impl.elem0.ae8: %.9db = impl_witness_access %Destroy.lookup_impl_witness, element0 [symbolic]
-// CHECK:STDOUT:   %specific_impl_fn.8f1: <specific function> = specific_impl_function %impl.elem0.ae8, @Destroy.WithSelf.Op(%Destroy.facet) [symbolic]
+// CHECK:STDOUT:   %Destroy.lookup_impl_witness.c3f: <witness> = lookup_impl_witness %ControlFlow.eda317.2, @Destroy [symbolic]
+// CHECK:STDOUT:   %Destroy.facet: %Destroy.type = facet_value %ControlFlow.eda317.2, (%Destroy.lookup_impl_witness.c3f) [symbolic]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.7d7: type = fn_type @Destroy.WithSelf.SelfDestruct, @Destroy.WithSelf(%Destroy.facet) [symbolic]
+// CHECK:STDOUT:   %.97f: type = fn_type_with_self_type %Destroy.WithSelf.SelfDestruct.type.7d7, %Destroy.facet [symbolic]
+// CHECK:STDOUT:   %impl.elem2: %.97f = impl_witness_access %Destroy.lookup_impl_witness.c3f, element2 [symbolic]
+// CHECK:STDOUT:   %specific_impl_fn.fdc: <specific function> = specific_impl_function %impl.elem2, @Destroy.WithSelf.SelfDestruct(%Destroy.facet) [symbolic]
 // CHECK:STDOUT:   %Consume.specific_fn: <specific function> = specific_function %Consume, @Consume(%T.67d) [symbolic]
 // CHECK:STDOUT:   %MyResult.Ok.specific_fn: <specific function> = specific_function %MyResult.Ok, @MyResult.Ok(%T.67d, %E) [symbolic]
 // CHECK:STDOUT: }
@@ -330,8 +330,8 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %Thread.decl: %Thread.type = fn_decl @Thread [concrete = constants.%Thread] {
-// CHECK:STDOUT:     %T.patt.loc52_12.1: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc52_12.2 (constants.%T.patt.d47)]
-// CHECK:STDOUT:     %E.patt.loc52_21.1: %pattern_type.98f = symbolic_binding_pattern E, 1 [symbolic = %E.patt.loc52_21.2 (constants.%E.patt)]
+// CHECK:STDOUT:     %T.patt.loc52_12.1: %pattern_type.9a5 = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc52_12.2 (constants.%T.patt.3a0)]
+// CHECK:STDOUT:     %E.patt.loc52_21.1: %pattern_type.9a5 = symbolic_binding_pattern E, 1 [symbolic = %E.patt.loc52_21.2 (constants.%E.patt)]
 // CHECK:STDOUT:     %mr.param_patt.loc52_31.1: @Thread.%pattern_type.loc52 (%pattern_type.6db) = value_param_pattern [symbolic = %mr.param_patt.loc52_31.2 (constants.%mr.param_patt)]
 // CHECK:STDOUT:     %mr.patt.loc52_31.1: @Thread.%pattern_type.loc52 (%pattern_type.6db) = wrapper_binding_pattern mr, %mr.param_patt.loc52_31.1 [symbolic = %mr.patt.loc52_31.2 (constants.%mr.patt)]
 // CHECK:STDOUT:     %return.param_patt.loc52_65.1: @Thread.%pattern_type.loc52 (%pattern_type.6db) = out_param_pattern [symbolic = %return.param_patt.loc52_65.2 (constants.%return.param_patt.296)]
@@ -343,12 +343,12 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:     %MyResult.loc52_65: type = class_type @MyResult, @MyResult(constants.%T.67d, constants.%E) [symbolic = %MyResult.loc52_46.1 (constants.%MyResult)]
 // CHECK:STDOUT:     %.loc52_65.4: Core.Form = init_form %MyResult.loc52_65 [symbolic = %.loc52_65.3 (constants.%.6c7)]
 // CHECK:STDOUT:     %.loc52_14.1: type = splice_block %.loc52_14.2 [concrete = type] {
-// CHECK:STDOUT:       %.Self.frozen.loc52_12: %type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen.197]
+// CHECK:STDOUT:       %.Self.frozen.loc52_12: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen.e58]
 // CHECK:STDOUT:       %.loc52_14.2: type = type_literal type [concrete = type]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     %T.loc52_12.2: type = symbolic_binding T, 0 [symbolic = %T.loc52_12.1 (constants.%T.67d)]
 // CHECK:STDOUT:     %.loc52_23.1: type = splice_block %.loc52_23.2 [concrete = type] {
-// CHECK:STDOUT:       %.Self.frozen.loc52_21: %type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen.197]
+// CHECK:STDOUT:       %.Self.frozen.loc52_21: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen.e58]
 // CHECK:STDOUT:       %.loc52_23.2: type = type_literal type [concrete = type]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     %E.loc52_21.2: type = symbolic_binding E, 1 [symbolic = %E.loc52_21.1 (constants.%E)]
@@ -366,9 +366,9 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: generic fn @Thread(%T.loc52_12.2: type, %E.loc52_21.2: type) {
-// CHECK:STDOUT:   %T.patt.loc52_12.2: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc52_12.2 (constants.%T.patt.d47)]
+// CHECK:STDOUT:   %T.patt.loc52_12.2: %pattern_type.9a5 = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc52_12.2 (constants.%T.patt.3a0)]
 // CHECK:STDOUT:   %T.loc52_12.1: type = symbolic_binding T, 0 [symbolic = %T.loc52_12.1 (constants.%T.67d)]
-// CHECK:STDOUT:   %E.patt.loc52_21.2: %pattern_type.98f = symbolic_binding_pattern E, 1 [symbolic = %E.patt.loc52_21.2 (constants.%E.patt)]
+// CHECK:STDOUT:   %E.patt.loc52_21.2: %pattern_type.9a5 = symbolic_binding_pattern E, 1 [symbolic = %E.patt.loc52_21.2 (constants.%E.patt)]
 // CHECK:STDOUT:   %E.loc52_21.1: type = symbolic_binding E, 1 [symbolic = %E.loc52_21.1 (constants.%E)]
 // CHECK:STDOUT:   %MyResult.loc52_46.1: type = class_type @MyResult, @MyResult(%T.loc52_12.1, %E.loc52_21.1) [symbolic = %MyResult.loc52_46.1 (constants.%MyResult)]
 // CHECK:STDOUT:   %pattern_type.loc52: type = pattern_type %MyResult.loc52_46.1 [symbolic = %pattern_type.loc52 (constants.%pattern_type.6db)]
@@ -401,12 +401,12 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:   %MyResult.as.Try.impl.FromBreak.type: type = fn_type @MyResult.as.Try.impl.FromBreak, @MyResult.as.Try.impl(%T.loc52_12.1, %E.loc52_21.1) [symbolic = %MyResult.as.Try.impl.FromBreak.type (constants.%MyResult.as.Try.impl.FromBreak.type)]
 // CHECK:STDOUT:   %MyResult.as.Try.impl.FromBreak: @Thread.%MyResult.as.Try.impl.FromBreak.type (%MyResult.as.Try.impl.FromBreak.type) = struct_value () [symbolic = %MyResult.as.Try.impl.FromBreak (constants.%MyResult.as.Try.impl.FromBreak)]
 // CHECK:STDOUT:   %MyResult.as.Try.impl.FromBreak.specific_fn: <specific function> = specific_function %MyResult.as.Try.impl.FromBreak, @MyResult.as.Try.impl.FromBreak(%T.loc52_12.1, %E.loc52_21.1) [symbolic = %MyResult.as.Try.impl.FromBreak.specific_fn (constants.%MyResult.as.Try.impl.FromBreak.specific_fn)]
-// CHECK:STDOUT:   %Destroy.lookup_impl_witness: <witness> = lookup_impl_witness %ControlFlow, @Destroy [symbolic = %Destroy.lookup_impl_witness (constants.%Destroy.lookup_impl_witness)]
+// CHECK:STDOUT:   %Destroy.lookup_impl_witness: <witness> = lookup_impl_witness %ControlFlow, @Destroy [symbolic = %Destroy.lookup_impl_witness (constants.%Destroy.lookup_impl_witness.c3f)]
 // CHECK:STDOUT:   %Destroy.facet.loc53_16.5: %Destroy.type = facet_value %ControlFlow, (%Destroy.lookup_impl_witness) [symbolic = %Destroy.facet.loc53_16.5 (constants.%Destroy.facet)]
-// CHECK:STDOUT:   %Destroy.WithSelf.Op.type: type = fn_type @Destroy.WithSelf.Op, @Destroy.WithSelf(%Destroy.facet.loc53_16.5) [symbolic = %Destroy.WithSelf.Op.type (constants.%Destroy.WithSelf.Op.type.16c)]
-// CHECK:STDOUT:   %.loc53_16.23: type = fn_type_with_self_type %Destroy.WithSelf.Op.type, %Destroy.facet.loc53_16.5 [symbolic = %.loc53_16.23 (constants.%.9db)]
-// CHECK:STDOUT:   %impl.elem0.loc53_16.5: @Thread.%.loc53_16.23 (%.9db) = impl_witness_access %Destroy.lookup_impl_witness, element0 [symbolic = %impl.elem0.loc53_16.5 (constants.%impl.elem0.ae8)]
-// CHECK:STDOUT:   %specific_impl_fn.loc53_16.3: <specific function> = specific_impl_function %impl.elem0.loc53_16.5, @Destroy.WithSelf.Op(%Destroy.facet.loc53_16.5) [symbolic = %specific_impl_fn.loc53_16.3 (constants.%specific_impl_fn.8f1)]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type: type = fn_type @Destroy.WithSelf.SelfDestruct, @Destroy.WithSelf(%Destroy.facet.loc53_16.5) [symbolic = %Destroy.WithSelf.SelfDestruct.type (constants.%Destroy.WithSelf.SelfDestruct.type.7d7)]
+// CHECK:STDOUT:   %.loc53_16.23: type = fn_type_with_self_type %Destroy.WithSelf.SelfDestruct.type, %Destroy.facet.loc53_16.5 [symbolic = %.loc53_16.23 (constants.%.97f)]
+// CHECK:STDOUT:   %impl.elem2.loc53_16.4: @Thread.%.loc53_16.23 (%.97f) = impl_witness_access %Destroy.lookup_impl_witness, element2 [symbolic = %impl.elem2.loc53_16.4 (constants.%impl.elem2)]
+// CHECK:STDOUT:   %specific_impl_fn.loc53_16.3: <specific function> = specific_impl_function %impl.elem2.loc53_16.4, @Destroy.WithSelf.SelfDestruct(%Destroy.facet.loc53_16.5) [symbolic = %specific_impl_fn.loc53_16.3 (constants.%specific_impl_fn.fdc)]
 // CHECK:STDOUT:   %Consume.specific_fn.loc54_3.2: <specific function> = specific_function constants.%Consume, @Consume(%T.loc52_12.1) [symbolic = %Consume.specific_fn.loc54_3.2 (constants.%Consume.specific_fn)]
 // CHECK:STDOUT:   %MyResult.Ok.type: type = fn_type @MyResult.Ok, @MyResult(%T.loc52_12.1, %E.loc52_21.1) [symbolic = %MyResult.Ok.type (constants.%MyResult.Ok.type)]
 // CHECK:STDOUT:   %MyResult.Ok: @Thread.%MyResult.Ok.type (%MyResult.Ok.type) = struct_value () [symbolic = %MyResult.Ok (constants.%MyResult.Ok)]
@@ -415,9 +415,9 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:   fn(%mr.param: @Thread.%MyResult.loc52_46.1 (%MyResult)) -> out %return.param: @Thread.%MyResult.loc52_46.1 (%MyResult) {
 // CHECK:STDOUT:   !entry:
 // CHECK:STDOUT:     %mr.ref: @Thread.%MyResult.loc52_46.1 (%MyResult) = name_ref mr, %mr
-// CHECK:STDOUT:     %impl.elem2: @Thread.%.loc53_16.20 (%.bb0) = impl_witness_access constants.%Try.impl_witness, element2 [symbolic = %MyResult.as.Try.impl.Branch (constants.%MyResult.as.Try.impl.Branch)]
-// CHECK:STDOUT:     %bound_method.loc53_16.1: <bound method> = bound_method %mr.ref, %impl.elem2
-// CHECK:STDOUT:     %specific_fn.loc53_16.1: <specific function> = specific_function %impl.elem2, @MyResult.as.Try.impl.Branch(constants.%T.67d, constants.%E) [symbolic = %MyResult.as.Try.impl.Branch.specific_fn (constants.%MyResult.as.Try.impl.Branch.specific_fn)]
+// CHECK:STDOUT:     %impl.elem2.loc53_16.1: @Thread.%.loc53_16.20 (%.bb0) = impl_witness_access constants.%Try.impl_witness, element2 [symbolic = %MyResult.as.Try.impl.Branch (constants.%MyResult.as.Try.impl.Branch)]
+// CHECK:STDOUT:     %bound_method.loc53_16.1: <bound method> = bound_method %mr.ref, %impl.elem2.loc53_16.1
+// CHECK:STDOUT:     %specific_fn.loc53_16.1: <specific function> = specific_function %impl.elem2.loc53_16.1, @MyResult.as.Try.impl.Branch(constants.%T.67d, constants.%E) [symbolic = %MyResult.as.Try.impl.Branch.specific_fn (constants.%MyResult.as.Try.impl.Branch.specific_fn)]
 // CHECK:STDOUT:     %bound_method.loc53_16.2: <bound method> = bound_method %mr.ref, %specific_fn.loc53_16.1
 // CHECK:STDOUT:     %.loc53_16.1: ref @Thread.%ControlFlow (%ControlFlow.eda317.2) = temporary_storage
 // CHECK:STDOUT:     %MyResult.as.Try.impl.Branch.call: init @Thread.%ControlFlow (%ControlFlow.eda317.2) to %.loc53_16.1 = call %bound_method.loc53_16.2(%mr.ref)
@@ -452,15 +452,15 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:     %specific_fn.loc53_16.4: <specific function> = specific_function %impl.elem3, @MyResult.as.Try.impl.FromBreak(constants.%T.67d, constants.%E) [symbolic = %MyResult.as.Try.impl.FromBreak.specific_fn (constants.%MyResult.as.Try.impl.FromBreak.specific_fn)]
 // CHECK:STDOUT:     %.loc52_65.1: ref @Thread.%MyResult.loc52_46.1 (%MyResult) = splice_block %return.param {}
 // CHECK:STDOUT:     %MyResult.as.Try.impl.FromBreak.call: init @Thread.%MyResult.loc52_46.1 (%MyResult) to %.loc52_65.1 = call %specific_fn.loc53_16.4(%.loc53_16.11)
-// CHECK:STDOUT:     %impl.elem0.loc53_16.3: @Thread.%.loc53_16.23 (%.9db) = impl_witness_access constants.%Destroy.lookup_impl_witness, element0 [symbolic = %impl.elem0.loc53_16.5 (constants.%impl.elem0.ae8)]
-// CHECK:STDOUT:     %bound_method.loc53_16.7: <bound method> = bound_method %.loc53_16.2, %impl.elem0.loc53_16.3
-// CHECK:STDOUT:     %Destroy.facet.loc53_16.1: %Destroy.type = facet_value constants.%ControlFlow.eda317.2, (constants.%Destroy.lookup_impl_witness) [symbolic = %Destroy.facet.loc53_16.5 (constants.%Destroy.facet)]
+// CHECK:STDOUT:     %impl.elem2.loc53_16.2: @Thread.%.loc53_16.23 (%.97f) = impl_witness_access constants.%Destroy.lookup_impl_witness.c3f, element2 [symbolic = %impl.elem2.loc53_16.4 (constants.%impl.elem2)]
+// CHECK:STDOUT:     %bound_method.loc53_16.7: <bound method> = bound_method %.loc53_16.2, %impl.elem2.loc53_16.2
+// CHECK:STDOUT:     %Destroy.facet.loc53_16.1: %Destroy.type = facet_value constants.%ControlFlow.eda317.2, (constants.%Destroy.lookup_impl_witness.c3f) [symbolic = %Destroy.facet.loc53_16.5 (constants.%Destroy.facet)]
 // CHECK:STDOUT:     %.loc53_16.13: %Destroy.type = converted constants.%ControlFlow.eda317.2, %Destroy.facet.loc53_16.1 [symbolic = %Destroy.facet.loc53_16.5 (constants.%Destroy.facet)]
-// CHECK:STDOUT:     %Destroy.facet.loc53_16.2: %Destroy.type = facet_value constants.%ControlFlow.eda317.2, (constants.%Destroy.lookup_impl_witness) [symbolic = %Destroy.facet.loc53_16.5 (constants.%Destroy.facet)]
+// CHECK:STDOUT:     %Destroy.facet.loc53_16.2: %Destroy.type = facet_value constants.%ControlFlow.eda317.2, (constants.%Destroy.lookup_impl_witness.c3f) [symbolic = %Destroy.facet.loc53_16.5 (constants.%Destroy.facet)]
 // CHECK:STDOUT:     %.loc53_16.14: %Destroy.type = converted constants.%ControlFlow.eda317.2, %Destroy.facet.loc53_16.2 [symbolic = %Destroy.facet.loc53_16.5 (constants.%Destroy.facet)]
-// CHECK:STDOUT:     %specific_impl_fn.loc53_16.1: <specific function> = specific_impl_function %impl.elem0.loc53_16.3, @Destroy.WithSelf.Op(constants.%Destroy.facet) [symbolic = %specific_impl_fn.loc53_16.3 (constants.%specific_impl_fn.8f1)]
+// CHECK:STDOUT:     %specific_impl_fn.loc53_16.1: <specific function> = specific_impl_function %impl.elem2.loc53_16.2, @Destroy.WithSelf.SelfDestruct(constants.%Destroy.facet) [symbolic = %specific_impl_fn.loc53_16.3 (constants.%specific_impl_fn.fdc)]
 // CHECK:STDOUT:     %bound_method.loc53_16.8: <bound method> = bound_method %.loc53_16.2, %specific_impl_fn.loc53_16.1
-// CHECK:STDOUT:     %Destroy.WithSelf.Op.call.loc53_16.1: init %empty_tuple.type = call %bound_method.loc53_16.8(%.loc53_16.2)
+// CHECK:STDOUT:     %Destroy.WithSelf.SelfDestruct.call.loc53_16.1: init %empty_tuple.type = call %bound_method.loc53_16.8(%.loc53_16.2)
 // CHECK:STDOUT:     return %MyResult.as.Try.impl.FromBreak.call to %return.param
 // CHECK:STDOUT:
 // CHECK:STDOUT:   !.loc53_16.2:
@@ -488,21 +488,21 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:     %MyResult.Ok.specific_fn.loc55_24.1: <specific function> = specific_function %Ok.ref, @MyResult.Ok(constants.%T.67d, constants.%E) [symbolic = %MyResult.Ok.specific_fn.loc55_24.2 (constants.%MyResult.Ok.specific_fn)]
 // CHECK:STDOUT:     %.loc52_65.2: ref @Thread.%MyResult.loc52_46.1 (%MyResult) = splice_block %return.param {}
 // CHECK:STDOUT:     %MyResult.Ok.call: init @Thread.%MyResult.loc52_46.1 (%MyResult) to %.loc52_65.2 = call %MyResult.Ok.specific_fn.loc55_24.1(%v.ref.loc55)
-// CHECK:STDOUT:     %impl.elem0.loc53_16.4: @Thread.%.loc53_16.23 (%.9db) = impl_witness_access constants.%Destroy.lookup_impl_witness, element0 [symbolic = %impl.elem0.loc53_16.5 (constants.%impl.elem0.ae8)]
-// CHECK:STDOUT:     %bound_method.loc53_16.9: <bound method> = bound_method %.loc53_16.2, %impl.elem0.loc53_16.4
-// CHECK:STDOUT:     %Destroy.facet.loc53_16.3: %Destroy.type = facet_value constants.%ControlFlow.eda317.2, (constants.%Destroy.lookup_impl_witness) [symbolic = %Destroy.facet.loc53_16.5 (constants.%Destroy.facet)]
+// CHECK:STDOUT:     %impl.elem2.loc53_16.3: @Thread.%.loc53_16.23 (%.97f) = impl_witness_access constants.%Destroy.lookup_impl_witness.c3f, element2 [symbolic = %impl.elem2.loc53_16.4 (constants.%impl.elem2)]
+// CHECK:STDOUT:     %bound_method.loc53_16.9: <bound method> = bound_method %.loc53_16.2, %impl.elem2.loc53_16.3
+// CHECK:STDOUT:     %Destroy.facet.loc53_16.3: %Destroy.type = facet_value constants.%ControlFlow.eda317.2, (constants.%Destroy.lookup_impl_witness.c3f) [symbolic = %Destroy.facet.loc53_16.5 (constants.%Destroy.facet)]
 // CHECK:STDOUT:     %.loc53_16.18: %Destroy.type = converted constants.%ControlFlow.eda317.2, %Destroy.facet.loc53_16.3 [symbolic = %Destroy.facet.loc53_16.5 (constants.%Destroy.facet)]
-// CHECK:STDOUT:     %Destroy.facet.loc53_16.4: %Destroy.type = facet_value constants.%ControlFlow.eda317.2, (constants.%Destroy.lookup_impl_witness) [symbolic = %Destroy.facet.loc53_16.5 (constants.%Destroy.facet)]
+// CHECK:STDOUT:     %Destroy.facet.loc53_16.4: %Destroy.type = facet_value constants.%ControlFlow.eda317.2, (constants.%Destroy.lookup_impl_witness.c3f) [symbolic = %Destroy.facet.loc53_16.5 (constants.%Destroy.facet)]
 // CHECK:STDOUT:     %.loc53_16.19: %Destroy.type = converted constants.%ControlFlow.eda317.2, %Destroy.facet.loc53_16.4 [symbolic = %Destroy.facet.loc53_16.5 (constants.%Destroy.facet)]
-// CHECK:STDOUT:     %specific_impl_fn.loc53_16.2: <specific function> = specific_impl_function %impl.elem0.loc53_16.4, @Destroy.WithSelf.Op(constants.%Destroy.facet) [symbolic = %specific_impl_fn.loc53_16.3 (constants.%specific_impl_fn.8f1)]
+// CHECK:STDOUT:     %specific_impl_fn.loc53_16.2: <specific function> = specific_impl_function %impl.elem2.loc53_16.3, @Destroy.WithSelf.SelfDestruct(constants.%Destroy.facet) [symbolic = %specific_impl_fn.loc53_16.3 (constants.%specific_impl_fn.fdc)]
 // CHECK:STDOUT:     %bound_method.loc53_16.10: <bound method> = bound_method %.loc53_16.2, %specific_impl_fn.loc53_16.2
-// CHECK:STDOUT:     %Destroy.WithSelf.Op.call.loc53_16.2: init %empty_tuple.type = call %bound_method.loc53_16.10(%.loc53_16.2)
+// CHECK:STDOUT:     %Destroy.WithSelf.SelfDestruct.call.loc53_16.2: init %empty_tuple.type = call %bound_method.loc53_16.10(%.loc53_16.2)
 // CHECK:STDOUT:     return %MyResult.Ok.call to %return.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: specific @Thread(constants.%T.67d, constants.%E) {
-// CHECK:STDOUT:   %T.patt.loc52_12.2 => constants.%T.patt.d47
+// CHECK:STDOUT:   %T.patt.loc52_12.2 => constants.%T.patt.3a0
 // CHECK:STDOUT:   %T.loc52_12.1 => constants.%T.67d
 // CHECK:STDOUT:   %E.patt.loc52_21.2 => constants.%E.patt
 // CHECK:STDOUT:   %E.loc52_21.1 => constants.%E
@@ -518,10 +518,10 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT: --- mixed.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
-// CHECK:STDOUT:   %type: type = facet_type <type> [concrete]
-// CHECK:STDOUT:   %.Self.frozen.197: %type = symbolic_binding .Self [symbolic_self]
-// CHECK:STDOUT:   %pattern_type.98f: type = pattern_type type [concrete]
-// CHECK:STDOUT:   %T.patt.d47: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic]
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %.Self.frozen.e58: type = symbolic_binding .Self [symbolic_self]
+// CHECK:STDOUT:   %pattern_type.9a5: type = pattern_type type [concrete]
+// CHECK:STDOUT:   %T.patt.3a0: %pattern_type.9a5 = symbolic_binding_pattern T, 0 [symbolic]
 // CHECK:STDOUT:   %T.67d: type = symbolic_binding T, 0 [symbolic]
 // CHECK:STDOUT:   %E: type = symbolic_binding E, 1 [symbolic]
 // CHECK:STDOUT:   %MyResult.type: type = generic_class_type @MyResult [concrete]
@@ -594,12 +594,12 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:   %.be6: type = fn_type_with_self_type %Try.WithSelf.FromBreak.type.f5b, %Try.facet.95f [symbolic]
 // CHECK:STDOUT:   %MyResult.as.Try.impl.FromBreak.specific_fn: <specific function> = specific_function %MyResult.as.Try.impl.FromBreak.908, @MyResult.as.Try.impl.FromBreak(%T.67d, %i32) [symbolic]
 // CHECK:STDOUT:   %Destroy.type: type = facet_type <@Destroy> [concrete]
-// CHECK:STDOUT:   %Destroy.lookup_impl_witness: <witness> = lookup_impl_witness %ControlFlow.10a, @Destroy [symbolic]
-// CHECK:STDOUT:   %Destroy.facet: %Destroy.type = facet_value %ControlFlow.10a, (%Destroy.lookup_impl_witness) [symbolic]
-// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.bd7: type = fn_type @Destroy.WithSelf.Op, @Destroy.WithSelf(%Destroy.facet) [symbolic]
-// CHECK:STDOUT:   %.314: type = fn_type_with_self_type %Destroy.WithSelf.Op.type.bd7, %Destroy.facet [symbolic]
-// CHECK:STDOUT:   %impl.elem0.a9c: %.314 = impl_witness_access %Destroy.lookup_impl_witness, element0 [symbolic]
-// CHECK:STDOUT:   %specific_impl_fn.5fb: <specific function> = specific_impl_function %impl.elem0.a9c, @Destroy.WithSelf.Op(%Destroy.facet) [symbolic]
+// CHECK:STDOUT:   %Destroy.lookup_impl_witness.b42: <witness> = lookup_impl_witness %ControlFlow.10a, @Destroy [symbolic]
+// CHECK:STDOUT:   %Destroy.facet: %Destroy.type = facet_value %ControlFlow.10a, (%Destroy.lookup_impl_witness.b42) [symbolic]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.cad: type = fn_type @Destroy.WithSelf.SelfDestruct, @Destroy.WithSelf(%Destroy.facet) [symbolic]
+// CHECK:STDOUT:   %.00b: type = fn_type_with_self_type %Destroy.WithSelf.SelfDestruct.type.cad, %Destroy.facet [symbolic]
+// CHECK:STDOUT:   %impl.elem2: %.00b = impl_witness_access %Destroy.lookup_impl_witness.b42, element2 [symbolic]
+// CHECK:STDOUT:   %specific_impl_fn.ee9: <specific function> = specific_impl_function %impl.elem2, @Destroy.WithSelf.SelfDestruct(%Destroy.facet) [symbolic]
 // CHECK:STDOUT:   %MyResult.Ok.specific_fn: <specific function> = specific_function %MyResult.Ok.2d0, @MyResult.Ok(%T.67d, %i32) [symbolic]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -621,7 +621,7 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %ThreadMixed.decl: %ThreadMixed.type = fn_decl @ThreadMixed [concrete = constants.%ThreadMixed] {
-// CHECK:STDOUT:     %T.patt.loc37_17.1: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc37_17.2 (constants.%T.patt.d47)]
+// CHECK:STDOUT:     %T.patt.loc37_17.1: %pattern_type.9a5 = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc37_17.2 (constants.%T.patt.3a0)]
 // CHECK:STDOUT:     %mr.param_patt.loc37_27.1: @ThreadMixed.%pattern_type.loc37 (%pattern_type.071) = value_param_pattern [symbolic = %mr.param_patt.loc37_27.2 (constants.%mr.param_patt)]
 // CHECK:STDOUT:     %mr.patt.loc37_27.1: @ThreadMixed.%pattern_type.loc37 (%pattern_type.071) = wrapper_binding_pattern mr, %mr.param_patt.loc37_27.1 [symbolic = %mr.patt.loc37_27.2 (constants.%mr.patt)]
 // CHECK:STDOUT:     %return.param_patt.loc37_65.1: @ThreadMixed.%pattern_type.loc37 (%pattern_type.071) = out_param_pattern [symbolic = %return.param_patt.loc37_65.2 (constants.%return.param_patt.d89)]
@@ -633,7 +633,7 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:     %MyResult.loc37_65: type = class_type @MyResult, @MyResult(constants.%T.67d, constants.%i32) [symbolic = %MyResult.loc37_44.1 (constants.%MyResult.f7e)]
 // CHECK:STDOUT:     %.loc37_65.4: Core.Form = init_form %MyResult.loc37_65 [symbolic = %.loc37_65.3 (constants.%.ff9)]
 // CHECK:STDOUT:     %.loc37_19.1: type = splice_block %.loc37_19.2 [concrete = type] {
-// CHECK:STDOUT:       %.Self.frozen: %type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen.197]
+// CHECK:STDOUT:       %.Self.frozen: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen.e58]
 // CHECK:STDOUT:       %.loc37_19.2: type = type_literal type [concrete = type]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     %T.loc37_17.2: type = symbolic_binding T, 0 [symbolic = %T.loc37_17.1 (constants.%T.67d)]
@@ -651,7 +651,7 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: generic fn @ThreadMixed(%T.loc37_17.2: type) {
-// CHECK:STDOUT:   %T.patt.loc37_17.2: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc37_17.2 (constants.%T.patt.d47)]
+// CHECK:STDOUT:   %T.patt.loc37_17.2: %pattern_type.9a5 = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc37_17.2 (constants.%T.patt.3a0)]
 // CHECK:STDOUT:   %T.loc37_17.1: type = symbolic_binding T, 0 [symbolic = %T.loc37_17.1 (constants.%T.67d)]
 // CHECK:STDOUT:   %MyResult.loc37_44.1: type = class_type @MyResult, @MyResult(%T.loc37_17.1, constants.%i32) [symbolic = %MyResult.loc37_44.1 (constants.%MyResult.f7e)]
 // CHECK:STDOUT:   %pattern_type.loc37: type = pattern_type %MyResult.loc37_44.1 [symbolic = %pattern_type.loc37 (constants.%pattern_type.071)]
@@ -681,12 +681,12 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:   %MyResult.as.Try.impl.FromBreak.type: type = fn_type @MyResult.as.Try.impl.FromBreak, @MyResult.as.Try.impl(%T.loc37_17.1, constants.%i32) [symbolic = %MyResult.as.Try.impl.FromBreak.type (constants.%MyResult.as.Try.impl.FromBreak.type.22a)]
 // CHECK:STDOUT:   %MyResult.as.Try.impl.FromBreak: @ThreadMixed.%MyResult.as.Try.impl.FromBreak.type (%MyResult.as.Try.impl.FromBreak.type.22a) = struct_value () [symbolic = %MyResult.as.Try.impl.FromBreak (constants.%MyResult.as.Try.impl.FromBreak.908)]
 // CHECK:STDOUT:   %MyResult.as.Try.impl.FromBreak.specific_fn: <specific function> = specific_function %MyResult.as.Try.impl.FromBreak, @MyResult.as.Try.impl.FromBreak(%T.loc37_17.1, constants.%i32) [symbolic = %MyResult.as.Try.impl.FromBreak.specific_fn (constants.%MyResult.as.Try.impl.FromBreak.specific_fn)]
-// CHECK:STDOUT:   %Destroy.lookup_impl_witness: <witness> = lookup_impl_witness %ControlFlow, @Destroy [symbolic = %Destroy.lookup_impl_witness (constants.%Destroy.lookup_impl_witness)]
+// CHECK:STDOUT:   %Destroy.lookup_impl_witness: <witness> = lookup_impl_witness %ControlFlow, @Destroy [symbolic = %Destroy.lookup_impl_witness (constants.%Destroy.lookup_impl_witness.b42)]
 // CHECK:STDOUT:   %Destroy.facet.loc38_16.5: %Destroy.type = facet_value %ControlFlow, (%Destroy.lookup_impl_witness) [symbolic = %Destroy.facet.loc38_16.5 (constants.%Destroy.facet)]
-// CHECK:STDOUT:   %Destroy.WithSelf.Op.type: type = fn_type @Destroy.WithSelf.Op, @Destroy.WithSelf(%Destroy.facet.loc38_16.5) [symbolic = %Destroy.WithSelf.Op.type (constants.%Destroy.WithSelf.Op.type.bd7)]
-// CHECK:STDOUT:   %.loc38_16.23: type = fn_type_with_self_type %Destroy.WithSelf.Op.type, %Destroy.facet.loc38_16.5 [symbolic = %.loc38_16.23 (constants.%.314)]
-// CHECK:STDOUT:   %impl.elem0.loc38_16.5: @ThreadMixed.%.loc38_16.23 (%.314) = impl_witness_access %Destroy.lookup_impl_witness, element0 [symbolic = %impl.elem0.loc38_16.5 (constants.%impl.elem0.a9c)]
-// CHECK:STDOUT:   %specific_impl_fn.loc38_16.3: <specific function> = specific_impl_function %impl.elem0.loc38_16.5, @Destroy.WithSelf.Op(%Destroy.facet.loc38_16.5) [symbolic = %specific_impl_fn.loc38_16.3 (constants.%specific_impl_fn.5fb)]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type: type = fn_type @Destroy.WithSelf.SelfDestruct, @Destroy.WithSelf(%Destroy.facet.loc38_16.5) [symbolic = %Destroy.WithSelf.SelfDestruct.type (constants.%Destroy.WithSelf.SelfDestruct.type.cad)]
+// CHECK:STDOUT:   %.loc38_16.23: type = fn_type_with_self_type %Destroy.WithSelf.SelfDestruct.type, %Destroy.facet.loc38_16.5 [symbolic = %.loc38_16.23 (constants.%.00b)]
+// CHECK:STDOUT:   %impl.elem2.loc38_16.4: @ThreadMixed.%.loc38_16.23 (%.00b) = impl_witness_access %Destroy.lookup_impl_witness, element2 [symbolic = %impl.elem2.loc38_16.4 (constants.%impl.elem2)]
+// CHECK:STDOUT:   %specific_impl_fn.loc38_16.3: <specific function> = specific_impl_function %impl.elem2.loc38_16.4, @Destroy.WithSelf.SelfDestruct(%Destroy.facet.loc38_16.5) [symbolic = %specific_impl_fn.loc38_16.3 (constants.%specific_impl_fn.ee9)]
 // CHECK:STDOUT:   %MyResult.Ok.type: type = fn_type @MyResult.Ok, @MyResult(%T.loc37_17.1, constants.%i32) [symbolic = %MyResult.Ok.type (constants.%MyResult.Ok.type.64e)]
 // CHECK:STDOUT:   %MyResult.Ok: @ThreadMixed.%MyResult.Ok.type (%MyResult.Ok.type.64e) = struct_value () [symbolic = %MyResult.Ok (constants.%MyResult.Ok.2d0)]
 // CHECK:STDOUT:   %MyResult.Ok.specific_fn.loc39_26.2: <specific function> = specific_function %MyResult.Ok, @MyResult.Ok(%T.loc37_17.1, constants.%i32) [symbolic = %MyResult.Ok.specific_fn.loc39_26.2 (constants.%MyResult.Ok.specific_fn)]
@@ -694,9 +694,9 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:   fn(%mr.param: @ThreadMixed.%MyResult.loc37_44.1 (%MyResult.f7e)) -> out %return.param: @ThreadMixed.%MyResult.loc37_44.1 (%MyResult.f7e) {
 // CHECK:STDOUT:   !entry:
 // CHECK:STDOUT:     %mr.ref: @ThreadMixed.%MyResult.loc37_44.1 (%MyResult.f7e) = name_ref mr, %mr
-// CHECK:STDOUT:     %impl.elem2: @ThreadMixed.%.loc38_16.20 (%.17f) = impl_witness_access constants.%Try.impl_witness.2ae, element2 [symbolic = %MyResult.as.Try.impl.Branch (constants.%MyResult.as.Try.impl.Branch.629)]
-// CHECK:STDOUT:     %bound_method.loc38_16.1: <bound method> = bound_method %mr.ref, %impl.elem2
-// CHECK:STDOUT:     %specific_fn.loc38_16.1: <specific function> = specific_function %impl.elem2, @MyResult.as.Try.impl.Branch(constants.%T.67d, constants.%i32) [symbolic = %MyResult.as.Try.impl.Branch.specific_fn (constants.%MyResult.as.Try.impl.Branch.specific_fn)]
+// CHECK:STDOUT:     %impl.elem2.loc38_16.1: @ThreadMixed.%.loc38_16.20 (%.17f) = impl_witness_access constants.%Try.impl_witness.2ae, element2 [symbolic = %MyResult.as.Try.impl.Branch (constants.%MyResult.as.Try.impl.Branch.629)]
+// CHECK:STDOUT:     %bound_method.loc38_16.1: <bound method> = bound_method %mr.ref, %impl.elem2.loc38_16.1
+// CHECK:STDOUT:     %specific_fn.loc38_16.1: <specific function> = specific_function %impl.elem2.loc38_16.1, @MyResult.as.Try.impl.Branch(constants.%T.67d, constants.%i32) [symbolic = %MyResult.as.Try.impl.Branch.specific_fn (constants.%MyResult.as.Try.impl.Branch.specific_fn)]
 // CHECK:STDOUT:     %bound_method.loc38_16.2: <bound method> = bound_method %mr.ref, %specific_fn.loc38_16.1
 // CHECK:STDOUT:     %.loc38_16.1: ref @ThreadMixed.%ControlFlow (%ControlFlow.10a) = temporary_storage
 // CHECK:STDOUT:     %MyResult.as.Try.impl.Branch.call: init @ThreadMixed.%ControlFlow (%ControlFlow.10a) to %.loc38_16.1 = call %bound_method.loc38_16.2(%mr.ref)
@@ -731,15 +731,15 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:     %specific_fn.loc38_16.4: <specific function> = specific_function %impl.elem3, @MyResult.as.Try.impl.FromBreak(constants.%T.67d, constants.%i32) [symbolic = %MyResult.as.Try.impl.FromBreak.specific_fn (constants.%MyResult.as.Try.impl.FromBreak.specific_fn)]
 // CHECK:STDOUT:     %.loc37_65.1: ref @ThreadMixed.%MyResult.loc37_44.1 (%MyResult.f7e) = splice_block %return.param {}
 // CHECK:STDOUT:     %MyResult.as.Try.impl.FromBreak.call: init @ThreadMixed.%MyResult.loc37_44.1 (%MyResult.f7e) to %.loc37_65.1 = call %specific_fn.loc38_16.4(%.loc38_16.11)
-// CHECK:STDOUT:     %impl.elem0.loc38_16.3: @ThreadMixed.%.loc38_16.23 (%.314) = impl_witness_access constants.%Destroy.lookup_impl_witness, element0 [symbolic = %impl.elem0.loc38_16.5 (constants.%impl.elem0.a9c)]
-// CHECK:STDOUT:     %bound_method.loc38_16.7: <bound method> = bound_method %.loc38_16.2, %impl.elem0.loc38_16.3
-// CHECK:STDOUT:     %Destroy.facet.loc38_16.1: %Destroy.type = facet_value constants.%ControlFlow.10a, (constants.%Destroy.lookup_impl_witness) [symbolic = %Destroy.facet.loc38_16.5 (constants.%Destroy.facet)]
+// CHECK:STDOUT:     %impl.elem2.loc38_16.2: @ThreadMixed.%.loc38_16.23 (%.00b) = impl_witness_access constants.%Destroy.lookup_impl_witness.b42, element2 [symbolic = %impl.elem2.loc38_16.4 (constants.%impl.elem2)]
+// CHECK:STDOUT:     %bound_method.loc38_16.7: <bound method> = bound_method %.loc38_16.2, %impl.elem2.loc38_16.2
+// CHECK:STDOUT:     %Destroy.facet.loc38_16.1: %Destroy.type = facet_value constants.%ControlFlow.10a, (constants.%Destroy.lookup_impl_witness.b42) [symbolic = %Destroy.facet.loc38_16.5 (constants.%Destroy.facet)]
 // CHECK:STDOUT:     %.loc38_16.13: %Destroy.type = converted constants.%ControlFlow.10a, %Destroy.facet.loc38_16.1 [symbolic = %Destroy.facet.loc38_16.5 (constants.%Destroy.facet)]
-// CHECK:STDOUT:     %Destroy.facet.loc38_16.2: %Destroy.type = facet_value constants.%ControlFlow.10a, (constants.%Destroy.lookup_impl_witness) [symbolic = %Destroy.facet.loc38_16.5 (constants.%Destroy.facet)]
+// CHECK:STDOUT:     %Destroy.facet.loc38_16.2: %Destroy.type = facet_value constants.%ControlFlow.10a, (constants.%Destroy.lookup_impl_witness.b42) [symbolic = %Destroy.facet.loc38_16.5 (constants.%Destroy.facet)]
 // CHECK:STDOUT:     %.loc38_16.14: %Destroy.type = converted constants.%ControlFlow.10a, %Destroy.facet.loc38_16.2 [symbolic = %Destroy.facet.loc38_16.5 (constants.%Destroy.facet)]
-// CHECK:STDOUT:     %specific_impl_fn.loc38_16.1: <specific function> = specific_impl_function %impl.elem0.loc38_16.3, @Destroy.WithSelf.Op(constants.%Destroy.facet) [symbolic = %specific_impl_fn.loc38_16.3 (constants.%specific_impl_fn.5fb)]
+// CHECK:STDOUT:     %specific_impl_fn.loc38_16.1: <specific function> = specific_impl_function %impl.elem2.loc38_16.2, @Destroy.WithSelf.SelfDestruct(constants.%Destroy.facet) [symbolic = %specific_impl_fn.loc38_16.3 (constants.%specific_impl_fn.ee9)]
 // CHECK:STDOUT:     %bound_method.loc38_16.8: <bound method> = bound_method %.loc38_16.2, %specific_impl_fn.loc38_16.1
-// CHECK:STDOUT:     %Destroy.WithSelf.Op.call.loc38_16.1: init %empty_tuple.type = call %bound_method.loc38_16.8(%.loc38_16.2)
+// CHECK:STDOUT:     %Destroy.WithSelf.SelfDestruct.call.loc38_16.1: init %empty_tuple.type = call %bound_method.loc38_16.8(%.loc38_16.2)
 // CHECK:STDOUT:     return %MyResult.as.Try.impl.FromBreak.call to %return.param
 // CHECK:STDOUT:
 // CHECK:STDOUT:   !.loc38_16.2:
@@ -762,21 +762,21 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:     %MyResult.Ok.specific_fn.loc39_26.1: <specific function> = specific_function %Ok.ref, @MyResult.Ok(constants.%T.67d, constants.%i32) [symbolic = %MyResult.Ok.specific_fn.loc39_26.2 (constants.%MyResult.Ok.specific_fn)]
 // CHECK:STDOUT:     %.loc37_65.2: ref @ThreadMixed.%MyResult.loc37_44.1 (%MyResult.f7e) = splice_block %return.param {}
 // CHECK:STDOUT:     %MyResult.Ok.call: init @ThreadMixed.%MyResult.loc37_44.1 (%MyResult.f7e) to %.loc37_65.2 = call %MyResult.Ok.specific_fn.loc39_26.1(%v.ref)
-// CHECK:STDOUT:     %impl.elem0.loc38_16.4: @ThreadMixed.%.loc38_16.23 (%.314) = impl_witness_access constants.%Destroy.lookup_impl_witness, element0 [symbolic = %impl.elem0.loc38_16.5 (constants.%impl.elem0.a9c)]
-// CHECK:STDOUT:     %bound_method.loc38_16.9: <bound method> = bound_method %.loc38_16.2, %impl.elem0.loc38_16.4
-// CHECK:STDOUT:     %Destroy.facet.loc38_16.3: %Destroy.type = facet_value constants.%ControlFlow.10a, (constants.%Destroy.lookup_impl_witness) [symbolic = %Destroy.facet.loc38_16.5 (constants.%Destroy.facet)]
+// CHECK:STDOUT:     %impl.elem2.loc38_16.3: @ThreadMixed.%.loc38_16.23 (%.00b) = impl_witness_access constants.%Destroy.lookup_impl_witness.b42, element2 [symbolic = %impl.elem2.loc38_16.4 (constants.%impl.elem2)]
+// CHECK:STDOUT:     %bound_method.loc38_16.9: <bound method> = bound_method %.loc38_16.2, %impl.elem2.loc38_16.3
+// CHECK:STDOUT:     %Destroy.facet.loc38_16.3: %Destroy.type = facet_value constants.%ControlFlow.10a, (constants.%Destroy.lookup_impl_witness.b42) [symbolic = %Destroy.facet.loc38_16.5 (constants.%Destroy.facet)]
 // CHECK:STDOUT:     %.loc38_16.18: %Destroy.type = converted constants.%ControlFlow.10a, %Destroy.facet.loc38_16.3 [symbolic = %Destroy.facet.loc38_16.5 (constants.%Destroy.facet)]
-// CHECK:STDOUT:     %Destroy.facet.loc38_16.4: %Destroy.type = facet_value constants.%ControlFlow.10a, (constants.%Destroy.lookup_impl_witness) [symbolic = %Destroy.facet.loc38_16.5 (constants.%Destroy.facet)]
+// CHECK:STDOUT:     %Destroy.facet.loc38_16.4: %Destroy.type = facet_value constants.%ControlFlow.10a, (constants.%Destroy.lookup_impl_witness.b42) [symbolic = %Destroy.facet.loc38_16.5 (constants.%Destroy.facet)]
 // CHECK:STDOUT:     %.loc38_16.19: %Destroy.type = converted constants.%ControlFlow.10a, %Destroy.facet.loc38_16.4 [symbolic = %Destroy.facet.loc38_16.5 (constants.%Destroy.facet)]
-// CHECK:STDOUT:     %specific_impl_fn.loc38_16.2: <specific function> = specific_impl_function %impl.elem0.loc38_16.4, @Destroy.WithSelf.Op(constants.%Destroy.facet) [symbolic = %specific_impl_fn.loc38_16.3 (constants.%specific_impl_fn.5fb)]
+// CHECK:STDOUT:     %specific_impl_fn.loc38_16.2: <specific function> = specific_impl_function %impl.elem2.loc38_16.3, @Destroy.WithSelf.SelfDestruct(constants.%Destroy.facet) [symbolic = %specific_impl_fn.loc38_16.3 (constants.%specific_impl_fn.ee9)]
 // CHECK:STDOUT:     %bound_method.loc38_16.10: <bound method> = bound_method %.loc38_16.2, %specific_impl_fn.loc38_16.2
-// CHECK:STDOUT:     %Destroy.WithSelf.Op.call.loc38_16.2: init %empty_tuple.type = call %bound_method.loc38_16.10(%.loc38_16.2)
+// CHECK:STDOUT:     %Destroy.WithSelf.SelfDestruct.call.loc38_16.2: init %empty_tuple.type = call %bound_method.loc38_16.10(%.loc38_16.2)
 // CHECK:STDOUT:     return %MyResult.Ok.call to %return.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: specific @ThreadMixed(constants.%T.67d) {
-// CHECK:STDOUT:   %T.patt.loc37_17.2 => constants.%T.patt.d47
+// CHECK:STDOUT:   %T.patt.loc37_17.2 => constants.%T.patt.3a0
 // CHECK:STDOUT:   %T.loc37_17.1 => constants.%T.67d
 // CHECK:STDOUT:   %MyResult.loc37_44.1 => constants.%MyResult.f7e
 // CHECK:STDOUT:   %pattern_type.loc37 => constants.%pattern_type.071
@@ -790,12 +790,12 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT: --- use.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
-// CHECK:STDOUT:   %type: type = facet_type <type> [concrete]
-// CHECK:STDOUT:   %.Self.frozen: %type = symbolic_binding .Self [symbolic_self]
-// CHECK:STDOUT:   %pattern_type.98f: type = pattern_type type [concrete]
-// CHECK:STDOUT:   %T.patt.d47: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic]
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %.Self.frozen: type = symbolic_binding .Self [symbolic_self]
+// CHECK:STDOUT:   %pattern_type.9a5: type = pattern_type type [concrete]
+// CHECK:STDOUT:   %T.patt.3a0: %pattern_type.9a5 = symbolic_binding_pattern T, 0 [symbolic]
 // CHECK:STDOUT:   %T.67d: type = symbolic_binding T, 0 [symbolic]
-// CHECK:STDOUT:   %E.patt: %pattern_type.98f = symbolic_binding_pattern E, 1 [symbolic]
+// CHECK:STDOUT:   %E.patt: %pattern_type.9a5 = symbolic_binding_pattern E, 1 [symbolic]
 // CHECK:STDOUT:   %E: type = symbolic_binding E, 1 [symbolic]
 // CHECK:STDOUT:   %MyResult.type: type = generic_class_type @MyResult [concrete]
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
@@ -864,12 +864,12 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:   %.1b2: type = fn_type_with_self_type %Try.WithSelf.FromBreak.type.012, %Try.facet [symbolic]
 // CHECK:STDOUT:   %MyResult.as.Try.impl.FromBreak.specific_fn: <specific function> = specific_function %MyResult.as.Try.impl.FromBreak, @MyResult.as.Try.impl.FromBreak(%T.67d, %E) [symbolic]
 // CHECK:STDOUT:   %Destroy.type: type = facet_type <@Destroy> [concrete]
-// CHECK:STDOUT:   %Destroy.lookup_impl_witness: <witness> = lookup_impl_witness %ControlFlow.eda317.2, @Destroy [symbolic]
-// CHECK:STDOUT:   %Destroy.facet: %Destroy.type = facet_value %ControlFlow.eda317.2, (%Destroy.lookup_impl_witness) [symbolic]
-// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.16c: type = fn_type @Destroy.WithSelf.Op, @Destroy.WithSelf(%Destroy.facet) [symbolic]
-// CHECK:STDOUT:   %.9db: type = fn_type_with_self_type %Destroy.WithSelf.Op.type.16c, %Destroy.facet [symbolic]
-// CHECK:STDOUT:   %impl.elem0.ae8: %.9db = impl_witness_access %Destroy.lookup_impl_witness, element0 [symbolic]
-// CHECK:STDOUT:   %specific_impl_fn.8f1: <specific function> = specific_impl_function %impl.elem0.ae8, @Destroy.WithSelf.Op(%Destroy.facet) [symbolic]
+// CHECK:STDOUT:   %Destroy.lookup_impl_witness.c3f: <witness> = lookup_impl_witness %ControlFlow.eda317.2, @Destroy [symbolic]
+// CHECK:STDOUT:   %Destroy.facet: %Destroy.type = facet_value %ControlFlow.eda317.2, (%Destroy.lookup_impl_witness.c3f) [symbolic]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.7d7: type = fn_type @Destroy.WithSelf.SelfDestruct, @Destroy.WithSelf(%Destroy.facet) [symbolic]
+// CHECK:STDOUT:   %.97f: type = fn_type_with_self_type %Destroy.WithSelf.SelfDestruct.type.7d7, %Destroy.facet [symbolic]
+// CHECK:STDOUT:   %impl.elem2: %.97f = impl_witness_access %Destroy.lookup_impl_witness.c3f, element2 [symbolic]
+// CHECK:STDOUT:   %specific_impl_fn.fdc: <specific function> = specific_impl_function %impl.elem2, @Destroy.WithSelf.SelfDestruct(%Destroy.facet) [symbolic]
 // CHECK:STDOUT:   %MyResult.Ok.specific_fn: <specific function> = specific_function %MyResult.Ok, @MyResult.Ok(%T.67d, %E) [symbolic]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -890,8 +890,8 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %ThreadImported.decl: %ThreadImported.type = fn_decl @ThreadImported [concrete = constants.%ThreadImported] {
-// CHECK:STDOUT:     %T.patt.loc10_20.1: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc10_20.2 (constants.%T.patt.d47)]
-// CHECK:STDOUT:     %E.patt.loc10_29.1: %pattern_type.98f = symbolic_binding_pattern E, 1 [symbolic = %E.patt.loc10_29.2 (constants.%E.patt)]
+// CHECK:STDOUT:     %T.patt.loc10_20.1: %pattern_type.9a5 = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc10_20.2 (constants.%T.patt.3a0)]
+// CHECK:STDOUT:     %E.patt.loc10_29.1: %pattern_type.9a5 = symbolic_binding_pattern E, 1 [symbolic = %E.patt.loc10_29.2 (constants.%E.patt)]
 // CHECK:STDOUT:     %mr.param_patt.loc10_39.1: @ThreadImported.%pattern_type.loc10 (%pattern_type.6db) = value_param_pattern [symbolic = %mr.param_patt.loc10_39.2 (constants.%mr.param_patt)]
 // CHECK:STDOUT:     %mr.patt.loc10_39.1: @ThreadImported.%pattern_type.loc10 (%pattern_type.6db) = wrapper_binding_pattern mr, %mr.param_patt.loc10_39.1 [symbolic = %mr.patt.loc10_39.2 (constants.%mr.patt)]
 // CHECK:STDOUT:     %return.param_patt.loc10_73.1: @ThreadImported.%pattern_type.loc10 (%pattern_type.6db) = out_param_pattern [symbolic = %return.param_patt.loc10_73.2 (constants.%return.param_patt.296)]
@@ -903,12 +903,12 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:     %MyResult.loc10_73: type = class_type @MyResult, @MyResult(constants.%T.67d, constants.%E) [symbolic = %MyResult.loc10_54.1 (constants.%MyResult)]
 // CHECK:STDOUT:     %.loc10_73.4: Core.Form = init_form %MyResult.loc10_73 [symbolic = %.loc10_73.3 (constants.%.6c7)]
 // CHECK:STDOUT:     %.loc10_22.1: type = splice_block %.loc10_22.2 [concrete = type] {
-// CHECK:STDOUT:       %.Self.frozen.loc10_20: %type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
+// CHECK:STDOUT:       %.Self.frozen.loc10_20: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
 // CHECK:STDOUT:       %.loc10_22.2: type = type_literal type [concrete = type]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     %T.loc10_20.2: type = symbolic_binding T, 0 [symbolic = %T.loc10_20.1 (constants.%T.67d)]
 // CHECK:STDOUT:     %.loc10_31.1: type = splice_block %.loc10_31.2 [concrete = type] {
-// CHECK:STDOUT:       %.Self.frozen.loc10_29: %type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
+// CHECK:STDOUT:       %.Self.frozen.loc10_29: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
 // CHECK:STDOUT:       %.loc10_31.2: type = type_literal type [concrete = type]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     %E.loc10_29.2: type = symbolic_binding E, 1 [symbolic = %E.loc10_29.1 (constants.%E)]
@@ -926,9 +926,9 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: generic fn @ThreadImported(%T.loc10_20.2: type, %E.loc10_29.2: type) {
-// CHECK:STDOUT:   %T.patt.loc10_20.2: %pattern_type.98f = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc10_20.2 (constants.%T.patt.d47)]
+// CHECK:STDOUT:   %T.patt.loc10_20.2: %pattern_type.9a5 = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc10_20.2 (constants.%T.patt.3a0)]
 // CHECK:STDOUT:   %T.loc10_20.1: type = symbolic_binding T, 0 [symbolic = %T.loc10_20.1 (constants.%T.67d)]
-// CHECK:STDOUT:   %E.patt.loc10_29.2: %pattern_type.98f = symbolic_binding_pattern E, 1 [symbolic = %E.patt.loc10_29.2 (constants.%E.patt)]
+// CHECK:STDOUT:   %E.patt.loc10_29.2: %pattern_type.9a5 = symbolic_binding_pattern E, 1 [symbolic = %E.patt.loc10_29.2 (constants.%E.patt)]
 // CHECK:STDOUT:   %E.loc10_29.1: type = symbolic_binding E, 1 [symbolic = %E.loc10_29.1 (constants.%E)]
 // CHECK:STDOUT:   %MyResult.loc10_54.1: type = class_type @MyResult, @MyResult(%T.loc10_20.1, %E.loc10_29.1) [symbolic = %MyResult.loc10_54.1 (constants.%MyResult)]
 // CHECK:STDOUT:   %pattern_type.loc10: type = pattern_type %MyResult.loc10_54.1 [symbolic = %pattern_type.loc10 (constants.%pattern_type.6db)]
@@ -960,12 +960,12 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:   %MyResult.as.Try.impl.FromBreak.type: type = fn_type @MyResult.as.Try.impl.FromBreak, @MyResult.as.Try.impl(%T.loc10_20.1, %E.loc10_29.1) [symbolic = %MyResult.as.Try.impl.FromBreak.type (constants.%MyResult.as.Try.impl.FromBreak.type)]
 // CHECK:STDOUT:   %MyResult.as.Try.impl.FromBreak: @ThreadImported.%MyResult.as.Try.impl.FromBreak.type (%MyResult.as.Try.impl.FromBreak.type) = struct_value () [symbolic = %MyResult.as.Try.impl.FromBreak (constants.%MyResult.as.Try.impl.FromBreak)]
 // CHECK:STDOUT:   %MyResult.as.Try.impl.FromBreak.specific_fn: <specific function> = specific_function %MyResult.as.Try.impl.FromBreak, @MyResult.as.Try.impl.FromBreak(%T.loc10_20.1, %E.loc10_29.1) [symbolic = %MyResult.as.Try.impl.FromBreak.specific_fn (constants.%MyResult.as.Try.impl.FromBreak.specific_fn)]
-// CHECK:STDOUT:   %Destroy.lookup_impl_witness: <witness> = lookup_impl_witness %ControlFlow, @Destroy [symbolic = %Destroy.lookup_impl_witness (constants.%Destroy.lookup_impl_witness)]
+// CHECK:STDOUT:   %Destroy.lookup_impl_witness: <witness> = lookup_impl_witness %ControlFlow, @Destroy [symbolic = %Destroy.lookup_impl_witness (constants.%Destroy.lookup_impl_witness.c3f)]
 // CHECK:STDOUT:   %Destroy.facet.loc11_16.5: %Destroy.type = facet_value %ControlFlow, (%Destroy.lookup_impl_witness) [symbolic = %Destroy.facet.loc11_16.5 (constants.%Destroy.facet)]
-// CHECK:STDOUT:   %Destroy.WithSelf.Op.type: type = fn_type @Destroy.WithSelf.Op, @Destroy.WithSelf(%Destroy.facet.loc11_16.5) [symbolic = %Destroy.WithSelf.Op.type (constants.%Destroy.WithSelf.Op.type.16c)]
-// CHECK:STDOUT:   %.loc11_16.23: type = fn_type_with_self_type %Destroy.WithSelf.Op.type, %Destroy.facet.loc11_16.5 [symbolic = %.loc11_16.23 (constants.%.9db)]
-// CHECK:STDOUT:   %impl.elem0.loc11_16.5: @ThreadImported.%.loc11_16.23 (%.9db) = impl_witness_access %Destroy.lookup_impl_witness, element0 [symbolic = %impl.elem0.loc11_16.5 (constants.%impl.elem0.ae8)]
-// CHECK:STDOUT:   %specific_impl_fn.loc11_16.3: <specific function> = specific_impl_function %impl.elem0.loc11_16.5, @Destroy.WithSelf.Op(%Destroy.facet.loc11_16.5) [symbolic = %specific_impl_fn.loc11_16.3 (constants.%specific_impl_fn.8f1)]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type: type = fn_type @Destroy.WithSelf.SelfDestruct, @Destroy.WithSelf(%Destroy.facet.loc11_16.5) [symbolic = %Destroy.WithSelf.SelfDestruct.type (constants.%Destroy.WithSelf.SelfDestruct.type.7d7)]
+// CHECK:STDOUT:   %.loc11_16.23: type = fn_type_with_self_type %Destroy.WithSelf.SelfDestruct.type, %Destroy.facet.loc11_16.5 [symbolic = %.loc11_16.23 (constants.%.97f)]
+// CHECK:STDOUT:   %impl.elem2.loc11_16.4: @ThreadImported.%.loc11_16.23 (%.97f) = impl_witness_access %Destroy.lookup_impl_witness, element2 [symbolic = %impl.elem2.loc11_16.4 (constants.%impl.elem2)]
+// CHECK:STDOUT:   %specific_impl_fn.loc11_16.3: <specific function> = specific_impl_function %impl.elem2.loc11_16.4, @Destroy.WithSelf.SelfDestruct(%Destroy.facet.loc11_16.5) [symbolic = %specific_impl_fn.loc11_16.3 (constants.%specific_impl_fn.fdc)]
 // CHECK:STDOUT:   %MyResult.Ok.type: type = fn_type @MyResult.Ok, @MyResult(%T.loc10_20.1, %E.loc10_29.1) [symbolic = %MyResult.Ok.type (constants.%MyResult.Ok.type)]
 // CHECK:STDOUT:   %MyResult.Ok: @ThreadImported.%MyResult.Ok.type (%MyResult.Ok.type) = struct_value () [symbolic = %MyResult.Ok (constants.%MyResult.Ok)]
 // CHECK:STDOUT:   %MyResult.Ok.specific_fn.loc12_24.2: <specific function> = specific_function %MyResult.Ok, @MyResult.Ok(%T.loc10_20.1, %E.loc10_29.1) [symbolic = %MyResult.Ok.specific_fn.loc12_24.2 (constants.%MyResult.Ok.specific_fn)]
@@ -973,9 +973,9 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:   fn(%mr.param: @ThreadImported.%MyResult.loc10_54.1 (%MyResult)) -> out %return.param: @ThreadImported.%MyResult.loc10_54.1 (%MyResult) {
 // CHECK:STDOUT:   !entry:
 // CHECK:STDOUT:     %mr.ref: @ThreadImported.%MyResult.loc10_54.1 (%MyResult) = name_ref mr, %mr
-// CHECK:STDOUT:     %impl.elem2: @ThreadImported.%.loc11_16.20 (%.3c0) = impl_witness_access constants.%Try.impl_witness, element2 [symbolic = %MyResult.as.Try.impl.Branch (constants.%MyResult.as.Try.impl.Branch)]
-// CHECK:STDOUT:     %bound_method.loc11_16.1: <bound method> = bound_method %mr.ref, %impl.elem2
-// CHECK:STDOUT:     %specific_fn.loc11_16.1: <specific function> = specific_function %impl.elem2, @MyResult.as.Try.impl.Branch(constants.%T.67d, constants.%E) [symbolic = %MyResult.as.Try.impl.Branch.specific_fn (constants.%MyResult.as.Try.impl.Branch.specific_fn)]
+// CHECK:STDOUT:     %impl.elem2.loc11_16.1: @ThreadImported.%.loc11_16.20 (%.3c0) = impl_witness_access constants.%Try.impl_witness, element2 [symbolic = %MyResult.as.Try.impl.Branch (constants.%MyResult.as.Try.impl.Branch)]
+// CHECK:STDOUT:     %bound_method.loc11_16.1: <bound method> = bound_method %mr.ref, %impl.elem2.loc11_16.1
+// CHECK:STDOUT:     %specific_fn.loc11_16.1: <specific function> = specific_function %impl.elem2.loc11_16.1, @MyResult.as.Try.impl.Branch(constants.%T.67d, constants.%E) [symbolic = %MyResult.as.Try.impl.Branch.specific_fn (constants.%MyResult.as.Try.impl.Branch.specific_fn)]
 // CHECK:STDOUT:     %bound_method.loc11_16.2: <bound method> = bound_method %mr.ref, %specific_fn.loc11_16.1
 // CHECK:STDOUT:     %.loc11_16.1: ref @ThreadImported.%ControlFlow (%ControlFlow.eda317.2) = temporary_storage
 // CHECK:STDOUT:     %MyResult.as.Try.impl.Branch.call: init @ThreadImported.%ControlFlow (%ControlFlow.eda317.2) to %.loc11_16.1 = call %bound_method.loc11_16.2(%mr.ref)
@@ -1010,15 +1010,15 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:     %specific_fn.loc11_16.4: <specific function> = specific_function %impl.elem3, @MyResult.as.Try.impl.FromBreak(constants.%T.67d, constants.%E) [symbolic = %MyResult.as.Try.impl.FromBreak.specific_fn (constants.%MyResult.as.Try.impl.FromBreak.specific_fn)]
 // CHECK:STDOUT:     %.loc10_73.1: ref @ThreadImported.%MyResult.loc10_54.1 (%MyResult) = splice_block %return.param {}
 // CHECK:STDOUT:     %MyResult.as.Try.impl.FromBreak.call: init @ThreadImported.%MyResult.loc10_54.1 (%MyResult) to %.loc10_73.1 = call %specific_fn.loc11_16.4(%.loc11_16.11)
-// CHECK:STDOUT:     %impl.elem0.loc11_16.3: @ThreadImported.%.loc11_16.23 (%.9db) = impl_witness_access constants.%Destroy.lookup_impl_witness, element0 [symbolic = %impl.elem0.loc11_16.5 (constants.%impl.elem0.ae8)]
-// CHECK:STDOUT:     %bound_method.loc11_16.7: <bound method> = bound_method %.loc11_16.2, %impl.elem0.loc11_16.3
-// CHECK:STDOUT:     %Destroy.facet.loc11_16.1: %Destroy.type = facet_value constants.%ControlFlow.eda317.2, (constants.%Destroy.lookup_impl_witness) [symbolic = %Destroy.facet.loc11_16.5 (constants.%Destroy.facet)]
+// CHECK:STDOUT:     %impl.elem2.loc11_16.2: @ThreadImported.%.loc11_16.23 (%.97f) = impl_witness_access constants.%Destroy.lookup_impl_witness.c3f, element2 [symbolic = %impl.elem2.loc11_16.4 (constants.%impl.elem2)]
+// CHECK:STDOUT:     %bound_method.loc11_16.7: <bound method> = bound_method %.loc11_16.2, %impl.elem2.loc11_16.2
+// CHECK:STDOUT:     %Destroy.facet.loc11_16.1: %Destroy.type = facet_value constants.%ControlFlow.eda317.2, (constants.%Destroy.lookup_impl_witness.c3f) [symbolic = %Destroy.facet.loc11_16.5 (constants.%Destroy.facet)]
 // CHECK:STDOUT:     %.loc11_16.13: %Destroy.type = converted constants.%ControlFlow.eda317.2, %Destroy.facet.loc11_16.1 [symbolic = %Destroy.facet.loc11_16.5 (constants.%Destroy.facet)]
-// CHECK:STDOUT:     %Destroy.facet.loc11_16.2: %Destroy.type = facet_value constants.%ControlFlow.eda317.2, (constants.%Destroy.lookup_impl_witness) [symbolic = %Destroy.facet.loc11_16.5 (constants.%Destroy.facet)]
+// CHECK:STDOUT:     %Destroy.facet.loc11_16.2: %Destroy.type = facet_value constants.%ControlFlow.eda317.2, (constants.%Destroy.lookup_impl_witness.c3f) [symbolic = %Destroy.facet.loc11_16.5 (constants.%Destroy.facet)]
 // CHECK:STDOUT:     %.loc11_16.14: %Destroy.type = converted constants.%ControlFlow.eda317.2, %Destroy.facet.loc11_16.2 [symbolic = %Destroy.facet.loc11_16.5 (constants.%Destroy.facet)]
-// CHECK:STDOUT:     %specific_impl_fn.loc11_16.1: <specific function> = specific_impl_function %impl.elem0.loc11_16.3, @Destroy.WithSelf.Op(constants.%Destroy.facet) [symbolic = %specific_impl_fn.loc11_16.3 (constants.%specific_impl_fn.8f1)]
+// CHECK:STDOUT:     %specific_impl_fn.loc11_16.1: <specific function> = specific_impl_function %impl.elem2.loc11_16.2, @Destroy.WithSelf.SelfDestruct(constants.%Destroy.facet) [symbolic = %specific_impl_fn.loc11_16.3 (constants.%specific_impl_fn.fdc)]
 // CHECK:STDOUT:     %bound_method.loc11_16.8: <bound method> = bound_method %.loc11_16.2, %specific_impl_fn.loc11_16.1
-// CHECK:STDOUT:     %Destroy.WithSelf.Op.call.loc11_16.1: init %empty_tuple.type = call %bound_method.loc11_16.8(%.loc11_16.2)
+// CHECK:STDOUT:     %Destroy.WithSelf.SelfDestruct.call.loc11_16.1: init %empty_tuple.type = call %bound_method.loc11_16.8(%.loc11_16.2)
 // CHECK:STDOUT:     return %MyResult.as.Try.impl.FromBreak.call to %return.param
 // CHECK:STDOUT:
 // CHECK:STDOUT:   !.loc11_16.2:
@@ -1041,21 +1041,21 @@ final impl forall [T: type, E: type] MyResult(T, E) as Core.Try
 // CHECK:STDOUT:     %MyResult.Ok.specific_fn.loc12_24.1: <specific function> = specific_function %Ok.ref, @MyResult.Ok(constants.%T.67d, constants.%E) [symbolic = %MyResult.Ok.specific_fn.loc12_24.2 (constants.%MyResult.Ok.specific_fn)]
 // CHECK:STDOUT:     %.loc10_73.2: ref @ThreadImported.%MyResult.loc10_54.1 (%MyResult) = splice_block %return.param {}
 // CHECK:STDOUT:     %MyResult.Ok.call: init @ThreadImported.%MyResult.loc10_54.1 (%MyResult) to %.loc10_73.2 = call %MyResult.Ok.specific_fn.loc12_24.1(%v.ref)
-// CHECK:STDOUT:     %impl.elem0.loc11_16.4: @ThreadImported.%.loc11_16.23 (%.9db) = impl_witness_access constants.%Destroy.lookup_impl_witness, element0 [symbolic = %impl.elem0.loc11_16.5 (constants.%impl.elem0.ae8)]
-// CHECK:STDOUT:     %bound_method.loc11_16.9: <bound method> = bound_method %.loc11_16.2, %impl.elem0.loc11_16.4
-// CHECK:STDOUT:     %Destroy.facet.loc11_16.3: %Destroy.type = facet_value constants.%ControlFlow.eda317.2, (constants.%Destroy.lookup_impl_witness) [symbolic = %Destroy.facet.loc11_16.5 (constants.%Destroy.facet)]
+// CHECK:STDOUT:     %impl.elem2.loc11_16.3: @ThreadImported.%.loc11_16.23 (%.97f) = impl_witness_access constants.%Destroy.lookup_impl_witness.c3f, element2 [symbolic = %impl.elem2.loc11_16.4 (constants.%impl.elem2)]
+// CHECK:STDOUT:     %bound_method.loc11_16.9: <bound method> = bound_method %.loc11_16.2, %impl.elem2.loc11_16.3
+// CHECK:STDOUT:     %Destroy.facet.loc11_16.3: %Destroy.type = facet_value constants.%ControlFlow.eda317.2, (constants.%Destroy.lookup_impl_witness.c3f) [symbolic = %Destroy.facet.loc11_16.5 (constants.%Destroy.facet)]
 // CHECK:STDOUT:     %.loc11_16.18: %Destroy.type = converted constants.%ControlFlow.eda317.2, %Destroy.facet.loc11_16.3 [symbolic = %Destroy.facet.loc11_16.5 (constants.%Destroy.facet)]
-// CHECK:STDOUT:     %Destroy.facet.loc11_16.4: %Destroy.type = facet_value constants.%ControlFlow.eda317.2, (constants.%Destroy.lookup_impl_witness) [symbolic = %Destroy.facet.loc11_16.5 (constants.%Destroy.facet)]
+// CHECK:STDOUT:     %Destroy.facet.loc11_16.4: %Destroy.type = facet_value constants.%ControlFlow.eda317.2, (constants.%Destroy.lookup_impl_witness.c3f) [symbolic = %Destroy.facet.loc11_16.5 (constants.%Destroy.facet)]
 // CHECK:STDOUT:     %.loc11_16.19: %Destroy.type = converted constants.%ControlFlow.eda317.2, %Destroy.facet.loc11_16.4 [symbolic = %Destroy.facet.loc11_16.5 (constants.%Destroy.facet)]
-// CHECK:STDOUT:     %specific_impl_fn.loc11_16.2: <specific function> = specific_impl_function %impl.elem0.loc11_16.4, @Destroy.WithSelf.Op(constants.%Destroy.facet) [symbolic = %specific_impl_fn.loc11_16.3 (constants.%specific_impl_fn.8f1)]
+// CHECK:STDOUT:     %specific_impl_fn.loc11_16.2: <specific function> = specific_impl_function %impl.elem2.loc11_16.3, @Destroy.WithSelf.SelfDestruct(constants.%Destroy.facet) [symbolic = %specific_impl_fn.loc11_16.3 (constants.%specific_impl_fn.fdc)]
 // CHECK:STDOUT:     %bound_method.loc11_16.10: <bound method> = bound_method %.loc11_16.2, %specific_impl_fn.loc11_16.2
-// CHECK:STDOUT:     %Destroy.WithSelf.Op.call.loc11_16.2: init %empty_tuple.type = call %bound_method.loc11_16.10(%.loc11_16.2)
+// CHECK:STDOUT:     %Destroy.WithSelf.SelfDestruct.call.loc11_16.2: init %empty_tuple.type = call %bound_method.loc11_16.10(%.loc11_16.2)
 // CHECK:STDOUT:     return %MyResult.Ok.call to %return.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: specific @ThreadImported(constants.%T.67d, constants.%E) {
-// CHECK:STDOUT:   %T.patt.loc10_20.2 => constants.%T.patt.d47
+// CHECK:STDOUT:   %T.patt.loc10_20.2 => constants.%T.patt.3a0
 // CHECK:STDOUT:   %T.loc10_20.1 => constants.%T.67d
 // CHECK:STDOUT:   %E.patt.loc10_29.2 => constants.%E.patt
 // CHECK:STDOUT:   %E.loc10_29.1 => constants.%E

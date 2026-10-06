@@ -100,47 +100,47 @@ fn Use() -> i32 { return Cpp.Drive(); }
 // CHECK:STDOUT: @.str.1 = private unnamed_addr constant [79 x i8] c"carbon: C++ exception escaped into Carbon through `CallWithLong`; terminating\0A\00", align 1
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @"_CF:overload0.Main"(i64 %x) #0 !dbg !12 {
+// CHECK:STDOUT: define i32 @"_CF:overload0.Main"(i64 %x) #0 !dbg !19 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret i32 1, !dbg !19
+// CHECK:STDOUT:   ret i32 1, !dbg !24
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @"_CF:overload1.Main"(i1 %b) #0 !dbg !20 {
+// CHECK:STDOUT: define i32 @"_CF:overload1.Main"(i1 %b) #0 !dbg !26 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret i32 2, !dbg !26
+// CHECK:STDOUT:   ret i32 2, !dbg !31
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @"_CF__carbon_thunk:overload0.Main"(ptr %_, ptr %_1) #0 !dbg !27 {
+// CHECK:STDOUT: define void @"_CF__carbon_thunk:overload0.Main"(ptr %_, ptr %_1) #0 !dbg !33 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc6 = load i64, ptr %_, align 8, !dbg !33
-// CHECK:STDOUT:   %F.call = call i32 @"_CF:overload0.Main"(i64 %.loc6), !dbg !33
-// CHECK:STDOUT:   store i32 %F.call, ptr %_1, align 4, !dbg !33
-// CHECK:STDOUT:   ret void, !dbg !33
+// CHECK:STDOUT:   %.loc6 = load i64, ptr %_, align 8, !dbg !36
+// CHECK:STDOUT:   %F.call = call i32 @"_CF:overload0.Main"(i64 %.loc6), !dbg !36
+// CHECK:STDOUT:   store i32 %F.call, ptr %_1, align 4, !dbg !36
+// CHECK:STDOUT:   ret void, !dbg !36
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @"_CF__carbon_thunk:overload1.Main"(ptr %_, ptr %_1) #0 !dbg !34 {
+// CHECK:STDOUT: define void @"_CF__carbon_thunk:overload1.Main"(ptr %_, ptr %_1) #0 !dbg !38 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc7 = load i8, ptr %_, align 1, !dbg !40
-// CHECK:STDOUT:   %.loc72 = trunc i8 %.loc7 to i1, !dbg !40
-// CHECK:STDOUT:   %F.call = call i32 @"_CF:overload1.Main"(i1 %.loc72), !dbg !40
-// CHECK:STDOUT:   store i32 %F.call, ptr %_1, align 4, !dbg !40
-// CHECK:STDOUT:   ret void, !dbg !40
+// CHECK:STDOUT:   %.loc7 = load i8, ptr %_, align 1, !dbg !41
+// CHECK:STDOUT:   %.loc72 = trunc i8 %.loc7 to i1, !dbg !41
+// CHECK:STDOUT:   %F.call = call i32 @"_CF:overload1.Main"(i1 %.loc72), !dbg !41
+// CHECK:STDOUT:   store i32 %F.call, ptr %_1, align 4, !dbg !41
+// CHECK:STDOUT:   ret void, !dbg !41
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CUse.Main() #0 !dbg !41 {
+// CHECK:STDOUT: define i32 @_CUse.Main() #0 !dbg !43 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %F.call.loc14_29 = call i32 @"_CF:overload0.Main"(i64 7), !dbg !44
-// CHECK:STDOUT:   %F.call.loc14_39 = call i32 @"_CF:overload1.Main"(i1 true), !dbg !45
-// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call.loc14_31 = add i32 %F.call.loc14_29, %F.call.loc14_39, !dbg !44
-// CHECK:STDOUT:   %CallBool__carbon_thunk.call = call i32 @_Z8CallBoolv.carbon_thunk.(), !dbg !46
-// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call.loc14_41 = add i32 %Int.as.AddWith.impl.Op.call.loc14_31, %CallBool__carbon_thunk.call, !dbg !44
-// CHECK:STDOUT:   %CallWithLong__carbon_thunk.call = call i32 @_Z12CallWithLongv.carbon_thunk.(), !dbg !47
-// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call.loc14_58 = add i32 %Int.as.AddWith.impl.Op.call.loc14_41, %CallWithLong__carbon_thunk.call, !dbg !44
-// CHECK:STDOUT:   ret i32 %Int.as.AddWith.impl.Op.call.loc14_58, !dbg !48
+// CHECK:STDOUT:   %F.call.loc14_29 = call i32 @"_CF:overload0.Main"(i64 7), !dbg !46
+// CHECK:STDOUT:   %F.call.loc14_39 = call i32 @"_CF:overload1.Main"(i1 true), !dbg !47
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call.loc14_31 = add i32 %F.call.loc14_29, %F.call.loc14_39, !dbg !46
+// CHECK:STDOUT:   %CallBool__carbon_thunk.call = call i32 @_Z8CallBoolv.carbon_thunk.(), !dbg !48
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call.loc14_41 = add i32 %Int.as.AddWith.impl.Op.call.loc14_31, %CallBool__carbon_thunk.call, !dbg !46
+// CHECK:STDOUT:   %CallWithLong__carbon_thunk.call = call i32 @_Z12CallWithLongv.carbon_thunk.(), !dbg !49
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call.loc14_58 = add i32 %Int.as.AddWith.impl.Op.call.loc14_41, %CallWithLong__carbon_thunk.call, !dbg !46
+// CHECK:STDOUT:   ret i32 %Int.as.AddWith.impl.Op.call.loc14_58, !dbg !50
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
@@ -256,7 +256,7 @@ fn Use() -> i32 { return Cpp.Drive(); }
 // CHECK:STDOUT:   %retval = alloca i32, align 4
 // CHECK:STDOUT:   %.addr = alloca i8, align 1
 // CHECK:STDOUT:   %storedv = zext i1 %0 to i8
-// CHECK:STDOUT:   store i8 %storedv, ptr %.addr, align 1, !tbaa !49
+// CHECK:STDOUT:   store i8 %storedv, ptr %.addr, align 1, !tbaa !54
 // CHECK:STDOUT:   call void @"_CF__carbon_thunk:overload1.Main"(ptr noundef nonnull align 1 dereferenceable(1) %.addr, ptr noundef nonnull align 4 dereferenceable(4) %retval)
 // CHECK:STDOUT:   %1 = load i32, ptr %retval, align 4
 // CHECK:STDOUT:   ret i32 %1
@@ -274,7 +274,7 @@ fn Use() -> i32 { return Cpp.Drive(); }
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %retval = alloca i32, align 4
 // CHECK:STDOUT:   %.addr = alloca i64, align 8
-// CHECK:STDOUT:   store i64 %0, ptr %.addr, align 8, !tbaa !51
+// CHECK:STDOUT:   store i64 %0, ptr %.addr, align 8, !tbaa !57
 // CHECK:STDOUT:   call void @"_CF__carbon_thunk:overload0.Main"(ptr noundef nonnull align 8 dereferenceable(8) %.addr, ptr noundef nonnull align 4 dereferenceable(4) %retval)
 // CHECK:STDOUT:   %1 = load i32, ptr %retval, align 4
 // CHECK:STDOUT:   ret i32 %1
@@ -295,63 +295,63 @@ fn Use() -> i32 { return Cpp.Drive(); }
 // CHECK:STDOUT: attributes #5 = { noreturn }
 // CHECK:STDOUT: attributes #6 = { noreturn nounwind }
 // CHECK:STDOUT:
-// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
-// CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!7}
+// CHECK:STDOUT: !llvm.dbg.cu = !{!5}
+// CHECK:STDOUT: !llvm.module.flags = !{!58, !59, !60, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!62}
 // CHECK:STDOUT:
-// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
-// CHECK:STDOUT: !1 = !DIFile(filename: "overload_set.carbon", directory: "")
-// CHECK:STDOUT: !2 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !3 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !4 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !5 = !{i32 7, !"Dwarf Version", i32 5}
-// CHECK:STDOUT: !6 = !{i32 2, !"Debug Info Version", i32 3}
-// CHECK:STDOUT: !7 = !{!8, !9, i64 0}
-// CHECK:STDOUT: !8 = !{!"__libc_errno", !9, i64 0}
-// CHECK:STDOUT: !9 = !{!"int", !10, i64 0}
-// CHECK:STDOUT: !10 = !{!"omnipotent char", !11, i64 0}
-// CHECK:STDOUT: !11 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !12 = distinct !DISubprogram(name: "F", linkageName: "_CF:overload0.Main", scope: null, file: !1, line: 6, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !17)
-// CHECK:STDOUT: !13 = !DISubroutineType(types: !14)
-// CHECK:STDOUT: !14 = !{!15, !16}
-// CHECK:STDOUT: !15 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !16 = !DIBasicType(name: "int", size: 64, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !17 = !{!18}
-// CHECK:STDOUT: !18 = !DILocalVariable(arg: 1, scope: !12, type: !16)
-// CHECK:STDOUT: !19 = !DILocation(line: 6, column: 39, scope: !12)
-// CHECK:STDOUT: !20 = distinct !DISubprogram(name: "F", linkageName: "_CF:overload1.Main", scope: null, file: !1, line: 7, type: !21, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !24)
-// CHECK:STDOUT: !21 = !DISubroutineType(types: !22)
-// CHECK:STDOUT: !22 = !{!15, !23}
-// CHECK:STDOUT: !23 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
-// CHECK:STDOUT: !24 = !{!25}
-// CHECK:STDOUT: !25 = !DILocalVariable(arg: 1, scope: !20, type: !23)
-// CHECK:STDOUT: !26 = !DILocation(line: 7, column: 40, scope: !20)
-// CHECK:STDOUT: !27 = distinct !DISubprogram(name: "F__carbon_thunk", linkageName: "_CF__carbon_thunk:overload0.Main", scope: null, file: !1, line: 6, type: !28, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !30)
-// CHECK:STDOUT: !28 = !DISubroutineType(types: !29)
-// CHECK:STDOUT: !29 = !{null, !16, !15}
-// CHECK:STDOUT: !30 = !{!31, !32}
-// CHECK:STDOUT: !31 = !DILocalVariable(arg: 1, scope: !27, type: !16)
-// CHECK:STDOUT: !32 = !DILocalVariable(arg: 2, scope: !27, type: !15)
-// CHECK:STDOUT: !33 = !DILocation(line: 6, column: 1, scope: !27)
-// CHECK:STDOUT: !34 = distinct !DISubprogram(name: "F__carbon_thunk", linkageName: "_CF__carbon_thunk:overload1.Main", scope: null, file: !1, line: 7, type: !35, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !37)
-// CHECK:STDOUT: !35 = !DISubroutineType(types: !36)
-// CHECK:STDOUT: !36 = !{null, !23, !15}
-// CHECK:STDOUT: !37 = !{!38, !39}
-// CHECK:STDOUT: !38 = !DILocalVariable(arg: 1, scope: !34, type: !23)
-// CHECK:STDOUT: !39 = !DILocalVariable(arg: 2, scope: !34, type: !15)
-// CHECK:STDOUT: !40 = !DILocation(line: 7, column: 1, scope: !34)
-// CHECK:STDOUT: !41 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !1, line: 14, type: !42, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !42 = !DISubroutineType(types: !43)
-// CHECK:STDOUT: !43 = !{!15}
-// CHECK:STDOUT: !44 = !DILocation(line: 14, column: 26, scope: !41)
-// CHECK:STDOUT: !45 = !DILocation(line: 14, column: 33, scope: !41)
-// CHECK:STDOUT: !46 = !DILocation(line: 14, column: 43, scope: !41)
-// CHECK:STDOUT: !47 = !DILocation(line: 14, column: 60, scope: !41)
-// CHECK:STDOUT: !48 = !DILocation(line: 14, column: 19, scope: !41)
-// CHECK:STDOUT: !49 = !{!50, !50, i64 0}
-// CHECK:STDOUT: !50 = !{!"bool", !10, i64 0}
-// CHECK:STDOUT: !51 = !{!52, !52, i64 0}
-// CHECK:STDOUT: !52 = !{!"long", !10, i64 0}
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !4 = !DIFile(filename: "overload_set.carbon", directory: "")
+// CHECK:STDOUT: !5 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !4, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 64, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !8 = !{!7, !6}
+// CHECK:STDOUT: !9 = !DISubroutineType(types: !8)
+// CHECK:STDOUT: !10 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !11 = !{!7, !10}
+// CHECK:STDOUT: !12 = !DISubroutineType(types: !11)
+// CHECK:STDOUT: !13 = !{null, !6, !7}
+// CHECK:STDOUT: !14 = !DISubroutineType(types: !13)
+// CHECK:STDOUT: !15 = !{null, !10, !7}
+// CHECK:STDOUT: !16 = !DISubroutineType(types: !15)
+// CHECK:STDOUT: !17 = !{!7}
+// CHECK:STDOUT: !18 = !DISubroutineType(types: !17)
+// CHECK:STDOUT: !19 = distinct !DISubprogram(name: "F", linkageName: "_CF:overload0.Main", scope: null, file: !4, line: 6, type: !9, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !25)
+// CHECK:STDOUT: !20 = !DILocalVariable(arg: 1, scope: !19, type: !6)
+// CHECK:STDOUT: !24 = !DILocation(line: 6, column: 39, scope: !19)
+// CHECK:STDOUT: !25 = !{!20}
+// CHECK:STDOUT: !26 = distinct !DISubprogram(name: "F", linkageName: "_CF:overload1.Main", scope: null, file: !4, line: 7, type: !12, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !32)
+// CHECK:STDOUT: !27 = !DILocalVariable(arg: 1, scope: !26, type: !10)
+// CHECK:STDOUT: !31 = !DILocation(line: 7, column: 40, scope: !26)
+// CHECK:STDOUT: !32 = !{!27}
+// CHECK:STDOUT: !33 = distinct !DISubprogram(name: "F__carbon_thunk", linkageName: "_CF__carbon_thunk:overload0.Main", scope: null, file: !4, line: 6, type: !14, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !37)
+// CHECK:STDOUT: !34 = !DILocalVariable(arg: 1, scope: !33, type: !6)
+// CHECK:STDOUT: !35 = !DILocalVariable(arg: 2, scope: !33, type: !7)
+// CHECK:STDOUT: !36 = !DILocation(line: 6, column: 1, scope: !33)
+// CHECK:STDOUT: !37 = !{!34, !35}
+// CHECK:STDOUT: !38 = distinct !DISubprogram(name: "F__carbon_thunk", linkageName: "_CF__carbon_thunk:overload1.Main", scope: null, file: !4, line: 7, type: !16, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !42)
+// CHECK:STDOUT: !39 = !DILocalVariable(arg: 1, scope: !38, type: !10)
+// CHECK:STDOUT: !40 = !DILocalVariable(arg: 2, scope: !38, type: !7)
+// CHECK:STDOUT: !41 = !DILocation(line: 7, column: 1, scope: !38)
+// CHECK:STDOUT: !42 = !{!39, !40}
+// CHECK:STDOUT: !43 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !4, line: 14, type: !18, spFlags: DISPFlagDefinition, unit: !5)
+// CHECK:STDOUT: !46 = !DILocation(line: 14, column: 26, scope: !43)
+// CHECK:STDOUT: !47 = !DILocation(line: 14, column: 33, scope: !43)
+// CHECK:STDOUT: !48 = !DILocation(line: 14, column: 43, scope: !43)
+// CHECK:STDOUT: !49 = !DILocation(line: 14, column: 60, scope: !43)
+// CHECK:STDOUT: !50 = !DILocation(line: 14, column: 19, scope: !43)
+// CHECK:STDOUT: !51 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !52 = !{!"omnipotent char", !51, i64 0}
+// CHECK:STDOUT: !53 = !{!"bool", !52, i64 0}
+// CHECK:STDOUT: !54 = !{!53, !53, i64 0}
+// CHECK:STDOUT: !55 = !{!"int", !52, i64 0}
+// CHECK:STDOUT: !56 = !{!"long", !52, i64 0}
+// CHECK:STDOUT: !57 = !{!56, !56, i64 0}
+// CHECK:STDOUT: !58 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !59 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !60 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !61 = !{!"__libc_errno", !55, i64 0}
+// CHECK:STDOUT: !62 = !{!61, !55, i64 0}
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'divergence.carbon'
@@ -366,43 +366,43 @@ fn Use() -> i32 { return Cpp.Drive(); }
 // CHECK:STDOUT: @.str = private unnamed_addr constant [74 x i8] c"carbon: C++ exception escaped into Carbon through `FromCpp`; terminating\0A\00", align 1
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @"_CPick:overload0.Main"(i64 %x) #0 !dbg !12 {
+// CHECK:STDOUT: define i32 @"_CPick:overload0.Main"(i64 %x) #0 !dbg !69 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret i32 1, !dbg !19
+// CHECK:STDOUT:   ret i32 1, !dbg !74
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @"_CPick:overload1.Main"(i32 %x) #0 !dbg !20 {
+// CHECK:STDOUT: define i32 @"_CPick:overload1.Main"(i32 %x) #0 !dbg !76 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret i32 2, !dbg !25
+// CHECK:STDOUT:   ret i32 2, !dbg !81
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @"_CPick__carbon_thunk:overload0.Main"(ptr %_, ptr %_1) #0 !dbg !26 {
+// CHECK:STDOUT: define void @"_CPick__carbon_thunk:overload0.Main"(ptr %_, ptr %_1) #0 !dbg !83 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc8 = load i64, ptr %_, align 8, !dbg !32
-// CHECK:STDOUT:   %Pick.call = call i32 @"_CPick:overload0.Main"(i64 %.loc8), !dbg !32
-// CHECK:STDOUT:   store i32 %Pick.call, ptr %_1, align 4, !dbg !32
-// CHECK:STDOUT:   ret void, !dbg !32
+// CHECK:STDOUT:   %.loc8 = load i64, ptr %_, align 8, !dbg !86
+// CHECK:STDOUT:   %Pick.call = call i32 @"_CPick:overload0.Main"(i64 %.loc8), !dbg !86
+// CHECK:STDOUT:   store i32 %Pick.call, ptr %_1, align 4, !dbg !86
+// CHECK:STDOUT:   ret void, !dbg !86
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @"_CPick__carbon_thunk:overload1.Main"(ptr %_, ptr %_1) #0 !dbg !33 {
+// CHECK:STDOUT: define void @"_CPick__carbon_thunk:overload1.Main"(ptr %_, ptr %_1) #0 !dbg !88 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc9 = load i32, ptr %_, align 4, !dbg !39
-// CHECK:STDOUT:   %Pick.call = call i32 @"_CPick:overload1.Main"(i32 %.loc9), !dbg !39
-// CHECK:STDOUT:   store i32 %Pick.call, ptr %_1, align 4, !dbg !39
-// CHECK:STDOUT:   ret void, !dbg !39
+// CHECK:STDOUT:   %.loc9 = load i32, ptr %_, align 4, !dbg !91
+// CHECK:STDOUT:   %Pick.call = call i32 @"_CPick:overload1.Main"(i32 %.loc9), !dbg !91
+// CHECK:STDOUT:   store i32 %Pick.call, ptr %_1, align 4, !dbg !91
+// CHECK:STDOUT:   ret void, !dbg !91
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CUse.Main(i32 %n) #0 !dbg !40 {
+// CHECK:STDOUT: define i32 @_CUse.Main(i32 %n) #0 !dbg !93 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %From.as_type.as.ImplicitAs.impl.Convert.call = call i64 @"_CConvert.45e1f8de18643ddf:ImplicitAs.0bc6489996802dd4.Core.f4e5d9509bf46ebe"(i32 %n), !dbg !43
-// CHECK:STDOUT:   %Pick.call = call i32 @"_CPick:overload0.Main"(i64 %From.as_type.as.ImplicitAs.impl.Convert.call), !dbg !44
-// CHECK:STDOUT:   %FromCpp__carbon_thunk.call = call i32 @_Z7FromCppi.carbon_thunk._(i32 %n), !dbg !45
-// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call = add i32 %Pick.call, %FromCpp__carbon_thunk.call, !dbg !44
-// CHECK:STDOUT:   ret i32 %Int.as.AddWith.impl.Op.call, !dbg !46
+// CHECK:STDOUT:   %From.as_type.as.ImplicitAs.impl.Convert.call = call i64 @"_CConvert.45e1f8de18643ddf:ImplicitAs.0bc6489996802dd4.Core.f4e5d9509bf46ebe"(i32 %n), !dbg !98
+// CHECK:STDOUT:   %Pick.call = call i32 @"_CPick:overload0.Main"(i64 %From.as_type.as.ImplicitAs.impl.Convert.call), !dbg !101
+// CHECK:STDOUT:   %FromCpp__carbon_thunk.call = call i32 @_Z7FromCppi.carbon_thunk._(i32 %n), !dbg !103
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call = add i32 %Pick.call, %FromCpp__carbon_thunk.call, !dbg !101
+// CHECK:STDOUT:   ret i32 %Int.as.AddWith.impl.Op.call, !dbg !104
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
@@ -411,8 +411,8 @@ fn Use() -> i32 { return Cpp.Drive(); }
 // CHECK:STDOUT:   %v.addr = alloca i32, align 4
 // CHECK:STDOUT:   %exn.slot = alloca ptr, align 8
 // CHECK:STDOUT:   %ehselector.slot = alloca i32, align 4
-// CHECK:STDOUT:   store i32 %v, ptr %v.addr, align 4, !tbaa !47
-// CHECK:STDOUT:   %0 = load i32, ptr %v.addr, align 4, !tbaa !47
+// CHECK:STDOUT:   store i32 %v, ptr %v.addr, align 4, !tbaa !124
+// CHECK:STDOUT:   %0 = load i32, ptr %v.addr, align 4, !tbaa !124
 // CHECK:STDOUT:   %call = invoke noundef i32 @_Z7FromCppi(i32 noundef %0)
 // CHECK:STDOUT:           to label %invoke.cont unwind label %lpad
 // CHECK:STDOUT:
@@ -450,23 +450,23 @@ fn Use() -> i32 { return Cpp.Drive(); }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr i64 @"_CConvert.45e1f8de18643ddf:ImplicitAs.0bc6489996802dd4.Core.f4e5d9509bf46ebe"(i32 %self) #0 !dbg !48 {
-// CHECK:STDOUT:   %1 = call i32 @"_CAsInt.Int.9452f4c51951679b.Core:AnyInt.Core.be1e879c1ad406d8"(i32 %self), !dbg !54
-// CHECK:STDOUT:   %2 = sext i32 %1 to i64, !dbg !55
-// CHECK:STDOUT:   ret i64 %2, !dbg !56
+// CHECK:STDOUT: define linkonce_odr i64 @"_CConvert.45e1f8de18643ddf:ImplicitAs.0bc6489996802dd4.Core.f4e5d9509bf46ebe"(i32 %self) #0 !dbg !107 {
+// CHECK:STDOUT:   %1 = call i32 @"_CAsInt.Int.9452f4c51951679b.Core:AnyInt.Core.be1e879c1ad406d8"(i32 %self), !dbg !112
+// CHECK:STDOUT:   %2 = sext i32 %1 to i64, !dbg !113
+// CHECK:STDOUT:   ret i64 %2, !dbg !114
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr i32 @"_CAsInt.Int.9452f4c51951679b.Core:AnyInt.Core.be1e879c1ad406d8"(i32 %self) #0 !dbg !57 {
-// CHECK:STDOUT:   ret i32 %self, !dbg !60
+// CHECK:STDOUT: define linkonce_odr i32 @"_CAsInt.Int.9452f4c51951679b.Core:AnyInt.Core.be1e879c1ad406d8"(i32 %self) #0 !dbg !116 {
+// CHECK:STDOUT:   ret i32 %self, !dbg !122
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: inlinehint mustprogress uwtable
 // CHECK:STDOUT: define linkonce_odr dso_local noundef i32 @_Z7FromCppi(i32 noundef %v) #2 comdat {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %v.addr = alloca i32, align 4
-// CHECK:STDOUT:   store i32 %v, ptr %v.addr, align 4, !tbaa !47
-// CHECK:STDOUT:   %0 = load i32, ptr %v.addr, align 4, !tbaa !47
+// CHECK:STDOUT:   store i32 %v, ptr %v.addr, align 4, !tbaa !124
+// CHECK:STDOUT:   %0 = load i32, ptr %v.addr, align 4, !tbaa !124
 // CHECK:STDOUT:   %call = call noundef i32 @_ZN6CarbonL4PickEi(i32 noundef %0)
 // CHECK:STDOUT:   ret i32 %call
 // CHECK:STDOUT: }
@@ -494,7 +494,7 @@ fn Use() -> i32 { return Cpp.Drive(); }
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %retval = alloca i32, align 4
 // CHECK:STDOUT:   %.addr = alloca i32, align 4
-// CHECK:STDOUT:   store i32 %0, ptr %.addr, align 4, !tbaa !47
+// CHECK:STDOUT:   store i32 %0, ptr %.addr, align 4, !tbaa !124
 // CHECK:STDOUT:   call void @"_CPick__carbon_thunk:overload1.Main"(ptr noundef nonnull align 4 dereferenceable(4) %.addr, ptr noundef nonnull align 4 dereferenceable(4) %retval)
 // CHECK:STDOUT:   %1 = load i32, ptr %retval, align 4
 // CHECK:STDOUT:   ret i32 %1
@@ -508,71 +508,71 @@ fn Use() -> i32 { return Cpp.Drive(); }
 // CHECK:STDOUT: attributes #5 = { noreturn }
 // CHECK:STDOUT: attributes #6 = { noreturn nounwind }
 // CHECK:STDOUT:
-// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
-// CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!7}
+// CHECK:STDOUT: !llvm.dbg.cu = !{!64}
+// CHECK:STDOUT: !llvm.module.flags = !{!58, !59, !60, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!62}
 // CHECK:STDOUT:
-// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
-// CHECK:STDOUT: !1 = !DIFile(filename: "divergence.carbon", directory: "")
-// CHECK:STDOUT: !2 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !3 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !4 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !5 = !{i32 7, !"Dwarf Version", i32 5}
-// CHECK:STDOUT: !6 = !{i32 2, !"Debug Info Version", i32 3}
-// CHECK:STDOUT: !7 = !{!8, !9, i64 0}
-// CHECK:STDOUT: !8 = !{!"__libc_errno", !9, i64 0}
-// CHECK:STDOUT: !9 = !{!"int", !10, i64 0}
-// CHECK:STDOUT: !10 = !{!"omnipotent char", !11, i64 0}
-// CHECK:STDOUT: !11 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !12 = distinct !DISubprogram(name: "Pick", linkageName: "_CPick:overload0.Main", scope: null, file: !1, line: 8, type: !13, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !17)
-// CHECK:STDOUT: !13 = !DISubroutineType(types: !14)
-// CHECK:STDOUT: !14 = !{!15, !16}
-// CHECK:STDOUT: !15 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !16 = !DIBasicType(name: "int", size: 64, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !17 = !{!18}
-// CHECK:STDOUT: !18 = !DILocalVariable(arg: 1, scope: !12, type: !16)
-// CHECK:STDOUT: !19 = !DILocation(line: 8, column: 42, scope: !12)
-// CHECK:STDOUT: !20 = distinct !DISubprogram(name: "Pick", linkageName: "_CPick:overload1.Main", scope: null, file: !1, line: 9, type: !21, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !23)
-// CHECK:STDOUT: !21 = !DISubroutineType(types: !22)
-// CHECK:STDOUT: !22 = !{!15, !15}
-// CHECK:STDOUT: !23 = !{!24}
-// CHECK:STDOUT: !24 = !DILocalVariable(arg: 1, scope: !20, type: !15)
-// CHECK:STDOUT: !25 = !DILocation(line: 9, column: 42, scope: !20)
-// CHECK:STDOUT: !26 = distinct !DISubprogram(name: "Pick__carbon_thunk", linkageName: "_CPick__carbon_thunk:overload0.Main", scope: null, file: !1, line: 8, type: !27, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !29)
-// CHECK:STDOUT: !27 = !DISubroutineType(types: !28)
-// CHECK:STDOUT: !28 = !{null, !16, !15}
-// CHECK:STDOUT: !29 = !{!30, !31}
-// CHECK:STDOUT: !30 = !DILocalVariable(arg: 1, scope: !26, type: !16)
-// CHECK:STDOUT: !31 = !DILocalVariable(arg: 2, scope: !26, type: !15)
-// CHECK:STDOUT: !32 = !DILocation(line: 8, column: 1, scope: !26)
-// CHECK:STDOUT: !33 = distinct !DISubprogram(name: "Pick__carbon_thunk", linkageName: "_CPick__carbon_thunk:overload1.Main", scope: null, file: !1, line: 9, type: !34, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !36)
-// CHECK:STDOUT: !34 = !DISubroutineType(types: !35)
-// CHECK:STDOUT: !35 = !{null, !15, !15}
-// CHECK:STDOUT: !36 = !{!37, !38}
-// CHECK:STDOUT: !37 = !DILocalVariable(arg: 1, scope: !33, type: !15)
-// CHECK:STDOUT: !38 = !DILocalVariable(arg: 2, scope: !33, type: !15)
-// CHECK:STDOUT: !39 = !DILocation(line: 9, column: 1, scope: !33)
-// CHECK:STDOUT: !40 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !1, line: 15, type: !21, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !41)
-// CHECK:STDOUT: !41 = !{!42}
-// CHECK:STDOUT: !42 = !DILocalVariable(arg: 1, scope: !40, type: !15)
-// CHECK:STDOUT: !43 = !DILocation(line: 15, column: 37, scope: !40)
-// CHECK:STDOUT: !44 = !DILocation(line: 15, column: 32, scope: !40)
-// CHECK:STDOUT: !45 = !DILocation(line: 15, column: 42, scope: !40)
-// CHECK:STDOUT: !46 = !DILocation(line: 15, column: 25, scope: !40)
-// CHECK:STDOUT: !47 = !{!9, !9, i64 0}
-// CHECK:STDOUT: !48 = distinct !DISubprogram(name: "Convert", linkageName: "_CConvert.45e1f8de18643ddf:ImplicitAs.0bc6489996802dd4.Core.f4e5d9509bf46ebe", scope: null, file: !49, line: 64, type: !50, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !52)
-// CHECK:STDOUT: !49 = !DIFile(filename: "{{.*}}/prelude/types/int.carbon", directory: "")
-// CHECK:STDOUT: !50 = !DISubroutineType(types: !51)
-// CHECK:STDOUT: !51 = !{!16, !15}
-// CHECK:STDOUT: !52 = !{!53}
-// CHECK:STDOUT: !53 = !DILocalVariable(arg: 1, scope: !48, type: !15)
-// CHECK:STDOUT: !54 = !DILocation(line: 66, column: 17, scope: !48)
-// CHECK:STDOUT: !55 = !DILocation(line: 66, column: 12, scope: !48)
-// CHECK:STDOUT: !56 = !DILocation(line: 66, column: 5, scope: !48)
-// CHECK:STDOUT: !57 = distinct !DISubprogram(name: "AsInt", linkageName: "_CAsInt.Int.9452f4c51951679b.Core:AnyInt.Core.be1e879c1ad406d8", scope: null, file: !49, line: 59, type: !21, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !58)
-// CHECK:STDOUT: !58 = !{!59}
-// CHECK:STDOUT: !59 = !DILocalVariable(arg: 1, scope: !57, type: !15)
-// CHECK:STDOUT: !60 = !DILocation(line: 59, column: 28, scope: !57)
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 64, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !8 = !{!7, !6}
+// CHECK:STDOUT: !9 = !DISubroutineType(types: !8)
+// CHECK:STDOUT: !13 = !{null, !6, !7}
+// CHECK:STDOUT: !14 = !DISubroutineType(types: !13)
+// CHECK:STDOUT: !51 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !52 = !{!"omnipotent char", !51, i64 0}
+// CHECK:STDOUT: !55 = !{!"int", !52, i64 0}
+// CHECK:STDOUT: !58 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !59 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !60 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !61 = !{!"__libc_errno", !55, i64 0}
+// CHECK:STDOUT: !62 = !{!61, !55, i64 0}
+// CHECK:STDOUT: !63 = !DIFile(filename: "divergence.carbon", directory: "")
+// CHECK:STDOUT: !64 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !63, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !65 = !{!7, !7}
+// CHECK:STDOUT: !66 = !DISubroutineType(types: !65)
+// CHECK:STDOUT: !67 = !{null, !7, !7}
+// CHECK:STDOUT: !68 = !DISubroutineType(types: !67)
+// CHECK:STDOUT: !69 = distinct !DISubprogram(name: "Pick", linkageName: "_CPick:overload0.Main", scope: null, file: !63, line: 8, type: !9, spFlags: DISPFlagDefinition, unit: !64, retainedNodes: !75)
+// CHECK:STDOUT: !70 = !DILocalVariable(arg: 1, scope: !69, type: !6)
+// CHECK:STDOUT: !74 = !DILocation(line: 8, column: 42, scope: !69)
+// CHECK:STDOUT: !75 = !{!70}
+// CHECK:STDOUT: !76 = distinct !DISubprogram(name: "Pick", linkageName: "_CPick:overload1.Main", scope: null, file: !63, line: 9, type: !66, spFlags: DISPFlagDefinition, unit: !64, retainedNodes: !82)
+// CHECK:STDOUT: !77 = !DILocalVariable(arg: 1, scope: !76, type: !7)
+// CHECK:STDOUT: !81 = !DILocation(line: 9, column: 42, scope: !76)
+// CHECK:STDOUT: !82 = !{!77}
+// CHECK:STDOUT: !83 = distinct !DISubprogram(name: "Pick__carbon_thunk", linkageName: "_CPick__carbon_thunk:overload0.Main", scope: null, file: !63, line: 8, type: !14, spFlags: DISPFlagDefinition, unit: !64, retainedNodes: !87)
+// CHECK:STDOUT: !84 = !DILocalVariable(arg: 1, scope: !83, type: !6)
+// CHECK:STDOUT: !85 = !DILocalVariable(arg: 2, scope: !83, type: !7)
+// CHECK:STDOUT: !86 = !DILocation(line: 8, column: 1, scope: !83)
+// CHECK:STDOUT: !87 = !{!84, !85}
+// CHECK:STDOUT: !88 = distinct !DISubprogram(name: "Pick__carbon_thunk", linkageName: "_CPick__carbon_thunk:overload1.Main", scope: null, file: !63, line: 9, type: !68, spFlags: DISPFlagDefinition, unit: !64, retainedNodes: !92)
+// CHECK:STDOUT: !89 = !DILocalVariable(arg: 1, scope: !88, type: !7)
+// CHECK:STDOUT: !90 = !DILocalVariable(arg: 2, scope: !88, type: !7)
+// CHECK:STDOUT: !91 = !DILocation(line: 9, column: 1, scope: !88)
+// CHECK:STDOUT: !92 = !{!89, !90}
+// CHECK:STDOUT: !93 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !63, line: 15, type: !66, spFlags: DISPFlagDefinition, unit: !64, retainedNodes: !105)
+// CHECK:STDOUT: !94 = !DILocalVariable(arg: 1, scope: !93, type: !7)
+// CHECK:STDOUT: !98 = !DILocation(line: 15, column: 37, scope: !93)
+// CHECK:STDOUT: !99 = !{!6, !7}
+// CHECK:STDOUT: !100 = !DISubroutineType(types: !99)
+// CHECK:STDOUT: !101 = !DILocation(line: 15, column: 32, scope: !93)
+// CHECK:STDOUT: !103 = !DILocation(line: 15, column: 42, scope: !93)
+// CHECK:STDOUT: !104 = !DILocation(line: 15, column: 25, scope: !93)
+// CHECK:STDOUT: !105 = !{!94}
+// CHECK:STDOUT: !106 = !DIFile(filename: "{{.*}}/prelude/types/int.carbon", directory: "")
+// CHECK:STDOUT: !107 = distinct !DISubprogram(name: "Convert", linkageName: "_CConvert.45e1f8de18643ddf:ImplicitAs.0bc6489996802dd4.Core.f4e5d9509bf46ebe", scope: null, file: !106, line: 64, type: !100, spFlags: DISPFlagDefinition, unit: !64, retainedNodes: !115)
+// CHECK:STDOUT: !108 = !DILocalVariable(arg: 1, scope: !107, type: !7)
+// CHECK:STDOUT: !112 = !DILocation(line: 66, column: 17, scope: !107)
+// CHECK:STDOUT: !113 = !DILocation(line: 66, column: 12, scope: !107)
+// CHECK:STDOUT: !114 = !DILocation(line: 66, column: 5, scope: !107)
+// CHECK:STDOUT: !115 = !{!108}
+// CHECK:STDOUT: !116 = distinct !DISubprogram(name: "AsInt", linkageName: "_CAsInt.Int.9452f4c51951679b.Core:AnyInt.Core.be1e879c1ad406d8", scope: null, file: !106, line: 59, type: !66, spFlags: DISPFlagDefinition, unit: !64, retainedNodes: !123)
+// CHECK:STDOUT: !117 = !DILocalVariable(arg: 1, scope: !116, type: !7)
+// CHECK:STDOUT: !122 = !DILocation(line: 59, column: 28, scope: !116)
+// CHECK:STDOUT: !123 = !{!117}
+// CHECK:STDOUT: !124 = !{!55, !55, i64 0}
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'method_set.carbon'
@@ -590,86 +590,86 @@ fn Use() -> i32 { return Cpp.Drive(); }
 // CHECK:STDOUT: @.str = private unnamed_addr constant [72 x i8] c"carbon: C++ exception escaped into Carbon through `Drive`; terminating\0A\00", align 1
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CMake.Acc.Main(ptr sret({ i32 }) %return) #0 !dbg !12 {
+// CHECK:STDOUT: define void @_CMake.Acc.Main(ptr sret({ i32 }) %return) #0 !dbg !133 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc12_40.3.total = getelementptr inbounds nuw { i32 }, ptr %return, i32 0, i32 0, !dbg !16
-// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @Acc.val.loc12_41, i64 4, i1 false), !dbg !17
-// CHECK:STDOUT:   ret void, !dbg !17
+// CHECK:STDOUT:   %.loc12_40.3.total = getelementptr inbounds nuw { i32 }, ptr %return, i32 0, i32 0, !dbg !136
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 %return, ptr align 4 @Acc.val.loc12_41, i64 4, i1 false), !dbg !137
+// CHECK:STDOUT:   ret void, !dbg !137
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @"_CAdd:overload0.Acc.Main"(ptr %self, i32 %x) #0 !dbg !18 {
+// CHECK:STDOUT: define void @"_CAdd:overload0.Acc.Main"(ptr %self, i32 %x) #0 !dbg !138 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc13_43.total = getelementptr inbounds nuw { i32 }, ptr %self, i32 0, i32 0, !dbg !25
-// CHECK:STDOUT:   %.loc13_56.1.total = getelementptr inbounds nuw { i32 }, ptr %self, i32 0, i32 0, !dbg !26
-// CHECK:STDOUT:   %.loc13_56.2 = load i32, ptr %.loc13_56.1.total, align 4, !dbg !26
-// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call = add i32 %.loc13_56.2, %x, !dbg !26
-// CHECK:STDOUT:   store i32 %Int.as.AddWith.impl.Op.call, ptr %.loc13_43.total, align 4, !dbg !25
-// CHECK:STDOUT:   ret void, !dbg !27
+// CHECK:STDOUT:   %.loc13_43.total = getelementptr inbounds nuw { i32 }, ptr %self, i32 0, i32 0, !dbg !143
+// CHECK:STDOUT:   %.loc13_56.1.total = getelementptr inbounds nuw { i32 }, ptr %self, i32 0, i32 0, !dbg !144
+// CHECK:STDOUT:   %.loc13_56.2 = load i32, ptr %.loc13_56.1.total, align 4, !dbg !144
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call = add i32 %.loc13_56.2, %x, !dbg !144
+// CHECK:STDOUT:   store i32 %Int.as.AddWith.impl.Op.call, ptr %.loc13_43.total, align 4, !dbg !143
+// CHECK:STDOUT:   ret void, !dbg !146
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @"_CAdd:overload1.Acc.Main"(ptr %self, i1 %flag) #0 !dbg !28 {
+// CHECK:STDOUT: define void @"_CAdd:overload1.Acc.Main"(ptr %self, i1 %flag) #0 !dbg !148 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   br i1 %flag, label %if.then, label %if.else, !dbg !34
+// CHECK:STDOUT:   br i1 %flag, label %if.then, label %if.else, !dbg !154
 // CHECK:STDOUT:
 // CHECK:STDOUT: if.then:                                          ; preds = %entry
-// CHECK:STDOUT:   %.loc15_21.total = getelementptr inbounds nuw { i32 }, ptr %self, i32 0, i32 0, !dbg !35
-// CHECK:STDOUT:   %.loc15_34.1.total = getelementptr inbounds nuw { i32 }, ptr %self, i32 0, i32 0, !dbg !36
-// CHECK:STDOUT:   %.loc15_34.2 = load i32, ptr %.loc15_34.1.total, align 4, !dbg !36
-// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call = add i32 %.loc15_34.2, 100, !dbg !36
-// CHECK:STDOUT:   store i32 %Int.as.AddWith.impl.Op.call, ptr %.loc15_21.total, align 4, !dbg !35
-// CHECK:STDOUT:   br label %if.else, !dbg !37
+// CHECK:STDOUT:   %.loc15_21.total = getelementptr inbounds nuw { i32 }, ptr %self, i32 0, i32 0, !dbg !155
+// CHECK:STDOUT:   %.loc15_34.1.total = getelementptr inbounds nuw { i32 }, ptr %self, i32 0, i32 0, !dbg !156
+// CHECK:STDOUT:   %.loc15_34.2 = load i32, ptr %.loc15_34.1.total, align 4, !dbg !156
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call = add i32 %.loc15_34.2, 100, !dbg !156
+// CHECK:STDOUT:   store i32 %Int.as.AddWith.impl.Op.call, ptr %.loc15_21.total, align 4, !dbg !155
+// CHECK:STDOUT:   br label %if.else, !dbg !157
 // CHECK:STDOUT:
 // CHECK:STDOUT: if.else:                                          ; preds = %if.then, %entry
-// CHECK:STDOUT:   ret void, !dbg !38
+// CHECK:STDOUT:   ret void, !dbg !158
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CGet.Acc.Main(ptr %self) #0 !dbg !39 {
+// CHECK:STDOUT: define i32 @_CGet.Acc.Main(ptr %self) #0 !dbg !160 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc17_36.1.total = getelementptr inbounds nuw { i32 }, ptr %self, i32 0, i32 0, !dbg !44
-// CHECK:STDOUT:   %.loc17_36.2 = load i32, ptr %.loc17_36.1.total, align 4, !dbg !44
-// CHECK:STDOUT:   ret i32 %.loc17_36.2, !dbg !45
+// CHECK:STDOUT:   %.loc17_36.1.total = getelementptr inbounds nuw { i32 }, ptr %self, i32 0, i32 0, !dbg !165
+// CHECK:STDOUT:   %.loc17_36.2 = load i32, ptr %.loc17_36.1.total, align 4, !dbg !165
+// CHECK:STDOUT:   ret i32 %.loc17_36.2, !dbg !166
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CMake__carbon_thunk.Acc.Main(ptr %_) #0 !dbg !46 {
+// CHECK:STDOUT: define void @_CMake__carbon_thunk.Acc.Main(ptr %_) #0 !dbg !168 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @_CMake.Acc.Main(ptr %_), !dbg !51
-// CHECK:STDOUT:   ret void, !dbg !51
+// CHECK:STDOUT:   call void @_CMake.Acc.Main(ptr %_), !dbg !170
+// CHECK:STDOUT:   ret void, !dbg !170
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @"_CAdd__carbon_thunk:overload0.Acc.Main"(ptr %self, ptr %_) #0 !dbg !52 {
+// CHECK:STDOUT: define void @"_CAdd__carbon_thunk:overload0.Acc.Main"(ptr %self, ptr %_) #0 !dbg !172 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc13 = load i32, ptr %_, align 4, !dbg !56
-// CHECK:STDOUT:   call void @"_CAdd:overload0.Acc.Main"(ptr %self, i32 %.loc13), !dbg !56
-// CHECK:STDOUT:   ret void, !dbg !56
+// CHECK:STDOUT:   %.loc13 = load i32, ptr %_, align 4, !dbg !175
+// CHECK:STDOUT:   call void @"_CAdd:overload0.Acc.Main"(ptr %self, i32 %.loc13), !dbg !175
+// CHECK:STDOUT:   ret void, !dbg !175
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @"_CAdd__carbon_thunk:overload1.Acc.Main"(ptr %self, ptr %_) #0 !dbg !57 {
+// CHECK:STDOUT: define void @"_CAdd__carbon_thunk:overload1.Acc.Main"(ptr %self, ptr %_) #0 !dbg !177 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc14 = load i8, ptr %_, align 1, !dbg !61
-// CHECK:STDOUT:   %.loc141 = trunc i8 %.loc14 to i1, !dbg !61
-// CHECK:STDOUT:   call void @"_CAdd:overload1.Acc.Main"(ptr %self, i1 %.loc141), !dbg !61
-// CHECK:STDOUT:   ret void, !dbg !61
+// CHECK:STDOUT:   %.loc14 = load i8, ptr %_, align 1, !dbg !180
+// CHECK:STDOUT:   %.loc141 = trunc i8 %.loc14 to i1, !dbg !180
+// CHECK:STDOUT:   call void @"_CAdd:overload1.Acc.Main"(ptr %self, i1 %.loc141), !dbg !180
+// CHECK:STDOUT:   ret void, !dbg !180
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CGet__carbon_thunk.Acc.Main(ptr %self, ptr %_) #0 !dbg !62 {
+// CHECK:STDOUT: define void @_CGet__carbon_thunk.Acc.Main(ptr %self, ptr %_) #0 !dbg !182 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %Acc.Get.call = call i32 @_CGet.Acc.Main(ptr %self), !dbg !66
-// CHECK:STDOUT:   store i32 %Acc.Get.call, ptr %_, align 4, !dbg !66
-// CHECK:STDOUT:   ret void, !dbg !66
+// CHECK:STDOUT:   %Acc.Get.call = call i32 @_CGet.Acc.Main(ptr %self), !dbg !185
+// CHECK:STDOUT:   store i32 %Acc.Get.call, ptr %_, align 4, !dbg !185
+// CHECK:STDOUT:   ret void, !dbg !185
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CUse.Main() #0 !dbg !67 {
+// CHECK:STDOUT: define i32 @_CUse.Main() #0 !dbg !187 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %Drive__carbon_thunk.call = call i32 @_Z5Drivev.carbon_thunk.(), !dbg !70
-// CHECK:STDOUT:   ret i32 %Drive__carbon_thunk.call, !dbg !71
+// CHECK:STDOUT:   %Drive__carbon_thunk.call = call i32 @_Z5Drivev.carbon_thunk.(), !dbg !190
+// CHECK:STDOUT:   ret i32 %Drive__carbon_thunk.call, !dbg !191
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
@@ -767,8 +767,8 @@ fn Use() -> i32 { return Cpp.Drive(); }
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %this.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %.addr = alloca i32, align 4
-// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !72
-// CHECK:STDOUT:   store i32 %0, ptr %.addr, align 4, !tbaa !75
+// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !195
+// CHECK:STDOUT:   store i32 %0, ptr %.addr, align 4, !tbaa !124
 // CHECK:STDOUT:   %this1 = load ptr, ptr %this.addr, align 8
 // CHECK:STDOUT:   call void @"_CAdd__carbon_thunk:overload0.Acc.Main"(ptr noundef nonnull align 4 dereferenceable(4) %this1, ptr noundef nonnull align 4 dereferenceable(4) %.addr)
 // CHECK:STDOUT:   ret void
@@ -779,9 +779,9 @@ fn Use() -> i32 { return Cpp.Drive(); }
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %this.addr = alloca ptr, align 8
 // CHECK:STDOUT:   %.addr = alloca i8, align 1
-// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !72
+// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !195
 // CHECK:STDOUT:   %storedv = zext i1 %0 to i8
-// CHECK:STDOUT:   store i8 %storedv, ptr %.addr, align 1, !tbaa !76
+// CHECK:STDOUT:   store i8 %storedv, ptr %.addr, align 1, !tbaa !54
 // CHECK:STDOUT:   %this1 = load ptr, ptr %this.addr, align 8
 // CHECK:STDOUT:   call void @"_CAdd__carbon_thunk:overload1.Acc.Main"(ptr noundef nonnull align 4 dereferenceable(4) %this1, ptr noundef nonnull align 1 dereferenceable(1) %.addr)
 // CHECK:STDOUT:   ret void
@@ -792,7 +792,7 @@ fn Use() -> i32 { return Cpp.Drive(); }
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %retval = alloca i32, align 4
 // CHECK:STDOUT:   %this.addr = alloca ptr, align 8
-// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !72
+// CHECK:STDOUT:   store ptr %this, ptr %this.addr, align 8, !tbaa !195
 // CHECK:STDOUT:   %this1 = load ptr, ptr %this.addr, align 8
 // CHECK:STDOUT:   call void @_CGet__carbon_thunk.Acc.Main(ptr noundef nonnull align 4 dereferenceable(4) %this1, ptr noundef nonnull align 4 dereferenceable(4) %retval)
 // CHECK:STDOUT:   %0 = load i32, ptr %retval, align 4
@@ -811,86 +811,86 @@ fn Use() -> i32 { return Cpp.Drive(); }
 // CHECK:STDOUT: attributes #6 = { noreturn }
 // CHECK:STDOUT: attributes #7 = { noreturn nounwind }
 // CHECK:STDOUT:
-// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
-// CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!7}
+// CHECK:STDOUT: !llvm.dbg.cu = !{!126}
+// CHECK:STDOUT: !llvm.module.flags = !{!58, !59, !60, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!62}
 // CHECK:STDOUT:
-// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
-// CHECK:STDOUT: !1 = !DIFile(filename: "method_set.carbon", directory: "")
-// CHECK:STDOUT: !2 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !3 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !4 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !5 = !{i32 7, !"Dwarf Version", i32 5}
-// CHECK:STDOUT: !6 = !{i32 2, !"Debug Info Version", i32 3}
-// CHECK:STDOUT: !7 = !{!8, !9, i64 0}
-// CHECK:STDOUT: !8 = !{!"__libc_errno", !9, i64 0}
-// CHECK:STDOUT: !9 = !{!"int", !10, i64 0}
-// CHECK:STDOUT: !10 = !{!"omnipotent char", !11, i64 0}
-// CHECK:STDOUT: !11 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !12 = distinct !DISubprogram(name: "Make", linkageName: "_CMake.Acc.Main", scope: null, file: !1, line: 12, type: !13, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !13 = !DISubroutineType(types: !14)
-// CHECK:STDOUT: !14 = !{!15}
-// CHECK:STDOUT: !15 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
-// CHECK:STDOUT: !16 = !DILocation(line: 12, column: 29, scope: !12)
-// CHECK:STDOUT: !17 = !DILocation(line: 12, column: 22, scope: !12)
-// CHECK:STDOUT: !18 = distinct !DISubprogram(name: "Add", linkageName: "_CAdd:overload0.Acc.Main", scope: null, file: !1, line: 13, type: !19, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !22)
-// CHECK:STDOUT: !19 = !DISubroutineType(types: !20)
-// CHECK:STDOUT: !20 = !{null, !15, !21}
-// CHECK:STDOUT: !21 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !22 = !{!23, !24}
-// CHECK:STDOUT: !23 = !DILocalVariable(arg: 1, scope: !18, type: !15)
-// CHECK:STDOUT: !24 = !DILocalVariable(arg: 2, scope: !18, type: !21)
-// CHECK:STDOUT: !25 = !DILocation(line: 13, column: 39, scope: !18)
-// CHECK:STDOUT: !26 = !DILocation(line: 13, column: 52, scope: !18)
-// CHECK:STDOUT: !27 = !DILocation(line: 13, column: 3, scope: !18)
-// CHECK:STDOUT: !28 = distinct !DISubprogram(name: "Add", linkageName: "_CAdd:overload1.Acc.Main", scope: null, file: !1, line: 14, type: !29, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !31)
-// CHECK:STDOUT: !29 = !DISubroutineType(types: !30)
-// CHECK:STDOUT: !30 = !{null, !15, !15}
-// CHECK:STDOUT: !31 = !{!32, !33}
-// CHECK:STDOUT: !32 = !DILocalVariable(arg: 1, scope: !28, type: !15)
-// CHECK:STDOUT: !33 = !DILocalVariable(arg: 2, scope: !28, type: !15)
-// CHECK:STDOUT: !34 = !DILocation(line: 15, column: 8, scope: !28)
-// CHECK:STDOUT: !35 = !DILocation(line: 15, column: 17, scope: !28)
-// CHECK:STDOUT: !36 = !DILocation(line: 15, column: 30, scope: !28)
-// CHECK:STDOUT: !37 = !DILocation(line: 15, column: 5, scope: !28)
-// CHECK:STDOUT: !38 = !DILocation(line: 14, column: 3, scope: !28)
-// CHECK:STDOUT: !39 = distinct !DISubprogram(name: "Get", linkageName: "_CGet.Acc.Main", scope: null, file: !1, line: 17, type: !40, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !42)
-// CHECK:STDOUT: !40 = !DISubroutineType(types: !41)
-// CHECK:STDOUT: !41 = !{!21, !15}
-// CHECK:STDOUT: !42 = !{!43}
-// CHECK:STDOUT: !43 = !DILocalVariable(arg: 1, scope: !39, type: !15)
-// CHECK:STDOUT: !44 = !DILocation(line: 17, column: 32, scope: !39)
-// CHECK:STDOUT: !45 = !DILocation(line: 17, column: 25, scope: !39)
-// CHECK:STDOUT: !46 = distinct !DISubprogram(name: "Make__carbon_thunk", linkageName: "_CMake__carbon_thunk.Acc.Main", scope: null, file: !1, line: 12, type: !47, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !49)
-// CHECK:STDOUT: !47 = !DISubroutineType(types: !48)
-// CHECK:STDOUT: !48 = !{null, !15}
-// CHECK:STDOUT: !49 = !{!50}
-// CHECK:STDOUT: !50 = !DILocalVariable(arg: 1, scope: !46, type: !15)
-// CHECK:STDOUT: !51 = !DILocation(line: 12, column: 3, scope: !46)
-// CHECK:STDOUT: !52 = distinct !DISubprogram(name: "Add__carbon_thunk", linkageName: "_CAdd__carbon_thunk:overload0.Acc.Main", scope: null, file: !1, line: 13, type: !19, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !53)
-// CHECK:STDOUT: !53 = !{!54, !55}
-// CHECK:STDOUT: !54 = !DILocalVariable(arg: 1, scope: !52, type: !15)
-// CHECK:STDOUT: !55 = !DILocalVariable(arg: 2, scope: !52, type: !21)
-// CHECK:STDOUT: !56 = !DILocation(line: 13, column: 3, scope: !52)
-// CHECK:STDOUT: !57 = distinct !DISubprogram(name: "Add__carbon_thunk", linkageName: "_CAdd__carbon_thunk:overload1.Acc.Main", scope: null, file: !1, line: 14, type: !29, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !58)
-// CHECK:STDOUT: !58 = !{!59, !60}
-// CHECK:STDOUT: !59 = !DILocalVariable(arg: 1, scope: !57, type: !15)
-// CHECK:STDOUT: !60 = !DILocalVariable(arg: 2, scope: !57, type: !15)
-// CHECK:STDOUT: !61 = !DILocation(line: 14, column: 3, scope: !57)
-// CHECK:STDOUT: !62 = distinct !DISubprogram(name: "Get__carbon_thunk", linkageName: "_CGet__carbon_thunk.Acc.Main", scope: null, file: !1, line: 17, type: !19, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !63)
-// CHECK:STDOUT: !63 = !{!64, !65}
-// CHECK:STDOUT: !64 = !DILocalVariable(arg: 1, scope: !62, type: !15)
-// CHECK:STDOUT: !65 = !DILocalVariable(arg: 2, scope: !62, type: !21)
-// CHECK:STDOUT: !66 = !DILocation(line: 17, column: 3, scope: !62)
-// CHECK:STDOUT: !67 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !1, line: 29, type: !68, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !68 = !DISubroutineType(types: !69)
-// CHECK:STDOUT: !69 = !{!21}
-// CHECK:STDOUT: !70 = !DILocation(line: 29, column: 26, scope: !67)
-// CHECK:STDOUT: !71 = !DILocation(line: 29, column: 19, scope: !67)
-// CHECK:STDOUT: !72 = !{!73, !73, i64 0}
-// CHECK:STDOUT: !73 = !{!"p1 _ZTSN6Carbon3AccE", !74, i64 0}
-// CHECK:STDOUT: !74 = !{!"any pointer", !10, i64 0}
-// CHECK:STDOUT: !75 = !{!9, !9, i64 0}
-// CHECK:STDOUT: !76 = !{!77, !77, i64 0}
-// CHECK:STDOUT: !77 = !{!"bool", !10, i64 0}
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !7 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !10 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !11 = !{!7, !10}
+// CHECK:STDOUT: !12 = !DISubroutineType(types: !11)
+// CHECK:STDOUT: !15 = !{null, !10, !7}
+// CHECK:STDOUT: !16 = !DISubroutineType(types: !15)
+// CHECK:STDOUT: !17 = !{!7}
+// CHECK:STDOUT: !18 = !DISubroutineType(types: !17)
+// CHECK:STDOUT: !51 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !52 = !{!"omnipotent char", !51, i64 0}
+// CHECK:STDOUT: !53 = !{!"bool", !52, i64 0}
+// CHECK:STDOUT: !54 = !{!53, !53, i64 0}
+// CHECK:STDOUT: !55 = !{!"int", !52, i64 0}
+// CHECK:STDOUT: !58 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !59 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !60 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !61 = !{!"__libc_errno", !55, i64 0}
+// CHECK:STDOUT: !62 = !{!61, !55, i64 0}
+// CHECK:STDOUT: !124 = !{!55, !55, i64 0}
+// CHECK:STDOUT: !125 = !DIFile(filename: "method_set.carbon", directory: "")
+// CHECK:STDOUT: !126 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !125, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !127 = !{!10}
+// CHECK:STDOUT: !128 = !DISubroutineType(types: !127)
+// CHECK:STDOUT: !129 = !{null, !10, !10}
+// CHECK:STDOUT: !130 = !DISubroutineType(types: !129)
+// CHECK:STDOUT: !131 = !{null, !10}
+// CHECK:STDOUT: !132 = !DISubroutineType(types: !131)
+// CHECK:STDOUT: !133 = distinct !DISubprogram(name: "Make", linkageName: "_CMake.Acc.Main", scope: null, file: !125, line: 12, type: !128, spFlags: DISPFlagDefinition, unit: !126)
+// CHECK:STDOUT: !136 = !DILocation(line: 12, column: 29, scope: !133)
+// CHECK:STDOUT: !137 = !DILocation(line: 12, column: 22, scope: !133)
+// CHECK:STDOUT: !138 = distinct !DISubprogram(name: "Add", linkageName: "_CAdd:overload0.Acc.Main", scope: null, file: !125, line: 13, type: !16, spFlags: DISPFlagDefinition, unit: !126, retainedNodes: !147)
+// CHECK:STDOUT: !139 = !DILocalVariable(arg: 1, scope: !138, type: !10)
+// CHECK:STDOUT: !140 = !DILocalVariable(arg: 2, scope: !138, type: !7)
+// CHECK:STDOUT: !143 = !DILocation(line: 13, column: 39, scope: !138)
+// CHECK:STDOUT: !144 = !DILocation(line: 13, column: 52, scope: !138)
+// CHECK:STDOUT: !146 = !DILocation(line: 13, column: 3, scope: !138)
+// CHECK:STDOUT: !147 = !{!139, !140}
+// CHECK:STDOUT: !148 = distinct !DISubprogram(name: "Add", linkageName: "_CAdd:overload1.Acc.Main", scope: null, file: !125, line: 14, type: !130, spFlags: DISPFlagDefinition, unit: !126, retainedNodes: !159)
+// CHECK:STDOUT: !149 = !DILocalVariable(arg: 1, scope: !148, type: !10)
+// CHECK:STDOUT: !150 = !DILocalVariable(arg: 2, scope: !148, type: !10)
+// CHECK:STDOUT: !154 = !DILocation(line: 15, column: 8, scope: !148)
+// CHECK:STDOUT: !155 = !DILocation(line: 15, column: 17, scope: !148)
+// CHECK:STDOUT: !156 = !DILocation(line: 15, column: 30, scope: !148)
+// CHECK:STDOUT: !157 = !DILocation(line: 15, column: 5, scope: !148)
+// CHECK:STDOUT: !158 = !DILocation(line: 14, column: 3, scope: !148)
+// CHECK:STDOUT: !159 = !{!149, !150}
+// CHECK:STDOUT: !160 = distinct !DISubprogram(name: "Get", linkageName: "_CGet.Acc.Main", scope: null, file: !125, line: 17, type: !12, spFlags: DISPFlagDefinition, unit: !126, retainedNodes: !167)
+// CHECK:STDOUT: !161 = !DILocalVariable(arg: 1, scope: !160, type: !10)
+// CHECK:STDOUT: !165 = !DILocation(line: 17, column: 32, scope: !160)
+// CHECK:STDOUT: !166 = !DILocation(line: 17, column: 25, scope: !160)
+// CHECK:STDOUT: !167 = !{!161}
+// CHECK:STDOUT: !168 = distinct !DISubprogram(name: "Make__carbon_thunk", linkageName: "_CMake__carbon_thunk.Acc.Main", scope: null, file: !125, line: 12, type: !132, spFlags: DISPFlagDefinition, unit: !126, retainedNodes: !171)
+// CHECK:STDOUT: !169 = !DILocalVariable(arg: 1, scope: !168, type: !10)
+// CHECK:STDOUT: !170 = !DILocation(line: 12, column: 3, scope: !168)
+// CHECK:STDOUT: !171 = !{!169}
+// CHECK:STDOUT: !172 = distinct !DISubprogram(name: "Add__carbon_thunk", linkageName: "_CAdd__carbon_thunk:overload0.Acc.Main", scope: null, file: !125, line: 13, type: !16, spFlags: DISPFlagDefinition, unit: !126, retainedNodes: !176)
+// CHECK:STDOUT: !173 = !DILocalVariable(arg: 1, scope: !172, type: !10)
+// CHECK:STDOUT: !174 = !DILocalVariable(arg: 2, scope: !172, type: !7)
+// CHECK:STDOUT: !175 = !DILocation(line: 13, column: 3, scope: !172)
+// CHECK:STDOUT: !176 = !{!173, !174}
+// CHECK:STDOUT: !177 = distinct !DISubprogram(name: "Add__carbon_thunk", linkageName: "_CAdd__carbon_thunk:overload1.Acc.Main", scope: null, file: !125, line: 14, type: !130, spFlags: DISPFlagDefinition, unit: !126, retainedNodes: !181)
+// CHECK:STDOUT: !178 = !DILocalVariable(arg: 1, scope: !177, type: !10)
+// CHECK:STDOUT: !179 = !DILocalVariable(arg: 2, scope: !177, type: !10)
+// CHECK:STDOUT: !180 = !DILocation(line: 14, column: 3, scope: !177)
+// CHECK:STDOUT: !181 = !{!178, !179}
+// CHECK:STDOUT: !182 = distinct !DISubprogram(name: "Get__carbon_thunk", linkageName: "_CGet__carbon_thunk.Acc.Main", scope: null, file: !125, line: 17, type: !16, spFlags: DISPFlagDefinition, unit: !126, retainedNodes: !186)
+// CHECK:STDOUT: !183 = !DILocalVariable(arg: 1, scope: !182, type: !10)
+// CHECK:STDOUT: !184 = !DILocalVariable(arg: 2, scope: !182, type: !7)
+// CHECK:STDOUT: !185 = !DILocation(line: 17, column: 3, scope: !182)
+// CHECK:STDOUT: !186 = !{!183, !184}
+// CHECK:STDOUT: !187 = distinct !DISubprogram(name: "Use", linkageName: "_CUse.Main", scope: null, file: !125, line: 29, type: !18, spFlags: DISPFlagDefinition, unit: !126)
+// CHECK:STDOUT: !190 = !DILocation(line: 29, column: 26, scope: !187)
+// CHECK:STDOUT: !191 = !DILocation(line: 29, column: 19, scope: !187)
+// CHECK:STDOUT: !193 = !{!"any pointer", !52, i64 0}
+// CHECK:STDOUT: !194 = !{!"p1 _ZTSN6Carbon3AccE", !193, i64 0}
+// CHECK:STDOUT: !195 = !{!194, !194, i64 0}
 // CHECK:STDOUT:

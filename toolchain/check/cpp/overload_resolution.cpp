@@ -26,14 +26,14 @@
 
 namespace Carbon::Check {
 
-// Map a Carbon name into a C++ name.
+// Map a Carbon name into a C++ name. An overload set is only imported by
+// looking up an identifier in C++, so its name is always an identifier.
 static auto GetCppName(Context& context, SemIR::NameId name_id)
     -> clang::DeclarationName {
-  // TODO: Some special names should probably use different formatting. In
-  // particular, NameId::CppOperator should probably map back to a
-  // CXXOperatorName.
-  auto name_str = context.names().GetFormatted(name_id);
-  return clang::DeclarationName(&context.ast_context().Idents.get(name_str));
+  auto* identifier_info = GetClangIdentifierInfo(context, name_id);
+  CARBON_CHECK(identifier_info, "non-identifier overload set name {0}",
+               name_id);
+  return clang::DeclarationName(identifier_info);
 }
 
 // Adds the given overload candidates to the candidate set.
@@ -123,7 +123,7 @@ auto CheckCppOverloadAccess(
   auto name_scope_const_id = context.constant_values().Get(
       context.name_scopes().Get(parent_scope_id).inst_id());
   SemIR::AccessKind allowed_access_kind =
-      GetHighestAllowedAccess(context, loc_id, name_scope_const_id);
+      GetHighestAllowedAccess(context, name_scope_const_id);
   CheckAccess(context, loc_id, SemIR::LocId(overload_inst_id), function.name_id,
               member_access_kind,
               /*is_parent_access=*/false,
@@ -229,23 +229,6 @@ auto GetPassingModeForCppParameter(const clang::ImplicitConversionSequence& ics,
   CARBON_FATAL("Unexpected kind of implicit conversion sequence");
 }
 
-// If the invented argument is an embedded reference to a C++ function
-// declaration (a Carbon function passed as a C++ callable, see
-// `InventClangArg`), returns that declaration; otherwise returns null.
-static auto GetConstantFunctionArg(clang::Expr* arg_expr)
-    -> clang::FunctionDecl* {
-  auto* cast_expr = dyn_cast<clang::ImplicitCastExpr>(arg_expr);
-  if (!cast_expr ||
-      cast_expr->getCastKind() != clang::CK_FunctionToPointerDecay) {
-    return nullptr;
-  }
-  auto* decl_ref_expr = dyn_cast<clang::DeclRefExpr>(cast_expr->getSubExpr());
-  if (!decl_ref_expr) {
-    return nullptr;
-  }
-  return dyn_cast<clang::FunctionDecl>(decl_ref_expr->getDecl());
-}
-
 // Computes the signature for a C++ function candidate based on the conversions
 // performed on the arguments.
 auto ComputeClangDeclSignatureFromBestViableFunction(
@@ -258,12 +241,6 @@ auto ComputeClangDeclSignatureFromBestViableFunction(
   signature.passing_modes.reserve(signature.num_params);
 
   for (auto [i, arg_expr] : llvm::enumerate(arg_exprs)) {
-    // A constant function argument is embedded into the thunk rather than
-    // passed at runtime; record which declaration it references.
-    if (auto* constant_decl = GetConstantFunctionArg(arg_expr)) {
-      signature.constant_function_args.resize(signature.num_params);
-      signature.constant_function_args[i] = constant_decl;
-    }
     // Compute which conversion sequence corresponds to this argument.
     // TODO: Clang should expose a way to compute this.
     int conversion_index = i;

@@ -79,10 +79,10 @@ static auto MapLValueToConstant(Context& context, SemIR::LocId loc_id,
 
       const SemIR::FieldDecl& field_decl_inst =
           context.insts().GetAs<SemIR::FieldDecl>(field_inst_id);
+      const auto& field = context.fields().Get(field_decl_inst.field_id);
 
       qual_type = field_decl->getType();
-      inst_id = PerformMemberAccess(context, loc_id, inst_id,
-                                    field_decl_inst.name_id);
+      inst_id = PerformMemberAccess(context, loc_id, inst_id, field.name_id);
     }
   }
 
@@ -309,22 +309,18 @@ auto MaybeModifyCppThunkCallForConstEval(Context& context, SemIR::Call* call)
       return;
     }
 
-    // A callee with a constant function argument embedded into its thunk has
-    // fewer runtime arguments than declared parameters, so the args can't be
-    // zipped against the callee's parameter list below.
-    if (const auto* callee_clang_decl =
-            context.clang_decls().Lookup(function.first_decl_id());
-        callee_clang_decl && callee_clang_decl->key.signature_id.has_value() &&
-        context.clang_decl_signatures()
-            .Get(callee_clang_decl->key.signature_id)
-            .HasConstantFunctionArgs()) {
-      return;
-    }
     auto thunk_callee_function = context.functions().Get(
         context.insts()
             .GetAs<SemIR::FunctionDecl>(thunk_callee_inst_id)
             .function_id);
 
+    const auto* clang_decl_info =
+        context.clang_decls().Lookup(thunk_callee_function.first_decl_id());
+    if (clang_decl_info == nullptr) {
+      // The `__invoke` thunk for a function pointer doesn't have a declared
+      // C++ callee.
+      return;
+    }
     function_decl = cast<clang::FunctionDecl>(
         context.clang_decls()
             .Lookup(thunk_callee_function.first_decl_id())

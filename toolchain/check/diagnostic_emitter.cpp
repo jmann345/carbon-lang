@@ -8,6 +8,7 @@
 #include <optional>
 #include <string>
 
+#include "clang/AST/TypeBase.h"
 #include "common/raw_string_ostream.h"
 #include "toolchain/check/diagnostic_helpers.h"
 #include "toolchain/sem_ir/absolute_node_ref.h"
@@ -92,14 +93,7 @@ auto DiagnosticEmitter::ConvertArg(llvm::Any arg) const -> llvm::Any {
     if (!type_of_expr->inst_id.has_value()) {
       return "<none>";
     }
-    // TODO: Where possible, produce a better description of the type based on
-    // the expression.
-    return "`" +
-           StringifyConstantInst(
-               *sem_ir_,
-               sem_ir_->types().GetTypeInstId(
-                   sem_ir_->insts().Get(type_of_expr->inst_id).type_id())) +
-           "`";
+    return "`" + StringifyTypeOfInst(*sem_ir_, type_of_expr->inst_id) + "`";
   }
   if (auto* expr = llvm::any_cast<InstIdAsConstant>(&arg)) {
     return "`" + StringifyConstantInst(*sem_ir_, expr->inst_id) + "`";
@@ -149,6 +143,9 @@ auto DiagnosticEmitter::ConvertArg(llvm::Any arg) const -> llvm::Any {
     auto specific_interface = sem_ir_->specific_interfaces().Get(
         specific_interface_raw->specific_interface_id);
     return StringifySpecificInterface(*sem_ir_, specific_interface);
+  }
+  if (auto* clang_type = llvm::any_cast<CppType>(&arg)) {
+    return clang_type->type.getAsString();
   }
   return DiagnosticEmitterBase::ConvertArg(arg);
 }

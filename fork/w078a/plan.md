@@ -58,17 +58,17 @@ an arbitrary seam the design does not have.
         `MatchDefaultNeverMatchesPriorArm`, `"every value is matched by this
         prior arm"`, at the covering arm's introducer — the W-066 first-
         covering-arm determinism (the first recorded `Wildcard`-root arm).
-    -   _Alternative union / bool value union_ (no single covering prior):
-        NEW note kind `MatchDefaultNeverMatchesFullCoverage` with
-        byte-identical text to `MatchCaseNeverMatchesFullCoverage` ("all
-        alternatives of {0} are matched by prior arms"); the bool rendering
-        "all alternatives of `bool`" is the landed W-076 wording. (amended
-        2026-09-26, review fold: rev 2 F2 + rev 1 C-5 — the former fallback is now
-        the primary plan. Cross-primary note reuse has precedent
-        (`RedeclPrevDecl`, merge.cpp:16, shared by three primaries), but
-        those precedents are NEUTRALLY named; a `[MatchCase...]`-tagged note
-        under a `default` primary is user-visibly incoherent. No hoist of
-        `MatchCaseNeverMatchesFullCoverage`; R-3 retired.)
+    -   _Alternative union / bool value union_ (no single covering prior): NEW
+        note kind `MatchDefaultNeverMatchesFullCoverage` with byte-identical
+        text to `MatchCaseNeverMatchesFullCoverage` ("all alternatives of {0}
+        are matched by prior arms"); the bool rendering "all alternatives of
+        `bool`" is the landed W-076 wording. (amended 2026-09-26, review fold:
+        rev 2 F2 + rev 1 C-5 — the former fallback is now the primary plan.
+        Cross-primary note reuse has precedent (`RedeclPrevDecl`, merge.cpp:16,
+        shared by three primaries), but those precedents are NEUTRALLY named; a
+        `[MatchCase...]`-tagged note under a `default` primary is user-visibly
+        incoherent. No hoist of `MatchCaseNeverMatchesFullCoverage`; R-3
+        retired.)
 2.  **Guarded `default`s ARE checked.** Deadness is arm reachability: when
     priors fully cover, control reaches the arm's test only with values prior
     arms already consumed, so even a guarded `default` never runs — exactly
@@ -215,24 +215,23 @@ diagnose-and-proceed still emits full SemIR, so the multi-arm guard-failure
 convergence shape keeps a SemIR pin there (amended 2026-09-26, review fold:
 rev 1 A-4; see §6.8).
 
-Negatives (silent unless noted), added to
-usefulness_no_false_positive.carbon: `guarded_priors_default` (choice whose
-every alternative is covered only by GUARDED arms, + `default` — guards never
-count); `fail_error_arm_prior_default` (choice, full coverage + an error arm +
-`default` — only the arm's own error; has_error_arm suppression);
-`fail_error_arm_wildcard_prior_default` (choice, an error arm + a
-`Wildcard`-root irrefutable prior + `default` — silent on the `default`,
-pinning the §1.4 asymmetry: the analogous `case` arm in that position would
-be diagnosed; amended 2026-09-26, review fold: rev 1 A-3). Error-arm spelling
-pin (amended 2026-09-26, review fold: rev 1 A-5): both error-arm negatives must
-use a non-aborting alternative-pattern error that push_error()s and
-proceeds — for example `.Err()` unexpected-parens (`MatchAlternativeUnexpectedParens`)
-or an unknown alternative name, per fail_choice_alternative_pattern.carbon's
-shapes — because `case 5` on a choice scrutinee TODO-aborts the subfile
-(fail_todo_choice_expr_case.carbon's SemanticsTodo pin). Already
-pinned in-tree and staying silent: partial coverage + `default`
-(choice_scrutinee, nested_choice_designator — which also pins nested-match
-independence on choice roots), integer irrefutable + `default`
+Negatives (silent unless noted), added to usefulness_no_false_positive.carbon:
+`guarded_priors_default` (choice whose every alternative is covered only by
+GUARDED arms, + `default` — guards never count); `fail_error_arm_prior_default`
+(choice, full coverage + an error arm + `default` — only the arm's own error;
+has_error_arm suppression); `fail_error_arm_wildcard_prior_default` (choice, an
+error arm + a `Wildcard`-root irrefutable prior + `default` — silent on the
+`default`, pinning the §1.4 asymmetry: the analogous `case` arm in that position
+would be diagnosed; amended 2026-09-26, review fold: rev 1 A-3). Error-arm
+spelling pin (amended 2026-09-26, review fold: rev 1 A-5): both error-arm
+negatives must use a non-aborting alternative-pattern error that push_error()s
+and proceeds — for example `.Err()` unexpected-parens
+(`MatchAlternativeUnexpectedParens`) or an unknown alternative name, per
+fail_choice_alternative_pattern.carbon's shapes — because `case 5` on a choice
+scrutinee TODO-aborts the subfile (fail_todo_choice_expr_case.carbon's
+SemanticsTodo pin). Already pinned in-tree and staying silent: partial
+coverage + `default` (choice_scrutinee, nested_choice_designator — which also
+pins nested-match independence on choice roots), integer irrefutable + `default`
 (dead_default_exempt IntSide, the R8 record), empty-choice `default`
 (empty_choice, choice_generic_scrutinee empty_choice_specific,
 single_alternative_choice default_only), tuple roots (bool_tuple_scrutinee,

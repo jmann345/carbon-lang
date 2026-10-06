@@ -158,204 +158,191 @@ implementation choice the design leaves to the toolchain, or draws a
     open (design-sprint unions.md:372-379) — no contradiction; the fork
     spelling is already in F-007's register. Break condition: none —
     the representation is design-mandated.
--   **D-UN-2 — the 0.1 field predicate is `IsTriviallyDestructible`
-    (custom_witness.cpp:504) extended with a `CustomLayoutType` arm AND
-    a class-keyed "no non-trivial user `Core.Copy` impl" check, NOT the
-    SF-6 scalar allowlist.** Rationale: the design's own canonical union
-    has an `array(u8, 4)` field (unions.md:96-99) and admits arrays,
-    tuples, structs, classes and unions "whose members recursively
-    satisfy" the predicate (:212-215); `IsInSliceChoicePayloadType`
-    rejects all of those. `IsTriviallyDestructible` is the design's
-    "defined once, reused" predicate (:196-202) as landed at F8b, but it
-    is only the DESTRUCTIBLE half: it checks `HasUserDestroyImpl`
-    (:551-556) and never looks at `Core.Copy` impls, and
+-   **D-UN-2** — the 0.1 field predicate is `IsTriviallyDestructible`
+    (custom_witness.cpp:504) extended with a `CustomLayoutType` arm AND a
+    class-keyed "no non-trivial user `Core.Copy` impl" check, NOT the SF-6
+    scalar allowlist. Rationale: the design's own canonical union has an
+    `array(u8, 4)` field (unions.md:96-99) and admits arrays, tuples, structs,
+    classes and unions "whose members recursively satisfy" the predicate
+    (:212-215); `IsInSliceChoicePayloadType` rejects all of those.
+    `IsTriviallyDestructible` is the design's "defined once, reused" predicate
+    (:196-202) as landed at F8b, but it is only the DESTRUCTIBLE half: it checks
+    `HasUserDestroyImpl` (:551-556) and never looks at `Core.Copy` impls, and
     `IsTriviallyCopyableForExport` (export.cpp:1583-1602) is shape plus
-    `IsTriviallyDestructible`, nothing more — a class field with a user
-    `impl as Core.Copy` would be admitted and D-UN-5's `PrimitiveCopy`
-    memcpy would silently bypass it (amended 2026-09-27, review fold: rev
-    B F-2; rev 1's sentence claiming export.cpp "says so" was false and
-    is deleted). **Adopted: option (a), the copyable half is added to the
-    union walk as `HasNonTrivialUserCopyImpl(class)`.** It is NOT a
-    literal mirror of `HasUserDestroyImpl`'s symbolic-self shortcut
-    (:436-438, :461-465: "any symbolic-self impl in scope disqualifies
-    every class"): the prelude already declares several symbolic-self
-    `Core.Copy` impls — `impl forall [T: type] T* as Copy`
-    (core/prelude/copy.carbon:46), `impl forall [T: Copy] const T as
+    `IsTriviallyDestructible`, nothing more — a class field with a user `impl as
+    Core.Copy` would be admitted and D-UN-5's `PrimitiveCopy` memcpy would
+    silently bypass it (amended 2026-09-27, review fold: rev B F-2; rev 1's
+    sentence claiming export.cpp "says so" was false and is deleted). **Adopted:
+    option (a), the copyable half is added to the union walk as
+    `HasNonTrivialUserCopyImpl(class)`.** It is NOT a literal mirror of
+    `HasUserDestroyImpl`'s symbolic-self shortcut (:436-438, :461-465: "any
+    symbolic-self impl in scope disqualifies every class"): the prelude already
+    declares several symbolic-self `Core.Copy` impls — `impl forall [T: type] T*
+    as Copy` (core/prelude/copy.carbon:46), `impl forall [T: Copy] const T as
     Copy` (:22), `impl forall [N: IntLiteral] Int(N) as Copy`
     (types/int.carbon:25), `UInt(N)` (uint.carbon:26), `Float(N)`
-    (float.carbon:26), `Optional(T)` (optional.carbon:50) — so the
-    shortcut would return true for every class, and `i32` is itself
-    `class_type @Int`, so a class-keyed match alone would reject every
-    integer field. The check is therefore: an impl of `Core.Copy`
-    (`GetCoreInterface`, custom_witness.cpp:886-894) whose self constant
-    is a `ClassType` (concrete) or a symbolic `ClassType` of the SAME
-    `class_id` as the field's class — walking the local store and the
-    imported stores exactly as `HasUserDestroyImpl` does (:425-497), the
-    canonical-identity match included — and which is declared OUTSIDE
-    package `Core` (amended 2026-09-27, rev 2a, auto-adopted under
-    R29(a): a TRUST BOUNDARY replaces rev 2's "bodied impl ⇒ rejected"
-    rule, which would have rejected the design's own canonical
+    (float.carbon:26), `Optional(T)` (optional.carbon:50) — so the shortcut
+    would return true for every class, and `i32` is itself `class_type @Int`, so
+    a class-keyed match alone would reject every integer field. The check is
+    therefore: an impl of `Core.Copy` (`GetCoreInterface`,
+    custom_witness.cpp:886-894) whose self constant is a `ClassType` (concrete)
+    or a symbolic `ClassType` of the SAME `class_id` as the field's class —
+    walking the local store and the imported stores exactly as
+    `HasUserDestroyImpl` does (:425-497), the canonical-identity match included
+    — and which is declared OUTSIDE package `Core` (amended 2026-09-27, rev 2a,
+    auto-adopted under R29(a): a TRUST BOUNDARY replaces rev 2's "bodied impl ⇒
+    rejected" rule, which would have rejected the design's own canonical
     `Optional(T*)` idiom, unions.md:341-344 — rejecting a ratified design
-    example is a user-visible contradiction, not a narrowing). The
-    prelude is toolchain-trusted code: its `Copy` impls over a
-    trivially-destructible shape are bitwise by construction, so
-    `user-provided` in the design's definition (:207-210) means
-    "declared by the program, not by the prelude". **Prelude `Core.Copy`
-    audit (every `impl ... as Copy` under core/, none outside
-    core/prelude):** copy.carbon:26-47 (`Bool`, `CharLiteral`,
-    `FloatLiteral`, `IntLiteral`, `type`, `T*`) and :22 (`const T`,
-    delegates to `T`); int.carbon:25-27, uint.carbon:26-28,
-    float.carbon:26-28, char.carbon:22-24; cpp/int.carbon:49-72 (the six
-    `CppCompat` adapters) — all `= "primitive_copy"`; cpp/nullptr.carbon:42-46
-    (`NullptrT`, `return Make()` over a `make_uninitialized` builtin — a
-    stateless type, trivially equivalent to a byte copy);
-    string.carbon:19-21 (`String`, `{.ptr = self.ptr, .size = self.size}`
-    — a field-wise copy of both fields, bitwise on the object
-    representation); optional.carbon:50-54 (`Optional(T)`, delegates to
-    `T.Copy` on the storage: the pointer specialization's `Copy` is
-    `= "primitive_copy"` (:203), and `DefaultOptionalStorage(T)`'s
-    (:174-180) rebuilds `{value, has_value}` through `Some()`/`None()` —
-    not a literal memcpy, but observationally identical to one for every
-    `T` the walk admits: same `has_value`, same `value` bytes when
-    present, no side effects, no ownership). Conclusion: NO prelude
-    `Copy` impl over an admitted shape has side effects or differs
-    observably from a byte copy of the object representation, so no
-    explicit allowlist is needed; the package test alone is the rule.
-    **Mechanism, verified (amended 2026-09-27, review fold: rev 2b
-    B-1):** the local-store leg first SKIPS every impl that import
-    MATERIALIZED into the local store — `context.insts().GetImportSource(
+    example is a user-visible contradiction, not a narrowing). The prelude is
+    toolchain-trusted code: its `Copy` impls over a trivially-destructible shape
+    are bitwise by construction, so `user-provided` in the design's definition
+    (:207-210) means "declared by the program, not by the prelude". **Prelude
+    `Core.Copy` audit (every `impl ... as Copy` under core/, none outside
+    core/prelude):** copy.carbon:26-47 (`Bool`, `CharLiteral`, `FloatLiteral`,
+    `IntLiteral`, `type`, `T*`) and :22 (`const T`, delegates to `T`);
+    int.carbon:25-27, uint.carbon:26-28, float.carbon:26-28, char.carbon:22-24;
+    cpp/int.carbon:49-72 (the six `CppCompat` adapters) — all `=
+    "primitive_copy"`; cpp/nullptr.carbon:42-46 (`NullptrT`, `return Make()`
+    over a `make_uninitialized` builtin — a stateless type, trivially equivalent
+    to a byte copy); string.carbon:19-21 (`String`, `{.ptr = self.ptr, .size =
+    self.size}` — a field-wise copy of both fields, bitwise on the object
+    representation); optional.carbon:50-54 (`Optional(T)`, delegates to `T.Copy`
+    on the storage: the pointer specialization's `Copy` is `= "primitive_copy"`
+    (:203), and `DefaultOptionalStorage(T)`'s (:174-180) rebuilds `{value,
+    has_value}` through `Some()`/`None()` — not a literal memcpy, but
+    observationally identical to one for every `T` the walk admits: same
+    `has_value`, same `value` bytes when present, no side effects, no
+    ownership). Conclusion: NO prelude `Copy` impl over an admitted shape has
+    side effects or differs observably from a byte copy of the object
+    representation, so no explicit allowlist is needed; the package test alone
+    is the rule. **Mechanism, verified (amended 2026-09-27, review fold: rev 2b
+    B-1):** the local-store leg first SKIPS every impl that import MATERIALIZED
+    into the local store — `context.insts().GetImportSource(
     impl.first_decl_id()).has_value()` (sem_ir/inst.h:590-594; equivalently
     `SemIR::GetCanonicalFileAndInstId(&context.sem_ir(),
-    impl.first_decl_id()).first != &context.sem_ir()`, sem_ir/import_ir.h:81)
-    — because a materialized impl's `parent_scope_id` is `None`
-    (`GetIncompleteLocalEntityBase`, import_ref.cpp:1458-1466; the impl
-    import phases :2868-2915 set only `parent_scope_inst_id`, :2876-2877),
-    so rev 2a's `IsCorePackage(impl.parent_scope_id)` spelling would have
-    classified a materialized prelude `Int.as.Copy.impl` (routine —
-    class/basic.carbon:56-58; 178 check goldens carry `as.Copy.impl`) as a
-    USER impl and diagnosed `var a: i32;` whenever an `i32` `Copy` lookup
-    preceded the union in the file, order-dependently. The remaining
-    file-declared impls are classified by `context.sem_ir().package_id()
-    == PackageNameId::Core` (sem_ir/file.h:133; the handle_interface.cpp:88
-    idiom); the imported-store leg classifies by
+    impl.first_decl_id()).first != &context.sem_ir()`, sem_ir/import_ir.h:81) —
+    because a materialized impl's `parent_scope_id` is `None`
+    (`GetIncompleteLocalEntityBase`, import_ref.cpp:1458-1466; the impl import
+    phases :2868-2915 set only `parent_scope_inst_id`, :2876-2877), so rev 2a's
+    `IsCorePackage(impl.parent_scope_id)` spelling would have classified a
+    materialized prelude `Int.as.Copy.impl` (routine — class/basic.carbon:56-58;
+    178 check goldens carry `as.Copy.impl`) as a USER impl and diagnosed `var a:
+    i32;` whenever an `i32` `Copy` lookup preceded the union in the file,
+    order-dependently. The remaining file-declared impls are classified by
+    `context.sem_ir().package_id() == PackageNameId::Core` (sem_ir/file.h:133;
+    the handle_interface.cpp:88 idiom); the imported-store leg classifies by
     `import_sem_ir.package_id() == PackageNameId::Core` inside the same
     `import_irs()` loop `HasUserDestroyImpl` walks (custom_witness.cpp:455-497),
-    whose canonical-decl identity match finds `impl forall [T] MyBox(T)
-    as Copy` for a `MyBox(i32)` field (re-review verified). Order
-    independence is pinned by §4.A `order_independent_i32`. `Int(N)`/`UInt(N)`/`Float(N)`/`Char`/`Bool`/`T*`/
-    `CppCompat`/`String`/`Optional(T)` fields therefore pass; a user
-    class with an `impl as Core.Copy` declared outside `Core` — bodied or
-    builtin, the package is the boundary — is rejected with
-    `UnionFieldNotTriviallyCopyable` (pinned: §4.A `fail_user_copy_field`).
-    `Core.Optional(T*)` is ADMITTED (pinned: §4.A `optional_pointer_field`,
-    check + lower — the lower golden must show a plain memcpy/load-store
-    of the pointer-sized storage). **Record of the rev 2 detour, kept
-    for the log:** rev 2 read rev B F-2's "`Optional(T*)` still passes
-    because its `Copy` is the `primitive_copy` builtin
-    (optional.carbon:189-203)" as citing the `OptionalStorage` helper
-    (:203) rather than the class's `Core.Copy` impl (:50-54), which is
-    bodied, and rejected `Optional(T*)`; rev 2a's trust boundary makes
-    the reviewer's conclusion right by a different mechanism — the
-    `fail_optional_pointer_field` pin, the ":341-344 self-contradiction"
-    doc note and the residue "union fields of `Core.Optional(T*)`" are
-    WITHDRAWN. Break condition of the trust boundary: a prelude `Copy`
-    impl that is not observationally bitwise over an admitted shape
-    (re-run the audit above at every weekly upstream merge that touches
-    core/prelude; the fix is then an explicit allowlist of prelude
-    classes, never widening the boundary to user packages). Falsifier:
-    the lower golden of `optional_pointer_field` showing anything other
-    than a plain memcpy/load-store of the storage (a call to the prelude
-    `Op` there means the union copy is not the primitive copy D-UN-5
-    specifies). Three conservative exclusions follow from the predicate as
-    it stands and are recorded loudly rather than papered over: (i) a
-    CHOICE-typed field is rejected (:535-538 returns false for `is_choice`,
-    deferring to the destroy machinery) although the design permits
-    choices whose payloads are trivial — residue "union fields of choice
-    type" (§8.5); (ii) `str` fields are rejected (the builtin string type
-    hits `IsTriviallyDestructible`'s default arm) — `String` fields are
-    ADMITTED under rev 2a (prelude `Copy`, string.carbon:19-21, and a
-    trivially-destructible `{ptr, size}` repr); (iii) an IMPORTED C++ class or union as a field is rejected,
-    because `IsTriviallyDestructible` returns false for every
-    `is_cpp_scope` class (custom_witness.cpp:528-534) — the canonical
-    migration shape (unions.md:54-58, :64-66) is therefore not admitted
-    in 0.1 (amended 2026-09-27, review fold: rev A M-1 / rev B F-3);
-    pinned by §4.A `fail_cpp_class_field`, doc note at §8.6, residue
-    "union fields of imported C++ type" naming the mechanism — a cpp-scope
-    arm consulting `CXXRecordDecl::isTriviallyCopyable()` through
-    `context.clang_decls()`. That residue is deliberately NOT pulled into
-    UN-2 although UN-2 has the cpp/ files open: the predicate lives in
-    custom_witness.cpp and is the F8b single-owner predicate whose other
-    consumer, `IsTriviallyCopyableForExport`, would change meaning for
-    exported classes with C++-typed fields — a separate review, not a
-    rider. **Mechanism behind the break condition:** `HasUserDestroyImpl`'s
-    symbolic-self shortcut (:436-438) makes ANY blanket `Core.Destroy`
-    impl in scope disqualify all classes; none exists today
-    (`grep -rn 'as Destroy' core/` is empty), and the predicate becomes
-    useless the day one lands. Break condition: a prelude or user
-    blanket `Core.Destroy` impl appearing, or the `aggregate_fields` /
-    `nested_union_field` subfiles diagnosing — then the predicate gains a
-    class-keyed `Destroy` match like the `Copy` one, never a silent
-    widening elsewhere.
--   **D-UN-3 — generic unions are TODO-gated in 0.1: a union with its
-    own parameters or an enclosing generic scope (`generic_id.has_value()`,
-    the handle_choice.cpp:645-646 test — citation corrected; amended
-    2026-09-27, review fold: rev B F-7) diagnoses `SemanticsTodo`
-    "`generic union`" at its definition and completes with an error
-    witness.** The gate is deliberately the BROAD one (amended
-    2026-09-27, review fold: rev B F-7): it also fires for a
-    concrete-field union nested in a generic class (`class Box(T: type) {
-    union U { var a: i32; } }`), which the design's cut line
-    (design-sprint unions.md:518-523, "concrete (non-generic) unions")
-    does not require; the narrow alternative — gate on "any field type
-    not `is_concrete()`" — would admit a union whose `ClassType` is
-    itself per-specific inside a generic region, a shape no golden pins,
-    for no 0.1 program. The :116-117 amendment and the residue title say
-    "generic unions and unions nested in generic scopes". unions.md:116-117 says generic unions are "supported as
-    they fall out of the general machinery"; §0.1 row 12 shows they do
-    not — the only symbolic-layout recompute is the choice payload hook,
+    whose canonical-decl identity match finds `impl forall [T] MyBox(T) as Copy`
+    for a `MyBox(i32)` field (re-review verified). Order independence is pinned
+    by §4.A `order_independent_i32`.
+    `Int(N)`/`UInt(N)`/`Float(N)`/`Char`/`Bool`/`T*`/ `CppCompat`/`String`/`Optional(T)`
+    fields therefore pass; a user class with an `impl as Core.Copy` declared
+    outside `Core` — bodied or builtin, the package is the boundary — is
+    rejected with `UnionFieldNotTriviallyCopyable` (pinned: §4.A
+    `fail_user_copy_field`). `Core.Optional(T*)` is ADMITTED (pinned: §4.A
+    `optional_pointer_field`, check + lower — the lower golden must show a plain
+    memcpy/load-store of the pointer-sized storage). **Record of the rev 2
+    detour, kept for the log:** rev 2 read rev B F-2's "`Optional(T*)` still
+    passes because its `Copy` is the `primitive_copy` builtin
+    (optional.carbon:189-203)" as citing the `OptionalStorage` helper (:203)
+    rather than the class's `Core.Copy` impl (:50-54), which is bodied, and
+    rejected `Optional(T*)`; rev 2a's trust boundary makes the reviewer's
+    conclusion right by a different mechanism — the
+    `fail_optional_pointer_field` pin, the ":341-344 self-contradiction" doc
+    note and the residue "union fields of `Core.Optional(T*)`" are WITHDRAWN.
+    Break condition of the trust boundary: a prelude `Copy` impl that is not
+    observationally bitwise over an admitted shape (re-run the audit above at
+    every weekly upstream merge that touches core/prelude; the fix is then an
+    explicit allowlist of prelude classes, never widening the boundary to user
+    packages). Falsifier: the lower golden of `optional_pointer_field` showing
+    anything other than a plain memcpy/load-store of the storage (a call to the
+    prelude `Op` there means the union copy is not the primitive copy D-UN-5
+    specifies). Three conservative exclusions follow from the predicate as it
+    stands and are recorded loudly rather than papered over: (i) a CHOICE-typed
+    field is rejected (:535-538 returns false for `is_choice`, deferring to the
+    destroy machinery) although the design permits choices whose payloads are
+    trivial — residue "union fields of choice type" (§8.5); (ii) `str` fields
+    are rejected (the builtin string type hits `IsTriviallyDestructible`'s
+    default arm) — `String` fields are ADMITTED under rev 2a (prelude `Copy`,
+    string.carbon:19-21, and a trivially-destructible `{ptr, size}` repr); (iii)
+    an IMPORTED C++ class or union as a field is rejected, because
+    `IsTriviallyDestructible` returns false for every `is_cpp_scope` class
+    (custom_witness.cpp:528-534) — the canonical migration shape
+    (unions.md:54-58, :64-66) is therefore not admitted in 0.1 (amended
+    2026-09-27, review fold: rev A M-1 / rev B F-3); pinned by §4.A
+    `fail_cpp_class_field`, doc note at §8.6, residue "union fields of imported
+    C++ type" naming the mechanism — a cpp-scope arm consulting
+    `CXXRecordDecl::isTriviallyCopyable()` through `context.clang_decls()`. That
+    residue is deliberately NOT pulled into UN-2 although UN-2 has the cpp/
+    files open: the predicate lives in custom_witness.cpp and is the F8b
+    single-owner predicate whose other consumer, `IsTriviallyCopyableForExport`,
+    would change meaning for exported classes with C++-typed fields — a separate
+    review, not a rider. **Mechanism behind the break condition:**
+    `HasUserDestroyImpl`'s symbolic-self shortcut (:436-438) makes ANY blanket
+    `Core.Destroy` impl in scope disqualify all classes; none exists today (`grep
+    -rn 'as Destroy' core/` is empty), and the predicate becomes useless the day
+    one lands. Break condition: a prelude or user blanket `Core.Destroy` impl
+    appearing, or the `aggregate_fields` / `nested_union_field` subfiles
+    diagnosing — then the predicate gains a class-keyed `Destroy` match like the
+    `Copy` one, never a silent widening elsewhere.
+-   **D-UN-3 — generic unions are TODO-gated in 0.1: a union with its own
+    parameters or an enclosing generic scope (`generic_id.has_value()`, the
+    handle_choice.cpp:645-646 test — citation corrected; amended 2026-09-27,
+    review fold: rev B F-7) diagnoses `SemanticsTodo` "`generic union`" at its
+    definition and completes with an error witness.**
+    The gate is deliberately the BROAD one (amended 2026-09-27, review fold: rev
+    B F-7): it also fires for a concrete-field union nested in a generic class
+    (`class
+    Box(T: type) { union U { var a: i32; } }`), which the design's cut line
+    (design-sprint unions.md:518-523, "concrete (non-generic) unions") does not
+    require; the narrow alternative — gate on "any field type not
+    `is_concrete()`" — would admit a union whose `ClassType` is itself
+    per-specific inside a generic region, a shape no golden pins, for no 0.1
+    program. The :116-117 amendment and the residue title say "generic unions
+    and unions nested in generic scopes". unions.md:116-117 says generic unions
+    are "supported as they fall out of the general machinery"; §0.1 row 12 shows
+    they do not — the only symbolic-layout recompute is the choice payload hook,
     which asserts tuple fields and the SF-6 allowlist. Making that hook
-    union-aware would either key on a flag `CustomLayoutType` does not
-    carry or duplicate the hook; both are beyond a slice whose design
-    cut line is "concrete (non-generic) unions" (design-sprint
-    unions.md:518-523; "only concrete instantiations are covered by the
-    conformance suite", unions.md:116-117). Recorded as a dated doc
-    amendment (§8.6) and a residue item "generic unions" (§8.5) naming
-    the mechanism: a `CustomLayoutType` origin bit or a separate
-    dependent-layout rebuild without the SF-6 element check. Break
-    condition: none in this workstream.
--   **D-UN-4 — designated single-field initialization is a new
-    `ConvertStructToUnion` arm inside `ConvertStructToClass`, replacing
-    the :909-912 bailout for `is_union` classes; it emits a ONE-element
-    `ClassInit` (the designated field's in-place initializer into
-    `ClassElementAccess(storage, field_index)`), and `EvalConstantInst(ClassInit)`
-    (eval_inst.cpp:180-186) returns `ConstantEvalResult::NotConstant`
-    for a union class so the initializer never folds.** The fold
-    suppression is the load-bearing part: a folded `ClassInit` becomes a
-    `StructValue` whose lowering is
+    union-aware would either key on a flag `CustomLayoutType` does not carry or
+    duplicate the hook; both are beyond a slice whose design cut line is
+    "concrete (non-generic) unions" (design-sprint unions.md:518-523; "only
+    concrete instantiations are covered by the conformance suite",
+    unions.md:116-117). Recorded as a dated doc amendment (§8.6) and a residue
+    item "generic unions" (§8.5) naming the mechanism: a `CustomLayoutType`
+    origin bit or a separate dependent-layout rebuild without the SF-6 element
+    check. Break condition: none in this workstream.
+-   **D-UN-4** — designated single-field initialization is a new
+    `ConvertStructToUnion` arm inside `ConvertStructToClass`, replacing the
+    :909-912 bailout for `is_union` classes; it emits a ONE-element `ClassInit`
+    (the designated field's in-place initializer into
+    `ClassElementAccess(storage, field_index)`), and
+    `EvalConstantInst(ClassInit)` (eval_inst.cpp:180-186) returns
+    `ConstantEvalResult::NotConstant` for a union class so the initializer never
+    folds. The fold suppression is the load-bearing part: a folded `ClassInit`
+    becomes a `StructValue` whose lowering is
     `EmitAggregateConstant<llvm::ConstantStruct>(...,
-    cast<llvm::StructType>(GetType(type)))` (lower/constant.cpp:204-208)
-    — but a union's LLVM type is `[N x i8]` (lower/type.cpp:675-682), so
-    the cast is a CHECK failure; overlapping fields have no constant
-    aggregate spelling (the `PadToType` zero-size arm, constant.cpp:127-172,
-    is the only sub-object shape lowering accepts, and it was minted for
-    exactly one folded shape by EH-A's R-3). One-sentence justification
-    for the reviewer: a union value has no constant object representation
-    in lowering, so union initializers are always runtime stores. The
-    one-element `ClassInit` is safe because the in-place aggregate
-    initializer lowering iterates the ELEMENT block, not the repr fields
-    (lower/aggregate.cpp:200-232: constant elements are stored through
-    `InitializeStorage`, non-constant ones were stored when their
-    `InPlaceInit` lowered, handle.cpp:207-211), and the element-count
-    convention the choice constructor keeps ("so the `ClassInit`'s
-    element count matches the object representation's field count",
-    handle_choice.cpp:404-408) exists for the CONSTANT fold, which
-    D-UN-4 forbids. Covering the other fields with `InPlaceInit(UninitializedValue)`
-    is rejected: at offset 0 the cover's zero store would clobber the
-    designated value whenever it is ordered after it (`EmitAggregateInitializer`
-    stores constant elements last, aggregate.cpp:213-232). Break
-    condition: any autoupdate fill showing a `struct_value` of union
-    type, or a lowering CHECK in `EmitAsConstant(StructValue)`, means
-    the suppression missed a path — stop and diagnose (§7 R-1).
+    cast<llvm::StructType>(GetType(type)))` (lower/constant.cpp:204-208) — but a
+    union's LLVM type is `[N x i8]` (lower/type.cpp:675-682), so the cast is a
+    CHECK failure; overlapping fields have no constant aggregate spelling (the
+    `PadToType` zero-size arm, constant.cpp:127-172, is the only sub-object
+    shape lowering accepts, and it was minted for exactly one folded shape by
+    EH-A's R-3). One-sentence justification for the reviewer: a union value has
+    no constant object representation in lowering, so union initializers are
+    always runtime stores. The one-element `ClassInit` is safe because the
+    in-place aggregate initializer lowering iterates the ELEMENT block, not the
+    repr fields (lower/aggregate.cpp:200-232: constant elements are stored
+    through `InitializeStorage`, non-constant ones were stored when their
+    `InPlaceInit` lowered, handle.cpp:207-211), and the element-count convention
+    the choice constructor keeps ("so the `ClassInit`'s element count matches
+    the object representation's field count", handle_choice.cpp:404-408) exists
+    for the CONSTANT fold, which D-UN-4 forbids. Covering the other fields with
+    `InPlaceInit(UninitializedValue)` is rejected: at offset 0 the cover's zero
+    store would clobber the designated value whenever it is ordered after it (`EmitAggregateInitializer`
+    stores constant elements last, aggregate.cpp:213-232). Break condition: any
+    autoupdate fill showing a `struct_value` of union type, or a lowering CHECK
+    in `EmitAsConstant(StructValue)`, means the suppression missed a path — stop
+    and diagnose (§7 R-1).
 -   **D-UN-5 — whole-union copy reuses the synthesized primitive-copy
     witness: `LookupChoiceCopyWitness`'s gate becomes `is_choice ||
     (is_union && !is_cpp_scope)`.** Justification is the union field
@@ -443,69 +430,65 @@ implementation choice the design leaves to the toolchain, or draws a
     is NOT added for a union (`final` is meaningless on a C++ union and
     is a Clang-side shape no existing golden exercises) — the C++ side
     sees an ordinary trivial union (unions.md:502-505).
--   **D-UN-9 — unformed state by way of `Core.UnformedInit`: a native
-    union implements `UnformedInit` through a synthesized empty custom
-    witness, so the prelude's blanket `impl forall [T: UnformedInit] T as
-    DefaultOrUnformed { fn Op() -> Self = "make_uninitialized"; }`
+-   **D-UN-9 — unformed state by way of `Core.UnformedInit`: a native union
+    implements `UnformedInit` through a synthesized empty custom witness, so the
+    prelude's blanket
+    `impl forall [T: UnformedInit] T as DefaultOrUnformed { fn Op() -> Self = "make_uninitialized"; }`
     (default.carbon:52-54) applies and `var u: U;` type-checks (amended
     2026-09-27, review fold: rev A B-1 / rev B F-1 — a rev 1 BLOCKER: the
-    design-faithful mechanism both reviewers preferred).** Mechanism, all
-    on landed patterns: (1) `CARBON_SEM_IR_CORE_INTERFACE_KIND(UnformedInit)`
-    in sem_ir/core_interface_kind.def (before `Unknown`, :43) — the tag
-    is assigned automatically to the prelude interface by name
-    (check/handle_interface.cpp:93-97's `StringSwitch` over the same
-    x-macro) and mirrored on import (import_ref.cpp:3089
-    `.core_interface = import_interface.core_interface`); (2)
+    design-faithful mechanism both reviewers preferred).** Mechanism, all on
+    landed patterns: (1) `CARBON_SEM_IR_CORE_INTERFACE_KIND(UnformedInit)` in
+    sem_ir/core_interface_kind.def (before `Unknown`, :43) — the tag is assigned
+    automatically to the prelude interface by name
+    (check/handle_interface.cpp:93-97's `StringSwitch` over the same x-macro)
+    and mirrored on import (import_ref.cpp:3089 `.core_interface =
+    import_interface.core_interface`); (2)
     `CARBON_CORE_IDENTIFIER(UnformedInit)` in check/core_identifier.def
     (alphabetical), which `AsCoreIdentifier`'s x-macro switch
-    (custom_witness.cpp:873-882) requires for every core interface; (3) a
-    `case SemIR::CoreInterface::UnformedInit:` arm in `LookupCustomWitness`
-    (:1196-1218) calling a new `LookupUnionUnformedInitWitness` that
-    mirrors `LookupChoiceCopyWitness` (:936-967): nullopt unless the self
-    is a `ClassType` with `is_union && !is_cpp_scope`; `InstId::None` when
+    (custom_witness.cpp:873-882) requires for every core interface; (3) a `case
+    SemIR::CoreInterface::UnformedInit:` arm in `LookupCustomWitness`
+    (:1196-1218) calling a new `LookupUnionUnformedInitWitness` that mirrors
+    `LookupChoiceCopyWitness` (:936-967): nullopt unless the self is a
+    `ClassType` with `is_union && !is_cpp_scope`; `InstId::None` when
     `!build_witness` or the self is symbolic (the :946-953 handling —
     unreachable for a 0.1 union under D-UN-3 but kept for parity); else
     `BuildCustomWitness(context, loc_id, query_self_const_id,
-    query_specific_interface_id, /*values=*/{})` — legal because
-    `UnformedInit` declares no associated entities (default.carbon:18-26)
-    and `BuildCustomWitness` CHECKs only `assoc_entities.size() ==
-    values.size()` (:741-756); (4) `case SemIR::CoreInterface::UnformedInit:
-    return SemIR::InstId::None;` in `LookupCppImpl`
-    (check/cpp/impl_lookup.cpp:571-636 — an exhaustive switch with no
-    default ending in `case Unknown: CARBON_FATAL`, so the new kind
-    breaks the -Werror build without an arm; the `IntFitsIn`/`FloatFitsIn`
-    precedent is :629-632). Behaviorally `EvalLookupSingleImplWitness`
-    (check/impl_lookup.cpp:1313-1322) now calls `LookupCppImpl` for
-    concrete selves whose associated import IR is `Cpp` with this kind,
-    and `None` keeps imported C++ classes' `DefaultOrUnformed` path
-    unchanged — the "imported unions unaffected" claim below depends on
-    it (amended 2026-09-27, review fold: rev 2b M-1). The `Op` call then
-    resolves through the blanket impl to the `MakeUninitialized`
-    builtin, which lowers to a poison value (lower/handle_call.cpp:333-336). **Rejected: a
-    synthesized `Core.Default` witness** — it would declare the variable
-    FORMED, contradicting unions.md:245-253 ("A union variable declared
-    without an initializer is in the unformed state ... The first write
-    to a field forms the variable") and the unformed-state contract that
-    destruction is optional and no other operation is permitted
-    (default.carbon:16-17). **Imported unions are unaffected:** their
-    `DefaultOrUnformed` resolves through `Core.Default` from the C++
-    default constructor (check/cpp/impl_lookup.cpp:216-240
-    `BuildDefaultWitness`, dispatched at :618), exactly as today. Golden
-    precedent note, verified: NO golden in the tree exercises an unformed
-    local of a class type with an in-place initializing representation
-    (`grep -rln 'var [a-z_]*: \(Core.\)\?String;'` and `... Optional(i32);`
-    over check/lower testdata are empty; the `String as UnformedInit` and
-    `Optional(T) as UnformedInit` impls exist but are unpinned), so the
-    §4.A shapes are derived from the code path and from the empty-tuple
-    precedent check/testdata/var/initialization.carbon:133-134
-    (`%...as.DefaultOrUnformed.impl.Op.call: init %... = call
-    constants.%...Op()` then `assign %x.var, %...call`) and the
+    query_specific_interface_id, /*values=*/{})` — legal because `UnformedInit`
+    declares no associated entities (default.carbon:18-26) and
+    `BuildCustomWitness` CHECKs only `assoc_entities.size() == values.size()`
+    (:741-756); (4) `case SemIR::CoreInterface::UnformedInit: return
+    SemIR::InstId::None;` in `LookupCppImpl` (check/cpp/impl_lookup.cpp:571-636
+    — an exhaustive switch with no default ending in `case Unknown:
+    CARBON_FATAL`, so the new kind breaks the -Werror build without an arm; the
+    `IntFitsIn`/`FloatFitsIn` precedent is :629-632). Behaviorally
+    `EvalLookupSingleImplWitness` (check/impl_lookup.cpp:1313-1322) now calls
+    `LookupCppImpl` for concrete selves whose associated import IR is `Cpp` with
+    this kind, and `None` keeps imported C++ classes' `DefaultOrUnformed` path
+    unchanged — the "imported unions unaffected" claim below depends on it
+    (amended 2026-09-27, review fold: rev 2b M-1). The `Op` call then resolves
+    through the blanket impl to the `MakeUninitialized` builtin, which lowers to
+    a poison value (lower/handle_call.cpp:333-336). **Rejected: a synthesized
+    `Core.Default` witness** — it would declare the variable FORMED,
+    contradicting unions.md:245-253 ("A union variable declared without an
+    initializer is in the unformed state ... The first write to a field forms
+    the variable") and the unformed-state contract that destruction is optional
+    and no other operation is permitted (default.carbon:16-17). **Imported
+    unions are unaffected:** their `DefaultOrUnformed` resolves through
+    `Core.Default` from the C++ default constructor
+    (check/cpp/impl_lookup.cpp:216-240 `BuildDefaultWitness`, dispatched at
+    :618), exactly as today. Golden precedent note, verified: NO golden in the
+    tree exercises an unformed local of a class type with an in-place
+    initializing representation (`grep -rln 'var [a-z_]*: \(Core.\)\?String;'`
+    and `... Optional(i32);` over check/lower testdata are empty; the `String as
+    UnformedInit` and `Optional(T) as UnformedInit` impls exist but are
+    unpinned), so the §4.A shapes are derived from the code path and from the
+    empty-tuple precedent check/testdata/var/initialization.carbon:133-134 (the
+    `%...as.DefaultOrUnformed.impl.Op.call` init then its `assign`) and the
     custom-witness constant shape alternative_copy.carbon:166-167. Break
-    condition and falsifier: `ConversionFailureTypeToFacet` ("cannot
-    convert type `IntOrBytes` into type implementing
-    `Core.DefaultOrUnformed`") on `var u: IntOrBytes;` in §4.A
-    `unformed_then_assign` — the exact rev 1 failure; there is no
-    fallback that keeps F-007d.
+    condition and falsifier: `ConversionFailureTypeToFacet` ("cannot convert
+    type `IntOrBytes` into type implementing `Core.DefaultOrUnformed`") on `var
+    u: IntOrBytes;` in §4.A `unformed_then_assign` — the exact rev 1 failure;
+    there is no fallback that keeps F-007d.
 
 ### §0.4 The split decision: two PR-sized workstreams, sequential
 
@@ -575,13 +558,12 @@ R29(b) it is two PRs:
     is a declaration scope (fields, methods, impls, aliases), so the
     parser mirrors the class variant chain exactly:
     -   node_kind.def: `UnionIntroducer`, `UnionDefinitionStart`,
-        `UnionDefinition`, `UnionDecl` as
-        `CARBON_PARSE_NODE_KIND_DECLARATION`s after `ClassDecl` (:425).
-        typed_nodes.h: a `UnionSignature` template beside `ClassSignature`
-        (:1578-1589 — `bracketed_by` and the `introducer` member type are
-        class-specific, so a 12-line sibling rather than a fourth template
-        parameter on a struct three aliases already instantiate),
-        `UnionDecl`/`UnionDefinitionStart` aliases over it (`Lex::SemiTokenIndex`
+        `UnionDefinition`, `UnionDecl` as `CARBON_PARSE_NODE_KIND_DECLARATION`s
+        after `ClassDecl` (:425). typed_nodes.h: a `UnionSignature` template
+        beside `ClassSignature` (:1578-1589 — `bracketed_by` and the
+        `introducer` member type are class-specific, so a 12-line sibling rather
+        than a fourth template parameter on a struct three aliases already
+        instantiate), `UnionDecl`/`UnionDefinitionStart` aliases over it (`Lex::SemiTokenIndex`
         -   `NodeCategory::Decl`, `Lex::OpenCurlyBraceTokenIndex` +
             `NodeCategory::None`, as :1591-1597), and `UnionDefinition`
             `{signature, members, token}` (:1599-1607 shape). Every struct
@@ -605,73 +587,71 @@ R29(b) it is two PRs:
     -   handle_type.cpp: `HandleTypeAfterIntroducerAsUnion` →
         `DeclOrDefinitionAsUnion` (:11-31 shape). handle_decl_definition.cpp:
         `HandleDeclOrDefinitionAsUnion(NodeKind::UnionDecl,
-        NodeKind::UnionDefinitionStart, StateKind::DeclDefinitionFinishAsUnion)`,
-        the `if (decl_kind == NodeKind::ClassDecl)` chain at :25-31 gains
-        `UnionDecl → DeclScopeLoopAsUnion`, and
+        NodeKind::UnionDefinitionStart,
+        StateKind::DeclDefinitionFinishAsUnion)`, the `if (decl_kind ==
+        NodeKind::ClassDecl)` chain at :25-31 gains `UnionDecl →
+        DeclScopeLoopAsUnion`, and
         `HandleDeclDefinitionFinishAsUnion(NodeKind::UnionDefinition)`.
-        handle_decl_scope_loop.cpp: `UnionContext = 3`,
-        `MaxDeclContextKind = UnionContext` (:49-54; the table initializer
-        :72-84 grows to four `Unrecognized` entries per token);
-        `set(Lex::TokenKind::Union, NodeKind::UnionIntroducer,
-        StateKind::TypeAfterIntroducerAsUnion)` after `Require` (:138-139);
-        `set_contextual(Var, UnionContext, VariableIntroducer, VarAsRegular)`
-        and `set_contextual(Let, UnionContext, LetIntroducer, Let)` beside
-        :140-150; then an `unset(token, UnionContext)` lambda applied to
-        `Adapt`, `Base`, `Choice`, `Class`, `Constraint`, `Interface`,
-        `Union` — D-UN-6's exclusion list; everything else a class body
-        admits (`fn`, `impl`, `alias`, `let`, `var`, `extend`/access
-        modifiers, `namespace`, `observe`, `require`, `match_first`,
-        `inline`, the packaging keywords) stays admitted so the check
-        layer keeps owning those rules, exactly as for classes.
-        `HandleDeclAsUnion`/`HandleDeclScopeLoopAsUnion` (:320-356 shape).
-        `ResolveAmbiguousTokenAsDeclaration`'s next-token list (:227-240)
-        gains `Lex::TokenKind::Union` for parity with `Class` (so
+        handle_decl_scope_loop.cpp: `UnionContext = 3`, `MaxDeclContextKind =
+        UnionContext` (:49-54; the table initializer :72-84 grows to four
+        `Unrecognized` entries per token); `set(Lex::TokenKind::Union,
+        NodeKind::UnionIntroducer, StateKind::TypeAfterIntroducerAsUnion)` after
+        `Require` (:138-139); `set_contextual(Var, UnionContext,
+        VariableIntroducer, VarAsRegular)` and `set_contextual(Let,
+        UnionContext, LetIntroducer, Let)` beside :140-150; then an
+        `unset(token, UnionContext)` lambda applied to `Adapt`, `Base`,
+        `Choice`, `Class`, `Constraint`, `Interface`, `Union` — D-UN-6's
+        exclusion list; everything else a class body admits (`fn`, `impl`,
+        `alias`, `let`, `var`, `extend`/access modifiers, `namespace`,
+        `observe`, `require`, `match_first`, `inline`, the packaging keywords)
+        stays admitted so the check layer keeps owning those rules, exactly as
+        for classes. `HandleDeclAsUnion`/`HandleDeclScopeLoopAsUnion` (:320-356
+        shape). `ResolveAmbiguousTokenAsDeclaration`'s next-token list
+        (:227-240) gains `Lex::TokenKind::Union` for parity with `Class` (so
         `export union U;` parses `export` as the modifier).
         handle_statement.cpp: `case Lex::TokenKind::Union:` beside `Choice`/
-        `Class` (:59-60) so a local union declaration inside a function
-        body takes `DeclAsRegular` — the `choice/local.carbon` precedent.
+        `Class` (:59-60) so a local union declaration inside a function body
+        takes `DeclAsRegular` — the `choice/local.carbon` precedent.
     -   Coverage: parse/coverage_test.cpp:17-30 requires every node kind
         in some golden; §4.A's parse goldens cover all four.
 3.  **Check: the class declaration path, shared, with `is_union`.**
     sem_ir/class.h `ClassFields` gains `bool is_union = false;` after
     `is_choice` (:85) with the entity-level-truth comment; import_ref.cpp:2019
     mirrors it (`.is_union = import_class.is_union`); `PrintClassFields`
-    (class.h:122-140), which today omits `is_choice`, prints both
-    `is_choice` and `is_union` (amended 2026-09-27, review fold: rev A
-    m-2). handle_class.cpp's
-    `BuildClassDecl` (:173-263) is split: the two pops (`PopAndDiscardSoloNodeId<ClassIntroducer>`
-    :178-179, `Pop<Lex::TokenKind::Class>` :184-185) stay in the class
-    caller, and the remainder becomes `BuildClassOrUnionDecl(Context&,
-    Parse::AnyClassDeclId, bool is_definition, DeclIntroducerState
-    introducer, Lex::TokenKind decl_kind)` declared in check/class.h:
-    the allowed modifier set is `Access | Extern` plus
-    `KeywordModifierSet::Class` only for `decl_kind == Class` (:186-190);
-    `inheritance_kind` is `Final` for a union (unions.md:142-146) and
-    the `.Case(...)` mapping :204-208 for a class; `.is_union = (decl_kind
-    == Lex::TokenKind::Union)` in the `SemIR::Class` initializer
-    (:219-224); `MergeClassRedecl` (:51-91) passes `decl_kind` to
+    (class.h:122-140), which today omits `is_choice`, prints both `is_choice`
+    and `is_union` (amended 2026-09-27, review fold: rev A m-2).
+    handle_class.cpp's `BuildClassDecl` (:173-263) is split: the two pops (`PopAndDiscardSoloNodeId<ClassIntroducer>`
+    :178-179, `Pop<Lex::TokenKind::Class>` :184-185) stay in the class caller,
+    and the remainder becomes `BuildClassOrUnionDecl(Context&,
+    Parse::AnyClassDeclId, bool is_definition, DeclIntroducerState introducer,
+    Lex::TokenKind decl_kind)` declared in check/class.h: the allowed modifier
+    set is `Access | Extern` plus `KeywordModifierSet::Class` only for
+    `decl_kind == Class` (:186-190); `inheritance_kind` is `Final` for a union
+    (unions.md:142-146) and the `.Case(...)` mapping :204-208 for a class;
+    `.is_union = (decl_kind == Lex::TokenKind::Union)` in the `SemIR::Class`
+    initializer (:219-224); `MergeClassRedecl` (:51-91) passes `decl_kind` to
     `DiagnoseIfInvalidRedecl` (merge.h:47-50) so `RedeclRedef` reads
     "redefinition of `union U`"; `MergeOrAddName` (:95-171) treats
-    `prev_class.is_union != new_is_union` like the "something other than
-    a class" branch (:150-155, `DiagnoseDuplicateName`). New file
-    check/handle_union.cpp (BUILD: check/BUILD:17-118 lists sources
-    explicitly — `class.cpp` at :20 — so `handle_union.cpp` is added
-    there; parse/BUILD globs testdata only, its `handle_*.cpp` list is
-    explicit too) with the four handlers: `UnionIntroducerId` mirrors
-    :36-49 with `Push<Lex::TokenKind::Union>`; `UnionDeclId` pops and
-    calls `BuildClassOrUnionDecl(..., /*is_definition=*/false, ...)`
-    then `decl_name_stack().PopScope()` (:265-269); `UnionDefinitionStartId`
-    pops, builds, then the :271-299 scaffolding verbatim
-    (`StartClassDefinition`, `PushForEntity` with the self specific,
-    `StartGenericDefinition`, `inst_block_stack().Push()`,
-    `node_stack().Push(node_id, class_id)`, `field_decls_stack().PushArray()`,
-    `vtable_stack().Push()`, `body_block_id`); `UnionDefinitionId` pops
-    the class id, calls the new `ComputeUnionObjectRepr` (§1.A.4), pops
-    the three stacks and `FinishGenericDefinition` (:560-577 shape). The
-    `vtable_stack` push/pop is kept for symmetry with the class path even
-    though a union can never request a vtable (`virtual` is forbidden
-    for `Final` classes and `ForbidModifiersOnDecl` strips the modifier);
-    `ComputeUnionObjectRepr` CHECKs the vtable block is empty.
+    `prev_class.is_union != new_is_union` like the "something other than a
+    class" branch (:150-155, `DiagnoseDuplicateName`). New file
+    check/handle_union.cpp (BUILD: check/BUILD:17-118 lists sources explicitly —
+    `class.cpp` at :20 — so `handle_union.cpp` is added there; parse/BUILD globs
+    testdata only, its `handle_*.cpp` list is explicit too) with the four
+    handlers: `UnionIntroducerId` mirrors :36-49 with
+    `Push<Lex::TokenKind::Union>`; `UnionDeclId` pops and calls
+    `BuildClassOrUnionDecl(..., /*is_definition=*/false, ...)` then
+    `decl_name_stack().PopScope()` (:265-269); `UnionDefinitionStartId` pops,
+    builds, then the :271-299 scaffolding verbatim (`StartClassDefinition`,
+    `PushForEntity` with the self specific, `StartGenericDefinition`,
+    `inst_block_stack().Push()`, `node_stack().Push(node_id, class_id)`,
+    `field_decls_stack().PushArray()`, `vtable_stack().Push()`,
+    `body_block_id`); `UnionDefinitionId` pops the class id, calls the new
+    `ComputeUnionObjectRepr` (§1.A.4), pops the three stacks and
+    `FinishGenericDefinition` (:560-577 shape). The `vtable_stack` push/pop is
+    kept for symmetry with the class path even though a union can never request
+    a vtable (`virtual` is forbidden for `Final` classes and
+    `ForbidModifiersOnDecl` strips the modifier); `ComputeUnionObjectRepr`
+    CHECKs the vtable block is empty.
 4.  **`ComputeUnionObjectRepr` (check/class.cpp, beside
     `ComputeClassObjectRepr` :432-441; `AddStructTypeFields` :115-142
     stays static and is reused):** (i) if `class_info.generic_id.has_value()`
@@ -707,35 +687,33 @@ R29(b) it is two PRs:
     `size(U)` = max rounded up.
 5.  **Designated initialization (D-UN-4), `ConvertStructToUnion` in
     convert.cpp:** static, called from `ConvertStructToClass` inside the
-    :909-912 branch when `dest_class_info.is_union` (the non-union
-    imported-C++ case keeps the bailout and its comment). Body, in
-    order: (a) if `!target.is_initializer()`, form temporary storage
-    exactly as :914-921 does; (b) source fields from `src_type.fields_id`;
-    if their count is not exactly one → `UnionInitNotSingleField`
-    (naming the union type and the count; `target.diagnose`-gated like
-    :660-679) → `ErrorInst::InstId`; (c) look the one source field's
-    name up in the repr's fields (`struct_type_fields().Get(custom_layout.fields_id)`)
-    → not found → `UnionInitUnknownField` → error; (d) literal-versus-value
-    source handling verbatim from :644-651 (`StructLiteral` elements
-    used directly, else `MaterializeIfInitializer`); (e) `inner_kind =
+    :909-912 branch when `dest_class_info.is_union` (the non-union imported-C++
+    case keeps the bailout and its comment). Body, in order: (a) if
+    `!target.is_initializer()`, form temporary storage exactly as :914-921 does;
+    (b) source fields from `src_type.fields_id`; if their count is not exactly
+    one → `UnionInitNotSingleField` (naming the union type and the count;
+    `target.diagnose`-gated like :660-679) → `ErrorInst::InstId`; (c) look the
+    one source field's name up in the repr's fields
+    (`struct_type_fields().Get(custom_layout.fields_id)`) → not found →
+    `UnionInitUnknownField` → error; (d) literal-versus-value source handling
+    verbatim from :644-651 (`StructLiteral` elements used directly, else used
+    directly, else `MaterializeIfInitializer`); (e) `inner_kind =
     GetAggregateElementConversionTargetKind(sem_ir, target)` (:172) and
-    `init_id = ConvertAggregateElement<SemIR::StructAccess,
-    SemIR::ClassElementAccess>(context, loc, value_id,
-    src_field.type_inst_id, literal_elems, inner_kind, target.storage_id,
-    dest_field.type_inst_id, target.storage_access_block,
-    /*src_index=*/0, /*dest_index=*/field_index)` (:207; the :794-798
-    call shape); (f) `target.storage_access_block->InsertHere()` and
-    `AddInst<SemIR::ClassInit>(loc, {target.type_id,
-    inst_blocks().Add({init_id}), target.storage_id})`. Zero-field and
-    two-field literals therefore never reach element conversion, and
-    `{.word = "text"}` diagnoses the ordinary element `ConversionFailure`.
-    `EvalConstantInst(ClassInit)` (eval_inst.cpp:180-186, whose
-    `Context&` parameter is currently unused) gains the union check
-    first: `TryGetAs<SemIR::ClassType>(inst.type_id)` → `is_union` →
-    `ConstantEvalResult::NotConstant` (eval_inst.h:44, :92-93), with the
-    D-UN-4 comment. Consequence pinned by §4.A: a `var v: U = {.word =
-    5};` lowers to one `store i32 5` through a byte-offset GEP; no
-    `@U.val`-style template global exists for any union.
+    `init_id` = the `ConvertAggregateElement<SemIR::StructAccess,
+    SemIR::ClassElementAccess>` call over the one source field into
+    `ClassElementAccess(target.storage_id, field_index)` with `inner_kind`
+    (:207; the :794-798 call shape); (f)
+    `target.storage_access_block->InsertHere()` and `AddInst<SemIR::ClassInit>`
+    over `{target.type_id, inst_blocks().Add({init_id}), target.storage_id}`.
+    Zero-field and two-field literals therefore never reach element conversion,
+    and `{.word = "text"}` diagnoses the ordinary element `ConversionFailure`.
+    `EvalConstantInst(ClassInit)` (eval_inst.cpp:180-186, whose `Context&`
+    parameter is currently unused) gains the union check first:
+    `TryGetAs<SemIR::ClassType>(inst.type_id)` → `is_union` →
+    `ConstantEvalResult::NotConstant` (eval_inst.h:44, :92-93), with the D-UN-4
+    comment. Consequence pinned by §4.A: a `var v: U = {.word = 5};` lowers to
+    one `store i32 5` through a byte-offset GEP; no `@U.val`-style template
+    global exists for any union.
 6.  **Copy, destroy and unformed state.** `LookupChoiceCopyWitness`
     (custom_witness.cpp:936-967) gate widened per D-UN-5 (the :921-935
     comment gains the union sentence, the `is_cpp_scope` rationale and
@@ -791,26 +769,24 @@ R29(b) it is two PRs:
     Copy of an imported union stays on `LookupCppImpl`'s C++ copy
     constructor (D-UN-5's exclusion), so a union with a non-trivial
     member keeps C++'s deletion.
-2.  **Export as a genuine union:** export.cpp:76-79 passes
-    `class_info.is_union ? clang::TagTypeKind::Union :
-    clang::TagTypeKind::Class` and the UN-1 TODO guard is deleted.
-    `Class::GetStructTypeFields` (sem_ir/class.cpp:55-72) returns the
-    `fields_id` of a `CustomLayoutType` repr as it does for a
+2.  **Export as a genuine union:** export.cpp:76-79 passes `class_info.is_union
+    ? clang::TagTypeKind::Union : clang::TagTypeKind::Class` and the UN-1 TODO
+    guard is deleted. `Class::GetStructTypeFields` (sem_ir/class.cpp:55-72)
+    returns the `fields_id` of a `CustomLayoutType` repr as it does for a
     `StructType` (both carry `StructTypeFieldsId`) — its two callers
-    (export.cpp:550, read_only_ast_source.cpp:22) then enumerate union
-    fields correctly. `CalculateCppFieldOffsets` (read_only_ast_source.cpp:15-49):
-    for `is_union`, every `FieldDecl` gets offset 0 and `class_layout`
-    is not advanced (D-UN-8); `layoutRecordType` (:51-90) needs no change
-    — size/alignment already come from `GetCompleteTypeInfo(class)`,
-    which for a union is the `CustomLayoutType` block. `CompleteType`
-    (generate_ast.cpp:427-540): skip the `FinalAttr` for `is_union`
-    (:452-457, D-UN-8); the destructor decision (:486-497) needs no
-    change — `IsTriviallyCopyableForExport` → `IsTriviallyDestructible`
-    now walks the `CustomLayoutType` repr (UN-1) and answers true for
-    every 0.1 union, so no destructor thunk is declared and Clang's
-    implicit special members stay trivial (unions.md:502-505). Methods
-    export as for classes (`ExportAllFieldsToCpp` :483-484 then the
-    vtable loop, which is empty).
+    (export.cpp:550, read_only_ast_source.cpp:22) then enumerate union fields
+    correctly. `CalculateCppFieldOffsets` (read_only_ast_source.cpp:15-49): for
+    `is_union`, every `FieldDecl` gets offset 0 and `class_layout` is not
+    advanced (D-UN-8); `layoutRecordType` (:51-90) needs no change —
+    size/alignment already come from `GetCompleteTypeInfo(class)`, which for a
+    union is the `CustomLayoutType` block. `CompleteType`
+    (generate_ast.cpp:427-540): skip the `FinalAttr` for `is_union` (:452-457,
+    D-UN-8); the destructor decision (:486-497) needs no change —
+    `IsTriviallyCopyableForExport` → `IsTriviallyDestructible` now walks the
+    `CustomLayoutType` repr (UN-1) and answers true for every 0.1 union, so no
+    destructor thunk is declared and Clang's implicit special members stay
+    trivial (unions.md:502-505). Methods export as for classes (`ExportAllFieldsToCpp`
+    :483-484 then the vtable loop, which is empty).
 3.  **Round-trip guarantee (unions.md:507-514)** is what the two
     conformance programs execute: C++ writes / Carbon reads and Carbon
     writes / C++ reads, by pointer, both directions, with a compile-time
@@ -954,89 +930,81 @@ token_kind.def:157-241); `union` appears only as the keyword or as
     on its own dedented line — then recovery consumes only the member and
     the `UnionDefinition '}'` node still closes the tree.
 -   **check/testdata/union/basic.carbon** (`INCLUDE-FILE:
-    toolchain/testing/testdata/min_prelude/full.carbon`,
-    `//@dump-sem-ir` ranges on positives). Subfiles:
-    `declare_and_access` — `union IntOrBytes { var word: i32; var
-    bytes: array(i8, 4); }`, `fn Read(u: IntOrBytes) -> i32 { return
-    u.word; }`, `fn Write(p: IntOrBytes*) { p->word = 1; }`: predicted
+    toolchain/testing/testdata/min_prelude/full.carbon`, `//@dump-sem-ir` ranges
+    on positives). Subfiles: `declare_and_access` — `union IntOrBytes { var
+    word: i32; var bytes: array(i8, 4); }`, `fn Read(u: IntOrBytes) -> i32 {
+    return u.word; }`, `fn Write(p: IntOrBytes*) { p->word = 1; }`: predicted
     `%IntOrBytes: type = class_type @IntOrBytes`, the class's
-    `complete_type_witness` over a `custom_layout_type` constant that
-    formats as `size=4, align=4` with two zero field offsets
-    (sem_ir/formatter.cpp:1171-1178), `class_element_access %u.ref,
-    element0`; `unformed_then_assign` — `var u: IntOrBytes; u.word = 5;
-    return u.word;` (rewritten; amended 2026-09-27, review fold: rev A
-    B-1 / rev B F-1 — rev 1 cited class/fail_incomplete.carbon:157, a
-    FAILURE golden, as evidence that no interface is consulted; wrong,
-    §0.1 row 12b): predicted, per D-UN-9, a `custom_witness (),
-    @UnformedInit [concrete]` constant and `%UnformedInit.facet:
-    %UnformedInit.type = facet_value %IntOrBytes, (%custom_witness...)`
-    (the alternative_copy.carbon:166-167 shape with an EMPTY table), the
-    blanket-impl specific `@T.as.DefaultOrUnformed.impl(%IntOrBytes)`, a
-    call `%IntOrBytes.as.DefaultOrUnformed.impl.Op.call: init
-    %IntOrBytes = call ...(%u.var)` targeting the variable's return slot
-    (in-place class repr) followed by `assign %u.var, %...call` (the
-    var/initialization.carbon:133-134 shape), then the field store; a
-    `ConversionFailureTypeToFacet` line here is D-UN-9's falsifier; `designated_init` — `var v: IntOrBytes = {.word = 5};` and
-    `var b: IntOrBytes = {.bytes = (1, 2, 3, 4)};`: predicted ONE
-    `class_element_access %v.var, element0` (resp. `element1`), the
-    element's in-place initializer, `class_init (%...), %v.var` with ONE
-    element, and NO `struct_value` constant of type `%IntOrBytes` anywhere
-    in the dump (D-UN-4's falsifier is exactly such a line);
-    `return_designated` (`fn Make() -> IntOrBytes { return {.word = 7};
-    }` — the `class_init` targets `%return`), `let_designated` (temporary
-    storage then the binding); `from_struct_value` (`var s: {.word:
-    i32} = {.word = 1}; var v: IntOrBytes = s;` — `struct_access %s,
-    element0` feeds the element init); `copy` (`var w: IntOrBytes = v;`
-    → a `Core.Copy` witness call: predicted `%.loc: init %IntOrBytes =
-    call %Op.ref(%v.ref) to %w.var` with the primitive-copy builtin as
-    in check/testdata/choice/alternative_copy.carbon; then the ASSIGNMENT
-    `w = v;` (unions.md:271-274) — predicted a second witness call whose
-    initializer targets `%w.var` through `assign`, and in lower a second
-    `llvm.memcpy` of 4 bytes; amended 2026-09-27, review fold: rev B
-    F-11); `user_copy_impl_shadowed` (`union Shadowed { var a: i32; impl
-    as Core.Copy { fn Op(self) -> Self { return {.a = 0}; } } }` then
-    `var y: Shadowed = x;` — predicted the copy resolves to the
-    synthesized `custom_witness (%Copy.Op), @Copy`, NOT the user `Op`,
-    the D-UN-5 consequence; amended 2026-09-27, review fold: rev B F-8); `method` (`fn
-    LowHalf(self) -> i32 { return self.bytes[0] as i32; }` and `fn
-    Set(ref self, x: i32) { self.word = x; }`); `impl_member` (an
-    `impl as Core.Default`-free interface impl inside the union body —
-    a user interface `I` with `fn Get(self) -> i32`, pins `impl` as a
-    permitted member); `forward_decl` (`union U;` ... `union U { var a:
-    i32; }` merges: one `class_decl`, no diagnostic); `member_of_class`
-    (`class C { union Inner { var a: i32; } var u: Inner; }`);
-    `namespace_scoped` (`namespace N; union N.U { var a: i32; }` —
-    unions.md:105-106; amended 2026-09-27, review fold: rev B F-12);
-    `order_independent_i32` (`fn Warm(x: i32) -> i32 { var y: i32 = x;
-    return y; }` — an `i32` `Core.Copy` lookup that materializes
-    `Int.as.Copy.impl` into the local store — placed textually BEFORE
-    `union U { var a: i32; }`: predicted ACCEPTED, no
-    `UnionFieldNotTriviallyCopyable`; the rev 2b B-1 pin, amended
-    2026-09-27, review fold: rev 2b B-1);
-    `file_scope_designated` (`var g: IntOrBytes = {.word = 5};` at file
-    scope — with D-UN-4 the initializer is `NotConstant`, so predicted:
-    the variable's `var` inst has no constant initializer and the
-    `class_init` is emitted in the file's `__global_init` block, the
-    lower/testdata/global/decl.carbon path; the lower twin pins
-    `@_Cg.Main = internal global [4 x i8] zeroinitializer` plus a `store
-    i32 5` through a GEP in `@__global_init`; amended 2026-09-27, review
-    fold: rev A M-2 — R-14 is now pinned, not deferred);
-    `raw_identifier` (`var r#union: i32 = 1;` compiles — F-007h);
-    `nested_union_field` (`union Outer { var inner: IntOrBytes; var w:
-    i64; }` — the `IsTriviallyDestructible` `CustomLayoutType` arm;
-    predicted accepted, `size=8, align=8`); `aggregate_fields` (a struct
-    field `{.a: i32, .b: i32}`, a tuple field `(i32, i16)`, a pointer
-    field, a `bool` field, a `char` field, a `Core.String` field — all
-    accepted: every prelude `Core.Copy` impl they reach is declared in
-    package `Core`, D-UN-2); `optional_pointer_field` (`var p:
-    Core.Optional(i32*);` — predicted ACCEPTED: `IsTriviallyDestructible`
-    walks the adapter (custom_witness.cpp:555-566) into
-    `MaybeUnformed(i32*)` (optional.carbon:189-190, :196-199) and the
-    `Core.Copy` impl at :50-54 is prelude-declared, so the copy half
-    passes; its lower twin pins the union copy as a plain `llvm.memcpy`
-    of the 8-byte storage with NO call to the prelude `Op` — the rev 2a
-    falsifier; restored as a POSITIVE subfile, amended 2026-09-27, rev
-    2a).
+    `complete_type_witness` over a `custom_layout_type` constant that formats as
+    `size=4, align=4` with two zero field offsets
+    (sem_ir/formatter.cpp:1171-1178), `class_element_access %u.ref, element0`;
+    `unformed_then_assign` — `var u: IntOrBytes; u.word = 5; return u.word;`
+    (rewritten; amended 2026-09-27, review fold: rev A B-1 / rev B F-1 — rev 1
+    cited class/fail_incomplete.carbon:157, a FAILURE golden, as evidence that
+    no interface is consulted; wrong, §0.1 row 12b): predicted, per D-UN-9, a
+    `custom_witness (), @UnformedInit [concrete]` constant and
+    `%UnformedInit.facet: %UnformedInit.type = facet_value %IntOrBytes,
+    (%custom_witness...)` (the alternative_copy.carbon:166-167 shape with an
+    EMPTY table), the blanket-impl specific
+    `@T.as.DefaultOrUnformed.impl(%IntOrBytes)`, a call
+    `%IntOrBytes.as.DefaultOrUnformed.impl.Op.call: init %IntOrBytes = call
+    ...(%u.var)` targeting the variable's return slot (in-place class repr)
+    followed by `assign %u.var, %...call` (the var/initialization.carbon:133-134
+    shape), then the field store; a `ConversionFailureTypeToFacet` line here is
+    D-UN-9's falsifier; `designated_init` — `var v: IntOrBytes = {.word = 5};`
+    and `var b: IntOrBytes = {.bytes = (1, 2, 3, 4)};`: predicted ONE
+    `class_element_access %v.var, element0` (resp. `element1`), the element's
+    in-place initializer, `class_init (%...), %v.var` with ONE element, and NO
+    `struct_value` constant of type `%IntOrBytes` anywhere in the dump (D-UN-4's
+    falsifier is exactly such a line); `return_designated` (`fn Make() ->
+    IntOrBytes { return {.word = 7}; }` — the `class_init` targets `%return`),
+    `let_designated` (temporary storage then the binding); `from_struct_value` (`var
+    s: {.word: i32} = {.word = 1}; var v: IntOrBytes = s;` — `struct_access %s,
+    element0` feeds the element init); `copy` (`var w: IntOrBytes = v;` → a
+    `Core.Copy` witness call: predicted `%.loc: init %IntOrBytes = call
+    %Op.ref(%v.ref) to %w.var` with the primitive-copy builtin as in
+    check/testdata/choice/alternative_copy.carbon; then the ASSIGNMENT `w = v;`
+    (unions.md:271-274) — predicted a second witness call whose initializer
+    targets `%w.var` through `assign`, and in lower a second `llvm.memcpy` of 4
+    bytes; amended 2026-09-27, review fold: rev B F-11);
+    `user_copy_impl_shadowed` (`union Shadowed { var a: i32; impl as Core.Copy {
+    fn Op(self) -> Self { return {.a = 0}; } } }` then `var y: Shadowed = x;` —
+    predicted the copy resolves to the synthesized `custom_witness (%Copy.Op),
+    @Copy`, NOT the user `Op`, the D-UN-5 consequence; amended 2026-09-27,
+    review fold: rev B F-8); `method` (`fn LowHalf(self) -> i32 { return
+    self.bytes[0] as i32; }` and `fn Set(ref self, x: i32) { self.word = x; }`);
+    `impl_member` (an `impl as Core.Default`-free interface impl inside the
+    union body — a user interface `I` with `fn Get(self) -> i32`, pins `impl` as
+    a permitted member); `forward_decl` (`union U;` ... `union U { var a: i32;
+    }` merges: one `class_decl`, no diagnostic); `member_of_class` (`class C {
+    union Inner { var a: i32; } var u: Inner; }`); `namespace_scoped` (`namespace
+    N; union N.U { var a: i32; }` — unions.md:105-106; amended 2026-09-27,
+    review fold: rev B F-12); `order_independent_i32` (`fn Warm(x: i32) -> i32 {
+    var y: i32 = x; return y; }` — an `i32` `Core.Copy` lookup that materializes
+    `Int.as.Copy.impl` into the local store — placed textually BEFORE `union U {
+    var a: i32; }`: predicted ACCEPTED, no `UnionFieldNotTriviallyCopyable`; the
+    rev 2b B-1 pin, amended 2026-09-27, review fold: rev 2b B-1);
+    `file_scope_designated` (`var g: IntOrBytes = {.word = 5};` at file scope —
+    with D-UN-4 the initializer is `NotConstant`, so predicted: the variable's
+    `var` inst has no constant initializer and the `class_init` is emitted in
+    the file's `__global_init` block, the lower/testdata/global/decl.carbon
+    path; the lower twin pins `@_Cg.Main = internal global [4 x i8]
+    zeroinitializer` plus a `store i32 5` through a GEP in `@__global_init`;
+    amended 2026-09-27, review fold: rev A M-2 — R-14 is now pinned, not
+    deferred); `raw_identifier` (`var r#union: i32 = 1;` compiles — F-007h);
+    `nested_union_field` (`union Outer { var inner: IntOrBytes; var w: i64; }` —
+    the `IsTriviallyDestructible` `CustomLayoutType` arm; predicted accepted,
+    `size=8, align=8`); `aggregate_fields` (a struct field `{.a: i32, .b: i32}`,
+    a tuple field `(i32, i16)`, a pointer field, a `bool` field, a `char` field,
+    a `Core.String` field — all accepted: every prelude `Core.Copy` impl they
+    reach is declared in package `Core`, D-UN-2); `optional_pointer_field` (`var
+    p: Core.Optional(i32*);` — predicted ACCEPTED: `IsTriviallyDestructible`
+    walks the adapter (custom_witness.cpp:555-566) into `MaybeUnformed(i32*)`
+    (optional.carbon:189-190, :196-199) and the `Core.Copy` impl at :50-54 is
+    prelude-declared, so the copy half passes; its lower twin pins the union
+    copy as a plain `llvm.memcpy` of the 8-byte storage with NO call to the
+    prelude `Op` — the rev 2a falsifier; restored as a POSITIVE subfile, amended
+    2026-09-27, rev 2a).
 -   **check/testdata/union/layout.carbon** — `union Wide { var lo: i32;
     var both: i64; }` → `size=8, align=8`; `union Odd { var a: i8; var b:
     i16; var c: array(i8, 3); }` → `size=4, align=2` (max size 3 rounded
@@ -1110,33 +1078,31 @@ token_kind.def:157-241); `union` appears only as the keyword or as
     rev 2b m-1). The pin is the `ExportClassToCpp` TODO in both subfiles;
     the falsifier is a CHECK failure in `GetStructTypeFields` or a null
     dereference (§7 R-9; amended 2026-09-27, review fold: rev A B-2).
--   **lower/testdata/union/basic.carbon** (full prelude) — subfiles
-    mirroring `unformed_local` (a `fail_`-free twin of
-    `unformed_then_assign`; amended 2026-09-27, review fold: rev A B-1 /
-    rev B F-1: predicted `%u.var = alloca [4 x i8], align 4` and NO store
-    from the default init — the `MakeUninitialized` call's value is a
-    poison `[4 x i8]` (handle_call.cpp:333-336) and the in-place
-    consumer emits nothing for a non-constant source
-    (function_context.cpp:398-405); the one acceptable variant the fill
-    may show instead is a single `store [4 x i8] poison, ptr %u.var`,
-    the by-copy scalar analogue of lower/testdata/global/decl.carbon:24's
-    `store i32 poison`; a memcpy, a call, or any non-poison store is a
-    miss), `designated_init`, `copy` (two memcpys: initialization and
-    the `w = v;` assignment, rev B F-11), `user_copy_impl_shadowed` (a
-    memcpy and no call to the user `Op`, rev B F-8), `optional_pointer_field`
-    (`var q: OptPtr = p;` over `union OptPtr { var o: Core.Optional(i32*);
-    var n: i64; }` — an 8-byte `llvm.memcpy`, no call to the prelude
-    `Optional.as.Copy.impl.Op`; rev 2a), `method`, `by_pointer`,
-    `file_scope_union` (rev A M-2). Predicted IR: `%u.var =
-    alloca [4 x i8], align 4`; field access `getelementptr inbounds nuw [4 x i8], ptr
-    %u.var, i32 0, i32 0` for BOTH `word` and `bytes` (offset 0 each —
-    the field.carbon:229 shape), `store i32 5, ptr %..., align 4` for
-    the designated init with NO `@IntOrBytes.val`/`llvm.memcpy` from a
-    constant global (D-UN-4), `llvm.memcpy.p0.p0.i64(ptr align 4 %w.var,
-    ptr align 4 %v.var, i64 4, i1 false)` for the copy (`CopyObject`),
-    and the method thunk-free `define ... @_CLowHalf.IntOrBytes.Main(ptr
-    %self)` reading `getelementptr ... i32 0, i32 0` then indexing the
-    `[4 x i8]` array element.
+-   **lower/testdata/union/basic.carbon** (full prelude) — subfiles mirroring
+    `unformed_local` (a `fail_`-free twin of `unformed_then_assign`; amended
+    2026-09-27, review fold: rev A B-1 / rev B F-1: predicted `%u.var = alloca
+    [4 x i8], align 4` and NO store from the default init — the
+    `MakeUninitialized` call's value is a poison `[4 x i8]`
+    (handle_call.cpp:333-336) and the in-place consumer emits nothing for a
+    non-constant source (function_context.cpp:398-405); the one acceptable
+    variant the fill may show instead is a single `store [4 x i8] poison, ptr
+    %u.var`, the by-copy scalar analogue of
+    lower/testdata/global/decl.carbon:24's `store i32 poison`; a memcpy, a call,
+    or any non-poison store is a miss), `designated_init`, `copy` (two memcpys:
+    initialization and the `w = v;` assignment, rev B F-11),
+    `user_copy_impl_shadowed` (a memcpy and no call to the user `Op`, rev B
+    F-8), `optional_pointer_field` (`var q: OptPtr = p;` over `union OptPtr {
+    var o: Core.Optional(i32*); var n: i64; }` — an 8-byte `llvm.memcpy`, no
+    call to the prelude `Optional.as.Copy.impl.Op`; rev 2a), `method`,
+    `by_pointer`, `file_scope_union` (rev A M-2). Predicted IR: `%u.var = alloca
+    [4 x i8], align 4`; field access `getelementptr inbounds nuw [4 x i8], ptr
+    %u.var, i32 0, i32 0` for BOTH `word` and `bytes` (offset 0 each — the
+    field.carbon:229 shape), `store i32 5, ptr %..., align 4` for the designated
+    init with NO `@IntOrBytes.val`/`llvm.memcpy` from a constant global
+    (D-UN-4), `llvm.memcpy.p0.p0.i64(ptr align 4 %w.var, ptr align 4 %v.var, i64
+    4, i1 false)` for the copy (`CopyObject`), and the method thunk-free `define
+    ... @_CLowHalf.IntOrBytes.Main(ptr %self)` reading `getelementptr ... i32 0,
+    i32 0` then indexing the `[4 x i8]` array element.
 -   **lower/testdata/union/layout.carbon** — `Wide`: `alloca [8 x i8],
     align 8`, `store i32` and `store i64` both at GEP `i32 0, i32 0`;
     `Odd`: `alloca [4 x i8], align 2`.
@@ -1326,38 +1292,36 @@ UN-1 changes no diagnostic a landed program triggers.
     Cpp.MakePair(RuntimeSeed(-9)); Core.Print(m.b);` (C++ returns by
     value, Carbon reads the other member: 11). EXPECT-STDOUT: `42`, `5`,
     `7`, `5`, `11`.
-2.  **types/union_cpp_export.carbon (new)** — `import Cpp;` + `union
-    Wide { var lo: i32; var both: i64; fn Low(self) -> i32 { return
-    self.lo; } }` + `inline Cpp ''' static_assert(__is_union(Carbon::Wide),
-    "kind"); static_assert(sizeof(Carbon::Wide) == 8 &&
-    alignof(Carbon::Wide) == 8, "layout"); int RoundTrip(int v) {
-    Carbon::Wide w; w.lo = v; return w.Low(); } void WriteBoth(Carbon::Wide*
-    w, int hi, int lo) { w->both = (static_cast<long long>(hi) << 32) |
-    static_cast<unsigned>(lo); } Carbon::Wide MakeWide(int v) {
-    Carbon::Wide w; w.lo = v; return w; } int SumLo(Carbon::Wide w) {
-    return w.lo + 1; } '''` (by-value crossings in both directions;
-    amended 2026-09-27, review fold: rev B F-5); then
-    `Core.Print(Cpp.RoundTrip(RuntimeSeed(22)));` (C++ constructs,
-    writes and calls the exported method: 42); `var w: Wide;
-    Cpp.WriteBoth(&w, RuntimeSeed(-13), RuntimeSeed(-11));
-    Core.Print(w.lo); Core.Print((w.both / 4294967296) as i32);` (C++
-    writes the 64-bit member, Carbon reads the low half through `lo` —
-    defined by Carbon's rule — and the high half arithmetically: 9, 7);
-    `var m: Wide = Cpp.MakeWide(RuntimeSeed(-8)); Core.Print(m.lo);`
-    (C++ returns a Carbon union by value: 12); `Core.Print(Cpp.SumLo(m));`
-    (Carbon passes it by value into C++: 13). EXPECT-STDOUT: `42`, `9`,
-    `7`, `12`, `13`. If the by-value parameter probe of §4.B fails, the
-    `SumLo` line is dropped from this program at the same commit (the
-    EXPECT list loses its last line), the residue is filed and the row
-    stays PARTIAL (§8.6) — recorded in the commit message and the
-    decision-log entry, never silently. The `static_assert`s are the compile-time
-    layout arbiter (D-UN-8); a wrong `TagTypeKind` fails `__is_union`, a
-    wrong layout fails `sizeof`, both as COMPILE-FAIL — loud.
+2.  **types/union_cpp_export.carbon (new)** — `import Cpp;` + `union Wide { var
+    lo: i32; var both: i64; fn Low(self) -> i32 { return self.lo; } }` + `inline
+    Cpp ''' static_assert(__is_union(Carbon::Wide), "kind");
+    static_assert(sizeof(Carbon::Wide) == 8 && alignof(Carbon::Wide) == 8,
+    "layout"); int RoundTrip(int v) { Carbon::Wide w; w.lo = v; return w.Low();
+    } void WriteBoth(Carbon::Wide* w, int hi, int lo) { w->both =
+    (static_cast<long long>(hi) << 32) | static_cast<unsigned>(lo); }
+    Carbon::Wide MakeWide(int v) { Carbon::Wide w; w.lo = v; return w; } int
+    SumLo(Carbon::Wide w) { return w.lo + 1; } '''` (by-value crossings in both
+    directions; amended 2026-09-27, review fold: rev B F-5); then
+    `Core.Print(Cpp.RoundTrip(RuntimeSeed(22)));` (C++ constructs, writes and
+    calls the exported method: 42); `var w: Wide; Cpp.WriteBoth(&w,
+    RuntimeSeed(-13), RuntimeSeed(-11)); Core.Print(w.lo); Core.Print((w.both /
+    4294967296) as i32);` (C++ writes the 64-bit member, Carbon reads the low
+    half through `lo` — defined by Carbon's rule — and the high half
+    arithmetically: 9, 7); `var m: Wide = Cpp.MakeWide(RuntimeSeed(-8));
+    Core.Print(m.lo);` (C++ returns a Carbon union by value: 12);
+    `Core.Print(Cpp.SumLo(m));` (Carbon passes it by value into C++: 13).
+    EXPECT-STDOUT: `42`, `9`, `7`, `12`, `13`. If the by-value parameter probe
+    of §4.B fails, the `SumLo` line is dropped from this program at the same
+    commit (the EXPECT list loses its last line), the residue is filed and the
+    row stays PARTIAL (§8.6) — recorded in the commit message and the
+    decision-log entry, never silently. The `static_assert`s are the
+    compile-time layout arbiter (D-UN-8); a wrong `TagTypeKind` fails
+    `__is_union`, a wrong layout fails `sizeof`, both as COMPILE-FAIL — loud.
 
-The bullet's runner status flips SKIP → PASS at UN-1 (bullets +1: 45/56
-on the post-W-012 base); `gap_status` follows the gap-analysis row
-(PARTIAL at UN-1, DONE — or PARTIAL — at UN-2, §8.6). `runner.py --update-readme-table` refreshes the README table at
-each discharge.
+The bullet's runner status flips SKIP → PASS at UN-1 (bullets +1: 45/56 on the
+post-W-012 base); `gap_status` follows the gap-analysis row (PARTIAL at UN-1,
+DONE — or PARTIAL — at UN-2, §8.6). `runner.py --update-readme-table` refreshes
+the README table at each discharge.
 
 ## §6 Churn inventory (verified by grep at e78db5df4)
 
@@ -1466,10 +1430,10 @@ each discharge.
     `set_contextual` leaves `var` unrecognized in a union body.
     Falsifier: parse/testdata/union/basic.carbon showing `UnrecognizedDecl`
     at `var`.
--   **R-6 — `SemIR::ClassDecl` location verification.** Its `Define<Parse::AnyClassDeclId>`
-    accepts only the ids in that `NodeIdOneOf`; both union ids are added
-    (§1.A.2). Falsifier: a location CHECK when `AddPlaceholderInst`
-    builds the union's `class_decl`.
+-   **R-6 — `SemIR::ClassDecl` location verification.** Its
+    `Define<Parse::AnyClassDeclId>` accepts only the ids in that `NodeIdOneOf`;
+    both union ids are added (§1.A.2). Falsifier: a location CHECK when
+    `AddPlaceholderInst` builds the union's `class_decl`.
 -   **R-7 — destroying a union local.** `CanDestroyClass` → repr walk →
     `CustomLayoutType` case over fields (all trivially destroyable by the
     field rule) → a placeholder `Destroy.Op` as for choices. Falsifier: a
@@ -1663,16 +1627,15 @@ each discharge.
     7 / 1). **If the by-value parameter probe of §4.B fails, the row
     stays PARTIAL** at UN-2 with the by-value residue named in its
     evidence and no header delta. R7: bullet TEXT untouched.
-7.  **Decision log:** entries "UN-1: native `union` declaration (date)"
-    and "UN-2: C++ union interop (date)" carrying D-UN-1..9 with break
-    conditions, the §0.2 corrections verbatim, the review-claim
-    correction of the rev 2 fold (the `HasUserDestroyImpl` mirror) and
-    the rev 2a trust-boundary amendment with its prelude `Copy` audit
-    (auto-adopted under R29(a), veto-able), the V-3a divergence-register line (the
-    `union` keyword and byte-reinterpretation reads are already F-007's;
-    nothing new is minted), the row 44 DONE-with-gated-residue precedent
-    (rev B F-6), the residue items by title with the ids allocated at
-    that discharge, and the R29(a) auto-adoption note.
+7.  **Decision log:** entries "UN-1: native `union` declaration (date)" and
+    "UN-2: C++ union interop (date)" carrying D-UN-1..9 with break conditions,
+    the §0.2 corrections verbatim, the review-claim correction of the rev 2 fold
+    (the `HasUserDestroyImpl` mirror) and the rev 2a trust-boundary amendment
+    with its prelude `Copy` audit (auto-adopted under R29(a), veto-able), the
+    V-3a divergence-register line (the `union` keyword and byte-reinterpretation
+    reads are already F-007's; nothing new is minted), the row 44
+    DONE-with-gated-residue precedent (rev B F-6), the residue items by title
+    with the ids allocated at that discharge, and the R29(a) auto-adoption note.
     fork/ORCHESTRATION.md header and scoreboard line stamped per PR.
 
 ## Hand-off notes for the implementer
@@ -1892,18 +1855,18 @@ next, after EH-B (§0.4, D-UN-7). Deltas from this plan, honestly:
         across sem_ir/class.h, check/import_ref.cpp, class.cpp,
         handle_union.cpp, convert.cpp, eval_inst.cpp, custom_witness.cpp,
         cpp/export.cpp, cpp/impl_lookup.cpp.
--   **Verification (R28, hosted-only):** first autoupdate 36313187966
-    (17 new goldens filled, the deferral defect surfaced). Second
-    autoupdate, after d96369b93, run 36314113850: refilled clean. A first
-    gate (run 36315119109) failed on one non-converged Clang snippet line
-    number in fail_todo_export.carbon (the previous fill's layout); a third
-    autoupdate (run 36316933295) converged it. Conformance run
-    36315125503: 110/0/26 over 136, 45/56 bullets, exactly the §5.A delta
-    on the post-W-012 base. Of record after merging trunk with EH-B:
-    gate run 36318283448 green, conformance run 36318245113 at 114/0/25
-    over 139, 45/56 bullets (the same delta on the post-EH-B base). Implementation review: one review,
-    APPROVE-WITH-FIXES (the doc count; `Field::index` assignment moved
-    before the generic gate; discharge artifacts).
+-   **Verification (R28, hosted-only):** first autoupdate 36313187966 (17 new
+    goldens filled, the deferral defect surfaced). Second autoupdate, after
+    d96369b93, run 36314113850: refilled clean. A first gate (run 36315119109)
+    failed on one non-converged Clang snippet line number in
+    fail_todo_export.carbon (the previous fill's layout); a third autoupdate
+    (run 36316933295) converged it. Conformance run 36315125503: 110/0/26 over
+    136, 45/56 bullets, exactly the §5.A delta on the post-W-012 base. Of record
+    after merging trunk with EH-B: gate run 36318283448 green, conformance run
+    36318245113 at 114/0/25 over 139, 45/56 bullets (the same delta on the
+    post-EH-B base). Implementation review: one review, APPROVE-WITH-FIXES (the
+    doc count; `Field::index` assignment moved before the generic gate;
+    discharge artifacts).
 -   **Residue ids allocated at discharge** (assuming EH-B takes
     W-083..W-085; verified at merge): W-086 union fields of choice type;
     W-087 union fields of imported C++ type; W-088 generic unions and

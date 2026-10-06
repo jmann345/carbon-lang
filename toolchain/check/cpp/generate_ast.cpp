@@ -171,9 +171,6 @@ class CarbonExternalASTSource : public SemIR::ReadOnlyASTSource {
   auto MapInstIdToClangDeclOrType(LookupResult lookup)
       -> std::variant<clang::NamedDecl*, clang::QualType, NamedDeclList>;
 
-  auto GetOrExportFunctionToCpp(SemIR::InstId target_inst_id,
-                                SemIR::FunctionId function_id)
-      -> clang::NamedDecl*;
   // Get a current best-effort location for the current position within C++
   // processing.
   auto GetCurrentCppLocId() -> SemIR::LocId {
@@ -239,7 +236,7 @@ auto CarbonExternalASTSource::MapInstIdToClangDeclOrType(LookupResult lookup)
           context_->types().GetTypeInstId(target_inst.type_id());
       auto callee = GetCallee(context_->sem_ir(), target_inst_id);
       if (auto* callee_function = std::get_if<SemIR::CalleeFunction>(&callee)) {
-        return GetOrExportFunctionToCpp(target_inst_id,
+        return GetOrExportFunctionToCpp(*context_, SemIR::LocId(target_inst_id),
                                         callee_function->function_id);
       } else if (auto generic_class =
                      context_->insts().TryGetAs<SemIR::GenericClassType>(
@@ -280,8 +277,8 @@ auto CarbonExternalASTSource::MapInstIdToClangDeclOrType(LookupResult lookup)
         auto function_id = context_->insts()
                                .GetAs<SemIR::FunctionDecl>(member_decl_id)
                                .function_id;
-        if (auto* member_decl =
-                GetOrExportFunctionToCpp(member_decl_id, function_id)) {
+        if (auto* member_decl = GetOrExportFunctionToCpp(
+                *context_, SemIR::LocId(member_decl_id), function_id)) {
           member_decls.push_back(member_decl);
         }
       }
@@ -293,46 +290,6 @@ auto CarbonExternalASTSource::MapInstIdToClangDeclOrType(LookupResult lookup)
     default:
       return nullptr;
   }
-}
-
-auto CarbonExternalASTSource::GetOrExportFunctionToCpp(
-    SemIR::InstId target_inst_id, SemIR::FunctionId function_id)
-    -> clang::NamedDecl* {
-  SemIR::Function& function = context_->functions().Get(function_id);
-  if (const auto* clang_decl =
-          context_->clang_decls().Lookup(function.first_decl_id())) {
-    return cast<clang::NamedDecl>(clang_decl->decl());
-  }
-
-  auto* named_decl =
-      ExportFunctionToCpp(*context_, SemIR::LocId(target_inst_id), function_id);
-  if (!named_decl) {
-    return nullptr;
-  }
-
-  if (auto* function_template_decl =
-          llvm::dyn_cast<clang::FunctionTemplateDecl>(named_decl)) {
-    context_->clang_decls().Add(
-        {.key = SemIR::ClangDeclKey::ForNonFunctionDecl(function_template_decl),
-         .inst_id = function.first_decl_id()});
-    return function_template_decl;
-  }
-
-  auto* clang_function_decl = llvm::cast<clang::FunctionDecl>(named_decl);
-
-  SemIR::ClangDeclSignature thunk_signature;
-  thunk_signature.kind = SemIR::ClangDeclSignature::Normal;
-  thunk_signature.num_params =
-      static_cast<int32_t>(clang_function_decl->getNumParams());
-  thunk_signature.passing_modes.assign(
-      thunk_signature.num_params,
-      SemIR::ClangDeclSignature::PassingMode::ByValue);
-  context_->clang_decls().Add(
-      {.key = SemIR::ClangDeclKey::ForFunctionDecl(
-           clang_function_decl,
-           context_->clang_decl_signatures().Add(std::move(thunk_signature))),
-       .inst_id = function.first_decl_id()});
-  return clang_function_decl;
 }
 
 auto CarbonExternalASTSource::BuildCarbonNamespace() -> void {
@@ -572,10 +529,14 @@ auto CarbonExternalASTSource::CompleteType(clang::TagDecl* tag_decl) -> void {
   llvm::SmallVector<PendingVirtualFunction> pending_virtual_functions;
 
   if (class_info.vtable_decl_id.has_value()) {
+    LoadImportRef(*context_, class_info.vtable_decl_id);
+    auto canonical_vtable_decl_id =
+        context_->constant_values().GetConstantInstId(
+            class_info.vtable_decl_id);
     auto vtable_inst_block = context_->inst_blocks().Get(
         context_->vtables()
             .Get(context_->insts()
-                     .GetAs<SemIR::VtableDecl>(class_info.vtable_decl_id)
+                     .GetAs<SemIR::VtableDecl>(canonical_vtable_decl_id)
                      .vtable_id)
             .virtual_functions_id);
     for (auto vtable_entry_id : vtable_inst_block) {
@@ -1013,7 +974,7 @@ auto InitializeCppDomain(
   // Ensure any diagnostics emitted in this function are flushed before we
   // return.
   auto on_exit =
-      llvm::scope_exit([&]() { FlushDiagnosticConsumer(*diags->getClient()); });
+      llvm::scope_exit([&] { FlushDiagnosticConsumer(*diags->getClient()); });
 
   // Extract the input from the frontend invocation and make sure it makes
   // sense.

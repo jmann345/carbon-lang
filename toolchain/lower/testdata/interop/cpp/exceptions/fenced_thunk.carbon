@@ -39,10 +39,10 @@ fn F() {
 // CHECK:STDOUT: @.str = private unnamed_addr constant [76 x i8] c"carbon: C++ exception escaped into Carbon through `may_throw`; terminating\0A\00", align 1
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CF.Main() #0 !dbg !12 {
+// CHECK:STDOUT: define void @_CF.Main() #0 !dbg !8 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   call void @_Z9may_throwv.carbon_thunk.(), !dbg !15
-// CHECK:STDOUT:   ret void, !dbg !16
+// CHECK:STDOUT:   call void @_Z9may_throwv.carbon_thunk.(), !dbg !9
+// CHECK:STDOUT:   ret void, !dbg !10
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
@@ -114,25 +114,25 @@ fn F() {
 // CHECK:STDOUT: attributes #5 = { noreturn }
 // CHECK:STDOUT: attributes #6 = { noreturn nounwind }
 // CHECK:STDOUT:
-// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
-// CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!7}
+// CHECK:STDOUT: !llvm.dbg.cu = !{!5}
+// CHECK:STDOUT: !llvm.module.flags = !{!13, !14, !15, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!18}
 // CHECK:STDOUT:
-// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
-// CHECK:STDOUT: !1 = !DIFile(filename: "fenced_thunk.carbon", directory: "")
-// CHECK:STDOUT: !2 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !3 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !4 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !5 = !{i32 7, !"Dwarf Version", i32 5}
-// CHECK:STDOUT: !6 = !{i32 2, !"Debug Info Version", i32 3}
-// CHECK:STDOUT: !7 = !{!8, !9, i64 0}
-// CHECK:STDOUT: !8 = !{!"__libc_errno", !9, i64 0}
-// CHECK:STDOUT: !9 = !{!"int", !10, i64 0}
-// CHECK:STDOUT: !10 = !{!"omnipotent char", !11, i64 0}
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !4 = !DIFile(filename: "fenced_thunk.carbon", directory: "")
+// CHECK:STDOUT: !5 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !4, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !6 = !{null}
+// CHECK:STDOUT: !7 = !DISubroutineType(types: !6)
+// CHECK:STDOUT: !8 = distinct !DISubprogram(name: "F", linkageName: "_CF.Main", scope: null, file: !4, line: 14, type: !7, spFlags: DISPFlagDefinition, unit: !5)
+// CHECK:STDOUT: !9 = !DILocation(line: 15, column: 3, scope: !8)
+// CHECK:STDOUT: !10 = !DILocation(line: 14, column: 1, scope: !8)
 // CHECK:STDOUT: !11 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !12 = distinct !DISubprogram(name: "F", linkageName: "_CF.Main", scope: null, file: !1, line: 14, type: !13, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !13 = !DISubroutineType(types: !14)
-// CHECK:STDOUT: !14 = !{null}
-// CHECK:STDOUT: !15 = !DILocation(line: 15, column: 3, scope: !12)
-// CHECK:STDOUT: !16 = !DILocation(line: 14, column: 1, scope: !12)
+// CHECK:STDOUT: !12 = !{!"omnipotent char", !11, i64 0}
+// CHECK:STDOUT: !13 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !14 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !15 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !16 = !{!"int", !12, i64 0}
+// CHECK:STDOUT: !17 = !{!"__libc_errno", !16, i64 0}
+// CHECK:STDOUT: !18 = !{!17, !16, i64 0}
 // CHECK:STDOUT:

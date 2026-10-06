@@ -115,7 +115,7 @@ class SpecificCoalescer {
   // found, if the two specifics given as arguments are found to be equivalent.
   auto AreFunctionBodiesEquivalent(
       SemIR::SpecificId specific_id1, SemIR::SpecificId specific_id2,
-      Set<std::pair<SemIR::SpecificId, SemIR::SpecificId>>&
+      SetBase<std::pair<SemIR::SpecificId, SemIR::SpecificId>>&
           visited_equivalent_specifics) -> bool;
 
   // Given an equivalent pair of specifics, updates the canonical specific to
@@ -146,13 +146,13 @@ class SpecificCoalescer {
   // checks entry already existed if it cannot be inserted.
   auto InsertPair(
       SemIR::SpecificId specific_id1, SemIR::SpecificId specific_id2,
-      Set<std::pair<SemIR::SpecificId, SemIR::SpecificId>>& set_of_pairs)
+      SetBase<std::pair<SemIR::SpecificId, SemIR::SpecificId>>& set_of_pairs)
       -> bool;
 
   // Checks if a pair is contained into a set of pairs, in canonical form.
   auto ContainsPair(
       SemIR::SpecificId specific_id1, SemIR::SpecificId specific_id2,
-      const Set<std::pair<SemIR::SpecificId, SemIR::SpecificId>>& set_of_pairs)
+      SetView<std::pair<SemIR::SpecificId, SemIR::SpecificId>> set_of_pairs)
       -> bool;
 
   // The optional vlog stream.
@@ -182,7 +182,7 @@ class SpecificCoalescer {
 
   // Non-equivalent specifics found.
   // TODO: Revisit this due to its quadratic space growth.
-  Set<std::pair<SemIR::SpecificId, SemIR::SpecificId>>
+  Set<std::pair<SemIR::SpecificId, SemIR::SpecificId>, 16>
       non_equivalent_specifics_;
 
   // Specifics whose type fingerprint was written into

@@ -37,6 +37,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     -   [`std::string_view` and `str`](#stdstring_view-and-str)
     -   [`std::span` and `Core.Slice`](#stdspan-and-coreslice)
 -   [TODO: The operator interoperability model](#todo-the-operator-interoperability-model)
+-   [References](#references)
 
 <!-- tocstop -->
 
@@ -273,6 +274,9 @@ interoperability, though bits will be interpreted differently in each language.
 
 ## TODO: Advanced type mapping: pointers, references, and `const`
 
+> **TODO:** Incorporate proposal
+> [#6357: C++ Interop: Mapping pointer types](https://github.com/carbon-language/carbon-lang/pull/6357)
+
 ## Bi-directional type mapping: standard library types
 
 C++ view types map to the corresponding Carbon view types where the two share
@@ -307,14 +311,15 @@ default until layout compatibility is established.
 > decisions D-SL-8, D-SL-9, D-SL-10, D-SL-14).** As implemented in the fork
 > toolchain; see [Slices](../slices.md#interop) for the Carbon-side API.
 
-C++'s dynamic-extent `std::span<T>` (that is, `std::span<T, std::dynamic_extent>`)
-maps directly to Carbon's [`Core.Slice(T)`](../slices.md) in both directions,
-on the same premise as the `std::string_view` mapping: both are a pointer to
-the first element followed by a size, so the Carbon compiler treats the span
-specialization as `Core.Slice(T)` at the ABI level and no conversion runs at
-the boundary. The element type maps recursively, so `std::span<const int>` is
-`Core.Slice(const i32)`, and a Carbon `Core.Slice(T)` converts implicitly to
-`Core.Slice(const T)` as a `std::span<T>` converts to `std::span<const T>`.
+C++'s dynamic-extent `std::span<T>` (that is, `std::span<T,
+std::dynamic_extent>`) maps directly to Carbon's [`Core.Slice(T)`](../slices.md)
+in both directions, on the same premise as the `std::string_view` mapping: both
+are a pointer to the first element followed by a size, so the Carbon compiler
+treats the span specialization as `Core.Slice(T)` at the ABI level and no
+conversion runs at the boundary. The element type maps recursively, so
+`std::span<const int>` is `Core.Slice(const i32)`, and a Carbon `Core.Slice(T)`
+converts implicitly to `Core.Slice(const T)` as a `std::span<T>` converts to
+`std::span<const T>`.
 
 -   Importing: a C++ function taking or returning `std::span<T>` takes or
     returns `Core.Slice(T)` in Carbon. A Carbon array reaches such a parameter
@@ -343,3 +348,8 @@ only) and is imported as an ordinary class; it is not mapped to `Core.Slice`.
 (libc++ and libstdc++ both do).
 
 ## TODO: The operator interoperability model
+
+## References
+
+-   Proposal
+    [#6358: C++ Interop: API importing and semantics](https://github.com/carbon-language/carbon-lang/pull/6358)

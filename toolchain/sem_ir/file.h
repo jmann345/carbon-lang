@@ -50,6 +50,10 @@
 #include "toolchain/sem_ir/type_info.h"
 #include "toolchain/sem_ir/vtable.h"
 
+namespace clang {
+class Type;
+}  // namespace clang
+
 namespace Carbon::SemIR {
 
 // An expression that may contain control flow, represented as a
@@ -169,6 +173,12 @@ class File : public Printable<File> {
   auto entity_names() const -> const EntityNameStore& { return entity_names_; }
   auto functions() -> FunctionStore& { return functions_; }
   auto functions() const -> const FunctionStore& { return functions_; }
+  auto generated_functions() -> GeneratedFunctionStore& {
+    return generated_functions_;
+  }
+  auto generated_functions() const -> const GeneratedFunctionStore& {
+    return generated_functions_;
+  }
   auto cpp_overload_sets() -> CppOverloadSetStore& {
     return cpp_overload_sets_;
   }
@@ -319,6 +329,14 @@ class File : public Printable<File> {
   auto bundles() -> BundleStore& { return bundles_; }
   auto bundles() const -> const BundleStore& { return bundles_; }
 
+  auto clang_function_pointer_types() -> ClangFunctionPointerTypeStore& {
+    return clang_function_pointer_types_;
+  }
+  auto clang_function_pointer_types() const
+      -> const ClangFunctionPointerTypeStore& {
+    return clang_function_pointer_types_;
+  }
+
   auto top_inst_block_id() const -> InstBlockId { return top_inst_block_id_; }
   auto set_top_inst_block_id(InstBlockId block_id) -> void {
     top_inst_block_id_ = block_id;
@@ -366,6 +384,10 @@ class File : public Printable<File> {
 
   // Storage for callable objects.
   FunctionStore functions_;
+
+  // Provides canonical ids for Generated special functions which map to a
+  // canonical FunctionId.
+  GeneratedFunctionStore generated_functions_;
 
   // Storage for CppOverloadSet.
   CppOverloadSetStore cpp_overload_sets_;
@@ -485,6 +507,9 @@ class File : public Printable<File> {
 
   // Storage for instruction argument bundles.
   BundleStore bundles_;
+
+  // Cache of thunks for C++ function pointer types.
+  ClangFunctionPointerTypeStore clang_function_pointer_types_;
 };
 
 }  // namespace Carbon::SemIR
@@ -499,6 +524,9 @@ extern template class ValueStore<SemIR::CustomLayoutId,
                                  Tag<SemIR::CheckIRId>>;
 extern template class BlockValueStore<SemIR::CustomLayoutId, SemIR::ObjectSize,
                                       Tag<SemIR::CheckIRId>>;
+extern template class CanonicalValueStore<
+    SemIR::ClangFunctionPointerTypeId, const clang::Type*,
+    Tag<SemIR::CheckIRId>, SemIR::ClangFunctionPointerTypeInfo>;
 }  // namespace Carbon
 
 #endif  // CARBON_TOOLCHAIN_SEM_IR_FILE_H_

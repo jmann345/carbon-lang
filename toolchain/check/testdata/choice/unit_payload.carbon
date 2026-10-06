@@ -78,6 +78,7 @@ fn Classify(c: Core.ControlFlow(i32, ())) -> i32 {
 // CHECK:STDOUT: --- unit_payload.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %empty_tuple: %empty_tuple.type = tuple_value () [concrete]
 // CHECK:STDOUT:   %pattern_type.cb1: type = pattern_type %empty_tuple.type [concrete]
@@ -403,8 +404,8 @@ fn Classify(c: Core.ControlFlow(i32, ())) -> i32 {
 // CHECK:STDOUT:   %.loc16_20.7: ref %.dbf = class_element_access %u.ref, element1
 // CHECK:STDOUT:   %.loc16_20.8: ref %tuple.type.9fb = class_element_access %.loc16_20.7, element0
 // CHECK:STDOUT:   %tuple.elem0.loc16: ref %empty_tuple.type = tuple_access %.loc16_20.8, element0
-// CHECK:STDOUT:   %tuple: %empty_tuple.type = tuple_value () [concrete = constants.%empty_tuple]
-// CHECK:STDOUT:   %.loc16_20.9: %empty_tuple.type = converted %tuple.elem0.loc16, %tuple [concrete = constants.%empty_tuple]
+// CHECK:STDOUT:   %empty_tuple: %empty_tuple.type = tuple_value () [concrete = constants.%empty_tuple]
+// CHECK:STDOUT:   %.loc16_20.9: %empty_tuple.type = converted %tuple.elem0.loc16, %empty_tuple [concrete = constants.%empty_tuple]
 // CHECK:STDOUT:   %.loc16_17.1: type = splice_block %.loc16_17.3 [concrete = constants.%empty_tuple.type] {
 // CHECK:STDOUT:     %.loc16_17.2: %empty_tuple.type = tuple_literal () [concrete = constants.%empty_tuple]
 // CHECK:STDOUT:     %.loc16_17.3: type = converted %.loc16_17.2, constants.%empty_tuple.type [concrete = constants.%empty_tuple.type]
@@ -483,6 +484,7 @@ fn Classify(c: Core.ControlFlow(i32, ())) -> i32 {
 // CHECK:STDOUT: --- control_flow_unit.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %empty_tuple.type: type = tuple_type () [concrete]
 // CHECK:STDOUT:   %empty_tuple: %empty_tuple.type = tuple_value () [concrete]
 // CHECK:STDOUT:   %pattern_type.cb1: type = pattern_type %empty_tuple.type [concrete]
@@ -809,8 +811,8 @@ fn Classify(c: Core.ControlFlow(i32, ())) -> i32 {
 // CHECK:STDOUT:   %.loc17_24.7: ref %.96b = class_element_access %c.ref, element1
 // CHECK:STDOUT:   %.loc17_24.8: ref %tuple.type.9fb = class_element_access %.loc17_24.7, element1
 // CHECK:STDOUT:   %tuple.elem0.loc17: ref %empty_tuple.type = tuple_access %.loc17_24.8, element0
-// CHECK:STDOUT:   %tuple: %empty_tuple.type = tuple_value () [concrete = constants.%empty_tuple]
-// CHECK:STDOUT:   %.loc17_24.9: %empty_tuple.type = converted %tuple.elem0.loc17, %tuple [concrete = constants.%empty_tuple]
+// CHECK:STDOUT:   %empty_tuple: %empty_tuple.type = tuple_value () [concrete = constants.%empty_tuple]
+// CHECK:STDOUT:   %.loc17_24.9: %empty_tuple.type = converted %tuple.elem0.loc17, %empty_tuple [concrete = constants.%empty_tuple]
 // CHECK:STDOUT:   %.loc17_21.1: type = splice_block %.loc17_21.3 [concrete = constants.%empty_tuple.type] {
 // CHECK:STDOUT:     %.loc17_21.2: %empty_tuple.type = tuple_literal () [concrete = constants.%empty_tuple]
 // CHECK:STDOUT:     %.loc17_21.3: type = converted %.loc17_21.2, constants.%empty_tuple.type [concrete = constants.%empty_tuple.type]

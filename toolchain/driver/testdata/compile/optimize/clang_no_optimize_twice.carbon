@@ -52,10 +52,10 @@ fn Call() -> i32 {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: noinline nounwind optnone
-// CHECK:STDOUT: define i32 @_CCall.Main() #2 !dbg !12 {
+// CHECK:STDOUT: define i32 @_CCall.Main() #2 !dbg !5 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %g__carbon_thunk.call = call i32 @_Z1gv.carbon_thunk.(), !dbg !16
-// CHECK:STDOUT:   ret i32 %g__carbon_thunk.call, !dbg !17
+// CHECK:STDOUT:   %g__carbon_thunk.call = call i32 @_Z1gv.carbon_thunk.(), !dbg !8
+// CHECK:STDOUT:   ret i32 %g__carbon_thunk.call, !dbg !9
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
@@ -127,26 +127,26 @@ fn Call() -> i32 {
 // CHECK:STDOUT: attributes #7 = { noreturn }
 // CHECK:STDOUT: attributes #8 = { noreturn nounwind }
 // CHECK:STDOUT:
-// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
-// CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!7}
+// CHECK:STDOUT: !llvm.dbg.cu = !{!1}
+// CHECK:STDOUT: !llvm.module.flags = !{!12, !13, !14, !18, !19}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!17}
 // CHECK:STDOUT:
-// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
-// CHECK:STDOUT: !1 = !DIFile(filename: "foo.carbon", directory: "")
-// CHECK:STDOUT: !2 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !3 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !4 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !5 = !{i32 7, !"Dwarf Version", i32 5}
-// CHECK:STDOUT: !6 = !{i32 2, !"Debug Info Version", i32 3}
-// CHECK:STDOUT: !7 = !{!8, !9, i64 0}
-// CHECK:STDOUT: !8 = !{!"__libc_errno", !9, i64 0}
-// CHECK:STDOUT: !9 = !{!"int", !10, i64 0}
-// CHECK:STDOUT: !10 = !{!"omnipotent char", !11, i64 0}
-// CHECK:STDOUT: !11 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !12 = distinct !DISubprogram(name: "Call", linkageName: "_CCall.Main", scope: null, file: !1, line: 12, type: !13, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !13 = !DISubroutineType(types: !14)
-// CHECK:STDOUT: !14 = !{!15}
-// CHECK:STDOUT: !15 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !16 = !DILocation(line: 13, column: 10, scope: !12)
-// CHECK:STDOUT: !17 = !DILocation(line: 13, column: 3, scope: !12)
+// CHECK:STDOUT: !0 = !DIFile(filename: "foo.carbon", directory: "")
+// CHECK:STDOUT: !1 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !0, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !2 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !3 = !{!2}
+// CHECK:STDOUT: !4 = !DISubroutineType(types: !3)
+// CHECK:STDOUT: !5 = distinct !DISubprogram(name: "Call", linkageName: "_CCall.Main", scope: null, file: !0, line: 12, type: !4, spFlags: DISPFlagDefinition, unit: !1)
+// CHECK:STDOUT: !8 = !DILocation(line: 13, column: 10, scope: !5)
+// CHECK:STDOUT: !9 = !DILocation(line: 13, column: 3, scope: !5)
+// CHECK:STDOUT: !10 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !11 = !{!"omnipotent char", !10, i64 0}
+// CHECK:STDOUT: !12 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !13 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !14 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !15 = !{!"int", !11, i64 0}
+// CHECK:STDOUT: !16 = !{!"__libc_errno", !15, i64 0}
+// CHECK:STDOUT: !17 = !{!16, !15, i64 0}
+// CHECK:STDOUT: !18 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !19 = !{i32 2, !"Debug Info Version", i32 3}
 // CHECK:STDOUT:

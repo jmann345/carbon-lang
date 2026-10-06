@@ -93,6 +93,7 @@ fn Bad(p: i64, n: i64) -> i64 = "pointer.offset";
 // CHECK:STDOUT: --- call.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %int_64: Core.IntLiteral = int_value 64 [concrete]
 // CHECK:STDOUT:   %i64: type = class_type @Int, @Int(%int_64) [concrete]
 // CHECK:STDOUT:   %Offset.type: type = fn_type @Offset [concrete]
@@ -172,8 +173,8 @@ fn Bad(p: i64, n: i64) -> i64 = "pointer.offset";
 // CHECK:STDOUT: --- symbolic_deref.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
-// CHECK:STDOUT:   %type: type = facet_type <type> [concrete]
-// CHECK:STDOUT:   %.Self.frozen: %type = symbolic_binding .Self [symbolic_self]
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %.Self.frozen: type = symbolic_binding .Self [symbolic_self]
 // CHECK:STDOUT:   %Copy.type: type = facet_type <@Copy> [concrete]
 // CHECK:STDOUT:   %pattern_type.e81: type = pattern_type %Copy.type [concrete]
 // CHECK:STDOUT:   %T.patt.fe6: %pattern_type.e81 = symbolic_binding_pattern T, 0 [symbolic]
@@ -224,7 +225,7 @@ fn Bad(p: i64, n: i64) -> i64 = "pointer.offset";
 // CHECK:STDOUT:     %.loc5_33.3: type = converted %T.ref.loc5_33, %T.as_type.loc5_33 [symbolic = %T.as_type.loc5_27.1 (constants.%T.as_type)]
 // CHECK:STDOUT:     %.loc5_33.4: Core.Form = init_form %.loc5_33.3 [symbolic = %.loc5_33.2 (constants.%.1ce700.2)]
 // CHECK:STDOUT:     %.loc5_16: type = splice_block %Copy.ref [concrete = constants.%Copy.type] {
-// CHECK:STDOUT:       %.Self.frozen: %type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
+// CHECK:STDOUT:       %.Self.frozen: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
 // CHECK:STDOUT:       %Core.ref: <namespace> = name_ref Core, imports.%Core [concrete = imports.%Core]
 // CHECK:STDOUT:       %Copy.ref: type = name_ref Copy, imports.%Core.Copy [concrete = constants.%Copy.type]
 // CHECK:STDOUT:     }
@@ -248,7 +249,7 @@ fn Bad(p: i64, n: i64) -> i64 = "pointer.offset";
 // CHECK:STDOUT:     %v.patt.loc9_32.1: @Store.%pattern_type.loc9_32 (%pattern_type.2c66b4.2) = wrapper_binding_pattern v, %v.param_patt.loc9_32.1 [symbolic = %v.patt.loc9_32.2 (constants.%v.patt)]
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %.loc9_17: type = splice_block %Copy.ref [concrete = constants.%Copy.type] {
-// CHECK:STDOUT:       %.Self.frozen: %type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
+// CHECK:STDOUT:       %.Self.frozen: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen]
 // CHECK:STDOUT:       %Core.ref: <namespace> = name_ref Core, imports.%Core [concrete = imports.%Core]
 // CHECK:STDOUT:       %Copy.ref: type = name_ref Copy, imports.%Core.Copy [concrete = constants.%Copy.type]
 // CHECK:STDOUT:     }

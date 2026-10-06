@@ -122,21 +122,22 @@ out by value through its `Copy` witness, after the bounds check of `Get`. The
 subscript type is `i64`. An integer literal subscript converts to `i64` first
 (fork rule, SL-1): the index expression applies that conversion when the
 container implements `IndexWith(i64)` and has no `IndexWith(Core.IntLiteral)`
-impl — the array indexing rule's hardcoded subscript conversion, decided by
-impl lookup instead — so `s[1]` and `s[i]` with `i: i64` work, while an `i32`
+impl — the array indexing rule's hardcoded subscript conversion, decided by impl
+lookup instead — so `s[1]` and `s[i]` with `i: i64` work, while an `i32`
 subscript must be written `s[i as i64]` (see [0.1 limits](#01-limits)). A
 container with its own `IndexWith(Core.IntLiteral)` impl, such as `Core.String`,
 is dispatched as written. The `IndexWith(i64)` impls of `Slice` and `Buf` are
 `final`, so in a generic body `s[i]` on a `Core.Slice(T)` has type `T`: a
-symbolic impl lookup resolves only final impls, and through a non-final impl
-the element type would stay the abstract
-`Core.Slice(T).(Core.IndexWith(i64).ElementType)`. `Slice` deliberately does not copy `String`'s blanket
-`IndexWith(U: ImplicitAs(i64))` impl: for `U = Core.IntLiteral` its `At` would
-apply a compile-time-only conversion to a runtime `subscript`, which cannot be
-lowered; `String`'s works only because its `At` is itself a builtin, lowered at
-the call site. A `Core.Slice(T)` is `Copy` (two words) and `UnformedInit`:
-`var s: Core.Slice(i32);` is accepted and must be assigned before use, as for
-`Core.String`, whose `{ptr, size}` layout `Core.Slice(T)` shares.
+symbolic impl lookup resolves only final impls, and through a non-final impl the
+element type would stay the abstract
+`Core.Slice(T).(Core.IndexWith(i64).ElementType)`. `Slice` deliberately does not
+copy `String`'s blanket `IndexWith(U: ImplicitAs(i64))` impl: for `U =
+Core.IntLiteral` its `At` would apply a compile-time-only conversion to a
+runtime `subscript`, which cannot be lowered; `String`'s works only because its
+`At` is itself a builtin, lowered at the call site. A `Core.Slice(T)` is `Copy`
+(two words) and `UnformedInit`: `var s: Core.Slice(i32);` is accepted and must
+be assigned before use, as for `Core.String`, whose `{ptr, size}` layout
+`Core.Slice(T)` shares.
 
 ### `Core.Buf(T)`
 
@@ -305,10 +306,11 @@ the deleted constructor is imported as the `Copy` witness — and maps to a
 site, not at the header.
 
 **Views are explicit on the Carbon side (D-SL-2).** A Carbon array reaches a
-`std::span<const int>` parameter as `Cpp.SumSpan(Core.Slice(i32).FromArray(&a))`,
-never as `Cpp.SumSpan(a)`: the view is formed from a pointer to the array. A
-`Core.Slice(T)` argument converts to a `Core.Slice(const T)` parameter
-implicitly (D-SL-10), as `std::span<T>` converts to `std::span<const T>`.
+`std::span<const int>` parameter as
+`Cpp.SumSpan(Core.Slice(i32).FromArray(&a))`, never as `Cpp.SumSpan(a)`: the
+view is formed from a pointer to the array. A `Core.Slice(T)` argument converts
+to a `Core.Slice(const T)` parameter implicitly (D-SL-10), as `std::span<T>`
+converts to `std::span<const T>`.
 
 **Owning containers form views implicitly (D-SL-9).** A C++ class with `data()`
 and `size()` member functions — `std::vector<T>`, `std::array<T, N>`,
@@ -353,15 +355,15 @@ pointer-then-size layout so they stay hermetic (D-SL-14).
 Each limit is a deviation from the target design, with the condition under
 which it is removed:
 
--   **Slices are read-only; `s[i] = v` is an error.** [Indexing](expressions/indexing.md)
-    specifies a `Span` that implements `IndirectIndexWith` with a `Ref` method
-    returning `ref T`. The toolchain has neither `IndirectIndexWith` nor
-    `ref`-returning methods, and the prelude's `IndexWith` has only `At`, so
-    `s[i]` is a value expression and a write through it diagnoses
-    `AssignmentToNonAssignable`. There is also no `Slice.Set`: a
-    `Core.Slice(const T)` over C++ read-only memory would compile its store
-    against the unqualified symbolic `T` and fault at runtime. Removed when
-    `IndirectIndexWith` and `ref` returns land; `Core.Slice` then takes the
+-   **Slices are read-only; `s[i] = v` is an error.**
+    [Indexing](expressions/indexing.md) specifies a `Span` that implements
+    `IndirectIndexWith` with a `Ref` method returning `ref T`. The toolchain has
+    neither `IndirectIndexWith` nor `ref`-returning methods, and the prelude's
+    `IndexWith` has only `At`, so `s[i]` is a value expression and a write
+    through it diagnoses `AssignmentToNonAssignable`. There is also no
+    `Slice.Set`: a `Core.Slice(const T)` over C++ read-only memory would compile
+    its store against the unqualified symbolic `T` and fault at runtime. Removed
+    when `IndirectIndexWith` and `ref` returns land; `Core.Slice` then takes the
     `Span` shape.
 -   **`i32` subscripts need `as i64`.** Only an integer literal converts to the
     `i64` subscript type implicitly. Removed when integer subscript widening is

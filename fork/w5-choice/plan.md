@@ -66,13 +66,14 @@ than a private overlapping-storage mechanism."*
 Concretely (recommended repr — sub-fork SF-1, §5):
 
 -   Object repr becomes `StructType { .discriminant: UInt(N), .payload:
-    CustomLayoutType }` where the `CustomLayoutType` (sem_ir/typed_insts.h:617-627)
-    carries one field per payload-carrying alternative — that alternative's
-    payload tuple type — **all at offset 0**, with size/align = max over
-    payload tuples (the unions.md Layout rule). Payload-free choices keep
-    today's exact `{.discriminant}` repr (the degenerate case of the
-    contract): zero golden churn for existing choices, and the by-copy value
-    repr of single-field structs (type_completion.cpp:570-576) is preserved.
+    CustomLayoutType }` where the `CustomLayoutType`
+    (sem_ir/typed_insts.h:617-627) carries one field per payload-carrying
+    alternative — that alternative's payload tuple type — **all at offset 0**,
+    with size/align = max over payload tuples (the unions.md Layout rule).
+    Payload-free choices keep today's exact `{.discriminant}` repr (the
+    degenerate case of the contract): zero golden churn for existing choices,
+    and the by-copy value repr of single-field structs
+    (type_completion.cpp:570-576) is preserved.
 -   The contract operates at the compiler layout level; source-level union
     field rules do **not** constrain choice payloads (unions.md:543-554). 0.1
     slices below nevertheless _restrict_ payloads to trivially copyable +
@@ -260,34 +261,32 @@ references diagnose against the TODO, not against a phantom missing member.
     (`case .Err()` vs `.Err`, sum_types.md:233-241). Payload-free CHOICES
     (no payload field at all) keep today's constants bit-for-bit — the
     zero-golden-churn claim in §0.2 is unaffected.
--   **(c) Choice-ness + alternative-index metadata.** SemIR has no way to
-    ask "is this ClassType a choice?" (`toolchain/sem_ir/class.h`: zero
-    mentions of choice; alternatives are plain WrapperBinding scope entries
-    with the index baked into the constant, handle_choice.cpp:221-234), and
-    §2.3's H3/H9 need exactly that plus name→index. S1 adds **one bool
-    `is_choice` to `SemIR::Class`**, set where `ChoiceDefinitionStart`
-    creates the class, copied at import like the existing `is_dynamic` /
-    `fields_exported` flags (class.h:47-50; import copy site
-    import_ref.cpp:~2016) — precedented, one-flag entity churn, NOT
-    inferred from the `NameId::ChoiceDiscriminant` repr field (a syntactic
-    test R-4's discipline forbids; the flag is entity truth). Name→index
-    for S1's payload-free arms comes from the alternative's **bound
-    value** constant, not the WrapperBinding's own constant. AMENDED
-    post-CI (autoupdate run 30251025460): a WrapperBinding over a
-    value-category bound value is never constant — EvalConstantInst
-    forwards constants only for ref-category bounds (eval_inst.cpp:118-126)
-    — and a non-constant binding imports as ConstantId::NotConstant
-    (import_ref.cpp:4401-4408), so this section's original "constant
-    imports with the binding (LoadImportRef + canonical constants)"
-    premise was wrong on both counts and CHECK-crashed the first real run.
-    The implemented mechanism resolves the binding to its defining file
-    (SemIR::GetCanonicalFileAndInstId) and reads the bound value's
+-   **(c) Choice-ness + alternative-index metadata.** SemIR has no way to ask
+    "is this ClassType a choice?" (`toolchain/sem_ir/class.h`: zero mentions of
+    choice; alternatives are plain WrapperBinding scope entries with the index
+    baked into the constant, handle_choice.cpp:221-234), and §2.3's H3/H9 need
+    exactly that plus name→index. S1 adds **one bool `is_choice` to
+    `SemIR::Class`**, set where `ChoiceDefinitionStart` creates the class,
+    copied at import like the existing `is_dynamic` / `fields_exported` flags
+    (class.h:47-50; import copy site import_ref.cpp:~2016) — precedented,
+    one-flag entity churn, NOT inferred from the `NameId::ChoiceDiscriminant`
+    repr field (a syntactic test R-4's discipline forbids; the flag is entity
+    truth). Name→index for S1's payload-free arms comes from the alternative's
+    **bound value** constant, not the WrapperBinding's own constant. AMENDED
+    post-CI (autoupdate run 30251025460): a WrapperBinding over a value-category
+    bound value is never constant — EvalConstantInst forwards constants only for
+    ref-category bounds (eval_inst.cpp:118-126) — and a non-constant binding
+    imports as ConstantId::NotConstant (import_ref.cpp:4401-4408), so this
+    section's original "constant imports with the binding (LoadImportRef +
+    canonical constants)" premise was wrong on both counts and CHECK-crashed the
+    first real run. The implemented mechanism resolves the binding to its
+    defining file (SemIR::GetCanonicalFileAndInstId) and reads the bound value's
     concrete StructValue discriminant element there (handle_match.cpp
-    GetAlternativeDiscriminant). S2's payload patterns need richer per-alternative
-    metadata (payload tuple type, payload field index); that shape
-    (an alternatives side-table on Class, a la fields) is planned in §3.2.
-    The §2.4 sem_ir line and §6 are updated accordingly; a cross-file
-    testdata program pins the imported-choice match path.
+    GetAlternativeDiscriminant). S2's payload patterns need richer
+    per-alternative metadata (payload tuple type, payload field index); that
+    shape (an alternatives side-table on Class, a la fields) is planned in §3.2.
+    The §2.4 sem_ir line and §6 are updated accordingly; a cross-file testdata
+    program pins the imported-choice match path.
 -   Object repr: extend the :248-289 computation — collect payload tuple
     types, compute max size/align by way of the same completion-time queries the
     C++ import layout path uses, build the CustomLayoutId block
@@ -421,17 +420,16 @@ diagnostics join W-066's deferral (recorded, not silent).
     (`handle_binding_pattern.cpp:451-452`,
     FullPatternStack::Kind::NotInEitherParamList). S2 introduces a case-arm
     pattern context: FullPatternStack pushed at MatchCaseIntroducer, binding
-    patterns allowed with the scrutinee (not a call param) as the match
-    source, bindings materialized into the arm's then-block scope
-    (MatchHandlerStart's scope, W4 H12) by way of the existing BindName machinery,
-    initialized from `class_element_access` payload extraction +
-    tuple-element access. By-value copy of trivially-copyable payloads only
-    (S1 gate), so no destroy/cleanup novelty. Declared binding type must
-    ImplicitAs-match the alternative's declared payload type (design:
-    pattern reproduces the parameter list, sum_types.md:220-231). Payload
-    patterns need per-alternative metadata beyond §2.2c's flag — payload
-    tuple type + payload field index, keyed by name: S2 adds an
-    alternatives side-table on `SemIR::Class` (shape modeled on the
+    patterns allowed with the scrutinee (not a call param) as the match source,
+    bindings materialized into the arm's then-block scope (MatchHandlerStart's
+    scope, W4 H12) by way of the existing BindName machinery, initialized from
+    `class_element_access` payload extraction + tuple-element access. By-value
+    copy of trivially-copyable payloads only (S1 gate), so no destroy/cleanup
+    novelty. Declared binding type must ImplicitAs-match the alternative's
+    declared payload type (design: pattern reproduces the parameter list,
+    sum_types.md:220-231). Payload patterns need per-alternative metadata beyond
+    §2.2c's flag — payload tuple type + payload field index, keyed by name: S2
+    adds an alternatives side-table on `SemIR::Class` (shape modeled on the
     existing fields store), imported alongside the class.
 3.  **Exhaustiveness (the SF-7(a) outcome is machinery, not a flag flip)**:
     "all alternatives covered ⇒ no `default`" needs, in the match
@@ -461,12 +459,13 @@ diagnostics join W-066's deferral (recorded, not silent).
 -   `toolchain/check/handle_binding_pattern.cpp` /
     `toolchain/check/full_pattern_stack.h` (or equivalent) — the case-arm
     pattern context.
--   Testdata: new `toolchain/check/testdata/match/choice_payload_binding.carbon`,
+-   Testdata: new
+    `toolchain/check/testdata/match/choice_payload_binding.carbon`,
     `choice_exhaustive.carbon`, `fail_choice_nonexhaustive.carbon` (§3.2.3
-    shapes), fail cases (wrong binding type, wrong arity,
-    unknown alternative, duplicate alternative accepted-with-work-item);
-    `toolchain/lower/testdata/match/choice_payload.carbon` (payload GEP +
-    branch chain).
+    shapes), fail cases (wrong binding type, wrong arity, unknown alternative,
+    duplicate alternative accepted-with-work-item);
+    `toolchain/lower/testdata/match/choice_payload.carbon` (payload GEP + branch
+    chain).
 -   Conformance: new `control_flow/choice_payload_roundtrip_diff.carbon` /
     `.diff.cpp` — Carbon choice construct+match-bind vs C++
     `std::variant<int,...>` + `std::get_if`, runtime-computed payload values
@@ -571,12 +570,12 @@ slice merges**. Recommendations follow each; none is a decision.
     either way. **Recommend leading-dot only** for S1/S2 with the qualified
     form as a recorded TODO + work item.
 -   **SF-5 (blocks S2): binding spelling inside alternative patterns.**
-    sum_types.md:82 writes `case .Some(the_value: i32)`; the conformance
-    sketch writes `case .Ok(let v: i32)`; W4 parse testdata shows bare
-    `case a: i32` producing LetBindingPattern. Accept bare only, `let` only,
-    or both? **Recommend: bare `name: type`** (design-doc spelling), with
-    `let` rejected by way of the normal pattern grammar — revisit alongside F-011
-    if-let work which touches the same pattern surface.
+    sum_types.md:82 writes `case .Some(the_value: i32)`; the conformance sketch
+    writes `case .Ok(let v: i32)`; W4 parse testdata shows bare `case a: i32`
+    producing LetBindingPattern. Accept bare only, `let` only, or both?
+    **Recommend: bare `name: type`** (design-doc spelling), with `let` rejected
+    by way of the normal pattern grammar — revisit alongside F-011 if-let work
+    which touches the same pattern surface.
 -   **SF-6 (blocks S1, revisited each slice): trivially-copyable payload
     restriction.** The F-007k contract explicitly permits non-trivial
     payloads (`String`, unions.md:543-554); 0.1 slices restrict + diagnose,
@@ -684,9 +683,9 @@ the kind mid-loop. S4 needs custom-type-mapping glue but no inst kinds.
 -   Every TODO string in §2.1 is contract text: conformance SKIP reasons
     quote them verbatim (R10), and changing one is a golden+conformance
     co-change.
--   clang-format 21.1.8 by way of hooks (R12/R18); `runner.py --self-test` before
-    every conformance-touching commit (R7); private `--out` dirs (R5); one
-    committer per worktree (R20).
+-   clang-format 21.1.8 by way of hooks (R12/R18); `runner.py --self-test`
+    before every conformance-touching commit (R7); private `--out` dirs (R5);
+    one committer per worktree (R20).
 
 ---
 

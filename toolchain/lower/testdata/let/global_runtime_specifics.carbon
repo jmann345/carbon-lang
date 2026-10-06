@@ -89,49 +89,49 @@ fn CallHB() -> i32 { return H(i32); }
 // CHECK:STDOUT: @llvm.global_ctors = appending global [1 x { i32, ptr, ptr }] [{ i32, ptr, ptr } { i32 0, ptr @_C__global_init.Main, ptr null }]
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CSeedA.Main() #0 !dbg !4 {
+// CHECK:STDOUT: define i32 @_CSeedA.Main() #0 !dbg !9 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret i32 3, !dbg !8
+// CHECK:STDOUT:   ret i32 3, !dbg !12
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CSeedB.Main() #0 !dbg !9 {
+// CHECK:STDOUT: define i32 @_CSeedB.Main() #0 !dbg !13 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret i32 4, !dbg !10
+// CHECK:STDOUT:   ret i32 4, !dbg !16
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define internal void @_C__global_init.Main() #0 !dbg !11 {
+// CHECK:STDOUT: define internal void @_C__global_init.Main() #0 !dbg !19 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %SeedA.call = call i32 @_CSeedA.Main(), !dbg !14
+// CHECK:STDOUT:   %SeedA.call = call i32 @_CSeedA.Main(), !dbg !20
 // CHECK:STDOUT:   store i32 %SeedA.call, ptr @_Cla.Main, align 4
-// CHECK:STDOUT:   %SeedB.call = call i32 @_CSeedB.Main(), !dbg !15
+// CHECK:STDOUT:   %SeedB.call = call i32 @_CSeedB.Main(), !dbg !21
 // CHECK:STDOUT:   store i32 %SeedB.call, ptr @_Clb.Main, align 4
-// CHECK:STDOUT:   ret void, !dbg !16
+// CHECK:STDOUT:   ret void, !dbg !22
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT:
-// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
+// CHECK:STDOUT: !llvm.dbg.cu = !{!5}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
 // CHECK:STDOUT:
-// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
-// CHECK:STDOUT: !1 = !DIFile(filename: "def.carbon", directory: "")
 // CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
 // CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
-// CHECK:STDOUT: !4 = distinct !DISubprogram(name: "SeedA", linkageName: "_CSeedA.Main", scope: null, file: !1, line: 4, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !5 = !DISubroutineType(types: !6)
-// CHECK:STDOUT: !6 = !{!7}
-// CHECK:STDOUT: !7 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !8 = !DILocation(line: 4, column: 21, scope: !4)
-// CHECK:STDOUT: !9 = distinct !DISubprogram(name: "SeedB", linkageName: "_CSeedB.Main", scope: null, file: !1, line: 6, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !10 = !DILocation(line: 6, column: 21, scope: !9)
-// CHECK:STDOUT: !11 = distinct !DISubprogram(name: "__global_init", linkageName: "_C__global_init.Main", scope: null, file: !1, type: !12, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !12 = !DISubroutineType(types: !13)
-// CHECK:STDOUT: !13 = !{null}
-// CHECK:STDOUT: !14 = !DILocation(line: 8, column: 15, scope: !11)
-// CHECK:STDOUT: !15 = !DILocation(line: 10, column: 15, scope: !11)
-// CHECK:STDOUT: !16 = !DILocation(line: 0, scope: !11)
+// CHECK:STDOUT: !4 = !DIFile(filename: "def.carbon", directory: "")
+// CHECK:STDOUT: !5 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !4, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !{!6}
+// CHECK:STDOUT: !8 = !DISubroutineType(types: !7)
+// CHECK:STDOUT: !9 = distinct !DISubprogram(name: "SeedA", linkageName: "_CSeedA.Main", scope: null, file: !4, line: 4, type: !8, spFlags: DISPFlagDefinition, unit: !5)
+// CHECK:STDOUT: !12 = !DILocation(line: 4, column: 21, scope: !9)
+// CHECK:STDOUT: !13 = distinct !DISubprogram(name: "SeedB", linkageName: "_CSeedB.Main", scope: null, file: !4, line: 6, type: !8, spFlags: DISPFlagDefinition, unit: !5)
+// CHECK:STDOUT: !16 = !DILocation(line: 6, column: 21, scope: !13)
+// CHECK:STDOUT: !17 = !{null}
+// CHECK:STDOUT: !18 = !DISubroutineType(types: !17)
+// CHECK:STDOUT: !19 = distinct !DISubprogram(name: "__global_init", linkageName: "_C__global_init.Main", scope: null, file: !4, type: !18, spFlags: DISPFlagDefinition, unit: !5)
+// CHECK:STDOUT: !20 = !DILocation(line: 8, column: 15, scope: !19)
+// CHECK:STDOUT: !21 = !DILocation(line: 10, column: 15, scope: !19)
+// CHECK:STDOUT: !22 = !DILocation(line: 0, scope: !19)
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'use.carbon'
@@ -141,45 +141,45 @@ fn CallHB() -> i32 { return H(i32); }
 // CHECK:STDOUT: @_Clb.Main = external global i32
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @"_CGet.UseA.Main:Reader.Main"() #0 !dbg !4 {
+// CHECK:STDOUT: define i32 @"_CGet.UseA.Main:Reader.Main"() #0 !dbg !25 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %la.ref = load i32, ptr @_Cla.Main, align 4, !dbg !8
-// CHECK:STDOUT:   ret i32 %la.ref, !dbg !9
+// CHECK:STDOUT:   %la.ref = load i32, ptr @_Cla.Main, align 4, !dbg !28
+// CHECK:STDOUT:   ret i32 %la.ref, !dbg !29
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @"_CGet.UseB.Main:Reader.Main"() #0 !dbg !10 {
+// CHECK:STDOUT: define i32 @"_CGet.UseB.Main:Reader.Main"() #0 !dbg !30 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %lb.ref = load i32, ptr @_Clb.Main, align 4, !dbg !11
-// CHECK:STDOUT:   ret i32 %lb.ref, !dbg !12
+// CHECK:STDOUT:   %lb.ref = load i32, ptr @_Clb.Main, align 4, !dbg !33
+// CHECK:STDOUT:   ret i32 %lb.ref, !dbg !34
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CCallA.Main() #0 !dbg !13 {
+// CHECK:STDOUT: define i32 @_CCallA.Main() #0 !dbg !35 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %G.call = call i32 @_CG.Main.b5567028e227e792(), !dbg !14
-// CHECK:STDOUT:   ret i32 %G.call, !dbg !15
+// CHECK:STDOUT:   %G.call = call i32 @_CG.Main.b5567028e227e792(), !dbg !38
+// CHECK:STDOUT:   ret i32 %G.call, !dbg !39
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CCallB.Main() #0 !dbg !16 {
+// CHECK:STDOUT: define i32 @_CCallB.Main() #0 !dbg !40 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %G.call = call i32 @_CG.Main.37564afe55274bd3(), !dbg !17
-// CHECK:STDOUT:   ret i32 %G.call, !dbg !18
+// CHECK:STDOUT:   %G.call = call i32 @_CG.Main.37564afe55274bd3(), !dbg !43
+// CHECK:STDOUT:   ret i32 %G.call, !dbg !44
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CCallHA.Main() #0 !dbg !19 {
+// CHECK:STDOUT: define i32 @_CCallHA.Main() #0 !dbg !45 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %H.call = call i32 @_CH.Main.a4c7fafe8a72cac4(), !dbg !20
-// CHECK:STDOUT:   ret i32 %H.call, !dbg !21
+// CHECK:STDOUT:   %H.call = call i32 @_CH.Main.a4c7fafe8a72cac4(), !dbg !48
+// CHECK:STDOUT:   ret i32 %H.call, !dbg !49
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CCallHB.Main() #0 !dbg !22 {
+// CHECK:STDOUT: define i32 @_CCallHB.Main() #0 !dbg !50 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %H.call = call i32 @_CH.Main.a4c7fafe8a72cac4(), !dbg !23
-// CHECK:STDOUT:   ret i32 %H.call, !dbg !24
+// CHECK:STDOUT:   %H.call = call i32 @_CH.Main.a4c7fafe8a72cac4(), !dbg !53
+// CHECK:STDOUT:   ret i32 %H.call, !dbg !54
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare i32 @_CSeedA.Main()
@@ -187,24 +187,24 @@ fn CallHB() -> i32 { return H(i32); }
 // CHECK:STDOUT: declare i32 @_CSeedB.Main()
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr i32 @_CG.Main.b5567028e227e792() #0 !dbg !25 {
+// CHECK:STDOUT: define linkonce_odr i32 @_CG.Main.b5567028e227e792() #0 !dbg !55 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %Reader.WithSelf.Get.call = call i32 @"_CGet.UseA.Main:Reader.Main"(), !dbg !26
-// CHECK:STDOUT:   ret i32 %Reader.WithSelf.Get.call, !dbg !27
+// CHECK:STDOUT:   %Reader.WithSelf.Get.call = call i32 @"_CGet.UseA.Main:Reader.Main"(), !dbg !58
+// CHECK:STDOUT:   ret i32 %Reader.WithSelf.Get.call, !dbg !59
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr i32 @_CG.Main.37564afe55274bd3() #0 !dbg !28 {
+// CHECK:STDOUT: define linkonce_odr i32 @_CG.Main.37564afe55274bd3() #0 !dbg !60 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %Reader.WithSelf.Get.call = call i32 @"_CGet.UseB.Main:Reader.Main"(), !dbg !29
-// CHECK:STDOUT:   ret i32 %Reader.WithSelf.Get.call, !dbg !30
+// CHECK:STDOUT:   %Reader.WithSelf.Get.call = call i32 @"_CGet.UseB.Main:Reader.Main"(), !dbg !63
+// CHECK:STDOUT:   ret i32 %Reader.WithSelf.Get.call, !dbg !64
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define linkonce_odr i32 @_CH.Main.a4c7fafe8a72cac4() #0 !dbg !31 {
+// CHECK:STDOUT: define linkonce_odr i32 @_CH.Main.a4c7fafe8a72cac4() #0 !dbg !65 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %la.ref = load i32, ptr @_Cla.Main, align 4, !dbg !32
-// CHECK:STDOUT:   ret i32 %la.ref, !dbg !33
+// CHECK:STDOUT:   %la.ref = load i32, ptr @_Cla.Main, align 4, !dbg !68
+// CHECK:STDOUT:   ret i32 %la.ref, !dbg !69
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; uselistorder directives
@@ -212,41 +212,41 @@ fn CallHB() -> i32 { return H(i32); }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT:
-// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
+// CHECK:STDOUT: !llvm.dbg.cu = !{!24}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
 // CHECK:STDOUT:
-// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
-// CHECK:STDOUT: !1 = !DIFile(filename: "use.carbon", directory: "")
 // CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
 // CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
-// CHECK:STDOUT: !4 = distinct !DISubprogram(name: "Get", linkageName: "_CGet.UseA.Main:Reader.Main", scope: null, file: !1, line: 12, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !5 = !DISubroutineType(types: !6)
-// CHECK:STDOUT: !6 = !{!7}
-// CHECK:STDOUT: !7 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !8 = !DILocation(line: 12, column: 28, scope: !4)
-// CHECK:STDOUT: !9 = !DILocation(line: 12, column: 21, scope: !4)
-// CHECK:STDOUT: !10 = distinct !DISubprogram(name: "Get", linkageName: "_CGet.UseB.Main:Reader.Main", scope: null, file: !1, line: 17, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !11 = !DILocation(line: 17, column: 28, scope: !10)
-// CHECK:STDOUT: !12 = !DILocation(line: 17, column: 21, scope: !10)
-// CHECK:STDOUT: !13 = distinct !DISubprogram(name: "CallA", linkageName: "_CCallA.Main", scope: null, file: !1, line: 24, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !14 = !DILocation(line: 24, column: 28, scope: !13)
-// CHECK:STDOUT: !15 = !DILocation(line: 24, column: 21, scope: !13)
-// CHECK:STDOUT: !16 = distinct !DISubprogram(name: "CallB", linkageName: "_CCallB.Main", scope: null, file: !1, line: 26, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !17 = !DILocation(line: 26, column: 28, scope: !16)
-// CHECK:STDOUT: !18 = !DILocation(line: 26, column: 21, scope: !16)
-// CHECK:STDOUT: !19 = distinct !DISubprogram(name: "CallHA", linkageName: "_CCallHA.Main", scope: null, file: !1, line: 36, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !20 = !DILocation(line: 36, column: 29, scope: !19)
-// CHECK:STDOUT: !21 = !DILocation(line: 36, column: 22, scope: !19)
-// CHECK:STDOUT: !22 = distinct !DISubprogram(name: "CallHB", linkageName: "_CCallHB.Main", scope: null, file: !1, line: 38, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !23 = !DILocation(line: 38, column: 29, scope: !22)
-// CHECK:STDOUT: !24 = !DILocation(line: 38, column: 22, scope: !22)
-// CHECK:STDOUT: !25 = distinct !DISubprogram(name: "G", linkageName: "_CG.Main.b5567028e227e792", scope: null, file: !1, line: 22, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !26 = !DILocation(line: 22, column: 41, scope: !25)
-// CHECK:STDOUT: !27 = !DILocation(line: 22, column: 34, scope: !25)
-// CHECK:STDOUT: !28 = distinct !DISubprogram(name: "G", linkageName: "_CG.Main.37564afe55274bd3", scope: null, file: !1, line: 22, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !29 = !DILocation(line: 22, column: 41, scope: !28)
-// CHECK:STDOUT: !30 = !DILocation(line: 22, column: 34, scope: !28)
-// CHECK:STDOUT: !31 = distinct !DISubprogram(name: "H", linkageName: "_CH.Main.a4c7fafe8a72cac4", scope: null, file: !1, line: 34, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !32 = !DILocation(line: 34, column: 39, scope: !31)
-// CHECK:STDOUT: !33 = !DILocation(line: 34, column: 32, scope: !31)
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !{!6}
+// CHECK:STDOUT: !8 = !DISubroutineType(types: !7)
+// CHECK:STDOUT: !23 = !DIFile(filename: "use.carbon", directory: "")
+// CHECK:STDOUT: !24 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !23, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !25 = distinct !DISubprogram(name: "Get", linkageName: "_CGet.UseA.Main:Reader.Main", scope: null, file: !23, line: 12, type: !8, spFlags: DISPFlagDefinition, unit: !24)
+// CHECK:STDOUT: !28 = !DILocation(line: 12, column: 28, scope: !25)
+// CHECK:STDOUT: !29 = !DILocation(line: 12, column: 21, scope: !25)
+// CHECK:STDOUT: !30 = distinct !DISubprogram(name: "Get", linkageName: "_CGet.UseB.Main:Reader.Main", scope: null, file: !23, line: 17, type: !8, spFlags: DISPFlagDefinition, unit: !24)
+// CHECK:STDOUT: !33 = !DILocation(line: 17, column: 28, scope: !30)
+// CHECK:STDOUT: !34 = !DILocation(line: 17, column: 21, scope: !30)
+// CHECK:STDOUT: !35 = distinct !DISubprogram(name: "CallA", linkageName: "_CCallA.Main", scope: null, file: !23, line: 24, type: !8, spFlags: DISPFlagDefinition, unit: !24)
+// CHECK:STDOUT: !38 = !DILocation(line: 24, column: 28, scope: !35)
+// CHECK:STDOUT: !39 = !DILocation(line: 24, column: 21, scope: !35)
+// CHECK:STDOUT: !40 = distinct !DISubprogram(name: "CallB", linkageName: "_CCallB.Main", scope: null, file: !23, line: 26, type: !8, spFlags: DISPFlagDefinition, unit: !24)
+// CHECK:STDOUT: !43 = !DILocation(line: 26, column: 28, scope: !40)
+// CHECK:STDOUT: !44 = !DILocation(line: 26, column: 21, scope: !40)
+// CHECK:STDOUT: !45 = distinct !DISubprogram(name: "CallHA", linkageName: "_CCallHA.Main", scope: null, file: !23, line: 36, type: !8, spFlags: DISPFlagDefinition, unit: !24)
+// CHECK:STDOUT: !48 = !DILocation(line: 36, column: 29, scope: !45)
+// CHECK:STDOUT: !49 = !DILocation(line: 36, column: 22, scope: !45)
+// CHECK:STDOUT: !50 = distinct !DISubprogram(name: "CallHB", linkageName: "_CCallHB.Main", scope: null, file: !23, line: 38, type: !8, spFlags: DISPFlagDefinition, unit: !24)
+// CHECK:STDOUT: !53 = !DILocation(line: 38, column: 29, scope: !50)
+// CHECK:STDOUT: !54 = !DILocation(line: 38, column: 22, scope: !50)
+// CHECK:STDOUT: !55 = distinct !DISubprogram(name: "G", linkageName: "_CG.Main.b5567028e227e792", scope: null, file: !23, line: 22, type: !8, spFlags: DISPFlagDefinition, unit: !24)
+// CHECK:STDOUT: !58 = !DILocation(line: 22, column: 41, scope: !55)
+// CHECK:STDOUT: !59 = !DILocation(line: 22, column: 34, scope: !55)
+// CHECK:STDOUT: !60 = distinct !DISubprogram(name: "G", linkageName: "_CG.Main.37564afe55274bd3", scope: null, file: !23, line: 22, type: !8, spFlags: DISPFlagDefinition, unit: !24)
+// CHECK:STDOUT: !63 = !DILocation(line: 22, column: 41, scope: !60)
+// CHECK:STDOUT: !64 = !DILocation(line: 22, column: 34, scope: !60)
+// CHECK:STDOUT: !65 = distinct !DISubprogram(name: "H", linkageName: "_CH.Main.a4c7fafe8a72cac4", scope: null, file: !23, line: 34, type: !8, spFlags: DISPFlagDefinition, unit: !24)
+// CHECK:STDOUT: !68 = !DILocation(line: 34, column: 39, scope: !65)
+// CHECK:STDOUT: !69 = !DILocation(line: 34, column: 32, scope: !65)
 // CHECK:STDOUT:

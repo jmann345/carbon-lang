@@ -109,6 +109,13 @@ auto ImportCppThunkFunctionDecl(Context& context, SemIR::LocId loc_id,
                                 clang::FunctionDecl* thunk_clang_decl,
                                 SemIR::ClangDeclSignatureId signature_id)
     -> std::optional<SemIR::FunctionId>;
+// Imports a notional `__invoke` method of the given function pointer type.
+// The imported carbon function takes the pointer value as a `self` parameter,
+// and the pointer type's parameter types as ordinary parameters.
+auto ImportFunctionPointerInvoke(
+    Context& context, SemIR::LocId loc_id,
+    SemIR::ClangFunctionPointerTypeId clang_type_id)
+    -> SemIR::ClangFunctionPointerTypeInfo;
 
 // Returns the type that intN_t or uintN_t is an alias for.
 auto GetIntNType(const clang::ASTContext& ast_context, unsigned width,

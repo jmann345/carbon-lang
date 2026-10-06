@@ -61,11 +61,10 @@ doc (`docs/design/templates.md:22-27`) is a self-described "skeletal design
     lines 1038-1049) and "Predicates: constraints on values" (lines
     1051-1057, tracked upstream as leads issue #2153).
 
-In the toolchain, `template constraint` is not even parsed — the parser
-emits `UnrecognizedDecl`
+In the toolchain, `template constraint` is not even parsed — the parser emits
+`UnrecognizedDecl`
 (`toolchain/parse/testdata/generics/named_constraint/template_constraint.carbon`)
-and the checker has an explicit
-`// TODO: Support for "template constraint"` at
+and the checker has an explicit `// TODO: Support for "template constraint"` at
 `toolchain/check/handle_named_constraint.cpp:118`.
 
 ### Which 0.1 bullets this closes

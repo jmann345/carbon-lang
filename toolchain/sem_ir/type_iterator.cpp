@@ -114,6 +114,7 @@ auto TypeIterator::ProcessType(InstId inst_id) -> std::optional<Step> {
     }
 
     case Call::Kind:
+    case SpliceInst::Kind:
     case TypeOfInst::Kind: {
       return Step::TemplateType();
     }
@@ -131,6 +132,7 @@ auto TypeIterator::ProcessType(InstId inst_id) -> std::optional<Step> {
     case AssociatedEntityType::Kind:
     case BoolType::Kind:
     case CharLiteralType::Kind:
+    case CppFunctionPointerType::Kind:
     case CppOverloadSetType::Kind:
     case CppTemplateNameType::Kind:
     case FacetType::Kind:
@@ -146,7 +148,6 @@ auto TypeIterator::ProcessType(InstId inst_id) -> std::optional<Step> {
     case NamespaceType::Kind:
     case OverloadSetType::Kind:
     case RequireSpecificDefinitionType::Kind:
-    case TypeType::Kind:
     case UnboundElementType::Kind:
     case VtableType::Kind:
     case WitnessType::Kind: {
@@ -333,7 +334,7 @@ auto TypeIterator::PushInstId(InstId inst_id) -> void {
   // non-canonical input through other Add() methods.
   inst_id = sem_ir_->constant_values().GetConstantInstId(inst_id);
 
-  if (sem_ir_->types().IsFacetType(sem_ir_->insts().Get(inst_id).type_id())) {
+  if (sem_ir_->types().Is<FacetType>(sem_ir_->insts().Get(inst_id).type_id())) {
     Push(TypeValue{.inst_id = inst_id});
   } else if (sem_ir_->constant_values().Get(inst_id).is_symbolic()) {
     Push(SymbolicNonTypeValue{.inst_id = inst_id});

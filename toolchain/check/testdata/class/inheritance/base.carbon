@@ -52,6 +52,7 @@ class Derived {
 // CHECK:STDOUT: --- base.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %Base: type = class_type @Base [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %Int.type: type = generic_class_type @Int [concrete]
@@ -102,9 +103,9 @@ class Derived {
 // CHECK:STDOUT:   %int_7.690: %i32 = int_value 7 [concrete]
 // CHECK:STDOUT:   %Derived.val: %Derived = struct_value (%Base.val, %int_7.690) [concrete]
 // CHECK:STDOUT:   %d.param_patt: %pattern_type.4fd = value_param_pattern [concrete]
-// CHECK:STDOUT:   %d.patt.cd7: %pattern_type.4fd = wrapper_binding_pattern d, %d.param_patt [concrete]
-// CHECK:STDOUT:   %tuple.type.24b: type = tuple_type (type, type) [concrete]
-// CHECK:STDOUT:   %tuple.b59: %tuple.type.24b = tuple_value (%i32, %i32) [concrete]
+// CHECK:STDOUT:   %d.patt: %pattern_type.4fd = wrapper_binding_pattern d, %d.param_patt [concrete]
+// CHECK:STDOUT:   %tuple.type.693: type = tuple_type (type, type) [concrete]
+// CHECK:STDOUT:   %tuple.94e: %tuple.type.693 = tuple_value (%i32, %i32) [concrete]
 // CHECK:STDOUT:   %tuple.type.e55: type = tuple_type (%i32, %i32) [concrete]
 // CHECK:STDOUT:   %.c11: Core.Form = init_form %tuple.type.e55 [concrete]
 // CHECK:STDOUT:   %pattern_type.394: type = pattern_type %tuple.type.e55 [concrete]
@@ -163,13 +164,13 @@ class Derived {
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Access.decl: %Access.type = fn_decl @Access [concrete = constants.%Access] {
 // CHECK:STDOUT:     %d.param_patt: %pattern_type.4fd = value_param_pattern [concrete = constants.%d.param_patt]
-// CHECK:STDOUT:     %d.patt: %pattern_type.4fd = wrapper_binding_pattern d, %d.param_patt [concrete = constants.%d.patt.cd7]
+// CHECK:STDOUT:     %d.patt: %pattern_type.4fd = wrapper_binding_pattern d, %d.param_patt [concrete = constants.%d.patt]
 // CHECK:STDOUT:     %return.param_patt: %pattern_type.394 = out_param_pattern [concrete = constants.%return.param_patt.a90]
 // CHECK:STDOUT:     %return.patt: %pattern_type.394 = return_slot_pattern %return.param_patt, %.loc17_35.2 [concrete = constants.%return.patt.2ed]
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %i32.loc17_27: type = type_literal constants.%i32 [concrete = constants.%i32]
 // CHECK:STDOUT:     %i32.loc17_32: type = type_literal constants.%i32 [concrete = constants.%i32]
-// CHECK:STDOUT:     %.loc17_35.1: %tuple.type.24b = tuple_literal (%i32.loc17_27, %i32.loc17_32) [concrete = constants.%tuple.b59]
+// CHECK:STDOUT:     %.loc17_35.1: %tuple.type.693 = tuple_literal (%i32.loc17_27, %i32.loc17_32) [concrete = constants.%tuple.94e]
 // CHECK:STDOUT:     %.loc17_35.2: type = converted %.loc17_35.1, constants.%tuple.type.e55 [concrete = constants.%tuple.type.e55]
 // CHECK:STDOUT:     %.loc17_35.3: Core.Form = init_form %.loc17_35.2 [concrete = constants.%.c11]
 // CHECK:STDOUT:     %d.param: %Derived = value_param call_param0
@@ -181,19 +182,23 @@ class Derived {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: class @Base {
-// CHECK:STDOUT:   %.loc4: %Base.elem = field_decl b, element0 [concrete]
+// CHECK:STDOUT:   %field_decl: %Base.elem = field_decl b, element0, %i32 in [concrete] {
+// CHECK:STDOUT:     %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %complete_type: <witness> = complete_type_witness constants.%struct_type.b.0bf [concrete = constants.%complete_type.330]
 // CHECK:STDOUT:   complete_type_witness = %complete_type
 // CHECK:STDOUT:
 // CHECK:STDOUT: !members:
 // CHECK:STDOUT:   .Self = constants.%Base
-// CHECK:STDOUT:   .b = %.loc4
+// CHECK:STDOUT:   .b = %field_decl
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: class @Derived {
 // CHECK:STDOUT:   %Base.ref: type = name_ref Base, file.%Base.decl [concrete = constants.%Base]
 // CHECK:STDOUT:   %.loc8: %Derived.elem.e51 = base_decl %Base.ref, element0 [concrete]
-// CHECK:STDOUT:   %.loc10: %Derived.elem.a2d = field_decl d, element1 [concrete]
+// CHECK:STDOUT:   %field_decl: %Derived.elem.a2d = field_decl d, element1, %i32 in [concrete] {
+// CHECK:STDOUT:     %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %complete_type: <witness> = complete_type_witness constants.%struct_type.base.d.90a [concrete = constants.%complete_type.2d7]
 // CHECK:STDOUT:   complete_type_witness = %complete_type
 // CHECK:STDOUT:
@@ -201,7 +206,7 @@ class Derived {
 // CHECK:STDOUT:   .Self = constants.%Derived
 // CHECK:STDOUT:   .Base = <poisoned>
 // CHECK:STDOUT:   .base = %.loc8
-// CHECK:STDOUT:   .d = %.loc10
+// CHECK:STDOUT:   .d = %field_decl
 // CHECK:STDOUT:   extend %Base.ref
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -239,14 +244,14 @@ class Derived {
 // CHECK:STDOUT: fn @Access(%d.param: %Derived) -> out %return.param: %tuple.type.e55 {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %d.ref.loc18_11: %Derived = name_ref d, %d
-// CHECK:STDOUT:   %d.ref.loc18_12: %Derived.elem.a2d = name_ref d, @Derived.%.loc10 [concrete = @Derived.%.loc10]
+// CHECK:STDOUT:   %d.ref.loc18_12: %Derived.elem.a2d = name_ref d, @Derived.%field_decl [concrete = @Derived.%field_decl]
 // CHECK:STDOUT:   %.loc18_12.1: ref %i32 = class_element_access %d.ref.loc18_11, element1
 // CHECK:STDOUT:   %.loc18_12.2: %i32 = acquire_value %.loc18_12.1
 // CHECK:STDOUT:   %d.ref.loc18_16: %Derived = name_ref d, %d
 // CHECK:STDOUT:   %base.ref: %Derived.elem.e51 = name_ref base, @Derived.%.loc8 [concrete = @Derived.%.loc8]
 // CHECK:STDOUT:   %.loc18_17.1: ref %Base = class_element_access %d.ref.loc18_16, element0
 // CHECK:STDOUT:   %.loc18_17.2: %Base = acquire_value %.loc18_17.1
-// CHECK:STDOUT:   %b.ref: %Base.elem = name_ref b, @Base.%.loc4 [concrete = @Base.%.loc4]
+// CHECK:STDOUT:   %b.ref: %Base.elem = name_ref b, @Base.%field_decl [concrete = @Base.%field_decl]
 // CHECK:STDOUT:   %.loc18_22.1: ref %i32 = class_element_access %.loc18_17.2, element0
 // CHECK:STDOUT:   %.loc18_22.2: %i32 = acquire_value %.loc18_22.1
 // CHECK:STDOUT:   %.loc18_24.1: %tuple.type.e55 = tuple_literal (%.loc18_12.2, %.loc18_22.2)
@@ -272,6 +277,7 @@ class Derived {
 // CHECK:STDOUT: --- fail_base_after_field.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %Base: type = class_type @Base [concrete]
 // CHECK:STDOUT:   %empty_struct_type: type = struct_type {} [concrete]
 // CHECK:STDOUT:   %complete_type.357: <witness> = complete_type_witness %empty_struct_type [concrete]
@@ -314,14 +320,16 @@ class Derived {
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: class @Derived {
-// CHECK:STDOUT:   %.loc7: %Derived.elem = field_decl d, element0 [concrete]
+// CHECK:STDOUT:   %field_decl: %Derived.elem = field_decl d, element0, %i32 in [concrete] {
+// CHECK:STDOUT:     %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Base.ref: type = name_ref Base, file.%Base.decl [concrete = constants.%Base]
 // CHECK:STDOUT:   %complete_type: <witness> = complete_type_witness constants.%struct_type.d [concrete = constants.%complete_type.5d0]
 // CHECK:STDOUT:   complete_type_witness = %complete_type
 // CHECK:STDOUT:
 // CHECK:STDOUT: !members:
 // CHECK:STDOUT:   .Self = constants.%Derived
-// CHECK:STDOUT:   .d = %.loc7
+// CHECK:STDOUT:   .d = %field_decl
 // CHECK:STDOUT:   .Base = <poisoned>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

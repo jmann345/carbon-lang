@@ -116,70 +116,67 @@ discriminant dispatch only.
     _S2c landing note (2026-07-28):_ superseded — `.On()` now matches per
     SF-3; bare `.On` diagnoses MissingParens (see the S2c note).
 -   **Guarded designator patterns** (`case .Err if (...)`) keep W4's generic
-    pattern/guard TODO string, not the payload-destructuring string.
-    _S2a landing note (2026-07-28):_ the match re-platform's RF-3 co-change
+    pattern/guard TODO string, not the payload-destructuring string. _S2a
+    landing note (2026-07-28):_ the match re-platform's RF-3 co-change
     (fork/match-replatform/plan.md §6) supersedes this: guard nodes are now
-    reached by checking, and every guard — on any pattern — is diagnosed at
-    the guard's `if` token with the single string
-    `` `match case guard` ``. Patterns whose own gate fires first (for
-    example a binding in `case a: i32 if (...)`) still emit their pattern
-    TODO at the `case` token before the guard nodes are reached. A further
-    recorded deviation class from the same landing: pattern-expression
-    diagnostics now surface before or instead of the slice-gate TODOs for
-    non-golden-pinned inputs (inherent to plan §2.1's re-route of pattern
-    nodes through their ordinary handlers) — for example `case undeclared` adds a
-    real name-not-found before the TODO; `case .Err == .Stop` and the like
-    produce expression errors instead of the payload TODO; `case (.Err)`
-    loses the TODO entirely (the tuple wrapper masks the introducer peek;
-    the error-typed pattern continues with real `.Self`-scope errors).
-    Disposition: recorded as more-honest diagnostics rather than gated —
-    adding lookahead to preserve blanket TODOs on unpinned inputs would
+    reached by checking, and every guard — on any pattern — is diagnosed at the
+    guard's `if` token with the single string `` `match case guard` ``. Patterns
+    whose own gate fires first (for example a binding in `case a: i32 if (...)`)
+    still emit their pattern TODO at the `case` token before the guard nodes are
+    reached. A further recorded deviation class from the same landing:
+    pattern-expression diagnostics now surface before or instead of the
+    slice-gate TODOs for non-golden-pinned inputs (inherent to plan §2.1's
+    re-route of pattern nodes through their ordinary handlers) — for example
+    `case undeclared` adds a real name-not-found before the TODO; `case .Err ==
+    .Stop` and the like produce expression errors instead of the payload TODO;
+    `case (.Err)` loses the TODO entirely (the tuple wrapper masks the
+    introducer peek; the error-typed pattern continues with real `.Self`-scope
+    errors). Disposition: recorded as more-honest diagnostics rather than gated
+    — adding lookahead to preserve blanket TODOs on unpinned inputs would
     reintroduce the sniffing this slice removes (R17). No golden or SKIP
     evidence pins any affected input (verified by reviewer #1). Veto-able.
-    Relatedly, the binding-root gate lives in the binding handlers rather
-    than in `MatchCase` classification as the plan sketched, because
-    binding nodes check before `MatchCase` — same string and location,
-    forced by traversal order.
+    Relatedly, the binding-root gate lives in the binding handlers rather than
+    in `MatchCase` classification as the plan sketched, because binding nodes
+    check before `MatchCase` — same string and location, forced by traversal
+    order.
 -   **The `default` arm stays required** for choice matches in S1 (SF-7's
     exhaustiveness lands in S2), so every S1 conformance/testdata match carries
     `default`.
     _Discharged at S2e (2026-08-08): exhaustive choice matches no longer
     require `default`; integer matches still do (see the S2e note)._
--   **Reconstruction-landing addendum (2026-07-27):** the first full CI run
-    of S1 exposed and fixed six defects across five fix rounds:
+-   **Reconstruction-landing addendum (2026-07-27):** the first full CI run of
+    S1 exposed and fixed six defects across five fix rounds:
     generated-constructor FunctionDecl loc; match discriminant lookup (plan
     §2.2c's "constant imports with the binding" premise was wrong, see the
-    amendment there); TypeIterator missing CustomLayoutType;
-    alternative-param names leaking into the choice scope
-    (NameDeclDuplicate across alternatives); constructor ClassInit elements
-    built with InitializeExisting against its documented contract (by-copy
-    discriminant crashed lowering AND the Small payload store was silently
-    dropped — now InPlaceInitializing per upstream's aggregate discipline);
-    and review-found F1, a zero-param `Alt()` in a payload-carrying choice
-    producing a 1-element ClassInit against a 2-field repr (now filled with
-    an uninit payload element mirroring convert.cpp's ChoicePayload case,
-    covered by the new mixed_payload_alternatives testdata). Adversarial review passed both semantic fixes with no
-    landing blockers and these recorded follow-ups: (1) DONE
-    (claude/carbon-fork-0-1-followups): the defense-in-depth fallback at the
-    choice-case pattern now emits `match case pattern on unsupported choice
-    alternative shape` instead of the scrutinee string, which stays on the
-    scrutinee gate only; (2) when §2.2c name-to-index metadata lands for S2
-    exhaustiveness, replace `GetAlternativeDiscriminant`'s constant
-    excavation with it; (3) optional comment that CustomLayoutType's
+    amendment there); TypeIterator missing CustomLayoutType; alternative-param
+    names leaking into the choice scope (NameDeclDuplicate across alternatives);
+    constructor ClassInit elements built with InitializeExisting against its
+    documented contract (by-copy discriminant crashed lowering AND the Small
+    payload store was silently dropped — now InPlaceInitializing per upstream's
+    aggregate discipline); and review-found F1, a zero-param `Alt()` in a
+    payload-carrying choice producing a 1-element ClassInit against a 2-field
+    repr (now filled with an uninit payload element mirroring convert.cpp's
+    ChoicePayload case, covered by the new mixed_payload_alternatives testdata).
+    Adversarial review passed both semantic fixes with no landing blockers and
+    these recorded follow-ups: (1) DONE (claude/carbon-fork-0-1-followups): the
+    defense-in-depth fallback at the choice-case pattern now emits `match case
+    pattern on unsupported choice alternative shape` instead of the scrutinee
+    string, which stays on the scrutinee gate only; (2) when §2.2c name-to-index
+    metadata lands for S2 exhaustiveness, replace `GetAlternativeDiscriminant`'s
+    constant excavation with it; (3) optional comment that CustomLayoutType's
     type-structure fingerprint conflates with a same-shaped StructType
     (filter/ordering-only today); (4) DONE (claude/carbon-fork-0-1-followups):
-    match/choice_scrutinee_reexported.carbon pins the
-    GetCanonicalFileAndInstId multi-hop path through an `export import`
-    relay library; (5) DONE (claude/carbon-fork-0-1-followups): duplicate
-    alternative NAMES (`choice C { A, A }`, distinct from the fixed param
-    collision) no longer CHECK-crash in NameScope::AddRequired —
-    handle_choice.cpp diagnoses NameDeclDuplicate/NameDeclPrevious before
-    registration and drops the duplicate (references resolve to the first
-    alternative), with choice/fail_duplicate_alternative.carbon covering
-    constant/constant, constant/function, and function/constant orders. Also
-    landed on that branch: the review F-A1 OneShot single-payload-alternative
-    testdata (check+lower) pinning the zero-bit-()-discriminant +
-    payload-region constructor shape.
+    match/choice_scrutinee_reexported.carbon pins the GetCanonicalFileAndInstId
+    multi-hop path through an `export import` relay library; (5) DONE
+    (claude/carbon-fork-0-1-followups): duplicate alternative NAMES (`choice C {
+    A, A }`, distinct from the fixed param collision) no longer CHECK-crash in
+    NameScope::AddRequired — handle_choice.cpp diagnoses
+    NameDeclDuplicate/NameDeclPrevious before registration and drops the
+    duplicate (references resolve to the first alternative), with
+    choice/fail_duplicate_alternative.carbon covering constant/constant,
+    constant/function, and function/constant orders. Also landed on that branch:
+    the review F-A1 OneShot single-payload-alternative testdata (check+lower)
+    pinning the zero-bit-()-discriminant + payload-region constructor shape.
 
 _W5-S3a landing note (2026-08-08):_ the first slice of the approved
 generic-choice plan (fork/w5-s3/plan.md §3 S3a) lifts the W5-S1
@@ -608,120 +605,110 @@ fix round's symbolic-operand narrowing gate, ledgered in plan §6 with
 W-071 as its discharge (amended from "zero remain" at that round).
 Veto-able.
 
-_B2a landing note (2026-08-09):_ the implementation slice of the approved
-B2 plan (fork/b2/plan.md — process step 6, two adversarial plan-review
-rounds, coordinator sign-off on the six-item veto digest) is landed: the
-W-071 discharge, the only ungated F-006 remainder per the plan's §0.1
-classification (B3 stays post-S3p; the B2b S3p ask package is the sibling
-slice). _The resolution (digest item 2, option (b) as pinned):_
-`CanDestroyClass` (custom_witness.cpp) gains a choice clause BEFORE the
-object-repr field walk — `class_info.is_choice` plus the symbolic-QUERY
-predicate (the same `query_self_const_id.is_symbolic()` fact
-`LookupDestroyWitness` defers witness building on, threaded down from the
-`CanDestroyType` entry so yes/no and build/defer key on one predicate) —
-answering destroyable-deferred `NonTrivial`, never `Trivial`, on the
-strength of SF-6's per-specific payload guarantee; concrete choice
-specifics take the unchanged field walk, and non-choice symbolic cases
-(`ImplWitnessAccess`/`SymbolicBinding`) are untouched. **Recorded
-deviation, flagged for B2b ratification:** the W-071 ledger's option-(b)
-wording said "TRIVIALLY destructible"; the landed answer is
-`NonTrivial`-deferred (a symbolic-time `Trivial` would encode a format a
-future consumer could trust wrongly — the S1 adapter shape is genuinely
-`NonTrivial` concretely); the B2b brief surfaces that delta alongside
-option (a) as the user's S3p alternative. The §2.2 revisit note (valid
-only while SF-6's allowlist holds and destroy synthesis stays a
-placeholder) is recorded in the clause comment and in W-071's successor
-state in work-items.json. _The widening (digest item 2's language-wide
+_B2a landing note (2026-08-09):_ the implementation slice of the approved B2
+plan (fork/b2/plan.md — process step 6, two adversarial plan-review rounds,
+coordinator sign-off on the six-item veto digest) is landed: the W-071
+discharge, the only ungated F-006 remainder per the plan's §0.1 classification
+(B3 stays post-S3p; the B2b S3p ask package is the sibling slice). _The
+resolution (digest item 2, option (b) as pinned):_ `CanDestroyClass`
+(custom_witness.cpp) gains a choice clause BEFORE the object-repr field walk —
+`class_info.is_choice` plus the symbolic-QUERY predicate (the same
+`query_self_const_id.is_symbolic()` fact `LookupDestroyWitness` defers witness
+building on, threaded down from the `CanDestroyType` entry so yes/no and
+build/defer key on one predicate) — answering destroyable-deferred `NonTrivial`,
+never `Trivial`, on the strength of SF-6's per-specific payload guarantee;
+concrete choice specifics take the unchanged field walk, and non-choice symbolic
+cases (`ImplWitnessAccess`/`SymbolicBinding`) are untouched. **Recorded
+deviation, flagged for B2b ratification:** the W-071 ledger's option-(b) wording
+said "TRIVIALLY destructible"; the landed answer is `NonTrivial`-deferred (a
+symbolic-time `Trivial` would encode a format a future consumer could trust
+wrongly — the S1 adapter shape is genuinely `NonTrivial` concretely); the B2b
+brief surfaces that delta alongside option (a) as the user's S3p alternative.
+The §2.2 revisit note (valid only while SF-6's allowlist holds and destroy
+synthesis stays a placeholder) is recorded in the clause comment and in W-071's
+successor state in work-items.json. _The widening (digest item 2's language-wide
 statement):_ plain `var`s, `match` scrutinee temporaries, and `?`
-carriers/operands of SYMBOLIC choice specifics in generic bodies now
-compile uniformly — pinned deliberately by question.carbon's restored
-generic split (the recorded discharge body `let unused c: R.ContinueType
-= r?; return R.FromBreak(0);`), its symbolic-choice-operand,
-widened-var, and widened-scrutinee-temporary probes (the scrutinee
-probe carries the mixed-specific `MyResult(T, i32)` edge). _The uniformity policy (digest item
-3):_ the handle_question.cpp gate is DELETED outright, no narrowed-gate
-fallback needed — the NEW fail_question_generic.carbon pins `MakeR(R)?`
-and `var unused x: R = MakeR(R);` side by side diagnosing the identical
-missing-`Core.Destroy` error (`?` gets no carve-out; R-2/R-3's
-falsifiers), plus the R-8 negative probe: an SF-6-REJECTED instantiation
-of the widened `var` shape (`Widened(Fat)`) pins
-`ChoicePayloadNotTrivialInSpecific` as a clean
-monomorphization-time diagnostic under `ResolvingSpecificHere`, not a
-crash or eval retry loop. _Golden placement note:_ the §3 probes landed
-as NEW files (check fail_question_generic.carbon, lower
-question_generic.carbon with the instantiated-generic CFG and the S1
-adapter-payload probe) rather than subfiles of the existing
-fail_question.carbon/question.carbon lower goldens, keeping those
-byte-identical per §4; positive CHECK content rides the runner
-autoupdate (R15/R19 red-first-CI reconciliation). The lower criterion is
-the REVISED one: the instantiated-generic CFG carries the same
-no-op-body destroy-call shape as the concrete `_CBasic.Main` baseline;
-falsification is a non-empty destroy body, a user `Destroy` impl invoked
-on the propagation path, or absent calls. _TODO ledger (digest item 4):_
-the symbolic-operand string is DISCHARGED at its emission site; **net `?`
-TODO strings across B2: zero** (plan §6 as written, no amendment needed);
-all other TODO strings byte-identical. _Conformance (digest item 5):_ NEW
-differential pair error_handling/question_generic_diff.{carbon,diff.cpp}
-(generic `?` chain over symbolic `MyResult(T, i32)` operands instantiated
-at i32 AND i64 — distinct `ControlFlow` specifics/layouts at runtime —
-against a C++ function-TEMPLATE early-return oracle, runtime-selected
-failure depth, runtime-computed payloads, an i64 payload-integrity
-comparison): target floor 84 PASS / 0 FAIL / 30 SKIP over 114, no SKIP
-flips; `runner.py --self-test` OK, README table regenerated (DIFF-4),
-scoreboard regeneration rides the landing gate (R9). _R-6 (upstream):_
-the pre-implementation re-check found the tree matching every plan
-citation (CanDestroyClass :144, CanDestroyType dispatch, the :658
-symbolic-build deferral, the eval hook) — no drift from upstream 453b547's
-line of work; no public names minted, no new V-3a divergence-register
-entries. _Review-round records (2026-08-09):_ plan §4's pre-change grep
-found zero `Core.Destroy`-adjacent choice/match goldens outside the
-enumerated set (outcome verified independently by the strictness
-review); the R-5 broken-oracle drill was NOT run locally (no toolchain)
-— its falsifier stands and the drill rides the conformance gate, whose
-runtime differential comparison is also the pair's first compile+run
-verification; the reconciliation churn review must apply the R-1/R-8
-falsification triads by hand against the autoupdated goldens (they are
-pinned in comments until then). Named residue: IMPORT parity for
-generic bodies containing `?` (the deferred destroy-witness eval-block
-content is only instantiated same-file; the W-069 precedent says
-import-side gaps are real) — a follow-up subfile, not B2a scope. _Regen
-round (2026-08-09):_ two authoring defects caught by the first
-autoupdate — the symbolic-choice-operand probe annotated the continue
-value as `T`, but it types as the unreduced projection
-`MyResult(T, E).(Core.Try.ContinueType)` (the B1b non-reduction family;
-now consumed through the deduced sink and RECORDED AS A KNOWN WART:
-`?` on a direct choice operand under symbolic arguments yields
-projection-typed values users must consume by way of deduction or
-projection-annotated bindings until rewrite-reduction lands); and the
-scrutinee probe's maker was declaration-only, but a GENERIC function
-must be defined to be callable — defined (and the fail file's facet
-maker likewise, as a diverging body). _R-1 triad applied by hand to the
-regen (2026-08-09):_ destroy calls carry the baseline no-op shape; all
-synthesized op bodies are bare returns; the adapter probe's user
-`Tag.Op` appears ONLY inside the materialized witness thunk's
-definition, which has ZERO call sites — never invoked from program
-flow, which is the honest reading of the S1 exception's
-"consulted-but-never-invoked". _Conformance round (2026-08-09):_ the
-suite's first run COMPILE-FAILED the new pair — its original `let a: T =
-Step(...)?;` chain was authored (in the implementation commit) before the
-regen round surfaced the projection wart, and never received the goldens'
-fix; the golden fix consumed the value through a deduced sink because
-under symbolic arguments the continue value CANNOT be threaded as `T` at
-all — an expressiveness limit of the landed slice, now ledgered as
-**W-072** (projection rewrite-reduction; facet-binding rewrites DO reduce
-— the W-071 discharge body's `FromBreak(0)` — but impl-lookup projections
-on symbolic specifics do not; `Core.Try`'s missing success constructor is
-recorded there as adjacent B2b/SF-9 brief material). Per R17 the pair was
-NOT worked around silently: it is restructured to the proven
-`PropagateChoice` configuration (operand and return the same specific so
-the break path's `FromBreak` aligns projection-for-projection; continue
-values through the golden's `Discard` sink; Ok payload reconstructed from
-the seed — the identical value `Step` passes through, so the output
-table, the runtime-selected depths, and the i64 layout-roundtrip
-observation are unchanged) with the honest scope narrowing stated in the
-pair's header: it arbitrates BREAK-path propagation + per-instantiation
-layouts; continue-THREADING runtime arbitration is W-072 follow-up. The
-C++ oracle's Chain mirrors the discard semantics. Veto-able.
+carriers/operands of SYMBOLIC choice specifics in generic bodies now compile
+uniformly — pinned deliberately by question.carbon's restored generic split (the
+recorded discharge body `let unused c: R.ContinueType = r?; return
+R.FromBreak(0);`), its symbolic-choice-operand, widened-var, and
+widened-scrutinee-temporary probes (the scrutinee probe carries the
+mixed-specific `MyResult(T, i32)` edge). _The uniformity policy (digest item
+3):_ the handle_question.cpp gate is DELETED outright, no narrowed-gate fallback
+needed — the NEW fail_question_generic.carbon pins `MakeR(R)?` and `var unused
+x: R = MakeR(R);` side by side diagnosing the identical missing-`Core.Destroy`
+error (`?` gets no carve-out; R-2/R-3's falsifiers), plus the R-8 negative
+probe: an SF-6-REJECTED instantiation of the widened `var` shape
+(`Widened(Fat)`) pins `ChoicePayloadNotTrivialInSpecific` as a clean
+monomorphization-time diagnostic under `ResolvingSpecificHere`, not a crash or
+eval retry loop. _Golden placement note:_ the §3 probes landed as NEW files
+(check fail_question_generic.carbon, lower question_generic.carbon with the
+instantiated-generic CFG and the S1 adapter-payload probe) rather than subfiles
+of the existing fail_question.carbon/question.carbon lower goldens, keeping
+those byte-identical per §4; positive CHECK content rides the runner autoupdate
+(R15/R19 red-first-CI reconciliation). The lower criterion is the REVISED one:
+the instantiated-generic CFG carries the same no-op-body destroy-call shape as
+the concrete `_CBasic.Main` baseline; falsification is a non-empty destroy body,
+a user `Destroy` impl invoked on the propagation path, or absent calls. _TODO
+ledger (digest item 4):_ the symbolic-operand string is DISCHARGED at its
+emission site; **net `?` TODO strings across B2: zero** (plan §6 as written, no
+amendment needed); all other TODO strings byte-identical. _Conformance (digest
+item 5):_ NEW differential pair
+error_handling/question_generic_diff.{carbon,diff.cpp} (generic `?` chain over
+symbolic `MyResult(T, i32)` operands instantiated at i32 AND i64 — distinct
+`ControlFlow` specifics/layouts at runtime — against a C++ function-TEMPLATE
+early-return oracle, runtime-selected failure depth, runtime-computed payloads,
+an i64 payload-integrity comparison): target floor 84 PASS / 0 FAIL / 30 SKIP
+over 114, no SKIP flips; `runner.py --self-test` OK, README table regenerated
+(DIFF-4), scoreboard regeneration rides the landing gate (R9). _R-6 (upstream):_
+the pre-implementation re-check found the tree matching every plan citation
+(CanDestroyClass :144, CanDestroyType dispatch, the :658 symbolic-build
+deferral, the eval hook) — no drift from upstream 453b547's line of work; no
+public names minted, no new V-3a divergence-register entries. _Review-round
+records (2026-08-09):_ plan §4's pre-change grep found zero
+`Core.Destroy`-adjacent choice/match goldens outside the enumerated set (outcome
+verified independently by the strictness review); the R-5 broken-oracle drill
+was NOT run locally (no toolchain) — its falsifier stands and the drill rides
+the conformance gate, whose runtime differential comparison is also the pair's
+first compile+run verification; the reconciliation churn review must apply the
+R-1/R-8 falsification triads by hand against the autoupdated goldens (they are
+pinned in comments until then). Named residue: IMPORT parity for generic bodies
+containing `?` (the deferred destroy-witness eval-block content is only
+instantiated same-file; the W-069 precedent says import-side gaps are real) — a
+follow-up subfile, not B2a scope. _Regen round (2026-08-09):_ two authoring
+defects caught by the first autoupdate — the symbolic-choice-operand probe
+annotated the continue value as `T`, but it types as the unreduced projection
+`MyResult(T, E).(Core.Try.ContinueType)` (the B1b non-reduction family; now
+consumed through the deduced sink and RECORDED AS A KNOWN WART: `?` on a direct
+choice operand under symbolic arguments yields projection-typed values users
+must consume by way of deduction or projection-annotated bindings until
+rewrite-reduction lands); and the scrutinee probe's maker was declaration-only,
+but a GENERIC function must be defined to be callable — defined (and the fail
+file's facet maker likewise, as a diverging body). _R-1 triad applied by hand to
+the regen (2026-08-09):_ destroy calls carry the baseline no-op shape; all
+synthesized op bodies are bare returns; the adapter probe's user `Tag.Op`
+appears ONLY inside the materialized witness thunk's definition, which has ZERO
+call sites — never invoked from program flow, which is the honest reading of the
+S1 exception's "consulted-but-never-invoked". _Conformance round (2026-08-09):_
+the suite's first run COMPILE-FAILED the new pair — its original `let a: T =
+Step(...)?;` chain was authored (in the implementation commit) before the regen
+round surfaced the projection wart, and never received the goldens' fix; the
+golden fix consumed the value through a deduced sink because under symbolic
+arguments the continue value CANNOT be threaded as `T` at all — an
+expressiveness limit of the landed slice, now ledgered as **W-072** (projection
+rewrite-reduction; facet-binding rewrites DO reduce — the W-071 discharge body's
+`FromBreak(0)` — but impl-lookup projections on symbolic specifics do not;
+`Core.Try`'s missing success constructor is recorded there as adjacent B2b/SF-9
+brief material). Per R17 the pair was NOT worked around silently: it is
+restructured to the proven `PropagateChoice` configuration (operand and return
+the same specific so the break path's `FromBreak` aligns
+projection-for-projection; continue values through the golden's `Discard` sink;
+Ok payload reconstructed from the seed — the identical value `Step` passes
+through, so the output table, the runtime-selected depths, and the i64
+layout-roundtrip observation are unchanged) with the honest scope narrowing
+stated in the pair's header: it arbitrates BREAK-path propagation +
+per-instantiation layouts; continue-THREADING runtime arbitration is W-072
+follow-up. The C++ oracle's Chain mirrors the discard semantics. Veto-able.
 
 _RETRACTION addendum (2026-08-18, W72a — fork/w072/plan.md §3,
 record-honesty sweep item 1; a dated addendum, the historical text above
@@ -1207,62 +1194,55 @@ the false byte-identity claim, the unguarded `Core.Int` lookup, the stale
 
 _F8c landing note (2026-08-18):_ the D3 fix of the approved F-008 plan
 (fork/f008/plan.md §2.3, §3 F8c). _Adjudication verdict (step 1, plan
-adjudication D, run 32079343005, 2026-08-17T23:11Z): H0 REFUTED — and the plan's pre-declared H0-mock-divergence
-stop-and-explain path FIRED (the F8a mock dump looked fixed while the
-real pair link-failed; the §2.3 amendment is filed on this branch, a
-strictness-review catch: the substance was done, the mandated filing
-was not)._ The un-SKIPped real-header
-pair cpp_atomic_global_counter_diff COMPILES fully (the flagged as-i32
-chain and every thunk lowered) but LINKS red with `undefined symbol:
-_Ctotal.Main.2` (referenced by the fetch_add thunk and both
-`__thread_proxy` instantiations) AND `_Ctotal.Main.3` (referenced by the
+adjudication D, run 32079343005, 2026-08-17T23:11Z): H0 REFUTED — and the plan's
+pre-declared H0-mock-divergence stop-and-explain path FIRED (the F8a mock dump
+looked fixed while the real pair link-failed; the §2.3 amendment is filed on
+this branch, a strictness-review catch: the substance was done, the mandated
+filing was not)._ The un-SKIPped real-header pair cpp_atomic_global_counter_diff
+COMPILES fully (the flagged as-i32 chain and every thunk lowered) but LINKS red
+with `undefined symbol: _Ctotal.Main.2` (referenced by the fetch_add thunk and
+both `__thread_proxy` instantiations) AND `_Ctotal.Main.3` (referenced by the
 store and load thunks) — the defect is live, and richer than the sprint's
-single-symbol `_Cgcount.Main.1` measurement: references split per
-function across DISTINCT `.N`-renamed duplicates of one variable.
-_Mechanism (§2.3 H1 family):_
-`Lower::FileContext::BuildNonCppGlobalVariableDecl`
-(toolchain/lower/file_context.cpp) created a fresh `llvm::GlobalVariable`
-on EVERY call — no cache, no module-symbol-table lookup — while the
-function path (`GetOrCreateLLVMFunction`) has had a name-keyed
-early-return all along. LLVM silently uniquifies each duplicate with a
-`.N` suffix, so the initializer added by `LowerGlobalVariables`
-(file_context.cpp `LowerGlobalVariables`, the :305/:306 insert+define)
-lands on one object while references bind others. The evidence
-adjudicates the hypothesis set: two distinct undefined suffixes in one
-link refute H3 (a deterministic mangling divergence yields ONE wrong
-name, not per-function rename suffixes); H2's non-concrete constant-walk
-skip is refuted by the compile succeeding (a skipped constant would have
-crashed the definition walk's `cast`/`setInitializer` at
-file_context.cpp:297-307); H0 by the link failure itself. Honest residue,
-recorded per R17: the check-side reason the creation count EXCEEDS the
-two call sites the plan's H1 story names (constant lowering + the
-non-constant definition-walk branch) — the per-function split implies
-per-use-cluster mints — was not fully traced without a local build; the
-fix below restores the one-mangled-name⇔one-object invariant at the only
-site that mints these symbols, which closes every variant of the split,
-and the probe's new member-calls split plus the pair arbitrate that claim
-at regen and link level (falsifiers §5 R-4). _Fix:_ name-keyed reuse in
+single-symbol `_Cgcount.Main.1` measurement: references split per function
+across DISTINCT `.N`-renamed duplicates of one variable. _Mechanism (§2.3 H1
+family):_ `Lower::FileContext::BuildNonCppGlobalVariableDecl`
+(toolchain/lower/file_context.cpp) created a fresh `llvm::GlobalVariable` on
+EVERY call — no cache, no module-symbol-table lookup — while the function path
+(`GetOrCreateLLVMFunction`) has had a name-keyed early-return all along. LLVM
+silently uniquifies each duplicate with a `.N` suffix, so the initializer added
+by `LowerGlobalVariables` (file_context.cpp `LowerGlobalVariables`, the
+:305/:306 insert+define) lands on one object while references bind others. The
+evidence adjudicates the hypothesis set: two distinct undefined suffixes in one
+link refute H3 (a deterministic mangling divergence yields ONE wrong name, not
+per-function rename suffixes); H2's non-concrete constant-walk skip is refuted
+by the compile succeeding (a skipped constant would have crashed the definition
+walk's `cast`/`setInitializer` at file_context.cpp:297-307); H0 by the link
+failure itself. Honest residue, recorded per R17: the check-side reason the
+creation count EXCEEDS the two call sites the plan's H1 story names (constant
+lowering + the non-constant definition-walk branch) — the per-function split
+implies per-use-cluster mints — was not fully traced without a local build; the
+fix below restores the one-mangled-name⇔one-object invariant at the only site
+that mints these symbols, which closes every variant of the split, and the
+probe's new member-calls split plus the pair arbitrate that claim at regen and
+link level (falsifiers §5 R-4). _Fix:_ name-keyed reuse in
 `BuildNonCppGlobalVariableDecl` — `llvm_module().getGlobalVariable(
-mangled_name, /*AllowInternal=*/true)` early-return before creating, the
-exact global-side mirror of `GetOrCreateLLVMFunction`'s
-`getFunction(mangled_name)` early-return (the B2a-coalescer-adjacent
-function path had the dedup; the global path was the hole — answering
-the plan's H1/coalescer-analog question affirmatively). No check-side,
-mangler, or driver changes. _Probe:_
-lower/testdata/interop/cpp/globals_carbon_defined.carbon gains a third
-split (mock `Counter<T>` template, file-scope `var total:
-Cpp.Counter(i32)`, store/fetch_add/load member CALLS from two functions
-mirroring the pair's Bump/Run) with the R-4 pin stated in-file: one
-defined `@_Ctotal.Main`, every reference on that same symbol, no `.N`
-duplicate anywhere. _Movement prediction for the regen:_ ONLY
-globals_carbon_defined.carbon moves, by the ADDED split's new module dump
-(the fix's reuse path is unreachable when a variable is created once, so
-the existing splits' dumps and every other golden — globals.carbon in
-particular, the R-5 imported-direction negative — stay byte-identical;
-any other movement is stop-and-explain). Conformance:
-cpp_atomic_global_counter_diff flips SKIP→PASS off the branch's red
-baseline; floor 89/0/30 over 119; bullets stay 43/56 (plan §6). W-022
-DISCHARGED (ledger updated, plan §9). Veto-able.
+mangled_name, /*AllowInternal=*/true)` early-return before creating, the exact
+global-side mirror of `GetOrCreateLLVMFunction`'s `getFunction(mangled_name)`
+early-return (the B2a-coalescer-adjacent function path had the dedup; the global
+path was the hole — answering the plan's H1/coalescer-analog question
+affirmatively). No check-side, mangler, or driver changes. _Probe:_
+lower/testdata/interop/cpp/globals_carbon_defined.carbon gains a third split
+(mock `Counter<T>` template, file-scope `var total: Cpp.Counter(i32)`,
+store/fetch_add/load member CALLS from two functions mirroring the pair's
+Bump/Run) with the R-4 pin stated in-file: one defined `@_Ctotal.Main`, every
+reference on that same symbol, no `.N` duplicate anywhere. _Movement prediction
+for the regen:_ ONLY globals_carbon_defined.carbon moves, by the ADDED split's
+new module dump (the fix's reuse path is unreachable when a variable is created
+once, so the existing splits' dumps and every other golden — globals.carbon in
+particular, the R-5 imported-direction negative — stay byte-identical; any other
+movement is stop-and-explain). Conformance: cpp_atomic_global_counter_diff flips
+SKIP→PASS off the branch's red baseline; floor 89/0/30 over 119; bullets stay
+43/56 (plan §6). W-022 DISCHARGED (ledger updated, plan §9). Veto-able.
 
 _F8d landing note (2026-08-18):_ the D1 fix of the approved F-008 plan
 (fork/f008/plan.md §2.4, §3 F8d) — the FIX path taken; the §2.4
@@ -1414,12 +1394,12 @@ arm; everything else keeps a clean `semantics TODO` diagnostic. Trades:
     plan §7 alternative (rewrite to slice-1 arms + un-SKIP). Rationale:
     un-SKIPping it on slice-1 arms would double-count coverage
     match_switch.carbon already provides and overstate "most 0.1 features".
--   **Usefulness/redundancy diagnostics deferred**: duplicate or
-    never-matching `case` literals (for example two `case 5` arms) are accepted in
-    slice 1; runtime first-match-wins SemIR is design-correct, but
-    `pattern_matching.md` ("We will diagnose... A pattern is not useful in
-    the context of prior patterns") requires a diagnostic. Recorded as
-    work item W-066, blocked on W-008 landing.
+-   **Usefulness/redundancy diagnostics deferred**: duplicate or never-matching
+    `case` literals (for example two `case 5` arms) are accepted in slice 1;
+    runtime first-match-wins SemIR is design-correct, but `pattern_matching.md`
+    ("We will diagnose... A pattern is not useful in the context of prior
+    patterns") requires a diagnostic. Recorded as work item W-066, blocked on
+    W-008 landing.
 -   **Scrutinee gate**: only `Core.IntLiteral`, builtin integer types, and
     the `Int(N)`/`UInt(N)` adapters are in-slice. Other class types whose
     object representation is an integer (`Core.Char`, user adapter classes)
@@ -1463,47 +1443,44 @@ same scrutinee), so duplicate/overlap detection must compare evaluated
 constant values, not source forms — noted on the work item. Veto-able.
 
 _S2b landing note (2026-07-28):_ the match re-platform's S2b slice
-(fork/match-replatform/plan.md §3.2) discharges this section's binding
-gate for bare `name: type` case bindings: they check to a
-`ValueBindingPattern` under `Kind::MatchCaseArm` and bind the scrutinee's
-value in the arm's scope. The test pass contributes no condition
-(bindings are irrefutable), so the arm's condition is a constant `true`
-emitted by handle_match.cpp — keeping the first-match-wins CFG uniform —
-and the bind pass runs `LocalPatternMatch` in the arm's body block, so
-the binding is initialized only where the arm has matched. The TODO
-string `` `match `case` pattern other than an integer literal, or a case
-guard` `` is therefore no longer emitted at the plain-binding case gate
-in toolchain/check/handle_binding_pattern.cpp, but survives byte-identical
-at its remaining sites (handle_match.cpp's non-binding-root fallback, the
-compile-time-binding and form-binding case gates in
-handle_binding_pattern.cpp, handle_let_and_var.cpp's binding-free `var`
-case pattern, pattern_match.cpp's choice-pattern fallback, and
-handle_name.cpp's leading-dot designator gate — six in all; the
-tuple-case and compile-time-binding sites are golden-pinned by
-fail_todo_tuple_pattern.carbon). Per
-§3.2(c), `var`-mode and `ref` case bindings stay gated behind a NEW
-precise TODO string `` `var` or `ref` binding in match `case` pattern ``,
-pinned to the binding itself (fail_todo_var_binding.carbon,
-fail_todo_ref_binding.carbon). Other testdata: the now-compiling
-fail_todo_binding_pattern.carbon flips to binding_pattern.carbon (multiple
-arms, mixed literal+binding arms, `unused` modifier);
-binding_choice_scrutinee.carbon binds a choice-typed scrutinee and
-rematches it in a nested match (risks R-2/R-8);
-fail_binding_scope.carbon pins sibling-arm and post-match leakage as
-`NameNotFound` (§3.2(b)); fail_unused_case_binding.carbon pins
-`UnusedButUsed` under the arm's implicit `let` introducer (§3.2(a));
-fail_arm_conversion.carbon gains a bind-pass conversion-failure pin
-(R-1); and the fail_todo_match subfile of
+(fork/match-replatform/plan.md §3.2) discharges this section's binding gate for
+bare `name: type` case bindings: they check to a `ValueBindingPattern` under
+`Kind::MatchCaseArm` and bind the scrutinee's value in the arm's scope. The test
+pass contributes no condition (bindings are irrefutable), so the arm's condition
+is a constant `true` emitted by handle_match.cpp — keeping the first-match-wins
+CFG uniform — and the bind pass runs `LocalPatternMatch` in the arm's body
+block, so the binding is initialized only where the arm has matched. The TODO
+string
+`` `match `case` pattern other than an integer literal, or a case guard` `` is
+therefore no longer emitted at the plain-binding case gate in
+toolchain/check/handle_binding_pattern.cpp, but survives byte-identical at its
+remaining sites (handle_match.cpp's non-binding-root fallback, the
+compile-time-binding and form-binding case gates in handle_binding_pattern.cpp,
+handle_let_and_var.cpp's binding-free `var` case pattern, pattern_match.cpp's
+choice-pattern fallback, and handle_name.cpp's leading-dot designator gate — six
+in all; the tuple-case and compile-time-binding sites are golden-pinned by
+fail_todo_tuple_pattern.carbon). Per §3.2(c), `var`-mode and `ref` case bindings
+stay gated behind a NEW precise TODO string
+`` `var` or `ref` binding in match `case` pattern ``, pinned to the binding
+itself (fail_todo_var_binding.carbon, fail_todo_ref_binding.carbon). Other
+testdata: the now-compiling fail_todo_binding_pattern.carbon flips to
+binding_pattern.carbon (multiple arms, mixed literal+binding arms, `unused`
+modifier); binding_choice_scrutinee.carbon binds a choice-typed scrutinee and
+rematches it in a nested match (risks R-2/R-8); fail_binding_scope.carbon pins
+sibling-arm and post-match leakage as `NameNotFound` (§3.2(b));
+fail_unused_case_binding.carbon pins `UnusedButUsed` under the arm's implicit
+`let` introducer (§3.2(a)); fail_arm_conversion.carbon gains a bind-pass
+conversion-failure pin (R-1); and the fail_todo_match subfile of
 toolchain/check/testdata/patterns/unused.carbon — whose first case is a
-`var`-mode binding — moves from the combined string at its `case` token
-to the new `var`/`ref` string at the binding, the same §3.2(c) sanction. `default` stays required — an irrefutable binding arm does not yet
-discharge exhaustiveness (S2e; _discharged there for choice scrutinees
-only, 2026-08-08 — integer matches keep the requirement per SF-7_). SKIP
-evidence refreshed for
+`var`-mode binding — moves from the combined string at its `case` token to the
+new `var`/`ref` string at the binding, the same §3.2(c) sanction. `default`
+stays required — an irrefutable binding arm does not yet discharge
+exhaustiveness (S2e; _discharged there for choice scrutinees only, 2026-08-08 —
+integer matches keep the requirement per SF-7_). SKIP evidence refreshed for
 control_flow/match_guard_binding.carbon and
-project/most_features_missing_match.carbon: their guarded-binding arms
-are now rejected at the guard's `if` token ("match case guard") instead
-of the `case` token, and both un-SKIP only at S2d. Veto-able.
+project/most_features_missing_match.carbon: their guarded-binding arms are now
+rejected at the guard's `if` token ("match case guard") instead of the `case`
+token, and both un-SKIP only at S2d. Veto-able.
 
 _S2b R-7 re-derivation (2026-07-28, post-review):_ the bind pass's
 no-cleanups argument does not close from the scrutinee gate alone. The
@@ -1544,106 +1521,103 @@ fallback, and `case template n: i32` at handle_binding_pattern.cpp's
 compile-time case gate), which had zero testdata pins after S2b's flips.
 Veto-able.
 
+<!-- rumdl-disable MD013 -->
+
 _S2c landing note (2026-07-28):_ the match re-platform's S2c slice
-(fork/match-replatform/plan.md §3.3) discharges W5-S2's payload
-destructuring: `case .Ok(value: i32)` tests the scrutinee's discriminant
-and, in the bind pass, extracts the alternative's payload tuple from the
-payload region (`ClassElementAccess` field 1, then the alternative's tuple
-field — the F-007k offset-0 overlap) and initializes each payload binding
-through `LocalPatternMatch` on a `TuplePattern` root, in the arm's scope.
-Parse gains the RF-5 dedicated form: `AlternativePatternStart` +
-`AlternativePattern` node kinds, entered from `MatchCaseIntroducer` only
-when the case pattern starts with `.` followed by an identifier
-(leading-dot-only per SF-4); the `Period` token gains a virtual-node
-allowance because the wrapper node shares the period with its bracketing
-start node. **Name-to-index metadata (the W5-S1 review follow-up (2), now
-DONE):** a `SemIR::ChoiceAlternative` side table
-(`{name_id, index, payload_field_index, has_parameters}`) on
-`SemIR::Class`, populated in declaration order when the choice definition
-completes and imported with the class definition (names translated by
-`GetLocalNameId`). It replaces `GetAlternativeDiscriminant`'s constant
-excavation, which is DELETED from pattern_match.cpp together with its
-cross-file `GetCanonicalFileAndInstId` walk — imported and reexported
-choices resolve through the ordinary class import
-(choice_scrutinee_imported/choice_scrutinee_reexported still pin those
-paths, plus the new choice_payload_imported.carbon for payload metadata).
-Sanctioned diagnostic changes, verbatim: the TODO string
-`` `match case pattern destructuring a choice payload` `` is DISCHARGED —
-both emission sites (bare `.Ok` and wrapped-designator, pattern_match.cpp)
-are deleted. In its place: in-slice payload patterns compile; the
+(fork/match-replatform/plan.md §3.3) discharges W5-S2's payload destructuring:
+`case .Ok(value: i32)` tests the scrutinee's discriminant and, in the bind pass,
+extracts the alternative's payload tuple from the payload region
+(`ClassElementAccess` field 1, then the alternative's tuple field — the F-007k
+offset-0 overlap) and initializes each payload binding through
+`LocalPatternMatch` on a `TuplePattern` root, in the arm's scope. Parse gains
+the RF-5 dedicated form: `AlternativePatternStart` + `AlternativePattern` node
+kinds, entered from `MatchCaseIntroducer` only when the case pattern starts with
+`.` followed by an identifier (leading-dot-only per SF-4); the `Period` token
+gains a virtual-node allowance because the wrapper node shares the period with
+its bracketing start node. **Name-to-index metadata (the W5-S1 review follow-up
+(2), now DONE):** a `SemIR::ChoiceAlternative` side table
+(`{name_id, index, payload_field_index, has_parameters}`) on `SemIR::Class`,
+populated in declaration order when the choice definition completes and imported
+with the class definition (names translated by `GetLocalNameId`). It replaces
+`GetAlternativeDiscriminant`'s constant excavation, which is DELETED from
+pattern_match.cpp together with its cross-file `GetCanonicalFileAndInstId` walk
+— imported and reexported choices resolve through the ordinary class import
+(choice_scrutinee_imported/choice_scrutinee_reexported still pin those paths,
+plus the new choice_payload_imported.carbon for payload metadata). Sanctioned
+diagnostic changes, verbatim: the TODO string
+"`match case pattern destructuring a choice payload`" is DISCHARGED — both
+emission sites (bare `.Ok` and wrapped-designator, pattern_match.cpp) are
+deleted. In its place: in-slice payload patterns compile; the
 parens-iff-parameter-list rule (p2188:453-456) is enforced by two new
-diagnostics, `` alternative `{0}` is declared with a parameter list, so its
-pattern requires parentheses `` (MatchAlternativeMissingParens, bare `.Ok`
-— this also supersedes the W5-S1 recorded gate that kept `case .On` for a
-zero-payload `On()` behind the payload TODO: `.On()` now matches per SF-3
-and bare `.On` gets this error) and `` alternative `{0}` is declared
-without a parameter list, so its pattern cannot have parentheses ``
-(MatchAlternativeUnexpectedParens, `case .Err()`); wrong arity gets
-`` alternative pattern has {0} subpattern{0:s}, but alternative `{1}` is
-declared with {2} parameter{2:s} `` (MatchAlternativeArgCountMismatch); a
-non-binding payload subpattern (`case .Ok(42)`) gets a NEW precise TODO
-`` `non-binding subpattern in match `case` alternative pattern` ``, pinned
-to the subpattern. Span choice: all three new match-alternative
-diagnostics anchor on the whole alternative pattern node — uniformity
-over sharpness — with sharper sub-spans deferred to W-066's
-diagnostics-quality work. The combined W4 string survives byte-identical at six
-sites, but one site MOVES: handle_name.cpp's leading-dot designator gate
-(the split-literal site) is deleted with the whole S2c-scheduled
-DesignatorExpr node-stack hack (plan §1.2 F-Q1 residue), and the same
-string with the same introducer-node pin is re-emitted from the
-`AlternativePattern` check handler in handle_match.cpp (non-choice
-scrutinee gate). `qualified alternative pattern in match case` and
-`match case pattern on unsupported choice alternative shape` survive
-verbatim (the latter now keyed on missing metadata rather than failed
-excavation). _R-7 re-derivation for S2c:_ payload extraction itself
-registers no cleanups — the `ClassElementAccess` chain is reference
-projection into the scrutinee, and in-slice payload element types are
-trivially copyable and destructible by the choice-completion gate — but
-the bind pass's per-element `Convert` to each binding's DECLARED type is
-ungated (the same S2b hole: `case .Set(n: i64)` on an `i32` payload runs
-`Core.ImplicitAs` and can materialize a `Temporary` with a registered
-cleanup, and destroy synthesis is live), so alternative-payload arms get
-the identical `DeferCleanups` treatment as S2b binding arms: such
-temporaries discharge at arm exit by `MatchHandler`'s scope cleanups, not
-at the next statement while the binding is live. Re-derive at S2d, where
-guards run arbitrary code between test and bind. Recorded deviations
-(veto-able): (1) the alternative-pattern parse form is gated to the match
-case ROOT position only, not all pattern positions as W5 plan §3.2.1
-sketched — leading-dot in any other pattern position (function params,
-`let`, nested in payload lists, `case (.Err)`) parses exactly as before;
-alternative patterns are meaningless without a scrutinee-typed scope, and
-F-011's if-let can widen the gate later. (2) Consequently unpinned inputs
-of the S2a "more-honest diagnostics" class shift again: `case .Err ==
-.Stop` now parses `.Err` as an alternative pattern and the trailing
-operator is a parse error (expected `=>`), and `case .Self` takes the
-ordinary expression route (`.Self` not in scope) since the lookahead gate
-requires an identifier after the period; no golden or SKIP evidence pins
-either. (3) A single parenthesized subpattern (`ParenPattern`) is wrapped
-in a synthesized `TuplePattern` so payloads uniformly destructure through
-upstream's tuple machinery. (4) Unknown alternative names get the standard
-member-access diagnostic in both forms (`PerformMemberAccess` against the
-choice scope; in the paren form its name-ref lands in a consumed,
-unreferenced expr region). (5) `default` stays required — payload arms do
-not discharge exhaustiveness (S2e; _discharged there, 2026-08-08: an
-unguarded payload arm now covers its alternative_). (6) The paren-form discriminant test
-is emitted by a free function (`MatchCaseAlternativePatternMatch`)
-sharing `EmitChoiceDiscriminantTest` rather than entering the
-`MatchContext` engine worklist as plan §2.1/RF-1 sketched — functionally
-equivalent, same file (pattern_match.cpp); fold into the engine at S2d
-when guards force it. Testdata:
+diagnostics, "alternative `{0}` is declared with a parameter list, so its
+pattern requires parentheses" (MatchAlternativeMissingParens, bare `.Ok` — this
+also supersedes the W5-S1 recorded gate that kept `case .On` for a zero-payload
+`On()` behind the payload TODO: `.On()` now matches per SF-3 and bare `.On` gets
+this error) and "alternative `{0}` is declared without a parameter list, so its
+pattern cannot have parentheses" (MatchAlternativeUnexpectedParens,
+`case .Err()`); wrong arity gets "alternative pattern has {0} subpattern{0:s},
+but alternative `{1}` is declared with {2} parameter{2:s}"
+(MatchAlternativeArgCountMismatch); a non-binding payload subpattern
+(`case .Ok(42)`) gets a NEW precise TODO
+"`non-binding subpattern in match `case` alternative pattern`", pinned to the
+subpattern. Span choice: all three new match-alternative diagnostics anchor on
+the whole alternative pattern node — uniformity over sharpness — with sharper
+sub-spans deferred to W-066's diagnostics-quality work. The combined W4 string
+survives byte-identical at six sites, but one site MOVES: handle_name.cpp's
+leading-dot designator gate (the split-literal site) is deleted with the whole
+S2c-scheduled DesignatorExpr node-stack hack (plan §1.2 F-Q1 residue), and the
+same string with the same introducer-node pin is re-emitted from the
+`AlternativePattern` check handler in handle_match.cpp (non-choice scrutinee
+gate). `qualified alternative pattern in match case` and
+`match case pattern on unsupported choice alternative shape` survive verbatim
+(the latter now keyed on missing metadata rather than failed excavation). _R-7
+re-derivation for S2c:_ payload extraction itself registers no cleanups — the
+`ClassElementAccess` chain is reference projection into the scrutinee, and
+in-slice payload element types are trivially copyable and destructible by the
+choice-completion gate — but the bind pass's per-element `Convert` to each
+binding's DECLARED type is ungated (the same S2b hole: `case .Set(n: i64)` on an
+`i32` payload runs `Core.ImplicitAs` and can materialize a `Temporary` with a
+registered cleanup, and destroy synthesis is live), so alternative-payload arms
+get the identical `DeferCleanups` treatment as S2b binding arms: such
+temporaries discharge at arm exit by `MatchHandler`'s scope cleanups, not at the
+next statement while the binding is live. Re-derive at S2d, where guards run
+arbitrary code between test and bind. Recorded deviations (veto-able): (1) the
+alternative-pattern parse form is gated to the match case ROOT position only,
+not all pattern positions as W5 plan §3.2.1 sketched — leading-dot in any other
+pattern position (function params, `let`, nested in payload lists,
+`case (.Err)`) parses exactly as before; alternative patterns are meaningless
+without a scrutinee-typed scope, and F-011's if-let can widen the gate later.
+(2) Consequently unpinned inputs of the S2a "more-honest diagnostics" class
+shift again: `case .Err == .Stop` now parses `.Err` as an alternative pattern
+and the trailing operator is a parse error (expected `=>`), and `case .Self`
+takes the ordinary expression route (`.Self` not in scope) since the lookahead
+gate requires an identifier after the period; no golden or SKIP evidence pins
+either. (3) A single parenthesized subpattern (`ParenPattern`) is wrapped in a
+synthesized `TuplePattern` so payloads uniformly destructure through upstream's
+tuple machinery. (4) Unknown alternative names get the standard member-access
+diagnostic in both forms (`PerformMemberAccess` against the choice scope; in the
+paren form its name-ref lands in a consumed, unreferenced expr region). (5)
+`default` stays required — payload arms do not discharge exhaustiveness (S2e;
+_discharged there, 2026-08-08: an unguarded payload arm now covers its
+alternative_). (6) The paren-form discriminant test is emitted by a free
+function (`MatchCaseAlternativePatternMatch`) sharing
+`EmitChoiceDiscriminantTest` rather than entering the `MatchContext` engine
+worklist as plan §2.1/RF-1 sketched — functionally equivalent, same file
+(pattern_match.cpp); fold into the engine at S2d when guards force it. Testdata:
 fail_todo_choice_payload_pattern.carbon is renamed (git mv) to
-fail_choice_alternative_pattern.carbon, its `.Ok(42)`/`.Ok` subfiles
-re-pinned to the new TODO/diagnostics, qualified subfile unchanged, plus
-new arity/parens/unknown-name/nested-designator fail subfiles; new
-positive goldens choice_payload_pattern.carbon,
-choice_payload_multi.carbon (multi-element, `.On()`, converting binding),
-choice_payload_imported.carbon, lower/testdata/match/choice_payload.carbon
-(the R-9 payload-GEP pin), and parse alternative_pattern goldens — all new
-CHECK content rides the runner autoupdate (R15/R19). Conformance:
-choice_payload_roundtrip_diff.carbon un-SKIPs (with a recorded
-never-taken `default` arm until S2e); match_sum_type_payload.carbon keeps
-only its interop half per the W5 plan §3.3 split, SKIP evidence refreshed
+fail_choice_alternative_pattern.carbon, its `.Ok(42)`/`.Ok` subfiles re-pinned
+to the new TODO/diagnostics, qualified subfile unchanged, plus new
+arity/parens/unknown-name/nested-designator fail subfiles; new positive goldens
+choice_payload_pattern.carbon, choice_payload_multi.carbon (multi-element,
+`.On()`, converting binding), choice_payload_imported.carbon,
+lower/testdata/match/choice_payload.carbon (the R-9 payload-GEP pin), and parse
+alternative_pattern goldens — all new CHECK content rides the runner autoupdate
+(R15/R19). Conformance: choice_payload_roundtrip_diff.carbon un-SKIPs (with a
+recorded never-taken `default` arm until S2e); match_sum_type_payload.carbon
+keeps only its interop half per the W5 plan §3.3 split, SKIP evidence refreshed
 to the S4 blocker. Veto-able.
+
+<!-- rumdl-enable MD013 -->
 
 _S2d landing note (2026-07-29):_ the match re-platform's S2d slice
 (fork/match-replatform/plan.md §3.4) gives `case` guards real semantics.
@@ -2891,46 +2865,48 @@ exception interop), then unions W-009/W-015.
 Milestone bullet "Stdlib C++ interop: transparent non-owning contiguous
 container mapping (incl. owning->view)" flips MISSING → DONE
 (fork/gap-analysis.md row 82; this branch's header 29 DONE / 22 PARTIAL / 4
-MISSING / 1 DESIGN-ONLY over 56 — trunk's header after OV-3 reads 29 / 21 / 5
-/ 1, so the merged header is 30 / 21 / 4 / 1, reconciled by the orchestrator at
-the trunk merge) on the conformance run of record 37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit) (128 PASS / 0 FAIL / 22 SKIP over 150 programs, 48/56 bullets).
-Landed on claude/carbon-fork-0-1-sl2 off trunk 9e5dd5f75 in the four commits
-fork/slices/plan.md §3 fixed — 65338a7b7 (the import and export mapping with
-five goldens), 17d506e2e (the synthesized `CppContiguousRange`, the prelude
-interop library, three goldens), 677d0e4b2 (conformance: `cpp_span_view` SKIP
-→ PASS, `cpp_span_roundtrip_diff` with its C++17 oracle; gap row; ledger),
-12a2143d2 (docs/design/slices.md's Interop section, the interop README
-subsection) — plus fd9cdd5da (round 1: the owning→view impl moved beside
-`Slice`, 299 goldens restored byte-identical, the implementation review's
-REJECT folded) and 58c08be07 (round 2: the silent golden explained, the
-`size_t` story corrected, the gap row held at PARTIAL), with the hosted fills
-0790c7428 + 2c21f6e24 (run 37356848697, the broken prelude) and 18e2165c1 +
-0c9924049 (runs 37362980320 and 37365683022, clean) between them. The plan's
-SL-1 slice was W-055 (its entry below); this is W-056, the second half of the
-F-012 record. The "SL-2 round-1 note" entry below is the round-level record
-written mid-stream; its content is folded here and the note stays in place.
-Design authority was not reopened: milestones.md:201-214's bullet text, the
-`str` ↔ `std::string_view` precedent of interoperability/README.md and
-D-SL-8/9/10/14 as adopted at plan §0.3 stand; every decision below is an
-R29(a) fill or an implementation choice, recorded for after-the-fact veto.
+MISSING / 1 DESIGN-ONLY over 56 — trunk's header after OV-3 reads 29 / 21 / 5 /
+1, so the merged header is 30 / 21 / 4 / 1, reconciled by the orchestrator at
+the trunk merge) on the conformance run of record 37390640614 (on affa54e8a,
+which the final head differs from only by the scoreboard commit 2a17f0239 and
+the CHECK-only convergence commit) (128 PASS / 0 FAIL / 22 SKIP over 150
+programs, 48/56 bullets). Landed on claude/carbon-fork-0-1-sl2 off trunk
+9e5dd5f75 in the four commits fork/slices/plan.md §3 fixed — 65338a7b7 (the
+import and export mapping with five goldens), 17d506e2e (the synthesized
+`CppContiguousRange`, the prelude interop library, three goldens), 677d0e4b2
+(conformance: `cpp_span_view` SKIP → PASS, `cpp_span_roundtrip_diff` with its
+C++17 oracle; gap row; ledger), 12a2143d2 (docs/design/slices.md's Interop
+section, the interop README subsection) — plus fd9cdd5da (round 1: the
+owning→view impl moved beside `Slice`, 299 goldens restored byte-identical, the
+implementation review's REJECT folded) and 58c08be07 (round 2: the silent golden
+explained, the `size_t` story corrected, the gap row held at PARTIAL), with the
+hosted fills 0790c7428 + 2c21f6e24 (run 37356848697, the broken prelude) and
+18e2165c1 + 0c9924049 (runs 37362980320 and 37365683022, clean) between them.
+The plan's SL-1 slice was W-055 (its entry below); this is W-056, the second
+half of the F-012 record. The "SL-2 round-1 note" entry below is the round-level
+record written mid-stream; its content is folded here and the note stays in
+place. Design authority was not reopened: milestones.md:201-214's bullet text,
+the `str` ↔ `std::string_view` precedent of interoperability/README.md and
+D-SL-8/9/10/14 as adopted at plan §0.3 stand; every decision below is an R29(a)
+fill or an implementation choice, recorded for after-the-fact veto.
 
 WHAT LANDED, by mechanism. (1) IMPORT (check/cpp/custom_type_mapping.{h,cpp},
 import.cpp). `CustomCppTypeMapping` is a struct — `Kind {None, Str, Span}` plus
-the `element_type` payload — and `GetCustomCppTypeMapping` fills it from two
-new matchers beside `StdStringView`: `DynamicExtent` (an integral template
-argument whose `APInt` `isAllOnes()`: `std::dynamic_extent` is
-`static_cast<size_t>(-1)` in libc++ and libstdc++ alike) and `StdSpan`
-(`StdClassTemplate("span", TemplateArgumentsAre({TypeTemplateArgument(AnyType),
-DynamicExtent}))`), so `std::span<T, 3>` fails the matcher and imports as an
-ordinary class. `LookupCustomRecordType`'s `Span` arm imports the element
-(`ImportCppType`), tests it against `Slice`'s bound (`SliceElementSatisfiesBound`,
-below) and builds `Core.Slice(T')` with `MakeSliceType` (`LookupNameInCore(Slice)` +
+the `element_type` payload — and `GetCustomCppTypeMapping` fills it from two new
+matchers beside `StdStringView`: `DynamicExtent` (an integral template argument
+whose `APInt` `isAllOnes()`: `std::dynamic_extent` is `static_cast<size_t>(-1)`
+in libc++ and libstdc++ alike) and `StdSpan` (`StdClassTemplate("span",
+TemplateArgumentsAre({TypeTemplateArgument(AnyType), DynamicExtent}))`), so
+`std::span<T, 3>` fails the matcher and imports as an ordinary class.
+`LookupCustomRecordType`'s `Span` arm imports the element (`ImportCppType`),
+tests it against `Slice`'s bound (`SliceElementSatisfiesBound`, below) and
+builds `Core.Slice(T')` with `MakeSliceType` (`LookupNameInCore(Slice)` +
 `PerformCall` + `ExprAsType`, the `MakeOptionalType` shape); the element maps
 recursively, so `std::span<const int>` is `Core.Slice(const i32)`. The thunk
 path is the `str` one — `std::span` is not a simple ABI type, so the import
-thunk takes the `Slice` object's address; lower interop/cpp/span.carbon's
-thunk is `@_Z7ConsumeNSt3__14spanIKiLm18446744073709551615EEE.carbon_thunk._`,
-the all-ones extent in the mangling, with the out-pointer form for the
+thunk takes the `Slice` object's address; lower interop/cpp/span.carbon's thunk
+is `@_Z7ConsumeNSt3__14spanIKiLm18446744073709551615EEE.carbon_thunk._`, the
+all-ones extent in the mangling, with the out-pointer form for the
 `std::span<int>` return. (2) EXPORT (sem_ir/type_info.{h,cpp},
 check/cpp/type_mapping.cpp). `RecognizedTypeInfo::Kind` gains `Slice` — a
 Core-root class named `Slice` with one argument (`ExpectsArgs` :151, the name
@@ -2939,43 +2915,43 @@ exhaustive switch rev B B4 named) — and `TryMapClassType`'s exhaustive switch
 gains the `Slice` arm (:319): a `WrappedType` whose `wrap_fn` runs late, after
 the element has mapped, finding `std::span` by `LookupCppClassTemplate(context,
 {"std", "span"})` (through libc++'s inline `__1`) and instantiating it with
-`CheckTemplateIdType` on the mapped element. A translation unit without
-`<span>` maps to the null type, which the existing `failed to map Carbon type
-to C++` TODO paths report (`fail_no_span_header`) — no new diagnostic kind.
-(3) OWNING → VIEW (sem_ir/core_interface_kind.def:22, check/core_identifier
-.def:37 and :84, check/cpp/impl_lookup.cpp, check/custom_witness.cpp:1546, the
-prelude). `BuildCppContiguousRangeWitness` (impl_lookup.cpp:610) looks up the
-member functions `data` and `size` with `LookupCppMethod` only — the const
-filter keeps `data() const` when both overloads exist; no ADL stage — through
-`LookupCppMemberWithResultType` (:574), and hands `BuildCustomWitness` the
-table `{DataType, SizeType, Data, Size}` in interface member order;
-`LookupCppImpl`'s exhaustive switch dispatches it (:706) and
-`LookupCustomWitness` answers nullopt for it as for `CppRangeForIterate`.
-core/prelude/types/cpp/slice.carbon (library `prelude/types/cpp/slice`,
-exported from types.carbon:14) holds the public helpers: `interface
-CppContiguousRange { let DataType: type; let SizeType: type; fn Data(self) ->
-DataType; fn Size(self) -> SizeType; }`, `interface CppDataPointer` with impls
-for `T*` and `Optional(T*)` (`None` → the null pointer), `interface
-CppSizeToI64 { fn Op(self) -> i64; }` with `impl forall [T: ImplicitAs(u64)] T
-as CppSizeToI64` (the two-step `ImplicitAs(u64)` then `As(i64)` conversion of
-rev A A2, keeping `u64` out of slice.carbon), and `constraint CppContiguous {
-extend require impls CppContiguousRange; require Self.(DataType) impls
-CppDataPointer & Destroy; require Self.(SizeType) impls CppSizeToI64 &
-Destroy; alias Element = Self.(DataType).(CppDataPointer.Element); }`.
-core/prelude/types/slice.carbon's SL-1-reserved `prelude/types/optional`
-import line (unused there) became `import library "prelude/types/cpp/slice";`
-at the same line count (`class Slice` stays at :24, every method on its line)
-and the blanket `impl forall [C: CppContiguous where .Element impls Copy &
-Destroy] C as ImplicitAs(Slice(C.Element))` is APPENDED beside `Slice` (:85-
-106, comment and impl), its `Convert` body `Slice(C.Element).UnsafeMake(self.Data()
-.(CppDataPointer.Raw)(), self.Size().(CppSizeToI64.Op)())` — public `Slice`
-API only. For a `std::vector<int>` `v`: `data() const` → `Optional(const
-i32*)` → `Element = const i32`; `size() const` → `u64` on x86_64-linux-gnu;
-`v` converts to `Core.Slice(const i32)`, the type a `std::span<const int>`
-parameter imports as, so both `let view: Core.Slice(const i32) = v;` and
-`Cpp.SumSpan(v)` resolve. (4) THREE TOOLCHAIN HARDENINGS the rounds forced:
-(a) `LookupCppMemberWithResultType` returns `{None, None}` for a `void` member
-and `{ErrorInst, ErrorInst}` for an unmappable result type where the
+`CheckTemplateIdType` on the mapped element. A translation unit without `<span>`
+maps to the null type, which the existing `failed to map Carbon type to C++`
+TODO paths report (`fail_no_span_header`) — no new diagnostic kind. (3) OWNING →
+VIEW (sem_ir/core_interface_kind.def:22, check/core_identifier .def:37 and :84,
+check/cpp/impl_lookup.cpp, check/custom_witness.cpp:1546, the prelude).
+`BuildCppContiguousRangeWitness` (impl_lookup.cpp:610) looks up the member
+functions `data` and `size` with `LookupCppMethod` only — the const filter keeps
+`data() const` when both overloads exist; no ADL stage — through
+`LookupCppMemberWithResultType` (:574), and hands `BuildCustomWitness` the table
+`{DataType, SizeType, Data, Size}` in interface member order; `LookupCppImpl`'s
+exhaustive switch dispatches it (:706) and `LookupCustomWitness` answers nullopt
+for it as for `CppRangeForIterate`. core/prelude/types/cpp/slice.carbon (library
+`prelude/types/cpp/slice`, exported from types.carbon:14) holds the public
+helpers: `interface CppContiguousRange { let DataType: type; let SizeType: type;
+fn Data(self) -> DataType; fn Size(self) -> SizeType; }`, `interface
+CppDataPointer` with impls for `T*` and `Optional(T*)` (`None` → the null
+pointer), `interface CppSizeToI64 { fn Op(self) -> i64; }` with `impl forall [T:
+ImplicitAs(u64)] T as CppSizeToI64` (the two-step `ImplicitAs(u64)` then
+`As(i64)` conversion of rev A A2, keeping `u64` out of slice.carbon), and
+`constraint CppContiguous { extend require impls CppContiguousRange; require
+Self.(DataType) impls CppDataPointer & Destroy; require Self.(SizeType) impls
+CppSizeToI64 & Destroy; alias Element =
+Self.(DataType).(CppDataPointer.Element); }`. core/prelude/types/slice.carbon's
+SL-1-reserved `prelude/types/optional` import line (unused there) became `import
+library "prelude/types/cpp/slice";` at the same line count (`class Slice` stays
+at :24, every method on its line) and the blanket `impl forall [C: CppContiguous
+where .Element impls Copy & Destroy] C as ImplicitAs(Slice(C.Element))` is
+APPENDED beside `Slice` (:85- 106, comment and impl), its `Convert` body
+`Slice(C.Element).UnsafeMake(self.Data() .(CppDataPointer.Raw)(),
+self.Size().(CppSizeToI64.Op)())` — public `Slice` API only. For a
+`std::vector<int>` `v`: `data() const` → `Optional(const i32*)` → `Element =
+const i32`; `size() const` → `u64` on x86_64-linux-gnu; `v` converts to
+`Core.Slice(const i32)`, the type a `std::span<const int>` parameter imports as,
+so both `let view: Core.Slice(const i32) = v;` and `Cpp.SumSpan(v)` resolve. (4)
+THREE TOOLCHAIN HARDENINGS the rounds forced: (a)
+`LookupCppMemberWithResultType` returns `{None, None}` for a `void` member and
+`{ErrorInst, ErrorInst}` for an unmappable result type where the
 `CppRangeForIterate` precedent `CARBON_CHECK`s — reached from every
 `ImplicitAs(Slice(...))` conversion of a C++ class, that CHECK was an ICE for
 `class W { void data(); void size(); };` (pinned `fail_void_members`); (b)
@@ -2986,11 +2962,11 @@ over an element outside the bound is an ordinary class import rather than a
 conversion error at the header's `span` declaration (pinned
 `noncopyable_element_is_a_class`); (c) the `Span` arm propagates an
 already-diagnosed element error (`element.type_id == ErrorInst`) instead of the
-plan's `TypeExpr::None`, which would have imported the specialization as a
-class and diagnosed a second time. (5) GOLDENS, eight files (the in-flight
-records said "ten"; `git diff --stat 9e5dd5f75..HEAD` over the two testdata
-trees lists exactly these and no pre-existing mover): check
-interop/cpp/stdlib/span.carbon (`pass_and_return`, `static_extent_is_a_class`,
+plan's `TypeExpr::None`, which would have imported the specialization as a class
+and diagnosed a second time. (5) GOLDENS, eight files (the in-flight records
+said "ten"; `git diff --stat 9e5dd5f75..HEAD` over the two testdata trees lists
+exactly these and no pre-existing mover): check interop/cpp/stdlib/span.carbon
+(`pass_and_return`, `static_extent_is_a_class`,
 `noncopyable_element_is_a_class`), stdlib/fail_span.carbon
 (`fail_static_extent_from_slice`), stdlib/vector_view.carbon (`view`,
 `nonnull_data`), stdlib/fail_vector_view.carbon (`fail_no_size`,
@@ -2999,138 +2975,135 @@ function/export/fail_export_slice.carbon (`fail_no_span_header`),
 impls/cpp_contiguous_range.carbon (`member_data_size`, `missing_size`,
 `non_const_only`, with `//@dump-sem-ir-begin/end` ranges since round 2); lower
 interop/cpp/span.carbon. Every golden mocks `std::span` with the
-pointer-then-size layout (D-SL-14) and the four that name `size_t` or a
-mangled extent pin `--target=x86_64-linux-gnu`. (6) CONFORMANCE: the two
-programs of plan §5.B under the bullet — interop/cpp_span_view.carbon (SKIP →
-PASS; hand-derived `10` = 1+2+3+4 through `std::accumulate` over an explicit
-`FromArray(&a)` view, `6` = `view[2]` of a C++-made `{2, 4, 6}` vector viewed
-as `Core.Slice(const i32)`, `12` = `Cpp.SumSpan(v)` with the vector passed
-DIRECTLY to the `std::span<const int>` parameter — the review's MINOR 7) and
-interop/cpp_span_roundtrip_diff.carbon + .diff.cpp (new; `2 2 18`: a Carbon
-view into C++'s `Tail`, the returned span imported, and a C++-made span
-summed by the EXPORTED Carbon `Sum`; the oracle spells the same three steps
-with pointer+size arithmetic in C++17); both carry `COMPILE-ARGS:
---clang-arg=-std=c++20` (`<span>` is C++20; the embedded Clang defaults to
-gnu++17) and a `static_assert(sizeof(std::span<const int>) == 16)` pinning the
-R-6 layout premise; `runner.py --self-test`: "148 programs parsed, 56 bullets
-in table, OK". (7) DOCS: docs/design/slices.md's Interop section (D-SL-8
-both directions and the `#include <span>` requirement on export, D-SL-2
-explicit views, D-SL-9 with the const-`data()` selection and the per-target
-size story, the deleted-copy-constructor consequence, `-std=c++20`, D-SL-14
-mocks), its "0.1 limits" (W-119, W-120) and Overview status;
-docs/design/interoperability/README.md's "C++ view types such as `std::span`
-... will have corresponding types" TODO replaced by a dated paragraph and a
-`std::span` and `Core.Slice` subsection beside the `std::string_view` one.
-Ten toolchain source files: custom_type_mapping.{h,cpp}, import.cpp,
-type_mapping.cpp, cpp/impl_lookup.cpp, custom_witness.cpp,
-core_identifier.def, core_interface_kind.def, type_info.{h,cpp}.
+pointer-then-size layout (D-SL-14) and the four that name `size_t` or a mangled
+extent pin `--target=x86_64-linux-gnu`. (6) CONFORMANCE: the two programs of
+plan §5.B under the bullet — interop/cpp_span_view.carbon (SKIP → PASS;
+hand-derived `10` = 1+2+3+4 through `std::accumulate` over an explicit
+`FromArray(&a)` view, `6` = `view[2]` of a C++-made `{2, 4, 6}` vector viewed as
+`Core.Slice(const i32)`, `12` = `Cpp.SumSpan(v)` with the vector passed DIRECTLY
+to the `std::span<const int>` parameter — the review's MINOR 7) and
+interop/cpp_span_roundtrip_diff.carbon + .diff.cpp (new; `2 2 18`: a Carbon view
+into C++'s `Tail`, the returned span imported, and a C++-made span summed by the
+EXPORTED Carbon `Sum`; the oracle spells the same three steps with pointer+size
+arithmetic in C++17); both carry `COMPILE-ARGS: --clang-arg=-std=c++20` (`<span>`
+is C++20; the embedded Clang defaults to gnu++17) and a
+`static_assert(sizeof(std::span<const int>) == 16)` pinning the R-6 layout
+premise; `runner.py --self-test`: "148 programs parsed, 56 bullets in table,
+OK". (7) DOCS: docs/design/slices.md's Interop section (D-SL-8 both directions
+and the `#include <span>` requirement on export, D-SL-2 explicit views, D-SL-9
+with the const-`data()` selection and the per-target size story, the
+deleted-copy-constructor consequence, `-std=c++20`, D-SL-14 mocks), its "0.1
+limits" (W-119, W-120) and Overview status;
+docs/design/interoperability/README.md's "C++ view types such as `std::span` ...
+will have corresponding types" TODO replaced by a dated paragraph and a
+`std::span` and `Core.Slice` subsection beside the `std::string_view` one. Ten
+toolchain source files: custom_type_mapping.{h,cpp}, import.cpp,
+type_mapping.cpp, cpp/impl_lookup.cpp, custom_witness.cpp, core_identifier.def,
+core_interface_kind.def, type_info.{h,cpp}.
 
 DECISIONS. D-SL-8 (the dynamic-extent `std::span<T>` ↔ `Core.Slice(T')`
 reinterpretation mapping, static extents excluded), D-SL-9 (the synthesized
 `CppContiguousRange` over member `data()`/`size()`, the blanket `ImplicitAs`
 impl, the two-step size conversion), D-SL-10 (`Slice(T)` → `Slice(const T)`
-implicitly, which is how a `Slice(i32)` argument reaches `std::span<const
-int>`) and D-SL-14 (goldens mock `std::span`; conformance uses the real header
-under `-std=c++20`) are adopted as plan §0.3 wrote them, each with its break
-condition there. The rounds forced seven more, numbered after SL-1's D-SL-20:
-**D-SL-21** — the owning→view impl lives beside `Slice`; the helpers do not.
-The orphan rule (check/impl_validation.cpp `DiagnoseOrphanImpl`) anchors a
-non-final impl on a class, generic class, generic interface or generic named
-constraint reachable from its SELF type or its INTERFACE SPECIFIC in the same
-library — the facet-type bound on the self binding is never visited — and
-impl lookup imports candidates only from the IRs owning the query's self,
-interface and arguments (check/impl_lookup.cpp `FindAssociatedImportIRs`,
+implicitly, which is how a `Slice(i32)` argument reaches `std::span<const int>`)
+and D-SL-14 (goldens mock `std::span`; conformance uses the real header under
+`-std=c++20`) are adopted as plan §0.3 wrote them, each with its break condition
+there. The rounds forced seven more, numbered after SL-1's D-SL-20: **D-SL-21**
+— the owning→view impl lives beside `Slice`; the helpers do not. The orphan rule
+(check/impl_validation.cpp `DiagnoseOrphanImpl`) anchors a non-final impl on a
+class, generic class, generic interface or generic named constraint reachable
+from its SELF type or its INTERFACE SPECIFIC in the same library — the
+facet-type bound on the self binding is never visited — and impl lookup imports
+candidates only from the IRs owning the query's self, interface and arguments
+(check/impl_lookup.cpp `FindAssociatedImportIRs`,
 `CollectCandidateImplsForQuery`), so an impl the orphan rule would reject is
-also one lookup would never find: the two are one invariant. The rule this
-makes for the prelude: a blanket `impl forall [C: SomeConstraint] C as
-I(X(...))` lives in the library of a class in its self type or interface
-arguments (`Slice`'s), never in the constraint's library; a name the impl
-needs but its file cannot import goes behind a local interface in the helper
-library (D-SL-23) rather than moving the impl; and helpers another Core
-library's impl names are public Core names (`CppUnsafeDeref`,
-prelude/operators/deref.carbon, is the precedent — this amends D-SL-9's
-"private helper interface" wording). Break condition: upstream widens
-`DiagnoseOrphanImpl` and `FindAssociatedImportIRs` to the self binding's
-constraint libraries — the section may then consolidate in one file;
-falsifier: `ImplIsOrphan` in any full-prelude golden, or vector_view.carbon's
-`view` split diagnosing `ConversionFailure`. **D-SL-22** — bounds on a
-synthesized witness's associated types are stated on the constraint, not the
-interface. `BuildCustomWitness` (check/custom_witness.cpp) supplies
-associated constants as bare `type`s and TODOs on any other
-associated-constant type, so `CppContiguousRange` declares `let DataType:
-type; let SizeType: type;` and `CppContiguous` carries `require Self.(DataType)
-impls CppDataPointer & Destroy; require Self.(SizeType) impls CppSizeToI64 &
-Destroy;` — the `CppIterator` shape of prelude/iterate.carbon, whose `Inc &
-Destroy` serves `++cursor->0` through the same route
-(`CollectFacetWitnessSources` reads the binding's identified facet type). The
-`Destroy` halves exist because `Convert`'s `self.Data()`/`self.Size()` results
-are temporaries (the first fill's `MissingImplInMemberAccess`). Break
-condition: `BuildCustomWitness` learns bounded associated constants — the
-bounds move onto the interface's `let`s. **D-SL-23** — the size conversion is
-`CppSizeToI64`, two steps behind a local interface. `size_t` imports per
-target: `u64` where it is `uint64_t` (LP64 Linux — `unsigned long` IS
-`uint64_t` there, `MapBuiltinIntegerType` maps it first; LLP64 Windows through
-`unsigned long long`), `Core.CppCompat.ULong64` on Darwin (`unsigned long` is
-not `uint64_t` there), `ULong32`/`u32` on 32-bit `long`; every one of them has
-`ImplicitAs(u64)` (as.carbon:37's identity, cpp/int.carbon:173, :124,
-uint.carbon:70) while `ULong64` has no `As(i64)`, so the constraint is
-`ImplicitAs(u64)` and `u64 as As(i64)` (uint.carbon:97) finishes; `impl forall
-[T: ImplicitAs(u64)] T as CppSizeToI64` is anchored by its local interface and
-keeps `u64` out of slice.carbon, whose header has no `prelude/types/uint`
-import and whose line count the SL-1 lower goldens pin. A signed `size()`
-(`int size() const`, the Qt shape) has no `ImplicitAs(u64)` and forms no view;
-the conversion fails gracefully at the use site. Break condition: `ULong64`
-gains `As(i64)`, or a golden regeneration makes slice.carbon's import line
-count free — then the two steps may inline. **D-SL-24** — an element outside
-`Slice`'s bound makes `std::span<T>` an ordinary class import, decided without
-diagnostics against `Slice`'s own generic binding (so the bound cannot drift
-from the prelude); a C++ `T` whose copy constructor is deleted does NOT fail
-it (`BuildCopyWitness` imports the deleted decl as the `Copy` witness), so
+also one lookup would never find: the two are one invariant. The rule this makes
+for the prelude: a blanket `impl forall [C: SomeConstraint] C as I(X(...))`
+lives in the library of a class in its self type or interface arguments
+(`Slice`'s), never in the constraint's library; a name the impl needs but its
+file cannot import goes behind a local interface in the helper library (D-SL-23)
+rather than moving the impl; and helpers another Core library's impl names are
+public Core names (`CppUnsafeDeref`, prelude/operators/deref.carbon, is the
+precedent — this amends D-SL-9's "private helper interface" wording). Break
+condition: upstream widens `DiagnoseOrphanImpl` and `FindAssociatedImportIRs` to
+the self binding's constraint libraries — the section may then consolidate in
+one file; falsifier: `ImplIsOrphan` in any full-prelude golden, or
+vector_view.carbon's `view` split diagnosing `ConversionFailure`. **D-SL-22** —
+bounds on a synthesized witness's associated types are stated on the constraint,
+not the interface. `BuildCustomWitness` (check/custom_witness.cpp) supplies
+associated constants as bare `type`s and TODOs on any other associated-constant
+type, so `CppContiguousRange` declares `let DataType: type; let SizeType: type;`
+and `CppContiguous` carries `require Self.(DataType) impls CppDataPointer &
+Destroy; require Self.(SizeType) impls CppSizeToI64 & Destroy;` — the
+`CppIterator` shape of prelude/iterate.carbon, whose `Inc & Destroy` serves
+`++cursor->0` through the same route (`CollectFacetWitnessSources` reads the
+binding's identified facet type). The `Destroy` halves exist because `Convert`'s
+`self.Data()`/`self.Size()` results are temporaries (the first fill's
+`MissingImplInMemberAccess`). Break condition: `BuildCustomWitness` learns
+bounded associated constants — the bounds move onto the interface's `let`s.
+**D-SL-23** — the size conversion is `CppSizeToI64`, two steps behind a local
+interface. `size_t` imports per target: `u64` where it is `uint64_t` (LP64 Linux
+— `unsigned long` IS `uint64_t` there, `MapBuiltinIntegerType` maps it first;
+LLP64 Windows through `unsigned long long`), `Core.CppCompat.ULong64` on Darwin
+(`unsigned long` is not `uint64_t` there), `ULong32`/`u32` on 32-bit `long`;
+every one of them has `ImplicitAs(u64)` (as.carbon:37's identity,
+cpp/int.carbon:173, :124, uint.carbon:70) while `ULong64` has no `As(i64)`, so
+the constraint is `ImplicitAs(u64)` and `u64 as As(i64)` (uint.carbon:97)
+finishes; `impl forall [T: ImplicitAs(u64)] T as CppSizeToI64` is anchored by
+its local interface and keeps `u64` out of slice.carbon, whose header has no
+`prelude/types/uint` import and whose line count the SL-1 lower goldens pin. A
+signed `size()` (`int size() const`, the Qt shape) has no `ImplicitAs(u64)` and
+forms no view; the conversion fails gracefully at the use site. Break condition:
+`ULong64` gains `As(i64)`, or a golden regeneration makes slice.carbon's import
+line count free — then the two steps may inline. **D-SL-24** — an element
+outside `Slice`'s bound makes `std::span<T>` an ordinary class import, decided
+without diagnostics against `Slice`'s own generic binding (so the bound cannot
+drift from the prelude); a C++ `T` whose copy constructor is deleted does NOT
+fail it (`BuildCopyWitness` imports the deleted decl as the `Copy` witness), so
 `std::span<std::unique_ptr<int>>` maps to a `Core.Slice(T')` whose element
 copies — `Get`, `s[i]` — fail at the use site, not at the header; recorded in
 slices.md, W-056 and import.cpp. (Finding the `Copy` witness of a C++ element
-may still require a complete type and diagnose that, as any `Copy` lookup
-does; pre-existing.) Break condition: `BuildCopyWitness` declines deleted copy
+may still require a complete type and diagnose that, as any `Copy` lookup does;
+pre-existing.) Break condition: `BuildCopyWitness` declines deleted copy
 constructors — those spans become class imports too and slices.md's sentence
 flips. **D-SL-25** — a nullable `data()` (`Optional(T*)`, the import of a
-pointer without `_Nonnull`) yields the null pointer for `None`
-(`Optional(T*).Get()` is `value unsafe as T*`) and the view has `Size()` 0, so
-the pointer is never dereferenced; a container reporting `data() == nullptr`
-with `size() > 0` is undefined on either side of the boundary and not a
-`Slice` concern. Break condition: `Core.Slice` acquires a non-null `Data()`
-invariant — the `None` arm must then substitute an aligned dangling pointer.
-**D-SL-26** — static extents stay class imports in both directions: `std::span<T,
-N>` fails `DynamicExtent` (`static_extent_is_a_class`: `class_type @span`) and
-no Carbon type exports to it, so a `Core.Slice(i32)` argument to a
-`std::span<int, 3>` parameter is Clang's forwarded "no matching function"
-(`fail_static_extent_from_slice`) — honestly unmapped, W-119; the mocks keep
-`{T*, size_t}` for every extent, immaterial to the goldens' one assertion. Break
-condition: W-119's mechanism (a thunk-side conversion in the
-`std::initializer_list` style, or an `array(T, N)*`-keyed mapping). **D-SL-27**
-— the roundtrip program keeps BOTH its hand-derived `EXPECT-STDOUT` and its
-`.diff.cpp` oracle: the values `2 2 18` are re-derivable by hand (R16(d)) and
-DIFF-MISMATCH is the falsifier for drift in either direction, while the oracle
-spells `std::span`/`subspan` as pointer+size arithmetic because the runner
-compiles oracles with `-std=c++17`, where `<span>` does not exist. Break
-condition: the runner compiles oracles as C++20 — the oracle may then use
-`std::span` itself; the EXPECT lines stay.
+pointer without `_Nonnull`) yields the null pointer for `None` (`Optional(T*).Get()`
+is `value unsafe as T*`) and the view has `Size()` 0, so the pointer is never
+dereferenced; a container reporting `data() == nullptr` with `size() > 0` is
+undefined on either side of the boundary and not a `Slice` concern. Break
+condition: `Core.Slice` acquires a non-null `Data()` invariant — the `None` arm
+must then substitute an aligned dangling pointer. **D-SL-26** — static extents
+stay class imports in both directions: `std::span<T, N>` fails `DynamicExtent`
+(`static_extent_is_a_class`: `class_type @span`) and no Carbon type exports to
+it, so a `Core.Slice(i32)` argument to a `std::span<int, 3>` parameter is
+Clang's forwarded "no matching function" (`fail_static_extent_from_slice`) —
+honestly unmapped, W-119; the mocks keep `{T*, size_t}` for every extent,
+immaterial to the goldens' one assertion. Break condition: W-119's mechanism (a
+thunk-side conversion in the `std::initializer_list` style, or an `array(T,
+N)*`-keyed mapping). **D-SL-27** — the roundtrip program keeps BOTH its
+hand-derived `EXPECT-STDOUT` and its `.diff.cpp` oracle: the values `2 2 18` are
+re-derivable by hand (R16(d)) and DIFF-MISMATCH is the falsifier for drift in
+either direction, while the oracle spells `std::span`/`subspan` as pointer+size
+arithmetic because the runner compiles oracles with `-std=c++17`, where `<span>`
+does not exist. Break condition: the runner compiles oracles as C++20 — the
+oracle may then use `std::span` itself; the EXPECT lines stay.
 
 REVIEWS. One implementation review of the four plan commits (R29(c): hosted
 verification was not green) returned REJECT — 1 BLOCKER, 3 MAJOR, 5 MINOR.
-BLOCKER 1: the blanket `ImplicitAs(Slice(C.Element))` impl was an orphan in
-the new library core/prelude/types/cpp/slice.carbon — `DiagnoseOrphanImpl`'s
-walk anchors on nothing there (self is the bare binding `C`, `ImplicitAs` is
-prelude/operators/as's, `Slice` is prelude/types/slice's; the exact shape of
-the pinned negative impl/orphan.carbon:83-87), so every program including the
-full prelude fails, and independently `FindAssociatedImportIRs` would never
-have imported it for `Cpp.VectorLike as ImplicitAs(Slice(const i32))` even had
-it compiled — the implementer's disclosed deviation from plan §2.B.9 (to keep
-`u64` out of slice.carbon without an import line moving the SL-1 lower
-goldens' DI lines) traded a churn concern for a correctness invariant (R17:
-the justification needed a paragraph). MAJOR 2: `LookupCppMemberWithResultType`'s
-result-type `CARBON_CHECK` was an ICE for `void data(); void size();` and for
-an unmappable result, on a path every `ImplicitAs(Slice(...))` conversion of
-a C++ class reaches. MAJOR 3: `MakeSliceType` converted the element to `Copy &
+BLOCKER 1: the blanket `ImplicitAs(Slice(C.Element))` impl was an orphan in the
+new library core/prelude/types/cpp/slice.carbon — `DiagnoseOrphanImpl`'s walk
+anchors on nothing there (self is the bare binding `C`, `ImplicitAs` is
+prelude/operators/as's, `Slice` is prelude/types/slice's; the exact shape of the
+pinned negative impl/orphan.carbon:83-87), so every program including the full
+prelude fails, and independently `FindAssociatedImportIRs` would never have
+imported it for `Cpp.VectorLike as ImplicitAs(Slice(const i32))` even had it
+compiled — the implementer's disclosed deviation from plan §2.B.9 (to keep `u64`
+out of slice.carbon without an import line moving the SL-1 lower goldens' DI
+lines) traded a churn concern for a correctness invariant (R17: the
+justification needed a paragraph). MAJOR 2: `LookupCppMemberWithResultType`'s
+result-type `CARBON_CHECK` was an ICE for `void data(); void size();` and for an
+unmappable result, on a path every `ImplicitAs(Slice(...))` conversion of a C++
+class reaches. MAJOR 3: `MakeSliceType` converted the element to `Copy &
 Destroy` WITH diagnostics, a header-site error for `std::span<NonCopyable>`
 where the plan and ledger promised the class-import fallback. MAJOR 4: the gap
 row read DONE and the header 29 / 22 / 4 / 1 before any scoreboard said PASS
@@ -3141,270 +3114,273 @@ was claimed in three places and exercised nowhere; MINOR 8: R-9's "no in-tree
 precedent" was stale (impl/lookup/access.carbon:26 is the projection-in-
 interface-argument shape) so the rev B B9 fallback is not needed; MINOR 9:
 fail_vector_view predicted a note the plain `ConversionFailure` path never
-emits. fd9cdd5da (round 1) took the review's own zero-churn fix for the
-BLOCKER (D-SL-21/22/23: helpers public, `CppSizeToI64`, the import-line swap,
-the impl appended beside `Slice`, `require ... & Destroy`), fixed MAJOR 2
-(hardening (a), `fail_void_members`) and MAJOR 3 (hardening (b),
+emits. fd9cdd5da (round 1) took the review's own zero-churn fix for the BLOCKER
+(D-SL-21/22/23: helpers public, `CppSizeToI64`, the import-line swap, the impl
+appended beside `Slice`, `require ... & Destroy`), fixed MAJOR 2 (hardening (a),
+`fail_void_members`) and MAJOR 3 (hardening (b),
 `noncopyable_element_is_a_class`), reworded the gap row to "PASS pending the
 hosted conformance run of record" (MAJOR 4, incompletely — below), and folded
 MINOR 5-9 (`ConsumeStatic` only; `{T*, size_t}` wording and the pins;
-`Core.Print(Cpp.SumSpan(v))` with EXPECT `10 6 12`; the precedent cited and
-the fallback comment dropped; the note prediction dropped). The focused
-re-review of fd9cdd5da returned APPROVE-WITH-FIXES — 2 MAJOR, 3 MINOR. MAJOR
-1: round 1's root-cause story for the unfilled impls/cpp_contiguous_range
-.carbon — `unsigned long` → `Core.CppCompat.ULong64` on "every 64-bit target",
-absent from the primitives min-prelude, hence the result-type CHECK — was
-FALSE and had been written into seven records, inverting the golden's correct
-original "`--target` pins `unsigned long` to `u64`": `MapBuiltinIntegerType`
-maps the target's `uint64_t` first and on x86_64-linux-gnu that is `unsigned
-long` (`X86_64TargetInfo` `Int64Type = SignedLong`; the upstream goldens
+`Core.Print(Cpp.SumSpan(v))` with EXPECT `10 6 12`; the precedent cited and the
+fallback comment dropped; the note prediction dropped). The focused re-review of
+fd9cdd5da returned APPROVE-WITH-FIXES — 2 MAJOR, 3 MINOR. MAJOR 1: round 1's
+root-cause story for the unfilled impls/cpp_contiguous_range .carbon — `unsigned
+long` → `Core.CppCompat.ULong64` on "every 64-bit target", absent from the
+primitives min-prelude, hence the result-type CHECK — was FALSE and had been
+written into seven records, inverting the golden's correct original "`--target`
+pins `unsigned long` to `u64`": `MapBuiltinIntegerType` maps the target's
+`uint64_t` first and on x86_64-linux-gnu that is `unsigned long` (`X86_64TargetInfo`
+`Int64Type = SignedLong`; the upstream goldens
 long_and_long_long.{lp64,darwin,llp64}.carbon pin `u64`/`ULong64`/`ULong32`
 respectively), so the CHECK never ran on the hosted runner and the crash was
-unexplained. MAJOR 2: the row's status cell still read DONE and the header
-still counted 29 / 22 / 4 / 1 (the original MAJOR 4 not addressed). MINOR 3:
+unexplained. MAJOR 2: the row's status cell still read DONE and the header still
+counted 29 / 22 / 4 / 1 (the original MAJOR 4 not addressed). MINOR 3:
 `no_size.h`'s `int* data();` would echo Clang's nullability warning into
 `fail_no_size`; MINOR 4: `SliceElementSatisfiesBound` should read `Slice`'s
 bindings with `GetOrEmpty`; MINOR 5: the deleted-copy-constructor consequence
-was recorded only in the decision log. 58c08be07 (round 2) read the harness
-and explained the silent golden (below), corrected the `size_t` story in all
-seven records to the per-target reading (plan §1.B/§7 R-9/hand-off, the
-round-1 note, W-056, the golden and prelude comments, slices.md), restored
-`unsigned long`/`.SizeType = u64` in the impls golden and gave its three
-`Test()` bodies dump ranges, put the gap row back to PARTIAL and the header to
-28 / 22 / 5 / 1 until the run of record, made `no_size.h`'s `data()`
-`_Nonnull`, switched to `GetOrEmpty`, and recorded the deleted-copy case in
-slices.md, W-056 and import.cpp (D-SL-24). The re-reviewer named the riskiest
-remaining edit "the one nobody made": the only positive golden exercising the
-synthesized witness in isolation had come back empty from a run that could
-not have reached the removed CHECK, and the first in-tree `require Self.(X)
-impls A & B` on a non-Self subject is arbitrated only by a fill. The
-round-4 re-review (438f77b45 on 76c695db4, read against the fill b89020c8a)
-returned APPROVE-WITH-FIXES — HIGH, MEDIUM, LOW — and round 5 folds all
-three. HIGH: vector_view_span.carbon never selected the range constructor —
+was recorded only in the decision log. 58c08be07 (round 2) read the harness and
+explained the silent golden (below), corrected the `size_t` story in all seven
+records to the per-target reading (plan §1.B/§7 R-9/hand-off, the round-1 note,
+W-056, the golden and prelude comments, slices.md), restored `unsigned long`/`.SizeType =
+u64` in the impls golden and gave its three `Test()` bodies dump ranges, put the
+gap row back to PARTIAL and the header to 28 / 22 / 5 / 1 until the run of
+record, made `no_size.h`'s `data()` `_Nonnull`, switched to `GetOrEmpty`, and
+recorded the deleted-copy case in slices.md, W-056 and import.cpp (D-SL-24). The
+re-reviewer named the riskiest remaining edit "the one nobody made": the only
+positive golden exercising the synthesized witness in isolation had come back
+empty from a run that could not have reached the removed CHECK, and the first
+in-tree `require Self.(X) impls A & B` on a non-Self subject is arbitrated only
+by a fill. The round-4 re-review (438f77b45 on 76c695db4, read against the fill
+b89020c8a) returned APPROVE-WITH-FIXES — HIGH, MEDIUM, LOW — and round 5 folds
+all three. HIGH: vector_view_span.carbon never selected the range constructor —
 both splits convert a parameter binding, a Carbon value invented as a C++
 prvalue (`InventPrimitiveClangArg`), which the mock's `R&` cannot bind, so
 `InitializationSequence` failed and the lookup declined before the gate; the
-fill's CHECK lines were the pre-gate output and the golden passes on
-76c695db4 unchanged. Round 5: the mock takes the real header's `R&&`, a
-`var_source` split carries the conformance program's lvalue category, CHECK
-lines cleared. MEDIUM: the gate keyed on the matcher
-(`GetCustomCppTypeMapping`) while the importer applies the `std::span`
-mapping conditionally (`LookupCustomRecordType`: unmappable element, or one
-outside `Slice`'s bound, imports as an ordinary class), so for
-span.carbon's `NoCopySpan` shape — a `ClassDecl` parent, the pre-round-4
-import fine — the gate turned a working conversion into "cannot implicitly
-convert". Round 5: the gate imports the parent type (registering its
+fill's CHECK lines were the pre-gate output and the golden passes on 76c695db4
+unchanged. Round 5: the mock takes the real header's `R&&`, a `var_source` split
+carries the conformance program's lvalue category, CHECK lines cleared. MEDIUM:
+the gate keyed on the matcher (`GetCustomCppTypeMapping`) while the importer
+applies the `std::span` mapping conditionally (`LookupCustomRecordType`:
+unmappable element, or one outside `Slice`'s bound, imports as an ordinary
+class), so for span.carbon's `NoCopySpan` shape — a `ClassDecl` parent, the
+pre-round-4 import fine — the gate turned a working conversion into "cannot
+implicitly convert". Round 5: the gate imports the parent type (registering its
 `ClangDeclKey` either way) and declines iff the registered inst is not a
 `ClassDecl` (`LookupClangDeclInstId`, declared in import.h); new split
 `noncopyable_element_class_constructor` (`VecLike<Carbon::NoCopy>` →
-`Cpp.NoCopySpan`, predicted to import and call the constructor). LOW: the
-"no Carbon declaration owns such a member" wording narrowed, above. The
-re-reviewer named the riskiest edit the gate itself — the only change that
-meets the real `<span>` header, and until round 5 exercised only by the
-hosted conformance run.
+`Cpp.NoCopySpan`, predicted to import and call the constructor). LOW: the "no
+Carbon declaration owns such a member" wording narrowed, above. The re-reviewer
+named the riskiest edit the gate itself — the only change that meets the real
+`<span>` header, and until round 5 exercised only by the hosted conformance run.
 
 FILL-CAUGHT MISSES — review misses per R28(d), one per hosted round. Round 1
 (run 37356848697, fill 0790c7428 and its convergence pass 2c21f6e24; fix
 fd9cdd5da): 306 files moved for eight new goldens — core/prelude/types/cpp
 /slice.carbon failed to type-check (`ImplIsOrphan` at its :64, two
 `MissingImplInMemberAccess` for `Destroy` at :68/:69) and every golden that
-includes the full prelude carried the three errors in place of its SemIR.
-The orphan placement was DECIDABLE FROM THE TREE: `DiagnoseOrphanImpl`'s walk
-is thirty lines, impl/orphan.carbon:83-87 pins the identical shape, and
-`FindAssociatedImportIRs` states the reachability half — it was caught twice,
-by the hosted fill and by the implementation review running concurrently
-(R29(d) pipelining), and is a review miss of the plan-review class: the
-deviation from §2.B.9 was disclosed in one sentence of the W-056 notes and
-neither reviewer of record ran the orphan walk over it, because §2.B.9 stated
-a placement without stating the placement RULE (now D-SL-21 and a hand-off
-lesson). The `Destroy` requirement on the temporaries (D-SL-22) was decidable
-too — `BuildCustomWitness`'s TODO is in the tree — and the plan's §1.B.3
-sketch, which bounded nothing, was reviewed twice without it. Round 2 (run
-37362980320, fill 18e2165c1, and its convergence pass 37365683022, 0c9924049;
-fix 58c08be07): the fill matched every prediction — exactly the seven goldens
-that produce output filled, no pre-existing golden moved (§6.B's hedge that
-the check/lower slice goldens might renumber under the wider `ImplicitAs`
-import footprint did NOT fire: the impl's type structure `? as
-ImplicitAs(Slice(?))` is never a candidate for their queries), vector_view's
-`view` split shows `custom_witness (%Optional.f0c, %u64, %VectorLike.Data,
-%VectorLike.Size), @CppContiguousRange` with the `ImplicitAs(u64)` step
-resolving to uint.carbon's `UInt(From) as ImplicitAs(To)` over `FromUInt(u64)`,
-`noncopyable_element_is_a_class` shows `class_type @span`, the four `fail_`
-splits carry the predicted diagnostics and no nullability warning, and the
-convergence pass renumbered two Clang-echoed source lines in `CHECK:STDERR`
-(fail_export_slice :19 → :27, fail_span :12 → :20 — R26's shape: the
-inserted CHECK lines shift the source below them). The one miss of this round
-was a READING error, not a defect: impls/cpp_contiguous_range.carbon came
-back without CHECK lines from both fills, round 1 called it a crash and
-attributed it to the `ULong64` chain, and the attribution was false (the
-re-review's MAJOR 1). Root cause, read from the harness at round 2: the check
-component runs `--dump-sem-ir-ranges=only` (toolchain/testing/file_test.cpp
-`GetDefaultArgs`), the golden had no `//@dump-sem-ir-begin` range and none of
-its three splits produced a diagnostic, so stdout and stderr were empty and
-`FileTestAutoupdater` had nothing to write — a clean PASS of
-`AssertIsContiguous(Cpp.V)` and of `let _: ... .SizeType = u64 = Cpp.V` with
-`unsigned long size()`, which is POSITIVE evidence for `u64`; both runs ran
-1898 tests (1896 `.carbon` + 2 driver `.cpp`) with no `<test>: <error>` line
-and no `Stack dump:`, and the precedent cpp_range_for_iterate.carbon's
-positive splits are empty the same way. Lesson, in the hand-off notes: read
-"no CHECK lines" with the harness in hand — a crash shows as `Stack dump:`
-or `CHECK failure` and an abort before "Ran N tests", never as a quiet `.` —
-and give every positive split whose evidence must be visible a dump range.
-The round-1 code change the false story motivated (hardening (a)) stands on
-its own as a real ICE fix for `void` members. Round 3 (run 37367343836 on
-58c08be07, CANCELLED; fix in the round-3 commit): the fill that first dumped
-impls/cpp_contiguous_range.carbon's three `Test()` bodies HUNG in the
-file_test step — 32+ minutes where every earlier fill took ~12 min to build
-and ~40 s for all 1898 tests, no `Stack dump:`, no `<test>: <error>` — and
-was cancelled before the job log could show which test. The miss is of a new
-class: a dump range on a shape no filled golden dumps is itself a fill risk.
-Decidable from the tree only in part: the formatter and inst namer run only
-when a range exists (check.cpp `MaybeDumpFormattedSemIR`), the other deltas
-since the clean fill (`unsigned long`, `_Nonnull`, `GetOrEmpty`) cannot loop,
-and the same witness dumps cleanly in vector_view.carbon's `view` split, so
-the first-dumped shapes are the `let` facet value typed `CppContiguousRange
-where .DataType = … and .SizeType = …` over a synthesized witness and the
-`final impl forall [T: CppContiguousRange]` specific whose argument is that
-facet value; the one unbounded walk on the naming path, the fingerprint
-worklist in sem_ir/inst_fingerprinter.cpp `Run`, has no cycle guard — but no
-cycle was found by reading, so no toolchain change is made and the plan's
-testdata fallback applies: ONE range, on `missing_size` (no witness is built
-there), the positives passing silently as before, W-121 filed with the run
-id. Predicted fill (37373875153 (fill 1d0c65f09)): impls/cpp_contiguous_range.carbon only, the
-`missing_size` range showing the blanket `impl_witness` with `.Result =
-false`; everything else byte-identical; if it hangs again the cycle is in the
-test library's import, not the witness. Round 4 (hosted conformance run
-37378790657 on 76c695db4, the first of-record conformance run, FAILED both
-new programs; fix in the round-4 commit): neither failure is in the mapping
-the reviews traced — both the review and the re-review traced the span ABI
-claim and it holds (the thunk's `span* _Nonnull` parameter and out-pointer
-return, the `{ptr, i64}` register return stored field-wise into the Carbon
-slot). (a) cpp_span_view: ICE `Casting inst {kind: ClassType, …} to wrong
-kind ClassDecl` at `let view: Core.Slice(const i32) = v;`. With `<span>` in
-the TU, the `ImplicitAs` operator lookup's C++ half (operators.cpp
+includes the full prelude carried the three errors in place of its SemIR. The
+orphan placement was DECIDABLE FROM THE TREE: `DiagnoseOrphanImpl`'s walk is
+thirty lines, impl/orphan.carbon:83-87 pins the identical shape, and
+`FindAssociatedImportIRs` states the reachability half — it was caught twice, by
+the hosted fill and by the implementation review running concurrently (R29(d)
+pipelining), and is a review miss of the plan-review class: the deviation from
+§2.B.9 was disclosed in one sentence of the W-056 notes and neither reviewer of
+record ran the orphan walk over it, because §2.B.9 stated a placement without
+stating the placement RULE (now D-SL-21 and a hand-off lesson). The `Destroy`
+requirement on the temporaries (D-SL-22) was decidable too —
+`BuildCustomWitness`'s TODO is in the tree — and the plan's §1.B.3 sketch, which
+bounded nothing, was reviewed twice without it. Round 2 (run 37362980320, fill
+18e2165c1, and its convergence pass 37365683022, 0c9924049; fix 58c08be07): the
+fill matched every prediction — exactly the seven goldens that produce output
+filled, no pre-existing golden moved (§6.B's hedge that the check/lower slice
+goldens might renumber under the wider `ImplicitAs` import footprint did NOT
+fire: the impl's type structure `? as ImplicitAs(Slice(?))` is never a candidate
+for their queries), vector_view's `view` split shows `custom_witness
+(%Optional.f0c, %u64, %VectorLike.Data, %VectorLike.Size), @CppContiguousRange`
+with the `ImplicitAs(u64)` step resolving to uint.carbon's `UInt(From) as
+ImplicitAs(To)` over `FromUInt(u64)`, `noncopyable_element_is_a_class` shows
+`class_type @span`, the four `fail_` splits carry the predicted diagnostics and
+no nullability warning, and the convergence pass renumbered two Clang-echoed
+source lines in `CHECK:STDERR` (fail_export_slice :19 → :27, fail_span :12 → :20
+— R26's shape: the inserted CHECK lines shift the source below them). The one
+miss of this round was a READING error, not a defect:
+impls/cpp_contiguous_range.carbon came back without CHECK lines from both fills,
+round 1 called it a crash and attributed it to the `ULong64` chain, and the
+attribution was false (the re-review's MAJOR 1). Root cause, read from the
+harness at round 2: the check component runs `--dump-sem-ir-ranges=only`
+(toolchain/testing/file_test.cpp `GetDefaultArgs`), the golden had no
+`//@dump-sem-ir-begin` range and none of its three splits produced a diagnostic,
+so stdout and stderr were empty and `FileTestAutoupdater` had nothing to write —
+a clean PASS of `AssertIsContiguous(Cpp.V)` and of `let _: ... .SizeType = u64 =
+Cpp.V` with `unsigned long size()`, which is POSITIVE evidence for `u64`; both
+runs ran 1898 tests (1896 `.carbon` + 2 driver `.cpp`) with no `<test>: <error>`
+line and no `Stack dump:`, and the precedent cpp_range_for_iterate.carbon's
+positive splits are empty the same way. Lesson, in the hand-off notes: read "no
+CHECK lines" with the harness in hand — a crash shows as `Stack dump:` or `CHECK
+failure` and an abort before "Ran N tests", never as a quiet `.` — and give
+every positive split whose evidence must be visible a dump range. The round-1
+code change the false story motivated (hardening (a)) stands on its own as a
+real ICE fix for `void` members. Round 3 (run 37367343836 on 58c08be07,
+CANCELLED; fix in the round-3 commit): the fill that first dumped
+impls/cpp_contiguous_range.carbon's three `Test()` bodies HUNG in the file_test
+step — 32+ minutes where every earlier fill took ~12 min to build and ~40 s for
+all 1898 tests, no `Stack dump:`, no `<test>: <error>` — and was cancelled
+before the job log could show which test. The miss is of a new class: a dump
+range on a shape no filled golden dumps is itself a fill risk. Decidable from
+the tree only in part: the formatter and inst namer run only when a range exists
+(check.cpp `MaybeDumpFormattedSemIR`), the other deltas since the clean fill (`unsigned
+long`, `_Nonnull`, `GetOrEmpty`) cannot loop, and the same witness dumps cleanly
+in vector_view.carbon's `view` split, so the first-dumped shapes are the `let`
+facet value typed `CppContiguousRange where .DataType = … and .SizeType = …`
+over a synthesized witness and the `final impl forall [T: CppContiguousRange]`
+specific whose argument is that facet value; the one unbounded walk on the
+naming path, the fingerprint worklist in sem_ir/inst_fingerprinter.cpp `Run`,
+has no cycle guard — but no cycle was found by reading, so no toolchain change
+is made and the plan's testdata fallback applies: ONE range, on `missing_size`
+(no witness is built there), the positives passing silently as before, W-121
+filed with the run id. Predicted fill (37373875153 (fill 1d0c65f09)):
+impls/cpp_contiguous_range.carbon only, the `missing_size` range showing the
+blanket `impl_witness` with `.Result = false`; everything else byte-identical;
+if it hangs again the cycle is in the test library's import, not the witness.
+Round 4 (hosted conformance run 37378790657 on 76c695db4, the first of-record
+conformance run, FAILED both new programs; fix in the round-4 commit): neither
+failure is in the mapping the reviews traced — both the review and the re-review
+traced the span ABI claim and it holds (the thunk's `span* _Nonnull` parameter
+and out-pointer return, the `{ptr, i64}` register return stored field-wise into
+the Carbon slot). (a) cpp_span_view: ICE `Casting inst {kind: ClassType, …} to
+wrong kind ClassDecl` at `let view: Core.Slice(const i32) = v;`. With `<span>`
+in the TU, the `ImplicitAs` operator lookup's C++ half (operators.cpp
 `LookupCppConversion`) maps the destination to `std::span<const int>`, Clang
 selects `span`'s range constructor for the `std::vector<int>` source, and
 import.cpp `GetFunctionName` casts the constructor's parent inst — the mapped
 `Core.Slice(const i32)` `ClassType` — to `ClassDecl`. Decidable from the tree
 (`BuildUnaryOperator`'s `LookupCppOperator` call, the cast, and `std::span`'s
 range constructor are all readable) and a review miss of the fixture class:
-every golden mocks the container in a header WITHOUT `std::span`, so the C++
-map was null and Clang never ran; §7's R-11 named `<span>` under `-std=c++20`
-as 37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit)-arbitrated without naming the conversion-lookup interaction.
-Fix: `LookupCppConversion` declines constructors of a class whose
-`ClangDecl` inst is the mapped Carbon type rather than a `ClassDecl` (round
-5 narrowed this from "custom-mapped classes", the matcher; the conversion is
-the prelude's by design, D-SL-9) and falls through to the blanket impl;
-stdlib/vector_view_span.carbon (the mock `span` WITH the range constructor,
-a `VecLike<T>` template through `VecLikeInt`, splits `view` and `argument`)
-pins it. (b) cpp_span_roundtrip_diff: `2 / -724362768 / 18`. The size
-crossed and the element did not, which pointed at the pointer field; it was
-not the pointer. Every link of the span path is correct in the lowered IR
-(span.carbon's `Convert`/`Data`/`UnsafeMake` bodies, `Consume`'s 16-byte
-load, `Produce`'s field-wise store into the return slot), and the exported
-`Sum` reads `s[i]` through the identical `Slice(const i32).Get` specific;
-what is garbage is `a[1]`. `var a: array(i32, 3) = (RuntimeSeed(-19), 2, 3)`
-is the only mixed constant/runtime tuple-to-array initializer in the suite
-and in every golden, and lower/handle.cpp `HandleInst(ArrayInit)` only
+every golden mocks the container in a header WITHOUT `std::span`, so the C++ map
+was null and Clang never ran; §7's R-11 named `<span>` under `-std=c++20` as
+37390640614 (on affa54e8a, which the final head differs from only by the
+scoreboard commit 2a17f0239 and the CHECK-only convergence commit)-arbitrated
+without naming the conversion-lookup interaction. Fix: `LookupCppConversion`
+declines constructors of a class whose `ClangDecl` inst is the mapped Carbon
+type rather than a `ClassDecl` (round 5 narrowed this from "custom-mapped
+classes", the matcher; the conversion is the prelude's by design, D-SL-9) and
+falls through to the blanket impl; stdlib/vector_view_span.carbon (the mock
+`span` WITH the range constructor, a `VecLike<T>` template through `VecLikeInt`,
+splits `view` and `argument`) pins it. (b) cpp_span_roundtrip_diff: `2 /
+-724362768 / 18`. The size crossed and the element did not, which pointed at the
+pointer field; it was not the pointer. Every link of the span path is correct in
+the lowered IR (span.carbon's `Convert`/`Data`/`UnsafeMake` bodies, `Consume`'s
+16-byte load, `Produce`'s field-wise store into the return slot), and the
+exported `Sum` reads `s[i]` through the identical `Slice(const i32).Get`
+specific; what is garbage is `a[1]`. `var a: array(i32, 3) = (RuntimeSeed(-19),
+2, 3)` is the only mixed constant/runtime tuple-to-array initializer in the
+suite and in every golden, and lower/handle.cpp `HandleInst(ArrayInit)` only
 forwarded its destination: `LowerInst` skips the constant elements'
 `in_place_init`s (they have constant values), the non-constant `array_init`
-makes the `var`'s `Assign` copy nothing, so `a[1]` and `a[2]` were never
-stored and `t[0]` read a stale stack word (`0xD4D22C70`). An upstream latent
-defect, exposed by the program's `RuntimeSeed` (kept):
-`EmitAggregateInitializer`'s `InPlace` arm finishes constant fields for
-struct/tuple/class inits and says so in its comment; arrays lacked the twin.
-Fix: `HandleInst(ArrayInit)` finishes constant element inits the same way;
-array/mixed_constant_init.carbon pins the two constant stores; no existing
-golden moves (an all-constant `array_init` is a constant and never reaches
-the handler). The review miss here is of the plan class: §5.B.2's
-hand-derived expectation treated `a` as given, and no reviewer asked which
-lowering path initializes a mixed literal. Predicted fill (37373875153 (fill 1d0c65f09),
-re-predicted): impls/cpp_contiguous_range.carbon's one range plus the two
-new goldens (vector_view_span.carbon's two dump ranges,
-mixed_constant_init.carbon's one function); everything else byte-identical.
-Predicted conformance (37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit)): both programs PASS, EXPECTs unchanged.
+makes the `var`'s `Assign` copy nothing, so `a[1]` and `a[2]` were never stored
+and `t[0]` read a stale stack word (`0xD4D22C70`). An upstream latent defect,
+exposed by the program's `RuntimeSeed` (kept): `EmitAggregateInitializer`'s
+`InPlace` arm finishes constant fields for struct/tuple/class inits and says so
+in its comment; arrays lacked the twin. Fix: `HandleInst(ArrayInit)` finishes
+constant element inits the same way; array/mixed_constant_init.carbon pins the
+two constant stores; no existing golden moves (an all-constant `array_init` is a
+constant and never reaches the handler). The review miss here is of the plan
+class: §5.B.2's hand-derived expectation treated `a` as given, and no reviewer
+asked which lowering path initializes a mixed literal. Predicted fill
+(37373875153 (fill 1d0c65f09), re-predicted):
+impls/cpp_contiguous_range.carbon's one range plus the two new goldens
+(vector_view_span.carbon's two dump ranges, mixed_constant_init.carbon's one
+function); everything else byte-identical. Predicted conformance (37390640614
+(on affa54e8a, which the final head differs from only by the scoreboard commit
+2a17f0239 and the CHECK-only convergence commit)): both programs PASS, EXPECTs
+unchanged.
 
 DEVIATIONS from the plan, each in fork/slices/plan.md's "Landed notes (SL-2,
-2026-10-05)": the prelude section was first landed in a new library and
-moved back beside `Slice` at round 1 — the landed layout keeps the helpers in
+2026-10-05)": the prelude section was first landed in a new library and moved
+back beside `Slice` at round 1 — the landed layout keeps the helpers in
 core/prelude/types/cpp/slice.carbon as PUBLIC names (the §1.B.3 sketch said
 `private`) with the new `CppSizeToI64` interface, and the constraint reads
-`require Self.(DataType) impls CppDataPointer & Destroy; require
-Self.(SizeType) impls CppSizeToI64 & Destroy;` where the sketch had
-`CppDataPointer` and `ImplicitAs(u64)` unbounded by `Destroy`; the `Span`
-import arm tests the element bound without diagnosing (`SliceElementSatisfiesBound`,
-not in the plan) and propagates an already-diagnosed element error instead of
-`TypeExpr::None`; `LookupCppMemberWithResultType` declines on `void`; the
-static-extent golden names `std::span<int, 3>` through a header alias
-`IntSpan3` (the class/import/template.carbon `using Ai32 = A<int>` spelling)
-rather than `Cpp.std.span(i32, 3)`, since no golden instantiates a C++ class
-template with a non-type argument from Carbon; the impls golden's mock
-`data()` members return `_Nonnull` pointers (the primitives min-prelude has
-no `Optional`) and carry one dump range, on `missing_size` (round 3; W-121);
-span.carbon gains
+`require Self.(DataType) impls CppDataPointer & Destroy; require Self.(SizeType)
+impls CppSizeToI64 & Destroy;` where the sketch had `CppDataPointer` and
+`ImplicitAs(u64)` unbounded by `Destroy`; the `Span` import arm tests the
+element bound without diagnosing (`SliceElementSatisfiesBound`, not in the plan)
+and propagates an already-diagnosed element error instead of `TypeExpr::None`;
+`LookupCppMemberWithResultType` declines on `void`; the static-extent golden
+names `std::span<int, 3>` through a header alias `IntSpan3` (the
+class/import/template.carbon `using Ai32 = A<int>` spelling) rather than
+`Cpp.std.span(i32, 3)`, since no golden instantiates a C++ class template with a
+non-type argument from Carbon; the impls golden's mock `data()` members return
+`_Nonnull` pointers (the primitives min-prelude has no `Optional`) and carry one
+dump range, on `missing_size` (round 3; W-121); span.carbon gains
 `noncopyable_element_is_a_class`, fail_vector_view.carbon gains
 `fail_void_members`, vector_view.carbon has `view` and `nonnull_data`;
 `cpp_span_view` prints THREE values (`10 6 12`), not §5.B's two, and both
-programs carry a `static_assert` on `sizeof(std::span<const int>)`; eight
-golden files, not the "ten" the in-flight records counted; the §W9 paragraph
-of the gap analysis is corrected rather than merely stamped.
+programs carry a `static_assert` on `sizeof(std::span<const int>)`; eight golden
+files, not the "ten" the in-flight records counted; the §W9 paragraph of the gap
+analysis is corrected rather than merely stamped.
 
-VERIFICATION is hosted-only (the container's clang cannot build the
-toolchain; R28(b)). First autoupdate: run 37356848697, fill 0790c7428 (306
-files: the broken prelude) and its convergence pass 2c21f6e24 (40 files,
-`.loc`-only). Second autoupdate (after fd9cdd5da): run 37362980320, fill
-18e2165c1 (the seven output-producing goldens, no pre-existing mover) and the
-convergence run 37365683022, 0c9924049 (two `CHECK:STDERR` line numbers).
-Third autoupdate (after 58c08be07): run 37367343836 HUNG in the file_test
-step and was cancelled (W-121). Fourth autoupdate (after the round-3 commit):
-run 37373875153, fill 1d0c65f09 (also renumbered prelude `.loc`s in
-stdlib/vector_view.carbon; impls/cpp_contiguous_range.carbon's one dump range, plus the
-round-4 goldens stdlib/vector_view_span.carbon and
-array/mixed_constant_init.carbon; the round-4 fill b89020c8a filled
-vector_view_span.carbon without reaching the gate, so the round-4 fill was run
-37385761799, its conformance 37387226286 pushed 85f1c03f1 at 128 / 0 / 22
-over 150, and the round-5 fill, run 37389055212 (affa54e8a), rewrote that
-file's four ranges and nothing else, as predicted). Gate: run 37395916761 (on 556a8669d; the first gate, 37390683098, failed only on the round-5 fill's own `.loc` renumbering inside vector_view_span.carbon, the two-pass convergence of R26, and convergence run 37394549957 pushed 556a8669d, 130 `.loc` lines and nothing else) (prek, `bazel test //toolchain/...`;
-no new diagnostic kind, so the coverage test is unchanged). Conformance: the
-first of-record run, 37378790657 on 76c695db4 (the trunk merge), FAILED both
-new programs — cpp_span_view COMPILE-FAIL (exit -6, the `ClassDecl` cast
-ICE) and cpp_span_roundtrip_diff OUTPUT-MISMATCH (`2 / -724362768 / 18`) —
-with every landed program unmoved: 126 PASS / 2 FAIL / 22 SKIP over 150
-programs, bullets 47 PASS / 1 FAIL / 8 SKIP — trunk's 126 / 0 / 23 over 149
-plus the two new programs failing; see FILL-CAUGHT MISSES round 4. After the
-round-4 commit the of-record run must show 128 PASS / 0 FAIL / 22 SKIP over
-150, 48/56 bullets (the same +2 / −1 / +1 delta over the merged trunk base):
-run 37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit), **128 PASS / 0 FAIL / 22 SKIP over 150 programs, 48/56 bullets** — pre-merge expectation 126 PASS / 0 FAIL / 22 SKIP over 148
-programs, 48/56 bullets ("Stdlib C++ interop: transparent non-owning
-contiguous container mapping (incl. owning->view)" SKIP → PASS, 2/2 programs),
-from the branch base READ FROM fork/conformance/out/scoreboard.json at
-9e5dd5f75 (last written by e76b8052f, generated 2026-10-05T17:37:12Z: 124
+VERIFICATION is hosted-only (the container's clang cannot build the toolchain;
+R28(b)). First autoupdate: run 37356848697, fill 0790c7428 (306 files: the
+broken prelude) and its convergence pass 2c21f6e24 (40 files, `.loc`-only).
+Second autoupdate (after fd9cdd5da): run 37362980320, fill 18e2165c1 (the seven
+output-producing goldens, no pre-existing mover) and the convergence run
+37365683022, 0c9924049 (two `CHECK:STDERR` line numbers). Third autoupdate
+(after 58c08be07): run 37367343836 HUNG in the file_test step and was cancelled
+(W-121). Fourth autoupdate (after the round-3 commit): run 37373875153, fill
+1d0c65f09 (also renumbered prelude `.loc`s in stdlib/vector_view.carbon;
+impls/cpp_contiguous_range.carbon's one dump range, plus the round-4 goldens
+stdlib/vector_view_span.carbon and array/mixed_constant_init.carbon; the round-4
+fill b89020c8a filled vector_view_span.carbon without reaching the gate, so the
+round-4 fill was run 37385761799, its conformance 37387226286 pushed 85f1c03f1
+at 128 / 0 / 22 over 150, and the round-5 fill, run 37389055212 (affa54e8a),
+rewrote that file's four ranges and nothing else, as predicted). Gate: run
+37395916761 (on 556a8669d; the first gate, 37390683098, failed only on the
+round-5 fill's own `.loc` renumbering inside vector_view_span.carbon, the
+two-pass convergence of R26, and convergence run 37394549957 pushed 556a8669d,
+130 `.loc` lines and nothing else) (prek, `bazel test //toolchain/...`; no new
+diagnostic kind, so the coverage test is unchanged). Conformance: the first
+of-record run, 37378790657 on 76c695db4 (the trunk merge), FAILED both new
+programs — cpp_span_view COMPILE-FAIL (exit -6, the `ClassDecl` cast ICE) and
+cpp_span_roundtrip_diff OUTPUT-MISMATCH (`2 / -724362768 / 18`) — with every
+landed program unmoved: 126 PASS / 2 FAIL / 22 SKIP over 150 programs, bullets
+47 PASS / 1 FAIL / 8 SKIP — trunk's 126 / 0 / 23 over 149 plus the two new
+programs failing; see FILL-CAUGHT MISSES round 4. After the round-4 commit the
+of-record run must show 128 PASS / 0 FAIL / 22 SKIP over 150, 48/56 bullets (the
+same +2 / −1 / +1 delta over the merged trunk base): run 37390640614 (on
+affa54e8a, which the final head differs from only by the scoreboard commit
+2a17f0239 and the CHECK-only convergence commit), **128 PASS / 0 FAIL / 22 SKIP
+over 150 programs, 48/56 bullets** — pre-merge expectation 126 PASS / 0 FAIL /
+22 SKIP over 148 programs, 48/56 bullets ("Stdlib C++ interop: transparent
+non-owning contiguous container mapping (incl. owning->view)" SKIP → PASS, 2/2
+programs), from the branch base READ FROM fork/conformance/out/scoreboard.json
+at 9e5dd5f75 (last written by e76b8052f, generated 2026-10-05T17:37:12Z: 124
 PASS / 0 FAIL / 23 SKIP over 147 programs, 47/56); delta PASS +2 / SKIP −1 /
-total +1 as plan §5.B predicted, the D-SL-9 fallback (+1 / 0 / +1, PARTIAL)
-not taken; zero landed programs move (no landed program includes `<span>` or
-names `Slice`). Trunk meanwhile carries OV-3's 126 / 0 / 23 over 149 (47/56),
-so the of-record numbers on the trunk merge are the same delta over that
-base.
+total +1 as plan §5.B predicted, the D-SL-9 fallback (+1 / 0 / +1, PARTIAL) not
+taken; zero landed programs move (no landed program includes `<span>` or names
+`Slice`). Trunk meanwhile carries OV-3's 126 / 0 / 23 over 149 (47/56), so the
+of-record numbers on the trunk merge are the same delta over that base.
 
-RESIDUE, filed with blocked_by [] (ids: trunk's OV-3 discharge took
-W-117/W-118, as the ledger's `source` sentence assumed and the trunk checkout
-923c2f2af confirms, so W-119/W-120 stand): W-119 static-extent `std::span<T,
-N>` mapping — `std::span<T, 3>` imports as an ordinary class and no Carbon
-type exports to it (D-SL-8, D-SL-26; mechanism: a thunk-side conversion in the
+RESIDUE, filed with blocked_by [] (ids: trunk's OV-3 discharge took W-117/W-118,
+as the ledger's `source` sentence assumed and the trunk checkout 923c2f2af
+confirms, so W-119/W-120 stand): W-119 static-extent `std::span<T, N>` mapping —
+`std::span<T, 3>` imports as an ordinary class and no Carbon type exports to it
+(D-SL-8, D-SL-26; mechanism: a thunk-side conversion in the
 `std::initializer_list` style, or an `array(T, N)*`-keyed mapping); W-120 ADL
-`data`/`size` sources for `Core.CppContiguousRange` — a class whose
-contiguous access comes only from free `data(x)`/`size(x)` functions or a base
-class member lookup does not see gets no view (§1.B.3; the one-function
+`data`/`size` sources for `Core.CppContiguousRange` — a class whose contiguous
+access comes only from free `data(x)`/`size(x)` functions or a base class member
+lookup does not see gets no view (§1.B.3; the one-function
 `LookupCppUnqualified` second stage `BuildCppRangeForIterateWitness` already
 has), with the non-const-`size()`-beside-two-`data()` and the signed-`size()`
-shapes noted there. Not filed: "owning C++ container to Core.Slice view" —
-§8.5 files it only if the D-SL-9 fallback fires, and it did not (the chain
-resolved at the second fill; 37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit) is its arbiter at runtime); "array-value
-to slice conversion" (D-SL-2, SL-1's rule stands). Disclosed, not filed,
-because the mechanism it would file against is `BuildCopyWitness`'s
-pre-existing policy and not SL-2's: a `std::span<T>` over a C++ `T` with a
-deleted copy constructor maps to a `Core.Slice` whose element copies fail at
-the use site (D-SL-24; slices.md Interop, W-056 notes, import.cpp:1271-1280).
+shapes noted there. Not filed: "owning C++ container to Core.Slice view" — §8.5
+files it only if the D-SL-9 fallback fires, and it did not (the chain resolved
+at the second fill; 37390640614 (on affa54e8a, which the final head differs from
+only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit)
+is its arbiter at runtime); "array-value to slice conversion" (D-SL-2, SL-1's
+rule stands). Disclosed, not filed, because the mechanism it would file against
+is `BuildCopyWitness`'s pre-existing policy and not SL-2's: a `std::span<T>`
+over a C++ `T` with a deleted copy constructor maps to a `Core.Slice` whose
+element copies fail at the use site (D-SL-24; slices.md Interop, W-056 notes,
+import.cpp:1271-1280).
 
 PLAN §0.2 CORRECTIONS carried into the ledger (items 2, 7, 9 per §8.5): W-056's
 original evidence named only the IMPORT half of the mapping — the export half
@@ -3435,10 +3411,10 @@ import declines deleted copy constructors, D-SL-24's sentence flips. Veto-able.
 ### SL-2 round-1 note: the prelude interop impl was an orphan (2026-10-05)
 
 The first hosted autoupdate of SL-2 (run 37356848697, fill 0790c7428 on
-12a2143d2) moved 306 files for ten predicted: core/prelude/types/cpp/slice.carbon
-failed to type-check and every program including the full prelude carried its
-three errors. Root causes, read from the tree (fork/slices/plan.md §2.B.9/R-9
-amendments; W-056 notes):
+12a2143d2) moved 306 files for ten predicted:
+core/prelude/types/cpp/slice.carbon failed to type-check and every program
+including the full prelude carried its three errors. Root causes, read from the
+tree (fork/slices/plan.md §2.B.9/R-9 amendments; W-056 notes):
 
 -   **`ImplIsOrphan` at cpp/slice.carbon:64** — the blanket `impl forall [C:
     CppContiguous where .Element impls Copy & Destroy] C as
@@ -3540,23 +3516,24 @@ copies fail at the use site) recorded in slices.md, W-056 and import.cpp.
 
 ### OV-3: overload-set export, documented divergence (2026-10-05)
 
-Milestone bullet "Functions: function overloading (Carbon-native)" flips
-PARTIAL → **DONE** (fork/gap-analysis.md row 58; header 28 / 22 / 5 / 1 →
-29 DONE / 21 PARTIAL / 5 MISSING / 1 DESIGN-ONLY over 56 as merged after
-SL-1 — the row 44 DONE-with-gated-residue precedent, every gate a filed
-item). Landed on
-claude/carbon-fork-0-1-ov3, cut from trunk ae157438d (OV-2 and UN-2 merged,
-so D-OV-9's sequencing was met without a rebase), in 13aa792bc (the
+Milestone bullet "Functions: function overloading (Carbon-native)" flips PARTIAL
+→ **DONE** (fork/gap-analysis.md row 58; header 28 / 22 / 5 / 1 → 29 DONE / 21
+PARTIAL / 5 MISSING / 1 DESIGN-ONLY over 56 as merged after SL-1 — the row 44
+DONE-with-gated-residue precedent, every gate a filed item). Landed on
+claude/carbon-fork-0-1-ov3, cut from trunk ae157438d (OV-2 and UN-2 merged, so
+D-OV-9's sequencing was met without a rebase), in 13aa792bc (the
 generate_ast.cpp export arm, goldens, conformance programs, ledger) and
 4033adc75 (docs: the interop README overload-resolution section, the design
-README placeholder, the W-007 note), with the hosted fill 88b863220 between
-them and 3a7bc00d3 (implementation-review fixes) after; the refill of the
-fixer's cleared and new subfiles is the fill of record (37346182494 (refill after the review fixes), 37353176048 on the trunk merge (SL-1 in; one id line in the AST dump moved, which exposed an unnormalized Clang id at end of line — fixed in the file_test autoupdater) and 37355767908 (converged)). The plan's
-OV-3 slice was W-026, the last of the three (§0.4); the overloading
-workstream is complete. Design authority was not reopened: F-009, Option A
-and D-OV-1..16 stand; every decision below is an implementation choice the
-plan left open or got wrong, auto-adopted under R29(a) and veto-able after
-the fact.
+README placeholder, the W-007 note), with the hosted fill 88b863220 between them
+and 3a7bc00d3 (implementation-review fixes) after; the refill of the fixer's
+cleared and new subfiles is the fill of record (37346182494 (refill after the
+review fixes), 37353176048 on the trunk merge (SL-1 in; one id line in the AST
+dump moved, which exposed an unnormalized Clang id at end of line — fixed in the
+file_test autoupdater) and 37355767908 (converged)). The plan's OV-3 slice was
+W-026, the last of the three (§0.4); the overloading workstream is complete.
+Design authority was not reopened: F-009, Option A and D-OV-1..16 stand; every
+decision below is an implementation choice the plan left open or got wrong,
+auto-adopted under R29(a) and veto-able after the fact.
 
 WHAT LANDED, by mechanism. (1) C++ name lookup returns every member:
 check/cpp/generate_ast.cpp `MapInstIdToClangDeclOrType` gains a
@@ -3598,56 +3575,55 @@ status paragraph, "0.1 limits" (viii) LIFTED, the export section's landed
 note, the divergence section's program names and the "Linkage and mangling"
 thunk-symbol sentence; pattern_matching.md's C++-half sentence.
 
-DECISIONS beyond the plan, each with its break condition. **D-OV-17** — a
-set member's generated thunk carries the member's `overload_index`. The
-thunk (`F__carbon_thunk`) is a generated function, not a set member, so
-D-OV-5's `:overload<N>` marker never reached it: every member's thunk
-mangled `_CF__carbon_thunk.Main`, and lowering's name-keyed `GetOrCreateFunction`
-early return (lower/file_context.cpp) would have handed member 0's thunk to
-member 1's C++ declaration — a wrong-member call with no diagnostic, exactly
-the R-4 failure the plan said must never occur. R-10's falsifier therefore
-FIRED and the D-OV-9 fallback applies: one additive hunk in export.cpp,
-after UN-2 merged. The first cut (13aa792bc) suffixed the thunk's NAME with
-`__overload<N>`, which is identifier-spellable (a user `fn
-F__carbon_thunk__overload1` would mangle identically); the review's root
-fix (3a7bc00d3) propagates `overload_index` instead, so the symbol is
-`_CF__carbon_thunk:overload<N>.Main` with `:` unspellable in Carbon source.
-`overload_set_id` stays unset, so the mangler's set-agreement CHECK (which
-is guarded by it) does not apply. Break condition: the lower golden showing
-fewer `_CF__carbon_thunk:overload<N>` `define`s than members, or the two
-C++ `F`s' asm labels naming one thunk; the mangler's CHECK firing on a
-thunk. **D-OV-18** — a set with an unmappable member REJECTS the unit. The
-omitted member's note is the per-function path's `SemanticsTodo` ("failed to
-map C++ type to Carbon", export.cpp `BuildCppToCarbonThunkFunctionType`, the
-thunk-signature path that runs first — not §4.C's predicted "failed to map
-Carbon type to C++"), and a `SemanticsTodo` is an error. So §1.C.1's "the
-other member callable from C++" and sub-fork F-009i's "the exportable subset
-stays callable" are false as landed: nothing is callable from a rejected
-unit. What IS true, and what the arm buys: the mappable members are still
-delivered to Clang, so the TODO is the only diagnostic — `Carbon::F(7)`
-resolves and no "no member named 'F'" cascade follows
-(`fail_todo_partial_export`, a tuple-typed parameter `(i32, i32)`; a
-`choice` is a `ClassType` that exports as a C++ class and so is not
-unmappable). No new diagnostic was added to say so (zero new diagnostics,
-§1.C.3). Break condition: `fail_todo_partial_export` gaining a second
-diagnostic, or losing its `fail_` prefix without the TODO becoming a
-non-error by a recorded decision. **D-OV-19** — the divergence is documented,
-not bridged. No export-side coherence check, no Carbon-side ambiguity
-diagnostic mirroring Clang's, no `.diff.cpp` sibling for either §5.C
-program: a divergence test cannot use an equality oracle, and the agreeing
-program's C++ side is already the oracle for its own two lines; the
+DECISIONS beyond the plan, each with its break condition. **D-OV-17** — a set
+member's generated thunk carries the member's `overload_index`. The thunk
+(`F__carbon_thunk`) is a generated function, not a set member, so D-OV-5's
+`:overload<N>` marker never reached it: every member's thunk mangled
+`_CF__carbon_thunk.Main`, and lowering's name-keyed `GetOrCreateFunction` early
+return (lower/file_context.cpp) would have handed member 0's thunk to member 1's
+C++ declaration — a wrong-member call with no diagnostic, exactly the R-4
+failure the plan said must never occur. R-10's falsifier therefore FIRED and the
+D-OV-9 fallback applies: one additive hunk in export.cpp, after UN-2 merged. The
+first cut (13aa792bc) suffixed the thunk's NAME with `__overload<N>`, which is
+identifier-spellable (a user `fn F__carbon_thunk__overload1` would mangle
+identically); the review's root fix (3a7bc00d3) propagates `overload_index`
+instead, so the symbol is `_CF__carbon_thunk:overload<N>.Main` with `:`
+unspellable in Carbon source. `overload_set_id` stays unset, so the mangler's
+set-agreement CHECK (which is guarded by it) does not apply. Break condition:
+the lower golden showing fewer `_CF__carbon_thunk:overload<N>` `define`s than
+members, or the two C++ `F`s' asm labels naming one thunk; the mangler's CHECK
+firing on a thunk. **D-OV-18** — a set with an unmappable member REJECTS the
+unit. The omitted member's note is the per-function path's `SemanticsTodo`
+("failed to map C++ type to Carbon", export.cpp
+`BuildCppToCarbonThunkFunctionType`, the thunk-signature path that runs first —
+not §4.C's predicted "failed to map Carbon type to C++"), and a `SemanticsTodo`
+is an error. So §1.C.1's "the other member callable from C++" and sub-fork
+F-009i's "the exportable subset stays callable" are false as landed: nothing is
+callable from a rejected unit. What IS true, and what the arm buys: the mappable
+members are still delivered to Clang, so the TODO is the only diagnostic —
+`Carbon::F(7)` resolves and no "no member named 'F'" cascade follows
+(`fail_todo_partial_export`, a tuple-typed parameter `(i32, i32)`; a `choice` is
+a `ClassType` that exports as a C++ class and so is not unmappable). No new
+diagnostic was added to say so (zero new diagnostics, §1.C.3). Break condition:
+`fail_todo_partial_export` gaining a second diagnostic, or losing its `fail_`
+prefix without the TODO becoming a non-error by a recorded decision. **D-OV-19**
+— the divergence is documented, not bridged. No export-side coherence check, no
+Carbon-side ambiguity diagnostic mirroring Clang's, no `.diff.cpp` sibling for
+either §5.C program: a divergence test cannot use an equality oracle, and the
+agreeing program's C++ side is already the oracle for its own two lines; the
 divergence program asserts both sides in ONE program (rulebook R30, allocated
-here, cites it as precedent). Break condition: cpp_export_overload_set_divergence.carbon's
-EXPECT-STDOUT changing from `1 2` to agree, or a `.diff.cpp` appearing beside
-either program. **D-OV-20** — one `SemanticsTodo` per member for a set the
-per-function path cannot export at all. A set in a generic class reached
-through `Carbon::Box<int>` hits export.cpp's "support exporting generic
-member functions" TODO once per member (N identical TODOs at N Carbon
-lines), then the empty list makes Clang report the missing member — the
-single-method outcome, N-fold, no dedupe (`fail_todo_generic_class_set`).
-Acceptable under zero new diagnostics; the N-fold shape is filed residue
-(W-117), not fixed. Break condition: the subfile's fill showing fewer TODOs
-than members with W-117 still open (a silent behavior change), or a crash.
+here, cites it as precedent). Break condition:
+cpp_export_overload_set_divergence.carbon's EXPECT-STDOUT changing from `1 2` to
+agree, or a `.diff.cpp` appearing beside either program. **D-OV-20** — one
+`SemanticsTodo` per member for a set the per-function path cannot export at all.
+A set in a generic class reached through `Carbon::Box<int>` hits export.cpp's
+"support exporting generic member functions" TODO once per member (N identical
+TODOs at N Carbon lines), then the empty list makes Clang report the missing
+member — the single-method outcome, N-fold, no dedupe
+(`fail_todo_generic_class_set`). Acceptable under zero new diagnostics; the
+N-fold shape is filed residue (W-117), not fixed. Break condition: the subfile's
+fill showing fewer TODOs than members with W-117 still open (a silent behavior
+change), or a crash.
 
 REVIEWS. One implementation review (R29(c): hosted verification was not yet
 fully green — the first fill had landed, gate and conformance had not)
@@ -3679,19 +3655,22 @@ canonical decls, and that imported sets' `member_decl_ids` are local
 `FunctionDecl` insts so the arm's `GetAs` cannot CHECK-fail.
 
 FILLS. The first hosted autoupdate (fill 88b863220, over 13aa792bc and
-4033adc75) matched the implementer's predictions — the omitted-member TODO
-text and the Carbon-side selections in the dumped ranges (`F(7)` → the `i64`
-member, `F(true)` → the `bool` member, `Pick(n)` → the `i64` member with the
-`i32 → i64` conversion visible) — and supplied the ambiguity text §4.C left
-to the fill: "call to 'F' is ambiguous [CppInteropParseError]" with two
-`candidate function` notes. `fail_cpp_ambiguous`'s Clang-echoed source lines
-(`11 |`, `12 |`, `17 |`) embed the CHECK-stripped subfile's line numbers,
-which the inserted STDERR lines shift, so that subfile needs the R26
-two-pass convergence; the committed fill is at fixpoint (echo numbers
-verified against the stripped subfile at 3a7bc00d3). The fill of record
-37346182494 (refill after the review fixes), 37353176048 on the trunk merge (SL-1 in; one id line in the AST dump moved, which exposed an unnormalized Clang id at end of line — fixed in the file_test autoupdater) and 37355767908 (converged) refills the lower golden (its CHECK lines were cleared for D-OV-17's
-symbol change), overload_set_ast.carbon and `fail_todo_generic_class_set`.
-No fill-caught review miss: the review ran after the first fill.
+4033adc75) matched the implementer's predictions — the omitted-member TODO text
+and the Carbon-side selections in the dumped ranges (`F(7)` → the `i64` member,
+`F(true)` → the `bool` member, `Pick(n)` → the `i64` member with the `i32 → i64`
+conversion visible) — and supplied the ambiguity text §4.C left to the fill:
+"call to 'F' is ambiguous [CppInteropParseError]" with two `candidate function`
+notes. `fail_cpp_ambiguous`'s Clang-echoed source lines (`11 |`, `12 |`, `17 |`)
+embed the CHECK-stripped subfile's line numbers, which the inserted STDERR lines
+shift, so that subfile needs the R26 two-pass convergence; the committed fill is
+at fixpoint (echo numbers verified against the stripped subfile at 3a7bc00d3).
+The fill of record 37346182494 (refill after the review fixes), 37353176048 on
+the trunk merge (SL-1 in; one id line in the AST dump moved, which exposed an
+unnormalized Clang id at end of line — fixed in the file_test autoupdater) and
+37355767908 (converged) refills the lower golden (its CHECK lines were cleared
+for D-OV-17's symbol change), overload_set_ast.carbon and
+`fail_todo_generic_class_set`. No fill-caught review miss: the review ran after
+the first fill.
 
 DEVIATIONS from the plan, each in fork/overload/plan.md's "Landed notes
 (OV-3, 2026-10-05)": R-10 fired (one export.cpp hunk; §0.2 item 7's
@@ -3708,26 +3687,29 @@ callee symbols; a `--dump-cpp-ast` sibling golden the plan did not list; a
 `method_set` subfile in both goldens the plan did not list; §6.C's "source
 files touched: 1" is 2.
 
-VERIFICATION is hosted-only (R28(b)). Autoupdate: the first run (fill
-88b863220, at fixpoint with the Clang-echoed lines included) and 37346182494 (refill after the review fixes), 37353176048 on the trunk merge (SL-1 in; one id line in the AST dump moved, which exposed an unnormalized Clang id at end of line — fixed in the file_test autoupdater) and 37355767908 (converged)
-(the refill after 3a7bc00d3). Gate: 37357704620. Conformance: 37357609478,
-**126 PASS / 0 FAIL / 23 SKIP over 149, 47/56 bullets** — expected 123 PASS / 0 FAIL / 24 SKIP over 147 programs,
-46/56 bullets, from the trunk of-record base READ FROM origin/trunk's
-fork/conformance/out/scoreboard.json (18410df07, OV-2 merged: 121 / 0 / 24
-over 145, 46/56; this branch's in-tree copy is the same file). Delta PASS +2
-/ SKIP 0 / total +2 as plan §5.C predicted; the overloading bullet was
-already PASS, so 46/56 holds. If SL-1 (slices) merges to trunk first, the
-base of record moves and the of-record absolute on the trunk merge differs
-— the same +2 / 0 / +2 delta over the trunk base at merge is the claim.
-Reconciliation greps (§8.4) at 3a7bc00d3: `overload set export` has ZERO
-hits in toolchain (the arm and fail_todo_export.carbon are gone); `overload
-set import` stays at zero; the nine remaining gates are one site each —
-handle_function.cpp:422 (x), :434 `self`-only, :855 (ix), :859 (xiii), :901
-(iii), :908 (v), :918 (vi), call.cpp:452 (xii), :534 (xi) — plus
-fail_todo_gates.carbon; `DiscardCleanupsSince` is ONE hit (call.cpp:504);
-`git diff ae157438d...HEAD --diff-filter=M` over the parse/check/lower
-testdata trees is EMPTY (§6.C's zero-churn claim holds); `runner.py
---self-test` OK with 147 programs and both new rows in the README table.
+VERIFICATION is hosted-only (R28(b)). Autoupdate: the first run (fill 88b863220,
+at fixpoint with the Clang-echoed lines included) and 37346182494 (refill after
+the review fixes), 37353176048 on the trunk merge (SL-1 in; one id line in the
+AST dump moved, which exposed an unnormalized Clang id at end of line — fixed in
+the file_test autoupdater) and 37355767908 (converged) (the refill after
+3a7bc00d3). Gate: 37357704620. Conformance: 37357609478, **126 PASS / 0 FAIL /
+23 SKIP over 149, 47/56 bullets** — expected 123 PASS / 0 FAIL / 24 SKIP over
+147 programs, 46/56 bullets, from the trunk of-record base READ FROM
+origin/trunk's fork/conformance/out/scoreboard.json (18410df07, OV-2 merged: 121
+/ 0 / 24 over 145, 46/56; this branch's in-tree copy is the same file). Delta
+PASS +2 / SKIP 0 / total +2 as plan §5.C predicted; the overloading bullet was
+already PASS, so 46/56 holds. If SL-1 (slices) merges to trunk first, the base
+of record moves and the of-record absolute on the trunk merge differs — the same
++2 / 0 / +2 delta over the trunk base at merge is the claim. Reconciliation
+greps (§8.4) at 3a7bc00d3: `overload set export` has ZERO hits in toolchain (the
+arm and fail_todo_export.carbon are gone); `overload set import` stays at zero;
+the nine remaining gates are one site each — handle_function.cpp:422 (x), :434
+`self`-only, :855 (ix), :859 (xiii), :901 (iii), :908 (v), :918 (vi),
+call.cpp:452 (xii), :534 (xi) — plus fail_todo_gates.carbon;
+`DiscardCleanupsSince` is ONE hit (call.cpp:504); `git diff ae157438d...HEAD
+--diff-filter=M` over the parse/check/lower testdata trees is EMPTY (§6.C's
+zero-churn claim holds); `runner.py --self-test` OK with 147 programs and both
+new rows in the README table.
 
 RESIDUE, filed with blocked_by [] as W-117 and W-118 (allocated after SL-1's
 W-108..W-116; final at the trunk merge). W-117 sets
@@ -4075,40 +4057,41 @@ former only. Accepted and disclosed, not fixed: the import is the
 final-impl validation D-SL-18 relies on.
 
 DEVIATIONS from the plan, each in fork/slices/plan.md's "Landed notes (SL-1,
-2026-10-05)": the builtin arms live at handle_call.cpp:660-810 (the plan's
-:649 anchor moved) and the runtime-fatal `default` is :812; `IndexWith(i64)`
-only, not the rev 2 blanket (D-SL-17); `final` on three impls (D-SL-18); the
-checker hook and the one diagnostic kind the plan's §6.A had said did not
-exist (D-SL-15); fifteen pre-existing goldens move where §6.A(a) predicted
-none (six for D-SL-16, four `for`/iterate lower goldens plus range_for for
-the `Iterate` footprint, two index goldens for the `Core.Int` load,
+2026-10-05)": the builtin arms live at handle_call.cpp:660-810 (the plan's :649
+anchor moved) and the runtime-fatal `default` is :812; `IndexWith(i64)` only,
+not the rev 2 blanket (D-SL-17); `final` on three impls (D-SL-18); the checker
+hook and the one diagnostic kind the plan's §6.A had said did not exist
+(D-SL-15); fifteen pre-existing goldens move where §6.A(a) predicted none (six
+for D-SL-16, four `for`/iterate lower goldens plus range_for for the `Iterate`
+footprint, two index goldens for the `Core.Int` load,
 function/overload/basic.carbon, and check/for/actual.carbon for the `final`
-impl's import by `ImportFinalImplsWithImplInFile`, fill a6cae2bab); check/slice/basic.carbon's `unformed` split
-keeps its `UnusedBinding` STDERR pin; slices_bounds_fail_stop.carbon's
-subscript is `s[RuntimeSeed(-18) as i64]`; `index_runtime_subscript` takes
-`i: i64`; the W-055 subsystem is "core/prelude + toolchain/sem_ir +
-toolchain/check (eval) + toolchain/lower", never prelude-only.
+impl's import by `ImportFinalImplsWithImplInFile`, fill a6cae2bab);
+check/slice/basic.carbon's `unformed` split keeps its `UnusedBinding` STDERR
+pin; slices_bounds_fail_stop.carbon's subscript is `s[RuntimeSeed(-18) as i64]`;
+`index_runtime_subscript` takes `i: i64`; the W-055 subsystem is "core/prelude +
+toolchain/sem_ir + toolchain/check (eval) + toolchain/lower", never
+prelude-only.
 
-VERIFICATION is hosted-only (the container's clang cannot build the
-toolchain; R28(b)). First autoupdate: run 37324972577 FAILED (the two
-incomplete-pointee crashes). Second autoupdate (after c200e6b81, 24ef65c1c,
-ee434b2b3): run 37329946461 FAILED (the comptime-only conversion in
-`Slice.At`). Third autoupdate (after ee434b2b3): run 37335213696, success —
-fill 50cd6c82c (40 files) and the convergence pass 84315a5d4 (8 files,
-`.loc`-only), the 13-file regression and the three disclosed footprints
-above. Fourth autoupdate (after 7b69e540b and 713eddc7a): run 37341482411 (and 37345524695 on the trunk merge, which changed nothing),
-filling the four slice goldens and check/function/overload/basic.carbon with
-the union goldens unmoved. Gate: run 37347712964, green (prek, `bazel test
-//toolchain/...`, the diagnostics coverage test with
-`IncompleteTypeInBuiltinCall` covered by the filled `fail_incomplete_pointee`
-splits). Conformance: run 37347619141, **124 PASS / 0 FAIL / 23 SKIP over 147, 47/56 bullets** — expected 121 PASS / 0
-FAIL / 23 SKIP over 144 programs, 47/56 bullets ("Stdlib: Slices" SKIP →
-PASS), from the branch base READ FROM fork/conformance/out/scoreboard.json
-(3c9df53f7, generated 2026-09-28T17:19:40Z: 118 PASS / 0 FAIL / 24 SKIP over
-142 programs, 46/56); delta PASS +3 / SKIP −1 / total +2 as plan §5.A
-predicted; zero landed programs move. Trunk meanwhile carries OV-2's 121 / 0
-/ 24 over 145 (46/56), so the of-record numbers on the trunk merge are the
-same delta over that base.
+VERIFICATION is hosted-only (the container's clang cannot build the toolchain;
+R28(b)). First autoupdate: run 37324972577 FAILED (the two incomplete-pointee
+crashes). Second autoupdate (after c200e6b81, 24ef65c1c, ee434b2b3): run
+37329946461 FAILED (the comptime-only conversion in `Slice.At`). Third
+autoupdate (after ee434b2b3): run 37335213696, success — fill 50cd6c82c (40
+files) and the convergence pass 84315a5d4 (8 files, `.loc`-only), the 13-file
+regression and the three disclosed footprints above. Fourth autoupdate (after
+7b69e540b and 713eddc7a): run 37341482411 (and 37345524695 on the trunk merge,
+which changed nothing), filling the four slice goldens and
+check/function/overload/basic.carbon with the union goldens unmoved. Gate: run
+37347712964, green (prek, `bazel test //toolchain/...`, the diagnostics coverage
+test with `IncompleteTypeInBuiltinCall` covered by the filled
+`fail_incomplete_pointee` splits). Conformance: run 37347619141, **124 PASS / 0
+FAIL / 23 SKIP over 147, 47/56 bullets** — expected 121 PASS / 0 FAIL / 23 SKIP
+over 144 programs, 47/56 bullets ("Stdlib: Slices" SKIP → PASS), from the branch
+base READ FROM fork/conformance/out/scoreboard.json (3c9df53f7, generated
+2026-09-28T17:19:40Z: 118 PASS / 0 FAIL / 24 SKIP over 142 programs, 46/56);
+delta PASS +3 / SKIP −1 / total +2 as plan §5.A predicted; zero landed programs
+move. Trunk meanwhile carries OV-2's 121 / 0 / 24 over 145 (46/56), so the
+of-record numbers on the trunk merge are the same delta over that base.
 
 RESIDUE, filed with blocked_by [] (ids follow the ledger: trunk's OV-2
 discharge took W-105..W-107, so this branch's round-2 item W-105 is
@@ -4388,36 +4371,35 @@ is deleted at OV-2 was wrong (it is kept; comment edit only), and the base
 numbers are restated against the trunk of-record scoreboard.
 
 VERIFICATION is hosted-only (R28(b)). Autoupdate: run 36459794418 (fill
-71fa9bb1a, one pass over commits 1-3; no pre-existing golden moved beyond
-the planned fail_todo_gates.carbon subfile deletions and the
-import_member_specific.carbon comment), run 37325822499 (fill fc3a74dce
-after 24cacacf3; the three refuted predictions above), run 37331151699 (fill
-657bbe634 after 843d20244; one pass). Gate: run 37333625063. Conformance: run
-37333428997, **121 PASS / 0 FAIL / 24 SKIP over 145, 46/56 bullets** — expected 121 PASS / 0 FAIL / 24 SKIP over 145
-programs, 46/56 bullets, from the trunk of-record base READ FROM
-origin/trunk's fork/conformance/out/scoreboard.json (3c9df53f7, OV-1
-merged: 118 PASS / 0 FAIL / 24 SKIP over 142; this branch's in-tree copy is
-the UN-2-era 6e6e4c7a9, 116/0/25 over 141, which predates OV-1's of-record
-run and is replaced by the orchestrator's scoreboard push). Delta PASS +3 /
-SKIP 0 / total +3 as plan §5.B predicted — §1.B.5 was not refuted, so the
-+2/+1/+3 fallback does not apply. Reconciliation greps (§8.4) at 657bbe634:
-`overload set import` has ZERO hits in toolchain (sources and goldens); the
-generic-parameters, generic-scope and `extern overload fn` TODO strings are
-gone from sources (the phrase `extern overload fn` survives only in two
-comments, handle_function.cpp:264 and :273, describing the owning
-redeclaration) and from fail_todo_gates.carbon; the remaining gates are one
-site each — handle_function.cpp:422 (x), :435 `self`-only, :855 (ix), :859
-(xiii), :902 (iii), :908 (v), :918 (vi), call.cpp:453 (xii), :535 (xi) —
-plus fail_todo_gates.carbon; `overload set export` is generate_ast.cpp:256
-and fail_todo_export.carbon:28; the two OV-2 kinds have one kind.def line,
-one `CARBON_DIAGNOSTIC` and one emit site each and fire in
-`fail_frozen.impl`, `fail_cross_library_adds_member` and
-`fail_extern_non_member`; `DiscardCleanupsSince` is ONE hit (call.cpp:504;
-the probe exits through a single unwind); `git diff 490ee40cd...HEAD
---diff-filter=M` over the testdata trees lists only fail_todo_gates.carbon
-(three subfiles deleted, as planned) and import_member_specific.carbon
-(comment); fail_todo_impl_file.carbon is deleted (its `impl_local` pair
-survives as import.carbon `impl_local_set`).
+71fa9bb1a, one pass over commits 1-3; no pre-existing golden moved beyond the
+planned fail_todo_gates.carbon subfile deletions and the
+import_member_specific.carbon comment), run 37325822499 (fill fc3a74dce after
+24cacacf3; the three refuted predictions above), run 37331151699 (fill 657bbe634
+after 843d20244; one pass). Gate: run 37333625063. Conformance: run 37333428997,
+**121 PASS / 0 FAIL / 24 SKIP over 145, 46/56 bullets** — expected 121 PASS / 0
+FAIL / 24 SKIP over 145 programs, 46/56 bullets, from the trunk of-record base
+READ FROM origin/trunk's fork/conformance/out/scoreboard.json (3c9df53f7, OV-1
+merged: 118 PASS / 0 FAIL / 24 SKIP over 142; this branch's in-tree copy is the
+UN-2-era 6e6e4c7a9, 116/0/25 over 141, which predates OV-1's of-record run and
+is replaced by the orchestrator's scoreboard push). Delta PASS +3 / SKIP 0 /
+total +3 as plan §5.B predicted — §1.B.5 was not refuted, so the +2/+1/+3
+fallback does not apply. Reconciliation greps (§8.4) at 657bbe634: `overload set
+import` has ZERO hits in toolchain (sources and goldens); the
+generic-parameters, generic-scope and `extern overload fn` TODO strings are gone
+from sources (the phrase `extern overload fn` survives only in two comments,
+handle_function.cpp:264 and :273, describing the owning redeclaration) and from
+fail_todo_gates.carbon; the remaining gates are one site each —
+handle_function.cpp:422 (x), :435 `self`-only, :855 (ix), :859 (xiii), :902
+(iii), :908 (v), :918 (vi), call.cpp:453 (xii), :535 (xi) — plus
+fail_todo_gates.carbon; `overload set export` is generate_ast.cpp:256 and
+fail_todo_export.carbon:28; the two OV-2 kinds have one kind.def line, one
+`CARBON_DIAGNOSTIC` and one emit site each and fire in `fail_frozen.impl`,
+`fail_cross_library_adds_member` and `fail_extern_non_member`;
+`DiscardCleanupsSince` is ONE hit (call.cpp:504; the probe exits through a
+single unwind); `git diff 490ee40cd...HEAD --diff-filter=M` over the testdata
+trees lists only fail_todo_gates.carbon (three subfiles deleted, as planned) and
+import_member_specific.carbon (comment); fail_todo_impl_file.carbon is deleted
+(its `impl_local` pair survives as import.carbon `impl_local_set`).
 
 RESIDUE, filed with blocked_by [] (ids follow this branch's ledger max
 W-104; the slices branch allocates independently, so the orchestrator
@@ -4545,41 +4527,38 @@ rebases over it. **D-OV-10** — `alias` of a set re-exports the whole set
 (OV-2's `export_import_of_set`). Break condition: an `export import`
 chain that drops or splits the set.
 
-REVIEWS. Two adversarial plan reviews of rev 1: rev A REJECT (blockers
-A1 the probe's cleanup leak, A2 `self` misalignment; majors A3-A7) and
-rev B APPROVE-WITH-AMENDMENTS (B1-B14, incl. the port of the stranded
-page), folded as rev 2 with the coordinator's R29(a) rulings (A2/F-009l
-mixed `self` gate, A3 literal pre-test, B1 port, B4 template gate, B5
-lifting the generic-scope gate in OV-2, B11 `export` exclusivity). A
-focused re-review of rev 2 returned SIGN-OFF-WITH-AMENDMENTS (0
-blockers; M1 the explicit receiver is a legal shape, which added gate
-(xii); M2 the generic-class test shape; m1-m6), folded as rev 2b. One
-implementation review, APPROVE-WITH-FIXES. MAJOR-1: an imported set
+REVIEWS. Two adversarial plan reviews of rev 1: rev A REJECT (blockers A1 the
+probe's cleanup leak, A2 `self` misalignment; majors A3-A7) and rev B
+APPROVE-WITH-AMENDMENTS (B1-B14, incl. the port of the stranded page), folded as
+rev 2 with the coordinator's R29(a) rulings (A2/F-009l mixed `self` gate, A3
+literal pre-test, B1 port, B4 template gate, B5 lifting the generic-scope gate
+in OV-2, B11 `export` exclusivity). A focused re-review of rev 2 returned
+SIGN-OFF-WITH-AMENDMENTS (0 blockers; M1 the explicit receiver is a legal shape,
+which added gate (xii); M2 the generic-class test shape; m1-m6), folded as rev
+2b. One implementation review, APPROVE-WITH-FIXES. MAJOR-1: an imported set
 MEMBER named in an imported generic's body resolved through the plain
-`FunctionDecl` arm without its `overload_set_id`, so the specific
-instantiated in the importing file would call an un-indexed mangled name
-that collapses onto its siblings' — an undefined symbol at link with no
-diagnostic. First fixed by gating the member import (the OV-2 "overload
-set import" TODO), but the pin for that gate compiled CLEAN: the specific
-of an imported generic reaches the member without ever importing the set,
-so the gate was unreachable and the collapse live. Fixed at the root
-instead (1baec5d70): the member's index is stored on `SemIR::Function`
-(`overload_index`, mirrored by `ImportFunctionDecl`) and the mangler keys
-`:overload<N>` on it, so an imported member mangles exactly as its
-defining library did; the set entity itself stays un-imported until OV-2.
-Pinned by the positive import_member_specific.carbon check golden and its
-LOWER twin, whose falsifier is an un-indexed `_CP.Main` call in the
-importing file's specific. MAJOR-2: the ported page's heading levels were corrupted by a
-line-leading `#3763` (prettier turned it into a `##` heading and demoted
-every following H2); repaired with heading parity to the stranded page
-proven by diffing `grep '^#'` against `git show 481e08c24:...` (the only
-difference is the added `### 0.1 limits`). Minors: gate (ii) takes
-precedence over gate (i) (`else if`; one TODO for a method of a generic
-class); the R-15 residue wording is "unconditional constant-evaluation
-diagnostics inside overload probes: literal→float, abstract-init and
-aggregate-literal element conversions"; an IWYU include in
-sem_ir/overload_set.h; the plan's comma in `OverloadCandidateRejected`
-reason 3.
+`FunctionDecl` arm without its `overload_set_id`, so the specific instantiated
+in the importing file would call an un-indexed mangled name that collapses onto
+its siblings' — an undefined symbol at link with no diagnostic. First fixed by
+gating the member import (the OV-2 "overload set import" TODO), but the pin for
+that gate compiled CLEAN: the specific of an imported generic reaches the member
+without ever importing the set, so the gate was unreachable and the collapse
+live. Fixed at the root instead (1baec5d70): the member's index is stored on
+`SemIR::Function` (`overload_index`, mirrored by `ImportFunctionDecl`) and the
+mangler keys `:overload<N>` on it, so an imported member mangles exactly as its
+defining library did; the set entity itself stays un-imported until OV-2. Pinned
+by the positive import_member_specific.carbon check golden and its LOWER twin,
+whose falsifier is an un-indexed `_CP.Main` call in the importing file's
+specific. MAJOR-2: the ported page's heading levels were corrupted by a
+line-leading `#3763` (prettier turned it into a `##` heading and demoted every
+following H2); repaired with heading parity to the stranded page proven by
+diffing `grep '^#'` against `git show 481e08c24:...` (the only difference is the
+added `### 0.1 limits`). Minors: gate (ii) takes precedence over gate (i) (`else
+if`; one TODO for a method of a generic class); the R-15 residue wording is
+"unconditional constant-evaluation diagnostics inside overload probes:
+literal→float, abstract-init and aggregate-literal element conversions"; an IWYU
+include in sem_ir/overload_set.h; the plan's comma in
+`OverloadCandidateRejected` reason 3.
 
 THE EXPORT-SWITCH CRASH — a review miss per R28(d). check/import.cpp
 `GetImportName` is a runtime-fatal switch over EXPORTED inst kinds
@@ -4845,30 +4824,29 @@ IMPLEMENTATION REVIEW: a single review, APPROVE-WITH-FIXES on the fill
 3f89d7caa; and the discharge artifacts (this entry, the ledger, the
 gap-analysis row, the plan's landed notes).
 
-VERIFICATION was hosted-only per R28: `Fork: hosted verification` in
-autoupdate → gate → conformance. First autoupdate run 36438032097 filled
-the six new goldens (fill 4f005ecdd); ZERO existing goldens moved, as
-§6.B predicted (`git diff origin/trunk...HEAD --diff-filter=M` over the
-check/lower/parse testdata is empty), and both probes — R-11's layout
-`static_assert`s and the by-value `SumLo` — PASSED. Second autoupdate,
-after the review fix 3f89d7caa (rebased as 0ec762ad2): run 36445060391, success (the refill
-of `fail_init_non_aggregate` and `empty_init`; predicted: the
-non_aggregate_init.carbon pair — `ConversionFailure` plus the
-`MissingImplInMemberAccessInContext` note — and `class_init () [concrete
-= constants.%Bar.val]`). Gate run 36447075548, green (a first gate,
-36440202472, failed only on a not-yet-converged Clang snippet line number
-in fail_union_init.carbon, converged by the refill). Conformance run
-36447037687 (scoreboard
-6e6e4c7a9): **116 PASS / 0 FAIL / 25 SKIP over 141, 45/56 bullets** — the §5.B delta exactly (the plan wrote "over 142" from a miscounted 140 base; the trunk base was 139), the §5.B
-delta PASS +2 / total +2 on UN-1's post-EH-B base of 114/0/25 over 139;
-bullets stay 45/56 because the unions bullet was already PASS at UN-1
-(fork/conformance/out/scoreboard.json at 06557fb21: `status: PASS`,
-`gap_status: PARTIAL`, now DONE), so the two new programs add PASSes,
-not a bullet. `runner.py --self-test` clean and the README program table
-regenerated at f0970f148. Reconciliation greps (§8.4), as run at
-3f89d7caa: `union export` empty; `Builtin conversion does not apply` one
-hit, convert.cpp:1020; `generic union` unchanged from UN-1 (one TODO
-site, class.cpp:708).
+VERIFICATION was hosted-only per R28: `Fork: hosted verification` in autoupdate
+→ gate → conformance. First autoupdate run 36438032097 filled the six new
+goldens (fill 4f005ecdd); ZERO existing goldens moved, as §6.B predicted (`git
+diff origin/trunk...HEAD --diff-filter=M` over the check/lower/parse testdata is
+empty), and both probes — R-11's layout `static_assert`s and the by-value
+`SumLo` — PASSED. Second autoupdate, after the review fix 3f89d7caa (rebased as
+0ec762ad2): run 36445060391, success (the refill of `fail_init_non_aggregate`
+and `empty_init`; predicted: the non_aggregate_init.carbon pair —
+`ConversionFailure` plus the `MissingImplInMemberAccessInContext` note — and
+`class_init () [concrete = constants.%Bar.val]`). Gate run 36447075548, green (a
+first gate, 36440202472, failed only on a not-yet-converged Clang snippet line
+number in fail_union_init.carbon, converged by the refill). Conformance run
+36447037687 (scoreboard 6e6e4c7a9): **116 PASS / 0 FAIL / 25 SKIP over 141,
+45/56 bullets** — the §5.B delta exactly (the plan wrote "over 142" from a
+miscounted 140 base; the trunk base was 139), the §5.B delta PASS +2 / total +2
+on UN-1's post-EH-B base of 114/0/25 over 139; bullets stay 45/56 because the
+unions bullet was already PASS at UN-1 (fork/conformance/out/scoreboard.json at
+06557fb21: `status: PASS`, `gap_status: PARTIAL`, now DONE), so the two new
+programs add PASSes, not a bullet. `runner.py --self-test` clean and the README
+program table regenerated at f0970f148. Reconciliation greps (§8.4), as run at
+3f89d7caa: `union export` empty; `Builtin conversion does not apply` one hit,
+convert.cpp:1020; `generic union` unchanged from UN-1 (one TODO site,
+class.cpp:708).
 
 THE DONE JUSTIFICATION (rev B F-6). The row's evidence is the UN-1 text
 plus the UN-2 sentence and names every gated item by ledger id: generic
@@ -5165,27 +5143,26 @@ gate so a union that completes with the error witness never leaves a
 `None` element index in error dumps; and the discharge artifacts (this
 entry, the ledger, the gap-analysis row, the plan's Landed notes).
 
-VERIFICATION was hosted-only per R28: `Fork: hosted verification` in
-autoupdate → gate → conformance. First autoupdate run 36313187966 filled
-the 17 new goldens and surfaced the deferral defect above. Second
-autoupdate run 36314113850, after d96369b93: the method/impl_member/lower
-subfiles refilled clean, the only other movement being converged location
-markers. A first gate (run 36315119109) failed on ONE non-converged line —
-the Clang snippet line number a `CppInteropParseError` echoes in
-fail_todo_export.carbon still reflected the previous fill's layout — so a
-third autoupdate (run 36316933295) converged it. Conformance run
-36315125503 (scoreboard b17874390) on the post-W-012 base: **110 PASS / 0
-FAIL / 26 SKIP over 136, 45/56 bullets** — the predicted delta exactly. Of
-record, after merging trunk with EH-B (#42): gate run 36318283448 green;
-conformance run 36318245113 (scoreboard 06557fb21): **114 PASS / 0 FAIL /
-25 SKIP over 139, 45/56 bullets**, again the predicted delta (on the post-W-012
-base PASS +2 / SKIP −1 / total +1, that is 110 PASS / 0 FAIL / 26 SKIP over
-136, 45/56 bullets; on a post-EH-B base 114/0/25 over 139 — as landed). `runner.py
---self-test` clean (136 programs, 56 bullets) and the README program
-table regenerated, confirmed locally at 8a8754198. Reconciliation greps
-run at discharge are in the plan's Landed notes; the one surprise is that
-§8.4's "two refreshed comments" grep matches one line only because
-custom_witness.cpp's refreshed comment wraps the phrase across two lines.
+VERIFICATION was hosted-only per R28: `Fork: hosted verification` in autoupdate
+→ gate → conformance. First autoupdate run 36313187966 filled the 17 new goldens
+and surfaced the deferral defect above. Second autoupdate run 36314113850, after
+d96369b93: the method/impl_member/lower subfiles refilled clean, the only other
+movement being converged location markers. A first gate (run 36315119109) failed
+on ONE non-converged line — the Clang snippet line number a
+`CppInteropParseError` echoes in fail_todo_export.carbon still reflected the
+previous fill's layout — so a third autoupdate (run 36316933295) converged it.
+Conformance run 36315125503 (scoreboard b17874390) on the post-W-012 base: **110
+PASS / 0 FAIL / 26 SKIP over 136, 45/56 bullets** — the predicted delta exactly.
+Of record, after merging trunk with EH-B (#42): gate run 36318283448 green;
+conformance run 36318245113 (scoreboard 06557fb21): **114 PASS / 0 FAIL / 25
+SKIP over 139, 45/56 bullets**, again the predicted delta (on the post-W-012
+base PASS +2 / SKIP −1 / total +1, that is 110 PASS / 0 FAIL / 26 SKIP over 136,
+45/56 bullets; on a post-EH-B base 114/0/25 over 139 — as landed). `runner.py
+--self-test` clean (136 programs, 56 bullets) and the README program table
+regenerated, confirmed locally at 8a8754198. Reconciliation greps run at
+discharge are in the plan's Landed notes; the one surprise is that §8.4's "two
+refreshed comments" grep matches one line only because custom_witness.cpp's
+refreshed comment wraps the phrase across two lines.
 
 RESIDUE, filed with blocked_by []: W-086 union fields of choice type
 (D-UN-2(i)); W-087 union fields of imported C++ type (D-UN-2(iii); the
@@ -5427,49 +5404,46 @@ local verification is limited to `uvx prek` on the bookkeeping files.
 Conformance of record (run 36315999330, scoreboard 3d398fe6f, after the fixes
 below): **112 PASS / 0 FAIL / 26 SKIP over 138**, 44/56 bullets — plan §5.B's
 tree-relative 109/136 plus W-012's one program, PASS +4 / SKIP −1 / total +3
-exactly (the
-un-SKIP of cpp_exception_interop plus three new programs, zero other movement;
-`runner.py --self-test` and `--update-readme-table` clean per the implementer);
-gate of record run 36315995464 green on the same head (32d93701d).
-Hosted autoupdate: the branch itself modifies ZERO existing goldens (`git diff
-origin/trunk...HEAD --diff-filter=M` over the testdata trees is empty; the six
-goldens are new and CHECK-free), so the fill of record is expected to add CHECK
-lines to those six and to move exactly the 27 lower goldens containing
-`__clang_call_terminate` (plan §6.B) by the fence diagnostic's `write` call,
-message global and `throw;` resume edge inside each fenced thunk — any other
-file moving is a §6 miss to reconcile. _Fill of record (run 36310053869,
-e247c2700):_ the six new goldens filled; THIRTY existing goldens moved, the 27
-predicted plus three §6.B misses with the same benign cause — the check-side
-AST dump thunk_ast.carbon (a `CXXTryStmt`/`CXXCatchStmt` around the callee
-call), lower/optimize/clang_no_optimize_twice.carbon (its `terminate.lpad`
-became a real landing pad with `exn.slot`/`ehselector.slot`) and
-lower/debug_info.carbon (a `DILexicalBlock` for the try). Two negatives were
-wrong and fixed at the root (c214b5adf): `fail_class_return` cascaded into
-five follow-on monomorphization errors because `RequireCompleteType` returns
-TRUE for an SF-6-rejected `Core.Result(Cpp.Widget, Cpp.Exception)` specific
-(the class completes with an error-valued layout; `GetObjectRepr` is
-`ErrorInst`), so the catching call now checks `IsInSliceChoicePayloadType` on
-the success type BEFORE forming the specific and emits the new Error
-`CppCatchingImportNonScalarSuccess`; the specific's completion behind it
-is a `CARBON_CHECK` invariant (a drift between the predicate and the SF-6
-rule is a toolchain bug, not a user diagnostic — the `CppCatchingImportPayloadNote`
-belt was deleted when the coverage test showed it can no longer fire); and
-`fail_ctor_return` spelled the
-constructor call `Cpp.Widget(1)` instead of the tree's static-member form
-`Cpp.Widget.Widget(1)`, so it never reached the catching lane. Both are
-review misses per R28(d), alongside the two compile misses and the
-convergence shape above. _Gate + conformance of record (runs 36311895668,
-36311899697 on the fill b8abdb68a) both FAILED and were fixed at the root
-(ebf12feae): the gate on `//toolchain/diagnostics:coverage_test` (the two
-dead kinds above), the conformance suite on a SIGSEGV in
+exactly (the un-SKIP of cpp_exception_interop plus three new programs, zero
+other movement; `runner.py --self-test` and `--update-readme-table` clean per
+the implementer); gate of record run 36315995464 green on the same head
+(32d93701d). Hosted autoupdate: the branch itself modifies ZERO existing goldens
+(`git diff origin/trunk...HEAD --diff-filter=M` over the testdata trees is
+empty; the six goldens are new and CHECK-free), so the fill of record is
+expected to add CHECK lines to those six and to move exactly the 27 lower
+goldens containing `__clang_call_terminate` (plan §6.B) by the fence
+diagnostic's `write` call, message global and `throw;` resume edge inside each
+fenced thunk — any other file moving is a §6 miss to reconcile. _Fill of record
+(run 36310053869, e247c2700):_ the six new goldens filled; THIRTY existing
+goldens moved, the 27 predicted plus three §6.B misses with the same benign
+cause — the check-side AST dump thunk_ast.carbon (a `CXXTryStmt`/`CXXCatchStmt`
+around the callee call), lower/optimize/clang_no_optimize_twice.carbon (its
+`terminate.lpad` became a real landing pad with `exn.slot`/`ehselector.slot`)
+and lower/debug_info.carbon (a `DILexicalBlock` for the try). Two negatives were
+wrong and fixed at the root (c214b5adf): `fail_class_return` cascaded into five
+follow-on monomorphization errors because `RequireCompleteType` returns TRUE for
+an SF-6-rejected `Core.Result(Cpp.Widget, Cpp.Exception)` specific (the class
+completes with an error-valued layout; `GetObjectRepr` is `ErrorInst`), so the
+catching call now checks `IsInSliceChoicePayloadType` on the success type BEFORE
+forming the specific and emits the new Error
+`CppCatchingImportNonScalarSuccess`; the specific's completion behind it is a
+`CARBON_CHECK` invariant (a drift between the predicate and the SF-6 rule is a
+toolchain bug, not a user diagnostic — the `CppCatchingImportPayloadNote` belt
+was deleted when the coverage test showed it can no longer fire); and
+`fail_ctor_return` spelled the constructor call `Cpp.Widget(1)` instead of the
+tree's static-member form `Cpp.Widget.Widget(1)`, so it never reached the
+catching lane. Both are review misses per R28(d), alongside the two compile
+misses and the convergence shape above. _Gate + conformance of record (runs
+36311895668, 36311899697 on the fill b8abdb68a) both FAILED and were fixed at
+the root (ebf12feae): the gate on `//toolchain/diagnostics:coverage_test` (the
+two dead kinds above), the conformance suite on a SIGSEGV in
 `CarbonExternalASTSource::FindExternalVisibleDeclsByName` while Clang parsed
 `<carbon/expected.h>` — a constructor declarator inside a C++-declared class
-nested in `namespace Carbon` (the export namespace) sends a
-`CXXConstructorName` redeclaration lookup up to the namespace, and the
-source's constructor arm `cast<CXXRecordDecl>`-ed the `NamespaceDecl`; now a
-`dyn_cast` with a negative answer, pinned by
-function/export/carbon_namespace_cpp_class.carbon and by inline members in
-result_expected.carbon's skeletons. Veto-able.
+nested in `namespace Carbon` (the export namespace) sends a `CXXConstructorName`
+redeclaration lookup up to the namespace, and the source's constructor arm
+`cast<CXXRecordDecl>`-ed the `NamespaceDecl`; now a `dyn_cast` with a negative
+answer, pinned by function/export/carbon_namespace_cpp_class.carbon and by
+inline members in result_expected.carbon's skeletons. Veto-able.
 
 ### W-012: if-let / while-let / let-else landed (2026-09-27)
 
@@ -5667,14 +5641,34 @@ zero-sized payload stores flips `Optional` ONLY to the scalar carrier with
 a dated D9 amendment; `Result((), E)` is unaffected (its `()` sits in a
 two-payload region sized by `E`).
 
-_Ledger corrections at discharge (plan §0.2, verbatim):_ [1] 1. **W-017 title/kind ("design-needed", "Core.Result choice in the prelude + match-based consumption + conformance programs", blocked_by W-008/W-010):** the design is ratified (docs/design/ error_handling.md:94-124) and both blockers are landed (W-008 W8c COMPLETE 2026-09-25; W-010's payload construction/destructuring landed S1-S3c). What is actually missing is the prelude file (§0.1 row 9), and the real gate was SF-9 (OPEN, decision-log:15-26), which the ledger does not record as a blocker at all. [2] 2. **W-018 ("design-needed", "postfix `?` operator + Core.Try interface + ImplicitAs error conversion", blocked_by W-017):** everything in the title landed at B1b/B2a (§0.1 rows 4-8) — over user choices. The blocked_by edge is inverted: `?` does not wait on `Core.Result`; the prelude `Try` IMPLS (rows 10-11) do. W-018's note "Bare Question token already lexed and unused (token_kind.def:103)" is also stale — the token is at :108 and is consumed by the parser.
-[5] 5. **W-070 blocked_by "SF-9":** the unit-break bound is an SF-6 allowlist question (type.cpp:313-320); SF-9 (Optional's identity) does not decide it. This plan decides it (§0.3 D-EH-2). [7] 7. **decision-log OPEN fork SF-9 (:15-26)** was to "ride the W5-S3p AskUserQuestion round" whose ask package (fork/b2/plan.md §3 B2b, :397-420: `fork/design-sprint/s3p-ask.md`) was never written — no such file exists, `git log --all | grep -i s3p` is empty. Under R29(a) there are no more question rounds; §0.3 auto-adopts the recommendation. Applied in fork/inventory/work-items.json: W-017 and W-018
-→ `implemented`, blocked_by cleared (W-017 retitled and re-evidenced;
-W-018's token line corrected to :108); W-070 DISCHARGED at EH-A by option
-(a), blocked_by cleared; W-058's notes carry the corrected impl signature;
-W-059's notes gain the POSIX `write(2)` dependency of the entry-point
-epilogue (plan R-5). W-016/W-019/W-007 and the three residue items are
-EH-B's.
+_Ledger corrections at discharge (plan §0.2, verbatim):_ [1] 1.
+**W-017 title/kind ("design-needed", "Core.Result choice in the prelude +
+match-based consumption + conformance programs", blocked_by W-008/W-010):**
+the design is ratified (docs/design/ error_handling.md:94-124) and both blockers
+are landed (W-008 W8c COMPLETE 2026-09-25; W-010's payload
+construction/destructuring landed S1-S3c). What is actually missing is the
+prelude file (§0.1 row 9), and the real gate was SF-9 (OPEN,
+decision-log:15-26), which the ledger does not record as a blocker at all. [2]
+2.
+**W-018 ("design-needed", "postfix `?` operator + Core.Try interface +
+ImplicitAs error conversion", blocked_by W-017):**
+everything in the title landed at B1b/B2a (§0.1 rows 4-8) — over user choices.
+The blocked_by edge is inverted: `?` does not wait on `Core.Result`; the prelude
+`Try` IMPLS (rows 10-11) do. W-018's note "Bare Question token already lexed and
+unused (token_kind.def:103)" is also stale — the token is at :108 and is
+consumed by the parser. [5] 5. **W-070 blocked_by "SF-9":** the unit-break bound
+is an SF-6 allowlist question (type.cpp:313-320); SF-9 (Optional's identity)
+does not decide it. This plan decides it (§0.3 D-EH-2). [7] 7. **decision-log
+OPEN fork SF-9 (:15-26)** was to "ride the W5-S3p AskUserQuestion round" whose
+ask package (fork/b2/plan.md §3 B2b, :397-420: `fork/design-sprint/s3p-ask.md`)
+was never written — no such file exists, `git log --all | grep -i s3p` is empty.
+Under R29(a) there are no more question rounds; §0.3 auto-adopts the
+recommendation. Applied in fork/inventory/work-items.json: W-017 and W-018 →
+`implemented`, blocked_by cleared (W-017 retitled and re-evidenced; W-018's
+token line corrected to :108); W-070 DISCHARGED at EH-A by option (a),
+blocked_by cleared; W-058's notes carry the corrected impl signature; W-059's
+notes gain the POSIX `write(2)` dependency of the entry-point epilogue (plan
+R-5). W-016/W-019/W-007 and the three residue items are EH-B's.
 
 _V-3a divergence-risk register entries (reviewed at each upstream merge):_
 (i) `Core.Result(T, E)` as an INDEPENDENT prelude choice with a `final`
@@ -5721,9 +5715,19 @@ then `lower_block`; (4) plan §1.A.3 spelled `FromBreak(b: ())`, landed
 iterate.carbon:23, :74). Each is a dated "(landed 2026-09-27, EH-A: ...)"
 note in the plan.
 
-_SF-9, formerly OPEN — entry moved here verbatim:_ "**SF-9: identity of the existing `Core.Optional` class** (recorded OPEN at the W5-S3a landing per fork/w5-s3/plan.md §0.2's landing obligation, 2026-08-08). Whether the prelude's placeholder `Core.Optional(T)` class is re-platformed onto the generic `choice` machinery (W5-S3 family), kept as an adapter over it, or left as an independent class with a redesigned API (W-058), and how `Core.Result(T, E)` relates. The generic-choice slices S3a-S3c have NO SF-9 dependency; the decision rides the W5-S3p (prelude) AskUserQuestion round, which this entry queues — this split explicitly supersedes the fork/w5-choice/plan.md §5/§7 gate ("SF-9 … must be decided before S3's detailed plan is written"), which now binds W5-S3p only. stdlib/optional_missing_ops.carbon's SKIP stays pinned to the placeholder API until then."
-Resolution: D-EH-1 above. stdlib/optional_missing_ops.carbon's SKIP stays
-pinned to the placeholder API; the redesign is W-058.
+_SF-9, formerly OPEN — entry moved here verbatim:_ "**SF-9: identity of the
+existing `Core.Optional` class** (recorded OPEN at the W5-S3a landing per
+fork/w5-s3/plan.md §0.2's landing obligation, 2026-08-08). Whether the prelude's
+placeholder `Core.Optional(T)` class is re-platformed onto the generic `choice`
+machinery (W5-S3 family), kept as an adapter over it, or left as an independent
+class with a redesigned API (W-058), and how `Core.Result(T, E)` relates. The
+generic-choice slices S3a-S3c have NO SF-9 dependency; the decision rides the
+W5-S3p (prelude) AskUserQuestion round, which this entry queues — this split
+explicitly supersedes the fork/w5-choice/plan.md §5/§7 gate ("SF-9 … must be
+decided before S3's detailed plan is written"), which now binds W5-S3p only.
+stdlib/optional_missing_ops.carbon's SKIP stays pinned to the placeholder API
+until then." Resolution: D-EH-1 above. stdlib/optional_missing_ops.carbon's SKIP
+stays pinned to the placeholder API; the redesign is W-058.
 
 _Docs:_ docs/design/error_handling.md gained two dated amendments (history
 unrewritten): the staging table's W5-S3p row records "landed at EH-A" and
@@ -6120,6 +6124,375 @@ Noted for W8b/W8c: lower merge-block namer emits the label
 choice-payload bind-pass coverage nuance, and the R8 conservative
 gate.
 
+### Upstream advance 2026-10: cut 631f8fb → c1e83b0b7 (2026-10-06)
+
+The fork's upstream cut advances from 631f8fb6d (2026-08-20, "Modularize driver
+subcommands and prune unused dependencies", PR 7658 — the cut the seven weekly
+entries below held) to upstream trunk c1e83b0b78b6bf648661f4c448c01f11d74af115
+(2026-10-05, "Use the plain identifier for Carbon names in C++", PR 7897), in
+ONE staged merge PR per fork/upstream/plan.md rev 3 (W-001, the F-002 staging
+flow operationalized for the first non-weekly-sized merge; D-UA-1). Landed on
+claude/carbon-fork-0-1-upstream-advance, cut from trunk 923c2f2af (post-PR 48)
+and re-merged with trunk 59f1c30d5 (post-PR 49, SL-2) before discharge:
+1de4bb49d plan sign-off (rev 3); 3d4c0e37a the merge commit (§3 commit 1 — every
+textual and semantic resolution of §2 except the F8d embedding); 5a6f54229 the
+F8d retirement (commit 1b, D-UA-8); 119b35439 the rumdl reflow (commit 2,
+D-UA-4); da91ddb45 the landed notes; 3d39ec8c2 and f28528990 compile fixes
+(round 1); ad13c57bd fill fixes (round 1); 1f69cf8fe fill fixes (round 2);
+b430984d2 the first complete hosted fill (225 goldens); dd8b9649e fill triage
+(round 3); 775de300d the round-3 fill; 85b0feb2c the pre-merge conformance
+scoreboard; b51094c44 the merge of origin/trunk 59f1c30d5 (SL-2); 929667a50 its
+landed note; 5795a773a the scoreboard merged across; 606a99c5a the post-merge
+fill. §0.1 numbers, as measured and as they reproduced at the merge: 183
+deferred upstream commits (`git rev-list --count 631f8fb..upstream-trunk`); 1533
+upstream files changed (1091 goldens); 762 fork files changed since the cut
+(toolchain 482, fork/ 230); 202 overlapping files (112 non-testdata, 90
+goldens); 105 dry-run conflicts = 31 non-testdata (25 toolchain sources,
+docs/design/lexical_conventions/words.md, five editor syntax files) + 74 goldens
+(73 content conflicts, 1 upstream-deleted); 13 upstream deletions and 1 rename;
+607 MD013 findings in 34 fork-authored markdown files under upstream's new
+`.rumdl.toml`. The merge commit's `git merge` reproduced exactly the 105 paths
+the plan's `merge-tree` dry run listed. Design authority not reopened: F-002,
+standing rule 7 / V-3a, R16, R26/R28(d), R29(b); every D-UA decision is an
+R29(a) implementation choice recorded for after-the-fact veto.
+
+CONFLICT CLASSIFICATION AS LANDED (§0.3 classes; the upstream commit that
+forced each class-B re-expression or class-C deletion). Class A, keep both
+(sixteen files): call.cpp, convert.cpp, core_identifier.def, cpp/import.h,
+function.{h,cpp}, handle_pattern_list.cpp, import_ref.cpp, member_access.cpp,
+lower/function_context.cpp (D-UA-11: the W-069 `TryEmitGlobalLetValue` early
+return before upstream's `require_value` CHECK, PR 7880), lower/type.cpp
+(upstream's placeholder list plus `OverloadSetType`; `FacetType` left with PR
+7734), sem_ir/expr_info.cpp, sem_ir/function.h (six `Callee` alternatives),
+sem_ir/stringify.cpp, words.md (`typeof`/`unused`/`val` from PR 7861 beside the
+fork's `union`), tree-sitter highlights (fork lines stay commented, W-091).
+Class B, upstream's structure with the fork mechanism re-expressed inside it:
+D-UA-9 custom_witness.cpp against PR 7784 (`SpecificInterface` query
+parameter), PR 7773 (the three-entity `Destroy` interface) and PRs 7829, 7840,
+7842, 7844, 7845 (the synthesized `SubobjectDestroy.Op` walk) — the fork's
+`CanDestroyClass(…, query_is_symbolic)` threading, `HasClassKeyedImpl`
+(D-SL-16), `HasUserDestroyImpl`, `IsTriviallyDestructible`,
+`HasNonTrivialUserCopyImpl`, the `CanDestroyType` `CustomLayoutType` arm, the
+choice-copy and union-unformed witnesses survive on `SpecificInterface`
+parameters, and `MakeSubobjectDestroyOpBody` carries clause (i) (`is_choice`
+early return in its `ClassType` arm) and clause (ii) (a `CustomLayoutType` arm
+that walks nothing), both commented as the W-083 placeholder with the D-UA-15
+residue named; D-UA-6 handle_function.cpp, class.cpp and merge.cpp against PR
+7632 (`TryMergeRedecl<EntityT>`) — `TryMergeRedecl` is the only merge path for
+plain functions and classes, the fork's full set-path decision runs first as
+`TryMergeOverloadDecl` (local set, imported set, the D-OV-3 marker-mismatch
+rule, the `ErrorInst`-localized silent return, a poisoned name returned to the
+template per the implementation review), set members merge through the fork's
+`MergeFunctionRedecl` renamed `MergeOverloadMemberRedecl` (one caller,
+`TryMergeIntoOverloadSet`), `BuildClassOrUnionDecl` dropped its copied
+`MergeClassRedecl`/`MergeOrAddName` (126 lines) for `LookupOrAddName` +
+`TryMergeRedecl<SemIR::Class>`, and the D-UN-6 `class`/`union` flip check moved
+INTO the template as an `if constexpr (IsClass)` clause beside a second
+two-line clause that spells a union's redeclaration diagnostics as `union`
+(merge.cpp:868 and :894); D-UA-7 cpp/thunk.{h,cpp} and cpp/import.{h,cpp}
+against PRs 7787, 7788, 7789 (public `CalleeFunctionInfo`,
+`SelfParamKind::FunctionPointer`, `BuildCppThunk(context, callee_info)`) and
+PR 7897 (`decl_name`) — the fence's three components re-expressed on
+upstream's struct: `EST_BasicNoexcept` on `CreateThunkFunctionDecl` (serving
+the decl and the function-pointer constructors; grep count 4, awk count 1),
+`IsCppThunkFenceRequired(Context&, const FunctionProtoType*, const
+FunctionDecl* decl_or_null)` with a `FunctionDecl*` overload, and the fence
+clause of `IsCppThunkRequired`; the fence-unbuildable TODO after
+`DefineAsThunkCall` in `ImportFunctionDecl` and, new, in
+`ImportFunctionPointerInvoke`; the catching thunk rebuilt on upstream's
+constructor with the `_catch` marker; D-UA-5 the five editor files against PR
+7746 (grammar overhaul) — `union` in each introducer alternation, `overload` in
+each `storage.modifier` alternation, vim's `carbonUnionDeclaration` kept.
+Class C, upstream's mechanism with the fork goldens and programs kept as pins:
+D-UA-10 eval.{h,cpp}, check/generic.cpp, sem_ir/generic.cpp against PR 7717
+(in-place specific value block) — the S3b `publish_block_id` incremental
+publication, the pre-sized placeholder and the two loud CHECKs in
+`GetConstantInSpecific` deleted, upstream's `NotConstant` for unreached entries
+adopted (rev A A9: upstream's `TryEvalBlockForSpecific` publishes the block
+before evaluating, so S3b's mechanism is upstream's now and only the fork's
+forward-reference CHECK is lost); D-UA-8 against PRs 7788, 7789 and 7881 — the
+F8d constant-function-argument embedding deleted in its own commit 5a6f54229
+(`ClangDeclSignature::constant_function_args` with its hashing, equality and
+`Print`, `InventConstantFunctionArg`, `TryMapFunctionType`, the
+`HasConstantFunctionArgs` branches in cpp/call.cpp, constant.cpp and
+overload_resolution.cpp, the `.arg<i>.<mangled>` thunk-name suffix,
+`GetOrExportFunctionDeclToCpp`), the duplicate `case SemIR::FunctionType::Kind:`
+arm of `TryMapType` deleted in the merge commit so that commit compiles (§0.4
+item 1), and the thunk's constant-parameter plumbing dropped in the merge
+commit rather than 1b because it lived inside the hunks upstream's struct
+rewrite replaced whole — so D-UA-8's break action is a revert of 5a6f54229
+PLUS re-adding the `TryMapType` arm and re-expressing about 60 lines of thunk
+plumbing on upstream's struct, not a plain `git revert` (the implementation
+review's finding 5; W-023 note). §0.4 item 11 against PR 7813: the two
+clean-merging `GetCanonicalFacetOrTypeValue` calls (`LookupChoiceCopyWitness`,
+`LookupUnionUnformedInitWitness`) renamed `GetCanonicalFacet` in the merge
+commit. Goldens (D-UA-3): 71 refill-only conflicts took upstream's text, the 2
+fork-source-edited goldens (check/let/fail_generic_import.carbon's
+`implicit.impl.carbon` split name; lower/var/import.carbon's `fn X() -> i32 {
+return x; }`) took upstream's text with the fork edit re-applied, all 73 with
+their CHECK lines cleared (46088 lines) for the hosted fill, and
+lower/interop/cpp/std_initializer_list.carbon was deleted with upstream.
+Reflow (D-UA-4, PR 7667): 35 of 48 measured files reflowed under upstream's
+`.rumdl.toml`; the 29 MD013 residue lines rewritten by hand; three paragraphs
+rumdl refuses to wrap fenced with the upstream-precedented
+`rumdl-disable MD013` pair; the two manufactured headings D-UA-4 predicted
+(fork/ORCHESTRATION.md's "12/#13/#14" and the decision log's "7741
+template-dependent assignment" heading at :5428 pre-reflow) repaired, plus one
+it did not (fork/unions/plan.md, from a list-item continuation whose code span
+crossed lines on the SECOND rumdl pass); each repair restored the demoted
+heading levels from HEAD (24 headings in two files), caught by the per-file
+heading-count diff, and the unions one only by a set comparison of heading
+lines — the detector R31(c) now needs. Deviations from the plan as written,
+each recorded in the plan's landed notes: function.{h,cpp} needed a fork-only
+`return_type_id` alternative to upstream's `return_form` in `FunctionDeclArgs`
+(the generic choice constructors re-add a symbolic return type INSIDE the
+generic region `MakeGeneratedFunctionDecl` opens); the §0.4 item 5 `-l` file
+sets differ by eval.cpp by design (upstream's `Callee` switch there has a
+`default:` arm and an unresolved set is never constant-evaluated); the §8.4
+`is_choice` count is six, not five (one more comment); and
+`BuildPrimitiveCopyWitness` had no fork delta.
+
+A/B MATRIX (§8.2): NOT RUN. No nightly at or after `v0.0.0-0.nightly.2026.10.02`
+was mirrored — the fork's newest mirror is `arbiter-v0.0.0-0.nightly.2026.09.28`
+(upstream 1579d4e, before the 10-01 fixes PRs 7879 and 7880), the mirror
+workflow was not dispatched during UA-1, and §8.1 step 1 forbids the staging
+branch from touching fork/conformance/arbiter-request.txt or the mirror workflow
+(a push to either would have fired it). The reading D-UA-14 makes authoritative
+is available instead: the hosted conformance of the MERGED fork toolchain ran
+both template probes green — generics/templates_type_param .carbon and
+generics/templates_value_param.carbon PASS on the pre-merge scoreboard (run
+37399118672, quoted below), the programs whose 09-21 and 09-28 crash signatures
+(`lower/handle.cpp:294 Unexpected category 9 for return expression {kind:
+SpliceInst}`; `function_context.cpp:198 const_id.is_concrete()`) the weekly
+entries refused to land — so upstream's fixes f1bf78948 and 3dadff7d0 (inside
+the deferred range) hold at the merged tip, and D-UA-1's break condition did not
+fire. What the matrix would have added — attributing a FAILURE to upstream or to
+the merge — was not needed, since there was none; UA-2 may run it for the record
+when a newer nightly is mirrored, with the nightly's own commit recorded as the
+09-28 entry did.
+
+FILL STATISTICS (hosted autoupdate, `Fork: hosted verification`, files per
+pass from `git show --stat`). Pass 1, run 37385396872: toolchain built, one
+test crashed (carbon_fn_as_callable.carbon, round 1 below), no fill pushed.
+Pass 2, run 37388566542: toolchain built, one test crashed
+(operators/question.carbon, round 2 below), no fill pushed. Pass 3, run
+37393341208 → b430984d2: 225 goldens (120 check, 1 driver, 104 lower; +86945 /
+−12682 lines), no crash, one `Problems that require manual fixes` entry
+(round 3 below). Pass 4, run 37397937554 → 775de300d: 22 goldens (+1067 /
+−537) — the round-3 predictions (fail_todo_gates `template_dependent`'s per-
+specific resolution, arm_temporary `typeof_operand`, function_ptr
+`fail_use_forward_decl`, method_ptr `fail_todo_call_method_ptr`) plus the R26
+pass-2 Clang snippet numbers in nine upstream goldens; no manual-fix list.
+Pass 5, after the re-merge of trunk, run 37401156556 → 606a99c5a: 12 goldens
+(+1995 / −590) — SL-2's ten refilled under the upstream base (the fence's
+`__carbon_thunk` call lines for the span mocks, D-UA-9's `SelfDestruct`/
+`SubobjectDestroy` reshapes in lower interop/cpp/span.carbon, upstream's
+unqualified type-name printing in two `fail_` diagnostics, inst-namer
+disambiguation) plus two round-3 pass-2 movers; no manual-fix list. The R26
+fixpoint on 606a99c5a is proven by the gate 37403008794 (R28(d)), not by a
+separate pass. Pre-merge checkpoint: gate run 37399160122 PASSED (prek
+`--all-files` and `bazel test //toolchain/...`), the first full gate of the
+merged tree.
+
+SCOREBOARD AT FIXPOINT. Pre-merge (on 775de300d, run 37399118672, committed as
+85b0feb2c and merged across in 5795a773a): 126 PASS / 0 FAIL / 23 SKIP over 149
+programs — trunk's pre-SL-2 floor exactly, all five thread programs PASS
+(interop/cpp_thread_carbon_fn_diff.carbon in particular: the real
+`std::thread`'s `F&&` deduction on upstream's `_Nonnull` function-pointer
+argument, R-4's last residual, is settled — the F8d retirement stands, no
+revert), both template probes PASS, stdlib/slices_heap_buf.carbon PASS (R-3). Of
+record, on 606a99c5a: 37402970811 — 128 PASS / 0 FAIL / 22 SKIP over 150
+programs, 48/56 bullets (quoted from fork/conformance/out/scoreboard.json as
+pushed by that run; the bar is trunk's floor 128 / 0 / 22 over 150, 48/56
+bullets, non-regressing; D-UA-12: no program changed status in UA-1).
+
+DIVERGENCE-RISK REGISTER REVIEW (standing rule 7 / V-3a; the ten register
+blocks, each entry HOLDS or MOVED with the upstream commit). (1) B1
+(Core.ControlFlow, continue-first `ControlFlow(C, B)`, the `Try` member
+spellings): HOLDS — upstream's prelude at c1e83b0b7 has no `ControlFlow` and no
+`Try` (`git grep` over upstream-trunk's core/ is empty). (2) EH-A (`Core.Result`
+as an independent prelude choice with a `final` `Try` impl, Ok-first
+discriminant, the `()` payload admission): HOLDS — upstream has no `Result`
+type; under D-UA-9 every `Core.Result` golden gained `SubobjectDestroy`/
+`SelfDestruct` functions (a reshape, R-2's falsifier did not fire) and no
+layout changed. (3) EH-B (`Carbon::Exception` wrapper, `<carbon/expected.h>`
+layout, the foreign-exception contract, the `noexcept` fence): HOLDS — the
+fence MOVED in mechanism, not in surface: re-expressed on upstream's
+`CalleeFunctionInfo` (PRs 7787-7789, D-UA-7), `__clang_call_terminate` now in
+35 lower goldens (floor 30; gained upstream's function_ptr/method_ptr/
+destroy_from_thunk and SL-2's span). (4) UN-1 (`union` keyword,
+`Core.UnformedInit` as a `CoreInterface` kind, the `is_union` dump field, four
+diagnostics): HOLDS — upstream has no `union`; two mechanism moves: the
+D-UN-6 flip check now lives inside upstream's `TryMergeRedecl` (PR 7632, D-UA-6)
+and upstream's new exhaustive `CoreInterface` switch in handle_interface.cpp
+gained the `UnformedInit` arm (compile round 1). (5) UN-2 (`TagTypeKind::Union`
+export, offset-zero layout arm): HOLDS (export.cpp:82 unchanged in meaning
+under PR 7897's naming change). (6) OV-1 (`overload` keyword, `:overload<N>`
+mangling marker, `OverloadSet*` inst kinds and store, five diagnostic kinds,
+`overload_set_id`): HOLDS — upstream's token_kind.def has no `overload`, its
+only mention is the sem_ir/function.h:489 TODO "to support overloaded
+functions"; the `_CF__carbon_thunk:overload<N>` asm label is a Carbon mangled
+name PR 7897 did not touch. (7) OV-2 (`OverloadSetFrozen`/
+`OverloadSetDeclaredHere`, the `replace_prev_inst`/`prev_decl_override`
+parameters of `MergeFunctionRedecl`, the `diagnose` parameter of
+`DeduceGenericCallArguments`, `GetApiClassDeclForQualifier`, the
+`OverloadSetValue` arm of `AddImportRefOrMerge`): one entry MOVED — the
+`MergeFunctionRedecl` parameters are now `MergeOverloadMemberRedecl`'s, with
+`replace_prev_inst` dropped as dead under PR
+7632's `TryMergeRedecl` (D-UA-6, recorded as the V-3a convergence D-UA-6's break
+condition anticipates in part); the other four HOLD (decl_name_stack.cpp:462
+still resolves `fn C.F` in an impl file the fork's way; upstream landed no
+counterpart). (8) OV-3 (`NamedDeclList` alternative of
+`MapInstIdToClangDeclOrType`, `overload_index` on a generated thunk): HOLDS
+(PR 7897 changed how a Carbon name prints in C++, not the thunk keying; the
+OV-3 export goldens refilled with identical member selection). (9) SL-1 (the
+four builtins, `Core.Slice`/`Core.Buf`, the `Iterate` impl, D-SL-15..20):
+HOLDS, with the register's own trigger PARTIALLY MET — "if upstream's
+destroy-op synthesis starts calling declared impls, D-SL-16's yield and
+D-SL-19's keying are dropped in favor of it": upstream's synthesized
+`SubobjectDestroy.Op` (PRs 7829/7840/7842/7844) now calls each field's
+`Destroy.SelfDestruct`, and whether that reaches a `Buf` field's declared `Op`
+is §0.6's W-108 probe, UA-2's to run (R-3 held: lower/slice/buf.carbon shows
+three `free` calls for its three `Buf` objects, as at the cut; D-SL-16's
+selection is still what makes a `Buf` LOCAL free, visible as the two
+`facet_value` + `converted` pairs in every declared-impl destroy sequence,
+now in six goldens — an IR-clutter reconciliation candidate for UA-2). (10)
+SL-2 (`std::span` ↔ `Core.Slice`, `RecognizedTypeInfo::Slice`,
+`CoreInterface::CppContiguousRange`, both prelude interop sections): HOLDS —
+upstream's custom_type_mapping.cpp at c1e83b0b7 still names only
+`StdStringView` (zero `span` hits); SL-2's `BuildCppContiguousRangeWitness` was
+ported to `SpecificInterface` at the re-merge. The design-fork entries these
+blocks extend (F-006a `Ok`/`Err`, F-007's `union`, F-009's marked closed sets)
+stand with them. No entry is retired by this merge.
+
+RESIDUES FILED (D-UA-15; ids allocated after W-122, the round-3 item). W-123:
+a catching (`?`) thunk over a C++ function-pointer callee is a semantics TODO
+("Unsupported: catching thunk for a C++ function pointer",
+toolchain/check/cpp/thunk.cpp:1570 in `PerformCppThunkCall`; pin
+check/testdata/interop/cpp/exceptions/fail_catching.carbon
+`fail_todo_fn_pointer_catching`) — the call falls through to the fenced thunk
+and `?` then diagnoses the `i32` operand. W-124: a potentially-throwing C++
+function-pointer type whose fenced `__invoke` thunk cannot be built is a
+semantics TODO instead of upstream's unfenced direct call
+(toolchain/check/cpp/import.cpp:2316-2319 in `ImportFunctionPointerInvoke`,
+keyed on `IsCppThunkFenceRequired(callee_info.function_type, nullptr)`; the
+imported `__invoke` is KEPT so upstream's follow-on diagnostics still fire —
+pins function_ptr.carbon `fail_use_forward_decl` and method_ptr.carbon
+`fail_todo_call_method_ptr`, both shapes upstream's own thunk build also fails).
+W-125: choice-payload destroy synthesis under upstream's real
+`SubobjectDestroy` walk — `MakeSubobjectDestroyOpBody`'s `is_choice` early
+return (custom_witness.cpp:1021) and `CustomLayoutType` arm (:1047) preserve
+the placeholder semantics (no payload destructor runs), the W-083 release-on-
+destroy dependency made explicit in code; pins the seven choice goldens with
+`var`s, payload_layout.carbon's `SubobjectDestroy`/`SelfDestruct` pairs and the
+union goldens. The R-11 class ("an upstream-intended diagnostic the fork's
+design did not anticipate") produced NO new item: the one prefix flip,
+fail_todo_gates.carbon's `template_dependent` (upstream's `CallAction`, PRs
+7682/7727, defers a template-dependent call per specific), is recorded on
+W-101, and every other new STDERR line of the 225-golden fill equals
+upstream's golden or the cut's (the round-3 classification table in the plan's
+landed notes). The F8d retirement note is W-023's. W-001 gains its landed note
+(this flow); W-069 and the S3b record gain the D-UA-10 line. UA-2 also
+inherits: the pre-existing manufactured H3 "7700 splice-stepping for bound
+methods, …" at the cut's decision-log :5585 (both parents carry it; R31
+class, predates the reflow); the declared-impl destroy IR clutter above; the
+§0.6 un-SKIP probes (W-014/row 52, W-043/rows 40 and 54), the W-108 pin golden,
+the W-046 tip-pin note, and the ledger notes for W-037, W-030, W-083, W-091,
+W-065.
+
+REVIEW FOLD. Plan: two adversarial reviews of rev 1 — rev A (fork-mechanism
+fidelity) REJECT with BLOCKER A1 (D-UA-9 as written crashed every destroy of a
+payload-carrying choice under upstream's real `MakeSubobjectDestroyOpBody`),
+MAJORs A2-A5, MINORs A6-A10; rev B (mechanics/verification)
+APPROVE-WITH-AMENDMENTS with MAJORs B1-B5, MINORs B6-B15 — folded as rev 2; a
+focused re-review of rev 2 REJECT with BLOCKER F1 (the destroy walk meets the
+fork's shapes one level earlier than rev 2 assumed, inside the witness QUERY,
+so D-UA-9 needed the `CustomLayoutType` arm as a second clause), MAJORs F2-F4,
+MINORs F5-F8 — folded as rev 3; the final count-and-grep re-check of rev 3
+APPROVE-WITH-AMENDMENTS (M1-M3, applied in the sign-off commit). The plan
+reviews earned their two rounds (R29(c)): without A1 and F1 the first fill
+would have died on the first choice `var`, hiding the rest of the fill behind
+the stack-dump gate. Implementation: one review of da91ddb45 (ua1_impl_review)
+REJECT — two BLOCKERs (call.cpp:252 `builtin_function_kind()` removed by PR
+7729, the one fork-called method whose declaration changed between cut and
+tip without a textual conflict; `TryMergeOverloadDecl` calling
+`prev_inst_id()` on a poisoned name, a `CARBON_FATAL` upstream's own
+name_poisoning.carbon would have hit), one MAJOR (`ptr(args)?` through a C++
+function pointer CHECK-failing instead of the D-UA-7 TODO), two MINORs (the
+`FunctionId::None` callee after a failed `__invoke` import; the D-UA-8 revert
+recipe) — every finding folded in 3d39ec8c2, and the review's compile
+prediction ("the first error out of //toolchain/check is finding 1") was
+exactly what the hosted probe reported; the round-2 fix 1f69cf8fe reviewed
+APPROVE-WITH-FIXES (F1 `typeof` scope demotion applied with the
+`typeof_operand` pin, F2 filed as W-122, F3 recorded there, F4 applied). Two
+reviews were not repeated after the green fills (R29(c)).
+
+FILL-CAUGHT MISSES — review misses per R28(d), with why review did not see
+each. Compile round 1 (hosted compile probe 37381466829, fix 3d39ec8c2 +
+f28528990): `Function::builtin_function_kind()` gone (PR 7729); the plan's
+§8.4 greps covered free functions and switches but no METHOD renames, and the
+SL-1 hunk merged clean three functions away from upstream's conflicting one —
+the implementation review found it by diffing the declarations of every
+fork-called name between cut and tip, the method the §8.4 list lacked. Three
+more errors found the same way before the next probe (`ConvertStructToUnion`'s
+`ConvertAggregateElement` signature, the OV-3 `GetOrExportFunctionToCpp`
+call, `Dump(const File&, OverloadSetId)` for upstream's fingerprinter) and one
+`-Werror=switch` in a file the merge did not touch (handle_interface.cpp's
+exhaustive `CoreInterface` switch lacked `UnformedInit`) — found by a local
+`clang++-19 -fsyntax-only` pass over every unchanged source that includes a
+fork-changed header, the first time the container could compile-check at all.
+Fill round 1 (run 37385396872, fix ad13c57bd): a null `QualType` in
+`TryMapType`'s `FunctionType` arm for a GENERIC Carbon function
+(`Cpp.invoke(GenericWork)`): upstream's arm, taken verbatim under D-UA-8, calls
+`GetOrExportFunctionToCpp` unguarded and a generic function exports as a
+`FunctionTemplateDecl` whose `getFunctionType()` is null — an upstream latent
+bug the fork's F8d negative-partition golden exposed; review did not see it
+because D-UA-8 reviewed what upstream's mechanism DOES for the positive shape
+(rev A A8 traced each piece of the `thread(Work)` deduction) and never asked
+what it does for the fork's negative pins, and upstream's only generic pin
+fails earlier, inside the export. Fill round 2 (run 37388566542, fix
+1f69cf8fe): upstream's new SemIR SSA verifier (PR 7771, dominance.cpp) caught
+the `?` desugar's temporaries inside an `if`-expression arm being destroyed in
+the other arm's break block and in `if.expr.result` — upstream's own
+unconditionalized arm cleanups (its open TODO in handle_if_expr.cpp), a latent
+MISCOMPILE at the cut (an unconstructed temporary destroyed on the other path),
+fixed in upstream's files with `BeginConditionalExprOperand`/
+`EndConditionalExprOperand` and pinned by if_expr/arm_temporary.carbon and
+operators/builtin/short_circuit_temporary.carbon; review did not see it because
+the verifier was a new GATE, not a new mechanism — §0.2's subsystem list named
+it nowhere, no §7 risk asked "which fork IR shapes does upstream's verifier
+reject", and the violation was decidable from the pre-merge golden by a
+dominance check nobody had reason to run until the gate existed (a textual
+dominance checker over the 200 fork-touched check goldens then found exactly
+this one). Fill round 3 (run 37393341208, fix dd8b9649e): the predicted §4
+prefix flip (`fail_todo_template_dependent` passing under upstream's
+`CallAction`) retriaged per §3 commit 3b with an instantiating pin; and the
+function-pointer fence TODO's `result.decl_id = ErrorInst` HID upstream's
+follow-on diagnostics (`IncompleteTypeInFunctionReturnType`,
+`CallArgCountMismatch`) on two upstream splits — review did not see it because
+D-UA-7 (rev A A7) specified `ErrorInst` and no pin existed for the clause; the
+fill supplied the two pins. Post-merge fill (run 37401156556): no manual-fix
+list, every prediction of the re-merge note matched — no miss. Four fix
+rounds for a 183-commit merge; each is a real defect fixed at its root, none
+a golden edit (R16), and the two that upstream shares (the null `QualType`,
+the arm-cleanup miscompile) are upstreamable.
+
+_V-3a divergence-risk register entries (reviewed at each upstream merge):_
+this entry adds no new fork surface; it re-expresses existing entries on
+upstream's structures (D-UA-6/7/9) and retires the F8d embedding (W-023). The
+fork-local code the merge introduced INSIDE upstream's functions is the
+register's new watch list: the `if constexpr (IsClass)` union clauses in
+`TryMergeRedecl` (merge.cpp:868/:894), `TryMergeOverloadDecl` before
+`TryMergeRedecl` in `BuildFunctionDecl`, the `is_choice`/`CustomLayoutType`
+clauses in `MakeSubobjectDestroyOpBody`, the fork-only `return_type_id`
+alternative in `FunctionDeclArgs`, `BeginConditionalExprOperand`/
+`EndConditionalExprOperand` in control_flow.{h,cpp}, and the null guards in
+`TryMapType`'s `FunctionType` arm and `ExportFunctionToCppPointerConversion` —
+each marked "Fork (D-UA-n)" in code, each a V-3a convergence candidate when
+upstream lands its own (upstream's `TryMergeRedecl<Function>` growing a
+member-targeted entry point retires `MergeOverloadMemberRedecl`; upstream
+conditionalizing arm cleanups retires the W-122 guard). Veto-able.
+
 ### Weekly upstream merge 2026-10-05: cut HOLDS a seventh week; a dry-run merge conflicts in 99 files (2026-10-05)
 
 Hosted-only check (R28). Measured upstream trunk d31a8b67d
@@ -6209,11 +6582,9 @@ Fold-in to the still-unlanded 08-24 staging merge (runner jeromehome
 offline since 08-27 ~02:20Z — 18 days; the landing loop keeps a gate
 run queued and re-bumps past GitHub's 24h queue expiry). Measured
 upstream trunk 4081848 (44 commits since 386327e). Real template
-progress landed: #7726 SpecificInst, #7727 template LOWERING support,
-
-## 7741 template-dependent assignment, #7735/#7736 template-argument
-
-tests, #7772 out-of-line template decl fix. Empirical A/B against the
+progress landed: PR 7726 SpecificInst, PR 7727 template LOWERING support,
+PR 7741 template-dependent assignment, PRs 7735/7736 template-argument
+tests, PR 7772 out-of-line template decl fix. Empirical A/B against the
 freshly mirrored 2026.09.14 nightly (version 4081848):
 generics/templates_value_param.carbon now COMPILES CLEAN (was
 crashing) — but generics/templates_type_param.carbon still CRASHES
@@ -6329,16 +6700,16 @@ list.
 ##### F-005: Own-toolchain build environment — **Self-hosted runner** (2026-07-19)
 
 The user registered a self-hosted GitHub Actions runner ("jeromehome",
-self-hosted/Linux/X64) on the fork. `.github/workflows/fork_build_toolchain.yaml`
-builds `//toolchain/install:carbon_toolchain_tar_gz` from the pushed
-branch, runs `bazel test //toolchain/...` as the F-002 merge gate, and
-publishes the tarball as a fork release (by way of a hosted publish job). The
-sandbox then downloads that release the same way it downloads the mirrored
-nightly. First cold build compiles LLVM (hours); the runner's bazel disk
-cache makes subsequent fork builds incremental. Security note: on a public
-repository, keep the default "require approval for outside collaborators'
-workflow runs" protection enabled so third-party PRs can't run code on the
-runner host.
+self-hosted/Linux/X64) on the fork.
+`.github/workflows/fork_build_toolchain.yaml` builds
+`//toolchain/install:carbon_toolchain_tar_gz` from the pushed branch, runs
+`bazel test //toolchain/...` as the F-002 merge gate, and publishes the tarball
+as a fork release (by way of a hosted publish job). The sandbox then downloads
+that release the same way it downloads the mirrored nightly. First cold build
+compiles LLVM (hours); the runner's bazel disk cache makes subsequent fork
+builds incremental. Security note: on a public repository, keep the default
+"require approval for outside collaborators' workflow runs" protection enabled
+so third-party PRs can't run code on the runner host.
 
 ##### F-001: What "0.1" means for this fork — **Staged official 0.1** (2026-07-19)
 

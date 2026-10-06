@@ -102,13 +102,13 @@ escape hatch; A and B do not.
 
 ### Carbon design principles that bind this design
 
--   **Performance / zero hidden overhead** (`docs/project/goals.md:175`
-    ff): a union must be exactly max-size/max-align overlapping storage;
-    no hidden discriminator in production builds. (A debug-build
-    tracking discriminator, as upstream discussion
+-   **Performance / zero hidden overhead** (`docs/project/goals.md:175` ff): a
+    union must be exactly max-size/max-align overlapping storage; no hidden
+    discriminator in production builds. (A debug-build tracking discriminator,
+    as upstream discussion
     [#1907](https://github.com/carbon-language/carbon-lang/discussions/1907)
-    proposes and Zig implements, is compatible with this because build
-    modes may change unsafe-code behavior — `docs/design/safety/README.md:208-229`.)
+    proposes and Zig implements, is compatible with this because build modes may
+    change unsafe-code behavior — `docs/design/safety/README.md:208-229`.)
 -   **Expressivity comparable to C++** (`goals.md:488-490`): "If an
     algorithm or data structure ... can naturally be written in C++, it
     should also be possible to write it naturally in Carbon." Union-based

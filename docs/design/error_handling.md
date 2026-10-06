@@ -411,29 +411,28 @@ That bound is recorded as an open work item at the B1 landing; W5-S3p
 decides between admitting the zero-sized `()` payload and giving the
 `Optional` impl a scalar break carrier (fork/b1/plan.md §2.7).
 
-> **Amendment (2026-09-27, landed at EH-A — fork/eh/plan.md):** both open
-> points above are resolved and landed; the history is left as written.
-> (1) The unit break type exists: W-070 was discharged by option (a) — the
-> zero-sized empty tuple `()` is admitted as a choice payload
-> (`IsInSliceChoicePayloadType`, toolchain/check/type.cpp; plan D-EH-2), so
-> `ControlFlow(T, ())` and `Core.Result((), E)` are ordinary specifics and
-> `BreakType = ()` is spelled as this section says. (2) The `Optional` impl's
-> SIGNATURE above is normative MODULO its bound: `Core.Optional` was NOT
-> rebuilt as a choice (plan D-EH-1 — SF-9 resolved as "keep the placeholder
-> class"; the redesign stays W-058), and the placeholder class forces
-> `T: OptionalStorage` (core/prelude/types/optional.carbon:29), while moving
-> the `T` payload in `Branch` requires `T: Destroy` (a symbolic `T` bound by a
-> non-`type` facet proves only its declared interfaces — exposed by the first
-> hosted autoupdate, every full-prelude golden failing at once, and fixed in
-> c127784c4). The landed signature is therefore
-> `final impl forall [T: Destroy & OptionalStorage] Optional(T) as Try where .ContinueType = T and .BreakType = ()`
+> **Amendment (2026-09-27, landed at EH-A — fork/eh/plan.md):** both open points
+> above are resolved and landed; the history is left as written. (1) The unit
+> break type exists: W-070 was discharged by option (a) — the zero-sized empty
+> tuple `()` is admitted as a choice payload (`IsInSliceChoicePayloadType`,
+> toolchain/check/type.cpp; plan D-EH-2), so `ControlFlow(T, ())` and
+> `Core.Result((), E)` are ordinary specifics and `BreakType = ()` is spelled as
+> this section says. (2) The `Optional` impl's SIGNATURE above is normative
+> MODULO its bound: `Core.Optional` was NOT rebuilt as a choice (plan D-EH-1 —
+> SF-9 resolved as "keep the placeholder class"; the redesign stays W-058), and
+> the placeholder class forces `T: OptionalStorage`
+> (core/prelude/types/optional.carbon:29), while moving the `T` payload in
+> `Branch` requires `T: Destroy` (a symbolic `T` bound by a non-`type` facet
+> proves only its declared interfaces — exposed by the first hosted autoupdate,
+> every full-prelude golden failing at once, and fixed in c127784c4). The landed
+> signature is therefore `final impl forall [T: Destroy & OptionalStorage]
+> Optional(T) as Try where .ContinueType = T and .BreakType = ()`
 > (optional.carbon:69-70). Its body dispatches through the placeholder
-> `HasValue()`/`Get()` API with an `if` — observationally the same two-way
-> split as the `match` above — and `FromBreak` takes `unused b: ()`; the
-> `match` body above applies verbatim once W-058 makes `Optional` a choice.
-> The `Result` impl landed byte-for-byte as sketched
-> (core/prelude/types/result.carbon), the `Try`/`ControlFlow` qualification
-> being unnecessary inside package `Core`.
+> `HasValue()`/`Get()` API with an `if` — observationally the same two-way split
+> as the `match` above — and `FromBreak` takes `unused b: ()`; the `match` body
+> above applies verbatim once W-058 makes `Optional` a choice. The `Result` impl
+> landed byte-for-byte as sketched (core/prelude/types/result.carbon), the
+> `Try`/`ControlFlow` qualification being unnecessary inside package `Core`.
 
 The `Optional` impl depends on `Core.Optional` being a payload-carrying choice
 type with alternatives `.Some(value: T)` and `.None`. Today's prelude
@@ -708,21 +707,21 @@ ordinary interop type mapping):
 
 > **Amendment (2026-09-27, landed at EH-B — fork/eh/plan.md D-EH-4, §1.B.1):**
 > the selection surface delivered in 0.1 is `?` applied directly to the call
-> (parentheses around the call are transparent). The other context of the
-> second bullet — a binding or argument whose EXPECTED type is
-> `Core.Result(S, Cpp.Exception)`, such as
-> `let r: Core.Result(i32, Cpp.Exception) = Cpp.parse(x);` — needs an
-> expected-type channel the checker does not have (conversions run after the
-> call is emitted) and is deferred as the residue item "catching-import
-> selection in binding/argument contexts"; the one-line workaround is a helper
-> `fn Wrap() -> Core.Result(S, Cpp.Exception) { return .Ok(Cpp.f(x)?); }`.
-> Additionally, in 0.1 a catching import requires the C++ return type to map to
-> a scalar (int, float, bool, pointer, after adapters) or `void`, because
-> `Core.Result(S, Cpp.Exception)` is a choice specific bound by SF-6
-> (`toolchain/check/type.cpp`, `IsInSliceChoicePayloadType`); a class,
+> (parentheses around the call are transparent). The other context of the second
+> bullet — a binding or argument whose EXPECTED type is `Core.Result(S,
+> Cpp.Exception)`, such as `let r: Core.Result(i32, Cpp.Exception) =
+> Cpp.parse(x);` — needs an expected-type channel the checker does not have
+> (conversions run after the call is emitted) and is deferred as the residue
+> item "catching-import selection in binding/argument contexts"; the one-line
+> workaround is a helper `fn Wrap() -> Core.Result(S, Cpp.Exception) { return
+> .Ok(Cpp.f(x)?); }`. Additionally, in 0.1 a catching import requires the C++
+> return type to map to a scalar (int, float, bool, pointer, after adapters) or
+> `void`, because `Core.Result(S, Cpp.Exception)` is a choice specific bound by
+> SF-6 (`toolchain/check/type.cpp`, `IsInSliceChoicePayloadType`); a class,
 > `std::string`, or constructor return is diagnosed at the `?` with a context
-> note naming the C++ callee (`CppCatchingImportNonScalarSuccess`). Break condition:
-> the SF-6 lift (the Sum types bullet, W-010's residue) removes this sentence.
+> note naming the C++ callee (`CppCatchingImportNonScalarSuccess`). Break
+> condition: the SF-6 lift (the Sum types bullet, W-010's residue) removes this
+> sentence.
 
 ### `Cpp.Exception`
 
@@ -904,11 +903,11 @@ Dependency notes, stated plainly:
     thunk. This is a real B0 implementation cost, not a free re-labeling of
     existing thunks.
 -   **`Core.Optional` rebuild.** The prelude `Optional` is today a placeholder
-    class, not a choice type. The [`Try` impl for `Optional`](#the-coretry-interface)
-    and every `.Some`/`.None` pattern in this document require it to become a
-    payload-carrying choice; that rebuild rides the SF-9 decision at W5-S3p
-    (restaged 2026-08-08 — the choice-payloads machinery itself landed at
-    W5-S2/S3).
+    class, not a choice type. The
+    [`Try` impl for `Optional`](#the-coretry-interface) and every `.Some`/`.None`
+    pattern in this document require it to become a payload-carrying choice;
+    that rebuild rides the SF-9 decision at W5-S3p (restaged 2026-08-08 — the
+    choice-payloads machinery itself landed at W5-S2/S3).
 -   **`Cpp.Exception` synthesis.** Carbon source cannot declare into the `Cpp`
     package, so B3 must add a toolchain mechanism that synthesizes the type
     into the `Cpp` scope (as for the built-in file-less C++ entities).

@@ -56,19 +56,6 @@ auto ClangDeclSignature::Print(llvm::raw_ostream& out) const -> void {
     out << ", self_mode: ";
     print_mode(self_passing_mode);
   }
-  if (!constant_function_args.empty()) {
-    out << ", constant_args: [";
-    llvm::ListSeparator sep;
-    for (const auto* constant_decl : constant_function_args) {
-      out << sep;
-      if (constant_decl) {
-        out << "\"" << constant_decl->getNameAsString() << "\"";
-      } else {
-        out << "null";
-      }
-    }
-    out << "]";
-  }
   out << "}";
 }
 
@@ -145,14 +132,14 @@ auto ClangDeclStore::LookupId(ClangDeclKey key) const -> ClangDeclId {
   return values_.Lookup(key);
 }
 
-auto ClangDeclStore::Lookup(InstId inst_id, SpecificId specific_id) const
-    -> const ClangDecl* {
+auto ClangDeclStore::LookupId(InstId inst_id, SpecificId specific_id) const
+    -> ClangDeclId {
   if (auto result = reverse_lookup_.Lookup(
           KeyContext::Key{.inst_id = inst_id, .specific_id = specific_id},
           KeyContext(this))) {
-    return &Get(result.key());
+    return result.key();
   }
-  return nullptr;
+  return ClangDeclId::None;
 }
 
 auto ClangDeclStore::OutputYaml() const -> Yaml::OutputMapping {

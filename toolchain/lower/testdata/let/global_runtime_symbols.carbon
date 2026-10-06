@@ -71,58 +71,58 @@ fn UseHidden() -> i32 { return hidden; }
 // CHECK:STDOUT: @llvm.global_ctors = appending global [1 x { i32, ptr, ptr }] [{ i32, ptr, ptr } { i32 0, ptr @_C__global_init.Main, ptr null }]
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CSeed.Main() #0 !dbg !4 {
+// CHECK:STDOUT: define i32 @_CSeed.Main() #0 !dbg !23 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret i32 7, !dbg !8
+// CHECK:STDOUT:   ret i32 7, !dbg !26
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CFirst.Main() #0 !dbg !9 {
+// CHECK:STDOUT: define i32 @_CFirst.Main() #0 !dbg !27 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %total.ref = load i32, ptr @_Ctotal.Main, align 4, !dbg !10
-// CHECK:STDOUT:   ret i32 %total.ref, !dbg !11
+// CHECK:STDOUT:   %total.ref = load i32, ptr @_Ctotal.Main, align 4, !dbg !30
+// CHECK:STDOUT:   ret i32 %total.ref, !dbg !31
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CSecond.Main() #0 !dbg !12 {
+// CHECK:STDOUT: define i32 @_CSecond.Main() #0 !dbg !32 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %total.ref = load i32, ptr @_Ctotal.Main, align 4, !dbg !13
-// CHECK:STDOUT:   ret i32 %total.ref, !dbg !14
+// CHECK:STDOUT:   %total.ref = load i32, ptr @_Ctotal.Main, align 4, !dbg !35
+// CHECK:STDOUT:   ret i32 %total.ref, !dbg !36
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define internal void @_C__global_init.Main() #0 !dbg !15 {
+// CHECK:STDOUT: define internal void @_C__global_init.Main() #0 !dbg !39 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %Seed.call = call i32 @_CSeed.Main(), !dbg !18
+// CHECK:STDOUT:   %Seed.call = call i32 @_CSeed.Main(), !dbg !40
 // CHECK:STDOUT:   store i32 %Seed.call, ptr @_Ctotal.Main, align 4
-// CHECK:STDOUT:   ret void, !dbg !19
+// CHECK:STDOUT:   ret void, !dbg !41
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT:
-// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
+// CHECK:STDOUT: !llvm.dbg.cu = !{!19}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
 // CHECK:STDOUT:
-// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
-// CHECK:STDOUT: !1 = !DIFile(filename: "def.carbon", directory: "")
 // CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
 // CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
-// CHECK:STDOUT: !4 = distinct !DISubprogram(name: "Seed", linkageName: "_CSeed.Main", scope: null, file: !1, line: 4, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !5 = !DISubroutineType(types: !6)
-// CHECK:STDOUT: !6 = !{!7}
-// CHECK:STDOUT: !7 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !8 = !DILocation(line: 4, column: 20, scope: !4)
-// CHECK:STDOUT: !9 = distinct !DISubprogram(name: "First", linkageName: "_CFirst.Main", scope: null, file: !1, line: 10, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !10 = !DILocation(line: 10, column: 28, scope: !9)
-// CHECK:STDOUT: !11 = !DILocation(line: 10, column: 21, scope: !9)
-// CHECK:STDOUT: !12 = distinct !DISubprogram(name: "Second", linkageName: "_CSecond.Main", scope: null, file: !1, line: 12, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !13 = !DILocation(line: 12, column: 29, scope: !12)
-// CHECK:STDOUT: !14 = !DILocation(line: 12, column: 22, scope: !12)
-// CHECK:STDOUT: !15 = distinct !DISubprogram(name: "__global_init", linkageName: "_C__global_init.Main", scope: null, file: !1, type: !16, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !16 = !DISubroutineType(types: !17)
-// CHECK:STDOUT: !17 = !{null}
-// CHECK:STDOUT: !18 = !DILocation(line: 6, column: 18, scope: !15)
-// CHECK:STDOUT: !19 = !DILocation(line: 0, scope: !15)
+// CHECK:STDOUT: !18 = !DIFile(filename: "def.carbon", directory: "")
+// CHECK:STDOUT: !19 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !18, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !20 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !21 = !{!20}
+// CHECK:STDOUT: !22 = !DISubroutineType(types: !21)
+// CHECK:STDOUT: !23 = distinct !DISubprogram(name: "Seed", linkageName: "_CSeed.Main", scope: null, file: !18, line: 4, type: !22, spFlags: DISPFlagDefinition, unit: !19)
+// CHECK:STDOUT: !26 = !DILocation(line: 4, column: 20, scope: !23)
+// CHECK:STDOUT: !27 = distinct !DISubprogram(name: "First", linkageName: "_CFirst.Main", scope: null, file: !18, line: 10, type: !22, spFlags: DISPFlagDefinition, unit: !19)
+// CHECK:STDOUT: !30 = !DILocation(line: 10, column: 28, scope: !27)
+// CHECK:STDOUT: !31 = !DILocation(line: 10, column: 21, scope: !27)
+// CHECK:STDOUT: !32 = distinct !DISubprogram(name: "Second", linkageName: "_CSecond.Main", scope: null, file: !18, line: 12, type: !22, spFlags: DISPFlagDefinition, unit: !19)
+// CHECK:STDOUT: !35 = !DILocation(line: 12, column: 29, scope: !32)
+// CHECK:STDOUT: !36 = !DILocation(line: 12, column: 22, scope: !32)
+// CHECK:STDOUT: !37 = !{null}
+// CHECK:STDOUT: !38 = !DISubroutineType(types: !37)
+// CHECK:STDOUT: !39 = distinct !DISubprogram(name: "__global_init", linkageName: "_C__global_init.Main", scope: null, file: !18, type: !38, spFlags: DISPFlagDefinition, unit: !19)
+// CHECK:STDOUT: !40 = !DILocation(line: 6, column: 18, scope: !39)
+// CHECK:STDOUT: !41 = !DILocation(line: 0, scope: !39)
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'import_one.carbon'
@@ -131,17 +131,17 @@ fn UseHidden() -> i32 { return hidden; }
 // CHECK:STDOUT: @_Ctotal.Main = external global i32
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CImportedOnceA.Main() #0 !dbg !4 {
+// CHECK:STDOUT: define i32 @_CImportedOnceA.Main() #0 !dbg !44 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %total.ref = load i32, ptr @_Ctotal.Main, align 4, !dbg !8
-// CHECK:STDOUT:   ret i32 %total.ref, !dbg !9
+// CHECK:STDOUT:   %total.ref = load i32, ptr @_Ctotal.Main, align 4, !dbg !47
+// CHECK:STDOUT:   ret i32 %total.ref, !dbg !48
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CImportedOnceB.Main() #0 !dbg !10 {
+// CHECK:STDOUT: define i32 @_CImportedOnceB.Main() #0 !dbg !49 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %total.ref = load i32, ptr @_Ctotal.Main, align 4, !dbg !11
-// CHECK:STDOUT:   ret i32 %total.ref, !dbg !12
+// CHECK:STDOUT:   %total.ref = load i32, ptr @_Ctotal.Main, align 4, !dbg !52
+// CHECK:STDOUT:   ret i32 %total.ref, !dbg !53
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare i32 @_CSeed.Main()
@@ -152,22 +152,22 @@ fn UseHidden() -> i32 { return hidden; }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT:
-// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
+// CHECK:STDOUT: !llvm.dbg.cu = !{!43}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
 // CHECK:STDOUT:
-// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
-// CHECK:STDOUT: !1 = !DIFile(filename: "import_one.carbon", directory: "")
 // CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
 // CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
-// CHECK:STDOUT: !4 = distinct !DISubprogram(name: "ImportedOnceA", linkageName: "_CImportedOnceA.Main", scope: null, file: !1, line: 6, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !5 = !DISubroutineType(types: !6)
-// CHECK:STDOUT: !6 = !{!7}
-// CHECK:STDOUT: !7 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !8 = !DILocation(line: 6, column: 36, scope: !4)
-// CHECK:STDOUT: !9 = !DILocation(line: 6, column: 29, scope: !4)
-// CHECK:STDOUT: !10 = distinct !DISubprogram(name: "ImportedOnceB", linkageName: "_CImportedOnceB.Main", scope: null, file: !1, line: 8, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !11 = !DILocation(line: 8, column: 36, scope: !10)
-// CHECK:STDOUT: !12 = !DILocation(line: 8, column: 29, scope: !10)
+// CHECK:STDOUT: !20 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !21 = !{!20}
+// CHECK:STDOUT: !22 = !DISubroutineType(types: !21)
+// CHECK:STDOUT: !42 = !DIFile(filename: "import_one.carbon", directory: "")
+// CHECK:STDOUT: !43 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !42, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !44 = distinct !DISubprogram(name: "ImportedOnceA", linkageName: "_CImportedOnceA.Main", scope: null, file: !42, line: 6, type: !22, spFlags: DISPFlagDefinition, unit: !43)
+// CHECK:STDOUT: !47 = !DILocation(line: 6, column: 36, scope: !44)
+// CHECK:STDOUT: !48 = !DILocation(line: 6, column: 29, scope: !44)
+// CHECK:STDOUT: !49 = distinct !DISubprogram(name: "ImportedOnceB", linkageName: "_CImportedOnceB.Main", scope: null, file: !42, line: 8, type: !22, spFlags: DISPFlagDefinition, unit: !43)
+// CHECK:STDOUT: !52 = !DILocation(line: 8, column: 36, scope: !49)
+// CHECK:STDOUT: !53 = !DILocation(line: 8, column: 29, scope: !49)
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'import_two.carbon'
@@ -176,10 +176,10 @@ fn UseHidden() -> i32 { return hidden; }
 // CHECK:STDOUT: @_Ctotal.Main = external global i32
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CImportedTwice.Main() #0 !dbg !4 {
+// CHECK:STDOUT: define i32 @_CImportedTwice.Main() #0 !dbg !56 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %total.ref = load i32, ptr @_Ctotal.Main, align 4, !dbg !8
-// CHECK:STDOUT:   ret i32 %total.ref, !dbg !9
+// CHECK:STDOUT:   %total.ref = load i32, ptr @_Ctotal.Main, align 4, !dbg !59
+// CHECK:STDOUT:   ret i32 %total.ref, !dbg !60
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare i32 @_CSeed.Main()
@@ -190,19 +190,19 @@ fn UseHidden() -> i32 { return hidden; }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT:
-// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
+// CHECK:STDOUT: !llvm.dbg.cu = !{!55}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
 // CHECK:STDOUT:
-// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
-// CHECK:STDOUT: !1 = !DIFile(filename: "import_two.carbon", directory: "")
 // CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
 // CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
-// CHECK:STDOUT: !4 = distinct !DISubprogram(name: "ImportedTwice", linkageName: "_CImportedTwice.Main", scope: null, file: !1, line: 6, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !5 = !DISubroutineType(types: !6)
-// CHECK:STDOUT: !6 = !{!7}
-// CHECK:STDOUT: !7 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !8 = !DILocation(line: 6, column: 36, scope: !4)
-// CHECK:STDOUT: !9 = !DILocation(line: 6, column: 29, scope: !4)
+// CHECK:STDOUT: !20 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !21 = !{!20}
+// CHECK:STDOUT: !22 = !DISubroutineType(types: !21)
+// CHECK:STDOUT: !54 = !DIFile(filename: "import_two.carbon", directory: "")
+// CHECK:STDOUT: !55 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !54, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !56 = distinct !DISubprogram(name: "ImportedTwice", linkageName: "_CImportedTwice.Main", scope: null, file: !54, line: 6, type: !22, spFlags: DISPFlagDefinition, unit: !55)
+// CHECK:STDOUT: !59 = !DILocation(line: 6, column: 36, scope: !56)
+// CHECK:STDOUT: !60 = !DILocation(line: 6, column: 29, scope: !56)
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'private.carbon'
@@ -212,46 +212,46 @@ fn UseHidden() -> i32 { return hidden; }
 // CHECK:STDOUT: @llvm.global_ctors = appending global [1 x { i32, ptr, ptr }] [{ i32, ptr, ptr } { i32 0, ptr @_C__global_init.Main, ptr null }]
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CPrivateSeed.Main() #0 !dbg !4 {
+// CHECK:STDOUT: define i32 @_CPrivateSeed.Main() #0 !dbg !63 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   ret i32 9, !dbg !8
+// CHECK:STDOUT:   ret i32 9, !dbg !66
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define i32 @_CUseHidden.Main() #0 !dbg !9 {
+// CHECK:STDOUT: define i32 @_CUseHidden.Main() #0 !dbg !67 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %hidden.ref = load i32, ptr @_Chidden.Main.b2b5bfc054bc42f8, align 4, !dbg !10
-// CHECK:STDOUT:   ret i32 %hidden.ref, !dbg !11
+// CHECK:STDOUT:   %hidden.ref = load i32, ptr @_Chidden.Main.b2b5bfc054bc42f8, align 4, !dbg !70
+// CHECK:STDOUT:   ret i32 %hidden.ref, !dbg !71
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define internal void @_C__global_init.Main() #0 !dbg !12 {
+// CHECK:STDOUT: define internal void @_C__global_init.Main() #0 !dbg !72 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %PrivateSeed.call = call i32 @_CPrivateSeed.Main(), !dbg !15
+// CHECK:STDOUT:   %PrivateSeed.call = call i32 @_CPrivateSeed.Main(), !dbg !73
 // CHECK:STDOUT:   store i32 %PrivateSeed.call, ptr @_Chidden.Main.b2b5bfc054bc42f8, align 4
-// CHECK:STDOUT:   ret void, !dbg !16
+// CHECK:STDOUT:   ret void, !dbg !74
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: attributes #0 = { nounwind }
 // CHECK:STDOUT:
-// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
+// CHECK:STDOUT: !llvm.dbg.cu = !{!62}
 // CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
 // CHECK:STDOUT:
-// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
-// CHECK:STDOUT: !1 = !DIFile(filename: "private.carbon", directory: "")
 // CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
 // CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
-// CHECK:STDOUT: !4 = distinct !DISubprogram(name: "PrivateSeed", linkageName: "_CPrivateSeed.Main", scope: null, file: !1, line: 4, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !5 = !DISubroutineType(types: !6)
-// CHECK:STDOUT: !6 = !{!7}
-// CHECK:STDOUT: !7 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-// CHECK:STDOUT: !8 = !DILocation(line: 4, column: 27, scope: !4)
-// CHECK:STDOUT: !9 = distinct !DISubprogram(name: "UseHidden", linkageName: "_CUseHidden.Main", scope: null, file: !1, line: 10, type: !5, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !10 = !DILocation(line: 10, column: 32, scope: !9)
-// CHECK:STDOUT: !11 = !DILocation(line: 10, column: 25, scope: !9)
-// CHECK:STDOUT: !12 = distinct !DISubprogram(name: "__global_init", linkageName: "_C__global_init.Main", scope: null, file: !1, type: !13, spFlags: DISPFlagDefinition, unit: !0)
-// CHECK:STDOUT: !13 = !DISubroutineType(types: !14)
-// CHECK:STDOUT: !14 = !{null}
-// CHECK:STDOUT: !15 = !DILocation(line: 8, column: 27, scope: !12)
-// CHECK:STDOUT: !16 = !DILocation(line: 0, scope: !12)
+// CHECK:STDOUT: !20 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !21 = !{!20}
+// CHECK:STDOUT: !22 = !DISubroutineType(types: !21)
+// CHECK:STDOUT: !37 = !{null}
+// CHECK:STDOUT: !38 = !DISubroutineType(types: !37)
+// CHECK:STDOUT: !61 = !DIFile(filename: "private.carbon", directory: "")
+// CHECK:STDOUT: !62 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !61, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !63 = distinct !DISubprogram(name: "PrivateSeed", linkageName: "_CPrivateSeed.Main", scope: null, file: !61, line: 4, type: !22, spFlags: DISPFlagDefinition, unit: !62)
+// CHECK:STDOUT: !66 = !DILocation(line: 4, column: 27, scope: !63)
+// CHECK:STDOUT: !67 = distinct !DISubprogram(name: "UseHidden", linkageName: "_CUseHidden.Main", scope: null, file: !61, line: 10, type: !22, spFlags: DISPFlagDefinition, unit: !62)
+// CHECK:STDOUT: !70 = !DILocation(line: 10, column: 32, scope: !67)
+// CHECK:STDOUT: !71 = !DILocation(line: 10, column: 25, scope: !67)
+// CHECK:STDOUT: !72 = distinct !DISubprogram(name: "__global_init", linkageName: "_C__global_init.Main", scope: null, file: !61, type: !38, spFlags: DISPFlagDefinition, unit: !62)
+// CHECK:STDOUT: !73 = !DILocation(line: 8, column: 27, scope: !72)
+// CHECK:STDOUT: !74 = !DILocation(line: 0, scope: !72)
 // CHECK:STDOUT:

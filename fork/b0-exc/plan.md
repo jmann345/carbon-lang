@@ -51,8 +51,8 @@ fencing beyond what falls out naturally (see §4 note), MSVC/Windows.
     -   `clang_args`, then calls `Carbon::BuildClangInvocation`
         (toolchain/base/clang_invocation.cpp:53-109), which runs the real Clang
         driver → `clang::CompilerInvocation`. The resulting **LangOpts carry the
-        resolved exceptions state** (`CXXExceptions`), including `-fno-exceptions`
-        from user `--clang-arg`s and target defaults.
+        resolved exceptions state** (`CXXExceptions`), including
+        `-fno-exceptions` from user `--clang-arg`s and target defaults.
 -   **Plumbing already exists.** The `CompilerInvocation` flows driver → check
     intact: compile_driver.cpp:463,630-631 → `Check::CheckParseTrees`
     (check.h:89-94) → `CheckUnit` (check_unit.cpp:66-73) → `ImportCpp`
@@ -330,17 +330,17 @@ throwing C++, exporting Carbon errors as std::expected/exceptions)"
 (exact text per R7); inline-C++ shape cloned from
 interop/cpp_operator_import_arithmetic.carbon:
 
--   `cpp_exceptions_none_mode.carbon` — `COMPILE-ARGS:
-    --cpp-exceptions=none`; non-throwing C++ helper (no `throw` anywhere —
-    it would be a compile error in this mode); computes and prints a value;
-    EXPECT-EXIT 0 + EXPECT-STDOUT. Pins that the -fno-except configuration compiles and runs (throw
-    rejection is pinned by fail_throw_in_none.carbon, not here —
-    landing-review honesty note).
+-   `cpp_exceptions_none_mode.carbon` — `COMPILE-ARGS: --cpp-exceptions=none`;
+    non-throwing C++ helper (no `throw` anywhere — it would be a compile error
+    in this mode); computes and prints a value; EXPECT-EXIT 0 + EXPECT-STDOUT.
+    Pins that the -fno-except configuration compiles and runs (throw rejection
+    is pinned by fail_throw_in_none.carbon, not here — landing-review honesty
+    note).
 -   `cpp_exceptions_auto_catch.carbon` — no COMPILE-ARGS (default `auto`);
-    helper containing `throw` on an untaken path; EXPECT-EXIT 0 +
-    EXPECT-STDOUT. Pins that the default build keeps C++ exceptions enabled (a literal
-    `throw` compiles); auto RESOLUTION is pinned by the check goldens, not
-    here (landing-review honesty note).
+    helper containing `throw` on an untaken path; EXPECT-EXIT 0 + EXPECT-STDOUT.
+    Pins that the default build keeps C++ exceptions enabled (a literal `throw`
+    compiles); auto RESOLUTION is pinned by the check goldens, not here
+    (landing-review honesty note).
 -   `cpp_exceptions_fence_terminate.carbon` — `COMPILE-ARGS:
     --cpp-exceptions=catch`; helper that unconditionally throws; the Carbon
     call site never sees the exception; `EXPECT-EXIT: -6` (SIGABRT by way of

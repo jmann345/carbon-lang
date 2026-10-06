@@ -575,9 +575,10 @@ auto Formatter::FormatFunction(FunctionId id, const Function& fn) -> void {
                           fn.call_param_ranges.return_begin(),
                           fn.GetDeclaredReturnForm(*sem_ir_));
 
-  if (fn.builtin_function_kind() != BuiltinFunctionKind::None) {
+  if (auto builtin_kind = fn.GetBuiltinFunctionKind(*sem_ir_);
+      builtin_kind != BuiltinFunctionKind::None) {
     out() << " = \""
-          << FormatEscaped(fn.builtin_function_kind().name(),
+          << FormatEscaped(builtin_kind.name(),
                            /*use_hex_escapes=*/true)
           << "\"";
   }
@@ -645,7 +646,11 @@ auto Formatter::FormatSpecificRegion(const Generic& generic,
     }
     out() << " => ";
     if (specific_inst_id) {
-      FormatName(*specific_inst_id);
+      if (specific_inst_id->has_value()) {
+        FormatName(*specific_inst_id);
+      } else {
+        out() << "<not constant>";
+      }
     } else {
       out() << "<missing>";
     }
@@ -1640,7 +1645,8 @@ auto Formatter::FormatArg(DeclaredFacetTypeId id) -> void {
 
 auto Formatter::FormatArg(FieldId id) -> void {
   const auto& field = sem_ir_->fields().Get(id);
-  out() << field.index;
+  FormatName(field.name_id);
+  out() << ", " << field.index;
   if (field.initializer_id.has_value()) {
     out() << ", initializer = ";
     out() << field.initializer_id;
@@ -1715,6 +1721,12 @@ auto Formatter::FormatArg(StringLiteralValueId id) -> void {
         << FormatEscaped(sem_ir_->string_literal_values().Get(id),
                          /*use_hex_escapes=*/true)
         << '"';
+}
+
+auto Formatter::FormatArg(ClangDeclId id) -> void { out() << id; }
+
+auto Formatter::FormatArg(ClangFunctionPointerTypeId id) -> void {
+  out() << id;
 }
 
 auto Formatter::FormatReturnSlotArg(InstId dest_id) -> void {

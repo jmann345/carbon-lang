@@ -392,12 +392,14 @@ static auto BuildAlternativeConstructor(
   // `ExportDestructorToCpp` — which still resolves to the choice's source
   // location in diagnostics.
   auto loc_id = SemIR::LocId(choice_info.class_decl_id);
+  llvm::SmallVector<ParamPatternKind> param_kinds(alt.param_type_ids.size(),
+                                                  ParamPatternKind::Value);
   auto [decl_id, function_id] =
       MakeGeneratedFunctionDecl(context, loc_id,
                                 {.parent_scope_id = choice_info.name_scope_id,
                                  .name_id = binding.name_component.name_id,
                                  .param_type_ids = alt.param_type_ids,
-                                 .param_kind = ParamPatternKind::Value,
+                                 .param_kinds = param_kinds,
                                  .return_type_id = choice_info.self_type_id,
                                  .build_generic = choice_info.is_generic});
 

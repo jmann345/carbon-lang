@@ -43,7 +43,7 @@ struct LeafNode {
 //
 // Each of these types should start with a `static constexpr Kind` member
 // initialized by calling `Define` on the corresponding `NodeKind`, and passing
-// in the `NodeCategory` of that kind.  This will both associate the category
+// in the `NodeCategory` of that kind. This will both associate the category
 // with the node kind and create the necessary kind object for the typed node.
 //
 // This should be followed by field declarations that describe the child nodes,
@@ -371,6 +371,29 @@ struct UnusedPattern {
 
   Lex::UnusedTokenIndex token;
   AnyPatternId inner;
+};
+
+using DefaultValueUnspecified =
+    LeafNode<NodeKind::DefaultValueUnspecified, Lex::UnderscoreTokenIndex,
+             NodeCategory::Expr>;
+
+struct DefaultValueExprStart {
+  static constexpr auto Kind =
+      NodeKind::DefaultValueExprStart.Define({.child_count = 0});
+  // This is a virtual token. The `=` token is owned by the
+  // DefaultValuePattern node.
+  Lex::EqualTokenIndex token;
+};
+
+// A pattern with a default value specified: `pattern = expr`.
+struct DefaultValuePattern {
+  static constexpr auto Kind = NodeKind::DefaultValuePattern.Define(
+      {.category = NodeCategory::Pattern, .child_count = 3});
+
+  AnyPatternId pattern;
+  Lex::EqualTokenIndex token;
+  DefaultValueExprStartId start;
+  AnyExprId default_value_expr;
 };
 
 // A ref binding name: `ref name`.
@@ -1182,6 +1205,25 @@ struct FormLiteral {
   Lex::CloseParenTokenIndex token;
 };
 
+using TypeOfExprKeyword =
+    LeafNode<NodeKind::TypeOfExprKeyword, Lex::TypeOfTokenIndex>;
+
+using TypeOfExprOpenParen =
+    LeafNode<NodeKind::TypeOfExprOpenParen, Lex::OpenParenTokenIndex>;
+
+// A `typeof` expression: `typeof(expr)`.
+struct TypeOfExpr {
+  static constexpr auto Kind =
+      NodeKind::TypeOfExpr.Define({.category = NodeCategory::Expr,
+                                   .bracketed_by = NodeKind::TypeOfExprKeyword,
+                                   .child_count = 3});
+
+  TypeOfExprKeywordId keyword;
+  TypeOfExprOpenParenId start;
+  AnyExprId operand;
+  Lex::CloseParenTokenIndex token;
+};
+
 // The opening portion of an indexing expression: `a[`.
 //
 // TODO: Consider flattening this into `IndexExpr`.
@@ -1614,7 +1656,7 @@ struct StructPatternDesignatedField {
 using StructPatternFieldId =
     NodeIdOneOf<StructPatternDesignatedField, LetBindingPattern,
                 VariablePattern, VarBindingPattern, UnusedPattern,
-                UnderscoreName>;
+                UnderscoreName, DefaultValuePattern>;
 
 struct StructPattern {
   static constexpr auto Kind = NodeKind::StructPattern.Define(
@@ -1740,6 +1782,25 @@ struct BaseDecl {
   llvm::SmallVector<AnyModifierId> modifiers;
   BaseColonId colon;
   AnyExprId base_class;
+  Lex::SemiTokenIndex token;
+};
+
+// Friend declaration
+// ------------------
+
+using FriendIntroducer =
+    LeafNode<NodeKind::FriendIntroducer, Lex::FriendTokenIndex>;
+
+struct FriendDecl {
+  static constexpr auto Kind = NodeKind::FriendDecl.Define(
+      {.category = NodeCategory::Decl, .bracketed_by = FriendIntroducer::Kind});
+
+  FriendIntroducerId introducer;
+
+  // TODO: figure out the more general syntax for the name part of a friend
+  // declaration.
+  IdentifierNameExprId name;
+
   Lex::SemiTokenIndex token;
 };
 
@@ -1957,6 +2018,11 @@ struct NamedConstraintDefinition {
   llvm::SmallVector<AnyDeclId> members;
   Lex::CloseCurlyBraceTokenIndex token;
 };
+
+// `$0`
+using PositionalParamExpr =
+    LeafNode<NodeKind::PositionalParamExpr, Lex::DollarIntLiteralTokenIndex,
+             NodeCategory::Expr>;
 
 // ---------------------------------------------------------------------------
 

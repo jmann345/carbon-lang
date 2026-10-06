@@ -48,8 +48,8 @@ fn Use() -> i32 {
 // CHECK:STDOUT: --- generic_class.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
-// CHECK:STDOUT:   %type: type = facet_type <type> [concrete]
-// CHECK:STDOUT:   %.Self.frozen.197: %type = symbolic_binding .Self [symbolic_self]
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %.Self.frozen.e58: type = symbolic_binding .Self [symbolic_self]
 // CHECK:STDOUT:   %Copy.type: type = facet_type <@Copy> [concrete]
 // CHECK:STDOUT:   %pattern_type.e81: type = pattern_type %Copy.type [concrete]
 // CHECK:STDOUT:   %T.patt.fe6: %pattern_type.e81 = symbolic_binding_pattern T, 0 [symbolic]
@@ -61,7 +61,6 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %T.as_type.c1c: type = facet_access_type %T.f84 [symbolic]
 // CHECK:STDOUT:   %require_complete.d83: <witness> = require_complete_type %T.as_type.c1c [symbolic]
 // CHECK:STDOUT:   %pattern_type.2c66b4.2: type = pattern_type %T.as_type.c1c [symbolic]
-// CHECK:STDOUT:   %tag.patt.d4d: %pattern_type.2c66b4.2 = ref_binding_pattern tag [symbolic]
 // CHECK:STDOUT:   %Box.elem.159: type = unbound_element_type %Box.fc8, %T.as_type.c1c [symbolic]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %Int.type: type = generic_class_type @Int [concrete]
@@ -69,7 +68,6 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
 // CHECK:STDOUT:   %Int.67af24.1: type = class_type @Int, @Int(%N) [symbolic]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
-// CHECK:STDOUT:   %i32.builtin: type = int_type signed, %int_32 [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
 // CHECK:STDOUT:   %Box.elem.adb: type = unbound_element_type %Box.fc8, %i32 [symbolic]
 // CHECK:STDOUT:   %x.param_patt: %pattern_type.6b6 = value_param_pattern [concrete]
@@ -176,8 +174,6 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %complete_type.4a1: <witness> = complete_type_witness %i64.builtin [concrete]
 // CHECK:STDOUT:   %Copy.facet.4e9: %Copy.type = facet_value %i64, (%Copy.impl_witness.8cc) [concrete]
 // CHECK:STDOUT:   %Box.ecf: type = class_type @Box, @Box(%Copy.facet.4e9) [concrete]
-// CHECK:STDOUT:   %pattern_type.f57: type = pattern_type %i64 [concrete]
-// CHECK:STDOUT:   %tag.patt.fc8: %pattern_type.f57 = ref_binding_pattern tag [concrete]
 // CHECK:STDOUT:   %Box.elem.e42: type = unbound_element_type %Box.ecf, %i64 [concrete]
 // CHECK:STDOUT:   %Box.elem.269: type = unbound_element_type %Box.ecf, %i32 [concrete]
 // CHECK:STDOUT:   %Box.Make.type.75b: type = fn_type @Box.Make, @Box(%Copy.facet.4e9) [concrete]
@@ -209,6 +205,7 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %As.WithSelf.Convert.type.7f7: type = fn_type @As.WithSelf.Convert, @As.WithSelf(%i64, %As.facet) [concrete]
 // CHECK:STDOUT:   %.8fd: type = fn_type_with_self_type %As.WithSelf.Convert.type.7f7, %As.facet [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.As.impl.Convert.bound: <bound method> = bound_method %int_0.5c6, %Core.IntLiteral.as.As.impl.Convert.3d9 [concrete]
+// CHECK:STDOUT:   %pattern_type.f57: type = pattern_type %i64 [concrete]
 // CHECK:STDOUT:   %Core.IntLiteral.as.As.impl.Convert.specific_fn: <specific function> = specific_function %Core.IntLiteral.as.As.impl.Convert.3d9, @Core.IntLiteral.as.As.impl.Convert(%int_64) [concrete]
 // CHECK:STDOUT:   %bound_method.585: <bound method> = bound_method %int_0.5c6, %Core.IntLiteral.as.As.impl.Convert.specific_fn [concrete]
 // CHECK:STDOUT:   %int_0.2e4: %i64 = int_value 0 [concrete]
@@ -230,8 +227,35 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %self.patt.692: %pattern_type.60e = wrapper_binding_pattern self, %self.param_patt.e92 [concrete]
 // CHECK:STDOUT:   %Box.Get.specific_fn: <specific function> = specific_function %Box.Get.7c5, @Box.Get(%Copy.facet.4e9) [concrete]
 // CHECK:STDOUT:   %Destroy.type: type = facet_type <@Destroy> [concrete]
-// CHECK:STDOUT:   %Destroy.Op.type.1d8f74.6: type = fn_type @Destroy.Op.loc15_3.6 [concrete]
-// CHECK:STDOUT:   %Destroy.Op.1a2547.6: %Destroy.Op.type.1d8f74.6 = struct_value () [concrete]
+// CHECK:STDOUT:   %self.param_patt.108: %pattern_type.f57 = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.5f4: %pattern_type.f57 = wrapper_binding_pattern self, %self.param_patt.108 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.1: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc15_3.1 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.1: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.1 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.1: type = fn_type @Destroy.WithSelf.Op.loc15_3.1 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.1: %Destroy.WithSelf.Op.type.ef016f.1 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbceb5.1: type = fn_type @Destroy.WithSelf.SelfDestruct.loc15_3.1 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3fdb.1: %Destroy.WithSelf.SelfDestruct.type.fbceb5.1 = struct_value () [concrete]
+// CHECK:STDOUT:   %self.param_patt.705: %pattern_type.6b6 = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.70d: %pattern_type.6b6 = wrapper_binding_pattern self, %self.param_patt.705 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.2: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc15_3.2 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.2: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.2: type = fn_type @Destroy.WithSelf.Op.loc15_3.2 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.2: %Destroy.WithSelf.Op.type.ef016f.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbceb5.2: type = fn_type @Destroy.WithSelf.SelfDestruct.loc15_3.2 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3fdb.2: %Destroy.WithSelf.SelfDestruct.type.fbceb5.2 = struct_value () [concrete]
+// CHECK:STDOUT:   %pattern_type.5ec: type = pattern_type %struct_type.tag.total.f3f [concrete]
+// CHECK:STDOUT:   %self.param_patt.10e: %pattern_type.5ec = ref_param_pattern [concrete]
+// CHECK:STDOUT:   %self.patt.549: %pattern_type.5ec = wrapper_binding_pattern self, %self.param_patt.10e [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.3: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc15_3.3 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.3: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.3 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.3: type = fn_type @Destroy.WithSelf.Op.loc15_3.3 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.3: %Destroy.WithSelf.Op.type.ef016f.3 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.4: type = fn_type @Destroy.WithSelf.SubobjectDestroy.loc15_3.4 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.d01daf.4: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.4 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.type.ef016f.4: type = fn_type @Destroy.WithSelf.Op.loc15_3.4 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.403171.4: %Destroy.WithSelf.Op.type.ef016f.4 = struct_value () [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.type.fbceb5.4: type = fn_type @Destroy.WithSelf.SelfDestruct.loc15_3.4 [concrete]
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.db3fdb.4: %Destroy.WithSelf.SelfDestruct.type.fbceb5.4 = struct_value () [concrete]
 // CHECK:STDOUT:   %Copy.WithSelf.Op.type.5c1: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet.4e9) [concrete]
 // CHECK:STDOUT:   %.826: type = fn_type_with_self_type %Copy.WithSelf.Op.type.5c1, %Copy.facet.4e9 [concrete]
 // CHECK:STDOUT:   %Int.as.Copy.impl.Op.specific_fn.b95: <specific function> = specific_function %Int.as.Copy.impl.Op.d73, @Int.as.Copy.impl.Op(%int_64) [concrete]
@@ -271,12 +295,71 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %Core.Destroy: type = import_ref Core//prelude/destroy, Destroy, loaded [concrete = constants.%Destroy.type]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
+// CHECK:STDOUT: generated {
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.1: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.1 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc15_3.1 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.1] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.f57 = ref_param_pattern [concrete = constants.%self.param_patt.108]
+// CHECK:STDOUT:     %self.patt: %pattern_type.f57 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.5f4]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %i64 = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %i64 = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.1: %Destroy.WithSelf.Op.type.ef016f.1 = fn_decl @Destroy.WithSelf.Op.loc15_3.1 [concrete = constants.%Destroy.WithSelf.Op.403171.1] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.f57 = ref_param_pattern [concrete = constants.%self.param_patt.108]
+// CHECK:STDOUT:     %self.patt: %pattern_type.f57 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.5f4]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %i64 = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %i64 = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.2: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.2 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc15_3.2 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.2] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.6b6 = ref_param_pattern [concrete = constants.%self.param_patt.705]
+// CHECK:STDOUT:     %self.patt: %pattern_type.6b6 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.70d]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %i32 = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %i32 = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.2: %Destroy.WithSelf.Op.type.ef016f.2 = fn_decl @Destroy.WithSelf.Op.loc15_3.2 [concrete = constants.%Destroy.WithSelf.Op.403171.2] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.6b6 = ref_param_pattern [concrete = constants.%self.param_patt.705]
+// CHECK:STDOUT:     %self.patt: %pattern_type.6b6 = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.70d]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %i32 = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %i32 = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.3: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.3 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc15_3.3 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.3] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.5ec = ref_param_pattern [concrete = constants.%self.param_patt.10e]
+// CHECK:STDOUT:     %self.patt: %pattern_type.5ec = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.549]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %struct_type.tag.total.f3f = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %struct_type.tag.total.f3f = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.3: %Destroy.WithSelf.Op.type.ef016f.3 = fn_decl @Destroy.WithSelf.Op.loc15_3.3 [concrete = constants.%Destroy.WithSelf.Op.403171.3] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.5ec = ref_param_pattern [concrete = constants.%self.param_patt.10e]
+// CHECK:STDOUT:     %self.patt: %pattern_type.5ec = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.549]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %struct_type.tag.total.f3f = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %struct_type.tag.total.f3f = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.decl.763c71.4: %Destroy.WithSelf.SubobjectDestroy.type.dfcbdb.4 = fn_decl @Destroy.WithSelf.SubobjectDestroy.loc15_3.4 [concrete = constants.%Destroy.WithSelf.SubobjectDestroy.d01daf.4] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.60e = ref_param_pattern [concrete = constants.%self.param_patt.359]
+// CHECK:STDOUT:     %self.patt: %pattern_type.60e = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.453]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %Box.ecf = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %Box.ecf = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.4: %Destroy.WithSelf.Op.type.ef016f.4 = fn_decl @Destroy.WithSelf.Op.loc15_3.4 [concrete = constants.%Destroy.WithSelf.Op.403171.4] {
+// CHECK:STDOUT:     %self.param_patt: %pattern_type.60e = ref_param_pattern [concrete = constants.%self.param_patt.359]
+// CHECK:STDOUT:     %self.patt: %pattern_type.60e = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.453]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %self.param: ref %Box.ecf = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %Box.ecf = wrapper_binding self, %self.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
 // CHECK:STDOUT: file {
 // CHECK:STDOUT:   %Box.decl: %Box.type = class_decl @Box [concrete = constants.%Box.generic] {
 // CHECK:STDOUT:     %T.patt.loc5_12.1: %pattern_type.e81 = symbolic_binding_pattern T, 0 [symbolic = %T.patt.loc5_12.2 (constants.%T.patt.fe6)]
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %.loc5: type = splice_block %Copy.ref [concrete = constants.%Copy.type] {
-// CHECK:STDOUT:       %.Self.frozen: %type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen.197]
+// CHECK:STDOUT:       %.Self.frozen: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen.e58]
 // CHECK:STDOUT:       %Core.ref: <namespace> = name_ref Core, imports.%Core [concrete = imports.%Core]
 // CHECK:STDOUT:       %Copy.ref: type = name_ref Copy, imports.%Core.Copy [concrete = constants.%Copy.type]
 // CHECK:STDOUT:     }
@@ -298,12 +381,10 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %T.loc5_12.1: %Copy.type = symbolic_binding T, 0 [symbolic = %T.loc5_12.1 (constants.%T.f84)]
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
-// CHECK:STDOUT:   %T.as_type: type = facet_access_type %T.loc5_12.1 [symbolic = %T.as_type (constants.%T.as_type.c1c)]
-// CHECK:STDOUT:   %require_complete: <witness> = require_complete_type %T.as_type [symbolic = %require_complete (constants.%require_complete.d83)]
-// CHECK:STDOUT:   %pattern_type: type = pattern_type %T.as_type [symbolic = %pattern_type (constants.%pattern_type.2c66b4.2)]
-// CHECK:STDOUT:   %tag.patt: @Box.%pattern_type (%pattern_type.2c66b4.2) = ref_binding_pattern tag [symbolic = %tag.patt (constants.%tag.patt.d4d)]
+// CHECK:STDOUT:   %T.as_type.loc6_12.2: type = facet_access_type %T.loc5_12.1 [symbolic = %T.as_type.loc6_12.2 (constants.%T.as_type.c1c)]
+// CHECK:STDOUT:   %require_complete: <witness> = require_complete_type %T.as_type.loc6_12.2 [symbolic = %require_complete (constants.%require_complete.d83)]
 // CHECK:STDOUT:   %Box: type = class_type @Box, @Box(%T.loc5_12.1) [symbolic = %Box (constants.%Box.fc8)]
-// CHECK:STDOUT:   %Box.elem.loc6: type = unbound_element_type %Box, %T.as_type [symbolic = %Box.elem.loc6 (constants.%Box.elem.159)]
+// CHECK:STDOUT:   %Box.elem.loc6: type = unbound_element_type %Box, %T.as_type.loc6_12.2 [symbolic = %Box.elem.loc6 (constants.%Box.elem.159)]
 // CHECK:STDOUT:   %Box.elem.loc7: type = unbound_element_type %Box, constants.%i32 [symbolic = %Box.elem.loc7 (constants.%Box.elem.adb)]
 // CHECK:STDOUT:   %Box.Make.type: type = fn_type @Box.Make, @Box(%T.loc5_12.1) [symbolic = %Box.Make.type (constants.%Box.Make.type.fef)]
 // CHECK:STDOUT:   %Box.Make: @Box.%Box.Make.type (%Box.Make.type.fef) = struct_value () [symbolic = %Box.Make (constants.%Box.Make.22d)]
@@ -315,12 +396,18 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %Box.Add.loc10: @Box.%Box.Add.type.loc10 (%Box.Add.type.1628b5.2) = struct_value () [symbolic = %Box.Add.loc10 (constants.%Box.Add.b04003.2)]
 // CHECK:STDOUT:   %Box.Get.type: type = fn_type @Box.Get, @Box(%T.loc5_12.1) [symbolic = %Box.Get.type (constants.%Box.Get.type.b71)]
 // CHECK:STDOUT:   %Box.Get: @Box.%Box.Get.type (%Box.Get.type.b71) = struct_value () [symbolic = %Box.Get (constants.%Box.Get.c3a)]
-// CHECK:STDOUT:   %struct_type.tag.total: type = struct_type {.tag: @Box.%T.as_type (%T.as_type.c1c), .total: %i32} [symbolic = %struct_type.tag.total (constants.%struct_type.tag.total.9eb)]
+// CHECK:STDOUT:   %struct_type.tag.total: type = struct_type {.tag: @Box.%T.as_type.loc6_12.2 (%T.as_type.c1c), .total: %i32} [symbolic = %struct_type.tag.total (constants.%struct_type.tag.total.9eb)]
 // CHECK:STDOUT:   %complete_type.loc12_1.2: <witness> = complete_type_witness %struct_type.tag.total [symbolic = %complete_type.loc12_1.2 (constants.%complete_type.081)]
 // CHECK:STDOUT:
 // CHECK:STDOUT:   class {
-// CHECK:STDOUT:     %.loc6: @Box.%Box.elem.loc6 (%Box.elem.159) = field_decl tag, element0 [concrete]
-// CHECK:STDOUT:     %.loc7: @Box.%Box.elem.loc7 (%Box.elem.adb) = field_decl total, element1 [concrete]
+// CHECK:STDOUT:     %field_decl.loc6: @Box.%Box.elem.loc6 (%Box.elem.159) = field_decl tag, element0, %.loc6 in [concrete] {
+// CHECK:STDOUT:       %T.ref: %Copy.type = name_ref T, %T.loc5_12.2 [symbolic = %T.loc5_12.1 (constants.%T.f84)]
+// CHECK:STDOUT:       %T.as_type.loc6_12.1: type = facet_access_type %T.ref [symbolic = %T.as_type.loc6_12.2 (constants.%T.as_type.c1c)]
+// CHECK:STDOUT:       %.loc6: type = converted %T.ref, %T.as_type.loc6_12.1 [symbolic = %T.as_type.loc6_12.2 (constants.%T.as_type.c1c)]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %field_decl.loc7: @Box.%Box.elem.loc7 (%Box.elem.adb) = field_decl total, element1, %i32 in [concrete] {
+// CHECK:STDOUT:       %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:     }
 // CHECK:STDOUT:     %Box.Make.decl: @Box.%Box.Make.type (%Box.Make.type.fef) = fn_decl @Box.Make [symbolic = @Box.%Box.Make (constants.%Box.Make.22d)] {
 // CHECK:STDOUT:       %x.param_patt: %pattern_type.6b6 = value_param_pattern [concrete = constants.%x.param_patt]
 // CHECK:STDOUT:       %x.patt: %pattern_type.6b6 = wrapper_binding_pattern x, %x.param_patt [concrete = constants.%x.patt]
@@ -402,8 +489,8 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   !members:
 // CHECK:STDOUT:     .Self = constants.%Box.fc8
 // CHECK:STDOUT:     .T = <poisoned>
-// CHECK:STDOUT:     .tag = %.loc6
-// CHECK:STDOUT:     .total = %.loc7
+// CHECK:STDOUT:     .tag = %field_decl.loc6
+// CHECK:STDOUT:     .total = %field_decl.loc7
 // CHECK:STDOUT:     .Box = <poisoned>
 // CHECK:STDOUT:     .Make = %Box.Make.decl
 // CHECK:STDOUT:     .Add = %Box.Add.overload_set.value.loc9_37.1
@@ -474,10 +561,10 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   fn(%self.param: ref @Box.Add.loc9.%Box (%Box.fc8), %n.param: %i32) {
 // CHECK:STDOUT:   !entry:
 // CHECK:STDOUT:     %self.ref.loc9_39: ref @Box.Add.loc9.%Box (%Box.fc8) = name_ref self, %self
-// CHECK:STDOUT:     %total.ref.loc9_43: @Box.Add.loc9.%Box.elem (%Box.elem.adb) = name_ref total, @Box.%.loc7 [concrete = @Box.%.loc7]
+// CHECK:STDOUT:     %total.ref.loc9_43: @Box.Add.loc9.%Box.elem (%Box.elem.adb) = name_ref total, @Box.%field_decl.loc7 [concrete = @Box.%field_decl.loc7]
 // CHECK:STDOUT:     %.loc9_43: ref %i32 = class_element_access %self.ref.loc9_39, element1
 // CHECK:STDOUT:     %self.ref.loc9_52: ref @Box.Add.loc9.%Box (%Box.fc8) = name_ref self, %self
-// CHECK:STDOUT:     %total.ref.loc9_56: @Box.Add.loc9.%Box.elem (%Box.elem.adb) = name_ref total, @Box.%.loc7 [concrete = @Box.%.loc7]
+// CHECK:STDOUT:     %total.ref.loc9_56: @Box.Add.loc9.%Box.elem (%Box.elem.adb) = name_ref total, @Box.%field_decl.loc7 [concrete = @Box.%field_decl.loc7]
 // CHECK:STDOUT:     %.loc9_56.1: ref %i32 = class_element_access %self.ref.loc9_52, element1
 // CHECK:STDOUT:     %n.ref: %i32 = name_ref n, %n
 // CHECK:STDOUT:     %impl.elem1: %.d47 = impl_witness_access constants.%AddWith.impl_witness.833, element1 [concrete = constants.%Int.as.AddWith.impl.Op.365]
@@ -509,10 +596,10 @@ fn Use() -> i32 {
 // CHECK:STDOUT:
 // CHECK:STDOUT:   !if.then:
 // CHECK:STDOUT:     %self.ref.loc10_49: ref @Box.Add.loc10.%Box (%Box.fc8) = name_ref self, %self
-// CHECK:STDOUT:     %total.ref.loc10_53: @Box.Add.loc10.%Box.elem (%Box.elem.adb) = name_ref total, @Box.%.loc7 [concrete = @Box.%.loc7]
+// CHECK:STDOUT:     %total.ref.loc10_53: @Box.Add.loc10.%Box.elem (%Box.elem.adb) = name_ref total, @Box.%field_decl.loc7 [concrete = @Box.%field_decl.loc7]
 // CHECK:STDOUT:     %.loc10_53: ref %i32 = class_element_access %self.ref.loc10_49, element1
 // CHECK:STDOUT:     %self.ref.loc10_62: ref @Box.Add.loc10.%Box (%Box.fc8) = name_ref self, %self
-// CHECK:STDOUT:     %total.ref.loc10_66: @Box.Add.loc10.%Box.elem (%Box.elem.adb) = name_ref total, @Box.%.loc7 [concrete = @Box.%.loc7]
+// CHECK:STDOUT:     %total.ref.loc10_66: @Box.Add.loc10.%Box.elem (%Box.elem.adb) = name_ref total, @Box.%field_decl.loc7 [concrete = @Box.%field_decl.loc7]
 // CHECK:STDOUT:     %.loc10_66.1: ref %i32 = class_element_access %self.ref.loc10_62, element1
 // CHECK:STDOUT:     %int_100: Core.IntLiteral = int_value 100 [concrete = constants.%int_100.44f]
 // CHECK:STDOUT:     %impl.elem1: %.fbe = impl_witness_access constants.%AddWith.impl_witness.aa4, element1 [concrete = constants.%Int.as.AddWith.impl.Op.1fd531.2]
@@ -555,7 +642,7 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   fn(%self.param: @Box.Get.%Box (%Box.fc8)) -> out %return.param: %i32 {
 // CHECK:STDOUT:   !entry:
 // CHECK:STDOUT:     %self.ref: @Box.Get.%Box (%Box.fc8) = name_ref self, %self
-// CHECK:STDOUT:     %total.ref: @Box.Get.%Box.elem (%Box.elem.adb) = name_ref total, @Box.%.loc7 [concrete = @Box.%.loc7]
+// CHECK:STDOUT:     %total.ref: @Box.Get.%Box.elem (%Box.elem.adb) = name_ref total, @Box.%field_decl.loc7 [concrete = @Box.%field_decl.loc7]
 // CHECK:STDOUT:     %.loc11_36.1: ref %i32 = class_element_access %self.ref, element1
 // CHECK:STDOUT:     %.loc11_36.2: %i32 = acquire_value %.loc11_36.1
 // CHECK:STDOUT:     %impl.elem0: %.737 = impl_witness_access constants.%Copy.impl_witness.b51, element0 [concrete = constants.%Int.as.Copy.impl.Op.4f6]
@@ -651,32 +738,72 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %bound_method.loc18: <bound method> = bound_method %b.ref.loc18, %Box.Get.specific_fn
 // CHECK:STDOUT:   %.loc18_10: %Box.ecf = acquire_value %b.ref.loc18
 // CHECK:STDOUT:   %Box.Get.call: init %i32 = call %bound_method.loc18(%.loc18_10)
-// CHECK:STDOUT:   %Destroy.Op.bound: <bound method> = bound_method %b.var, constants.%Destroy.Op.1a2547.6
-// CHECK:STDOUT:   %Destroy.Op.call: init %empty_tuple.type = call %Destroy.Op.bound(%b.var)
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound: <bound method> = bound_method %b.var, constants.%Destroy.WithSelf.SelfDestruct.db3fdb.4
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound(%b.var)
 // CHECK:STDOUT:   return %Box.Get.call
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc15_3.1(%self.param: ref %i64.builtin) = "no_op";
+// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc15_3.1(%self.param: ref %i64) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc15_3.2(%self.param: ref %i64) {
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc15_3.1(%self.param: ref %i64) = "no_op";
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc15_3.1(%self.param: ref %i64) {
 // CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl.5f94cf.1(%self.param)
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.SubobjectDestroy.decl.763c71.1(%self.param)
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc15_3.3(%self.param: ref %i32.builtin) = "no_op";
+// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc15_3.2(%self.param: ref %i32) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc15_3.4(%self.param: ref %i32) {
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc15_3.2(%self.param: ref %i32) = "no_op";
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc15_3.2(%self.param: ref %i32) {
 // CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl.5f94cf.2(%self.param)
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.SubobjectDestroy.decl.763c71.2(%self.param)
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc15_3.5(%self.param: ref %struct_type.tag.total.f3f) {
+// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc15_3.3(%self.param: ref %struct_type.tag.total.f3f) {
 // CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %.loc15_3.1: ref %i32 = struct_access %self.param, element1
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound.loc15_3.1: <bound method> = bound_method %.loc15_3.1, constants.%Destroy.WithSelf.SelfDestruct.db3fdb.2
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call.loc15_3.1: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound.loc15_3.1(%.loc15_3.1)
+// CHECK:STDOUT:   %.loc15_3.2: ref %i64 = struct_access %self.param, element0
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound.loc15_3.2: <bound method> = bound_method %.loc15_3.2, constants.%Destroy.WithSelf.SelfDestruct.db3fdb.1
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call.loc15_3.2: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound.loc15_3.2(%.loc15_3.2)
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.Op.loc15_3.6(%self.param: ref %Box.ecf) {
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc15_3.3(%self.param: ref %struct_type.tag.total.f3f) = "no_op";
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc15_3.3(%self.param: ref %struct_type.tag.total.f3f) {
 // CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl.5f94cf.3(%self.param)
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.SubobjectDestroy.decl.763c71.3(%self.param)
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc15_3.4(%self.param: ref %Box.ecf) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %total.ref: %Box.elem.269 = name_ref total, @Box.%field_decl.loc7 [concrete = @Box.%field_decl.loc7]
+// CHECK:STDOUT:   %.loc15_3.1: ref %i32 = class_element_access %self.param, element1
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound.loc15_3.1: <bound method> = bound_method %.loc15_3.1, constants.%Destroy.WithSelf.SelfDestruct.db3fdb.2
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call.loc15_3.1: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound.loc15_3.1(%.loc15_3.1)
+// CHECK:STDOUT:   %tag.ref: %Box.elem.e42 = name_ref tag, @Box.%field_decl.loc6 [concrete = @Box.%field_decl.loc6]
+// CHECK:STDOUT:   %.loc15_3.2: ref %i64 = class_element_access %self.param, element0
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound.loc15_3.2: <bound method> = bound_method %.loc15_3.2, constants.%Destroy.WithSelf.SelfDestruct.db3fdb.1
+// CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call.loc15_3.2: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound.loc15_3.2(%.loc15_3.2)
+// CHECK:STDOUT:   return
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc15_3.4(%self.param: ref %Box.ecf) = "no_op";
+// CHECK:STDOUT:
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc15_3.4(%self.param: ref %Box.ecf) {
+// CHECK:STDOUT: !entry:
+// CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl.5f94cf.4(%self.param)
+// CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.SubobjectDestroy.decl.763c71.4(%self.param)
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -685,10 +812,8 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %T.loc5_12.1 => constants.%T.f84
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
-// CHECK:STDOUT:   %T.as_type => constants.%T.as_type.c1c
+// CHECK:STDOUT:   %T.as_type.loc6_12.2 => constants.%T.as_type.c1c
 // CHECK:STDOUT:   %require_complete => constants.%require_complete.d83
-// CHECK:STDOUT:   %pattern_type => constants.%pattern_type.2c66b4.2
-// CHECK:STDOUT:   %tag.patt => constants.%tag.patt.d4d
 // CHECK:STDOUT:   %Box => constants.%Box.fc8
 // CHECK:STDOUT:   %Box.elem.loc6 => constants.%Box.elem.159
 // CHECK:STDOUT:   %Box.elem.loc7 => constants.%Box.elem.adb
@@ -748,10 +873,8 @@ fn Use() -> i32 {
 // CHECK:STDOUT:   %T.loc5_12.1 => constants.%Copy.facet.4e9
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
-// CHECK:STDOUT:   %T.as_type => constants.%i64
+// CHECK:STDOUT:   %T.as_type.loc6_12.2 => constants.%i64
 // CHECK:STDOUT:   %require_complete => constants.%complete_type.4a1
-// CHECK:STDOUT:   %pattern_type => constants.%pattern_type.f57
-// CHECK:STDOUT:   %tag.patt => constants.%tag.patt.fc8
 // CHECK:STDOUT:   %Box => constants.%Box.ecf
 // CHECK:STDOUT:   %Box.elem.loc6 => constants.%Box.elem.e42
 // CHECK:STDOUT:   %Box.elem.loc7 => constants.%Box.elem.269

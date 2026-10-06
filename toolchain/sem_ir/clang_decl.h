@@ -7,6 +7,7 @@
 
 #include <concepts>
 
+#include "clang/AST/TypeBase.h"
 #include "common/hashtable_key_context.h"
 #include "common/ostream.h"
 #include "common/set.h"
@@ -21,7 +22,7 @@ class FunctionDecl;
 namespace Carbon::SemIR {
 
 // Information about how to form the Carbon function signature from the Clang
-// function declaration.
+// function signature.
 struct ClangDeclSignature : public Printable<ClangDeclSignature> {
   // A passing mode for a parameter in a C++ function signature.
   enum class PassingMode : int8_t {
@@ -68,15 +69,6 @@ struct ClangDeclSignature : public Printable<ClangDeclSignature> {
   // TODO: Generalize this to be parameter info, not just passing mode.
   llvm::SmallVector<PassingMode, 4> passing_modes;
 
-  // For each parameter, the C++ function declaration whose address is passed
-  // as a known-constant argument (a concrete Carbon function passed as a C++
-  // callable), or null for an ordinary runtime parameter. Empty if no argument
-  // is such a constant; otherwise the same size as `num_params`. A constant
-  // function argument is embedded into the C++ thunk body as a reference to
-  // the declaration rather than being passed at runtime, and no Carbon
-  // parameter is formed for it.
-  llvm::SmallVector<clang::FunctionDecl*, 4> constant_function_args;
-
   // Convenience function to make a fixed signature.
   static auto Make(
       std::initializer_list<SemIR::ClangDeclSignature::PassingMode> modes,
@@ -96,19 +88,6 @@ struct ClangDeclSignature : public Printable<ClangDeclSignature> {
                                                           : PassingMode::ByVar;
   }
 
-  // Returns whether any argument is a known-constant function reference.
-  auto HasConstantFunctionArgs() const -> bool {
-    return !constant_function_args.empty();
-  }
-
-  // Returns the C++ function declaration embedded as the i-th argument, or
-  // null if the i-th parameter is an ordinary runtime parameter.
-  auto GetConstantFunctionArg(int32_t i) const -> clang::FunctionDecl* {
-    return i < static_cast<int32_t>(constant_function_args.size())
-               ? constant_function_args[i]
-               : nullptr;
-  }
-
   auto Print(llvm::raw_ostream& out) const -> void;
 
   auto operator==(const ClangDeclSignature& rhs) const -> bool = default;
@@ -122,9 +101,6 @@ struct ClangDeclSignature : public Printable<ClangDeclSignature> {
                   seed);
     for (auto mode : value.passing_modes) {
       code = HashValue(static_cast<int8_t>(mode), static_cast<uint64_t>(code));
-    }
-    for (auto* constant_decl : value.constant_function_args) {
-      code = HashValue(constant_decl, static_cast<uint64_t>(code));
     }
     return code;
   }
@@ -185,6 +161,11 @@ struct ClangDeclKey : public Printable<ClangDeclKey> {
                UncheckedTag /*_*/);
 };
 
+// A ClangDeclSignature mapped to an ID.
+using ClangDeclSignatureStore =
+    CanonicalValueStore<ClangDeclSignatureId, ClangDeclSignature,
+                        Tag<CheckIRId>, ClangDeclSignature>;
+
 // A Clang declaration mapped to a Carbon instruction.
 //
 // Instances of this type are managed by a `ClangDeclStore`, which ensures that
@@ -233,10 +214,20 @@ class ClangDeclStore {
   // Looks up a `ClangDeclId` by `ClangDeclKey`.
   auto LookupId(ClangDeclKey key) const -> ClangDeclId;
 
+  // Looks up a `ClangDeclId` by `InstId` and optional `SpecificId`.
+  auto LookupId(InstId inst_id, SpecificId specific_id = SpecificId::None) const
+      -> ClangDeclId;
+
   // Looks up a `ClangDecl` by `InstId` and optional `SpecificId`. Returns
   // nullptr if not found.
   auto Lookup(InstId inst_id, SpecificId specific_id = SpecificId::None) const
-      -> const ClangDecl*;
+      -> const ClangDecl* {
+    if (auto clang_decl_id = LookupId(inst_id, specific_id);
+        clang_decl_id.has_value()) {
+      return &Get(clang_decl_id);
+    }
+    return nullptr;
+  }
 
   auto OutputYaml() const -> Yaml::OutputMapping;
 
@@ -255,10 +246,34 @@ class ClangDeclStore {
   Set<ClangDeclId, 0, KeyContext> reverse_lookup_;
 };
 
-// A ClangDeclSignature mapped to an ID.
-using ClangDeclSignatureStore =
-    CanonicalValueStore<ClangDeclSignatureId, ClangDeclSignature,
-                        Tag<CheckIRId>, ClangDeclSignature>;
+// Information about a Clang function pointer type. We can't use `ClangDecl`
+// to represent function pointer callees, because function pointer types
+// don't have declarations in C++, so this type is used in its place.
+struct ClangFunctionPointerTypeInfo {
+  auto GetAsKey() const -> const clang::Type* { return clang_type; }
+
+  // The function pointer type. This should be a canonical type.
+  //
+  // TODO: figure out how to get a canonical type that preserves nullability
+  // attributes, which canonicalization discards. Note that this applies to both
+  // the function pointer type and its parameter/return types.
+  const clang::Type* clang_type;
+
+  // The ID of the `FunctionDecl` for the Carbon thunk that invokes
+  // function pointers of this type, or `None` if the thunk has not yet
+  // been imported.
+  SemIR::InstId decl_id;
+
+  // The corresponding function ID, or `None` if it has not yet been
+  // imported. This should always be the same as `decl_id`'s `function_id`
+  // field, but we cache it here for convenience and efficiency.
+  SemIR::FunctionId function_id;
+};
+
+// Canonical storage for `ClangFunctionPointerTypeInfo`.
+using ClangFunctionPointerTypeStore =
+    CanonicalValueStore<SemIR::ClangFunctionPointerTypeId, const clang::Type*,
+                        Tag<SemIR::CheckIRId>, ClangFunctionPointerTypeInfo>;
 
 }  // namespace Carbon::SemIR
 

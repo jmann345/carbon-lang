@@ -125,19 +125,18 @@ Each verified in-tree; recorded at discharge (§8.5).
 6.  **Both ledger blockers are landed.** W-008 (match statement) and
     W-010 (payload alternatives) carry "implemented" titles and empty
     `blocked_by`; the machinery this plan reuses is the evidence.
-7.  **Design premise re-verified, not corrected:** "`let`/`var` can never
-    begin an expression" (if-let.md:191-197). `var` appears in the
-    expression grammar only after `form(` (toolchain/parse/handle_form_literal.cpp:
-    34-48, reached from handle_expr.cpp:172-174 on the `form` token); `let`
-    appears nowhere in it. So the single-token peek after `(` is
-    unambiguous.
-8.  **Refutable patterns in plain `let`/`var` are a TODO today, not the
-    design's error.** `LocalPatternMatch` on an `ExprPattern` root emits
+7.  **Design premise re-verified, not corrected:** "`let`/`var` can never begin
+    an expression" (if-let.md:191-197). `var` appears in the expression grammar
+    only after `form(` (toolchain/parse/handle_form_literal.cpp: 34-48, reached
+    from handle_expr.cpp:172-174 on the `form` token); `let` appears nowhere in
+    it. So the single-token peek after `(` is unambiguous.
+8.  **Refutable patterns in plain `let`/`var` are a TODO today, not the design's
+    error.** `LocalPatternMatch` on an `ExprPattern` root emits
     ``context_.TODO(entry.pattern_id, "expression pattern")``
-    (toolchain/check/pattern_match.cpp:1176-1191; the TODO is :1191), and no check golden
-    contains a refutable `let`/`var` root (grep record in §6.1). The
-    real refutability error of pattern_matching.md:670-687 stays out of
-    this slice and is filed as a work item (§8.5).
+    (toolchain/check/pattern_match.cpp:1176-1191; the TODO is :1191), and no
+    check golden contains a refutable `let`/`var` root (grep record in §6.1).
+    The real refutability error of pattern_matching.md:670-687 stays out of this
+    slice and is filed as a work item (§8.5).
 
 ## §1 Design decisions
 
@@ -177,41 +176,44 @@ means any of the three forms.
         an expression subpattern falls to the slice-gate TODO (:812-816).
         Decision R29a: the `var`-wrapped alternative root gets an EXPLICIT
         second engine lane rather than being dropped.
-
     -   Classification, in the shared test driver (§2.2), computed BEFORE
-        `is_irrefutable_var_arm`, which EXCLUDES it (amended 2026-09-27,
-        review fold: re-review M1 — ordering the dispatch alone is not
-        enough, see the next bullet):
-        `is_var_alternative_arm = context.insts().Is<SemIR::VarPattern>(pattern_id) && alternative && alternative->payload_pattern_id.has_value() && alternative->payload_pattern_id == context.insts().GetAs<SemIR::VarPattern>(pattern_id).subpattern_id`
-        — the `VarPattern`'s `subpattern_id` (sem_ir/typed_insts.h:2394)
-        is the synthesized payload `TuplePattern` that `AlternativePattern`
-        records as `payload_pattern_id` (handle_match.cpp:556-560) — and
-        `is_irrefutable_var_arm = context.insts().Is<SemIR::VarPattern>(pattern_id) && !is_var_alternative_arm && IsIrrefutableMatchCasePattern(context, pattern_id)`.
-    -   **Why the exclusion is load-bearing (amended 2026-09-27, review
-        fold: re-review M1).** Today's `is_irrefutable_var_arm`
+        `is_irrefutable_var_arm`, which EXCLUDES it (amended 2026-09-27, review
+        fold: re-review M1 — ordering the dispatch alone is not enough, see the
+        next bullet): `is_var_alternative_arm =
+        context.insts().Is<SemIR::VarPattern>(pattern_id) && alternative &&
+        alternative->payload_pattern_id.has_value() &&
+        alternative->payload_pattern_id ==
+        context.insts().GetAs<SemIR::VarPattern>(pattern_id).subpattern_id` —
+        the `VarPattern`'s `subpattern_id` (sem_ir/typed_insts.h:2394) is the
+        synthesized payload `TuplePattern` that `AlternativePattern` records as
+        `payload_pattern_id` (handle_match.cpp:556-560) — and
+        `is_irrefutable_var_arm =
+        context.insts().Is<SemIR::VarPattern>(pattern_id) &&
+        !is_var_alternative_arm && IsIrrefutableMatchCasePattern(context,
+        pattern_id)`.
+    -   **Why the exclusion is load-bearing (amended 2026-09-27, review fold:
+        re-review M1).** Today's `is_irrefutable_var_arm`
         (handle_match.cpp:779-781) is TRUE for `case var .Some(n: i32)`:
         `IsIrrefutableMatchCasePattern` recurses through the `VarPattern`
         (pattern_match.cpp:680-684) into the all-binding payload. With the
-        dispatch merely ordered, the flag would still reach `match`'s
-        coverage block (:939-941), set `has_irrefutable_arm`, and mark the
-        match exhaustive — suppressing `DiagnoseNonexhaustiveMatch`
-        (:1460) for a two-alternative choice whose `.None` no arm covers,
-        and breaking the "`has_irrefutable_arm` iff a `Wildcard`-root
-        usefulness entry" invariant that `DiagnoseDeadDefault` rests on
-        (:1239-1245). With the exclusion, none of the three flags that feed
-        `has_irrefutable_arm` is set for the arm, so :942-943 records
-        `covered_alternatives` through `alternative->payload_is_irrefutable`
-        exactly as for the plain `case .Some(n: i32)`. Usefulness keys the
-        arm with
-        `BuildMatchCaseUsefulnessKey(context, alternative->payload_pattern_id, alternative)`
-        — the payload root, not the `VarPattern` — because the builder's
-        defensive check (pattern_match.cpp:740-744) returns `nullopt` when
-        `payload_pattern_id != pattern_id`, which is why today's
-        `case var .Some(n: i32)` is silently neither checked nor recorded
-        for usefulness. Guards: the §4 match rows
-        `fail_nonexhaustive_var_alternative` (the arm alone on a
-        two-alternative choice → `MatchNonexhaustive` naming `.None`) and
-        `var_alternative_then_default` (a trailing `default` is NOT dead).
+        dispatch merely ordered, the flag would still reach `match`'s coverage
+        block (:939-941), set `has_irrefutable_arm`, and mark the match
+        exhaustive — suppressing `DiagnoseNonexhaustiveMatch` (:1460) for a
+        two-alternative choice whose `.None` no arm covers, and breaking the "`has_irrefutable_arm`
+        iff a `Wildcard`-root usefulness entry" invariant that
+        `DiagnoseDeadDefault` rests on (:1239-1245). With the exclusion, none of
+        the three flags that feed `has_irrefutable_arm` is set for the arm, so
+        :942-943 records `covered_alternatives` through
+        `alternative->payload_is_irrefutable` exactly as for the plain `case
+        .Some(n: i32)`. Usefulness keys the arm with
+        `BuildMatchCaseUsefulnessKey(context, alternative->payload_pattern_id,
+        alternative)` — the payload root, not the `VarPattern` — because the
+        builder's defensive check (pattern_match.cpp:740-744) returns `nullopt`
+        when `payload_pattern_id != pattern_id`, which is why today's `case var
+        .Some(n: i32)` is silently neither checked nor recorded for usefulness.
+        Guards: the §4 match rows `fail_nonexhaustive_var_alternative` (the arm
+        alone on a two-alternative choice → `MatchNonexhaustive` naming `.None`)
+        and `var_alternative_then_default` (a trailing `default` is NOT dead).
         The §8.1 zero-diff gate cannot catch a regression here: no existing
         golden spells a `var`-wrapped alternative root (§8.1).
     -   Test: `MatchCaseAlternativePatternMatch(context, scrutinee_id, node_id)`
@@ -220,22 +222,23 @@ means any of the three forms.
         single-alternative rule :578-597, the discriminant test :599-603,
         payload conditions on `alternative.payload_pattern_id`), never the
         root inst, so the wrapper is invisible to it.
-    -   Bind, in the success block:
-        `MatchCaseBindPatternMatch(context, var_root_id, EmitChoicePayloadFieldAccess(context, SemIR::LocId(node_id), scrutinee_id, alternative->payload_field_index))`
-        when `alternative->payload_field_index >= 0 && MatchCasePatternHasBindings(context, var_root_id)`
-        (the alternative-payload lane's own guard, handle_match.cpp:
-        1006-1009). The bind walk meets the `VarPattern` root first and
-        emits on-demand storage through `GetOrAddVarStorage`
-        (pattern_match.cpp:1476-1477, the `in_match_case_bind` branch),
-        typed by the `VarPattern`'s type — the payload-tuple pattern type
-        the `VariablePattern` handler took from its subpattern
-        (handle_let_and_var.cpp:102, :164) — initialized from the payload
-        field ref, then destructured elementwise into the payload's `ref`
-        bindings. Precedent, shape for shape: `case var (a: i32, b: i32)`
-        (toolchain/check/testdata/match/var_binding.carbon:58) — one
-        tuple-typed storage bound elementwise. The field ref is trivially
-        copyable (the scrutinee gate) and dominated by the discriminant
-        test exactly as in the plain payload lane (:1010-1019 comment).
+    -   Bind, in the success block: `MatchCaseBindPatternMatch(context,
+        var_root_id, EmitChoicePayloadFieldAccess(context,
+        SemIR::LocId(node_id), scrutinee_id, alternative->payload_field_index))`
+        when `alternative->payload_field_index >= 0 &&
+        MatchCasePatternHasBindings(context, var_root_id)` (the
+        alternative-payload lane's own guard, handle_match.cpp: 1006-1009). The
+        bind walk meets the `VarPattern` root first and emits on-demand storage
+        through `GetOrAddVarStorage` (pattern_match.cpp:1476-1477, the
+        `in_match_case_bind` branch), typed by the `VarPattern`'s type — the
+        payload-tuple pattern type the `VariablePattern` handler took from its
+        subpattern (handle_let_and_var.cpp:102, :164) — initialized from the
+        payload field ref, then destructured elementwise into the payload's
+        `ref` bindings. Precedent, shape for shape: `case var (a: i32, b: i32)`
+        (toolchain/check/testdata/match/var_binding.carbon:58) — one tuple-typed
+        storage bound elementwise. The field ref is trivially copyable (the
+        scrutinee gate) and dominated by the discriminant test exactly as in the
+        plain payload lane (:1010-1019 comment).
     -   Irrefutability for the §1.10 WARNING looks THROUGH the wrapper: the
         driver's `is_irrefutable` (the warn predicate, §2.2 — a flag kept
         SEPARATE from the three that `match` feeds into
@@ -244,13 +247,13 @@ means any of the three forms.
         `alternative->payload_is_irrefutable`" — the same rule the plain
         alternative lane uses — and the single-alternative constant-`true`
         test reads `alternative` as before.
-    -   `match` gets the lane too (the driver is shared): `case var .Some(n: i32) => …`
-        starts working as a side effect. §4 pins `var_alternative`
-        positives in check AND lower, plus — in the same PR — a `match`
-        golden for the payload-level `case .Some(var n: i32)`, which the
+    -   `match` gets the lane too (the driver is shared): `case var .Some(n:
+        i32) => …` starts working as a side effect. §4 pins `var_alternative`
+        positives in check AND lower, plus — in the same PR — a `match` golden
+        for the payload-level `case .Some(var n: i32)`, which the
         alternative-payload lane admits today through its
-        `MatchCasePatternHasVarPattern` branch (handle_match.cpp:1027-1031)
-        but which NO golden pins (grep `\.[A-Za-z]*(var` over
+        `MatchCasePatternHasVarPattern` branch (handle_match.cpp:1027-1031) but
+        which NO golden pins (grep `\.[A-Za-z]*(var` over
         toolchain/check/testdata/match, toolchain/lower/testdata/match and
         fork/conformance/programs: no hits).
     -   Bare `var .None` (empty synthetic payload root, no bindings): the
@@ -365,20 +368,20 @@ means any of the three forms.
     typed_nodes.h:782) with the prefix still optional; tree output is
     identical either way.
 
-3.  **PARSE, `let`-`else`: the introducer node is re-kinded when the
-    parser reaches the `else`.** The parser learns that a `let` is a
-    `let`-`else` only after the full initializer expression, exactly as it
-    learns a declaration's introducer only after its modifiers — and it
-    handles that with `ReplacePlaceholderNode(state.subtree_start, …)`
-    (toolchain/parse/context.cpp:42-53; the state's `subtree_start` is
-    retained through `ApplyIntroducer`, handle_decl_scope_loop.cpp:38-45,
-    and `HandleLet`'s `PushState(state, LetFinishAsRegular)`,
-    handle_let.cpp:17, so `state.subtree_start` in `HandleLetFinish`
-    indexes the `LetIntroducer` node). This slice adds the sibling
-    `Context::ReplaceIntroducerNode(position, old_kind, new_kind)`: the
-    same one-line `NodeImpl` rewrite with a CHECK on the old kind (the
-    tree already exposes `set_kind` for exactly this operation,
-    tree.h:245-250). Tree for `let .Some(port: i32) = Parse(s) else { return -1; }`:
+3.  **PARSE, `let`-`else`: the introducer node is re-kinded when the parser
+    reaches the `else`.** The parser learns that a `let` is a `let`-`else` only
+    after the full initializer expression, exactly as it learns a declaration's
+    introducer only after its modifiers — and it handles that with
+    `ReplacePlaceholderNode(state.subtree_start, …)`
+    (toolchain/parse/context.cpp:42-53; the state's `subtree_start` is retained
+    through `ApplyIntroducer`, handle_decl_scope_loop.cpp:38-45, and
+    `HandleLet`'s `PushState(state, LetFinishAsRegular)`, handle_let.cpp:17, so
+    `state.subtree_start` in `HandleLetFinish` indexes the `LetIntroducer`
+    node). This slice adds the sibling `Context::ReplaceIntroducerNode(position,
+    old_kind, new_kind)`: the same one-line `NodeImpl` rewrite with a CHECK on
+    the old kind (the tree already exposes `set_kind` for exactly this
+    operation, tree.h:245-250). Tree for `let .Some(port: i32) = Parse(s) else {
+    return -1; }`:
 
     ```text
     ╭─LetElseIntroducer 'let'
@@ -392,13 +395,13 @@ means any of the three forms.
     ├─LetElseDecl 'let'
     ```
 
-    `LetInitializer`/`VariableInitializer` are NOT re-kinded (their
-    position is not retained by any state); their check handlers become
-    context-aware instead (§2.3, a two-line branch each). Budget:
-    `let n: i32 = x else { return; }` tokens 1+1+2+1+1+1+2(else, §0.1)+1+1+1+1
-    = 13; nodes: introducer, `n`, type start, `i32`, binding, `=`, `x`,
-    LetElse, CodeBlockStart, ReturnStatementStart, ReturnStatement,
-    CodeBlock, LetElseDecl = 13. Exact. Typed nodes:
+    `LetInitializer`/`VariableInitializer` are NOT re-kinded (their position is
+    not retained by any state); their check handlers become context-aware
+    instead (§2.3, a two-line branch each). Budget: `let n: i32 = x else {
+    return; }` tokens 1+1+2+1+1+1+2(else, §0.1)+1+1+1+1 = 13; nodes: introducer,
+    `n`, type start, `i32`, binding, `=`, `x`, LetElse, CodeBlockStart,
+    ReturnStatementStart, ReturnStatement, CodeBlock, LetElseDecl = 13. Exact.
+    Typed nodes:
 
     ```cpp
     // `let` or `var` opening a `let`-`else` declaration (re-kinded from
@@ -430,14 +433,13 @@ means any of the three forms.
     };
     ```
 
-    Category `Statement` (function-body only, §1.9); `AnyStatementId`
-    admits it (toolchain/parse/node_ids.h:111-112). No trailing `;`
-    (design open question 1, if-let.md:575-580, resolved by the paper's
-    own assumption; the `;` alternative is §7 A-3). Break condition: a
-    reviewer rejecting node re-kinding — the fallback is a distinct
-    `LetElseDecl` close node only, with the check side deciding the
-    pattern context late; §7 A-4 records why that fallback is worse
-    (it cannot resolve `.Name` roots, §0.3).
+    Category `Statement` (function-body only, §1.9); `AnyStatementId` admits it
+    (toolchain/parse/node_ids.h:111-112). No trailing `;` (design open question
+    1, if-let.md:575-580, resolved by the paper's own assumption; the `;`
+    alternative is §7 A-3). Break condition: a reviewer rejecting node
+    re-kinding — the fallback is a distinct `LetElseDecl` close node only, with
+    the check side deciding the pattern context late; §7 A-4 records why that
+    fallback is worse (it cannot resolve `.Name` roots, §0.3).
 
 4.  **CHECK: `FullPatternStack::Kind::MatchCaseArm` plus a
     `MatchCaseContext` entry ARE the refutable pattern context; the three
@@ -617,16 +619,16 @@ means any of the three forms.
         break condition and fallback; the pattern_matching.md amendment states
         the precise rule (§2.6). Break condition: the owner vetoing F-011a —
         then the check becomes a parse-node-kind test on the else block's last
-        statement (`ReturnStatement`/`BreakStatement`/`ContinueStatement`),
-        one function, same diagnostic; the all-paths-diverge block and every
-        other superset case become errors. Bindings inside the else block: the names are in the
-        enclosing scope from pattern time (§1.5), but they are never
+        statement (`ReturnStatement`/`BreakStatement`/`ContinueStatement`), one
+        function, same diagnostic; the all-paths-diverge block and every other
+        superset case become errors. Bindings inside the else block: the names
+        are in the enclosing scope from pattern time (§1.5), but they are never
         initialized on the else path — so the `StartPatternInitializer`
         tombstones (full_pattern_stack.cpp:15-33; they make a use diagnose
         `UsedBeforeInitialization`, pinned at toolchain/check/testdata/let/
         fail_use_in_init.carbon) are kept live through the else block and
-        released by `EndPatternInitializer` only at `LetElseDecl`, before
-        the bind pass. Zero new machinery; pinned in §4.
+        released by `EndPatternInitializer` only at `LetElseDecl`, before the
+        bind pass. Zero new machinery; pinned in §4.
 
 9.  **`let`-`else` outside a function body is an error at the
     introducer.** The parser cannot tell statement `let` from file/class
@@ -672,34 +674,32 @@ means any of the three forms.
     `let`-`else` initializers are not restricted (Rust's `let`-`else` has
     no chains either).
 
-12. **The `if`-expression ambiguity (if-let.md:322-326; the ambiguity itself :201-203): forbidden at
-    the `else`, plus a targeted recovery for the misparse.** (a) In
-    `HandleLetFinish`/`HandleVarFinish`, when the next token is `else` and
-    the initializer's root node (`context.tree().node_kind(NodeId(size-1))`,
-    context.h:475, tree.h:121) is `IfExprElse`, diagnose
-    `LetElseUnparenthesizedIfExpr` and mark the declaration errored (it is
-    still parsed as a `let`-`else` for recovery); (a) is gated on
-    `!context.tree().node_has_error(last)` so that when (b) below already
-    diagnosed and errored the if-expression, a line gets exactly ONE
-    `LetElseUnparenthesizedIfExpr` (amended 2026-09-27, review fold: rev 1
-    F3). (b) In `HandleIfExprFinishThen` (handle_if_expr.cpp:34-54),
-    before consuming `else`: if the next-next token is `{`, **the token
-    after that `{` is neither `.` nor `}`** (struct literals start `{.` or
-    are `{}`, so `var s: {.a: i32} = if c then t else {.a = 1};` keeps
-    parsing as an if-expression — pinned as a positive in §4; amended
-    2026-09-27, review fold: rev 1 F3), and the state stack below is
-    `[…, LetFinishAsRegular | VarFinish, IfExprFinish]` (the
+12. **The `if`-expression ambiguity (if-let.md:322-326; the ambiguity itself
+    :201-203): forbidden at the `else`, plus a targeted recovery for the
+    misparse.** (a) In `HandleLetFinish`/`HandleVarFinish`, when the next token
+    is `else` and the initializer's root node
+    (`context.tree().node_kind(NodeId(size-1))`, context.h:475, tree.h:121) is
+    `IfExprElse`, diagnose `LetElseUnparenthesizedIfExpr` and mark the
+    declaration errored (it is still parsed as a `let`-`else` for recovery); (a)
+    is gated on `!context.tree().node_has_error(last)` so that when (b) below
+    already diagnosed and errored the if-expression, a line gets exactly ONE
+    `LetElseUnparenthesizedIfExpr` (amended 2026-09-27, review fold: rev 1 F3).
+    (b) In `HandleIfExprFinishThen` (handle_if_expr.cpp:34-54), before consuming
+    `else`: if the next-next token is `{`, **the token after that `{` is neither
+    `.` nor `}`** (struct literals start `{.` or are `{}`, so `var s: {.a: i32} =
+    if c then t else {.a = 1};` keeps parsing as an if-expression — pinned as a
+    positive in §4; amended 2026-09-27, review fold: rev 1 F3), and the state
+    stack below is `[…, LetFinishAsRegular | VarFinish, IfExprFinish]` (the
     if-expression is the whole initializer — state-stack inspection is
-    precedented at handle_expr.cpp:249-255 and context.cpp:449-456),
-    emit the same diagnostic, do NOT consume the `else`, and return the
-    if-expression with an error (`ReturnErrorOnState` plus the ONE
-    `AddInvalidParse` the existing missing-`else` path adds for the final
-    operand, :51 — the missing-`then` path adds two, :28-29, because it
-    substitutes both `IfExprThen` and the final operand; the draft's "two"
-    was wrong); `HandleLetFinish` then sees `else` and parses the
-    `let`-`else`, so the user gets one diagnostic and a sane tree. Without
-    (b) the user sees the struct-literal error the design paper describes
-    (:201-203).
+    precedented at handle_expr.cpp:249-255 and context.cpp:449-456), emit the
+    same diagnostic, do NOT consume the `else`, and return the if-expression
+    with an error (`ReturnErrorOnState` plus the ONE `AddInvalidParse` the
+    existing missing-`else` path adds for the final operand, :51 — the missing-`then`
+    path adds two, :28-29, because it substitutes both `IfExprThen` and the
+    final operand; the draft's "two" was wrong); `HandleLetFinish` then sees
+    `else` and parses the `let`-`else`, so the user gets one diagnostic and a
+    sane tree. Without (b) the user sees the struct-literal error the design
+    paper describes (:201-203).
 
 13. **Root `.Name` peek in `let`/`var` too.** `let .Some(port: i32) = e
     else` requires `HandleLet`/`HandleVar` (handle_let.cpp:13-25,
@@ -807,13 +807,12 @@ peek between the `{` recovery and the `Expr` push:
 ```
 
 `PushRootPattern` is the root-alternative peek factored out of
-`HandleMatchCaseIntroducer` (parse/handle_match.cpp:158-178: `.`
-`Identifier` → `PushStateForPattern(MatchCaseAlternativePattern, …)`, else
-`Pattern`), taking `in_var_pattern`, and is called from `HandleLet`,
-`HandleVar` and `HandleMatchCaseIntroducer` too (§1.13). It lives in
-handle_pattern.cpp with a declaration in handle.h. The `MatchCaseAlternativePattern`
-states (:181-212) already propagate `in_var_pattern` into the payload list
-(:193-196).
+`HandleMatchCaseIntroducer` (parse/handle_match.cpp:158-178: `.` `Identifier` →
+`PushStateForPattern(MatchCaseAlternativePattern, …)`, else `Pattern`), taking
+`in_var_pattern`, and is called from `HandleLet`, `HandleVar` and
+`HandleMatchCaseIntroducer` too (§1.13). It lives in handle_pattern.cpp with a
+declaration in handle.h. The `MatchCaseAlternativePattern` states (:181-212)
+already propagate `in_var_pattern` into the payload list (:193-196).
 
 **Root `var` before the peek (amended 2026-09-27, review fold: re-review
 M2).** `HandleMatchCaseIntroducer` peeks `.` ONLY
@@ -1073,30 +1072,29 @@ shift accordingly):**
 BeginRefutableBinding(node_id); set scrutinee_type_id = type of
 PeekScrutinee()` — the only place the type is filled at pattern time.
 
-**`ResolvePendingAlternative` — exactly what moves (amended 2026-09-27,
-review fold: rev 2 m1/m7).** Signature
-`ResolvePendingAlternative(context, node_id, scrutinee_type_id, name_id, has_parens, subpattern_count) -> std::optional<Alternative>`,
-called from the driver (deferred mode) and from
+**`ResolvePendingAlternative` — exactly what moves (amended 2026-09-27, review
+fold: rev 2 m1/m7).** Signature `ResolvePendingAlternative(context, node_id,
+scrutinee_type_id, name_id, has_parens, subpattern_count) ->
+std::optional<Alternative>`, called from the driver (deferred mode) and from
 `HandleParseNode(AlternativePatternId)` (immediate mode, `match`) alike. It
-hosts, moved verbatim from handle_match.cpp: the choice gate :393-400 (its
-TODO at `match_case_stack().back().introducer_node_id`, which under the
-new forms is the form's introducer), the `LookupChoiceAlternative` :408-409,
-`MatchAlternativeUnexpectedParens` :417-424, the unknown-name
-member-access diagnostic :425-426 (`PerformMemberAccess` for its standard
-`NameNotFound`; in deferred mode the result is discarded — the driver runs
-in the test block with no pattern region open; in immediate mode it feeds
-the designator lane as today), `MatchAlternativeMissingParens` :458-465,
-the parameter count :476-490 and `MatchAlternativeArgCountMismatch`
-:491-505, and the `alternative` fill. STAYS immediate in the handler, in
-both modes: the §1.13 context TODO, the payload/name pop :376-389, the
-`payload_id == ErrorInst` bail :466-468, the payload collection :469-475
-(reordered ahead of the resolution call so `subpattern_count` is known;
-no parens gives zero subpatterns, as today's `param_count` comparison
-expects), the irrefutability fold :516-523 and the root synthesis
-:525-553. STAYS match-only: the designator lane for a constant
+hosts, moved verbatim from handle_match.cpp: the choice gate :393-400 (its TODO
+at `match_case_stack().back().introducer_node_id`, which under the new forms is
+the form's introducer), the `LookupChoiceAlternative` :408-409,
+`MatchAlternativeUnexpectedParens` :417-424, the unknown-name member-access
+diagnostic :425-426 (`PerformMemberAccess` for its standard `NameNotFound`; in
+deferred mode the result is discarded — the driver runs in the test block with
+no pattern region open; in immediate mode it feeds the designator lane as
+today), `MatchAlternativeMissingParens` :458-465, the parameter count :476-490
+and `MatchAlternativeArgCountMismatch` :491-505, and the `alternative` fill.
+STAYS immediate in the handler, in both modes: the §1.13 context TODO, the
+payload/name pop :376-389, the `payload_id == ErrorInst` bail :466-468, the
+payload collection :469-475 (reordered ahead of the resolution call so
+`subpattern_count` is known; no parens gives zero subpatterns, as today's
+`param_count` comparison expects), the irrefutability fold :516-523 and the root
+synthesis :525-553. STAYS match-only: the designator lane for a constant
 alternative :427-454 (`designator_root_id`, the `ExprPattern` wrap, the
-`ConsumeExprRegionForPattern`) — the new forms' bare `.Name` uses the
-empty synthetic root instead (§1.6).
+`ConsumeExprRegionForPattern`) — the new forms' bare `.Name` uses the empty
+synthetic root instead (§1.6).
 
 ### §2.3 Check handlers for the new parse nodes
 
@@ -1145,9 +1143,10 @@ top (amended 2026-09-27, review fold: rev 2 m1/m7: the draft's
     warn_irrefutable = true)`; `nullopt` → `return false`.
     4a. `decl_introducer_state_stack().Pop<Let>()` (the :739 pop, §2.2
     map).
-5.  `then = AddDominatedBlockAndBranchIf(cond)`, `else = AddDominatedBlockAndBranch()`,
-    pop/push then, `AddToRegion` — the existing lines :29-36 verbatim (the
-    labels are `if.then`/`if.else` because the node is `IfCondition`).
+5.  `then = AddDominatedBlockAndBranchIf(cond)`, `else =
+    AddDominatedBlockAndBranch()`, pop/push then, `AddToRegion` — the existing
+    lines :29-36 verbatim (the labels are `if.then`/`if.else` because the node
+    is `IfCondition`).
 6.  `EmitRefutableBindingBind(…, pattern_id, scrutinee, *test)` in the
     then block, then `full_pattern_stack().PopFullPattern()` and
     `match_case_stack().pop_back()` — the :958-964 pops, owned by the
@@ -1160,31 +1159,30 @@ top (amended 2026-09-27, review fold: rev 2 m1/m7: the draft's
 The expression path is the existing body with one added
 `PopAndDiscardSoloNodeId<IfConditionStart>()`.
 
-**`IfStatementElseId`** (:42-52) and **`IfStatementId`**'s `IfCondition`
-case (:56-66): `auto else_block_id = Pop<IfCondition>()` as today, then
-`if (node_stack().PopAndDiscardSoloNodeIdIf<PatternConditionIntroducer>()) { AddAndDiscardScopeCleanups(context); scope_stack().Pop(/*check_unused=*/true); }`
-in the then block, BEFORE switching to the else block / branching (§1.5;
-amended 2026-09-27, review fold: rev 1 F8 — the node-stack protocol
-replaces the typed-node extraction). `IfStatement`'s `IfStatementElse`
-case is unchanged (the scope was popped at `IfStatementElse`, and the
-introducer node went with it).
+**`IfStatementElseId`** (:42-52) and **`IfStatementId`**'s `IfCondition` case
+(:56-66): `auto else_block_id = Pop<IfCondition>()` as today, then `if
+(node_stack().PopAndDiscardSoloNodeIdIf<PatternConditionIntroducer>()) {
+AddAndDiscardScopeCleanups(context); scope_stack().Pop(/*check_unused=*/true);
+}` in the then block, BEFORE switching to the else block / branching (§1.5;
+amended 2026-09-27, review fold: rev 1 F8 — the node-stack protocol replaces the
+typed-node extraction). `IfStatement`'s `IfStatementElse` case is unchanged (the
+scope was popped at `IfStatementElse`, and the introducer node went with it).
 
-**`WhileConditionId`** (handle_loop_statement.cpp:103-115) — pattern path,
-same detection: steps 1-4a as above, except that `WhileCondition` DOES pop
-the `PatternConditionIntroducer` solo node (nothing later needs it — the
-loop scope is popped by `FinishLoopBody`) before popping
-`WhileConditionStart`, which yields `loop_header_id` as today, then `BranchAndStartLoopBody(…, cond)` verbatim
-(:44-71 — the `ConvertToBoolValue` is a no-op on a bool; labels
-`while.body`/`while.done`), then `EmitRefutableBindingBind(…, *test)` in
-the body block, then the `PopFullPattern()`/`pop_back()` pair (the caller
-owns the pops; re-review M3). `WhileStatement` (:117-121) is unchanged: `FinishLoopBody` adds the
-back-edge to the header — where the initializer is re-evaluated and the
-pattern re-tested each iteration — and pops the loop scope, so the bindings
-end with the loop. `break`/`continue` inside the body use the
-`break_continue_stack` entry `BranchAndStartLoopBody` pushed (:66-70);
-`continue` destroys header temporaries (none of consequence: the scrutinee
-gate admits only trivially destructible shapes, handle_match.cpp:256-263,
-the same argument `match` makes).
+**`WhileConditionId`** (handle_loop_statement.cpp:103-115) — pattern path, same
+detection: steps 1-4a as above, except that `WhileCondition` DOES pop the
+`PatternConditionIntroducer` solo node (nothing later needs it — the loop scope
+is popped by `FinishLoopBody`) before popping `WhileConditionStart`, which
+yields `loop_header_id` as today, then `BranchAndStartLoopBody(…, cond)`
+verbatim (:44-71 — the `ConvertToBoolValue` is a no-op on a bool; labels
+`while.body`/`while.done`), then `EmitRefutableBindingBind(…, *test)` in the
+body block, then the `PopFullPattern()`/`pop_back()` pair (the caller owns the
+pops; re-review M3). `WhileStatement` (:117-121) is unchanged: `FinishLoopBody`
+adds the back-edge to the header — where the initializer is re-evaluated and the
+pattern re-tested each iteration — and pops the loop scope, so the bindings end
+with the loop. `break`/`continue` inside the body use the `break_continue_stack`
+entry `BranchAndStartLoopBody` pushed (:66-70); `continue` destroys header
+temporaries (none of consequence: the scrutinee gate admits only trivially
+destructible shapes, handle_match.cpp:256-263, the same argument `match` makes).
 
 **`LetElseIntroducerId`**: if `!scope_stack().IsInFunctionScope()` →
 `LetElseOutsideFunction`, `return false` (aborts the rest of the file,
@@ -1244,40 +1242,39 @@ follows for the other kinds.
     scope (the `let` rule, handle_let_and_var.cpp:367-369); then
     `PopFullPattern()` and `match_case_stack().pop_back()` (the caller
     owns the pops; amended 2026-09-27, review fold: re-review M3).
-5.  **Modifier checks, verbatim from `LetDecl` (amended 2026-09-27, review
-    fold: rev 1 F4 + rev 2 M1 — without them `fail_modifier` in §4 would
-    diagnose nothing):** `auto introducer =
+5.  **Modifier checks, verbatim from `LetDecl` (amended 2026-09-27, review fold:
+    rev 1 F4 + rev 2 M1 — without them `fail_modifier` in §4 would diagnose
+    nothing):** `auto introducer =
     context.decl_introducer_state_stack().innermost();` (a copy, as
-    `DeclInfo::introducer` is, handle_let_and_var.cpp:329) — then, first,
-    the `returned` rejection: `if
+    `DeclInfo::introducer` is, handle_let_and_var.cpp:329) — then, first, the
+    `returned` rejection: `if
     (introducer.modifier_set.HasAnyOf(KeywordModifierSet::Returned)) {
     Emit(introducer.modifier_node_id(ModifierOrder::Decl),
-    ReturnedNotAllowedOnLetElse); introducer.modifier_set.Remove(Returned); }`
-    (`Returned` is in the `Decl` modifier group, keyword_modifier_set.h:
-    149-152, so `HandleModifier` files it under `ModifierOrder::Decl`,
-    handle_modifier.cpp:58-59; without the rejection the `returned` on
-    `returned var P = e else {…}` would be silently dropped — the
-    `MatchCaseArm` `var` lane never reads it). Then
-    `CheckAccessModifiersOnDecl(context, introducer, parent_scope_inst)`
-    with `parent_scope_inst` computed as at :325-328 (in a function body
-    this is what rejects `private`: `ModifierPrivateNotAllowed`, "`private`
-    not allowed; requires class or file scope", modifiers.cpp:147-150,
-    pinned for a local `var` at
+    ReturnedNotAllowedOnLetElse); introducer.modifier_set.Remove(Returned); }` (`Returned`
+    is in the `Decl` modifier group, keyword_modifier_set.h: 149-152, so
+    `HandleModifier` files it under `ModifierOrder::Decl`,
+    handle_modifier.cpp:58-59; without the rejection the `returned` on `returned
+    var P = e else {…}` would be silently dropped — the `MatchCaseArm` `var`
+    lane never reads it). Then `CheckAccessModifiersOnDecl(context, introducer,
+    parent_scope_inst)` with `parent_scope_inst` computed as at :325-328 (in a
+    function body this is what rejects `private`: `ModifierPrivateNotAllowed`, "`private`
+    not allowed; requires class or file scope", modifiers.cpp:147-150, pinned
+    for a local `var` at
     toolchain/check/testdata/function/definition/fail_local_decl.carbon:40);
     `decl_introducer_state_stack().Pop<Let>()` (:339);
     `LimitModifiersOnDecl(context, introducer, KeywordModifierSet::Access |
     KeywordModifierSet::Interface)` (:341-343 — `virtual` etc. diagnose
     `ModifierNotAllowedOnDeclaration`, "`virtual` not allowed on `let`
-    declaration", pinned at toolchain/check/testdata/let/fail_modifiers.carbon:33);
+    declaration", pinned at
+    toolchain/check/testdata/let/fail_modifiers.carbon:33);
     `RequireDefaultFinalOnlyInInterfaces(context, introducer,
-    SemIR::NameScopeId::None, /*is_definition=*/false)` (:348-350). Same
-    calls, same order, same mask as `LetDecl` (:329-350), so the two
-    declarations reject the same modifiers with the same texts. The
-    diagnostic name is spelled with `let` for the `var` spelling too
-    (`LetDecl`'s `{1}` is the pushed `Let` introducer kind, and
-    `BeginRefutableBinding` pushes `Let` for both spellings, as
-    `MatchCaseIntroducer` does at :331) — accepted; the `let`-`else` form
-    is named "`let`-`else`" throughout the design.
+    SemIR::NameScopeId::None, /*is_definition=*/false)` (:348-350). Same calls,
+    same order, same mask as `LetDecl` (:329-350), so the two declarations
+    reject the same modifiers with the same texts. The diagnostic name is
+    spelled with `let` for the `var` spelling too (`LetDecl`'s `{1}` is the
+    pushed `Let` introducer kind, and `BeginRefutableBinding` pushes `Let` for
+    both spellings, as `MatchCaseIntroducer` does at :331) — accepted; the
+    `let`-`else` form is named "`let`-`else`" throughout the design.
 
 SemIR emission order consequence: the success block's insts follow the
 else block's in inst-id order. Blocks are independent for lowering, and
@@ -1478,38 +1475,38 @@ could truncate; the table rows below are the split-file names.
 
 **Parse — toolchain/parse/testdata/if/if_let.carbon** (positive): subfiles
 `let_binding` (`if (let n: i32 = x) {}`), `var_binding`, `alternative_bare`
-(`.None`), `alternative_payload` (`.Some(n: i32)`), `tuple`
-(`(0, n: i32)`), `else_if_chain` (`if (let …) {} else if (let …) {} else {}`
-— exercises `StatementIfThenBlockFinish`'s `else if` special case,
-handle_statement.cpp:196-199, with a pattern condition in the chained
-`if`), `nested_in_match_arm`, `parenthesized_and` (`(x and y)` initializer).
+(`.None`), `alternative_payload` (`.Some(n: i32)`), `tuple` (`(0, n: i32)`),
+`else_if_chain` (`if (let …) {} else if (let …) {} else {}` — exercises
+`StatementIfThenBlockFinish`'s `else if` special case,
+handle_statement.cpp:196-199, with a pattern condition in the chained `if`),
+`nested_in_match_arm`, `parenthesized_and` (`(x and y)` initializer).
 **fail_if_let_missing_initializer.carbon** (`if (let n: i32) {}` →
 `ExpectedPatternConditionInitializer` + recovery to `)`),
-**fail_if_let_missing_pattern.carbon** (`if (let = x)` → the pattern
-parser's `ExpectedPattern`-family error, recovery pinned).
-**toolchain/parse/testdata/while/while_let.carbon** (`let`, `var`,
-payload alternative), **fail_while_let_missing_initializer.carbon**.
-**toolchain/parse/testdata/let/let_else.carbon**: `basic`, `alternative_payload`,
-`alternative_bare`, `var_else`, `tuple`, `with_modifier` (`private let … else`
-parses; check rejects), `returned_var_else` (`returned var .Some(v: i32) = o else { return 0; }`
-parses with the `ReturnedModifier` leaf; check rejects, §2.3),
-`if_expr_struct_literal_else` (`var s: {.a: i32} = if c then t else {.a = 1};`
-and `var e: {} = if c then t else {};` — the §1.12(b) lookahead lets both
-parse as if-expressions; amended 2026-09-27, review fold: rev 1 F3). **fail_let_else_missing_block.carbon**
-(`let x: i32 = y else return;` → `ExpectedCodeBlock`, handle_code_block.cpp:22),
-**fail_let_else_if_expr.carbon** (both §1.12 shapes:
-`let x: i32 = if c then 1 else { return 0; }` and
-`let x: i32 = if c then 1 else 2 else { return 0; }` — one diagnostic each,
-`LetElseUnparenthesizedIfExpr`), **fail_let_else_trailing_semi.carbon**
-(`let … else { return; };` — the stray `;` is diagnosed as today's empty
-expression statement; documents the no-`;` decision).
-**toolchain/parse/testdata/let/alternative_root.carbon**: plain
-`let .Some(n: i32) = e;` and `var .None = e;` now parse (§1.13).
-**toolchain/parse/testdata/match/var_alternative.carbon** (amended
-2026-09-27, review fold: re-review M2): `case var .Some(n: i32) => {…}`
-and `case var .None => {…}` — a `VariablePattern` at the `var` token
-wrapping the `AlternativePattern` root, the §2.1 root-`var` peek; today
-this shape misparses as a `VariablePattern` over an `ExprPattern`.
+**fail_if_let_missing_pattern.carbon** (`if (let = x)` → the pattern parser's
+`ExpectedPattern`-family error, recovery pinned).
+**toolchain/parse/testdata/while/while_let.carbon** (`let`, `var`, payload
+alternative), **fail_while_let_missing_initializer.carbon**.
+**toolchain/parse/testdata/let/let_else.carbon**: `basic`,
+`alternative_payload`, `alternative_bare`, `var_else`, `tuple`, `with_modifier`
+(`private let … else` parses; check rejects), `returned_var_else` (`returned var
+.Some(v: i32) = o else { return 0; }` parses with the `ReturnedModifier` leaf;
+check rejects, §2.3), `if_expr_struct_literal_else` (`var s: {.a: i32} = if c
+then t else {.a = 1};` and `var e: {} = if c then t else {};` — the §1.12(b)
+lookahead lets both parse as if-expressions; amended 2026-09-27, review fold:
+rev 1 F3). **fail_let_else_missing_block.carbon** (`let x: i32 = y else return;`
+→ `ExpectedCodeBlock`, handle_code_block.cpp:22),
+**fail_let_else_if_expr.carbon** (both §1.12 shapes: `let x: i32 = if c then 1
+else { return 0; }` and `let x: i32 = if c then 1 else 2 else { return 0; }` —
+one diagnostic each, `LetElseUnparenthesizedIfExpr`),
+**fail_let_else_trailing_semi.carbon** (`let … else { return; };` — the stray
+`;` is diagnosed as today's empty expression statement; documents the no-`;`
+decision). **toolchain/parse/testdata/let/alternative_root.carbon**: plain `let
+.Some(n: i32) = e;` and `var .None = e;` now parse (§1.13).
+**toolchain/parse/testdata/match/var_alternative.carbon** (amended 2026-09-27,
+review fold: re-review M2): `case var .Some(n: i32) => {…}` and `case var .None
+=> {…}` — a `VariablePattern` at the `var` token wrapping the
+`AlternativePattern` root, the §2.1 root-`var` peek; today this shape misparses
+as a `VariablePattern` over an `ExprPattern`.
 
 **Check — toolchain/check/testdata/if/if_let.carbon** (positives, silent):
 
@@ -1559,14 +1556,14 @@ lane); **fail_while_let.carbon**: `fail_binding_after_loop`
 `NameNotFound`; the body uses `x`, re-review m6), `fail_irrefutable`
 (Warning), `fail_chain_reserved`.
 
-**toolchain/check/testdata/let/let_else.carbon** (positives): `alternative_payload`
-(`let .Some(port: i32) = e else { return -1; } return port;`), `alternative_bare`,
-`tuple`, `var_else` (`var .Some(v: i32) = o else { return 0; } v = v + 1;` —
-the §1.1 var-alternative lane, mutated after), `break_in_loop`, `continue_in_loop`,
-`nested_all_paths_return` (`else { if (c) { return 1; } else { return 2; } }`
-— accepted, §1.8), `let_else_in_match_arm_body`, `two_in_sequence`
-(second let-else's initializer uses the first's binding).
-**fail_let_else.carbon**:
+**toolchain/check/testdata/let/let_else.carbon** (positives):
+`alternative_payload` (`let .Some(port: i32) = e else { return -1; } return
+port;`), `alternative_bare`, `tuple`, `var_else` (`var .Some(v: i32) = o else {
+return 0; } v = v + 1;` — the §1.1 var-alternative lane, mutated after),
+`break_in_loop`, `continue_in_loop`, `nested_all_paths_return` (`else { if (c) {
+return 1; } else { return 2; } }` — accepted, §1.8),
+`let_else_in_match_arm_body`, `two_in_sequence` (second let-else's initializer
+uses the first's binding). **fail_let_else.carbon**:
 
 | subfile | shape | expect |
 | --- | --- | --- |
@@ -1938,13 +1935,13 @@ Rejected alternatives (each with the reason, for the record):
     §4 parse goldens).
 3.  **Conformance:** hosted conformance mode: **104 PASS / 0 FAIL / 27
     SKIP over 131**; `runner.py --self-test` green (R7).
-4.  **Reconciliation greps at discharge:** ``expression pattern`` TODO
-    site count unchanged (pattern_match.cpp:1191 only); the new TODO
-    strings appear at exactly one code site each plus their §4 pins;
-    ``match `case` pattern other than an integer literal, or a case
-    guard`` site count unchanged; `Kind::MatchCaseArm` site count grew
-    only by the new handlers and the CHECK relaxation; `IsSupportedScrutineeType`
-    has one definition (refutable_binding.cpp).
+4.  **Reconciliation greps at discharge:** ``expression pattern`` TODO site
+    count unchanged (pattern_match.cpp:1191 only); the new TODO strings appear
+    at exactly one code site each plus their §4 pins; ``match `case` pattern
+    other than an integer literal, or a case guard`` site count unchanged;
+    `Kind::MatchCaseArm` site count grew only by the new handlers and the CHECK
+    relaxation; `IsSupportedScrutineeType` has one definition
+    (refutable_binding.cpp).
 5.  **Ledger edits (fork/inventory/work-items.json):**
     -   W-012: notes gain the closing record — "DISCHARGED
         (fork/w012/plan.md): if-let / while-let / let-else (+ `var`
@@ -2032,9 +2029,9 @@ Rejected alternatives (each with the reason, for the record):
     classification lane list over verbatim and keep the usefulness and
     coverage blocks in the `match` caller at their current position
     relative to the branches.
--   `MatchCaseIntroducer` must keep filling `scrutinee_type_id` at
-    pattern time; only the new forms leave it `None`. `ResolvePendingAlternative`
-    is the single body for both — do not fork the diagnostics.
+-   `MatchCaseIntroducer` must keep filling `scrutinee_type_id` at pattern time;
+    only the new forms leave it `None`. `ResolvePendingAlternative` is the
+    single body for both — do not fork the diagnostics.
 -   The bare `.Name` root under the new forms is an EMPTY synthetic
     `TuplePattern` with `payload_pattern_id = root_id`; never route it
     through the `designator_root_id` lane, which needs a pattern-time
@@ -2132,19 +2129,19 @@ marked) before writing:
 12. **rev 2 m9/m10** — §4, §5: bool scrutinee positive, chained-`else if`
     condition leak negative, nested payload tuple, `.Some(var n: i32)`
     pin, one split file per row, while_let.carbon header in full.
-13. **re-review M1 (match exhaustiveness soundness)** — §1.1, §2.2, §4,
-    §6, §8.1, hand-off: `is_irrefutable_var_arm` gains
-    `&& !is_var_alternative_arm` (today's :779-781 is TRUE for
-    `case var .Some(n: i32)` because `IsIrrefutableMatchCasePattern`
-    recurses through `VarPattern`, pattern_match.cpp:680-684, and the
-    coverage block :939-941 would set `has_irrefutable_arm`); :942-943
-    then records `covered_alternatives`; usefulness keyed with
-    `BuildMatchCaseUsefulnessKey(context, alternative->payload_pattern_id, alternative)`
-    (:740-744 returns `nullopt` on the root today — the arm was silently
-    unchecked/unrecorded); new rows `fail_nonexhaustive_var_alternative`
-    (match/fail_var_alternative.carbon) and `var_alternative_then_default`;
-    §8.1 records that the zero-diff gate cannot catch this (no existing
-    golden has a `var`-wrapped alternative root — grep recorded there).
+13. **re-review M1 (match exhaustiveness soundness)** — §1.1, §2.2, §4, §6,
+    §8.1, hand-off: `is_irrefutable_var_arm` gains `&& !is_var_alternative_arm`
+    (today's :779-781 is TRUE for `case var .Some(n: i32)` because
+    `IsIrrefutableMatchCasePattern` recurses through `VarPattern`,
+    pattern_match.cpp:680-684, and the coverage block :939-941 would set
+    `has_irrefutable_arm`); :942-943 then records `covered_alternatives`;
+    usefulness keyed with `BuildMatchCaseUsefulnessKey(context,
+    alternative->payload_pattern_id, alternative)` (:740-744 returns `nullopt`
+    on the root today — the arm was silently unchecked/unrecorded); new rows
+    `fail_nonexhaustive_var_alternative` (match/fail_var_alternative.carbon) and
+    `var_alternative_then_default`; §8.1 records that the zero-diff gate cannot
+    catch this (no existing golden has a `var`-wrapped alternative root — grep
+    recorded there).
 14. **re-review M2 (parse of `case var .Some(…)`)** — §2.1, §4, §6,
     hand-off: `HandleMatchCaseIntroducer` peeks `.` only
     (parse/handle_match.cpp:163-171); `var` first routes

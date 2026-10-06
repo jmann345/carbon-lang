@@ -44,9 +44,14 @@ struct FunctionDeclArgs {
   ParamPatternKind self_kind = ParamPatternKind::Ref;
   // The types of the explicit parameters.
   llvm::ArrayRef<SemIR::TypeId> param_type_ids = {};
-  // The kind of the parameters described by `param_type_ids`.
-  ParamPatternKind param_kind = ParamPatternKind::Value;
-  // The return type, or `None` if the function doesn't declare a return type.
+  // The kinds of the parameters described by `param_type_ids`.
+  llvm::ArrayRef<ParamPatternKind> param_kinds = {};
+  // The return form, or `None` if the function doesn't declare a return form.
+  Context::FormExpr return_form = Context::FormExpr::None;
+  // Fork (W-071 generic choice constructors): the return type, used in place
+  // of `return_form` when the form must be built inside the function's own
+  // generic declaration region (see `build_generic`). At most one of
+  // `return_form` and `return_type_id` may be set.
   SemIR::TypeId return_type_id = SemIR::TypeId::None;
   // Whether to build a generic for the function. Required when any signature
   // type is symbolic — a generated member of a generic scope, such as a

@@ -7,6 +7,7 @@
 #include "clang/Sema/Sema.h"
 #include "clang/Sema/Template.h"
 #include "toolchain/base/kind_switch.h"
+#include "toolchain/check/action.h"
 #include "toolchain/check/call.h"
 #include "toolchain/check/cpp/constant.h"
 #include "toolchain/check/cpp/import.h"
@@ -29,10 +30,9 @@ namespace Carbon::Check {
 static auto IsTemplateArg(Context& context, SemIR::InstId arg_id) -> bool {
   auto arg_type_id = context.insts().Get(arg_id).type_id();
   auto arg_type = context.types().GetAsInst(arg_type_id);
-  return arg_type
-      .IsOneOf<SemIR::TypeType, SemIR::FacetType, SemIR::CppTemplateNameType,
-               SemIR::GenericClassType, SemIR::GenericInterfaceType,
-               SemIR::GenericNamedConstraintType>();
+  return arg_type.IsOneOf<SemIR::FacetType, SemIR::CppTemplateNameType,
+                          SemIR::GenericClassType, SemIR::GenericInterfaceType,
+                          SemIR::GenericNamedConstraintType>();
 }
 
 // Splits a call argument list into a list of template arguments followed by a
@@ -72,25 +72,6 @@ auto PerformCallToCppFunction(Context& context, SemIR::LocId loc_id,
         // Preserve the `self` argument from the original callee.
         fn.self_id = self_id;
       }
-      // Arguments embedded as constants into the C++ thunk (a Carbon function
-      // passed as a callable) are not passed at runtime and have no Carbon
-      // parameter; drop them from the call.
-      llvm::SmallVector<SemIR::InstId> runtime_arg_ids;
-      const auto& function = context.functions().Get(fn.function_id);
-      if (const auto* clang_decl =
-              context.clang_decls().Lookup(function.first_decl_id());
-          clang_decl && clang_decl->key.signature_id.has_value()) {
-        const auto& signature =
-            context.clang_decl_signatures().Get(clang_decl->key.signature_id);
-        if (signature.HasConstantFunctionArgs()) {
-          for (auto [i, arg_id] : llvm::enumerate(function_arg_ids)) {
-            if (!signature.GetConstantFunctionArg(static_cast<int32_t>(i))) {
-              runtime_arg_ids.push_back(arg_id);
-            }
-          }
-          function_arg_ids = runtime_arg_ids;
-        }
-      }
       return PerformCallToFunction(context, loc_id, callee_id, fn,
                                    function_arg_ids, is_desugared);
     }
@@ -101,6 +82,9 @@ auto PerformCallToCppFunction(Context& context, SemIR::LocId loc_id,
       CARBON_FATAL("overloads should produce functions");
     }
     case CARBON_KIND(SemIR::CalleeNonFunction _): {
+      CARBON_FATAL("overloads should produce functions");
+    }
+    case CARBON_KIND(SemIR::CalleeCppFunctionPointer _): {
       CARBON_FATAL("overloads should produce functions");
     }
   }

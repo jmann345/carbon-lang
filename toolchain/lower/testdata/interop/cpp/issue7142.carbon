@@ -49,18 +49,18 @@ void f() {
 // CHECK:STDOUT: entry:
 // CHECK:STDOUT:   %call = call noundef ptr @_ZN6CarbonL3GetEv()
 // CHECK:STDOUT:   %price = getelementptr inbounds nuw %"class.Carbon::A", ptr %call, i32 0, i32 0
-// CHECK:STDOUT:   %0 = load i32, ptr %price, align 4, !tbaa !12
+// CHECK:STDOUT:   %0 = load i32, ptr %price, align 4, !tbaa !20
 // CHECK:STDOUT:   ret i32 %0
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: declare ptr @_CGet.Main()
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
-// CHECK:STDOUT: define void @_CGet__carbon_thunk.Main(ptr %_) #1 !dbg !14 {
+// CHECK:STDOUT: define void @_CGet__carbon_thunk.Main(ptr %_) #1 !dbg !12 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %Get.call = call ptr @_CGet.Main(), !dbg !20
-// CHECK:STDOUT:   store ptr %Get.call, ptr %_, align 8, !dbg !20
-// CHECK:STDOUT:   ret void, !dbg !20
+// CHECK:STDOUT:   %Get.call = call ptr @_CGet.Main(), !dbg !14
+// CHECK:STDOUT:   store ptr %Get.call, ptr %_, align 8, !dbg !14
+// CHECK:STDOUT:   ret void, !dbg !14
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: alwaysinline mustprogress nounwind uwtable
@@ -76,29 +76,29 @@ void f() {
 // CHECK:STDOUT: attributes #1 = { nounwind }
 // CHECK:STDOUT: attributes #2 = { alwaysinline mustprogress nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 // CHECK:STDOUT:
-// CHECK:STDOUT: !llvm.dbg.cu = !{!0}
-// CHECK:STDOUT: !llvm.module.flags = !{!2, !3, !4, !5, !6}
-// CHECK:STDOUT: !llvm.errno.tbaa = !{!7}
+// CHECK:STDOUT: !llvm.dbg.cu = !{!5}
+// CHECK:STDOUT: !llvm.module.flags = !{!23, !24, !25, !2, !3}
+// CHECK:STDOUT: !llvm.errno.tbaa = !{!27}
 // CHECK:STDOUT:
-// CHECK:STDOUT: !0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !1, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
-// CHECK:STDOUT: !1 = !DIFile(filename: "issue7142.carbon", directory: "")
-// CHECK:STDOUT: !2 = !{i32 8, !"PIC Level", i32 2}
-// CHECK:STDOUT: !3 = !{i32 7, !"PIE Level", i32 2}
-// CHECK:STDOUT: !4 = !{i32 7, !"uwtable", i32 2}
-// CHECK:STDOUT: !5 = !{i32 7, !"Dwarf Version", i32 5}
-// CHECK:STDOUT: !6 = !{i32 2, !"Debug Info Version", i32 3}
-// CHECK:STDOUT: !7 = !{!8, !9, i64 0}
-// CHECK:STDOUT: !8 = !{!"__libc_errno", !9, i64 0}
-// CHECK:STDOUT: !9 = !{!"int", !10, i64 0}
-// CHECK:STDOUT: !10 = !{!"omnipotent char", !11, i64 0}
-// CHECK:STDOUT: !11 = !{!"Simple C++ TBAA"}
-// CHECK:STDOUT: !12 = !{!13, !9, i64 0}
-// CHECK:STDOUT: !13 = !{!"_ZTSN6Carbon1AE", !9, i64 0}
-// CHECK:STDOUT: !14 = distinct !DISubprogram(name: "Get__carbon_thunk", linkageName: "_CGet__carbon_thunk.Main", scope: null, file: !1, line: 16, type: !15, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !18)
-// CHECK:STDOUT: !15 = !DISubroutineType(types: !16)
-// CHECK:STDOUT: !16 = !{null, !17}
-// CHECK:STDOUT: !17 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
-// CHECK:STDOUT: !18 = !{!19}
-// CHECK:STDOUT: !19 = !DILocalVariable(arg: 1, scope: !14, type: !17)
-// CHECK:STDOUT: !20 = !DILocation(line: 16, column: 1, scope: !14)
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !4 = !DIFile(filename: "issue7142.carbon", directory: "")
+// CHECK:STDOUT: !5 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !4, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !7 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !10 = !{null, !7}
+// CHECK:STDOUT: !11 = !DISubroutineType(types: !10)
+// CHECK:STDOUT: !12 = distinct !DISubprogram(name: "Get__carbon_thunk", linkageName: "_CGet__carbon_thunk.Main", scope: null, file: !4, line: 16, type: !11, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !15)
+// CHECK:STDOUT: !13 = !DILocalVariable(arg: 1, scope: !12, type: !7)
+// CHECK:STDOUT: !14 = !DILocation(line: 16, column: 1, scope: !12)
+// CHECK:STDOUT: !15 = !{!13}
+// CHECK:STDOUT: !16 = !{!"Simple C++ TBAA"}
+// CHECK:STDOUT: !17 = !{!"omnipotent char", !16, i64 0}
+// CHECK:STDOUT: !18 = !{!"int", !17, i64 0}
+// CHECK:STDOUT: !19 = !{!"_ZTSN6Carbon1AE", !18, i64 0}
+// CHECK:STDOUT: !20 = !{!19, !18, i64 0}
+// CHECK:STDOUT: !23 = !{i32 8, !"PIC Level", i32 2}
+// CHECK:STDOUT: !24 = !{i32 7, !"PIE Level", i32 2}
+// CHECK:STDOUT: !25 = !{i32 7, !"uwtable", i32 2}
+// CHECK:STDOUT: !26 = !{!"__libc_errno", !18, i64 0}
+// CHECK:STDOUT: !27 = !{!26, !18, i64 0}
 // CHECK:STDOUT:

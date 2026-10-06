@@ -53,13 +53,14 @@ fn G(t: (bool, bool)) -> i32 {
 // CHECK:STDOUT: --- mixed_tuple.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
 // CHECK:STDOUT:   %Int.67af24.1: type = class_type @Int, @Int(%N) [symbolic]
 // CHECK:STDOUT:   %pattern_type.dc0: type = pattern_type Core.IntLiteral [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
-// CHECK:STDOUT:   %tuple.type.24b: type = tuple_type (type, type) [concrete]
-// CHECK:STDOUT:   %tuple.2f5: %tuple.type.24b = tuple_value (bool, %i32) [concrete]
+// CHECK:STDOUT:   %tuple.type.693: type = tuple_type (type, type) [concrete]
+// CHECK:STDOUT:   %tuple.dcd: %tuple.type.693 = tuple_value (bool, %i32) [concrete]
 // CHECK:STDOUT:   %tuple.type.68a: type = tuple_type (bool, %i32) [concrete]
 // CHECK:STDOUT:   %pattern_type.541: type = pattern_type %tuple.type.68a [concrete]
 // CHECK:STDOUT:   %t.param_patt: %pattern_type.541 = value_param_pattern [concrete]
@@ -166,7 +167,7 @@ fn G(t: (bool, bool)) -> i32 {
 // CHECK:STDOUT:     %.loc4_19.1: type = splice_block %.loc4_19.3 [concrete = constants.%tuple.type.68a] {
 // CHECK:STDOUT:       %.loc4_10: type = type_literal bool [concrete = bool]
 // CHECK:STDOUT:       %i32.loc4_16: type = type_literal constants.%i32 [concrete = constants.%i32]
-// CHECK:STDOUT:       %.loc4_19.2: %tuple.type.24b = tuple_literal (%.loc4_10, %i32.loc4_16) [concrete = constants.%tuple.2f5]
+// CHECK:STDOUT:       %.loc4_19.2: %tuple.type.693 = tuple_literal (%.loc4_10, %i32.loc4_16) [concrete = constants.%tuple.dcd]
 // CHECK:STDOUT:       %.loc4_19.3: type = converted %.loc4_19.2, constants.%tuple.type.68a [concrete = constants.%tuple.type.68a]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     %t: %tuple.type.68a = wrapper_binding t, %t.param
@@ -278,8 +279,9 @@ fn G(t: (bool, bool)) -> i32 {
 // CHECK:STDOUT: --- bool_pair_keeps_default.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
-// CHECK:STDOUT:   %tuple.type.24b: type = tuple_type (type, type) [concrete]
-// CHECK:STDOUT:   %tuple: %tuple.type.24b = tuple_value (bool, bool) [concrete]
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %tuple.type.693: type = tuple_type (type, type) [concrete]
+// CHECK:STDOUT:   %tuple: %tuple.type.693 = tuple_value (bool, bool) [concrete]
 // CHECK:STDOUT:   %tuple.type.784: type = tuple_type (bool, bool) [concrete]
 // CHECK:STDOUT:   %pattern_type.860: type = pattern_type %tuple.type.784 [concrete]
 // CHECK:STDOUT:   %t.param_patt: %pattern_type.860 = value_param_pattern [concrete]
@@ -362,7 +364,7 @@ fn G(t: (bool, bool)) -> i32 {
 // CHECK:STDOUT:     %.loc8_20.1: type = splice_block %.loc8_20.3 [concrete = constants.%tuple.type.784] {
 // CHECK:STDOUT:       %.loc8_10: type = type_literal bool [concrete = bool]
 // CHECK:STDOUT:       %.loc8_16: type = type_literal bool [concrete = bool]
-// CHECK:STDOUT:       %.loc8_20.2: %tuple.type.24b = tuple_literal (%.loc8_10, %.loc8_16) [concrete = constants.%tuple]
+// CHECK:STDOUT:       %.loc8_20.2: %tuple.type.693 = tuple_literal (%.loc8_10, %.loc8_16) [concrete = constants.%tuple]
 // CHECK:STDOUT:       %.loc8_20.3: type = converted %.loc8_20.2, constants.%tuple.type.784 [concrete = constants.%tuple.type.784]
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     %t: %tuple.type.784 = wrapper_binding t, %t.param

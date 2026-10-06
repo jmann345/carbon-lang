@@ -36,6 +36,11 @@ auto ExportNameScopeToCpp(Context& context, SemIR::LocId loc_id,
 auto ExportClassToCpp(Context& context, SemIR::ClassType class_type)
     -> clang::TagDecl*;
 
+// Exports a dynamic Carbon class with a foreign (C++) vtable into C++ as a
+// class, and completes its definition.
+auto ExportAndCompleteClassToCpp(Context& context, SemIR::ClassType class_type)
+    -> clang::TagDecl*;
+
 // Exports a generic Carbon class into C++ as a templated class.
 //
 // If the generic class has already been exported, returns the existing
@@ -72,20 +77,21 @@ auto ExportFieldToCpp(Context& context, SemIR::InstId field_inst_id,
                       SemIR::FieldDecl field_decl,
                       SemIR::SpecificId specific_id) -> clang::FieldDecl*;
 
-// Get a `clang::FunctionDecl` that can be used to call a Carbon function.
-// If the function is generic, a `clang::FunctionTemplateDecl` will be
-// created instead.
-auto ExportFunctionToCpp(Context& context, SemIR::LocId loc_id,
-                         SemIR::FunctionId function_id) -> clang::NamedDecl*;
+// Returns the `ClangDeclId` of a `clang::FunctionDecl` or
+// `clang::FunctionTemplateDecl` that can be used to call the given function.
+// Returns null if an error was diagnosed.
+auto GetOrExportFunctionToCpp(Context& context, SemIR::LocId loc_id,
+                              SemIR::FunctionId function_id)
+    -> clang::NamedDecl*;
 
-// Returns the C++ function declaration for the given concrete, non-generic
-// Carbon function, exporting it (and registering the mapping in
-// `clang_decls()`) if it hasn't been exported yet. This is used to pass a
-// Carbon function where C++ expects a callable (TA-D1, W-023). Returns
-// nullptr if the function could not be exported.
-auto GetOrExportFunctionDeclToCpp(Context& context,
-                                  SemIR::FunctionId function_id)
-    -> clang::FunctionDecl*;
+// Exports the necessary declarations to permit conversion from the given
+// Carbon function type to the given C++ function pointer type. If the
+// conversion would be invalid, this will return false, and if `diagnose` is
+// true it will also emit one or more diagnostics explaining the reason it would
+// be invalid. In those diagnostics, `src_id` is the source of the conversion.
+auto ExportFunctionToCppPointerConversion(
+    Context& context, SemIR::InstId src_id, SemIR::FunctionType src_type,
+    SemIR::CppFunctionPointerType dest_type, bool diagnose) -> bool;
 
 // Exports a Carbon virtual function as a C++ `clang::FunctionDecl` declaration.
 // Does not emit a definition.

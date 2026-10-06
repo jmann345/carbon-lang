@@ -76,8 +76,8 @@ From `docs/project/milestones.md` ("Functions", lines 154-164):
 Bullets this area touches but does **not** close:
 
 -   "Importing C++ overload sets into Carbon overload sets where the model
-    (closed overloading) fits" (lines 160-161) — already DONE by way of Clang Sema.
-    Note the milestone text itself names Carbon's model: **closed
+    (closed overloading) fits" (lines 160-161) — already DONE by way of Clang
+    Sema. Note the milestone text itself names Carbon's model: **closed
     overloading**.
 -   "Importing C++ open-overload-sets-as-extension-points (`swap`, etc)"
     (lines 162-164) — separate work (W8); Carbon's answer to _open_
@@ -228,8 +228,8 @@ Rules (the proposal-sized core):
     accumulation, p000875).
 -   No-match diagnostic lists every candidate with its first failure reason,
     mirroring the Clang note style users already get from imported sets.
--   Naming an overload set other than as a callee (for example taking its value) is
-    an error in 0.1; p002875's single-function-type-with-many-`Call`-impls
+-   Naming an overload set other than as a callee (for example taking its value)
+    is an error in 0.1; p002875's single-function-type-with-many-`Call`-impls
     model is the documented future path.
 
 **C++ interop story.** Import: unchanged. Export: iterate the set through the
@@ -419,10 +419,10 @@ Suggested staging against the arbiter (fork/conformance):
     vs p002875's `overloaded fn` vs marking only the second-and-later
     members. Recommendation: modifier on _every_ member, so any single
     declaration reveals the set exists.
-2.  **Mixed generic/non-generic sets and ordering discipline**: pure
-    declaration order (recommended, simplest and matches the anticipated
-    rule) vs any specificity preference (for example non-generic before generic),
-    which reintroduces ranking complexity.
+2.  **Mixed generic/non-generic sets and ordering discipline**: pure declaration
+    order (recommended, simplest and matches the anticipated rule) vs any
+    specificity preference (for example non-generic before generic), which
+    reintroduces ranking complexity.
 3.  **Export coherence policy**: accept documented Carbon-vs-C++ resolution
     divergence (recommended for 0.1), or add a per-set opt-in/opt-out for
     export, or attempt a conservative "reject export when members overlap

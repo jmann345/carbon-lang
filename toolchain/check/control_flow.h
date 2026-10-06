@@ -100,6 +100,31 @@ auto AddAndDiscardTemporaryCleanups(Context& context) -> void;
 // discards them from cleanup tracking.
 auto AddAndDiscardScopeCleanups(Context& context) -> void;
 
+// Begins a conditionally evaluated operand of an expression, such as an arm of
+// an `if` expression or the right-hand operand of a short-circuit operator,
+// whose block has just been pushed. The operand owns the cleanups registered
+// while it is checked: its block is evaluated only when the branch into it is
+// taken, so a temporary created there can be destroyed neither in a sibling
+// operand's block nor in the convergence block, where no evaluation of it
+// dominates the destroy call. Instead the temporaries are destroyed at the end
+// of the operand's block by `EndConditionalExprOperand`, before the branch to
+// the convergence block, the way an `if` statement's condition destroys its
+// temporaries before branching (`AddAndDiscardTemporaryCleanups`). Does nothing
+// outside a function, where control flow expressions are diagnosed.
+//
+// TODO: Instead, conditionalize the cleanups so that they run at the end of the
+// full-expression in the same cases where the operand was evaluated.
+auto BeginConditionalExprOperand(Context& context) -> void;
+
+// Ends the conditionally evaluated operand begun by
+// `BeginConditionalExprOperand`, whose value is `value_id`: destroys the
+// operand's temporaries and pops its cleanup scope. Returns false after
+// diagnosing an operand whose value could refer into those temporaries: a value
+// of a type without a by-copy value representation is backed by the object it
+// was formed from, which may be one of them.
+auto EndConditionalExprOperand(Context& context, Parse::NodeId node_id,
+                               SemIR::InstId value_id) -> bool;
+
 // Adds a branch to the given target block, which should be in the current scope
 // or an enclosing scope, along with cleanups for all variables and temporaries
 // created since the given depth, which should be the cleanup depth of the

@@ -120,8 +120,8 @@ handle_binding_pattern.cpp:295-562, which reads the innermost
 `decl_introducer_state_stack` entry (:324-325) and switches on
 `full_pattern_stack().CurrentKind()` (:416-560) — `NotInEitherParamList` is
 `CARBON_FATAL("Unreachable")` (:558-559). The driving sequence for a
-statement-context pattern is proven by the `for` loop: an implicit
-introducer push (`decl_introducer_state_stack().Push<Lex::TokenKind::Let>()`,
+statement-context pattern is proven by the `for` loop: an implicit introducer
+push (`decl_introducer_state_stack().Push<Lex::TokenKind::Let>()`,
 handle_loop_statement.cpp:136) + `pattern_block_stack().Push()` +
 `full_pattern_stack().PushNameBindingDecl()`
 
@@ -532,11 +532,11 @@ fail_choice_nonexhaustive goldens.
     peek depend on exact stack layout across the new pushes. _Falsifier:_
     the existing nested.carbon golden plus a new designator-in-nested-match
     testdata program.
--   **R-9. Conformance floor + Goodhart guard.** match_switch,
-    match_position, match_no_fallthrough, choice_payload_construct,
-    choice_discriminant_diff, match_switch_diff stay PASS at every slice;
-    no SKIP on a passing program (R16b); goldens only by way of runner autoupdate
-    (R16a/R15); S2c's lower golden must actually discriminate payload GEPs.
+-   **R-9. Conformance floor + Goodhart guard.** match_switch, match_position,
+    match_no_fallthrough, choice_payload_construct, choice_discriminant_diff,
+    match_switch_diff stay PASS at every slice; no SKIP on a passing program
+    (R16b); goldens only by way of runner autoupdate (R16a/R15); S2c's lower
+    golden must actually discriminate payload GEPs.
 
 ## 6. Open sub-forks (V-2 veto digest)
 

@@ -6227,7 +6227,9 @@ narrowed to "a `Core.Buf` stored in a field of a class that declares its own
 register trigger (block 9 of the UA-1 review below) is met for FIELDS —
 upstream's walk reaches declared impls through `SelfDestruct` — while D-SL-16's
 yield still makes a `Buf` LOCAL free, so the yield stays; W-125 (choice
-payloads) stays.
+payloads) stays. §0.6's register row, closed: re-read at UA-2, the UA-1 listing
+below stands — nine blocks HOLD and OV-2's one entry MOVED (D-UA-6) — with
+block 9's SL-1 trigger met for fields, as just recorded.
 
 The two W-043 probes, root-caused before anything was decided. Both programs
 failed with the same two diagnostics: (1) at the uninitialized
@@ -6244,7 +6246,10 @@ by two independent lines of evidence. First, upstream's own prebuilt nightly
 diagnostics on the unmodified programs AND reproduces (1) on upstream's EXACT
 pin shape `fn F[T: type](unused x: T) { var unused v: Cpp.S(T); }` compiled
 as a program (the installed toolchain's real prelude), where upstream's golden
-generic_call.carbon:27-28 passes in file_test. Second, the preludes differ
+generic_call.carbon:27-28 passes in file_test. (Round-3 record: that
+reproduction ran in a container since recreated; its command and output were
+not written down and are not reproducible from this tree, so the second line is
+the evidence of record, carried by W-127.) Second, the preludes differ
 exactly there: the test prelude's
 toolchain/testing/testdata/min_prelude/parts/default.carbon:19 declares an
 unconstrained `impl forall [T: type] T as DefaultOrUnformed`, so the lookup on
@@ -6263,8 +6268,10 @@ programs' claim compiles: the box is initialized through its C++ default
 constructor (`var b: Cpp.Box(T) = Cpp.Box(T).Box();`, upstream's own pin
 check/testdata/interop/cpp/class/import/template.carbon:149 `var unused a:
 Cpp.A(T) = Cpp.A(T).A();`) and `Point`/`Pt` declare `impl as Core.Copy { fn
-Op(self) -> Self { return {.x = self.x}; } }` (lower/testdata/template/class
-.carbon's spelling). `Cpp.Box(T)` with symbolic `T` stays in the body and in
+Op(self) -> Self { return {.x = self.x}; } }` (the lower/testdata/template/class
+.carbon idiom — an in-class `impl as Core.Copy` whose `Op` returns the copy;
+class.carbon's `Op(unused self)` returns `{}`, so the idiom, not the spelling).
+`Cpp.Box(T)` with symbolic `T` stays in the body and in
 the return type; EXPECT lines unchanged. Both edited programs compile, link
 and print `7` with exit 0 on the 2026.09.28 nightly (the fork tip is measured
 by the next hosted conformance; a failure there is an R10 re-SKIP with the
@@ -6272,10 +6279,11 @@ measured text). The limitation is pinned for the record and the next re-probe:
 new check golden toolchain/check/testdata/interop/cpp/template/
 dependent_var_full_prelude.carbon under `min_prelude/full.carbon` (splits
 `fail_unformed_dependent_var` — upstream's shape, predicted
-`ConversionFailureTypeToFacet` — and `ctor_init_dependent_var` — the working
-shape with the dependent return, predicted clean), CHECK lines empty for the
-fill; both splits compiled with the nightly as predicted. The ledger W-043
-carries the root cause; its blocked_by W-014 is kept.
+`ConversionFailureTypeToFacet`; renamed `fail_todo_unformed_dependent_var` at
+round 3, below — and `ctor_init_dependent_var` — the working shape with the
+dependent return, predicted clean), CHECK lines empty for the fill; both splits
+compiled with the nightly as predicted. The ledger W-043 carried the root cause
+at round 2 (moved to W-127 at round 3, below); its blocked_by W-014 is kept.
 
 Ledger re-cites (each note dated UA-2, evidence line numbers refreshed to
 c1e83b0b7): W-023 (landed by UA-1; the five thread programs PASS on
@@ -6306,23 +6314,92 @@ pattern splices still fatal), 91 (the surviving placeholders and the
 corrected TODO-heading count), plus 79 (W-108). No row's status flipped, so
 the header stays 30 DONE / 21 PARTIAL / 4 MISSING / 1 DESIGN-ONLY.
 
-Manufactured heading repaired (R31; the inheritance UA-1 recorded): the H3 "7700
-splice-stepping for bound methods, …" born in a8923ccc4 from the 2026-09-07
-weekly entry's paragraph listing PRs 7689, 7700 and 7710 with hash signs (the
-second wrapped to column 0 and the rumdl hook made it a heading) is folded back
-into prose as "PRs 7689 TemplateInst, 7700 splice-stepping for bound methods,
-7710 call-action operand refinement", and the seven headings it had demoted are
-restored to their original H3 (verified against ec7d4bcd5 and c991a7797): the
-2026-08-31 weekly entry (was H4), the 2026-08-24 weekly entry and F-005, F-001,
-F-002, F-003, F-004 (were H5). Heading counts per level, before → after this
+Manufactured heading repaired (R31; the inheritance UA-1 recorded): the heading
+"7700 splice-stepping for bound methods, …", born as an H2 in a8923ccc4 from the
+2026-09-07 weekly entry's paragraph listing PRs 7689, 7700 and 7710 with hash
+signs (the second wrapped to column 0 and the rumdl hook made it a heading, with
+the 2026-08-31 entry at H3 and the 2026-08-24 entry and F-00x at H4 under it)
+and made an H3 by a later reflow that demoted its followers one level further
+(the levels at 8068151ed; wording corrected at round 3, implementation review
+MINOR-7), is folded back into prose as "PRs 7689 TemplateInst, 7700
+splice-stepping for bound methods, 7710 call-action operand refinement", and the
+seven headings it had demoted are restored to their original H3 (verified
+against ec7d4bcd5 and c991a7797): the 2026-08-31 weekly entry (was H4 at
+8068151ed), the 2026-08-24 weekly entry and F-005, F-001, F-002, F-003, F-004
+(were H5). Heading counts per level, before → after this
 round: H2 2 → 2, H3 44 → 50, H4 1 → 0, H5 6 → 0; list-item counts unchanged; the
 heading-line set differs by the removed heading and the seven relevelled lines
 only.
 
-Scoreboard prediction for the round-2 hosted conformance: 131 PASS / 0 FAIL /
-19 SKIP over 150, 48/56 bullets (the two re-probed programs PASS, `7` each);
-the autoupdate creates dependent_var_full_prelude.carbon's CHECK lines and
-changes no other golden. Veto-able.
+Round-2 prediction, as written before the runs: 131 PASS / 0 FAIL / 19 SKIP
+over 150, 48/56 bullets (the two re-probed programs PASS, `7` each); the
+autoupdate creates dependent_var_full_prelude.carbon's CHECK lines and changes
+no other golden. OF RECORD (round 2, 2026-10-06; written at round 3 after the
+implementation review's MAJOR-1, R9): hosted autoupdate 37411162511 →
+8b42d1bc4, exactly as predicted — one file, dependent_var_full_prelude.carbon,
+412 inserted lines (the `fail_unformed_dependent_var` split's four STDERR CHECK
+lines, `ConversionFailureTypeToFacet` at the `var`, and the
+`ctor_init_dependent_var` split's clean dump), no other golden changed, no
+manual-fix list; hosted conformance 37411196881: 131 PASS / 0 FAIL / 19 SKIP
+over 150, 48/56 bullets — its scoreboard push lost a non-fast-forward race with
+the fill's push, so it was re-run for the record: hosted conformance
+37413300832 → ace101b0d with the same numbers, fork/conformance/out/scoreboard
+.json `totals` PASS 131, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
+OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 19 over 150 programs, bullets 48 PASS /
+8 SKIP of 56, `generated` 2026-10-06T04:36:08.828687+00:00; the two W-043
+programs PASS, `7` each (the headers' "Measured" lines);
+interop/inherit_multiple_bases.carbon still SKIP. The prediction was met
+exactly; no R10 re-SKIP.
+
+ROUND 3 (2026-10-12): the fresh-context implementation review of ace101b0d
+(APPROVE-WITH-FIXES; MAJOR-1..4, MINOR-5..9) folded, every finding. MAJOR-1: the
+of-record runs above. MAJOR-2: the declared-owner leak — an owner that declares
+`impl as Destroy` runs its `Op` and the interface's `final` placeholder
+`SubobjectDestroy`, so its `Buf` field leaks — is filed as its own item, W-126
+(evidence: buf_field.carbon's `declared_owner` lines, core/prelude/destroy
+.carbon:12-13 and :18-20, custom_witness.cpp:269-273's class-keyed yield,
+upstream PR 7773's stated limit), cited from docs/design/slices.md's 0.1 limit
+and gap row "Stdlib: Slices"; W-108 stays DISCHARGED and its title no longer
+carries the open limit (moved to its note, pointing at W-126). MAJOR-3: the pin
+golden's split `fail_unformed_dependent_var` is renamed
+`fail_todo_unformed_dependent_var` (.agents/skills/toolchain_tests/SKILL.md: the
+diagnostic fires but should not — the concrete `var b: Cpp.Box(Pt);` compiles
+and a correct deferral would accept the dependent shape, as the test prelude's
+hack lets generic_call.carbon show); the STDERR CHECK lines embed the split
+name, so they are CLEARED, not hand-edited (R16(a)), and the other split's
+lines are untouched. R19 consequence, recorded: the branch's file_test is RED
+on this one split until the next hosted autoupdate rewrites it, acceptable only
+because the PR is held OPEN (R28(c)) — and GitHub Actions on the repository has
+been disabled since 2026-10-08 (trunk's weekly entry of 2026-10-12, stamp
+8ddf79a0c), so the fork cannot dispatch that fill, the gate or a conformance
+itself. MAJOR-4: the real-prelude `DefaultOrUnformed` limitation is its own
+item, W-127 (evidence: default.carbon:52's `impl forall [T: UnformedInit]`
+versus parts/default.carbon:19's unconstrained hack, handle_let_and_var.cpp:297
+`ConvertToValueOfType`, the pin golden, the two programs' round-1 diagnostics
+from 37407530104; removal condition: impl lookup deferring a template-dependent
+self under a constrained blanket impl, the deferral the min_prelude hack
+simulates), cited from gap rows 42 and 56, the golden header and W-043; W-043
+keeps only its W-014 residue, its note's opening sentence corrected (call.cpp
+:127's TODO was lifted by PR 7673; it is :133 now, reached only for a concrete
+unmapped type). MINOR-5: §0.6's register row closed (above, in the W-108
+paragraph). MINOR-6: the nightly-2026.09.28 reproduction's command and output
+were in a container that has since been recreated and are not reproducible from
+this tree; the structural proof (default.carbon against parts/default.carbon)
+is the evidence of record (noted above, in W-043 and W-127, and in the two
+program headers). MINOR-7: the heading-repair wording corrected above (born as
+an H2; a later reflow made it an H3 and demoted the followers); the count
+record stands. MINOR-8: fork/ORCHESTRATION.md is deliberately NOT edited on this
+branch — trunk's stamp 8ddf79a0c already records the parked state ("HELD OPEN
+… gate impossible (Actions disabled); merge when a gate runs"), and the merge
+brings it. MINOR-9: the Copy impl is cited as the class.carbon idiom, not its
+spelling (above and in the headers). The review's nit on the entry's fork-delta
+list (the `UnformedInit` arm of cpp/impl_lookup.cpp `LookupCppImpl`, :715-719,
+returns `None` and is unreachable for a splice) is recorded in W-127's
+evidence. Verification at round 3, with no hosted run available: `json.load`,
+`runner.py --self-test` (150 programs, 56 bullets), prek on the touched files to
+a fixpoint, R31 heading and list counts before and after (decision-log
+2/50/0/0, slices.md 10/4/0/0, gap-analysis.md 5/23/0/0 at H2/H3/H4/H5; list
+items 23 / 55 / 0 — unchanged). Veto-able.
 
 ### Upstream advance 2026-10: cut 631f8fb → c1e83b0b7 (2026-10-06)
 

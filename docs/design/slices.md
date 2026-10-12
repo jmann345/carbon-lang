@@ -385,16 +385,16 @@ which it is removed:
     `Buf` then gains an allocator parameter defaulting to the global one.
 -   **A `Core.Buf` stored in a field of a class that declares its own
     `impl as Destroy`, or in a choice payload, is not freed.** A class, struct,
-    tuple or array that holds a `Buf` and declares no `Destroy` impl destroys
-    it through the toolchain's synthesized `SubobjectDestroy` walk, which calls
-    each field's `Destroy.SelfDestruct` and so `Buf`'s `impl as Destroy`
-    (since the 2026-10 upstream advance; pinned by
+    tuple or array that holds a `Buf` and declares no `Destroy` impl destroys it
+    through the toolchain's synthesized `SubobjectDestroy` walk, which calls
+    each field's `Destroy.SelfDestruct` and so `Buf`'s `impl as Destroy` (since
+    the 2026-10 upstream advance; pinned by
     toolchain/lower/testdata/slice/buf_field.carbon, where the owner's destroy
-    sequence reaches `call void @free`). An owner that declares its own
-    `impl as Destroy` runs that impl's `Op` and the `Destroy` interface's
-    placeholder `SubobjectDestroy`, so its `Buf` field leaks (the same
-    golden's `declared_owner` split has no `free`); a `Buf` in a choice payload
-    is not destroyed either (W-125). Removed when the toolchain's `Destroy`
+    sequence reaches `call void @free`). An owner that declares its own `impl as
+    Destroy` runs that impl's `Op` and the `Destroy` interface's placeholder
+    `SubobjectDestroy`, so its `Buf` field leaks (the same golden's
+    `declared_owner` split has no `free`; W-126); a `Buf` in a choice payload is
+    not destroyed either (W-125). Removed when the toolchain's `Destroy`
     interface gains the `require impls SubobjectDestroy` entry its prelude TODO
     names, so a declared impl's subobjects are walked too.
 -   **Over-aligned element types** (alignment above `max_align_t`) are not

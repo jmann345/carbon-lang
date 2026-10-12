@@ -10,18 +10,35 @@
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/interop/cpp/template/dependent_var_full_prelude.carbon
 
-// Fork (UA-2, fork/upstream/plan.md §0.6 W-043 row): generic_call.carbon's
-// shape under the REAL prelude. generic_call.carbon passes under
-// min_prelude/convert.carbon, whose parts/default.carbon:19 declares an
-// unconstrained `impl forall [T: type] T as DefaultOrUnformed`; the real
-// prelude's blanket impl requires `T: UnformedInit` (core/prelude/default
-// .carbon:52), which cannot be decided for a template-dependent type, so an
-// UNINITIALIZED dependent `var` fails at its default initialization. The
-// conformance programs interop/cpp_template_symbolic_arg.carbon and
+// Fork (UA-2, fork/upstream/plan.md §0.6 W-043 row; ledger W-127):
+// generic_call.carbon's shape under the REAL prelude. generic_call.carbon
+// passes under min_prelude/convert.carbon, whose parts/default.carbon:19
+// declares an unconstrained `impl forall [T: type] T as DefaultOrUnformed`;
+// the real prelude's blanket impl requires `T: UnformedInit`
+// (core/prelude/default.carbon:52), which cannot be decided for a
+// template-dependent type, so an UNINITIALIZED dependent `var` fails at its
+// default initialization. The conformance programs
+// interop/cpp_template_symbolic_arg.carbon and
 // cpp_template_on_carbon_generic.carbon measured this on hosted run
-// 37407530104 and on upstream nightly 2026.09.28; this file pins both the
+// 37407530104 (and, at round 2, on upstream nightly 2026.09.28, a
+// reproduction whose container has since been recreated — the prelude
+// difference above is the evidence of record); this file pins both the
 // failing shape and the shape that works (initialization through the C++
 // default constructor, class/import/template.carbon's pin).
+//
+// The failing split is `fail_todo_` (renamed from `fail_unformed_dependent_var`
+// at UA-2 round 3, 2026-10-12, per .agents/skills/toolchain_tests/SKILL.md:
+// the diagnostic fires but should not). It is an upstream limitation, not the
+// intended behavior: the concrete `var b: Cpp.Box(Pt);` compiles
+// (fork/conformance/programs/interop/cpp_template_carbon_class.carbon), and a
+// correct deferral of the `DefaultOrUnformed` lookup to the specific would
+// accept the dependent shape too, as the test prelude's unconstrained impl
+// already lets generic_call.carbon:69-71 show. Hosted autoupdate 37411162511
+// (8b42d1bc4) filled this split's CHECK lines under the old name, which its
+// STDERR lines embed, so the rename cleared them (R16(a): no hand-edited
+// CHECK line); the split awaits the next hosted refill, and this file is red
+// in file_test until then (R19). W-127 carries the limit and its removal
+// condition.
 
 // --- header.h
 
@@ -29,19 +46,17 @@ struct X {};
 
 template<typename T> struct S {};
 
-// --- fail_unformed_dependent_var.carbon
+// --- fail_todo_unformed_dependent_var.carbon
 
 library "[[@TEST_NAME]]";
 
 import Cpp library "header.h";
 
 // Predicted: `ConversionFailureTypeToFacet` "cannot convert type `<splice of
-// ...>` into type implementing `Core.DefaultOrUnformed`" at the `var`.
+// ...>` into type implementing `Core.DefaultOrUnformed`" at the `var` (the
+// round-2 fill measured exactly this under the old split name; the CHECK
+// lines were cleared for the rename, see the header).
 fn F[T: type](unused x: T) {
-  // CHECK:STDERR: fail_unformed_dependent_var.carbon:[[@LINE+4]]:3: error: cannot convert type `<splice of <cannot stringify inst69000041: {kind: ConvertToValueAction, arg0: inst6900003E, arg1: inst(TypeType), type: type(inst(InstType))}>>` into type implementing `Core.DefaultOrUnformed` [ConversionFailureTypeToFacet]
-  // CHECK:STDERR:   var unused v: Cpp.S(T);
-  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~
-  // CHECK:STDERR:
   var unused v: Cpp.S(T);
 }
 

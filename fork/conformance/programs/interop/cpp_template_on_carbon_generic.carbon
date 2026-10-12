@@ -36,7 +36,8 @@
 // decided for a type that is unknown until instantiation; upstream's exact pin
 // shape (`var unused v: Cpp.S(T);`) fails identically under the real prelude.
 // Pinned by check/testdata/interop/cpp/template/dependent_var_full_prelude
-// .carbon. (2) "unable to monomorphize specific" with the notes "cannot copy
+// .carbon (split `fail_todo_unformed_dependent_var`; ledger W-127, filed at
+// round 3). (2) "unable to monomorphize specific" with the notes "cannot copy
 // value of type ..." / "does not implement interface `Core.Copy`" at the
 // member assignment — a program bug: a Carbon class is not implicitly
 // `Core.Copy`. Program edits, recorded here and in the decision log: the box
@@ -44,10 +45,16 @@
 // upstream's pin shape check/testdata/interop/cpp/class/import/template.carbon
 // :149 `var unused a: Cpp.A(T) = Cpp.A(T).A();`), and the Carbon class
 // declares `impl as Core.Copy` (the lower/testdata/template/class.carbon
-// spelling). The claim is unchanged: `Cpp.Box(T)` with symbolic `T` in the
-// body and in the return type. Verified end to end on the 2026.09.28 nightly
-// (compile, link, run: `7`, exit 0); the fork tip is measured by the next
-// hosted run. Prediction: PASS, 7.
+// idiom — an in-class impl whose `fn Op(self) -> Self` returns the copy;
+// class.carbon's `Op(unused self)` returns `{}`, this one copies the field).
+// The claim is unchanged: `Cpp.Box(T)` with symbolic `T` in the body and in
+// the return type. Verified end to end on the 2026.09.28 nightly (compile,
+// link, run: `7`, exit 0 — in a container since recreated; that command and
+// output are not reproducible from this tree); the fork tip is measured by
+// the next hosted run. Prediction: PASS, 7.
+// Measured 2026-10-06: PASS, 7, on hosted conformance run 37413300832 (UA-2
+// round 2, of record; run 37411196881 measured the same and lost its
+// scoreboard push to the fill's) — the re-shaped W-043 probe flipped.
 //
 // Encodes the slice this program pins precisely: the audit evidence said
 // "C++ templates cannot instantiate on Carbon class types", but already at

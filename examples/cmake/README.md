@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 A small project built with an installed Carbon toolchain through the CMake
 language support in [/cmake](/cmake/README.md), and again through the explicit
 rules of the checked-in [`Makefile`](Makefile). It is the project the guide
-`docs/guides/build_systems.md` (Build systems: CMake and Make) walks through,
+[Build systems: CMake and Make](/docs/guides/build_systems.md) walks through,
 and its `test.sh` is the arbiter the fork's conformance runner drives for the
 two build-system milestone bullets.
 

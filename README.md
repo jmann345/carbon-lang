@@ -314,6 +314,9 @@ sudo apt install libgcc-11-dev
 ./forty_two
 ```
 
+To build from CMake, or with explicit Make rules, see
+[Build systems: CMake and Make](/docs/guides/build_systems.md).
+
 As a reminder, the toolchain is still very early and many things don't yet work.
 Please hold off on filing lots of bugs: we know many parts of this don't work
 yet or may not work on all systems. We expect to have releases that are much

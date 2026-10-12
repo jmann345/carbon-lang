@@ -40,7 +40,7 @@ environment variable, or `carbon` on `PATH`. A mixed Carbon and C++ project
 also names `CXX` and should point `CMAKE_CXX_COMPILER` at the toolchain's own
 `lib/carbon/llvm/bin/clang++`; the example project shows the pattern.
 
-The user guide is `docs/guides/build_systems.md` (Build systems: CMake and Make)
+The user guide is [Build systems: CMake and Make](/docs/guides/build_systems.md)
 and the worked example is [examples/cmake](/examples/cmake/README.md), which
 builds a single-file program, a two-file package behind a static library, and a
 Carbon program calling C++ under the Unix Makefiles generator, the Ninja

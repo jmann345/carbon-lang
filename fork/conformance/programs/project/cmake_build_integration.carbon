@@ -3,33 +3,32 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // CONFORMANCE-BULLET: Project: CMake build-system integration plus Make documentation
+// BUILD-SCRIPT: examples/cmake/test.sh
 // EXPECT-EXIT: 0
 // EXPECT-STDOUT:
 //   built by CMake-integrated Carbon
-// SKIP: MISSING — no CMake support, example, or docs exist anywhere in the repo (only a libc++ header-expansion .bzl mentions cmake); Bazel is the only integrated build system. Distinct from the drop-in-Clang bullet (project/dropin_clang_make_cmake.carbon): this bullet requires first-class CMake integration for building *Carbon* code (a language/toolchain module or find-package flow driving `carbon compile`/`carbon link` from CMakeLists.txt) plus written Make documentation, none of which exists. This harness also cannot arbitrate it — runner.py only runs single .carbon files and cannot drive an external build system — so when the integration lands, arbitration must move to the example project's own CI; un-SKIP then.
+//   widget package built by CMake-integrated Carbon
+//   7
+//   built by a drop-in Clang build-system example
+//   42
 //
-// Write-tests-first stub. Intended future arbitration (sketched, since no
-// single-file program can prove build-system integration):
+// Un-SKIPped by the CM-1 landing (fork/cmake/plan.md §3, commit 2 of 3) on
+// nightly 0.0.0-0.nightly.2026.10.12+62f1cc6: the arbiter is
+// examples/cmake/test.sh, which configures and builds examples/cmake under
+// the Unix Makefiles generator, the Ninja generator (when ninja is on PATH)
+// and the checked-in Makefile with the CMake language modules of cmake/,
+// runs hello, widget_main and mixed from each build, requires the outputs to
+// be byte-identical and prints the Unix Makefiles build's output — the five
+// lines above (hand-derived: the two Core.PrintStr literals, Get() returning
+// the literal 7 through Core.Print, the C++ marker, Twice(21) = 42).
 //
-//   # CMakeLists.txt of the future in-repo example project:
-//   #   cmake_minimum_required(VERSION 3.28)
-//   #   project(hello_carbon LANGUAGES Carbon)          # or find_package(Carbon)
-//   #   add_executable(hello cmake_build_integration.carbon)
-//   # plus a documented Make equivalent invoking `carbon compile` +
-//   # `carbon link` explicitly, per the required Make documentation.
-//
-// The Carbon body below is the program such an example would build; it is
-// valid today (Core.Print shape from stdlib/fundamental_types.carbon) so
-// the file is promotable into the example project the day CMake
-// integration lands. The EXPECT directives describe that future build's
-// run; a premature un-SKIP here fails loudly on OUTPUT-MISMATCH because
-// this body prints an integer, not the expected marker line.
+// The runner does NOT compile this file; the body below is
+// examples/cmake/hello/hello.carbon verbatim after its license header, and
+// `--self-test`'s identity rule fails if the two drift.
 
 import Core library "io";
 
 fn Run() -> i32 {
-  // Placeholder observable output; the CMake-example version will print
-  // the marker line in EXPECT-STDOUT via a linked print routine.
-  Core.Print(1);
+  Core.PrintStr("built by CMake-integrated Carbon\n");
   return 0;
 }

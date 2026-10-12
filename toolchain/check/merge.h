@@ -123,10 +123,16 @@ struct DeclParams {
 // Checks that the parameters in a redeclaration of an entity match the
 // parameters in the prior declaration. If not, produces a diagnostic if
 // `diagnose` is true, and returns false.
-auto CheckRedeclParamsMatch(Context& context, const DeclParams& new_entity,
-                            const DeclParams& prev_entity,
-                            SemIR::SpecificId prev_specific_id, bool diagnose,
-                            bool check_syntax) -> bool;
+//
+// Fork (SC-1, fork/structural/plan.md D-SC-5(d)): `new_specific_id`, when
+// specified, is the specific in which `new_entity`'s parameters are read, as
+// `prev_specific_id` is for `prev_entity` — a member of a generic class
+// specific compared against a requirement declared outside that generic.
+auto CheckRedeclParamsMatch(
+    Context& context, const DeclParams& new_entity,
+    const DeclParams& prev_entity, SemIR::SpecificId prev_specific_id,
+    bool diagnose, bool check_syntax,
+    SemIR::SpecificId new_specific_id = SemIR::SpecificId::None) -> bool;
 
 // Returns whether the explicit parameters AFTER the leading `self` parameter of
 // two method declarations have matching types (binding names and syntax are

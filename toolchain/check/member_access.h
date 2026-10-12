@@ -28,7 +28,12 @@ struct MemberLookupInfo {
   // Whether the name was found in one of the scopes (an error scope does not
   // count as found).
   bool found = false;
-  // The declared access of the found member.
+  // Whether the name was found only as a member whose access is prohibited
+  // (a private member of a base class, which lookup through an extended scope
+  // prohibits regardless of `access_info`). `found` is false in that case.
+  bool found_but_prohibited = false;
+  // The declared access of the found member, or of the last prohibited member
+  // when `found_but_prohibited`.
   SemIR::AccessKind access_kind = SemIR::AccessKind::Public;
 };
 

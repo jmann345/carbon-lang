@@ -226,7 +226,8 @@ static auto CheckRedeclParam(Context& context, bool is_implicit_param,
                              SemIR::InstId orig_new_param_pattern_id,
                              SemIR::InstId orig_prev_param_pattern_id,
                              SemIR::SpecificId prev_specific_id, bool diagnose,
-                             bool check_syntax) -> bool {
+                             bool check_syntax,
+                             SemIR::SpecificId new_specific_id) -> bool {
   CARBON_DIAGNOSTIC(
       RedeclParamPrevious, Note,
       "previous declaration's corresponding {0:implicit |}parameter here",
@@ -267,8 +268,24 @@ static auto CheckRedeclParam(Context& context, bool is_implicit_param,
     // use an imported function in place of a local decl so the `kind()` would
     // be an `ImportRefLoaded`. What we want is the canonical instruction for
     // the new pattern regardless.
-    auto new_param_pattern = context.insts().Get(
-        context.constant_values().GetConstantInstId(patterns.new_id));
+    //
+    // Fork (SC-1, fork/structural/plan.md D-SC-5(d)): when `new_specific_id`
+    // is specified the new pattern is a member of that generic specific, and
+    // is read in it exactly as the previous pattern is read in
+    // `prev_specific_id`, so both sides are compared with their generic's
+    // bindings substituted.
+    auto new_param_pattern =
+        new_specific_id.has_value()
+            ? context.constant_values().GetInst(
+                  SemIR::GetConstantValueInSpecific(
+                      context.sem_ir(), new_specific_id, patterns.new_id))
+            : context.insts().Get(
+                  context.constant_values().GetConstantInstId(patterns.new_id));
+    auto new_param_type_id =
+        new_specific_id.has_value()
+            ? SemIR::GetTypeOfInstInSpecific(context.sem_ir(), new_specific_id,
+                                             patterns.new_id)
+            : new_param_pattern.type_id();
     auto prev_param_const_id = SemIR::GetConstantValueInSpecific(
         context.sem_ir(), prev_specific_id, patterns.prev_id);
     auto prev_param_pattern =
@@ -282,7 +299,7 @@ static auto CheckRedeclParam(Context& context, bool is_implicit_param,
     // and new parameter patterns. Returns false if a mismatch was found.
     auto check_for_type_mismatch_with = [&](SemIR::TypeId prev_param_type_id) {
       if (check_type && !context.types().AreEqualAcrossDeclarations(
-                            new_param_pattern.type_id(), prev_param_type_id)) {
+                            new_param_type_id, prev_param_type_id)) {
         if (diagnose) {
           CARBON_DIAGNOSTIC(
               RedeclParamDiffersType, Error,
@@ -292,7 +309,7 @@ static auto CheckRedeclParam(Context& context, bool is_implicit_param,
           context.emitter()
               .Build(orig_new_param_pattern_id, RedeclParamDiffersType,
                      is_implicit_param, param_index + 1, prev_param_type_id,
-                     new_param_pattern.type_id())
+                     new_param_type_id)
               .Note(orig_prev_param_pattern_id, RedeclParamPrevious,
                     is_implicit_param)
               .Emit();
@@ -385,13 +402,14 @@ static auto CheckRedeclParamLists(
     Context& context, llvm::ArrayRef<SemIR::InstId> new_param_pattern_ids,
     llvm::ArrayRef<SemIR::InstId> prev_param_pattern_ids,
     bool is_implicit_param, SemIR::SpecificId prev_specific_id, bool diagnose,
-    bool check_syntax) -> bool {
+    bool check_syntax, SemIR::SpecificId new_specific_id) -> bool {
   CARBON_CHECK(new_param_pattern_ids.size() == prev_param_pattern_ids.size());
   for (auto [index, new_param_pattern_id, prev_param_pattern_id] :
        llvm::enumerate(new_param_pattern_ids, prev_param_pattern_ids)) {
     if (!CheckRedeclParam(context, is_implicit_param, index,
                           new_param_pattern_id, prev_param_pattern_id,
-                          prev_specific_id, diagnose, check_syntax)) {
+                          prev_specific_id, diagnose, check_syntax,
+                          new_specific_id)) {
       return false;
     }
   }
@@ -405,7 +423,8 @@ static auto CheckRedeclParams(Context& context, SemIR::LocId new_decl_loc_id,
                               SemIR::InstBlockId prev_param_patterns_id,
                               bool is_implicit_param,
                               SemIR::SpecificId prev_specific_id, bool diagnose,
-                              bool check_syntax) -> bool {
+                              bool check_syntax,
+                              SemIR::SpecificId new_specific_id) -> bool {
   // This will often occur for empty params.
   if (new_param_patterns_id == prev_param_patterns_id) {
     return true;
@@ -462,9 +481,9 @@ static auto CheckRedeclParams(Context& context, SemIR::LocId new_decl_loc_id,
         .Emit();
     return false;
   }
-  return CheckRedeclParamLists(context, new_param_pattern_ids,
-                               prev_param_pattern_ids, is_implicit_param,
-                               prev_specific_id, diagnose, check_syntax);
+  return CheckRedeclParamLists(
+      context, new_param_pattern_ids, prev_param_pattern_ids, is_implicit_param,
+      prev_specific_id, diagnose, check_syntax, new_specific_id);
 }
 
 // Returns true if the two nodes represent the same syntax.
@@ -611,13 +630,15 @@ auto CheckRedeclExplicitParamsAfterSelfMatch(Context& context,
                                prev_param_pattern_ids.drop_front(),
                                /*is_implicit_param=*/false,
                                SemIR::SpecificId::None,
-                               /*diagnose=*/false, /*check_syntax=*/false);
+                               /*diagnose=*/false, /*check_syntax=*/false,
+                               /*new_specific_id=*/SemIR::SpecificId::None);
 }
 
 auto CheckRedeclParamsMatch(Context& context, const DeclParams& new_entity,
                             const DeclParams& prev_entity,
                             SemIR::SpecificId prev_specific_id, bool diagnose,
-                            bool check_syntax) -> bool {
+                            bool check_syntax,
+                            SemIR::SpecificId new_specific_id) -> bool {
   if (EntityHasParamError(context, new_entity) ||
       EntityHasParamError(context, prev_entity)) {
     return false;
@@ -625,15 +646,15 @@ auto CheckRedeclParamsMatch(Context& context, const DeclParams& new_entity,
   if (!CheckRedeclParams(
           context, new_entity.loc_id, new_entity.implicit_param_patterns_id,
           prev_entity.loc_id, prev_entity.implicit_param_patterns_id,
-          /*is_implicit_param=*/true, prev_specific_id, diagnose,
-          check_syntax)) {
+          /*is_implicit_param=*/true, prev_specific_id, diagnose, check_syntax,
+          new_specific_id)) {
     return false;
   }
   if (!CheckRedeclParams(context, new_entity.loc_id,
                          new_entity.param_patterns_id, prev_entity.loc_id,
                          prev_entity.param_patterns_id,
                          /*is_implicit_param=*/false, prev_specific_id,
-                         diagnose, check_syntax)) {
+                         diagnose, check_syntax, new_specific_id)) {
     return false;
   }
   if (check_syntax &&

@@ -117,3 +117,22 @@ fn Test(c: C) -> i32 {
   return b.Call(c);
 }
 //@dump-sem-ir-end
+
+// --- generic_self.carbon
+library "[[@TEST_NAME]]";
+
+// A member of a GENERIC class specific (commit-2 review, MAJOR finding):
+// `Box(i32).Get` declares `self: Box(T)`, and the matcher reads it in the
+// member's enclosing specific so that it equals the requirement's
+// `Self := Box(i32)`. Spelling from class/method/generic_method.carbon.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+class Box(T: type) {
+  fn Get(self) -> i32 { return 1; }
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+
+fn Test(b: Box(i32)) -> i32 { return CallGet(b); }

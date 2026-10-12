@@ -155,22 +155,26 @@ static auto FindStructuralMember(Context& context, SemIR::LocId loc_id,
 // bound to the self: the thunk criterion (`CheckFunctionTypeMatches` with
 // `check_syntax` false), so parameter names need not agree and no thunk is
 // built. The requirement's specific is built exactly as for an interface
-// member, with no enclosing specific.
+// member, with no enclosing specific. The member is read in its own enclosing
+// specific (`member_specific_id`, from `GetCallee`): a member of a generic
+// class specific such as `Box(i32).Get` declares `self: Box(T)`, and only the
+// substituted `Box(i32)` can equal the requirement's `Self := Box(i32)`
+// (commit-2 review, MAJOR finding).
 static auto RequirementMatches(
     Context& context, SemIR::LocId loc_id,
     const SemIR::IdentifiedFacetType::StructuralRequirement& requirement,
     const SemIR::NamedConstraint& constraint,
-    const SemIR::Function& requirement_fn, const SemIR::Function& member_fn)
-    -> bool {
+    const SemIR::Function& requirement_fn, const SemIR::Function& member_fn,
+    SemIR::SpecificId member_specific_id) -> bool {
   auto with_self_specific_id = MakeSpecificWithInnerSelf(
       context, loc_id, constraint.generic_id, constraint.generic_with_self_id,
       requirement.constraint.specific_id, requirement.self_facet_value);
   auto requirement_specific_id = GetSelfSpecificForInterfaceMemberWithSelfType(
       context, loc_id, with_self_specific_id, requirement_fn.generic_id,
       SemIR::SpecificId::None);
-  return CheckFunctionTypeMatches(context, member_fn, requirement_fn,
-                                  requirement_specific_id,
-                                  /*check_syntax=*/false, /*diagnose=*/false);
+  return CheckFunctionTypeMatches(
+      context, member_fn, requirement_fn, requirement_specific_id,
+      /*check_syntax=*/false, /*diagnose=*/false, member_specific_id);
 }
 
 // Explain mode: notes for one unsatisfied requirement of a concrete self. The
@@ -235,6 +239,13 @@ static auto CheckRequirementFunction(
   auto member_id = FindStructuralMember(context, loc_id, self_type_id,
                                         requirement_fn.name_id, &info);
   if (!member_id.has_value()) {
+    if (info.found_but_prohibited) {
+      // A private member of a base class: lookup through the extended scope
+      // prohibits it regardless of the access context, so it is reported as
+      // inaccessible, not missing.
+      return MemberFailureInfo{.failure = MemberFailure::Inaccessible,
+                               .access_kind = info.access_kind};
+    }
     return MemberFailureInfo{.failure = MemberFailure::Missing};
   }
   if (member_id == SemIR::ErrorInst::InstId) {
@@ -266,7 +277,8 @@ static auto CheckRequirementFunction(
   }
   const auto& member_fn = context.functions().Get(callee_fn->function_id);
   if (!RequirementMatches(context, loc_id, requirement, constraint,
-                          requirement_fn, member_fn)) {
+                          requirement_fn, member_fn,
+                          callee_fn->enclosing_specific_id)) {
     return MemberFailureInfo{.failure = MemberFailure::Mismatch,
                              .member_decl_id = member_fn.latest_decl_id()};
   }

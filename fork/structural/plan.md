@@ -1669,3 +1669,186 @@ R31 record for this note: before, 1 H1 / 12 H2 / 19 H3 / 0 H4, 73 dash items,
 53 numbered items (identical to the rev 2 record); after, 1 / 12 / 20 / 0, 76
 dash, 53 numbered: exactly this subsection's heading and its three findings,
 nothing manufactured; the hazard greps are empty before and after.
+
+### Landed notes (SC-1 commit 2)
+
+Commit 2 (SC-1b, 1f207c892) landed on the branch and received its
+implementation review (verdict APPROVE-WITH-FIXES: one MAJOR, six MINOR of
+which one unconfirmed, no BLOCKER); the fixer commit that carries this note
+folds all seven, extending the commit-1 note above. As for commit 1, the review
+ran BEFORE any hosted verification: GitHub Actions is disabled on the
+repository, so the autoupdate fill of every §4.B and §4.C golden is DEFERRED
+and no fill has run for commit 2 or for this fix. Every new golden and split
+carries `AUTOUPDATE` and no CHECK lines; the diagnostics coverage test (seven
+kinds from commit 2) stays expected red until the fill lands (R19). Nothing
+below claims a fill; every prediction is a hand trace (R9).
+
+-   Finding 1 (MAJOR, confirmed): a member of a GENERIC class specific never
+    satisfied a method requirement. D-SC-5(d) calls the matcher "byte-for-byte
+    the thunk criterion", and the thunk.cpp:462-468 caller IS that criterion
+    only because there both sides live in the impl's own generic (the impl's
+    `self` type is symbolic on both sides). At the chokepoint the self is
+    concrete and the member symbolic in its class's generic: for `class Box(T:
+    type) { fn Get(self) -> i32 }` and a `Box(i32)` argument,
+    `FindStructuralMember` returns a `SpecificConstant{Get, Box(i32)}` whose
+    `GetCallee` carries `enclosing_specific_id`, but `CheckRedeclParam`
+    (merge.cpp) compared the member's RAW pattern type `Box(T)` with the
+    requirement's substituted `Self := Box(i32)` and
+    `CheckFunctionReturnTypeMatches` (function.cpp) read the member's return
+    type unsubstituted, so every generic-class specific was a silent
+    `StructuralMemberMismatch`. No §4.B split used a generic self, so the fill
+    would not have caught it. ACCEPTED, the reviewer's fix: a trailing
+    `new_specific_id` (default `SpecificId::None`, so every existing caller is
+    unchanged — each passes its arguments positionally ahead of the new default)
+    threaded through `CheckFunctionTypeMatches`,
+    `CheckFunctionReturnTypeMatches` (function.{h,cpp}),
+    `CheckRedeclParamsMatch` and the three static helpers below it
+    (merge.{h,cpp}); the new side is read in its specific with
+    `GetConstantValueInSpecific` / `GetTypeOfInstInSpecific`, exactly as the
+    prev side already was, and `new_function.GetDeclaredReturnType(sem_ir,
+    new_specific_id)`; `RequirementMatches` passes the member's
+    `enclosing_specific_id`. D-SC-5(d) is CORRECTED by this note: the criterion
+    is the thunk criterion with BOTH sides read in their own specifics. §4.B
+    amendments: template_constraint_ satisfy.carbon gains `generic_self.carbon`
+    (`class Box(T: type) { fn Get(self) -> i32 }`, `fn Test(b: Box(i32)) -> i32
+    { return CallGet(b); }`; predicted no STDERR, no dump range — the fork's
+    generic-class spelling is `class C(T: type)`,
+    class/method/generic_method.carbon:15) and
+    fail_template_constraint_unsatisfied.carbon gains
+    `fail_generic_self_wrong_return.carbon` (`fn Get(self) -> T;` with
+    `Box(bool)`; predicted `ConversionFailureTypeToFacet` for `Box(bool)` +
+    `StructuralMemberMismatch` at the member declaration +
+    `StructuralRequirementHere` + `DeductionGenericHere`). §6's source-file list
+    gains function.{h,cpp}; merge.{h,cpp} were already commit 1's drift (1).
+-   Finding 2 (MINOR, confirmed): commit scope against §3. The §4.C interop
+    golden (a commit-3 deliverable, §2.C item 1) landed in commit 2 with all
+    four splits negative, and the §2.B.9 / §3 item 2 / D-SC-14 deliverables
+    (the §5.A conformance rewrite and un-SKIP, gap row 55 → PARTIAL, ledger
+    W-027) were omitted, each disclosed in the body but nowhere in the plan.
+    ACCEPTED as recorded here; commit 2 is not amended (never rewrite submitted
+    history). (a) D-SC-11's break condition fired at implementation time, by a
+    mechanism the plan did not foresee: an imported C++ method NAME resolves to
+    a `cpp_overload_set_value` (interop/cpp/class/import/method.carbon
+    :279-280), which D-SC-5(c) / A10 classifies as `CalleeCppOverloadSet` → a
+    mismatch, so NO C++ class satisfies any method requirement under the
+    commit-2 predicate. Owner decision, auto-adopted under R29(a) and veto-able
+    after the fact: the D-SC-5(c) predicate is EXTENDED to look through a
+    `CalleeCppOverloadSet` whose `candidate_functions` holds exactly one member
+    to that member's imported function (the `fn (ref self)` thunk of §0.1 row
+    19, imported through check/cpp/import.h's declaration entry point) and to
+    match it under D-SC-5(d); a set with two or more candidates stays a
+    mismatch (`fail_overloaded` keeps its name). This lands in SC-1c together
+    with §4.C and §5.B, where the golden's `fail_todo_satisfy` and
+    `fail_todo_const_method` splits revert to `satisfy` and `const_method` and
+    the §4.C predictions are re-traced; if the imported function's `self`
+    pattern then still cannot match (the break condition D-SC-5 and D-SC-11
+    originally named), the SKIP fallback of D-SC-11 and the residue "C++ method
+    `self` qualifiers in structural matching" stand. (b) The §5.A conformance
+    rewrite and un-SKIP, gap row 55 and the W-027 ledger edit move from SC-1b
+    to SC-1c; the D-SC-14 arbiter order is preserved, since
+    `template_constraint_overload.carbon`'s `overload_catch_all` split is
+    already committed and fills before any conformance run. §3 is read with
+    these two moves; the R31 count diff of that commit stays with it.
+-   Finding 3 (MINOR, confirmed): the compound-access redirect ran with
+    diagnostics unconditionally on while its caller
+    `PerformCompoundMemberAccessAction` carries `diagnose` from operator.cpp's
+    probes — R-7 ("`diagnose = false` must be total") violated by construction,
+    unreachable today only because those probes pass interface members, which
+    never reach the redirect. ACCEPTED: `diagnose` is threaded into
+    `RedirectStructuralRequirementAccess` — `ConvertToValueOfType(…, diagnose)`,
+    then `LookupMemberNameInTypeScopes(…, required = diagnose, the scope's
+    `AccessInfo`, diagnose, &info)` returning `ErrorInst` silently when nothing
+    is found, and the generic-constraint `context.TODO` gated the same way.
+-   Finding 4 (MINOR, confirmed): `impl C as I & HasGet {}` is accepted with NO
+    structural check of the impl's self: `CheckRequireDeclsSatisfied`
+    (impl.cpp) walks the identified facet type's `required_impls()` only, and
+    the structural entries never reach `LookupImplWitness`. Not unsound (a later
+    `T: I & HasGet` conversion of `C` runs the check), but undiagnosed and
+    unpinned. ACCEPTED as the reviewer's second option — pin and file —
+    because the first (a check in impl.cpp) would cross D-SC-3 ("inside
+    `LookupImplWitness`, and nowhere else"), §2.B / §6 (impl.cpp untouched) and
+    A5(ii) (impl.cpp's emits stay note-less in SC-1): split
+    `todo_fail_impl_as_interface_and_template.carbon` added to
+    fail_template_constraint_impl_as.carbon (predicted no STDERR; the
+    container's own `fail_` prefix is enforced only when every split succeeds,
+    testing/file_test/file_test_base.cpp:134-173, so a positive split beside
+    `fail_impl_as` is well-formed), and the residue "structural requirements on
+    an impl's `as` facet type" is added to §1.G by this note.
+-   Finding 5 (MINOR, confirmed): a private method inherited from a base class
+    was explained as `StructuralMemberMissing`: with `access_info = nullopt` a
+    hit in an extended scope synthesizes a Protected `AccessInfo`
+    (name_lookup.cpp, the `is_parent_access` branch), the private hit goes into
+    `prohibited_accesses`, the walk finds nothing else and `LookupQualifiedName`
+    returns `MakeError()` silently. ACCEPTED: `LookupResult` gains
+    `prohibited_access_kind` (the last prohibited hit's access, set only on that
+    error return), `MemberLookupInfo` gains `found_but_prohibited`, and
+    `CheckRequirementFunction` reports such a miss as `Inaccessible` with that
+    access kind. Split `fail_private_base.carbon` added to
+    fail_template_constraint_unsatisfied.carbon (`base class B { private fn
+    Get(self) -> i32 }`, `class C { extend base: B; }`; predicted
+    `ConversionFailureTypeToFacet` for `C` + `StructuralMemberInaccessible`
+    "member `Get` of type `C` is private here …" at the call +
+    `StructuralRequirementHere` + `DeductionGenericHere`). Observation recorded,
+    not decided: an inherited PUBLIC method does not satisfy either, because the
+    matcher compares the member's `self` type (`B`) with `Self := C` exactly;
+    unpinned, a residue candidate for the SC-1c discharge ("inherited methods
+    in structural matching").
+-   Finding 6 (MINOR, not confirmed): re-entrant impl lookup from inside the
+    structural check (`class D { impl as A {…} alias F = A.F; }` plus a blanket
+    `impl forall [template T: HasF] T as A`), with `PerformImplLookup` calling
+    `LookupImplWitness` at its default `diagnose = true`. ACCEPTED in part:
+    `diagnose` is now forwarded to that call (R-7). REJECTED in part, with
+    evidence, for "skip a requirement whose lookup would re-query a pair on
+    `impl_lookup_stack`": (a) in the reviewer's shape the blanket impl is never
+    probed for `D` — `CollectCandidateImplsForQuery` sorts candidates
+    most-specific first (impl_lookup.cpp:803-816, a concrete `impl D as A`
+    ahead of a `forall` impl) and both `FindNonFinalWitness` (:941-955) and
+    `EvalLookupSingleFinalWitness` (:1323-1343) stop at the first witness, so
+    no re-entry occurs; (b) in the variant WITHOUT `D`'s own impl the shape is a
+    genuine acyclic-rule violation (`D.F` needs `D as A`, which needs `D:
+    HasF`, which needs `D.F`), and upstream diagnoses impl-lookup cycles
+    unconditionally by design ("Cycles are diagnosed even if they are found when
+    diagnostics are otherwise being suppressed", impl_lookup.cpp:1046-1047), so
+    reading it as silently unsatisfied would hide a cycle upstream wants
+    reported. Pinned as `fail_alias_cycle.carbon` in
+    fail_template_constraint_unsatisfied.carbon, predicted: `ImplLookupCycle`
+    "cycle found in search for impl of `A` for type `D`" at `d.F()` with the
+    `ImplLookupCycleNote` at the blanket impl, then `MissingImplInMemberAccess`
+    at `d.F()` (the outer lookup finds no witness; the cycle sets
+    `diagnosed_cycle` on the outer entry, so it is reported once).
+-   Finding 7 (MINOR, confirmed): a side effect A5(i) did not state. Every
+    miss poisons the requirement's name in the self type's class scope and in
+    each walked base scope (`LookupNameInExactScope` →
+    `NameScope::LookupOrPoison`), including during overload probes and the
+    explain re-run; a poisoned entry prints as `.Get = <poisoned>` in
+    `!members:` under a dump range. Harmless (every probed scope is complete,
+    so `DiagnosePoisonedName` cannot fire), and none of the three
+    pre-registered dump ranges includes a probed class, so no committed
+    prediction moves — but the commit-2 body's "no SemIR trace from the check"
+    is incomplete by exactly this. Rule from here: positive dump ranges stay
+    away from classes the check probes (`Lacking` in overload_catch_all.carbon
+    and fail_missing.carbon carry the poison).
+
+§1.G addition by this note: "structural requirements on an impl's `as` facet
+type" (finding 4); candidate, not yet filed: "inherited methods in structural
+matching" (finding 5's observation).
+
+Verification for the fixer commit, same harness as commits 1 and 2 (no bazel
+run, no fill): clang++ -fsyntax-only with the toolchain's -Werror set against
+the pinned LLVM headers, OK on all 46 files — the five changed .cpp (merge,
+function, name_lookup, member_access, structural_conformance) and every .cpp
+that includes merge.h, function.h, name_lookup.h, member_access.h or
+structural_conformance.h — run once before prek (one failure: the fork's OV-3
+`CheckRedeclExplicitParamsAfterSelfMatch` is a seventh caller of the static
+`CheckRedeclParamLists`, fixed by passing `None`) and once more on the
+post-prek tree; prek (clang-format 21.1.8, header guards,
+check-toolchain-diagnostics, rumdl, google-doc-style, codespell, copyright,
+links) at a fixpoint over every touched file (pass 1 reformatted the C++ and
+reflowed one line of this note; passes 2 and 3 clean). The R12 hook's
+clang-format 18.1.3 and the pinned 21.1.8 disagreed on the same files as for
+commit 1; prek remains the arbiter (R18).
+
+R31 record for this note: before, 1 H1 / 12 H2 / 20 H3 / 0 H4, 76 dash items,
+53 numbered items (identical to the commit-1 record); after, 1 / 12 / 21 / 0,
+83 dash, 53 numbered: exactly this subsection's heading and its seven findings,
+nothing manufactured; the hazard greps are empty before and after.

@@ -176,3 +176,80 @@ class Box(template T: HasGet) {}
 fn Test() {
   var b: Box(Inc) = {};
 }
+
+// --- fail_private_base.carbon
+library "[[@TEST_NAME]]";
+
+// A private method of a base class is prohibited through the derived class's
+// extended scope regardless of the access context (name_lookup.cpp's
+// parent-access rule), so it is reported as inaccessible, not missing
+// (commit-2 review, `found_but_prohibited`).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+base class B {
+  private fn Get(self) -> i32 { return 1; }
+}
+
+class C {
+  extend base: B;
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+
+fn Test(c: C) -> i32 {
+  return CallGet(c);
+}
+
+// --- fail_alias_cycle.carbon
+library "[[@TEST_NAME]]";
+
+// A requirement whose only witness in the type is an `alias` of an interface
+// member, where that interface is implemented only by a blanket impl over the
+// same template constraint: `D.F` needs `D as A`, which needs `D: HasF`,
+// which needs `D.F`. This is an acyclic-rule violation and impl lookup
+// diagnoses it unconditionally (impl_lookup.cpp, "Cycles are diagnosed even
+// if they are found when diagnostics are otherwise being suppressed");
+// the structural check then reads the member as unsatisfied. Pinned by the
+// commit-2 review (the shape with D's own `impl as A` never probes the
+// blanket impl: candidates are tried most-specific first).
+interface A {
+  fn F(self);
+}
+
+template constraint HasF {
+  fn F(self);
+}
+
+class D {
+  alias F = A.F;
+}
+
+impl forall [template T: HasF] T as A {
+  fn F(self) {}
+}
+
+fn Test(d: D) {
+  d.F();
+}
+
+// --- fail_generic_self_wrong_return.carbon
+library "[[@TEST_NAME]]";
+
+// The generic-class sibling of `fail_wrong_return`: the member's return type
+// is read in its enclosing specific, `Box(bool).Get` returns `bool`, which does
+// not match the required `i32` (commit-2 review, MAJOR finding).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+class Box(T: type) {
+  fn Get(self) -> T;
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+
+fn Test(b: Box(bool)) -> i32 {
+  return CallGet(b);
+}

@@ -35,6 +35,12 @@ struct LookupResult {
 
   // The result from the lookup in the scope.
   SemIR::ScopeLookupResult scope_result;
+
+  // Fork (SC-1, fork/structural/plan.md D-SC-5(b)): when `scope_result` is an
+  // error because the name was found only as a member whose access is
+  // prohibited from the access context, the declared access of the last such
+  // member; `nullopt` otherwise.
+  std::optional<SemIR::AccessKind> prohibited_access_kind = std::nullopt;
 };
 
 // Information about an access.

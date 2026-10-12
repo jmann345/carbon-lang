@@ -253,11 +253,12 @@ auto CheckFunctionReturnTypeMatches(Context& context,
                                     const SemIR::Function& new_function,
                                     const SemIR::Function& prev_function,
                                     SemIR::SpecificId prev_specific_id,
-                                    bool diagnose) -> bool {
+                                    bool diagnose,
+                                    SemIR::SpecificId new_specific_id) -> bool {
   // TODO: Pass a specific ID for `prev_function` instead of substitutions and
   // use it here.
   auto new_return_type_id =
-      new_function.GetDeclaredReturnType(context.sem_ir());
+      new_function.GetDeclaredReturnType(context.sem_ir(), new_specific_id);
   auto prev_return_type_id =
       prev_function.GetDeclaredReturnType(context.sem_ir(), prev_specific_id);
   if (new_return_type_id == SemIR::ErrorInst::TypeId ||
@@ -354,14 +355,16 @@ auto CheckFunctionTypeMatches(Context& context,
                               const SemIR::Function& new_function,
                               const SemIR::Function& prev_function,
                               SemIR::SpecificId prev_specific_id,
-                              bool check_syntax, bool diagnose) -> bool {
+                              bool check_syntax, bool diagnose,
+                              SemIR::SpecificId new_specific_id) -> bool {
   if (!CheckRedeclParamsMatch(context, DeclParams(new_function),
                               DeclParams(prev_function), prev_specific_id,
-                              diagnose, check_syntax)) {
+                              diagnose, check_syntax, new_specific_id)) {
     return false;
   }
   if (!CheckFunctionReturnTypeMatches(context, new_function, prev_function,
-                                      prev_specific_id, diagnose)) {
+                                      prev_specific_id, diagnose,
+                                      new_specific_id)) {
     return false;
   }
   if (!CheckFunctionEvaluationModeMatches(context, new_function, prev_function,

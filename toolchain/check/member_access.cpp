@@ -275,8 +275,12 @@ static auto PerformImplLookup(
   auto interface_type_id =
       GetInterfaceType(context, assoc_type.interface_id,
                        assoc_type.interface_without_self_specific_id);
-  auto lookup_result = LookupImplWitness(context, loc_id, type_const_id,
-                                         interface_type_id.AsConstantId());
+  // Fork (SC-1, fork/structural/plan.md R-7): a non-diagnosing lookup (an
+  // overload probe or the structural check) must not emit through the witness
+  // lookup either.
+  auto lookup_result =
+      LookupImplWitness(context, loc_id, type_const_id,
+                        interface_type_id.AsConstantId(), diagnose);
   if (!lookup_result.has_value()) {
     if (diagnose) {
       if (missing_impl_diagnostic_context) {
@@ -327,10 +331,13 @@ auto LookupMemberNameInTypeScopes(Context& context, SemIR::LocId loc_id,
       context, loc_id, name_id, lookup_scopes, required, access_info, diagnose);
 
   if (out_info) {
-    *out_info = {.found = result.scope_result.is_found() &&
-                          result.scope_result.target_inst_id() !=
-                              SemIR::ErrorInst::InstId,
-                 .access_kind = result.scope_result.access_kind()};
+    *out_info = {
+        .found =
+            result.scope_result.is_found() &&
+            result.scope_result.target_inst_id() != SemIR::ErrorInst::InstId,
+        .found_but_prohibited = result.prohibited_access_kind.has_value(),
+        .access_kind = result.prohibited_access_kind.value_or(
+            result.scope_result.access_kind())};
   }
   if (!result.scope_result.is_found()) {
     return SemIR::ErrorInst::InstId;
@@ -813,13 +820,12 @@ auto GetAssociatedValue(Context& context, SemIR::LocId loc_id,
 // requirement `fn` of a `template constraint`, converts the base type to the
 // constraint's facet type (the structural check) and returns the base type's
 // own member of the requirement's name, to be instance-bound by the caller.
-// Returns `ErrorInst` if the conversion or the lookup failed (diagnosed), and
-// `None` if `member_id` is not such a requirement.
-static auto RedirectStructuralRequirementAccess(Context& context,
-                                                SemIR::LocId loc_id,
-                                                SemIR::InstId base_id,
-                                                SemIR::InstId member_id)
-    -> SemIR::InstId {
+// Returns `ErrorInst` if the conversion or the lookup failed (diagnosed when
+// `diagnose`; silent otherwise, R-7), and `None` if `member_id` is not such a
+// requirement.
+static auto RedirectStructuralRequirementAccess(
+    Context& context, SemIR::LocId loc_id, SemIR::InstId base_id,
+    SemIR::InstId member_id, bool diagnose) -> SemIR::InstId {
   auto callee = SemIR::GetCallee(context.sem_ir(), member_id);
   auto* callee_fn = std::get_if<SemIR::CalleeFunction>(&callee);
   if (!callee_fn) {
@@ -844,9 +850,11 @@ static auto RedirectStructuralRequirementAccess(Context& context,
   auto without_self_specific_id = SemIR::SpecificId::None;
   if (constraint.generic_id.has_value()) {
     if (!callee_fn->enclosing_specific_id.has_value()) {
-      context.TODO(loc_id,
-                   "compound member access through a generic `template "
-                   "constraint` requirement");
+      if (diagnose) {
+        context.TODO(loc_id,
+                     "compound member access through a generic `template "
+                     "constraint` requirement");
+      }
       return SemIR::ErrorInst::InstId;
     }
     auto with_self_args = context.inst_blocks().Get(
@@ -858,20 +866,21 @@ static auto RedirectStructuralRequirementAccess(Context& context,
       context, with_self_decl->named_constraint_id, without_self_specific_id);
 
   // The base type must satisfy the constraint: convert it, as a type, to the
-  // constraint's facet type. The conversion diagnoses an unsatisfied
-  // requirement with its structural notes.
+  // constraint's facet type. When `diagnose`, the conversion diagnoses an
+  // unsatisfied requirement with its structural notes.
   auto base_type_id = context.insts().Get(base_id).type_id();
   auto unqualified_base_type_id =
       context.types().GetUnqualifiedTypeAndQualifiers(base_type_id).first;
   auto base_type_inst_id =
       context.types().GetTypeInstId(unqualified_base_type_id);
-  if (ConvertToValueOfType(context, loc_id, base_type_inst_id, facet_type_id) ==
-      SemIR::ErrorInst::InstId) {
+  if (ConvertToValueOfType(context, loc_id, base_type_inst_id, facet_type_id,
+                           diagnose) == SemIR::ErrorInst::InstId) {
     return SemIR::ErrorInst::InstId;
   }
 
   // The structural witness is the type's own member set: look the requirement's
-  // name up in the base type's scopes, as `x.Get` would.
+  // name up in the base type's scopes, as `x.Get` would, with the access
+  // context of that scope.
   auto lookup_const_id =
       context.types().GetConstantId(unqualified_base_type_id);
   llvm::SmallVector<LookupScope> lookup_scopes;
@@ -882,10 +891,20 @@ static auto RedirectStructuralRequirementAccess(Context& context,
     CARBON_FATAL("Structurally satisfying type {0} is not a name scope",
                  context.types().GetAsInst(unqualified_base_type_id));
   }
-  return LookupMemberNameInScope(context, loc_id, base_id, function.name_id,
-                                 lookup_const_id, lookup_scopes,
-                                 /*lookup_in_type_of_base=*/true,
-                                 /*required=*/true);
+  AccessInfo access_info = {
+      .constant_id = lookup_const_id,
+      .highest_allowed_access =
+          GetHighestAllowedAccess(context, lookup_const_id),
+  };
+  MemberLookupInfo info;
+  auto redirected_id = LookupMemberNameInTypeScopes(
+      context, loc_id, base_id, function.name_id, lookup_const_id,
+      lookup_scopes, /*lookup_in_type_of_base=*/true, /*required=*/diagnose,
+      access_info, diagnose, &info);
+  if (!info.found) {
+    return SemIR::ErrorInst::InstId;
+  }
+  return redirected_id;
 }
 
 static auto PerformCompoundMemberAccessAction(
@@ -944,7 +963,7 @@ static auto PerformCompoundMemberAccessAction(
   // the constraint's facet type (the structural check, with its diagnostics).
   // There is no witness table; the type's member set is the witness.
   if (auto redirected_id = RedirectStructuralRequirementAccess(
-          context, loc_id, base_id, member_id);
+          context, loc_id, base_id, member_id, diagnose);
       redirected_id.has_value()) {
     member_id = redirected_id;
     if (member_id == SemIR::ErrorInst::InstId) {

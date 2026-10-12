@@ -580,7 +580,11 @@ auto LookupQualifiedName(Context& context, SemIR::LocId loc_id,
 
     CARBON_CHECK(!result.scope_result.is_poisoned());
     return {.specific_id = SemIR::SpecificId::None,
-            .scope_result = SemIR::ScopeLookupResult::MakeError()};
+            .scope_result = SemIR::ScopeLookupResult::MakeError(),
+            .prohibited_access_kind =
+                prohibited_accesses.empty()
+                    ? std::nullopt
+                    : std::optional(prohibited_accesses.back().access_kind)};
   }
 
   return result;

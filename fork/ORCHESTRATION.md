@@ -10,27 +10,48 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-06 (post-PR #50: UPSTREAM ADVANCE (UA-1) LANDED — the
-cut moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
-commits, 105 conflicts (31 sources and docs, 74 goldens), every class-B
-mechanism re-expressed inside upstream's structure (D-UA-6 redeclarations,
-D-UA-7 thunk fence, D-UA-9 destroy witnesses), two class-C deletions (S3b
-publication, the F8d embedding), one source conflict at the SL-2 re-merge.
-Floor UNCHANGED at 128 PASS / 0 / 22 SKIP over 150 (quoted from
-scoreboard.json, run 37402970811), 48/56 bullets — the bar was non-regression
-and it held; the pre-merge board was trunk's pre-SL-2 floor exactly. Two
-upstream latent bugs fixed on the way: a null `QualType` in the
-generic-function arm of `TryMapType`, and `if`-expression arm / short-circuit
-operand cleanups that destroyed an unconstructed temporary on the other path
-(caught by upstream's new SSA verifier against the fork's `?` operator). The
-mirrored-nightly A/B was not run (no nightly at or after 2026-10-02 mirrored).
-NEXT: UA-2 reconciliation (fork/upstream/plan.md §8.5: un-SKIP the §0.6
-probes, the W-108 pin golden, ledger and gap-analysis re-cites, the
-pre-existing manufactured decision-log heading, optional A/B for the record;
-expected ceiling 129 / 0 / 20 over 150 if the probes flip), then variadics,
-CMake integration, safe-Carbon design. Next cron Monday 2026-10-12 (first
-post-advance firing: expect a small deferred set); the owner's machine is never
-used.
+Last updated: 2026-10-12 (weekly check fired; BLOCKED: GitHub Actions on
+the repository is DISABLED — every `workflow_dispatch` of `Fork: hosted
+verification` returns "Actions has been disabled for this repository", the
+repository's own scheduled workflows last ran 2026-10-08, the repository is
+public, and this session has no access to repository settings — so under R28
+there is no autoupdate, gate or conformance arbiter at all. The session was
+also out of usage credits from 2026-10-06 04:30 UTC until this firing, and
+the container was recreated in between (worktrees, the clang-19 syntax
+harness and the bazel cache were lost; rebuilt: worktrees only). STATE: UA-2
+reconciliation on claude/carbon-fork-0-1-ua2 at ace101b0d is complete —
+three probes un-SKIPped and PASSING (templates_dependent_member,
+cpp_template_symbolic_arg, cpp_template_on_carbon_generic; the two Box(T)
+programs needed a constructor-initialized dependent `var` and a declared
+`Core.Copy`, root cause an upstream limitation of the REAL prelude's
+constrained `DefaultOrUnformed` impl, pinned by
+check/testdata/interop/cpp/template/dependent_var_full_prelude.carbon),
+W-108 DISCHARGED on the fill (a `Core.Buf` field is freed through the
+owner's synthesized SubobjectDestroy; an owner with its own `impl as Destroy`
+still leaks — the 0.1 limit), ledger and gap re-cites done, of-record
+conformance run 37413300832: 131 PASS / 0 FAIL / 19 SKIP over 150, 48/56
+bullets — but its gate never ran: implementation review in progress; its PR
+is opened and HELD OPEN, not merged. SC-1 (template structural conformance,
+W-027) plan rev 2 signed off at e612aebc6 on claude/carbon-fork-0-1-sc after
+two reviews (both APPROVE-WITH-AMENDMENTS); the commit-1 implementer died
+with the credits and is NOT relaunched: new toolchain code cannot be filled
+or gated. Weekly: upstream 62f1cc6a3 is 36 commits past the cut with 70
+conflicting files (a tree-wide `ParameterizedClassType` rename); the cut
+HOLDS, recorded in the decision log. OWNER DECISION NEEDED (R29: recorded,
+not asked): re-enable Actions on the repository, or permit the session's
+container to install bazelisk + LLVM 21.1.8 and build against upstream's
+public read-only bazel cache (the tool-permission layer declined that setup
+when attempted) — until one of these, no code lands. Next cron Monday
+2026-10-19; the owner's machine is never used.
+
+Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
+moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
+commits, 105 conflicts, every class-B mechanism re-expressed inside
+upstream's structure, two class-C deletions, one source conflict at the
+SL-2 re-merge; floor 128 PASS / 0 / 22 SKIP over 150 (run 37402970811),
+48/56 bullets; two upstream latent bugs fixed on the way (a null `QualType`
+in `TryMapType`'s generic-function arm; `if`-expression arm and
+short-circuit operand cleanups destroying an unconstructed temporary).
 
 FIFTY PRs. Seven weekly checks held the cut because the merge was too large to
 do safely by hand; it was done in one planned flow instead — two adversarial
@@ -354,6 +375,8 @@ code). Next check: Monday 14:00 UTC.
 
 | Branch | State |
 | --- | --- |
+| `claude/carbon-fork-0-1-ua2` | HELD OPEN — UA-2 reconciliation at ace101b0d, fill + of-record conformance 37413300832 (131/0/19 over 150) done, gate impossible (Actions disabled); merge when a gate runs. |
+| `claude/carbon-fork-0-1-sc` | PLAN ONLY — SC-1 template structural conformance, plan rev 2 signed off (e612aebc6); implementation paused until an arbiter exists. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |

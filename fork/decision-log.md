@@ -6493,6 +6493,56 @@ upstream lands its own (upstream's `TryMergeRedecl<Function>` growing a
 member-targeted entry point retires `MergeOverloadMemberRedecl`; upstream
 conditionalizing arm cleanups retires the W-122 guard). Veto-able.
 
+### Weekly upstream merge 2026-10-12: first post-advance check; cut HOLDS one week at 36 commits; GitHub Actions on the fork is DISABLED (2026-10-12)
+
+Measured in a throwaway worktree off trunk 8068151ed: upstream trunk
+62f1cc6a3 (2026-10-11, "Rename `GenericClassType` to
+`ParameterizedClassType`", PR 7953) is 36 commits past the c1e83b0b7 cut
+the UA-1 advance set six days ago (PR 50); 672 upstream files touched, 133
+of them also modified by the fork since the cut; a dry-run `git merge
+--no-commit` conflicts in 70 files — 22 sources and editor grammars
+(check/cpp/thunk.cpp, custom_witness.cpp, handle_class.cpp,
+handle_function.cpp, handle_index.cpp, import_ref.cpp, node_stack.h,
+type_completion.cpp, lower/file_context.cpp, lower/handle.cpp,
+lower/type.cpp, parse/node_ids.h, parse/state.def, sem_ir/inst_kind.def,
+inst_namer.cpp, mangler.cpp, stringify.cpp, type_info.cpp,
+type_iterator.cpp, typed_insts.h, and the two TextMate grammars that carry
+the fork's `union`/`overload` keywords) plus 48 goldens. That is not the
+"small deferred set and no overlap beyond the usual check-core files" the
+UA-1 discharge predicted for this firing: upstream's week renamed a core
+SemIR type across the tree, so every fork-touched sem_ir and lower file
+conflicts textually. Merging it is a UA-1-shaped flow in miniature (the
+rename is mechanical; the thunk, custom_witness and handle_function
+conflicts are the same class-B re-expressions UA-1 recorded), not a
+weekly-sized one, and it is in any case blocked by the finding below. The
+cut holds; the deferred set is 36 commits. The dry-run worktree was
+removed; no staging branch was pushed.
+
+**Blocking finding — hosted verification is gone.** Every
+`workflow_dispatch` of `Fork: hosted verification` now returns "Actions
+has been disabled for this repository"; the repository's own scheduled
+workflows ("Triage inactive issues and PRs", "Nightly Release") last ran
+on 2026-10-08 and have not fired since, and the repository is public (no
+billing cause), so the setting was changed on the repository around
+2026-10-08 or 2026-10-09 — not by this session, which has no access to
+repository settings and does not touch CI (owner directive). Under R28 the
+GitHub-hosted runners are the only arbiter (the owner's machine is never
+used), so no autoupdate, gate or conformance can run until Actions is
+re-enabled. Consequences recorded here and on the ORCHESTRATION stamp: the
+UA-2 reconciliation branch is complete with its fill and of-record
+conformance (run 37413300832, 131 PASS / 0 FAIL / 19 SKIP over 150, 48/56
+bullets) but its gate was never dispatched — its PR is opened and left
+OPEN, not merged, until a gate can run; the SC-1 structural-conformance
+implementation (plan signed off at e612aebc6) cannot be filled or gated
+and is paused at the plan; this weekly merge is held. An alternative
+arbiter — building the toolchain inside the session's own container
+against upstream's public read-only bazel cache — was attempted and could
+not be set up (the session's own tool-permission layer declined the
+install steps), so it is recorded as the owner's call rather than done:
+either re-enable Actions on the repository or permit the container build
+setup. The weekly Routine's prompt is unchanged (D-UA-13); its next firing
+re-measures and re-tests the Actions state.
+
 ### Weekly upstream merge 2026-10-05: cut HOLDS a seventh week; a dry-run merge conflicts in 99 files (2026-10-05)
 
 Hosted-only check (R28). Measured upstream trunk d31a8b67d

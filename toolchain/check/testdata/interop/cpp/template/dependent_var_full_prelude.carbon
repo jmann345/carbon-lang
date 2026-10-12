@@ -36,8 +36,8 @@
 // already lets generic_call.carbon:69-71 show. Hosted autoupdate 37411162511
 // (8b42d1bc4) filled this split's CHECK lines under the old name, which its
 // STDERR lines embed, so the rename cleared them (R16(a): no hand-edited
-// CHECK line); the split awaits the next hosted refill, and this file is red
-// in file_test until then (R19). W-127 carries the limit and its removal
+// expectation); the container arbiter's autoupdate (2026-10-12) refilled the
+// split under the new name. W-127 carries the limit and its removal
 // condition.
 
 // --- header.h
@@ -57,6 +57,10 @@ import Cpp library "header.h";
 // round-2 fill measured exactly this under the old split name; the CHECK
 // lines were cleared for the rename, see the header).
 fn F[T: type](unused x: T) {
+  // CHECK:STDERR: fail_todo_unformed_dependent_var.carbon:[[@LINE+4]]:3: error: cannot convert type `<splice of <cannot stringify inst69000041: {kind: ConvertToValueAction, arg0: inst6900003E, arg1: inst(TypeType), type: type(inst(InstType))}>>` into type implementing `Core.DefaultOrUnformed` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   var unused v: Cpp.S(T);
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   var unused v: Cpp.S(T);
 }
 

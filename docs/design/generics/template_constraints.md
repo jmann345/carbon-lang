@@ -84,15 +84,14 @@ Proposal 2200's other future-work direction,
 is _not_ completed here and stays out of 0.1 scope; see
 [Boolean predicate requirements](#boolean-predicate-requirements).
 
-This design was fixed by fork decision
-[F-010](/fork/decision-log.md)
-
 <!-- Links to /fork/decision-log.md carry no `#f-009-...`/`#f-010-...`
 fragment: those headings contain an em dash, which the check-links hook
 percent-encodes in a link but keeps raw in the heading's anchor, so no
 spelling of the fragment validates (the functions_overloading.md convention).
 -->
-and depends on several unimplemented toolchain features; see
+
+This design was fixed by fork decision [F-010](/fork/decision-log.md) and
+depends on several unimplemented toolchain features; see
 [Dependencies on unimplemented features](#dependencies-on-unimplemented-features).
 Sub-decisions within this design that have more than one defensible answer are
 not decided here: each is marked **OPEN (sub-fork)** in place and collected in
@@ -153,8 +152,12 @@ template constraint Summable {
 Like other named constraints, a template constraint may be forward-declared, may
 be parameterized, may contain `alias` declarations, and follows the
 [declaration and completeness rules](details.md#forward-declarations-and-cyclic-references)
-for named constraints. Member requirements may only be declared inside a
-`template constraint`, never in a plain `constraint` or in an `interface`'s
+for named constraints. A forward declaration and definition (or two
+declarations) of one constraint must agree on `template`
+(`NamedConstraintRedeclTemplateMismatch`; SC-1, D-SC-16; after the diagnostic
+the constraint is treated as a template constraint). Member requirements may
+only be declared inside a `template constraint`, never in a plain `constraint`
+or in an `interface`'s
 `require` clauses:
 [#2200](/proposals/p002200-template-generics.md#template-constraints) admits
 "function and field declarations" in a template constraint body, and
@@ -267,7 +270,7 @@ definition in `template constraint`"); a `fn` in a plain, non-`template`
 > matching parameterized declarations has real implementation cost. SC-1
 > diagnoses a requirement `fn` with compile-time bindings of its own as a
 > semantics TODO ("parameterized requirement in `template constraint`") and
-> does not collect it as a requirement; filed as a ledger residue.
+> does not collect it as a requirement; filed as a ledger residue (W-136).
 
 Field requirements (`var count: i32;` above) are satisfied by a field of exactly
 the declared name and type. They exist because migrated C++ code constrains on
@@ -285,13 +288,14 @@ counterpart
 > `template constraint`"), because a field match needs its own type-equality
 > path (`FieldDecl`, not the function matcher), nothing in the conformance
 > arbiter needs it, and SC-B2's validity blocks are the natural second
-> consumer. Veto-able after the fact; filed as a ledger residue. Associated-
+> consumer. Veto-able after the fact; filed as a ledger residue (W-134).
+> Associated-
 > constant requirements (`let X: type;`) are deferred the same way, which
 > NARROWS [details.md's enumeration](details.md#named-constraints) ("method,
 > associated constant, and associated function requirements") on an
 > implementation-cost ground: the interface form routes through the
 > associated-constant introducer in interface context only, so a constraint
-> body has no parse for it today. Also veto-able; also filed.
+> body has no parse for it today. Also veto-able; also filed (W-135).
 
 ### Validity blocks
 
@@ -445,7 +449,7 @@ an adapter, not an impl, for supplying missing members.
 > confusion. The rejected alternative was to define it as implementing exactly
 > the constraint's nominal `require impls` requirements. An `impl ... as I &
 > SomeTemplateConstraint` is accepted without a structural check of the impl's
-> self in SC-1 (filed as a residue).
+> self in SC-1 (filed as a residue, W-142).
 
 ### Anonymous predicates on bindings
 
@@ -664,9 +668,10 @@ instantiation rather than discarding failed instantiations after. As landed
 (SC-1, D-SC-9), the error is the existing conversion failure ("cannot convert
 type `C` into type implementing `HasGet`") with notes for the first unsatisfied
 requirement in declaration order: `StructuralMemberMissing`,
-`StructuralMemberMismatch` (at the found member), `StructuralMemberInaccessible`
-or `StructuralRequirementNeedsConcreteType`, each followed by
-`StructuralRequirementHere` at the requirement.
+`StructuralMemberMismatch` (at the found member) or
+`StructuralMemberInaccessible`, each followed by `StructuralRequirementHere` at
+the requirement; for a checked-generic self the single note
+`StructuralRequirementNeedsConcreteType` is attached instead.
 
 ## Constrained candidates and overload resolution
 
@@ -929,7 +934,7 @@ d, e, f, g, i, j and k stay OPEN for SC-B2 and SC-B3.
 -   **F-010l — parameterized member requirements.** Allow `template` or
     parameterized requirement declarations in 0.1 vs defer them.
     _Recommendation: defer past 0.1._ **DEFERRED as recommended (SC-1, D-SC-2;
-    ledger residue).**
+    ledger residue W-136).**
 -   **F-010m — `impl ... as` a template constraint.** Error vs the
     plain-named-constraint meaning (nominal requirements only).
     _Recommendation: error._ **RESOLVED as recommended (SC-1, D-SC-8).**

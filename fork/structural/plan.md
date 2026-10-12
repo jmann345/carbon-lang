@@ -1852,3 +1852,130 @@ R31 record for this note: before, 1 H1 / 12 H2 / 20 H3 / 0 H4, 76 dash items,
 53 numbered items (identical to the commit-1 record); after, 1 / 12 / 21 / 0,
 83 dash, 53 numbered: exactly this subsection's heading and its seven findings,
 nothing manufactured; the hazard greps are empty before and after.
+
+### Landed notes (SC-1 commit 3)
+
+Commit 3 (SC-1c, 43575bf1d) landed on the branch and received the ONE
+implementation review R29(c) owes (verdict APPROVE-WITH-FIXES: seven MINOR, no
+MAJOR, no BLOCKER); the fixer commit that carries this note folds all seven,
+extending the two notes above. As before, the review ran BEFORE any hosted
+verification: no fill, gate or conformance run exists for any SC-1 commit, every
+golden still carries `AUTOUPDATE` and no CHECK lines, and nothing below claims a
+measurement (R9). The review's verified-clean list (the look-through inside
+`LookupImplWitness`, the refined D-SC-11 rule against the call-site import, R27
+spelling fidelity of the page, the port's diff against 481e08c24, both
+conformance programs' falsifier shape and hand-derived EXPECTs, the record SHAs
+and counts, the ledger ids, gap row 55, the Branches row, the design-record
+repair, the whole-branch toolchain scope, golden coverage of all nine kinds and
+every D-SC, trailers and no model identifiers) stands as the review stated it.
+
+-   Finding 1 (MINOR, confirmed): the page's §Diagnostics paragraph said each
+    of the four notes, `StructuralRequirementNeedsConcreteType` included, is
+    "followed by `StructuralRequirementHere`"; the code emits
+    `StructuralRequirementNeedsConcreteType` in `CheckRequirements`'
+    checked-symbolic branch and returns before the per-`fn` loop, so
+    `NoteMemberFailure` (the only `StructuralRequirementHere` emitter) never
+    runs — the plan's own §4.B `fail_symbolic_arg` prediction agrees. ACCEPTED,
+    reworded as the reviewer proposed: the three member notes are each followed
+    by `StructuralRequirementHere`; for a checked-generic self the single note
+    `StructuralRequirementNeedsConcreteType` is attached instead (R27).
+-   Finding 2 (MINOR, confirmed): the port split "This design was fixed by fork
+    decision F-010 … and depends on several unimplemented toolchain features"
+    into two paragraphs by inserting the fragment-stripping HTML comment
+    between them (the stranded page had one sentence). ACCEPTED: the comment
+    moved to just before the paragraph and the sentence is rejoined; a
+    paragraph move only — the page's counts are unchanged (below).
+-   Finding 3 (MINOR, confirmed): the SC-1 decision-log entry's "(9) GOLDENS"
+    said "fifteen new files" while enumerating sixteen, and `git diff
+    --name-status origin/trunk..HEAD -- 'toolchain/*/testdata/*'` shows sixteen
+    added files (plus the two modified §6 goldens). ACCEPTED: "sixteen".
+-   Finding 4 (MINOR, confirmed): the gap analysis's W7 paragraph kept "needs
+    a real design first (templates.md is a placeholder)" beside the appended
+    "landed … the design is template_constraints.md, and templates.md now links
+    it" — §8.5 asked only for the appended sentence, but the sentence it
+    contradicts is one SC-1 made false. ACCEPTED: the two sentences are
+    rewritten as one ("has its design in docs/design/generics/
+    template_constraints.md (F-010; member requirements, B1, landed on the SC-1
+    branch 2026-10-12 with the fill pending — fork/structural/plan.md);
+    templates.md links it."); the "lowering hits CARBON_FATAL" sentence stays
+    UA-2's, as the plan says. Counts unchanged (prose only).
+-   Finding 5 (MINOR, confirmed by code reading): R-7 ("`diagnose = false` must
+    be total") is violated by construction in the SC-1c look-through —
+    `ImportSingleCppOverloadCandidate` calls `ImportCppFunctionDecl` in both
+    check modes, and the C++ import emits unconditionally (cpp/import.cpp:2152
+    "Unsupported: Template function", :2213 the fenced-thunk TODO, :1654 and
+    :1786 the type-mapping TODOs); the two shape checks narrow the exposure but
+    do not close it, so a one-candidate `Get` of the right arity with an
+    unmappable parameter type emits during the silent member-1 probe of the
+    two-member `Pick` set and the program is COMPILE-FAIL instead of selecting
+    member 2 — the commit-2 finding-3 class, reachable only through interop,
+    with no golden. ACCEPTED exactly as the reviewer asked, the import NOT gated
+    on `diagnose` (the §5.B program's own member-1 probe is a `diagnose =
+    false` path and must import): (a) residue W-144 "C++ member import inside a
+    non-diagnosing structural probe can emit (R-7)", blocked_by [], citing the
+    import.cpp sites, the mechanism being to thread `diagnose` into
+    `ImportCppDecl` (check/cpp/, untouched by §2.C) — W-144 is allocated above
+    W-143 under the same cross-branch assumption as W-134..W-143; (b) split
+    `fail_todo_probe_import_leak.carbon` added to interop/cpp/class/import/
+    template_constraint.carbon with its own header `unmappable_param.h`
+    (`struct BitGetter { int Get(_BitInt(23) n); }`, the
+    param_unsupported.carbon shape) and the two-member `Pick` set over
+    `HasGetN { fn Get(ref self, n: i32) -> i32; }`; predicted exactly one
+    diagnostic, `SemanticsTodo` "Unsupported: parameter type: _BitInt(23)"
+    located at the member-1 probe (the conversion of `b` in `Pick(b)`), member 2
+    selected regardless — the overload probe runs in a discard scope with no
+    diagnostic suppression (call.cpp `ProbeOverloadCandidate`), so the TODO
+    reaches the consumer; (c) the look-through's comment now states that the
+    import is not `diagnose`-aware, why it is not gated, and the residue's
+    mechanism. The twelve comment lines shift the file below them: W-143's cite
+    (`RequirementMatches`) moves :281 → :293, W-027's (`CheckRequirements`) :418
+    → :430, and the decision-log's look-through range is re-cited :167-282;
+    the cpp diff is comment-only (twelve added lines, nothing else).
+-   Finding 6 (MINOR, confirmed): §8.7 (review fold B15) lists the status
+    paragraph among the stamps the discharge updates, and commit 3's deviation
+    (4) left it reading "Last updated: 2026-10-06" with a NEXT list silent on
+    the open, HELD SC branch one row below. ACCEPTED, the reviewer's first
+    option: one dated sentence appended to the status paragraph ("Appended
+    2026-10-12 (SC-1 commit-3 fold): SC-1 … is OPEN on claude/carbon-fork-0-1-sc
+    and HELD awaiting the fork toolchain's autoupdate + gate + conformance — see
+    the Branches row; no measured numbers yet, so the floor above stands"), and
+    the Branches row now counts three fixer commits and W-134..W-144. Deviation
+    (4) of the commit-3 body is thereby withdrawn for the status paragraph and
+    stands for the Scoreboard section and the floor (no measured numbers exist,
+    R9), which is a narrower reading of §8.7, recorded here rather than as an
+    amendment of the signed-off plan. Counts unchanged.
+-   Finding 7 (MINOR, confirmed): the page's 0.1 limits said "filed as a ledger
+    residue" without an id at F-010l (:270), F-010b and the associated-constant
+    deferral (:288), the `impl … as I & SomeTemplateConstraint` gap (:448) and
+    the F-010l sub-fork entry (:932), while the ledger carries W-134..W-137 and
+    W-142 for exactly these; and D-SC-16 (redeclarations must agree on
+    `template`) appeared nowhere on the page. ACCEPTED: W-136, W-134, W-135,
+    W-142 and W-136 appended in place, and one sentence under §Declaring a
+    template constraint beside the completeness-rules link states the D-SC-16
+    rule, its diagnostic `NamedConstraintRedeclTemplateMismatch` and the
+    commit-1 recovery (treated as a template constraint after the diagnostic).
+
+§1.G addition by this note: "C++ member import inside a non-diagnosing
+structural probe can emit (R-7)" (finding 5; W-144).
+
+Verification for the fixer commit, same harness as commits 1-3 (no bazel run,
+no fill): clang++ -fsyntax-only with the toolchain's -Werror set against the
+pinned LLVM 21.1.8 headers, OK on structural_conformance.cpp before and after
+prek's clang-format (the R12 hook's clang-format 18.1.3 again reformatted
+unrelated lines on edit and the pinned 21.1.8 under prek restored them, R18);
+prek (rumdl, google-doc-style, markdown-toc, prettier on the ledger,
+clang-format, check-toolchain-diagnostics, codespell, copyright, check-links)
+at a fixpoint over every touched file (pass 1 reformatted only the C++ the hook
+had drifted; pass 2 clean); `runner.py --self-test` OK (151 programs; no
+program changed); the ledger parses and W-144 is the unique maximum id.
+
+R31 record for this note (H1/H2/H3/H4, dash items, numbered items): plan.md
+before 1 / 12 / 21 / 0, 83 dash, 53 numbered (identical to the commit-2
+record); after 1 / 12 / 22 / 0, 90 dash, 53 numbered — exactly this
+subsection's heading and its seven findings (the §1.G addition is a
+paragraph, not an item). The other
+files are unchanged before and after: template_constraints.md 1/12/19/0/0, 83,
+3 (the comment move and the appended ids add no item); decision-log.md
+1/2/44/1/6, 23, 0 (its one hazard-grep hit is the pre-existing trunk heading
+"7700 splice-stepping …", UA-2's, untouched); gap-analysis.md 1/5/23/0/0, 0;
+ORCHESTRATION.md 1/1/5/0/0, 8, 4. The hazard greps over the diff are empty.

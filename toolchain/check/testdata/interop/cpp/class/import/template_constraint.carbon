@@ -30,7 +30,12 @@
 // `ConversionFailureTypeToFacet` + `StructuralMemberMismatch` +
 // `StructuralRequirementHere` + `DeductionGenericHere`, the mismatch note at
 // the imported declaration for the one-candidate splits and at the call for
-// `fail_overloaded`.
+// `fail_overloaded`. `fail_todo_probe_import_leak` pins the R-7 residue
+// (ledger W-144; commit-3 review): the look-through's import is not
+// `diagnose`-aware, so the silent member-1 probe of a two-member `Pick` set
+// emits `SemanticsTodo` "Unsupported: parameter type: _BitInt(23)" at the
+// probe (the conversion of `b` in `Pick(b)`) even though member 2 is then
+// selected; predicted exactly that one diagnostic.
 
 // --- method.h
 
@@ -131,4 +136,33 @@ fn CallGet[template T: HasGet](p: T*) -> i32 { return p->Get(); }
 
 fn Test(g: Cpp.ConstGetter*) -> i32 {
   return CallGet(g);
+}
+
+// --- unmappable_param.h
+
+// A one-candidate `Get` with the arity `HasGetN` requires, whose parameter
+// type the importer cannot map (the param_unsupported.carbon shape).
+struct BitGetter {
+  int value;
+  int Get(_BitInt(23) n) { return value; }
+};
+
+// --- fail_todo_probe_import_leak.carbon
+library "[[@TEST_NAME]]";
+
+import Cpp library "unmappable_param.h";
+
+// R-7 residue (ledger W-144): member 1 is probed with `diagnose = false`; the
+// shape checks pass (object member, one explicit parameter), the import runs
+// and its type-mapping TODO leaks. Member 2 is selected regardless, so once
+// the import honors `diagnose` this split loses its `fail_todo_` prefix.
+template constraint HasGetN {
+  fn Get(ref self, n: i32) -> i32;
+}
+
+overload fn Pick[template T: HasGetN](p: T*) -> i32 { return p->Get(1); }
+overload fn Pick[template T: type](unused p: T*) -> i32 { return 0; }
+
+fn Test(b: Cpp.BitGetter*) -> i32 {
+  return Pick(b);
 }

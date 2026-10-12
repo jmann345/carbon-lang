@@ -195,11 +195,11 @@ function overloading, threading/atomics interop
 
 Template bindings and simple dependent member access exist, but dependent
 operators/conversions are fail_todo and template lowering is a hard fatal.
-Structural conformance to nominal constraints needs a real design first
-(templates.md is a placeholder). Also unlocks C++ templates instantiated on
-Carbon types. Structural conformance (B1) landed on the SC-1 branch
-(2026-10-12, fill pending); see fork/structural/plan.md — the design is
-docs/design/generics/template_constraints.md, and templates.md now links it.
+Structural conformance to nominal constraints has its design in
+docs/design/generics/template_constraints.md (F-010; member requirements, B1,
+landed on the SC-1 branch 2026-10-12 with the fill pending —
+fork/structural/plan.md); templates.md links it. Also unlocks C++ templates
+instantiated on Carbon types.
 
 **Arbiter:** generic/template/unimplemented.carbon fail_todo tests flip to
 passing (operators, conversions, assoc-const access on dependent values); the

@@ -187,6 +187,18 @@ static auto PassingModeForCppParameterType(clang::QualType type)
 // parameter is `Self&` (so `ref self`, §0.1 row 19), a `const` method's is
 // `const Self&` (so value `self`) -- D-SC-11's spelling rule, refined.
 //
+// The import is NOT `diagnose`-aware (R-7 residue, ledger W-144):
+// `ImportCppFunctionDecl` emits unconditionally -- cpp/import.cpp's
+// "Unsupported: Template function" and fenced-thunk TODOs, and the
+// parameter/return type-mapping TODOs under `CreateFunctionSignatureInsts` --
+// so a check-mode probe (`diagnose = false`) that reaches the import can emit.
+// The import is deliberately not gated on `diagnose`: the overload-set shape
+// the conformance programs use probes member 1 in check mode and MUST import
+// for a C++ class to satisfy at all. Closing the leak means threading
+// `diagnose` into `ImportCppDecl`, which touches check/cpp/ (untouched by
+// SC-1); pinned by the `fail_todo_probe_import_leak` split of
+// interop/cpp/class/import/template_constraint.carbon.
+//
 // Returns the imported `FunctionDecl` inst, or `None` with `*out_failure` set.
 // Cheap shape checks (`self` presence, parameter count) run before the import
 // so that a shape that cannot match imports nothing.

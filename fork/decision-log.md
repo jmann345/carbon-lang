@@ -3894,7 +3894,7 @@ generic template constraint there is a `context.TODO`.
 `LookupMemberNameInTypeScopes(…, optional<AccessInfo>, diagnose,
 MemberLookupInfo*)`, `LookupQualifiedName` gained `diagnose`, and
 `IsAccessProhibited` is declared in name_lookup.h. (8) C++ INTEROP
-(structural_conformance.cpp:167-279, SC-1c). An imported C++ method NAME
+(structural_conformance.cpp:167-282, SC-1c). An imported C++ method NAME
 resolves to a `cpp_overload_set_value` (interop/cpp/class/import/
 method.carbon:279-280), which the D-SC-5(c) predicate as planned classified as
 `CalleeCppOverloadSet` → mismatch, so under commits 1-2 NO C++ class satisfied
@@ -3915,7 +3915,7 @@ function is matched under D-SC-5(d). Two or more candidates stay a mismatch
 (`fail_overloaded`). (9) GOLDENS, all unfilled (AUTOUPDATE, no CHECK lines): the
 two pre-existing goldens §6 named (parse/testdata/generics/named_constraint/
 template_constraint.carbon's split renamed from `fail_todo_`; invalid_members.
-carbon's three splits moved, CHECK lines cleared) and fifteen new files — the
+carbon's three splits moved, CHECK lines cleared) and sixteen new files — the
 §4.A declaration set (template_constraint, fail_template_constraint_modifier,
 fail_template_constraint_redecl with the two recovery splits of commit-1 finding
 1, fail_todo_template_constraint_members), the §4.B satisfaction set
@@ -4089,8 +4089,19 @@ observed and filed, W-143), re-entrant impl lookup from inside the check
 the cycle is upstream's to diagnose; pinned as `fail_alias_cycle`), the
 name-poisoning side effect of every miss (recorded; dump ranges keep away
 from probed classes). The ONE implementation review of SC-1c that R29(c) owes
-runs after this commit, before any fill; its findings fold into a fixer
-commit as for commits 1 and 2.
+(before any fill, as for commits 1 and 2): APPROVE-WITH-FIXES, 7 MINOR, 0
+MAJOR, 0 BLOCKER — the design page's note sequence for
+`StructuralRequirementNeedsConcreteType` (folded: reworded to what the code
+emits), the ported page's sentence split around an HTML comment (folded:
+comment moved, sentence rejoined), "fifteen" for sixteen new goldens (folded),
+the gap analysis's self-contradictory W7 paragraph (folded: rewritten), the
+look-through's import not being `diagnose`-aware — R-7 by construction (folded
+as asked: residue W-144, the `fail_todo_probe_import_leak` split, the comment),
+the ORCHESTRATION status paragraph silent on the HELD SC branch (folded: one
+dated sentence), the page's un-numbered residue mentions and the unstated
+D-SC-16 rule (folded: W-134/W-135/W-136/W-142 appended in place, one D-SC-16
+sentence). Fold record: fork/structural/plan.md "Landed notes (SC-1 commit
+3)".
 
 FILL-CAUGHT MISSES: none possible — no fill has run. The class of miss
 R28(d) tracks here (a reviewed prediction a hosted fill overturns) has no
@@ -4112,7 +4123,7 @@ A/B (the nightly lacks the feature). The R31 record for this entry's files is
 in the SC-1c commit body: heading and list counts per level before and after
 prek, the hazard greps empty.
 
-RESIDUE, filed with blocked_by [] (ids W-134..W-143, allocated above W-133 —
+RESIDUE, filed with blocked_by [] (ids W-134..W-144, allocated above W-133 —
 the maximum across origin/trunk (W-125), origin/claude/carbon-fork-0-1-ua2
 (W-126/W-127), origin/claude/carbon-fork-0-1-cmake (W-128..W-133) and
 origin/claude/carbon-fork-0-1-safe (nothing above W-125 at its fetch) — on
@@ -4131,7 +4142,12 @@ TODO); W-141 re-run deferred structural `require` checks at template
 blanket-impl specifics (D-SC-19; review fold A3); W-142 structural
 requirements on an impl's `as` facet type (commit-2 review finding 4); W-143
 inherited methods in structural matching (commit-2 review finding 5's
-observation, filed at this discharge as the note asked). W-028 (SC-B2) and
+observation, filed at this discharge as the note asked); W-144 C++ member
+import inside a non-diagnosing structural probe can emit (R-7; the commit-3
+review's finding — `ImportCppFunctionDecl` emits unconditionally,
+cpp/import.cpp:2152 and :2213 and the type-mapping TODOs, and the look-through
+calls it in both check modes; filed by the commit-3 fixer with the
+`fail_todo_probe_import_leak` split). W-028 (SC-B2) and
 W-029 (SC-B3) lose their W-027 edge. NOT filed, each conditional on a fill
 that has not run: "`impl forall [template T: HasGet]` migration-ladder step"
 (only if D-SC-19's break condition fires on the `ladder` split); "`const` C++

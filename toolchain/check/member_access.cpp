@@ -5,6 +5,7 @@
 #include "toolchain/check/member_access.h"
 
 #include <optional>
+#include <variant>
 
 #include "llvm/ADT/STLExtras.h"
 #include "toolchain/base/kind_switch.h"
@@ -314,24 +315,23 @@ static auto PerformImplLookup(
                                    interface_with_self_specific_id, member_id);
 }
 
-// Performs a member name lookup into the specified scope, including performing
-// impl lookup if necessary. If the scope result is `None`, assume an error has
-// already been diagnosed, and return `ErrorInst`.
-static auto LookupMemberNameInScope(Context& context, SemIR::LocId loc_id,
-                                    SemIR::InstId base_id,
-                                    SemIR::NameId name_id,
-                                    SemIR::ConstantId name_scope_const_id,
-                                    llvm::ArrayRef<LookupScope> lookup_scopes,
-                                    bool lookup_in_type_of_base, bool required)
+auto LookupMemberNameInTypeScopes(Context& context, SemIR::LocId loc_id,
+                                  SemIR::InstId base_id, SemIR::NameId name_id,
+                                  SemIR::ConstantId name_scope_const_id,
+                                  llvm::ArrayRef<LookupScope> lookup_scopes,
+                                  bool lookup_in_type_of_base, bool required,
+                                  std::optional<AccessInfo> access_info,
+                                  bool diagnose, MemberLookupInfo* out_info)
     -> SemIR::InstId {
-  AccessInfo access_info = {
-      .constant_id = name_scope_const_id,
-      .highest_allowed_access =
-          GetHighestAllowedAccess(context, name_scope_const_id),
-  };
   LookupResult result = LookupQualifiedName(
-      context, loc_id, name_id, lookup_scopes, required, access_info);
+      context, loc_id, name_id, lookup_scopes, required, access_info, diagnose);
 
+  if (out_info) {
+    *out_info = {.found = result.scope_result.is_found() &&
+                          result.scope_result.target_inst_id() !=
+                              SemIR::ErrorInst::InstId,
+                 .access_kind = result.scope_result.access_kind()};
+  }
   if (!result.scope_result.is_found()) {
     return SemIR::ErrorInst::InstId;
   }
@@ -393,16 +393,36 @@ static auto LookupMemberNameInScope(Context& context, SemIR::LocId loc_id,
       auto base_type_id = context.insts().Get(base_id).type_id();
       member_id = PerformImplLookup(context, loc_id,
                                     context.types().GetConstantId(base_type_id),
-                                    *assoc_type, member_id);
+                                    *assoc_type, member_id, diagnose);
     } else if (ScopeNeedsImplLookup(context, name_scope_const_id)) {
       // Handles `T.F` where `T` is a type extending an interface containing
       // `F`.
       member_id = PerformImplLookup(context, loc_id, name_scope_const_id,
-                                    *assoc_type, member_id);
+                                    *assoc_type, member_id, diagnose);
     }
   }
 
   return member_id;
+}
+
+// Performs a member name lookup into the specified scope, including performing
+// impl lookup if necessary. If the scope result is `None`, assume an error has
+// already been diagnosed, and return `ErrorInst`.
+static auto LookupMemberNameInScope(Context& context, SemIR::LocId loc_id,
+                                    SemIR::InstId base_id,
+                                    SemIR::NameId name_id,
+                                    SemIR::ConstantId name_scope_const_id,
+                                    llvm::ArrayRef<LookupScope> lookup_scopes,
+                                    bool lookup_in_type_of_base, bool required)
+    -> SemIR::InstId {
+  AccessInfo access_info = {
+      .constant_id = name_scope_const_id,
+      .highest_allowed_access =
+          GetHighestAllowedAccess(context, name_scope_const_id),
+  };
+  return LookupMemberNameInTypeScopes(
+      context, loc_id, base_id, name_id, name_scope_const_id, lookup_scopes,
+      lookup_in_type_of_base, required, access_info, /*diagnose=*/true);
 }
 
 // Performs the instance binding step in member access. If the found member is a
@@ -789,6 +809,85 @@ auto GetAssociatedValue(Context& context, SemIR::LocId loc_id,
                                 specific_interface);
 }
 
+// Fork (SC-1, fork/structural/plan.md D-SC-4): if `member_id` names a
+// requirement `fn` of a `template constraint`, converts the base type to the
+// constraint's facet type (the structural check) and returns the base type's
+// own member of the requirement's name, to be instance-bound by the caller.
+// Returns `ErrorInst` if the conversion or the lookup failed (diagnosed), and
+// `None` if `member_id` is not such a requirement.
+static auto RedirectStructuralRequirementAccess(Context& context,
+                                                SemIR::LocId loc_id,
+                                                SemIR::InstId base_id,
+                                                SemIR::InstId member_id)
+    -> SemIR::InstId {
+  auto callee = SemIR::GetCallee(context.sem_ir(), member_id);
+  auto* callee_fn = std::get_if<SemIR::CalleeFunction>(&callee);
+  if (!callee_fn) {
+    return SemIR::InstId::None;
+  }
+  const auto& function = context.functions().Get(callee_fn->function_id);
+  auto with_self_decl =
+      context.name_scopes().TryGetInstAs<SemIR::NamedConstraintWithSelfDecl>(
+          function.parent_scope_id);
+  if (!with_self_decl) {
+    return SemIR::InstId::None;
+  }
+  const auto& constraint =
+      context.named_constraints().Get(with_self_decl->named_constraint_id);
+  if (!constraint.is_template) {
+    return SemIR::InstId::None;
+  }
+
+  // The requirement's enclosing specific is the constraint-with-self specific
+  // (the constraint's arguments followed by `Self`); the facet type to convert
+  // to is the constraint-without-self specific, so drop `Self`.
+  auto without_self_specific_id = SemIR::SpecificId::None;
+  if (constraint.generic_id.has_value()) {
+    if (!callee_fn->enclosing_specific_id.has_value()) {
+      context.TODO(loc_id,
+                   "compound member access through a generic `template "
+                   "constraint` requirement");
+      return SemIR::ErrorInst::InstId;
+    }
+    auto with_self_args = context.inst_blocks().Get(
+        context.specifics().Get(callee_fn->enclosing_specific_id).args_id);
+    without_self_specific_id = MakeSpecific(
+        context, loc_id, constraint.generic_id, with_self_args.drop_back());
+  }
+  auto facet_type_id = GetNamedConstraintType(
+      context, with_self_decl->named_constraint_id, without_self_specific_id);
+
+  // The base type must satisfy the constraint: convert it, as a type, to the
+  // constraint's facet type. The conversion diagnoses an unsatisfied
+  // requirement with its structural notes.
+  auto base_type_id = context.insts().Get(base_id).type_id();
+  auto unqualified_base_type_id =
+      context.types().GetUnqualifiedTypeAndQualifiers(base_type_id).first;
+  auto base_type_inst_id =
+      context.types().GetTypeInstId(unqualified_base_type_id);
+  if (ConvertToValueOfType(context, loc_id, base_type_inst_id, facet_type_id) ==
+      SemIR::ErrorInst::InstId) {
+    return SemIR::ErrorInst::InstId;
+  }
+
+  // The structural witness is the type's own member set: look the requirement's
+  // name up in the base type's scopes, as `x.Get` would.
+  auto lookup_const_id =
+      context.types().GetConstantId(unqualified_base_type_id);
+  llvm::SmallVector<LookupScope> lookup_scopes;
+  if (!AppendLookupScopesForConstant(
+          context, loc_id, lookup_const_id, base_type_id.AsConstantId(),
+          /*extended_scope=*/false, &lookup_scopes)) {
+    // The conversion succeeded, so the type was a name scope with the member.
+    CARBON_FATAL("Structurally satisfying type {0} is not a name scope",
+                 context.types().GetAsInst(unqualified_base_type_id));
+  }
+  return LookupMemberNameInScope(context, loc_id, base_id, function.name_id,
+                                 lookup_const_id, lookup_scopes,
+                                 /*lookup_in_type_of_base=*/true,
+                                 /*required=*/true);
+}
+
 static auto PerformCompoundMemberAccessAction(
     Context& context, SemIR::LocId loc_id, SemIR::InstId base_id,
     SemIR::InstId member_expr_id, bool diagnose = true,
@@ -836,6 +935,20 @@ static auto PerformCompoundMemberAccessAction(
       // binding.
       return GetAssociatedValueImpl(context, loc_id, base_id, assoc_entity,
                                     assoc_type->GetSpecificInterface());
+    }
+  }
+
+  // Fork (SC-1, fork/structural/plan.md D-SC-4 / §1.B.3): a member that is a
+  // requirement of a `template constraint` (`x.(HasGet.Get)`) is redirected to
+  // the base type's OWN member of that name, after converting the base type to
+  // the constraint's facet type (the structural check, with its diagnostics).
+  // There is no witness table; the type's member set is the witness.
+  if (auto redirected_id = RedirectStructuralRequirementAccess(
+          context, loc_id, base_id, member_id);
+      redirected_id.has_value()) {
+    member_id = redirected_id;
+    if (member_id == SemIR::ErrorInst::InstId) {
+      return member_id;
     }
   }
 

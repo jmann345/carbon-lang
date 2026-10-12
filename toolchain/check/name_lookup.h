@@ -5,6 +5,8 @@
 #ifndef CARBON_TOOLCHAIN_CHECK_NAME_LOOKUP_H_
 #define CARBON_TOOLCHAIN_CHECK_NAME_LOOKUP_H_
 
+#include <optional>
+
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/StringRef.h"
 #include "toolchain/check/context.h"
@@ -108,12 +110,25 @@ auto AppendLookupScopesForConstant(Context& context, SemIR::LocId loc_id,
 
 // Performs a qualified name lookup in a specified scopes and in scopes that
 // they extend, returning the referenced `InstId`.
+//
+// Fork (SC-1): when `diagnose` is false, nothing is emitted for a missing or
+// ambiguous name or for a prohibited access; the result then reads as an error
+// for the structural-conformance probe, which never puts it in SemIR.
 auto LookupQualifiedName(Context& context, SemIR::LocId loc_id,
                          SemIR::NameId name_id,
                          llvm::ArrayRef<LookupScope> lookup_scopes,
                          bool required = true,
-                         std::optional<AccessInfo> access_info = std::nullopt)
-    -> LookupResult;
+                         std::optional<AccessInfo> access_info = std::nullopt,
+                         bool diagnose = true) -> LookupResult;
+
+// Returns whether an access of a member with `access_kind` is prohibited by the
+// access modifiers from the context described by `access_info`. No access
+// information (`nullopt`) means nothing is prohibited. Fork (SC-1): exposed so
+// the structural-conformance check can apply the access decision to a lookup
+// result without a diagnostic (fork/structural/plan.md D-SC-5(b)).
+auto IsAccessProhibited(Context& context, std::optional<AccessInfo> access_info,
+                        SemIR::AccessKind access_kind, bool is_parent_access)
+    -> bool;
 
 // Returns the `InstId` corresponding to a qualified name in the `Core` package,
 // or BuiltinErrorInst if not found.

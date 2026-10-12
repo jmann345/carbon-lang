@@ -27,6 +27,7 @@
 #include "toolchain/check/operator.h"
 #include "toolchain/check/pattern_match.h"
 #include "toolchain/check/pending_block.h"
+#include "toolchain/check/structural_conformance.h"
 #include "toolchain/check/type.h"
 #include "toolchain/check/type_completion.h"
 #include "toolchain/diagnostics/emitter.h"
@@ -1500,9 +1501,15 @@ static auto CanRemoveQualifiers(SemIR::TypeQualifiers quals,
   return true;
 }
 
+// Diagnoses a failed conversion of `expr_id` to the facet type
+// `target_type_id`. `query_self_const_id` is the self that impl lookup was
+// queried with; fork (SC-1, fork/structural/plan.md D-SC-9): the error carries
+// notes explaining the first unsatisfied structural requirement of a
+// `template constraint`, if that is why lookup failed.
 static auto DiagnoseConversionFailureToConstraintValue(
     Context& context, SemIR::LocId loc_id, SemIR::InstId expr_id,
-    SemIR::TypeId target_type_id) -> void {
+    SemIR::ConstantId query_self_const_id, SemIR::TypeId target_type_id)
+    -> void {
   CARBON_CHECK(context.types().Is<SemIR::FacetType>(target_type_id));
 
   // If the source is a facet with constraints (possibly converted to `type`),
@@ -1515,14 +1522,21 @@ static auto DiagnoseConversionFailureToConstraintValue(
                       "cannot convert type {0} that implements {1} into type "
                       "implementing {2}",
                       InstIdAsType, SemIR::TypeId, SemIR::TypeId);
-    context.emitter().Emit(loc_id, ConversionFailureFacetToFacet, expr_id,
-                           const_expr_type_id, target_type_id);
+    auto builder =
+        context.emitter().Build(loc_id, ConversionFailureFacetToFacet, expr_id,
+                                const_expr_type_id, target_type_id);
+    NoteStructuralConformanceFailure(context, loc_id, query_self_const_id,
+                                     target_type_id, builder);
+    builder.Emit();
   } else {
     CARBON_DIAGNOSTIC(ConversionFailureTypeToFacet, Error,
                       "cannot convert type {0} into type implementing {1}",
                       InstIdAsType, SemIR::TypeId);
-    context.emitter().Emit(loc_id, ConversionFailureTypeToFacet, expr_id,
-                           target_type_id);
+    auto builder = context.emitter().Build(loc_id, ConversionFailureTypeToFacet,
+                                           expr_id, target_type_id);
+    NoteStructuralConformanceFailure(context, loc_id, query_self_const_id,
+                                     target_type_id, builder);
+    builder.Emit();
   }
 }
 
@@ -1976,8 +1990,9 @@ static auto PerformBuiltinConversion(Context& context, SemIR::LocId loc_id,
       // TODO: Pass this function into `LookupImplWitness` so it can construct
       // the error add notes explaining failure.
       if (target.diagnose) {
-        DiagnoseConversionFailureToConstraintValue(context, loc_id, value_id,
-                                                   target.type_id);
+        DiagnoseConversionFailureToConstraintValue(
+            context, loc_id, value_id,
+            sem_ir.constant_values().Get(type_inst_id), target.type_id);
       }
       return SemIR::ErrorInst::InstId;
     }

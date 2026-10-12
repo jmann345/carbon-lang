@@ -20,6 +20,7 @@
 #include "toolchain/check/import_ref.h"
 #include "toolchain/check/inst.h"
 #include "toolchain/check/period_self.h"
+#include "toolchain/check/structural_conformance.h"
 #include "toolchain/check/subst.h"
 #include "toolchain/check/type.h"
 #include "toolchain/check/type_completion.h"
@@ -221,16 +222,17 @@ static auto FindAndDiagnoseImplLookupCycle(
   return false;
 }
 
-// Gets the set of `SpecificInterface`s that are required by a facet type
-// (as a constant value), and any special requirements.
-static auto GetRequiredImplsFromConstraint(
+// Identifies the facet type of a query (as a constant value) against the query
+// self, for its required `SpecificInterface`s and its structural requirements.
+// Returns `None` if the facet type can not be identified.
+static auto GetIdentifiedFacetTypeForQuery(
     Context& context, SemIR::LocId loc_id,
     SemIR::ConstantId query_self_const_id,
     SemIR::ConstantId query_facet_type_const_id, bool diagnose)
-    -> std::optional<llvm::ArrayRef<SemIR::IdentifiedFacetType::RequiredImpl>> {
+    -> SemIR::IdentifiedFacetTypeId {
   auto facet_type_inst_id =
       context.types().GetTypeInstIdForTypeConstantId(query_facet_type_const_id);
-  auto identified_id = RequireIdentifiedFacetType(
+  return RequireIdentifiedFacetType(
       context, loc_id, query_self_const_id, facet_type_inst_id,
       [&](auto& builder) {
         CARBON_DIAGNOSTIC(ImplLookupInUnidentifiedFacetType, Context,
@@ -239,10 +241,6 @@ static auto GetRequiredImplsFromConstraint(
                         facet_type_inst_id);
       },
       diagnose);
-  if (!identified_id.has_value()) {
-    return std::nullopt;
-  }
-  return context.identified_facet_types().Get(identified_id).required_impls();
 }
 
 static auto TreatImplAsFinal(Context& context, const SemIR::Impl& impl)
@@ -1007,13 +1005,36 @@ auto LookupImplWitness(Context& context, SemIR::LocId loc_id,
         query_facet_type_const_id));
   }
 
-  auto req_impls_from_constraint =
-      GetRequiredImplsFromConstraint(context, loc_id, query_self_const_id,
+  auto identified_id =
+      GetIdentifiedFacetTypeForQuery(context, loc_id, query_self_const_id,
                                      query_facet_type_const_id, diagnose);
-  if (!req_impls_from_constraint.has_value()) {
+  if (!identified_id.has_value()) {
     return SemIR::InstBlockIdOrError::MakeError();
   }
-  auto req_impls = *req_impls_from_constraint;
+
+  // Fork (SC-1, fork/structural/plan.md D-SC-3 / D-SC-5): the structural
+  // requirements of `template constraint`s are checked here, before the
+  // interface witnesses, so that a facet type with no interfaces is still
+  // satisfied only by a type with the required members. An unsatisfied
+  // requirement is plain lookup failure (`None`), explained by the conversion's
+  // diagnostic (D-SC-9); a template-phase self is deferred (D-SC-19).
+  if (!context.identified_facet_types()
+           .Get(identified_id)
+           .structural_requirements()
+           .empty()) {
+    switch (
+        CheckStructuralRequirements(context, loc_id, identified_id, diagnose)) {
+      case StructuralCheckResult::Satisfied:
+        break;
+      case StructuralCheckResult::Unsatisfied:
+        return SemIR::InstBlockId::None;
+      case StructuralCheckResult::Error:
+        return SemIR::InstBlockIdOrError::MakeError();
+    }
+  }
+
+  auto req_impls =
+      context.identified_facet_types().Get(identified_id).required_impls();
   if (req_impls.empty()) {
     return SemIR::InstBlockId::Empty;
   }

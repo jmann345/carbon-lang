@@ -246,11 +246,9 @@ static auto DiagnoseInvalidQualifiedNameAccess(
       .Emit();
 }
 
-// Returns whether the access is prohibited by the access modifiers.
-static auto IsAccessProhibited(Context& context,
-                               std::optional<AccessInfo> access_info,
-                               SemIR::AccessKind access_kind,
-                               bool is_parent_access) -> bool {
+auto IsAccessProhibited(Context& context, std::optional<AccessInfo> access_info,
+                        SemIR::AccessKind access_kind, bool is_parent_access)
+    -> bool {
   // Namespace members are always available within the current library;
   // filtering of private names happens in import, not here.
   if (!access_info || context.constant_values().InstIs<SemIR::Namespace>(
@@ -471,8 +469,8 @@ static auto DiagnoseMemberNameNotFound(
 auto LookupQualifiedName(Context& context, SemIR::LocId loc_id,
                          SemIR::NameId name_id,
                          llvm::ArrayRef<LookupScope> lookup_scopes,
-                         bool required, std::optional<AccessInfo> access_info)
-    -> LookupResult {
+                         bool required, std::optional<AccessInfo> access_info,
+                         bool diagnose) -> LookupResult {
   llvm::SmallVector<LookupScope> scopes(lookup_scopes);
 
   // TODO: Support reporting of multiple prohibited access.
@@ -545,11 +543,13 @@ auto LookupQualifiedName(Context& context, SemIR::LocId loc_id,
 
     // If this is our second lookup result, diagnose an ambiguity.
     if (result.scope_result.is_found()) {
-      CARBON_DIAGNOSTIC(
-          NameAmbiguousDueToExtend, Error,
-          "ambiguous use of name `{0}` found in multiple extended scopes",
-          SemIR::NameId);
-      context.emitter().Emit(loc_id, NameAmbiguousDueToExtend, name_id);
+      if (diagnose) {
+        CARBON_DIAGNOSTIC(
+            NameAmbiguousDueToExtend, Error,
+            "ambiguous use of name `{0}` found in multiple extended scopes",
+            SemIR::NameId);
+        context.emitter().Emit(loc_id, NameAmbiguousDueToExtend, name_id);
+      }
       // TODO: Add notes pointing to the scopes.
       return {.specific_id = SemIR::SpecificId::None,
               .scope_result = SemIR::ScopeLookupResult::MakeError()};
@@ -561,7 +561,7 @@ auto LookupQualifiedName(Context& context, SemIR::LocId loc_id,
 
   if ((!prohibited_accesses.empty() || required) &&
       !result.scope_result.is_found()) {
-    if (!has_error) {
+    if (!has_error && diagnose) {
       if (prohibited_accesses.empty()) {
         DiagnoseMemberNameNotFound(context, loc_id, name_id, lookup_scopes);
       } else {

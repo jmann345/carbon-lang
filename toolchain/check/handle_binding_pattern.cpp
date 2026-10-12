@@ -16,6 +16,7 @@
 #include "toolchain/check/pattern.h"
 #include "toolchain/check/period_self.h"
 #include "toolchain/check/return.h"
+#include "toolchain/check/structural_conformance.h"
 #include "toolchain/check/type.h"
 #include "toolchain/check/type_completion.h"
 #include "toolchain/check/unused.h"
@@ -316,6 +317,24 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
           .PopAndDiscardSoloNodeIdIf<Parse::NodeKind::TemplateBindingName>();
   // A non-generic template binding is diagnosed by the parser.
   is_template &= is_generic;
+
+  // Fork (SC-1, fork/structural/plan.md D-SC-8(i)): a `template constraint`
+  // can only constrain a `template` binding. A checked binding whose facet
+  // type mentions one, directly or through a named constraint's `require`
+  // block, is diagnosed here; the pattern keeps its type, so nothing cascades.
+  if (is_generic && !is_template) {
+    if (auto constraint_id = FacetTypeHasStructuralRequirements(
+            context, type_expr.type_component_id);
+        constraint_id.has_value()) {
+      CARBON_DIAGNOSTIC(
+          TemplateConstraintOnNonTemplateBinding, Error,
+          "template constraint `{0}` can only constrain a `template` binding",
+          SemIR::NameId);
+      context.emitter().Emit(
+          node_id, TemplateConstraintOnNonTemplateBinding,
+          context.named_constraints().Get(constraint_id).name_id);
+    }
+  }
 
   // The name in a runtime binding may be wrapped in `runtime`; discard it.
   context.node_stack()

@@ -5,8 +5,13 @@
 #ifndef CARBON_TOOLCHAIN_CHECK_MEMBER_ACCESS_H_
 #define CARBON_TOOLCHAIN_CHECK_MEMBER_ACCESS_H_
 
+#include <optional>
+
+#include "llvm/ADT/ArrayRef.h"
 #include "toolchain/check/context.h"
+#include "toolchain/check/name_lookup.h"
 #include "toolchain/sem_ir/ids.h"
+#include "toolchain/sem_ir/name_scope.h"
 
 namespace Carbon::Check {
 
@@ -16,6 +21,35 @@ namespace Carbon::Check {
 auto GetHighestAllowedAccess(Context& context,
                              SemIR::ConstantId name_scope_const_id)
     -> SemIR::AccessKind;
+
+// Fork (SC-1): what a member-name lookup through `LookupMemberNameInTypeScopes`
+// found, before any access decision is applied.
+struct MemberLookupInfo {
+  // Whether the name was found in one of the scopes (an error scope does not
+  // count as found).
+  bool found = false;
+  // The declared access of the found member.
+  SemIR::AccessKind access_kind = SemIR::AccessKind::Public;
+};
+
+// Fork (SC-1, fork/structural/plan.md D-SC-5(b)): the member-access lookup
+// path, exposed for the structural-conformance check. Performs a member name
+// lookup for `name_id` in `lookup_scopes` (the scopes of
+// `name_scope_const_id`), including impl lookup through an alias of an
+// associated entity and the on-demand import of C++ members, and returns the
+// `NameRef` for the member (or `ErrorInst` if nothing was found).
+//
+// `access_info` is the access context to check against, or `nullopt` to find
+// members regardless of their access (the caller then applies
+// `IsAccessProhibited` to `out_info->access_kind`). With `diagnose` false,
+// nothing is emitted for a missing name, a prohibited access or a missing
+// `impl`. `base_id` is only used when `lookup_in_type_of_base` is true.
+auto LookupMemberNameInTypeScopes(
+    Context& context, SemIR::LocId loc_id, SemIR::InstId base_id,
+    SemIR::NameId name_id, SemIR::ConstantId name_scope_const_id,
+    llvm::ArrayRef<LookupScope> lookup_scopes, bool lookup_in_type_of_base,
+    bool required, std::optional<AccessInfo> access_info, bool diagnose,
+    MemberLookupInfo* out_info = nullptr) -> SemIR::InstId;
 
 // Creates SemIR to perform a member access with base expression `base_id` and
 // member name `name_id`. When `required`, failing to find the name is a

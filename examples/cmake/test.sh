@@ -18,9 +18,14 @@
 # The toolchain directory (the unpacked tarball, the parent of bin/carbon)
 # comes from CARBON_TOOLCHAIN, else from CARBON (a path to bin/carbon; the
 # directory is its parent's parent, as the Makefile derives it), else from
-# `carbon` on PATH (resolved through its symlink). The build directory comes
+# `carbon` on PATH (resolved through its symlink). Every variant then gets
+# that one directory: the CMake builds take it as -DCARBON_TOOLCHAIN and the
+# Makefile as both CARBON_TOOLCHAIN= and CARBON=, so an exported CARBON
+# pointing elsewhere cannot leak into any build. The build directory comes
 # from --build-dir, else CARBON_BUILD_DIR, else a fresh temporary directory;
-# it is left in place on exit. Nothing is written inside examples/cmake/.
+# it is left in place on exit, and each run reconfigures its CMake variants
+# from scratch (`cmake --fresh`), so a reused directory never keeps an earlier
+# run's toolchain. Nothing is written inside examples/cmake/.
 #
 # stdout carries exactly the Unix Makefiles build's concatenated program
 # output (the programs run in the order hello, widget_main, mixed, or the
@@ -141,9 +146,9 @@ fail_from_log() {
 cmake_variant() {
   local name=$1 generator=$2
   local dir=$build_dir/$name log=$build_dir/$name.log
-  note "[$name] cmake -S $SRC_DIR -B $dir -G \"$generator\""
+  note "[$name] cmake --fresh -S $SRC_DIR -B $dir -G \"$generator\""
   : >"$log"
-  if ! cmake -S "$SRC_DIR" -B "$dir" -G "$generator" \
+  if ! cmake --fresh -S "$SRC_DIR" -B "$dir" -G "$generator" \
     "-DCARBON_TOOLCHAIN=$toolchain" >>"$log" 2>&1; then
     cat "$log" >&2
     note "[$name] configure failed"
@@ -194,15 +199,17 @@ fi
 if [ "$want_make" -eq 1 ]; then
   log=$build_dir/make.log
   : >"$log"
-  note "[make] make -C $SRC_DIR CARBON_TOOLCHAIN=$toolchain O=$build_dir/make"
-  if ! make -C "$SRC_DIR" "CARBON_TOOLCHAIN=$toolchain" "O=$build_dir/make" \
-    objects >>"$log" 2>&1; then
+  # CARBON= is pinned too: the Makefile derives it from CARBON_TOOLCHAIN, but
+  # a command-line value is the one setting nothing in the environment beats.
+  make_vars=("CARBON_TOOLCHAIN=$toolchain" "CARBON=$toolchain/bin/carbon"
+    "O=$build_dir/make")
+  note "[make] make -C $SRC_DIR ${make_vars[*]}"
+  if ! make -C "$SRC_DIR" "${make_vars[@]}" objects >>"$log" 2>&1; then
     cat "$log" >&2
     note "[make] compile failed"
     exit 2
   fi
-  if ! make -C "$SRC_DIR" "CARBON_TOOLCHAIN=$toolchain" "O=$build_dir/make" \
-    link >>"$log" 2>&1; then
+  if ! make -C "$SRC_DIR" "${make_vars[@]}" link >>"$log" 2>&1; then
     cat "$log" >&2
     note "[make] link failed"
     exit 3

@@ -36,6 +36,19 @@ if(CARBON_TOOLCHAIN)
     set(CMAKE_CXX_COMPILER "${CARBON_TOOLCHAIN}/lib/carbon/llvm/bin/clang++")
   endif()
 endif()
+# The compilers seeded above are not cache entries, so CMake's own
+# compiler-change detection never sees a changed CARBON_TOOLCHAIN: a build
+# directory keeps the toolchain of its first configure. Refuse a mismatch
+# rather than silently building with the old one.
+if(DEFINED _CARBON_TOOLCHAIN_CONFIGURED
+    AND NOT _CARBON_TOOLCHAIN_CONFIGURED STREQUAL CARBON_TOOLCHAIN)
+  message(FATAL_ERROR
+    "CARBON_TOOLCHAIN changed from '${_CARBON_TOOLCHAIN_CONFIGURED}' to "
+    "'${CARBON_TOOLCHAIN}'; the compilers are fixed at the first configure. "
+    "Use a fresh build directory (cmake --fresh ...).")
+endif()
+set(_CARBON_TOOLCHAIN_CONFIGURED "${CARBON_TOOLCHAIN}" CACHE INTERNAL
+  "The CARBON_TOOLCHAIN this build directory was configured with")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cmake")
 project(carbon_cmake_example LANGUAGES Carbon CXX)

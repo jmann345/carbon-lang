@@ -309,7 +309,7 @@ generated lines:
 ```text
 <tc>/bin/carbon compile $(Carbon_DEFINES) $(Carbon_INCLUDES) $(Carbon_FLAGS) --output-last-input-only --output=CMakeFiles/mixed.dir/mixed/main.carbon.o <src>/mixed/main.carbon
 <tc>/lib/carbon/llvm/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/twice.dir/mixed/twice.cpp.o -MF CMakeFiles/twice.dir/mixed/twice.cpp.o.d -o CMakeFiles/twice.dir/mixed/twice.cpp.o -c <src>/mixed/twice.cpp
-<tc>/bin/carbon link --output=mixed CMakeFiles/mixed.dir/mixed/main.carbon.o --  -L<runtimes cache>/libunwind/lib -L<runtimes cache>/libcxx/lib -L<runtimes cache>/clang_resource_dir/lib/x86_64-unknown-linux-gnu -L<tc>/lib/carbon/llvm/lib ... libtwice.a -lc++ -lm -lunwind -lc -lunwind
+<tc>/bin/carbon link --output=mixed CMakeFiles/mixed.dir/mixed/main.carbon.o --  -L<runtimes cache>/libunwind/lib -L<runtimes cache>/libcxx/lib -L<runtimes cache>/clang_resource_dir/lib/x86_64-unknown-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/13 libtwice.a -lc++ -lm -lunwind -lc -lunwind
 ```
 
 with `Carbon_INCLUDES = --clang-arg=-I<src>/mixed` in the object's
@@ -342,14 +342,17 @@ The explicit GNU make rules for the same three programs are the checked-in
 programs; `O=<dir>` moves the outputs, `clean` removes them):
 
 ```make
-# Toolchain directory: the unpacked tarball, the parent of bin/carbon.
+# Toolchain directory: the unpacked tarball, the parent of bin/carbon. An
+# explicit CARBON_TOOLCHAIN wins over an exported CARBON, so every tool comes
+# from one toolchain; `:=` still yields to a command-line `make CARBON=...`.
 ifeq ($(origin CARBON_TOOLCHAIN),undefined)
   ifeq ($(origin CARBON),undefined)
     $(error set CARBON_TOOLCHAIN=<toolchain directory> or CARBON=<path to bin/carbon>)
   endif
   CARBON_TOOLCHAIN := $(abspath $(dir $(CARBON))..)
+else
+  CARBON := $(CARBON_TOOLCHAIN)/bin/carbon
 endif
-CARBON ?= $(CARBON_TOOLCHAIN)/bin/carbon
 # CXX, CC and AR are GNU make builtins (origin "default"), so `?=` would
 # keep g++; `:=` still yields to a command-line `make CXX=...`.
 CXX := $(CARBON_TOOLCHAIN)/lib/carbon/llvm/bin/clang++
@@ -385,17 +388,23 @@ $(O)/mixed: $(O)/mixed.o $(O)/twice.o
 
 Rule by rule:
 
--   **The variable block.** `CARBON_TOOLCHAIN` is the toolchain directory;
-    when only `CARBON` (a path to `bin/carbon`) is given, the directory is
-    derived as its parent's parent, and with neither the Makefile stops at the
-    `$(error)`. `CXX`, `CC` and `AR` are GNU make builtins with origin
-    `default` (`make -p -f /dev/null` prints `CXX = g++`), which `?=` treats
-    as already set — so `CXX` takes `:=`, which a command-line `make CXX=...`
-    still overrides. With `CXX ?=`, `twice.o` is built by `g++` and the mixed
-    link fails with `ld.lld: error: undefined symbol: std::cout`.
+-   **The variable block.** `CARBON_TOOLCHAIN` is the toolchain directory; when
+    only `CARBON` (a path to `bin/carbon`) is given, the directory is derived as
+    its parent's parent, and with neither the Makefile stops at the `$(error)`.
+    When `CARBON_TOOLCHAIN` is given, `CARBON` is set from it with `:=` rather
+    than `?=`: an exported `CARBON` (which "Finding the compiler" above
+    recommends for CMake) has origin `environment`, which `?=` treats as already
+    set, and the recipes would then run one toolchain's driver with another's
+    `clang++` and Core sources. A command-line `make CARBON=...` still overrides
+    the `:=`. `CXX`, `CC` and `AR` are GNU make builtins with origin `default` (`make
+    -p -f /dev/null` prints `CXX = g++`), which `?=` treats as already set — so
+    `CXX` takes `:=`, which a command-line `make CXX=...` still overrides. With
+    `CXX ?=`, `twice.o` is built by `g++` and the mixed link fails with `ld.lld:
+    error: undefined symbol: std::cout`.
 -   **`$(O)`** is the output directory. Every object rule lists it as an
     order-only prerequisite (`| $(O)`), so a fresh `O=` works on a clean tree
-    and the source tree stays clean.
+    and keeps the source tree clean; the default `build-make/` sits inside
+    `examples/cmake` and is git-ignored.
 -   **`io.impl.o`** compiles both files of Core's `io` library with
     `--no-include-carbon-core` and keeps the last input's object, the impl's
     — the one with the bodies of `Core.PrintStr` and `Core.EOF`.
@@ -430,8 +439,10 @@ carbon build --output=widget_main widget/widget.carbon widget/widget.impl.carbon
 ```
 
 Two caveats, both filed as W-133: the help text lists `.cpp` inputs, but a
-`.cpp` positional is parsed as Carbon (`unrecognized declaration introducer`),
-and C++ objects go after a second `--`; and the short output flag works only as
+`.cpp` positional is rejected (`error: file extension of `.carbon` required
+for api`) and then parsed as Carbon (`unrecognized declaration introducer` at
+its first declaration), and C++ objects go after a second `--`; and the short
+output flag works only as
 `-o=FILE` (`-o FILE` fails with "requires a value"). It produces no object a
 library target can own and tracks no dependencies, so the explicit rules above
 are the Make shape for anything beyond one program.

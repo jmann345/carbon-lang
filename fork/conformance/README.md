@@ -200,6 +200,11 @@ The contract, enforced by `execute_program`:
     the runner, resolved) and `CARBON_BUILD_DIR` (`<out>/build/<name>`, a
     private directory the script may fill). The script runs under the link
     timeout, because its first `carbon link` builds the runtimes on demand.
+    The runner only creates `CARBON_BUILD_DIR`; it persists across runs
+    against the same `--out`, so the script owns the reuse rule: every build
+    it makes must come from the toolchain of this run, never from a cache left
+    by an earlier one (`examples/cmake/test.sh` configures its CMake variants
+    with `--fresh` and pins `CARBON=` for its Makefile variant).
 -   `EXPECT-EXIT` applies to the script's exit code and `EXPECT-STDOUT` to its
     stdout, unchanged. The script must therefore print only what the programs
     it builds print, with every configure and build message on stderr.

@@ -11,14 +11,17 @@
 #   make CARBON_TOOLCHAIN=<toolchain directory> [O=<build directory>] all
 #   make CARBON_TOOLCHAIN=<toolchain directory> run
 
-# Toolchain directory: the unpacked tarball, the parent of bin/carbon.
+# Toolchain directory: the unpacked tarball, the parent of bin/carbon. An
+# explicit CARBON_TOOLCHAIN wins over an exported CARBON, so every tool comes
+# from one toolchain; `:=` still yields to a command-line `make CARBON=...`.
 ifeq ($(origin CARBON_TOOLCHAIN),undefined)
   ifeq ($(origin CARBON),undefined)
     $(error set CARBON_TOOLCHAIN=<toolchain directory> or CARBON=<path to bin/carbon>)
   endif
   CARBON_TOOLCHAIN := $(abspath $(dir $(CARBON))..)
+else
+  CARBON := $(CARBON_TOOLCHAIN)/bin/carbon
 endif
-CARBON ?= $(CARBON_TOOLCHAIN)/bin/carbon
 # CXX, CC and AR are GNU make builtins (origin "default"), so `?=` would
 # keep g++; `:=` still yields to a command-line `make CXX=...`.
 CXX := $(CARBON_TOOLCHAIN)/lib/carbon/llvm/bin/clang++

@@ -2313,12 +2313,12 @@
     {
       "id": "W-133",
       "kind": "todo-stub",
-      "title": "CM-1 residue: driver help-text drift -- `carbon build` claims `.cpp` inputs but parses them as Carbon and its short `-o` works only as `-o=FILE`; `carbon help link` says EXTRA_CLANG_LINK_ARGS may carry object files intermingled with flags but `-- a.o b.o -lc++` fails",
+      "title": "CM-1 residue: driver help-text drift -- `carbon build` claims `.cpp` inputs but rejects them (`file extension of `.carbon` required for api`, then parsed as Carbon) and its short `-o` works only as `-o=FILE`; `carbon help link` says EXTRA_CLANG_LINK_ARGS may carry object files intermingled with flags but `-- a.o b.o -lc++` fails",
       "subsystem": "toolchain/driver (build_subcommand.cpp, link_driver.cpp, help text)",
       "size": "S",
       "bullet": "Project: CMake build-system integration plus Make documentation",
       "evidence": [
-        "fork/cmake/plan.md §0.1 row 8 (measured on the nightly: `-o FILE` fails with 'requires a value', `-o=FILE` and `--output=FILE` work; a `.cpp` positional is 'unrecognized declaration introducer'; C++ objects go after the second `--`)",
+        "fork/cmake/plan.md §0.1 row 8 (measured on the nightly: `-o FILE` fails with 'requires a value', `-o=FILE` and `--output=FILE` work; a `.cpp` positional prints 'file extension of `.carbon` required for api' and is then parsed as Carbon, 'unrecognized declaration introducer' at its first declaration -- re-measured at the implementation review fold, fork/cmake/plan.md Landed notes F3; C++ objects go after the second `--`)",
         "fork/cmake/plan.md D-CM-16 and review fold F10 (measured: `carbon link --output=x -- a.o b.o -lc++` -> `error: no such file or directory: '-lc++'`, rc 1; the positional form `carbon link --output=x a.o b.o -- -lc++` links)",
         "docs/guides/build_systems.md (The `carbon build` one-liner; the objects-before-`--` warning in The rules)",
         "examples/cmake/Makefile and cmake/CMakeCarbonInformation.cmake (every rule keeps objects positional before `--`)"

@@ -3122,8 +3122,9 @@ cmake/ or examples/cmake/ directory, no build-systems guide; its thirteen
 `cmake` mentions are Bazel-internal), so the module and helper names
 (`CMAKE_Carbon_*`, `carbon_add_library`, `carbon_add_executable`,
 `carbon_add_core_library`, `Carbon::core_io`) are fork-local and rename if
-upstream ships its own; README.md's one-line pointer is the only
-upstream-owned text touched; the `BUILD-SCRIPT` directive is
+upstream ships its own; README.md's one-line pointer and the
+`/examples/cmake/build-make/` line in .gitignore (implementation review fold
+F5) are the only upstream-owned text touched; the `BUILD-SCRIPT` directive is
 fork-harness-local. If upstream's driver gains multi-output or separate
 compilation (compile_subcommand.cpp's TODO), D-CM-6's sibling wiring is
 deleted; if `carbon link` learns the Core objects (W-003) or shared libraries

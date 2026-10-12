@@ -575,7 +575,9 @@ order is immaterial — Check orders units by import dependency, runner.py:35-40
     review fold: rev 2 F1, F3, F7): `CARBON_TOOLCHAIN` is the toolchain
     directory (§1 terms); when it is not given it is derived from `CARBON` (`$(abspath
     $(dir $(CARBON))..)`), and when neither is given the Makefile stops with
-    `$(error ...)`; `CARBON ?= $(CARBON_TOOLCHAIN)/bin/carbon`; `CXX :=
+    `$(error ...)`; `CARBON := $(CARBON_TOOLCHAIN)/bin/carbon` in the `else`
+    branch (implementation review fold, CM-1 F1: `?=` let an exported `CARBON`
+    override the explicit directory); `CXX :=
     $(CARBON_TOOLCHAIN)/lib/carbon/llvm/bin/clang++` — `:=`, never `?=`, because
     `CXX`, `CC` and `AR` are GNU make builtins (origin `default`; `make -p -f
     /dev/null` prints `CXX = g++`), so a `?=` never assigns them and the mixed
@@ -583,20 +585,23 @@ order is immaterial — Check orders units by import dependency, runner.py:35-40
     text reproduced exactly that); a command-line `make CXX=...` still overrides
     a `:=`; `CORE := $(CARBON_TOOLCHAIN)/lib/carbon/core`; `O ?= build-make`
     (all outputs under `$(O)`, which the `$(O)` rule creates and every object
-    rule lists as an order-only prerequisite, so the source tree stays clean and
-    a fresh `O=` works on a clean tree); targets `all` (the three programs),
-    `objects`, `link`, `run`, `clean`; the variable block and the explicit
-    rules, verbatim (measured at the rev 2 fold: §4.5):
+    rule lists as an order-only prerequisite, so a fresh `O=` keeps the source
+    tree clean; the default `build-make/` is git-ignored); targets `all` (the
+    three programs), `objects`, `link`, `run`, `clean`; the variable block and
+    the explicit rules, verbatim (measured at the rev 2 fold: §4.5):
 
     ```make
-    # Toolchain directory: the unpacked tarball, the parent of bin/carbon.
+    # Toolchain directory: the unpacked tarball, the parent of bin/carbon. An
+    # explicit CARBON_TOOLCHAIN wins over an exported CARBON, so every tool comes
+    # from one toolchain; `:=` still yields to a command-line `make CARBON=...`.
     ifeq ($(origin CARBON_TOOLCHAIN),undefined)
       ifeq ($(origin CARBON),undefined)
         $(error set CARBON_TOOLCHAIN=<toolchain directory> or CARBON=<path to bin/carbon>)
       endif
       CARBON_TOOLCHAIN := $(abspath $(dir $(CARBON))..)
+    else
+      CARBON := $(CARBON_TOOLCHAIN)/bin/carbon
     endif
-    CARBON ?= $(CARBON_TOOLCHAIN)/bin/carbon
     # CXX, CC and AR are GNU make builtins (origin "default"), so `?=` would
     # keep g++; `:=` still yields to a command-line `make CXX=...`.
     CXX := $(CARBON_TOOLCHAIN)/lib/carbon/llvm/bin/clang++
@@ -1284,5 +1289,54 @@ Deviations from the plan text, each small:
     feature); §4.4's "unchanged" holds for the fork-built toolchain of record.
 <!-- google-doc-style-resume -->
 
-Outstanding: the §8.7 implementation review; the hosted conformance run R9
-requires (no dispatch date, Actions disabled); W-128's install step.
+### Landed notes (CM-1): implementation review fold (2026-10-12)
+
+The §8.7 implementation review returned APPROVE-WITH-AMENDMENTS with five
+findings; each is folded below with its verdict, re-measured on the upstream
+nightly 2026.10.12 with CMake 3.28.3, GNU make 4.3 and ninja.
+
+<!-- google-doc-style-ignore -->
+-   **F1 (MAJOR, fixed).** An exported `CARBON` overrode an explicit
+    `CARBON_TOOLCHAIN` in the Makefile (`CARBON ?=` never assigns over origin
+    `environment`), and test.sh's make variant inherited it. The Makefile now
+    sets `CARBON := $(CARBON_TOOLCHAIN)/bin/carbon` in the `else` branch of
+    the `origin` test (a command-line `make CARBON=...` still wins); test.sh
+    passes `CARBON=$toolchain/bin/carbon` beside `CARBON_TOOLCHAIN=` and says
+    so in its header; the guide's verbatim block, its "variable block" bullet
+    and §2.B.5 above mirror the change. Proof: `CARBON=/nonexistent/bin/carbon`
+    exported with `CARBON_TOOLCHAIN` set, `test.sh` rc 0 (rc 2 before) and
+    `make CARBON_TOOLCHAIN=<tc> O=<new> all` builds.
+-   **F2 (MAJOR, fixed).** A reused build directory kept its first toolchain
+    (the seeded compilers are not cache entries, so CMake's compiler-change
+    detection never fires). test.sh now configures with `cmake --fresh` (CMake
+    >= 3.24; the floor is 3.28) and says so in its header; examples/cmake's
+    `CMakeLists.txt` caches `_CARBON_TOOLCHAIN_CONFIGURED` (INTERNAL) and stops
+    with `FATAL_ERROR` ("use a fresh build directory") when `CARBON_TOOLCHAIN`
+    differs from it; the examples README and the conformance README's
+    BUILD-SCRIPT contract carry the reuse rule (the runner only creates
+    `CARBON_BUILD_DIR`; the script owns reuse). Proof: a second configure of
+    the same directory with a different `-DCARBON_TOOLCHAIN` stops at the
+    guard; test.sh run twice into one `--build-dir` rc 0 both times.
+-   **F3 (MINOR, fixed with a correction).** The `.cpp`-input diagnostic was
+    quoted incompletely, not wrongly: on this nightly `carbon build
+    --output=x mixed/twice.cpp` prints `error: file extension of `.carbon`
+    required for api` first and then `unrecognized declaration introducer` at
+    each declaration (twice.cpp:9:1, :11:1); the one-line
+    `int f() { return 1; }` file prints the extension error and then the
+    introducer error at 1:1 — the review's "prints only the extension error"
+    did not reproduce. The guide and W-133 now quote both messages in that
+    order; §0.1 row 8 stands as the measured record, corrected here.
+-   **F4 (MINOR, fixed).** The guide's quoted mixed link line named
+    `-L<tc>/lib/carbon/llvm/lib`, which the generated link.txt does not carry;
+    replaced with the measured `-L/usr/lib/gcc/x86_64-linux-gnu/13` and the
+    elision dropped, so the line matches `cmake --build -v`.
+-   **F5 (MINOR, fixed).** The documented `make ... run` left an untracked
+    `examples/cmake/build-make/`. `.gitignore` gains `/examples/cmake/build-make/`
+    (one line, upstream-owned text; disclosed beside README.md's pointer in
+    the decision log's V-3a paragraph, so D-CM-13's "only upstream-owned file"
+    is now two files), §2.B.5's claim reads "a fresh `O=` keeps the source
+    tree clean", and the examples README says the default is git-ignored.
+<!-- google-doc-style-resume -->
+
+Outstanding: the hosted conformance run R9 requires (no dispatch date,
+Actions disabled); W-128's install step.

@@ -23,14 +23,18 @@ Ninja and the Makefile agree byte for byte on the five expected lines; runner
 bazel-requiring hooks skipped). Gap rows 84 and 87 → DONE, header 32 DONE /
 20 PARTIAL / 3 MISSING / 1 DESIGN-ONLY, EXPECTED scoreboard 130 / 0 / 20 over
 150, 49/56 — stated as expected, NOT OF RECORD: the hosted run R9 requires is
-pending with no dispatch date. Three commits on claude/carbon-fork-0-1-cmake
-off trunk 0bdce60a5 (a88077854, 10af323a2 and the discharge commit; the plan
-is fork/cmake/plan.md rev 2, reviewed once, APPROVE-WITH-AMENDMENTS folded);
-ledger W-060/W-061 DISCHARGED, W-128..W-133 filed on the assumption that PR 51
-takes W-126/W-127. NEXT for CM-1: push the branch, open its PR and HOLD it
-like PR 51 ("awaiting hosted conformance + gate (Actions disabled)"); the
-implementation review of plan §8.7 (it runs the local arbiter itself); then,
-once Actions returns, the dispatch list conformance → gate → merge (a
+pending with no dispatch date. Four commits on claude/carbon-fork-0-1-cmake
+off trunk 0bdce60a5 (a88077854, 10af323a2, the discharge commit 9ec8f1de4 and
+the review-fold commit; the plan is fork/cmake/plan.md rev 2, reviewed once,
+APPROVE-WITH-AMENDMENTS folded; the §8.7 implementation review returned
+APPROVE-WITH-AMENDMENTS, five findings folded in plan "Landed notes (CM-1)":
+CARBON_TOOLCHAIN now beats an exported CARBON in the Makefile and test.sh,
+test.sh configures with `cmake --fresh` and the example refuses a toolchain
+change in a reused build directory, three record corrections); ledger
+W-060/W-061 DISCHARGED, W-128..W-133 filed on the assumption that PR 51 takes
+W-126/W-127. NEXT for CM-1: push the branch, open its PR and HOLD it like PR
+51 ("awaiting hosted conformance + gate (Actions disabled)"); then, once
+Actions returns, the dispatch list conformance → gate → merge (a
 `cmake: command not found` log is D-CM-14's Option B trigger: the rows revert
 to PARTIAL with the SKIP naming the script). The scoreboard line below is
 untouched — only a hosted run regenerates scoreboard.json. The owner's
@@ -407,7 +411,7 @@ code). Next check: Monday 14:00 UTC.
 | Branch | State |
 | --- | --- |
 | `claude/carbon-fork-0-1-ua2` | HELD OPEN as PR #51 — UA-2 reconciliation at 05a5c30f7, fill + of-record conformance 37413300832 (131/0/19 over 150) done, gate impossible (Actions disabled); merge when a gate runs. |
-| `claude/carbon-fork-0-1-cmake` | LANDED LOCALLY, NOT PUSHED — CM-1 (W-060/W-061): cmake/ language modules, examples/cmake + test.sh + Makefile, docs/guides/build_systems.md, runner BUILD-SCRIPT channel; three commits off trunk 0bdce60a5 (a88077854, 10af323a2, the discharge commit); local arbiter and `--self-test` green on nightly 2026.10.12; to be pushed, PR opened and HELD like PR 51 (conformance → gate → merge once Actions returns); expected 130/0/20 over 150, 49/56, not of record. |
+| `claude/carbon-fork-0-1-cmake` | LANDED LOCALLY, NOT PUSHED — CM-1 (W-060/W-061): cmake/ language modules, examples/cmake + test.sh + Makefile, docs/guides/build_systems.md, runner BUILD-SCRIPT channel; four commits off trunk 0bdce60a5 (a88077854, 10af323a2, the discharge commit 9ec8f1de4, the implementation-review fold); local arbiter and `--self-test` green on nightly 2026.10.12; to be pushed, PR opened and HELD like PR 51 (conformance → gate → merge once Actions returns); expected 130/0/20 over 150, 49/56, not of record. |
 | `claude/carbon-fork-0-1-sc` | PLAN ONLY — SC-1 template structural conformance, plan rev 2 signed off (e612aebc6); implementation paused until an arbiter exists. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |

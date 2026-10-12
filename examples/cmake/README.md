@@ -41,7 +41,10 @@ build/hello && build/widget_main && build/mixed
 
 Add `-G Ninja` to the first command for the Ninja generator. Without
 `CARBON_TOOLCHAIN`, the `CMakeLists.txt` resolves `carbon` from `PATH`; a
-user-set `CMAKE_Carbon_COMPILER` or `CMAKE_CXX_COMPILER` always wins.
+user-set `CMAKE_Carbon_COMPILER` or `CMAKE_CXX_COMPILER` always wins. A build
+directory keeps the toolchain of its first configure: re-configuring it with a
+different `CARBON_TOOLCHAIN` stops with a message, so switch toolchains with
+`cmake --fresh` or a new build directory.
 
 With the Makefile, from this directory:
 
@@ -49,9 +52,11 @@ With the Makefile, from this directory:
 make CARBON_TOOLCHAIN=/path/to/carbon_toolchain-<version> run
 ```
 
-Objects and programs go under `build-make/` (override with `O=<dir>`); `make
-clean` removes them. The Makefile needs either `CARBON_TOOLCHAIN` or `CARBON`
-(a path to `bin/carbon`) and stops with a message otherwise.
+Objects and programs go under `build-make/`, which is git-ignored (override
+with `O=<dir>`); `make clean` removes them. The Makefile needs either
+`CARBON_TOOLCHAIN` or `CARBON` (a path to `bin/carbon`) and stops with a
+message otherwise; when both are set, `CARBON_TOOLCHAIN` wins, so an exported
+`CARBON` from another toolchain cannot mix into the build.
 
 ## test.sh
 
@@ -61,10 +66,13 @@ Ninja generator when `ninja` is on `PATH`, and with the Makefile; runs the
 selected programs from each build; requires the outputs to be byte-identical;
 and prints the Unix Makefiles build's program output on stdout, with every
 other message on stderr. The toolchain comes from `CARBON_TOOLCHAIN`, else
-`CARBON`, else `carbon` on `PATH`; the build directory from `--build-dir`, else
-`CARBON_BUILD_DIR`, else a fresh temporary directory. Exit codes: 0 success, 2
-configure or compile failed, 3 link failed, 4 a program failed, 5 the variants
-disagree, 64 usage, 66 toolchain not found.
+`CARBON`, else `carbon` on `PATH`, and that one directory is passed to every
+variant (the Makefile gets `CARBON=` as well as `CARBON_TOOLCHAIN=`); the build
+directory from `--build-dir`, else `CARBON_BUILD_DIR`, else a fresh temporary
+directory. A reused build directory is safe: each run configures its CMake
+variants with `--fresh`, and the Makefile variant has no cache. Exit codes: 0
+success, 2 configure or compile failed, 3 link failed, 4 a program failed, 5
+the variants disagree, 64 usage, 66 toolchain not found.
 
 ## Limits in this release
 

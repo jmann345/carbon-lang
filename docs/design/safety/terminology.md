@@ -35,6 +35,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         -   [_Type safety_](#type-safety)
         -   [_Initialization safety_](#initialization-safety)
         -   [_Data-race safety_](#data-race-safety)
+        -   [_Mutation safety_](#mutation-safety)
     -   [_Memory safety bug_](#memory-safety-bug)
     -   [_Memory-safe platform_ or _environment_](#memory-safe-platform-or-environment)
     -   [_Memory-safe language_](#memory-safe-language)
@@ -175,6 +176,22 @@ uninitialized data.
 #### _Data-race safety_
 
 Memory writes are synchronized with reads or writes on other threads.
+
+(fork amendment 2026-10-12, F-013: the cross-thread companion of
+[mutation safety](#mutation-safety), enforced by the same facets, not a
+sub-case of it)
+
+#### _Mutation safety_
+
+A mutation of an object never invalidates a live access path to that object or
+its sub-objects: iterator and reference invalidation, and a change of a sum
+type's alternative under a payload reference, are the mutation safety bugs.
+This is an access property, enforced by the aliasing discipline of
+exclusive-XOR-shared access plus the no-invalidation rule (fork decision F-013,
+D-SAFE-1; [mutation safety design](mutation_safety.md)). [Data-race
+safety](#data-race-safety) is its cross-thread companion, enforced by the same
+facets, not a sub-case: two threads writing one `Plain` `i32` race without
+invalidating anything.
 
 ### _Memory safety bug_
 

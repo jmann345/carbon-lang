@@ -106,6 +106,16 @@ may be less critical. Instead, we expect parameterized types and functions may
 use a mixture of checked and template generic parameters based on where they are
 constrained.
 
-However, if there are still use cases, we would like to explore applying the
-interface constraints of the checked-generics system directly to template
-parameters rather than create a new constraint system.
+Fork amendment (2026-10-12, F-010 / SC-1): template parameters may be
+constrained by interfaces and named constraints (nominally, exactly as checked
+parameters are) and additionally by _template constraints_ — structural member
+requirements, `require` validity blocks, and boolean predicates. The full
+design is [Template constraints](generics/template_constraints.md), fixed by
+fork decision
+[F-010](/fork/decision-log.md);
+member requirements are implemented (a `template constraint` whose body declares
+`fn Get(self) -> i32;`, constraining a `[template T: HasGet]` binding); validity
+blocks and predicates are the SC-B2 workstream. In 0.1, interfaces are not
+satisfied structurally in any phase; whether that rule is permanent or
+0.1-scoped is open sub-fork
+[F-010j](generics/template_constraints.md#open-sub-forks).

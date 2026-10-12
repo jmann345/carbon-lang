@@ -287,7 +287,7 @@ fails if this table is stale):
 | `functions/overloading_native.carbon` | Functions: function overloading (Carbon-native) | run |
 | `generics/checked_generics.carbon` | Generics: Checked generics | run |
 | `generics/generic_class.carbon` | Generics: generic functions and types | run |
-| `generics/structural_conformance.carbon` | Generics: Template-style structural conformance to nominal constraints | SKIP |
+| `generics/structural_conformance.carbon` | Generics: Template-style structural conformance to nominal constraints | run |
 | `generics/templates_dependent_member.carbon` | Generics: Integrated templates | SKIP |
 | `generics/templates_type_param.carbon` | Generics: Integrated templates | run |
 | `generics/templates_value_param.carbon` | Generics: Integrated templates | run |
@@ -321,6 +321,7 @@ fails if this table is stale):
 | `interop/cpp_range_member_begin_end_iterate.carbon` | Functions: C++ interop — open overload sets as extension points (swap etc.) | run |
 | `interop/cpp_span_roundtrip_diff.carbon` | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | differential |
 | `interop/cpp_span_view.carbon` | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | run |
+| `interop/cpp_structural_conformance.carbon` | Generics: Template-style structural conformance to nominal constraints | run |
 | `interop/cpp_template_builtins.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/cpp_template_carbon_class.carbon` | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | run |
 | `interop/cpp_template_on_carbon_generic.carbon` | Type system: C++ interop — importing C++ types / exporting Carbon types | SKIP |

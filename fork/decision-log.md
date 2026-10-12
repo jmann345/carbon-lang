@@ -1361,6 +1361,32 @@ boolean predicates by way of probe-mode evaluation; two-way C++20 concept
 mapping; adopts F-009's declaration-order/no-subsumption rule for
 constrained candidates. Rejected: Go-style implicit satisfaction,
 predicates-only. Per fork/design-sprint/structural-conformance.md.
+_SC-1 landing note (2026-10-12):_ the member-requirement half (B1) landed on
+claude/carbon-fork-0-1-sc — `template constraint` as a declaration modifier,
+method and associated-function requirements checked structurally at the
+facet-conversion chokepoint, C++ classes through their imported methods, the
+design page docs/design/generics/template_constraints.md ported — with NO
+fill, gate or conformance run yet (Actions disabled; the nightly lacks the
+feature). Decisions D-SC-1..19, the two plan-review folds, the three
+refinements and the residues W-134..W-143 are in the "SC-1: template
+structural conformance (F-010)" entry below (2026-10-12). Carried here
+verbatim because R29(a) would otherwise have auto-adopted the opposite:
+deferring `var` field requirements REVERSES the recorded F-010b recommendation
+("keep them, per proposal 2200" — stranded page :245-248 and :798-800;
+p002200:352-354 admits "function and field declarations"; the design record's
+Option B sketch :317 carries `var count: i32;`). Reason: a field match needs
+its own type-equality path (`FieldDecl`, not the D-SC-5(d) function matcher),
+nothing in the conformance arbiter needs it, and SC-B2's validity blocks are
+the natural second consumer; veto-able after the fact; residue filed (W-134).
+Deferring associated-constant requirements (`let X: type;`) NARROWS the landed
+p000818 text itself (details.md:1073-1075 enumerates "Method, associated
+constant, and associated function requirements"), on an implementation-cost
+ground: the interface form routes through `AssociatedConstantIntroducer` in
+`InterfaceContext` only (handle_decl_scope_loop.cpp:160-162), so there is no
+parse for it in a constraint body today and a `let X: type;` there is a plain
+`let` without initializer; also veto-able, residue filed (W-135). Validity
+blocks, predicates and `where require` are SC-B2 (W-028); concept mapping is
+SC-B3 (W-029); both lose their W-027 edge.
 
 ### F-011: Combined match control flow — **`if (let ...)` + `let ... else`** (2026-07-19)
 
@@ -3742,6 +3768,409 @@ may grow a list shape of its own — on merge, keep whichever delivers every
 member and drop the other), and `overload_index` on a generated thunk
 (upstream's `overloaded` placeholder, when it lands, will key its own
 thunks somehow; the fork's rule is "the thunk mangles as its member does").
+Veto-able.
+
+### SC-1: template structural conformance (F-010) (2026-10-12)
+
+Milestone bullet "Generics: Template-style structural conformance to nominal
+constraints" (fork/gap-analysis.md row 55) moves MISSING → PARTIAL — the
+member-requirement half of F-010 (fork/design-sprint/structural-conformance.md
+option B, stage B1; ledger item W-027) — and the header 30 DONE / 21 PARTIAL /
+4 MISSING / 1 DESIGN-ONLY → 30 / 22 / 3 / 1, against an EXPECTED scoreboard of
+130 PASS / 0 FAIL / 21 SKIP over 151 programs, 49/56 bullets (trunk's floor of
+record 128 / 0 / 22 over 150, 48/56, run 37402970811, plus one un-SKIP and one
+new program). Stated as expected, not of record, in the strongest sense this
+log has yet needed: NO FILL HAS RUN. GitHub Actions on the repository is
+disabled, and the upstream nightly the container holds does not implement
+`template constraint` (the feature is fork-only), so every SC-1 golden carries
+`AUTOUPDATE` and no CHECK lines, the two conformance programs have never been
+compiled, and R9's scoreboard record is outstanding with no dispatch date; the
+gap row and the ledger say so in those words. Landed on
+claude/carbon-fork-0-1-sc off trunk 8068151ed in the three commits
+fork/structural/plan.md §3 fixed — 33b22ecbd (SC-1a, parse + sem_ir + the
+declaration side), 1f207c892 (SC-1b, satisfaction at the chokepoint, every
+§4.B golden, the §4.C interop golden) and the SC-1c commit that carries this
+entry (the interop look-through, the docs port, both conformance programs, the
+discharge) — plus two fixer commits, 0a1339807 (commit 1's review: 3 MINOR)
+and 098ba3d64 (commit 2's review: 1 MAJOR, 6 MINOR), after the plan's own two
+commits d9918a542 (rev 1) and e612aebc6 (rev 2, the fold of reviews A and B,
+sign-off). The branch is to be pushed and its PR HELD "awaiting the fork
+toolchain's autoupdate + gate + conformance", with the dispatch list in
+ORCHESTRATION's Branches row. Design authority was not reopened: F-010 as
+decided on 2026-07-19 and the stranded page's semantics stand; every decision
+below is an R29(a) auto-adopt recorded for after-the-fact veto, each with its
+break condition in the plan.
+
+WHAT LANDED, by mechanism. (1) SURFACE (parse/node_kind.def:437,
+check/keyword_modifier_set.h:52 and :153). `template` is a declaration MODIFIER
+accepted only on `constraint`: one x-macro line
+(`CARBON_PARSE_NODE_KIND_TOKEN_MODIFIER(Template)`), every parser and checker
+consumer generated; `X(Template)` in the "at most one of" Decl group AND `|
+Template` in the explicit `KeywordModifierSet::Decl` union (the
+`CARBON_KEYWORD_MODIFIER_SET_IN_GROUP` static_assert and `HandleModifier`'s
+ordering arm both need it — review fold A4 / B1). Every other declaration
+rejects it through its existing `LimitModifiersOnDecl`
+(`ModifierNotAllowedOnDeclaration`); `template abstract constraint` is
+`ModifierNotAllowedWith`. (2) ENTITY (sem_ir/named_constraint.h:38, :49).
+`NamedConstraint::is_template` and `structural_members_id` (`None` for a plain
+constraint or one still being defined; `Empty` or the requirement `FunctionDecl`
+ids in declaration order once complete), printed only when set so the two
+raw_sem_ir goldens that print named constraints stay byte-identical;
+`MergeDefinition` copies the block and leaves the flag alone. (3) DECLARATION
+(check/handle_named_constraint.cpp:53-159, handle_function.cpp:573-585 and
+:1212-1239, handle_let_and_var.cpp:69, import_ref.cpp:1573 and :3708).
+`BuildNamedConstraintDecl` limits modifiers to `Access | Template`, sets the
+flag before `TryMergeRedecl`, diagnoses a disagreeing redeclaration
+(`NamedConstraintRedeclTemplateMismatch` + `RedeclPrevDecl`, emitted from
+merge.cpp because `RedeclPrevDecl` is private there) and then RECOVERS AS
+TEMPLATE (commit-1 review finding 1: the permissive mode, no member diagnostic
+cascades); the stored flag reaches `AddSelfSymbolicBindingToScope`, so `Self` is
+a template-phase binding (D-SC-10). At `}`, `CollectStructuralMembers` scans
+`body_block_with_self_id` for `FunctionDecl`s whose parent scope is the
+with-self scope and whose generic has no bindings of its own (A12) — no
+collector stack. `MaybeAddToNameLookup` emits `FunctionInNonTemplateConstraint`
+for a `fn` in a plain constraint (D-SC-18, the upstream TODO retired); a
+definition, a parameterized requirement, a `var` and a `let` in a template
+constraint are the four `SemanticsTodo`s of D-SC-2. Import copies the flag in
+the first-phase entity and the members block inside the with-self resolver's
+pushed block (`AddStructuralMembers`, kind-switched after commit-1 finding 3).
+(4) IDENTIFICATION (sem_ir/identified_facet_type.h:57, :79;
+check/type_completion.cpp:1108, :1168, :1230). `IdentifiedFacetType` gains
+`StructuralRequirement {self_facet_value, SpecificNamedConstraint}` and
+`structural_requirements()`, filled by `IdentifyFacetType`'s three
+named-constraint loops whenever the constraint `is_template`; an interface's
+`require` block never contributes (D-SC-6, B7). (5) SATISFACTION
+(check/structural_conformance.{h,cpp}, new; impl_lookup.cpp:228 and :1009-1026).
+`LookupImplWitness` runs `CheckStructuralRequirements` right after
+identification and BEFORE the `req_impls.empty()` → `Empty` return, so a pure
+template constraint is satisfied only by a type with the required members; no
+witness is produced, the facet value's list holds interface witnesses only
+(D-SC-4), lowering untouched. The check, one function for check and explain mode
+with a `DiagnosticBuilder*` that is null in check mode: the self is
+canonicalized as the interface loop does; a template-phase self is DEFERRED
+(`SelfIsTemplatePhase`, D-SC-19); a checked-symbolic self is satisfied only when
+its own facet type lists the same requirement (the D-SC-6 cascade guard) and is
+otherwise unsatisfied with `StructuralRequirementNeedsConcreteType`; a concrete
+self must be complete (`RequireCompleteType` with the
+`StructuralRequirementIncompleteType` context under `diagnose`,
+`TryToCompleteType` otherwise — R-7) and its constraint's members block must
+exist (A11); then each requirement `fn`, in declaration order, is looked up IN
+THE TYPE through the member-access path (`FindStructuralMember` →
+`LookupMemberNameInTypeScopes` with `access_info = nullopt`, `required = false`,
+`diagnose = false` and the desugared `loc_id`, A5(i)), the access decision is
+applied with `IsAccessProhibited` against `GetHighestAllowedAccess` (A1; an
+inherited private hit reports as inaccessible through
+`LookupResult::prohibited_access_kind`, commit-2 finding 5), the result must be
+a `CalleeFunction` by `SemIR::GetCallee` (A10) and the signature is matched by
+`MakeSpecificWithInnerSelf` → `GetSelfSpecificForInterfaceMemberWithSelfType(…,
+SpecificId::None)` → `CheckFunctionTypeMatches(check_syntax = false, diagnose =
+false)` with BOTH sides read in their own specifics — the `new_specific_id`
+threaded through `CheckFunctionTypeMatches`, `CheckFunctionReturnTypeMatches`,
+`CheckRedeclParamsMatch` and merge.cpp's three static helpers after commit-2
+finding 1 (MAJOR: a member of a generic class specific such as `Box(i32).Get`
+was compared unsubstituted and never matched). (6) DIAGNOSTICS (kind.def:402,
+:405, :469-476; convert.cpp:1509-1537; handle_binding_pattern.cpp:330-334). Nine
+kinds: `FunctionInNonTemplateConstraint`,
+`NamedConstraintRedeclTemplateMismatch`,
+`TemplateConstraintOnNonTemplateBinding` (a generic, non-template binding whose
+facet type reaches a template constraint, D-SC-8(i); the pattern keeps its
+type), and the notes `StructuralMemberMissing` (at the conversion),
+`StructuralMemberMismatch` (at the found member),
+`StructuralMemberInaccessible`, `StructuralRequirementNeedsConcreteType`,
+`StructuralRequirementHere` (at the requirement) plus the Context
+`StructuralRequirementIncompleteType` (R-6's ninth).
+`DiagnoseConversionFailureToConstraintValue` goes `Build` →
+`NoteStructuralConformanceFailure` (explain mode re-runs the check and notes the
+FIRST unsatisfied requirement) → `Emit` for both conversion-failure kinds;
+impl.cpp's two `require` emits stay note-less (A5(ii)). (7) COMPOUND ACCESS
+(member_access.cpp:826, :965). `RedirectStructuralRequirementAccess` in
+`PerformCompoundMemberAccessAction`, before instance binding: a member that is a
+`CalleeFunction` whose parent scope is a template constraint's with-self scope
+converts the base type to the constraint's facet type (the check) and then looks
+the requirement's name up in the base type's own scopes, binding the type's OWN
+function (D-SC-4); `diagnose` is threaded through it (commit-2 finding 3); a
+generic template constraint there is a `context.TODO`.
+`LookupMemberNameInScope`'s body became the exported
+`LookupMemberNameInTypeScopes(…, optional<AccessInfo>, diagnose,
+MemberLookupInfo*)`, `LookupQualifiedName` gained `diagnose`, and
+`IsAccessProhibited` is declared in name_lookup.h. (8) C++ INTEROP
+(structural_conformance.cpp:167-279, SC-1c). An imported C++ method NAME
+resolves to a `cpp_overload_set_value` (interop/cpp/class/import/
+method.carbon:279-280), which the D-SC-5(c) predicate as planned classified as
+`CalleeCppOverloadSet` → mismatch, so under commits 1-2 NO C++ class satisfied
+any method requirement (commit-2 body drift 5, commit-2 review finding 2(a)).
+SC-1c extends the predicate: a C++ overload set whose `candidate_functions`
+holds exactly one member is looked through to that member
+(`ImportSingleCppOverloadCandidate`) — the candidate's lookup access is applied
+first (`AS_private` / `AS_protected` → inaccessible), then two cheap shape
+checks (object-member-function versus `self` presence, explicit parameter count)
+so that a shape that cannot match imports nothing, then the function is imported
+with `ImportCppFunctionDecl` under a signature its DECLARATION alone determines
+(`PassingModeForCppParameterType`: a reference to `const` is by-value, a non-`const`
+lvalue reference is `ref`, a non-`const` rvalue reference is `var`, anything
+else by value — the declaration-side reading of
+`ComputePassingModeForReferenceBinding`; the `self` mode is that function
+applied to `getFunctionObjectParameterReferenceType()`), and the imported
+function is matched under D-SC-5(d). Two or more candidates stay a mismatch
+(`fail_overloaded`). (9) GOLDENS, all unfilled (AUTOUPDATE, no CHECK lines): the
+two pre-existing goldens §6 named (parse/testdata/generics/named_constraint/
+template_constraint.carbon's split renamed from `fail_todo_`; invalid_members.
+carbon's three splits moved, CHECK lines cleared) and fifteen new files — the
+§4.A declaration set (template_constraint, fail_template_constraint_modifier,
+fail_template_constraint_redecl with the two recovery splits of commit-1 finding
+1, fail_todo_template_constraint_members), the §4.B satisfaction set
+(template_constraint_satisfy with `generic_self`, fail_template_constraint_
+unsatisfied with `fail_generic_self_wrong_return`, `fail_private_base` and
+`fail_alias_cycle`, fail_template_constraint_checked_binding,
+template_constraint_dependent, template_constraint_compound_access,
+template_constraint_require, fail_template_constraint_impl_as with
+`todo_fail_impl_as_interface_and_template`,
+template_constraint_impl_forall_template, template_constraint_overload,
+template_constraint_import, lower/testdata/template/template_constraint) and the
+§4.C interop golden check/testdata/interop/cpp/class/import/
+template_constraint.carbon, whose `fail_todo_satisfy` and
+`fail_todo_const_method` splits of commit 2 became `satisfy` (predicted
+positive) and `fail_const_method` (predicted mismatch: a `const` method's object
+parameter is `const Self&`, so value `self`, against `ref self`) beside a new
+`const_method_value_self` (predicted positive); every prediction is a hand trace
+(R9). (10) CONFORMANCE, unmeasured: generics/ structural_conformance.carbon
+rewritten from the Option-A `template T:! HasGet` sketch to F-010's shape with
+the two-member `overload fn Pick` set (member 1 `[template T: HasGet]`, member 2
+`[template T: type]`; `StructuralOnly` prints 42 through member 1, `Lacking`
+prints 7 through member 2 — a silently-ignored constraint is COMPILE-FAIL on
+`Lacking`, an over-strict check prints `7` twice, a `diagnose` leak is
+COMPILE-FAIL; review fold B2), its SKIP line removed, no `.diff.cpp` (D-SC-14;
+R30 does not apply, both sides agree); interop/
+cpp_structural_conformance.carbon new under the same bullet (an inline `Counter`
+with `int Get()` prints 7, `Plain` prints 0; the pointer shape `p->Get()` with
+`fn Get(ref self)`); both headers carry a MEASUREMENT line reading "awaiting the
+fork toolchain run" and their EXPECT lines are hand-derived (R16(d)); `runner.py
+--self-test` clean, the README table regenerated. (11) DOCS (D-SC-13).
+docs/design/generics/template_constraints.md ported hunk-wise from 481e08c24
+(the D-OV-8 precedent, not re-authored): a status paragraph, the §Structural
+witnesses section rewritten to D-SC-4 (no table; the type's own member set is
+the witness; the extension point named), §Completeness and caching to D-SC-7 (no
+cache in SC-1), §Name lookup and the migration ladder's step 2 re-pointed from
+the witness to member lookup, the §Dependencies list corrected (parsed and
+checked; same-file lowering landed; F-009 landed), F-010b marked DEFERRED
+against its recommendation, F-010h and F-010m RESOLVED as recommended, F-010l
+DEFERRED as recommended, the landed diagnostics, the landed binding rule and the
+chokepoint named in place; every bare proposal and issue number in prose
+respelled "proposal 2200" / "issue 2153" (R31) and the decision-log links
+stripped of their fragment (the functions_overloading.md convention: the em-dash
+headings never validate). Sibling hunks: the generics/README.md link,
+details.md's :1068-1077 cross-reference hunk ONLY (the stranded diff's second,
++6877 hunk documents `require <bool-expr>` and waits for SC-B2 — B10),
+terminology.md's F-009 paragraph, templates.md's "Constraining templates with
+interfaces" gaining a dated paragraph linking the page. The design record's
+manufactured R31 heading at fork/design-sprint/structural-conformance.md:450
+("## 2153 'predicates' direction, …", a 119b35439 reflow artifact) is rejoined
+to its paragraph as "issue 2153"; its TOC entry went with it (H2 5 → 4, dash
+items 65 → 64, nothing else moved).
+
+DECISIONS. D-SC-1..19 are adopted as plan §0.3 wrote them, each with its break
+condition there; one line each: D-SC-1 `template` is a declaration modifier
+accepted only on `constraint` (break: upstream parses a two-token introducer —
+a parse-only respelling); D-SC-2 requirement forms are `fn` DECLARATIONS only
+— methods and associated functions; definitions, parameterized requirements,
+`var` and `let` are `SemanticsTodo`s (break: owner veto, or SC-B2 needing
+fields); D-SC-3 satisfaction is evaluated inside `LookupImplWitness` and
+nowhere else, dependent arguments arrive by action replay (break: a golden
+showing a dependent shape at the conversion chokepoint with a template-phase
+self — then D-SC-19 covers it); D-SC-4 no witness table, no new inst kind
+(break: a consumer needing a table — then a `CustomWitness` keyed on the
+constraint off the `IdentifiedFacetType`); D-SC-5 the algorithm — complete
+self, member lookup in the type through the member-access path with the
+access check applied to the result, one function by `GetCallee`, the thunk
+criterion with both sides in their specifics (break: the criterion too strict
+for a §4-positive shape — one documented relaxation, never a thunk); D-SC-6 a
+checked-symbolic self is unsatisfied unless its own facet type lists the
+requirement, `fn G[T: I]` over `require impls HasGet` rejected (break:
+upstream resolves issue 2153 toward checked-calls-template); D-SC-7 no
+satisfaction cache (break: a measured compile-time regression); D-SC-8
+template bindings only — `TemplateConstraintOnNonTemplateBinding`, `impl C as
+HasGet` is `ImplOfNotOneInterface` (F-010m: error), `require impls HasGet`
+inside an interface stays legal, a template blanket impl is deferred (break
+for (i): as D-SC-6); D-SC-9 eight kinds as planned, nine with R-6's context
+note, wired only into convert.cpp (break: an existing kind whose text fits);
+D-SC-10 `Self` inside a template constraint is template-phase (break: the
+commit-1 fill showing a template-phase `Self` breaking a positive golden —
+then `false` and an SC-B2 prerequisite); D-SC-11 C++ interop in scope at the
+structural level with the `ref self` spelling rule (break: the imported `self`
+cannot match any Carbon spelling — the SKIP fallback); D-SC-12 interactions
+need no code — overload probes honor `diagnose = false`, `?`, choice, union,
+imports (break: a probe emitting a structural note); D-SC-13 docs ported, not
+re-authored; D-SC-14 the conformance program's printed value DEPENDS on the
+check (break: `42\n7` printed while the unsatisfied goldens fill positive —
+the arbiter is wrong, stop); D-SC-15 two fields on `NamedConstraint`, one
+vector on `IdentifiedFacetType`, import in the with-self resolver (break: a
+template constraint reached only through `type_impls` needing the type's own
+self — the loop already has it); D-SC-16 redeclarations must agree on
+`template` (break: none); D-SC-17 gap row 55 MISSING → PARTIAL, not DONE, the
+row naming the four deferred member forms (break: the row's remaining list
+disagreeing with §1.G — rewritten from §1.G); D-SC-18
+`FunctionInNonTemplateConstraint` is an error, `var`/`let` in a plain
+constraint stay upstream's TODOs (break: none); D-SC-19 a template-phase self
+at the `require` entry point is deferred, uses checked at monomorphization,
+the bare clause not re-run per specific (break: the ladder golden showing impl
+deduction cannot instantiate a template-phase blanket impl — then `fail_todo_`
+and a residue). Three refinements the rounds forced, recorded here beside the
+plan's landed notes: **D-SC-16 recovery** (commit-1 finding 1) — after the
+mismatch diagnostic the stored entity's `is_template` is set true, so both
+declaration orders recover as a template constraint and no member diagnostic
+cascades; **D-SC-5(c) extended** (commit-2 finding 2, landed at SC-1c) — a
+one-candidate C++ overload set is looked through to its member and matched;
+two or more candidates stay a mismatch; break condition: the SC-1c fill showing
+the imported `self` pattern cannot match any Carbon spelling — then the
+D-SC-11 SKIP fallback and the residue "C++ method `self` qualifiers in
+structural matching"; **D-SC-11 refined** — the spelling rule is per
+qualifier: a non-`const` C++ method satisfies `fn F(ref self)`, a `const` one
+satisfies `fn F(self)`, because the structural view of a C++ member is the
+member as Carbon calls it (method.carbon's `const_this` thunk is called with a
+value, `plain` with a `ref_param_pattern`); §4.C's `const_method` split (`ref
+self` against `const`) is therefore predicted NEGATIVE and committed as
+`fail_const_method`, with `const_method_value_self` the positive pin — the
+"`const` C++ method conformance sibling" residue B14 made conditional on
+`const_method` filling positive is NOT filed, and the sibling program (a
+`const` accessor against `fn Get(self)`) is queued instead on the fill of
+`const_method_value_self`. Disclosed verbatim from D-SC-2, because R29(a)
+would otherwise have auto-adopted the opposite (review fold B3): deferring
+`var` field requirements REVERSES the recorded F-010b recommendation ("keep
+them, per proposal 2200" — stranded page :245-248 and :798-800; p002200:352-354
+admits "function and field declarations"; the design record's Option B sketch
+:317 carries `var count: i32;`). Reason: a field match needs its own
+type-equality path (`FieldDecl`, not the D-SC-5(d) function matcher), nothing
+in the conformance arbiter needs it, and SC-B2's validity blocks are the
+natural second consumer; veto-able after the fact; residue filed (W-134).
+Deferring associated-constant requirements (`let X: type;`) NARROWS the landed
+p000818 text itself (details.md:1073-1075 enumerates "Method, associated
+constant, and associated function requirements"), on an implementation-cost
+ground: the interface form routes through `AssociatedConstantIntroducer` in
+`InterfaceContext` only (handle_decl_scope_loop.cpp:160-162), so there is no
+parse for it in a constraint body today and a `let X: type;` there is a plain
+`let` without initializer; also veto-able, residue filed (W-135).
+
+REVIEWS. Two adversarial plan reviews of rev 1 (R29(c)): review A, correctness
+of the mechanism against the toolchain at c1e83b0b7 plus fork features —
+APPROVE-WITH-AMENDMENTS, 4 MAJOR, 8 MINOR, 0 BLOCKER (A1 the access check
+versus `diagnose = false`, A2 the members-block import in the wrong resolver,
+A3 the `require` entry point reaching the check with a template-phase self —
+the new D-SC-19, A4 `KeywordModifierSet::Decl` must gain `Template`; the
+minors: the extra `name_ref`, the wrong kind for the checked blanket `require`,
+no `impls` expression, stale cites, the overstated lowering risk, unbacked
+positive shapes, `GetCallee` over `Is<FunctionDecl>`, being-defined
+constraints, the `index_delta` benignity); review B, design fidelity / scope /
+tests / process — APPROVE-WITH-AMENDMENTS, 3 MAJOR, 12 MINOR, 0 BLOCKER (B1
+the same set-constant edit, B2 both conformance programs vacuous with respect
+to satisfaction — the two-member `Pick` shape, B3 D-SC-2's narrowings
+undisclosed; the minors: six versus seven kinds, value shape first, the
+unreachable `fail_incomplete`, D-SC-6's positive branch unpinned, two files
+not three, D-SC-13's wrong deletion claim and the unamended cache sentence and
+the record's R31 heading, missing break conditions, the W-121 hang
+pre-registration, the hedged `fail_todo_assoc_const`, the inline-struct
+program, the stale §8.7 stamp list). Every finding folded in rev 2
+(e612aebc6), two with a correction to the reviewer's own fix (A1's kind is a
+Note because `ClassInvalidMemberAccess` is Error-severity; A5(ii)'s
+`InterfaceRequireImplsNotImplemented`). Implementation review of commit 1
+(before any fill, the §3 order inverted by necessity): APPROVE-WITH-FIXES, 3
+MINOR — unspecified recovery after the template mismatch (folded: recover as
+template, two splits added), a fifth undisclosed line drift (`MergeDefinition`
+cannot assert the flag; the merge runs before the comparison), the
+`AddStructuralMembers` import-ref parity (folded: kind switch). Implementation
+review of commit 2: APPROVE-WITH-FIXES, 1 MAJOR, 6 MINOR — the generic-class
+specific never matching (folded: both sides read in their specifics, two
+goldens), commit scope against §3 (recorded: the interop golden landed early
+and negative, the §5.A rewrite moved to SC-1c, the look-through decided as an
+owner auto-adopt), `diagnose` not threaded into the compound redirect
+(folded), `impl C as I & HasGet` unchecked (pinned and filed, W-142), an
+inherited private method explained as missing (folded, with the public case
+observed and filed, W-143), re-entrant impl lookup from inside the check
+(accepted in part — `diagnose` forwarded; rejected in part with evidence —
+the cycle is upstream's to diagnose; pinned as `fail_alias_cycle`), the
+name-poisoning side effect of every miss (recorded; dump ranges keep away
+from probed classes). The ONE implementation review of SC-1c that R29(c) owes
+runs after this commit, before any fill; its findings fold into a fixer
+commit as for commits 1 and 2.
+
+FILL-CAUGHT MISSES: none possible — no fill has run. The class of miss
+R28(d) tracks here (a reviewed prediction a hosted fill overturns) has no
+instance yet; when the owner dispatches, every §4 prediction in the three
+commit bodies and the two landed notes is the pre-registered hypothesis, and
+the first miss is recorded under this heading by the fixer.
+
+VERIFICATION is local only: the container's `clang++ -fsyntax-only` harness
+against the pinned LLVM 21.1.8 headers with the toolchain's `-Werror` set
+(scratchpad `syn/check_one.sh`), OK on every touched .cpp of commits 1, 2 and
+the fixers and on structural_conformance.cpp after the SC-1c look-through,
+before and after prek's clang-format; `prek` (clang-format 21.1.8, header
+guards, check-toolchain-diagnostics, rumdl, markdown-toc, google-doc-style,
+check-links, codespell, copyright, prettier on the ledger) at a fixpoint over
+every touched file; `runner.py --self-test` clean after the program rewrite
+and the README table regeneration. NOT run: bazel (no build in the
+container), the autoupdate fill, the gate, the conformance suite, the nightly
+A/B (the nightly lacks the feature). The R31 record for this entry's files is
+in the SC-1c commit body: heading and list counts per level before and after
+prek, the hazard greps empty.
+
+RESIDUE, filed with blocked_by [] (ids W-134..W-143, allocated above W-133 —
+the maximum across origin/trunk (W-125), origin/claude/carbon-fork-0-1-ua2
+(W-126/W-127), origin/claude/carbon-fork-0-1-cmake (W-128..W-133) and
+origin/claude/carbon-fork-0-1-safe (nothing above W-125 at its fetch) — on
+the assumption, stated in the ledger's `source` sentence and verified at
+merge as CM-1's entry did for PR 51, that those branches keep their ids):
+W-134 field requirements in template constraints (D-SC-2; F-010b reversed);
+W-135 associated-constant requirements (D-SC-2; details.md:1073-1075
+narrowed); W-136 parameterized requirement functions (D-SC-2; F-010l);
+W-137 function definitions (defaults) in template constraints (D-SC-2);
+W-138 structural witness table for blanket impls over template constraints
+(D-SC-4's break condition); W-139 checked generics calling
+template-constrained functions (D-SC-6; leads issue 2153); W-140 forward
+structural requirements through an interface's `require impls` for checked
+bindings (D-SC-6; review fold B7; waits on upstream's interface/require.carbon
+TODO); W-141 re-run deferred structural `require` checks at template
+blanket-impl specifics (D-SC-19; review fold A3); W-142 structural
+requirements on an impl's `as` facet type (commit-2 review finding 4); W-143
+inherited methods in structural matching (commit-2 review finding 5's
+observation, filed at this discharge as the note asked). W-028 (SC-B2) and
+W-029 (SC-B3) lose their W-027 edge. NOT filed, each conditional on a fill
+that has not run: "`impl forall [template T: HasGet]` migration-ladder step"
+(only if D-SC-19's break condition fires on the `ladder` split); "`const` C++
+method conformance sibling" (B14's condition is now predicted false — see
+D-SC-11 refined); "SemIR dump of a structural facet value hangs file_test"
+(only if the W-121 pre-registration of plan §8.1 fires); "C++ method `self`
+qualifiers in structural matching" (only if the look-through's imported `self`
+cannot match — predicted to match); "satisfaction cache" (D-SC-7's break
+condition). Resolved rather than filed: commit 2's "single-member C++ overload
+sets in structural matching" (the SC-1c look-through).
+
+PLAN §0.2 CORRECTIONS carried into the ledger (W-027's discharge note): the
+chokepoint is convert.cpp:1955, not :1596 (item 1); `facet_type_info.h` split
+into declared_facet_type.h and identified_facet_type.h and the vector lives
+on the latter (item 2); no new deferred-action kind (item 3); same-file
+template lowering landed, the fatal is cross-file (item 4); the conformance
+sketch was Option A in the retired `:!` spelling (item 5); no witness table
+(item 6); the other entry points decided (item 7); the stranded page's
+dependency list rewritten (item 8); W-027's "blocks on W-014" retired (item
+9); gap row 55's `:!` spelling rewritten (item 10). The gap analysis's W7
+paragraph gains "structural conformance (B1) landed on the SC-1 branch (fill
+pending)"; its "lowering hits CARBON_FATAL" sentence is UA-2's to fix and is
+left as the plan said.
+
+_V-3a divergence-risk register entries (reviewed at each upstream merge):_
+upstream's handle_named_constraint.cpp carries the two TODOs SC-1 deleted
+("PopSoloNodeId(`template`) … Or maybe it should be a modifier, like `abstract
+class`?" and "Support for `template constraint`") and its `NamedConstraint` has
+no `is_template` or members block; upstream's `LookupImplWitness` returns
+`Empty` for a facet type with no interfaces (every type satisfies an empty
+constraint) and its `IdentifiedFacetType` has no structural vector; upstream's
+`GetCallee` classifies a `cpp_overload_set_value` as `CalleeCppOverloadSet` with
+no single-candidate look-through outside overload resolution. If upstream lands
+`template constraint` as a two-token introducer, D-SC-1 respells the parse and
+the check is unchanged; if upstream lands member requirements with a witness
+table, D-SC-4's extension point is where the fork's check attaches to it; if
+upstream resolves issue 2153 toward checked-calls-template, D-SC-6 and
+W-139/W-140 follow; if upstream's `CheckFunctionTypeMatches` gains a specific
+for the new side, the fork's `new_specific_id` parameter merges into it.
 Veto-able.
 
 ### SL-1: Core.Slice, Core.Buf, heap allocation, fail-stop (2026-10-05)

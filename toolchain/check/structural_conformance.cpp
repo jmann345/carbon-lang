@@ -7,9 +7,14 @@
 #include <optional>
 #include <variant>
 
+#include "clang/AST/Decl.h"
+#include "clang/AST/DeclCXX.h"
+#include "clang/Basic/Specifiers.h"
 #include "llvm/ADT/STLExtras.h"
+#include "llvm/ADT/Sequence.h"
 #include "llvm/ADT/SmallVector.h"
 #include "toolchain/check/context.h"
+#include "toolchain/check/cpp/import.h"
 #include "toolchain/check/diagnostic_helpers.h"
 #include "toolchain/check/function.h"
 #include "toolchain/check/generic.h"
@@ -20,7 +25,9 @@
 #include "toolchain/check/name_lookup.h"
 #include "toolchain/check/type_completion.h"
 #include "toolchain/diagnostics/format_providers.h"
+#include "toolchain/sem_ir/clang_decl.h"
 #include "toolchain/sem_ir/constant.h"
+#include "toolchain/sem_ir/cpp_overload_set.h"
 #include "toolchain/sem_ir/function.h"
 #include "toolchain/sem_ir/identified_facet_type.h"
 #include "toolchain/sem_ir/ids.h"
@@ -151,6 +158,117 @@ static auto FindStructuralMember(Context& context, SemIR::LocId loc_id,
   return member_id;
 }
 
+// The Carbon passing mode of a C++ parameter read from its declared type alone
+// (there is no call, so no conversion sequence): a reference to `const` is
+// pass-by-value, a non-`const` lvalue reference is `ref`, a non-`const` rvalue
+// reference is `var`, and anything else is by value -- the declaration-side
+// reading of cpp/overload_resolution.cpp's
+// `ComputePassingModeForReferenceBinding`.
+static auto PassingModeForCppParameterType(clang::QualType type)
+    -> SemIR::ClangDeclSignature::PassingMode {
+  if (!type->isReferenceType()) {
+    return SemIR::ClangDeclSignature::PassingMode::ByValue;
+  }
+  if (type.getNonReferenceType().isConstQualified()) {
+    return SemIR::ClangDeclSignature::PassingMode::ByValue;
+  }
+  return type->isLValueReferenceType()
+             ? SemIR::ClangDeclSignature::PassingMode::ByRef
+             : SemIR::ClangDeclSignature::PassingMode::ByVar;
+}
+
+// D-SC-5(c), extended at SC-1c (commit-2 review finding 2): an imported C++
+// method NAME resolves to a `cpp_overload_set_value`, never to a single
+// function, so a C++ overload set whose `candidate_functions` holds exactly
+// one member is looked through to that member, imported as a Carbon function
+// with the signature its declaration alone determines, and matched under
+// D-SC-5(d). A set with two or more candidates stays a mismatch. The `self`
+// passing mode mirrors the call-site import: a non-`const` method's object
+// parameter is `Self&` (so `ref self`, §0.1 row 19), a `const` method's is
+// `const Self&` (so value `self`) -- D-SC-11's spelling rule, refined.
+//
+// Returns the imported `FunctionDecl` inst, or `None` with `*out_failure` set.
+// Cheap shape checks (`self` presence, parameter count) run before the import
+// so that a shape that cannot match imports nothing.
+static auto ImportSingleCppOverloadCandidate(
+    Context& context, SemIR::LocId loc_id,
+    const SemIR::CalleeCppOverloadSet& overload,
+    const SemIR::Function& requirement_fn, MemberFailureInfo* out_failure)
+    -> SemIR::InstId {
+  *out_failure = MemberFailureInfo{.failure = MemberFailure::Mismatch};
+  const auto& overload_set =
+      context.cpp_overload_sets().Get(overload.cpp_overload_set_id);
+  if (overload_set.candidate_functions.size() != 1) {
+    return SemIR::InstId::None;
+  }
+  clang::DeclAccessPair candidate = overload_set.candidate_functions[0];
+  auto* clang_fn = clang::dyn_cast<clang::FunctionDecl>(
+      candidate.getDecl()->getUnderlyingDecl());
+  if (!clang_fn || clang_fn->isVariadic() || clang_fn->isDeleted()) {
+    return SemIR::InstId::None;
+  }
+
+  // The access of the candidate as name lookup found it (D-SC-5(b)): Carbon
+  // code is never inside a C++ class, so a non-public member never satisfies.
+  switch (candidate.getAccess()) {
+    case clang::AS_private:
+      *out_failure =
+          MemberFailureInfo{.failure = MemberFailure::Inaccessible,
+                            .access_kind = SemIR::AccessKind::Private};
+      return SemIR::InstId::None;
+    case clang::AS_protected:
+      *out_failure =
+          MemberFailureInfo{.failure = MemberFailure::Inaccessible,
+                            .access_kind = SemIR::AccessKind::Protected};
+      return SemIR::InstId::None;
+    case clang::AS_public:
+    case clang::AS_none:
+      break;
+  }
+
+  // Shape: a method requirement needs an object member function, an
+  // associated-function requirement a static member or free function; the
+  // explicit parameter counts must agree.
+  bool requirement_has_self = requirement_fn.self_param_id.has_value();
+  if (IsObjectMemberFunction(*clang_fn) != requirement_has_self) {
+    return SemIR::InstId::None;
+  }
+  int explicit_object_params =
+      clang_fn->hasCXXExplicitFunctionObjectParameter();
+  int num_cpp_params =
+      static_cast<int>(clang_fn->getNumParams()) - explicit_object_params;
+  int num_requirement_params =
+      static_cast<int>(context.inst_blocks()
+                           .GetOrEmpty(requirement_fn.param_patterns_id)
+                           .size()) -
+      (requirement_has_self ? 1 : 0);
+  if (num_cpp_params != num_requirement_params) {
+    return SemIR::InstId::None;
+  }
+
+  SemIR::ClangDeclSignature signature;
+  signature.kind = SemIR::ClangDeclSignature::Normal;
+  signature.num_params = num_cpp_params;
+  signature.passing_modes.reserve(num_cpp_params);
+  for (int i : llvm::seq(num_cpp_params)) {
+    signature.passing_modes.push_back(PassingModeForCppParameterType(
+        clang_fn->getParamDecl(i + explicit_object_params)->getType()));
+  }
+  if (requirement_has_self) {
+    signature.self_passing_mode = PassingModeForCppParameterType(
+        clang::cast<clang::CXXMethodDecl>(clang_fn)
+            ->getFunctionObjectParameterReferenceType());
+  }
+  auto signature_id = context.clang_decl_signatures().Add(std::move(signature));
+
+  auto fn_decl_id =
+      ImportCppFunctionDecl(context, loc_id, clang_fn, signature_id);
+  if (fn_decl_id == SemIR::ErrorInst::InstId) {
+    return SemIR::InstId::None;
+  }
+  return fn_decl_id;
+}
+
 // D-SC-5(d): the member's signature must match the requirement's with `Self`
 // bound to the self: the thunk criterion (`CheckFunctionTypeMatches` with
 // `check_syntax` false), so parameter names need not agree and no thunk is
@@ -267,10 +385,21 @@ static auto CheckRequirementFunction(
                              .access_kind = info.access_kind};
   }
 
-  // D-SC-5(c): the member must be exactly one function. An overload set, a C++
-  // overload set, a function pointer, a field, a class or a namespace does not
-  // satisfy a requirement (review fold A10).
+  // D-SC-5(c): the member must be exactly one function. An overload set, a
+  // function pointer, a field, a class or a namespace does not satisfy a
+  // requirement (review fold A10); a C++ overload set does only when it holds
+  // exactly one candidate, which is imported and matched as that function
+  // (SC-1c).
   auto callee = SemIR::GetCallee(context.sem_ir(), member_id);
+  if (auto* cpp_overload = std::get_if<SemIR::CalleeCppOverloadSet>(&callee)) {
+    MemberFailureInfo failure;
+    auto cpp_member_id = ImportSingleCppOverloadCandidate(
+        context, loc_id, *cpp_overload, requirement_fn, &failure);
+    if (!cpp_member_id.has_value()) {
+      return failure;
+    }
+    callee = SemIR::GetCallee(context.sem_ir(), cpp_member_id);
+  }
   auto* callee_fn = std::get_if<SemIR::CalleeFunction>(&callee);
   if (!callee_fn) {
     return MemberFailureInfo{.failure = MemberFailure::Mismatch};

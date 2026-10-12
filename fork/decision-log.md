@@ -2892,7 +2892,7 @@ and mutation safety pages), 75e2f8d29 (4/5: the safe-Rust interop analysis; the
 dated sibling amendments to docs/design/README.md, values.md, unions.md,
 slices.md, expressions/arithmetic.md and
 docs/project/principles/safety_strategy.md), e5207bd8e (the §2.11 stub SKIP
-refresh), 1ce52d061 (the fold of the two document reviews, 24 findings, none
+refresh), 1ce52d061 (the fold of the two document reviews, 26 findings, none
 rejected) and the discharge commit carrying this entry, the ledger, the gap row,
 ORCHESTRATION and the rulebook's R31 correction — with no toolchain, prelude,
 golden or program-body change (D-SAFE-23). Plan rev 3 at 68b04cce2 is the
@@ -3891,7 +3891,7 @@ every file:line, proposal quotation, prelude name and cross-link re-opened;
 MAJOR-1 found SP1's "not reachable from user code" contradicted by
 toolchain/check/testdata/builtins/pointer/offset.carbon:23 (now the
 builtin-binding rule, `StrictBuiltinBindingUnmarked`), MAJOR-2 was this
-discharge. All 24 findings accepted and folded in 1ce52d061; the fold table
+discharge. All 26 findings accepted and folded in 1ce52d061; the fold table
 with every verdict is the plan's "Landed notes (SAFE-1)". Two dated
 corrections the reviews forced on accepted text are mirrored here as the
 register asks: p005434's `nocapture`/`noalias` sentence is :83 and its

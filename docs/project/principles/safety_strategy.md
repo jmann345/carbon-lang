@@ -37,6 +37,16 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 ## Background
 
+> **Fork note (2026-10-12, SAFE-1 — F-013).** This principles document
+> predates the accepted strategy (proposal p005914,
+> [docs/design/safety/README.md](/docs/design/safety/README.md)) and the fork's
+> safe-Carbon design (F-013); where they differ — three build modes including
+> "hardened" ([Using build modes](#using-build-modes-to-manage-safety-checks)
+> and the "named three" principle), the runtime-first expectation (the opening
+> of that section and
+> [Alternatives considered](#guaranteed-memory-safety-programming-models)) —
+> the design documents govern. Kept as history.
+
 Carbon's goal is to provide
 [practical safety and testing mechanisms](../goals.md#practical-safety-and-testing-mechanisms).
 

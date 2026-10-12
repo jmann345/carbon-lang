@@ -164,6 +164,15 @@ programming errors:
     overflow checks might be combined into one -- but no control flow or memory
     access that depends on the value will be performed.
 
+> **Amendment (2026-10-12, SAFE-1 — F-013 D-SAFE-15):** for Carbon code the
+> fork fixes the behavior by build mode. In the Release build, signed overflow
+> wraps to the two's complement result; in the Debug build, overflow fails-stop
+> with a diagnostic; signed or unsigned division or remainder by zero
+> fails-stop in both. The performance-build row above, under which the
+> behavior is not defined, is withdrawn for Carbon code. The second TODO below
+> is answered: wrap, not zero. See
+> [Spatial safety: Arithmetic](../safety/spatial_safety.md#arithmetic).
+
 **TODO:** Unify the description of these programming errors with those of
 bit-shift domain errors, document the behavior in a common place and link to it
 from here.

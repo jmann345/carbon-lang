@@ -1247,3 +1247,42 @@ quoted as LOCAL, never as of record — with the hosted conformance and
 gate runs outstanding until Actions returns (R28); the PR is opened and
 HELD with its dispatch list in ORCHESTRATION (R28(c), D-CM-15). Landed
 notes are appended at discharge (§2.E.5).
+
+## Landed notes (discharge, 2026-10-12)
+
+Implemented as §3 fixed, on claude/carbon-fork-0-1-cmake off trunk
+0bdce60a5: a88077854 (1/3, §2.A and §2.B), 10af323a2 (2/3, §2.C, §2.D,
+§2.E.1-2) and the discharge commit carrying §2.E.3-5 (this section, the
+decision-log entry, the ORCHESTRATION stamp). Not pushed at discharge; the
+push, the HELD PR and its dispatch list are the next action in ORCHESTRATION.
+The measured outputs of §4 are quoted in the commit messages and the
+decision-log entry; every §4.5 and §4.6 check held. Gap rows 84 and 87 are
+lines 85 and 88 after the header grew by one line.
+
+Deviations from the plan text, each small:
+
+<!-- google-doc-style-ignore -->
+-   Commit 1's two READMEs referred to docs/guides/build_systems.md by path
+    and commit 2 turned both into links, because check-links rejects a link
+    to a file that does not exist yet and the guide is commit 2's (§3).
+-   The runner gained `--repo-root` (default `REPO_ROOT`) so the
+    execution-path fixtures can use a temporary root through the public
+    interface instead of absolute paths in the directive; `discover_programs`
+    and `execute_program` take the root as a parameter (§2.D.1).
+-   The gap-analysis summary sentence also names the CMake landing in its
+    "have since landed" list beside the "leaving ..." change §2.E.1
+    specified.
+-   `grep -rn 'output-last-input-only' cmake examples/cmake` (§8.4) hits the
+    rule once, a comment in the same module, a comment in CarbonTargets that
+    says the flag lives in the rule, and the Makefile's five recipes; no code
+    in CarbonTargets appends it.
+-   The Makefile's stage targets `objects`, `link`, `run` and `clean` sit
+    below the verbatim rule block of §2.B.5; test.sh builds `objects` then
+    `link` so the stage of a failure is known (D-CM-12).
+-   On the UPSTREAM nightly the local `--filter project/` run also shows
+    project/most_features_missing_match as COMPILE-FAIL (`match` is a fork
+    feature); §4.4's "unchanged" holds for the fork-built toolchain of record.
+<!-- google-doc-style-resume -->
+
+Outstanding: the §8.7 implementation review; the hosted conformance run R9
+requires (no dispatch date, Actions disabled); W-128's install step.

@@ -30,8 +30,13 @@ W-108 DISCHARGED on the fill (a `Core.Buf` field is freed through the
 owner's synthesized SubobjectDestroy; an owner with its own `impl as Destroy`
 still leaks — the 0.1 limit), ledger and gap re-cites done, of-record
 conformance run 37413300832: 131 PASS / 0 FAIL / 19 SKIP over 150, 48/56
-bullets — but its gate never ran: implementation review in progress; its PR
-is opened and HELD OPEN, not merged. SC-1 (template structural conformance,
+bullets — but its gate never ran: implementation review APPROVE-WITH-FIXES
+(nine findings, all folded in round 3, 05a5c30f7: of-record runs recorded,
+W-126 declared-owner leak and W-127 real-prelude `DefaultOrUnformed` limit
+filed, the prelude pin's failing split retriaged to `fail_todo_` with its
+CHECK lines cleared for the next refill); PR #51 is OPEN and HELD, not
+merged — land sequence once Actions returns: autoupdate (one split) → gate →
+conformance → merge. SC-1 (template structural conformance,
 W-027) plan rev 2 signed off at e612aebc6 on claude/carbon-fork-0-1-sc after
 two reviews (both APPROVE-WITH-AMENDMENTS); the commit-1 implementer died
 with the credits and is NOT relaunched: new toolchain code cannot be filled
@@ -375,7 +380,7 @@ code). Next check: Monday 14:00 UTC.
 
 | Branch | State |
 | --- | --- |
-| `claude/carbon-fork-0-1-ua2` | HELD OPEN — UA-2 reconciliation at ace101b0d, fill + of-record conformance 37413300832 (131/0/19 over 150) done, gate impossible (Actions disabled); merge when a gate runs. |
+| `claude/carbon-fork-0-1-ua2` | HELD OPEN as PR #51 — UA-2 reconciliation at 05a5c30f7, fill + of-record conformance 37413300832 (131/0/19 over 150) done, gate impossible (Actions disabled); merge when a gate runs. |
 | `claude/carbon-fork-0-1-sc` | PLAN ONLY — SC-1 template structural conformance, plan rev 2 signed off (e612aebc6); implementation paused until an arbiter exists. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |

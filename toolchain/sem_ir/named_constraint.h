@@ -32,9 +32,21 @@ struct NamedConstraintFields {
   // The implicit `Self` parameter. This is a SymbolicBinding instruction.
   InstId self_param_id = InstId::None;
 
+  // Whether this is a `template constraint`. Set at the first declaration;
+  // every redeclaration must agree (fork decision F-010 / SC-1, D-SC-15,
+  // D-SC-16).
+  bool is_template = false;
+
   // The following members are set at the `}` of the constraint definition.
 
   RequireImplsBlockId require_impls_block_id = RequireImplsBlockId::None;
+  // For a `template constraint`, the `FunctionDecl` instructions of its
+  // structural member requirements, in declaration order. `None` for a plain
+  // constraint and for a template constraint still being defined; `Empty` for
+  // a complete template constraint without requirements (D-SC-15). Function
+  // declarations with their own compile-time parameters are not collected
+  // (D-SC-2).
+  InstBlockId structural_members_id = InstBlockId::None;
   bool complete = false;
 };
 
@@ -45,7 +57,13 @@ struct NamedConstraint : public EntityWithParamsBase,
   auto Print(llvm::raw_ostream& out) const -> void {
     out << "{";
     PrintBaseFields(out);
+    if (is_template) {
+      out << ", is_template: true";
+    }
     out << ", require_impls_block_id: " << require_impls_block_id;
+    if (structural_members_id.has_value()) {
+      out << ", structural_members_id: " << structural_members_id;
+    }
     out << "}";
   }
 
@@ -67,7 +85,11 @@ struct NamedConstraint : public EntityWithParamsBase,
     body_block_without_self_id = definition.body_block_without_self_id;
     body_block_with_self_id = definition.body_block_with_self_id;
     self_param_id = definition.self_param_id;
+    // `is_template` is deliberately not copied: the first declaration's flag
+    // is authoritative, and a disagreeing redeclaration is diagnosed by
+    // `BuildNamedConstraintDecl` (D-SC-16) after this merge runs.
     require_impls_block_id = definition.require_impls_block_id;
+    structural_members_id = definition.structural_members_id;
     complete = definition.complete;
   }
 };

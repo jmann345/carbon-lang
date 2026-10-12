@@ -41,16 +41,18 @@ static auto BuildNamedConstraintDecl(Context& context,
   context.node_stack()
       .PopAndDiscardSoloNodeId<Parse::NodeKind::NamedConstraintIntroducer>();
 
-  // TODO: PopSoloNodeId(`template`) if it's present, and track that in the
-  // NamedConstraint. Or maybe it should be a modifier, like `abstract class`?
-
-  // Process modifiers.
+  // Process modifiers. `template` marks a template constraint (fork decision
+  // F-010 / SC-1, D-SC-1).
   auto [_, parent_scope_inst] =
       context.name_scopes().GetInstIfValid(name_context.parent_scope_id);
   auto introducer =
       context.decl_introducer_state_stack().Pop<Lex::TokenKind::Constraint>();
   CheckAccessModifiersOnDecl(context, introducer, parent_scope_inst);
-  LimitModifiersOnDecl(context, introducer, KeywordModifierSet::Access);
+  LimitModifiersOnDecl(
+      context, introducer,
+      KeywordModifierSet::Access | KeywordModifierSet::Template);
+  bool is_template =
+      introducer.modifier_set.HasAnyOf(KeywordModifierSet::Template);
 
   auto decl_block_id = context.inst_block_stack().Pop();
 
@@ -62,7 +64,8 @@ static auto BuildNamedConstraintDecl(Context& context,
   SemIR::NamedConstraint constraint_info = {
       name_context.MakeEntityWithParamsBase(name, decl_inst_id,
                                             /*is_extern=*/false,
-                                            SemIR::LibraryNameId::None)};
+                                            SemIR::LibraryNameId::None),
+      {.is_template = is_template}};
 
   DiagnoseIfGenericMissingExplicitParameters(context, constraint_info);
 
@@ -75,10 +78,16 @@ static auto BuildNamedConstraintDecl(Context& context,
                          .new_entity_decl = constraint_decl,
                          .new_entity = constraint_info},
                      is_definition)) {
-    auto prev_decl_generic_id = context.named_constraints()
-                                    .Get(constraint_decl.named_constraint_id)
-                                    .generic_id;
-    FinishGenericRedecl(context, prev_decl_generic_id);
+    const auto& prev_constraint_info =
+        context.named_constraints().Get(constraint_decl.named_constraint_id);
+    // Redeclarations must agree on `template` (D-SC-16). The merged entity
+    // keeps the first declaration's flag.
+    if (prev_constraint_info.is_template != is_template) {
+      DiagnoseNamedConstraintTemplateMismatch(
+          context, prev_constraint_info.name_id, SemIR::LocId(decl_inst_id),
+          SemIR::LocId(lookup_result.target_inst_id()));
+    }
+    FinishGenericRedecl(context, prev_constraint_info.generic_id);
   } else {
     // Create a new named constraint if this isn't a valid redeclaration.
     constraint_info.generic_id = BuildGenericDecl(context, decl_inst_id);
@@ -110,8 +119,10 @@ auto HandleParseNode(Context& context,
       BuildNamedConstraintDecl(context, node_id, /*is_definition=*/true);
   auto& constraint_info = context.named_constraints().Get(named_constraint_id);
 
-  // TODO: Support for `template constraint`.
-  bool is_template = false;
+  // Inside a `template constraint`, `Self` is a template-phase binding
+  // (D-SC-10). The flag comes from the stored entity: a definition may be a
+  // redeclaration, and the first declaration's flag is authoritative.
+  bool is_template = constraint_info.is_template;
 
   // Track that this declaration is the definition.
   CARBON_CHECK(!constraint_info.has_definition_started(),
@@ -185,6 +196,47 @@ auto HandleParseNode(Context& context,
   return true;
 }
 
+// Collects the structural member requirements of a `template constraint` at
+// its `}`: the `FunctionDecl` instructions of its with-self body block, in
+// declaration order (D-SC-15). A declaration is a requirement only if it is
+// declared directly in the constraint-with-self scope and has no compile-time
+// parameters of its own beyond the with-self generic's (a parameterized
+// requirement is diagnosed as a TODO by `BuildFunctionDecl` and is not
+// collected, D-SC-2 / review fold A12).
+static auto CollectStructuralMembers(
+    Context& context, const SemIR::NamedConstraint& constraint_info)
+    -> SemIR::InstBlockId {
+  auto with_self_binding_count =
+      context.inst_blocks()
+          .Get(context.generics()
+                   .Get(constraint_info.generic_with_self_id)
+                   .bindings_id)
+          .size();
+  llvm::SmallVector<SemIR::InstId> members;
+  for (auto inst_id :
+       context.inst_blocks().Get(constraint_info.body_block_with_self_id)) {
+    auto fn_decl = context.insts().TryGetAs<SemIR::FunctionDecl>(inst_id);
+    if (!fn_decl) {
+      continue;
+    }
+    const auto& function = context.functions().Get(fn_decl->function_id);
+    if (function.parent_scope_id != constraint_info.scope_with_self_id) {
+      continue;
+    }
+    auto binding_count =
+        function.generic_id.has_value()
+            ? context.inst_blocks()
+                  .Get(context.generics().Get(function.generic_id).bindings_id)
+                  .size()
+            : 0;
+    if (binding_count != with_self_binding_count) {
+      continue;
+    }
+    members.push_back(inst_id);
+  }
+  return context.inst_blocks().Add(members);
+}
+
 auto HandleParseNode(Context& context,
                      Parse::NamedConstraintDefinitionId /*node_id*/) -> bool {
   auto named_constraint_id =
@@ -200,6 +252,10 @@ auto HandleParseNode(Context& context,
   auto& constraint_info = context.named_constraints().Get(named_constraint_id);
   if (!constraint_info.complete) {
     constraint_info.require_impls_block_id = require_impls_block_id;
+    if (constraint_info.is_template) {
+      constraint_info.structural_members_id =
+          CollectStructuralMembers(context, constraint_info);
+    }
     // TODO: Do something with `alias` statements in the body of the
     // constraint.
     constraint_info.complete = true;

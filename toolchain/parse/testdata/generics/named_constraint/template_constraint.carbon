@@ -8,29 +8,12 @@
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/parse/testdata/generics/named_constraint/template_constraint.carbon
 
-// --- fail_todo_template_constraint.carbon
+// --- template_constraint.carbon
 
-// CHECK:STDERR: fail_todo_template_constraint.carbon:[[@LINE+4]]:1: error: unrecognized declaration introducer [UnrecognizedDecl]
-// CHECK:STDERR: template constraint Foo {
-// CHECK:STDERR: ^~~~~~~~
-// CHECK:STDERR:
 template constraint Foo {
   // TODO: Add a require statement.
   fn DeclaredMethod();
   fn DefinedMethod() {}
 }
 
-// CHECK:STDERR: fail_todo_template_constraint.carbon:[[@LINE+4]]:1: error: unrecognized declaration introducer [UnrecognizedDecl]
-// CHECK:STDERR: template constraint ForwardDeclared;
-// CHECK:STDERR: ^~~~~~~~
-// CHECK:STDERR:
 template constraint ForwardDeclared;
-
-// CHECK:STDOUT: - filename: fail_todo_template_constraint.carbon
-// CHECK:STDOUT:   ╭─FileStart ''
-// CHECK:STDOUT:   │ ╭─InvalidParseStart 'template' has_error
-// CHECK:STDOUT:   ├─InvalidParseSubtree '}' has_error
-// CHECK:STDOUT:   │ ╭─InvalidParseStart 'template' has_error
-// CHECK:STDOUT:   ├─InvalidParseSubtree ';' has_error
-// CHECK:STDOUT:   ├─FileEnd ''
-// CHECK:STDOUT:   (root)

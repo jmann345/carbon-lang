@@ -399,8 +399,10 @@ CARBON_DIAGNOSTIC_KIND(MatchFirstInWrongScope)
 CARBON_DIAGNOSTIC_KIND(MatchFirstInWrongScopeNote)
 
 // Named constraint checking.
+CARBON_DIAGNOSTIC_KIND(FunctionInNonTemplateConstraint)
 CARBON_DIAGNOSTIC_KIND(NamedConstraintForwardDeclaredHere)
 CARBON_DIAGNOSTIC_KIND(NamedConstraintIncompleteWithinDefinition)
+CARBON_DIAGNOSTIC_KIND(NamedConstraintRedeclTemplateMismatch)
 
 // Impl checking.
 CARBON_DIAGNOSTIC_KIND(AssociatedConstantHere)

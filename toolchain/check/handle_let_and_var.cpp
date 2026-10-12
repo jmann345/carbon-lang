@@ -66,6 +66,20 @@ static auto EndAssociatedConstantDeclRegion(Context& context,
 
 template <Lex::TokenKind::RawEnumType Kind>
 static auto HandleIntroducer(Context& context, Parse::NodeId node_id) -> bool {
+  // Field and associated-constant requirements in a `template constraint` are
+  // deferred (fork decision F-010 / SC-1, D-SC-2); a plain constraint's
+  // members are upstream's TODO and are left as they are (D-SC-18).
+  if (auto constraint_decl =
+          context.scope_stack()
+              .TryGetCurrentScopeAs<SemIR::NamedConstraintWithSelfDecl>();
+      constraint_decl && context.named_constraints()
+                             .Get(constraint_decl->named_constraint_id)
+                             .is_template) {
+    context.TODO(node_id, Kind == Lex::TokenKind::Var
+                              ? "field requirement in `template constraint`"
+                              : "associated constant requirement in `template "
+                                "constraint`");
+  }
   context.decl_introducer_state_stack().Push<Kind>();
   // Push a bracketing node and pattern block to establish the pattern context.
   context.node_stack().Push(node_id);

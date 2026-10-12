@@ -56,6 +56,20 @@ static auto DiagnoseExternMismatch(Context& context, Lex::TokenKind decl_kind,
       .Emit();
 }
 
+auto DiagnoseNamedConstraintTemplateMismatch(Context& context,
+                                             SemIR::NameId name_id,
+                                             SemIR::LocId new_loc_id,
+                                             SemIR::LocId prev_loc_id) -> void {
+  CARBON_DIAGNOSTIC(
+      NamedConstraintRedeclTemplateMismatch, Error,
+      "redeclarations of `constraint {0}` must match use of `template`",
+      SemIR::NameId);
+  context.emitter()
+      .Build(new_loc_id, NamedConstraintRedeclTemplateMismatch, name_id)
+      .Note(prev_loc_id, RedeclPrevDecl)
+      .Emit();
+}
+
 // Diagnoses `extern library` declared in a library importing the owned entity.
 static auto DiagnoseExternLibraryInImporter(Context& context,
                                             Lex::TokenKind decl_kind,

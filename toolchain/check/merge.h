@@ -66,6 +66,16 @@ auto DiagnoseIfInvalidRedecl(Context& context, Lex::TokenKind decl_kind,
                              RedeclInfo prev_decl,
                              SemIR::ImportIRId prev_import_ir_id) -> void;
 
+// Diagnoses a `template constraint` versus plain `constraint` mismatch between
+// two declarations of one named constraint (fork decision F-010 / SC-1,
+// D-SC-16), with the same "previously declared here" note as the `extern`
+// mismatch. The note's diagnostic lives in merge.cpp, which is why this is
+// declared here rather than beside its caller.
+auto DiagnoseNamedConstraintTemplateMismatch(Context& context,
+                                             SemIR::NameId name_id,
+                                             SemIR::LocId new_loc_id,
+                                             SemIR::LocId prev_loc_id) -> void;
+
 // When the prior name lookup result is an import and we are successfully
 // merging, replace the name lookup result with the reference in the current
 // file.

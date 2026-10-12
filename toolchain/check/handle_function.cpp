@@ -568,6 +568,24 @@ static auto MaybeAddToNameLookup(Context& context,
                 parent_scope_id)) {
       lookup_result_id =
           BuildAssociatedEntity(context, interface_decl->interface_id, decl_id);
+    } else if (auto constraint_decl =
+                   context.name_scopes()
+                       .TryGetInstAs<SemIR::NamedConstraintWithSelfDecl>(
+                           parent_scope_id)) {
+      // At named-constraint scope, a function declaration is a structural
+      // member requirement, which only a `template constraint` can carry
+      // (fork decision F-010 / SC-1, D-SC-18). The requirement itself is
+      // collected at the constraint's `}` (D-SC-15); the declaration is added
+      // to name lookup either way so that later uses do not cascade.
+      if (!context.named_constraints()
+               .Get(constraint_decl->named_constraint_id)
+               .is_template) {
+        CARBON_DIAGNOSTIC(FunctionInNonTemplateConstraint, Error,
+                          "function declaration in a non-`template` "
+                          "`constraint`; use `template constraint` to declare "
+                          "a structural requirement");
+        context.emitter().Emit(decl_id, FunctionInNonTemplateConstraint);
+      }
     }
   }
 
@@ -1189,6 +1207,39 @@ static auto BuildFunctionDecl(Context& context,
                       "definition of `abstract` function");
     context.emitter().Emit(LocIdForDiagnostics::TokenOnly(node_id),
                            DefinedAbstractFunction);
+  }
+
+  // The member-requirement forms a `template constraint` does not support yet
+  // (fork decision F-010 / SC-1, D-SC-2): a definition (a default), and a
+  // requirement with compile-time parameters of its own (F-010l). The latter
+  // is also not collected into the constraint's `structural_members_id`
+  // (review fold A12).
+  if (auto constraint_decl =
+          context.name_scopes()
+              .TryGetInstAs<SemIR::NamedConstraintWithSelfDecl>(
+                  name_context.parent_scope_id)) {
+    const auto& constraint_info =
+        context.named_constraints().Get(constraint_decl->named_constraint_id);
+    if (constraint_info.is_template) {
+      if (is_definition) {
+        context.TODO(node_id, "function definition in `template constraint`");
+      } else {
+        auto bindings_count = [&](SemIR::GenericId generic_id) -> size_t {
+          return generic_id.has_value()
+                     ? context.inst_blocks()
+                           .Get(context.generics().Get(generic_id).bindings_id)
+                           .size()
+                     : 0;
+        };
+        if (bindings_count(context.functions()
+                               .Get(function_decl.function_id)
+                               .generic_id) !=
+            bindings_count(constraint_info.generic_with_self_id)) {
+          context.TODO(node_id,
+                       "parameterized requirement in `template constraint`");
+        }
+      }
+    }
   }
 
   // A first marked declaration of a name creates its `overload fn` set

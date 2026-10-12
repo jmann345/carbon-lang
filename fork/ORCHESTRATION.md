@@ -10,7 +10,16 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-12 (weekly check fired; BLOCKED: GitHub Actions on
+Last updated: 2026-10-12 (SAFE-1 DISCHARGED on claude/carbon-fork-0-1-safe:
+the safe-Carbon design — safety README rewritten, six category pages,
+terminology, sibling amendments — landed as fork decision F-013 with
+D-SAFE-1..23, two document reviews APPROVE-WITH-AMENDMENTS folded (24
+findings, none rejected), gap row 89 MISSING → DONE on document review (31 /
+21 / 3 / 1), W-063 discharged, residue W-144..W-150 filed (ids allocated above
+the local sc worktree's W-143), both documentation stubs stay SKIP until
+W-145; a docs-only PR with no toolchain change, gated locally under D-SAFE-23
+because Actions is disabled; the branch is pushed and the PR is the next
+action. Earlier the same day: weekly check fired; BLOCKED: GitHub Actions on
 the repository is DISABLED — every `workflow_dispatch` of `Fork: hosted
 verification` returns "Actions has been disabled for this repository", the
 repository's own scheduled workflows last ran 2026-10-08, the repository is
@@ -380,6 +389,7 @@ code). Next check: Monday 14:00 UTC.
 
 | Branch | State |
 | --- | --- |
+| `claude/carbon-fork-0-1-safe` | PUSHED, PR to open — SAFE-1 docs (F-013): five page commits + stub refresh + the document-review fold 1ce52d061 + the discharge commit; gap row 89 DONE on document review; stubs stay SKIP until W-145; docs-only, local D-SAFE-23 gate (prek fixpoint + R31 counts + runner self-test + JSON), no arbiter needed. |
 | `claude/carbon-fork-0-1-ua2` | HELD OPEN as PR #51 — UA-2 reconciliation at 05a5c30f7, fill + of-record conformance 37413300832 (131/0/19 over 150) done, gate impossible (Actions disabled); merge when a gate runs. |
 | `claude/carbon-fork-0-1-sc` | PLAN ONLY — SC-1 template structural conformance, plan rev 2 signed off (e612aebc6); implementation paused until an arbiter exists. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
@@ -441,13 +451,19 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
 
 ### Next actions (dependency order)
 
-1.  A W-008 slice (tuple/var/ref/compile-time case patterns,
+1.  SAFE-1 (F-013): open and merge the docs-only PR from
+    claude/carbon-fork-0-1-safe (no arbiter needed; the two document reviews
+    are the gate); then W-145 (stage 1 safety syntax: tokens, mode spellings,
+    `unsafe fn`/`impl`/`class`/`import`, the `unsafe` prefix forms — un-SKIPs
+    safe_carbon_design.carbon and safety_strategy_doc.carbon) first when an
+    arbiter exists, W-146 (stage 2 hardening) in parallel.
+2.  A W-008 slice (tuple/var/ref/compile-time case patterns,
     non-binding payload subpatterns — unblocks W-066's usefulness
     diagnostics) or conformance depth (differential pairs for flipped
     bullets lacking one). W-066 stays blocked on W-008.
-2.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
+3.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
     user's veto-digest response** (presented 2026-07-20, unanswered).
-3.  W5-S3p (prelude Result/Optional) stays GATED on the OPEN SF-9 fork
+4.  W5-S3p (prelude Result/Optional) stays GATED on the OPEN SF-9 fork
     (default (c) DEFER; carries W72c Try.FromContinue + the
     `final`-spelling recurrence flag); W5-S4 (std::variant mapping)
     rides its deferred planning decision. Residues: W-067
@@ -456,7 +472,7 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     SF-9-blocked), choice `Core.Copy` construction gap,
     tuple/var/ref/compile-time case patterns, non-binding payload
     subpatterns (W-008).
-4.  Conformance depth: differential pair per flipped bullet; scoreboard in
+5.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI; W-066 match usefulness diagnostics.
 
 ### Standing user directives

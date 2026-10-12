@@ -2148,6 +2148,10 @@ for any type with a trivial destructor like `i32`. Types may define additional
 initialization for the [hardened build mode](#build-modes). For example, this
 causes integers to be set to `0` when in unformed state in this mode.
 
+> **Fork amendment (2026-10-12, F-013 D-SAFE-13 I5).** The fork promotes this
+> zeroing to the Release baseline for every type; there is no separate hardened
+> mode. See [Initialization safety](safety/initialization_safety.md), rule I5.
+
 Any operation on an unformed object _other_ than destruction or assignment from
 a fully formed value is an error, even if its in-memory representation is that
 of a valid value for that type.
@@ -2167,6 +2171,11 @@ value.
 > **Note:** This is provisional. The move operator was discussed but not
 > proposed in accepted proposal
 > [#257: Initialization of memory and variables](https://github.com/carbon-language/carbon-lang/pull/257).
+
+> **Fork amendment (2026-10-12, F-013 D-SAFE-13).** The fork fixes `~x` as a
+> destructive move leaving the source unformed; see
+> [Initialization safety](safety/initialization_safety.md), rule I4. The
+> provisional note above is history.
 
 #### Mixins
 
@@ -3900,11 +3909,27 @@ This leads to Carbon's incremental path to safety:
 -   Shift the Carbon code onto an incremental path towards memory safety over
     the next decade.
 
+The fork's safe-Carbon design (2026-10-12, fork decision F-013) is specified
+on six pages under the safety design: [Type safety](safety/type_safety.md),
+[Initialization safety](safety/initialization_safety.md),
+[Spatial safety](safety/spatial_safety.md),
+[Temporal safety](safety/temporal_safety.md),
+[Mutation safety](safety/mutation_safety.md) and
+[Safe-Rust interop](safety/rust_interop.md).
+
 > References: [Safety design](/docs/design/safety)
 
 ### Lifetime and move semantics
 
-> **TODO:**
+> **Note:** Unlike the rest of this section, lifetime and move semantics are
+> not provisional: the design is fixed by fork decision
+> [F-013](/fork/decision-log.md) and specified normatively in
+> [Temporal safety](safety/temporal_safety.md) (pointer kinds, loans, `bound`,
+> relocation and the move operator `~x`) and
+> [Mutation safety](safety/mutation_safety.md) (exclusivity, the
+> no-invalidation rule, data races). Toolchain status: none of it is
+> implemented in 0.1 (fork workstream SAFE-1, stage 0); see the pages'
+> Implementation staging tables.
 
 ### Metaprogramming
 

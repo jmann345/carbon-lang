@@ -454,6 +454,12 @@ that strategy:
     mode intended for C++ interop and migration anyway. This is a documented
     dependency, not a gap in the union semantics: the read rule above is the
     same in both modes; only the required syntax differs.
+
+    > **Amendment (2026-10-12, SAFE-1 — F-013 D-SAFE-5):** the spelling is
+    > `unsafe u.f` (and `unsafe &u.f`); see
+    > [Type safety](safety/type_safety.md). 0.1 still ships the Permissive
+    > behavior.
+
 -   A **debug-build discriminator** — tracking the written field in the debug
     [build mode](safety/README.md#build-modes) (and its specialized extensions)
     and diagnosing mismatched reads that the validity rule alone cannot catch —

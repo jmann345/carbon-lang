@@ -2860,6 +2860,1083 @@ if-let/let-else/while-let (flips a MISSING bullet on landed match
 machinery), then the error-handling chain W-016..W-019 (Result, `?`,
 exception interop), then unions W-009/W-015.
 
+### SAFE-1 / F-013: Safe Carbon — Strict by default, shared `T*` plus `exclusive T*`, loans with `bound`, operation-tied `unsafe` (2026-10-12)
+
+Milestone bullet "Detailed and concrete design for safe Carbon" with its four
+sub-bullets — "Must at least include ways in which most modern C++ is safe: type
+and initialization safety", "Must also include spatial, temporal, and mutation
+safety", "Will include an analysis of how this impacts _safe_ Rust interop",
+"Does _not_ include having a complete implementation in 0.1"
+(docs/project/milestones.md:237-242; fork/gap-analysis.md row 89 reads "Project:
+detailed and concrete design for safe Carbon
+(type/init/spatial/temporal/mutation + safe-Rust-interop analysis)") flips
+MISSING → DONE on document review, the row-88 precedent, because the bullet
+itself excludes implementation; the header moves 30 DONE / 21 PARTIAL / 4
+MISSING / 1 DESIGN-ONLY → 31 / 21 / 3 / 1 over 56, and the :12-14 legend gains
+D-SAFE-21's sentence so that DONE is not self-contradictory for a documentation
+bullet. The scoreboard is unchanged (128 PASS / 0 FAIL / 22 SKIP over 150
+programs, 48/56 bullets; no program moves, and both documentation stubs stay
+SKIP with refreshed evidence until W-145). Context: proposal p005914:137-140
+marks its temporal and data-race type-system model "a _directional_ component of
+the proposal, and should be treated as provisional until dedicated proposals
+fully establish our model here"; W-063 (the gap analysis's W3) is that wave, and
+the fork replaces the proposal committee (fork/process.md:18-22), so the pages
+cite F-013 and the plan's panel record and no file is added under proposals/.
+Landed on claude/carbon-fork-0-1-safe off trunk 0bdce60a5 in the commits
+fork/safe/plan.md §3 fixed — 619c708d2 (1/5: the safety README rewritten in
+place with history kept — soundness model, modes, operation-tied `unsafe`, the
+diagnostic matrix, the pointer kinds table, the C++ call allowlist, the
+`Normalize` migration ladder; terminology gains mutation safety), afda8cd57
+(2/5: type, initialization and spatial safety pages), 2cf7e90bf (3/5: temporal
+and mutation safety pages), 75e2f8d29 (4/5: the safe-Rust interop analysis; the
+dated sibling amendments to docs/design/README.md, values.md, unions.md,
+slices.md, expressions/arithmetic.md and
+docs/project/principles/safety_strategy.md), e5207bd8e (the §2.11 stub SKIP
+refresh), 1ce52d061 (the fold of the two document reviews, 26 findings, none
+rejected) and the discharge commit carrying this entry, the ledger, the gap row,
+ORCHESTRATION and the rulebook's R31 correction — with no toolchain, prelude,
+golden or program-body change (D-SAFE-23). Plan rev 3 at 68b04cce2 is the
+normative text; its §1 is what the pages state and its §4.1 is the
+design-conformance checklist every rule's worked example was checked against
+(ACCEPTS / REJECTS / ACCEPTS-UNCHECKED / NEW-SYNTAX, each with the nightly
+2026.10.12 outcome or the scoreboard program that proves the cell).
+
+THE PANEL (fork/safe/plan.md "Design panel record": three attempts, two
+judges, scored as wholes). Attempt A, "Strict Carbon by default: owners, loans,
+and operation-tied `unsafe`" (Rust-shaped), made `T*` the exclusive pointer
+and re-meant `const T*` as shared-immutable; judge 1 found that fatal (item A)
+because the C++ `T&` → `T*` mapping and the prelude's own `Slice.ptr`/`Buf.ptr`
+fields are shared views of one block, so an exclusive `T*` is an unverified
+`noalias` claim on every one of them. Attempt B, "Places, projections and
+shared cells", is the base of the synthesis — `T*` shared-mutable, `ref` the
+exclusive access, one dataflow pass, `bound` the only annotation, library
+`Guarded`/`Box` — and both judges found its single pointer kind fatal (item
+B: `ref self` unreachable through a pointer in Strict), which is repaired by
+grafting A's explicit `exclusive T*`. Attempt C, "Ratchet: hardened runtime
+core now, annotated borrows later", claimed temporal soundness for a stage with
+no loan sets; judge 2 refuted it with `Leak` and `Escape` (a view of a local
+escaping as a class value), which is why its P1/P2/P3 subset ships only as
+stage 3's checker together with the prelude churn of W-144 — its `unsafe
+import` marker, arithmetic answer, `Core.DynCast`, `unsafe class` interim,
+rollout posture, per-row Stage column and discharge mechanics are grafted.
+Judge 2's refutation of A's return-only `bound` contract (the global `Holder`
+store) is answered by B's Store rule, and judge 1's rejection of A's
+`s_value.unsafe M()` member-position spelling by D-SAFE-5's uniform prefix.
+Every fatal flaw either judge named is resolved by a decision below and
+cross-referenced there; the design-conformance regression sets EX-TM-4 (judge
+2's three programs) and EX-TM-8 (the review programs) are kept verbatim on the
+temporal page.
+
+THE DECISIONS, D-SAFE-1 to D-SAFE-23, verbatim from fork/safe/plan.md §0.3 as
+folded through the two plan reviews (A, B), the focused re-review (RR) and the
+two document reviews (D-n, MAJOR-n, MINOR-n); each break condition is the
+decision's own, and the `§`, `R-` and `W-` references are the plan's (the
+residue ids are the allocated ones, below):
+
+-   **D-SAFE-1 — Taxonomy.** _Mutation safety_: a mutation of an object never
+    invalidates a live access path to that object or its sub-objects
+    (iterator and reference invalidation, change of a sum's alternative under
+    a payload reference) — an access property in terminology.md:156-176's
+    phrasing, enforced by the aliasing discipline (exclusive-XOR-shared access
+    plus the no-invalidation rule, D-SAFE-9). _Data-race safety_
+    (terminology.md:174-176) is its cross-thread companion, enforced by the
+    same facets (D-SAFE-16), not a sub-case: two threads writing one `Plain`
+    `i32` race without invalidating anything (amended 2026-10-12, review
+    fold: A-19 — the rev-1 "mechanism" definition and the "cross-thread case"
+    nesting withdrawn). terminology.md gains the entry; safety/README.md
+    :131-135's list gains a "Mutation safety" row that names data-race safety
+    as its thread-crossing companion. This closes the gap between
+    milestones.md:240 and terminology.md:156-176 (§0.1 row 6). Break
+    condition: upstream adds a conflicting definition of "mutation safety" to
+    terminology.md — the fork entry is renamed, the rules are not reopened.
+-   **D-SAFE-2 — Soundness model S0 (closes safety/README.md:89-91).** A
+    Strict function body cannot cause a safety bug provided (a) every callee
+    meets its declared signature contract (loans and `bound`, `unsafe fn`
+    marking, the `Send`/`Sync` facets) and (b) every `unsafe`-marked
+    operation's stated obligation holds there. Signatures are the contract;
+    Strict bodies are checked against them; Permissive bodies, `unsafe fn`
+    bodies and C++ are trusted to meet them (review is where (a) is
+    established for those); every point where the programmer takes on an
+    obligation the checker cannot discharge is spelled `unsafe` at the
+    operation (README.md:70-81 made precise). The prelude is the first client:
+    `Core.Slice`, `Core.Buf`, `Core.Optional` are Permissive-implemented
+    behind Strict-checkable signatures (slice.carbon:24-77, buf.carbon:26-64,
+    optional.carbon:186-203). Break condition: a program that Strict accepts
+    with no `unsafe` spelled and that exhibits a safety bug (terminology.md
+    :150-176) — a model bug; the page is amended and the counterexample joins
+    the §4.1 regression set.
+-   **D-SAFE-3 — Strict is the language default; Permissive is spelled with
+    `unsafe`.** A file is Strict unless its package declaration reads
+    `unsafe permissive package P (library "L")?;` (also `unsafe permissive
+    impl package P;` and `unsafe permissive library "L";`), extending the
+    grammar at docs/design/code_and_name_organization/README.md:312-316; a
+    function body is Strict unless its definition carries `unsafe permissive
+    fn F(...) { ... }`. `permissive` is a contextual keyword valid only after
+    `unsafe`, so README.md:116-120's requirement that the permissive spelling
+    "must include the `unsafe` keyword" holds and `grep unsafe` finds every
+    Permissive unit. The stub's `package Main strict;` strawman
+    (safe_carbon_design.carbon:16) is superseded: Strict needs no word.
+    Rollout (attempt C's posture, adopted as the implementation rule, not
+    the language rule): the 0.1 toolchain has no modes, so every file today
+    behaves as Permissive-unmarked; stage 3 ships `--strict-checks=warn` as
+    the default and stage 4 flips it to `error`; the design page states the
+    language rule and the rollout both. Break condition: owner veto of
+    Strict-by-default, or a stage-1 parse ambiguity between `unsafe
+    permissive` and the `unsafe` expression prefix (none exists on paper:
+    the prefix form never precedes `permissive`, `package`, `impl`,
+    `library` or `fn`).
+-   **D-SAFE-4 — Callee contract and body mode are different things.**
+    `unsafe fn F(...)` declares that calling `F` carries an obligation the
+    checker cannot discharge; in Strict every call is spelled `unsafe F(args)`
+    / `unsafe x.M(args)`; the body of an `unsafe fn` is still checked in its
+    file's mode (marking a callee never un-checks its body). `unsafe
+    permissive fn` is the body-mode marker: a Permissive body that is safe to
+    call and never colors callers (p005914:97-98: safe and unsafe code "freely
+    mixed"). Attempt C's conflation (an `unsafe fn` body being Permissive) is
+    rejected (judge 1 fatal, item C). Break condition: a prelude function that
+    needs both (unsafe to call AND Permissive body) — spelled `unsafe
+    permissive unsafe fn`? No: the two modifiers compose as `unsafe fn` on the
+    declaration plus `unsafe permissive` on the definition; if the parser
+    cannot carry both, the body marker moves to a post-signature position
+    (attempt A's R6 form) without changing semantics.
+-   **D-SAFE-5 — Operation-tied `unsafe` is a uniform expression prefix.**
+    Forms: `p unsafe as T` (exists, as.carbon:61-65), `unsafe F(args)` and
+    `unsafe x.M(args)` (call of an `unsafe fn`), `unsafe *p` and `unsafe p->m`
+    (dereference of an unverified pointer, D-SAFE-10), `unsafe u.f` (union
+    field read, the spelling unions.md:450-452 defers to this design; writes
+    need none, F-007b), `unsafe &u.f` (address of a union field: a deferred
+    read, whose result is a ⊥ pointer — T6, RR-1), `unsafe s[i]` where `[]`
+    resolves to an `unsafe fn`. The prefix
+    applies to the innermost call, dereference, subscript or field read that
+    follows the keyword — in `unsafe x.M(args).N()` it marks `x.M(args)` only,
+    and `unsafe (x.M(args).N())` widens it by parenthesizing; an infix or
+    assignment operator that resolves to an `unsafe fn` (a C++ member
+    `operator=`, `operator+`, `operator+=`: `c = 42` at fork/conformance/
+    programs/interop/cpp_operator_import_assignment.carbon:33 — a site that
+    does not compile today, the program being SKIP until the assignment-operator
+    import lands; re-pinned 2026-10-12, document-review fold: MINOR-1) is
+    spelled with
+    the parenthesized form, `unsafe (c = 42)`, `unsafe (a + b)`, `unsafe (a
+    += b)`, the parse note being that `unsafe (` begins a prefix expression
+    whose operand is the parenthesized expression's outermost operator
+    application (amended 2026-10-12, review fold: A-16, A-12). Three further
+    forms (amended 2026-10-12, document-review fold: D-1, D-9, MAJOR-1): the
+    same prefix on a call, method or subscript that does not resolve to an
+    `unsafe fn` but consumes an unverified carrier — a ⊥ pointer passed to a
+    `bound` parameter, a ⊥ view subscripted: `unsafe Load(q)`, `unsafe v[i]` —
+    carries T6's obligation that the storage outlives every use derived from
+    the result; `unsafe p->Push(3)` and `unsafe (*p = v)` mark an invalidating
+    operation of M3 through a shared path, with the obligation that no live
+    access path reaches the storage it invalidates; and `unsafe fn F(...) =
+    "name"` marks a builtin binding declared outside the prelude, a
+    declaration-level form like `unsafe import` (the toolchain accepts such a
+    binding in any file today, toolchain/check/testdata/builtins/pointer/
+    offset.carbon:23), with `StrictBuiltinBindingUnmarked` and its warning
+    twin `PermissiveBuiltinBinding` added to §1.1's matrix. This supersedes
+    values.md:579-596's `s_value.unsafe RefMemberFunction()` strawman (the
+    member-access path has no modifier hook, handle_expr.cpp:335-340 only
+    generalizes the trailing-operator path — judge 1 on attempt A's R9) and is
+    recorded as a dated amendment there. Break condition: stage 1 finds the
+    prefix ambiguous against `unsafe as` (it is not: `unsafe` followed by `as`
+    remains the infix modifier by the existing one-token lookahead,
+    handle_expr.cpp:391-394) — then the spelling moves, the set of marked
+    operations does not.
+-   **D-SAFE-6 — Permissive imports are marked (closes README.md:122-124).**
+    A Strict file that imports a library whose API file is Permissive writes
+    `unsafe import P library "L";` (declaration-level `unsafe` modifier, the
+    attempt-C graft both judges asked for); importing a Strict library needs
+    no marker. `import Cpp ...` needs no marker either, and that is a named
+    asymmetry against README.md:122-124's one-rule ask (amended 2026-10-12,
+    review fold: A-13(d)): a by-value C++ function is called unmarked while a
+    by-value function of a Permissive Carbon library needs `unsafe import`,
+    because the `Cpp.` prefix on every C++ name is itself the audit marker an
+    `unsafe import` would duplicate, and D-SAFE-18 marks every
+    pointer-carrying C++ call at the operation. Attempt A's driver flag alone
+    (`--warn-permissive-imports`) is rejected as weaker than a source marker
+    an audit greps. Break condition: a migration corpus where the marker is on
+    more than half of all imports of a Strict file — then the marker becomes
+    per-package (one `unsafe import` for the package) and the driver flag is
+    added for discoverability.
+-   **D-SAFE-7 — Three pointer kinds; `T*` is the shared-mutable one.**
+    `T*` is the Ante-style shared-mutable pointer (any number may alias; only
+    non-invalidating operations through it, D-SAFE-9); `exclusive T*` is the
+    NEW exclusive-mutable kind (Rust `&mut T`; the explicit pointer kind
+    p005914:182-184 names); `const T*` is the shared-const kind and `const`
+    keeps exactly values.md:1266-1270's API-subsetting meaning (nothing new is
+    read into `const`; attempt A's re-meaning of `const` is rejected, judge 1
+    fatal A). `&x` on a place under exclusive access (an owner, a `ref`
+    binding, `*p` for `p: exclusive T*`) yields `exclusive T*`, which converts
+    implicitly to `T*` (downgrade: the loan becomes shared) and to `const T*`;
+    `T*` converts implicitly to `const T*`; nothing converts upward except
+    `unsafe as` (and `unsafe as` is the only cast that removes `const`,
+    convert.cpp:1843-1846, answering as.carbon:62's TODO); the kind upgrade
+    `p unsafe as exclusive T*` is a row of §1.2's closed list whose obligation
+    is that no other access to the object is live while the result is used,
+    the result keeping the operand's loan set at exclusive kind (amended
+    2026-10-12, document-review fold: D-4). Receivers: `ref
+    self: Self` is exclusive access (p005434:83); `addr self: Self*` is the
+    shared-mutable receiver, restoring `addr` exactly for the purpose
+    p005434:1226-1237 reserves it; `ref self: const Self` and by-value `self`
+    are const access. Why `T*` is shared: the C++ `T&` → `T*` mapping
+    (docs/design/README.md:3757-3758) and the prelude's own `Slice.ptr: T*`
+    / `Buf.ptr: T*` fields (slice.carbon:58, buf.carbon:62) are shared views
+    of one block; an exclusive `T*` would turn every one into an unverified
+    `noalias` claim (judge 1 fatal A; judge 2 fatal B resolved by the explicit
+    exclusive kind). Keyword fallout, verified: `exclusive` occurs in `.carbon`
+    sources only in comments (three testdata files; `grep -rnw`), `addr` in
+    CHECK lines and comments and in **one source line**,
+    third_party/examples/re2/re2.carbon:769 `private fn Init(addr self: Self,
+    pattern: StringPiece, options: Options);` — the historic spelling, in a
+    file no target builds (amended 2026-10-12, review fold: B9; the rev-1
+    "only in CHECK lines and comments" claim withdrawn here, in §6 and R-7);
+    the fork chooses `addr self: Self*` over that historic `addr self: Self`
+    because the receiver is the address-taking form p005434:1226-1237
+    contemplates ("one of the pointer semantics"), so its declared type is
+    the pointer type the body sees; `permissive` nowhere. Break condition: a
+    prelude or interop API that needs a fourth kind (exclusive-const) — added
+    additively; the `exclusive` spelling is a mechanical rename.
+-   **D-SAFE-8 — `ref` bindings inherit the kind of their source.** A `ref`
+    formed from a place is exclusive access (p005434:83, :173-180 kept); a
+    `ref` formed from `*p` inherits `p`'s kind: exclusive from `exclusive T*`,
+    shared-mutable from `T*` (M3 applies to uses of it), const from `const
+    T*`. So p005434:717-720 (`Valid1(bound p: i32*) -> ref i32 { return *p;
+    }`; re-pinned, B10) and :826 (`ValToRef`) stay valid in both modes (judge
+    2 fatal B), the result being a shared-kind `ref`. A `ref` or result whose
+    loan set mixes kinds — p005434:772-779's `Conditional(b, bound ref r: C,
+    bound p: C*) -> ref C` carries `{(r, exclusive), (*p, shared)}` — has the
+    **weakest** kind (shared if any loan is shared, const if any is const),
+    and T4 applies to every place in the set: program `Pick` in §4.1 (a
+    shared-kind `ref` to `y` obtained from `Pick(false, x, q)` cannot be
+    assigned a new `Buf` while `q2->AsSlice()` views `y`) is
+    `StrictInvalidatingThroughShared` — a non-`Plain` assignment through
+    shared-kind access, rejected even with no live view, the view `v` being
+    a second reason (amended 2026-10-12, review fold: A-5; the diagnostic
+    name corrected from `StrictSharedBorrowInvalidated`, re-review fold:
+    RR-7).
+    `noalias`/`captures(none)` are emitted
+    only for exclusive-kind refs and only under D-SAFE-10's T8, which narrows
+    p005434:83's "The address of a `ref` binding is `nocapture` and `noalias`"
+    to the exclusive kind — a dated amendment on the temporal page and in the
+    F-013 entry. Break condition: an accepted p005434 example that becomes
+    invalid in Permissive mode (none may; §4.1 lists them as "ACCEPTS").
+-   **D-SAFE-9 — The no-invalidation rule and `Core.Plain`.** An operation on
+    a place `P` is _invalidating_ if it can end the lifetime of any object
+    reachable from `P` or change which sub-objects exist at an address: (a)
+    destruction of `P` or a sub-object; (b) `~P`; (c) assignment to `P` or a
+    sub-object unless the assigned type is `Core.Plain`; (d) a call whose
+    receiver is exclusive (`ref self: Self`); (e) forming an exclusive loan.
+    Invalidating operations require exclusive access: forbidden through `T*`
+    and `const T*`, forbidden on the owner while any shared loan is live.
+    Everything else (reads, overwriting `Plain` fields, `addr`/`const`
+    methods) is permitted through any number of aliases. `Core.Plain` is a
+    compiler-determined facet in the `Concrete`/`TrivialDestructor` pattern
+    (classes.md:1941-1944; details.md:4254-4290), defined **structurally** to
+    match the invalidation definition above (amended 2026-10-12, review fold:
+    A-3, B2, B12): a type is `Plain` when (i) it is `Copy` with trivial
+    destruction — no user destructor in either spelling, classes.md
+    :1852-1870's `fn destroy(self)` / `fn destroy(ref self)` or the prelude's
+    `impl as Destroy { fn Op(ref self) }` form (buf.carbon:58-60, D-SL-16; the
+    mutation page discloses in one dated sentence that the fork's prelude uses
+    the interface form classes.md does not name) — and (ii) every sub-object
+    exists **and is formed** at a fixed offset regardless of the value
+    (amended 2026-10-12, re-review fold: RR-6: `DefaultOptionalStorage(T)`
+    is {`MaybeUnformed(T)`, `bool`}, optional.carbon:140-143, and the
+    pointer storage is the one-word `MaybeUnformed(T*)`, :188-189 — every
+    sub-object has a fixed offset and what varies is formedness, so the
+    exclusions below follow from (ii) only with that word), closed under
+    arrays/tuples/structs/classes of `Plain` fields. Membership table (§2.7):
+    integers, floats, `bool`, `char`, all three pointer kinds, `Slice(T)` and
+    the prelude's `String` (= `str`: a non-owning `{Char*, i64}` with `impl as
+    Copy`, no `Destroy`, `impl String as UnformedInit`, string.carbon:16-28 —
+    B2) **are** `Plain`; `Buf`, `Box`, payload `choice`s, `Core.Optional(T)`
+    for every `T` (a class over `MaybeUnformed`/null-niche storage whose
+    payload sub-object exists only for `Some`, optional.carbon:13-60,
+    :186-203), `MaybeUnformed(T)` and unions with a pointer-carrying field
+    (unions.md:241) are **not** — so `*d = Optional(i32*).None()` through a
+    shared `Optional(i32*)*` is `StrictInvalidatingThroughShared`, and M5's
+    "alternative cannot change while a payload reference lives" is a
+    consequence of (c) rather than a contradiction of it (program `Alt2` in
+    §4.1). The rev-1 representational wording ("`Copy` with trivial
+    destruction, no `choice` payload", which admitted `Optional(T*)` and
+    listed `String` as non-`Plain`) is withdrawn. Attempt B's definition
+    replaces attempt A's `SharedAssignable` (judge 2's graft). This is
+    p005914:198-202 made checkable: iterators hold `T*`, `Push` is `ref self`
+    and so "precludes any outstanding shared mutable pointers". Break
+    condition (R-1): a migration corpus in which more than 30 percent of C++
+    non-`const` methods end up exclusive (the `Optional(T*)` exclusion makes
+    linked-structure heads exclusive-only through pointers — counted in that
+    corpus) — then a finer rule (assignment through `T*` when no sub-loan
+    into the old value can exist, needing per-field loan tracking) or an
+    `unsafe impl T as Core.Plain` opt-in.
+-   **D-SAFE-10 — Loans (T1-T8) plus the Store rule.** Vocabulary: a _place_ is
+    a durable reference expression's storage (values.md:306-315); a _loan_ is
+    (place, kind ∈ {exclusive, shared}, origin); every pointer value, `ref`
+    binding, value binding and value of a class transitively containing a
+    pointer carries a loan set; ⊥ means _unverified_, the empty set means _free_
+    (globals, allocator-owned storage held by Permissive code). Loans are a
+    property of values, not of types (p005434:902-915): `T*` stays the single
+    indirection construct (values.md:1138-1152). T1 ownership (one owner: `var`,
+    `var` parameter, field, temporary, or the allocator behind a free pointer;
+    no RC/GC, p005914:107-109). T2 forming (`&x` exclusive; downgrade on
+    conversion; `let ref r = x;` exclusive; a value binding of a non-`Plain`
+    type is a shared loan — from a materialized temporary it owns the storage
+    instead, D-SAFE-17, RR-5 — of a `Plain` type an eager copy with no loan —
+    D-SAFE-17, M8; `p->f`, `(*p).f`, `case .Some(ref v)`, `Subslice`,
+    `FromArray`, `AsSlice` produce sub-loans; loans reached through an owning
+    indirection — a `Buf`'s elements, a `Box`'s pointee — are _interior loans_
+    on the owner). **Copies preserve loans** (amended 2026-10-12, review fold:
+    A-2): a copy, relocation, `ImplicitAs`/`As` conversion or `Copy.Op` of a
+    loan-carrying value carries the same loan set — the prelude's `impl forall
+    [T: Copy] T as ImplicitAs(T)` (as.carbon:38-40) and every `Copy`/`ImplicitAs`
+    impl are not loan boundaries, so `let t = s; return t;` of a view is exactly
+    `return s;`, and D-SAFE-11(a)'s "no `bound` parameter → free result" applies
+    to functions that _produce_ values, never to the identity conversions a
+    `let`, a `return` or an argument pass goes through. A copy of an
+    **exclusive** carrier is never a second live exclusive carrier of the same
+    loan (amended 2026-10-12, re-review fold: RR-3): a same-kind copy — `let q:
+    exclusive i32* = p;` for `p: exclusive i32*` — is a move of the loan, the
+    source dead until the copy's last use (NLL, T3), and an exclusive carrier
+    reached through a shared path (a `Plain` field of type `exclusive T*` read
+    through a shared pointer) is copied as a reborrow at shared kind, so T8
+    never sees two live exclusive carriers of one loan. **Reborrow** (amended
+    2026-10-12, review fold: A-4): forming a shared loan from an exclusive
+    carrier — the `exclusive T*` → `T*` downgrade, a `bound self` by value, an
+    `addr self` call, `&*p` at shared kind — _suspends_ the carrier's
+    exclusivity; until every derived loan is dead the carrier may be used only
+    at shared kind (reads, `Plain` writes, `addr` and `const` methods, further
+    shared loans), and an invalidating use of it is
+    `StrictSharedBorrowInvalidated` — which is how EX-M-1 reads: `vec->Get(0)`
+    while `a` lives is a shared use, `vec->Push(3)` is legal only once `a`, `b`
+    and `first` are dead. T3 liveness: from creation to last use of any carrier
+    (NLL on SemIR's block graph); at scope exit the destroyed `var`'s loans must
+    be dead (`StrictBorrowOutlivesPlace`). T4 conflicts: a live exclusive loan
+    excludes every other access to overlapping places except through the
+    suspended carrier at shared kind (the reborrow clause); a live shared loan
+    excludes exclusive loans and invalidating operations (D-SAFE-9), and an
+    invalidating operation on `P` kills every interior loan on `P`
+    (`StrictSharedBorrowInvalidated`, `StrictExclusiveBorrowConflict`); for a
+    carrier whose loan set mixes kinds, T4 is applied to every place in the set
+    at the weakest kind (D-SAFE-8, A-5). T5 is D-SAFE-11. **Store rule (attempt
+    B's, judge 2's fatal-flaw repair for attempt A's T5(a)):** storing a
+    loan-carrying value into a place `P` (field write, store through a pointer,
+    container insert through a `bound`-free API, global) requires every loan to
+    outlive `root(P)` — by lexical nesting for locals, by D-SAFE-11 for
+    parameters, and a free or ⊥ destination accepts only free loans
+    (`StrictStoreOutlivesSource`); so `let h: Holder* = GetGlobalHolder(); h->p =
+    &y;` is rejected. T6 the unsafe boundary: the result of `unsafe as` from a
+    non-pointer, of any unannotated C++ call (and every pointer-typed field read
+    from an imported C++ type — amended 2026-10-12, document-review fold: D-7; a
+    marked `unsafe fn` call's result is NOT ⊥: it carries the loan set its
+    signature gives under 11(a), free when it has no `bound` parameter, because
+    the marker takes on the callee's stated obligation, lifetime included where
+    the doc comment states one, so `unsafe Slice(T).Make(p, n)` yields a free
+    view and is the single audit line §1.4 names — amended 2026-10-12,
+    document-review fold: D-1), anything read through an unverified pointer, **a
+    value of pointer-carrying type read from a union field (`unsafe u.p`), and
+    the pointer `unsafe &u.f` itself, ⊥ on formation for every field type**
+    (amended 2026-10-12, review fold: A-1: the union read discharges only the
+    punning obligation, unions.md:445-447, and a write `u.n = 0x1234` through
+    another field is safe, so the loans stored in `u` say nothing about the
+    bytes read back — program `Wild` in §4.1 is the README.md:83-87 case;
+    amended 2026-10-12, re-review fold: RR-1: rev 2 marked the value _loaded_
+    through `unsafe &u.f` rather than the pointer, which is not modular — a
+    Strict callee that returns the pointee of a `bound` pointer-to-pointer
+    parameter is correct code that cannot see the union, and 11(a) would give
+    its result over `unsafe &u.p` the non-⊥ loan set {(u.p, shared)}; with the
+    pointer itself ⊥, because a pointer into a union aliases every field
+    (unions.md:417-418), passing it to a `bound` parameter, dereferencing it,
+    binding a `ref` through it and every copy of it fall under the next
+    sentence, and a call result whose `bound` arguments include a ⊥ carrier is ⊥
+    — program `Wild3` in §4.1), and every pointer field of an `unsafe class`
+    (D-SAFE-11(g)) is ⊥; a ⊥ pointer may be copied, compared and passed to a
+    non-`bound` parameter, but `*p`, `p->m`, `ref` binding, view formation or
+    passing it to a `bound` parameter needs `unsafe` — `unsafe *p` for the
+    dereference, and for a non-dereference use the same prefix on the innermost
+    call, binding or subscript that consumes the carrier, `unsafe Load(q)`,
+    `unsafe v[i]`, each marker discharging one obligation, so `Wild3`'s `unsafe
+    &u.p` covers the address-of and not the pass (amended 2026-10-12,
+    document-review fold: D-1) — whose obligation is that the storage outlives
+    every derived use; and a ⊥ value does not leave a Strict function through
+    its signature: returning it from a function that is not `unsafe fn` is
+    `StrictUnverifiedDeref` at the `return`, and storing it into a place whose
+    root is not a local of the body is `StrictStoreOutlivesSource` under the
+    Store rule, because ⊥ is not free, while an `unsafe fn` may return ⊥ under
+    the obligation its doc comment states (amended 2026-10-12, document-review
+    fold: D-2; program AP-1 on the temporal page); `unsafe as` between pointer
+    types preserves the loan set of its operand, so a conversion never extends a
+    lifetime (README.md:83-87), and its obligation is that **a valid, complete
+    object of the destination type lives at that address for the loan's
+    lifetime** — extent included, so `(&x) unsafe as i64*` for `x: i32` is the
+    caster's bug, not a checker hole (amended 2026-10-12, review fold: A-14;
+    stated on type_safety.md). T7 is D-SAFE-12. T8 codegen honesty: `noalias`/`captures(none)`
+    are emitted for exclusive loans only where the checker established them —
+    intra-function, and on `ref`/`exclusive T*` parameters of functions that are
+    **not exported to C++, not address-taken (no function value crosses to C++
+    or Permissive code), and whose every Carbon call site in the package is
+    Strict-checked** (a whole-package fact; otherwise never), per
+    p005434:865-870 — amended 2026-10-12, review fold: A-7: the fork's own
+    corpus has C++ calling `fn Bump(ref self, n: i32)` (fork/conformance/
+    programs/interop/cpp_export_method.carbon:31-33 called from `inline Cpp`)
+    and `std::thread(Work)` taking a Carbon function value
+    (cpp_thread_carbon_fn_diff.carbon:38-45), and both are callers the
+    whole-package fact must count; Permissive or C++ callers that alias such a
+    parameter produce erroneous behavior, never UB (p005914:204-222). First
+    enforceable subset (attempt C's graft, both judges): P1 `&local`/`&param`,
+    P2 pointer parameters and `ref` bindings, P3 everything else (returned,
+    loaded, converted, C++) — with P3 needing `unsafe *p` and P1/P2 never
+    escaping (P1: not returned, not stored into a place whose root is declared
+    outside the source's scope, decided lexically, so a store into a local
+    declared inside that scope is accepted — amended 2026-10-12, document-review
+    fold: D-5); it is a strict subset of T1-T8 with no loan sets and ships as
+    stage 3's first checker (§1.9), **but only together with the prelude churn
+    of D-SAFE-14** (judge 2 fatal C: without `bound` on `AsSlice`/`FromArray` a
+    view escapes as a class value and the P-rule never fires). Break condition:
+    any Strict-accepted counterexample; judge 2's three programs (`Leak`, the
+    scope-escaping `FromArray`, the global `Holder` store) are the standing
+    regression set in §4.1 and on the temporal page.
+-   **D-SAFE-11 — `bound` semantics fixed; named lifetimes pinned.** (a) The
+    loan set of a call's result is the union of the loan sets of the arguments
+    passed to `bound` parameters (`self` included), with kind = the parameter's
+    kind (`ref`/`exclusive T*` → exclusive, value/`T*`/`const` → shared), a
+    mixed set taking the weakest kind (D-SAFE-8, A-5); a function with no
+    `bound` parameters returns free values — subject to the Store rule, and
+    never read as applying to a copy, conversion or `Copy.Op` of an existing
+    value (T2's copies-preserve-loans clause, A-2), so a prelude function
+    whose result can carry a loan from a parameter — a view of `self`, a `T`
+    payload returned from `self`, a `T` argument stored into the result —
+    without `bound` on that parameter is a W-144 defect under SP3's signature
+    rule (RR-2), not a loan boundary; a ⊥ argument to a `bound` parameter
+    makes the result ⊥, after the `unsafe` T6 demands for the pass (RR-1).
+    (b) In the callee a non-`bound` pointer/`ref` parameter may not
+    escape (not returned, not stored, not passed as a `bound` argument whose
+    result escapes: `StrictEscapeOfUnboundParam`); a `bound` parameter may
+    escape only into the return value. (c) Returning a loan on a local,
+    temporary or `var` parameter is `StrictDanglingReturn` (p005434:698-713's
+    erroneous cases become hard errors in Strict). (d) For the duration of a
+    returned loan the bound argument stays borrowed in the caller at the
+    parameter's kind: p005434:831-832 asks for the bound parameter to be
+    "immutable for the duration", which this design **narrows** to "not
+    invalidated" — a shared-kind bound argument stays writable in its `Plain`
+    fields through other aliases (the D-SAFE-17 narrowing applied at a second
+    site; a dated narrowing on the temporal page, in §4.3's list and in the
+    F-013 entry — amended 2026-10-12, review fold: A-13(b)). (e) Impls may drop
+    but not add `bound` (p005434:782-806, kept) — which is why the prelude's
+    interfaces `IndexWith.At` and `Copy.Op` carry `bound self` themselves
+    (SP3, RR-2). (f) Named form, pinned now and
+    implemented at stage 6: `bound(a)` with `[a: Core.Lifetime]` as a deduced
+    parameter — `fn Push[a: Core.Lifetime](list: bound(a) List*, node: bound(a)
+    Node*)` lets `list->head = node` pass the Store rule; `class Iter(T: type,
+    a: Core.Lifetime)` holds `bound(a)` pointer fields; bare `bound` is the
+    elision form. The rule behind the example (amended 2026-10-12, review fold:
+    B13(e)): one name is one loan set — every argument passed to a `bound(a)`
+    parameter, every `bound(a)` field of the receiver and the result join a
+    single set whose kind is the weakest among them; a store from a place in set
+    `a` into a place in set `a` passes the Store rule; two names are unrelated
+    sets, and an outlives relation between names (`a: b`) is deferred to the
+    stage-6 plan (W-150), with the bare-`bound` stage expressing none. (g)
+    Pointer fields and the interim (attempt C's graft; amended 2026-10-12,
+    document-review fold: D-3): a Strict class with a pointer field is legal
+    without `unsafe class` — its values carry the union of their fields' loans
+    as one loan set, formed at construction and propagated by 11(a) and T2, so
+    a view-shaped class is checked like `Core.Slice`, whose `ptr: T*` is such
+    a field (review 1's AP-2: `View2`/`Make2` accepted, `Bad2`
+    `StrictDanglingReturn`); `unsafe class` is required only where a loan must
+    be stated in the type because the value's lifetime is not the loan's — a
+    field written through a free or ⊥ pointer, a heap-stored node — until
+    stage 6's `bound(a)` fields: its invariant is the author's,
+    every construction site in Strict is `unsafe` because construction may store
+    non-free loans, its pointer fields are ⊥ (T6: reads through them need
+    `unsafe *`), and the Store rule treats them as a ⊥ destination that accepts
+    only free loans — so EX-TM-4 `Store`'s `h->p = &y` is
+    `StrictStoreOutlivesSource` by rule (amended 2026-10-12, review fold: A-15),
+    closing attempt A's R4 window with an auditable spelling. Break condition:
+    upstream amends p005434's `bound` with different semantics — a V-3 review;
+    the fork keeps whichever is lower-divergence and records the delta.
+-   **D-SAFE-12 — Temporaries: diagnose, do not extend.** A `ref` binding or
+    `bound` result may carry a loan on a temporary only until the end of the
+    full-expression; later use is `StrictBorrowOfTemporary`, with the fix
+    p005434:1140-1142 suggests (`var x = ...;`). This makes the C++ divergence
+    at docs/design/interoperability/philosophy_and_goals.md:456-465 (full
+    path, review A) a compile error, never a dangling pointer; today's
+    toolchain already rejects `let ref r: Core.String = MakeString();` by
+    p005434:173-175's rule ("cannot bind durable reference to non-reference
+    value of type `str`", nightly 2026.10.12), so `StrictBorrowOfTemporary`
+    is reachable only through a `bound` result or a pointer formed from a
+    temporary (EX-TM-7b; amended 2026-10-12, review fold: B1); the
+    builder-chain idiom values.md:414-421 flags stays
+    unsupported. Break condition: a migration corpus where builder chains
+    dominate — an owner call on extension.
+-   **D-SAFE-13 — Initialization: definite formation, zero-fill, moves.** I1
+    today's desugaring (handle_let_and_var.cpp:277-305, default.carbon:38-54)
+    and the unformed contract (README.md:2134-2153) are kept. I2 Strict runs a
+    flow-sensitive _definite-formation_ analysis (the same pass as the borrow
+    checker) over each local `var` of an `UnformedInit`-only type, each
+    `MaybeUnformed(T)` and each moved-from object: every read, member access,
+    method call, value binding, `&x`, `ref` binding or pass-by-value must be
+    dominated on every path by assignment from a formed value, else
+    `StrictUseOfUnformed` — for a `MaybeUnformed(T)` object the tracked uses
+    are its own assignment and destruction, the projection `x unsafe as T`
+    being its one read and an `unsafe` operation whose obligation replaces
+    domination (I3; amended 2026-10-12, document-review fold: D-12);
+    conditional initialization is rejected and
+    `Optional(T)` is the sanctioned escape (README.md:2129-2132's own
+    suggestion). I3 `&x` of a possibly-unformed `x` is permitted in Strict
+    only when `x: MaybeUnformed(T)` (maybe_unformed.carbon:13-17), whose
+    projection is the existing `x unsafe as T` (the read form
+    optional.carbon:201 `value unsafe as T*` uses; :194 is the assignment
+    form `result unsafe as T* = self;` — re-pinned, B10); in Permissive `&x`
+    is allowed and the callee is _assumed_
+    to form `x` (p000257:102-104 "Taking the address is fine"), reads of
+    unformed storage being erroneous-with-a-defined-value by I5. I4 moves
+    (makes README.md:2160-2168 concrete): `~x` yields an initializing
+    expression with `x`'s old value and leaves `x` unformed; the default move
+    of a class is a bitwise relocation followed by marking the source
+    unformed; `impl as Core.Move` customizes, with the signature `interface
+    Move { fn Op[ref self: Self]() -> Self; }` whose contract is "returns the
+    old value as an initializing expression and leaves `self` unformed" and
+    whose default impl for `Relocatable` types is the bitwise relocation
+    (amended 2026-10-12, review fold: B13(d)); the moved-from mark is static
+    in Strict, where I2 rejects path-dependent formation, and a per-object
+    flag consulted at scope exit only in a Permissive body, the Permissive and
+    Debug mechanism for destructor skipping, never a Strict cost (amended
+    2026-10-12, document-review fold: D-13); only entire reference
+    expressions may be moved from (values.md:117-118; `*p` stays future work,
+    :119-122); after `~x` I2 forbids use until reassignment — p000257's
+    middle ground, neither Rust's nor C++'s. `Core.Relocatable` is a
+    compiler-determined facet defined structurally (amended 2026-10-12,
+    review fold: A-20): all fields `Relocatable`; the three pointer kinds,
+    integers, floats, `bool`, `char` are; imported C++ types are iff
+    trivially relocatable; `unsafe impl T as Core.Relocatable {}` opts a
+    pinned type out or in — self-reference is a property of values, not
+    types, and what makes relocation safe is T4 (a self-loan is a live shared
+    loan on `x` that forbids the invalidating `~x`), so "no self-pointers" is
+    not a criterion. The facet decides by-value crossing to Rust
+    (D-SAFE-19). I5 every mode: Release `make_uninitialized` zero-fills the
+    whole object including padding (p000257:355-358; README.md:2147-2149's
+    hook, promoted from "hardened" to the Release baseline, which
+    p005914:87-88 permits — a dated departure disclosed by a §2.9-style
+    blockquote at README.md:2147, amended 2026-10-12, review fold: A-13(e));
+    Debug poison-fills and
+    detects (README.md:231-235). I6 no unformed members (p000257:630-637; the
+    `extend base` subobject is an ordinary field for I2, closing :639-642),
+    no passing/returning unformed objects (:760-764), `Optional(T*)`'s
+    `MaybeUnformed(T*)` storage is Permissive prelude code behind a safe API.
+    Break condition: a benchmark in the fork showing more than 0.5 percent
+    from zero-fill alone — then zero-fill is scoped to escaped-unformed
+    objects only (the same pass knows which).
+-   **D-SAFE-14 — Spatial: fail-stop everywhere, `unsafe fn` is the opt-out,
+    views carry loans.** SP1 no arithmetic (README.md:847-856;
+    `pointer.offset` prelude-private, slice.carbon:19). SP2 every element
+    access through `array(T, N)`, `Core.Slice(T)`, `Core.Buf(T)` is
+    bounds-checked and a violation fails-stop in every build mode (D-SL-4
+    retained as the Release baseline README.md:219-222 requires); the array
+    gap — constant indices rejected at compile time (eval.cpp:1080-1116
+    `ArrayIndexOutOfBounds`), runtime indices lowered unchecked
+    (lower/handle.cpp:47-74) — is a stage-2 lowering residue: `ArrayIndex`
+    emits the same compare-and-`fail_stop` sequence as `Slice.Get`, and
+    array subscripts go through `IndexWith(i64)` instead of the hardcoded
+    `i32` (handle_index.cpp:165-170's TODO; W-116). SP3 views carry their
+    length and a loan: `FromArray` takes `bound p`; `Data`/`Get`/`AsSlice`,
+    **`Subslice`, `Slice(T) as ImplicitAs(Slice(const T))`'s `Convert`
+    (slice.carbon:80-84), the C++-container `C as
+    ImplicitAs(Slice(C.Element))`'s `Convert` (:100-106) and every other
+    producer whose result views `self`'s storage** take `bound self`
+    (amended 2026-10-12, review fold: A-2 — programs `Launder1`/`Launder2`
+    in §4.1). **The W-144 audit rule** (amended 2026-10-12, re-review fold:
+    RR-2 — rev 2's receiver-only grep, a view- or `Self`-returning function
+    whose receiver is not `bound`, missed results of type `T` and
+    loan-carrying non-receiver parameters): W-144 reviews every prelude
+    signature under 11(b)/(c) as if its body were Strict-checked, the body
+    itself trusted (D-SAFE-18) — every parameter, receiver, value or pointer,
+    including a type parameter `T` that may be instantiated to a
+    pointer-carrying type, whose loans can reach the result or be stored into
+    `self` is marked `bound`, or the function becomes `unsafe fn`; because an
+    impl may drop but not add `bound` (p005434:782-784), the interface
+    declarations `IndexWith.At` (core/prelude/operators/index.carbon:9) and
+    `Copy.Op` (core/prelude/copy.carbon:10) carry `bound self` so that impls
+    may keep it — the prelude's primitive copies and identity conversions
+    stay governed by T2 (loan set preserved; RR-3's rule for exclusive
+    carriers), the interface's `bound self` being what lets a user-written
+    `Copy.Op` keep its loan without 11(a) reading the result as free. Named
+    hits today: `Optional(T).Get` (result `T`, optional.carbon:40-42) and
+    `Optional(T).Some` (a `T` argument stored into the result, no receiver,
+    :34-36), `OptionalStorage.Get` (:22), `Try.Branch` (:69-78, the `o?`
+    path), `Buf(T).Make` (`fill: T` stored, buf.carbon:28), `Buf.Get` (:45),
+    `Buf.At` (:72-75), `Slice.At` (slice.carbon:74-77) — programs
+    `Launder4`/`Launder5` in §4.1 (`Core.String` is audited the same way);
+    `UnsafeMake` becomes `unsafe fn
+    Make(p: T*, size: i64)` with slice.carbon:29-30's comment as its stated
+    obligation — the **prelude churn is a named residue item (W-144), gated,
+    never assumed in an example** (judge 2 fatal D). SP4 unchecked access is
+    `unsafe fn GetUnchecked[bound self: Self](i: i64) -> T` on `Slice`/`Buf`
+    (the W-114 opt-out README.md:223-226 promises); no build flag disables
+    checks — README.md:260-262's promise that Carbon "will provide a way to
+    disable the default hardening in release builds, but not in a supported
+    way" is **withdrawn by the fork, dated** (amended 2026-10-12, review
+    fold: A-13(c)): the per-site `unsafe fn GetUnchecked` is the only
+    disable, which keeps p000196:45-48's "manually disabled for
+    performance-critical use cases" at the site rather than the build. SP5
+    hardening extensions (CFI, HWASAN) carry no Strict guarantee
+    (README.md:266-283). The fail-stop message text stays fixed (W-113) so
+    `fail_stop` needs no formatting runtime. Break condition: none for the
+    semantics; the unchecked-accessor name is the residue item's.
+-   **D-SAFE-15 — Arithmetic (amends arithmetic.md:150-166, answers its
+    :171-173 TODO).** Release: signed overflow wraps (the existing lowering,
+    lower/handle_call.cpp:165-181, made normative) and signed or unsigned
+    division/remainder by zero fails-stop (NEW guard before `CreateSDiv`/
+    `CreateSRem`, :188-192; stage 2). Debug: overflow fails-stop with a
+    diagnostic. Compile-time overflow is already rejected. The "performance
+    build ... behavior ... is not defined" row is withdrawn for Carbon code
+    because p005914:85-88 forbids UB in safe code and bounds checks make
+    overflow a logic bug rather than a memory bug. Break condition: a
+    real-world benchmark (p005914:110-111's class) where the loss of `nsw`
+    exceeds 0.5 percent — an owner call on a performance-build opt-in.
+-   **D-SAFE-16 — Data races: inferred facets, staged, all races prevented
+    among Carbon threads.** `Core.Send`, `Core.Sync`, `Core.Freeze` are
+    compiler-determined facets, each defined structurally (amended
+    2026-10-12, review fold: A-10, B14 — these are the fork's definitions;
+    their soundness argument is Rust's auto-trait argument, a D-SAFE-22
+    "External facts" item, UNVERIFIED until the writer cites it): a type is
+    `Send` when all fields are, and `Sync` when all fields are; a `T*`
+    (shared-mutable) field or a `Slice(T)` field makes the type **neither
+    `Send` nor `Sync`** (a shared-mutable reference is thread-local — the
+    Ante rule, from training knowledge, D-SAFE-22 — and `Slice` reaches a
+    `T*` through `Data(self) -> T*`, slice.carbon:37, even from `const
+    Slice*`, because `const` is API-subsetting only, as.carbon:41-43);
+    `exclusive T*` is `Send` iff `T: Send` and `Sync` iff `T: Sync`; `const
+    T*` is `Send` iff `T: Sync` and `Sync` iff `T: Sync`; `Core.Atomic(T)` is
+    `Send` and `Sync` and not `Freeze`; `Freeze` = no interior mutability;
+    `Core.Guarded(T)` is neither; imported C++ types are neither unless
+    annotated; `unsafe impl T as Core.Send {}` / `as Core.Sync {}` opt in.
+    `Sync ⇔ const Self*: Send` is then a consequence, not the rule (the rev-1
+    pair of sentences was circular). Enforcement is at thread-crossing APIs
+    as generic constraints, staged facets → `--strict-concurrency=warn` →
+    `error` (p005914:191-196), **with the thread-boundary lifetime rule**
+    (amended 2026-10-12, review fold: A-6): a thread-crossing API accepts
+    only a free loan set (`'static` in D-SAFE-19's mapping) — `Core.Thread.
+    Spawn[F: Core.Send & Core.Call](f: F)` requires `f`'s loan set to be free
+    (`StrictBorrowOutlivesPlace` at the spawn otherwise) — or is a scoped
+    API whose join lies inside the borrow (`Core.Thread.Scope(fn (ref s:
+    Scope) { s.Spawn(...); })`, where the scope's loans are live until the
+    closing join), so `Spawn(fn (var q: exclusive i32*) { *q = 1; }, &x)` on
+    a local `x` is rejected (program `Race` in §4.1). Consequently Strict
+    Carbon has no data races between Carbon-spawned threads — stronger than
+    README.md:167-174 requires, permitted by :176-178 — and the "must" (no
+    unsynchronized use-after-free) follows from D-SAFE-7 plus this rule
+    **once the thread API's lifetime contract is fixed as above at stage 5**
+    (the rev-1 "theorem" sentence lacked this premise). The 0.1 Permissive
+    contract "races are UB" (threading-atomics.md:192-200, :476-480) is
+    untouched: it describes Permissive code and C++ threads. Break
+    condition: facet synthesis cannot see through imported C++ layouts — the
+    C++ default (neither, unless annotated) already covers it.
+-   **D-SAFE-17 — Value bindings through shared pointers (MS-5, ratified
+    explicitly).** A value binding of a `Plain` type — from `*p` or from an
+    owner — acquires eagerly (a copy, README.md:1319-1321) and carries no
+    loan, so `let b: i32 = a; a = 2; return b;` is **accepted in Strict and
+    returns 1** (EX-M-4a; values.md:456-468's erroneous reading does not
+    arise, and the values.md:473-475 dated note says so — amended 2026-10-12,
+    review fold: A-8, B3); a value binding of a non-`Plain` type, from `*p`
+    or from an owner, is a shared loan on the bound object for the binding's
+    NLL lifetime (T2) under which invalidating operations are
+    `StrictSharedBorrowInvalidated` (T4; EX-M-4b) — this is M8 stated as a
+    rule — while `Plain`-field writes through _other_ shared aliases during
+    the binding remain erroneous (values.md:456-468) and are Debug-detected
+    by a value-binding shadow flag: Debug keeps, in shadow memory keyed by
+    object address (never in the object's layout), a per-object count of
+    live non-`Plain` value bindings, incremented when the binding is formed
+    and decremented at its last use as stage 4 computes it; a `Plain`-field
+    write through `T*` or `addr self` whose target's count is non-zero
+    reports `MutationDuringValueBinding` (amended 2026-10-12, review fold:
+    B13(c)). A value binding of a non-`Plain` type initialized from an
+    initializing expression — a materialized temporary, values.md:186-192's
+    third source, neither `*p` nor an owner — takes ownership of the
+    materialized storage, values.md:192's `var` rule applied to `let`, and
+    carries no loan on it, so `let o: Core.Optional(i32) =
+    Core.Optional(i32).Some(1);` followed by `o.HasValue()` on the next line
+    is accepted; the loans carried _by_ the value are unaffected, which is
+    why EX-TM-7b's view of a temporary `Buf` stays `StrictBorrowOfTemporary`
+    (amended 2026-10-12, re-review fold: RR-5). Memory safety holds (plain
+    fields carry no
+    ownership; owning fields cannot be written through `T*`; exclusive writes
+    are statically dead for the binding's lifetime); what is narrowed is
+    p005434:660-663's plan to prevent _all_ mutation of borrowed objects in
+    strict (judge 1 fatal B: must be ratified, not inherited). Alternative
+    recorded: eager acquisition for every type (always copy — simplest,
+    costly for large owning types). Consequence for Rust (D-SAFE-19): such a
+    parameter exports as `&SharedView<T>`, not `&T`. Break condition: a
+    demonstrated memory-safety (not correctness) consequence — then the
+    eager-copy alternative is adopted.
+-   **D-SAFE-18 — C++ is Permissive Carbon.** C++ code is trusted to meet
+    declared contracts (S0). In Strict a C++ function whose signature involves
+    any pointer, reference, view or `this` is unsafe to call (`unsafe
+    Cpp.F(...)`, `StrictCppCallUnannotated`) unless its declaration carries
+    annotations the importer maps: `_Nonnull` (honored today,
+    import.cpp:1462-1509), `[[clang::lifetimebound]]` → `bound`
+    (p005434:823-826 already equates them), a noescape-style attribute →
+    non-`bound` (attribute names are D-SAFE-22 items), thread-safety
+    annotations → facets — the family is Clang's Thread Safety Analysis
+    attributes (`capability`, `guarded_by`, `requires_capability`,
+    `acquire_capability`/`release_capability`; names a D-SAFE-22 item): a C++
+    class every one of whose data members is `guarded_by` a `capability`
+    member imports as `Sync`, nothing else does (amended 2026-10-12, review
+    fold: B13(b)); pointers returned by C++, and pointer-typed fields read
+    from an imported C++ type, are ⊥ (T6; the second clause amended
+    2026-10-12, document-review fold: D-7) — p005914:204-208's
+    "no assumption that a call to C++ code won't save a copy of pointers" as
+    a checkable rule. C++ `T&` → `T*` (shared, README.md:3757-3758);
+    non-`const` C++ methods import as `ref self` (exclusive, invalidating —
+    the conservative reading, callable through `exclusive T*`; through
+    shared `T*` only as `unsafe`, or by way of `Core.Guarded`), `const`
+    methods as const access; a future non-invalidation annotation on a C++
+    method maps to `addr self`. The prelude's synthesized
+    `CppRangeForIterate`/`CppContiguousRange` witnesses (the path
+    cpp_iterate_generic_member_range.carbon:50-55 and the `C as
+    ImplicitAs(Slice(C.Element))` impl take to `begin()`/`end()`/`data()`/
+    `size()`) are **trusted prelude code**, Permissive-implemented behind a
+    Strict signature like the rest of the prelude (D-SAFE-2), so §1.2's "an
+    audit grep finds everything" reads "everything outside the prelude"
+    (amended 2026-10-12, review fold: A-12). **R-8's contingency is decided
+    now** (amended 2026-10-12, review fold: A-12 — measured on the fork's
+    corpus as Strict files, nine of fourteen C++ call sites in six interop
+    programs are unsafe under the bare rule, above the "more than half"
+    falsifier before any pilot): the importer carries an explicitly trusted
+    **allowlist of benign signature shapes** that need no marker — (1)
+    by-value parameters and by-value returns; (2) `const T&` parameters of
+    `Freeze` types, from stage 5 when `Freeze` exists, the shape keeping the
+    marker at stage 3 (amended 2026-10-12, document-review fold: MINOR-9);
+    (3) the members of `std::atomic<T>` and `std::thread`
+    that F-008 models (threading-atomics.md:192-212: `fetch_add`, `load`,
+    `store`, the constructor taking a Carbon function value, `join`), the
+    function value crossing being the A-7 export case (no `noalias`); (4)
+    `std::span<T>`/`std::span<const T>` parameters when the Carbon argument
+    is a loan-carrying `Slice` whose extent the Carbon side proves (the
+    cpp_span_view.carbon:62-69 shape, SL-2). Everything else keeps
+    `StrictCppCallUnannotated`; the allowlist is one table on the README
+    page and is the trusted assumption a document review re-measures against
+    the corpus (the §4.1 "interop corpus Strict-readiness" row). Permissive
+    is Strict with three facts _assumed_ rather than proved (attempt B's
+    framing, judge 2's graft) plus the error-to-warning downgrades of §1.1's
+    matrix (amended 2026-10-12, review fold: B4): unannotated C++ pointer
+    parameters do not escape — **the Permissive reading of p005914:206-208,
+    named as a departure** (amended 2026-10-12, review fold: A-13(a)): it is
+    a diagnostic assumption only, never a codegen one, because T8 withholds
+    `noalias`/`captures(none)` at every such boundary; C++ non-`const`
+    methods may be called through shared pointers; union reads, `unsafe fn`
+    calls and `unsafe *` need no marker. `unsafe as` is required in **both**
+    modes (amended 2026-10-12, review fold: A-11: the rev-1 "raw casts need
+    no marker" is deleted — it is enforced today in Permissive-unmarked
+    files, toolchain/check/testdata/as/unsafe_as.carbon, the stub's line
+    safety_strategy_doc.carbon:24 depends on it, and README.md:105-107
+    limits Permissive's omissions to C++-interop and migration patterns).
+    Every other analysis (definite formation, bounds, zero-fill, exclusivity
+    over Carbon-owned places) runs in both modes; Permissive emits the
+    warning twins of §1.1's matrix (`MaybeUnformedRead`,
+    `PermissiveAliasedExclusive`, `PermissiveDanglingLoan`,
+    `PermissiveUnannotatedCppCall`) so a file's Strict-readiness is visible
+    before the flip — what makes p005914:99-104's per-function granularity
+    mechanical. Migration ladder: file → `unsafe permissive package`; function
+    → delete its `unsafe permissive` after fixing its warnings; file → delete
+    the package modifier (the `Normalize` ladder, §1.8). Break condition
+    (R-8, re-based on the allowlist): the planned C++-migration examples
+    (p005914:188-189) still show the unannotated-call rule on more than half
+    of call sites in Strict with the allowlist in force — then the allowlist
+    grows by named shapes, each a dated edit of the README table, never by
+    dropping the rule.
+-   **D-SAFE-19 — Safe-Rust interop mapping and verdict.** Transport
+    (**analysis**, not rule — amended 2026-10-12, review fold: B14: its
+    three facts are D-SAFE-22 items the writer verifies against the Rust
+    reference and the Rustonomicon or labels UNVERIFIED): C-ABI shims
+    generated per function on both sides (Crubit-style) over Carbon's
+    existing C++-ABI lowering (threading-atomics.md:205-212), `extern "C"`
+    only, never `"C-unwind"`; a Rust panic reaching Carbon aborts, a Carbon
+    fail-stop under Rust frames is a process abort and Rust `Drop` does not
+    run (documented; terminology.md:98-102; error_handling.md:873-882).
+    Mapping (table on the page, with attempt C's Stage column): `exclusive T*`
+    ↔ `&mut T` (sound only for Strict-checked functions; the generator refuses
+    `&mut` for Permissive ones); `T*` ↔ `&Shared<T>` where `Shared<T>` is a
+    generated `UnsafeCell`-based wrapper exposing exactly the
+    non-invalidating surface (`get`/`set` on `Plain` fields, `addr self`
+    methods) — **safe Rust**, because `Cell` semantics are what the
+    no-invalidation rule is (attempt B's spelling; attempt A's "durable gap"
+    becomes a wrapper); `const T*` ↔ `&SharedView<T>` (the read-only
+    `Cell`-shaped view) by default, and ↔ `&T` **only when `T: Core.Freeze`
+    and no `T*` to the same object is reachable from Rust in the exported
+    signature set** — in practice never for an exported class, because
+    Rust's `&T` asserts no mutation for the reference's lifetime while
+    Carbon writes `Plain` fields through `T*` aliases during a live `const
+    T*` (EX-TM-3, EX-M-1), so an `IntVec` reachable as both `&IntVec` and
+    `&Shared<IntVec>` would make `Shared::set` UB for the first (amended
+    2026-10-12, review fold: A-9); `Slice(T)` ↔ `&SharedSlice<T>` (a
+    `&[Cell<T>]`-shaped view through a two-word shim, never by layout), and
+    ↔ `&[T]` only for `Slice(const T)` of a `Freeze` type under the same
+    proviso (`Buf.Set` during a live view is the plan's own EX-TM-3 — A-9);
+    `bound` ↔ one elided lifetime, `bound(a)` ↔ named lifetimes (stage 6),
+    `'static` ↔ free; `Core.Relocatable` types by value as `#[repr(C)]` with
+    a generated `Drop` thunk, others as owning opaque handles; `Optional(T*)`
+    ↔ `Option<&Shared<T>>` by representation (p006357:243-249; not
+    `Option<&T>` — A-9), `Optional(exclusive T*)` ↔ `Option<&mut T>`;
+    `choice` ↔ a `#[repr(C)]` tagged union through the shim; `Core.String`
+    (the prelude's `str`; docs/design/README.md:3762's `Core.Str` is the same
+    type under the interop design's name — the pages say `Core.String` and
+    note the alias once, B13(g)) ↔ `&str` only with a UTF-8 obligation
+    (`Core.Utf8`, residue); interfaces/vtables and inheritance opaque both
+    ways (p005914:170-175); generics instantiated on the defining side;
+    `Send`/`Sync` emitted as `unsafe impl` exactly when the Carbon facet
+    holds, nothing exported `Send`/`Sync` before stage 5. Verdict (attempt
+    A's four parts): (1) safe Rust → Strict Carbon: every Strict-checked
+    function over relocatable values, `exclusive T*`, `T*` as `&Shared<T>`,
+    `const T*` as `&SharedView<T>`, with `bound`-expressible lifetimes,
+    `Optional(T*)` as `Option<&Shared<T>>`, `Slice` as `&SharedSlice<T>`,
+    `Core.Result` and `repr`-declared `choice` exports as a safe `fn`;
+    Permissive functions always export `unsafe fn` (an audit signal); (2)
+    Strict Carbon → safe Rust: a Rust fn with `#[repr(C)]`-mappable types and
+    elidable lifetimes imports safe with `bound` derived from its signature,
+    so T6 does not apply to Rust results whose lifetimes are declared — except
+    a Rust fn taking `&T` together with a Carbon callback, which imports
+    `unsafe` (the callback can write through a `T*` alias and re-enter —
+    A-9); (3) remaining gap, as p005914:127-129 asks: `&T`/`&[T]` are never
+    produced for exported classes and slices (`SharedView`/`SharedSlice`
+    instead, the D-SAFE-17 case generalized — moved here from part (1),
+    A-9), named lifetimes and outlives bounds wait on stage 6, `Send`/`Sync`
+    export on stage 5, interface- and inheritance-typed APIs are opaque,
+    `&T`-plus-callback imports are `unsafe`, multi-lifetime Rust APIs import
+    conservatively — every gap degrades to `unsafe` on one side with a
+    stated obligation, never to UB; (4)
+    performance: no runtime cost beyond the shim call; spatial checks match
+    Rust's index checks (1-2 percent), temporal is compile-time on both sides.
+    Break condition: a Rust soundness argument against the `Shared<T>`
+    wrapper (an `UnsafeCell` reachable from a `Sync` type, say) — then `T*`
+    falls back to a raw pointer on the Rust side (attempt A's durable gap)
+    and the page says so.
+-   **D-SAFE-20 — Library surface, all residue, none in 0.1.** `Core.Plain`,
+    `Core.Relocatable`, `Core.Send`/`Sync`/`Freeze` (compiler-determined;
+    `unsafe impl` opt-in), `Core.Lifetime` (stage 6), `Core.Box(T)` (unique
+    owning heap handle: `fn Deref[bound ref self: Self]() -> ref T`, `fn
+    DerefShared[bound addr self: Self*]() -> T*`, `impl as Destroy` in the
+    buf.carbon:58-60 shape), `Core.Guarded(T)` (the one opt-in run-time
+    exclusivity check: a `bool` busy flag plus `fail_stop` "carbon: Core.Guarded
+    re-entered; terminating", `Modify[addr self: Self*](f)` gives `f` a `ref` to
+    the value for the call; no builtin), `Core.DynCast(Derived*) (p: Base*) ->
+    Optional(Derived*)` (checked downcast through the vtable for `Deletable`
+    classes; `p unsafe as Derived*` is the unchecked one, closing
+    p005914:170-175's inheritance divergence inside type safety), `Core.Move`,
+    `Core.Utf8`; `UnsafeDelete` (classes.md:1950-1957) becomes `unsafe fn`, and
+    the `UnsafeAllowDelete(T)*` conversion is `unsafe as` — the adapter is
+    `class UnsafeAllowDelete(T: Concrete) { extend adapt T; impl as Deletable {}
+    }` (classes.md:1972-1980) and has no constructor (amended 2026-10-12,
+    document-review fold: MINOR-8). Break condition: none; each is a filed item
+    with its own gate.
+-   **D-SAFE-21 — Staging, what 0.1 claims, and the discharge.** Stage 0
+    (this PR): the pages; no toolchain change. Stage 1: lex/parse `exclusive`,
+    `permissive` (contextual), `bound`, `addr`, the mode spellings, `unsafe
+    fn`, `unsafe impl`, `unsafe class`, `unsafe import`, the `unsafe` prefix
+    forms — recorded in SemIR, unenforced; this un-SKIPs both documentation
+    stubs (§4.2). Stage 2: runtime hardening regardless of mode (array index
+    fail-stop, division by zero fail-stop, `--build-mode=debug|release`,
+    Release zero-fill). Stage 3: Strict static checks without loan sets
+    (unsafe-op marking, definite formation, the C++-call rule, the P1/P2/P3
+    subset, warning twins), `--strict-checks=warn` default. Stage 4: the loan
+    checker (T1-T8, `bound`, no-invalidation, `exclusive`), `error` default,
+    `noalias` under T8. Stage 5: facets, `Core.Thread`,
+    `--strict-concurrency`. Stage 6: `bound(a)`/`Core.Lifetime`,
+    `Core.DynCast`, the Rust binding generator. **0.1 claims no executable
+    behavior**: no Strict program is accepted or rejected by the 0.1
+    toolchain; safe_carbon_design.carbon stays SKIP with its guard (§4.2);
+    gap row 89 flips MISSING → DONE on document review by the row-88
+    precedent, because the bullet itself excludes implementation
+    (milestones.md:242) — **and the discharge commit amends the legend**
+    (fork/gap-analysis.md:12-14) so DONE is not self-contradictory for
+    documentation bullets: after "**DONE** (implemented with real test
+    coverage" add "; for a documentation bullet whose text excludes
+    implementation, DONE on document review while its program stays SKIP —
+    rows 88 and 89)" (amended 2026-10-12, review fold: B6: the rev-1 reading
+    of DESIGN-ONLY as "a bullet whose text requires implementation" is not
+    supported by row 53's text, which is a feature name; the legend edit is
+    listed in §2.12 and §5); W-063 is discharged; residue items W-144.. are
+    filed at discharge (§8.5). Break condition: the owner reads row 89 as
+    DESIGN-ONLY — a one-cell edit, the legend sentence reverted and header
+    delta MISSING −1 / DESIGN-ONLY +1 instead, no page changes.
+-   **D-SAFE-22 — External facts are quarantined.** Every claim about Rust,
+    Clang attributes, LLVM semantics, Ante's spellings, Swift, Hylo or
+    hardened libc++ that the panel marked "from training knowledge" (the
+    `extern "C"` abort-on-unwind rule and `C-unwind`; `[[clang::lifetimebound]]`
+    and the noescape attribute names; LLVM `sdiv`/`srem` by zero being
+    undefined; Ante's exact reference spellings and thread rule; the
+    hardened-libc++ cost figure; `Cell`/`UnsafeCell` soundness conditions;
+    Crubit's trust model) appears on the landed pages only in an "External
+    facts" appendix with a status column (VERIFIED against a primary source
+    by the writer, else UNVERIFIED), phrased as "we expect" where UNVERIFIED;
+    no normative Carbon rule depends on an UNVERIFIED item (the Rust mapping
+    rows depend on them and are therefore labelled "analysis", not "rule",
+    which is what milestones.md:241 asks for — an analysis). Break condition:
+    the writer verifies an item — the tag is removed in a dated edit.
+-   **D-SAFE-23 — Fork id, reviews and the merge gate for a PR with no
+    toolchain, prelude, golden or program-body change.** One id, F-013, with
+    D-SAFE-1..23 and one break-condition register. Plan reviews: TWO
+    (R29(c)). Document reviews of the landed pages: **TWO**, not one, because
+    R29(c)'s reduction to one applies "once hosted verification ... is fully
+    green" and a docs PR has no hosted verification to substitute (and
+    Actions is disabled) — the second review is the arbiter the harness
+    lacks (W-002: "no arbitration channel for ... document-review bullets",
+    work-items.json:37). Briefs are the rulebook's design-doc rows
+    (fork/rulebook.md:98-101). Merge gate (amended 2026-10-12, review fold:
+    B7): local `uvx prek run` (pinned hooks v0.2.58, R22) to a fixpoint plus
+    the R31 count checks for every markdown file; `python3
+    fork/conformance/runner.py --self-test` for the two `.carbon` SKIP lines
+    (R7) and `python3 -c 'import json; json.load(open(...))'` for
+    fork/inventory/work-items.json — the non-markdown churn that makes
+    upstream's `has_code` filter true (test-setup/action.yml:35-36); the
+    nightly compile step of §8.1a for the today's-syntax examples; all
+    recorded in each commit message. This is **not** R21 parity by
+    "markdown-only" (the rev-1 claim is withdrawn): upstream's
+    tests.yaml:100-101 would run bazel, which builds nothing this PR touches,
+    and the rulebook has no docs-only rule — R23 says the runner-side prek
+    "remains the authority" — so the local gate is a **stated deviation from
+    R23's authority sentence while Actions is disabled**, recorded in the
+    F-013 entry with the exact gate that ran. Break condition: Actions
+    returns before the merge — then `Fork: hosted verification` mode `gate`
+    is dispatched once on the branch head for the record (prek is its first
+    step) and the result is stamped in ORCHESTRATION.
+
+PLAN §0.2 CORRECTIONS, the stale ledger, gap and process claims the plan found
+and this discharge corrects (verbatim; the eight items are carried into the
+ledger, the gap analysis and the rulebook as each says):
+
+-   W-063's evidence pins fork/gap-analysis.md:71 and :96-102
+    (work-items.json:1190-1191); the row is now :89 and the W3 text :128-141.
+    Also "fork/decision-log.md:52-59" (:1193) is the W5-S1 entry today (:53).
+-   W-063's notes say fork ids beyond F-011 "are not yet assigned (register
+    them by way of the W-005/DS-0 flow when the wave starts)" (:1197). W-005 was
+    DISCHARGED 2026-09-27 under full autonomy (work-items.json:81;
+    decision-log.md:2843-2855), so the id is minted here (F-013) with no
+    registration round.
+-   The gap narrative says there is "no runtime bounds checking"
+    (fork/gap-analysis.md:516); SL-1 landed the fail-stop checks (row 79 :79,
+    D-SL-4). The narrative sentence is amended at discharge.
+-   Row 88's evidence says the strategy's residual future work is "soundness
+    model/mode syntax" (:88); both are closed by this PR, so row 88's evidence
+    cell is refreshed too (no status change: it is already DONE).
+-   The rulebook's R31 parenthetical says "the fork's `.rumdl.toml` has MD013
+    off but MD018/MD004/MD069 on" (fork/rulebook.md:342-343); since UA-1
+    adopted upstream's config (D-UA-4, fork/upstream/plan.md:368-370;
+    .rumdl.toml:28-41) MD013 reflow is ON. One-sentence correction in the
+    discharge commit, dated.
+-   safe_carbon_design.carbon's SKIP line un-SKIP clause ("when dedicated
+    safe-Carbon design docs ... land") is superseded by its own body guard
+    (§0.1b); the refreshed SKIP text records the supersession.
+-   W-064's notes say the stub "Flips when p005914's follow-on mode-syntax
+    proposals land" (work-items.json:1214); after this PR the syntax is fixed
+    by F-013 but has no toolchain surface, so W-064's flip condition is
+    reworded to "when stage 1 (§1.9) lands".
+-   fork/decision-log.md:6658 carries a manufactured H3 that demotes the
+    2026-08-31 weekly entry to H4 (:6676). NOT repaired by this PR (it is
+    outside the workstream and a repair changes heading counts in a file this
+    PR also appends to; keeping the baseline H2 2 / H3 44 / H4 1 / H5 6 makes
+    the §8.7 count check unambiguous: H3 becomes exactly 45). Recorded as a
+    residue note, not an item.
+
+RESIDUE, filed at this discharge. Ids were allocated by the §8.5 grep
+(`grep -o '"W-[0-9]*"'` over fork/inventory/work-items.json) on trunk
+0bdce60a5 (max W-125) and on the head of every live claude/carbon-fork-0-1-*
+branch, remote and local worktree alike: origin ua2 W-127, origin sc W-125,
+origin cmake W-133, origin safe W-125, the local sc worktree at 43575bf1d
+W-143, the local cmake worktree at ea573f672 W-133, the local ua2 worktree
+W-127 — so the maximum is W-143 and the plan's provisional W-128..W-134 became
+W-144..W-150 on every page, in the plan and in both stubs (one regular
+expression over the ten files, 149 substitutions). W-144 prelude
+`bound`/`unsafe fn` churn: the SP3 signature audit (A-2, RR-2) with `bound
+self` on `interface IndexWith.At` and `interface Copy.Op`, `UnsafeMake` →
+`unsafe fn Make`, `GetUnchecked`, and the D-SAFE-20 library surface
+(`Core.Plain`, `Relocatable`, `Box`, `Guarded`, `Move`, `DynCast`, `Utf8`;
+`UnsafeDelete` → `unsafe fn`); W-145 stage 1 syntax (tokens, mode spellings,
+`unsafe fn`/`impl`/`class`/`import`, the `unsafe` prefix forms; un-SKIPs both
+stubs); W-146 stage 2 hardening (array index fail-stop with `IndexWith(i64)`
+subscripts, absorbing W-116's `i32` note; division-by-zero fail-stop;
+`--build-mode`; Release zero-fill; absorbs W-114's opt-out as "spelled by
+W-144"); W-147 stage 3 Strict static checks (definite formation, unsafe-op
+marking including `StrictBuiltinBindingUnmarked`, the C++-call rule and
+annotation mapping, the P1/P2/P3 subset, warning twins, `--strict-checks`);
+W-148 stage 4 loan checker (T1-T8, Store rule, `bound`, `exclusive`,
+no-invalidation, `addr`, `noalias` under T8, the Debug value-binding flag);
+W-149 stage 5 facets and threads (`Send`/`Sync`/`Freeze`, `unsafe impl`,
+`Core.Thread`, `Core.Atomic(T)` as the Carbon signature over
+`Cpp.std.atomic(T)`, `--strict-concurrency`); W-150 stage 6 (`bound(a)` /
+`Core.Lifetime`, `Core.DynCast`, the Rust binding generator with
+`Shared<T>`/`SharedView<T>`). Each item: kind missing-feature (the ledger's
+vocabulary for a filed residue, W-109..W-116 precedent; the plan's
+"implementation-needed" is not a ledger kind), bullet = the row-89 string,
+evidence = the owning page and the §4.1 rows, blocked_by = the previous stage
+(W-145 and W-146 unblocked; W-144 gated on W-145), notes naming the decision
+and its break condition. W-063 is DISCHARGED (subsystem corrected to
+docs/design/safety, evidence re-pinned to row 89, the W3 text at :128-141, the
+six pages and this heading); W-064's flip condition is reworded to "when stage
+1 (W-145) lands".
+
+DOCUMENT REVIEWS (D-SAFE-23: two, not one, because a docs PR has no hosted
+verification to substitute for the second review and Actions is disabled).
+Review 1 (design fidelity and soundness, scratchpad safe1_docreview_1.md):
+APPROVE-WITH-AMENDMENTS, 0 BLOCKER / 3 MAJOR / 12 MINOR — every §1 rule found
+on its owner page with §1's meaning, every §4.1 example with the checklist's
+outcome, the three BLOCKER folds (RR-1 union laundering, RR-2 copies preserve
+loans plus the SP3 audit, RR-6 structural `Plain`) traced faithful, the Rust
+rows and four-part verdict matched to D-SAFE-19 as amended; the three MAJORs
+were soundness gaps in the pages' own wording at the unsafe boundary, each
+exposed by an adversarial program (AP-1: a ⊥ pointer leaving a safe signature
+as "free"; AP-2: whether a Strict class with a pointer field must be `unsafe
+class`; AP-3: T6's blanket ⊥ for `unsafe fn` results against the single audit
+line), now rules of T6 and T5(g) with AP-1 and AP-2 on the temporal page.
+Review 2 (readability, consistency with the landed design, records-readiness,
+scratchpad safe1_docreview_2.md): APPROVE-WITH-AMENDMENTS, 2 MAJOR / 9 MINOR —
+every file:line, proposal quotation, prelude name and cross-link re-opened;
+MAJOR-1 found SP1's "not reachable from user code" contradicted by
+toolchain/check/testdata/builtins/pointer/offset.carbon:23 (now the
+builtin-binding rule, `StrictBuiltinBindingUnmarked`), MAJOR-2 was this
+discharge. All 26 findings accepted and folded in 1ce52d061; the fold table
+with every verdict is the plan's "Landed notes (SAFE-1)". Two dated
+corrections the reviews forced on accepted text are mirrored here as the
+register asks: p005434's `nocapture`/`noalias` sentence is :83 and its
+"immutable for the duration" sentence :831-832 (MINOR-2); `UnsafeAllowDelete`
+is an adapter with no constructor, so only `UnsafeDelete` becomes `unsafe fn`
+and the `UnsafeAllowDelete(T)*` conversion is `unsafe as` (MINOR-8, inside
+D-SAFE-20 above).
+
+PROCESS. R29(a): every D-SAFE above auto-adopts the design recommendation
+under V-2/V-3 and is recorded for after-the-fact veto; no AskUserQuestion was
+used. The merge gate that ran (D-SAFE-23 as amended B7; a stated deviation
+from R23's "the runner-side prek remains the authority" while GitHub Actions
+on the repository is disabled, ORCHESTRATION 2026-10-12): for every commit,
+`SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
+uvx prek run --files <touched>` (prek 0.5.5 running .pre-commit-config.yaml's
+pinned hooks, rumdl v0.2.58) repeated to a fixpoint, the R31 heading and
+list-item counts before and after with the heading-set `comm -13` and the
+manufactured-heading grep, `python3 fork/conformance/runner.py --self-test`
+for the two `.carbon` SKIP lines, `python3 -c 'import json;
+json.load(open("fork/inventory/work-items.json"))'`, and the §8.1a nightly
+compile of every today's-syntax example (recorded in commits 2/5 and 3/5);
+each commit message records its run. Break condition: Actions returns before
+the merge — then `Fork: hosted verification` mode `gate` is dispatched once
+on the branch head for the record and stamped in ORCHESTRATION.
+
+_V-3a divergence-risk register entries (reviewed at each upstream merge):_ the
+fork spellings — `exclusive`, `unsafe permissive`, `unsafe import`, `unsafe
+class`, `addr self: Self*` restored, the prefix `unsafe` forms (`unsafe
+F(args)`, `unsafe *p`, `unsafe p->m`, `unsafe u.f`, `unsafe &u.f`, `unsafe
+s[i]`, `unsafe (...)`, `unsafe fn F(...) = "name"`), and the library names
+`Core.Plain`/`Guarded`/`Box`/`Send`/`Sync`/`Freeze`/`Relocatable`/`Lifetime`/
+`DynCast`/`Move`/`Utf8`/`Atomic`/`Thread` — are each a mechanical rename if
+upstream chooses otherwise; the dated narrowings and departures from accepted
+text — p005434:83 (`noalias`/`captures(none)` for exclusive-kind refs only,
+D-SAFE-8), p005434:663 (D-SAFE-17), p005434:831-832 ("immutable" narrowed to
+"not invalidated", D-SAFE-11(d)), arithmetic.md:155-158 (the performance-build
+row withdrawn, D-SAFE-15), safety README.md:260-262 (the benchmarking disable
+withdrawn, D-SAFE-14), docs/design/README.md:2147 (zero-fill promoted to the
+Release baseline, D-SAFE-13), the Permissive reading of p005914:206-208
+(D-SAFE-18) and the `import Cpp` asymmetry (D-SAFE-6, A-13) — are each a
+one-paragraph amendment away from an upstream decision and are disclosed on
+the owning page. If upstream lands the dedicated memory-safety proposals
+p005914 defers to, every D-SAFE is re-based under V-3, the fork keeping
+whichever is lower-divergence and recording the delta. Veto-able.
+
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 
 Milestone bullet "Stdlib C++ interop: transparent non-owning contiguous

@@ -1181,25 +1181,27 @@
     },
     {
       "id": "W-063",
-      "title": "W3: safe-Carbon concrete design — five safety categories + safe-Rust-interop analysis (next design-sprint wave)",
-      "kind": "design-needed",
-      "subsystem": "docs/design/safety + proposals",
+      "kind": "implemented",
+      "title": "W3 (LANDED 2026-10-12): safe-Carbon concrete design — five safety categories + safe-Rust-interop analysis (SAFE-1, F-013)",
+      "subsystem": "docs/design/safety",
       "size": "XL",
       "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
       "evidence": [
-        "proposals/p005914-updating-carbon-s-safety-strategy.md",
-        "fork/gap-analysis.md:71",
-        "fork/gap-analysis.md:96-102",
-        "fork/conformance/programs/project/safe_carbon_design.carbon:5",
-        "fork/decision-log.md:52-59"
+        "fork/gap-analysis.md:89 (the row, DONE on document review; the legend sentence at :12-15 for documentation bullets)",
+        "fork/gap-analysis.md:128-141 (the W3 narrative, with the 2026-10-12 closure note)",
+        "docs/design/safety/README.md (soundness model S0, the six names, Strict/Permissive mode syntax, operation-tied `unsafe`, the diagnostic matrix, the pointer kinds table, the C++ call allowlist, the `Normalize` migration ladder, implementation staging)",
+        "docs/design/safety/type_safety.md, initialization_safety.md, spatial_safety.md, temporal_safety.md, mutation_safety.md, rust_interop.md (the six category pages; terminology.md gains mutation safety; docs/design/README.md 'Lifetime and move semantics' fixed by decision)",
+        "fork/decision-log.md 'SAFE-1 / F-013: Safe Carbon — Strict by default, shared `T*` plus `exclusive T*`, loans with `bound`, operation-tied `unsafe` (2026-10-12)' (D-SAFE-1..23 with break conditions)",
+        "fork/safe/plan.md (rev 3 signed off at 68b04cce2; §1 normative text, §4.1 design-conformance checklist, 'Landed notes (SAFE-1)' with the document-review fold table)",
+        "fork/conformance/programs/project/safe_carbon_design.carbon:9 (stays SKIP until W-145; the body guard returns 1)"
       ],
       "blocked_by": [],
-      "notes": "Startable now; its five safety-category decisions will need design-fork ids beyond F-011, which are not yet assigned (register them via the W-005/DS-0 flow when the wave starts). Merges two scanner reports. Design-only for 0.1 (implementation deferred to 0.2); pure design work, parallelizable with everything, and the stated reason 0.1 slipped to end-2026. Temporal/mutation safety exists only as p005914's explicitly 'directional... provisional' section; needs concrete pointer/borrow rules, safety-mode syntax, soundness model, worked C++-migration examples, and a written safe-Rust-interop analysis (none exists anywhere; README 'Lifetime and move semantics' is a bare TODO). F-003 names it the wave after the current sprint. Also owns the Strict-mode `unsafe` spelling that UN-1's read-marking hook waits on (unions.md:521-525). Arbitrated by document review — no executable surface (arbitration channel via W-002)."
+      "notes": "DISCHARGED (fork/safe/plan.md SAFE-1, 2026-10-12; branch claude/carbon-fork-0-1-safe off trunk 0bdce60a5; commits 619c708d2 README + terminology, afda8cd57 type/initialization/spatial pages, 2cf7e90bf temporal/mutation pages, 75e2f8d29 Rust interop + sibling amendments, e5207bd8e stub refresh, 1ce52d061 document-review fold, then the discharge commit; F-013 with D-SAFE-1..23): a design, not an implementation — the bullet excludes implementation in 0.1, so the row is DONE on document review (row-88 precedent) while this program stays SKIP. Two document reviews (D-SAFE-23), both APPROVE-WITH-AMENDMENTS, 26 findings all folded. The implementation is filed as W-144 (prelude `bound`/`unsafe fn` churn) and W-145..W-150 (stages 1 to 6); the fork id F-013 was minted at the plan (R29(a) autonomy; the W-005/DS-0 registration flow the original notes name was discharged 2026-09-27). Original notes: Startable now; its five safety-category decisions will need design-fork ids beyond F-011, which are not yet assigned (register them via the W-005/DS-0 flow when the wave starts). Merges two scanner reports. Design-only for 0.1 (implementation deferred to 0.2); pure design work, parallelizable with everything, and the stated reason 0.1 slipped to end-2026. Temporal/mutation safety exists only as p005914's explicitly 'directional... provisional' section; needs concrete pointer/borrow rules, safety-mode syntax, soundness model, worked C++-migration examples, and a written safe-Rust-interop analysis (none exists anywhere; README 'Lifetime and move semantics' is a bare TODO). F-003 names it the wave after the current sprint. Also owns the Strict-mode `unsafe` spelling that UN-1's read-marking hook waits on (unions.md:521-525). Arbitrated by document review — no executable surface (arbitration channel via W-002)."
     },
     {
       "id": "W-064",
-      "title": "Safety-strategy follow-ons: mode-syntax proposals and stale principles doc",
       "kind": "design-needed",
+      "title": "Safety-strategy follow-ons: mode-syntax proposals and stale principles doc",
       "subsystem": "docs/design/safety + docs/project/principles + proposals",
       "size": "M",
       "bullet": "Project: detailed safety strategy",
@@ -1208,10 +1210,11 @@
         "docs/design/safety/README.md:116",
         "docs/design/safety/README.md:122",
         "docs/project/principles/safety_strategy.md:151",
-        "fork/conformance/programs/project/safety_strategy_doc.carbon:5"
+        "fork/conformance/programs/project/safety_strategy_doc.carbon:5",
+        "fork/safe/plan.md §0.2 item 7 (the flip condition reworded at the SAFE-1 discharge); docs/design/safety/README.md 'Safety modes' (the syntax F-013 fixed)"
       ],
       "blocked_by": [],
-      "notes": "The only SKIP whose bullet is gap-status DONE: the strategy document exists and is accepted via p005914; the SKIP is an arbitration gap. Three 'Future work' blocks remain (soundness model, safety-mode package/function syntax, permissive-import marking), so no program can yet observe the strategy. Flips when p005914's follow-on mode-syntax proposals land (then the program body morphs into a Strict-mode file requiring `unsafe` on the existing `unsafe as`), plus reconcile/retire the stale build-mode-centric principles doc. Overlaps W-063, which owns the mode-syntax substance."
+      "notes": "The only SKIP whose bullet is gap-status DONE: the strategy document exists and is accepted via p005914; the SKIP is an arbitration gap. The three 'Future work' blocks (soundness model, safety-mode package/function syntax, permissive-import marking) are resolved by F-013 (SAFE-1, 2026-10-12: D-SAFE-2, D-SAFE-3/4, D-SAFE-6) and docs/project/principles/safety_strategy.md carries a supersession note, but the syntax has no toolchain surface, so no program can yet observe the strategy. Flips when stage 1 (fork/safe/plan.md §1.9, W-145) lands — then the program body is a default-mode (Strict) file where the existing `unsafe as` is required to carry its keyword, which it already does. Overlaps W-063 (discharged), which owned the mode-syntax substance."
     },
     {
       "id": "W-065",
@@ -2217,6 +2220,119 @@
       ],
       "blocked_by": ["W-010"],
       "notes": "Filed at the UA-1 discharge (2026-10-06). Before the merge the fork's `MakeDestroyOpBody` emitted NOTHING for every aggregate (W-108's placeholder); upstream's `MakeSubobjectDestroyOpBody` is real for structs, classes, tuples and arrays (PRs 7829/7840/7842/7844) but has no choice or custom-layout arm, and its walk meets the fork's shapes inside the witness query (D-UA-9's traced path), so the two fork arms preserve the placeholder semantics exactly where the fork had them: a payload-carrying choice destroys neither its payload nor (through `SelfDestruct`) a payload's declared `Destroy` impl, except the S1 admitted-exception adapter payload which keeps its declared-impl `Op`. Mechanism: synthesize a `SubobjectDestroy.Op` for `is_choice` classes that branches on the discriminant (the match-arm destroy shape, handle_match.cpp's `BranchOnGuard` precedent) and calls the selected alternative's payload `SelfDestruct`; the `CustomLayoutType` arm then walks the region's fields for that alternative only. Needs SF-6 widened past scalars for a non-trivial payload to exist at all (W-010 gates it; W-083's release-on-destroy is the first consumer). Related: W-108 (a `Buf` field inside a class, struct, tuple or array -- upstream's walk may now reach it; UA-2 adds the pin golden). Break condition: a choice golden with a payload whose type has a declared `Destroy` impl shows the impl's `Op` call under the discriminant branch, and the seven choice goldens with `var`s refill without a stack dump."
+    },
+    {
+      "id": "W-144",
+      "kind": "missing-feature",
+      "title": "SAFE-1 residue: prelude `bound`/`unsafe fn` churn and the D-SAFE-20 library surface — the SP3 signature audit (`bound self` on every view producer and on `interface IndexWith.At`/`Copy.Op`, `bound` on `FromArray`'s pointer and on `Optional.Some`'s/`Buf.Make`'s value parameters, `UnsafeMake` → `unsafe fn Make`, `GetUnchecked` as `unsafe fn`, `UnsafeDelete` → `unsafe fn`) plus `Core.Plain`, `Relocatable`, `Box`, `Guarded`, `Move`, `DynCast`, `Utf8`",
+      "subsystem": "core/prelude (types/slice.carbon, buf.carbon, optional.carbon, string.carbon, operators/index.carbon, copy.carbon)",
+      "size": "L",
+      "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
+      "evidence": [
+        "docs/design/safety/spatial_safety.md 'SP3' (the W-144 audit rule and the named hits: `Optional(T).Get`/`Some`, `OptionalStorage.Get`, `Try.Branch`, `Buf(T).Make`'s `fill`, `Buf.Get`, `Buf.At`, `Slice.At`)",
+        "docs/design/safety/temporal_safety.md 'T5' (a)/(e), EX-TM-8 `Launder1`..`Launder5` (fork/safe/plan.md §4.1 rows 'T2 copies preserve loans, W-144 signature audit', 'Regression set' EX-TM-4)",
+        "docs/design/safety/mutation_safety.md 'Core.Guarded(T)' sketch (EX-M-2); docs/design/safety/type_safety.md 'TY2' (the `Unsafe`-prefixed functions become the first `unsafe fn`s)",
+        "core/prelude/types/slice.carbon:29-30 (`UnsafeMake`'s obligation sentence, kept as `Make`'s doc comment), optional.carbon:34-42, buf.carbon:28, :45, :54-56, :72-75, index.carbon:9, copy.carbon:10"
+      ],
+      "blocked_by": ["W-145"],
+      "notes": "Filed at the SAFE-1 discharge (2026-10-12). Design decisions: D-SAFE-11 (a)/(e) and D-SAFE-14 (SP3: every parameter, receiver, value, pointer or type parameter whose loans can reach the result or `self` is `bound`, else the function is `unsafe fn`; impls may drop but not add `bound`, p005434, so the interface declarations carry `bound self`), D-SAFE-20 (the library surface, each a filed gate). Gated on W-145 (stage 1: `bound` and `unsafe fn` must parse before the prelude can spell them); stage 3's P1/P2/P3 subset (W-147) is sound only with this churn in place (judge 2's `Leak`/`Escape` refutation, EX-TM-4). Absorbs W-114's unchecked-access opt-out as `unsafe fn GetUnchecked`. Break condition (D-SAFE-11): upstream amends p005434's `bound` with different semantics — a V-3 review, the fork keeping whichever is lower-divergence; (D-SAFE-20): none, each name is its own gate."
+    },
+    {
+      "id": "W-145",
+      "kind": "missing-feature",
+      "title": "SAFE-1 residue: stage 1 safety syntax — lex and parse `exclusive`, `permissive` (contextual after `unsafe`), `bound`, `addr`, the mode spellings (`unsafe permissive package`/`fn`), `unsafe fn`, `unsafe impl`, `unsafe class`, `unsafe import` and the `unsafe` prefix forms (`unsafe F(args)`, `unsafe x.M(args)`, `unsafe *p`, `unsafe p->m`, `unsafe u.f`, `unsafe &u.f`, `unsafe s[i]`, `unsafe (...)`), recorded in SemIR and unenforced; un-SKIPs both documentation stubs",
+      "subsystem": "toolchain/lex (token_kind.def) + toolchain/parse (handle_expr.cpp, the package/import/decl handlers) + toolchain/sem_ir",
+      "size": "M",
+      "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
+      "evidence": [
+        "docs/design/safety/README.md 'Safety modes', 'Operation-tied `unsafe`', 'Implementation staging' row 1 (fork/safe/plan.md §4.1 rows 'Modes', 'TY1 union read' EX-TY-2, 'TY1 unverified deref' EX-TY-3, 'TY2 `unsafe fn`' EX-TY-4, 'T5 `bound`' EX-TM-1, 'P-subset / `exclusive`' EX-TM-5, 'M3/M4 `addr`' EX-M-1, 'C++ migration ladder' EX-MIG-1..4)",
+        "toolchain/lex/token_kind.def (`unsafe` :243 and `ref` :226 are keywords; `bound`, `addr`, `exclusive`, `permissive` do not exist); toolchain/parse/handle_expr.cpp:391-399 (`unsafe` is accepted only before `as`, the one-token lookahead D-SAFE-5 keeps)",
+        "fork/conformance/programs/project/safe_carbon_design.carbon:9 and safety_strategy_doc.carbon:9 (the SKIP lines naming this item as their un-SKIP condition; fork/safe/plan.md §4.2 body morph plan)",
+        "third_party/examples/re2/re2.carbon:769 (the one historic `addr self: Self` source line, in a file no target builds — D-SAFE-7 chooses `addr self: Self*`)"
+      ],
+      "blocked_by": [],
+      "notes": "Filed at the SAFE-1 discharge (2026-10-12). Design decisions: D-SAFE-3 (Strict is the default; `unsafe permissive` on the package or the fn), D-SAFE-4 (`unsafe fn` is the callee contract, `unsafe permissive fn` the body mode), D-SAFE-5 (the uniform prefix; break condition: stage 1 finds the prefix ambiguous against `unsafe as` — then the spelling moves, the set of marked operations does not), D-SAFE-6 (`unsafe import`), D-SAFE-7 (`exclusive T*`, `addr self: Self*`; keyword fallout verified: `exclusive` only in comments, `addr` in one unbuilt source line, `permissive` nowhere), D-SAFE-21 (stage 1). Unblocked: no toolchain prerequisite; the first SAFE-1 item to start when an arbiter exists (R28). On landing: delete both stubs' SKIP lines and morph safe_carbon_design.carbon's body per fork/safe/plan.md §4.2; the bullet stays SKIP-rolled-up until then."
+    },
+    {
+      "id": "W-146",
+      "kind": "missing-feature",
+      "title": "SAFE-1 residue: stage 2 runtime hardening regardless of mode — `array(T, N)` run-time index fail-stop (\"carbon: array index out of bounds; terminating\") with subscripts through `IndexWith(i64)` (absorbs W-116's `i32` note), signed and unsigned division/remainder by zero fail-stop (\"carbon: division by zero; terminating\"), `--build-mode=debug|release`, Release zero-fill of `make_uninitialized` including padding, Debug poison-fill and overflow fail-stop",
+      "subsystem": "toolchain/lower (handle.cpp:47-74 `CreateInBoundsGEP`, handle_call.cpp:165-181, :188-192, :208-214) + toolchain/check (handle_index.cpp) + toolchain/driver (the build-mode flag)",
+      "size": "M",
+      "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
+      "evidence": [
+        "docs/design/safety/spatial_safety.md 'SP2', 'Arithmetic', 'Runtime behavior and messages', staging row 2 (fork/safe/plan.md §4.1 rows 'SP2 runtime array' EX-SP-4 ACCEPTS-UNCHECKED, 'D-SAFE-15 division' EX-SP-6 ACCEPTS-UNCHECKED)",
+        "docs/design/safety/initialization_safety.md 'I5' (Release zero-fill, Debug poison-fill; the dated blockquote at docs/design/README.md:2147 promoting zero-fill to the Release baseline); docs/design/safety/README.md 'Build modes'",
+        "toolchain/lower/handle.cpp:47-74 (the run-time array subscript is an `inbounds` GEP with no check); toolchain/check/eval.cpp:1080-1116 (`ArrayIndexOutOfBounds` for constant indices, kept); toolchain/lower/handle_call.cpp:188-192 and :208-214 (`CreateSDiv`/`CreateSRem` and the unsigned twins, emitted unguarded); :165-181 (`SignedOverflowIsUB = false`, the wrap lowering made normative)",
+        "docs/design/expressions/arithmetic.md (the dated blockquote withdrawing the performance-build row, D-SAFE-15); fork/conformance/programs/stdlib/slices_bounds_fail_stop.carbon (the fail-stop shape, EXPECT-EXIT -6, the precedent for the array twin)"
+      ],
+      "blocked_by": [],
+      "notes": "Filed at the SAFE-1 discharge (2026-10-12). Design decisions: D-SAFE-14 (fail-stop everywhere, no build flag disables the checks — the benchmarking disable of safety README.md:260-262 withdrawn, A-13(c); break condition: a measured corpus where the checks exceed the strategy's budget — then a per-site `unsafe fn` accessor, never a flag), D-SAFE-15 (Release wraps, every mode fails-stop on division by zero, Debug traps on overflow, compile time rejects; break condition: a real-world benchmark where the loss of `nsw` exceeds 0.5 percent — an owner call), D-SAFE-13 I5 (zero-fill; break condition: more than 0.5 percent from zero-fill alone — then scoped to escaped-unformed objects). Unblocked: independent of the syntax of W-145. Absorbs W-116 (subscripts through `IndexWith(i64)`) and W-114's opt-out question (answered as `unsafe fn GetUnchecked`, spelled by W-144)."
+    },
+    {
+      "id": "W-147",
+      "kind": "missing-feature",
+      "title": "SAFE-1 residue: stage 3 Strict static checks without loan sets — unsafe-operation marking (`StrictUnsafeCallUnmarked`, `StrictUnionReadUnmarked`, `StrictBuiltinBindingUnmarked`, `StrictUnverifiedDeref` for P3), definite formation (`StrictUseOfUnformed`, `StrictAddressOfUnformed`, `StrictMoveFromNonEntire`), the C++-call rule with the allowlist and the annotation mapping (`StrictCppCallUnannotated`), the P1/P2/P3 first enforceable temporal subset (`StrictDanglingReturn`, `StrictBorrowOutlivesPlace` for `Leak`/`Escape`), the Permissive warning twins, `--strict-checks=warn` as the default",
+      "subsystem": "toolchain/check (a new definite-formation/P-subset pass over SemIR's block graph; cpp/import.cpp for the annotation mapping) + toolchain/diagnostics/kind.def + toolchain/driver",
+      "size": "L",
+      "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
+      "evidence": [
+        "docs/design/safety/README.md 'What each mode diagnoses' (the matrix; the warning column), 'C++ call allowlist', 'C++ migration example' rungs 1 and 3; staging row 3",
+        "docs/design/safety/type_safety.md 'Diagnostics' (the three assumed-fact rows plus `StrictBuiltinBindingUnmarked`); initialization_safety.md 'I2', 'I3', 'Diagnostics' (fork/safe/plan.md §4.1 rows 'I2 definite formation' EX-I-1 ACCEPTS-UNCHECKED, 'I3 `MaybeUnformed`' EX-I-5)",
+        "docs/design/safety/temporal_safety.md 'The first enforceable subset', 'C++ interop consequence', staging row 3 (fork/safe/plan.md §4.1 rows 'T5c dangling return' EX-TM-2 ACCEPTS-UNCHECKED, 'Regression set' EX-TM-4 `Leak`/`Escape`, 'P-subset / `exclusive`' EX-TM-5, 'T6 union laundering' EX-TM-8 `Wild`/`Wild3`, 'Interop corpus Strict-readiness' — one marked site of fourteen)",
+        "docs/design/safety/spatial_safety.md 'SP1' (the builtin-binding rule; toolchain/check/testdata/builtins/pointer/offset.carbon:23 is the Main-package binding the toolchain accepts today)",
+        "toolchain/diagnostics/kind.def (no diagnostic containing `Unformed`, `Borrow`, `Loan` or `Dangling` exists); toolchain/check/cpp/import.cpp:1462-1509 (`_Nonnull` honored today — the one annotation already mapped)"
+      ],
+      "blocked_by": ["W-146"],
+      "notes": "Filed at the SAFE-1 discharge (2026-10-12). Design decisions: D-SAFE-2 (S0), D-SAFE-5 (the marked operations, including the document-review forms: the T6 prefix on a call consuming a ⊥ carrier, the M3 escape, the builtin binding), D-SAFE-10's P1/P2/P3 subset (sound only together with W-144's `bound` on the view producers — judge 2 fatal C; break condition: any Strict-accepted counterexample, EX-TM-4 and EX-TM-8 the standing regression sets), D-SAFE-13 I2/I3 (conditional initialization rejected, `Optional` the escape, `MaybeUnformed` the address-of escape), D-SAFE-18 (C++ is Permissive Carbon; the allowlist of four shapes, shape 2 from stage 5; break condition R-8: the unannotated-call rule on more than half of call sites with the allowlist in force — then the allowlist grows by named shapes), D-SAFE-21 (stage 3, `warn` default). Blocked by W-146 (the previous stage) and, for the temporal subset, by W-144."
+    },
+    {
+      "id": "W-148",
+      "kind": "missing-feature",
+      "title": "SAFE-1 residue: stage 4 loan checker — loans T1 to T8 over SemIR's block graph (NLL liveness), the Store rule, `bound` per T5 (a)-(e), `exclusive T*` and the reborrow/same-kind-copy clauses, the no-invalidation rule M3 with `Core.Plain` synthesis, `addr self` body checks, M5 payload sub-loans, M8 value-binding loans with the Debug shadow count (`MutationDuringValueBinding`), `Core.Guarded(T)`, `Core.Relocatable`/`Core.Move`/`~x`, `noalias`/`captures(none)` under T8, `--strict-checks=error` as the default",
+      "subsystem": "toolchain/check (the loan pass; the facet synthesis for `Plain`/`Relocatable`) + toolchain/lower (T8 attributes) + core/prelude (`Guarded`, `Box`, `Move`)",
+      "size": "XL",
+      "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
+      "evidence": [
+        "docs/design/safety/temporal_safety.md 'Rules T1 to T8 and the Store rule', '`bound`, `bound(a)` and `unsafe class`', 'Diagnostics', staging row 4 (fork/safe/plan.md §4.1 rows 'T3/T4 NLL' EX-TM-3, 'Regression set' EX-TM-4 `Store`, 'T7 temporaries, `bound` result' EX-TM-7b, 'T2 copies preserve loans' EX-TM-8 `Launder3`, 'D-SAFE-8 mixed-kind result' `Pick`/`UsePick`; AP-1 and AP-2 under T6 and T5(g))",
+        "docs/design/safety/mutation_safety.md 'M1'..'M6', 'M8', 'Core.Plain', 'Core.Guarded(T)', staging row 4 (fork/safe/plan.md §4.1 rows 'M3/M4 `addr`, reborrow' EX-M-1, 'M6 `Guarded`' EX-M-2, 'M8 value binding, non-`Plain`' EX-M-4b, 'M5 payload refs' EX-M-5, 'M3(c) sums non-`Plain`' EX-M-6 `Alt2`)",
+        "docs/design/safety/initialization_safety.md 'I4' (fork/safe/plan.md §4.1 row 'I4 move' EX-I-4); docs/design/README.md 'Lifetime and move semantics' (fixed by decision)",
+        "proposals/p005434 (`bound`, `ref`, `val`; :83 and :831-832 narrowed by D-SAFE-8 and D-SAFE-11(d)); toolchain/check/call.cpp:528-540 (the receiver gate EX-M-1's `addr self` reaches)"
+      ],
+      "blocked_by": ["W-147"],
+      "notes": "Filed at the SAFE-1 discharge (2026-10-12). Design decisions: D-SAFE-7, D-SAFE-8, D-SAFE-9 (`Plain` structural: `Copy` with trivial destruction and every sub-object formed at a fixed offset — sums are non-`Plain`), D-SAFE-10 (T1-T8 and the Store rule; the document-review folds D-1/D-2: a marked `unsafe fn` call's result carries its signature's loan set and a ⊥ value does not leave a Strict function through its signature; break condition: any Strict-accepted counterexample), D-SAFE-11 (a)-(e) and (g) as folded by D-3 (a Strict class with a pointer field is legal without `unsafe class`), D-SAFE-12, D-SAFE-13 I4, D-SAFE-17 (value bindings; break condition: a corpus where the Debug shadow count's cost is measurable — then opt-in), D-SAFE-20 (`Guarded`, `Box`, `Move`), D-SAFE-21 (stage 4, `error` default). Blocked by W-147. The `match` forms of EX-M-5/EX-M-6 additionally wait on the choice-based `Core.Optional` redesign the prelude's own comment names (optional.carbon:64-68), which is not a stage of this design."
+    },
+    {
+      "id": "W-149",
+      "kind": "missing-feature",
+      "title": "SAFE-1 residue: stage 5 facets and threads — compiler-determined `Core.Send`/`Core.Sync`/`Core.Freeze` with `unsafe impl` opt-in, `Core.Thread` (`Spawn` requiring a free loan set, `Scope` joining inside the borrow), `Core.Atomic(T)` as the Carbon signature over `Cpp.std.atomic(T)` (F-008 rejected a native atomic for 0.1), `StrictNotSend`/`StrictNotSync`, `StrictBorrowOutlivesPlace` at a thread-crossing call, the C++ thread-safety-annotation import (`guarded_by`/`capability` → `Sync`), allowlist shape 2 (`const T&` of `Freeze` types), `--strict-concurrency=warn|error`",
+      "subsystem": "toolchain/check (facet synthesis; cpp/import.cpp for the Clang Thread Safety Analysis attributes) + core/prelude (`Thread`, `Atomic`) + toolchain/driver",
+      "size": "L",
+      "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
+      "evidence": [
+        "docs/design/safety/mutation_safety.md 'M7', 'Data races and the facets', 'C++ interop consequence', staging row 5 (fork/safe/plan.md §4.1 row 'M7 facets, thread-boundary lifetime' EX-M-3 `BadSpawn`/`Race`/`Scoped`)",
+        "docs/design/safety/README.md 'C++ call allowlist' shape 2 (from stage 5, document-review fold MINOR-9), 'What each mode diagnoses' (`StrictNotSend`/`StrictNotSync`), 'Soundness model' (temporal safety across threads once the thread API's lifetime contract is fixed here, D-8)",
+        "docs/design/safety/rust_interop.md '`Send`, `Sync` versus Carbon threads' row and the `&T`/`&[T]` rows under the `Freeze` proviso (after stage 5)",
+        "fork/design-sprint/threading-atomics.md:192-212 (the F-008 model of `std::atomic`/`std::thread`), :403-416 (Option D, a native atomic, rejected); fork/decision-log.md 'F-008' ('Rejected: ... native atomics'); fork/conformance/programs/interop/cpp_thread_carbon_fn_diff.carbon:38-52 (allowlist shape 3)"
+      ],
+      "blocked_by": ["W-148"],
+      "notes": "Filed at the SAFE-1 discharge (2026-10-12). Design decisions: D-SAFE-16 (all races between Carbon-spawned threads prevented by inferred facets plus the thread-boundary lifetime rule, staged facets → warn → error; break condition: facet synthesis cannot see through an imported C++ layout, which the C++ row's conservative default covers), D-SAFE-18's thread-safety-annotation mapping (B13(b)), D-SAFE-20 (`Send`/`Sync`/`Freeze` as compiler-determined facets), D-SAFE-21 (stage 5). Blocked by W-148 (the loan sets the thread-boundary rule reads). `Core.Atomic(T)` is a Carbon signature over the imported `Cpp.std.atomic(T)` and not a native atomic (F-008's rejection stands; document-review fold MINOR-4)."
+    },
+    {
+      "id": "W-150",
+      "kind": "missing-feature",
+      "title": "SAFE-1 residue: stage 6 — named lifetimes `bound(a)` with `[a: Core.Lifetime]` as a deduced parameter (one name, one loan set; `bound(a)` fields replacing the `unsafe class` interim; the outlives relation `a: b` deferred to this stage's plan), `Core.DynCast(Derived*)(p: Base*) -> Core.Optional(Derived*)` as the checked downcast, and the Rust binding generator (`Shared<T>`/`SharedView<T>`/`SharedSlice<T>` wrappers, `extern \"C\"` shims, `repr(C)` by-value crossing for `Relocatable` types, `choice` and view shims, per-instantiation generics, `unsafe impl Send`/`Sync` exactly when the facet holds)",
+      "subsystem": "toolchain/lex + parse + check (`bound(a)`, `Core.Lifetime`); core/prelude (`DynCast`, `Lifetime`); a new Rust binding generator (tooling, outside the compiler)",
+      "size": "XL",
+      "bullet": "Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)",
+      "evidence": [
+        "docs/design/safety/temporal_safety.md 'T5' (f), staging row 6 (fork/safe/plan.md §4.1 row 'T5f named' EX-TM-6 `Push`, NEW-SYNTAX stage 6)",
+        "docs/design/safety/type_safety.md 'TY1' downcast row, staging row 6 (fork/safe/plan.md §4.1 row 'TY2 `unsafe fn`' EX-TY-4's third line, `Core.DynCast`)",
+        "docs/design/safety/rust_interop.md (the mapping tables' Stage column, 'The `Shared<T>` and `SharedView<T>` wrappers' sketch, the three exported-signature examples, the verdict; fork/safe/plan.md §4.1 row 'Rust rows' ANALYSIS; D-SAFE-22's External facts appendix, row 10 UNVERIFIED)",
+        "docs/design/safety/initialization_safety.md 'I4' (`Core.Relocatable` decides by-value crossing); docs/design/safety/mutation_safety.md 'Data races and the facets' (the `unsafe impl` emission rule)"
+      ],
+      "blocked_by": ["W-149"],
+      "notes": "Filed at the SAFE-1 discharge (2026-10-12). Design decisions: D-SAFE-11 (f) (one name is one loan set, B13(e); break condition: upstream amends p005434's `bound` — a V-3 review), D-SAFE-19 (the mapping and the four-part verdict: `exclusive T*` ↔ `&mut T`, `T*` ↔ `&Shared<T>`, `const T*` ↔ `&SharedView<T>` with `&T` only under the `Freeze` proviso, `bound` ↔ one shared lifetime (document-review fold D-10), `bound(a)` ↔ named lifetimes, free ↔ `'static`; break condition: a Rust fact in the External facts appendix is verified false — the row is rewritten, never the Carbon rule), D-SAFE-20 (`DynCast`, `Lifetime`), D-SAFE-22 (the generator depends on UNVERIFIED items only through rows labelled analysis), D-SAFE-21 (stage 6). Blocked by W-149 (the generator emits `Send`/`Sync` from the facets). The plan for the outlives relation `a: b` is written at this stage, not before."
     }
   ]
 }

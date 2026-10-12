@@ -62,6 +62,13 @@ a[2] = 30;
 Core.Print(s[1]);             // 30: no copy was made
 ```
 
+> **Amendment (2026-10-12, SAFE-1 — F-013 D-SAFE-14 SP3):** in Strict Carbon
+> this obligation is checked — views carry a loan on their storage
+> ([Temporal safety](safety/temporal_safety.md)), the view-producing prelude
+> functions take `bound self`/`bound p` and `UnsafeMake` becomes
+> `unsafe fn Make` under residue item W-144; 0.1 keeps the unchecked contract
+> above. See [Spatial safety](safety/spatial_safety.md), rule SP3.
+
 The element type is constrained to `Copy & Destroy`, the constraint `Iterate`
 and `Optional` already impose, so that an element can be read out of a view by
 value. `const T` satisfies it, so `Core.Slice(const i32)` — the mapping of

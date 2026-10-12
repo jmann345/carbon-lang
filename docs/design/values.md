@@ -134,6 +134,14 @@ cannot be implicitly converted to durable reference expressions at all.
 > properties like uniqueness, and make sure their names are aligned with
 > memory-safety terminology.
 
+> **Answered (2026-10-12, SAFE-1 — F-013 D-SAFE-7, D-SAFE-8, D-SAFE-17):** a
+> durable entire reference expression is a _place_ in the safety design's
+> sense; a `ref` binding is exclusive access to its place, or has the kind of
+> the pointer it was formed through; a value binding is a shared read; and
+> `T*`, `exclusive T*` and `const T*` are the three pointer kinds. See
+> [Temporal safety](safety/temporal_safety.md) and
+> [Mutation safety](safety/mutation_safety.md).
+
 #### Value acquisition
 
 We call forming a value expression from a reference expression _value
@@ -474,6 +482,14 @@ expression an error.
 > or weaken it based on experience, especially with C++ interop and a more
 > complete memory safety story.
 
+> **Pinned (2026-10-12, SAFE-1 — F-013 D-SAFE-17):** a value binding of a
+> `Core.Plain` type acquires eagerly and is unaffected by later mutation (the
+> mutation safety page's EX-M-4a is accepted, and its `b` is 1); a value
+> binding of a non-`Plain` type is a shared loan under which invalidating
+> operations are rejected in Strict Carbon and `Plain`-field writes through
+> other aliases stay erroneous. See
+> [Mutation safety: Value bindings](safety/mutation_safety.md#value-bindings).
+
 Even with these restrictions, we expect to make values in Carbon useful in
 roughly the same places as `const &`s in C++, but with added efficiency in the
 case where the values can usefully be kept in machine registers. We also
@@ -595,6 +611,11 @@ fn F(s_value: S) {
   s_value.unsafe RefMemberFunction();
 }
 ```
+
+> **Superseded (2026-10-12, SAFE-1 — F-013 D-SAFE-5):** the marker is the
+> uniform prefix form, `unsafe s_value.RefMemberFunction()`; see
+> [Safety: Operation-tied `unsafe`](safety/README.md#operation-tied-unsafe).
+> The sketch above is kept as history.
 
 The specific tradeoff here is covered in a proposal
 [alternative](/proposals/p002006-values-variables-pointers-and-references.md#value-expression-escape-hatches).

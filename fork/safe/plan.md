@@ -1839,7 +1839,7 @@ is a finding.
 
 | Rule | Example | Today | Evidence | Stage |
 | --- | --- | --- | --- | --- |
-| TY1 `unsafe as` | EX-TY-1 | ACCEPTS | safety_strategy_doc.carbon body; check/testdata/as/unsafe_as.carbon; lower/testdata/pointer/convert.carbon | — |
+| TY1 `unsafe as` | EX-TY-1 | ACCEPTS (measured 2026-10-12: nightly exit 0 with `import Core library "io";` prepended for `Core.Print`, which the prelude alone does not provide) | safety_strategy_doc.carbon body; check/testdata/as/unsafe_as.carbon; lower/testdata/pointer/convert.carbon | — |
 | TY1 union read | EX-TY-2 | NEW-SYNTAX (Permissive read ACCEPTS today: types/union_basic.carbon) | unions.md:450-456 | 1, 3 |
 | TY1 unverified deref | EX-TY-3 | NEW-SYNTAX | handle_expr.cpp:391-399 | 1, 3 |
 | TY2 `unsafe fn` | EX-TY-4 | NEW-SYNTAX | token_kind.def (no modifier) | 1, 3 |
@@ -1856,11 +1856,11 @@ is a finding.
 | D-SAFE-15 division | EX-SP-6 | ACCEPTS-UNCHECKED | handle_call.cpp:188-192 | 2 (W-130) |
 | T5 `bound` | EX-TM-1 | NEW-SYNTAX | token_kind.def (no `bound`) | 1, 4 |
 | T5c dangling return | EX-TM-2 | ACCEPTS-UNCHECKED | p005434:705-709 `Invalid1` (erroneous; re-pinned, B10); nightly exit 0 (B1) | 3 (P-subset) |
-| T3/T4 NLL | EX-TM-3 | ACCEPTS-UNCHECKED (Permissive semantics today; the `String` assignment under a live `const String*` compiles on the nightly, exit 0, and is accepted in Strict too — B2) | — | 4 |
+| T3/T4 NLL | EX-TM-3 | ACCEPTS-UNCHECKED (Permissive semantics today; the `String` assignment under a live `const String*` compiles on the nightly, exit 0, and is accepted in Strict too — B2) (measured 2026-10-12: the literal `Core.Print(p->Size())` of the §2.6 block is rejected by the nightly, "cannot implicitly convert expression of type `i64` to `i32`"; the page spells it `Core.Print(p->Size() as i32)`, the slices.md idiom, which exits 0 — the outcome stands, the spelling on the page is the measured one) | — | 4 |
 | Regression set | EX-TM-4 | ACCEPTS-UNCHECKED | judge 2's programs; buf.carbon:54-60; slice.carbon:26-28 | 3 (`Leak`, `Escape` with W-128), 4 (`Store`) |
 | P-subset / `exclusive` | EX-TM-5 | NEW-SYNTAX | — | 1, 3 |
 | T5f named | EX-TM-6 | NEW-SYNTAX | — | 6 |
-| T7 temporaries, `ref` | EX-TM-7 | REJECTS today ("cannot bind durable reference to non-reference value of type `str`", nightly 2026.10.12; p005434:173-175) — amended 2026-10-12, review fold: B1 | convert.cpp:2219 TODO is the extension point | — |
+| T7 temporaries, `ref` | EX-TM-7 | REJECTS today ("cannot bind durable reference to non-reference value of type `str`", nightly 2026.10.12; p005434:173-175) — amended 2026-10-12, review fold: B1 (measured 2026-10-12: the literal §2.6 line alone is rejected first with "name `MakeString` not found"; with the declaration `fn MakeString() -> Core.String;` and `r.Size() as i32`, as the page spells it, the first diagnostic is the quoted one, exit 1) | convert.cpp:2219 TODO is the extension point | — |
 | T7 temporaries, `bound` result | EX-TM-7b | ACCEPTS-UNCHECKED (fork prelude; `bound self` is W-128) | buf.carbon:54-56 | 4 (W-128) |
 | T6 union laundering (A-1, RR-1) | EX-TM-8 `Wild`/`Wild3` | NEW-SYNTAX (`unsafe u.p`, `unsafe &u.p`, `bound`; the union is fork syntax, types/union_basic.carbon; the nightly has no `union`) | unions.md:241, :369-380, :417-418 (a pointer into a union aliases every field: `unsafe &u.f` is ⊥ on formation) | 1, 3 |
 | T2 copies preserve loans, W-128 signature audit (A-2, RR-2) | EX-TM-8 `Launder1`/`Launder2`/`Launder3`/`Launder4`/`Launder5` | ACCEPTS-UNCHECKED (fork prelude) | slice.carbon:46-56, :74-77, :80-84, :100-106; as.carbon:38-40; optional.carbon:34-42, :69-78; buf.carbon:28, :45, :72-75; index.carbon:9; copy.carbon:10; p005434:782-784 | 3 with W-128 (`Launder1`, `Launder2`, `Launder4`, `Launder5`), 4 (`Launder3`) |

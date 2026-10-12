@@ -15,9 +15,10 @@ with real test coverage), **PARTIAL** (works with material gaps),
 
 ## Scoreboard
 
-**30 DONE / 21 PARTIAL / 4 MISSING / 1 DESIGN-ONLY** across 56 milestone
-bullets (reconciled 2026-10-05 against the conformance scoreboard —
-128 PASS / 0 FAIL / 22 SKIP over 150 programs, 48/56 bullets PASS — and the
+**32 DONE / 20 PARTIAL / 3 MISSING / 1 DESIGN-ONLY** across 56 milestone
+bullets (reconciled 2026-10-12 against the expected conformance scoreboard —
+130 PASS / 0 FAIL / 20 SKIP over 150 programs, 49/56 bullets PASS, stated as
+expected, not of record (Actions disabled) — and the
 fork/inventory/work-items.json ledger; the original 2026-07-19 audit read
 24 / 18 / 13 / 1; the if-let / let-else row flipped MISSING → PARTIAL at the
 W-012 landing later the same day). The front half of the compiler is done;
@@ -25,9 +26,9 @@ match, choice payloads, `?` error handling, exception boundaries, threading
 interop, if-let / while-let / let-else, native unions, `overload fn` sets
 with import, api/impl definitions, generic members and C++ export, and
 `Core.Slice`/`Core.Buf` with the runtime bounds fail-stop, and the
-`std::span` <-> `Core.Slice` mapping with owning-container views have since
-landed, leaving variadics and the build-system/documentation rows as the
-open back half.
+`std::span` <-> `Core.Slice` mapping with owning-container views, and CMake
+build-system integration with Make documentation have since landed, leaving
+variadics, Windows and the evaluator-documentation row as the open back half.
 
 ## Per-bullet status
 
@@ -81,10 +82,10 @@ open back half.
 | Stdlib C++ interop: transparent non-owning string mapping | DONE | str <-> std::string_view bidirectional transparent mapping implemented and tested (check/cpp/custom_type_mapping.cpp, proposal p006177). |
 | Stdlib C++ interop: transparent non-owning contiguous container mapping (incl. owning->view) | DONE | SL-2 landed (W-056 DISCHARGED 2026-10-05, fork/slices/plan.md §1.B, decision-log "SL-2: std::span ↔ Core.Slice mapping, owning-container views", D-SL-21..27): the dynamic-extent `std::span<T>` imports as `Core.Slice(T')` (check/cpp/custom_type_mapping.cpp `StdSpan` + `DynamicExtent`, import.cpp `MakeSliceType`; `std::span<const int>` is `Core.Slice(const i32)`) and `Core.Slice(T')` in an exported signature maps to `std::span<T>` (sem_ir/type_info.cpp `RecognizedTypeInfo::Slice` + check/cpp/type_mapping.cpp, `std::span` found by name in the translation unit, so it must `#include <span>`), both a reinterpretation of the shared pointer-then-size layout (D-SL-8); a Carbon array crosses as a span through the explicit view `Core.Slice(i32).FromArray(&a)` (D-SL-2), and `Core.Slice(T)` converts to `Core.Slice(const T)` implicitly (D-SL-10); owning -> view: a C++ class with `data()`/`size()` members implements the synthesized `Core.CppContiguousRange` (check/cpp/impl_lookup.cpp; the `const` `data()` is selected) and converts implicitly to `Core.Slice` of its elements through core/prelude/types/slice.carbon's blanket `ImplicitAs` impl beside `Slice` (helpers `CppContiguousRange`/`CppDataPointer`/`CppSizeToI64`/`CppContiguous` in core/prelude/types/cpp/slice.carbon; the size converts `ImplicitAs(u64)` then `As(i64)`, so `size_t` is accepted as `u64` and as Darwin's `CppCompat.ULong64`), so `let view: Core.Slice(const i32) = v;` and `Cpp.SumSpan(v)` work for a `Cpp.std.vector(i32)` (D-SL-9). 0.1 limits, each a filed item: static-extent `std::span<T, N>` stays an ordinary class import and nothing exports to it (W-119); only member `data()`/`size()` are consulted, no ADL, and a signed `size()` forms no view (W-120). Disclosed, not filed: a `std::span<T>` whose C++ `T` has a deleted copy constructor maps to a `Core.Slice` whose element copies fail at the use site (D-SL-24). Conformance: 2/2 programs PASS (interop/cpp_span_view SKIP -> PASS, EXPECT 10 6 12; interop/cpp_span_roundtrip_diff new, EXPECT 2 2 18 with a C++17 oracle; both `COMPILE-ARGS: --clang-arg=-std=c++20`, `<span>` being C++20; hosted run 37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit), 128 PASS / 0 FAIL / 22 SKIP over 150 programs, 48/56 bullets). |
 | Stdlib C++ interop: transparent iteration-abstraction mapping | DONE | Carbon range-for over C++ ranges by way of synthesized Core.Iterate (member and ADL begin/end), tested in check+lower (cpp_range_for_iterate.carbon). |
-| Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems | PARTIAL | clang/clang++/clang-cl/lld busybox symlinks with on-demand runtimes are implemented and integration-tested, but nothing exercises or documents them under CMake or Make. |
+| Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems | DONE | clang/clang++/clang-cl/lld busybox symlinks with on-demand runtimes are implemented and integration-tested (dropin_clang_cpp_toolchain PASS), and CM-1 exercises and documents them under CMake (examples/cmake: CMAKE_CXX_COMPILER = the install tree's lib/carbon/llvm/bin/clang++ compiles the C++ half of a mixed program) and Make (examples/cmake/Makefile assigns CXX := the same symlink; the measured compile line is in fork/cmake/plan.md §4.5), arbitrated by examples/cmake/test.sh through the BUILD-SCRIPT channel (project/dropin_clang_make_cmake PASS locally on nightly 2026.10.12 — not of record: the hosted run R9 requires is pending with no dispatch date, Actions disabled); docs/guides/build_systems.md. System-g++-built objects under `carbon link` remain a filed limit (W-131). |
 | Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation | PARTIAL | Compile->link->run works on Linux/macOS for classes, generics, match, choice payloads, `?` error handling, if-let / while-let / let-else, threading interop, unions in both C++ interop directions, same-file `overload fn` sets, and C++ interop (3/3 conformance programs PASS incl. most_features_missing_match, un-SKIPped at S2d); but variadics, template lowering, and std::variant/optional mapping are absent — gaps that do undermine evaluation of those features (see the MISSING/DESIGN-ONLY rows; W-041 lowering fatals also open). |
 | Project: installs on Windows, macOS, and Linux and builds working programs | PARTIAL | Linux x86-64/arm64 and macOS arm64 in CI (only Linux x86-64 released); Windows explicitly unsupported — clang_runtimes.cpp returns 'TODO: Windows runtimes are untested and not yet supported', LLD wired for ELF/MachO only, no Windows CI. |
-| Project: CMake build-system integration plus Make documentation | MISSING | No CMake support, example, or docs anywhere (only a libc++ header-expansion .bzl mentions cmake); Bazel is the only integrated build system. |
+| Project: CMake build-system integration plus Make documentation | DONE | CM-1 (2026-10-12, fork/cmake/plan.md): first-class CMake language support under cmake/ (CMakeDetermineCarbonCompiler, CMakeCarbonInformation, CMakeTestCarbonCompiler, CarbonTargets with carbon_add_library / carbon_add_executable for whole-package compilation and Carbon::core_io) and examples/cmake building hello, a two-file package and a mixed Carbon/C++ program under Unix Makefiles, Ninja and a plain Makefile, arbitrated by examples/cmake/test.sh through the runner's BUILD-SCRIPT channel (project/cmake_build_integration PASS locally on nightly 2026.10.12 — not of record: the hosted run R9 requires is pending with no dispatch date, Actions disabled); Make documentation in docs/guides/build_systems.md. 0.1 limits, each a filed item: no depfile (W-129), whole-package recompiles (W-130), `carbon link` adds no Core io objects (W-003), no shared libraries (W-132), modules not installed in the toolchain tree (W-128). |
 | Project: detailed safety strategy | DONE | docs/design/safety/README.md rewritten by way of accepted p005914 (Strict/Permissive modes, per-category enforcement model, build modes, Rust-ecosystem reuse); residual future-work on soundness model/mode syntax and a stale conflicting principles doc. |
 | Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis) | MISSING | Temporal/mutation safety exists only as an explicitly 'directional... provisional' section of p005914; no dedicated design docs or follow-up proposals, no Rust-interop analysis, README 'Lifetime and move semantics' is a bare TODO. |
 | Project: basic evaluator documentation (getting started to FAQs) | PARTIAL | README nightly-tarball getting-started (Ubuntu-only) and a comprehensive project FAQ exist, but docs/guides contains only a glossary — no language tutorial or evaluation walkthrough. |
@@ -262,15 +263,23 @@ arm64) with OS/CPU in package names.
 
 **Depends on:** Execution/conformance test harness
 
-The milestone explicitly requires CMake integration plus Make documentation;
-neither has been started (Bazel-only today, though `carbon config --json`
-provides groundwork). Evaluator docs are thin (glossary only in docs/guides).
-Mostly product/docs work, parallelizable late.
+The milestone's CMake integration and Make documentation LANDED with CM-1
+(fork/cmake/plan.md, 2026-10-12): first-class CMake language modules under
+cmake/ (CMakeDetermineCarbonCompiler, CMakeCarbonInformation,
+CMakeTestCarbonCompiler, CarbonTargets), the examples/cmake project (hello, a
+two-file package behind a static library, and a mixed Carbon/C++ program whose
+C++ half is compiled by the drop-in clang++) built under the Unix Makefiles and
+Ninja generators and by a plain Makefile, and docs/guides/build_systems.md with
+the explicit Make rules; `carbon config --json` was the groundwork. Evaluator
+docs remain thin (the glossary and the build-systems guide in docs/guides): the
+getting-started tutorial is W-062 and stays open.
 
-**Arbiter:** A CI-tested example CMake project that builds a mixed Carbon/C++
-program using the installed toolchain (drop-in Clang mode), written
-Make-integration docs, and a docs/guides getting-started tutorial an evaluator
-can follow from install to running a program with interop.
+**Arbiter:** For the build-system half, examples/cmake/test.sh driven by the
+conformance runner's BUILD-SCRIPT channel (project/cmake_build_integration and
+project/dropin_clang_make_cmake — PASS locally on nightly 2026.10.12, not of
+record until a hosted run). For the documentation half, a docs/guides
+getting-started tutorial an evaluator can follow from install to running a
+program with interop (W-062, open).
 
 ### W12. Unicode source support in the lexer [S]
 
@@ -527,8 +536,12 @@ libc++/libc++abi, libunwind) on demand with a cache — all covered by substanti
 unit tests and an end-to-end install integration test that compiles and runs
 both C++ and Carbon-with-C++-interop programs. Build system integration is
 Bazel-first and tested (example downstream module, `carbon config --json`,
-cc_toolchain rules), but the 0.1-required CMake integration and Make
-documentation are entirely absent. The install story is Linux-x86-64-only for
+cc_toolchain rules), and the 0.1-required CMake integration and Make
+documentation landed with CM-1 (cmake/ language modules, examples/cmake with
+its test.sh arbiter, docs/guides/build_systems.md); the 0.1 limits — no
+depfile, whole-package recompiles, no Core io objects in `carbon link`, no
+shared libraries, modules not installed in the toolchain tree — are filed as
+W-128..W-133 and listed in the guide. The install story is Linux-x86-64-only for
 actual releases: a nightly GitHub prerelease tarball is automated, CI tests
 Linux x86-64/AArch64 and macOS AArch64, but there is no Windows support anywhere
 (no CI, no packaging targets, no release artifacts for macOS or ARM Linux

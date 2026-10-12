@@ -2860,6 +2860,278 @@ if-let/let-else/while-let (flips a MISSING bullet on landed match
 machinery), then the error-handling chain W-016..W-019 (Result, `?`,
 exception interop), then unions W-009/W-015.
 
+### CM-1: CMake language modules, example project, Make documentation (2026-10-12)
+
+Milestone bullets "Project: CMake build-system integration plus Make
+documentation" (fork/gap-analysis.md row 87, now line 88) MISSING → DONE and
+"Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake
+build systems" (row 84, now line 85) PARTIAL → DONE; header 30 DONE / 21
+PARTIAL / 4 MISSING / 1 DESIGN-ONLY → 32 / 20 / 3 / 1, against the EXPECTED
+scoreboard 130 PASS / 0 FAIL / 20 SKIP over 150 programs, 49/56 bullets
+(trunk's floor 128 / 0 / 22, 48/56, run 37402970811, plus the two un-SKIPs) —
+stated as expected, not of record: GitHub Actions on the repository is
+disabled, so R9's scoreboard record is outstanding with no dispatch date, and
+each flipped row's evidence cell says so in those words. Landed on
+claude/carbon-fork-0-1-cmake off trunk 0bdce60a5 in the three commits
+fork/cmake/plan.md §3 fixed — a88077854 (1/3: the cmake/ language modules and
+examples/cmake with test.sh and the Makefile), 10af323a2 (2/3: the runner's
+BUILD-SCRIPT channel, the two project stubs un-SKIPped, docs/guides/
+build_systems.md, gap rows 84/87, the ledger) and the discharge commit that
+carries this entry (3/3) — after the plan's own two commits 840d65a6a (rev 1)
+and 569da2e37 (rev 2, the review fold and sign-off). Not pushed at the time of
+writing: the branch is to be pushed and its PR opened and HELD like PR 51
+(label text "awaiting hosted conformance + gate (Actions disabled)"), with the
+dispatch list in ORCHESTRATION. The ledger ids W-128..W-133 assume PR 51 takes
+W-126/W-127 (D-CM-16, verified at merge). This workstream touches no toolchain
+C++ and no golden, so it needs no autoupdate; its verification is prek plus
+the example's own arbiter run LOCALLY against the upstream nightly
+0.0.0-0.nightly.2026.10.12+62f1cc6. Every decision below is an R29(a)
+auto-adopt recorded for after-the-fact veto, each with its break condition in
+the plan.
+
+<!-- google-doc-style-ignore -->
+WHAT LANDED, by mechanism. (1) LANGUAGE MODULES (cmake/, six files).
+`project(... LANGUAGES Carbon)` works through four modules found on
+CMAKE_MODULE_PATH: CMakeDetermineCarbonCompiler (the CMAKE_Carbon_COMPILER
+cache entry, then the CARBON environment variable, then `carbon` /
+`carbon-busybox` on PATH; identification by CMAKE_DETERMINE_COMPILER_ID_VENDOR
+with the regex `Carbon Language toolchain version: ([0-9][^ \r\n]*)` and no
+compiler-id source; CMAKE_Carbon_INSTALL_ROOT and CMAKE_Carbon_LLVM_BINDIR from
+`carbon config --json` through guarded `string(JSON ... ERROR_VARIABLE)` reads;
+llvm-ar/llvm-ranlib recorded, advanced; the generic CMakeFindBinUtils pass),
+CMakeCarbonCompiler.cmake.in (the persisted compiler file: source extension
+`carbon` so `.impl.carbon` is "carbon", LINKER_PREFERENCE 40 with _PROPAGATES
+1), CMakeCarbonInformation (compile rule `<CMAKE_Carbon_COMPILER> compile
+<DEFINES> <INCLUDES> <FLAGS> --output-last-input-only --output=<OBJECT>
+<SOURCE>`; link rule `link <CMAKE_Carbon_LINK_FLAGS> --output=<TARGET>
+<OBJECTS> -- <LINK_FLAGS> <LINK_LIBRARIES>` with `<FLAGS>` omitted because
+CMAKE_Carbon_FLAGS are compile options; archives through `<CMAKE_AR> qc` and
+`<CMAKE_RANLIB>`; `--clang-arg=-I` / `--clang-arg=-D`; the per-configuration
+`--optimize` defaults seeded from CARBONFLAGS; CMAKE_Carbon_CREATE_SHARED_
+LIBRARY and _MODULE pinned to `<CMAKE_COMMAND> -E false`) and
+CMakeTestCarbonCompiler (`try_compile` of `fn Run() -> i32 { return 0; }`).
+(2) HELPERS (cmake/CarbonTargets.cmake). `_carbon_wire_package` puts, per
+source, the dependency API files and the package's other files into
+COMPILE_OPTIONS (before `<SOURCE>`, so the object is the last input) and into
+OBJECT_DEPENDS; API files (sources not ending in `.impl.carbon`) publish
+through the target property CARBON_API_FILES, transitively; a source already
+owned by another target's CARBON_PACKAGE property is a FATAL_ERROR naming both
+targets (per-directory source properties). `carbon_add_library(<name>
+[STATIC|OBJECT] SOURCES ... [DEPS ...] [NO_CORE])`, `carbon_add_executable`
+and `carbon_add_core_library(<lib>)` — manifest-driven from
+`${CMAKE_Carbon_INSTALL_ROOT}/core/core_library_manifest.txt`, NO_CORE,
+STATIC target carbon_core_<lib> with the alias Carbon::core_<lib>. No prelude
+target (Route B dropped). (3) THE EXAMPLE (examples/cmake/, eleven files).
+The CARBON_TOOLCHAIN block before `project()` (cache entry → environment →
+`carbon` on PATH resolved by REALPATH and three PATH steps from the busybox)
+seeds CMAKE_Carbon_COMPILER and CMAKE_CXX_COMPILER = lib/carbon/llvm/bin/
+clang++ unless the user set them; hello (add_executable + Carbon::core_io),
+widget (carbon_add_library STATIC of widget.carbon + widget.impl.carbon;
+carbon_add_executable widget_main DEPS widget), mixed (a CXX STATIC library
+`twice` with a PUBLIC include directory, add_executable of main.carbon,
+OBJECT_DEPENDS on twice.h, linked by `carbon link` by linker preference).
+The Makefile is the §2.B.5 rules verbatim (checked byte-identical to the
+guide's fenced block): the `$(origin)` guard deriving CARBON_TOOLCHAIN from
+CARBON or stopping at `$(error)`, `CXX :=` (make predefines `CXX = g++` with
+origin default, so `?=` never assigns), the `$(O)` rule with `| $(O)` on every
+object rule, and the `objects` / `link` / `run` / `clean` stage targets.
+(4) THE ARBITER SCRIPT (examples/cmake/test.sh, D-CM-12's contract). Unix
+Makefiles always, Ninja when on PATH (a one-line stderr note otherwise,
+`--no-ninja`), the Makefile through `make -C examples/cmake CARBON_TOOLCHAIN=
+<dir> O=<build>/make objects` then `link` (`--no-make`); the selected programs
+run from each build in order; outputs byte-identical; stdout is exactly the
+Unix Makefiles build's program output; exit codes 0 / 2 configure or compile
+/ 3 link (the CMake log searched for `ld.lld: error` or `linker command
+failed`) / 4 program / 5 variants differ / 64 usage / 66 toolchain not found;
+toolchain from CARBON_TOOLCHAIN, else CARBON (parent's parent), else `carbon`
+on PATH; build dir from `--build-dir`, else CARBON_BUILD_DIR, else mktemp;
+`-DCARBON_TOOLCHAIN=<dir>` passed explicitly so the arbiter never depends on
+PATH. (5) DOCS. docs/guides/build_systems.md (toolchain layout and the two
+terms; CMake: enabling the language, finding the compiler, flags, a
+single-file executable, Core libraries, a multi-file package with the
+generated command lines quoted from build.make and rules.ninja, mixed Carbon
+and C++ with the CXX implicit-link disclosure including the `$HOME`
+runtimes-cache `-L`, shared libraries; Make: the rules verbatim with a
+paragraph per rule, the objects-before-`--` warning, the `carbon build`
+one-liner with its caveats; Limits in 0.1 as a table of W-ids), listed in
+docs/guides/README.md; one pointer sentence after README.md's Getting
+started block; cmake/README.md and examples/cmake/README.md. (6) THE RUNNER
+CHANNEL (fork/conformance/runner.py, Option A of D-CM-14). The `//
+BUILD-SCRIPT: <script> [args...]` directive (DIRECTIVE_PREFIXES, Program.
+build_script, the parse branch), `validate_build_script` at discovery (no
+COMPILE-ARGS, no multi-unit, no `.diff.cpp`; the script exists and is
+executable), `toolchain_root` (the two layouts find_clangxx probes; the
+resolved binary's own directory when neither has lib/carbon, which is what the
+stub fixtures need), `run_build_script` (cwd = REPO_ROOT, CARBON_TOOLCHAIN /
+CARBON / CARBON_BUILD_DIR, the link timeout, EXPECT-EXIT and EXPECT-STDOUT on
+the script, exit 2 → COMPILE-FAIL, 3 → LINK-FAIL, other unexpected exits and
+timeouts → RUN-FAIL, stdout → OUTPUT-MISMATCH, the write_log shape),
+`--repo-root` (default REPO_ROOT = SCRIPT_DIR.parent.parent; the fixtures pass
+a temp root), the `external-build` table kind, the `external_build` scoreboard
+key, the `[build: <script>]` listing mark, the fixture line in the
+directive-sync self-check, three BUILD-SCRIPT fixtures in the execution
+self-check (PASS with the three variables, the working directory and the
+arguments asserted; exit 2 → COMPILE-FAIL; `bye` → OUTPUT-MISMATCH) and
+`build_script_self_check` — the identity rule: the program body after its
+leading comment block equals the body of exactly one `.carbon` under the
+script's directory tree, each file stripped of its own leading comment block.
+fork/conformance/README.md gains the directive line, a bullet and the
+"External-build programs (BUILD-SCRIPT)" subsection; the generated table
+marks both project rows `external-build`.
+<!-- google-doc-style-resume -->
+
+<!-- google-doc-style-ignore -->
+DECISIONS. D-CM-1 (genuine language support plus the CarbonTargets helper
+layer; rejected: a functions-only `carbon build` custom-command layer, which
+yields no objects a library can own, and language support without helpers,
+which cannot express a package), D-CM-2 (module home is a top-level cmake/
+directory, the install analogy with bazel/; the house hand-off's
+examples/cmake/cmake/ placement recorded as a deviation; installing into the
+toolchain tree is W-128), D-CM-3 (discovery order cache entry → CARBON → PATH;
+vendor-regex identification; the example's CARBON_TOOLCHAIN convenience with
+three PATH steps — two give `<dir>/lib`; the two terms toolchain directory
+versus install root `<dir>/lib/carbon/`), D-CM-4 (`--output-last-input-only`
+in the compile rule, silent for one input, so hand-written COMPILE_OPTIONS
+sibling lists work without the helper), D-CM-5 (link rules; objects positional
+before `--`; archives through CMAKE_AR; linker preference 40 propagating;
+SHARED/MODULE pinned to `<CMAKE_COMMAND> -E false` because the undefined form
+succeeds silently under Ninja), D-CM-6 (the whole-package helpers; the
+CARBON_PACKAGE collision FATAL_ERROR; O(N²) re-parsing filed as W-130),
+D-CM-7 (Core io through Carbon::core_io, manifest-driven, NO_CORE for Core's
+own sources only; W-003 is the toolchain fix), D-CM-8 (mixed targets default
+to the drop-in clang++ — Route A; Route B not landed, W-131), D-CM-9 (no
+depfile; OBJECT_DEPENDS by hand; W-129), D-CM-10 (flags and configurations
+from `carbon help compile`'s optimize levels), D-CM-11 (the example's file set
+and hand-derived markers; both stub markers survive verbatim), D-CM-12
+(test.sh's contract as landed, including the CARBON fallback), D-CM-13 (the
+guide at docs/guides/build_systems.md; the Makefile is the documented rules
+verbatim; `CXX :=`), D-CM-14 (arbitration by the BUILD-SCRIPT directive,
+never a fake un-SKIP; the Option B fallback — a SKIP naming the script, the
+nightly, the command and the observed output, rows PARTIAL — if the hosted
+runner lacks cmake), D-CM-15 (row 84 flips in the same PR; the drop-in hunk is
+a separable part of commit 2 if vetoed), D-CM-16 (ledger ids W-128..W-133 on
+the PR 51 assumption; W-060/W-061 DISCHARGED; W-002 (3) answered; W-003 notes
+the workaround; W-133 carries the measured intermingled-objects failure of
+`carbon link`), D-CM-17 (out of scope, disclosed: cross-compiling, the
+compiler launcher, Windows, macOS verification — in W-128's and W-130's notes
+and the guide's limits table). Implementation choices beyond the plan, each
+small and recorded in the plan's landed notes: commit 1's two READMEs
+referred to the guide by path and commit 2 turned the references into links
+(check-links rejects a link to a file that does not exist yet); the runner
+gained `--repo-root` so the self-test fixtures can use a temp root without
+absolute paths in the directive; the gap-analysis summary sentence names the
+CMake landing beside the "leaving ..." change the plan specified; the
+Makefile's stage targets (`objects`, `link`, `run`, `clean`) sit below the
+verbatim rule block.
+<!-- google-doc-style-resume -->
+
+REVIEWS (R29(c)). One plan review of rev 1 returned APPROVE-WITH-AMENDMENTS
+(one BLOCKER — `CXX ?=` never assigns against make's builtin; two MAJORs — the
+silent Ninja SHARED success and the missing `$(O)` rule; seven MINORs), all
+ten reproduced by the fixer and folded into rev 2 (the fold record is in the
+plan); the rev 1 header anticipated two plan reviews and one ran. The
+implementation review of plan §8.7 is outstanding at this discharge: hosted
+verification cannot be green, so it is to run the local arbiter itself and
+diff the generated command lines against plan §4.5.
+
+FILL-CAUGHT MISSES: none — no hosted round was possible (Actions disabled);
+the local arbiter and the runner's self-test are the only fills, and both
+were green at every commit.
+
+VERIFICATION, all LOCAL, never of record. prek to a fixpoint at each commit
+(two consecutive clean passes, identical hash) with
+SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest:
+fix-cc-deps runs `bazel query //...` and cannot run here; it is a
+BUILD-dependency fixer and no BUILD file is touched (examples/cmake has none,
+so it is invisible to Bazel), so its CI pass is a no-op by construction; the
+other three are the bazel-requiring hooks the task names (R22/R23: the CI prek
+is the authority when Actions returns). `python3 fork/conformance/runner.py
+--self-test` → multi-unit discovery OK, directive-prefix sync OK,
+execution-path OK (six fixtures), build-script OK, "150 programs parsed, 56
+bullets in table, OK". `CARBON_TOOLCHAIN=<tc> examples/cmake/test.sh
+--build-dir <scratch>/t1` → exit 0, stderr "variants agree: make-gen ninja
+make", stdout exactly the five lines of plan §4.1 (`built by CMake-integrated
+Carbon`, `widget package built by CMake-integrated Carbon`, `7`, `built by a
+drop-in Clang build-system example`, `42`), 5.8 s wall on a warm runtimes
+cache; `--only mixed` the last two lines; CARBON= alone, CARBON_BUILD_DIR,
+`--no-ninja --no-make` and PATH-only discovery give the same stdout; no
+toolchain → 66; a bad option or target → 64; an induced compile error → 2, an
+undefined C++ symbol → 3, a program returning 9 → 4. The runner's local run
+`--toolchain <tc>/bin/carbon --filter project/` → `[PASS]
+project/cmake_build_integration.carbon`, `[PASS]
+project/dropin_clang_make_cmake.carbon`, the four document-review SKIPs
+unchanged; project/most_features_missing_match is COMPILE-FAIL on this
+UPSTREAM nightly because `match` is a fork feature (`semantics TODO:
+HandleMatchIntroducer`), unrelated and PASS on the fork-built toolchain of
+record. Plan §4.6's negative checks: `add_library(bad SHARED ...)` configures
+under both generators and `cmake --build` fails with no libbad.so (Makefiles
+`Error 1`; Ninja `FAILED: libbad.so` / `: && /usr/bin/cmake -E false && :`);
+a configure with only `PATH=<tc>/bin` resolves CMAKE_Carbon_COMPILER to
+`<tc>/bin/carbon` and CMAKE_CXX_COMPILER to `<tc>/lib/carbon/llvm/bin/
+clang++`; widget/main.carbon compiled alone → "imported API 'Main//widget'
+not found"; touching mixed/twice.h rebuilds mixed/main.carbon.o and relinks
+under both generators. Plan §4.5's Makefile checks: a fresh `O=` on a clean
+tree builds (`mkdir -p`, `<tc>/lib/carbon/llvm/bin/clang++ -std=c++17 -c -o
+<O>/twice.o mixed/twice.cpp`), a second make is "Nothing to be done for
+'all'", `make CARBON=<tc>/bin/carbon` alone builds the same, `make O=...`
+alone stops at the `$(error)`, and `make CXX=g++` reproduces `ld.lld: error:
+undefined symbol: std::cout`. The generated command lines quoted in the guide
+are the ones `cmake --build -v`, build.make, link.txt and rules.ninja showed
+(plan §4.5). R31 counts (H2/H3/dash/numbered) changed only by the sections
+added: fork/conformance/README 4/3/22/6 → 4/4/28/6, docs/guides/README
+0/0/1/0 → 0/0/2/0, this file and ORCHESTRATION by their new paragraphs; no
+`+` line starts with a `#NNNN`, a stray marker or a cron field; no model
+identifiers. Hosted: pending — R9's scoreboard record is outstanding with no
+dispatch date (Actions disabled); when it returns, dispatch `Fork: hosted
+verification` mode conformance on the PR head and expect 130 / 0 / 20 over
+150, 49/56 (or the delta on whatever trunk then holds); a `cmake: command not
+found` log is D-CM-14's Option B trigger.
+
+RESIDUE, filed. W-128 (modules not installed into the toolchain tree, no
+find_package(Carbon), no Bazel-side test of the example; carries
+cross-compiling, the launcher, Windows and macOS verification — evidence
+cmake/README.md, toolchain/install/BUILD:321-375, examples/BUILD:35-41);
+W-129 (no dependency output from `carbon compile`; `-- -MD -MF` exits 0 and
+writes nothing, Ninja `#deps 0`; the `-MM` side scan as the interim); W-130
+(the whole-package model: O(N²) re-parsing, per-directory source properties,
+single-output compile; compile_subcommand.cpp:43-63); W-131 (system-g++-built
+objects under `carbon link`: `-lstdc++` → `-lc++`, `std::__throw_length_error`
+undefined; the by-path workaround; Route B not landed); W-132 (no shared
+libraries in `carbon link`; the failing rule); W-133 (`carbon build`'s `.cpp`
+and `-o` help drift; `carbon link --output=x -- a.o b.o -lc++` → `error: no
+such file or directory: '-lc++'`). W-003 stays OPEN (toolchain) with the
+CMake workaround noted; W-062 (the evaluator tutorial) stays OPEN and is not
+this workstream's.
+
+PLAN §0.2 CORRECTIONS carried into the ledger and the gap analysis: W-060's
+evidence pointed at gap-analysis.md:69 and :160-166 (the if-let row and the
+matching-area paragraph) and at the stub's bullet line as its SKIP — re-pinned
+to the CMake row, §W11 and the BUILD-SCRIPT line (items 1-2); W-002's
+runner.py:503-524 re-pinned to the execute_program entry (item 3); both SKIP
+lines' "arbitration must move to the example project's own CI" is answered by
+the runner channel, not a workflow, so the scoreboard stays the single arbiter
+(item 4); the CMake stub's EXPECT block grew from one marker line to the
+example's five (item 5) and the drop-in stub's body is the mixed main unit,
+disclosed in its header (item 6); W-003's notes carry the workaround (item 7);
+§W11 says which halves landed (item 8); the module home deviation from the
+house hand-off (item 9).
+
+_V-3a divergence-risk register entries (reviewed at each upstream merge):_
+upstream has no CMake integration (no CMakeLists.txt, no `*.cmake`, no
+cmake/ or examples/cmake/ directory, no build-systems guide; its thirteen
+`cmake` mentions are Bazel-internal), so the module and helper names
+(`CMAKE_Carbon_*`, `carbon_add_library`, `carbon_add_executable`,
+`carbon_add_core_library`, `Carbon::core_io`) are fork-local and rename if
+upstream ships its own; README.md's one-line pointer and the
+`/examples/cmake/build-make/` line in .gitignore (implementation review fold
+F5) are the only upstream-owned text touched; the `BUILD-SCRIPT` directive is
+fork-harness-local. If upstream's driver gains multi-output or separate
+compilation (compile_subcommand.cpp's TODO), D-CM-6's sibling wiring is
+deleted; if `carbon link` learns the Core objects (W-003) or shared libraries
+(W-132), D-CM-7's helper becomes a warning no-op and D-CM-5's failing rule
+becomes the C reference rule; if the driver writes a depfile (W-129), D-CM-9's
+NASM-style wiring replaces OBJECT_DEPENDS. Veto-able.
+
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 
 Milestone bullet "Stdlib C++ interop: transparent non-owning contiguous

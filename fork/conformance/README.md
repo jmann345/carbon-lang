@@ -95,6 +95,7 @@ comment block:
 //   <literal line 1>
 //   <literal line 2>
 // SKIP: <reason>              (optional; marks a not-yet-runnable program)
+// BUILD-SCRIPT: <script> [args] (optional; an external build arbitrates instead)
 ```
 
 -   `CONFORMANCE-BULLET` is **required** and must match a first-column cell of
@@ -114,6 +115,10 @@ comment block:
 -   `SKIP` exists for programs written ahead of their feature
     (write-tests-first, per process.md step 1). Keep SKIPs rare; prefer
     writing programs against constructs that already work.
+-   `BUILD-SCRIPT` hands the program to an external build system's own script
+    instead of the runner's compile/link/run — see "External-build programs
+    (BUILD-SCRIPT)" below. The program's body must be byte-identical to a file
+    that script builds.
 
 ### Multi-unit (split-file) programs
 
@@ -174,6 +179,62 @@ The convention, enforced by discovery (and therefore by `--self-test`):
     additionally runs a fixture-based self-check of this discovery logic
     itself (`multi-unit discovery self-check`), so the machinery stays
     covered even while the tree has no multi-unit program.
+
+### External-build programs (BUILD-SCRIPT)
+
+A bullet about build-system integration cannot be arbitrated by compiling one
+`.carbon` file: the thing under test is CMake or Make driving the toolchain. A
+program carrying `// BUILD-SCRIPT: <script> [args...]` is arbitrated by that
+script instead (the two `project/` build-system programs name
+`examples/cmake/test.sh`). The script path is relative to the repository root
+and its arguments are whitespace-split, like `COMPILE-ARGS`.
+
+The contract, enforced by `execute_program`:
+
+-   The runner issues **no** compile, link or run of its own. It runs the
+    script from the repository root with three environment variables:
+    `CARBON_TOOLCHAIN` (the toolchain directory — the parent of `bin/carbon`,
+    derived from `--toolchain` by probing the same two install-tree layouts
+    `find_clangxx` probes, falling back to the binary's own directory when
+    neither holds `lib/carbon`), `CARBON` (the `--toolchain` path as given to
+    the runner, resolved) and `CARBON_BUILD_DIR` (`<out>/build/<name>`, a
+    private directory the script may fill). The script runs under the link
+    timeout, because its first `carbon link` builds the runtimes on demand.
+    The runner only creates `CARBON_BUILD_DIR`; it persists across runs
+    against the same `--out`, so the script owns the reuse rule: every build
+    it makes must come from the toolchain of this run, never from a cache left
+    by an earlier one (`examples/cmake/test.sh` configures its CMake variants
+    with `--fresh` and pins `CARBON=` for its Makefile variant).
+-   `EXPECT-EXIT` applies to the script's exit code and `EXPECT-STDOUT` to its
+    stdout, unchanged. The script must therefore print only what the programs
+    it builds print, with every configure and build message on stderr.
+-   **Status mapping uses existing classes only**: exit 2 is `COMPILE-FAIL`
+    (configure or compile failed), exit 3 is `LINK-FAIL`, any other exit that
+    is not `EXPECT-EXIT` — or a timeout — is `RUN-FAIL` (detail: "build script
+    exited with N"), and a stdout mismatch is `OUTPUT-MISMATCH`. The generated
+    table marks such a program `external-build`, the scoreboard entry carries
+    `"external_build": true`, and the log holds the script's command, stdout
+    and stderr.
+-   Guard rails (discovery errors, so `--self-test` catches them without a
+    toolchain): `BUILD-SCRIPT` cannot combine with `COMPILE-ARGS`, with a
+    multi-unit directory program, or with a `.diff.cpp` sibling; the script
+    must exist and be executable.
+-   **The identity rule** (`--self-test`'s `build-script self-check`): the
+    program's body — everything after its leading comment block, so the
+    directive header does not count — must be byte-identical to the body of
+    exactly one `.carbon` file under the script's directory tree, each file
+    stripped of its own leading comment block (the license header). The
+    promoted program IS a file the script builds; a retyped or drifted copy
+    fails the self-test. `--self-test` also runs three stub fixtures through
+    the execution path (a script printing `hi` with the three variables
+    asserted, a script exiting 2, a script printing `bye` against an expected
+    `hi`).
+
+Never a fake un-SKIP: when the hosted runner cannot run the script (for
+example a missing `cmake`), the program fails as `COMPILE-FAIL` with the
+script's message in the log, and the honest fallback is a `SKIP` naming the
+script, the toolchain version and the observed output — never a body that
+prints the expected lines through `carbon compile` alone.
 
 ### Differential Carbon-vs-C++ programs
 
@@ -336,10 +397,10 @@ fails if this table is stale):
 | `interop/inherit_multiple_bases.carbon` | Type system: C++ interop — bi-directional inheritance, hierarchy roots, abstract/final/virtual mapping | SKIP |
 | `interop/string_view_cpp_to_str.carbon` | Stdlib C++ interop: transparent non-owning string mapping | run |
 | `interop/string_view_str_to_cpp.carbon` | Stdlib C++ interop: transparent non-owning string mapping | run |
-| `project/cmake_build_integration.carbon` | Project: CMake build-system integration plus Make documentation | SKIP |
+| `project/cmake_build_integration.carbon` | Project: CMake build-system integration plus Make documentation | external-build |
 | `project/design_docs_placeholders.carbon` | Goal: design docs documented, cohesive, understandable without placeholders | SKIP |
 | `project/dropin_clang_cpp_toolchain.carbon` | Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems | run |
-| `project/dropin_clang_make_cmake.carbon` | Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems | SKIP |
+| `project/dropin_clang_make_cmake.carbon` | Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems | external-build |
 | `project/evaluator_docs_getting_started.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
 | `project/evaluator_docs_review.carbon` | Project: basic evaluator documentation (getting started to FAQs) | SKIP |
 | `project/most_features_interop_matrix.carbon` | Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation | run |

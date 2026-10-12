@@ -1567,7 +1567,9 @@ static auto AddAssociatedEntities(ImportContext& context,
 // Given a block ID for the structural member requirements of a `template
 // constraint` (`FunctionDecl` instructions in its with-self scope, D-SC-15),
 // returns a version localized to the current IR: a block of import-refs, one
-// per requirement, in the same order.
+// per requirement, in the same order. As in `AddAssociatedEntities`, an entry
+// may itself be an import-ref when the imported IR localized the block from a
+// further import.
 static auto AddStructuralMembers(ImportContext& context,
                                  SemIR::NameScopeId local_name_scope_id,
                                  SemIR::InstBlockId structural_members_id)
@@ -1580,13 +1582,28 @@ static auto AddStructuralMembers(ImportContext& context,
   llvm::SmallVector<SemIR::InstId> new_structural_members;
   new_structural_members.reserve(structural_members.size());
   for (auto inst_id : structural_members) {
+    // Determine the name of the requirement, by switching on its kind.
+    SemIR::NameId import_name_id = SemIR::NameId::None;
     // We don't need `GetWithAttachedType` here because we don't access the
     // type.
-    auto function_decl =
-        context.import_insts().GetAs<SemIR::FunctionDecl>(inst_id);
-    const auto& function =
-        context.import_functions().Get(function_decl.function_id);
-    auto name_id = GetLocalNameId(context, function.name_id);
+    auto inst = context.import_insts().Get(inst_id);
+    CARBON_KIND_SWITCH(inst) {
+      case CARBON_KIND(SemIR::FunctionDecl function_decl): {
+        const auto& function =
+            context.import_functions().Get(function_decl.function_id);
+        import_name_id = function.name_id;
+        break;
+      }
+      case CARBON_KIND_ANY(SemIR::AnyImportRef, import_ref): {
+        import_name_id = context.import_entity_names()
+                             .Get(import_ref.entity_name_id)
+                             .name_id;
+        break;
+      }
+      default:
+        CARBON_FATAL("Unhandled structural member kind: {0}", inst.kind());
+    }
+    auto name_id = GetLocalNameId(context, import_name_id);
     auto entity_name_id = context.local_entity_names().Add(
         {.name_id = name_id, .parent_scope_id = local_name_scope_id});
     new_structural_members.push_back(

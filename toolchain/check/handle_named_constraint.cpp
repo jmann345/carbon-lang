@@ -78,14 +78,18 @@ static auto BuildNamedConstraintDecl(Context& context,
                          .new_entity_decl = constraint_decl,
                          .new_entity = constraint_info},
                      is_definition)) {
-    const auto& prev_constraint_info =
+    auto& prev_constraint_info =
         context.named_constraints().Get(constraint_decl.named_constraint_id);
-    // Redeclarations must agree on `template` (D-SC-16). The merged entity
-    // keeps the first declaration's flag.
+    // Redeclarations must agree on `template` (D-SC-16). `MergeDefinition`
+    // leaves the stored flag alone, so a disagreement is still visible here.
+    // Recover as a template constraint, the permissive mode: a `fn` member of
+    // the definition is then a requirement rather than a cascade of
+    // `FunctionInNonTemplateConstraint`.
     if (prev_constraint_info.is_template != is_template) {
       DiagnoseNamedConstraintTemplateMismatch(
           context, prev_constraint_info.name_id, SemIR::LocId(decl_inst_id),
           SemIR::LocId(lookup_result.target_inst_id()));
+      prev_constraint_info.is_template = true;
     }
     FinishGenericRedecl(context, prev_constraint_info.generic_id);
   } else {
@@ -121,7 +125,8 @@ auto HandleParseNode(Context& context,
 
   // Inside a `template constraint`, `Self` is a template-phase binding
   // (D-SC-10). The flag comes from the stored entity: a definition may be a
-  // redeclaration, and the first declaration's flag is authoritative.
+  // redeclaration, and a `template` disagreement has by now been diagnosed and
+  // recovered as template (D-SC-16).
   bool is_template = constraint_info.is_template;
 
   // Track that this declaration is the definition.

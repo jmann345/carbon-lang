@@ -85,9 +85,10 @@ struct NamedConstraint : public EntityWithParamsBase,
     body_block_without_self_id = definition.body_block_without_self_id;
     body_block_with_self_id = definition.body_block_with_self_id;
     self_param_id = definition.self_param_id;
-    // `is_template` is deliberately not copied: the first declaration's flag
-    // is authoritative, and a disagreeing redeclaration is diagnosed by
-    // `BuildNamedConstraintDecl` (D-SC-16) after this merge runs.
+    // `is_template` is deliberately not copied, and not asserted equal: this
+    // runs inside `TryMergeRedecl`, before `BuildNamedConstraintDecl` compares
+    // the stored flag with the redeclaration's, diagnoses a disagreement and
+    // recovers as template (D-SC-16).
     require_impls_block_id = definition.require_impls_block_id;
     structural_members_id = definition.structural_members_id;
     complete = definition.complete;

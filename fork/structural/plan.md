@@ -1589,3 +1589,83 @@ focused re-review, and the ONE implementation review runs after the hosted
 verification of SC-1c is green (R29(c)). The implementer starts from §2.A
 with the hand-off notes; the first stop condition is the hosted `compile`
 probe after SC-1a (R-10, A4 / B1).
+
+### Landed notes (SC-1 commit 1)
+
+Commit 1 (SC-1a, 33b22ecbd) landed on the branch and received its
+implementation review (verdict APPROVE-WITH-FIXES: three MINOR findings, no
+MAJOR, no BLOCKER); the fixer commit that carries this note folds all three.
+The review ran BEFORE any hosted verification, against the §3 order: GitHub
+Actions is disabled on the repository, so the hosted `compile` probe and the
+autoupdate fill of every §4.A golden are DEFERRED and no fill has run for
+commit 1 or for this fix. Every new golden carries `AUTOUPDATE` and no CHECK
+lines, the two pre-existing goldens of §6 have their CHECK lines cleared, and
+the diagnostics coverage test (two new kinds) and the parse coverage test
+(`TemplateModifier`) stay expected red until the fill lands (R19). Nothing
+below claims a fill; every prediction is a hand trace (R9).
+
+-   Finding 1 (MINOR, confirmed): error recovery after
+    `NamedConstraintRedeclTemplateMismatch` was unspecified. D-SC-16 asks only
+    for the diagnostic, and commit 1 kept the FIRST declaration's flag, so
+    `constraint X; template constraint X { fn G(self); }` diagnosed the mismatch
+    and then one `FunctionInNonTemplateConstraint` per member, while the reverse
+    order silently collected `G` as a requirement, and neither direction was
+    pinned (the §4.A row 3 splits have empty bodies). ACCEPTED, reviewer option
+    (a): after the diagnostic, `BuildNamedConstraintDecl` sets the stored
+    entity's `is_template` to true (handle_named_constraint.cpp, one
+    assignment), so both directions recover as a template constraint, the
+    permissive mode, and no member diagnostic cascades. `MergeDefinition` still
+    leaves the flag uncopied (its comment now says why). Two splits are added to
+    fail_template_constraint_redecl.carbon so the fill pins the recovery,
+    amending §4.A row 3 from two splits to four:
+    `fail_decl_then_template_def_member.carbon` (`constraint X; template
+    constraint X { fn G(self); }`) and
+    `fail_template_decl_then_def_member.carbon` (`template constraint X;
+    constraint X { fn G(self); }`). Prediction for each: exactly one error,
+    `NamedConstraintRedeclTemplateMismatch` "redeclarations of `constraint X`
+    must match use of `template`" at the second declaration, plus the
+    `RedeclPrevDecl` note at the first; NO `FunctionInNonTemplateConstraint`;
+    `G` is collected into `structural_members_id` under a template-phase `Self`.
+    The D-SC-16 text stands as written (diagnose); this note specifies the
+    recovery it left silent.
+-   Finding 2 (MINOR, confirmed): commit 1's body lists four line drifts
+    against the plan and omits a fifth. Drift (5), recorded here and in the
+    fixer commit's body, with commit 1 left unamended (rulebook: never rewrite
+    submitted history): §2.A.3 says `MergeDefinition` "asserts `is_template`
+    equality — the check diagnosed it first", but `MergeDefinition` runs
+    inside `TryMergeRedecl` (merge.cpp:937) BEFORE control returns to the
+    D-SC-16 comparison in `BuildNamedConstraintDecl`, so such an assert would
+    fire ahead of the diagnostic; the implementer correctly dropped the assert
+    and leaves the flag uncopied, and the comparison diagnoses it afterwards
+    (and, after finding 1, recovers as template). The sem_ir paragraph of
+    commit 1's body disclosed the behavior but not the departure from §2.A.3.
+-   Finding 3 (MINOR, not confirmed as reachable): `AddStructuralMembers`
+    (import_ref.cpp) read every block entry with
+    `GetAs<SemIR::FunctionDecl>`, whereas the sibling idiom it cites,
+    `AddAssociatedEntities`, switches on the kind and also accepts an
+    `AnyImportRef` (name from `import_entity_names()`). An imported IR whose
+    constraint entity was itself localized from a further import would hold
+    import-refs in that block and CHECK-fail; reachability was not
+    demonstrated (the resolver canonicalizes to the owning IR and the §4.B
+    import golden is single-hop). ACCEPTED as defensive parity and folded now
+    rather than riding commit 2: a `CARBON_KIND_SWITCH` with a `FunctionDecl`
+    arm, an `AnyImportRef` arm and a fatal default, mirroring
+    `AddAssociatedEntities`.
+
+Verification for the fixer commit, same harness as commit 1 (no bazel run,
+no fill): clang++ -fsyntax-only with the toolchain's -Werror set against the
+pinned LLVM headers, OK on handle_named_constraint.cpp and import_ref.cpp and,
+as consumers of the touched header or the merge template, handle_require.cpp,
+type_completion.cpp, sem_ir/name_scope.cpp, sem_ir/named_constraint.cpp,
+merge.cpp and handle_function.cpp; prek (clang-format 21.1.8, header guards,
+check-toolchain-diagnostics, codespell, copyright) at a fixpoint over every
+touched file. The R12 hook's container clang-format is 18.1.3, which
+reformatted unrelated function signatures in handle_named_constraint.cpp and
+import_ref.cpp on edit; the pinned 21.1.8 under prek restored every one of
+them (the committed diff touches only the lines named above), so prek remains
+the arbiter (R18).
+
+R31 record for this note: before, 1 H1 / 12 H2 / 19 H3 / 0 H4, 73 dash items,
+53 numbered items (identical to the rev 2 record); after, 1 / 12 / 20 / 0, 76
+dash, 53 numbered: exactly this subsection's heading and its three findings,
+nothing manufactured; the hazard greps are empty before and after.

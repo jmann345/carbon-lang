@@ -49,6 +49,23 @@ public read-only bazel cache (the tool-permission layer declined that setup
 when attempted) — until one of these, no code lands. Next cron Monday
 2026-10-19; the owner's machine is never used.
 
+Later on 2026-10-12 (after the weekly stamp above): three PRs are OPEN and HELD
+against trunk 0bdce60a5 — PR #51 (UA-2, claude/carbon-fork-0-1-ua2, head
+f96fe8a7a), PR #52 (CM-1, claude/carbon-fork-0-1-cmake, head ea573f672: the
+CMake language modules, examples/cmake, the Make guide; gap rows 84/87 expected
+DONE, W-060/W-061 discharged, W-128..W-133 filed) and PR #53 (SAFE-1,
+claude/carbon-fork-0-1-safe, head adaae4e35: the safe-Carbon design F-013 with
+D-SAFE-1..23, the safety README rewrite plus five category pages and the
+safe-Rust interop analysis, gap row 89 expected DONE on document review, W-063
+discharged, W-144..W-150 filed). SC-1 (claude/carbon-fork-0-1-sc, W-027) is
+IMPLEMENTED through commit 3 at 42841fa8d — structural_conformance.{h,cpp},
+seven diagnostics, 18 goldens, the two conformance programs, W-134..W-144 filed,
+every implementation review folded — and its golden fill is in progress; its
+W-144 collides with SAFE-1's W-144 and renumbers to W-151 at its landing (SAFE-1
+lands first). Each PR body carries its own verification record and names exactly
+what did not run. None is merged. Merge order when the land sequence runs: #53
+(no program moves), #51, #52, then SC-1.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -381,7 +398,9 @@ code). Next check: Monday 14:00 UTC.
 | Branch | State |
 | --- | --- |
 | `claude/carbon-fork-0-1-ua2` | HELD OPEN as PR #51 — UA-2 reconciliation at 05a5c30f7, fill + of-record conformance 37413300832 (131/0/19 over 150) done, gate impossible (Actions disabled); merge when a gate runs. |
-| `claude/carbon-fork-0-1-sc` | PLAN ONLY — SC-1 template structural conformance, plan rev 2 signed off (e612aebc6); implementation paused until an arbiter exists. |
+| `claude/carbon-fork-0-1-cmake` | HELD OPEN as PR #52 — CM-1 CMake integration at ea573f672 (gap rows 84/87 expected DONE, W-060/W-061 discharged, W-128..W-133); verification record in the PR; merge when the land sequence runs. |
+| `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at adaae4e35, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence. |
+| `claude/carbon-fork-0-1-sc` | IMPLEMENTED, FILL IN PROGRESS — SC-1 template structural conformance, commits 1-3 at 42841fa8d with reviews folded (W-134..W-144; W-144 renumbers to W-151 at landing); PR after the fill converges. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |

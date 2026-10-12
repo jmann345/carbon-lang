@@ -64,8 +64,9 @@ design is the library this page's rules are enforced by.
 
 This page was fixed by fork decision [F-013](/fork/decision-log.md),
 sub-decisions D-SAFE-14 and D-SAFE-15, synthesized in
-[fork/safe/plan.md](/fork/safe/plan.md). No part of this page is implemented in
-the toolchain (fork workstream SAFE-1, stage 0); see
+[fork/safe/plan.md](/fork/safe/plan.md). No part of this page beyond the live
+`Core.Slice`/`Core.Buf` check the slices design already specifies is
+implemented in the toolchain (fork workstream SAFE-1, stage 0); see
 [Implementation staging](#implementation-staging). What the toolchain does
 today is this. The bounds check on `Core.Slice(T)` and `Core.Buf(T)` is live
 and fails-stop unconditionally, the 0.1 toolchain having a single mode in which
@@ -93,12 +94,23 @@ are dereference and address-of
 ([pointer types](../README.md#pointer-types)). A `T*` therefore names one
 object and can reach no other, and an out-of-bounds access cannot be written
 with a pointer. The prelude's `pointer.offset` builtin, which the view types
-use to reach an element, is a `private fn` of the slice and buffer libraries
-(core/prelude/types/slice.carbon:19, buf.carbon:17) and is not reachable from
-user code; the elements of a contiguous region are reached only through the
-indexable types of SP2. This rule is unchanged by the fork and is the reason
-spatial safety reduces to the bounds behavior of three types rather than to a
-property of every pointer.
+use to reach an element, is bound by a `private fn` of the slice and buffer
+libraries (core/prelude/types/slice.carbon:19, buf.carbon:17); the `private`
+hides the wrapper, not the builtin, and the toolchain today accepts a binding
+of it in any file: toolchain/check/testdata/builtins/pointer/offset.carbon:23
+declares `fn Offset[T: type](p: T*, n: i64) -> T* = "pointer.offset";` in a
+Main-package library. The rule is therefore stated on the declaration (amended
+2026-10-12, document-review fold: MAJOR-1): in Strict Carbon a builtin binding
+outside the prelude is declared `unsafe fn`, as in
+`unsafe fn Offset[T: type](p: T*, n: i64) -> T* = "pointer.offset";`, else
+`StrictBuiltinBindingUnmarked` ([type safety](type_safety.md) owns the
+spelling and the Permissive twin `PermissiveBuiltinBinding`); every call of it
+is an `unsafe fn` call under the type page's TY2, the obligation being that the
+result stays within the object `p` names; and the search for `unsafe` finds
+every such binding, which the W-131 marking pass enforces. With that rule the
+elements of a contiguous region are reached only through the indexable types
+of SP2, and spatial safety reduces to the bounds behavior of three types
+rather than to a property of every pointer.
 
 ### SP2: Every element access is bounds-checked and fails-stop in every build mode
 
@@ -168,8 +180,10 @@ and the loan is formed by the function that produced the view. Concretely, on
     sentence slice.carbon:29-30 already carries as its stated obligation: the
     caller guarantees that `p` names at least `size` valid elements that
     outlive the view. A Strict call of it is spelled
-    `unsafe Core.Slice(T).Make(p, n)`, and the result is an unverified view
-    (loan set ⊥) until that obligation is the caller's.
+    `unsafe Core.Slice(T).Make(p, n)`, and because the marker takes on that
+    obligation the result carries the loan set the signature gives — free,
+    rule T6 of the temporal page — so no later access through the view needs
+    a marker (amended 2026-10-12, document-review fold: D-1).
 
 The W-128 audit rule generalizes the list: the prelude churn reviews every
 prelude signature as if its body were Strict-checked, the body itself trusted
@@ -317,7 +331,9 @@ NEW-SYNTAX (no toolchain parses it, with the stage that will). EX-SP-3, EX-SP-4
 and EX-SP-6 use only the upstream prelude and were compiled on the 2026.10.12
 nightly toolchain with `carbon compile --output-last-input-only` and no
 `package` line; EX-SP-1 and EX-SP-2 use the fork prelude's `Core.Slice`, which
-that toolchain lacks, and are proven by the scoreboard programs they cite.
+that toolchain lacks, and are proven by the scoreboard programs they cite. Tags
+of the form A-n, B-n and RR-n in example comments index the review-fold record
+of [fork/safe/plan.md](/fork/safe/plan.md).
 
 ```carbon
 // EX-SP-1 (today's syntax; runs today)
@@ -414,29 +430,32 @@ C++ is Permissive Carbon (D-SAFE-18): C++ code is trusted to meet its declared
 contracts, and no C++ access is re-checked. For spatial safety that has these
 consequences:
 
--   **View types gain the Carbon-side check at no C++ cost.** `std::span<T>`
-    and `std::string_view` map to `Core.Slice(T)` and `Core.String`
-    ([Slices: interop](../slices.md#interop); the design overview names the
-    string type `Core.Str`, an alias of the prelude's `Core.String`, which the
-    safety pages use). Every read through the Carbon view is checked by SP2,
-    and the C++ side is unchanged: the view's layout is the C++ view's, no
-    thunk inserts a check, and a C++ caller that reads the same memory through
-    its own `span` does so under C++'s rules. A C++ function taking
-    `std::span<T>` or `std::span<const T>` is the fourth shape of the
-    strategy's [C++ call allowlist](README.md#c-call-allowlist): when the Carbon
-    argument is a loan-carrying `Core.Slice` whose extent the Carbon side has
-    established, the call needs no marker in Strict, because the callee
-    receives exactly that extent. The owning-container conversion, a
-    `std::vector<int>` viewed as `Core.Slice(const i32)` through the prelude's
-    synthesized `CppContiguousRange` witness (slice.carbon:100-106), is trusted
-    prelude code and produces a view that SP2 checks like any other.
+-   **View types gain the Carbon-side check at no C++ cost.** `std::span<T>` and
+    `std::string_view` map to `Core.Slice(T)` and `Core.String`
+    ([Slices: interop](../slices.md#interop); the design overview's interop
+    section names the string type `Core.Str`, the same type under the interop
+    design's name, and the safety pages use the prelude's `Core.String`). Every
+    read through the Carbon view is checked by SP2, and the C++ side is
+    unchanged: the view's layout is the C++ view's, no thunk inserts a check,
+    and a C++ caller that reads the same memory through its own `span` does so
+    under C++'s rules. A C++ function taking `std::span<T>` or `std::span<const
+    T>` is the fourth shape of the strategy's
+    [C++ call allowlist](README.md#c-call-allowlist): when the Carbon argument
+    is a loan-carrying `Core.Slice` whose extent the Carbon side has
+    established, the call needs no marker in Strict, because the callee receives
+    exactly that extent. The owning-container conversion, a `std::vector<int>`
+    viewed as `Core.Slice(const i32)` through the prelude's synthesized
+    `CppContiguousRange` witness (slice.carbon:100-106), is trusted prelude code
+    and produces a view that SP2 checks like any other.
 -   **A raw pointer-plus-length API is one `unsafe` per site.** A C++ function
     that returns `T*` plus a count, or a `data()` that is not reachable through
     the witness, yields a pointer with no arithmetic on it (SP1); turning it
     into something indexable is `unsafe Core.Slice(T).Make(p, n)`, and that
     line is the single audit line of a migrated buffer API: the obligation it
     takes on is that `p` names at least `n` valid elements that outlive the
-    view, every access through the view is checked from then on, and the
+    view, the view is free under rule T6 of the temporal page because the
+    marker took on that lifetime, every access through the view is checked
+    from then on, and the
     search for `unsafe` finds the one place where the length was asserted
     rather than proven. Permissive removes only the keyword from that line,
     never the check that follows it.
@@ -476,7 +495,7 @@ else on this page is. The rows this page owns:
 | 0 (this PR) | This page; no toolchain change | All of this page; the dated amendments on the [slices](../slices.md) and [arithmetic](../expressions/arithmetic.md) pages |
 | 1 | Lex and parse `unsafe fn` and the `unsafe` prefix forms, recorded in SemIR, unenforced | EX-SP-5's call spelling parses; the prelude churn W-128 is gated here: `unsafe fn GetUnchecked[bound self: Self](i: i64) -> T` on `Slice` and `Buf`, `bound p` on `FromArray`, `bound self` on every view producer and on `IndexWith.At` and `Copy.Op`, `UnsafeMake` renamed to `unsafe fn Make` |
 | 2 | Runtime hardening regardless of mode: array index fail-stop, division by zero fail-stop, `--build-mode=debug\|release`, Release zero-fill | `ArrayIndex` lowered as compare-and-`fail_stop` with "carbon: array index out of bounds; terminating", array subscripts through `IndexWith(i64)` (absorbing W-116); the division and remainder guard with "carbon: division by zero; terminating"; Debug overflow fail-stop; residue item W-130 |
-| 3 | Strict static checks without loan sets; `--strict-checks=warn` default | Nothing of its own: an unmarked `GetUnchecked` call is the type page's `StrictUnsafeCallUnmarked` |
+| 3 | Strict static checks without loan sets; `--strict-checks=warn` default | `StrictBuiltinBindingUnmarked` for a builtin binding outside the prelude (SP1; residue item W-131); an unmarked `GetUnchecked` call is the type page's `StrictUnsafeCallUnmarked` |
 | 4 | The loan checker | SP3 enforced: the `bound` loans of the view producers and the ⊥ result of `unsafe fn Make`, under the temporal page's rules |
 
 Stages 5 and 6 own nothing on this page.
@@ -489,7 +508,8 @@ strategy page carries D-SAFE-1 to D-SAFE-6, D-SAFE-18 and D-SAFE-21, and the
 other category pages carry the rest.
 
 -   **D-SAFE-14 — Spatial: fail-stop everywhere, `unsafe fn` is the opt-out,
-    views carry loans.** SP1 no arithmetic, `pointer.offset` prelude-private.
+    views carry loans.** SP1 no arithmetic, `pointer.offset` bound by the
+    prelude and by an `unsafe fn` anywhere else.
     SP2 every element access through `array(T, N)`, `Core.Slice(T)` and
     `Core.Buf(T)` is bounds-checked and a violation fails-stop in every build
     mode, D-SL-4 retained as the Release baseline; the array gap, constant
@@ -533,17 +553,18 @@ synthesis. Four alternatives bear on this page:
     [build modes](README.md#build-modes) section promised an unsupported way to
     disable the default hardening in release builds for benchmarking, and
     attempt C carried it as an `--unhardened` build flag beside its hardened
-    runtime core. The synthesis withdraws it (D-SAFE-14, review fold A-13(c))
-    for two reasons. A flag moves the disable from the site to the build
-    configuration, so no search of the source finds where the check was
-    removed, which is the audit property the whole design rests on
-    ([Safe and unsafe code](README.md#safe-and-unsafe-code)); and a flag makes
-    the matrix's fail-stop row depend on how the program was built, so a
-    Permissive program's one spatial guarantee would no longer be identical in
-    every mode. The per-site `unsafe fn GetUnchecked` keeps proposal p000196's
-    disable "for performance-critical use cases" where the keyword is, and a
-    benchmark that wants the unchecked build measures the program with the
-    accessor at its hot sites, which is also the program that would ship.
+    runtime core. The synthesis withdraws it (D-SAFE-14, review fold A-13(c) in
+    [fork/safe/plan.md](/fork/safe/plan.md)) for two reasons. A flag moves the
+    disable from the site to the build configuration, so no search of the source
+    finds where the check was removed, which is the audit property the whole
+    design rests on ([Safe and unsafe code](README.md#safe-and-unsafe-code));
+    and a flag makes the matrix's fail-stop row depend on how the program was
+    built, so a Permissive program's one spatial guarantee would no longer be
+    identical in every mode. The per-site `unsafe fn GetUnchecked` keeps
+    proposal p000196's disable "for performance-critical use cases" where the
+    keyword is, and a benchmark that wants the unchecked build measures the
+    program with the accessor at its hot sites, which is also the program that
+    would ship.
 -   **Mode-gated checks.** The slices design's 0.1 limits anticipated that the
     unchecked read would arrive with build modes, "the check becomes
     mode-gated", and the toolchain's one mode adopted the Debug build's promise

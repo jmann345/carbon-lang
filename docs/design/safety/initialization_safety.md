@@ -65,7 +65,10 @@ sub-decision D-SAFE-13, synthesized in [fork/safe/plan.md](/fork/safe/plan.md).
 No part of this page is implemented in the toolchain (fork workstream SAFE-1,
 stage 0); see [Implementation staging](#implementation-staging). The
 toolchain today desugars an uninitialized `var` onto `Core.DefaultOrUnformed`
-and has no diagnostic for a read of unformed storage. File and line citations
+and has no diagnostic for a read of unformed storage; `Core.MaybeUnformed` and
+`Core.Optional` exist, while `Core.Move` and `Core.Relocatable`, named under
+I4, are D-SAFE-20 library residue and are not in the 0.1 prelude. File and line
+citations
 are against trunk 0bdce60a5 unless a citation says otherwise; the examples
 marked "today's syntax" were compiled on the 2026.10.12 nightly toolchain and
 their outcomes are stated with each example.
@@ -116,7 +119,13 @@ object of the three categories above. It is the same dataflow pass as the
 Every read, member access, method call, value binding, `&x`, `ref` binding or
 pass-by-value of such an object must be dominated, on every path that reaches
 it, by an assignment from a formed value; otherwise the use is
-`StrictUseOfUnformed`. Conditional initialization is therefore rejected: a
+`StrictUseOfUnformed`. For a `Core.MaybeUnformed(T)` object the tracked uses
+are the object's own assignment and destruction; the projection `x unsafe as T`
+is its one read, and it is an `unsafe` operation whose obligation replaces
+domination (I3), which is why EX-I-5's `return x unsafe as i32;` is accepted
+with no dominating assignment to `x` (amended 2026-10-12, document-review
+fold: D-12; D-SAFE-13 amended identically). Conditional initialization is
+therefore rejected: a
 `var x: i32;` assigned in one arm of an `if` and read after it is an error, and
 the analysis does not try to prove the condition. `Core.Optional(T)` is the
 sanctioned escape, the design overview's own suggestion for a type that must
@@ -174,10 +183,14 @@ Self; }` and whose contract is "return the old value as an initializing
 expression and leave `self` unformed"; the default impl for `Core.Relocatable`
 types is the bitwise relocation. For a type with no `UnformedInit` impl the
 moved-from mark is what keeps destruction correct: the destructor does not run
-on a moved-from object that was not re-formed. The mark is static wherever the
-definite-formation pass decides it and a per-object flag where formation at
-scope exit is path-dependent, the dynamic tracking proposal p000257 describes
-for `Optional` applied to one object.
+on a moved-from object that was not re-formed. In Strict the mark is static:
+I2 rejects path-dependent formation, so the pass decides at every scope exit
+whether the destructor runs. In a Permissive body, where a path-dependent
+moved-from state is a warning and the read proceeds, the mark is a per-object
+flag consulted at scope exit — the dynamic tracking proposal p000257 describes
+for `Optional`, applied to one object — and that flag is the Permissive and
+Debug mechanism only, never a cost of a Strict body (amended 2026-10-12,
+document-review fold: D-13; D-SAFE-13 amended identically).
 
 Only an entire reference expression may be moved from
 ([values.md](/docs/design/values.md#entire-reference-expressions), "only entire
@@ -285,7 +298,8 @@ check, with the stage that will) or NEW-SYNTAX (no toolchain parses it, with
 the stage that will). The examples marked "today's syntax" were compiled on the
 2026.10.12 nightly toolchain with `carbon compile --output-last-input-only`
 and no `package` line; `Core.Buf` is the fork prelude's and is not in that
-toolchain.
+toolchain. Tags of the form A-n, B-n and RR-n in example comments index the
+review-fold record of [fork/safe/plan.md](/fork/safe/plan.md).
 
 ### EX-I-1: Conditional initialization
 
@@ -371,7 +385,7 @@ fn Fill(p: Core.MaybeUnformed(i32)*);
 fn Out() -> i32 {
   var x: Core.MaybeUnformed(i32);
   Fill(&x);                       // Strict: allowed only because x is MaybeUnformed
-  return x unsafe as i32;         // the existing read projection (optional.carbon:200 shape)
+  return x unsafe as i32;         // the existing read projection (optional.carbon:201 shape)
 }
 ```
 

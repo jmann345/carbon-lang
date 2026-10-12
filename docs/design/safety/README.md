@@ -147,9 +147,11 @@ anything. Under this model Strict Carbon satisfies the
 [memory-safe language] test of the terminology page as written: the default
 mode guarantees spatial, temporal, type and initialization safety; the unsafe
 subset is delineated by `unsafe` at every operation; and temporal safety holds
-across threads because every thread-crossing API accepts only loans that
-outlive the thread or joins inside the borrow (see
-[Mutation safety](mutation_safety.md)).
+across threads once the thread API's lifetime contract is fixed at stage 5
+(D-SAFE-16): every thread-crossing API then accepts only loans that outlive
+the thread or joins inside the borrow (see
+[Mutation safety](mutation_safety.md); amended 2026-10-12, document-review
+fold: D-8).
 
 ## Safety modes
 
@@ -189,7 +191,7 @@ its package declaration carries `unsafe permissive`, which extends the
 
 ```regex
 (unsafe permissive)? (impl)? package IDENTIFIER (library STRING)?;
-(unsafe permissive)? library STRING;
+(unsafe permissive)? (impl)? library STRING;
 ```
 
 A function body is Permissive when its definition carries `unsafe permissive
@@ -265,6 +267,24 @@ setting emits; a Permissive file keeps them after the flip.
 -   `unsafe (c = 42)`, `unsafe (a + b)`, `unsafe (a += b)` — an infix or
     assignment operator that resolves to an `unsafe fn`, such as an imported
     C++ member `operator=`.
+-   `unsafe F(args)`, `unsafe x.M(args)` and `unsafe s[i]` on a call, method
+    or subscript that does not resolve to an `unsafe fn` but consumes an
+    unverified carrier — a ⊥ pointer passed to a `bound` parameter, a ⊥ view
+    subscripted — where the obligation is the one rule T6 of
+    [Temporal safety](temporal_safety.md) states, that the storage outlives
+    every use derived from the result (amended 2026-10-12, document-review
+    fold: D-1).
+-   `unsafe p->Push(3)` and `unsafe (*p = v)` — an invalidating operation of
+    rule M3 of [Mutation safety](mutation_safety.md) performed through a
+    shared path, whose obligation is that no live access path reaches the
+    storage the operation invalidates (amended 2026-10-12, document-review
+    fold: D-9).
+-   `unsafe fn F(...) = "name"` — a builtin binding declared outside the
+    prelude, a declaration-level form like `unsafe import`: the declaration
+    asserts the builtin's contract and every call of it is an `unsafe fn`
+    call; an unmarked binding is `StrictBuiltinBindingUnmarked` (amended
+    2026-10-12, document-review fold: MAJOR-1; rule SP1 of
+    [Spatial safety](spatial_safety.md)).
 
 The prefix applies to the innermost call, dereference, subscript or field read
 that follows the keyword: in `unsafe x.M(args).N()` it marks `x.M(args)` only,
@@ -292,6 +312,7 @@ twin; the fail-stop rows are identical in every mode.
 | --- | --- | --- | --- |
 | `StrictUnsafeCallUnmarked` ([type safety](type_safety.md)) | error | none — assumed fact | — |
 | `StrictUnionReadUnmarked` ([type safety](type_safety.md)) | error | none — assumed fact | — |
+| `StrictBuiltinBindingUnmarked` ([type safety](type_safety.md); rule SP1 of [spatial safety](spatial_safety.md)) | error | warning `PermissiveBuiltinBinding` | — |
 | `StrictUnverifiedDeref` ([type safety](type_safety.md), [temporal safety](temporal_safety.md)) | error | none — assumed fact | ASan-class detection ([Build modes](#build-modes)) |
 | missing `unsafe` before `as` (existing `ConversionFailure`-class error) | error | error | — |
 | `StrictUseOfUnformed` ([initialization safety](initialization_safety.md)) | error | warning `MaybeUnformedRead`; Release reads zero (I5) | "carbon: read of unformed object; terminating" |
@@ -379,7 +400,7 @@ used by every other page.
 | exclusive-mutable | `exclusive T*` (NEW) | `&x` on an owner, a `ref`, or `*p` for `p: exclusive T*` | exclusive | everything: read, write, invalidate (`ref self` calls, assignment of non-`Plain`, `~`, destroy) | `ref self: Self` | `&mut T` |
 | shared-mutable | `T*` | downgrade from `exclusive T*`; `&x` on a place already under shared access; C++ `T&` | shared | read; write `Plain` fields; `addr`/`const` methods; form further shared loans | `addr self: Self*` (restored) | `&Shared<T>` |
 | shared-const | `const T*` | conversion from either kind; C++ `const T&` | shared (const) | read; `const` methods | `ref self: const Self`, by-value `self` | `&SharedView<T>` (`&T` only under the D-SAFE-19 proviso) |
-| unverified (any kind) | the same spellings, loan set ⊥ | `unsafe as` from non-pointers, `unsafe fn`/C++ results, union reads and `unsafe &u.f`, `unsafe class` fields | ⊥ | copy, compare, store, pass; `unsafe *p` to use | — | raw pointer |
+| unverified (any kind) | the same spellings, loan set ⊥ | `unsafe as` from non-pointers, C++ results, union reads and `unsafe &u.f`, `unsafe class` fields | ⊥ | copy, compare, store, pass; `unsafe *p` to use | — | raw pointer |
 
 ### C++ call allowlist
 
@@ -398,22 +419,26 @@ dated edit of this table that names a new shape, never by dropping the rule.
 | Shape | Why it needs no marker | Corpus program that exercises it |
 | --- | --- | --- |
 | 1. By-value parameters and by-value returns | No pointer, reference, view or `this` crosses the call, so nothing can be saved or aliased by the callee | fork/conformance/programs/interop/cpp_export_method.carbon:59-61 (`Cpp.StaticThroughCpp()`, `Cpp.DriveCounterInCpp()`, both returning `int` by value) |
-| 2. `const T&` parameters of `Freeze` types | The callee gets read-only access to an object with no interior mutability, so no write is possible through it during the call; that the reference is not saved is the trusted assumption | None directly today: the `begin(const Halves& r)` in cpp_iterate_generic_adl_range.carbon:42-43 is reached only through the prelude's trusted range witnesses |
+| 2. `const T&` parameters of `Freeze` types, from stage 5 (at stage 3, before `Freeze` exists, the shape keeps the marker; amended 2026-10-12, document-review fold: MINOR-9) | The callee gets read-only access to an object with no interior mutability, so no write is possible through it during the call; that the reference is not saved is the trusted assumption | None directly today: the `begin(const Halves& r)` in cpp_iterate_generic_adl_range.carbon:42-43 is reached only through the prelude's trusted range witnesses |
 | 3. The members of `std::atomic<T>` and `std::thread` that fork decision F-008 models: `fetch_add`, `load`, `store`, the constructor taking a Carbon function value, `join` | Their contract is fixed by the 0.1 threading decision ([fork/design-sprint/threading-atomics.md](/fork/design-sprint/threading-atomics.md)); the function value crossing is the export case under which the loan checker emits no `noalias` | cpp_thread_carbon_fn_diff.carbon:38-52 (`Cpp.hits.fetch_add(...)`, `Cpp.std.thread.thread(Work)`, `Cpp.hits.load()`) |
 | 4. `std::span<T>` and `std::span<const T>` parameters when the Carbon argument is a loan-carrying `Core.Slice` whose extent the Carbon side proves | The view's bounds are established by Carbon before the call and the callee receives exactly that extent | cpp_span_view.carbon:62-69 (`Cpp.SumSpan(Core.Slice(i32).FromArray(&a))` and the `std::vector` argument) |
 
 Everything else keeps `StrictCppCallUnannotated` in Strict and its warning twin
-`PermissiveUnannotatedCppCall` in Permissive. Pointers returned by C++ are
-unverified. Non-`const` C++ methods import as `ref self` (exclusive, callable
-through `exclusive T*`; through a shared `T*` only as `unsafe` or by way of
-`Core.Guarded`), `const` methods as const access; a future non-invalidation
-annotation on a C++ method maps to `addr self`. The prelude's synthesized
-range witnesses (`CppRangeForIterate`, `CppContiguousRange`) are trusted
-prelude code, Permissive-implemented behind a Strict signature like the rest of
-the prelude. Measured on the fork's interop corpus with this allowlist in
-force, one C++ call site of fourteen across six programs needs a marker — the
-`c = 42` of cpp_operator_import_assignment.carbon:26, spelled
-`unsafe (c = 42)`; the document reviews of the design re-measure this row.
+`PermissiveUnannotatedCppCall` in Permissive. Pointers returned by C++, and
+pointer-typed fields read from an imported C++ type, are unverified (the second
+clause amended 2026-10-12, document-review fold: D-7). Non-`const` C++ methods
+import as `ref self` (exclusive, callable through `exclusive T*`; through a
+shared `T*` only as `unsafe` or by way of `Core.Guarded`), `const` methods as
+const access; a future non-invalidation annotation on a C++ method maps to `addr
+self`. The prelude's synthesized range witnesses (`CppRangeForIterate`,
+`CppContiguousRange`) are trusted prelude code, Permissive-implemented behind a
+Strict signature like the rest of the prelude. Measured on the fork's interop
+corpus with this allowlist in force, one C++ call site of fourteen across six
+programs needs a marker — the `c = 42` of
+cpp_operator_import_assignment.carbon:33, spelled `unsafe (c = 42)`, a site that
+does not compile today because the program is SKIP until the assignment-operator
+import lands (its line 6); the document reviews of the design re-measure this
+row.
 
 ### Data races versus unsynchronized temporal safety
 

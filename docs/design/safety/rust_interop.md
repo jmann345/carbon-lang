@@ -196,7 +196,7 @@ emit until the loan checker exists.
 | --- | --- | --- | --- | --- |
 | Ownership transfer | A `Core.Relocatable` value crosses by value: a bitwise relocation leaves the source unformed (I4, D-SAFE-13). A non-`Relocatable` value never crosses by value | `repr(C)` struct for a `Relocatable` type, with a generated `Drop` thunk that runs the Carbon destructor; an owning opaque handle otherwise | A value received by Rust is owned by Rust: Carbon holds no loan on it (a moved-from object is unformed, and I2 forbids its use). Safe Rust relies on the value being a complete, formed object of the declared `repr` | after stage 4 (the `Relocatable` facet and the move operator) |
 | Aliasing and mutability | Three kinds: `exclusive T*` is the one live access path (T4, M2); `T*` admits aliases that write `Plain` fields and call `addr self` methods (M3); `const T*` reads. Invalidating operations need exclusive access (D-SAFE-9) | `&mut T`; `&Shared<T>`; `&SharedView<T>`, or `&T` under the proviso | A Strict signature's kinds are checked, so a `&mut T` received by Rust is unique for the call and a `&Shared<T>` is never read or written as a `&T`. Safe Rust relies on the usual meaning of `&mut`, and on `Shared<T>` exposing nothing M3 forbids | after stage 4 (the loan checker and `exclusive`) |
-| Lifetimes at the boundary | Loans on places; `bound` ties a result or stored value to one parameter's loan set (T5); `bound(a)` names a set (stage 6); a free loan set is one with no place in it | One elided lifetime for `bound`; named lifetimes for `bound(a)`; `'static` for a free loan set | A `bound` result lives exactly as long as Rust's elided lifetime says; Rust's borrow checker then enforces on the Rust side what Carbon's loan checker enforced on the Carbon side. Safe Rust relies on the lifetime in the generated signature | after stage 4 (`bound`); after stage 6 (`bound(a)`) |
+| Lifetimes at the boundary | Loans on places; `bound` ties a result to the union of its `bound` arguments' loan sets (T5); `bound(a)` names a set (stage 6); a free loan set is one with no place in it | One elided lifetime for `bound`; named lifetimes for `bound(a)`; `'static` for a free loan set | A `bound` result lives exactly as long as Rust's elided lifetime says; Rust's borrow checker then enforces on the Rust side what Carbon's loan checker enforced on the Carbon side. Safe Rust relies on the lifetime in the generated signature | after stage 4 (`bound`); after stage 6 (`bound(a)`) |
 | Unwinding and panics | Fail-stop: one stderr line, then `abort()`; no unwinding of any frame | `extern "C"` shims; a panic reaching one aborts; `Drop` does not run on abort | Neither side ever unwinds through the other. Safe Rust relies on no Carbon frame unwinding into it, which `extern "C"` plus the fail-stop rule guarantees | 0.1 (fail-stop is the 0.1 behavior; the shim rule is a generator rule) |
 | `Send`, `Sync` versus Carbon threads | Compiler-determined facets (D-SAFE-16): a `T*` or `Slice(T)` field makes a type neither; `exclusive T*` is `Send` iff `T: Send`; `const T*` is `Send` iff `T: Sync`; `unsafe impl` opts in. Thread-crossing APIs accept only free loan sets or join inside the borrow | `unsafe impl Send`/`Sync` emitted exactly when the Carbon facet holds; nothing exported `Send` or `Sync` before stage 5. `Shared<T>` and `SharedView<T>` are never `Sync` | A type Rust sees as `Send` is one Carbon's facet rules say may cross a thread, and Rust's `spawn` requires `'static`, the same free-loan-set rule as Carbon's `Core.Thread.Spawn`. Safe Rust relies on the auto-trait meaning of the emitted impls | after stage 5 (the facets) |
 | ABI and representation | C++-ABI lowering; `Core.Optional(T*)` with a null niche (optional.carbon:186-203); `Core.Slice(T)` and `Core.String` as `{pointer, i64}` (slice.carbon, string.carbon:16-27); `choice` with a tag and a payload; interfaces, vtables and inheritance with no stable layout | `repr(C)` structs; `Option<&Shared<T>>` and `Option<&mut T>` by representation (the null-pointer optimization); two-word shims for views; `repr(C)` tagged unions for `choice`; opaque handles for interface- and inheritance-typed values | Nothing crosses by layout except what both sides document as layout: `repr(C)`, the `Option` niche, and views through a shim that re-forms them. Safe Rust relies on `repr(C)` and the `Option` guarantee only | 0.1 for the Carbon-side layout facts; the `choice` and view shims are generator work (stage 6) |
@@ -211,7 +211,7 @@ emit until the loan checker exists.
 | `const T*` | `&T` | Only when `T: Core.Freeze` and no `T*` to the same object is reachable from Rust in the exported signature set; in practice never for an exported class | after stage 5 (`Freeze`) |
 | `Core.Slice(T)` | `&SharedSlice<T>` | Always; a `&[Cell<T>]`-shaped view formed through a two-word shim, never by layout | after stage 4 |
 | `Core.Slice(const T)` | `&[T]` | Only for a `Freeze` element type under the same proviso as `&T`: `Buf.Set` during a live view is the temporal page's EX-TM-3, so a slice of a class reachable through `&Shared` cannot be `&[T]` | after stage 5 (`Freeze`) |
-| `bound` parameter or result | one elided lifetime `'a` | The loan set is one parameter's | after stage 4 |
+| `bound` parameter or result | one lifetime `'a`, written by the generator on every `bound` parameter and the result | The result's loan set is the union of the `bound` arguments' sets, one Rust lifetime shared by all of them (amended 2026-10-12, document-review fold: D-10) | after stage 4 |
 | `bound(a)` | named lifetimes | One name, one loan set (T5(f)) | after stage 6 |
 | a free loan set | `'static` | A loan set with no place in it: an owner's value, a literal, a global | after stage 4 |
 | a `Core.Relocatable` value | `repr(C)` struct by value, with a generated `Drop` thunk | The facet decides by-value crossing (D-SAFE-13) | after stage 4 |
@@ -240,7 +240,8 @@ pub struct Shared<T>(core::cell::UnsafeCell<T>);
 pub struct SharedView<T>(Shared<T>);
 
 impl<T> Shared<T> {
-    // One pair per `Plain` field `f: F` of `T`; `F` maps to a `Copy` Rust type.
+    // One pair per `Plain` field `f: F` of `T` of non-pointer type; `F` maps to a `Copy` Rust type.
+    // A pointer-kind field gets no accessor before stage 6 (D-11).
     pub fn get_f(&self) -> F { unsafe { (*self.0.get()).f } }
     pub fn set_f(&self, v: F) { unsafe { (*self.0.get()).f = v; } }
     // One per `addr self` method `M` of `T`: a shim call over the raw pointer.
@@ -289,7 +290,15 @@ Why this is safe Rust to use, in the terms of Rust's own rules:
     when `U: Sync`. A `&Shared<T>` cannot cross a Rust thread, which is the
     Rust-side statement of D-SAFE-16's rule that a shared-mutable pointer is
     thread-local. The generator writes no `unsafe impl` for the wrappers.
--   **The A-9 proviso keeps `&T` honest.** If a `&T` to an object existed
+-   **Pointer-kind fields get no accessor before stage 6.** A `set_p` for a
+    pointer-typed field is the Store rule's Rust-side analogue: the stored
+    reference must outlive the container, which only `'static` or the
+    container's own lifetime parameter can state, and `&mut T` is not `Copy`.
+    So a `Plain` field of pointer kind has no `get_p`/`set_p` pair until stage
+    6, when the setter takes the container's named lifetime; a field of an
+    `unsafe class` is ⊥ and gets none either (amended 2026-10-12,
+    document-review fold: D-11).
+-   **The `Freeze` proviso keeps `&T` honest.** If a `&T` to an object existed
     anywhere in the exported signature set while a `&Shared<T>` to the same
     object could be formed, `set_f` would mutate bytes a live `&T` promises
     are immutable, which is undefined behavior for the holder of the `&T`.
@@ -320,13 +329,14 @@ analysis. The design-conformance checklist of
 [fork/safe/plan.md](/fork/safe/plan.md) carries these as its "Rust rows" row,
 with the outcome ANALYSIS (D-SAFE-22): no toolchain parses the Carbon side and
 no tool emits the Rust side, and the Stage column says when each becomes
-checkable.
+checkable. Tags of the form A-n, B-n and RR-n in example comments index the
+review-fold record of [fork/safe/plan.md](/fork/safe/plan.md).
 
 ```carbon
 fn At[bound self: Self](i: i64) -> const i32*;      // → fn at<'a>(&'a SharedView<Self>, i: i64) -> &'a SharedView<i32>   (stage 4; never &'a i32 for an exported class — A-9)
 fn Bump(p: exclusive Counter*);                     // → fn bump(p: &mut Counter)                 (stage 4)
 fn Observe(p: Node*);                               // → fn observe(p: &Shared<Node>)             (stage 4; safe, Cell-shaped)
-fn Longest(bound a: const Core.String*, bound b: const Core.String*) -> const Core.String*;   // → fn longest<'a>(a: &'a SharedView<str>, b: &'a SharedView<str>) -> &'a SharedView<str> (stage 6 for two names; &str needs Core.Utf8 and the Freeze proviso)
+fn Longest(bound a: const Core.String*, bound b: const Core.String*) -> const Core.String*;   // → fn longest<'a>(a: &'a SharedView<str>, b: &'a SharedView<str>) -> &'a SharedView<str> (stage 4: one lifetime shared by both bound parameters, D-10; &str needs Core.Utf8 and the Freeze proviso)
 ```
 
 What each line shows:
@@ -352,13 +362,16 @@ What each line shows:
     methods, and nothing else. This is the observer and back-pointer idiom of
     the mutation page (M6) seen from Rust: safe, `Cell`-shaped, and never a
     `&Node`. Stage 4.
--   **`Longest`: two `bound` parameters need two names.** With one elided
-    lifetime the result could be tied to one parameter only; two parameters
-    whose loan sets both flow into the result need the stage-6 `bound(a)` to
-    say which, and the generator then emits one named lifetime per name. The
-    `const Core.String*` parameters export as `&'a SharedView<str>` rather
-    than `&'a str`: `&str` needs the UTF-8 obligation of `Core.Utf8` and the
-    `Freeze` proviso. Stage 6.
+-   **`Longest`: two `bound` parameters share one lifetime.** The result's
+    loan set is the union of both arguments' sets (T5(a)), which is exactly
+    Rust's single named lifetime `'a` on both parameters and the result; the
+    generator writes the lifetime, so what Rust's elision alone could not
+    express is beside the point. `bound(a)` is needed only when two parameters
+    must be in _different_ sets, and at stage 6 the generator emits one named
+    lifetime per name. The `const Core.String*` parameters export as
+    `&'a SharedView<str>` rather than `&'a str`: `&str` needs the UTF-8
+    obligation of `Core.Utf8` and the `Freeze` proviso. Stage 4 (amended
+    2026-10-12, document-review fold: D-10).
 
 ## Verdict
 
@@ -606,7 +619,8 @@ their verdicts. The alternatives specific to this page:
 -   **`&T` for `const T*` and `&[T]` for `Core.Slice(const T)` by default.**
     The plan's first revision mapped the const kind and const slices to Rust's
     plain references. The review found this inconsistent with EX-TM-3 and
-    EX-M-1 (fold item A-9): Carbon writes `Plain` fields through `T*` aliases
+    EX-M-1 (fold item A-9 of [fork/safe/plan.md](/fork/safe/plan.md)): Carbon
+    writes `Plain` fields through `T*` aliases
     during a live `const T*`, which a Rust `&T` forbids. The rows were
     rewritten to `&SharedView<T>` and `&SharedSlice<T>` by default with `&T`
     only under the `Freeze` and no-reachable-`T*` proviso, and the verdict's
@@ -637,7 +651,7 @@ source's.
 
 | Row | Fact | Used by | Status |
 | --- | --- | --- | --- |
-| 1 | Rust's `&T` must point to memory that is not mutated while the reference is live, except for data inside an `UnsafeCell`, and `&mut T` must point to memory that is not read or written by any pointer not derived from it and that no other reference points to while it is live; breaking these rules is undefined behavior | [The asymmetry](#the-asymmetry); the `&mut T` and `&T` rows; the A-9 proviso | VERIFIED against the Rust Reference, "Behavior considered undefined" ("`&T` must point to memory that is not mutated while they are live (except for data inside an `UnsafeCell<U>`), and `&mut T` must point to memory that is not read or written by any pointer not derived from the reference and that no other reference points to while they are live (with no exceptions)"; "the bytes pointed to by a shared reference ... are immutable") |
+| 1 | Rust's `&T` must point to memory that is not mutated while the reference is live, except for data inside an `UnsafeCell`, and `&mut T` must point to memory that is not read or written by any pointer not derived from it and that no other reference points to while it is live; breaking these rules is undefined behavior | [The asymmetry](#the-asymmetry); the `&mut T` and `&T` rows; the `Freeze` proviso | VERIFIED against the Rust Reference, "Behavior considered undefined" ("`&T` must point to memory that is not mutated while they are live (except for data inside an `UnsafeCell<U>`), and `&mut T` must point to memory that is not read or written by any pointer not derived from the reference and that no other reference points to while they are live (with no exceptions)"; "the bytes pointed to by a shared reference ... are immutable") |
 | 2 | `UnsafeCell<T>` is the only permitted way to disable the requirement that a shared reference's referent is not mutated; a `&UnsafeCell<T>` may point to data that is being mutated | The `Shared<T>` wrapper's soundness | VERIFIED against the Rust Reference, "Interior mutability" ("`std::cell::UnsafeCell<T>` type is the only allowed way to disable this requirement"), and the standard library's `UnsafeCell` page ("`UnsafeCell<T>` opts-out of the immutability guarantee for `&T`: a shared reference `&UnsafeCell<T>` may point to data that is being mutated") |
 | 3 | `UnsafeCell<T>` and `Cell<T>` are not `Sync`; `Cell<T>` never gives out a `&T` to its inner value, and moves values in and out through `get` (for `Copy` types) and `set` | The wrappers' `Cell` discipline and their never being `Sync`; the `Send`/`Sync` row | VERIFIED against the standard library's `cell` module page ("`Cell<T>`, `RefCell<T>`, and `OnceCell<T>` allow doing this in a single-threaded way—they do not implement `Sync`"; "a `&T` to the inner value can never be obtained, and the value itself cannot be directly obtained without replacing it with something else"), the `UnsafeCell` page (`impl<T> !Sync for UnsafeCell<T>`) and the `Cell` page (`impl<T> !Sync for Cell<T>`; `get` under `where T: Copy`, "Returns a copy of the contained value"; `set`, "Sets the contained value") |
 | 4 | `Cell::from_mut` turns a `&mut T` into a `&Cell<T>`, and `Cell::as_slice_of_cells` turns a `&Cell<[T]>` into a `&[Cell<T>]`; `Cell<T>` has the same in-memory representation as `T` | The `SharedSlice<T>` construction as a `&[Cell<T>]`-shaped view | VERIFIED against the standard library's `Cell` page (`pub const fn from_mut(t: &mut T) -> &Cell<T>`; `pub const fn as_slice_of_cells(&self) -> &[Cell<T>]`; "has the same in-memory representation as its inner type `T`"); whether `Cell` is declared `repr(transparent)` was not confirmed and the sketch's use of that attribute on the wrappers is the generator's own choice |

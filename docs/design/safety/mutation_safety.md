@@ -81,7 +81,11 @@ today is this. `T*` is the one pointer kind and nothing is checked through it;
 the tokens `exclusive` and `addr` do not exist (`addr self` appears in one
 historic source line of an unbuilt example, third_party/examples/re2/re2.carbon
 :769, and in comments); `Core.Plain`, `Core.Guarded`, `Core.Send`, `Core.Sync`
-and `Core.Freeze` do not exist; and `Core.Optional` is a class with an `adapt`
+and `Core.Freeze` do not exist, nor do `Core.Atomic`, `Core.Box` and
+`Core.Thread` — `Core.Atomic(T)` is the stage-5 Carbon signature over
+`Cpp.std.atomic(T)` filed under W-133, since fork decision F-008 rejected a
+native atomic for 0.1, and the other two are D-SAFE-20 library residue; and
+`Core.Optional` is a class with an `adapt`
 rather than a choice type, so no `match` on it parses
 (core/prelude/types/optional.carbon:30-46, :64-68). The one example on this
 page in today's syntax, EX-M-4a, was compiled and run on the 2026.10.12 nightly
@@ -187,8 +191,12 @@ The escape is the uniform `unsafe` prefix of the strategy's
 operation itself: `unsafe p->Push(3)` for an exclusive method reached through
 a shared pointer, `unsafe (*p = Core.Buf(i32).Make(2, 0))` for a non-`Plain`
 assignment through one. Its stated obligation is that no live access path
-reaches the storage the operation invalidates. The alternative to the
-obligation is `Core.Guarded(T)` (M6), which checks it at run time.
+reaches the storage the operation invalidates. The form is listed on the
+strategy page under
+[operation-tied `unsafe`](README.md#operation-tied-unsafe) beside the
+`unsafe fn` call it resembles (amended 2026-10-12, document-review fold: D-9).
+The alternative to the obligation is `Core.Guarded(T)` (M6), which checks it
+at run time.
 
 ### M4: Method classification by receiver
 
@@ -213,8 +221,11 @@ is checked against that statement:
 
 Interior mutability, a type that mutates through a const or shared path, is that
 type's private Permissive business: `Core.Atomic(T)` over `Cpp.std.atomic(T)` is
-the model (0.1 obtains atomicity exclusively by way of imported C++ types,
-[fork/design-sprint/threading-atomics.md](/fork/design-sprint/threading-atomics.md)),
+the model — a stage-5 Carbon signature over the imported C++ type (W-133), not
+a native atomic, which fork decision F-008 rejected for 0.1; 0.1 obtains
+atomicity exclusively by way of imported C++ types
+([fork/design-sprint/threading-atomics.md](/fork/design-sprint/threading-atomics.md))
+—
 its body is trusted under the soundness model (S0), and such a type is not
 `Core.Freeze`, which is what keeps M7's facet rules sound over it.
 
@@ -385,8 +396,9 @@ facets first, then `--strict-concurrency=warn`, then `error`. The
 thread-boundary lifetime rule completes it: a thread-crossing API accepts only
 a free loan set, the empty set that globals and allocator-owned storage have,
 or it is a scoped API whose join lies inside the borrow. Concretely,
-`Core.Thread.Spawn[F: Core.Send & Core.Call](f: F)` requires `f`'s loan set to
-be free, else `StrictBorrowOutlivesPlace` at the spawn, and
+`Core.Thread.Spawn[T: Core.Send](f: fn (var t: T), t: T)`, the shape EX-M-3
+declares, requires `t`'s loan set to be free, else `StrictBorrowOutlivesPlace`
+at the spawn, and
 `Core.Thread.Scope(fn (ref s: Scope) { s.Spawn(...); })` holds the scope's
 loans live until the closing join, so a loan on a local may cross into a
 scoped thread and never into a detached one (EX-M-3). With that rule fixed at
@@ -512,7 +524,8 @@ and was compiled on the 2026.10.12 nightly toolchain with
 `carbon compile --output-last-input-only` and no `package` line, then linked
 and run; EX-M-4b uses the fork prelude's `Core.Buf`, which that toolchain
 lacks; every other example is NEW syntax. Prelude names are `Core.`-qualified
-throughout.
+throughout. Tags of the form A-n, B-n and RR-n in example comments index the
+review-fold record of [fork/safe/plan.md](/fork/safe/plan.md).
 
 ### EX-M-1: Aliased non-invalidating mutation
 

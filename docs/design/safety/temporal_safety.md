@@ -79,7 +79,9 @@ in the toolchain (fork workstream SAFE-1, stage 0); see
 [Implementation staging](#implementation-staging). The toolchain today has no
 loan analysis and no borrow diagnostic, and the tokens `bound`, `addr` and
 `exclusive` do not exist: toolchain/lex/token_kind.def declares `unsafe` as a
-keyword and none of the three. Every pointer in today's toolchain behaves as an
+keyword and none of the three. `Core.Box`, `Core.Relocatable` and
+`Core.Lifetime`, named below, are D-SAFE-20 library residue and are not in the
+0.1 prelude. Every pointer in today's toolchain behaves as an
 unmarked Permissive pointer, and today's `ref` bindings are checked only by the
 rule of proposal p005434 that a `ref` binds a durable reference expression.
 File and line citations are against trunk 0bdce60a5 unless a citation says
@@ -140,7 +142,7 @@ alias while a `const T*` to it is live.
 | exclusive-mutable | `exclusive T*` (NEW) | `&x` on an owner, a `ref`, or `*p` for `p: exclusive T*` | exclusive | everything: read, write, invalidate (`ref self` calls, assignment of non-`Plain`, `~`, destroy) | `ref self: Self` | `&mut T` |
 | shared-mutable | `T*` | downgrade from `exclusive T*`; `&x` on a place already under shared access; C++ `T&` | shared | read; write `Plain` fields; `addr`/`const` methods; form further shared loans | `addr self: Self*` (restored) | `&Shared<T>` |
 | shared-const | `const T*` | conversion from either kind; C++ `const T&` | shared (const) | read; `const` methods | `ref self: const Self`, by-value `self` | `&SharedView<T>` (`&T` only under the D-SAFE-19 proviso) |
-| unverified (any kind) | the same spellings, loan set ⊥ | `unsafe as` from non-pointers, `unsafe fn`/C++ results, union reads and `unsafe &u.f`, `unsafe class` fields | ⊥ | copy, compare, store, pass; `unsafe *p` to use | — | raw pointer |
+| unverified (any kind) | the same spellings, loan set ⊥ | `unsafe as` from non-pointers, C++ results, union reads and `unsafe &u.f`, `unsafe class` fields | ⊥ | copy, compare, store, pass; `unsafe *p` to use | — | raw pointer |
 
 `&x` on a place under exclusive access — an owner, a `ref` binding, or `*p` for
 `p: exclusive T*` — yields `exclusive T*`. The conversions between kinds form a
@@ -156,7 +158,9 @@ lattice in which every arrow is a downgrade and nothing converts upward except
 An `unsafe as` between pointer kinds is an `unsafe` operation of
 [type safety](type_safety.md); it preserves the loan set of its operand, so it
 never extends a lifetime, and its obligation when it upgrades a kind is that no
-other access to the object is live while the result is used.
+other access to the object is live while the result is used; the type page's
+closed list of unsafe operations carries that upgrade as its own row (amended
+2026-10-12, document-review fold: D-4).
 
 The receiver forms follow the kinds. `ref self: Self` is exclusive access, as
 proposal p005434 defines it. `addr self: Self*` is the shared-mutable receiver,
@@ -206,7 +210,7 @@ rule's example: a non-`Plain` assignment through such a `ref` is
 live.
 
 > **Narrowing (fork amendment 2026-10-12, F-013 D-SAFE-8).** Proposal p005434
-> states (p005434:82) that "the address of a `ref` binding is `nocapture` and
+> states (p005434:83) that "the address of a `ref` binding is `nocapture` and
 > `noalias`". This design emits `noalias` and `captures(none)` only for
 > exclusive-kind refs, and only under the conditions of T8 below; a shared-kind
 > `ref` carries neither attribute. The proposal's sentence is kept for the
@@ -235,6 +239,11 @@ A loan is formed by the operations below, with the kind each gives.
 -   `&x` on a place under exclusive access forms an exclusive loan on `x`;
     conversion of the result to `T*` or `const T*` downgrades the loan to
     shared.
+-   `&x` on a place already under shared access — one with a live shared loan
+    on it — forms a shared loan on `x`: the result is `T*` and no exclusive
+    loan is formed, so T4's exclusion of exclusive loans does not fire, which
+    is how `UsePick` of EX-TM-8 takes `&y` twice while `q` is live (amended
+    2026-10-12, document-review fold: D-14).
 -   `let ref r = x;` forms an exclusive loan on `x`
     ([`ref` bindings](#ref-bindings)).
 -   A value binding of a non-`Plain` type, from `*p` or from an owner, forms a
@@ -330,7 +339,10 @@ regression test.
 The following values carry the loan set ⊥:
 
 -   the result of `unsafe as` from a non-pointer;
--   the result of any `unsafe fn` call and of any unannotated C++ call;
+-   the result of any unannotated C++ call, and every pointer-typed field read
+    from an imported C++ type, because the Carbon checker never saw the C++
+    store (the second clause amended 2026-10-12, document-review fold: D-7,
+    with D-SAFE-18 amended identically);
 -   anything read through an unverified pointer;
 -   a value of pointer-carrying type read from a union field (`unsafe u.p`),
     and the pointer `unsafe &u.f` itself, ⊥ on formation for every field type:
@@ -343,15 +355,63 @@ The following values carry the loan set ⊥:
 -   every pointer field of an `unsafe class` (T5(g));
 -   the result of a `bound` call one of whose `bound` arguments is ⊥.
 
-A ⊥ pointer may be copied, compared, stored and passed. Dereferencing it
-(`*p`, `p->m`), binding a `ref` through it, forming a view from it, or passing
-it to a `bound` parameter needs `unsafe *p`, the operation-tied spelling of
-[type safety](type_safety.md), and the obligation that spelling takes on is
-that the storage outlives every use derived from the dereference; an unmarked
-use is `StrictUnverifiedDeref`. `unsafe as` between pointer types preserves the
-loan set of its operand, so a conversion never extends a lifetime, and its own
-obligation is the type-safety one, extent included. The programs `Wild` and
-`Wild3` of EX-TM-8 are this rule's regression set: the first is the case the
+**A marked `unsafe fn` call is not in that list** (amended 2026-10-12,
+document-review fold: D-1; D-SAFE-10 amended identically). The result of a
+marked `unsafe fn` call carries the loan set its signature gives under T5(a),
+free when the function has no `bound` parameter, because the `unsafe` on the
+call takes on the callee's stated obligation, lifetime included where the doc
+comment states one: for `unsafe Core.Slice(T).Make(p, n)` the obligation is
+that the elements outlive the view, so the view is free and no later `v[i]`
+through it needs a marker, which is what makes that call the single audit line
+of a migrated buffer API ([spatial safety](spatial_safety.md)). The result of
+an unannotated C++ call stays ⊥ because its marker's obligation, that the
+callee saves no pointer, says nothing about what the result points at.
+
+A ⊥ pointer may be copied, compared, and passed to a non-`bound` parameter, and
+every copy of it is ⊥ (T2). Every use of its pointee is an `unsafe` operation
+whose obligation is that the storage outlives every use derived from it, and an
+unmarked one is `StrictUnverifiedDeref`. A dereference (`*p`, `p->m`) is
+spelled `unsafe *p` or `unsafe p->m`, the operation-tied spelling of
+[type safety](type_safety.md); a use that is not a dereference — passing the
+carrier to a `bound` parameter, binding a `ref` through it, forming a view from
+it, subscripting a ⊥ view — is spelled with the same prefix on the innermost
+call, binding or subscript that consumes the carrier, `unsafe Load(q)`,
+`let ref r = unsafe *q;`, `unsafe v[i]`, the form the strategy page lists under
+[operation-tied `unsafe`](README.md#operation-tied-unsafe) (amended 2026-10-12,
+document-review fold: D-1). Each marker discharges exactly one obligation: in
+`Wild3` the `unsafe &u.p` discharges the address-of obligation of type safety
+and not the pass, which needs its own marker; written
+`unsafe Load(unsafe &u.p)` the call is accepted and its result is ⊥.
+
+**A ⊥ value does not leave a Strict function through its signature** (amended
+2026-10-12, document-review fold: D-2; D-SAFE-10 amended identically).
+Returning a ⊥ value from a function that is not `unsafe fn` is
+`StrictUnverifiedDeref` at the `return`; storing it into a place whose root is
+not a local of the body — a parameter's pointee, a global, a field reached
+through a free or ⊥ pointer — is `StrictStoreOutlivesSource` under the Store
+rule, because ⊥ is not free and no destination outside the body accepts a loan
+the checker cannot see; a copy into a local of the body is accepted and is ⊥.
+An `unsafe fn` may return ⊥: its doc comment states the obligation, and its
+marked call gives the result the signature's loan set, as above. This is what
+makes T5(a)'s rule that a function with no `bound` parameter returns a free
+value sound: a Strict body cannot have made the value anything else, and an
+`unsafe fn` body is trusted to the obligation its comment states.
+
+```carbon
+// AP-1 (NEW: `unsafe fn`, `unsafe` prefix; document review 1) — a ⊥ pointer may not leave a safe signature
+fn Raw() -> i32* { let n: i64 = 0x1000; return n unsafe as i32*; }           // StrictUnverifiedDeref at the return: the result is ⊥ and Raw is not `unsafe fn`
+unsafe fn RawUnsafe() -> i32* { let n: i64 = 0x1000; return n unsafe as i32*; }   // accepted; the doc comment states what the result points at
+fn Use() -> i32 { let r: i32* = unsafe RawUnsafe(); return *r; }             // accepted: the marked call takes on that obligation, so r is free (T5(a))
+```
+
+Outcome today for AP-1: NEW-SYNTAX (`unsafe fn` and the `unsafe` prefix do not
+parse); `Raw` is rejected at stage 3 by the subset's P3 rule and at stage 4 by
+this sentence, `Use` is accepted at stage 4.
+
+`unsafe as` between pointer types preserves the loan set of its operand, so a
+conversion never extends a lifetime, and its own obligation is the type-safety
+one, extent included. The programs `Wild` and `Wild3` of EX-TM-8 are this
+rule's regression set: the first is the case the
 strategy page's narrowness principle names, an unsafe type conversion that
 must not also allow out-of-lifetime access; the second shows why the pointer
 itself, not the value loaded through it, must be ⊥ — a Strict callee that
@@ -388,8 +448,11 @@ of T1 to T8 that attempt C contributed and both judges asked for:
 
 -   **P1** — a pointer formed by `&local` or `&param` in the body being
     checked. It may be dereferenced and passed to a non-`bound` parameter; it
-    may never escape: not returned, not stored, not passed to a `bound`
-    parameter whose result escapes.
+    may never escape: not returned, not stored into a place whose root is
+    declared outside the source's scope — the subset decides this lexically,
+    so `Wild`'s `var u: U = {.p = &x};` into a local declared inside `x`'s
+    scope is accepted — and not passed to a `bound` parameter whose result
+    escapes (amended 2026-10-12, document-review fold: D-5).
 -   **P2** — a pointer parameter of the function, or a `ref` binding. It may be
     dereferenced without a marker; it escapes only as T5 allows.
 -   **P3** — everything else: a pointer that was returned by a call, loaded
@@ -397,7 +460,8 @@ of T1 to T8 that attempt C contributed and both judges asked for:
     dereference needs `unsafe *p`.
 
 The subset proves T5(c) for the return of a P1 pointer (EX-TM-2), the Store
-rule for a P1 pointer stored anywhere, and T6 for P3; it proves nothing about
+rule for a P1 pointer stored outside the source's scope, and T6 for P3; it
+proves nothing about
 views. It is sound only together with the prelude churn of W-128: without
 `bound self` on `Core.Buf.AsSlice` and `bound p` on `Core.Slice.FromArray`, a
 view of a local escapes as a class value and no P rule fires, which is judge
@@ -434,7 +498,7 @@ kept from proposal p005434 with its semantics now fixed.
     errors in Strict and warnings in Permissive.
 -   **(d) The argument stays borrowed.** For the duration of a returned loan
     the bound argument stays borrowed in the caller at the parameter's kind.
-    The proposal asks (p005434:826-830) for the bound parameter to be
+    The proposal asks (p005434:831-832) for the bound parameter to be
     "immutable for the duration of the lifetime of the returned result"; this
     design narrows "immutable" to "not invalidated": a shared-kind bound
     argument stays writable in its `Plain` fields through other aliases, the
@@ -456,13 +520,36 @@ kept from proposal p005434 with its semantics now fixed.
     between names (`a: b`) is deferred to the stage-6 plan (W-134). The
     proposal already defers linked structures to "More precise lifetimes";
     EX-TM-6 is the shape that section asks for.
--   **(g) The `unsafe class` interim.** Until stage 6, a Strict class with a
-    non-owning pointer field is declared `unsafe class`: its invariant is the
-    author's, every construction site in Strict is `unsafe` because
+-   **(g) Pointer fields and the `unsafe class` interim** (amended 2026-10-12,
+    document-review fold: D-3; D-SAFE-11(g) amended identically). A Strict
+    class with a pointer field is legal without `unsafe class`: its values
+    carry the union of their fields' loans as one loan set
+    ([Vocabulary](#vocabulary)), formed at construction and propagated by
+    T5(a) and T2, so a view-shaped class over locals and `bound` results is
+    checked exactly like `Core.Slice`, whose `ptr: T*` is such a field.
+    `unsafe class` is required only where a loan must be stated _in the type_
+    because the value's lifetime is not the loan's — a field written through a
+    free or ⊥ pointer, the `Holder` of EX-TM-4 reached through
+    `GetGlobalHolder()`, or a heap-stored node of a linked structure — until
+    `bound(a)` fields exist at stage 6. For an `unsafe class` the invariant is
+    the author's: every construction site in Strict is `unsafe` because
     construction may store non-free loans, its pointer fields are ⊥ (reads
     through them need `unsafe *`), and the Store rule treats them as a ⊥
-    destination that accepts only free loans. `Holder` in EX-TM-4 is the
-    shape, and its `h->p = &y` is `StrictStoreOutlivesSource` by this rule.
+    destination that accepts only free loans, so `Holder`'s `h->p = &y` is
+    `StrictStoreOutlivesSource` by this rule. The program below is review 1's
+    AP-2: `View2` and `Make2` are accepted, `Bad2` is rejected.
+
+```carbon
+// AP-2 (NEW: `bound`; document review 1) — a plain Strict class with a pointer field
+class View2 { var p: i32*; }                              // legal in Strict without `unsafe class`: a View2 value carries p's loan
+fn Make2(bound q: i32*) -> View2 { return {.p = q}; }     // accepted: the result's loan set is q's (T5(a))
+fn Bad2() -> View2 { var x: i32 = 1; return Make2(&x); }  // StrictDanglingReturn: a loan on the local x leaves the function (T5(c))
+```
+
+Outcome today for AP-2: NEW-SYNTAX (`bound` is not a token); `Bad2` is
+rejected at stage 3 with W-128's `bound` on view producers for the `Core.Slice`
+shape and at stage 4 for a user class, `View2` and `Make2` are accepted at
+every stage.
 
 ## Temporaries
 
@@ -589,7 +676,9 @@ is used; `Core.Buf`, `Core.Slice` and `union` are the fork prelude's
 and the fork syntax's and are not in that toolchain, so the examples that use
 them cite the fork program or prelude line that proves the cell instead. The
 two regression sets, EX-TM-4 and EX-TM-8, are the standing counterexamples the
-design must reject and are kept verbatim from the plan.
+design must reject and are kept verbatim from the plan. Tags of the form A-n,
+B-n and RR-n in example comments index the review-fold record of
+[fork/safe/plan.md](/fork/safe/plan.md).
 
 ### EX-TM-1: A `bound` result borrows both arguments
 
@@ -678,8 +767,9 @@ Rules T3, T5(c), the Store rule and T5(g); judge 2's three programs, the ones
 that refuted a stage with no loan sets, kept verbatim. Outcome today:
 ACCEPTS-UNCHECKED — all three are accepted by today's toolchain for the fork
 prelude (`AsSlice` at buf.carbon:54-56, `FromArray` at slice.carbon:26-28),
-with `unsafe class` as the one NEW spelling (a plain `class` until stage 6, as
-the comment says). Under the design: `Leak` returns a view whose loan is on the
+with `unsafe class` as the one NEW spelling: a plain `class` today, parsed at
+stage 1, and the interim the comment names until `bound(a)` fields replace it
+at stage 6. Under the design: `Leak` returns a view whose loan is on the
 local `b`, whose `Destroy` frees the block, and the return copy keeps the loan
 by T2, so it is `StrictBorrowOutlivesPlace`; `Escape` stores a view of the
 inner-scope array `a` into the outer `s` and reads it after `a` ended, which is
@@ -705,10 +795,12 @@ not a token and `unsafe` is accepted only before `as`
 `x` yields `exclusive i32*`, `Bump`'s parameter is a P2 carrier that may be
 dereferenced without a marker and holds an exclusive loan on `*p` for the
 call, and `Run` returns 42. `Lookup` has no `bound` parameter, so its result is
-free under T5(a) in the full checker but P3 to the subset, which has no loan
-sets; the subset therefore demands `unsafe *r`, and the full checker at stage 4
-accepts `*r` unmarked because the result is free. The marked form is correct
-in both. Lands at stage 1 (the token) and stage 3 (the subset).
+free under T5(a) in the full checker — a Strict `Lookup` body cannot return a
+⊥ value (T6), and an `unsafe fn Lookup` would need `unsafe` at the call — but
+P3 to the subset, which has no loan sets; the subset therefore demands
+`unsafe *r`, and the full checker at stage 4 accepts `*r` unmarked because the
+result is free (amended 2026-10-12, document-review fold: D-2). The marked
+form is correct in both. Lands at stage 1 (the token) and stage 3 (the subset).
 
 ### EX-TM-6: Named lifetimes
 
@@ -889,12 +981,13 @@ that has these consequences:
     of the strategy page's [migration example](README.md#c-migration-example)
     shows in `Unit`.
 -   **Pointers returned by C++ are ⊥.** Every pointer, reference or view a C++
-    function returns, and every pointer loaded from a C++ object, has the loan
-    set ⊥ (T6): a Strict body that uses its pointee writes `unsafe *p`, and
-    that marker is the audit point. This is the strategy's "there won't be an
-    assumption that a call to C++ code won't save a copy of pointers to
-    passed-in objects" (proposal p005914) turned around: Carbon also assumes
-    nothing about what a C++ result points at.
+    function returns, and every pointer-typed field read from an imported C++
+    type, has the loan set ⊥ (T6; the second clause is D-SAFE-18 amended
+    2026-10-12, document-review fold: D-7): a Strict body that uses its pointee
+    writes `unsafe *p`, and that marker is the audit point. This is the
+    strategy's "there won't be an assumption that a call to C++ code won't save
+    a copy of pointers to passed-in objects" (proposal p005914) turned around:
+    Carbon also assumes nothing about what a C++ result points at.
 -   **An unannotated pointer-carrying call is `unsafe`.** In Strict a C++
     function whose signature involves any pointer, reference, view or `this`
     is unsafe to call — `unsafe Cpp.F(...)`, else `StrictCppCallUnannotated` —
@@ -931,11 +1024,16 @@ that has these consequences:
     function T8 emits no aliasing attribute for, so a C++ caller that aliases
     its `ref` parameter produces erroneous behavior and never undefined
     behavior.
--   **Migrated classes with non-owning pointer fields are `unsafe class`.** A
-    C++ class holding a raw pointer it does not own migrates to Strict Carbon
-    as an `unsafe class` under T5(g) until stage 6's `bound(a)` fields can
-    state the lifetime; its pointer fields are ⊥, so every read through them
-    in Strict is marked, which is the audit surface of the migrated invariant.
+-   **Migrated classes whose pointer fields outlive the value are
+    `unsafe class`.** A C++ class holding a raw pointer it does not own
+    migrates to Strict Carbon as a plain `class` when the pointer's loan is
+    the value's own — a view over a constructor argument, the `Core.Slice`
+    shape — and as an `unsafe class` under T5(g) when its invariant ties the
+    pointer to storage the value does not borrow from its constructor — a node
+    written through a free pointer, a registry entry — until stage 6's
+    `bound(a)` fields can state that lifetime; in the second case its pointer
+    fields are ⊥, so every read through them in Strict is marked, which is
+    the audit surface of the migrated invariant.
 -   **Temporaries diverge, as a compile error.** C++ code that binds a reference
     to a temporary and uses it later migrates to Carbon code that is
     `StrictBorrowOfTemporary` or rejected by today's `ref` rule, never to a
@@ -964,7 +1062,7 @@ toolchain.
 | Stage | Contents | Owned here |
 | --- | --- | --- |
 | 0 (this PR) | This page; no toolchain change | All of this page |
-| 1 | Lex and parse `exclusive`, `bound`, `addr`, `unsafe class`, `bound(a)` with `[a: Core.Lifetime]`; recorded in SemIR, unenforced | EX-TM-1, EX-TM-5, EX-TM-6 and EX-TM-8 parse (residue item W-129) |
+| 1 | Lex and parse `exclusive`, `bound`, `addr`, `unsafe class`; recorded in SemIR, unenforced | EX-TM-1, EX-TM-5 and EX-TM-8 parse (residue item W-129); `bound(a)` and EX-TM-6 are stage 6's |
 | 3 | Strict static checks without loan sets; `--strict-checks=warn` default | The P1/P2/P3 subset: `StrictDanglingReturn` for a P1 return (EX-TM-2), `StrictBorrowOutlivesPlace` for `Leak` and `Escape` once W-128 lands, `StrictUnverifiedDeref` for P3; `StrictCppCallUnannotated` with the allowlist and the annotation mapping; the warning twins `PermissiveDanglingLoan` and `PermissiveUnannotatedCppCall` (residue item W-131, gated on W-128) |
 | 4 | The loan checker | T1 to T8 and the Store rule over loan sets; `bound` per T5(a) to (e); `exclusive`; the reborrow and same-kind-copy clauses; `StrictExclusiveBorrowConflict`, `StrictSharedBorrowInvalidated`, `StrictBorrowOfTemporary`, `StrictStoreOutlivesSource`, `StrictEscapeOfUnboundParam`; `noalias` and `captures(none)` under T8; `error` default (residue item W-132) |
 | 5 | Facets, `Core.Thread`, `--strict-concurrency` | `StrictBorrowOutlivesPlace` at a thread-crossing call whose argument's loan set is not free, the thread-boundary lifetime rule of the mutation page (residue item W-133) |
@@ -999,7 +1097,7 @@ pages carry the rest of D-SAFE-1 to D-SAFE-23.
     from a place is exclusive; a `ref` from `*p` has `p`'s kind; a mixed loan
     set has the weakest kind and T4 applies to every place in it. `noalias`
     and `captures(none)` are emitted only for exclusive-kind refs under T8,
-    which narrows p005434:82 in a dated amendment on this page. Break
+    which narrows p005434:83 in a dated amendment on this page. Break
     condition: an accepted p005434 example that becomes invalid in Permissive
     mode (none may; the checklist lists them as accepted).
 -   **D-SAFE-10 — Loans T1 to T8 plus the Store rule.** As stated under
@@ -1011,7 +1109,7 @@ pages carry the rest of D-SAFE-1 to D-SAFE-23.
 -   **D-SAFE-11 — `bound` semantics fixed; named lifetimes pinned.** As stated
     under
     [`bound`, `bound(a)` and `unsafe class`](#bound-bounda-and-unsafe-class),
-    with the narrowing of p005434:826-830 from "immutable" to "not invalidated".
+    with the narrowing of p005434:831-832 from "immutable" to "not invalidated".
     Break condition: upstream amends p005434's `bound` with different semantics
     — a V-3 review; the fork keeps whichever is lower-divergence and records the
     delta.

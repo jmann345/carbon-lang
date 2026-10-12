@@ -155,7 +155,7 @@ UnsafeAllowDelete(T: Concrete) { extend adapt T; impl as Deletable {} }` in
 [classes](../classes.md#destructors) — so the unsafe operation there is the
 conversion `&x unsafe as UnsafeAllowDelete(T)*`, a pointer reinterpretation of
 TY1 (amended 2026-10-12, document-review fold: MINOR-8). That prelude churn is
-the residue item W-128, gated on stage 1, and no example on this page assumes it
+the residue item W-144, gated on stage 1, and no example on this page assumes it
 has landed.
 
 ### TY3: template parameters never weaken TY1
@@ -274,7 +274,7 @@ fn Deref(p: i32*) -> i32 {
   return unsafe *q;                  // temporal obligation, spelled separately (p is a P2 parameter: ⊥ only if its source was)
 }
 // EX-TY-4 (NEW): unsafe fn and its call; checked downcast
-unsafe fn Make(p: T*, size: i64) -> Self;        // on Core.Slice(T), residue W-128
+unsafe fn Make(p: T*, size: i64) -> Self;        // on Core.Slice(T), residue W-144
 let v: Core.Slice(i32) = unsafe Core.Slice(i32).Make(raw, n);
 let d: Core.Optional(Derived*) = Core.DynCast(Derived*)(b);   // safe; `b unsafe as Derived*` is unchecked
 ```
@@ -312,7 +312,7 @@ What each example shows:
     Outcome: NEW-SYNTAX, stages 1 and 3 for `unsafe fn` and its call (no
     `unsafe fn` modifier exists: toolchain/lex/token_kind.def has `unsafe` as
     a keyword only for the `as` modifier), stage 6 for `Core.DynCast`, and
-    W-128 for the prelude rename.
+    W-144 for the prelude rename.
 -   **TY4 (`Optional(T*)`).** The checklist's example is the prelude type
     itself. The shape below is today's syntax, taken from
     fork/conformance/programs/stdlib/optional_pointer_niche.carbon and
@@ -412,7 +412,7 @@ toolchain. The rows this page owns:
 | Stage | Contents | Owned here |
 | --- | --- | --- |
 | 0 (this PR) | This page; no toolchain change | All of this page |
-| 1 | Lex and parse `unsafe fn`, the `unsafe` prefix forms (`unsafe F(args)`, `unsafe x.M(args)`, `unsafe *p`, `unsafe p->m`, `unsafe u.f`, `unsafe &u.f`, `unsafe s[i]`, `unsafe (...)`), recorded in SemIR and unenforced; `unsafe` before `as` keeps its one-token lookahead | EX-TY-2, EX-TY-3 and EX-TY-4 parse; safety_strategy_doc.carbon un-SKIPs with no body change; the prelude rename of `UnsafeMake` to `unsafe fn Make` and of `UnsafeDelete` (W-128) |
+| 1 | Lex and parse `unsafe fn`, the `unsafe` prefix forms (`unsafe F(args)`, `unsafe x.M(args)`, `unsafe *p`, `unsafe p->m`, `unsafe u.f`, `unsafe &u.f`, `unsafe s[i]`, `unsafe (...)`), recorded in SemIR and unenforced; `unsafe` before `as` keeps its one-token lookahead | EX-TY-2, EX-TY-3 and EX-TY-4 parse; safety_strategy_doc.carbon un-SKIPs with no body change; the prelude rename of `UnsafeMake` to `unsafe fn Make` and of `UnsafeDelete` (W-144) |
 | 3 | Strict static checks without loan sets, `--strict-checks=warn` default | `StrictUnsafeCallUnmarked`, `StrictUnionReadUnmarked`, `StrictBuiltinBindingUnmarked`, `StrictUnverifiedDeref` as warnings; the audit property that a Strict file's unmarked type-unsafe operations are exactly the diagnosed ones |
 | 4 | The loan checker; `error` default | The same three as errors; `StrictUnverifiedDeref` gains the loan-set reasons the temporal page states (T6) |
 | 6 | `bound(a)`, `Core.Lifetime`, `Core.DynCast`, the Rust binding generator | `Core.DynCast(Derived*)(p) -> Core.Optional(Derived*)` as the checked downcast; EX-TY-4's third line |

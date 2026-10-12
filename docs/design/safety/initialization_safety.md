@@ -318,7 +318,7 @@ emit. Under the design, Strict rejects the `return x;` with
 `StrictUseOfUnformed` because the path on which `c` is false reaches the read
 without an assignment; Permissive warns `MaybeUnformedRead` and, in Release,
 the read yields 0 by I5; Debug fails-stop with the read-of-unformed message.
-The check lands at stage 3 (residue item W-131).
+The check lands at stage 3 (residue item W-147).
 
 ### EX-I-2: The `Optional` escape
 
@@ -439,7 +439,7 @@ diagnosed or zero-filled by the 0.1 toolchain.
 | --- | --- | --- |
 | 0 (this PR) | This page; no toolchain change | All of this page |
 | 2 | Runtime hardening regardless of mode | I5: Release `make_uninitialized` zero-fill of the whole object; Debug poison-fill and the read-of-unformed fail-stop |
-| 3 | Strict static checks without loan sets; `--strict-checks=warn` default | I2 definite formation over `UnformedInit` locals and `MaybeUnformed(T)`; I3's `StrictAddressOfUnformed`; I6's argument and return uses; the warning twin `MaybeUnformedRead` (residue item W-131) |
+| 3 | Strict static checks without loan sets; `--strict-checks=warn` default | I2 definite formation over `UnformedInit` locals and `MaybeUnformed(T)`; I3's `StrictAddressOfUnformed`; I6's argument and return uses; the warning twin `MaybeUnformedRead` (residue item W-147) |
 | 4 | The loan checker | I4: `~x`, `Core.Move`, `Core.Relocatable`, `StrictMoveFromNonEntire`, and I2 over moved-from objects; the T4 self-loan rule for relocation |
 
 Stages 1, 5 and 6 own nothing on this page; `~` as a move operator is parsed

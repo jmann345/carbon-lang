@@ -10,13 +10,16 @@ Produced 2026-07-19 by a 12-agent audit of trunk @ `99cda60` against
 `docs/project/milestones.md#milestone-01`; per-bullet statuses reconciled
 2026-09-27 with fork/conformance/out/scoreboard.json and the work-item ledger
 (bullet text unchanged per rulebook R7). Statuses: **DONE** (implemented
-with real test coverage), **PARTIAL** (works with material gaps),
+with real test coverage; for a documentation bullet whose text excludes
+implementation, DONE on document review while its program stays SKIP — rows
+88 and 89), **PARTIAL** (works with material gaps),
 **MISSING** (absent), **DESIGN-ONLY** (designed, zero implementation).
 
 ## Scoreboard
 
-**30 DONE / 21 PARTIAL / 4 MISSING / 1 DESIGN-ONLY** across 56 milestone
-bullets (reconciled 2026-10-05 against the conformance scoreboard —
+**31 DONE / 21 PARTIAL / 3 MISSING / 1 DESIGN-ONLY** across 56 milestone
+bullets (row 89 MISSING → DONE 2026-10-12 on document review, SAFE-1 / F-013;
+reconciled 2026-10-05 against the conformance scoreboard —
 128 PASS / 0 FAIL / 22 SKIP over 150 programs, 48/56 bullets PASS — and the
 fork/inventory/work-items.json ledger; the original 2026-07-19 audit read
 24 / 18 / 13 / 1; the if-let / let-else row flipped MISSING → PARTIAL at the
@@ -85,8 +88,8 @@ open back half.
 | Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation | PARTIAL | Compile->link->run works on Linux/macOS for classes, generics, match, choice payloads, `?` error handling, if-let / while-let / let-else, threading interop, unions in both C++ interop directions, same-file `overload fn` sets, and C++ interop (3/3 conformance programs PASS incl. most_features_missing_match, un-SKIPped at S2d); but variadics, template lowering, and std::variant/optional mapping are absent — gaps that do undermine evaluation of those features (see the MISSING/DESIGN-ONLY rows; W-041 lowering fatals also open). |
 | Project: installs on Windows, macOS, and Linux and builds working programs | PARTIAL | Linux x86-64/arm64 and macOS arm64 in CI (only Linux x86-64 released); Windows explicitly unsupported — clang_runtimes.cpp returns 'TODO: Windows runtimes are untested and not yet supported', LLD wired for ELF/MachO only, no Windows CI. |
 | Project: CMake build-system integration plus Make documentation | MISSING | No CMake support, example, or docs anywhere (only a libc++ header-expansion .bzl mentions cmake); Bazel is the only integrated build system. |
-| Project: detailed safety strategy | DONE | docs/design/safety/README.md rewritten by way of accepted p005914 (Strict/Permissive modes, per-category enforcement model, build modes, Rust-ecosystem reuse); residual future-work on soundness model/mode syntax and a stale conflicting principles doc. |
-| Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis) | MISSING | Temporal/mutation safety exists only as an explicitly 'directional... provisional' section of p005914; no dedicated design docs or follow-up proposals, no Rust-interop analysis, README 'Lifetime and move semantics' is a bare TODO. |
+| Project: detailed safety strategy | DONE | docs/design/safety/README.md rewritten by way of accepted p005914 (Strict/Permissive modes, per-category enforcement model, build modes, Rust-ecosystem reuse); soundness model and mode syntax closed by F-013 (row 89); the principles doc carries a supersession note; the program stays SKIP until W-145. |
+| Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis) | DONE | Fork design F-013 (SAFE-1, fork/safe/plan.md): docs/design/safety/README.md rewritten (soundness model, Strict-by-default mode syntax with `unsafe permissive`, `unsafe import`, operation-tied `unsafe`), six pages type_safety / initialization_safety / spatial_safety / temporal_safety (three pointer kinds `T*`/`exclusive T*`/`const T*`, loans, `bound`, relocation) / mutation_safety (no-invalidation rule, `Core.Plain`, `Core.Guarded`, `Send`/`Sync`) / rust_interop (mapping table, four-part verdict), terminology gains mutation safety, README 'Lifetime and move semantics' fixed by decision; DONE on document review (row 88 precedent), implementation excluded by the bullet. Gated residue, each a filed item: stage 1 syntax (W-145), stage 2 hardening (W-146), stage 3 static checks (W-147), stage 4 loan checker (W-148), stage 5 facets (W-149), stage 6 named lifetimes + Rust generator (W-150), prelude `bound`/`unsafe fn` churn (W-144); the conformance stub stays SKIP until W-145. |
 | Project: basic evaluator documentation (getting started to FAQs) | PARTIAL | README nightly-tarball getting-started (Ubuntu-only) and a comprehensive project FAQ exist, but docs/guides contains only a glossary — no language tutorial or evaluation walkthrough. |
 | Goal: design docs documented, cohesive, understandable without placeholders | PARTIAL | Generics/variadics/pattern-matching/classes designs are mature, and the fork landed docs/design/error_handling.md (F-006) and docs/design/unions.md (F-007); but templates.md, metaprogramming.md, and the `match` section of pattern_matching.md still self-describe as skeletal placeholders, the interop README has 9 'TODO:' section headings, and the F-008..F-011 pages (threads/atomics, overloading, structural conformance, if-let) have not landed (W-065 open). |
 
@@ -132,7 +135,9 @@ match-declare, overloading, and threading interop (grep-verifiable against the
 The 0.1 checklist requires a detailed, concrete design (not implementation) for
 safe Carbon. Only a directional sketch exists (Ante-style shared mutability,
 Swift-style adoption). Pure design work, parallelizable with everything else,
-but it is the stated reason 0.1 slipped to end-2026.
+but it is the stated reason 0.1 slipped to end-2026. (Closed 2026-10-12 by
+SAFE-1 / F-013, row 89: the seven safety pages under docs/design/safety and
+the fork decision-log entry; W-063 discharged.)
 
 **Arbiter:** Dedicated accepted proposals replacing p005914's 'provisional'
 section: concrete pointer/borrow type-system rules, safety-mode syntax,
@@ -512,10 +517,11 @@ follow-up proposals, no worked C++-migration examples, and multiple "Future
 work" placeholders (soundness model, safety-mode syntax). In the toolchain the
 only safety-adjacent implementation is the `unsafe` keyword and a working,
 tested `unsafe as` conversion operator (Core.UnsafeAs) used mainly for C++
-interop pointer casts; there is no borrow/lifetime checking, no safety-mode
-enforcement, and no runtime bounds checking. Net: strategy ~done, concrete
-safe-Carbon design is the largest open item and is essentially at the "declared
-direction" stage.
+interop pointer casts; there is no borrow/lifetime checking and no safety-mode
+enforcement (runtime bounds checking landed at SL-1). Net: strategy ~done;
+the concrete safe-Carbon design, the largest open item at the audit and then
+at the "declared direction" stage, is closed by SAFE-1 (F-013, row 89,
+2026-10-12) as a design with its implementation filed as W-144..W-150.
 
 ### Project/toolchain product features for 0.1: drop-in Clang toolchain, build-system integration, install/packaging/releases, evaluator documentation
 

@@ -462,11 +462,11 @@ of T1 to T8 that attempt C contributed and both judges asked for:
 The subset proves T5(c) for the return of a P1 pointer (EX-TM-2), the Store
 rule for a P1 pointer stored outside the source's scope, and T6 for P3; it
 proves nothing about
-views. It is sound only together with the prelude churn of W-128: without
+views. It is sound only together with the prelude churn of W-144: without
 `bound self` on `Core.Buf.AsSlice` and `bound p` on `Core.Slice.FromArray`, a
 view of a local escapes as a class value and no P rule fires, which is judge
 2's refutation of attempt C's stage-1 claim (`Leak` and `Escape` in EX-TM-4).
-With W-128 in place, a view is a P1 carrier when its `bound` argument was P1,
+With W-144 in place, a view is a P1 carrier when its `bound` argument was P1,
 and `Leak` and `Escape` are rejected at stage 3; `Store` needs the Store rule
 over a ⊥ destination and is rejected at stage 4.
 
@@ -485,7 +485,7 @@ kept from proposal p005434 with its semantics now fixed.
     an existing value (T2). A prelude function whose result can carry a loan
     from a parameter — a view of `self`, a `T` payload returned from `self`, a
     `T` argument stored into the result — without `bound` on that parameter is
-    a defect of the W-128 audit under the spatial page's rule SP3, not a loan
+    a defect of the W-144 audit under the spatial page's rule SP3, not a loan
     boundary. A ⊥ argument to a `bound` parameter makes the result ⊥, after
     the `unsafe` that T6 demands for the pass.
 -   **(b) Escape in the callee.** A non-`bound` pointer or `ref` parameter may
@@ -507,7 +507,7 @@ kept from proposal p005434 with its semantics now fixed.
 -   **(e) Interfaces.** An impl may drop but not add `bound` relative to its
     interface, as the proposal states. This is why the prelude's interface
     declarations `IndexWith.At` (core/prelude/operators/index.carbon:9) and
-    `Copy.Op` carry `bound self` themselves after W-128: a user-written
+    `Copy.Op` carry `bound self` themselves after W-144: a user-written
     `Copy.Op` may then keep its loan without (a) reading its result as free,
     while the prelude's primitive copies stay governed by T2.
 -   **(f) Named lifetimes.** `bound(a)`, with `[a: Core.Lifetime]` as a deduced
@@ -517,7 +517,7 @@ kept from proposal p005434 with its semantics now fixed.
     weakest among them; a store from a place in set `a` into a place in set `a`
     passes the Store rule; two names are unrelated sets. Bare `bound` is the
     elision form and expresses no relation between names. An outlives relation
-    between names (`a: b`) is deferred to the stage-6 plan (W-134). The
+    between names (`a: b`) is deferred to the stage-6 plan (W-150). The
     proposal already defers linked structures to "More precise lifetimes";
     EX-TM-6 is the shape that section asks for.
 -   **(g) Pointer fields and the `unsafe class` interim** (amended 2026-10-12,
@@ -547,7 +547,7 @@ fn Bad2() -> View2 { var x: i32 = 1; return Make2(&x); }  // StrictDanglingRetur
 ```
 
 Outcome today for AP-2: NEW-SYNTAX (`bound` is not a token); `Bad2` is
-rejected at stage 3 with W-128's `bound` on view producers for the `Core.Slice`
+rejected at stage 3 with W-144's `bound` on view producers for the `Core.Slice`
 shape and at stage 4 for a user class, `View2` and `Make2` are accepted at
 every stage.
 
@@ -708,12 +708,12 @@ exit status 0 and no diagnostic, and it is the proposal's `Invalid1`, which the
 proposal classes as erroneous behavior. Under the design `&x` is a P1 loan on
 the local `x`, and returning it is `StrictDanglingReturn` in Strict and
 `PermissiveDanglingLoan` in Permissive. Rejected at stage 3 by the first
-enforceable subset (residue item W-131).
+enforceable subset (residue item W-147).
 
 ### EX-TM-3: Liveness and non-invalidating writes
 
 ```carbon
-// EX-TM-3 (today's syntax for everything but the `bound` on AsSlice, which is W-128; amended
+// EX-TM-3 (today's syntax for everything but the `bound` on AsSlice, which is W-144; amended
 // 2026-10-12, review fold: B2 — the prelude's String is Plain, so the invalidating assignment is a Buf's)
 fn Use() {
   var s: Core.String = "abc";
@@ -721,7 +721,7 @@ fn Use() {
   Core.Print(p->Size() as i32);
   s = "def";                        // OK even while p is live: String is Plain (B2), assignment is non-invalidating
   var buf: Core.Buf(i32) = Core.Buf(i32).Make(4, 0);
-  let v: Core.Slice(i32) = buf.AsSlice();   // AsSlice is [bound self] after W-128: v holds an interior loan on buf
+  let v: Core.Slice(i32) = buf.AsSlice();   // AsSlice is [bound self] after W-144: v holds an interior loan on buf
   buf.Set(1, 7);                    // OK: Set is non-invalidating and i32 is Plain
   Core.Print(v[1]);                 // prints 7; last use of v: loan ends (NLL)
   buf = Core.Buf(i32).Make(1, 0);   // OK after v is dead; before it: StrictSharedBorrowInvalidated (the block v views is freed)
@@ -738,7 +738,7 @@ assignment under the live `const String*` is non-invalidating. The `Buf` half
 is fork prelude code (`Make`, `Set`, `AsSlice` at
 core/prelude/types/buf.carbon:28-56) and is not compile-verified against the
 upstream nightly; the view `v` holds an interior loan on `buf` once `AsSlice`
-is `[bound self]` (W-128), `buf.Set(1, 7)` is permitted through it because
+is `[bound self]` (W-144), `buf.Set(1, 7)` is permitted through it because
 `Set` is non-invalidating and `i32` is `Plain`, and the last use of `v` ends
 the loan, after which the assignment to `buf` — which frees the block `v`
 viewed — is legal. Moved one line earlier, that assignment is
@@ -748,7 +748,7 @@ viewed — is legal. Moved one line earlier, that assignment is
 
 ```carbon
 // EX-TM-4 (regression set, judge 2 — all three are accepted by today's toolchain and must be
-// rejected by stage 4; the first two also by stage 3 once W-128 lands)
+// rejected by stage 4; the first two also by stage 3 once W-144 lands)
 fn Leak() -> Core.Slice(i32) {
   var b: Core.Buf(i32) = Core.Buf(i32).Make(4, 0);
   return b.AsSlice();               // StrictBorrowOutlivesPlace: b's Destroy frees the block (the return copy keeps the loan, T2/A-2)
@@ -776,7 +776,7 @@ inner-scope array `a` into the outer `s` and reads it after `a` ended, which is
 `StrictBorrowOutlivesPlace` at the inner scope's exit; `Store` writes a loan on
 the local `y` into a ⊥ destination, the pointer field of an `unsafe class`
 reached through a free pointer, and is `StrictStoreOutlivesSource`. `Leak` and
-`Escape` are rejected at stage 3 once W-128 gives `AsSlice` and `FromArray`
+`Escape` are rejected at stage 3 once W-144 gives `AsSlice` and `FromArray`
 their `bound`; `Store` at stage 4.
 
 ### EX-TM-5: The exclusive pointer and the first enforceable subset
@@ -809,7 +809,7 @@ form is correct in both. Lands at stage 1 (the token) and stage 3 (the subset).
 fn Push[a: Core.Lifetime](list: bound(a) List*, node: bound(a) Node*) { list->head = .Some(node); }
 ```
 
-Rule T5(f). Outcome today: NEW-SYNTAX, stage 6 (residue item W-134). Under the
+Rule T5(f). Outcome today: NEW-SYNTAX, stage 6 (residue item W-150). Under the
 design `list` and `node` join the one loan set `a`, so the store
 `list->head = .Some(node)` is a store from a place in `a` into a place in `a`
 and passes the Store rule; with bare `bound` on both parameters the two would
@@ -824,7 +824,7 @@ T5(g) until then.
 // type `str`", nightly 2026.10.12, p005434:173-175's rule; amended 2026-10-12, review fold: B1)
 fn MakeString() -> Core.String;
 fn Temp() { let ref r: Core.String = MakeString(); Core.Print(r.Size() as i32); }  // rejected today and in both modes; fix: var
-// EX-TM-7b (today's syntax except the `bound self` on AsSlice, W-128): a `bound` result on a temporary
+// EX-TM-7b (today's syntax except the `bound self` on AsSlice, W-144): a `bound` result on a temporary
 fn Temp2() { let v: Core.Slice(i32) = Core.Buf(i32).Make(4, 0).AsSlice(); Core.Print(v[0]); }  // StrictBorrowOfTemporary: v's loan is on the temporary Buf, dead at the `;`
 ```
 
@@ -839,7 +839,7 @@ destroyed at the end of the full-expression, so `v[0]` reads freed memory;
 under the design `v`'s loan is on the temporary and the use on the next
 statement is `StrictBorrowOfTemporary`. The value binding `v` itself takes
 ownership of nothing here: its initializer is a view, and the loans carried by
-the view are what the rule checks. Rejected at stage 4 with W-128.
+the view are what the rule checks. Rejected at stage 4 with W-144.
 
 ### EX-TM-8: The review regression set
 
@@ -868,11 +868,11 @@ fn Wild3() -> i32 {
 fn Launder1() -> Core.Slice(i32) {
   var a: array(i32, 2) = (1, 2);
   let s: Core.Slice(i32) = Core.Slice(i32).FromArray(&a);
-  return s.Subslice(0, 2);          // StrictDanglingReturn: Subslice is [bound self] (W-128, A-2) — a sub-loan on a
+  return s.Subslice(0, 2);          // StrictDanglingReturn: Subslice is [bound self] (W-144, A-2) — a sub-loan on a
 }
 fn Launder2() -> Core.Slice(const i32) {
   var v: Cpp.std.vector(i32) = Cpp.MakeVector();         // the cpp_span_view.carbon:64-65 shape
-  let view: Core.Slice(const i32) = v;                   // the container ImplicitAs is [bound self] (W-128, A-2)
+  let view: Core.Slice(const i32) = v;                   // the container ImplicitAs is [bound self] (W-144, A-2)
   return view;                      // StrictDanglingReturn: the return copy keeps the loan on v (T2)
 }
 fn Launder3() -> Core.Slice(i32) {
@@ -883,12 +883,12 @@ fn Launder3() -> Core.Slice(i32) {
 }
 fn Launder4() -> i32* {
   var x: i32 = 1;
-  var o: Core.Optional(i32*) = Core.Optional(i32*).Some(&x);   // Store rule: x outlives o — accepted; Some's `bound value` (W-128, RR-2) puts x's loan in o
-  return o.Get();                   // StrictDanglingReturn: Get is [bound self] after W-128 (RR-2) — rev 2's receiver grep missed a result of type T
+  var o: Core.Optional(i32*) = Core.Optional(i32*).Some(&x);   // Store rule: x outlives o — accepted; Some's `bound value` (W-144, RR-2) puts x's loan in o
+  return o.Get();                   // StrictDanglingReturn: Get is [bound self] after W-144 (RR-2) — rev 2's receiver grep missed a result of type T
 }
 fn Launder5() -> Core.Optional(i32*) {
   var x: i32 = 1;
-  return Core.Optional(i32*).Some(&x);   // StrictDanglingReturn: Some has no receiver; `bound value` (W-128, RR-2) carries the loan on x into the result
+  return Core.Optional(i32*).Some(&x);   // StrictDanglingReturn: Some has no receiver; `bound value` (W-144, RR-2) carries the loan on x into the result
 }
 fn Pick(b: bool, bound ref r: Core.Buf(i32), bound p: Core.Buf(i32)*) -> ref Core.Buf(i32) {
   if (b) { return r; } else { return *p; }               // p005434:772-779's Conditional: result kind is the weakest (shared)
@@ -937,13 +937,13 @@ conversion at as.carbon:37-39). What each shows:
     `let t = s` copy each carry the loan of the view they were made from, so
     the returns are `StrictDanglingReturn` and `StrictBorrowOutlivesPlace`
     exactly as `Leak` is; T5(a)'s free result never applies to them. The first
-    two are rejected at stage 3 with W-128, the third at stage 4.
--   **`Launder4`, `Launder5`** (T5(a) and the W-128 audit). `Optional.Some` has
+    two are rejected at stage 3 with W-144, the third at stage 4.
+-   **`Launder4`, `Launder5`** (T5(a) and the W-144 audit). `Optional.Some` has
     no receiver and stores its `T` argument into the result; `Optional.Get`
     returns a `T` payload from `self`. Both carry a loan when `T` is a pointer
-    type, so both are `bound` after W-128 — a receiver-only audit would have
+    type, so both are `bound` after W-144 — a receiver-only audit would have
     missed them — and the returns are `StrictDanglingReturn`. Rejected at
-    stage 3 with W-128.
+    stage 3 with W-144.
 -   **`Pick`, `UsePick`** (D-SAFE-8). `Pick`'s result carries `{(r, exclusive),
     (*p, shared)}` and is a shared-kind `ref`; the assignment of a new `Buf`
     through `z` is `StrictInvalidatingThroughShared`, the mutation page's
@@ -958,13 +958,13 @@ The checklist rows this page owns, in the checklist's own vocabulary:
 | T5 `bound` | EX-TM-1 | NEW-SYNTAX | token_kind.def (no `bound`) | 1, 4 |
 | T5c dangling return | EX-TM-2 | ACCEPTS-UNCHECKED | p005434 `Invalid1` (erroneous); nightly exit 0 | 3 (P-subset) |
 | T3/T4 NLL | EX-TM-3 | ACCEPTS-UNCHECKED (Permissive semantics today; the `String` assignment under a live `const String*` compiles on the nightly, exit 0, and is accepted in Strict too) | string.carbon:16-28; buf.carbon:28-56 | 4 |
-| Regression set | EX-TM-4 | ACCEPTS-UNCHECKED | judge 2's programs; buf.carbon:54-60; slice.carbon:26-28 | 3 (`Leak`, `Escape` with W-128), 4 (`Store`) |
+| Regression set | EX-TM-4 | ACCEPTS-UNCHECKED | judge 2's programs; buf.carbon:54-60; slice.carbon:26-28 | 3 (`Leak`, `Escape` with W-144), 4 (`Store`) |
 | P-subset / `exclusive` | EX-TM-5 | NEW-SYNTAX | handle_expr.cpp:391-399 | 1, 3 |
 | T5f named | EX-TM-6 | NEW-SYNTAX | — | 6 |
 | T7 temporaries, `ref` | EX-TM-7 | REJECTS today ("cannot bind durable reference to non-reference value of type `str`", nightly 2026.10.12; p005434:173-175) | convert.cpp:2216-2219 TODO is the extension point | — |
-| T7 temporaries, `bound` result | EX-TM-7b | ACCEPTS-UNCHECKED (fork prelude; `bound self` is W-128) | buf.carbon:54-56 | 4 (W-128) |
+| T7 temporaries, `bound` result | EX-TM-7b | ACCEPTS-UNCHECKED (fork prelude; `bound self` is W-144) | buf.carbon:54-56 | 4 (W-144) |
 | T6 union laundering | EX-TM-8 `Wild`/`Wild3` | NEW-SYNTAX (`unsafe u.p`, `unsafe &u.p`, `bound`; the union is fork syntax, types/union_basic.carbon; the nightly has no `union`) | unions.md [Reads](../unions.md#reads), [Aliasing](../unions.md#aliasing) | 1, 3 |
-| T2 copies preserve loans, W-128 signature audit | EX-TM-8 `Launder1` to `Launder5` | ACCEPTS-UNCHECKED (fork prelude) | slice.carbon:46-56, :74-77, :80-84, :100-106; as.carbon:37-39; optional.carbon:34-42, :69-78; buf.carbon:28, :45, :72-75; index.carbon:9; p005434 "`bound` parameters" | 3 with W-128 (`Launder1`, `Launder2`, `Launder4`, `Launder5`), 4 (`Launder3`) |
+| T2 copies preserve loans, W-144 signature audit | EX-TM-8 `Launder1` to `Launder5` | ACCEPTS-UNCHECKED (fork prelude) | slice.carbon:46-56, :74-77, :80-84, :100-106; as.carbon:37-39; optional.carbon:34-42, :69-78; buf.carbon:28, :45, :72-75; index.carbon:9; p005434 "`bound` parameters" | 3 with W-144 (`Launder1`, `Launder2`, `Launder4`, `Launder5`), 4 (`Launder3`) |
 | D-SAFE-8 mixed-kind result | EX-TM-8 `Pick`/`UsePick` | NEW-SYNTAX (`bound`) | p005434 `Conditional` | 1, 4 |
 
 ## C++ interop consequence
@@ -1062,18 +1062,18 @@ toolchain.
 | Stage | Contents | Owned here |
 | --- | --- | --- |
 | 0 (this PR) | This page; no toolchain change | All of this page |
-| 1 | Lex and parse `exclusive`, `bound`, `addr`, `unsafe class`; recorded in SemIR, unenforced | EX-TM-1, EX-TM-5 and EX-TM-8 parse (residue item W-129); `bound(a)` and EX-TM-6 are stage 6's |
-| 3 | Strict static checks without loan sets; `--strict-checks=warn` default | The P1/P2/P3 subset: `StrictDanglingReturn` for a P1 return (EX-TM-2), `StrictBorrowOutlivesPlace` for `Leak` and `Escape` once W-128 lands, `StrictUnverifiedDeref` for P3; `StrictCppCallUnannotated` with the allowlist and the annotation mapping; the warning twins `PermissiveDanglingLoan` and `PermissiveUnannotatedCppCall` (residue item W-131, gated on W-128) |
-| 4 | The loan checker | T1 to T8 and the Store rule over loan sets; `bound` per T5(a) to (e); `exclusive`; the reborrow and same-kind-copy clauses; `StrictExclusiveBorrowConflict`, `StrictSharedBorrowInvalidated`, `StrictBorrowOfTemporary`, `StrictStoreOutlivesSource`, `StrictEscapeOfUnboundParam`; `noalias` and `captures(none)` under T8; `error` default (residue item W-132) |
-| 5 | Facets, `Core.Thread`, `--strict-concurrency` | `StrictBorrowOutlivesPlace` at a thread-crossing call whose argument's loan set is not free, the thread-boundary lifetime rule of the mutation page (residue item W-133) |
-| 6 | `bound(a)` and `Core.Lifetime`, `Core.DynCast`, the Rust binding generator | T5(f): one name, one loan set; `bound(a)` fields replace the `unsafe class` interim for Strict classes with non-owning pointers (EX-TM-6; residue item W-134) |
+| 1 | Lex and parse `exclusive`, `bound`, `addr`, `unsafe class`; recorded in SemIR, unenforced | EX-TM-1, EX-TM-5 and EX-TM-8 parse (residue item W-145); `bound(a)` and EX-TM-6 are stage 6's |
+| 3 | Strict static checks without loan sets; `--strict-checks=warn` default | The P1/P2/P3 subset: `StrictDanglingReturn` for a P1 return (EX-TM-2), `StrictBorrowOutlivesPlace` for `Leak` and `Escape` once W-144 lands, `StrictUnverifiedDeref` for P3; `StrictCppCallUnannotated` with the allowlist and the annotation mapping; the warning twins `PermissiveDanglingLoan` and `PermissiveUnannotatedCppCall` (residue item W-147, gated on W-144) |
+| 4 | The loan checker | T1 to T8 and the Store rule over loan sets; `bound` per T5(a) to (e); `exclusive`; the reborrow and same-kind-copy clauses; `StrictExclusiveBorrowConflict`, `StrictSharedBorrowInvalidated`, `StrictBorrowOfTemporary`, `StrictStoreOutlivesSource`, `StrictEscapeOfUnboundParam`; `noalias` and `captures(none)` under T8; `error` default (residue item W-148) |
+| 5 | Facets, `Core.Thread`, `--strict-concurrency` | `StrictBorrowOutlivesPlace` at a thread-crossing call whose argument's loan set is not free, the thread-boundary lifetime rule of the mutation page (residue item W-149) |
+| 6 | `bound(a)` and `Core.Lifetime`, `Core.DynCast`, the Rust binding generator | T5(f): one name, one loan set; `bound(a)` fields replace the `unsafe class` interim for Strict classes with non-owning pointers (EX-TM-6; residue item W-150) |
 
 Stage 2 owns nothing on this page. The prelude churn that stage 3 depends on —
 `bound self` on `AsSlice`, `Subslice`, `Get`, `At`, the view conversions,
 `Optional.Get` and `Branch`, `bound` on `FromArray`'s pointer, on
 `Optional.Some`'s and `Buf.Make`'s value parameters and on the interface
 declarations `IndexWith.At` and `Copy.Op`, and `UnsafeMake` becoming
-`unsafe fn Make` — is residue item W-128 and is never assumed in an example
+`unsafe fn Make` — is residue item W-144 and is never assumed in an example
 except where the example says so.
 
 ## Decisions within this design
@@ -1103,7 +1103,7 @@ pages carry the rest of D-SAFE-1 to D-SAFE-23.
 -   **D-SAFE-10 — Loans T1 to T8 plus the Store rule.** As stated under
     [Rules T1 to T8 and the Store rule](#rules-t1-to-t8-and-the-store-rule),
     with the first enforceable subset P1/P2/P3 shipping at stage 3 only
-    together with the prelude churn of W-128. Break condition: any
+    together with the prelude churn of W-144. Break condition: any
     Strict-accepted counterexample; judge 2's three programs (EX-TM-4) and the
     review set (EX-TM-8) are the standing regression set on this page.
 -   **D-SAFE-11 — `bound` semantics fixed; named lifetimes pinned.** As stated
@@ -1169,7 +1169,7 @@ their verdicts. The alternatives specific to this page:
     the non-escaping pointer rule. Judge 2 found it fatal with the programs
     `Leak` and `Escape` of EX-TM-4: a view of a local escapes as a class value
     and the P rule never fires. The subset is kept, but as a stage-3 checker
-    that is sound only with W-128's `bound` on the view producers, and never
+    that is sound only with W-144's `bound` on the view producers, and never
     as the design's guarantee.
 -   **Attempt A's return-only `bound` without a store rule.** Judge 2 refuted
     attempt A's T5(a) with the global `Holder` program of EX-TM-4: a loan on a
@@ -1231,7 +1231,7 @@ analogues in the kinds table are analysis, owned by
     example; the [terminology](terminology.md) page.
 -   The sibling category pages: [Type safety](type_safety.md) for `unsafe as`
     and `unsafe *p`, [Initialization safety](initialization_safety.md) for
-    `~x`, [Spatial safety](spatial_safety.md) for views and the W-128
+    `~x`, [Spatial safety](spatial_safety.md) for views and the W-144
     signature rule, [Mutation safety](mutation_safety.md) for M1 to M8 and the
     facets, and [Safe-Rust interop](rust_interop.md) for the mapping.
 -   Fork decision [F-013](/fork/decision-log.md) and the synthesized plan

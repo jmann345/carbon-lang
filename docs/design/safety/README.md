@@ -135,7 +135,7 @@ The prelude is the first client of this model. `Core.Slice`, `Core.Buf` and
 (core/prelude/types/slice.carbon:24-77, buf.carbon:26-64,
 optional.carbon:186-203): their bodies are trusted, their signatures are what a
 Strict caller is checked against, and the audit of those signatures under the
-loan rules is the first residue item of the design (W-128; see
+loan rules is the first residue item of the design (W-144; see
 [Temporal safety](temporal_safety.md)).
 
 The design uses six names for memory safety, five categories and one

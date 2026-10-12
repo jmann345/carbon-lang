@@ -107,7 +107,7 @@ outside the prelude is declared `unsafe fn`, as in
 spelling and the Permissive twin `PermissiveBuiltinBinding`); every call of it
 is an `unsafe fn` call under the type page's TY2, the obligation being that the
 result stays within the object `p` names; and the search for `unsafe` finds
-every such binding, which the W-131 marking pass enforces. With that rule the
+every such binding, which the W-147 marking pass enforces. With that rule the
 elements of a contiguous region are reached only through the indexable types
 of SP2, and spatial safety reduces to the bounds behavior of three types
 rather than to a property of every pointer.
@@ -142,7 +142,7 @@ The check has three shapes today and one gap:
     the program is rejected.
 -   The gap: an `array(T, N)` subscript with a run-time index is lowered as an
     `inbounds` GEP with no compare (lower/handle.cpp:47-74). This is a stage-2
-    lowering residue (W-130): `ArrayIndex` emits the same compare-and-`fail_stop`
+    lowering residue (W-146): `ArrayIndex` emits the same compare-and-`fail_stop`
     sequence as `Slice.Get`, with the message "carbon: array index out of
     bounds; terminating", and array subscripts go through `IndexWith(i64)`
     instead of the hardcoded `i32` of toolchain/check/handle_index.cpp:165-170,
@@ -185,7 +185,7 @@ and the loan is formed by the function that produced the view. Concretely, on
     rule T6 of the temporal page — so no later access through the view needs
     a marker (amended 2026-10-12, document-review fold: D-1).
 
-The W-128 audit rule generalizes the list: the prelude churn reviews every
+The W-144 audit rule generalizes the list: the prelude churn reviews every
 prelude signature as if its body were Strict-checked, the body itself trusted
 (D-SAFE-18), and every parameter, receiver, value or pointer, including a type
 parameter `T` that may be instantiated to a pointer-carrying type, whose loans
@@ -199,7 +199,7 @@ impls may keep it. The named hits today, beyond the view producers above, are
 `Buf(T).Make`'s `fill: T`, `Buf.Get`, `Buf.At` and `Slice.At`; the temporal page
 carries the regression programs (`Launder1` to `Launder5` in EX-TM-8).
 `Core.String`, the prelude's non-owning string, is audited the same way. That
-churn is a named residue item, W-128, gated on stage 1, and no example on this
+churn is a named residue item, W-144, gated on stage 1, and no example on this
 page assumes it has landed: 0.1 keeps the unchecked contract the slices design
 states, and the [slices](../slices.md) page carries a dated amendment saying so.
 
@@ -226,7 +226,7 @@ is the same unchecked read with no marker (the `StrictUnsafeCallUnmarked` row
 of the matrix is "none — assumed fact" in Permissive). It never removes a
 check from `s[i]`, `Get`, `Set` or `Subslice`. The accessor does not exist in
 the 0.1 prelude, which is why the "Unchecked slice access" entry of
-[Slices: 0.1 limits](../slices.md#01-limits) is removed by W-128's accessor,
+[Slices: 0.1 limits](../slices.md#01-limits) is removed by W-144's accessor,
 not by a build mode as that entry anticipated.
 
 ### SP5: Hardening extensions carry no Strict guarantee
@@ -261,7 +261,7 @@ produces undefined behavior:
     unsigned `/` and `%` by zero fails-stop with "carbon: division by zero;
     terminating" before the division instruction. The guard is NEW, emitted
     before the `CreateSDiv`/`CreateSRem` at handle_call.cpp:188-192 and their
-    unsigned twins at :210-214, and lands at stage 2 (W-130).
+    unsigned twins at :210-214, and lands at stage 2 (W-146).
 -   **Debug: overflow fails-stop with a diagnostic.** The Debug build turns the
     wrap into a fail-stop at the operation, which is the development-build row
     of the arithmetic design's table made concrete.
@@ -390,7 +390,7 @@ What each example shows:
     constant evaluation has nothing to check, and the lowering emits an
     `inbounds` GEP with no compare (lower/handle.cpp:47-74): `RuntimeArr(2)`
     reads past the array today. Outcome: ACCEPTS-UNCHECKED; the nightly exits
-    0 with no diagnostic. Stage 2 (W-130) closes it: `ArrayIndex` emits the
+    0 with no diagnostic. Stage 2 (W-146) closes it: `ArrayIndex` emits the
     compare-and-`fail_stop` sequence of `Slice.Get` with the message "carbon:
     array index out of bounds; terminating", and the subscript goes through
     `IndexWith(i64)`, so the `i32` parameter is converted at the subscript
@@ -400,11 +400,11 @@ What each example shows:
     Size()` is `Hot`'s caller's; in Permissive the same call is written
     without the keyword. The view's loan is unchanged by the accessor. Outcome:
     NEW-SYNTAX; no accessor exists in slice.carbon and no `unsafe fn` modifier
-    exists in the toolchain. Stage 1 parses the call spelling and W-128 adds
+    exists in the toolchain. Stage 1 parses the call spelling and W-144 adds
     the accessor.
 -   **EX-SP-6 (D-SAFE-15, division by zero).** `Div(1, 0)` reaches an
     unguarded `sdiv` today (handle_call.cpp:188-192). Outcome:
-    ACCEPTS-UNCHECKED; the nightly exits 0 with no diagnostic. Stage 2 (W-130)
+    ACCEPTS-UNCHECKED; the nightly exits 0 with no diagnostic. Stage 2 (W-146)
     emits the guard, after which `Div(1, 0)` fails-stop with "carbon: division
     by zero; terminating" in every mode, and a `Div` of the least `i32` by
     −1, the overflowing division, wraps in Release and fails-stop in Debug.
@@ -415,9 +415,9 @@ The checklist rows this page owns, in the checklist's own vocabulary:
 | --- | --- | --- | --- | --- |
 | SP2 slice check | EX-SP-1, EX-SP-2 | ACCEPTS | stdlib/slices_bounds_fail_stop.carbon EXPECT-EXIT −6; slice.carbon:39-44 | — |
 | SP2 constant array | EX-SP-3 | REJECTS | eval.cpp:1080-1116 `ArrayIndexOutOfBounds` | — |
-| SP2 runtime array | EX-SP-4 | ACCEPTS-UNCHECKED | lower/handle.cpp:47-74 | 2 (W-130) |
-| SP4 unchecked | EX-SP-5 | NEW-SYNTAX | slice.carbon (no accessor) | 1 + W-128 |
-| D-SAFE-15 division | EX-SP-6 | ACCEPTS-UNCHECKED | handle_call.cpp:188-192 | 2 (W-130) |
+| SP2 runtime array | EX-SP-4 | ACCEPTS-UNCHECKED | lower/handle.cpp:47-74 | 2 (W-146) |
+| SP4 unchecked | EX-SP-5 | NEW-SYNTAX | slice.carbon (no accessor) | 1 + W-144 |
+| D-SAFE-15 division | EX-SP-6 | ACCEPTS-UNCHECKED | handle_call.cpp:188-192 | 2 (W-146) |
 
 SP1 and SP3 carry no row of their own: SP1 is the pointer design as it stands,
 and SP3's examples are the temporal page's `FromArray` and `AsSlice` programs
@@ -493,9 +493,9 @@ else on this page is. The rows this page owns:
 | Stage | Contents | Owned here |
 | --- | --- | --- |
 | 0 (this PR) | This page; no toolchain change | All of this page; the dated amendments on the [slices](../slices.md) and [arithmetic](../expressions/arithmetic.md) pages |
-| 1 | Lex and parse `unsafe fn` and the `unsafe` prefix forms, recorded in SemIR, unenforced | EX-SP-5's call spelling parses; the prelude churn W-128 is gated here: `unsafe fn GetUnchecked[bound self: Self](i: i64) -> T` on `Slice` and `Buf`, `bound p` on `FromArray`, `bound self` on every view producer and on `IndexWith.At` and `Copy.Op`, `UnsafeMake` renamed to `unsafe fn Make` |
-| 2 | Runtime hardening regardless of mode: array index fail-stop, division by zero fail-stop, `--build-mode=debug\|release`, Release zero-fill | `ArrayIndex` lowered as compare-and-`fail_stop` with "carbon: array index out of bounds; terminating", array subscripts through `IndexWith(i64)` (absorbing W-116); the division and remainder guard with "carbon: division by zero; terminating"; Debug overflow fail-stop; residue item W-130 |
-| 3 | Strict static checks without loan sets; `--strict-checks=warn` default | `StrictBuiltinBindingUnmarked` for a builtin binding outside the prelude (SP1; residue item W-131); an unmarked `GetUnchecked` call is the type page's `StrictUnsafeCallUnmarked` |
+| 1 | Lex and parse `unsafe fn` and the `unsafe` prefix forms, recorded in SemIR, unenforced | EX-SP-5's call spelling parses; the prelude churn W-144 is gated here: `unsafe fn GetUnchecked[bound self: Self](i: i64) -> T` on `Slice` and `Buf`, `bound p` on `FromArray`, `bound self` on every view producer and on `IndexWith.At` and `Copy.Op`, `UnsafeMake` renamed to `unsafe fn Make` |
+| 2 | Runtime hardening regardless of mode: array index fail-stop, division by zero fail-stop, `--build-mode=debug\|release`, Release zero-fill | `ArrayIndex` lowered as compare-and-`fail_stop` with "carbon: array index out of bounds; terminating", array subscripts through `IndexWith(i64)` (absorbing W-116); the division and remainder guard with "carbon: division by zero; terminating"; Debug overflow fail-stop; residue item W-146 |
+| 3 | Strict static checks without loan sets; `--strict-checks=warn` default | `StrictBuiltinBindingUnmarked` for a builtin binding outside the prelude (SP1; residue item W-147); an unmarked `GetUnchecked` call is the type page's `StrictUnsafeCallUnmarked` |
 | 4 | The loan checker | SP3 enforced: the `bound` loans of the view producers and the ⊥ result of `unsafe fn Make`, under the temporal page's rules |
 
 Stages 5 and 6 own nothing on this page.
@@ -518,12 +518,12 @@ other category pages carry the rest.
     compare-and-`fail_stop` sequence of `Slice.Get` and array subscripts go
     through `IndexWith(i64)`. SP3 views carry their length and a loan:
     `FromArray` takes `bound p`, every producer whose result views `self`'s
-    storage takes `bound self`, and the W-128 audit rule reviews every prelude
+    storage takes `bound self`, and the W-144 audit rule reviews every prelude
     signature as if its body were Strict-checked, marking `bound` or `unsafe
     fn`, with `bound self` on the interface declarations `IndexWith.At` and
     `Copy.Op` so that impls may keep it; `UnsafeMake` becomes `unsafe fn
     Make(p: T*, size: i64)` with its existing comment as the stated
-    obligation; the prelude churn is the named residue item W-128, gated, and
+    obligation; the prelude churn is the named residue item W-144, gated, and
     never assumed in an example. SP4 unchecked access is `unsafe fn
     GetUnchecked[bound self: Self](i: i64) -> T` on `Slice` and `Buf`; no build
     flag disables checks, and the strategy's promise of an unsupported disable
@@ -640,7 +640,7 @@ motivates a check the strategy already requires.
 -   Fork decision [F-013](/fork/decision-log.md) and the synthesized plan
     [fork/safe/plan.md](/fork/safe/plan.md), whose design-panel record is the
     option paper for this area; fork decision D-SL-4 in the same log, and the
-    residue items W-113, W-114, W-116, W-128 and W-130 in
+    residue items W-113, W-114, W-116, W-144 and W-146 in
     [fork/inventory/work-items.json](/fork/inventory/work-items.json)
 -   The conformance programs
     fork/conformance/programs/stdlib/slices_basic.carbon and

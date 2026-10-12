@@ -339,8 +339,10 @@ here.
     `types_or: [html, javascript, json, yaml]` and the R12 hook runs prettier on
     `*.json|*.yaml` only and no rumdl — neither touches markdown; the
     manufactured headings came from hand-wrapped text plus the rumdl hook's
-    MD018/MD004 fixes (the fork's `.rumdl.toml` has MD013 off but
-    MD018/MD004/MD069 on), and a reflow commit's wrapping comes from upstream's
+    MD018/MD004 fixes (the fork's `.rumdl.toml` had MD013 off until UA-1
+    adopted upstream's reflow config, D-UA-4, 2026-10-06; it is on now —
+    corrected 2026-10-12 at the SAFE-1 discharge, fork/safe/plan.md §0.2 item
+    5), and a reflow commit's wrapping comes from upstream's
     `.rumdl.toml` through that same hook. Discipline: (a) in paragraphs, write
     PR and issue references so no wrap can put `#` first — as bare numbers in
     dense lists ("PRs 7784, 7813") or attached to the preceding word — and spell

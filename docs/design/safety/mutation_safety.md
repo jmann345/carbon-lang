@@ -83,7 +83,7 @@ historic source line of an unbuilt example, third_party/examples/re2/re2.carbon
 :769, and in comments); `Core.Plain`, `Core.Guarded`, `Core.Send`, `Core.Sync`
 and `Core.Freeze` do not exist, nor do `Core.Atomic`, `Core.Box` and
 `Core.Thread` — `Core.Atomic(T)` is the stage-5 Carbon signature over
-`Cpp.std.atomic(T)` filed under W-133, since fork decision F-008 rejected a
+`Cpp.std.atomic(T)` filed under W-149, since fork decision F-008 rejected a
 native atomic for 0.1, and the other two are D-SAFE-20 library residue; and
 `Core.Optional` is a class with an `adapt`
 rather than a choice type, so no `match` on it parses
@@ -221,7 +221,7 @@ is checked against that statement:
 
 Interior mutability, a type that mutates through a const or shared path, is that
 type's private Permissive business: `Core.Atomic(T)` over `Cpp.std.atomic(T)` is
-the model — a stage-5 Carbon signature over the imported C++ type (W-133), not
+the model — a stage-5 Carbon signature over the imported C++ type (W-149), not
 a native atomic, which fork decision F-008 rejected for 0.1; 0.1 obtains
 atomicity exclusively by way of imported C++ types
 ([fork/design-sprint/threading-atomics.md](/fork/design-sprint/threading-atomics.md))
@@ -358,7 +358,7 @@ the same cell while one is active, the re-entrant observer, fails-stop with
 "carbon: Core.Guarded re-entered; terminating" rather than handing out a
 second `ref`. The cell is not `Send`, not `Sync` and not `Freeze`
 (D-SAFE-16): the flag is not atomic and the design does not pretend it is.
-It is a library item under residue W-128, filed at discharge, with no builtin
+It is a library item under residue W-144, filed at discharge, with no builtin
 behind it.
 
 ## Data races and the facets
@@ -503,7 +503,7 @@ Message texts:
 -   `StrictNotSend`: "`{0}` is not `Core.Send`: field `{1}` of type `{2}` is
     not", at the thread-crossing call, with a note at the API's constraint;
     `StrictNotSync` reads the same with `Core.Sync`. The texts are fixed at
-    stage 5 (W-133) with the thread API.
+    stage 5 (W-149) with the thread API.
 -   `PermissiveAliasedExclusive`: the warning twin, same text, same site,
     under `--strict-checks=warn` or in a Permissive file; its one Permissive
     exception is the assumed fact of the matrix, that a C++ non-`const`
@@ -588,7 +588,7 @@ through `T*` (M4); inside, `b` is the exclusive `ref` the cell hands out for
 the call, and `b.Push(1)` is checked under exclusive access. If an observer
 re-enters `Modify` on the same cell from inside `f`, the busy flag fails-stop.
 Outcome: NEW-SYNTAX (library); `Core.Guarded` does not exist and the sketch
-above does not parse. Stage 4 with W-128 adds the type.
+above does not parse. Stage 4 with W-144 adds the type.
 
 ### EX-M-3: Facets at the thread boundary
 
@@ -610,7 +610,7 @@ is the same loan handed to a scoped thread: the scope's join lies inside the
 borrow, `x` outlives every thread that borrowed it, and the program is
 accepted. The commented tag names the review finding that added the rule.
 Outcome: NEW-SYNTAX; no facet, no `Core.Thread` and no `exclusive` exist.
-Stage 5 (W-133).
+Stage 5 (W-149).
 
 ### EX-M-4a: A `Plain` value binding
 
@@ -717,8 +717,8 @@ The checklist rows this page owns, in the checklist's own vocabulary:
 | Rule | Example | Today | Stage |
 | --- | --- | --- | --- |
 | M3/M4 `addr`, reborrow | EX-M-1 | NEW-SYNTAX | 1, 4 |
-| M6 `Guarded` | EX-M-2 | NEW-SYNTAX (library) | 4 (W-128) |
-| M7 facets, thread-boundary lifetime | EX-M-3 (`BadSpawn`, `Race`, `Scoped`) | NEW-SYNTAX | 5 (W-133) |
+| M6 `Guarded` | EX-M-2 | NEW-SYNTAX (library) | 4 (W-144) |
+| M7 facets, thread-boundary lifetime | EX-M-3 (`BadSpawn`, `Race`, `Scoped`) | NEW-SYNTAX | 5 (W-149) |
 | M8 value binding, `Plain` | EX-M-4a | ACCEPTS (today and in Strict; `b` is 1) | — |
 | M8 value binding, non-`Plain` | EX-M-4b | ACCEPTS-UNCHECKED (fork prelude) | 4 |
 | M5 payload refs | EX-M-5 | NEW-SYNTAX | 4 plus the `Optional` redesign |
@@ -793,9 +793,9 @@ the 0.1 toolchain.
 | Stage | Contents | Owned here |
 | --- | --- | --- |
 | 0 (this PR) | This page; no toolchain change | All of this page |
-| 1 | Lex and parse `exclusive`, `addr`, `unsafe impl` and the `unsafe` prefix forms; recorded in SemIR, unenforced (W-129) | The `addr self: Self*` receiver and `exclusive T*` in EX-M-1 parse; `unsafe impl T as Core.Send {}` parses |
-| 4 | The loan checker (W-132) | M1 to M5: `Core.Plain` synthesis, `StrictInvalidatingThroughShared` with its twin `PermissiveAliasedExclusive`, the `addr` body check of M4, payload sub-loans of M5; M8: the non-`Plain` value-binding loan and the Debug shadow count behind `MutationDuringValueBinding`; M6: `Core.Guarded(T)` under W-128 |
-| 5 | Facets, `Core.Thread`, `--strict-concurrency` (W-133) | M7: `Core.Send`, `Core.Sync`, `Core.Freeze`, `StrictNotSend`, `StrictNotSync`, the thread-boundary lifetime rule, `unsafe impl` opt-in |
+| 1 | Lex and parse `exclusive`, `addr`, `unsafe impl` and the `unsafe` prefix forms; recorded in SemIR, unenforced (W-145) | The `addr self: Self*` receiver and `exclusive T*` in EX-M-1 parse; `unsafe impl T as Core.Send {}` parses |
+| 4 | The loan checker (W-148) | M1 to M5: `Core.Plain` synthesis, `StrictInvalidatingThroughShared` with its twin `PermissiveAliasedExclusive`, the `addr` body check of M4, payload sub-loans of M5; M8: the non-`Plain` value-binding loan and the Debug shadow count behind `MutationDuringValueBinding`; M6: `Core.Guarded(T)` under W-144 |
+| 5 | Facets, `Core.Thread`, `--strict-concurrency` (W-149) | M7: `Core.Send`, `Core.Sync`, `Core.Freeze`, `StrictNotSend`, `StrictNotSync`, the thread-boundary lifetime rule, `unsafe impl` opt-in |
 
 Stages 2, 3 and 6 own nothing on this page. The `match` forms of EX-M-5 and
 EX-M-6 additionally wait on the choice-based `Core.Optional` redesign the

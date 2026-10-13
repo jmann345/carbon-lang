@@ -78,11 +78,35 @@ auto CheckCalleeIsNotStructuralRequirement(Context& context,
                                            SemIR::FunctionId function_id)
     -> bool;
 
-// D-SC-20 as amended at fill round 4: a requirement `fn` named with no type
-// that satisfies it is never a runtime value. If the value `expr_id` is a
-// requirement, a bound method of one, or a tuple or struct literal holding one,
-// diagnoses it when `diagnose` and returns false.
-auto CheckValueIsNotStructuralRequirement(Context& context,
+// D-SC-20 as amended at fill round 5: if `member_id`, found by a lookup in the
+// constraint-with-self specific `with_self_specific_id`, is a requirement `fn`
+// and that specific's `Self` is the constraint's own `Self` (a lookup with no
+// self type, `HasN.N`), returns a name reference at `loc_id` to the
+// requirement's value: an empty struct value of the concrete
+// `StructuralRequirementType`, so that no expression has a type that depends
+// on that `Self`, as an interface's `I.F` is an associated entity of a
+// concrete type. Otherwise returns `None`.
+auto MakeStructuralRequirementName(Context& context, SemIR::LocId loc_id,
+                                   SemIR::NameId name_id,
+                                   SemIR::InstId member_id,
+                                   SemIR::SpecificId with_self_specific_id)
+    -> SemIR::InstId;
+
+// Returns the requirement `fn` that values of `type_id` name or hold: a
+// `StructuralRequirementType`, the `FunctionType` of a requirement, or a tuple
+// or struct type with such an element type. Otherwise returns `None`. (An
+// array's elements are converted one by one, so an array holds a requirement
+// only if an element conversion accepted one.)
+auto GetStructuralRequirementOfType(Context& context, SemIR::TypeId type_id)
+    -> SemIR::FunctionId;
+
+// D-SC-20 as amended at fill rounds 4 and 5: a requirement `fn` named with no
+// type that satisfies it is never a runtime value. If the value `expr_id`
+// names or holds a requirement (`GetStructuralRequirementOfType`, or a bound
+// method of one), diagnoses it when `diagnose` and returns false. The error is
+// at the innermost tuple or struct literal element that holds it, or at
+// `loc_id` when that value has no location of its own.
+auto CheckValueIsNotStructuralRequirement(Context& context, SemIR::LocId loc_id,
                                           SemIR::InstId expr_id, bool diagnose)
     -> bool;
 

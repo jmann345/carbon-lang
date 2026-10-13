@@ -2453,6 +2453,11 @@ static auto AddConvertActionIfDependent(Context& context, SemIR::LocId loc_id,
 
 auto PerformAction(Context& context, SemIR::LocId loc_id,
                    SemIR::ConvertAction action) -> SemIR::InstId {
+  // Fork (SC-1, D-SC-20): as in `Convert`.
+  if (!CheckValueIsNotStructuralRequirement(context, loc_id, action.inst_id,
+                                            /*diagnose=*/true)) {
+    return SemIR::ErrorInst::InstId;
+  }
   const auto& target_bundle = context.bundles().Get(action.target_id);
   ConversionTarget target = {
       .kind = ConversionTarget::Kind(target_bundle.conversion_kind.index),
@@ -2467,6 +2472,11 @@ auto PerformAction(Context& context, SemIR::LocId loc_id,
 
 auto PerformAction(Context& context, SemIR::LocId loc_id,
                    SemIR::ConvertToCategoryAction action) -> SemIR::InstId {
+  // Fork (SC-1, D-SC-20): as in `Convert`.
+  if (!CheckValueIsNotStructuralRequirement(context, loc_id, action.inst_id,
+                                            /*diagnose=*/true)) {
+    return SemIR::ErrorInst::InstId;
+  }
   ConversionTarget target = {
       .kind = ConversionTarget::Kind(action.conversion_kind.index),
       .type_id = context.insts().Get(action.inst_id).type_id()};
@@ -2476,6 +2486,11 @@ auto PerformAction(Context& context, SemIR::LocId loc_id,
 
 auto PerformAction(Context& context, SemIR::LocId loc_id,
                    SemIR::ConvertToValueAction action) -> SemIR::InstId {
+  // Fork (SC-1, D-SC-20): as in `Convert`.
+  if (!CheckValueIsNotStructuralRequirement(context, loc_id, action.inst_id,
+                                            /*diagnose=*/true)) {
+    return SemIR::ErrorInst::InstId;
+  }
   ConversionTarget target = {.kind = ConversionTarget::Value,
                              .type_id = context.types().GetTypeIdForTypeInstId(
                                  action.target_type_inst_id)};
@@ -2515,6 +2530,11 @@ auto PerformAction(Context& context, SemIR::SpecificId specific_id,
 
   // Form a specific initializer and initialize from it.
   auto expr_id = AddSpecificInst(context, action.init_id, specific_id);
+  // Fork (SC-1, D-SC-20): as in `Convert`.
+  if (!CheckValueIsNotStructuralRequirement(context, loc_id, expr_id,
+                                            /*diagnose=*/true)) {
+    expr_id = SemIR::ErrorInst::InstId;
+  }
 
   // Perform the initialization. As a side effect, this will update
   // `result_ids` to refer to parts of storage_id.
@@ -2618,11 +2638,11 @@ auto Convert(Context& context, SemIR::LocId loc_id, SemIR::InstId expr_id,
     return SemIR::ErrorInst::InstId;
   }
 
-  // Fork (SC-1, fork/structural/plan.md D-SC-20 as amended at fill round 4,
-  // review finding BLOCKER-1): a `template constraint` requirement is never a
-  // runtime value, whatever the target. Its uses that are not values (a callee,
-  // the member of a compound access, an `alias`) never pass through here.
-  if (!CheckValueIsNotStructuralRequirement(context, expr_id,
+  // Fork (SC-1, fork/structural/plan.md D-SC-20 as amended at fill rounds 4
+  // and 5): a `template constraint` requirement is never a runtime value,
+  // whatever the target. A template replays this check when it converts at
+  // instantiation (`PerformAction` below).
+  if (!CheckValueIsNotStructuralRequirement(context, loc_id, expr_id,
                                             target.diagnose)) {
     return SemIR::ErrorInst::InstId;
   }

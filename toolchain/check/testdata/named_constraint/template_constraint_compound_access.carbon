@@ -123,13 +123,15 @@ fn Test() -> D {
 // --- checked_generic_name.carbon
 library "[[@TEST_NAME]]";
 
-// A requirement named through its facet type has `Self := .Self` of the
-// constraint's facet type (D-SC-20): naming it in a checked generic attaches
-// nothing to that generic's eval block, and in a non-generic function the
-// compound access is not template-dependent (fill round 1, fix 2; fill round 2,
-// review findings F3 / F4). `G` names it as the member of a compound access,
-// since naming it as a statement is a value use (fill round 4, review finding
-// BLOCKER-1; requirement-call `fail_requirement_as_value`).
+// A requirement named through its facet type is a value of the concrete
+// `StructuralRequirementType` (D-SC-20 as amended at fill round 5; until then
+// its `Self` was `.Self` of the constraint's facet type): naming it in a
+// checked generic attaches nothing to that generic's eval block, and in a
+// non-generic function the compound access is not template-dependent (fill
+// round 1, fix 2; fill round 2, review findings F3 / F4). `G` names it as the
+// member of a compound access, since naming it as a statement is a value use
+// (fill round 4, review finding BLOCKER-1; requirement-call
+// `fail_requirement_as_value`).
 template constraint HasGet {
   fn Get(self) -> i32;
 }
@@ -143,6 +145,50 @@ fn G[T: type](unused x: T, c: C) -> i32 { return c.(HasGet.Get)(); }
 
 fn Test(c: C) -> i32 {
   return G(c, c) + c.(HasGet.Get)();
+}
+//@dump-sem-ir-end
+
+
+// --- requirement_typeof.carbon
+library "[[@TEST_NAME]]";
+
+// `typeof` of a requirement named with no self type is a concrete type with no
+// values (D-SC-20 as amended at fill round 5, review 1 finding BLOCKER-2 and
+// review 2 finding BLOCKER-1), as upstream's `typeof(I.F)` is the concrete
+// `AssociatedEntityType`: it can be used as a type, including in a pointer, a
+// field, an impl's self type and a generic argument, and through a generic
+// constraint it depends on the constraint's arguments. Its value uses are
+// requirement-call `fail_requirement_typeof_value`; lowering is
+// lower/testdata/template/template_constraint.carbon, `requirement_typeof`.
+template constraint HasN {
+  fn N() -> i32;
+}
+
+template constraint Has(X: type) {
+  fn N() -> X;
+}
+
+interface Z {
+  fn F() -> i32;
+}
+
+//@dump-sem-ir-begin
+fn TypeOnly(unused T: type) -> i32 { return 1; }
+
+fn Pointer(unused p: typeof(HasN.N)*) {}
+
+class W {
+  var f: typeof(HasN.N);
+}
+
+impl typeof(HasN.N) as Z {
+  fn F() -> i32 { return 9; }
+}
+
+fn Generic[T: type](unused x: T, unused p: typeof(Has(T).N)*) {}
+
+fn Run() -> i32 {
+  return TypeOnly(typeof(HasN.N)) + typeof(HasN.N).(Z.F)();
 }
 //@dump-sem-ir-end
 

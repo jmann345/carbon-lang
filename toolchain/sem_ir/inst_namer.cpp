@@ -1214,6 +1214,10 @@ auto InstNamer::NamingContext::NameInst() -> void {
       AddEntityNameAndMaybePush(inst.overload_set_id, ".type");
       return;
     }
+    case CARBON_KIND(StructuralRequirementType inst): {
+      AddEntityNameAndMaybePush(inst.function_id, ".requirement.type");
+      return;
+    }
     case CARBON_KIND(GenericClassType inst): {
       AddEntityNameAndMaybePush(inst.class_id, ".type");
       return;
@@ -1473,6 +1477,10 @@ auto InstNamer::NamingContext::NameInst() -> void {
       CARBON_KIND_SWITCH(sem_ir().types().GetAsInst(inst.type_id)) {
         case CARBON_KIND(FunctionType fn_ty): {
           AddEntityNameAndMaybePush(fn_ty.function_id);
+          break;
+        }
+        case CARBON_KIND(StructuralRequirementType requirement_ty): {
+          AddEntityNameAndMaybePush(requirement_ty.function_id, ".requirement");
           break;
         }
         case CARBON_KIND(ClassType class_ty): {

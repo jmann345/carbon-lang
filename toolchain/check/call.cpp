@@ -769,6 +769,13 @@ static auto PerformCallToNonFunction(Context& context, SemIR::LocId loc_id,
                             .is_desugared = SemIR::BoolValue::From(false)},
           SemIR::TypeInstId::None);
     }
+    case CARBON_KIND(SemIR::StructuralRequirementType requirement_type): {
+      // Fork (SC-1, fork/structural/plan.md D-SC-4 / D-SC-20): a requirement
+      // named with no self type that satisfies it is never called.
+      CheckCalleeIsNotStructuralRequirement(context, loc_id,
+                                            requirement_type.function_id);
+      return SemIR::ErrorInst::InstId;
+    }
     case CARBON_KIND(SemIR::GenericClassType generic_class): {
       return PerformCallToGenericClass(context, loc_id, generic_class.class_id,
                                        generic_class.enclosing_specific_id,

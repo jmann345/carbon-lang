@@ -109,6 +109,114 @@ fn Run() -> i32 {
   return Take(C.(HasN.N)) + Take((C as HasN).N) + Dependent(c);
 }
 
+
+// --- requirement_through_template_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+// The templates of requirement-call
+// `fail_requirement_through_template_instantiation`, instantiated with a class
+// that satisfies the constraints: `T.N` and `T.Get` are the class's own
+// functions (D-SC-4), values like any function (fill round 5, review 1 finding
+// BLOCKER-1). `Nested` and `IfTuple` are left out: with any function value,
+// `Take(((C.N, 1), 2))` fails LLVM's module verifier (lower/lower.cpp:48) and
+// `Take(if true then (C.N, 1) else (C.N, 2))` aborts in `BranchWithArg`, on
+// trunk 0bdce60a5 too.
+template constraint HasN {
+  fn N() -> i32;
+}
+
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+class C {
+  fn N() -> i32 { return 5; }
+  fn Get(unused self) -> i32 { return 6; }
+}
+
+fn Take[T: type](unused f: T) -> i32 { return 1; }
+
+fn Tuple(template T: type) -> i32 { return Take((T.N, 1)); }
+
+fn Struct(template T: type) -> i32 { return Take({.f = T.N}); }
+
+fn LetTuple(template T: type) -> i32 {
+  let t: (typeof(T.N), i32) = (T.N, 1);
+  return Take(t);
+}
+
+fn MethodTuple(template T: type) -> i32 { return Take((T.Get, 1)); }
+
+fn Discard(template T: type) -> i32 {
+  T.N;
+  (T.N, 1);
+  {.a = T.N};
+  return 0;
+}
+
+class Box(template FT: type) {
+  fn F() -> i32 { return Take((FT.N, 1)); }
+}
+
+fn Run() -> i32 {
+  return Tuple(C) + Struct(C) + LetTuple(C) + MethodTuple(C) + Discard(C) +
+         Box(C).F();
+}
+
+// --- requirement_typeof.carbon
+library "[[@TEST_NAME]]";
+
+// `typeof` of a requirement named with no self type is a concrete type with no
+// values, lowered as an empty struct (D-SC-20 as amended at fill round 5,
+// review 1 finding BLOCKER-2 and review 2 finding BLOCKER-1: a parameter of
+// the `.Self`-symbolic type aborted lowering), as upstream's `typeof(I.F)` is.
+// `typeof(C.(HasN.N))` is `C.N`'s own function type (D-SC-4).
+template constraint HasN {
+  fn N() -> i32;
+}
+
+template constraint Has(X: type) {
+  fn N() -> X;
+}
+
+interface Z {
+  fn F() -> i32;
+}
+
+interface I {
+  fn F();
+}
+
+class C {
+  fn N() -> i32 { return 2; }
+}
+
+class W {
+  var f: typeof(HasN.N);
+}
+
+impl typeof(HasN.N) as Z {
+  fn F() -> i32 { return 9; }
+}
+
+fn Pointer(unused p: typeof(HasN.N)*) -> i32 { return 3; }
+
+fn Wrapped(unused w: W) {}
+
+fn Generic[T: type](unused x: T) -> i32 {
+  var unused a: array(typeof(Has(T).N), 0) = ();
+  return 4;
+}
+
+fn Upstream(unused f: typeof(I.F)) {}
+
+fn Satisfied(unused f: typeof(C.(HasN.N))) -> i32 { return 1; }
+
+fn Run() -> i32 {
+  Upstream(I.F);
+  return typeof(HasN.N).(Z.F)() + Generic(1) + Satisfied(C.(HasN.N));
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'call_method.carbon'
 // CHECK:STDOUT: source_filename = "call_method.carbon"

@@ -13,16 +13,20 @@
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/Sequence.h"
 #include "llvm/ADT/SmallVector.h"
+#include "toolchain/base/kind_switch.h"
 #include "toolchain/check/context.h"
 #include "toolchain/check/cpp/import.h"
 #include "toolchain/check/diagnostic_helpers.h"
+#include "toolchain/check/eval.h"
 #include "toolchain/check/function.h"
 #include "toolchain/check/generic.h"
 #include "toolchain/check/impl_lookup.h"
 #include "toolchain/check/import_ref.h"
+#include "toolchain/check/inst.h"
 #include "toolchain/check/interface.h"
 #include "toolchain/check/member_access.h"
 #include "toolchain/check/name_lookup.h"
+#include "toolchain/check/type.h"
 #include "toolchain/check/type_completion.h"
 #include "toolchain/diagnostics/format_providers.h"
 #include "toolchain/sem_ir/clang_decl.h"
@@ -424,6 +428,23 @@ static auto CheckRequirementFunction(
   // requirement (review fold A10); a C++ overload set does only when it holds
   // exactly one candidate, which is imported and matched as that function
   // (SC-1c).
+  //
+  // D-SC-5(c): a requirement `fn` is a declaration of a constraint, not a
+  // member of the type, so a lookup in the type that finds one -- through
+  // `alias Get = HasGet.Get`, an `extend impl` of an interface whose `extend
+  // require` names the constraint, or a facet type as the self -- finds no
+  // member (fill round 2, review findings F2 / MINOR-1; reported as such since
+  // fill round 3, review finding F7). A requirement named with no self type has
+  // a `StructuralRequirementType` (D-SC-20); one found through a self has the
+  // requirement's `FunctionType`.
+  if (auto requirement_type =
+          context.types().TryGetAs<SemIR::StructuralRequirementType>(
+              context.insts().Get(member_id).type_id())) {
+    return MemberFailureInfo{
+        .failure = MemberFailure::IsRequirement,
+        .found_constraint_id = GetStructuralRequirementConstraint(
+            context, requirement_type->function_id)};
+  }
   auto callee = SemIR::GetCallee(context.sem_ir(), member_id);
   if (auto* cpp_overload = std::get_if<SemIR::CalleeCppOverloadSet>(&callee)) {
     MemberFailureInfo failure;
@@ -438,12 +459,6 @@ static auto CheckRequirementFunction(
   if (!callee_fn) {
     return MemberFailureInfo{.failure = MemberFailure::Mismatch};
   }
-  // D-SC-5(c): a requirement `fn` is a declaration of a constraint, not a
-  // member of the type, so a lookup in the type that finds one -- through
-  // `alias Get = HasGet.Get`, an `extend impl` of an interface whose `extend
-  // require` names the constraint, or a facet type as the self -- finds no
-  // member (fill round 2, review findings F2 / MINOR-1; reported as such since
-  // fill round 3, review finding F7).
   if (auto found_constraint_id =
           GetStructuralRequirementConstraint(context, callee_fn->function_id);
       found_constraint_id.has_value()) {
@@ -655,12 +670,12 @@ static auto DiagnoseStructuralRequirementUse(
     Context& context, SemIR::LocId loc_id, SemIR::FunctionId function_id,
     SemIR::NamedConstraintId constraint_id) -> void {
   const auto& function = context.functions().Get(function_id);
-  CARBON_DIAGNOSTIC(StructuralRequirementCalled, Error,
+  CARBON_DIAGNOSTIC(StructuralRequirementUsed, Error,
                     "requirement `{0}` of template constraint `{1}` can only "
                     "be used through a type that satisfies it",
                     SemIR::NameId, SemIR::NameId);
   auto builder = context.emitter().Build(
-      loc_id, StructuralRequirementCalled, function.name_id,
+      loc_id, StructuralRequirementUsed, function.name_id,
       context.named_constraints().Get(constraint_id).name_id);
   NoteStructuralRequirementHere(builder, function.latest_decl_id());
   builder.Emit();
@@ -678,42 +693,151 @@ auto CheckCalleeIsNotStructuralRequirement(Context& context,
   return false;
 }
 
-auto CheckValueIsNotStructuralRequirement(Context& context,
+auto MakeStructuralRequirementName(Context& context, SemIR::LocId loc_id,
+                                   SemIR::NameId name_id,
+                                   SemIR::InstId member_id,
+                                   SemIR::SpecificId with_self_specific_id)
+    -> SemIR::InstId {
+  if (!with_self_specific_id.has_value()) {
+    return SemIR::InstId::None;
+  }
+  auto function_type = context.types().TryGetAs<SemIR::FunctionType>(
+      context.insts().Get(member_id).type_id());
+  if (!function_type) {
+    return SemIR::InstId::None;
+  }
+  auto constraint_id =
+      GetStructuralRequirementConstraint(context, function_type->function_id);
+  if (!constraint_id.has_value()) {
+    return SemIR::InstId::None;
+  }
+  // The constraint-with-self specific's arguments are the constraint's,
+  // followed by `Self`, which here must be the constraint's own `Self`: the
+  // self of a lookup with no self type, as for an interface's `I.F`
+  // (name_lookup.cpp, `GetSelfFacetForInterfaceFromLookupSelfType`).
+  const auto& constraint = context.named_constraints().Get(constraint_id);
+  auto with_self_args = context.inst_blocks().Get(
+      context.specifics().Get(with_self_specific_id).args_id);
+  auto own_self_args =
+      context.inst_blocks().Get(context.specifics().GetArgsOrEmpty(
+          context.generics().GetSelfSpecific(constraint.generic_with_self_id)));
+  if (own_self_args.empty() ||
+      context.constant_values().Get(with_self_args.back()) !=
+          context.constant_values().Get(own_self_args.back())) {
+    return SemIR::InstId::None;
+  }
+  auto specific_id = SemIR::SpecificId::None;
+  if (constraint.generic_id.has_value()) {
+    specific_id = MakeSpecific(context, loc_id, constraint.generic_id,
+                               with_self_args.drop_back());
+  }
+  auto type_id = GetStructuralRequirementType(
+      context, function_type->function_id, specific_id);
+  // The value is a canonical constant, with no location of its own; the name
+  // reference carries the use's location.
+  auto value_id = context.constant_values().GetInstId(TryEvalInst(
+      context, SemIR::StructValue{.type_id = type_id,
+                                  .elements_id = SemIR::InstBlockId::Empty}));
+  return GetOrAddInst<SemIR::NameRef>(
+      context, loc_id,
+      {.type_id = type_id, .name_id = name_id, .value_id = value_id});
+}
+
+auto GetStructuralRequirementOfType(Context& context, SemIR::TypeId type_id)
+    -> SemIR::FunctionId {
+  llvm::SmallVector<SemIR::TypeId> work = {type_id};
+  while (!work.empty()) {
+    auto type_inst = context.types().GetAsInst(work.pop_back_val());
+    CARBON_KIND_SWITCH(type_inst) {
+      case CARBON_KIND(SemIR::StructuralRequirementType requirement_type): {
+        return requirement_type.function_id;
+      }
+      case CARBON_KIND(SemIR::FunctionType function_type): {
+        if (GetStructuralRequirementConstraint(context,
+                                               function_type.function_id)
+                .has_value()) {
+          return function_type.function_id;
+        }
+        break;
+      }
+      case CARBON_KIND(SemIR::TupleType tuple_type): {
+        for (auto element_type_inst_id :
+             context.inst_blocks().Get(tuple_type.type_elements_id)) {
+          work.push_back(
+              context.types().GetTypeIdForTypeInstId(element_type_inst_id));
+        }
+        break;
+      }
+      case CARBON_KIND(SemIR::StructType struct_type): {
+        for (auto field :
+             context.struct_type_fields().Get(struct_type.fields_id)) {
+          work.push_back(
+              context.types().GetTypeIdForTypeInstId(field.type_inst_id));
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  }
+  return SemIR::FunctionId::None;
+}
+
+// Returns the requirement `fn` that the value `inst_id` names or holds, either
+// by its type (`GetStructuralRequirementOfType`) or as a bound method of a
+// requirement found through a checked binding (`x.Get`), whose type does not
+// say; or `None`.
+static auto GetStructuralRequirementOfValue(Context& context,
+                                            SemIR::InstId inst_id)
+    -> SemIR::FunctionId {
+  auto type_id = context.insts().Get(inst_id).type_id();
+  if (auto function_id = GetStructuralRequirementOfType(context, type_id);
+      function_id.has_value()) {
+    return function_id;
+  }
+  if (!context.types().Is<SemIR::BoundMethodType>(type_id)) {
+    return SemIR::FunctionId::None;
+  }
+  auto callee = SemIR::GetCallee(context.sem_ir(), inst_id);
+  auto* callee_fn = std::get_if<SemIR::CalleeFunction>(&callee);
+  if (!callee_fn ||
+      !GetStructuralRequirementConstraint(context, callee_fn->function_id)
+           .has_value()) {
+    return SemIR::FunctionId::None;
+  }
+  return callee_fn->function_id;
+}
+
+auto CheckValueIsNotStructuralRequirement(Context& context, SemIR::LocId loc_id,
                                           SemIR::InstId expr_id, bool diagnose)
     -> bool {
-  // The value itself, and the elements of a tuple or struct literal, which a
-  // conversion to the literal's own type does not visit one by one.
+  // The elements of a tuple or struct literal are visited first, so that the
+  // error points at the element; a bound method element does not show in the
+  // literal's type.
   llvm::SmallVector<SemIR::InstId> work = {expr_id};
   while (!work.empty()) {
     auto inst_id = work.pop_back_val();
     auto inst = context.insts().Get(inst_id);
     if (auto literal = inst.TryAs<SemIR::TupleLiteral>()) {
       llvm::append_range(work, context.inst_blocks().Get(literal->elements_id));
-      continue;
-    }
-    if (auto literal = inst.TryAs<SemIR::StructLiteral>()) {
+    } else if (auto literal = inst.TryAs<SemIR::StructLiteral>()) {
       llvm::append_range(work, context.inst_blocks().Get(literal->elements_id));
-      continue;
     }
-    // A function value, or a bound method of one (`x.Get` where lookup in a
-    // checked `x`'s type found the requirement).
-    if (!context.types().Is<SemIR::FunctionType>(inst.type_id()) &&
-        !context.types().Is<SemIR::BoundMethodType>(inst.type_id())) {
-      continue;
-    }
-    auto callee = SemIR::GetCallee(context.sem_ir(), inst_id);
-    auto* callee_fn = std::get_if<SemIR::CalleeFunction>(&callee);
-    if (!callee_fn) {
-      continue;
-    }
-    auto constraint_id =
-        GetStructuralRequirementConstraint(context, callee_fn->function_id);
-    if (!constraint_id.has_value()) {
+    auto function_id = GetStructuralRequirementOfValue(context, inst_id);
+    if (!function_id.has_value() || inst.Is<SemIR::TupleLiteral>() ||
+        inst.Is<SemIR::StructLiteral>()) {
       continue;
     }
     if (diagnose) {
-      DiagnoseStructuralRequirementUse(context, SemIR::LocId(inst_id),
-                                       callee_fn->function_id, constraint_id);
+      // A value that deduction or a template's instantiation built has no
+      // location of its own; use the conversion's.
+      DiagnoseStructuralRequirementUse(
+          context,
+          context.insts().GetCanonicalLocId(inst_id).has_value()
+              ? SemIR::LocId(inst_id)
+              : loc_id,
+          function_id,
+          GetStructuralRequirementConstraint(context, function_id));
     }
     return false;
   }

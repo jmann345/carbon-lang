@@ -329,8 +329,12 @@ struct StructuralRequirementRef {
   // The template constraint declaring it.
   SemIR::NamedConstraintId named_constraint_id;
   // The requirement's enclosing specific: the constraint-with-self specific,
-  // whose last argument is `Self`.
+  // whose last argument is `Self`. `None` for a requirement named with no self
+  // type (D-SC-20), which has a `StructuralRequirementType`.
   SemIR::SpecificId with_self_specific_id;
+  // For a requirement named with no self type, the constraint's specific
+  // without `Self`, from its `StructuralRequirementType`.
+  SemIR::SpecificId without_self_specific_id = SemIR::SpecificId::None;
 };
 }  // namespace
 
@@ -339,6 +343,16 @@ struct StructuralRequirementRef {
 static auto GetStructuralRequirementRef(Context& context,
                                         SemIR::InstId member_id)
     -> std::optional<StructuralRequirementRef> {
+  if (auto requirement_type =
+          context.types().TryGetAs<SemIR::StructuralRequirementType>(
+              context.insts().Get(member_id).type_id())) {
+    return StructuralRequirementRef{
+        .function = &context.functions().Get(requirement_type->function_id),
+        .named_constraint_id = GetStructuralRequirementConstraint(
+            context, requirement_type->function_id),
+        .with_self_specific_id = SemIR::SpecificId::None,
+        .without_self_specific_id = requirement_type->specific_id};
+  }
   auto callee = SemIR::GetCallee(context.sem_ir(), member_id);
   auto* callee_fn = std::get_if<SemIR::CalleeFunction>(&callee);
   if (!callee_fn) {
@@ -377,6 +391,17 @@ static auto LookupMemberNameInTypeScopesImpl(
   }
   if (!result.scope_result.is_found()) {
     return SemIR::ErrorInst::InstId;
+  }
+
+  // Fork (SC-1, fork/structural/plan.md D-SC-20 as amended at fill round 5): a
+  // requirement `fn` of a `template constraint` named with no self type
+  // (`HasN.N`) is a value of a concrete type, not a function of the
+  // constraint's `Self`.
+  if (auto requirement_name_id = MakeStructuralRequirementName(
+          context, loc_id, name_id, result.scope_result.target_inst_id(),
+          result.specific_id);
+      requirement_name_id.has_value()) {
+    return requirement_name_id;
   }
 
   // TODO: Find a way to use `WrapInstForSpecific` here.
@@ -932,11 +957,13 @@ static auto RedirectStructuralRequirementAccess(
   const auto& constraint =
       context.named_constraints().Get(requirement->named_constraint_id);
 
-  // The requirement's enclosing specific is the constraint-with-self specific
-  // (the constraint's arguments followed by `Self`); the facet type to convert
-  // to is the constraint-without-self specific, so drop `Self`.
-  auto without_self_specific_id = SemIR::SpecificId::None;
-  if (constraint.generic_id.has_value()) {
+  // The facet type to convert to is the constraint-without-self specific: the
+  // one a `StructuralRequirementType` carries, or else the requirement's
+  // enclosing constraint-with-self specific (the constraint's arguments
+  // followed by `Self`) with `Self` dropped.
+  auto without_self_specific_id = requirement->without_self_specific_id;
+  if (constraint.generic_id.has_value() &&
+      !without_self_specific_id.has_value()) {
     if (!requirement->with_self_specific_id.has_value()) {
       if (diagnose) {
         context.TODO(loc_id,

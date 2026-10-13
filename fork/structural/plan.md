@@ -462,8 +462,9 @@ listing them verbatim at discharge (§8.5).
     constraint `{1}` can only be called through a type that satisfies it",
     D-SC-4: a requirement `fn` is never itself the callee; its text says
     "used" for "called" since fill round 4, when it also reports a requirement
-    used as a value, D-SC-20), so 9 kinds, 10 with R-6's (amended
-    2026-10-13); fill round 3 adds the note
+    used as a value, D-SC-20, and the kind is named `StructuralRequirementUsed`
+    since fill round 5, review 2 finding MINOR-1), so 9 kinds, 10 with R-6's
+    (amended 2026-10-13); fill round 3 adds the note
     `StructuralMemberIsRequirement` ("name `{1}` in type {0} refers to a
     requirement of template constraint `{2}`, not to a member of the type",
     D-SC-5(c) as amended; review finding F7), so 10 kinds, 11 with R-6's
@@ -707,43 +708,61 @@ listing them verbatim at discharge (§8.5).
     cannot instantiate a template-phase blanket impl — then the split moves
     to `fail_todo_`, the ladder step is filed as a residue, and D-SC-19's
     rule stands for the `require` entry point alone.
--   **D-SC-20 — a requirement named with no self type has `Self := .Self`
-    (added 2026-10-13: introduced by fill round 1's fix 2, recorded at fill
-    round 2, review finding F4).** A lookup into a template constraint with
-    no self type (`HasGet.Get`, or a facet type as the lookup's self) builds
-    the constraint-with-self specific with `.Self` of the constraint's facet
-    type (name_lookup.cpp `GetPeriodSelfForTemplateConstraintLookup`: an
-    unfrozen `symbolic_binding .Self` with no parent scope), not the
-    constraint's own `Self` binding. Reason: the requirement `fn` is the one
-    with-self member whose value depends on `Self`; the abstract `Self` is a
-    parameter of the constraint's generic, so naming the requirement inside
-    any generic attached that binding to the generic's eval block (eval.cpp
-    "does not belong to generic", a CHECK failure) and its template phase
-    made the name template-dependent (a `splice_inst` that lowering cannot
-    handle); `.Self` depends on no generic parameter (sem_ir/constant.h
-    `DependsOnGenericParameter`), and generic.cpp's
-    `GetOrAddInstWithSpecificConstantValue` returns early for such a
-    constant. Interfaces and plain constraints keep the abstract `Self`, so
-    no upstream golden moves. Consequences: the requirement is never itself
-    called (D-SC-9's `StructuralRequirementCalled`), and a compound access
-    through it redirects to the base type's own member (D-SC-4). It is
-    never a runtime value either (amended 2026-10-13, fill round 4, review
-    finding BLOCKER-1: `Take(HasN.N)` checked clean and aborted lowering at
-    the `.Self`-symbolic type, lower/type.cpp:459): `Convert`, which every
-    argument, initializer, return and discarded expression passes through,
-    rejects a requirement, a bound method of one, or a tuple or struct
-    literal holding one, with the same error, so a callee, the member of a
-    compound access and an `alias` (which convert nothing) stay its only
-    uses. Pinned by
-    template_constraint_compound_access.carbon `checked_generic_name` and
-    `assoc_fn_compound` (the SemIR shows `%.Self: %HasGet.type =
-    symbolic_binding .Self [symbolic_self]`) and lower/testdata/template/
-    template_constraint.carbon `compound_nongeneric`. Veto-able (R29(a)).
-    Break condition: a golden shows the unfrozen `.Self` replaced by
-    `SubstPeriodSelf` where a requirement's specific reaches a facet type,
-    or upstream gives facet-type member lookups a self of their own — then
-    the placeholder becomes a frozen or dedicated binding printed as the
-    constraint's `Self`.
+-   **D-SC-20 — a requirement named with no self type is a value of its own
+    concrete type (added 2026-10-13 as "has `Self := .Self`", introduced by
+    fill round 1's fix 2 and recorded at fill round 2, review finding F4;
+    replaced at fill round 5, round 4's review 1 findings BLOCKER-1,
+    BLOCKER-2, MAJOR-1 and MAJOR-2 and review 2 findings BLOCKER-1 and
+    MAJOR-1).** A lookup into a template constraint with no self type
+    (`HasGet.Get`; `T.N` once a template's `T` is the facet type `HasN`; a
+    runtime facet value's member, looked up in its facet type) builds the
+    constraint-with-self specific with the constraint's own `Self`, as upstream
+    does for an interface's `I.F` (name_lookup.cpp
+    `GetSelfFacetForInterfaceFromLookupSelfType`, unchanged from trunk), and
+    the requirement found there is not returned as a function:
+    `MakeStructuralRequirementName` (structural_conformance.cpp, called from
+    member_access.cpp's lookup) returns a name reference to an empty
+    `struct_value` of `StructuralRequirementType` (sem_ir/typed_insts.h: the
+    requirement's function and the constraint's specific without `Self`), a
+    type that depends on the constraint's arguments only, as upstream's `I.F` is
+    an `assoc_entity` of the concrete `AssociatedEntityType`. Reason: the
+    requirement `fn` is the one with-self member whose value depends on `Self`.
+    Returned as a function, it had a function type symbolic in a `Self` that no
+    specific replaces (the constraint's own at the first fill, `.Self` from
+    round 1 to round 4), and every construct that takes a type without
+    converting a value (`typeof`, a template's constant tuple or struct value,
+    deduction) carried that type into concrete code, where lowering aborts
+    (lower/type.cpp:459, lower/file_context.h:187; round 4's reviews). With a
+    concrete type nothing symbolic escapes, so round 1's `.Self` lookup and
+    generic.cpp's early return for `.Self`-only constants are deleted
+    (name_lookup.cpp and generic.cpp as on trunk). Consequences: the
+    requirement is never itself called (`StructuralRequirementUsed` in call.cpp
+    `PerformCallToNonFunction`, D-SC-9); a compound access through it redirects
+    to the base type's own member, the facet type taken from its type (D-SC-4);
+    an `alias` of it is that value; `typeof(HasN.N)` is its type, usable as a
+    type (a pointer, a field, an impl's self, a generic argument) but with no
+    values. It is never a runtime value (amended at fill round 4, review
+    finding BLOCKER-1; restated at fill round 5): `Convert` refuses a value
+    whose type is, or holds as a tuple or struct element, a requirement's type,
+    and a bound method of a requirement found through a checked binding, whose
+    type does not say; a template replays the refusal in its convert actions
+    at instantiation (convert.cpp `PerformAction`), so `Take((T.N, 1))` and a
+    discarded `T.N;` instantiated with `HasN` are refused like `Take((HasN.N,
+    1))` and `HasN.N;`. The refusal is the design rule, not a guard against a
+    crash: a use that converts nothing yields an empty value of a concrete
+    type. Pinned by requirement-call `fail_requirement_as_value`,
+    `fail_requirement_through_checked_binding_as_value`,
+    `fail_requirement_through_template_instantiation` and
+    `fail_requirement_typeof_value`; compound `checked_generic_name`,
+    `assoc_fn_compound` and `requirement_typeof` (the dumps show
+    `structural_requirement_type`, symbolic only through a generic
+    constraint's arguments, and no `.Self`); lower `compound_nongeneric`,
+    `requirement_through_template_instantiation` and `requirement_typeof`.
+    Veto-able (R29(a)). Break condition: upstream gives a named constraint's
+    members associated entities, so the requirement becomes an `assoc_entity`
+    of the constraint and `StructuralRequirementType` folds into
+    `AssociatedEntityType`; or W-138's structural witness table lands, and a
+    requirement value names a table entry instead of being refused.
 
 ### §0.4 The split decision: one PR, three commits
 
@@ -1127,6 +1146,9 @@ convention).
 | check/testdata/named_constraint/template_constraint_require.carbon (round-4 splits PRE-FILL, 2026-10-13) | `require_in_interface_in_union_impl` (`union U` with `impl as I` before its own `Get`, `I` doing `require impls HasGet`; `u.(I.F)() + CallGet(u)`); `fail_require_in_interface_in_union_impl_lacking` (`union Lacking { var a: i32; impl as I {} }`, and `union LackingMixed { var a: i32; impl as J {} impl as I2 {} }` with `I2` doing `require impls HasGet & J`) | Round 4, predicted: the positive has no STDERR; the negative has exactly two `InterfaceRequireImplsNotImplemented`, at `impl as I` ("requires that `Lacking` implements `HasGet`") and at `impl as I2` ("requires that `LackingMixed` implements `J & HasGet`", the order miss (l) found), each emitted at its union's end, and no CHECK failure at the end of the file (the new `VerifyOnFinish` check) FILLED 2026-10-13 (fill round 4, ff490bd48): held as written |
 | check/testdata/named_constraint/fail_template_constraint_unsatisfied.carbon (round-4 change PRE-FILL, 2026-10-13) | `fail_own_params` respelled (review finding MINOR-3 of round 3's review 2): requirement `fn Get(self, n: i32) -> i32`, member `fn Get[U: type](unused self, unused n: U) -> i32`, `CallGet` calling `x.Get(1)` | Round 4, predicted: unchanged kinds, `ConversionFailureTypeToFacet` + `StructuralMemberMismatch` (at the member's declaration) + `StructuralRequirementHere` + `DeductionGenericHere` FILLED 2026-10-13 (fill round 4, ff490bd48): held as written |
 | lower/testdata/template/template_constraint.carbon (round-4 split PRE-FILL, 2026-10-13) | `requirement_through_type_as_value` (`Take(C.(HasN.N)) + Take((C as HasN).N) + Dependent(c)`, `Dependent[template T: HasN]` returning `Take(T.N)`) | Round 4, predicted: a `define` of `C.N`, one `Take` specific (all three arguments have `C.N`'s function type, D-SC-4), a `Dependent` specific calling it, and `@main` calling `Take` twice and `Dependent` once; no `CARBON_FATAL` FILLED 2026-10-13 (fill round 4, ff490bd48): held; one `@_CTake.Main.…` specific, called twice from `@main` and once from the `Dependent` specific |
+| check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon (round-5 splits PRE-FILL, 2026-10-13) | `fail_requirement_as_value` gains `TemplateValueParam` (`TemplateParam(HasN.N)` with `[template U: type](unused template f: U)`), `GenericValueParam` (the `generic f: U` form) and `Overload` (`P(HasN.N)` against `overload fn P(unused x: i32)` and `overload fn P[T: type](unused f: T)`); `fail_requirement_through_checked_binding_as_value` gains `BoundInStruct` (`Take({.a = x.Get})`); new `fail_requirement_through_template_instantiation` (`Tuple`, `Struct`, `Nested`, `IfTuple`, `LetTuple`, `Discard`, `DiscardTuple`, `DiscardStruct` and `Box(template FT: type).F` instantiated with `HasN`, `MethodTuple` with `HasGet & J`); new `fail_requirement_typeof_value` (a parameter of `typeof(HasN.N)`, `Take(w.f)` for a field of it, and `return HasN.N` from a function returning it) | Round 5, written before the fill from D-SC-20 as amended at round 5 (the development build's probes of the reviews' shapes ran first, R16(d) disclosure). Every existing `[StructuralRequirementCalled]` becomes `[StructuralRequirementUsed]` with unchanged text (review 2 finding MINOR-1). The two value parameters: one `StructuralRequirementUsed` each, located at the call (the deduced value is a constant with no location, so `Convert`'s location; review 1 finding MINOR-1), with `StructuralRequirementHere` and `DeductionGenericHere`. `Overload`: only `OverloadNoMatch` with two `OverloadCandidateRejected` notes (the candidates convert with diagnostics off). `BoundInStruct`: one `StructuralRequirementUsed` at `x.Get` with `StructuralRequirementHere` and `InCallToFunctionParam`. The instantiation split: one `ResolvingSpecificHere` ("unable to monomorphize specific") at each `Use*` call, two for `IfTuple` (one per branch), each with a `StructuralRequirementUsed` note and `StructuralRequirementHere`; for the call arguments (`Tuple`, `Struct`, `Nested`, `MethodTuple`, `Box`) the note has no location and is followed by `InCallToFunctionParam`, as upstream's own conversion notes for a constant argument at instantiation (trunk 0bdce60a5, `TakeI((T.N, 1))` with a class); for `LetTuple`, `IfTuple` and the three discards it is at the element or statement. The `typeof` split: three `StructuralRequirementUsed` (the parameter, `w.f`, `HasN.N`), each with `StructuralRequirementHere` only |
+| check/testdata/named_constraint/template_constraint_compound_access.carbon (round-5 split PRE-FILL, 2026-10-13) | new `requirement_typeof` (dumped): `TypeOnly(typeof(HasN.N))`, a `typeof(HasN.N)*` parameter, a field of `typeof(HasN.N)`, `impl typeof(HasN.N) as Z` called as `typeof(HasN.N).(Z.F)()`, and `Generic[T: type]` taking a `typeof(Has(T).N)*`; `checked_generic_name`'s comment rewritten | Round 5, predicted: no STDERR; the dump shows `structural_requirement_type @HasN.WithSelf.N` as a concrete constant with an empty `struct_value ()` of it, and in `Generic` a symbolic `structural_requirement_type @Has.WithSelf.N, @Has(%T)`; no `.Self` binding inside the range. `checked_generic_name`'s `G` loses its `.Self` binding: `HasGet.Get` is a `name_ref` of the concrete requirement type, and the compound access still binds `C`'s own `Get` |
+| lower/testdata/template/template_constraint.carbon (round-5 splits PRE-FILL, 2026-10-13) | new `requirement_through_template_instantiation` (the instantiation split's templates, less `Nested` and `IfTuple`, with a class `C`); new `requirement_typeof` (`Pointer`, `Wrapped(w: W)`, `Generic[T: type]` with an `array(typeof(Has(T).N), 0)` local, `Upstream(f: typeof(I.F))` called with `I.F`, `Satisfied(f: typeof(C.(HasN.N)))` called with `C.(HasN.N)`, and `typeof(HasN.N).(Z.F)()`) | Round 5, predicted: no `CARBON_FATAL` and no verifier failure; one `define` per template specific with `C`, calling `Take` specifics over `C.N`'s and `C.Get`'s function types; the requirement type lowers as `{}` (a `W` of one empty field, an empty-array local, a pointer parameter), and `@main` calls the impl's `F` by its mangled name. `Nested` and `IfTuple` are left out because their class instantiations fail on trunk 0bdce60a5 too (`Take(((C.N, 1), 2))` at the module verifier, lower/lower.cpp:48; the `if` form in `BranchWithArg`) |
 
 ### §4.C Commit 3
 
@@ -2273,6 +2295,10 @@ names the splits that pin them):
     lower/handle.cpp:404's FATAL on an unresolved splice. Design: D-SC-10, whose
     phase claim this falsified (miss (h)) but whose break condition was not
     needed; D-SC-20 (§0.3), recorded at round 2. Break condition: D-SC-20's.
+    SUPERSEDED 2026-10-13 (fill round 5): a requirement named with no self type
+    is a value of its own concrete type, so nothing depends on its `Self`, and
+    both the `.Self` lookup and the generic.cpp early return are deleted
+    (D-SC-20 as amended).
 -   **Facet redirect** (member_access.cpp:451-509). Satisfy `assoc_fn` failed
     "use of undefined generic function" at the requirement: the replayed
     `T.Make()` on the facet value found the requirement with `Self := C`. A
@@ -2473,15 +2499,19 @@ stamped 0.0.0-0.dev+bc8b37290 with the reviews' probes:
     lowering the call, tuple or struct), the bound method naming the bodiless
     requirement. Round 3 had guarded only the impl member; the value use is now
     rejected at one place, `Convert`, which every argument, initializer, return
-    and discarded expression passes through (structural_conformance.cpp:681
-    `CheckValueIsNotStructuralRequirement`, called at convert.cpp:2625 beside
-    the fork's overload-set check): a requirement, a bound method of one, or a
-    tuple or struct literal holding one (a conversion to the literal's own type
-    does not visit its elements) is `StructuralRequirementCalled`, now worded
-    "can only be used through a type that satisfies it" and emitted by one
-    helper for both uses (structural_conformance.cpp:654). D-SC-9 and D-SC-20
-    amended. Pinned by requirement-call `fail_requirement_as_value` (a
-    statement, five arguments, a tuple element, a struct field) and
+    and discarded expression passes through (AMENDED 2026-10-13, fill round 5:
+    false, round 4's reviews found `typeof`, which converts nothing, and a
+    template's instantiation, which converts constant values and replays
+    conversions without `Convert`'s check; see round 5)
+    (structural_conformance.cpp:681 `CheckValueIsNotStructuralRequirement`,
+    called at convert.cpp:2625 beside the fork's overload-set check): a
+    requirement, a bound method of one, or a tuple or struct literal holding one
+    (a conversion to the literal's own type does not visit its elements) is
+    `StructuralRequirementCalled`, now worded "can only be used through a type
+    that satisfies it" and emitted by one helper for both uses
+    (structural_conformance.cpp:654). D-SC-9 and D-SC-20 amended. Pinned by
+    requirement-call `fail_requirement_as_value` (a statement, five arguments, a
+    tuple element, a struct field) and
     `fail_requirement_through_checked_binding_as_value` (`T.N`, `x.Get`,
     `(x.Get, 1)`), and lower `requirement_through_type_as_value`
     (`Take(C.(HasN.N))`, `Take((C as HasN).N)` and a template's `Take(T.N)`
@@ -2552,7 +2582,14 @@ break condition:
     D-SC-9 as amended. Break condition: W-138's structural witness table
     lands, or upstream gives a facet type's member a value whose self is
     supplied later; then a requirement value names that entry instead of
-    being refused.
+    being refused. AMENDED 2026-10-13 (fill round 5, round 4's review 1
+    MAJOR-1 and review 2 MAJOR-1): the claim that this check addressed the
+    root cause, and that a callee, a compound member and an `alias` were the
+    only uses that convert nothing, was false; the root cause was the
+    `.Self`-symbolic type, which `typeof` and a template's instantiation
+    carried past the check. Round 5 gives the requirement a concrete type
+    (D-SC-20 as amended) and keeps the refusal as the design rule, type-based
+    and replayed at instantiation.
 -   **A union drains its waiting `require`s** (handle_union.cpp:99,
     context.cpp:83; MAJOR-1). Design: D-SC-12 (a union is a class, and its
     methods satisfy as a class's do) and D-SC-8(iii) as amended. Break
@@ -2572,6 +2609,106 @@ W-151: the commit-3 residue first filed as W-144 was renumbered to W-151 by
 2f4ebbf6e, because SAFE-1 (PR 53) allocated W-144..W-150; trunk's id
 reservations (9d3ca60a3) give SC-1 nothing above W-151, so the MINOR-3 residue
 waited for an id; the orchestrator reserved W-168 for it, filed at fill round 4.
+
+Round 4's own diff (aa67ea281, ff490bd48, d232d4753, 77838fdd5) had two
+implementation reviews: review 1, REJECT, 2 BLOCKER, 2 MAJOR and 1 MINOR
+(BLOCKER-1, BLOCKER-2, MAJOR-1, MAJOR-2, MINOR-1), and review 2, REJECT, 1
+BLOCKER, 1 MAJOR and 2 MINOR (BLOCKER-1, MAJOR-1, MINOR-1, MINOR-2), 9
+findings, with review 1 BLOCKER-2 and review 2 BLOCKER-1 the same defect
+(`typeof`) and the two MAJOR-1s the same R17 judgement. Both confirmed round
+4's union drain and its value refusals on the 0.0.0-0.dev+ff490bd48 driver, its
+gate (1959 passed, 0 failed) and its conformance (130 / 0 / 21 over 151)
+privately. Fill round 5 folds all 9, below.
+
+Fill round 5 (2026-10-13), by review finding, each reproduced first on the
+toolchain stamped 0.0.0-0.dev+ff490bd48 with the reviews' probes:
+
+-   BLOCKER-1 (review 1): a template instantiated with a facet type checked
+    clean and aborted lowering: `Take((T.N, 1))` in `fn F(template T: type)`
+    called as `F(HasN)` (lower/type.cpp:459), and the struct, nested, method,
+    template-class-member and deduced shapes, with `let` and `if` forms at
+    lower/function_context.cpp:223. The call action converts the instantiation's
+    constant `tuple_value`, which round 4's literal walk did not visit. Fixed by
+    D-SC-20 as amended: the requirement's type is concrete, the refusal asks
+    whether the value's type is or holds a requirement's type
+    (`GetStructuralRequirementOfType`: the type itself, or a tuple or struct
+    element), and the template's convert actions replay it (convert.cpp
+    `PerformAction` for `ConvertAction`, `ConvertToValueAction`,
+    `ConvertToCategoryAction` and `InitializeAction`). Pinned by
+    requirement-call `fail_requirement_through_template_instantiation` and,
+    instantiated with a class, lower
+    `requirement_through_template_instantiation`.
+-   BLOCKER-2 (review 1) and BLOCKER-1 (review 2): `typeof(HasN.N)` handed out
+    the `.Self`-symbolic function type without converting anything: `fn H(unused
+    f: typeof(HasN.N)) {}` aborted lowering at lower/type.cpp:459, other shapes
+    at lower/file_context.h:187 and lower/function_context.cpp:223, `Take(f)`
+    on such a parameter passed the check, and `impl typeof(HasN.N) as Z` linked
+    to an undefined symbol. Fixed at the root: `typeof(HasN.N)` is the concrete
+    `StructuralRequirementType`, usable as a type (the impl now prints 9
+    through `typeof(HasN.N).(Z.F)()`), and a value of it (a parameter, a field
+    read, a return) is refused. Pinned by requirement-call
+    `fail_requirement_typeof_value`, compound `requirement_typeof` and lower
+    `requirement_typeof` (with upstream's `typeof(I.F)` twin and
+    `typeof(C.(HasN.N))`). The reviews' minimal alternative, refusing `typeof`
+    itself, is not taken: once concrete the type is harmless, as upstream's
+    `typeof(I.F)` is, and a refusal at definition would not see a template's
+    `typeof(T.N)`, which evaluates at instantiation, the split MAJOR-2 objects
+    to.
+-   MAJOR-1 (both reviews, R17): round 4's check was a broader use-site guard,
+    not the root cause. Agreed, and the design alternative both name is taken:
+    a requirement named with no self type is a value of its own concrete type
+    (D-SC-20 replaced), the `.Self` lookup and generic.cpp's early return are
+    deleted (name_lookup.cpp and generic.cpp as on trunk), and the eval.cpp:151
+    failure they existed for does not recur (compound `checked_generic_name`
+    and `assoc_fn_compound`). The refusal in `Convert` stays as D-SC-20's rule
+    (values of a requirement's type are refused, as overload sets are), not as
+    a crash guard: deleting it would make `Take(HasN.N)` compile, as upstream's
+    `H(I.F)` does, which round 4 decided against and its goldens pin (R16(b)).
+    The records that called round 4's check the root cause are amended (the
+    convert.cpp comment, D-SC-20, round 4's BLOCKER-1 bullet and decision
+    above, the decision log, the design page, ORCHESTRATION). W-169 stays
+    unused: nothing is deferred.
+-   MAJOR-2 (review 1): a discarded `T.N;`, `(T.N, 1);` or `{.a = T.N};`
+    instantiated with `HasN` compiled and ran; the replayed category
+    conversion now refuses all three, as `HasN.N;` is refused. Pinned by the
+    instantiation split's `Discard`, `DiscardTuple` and `DiscardStruct`.
+-   MINOR-1 (review 1): a value that deduction built has no location, so the
+    error now takes the conversion's (requirement-call `TemplateValueParam`
+    and `GenericValueParam`, at the call). At instantiation a constant
+    argument has no location and neither has its conversion, as for upstream's
+    own conversion notes on such an argument (trunk 0bdce60a5, `TakeI((T.N,
+    1))` instantiated with a class); those notes stay unlocated, pinned so.
+-   MINOR-1 (review 2): the kind is renamed `StructuralRequirementUsed`
+    (kind.def, the one `CARBON_DIAGNOSTIC`, the goldens by autoupdate, D-SC-9,
+    the design page).
+-   MINOR-2 (review 2): `BoundInStruct` (`Take({.a = x.Get})`) and an
+    overload-set use (`P(HasN.N)` against `overload fn P(unused x: i32)` and
+    `overload fn P[T: type](unused f: T)`, whose candidates convert with
+    diagnostics off) are pinned; the latter reports only `OverloadNoMatch`
+    with its two candidate notes.
+
+Rejected or narrowed: none of the 9; the two `typeof` findings are fixed by the
+root fix their reviews prefer, not by their minimal alternative.
+
+Round 5's decision as an R29(a) implementation decision, with design citation
+and break condition:
+
+-   **A requirement named with no self type has its own concrete type**
+    (sem_ir/typed_insts.h `StructuralRequirementType`;
+    structural_conformance.cpp `MakeStructuralRequirementName`,
+    `GetStructuralRequirementOfType` and `CheckValueIsNotStructuralRequirement`;
+    convert.cpp `Convert` and the four template `PerformAction`s; call.cpp
+    `PerformCallToNonFunction`; member_access.cpp's lookup and compound
+    redirect; the type's lowering, completion, destruction, import, printing and
+    naming beside `OverloadSetType`'s). Design: D-SC-20 as amended, D-SC-4,
+    D-SC-9. Break condition: D-SC-20's. Found while probing it and fixed by it:
+    through a generic constraint in a checked generic, `typeof(Has(T).N)`
+    aborted lowering on round 4's build too (there `.Self` depends on `T`, so
+    generic.cpp's early return did not apply and the specific kept `.Self`). Not
+    SC-1's, reproduced on trunk 0bdce60a5 with a class: `Take(((C.N, 1), 2))`
+    fails the module verifier (lower/lower.cpp:48), an `if` expression of a
+    tuple holding a function value aborts in `BranchWithArg`, and `typeof` of a
+    bound method is type_iterator.cpp's `BoundMethodType` FATAL.
 
 Measured, on the container only (not of record, R9; hosted: not run, Actions
 disabled). Round 1: autoupdate over the 18 goldens in three passes (all 18

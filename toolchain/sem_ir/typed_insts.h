@@ -2226,6 +2226,24 @@ struct StructValue {
   InstBlockId elements_id;
 };
 
+// Fork (SC-1, fork/structural/plan.md D-SC-20 as amended at fill round 5): the
+// type of a requirement `fn` of a `template constraint` named with no self
+// type that satisfies it, such as `HasN.N`. The corresponding value is an empty
+// `StructValue`, which is not a runtime value: it is only the callee of a call
+// (diagnosed), the member of a compound access, or an `alias` target.
+// `specific_id` is the constraint's specific, without `Self`.
+struct StructuralRequirementType {
+  static constexpr auto Kind =
+      InstKind::StructuralRequirementType.Define<Parse::NoneNodeId>(
+          {.ir_name = "structural_requirement_type",
+           .is_type = InstIsType::Always,
+           .constant_kind = InstConstantKind::WheneverPossible});
+
+  TypeId type_id;
+  FunctionId function_id;
+  SpecificId specific_id;
+};
+
 // Binds a symbolic name, such as `x` in `let x: i32 = 7;`. See AnyBinding for
 // member documentation.
 struct SymbolicBinding {

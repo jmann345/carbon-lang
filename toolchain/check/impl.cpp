@@ -53,17 +53,17 @@ auto CheckAssociatedFunctionImplementation(
     Context& context, SemIR::FunctionType interface_function_type,
     SemIR::SpecificId enclosing_specific_id, SemIR::InstId impl_decl_id,
     bool defer_thunk_definition) -> SemIR::InstId {
-  auto impl_function_type = context.types().TryGetAs<SemIR::FunctionType>(
-      context.insts().Get(impl_decl_id).type_id());
+  auto impl_type_id = context.insts().Get(impl_decl_id).type_id();
+  auto impl_function_type =
+      context.types().TryGetAs<SemIR::FunctionType>(impl_type_id);
   // Fork (SC-1, fork/structural/plan.md D-SC-5(c) as amended at fill round 3,
   // review finding BLOCKER-1): a requirement `fn` of a `template constraint`
   // is a declaration of the constraint, not a function a thunk can call, so
   // `alias F = HasGet.Get` implements nothing, as `alias F = I2.Get` does not.
-  auto requirement_constraint_id =
-      impl_function_type ? GetStructuralRequirementConstraint(
-                               context, impl_function_type->function_id)
-                         : SemIR::NamedConstraintId::None;
-  if (!impl_function_type || requirement_constraint_id.has_value()) {
+  // Named with no self type, it has a `StructuralRequirementType` (D-SC-20).
+  auto requirement_function_id =
+      GetStructuralRequirementOfType(context, impl_type_id);
+  if (!impl_function_type || requirement_function_id.has_value()) {
     if (impl_decl_id != SemIR::ErrorInst::InstId) {
       CARBON_DIAGNOSTIC(ImplFunctionWithNonFunction, Error,
                         "associated function {0} implemented by non-function",
@@ -73,11 +73,10 @@ auto CheckAssociatedFunctionImplementation(
           context.functions().Get(interface_function_type.function_id).name_id);
       NoteAssociatedFunction(context, builder,
                              interface_function_type.function_id);
-      if (requirement_constraint_id.has_value()) {
-        NoteStructuralRequirementHere(builder,
-                                      context.functions()
-                                          .Get(impl_function_type->function_id)
-                                          .latest_decl_id());
+      if (requirement_function_id.has_value()) {
+        NoteStructuralRequirementHere(
+            builder,
+            context.functions().Get(requirement_function_id).latest_decl_id());
       }
       builder.Emit();
     }

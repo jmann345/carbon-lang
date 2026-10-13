@@ -197,6 +197,14 @@ auto GetOverloadSetType(Context& context, SemIR::OverloadSetId overload_set_id,
                                                      specific_id);
 }
 
+auto GetStructuralRequirementType(Context& context,
+                                  SemIR::FunctionId function_id,
+                                  SemIR::SpecificId specific_id)
+    -> SemIR::TypeId {
+  return GetCompleteTypeImpl<SemIR::StructuralRequirementType>(
+      context, function_id, specific_id);
+}
+
 auto GetCppTemplateNameType(Context& context, SemIR::EntityNameId name_id,
                             SemIR::ClangDeclId decl_id) -> SemIR::TypeId {
   return GetCompleteTypeImpl<SemIR::CppTemplateNameType>(context, name_id,

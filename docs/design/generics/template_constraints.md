@@ -512,14 +512,18 @@ then looked up in the base type, the semantics
 [proposal 2200](/proposals/p002200-template-generics.md#template-constraints)
 states ("`C.F` and `HasF.F` refer to the same function"); see
 [Structural witnesses](#structural-witnesses). A requirement is never itself the
-callee: `HasCount.Count()` names it with no type to satisfy it (its `Self` is
-the constraint's `.Self`, D-SC-20) and is rejected with
-`StructuralRequirementCalled`, as is a call through a runtime facet value or
+callee: `HasCount.Count()` names it with no type to satisfy it and is rejected
+with `StructuralRequirementUsed`, as is a call through a runtime facet value or
 through a self whose lookup finds only the requirement (D-SC-4, as landed at the
-2026-10-13 fill rounds). Nor is it ever a runtime value: passing
-`HasCount.Count` to a function, putting it in a tuple or struct, or naming it as
-a statement is the same error, as is a bound method of a requirement found
-through a checked generic binding; named through a type that satisfies it, as
+2026-10-13 fill rounds). Named with no such type, as `HasCount.Count`, the
+requirement has a type of its own that does not depend on the constraint's
+`Self`, as an interface's `I.F` names an associated entity of a concrete type
+(D-SC-20, as amended at fill round 5). That type can be named with `typeof` and
+used as a type, but it has no values: passing `HasCount.Count` to a function,
+putting it in a tuple or struct, naming it as a statement, binding a parameter
+of its `typeof`, or doing any of these in a template instantiated with a facet
+type, is the same error, as is a bound method of a requirement found through a
+checked generic binding. Named through a type that satisfies it, as
 `C.(HasCount.Count)`, it is that type's own function and is a value like any
 other (D-SC-20, as amended at fill round 4).
 
@@ -707,7 +711,7 @@ the requirement itself), each followed by `StructuralRequirementHere` at the
 requirement; for a checked-generic self the single note
 `StructuralRequirementNeedsConcreteType` is attached instead. A call whose
 callee is a requirement, or any other use of a requirement as a value, is the
-error `StructuralRequirementCalled` ("can only be used through a type that
+error `StructuralRequirementUsed` ("can only be used through a type that
 satisfies it"; [Name lookup](#name-lookup)).
 
 ## Constrained candidates and overload resolution

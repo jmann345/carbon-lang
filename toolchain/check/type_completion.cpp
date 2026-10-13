@@ -304,7 +304,8 @@ class TypeCompleter {
              SemIR::CppTemplateNameType, SemIR::FunctionType,
              SemIR::FunctionTypeWithSelfType, SemIR::GenericClassType,
              SemIR::GenericInterfaceType, SemIR::GenericNamedConstraintType,
-             SemIR::InstType, SemIR::OverloadSetType, SemIR::UnboundElementType,
+             SemIR::InstType, SemIR::OverloadSetType,
+             SemIR::StructuralRequirementType, SemIR::UnboundElementType,
              SemIR::WhereExpr>())
   auto BuildInfoForInst(SemIR::TypeId /*type_id*/, InstT /*inst*/) const
       -> SemIR::CompleteTypeInfo {

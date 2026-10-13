@@ -62,6 +62,15 @@ auto GetCppOverloadSetType(Context& context,
 auto GetOverloadSetType(Context& context, SemIR::OverloadSetId overload_set_id,
                         SemIR::SpecificId specific_id) -> SemIR::TypeId;
 
+// Fork (SC-1, fork/structural/plan.md D-SC-20): gets the type of the
+// requirement `function_id` of a `template constraint` named with no self type
+// that satisfies it; `specific_id` is the constraint's specific, without
+// `Self`. The returned type will be complete.
+auto GetStructuralRequirementType(Context& context,
+                                  SemIR::FunctionId function_id,
+                                  SemIR::SpecificId specific_id)
+    -> SemIR::TypeId;
+
 // Gets a C++ template name type. The returned type will be complete.
 auto GetCppTemplateNameType(Context& context, SemIR::EntityNameId name_id,
                             SemIR::ClangDeclId decl_id) -> SemIR::TypeId;

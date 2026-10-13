@@ -18,8 +18,8 @@
 // --- fail_direct_call.carbon
 library "[[@TEST_NAME]]";
 
-// Named with no self, the requirement's `Self` is the constraint's `.Self`
-// (D-SC-20), which no type replaces.
+// Named with no self, the requirement is a value of its own type, with no
+// `Self` for a type to replace (D-SC-20 as amended at fill round 5).
 template constraint HasCount {
   fn Count() -> i32;
 }
@@ -56,8 +56,8 @@ library "[[@TEST_NAME]]";
 // A runtime facet value is not a type: member access looks into its facet type
 // with no self, as for `HasMake.Make`, and a compound access through it is
 // upstream's open "associated value lookup on runtime facet value" case
-// (member_access.cpp:853-858, `GetAssociatedValueImpl`), mirrored by the fork's
-// TODO at member_access.cpp:987-996; ledger W-033 (runtime facet values).
+// (member_access.cpp:878-883, `GetAssociatedValueImpl`), mirrored by the fork's
+// TODO at member_access.cpp:1014-1023; ledger W-033 (runtime facet values).
 template constraint HasMake {
   fn Make() -> Self;
 }
@@ -220,8 +220,14 @@ library "[[@TEST_NAME]]";
 // A requirement named with no type that satisfies it is never a runtime value
 // (D-SC-20 as amended at fill round 4, review finding BLOCKER-1: passed to a
 // function, it checked clean and aborted lowering at its `.Self`-symbolic
-// type). Every value use is rejected where the value is formed: an expression
-// statement, an argument, and an element of a tuple or struct literal.
+// type). Since fill round 5 its type is the concrete
+// `StructuralRequirementType`, and `Convert` rejects any value whose type is,
+// or holds as a tuple or struct element, a requirement's type: an expression
+// statement, an argument, and an element of a tuple or struct literal. A value
+// that deduction built has no location of its own, so the error is at the
+// conversion (round 5, review 1 finding MINOR-1); an overload candidate rejects
+// it silently, so only the overload set's error is reported (review 2 finding
+// MINOR-2).
 template constraint HasN {
   fn N() -> i32;
 }
@@ -319,6 +325,19 @@ fn TupleElement() -> i32 { return Take((HasN.N, 1)); }
 // CHECK:STDERR:
 fn StructField() -> i32 { return Take({.f = HasN.N}); }
 
+fn TemplateParam[template U: type](unused template f: U) -> i32 { return 1; }
+
+fn TemplateValueParam() -> i32 { return TemplateParam(HasN.N); }
+
+fn GenericParam[U: type](unused generic f: U) -> i32 { return 1; }
+
+fn GenericValueParam() -> i32 { return GenericParam(HasN.N); }
+
+overload fn P(unused x: i32) -> i32 { return 1; }
+overload fn P[T: type](unused f: T) -> i32 { return 2; }
+
+fn Overload() -> i32 { return P(HasN.N); }
+
 // --- fail_requirement_through_checked_binding_as_value.carbon
 library "[[@TEST_NAME]]";
 
@@ -379,6 +398,105 @@ fn Bound[T: K](x: T) -> i32 { return Take(x.Get); }
 // CHECK:STDERR:                         ^~~~
 // CHECK:STDERR:
 fn BoundInTuple[T: K](x: T) -> i32 { return Take((x.Get, 1)); }
+
+fn BoundInStruct[T: K](x: T) -> i32 { return Take({.a = x.Get}); }
+
+// --- fail_requirement_through_template_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+// A template's member access on its type parameter is replayed at
+// instantiation; with a facet type as the argument, `T.N` names the requirement
+// with no self type, as `HasN.N` does, and has the same concrete type. Each
+// value use is then rejected where the template converts it (D-SC-20 as
+// amended at fill round 5, review 1 findings BLOCKER-1 and MAJOR-2: a tuple or
+// struct holding it checked clean and aborted lowering, and a discarded one was
+// accepted). The same templates instantiated with a class are
+// lower/testdata/template/template_constraint.carbon,
+// `requirement_through_template_instantiation`.
+template constraint HasN {
+  fn N() -> i32;
+}
+
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface J {}
+
+fn Take[T: type](unused f: T) -> i32 { return 1; }
+
+fn Tuple(template T: type) -> i32 { return Take((T.N, 1)); }
+fn UseTuple() -> i32 { return Tuple(HasN); }
+
+fn Struct(template T: type) -> i32 { return Take({.f = T.N}); }
+fn UseStruct() -> i32 { return Struct(HasN); }
+
+fn Nested(template T: type) -> i32 {
+  return Take({.a = 1, .b = ((T.N, 1), 2)});
+}
+fn UseNested() -> i32 { return Nested(HasN); }
+
+fn IfTuple(template T: type) -> i32 {
+  return Take(if true then (T.N, 1) else (T.N, 2));
+}
+fn UseIfTuple() -> i32 { return IfTuple(HasN); }
+
+fn LetTuple(template T: type) -> i32 {
+  let unused t: (typeof(T.N), i32) = (T.N, 1);
+  return 0;
+}
+fn UseLetTuple() -> i32 { return LetTuple(HasN); }
+
+fn MethodTuple(template T: type) -> i32 { return Take((T.Get, 1)); }
+fn UseMethodTuple() -> i32 { return MethodTuple(HasGet & J); }
+
+fn Discard(template T: type) -> i32 {
+  T.N;
+  return 0;
+}
+fn UseDiscard() -> i32 { return Discard(HasN); }
+
+fn DiscardTuple(template T: type) -> i32 {
+  (T.N, 1);
+  return 0;
+}
+fn UseDiscardTuple() -> i32 { return DiscardTuple(HasN); }
+
+fn DiscardStruct(template T: type) -> i32 {
+  {.a = T.N};
+  return 0;
+}
+fn UseDiscardStruct() -> i32 { return DiscardStruct(HasN); }
+
+class Box(template FT: type) {
+  fn F() -> i32 { return Take((FT.N, 1)); }
+}
+fn UseBox() -> i32 { return Box(HasN).F(); }
+
+// --- fail_requirement_typeof_value.carbon
+library "[[@TEST_NAME]]";
+
+// `typeof` of a requirement named with no self type is its concrete type
+// (D-SC-20 as amended at fill round 5, review 1 finding BLOCKER-2 and review 2
+// finding BLOCKER-1: the type was `.Self`-symbolic, and a parameter of it
+// aborted lowering). The type has no values: a parameter, a field read and a
+// return of it are value uses, rejected as above. Uses of the type itself are
+// template_constraint_compound_access.carbon, `requirement_typeof`.
+template constraint HasN {
+  fn N() -> i32;
+}
+
+fn Take[T: type](unused f: T) -> i32 { return 1; }
+
+fn Param(unused f: typeof(HasN.N)) {}
+
+class W {
+  var f: typeof(HasN.N);
+}
+
+fn Field(w: W) -> i32 { return Take(w.f); }
+
+fn Return() -> typeof(HasN.N) { return HasN.N; }
 
 // --- fail_ladder_alias.carbon
 library "[[@TEST_NAME]]";

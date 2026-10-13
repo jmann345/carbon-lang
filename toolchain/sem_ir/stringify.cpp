@@ -921,6 +921,24 @@ class Stringifier {
     }
   }
 
+  // Fork (SC-1, D-SC-20): `<type of HasN.N>`.
+  auto StringifyInst(InstId /*inst_id*/, StructuralRequirementType inst)
+      -> void {
+    const auto& fn = sem_ir_->functions().Get(inst.function_id);
+    *out_ << "<type of ";
+    if (auto with_self_decl =
+            sem_ir_->name_scopes().TryGetInstAs<NamedConstraintWithSelfDecl>(
+                fn.parent_scope_id)) {
+      step_stack_->Push(
+          SpecificNamedConstraint{
+              .named_constraint_id = with_self_decl->named_constraint_id,
+              .specific_id = inst.specific_id},
+          ".", fn.name_id, ">");
+    } else {
+      step_stack_->Push(fn.name_id, ">");
+    }
+  }
+
   auto StringifyInst(InstId /*inst_id*/, StructValue inst) -> void {
     auto field_values = sem_ir_->inst_blocks().Get(inst.elements_id);
     if (field_values.empty()) {

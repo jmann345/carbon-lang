@@ -3026,6 +3026,30 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
                      resolver, inst.specific_id, specific_data)});
 }
 
+// Fork (SC-1, fork/structural/plan.md D-SC-20): resolves the type of a
+// requirement named with no self type that satisfies it, as `FunctionType`.
+static auto TryResolveTypedInst(ImportRefResolver& resolver,
+                                SemIR::StructuralRequirementType inst)
+    -> ResolveResult {
+  CARBON_CHECK(inst.type_id == SemIR::TypeType::TypeId);
+  auto fn_val_id = GetLocalConstantInstId(
+      resolver,
+      resolver.import_functions().Get(inst.function_id).first_decl_id());
+
+  auto specific_data = GetLocalSpecificData(resolver, inst.specific_id);
+  if (resolver.HasNewWork()) {
+    return ResolveResult::Retry();
+  }
+  auto fn_type_id = resolver.local_insts().Get(fn_val_id).type_id();
+  return ResolveResult::Deduplicated<SemIR::StructuralRequirementType>(
+      resolver, {.type_id = SemIR::TypeType::TypeId,
+                 .function_id = resolver.local_types()
+                                    .GetAs<SemIR::FunctionType>(fn_type_id)
+                                    .function_id,
+                 .specific_id = GetOrAddLocalSpecific(
+                     resolver, inst.specific_id, specific_data)});
+}
+
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
                                 SemIR::FunctionTypeWithSelfType inst)
     -> ResolveResult {
@@ -5082,6 +5106,9 @@ static auto TryResolveInstCanonical(ImportRefResolver& resolver,
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::StructValue inst): {
+      return TryResolveTypedInst(resolver, inst);
+    }
+    case CARBON_KIND(SemIR::StructuralRequirementType inst): {
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::SymbolicBindingPattern inst): {

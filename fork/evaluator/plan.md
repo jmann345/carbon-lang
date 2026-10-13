@@ -6,7 +6,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Evaluator documentation plan: getting started, tutorial, FAQ, transcribed programs (EV-1: W-062)
 
-**Status:** rev 2, 2026-10-13 — PLAN, both plan reviews of R29(c) folded. Review
+**Status:** rev 2, 2026-10-13 — SIGNED OFF FOR IMPLEMENTATION (sign-off at the
+end); both plan reviews of R29(c) folded. Review
 A (correctness and evaluator fidelity) and review B (strictness, process and
 records) each returned APPROVE-WITH-AMENDMENTS with no BLOCKER (A: four MAJOR,
 eight MINOR; B: six MAJOR, five MINOR). The fixer reproduced every finding
@@ -2199,3 +2200,15 @@ and the final run passed with no change. Every count after the fixpoint equals
 the pre-prek count, the heading set is unchanged by prek, and the R-3 grep of
 the diff for manufactured headings is empty. The counts are spelled in words
 here so that no wrap can start a line with a number and a period.
+
+## Sign-off
+
+Signed off for implementation on 2026-10-13 at rev 2 by the orchestrator under
+R29(a): the two plan reviews of R29(c) (A: correctness and evaluator fidelity,
+APPROVE-WITH-AMENDMENTS, four MAJOR and eight MINOR; B: strictness, process and
+records, APPROVE-WITH-AMENDMENTS, six MAJOR and five MINOR) found no BLOCKER,
+so no focused re-review is owed; all twenty-three findings are folded in rev 2
+(f0e1ab70b) and none is rejected. The id block W-152 to W-159 is reserved for
+this workstream on trunk's fork/ORCHESTRATION.md at the sign-off stamp, beside
+ST-1's start at W-160. Implementation proceeds in state T per §3; the
+integration commit to state C waits for PR 52 on trunk.

@@ -49,7 +49,8 @@ carbon link --output=hello hello.o
 For another section, replace `hello` with the name of that section's file
 without its `.carbon` extension. The sections
 [Linking your own C++ library](#linking-your-own-c-library) and
-[A multi-file package](#a-multi-file-package) show their own commands.
+[A multi-file package](#a-multi-file-package) show their own commands; give
+each its own directory, since both have a `main.carbon`.
 
 Each section starts with a "Runs on" line. "The upstream nightly (measured
 with 0.0.0-0.nightly.2026.10.12) and this fork's toolchain" means that the
@@ -139,8 +140,9 @@ Output:
 What to notice: `let` binds an immutable value and `var` a mutable variable,
 and the type follows the name. `for` loops over a range, and
 `Core.InclusiveRange(1, n)` includes both ends. `if ... then ... else` is an
-expression, usable anywhere a value is, and the last two prints take its two
-arms. `Run` may return `i32`, which becomes the program's exit code. Design:
+expression, usable as an initializer, a call argument or a `return` operand
+(as another operator's operand it needs parentheses), and the last two prints
+take its two arms. `Run` may return `i32`, which becomes the exit code. Design:
 [name-binding declarations](/docs/design/README.md#name-binding-declarations),
 [functions](/docs/design/functions.md),
 [control flow](/docs/design/control_flow/README.md) and
@@ -271,7 +273,9 @@ If it fails, see the FAQ:
 
 ## Choice types and match
 
-Runs on: this fork's toolchain only. The upstream nightly reports
+Runs on:
+[this fork's toolchain](getting_started.md#build-this-forks-toolchain-from-source)
+only. The upstream nightly reports
 ``semantics TODO: `choice alternatives with parameters are not yet supported` ``
 and ``semantics TODO: `HandleMatchIntroducer` ``. Save the program as
 `choice_match.carbon`:
@@ -331,11 +335,12 @@ Output:
 What to notice: a `choice` is a sum type whose alternatives may carry values.
 `match` destructures them, needs no `default` when every alternative is
 covered, and runs only the first matching case, with no fall-through. A guard
-is written `if (...)` after the pattern. The arms assign and the function
-returns once: a `match` with no `default` arm, even one that covers every
-alternative, is not treated as returning on every path, so a function whose
-arms all return still needs a `return` after it; with a `default` arm it does
-not. Design: [choice types](/docs/design/sum_types.md) and
+is written `if (...)`: the toolchain requires the parentheses, though the
+design's grammar does not. The arms assign and the function returns once
+because, unlike the design, the toolchain does not yet treat an exhaustive
+`match` as returning on every path: without a `default` arm, a function whose
+arms all return still needs a `return` after the `match`; see the FAQ. Design:
+[choice types](/docs/design/sum_types.md) and
 [pattern matching](/docs/design/pattern_matching.md).
 
 If it fails, see the FAQ:
@@ -346,7 +351,9 @@ If it fails, see the FAQ:
 
 ## Errors as values
 
-Runs on: this fork's toolchain only. The upstream nightly reports
+Runs on:
+[this fork's toolchain](getting_started.md#build-this-forks-toolchain-from-source)
+only. The upstream nightly reports
 ``member name `Result` not found in `Core` ``. Save the program as
 `errors.carbon`:
 
@@ -466,7 +473,9 @@ What to notice: C++ names live under `Cpp`, and C++ `int` is Carbon `i32`. A
 constructor is called as `Cpp.Counter.Counter(...)`. A C++ class template is
 instantiated with a Carbon type argument, as in `Cpp.std.vector(i32)`.
 `import Cpp inline` compiles C++ source written in the Carbon file. Overload
-resolution for `std::abs` is C++'s own. Design:
+resolution for `std::abs` is C++'s own. The constructor call, C++ method calls
+and `import Cpp inline` are toolchain behavior whose design sections are still
+placeholders. Design:
 [interoperability](/docs/design/interoperability/README.md).
 
 If it fails, see the FAQ:
@@ -484,7 +493,7 @@ this fork's toolchain. This section has three files. `rectangle.h`:
 #define RECTANGLE_H_
 
 // Returns the area of a `width` by `height` rectangle.
-int RectangleArea(int width, int height);
+auto RectangleArea(int width, int height) -> int;
 
 #endif  // RECTANGLE_H_
 ```
@@ -494,7 +503,7 @@ int RectangleArea(int width, int height);
 ```cpp
 #include "rectangle.h"
 
-int RectangleArea(int width, int height) { return width * height; }
+auto RectangleArea(int width, int height) -> int { return width * height; }
 ```
 
 `main.carbon`:
@@ -525,15 +534,17 @@ Output:
 ```
 
 What to notice: build the C++ files with `carbon clang` (or with the
-toolchain's `lib/carbon/llvm/bin/clang++`), because `carbon link` links libc++,
-and C++ objects compiled against libstdc++ do not link; see the FAQ. A quoted
-header is found relative to the directory the compile runs in, so build from
-the directory that holds the header, or pass `--clang-arg=-I<dir>`. Design:
+toolchain's `lib/carbon/llvm/bin/clang++`), because `carbon link` links libc++:
+C++ code that uses the standard library and was compiled by `g++` or a system
+`clang++` against libstdc++ does not link, though code like `rectangle.cpp`
+that uses none of it does; see the FAQ. A quoted header is found relative to
+the directory the compile runs in, so build from the directory that holds the
+header, or pass `--clang-arg=-I<dir>`. Design:
 [importing and `#include`](/docs/design/README.md#importing-and-include).
 
-This fork keeps these three files, byte for byte, as
-`fork/evaluator/cpp_library/rectangle.h`, `rectangle.cpp` and `main.carbon`,
-which `fork/evaluator/cpp_library/build.sh` builds with these commands, and
+This fork keeps these three files, with a license comment added and, in the
+header, the guard name the header-guard check requires, in
+`fork/evaluator/cpp_library/`, where `build.sh` runs these commands;
 `fork/evaluator/check_samples.py` compares them with this page.
 
 If it fails, see the FAQ:
@@ -589,10 +600,11 @@ Output:
 ```
 
 What to notice: `import Cpp;` with a later `inline Cpp` block exports the
-Carbon functions declared above that block into C++'s `Carbon` namespace. The
-three calls reach the three arms of `Clamp`: in range, above `hi`, and below
-`lo`. C++ compiled separately cannot call Carbon yet, because no header is
-generated; see the FAQ. Design:
+Carbon functions declared above that block into C++'s `Carbon` namespace; the
+`inline Cpp` block and that rule are toolchain behavior no design document
+describes yet. The three calls reach the three arms of `Clamp`: in range,
+above `hi`, and below `lo`. C++ compiled separately cannot call Carbon yet,
+because no header is generated; see the FAQ. Design:
 [interoperability](/docs/design/interoperability/README.md).
 
 If it fails, see the FAQ:

@@ -11,9 +11,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 # applies to, and the exact line the toolchain prints. For the toolchain given,
 # each applicable reproducer is run in a fresh temporary directory; the script
 # then requires the expected line in the output and the same line inside a
-# ```text block of the FAQ page. It exits 1 on any mismatch. It needs a
-# toolchain, so `runner.py --self-test` does not run it (fork/evaluator/plan.md
-# D-EV-21); run it with each toolchain:
+# ```text block of the FAQ page, as a whole line. docs/guides/getting_started.md
+# repeats some of these diagnostics, so every line of its ```text blocks other
+# than program output must also be a line of a ```text block of the FAQ. It
+# exits 1 on any mismatch. It needs a toolchain, so `runner.py --self-test`
+# does not run it (fork/evaluator/plan.md D-EV-21); run it with each toolchain:
 #
 #     python3 fork/evaluator/check_faq.py --which fork --toolchain <fork carbon>
 #     python3 fork/evaluator/check_faq.py --which nightly --toolchain <nightly>
@@ -27,6 +29,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 FAQ = ROOT / "docs" / "guides" / "evaluator_faq.md"
+GUIDE = ROOT / "docs" / "guides" / "getting_started.md"
+# The lines of the guide's ```text blocks that are program output, not quoted
+# diagnostics.
+GUIDE_OUTPUT = {
+    "42",
+    "Carbon Language toolchain version: 0.0.0-0.nightly.YYYY.MM.DD+<commit>",
+}
 PACKAGE = ROOT / "fork" / "conformance" / "programs" / "project"
 PACKAGE = PACKAGE / "evaluator_tutorial_package"
 
@@ -257,17 +266,17 @@ REPRODUCERS = [
 ]
 
 
-def text_blocks(page: str) -> str:
-    """Returns the bodies of the page's ```text blocks, concatenated."""
-    out, inside = [], False
+def text_block_lines(page: str) -> set[str]:
+    """Returns the non-empty lines of the page's ```text blocks, stripped."""
+    out, inside = set(), False
     for line in page.splitlines():
         if not inside and line.strip() == "```text":
             inside = True
         elif inside and line.strip() == "```":
             inside = False
-        elif inside:
-            out.append(line.strip())
-    return "\n".join(out)
+        elif inside and line.strip():
+            out.add(line.strip())
+    return out
 
 
 def main() -> int:
@@ -278,8 +287,13 @@ def main() -> int:
     parser.add_argument("--which", required=True, choices=["fork", "nightly"])
     args = parser.parse_args()
     carbon = str(args.toolchain.resolve())
-    quoted = text_blocks(FAQ.read_text())
+    quoted = text_block_lines(FAQ.read_text())
     errors, ran = [], 0
+    guide_lines = text_block_lines(GUIDE.read_text()) - GUIDE_OUTPUT
+    for line in sorted(guide_lines - quoted):
+        errors.append(
+            f"{GUIDE.name}: not a text-block line of {FAQ.name}: {line}"
+        )
     for rid, toolchains, files, command, expected, exit_code in REPRODUCERS:
         if expected and expected not in quoted:
             errors.append(f"{rid}: not quoted in a text block of {FAQ.name}")

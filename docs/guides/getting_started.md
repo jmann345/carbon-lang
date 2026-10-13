@@ -35,7 +35,7 @@ can run the programs of these guides:
 
 | Toolchain | Where it comes from | Language |
 | --- | --- | --- |
-| The upstream nightly | A prebuilt download from the upstream project's releases page, for Linux x86-64 only | Upstream Carbon |
+| The upstream nightly | A prebuilt download from the upstream project's releases page, for Linux x86-64 only (upstream's release configuration publishes one tarball, built on Linux x86-64) | Upstream Carbon |
 | This fork's toolchain | Built from this repository's source | Upstream Carbon, plus choice types whose alternatives carry values, `match`, `Core.Result` and `?`, if-let, unions, `overload fn` and slices |
 
 Each of the fork's seven additions was measured absent from the nightly
@@ -45,17 +45,22 @@ the errors the FAQ lists under
 The tutorial marks the two sections that need this fork's toolchain; the other
 eight ran on both.
 
-This fork's GitHub releases page also lists `fork-toolchain-*` prereleases. Do
-not use them for this tutorial. The newest, `fork-toolchain-143-ea02513be`
-(2026-09-25), predates `Core.Result`, if-let, unions, `overload fn` and slices,
-and on Ubuntu 24.04, whose glibc is version 2.39, it does not start; any
-command stops with this loader error (measured):
+This fork's GitHub releases page also lists prereleases. Do not use them for
+this tutorial. The newest entry there, `arbiter-v0.0.0-0.nightly.2026.09.28`,
+is a copy of upstream's nightly of 2026-09-28, as its release notes say, so it
+has none of this fork's features either (not run by this project). The
+`fork-toolchain-*` prereleases below it are builds of this fork, but the
+newest, `fork-toolchain-143-ea02513be` (2026-09-25), predates `Core.Result`,
+if-let, unions, `overload fn` and slices, and on Ubuntu 24.04, whose glibc is
+version 2.39, it does not start; any command stops with this loader error
+(measured):
 
 ```text
 carbon: /lib/x86_64-linux-gnu/libm.so.6: version `GLIBC_2.44' not found (required by carbon)
 ```
 
-Publishing a current fork toolchain is tracked as W-152; until then, build it
+Publishing a current fork toolchain is tracked as W-152 in this fork's
+[work-item ledger](/fork/inventory/work-items.json); until then, build it
 [from source](#build-this-forks-toolchain-from-source).
 
 The browser toolchain that the README links,
@@ -73,10 +78,10 @@ last showed, with the run id), or "not verified by this project".
 
 | Platform | Status | Sources |
 | --- | --- | --- |
-| Linux x86-64 | The upstream nightly is prebuilt for it; this fork's toolchain builds from source | Measured on Ubuntu 24.04 with glibc 2.39: the nightly download, every tutorial section on this fork's toolchain (a CMake build in that container, not the Bazel route below), and the eight sections that need no fork feature on the nightly. This fork's CI record: hosted conformance run 37402970811 (2026-10-06) built this fork's toolchain with Bazel on ubuntu-22.04 and ran the conformance programs |
-| Linux arm64 | No prebuilt toolchain; build this fork from source | Upstream's CI configuration runs upstream's tests on ubuntu-22.04-arm. This fork's CI record: the last run that reached its tests passed there (run 37398447710 at b4416a88e, 2026-10-06); no run of the current trunk has reached a test step, because GitHub Actions is disabled on this repository |
-| macOS arm64 | No prebuilt toolchain; build this fork from source; unverified for this fork's current trunk | Upstream's CI configuration runs upstream's tests on macos-14, the end-to-end install test included. This fork's CI record: in runs 37359728074 and 37398447710 the install test passed beside a failing fork-only export test (W-153), and no run of the current trunk has reached a test step. Linking needs Apple's Command Line Tools SDK at `/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk`, the path the toolchain's source names (not verified by this project) |
-| Intel macOS | No prebuilt toolchain; untested | In neither upstream's CI configuration nor this fork's CI record; not verified by this project |
+| Linux x86-64 | The upstream nightly is prebuilt for it; this fork's toolchain builds from source | Measured on Ubuntu 24.04 with glibc 2.39: the nightly download, every tutorial section on this fork's toolchain (a CMake build on the Ubuntu 24.04 machine that ran these measurements, not the Bazel route below), and the eight sections that need no fork feature on the nightly. This fork's CI record: hosted conformance run 37402970811 (2026-10-06, at commit 606a99c5a; the later trunk commits change only this fork's records, not the toolchain) built this fork's toolchain with Bazel on ubuntu-22.04 and ran the conformance programs |
+| Linux arm64 | No prebuilt toolchain (upstream's release configuration); build this fork from source | Upstream's CI configuration runs upstream's tests on ubuntu-22.04-arm. This fork's CI record: the last run that reached its tests passed there (run 37398447710 at b4416a88e, 2026-10-06); no run of the current trunk has reached a test step, because GitHub Actions is disabled on this repository |
+| macOS arm64 | No prebuilt toolchain (upstream's release configuration); build this fork from source; unverified for this fork's current trunk | Upstream's CI configuration runs upstream's tests on macos-14, the end-to-end install test included. This fork's CI record: in runs 37359728074 and 37398447710 the install test passed beside a failing fork-only export test (W-153), and no run of the current trunk has reached a test step. Linking needs Apple's Command Line Tools SDK at `/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk`, the path the toolchain's source names (not verified by this project) |
+| Intel macOS | No prebuilt toolchain (upstream's release configuration); untested | In neither upstream's CI configuration nor this fork's CI record; not verified by this project |
 | Windows | Unsupported | The toolchain's source reports that Windows runtimes are untested and not yet supported, and cross-targeting Windows from Linux fails at compile (measured; see [Which platforms are supported?](evaluator_faq.md#which-platforms-are-supported)). WSL 2 running the Linux instructions is the route the [contribution tools guide](/docs/project/contribution_tools.md#windows) describes; not verified by this project |
 
 ## Install the upstream nightly on Linux x86-64
@@ -114,7 +119,9 @@ in the FAQ.
 
 ## Build this fork's toolchain from source
 
-Install the prerequisites that the
+You need this toolchain only for the tutorial's two sections marked for this
+fork's toolchain; the nightly runs the other eight. Install the prerequisites
+that the
 [contribution tools guide](/docs/project/contribution_tools.md#setup-commands)
 lists for your platform, then:
 
@@ -140,8 +147,17 @@ build took 9m29.6s, the only measured duration, and `carbon version` printed
 wrapper; this page uses the README's `./scripts/run_bazelisk.py`, which fetches
 Bazelisk itself.
 
+A build on your own machine does not use that remote cache, which the CI job
+configures rather than this repository's `.bazelrc` (whose own cache is a local
+disk cache), so it compiles LLVM and Clang from source and takes longer; how
+much longer, and how much disk space it uses, was not measured by this
+project.
+
 The unpacked tree has the same layout as the nightly's, so every later command
-in these guides is the same for both toolchains.
+in these guides is the same for both toolchains. With both installed, a bare
+`carbon` runs the one whose `export` line ran last, and `carbon version` shows
+which; run the other by its full path, such as
+`$HOME/carbon-fork/carbon_toolchain-0.0.0-0.dev/bin/carbon`.
 
 ## System packages
 
@@ -197,6 +213,15 @@ Write the README's one-line program:
 echo "import Core library \"io\"; fn Run() { Core.Print(42); }" > forty_two.carbon
 ```
 
+The first link builds runtime libraries and caches them in your cache
+directory, `$XDG_CACHE_HOME` or else `$HOME/.cache`. The toolchain does not
+create that directory, so make sure it exists before the first link (see
+[The first link takes a while](#the-first-link-takes-a-while)):
+
+```shell
+mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}"
+```
+
 Then compile it, link it and run it:
 
 ```shell
@@ -227,32 +252,35 @@ type exits with status 0.
 
 The first `carbon link` on a machine builds the runtime libraries for the
 target and caches them. That takes about 20 seconds on an idle four-core Linux
-x86-64 machine, and up to twice that or more on a busy one (measured: 19 to 22
-seconds idle, 32 at load average 4 to 6, 47 at load average 10.7); later links
-take hundredths of a second.
+x86-64 machine, and up to twice that or more on a busy one (measured on
+2026-10-13: 16 to 22 seconds at load average below 4, 32 to 34 at load average
+4 to 8, 47 at load average 10.7); later links take hundredths of a second.
 
 The cache is the `carbon_runtimes` directory under `$XDG_CACHE_HOME`, or under
 `$HOME/.cache` when that is not set. The toolchain creates `carbon_runtimes`
 but not the directory that holds it: when that directory does not exist, as in
 a new account or container, the toolchain builds the runtimes in a temporary
 directory that it removes afterwards, so every link takes as long as the first
-(measured). Create the directory before the first link:
+(measured). That is why [Your first program](#your-first-program) creates the
+directory before the first link:
 
 ```shell
-mkdir -p "$HOME/.cache"
+mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}"
 ```
 
-The global option `--runtimes-cache=PATH`, written before the subcommand, puts
-the cache in another directory, which must already exist:
+The tutorial needs neither of the two options that follow, and each of their
+blocks builds the runtimes once more. If you want the cache in another
+directory, the global option `--runtimes-cache=PATH`, written before the
+subcommand, puts it there; that directory must already exist:
 
 ```shell
 mkdir -p "$HOME/carbon-runtimes-cache"
 carbon --runtimes-cache="$HOME/carbon-runtimes-cache" link --output=forty_two forty_two.o
 ```
 
-To build the runtimes ahead of time, for example for a machine image, run the
-`build-runtimes` subcommand with an output directory, and then pass that
-directory to the global option `--prebuilt-runtimes`:
+If you want to build the runtimes ahead of time, for example for a machine
+image, run the `build-runtimes` subcommand with an output directory, and then
+pass that directory to the global option `--prebuilt-runtimes`:
 
 ```shell
 carbon build-runtimes --output-directory="$HOME/carbon-runtimes"

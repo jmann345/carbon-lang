@@ -4,4 +4,4 @@
 
 #include "rectangle.h"
 
-int RectangleArea(int width, int height) { return width * height; }
+auto RectangleArea(int width, int height) -> int { return width * height; }

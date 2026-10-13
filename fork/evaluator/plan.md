@@ -14,7 +14,10 @@ eight MINOR; B: six MAJOR, five MINOR). The fixer reproduced every finding
 before folding it and rejected none; each amended passage carries "(amended
 2026-10-13, review fold: …)" with the reviews' own ids (A1 to A12, B-1 to B-6, B
 m-1 to B m-5), and the section "Review fold record (rev 2, 2026-10-13)" at the
-end lists them. Branch `claude/carbon-fork-0-1-ev` off trunk 80a11e7f0, whose
+end lists them. Commit 2a folds the two document reviews of D-EV-19 the same
+way, marked "(amended 2026-10-13, document-review fold: …)" and listed in the
+section "Document-review fold record (commit 2a, 2026-10-13)". Branch
+`claude/carbon-fork-0-1-ev` off trunk 80a11e7f0, whose
 toolchain sources are identical to 0bdce60a5 (the only later trunk commits are
 fork/ORCHESTRATION.md stamps). Trunk's floor is **128 PASS / 0 FAIL / 22 SKIP
 over 150 programs**, 48/56 bullets (fork/conformance/out/scoreboard.json
@@ -99,8 +102,8 @@ forty_two program, verbatim).
 | # | Element | Status | Evidence and measurement |
 | --- | --- | --- | --- |
 | 1 | The two toolchains and their layout | PRESENT, measured | Both trees: `bin/carbon` → `../lib/carbon/carbon-busybox`; `lib/carbon/{bazel,core,llvm,runtimes}`; `lib/carbon/llvm/bin` holds clang, clang++, clang-cl, ld.lld, ld64.lld and the LLVM tools. F adds `lib/carbon/include` (the `<carbon/expected.h>` header of EH-B). N's busybox needs only libc.so.6, libm.so.6 and the loader (`ldd`), and its highest versioned glibc symbol is GLIBC_2.34 (25 symbols, `objdump -T`), so N needs glibc 2.34 or newer. F's busybox links this container's own LLVM shared libraries (`/home/user/llvm-build/lib/libLLVM.so.24.0git`, `libclang-cpp.so.24.0git`, `ldd`): it is the container's arbiter, not something an evaluator can download, and it is a CMake and Ninja build rather than the Bazel `carbon_toolchain_tar` the guide teaches (header paragraph (amended 2026-10-13, review fold: A7)) |
-| 2 | README forty_two, end to end (README.md:287-315) | WORKS on F and N, measured | The README's echo line verbatim, then `carbon compile --output=forty_two.o forty_two.carbon`, stderr empty; first `carbon link --output=forty_two forty_two.o` against an empty `--runtimes-cache` directory; `./forty_two` prints `42`, exit 0. Repeated with N's `bin` on `PATH` and a bare `carbon`: identical. `carbon build -o=forty_two_b forty_two.carbon`: identical output. Timings depend on machine load, measured three times on this 4-CPU container: compile 0.81 s (F) / 1.02 s (N), cold link 19.3 s / 21.6 s on an idle machine (rev 1); compile 0.28 s / 0.12 s, cold link 31.8 s / 31.7 s at load average 3.8 to 6.4 (fixer, 2026-10-13); cold link 46.6 s / 47.0 s at load average 10.7 (review A). A warm link takes 0.03 to 0.05 s in every run (amended 2026-10-13, review fold: A6) |
-| 3 | Runtimes cache | WORKS, measured | Default location `$XDG_CACHE_HOME/carbon_runtimes`, else `$HOME/.cache/carbon_runtimes` (`carbon help`, the `--runtimes-cache` entry); `carbon --no-threads build-runtimes --output-directory=DIR` on F: 63.6 s single-threaded, producing `clang_resource_dir`, `core`, `libcxx`, `libunwind`; `--prebuilt-runtimes=PATH` uses such a tree instead of building |
+| 2 | README forty_two, end to end (README.md:287-315) | WORKS on F and N, measured | The README's echo line verbatim, then `carbon compile --output=forty_two.o forty_two.carbon`, stderr empty; first `carbon link --output=forty_two forty_two.o` against an empty `--runtimes-cache` directory; `./forty_two` prints `42`, exit 0. Repeated with N's `bin` on `PATH` and a bare `carbon`: identical. `carbon build -o=forty_two_b forty_two.carbon`: identical output. Timings depend on machine load, measured three times on this 4-CPU container: compile 0.81 s (F) / 1.02 s (N), cold link 19.3 s / 21.6 s on an idle machine (rev 1); compile 0.28 s / 0.12 s, cold link 31.8 s / 31.7 s at load average 3.8 to 6.4 (fixer, 2026-10-13); cold link 46.6 s / 47.0 s at load average 10.7 (review A). A warm link takes 0.03 to 0.05 s in every run (amended 2026-10-13, review fold: A6). Commit 1 measured cold links of 16.2 s (F) and 16.4 s (N) at load average 2.4 to 3.6, and commit 2a's fixer 33.3 to 34.4 s on N at load average 4.7 to 7.6 (amended 2026-10-13, document-review fold: R2-8) |
+| 3 | Runtimes cache | WORKS, measured | Default location `$XDG_CACHE_HOME/carbon_runtimes`, else `$HOME/.cache/carbon_runtimes` (`carbon help`, the `--runtimes-cache` entry); `carbon --no-threads build-runtimes --output-directory=DIR` on F: 63.6 s single-threaded, producing `clang_resource_dir`, `core`, `libcxx`, `libunwind`; `--prebuilt-runtimes=PATH` uses such a tree instead of building. The toolchain creates `carbon_runtimes` but not the directory that holds it: when `$XDG_CACHE_HOME` (used if set and absolute) or else `$HOME/.cache` does not exist, every link builds the runtimes in a temporary directory that it removes (toolchain/driver/runtimes_cache.cpp:140-203). Measured by commit 2a's fixer with N in fresh `HOME` directories: with no `.cache`, two links took 33.7 s and 33.4 s and cached nothing; with `XDG_CACHE_HOME` naming a missing directory, creating `$HOME/.cache` changed nothing (34.0 s); after `mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}"` the first link took 33.3 to 34.4 s and the next 0.0 s, with `XDG_CACHE_HOME` set and unset (amended 2026-10-13, document-review fold: MAJOR-1, MINOR-5) |
 | 4 | What `carbon link` reads from the system | MEASURED on F | `carbon link --output=x forty_two.o -- -v`: the Clang prefix adds `-rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++ -fuse-ld=lld` (toolchain/base/clang_invocation.cpp:132-142), link_driver.cpp:68 adds `--driver-mode=g++`, and ld.lld reads from the system only `Scrt1.o`, `crti.o`, `crtn.o`, `-lc`, `-lm` and the loader `/lib64/ld-linux-x86-64.so.2`; `dpkg -S` puts the first five in libc6-dev and the loader in libc6. CRT begin/end, the builtins, libc++ and libunwind come from the runtimes cache. With `-- --gcc-toolchain=/nonexistent` a warm link and a cold link (17.6 s) both still produce a binary printing 42: nothing from a GCC installation is linked. With `-- --sysroot=<empty dir>`: `ld.lld: error: cannot open Scrt1.o: No such file or directory`, then the same for crti.o, `unable to find library -lm`, `-lc`, and crtn.o |
 | 5 | The README's `sudo apt install libgcc-11-dev` (README.md:304-307) | WORKS INDIRECTLY, measured on the analogue | apt metadata of the installed analogue libgcc-13-dev: Depends gcc-13-base, libgcc-s1, libgomp1, libitm1, libatomic1, libasan8, liblsan0, libtsan2, libubsan1, libhwasan0, libquadmath0; **Recommends libc6-dev**. So the README line supplies what the link needs (row 4) only through apt's default install of Recommends; its own comment (:304-306) already says gcc or g++ also suffice. libgcc-11-dev's own metadata is not readable here (the container's apt lists are empty; `apt-cache policy` knows only installed packages) |
 | 6 | System headers for C++ interop | MEASURED | `carbon config --json` on N: `CLANG_INCLUDE_DIRS` ends with `/usr/local/include`, `/usr/include/x86_64-linux-gnu`, `/usr/include`, and `CLANG_SYSROOT` is `/`: imported C++ headers such as `<iostream>` reach the system C headers, which libc6-dev (and the linux-libc-dev it depends on) provides on Debian and Ubuntu. Measured with an empty directory standing in for a system without libc6-dev (`carbon compile --output=hello.o hello.carbon -- --sysroot=<empty dir>`): §2.B's hello fails at compile on F and on N, first with `<toolchain>/lib/carbon/runtimes/libcxx/include/__mbstate_t.h:55:4: error: "We don't know how to get the definition of mbstate_t on your platform."`, then `'ctype.h' file not found` and 186 lines in all; the pure-Carbon functions sample compiles with no error under the same flag. So the C headers are needed to COMPILE any `import Cpp` program, not only to link (amended 2026-10-13, review fold: A5) |
@@ -108,13 +111,13 @@ forty_two program, verbatim).
 | 8 | `Core.PrintStr` under compile + link | FAILS on F and N, measured | A four-line `Core.PrintStr("Hello, world!\n")` program (the shape of examples/hello_world.carbon) compiles, then `carbon link` fails with `ld.lld: error: undefined symbol: _CPrintStr.Core`; link_driver.cpp:149-151 ("TODO: should also be able to link in the rest of the Core object files"); `carbon build -o=psb printstr.carbon` links it and prints `Hello, world!` (0.32 s on F, warm). The repository's own examples/hello_world.carbon therefore links only under the Bazel `carbon_binary` rule or `carbon build` (W-003) |
 | 9 | Fork features on N | REJECTED by N, measured | Choice payloads: `` semantics TODO: `choice alternatives with parameters are not yet supported` ``; `match`: `` semantics TODO: `HandleMatchIntroducer` ``; `Core.Result`: ``member name `Result` not found in `Core` `` (the first diagnostics of §2.B samples 5 and 6 on N). The four other fork features, each with a one-statement program that F compiles and runs: if-let `error: expected expression` (at the `let`); `union` and `overload fn` both `error: unrecognized declaration introducer`; `Core.Slice` ``error: member name `Slice` not found in `Core` `` (amended 2026-10-13, review fold: B m-4) |
 | 10 | The tutorial samples, by hand | WORKS, measured | The ten samples of §2.B (rev 2 text) with the three-command compile/link/run of D-EV-6, stderr empty on both toolchains: hello, functions, classes, generics, interop-use-C++, C++-library (with `carbon clang`), call-Carbon and the three-file package print the §4 values and exit 0 on F and on N (nightly 0.0.0-0.nightly.2026.10.12, the only nightly measured); choice/match and errors print the §4 values on F and are rejected by N (row 9). Rev 2 re-ran the eight single-file samples on both toolchains after A11's additions: functions prints `30 3 2 1 0 1`, errors `3 -7 3 0`, call-Carbon `14 100 20`, matching §4's hand derivations (amended 2026-10-13, review fold: A11, A12) |
-| 11 | A separately compiled C++ library | WORKS, measured | `carbon clang -- -c rectangle.cpp -o rectangle.o`, `carbon compile --output=main.o main.carbon`, `carbon link --output=main main.o rectangle.o` → `42`, exit 0, on F and on N. An object of the same function (no standard library) compiled by the system `clang++` 21.1.8 or by `g++` 13 also links. A function using `std::string` compiled by `g++` or by the system `clang++` (whose headers are libstdc++'s) fails to link: `ld.lld: error: undefined symbol: std::__cxx11::basic_string<...>`; compiled by `carbon clang` it links and prints `10`. The g++ object links and prints `10` when libstdc++ is passed by path after `--` (`carbon link --output=s main.o strlib.o -- /usr/lib/x86_64-linux-gnu/libstdc++.so.6`, F), the workaround docs/guides/build_systems.md:284-292 documents on PR 52; the two libraries' types are distinct (libstdc++'s `std::__cxx11::` names against libc++'s), so it holds only while no standard-library object crosses between the g++ code and the rest (amended 2026-10-13, review fold: A9, B m-2) |
+| 11 | A separately compiled C++ library | WORKS, measured | `carbon clang -- -c rectangle.cpp -o rectangle.o`, `carbon compile --output=main.o main.carbon`, `carbon link --output=main main.o rectangle.o` → `42`, exit 0, on F and on N. An object of the same function (no standard library) compiled by the system `clang++` 21.1.8 or by `g++` 13 also links. A function using `std::string` compiled by `g++` or by the system `clang++` (whose headers are libstdc++'s) fails to link: `ld.lld: error: undefined symbol: std::__cxx11::basic_string<...>`; compiled by `carbon clang` it links and prints `10`. The g++ object links and prints `10` when libstdc++ is passed by path after `--` (`carbon link --output=s main.o strlib.o -- /usr/lib/x86_64-linux-gnu/libstdc++.so.6`, F), the workaround docs/guides/build_systems.md:284-292 documents on PR 52; the two libraries' types are distinct (libstdc++'s `std::__cxx11::` names against libc++'s), so it holds only while no standard-library object crosses between the g++ code and the rest (amended 2026-10-13, review fold: A9, B m-2). Re-measured by commit 2a's fixer on F and on N: the `g++` object of `rectangle.cpp` links with the tutorial's `main.carbon` and prints `42`; the `g++` `std::string` object fails as above, and links and prints `10` with libstdc++ passed by path; the toolchain's own `lib/carbon/llvm/bin/clang++` compiles either C++ file into an object that links (`42`, `10`) (amended 2026-10-13, document-review fold: MAJOR-3, MINOR-6) |
 | 12 | Quoted C++ header lookup | MEASURED | `import Cpp library "rectangle.h"` resolves against the working directory, not the importing file's directory: compiling `../main.carbon` from a subdirectory fails with `'rectangle.h' file not found`; `--clang-arg=-I<dir>` and `-- -I<dir>` both fix it and give byte-identical objects (`cmp`) |
 | 13 | A multi-file package | WORKS on F and N, measured | `package Geometry;` API file, `impl package Geometry;` implementation file, `import Geometry;` in main: `carbon compile --output=geometry.o geometry.carbon`; `carbon compile --output-last-input-only --output=geometry.impl.o geometry.carbon geometry.impl.carbon`; same for main with `geometry.carbon main.carbon`; `carbon link --output=shapes geometry.o geometry.impl.o main.o` → `12`, `14`. The API object has no symbols (`llvm-nm` prints nothing) and the link also works without it. `carbon build -o=shapes_b main.carbon geometry.carbon geometry.impl.carbon` → same. main alone: `error: imported API 'Geometry' not found`; three inputs with one `--output` and no last-input flag: ``warning: only outputting main.carbon to y.o, skipping output of 2 input files; pass `--output-last-input-only` to silence this warning``. The runner's command shape (each unit compiled with all of its siblings) and the tutorial's (each unit with the API file only) give byte-identical objects for all three units on F and on N (`cmp`) (amended 2026-10-13, review fold: B m-3, A12) |
-| 14 | Diagnostics an evaluator meets | MEASURED on F | A `match` with no `default` arm whose arms all `return`, with no return after it, is rejected with ``error: missing `return` at end of function with declared return type``: measured for a choice match covering every alternative and for a match whose last arm is the irrefutable `case x: i32`; the same function whose `match` has a `default` arm compiles without a trailing `return` and runs (exit 1 for `F(0)` returning 1) (amended 2026-10-13, review fold: A3); `package Main;`: ``error: `Main//default` must omit `package` declaration``; `fn Run() -> i32 { return 3; }` exits 3; `fn Run() -> Core.Result((), i32)` returning `.Err` prints ``carbon: `Main.Run` returned `.Err` of type `i32`; exiting with code 1`` to stderr and exits 1 |
+| 14 | Diagnostics an evaluator meets | MEASURED on F | A `match` with no `default` arm whose arms all `return`, with no return after it, is rejected with ``error: missing `return` at end of function with declared return type``: measured for a choice match covering every alternative and for a match whose last arm is the irrefutable `case x: i32`; the same function whose `match` has a `default` arm compiles without a trailing `return` and runs (exit 1 for `F(0)` returning 1) (amended 2026-10-13, review fold: A3); `package Main;`: ``error: `Main//default` must omit `package` declaration``; `fn Run() -> i32 { return 3; }` exits 3; `fn Run() -> Core.Result((), i32)` returning `.Err` prints ``carbon: `Main.Run` returned `.Err` of type `i32`; exiting with code 1`` to stderr and exits 1. The first behavior is a toolchain limitation, not the design: docs/design/error_handling.md:350-353 records that the checker's reachability analysis does not consult match exhaustiveness, while pattern_matching.md:590-592 and :612-617 design the code after an exhaustive `match` as unreachable (amended 2026-10-13, document-review fold: R2-1) |
 | 15 | Windows | UNSUPPORTED, source and measured | clang_runtimes.cpp:240-242 and :400-402 return "TODO: Windows runtimes are untested and not yet supported."; link_driver.cpp:59-61 (Clang-driver linking "works well on Unix OSes"). Cross-targeting from Linux, measured: `carbon compile --target=x86_64-pc-windows-msvc` fails with `error: unsupported option '-fPIE' for target 'x86_64-pc-windows-msvc'` (exit 1); `carbon link` with that target prints the same error and then a crash stack dump, on F (exit 134) and on N alike — upstream behavior, recorded in W-059's notes at discharge |
 | 16 | Platforms in upstream's CI configuration and releases | SOURCED from configuration, not measured (amended 2026-10-13, review fold: A1) | nightly_release.yaml:41 (`runs-on: ubuntu-22.04`), :97-105 (one `//toolchain/install:carbon_toolchain_tar_gz`), :118-127 (one asset `carbon_toolchain-${release_version}.tar.gz`, no OS or CPU in the name), and its header TODO :21-22 ("Build artifacts for all the different OSes ... rather than just x86 Linux"); tests.yaml:29-32 runs `bazel test` on ubuntu-22.04, ubuntu-22.04-arm and macos-14 ("Linux on x86-64 and AArch64, and macOS on AArch64"), which includes toolchain/install/install_test.py:190-202 (`test_carbon_end_to_end`: compile, link and run of `Cpp.std.cout << "Hello from Carbon\n"` from an installed tree; py_test at toolchain/install/BUILD:782-791). No Intel macOS and no Windows runner. On macOS the Clang prefix hard-codes `--sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk` and `-mlinker-version=705` (toolchain/base/clang_invocation.cpp:148-167): linking there needs Apple's Command Line Tools SDK at that path (source only). This row is configuration: it says upstream's code is in upstream's CI matrix, not that this fork's code passes there; row 26 is the fork's own record |
-| 17 | The fork's own GitHub prereleases | STALE, measured | REST listing of the repository's releases: the newest fork toolchain is `fork-toolchain-143-ea02513be` ("Fork toolchain 0.0.0-0.dev @ ea02513be", 2026-09-25, 58 MB), 321 commits behind 0bdce60a5; `core/prelude/types/result.carbon` does not exist at ea02513be (added 2026-09-27 by a27059915, EH-A), and neither does `core/prelude/types/slice.carbon`; `union` and `overload` are not keywords there (toolchain/lex/token_kind.def), and if-let is a SKIP program (control_flow/if_let_let_else.carbon:10; W-012 landed 2026-09-27). Downloaded and run here: the tarball (sha256 `802a4ea5...`) unpacks, but its busybox needs GLIBC_2.44 (`cosh` and `sinh`, `llvm-objdump -T`), so on this Ubuntu 24.04 (glibc 2.39) every command fails with ``/lib/x86_64-linux-gnu/libm.so.6: version `GLIBC_2.44' not found (required by .../bin/carbon)``. Published before R28 (2026-09-26) ended agent use of the owner's runner; nothing has refreshed it since (amended 2026-10-13, review fold: B-6) |
+| 17 | The fork's own GitHub prereleases | STALE, measured | REST listing of the repository's releases: the newest fork toolchain is `fork-toolchain-143-ea02513be` ("Fork toolchain 0.0.0-0.dev @ ea02513be", 2026-09-25, 58 MB), 321 commits behind 0bdce60a5; `core/prelude/types/result.carbon` does not exist at ea02513be (added 2026-09-27 by a27059915, EH-A), and neither does `core/prelude/types/slice.carbon`; `union` and `overload` are not keywords there (toolchain/lex/token_kind.def), and if-let is a SKIP program (control_flow/if_let_let_else.carbon:10; W-012 landed 2026-09-27). Downloaded and run here: the tarball (sha256 `802a4ea5...`) unpacks, but its busybox needs GLIBC_2.44 (`cosh` and `sinh`, `llvm-objdump -T`), so on this Ubuntu 24.04 (glibc 2.39) every command fails with ``/lib/x86_64-linux-gnu/libm.so.6: version `GLIBC_2.44' not found (required by .../bin/carbon)``. Published before R28 (2026-09-26) ended agent use of the owner's runner; nothing has refreshed it since (amended 2026-10-13, review fold: B-6). The same listing, read again on 2026-10-13, has above it `arbiter-v0.0.0-0.nightly.2026.09.28` ("Arbiter: mirrored upstream nightly v0.0.0-0.nightly.2026.09.28", prerelease, published 2026-09-28), whose notes call it a verbatim mirror of upstream's nightly tarball of that date; not run here (amended 2026-10-13, document-review fold: MINOR-7, R2-7) |
 | 18 | How the fork toolchain is built from source | SOURCED, not run here | fork_hosted.yaml:106-110 (`./scripts/run_bazel.py build -c opt //toolchain/install:carbon_toolchain_tar`) and :112-120 (unpack `bazel-bin/toolchain/install/carbon_toolchain-*.tar`, then `"$CARBON" version`); the unpacked directory is `carbon_toolchain-0.0.0-0.dev` (the `toolchain` field of fork/conformance/out/scoreboard.json). The user-facing script is `./scripts/run_bazelisk.py` (README.md:349, contribution_tools.md:78), which execs bazelisk; the hosted job's `run_bazel.py` is a retrying wrapper over `scripts_utils.locate_bazel()` (scripts/run_bazel.py) (amended 2026-10-13, review fold: A7, B m-3). Prerequisites docs/project/contribution_tools.md:46-113 (Debian or Ubuntu: Clang 21 or newer with libc++, LLD, bazelisk), :115-167 (macOS: Homebrew llvm, bazelisk), :169-176 (Windows: WSL). There is no Bazel in this container (task environment), so none of this ran here; the target and the unpack step ran on the hosted job of record 37402970811 (header paragraph) |
 | 19 | Existing evaluator documentation | PARTIAL | README.md:273-363 "Getting started" (browser link :275-276; nightly walkthrough :278-315 for "a recent Ubuntu Linux or similar (Debian, WSL, etc.)", :281-282; reminder :317-321; build from source :323-355; links :357-362); docs/guides/ holds README.md (12 lines, one list item: the glossary) and glossary.md; docs/project/faq.md is 659 lines (9 H2, 34 H3; §0.3); toolchain/docs/driver.md is a 22-line developer stub |
 | 20 | examples/ | CONTEXT | examples/hello_world.carbon uses `Core.PrintStr` (row 8); examples/sieve.carbon uses `returned var` and `Core.UnformedInit`; examples/interop/cpp/hello_world.carbon passes strings to C through `Cpp.std.data("...\0")`; examples/advent2024/README.md:13-17 says those samples "are not reflective of expected Carbon style and idioms". None is written for a reader |
@@ -122,10 +125,11 @@ forty_two program, verbatim).
 | 22 | Conformance runner facts | MEASURED | compile command runner.py:516-524 (Carbon units only), link :546-551, `run_cmd` passes no `cwd` (:453-462), multi-unit units are `prog_dir.glob("*.carbon")` (:321). `--self-test` on 80a11e7f0: "150 programs parsed, 56 bullets in table, OK" plus the three self-checks; `--filter project/` with F's busybox and a private `--out`: 6 PASS / 6 SKIP in 2.7 s (bullet rollup: the evaluator bullet PASS through evaluator_docs_getting_started.carbon). On PR 52's head ea573f672 the same code sits at :690-698, :720-725 and :357, `run_cmd` takes `cwd=` (:563) and `--self-test` adds the build-script self-check (:1665, :1767), so every trunk line pin above moves at the integration commit (amended 2026-10-13, review fold: A2) |
 | 23 | Prototype of this plan's programs | MEASURED | Two scratch mirrors with §2.E's rev 2 programs, the fixtures of §2.E.2 and the stub removed, each after `--update-readme-table` (ten rows replace one). State T (trunk 80a11e7f0's fork/conformance and gap-analysis.md): "159 programs parsed, 56 bullets in table, OK"; `--filter project/` with F: 15 PASS / 6 SKIP (every new program PASS except the C++-library SKIP); with N and `--filter project/evaluator`: 8 PASS, 2 COMPILE-FAIL (choice_match, errors: row 9's diagnostics), 1 SKIP. State C (PR 52's head ea573f672, with its cmake/ and examples/cmake/): the four self-checks OK and "159 programs parsed, 56 bullets in table, OK"; `--filter project/` with F: 18 PASS / 3 SKIP, all ten new programs PASS; with N and `--filter project/evaluator`: 9 PASS, 2 COMPILE-FAIL. The rev 2 checker passes on a mock page holding the twelve `carbon` blocks, the two `cpp` blocks and one `text` block per section ("14 samples, 0 errors"), and reports each of: a one-space code edit, `7` for `-7` in a `text` block, an indented `carbon` fence, and an edited `cpp` line. Wired into state C's `--self-test` it prints "evaluator-samples self-check: OK" and turns the self-test to ERRORS on the `7` edit (amended 2026-10-13, review fold: A2, A10, A11, B-1, B-3) |
 | 24 | prek | AVAILABLE | `uvx prek --version`: prek 0.5.5. Markdown hooks: rumdl twice (`--fix`, upstream's `.rumdl.toml`, MD013 reflow), check-google-doc-style, markdown-toc, check-links, codespell, check-copyright; Python: ruff-check, ruff-format, ty; JSON: prettier. The four bazel-backed hooks are skipped by name (task environment) |
-| 25 | The C++-library sample under PR 52's BUILD-SCRIPT channel | WORKS, measured (amended 2026-10-13, review fold: A2, B-1) | Fixture directory fork/evaluator/cpp_library/ (`main.carbon`, `rectangle.h`, `rectangle.cpp`, each with the license header, and `build.sh`, executable, running the section's four commands from its own directory into `$CARBON_BUILD_DIR`, build output on stderr, exit 2 on a compile failure and 3 on a link failure) plus the program of §2.E.2 in its BUILD-SCRIPT form, in the state C mirror of row 23: the build-script self-check OK (the identity rule of /home/user/carbon-cmake fork/conformance/README.md:222-231 holds); PASS with `42` on F and on N; a one-space edit of the fixture's `main.carbon` turns the self-check to ERRORS. Deleting the program's SKIP line and adding the BUILD-SCRIPT line after the bullet line turns the state T program into the state C program byte for byte (`cmp`). The check-header-guards hook (scripts/check_header_guards.py:64-65) rewrites a fixture guard `RECTANGLE_H_` to `CARBON_FORK_EVALUATOR_CPP_LIBRARY_RECTANGLE_H_` (exit 1, then 0); clang-format 21.1.8 leaves both C++ fixtures unchanged |
+| 25 | The C++-library sample under PR 52's BUILD-SCRIPT channel | WORKS, measured (amended 2026-10-13, review fold: A2, B-1) | Fixture directory fork/evaluator/cpp_library/ (`main.carbon`, `rectangle.h`, `rectangle.cpp`, each with the license header, and `build.sh`, executable, running the section's four commands from its own directory into `$CARBON_BUILD_DIR`, build output on stderr, exit 2 on a compile failure and 3 on a link failure) plus the program of §2.E.2 in its BUILD-SCRIPT form, in the state C mirror of row 23: the build-script self-check OK (the identity rule of /home/user/carbon-cmake fork/conformance/README.md:222-231 holds); PASS with `42` on F and on N; a one-space edit of the fixture's `main.carbon` turns the self-check to ERRORS. Deleting the program's SKIP line and adding the BUILD-SCRIPT line after the bullet line turns the state T program into the state C program byte for byte (`cmp`). The check-header-guards hook (scripts/check_header_guards.py:64-65) rewrites a fixture guard `RECTANGLE_H_` to `CARBON_FORK_EVALUATOR_CPP_LIBRARY_RECTANGLE_H_` (exit 1, then 0); clang-format 21.1.8 leaves both C++ fixtures unchanged. The fixtures also fall under the clangd-tidy gates, which exclude only `**/*.tpl.h` and `fork/conformance/programs/**` (.github/workflows/clangd_tidy.yaml:66-77) and `.tpl.h` and `.diff.cpp` (the fork gate, fork_build_toolchain.yaml:133-151), and the repository's .clang-tidy enables `modernize-*` with `WarningsAsErrors: '*'`: clang-tidy 18.1.3 with that file rejects the leading `int` return type of `RectangleArea` in both fixtures (`modernize-use-trailing-return-type`) and accepts `auto RectangleArea(int width, int height) -> int`, the trailing return syntax of docs/project/cpp_style_guide.md:108, which commit 2a adopts in §2.B and in the fixtures; clangd-tidy itself was not run here (amended 2026-10-13, document-review fold: R2-2) |
 | 26 | This fork's own CI record on macOS and Linux arm64 | MEASURED from run records, not run here (amended 2026-10-13, review fold: A1) | Read through the GitHub REST API (no dispatch): tests.yaml on fork PRs. SL-2 PR run 37398447710 at b4416a88e (2026-10-06): ubuntu-22.04-arm Test and Test (Opt) success; macos-14 Test (Opt) FAILURE, `//toolchain/testing:file_test FAILED` on toolchain/check/testdata/interop/cpp/function/export/overload_set.carbon (``call to 'F' is ambiguous`` for `Carbon::F(7L)`: on Darwin Carbon `i64` exports as `long long`, so a `long` converts equally to the `i64` and `bool` members), while `//toolchain/install:install_test PASSED in 58.8s` in the same job; macos-14 Test (Default) cancelled. OV-3 PR run 37359728074 (2026-10-05): the same macos-14 Test (Opt) failure, install_test PASSED in 28.5 s. UA-1 PR run 37406043564: the macos-14 jobs failed in test setup. Trunk push run 37406163455 at 8068151ed: every Test step skipped (no code change). So no run of the current trunk's code reached a test step on any runner; the last arm64 pass is b4416a88e; on macOS the end-to-end install test passed but a fork-only export golden fails since OV-3, and no fork record mentions the failure (filed as W-153) |
 | 27 | The nightly download block, run verbatim | WORKS, measured (amended 2026-10-13, review fold: B-4, B-5) | §2.A item 3's block (rev 2, `wget`) in a fresh directory under `env -i` with a `PATH` that has no `carbon`: `date -d yesterday` on 2026-10-13 gives 2026.10.12; the download is 58783647 bytes, sha256 `f85bdd83f35bc6711ee92ab9de5e6be026e55cd8c143979146d93d0953e22f34`; the unpacked tree is identical to N (`diff -rq`); `carbon version` prints `Carbon Language toolchain version: 0.0.0-0.nightly.2026.10.12+62f1cc6`; §2.A item 6's forty_two block then prints `42`. For a date with no release (2001.01.01): `wget` prints `ERROR 404: Not Found.`, exits 8 and writes no file; `curl -LO` exits 0 and saves a 9-byte `Not Found` body, after which `tar -xf` fails with `gzip: stdin: not in gzip format` (exit 2); `curl -fLO` prints `curl: (22) The requested URL returned error: 404`, exits 22 and writes no file |
 | 28 | The FAQ's reproducers | MEASURED on F and N (amended 2026-10-13, review fold: A4, A5, B m-4) | The twenty reproducers of §2.C, first run on F and on N by a scratch script (`ev1/fix/faq/run_repro.sh`), then in the one-line form §2.C shows by the prototype of D-EV-21's `check_faq.py` against a mock FAQ page quoting every expected line: "13 reproducers run, 0 errors" on F and "17 reproducers run, 0 errors" on N (each row runs on the toolchains §2.C names); a one-character edit of a quoted line on the page is reported |
+| 29 | Toolchain rules that the design states otherwise or not at all | MEASURED on F and N (amended 2026-10-13, document-review fold: R2-3, R2-4) | A guard without parentheses, `case x: i32 if x < 0 =>`, and the design's own guard example (pattern_matching.md:809-816) fail on F with ``error: expected `(` after `if` `` (toolchain/parse/handle_match.cpp:214), and N prints the same parse error for the first, while the design's grammar is `case pattern [if expression]?`; `Core.Print(1 + if ... then 0 else 1)` fails on both with ``error: parentheses are required around this unary `if` operator``, as if.md:41-45 states, while `return if ...` and a parenthesized operand compile and run on both; the interop design's sections on inline C++ import, constructors and member access are TODO headings (interoperability/README.md:156, :240, :244), and no file under docs/design mentions `inline Cpp` (`grep`) |
 
 ### §0.2 Stale claims (each corrected at discharge, §8.6)
 
@@ -306,16 +310,21 @@ before PR 52, or PR 52 is abandoned, W-154 is filed then (D-EV-12).
 
 ### §1.G Decisions this plan auto-adopts (R29(a); each with a break condition)
 
--   **D-EV-1 — Three pages under docs/guides/** (§1.A):
-    `getting_started.md`, `tutorial.md`, `evaluator_faq.md`, each with an
-    H1, the `<!-- -->` license block and a markdown-toc table of contents.
-    Rejected: one long page (the FAQ must be linkable on its own, and the
-    getting-started page must stay short enough to follow at a terminal);
-    a `docs/guides/tutorial/` directory of per-chapter pages (ten short
-    chapters do not justify eleven files). Break condition: tutorial.md
-    exceeds about 700 lines, or the evaluator-simulation review (D-EV-19)
-    reports a task that needs more than one jump between pages — then split
-    the tutorial into per-chapter pages.
+-   **D-EV-1 — Three pages under docs/guides/** (§1.A): `getting_started.md`,
+    `tutorial.md`, `evaluator_faq.md`, each with an H1, the `<!-- -->` license
+    block and a markdown-toc table of contents. Rejected: one long page (the FAQ
+    must be linkable on its own, and the getting-started page must stay short
+    enough to follow at a terminal); a `docs/guides/tutorial/` directory of
+    per-chapter pages (ten short chapters do not justify eleven files). Break
+    condition: tutorial.md exceeds about 700 lines, or the evaluator-simulation
+    review (D-EV-19) reports a task that needs more than one jump between pages
+    — then split the tutorial into per-chapter pages. At commit 2a, document
+    review 1 reported two tasks that needed two jumps (its MINOR-1a and
+    MINOR-1b), each caused by a missing link rather than by the tutorial's
+    length; the fold added the links instead of splitting, after which every
+    task the review met needs at most one jump, and the folded tutorial.md is
+    700 lines long, so neither condition fires (amended 2026-10-13,
+    document-review fold: MINOR-1a, MINOR-1b).
 -   **D-EV-2 — The guides target this fork's toolchain and label every step
     with the toolchains it runs on** (§1.B). The tutorial's commands use a
     bare `carbon` on `PATH` (measured to work, §0.1 row 2), so the same
@@ -371,29 +380,38 @@ before PR 52, or PR 52 is abandoned, W-154 is filed then (D-EV-12).
     not tested: a machine with libc6-dev and no GCC packages at all. Break
     condition: a distribution's package metadata shows the headers or start
     files in a different package — correct that name and drop its label.
--   **D-EV-5 — The fork toolchain comes from source.** getting_started.md
-    gives the Bazel route of §0.1 row 18 (`./scripts/run_bazelisk.py build
-    -c opt //toolchain/install:carbon_toolchain_tar`, unpack into a
-    directory, put its `bin` on `PATH`) with the prerequisites linked to
-    contribution_tools.md, labelled "not run by this project's container (no
-    Bazel there); the target and the unpack step are those of the fork's
-    hosted conformance job, which built and ran them in run 37402970811; the
-    script is the README's user-facing `run_bazelisk.py`, where that job
-    uses `run_bazel.py`". The script substitution is deliberate:
-    README.md:349 and contribution_tools.md:78 teach `run_bazelisk.py`,
-    which needs no Bazel installed (amended 2026-10-13, review fold: A7,
-    B m-3). No guide links the stale prereleases (§0.1 row 17), but the
-    "Two toolchains" section and the FAQ entry "Can I download a prebuilt
-    fork toolchain?" name the `fork-toolchain-*` prereleases, say they
-    predate `Core.Result`, if-let, unions, `overload fn` and slices, quote
-    the GLIBC_2.44 loader error the newest one gives on Ubuntu 24.04, and
-    tell the reader not to use them for this tutorial (amended 2026-10-13,
-    review fold: B-6). Residue W-152: publish a current fork toolchain
-    artifact and retire or relabel the stale ones. Break conditions: a
-    current fork toolchain artifact is published — then getting_started.md
-    gains its download path ahead of the source build; the prereleases are
-    deleted or refreshed — then the warning and the FAQ entry are rewritten
-    from the new listing (amended 2026-10-13, review fold: B-6).
+-   **D-EV-5 — The fork toolchain comes from source.** getting_started.md gives
+    the Bazel route of §0.1 row 18 (`./scripts/run_bazelisk.py build -c opt
+    //toolchain/install:carbon_toolchain_tar`, unpack into a directory, put its
+    `bin` on `PATH`) with the prerequisites linked to contribution_tools.md,
+    labelled "not run by this project's container (no Bazel there); the target
+    and the unpack step are those of the fork's hosted conformance job, which
+    built and ran them in run 37402970811; the script is the README's
+    user-facing `run_bazelisk.py`, where that job uses `run_bazel.py`". The
+    script substitution is deliberate: README.md:349 and
+    contribution_tools.md:78 teach `run_bazelisk.py`, which needs no Bazel
+    installed (amended 2026-10-13, review fold: A7, B m-3). No guide links the
+    stale prereleases (§0.1 row 17), but the "Two toolchains" section and the
+    FAQ entry "Can I download a prebuilt fork toolchain?" name the
+    `fork-toolchain-*` prereleases, say they predate `Core.Result`, if-let,
+    unions, `overload fn` and slices, quote the GLIBC_2.44 loader error the
+    newest one gives on Ubuntu 24.04, and tell the reader not to use them for
+    this tutorial (amended 2026-10-13, review fold: B-6). Both places also name
+    the newest entry of that releases page,
+    `arbiter-v0.0.0-0.nightly.2026.09.28`, a mirror of upstream's nightly of
+    2026-09-28 and so not this fork's toolchain (amended 2026-10-13,
+    document-review fold: MINOR-7, R2-7). The build block's label also says that
+    a build on the reader's machine does not get the hosted job's read-only
+    remote cache, which the CI action configures
+    (.github/actions/build-setup-common/action.yml:70) and .bazelrc does not
+    (:45-51, a local disk cache only), so the job's 9m29.6s is no estimate for
+    it (amended 2026-10-13, document-review fold: MAJOR-2). Residue W-152:
+    publish a current fork toolchain artifact and retire or relabel the stale
+    ones. Break conditions: a current fork toolchain artifact is published —
+    then getting_started.md gains its download path ahead of the source build;
+    the prereleases are deleted or refreshed — then the warning and the FAQ
+    entry are rewritten from the new listing (amended 2026-10-13, review fold:
+    B-6).
 -   **D-EV-6 — Compile and link are the taught path; `carbon build` is the
     shortcut.** Every sample is built by `carbon compile --output=X.o
     X.carbon`, `carbon link --output=X X.o`, `./X` — the README's commands,
@@ -614,19 +632,22 @@ before PR 52, or PR 52 is abandoned, W-154 is filed then (D-EV-12).
     entry covers both tools. Break conditions: README.md changes its
     download tool — the guide follows; a report that `wget` is missing on a
     supported image — the block switches to `curl -fLO`.
--   **D-EV-21 — The FAQ's quoted diagnostics are reproducer-backed**
-    (amended 2026-10-13, review fold: A4). §2.C fixes a reproducer for
-    every diagnostic-keyed entry (input of ten lines or fewer, command,
-    toolchain, exact line, exit status), measured on F and N (§0.1 row 28).
-    fork/evaluator/check_faq.py (stdlib only) runs the reproducers that
-    apply to the toolchain it is given and requires each expected line both
-    in the output and inside a `text` block of evaluator_faq.md; it needs a
-    toolchain, so it is not part of `--self-test`. It runs at commit 2 on F
-    and N, a mismatch blocks the commit as a failing tutorial sample would,
-    the result goes in the message, and the land sequence runs it with the
-    then-current nightly. Break condition: a toolchain changes a quoted
-    diagnostic — the FAQ quote and the reproducer change together in one
-    commit.
+-   **D-EV-21 — The FAQ's quoted diagnostics are reproducer-backed** (amended
+    2026-10-13, review fold: A4). §2.C fixes a reproducer for every
+    diagnostic-keyed entry (input of ten lines or fewer, command, toolchain,
+    exact line, exit status), measured on F and N (§0.1 row 28).
+    fork/evaluator/check_faq.py (stdlib only) runs the reproducers that apply to
+    the toolchain it is given and requires each expected line both in the output
+    and as a whole line inside a `text` block of evaluator_faq.md, and it
+    requires every line of a `text` block of getting_started.md other than
+    program output to be such a line of the FAQ, so the guide's repeated
+    diagnostics stay the reproducer-backed ones (amended 2026-10-13,
+    document-review fold: R2-5, MINOR-9); it needs a toolchain, so it is not
+    part of `--self-test`. It runs at commit 2 on F and N, a mismatch blocks the
+    commit as a failing tutorial sample would, the result goes in the message,
+    and the land sequence runs it with the then-current nightly. Break
+    condition: a toolchain changes a quoted diagnostic — the FAQ quote and the
+    reproducer change together in one commit.
 
 ## §2 Implementation spec, file by file
 
@@ -646,34 +667,48 @@ Title "Getting started with the Carbon toolchain". Sections, each an H2 with
 exactly the quoted title (anchors are what the tutorial, the FAQ and
 faq.md's pointer target; amended 2026-10-13, review fold: B m-1):
 
-1.  **"Two toolchains"** — a two-row table: the upstream nightly (prebuilt
-    for Linux x86-64 only; upstream's language subset) and this fork's
-    toolchain (built from this repository; adds choice payloads, `match`,
-    `Core.Result` and `?`, if-let, unions, `overload fn`, slices — each
-    measured absent from nightly 2026.10.12, §0.1 row 9; amended 2026-10-13,
-    review fold: B m-4). One sentence: the tutorial marks the two sections
-    that need the fork's toolchain. One paragraph on the fork's GitHub
-    Releases page: its `fork-toolchain-*` prereleases (newest
-    `fork-toolchain-143-ea02513be`, 2026-09-25) predate `Core.Result`,
-    if-let, unions, `overload fn` and slices, the newest stops on Ubuntu
-    24.04 with the GLIBC_2.44 loader error of §0.1 row 17, and they are not
-    for this tutorial (W-152; amended 2026-10-13, review fold: B-6). One
-    sentence: the browser link of README.md:275-276 runs upstream's
-    toolchain, so presumably none of the fork's features, labelled
-    "inferred: not measured by this project" (amended 2026-10-13, review
-    fold: B m-4).
-2.  **"Platforms"** — the table of D-EV-3 with a "Status" column and a
-    "Sources" column whose entries say which kind they are (amended
-    2026-10-13, review fold: A1): Linux x86-64 (prebuilt nightly; measured
-    on Ubuntu 24.04 with glibc 2.39); Linux arm64 (no prebuilt; build from
-    source; upstream's CI configuration runs upstream's code there; this
-    fork's CI record: last passing run 37398447710 at b4416a88e, no run of
-    the current trunk); macOS arm64 (no prebuilt; build from source;
-    "unverified for this fork's current trunk": upstream's CI configuration
-    runs upstream's code there, and this fork's record shows the install
-    test passing beside a failing fork-only export test, W-153; linking
-    needs the Command Line Tools SDK); Intel macOS (in no CI); Windows
-    (unsupported; WSL 2 with the Linux instructions, not measured).
+1.  **"Two toolchains"** — a two-row table: the upstream nightly (prebuilt for
+    Linux x86-64 only; upstream's language subset) and this fork's toolchain
+    (built from this repository; adds choice payloads, `match`, `Core.Result`
+    and `?`, if-let, unions, `overload fn`, slices — each measured absent from
+    nightly 2026.10.12, §0.1 row 9; amended 2026-10-13, review fold: B m-4). One
+    sentence: the tutorial marks the two sections that need the fork's
+    toolchain. One paragraph on the fork's GitHub Releases page: its
+    `fork-toolchain-*` prereleases (newest `fork-toolchain-143-ea02513be`,
+    2026-09-25) predate `Core.Result`, if-let, unions, `overload fn` and slices,
+    the newest stops on Ubuntu 24.04 with the GLIBC_2.44 loader error of §0.1
+    row 17, and they are not for this tutorial (W-152; amended 2026-10-13,
+    review fold: B-6). The nightly's "Linux x86-64 only" cites its source,
+    upstream's release configuration, which publishes one tarball built on Linux
+    x86-64 (§0.1 row 16) (amended 2026-10-13, document-review fold: MINOR-4);
+    the releases paragraph first names the page's newest entry,
+    `arbiter-v0.0.0-0.nightly.2026.09.28`, a copy of upstream's nightly of
+    2026-09-28 with none of the fork's features (§0.1 row 17) (amended
+    2026-10-13, document-review fold: MINOR-7, R2-7); and the first W-152 on the
+    page says it is tracked in this fork's work-item ledger, linked as
+    /fork/inventory/work-items.json, as does the FAQ's first id (amended
+    2026-10-13, document-review fold: MINOR-8). One sentence: the browser link
+    of README.md:275-276 runs upstream's toolchain, so presumably none of the
+    fork's features, labelled "inferred: not measured by this project" (amended
+    2026-10-13, review fold: B m-4).
+2.  **"Platforms"** — the table of D-EV-3 with a "Status" column and a "Sources"
+    column whose entries say which kind they are (amended 2026-10-13, review
+    fold: A1): Linux x86-64 (prebuilt nightly; measured on Ubuntu 24.04 with
+    glibc 2.39); Linux arm64 (no prebuilt; build from source; upstream's CI
+    configuration runs upstream's code there; this fork's CI record: last
+    passing run 37398447710 at b4416a88e, no run of the current trunk); macOS
+    arm64 (no prebuilt; build from source; "unverified for this fork's current
+    trunk": upstream's CI configuration runs upstream's code there, and this
+    fork's record shows the install test passing beside a failing fork-only
+    export test, W-153; linking needs the Command Line Tools SDK); Intel macOS
+    (in no CI); Windows (unsupported; WSL 2 with the Linux instructions, not
+    measured). Each "no prebuilt toolchain" cites upstream's release
+    configuration (amended 2026-10-13, document-review fold: MINOR-4); the Linux
+    x86-64 sources say that the fork toolchain measured is a CMake build on the
+    Ubuntu 24.04 machine that ran the measurements, and that run 37402970811 ran
+    at 606a99c5a, whose later trunk commits change only fork records, not the
+    toolchain (`git diff --stat 606a99c5a 80a11e7f0`: five fork/ record files)
+    (amended 2026-10-13, document-review fold: MINOR-3).
 3.  **"Install the upstream nightly on Linux x86-64"** — this block, which is
     the README's own download and unpack lines plus a `PATH` line, run verbatim
     in a fresh directory (§0.1 row 27; D-EV-20; amended 2026-10-13, review fold:
@@ -716,6 +751,15 @@ faq.md's pointer target; amended 2026-10-13, review fold: B m-1):
     read-only remote cache; amended 2026-10-13, review fold: A7). One sentence:
     the result has the same layout as the nightly, so every later command is
     identical. The repository's default branch is `trunk` (REST, 2026-10-13).
+    The section opens by saying that only the tutorial's two fork-only sections
+    need this toolchain, and closes by saying that with both toolchains
+    installed a bare `carbon` runs the one exported last and how to run the
+    other by its full path (amended 2026-10-13, document-review fold: MINOR-2).
+    After the 9m29.6s sentence, one paragraph says that a build on the reader's
+    machine gets no remote cache (the CI action sets it, not .bazelrc), so it
+    compiles LLVM and Clang from source and takes longer, by an amount and with
+    a disk use this project did not measure (amended 2026-10-13, document-review
+    fold: MAJOR-2).
 5.  **"System packages"** (renamed from "System packages for linking";
     amended 2026-10-13, review fold: A5) — D-EV-4's text: the compiler reads
     glibc's C headers for any program that imports a C++ header, and the
@@ -729,7 +773,15 @@ faq.md's pointer target; amended 2026-10-13, review fold: B m-1):
     platform."` and the link error `cannot open Scrt1.o` (§0.1 rows 4 and
     6; amended 2026-10-13, review fold: B m-4).
 6.  **"Your first program"** — the README's echo line verbatim (the
-    checker of D-EV-13 requires it), then:
+    checker of D-EV-13 requires it), then one sentence and this block, so
+    that the first link already has a cache directory (§0.1 row 3)
+    (amended 2026-10-13, document-review fold: MAJOR-1, R2-8, MINOR-5):
+
+    ```shell
+    mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}"
+    ```
+
+    then:
 
     ```shell
     carbon compile --output=forty_two.o forty_two.carbon
@@ -738,15 +790,19 @@ faq.md's pointer target; amended 2026-10-13, review fold: B m-1):
     ```
 
     expected output `42`; one paragraph per command (what each produces).
-7.  **"The first link takes a while"** — the runtimes cache: "about 20
-    seconds on an idle four-core Linux x86-64 machine, and up to twice that
-    or more on a busy one (measured: 19 to 22 seconds idle, 32 at load
-    average 4 to 6, 47 at load average 10.7); later links take hundredths
-    of a second" (§0.1 row 2; amended 2026-10-13, review fold: A6), the
-    default location, the global `--runtimes-cache=PATH` option, and
-    prebuilding with the `build-runtimes` subcommand (its
-    `--output-directory=DIR`) and then `--prebuilt-runtimes=DIR` (§0.1 row
-    3).
+7.  **"The first link takes a while"** — the runtimes cache: "about 20 seconds
+    on an idle four-core Linux x86-64 machine, and up to twice that or more on a
+    busy one (measured on 2026-10-13: 16 to 22 seconds at load average below 4,
+    32 to 34 at load average 4 to 8, 47 at load average 10.7); later links take
+    hundredths of a second" (§0.1 row 2; amended 2026-10-13, review fold: A6;
+    the measured range (amended 2026-10-13, document-review fold: R2-8)), the
+    default location and why item 6 creates it (the same `mkdir` line (amended
+    2026-10-13, document-review fold: MAJOR-1, MINOR-5)), and, introduced as
+    options the tutorial does not need, each of which builds the runtimes once
+    more (amended 2026-10-13, document-review fold: MINOR-11), the global
+    `--runtimes-cache=PATH` option and prebuilding with the `build-runtimes`
+    subcommand (its `--output-directory=DIR`) and then `--prebuilt-runtimes=DIR`
+    (§0.1 row 3).
 8.  **"One-step builds"** — `carbon build -o=forty_two forty_two.carbon`,
     the measured `-o=` spelling, the default output name, and that it also
     links the Core library objects (`Core.PrintStr`, FAQ); in state C the
@@ -783,9 +839,14 @@ section holds exactly one `text` block, its expected output (the checker
 compares it with the program's EXPECT-STDOUT, D-EV-13); diagnostics a section
 mentions go inline or in the FAQ, never in a second `text` block. A "Runs on:"
 line that names the nightly reads "the upstream nightly (measured with
-0.0.0-0.nightly.2026.10.12) and this fork's toolchain" (D-EV-2). Links are
-file-level where an anchor is not listed; anchors are the slugs of the exact
-H2/H3 titles of §2.C (check-links decides).
+0.0.0-0.nightly.2026.10.12) and this fork's toolchain" (D-EV-2); a "Runs on:"
+line for this fork's toolchain only links "this fork's toolchain" to
+getting_started.md's "Build this fork's toolchain from source" (amended
+2026-10-13, document-review fold: MINOR-1a). "Before you start" also tells the
+reader to give each of the two sections with several files its own directory,
+since both have a `main.carbon` (amended 2026-10-13, document-review fold:
+MINOR-10). Links are file-level where an anchor is not listed; anchors are the
+slugs of the exact H2/H3 titles of §2.C (check-links decides).
 
 | Section (H2 title) | Design links | FAQ entries linked under "If it fails" |
 | --- | --- | --- |
@@ -848,11 +909,13 @@ fn Run() -> i32 {
 }
 ```
 
-What to notice: `let` binds an immutable value, `var` a mutable variable,
-types follow names; `for` over a range; `if ... then ... else` is an
-expression, usable anywhere a value is, and the two prints take its two arms;
-`Run` may return `i32`, which becomes the exit code. (Rev 2 adds the last
-print so the program checks both arms; amended 2026-10-13, review fold: A11.)
+What to notice: `let` binds an immutable value, `var` a mutable variable, types
+follow names; `for` over a range; `if ... then ... else` is an expression,
+usable as an initializer, a call argument or a `return` operand, and as another
+operator's operand it needs parentheses (if.md:41-45, row 29 of §0.1) (amended
+2026-10-13, document-review fold: R2-3), and the two prints take its two arms;
+`Run` may return `i32`, which becomes the exit code. (Rev 2 adds the last print
+so the program checks both arms; amended 2026-10-13, review fold: A11.)
 
 **3. Classes** (`classes.carbon`; both):
 
@@ -985,14 +1048,17 @@ fn Run() -> i32 {
 }
 ```
 
-What to notice: a `choice` is a sum type whose alternatives may carry
-values; `match` destructures them, needs no `default` when every alternative
-is covered, runs only the first matching case (no fall-through), and a guard
-is written `if (...)`. The arms assign and the function returns once: a
-`match` with no `default` arm, even one that covers every alternative, is
-not treated as returning on every path, so a function whose arms all return
-still needs a `return` after it; with a `default` arm it does not (FAQ;
-§0.1 row 14; amended 2026-10-13, review fold: A3).
+What to notice: a `choice` is a sum type whose alternatives may carry values;
+`match` destructures them, needs no `default` when every alternative is covered,
+runs only the first matching case (no fall-through), and a guard is written `if
+(...)`, which the toolchain requires and the design's grammar does not (row 29
+of §0.1) (amended 2026-10-13, document-review fold: R2-4). The arms assign and
+the function returns once because of a current toolchain limitation, not a
+language rule: the toolchain does not yet treat an exhaustive `match` as
+returning on every path, though the design does, so without a `default` arm a
+function whose arms all return still needs a `return` after the `match` (FAQ;
+§0.1 row 14; amended 2026-10-13, review fold: A3; reworded as a toolchain
+limitation (amended 2026-10-13, document-review fold: R2-1)).
 
 **6. Errors as values: `Core.Result` and `?`** (`errors.carbon`; **the
 fork's toolchain only** — the nightly reports ``member name `Result` not
@@ -1089,7 +1155,9 @@ What to notice: C++ names live under `Cpp`; C++ `int` is Carbon `i32`; a
 constructor is called as `Cpp.Counter.Counter(...)`; a C++ class template is
 instantiated with a Carbon type argument; `import Cpp inline` compiles C++
 source written in the Carbon file; overload resolution for `std::abs` is
-C++'s own.
+C++'s own. The constructor call, C++ method calls and `import Cpp inline` are
+labelled toolchain behavior whose design sections are still placeholders
+(row 29 of §0.1) (amended 2026-10-13, document-review fold: R2-4).
 
 **8. Linking your own C++ library** (three files; both toolchains). The page
 shows `rectangle.h` and `rectangle.cpp` in `cpp` fenced blocks:
@@ -1099,7 +1167,7 @@ shows `rectangle.h` and `rectangle.cpp` in `cpp` fenced blocks:
 #define RECTANGLE_H_
 
 // Returns the area of a `width` by `height` rectangle.
-int RectangleArea(int width, int height);
+auto RectangleArea(int width, int height) -> int;
 
 #endif  // RECTANGLE_H_
 ```
@@ -1107,7 +1175,7 @@ int RectangleArea(int width, int height);
 ```cpp
 #include "rectangle.h"
 
-int RectangleArea(int width, int height) { return width * height; }
+auto RectangleArea(int width, int height) -> int { return width * height; }
 ```
 
 then `main.carbon`:
@@ -1132,15 +1200,23 @@ carbon link --output=main main.o rectangle.o
 ```
 
 What to notice: build the C++ files with `carbon clang` (or the toolchain's
-`lib/carbon/llvm/bin/clang++`), because `carbon link` links libc++ and C++
-objects compiled against libstdc++ do not link (FAQ); a quoted header is
-found relative to the directory the compile runs in, so build from the
-directory holding the header or pass `--clang-arg=-I<dir>` (FAQ). The two
+`lib/carbon/llvm/bin/clang++`), because `carbon link` links libc++: C++ code
+that uses the standard library and was compiled by `g++` or a system `clang++`
+against libstdc++ does not link, though code like `rectangle.cpp` that uses none
+of it does (FAQ; §0.1 row 11) (amended 2026-10-13, document-review fold:
+MAJOR-3); a quoted header is found relative to the directory the compile runs
+in, so build from the directory holding the header or pass `--clang-arg=-I<dir>`
+(FAQ). The two `cpp` blocks use the trailing return type of
+docs/project/cpp_style_guide.md:108, because the fixtures fall under the
+clangd-tidy gate, whose `modernize-use-trailing-return-type` rejects a leading
+`int` (§0.1 row 25) (amended 2026-10-13, document-review fold: R2-2). The two
 `cpp` blocks and `main.carbon` are also the fixture files
-fork/evaluator/cpp_library/rectangle.h, rectangle.cpp and main.carbon,
-which fork/evaluator/cpp_library/build.sh builds with these commands; the
-checker compares them (D-EV-12, D-EV-13; amended 2026-10-13, review fold:
-A2).
+fork/evaluator/cpp_library/rectangle.h, rectangle.cpp and main.carbon, which
+fork/evaluator/cpp_library/build.sh builds with these commands; the checker
+compares them (D-EV-12, D-EV-13; amended 2026-10-13, review fold: A2). The page
+says the fixtures add a license comment and, in the header, the guard name the
+header-guard check requires, never that they are the page's files byte for byte
+(amended 2026-10-13, document-review fold: B1, R2-6).
 
 **9. Calling Carbon from C++** (`interop_call_carbon.carbon`; both):
 
@@ -1182,7 +1258,10 @@ What to notice: `import Cpp;` with a later `inline Cpp` block exports the
 Carbon functions declared above it into C++'s `Carbon` namespace; C++
 compiled separately cannot call Carbon yet, because no header is generated
 (FAQ). The three calls reach Clamp's three arms: in range, above `hi`, below
-`lo` (rev 2; amended 2026-10-13, review fold: A11).
+`lo` (rev 2; amended 2026-10-13, review fold: A11). The `inline Cpp` block
+and its declared-above rule are labelled toolchain behavior that no design
+document describes yet (row 29 of §0.1) (amended 2026-10-13, document-review
+fold: R2-4).
 
 **10. A multi-file package** (three files; both). `geometry.carbon`:
 
@@ -1263,19 +1342,19 @@ faq.md's pointer have stable anchors (amended 2026-10-13, review fold: B m-1):
 
 | H2 group | H3 entry (exact title) | Answer essentials | Evidence |
 | --- | --- | --- | --- |
-| Choosing and installing a toolchain | Which toolchain do I need? | nightly 2026.10.12 ran every tutorial section except "Choice types and match" and "Errors as values" (measured; a later nightly is re-measured by §8.3 and the land sequence, D-EV-2), and those two need the fork's (amended 2026-10-13, review fold: A12); the diagnostics the nightly prints for them | §0.1 rows 9-10 |
-| Choosing and installing a toolchain | Can I download a prebuilt fork toolchain? | not a current one: the `fork-toolchain-*` prereleases on the fork's releases page predate `Core.Result`, if-let, unions, `overload fn` and slices, and the newest stops on Ubuntu 24.04 with the quoted ``version `GLIBC_2.44' not found`` line; build from source (W-152) (amended 2026-10-13, review fold: B-6) | §0.1 row 17 |
-| Choosing and installing a toolchain | Which platforms are supported? | the platform table's summary with its labelled sources; macOS unverified for this fork's current trunk (W-153); Windows unsupported, with the quoted `-fPIE` line from cross-targeting; WSL 2 (amended 2026-10-13, review fold: A1) | §0.1 rows 15-16, 26; D-EV-3 |
-| Choosing and installing a toolchain | What system packages do I need? | glibc development files for compiling C++ imports and for linking; libc6-dev; the README's libgcc line; other distributions unverified; the `mbstate_t` and `cannot open Scrt1.o` texts, labelled as measured with an empty sysroot (amended 2026-10-13, review fold: A5, B m-4) | §0.1 rows 4-6 |
+| Choosing and installing a toolchain | Which toolchain do I need? | nightly 2026.10.12 ran every tutorial section except "Choice types and match" and "Errors as values" (measured; a later nightly is re-measured by §8.3 and the land sequence, D-EV-2), and those two need the fork's (amended 2026-10-13, review fold: A12); the diagnostics the nightly prints for them; the entry links "this fork's toolchain" to getting_started.md's build section (amended 2026-10-13, document-review fold: MINOR-1a) | §0.1 rows 9-10 |
+| Choosing and installing a toolchain | Can I download a prebuilt fork toolchain? | not a current one: the `fork-toolchain-*` prereleases on the fork's releases page predate `Core.Result`, if-let, unions, `overload fn` and slices, and the newest stops on Ubuntu 24.04 with the quoted ``version `GLIBC_2.44' not found`` line; build from source (W-152) (amended 2026-10-13, review fold: B-6); the entry also names the page's newest entry, `arbiter-v0.0.0-0.nightly.2026.09.28`, a mirror of upstream's nightly of 2026-09-28 and not this fork's toolchain (amended 2026-10-13, document-review fold: MINOR-7, R2-7), and says W-152 is tracked in the work-item ledger, linked (amended 2026-10-13, document-review fold: MINOR-8) | §0.1 row 17 |
+| Choosing and installing a toolchain | Which platforms are supported? | the platform table's summary with its labelled sources; macOS unverified for this fork's current trunk (W-153); Windows unsupported, with the quoted `-fPIE` line from cross-targeting; WSL 2 (amended 2026-10-13, review fold: A1); the Linux x86-64 sentence says the fork toolchain measured is a CMake build on that machine and the guide's Bazel route was not run (amended 2026-10-13, document-review fold: R2-9), and "no prebuilt toolchain" cites upstream's release configuration (amended 2026-10-13, document-review fold: MINOR-4) | §0.1 rows 15-16, 26; D-EV-3 |
+| Choosing and installing a toolchain | What system packages do I need? | glibc development files for compiling C++ imports and for linking; libc6-dev; the README's libgcc line; other distributions unverified; the `mbstate_t` and `cannot open Scrt1.o` texts, labelled as measured with an empty sysroot (amended 2026-10-13, review fold: A5, B m-4); the other distributions' names appear in the entry itself, labelled not verified, beside the link to the table (amended 2026-10-13, document-review fold: MINOR-1b) | §0.1 rows 4-6 |
 | Choosing and installing a toolchain | The download fails, or tar says the file is not in gzip format | no release for that date: `wget`'s `ERROR 404: Not Found.`; `curl` without `-f` saves the "Not Found" page and `tar` then reports `gzip: stdin: not in gzip format`; pick a date from the releases page (amended 2026-10-13, review fold: B-5) | §0.1 row 27 |
-| Choosing and installing a toolchain | Why is the first link slow, and where is the cache? | runtimes build, about 20 seconds idle and longer under load (§2.A item 7's measured range), cache location, `--runtimes-cache`, `build-runtimes`, `--prebuilt-runtimes` (amended 2026-10-13, review fold: A6) | §0.1 rows 2-3 |
+| Choosing and installing a toolchain | Why is the first link slow, and where is the cache? | runtimes build, about 20 seconds idle and longer under load (§2.A item 7's measured range), cache location, `--runtimes-cache`, `build-runtimes`, `--prebuilt-runtimes` (amended 2026-10-13, review fold: A6); when every link is slow the cache's parent directory is missing, fixed by `mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}"` (§0.1 row 3) (amended 2026-10-13, document-review fold: MINOR-5) | §0.1 rows 2-3 |
 | Building programs | Linking fails with an undefined symbol in Core | `link` adds only the prelude objects; use `carbon build`, or print through `Core.Print` or C++; state C links build_systems.md's "Core libraries" (D-EV-7) | §0.1 row 8 |
 | Building programs | A C++ header is not found | quoted headers resolve against the working directory; `--clang-arg=-I<dir>` | §0.1 row 12 |
 | Building programs | An imported package API is not found | compile each file with its package's API file and `--output-last-input-only`, or `carbon build`; state C links build_systems.md | §0.1 row 13 |
 | Building programs | The compiler only outputs one of several files | the `warning: only outputting ...` line; the same flag | §0.1 row 13 |
-| Building programs | C++ objects built with g++ fail to link | both measurements: C-ABI code from g++ or the system clang++ links; code that uses the C++ standard library does not (`undefined symbol: std::__cxx11::...`), because `carbon link` links libc++; compile it with `carbon clang`, or pass libstdc++ by path after `--` with the caveat that no standard-library object may cross between the two libraries; state C cites W-131 and links build_systems.md's "Mixed Carbon and C++" (amended 2026-10-13, review fold: A9, B m-2) | §0.1 row 11 |
-| Building programs | A function ending in a match needs a return | a `match` with no `default` arm, even an exhaustive one, is not treated as returning on every path; add a `default` arm or a `return` after the `match`, or assign in the arms and return once (tutorial section "Choice types and match") (amended 2026-10-13, review fold: A3) | §0.1 row 14 |
-| Building programs | The compiler rejects a fork feature | the seven measured nightly diagnostics (`semantics TODO: ...`, ``member name `Result` not found in `Core` ``, ``member name `Slice` ...``, `unrecognized declaration introducer`, `expected expression`); the feature needs this fork's toolchain, and a fork toolchain built before a27059915 (2026-09-27) also lacks `Core.Result` (amended 2026-10-13, review fold: B-6, B m-4) | §0.1 rows 9, 17 |
+| Building programs | C++ objects built with g++ fail to link | both measurements: C-ABI code from g++ or the system clang++ links; code that uses the C++ standard library does not (`undefined symbol: std::__cxx11::...`), because `carbon link` links libc++; compile it with `carbon clang`, or pass libstdc++ by path after `--` with the caveat that no standard-library object may cross between the two libraries; state C cites W-131 and links build_systems.md's "Mixed Carbon and C++" (amended 2026-10-13, review fold: A9, B m-2); the libstdc++-by-path link and the toolchain's `clang++` are both labelled measured on both toolchains (§0.1 row 11) (amended 2026-10-13, document-review fold: MINOR-6) | §0.1 row 11 |
+| Building programs | A function ending in a match needs a return | a `match` with no `default` arm, even an exhaustive one, is not treated as returning on every path; add a `default` arm or a `return` after the `match`, or assign in the arms and return once (tutorial section "Choice types and match") (amended 2026-10-13, review fold: A3); the entry calls this a current toolchain limitation, not a language rule, and links pattern_matching.md's exhaustiveness section, which treats code after an exhaustive match as unreachable, and error_handling.md's `Core.Try` section, which records the limitation (§0.1 row 14) (amended 2026-10-13, document-review fold: R2-1) | §0.1 row 14 |
+| Building programs | The compiler rejects a fork feature | the seven measured nightly diagnostics (`semantics TODO: ...`, ``member name `Result` not found in `Core` ``, ``member name `Slice` ...``, `unrecognized declaration introducer`, `expected expression`); the feature needs this fork's toolchain, and a fork toolchain built before a27059915 (2026-09-27) also lacks `Core.Result` (amended 2026-10-13, review fold: B-6, B m-4); "Use this fork's toolchain" links getting_started.md's build section (amended 2026-10-13, document-review fold: MINOR-1a) | §0.1 rows 9, 17 |
 | Building programs | Compiling a C++ import fails inside libc++ | the `mbstate_t` line first: the C library headers are missing; install libc6-dev (amended 2026-10-13, review fold: A5) | §0.1 row 6 |
 | Building programs | The main file's package declaration is rejected | the main file has no package declaration | §0.1 row 14 |
 | Building programs | The short output flag needs an equals sign | `carbon build -o FILE` fails with the quoted line; write `-o=FILE`; state C cites W-133 | §0.1 row 7 |
@@ -1287,14 +1366,18 @@ faq.md's pointer have stable anchors (amended 2026-10-13, review fold: B m-1):
 | Questions about the project | (H2 only, no H3) | links to docs/project/faq.md anchors: status, interop, generics, where to ask | §0.3 |
 
 **Reproducers** (amended 2026-10-13, review fold: A3, A4, A5). Every quoted
-diagnostic has one; fork/evaluator/check_faq.py (D-EV-21) writes the input,
-runs the command in a fresh temporary directory with the toolchain it is
-given (`{c}`), and requires the expected line as the suffix of an output line
-(so a file's `path:line:col:` prefix does not matter), the exit status, and
-the same line inside a `text` block of the page. `p.carbon` holds the
-one-line input shown; "package" is the tutorial's three package files;
-`empty` is an empty directory; "both" means F and N. All twenty were
-measured on 2026-10-13 (§0.1 row 28: 13 run on F, 17 on N, no mismatch).
+diagnostic has one; fork/evaluator/check_faq.py (D-EV-21) writes the input, runs
+the command in a fresh temporary directory with the toolchain it is given
+(`{c}`), and requires the expected line as the suffix of an output line (so a
+file's `path:line:col:` prefix does not matter), the exit status, and the same
+line inside a `text` block of the page, compared as a whole line (amended
+2026-10-13, document-review fold: R2-5); it also requires every line of a `text`
+block of getting_started.md other than program output to be a line of a `text`
+block of the FAQ, so the guide's repeated quotes cannot drift from the FAQ's
+(amended 2026-10-13, document-review fold: MINOR-9). `p.carbon` holds the
+one-line input shown; "package" is the tutorial's three package files; `empty`
+is an empty directory; "both" means F and N. All twenty were measured on
+2026-10-13 (§0.1 row 28: 13 run on F, 17 on N, no mismatch).
 
 | Id | FAQ entry | Input | Command | Runs on | Expected line | Exit |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -1500,17 +1583,20 @@ line of §0.1 row 17.
     `ev1/fix/proto/fork/evaluator/check_samples.py` in the scratchpad
     (ruff-clean); the implementer starts from it.
 5.  **fork/evaluator/check_faq.py** (new, about 330 lines, stdlib only, same
-    conventions; amended 2026-10-13, review fold: A4). `REPRODUCERS` is
-    §2.C's reproducer table; `--toolchain PATH` (the `carbon` binary or
-    busybox) and `--which fork|nightly` select the rows to run; each row
-    runs in a fresh temporary directory holding an `empty` subdirectory; a
-    row whose command starts with `g++` is reported as skipped when `g++` is
-    not on `PATH`. It reports a quoted line missing from every `text` block
-    of evaluator_faq.md, an expected line that no output line ends with,
-    and an exit status other than the table's, prints `check_faq: N
-    reproducers run, M errors` and exits 1 on any error. The prototype is
-    `ev1/fix/proto/fork/evaluator/check_faq.py` (ruff-clean; 13 rows run on
-    F, 17 on N, no error, §0.1 row 28).
+    conventions; amended 2026-10-13, review fold: A4). `REPRODUCERS` is §2.C's
+    reproducer table; `--toolchain PATH` (the `carbon` binary or busybox) and
+    `--which fork|nightly` select the rows to run; each row runs in a fresh
+    temporary directory holding an `empty` subdirectory; a row whose command
+    starts with `g++` is reported as skipped when `g++` is not on `PATH`. It
+    reports a quoted line that is not a whole line of a `text` block of
+    evaluator_faq.md (amended 2026-10-13, document-review fold: R2-5), a line of
+    a `text` block of getting_started.md that is neither program output
+    (`GUIDE_OUTPUT`: `42` and the version-shape line) nor such a FAQ line
+    (amended 2026-10-13, document-review fold: MINOR-9), an expected line that
+    no output line ends with, and an exit status other than the table's, prints
+    `check_faq: N reproducers run, M errors` and exits 1 on any error. The
+    prototype is `ev1/fix/proto/fork/evaluator/check_faq.py` (ruff-clean; 13
+    rows run on F, 17 on N, no error, §0.1 row 28).
 6.  **project/evaluator_docs_review.carbon** — deleted.
 7.  **project/evaluator_docs_getting_started.carbon** — header lines 9-19
     rewritten: the program is the echo line that README.md "Getting
@@ -1599,15 +1685,17 @@ line of §0.1 row 17.
     SF- or upstream-issue ids only, work-items.json `source`; PR and
     Actions dependencies go in the notes) and a note naming its break
     condition (amended 2026-10-13, review fold: B m-1, A8, B-2):
-    -   **W-152** — kind infra, subsystem "ci/releases + fork process", size
-        S, bullet "Project: basic evaluator documentation (getting started
-        to FAQs)", title "EV-1 residue: no current downloadable fork
-        toolchain — the fork-toolchain-* prereleases (newest
-        fork-toolchain-143-ea02513be, 2026-09-25) predate Core.Result,
-        if-let, unions, overload fn and slices, and the newest needs glibc
-        2.44 to start"; evidence §0.1 row 17's facts; notes: a refresh needs
-        a Bazel build of record (Actions disabled since 2026-10-08, R28),
-        and retiring or relabelling the stale prereleases is part of it.
+    -   **W-152** — kind infra, subsystem "ci/releases + fork process", size S,
+        bullet "Project: basic evaluator documentation (getting started to
+        FAQs)", title "EV-1 residue: no current downloadable fork toolchain —
+        the fork-toolchain-* prereleases (newest fork-toolchain-143-ea02513be,
+        2026-09-25) predate Core.Result, if-let, unions, overload fn and slices,
+        and the newest needs glibc 2.44 to start"; evidence §0.1 row 17's facts,
+        the mirrored upstream nightly `arbiter-v0.0.0-0.nightly.2026.09.28`
+        above the prereleases included (amended 2026-10-13, document-review
+        fold: R2-7); notes: a refresh needs a Bazel build of record (Actions
+        disabled since 2026-10-08, R28), and retiring or relabelling the stale
+        prereleases is part of it.
     -   **W-153** — kind fail-test, subsystem
         "toolchain/check/testdata/interop/cpp/function/export (macOS)",
         size S, bullet "Functions: function overloading (Carbon-native)",
@@ -1630,7 +1718,19 @@ line of §0.1 row 17.
         instead.
     -   **W-155 to W-159** — filed only for document-review friction that
         commit 2a does not fix (D-EV-19), in report order, each titled by
-        the failing step.
+        the failing step. Commit 2a leaves one, so commit 3 files W-155:
+        kind missing-feature, subsystem "toolchain/check", size S, bullet
+        "Control flow: matching — good switch equivalents", title "EV-1
+        residue found by document review 2: function-end reachability does
+        not consult match exhaustiveness — a function whose exhaustive
+        `match` has no `default` arm and returns in every arm still needs a
+        trailing `return`, code that pattern_matching.md:612-617 designs as
+        unreachable"; evidence docs/design/error_handling.md:350-353 (the
+        design's own record of the gap), §0.1 row 14 and the reproducer
+        `match-return` of §2.C; notes: the guides call it a toolchain
+        limitation, and W-073's trailing-return idiom is the same gap seen
+        from the `Try` sketches. W-156 to W-159 stay reserved and unused
+        (amended 2026-10-13, document-review fold: R2-1).
 
     Reserved ids that go unused are listed in the `source` note as
     "reserved by EV-1, unused". The `source` field gains "Updated
@@ -1676,7 +1776,16 @@ line of §0.1 row 17.
     fold: B-3, A4, A12); the reservation W-152 to W-159 if the orchestrator
     has not stamped it already; §0.2 item 5's quotation fix and item 6's
     toolchain list; Next actions unchanged except W-152 after the Actions
-    decision.
+    decision. Trunk 9d3ca60a3 already holds the reservation paragraph
+    (fork/ORCHESTRATION.md:69-76) and an EV-1 Branches row (:412), so
+    commit 3 does not re-add the reservation and updates that row in place
+    instead of adding one. If `git diff --stat 80a11e7f0 origin/trunk`
+    still lists only fork/ORCHESTRATION.md, commit 3 first merges
+    origin/trunk into the branch (a merge commit, never a rebase,
+    AGENTS.md; the branch stays in state T); otherwise it writes against
+    80a11e7f0 and records the expected conflict with the stamped paragraph
+    and row for the integration commit's merge (amended 2026-10-13,
+    document-review fold: R2-10).
 5.  **fork/evaluator/plan.md** (this file) — review fold records, sign-off,
     landed notes.
 
@@ -1792,44 +1901,41 @@ review fold: A2, A4, A10, B-1, B-3):
 2.  **Gap header:** DONE +1, PARTIAL −1. On trunk 30 / 21 / 4 / 1 →
     **31 / 20 / 4 / 1**; with SAFE-1 and CM-1 merged first, from 33 / 20 /
     2 / 1 to 34 / 19 / 2 / 1. The exact header texts are §2.F.1's.
-3.  **Row 90** (status and evidence cells; bullet cell untouched; the row
-    is one line in the table, the wraps below are this plan's; amended
-    2026-10-13, review fold: A1, A2, B-1, B-3, B-4, B-6). State T text,
-    written at commit 3:
-    `| Project: basic evaluator documentation (getting started to FAQs) |
-    DONE | EV-1 (2026-10-DD, fork/evaluator/plan.md): docs/guides/
-    getting_started.md (two toolchains: the upstream nightly, whose
-    download block was run verbatim, and this fork built from source, a
-    block quoted from the hosted conformance job and not run here; the
-    stale fork prereleases named and warned against; a platform table whose
-    rows each cite a measurement, upstream's CI configuration or this
-    fork's CI record, with Linux x86-64 measured and macOS unverified for
-    this fork's current trunk; the glibc development files that compiling
-    C++ imports and linking need; the first program; the runtimes cache),
-    docs/guides/tutorial.md (hello world, functions, classes, generics,
-    choice and match and Core.Result with ? on the fork's toolchain, C++
-    interop in both directions, a multi-file package) and
-    docs/guides/evaluator_faq.md (toolchain questions whose quoted
-    diagnostics are re-run by fork/evaluator/check_faq.py; project
-    questions stay in docs/project/faq.md). The ten tutorial programs are
-    documentation-sync programs under a bullet that was already PASS
-    (bullets unchanged), each a tutorial sample transcribed byte for byte
-    and checked by fork/evaluator/check_samples.py: nine PASS locally on
-    0.0.0-0.dev+0bdce60a5 beside evaluator_docs_getting_started, and the
-    C++-library one SKIPs until PR 52's BUILD-SCRIPT channel is on trunk —
-    not of record: the hosted run R9 requires is pending with no dispatch
-    date, Actions disabled. Not falsified by any review here: the fork
+3.  **Row 90** (status and evidence cells; bullet cell untouched; the row is one
+    line in the table, the wraps below are this plan's; amended 2026-10-13,
+    review fold: A1, A2, B-1, B-3, B-4, B-6). State T text, written at commit 3:
+    `| Project: basic evaluator documentation (getting started to FAQs) | DONE |
+    EV-1 (2026-10-DD, fork/evaluator/plan.md): docs/guides/ getting_started.md
+    (two toolchains: the upstream nightly, whose download block was run
+    verbatim, and this fork built from source, a block quoted from the hosted
+    conformance job and not run here; the stale fork prereleases named and
+    warned against; a platform table whose rows each cite a measurement,
+    upstream's CI configuration or this fork's CI record, with Linux x86-64
+    measured and macOS unverified for this fork's current trunk; the glibc
+    development files that compiling C++ imports and linking need; the first
+    program; the runtimes cache), docs/guides/tutorial.md (hello world,
+    functions, classes, generics, choice and match and Core.Result with ? on the
+    fork's toolchain, C++ interop in both directions, a multi-file package) and
+    docs/guides/evaluator_faq.md (toolchain questions; every quoted toolchain
+    diagnostic is re-run by fork/evaluator/check_faq.py except the
+    download-failure and stale-prerelease loader lines, which were re-run by
+    hand at commit 1; project questions stay in docs/project/faq.md). The ten
+    tutorial programs are documentation-sync programs under a bullet that was
+    already PASS (bullets unchanged), each a tutorial sample transcribed byte
+    for byte and checked by fork/evaluator/check_samples.py: nine PASS locally
+    on 0.0.0-0.dev+0bdce60a5 beside evaluator_docs_getting_started, and the
+    C++-library one SKIPs until PR 52's BUILD-SCRIPT channel is on trunk — not
+    of record: the hosted run R9 requires is pending with no dispatch date,
+    Actions disabled. Not falsified by any review here: the fork
     build-from-source block (no Bazel), platforms other than Linux x86-64,
-    distributions other than Ubuntu 24.04, a system without libc6-dev.
-    Residue, each a filed item: no current downloadable fork toolchain
-    (W-152); the macOS failure of OV-3's export golden found while sourcing
-    the platform table (W-153). |`
-    State C text, written by the integration commit: the same, except that
-    "nine PASS locally ... is on trunk" reads "all ten PASS locally on
-    0.0.0-0.dev+0bdce60a5 beside evaluator_docs_getting_started, the
+    distributions other than Ubuntu 24.04, a system without libc6-dev. Residue,
+    each a filed item: no current downloadable fork toolchain (W-152); the macOS
+    failure of OV-3's export golden found while sourcing the platform table
+    (W-153). |` State C text, written by the integration commit: the same,
+    except that "nine PASS locally ... is on trunk" reads "all ten PASS locally
+    on 0.0.0-0.dev+0bdce60a5 beside evaluator_docs_getting_started, the
     C++-library one through fork/evaluator/cpp_library/build.sh under the
-    BUILD-SCRIPT channel, and the sample check runs in runner.py
-    --self-test".
+    BUILD-SCRIPT channel, and the sample check runs in runner.py --self-test".
 4.  **Honesty guard (R9, R16):** the "not of record" phrase is in the row
     itself, not only in the header; the ORCHESTRATION scoreboard line is
     re-quoted from scoreboard.json only (§0.2 item 5), never moved to the
@@ -1866,7 +1972,11 @@ review fold: A2, A4, A10, B-1, B-3):
     twice, check-google-doc-style, markdown-toc (the three pages),
     check-links (every relative link and anchor of the pages), codespell,
     ruff-check, ruff-format and ty on the two checkers, clang-format and
-    check-header-guards on the C++ fixtures (§0.1 row 25),
+    check-header-guards on the C++ fixtures (§0.1 row 25; and, outside
+    prek, the clangd-tidy gates of R21, which the fixtures pass only in the
+    trailing-return form, so commit 2a writes them so, checked here with
+    clang-tidy 18.1.3 and the repository's .clang-tidy;
+    (amended 2026-10-13, document-review fold: R2-2)),
     check-executables-have-shebangs on build.sh, prettier on
     work-items.json, end-of-file, trailing-whitespace and mixed-line-ending
     on all.
@@ -2075,15 +2185,20 @@ review fold: A2, A4, A10, B-1, B-3):
     follows it; `python3 -c "import json;
     json.load(open('fork/inventory/work-items.json'))"` succeeds; §2.F.2's
     edits.
-7.  **Reconciliation greps at discharge** (amended 2026-10-13, review fold:
-    B m-3): `grep -rn --exclude-dir=out evaluator_docs_review
-    fork/conformance fork/gap-analysis.md` hits nothing, and in
-    fork/inventory/work-items.json only W-062's discharge note naming the
-    deleted stub (fork/b1/plan.md:179 and the hosted scoreboard.json under
-    fork/conformance/out stay: history, and a record only a hosted run
-    rewrites); `grep -rn 'W-152\|W-153'` hits the ledger, row 90 and the
-    decision log (and W-154 only where §2.F.2 filed it); the sample checker
-    reports 14 samples.
+7.  **Reconciliation greps at discharge** (amended 2026-10-13, review fold: B
+    m-3): `grep -rn --exclude-dir=out evaluator_docs_review fork/conformance
+    fork/gap-analysis.md` hits nothing, and in fork/inventory/work-items.json
+    only W-062's discharge note naming the deleted stub (fork/b1/plan.md:179 and
+    the hosted scoreboard.json under fork/conformance/out stay: history, and a
+    record only a hosted run rewrites); `grep -rn 'W-152\|W-153'` hits the
+    ledger, row 90 and the decision log (and W-154 only where §2.F.2 filed it);
+    the sample checker reports 14 samples. Beyond this plan and
+    fork/ORCHESTRATION.md, the expected extra hits are getting_started.md and
+    evaluator_faq.md, which name W-152 and W-153 since commit 1, and for W-154
+    the C++-library program's SKIP line, which names it as reserved and filed
+    only if the program must merge before PR 52 (§2.E.2); W-155 hits the ledger,
+    the decision log and this plan only (amended 2026-10-13, document-review
+    fold: R2-10).
 8.  **Decision-log entry, ORCHESTRATION, landed notes** per §2.F.3-5; the
     PR opened and HELD after commit 4 with "awaiting hosted conformance
     (Actions disabled); merges after PR 52, through the integration commit"
@@ -2212,3 +2327,60 @@ so no focused re-review is owed; all twenty-three findings are folded in rev 2
 this workstream on trunk's fork/ORCHESTRATION.md at the sign-off stamp, beside
 ST-1's start at W-160. Implementation proceeds in state T per §3; the
 integration commit to state C waits for PR 52 on trunk.
+
+## Document-review fold record (commit 2a, 2026-10-13)
+
+The two document reviews of D-EV-19 read commits 751102ee1 and 21c4a0565.
+Review 1, the evaluator simulation, returned **REJECT** on one BLOCKER, graded
+so under the rubric's clause that a false assertion on a page is one (B1),
+with three MAJOR and twelve MINOR findings; review 2, strictness, returned
+**APPROVE-WITH-AMENDMENTS** with two MAJOR and eight MINOR. Neither reported a
+step that fails as written, so D-EV-16's break condition does not fire, and
+D-EV-1's does not either (D-EV-1). A separate fixer (R11) reproduced every
+finding before folding it, with scratch under the session scratchpad's
+`ev1-impl/fixer2a/`, and rejected none. Three findings of review 1 are the
+same defects as three of review 2 (B1 and R2-6, MAJOR-1 and R2-8(a), MINOR-7
+and R2-7). Each passage this fold changed carries "(amended 2026-10-13,
+document-review fold: …)" with the reviews' own ids. MINOR-3 is folded as a
+variant of the reviewer's text, with the evidence in its row, and R2-10 as
+amendments that commit 3 carries out.
+
+| Finding | Grade | Fixer's reproduction | Disposition and where folded |
+| --- | --- | --- | --- |
+| B1 the tutorial calls the fixtures the page's files "byte for byte" | BLOCKER | CONFIRMED: a `diff` of the page's blocks with the fixtures shows the four-line license comment in all three and `CARBON_FORK_EVALUATOR_CPP_LIBRARY_RECTANGLE_H_` in the three guard lines of rectangle.h; check_samples.py equates them only after dropping the comment and reading the guard back | FOLDED: the sentence says the fixtures add a license comment and, in the header, the guard name the header-guard check requires; §2.B sample 8. Same defect as R2-6 |
+| MAJOR-1 the cache directory is created only after the first link | MAJOR | CONFIRMED with N in fresh `HOME` directories: with no `.cache`, two links of forty_two took 33.7 s and 33.4 s and kept nothing; after the `mkdir` the first link took 33.3 to 34.4 s and the next 0.0 s (§0.1 row 3) | FOLDED: "Your first program" creates the directory before its compile block, and "The first link takes a while" keeps the explanation and shows the same command; the download block is unchanged; §0.1 row 3, §2.A items 6 and 7 |
+| MAJOR-2 the only build duration used a remote cache a local build lacks | MAJOR | CONFIRMED: .bazelrc:45-51 sets only a disk cache; the remote cache is written into user.bazelrc by .github/actions/build-setup-common/action.yml:62-71, which fork_hosted.yaml uses | FOLDED: a paragraph after the 9m29.6s sentence (local build: no remote cache, LLVM and Clang from source, duration and disk use not measured); D-EV-5, §2.A item 4 |
+| MAJOR-3 the tutorial says g++-compiled C++ does not link | MAJOR | CONFIRMED on F and N: `g++ -c rectangle.cpp` links with the section's main.carbon and prints `42`; the `g++` `std::string` object fails with the FAQ's quoted line | FOLDED: the sentence separates code that uses the standard library (does not link) from code that does not (links), as the FAQ does; §0.1 row 11, §2.B sample 8 |
+| MINOR-1a fork-only sections do not link the fork build | MINOR | CONFIRMED by reading: the two "Runs on" lines and the FAQ's "need this fork's toolchain" and "Use this fork's toolchain" had no link | FOLDED: all four link getting_started.md's "Build this fork's toolchain from source"; D-EV-1, §2.B page structure, §2.C rows |
+| MINOR-1b a non-Debian reader needs two jumps for a package name | MINOR | CONFIRMED by reading the FAQ's system-packages entry | FOLDED: the entry names `glibc-devel` (Fedora, RHEL, openSUSE) and `glibc` (Arch), labelled not verified, beside the table link; D-EV-1, §2.C row |
+| MINOR-2 the build section does not say who needs it, or which `carbon` runs | MINOR | CONFIRMED by reading; with both `bin` directories exported, `carbon version` printed the toolchain exported last | FOLDED: the section opens with its two-section scope and closes with which `carbon` runs and how to run the other; §2.A item 4 |
+| MINOR-3 "that container" is undefined; the CI run predates trunk | MINOR | CONFIRMED: no antecedent for "that container"; run 37402970811 ran at 606a99c5a, eight commits before 80a11e7f0, and `git diff --stat 606a99c5a 80a11e7f0` lists only five fork records (ORCHESTRATION.md, scoreboard.json, decision-log.md, work-items.json, upstream/plan.md) | FOLDED as a variant: "a CMake build on the Ubuntu 24.04 machine that ran these measurements", and the run's commit with "the later trunk commits change only this fork's records, not the toolchain" instead of "before the current trunk", which would suggest a different toolchain; §2.A item 2 |
+| MINOR-4 "Linux x86-64 only" has no source label | MINOR | CONFIRMED: nightly_release.yaml:41, :97-105 and :118-127 build and publish one tarball on ubuntu-22.04; the page cited none of it | FOLDED: the "Two toolchains" cell and every "No prebuilt toolchain" status cell, Intel macOS included, cite upstream's release configuration, as does the FAQ's platform entry; §2.A items 1 and 2, §2.C row |
+| MINOR-5 the `mkdir` ignores `$XDG_CACHE_HOME` | MINOR | CONFIRMED with N: with `XDG_CACHE_HOME` naming a missing directory and `$HOME/.cache` present, the link still used a temporary cache (34.0 s, nothing kept); runtimes_cache.cpp:142-149 prefers an absolute `$XDG_CACHE_HOME` | FOLDED: `mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}"` on both pages; §0.1 row 3, §2.A items 6 and 7, §2.C row |
+| MINOR-6 the libstdc++-by-path link is labelled fork-only | MINOR | CONFIRMED on N: the link prints `10`, as on F | FOLDED: "measured on both toolchains", and the toolchain's `clang++`, measured too (`42` and `10` on both); §0.1 row 11, §2.C row |
+| MINOR-7 the newest releases-page entry is not mentioned | MINOR | CONFIRMED: REST listing of 2026-10-13, newest entry `arbiter-v0.0.0-0.nightly.2026.09.28` (prerelease, 2026-09-28), notes "Verbatim mirror of the upstream ... toolchain tarball", one asset `carbon_toolchain-0.0.0-0.nightly.2026.09.28.tar.gz` | FOLDED on both pages, labelled not run; D-EV-5, §0.1 row 17, §2.A item 1, §2.C row, W-152's evidence (§2.F.2). Same as R2-7 |
+| MINOR-8 W-152 and W-153 are cited bare | MINOR | CONFIRMED: neither id is in fork/inventory/work-items.json on the branch | FOLDED: the first id on each page links the work-item ledger; commit 3 still files both before the PR opens (§2.F.2, §3); §2.A item 1, §2.C row |
+| MINOR-9 no checker covers the guide's quoted diagnostics | MINOR | CONFIRMED: check_faq.py read only evaluator_faq.md; with getting_started.md's `mbstate_t` line edited, the committed checker printed "13 reproducers run, 0 errors" and exited 0 | FOLDED with the reviewer's first option: every guide `text`-block line other than program output (`GUIDE_OUTPUT`) must be a FAQ `text`-block line; that edit and a `GLIBC_2.45` edit now exit 1; D-EV-21, §2.C, §2.E.5 |
+| MINOR-10 two sections share `main.carbon` | MINOR | CONFIRMED: both sections save `main.carbon`; compiling the package's alone is reproducer `no-api` (`error: imported API 'Geometry' not found`) | FOLDED: "Before you start" gives each of the two sections its own directory; §2.B page structure |
+| MINOR-11 the optional cache blocks read as steps | MINOR | CONFIRMED by reading; each block builds the runtimes again (a new cache directory, or `build-runtimes`) | FOLDED: introduced as options the tutorial does not need, each building the runtimes once more; §2.A item 7 |
+| R2-1 the match limitation is taught as a language rule | MAJOR | CONFIRMED: pattern_matching.md:590-592 and :612-617, code_and_name_organization/README.md:121-127 (ColorName, no trailing return), error_handling.md:350-353 (the checker's reachability analysis does not consult match exhaustiveness); no ledger item files it | FOLDED: the tutorial and the FAQ call it a current toolchain limitation, and the FAQ links both design passages; §0.1 row 14, §2.B sample 5, §2.C row. The limitation stays: W-155 at commit 3 (below) |
+| R2-2 the fixtures fail clangd-tidy's trailing-return check | MAJOR | CONFIRMED: clang-tidy 18.1.3 with the repository's .clang-tidy reports `modernize-use-trailing-return-type` as an error in both fixtures; neither gate excludes fork/evaluator/ (clangd_tidy.yaml:66-77, fork_build_toolchain.yaml:133-151) | FOLDED with the preferred fix: `auto RectangleArea(int width, int height) -> int` on the page, in §2.B and in both fixtures, clang-tidy clean; the section re-run by hand from the page's blocks and build.sh run, on F and on N (`42`, exit 0, empty stderr); §0.1 row 25, §2.B sample 8, §6. No .github/ change |
+| R2-3 "usable anywhere a value is" | MINOR | CONFIRMED on F and N: `1 + if ...` fails with ``parentheses are required around this unary `if` operator``, while `return if ...` and `1 + (if ...)` run | FOLDED: the sentence names the permitted positions and the parentheses; §0.1 row 29, §2.B sample 2 |
+| R2-4 toolchain-only rules under "Design:" links | MINOR | CONFIRMED: interoperability/README.md:156, :240, :244 are TODO headings; no docs/design file mentions `inline Cpp`; `case x: i32 if x < 0` and the design's guard example fail on F with ``expected `(` after `if` ``, and N prints the same parse error (upstream's parser, handle_match.cpp:214) | FOLDED: the three passages are labelled toolchain behavior, and the guard sentence says the toolchain requires the parentheses and the design's grammar does not; §0.1 row 29, §2.B samples 5, 7 and 9. The optional FAQ entry is not added: it would change §2.C's fixed heading tree and need a reproducer for a parse error the tutorial already explains |
+| R2-5 check_faq.py matches quoted lines as substrings | MINOR | CONFIRMED: with the FAQ's `error: expected expression` lengthened to `... or a pattern here`, the committed checker printed "13 reproducers run, 0 errors" and exited 0 | FOLDED: quoted lines are compared as whole `text`-block lines; that edit and a suffix on the `_CPrintStr.Core` line now exit 1; D-EV-21, §2.C, §2.E.5 |
+| R2-6 the "byte for byte" fixture sentence | MINOR | as B1 | FOLDED with B1 |
+| R2-7 the mirrored upstream nightly on the releases page | MINOR | as MINOR-7 | FOLDED with MINOR-7 |
+| R2-8 the cache step's place; the idle timing range | MINOR | (a) as MAJOR-1; (b) CONFIRMED: commit 1's message records cold links of 16.2 s and 16.4 s at load average 2.4 to 3.6, under the quoted "19 to 22 seconds idle" | FOLDED: (a) with MAJOR-1; (b) the range reads "16 to 22 seconds at load average below 4, 32 to 34 at load average 4 to 8, 47 at load average 10.7", and "about 20 seconds" stays; §0.1 row 2, §2.A item 7 |
+| R2-9 the FAQ drops "CMake build" from the platform summary | MINOR | CONFIRMED by reading the FAQ's platform entry against the table | FOLDED: the entry says the fork toolchain measured is a CMake build and the Bazel route was not run; §2.C row |
+| R2-10 discharge readiness: §8.7, row 90, the trunk stamp | MINOR | CONFIRMED: (a) §8.7's grep, read literally, misses the two pages and the SKIP line; (b) four quoted lines are re-run by hand only (§2.C); (c) origin/trunk 9d3ca60a3 holds the reservation (fork/ORCHESTRATION.md:69-76) and an EV-1 Branches row (:412), and `git diff --stat 80a11e7f0 origin/trunk` lists only fork/ORCHESTRATION.md | FOLDED as amendments commit 3 carries out: §8.7 lists the expected extra hits, §5.3's row text excepts the by-hand lines, and §2.F.4 drops the re-stamp, updates the existing row and merges origin/trunk first while trunk has moved only by ORCHESTRATION stamps (otherwise it records the conflict) |
+
+Not fixed in commit 2a, for commit 3 (D-EV-19, §2.F.2):
+
+| Id | Finding | Why commit 2a does not fix it |
+| --- | --- | --- |
+| W-155 | R2-1: function-end reachability does not consult match exhaustiveness | It is a change to toolchain/check, outside this documentation workstream, which touches no toolchain C++ (§6); the pages now describe it as a current limitation, and §2.F.2 gives the item's fields |
+
+W-156 to W-159 stay reserved and unused. The fold's verification and its R31
+counts are in the commit 2a message; the counts of this file are spelled in
+words there, as in the rev 2 record, so that no wrap can start a line with a
+number and a period.

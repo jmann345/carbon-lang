@@ -6,6 +6,6 @@
 #define CARBON_FORK_EVALUATOR_CPP_LIBRARY_RECTANGLE_H_
 
 // Returns the area of a `width` by `height` rectangle.
-int RectangleArea(int width, int height);
+auto RectangleArea(int width, int height) -> int;
 
 #endif  // CARBON_FORK_EVALUATOR_CPP_LIBRARY_RECTANGLE_H_

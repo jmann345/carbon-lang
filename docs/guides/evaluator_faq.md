@@ -56,7 +56,8 @@ nightly 0.0.0-0.nightly.2026.10.12 ran them, and so did this fork's toolchain.
 A later nightly was not measured; if one fails a section labelled for both,
 use this fork's toolchain. The sections
 [Choice types and match](tutorial.md#choice-types-and-match) and
-[Errors as values](tutorial.md#errors-as-values) need this fork's toolchain.
+[Errors as values](tutorial.md#errors-as-values) need
+[this fork's toolchain](getting_started.md#build-this-forks-toolchain-from-source).
 The nightly rejects them; their first errors are:
 
 ```text
@@ -76,15 +77,21 @@ Ubuntu 24.04, whose glibc is version 2.39, it does not start (measured):
 carbon: /lib/x86_64-linux-gnu/libm.so.6: version `GLIBC_2.44' not found (required by carbon)
 ```
 
-Build this fork's toolchain from source instead, as
+The newest entry on that page, `arbiter-v0.0.0-0.nightly.2026.09.28`, is not
+this fork's toolchain either: its release notes call it a copy of upstream's
+nightly of 2026-09-28, so it lacks this fork's features (not run by this
+project). Build this fork's toolchain from source instead, as
 [Getting started](getting_started.md#build-this-forks-toolchain-from-source)
-describes. Publishing a current one is tracked as W-152.
+describes. Publishing a current one is tracked as W-152 in this fork's
+[work-item ledger](/fork/inventory/work-items.json).
 
 ### Which platforms are supported?
 
 Linux x86-64 is measured, on Ubuntu 24.04, with the prebuilt upstream nightly
-and with this fork's toolchain. Linux arm64 and macOS arm64 have no prebuilt
-toolchain: build this fork from source. Upstream's CI configuration runs
+and with this fork's toolchain built from source with CMake on that machine
+(the guide's Bazel route was not run by this project). Linux arm64 and macOS
+arm64 have no prebuilt toolchain (upstream's release configuration): build
+this fork from source. Upstream's CI configuration runs
 upstream's tests on both. This fork's CI record shows that its last arm64 run
 that reached its tests passed (run 37398447710), and that on macOS the install
 test passed beside a failing fork-only export test (W-153), so macOS is
@@ -108,9 +115,10 @@ start files and the `libc` and `libm` development links. On Debian and Ubuntu,
 run `sudo apt install libc6-dev` (verified with `dpkg -S` on Ubuntu 24.04). The
 README's `sudo apt install libgcc-11-dev` also works, because the libgcc
 development package recommends libc6-dev and apt installs recommended packages
-by default. Other distributions' package names are listed, unverified, under
-[System packages](getting_started.md#system-packages). The upstream nightly
-also needs glibc 2.34 or newer.
+by default. On other distributions the package is, by name only and not
+verified by this project, `glibc-devel` on Fedora, RHEL and openSUSE, and
+`glibc` on Arch Linux; the [System packages](getting_started.md#system-packages)
+table lists them. The upstream nightly also needs glibc 2.34 or newer.
 
 Measured with an empty sysroot standing in for a system without libc6-dev,
 compiling a program that imports a C++ header stops first with the first line
@@ -162,7 +170,7 @@ exist, and the `build-runtimes` subcommand with the global option
 If every link is that slow, the directory that should hold the cache is
 missing: the toolchain does not create `$HOME/.cache` or `$XDG_CACHE_HOME`, and
 without it builds the runtimes in a temporary directory each time (measured).
-Run `mkdir -p "$HOME/.cache"`. See
+Run `mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}"`. See
 [The first link takes a while](getting_started.md#the-first-link-takes-a-while).
 
 ## Building programs
@@ -239,10 +247,9 @@ ld.lld: error: undefined symbol: std::__cxx11::basic_string<char, std::char_trai
 ```
 
 Compile such C++ files with `carbon clang`, or with the toolchain's
-`lib/carbon/llvm/bin/clang++`, as
+`lib/carbon/llvm/bin/clang++` (both measured on both toolchains), as
 [Linking your own C++ library](tutorial.md#linking-your-own-c-library) does.
-Passing libstdc++ by path after `--` also links (measured on this fork's
-toolchain):
+Passing libstdc++ by path after `--` also links (measured on both toolchains):
 
 ```shell
 carbon link --output=main main.o strlib.o -- /usr/lib/x86_64-linux-gnu/libstdc++.so.6
@@ -258,11 +265,17 @@ distinct.
 error: missing `return` at end of function with declared return type
 ```
 
-A `match` with no `default` arm, even one that covers every alternative of a
-choice, is not treated as returning on every path, so a function whose arms
-all `return` still needs a `return` after the `match`. Add a `default` arm, or
-a `return` after the `match`, or assign a variable in the arms and return it
-once, as [Choice types and match](tutorial.md#choice-types-and-match) does.
+This is a current toolchain limitation, not a language rule: the toolchain's
+check that a function returns on every path does not yet consult whether a
+`match` is exhaustive. So after a `match` with no `default` arm, even one that
+covers every alternative of a choice, a function whose arms all `return` still
+needs a `return`. Add a `default` arm, or a `return` after the `match`, or
+assign a variable in the arms and return it once, as
+[Choice types and match](tutorial.md#choice-types-and-match) does. The design
+treats code after an exhaustive `match` as unreachable
+([exhaustiveness](/docs/design/pattern_matching.md#refutability-overlap-usefulness-and-exhaustiveness)),
+and the error-handling design records the limitation
+([the `Core.Try` interface](/docs/design/error_handling.md#the-coretry-interface)).
 Measured on this fork's toolchain; the upstream nightly rejects `match` itself.
 
 ### The compiler rejects a fork feature
@@ -282,7 +295,9 @@ error: unrecognized declaration introducer
 error: member name `Slice` not found in `Core`
 ```
 
-Use this fork's toolchain for these features. A fork toolchain built before
+Use
+[this fork's toolchain](getting_started.md#build-this-forks-toolchain-from-source)
+for these features. A fork toolchain built before
 commit a27059915 (2026-09-27) also lacks `Core.Result`, and the stale
 `fork-toolchain-*` prereleases lack if-let, unions, `overload fn` and slices
 too; see

@@ -75,6 +75,21 @@ W-160 and mints fork design id F-014. A reserved id that goes unused stays
 unused. EV-1 merges after PR 52 (its state C integration commit); ST-1's order
 is set at its sign-off.
 
+Later on 2026-10-13: PR 54 (EV-1, claude/carbon-fork-0-1-ev, head cb3ef2e74: the
+three evaluator guides, twelve transcribed programs, W-062 discharged, W-152,
+W-153 and W-155 filed, expected 137/0/22 over 159) and PR 55 (ST-1,
+claude/carbon-fork-0-1-st, head 21307851a: str comparison, Core.StringBuf and
+concatenation under F-014, W-057 discharged, W-160 to W-167 filed, expected
+133/0/21 over 154) are OPEN and HELD; both were verified on the container-built
+toolchain (every PR body names exactly what ran and what did not), not on a
+hosted run. SC-1 is through fill round 3 (head 2497d5000, gate 1959/1959,
+conformance 130/0/21 over 151) with a round-3 review in progress; W-168 and
+W-169 are reserved for its late residues. OP-1 (claude/carbon-fork-0-1-op,
+fork/optional/plan.md: Core.Optional comparison for W-058) is in planning with
+ids from W-170 and fork design id F-015 if minted. Merge order now: PR 53, PR
+51, PR 52, SC-1, PR 54 (EV-1, after its state C integration commit), PR 55
+(ST-1), then OP-1. None is merged.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -409,9 +424,10 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-ua2` | HELD OPEN as PR #51 — UA-2 reconciliation at 05a5c30f7, fill + of-record conformance 37413300832 (131/0/19 over 150) done, gate impossible (Actions disabled); merge when a gate runs. |
 | `claude/carbon-fork-0-1-cmake` | HELD OPEN as PR #52 — CM-1 CMake integration at ea573f672 (gap rows 84/87 expected DONE, W-060/W-061 discharged, W-128..W-133); verification record in the PR; merge when the land sequence runs. |
 | `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at adaae4e35, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence. |
-| `claude/carbon-fork-0-1-ev` | PLAN SIGNED OFF (rev 2) — EV-1 evaluator guides (W-062, gap row 90); ids W-152..W-159 reserved; implementation in progress on the container toolchain; merges after PR 52. |
-| `claude/carbon-fork-0-1-st` | PLAN rev 1 in review — ST-1 Core.String operations (W-057, gap row 77); ids from W-160, F-014. |
-| `claude/carbon-fork-0-1-sc` | IMPLEMENTED, FILL IN PROGRESS — SC-1 template structural conformance, commits 1-3 at 42841fa8d with reviews folded (W-134..W-144; W-144 renumbers to W-151 at landing); PR after the fill converges. |
+| `claude/carbon-fork-0-1-ev` | HELD OPEN as PR #54 — EV-1 evaluator guides and twelve transcribed programs at cb3ef2e74 (W-062 discharged; W-152, W-153, W-155 filed; expected 137/0/22 over 159); state T, merges after PR 52 through its state C integration commit. |
+| `claude/carbon-fork-0-1-st` | HELD OPEN as PR #55 — ST-1 str comparison, Core.StringBuf and concatenation (F-014) at 21307851a (W-057 discharged; W-160..W-167 filed; expected 133/0/21 over 154); merges after EV-1. |
+| `claude/carbon-fork-0-1-op` | PLANNING — OP-1 Core.Optional comparison (W-058); ids from W-170, F-015 if minted; merges last. |
+| `claude/carbon-fork-0-1-sc` | IMPLEMENTED AND FILLED on the container toolchain — SC-1 template structural conformance through fill round 3 at 2497d5000 (gate 1959/1959, conformance 130/0/21 over 151; W-134..W-143, W-151; W-168/W-169 reserved); round-3 review in progress, PR after it. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |

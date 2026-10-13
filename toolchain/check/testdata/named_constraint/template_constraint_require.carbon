@@ -292,12 +292,20 @@ interface I2 {
 
 union Lacking {
   var a: i32;
+  // CHECK:STDERR: fail_require_in_interface_in_union_impl_lacking.carbon:[[@LINE+4]]:3: error: interface `I` being implemented requires that `Lacking` implements `HasGet` [InterfaceRequireImplsNotImplemented]
+  // CHECK:STDERR:   impl as I {}
+  // CHECK:STDERR:   ^~~~~~~~~~~
+  // CHECK:STDERR:
   impl as I {}
 }
 
 union LackingMixed {
   var a: i32;
   impl as J {}
+  // CHECK:STDERR: fail_require_in_interface_in_union_impl_lacking.carbon:[[@LINE+4]]:3: error: interface `I2` being implemented requires that `LackingMixed` implements `J & HasGet` [InterfaceRequireImplsNotImplemented]
+  // CHECK:STDERR:   impl as I2 {}
+  // CHECK:STDERR:   ^~~~~~~~~~~~
+  // CHECK:STDERR:
   impl as I2 {}
 }
 
@@ -478,7 +486,7 @@ class C {
 }
 
 fn Test(c: C) -> i32 {
-  // CHECK:STDERR: fail_extend_impl_extend_require_self.carbon:[[@LINE+7]]:10: error: requirement `Get` of template constraint `HasGet` can only be called through a type that satisfies it [StructuralRequirementCalled]
+  // CHECK:STDERR: fail_extend_impl_extend_require_self.carbon:[[@LINE+7]]:10: error: requirement `Get` of template constraint `HasGet` can only be used through a type that satisfies it [StructuralRequirementCalled]
   // CHECK:STDERR:   return c.Get();
   // CHECK:STDERR:          ^~~~~~~
   // CHECK:STDERR: fail_extend_impl_extend_require_self.carbon:[[@LINE-19]]:3: note: requirement declared here [StructuralRequirementHere]

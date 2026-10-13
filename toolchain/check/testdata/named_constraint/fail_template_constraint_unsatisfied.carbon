@@ -475,13 +475,13 @@ fn Test(b: Box(i32)) -> i32 {
   // CHECK:STDERR:   return CallGet(b);
   // CHECK:STDERR:          ^~~~~~~~~~
   // CHECK:STDERR: fail_own_params.carbon:[[@LINE-9]]:3: note: member `Get` of type `Box(i32)` does not match the signature required by template constraint `HasGet` [StructuralMemberMismatch]
-  // CHECK:STDERR:   fn Get[unused U: type](unused self) -> i32 { return 1; }
-  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:   fn Get[U: type](unused self, unused n: U) -> i32 { return 1; }
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR: fail_own_params.carbon:[[@LINE-16]]:3: note: requirement declared here [StructuralRequirementHere]
-  // CHECK:STDERR:   fn Get(self) -> i32;
-  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:   fn Get(self, n: i32) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR: fail_own_params.carbon:[[@LINE-12]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
-  // CHECK:STDERR: fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+  // CHECK:STDERR: fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(1); }
   // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   return CallGet(b);

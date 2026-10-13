@@ -486,7 +486,7 @@ class C {
 }
 
 fn Test(c: C) -> i32 {
-  // CHECK:STDERR: fail_extend_impl_extend_require_self.carbon:[[@LINE+7]]:10: error: requirement `Get` of template constraint `HasGet` can only be used through a type that satisfies it [StructuralRequirementCalled]
+  // CHECK:STDERR: fail_extend_impl_extend_require_self.carbon:[[@LINE+7]]:10: error: requirement `Get` of template constraint `HasGet` can only be used through a type that satisfies it [StructuralRequirementUsed]
   // CHECK:STDERR:   return c.Get();
   // CHECK:STDERR:          ^~~~~~~
   // CHECK:STDERR: fail_extend_impl_extend_require_self.carbon:[[@LINE-19]]:3: note: requirement declared here [StructuralRequirementHere]

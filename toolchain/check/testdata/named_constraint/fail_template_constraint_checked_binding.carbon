@@ -215,7 +215,7 @@ interface I {
   extend require impls HasGet;
 }
 
-// CHECK:STDERR: fail_extend_require_in_interface_symbolic.carbon:[[@LINE+7]]:34: error: requirement `Get` of template constraint `HasGet` can only be used through a type that satisfies it [StructuralRequirementCalled]
+// CHECK:STDERR: fail_extend_require_in_interface_symbolic.carbon:[[@LINE+7]]:34: error: requirement `Get` of template constraint `HasGet` can only be used through a type that satisfies it [StructuralRequirementUsed]
 // CHECK:STDERR: fn G[T: I](x: T) -> i32 { return x.Get(); }
 // CHECK:STDERR:                                  ^~~~~~~
 // CHECK:STDERR: fail_extend_require_in_interface_symbolic.carbon:[[@LINE-10]]:3: note: requirement declared here [StructuralRequirementHere]

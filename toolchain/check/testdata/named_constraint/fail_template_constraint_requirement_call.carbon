@@ -32,7 +32,7 @@ class C {
   fn Make() -> C { return {}; }
 }
 
-// CHECK:STDERR: fail_direct_call.carbon:[[@LINE+7]]:24: error: requirement `Count` of template constraint `HasCount` can only be used through a type that satisfies it [StructuralRequirementCalled]
+// CHECK:STDERR: fail_direct_call.carbon:[[@LINE+7]]:24: error: requirement `Count` of template constraint `HasCount` can only be used through a type that satisfies it [StructuralRequirementUsed]
 // CHECK:STDERR: fn K() -> i32 { return HasCount.Count(); }
 // CHECK:STDERR:                        ^~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_direct_call.carbon:[[@LINE-14]]:3: note: requirement declared here [StructuralRequirementHere]
@@ -41,7 +41,7 @@ class C {
 // CHECK:STDERR:
 fn K() -> i32 { return HasCount.Count(); }
 
-// CHECK:STDERR: fail_direct_call.carbon:[[@LINE+7]]:22: error: requirement `Make` of template constraint `HasMake` can only be used through a type that satisfies it [StructuralRequirementCalled]
+// CHECK:STDERR: fail_direct_call.carbon:[[@LINE+7]]:22: error: requirement `Make` of template constraint `HasMake` can only be used through a type that satisfies it [StructuralRequirementUsed]
 // CHECK:STDERR: fn M() -> C { return HasMake.Make(); }
 // CHECK:STDERR:                      ^~~~~~~~~~~~~~
 // CHECK:STDERR: fail_direct_call.carbon:[[@LINE-19]]:3: note: requirement declared here [StructuralRequirementHere]
@@ -68,7 +68,7 @@ class C {
 
 fn ViaLet() -> C {
   let F: HasMake = C;
-  // CHECK:STDERR: fail_todo_runtime_facet.carbon:[[@LINE+7]]:10: error: requirement `Make` of template constraint `HasMake` can only be used through a type that satisfies it [StructuralRequirementCalled]
+  // CHECK:STDERR: fail_todo_runtime_facet.carbon:[[@LINE+7]]:10: error: requirement `Make` of template constraint `HasMake` can only be used through a type that satisfies it [StructuralRequirementUsed]
   // CHECK:STDERR:   return F.Make();
   // CHECK:STDERR:          ^~~~~~~~
   // CHECK:STDERR: fail_todo_runtime_facet.carbon:[[@LINE-12]]:3: note: requirement declared here [StructuralRequirementHere]
@@ -244,7 +244,7 @@ interface J {}
 
 fn Take[T: type](unused f: T) -> i32 { return 1; }
 
-// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+7]]:18: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementCalled]
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+7]]:18: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
 // CHECK:STDERR: fn Statement() { HasN.N; }
 // CHECK:STDERR:                  ^~~~~~
 // CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE-18]]:3: note: requirement declared here [StructuralRequirementHere]
@@ -253,7 +253,7 @@ fn Take[T: type](unused f: T) -> i32 { return 1; }
 // CHECK:STDERR:
 fn Statement() { HasN.N; }
 
-// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+10]]:31: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementCalled]
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+10]]:31: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
 // CHECK:STDERR: fn Arg() -> i32 { return Take(HasN.N); }
 // CHECK:STDERR:                               ^~~~~~
 // CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE-27]]:3: note: requirement declared here [StructuralRequirementHere]
@@ -265,7 +265,7 @@ fn Statement() { HasN.N; }
 // CHECK:STDERR:
 fn Arg() -> i32 { return Take(HasN.N); }
 
-// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+10]]:34: error: requirement `Get` of template constraint `HasGet` can only be used through a type that satisfies it [StructuralRequirementCalled]
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+10]]:34: error: requirement `Get` of template constraint `HasGet` can only be used through a type that satisfies it [StructuralRequirementUsed]
 // CHECK:STDERR: fn Method() -> i32 { return Take(HasGet.Get); }
 // CHECK:STDERR:                                  ^~~~~~~~~~
 // CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE-35]]:3: note: requirement declared here [StructuralRequirementHere]
@@ -277,7 +277,7 @@ fn Arg() -> i32 { return Take(HasN.N); }
 // CHECK:STDERR:
 fn Method() -> i32 { return Take(HasGet.Get); }
 
-// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+10]]:45: error: requirement `N` of template constraint `Has` can only be used through a type that satisfies it [StructuralRequirementCalled]
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+10]]:45: error: requirement `N` of template constraint `Has` can only be used through a type that satisfies it [StructuralRequirementUsed]
 // CHECK:STDERR: fn GenericConstraint() -> i32 { return Take(Has(i32).N); }
 // CHECK:STDERR:                                             ^~~~~~~~~~
 // CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE-43]]:3: note: requirement declared here [StructuralRequirementHere]
@@ -289,7 +289,7 @@ fn Method() -> i32 { return Take(HasGet.Get); }
 // CHECK:STDERR:
 fn GenericConstraint() -> i32 { return Take(Has(i32).N); }
 
-// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+10]]:37: error: requirement `Get` of template constraint `HasGet` can only be used through a type that satisfies it [StructuralRequirementCalled]
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+10]]:37: error: requirement `Get` of template constraint `HasGet` can only be used through a type that satisfies it [StructuralRequirementUsed]
 // CHECK:STDERR: fn FacetType() -> i32 { return Take((HasGet & J).Get); }
 // CHECK:STDERR:                                     ^~~~~~~~~~~~~~~~
 // CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE-59]]:3: note: requirement declared here [StructuralRequirementHere]
@@ -301,7 +301,7 @@ fn GenericConstraint() -> i32 { return Take(Has(i32).N); }
 // CHECK:STDERR:
 fn FacetType() -> i32 { return Take((HasGet & J).Get); }
 
-// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+10]]:41: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementCalled]
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+10]]:41: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
 // CHECK:STDERR: fn TupleElement() -> i32 { return Take((HasN.N, 1)); }
 // CHECK:STDERR:                                         ^~~~~~
 // CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE-75]]:3: note: requirement declared here [StructuralRequirementHere]
@@ -313,7 +313,7 @@ fn FacetType() -> i32 { return Take((HasGet & J).Get); }
 // CHECK:STDERR:
 fn TupleElement() -> i32 { return Take((HasN.N, 1)); }
 
-// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+10]]:45: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementCalled]
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+10]]:45: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
 // CHECK:STDERR: fn StructField() -> i32 { return Take({.f = HasN.N}); }
 // CHECK:STDERR:                                             ^~~~~~
 // CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE-87]]:3: note: requirement declared here [StructuralRequirementHere]
@@ -327,15 +327,45 @@ fn StructField() -> i32 { return Take({.f = HasN.N}); }
 
 fn TemplateParam[template U: type](unused template f: U) -> i32 { return 1; }
 
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+10]]:41: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fn TemplateValueParam() -> i32 { return TemplateParam(HasN.N); }
+// CHECK:STDERR:                                         ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE-101]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE-8]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn TemplateParam[template U: type](unused template f: U) -> i32 { return 1; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TemplateValueParam() -> i32 { return TemplateParam(HasN.N); }
 
 fn GenericParam[U: type](unused generic f: U) -> i32 { return 1; }
 
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+10]]:40: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fn GenericValueParam() -> i32 { return GenericParam(HasN.N); }
+// CHECK:STDERR:                                        ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE-115]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE-8]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn GenericParam[U: type](unused generic f: U) -> i32 { return 1; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn GenericValueParam() -> i32 { return GenericParam(HasN.N); }
 
 overload fn P(unused x: i32) -> i32 { return 1; }
 overload fn P[T: type](unused f: T) -> i32 { return 2; }
 
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE+10]]:31: error: no member of overload set `P` accepts this call [OverloadNoMatch]
+// CHECK:STDERR: fn Overload() -> i32 { return P(HasN.N); }
+// CHECK:STDERR:                               ^~~~~~~~~
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE-6]]:1: note: candidate has a parameter its argument cannot implicitly convert to [OverloadCandidateRejected]
+// CHECK:STDERR: overload fn P(unused x: i32) -> i32 { return 1; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_as_value.carbon:[[@LINE-8]]:1: note: candidate has a parameter its argument cannot implicitly convert to [OverloadCandidateRejected]
+// CHECK:STDERR: overload fn P[T: type](unused f: T) -> i32 { return 2; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Overload() -> i32 { return P(HasN.N); }
 
 // --- fail_requirement_through_checked_binding_as_value.carbon
@@ -363,7 +393,7 @@ interface K {
 
 fn Take[T: type](unused f: T) -> i32 { return 1; }
 
-// CHECK:STDERR: fail_requirement_through_checked_binding_as_value.carbon:[[@LINE+10]]:50: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementCalled]
+// CHECK:STDERR: fail_requirement_through_checked_binding_as_value.carbon:[[@LINE+10]]:50: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
 // CHECK:STDERR: fn Assoc[T: I](unused x: T) -> i32 { return Take(T.N); }
 // CHECK:STDERR:                                                  ^~~
 // CHECK:STDERR: fail_requirement_through_checked_binding_as_value.carbon:[[@LINE-20]]:3: note: requirement declared here [StructuralRequirementHere]
@@ -375,7 +405,7 @@ fn Take[T: type](unused f: T) -> i32 { return 1; }
 // CHECK:STDERR:
 fn Assoc[T: I](unused x: T) -> i32 { return Take(T.N); }
 
-// CHECK:STDERR: fail_requirement_through_checked_binding_as_value.carbon:[[@LINE+10]]:43: error: requirement `Get` of template constraint `HasGet` can only be used through a type that satisfies it [StructuralRequirementCalled]
+// CHECK:STDERR: fail_requirement_through_checked_binding_as_value.carbon:[[@LINE+10]]:43: error: requirement `Get` of template constraint `HasGet` can only be used through a type that satisfies it [StructuralRequirementUsed]
 // CHECK:STDERR: fn Bound[T: K](x: T) -> i32 { return Take(x.Get); }
 // CHECK:STDERR:                                           ^~~~~
 // CHECK:STDERR: fail_requirement_through_checked_binding_as_value.carbon:[[@LINE-28]]:3: note: requirement declared here [StructuralRequirementHere]
@@ -387,7 +417,7 @@ fn Assoc[T: I](unused x: T) -> i32 { return Take(T.N); }
 // CHECK:STDERR:
 fn Bound[T: K](x: T) -> i32 { return Take(x.Get); }
 
-// CHECK:STDERR: fail_requirement_through_checked_binding_as_value.carbon:[[@LINE+10]]:51: error: requirement `Get` of template constraint `HasGet` can only be used through a type that satisfies it [StructuralRequirementCalled]
+// CHECK:STDERR: fail_requirement_through_checked_binding_as_value.carbon:[[@LINE+10]]:51: error: requirement `Get` of template constraint `HasGet` can only be used through a type that satisfies it [StructuralRequirementUsed]
 // CHECK:STDERR: fn BoundInTuple[T: K](x: T) -> i32 { return Take((x.Get, 1)); }
 // CHECK:STDERR:                                                   ^~~~~
 // CHECK:STDERR: fail_requirement_through_checked_binding_as_value.carbon:[[@LINE-40]]:3: note: requirement declared here [StructuralRequirementHere]
@@ -399,6 +429,16 @@ fn Bound[T: K](x: T) -> i32 { return Take(x.Get); }
 // CHECK:STDERR:
 fn BoundInTuple[T: K](x: T) -> i32 { return Take((x.Get, 1)); }
 
+// CHECK:STDERR: fail_requirement_through_checked_binding_as_value.carbon:[[@LINE+10]]:57: error: requirement `Get` of template constraint `HasGet` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fn BoundInStruct[T: K](x: T) -> i32 { return Take({.a = x.Get}); }
+// CHECK:STDERR:                                                         ^~~~~
+// CHECK:STDERR: fail_requirement_through_checked_binding_as_value.carbon:[[@LINE-52]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_through_checked_binding_as_value.carbon:[[@LINE-44]]:25: note: initializing function parameter [InCallToFunctionParam]
+// CHECK:STDERR: fn Take[T: type](unused f: T) -> i32 { return 1; }
+// CHECK:STDERR:                         ^~~~
+// CHECK:STDERR:
 fn BoundInStruct[T: K](x: T) -> i32 { return Take({.a = x.Get}); }
 
 // --- fail_requirement_through_template_instantiation.carbon
@@ -426,51 +466,166 @@ interface J {}
 fn Take[T: type](unused f: T) -> i32 { return 1; }
 
 fn Tuple(template T: type) -> i32 { return Take((T.N, 1)); }
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE+11]]:31: error: unable to monomorphize specific `Tuple(HasN)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn UseTuple() -> i32 { return Tuple(HasN); }
+// CHECK:STDERR:                               ^~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon: note: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-16]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-10]]:25: note: initializing function parameter [InCallToFunctionParam]
+// CHECK:STDERR: fn Take[T: type](unused f: T) -> i32 { return 1; }
+// CHECK:STDERR:                         ^~~~
+// CHECK:STDERR:
 fn UseTuple() -> i32 { return Tuple(HasN); }
 
 fn Struct(template T: type) -> i32 { return Take({.f = T.N}); }
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE+11]]:32: error: unable to monomorphize specific `Struct(HasN)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn UseStruct() -> i32 { return Struct(HasN); }
+// CHECK:STDERR:                                ^~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon: note: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-30]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-24]]:25: note: initializing function parameter [InCallToFunctionParam]
+// CHECK:STDERR: fn Take[T: type](unused f: T) -> i32 { return 1; }
+// CHECK:STDERR:                         ^~~~
+// CHECK:STDERR:
 fn UseStruct() -> i32 { return Struct(HasN); }
 
 fn Nested(template T: type) -> i32 {
   return Take({.a = 1, .b = ((T.N, 1), 2)});
 }
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE+11]]:32: error: unable to monomorphize specific `Nested(HasN)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn UseNested() -> i32 { return Nested(HasN); }
+// CHECK:STDERR:                                ^~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon: note: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-46]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-40]]:25: note: initializing function parameter [InCallToFunctionParam]
+// CHECK:STDERR: fn Take[T: type](unused f: T) -> i32 { return 1; }
+// CHECK:STDERR:                         ^~~~
+// CHECK:STDERR:
 fn UseNested() -> i32 { return Nested(HasN); }
 
 fn IfTuple(template T: type) -> i32 {
   return Take(if true then (T.N, 1) else (T.N, 2));
 }
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE+20]]:33: error: unable to monomorphize specific `IfTuple(HasN)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn UseIfTuple() -> i32 { return IfTuple(HasN); }
+// CHECK:STDERR:                                 ^~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-5]]:28: note: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR:   return Take(if true then (T.N, 1) else (T.N, 2));
+// CHECK:STDERR:                            ^~~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-64]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR:
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE+10]]:33: error: unable to monomorphize specific `IfTuple(HasN)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn UseIfTuple() -> i32 { return IfTuple(HasN); }
+// CHECK:STDERR:                                 ^~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-15]]:42: note: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR:   return Take(if true then (T.N, 1) else (T.N, 2));
+// CHECK:STDERR:                                          ^~~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-74]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn UseIfTuple() -> i32 { return IfTuple(HasN); }
 
 fn LetTuple(template T: type) -> i32 {
   let unused t: (typeof(T.N), i32) = (T.N, 1);
   return 0;
 }
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE+10]]:34: error: unable to monomorphize specific `LetTuple(HasN)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn UseLetTuple() -> i32 { return LetTuple(HasN); }
+// CHECK:STDERR:                                  ^~~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-6]]:38: note: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR:   let unused t: (typeof(T.N), i32) = (T.N, 1);
+// CHECK:STDERR:                                      ^~~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-90]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn UseLetTuple() -> i32 { return LetTuple(HasN); }
 
 fn MethodTuple(template T: type) -> i32 { return Take((T.Get, 1)); }
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE+11]]:37: error: unable to monomorphize specific `MethodTuple(J & HasGet)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn UseMethodTuple() -> i32 { return MethodTuple(HasGet & J); }
+// CHECK:STDERR:                                     ^~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon: note: requirement `Get` of template constraint `HasGet` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-97]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-95]]:25: note: initializing function parameter [InCallToFunctionParam]
+// CHECK:STDERR: fn Take[T: type](unused f: T) -> i32 { return 1; }
+// CHECK:STDERR:                         ^~~~
+// CHECK:STDERR:
 fn UseMethodTuple() -> i32 { return MethodTuple(HasGet & J); }
 
 fn Discard(template T: type) -> i32 {
   T.N;
   return 0;
 }
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE+10]]:33: error: unable to monomorphize specific `Discard(HasN)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn UseDiscard() -> i32 { return Discard(HasN); }
+// CHECK:STDERR:                                 ^~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-6]]:3: note: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR:   T.N;
+// CHECK:STDERR:   ^~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-120]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn UseDiscard() -> i32 { return Discard(HasN); }
 
 fn DiscardTuple(template T: type) -> i32 {
   (T.N, 1);
   return 0;
 }
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE+10]]:38: error: unable to monomorphize specific `DiscardTuple(HasN)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn UseDiscardTuple() -> i32 { return DiscardTuple(HasN); }
+// CHECK:STDERR:                                      ^~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-6]]:3: note: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR:   (T.N, 1);
+// CHECK:STDERR:   ^~~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-136]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn UseDiscardTuple() -> i32 { return DiscardTuple(HasN); }
 
 fn DiscardStruct(template T: type) -> i32 {
   {.a = T.N};
   return 0;
 }
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE+10]]:39: error: unable to monomorphize specific `DiscardStruct(HasN)` [ResolvingSpecificHere]
+// CHECK:STDERR: fn UseDiscardStruct() -> i32 { return DiscardStruct(HasN); }
+// CHECK:STDERR:                                       ^~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-6]]:3: note: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR:   {.a = T.N};
+// CHECK:STDERR:   ^~~~~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-152]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn UseDiscardStruct() -> i32 { return DiscardStruct(HasN); }
 
 class Box(template FT: type) {
   fn F() -> i32 { return Take((FT.N, 1)); }
 }
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE+11]]:29: error: unable to monomorphize specific `F()` [ResolvingSpecificHere]
+// CHECK:STDERR: fn UseBox() -> i32 { return Box(HasN).F(); }
+// CHECK:STDERR:                             ^~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon: note: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-165]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_through_template_instantiation.carbon:[[@LINE-159]]:25: note: initializing function parameter [InCallToFunctionParam]
+// CHECK:STDERR: fn Take[T: type](unused f: T) -> i32 { return 1; }
+// CHECK:STDERR:                         ^~~~
+// CHECK:STDERR:
 fn UseBox() -> i32 { return Box(HasN).F(); }
 
 // --- fail_requirement_typeof_value.carbon
@@ -488,14 +643,35 @@ template constraint HasN {
 
 fn Take[T: type](unused f: T) -> i32 { return 1; }
 
+// CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE+7]]:17: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fn Param(unused f: typeof(HasN.N)) {}
+// CHECK:STDERR:                 ^~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-8]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Param(unused f: typeof(HasN.N)) {}
 
 class W {
   var f: typeof(HasN.N);
 }
 
+// CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE+7]]:37: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fn Field(w: W) -> i32 { return Take(w.f); }
+// CHECK:STDERR:                                     ^~~
+// CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-21]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Field(w: W) -> i32 { return Take(w.f); }
 
+// CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE+7]]:40: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fn Return() -> typeof(HasN.N) { return HasN.N; }
+// CHECK:STDERR:                                        ^~~~~~
+// CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-30]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Return() -> typeof(HasN.N) { return HasN.N; }
 
 // --- fail_ladder_alias.carbon

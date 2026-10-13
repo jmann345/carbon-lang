@@ -548,3 +548,279 @@ fn Run() -> i32 {
 // CHECK:STDOUT: !132 = !DILocation(line: 18, column: 54, scope: !126)
 // CHECK:STDOUT: !133 = !{!127}
 // CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'requirement_through_template_instantiation.carbon'
+// CHECK:STDOUT: source_filename = "requirement_through_template_instantiation.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: @tuple.6f2.tuple.6f2 = internal constant { {}, {} } zeroinitializer
+// CHECK:STDOUT: @tuple.7fd.loc31_38.5 = internal constant { {}, i32 } { {} zeroinitializer, i32 1 }
+// CHECK:STDOUT: @tuple.799.tuple.799 = internal constant { {}, {} } zeroinitializer
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @_CN.C.Main() #0 !dbg !136 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret i32 5, !dbg !139
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @_CGet.C.Main(ptr %self) #0 !dbg !140 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret i32 6, !dbg !145
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @main() #0 !dbg !147 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %Tuple.call = call i32 @_CTuple.Main.9522ff908e97e267(), !dbg !150
+// CHECK:STDOUT:   %Struct.call = call i32 @_CStruct.Main.9522ff908e97e267(), !dbg !151
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call.loc49_19 = add i32 %Tuple.call, %Struct.call, !dbg !150
+// CHECK:STDOUT:   %LetTuple.call = call i32 @_CLetTuple.Main.9522ff908e97e267(), !dbg !152
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call.loc49_31 = add i32 %Int.as.AddWith.impl.Op.call.loc49_19, %LetTuple.call, !dbg !150
+// CHECK:STDOUT:   %MethodTuple.call = call i32 @_CMethodTuple.Main.9522ff908e97e267(), !dbg !153
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call.loc49_45 = add i32 %Int.as.AddWith.impl.Op.call.loc49_31, %MethodTuple.call, !dbg !150
+// CHECK:STDOUT:   %Discard.call = call i32 @_CDiscard.Main.9522ff908e97e267(), !dbg !154
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call.loc49_62 = add i32 %Int.as.AddWith.impl.Op.call.loc49_45, %Discard.call, !dbg !150
+// CHECK:STDOUT:   %Box.F.call = call i32 @_CF.Box.Main.9522ff908e97e267(), !dbg !155
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call.loc49_75 = add i32 %Int.as.AddWith.impl.Op.call.loc49_62, %Box.F.call, !dbg !150
+// CHECK:STDOUT:   ret i32 %Int.as.AddWith.impl.Op.call.loc49_75, !dbg !156
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i32 @_CTuple.Main.9522ff908e97e267() #0 !dbg !157 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %Take.call.3e46d0.2 = call i32 @_CTake.Main.1f03bbe8d00cdc13(ptr @tuple.6f2.tuple.6f2), !dbg !160
+// CHECK:STDOUT:   ret i32 %Take.call.3e46d0.2, !dbg !161
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i32 @_CStruct.Main.9522ff908e97e267() #0 !dbg !162 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %Take.call.146 = call i32 @_CTake.Main.eab0bcee34c43f4b({ {} } zeroinitializer), !dbg !165
+// CHECK:STDOUT:   ret i32 %Take.call.146, !dbg !166
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i32 @_CLetTuple.Main.9522ff908e97e267() #0 !dbg !167 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %Take.call.e07 = call i32 @_CTake.Main.1f03bbe8d00cdc13(ptr @tuple.7fd.loc31_38.5), !dbg !173
+// CHECK:STDOUT:   ret i32 %Take.call.e07, !dbg !174
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i32 @_CMethodTuple.Main.9522ff908e97e267() #0 !dbg !175 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %Take.call.6c2 = call i32 @_CTake.Main.1f03bbe8d00cdc13(ptr @tuple.799.tuple.799), !dbg !178
+// CHECK:STDOUT:   ret i32 %Take.call.6c2, !dbg !179
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i32 @_CDiscard.Main.9522ff908e97e267() #0 !dbg !180 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret i32 0, !dbg !183
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i32 @_CF.Box.Main.9522ff908e97e267() #0 !dbg !184 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %Take.call.3e46d0.1 = call i32 @_CTake.Main.1f03bbe8d00cdc13(ptr @tuple.6f2.tuple.6f2), !dbg !187
+// CHECK:STDOUT:   ret i32 %Take.call.3e46d0.1, !dbg !188
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i32 @_CTake.Main.1f03bbe8d00cdc13(ptr %f) #0 !dbg !189 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret i32 1, !dbg !194
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i32 @_CTake.Main.eab0bcee34c43f4b({ {} } %f) #0 !dbg !196 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret i32 1, !dbg !201
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; uselistorder directives
+// CHECK:STDOUT: uselistorder ptr @_CTake.Main.1f03bbe8d00cdc13, { 3, 1, 0, 2 }
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!135}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !8 = !{!6, !7}
+// CHECK:STDOUT: !9 = !DISubroutineType(types: !8)
+// CHECK:STDOUT: !10 = !{!6}
+// CHECK:STDOUT: !11 = !DISubroutineType(types: !10)
+// CHECK:STDOUT: !134 = !DIFile(filename: "requirement_through_template_instantiation.carbon", directory: "")
+// CHECK:STDOUT: !135 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !134, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !136 = distinct !DISubprogram(name: "N", linkageName: "_CN.C.Main", scope: null, file: !134, line: 20, type: !11, spFlags: DISPFlagDefinition, unit: !135)
+// CHECK:STDOUT: !139 = !DILocation(line: 20, column: 19, scope: !136)
+// CHECK:STDOUT: !140 = distinct !DISubprogram(name: "Get", linkageName: "_CGet.C.Main", scope: null, file: !134, line: 21, type: !9, spFlags: DISPFlagDefinition, unit: !135, retainedNodes: !146)
+// CHECK:STDOUT: !141 = !DILocalVariable(arg: 1, scope: !140, type: !7)
+// CHECK:STDOUT: !145 = !DILocation(line: 21, column: 32, scope: !140)
+// CHECK:STDOUT: !146 = !{!141}
+// CHECK:STDOUT: !147 = distinct !DISubprogram(name: "Run", linkageName: "main", scope: null, file: !134, line: 48, type: !11, spFlags: DISPFlagDefinition, unit: !135)
+// CHECK:STDOUT: !150 = !DILocation(line: 49, column: 10, scope: !147)
+// CHECK:STDOUT: !151 = !DILocation(line: 49, column: 21, scope: !147)
+// CHECK:STDOUT: !152 = !DILocation(line: 49, column: 33, scope: !147)
+// CHECK:STDOUT: !153 = !DILocation(line: 49, column: 47, scope: !147)
+// CHECK:STDOUT: !154 = !DILocation(line: 49, column: 64, scope: !147)
+// CHECK:STDOUT: !155 = !DILocation(line: 50, column: 10, scope: !147)
+// CHECK:STDOUT: !156 = !DILocation(line: 49, column: 3, scope: !147)
+// CHECK:STDOUT: !157 = distinct !DISubprogram(name: "Tuple", linkageName: "_CTuple.Main.9522ff908e97e267", scope: null, file: !134, line: 26, type: !11, spFlags: DISPFlagDefinition, unit: !135)
+// CHECK:STDOUT: !160 = !DILocation(line: 26, column: 44, scope: !157)
+// CHECK:STDOUT: !161 = !DILocation(line: 26, column: 37, scope: !157)
+// CHECK:STDOUT: !162 = distinct !DISubprogram(name: "Struct", linkageName: "_CStruct.Main.9522ff908e97e267", scope: null, file: !134, line: 28, type: !11, spFlags: DISPFlagDefinition, unit: !135)
+// CHECK:STDOUT: !165 = !DILocation(line: 28, column: 45, scope: !162)
+// CHECK:STDOUT: !166 = !DILocation(line: 28, column: 38, scope: !162)
+// CHECK:STDOUT: !167 = distinct !DISubprogram(name: "LetTuple", linkageName: "_CLetTuple.Main.9522ff908e97e267", scope: null, file: !134, line: 30, type: !11, spFlags: DISPFlagDefinition, unit: !135)
+// CHECK:STDOUT: !173 = !DILocation(line: 32, column: 10, scope: !167)
+// CHECK:STDOUT: !174 = !DILocation(line: 32, column: 3, scope: !167)
+// CHECK:STDOUT: !175 = distinct !DISubprogram(name: "MethodTuple", linkageName: "_CMethodTuple.Main.9522ff908e97e267", scope: null, file: !134, line: 35, type: !11, spFlags: DISPFlagDefinition, unit: !135)
+// CHECK:STDOUT: !178 = !DILocation(line: 35, column: 50, scope: !175)
+// CHECK:STDOUT: !179 = !DILocation(line: 35, column: 43, scope: !175)
+// CHECK:STDOUT: !180 = distinct !DISubprogram(name: "Discard", linkageName: "_CDiscard.Main.9522ff908e97e267", scope: null, file: !134, line: 37, type: !11, spFlags: DISPFlagDefinition, unit: !135)
+// CHECK:STDOUT: !183 = !DILocation(line: 41, column: 3, scope: !180)
+// CHECK:STDOUT: !184 = distinct !DISubprogram(name: "F", linkageName: "_CF.Box.Main.9522ff908e97e267", scope: null, file: !134, line: 45, type: !11, spFlags: DISPFlagDefinition, unit: !135)
+// CHECK:STDOUT: !187 = !DILocation(line: 45, column: 26, scope: !184)
+// CHECK:STDOUT: !188 = !DILocation(line: 45, column: 19, scope: !184)
+// CHECK:STDOUT: !189 = distinct !DISubprogram(name: "Take", linkageName: "_CTake.Main.1f03bbe8d00cdc13", scope: null, file: !134, line: 24, type: !9, spFlags: DISPFlagDefinition, unit: !135, retainedNodes: !195)
+// CHECK:STDOUT: !190 = !DILocalVariable(arg: 1, scope: !189, type: !7)
+// CHECK:STDOUT: !194 = !DILocation(line: 24, column: 40, scope: !189)
+// CHECK:STDOUT: !195 = !{!190}
+// CHECK:STDOUT: !196 = distinct !DISubprogram(name: "Take", linkageName: "_CTake.Main.eab0bcee34c43f4b", scope: null, file: !134, line: 24, type: !9, spFlags: DISPFlagDefinition, unit: !135, retainedNodes: !202)
+// CHECK:STDOUT: !197 = !DILocalVariable(arg: 1, scope: !196, type: !7)
+// CHECK:STDOUT: !201 = !DILocation(line: 24, column: 40, scope: !196)
+// CHECK:STDOUT: !202 = !{!197}
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'requirement_typeof.carbon'
+// CHECK:STDOUT: source_filename = "requirement_typeof.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: @array.199.loc41_3.1 = internal constant [0 x {}] zeroinitializer
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @_CN.C.Main() #0 !dbg !221 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret i32 2, !dbg !224
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @"_CF.59ea7ce8a2779236:Z.Main"() #0 !dbg !225 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret i32 9, !dbg !228
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @_CPointer.Main(ptr %p) #0 !dbg !229 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret i32 3, !dbg !234
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CWrapped.Main(ptr %w) #0 !dbg !236 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret void, !dbg !239
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define void @_CUpstream.Main() #0 !dbg !241 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret void, !dbg !243
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @_CSatisfied.Main() #0 !dbg !244 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret i32 1, !dbg !248
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @main() #0 !dbg !249 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   call void @_CUpstream.Main(), !dbg !252
+// CHECK:STDOUT:   %HasN.WithSelf.N.requirement.type.as.Z.impl.F.call = call i32 @"_CF.59ea7ce8a2779236:Z.Main"(), !dbg !253
+// CHECK:STDOUT:   %Generic.call = call i32 @_CGeneric.Main.084a2801e0f5d754({} zeroinitializer), !dbg !254
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call.loc51_33 = add i32 %HasN.WithSelf.N.requirement.type.as.Z.impl.F.call, %Generic.call, !dbg !253
+// CHECK:STDOUT:   %Satisfied.call = call i32 @_CSatisfied.Main(), !dbg !255
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call.loc51_46 = add i32 %Int.as.AddWith.impl.Op.call.loc51_33, %Satisfied.call, !dbg !253
+// CHECK:STDOUT:   ret i32 %Int.as.AddWith.impl.Op.call.loc51_46, !dbg !256
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.bb9ac398e22f0ba9:core.Destroy.Core"(ptr %self) #0 !dbg !257 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret void, !dbg !259
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define linkonce_odr i32 @_CGeneric.Main.084a2801e0f5d754({} %x) #0 !dbg !261 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %a.var = alloca [0 x {}], align 1, !dbg !266
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %a.var), !dbg !266
+// CHECK:STDOUT:   call void @llvm.memcpy.p0.p0.i64(ptr align 1 %a.var, ptr align 1 @array.199.loc41_3.1, i64 0, i1 false), !dbg !266
+// CHECK:STDOUT:   call void @"_CSelfDestruct.bb9ac398e22f0ba9:core.Destroy.Core"(ptr %a.var), !dbg !266
+// CHECK:STDOUT:   ret i32 4, !dbg !268
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.memcpy.p0.p0.i64(ptr noalias writeonly captures(none), ptr noalias readonly captures(none), i64, i1 immarg) #1
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!218}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !8 = !{!6, !7}
+// CHECK:STDOUT: !9 = !DISubroutineType(types: !8)
+// CHECK:STDOUT: !10 = !{!6}
+// CHECK:STDOUT: !11 = !DISubroutineType(types: !10)
+// CHECK:STDOUT: !12 = !{null, !7}
+// CHECK:STDOUT: !13 = !DISubroutineType(types: !12)
+// CHECK:STDOUT: !217 = !DIFile(filename: "requirement_typeof.carbon", directory: "")
+// CHECK:STDOUT: !218 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !217, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !219 = !{null}
+// CHECK:STDOUT: !220 = !DISubroutineType(types: !219)
+// CHECK:STDOUT: !221 = distinct !DISubprogram(name: "N", linkageName: "_CN.C.Main", scope: null, file: !217, line: 25, type: !11, spFlags: DISPFlagDefinition, unit: !218)
+// CHECK:STDOUT: !224 = !DILocation(line: 25, column: 19, scope: !221)
+// CHECK:STDOUT: !225 = distinct !DISubprogram(name: "F", linkageName: "_CF.59ea7ce8a2779236:Z.Main", scope: null, file: !217, line: 33, type: !11, spFlags: DISPFlagDefinition, unit: !218)
+// CHECK:STDOUT: !228 = !DILocation(line: 33, column: 19, scope: !225)
+// CHECK:STDOUT: !229 = distinct !DISubprogram(name: "Pointer", linkageName: "_CPointer.Main", scope: null, file: !217, line: 36, type: !9, spFlags: DISPFlagDefinition, unit: !218, retainedNodes: !235)
+// CHECK:STDOUT: !230 = !DILocalVariable(arg: 1, scope: !229, type: !7)
+// CHECK:STDOUT: !234 = !DILocation(line: 36, column: 48, scope: !229)
+// CHECK:STDOUT: !235 = !{!230}
+// CHECK:STDOUT: !236 = distinct !DISubprogram(name: "Wrapped", linkageName: "_CWrapped.Main", scope: null, file: !217, line: 38, type: !13, spFlags: DISPFlagDefinition, unit: !218, retainedNodes: !240)
+// CHECK:STDOUT: !237 = !DILocalVariable(arg: 1, scope: !236, type: !7)
+// CHECK:STDOUT: !239 = !DILocation(line: 38, column: 1, scope: !236)
+// CHECK:STDOUT: !240 = !{!237}
+// CHECK:STDOUT: !241 = distinct !DISubprogram(name: "Upstream", linkageName: "_CUpstream.Main", scope: null, file: !217, line: 45, type: !220, spFlags: DISPFlagDefinition, unit: !218)
+// CHECK:STDOUT: !243 = !DILocation(line: 45, column: 1, scope: !241)
+// CHECK:STDOUT: !244 = distinct !DISubprogram(name: "Satisfied", linkageName: "_CSatisfied.Main", scope: null, file: !217, line: 47, type: !11, spFlags: DISPFlagDefinition, unit: !218)
+// CHECK:STDOUT: !248 = !DILocation(line: 47, column: 53, scope: !244)
+// CHECK:STDOUT: !249 = distinct !DISubprogram(name: "Run", linkageName: "main", scope: null, file: !217, line: 49, type: !11, spFlags: DISPFlagDefinition, unit: !218)
+// CHECK:STDOUT: !252 = !DILocation(line: 50, column: 3, scope: !249)
+// CHECK:STDOUT: !253 = !DILocation(line: 51, column: 10, scope: !249)
+// CHECK:STDOUT: !254 = !DILocation(line: 51, column: 35, scope: !249)
+// CHECK:STDOUT: !255 = !DILocation(line: 51, column: 48, scope: !249)
+// CHECK:STDOUT: !256 = !DILocation(line: 51, column: 3, scope: !249)
+// CHECK:STDOUT: !257 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.bb9ac398e22f0ba9:core.Destroy.Core", scope: null, file: !217, line: 41, type: !13, spFlags: DISPFlagDefinition, unit: !218, retainedNodes: !260)
+// CHECK:STDOUT: !258 = !DILocalVariable(arg: 1, scope: !257, type: !7)
+// CHECK:STDOUT: !259 = !DILocation(line: 41, column: 3, scope: !257)
+// CHECK:STDOUT: !260 = !{!258}
+// CHECK:STDOUT: !261 = distinct !DISubprogram(name: "Generic", linkageName: "_CGeneric.Main.084a2801e0f5d754", scope: null, file: !217, line: 40, type: !9, spFlags: DISPFlagDefinition, unit: !218, retainedNodes: !269)
+// CHECK:STDOUT: !262 = !DILocalVariable(arg: 1, scope: !261, type: !7)
+// CHECK:STDOUT: !266 = !DILocation(line: 41, column: 3, scope: !261)
+// CHECK:STDOUT: !268 = !DILocation(line: 42, column: 3, scope: !261)
+// CHECK:STDOUT: !269 = !{!262}
+// CHECK:STDOUT:

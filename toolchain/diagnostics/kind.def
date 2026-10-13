@@ -468,6 +468,7 @@ CARBON_DIAGNOSTIC_KIND(RequireInWrongScope)
 
 // Structural conformance (fork decision F-010 / SC-1).
 CARBON_DIAGNOSTIC_KIND(StructuralMemberInaccessible)
+CARBON_DIAGNOSTIC_KIND(StructuralMemberIsRequirement)
 CARBON_DIAGNOSTIC_KIND(StructuralMemberMismatch)
 CARBON_DIAGNOSTIC_KIND(StructuralMemberMissing)
 CARBON_DIAGNOSTIC_KIND(StructuralRequirementCalled)

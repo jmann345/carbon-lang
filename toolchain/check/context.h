@@ -595,6 +595,20 @@ class Context {
     return declaring_impl_decls_;
   }
 
+  // Fork (SC-1, fork/structural/plan.md D-SC-8(iii)): a `require` naming a
+  // `template constraint`, of the interface implemented by `impl_id`, whose
+  // self is the class `class_id` still being defined; checked when that
+  // class's definition ends.
+  struct DeferredStructuralRequire {
+    SemIR::ClassId class_id;
+    SemIR::ImplId impl_id;
+    SemIR::RequireImplsId require_id;
+  };
+  auto deferred_structural_requires()
+      -> llvm::SmallVector<DeferredStructuralRequire>& {
+    return deferred_structural_requires_;
+  }
+
   // Data about a form expression.
   //
   // TODO: consider moving this out of Context.
@@ -929,6 +943,9 @@ class Context {
   // `C as I`, an impl lookup query for `C as I` or `.Self as I` should find
   // that impl being declared (even though it does not yet exist).
   llvm::SmallVector<DeclaringImplDecl> declaring_impl_decls_;
+
+  // Fork (SC-1): see `deferred_structural_requires()`.
+  llvm::SmallVector<DeferredStructuralRequire> deferred_structural_requires_;
 
   // Declared return form for the in-progress function declaration, if any.
   std::optional<FormExpr> return_form_expr_;

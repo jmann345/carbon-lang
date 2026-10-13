@@ -56,7 +56,8 @@ library "[[@TEST_NAME]]";
 // A runtime facet value is not a type: member access looks into its facet type
 // with no self, as for `HasMake.Make`, and a compound access through it is
 // upstream's open "associated value lookup on runtime facet value" case
-// (member_access.cpp, `GetAssociatedValueImpl`).
+// (member_access.cpp:853-858, `GetAssociatedValueImpl`), mirrored by the fork's
+// TODO at member_access.cpp:987-996; ledger W-033 (runtime facet values).
 template constraint HasMake {
   fn Make() -> Self;
 }
@@ -84,4 +85,89 @@ fn ViaLetCompound() -> C {
   // CHECK:STDERR:          ^~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   return F.(HasMake.Make)();
+}
+
+// --- fail_impl_member_alias.carbon
+library "[[@TEST_NAME]]";
+
+// A requirement `fn` is a declaration of its constraint, not a function, so it
+// implements no associated function, as `alias F = I2.Get` of an interface
+// `I2` does not: `ImplFunctionWithNonFunction` with the requirement's note, for
+// a method, an associated function, and an `extend impl` in a class, and no
+// thunk (D-SC-5(b); fill round 3, review findings BLOCKER-1 and MAJOR-1: the
+// thunk took the constraint's scope, passed check, crashed in the mangler and
+// read as a requirement at its uses). The uses through `I` add nothing; a
+// structural use of `D` finds the rejected member as an error, not a function,
+// and reports it as not matching `HasF`. `(C as HasGet).Get` names `C`'s own
+// member and is accepted (lower/testdata/template/template_constraint.carbon,
+// `impl_member_alias`).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+template constraint HasMake {
+  fn Make() -> Self;
+}
+
+interface I {
+  fn F(self) -> i32;
+  fn Mk() -> Self;
+}
+
+class C {
+  fn Get(unused self) -> i32 { return 4; }
+  fn Make() -> C { return {}; }
+}
+
+impl C as I {
+  alias F = HasGet.Get;
+  alias Mk = HasMake.Make;
+}
+
+class D {
+  fn Get(unused self) -> i32 { return 5; }
+  extend impl as I {
+    alias F = HasGet.Get;
+    fn Mk() -> D { return {}; }
+  }
+}
+
+fn Use(c: C, d: D) -> i32 {
+  return c.(I.F)() + d.F();
+}
+
+template constraint HasF {
+  fn F(self) -> i32;
+}
+
+fn ViaHasF[template T: HasF](x: T) -> i32 { return x.F(); }
+
+fn UseStructurally(d: D) -> i32 { return ViaHasF(d); }
+
+// --- fail_ladder_alias.carbon
+library "[[@TEST_NAME]]";
+
+// p002200's migration-ladder blanket impl (p002200:612-619) with its member
+// spelled as an alias of the requirement: rejected at the impl as above, with
+// no diagnostic at the uses (fill round 3, review finding BLOCKER-1).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface NewF {
+  fn DoF(self) -> i32;
+}
+
+impl forall [template T: HasGet] T as NewF {
+  alias DoF = HasGet.Get;
+}
+
+class C {
+  fn Get(unused self) -> i32 { return 6; }
+}
+
+fn G[T: NewF](x: T) -> i32 { return x.(NewF.DoF)(); }
+
+fn Test(c: C) -> i32 {
+  return G(c) + c.(NewF.DoF)();
 }

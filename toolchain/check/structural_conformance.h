@@ -59,10 +59,16 @@ auto FacetTypeHasStructuralRequirements(Context& context, SemIR::TypeId type_id)
     -> SemIR::NamedConstraintId;
 
 // Returns the `template constraint` that declares the function `function_id`
-// as a structural requirement, or `None` if it is any other function.
+// as a structural requirement, or `None` if it is any other function (a thunk
+// included, though it takes its callee's parent scope).
 auto GetStructuralRequirementConstraint(Context& context,
                                         SemIR::FunctionId function_id)
     -> SemIR::NamedConstraintId;
+
+// Attaches the note "requirement declared here" at a requirement `fn`'s
+// declaration `requirement_decl_id` to `builder`.
+auto NoteStructuralRequirementHere(DiagnosticBuilder& builder,
+                                   SemIR::InstId requirement_decl_id) -> void;
 
 // D-SC-4: a requirement `fn` has no body and is never itself called; a call
 // through a type that satisfies the constraint targets the type's own member

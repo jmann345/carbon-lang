@@ -72,12 +72,12 @@ auto CheckRequireDeclsSatisfied(Context& context, SemIR::LocId loc_id,
                                 SemIR::Impl& impl,
                                 SemIR::TypeInstId full_constraint_id) -> void;
 
-// Fork (SC-1, fork/structural/plan.md D-SC-8(iii)): at the end of a class
-// definition whose body is `class_body`, checks the `require` declarations
-// naming a `template constraint` that `CheckRequireDeclsSatisfied` deferred
-// for the impls defined in the class.
-auto CheckDeferredRequireDeclsAtClassEnd(
-    Context& context, llvm::ArrayRef<SemIR::InstId> class_body) -> void;
+// Fork (SC-1, fork/structural/plan.md D-SC-8(iii)): at the end of the
+// definition of the class `class_id`, checks the `require` declarations naming
+// a `template constraint` whose self is that class, which
+// `CheckRequireDeclsSatisfied` deferred while the class was being defined.
+auto CheckDeferredRequireDeclsAtClassEnd(Context& context,
+                                         SemIR::ClassId class_id) -> void;
 
 // Sets all unset members of the witness for `impl` to the error instruction and
 // sets the witness id in the `Impl` to an error.

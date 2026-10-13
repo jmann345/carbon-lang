@@ -455,13 +455,15 @@ fn Test(b: Box(bool)) -> i32 {
 library "[[@TEST_NAME]]";
 
 // A member with compile-time parameters of its own never matches a requirement,
-// which has none (D-SC-2; fill round 2, review finding MINOR-4).
+// which has none (D-SC-2; fill round 2, review finding MINOR-4). The member
+// differs from the requirement in nothing else (fill round 3, review finding
+// F3), so this split moves when W-136 deduces own parameters.
 template constraint HasGet {
   fn Get(self) -> i32;
 }
 
 class Box(T: type) {
-  fn Get[U: type](unused self, unused u: U) -> i32 { return 1; }
+  fn Get[unused U: type](unused self) -> i32 { return 1; }
 }
 
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }

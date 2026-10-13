@@ -118,6 +118,11 @@ fn Test(c: C) -> i32 { return CallGet(c); }
 // --- fail_require_in_constraint_unsatisfied.carbon
 library "[[@TEST_NAME]]";
 
+// The negative of `require_in_constraint`: `Lacking` converts to `P` only if it
+// satisfies `HasGet`, so the call fails with `ConversionFailureTypeToFacet`,
+// the `StructuralMemberMissing` note naming `HasGet`,
+// `StructuralRequirementHere` and `DeductionGenericHere` (fill round 2, review
+// findings F3 / MINOR-4; comment added at fill round 3, review finding F9).
 template constraint HasGet {
   fn Get(self) -> i32;
 }
@@ -182,8 +187,11 @@ library "[[@TEST_NAME]]";
 
 // An impl defined inside the class it implements the interface for: the class
 // is incomplete there, so the structural `require` is checked when the class
-// completes (D-SC-8(iii), amended at fill round 2, review finding MAJOR-3). A
-// nominal `require` of the same interface is checked at the impl, as before.
+// completes (D-SC-8(iii), amended at fill round 2, review finding MAJOR-3). The
+// interface `J` that the same `require` names is checked at the impl, as a
+// nominal `require` is, so `extend impl as J` comes first (amended at fill
+// round 3, review findings MINOR-2 / F1; the other order is
+// `fail_require_mixed_in_class_impl_order`).
 template constraint HasGet {
   fn Get(self) -> i32;
 }
@@ -231,6 +239,138 @@ class Lacking {
   // CHECK:STDERR:   impl as I {}
   // CHECK:STDERR:   ^~~~~~~~~~~
   // CHECK:STDERR:
+  impl as I {}
+}
+
+// --- fail_require_mixed_in_class_impl_order.carbon
+library "[[@TEST_NAME]]";
+
+// The interfaces of a `require` that also names a template constraint are
+// checked at the impl, as a nominal `require` is: `impl as J` after `impl as
+// I1` is rejected for `HasGet & J` exactly as for `J` alone, and only the
+// structural part waits for the class end (D-SC-8(iii), amended at fill round
+// 3, review findings MINOR-2 / F1). Expected:
+// `InterfaceRequireImplsNotImplemented` at `impl as I1` and at `impl as I2`.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface J {}
+
+interface I1 {
+  require impls HasGet & J;
+}
+
+interface I2 {
+  require impls J;
+}
+
+class C {
+  fn Get(unused self) -> i32 { return 1; }
+  impl as I1 {}
+  impl as I2 {}
+  impl as J {}
+}
+
+// --- require_self_class_being_defined.carbon
+library "[[@TEST_NAME]]";
+
+// A structural `require` whose self is a class still being defined waits for
+// that class's end, wherever the impl is: an impl in a nested class whose self
+// is the enclosing class (its `Get` declared after or before the nested
+// class), and an impl of another type whose interface requires the class being
+// defined, where the interface `J(D)` the same `require` names is checked at
+// the impl and so is implemented first (D-SC-8(iii), amended at fill round 3,
+// review findings MINOR-1 and MINOR-2 / F1; `Self` appears in `J(Self)`, as
+// upstream requires of a `require` with another self).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface I {
+  require impls HasGet;
+}
+
+interface J(X: type) {}
+
+interface IU(U: type) {
+  require U impls HasGet & J(Self);
+}
+
+class Outer {
+  class Inner {
+    impl Outer as I {}
+  }
+  fn Get(unused self) -> i32 { return 1; }
+}
+
+class Outer2 {
+  fn Get(unused self) -> i32 { return 2; }
+  class Inner {
+    impl Outer2 as I {}
+  }
+}
+
+class D {}
+
+class F {
+  impl as J(D) {}
+  impl D as IU(F) {}
+  fn Get(unused self) -> i32 { return 3; }
+}
+
+// --- fail_require_self_class_being_defined_lacking.carbon
+library "[[@TEST_NAME]]";
+
+// The negative: `Lacking` has no `Get` when it completes, so the impl in its
+// nested class is rejected then. Expected:
+// `InterfaceRequireImplsNotImplemented` at the impl, once.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface I {
+  require impls HasGet;
+}
+
+class Lacking {
+  class Inner {
+    impl Lacking as I {}
+  }
+}
+
+// --- fail_todo_require_in_interface_in_generic_class_impl.carbon
+library "[[@TEST_NAME]]";
+
+// An impl inside a generic class has the checked-symbolic self `Box(T)`, which
+// never satisfies a structural requirement (D-SC-6), so the `require` fails at
+// the class end although every `Box(X)` has `Get`; likewise the self of a class
+// nested in a generic class. Known limitation (W-139). A `template` class
+// parameter makes the self template-phase, which defers the check (D-SC-19).
+// Expected: `InterfaceRequireImplsNotImplemented` for `Box(T)` and for `Inner`,
+// nothing for `Box2`.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface I {
+  require impls HasGet;
+}
+
+class Box(T: type) {
+  fn Get(unused self) -> i32 { return 1; }
+  impl as I {}
+}
+
+class Outer(T: type) {
+  class Inner {
+    fn Get(unused self) -> i32 { return 1; }
+    impl as I {}
+  }
+}
+
+class Box2(template T: type) {
+  fn Get(unused self) -> i32 { return 1; }
   impl as I {}
 }
 

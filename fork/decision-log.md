@@ -4471,6 +4471,73 @@ hosted autoupdate, gate and conformance run on the PR head, the goldens are the
 container's fill, the gate count is the container's, and gap row 55's MISSING to
 PARTIAL stays EXPECTED (R9, R28).
 
+### SC-1 fill round 3 (2026-10-13): round 2's reviews folded; a requirement as an impl member is rejected
+
+Round 2 (6f2f40d3c fixes, 502e7861a goldens, cb85e6b8b and 830447980 records)
+had two implementation reviews. Review 1 was REJECT on one BLOCKER: `impl C as I
+{ alias F = HasGet.Get; }` passed `--phase=check` and aborted lowering at
+sem_ir/mangler.cpp:185, because the thunk built for the alias took the template
+constraint's with-self scope as its parent (thunk.cpp:235 copies the callee's).
+The abort predates round 2 (an older SC-1 build aborts identically, per the
+review's probe) but sits on round 2's "a requirement is never called" surface.
+Its MAJOR was the same thunk read as a requirement by round 2's two new checks;
+its four MINORs were the in-class deferral keyed on the impl's placement instead
+of the require's self, the deferral of a mixed `require impls HasGet & J`'s
+nominal half, the unpinned generic-class limitation, and a stale cite. Review 2
+was APPROVE-WITH-FIXES with two MAJORs (the mixed-require relaxation, and the
+design page not updated for round 2) and seven MINORs (an own-parameter split
+that also differed in arity, the ladder's undisclosed deltas from p002200, cites
+and ledger lines, a misleading "has no member" note, the class-end mechanism's
+rationale and live block view, and no §4 rows for round 2's splits). Fill round
+3 folds all 15, each reproduced first on the 0.0.0-0.dev+6f2f40d3c driver.
+
+DECISIONS (R29(a), veto-able). (1) A requirement `fn` named as an impl member
+implements nothing: `ImplFunctionWithNonFunction` with the requirement's note,
+before any thunk, exactly as upstream treats an alias of another interface's
+member (D-SC-5(c) and §1.E amended). The accepted spelling, `alias F = (C as
+HasGet).Get`, names `C`'s own member and lowers to a direct call. (2) A thunk is
+never a requirement (`GetStructuralRequirementConstraint` returns `None` for
+any special function). The review's "no definition" guard is not taken: a
+requirement written with a body is D-SC-2's diagnosed TODO and stays collected
+in `structural_members_id`. (3) D-SC-8(iii) amended again: a `require` naming a
+template constraint waits when its own self is a class whose definition has
+started and not ended, wherever the impl is; only its structural part waits,
+the interfaces the same facet type names being looked up at the impl, so
+`require impls HasGet & J` orders `J`'s impl as `require impls J` does. The
+waiting requires sit on a per-class list on `Context`, drained by that class's
+`ClassDefinition` handler, rather than on `DeferredDefinitionWorklist`, which
+defers definitions to the outermost class's end. (4) A found member that is the
+requirement itself gets its own note, `StructuralMemberIsRequirement` (D-SC-9:
+10 kinds, 11 with R-6's).
+
+PINNED. Requirement-call `fail_impl_member_alias` and `fail_ladder_alias`;
+lower `impl_member_alias`; require `fail_require_mixed_in_class_impl_order`,
+`require_self_class_being_defined`,
+`fail_require_self_class_being_defined_lacking` and
+`fail_todo_require_in_interface_in_generic_class_impl` (the generic-class
+limitation, now in W-139); unsatisfied `fail_own_params` respelled, and
+`fail_alias_requirement` and `fail_facet_type_self` with the new note. The
+round-2 and round-3 splits have §4.B rows, the round-3 ones written before the
+fill; one fill miss, (k), a positive split's `require` that did not name
+`Self`, was respelled before the commit. The design page
+(docs/design/generics/template_constraints.md) states the round-2 behaviors;
+its alias sentence is narrowed to an alias naming a member of the type.
+
+NOT TAKEN. The ambiguity residue of round 2 (a name found through a template
+constraint and through an interface that resolve to the same function) keeps a
+pending ledger id: SC-1 holds no reservation above W-151, and ids are allocated
+by the orchestrator. Per-finding dispositions are in the plan's "Landed notes
+(SC-1 fill rounds, 2026-10-13)".
+
+MEASURED, on the container only (not of record, R9; hosted: not run, Actions
+disabled): on the toolchain built from the round-3
+sources before the commit (stamped 0.0.0-0.dev+830447980.dirty, the round-3
+source edits being the only difference), autoupdate over the 19 SC-1 goldens
+rewrote 4 (requirement-call, unsatisfied, require, lower) and reported miss (k);
+after the respelling a second pass rewrote none; the file_test gate over all
+toolchain testdata then passed 1959, failed 0. Conformance and the clean-stamp
+re-run are recorded by the round-3 records commit.
+
 ### SL-1: Core.Slice, Core.Buf, heap allocation, fail-stop (2026-10-05)
 
 Milestone bullet "Stdlib: Slices" flips MISSING → PARTIAL

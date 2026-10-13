@@ -57,6 +57,9 @@ enum class MemberFailure : uint8_t {
   Mismatch,
   // The member is private or protected from here.
   Inaccessible,
+  // The lookup found a requirement `fn`, which is not a member of the type
+  // (D-SC-5(b)).
+  IsRequirement,
 };
 
 // An unsatisfied requirement `fn`, for explain mode.
@@ -67,6 +70,9 @@ struct MemberFailureInfo {
   // The location of the found member's declaration, if it resolved to a
   // function (`Mismatch`); `None` otherwise.
   SemIR::InstId member_decl_id = SemIR::InstId::None;
+  // The `template constraint` that declares the found requirement
+  // (`IsRequirement`).
+  SemIR::NamedConstraintId found_constraint_id = SemIR::NamedConstraintId::None;
 };
 
 }  // namespace
@@ -305,19 +311,19 @@ static auto RequirementMatches(
       /*check_syntax=*/false, /*diagnose=*/false, member_specific_id);
 }
 
-// The note at a requirement `fn`'s declaration.
-static auto NoteRequirementHere(DiagnosticBuilder& builder,
-                                SemIR::InstId requirement_decl_id) -> void {
+auto NoteStructuralRequirementHere(DiagnosticBuilder& builder,
+                                   SemIR::InstId requirement_decl_id) -> void {
   CARBON_DIAGNOSTIC(StructuralRequirementHere, Note,
                     "requirement declared here");
   builder.Note(requirement_decl_id, StructuralRequirementHere);
 }
 
 // Explain mode: notes for one unsatisfied requirement of a concrete self. The
-// member note is at the conversion (`Missing`, `Inaccessible`) or at the
-// member's declaration (`Mismatch`); the requirement note is at the
-// requirement `fn`.
-static auto NoteMemberFailure(DiagnosticBuilder& builder, SemIR::LocId loc_id,
+// member note is at the conversion (`Missing`, `Inaccessible`,
+// `IsRequirement`) or at the member's declaration (`Mismatch`); the
+// requirement note is at the requirement `fn`.
+static auto NoteMemberFailure(Context& context, DiagnosticBuilder& builder,
+                              SemIR::LocId loc_id,
                               const MemberFailureInfo& info,
                               SemIR::TypeId self_type_id,
                               const SemIR::NamedConstraint& constraint,
@@ -358,8 +364,20 @@ static auto NoteMemberFailure(DiagnosticBuilder& builder, SemIR::LocId loc_id,
                    constraint.name_id);
       break;
     }
+    case MemberFailure::IsRequirement: {
+      CARBON_DIAGNOSTIC(StructuralMemberIsRequirement, Note,
+                        "name `{1}` in type {0} refers to a requirement of "
+                        "template constraint `{2}`, not to a member of the "
+                        "type",
+                        SemIR::TypeId, SemIR::NameId, SemIR::NameId);
+      builder.Note(
+          loc_id, StructuralMemberIsRequirement, self_type_id,
+          requirement_fn.name_id,
+          context.named_constraints().Get(info.found_constraint_id).name_id);
+      break;
+    }
   }
-  NoteRequirementHere(builder, requirement_decl_id);
+  NoteStructuralRequirementHere(builder, requirement_decl_id);
 }
 
 // Checks one requirement `fn` of `constraint` against the concrete self type.
@@ -424,10 +442,13 @@ static auto CheckRequirementFunction(
   // member of the type, so a lookup in the type that finds one -- through
   // `alias Get = HasGet.Get`, an `extend impl` of an interface whose `extend
   // require` names the constraint, or a facet type as the self -- finds no
-  // member (fill round 2, review findings F2 / MINOR-1).
-  if (GetStructuralRequirementConstraint(context, callee_fn->function_id)
-          .has_value()) {
-    return MemberFailureInfo{.failure = MemberFailure::Missing};
+  // member (fill round 2, review findings F2 / MINOR-1; reported as such since
+  // fill round 3, review finding F7).
+  if (auto found_constraint_id =
+          GetStructuralRequirementConstraint(context, callee_fn->function_id);
+      found_constraint_id.has_value()) {
+    return MemberFailureInfo{.failure = MemberFailure::IsRequirement,
+                             .found_constraint_id = found_constraint_id};
   }
   const auto& member_fn = context.functions().Get(callee_fn->function_id);
   if (!RequirementMatches(context, loc_id, requirement, constraint,
@@ -523,8 +544,9 @@ static auto CheckRequirements(Context& context, SemIR::LocId loc_id,
         continue;
       }
       if (mode.explain) {
-        NoteMemberFailure(*mode.explain, loc_id, *failure, self_type_id,
-                          constraint, requirement_fn, requirement_decl_id);
+        NoteMemberFailure(context, *mode.explain, loc_id, *failure,
+                          self_type_id, constraint, requirement_fn,
+                          requirement_decl_id);
       }
       return StructuralCheckResult::Unsatisfied;
     }
@@ -616,6 +638,13 @@ auto GetStructuralRequirementConstraint(Context& context,
                                         SemIR::FunctionId function_id)
     -> SemIR::NamedConstraintId {
   const auto& function = context.functions().Get(function_id);
+  // A thunk takes its callee's parent scope (thunk.cpp, `CloneFunctionDecl`),
+  // so only a plain function the constraint's body declares is a requirement
+  // (fill round 3, review finding MAJOR-1).
+  if (function.special_function_kind !=
+      SemIR::Function::SpecialFunctionKind::None) {
+    return SemIR::NamedConstraintId::None;
+  }
   auto with_self_decl =
       context.name_scopes().TryGetInstAs<SemIR::NamedConstraintWithSelfDecl>(
           function.parent_scope_id);
@@ -643,7 +672,7 @@ auto CheckCalleeIsNotStructuralRequirement(Context& context,
   auto builder = context.emitter().Build(
       loc_id, StructuralRequirementCalled, function.name_id,
       context.named_constraints().Get(constraint_id).name_id);
-  NoteRequirementHere(builder, function.latest_decl_id());
+  NoteStructuralRequirementHere(builder, function.latest_decl_id());
   builder.Emit();
   return false;
 }

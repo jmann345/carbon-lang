@@ -53,6 +53,37 @@ fn Run() -> i32 {
   return c.(HasGet.Get)();
 }
 
+
+// --- impl_member_alias.carbon
+library "[[@TEST_NAME]]";
+
+// An impl member named through a satisfying type, `(C as HasGet).Get`, is the
+// type's own method, so the impl needs no thunk and lowers like an alias of
+// `C.Get`. Spelled as the requirement itself, `HasGet.Get`, it is rejected at
+// the impl (fill round 3, review finding BLOCKER-1: that spelling passed check
+// and crashed in the mangler; check/testdata/named_constraint/
+// fail_template_constraint_requirement_call.carbon, `fail_impl_member_alias`).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface I {
+  fn F(self) -> i32;
+}
+
+class C {
+  fn Get(unused self) -> i32 { return 4; }
+}
+
+impl C as I {
+  alias F = (C as HasGet).Get;
+}
+
+fn Run() -> i32 {
+  let c: C = {};
+  return c.(I.F)();
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'call_method.carbon'
 // CHECK:STDOUT: source_filename = "call_method.carbon"

@@ -95,6 +95,11 @@ fn Test() -> C { return ViaT(C); }
 // --- fail_assoc_fn_compound_unsatisfied.carbon
 library "[[@TEST_NAME]]";
 
+// The negative of `assoc_fn_compound`: the type base `D` is converted to the
+// constraint and fails, with `ConversionFailureTypeToFacet`,
+// `StructuralMemberMissing` and `StructuralRequirementHere` at the compound
+// access (fill round 2, review finding MAJOR-1; comment added at fill round 3,
+// review finding F9).
 template constraint HasMake {
   fn Make() -> Self;
 }

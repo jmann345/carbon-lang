@@ -4,6 +4,8 @@
 
 #include "toolchain/check/impl.h"
 
+#include <algorithm>
+
 #include "toolchain/base/kind_switch.h"
 #include "toolchain/check/context.h"
 #include "toolchain/check/convert.h"
@@ -51,8 +53,17 @@ auto CheckAssociatedFunctionImplementation(
     Context& context, SemIR::FunctionType interface_function_type,
     SemIR::SpecificId enclosing_specific_id, SemIR::InstId impl_decl_id,
     bool defer_thunk_definition) -> SemIR::InstId {
-  auto impl_function_decl = context.insts().Get(impl_decl_id).type_id();
-  if (!context.types().Is<SemIR::FunctionType>(impl_function_decl)) {
+  auto impl_function_type = context.types().TryGetAs<SemIR::FunctionType>(
+      context.insts().Get(impl_decl_id).type_id());
+  // Fork (SC-1, fork/structural/plan.md D-SC-5(b) as amended at fill round 3,
+  // review finding BLOCKER-1): a requirement `fn` of a `template constraint`
+  // is a declaration of the constraint, not a function a thunk can call, so
+  // `alias F = HasGet.Get` implements nothing, as `alias F = I2.Get` does not.
+  auto requirement_constraint_id =
+      impl_function_type ? GetStructuralRequirementConstraint(
+                               context, impl_function_type->function_id)
+                         : SemIR::NamedConstraintId::None;
+  if (!impl_function_type || requirement_constraint_id.has_value()) {
     if (impl_decl_id != SemIR::ErrorInst::InstId) {
       CARBON_DIAGNOSTIC(ImplFunctionWithNonFunction, Error,
                         "associated function {0} implemented by non-function",
@@ -62,6 +73,12 @@ auto CheckAssociatedFunctionImplementation(
           context.functions().Get(interface_function_type.function_id).name_id);
       NoteAssociatedFunction(context, builder,
                              interface_function_type.function_id);
+      if (requirement_constraint_id.has_value()) {
+        NoteStructuralRequirementHere(builder,
+                                      context.functions()
+                                          .Get(impl_function_type->function_id)
+                                          .latest_decl_id());
+      }
       builder.Emit();
     }
 
@@ -833,103 +850,145 @@ static auto SubstImplSelfWitnesses(Context& context, SemIR::LocId loc_id,
 }
 
 namespace {
-// Fork (SC-1): which `require` declarations of the implemented interface a
-// `CheckInterfaceRequireDecls` call checks.
+// Fork (SC-1): what a `CheckInterfaceRequire` call checks of one `require`.
 enum class InterfaceRequirePhase : uint8_t {
-  // At the impl definition: all except the structural ones of an in-class
-  // impl (`IsStructuralRequireDeferredToClassEnd`).
+  // At the impl definition: the whole `require`, except that the structural
+  // part of one whose self is a class still being defined waits for that
+  // class (`GetRequireSelfClassBeingDefined`).
   ImplDefinition,
-  // At the end of the class definition enclosing an impl: only those.
+  // At the end of that class's definition: the whole `require`.
   ClassEnd,
 };
 }  // namespace
 
-// Fork (SC-1, fork/structural/plan.md D-SC-8(iii), amended at fill round 2,
-// review finding MAJOR-3): a `require` whose facet type names a `template
-// constraint`, of an impl defined inside the class that is its self, is
-// checked when the class completes, since structural satisfaction reads the
-// members of a complete type (D-SC-5(a)) and a class is incomplete within its
-// definition; a nominal `require` needs no completeness and stays at the impl.
-static auto IsStructuralRequireDeferredToClassEnd(
-    Context& context, const SemIR::Impl& impl,
-    SemIR::ConstantId req_facet_type_const_id) -> bool {
+// Fork (SC-1, fork/structural/plan.md D-SC-8(iii), amended at fill rounds 2
+// and 3): structural satisfaction reads the members of a complete type
+// (D-SC-5(a)), and a class is incomplete within its definition, so a
+// `require` whose facet type names a `template constraint` and whose self is a
+// class still being defined is checked when that class's definition ends.
+// Returns that class, or `None` for any other `require`.
+static auto GetRequireSelfClassBeingDefined(
+    Context& context, SemIR::ConstantId req_self_const_id,
+    SemIR::ConstantId req_facet_type_const_id) -> SemIR::ClassId {
   auto class_type = context.constant_values().TryGetInstAs<SemIR::ClassType>(
-      context.constant_values().Get(impl.self_id));
-  if (!class_type || !impl.scope_id.has_value() ||
-      context.name_scopes().Get(impl.scope_id).parent_scope_id() !=
-          context.classes().Get(class_type->class_id).scope_id) {
-    return false;
+      GetCanonicalQuerySelfForLookupImplWitness(context, req_self_const_id));
+  if (!class_type) {
+    return SemIR::ClassId::None;
   }
-  return FacetTypeHasStructuralRequirements(
-             context, context.types().GetTypeIdForTypeConstantId(
-                          req_facet_type_const_id))
-      .has_value();
+  const auto& class_info = context.classes().Get(class_type->class_id);
+  if (!class_info.has_definition_started() || class_info.is_complete() ||
+      !FacetTypeHasStructuralRequirements(
+           context,
+           context.types().GetTypeIdForTypeConstantId(req_facet_type_const_id))
+           .has_value()) {
+    return SemIR::ClassId::None;
+  }
+  return class_type->class_id;
 }
 
-// Checks the `require` declarations of the interface implemented by `impl`
-// that `phase` selects.
-static auto CheckInterfaceRequireDecls(Context& context, SemIR::LocId loc_id,
-                                       SemIR::Impl& impl,
-                                       InterfaceRequirePhase phase) -> void {
-  const auto& interface = context.interfaces().Get(impl.interface.interface_id);
+// Fork (SC-1, D-SC-8(iii) as amended at fill round 3): the interfaces that the
+// facet type of a `require` waiting for its self's class names besides its
+// `template constraint`s are looked up now, as for a nominal `require`, so
+// that `require impls HasGet & J` orders `J`'s impl as `require impls J`
+// does. Returns the first failed lookup, or an empty block.
+static auto LookupRequireInterfaces(Context& context, SemIR::LocId loc_id,
+                                    SemIR::ConstantId req_self_const_id,
+                                    SemIR::ConstantId req_facet_type_const_id)
+    -> SemIR::InstBlockIdOrError {
+  auto identified_id = TryToIdentifyFacetType(
+      context, loc_id, req_self_const_id,
+      context.types().GetTypeInstIdForTypeConstantId(req_facet_type_const_id),
+      /*allow_partially_identified=*/false);
+  if (!identified_id.has_value()) {
+    // The whole lookup at the class end diagnoses it.
+    return SemIR::InstBlockId::Empty;
+  }
+  // Copied: a lookup can identify further facet types.
+  llvm::SmallVector<SemIR::IdentifiedFacetType::RequiredImpl> required_impls(
+      context.identified_facet_types().Get(identified_id).required_impls());
+  for (const auto& req : required_impls) {
+    auto result = LookupImplWitness(
+        context, loc_id, req.self_facet_value,
+        GetInterfaceType(context, req.specific_interface.interface_id,
+                         req.specific_interface.specific_id)
+            .AsConstantId());
+    if (!result.has_value() || result.has_error_value()) {
+      return result;
+    }
+  }
+  return SemIR::InstBlockId::Empty;
+}
 
-  auto require_ids =
-      context.require_impls_blocks().Get(interface.require_impls_block_id);
-  if (require_ids.empty()) {
-    return;
+// Checks the `require` declaration `require_id` of the interface implemented
+// by `impl_id`, in the specific `interface_with_self_specific_id` of that
+// interface with the impl's self, as `phase` selects. Returns false, with the
+// impl's witness filled with errors, if it is not satisfied.
+static auto CheckInterfaceRequire(
+    Context& context, SemIR::LocId loc_id, SemIR::ImplId impl_id,
+    SemIR::SpecificId interface_with_self_specific_id,
+    SemIR::RequireImplsId require_id, InterfaceRequirePhase phase) -> bool {
+  auto& impl = context.impls().Get(impl_id);
+  const auto& require = context.require_impls().Get(require_id);
+
+  // Each require is in its own generic, with no additional bindings and no
+  // definition, so that they can have their specifics independently
+  // instantiated.
+  auto require_specific_id = CopySpecificToGeneric(
+      context, SemIR::LocId(require.decl_id), interface_with_self_specific_id,
+      require.generic_id);
+  auto req_self_const_id = GetConstantValueInSpecific(
+      context.sem_ir(), require_specific_id, require.self_id);
+  auto req_facet_type_const_id = GetConstantValueInSpecific(
+      context.sem_ir(), require_specific_id, require.facet_type_inst_id);
+  if (req_self_const_id == SemIR::ErrorInst::ConstantId ||
+      req_facet_type_const_id == SemIR::ErrorInst::ConstantId) {
+    FillImplWitnessWithErrors(context, impl);
+    return false;
   }
 
-  auto interface_with_self_specific_id = MakeSpecificWithInnerSelf(
+  auto class_id = phase == InterfaceRequirePhase::ImplDefinition
+                      ? GetRequireSelfClassBeingDefined(
+                            context, req_self_const_id, req_facet_type_const_id)
+                      : SemIR::ClassId::None;
+  auto result =
+      class_id.has_value()
+          ? LookupRequireInterfaces(context, loc_id, req_self_const_id,
+                                    req_facet_type_const_id)
+          : LookupImplWitness(context, loc_id, req_self_const_id,
+                              req_facet_type_const_id);
+  if (!result.has_value()) {
+    CARBON_DIAGNOSTIC(InterfaceRequireImplsNotImplemented, Error,
+                      "interface `{0}` being implemented requires that {1} "
+                      "implements {2}",
+                      SemIR::SpecificInterface, SemIR::TypeId,
+                      SemIR::DeclaredFacetTypeId);
+    context.emitter().Emit(
+        loc_id, InterfaceRequireImplsNotImplemented, impl.interface,
+        context.types().GetTypeIdForTypeConstantId(req_self_const_id),
+        context.constant_values()
+            .GetInstAs<SemIR::FacetType>(req_facet_type_const_id)
+            .declared_facet_type_id);
+  }
+  if (!result.has_value() || result.has_error_value()) {
+    FillImplWitnessWithErrors(context, impl);
+    return false;
+  }
+  if (class_id.has_value()) {
+    context.deferred_structural_requires().push_back(
+        {.class_id = class_id, .impl_id = impl_id, .require_id = require_id});
+  }
+  return true;
+}
+
+// Returns the specific of the interface implemented by `impl` with the impl's
+// self as its `Self`, which the interface's `require`s are read in.
+static auto GetInterfaceWithSelfSpecific(Context& context, SemIR::LocId loc_id,
+                                         const SemIR::Impl& impl)
+    -> SemIR::SpecificId {
+  const auto& interface = context.interfaces().Get(impl.interface.interface_id);
+  return MakeSpecificWithInnerSelf(
       context, loc_id, interface.generic_id, interface.generic_with_self_id,
       impl.interface.specific_id, context.constant_values().Get(impl.self_id));
-
-  for (auto require_id : require_ids) {
-    const auto& require = context.require_impls().Get(require_id);
-
-    // Each require is in its own generic, with no additional bindings and no
-    // definition, so that they can have their specifics independently
-    // instantiated.
-    auto require_specific_id = CopySpecificToGeneric(
-        context, SemIR::LocId(require.decl_id), interface_with_self_specific_id,
-        require.generic_id);
-    auto req_self_const_id = GetConstantValueInSpecific(
-        context.sem_ir(), require_specific_id, require.self_id);
-    auto req_facet_type_const_id = GetConstantValueInSpecific(
-        context.sem_ir(), require_specific_id, require.facet_type_inst_id);
-    if (req_self_const_id == SemIR::ErrorInst::ConstantId ||
-        req_facet_type_const_id == SemIR::ErrorInst::ConstantId) {
-      FillImplWitnessWithErrors(context, impl);
-      return;
-    }
-
-    // Fork (SC-1): a structural `require` of an in-class impl is checked at
-    // the end of the class, every other one at the impl definition.
-    if (IsStructuralRequireDeferredToClassEnd(context, impl,
-                                              req_facet_type_const_id) !=
-        (phase == InterfaceRequirePhase::ClassEnd)) {
-      continue;
-    }
-
-    auto result = LookupImplWitness(context, loc_id, req_self_const_id,
-                                    req_facet_type_const_id);
-    if (!result.has_value()) {
-      CARBON_DIAGNOSTIC(InterfaceRequireImplsNotImplemented, Error,
-                        "interface `{0}` being implemented requires that {1} "
-                        "implements {2}",
-                        SemIR::SpecificInterface, SemIR::TypeId,
-                        SemIR::DeclaredFacetTypeId);
-      context.emitter().Emit(
-          loc_id, InterfaceRequireImplsNotImplemented, impl.interface,
-          context.types().GetTypeIdForTypeConstantId(req_self_const_id),
-          context.constant_values()
-              .GetInstAs<SemIR::FacetType>(req_facet_type_const_id)
-              .declared_facet_type_id);
-    }
-    if (!result.has_value() || result.has_error_value()) {
-      FillImplWitnessWithErrors(context, impl);
-      return;
-    }
-  }
 }
 
 auto CheckRequireDeclsSatisfied(Context& context, SemIR::LocId loc_id,
@@ -1010,24 +1069,47 @@ auto CheckRequireDeclsSatisfied(Context& context, SemIR::LocId loc_id,
     }
   }
 
-  CheckInterfaceRequireDecls(context, loc_id, impl,
-                             InterfaceRequirePhase::ImplDefinition);
+  auto require_ids =
+      context.require_impls_blocks().Get(context.interfaces()
+                                             .Get(impl.interface.interface_id)
+                                             .require_impls_block_id);
+  if (require_ids.empty()) {
+    return;
+  }
+  auto impl_id =
+      context.insts().GetAs<SemIR::ImplDecl>(impl.definition_id).impl_id;
+  auto interface_with_self_specific_id =
+      GetInterfaceWithSelfSpecific(context, loc_id, impl);
+  for (auto require_id : require_ids) {
+    if (!CheckInterfaceRequire(context, loc_id, impl_id,
+                               interface_with_self_specific_id, require_id,
+                               InterfaceRequirePhase::ImplDefinition)) {
+      return;
+    }
+  }
 }
 
-auto CheckDeferredRequireDeclsAtClassEnd(
-    Context& context, llvm::ArrayRef<SemIR::InstId> class_body) -> void {
-  for (auto inst_id : class_body) {
-    auto impl_decl = context.insts().TryGetAs<SemIR::ImplDecl>(inst_id);
-    if (!impl_decl) {
+auto CheckDeferredRequireDeclsAtClassEnd(Context& context,
+                                         SemIR::ClassId class_id) -> void {
+  // Taken off the list before any is checked (fill round 3, review finding
+  // F8).
+  auto& pending = context.deferred_structural_requires();
+  auto ready_begin = std::stable_partition(
+      pending.begin(), pending.end(),
+      [&](const auto& entry) { return entry.class_id != class_id; });
+  llvm::SmallVector<Context::DeferredStructuralRequire> ready(ready_begin,
+                                                              pending.end());
+  pending.erase(ready_begin, pending.end());
+
+  for (const auto& entry : ready) {
+    const auto& impl = context.impls().Get(entry.impl_id);
+    if (impl.witness_id == SemIR::ErrorInst::InstId) {
       continue;
     }
-    auto& impl = context.impls().Get(impl_decl->impl_id);
-    if (impl.definition_id != inst_id ||
-        impl.witness_id == SemIR::ErrorInst::InstId) {
-      continue;
-    }
-    CheckInterfaceRequireDecls(context, SemIR::LocId(inst_id), impl,
-                               InterfaceRequirePhase::ClassEnd);
+    SemIR::LocId loc_id(impl.definition_id);
+    CheckInterfaceRequire(context, loc_id, entry.impl_id,
+                          GetInterfaceWithSelfSpecific(context, loc_id, impl),
+                          entry.require_id, InterfaceRequirePhase::ClassEnd);
   }
 }
 

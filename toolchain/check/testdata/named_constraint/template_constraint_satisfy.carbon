@@ -184,11 +184,12 @@ library "[[@TEST_NAME]]";
 
 // p002200:385-399: a name that lookup finds both through a template constraint
 // and through an interface, where both resolve to the type's same function, is
-// not ambiguous. Lookup decides ambiguity across extended scopes before the
-// D-SC-4 redirect resolves the requirement to `C.Make` (and, for the interface,
-// before impl lookup: upstream's own TODO in member_access.cpp), so it is still
-// diagnosed (fill round 2, review finding MINOR-3; residue in
-// fork/structural/plan.md, "Landed notes (fill round 2)").
+// not ambiguous. Lookup decides ambiguity across extended scopes
+// (name_lookup.cpp:589) before the D-SC-4 redirect resolves the requirement to
+// `C.Make` (and, for the interface, before impl lookup: upstream's own TODO at
+// member_access.cpp:430-432), so it is still diagnosed (fill round 2, review
+// finding MINOR-3; residue in fork/structural/plan.md, "Landed notes (SC-1 fill
+// rounds, 2026-10-13)", ledger id pending).
 template constraint HasMake {
   fn Make() -> Self;
 }

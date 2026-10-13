@@ -215,7 +215,7 @@ load-bearing and normative:
 -   **Members must be found by member lookup in the type.** A declaration
     provided only by an out-of-line (`extend`-less, external) `impl` does _not_
     satisfy a member requirement. An `alias` declared in the type's own scope
-    does:
+    does, when it names a member of the type:
 
     ```carbon
     interface A { fn F(self); }
@@ -234,6 +234,16 @@ load-bearing and normative:
     }
     // ✅ `D` satisfies `HasF`: member lookup in `D` finds `F`.
     ```
+
+    As landed (SC-1, D-SC-5(b), clarified 2026-10-13): a requirement `fn` is a
+    declaration of its constraint, not a member of any type, so an alias of the
+    requirement itself, `alias F = HasF.F` in a class, finds no member and does
+    not satisfy `HasF` (the note `StructuralMemberIsRequirement` says so); nor
+    does a facet type used as the self, whose lookup finds only its own
+    requirements. For the same reason a requirement implements no interface
+    member: `impl C as A { alias F = HasF.F; }` is rejected with
+    `ImplFunctionWithNonFunction`, as an alias of another interface's member is,
+    while `alias F = (C as HasF).F` names `C`'s own member and is accepted.
 
 -   **Member requirements do not affect name lookup.** They guarantee a name
     will be found in the type; they do not change what it resolves to. See
@@ -500,7 +510,12 @@ constraint's facet type (the satisfaction check) and the requirement's name is
 then looked up in the base type, the semantics
 [proposal 2200](/proposals/p002200-template-generics.md#template-constraints)
 states ("`C.F` and `HasF.F` refer to the same function"); see
-[Structural witnesses](#structural-witnesses).
+[Structural witnesses](#structural-witnesses). A requirement is never itself
+the callee: `HasCount.Count()` names it with no type to satisfy it (its `Self`
+is the constraint's `.Self`, D-SC-20) and is rejected with
+`StructuralRequirementCalled`, as is a call through a runtime facet value or
+through a self whose lookup finds only the requirement (D-SC-4, as landed at the
+2026-10-13 fill rounds).
 
 ## Satisfaction
 
@@ -539,7 +554,15 @@ see a template-phase `Self`: the `require` check of a template blanket impl
 template constraint) is deferred — structurally satisfied for now, with every
 use of a structural member inside the impl checked at monomorphization, and
 the bare `require` clause not re-run per specific in SC-1 (D-SC-19; filed as a
-residue).
+residue). One entry point waits instead: a `require` naming a template
+constraint whose self is a class still being defined — typically `impl as I`
+inside the class, for an `I` that requires a template constraint — has its
+structural part checked when that class's definition ends, since a class is
+incomplete within its definition ([F-010h](#completeness-and-caching)), while
+the interfaces the same `require` names are checked at the impl, as for any
+nominal `require` (D-SC-8(iii), amended 2026-10-13). An impl inside a generic
+class has the checked-symbolic self `Box(T)` and is rejected at the class end
+(D-SC-6; W-139).
 
 ### Definition-time checking
 
@@ -638,7 +661,11 @@ an empty plain `constraint` already has — so lowering is untouched. The
     requirement's name in the base type, binding the type's own member — the
     semantics
     [proposal 2200](/proposals/p002200-template-generics.md#template-constraints)
-    states by name ("`C.F` and `HasF.F` refer to the same function").
+    states by name ("`C.F` and `HasF.F` refer to the same function"). For an
+    associated-function requirement, one with no `self`, the base itself is
+    converted, as for an interface's non-instance member: `C.(HasMake.Make)()`
+    and a template's `T.(HasMake.Make)()` call the type's own `Make` (D-SC-4,
+    as landed at the 2026-10-13 fill rounds).
 -   The [migration ladder](#the-migration-ladder) step from a template
     constraint to a blanket interface `impl` needs no table either: inside
     `impl forall [template T: TheConstraint] T as TheInterface`, each forwarded
@@ -668,10 +695,13 @@ instantiation rather than discarding failed instantiations after. As landed
 (SC-1, D-SC-9), the error is the existing conversion failure ("cannot convert
 type `C` into type implementing `HasGet`") with notes for the first unsatisfied
 requirement in declaration order: `StructuralMemberMissing`,
-`StructuralMemberMismatch` (at the found member) or
-`StructuralMemberInaccessible`, each followed by `StructuralRequirementHere` at
-the requirement; for a checked-generic self the single note
-`StructuralRequirementNeedsConcreteType` is attached instead.
+`StructuralMemberMismatch` (at the found member),
+`StructuralMemberInaccessible` or `StructuralMemberIsRequirement` (lookup found
+the requirement itself), each followed by `StructuralRequirementHere` at the
+requirement; for a checked-generic self the single note
+`StructuralRequirementNeedsConcreteType` is attached instead. A call whose
+callee is a requirement is the error `StructuralRequirementCalled`
+([Name lookup](#name-lookup)).
 
 ## Constrained candidates and overload resolution
 

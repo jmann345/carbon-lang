@@ -6,17 +6,17 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Optional plan: comparison and the fork design for `Core.Optional` (OP-1, W-058)
 
-**Status:** rev 2, 2026-10-13 -- folds the two plan reviews of R29(c) (review A,
-design soundness and toolchain correctness: APPROVE-WITH-AMENDMENTS with 3 MAJOR
-and 7 MINOR findings; review B, concreteness, process, Goodhart and
-cross-workstream: APPROVE-WITH-AMENDMENTS with 4 MAJOR and 5 MINOR), each
-amended sentence or row marked "(amended 2026-10-13, review fold: A-n)" or "(...
-review fold: B-n)" and tabled in the
-[Review fold record](#review-fold-record-rev-2-2026-10-13); all 19 are folded
-and none is rejected. Review A's ids A-1..A-10 are review findings; the rejected
-alternatives of §7 keep their own A-1..A-10 numbering and are always cited as
-"§7 A-n". The fixer re-ran every measurement a finding is about in its own
-scratch tree
+**Status:** rev 2, 2026-10-13 -- SIGNED OFF FOR IMPLEMENTATION (sign-off at the
+end); folds the two plan reviews of R29(c) (review A, design soundness and
+toolchain correctness: APPROVE-WITH-AMENDMENTS with 3 MAJOR and 7 MINOR
+findings; review B, concreteness, process, Goodhart and cross-workstream:
+APPROVE-WITH-AMENDMENTS with 4 MAJOR and 5 MINOR), each amended sentence or row
+marked "(amended 2026-10-13, review fold: A-n)" or "(... review fold: B-n)" and
+tabled in the [Review fold record](#review-fold-record-rev-2-2026-10-13); all 19
+are folded and none is rejected. Review A's ids A-1..A-10 are review findings;
+the rejected alternatives of §7 keep their own A-1..A-10 numbering and are
+always cited as "§7 A-n". The fixer re-ran every measurement a finding is about
+in its own scratch tree
 (`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/op1-fixer`:
 a copy of the trunk install carrying §2.1 as extracted from rev 1 and applied
 with `git apply`, mutant and prototype copies, copies of the ST-1 and SC-1
@@ -3075,3 +3075,17 @@ only, because the fills spell the impl `Optional.as.EqWith.impl` (rev 1 also
 named the three goldens); and the mangled name in the W-171 abort depends on the
 program (M-7's `_CSome.74becf39533834ee...`, the arbiter's
 `_CSome.5d6f3f3a4b44a8f1...`), so optional_bool's SKIP line quotes its own.
+
+## Sign-off
+
+Signed off for implementation on 2026-10-13 at rev 2 by the orchestrator under
+R29(a): the two plan reviews of R29(c) (A, design soundness and toolchain
+correctness: APPROVE-WITH-AMENDMENTS, three MAJOR and seven MINOR; B,
+concreteness, process, Goodhart and cross-workstream: APPROVE-WITH-AMENDMENTS,
+four MAJOR and five MINOR) found no BLOCKER, so no focused re-review is owed;
+all nineteen findings are folded in rev 2 (d39c0e91d) and none is rejected. The
+row stays PARTIAL by D-OP-13, bounded by W-170 and W-171; the ids W-170 to
+W-179 are this workstream's, as trunk's fork/ORCHESTRATION.md records, and
+F-015 is minted. Implementation follows §3's commits 2 to 5, with the
+implementation review and its fold between commits 4 and 5; the merge position
+is last, after PR 55 (ST-1), with DD-1 (ids from W-180) after it.

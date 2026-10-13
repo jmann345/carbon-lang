@@ -15,19 +15,21 @@ with real test coverage), **PARTIAL** (works with material gaps),
 
 ## Scoreboard
 
-**30 DONE / 21 PARTIAL / 4 MISSING / 1 DESIGN-ONLY** across 56 milestone
-bullets (reconciled 2026-10-05 against the conformance scoreboard —
-128 PASS / 0 FAIL / 22 SKIP over 150 programs, 48/56 bullets PASS — and the
-fork/inventory/work-items.json ledger; the original 2026-07-19 audit read
-24 / 18 / 13 / 1; the if-let / let-else row flipped MISSING → PARTIAL at the
-W-012 landing later the same day). The front half of the compiler is done;
-match, choice payloads, `?` error handling, exception boundaries, threading
-interop, if-let / while-let / let-else, native unions, `overload fn` sets
-with import, api/impl definitions, generic members and C++ export, and
+**31 DONE / 20 PARTIAL / 4 MISSING / 1 DESIGN-ONLY** across 56 milestone
+bullets (row 90 PARTIAL → DONE 2026-10-13 on transcription plus document
+review, EV-1 / W-062, with the expected conformance scoreboard 137 PASS / 0
+FAIL / 22 SKIP over 159 programs, 48/56 bullets PASS, stated as expected, not
+of record (Actions disabled); reconciled 2026-10-05 against the conformance
+scoreboard — 128 PASS / 0 FAIL / 22 SKIP over 150 programs, 48/56 bullets
+PASS — and the fork/inventory/work-items.json ledger; the original 2026-07-19
+audit read 24 / 18 / 13 / 1; the if-let / let-else row flipped MISSING →
+PARTIAL at the W-012 landing later the same day). The front half of the compiler
+is done; match, choice payloads, `?` error handling, exception boundaries,
+threading interop, if-let / while-let / let-else, native unions, `overload fn`
+sets with import, api/impl definitions, generic members and C++ export, and
 `Core.Slice`/`Core.Buf` with the runtime bounds fail-stop, and the
 `std::span` <-> `Core.Slice` mapping with owning-container views have since
-landed, leaving variadics and the build-system/documentation rows as the
-open back half.
+landed, leaving variadics and the build-system rows as the open back half.
 
 ## Per-bullet status
 
@@ -87,7 +89,7 @@ open back half.
 | Project: CMake build-system integration plus Make documentation | MISSING | No CMake support, example, or docs anywhere (only a libc++ header-expansion .bzl mentions cmake); Bazel is the only integrated build system. |
 | Project: detailed safety strategy | DONE | docs/design/safety/README.md rewritten by way of accepted p005914 (Strict/Permissive modes, per-category enforcement model, build modes, Rust-ecosystem reuse); residual future-work on soundness model/mode syntax and a stale conflicting principles doc. |
 | Project: detailed and concrete design for safe Carbon (type/init/spatial/temporal/mutation + safe-Rust-interop analysis) | MISSING | Temporal/mutation safety exists only as an explicitly 'directional... provisional' section of p005914; no dedicated design docs or follow-up proposals, no Rust-interop analysis, README 'Lifetime and move semantics' is a bare TODO. |
-| Project: basic evaluator documentation (getting started to FAQs) | PARTIAL | README nightly-tarball getting-started (Ubuntu-only) and a comprehensive project FAQ exist, but docs/guides contains only a glossary — no language tutorial or evaluation walkthrough. |
+| Project: basic evaluator documentation (getting started to FAQs) | DONE | EV-1 (2026-10-13, fork/evaluator/plan.md): docs/guides/getting_started.md (two toolchains: the upstream nightly, whose download block was run verbatim, and this fork built from source, a block quoted from the hosted conformance job and not run here; the stale fork prereleases named and warned against; a platform table whose rows each cite a measurement, upstream's CI configuration or this fork's CI record, with Linux x86-64 measured and macOS unverified for this fork's current trunk; the glibc development files that compiling C++ imports and linking need; the first program; the runtimes cache), docs/guides/tutorial.md (hello world, functions, classes, generics, choice and match and Core.Result with ? on the fork's toolchain, C++ interop in both directions, a multi-file package) and docs/guides/evaluator_faq.md (toolchain questions; every quoted toolchain diagnostic is re-run by fork/evaluator/check_faq.py except the download-failure and stale-prerelease loader lines, which were re-run by hand at commit 1; project questions stay in docs/project/faq.md). The ten tutorial programs are documentation-sync programs under a bullet that was already PASS (bullets unchanged), each a tutorial sample transcribed byte for byte and checked by fork/evaluator/check_samples.py: nine PASS locally on 0.0.0-0.dev+0bdce60a5 beside evaluator_docs_getting_started, and the C++-library one SKIPs until PR 52's BUILD-SCRIPT channel is on trunk — not of record: the hosted run R9 requires is pending with no dispatch date, Actions disabled. Not falsified by any review here: the fork build-from-source block (no Bazel), platforms other than Linux x86-64, distributions other than Ubuntu 24.04, a system without libc6-dev. Residue, each a filed item: no current downloadable fork toolchain (W-152); the macOS failure of OV-3's export golden found while sourcing the platform table (W-153). |
 | Goal: design docs documented, cohesive, understandable without placeholders | PARTIAL | Generics/variadics/pattern-matching/classes designs are mature, and the fork landed docs/design/error_handling.md (F-006) and docs/design/unions.md (F-007); but templates.md, metaprogramming.md, and the `match` section of pattern_matching.md still self-describe as skeletal placeholders, the interop README has 9 'TODO:' section headings, and the F-008..F-011 pages (threads/atomics, overloading, structural conformance, if-let) have not landed (W-065 open). |
 
 ## Workstreams to close the gap (dependency-ordered)
@@ -264,13 +266,18 @@ arm64) with OS/CPU in package names.
 
 The milestone explicitly requires CMake integration plus Make documentation;
 neither has been started (Bazel-only today, though `carbon config --json`
-provides groundwork). Evaluator docs are thin (glossary only in docs/guides).
-Mostly product/docs work, parallelizable late.
+provides groundwork). The evaluator guides LANDED with EV-1
+(fork/evaluator/plan.md, 2026-10-13): docs/guides/getting_started.md,
+docs/guides/tutorial.md and docs/guides/evaluator_faq.md. Mostly product/docs
+work, parallelizable late.
 
 **Arbiter:** A CI-tested example CMake project that builds a mixed Carbon/C++
 program using the installed toolchain (drop-in Clang mode), written
 Make-integration docs, and a docs/guides getting-started tutorial an evaluator
-can follow from install to running a program with interop.
+can follow from install to running a program with interop (met at EV-1:
+docs/guides/tutorial.md, its samples transcribed into
+project/evaluator_tutorial_*, PASS locally, not of record until a hosted run;
+the fork's build-from-source block is quoted from the hosted job, not run).
 
 ### W12. Unicode source support in the lexer [S]
 
@@ -532,11 +539,12 @@ documentation are entirely absent. The install story is Linux-x86-64-only for
 actual releases: a nightly GitHub prerelease tarball is automated, CI tests
 Linux x86-64/AArch64 and macOS AArch64, but there is no Windows support anywhere
 (no CI, no packaging targets, no release artifacts for macOS or ARM Linux
-either). Evaluator documentation is thin: a README getting-started for the
-nightly tarball and a project FAQ exist, but docs/guides contains only a
-glossary and the driver doc is a stub. The repository's own version_base.bzl
-states progress toward 0.1 hasn't warranted moving off 0.0.0, and the roadmap
-calls shipping 0.1 in 2026 "very ambitious ... may not be possible".
+either). Evaluator documentation landed at EV-1: docs/guides holds a
+getting-started guide, a tutorial whose samples are conformance programs, and an
+evaluator FAQ beside the project FAQ; toolchain/docs/driver.md remains a
+developer stub. The repository's own version_base.bzl states progress toward 0.1
+hasn't warranted moving off 0.0.0, and the roadmap calls shipping 0.1 in 2026
+"very ambitious ... may not be possible".
 
 ### Build feasibility in this container (4 CPU, 15GB RAM, ~30GB free disk)
 

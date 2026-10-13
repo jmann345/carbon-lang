@@ -300,6 +300,11 @@ Clang and MSVC STL). For platforms with other layout conventions (like
 `libstdc++`'s size-first-then-pointer layout), this mapping is disabled by
 default until layout compatibility is established.
 
+> **Fork amendment (2026-10-13, F-014).** The owning `Core.StringBuf` has no C++
+> mapping; it reaches a `std::string_view` parameter through its view,
+> `Cpp.F(s.AsStr())`, because C++ overload resolution does not see Carbon
+> conversions (W-161).
+
 > References:
 >
 > -   Proposal

@@ -27,6 +27,10 @@ library "[[@TEST_NAME]]";
 import library "a";
 
 class C {
+  // CHECK:STDERR: b.carbon:[[@LINE+4]]:10: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR:
   fn Get(self) -> i32 { return 1; }
 }
 

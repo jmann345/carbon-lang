@@ -85,6 +85,20 @@ template constraint HasGet {
 fn CallGet[template T: HasGet](p: T*) -> i32 { return p->Get(); }
 
 fn Test(c: Cpp.Counter*) -> i32 {
+  // CHECK:STDERR: fail_value_self.carbon:[[@LINE+14]]:10: error: cannot convert type `Cpp.Counter` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   return CallGet(c);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_value_self.carbon:[[@LINE-14]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./method.h:5:7: note: member `Get` of type `Cpp.Counter` does not match the signature required by template constraint `HasGet` [StructuralMemberMismatch]
+  // CHECK:STDERR:   int Get() { return value; }
+  // CHECK:STDERR:       ^
+  // CHECK:STDERR: fail_value_self.carbon:[[@LINE-13]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_value_self.carbon:[[@LINE-13]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+  // CHECK:STDERR: fn CallGet[template T: HasGet](p: T*) -> i32 { return p->Get(); }
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return CallGet(c);
 }
 
@@ -101,6 +115,19 @@ template constraint HasGet {
 fn CallGet[template T: HasGet](p: T*) -> i32 { return p->Get(); }
 
 fn Test(o: Cpp.Overloaded*) -> i32 {
+  // CHECK:STDERR: fail_overloaded.carbon:[[@LINE+13]]:10: error: cannot convert type `Cpp.Overloaded` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   return CallGet(o);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_overloaded.carbon:[[@LINE+10]]:10: note: member `Get` of type `Cpp.Overloaded` does not match the signature required by template constraint `HasGet` [StructuralMemberMismatch]
+  // CHECK:STDERR:   return CallGet(o);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_overloaded.carbon:[[@LINE-12]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(ref self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_overloaded.carbon:[[@LINE-12]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+  // CHECK:STDERR: fn CallGet[template T: HasGet](p: T*) -> i32 { return p->Get(); }
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return CallGet(o);
 }
 
@@ -119,6 +146,20 @@ template constraint HasGet {
 fn CallGet[template T: HasGet](p: T*) -> i32 { return p->Get(); }
 
 fn Test(g: Cpp.ConstGetter*) -> i32 {
+  // CHECK:STDERR: fail_const_method.carbon:[[@LINE+14]]:10: error: cannot convert type `Cpp.ConstGetter` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   return CallGet(g);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_const_method.carbon:[[@LINE-15]]:10: in file included here [InCppInclude]
+  // CHECK:STDERR: ./method.h:16:7: note: member `Get` of type `Cpp.ConstGetter` does not match the signature required by template constraint `HasGet` [StructuralMemberMismatch]
+  // CHECK:STDERR:   int Get() const { return value; }
+  // CHECK:STDERR:       ^
+  // CHECK:STDERR: fail_const_method.carbon:[[@LINE-13]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(ref self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_const_method.carbon:[[@LINE-13]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+  // CHECK:STDERR: fn CallGet[template T: HasGet](p: T*) -> i32 { return p->Get(); }
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return CallGet(g);
 }
 
@@ -164,5 +205,9 @@ overload fn Pick[template T: HasGetN](p: T*) -> i32 { return p->Get(1); }
 overload fn Pick[template T: type](unused p: T*) -> i32 { return 0; }
 
 fn Test(b: Cpp.BitGetter*) -> i32 {
+  // CHECK:STDERR: fail_todo_probe_import_leak.carbon:[[@LINE+4]]:10: error: semantics TODO: `Unsupported: parameter type: _BitInt(23)` [SemanticsTodo]
+  // CHECK:STDERR:   return Pick(b);
+  // CHECK:STDERR:          ^~~~~~~
+  // CHECK:STDERR:
   return Pick(b);
 }

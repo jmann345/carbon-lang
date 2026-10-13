@@ -18,6 +18,14 @@
 library "[[@TEST_NAME]]";
 
 template constraint HasDefault {
+  // CHECK:STDERR: fail_todo_definition.carbon:[[@LINE+8]]:3: error: semantics TODO: `function definition in `template constraint`` [SemanticsTodo]
+  // CHECK:STDERR:   fn G(self) -> i32 { return 1; }
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_todo_definition.carbon:[[@LINE+4]]:8: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   fn G(self) -> i32 { return 1; }
+  // CHECK:STDERR:        ^~~~
+  // CHECK:STDERR:
   fn G(self) -> i32 { return 1; }
 }
 
@@ -25,6 +33,10 @@ template constraint HasDefault {
 library "[[@TEST_NAME]]";
 
 template constraint HasH {
+  // CHECK:STDERR: fail_todo_parameterized.carbon:[[@LINE+4]]:3: error: semantics TODO: `parameterized requirement in `template constraint`` [SemanticsTodo]
+  // CHECK:STDERR:   fn H[U: type](self, u: U);
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn H[U: type](self, u: U);
 }
 
@@ -32,5 +44,13 @@ template constraint HasH {
 library "[[@TEST_NAME]]";
 
 template constraint HasX {
+  // CHECK:STDERR: fail_todo_assoc_const.carbon:[[@LINE+8]]:3: error: semantics TODO: `associated constant requirement in `template constraint`` [SemanticsTodo]
+  // CHECK:STDERR:   let X: type;
+  // CHECK:STDERR:   ^~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_todo_assoc_const.carbon:[[@LINE+4]]:14: error: expected `=`; `let` declaration must have an initializer [ExpectedInitializerAfterLet]
+  // CHECK:STDERR:   let X: type;
+  // CHECK:STDERR:              ^
+  // CHECK:STDERR:
   let X: type;
 }

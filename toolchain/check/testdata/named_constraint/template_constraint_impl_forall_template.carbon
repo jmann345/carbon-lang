@@ -28,6 +28,10 @@ interface NewF {
 }
 
 class C {
+  // CHECK:STDERR: ladder.carbon:[[@LINE+4]]:10: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR:
   fn Get(self) -> i32 { return 1; }
 }
 
@@ -55,5 +59,9 @@ impl forall [template T: HasGet] T as NewF {
 }
 
 fn Test(d: D) -> i32 {
+  // CHECK:STDERR: fail_ladder_unsatisfied.carbon:[[@LINE+4]]:10: error: cannot access member of interface `NewF` in type `D` that does not implement that interface [MissingImplInMemberAccess]
+  // CHECK:STDERR:   return d.(NewF.DoF)();
+  // CHECK:STDERR:          ^~~~~~~~~~~~
+  // CHECK:STDERR:
   return d.(NewF.DoF)();
 }

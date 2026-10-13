@@ -22,12 +22,29 @@ template constraint HasGet {
 }
 
 class Lacking {
+  // CHECK:STDERR: fail_missing.carbon:[[@LINE+4]]:12: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   fn Other(self) -> i32 { return 0; }
+  // CHECK:STDERR:            ^~~~
+  // CHECK:STDERR:
   fn Other(self) -> i32 { return 0; }
 }
 
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
 fn Test(l: Lacking) -> i32 {
+  // CHECK:STDERR: fail_missing.carbon:[[@LINE+13]]:10: error: cannot convert type `Lacking` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   return CallGet(l);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_missing.carbon:[[@LINE+10]]:10: note: type `Lacking` has no member named `Get` required by template constraint `HasGet` [StructuralMemberMissing]
+  // CHECK:STDERR:   return CallGet(l);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_missing.carbon:[[@LINE-20]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_missing.carbon:[[@LINE-12]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+  // CHECK:STDERR: fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return CallGet(l);
 }
 
@@ -39,12 +56,29 @@ template constraint HasGet {
 }
 
 class C {
+  // CHECK:STDERR: fail_wrong_return.carbon:[[@LINE+4]]:10: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   fn Get(self) -> bool { return true; }
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR:
   fn Get(self) -> bool { return true; }
 }
 
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
 fn Test(c: C) -> i32 {
+  // CHECK:STDERR: fail_wrong_return.carbon:[[@LINE+13]]:10: error: cannot convert type `C` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   return CallGet(c);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_wrong_return.carbon:[[@LINE-9]]:3: note: member `Get` of type `C` does not match the signature required by template constraint `HasGet` [StructuralMemberMismatch]
+  // CHECK:STDERR:   fn Get(self) -> bool { return true; }
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_wrong_return.carbon:[[@LINE-20]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_wrong_return.carbon:[[@LINE-12]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+  // CHECK:STDERR: fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return CallGet(c);
 }
 
@@ -57,12 +91,29 @@ template constraint HasGet {
 }
 
 class C {
+  // CHECK:STDERR: fail_wrong_self.carbon:[[@LINE+4]]:10: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   fn Get(ref self) -> i32 { return 1; }
+  // CHECK:STDERR:          ^~~~~~~~
+  // CHECK:STDERR:
   fn Get(ref self) -> i32 { return 1; }
 }
 
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
 fn Test(c: C) -> i32 {
+  // CHECK:STDERR: fail_wrong_self.carbon:[[@LINE+13]]:10: error: cannot convert type `C` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   return CallGet(c);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_wrong_self.carbon:[[@LINE-9]]:3: note: member `Get` of type `C` does not match the signature required by template constraint `HasGet` [StructuralMemberMismatch]
+  // CHECK:STDERR:   fn Get(ref self) -> i32 { return 1; }
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_wrong_self.carbon:[[@LINE-20]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_wrong_self.carbon:[[@LINE-12]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+  // CHECK:STDERR: fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return CallGet(c);
 }
 
@@ -74,12 +125,29 @@ template constraint HasGet {
 }
 
 class C {
+  // CHECK:STDERR: fail_wrong_arity.carbon:[[@LINE+4]]:10: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   fn Get(self, n: i32) -> i32 { return n; }
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR:
   fn Get(self, n: i32) -> i32 { return n; }
 }
 
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
 fn Test(c: C) -> i32 {
+  // CHECK:STDERR: fail_wrong_arity.carbon:[[@LINE+13]]:10: error: cannot convert type `C` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   return CallGet(c);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_wrong_arity.carbon:[[@LINE-9]]:3: note: member `Get` of type `C` does not match the signature required by template constraint `HasGet` [StructuralMemberMismatch]
+  // CHECK:STDERR:   fn Get(self, n: i32) -> i32 { return n; }
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_wrong_arity.carbon:[[@LINE-20]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_wrong_arity.carbon:[[@LINE-12]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+  // CHECK:STDERR: fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return CallGet(c);
 }
 
@@ -99,12 +167,29 @@ template constraint HasF {
 class C {}
 
 impl C as A {
+  // CHECK:STDERR: fail_external_impl.carbon:[[@LINE+4]]:8: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   fn F(self) {}
+  // CHECK:STDERR:        ^~~~
+  // CHECK:STDERR:
   fn F(self) {}
 }
 
 fn CallF[template T: HasF](x: T) { x.F(); }
 
 fn Test(c: C) {
+  // CHECK:STDERR: fail_external_impl.carbon:[[@LINE+13]]:3: error: cannot convert type `C` into type implementing `HasF` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   CallF(c);
+  // CHECK:STDERR:   ^~~~~~~~
+  // CHECK:STDERR: fail_external_impl.carbon:[[@LINE+10]]:3: note: type `C` has no member named `F` required by template constraint `HasF` [StructuralMemberMissing]
+  // CHECK:STDERR:   CallF(c);
+  // CHECK:STDERR:   ^~~~~~~~
+  // CHECK:STDERR: fail_external_impl.carbon:[[@LINE-22]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn F(self);
+  // CHECK:STDERR:   ^~~~~~~~~~~
+  // CHECK:STDERR: fail_external_impl.carbon:[[@LINE-12]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+  // CHECK:STDERR: fn CallF[template T: HasF](x: T) { x.F(); }
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   CallF(c);
 }
 
@@ -117,12 +202,29 @@ template constraint HasGet {
 }
 
 class C {
+  // CHECK:STDERR: fail_private.carbon:[[@LINE+4]]:18: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   private fn Get(self) -> i32 { return 1; }
+  // CHECK:STDERR:                  ^~~~
+  // CHECK:STDERR:
   private fn Get(self) -> i32 { return 1; }
 }
 
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
 fn Test(c: C) -> i32 {
+  // CHECK:STDERR: fail_private.carbon:[[@LINE+13]]:10: error: cannot convert type `C` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   return CallGet(c);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_private.carbon:[[@LINE+10]]:10: note: member `Get` of type `C` is private here and cannot satisfy template constraint `HasGet` [StructuralMemberInaccessible]
+  // CHECK:STDERR:   return CallGet(c);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_private.carbon:[[@LINE-20]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_private.carbon:[[@LINE-12]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+  // CHECK:STDERR: fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return CallGet(c);
 }
 
@@ -135,13 +237,34 @@ template constraint HasGet {
 }
 
 class C {
+  // CHECK:STDERR: fail_overload_set.carbon:[[@LINE+4]]:19: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   overload fn Get(self) -> i32 { return 1; }
+  // CHECK:STDERR:                   ^~~~
+  // CHECK:STDERR:
   overload fn Get(self) -> i32 { return 1; }
+  // CHECK:STDERR: fail_overload_set.carbon:[[@LINE+4]]:19: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   overload fn Get(self, n: i32) -> i32 { return n; }
+  // CHECK:STDERR:                   ^~~~
+  // CHECK:STDERR:
   overload fn Get(self, n: i32) -> i32 { return n; }
 }
 
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
 fn Test(c: C) -> i32 {
+  // CHECK:STDERR: fail_overload_set.carbon:[[@LINE+13]]:10: error: cannot convert type `C` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   return CallGet(c);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_overload_set.carbon:[[@LINE+10]]:10: note: member `Get` of type `C` does not match the signature required by template constraint `HasGet` [StructuralMemberMismatch]
+  // CHECK:STDERR:   return CallGet(c);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_overload_set.carbon:[[@LINE-25]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_overload_set.carbon:[[@LINE-12]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+  // CHECK:STDERR: fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return CallGet(c);
 }
 
@@ -156,9 +279,23 @@ template constraint HasGet {
 
 class Inc;
 
+// CHECK:STDERR: fail_incomplete.carbon:[[@LINE+4]]:6: warning: binding `T` unused [UnusedBinding]
+// CHECK:STDERR: fn F(template T: HasGet) {}
+// CHECK:STDERR:      ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn F(template T: HasGet) {}
 
 fn Test() {
+  // CHECK:STDERR: fail_incomplete.carbon:[[@LINE+10]]:3: error: incomplete type `Inc` cannot satisfy template constraint `HasGet` [StructuralRequirementIncompleteType]
+  // CHECK:STDERR:   F(Inc);
+  // CHECK:STDERR:   ^~~~~~
+  // CHECK:STDERR: fail_incomplete.carbon:[[@LINE-12]]:1: note: class was forward declared here [ClassForwardDeclaredHere]
+  // CHECK:STDERR: class Inc;
+  // CHECK:STDERR: ^~~~~~~~~~
+  // CHECK:STDERR: fail_incomplete.carbon:[[@LINE-9]]:6: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+  // CHECK:STDERR: fn F(template T: HasGet) {}
+  // CHECK:STDERR:      ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   F(Inc);
 }
 
@@ -174,6 +311,20 @@ class Inc;
 class Box(template T: HasGet) {}
 
 fn Test() {
+  // CHECK:STDERR: fail_incomplete_class_param.carbon:[[@LINE+14]]:10: error: incomplete type `Inc` cannot satisfy template constraint `HasGet` [StructuralRequirementIncompleteType]
+  // CHECK:STDERR:   var b: Box(Inc) = {};
+  // CHECK:STDERR:          ^~~~~~~~
+  // CHECK:STDERR: fail_incomplete_class_param.carbon:[[@LINE-8]]:1: note: class was forward declared here [ClassForwardDeclaredHere]
+  // CHECK:STDERR: class Inc;
+  // CHECK:STDERR: ^~~~~~~~~~
+  // CHECK:STDERR: fail_incomplete_class_param.carbon:[[@LINE-9]]:11: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+  // CHECK:STDERR: class Box(template T: HasGet) {}
+  // CHECK:STDERR:           ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_incomplete_class_param.carbon:[[@LINE+4]]:7: warning: binding `b` unused [UnusedBinding]
+  // CHECK:STDERR:   var b: Box(Inc) = {};
+  // CHECK:STDERR:       ^~~~~~~~~~~
+  // CHECK:STDERR:
   var b: Box(Inc) = {};
 }
 
@@ -189,6 +340,10 @@ template constraint HasGet {
 }
 
 base class B {
+  // CHECK:STDERR: fail_private_base.carbon:[[@LINE+4]]:18: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   private fn Get(self) -> i32 { return 1; }
+  // CHECK:STDERR:                  ^~~~
+  // CHECK:STDERR:
   private fn Get(self) -> i32 { return 1; }
 }
 
@@ -199,6 +354,19 @@ class C {
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
 fn Test(c: C) -> i32 {
+  // CHECK:STDERR: fail_private_base.carbon:[[@LINE+13]]:10: error: cannot convert type `C` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   return CallGet(c);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_private_base.carbon:[[@LINE+10]]:10: note: member `Get` of type `C` is private here and cannot satisfy template constraint `HasGet` [StructuralMemberInaccessible]
+  // CHECK:STDERR:   return CallGet(c);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_private_base.carbon:[[@LINE-24]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_private_base.carbon:[[@LINE-12]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+  // CHECK:STDERR: fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return CallGet(c);
 }
 
@@ -227,10 +395,25 @@ class D {
 }
 
 impl forall [template T: HasF] T as A {
+  // CHECK:STDERR: fail_alias_cycle.carbon:[[@LINE+4]]:8: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   fn F(self) {}
+  // CHECK:STDERR:        ^~~~
+  // CHECK:STDERR:
   fn F(self) {}
 }
 
 fn Test(d: D) {
+  // CHECK:STDERR: fail_alias_cycle.carbon:[[@LINE+11]]:3: error: cycle found in search for impl of `A` for type `D` [ImplLookupCycle]
+  // CHECK:STDERR:   d.F();
+  // CHECK:STDERR:   ^~~
+  // CHECK:STDERR: fail_alias_cycle.carbon:[[@LINE-12]]:1: note: determining if this impl clause matches [ImplLookupCycleNote]
+  // CHECK:STDERR: impl forall [template T: HasF] T as A {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_alias_cycle.carbon:[[@LINE+4]]:3: error: cannot access member of interface `A` in type `D` that does not implement that interface [MissingImplInMemberAccess]
+  // CHECK:STDERR:   d.F();
+  // CHECK:STDERR:   ^~~
+  // CHECK:STDERR:
   d.F();
 }
 
@@ -251,5 +434,18 @@ class Box(T: type) {
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
 fn Test(b: Box(bool)) -> i32 {
+  // CHECK:STDERR: fail_generic_self_wrong_return.carbon:[[@LINE+13]]:10: error: cannot convert type `Box(bool)` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   return CallGet(b);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_generic_self_wrong_return.carbon:[[@LINE-9]]:3: note: member `Get` of type `Box(bool)` does not match the signature required by template constraint `HasGet` [StructuralMemberMismatch]
+  // CHECK:STDERR:   fn Get(self) -> T;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_generic_self_wrong_return.carbon:[[@LINE-16]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_generic_self_wrong_return.carbon:[[@LINE-12]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+  // CHECK:STDERR: fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return CallGet(b);
 }

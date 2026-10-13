@@ -23,6 +23,10 @@ template constraint HasGet {
 }
 
 class C {
+  // CHECK:STDERR: compound.carbon:[[@LINE+4]]:10: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR:
   fn Get(self) -> i32 { return 1; }
 }
 
@@ -40,11 +44,28 @@ template constraint HasGet {
 }
 
 class D {
+  // CHECK:STDERR: fail_compound_unsatisfied.carbon:[[@LINE+4]]:12: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   fn Other(self) -> i32 { return 0; }
+  // CHECK:STDERR:            ^~~~
+  // CHECK:STDERR:
   fn Other(self) -> i32 { return 0; }
 }
 
 fn F[template T: type](x: T) -> i32 { return x.(HasGet.Get)(); }
 
 fn Test(d: D) -> i32 {
+  // CHECK:STDERR: fail_compound_unsatisfied.carbon:[[@LINE+13]]:10: error: unable to monomorphize specific `F(D)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return F(d);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_compound_unsatisfied.carbon:[[@LINE-6]]:46: note: cannot convert type `D` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR: fn F[template T: type](x: T) -> i32 { return x.(HasGet.Get)(); }
+  // CHECK:STDERR:                                              ^~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_compound_unsatisfied.carbon:[[@LINE-9]]:46: note: type `D` has no member named `Get` required by template constraint `HasGet` [StructuralMemberMissing]
+  // CHECK:STDERR: fn F[template T: type](x: T) -> i32 { return x.(HasGet.Get)(); }
+  // CHECK:STDERR:                                              ^~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_compound_unsatisfied.carbon:[[@LINE-23]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return F(d);
 }

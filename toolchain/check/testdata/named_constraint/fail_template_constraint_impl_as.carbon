@@ -22,9 +22,17 @@ template constraint HasGet {
 }
 
 class C {
+  // CHECK:STDERR: fail_impl_as.carbon:[[@LINE+4]]:10: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR:
   fn Get(self) -> i32 { return 1; }
 }
 
+// CHECK:STDERR: fail_impl_as.carbon:[[@LINE+4]]:1: error: impl as 0 interfaces, expected 1 [ImplOfNotOneInterface]
+// CHECK:STDERR: impl C as HasGet {}
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 impl C as HasGet {}
 
 // --- todo_fail_impl_as_interface_and_template.carbon

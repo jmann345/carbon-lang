@@ -25,6 +25,10 @@ template constraint Both {
 }
 
 class C {
+  // CHECK:STDERR: require_in_template.carbon:[[@LINE+4]]:10: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR:
   fn Get(self) -> i32 { return 1; }
 }
 
@@ -44,6 +48,10 @@ interface I {
 }
 
 class C {
+  // CHECK:STDERR: require_in_interface_concrete.carbon:[[@LINE+4]]:10: warning: binding `self` unused [UnusedBinding]
+  // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR:
   fn Get(self) -> i32 { return 1; }
 }
 
@@ -67,6 +75,10 @@ impl forall [template T: type] T as I {}
 
 class Lacking {}
 
+// CHECK:STDERR: require_in_interface_template_blanket.carbon:[[@LINE+4]]:14: warning: binding `x` unused [UnusedBinding]
+// CHECK:STDERR: fn Use[U: I](x: U) {}
+// CHECK:STDERR:              ^~~~
+// CHECK:STDERR:
 fn Use[U: I](x: U) {}
 
 fn Test(l: Lacking) { Use(l); }

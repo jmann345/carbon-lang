@@ -17,21 +17,40 @@
 // --- fail_on_fn.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_on_fn.carbon:[[@LINE+4]]:1: error: `template` not allowed on `fn` declaration [ModifierNotAllowedOnDeclaration]
+// CHECK:STDERR: template fn F();
+// CHECK:STDERR: ^~~~~~~~
+// CHECK:STDERR:
 template fn F();
 
 // --- fail_on_class.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_on_class.carbon:[[@LINE+4]]:1: error: `template` not allowed on `class` declaration [ModifierNotAllowedOnDeclaration]
+// CHECK:STDERR: template class C {}
+// CHECK:STDERR: ^~~~~~~~
+// CHECK:STDERR:
 template class C {}
 
 // --- fail_on_interface.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_on_interface.carbon:[[@LINE+4]]:1: error: `template` not allowed on `interface` declaration [ModifierNotAllowedOnDeclaration]
+// CHECK:STDERR: template interface I {}
+// CHECK:STDERR: ^~~~~~~~
+// CHECK:STDERR:
 template interface I {}
 
 // --- fail_twice.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_twice.carbon:[[@LINE+7]]:10: error: `template` repeated on declaration [ModifierRepeated]
+// CHECK:STDERR: template template constraint X {}
+// CHECK:STDERR:          ^~~~~~~~
+// CHECK:STDERR: fail_twice.carbon:[[@LINE+4]]:1: note: `template` previously appeared here [ModifierPrevious]
+// CHECK:STDERR: template template constraint X {}
+// CHECK:STDERR: ^~~~~~~~
+// CHECK:STDERR:
 template template constraint X {}
 
 // --- fail_with_abstract.carbon
@@ -40,4 +59,11 @@ library "[[@TEST_NAME]]";
 // `template` and `abstract` are both in the "at most one of" declaration
 // modifier group, so the second is rejected before any declaration-specific
 // limit runs.
+// CHECK:STDERR: fail_with_abstract.carbon:[[@LINE+7]]:10: error: `abstract` not allowed on declaration with `template` [ModifierNotAllowedWith]
+// CHECK:STDERR: template abstract constraint X {}
+// CHECK:STDERR:          ^~~~~~~~
+// CHECK:STDERR: fail_with_abstract.carbon:[[@LINE+4]]:1: note: `template` previously appeared here [ModifierPrevious]
+// CHECK:STDERR: template abstract constraint X {}
+// CHECK:STDERR: ^~~~~~~~
+// CHECK:STDERR:
 template abstract constraint X {}

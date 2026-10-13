@@ -17,3 +17,28 @@ template constraint Foo {
 }
 
 template constraint ForwardDeclared;
+
+// CHECK:STDOUT: - filename: template_constraint.carbon
+// CHECK:STDOUT:   ╭─FileStart ''
+// CHECK:STDOUT:   │   ╭─NamedConstraintIntroducer 'constraint'
+// CHECK:STDOUT:   │   ├─TemplateModifier 'template'
+// CHECK:STDOUT:   │   ├─IdentifierNameNotBeforeSignature 'Foo'
+// CHECK:STDOUT:   │ ╭─NamedConstraintDefinitionStart '{'
+// CHECK:STDOUT:   │ │ ╭─FunctionIntroducer 'fn'
+// CHECK:STDOUT:   │ │ ├─IdentifierNameMaybeBeforeSignature 'DeclaredMethod'
+// CHECK:STDOUT:   │ │ │ ╭─ExplicitParamListStart '('
+// CHECK:STDOUT:   │ │ ├─ExplicitParamList ')'
+// CHECK:STDOUT:   │ ├─FunctionDecl ';'
+// CHECK:STDOUT:   │ │   ╭─FunctionIntroducer 'fn'
+// CHECK:STDOUT:   │ │   ├─IdentifierNameMaybeBeforeSignature 'DefinedMethod'
+// CHECK:STDOUT:   │ │   │ ╭─ExplicitParamListStart '('
+// CHECK:STDOUT:   │ │   ├─ExplicitParamList ')'
+// CHECK:STDOUT:   │ │ ╭─FunctionDefinitionStart '{'
+// CHECK:STDOUT:   │ ├─FunctionDefinition '}'
+// CHECK:STDOUT:   ├─NamedConstraintDefinition '}'
+// CHECK:STDOUT:   │ ╭─NamedConstraintIntroducer 'constraint'
+// CHECK:STDOUT:   │ ├─TemplateModifier 'template'
+// CHECK:STDOUT:   │ ├─IdentifierNameNotBeforeSignature 'ForwardDeclared'
+// CHECK:STDOUT:   ├─NamedConstraintDecl ';'
+// CHECK:STDOUT:   ├─FileEnd ''
+// CHECK:STDOUT:   (root)

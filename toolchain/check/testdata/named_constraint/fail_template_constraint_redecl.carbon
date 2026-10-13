@@ -21,6 +21,13 @@ library "[[@TEST_NAME]]";
 
 constraint X;
 
+// CHECK:STDERR: fail_decl_then_template_def.carbon:[[@LINE+7]]:1: error: redeclarations of `constraint X` must match use of `template` [NamedConstraintRedeclTemplateMismatch]
+// CHECK:STDERR: template constraint X {}
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_decl_then_template_def.carbon:[[@LINE-5]]:1: note: previously declared here [RedeclPrevDecl]
+// CHECK:STDERR: constraint X;
+// CHECK:STDERR: ^~~~~~~~~~~~~
+// CHECK:STDERR:
 template constraint X {}
 
 // --- fail_template_decl_then_def.carbon
@@ -28,6 +35,13 @@ library "[[@TEST_NAME]]";
 
 template constraint X;
 
+// CHECK:STDERR: fail_template_decl_then_def.carbon:[[@LINE+7]]:1: error: redeclarations of `constraint X` must match use of `template` [NamedConstraintRedeclTemplateMismatch]
+// CHECK:STDERR: constraint X {}
+// CHECK:STDERR: ^~~~~~~~~~~~~~
+// CHECK:STDERR: fail_template_decl_then_def.carbon:[[@LINE-5]]:1: note: previously declared here [RedeclPrevDecl]
+// CHECK:STDERR: template constraint X;
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 constraint X {}
 
 // --- fail_decl_then_template_def_member.carbon
@@ -35,6 +49,13 @@ library "[[@TEST_NAME]]";
 
 constraint X;
 
+// CHECK:STDERR: fail_decl_then_template_def_member.carbon:[[@LINE+7]]:1: error: redeclarations of `constraint X` must match use of `template` [NamedConstraintRedeclTemplateMismatch]
+// CHECK:STDERR: template constraint X {
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_decl_then_template_def_member.carbon:[[@LINE-5]]:1: note: previously declared here [RedeclPrevDecl]
+// CHECK:STDERR: constraint X;
+// CHECK:STDERR: ^~~~~~~~~~~~~
+// CHECK:STDERR:
 template constraint X {
   fn G(self);
 }
@@ -44,6 +65,13 @@ library "[[@TEST_NAME]]";
 
 template constraint X;
 
+// CHECK:STDERR: fail_template_decl_then_def_member.carbon:[[@LINE+7]]:1: error: redeclarations of `constraint X` must match use of `template` [NamedConstraintRedeclTemplateMismatch]
+// CHECK:STDERR: constraint X {
+// CHECK:STDERR: ^~~~~~~~~~~~~~
+// CHECK:STDERR: fail_template_decl_then_def_member.carbon:[[@LINE-5]]:1: note: previously declared here [RedeclPrevDecl]
+// CHECK:STDERR: template constraint X;
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 constraint X {
   fn G(self);
 }

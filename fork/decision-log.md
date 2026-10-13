@@ -2860,6 +2860,665 @@ if-let/let-else/while-let (flips a MISSING bullet on landed match
 machinery), then the error-handling chain W-016..W-019 (Result, `?`,
 exception interop), then unions W-009/W-015.
 
+### EV-1: evaluator documentation: getting started, tutorial, FAQ, transcribed programs (2026-10-13)
+
+Milestone bullet "Basic documentation for evaluators from getting started to
+FAQs." (docs/project/milestones.md:243; fork/gap-analysis.md row 90, now line
+93, reads "Project: basic evaluator documentation (getting started to FAQs)")
+flips PARTIAL → DONE on transcription plus document review (D-EV-16, row 88's
+DONE-on-review precedent, which SAFE-1 also takes for row 89 on PR 53); the
+header moves 30 DONE / 21 PARTIAL / 4 MISSING / 1 DESIGN-ONLY → 31 / 20 / 4 / 1
+over 56. The expected conformance scoreboard is 137 PASS / 0 FAIL / 22 SKIP over
+159 programs, 48/56 bullets (trunk's floor 128 / 0 / 22 over 150, 48/56, run
+37402970811, plus PASS +9, SKIP −1 +1 and programs −1 +10) — stated as expected,
+not of record: GitHub Actions on the repository is disabled, so the hosted
+conformance run R9 makes the record has no dispatch date, and row 90's evidence
+cell says so in those words. The ten new programs are documentation-sync
+programs under a bullet that was already PASS (through
+evaluator_docs_getting_started.carbon; bullets unchanged): each is a tutorial
+sample transcribed byte for byte and checked against its page by
+fork/evaluator/check_samples.py, which joins `runner.py --self-test` as the
+evaluator-samples self-check in state C. Landed on claude/carbon-fork-0-1-ev off
+trunk 80a11e7f0 in state T (a trunk without PR 52, fork/evaluator/plan.md §1.F)
+in the commits plan §3 fixed — 751102ee1 (1/3: the three guide pages, the guides
+index, the README and project-FAQ pointers), 21c4a0565 (2/3: the ten tutorial
+programs replacing the evaluator_docs_review stub, the C++-library fixtures, the
+sample and FAQ checkers, the program table), 6a3cbff24 (2a: the fold of the two
+document reviews), the merge of origin/trunk 9d3ca60a3 (dff212ccc: trunk had
+moved only by ORCHESTRATION stamps, §2.F.4) and the discharge commit carrying
+this entry (3/3) — after the plan's own commits dd24df3a7 (rev 1), f0e1ab70b
+(rev 2, the two plan reviews folded) and cbecda8e6 (sign-off). The
+implementation commits are not pushed at the time of writing: the implementation
+review and its fold (commit 4) come next, then the PR is opened and HELD
+("awaiting hosted conformance (Actions disabled); merges after PR 52, through
+the integration commit"). EV-1 merges after PR 52: the integration commit of
+plan §3 merges trunk into the branch and moves it to state C (the C++-library
+program's BUILD-SCRIPT un-SKIP, the evaluator-samples self-check in
+`--self-test`, the build_systems.md links, the W-131 and W-133 citations, row 90
+and the header in their state C texts). This workstream touches no toolchain
+C++, no golden, no BUILD file and nothing under .github/, so it needs no
+autoupdate. Every decision below is an R29(a) auto-adopt recorded for
+after-the-fact veto, each with its break condition.
+
+WHAT LANDED, by file group. (1) THE PAGES (commit 1, amended at 2a).
+docs/guides/getting_started.md (321 lines; H2 sections Two toolchains,
+Platforms, Install the upstream nightly on Linux x86-64, Build this fork's
+toolchain from source, System packages, Your first program, The first link takes
+a while, One-step builds, Next steps): the upstream nightly is the only current
+prebuilt toolchain (Linux x86-64; its download line is README.md:292's `wget`,
+and the block was run verbatim) and has none of the fork's features; this fork's
+toolchain is built from source (`./scripts/run_bazelisk.py build -c opt
+//toolchain/install:carbon_toolchain_tar`, the target and unpack step of the
+hosted conformance job, quoted and not run); the stale `fork-toolchain-*`
+prereleases and the arbiter mirror of upstream's nightly are named and warned
+against (W-152); the platform table labels each row's source (measured,
+upstream's CI configuration, or this fork's CI record with its run id); the
+system-packages section states the measured requirement (glibc's development
+files, to compile any program that imports a C++ header and to link; libc6-dev
+verified by `dpkg -S`, other distributions' names labelled not verified); the
+first program creates the runtimes-cache directory before its first link;
+`carbon build` is the one-step shortcut with its measured caveats.
+docs/guides/tutorial.md (700 lines; Before you start, ten sample sections from
+hello world to a multi-file package with C++ interop in both directions, Where
+next): twelve column-0 `carbon` blocks and two `cpp` blocks, one `text` block
+per sample section holding its program's expected output, each section labelled
+with the toolchains it runs on (eight on both; choice and match, and errors as
+values, on this fork's toolchain only). docs/guides/evaluator_faq.md (394 lines;
+four H2 groups, 21 H3 entries): toolchain and troubleshooting questions, every
+quoted diagnostic in a `text` block; project questions stay in
+docs/project/faq.md. docs/guides/README.md lists the three pages ahead of the
+glossary; README.md gains a pointer paragraph after the browser paragraph and a
+list item; docs/project/faq.md one sentence in "Is there a demo?". (2) THE
+PROGRAMS AND FIXTURES (commit 2). Nine single-file programs
+fork/conformance/programs/project/evaluator_tutorial_{hello, functions, classes,
+generics, choice_match, errors, interop_use_cpp, cpp_library,
+interop_call_carbon}.carbon and the three-unit directory
+evaluator_tutorial_package/, each the license header, the directives (bullet
+verbatim, `EXPECT-EXIT: 0`, plan §4's hand-derived EXPECT-STDOUT), a provenance
+comment naming the tutorial's H2 title, and the sample byte for byte;
+evaluator_tutorial_cpp_library is a SKIP in state T whose text names
+fork/evaluator/cpp_library/build.sh and the two-line un-SKIP;
+evaluator_docs_review.carbon deleted by its own un-SKIP path;
+evaluator_docs_getting_started.carbon's header refreshed; the program table
+regenerated (159 programs). fork/evaluator/cpp_library/ holds main.carbon,
+rectangle.h and rectangle.cpp (the page's blocks plus a license comment and, in
+the header, the guard name the header-guard check requires; the trailing return
+type since 2a) and build.sh (PR 52's BUILD-SCRIPT contract, executable, build
+output on stderr). (3) THE CHECKERS (commit 2, amended at 2a), stdlib only.
+fork/evaluator/check_samples.py: the column-0 `carbon` blocks equal their
+programs' bodies in page order, each sample section's one `text` block equals
+its program's EXPECT-STDOUT, the `cpp` blocks equal the fixtures after the
+license comment with the guard read as `RECTANGLE_H_`, the C++-library program
+equals the fixture main.carbon, no `carbon` fence is indented, and the README's
+forty_two echo line is in README.md and getting_started.md.
+fork/evaluator/check_faq.py: plan §2.C's twenty reproducers (an input of ten
+lines or fewer, a command, the toolchains, the exact line, the exit status), of
+which those that apply to the toolchain given are run; each expected line must
+be in the output and a whole `text`-block line of evaluator_faq.md, and every
+`text`-block line of getting_started.md other than program output must be such a
+FAQ line. (4) RECORDS (this commit): gap row 90, the header, §W11 and the area
+summary; W-062 DISCHARGED, W-002, W-003, W-026 and W-059 notes, W-152, W-153 and
+W-155 filed; this entry; ORCHESTRATION; the plan's landed notes.
+
+THE DECISIONS, D-EV-1 to D-EV-21, verbatim from fork/evaluator/plan.md §1.G as
+folded through the two plan reviews (A1 to A12, B-1 to B-6, B m-1 to B m-5) and
+the two document reviews (B1, MAJOR-n, MINOR-n, R2-n); each break condition is
+the decision's own, and the `§`, `R-` and row references are the plan's:
+
+-   **D-EV-1 — Three pages under docs/guides/** (§1.A): `getting_started.md`,
+    `tutorial.md`, `evaluator_faq.md`, each with an H1, the `<!-- -->` license
+    block and a markdown-toc table of contents. Rejected: one long page (the FAQ
+    must be linkable on its own, and the getting-started page must stay short
+    enough to follow at a terminal); a `docs/guides/tutorial/` directory of
+    per-chapter pages (ten short chapters do not justify eleven files). Break
+    condition: tutorial.md exceeds about 700 lines, or the evaluator-simulation
+    review (D-EV-19) reports a task that needs more than one jump between pages
+    — then split the tutorial into per-chapter pages. At commit 2a, document
+    review 1 reported two tasks that needed two jumps (its MINOR-1a and
+    MINOR-1b), each caused by a missing link rather than by the tutorial's
+    length; the fold added the links instead of splitting, after which every
+    task the review met needs at most one jump, and the folded tutorial.md is
+    700 lines long, so neither condition fires (amended 2026-10-13,
+    document-review fold: MINOR-1a, MINOR-1b).
+-   **D-EV-2 — The guides target this fork's toolchain and label every step
+    with the toolchains it runs on** (§1.B). The tutorial's commands use a
+    bare `carbon` on `PATH` (measured to work, §0.1 row 2), so the same
+    text serves both toolchains. A section labelled for the nightly says
+    "measured with nightly 0.0.0-0.nightly.2026.10.12", because the guide
+    downloads a moving nightly and only that one was measured (amended
+    2026-10-13, review fold: A12). Break conditions: an upstream nightly
+    accepts choice payloads, `match` and `Core.Result` (re-measured at each
+    upstream merge with the two fork-only programs under N) — then the
+    "fork toolchain only" labels drop; a later nightly fails one of the
+    eight both-toolchain samples (re-measured by §8.3's download run at
+    commit 1 and by the land sequence's runner pass with the then-current
+    nightly) — then that section's label changes to the fork's toolchain,
+    or the sample changes and §4 is re-derived (amended 2026-10-13, review
+    fold: A12).
+-   **D-EV-3 — Platform table with labelled sources per row** (§1.C;
+    amended 2026-10-13, review fold: A1). Linux x86-64: upstream nightly
+    prebuilt, measured on Ubuntu 24.04 (§0.1 rows 2 and 27). Linux arm64 and
+    macOS arm64: no prebuilt toolchain; build this fork from source; two
+    sources, labelled apart: (a) upstream's CI configuration runs
+    upstream's code there, the end-to-end install test included
+    (tests.yaml:29-32, install_test.py:190-202); (b) this fork's CI record
+    (§0.1 row 26): the last arm64 run that reached its tests passed (run
+    37398447710 at b4416a88e); on macOS the install test passed in the same
+    run, but a fork-only export golden has failed there since OV-3 (W-153),
+    and no run of the current trunk reached a test step because Actions is
+    disabled. macOS is therefore "unverified for this fork's current trunk",
+    the wording build_systems.md:463 uses on PR 52, and macOS linking needs
+    the Command Line Tools SDK path of clang_invocation.cpp:148-157 (source
+    only). Intel macOS: in no CI. Windows: unsupported
+    (clang_runtimes.cpp:240-242), with WSL 2 running the Linux instructions
+    as the documented route of contribution_tools.md:169-176, labelled not
+    measured. Break conditions: nightly_release.yaml publishes another
+    platform's artifact, or a Windows runner joins tests.yaml — then that
+    row changes source and status; a fork tests.yaml run on macos-14 or
+    ubuntu-22.04-arm reaches its test step green on the trunk EV-1 lands
+    on — then that row's fork-record cell cites it and "unverified" drops.
+-   **D-EV-4 — System packages stated as measured** (§0.1 rows 4-6): "the
+    compiler reads glibc's C headers for any program that imports a C++
+    header, and the link needs glibc's C runtime start files and the libc
+    and libm development links; nothing from GCC is linked" (amended
+    2026-10-13, review fold: A5); Debian and Ubuntu: `sudo apt install
+    libc6-dev` (verified, `dpkg -S`), with one sentence on why the README's
+    `libgcc-11-dev` line also works (Recommends); Fedora and RHEL
+    `glibc-devel`, openSUSE `glibc-devel`, Arch `glibc`, each labelled
+    "package name not verified by this project"; musl-based distributions
+    labelled untested (the default target is x86_64-unknown-linux-gnu, §0.1
+    row 7); N needs glibc 2.34 or newer. The page quotes the two failures as
+    "measured with an empty sysroot standing in for a system without
+    libc6-dev" (the compile-time `mbstate_t` error and the link-time
+    `cannot open Scrt1.o`), never as what a missing package produces
+    (amended 2026-10-13, review fold: B m-4). The page also says what was
+    not tested: a machine with libc6-dev and no GCC packages at all. Break
+    condition: a distribution's package metadata shows the headers or start
+    files in a different package — correct that name and drop its label.
+-   **D-EV-5 — The fork toolchain comes from source.** getting_started.md gives
+    the Bazel route of §0.1 row 18 (`./scripts/run_bazelisk.py build -c opt
+    //toolchain/install:carbon_toolchain_tar`, unpack into a directory, put its
+    `bin` on `PATH`) with the prerequisites linked to contribution_tools.md,
+    labelled "not run by this project's container (no Bazel there); the target
+    and the unpack step are those of the fork's hosted conformance job, which
+    built and ran them in run 37402970811; the script is the README's
+    user-facing `run_bazelisk.py`, where that job uses `run_bazel.py`". The
+    script substitution is deliberate: README.md:349 and
+    contribution_tools.md:78 teach `run_bazelisk.py`, which needs no Bazel
+    installed (amended 2026-10-13, review fold: A7, B m-3). No guide links the
+    stale prereleases (§0.1 row 17), but the "Two toolchains" section and the
+    FAQ entry "Can I download a prebuilt fork toolchain?" name the
+    `fork-toolchain-*` prereleases, say they predate `Core.Result`, if-let,
+    unions, `overload fn` and slices, quote the GLIBC_2.44 loader error the
+    newest one gives on Ubuntu 24.04, and tell the reader not to use them for
+    this tutorial (amended 2026-10-13, review fold: B-6). Both places also name
+    the newest entry of that releases page,
+    `arbiter-v0.0.0-0.nightly.2026.09.28`, a mirror of upstream's nightly of
+    2026-09-28 and so not this fork's toolchain (amended 2026-10-13,
+    document-review fold: MINOR-7, R2-7). The build block's label also says that
+    a build on the reader's machine does not get the hosted job's read-only
+    remote cache, which the CI action configures
+    (.github/actions/build-setup-common/action.yml:70) and .bazelrc does not
+    (:45-51, a local disk cache only), so the job's 9m29.6s is no estimate for
+    it (amended 2026-10-13, document-review fold: MAJOR-2). Residue W-152:
+    publish a current fork toolchain artifact and retire or relabel the stale
+    ones. Break conditions: a current fork toolchain artifact is published —
+    then getting_started.md gains its download path ahead of the source build;
+    the prereleases are deleted or refreshed — then the warning and the FAQ
+    entry are rewritten from the new listing (amended 2026-10-13, review fold:
+    B-6).
+-   **D-EV-6 — Compile and link are the taught path; `carbon build` is the
+    shortcut.** Every sample is built by `carbon compile --output=X.o
+    X.carbon`, `carbon link --output=X X.o`, `./X` — the README's commands,
+    the runner's commands and the commands a build system issues. `carbon
+    build` is taught in one getting_started.md section with its measured
+    caveats (the `-o=FILE` spelling, the default output name, that it links
+    the Core library objects that `link` omits) and is named again only as
+    the one-step alternative in the tutorial's package section and in the
+    FAQ. In state C the caveats cite W-133, PR 52's filed item for the same
+    driver behaviour (amended 2026-10-13, review fold: A9). Break condition:
+    `carbon link` gains the Core objects (link_driver.cpp:149-151) or
+    `carbon build` accepts C++ sources — then revisit which path is primary.
+-   **D-EV-7 — Output idioms: `Core.Print` for integers, C++ iostream for
+    text; no `Core.PrintStr` in any sample.** `Core.PrintStr` does not link
+    under compile and link (§0.1 row 8); the hello world prints through
+    `Cpp.std.cout`, which is install_test.py's own program shape. The FAQ
+    explains the `_CPrintStr.Core` failure and both ways around it; in
+    state C it also links build_systems.md's "Core libraries" section, which
+    links the Core `io` objects explicitly (amended 2026-10-13, review fold:
+    B m-2). Break condition: W-003 lands — then hello world switches to
+    `Core.PrintStr` and the FAQ entry is deleted.
+-   **D-EV-8 — The ten samples of §2.B are fixed by this plan.** They were
+    written from working code (R3: the conformance programs of §0.1 row 21,
+    types/classes.carbon, generics/checked_generics.carbon,
+    control_flow/match_guard_binding.carbon,
+    control_flow/if_let_let_else.carbon,
+    error_handling/result_prelude_diff.carbon,
+    code_org/library_multifile_export/), compile-verified on F and N (R6;
+    §0.1 row 10) and avoid every trap of §0.1 row 14 (each value-returning
+    `match` assigns in its arms and returns once). Rev 2 makes three of them
+    check both sides of the branch they teach: functions adds a second
+    if-expression that takes its `else` arm, errors adds an if-let with an
+    `else` on a failing division, and call-Carbon passes Clamp's bounds so
+    the three calls reach its value, upper and lower arms (amended
+    2026-10-13, review fold: A11). The implementer copies them; any change
+    is re-run on both toolchains and recorded. Break condition: a sample
+    stops compiling on F after a merge — then fix the sample, re-derive §4
+    and record the change in the commit message.
+-   **D-EV-9 — FAQ split and linkage** (§1.E): toolchain questions in
+    docs/guides/evaluator_faq.md, project questions stay in
+    docs/project/faq.md, which gains one pointer sentence in "Is there a
+    demo?" (:107-110). Rejected: adding the questions to docs/project/faq.md
+    (a 659-line upstream page about the project; mixing fork toolchain
+    troubleshooting into it would raise merge conflicts at every upstream
+    merge). Break condition: upstream adds a user-facing FAQ under
+    docs/guides — then merge into it at the next upstream merge.
+-   **D-EV-10 — CM-1's build_systems.md: links and consistency in state C**
+    (amended 2026-10-13, review fold: A9, B-1, B m-2). check-links would fail on
+    a trunk without the page, and an evaluator must not meet a dead link, so
+    commits 1 to 4 (state T) carry no link. The integration commit (§3, state C)
+    adds: the link in getting_started.md's "Next steps" and in the FAQ entry "An
+    imported package API is not found"; the FAQ's g++ entry gains the W-131
+    citation and a link to build_systems.md's "Mixed Carbon and C++" section;
+    the PrintStr entry links its "Core libraries" section; the `carbon build`
+    caveats cite W-133; W-131's notes gain EV-1's measurement that C-ABI objects
+    from g++ link (§0.1 row 11) and W-133's notes a pointer to the FAQ entry.
+    The FAQ then states both measurements (C-ABI code links; code using the C++
+    standard library needs `carbon clang` or the libstdc++-by-path workaround
+    with its caveat) and points at build_systems.md, whose general sentence is
+    about objects that use the standard library (its mixed example prints
+    through `std::cout` in mixed/twice.cpp); W-131's note is where the two pages
+    meet. Nothing is filed for the links. Break condition: PR 52 merges before
+    EV-1's commit 1 — then all of this goes into commits 1 to 4 directly and the
+    integration commit is only the merge.
+-   **D-EV-11 — One program per sample, named
+    `project/evaluator_tutorial_<topic>`** (§1.F, §2.E). Each file is the
+    license header, a blank line, the directives (bullet verbatim, R7;
+    `EXPECT-EXIT: 0`; the hand-derived `EXPECT-STDOUT`), a provenance
+    comment naming the tutorial's H2 title exactly (§2.E.1), a blank line
+    and the sample byte for byte. The package is the directory
+    `project/evaluator_tutorial_package/` (units `geometry.carbon`,
+    `geometry.impl.carbon`, `main.carbon`); the runner's own multi-unit
+    convention compiles every unit with all of its siblings, one or two
+    more files per command than the tutorial passes, and the objects are
+    byte-identical to the tutorial's (§0.1 row 13; amended 2026-10-13,
+    review fold: B m-3, A12). The stub is deleted; the getting-started
+    program stays with a refreshed header. Rejected: one program holding
+    every sample (a failure would not name the section), and `.diff.cpp`
+    oracles (D-EV-14). Break condition: the runner gains a directive that
+    names a documentation source — then the provenance comment becomes that
+    directive.
+-   **D-EV-12 — The separately compiled C++ library sample lands as a
+    BUILD-SCRIPT program; a SKIP is only its state T interim** (amended
+    2026-10-13, review fold: A2, A8, B-1). The fixture directory
+    fork/evaluator/cpp_library/ (`main.carbon`, `rectangle.h`,
+    `rectangle.cpp`, `build.sh`; §2.E.2) is committed in commit 2 in both
+    states, so the page's two `cpp` blocks have an instrument and the
+    un-SKIP is mechanical. State C: the program carries the BUILD-SCRIPT
+    directive naming `build.sh` and PASSes through PR 52's channel (§0.1 row
+    25; the channel runs scripts from the repository root, and `build.sh`
+    changes to its own directory because quoted headers resolve against the
+    working directory, row 12). State T: this trunk's runner builds Carbon
+    units only (runner.py:516-524, :546-551, :321) and runs without a `cwd`
+    (:453-462), so the program SKIPs with §2.E.2's text, which names the
+    fixture script and the two-line un-SKIP. EV-1 merges only in state C
+    (§1.F); W-154 is filed only if the land sequence must merge it in state
+    T or PR 52 is abandoned, and it then carries the integration commit's
+    steps (or, with PR 52 abandoned, a runner channel for C++ units with the
+    program directory as the working directory). W-002 item (3) is
+    answered for this program by the BUILD-SCRIPT channel in state C.
+    Rejected: `COMPILE-ARGS: --clang-arg=-Ifork/conformance/...` (true only
+    when the runner starts at the repository root, which nothing enforces)
+    and a header-only variant (not the sample the page shows). Break
+    condition: PR 52's BUILD-SCRIPT contract changes before EV-1 merges —
+    then `build.sh` follows the new contract and §0.1 row 25 is re-measured.
+-   **D-EV-13 — The R27 instrument is a checker script, enforced by
+    `--self-test` in state C** (amended 2026-10-13, review fold: A2, A10,
+    B-1, B-3). fork/evaluator/check_samples.py (§2.E.4, stdlib only) reads
+    the fenced blocks of the three pages and checks: the column-0 `carbon`
+    blocks equal their programs' bodies in page order (tutorial.md 12, the
+    other two pages 0); every H2 section of tutorial.md that holds `carbon`
+    blocks holds exactly one `text` block, equal to the EXPECT-STDOUT of the
+    program of the section's last `carbon` block; the two `cpp` blocks equal
+    the fixtures `rectangle.h` and `rectangle.cpp` after each fixture's
+    license comment and with the hook-imposed guard name read as
+    `RECTANGLE_H_`; the C++-library program's body equals the fixture
+    `main.carbon`'s; an indented `carbon` fence on any of the three pages is
+    an error; and the README's forty_two echo line is in README.md and
+    getting_started.md, with the getting-started program's body equal to
+    what it writes. Every program header names the checker. State T: it runs
+    by hand at commit 2 and in ORCHESTRATION's land sequence. State C: the
+    integration commit adds `evaluator_samples_self_check()` to
+    `runner.py --self-test` beside PR 52's build-script self-check (§2.E.4),
+    so the R12 hook runs it on every program edit and the land sequence's
+    `--self-test` runs it; no ledger item is filed for it. A page-only edit
+    is still caught only when `--self-test` next runs, so the land-sequence
+    entry stays in both states. Break condition: the R12 hook gains a
+    trigger for docs/guides/ edits — then the land-sequence entry goes.
+-   **D-EV-14 — EXPECT values are hand-derived from each sample's arithmetic
+    (§4; R16(d)); no differential oracles.** The C++ parts are part of the
+    program under test, there is no overload set (R30 does not apply), and
+    every value is one line of arithmetic a reviewer re-derives. Break
+    condition: a sample gains a value that cannot be derived by hand — then
+    it gets a `.diff.cpp` oracle.
+-   **D-EV-15 — Upstream-owned text is touched minimally.** README.md gains
+    a one-sentence paragraph after :276 (the browser paragraph) pointing at
+    docs/guides/getting_started.md and one list item after :362; its shell
+    commands, including the libgcc line, are not edited (§0.2 item 3: the
+    guide carries the correction). docs/project/faq.md gains one sentence at
+    :107-110; docs/guides/README.md gains three list items. CM-1 adds a
+    README sentence between :315 and :317, a separate hunk. These lines go
+    on the V-3a register in the decision-log entry. Break condition: an
+    upstream merge rewrites README "Getting started" — then the pointers
+    are re-placed in that merge.
+-   **D-EV-16 — Gap row 90 flips PARTIAL → DONE on transcription plus
+    document review** (row 88's DONE-on-review precedent; SAFE-1, PR 53,
+    makes the same call for row 89). Header delta DONE +1, PARTIAL −1. The
+    row says what the new programs are: documentation-sync programs under a
+    bullet that was already PASS (bullets unchanged), checked by
+    `--self-test`'s evaluator-samples self-check in state C (amended
+    2026-10-13, review fold: B-3). The install steps that no review here
+    can falsify are listed in the row and the decision log: the fork
+    build-from-source block (no Bazel; its target and unpack step ran on
+    hosted run 37402970811, not as the guide's commands), any platform but
+    Linux x86-64, any distribution but Ubuntu 24.04, and a system without
+    libc6-dev (stood in for by an empty sysroot) (amended 2026-10-13,
+    review fold: B-4). Break condition: either document review of D-EV-19
+    finds a step in the range "getting started to FAQs" the pages do not
+    cover, or a step that fails as written, the nightly download included
+    — then the row stays PARTIAL until it is fixed.
+-   **D-EV-17 — Verification is local, and the plan says what cannot run**
+    (§8): prek to a fixpoint, `--self-test`, the runner with F, the checker,
+    the FAQ reproducer script on F and N, the nightly download block run
+    verbatim, and the C++-library commands by hand on F and N. Not run: the
+    fork build-from-source block (no Bazel), any non-Linux or non-x86-64
+    platform, a distribution other than Ubuntu 24.04, a system without
+    libc6-dev (an empty sysroot stands in) or with libc6-dev and no GCC
+    packages, the stale prerelease on a glibc of 2.44 or newer, and any
+    hosted workflow (amended 2026-10-13, review fold: B m-3, B-4). Break
+    condition: Actions is re-enabled — then the hosted conformance run
+    becomes the record and the "not of record" phrases are removed in a
+    records commit.
+-   **D-EV-18 — Ids are reserved now and allocated before commit 2** (amended
+    2026-10-13, review fold: A8, B-2). The block W-152 to W-159 is reserved
+    (ST-1's plan at bff5ba4e8, fork/string/plan.md:35-38, records the same block
+    and starts at W-160) and stamped into trunk's ORCHESTRATION by the
+    orchestrator, as W-151 was: W-152 a current downloadable fork toolchain (and
+    the stale prereleases), W-153 the macOS failure of the OV-3 export golden
+    (§0.1 row 26), W-154 only for a merge in state T (D-EV-12), W-155 to W-159
+    for document-review friction left unfixed (D-EV-19). The allocation grep of
+    §8.6 runs at sign-off, again before commit 2 writes any id, and again at
+    discharge, over work-items.json, the status header of every live branch's
+    `fork/*/plan.md` and trunk's ORCHESTRATION reservations. A reserved id that
+    goes unused stays unused and is never reused; the discharge records it as
+    "reserved, unused". Break condition: an id of the block is already taken
+    when the grep runs — then the block moves to the next free eight ids before
+    any program or page carries one, and §8.6 records both greps.
+-   **D-EV-19 — Reviews** (amended 2026-10-13, review fold: B m-5, B-4,
+    A5): two plan reviews (R29(c); rev 2 folds them). After commit 2, TWO
+    fresh-context document reviews, as SAFE-1 chose for a documentation PR
+    with no hosted verification (D-SAFE-23): R29(c)'s reduction to one
+    review applies "once hosted verification ... is fully green", which
+    never happens here while Actions is disabled. Review 1, evaluator
+    simulation (process.md north-star guard 2): a skeptical C++ developer
+    starts from a `PATH` without `carbon`, performs the nightly download
+    itself, follows getting_started.md, then the tutorial, then looks up
+    the FAQ for every error met, using only the pages, the downloaded
+    nightly and F, and runs the empty-sysroot probe for a system without
+    libc6-dev. Review 2, strictness (the rulebook's strictness briefs for
+    conformance programs and design docs, fork/rulebook.md:100-101):
+    every platform, distribution and toolchain claim carries its source;
+    every quoted diagnostic matches §2.C's reproducer output; the programs,
+    fixtures and checkers match §2.E; R31 counts and links. A fixer folds
+    both (commit 2a) before commit 3. Then one implementation review of
+    commits 1 to 3 and its fixer (commit 4). Friction the simulation reports
+    that commit 2a does not fix is filed under W-155 to W-159 in commit 3
+    (guard 2). Break condition: a document review reports a failing step —
+    the fix lands in commit 2a, before commit 3.
+-   **D-EV-20 — The download line stays README.md:292's `wget`** (amended
+    2026-10-13, review fold: B-5). Rev 1's `curl -LO` saved GitHub's
+    "Not Found" page under the tarball's name and exited 0 for a date with
+    no release, so the next step failed in `tar` (§0.1 row 27). `wget` exits
+    8 with `ERROR 404: Not Found.` and writes no file; it is the README's own
+    command, so the guide and the README show one spelling of the step, and
+    rev 1's reason for switching ("minimal images lack wget") was never
+    measured. One sentence gives the curl form for a machine without wget,
+    `curl -fLO URL`, and says why the `-f` matters; the FAQ's download
+    entry covers both tools. Break conditions: README.md changes its
+    download tool — the guide follows; a report that `wget` is missing on a
+    supported image — the block switches to `curl -fLO`.
+-   **D-EV-21 — The FAQ's quoted diagnostics are reproducer-backed** (amended
+    2026-10-13, review fold: A4). §2.C fixes a reproducer for every
+    diagnostic-keyed entry (input of ten lines or fewer, command, toolchain,
+    exact line, exit status), measured on F and N (§0.1 row 28).
+    fork/evaluator/check_faq.py (stdlib only) runs the reproducers that apply to
+    the toolchain it is given and requires each expected line both in the output
+    and as a whole line inside a `text` block of evaluator_faq.md, and it
+    requires every line of a `text` block of getting_started.md other than
+    program output to be such a line of the FAQ, so the guide's repeated
+    diagnostics stay the reproducer-backed ones (amended 2026-10-13,
+    document-review fold: R2-5, MINOR-9); it needs a toolchain, so it is not
+    part of `--self-test`. It runs at commit 2 on F and N, a mismatch blocks the
+    commit as a failing tutorial sample would, the result goes in the message,
+    and the land sequence runs it with the then-current nightly. Break
+    condition: a toolchain changes a quoted diagnostic — the FAQ quote and the
+    reproducer change together in one commit.
+
+REVIEWS (D-EV-19, R29(c), R11). Two plan reviews of rev 1 (dd24df3a7): A
+(correctness and evaluator fidelity) APPROVE-WITH-AMENDMENTS, four MAJOR and
+eight MINOR; B (strictness, process and records) APPROVE-WITH-AMENDMENTS, six
+MAJOR and five MINOR; no BLOCKER. A separate fixer reproduced all twenty-three
+findings and folded them in rev 2 (f0e1ab70b), none rejected, three as variants
+(A8 and B-2: the reserved block is ST-1's recorded W-152 to W-159 and unused ids
+stay unused; B-2's ORCHESTRATION line is the orchestrator's trunk stamp; B-5:
+README.md's `wget`, not `curl -fLO`); signed off at cbecda8e6 with no re-review
+owed. Two document reviews after commit 2, reading 751102ee1 and 21c4a0565 (two,
+not R29(c)'s one: its reduction applies once hosted verification is fully green,
+which cannot happen while Actions is disabled; SAFE-1's D-SAFE-23 made the same
+call). Review 1, the evaluator simulation (a skeptical C++ developer starting
+from a `PATH` without `carbon`: the nightly download, getting_started.md, the
+tutorial, the FAQ for every error met, the empty-sysroot probe), returned REJECT
+on one BLOCKER, graded so under the rubric's clause that a false assertion on a
+page is one: B1, the tutorial called the C++ fixtures the page's files "byte for
+byte". It also reported three MAJOR (MAJOR-1, the cache directory was created
+only after the first link, so every link rebuilt the runtimes in a temporary
+directory; MAJOR-2, the only build duration quoted used a remote cache a local
+build lacks; MAJOR-3, the tutorial said g++-compiled C++ does not link, where
+C-ABI code does) and twelve MINOR (MINOR-1a, MINOR-1b and MINOR-2 to MINOR-11).
+Review 2, strictness, returned APPROVE-WITH-AMENDMENTS with two MAJOR (R2-1, the
+trailing return after an exhaustive match was taught as a language rule; R2-2,
+the fixtures failed clangd-tidy's trailing-return check) and eight MINOR (R2-3
+to R2-10). A separate fixer reproduced all twenty-six findings and folded them
+in 6a3cbff24, none rejected; three of review 1 are the same defects as three of
+review 2 (B1 and R2-6, MAJOR-1 and R2-8(a), MINOR-7 and R2-7); MINOR-3 is folded
+as a variant ("a CMake build on the Ubuntu 24.04 machine that ran these
+measurements", and run 37402970811's commit 606a99c5a with "the later trunk
+commits change only this fork's records, not the toolchain", because the diff
+from 606a99c5a to 80a11e7f0 touches only five fork record files); R2-4's
+optional FAQ entry is not added (it would change §2.C's fixed heading tree and
+need a reproducer for a parse error the tutorial already explains); R2-10 is
+carried out by this discharge (the origin/trunk merge and the in-place Branches
+row of §2.F.4, §8.7's expected hits, §5.3's exception for the lines re-run by
+hand). Neither review reported a step that fails as written, so D-EV-16's break
+condition does not fire; D-EV-1's does not either (both two-jump tasks were
+missing links, now added, and the folded tutorial.md is 700 lines). One finding
+is a toolchain limitation the fold could only describe: R2-1 is filed as W-155.
+The fold table with every reproduction is the plan's "Document-review fold
+record (commit 2a, 2026-10-13)", summarized in its "Landed notes (EV-1)". The
+implementation review of commits 1 to 3 (with 2a) is outstanding at this
+discharge; its fold is commit 4, which amends this section.
+
+VERIFICATION, all LOCAL, never of record (D-EV-17). F is the fork toolchain
+(version 0.0.0-0.dev+0bdce60a5), a CMake and Ninja build of trunk 0bdce60a5's
+sources in this container, linked against the container's own LLVM, so it
+arbitrates language and driver behavior, not the Bazel artifact; N is upstream's
+nightly (version 0.0.0-0.nightly.2026.10.12+62f1cc6). Ran, each recorded in its
+commit's message: prek to a fixpoint at every commit with
+SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
+(prek 0.5.5; the four skipped hooks need Bazel, and no BUILD, .bzl or toolchain
+C++ file is touched), judged by sha256 of the touched files because prek reports
+Passed when a hook rewrites an untracked file, with the R31 heading and
+list-item counts before and after and the R-3 grep of the diff; `python3
+fork/conformance/runner.py --self-test` (the three self-checks OK, "self-test:
+159 programs parsed, 56 bullets in table, OK"); `python3
+fork/evaluator/check_samples.py` ("check_samples: 14 samples, 0 errors");
+check_faq.py with F ("check_faq: 13 reproducers run, 0 errors") and with the
+nightly downloaded at commit 1 ("check_faq: 17 reproducers run, 0 errors"), and
+checker mutations in scratch mirrors (a `7` for `-7` in a `text` block, a
+one-space code edit, an edited `cpp` line, an indented `carbon` fence, a suffix
+on a quoted FAQ line, an edited guide diagnostic) each turning a checker to exit
+1; the runner with F's busybox, a private `--out` and `--filter project/`: 15
+PASS, 0 FAIL of any kind, 6 SKIP, the ten new lines nine PASS and the
+C++-library SKIP, the evaluator bullet PASS over 11 programs; the same with the
+nightly's busybox and `--filter project/evaluator`: 8 PASS, 2 COMPILE-FAIL
+(choice_match and errors, the fork-only sections), 1 SKIP, which is D-EV-2's
+two-toolchain evidence, not a scoreboard; the nightly download block run
+verbatim under `env -i` from a `PATH` without `carbon` (58783647 bytes, sha256
+f85bdd83..., the unpacked tree identical to N), then the forty_two block and
+every tutorial sample and command block by hand on that tree and on F, the
+outputs equal to plan §4's; the C++-library commands and build.sh by hand on F
+and N (`42`, exit 0, empty stderr); the download-failure texts for a date with
+no release (`wget` exit 8, `curl -LO` exit 0 and then `tar` fails, `curl -fLO`
+exit 22); the stale prerelease's GLIBC_2.44 loader line (exit 1); clang-tidy
+(18.1.3) with the repository's .clang-tidy on the two C++ fixtures (clean in the
+trailing-return form). Not run (D-EV-17, plan §8.4): the fork build-from-source
+block, because there is no Bazel here (it is quoted from
+fork_hosted.yaml:106-120, whose target and unpack step built and ran the
+toolchain in hosted run 37402970811 with `run_bazel.py`, where the guide uses
+README.md's `run_bazelisk.py`); any hosted workflow (Actions disabled; R28
+forbids the owner's runner); macOS, Windows, Linux arm64 and any distribution
+but Ubuntu 24.04 (the platform rows cite upstream's CI configuration or this
+fork's CI record and say so); a system without libc6-dev (an empty sysroot
+stands in) or with libc6-dev and no GCC packages; the stale prerelease on a
+glibc of 2.44 or newer; clangd-tidy itself (the CI pin). Hosted: pending with no
+dispatch date; when Actions returns, the conformance mode on the PR head is the
+record (D-EV-17's break condition), expected 137 / 0 / 22 over 159 in state T,
+or 143 / 0 / 16 over 159, 49/56, in state C with PRs 51, 52 and 53 merged first
+(plan §5.1; the delta on whatever trunk then holds).
+
+RESIDUE, filed at this discharge from the block W-152 to W-159 that trunk's
+fork/ORCHESTRATION.md reserves for EV-1 (stamped at 9d3ca60a3; ST-1 starts at
+W-160). The §8.6 grep ran at sign-off, before commit 1, before commit 2 and
+again here over 68 refs (trunk, origin/trunk and every local and origin
+claude/carbon-fork-0-1-* head): no work-items.json on any head files an id of
+the block, the highest filed id is W-151 (the SC-1 head) and the highest
+referenced W-167 (ST-1's plan). W-152 (infra, "ci/releases + fork process", S):
+no current downloadable fork toolchain — the `fork-toolchain-*` prereleases
+predate `Core.Result`, if-let, unions, `overload fn` and slices, the newest
+needs glibc 2.44 to start, and the newest releases-page entry,
+arbiter-v0.0.0-0.nightly.2026.09.28, mirrors upstream's nightly; a refresh needs
+a Bazel build of record, so it waits for the owner's Actions decision. W-153
+(fail-test, the macOS export golden, S): export/overload_set.carbon fails on
+macos-14 (runs 37359728074 and 37398447710) because Carbon `i64` exports as
+`long long` on Darwin, so `Carbon::F(7L)` is ambiguous; found while sourcing the
+platform table, cross-referenced from W-026. W-155 (missing-feature,
+toolchain/check, S, under "Control flow: matching — good switch equivalents"):
+function-end reachability does not consult match exhaustiveness (document review
+2's R2-1; docs/design/error_handling.md:350-353 records the gap and
+pattern_matching.md:612-617 designs the code as unreachable); the guides call it
+a current toolchain limitation. W-154 stays reserved and is filed only if EV-1
+must merge onto a trunk without PR 52 or PR 52 is abandoned (D-EV-12); W-156 to
+W-159 are reserved by EV-1, unused and never reused (D-EV-18). In state C the
+integration commit adds the cross-references to PR 52's items: W-131's notes
+gain EV-1's measurement that C-ABI objects from g++ link, W-133's a pointer to
+the FAQ entry "The short output flag needs an equals sign". W-062 is DISCHARGED
+with its evidence re-pinned; W-002's (3) is answered for the evaluator docs by
+transcription; W-003, W-026 and W-059 gain notes.
+
+PLAN §0.2 CORRECTIONS, the stale claims the plan found, each with where it is
+corrected:
+
+-   W-062's evidence `fork/gap-analysis.md:72` and `:160-166` pointed at the C++
+    exception interop row and the W5 sum-types paragraph; re-pinned to row 90
+    (now line 93) and the W11 paragraph (now :264-281) in the ledger.
+-   W-062's evidence `evaluator_docs_review.carbon:2` was the license header's
+    second line (the bullet line was :5 and the SKIP :6); the stub is deleted,
+    so the evidence moves to the three guides and
+    evaluator_tutorial_hello.carbon:5.
+-   W-062's notes and the stub's SKIP called the README getting-started
+    "Ubuntu-only (apt libgcc-11-dev dependency)". README.md addresses "a recent
+    Ubuntu Linux or similar (Debian, WSL, etc.)" (:281-282), and the link's
+    system dependency is glibc's development files (libc6-dev on Debian and
+    Ubuntu), which the libgcc line supplies only through apt's Recommends.
+    Corrected in the guide, row 90, W-062's notes and here; README.md's command
+    is not edited (D-EV-15).
+-   The task brief and CM-1's plan cite README "Getting started" as :273-317;
+    the section runs :273-363, and :317 is the reminder paragraph after the
+    nightly shell block. Recorded here.
+-   fork/ORCHESTRATION.md's scoreboard line quoted 126 PASS / 23 SKIP / 0 FAIL
+    over 149 programs and 47/56 bullets (the PR 48 run), while the file it
+    names, fork/conformance/out/scoreboard.json (generated 2026-10-06 by
+    conformance run 37402970811), reads 128 / 0 / 22 over 150, 48/56; re-quoted
+    from the file by this commit, a quotation fix, not a regeneration (R9).
+-   fork/ORCHESTRATION.md's toolchain list named
+    `/home/user/arbiter/carbon_toolchain-0.0.0-0.nightly.2026.07.19/bin/carbon`
+    and `/home/user/trial-tc/carbon_toolchain-0.0.0-0.dev/bin/carbon`, neither
+    of which exists since the container was recreated; re-listed as F and N.
+-   Gap row 90's evidence was accurate apart from item 3; rewritten whole with
+    plan §5.3's text.
+-   The area summary (fork/gap-analysis.md:535-537 on 80a11e7f0) called
+    evaluator documentation thin and the driver doc a stub; the driver doc is
+    still a 22-line stub, but a developer document under toolchain/docs;
+    rewritten to the landed state.
+-   W-002's item (3) said there is no arbitration channel for document-review
+    bullets, the evaluator docs among them; for the evaluator docs the channel
+    is now transcription (D-EV-11, D-EV-13). W-002's notes gain that sentence,
+    and the item stays open for the rest.
+-   The fork's GitHub prereleases look like a fork toolchain download but
+    predate `Core.Result`, if-let, unions, `overload fn` and slices, and the
+    newest does not start on a glibc older than 2.44. No guide links them;
+    getting_started.md and the FAQ name them and say why not to use them, and
+    W-152 files the refresh.
+
+DEVIATIONS FROM THE PLAN, each the closest faithful form, recorded in its
+commit's message. Commit 1: the first-link section and the FAQ entry gained the
+measured fact that the toolchain creates `carbon_runtimes` but not the directory
+above it (toolchain/driver/runtimes_cache.cpp), so the pages create the cache
+directory, made XDG-aware at 2a; each sample section names its file in its "Runs
+on" paragraph to keep tutorial.md within D-EV-1's length; the FAQ's first-link
+entry points at the guide's measured range; the stale prerelease's loader line
+is quoted as printed when `carbon` runs through `PATH`. Commit 2: both checkers
+open with the `__copyright__` block the R12 hook reads; ty's strict mode needed
+two type fixes in check_faq.py, with unchanged behavior; check_samples.py's
+docstring says when it joins `--self-test` (state C). This commit: the header
+grew by three lines, so the ledger pins row 90 at line 93 and §W11 at :264-281
+rather than plan §2.F.2's :90 and :261-273; §5.3's "docs/guides/
+getting_started.md" is read as one path (a wrap in the plan's text); the
+Branches row says the branch is discharged and not yet pushed rather than
+§2.F.4's "HELD OPEN as PR NN", because the PR opens after commit 4, which
+restamps it; ORCHESTRATION's "Last updated" line points at the new dated
+paragraph, as CM-1's and SAFE-1's discharges did.
+
+PROCESS. R29(a): every D-EV above auto-adopts with its break condition and is
+recorded for after-the-fact veto; no question was asked (R29). R11: the
+implementer, the two plan reviewers, the plan fixer, the two document reviewers
+and the document fixer were separate agents, and the implementation review and
+its fixer follow. R20: every commit names its paths (author jmann345, committer
+Claude). R3 and R6: every sample was written from working code and
+compile-verified on F and N before the plan fixed it (D-EV-8). R16(d): every
+EXPECT value is plan §4's hand derivation, made before any run. R27: the
+fourteen `carbon` and `cpp` blocks of tutorial.md equal plan §2.B's byte for
+byte, and the program bodies equal the page blocks, checked at commits 1, 2 and
+2a. The gate that ran is local (D-EV-17), a stated deviation from R21 and R23's
+hosted authority while Actions is disabled; each commit message records its run.
+State T: no runner.py, .github/ or build_systems.md change and no W-131 or W-133
+citation before the integration commit (D-EV-10, D-EV-13). Break condition:
+Actions returns before the merge — then the hosted conformance run on the PR
+head is the record, and the "not of record" phrases go in a records commit.
+
+_V-3a divergence-risk register entries (reviewed at each upstream merge):_ the
+three guide pages (docs/guides/getting_started.md, tutorial.md and
+evaluator_faq.md) are fork-local files in an upstream directory, and they teach
+this fork's features (choice payloads, `match`, `Core.Result` and `?`, if-let)
+beside upstream's; README.md's two pointer lines (a paragraph after the browser
+paragraph and a list item), docs/project/faq.md's one sentence in "Is there a
+demo?" and docs/guides/README.md's three list items are the only upstream-owned
+text touched, and README.md's shell commands, the libgcc line included, are not
+edited (D-EV-15). If upstream ships its own guides or a user-facing FAQ under
+docs/guides (D-EV-9's break condition), the fork's pages are renamed or merged
+into upstream's at that merge; if an upstream merge rewrites README "Getting
+started", the pointers are re-placed in that merge. Veto-able.
+
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 
 Milestone bullet "Stdlib C++ interop: transparent non-owning contiguous

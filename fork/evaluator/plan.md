@@ -16,8 +16,10 @@ before folding it and rejected none; each amended passage carries "(amended
 m-1 to B m-5), and the section "Review fold record (rev 2, 2026-10-13)" at the
 end lists them. Commit 2a folds the two document reviews of D-EV-19 the same
 way, marked "(amended 2026-10-13, document-review fold: …)" and listed in the
-section "Document-review fold record (commit 2a, 2026-10-13)". Branch
-`claude/carbon-fork-0-1-ev` off trunk 80a11e7f0, whose
+section "Document-review fold record (commit 2a, 2026-10-13)". Commit 3
+discharged the records in state T on 2026-10-13 (section "Landed notes
+(EV-1)" at the end). Branch `claude/carbon-fork-0-1-ev` off trunk 80a11e7f0,
+whose
 toolchain sources are identical to 0bdce60a5 (the only later trunk commits are
 fork/ORCHESTRATION.md stamps). Trunk's floor is **128 PASS / 0 FAIL / 22 SKIP
 over 150 programs**, 48/56 bullets (fork/conformance/out/scoreboard.json
@@ -2384,3 +2386,105 @@ W-156 to W-159 stay reserved and unused. The fold's verification and its R31
 counts are in the commit 2a message; the counts of this file are spelled in
 words there, as in the rev 2 record, so that no wrap can start a line with a
 number and a period.
+
+## Landed notes (EV-1)
+
+**Discharge (commit 3, 2026-10-13, state T).** The guides and programs landed on
+claude/carbon-fork-0-1-ev in 751102ee1 (1/3: the three pages, the guides index,
+the README and project-FAQ pointers), 21c4a0565 (2/3: the ten tutorial programs
+replacing the evaluator_docs_review stub, the C++-library fixtures, the sample
+and FAQ checkers, the program table) and 6a3cbff24 (2a: the document-review
+fold), over this plan at cbecda8e6. Before the discharge commit, origin/trunk
+9d3ca60a3 was merged into the branch as dff212ccc (a merge, never a rebase),
+because `git diff --stat 80a11e7f0 origin/trunk` listed only
+fork/ORCHESTRATION.md (§2.F.4 as amended by R2-10). The discharge commit wrote
+§2.F in its state T texts: gap row 90 DONE with §5.3's text, the header at 31 /
+20 / 4 / 1 with the expected 137 PASS / 0 FAIL / 22 SKIP over 159 programs,
+48/56 bullets, stated as expected and not of record, §W11's sentence and arbiter
+note, and the area summary; W-062 DISCHARGED with §0.2 items 1 to 3 and its
+evidence re-pinned, and notes on W-002 (§0.2 item 9), W-003, W-026 and W-059;
+W-152, W-153 and W-155 filed with §2.F.2's fields; the decision-log entry "EV-1:
+evaluator documentation: getting started, tutorial, FAQ, transcribed programs
+(2026-10-13)" above SL-2, with D-EV-1 to D-EV-21 verbatim from §1.G; and in
+fork/ORCHESTRATION.md the "Last updated" line, a dated paragraph after the id
+reservations with the land-sequence steps, the merge-order sentence, trunk's
+EV-1 Branches row updated in place, the scoreboard line re-quoted from
+scoreboard.json (§0.2 item 5), the toolchain list re-listed (§0.2 item 6) and
+W-152 in Next actions.
+
+**Ids (D-EV-18, §8.6).** The allocation grep ran again before the discharge
+commit, over 68 refs (trunk, origin/trunk and every local and origin
+claude/carbon-fork-0-1-* head): no work-items.json on any head files an id of
+W-152 to W-159; the highest filed id is W-151 (the SC-1 head) and the highest
+referenced W-167 (ST-1's plan). W-152, W-153 and W-155 are filed; W-154 stays
+reserved and is filed only for a merge before PR 52 (D-EV-12); W-156 to W-159
+are reserved and unused, listed so in the ledger's `source` note, and never
+reused.
+
+**Reconciliation (§8.7, at the discharge commit).** `grep -rn --exclude-dir=out
+evaluator_docs_review fork/conformance fork/gap-analysis.md` hits nothing, and
+in fork/inventory/work-items.json only W-062's discharge note names the deleted
+stub. W-152 and W-153 hit the ledger, row 90, the decision log, this plan,
+fork/ORCHESTRATION.md and the two pages that name them since commit 1
+(getting_started.md and evaluator_faq.md). W-154 hits this plan,
+fork/ORCHESTRATION.md, the C++-library program's SKIP line, the ledger's
+`source` note and W-062's notes, and the decision log (its verbatim D-EV-12 and
+D-EV-18 and its RESIDUE paragraph): the ledger and decision-log hits come from
+§2.F.2's and §2.F.3's listings of the reserved ids and from the decisions copied
+verbatim, so the hit set is the one §8.7 expects once those are counted. W-155
+hits the ledger, the decision log and this plan only. The sample checker reports
+14 samples.
+
+**Choices at discharge**, each recorded in the commit message: (a) the header
+grew by three lines, so row 90 is line 93 and §W11 is :264-281, and the ledger
+pins those lines rather than §2.F.2's :90 and :261-273 while still naming the
+row "row 90"; (b) §5.3's "docs/guides/ getting_started.md" is read as one path,
+a wrap in this plan's text; (c) the Branches row reads "DISCHARGED IN STATE T,
+NOT PUSHED" with the next steps instead of §2.F.4's "HELD OPEN as PR NN",
+because the PR opens after commit 4, which restamps the row; (d) ORCHESTRATION's
+"Last updated" line points at the dated paragraph, as CM-1's and SAFE-1's
+discharges did; (e) W-062 keeps its kind and title (§2.F.2, and CM-1's W-060
+precedent); (f) the merge-order sentence's EV-1 clause says "PR 52", the
+hand-off rule, beside the sentence's existing PR numbers, which are left as they
+were.
+
+**Document-review fold table** (commit 2a; the reproduction record with every
+fixer trace is the section "Document-review fold record (commit 2a, 2026-10-13)"
+above). Review 1, the evaluator simulation: REJECT on one BLOCKER, with three
+MAJOR and twelve MINOR. Review 2, strictness: APPROVE-WITH-AMENDMENTS, with two
+MAJOR and eight MINOR. All twenty-six findings are folded and none is rejected.
+
+| Finding | Review | Grade | Disposition |
+| --- | --- | --- | --- |
+| B1 | 1 | BLOCKER | FOLDED: "byte for byte" removed; the page says the fixtures add a license comment and, in the header, the guard name the header-guard check requires (same defect as R2-6) |
+| MAJOR-1 | 1 | MAJOR | FOLDED: `mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}"` comes before the first link of "Your first program"; the download block is unchanged |
+| MAJOR-2 | 1 | MAJOR | FOLDED: a local build gets no remote cache (action.yml:70 sets it, .bazelrc does not), and its time and disk use were not measured; D-EV-5 amended |
+| MAJOR-3 | 1 | MAJOR | FOLDED: the tutorial separates C++ that uses the standard library (does not link) from C-ABI C++ (links), as the FAQ does |
+| MINOR-1a | 1 | MINOR | FOLDED: four links to the fork build section, two in the tutorial and two in the FAQ |
+| MINOR-1b | 1 | MINOR | FOLDED: the FAQ names glibc-devel and glibc inline, labelled not verified |
+| MINOR-2 | 1 | MINOR | FOLDED: the build section says only two tutorial sections need it, and which bare `carbon` runs when both toolchains are installed |
+| MINOR-3 | 1 | MINOR | FOLDED as a variant: "a CMake build on the Ubuntu 24.04 machine that ran these measurements"; run 37402970811 at 606a99c5a, "the later trunk commits change only this fork's records, not the toolchain" |
+| MINOR-4 | 1 | MINOR | FOLDED: "Linux x86-64 only" and every "No prebuilt toolchain" cell cite upstream's release configuration |
+| MINOR-5 | 1 | MINOR | FOLDED: the XDG-aware `mkdir` on both pages |
+| MINOR-6 | 1 | MINOR | FOLDED: the libstdc++-by-path link and the toolchain's clang++ labelled measured on both toolchains |
+| MINOR-7 | 1 | MINOR | FOLDED: both pages name the arbiter mirror release, labelled not run; W-152's evidence carries it (commit 3) |
+| MINOR-8 | 1 | MINOR | FOLDED: the first W- id on each page links the work-item ledger; W-152 and W-153 filed at commit 3 |
+| MINOR-9 | 1 | MINOR | FOLDED with the reviewer's first option: check_faq.py requires every getting_started.md `text`-block line other than program output to be a FAQ `text`-block line |
+| MINOR-10 | 1 | MINOR | FOLDED: the two multi-file sections each get their own directory |
+| MINOR-11 | 1 | MINOR | FOLDED: the two cache options are introduced as not needed for the tutorial |
+| R2-1 | 2 | MAJOR | FOLDED: the match and trailing-return rule is relabelled a toolchain limitation, with design links in the FAQ; the limitation itself is W-155 (commit 3) |
+| R2-2 | 2 | MAJOR | FOLDED: `auto RectangleArea(int width, int height) -> int` on the page, in §2.B and in both fixtures; no .github/ change |
+| R2-3 | 2 | MINOR | FOLDED: the tutorial lists where an if-expression can go and says it needs parentheses as another operator's operand |
+| R2-4 | 2 | MINOR | FOLDED: toolchain-only behavior labelled in §2.B samples 5, 7 and 9; the optional FAQ entry not added |
+| R2-5 | 2 | MINOR | FOLDED: check_faq.py compares whole lines, not substrings |
+| R2-6 | 2 | MINOR | FOLDED with B1 |
+| R2-7 | 2 | MINOR | FOLDED with MINOR-7 |
+| R2-8 | 2 | MINOR | FOLDED: (a) with MAJOR-1; (b) the measured first-link range by load average |
+| R2-9 | 2 | MINOR | FOLDED: the FAQ says the measured fork toolchain is a CMake build and the Bazel route was not run |
+| R2-10 | 2 | MINOR | FOLDED as amendments carried out at commit 3: the origin/trunk merge and the in-place Branches row (§2.F.4), §8.7's expected hits, §5.3's exception for the lines re-run by hand |
+
+The implementation review of commits 1 to 3 (with 2a) and its fold, commit 4,
+follow; commit 4 amends this section and the decision log's REVIEWS paragraph.
+The R31 counts of the discharge are in its commit message, spelled in words here
+for this file: one H2 added (this section), so thirteen become fourteen, and
+every other heading and list count unchanged.

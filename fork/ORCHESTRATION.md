@@ -10,7 +10,10 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-12 (weekly check fired; BLOCKED: GitHub Actions on
+Last updated: 2026-10-13 (EV-1 discharged in state T on
+claude/carbon-fork-0-1-ev, not pushed; see "EV-1 discharge (2026-10-13)" after
+the id reservations below). Earlier, 2026-10-12 (weekly check fired; BLOCKED:
+GitHub Actions on
 the repository is DISABLED — every `workflow_dispatch` of `Fork: hosted
 verification` returns "Actions has been disabled for this repository", the
 repository's own scheduled workflows last ran 2026-10-08, the repository is
@@ -64,7 +67,8 @@ every implementation review folded — and its golden fill is in progress; its
 W-144 collides with SAFE-1's W-144 and renumbers to W-151 at its landing (SAFE-1
 lands first). Each PR body carries its own verification record and names exactly
 what did not run. None is merged. Merge order when the land sequence runs: #53
-(no program moves), #51, #52, then SC-1.
+(no program moves), #51, #52, then SC-1; EV-1 merges after PR 52, through its
+state C integration commit.
 
 Id reservations (2026-10-13, so concurrent workstreams never collide): W-151 is
 SC-1's renumber of its W-144 (SAFE-1 owns W-144); W-152 to W-159 are reserved
@@ -74,6 +78,38 @@ fork/string/plan.md: Core.String operations for W-057, gap row 77) starts at
 W-160 and mints fork design id F-014. A reserved id that goes unused stays
 unused. EV-1 merges after PR 52 (its state C integration commit); ST-1's order
 is set at its sign-off.
+
+EV-1 discharge (2026-10-13, state T, not pushed): claude/carbon-fork-0-1-ev
+carries the evaluator guides for W-062 (fork/evaluator/plan.md rev 2, signed off
+at cbecda8e6) — docs/guides/getting_started.md, docs/guides/tutorial.md and
+docs/guides/evaluator_faq.md; the ten tutorial samples transcribed into
+fork/conformance/programs/project/evaluator_tutorial_* (nine PASS locally on the
+container's fork toolchain, the C++-library one SKIP until PR 52's BUILD-SCRIPT
+channel is on trunk); the C++-library fixtures and the sample and FAQ checkers
+under fork/evaluator/ — in commits 751102ee1 (1/3), 21c4a0565 (2/3), 6a3cbff24
+(2a: the two document reviews, 26 findings folded, none rejected), dff212ccc
+(the merge of trunk 9d3ca60a3) and the discharge commit (3/3). Gap row 90
+PARTIAL → DONE on transcription plus document review, header 31 / 20 / 4 / 1;
+EXPECTED scoreboard 137 PASS / 0 FAIL / 22 SKIP over 159, 48/56, whose nine new
+PASS lines are documentation-sync programs under an already-PASS bullet — stated
+as expected, NOT OF RECORD (the hosted run R9 requires has no dispatch date; the
+scoreboard line below is the file's, re-quoted 2026-10-13). W-062 discharged;
+W-152 (no current downloadable fork toolchain) and W-153 (the macOS failure of
+OV-3's export golden) filed; W-154 stays reserved for a merge before PR 52, and
+the ledger's `source` note lists the block's other ids. NEXT for EV-1: the
+implementation review of commits 1 to 3 and its fold (commit 4); then push, open
+the PR and HOLD it ("awaiting hosted conformance (Actions disabled); merges
+after PR 52, through the integration commit"). Land-sequence steps for EV-1,
+once trunk holds PR 52: merge trunk into the branch and write the integration
+commit (plan §3: the C++-library program's BUILD-SCRIPT un-SKIP, the
+evaluator-samples self-check in `runner.py --self-test`, the build_systems.md
+links and the W-131 and W-133 citations, row 90 and the header in their state C
+texts); run `python3 fork/evaluator/check_samples.py` (kept in both states,
+D-EV-13) and `python3 fork/evaluator/check_faq.py` with the fork toolchain and
+with the then-current nightly; run the runner with that nightly's busybox and
+`--filter project/evaluator` (D-EV-2: 9 PASS, 2 COMPILE-FAIL in state C); then
+dispatch hosted conformance on the PR head and expect plan §5.1's delta on
+whatever trunk then holds.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
@@ -409,7 +445,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-ua2` | HELD OPEN as PR #51 — UA-2 reconciliation at 05a5c30f7, fill + of-record conformance 37413300832 (131/0/19 over 150) done, gate impossible (Actions disabled); merge when a gate runs. |
 | `claude/carbon-fork-0-1-cmake` | HELD OPEN as PR #52 — CM-1 CMake integration at ea573f672 (gap rows 84/87 expected DONE, W-060/W-061 discharged, W-128..W-133); verification record in the PR; merge when the land sequence runs. |
 | `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at adaae4e35, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence. |
-| `claude/carbon-fork-0-1-ev` | PLAN SIGNED OFF (rev 2) — EV-1 evaluator guides (W-062, gap row 90); ids W-152..W-159 reserved; implementation in progress on the container toolchain; merges after PR 52. |
+| `claude/carbon-fork-0-1-ev` | DISCHARGED IN STATE T, NOT PUSHED — EV-1 evaluator guides (W-062, gap row 90): commits 751102ee1, 21c4a0565, 6a3cbff24, the trunk merge dff212ccc and the discharge commit (gap row 90 expected DONE, W-062 discharged, W-152, W-153); next the implementation review and its fold (commit 4), then push and open the PR, HELD; state T until trunk holds PR 52, then the integration commit; verification record in the commit messages and the PR; merge after PR 52. |
 | `claude/carbon-fork-0-1-st` | PLAN rev 1 in review — ST-1 Core.String operations (W-057, gap row 77); ids from W-160, F-014. |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED, FILL IN PROGRESS — SC-1 template structural conformance, commits 1-3 at 42841fa8d with reviews folded (W-134..W-144; W-144 renumbers to W-151 at landing); PR after the fill converges. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
@@ -423,9 +459,10 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-126 PASS / 23 SKIP / 0 FAIL programs (149 total); **47/56 bullets green**
-(GitHub-hosted scoreboard at the PR #48 head, run 37357609478; verified from
-fork/conformance/out/scoreboard.json — the error-handling control-flow bullet is
+128 PASS / 22 SKIP / 0 FAIL programs (150 total); **48/56 bullets green**
+(GitHub-hosted scoreboard of run 37402970811, the UA-1 conformance run on
+606a99c5a, re-quoted 2026-10-13 from fork/conformance/out/scoreboard.json,
+generated 2026-10-06 — the error-handling control-flow bullet is
 the fork's first error-handling flip, now 4 programs deep incl. the W72b
 threading arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79 at S3a → 80
 at S3b → 81 at S3c → 83 at B1b (error_handling/control_flow_constructs flip +
@@ -456,10 +493,15 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
 
 ### Toolchains in the container
 
--   `/home/user/arbiter/carbon_toolchain-0.0.0-0.nightly.2026.07.19/bin/carbon`
-    — upstream nightly
--   `/home/user/trial-tc/carbon_toolchain-0.0.0-0.dev/bin/carbon` — fork-built
-    with match
+-   `/home/user/carbon-build/carbon-trunk/install/bin/carbon` — fork toolchain
+    (`carbon version`: 0.0.0-0.dev+0bdce60a5), a CMake and Ninja build of trunk
+    0bdce60a5 linked against the container's own LLVM, with its busybox at
+    `install/lib/carbon/carbon-busybox`; the local arbiter for fork features,
+    not the Bazel artifact (re-listed 2026-10-13 at the EV-1 discharge: the two
+    paths listed before, under /home/user/arbiter and /home/user/trial-tc, are
+    gone since the container was recreated)
+-   `/home/user/nightly/tc/carbon_toolchain-0.0.0-0.nightly.2026.10.12/bin/carbon`
+    — upstream nightly 0.0.0-0.nightly.2026.10.12+62f1cc6
 -   The container's clang 18 cannot build the toolchain, but `clang++-19`
     with libc++ (installed 2026-10-05) and the tablegen outputs built from
     the bazel-cached llvm-project give a `-fsyntax-only -std=c++20` check
@@ -488,6 +530,10 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     subpatterns (W-008).
 4.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI; W-066 match usefulness diagnostics.
+5.  W-152 (EV-1 residue), after the owner's Actions decision: publish a current
+    fork toolchain artifact from a Bazel build of record and retire or relabel
+    the stale `fork-toolchain-*` prereleases; docs/guides/getting_started.md
+    then gains its download path (D-EV-5's break condition).
 
 ### Standing user directives
 

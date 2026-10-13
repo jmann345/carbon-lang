@@ -300,7 +300,13 @@ auto HandleParseNode(Context& context, Parse::RequireDeclId node_id) -> bool {
   }
 
   auto [identified_facet_type] = *validated;
-  if (identified_facet_type->required_impls().empty()) {
+  // Fork (SC-1, fork/structural/plan.md D-SC-8(iii)): a `template constraint`'s
+  // structural requirements are actual constraints even when it requires no
+  // interface, so `require impls HasGet` is kept for
+  // `CheckRequireDeclsSatisfied` and for identification of an enclosing named
+  // constraint.
+  if (identified_facet_type->required_impls().empty() &&
+      identified_facet_type->structural_requirements().empty()) {
     // A `require T impls type` adds no actual constraints, so nothing to do.
     // This is not an error though.
     context.inst_block_stack().Pop();

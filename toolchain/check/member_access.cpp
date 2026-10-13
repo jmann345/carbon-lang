@@ -319,14 +319,53 @@ static auto PerformImplLookup(
                                    interface_with_self_specific_id, member_id);
 }
 
-auto LookupMemberNameInTypeScopes(Context& context, SemIR::LocId loc_id,
-                                  SemIR::InstId base_id, SemIR::NameId name_id,
-                                  SemIR::ConstantId name_scope_const_id,
-                                  llvm::ArrayRef<LookupScope> lookup_scopes,
-                                  bool lookup_in_type_of_base, bool required,
-                                  std::optional<AccessInfo> access_info,
-                                  bool diagnose, MemberLookupInfo* out_info)
-    -> SemIR::InstId {
+namespace {
+// Fork (SC-1): a requirement `fn` of a `template constraint`, as named by a
+// member access.
+struct StructuralRequirementRef {
+  // The requirement function.
+  const SemIR::Function* function;
+  // The template constraint declaring it.
+  SemIR::NamedConstraintId named_constraint_id;
+  // The requirement's enclosing specific: the constraint-with-self specific,
+  // whose last argument is `Self`.
+  SemIR::SpecificId with_self_specific_id;
+};
+}  // namespace
+
+// Fork (SC-1): returns the requirement `fn` of a `template constraint` that
+// `member_id` names, or `nullopt` if it names anything else.
+static auto GetStructuralRequirementRef(Context& context,
+                                        SemIR::InstId member_id)
+    -> std::optional<StructuralRequirementRef> {
+  auto callee = SemIR::GetCallee(context.sem_ir(), member_id);
+  auto* callee_fn = std::get_if<SemIR::CalleeFunction>(&callee);
+  if (!callee_fn) {
+    return std::nullopt;
+  }
+  const auto& function = context.functions().Get(callee_fn->function_id);
+  auto with_self_decl =
+      context.name_scopes().TryGetInstAs<SemIR::NamedConstraintWithSelfDecl>(
+          function.parent_scope_id);
+  if (!with_self_decl || !context.named_constraints()
+                              .Get(with_self_decl->named_constraint_id)
+                              .is_template) {
+    return std::nullopt;
+  }
+  return StructuralRequirementRef{
+      .function = &function,
+      .named_constraint_id = with_self_decl->named_constraint_id,
+      .with_self_specific_id = callee_fn->enclosing_specific_id};
+}
+
+// The member-access lookup, without the structural redirect of
+// `LookupMemberNameInTypeScopes`.
+static auto LookupMemberNameInTypeScopesImpl(
+    Context& context, SemIR::LocId loc_id, SemIR::InstId base_id,
+    SemIR::NameId name_id, SemIR::ConstantId name_scope_const_id,
+    llvm::ArrayRef<LookupScope> lookup_scopes, bool lookup_in_type_of_base,
+    bool required, std::optional<AccessInfo> access_info, bool diagnose,
+    MemberLookupInfo* out_info) -> SemIR::InstId {
   LookupResult result = LookupQualifiedName(
       context, loc_id, name_id, lookup_scopes, required, access_info, diagnose);
 
@@ -410,6 +449,62 @@ auto LookupMemberNameInTypeScopes(Context& context, SemIR::LocId loc_id,
   }
 
   return member_id;
+}
+
+auto LookupMemberNameInTypeScopes(Context& context, SemIR::LocId loc_id,
+                                  SemIR::InstId base_id, SemIR::NameId name_id,
+                                  SemIR::ConstantId name_scope_const_id,
+                                  llvm::ArrayRef<LookupScope> lookup_scopes,
+                                  bool lookup_in_type_of_base, bool required,
+                                  std::optional<AccessInfo> access_info,
+                                  bool diagnose, MemberLookupInfo* out_info)
+    -> SemIR::InstId {
+  auto member_id = LookupMemberNameInTypeScopesImpl(
+      context, loc_id, base_id, name_id, name_scope_const_id, lookup_scopes,
+      lookup_in_type_of_base, required, access_info, diagnose, out_info);
+
+  // Fork (SC-1, fork/structural/plan.md D-SC-4): a requirement `fn` of a
+  // `template constraint` found for a CONCRETE self -- `T.Make` once a
+  // template's `T` is the facet value of a class `C`, or `(C as HasMake).Make`
+  // -- names the self type's own member: the type's member set is the
+  // structural witness, as an impl's members are an interface's (the impl
+  // lookup above). The self's conversion to the constraint already ran the
+  // structural check. A symbolic self keeps the requirement: a template's
+  // dependent access is an action replayed with the concrete self, and a
+  // checked binding of a template constraint is rejected (D-SC-8(i)).
+  auto requirement = GetStructuralRequirementRef(context, member_id);
+  if (!requirement || !requirement->with_self_specific_id.has_value()) {
+    return member_id;
+  }
+  auto with_self_args = context.inst_blocks().Get(
+      context.specifics().Get(requirement->with_self_specific_id).args_id);
+  auto self_const_id = context.constant_values().Get(with_self_args.back());
+  if (!self_const_id.is_concrete()) {
+    return member_id;
+  }
+  auto self_type_const_id =
+      GetCanonicalQuerySelfForLookupImplWitness(context, self_const_id);
+  if (self_type_const_id == SemIR::ErrorInst::ConstantId) {
+    return SemIR::ErrorInst::InstId;
+  }
+  llvm::SmallVector<LookupScope> self_lookup_scopes;
+  if (!AppendLookupScopesForConstant(
+          context, loc_id, self_type_const_id, self_type_const_id,
+          /*extended_scope=*/false, &self_lookup_scopes)) {
+    // Only a name scope has members, so such a self never satisfied the
+    // constraint (`FindStructuralMember`); keep the requirement.
+    return member_id;
+  }
+  if (access_info) {
+    access_info = {.constant_id = self_type_const_id,
+                   .highest_allowed_access =
+                       GetHighestAllowedAccess(context, self_type_const_id)};
+  }
+  return LookupMemberNameInTypeScopesImpl(
+      context, loc_id, base_id, requirement->function->name_id,
+      self_type_const_id, self_lookup_scopes,
+      /*lookup_in_type_of_base=*/false, required, access_info, diagnose,
+      out_info);
 }
 
 // Performs a member name lookup into the specified scope, including performing
@@ -826,30 +921,20 @@ auto GetAssociatedValue(Context& context, SemIR::LocId loc_id,
 static auto RedirectStructuralRequirementAccess(
     Context& context, SemIR::LocId loc_id, SemIR::InstId base_id,
     SemIR::InstId member_id, bool diagnose) -> SemIR::InstId {
-  auto callee = SemIR::GetCallee(context.sem_ir(), member_id);
-  auto* callee_fn = std::get_if<SemIR::CalleeFunction>(&callee);
-  if (!callee_fn) {
+  auto requirement = GetStructuralRequirementRef(context, member_id);
+  if (!requirement) {
     return SemIR::InstId::None;
   }
-  const auto& function = context.functions().Get(callee_fn->function_id);
-  auto with_self_decl =
-      context.name_scopes().TryGetInstAs<SemIR::NamedConstraintWithSelfDecl>(
-          function.parent_scope_id);
-  if (!with_self_decl) {
-    return SemIR::InstId::None;
-  }
+  const auto& function = *requirement->function;
   const auto& constraint =
-      context.named_constraints().Get(with_self_decl->named_constraint_id);
-  if (!constraint.is_template) {
-    return SemIR::InstId::None;
-  }
+      context.named_constraints().Get(requirement->named_constraint_id);
 
   // The requirement's enclosing specific is the constraint-with-self specific
   // (the constraint's arguments followed by `Self`); the facet type to convert
   // to is the constraint-without-self specific, so drop `Self`.
   auto without_self_specific_id = SemIR::SpecificId::None;
   if (constraint.generic_id.has_value()) {
-    if (!callee_fn->enclosing_specific_id.has_value()) {
+    if (!requirement->with_self_specific_id.has_value()) {
       if (diagnose) {
         context.TODO(loc_id,
                      "compound member access through a generic `template "
@@ -858,12 +943,12 @@ static auto RedirectStructuralRequirementAccess(
       return SemIR::ErrorInst::InstId;
     }
     auto with_self_args = context.inst_blocks().Get(
-        context.specifics().Get(callee_fn->enclosing_specific_id).args_id);
+        context.specifics().Get(requirement->with_self_specific_id).args_id);
     without_self_specific_id = MakeSpecific(
         context, loc_id, constraint.generic_id, with_self_args.drop_back());
   }
   auto facet_type_id = GetNamedConstraintType(
-      context, with_self_decl->named_constraint_id, without_self_specific_id);
+      context, requirement->named_constraint_id, without_self_specific_id);
 
   // The base type must satisfy the constraint: convert it, as a type, to the
   // constraint's facet type. When `diagnose`, the conversion diagnoses an

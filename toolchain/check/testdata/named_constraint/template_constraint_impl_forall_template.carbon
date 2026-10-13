@@ -12,7 +12,9 @@
 
 // p002200's migration-ladder step: a blanket impl over a `template constraint`
 // (fork decision F-010 / SC-1, fork/structural/plan.md D-SC-19, R-11: no
-// golden in tree used `impl forall [template` before this one).
+// golden in tree used `impl forall [template` before this one). The interface
+// member is called qualified, `c.(NewF.DoF)()`, as p002200's ladder spells it:
+// the impl is not `extend`, so `DoF` is not a member name of the class.
 
 // --- ladder.carbon
 library "[[@TEST_NAME]]";
@@ -33,7 +35,7 @@ impl forall [template T: HasGet] T as NewF {
   fn DoF(self) -> i32 { return self.Get(); }
 }
 
-fn Test(c: C) -> i32 { return c.DoF(); }
+fn Test(c: C) -> i32 { return c.(NewF.DoF)(); }
 
 // --- fail_ladder_unsatisfied.carbon
 library "[[@TEST_NAME]]";
@@ -53,5 +55,5 @@ impl forall [template T: HasGet] T as NewF {
 }
 
 fn Test(d: D) -> i32 {
-  return d.DoF();
+  return d.(NewF.DoF)();
 }

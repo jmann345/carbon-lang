@@ -265,7 +265,12 @@ auto GetOrAddInstWithSpecificConstantValue(Context& context,
                                            SemIR::InstId inst_id)
     -> SemIR::InstId {
   auto const_id = context.constant_values().GetAttached(inst_id);
-  if (!const_id.is_symbolic()) {
+  // Fork (SC-1, fork/structural/plan.md D-SC-4): a constant that depends on no
+  // generic parameter -- concrete, or symbolic only in `.Self`, such as a
+  // `template constraint` requirement named through its facet type -- has the
+  // same value in every specific, as `AttachDependentInstToCurrentGeneric`
+  // already assumes; there is nothing to add to the eval block.
+  if (!context.constant_values().DependsOnGenericParameter(const_id)) {
     return inst_id;
   }
 

@@ -315,6 +315,42 @@ static auto GetSelfFacetForInterfaceFromLookupSelfType(
   return context.constant_values().Get(self_specific_args.back());
 }
 
+// Returns whether a lookup has a self type, as in `x.F` or `T.F`, rather than
+// being a lookup directly into a facet type, as in `I.F`, or into a
+// non-lexical scope (the cases `GetSelfFacetForInterfaceFromLookupSelfType`
+// answers with the abstract `Self`).
+static auto HasLookupSelfType(Context& context,
+                              SemIR::ConstantId self_type_const_id) -> bool {
+  return self_type_const_id.has_value() &&
+         !context.constant_values().InstIs<SemIR::FacetType>(
+             self_type_const_id);
+}
+
+// Fork (SC-1, fork/structural/plan.md D-SC-4): the self facet for a lookup
+// with no self type into a `template constraint` (`HasGet.Get`) is `.Self` of
+// the constraint's facet type. A requirement `fn` is the one member of a
+// with-self scope whose value depends on `Self` (an interface's members are
+// `Self`-free associated entities), and the constraint's own `Self` binding is
+// a parameter of the constraint's generic: it must not reach the eval block of
+// a generic that names the requirement (eval.cpp, "does not belong to
+// generic"), and its template phase (D-SC-10) must not make the name
+// template-dependent. `.Self` depends on no generic parameter
+// (`DependsOnGenericParameter`, sem_ir/constant.h).
+static auto GetPeriodSelfForTemplateConstraintLookup(
+    Context& context, SemIR::LocId loc_id,
+    SemIR::NamedConstraintId named_constraint_id, SemIR::SpecificId specific_id)
+    -> SemIR::ConstantId {
+  auto entity_name_id = context.entity_names().AddCanonical(
+      {.name_id = SemIR::NameId::PeriodSelf,
+       .parent_scope_id = SemIR::NameScopeId::None});
+  return EvalOrAddInst<SemIR::SymbolicBinding>(
+      context, loc_id,
+      {.type_id =
+           GetNamedConstraintType(context, named_constraint_id, specific_id),
+       .entity_name_id = entity_name_id,
+       .value_id = SemIR::InstId::None});
+}
+
 auto AppendLookupScopesForConstant(Context& context, SemIR::LocId loc_id,
                                    SemIR::ConstantId lookup_const_id,
                                    SemIR::ConstantId self_type_const_id,
@@ -407,8 +443,14 @@ auto AppendLookupScopesForConstant(Context& context, SemIR::LocId loc_id,
 
       // We need to build the inner constraint-with-self specific. To do that
       // we need to determine the self facet value to use.
-      auto self_facet = GetSelfFacetForInterfaceFromLookupSelfType(
-          context, constraint.generic_with_self_id, self_type_const_id);
+      auto self_facet = constraint.is_template &&
+                                !HasLookupSelfType(context, self_type_const_id)
+                            ? GetPeriodSelfForTemplateConstraintLookup(
+                                  context, loc_id, extend.named_constraint_id,
+                                  extend.specific_id)
+                            : GetSelfFacetForInterfaceFromLookupSelfType(
+                                  context, constraint.generic_with_self_id,
+                                  self_type_const_id);
       auto constraint_with_self_specific_id = MakeSpecificWithInnerSelf(
           context, loc_id, constraint.generic_id,
           constraint.generic_with_self_id, extend.specific_id, self_facet);

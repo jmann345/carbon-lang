@@ -22,7 +22,7 @@
 // is `const Self&`, so it is value `self` (method.carbon's `const_this` thunk
 // is called with a value) -- D-SC-11's spelling rule, refined.
 //
-// Hand trace (R9, no fill has run): `satisfy` and `const_method_value_self`
+// Hand trace (R9, pre-fill): `satisfy` and `const_method_value_self`
 // are predicted positive; `fail_value_self` (value `self` against a non-`const`
 // method), `fail_const_method` (`ref self` against a `const` method -- the
 // shape §4.C named `const_method` and D-SC-5's break condition flagged) and

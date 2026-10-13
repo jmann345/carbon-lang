@@ -285,17 +285,36 @@ static auto ImportSingleCppOverloadCandidate(
 // bound to the self: the thunk criterion (`CheckFunctionTypeMatches` with
 // `check_syntax` false), so parameter names need not agree and no thunk is
 // built. The requirement's specific is built exactly as for an interface
-// member, with no enclosing specific. The member is read in its own enclosing
-// specific (`member_specific_id`, from `GetCallee`): a member of a generic
-// class specific such as `Box(i32).Get` declares `self: Box(T)`, and only the
-// substituted `Box(i32)` can equal the requirement's `Self := Box(i32)`
-// (commit-2 review, MAJOR finding).
+// member, with no enclosing specific. The member is read in its OWN specific
+// (commit-2 review, MAJOR finding): a member of a generic class specific such
+// as `Box(i32).Get` declares `self: Box(T)`, and only the substituted
+// `Box(i32)` can equal the requirement's `Self := Box(i32)`. That specific is
+// of the member function's generic (`Box.Get` is generic over `T`), formed from
+// the arguments of its enclosing specific (`GetCallee`'s `Box(i32)`) as a call
+// forms it (call.cpp, `DeduceGenericCallArguments`); a member with compile-time
+// parameters of its own never matches, since a requirement has none (D-SC-2,
+// review fold A12).
 static auto RequirementMatches(
     Context& context, SemIR::LocId loc_id,
     const SemIR::IdentifiedFacetType::StructuralRequirement& requirement,
     const SemIR::NamedConstraint& constraint,
     const SemIR::Function& requirement_fn, const SemIR::Function& member_fn,
-    SemIR::SpecificId member_specific_id) -> bool {
+    SemIR::SpecificId member_enclosing_specific_id) -> bool {
+  auto member_specific_id = SemIR::SpecificId::None;
+  if (member_fn.generic_id.has_value()) {
+    auto enclosing_args_id =
+        context.specifics().GetArgsOrEmpty(member_enclosing_specific_id);
+    auto num_bindings =
+        context.inst_blocks()
+            .Get(context.generics().Get(member_fn.generic_id).bindings_id)
+            .size();
+    if (context.inst_blocks().Get(enclosing_args_id).size() != num_bindings) {
+      return false;
+    }
+    member_specific_id =
+        MakeSpecific(context, loc_id, member_fn.generic_id, enclosing_args_id);
+  }
+
   auto with_self_specific_id = MakeSpecificWithInnerSelf(
       context, loc_id, constraint.generic_id, constraint.generic_with_self_id,
       requirement.constraint.specific_id, requirement.self_facet_value);

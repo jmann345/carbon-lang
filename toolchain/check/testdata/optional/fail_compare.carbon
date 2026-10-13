@@ -26,6 +26,10 @@ class NoEq {
 }
 
 fn F(a: Core.Optional(NoEq), b: Core.Optional(NoEq)) -> bool {
+  // CHECK:STDERR: fail_not_eq.carbon:[[@LINE+4]]:10: error: cannot access member of interface `Core.EqWith(Core.Optional(NoEq as Core.OptionalStorage))` in type `Core.Optional(NoEq as Core.OptionalStorage)` that does not implement that interface [MissingImplInMemberAccess]
+  // CHECK:STDERR:   return a == b;
+  // CHECK:STDERR:          ^~~~~~
+  // CHECK:STDERR:
   return a == b;
 }
 
@@ -34,6 +38,10 @@ fn F(a: Core.Optional(NoEq), b: Core.Optional(NoEq)) -> bool {
 library "[[@TEST_NAME]]";
 
 fn F(a: Core.Optional(i32*), b: Core.Optional(i32*)) -> bool {
+  // CHECK:STDERR: fail_pointer.carbon:[[@LINE+4]]:10: error: cannot access member of interface `Core.EqWith(Core.Optional(i32* as Core.OptionalStorage))` in type `Core.Optional(i32* as Core.OptionalStorage)` that does not implement that interface [MissingImplInMemberAccess]
+  // CHECK:STDERR:   return a == b;
+  // CHECK:STDERR:          ^~~~~~
+  // CHECK:STDERR:
   return a == b;
 }
 
@@ -42,6 +50,10 @@ fn F(a: Core.Optional(i32*), b: Core.Optional(i32*)) -> bool {
 library "[[@TEST_NAME]]";
 
 fn F(a: Core.Optional(i32), b: i32) -> bool {
+  // CHECK:STDERR: fail_value_operand.carbon:[[@LINE+4]]:10: error: cannot access member of interface `Core.EqWith(i32)` in type `Core.Optional(i32 as Core.OptionalStorage)` that does not implement that interface [MissingImplInMemberAccess]
+  // CHECK:STDERR:   return a == b;
+  // CHECK:STDERR:          ^~~~~~
+  // CHECK:STDERR:
   return a == b;
 }
 
@@ -50,6 +62,10 @@ fn F(a: Core.Optional(i32), b: i32) -> bool {
 library "[[@TEST_NAME]]";
 
 fn F(a: Core.Optional(i32), b: Core.Optional(i64)) -> bool {
+  // CHECK:STDERR: fail_different_payloads.carbon:[[@LINE+4]]:10: error: cannot access member of interface `Core.EqWith(Core.Optional(i64 as Core.OptionalStorage))` in type `Core.Optional(i32 as Core.OptionalStorage)` that does not implement that interface [MissingImplInMemberAccess]
+  // CHECK:STDERR:   return a == b;
+  // CHECK:STDERR:          ^~~~~~
+  // CHECK:STDERR:
   return a == b;
 }
 
@@ -57,6 +73,20 @@ fn F(a: Core.Optional(i32), b: Core.Optional(i64)) -> bool {
 
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_generic_without_copy.carbon:[[@LINE+14]]:21: error: cannot convert type `T` that implements `Core.Eq` into type implementing `Core.OptionalStorage` [ConversionFailureFacetToFacet]
+// CHECK:STDERR: fn F[T: Core.Eq](a: Core.Optional(T), b: Core.Optional(T)) -> bool {
+// CHECK:STDERR:                     ^~~~~~~~~~~~~~~~
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:30:16: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+// CHECK:STDERR: class Optional(T: OptionalStorage) {
+// CHECK:STDERR:                ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
+// CHECK:STDERR: fail_generic_without_copy.carbon:[[@LINE+7]]:42: error: cannot convert type `T` that implements `Core.Eq` into type implementing `Core.OptionalStorage` [ConversionFailureFacetToFacet]
+// CHECK:STDERR: fn F[T: Core.Eq](a: Core.Optional(T), b: Core.Optional(T)) -> bool {
+// CHECK:STDERR:                                          ^~~~~~~~~~~~~~~~
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:30:16: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+// CHECK:STDERR: class Optional(T: OptionalStorage) {
+// CHECK:STDERR:                ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn F[T: Core.Eq](a: Core.Optional(T), b: Core.Optional(T)) -> bool {
   return a == b;
 }
@@ -77,6 +107,13 @@ impl Q as Core.EqWith(Q) {
   fn NotEqual(self, other: Q) -> bool { return self.v != other.v; }
 }
 
+// CHECK:STDERR: fail_specialize.carbon:[[@LINE+7]]:1: error: `impl` will never be used [ImplFinalOverlapsNonFinal]
+// CHECK:STDERR: impl Core.Optional(Q) as Core.EqWith(Core.Optional(Q)) {
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:215:1: note: `final impl` declared here would always be used instead [ImplFinalOverlapsNonFinalNote]
+// CHECK:STDERR: final impl forall [T: Destroy & OptionalStorage & Eq]
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 impl Core.Optional(Q) as Core.EqWith(Core.Optional(Q)) {
   fn Equal(self, unused other: Core.Optional(Q)) -> bool {
     return self.HasValue();

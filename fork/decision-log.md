@@ -4231,7 +4231,15 @@ D-SC-4); D-SC-5(b) clarified (a found member that is itself a requirement `fn`
 does not satisfy). Residue of round 2, id pending (SC-1 holds no reservation
 above W-151): lookup ambiguity between a template-constraint requirement and the
 same function found through an interface (p002200:385-399), pinned by
-`fail_todo_ambiguous_with_interface`.
+`fail_todo_ambiguous_with_interface`. Extended 2026-10-13 by fill round 3
+(0efe76e7d fixes, bc8b37290 goldens, 5171e5eda records), which folds round 2's
+two implementation reviews (15 findings), adds misses (k) and (l) and four
+decisions (a requirement named as an impl member is
+`ImplFunctionWithNonFunction`; a thunk is never a requirement; D-SC-8(iii)
+amended again, the class-end wait keyed on the `require`'s own self and limited
+to its structural part; D-SC-9 amended, the note
+`StructuralMemberIsRequirement`); the residue above is still without an id. All
+of it is in the next entry.
 
 ### SC-1 fill rounds (2026-10-13): four toolchain defects fixed on the container-built arbiter
 
@@ -4253,17 +4261,23 @@ round 2, folding round 1's two implementation reviews: 6f2f40d3c (fixes and test
 sources), 502e7861a (11 goldens refilled by the toolchain stamped
 0.0.0-0.dev+6f2f40d3c from a clean tree) and cb85e6b8b (records: D-SC-20, the
 dated plan amendments, the ledger and Branches re-cites, the FILL appendix
-above). This entry rides the records commit after them. Each fix is an R29(a)
-implementation decision recorded for after-the-fact veto, with its design
-citation and break condition; none reopens F-010 or the intent of a D-SC
-decision. Every count below is a measurement on the container, not of record
-(R9): fork/conformance/out/scoreboard.json reads 128 / 0 / 22 over 150 until a
-run of record replaces it.
+above), then 830447980, the records commit that wrote this entry. Fill round 3,
+folding round 2's two implementation reviews: 0efe76e7d (fixes, test sources,
+the design page and records), bc8b37290 (4 goldens refilled, CHECK lines only)
+and 5171e5eda (records: the re-measure on a clean-stamped toolchain). The
+records commit after 5171e5eda appends round 2's review record and round 3's
+decisions here and folds in the separate entry "SC-1 fill round 3 (2026-10-13)"
+that 0efe76e7d had added after this one, so that one entry holds every fill
+round. Each fix is an R29(a) implementation decision recorded for after-the-fact
+veto, with its design citation and break condition; none reopens F-010 or the
+intent of a D-SC decision. Every count below is a measurement on the container,
+not of record (R9): fork/conformance/out/scoreboard.json reads 128 / 0 / 22 over
+150 until a run of record replaces it.
 
 THE FOUR DEFECTS (1a7cce0b2), each an implementation decision:
 
--   **Member specific** (structural_conformance.cpp:274 `RequirementMatches`).
-    Symptom: satisfy `generic_self` and unsatisfied
+-   **Member specific** (structural_conformance.cpp:280 `RequirementMatches`;
+    re-cited at round 3). Symptom: satisfy `generic_self` and unsatisfied
     `fail_generic_self_wrong_return` CHECK-failed at sem_ir/generic.cpp:84,
     "Given a specific for the wrong generic" (`GetConstantInSpecific` under
     `CheckRedeclParamLists` under `CheckFunctionTypeMatches`). Root cause: the
@@ -4275,7 +4289,7 @@ THE FOUR DEFECTS (1a7cce0b2), each an implementation decision:
     read in its own specific, formed from the enclosing arguments as a call
     forms it (call.cpp:109-118, `DeduceGenericCallArguments` with the enclosing
     specific; since round 2's M3, `CopySpecificToGeneric` after a binding-count
-    guard, structural_conformance.cpp:280-295), and a member with compile-time
+    guard, structural_conformance.cpp:286-301), and a member with compile-time
     parameters of its own never matches. Design: D-SC-5(d), both sides read in
     their own specifics; D-SC-2 with review fold A12, a requirement has no
     parameters of its own. Break condition: W-136 (parameterized requirement
@@ -4339,42 +4353,132 @@ THE FOUR DEFECTS (1a7cce0b2), each an implementation decision:
     Round 2 extended the decision (review 1 MAJOR-3): the kept `require` made
     `class C { fn Get…; impl as I {…} }` fail with "incomplete type `C`", so a
     structural `require` of an impl defined inside the class that is its self is
-    checked when the class completes (impl.cpp:853
-    `IsStructuralRequireDeferredToClassEnd` and :1017
-    `CheckDeferredRequireDeclsAtClassEnd`, handle_class.cpp:386; D-SC-8(iii)
-    amended).
+    checked when the class completes (D-SC-8(iii) amended; round 2's
+    `IsStructuralRequireDeferredToClassEnd` is replaced at round 3 by
+    impl.cpp:870-887 `GetRequireSelfClassBeingDefined`, and
+    `CheckDeferredRequireDeclsAtClassEnd` is now impl.cpp:1092-1114, called from
+    handle_class.cpp:386). Round 3 extended it again (below).
+
+ROUND 3's DECISIONS (0efe76e7d, folding round 2's two implementation reviews;
+the finding each answers in brackets), each an implementation decision. Every
+one was reproduced first on the toolchain stamped 0.0.0-0.dev+6f2f40d3c, with
+the reviews' probes.
+
+-   **A requirement is not an impl member** (impl.cpp:52-86
+    `CheckAssociatedFunctionImplementation`; BLOCKER-1). Symptom: `impl C as I {
+    alias F = HasGet.Get; }` passed `--phase=check` and aborted lowering at
+    sem_ir/mangler.cpp:185 ("Attempting to mangle unsupported SemIR"); an older
+    SC-1 build aborts identically on the review's probe, so the abort predates
+    round 2, but it sits on round 2's "a requirement is never called" surface.
+    Root cause: the alias's function type is the requirement's, so the impl
+    built a thunk to the requirement, and a thunk copies its callee's parent
+    scope (thunk.cpp:235), here the template constraint's with-self scope, which
+    the mangler cannot name. Decision: a requirement `fn` named as an impl
+    member takes upstream's non-function branch (impl.cpp:66; trunk 0bdce60a5
+    impl.cpp:56-60, pinned upstream by
+    impl/fail_impl_bad_assoc_fn.carbon:28-37): `ImplFunctionWithNonFunction`
+    with `AssociatedFunctionHere` and the requirement's
+    `StructuralRequirementHere`, before any thunk, as an alias of another
+    interface's member already is; `alias F = (C as HasGet).Get` names `C`'s own
+    member and lowers to a direct call. Design: D-SC-4 (the structural witness
+    is the self type's own member set, so a requirement is never itself a
+    callee), D-SC-5(c) and §1.E amended. Break condition: upstream accepts an
+    impl member that aliases another interface's member, resolving it for the
+    impl's self, or W-138's structural witness table lands; then a requirement
+    alias resolves to the self type's own member through D-SC-4's redirect or
+    the table instead of being rejected. Pinned by requirement-call
+    `fail_impl_member_alias` (a method, an associated function and an `extend
+    impl` in a class) and `fail_ladder_alias`, and by lower `impl_member_alias`.
+-   **A thunk is not a requirement** (structural_conformance.cpp:637-657
+    `GetStructuralRequirementConstraint`, the special-function test at :641-647;
+    MAJOR-1). Symptom: the thunk of such an alias shares the requirement's
+    parent scope, so round 2's two requirement tests (the
+    `StructuralRequirementCalled` callee check and the found-member test) read
+    it as a requirement (the review's p24). Decision: a function of any special
+    kind is never a requirement. Declined with evidence: the review's second
+    guard, "no definition", because a requirement written with a body is
+    D-SC-2's diagnosed TODO (handle_function.cpp:1212-1225) and is still
+    collected in `structural_members_id`, so excluding it would treat one
+    collected requirement two ways. Design: D-SC-2 and D-SC-15 (a requirement is
+    a plain `fn` the constraint body declares). Break condition: a requirement
+    can itself be a special function (D-SC-2 admits none), or thunk.cpp stops
+    copying its callee's parent scope; then the test reads membership in
+    `structural_members_id` instead. Pinned by `fail_impl_member_alias`, whose
+    structural use of the rejected member reports a signature mismatch and no
+    requirement error.
+-   **The class-end wait keyed on the `require`'s own self, structural part
+    only** (impl.cpp:870-887 `GetRequireSelfClassBeingDefined`, :894-920
+    `LookupRequireInterfaces`, :926-981 `CheckInterfaceRequire`, :1092-1114
+    `CheckDeferredRequireDeclsAtClassEnd`; context.h:598-610 and :947-948
+    `deferred_structural_requires()`; handle_class.cpp:386; MINOR-1, MINOR-2 /
+    F1, F8). Symptoms: round 2 keyed the wait on the impl's lexical placement,
+    so an impl in a nested class whose self is the enclosing class failed as
+    incomplete (the review's p11); it deferred a mixed `require impls HasGet &
+    J` whole, so `J`'s impl could follow the impl, an order that `require impls
+    J` rejects (p46); and it iterated a view of the live class-body block.
+    Decision: a `require` naming a template constraint waits when its own self
+    is a class whose definition has started and not ended, wherever the impl is;
+    only its structural part waits, the interfaces the same facet type names
+    being looked up at the impl; the waiting `require`s go on a per-class list
+    on `Context`, taken off the list before any check runs, and that class's
+    `ClassDefinition` handler drains it. Not upstream's
+    `DeferredDefinitionWorklist`: it defers definitions to the outermost class's
+    end, and this check needs only its own class complete. Design: D-SC-8(iii)
+    amended again; D-SC-5(a) (the members of a complete type). Break condition:
+    upstream checks an interface's `require`s once the self is complete (at the
+    class end or at first use), or lets a class be looked into for satisfaction
+    within its own definition; then the list is deleted and the structural part
+    is checked with the rest. Known limit, W-139's and under W-139's break
+    condition: an in-class impl of a GENERIC class (self `Box(T)` or
+    `Outer(T).Inner`) reaches the class end with a checked-symbolic self and is
+    rejected by D-SC-6, while a `template` class parameter is deferred
+    (D-SC-19); pinned by `fail_todo_require_in_interface_in_generic_class_impl`.
+    Pinned by require `require_self_class_being_defined`,
+    `fail_require_self_class_being_defined_lacking` and
+    `fail_require_mixed_in_class_impl_order`.
+-   **A found requirement gets its own note**
+    (structural_conformance.cpp:367-377 in `NoteMemberFailure`,
+    toolchain/diagnostics/kind.def:471; F7). Symptom: since round 2 a type whose
+    lookup finds the requirement itself (`alias Get = HasGet.Get`, or a facet
+    type passed as the self) was told it "has no member named `Get`", which is
+    false: the name is found. Decision: the note `StructuralMemberIsRequirement`
+    ("name `{1}` in type {0} refers to a requirement of template constraint
+    `{2}`, not to a member of the type"). Design: D-SC-9 (10 kinds, 11 with
+    R-6's) and D-SC-5(c) as amended. Break condition: D-SC-9's, an existing kind
+    whose text fits is found, and the count drops. Pinned by unsatisfied
+    `fail_alias_requirement` and `fail_facet_type_self`.
 
 FILL-CAUGHT MISSES (R28(d): a reviewed prediction the fill overturned; bcaeadb98
-lists (a) to (i), 502e7861a adds (j)). (a) §4.A parse row: the tree prints
-`NamedConstraintIntroducer` before `TemplateModifier`, the
-class/introducer.carbon:30-31 placement the row itself cites; the prediction's
-order was wrong, the row is amended. (b) §4.B checked-binding row,
-`fail_implicit_binding_compound_use`, "EXACTLY ONE diagnostic": round 1's fill
-added `MissingGenericFunctionDefinition` at `CallGet`'s `x.Get()`, its note at
-the requirement. D-SC-6's cascade guard covered the conversion of `x`, but
-`CallGet`'s template body was then instantiated for `Bad`'s symbolic specific,
-where `x.Get` on the checked-symbolic `T` resolved to the bodiless requirement
-(the facet redirect applies to a concrete self only). Left OPEN at round 1,
-recorded as an error-recovery cascade and not silenced (bcaeadb98); FIXED at
-round 2 (review 1 MAJOR-2, review 2 F1): D-SC-8(i) gives the diagnosed checked
-binding an error type, as an invalid binding type does
-(handle_binding_pattern.cpp:329-338), D-SC-6's positive branch lost its only
-input and was deleted (R17), and 502e7861a shows exactly one diagnostic, the row
-as written. (c) §4.B unsatisfied row, `fail_incomplete` and
-`fail_incomplete_class_param`: the error line is R-6's Context diagnostic
-`StructuralRequirementIncompleteType` itself ("incomplete type `Inc` cannot
-satisfy template constraint `HasGet`"), followed by `ClassForwardDeclaredHere`
-and `InitializingGenericParam`, with no `DeductionGenericHere` since both pass
-the type explicitly; within R-6's allowance, the row is amended. (d) §4.B ladder
-row: `c.DoF()` cannot name a member of a non-`extend` impl
-(`MemberNameNotFoundInInstScope`); the splits take p002200's `x.(NewF.DoF)()`
-(proposals/p002200-template-generics.md:624, R27) since 1a7cce0b2 and its
-changed-constraint `G` since round 2 (review 2 M5), after which both predictions
-hold and D-SC-19's break condition did not fire. (e) every "No STDERR" positive
-row carried upstream's `UnusedBinding` warnings at round 1; round 2 spells
-`unused` on those bindings (review 2 M2), so the rows hold as written. (f)
-satisfy `method`: the `facet_value`/`converted` pair prints twice (deduction,
-then the argument), upstream's shape
+lists (a) to (i), 502e7861a adds (j), bc8b37290 adds (k) and (l)). (a) §4.A
+parse row: the tree prints `NamedConstraintIntroducer` before
+`TemplateModifier`, the class/introducer.carbon:30-31 placement the row itself
+cites; the prediction's order was wrong, the row is amended. (b) §4.B
+checked-binding row, `fail_implicit_binding_compound_use`, "EXACTLY ONE
+diagnostic": round 1's fill added `MissingGenericFunctionDefinition` at
+`CallGet`'s `x.Get()`, its note at the requirement. D-SC-6's cascade guard
+covered the conversion of `x`, but `CallGet`'s template body was then
+instantiated for `Bad`'s symbolic specific, where `x.Get` on the
+checked-symbolic `T` resolved to the bodiless requirement (the facet redirect
+applies to a concrete self only). Left OPEN at round 1, recorded as an
+error-recovery cascade and not silenced (bcaeadb98); FIXED at round 2 (review 1
+MAJOR-2, review 2 F1): D-SC-8(i) gives the diagnosed checked binding an error
+type, as an invalid binding type does (handle_binding_pattern.cpp:329-338),
+D-SC-6's positive branch lost its only input and was deleted (R17), and
+502e7861a shows exactly one diagnostic, the row as written. (c) §4.B unsatisfied
+row, `fail_incomplete` and `fail_incomplete_class_param`: the error line is
+R-6's Context diagnostic `StructuralRequirementIncompleteType` itself
+("incomplete type `Inc` cannot satisfy template constraint `HasGet`"), followed
+by `ClassForwardDeclaredHere` and `InitializingGenericParam`, with no
+`DeductionGenericHere` since both pass the type explicitly; within R-6's
+allowance, the row is amended. (d) §4.B ladder row: `c.DoF()` cannot name a
+member of a non-`extend` impl (`MemberNameNotFoundInInstScope`); the splits take
+p002200's `x.(NewF.DoF)()` (proposals/p002200-template-generics.md:624, R27)
+since 1a7cce0b2 and its changed-constraint `G` since round 2 (review 2 M5),
+after which both predictions hold and D-SC-19's break condition did not fire.
+(e) every "No STDERR" positive row carried upstream's `UnusedBinding` warnings
+at round 1; round 2 spells `unused` on those bindings (review 2 M2), so the rows
+hold as written. (f) satisfy `method`: the `facet_value`/`converted` pair prints
+twice (deduction, then the argument), upstream's shape
 (interop/cpp/function/export/generic.carbon:446-449), where the row predicted
 one; the row is amended. (g) the compound, dependent and import positives had no
 dump range, so their SemIR claims were verified by round-1 probes, not goldens;
@@ -4389,11 +4493,18 @@ round 2's first fill: two new negative splits named
 `fail_require_in_interface_concrete` and
 `fail_require_in_interface_in_class_impl` collided with the `[[@TEST_NAME]]`
 libraries of the positive splits of those names (`DuplicateLibraryApi`) and were
-renamed `..._lacking` before 6f2f40d3c. No miss hides a defect: (a), (c) and (f)
-were prediction errors, (b) and (e) a cascade and a warning class now gone, (d)
-and (j) test-source spellings, (g) a coverage gap now dumped where the claim
-needed a dump, and (h) and (i) design sentences amended in place beside their
-fixes.
+renamed `..._lacking` before 6f2f40d3c. (k) round 3's first fill: the positive
+split `require_self_class_being_defined` spelled its other-self `require` as
+`require U impls HasGet`, which upstream rejects
+(`RequireImplsMissingSelfEmptyFacetType`: a `require` must name `Self`), and was
+respelled `require U impls HasGet & J(Self)`, the review's probe shape, before
+0efe76e7d. (l) the round-3 §4.B require row predicted
+`InterfaceRequireImplsNotImplemented` naming `HasGet & J` at `impl as I1`; the
+fill prints the facet type as `J & HasGet`, and the row is amended. No miss
+hides a defect: (a), (c), (f) and (l) were prediction errors, (b) and (e) a
+cascade and a warning class now gone, (d), (j) and (k) test-source spellings,
+(g) a coverage gap now dumped where the claim needed a dump, and (h) and (i)
+design sentences amended in place beside their fixes.
 
 REVIEWS. Fill round 1 received two implementation reviews, both
 APPROVE-WITH-FIXES with no BLOCKER: review 1, 3 MAJOR and 5 MINOR (MAJOR-1
@@ -4412,9 +4523,46 @@ was narrowed with evidence (the requirement is kept and its two harms closed:
 such a type does not satisfy, and a requirement is never called, pinned by
 `fail_extend_impl_extend_require_self`), and MINOR-3 was taken as its reviewer's
 second option, a residue. Per-finding dispositions and pinning splits are in the
-plan's "Landed notes (SC-1 fill rounds, 2026-10-13)". Round 2's own diff
-(6f2f40d3c, 502e7861a, cb85e6b8b) has no implementation review on record at this
-commit.
+plan's "Landed notes (SC-1 fill rounds, 2026-10-13)".
+
+Round 2's diff (6f2f40d3c, 502e7861a, cb85e6b8b, 830447980) then received two
+implementation reviews, 15 findings in all. Review 1, REJECT: 1 BLOCKER, 1 MAJOR
+and 4 MINOR (BLOCKER-1 a requirement named as an impl member, which passed check
+and aborted lowering; MAJOR-1 that alias's thunk read as a requirement; MINOR-1
+the class-end wait keyed on the impl's placement instead of the `require`'s
+self; MINOR-2 a mixed `require`'s interfaces deferred with its structural part;
+MINOR-3 the generic-class limitation unpinned; MINOR-4 a stale cite). Review 2,
+APPROVE-WITH-FIXES: 2 MAJOR and 7 MINOR (F1 the mixed-`require` relaxation,
+MINOR-2's twin; F2 the design page not updated for round 2; F3 an own-parameter
+split that also differed in arity; F4 the ladder's undisclosed deltas from
+p002200; F5 cites and the residue's ledger id; F6 ledger lines and superseded
+plan text; F7 the misleading "has no member" note; F8 the class-end mechanism's
+rationale and live block view; F9 no §4 rows for round 2's splits). Fill round 3
+folds all 15, each reproduced first on the toolchain stamped
+0.0.0-0.dev+6f2f40d3c: 14 fixed as asked, and MAJOR-1 fixed with its second
+guard declined on the evidence above; F5's ledger id stays pending (RENUMBER
+below). Dispositions: BLOCKER-1, MAJOR-1, MINOR-1, MINOR-2 / F1, F7 and F8 are
+the four decisions above; MINOR-3 is pinned by
+`fail_todo_require_in_interface_in_generic_class_impl` and recorded in W-139;
+MINOR-4 / F5 re-cite satisfy `fail_todo_ambiguous_with_interface`
+(name_lookup.cpp:589, member_access.cpp:430-432) and `fail_todo_runtime_facet`
+(member_access.cpp:853-858 and :987-996, W-033); F2 updates
+docs/design/generics/template_constraints.md (the alias rule, its normative
+sentence narrowed to an alias naming a member of the type, the requirement-call
+error, the class-end timing with its generic-class limitation, the
+associated-function form of qualified access, the two new diagnostics); F3
+respells unsatisfied `fail_own_params` so that its `Get` differs from the
+requirement only by an own parameter, `[unused U: type]`; F4 cites
+p002200:601-637 in the ladder header and lists each delta with its reason; F6
+re-cites W-027, W-138, W-139, W-141, W-142, W-143 and W-151, marks D-SC-6's lead
+superseded and dates D-SC-5(c)'s amendment; F9 adds §4.B rows for the 23 round-2
+splits (as filled) and the round-3 splits (predicted before the fill) and
+comments the two uncommented fail splits. Per-finding detail and pinning splits
+are in the plan's "Landed notes (SC-1 fill rounds, 2026-10-13)". Round 3's own
+diff (0efe76e7d, bc8b37290, 5171e5eda) has no implementation review on record at
+this commit. The records commit after 5171e5eda noticed one stale cite in it and
+leaves it for that review, since a records commit changes no source: the
+impl.cpp:58 comment names D-SC-5(b), and the plan's amendment is in D-SC-5(c).
 
 MEASURED, on the container only. Round 1 (the toolchain built from 1a7cce0b2's
 sources): autoupdate over the 18 goldens rewrote all 18; the gate then ran 1958
@@ -4431,12 +4579,24 @@ autoupdate over the 19 SC-1 goldens to fixpoint in three passes (11 files, then
 the pre-commit build of the same sources; gate on 502e7861a 1959 passed and 0
 failed (one more test, fail_template_constraint_requirement_call.carbon);
 conformance PASS 130, SKIP 21 of 151, 49 of 56 bullets, every failure class 0.
-Re-run for this entry on cb85e6b8b with the same installed toolchain (no
-toolchain source differs from 6f2f40d3c): gate 1959 passed, 0 failed, exit 0;
-conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
-FAIL, 7 SKIP of 56. Against fork/conformance/out/scoreboard.json (128 / 0 / 22
-over 150, run 37402970811) exactly two programs move in every run:
-generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
+Re-run by 830447980 on cb85e6b8b with the same installed toolchain (no toolchain
+source differs from 6f2f40d3c): gate 1959 passed, 0 failed, exit 0; conformance
+PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP
+of 56. Round 3 (the toolchain built from the round-3 sources before the commit,
+stamped 0.0.0-0.dev+830447980.dirty, the uncommitted edits being exactly
+0efe76e7d's): autoupdate over the 19 SC-1 goldens rewrote 4 (requirement-call,
+unsatisfied, require, lower) and reported miss (k); after the respelling a
+second pass rewrote none; gate 1959 passed, 0 failed; conformance PASS 130,
+every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56.
+Re-run by 5171e5eda on the toolchain rebuilt from bc8b37290 with a clean tree
+(stamped 0.0.0-0.dev+bc8b37290): the same gate and conformance totals. Re-run
+for this record on 5171e5eda with that installed toolchain (no toolchain source
+differs from bc8b37290): gate 1959 passed, 0 failed, exit 0, no `!` or `?` mark
+in the log; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets
+49 PASS, 0 FAIL, 7 SKIP of 56, 59.7 s. Against
+fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
+exactly two programs move in every run: generics/structural_conformance.carbon
+SKIP to PASS (`42` then `7`) and the new
 interop/cpp_structural_conformance.carbon PASS (`7` then `0`), plan §5's 130 / 0
 / 21 over 151, EXPECTED and not of record.
 
@@ -4451,7 +4611,9 @@ interop golden, so no CHECK line or `[[@LINE]]` offset moved. Trunk's id
 reservations since (9d3ca60a3: W-151 is SC-1's renumber, W-152..W-159 EV-1's,
 ST-1 from W-160) leave SC-1 no id above W-151, so round 2's residue (the
 requirement-versus-interface ambiguity, p002200:385-399, pinned by
-`fail_todo_ambiguous_with_interface`) takes the next free id at landing.
+`fail_todo_ambiguous_with_interface`) takes the next free id at landing; after
+round 3 it is still pending (review 2 F5 asked for it), because ids are
+allocated by the orchestrator.
 
 RECORDS. The plan's fill-round note is renamed "Landed notes (SC-1 fill rounds,
 2026-10-13)" (it was "Landed notes (fill rounds 1 and 2)") and extended with the
@@ -4460,7 +4622,19 @@ rows that misses (c), (e), (f) and (g) falsified gain dated amendments, so every
 miss that falsified plan text now carries one; ORCHESTRATION's status paragraph
 and Branches row, W-027's notes and the two conformance programs' cites follow
 the rename. Gap row 55 needed no change: it already states the container
-measurement and keeps MISSING to PARTIAL EXPECTED, not DONE (D-SC-17).
+measurement and keeps MISSING to PARTIAL EXPECTED, not DONE (D-SC-17). Round 3's
+records: 0efe76e7d amended the plan (D-SC-5(c), D-SC-6's lead marked superseded,
+D-SC-8(iii), D-SC-9, §1.E; §4.B rows for the round-2 and round-3 splits; the
+round-3 landed notes), re-cited the ledger (W-027, W-138, W-139, W-141, W-142,
+W-143, W-151; W-139 records the generic-class limitation), updated the design
+page (F2) and gap row 55's fill-round count; 5171e5eda recorded the re-measure
+on the clean-stamped toolchain, the Branches row and W-027's notes. The records
+commit after 5171e5eda: round 3's decisions and the round-2 review record in
+this entry (the separate round-3 entry folded in, so this file has one heading
+fewer), misses (k) and (l), the four round-3 §4.B rows marked as filled with the
+require row amended for (l), the plan's round-3 decisions with their break
+conditions, the ORCHESTRATION status paragraph and Branches row, and W-027's
+notes and evidence.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with
@@ -4470,82 +4644,6 @@ hosted conformance tarball is built `-c opt`); macOS, Windows and ASan. Until a
 hosted autoupdate, gate and conformance run on the PR head, the goldens are the
 container's fill, the gate count is the container's, and gap row 55's MISSING to
 PARTIAL stays EXPECTED (R9, R28).
-
-### SC-1 fill round 3 (2026-10-13): round 2's reviews folded; a requirement as an impl member is rejected
-
-Round 2 (6f2f40d3c fixes, 502e7861a goldens, cb85e6b8b and 830447980 records)
-had two implementation reviews. Review 1 was REJECT on one BLOCKER: `impl C as I
-{ alias F = HasGet.Get; }` passed `--phase=check` and aborted lowering at
-sem_ir/mangler.cpp:185, because the thunk built for the alias took the template
-constraint's with-self scope as its parent (thunk.cpp:235 copies the callee's).
-The abort predates round 2 (an older SC-1 build aborts identically, per the
-review's probe) but sits on round 2's "a requirement is never called" surface.
-Its MAJOR was the same thunk read as a requirement by round 2's two new checks;
-its four MINORs were the in-class deferral keyed on the impl's placement instead
-of the require's self, the deferral of a mixed `require impls HasGet & J`'s
-nominal half, the unpinned generic-class limitation, and a stale cite. Review 2
-was APPROVE-WITH-FIXES with two MAJORs (the mixed-require relaxation, and the
-design page not updated for round 2) and seven MINORs (an own-parameter split
-that also differed in arity, the ladder's undisclosed deltas from p002200, cites
-and ledger lines, a misleading "has no member" note, the class-end mechanism's
-rationale and live block view, and no §4 rows for round 2's splits). Fill round
-3 folds all 15, each reproduced first on the 0.0.0-0.dev+6f2f40d3c driver.
-
-DECISIONS (R29(a), veto-able). (1) A requirement `fn` named as an impl member
-implements nothing: `ImplFunctionWithNonFunction` with the requirement's note,
-before any thunk, exactly as upstream treats an alias of another interface's
-member (D-SC-5(c) and §1.E amended). The accepted spelling, `alias F = (C as
-HasGet).Get`, names `C`'s own member and lowers to a direct call. (2) A thunk is
-never a requirement (`GetStructuralRequirementConstraint` returns `None` for
-any special function). The review's "no definition" guard is not taken: a
-requirement written with a body is D-SC-2's diagnosed TODO and stays collected
-in `structural_members_id`. (3) D-SC-8(iii) amended again: a `require` naming a
-template constraint waits when its own self is a class whose definition has
-started and not ended, wherever the impl is; only its structural part waits,
-the interfaces the same facet type names being looked up at the impl, so
-`require impls HasGet & J` orders `J`'s impl as `require impls J` does. The
-waiting requires sit on a per-class list on `Context`, drained by that class's
-`ClassDefinition` handler, rather than on `DeferredDefinitionWorklist`, which
-defers definitions to the outermost class's end. (4) A found member that is the
-requirement itself gets its own note, `StructuralMemberIsRequirement` (D-SC-9:
-10 kinds, 11 with R-6's).
-
-PINNED. Requirement-call `fail_impl_member_alias` and `fail_ladder_alias`;
-lower `impl_member_alias`; require `fail_require_mixed_in_class_impl_order`,
-`require_self_class_being_defined`,
-`fail_require_self_class_being_defined_lacking` and
-`fail_todo_require_in_interface_in_generic_class_impl` (the generic-class
-limitation, now in W-139); unsatisfied `fail_own_params` respelled, and
-`fail_alias_requirement` and `fail_facet_type_self` with the new note. The
-round-2 and round-3 splits have §4.B rows, the round-3 ones written before the
-fill; one fill miss, (k), a positive split's `require` that did not name
-`Self`, was respelled before the commit. The design page
-(docs/design/generics/template_constraints.md) states the round-2 behaviors;
-its alias sentence is narrowed to an alias naming a member of the type.
-
-NOT TAKEN. The ambiguity residue of round 2 (a name found through a template
-constraint and through an interface that resolve to the same function) keeps a
-pending ledger id: SC-1 holds no reservation above W-151, and ids are allocated
-by the orchestrator. Per-finding dispositions are in the plan's "Landed notes
-(SC-1 fill rounds, 2026-10-13)".
-
-MEASURED, on the container only (not of record, R9; hosted: not run, Actions
-disabled): on the toolchain built from the round-3 sources before the commit
-(stamped 0.0.0-0.dev+830447980.dirty, the round-3 source edits being the only
-difference), autoupdate over the 19 SC-1 goldens rewrote 4 (requirement-call,
-unsatisfied, require, lower) and reported miss (k); after the respelling a
-second pass rewrote none; the file_test gate over all toolchain testdata then
-passed 1959, failed 0; conformance into a private outdir PASS 130, COMPILE-FAIL
-0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 of 151,
-bullets 49 PASS, 0 FAIL, 7 SKIP of 56. Re-run by the round-3 records commit on
-the toolchain rebuilt from bc8b37290 with a clean tree (stamped
-0.0.0-0.dev+bc8b37290): gate 1959 passed, 0 failed; conformance PASS 130,
-COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0,
-SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56. Against
-fork/conformance/out/scoreboard.json exactly generics/structural_conformance
-(SKIP to PASS) and the new interop/cpp_structural_conformance (PASS) move, as at
-rounds 1 and 2. Commits: 0efe76e7d (fixes, test sources, docs and records),
-bc8b37290 (the goldens, CHECK lines only) and the round-3 records commit.
 
 ### SL-1: Core.Slice, Core.Buf, heap allocation, fail-stop (2026-10-05)
 

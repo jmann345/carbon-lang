@@ -1103,12 +1103,12 @@ convention).
 | check/testdata/named_constraint/template_constraint_import.carbon (new; multi-file) | `a.carbon`: `library "a"; template constraint HasGet { fn Get(self) -> i32; }`; `b.carbon`: `import library "a"; class C {…} fn CallGet[template T: HasGet](x: T)…; fn Test(c: C) …` | Positive; the imports block shows `%Main.HasGet = import_ref Main//a, HasGet, …` and the requirement as a loaded import-ref (D-SC-15). The import_constraint_decl.carbon shape (:12-60) AMENDED 2026-10-13 (miss (g)): the golden has no dump range, so the imports-block claim is not golden-pinned; the golden pins that `b.carbon` checks with no diagnostics |
 | lower/testdata/template/template_constraint.carbon (new) | `call_method.carbon`: the §5.A conformance body minus `Core.Print` and minus the overload set (`fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }` returning `CallGet(s)`) — the lower pin is for the dependent method call, not for overload resolution | A `define i32 @…CallGet…(%C …)`-style specific calling `@C.Get` and a caller `define`; no `splice`-related fatal (§1.E); the merging.carbon:241-272 `InitAndCallF` precedent (A8) |
 | check/testdata/named_constraint/fail_template_constraint_checked_binding.carbon (added 2026-10-13, fill round 2; recorded POST-FILL at fill round 3, review finding F9) | `fail_implicit_binding_direct_use` (`x.Get()` on `[T: HasGet]`), `fail_implicit_binding_assoc_fn_use` (`Use(x)` with `[T: HasMake & I]`, `Use` calling `T.Make()`), `fail_wrap_checked_binding` (`[T: Wrap]`, `Wrap` a plain constraint that does `require impls HasGet`); `fail_extend_require_in_interface_symbolic` (`x.Get()` on `[T: I]`, `I` doing `extend require impls HasGet`) | As filled at 502e7861a: the first three carry exactly `TemplateConstraintOnNonTemplateBinding` (the error-typed binding, D-SC-6 as amended); the fourth `StructuralRequirementCalled` + `StructuralRequirementHere` |
-| check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon (new at fill round 2; round-2 splits POST-FILL, round-3 splits PRE-FILL, 2026-10-13) | `fail_direct_call` (`HasCount.Count()`, `HasMake.Make()`); `fail_todo_runtime_facet` (`F.Make()`, `F.(HasMake.Make)()` through `let F: HasMake = C`); fill round 3: `fail_impl_member_alias` (`impl C as I { alias F = HasGet.Get; alias Mk = HasMake.Make; }` and `extend impl as I { alias F = HasGet.Get; ... }` in a class `D`, then `c.(I.F)() + d.F()` and `ViaHasF(d)` for a `template constraint HasF { fn F(self) -> i32; }`), `fail_ladder_alias` (`impl forall [template T: HasGet] T as NewF { alias DoF = HasGet.Get; }` with `G(c) + c.(NewF.DoF)()`) | Round 2, as filled: `fail_direct_call` `StructuralRequirementCalled` + `StructuralRequirementHere` twice; `fail_todo_runtime_facet` the same pair for `F.Make()` and `SemanticsTodo` (the fork's runtime-facet TODO, member_access.cpp:987-996) for the compound access. Round 3, predicted before the fill: `fail_impl_member_alias` three `ImplFunctionWithNonFunction` errors, each with `AssociatedFunctionHere` and `StructuralRequirementHere`, nothing at `Use` (the witness entries are errors), and at `UseStructurally` `ConversionFailureTypeToFacet` + `StructuralMemberMismatch` + `StructuralRequirementHere` + `DeductionGenericHere`, lookup of `F` in `D` resolving to the error entry (seen on the review's probe p24 before the fill); `fail_ladder_alias` one such triple and nothing at `Test` |
-| check/testdata/named_constraint/fail_template_constraint_unsatisfied.carbon (round-2 splits POST-FILL; round-3 changes PRE-FILL, 2026-10-13) | `fail_own_params` (respelled at round 3, review finding F3: `fn Get[unused U: type](unused self) -> i32`, differing from the requirement only by its own parameter); `fail_alias_requirement` (`alias Get = HasGet.Get`); `fail_facet_type_self` (`F(HasCount)`) | Round 2, as filled: `ConversionFailureTypeToFacet` + `StructuralMemberMismatch` + `StructuralRequirementHere` + `DeductionGenericHere` for `fail_own_params`; the same with `StructuralMemberMissing` for `fail_alias_requirement`, and with `StructuralMemberMissing` and `InitializingGenericParam` for `fail_facet_type_self`. Round 3, predicted: `fail_own_params` unchanged in kinds; `StructuralMemberIsRequirement` (naming `HasGet` / `HasCount`) in place of `StructuralMemberMissing` in the other two |
+| check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon (new at fill round 2; round-2 splits POST-FILL, round-3 splits PRE-FILL, 2026-10-13) | `fail_direct_call` (`HasCount.Count()`, `HasMake.Make()`); `fail_todo_runtime_facet` (`F.Make()`, `F.(HasMake.Make)()` through `let F: HasMake = C`); fill round 3: `fail_impl_member_alias` (`impl C as I { alias F = HasGet.Get; alias Mk = HasMake.Make; }` and `extend impl as I { alias F = HasGet.Get; ... }` in a class `D`, then `c.(I.F)() + d.F()` and `ViaHasF(d)` for a `template constraint HasF { fn F(self) -> i32; }`), `fail_ladder_alias` (`impl forall [template T: HasGet] T as NewF { alias DoF = HasGet.Get; }` with `G(c) + c.(NewF.DoF)()`) | Round 2, as filled: `fail_direct_call` `StructuralRequirementCalled` + `StructuralRequirementHere` twice; `fail_todo_runtime_facet` the same pair for `F.Make()` and `SemanticsTodo` (the fork's runtime-facet TODO, member_access.cpp:987-996) for the compound access. Round 3, predicted before the fill: `fail_impl_member_alias` three `ImplFunctionWithNonFunction` errors, each with `AssociatedFunctionHere` and `StructuralRequirementHere`, nothing at `Use` (the witness entries are errors), and at `UseStructurally` `ConversionFailureTypeToFacet` + `StructuralMemberMismatch` + `StructuralRequirementHere` + `DeductionGenericHere`, lookup of `F` in `D` resolving to the error entry (seen on the review's probe p24 before the fill); `fail_ladder_alias` one such triple and nothing at `Test` FILLED 2026-10-13 (fill round 3, bc8b37290): both round-3 predictions held as written |
+| check/testdata/named_constraint/fail_template_constraint_unsatisfied.carbon (round-2 splits POST-FILL; round-3 changes PRE-FILL, 2026-10-13) | `fail_own_params` (respelled at round 3, review finding F3: `fn Get[unused U: type](unused self) -> i32`, differing from the requirement only by its own parameter); `fail_alias_requirement` (`alias Get = HasGet.Get`); `fail_facet_type_self` (`F(HasCount)`) | Round 2, as filled: `ConversionFailureTypeToFacet` + `StructuralMemberMismatch` + `StructuralRequirementHere` + `DeductionGenericHere` for `fail_own_params`; the same with `StructuralMemberMissing` for `fail_alias_requirement`, and with `StructuralMemberMissing` and `InitializingGenericParam` for `fail_facet_type_self`. Round 3, predicted: `fail_own_params` unchanged in kinds; `StructuralMemberIsRequirement` (naming `HasGet` / `HasCount`) in place of `StructuralMemberMissing` in the other two FILLED 2026-10-13 (fill round 3, bc8b37290): held as written |
 | check/testdata/named_constraint/template_constraint_compound_access.carbon (round-2 splits POST-FILL, 2026-10-13) | `assoc_fn_compound` (dumped: `ViaT`, `ViaType`, `ViaFacet`); `fail_assoc_fn_compound_unsatisfied` (`D.(HasMake.Make)()`, comment added at round 3, F9); `checked_generic_name` (dumped) | As filled: the two positives have no STDERR; the negative carries `ConversionFailureTypeToFacet` + `StructuralMemberMissing` + `StructuralRequirementHere` at the compound access |
-| check/testdata/named_constraint/template_constraint_require.carbon (round-2 splits POST-FILL; round-3 splits PRE-FILL, 2026-10-13) | Round 2: `fail_require_in_interface_concrete_lacking`, `require_in_constraint`, `fail_require_in_constraint_unsatisfied` (comment added at round 3, F9), `extend_require`, `require_in_interface_in_class_impl`, `fail_require_in_interface_in_class_impl_lacking`, `fail_extend_impl_extend_require_self`. Round 3: `fail_require_mixed_in_class_impl_order` (`require impls HasGet & J` and `require impls J`, each with `impl as J` after the impl); `require_self_class_being_defined` (impls in a nested class whose self is the enclosing class, `Get` after and before the nested class, and `impl D as IU(F)` inside `F` for `IU(U)` doing `require U impls HasGet & J(Self)`, after `F`'s `impl as J(D)`; respelled after the first fill, miss (k)); `fail_require_self_class_being_defined_lacking`; `fail_todo_require_in_interface_in_generic_class_impl` (`Box(T)`, `Outer(T).Inner`, `Box2(template T)`) | Round 2, as filled: `InterfaceRequireImplsNotImplemented` alone for the two `_lacking` splits (the in-class one at the class end); the four positives STDERR-free; `fail_require_in_constraint_unsatisfied` `ConversionFailureTypeToFacet` + `StructuralMemberMissing` + `StructuralRequirementHere` + `DeductionGenericHere`; `fail_extend_impl_extend_require_self` `InterfaceRequireImplsNotImplemented` then `StructuralRequirementCalled` + `StructuralRequirementHere` at `c.Get()`. Round 3, predicted: `InterfaceRequireImplsNotImplemented` at `impl as I1` (`HasGet & J`, which the fill prints as `J & HasGet`) and at `impl as I2` (`J`); no STDERR for `require_self_class_being_defined`; one `InterfaceRequireImplsNotImplemented` at `impl Lacking as I`; and for the generic-class split `InterfaceRequireImplsNotImplemented` for `Box(T)` and for `Inner`, none for `Box2` (D-SC-19) |
+| check/testdata/named_constraint/template_constraint_require.carbon (round-2 splits POST-FILL; round-3 splits PRE-FILL, 2026-10-13) | Round 2: `fail_require_in_interface_concrete_lacking`, `require_in_constraint`, `fail_require_in_constraint_unsatisfied` (comment added at round 3, F9), `extend_require`, `require_in_interface_in_class_impl`, `fail_require_in_interface_in_class_impl_lacking`, `fail_extend_impl_extend_require_self`. Round 3: `fail_require_mixed_in_class_impl_order` (`require impls HasGet & J` and `require impls J`, each with `impl as J` after the impl); `require_self_class_being_defined` (impls in a nested class whose self is the enclosing class, `Get` after and before the nested class, and `impl D as IU(F)` inside `F` for `IU(U)` doing `require U impls HasGet & J(Self)`, after `F`'s `impl as J(D)`; respelled after the first fill, miss (k)); `fail_require_self_class_being_defined_lacking`; `fail_todo_require_in_interface_in_generic_class_impl` (`Box(T)`, `Outer(T).Inner`, `Box2(template T)`) | Round 2, as filled: `InterfaceRequireImplsNotImplemented` alone for the two `_lacking` splits (the in-class one at the class end); the four positives STDERR-free; `fail_require_in_constraint_unsatisfied` `ConversionFailureTypeToFacet` + `StructuralMemberMissing` + `StructuralRequirementHere` + `DeductionGenericHere`; `fail_extend_impl_extend_require_self` `InterfaceRequireImplsNotImplemented` then `StructuralRequirementCalled` + `StructuralRequirementHere` at `c.Get()`. Round 3, predicted: `InterfaceRequireImplsNotImplemented` at `impl as I1` (`HasGet & J`, which the fill prints as `J & HasGet`) and at `impl as I2` (`J`); no STDERR for `require_self_class_being_defined`; one `InterfaceRequireImplsNotImplemented` at `impl Lacking as I`; and for the generic-class split `InterfaceRequireImplsNotImplemented` for `Box(T)` and for `Inner`, none for `Box2` (D-SC-19) AMENDED 2026-10-13 (fill round 3, bc8b37290, miss (l)): held, except that the `impl as I1` error prints the facet type as `J & HasGet`, not as written; `require_self_class_being_defined` is filled as respelled after miss (k) |
 | check/testdata/named_constraint/template_constraint_satisfy.carbon (round-2 splits POST-FILL, 2026-10-13) | `nested_generic`; `as_facet` (dumped); `fail_todo_ambiguous_with_interface` (STDERR only; comment re-cited at round 3, MINOR-4 / F5) | As filled: the two positives STDERR-free; the `fail_todo` split `ResolvingSpecificHere` with the note `NameAmbiguousDueToExtend` |
-| lower/testdata/template/template_constraint.carbon (round-2 split POST-FILL; round-3 split PRE-FILL, 2026-10-13) | `compound_nongeneric` (`c.(HasGet.Get)()` in a non-generic `Run`); fill round 3: `impl_member_alias` (`impl C as I { alias F = (C as HasGet).Get; }`, `c.(I.F)()`) | As filled: `compound_nongeneric` a `define` of `Run` calling `C.Get`'s symbol. Round 3, predicted: `impl_member_alias` a `define` of `Run` calling `C.Get`'s symbol directly (no thunk is built, the alias being `C.Get` itself), and no `CARBON_FATAL` (§1.E as amended) |
+| lower/testdata/template/template_constraint.carbon (round-2 split POST-FILL; round-3 split PRE-FILL, 2026-10-13) | `compound_nongeneric` (`c.(HasGet.Get)()` in a non-generic `Run`); fill round 3: `impl_member_alias` (`impl C as I { alias F = (C as HasGet).Get; }`, `c.(I.F)()`) | As filled: `compound_nongeneric` a `define` of `Run` calling `C.Get`'s symbol. Round 3, predicted: `impl_member_alias` a `define` of `Run` calling `C.Get`'s symbol directly (no thunk is built, the alias being `C.Get` itself), and no `CARBON_FATAL` (§1.E as amended) FILLED 2026-10-13 (fill round 3, bc8b37290): held; `Run` lowers as `@main` calling `@_CGet.C.Main`, with no thunk and no fatal |
 
 ### §4.C Commit 3
 
@@ -2090,8 +2090,11 @@ to fixpoint over the 19 SC-1 goldens (pass 1 rewrote 11, pass 2 rewrote 4 with
 1959 passed, 0 failed; conformance into a private outdir 130 PASS / 0 FAIL / 21
 SKIP of 151, bullets 49/56, exactly generics/structural_conformance (SKIP to
 PASS, `42` then `7`) and interop/cpp_structural_conformance (PASS, `7` then `0`)
-moving. Not of record until fork/conformance/out/scoreboard.json is updated
-(R9).
+moving. Fill round 3 folds round 2's two implementation reviews: 0efe76e7d
+(fixes, test sources, the design page, records), bc8b37290 (4 goldens refilled)
+and 5171e5eda (records); it re-measured the same totals on the toolchain stamped
+0.0.0-0.dev+bc8b37290 (below). Not of record until
+fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
 one falsified carries a dated amendment above):
@@ -2126,11 +2129,14 @@ one falsified carries a dated amendment above):
     positive split of the same file (`[[@TEST_NAME]]` drops `fail_`), so they
     were renamed `..._lacking` before 6f2f40d3c.
 -   (k) round 3's first fill: the positive split
-    `require_self_class_being_defined` first spelled its other-self `require`
-    as `require U impls HasGet`, which upstream rejects
+    `require_self_class_being_defined` first spelled its other-self `require` as
+    `require U impls HasGet`, which upstream rejects
     (`RequireImplsMissingSelfEmptyFacetType`: a `require` must name `Self`);
     respelled `require U impls HasGet & J(Self)`, the review's own probe shape,
     with `F`'s `impl as J(D)` first, before the round-3 commit.
+-   (l) round 3's fill: the §4.B require row predicted the `impl as I1` error
+    naming the facet type as written, `HasGet & J`; the fill prints `J &
+    HasGet`. A prediction error; the row carries a dated amendment.
 
 Round 1's four mechanisms (1a7cce0b2), each now golden-pinned: the member's own
 specific in `RequirementMatches` (satisfy `generic_self`, `nested_generic`;
@@ -2155,12 +2161,13 @@ Round 2, by review finding (review 1 MAJOR-n / MINOR-n, review 2 Fn / Mn):
     `fail_implicit_binding_direct_use`, `fail_implicit_binding_assoc_fn_use`.
 -   MAJOR-3: D-SC-8(iii) amended (an in-class impl's structural `require` is
     checked at the end of the class: impl.cpp
-    `IsStructuralRequireDeferredToClassEnd` and
+    `IsStructuralRequireDeferredToClassEnd`, replaced at round 3 by
+    `GetRequireSelfClassBeingDefined`, and
     `CheckDeferredRequireDeclsAtClassEnd`, handle_class.cpp); require
     `require_in_interface_in_class_impl` and
     `fail_require_in_interface_in_class_impl_lacking`. An in-class impl in a
-    GENERIC class still fails, at the class end instead of the impl, because
-    its self is checked-symbolic (D-SC-6, W-139).
+    GENERIC class still fails, at the class end instead of the impl, because its
+    self is checked-symbolic (D-SC-6, W-139).
 -   MINOR-1 / F2: a found member that is itself a requirement `fn` is Missing
     (structural_conformance.cpp `CheckRequirementFunction`, D-SC-5(b)), and
     merge.cpp's same-block early return no longer short-circuits two different
@@ -2356,12 +2363,53 @@ Fill round 3, by review finding (review 1 BLOCKER-1 / MAJOR-1 / MINOR-n, review
 Rejected or narrowed, with evidence: MAJOR-1's "no definition" guard (above).
 None of the 15 findings is rejected otherwise.
 
-Round 3's fill predictions, checked against the fill: every round-3 row of §4.B
-held, the printed facet type `J & HasGet` (written `HasGet & J`) aside, after
-miss (k).
+Round 3's four decisions as R29(a) implementation decisions, each with its
+design citation and break condition (the decision log's "SC-1 fill rounds
+(2026-10-13)" entry gives each one's symptom and root cause; the bullets above
+name the splits that pin them):
 
-Round 3's own diff (0efe76e7d, bc8b37290 and its records commit) has no
-implementation review on record at this commit.
+-   **A requirement is not an impl member** (impl.cpp:52-86
+    `CheckAssociatedFunctionImplementation`, joining upstream's non-function
+    branch at :66; BLOCKER-1). A requirement `fn` named as an impl member is
+    `ImplFunctionWithNonFunction` with the requirement's note, before any thunk
+    (the thunk copied the constraint's with-self scope, thunk.cpp:235, and
+    sem_ir/mangler.cpp:185 aborted). Design: D-SC-4, D-SC-5(c) and §1.E as
+    amended; upstream's alias of another interface's member
+    (impl/fail_impl_bad_assoc_fn.carbon:28-37 pins the branch). Break condition:
+    upstream accepts an impl member aliasing another interface's member,
+    resolved for the impl's self, or W-138's table lands; then the alias
+    resolves to the self type's own member instead of being rejected.
+-   **A thunk is not a requirement** (structural_conformance.cpp:637-657
+    `GetStructuralRequirementConstraint`, :641-647; MAJOR-1). A function of any
+    special kind is never a requirement; the "no definition" guard is declined
+    (handle_function.cpp:1212-1225 keeps a requirement written with a body
+    collected). Design: D-SC-2, D-SC-15. Break condition: a requirement can
+    itself be a special function, or thunk.cpp stops copying its callee's parent
+    scope; then the test reads membership in `structural_members_id`.
+-   **The class-end wait keyed on the `require`'s own self, structural part
+    only** (impl.cpp:870-887, :894-920, :926-981, :1092-1114; context.h:598-610;
+    handle_class.cpp:386; MINOR-1, MINOR-2 / F1, F8). Design: D-SC-8(iii) as
+    amended, D-SC-5(a). Break condition: upstream checks an interface's
+    `require`s once the self is complete, or lets a class be looked into for
+    satisfaction within its own definition; then the per-class list is deleted
+    and the structural part is checked with the rest. The generic-class limit is
+    W-139's, under W-139's break condition.
+-   **A found requirement gets its own note**
+    (structural_conformance.cpp:367-377, toolchain/diagnostics/kind.def:471;
+    F7): `StructuralMemberIsRequirement` replaces `StructuralMemberMissing` when
+    the name found is the requirement itself. Design: D-SC-9 (10 kinds, 11 with
+    R-6's), D-SC-5(c). Break condition: D-SC-9's, an existing kind whose text
+    fits is found and the count drops.
+
+Round 3's fill predictions, checked against the fill: every round-3 row of §4.B
+held after miss (k), except miss (l), the printed facet type `J & HasGet`
+(written `HasGet & J`); each round-3 row now says so, dated.
+
+Round 3's own diff (0efe76e7d, bc8b37290, 5171e5eda) has no implementation
+review on record at this commit. The records commit after 5171e5eda noticed one
+stale cite there and leaves it for that review (a records commit changes no
+source): the impl.cpp:58 comment names D-SC-5(b), and the amendment is in
+D-SC-5(c).
 
 W-151: the commit-3 residue first filed as W-144 was renumbered to W-151 by
 2f4ebbf6e, because SAFE-1 (PR 53) allocated W-144..W-150; trunk's id
@@ -2386,7 +2434,11 @@ rebuilt from bc8b37290 with a clean tree (stamped 0.0.0-0.dev+bc8b37290,
 recorded by the round-3 records commit): gate 1959 passed and 0 failed;
 conformance 130 / 0 / 21 over 151 with 49 of 56 bullets; the same two programs
 moving. Round 3's commits: 0efe76e7d (fixes, test sources, docs, records),
-bc8b37290 (goldens) and the round-3 records commit.
+bc8b37290 (goldens) and 5171e5eda (records). Re-run for the records commit after
+5171e5eda, on 5171e5eda with the installed toolchain stamped
+0.0.0-0.dev+bc8b37290 (no toolchain source differs): gate 1959 passed and 0
+failed; conformance 130 / 0 / 21 over 151 with 49 of 56 bullets, the same two
+programs moving.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

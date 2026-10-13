@@ -23,11 +23,10 @@ of record (Actions disabled); reconciled 2026-10-05 against the conformance
 scoreboard — 128 PASS / 0 FAIL / 22 SKIP over 150 programs, 48/56 bullets
 PASS — and the fork/inventory/work-items.json ledger; the original 2026-07-19
 audit read 24 / 18 / 13 / 1; the if-let / let-else row flipped MISSING →
-PARTIAL at the W-012 landing later the same day). The front half of the
-compiler is done;
-match, choice payloads, `?` error handling, exception boundaries, threading
-interop, if-let / while-let / let-else, native unions, `overload fn` sets
-with import, api/impl definitions, generic members and C++ export, and
+PARTIAL at the W-012 landing later the same day). The front half of the compiler
+is done; match, choice payloads, `?` error handling, exception boundaries,
+threading interop, if-let / while-let / let-else, native unions, `overload fn`
+sets with import, api/impl definitions, generic members and C++ export, and
 `Core.Slice`/`Core.Buf` with the runtime bounds fail-stop, and the
 `std::span` <-> `Core.Slice` mapping with owning-container views have since
 landed, leaving variadics and the build-system rows as the open back half.

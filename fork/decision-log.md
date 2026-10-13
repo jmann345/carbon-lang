@@ -2885,20 +2885,20 @@ index, the README and project-FAQ pointers), 21c4a0565 (2/3: the ten tutorial
 programs replacing the evaluator_docs_review stub, the C++-library fixtures, the
 sample and FAQ checkers, the program table), 6a3cbff24 (2a: the fold of the two
 document reviews), the merge of origin/trunk 9d3ca60a3 (dff212ccc: trunk had
-moved only by ORCHESTRATION stamps, §2.F.4) and the discharge commit carrying
-this entry (3/3) — after the plan's own commits dd24df3a7 (rev 1), f0e1ab70b
+moved only by ORCHESTRATION stamps, §2.F.4), fbf65c99f (3/3: the discharge
+commit, which wrote this entry) and commit 4 (the implementation-review fold,
+which amends it) — after the plan's own commits dd24df3a7 (rev 1), f0e1ab70b
 (rev 2, the two plan reviews folded) and cbecda8e6 (sign-off). The
-implementation commits are not pushed at the time of writing: the implementation
-review and its fold (commit 4) come next, then the PR is opened and HELD
-("awaiting hosted conformance (Actions disabled); merges after PR 52, through
-the integration commit"). EV-1 merges after PR 52: the integration commit of
-plan §3 merges trunk into the branch and moves it to state C (the C++-library
-program's BUILD-SCRIPT un-SKIP, the evaluator-samples self-check in
-`--self-test`, the build_systems.md links, the W-131 and W-133 citations, row 90
-and the header in their state C texts). This workstream touches no toolchain
-C++, no golden, no BUILD file and nothing under .github/, so it needs no
-autoupdate. Every decision below is an R29(a) auto-adopt recorded for
-after-the-fact veto, each with its break condition.
+branch is pushed after commit 4, and the PR is opened and HELD ("awaiting hosted
+conformance (Actions disabled); merges after PR 52, through the integration
+commit"). EV-1 merges after PR 52: the integration commit of plan §3 merges
+trunk into the branch and moves it to state C (the C++-library program's
+BUILD-SCRIPT un-SKIP, the evaluator-samples self-check in `--self-test`, the
+build_systems.md links, the W-131 and W-133 citations, row 90 and the header in
+their state C texts). This workstream touches no toolchain C++, no golden, no
+BUILD file and nothing under .github/, so it needs no autoupdate. Every decision
+below is an R29(a) auto-adopt recorded for after-the-fact veto, each with its
+break condition.
 
 WHAT LANDED, by file group. (1) THE PAGES (commit 1, amended at 2a).
 docs/guides/getting_started.md (321 lines; H2 sections Two toolchains,
@@ -2956,9 +2956,10 @@ lines or fewer, a command, the toolchains, the exact line, the exit status), of
 which those that apply to the toolchain given are run; each expected line must
 be in the output and a whole `text`-block line of evaluator_faq.md, and every
 `text`-block line of getting_started.md other than program output must be such a
-FAQ line. (4) RECORDS (this commit): gap row 90, the header, §W11 and the area
-summary; W-062 DISCHARGED, W-002, W-003, W-026 and W-059 notes, W-152, W-153 and
-W-155 filed; this entry; ORCHESTRATION; the plan's landed notes.
+FAQ line. (4) RECORDS (fbf65c99f, amended at commit 4): gap row 90, the header,
+§W11 and the area summary; W-062 DISCHARGED, W-002, W-003, W-026 and W-059
+notes, W-152, W-153 and W-155 filed; this entry; ORCHESTRATION; the plan's
+landed notes.
 
 THE DECISIONS, D-EV-1 to D-EV-21, verbatim from fork/evaluator/plan.md §1.G as
 folded through the two plan reviews (A1 to A12, B-1 to B-6, B m-1 to B m-5) and
@@ -3345,8 +3346,28 @@ missing links, now added, and the folded tutorial.md is 700 lines). One finding
 is a toolchain limitation the fold could only describe: R2-1 is filed as W-155.
 The fold table with every reproduction is the plan's "Document-review fold
 record (commit 2a, 2026-10-13)", summarized in its "Landed notes (EV-1)". The
-implementation review of commits 1 to 3 (with 2a) is outstanding at this
-discharge; its fold is commit 4, which amends this section.
+implementation review read 751102ee1, 21c4a0565, 6a3cbff24, dff212ccc and
+fbf65c99f and returned APPROVE-WITH-AMENDMENTS with no BLOCKER, no MAJOR and six
+MINOR findings, all record and form defects: EV1-IR-1, plan §5.3 was amended by
+R2-10 at 2a without its fold mark; EV1-IR-2, the plan's landed-notes choices at
+discharge did not match fbf65c99f's message one to one; EV1-IR-3, THE DECISIONS
+above are verbatim rather than plan §2.F.3's one sentence each, which no record
+called a deviation; EV1-IR-4, fork/ORCHESTRATION.md's EV-1 record left out the
+filed W-155 so that §8.7's expected hits held; EV1-IR-5, the records named "the
+discharge commit" without its sha; EV1-IR-6, three scripted edits left ragged
+short lines. Its Goodhart checks passed (every EXPECT value re-derived by hand;
+the C++-library SKIP line meets R10, and its two-line un-SKIP PASSes on F in a
+scratch mirror of PR 52's head ea573f672; every PASS program is a page sample),
+and it re-ran the records' numbers, among them a whole-suite run with F (137
+PASS / 0 FAIL / 22 SKIP over 159, 48/56, the expected scoreboard, local). A
+separate fixer reproduced all six and folded them in commit 4, none rejected:
+the §5.3 mark added late; the landed notes' choices mapped one to one onto the
+message, the one it omits recorded in commit 4's message; the verbatim decisions
+recorded under DEVIATIONS below and not rewritten; W-155 named in
+fork/ORCHESTRATION.md, with plan §8.7 and §2.F.4 amended to match; fbf65c99f
+written into this entry, W-062's notes, the ledger's `source` note,
+ORCHESTRATION and the plan; the three paragraphs rewrapped by hand. The plan's
+landed notes carry the fold table.
 
 VERIFICATION, all LOCAL, never of record (D-EV-17). F is the fork toolchain
 (version 0.0.0-0.dev+0bdce60a5), a CMake and Ninja build of trunk 0bdce60a5's
@@ -3381,9 +3402,13 @@ and N (`42`, exit 0, empty stderr); the download-failure texts for a date with
 no release (`wget` exit 8, `curl -LO` exit 0 and then `tar` fails, `curl -fLO`
 exit 22); the stale prerelease's GLIBC_2.44 loader line (exit 1); clang-tidy
 (18.1.3) with the repository's .clang-tidy on the two C++ fixtures (clean in the
-trailing-return form). Not run (D-EV-17, plan §8.4): the fork build-from-source
-block, because there is no Bazel here (it is quoted from
-fork_hosted.yaml:106-120, whose target and unpack step built and ran the
+trailing-return form). At commit 4 the fixer re-ran `--self-test`, both checkers
+on F and N, the runner with F on `--filter project/` and on the whole suite (137
+PASS / 0 FAIL / 22 SKIP over 159, 48/56: the expected scoreboard, observed
+locally, not of record), the runner with N on `--filter project/evaluator` and
+prek to a fixpoint, each result in its message. Not run (D-EV-17, plan §8.4):
+the fork build-from-source block, because there is no Bazel here (it is quoted
+from fork_hosted.yaml:106-120, whose target and unpack step built and ran the
 toolchain in hosted run 37402970811 with `run_bazel.py`, where the guide uses
 README.md's `run_bazelisk.py`); any hosted workflow (Actions disabled; R28
 forbids the owner's runner); macOS, Windows, Linux arm64 and any distribution
@@ -3480,31 +3505,35 @@ entry points at the guide's measured range; the stale prerelease's loader line
 is quoted as printed when `carbon` runs through `PATH`. Commit 2: both checkers
 open with the `__copyright__` block the R12 hook reads; ty's strict mode needed
 two type fixes in check_faq.py, with unchanged behavior; check_samples.py's
-docstring says when it joins `--self-test` (state C). This commit: the header
-grew by three lines, so the ledger pins row 90 at line 93 and §W11 at :264-281
-rather than plan §2.F.2's :90 and :261-273; §5.3's "docs/guides/
+docstring says when it joins `--self-test` (state C). Commit 3 (fbf65c99f): the
+header grew by three lines, so the ledger pins row 90 at line 93 and §W11 at
+:264-281 rather than plan §2.F.2's :90 and :261-273; §5.3's "docs/guides/
 getting_started.md" is read as one path (a wrap in the plan's text); the
 Branches row says the branch is discharged and not yet pushed rather than
 §2.F.4's "HELD OPEN as PR NN", because the PR opens after commit 4, which
 restamps it; ORCHESTRATION's "Last updated" line points at the new dated
-paragraph, as CM-1's and SAFE-1's discharges did.
+paragraph, as CM-1's and SAFE-1's discharges did; and THE DECISIONS above carry
+D-EV-1 to D-EV-21 verbatim rather than in plan §2.F.3's form, "with break
+conditions in one sentence each", because a verbatim copy cannot drift from the
+plan as a paraphrase can, a deviation recorded only at commit 4
+(implementation-review fold: EV1-IR-3), which leaves the decisions as they are.
 
 PROCESS. R29(a): every D-EV above auto-adopts with its break condition and is
 recorded for after-the-fact veto; no question was asked (R29). R11: the
-implementer, the two plan reviewers, the plan fixer, the two document reviewers
-and the document fixer were separate agents, and the implementation review and
-its fixer follow. R20: every commit names its paths (author jmann345, committer
-Claude). R3 and R6: every sample was written from working code and
-compile-verified on F and N before the plan fixed it (D-EV-8). R16(d): every
-EXPECT value is plan §4's hand derivation, made before any run. R27: the
-fourteen `carbon` and `cpp` blocks of tutorial.md equal plan §2.B's byte for
-byte, and the program bodies equal the page blocks, checked at commits 1, 2 and
-2a. The gate that ran is local (D-EV-17), a stated deviation from R21 and R23's
-hosted authority while Actions is disabled; each commit message records its run.
-State T: no runner.py, .github/ or build_systems.md change and no W-131 or W-133
-citation before the integration commit (D-EV-10, D-EV-13). Break condition:
-Actions returns before the merge — then the hosted conformance run on the PR
-head is the record, and the "not of record" phrases go in a records commit.
+implementer, the two plan reviewers, the plan fixer, the two document reviewers,
+the document fixer, the implementation reviewer and its fixer were separate
+agents. R20: every commit names its paths (author jmann345, committer Claude).
+R3 and R6: every sample was written from working code and compile-verified on F
+and N before the plan fixed it (D-EV-8). R16(d): every EXPECT value is plan §4's
+hand derivation, made before any run. R27: the fourteen `carbon` and `cpp`
+blocks of tutorial.md equal plan §2.B's byte for byte, and the program bodies
+equal the page blocks, checked at commits 1, 2 and 2a. The gate that ran is
+local (D-EV-17), a stated deviation from R21 and R23's hosted authority while
+Actions is disabled; each commit message records its run. State T: no runner.py,
+.github/ or build_systems.md change and no W-131 or W-133 citation before the
+integration commit (D-EV-10, D-EV-13). Break condition: Actions returns before
+the merge — then the hosted conformance run on the PR head is the record, and
+the "not of record" phrases go in a records commit.
 
 _V-3a divergence-risk register entries (reviewed at each upstream merge):_ the
 three guide pages (docs/guides/getting_started.md, tutorial.md and

@@ -17,10 +17,11 @@ m-1 to B m-5), and the section "Review fold record (rev 2, 2026-10-13)" at the
 end lists them. Commit 2a folds the two document reviews of D-EV-19 the same
 way, marked "(amended 2026-10-13, document-review fold: …)" and listed in the
 section "Document-review fold record (commit 2a, 2026-10-13)". Commit 3
-discharged the records in state T on 2026-10-13 (section "Landed notes
-(EV-1)" at the end). Branch `claude/carbon-fork-0-1-ev` off trunk 80a11e7f0,
-whose
-toolchain sources are identical to 0bdce60a5 (the only later trunk commits are
+(fbf65c99f) discharged the records in state T on 2026-10-13, and commit 4 folds
+the implementation review the same way, marked "(amended 2026-10-13,
+implementation-review fold: …)" (section "Landed notes (EV-1)" at the end).
+Branch `claude/carbon-fork-0-1-ev` off trunk 80a11e7f0, whose toolchain sources
+are identical to 0bdce60a5 (the only later trunk commits are
 fork/ORCHESTRATION.md stamps). Trunk's floor is **128 PASS / 0 FAIL / 22 SKIP
 over 150 programs**, 48/56 bullets (fork/conformance/out/scoreboard.json
 `totals`, generated 2026-10-06); the gap-analysis header is **30 DONE / 21
@@ -1768,9 +1769,10 @@ line of §0.1 row 17.
     EV-1 merges after PR 52 (the merge-order sentence of :66-67 gains it;
     amended 2026-10-13, review fold: B-1); a Branches row `` |
     `claude/carbon-fork-0-1-ev` | HELD OPEN as PR NN — EV-1 evaluator guides
-    at <sha> (gap row 90 expected DONE, W-062 discharged, W-152, W-153);
-    state T until trunk holds PR 52, then the integration commit;
-    verification record in the PR; merge after PR 52. | ``; the land
+    at <sha> (gap row 90 expected DONE, W-062 discharged, W-152, W-153,
+    W-155); state T until trunk holds PR 52, then the integration commit;
+    verification record in the PR; merge after PR 52. | `` (amended
+    2026-10-13, implementation-review fold: EV1-IR-4); the land
     sequence's EV-1 steps: the integration commit, `python3
     fork/evaluator/check_samples.py` (kept in both states, D-EV-13), `python3
     fork/evaluator/check_faq.py` with F and with the then-current nightly,
@@ -1905,7 +1907,8 @@ review fold: A2, A4, A10, B-1, B-3):
     2 / 1 to 34 / 19 / 2 / 1. The exact header texts are §2.F.1's.
 3.  **Row 90** (status and evidence cells; bullet cell untouched; the row is one
     line in the table, the wraps below are this plan's; amended 2026-10-13,
-    review fold: A1, A2, B-1, B-3, B-4, B-6). State T text, written at commit 3:
+    review fold: A1, A2, B-1, B-3, B-4, B-6; amended 2026-10-13,
+    document-review fold: R2-10). State T text, written at commit 3:
     `| Project: basic evaluator documentation (getting started to FAQs) | DONE |
     EV-1 (2026-10-DD, fork/evaluator/plan.md): docs/guides/ getting_started.md
     (two toolchains: the upstream nightly, whose download block was run
@@ -2199,8 +2202,9 @@ review fold: A2, A4, A10, B-1, B-3):
     evaluator_faq.md, which name W-152 and W-153 since commit 1, and for W-154
     the C++-library program's SKIP line, which names it as reserved and filed
     only if the program must merge before PR 52 (§2.E.2); W-155 hits the ledger,
-    the decision log and this plan only (amended 2026-10-13, document-review
-    fold: R2-10).
+    the decision log, this plan and fork/ORCHESTRATION.md (amended 2026-10-13,
+    document-review fold: R2-10; amended 2026-10-13, implementation-review
+    fold: EV1-IR-4).
 8.  **Decision-log entry, ORCHESTRATION, landed notes** per §2.F.3-5; the
     PR opened and HELD after commit 4 with "awaiting hosted conformance
     (Actions disabled); merges after PR 52, through the integration commit"
@@ -2397,20 +2401,20 @@ and FAQ checkers, the program table) and 6a3cbff24 (2a: the document-review
 fold), over this plan at cbecda8e6. Before the discharge commit, origin/trunk
 9d3ca60a3 was merged into the branch as dff212ccc (a merge, never a rebase),
 because `git diff --stat 80a11e7f0 origin/trunk` listed only
-fork/ORCHESTRATION.md (§2.F.4 as amended by R2-10). The discharge commit wrote
-§2.F in its state T texts: gap row 90 DONE with §5.3's text, the header at 31 /
-20 / 4 / 1 with the expected 137 PASS / 0 FAIL / 22 SKIP over 159 programs,
-48/56 bullets, stated as expected and not of record, §W11's sentence and arbiter
-note, and the area summary; W-062 DISCHARGED with §0.2 items 1 to 3 and its
-evidence re-pinned, and notes on W-002 (§0.2 item 9), W-003, W-026 and W-059;
-W-152, W-153 and W-155 filed with §2.F.2's fields; the decision-log entry "EV-1:
-evaluator documentation: getting started, tutorial, FAQ, transcribed programs
-(2026-10-13)" above SL-2, with D-EV-1 to D-EV-21 verbatim from §1.G; and in
-fork/ORCHESTRATION.md the "Last updated" line, a dated paragraph after the id
-reservations with the land-sequence steps, the merge-order sentence, trunk's
-EV-1 Branches row updated in place, the scoreboard line re-quoted from
-scoreboard.json (§0.2 item 5), the toolchain list re-listed (§0.2 item 6) and
-W-152 in Next actions.
+fork/ORCHESTRATION.md (§2.F.4 as amended by R2-10). The discharge commit,
+fbf65c99f, wrote §2.F in its state T texts: gap row 90 DONE with §5.3's text,
+the header at 31 / 20 / 4 / 1 with the expected 137 PASS / 0 FAIL / 22 SKIP over
+159 programs, 48/56 bullets, stated as expected and not of record, §W11's
+sentence and arbiter note, and the area summary; W-062 DISCHARGED with §0.2
+items 1 to 3 and its evidence re-pinned, and notes on W-002 (§0.2 item 9),
+W-003, W-026 and W-059; W-152, W-153 and W-155 filed with §2.F.2's fields; the
+decision-log entry "EV-1: evaluator documentation: getting started, tutorial,
+FAQ, transcribed programs (2026-10-13)" above SL-2, with D-EV-1 to D-EV-21
+verbatim from §1.G; and in fork/ORCHESTRATION.md the "Last updated" line, a
+dated paragraph after the id reservations with the land-sequence steps, the
+merge-order sentence, trunk's EV-1 Branches row updated in place, the scoreboard
+line re-quoted from scoreboard.json (§0.2 item 5), the toolchain list re-listed
+(§0.2 item 6) and W-152 in Next actions.
 
 **Ids (D-EV-18, §8.6).** The allocation grep ran again before the discharge
 commit, over 68 refs (trunk, origin/trunk and every local and origin
@@ -2431,22 +2435,28 @@ fork/ORCHESTRATION.md, the C++-library program's SKIP line, the ledger's
 `source` note and W-062's notes, and the decision log (its verbatim D-EV-12 and
 D-EV-18 and its RESIDUE paragraph): the ledger and decision-log hits come from
 §2.F.2's and §2.F.3's listings of the reserved ids and from the decisions copied
-verbatim, so the hit set is the one §8.7 expects once those are counted. W-155
-hits the ledger, the decision log and this plan only. The sample checker reports
-14 samples.
+verbatim (a deviation from §2.F.3's form, recorded at commit 4 below), so the
+hit set is the one §8.7 expects once those are counted. W-155 hit the ledger,
+the decision log and this plan only at the discharge; commit 4 names it in
+fork/ORCHESTRATION.md too and widens §8.7 to match (EV1-IR-4, below). The sample
+checker reports 14 samples.
 
-**Choices at discharge**, each recorded in the commit message: (a) the header
-grew by three lines, so row 90 is line 93 and §W11 is :264-281, and the ledger
-pins those lines rather than §2.F.2's :90 and :261-273 while still naming the
-row "row 90"; (b) §5.3's "docs/guides/ getting_started.md" is read as one path,
-a wrap in this plan's text; (c) the Branches row reads "DISCHARGED IN STATE T,
-NOT PUSHED" with the next steps instead of §2.F.4's "HELD OPEN as PR NN",
-because the PR opens after commit 4, which restamps the row; (d) ORCHESTRATION's
-"Last updated" line points at the dated paragraph, as CM-1's and SAFE-1's
-discharges did; (e) W-062 keeps its kind and title (§2.F.2, and CM-1's W-060
-precedent); (f) the merge-order sentence's EV-1 clause says "PR 52", the
-hand-off rule, beside the sentence's existing PR numbers, which are left as they
-were.
+**Choices at discharge** ((a) to (e) are the commit 3 message's choices 1 to 5
+and (g) its choice 6; (f), which that message omits, is recorded here and in
+commit 4's message; amended 2026-10-13, implementation-review fold: EV1-IR-2):
+(a) the header grew by three lines, so row 90 is line 93 and §W11 is :264-281,
+and the ledger pins those lines rather than §2.F.2's :90 and :261-273 while
+still naming the row "row 90"; (b) §5.3's "docs/guides/ getting_started.md" is
+read as one path, a wrap in this plan's text; (c) the Branches row reads
+"DISCHARGED IN STATE T, NOT PUSHED" with the next steps instead of §2.F.4's
+"HELD OPEN as PR NN", because the PR opens after commit 4, which restamps the
+row; (d) ORCHESTRATION's "Last updated" line points at the dated paragraph, as
+CM-1's and SAFE-1's discharges did; (e) W-062 keeps its kind and title (§2.F.2,
+and CM-1's W-060 precedent); (f) the merge-order sentence's EV-1 clause says "PR
+52", the hand-off rule, beside the sentence's existing PR numbers, which are
+left as they were; (g) W-155 was kept out of fork/ORCHESTRATION.md and the gap
+analysis so that §8.7's expected W-155 hits (the ledger, the decision log and
+this plan) held, which commit 4 reverses for fork/ORCHESTRATION.md (EV1-IR-4).
 
 **Document-review fold table** (commit 2a; the reproduction record with every
 fixer trace is the section "Document-review fold record (commit 2a, 2026-10-13)"
@@ -2483,8 +2493,54 @@ MAJOR and eight MINOR. All twenty-six findings are folded and none is rejected.
 | R2-9 | 2 | MINOR | FOLDED: the FAQ says the measured fork toolchain is a CMake build and the Bazel route was not run |
 | R2-10 | 2 | MINOR | FOLDED as amendments carried out at commit 3: the origin/trunk merge and the in-place Branches row (§2.F.4), §8.7's expected hits, §5.3's exception for the lines re-run by hand |
 
-The implementation review of commits 1 to 3 (with 2a) and its fold, commit 4,
-follow; commit 4 amends this section and the decision log's REVIEWS paragraph.
 The R31 counts of the discharge are in its commit message, spelled in words here
 for this file: one H2 added (this section), so thirteen become fourteen, and
 every other heading and list count unchanged.
+
+**Implementation review (commit 4, 2026-10-13).** The implementation review of
+D-EV-19 read 751102ee1, 21c4a0565, 6a3cbff24, dff212ccc and fbf65c99f and
+returned **APPROVE-WITH-AMENDMENTS**: no BLOCKER, no MAJOR, six MINOR (EV1-IR-1
+to EV1-IR-6), each a record or form defect to fix forward. Its Goodhart checks
+passed: it re-derived every EXPECT value of the ten programs by hand against §4,
+found the C++-library SKIP line meeting R10 with exact runner.py pins (:321,
+:453-462, :516-524 and :546-551), saw the two-line un-SKIP PASS on F in a
+scratch mirror of PR 52's head ea573f672 with the build-script self-check OK,
+and found every PASS program to be a page sample tied to its `text` block by
+check_samples.py. It re-ran the records' numbers: `--self-test` (the three
+self-checks OK, 159 programs, 56 bullets), check_samples.py (14 samples, 0
+errors), check_faq.py (13 reproducers on F and 17 on N, 0 errors), the runner
+with F on `--filter project/` (15 PASS / 6 SKIP, the evaluator bullet PASS over
+11 programs) and on the whole suite (137 PASS / 0 FAIL / 22 SKIP over 159,
+48/56, equal to the expected scoreboard; local, not of record), and with N on
+`--filter project/evaluator` (8 PASS, 2 COMPILE-FAIL, 1 SKIP); the R31 counts of
+every commit, the §8.6 id grep over 68 refs and the §8.7 greps agreed with the
+messages. A separate fixer (R11) reproduced all six findings before folding them
+in commit 4 and rejected none; §2.F.4's Branches row and §8.7 carry "(amended
+2026-10-13, implementation-review fold: EV1-IR-4)", and §5.3 now carries the
+R2-10 mark it lacked.
+
+| Finding | Grade | Fixer's reproduction | Disposition and where folded |
+| --- | --- | --- | --- |
+| EV1-IR-1 §5.3 amended by R2-10 at commit 2a with no fold mark | MINOR | CONFIRMED: 6a3cbff24's §5.3 hunk added the exception for the lines re-run by hand, while the R2-10 marks stood only at §2.F.4 and §8.7, against the 2a message's claim that every changed passage carries one | FOLDED: §5.3 item 3's parenthetical gains "amended 2026-10-13, document-review fold: R2-10", added late, at commit 4; the row text was already right |
+| EV1-IR-2 the choices at discharge do not match the commit 3 message | MINOR | CONFIRMED: (f) is not in fbf65c99f's message, and the message's choice 6 was not in these notes | FOLDED: (g) added for choice 6; the lead-in maps (a) to (e) and (g) to the message's choices 1 to 6 and says (f) is recorded here and in commit 4's message |
+| EV1-IR-3 the decision log copies D-EV-1 to D-EV-21 verbatim, not in §2.F.3's one-sentence form, unrecorded | MINOR | CONFIRMED: §2.F.3 says "with break conditions in one sentence each"; the entry holds the 21 full decisions; neither its DEVIATIONS paragraph nor fbf65c99f's choices mention it | FOLDED with the reviewer's fix: recorded as a commit 3 deviation in the entry's DEVIATIONS paragraph and below, with its reason; the entry is not rewritten |
+| EV1-IR-4 ORCHESTRATION's EV-1 record omits the filed W-155 | MINOR | CONFIRMED: `grep -rn W-155` hit only the ledger, the decision log and this plan; fbf65c99f's choice 6 kept it out so that §8.7's set held | FOLDED: the dated paragraph and the Branches row name W-155, and the dated paragraph W-156 to W-159 as reserved and unused; §8.7's expected W-155 hits and §2.F.4's row template gain it, marked; the §8.7 greps re-run (commit 4 message) |
+| EV1-IR-5 the records name "the discharge commit" without its sha | MINOR | CONFIRMED in W-062's notes, the decision-log entry's opening paragraph, ORCHESTRATION's dated paragraph and Branches row, and these notes | FOLDED: fbf65c99f written into all five, and into the ledger's `source` note and this file's status header |
+| EV1-IR-6 scripted edits left ragged short lines | MINOR | CONFIRMED: this file's :22 ("whose"), fork/ORCHESTRATION.md:16 ("GitHub Actions on") and fork/gap-analysis.md:27 ("compiler is done;"), which rumdl's reflow does not join | FOLDED: the three paragraphs rewrapped by hand, every R31 count unchanged |
+
+**Deviation recorded at commit 4 (EV1-IR-3).** §2.F.3 asks for the decisions
+"with break conditions in one sentence each"; the decision-log entry carries
+D-EV-1 to D-EV-21 verbatim from §1.G instead (21 dash items), because a verbatim
+copy cannot drift from the plan as a paraphrase can. The copies keep the plan's
+own references and fold marks, which the entry says, and their D-EV-12 and
+D-EV-18 add to the decision-log W-154 hits counted above. The entry is not
+rewritten.
+
+**Records after commit 4.** fbf65c99f is named in W-062's notes, the ledger's
+`source` note, the decision-log entry, fork/ORCHESTRATION.md and this file; the
+entry's REVIEWS paragraph records this review, its DEVIATIONS paragraph the
+verbatim decisions and its PROCESS paragraph the review's agents;
+fork/ORCHESTRATION.md names W-155 and marks the branch pushed, its PR to be
+opened and HELD. The R31 counts of this fold are in the commit 4 message; in
+this file no heading or list count changes (the table rows above are not list
+items).

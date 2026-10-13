@@ -33,16 +33,18 @@
 // break condition (check golden interop/cpp/class/import/
 // template_constraint.carbon `fail_const_method` and
 // `const_method_value_self` splits: a `const` method imports as value `self`
-// and matches `fn Get(self)`, hand-traced, unfilled); a `const`-method
-// sibling program is queued once those splits fill as predicted.
+// and matches `fn Get(self)`, hand-traced and filled as traced on
+// 2026-10-13). No `const`-method sibling program is queued: the check golden
+// pins that behavior, and plan §1.G's condition for the sibling (review fold
+// B14: `const_method` filling positive with `ref self`) did not fire.
 //
-// MEASUREMENT: awaiting the fork toolchain run. The upstream nightly does not
-// implement `template constraint` (SC-1 is fork-only), so this program has
-// not been run; the EXPECT lines are hand-derived from each member's own body
-// and the first-match rule (R16(d)), never from an implementation run. A NEW
-// program may start without a measured PASS (R16(b) is about previously
-// passing ones); the scoreboard count is EXPECTED, not of record, until the
-// fork toolchain's conformance run (R9).
+// MEASUREMENT: the EXPECT lines are hand-derived from each member's own body
+// and the first-match rule (R16(d)), never from an implementation run. Run
+// 2026-10-13 on the container-built fork toolchain (the upstream nightly does
+// not implement `template constraint`): PASS, printing exactly the EXPECT
+// lines (fork/structural/plan.md "Landed notes (fill rounds 1 and 2)"); the
+// count is not of record until fork/conformance/out/scoreboard.json is
+// updated (R9).
 
 import Core library "io";
 import Cpp inline '''

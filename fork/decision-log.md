@@ -4107,7 +4107,9 @@ FILL-CAUGHT MISSES: none possible — no fill has run. The class of miss
 R28(d) tracks here (a reviewed prediction a hosted fill overturns) has no
 instance yet; when the owner dispatches, every §4 prediction in the three
 commit bodies and the two landed notes is the pre-registered hypothesis, and
-the first miss is recorded under this heading by the fixer.
+the first miss is recorded under this heading by the fixer. (Superseded
+2026-10-13: the fill ran on the container-built toolchain; its misses are under
+FILL below.)
 
 VERIFICATION is local only: the container's `clang++ -fsyntax-only` harness
 against the pinned LLVM 21.1.8 headers with the toolchain's `-Werror` set
@@ -4127,7 +4129,8 @@ RESIDUE, filed with blocked_by [] (ids W-134..W-143 and W-151, allocated above
 W-133 — the maximum across origin/trunk (W-125),
 origin/claude/carbon-fork-0-1-ua2 (W-126/W-127),
 origin/claude/carbon-fork-0-1-cmake (W-128..W-133) and
-origin/claude/carbon-fork-0-1-safe (nothing above W-125 at its fetch) — on the
+origin/claude/carbon-fork-0-1-safe (nothing above W-125 at its fetch; it later
+allocated W-144..W-150, which is why the commit-3 residue is W-151) — on the
 assumption, stated in the ledger's `source` sentence and verified at merge as
 CM-1's entry did for PR 51, that those branches keep their ids): W-134 field
 requirements in template constraints (D-SC-2; F-010b reversed); W-135
@@ -4157,7 +4160,12 @@ method `self` qualifiers in structural matching" (only if the look-through's
 imported `self` cannot match — predicted to match); "satisfaction cache"
 (D-SC-7's break condition). Resolved rather than filed: commit 2's
 "single-member C++ overload sets in structural matching" (the SC-1c
-look-through).
+look-through). Resolved by the 2026-10-13 fill: none of the five conditions
+fired (the ladder filled positive; `fail_const_method`, `ref self` against a
+`const` method, filled as the mismatch the refined D-SC-11 predicts, so B14's
+sibling is not queued and the interop program's header now says so; no dump
+hung file_test; the look-through's imported `self` matches; no compile-time
+regression was measured), so none is filed.
 
 PLAN §0.2 CORRECTIONS carried into the ledger (W-027's discharge note): the
 chokepoint is convert.cpp:1955, not :1596 (item 1); `facet_type_info.h` split
@@ -4188,6 +4196,37 @@ upstream resolves issue 2153 toward checked-calls-template, D-SC-6 and
 W-139/W-140 follow; if upstream's `CheckFunctionTypeMatches` gains a specific
 for the new side, the fork's `new_specific_id` parameter merges into it.
 Veto-able.
+
+FILL (appended 2026-10-13). The goldens were filled on the container-built
+toolchain (the carbonbuild fastbuild of this branch, Carbon's assertions on),
+not on hosted runners (Actions disabled; R28). Fill round 1: 1a7cce0b2 (fixes),
+bcaeadb98 (goldens), 2f4ebbf6e (records); fill round 2, folding round 1's two
+implementation reviews (19 findings, none rejected): 6f2f40d3c (fixes and test
+sources), 502e7861a (goldens, autoupdated by the toolchain stamped
+0.0.0-0.dev+6f2f40d3c from a clean tree) and the records commit carrying this
+appendix. Measured: autoupdate to fixpoint over the 19 SC-1 goldens; file_test
+1959 passed, 0 failed; conformance into a private outdir 130 PASS / 0 FAIL / 21
+SKIP of 151, 49/56, exactly generics/structural_conformance (SKIP to PASS) and
+interop/cpp_structural_conformance (PASS) moving; not of record until
+scoreboard.json is updated (R9). Fill-caught misses (a) to (j), each with its
+dated plan amendment, are in fork/structural/plan.md "Landed notes (fill rounds
+1 and 2)". Decisions the fill added, auto-adopted under R29(a) and veto-able:
+D-SC-20 (a requirement named with no self type has `Self := .Self` of the
+constraint's facet type, so naming it neither enters a generic's eval block nor
+becomes template-dependent; break: a golden showing that unfrozen `.Self`
+substituted where a requirement's specific reaches a facet type, or upstream
+giving facet-type member lookups a self of their own, then a frozen or dedicated
+placeholder); D-SC-6 amended (D-SC-8(i) gives the diagnosed checked binding an
+error type, and the cascade guard is deleted: the guard let `CallGet(x)`
+instantiate a template body that reached the bodiless requirement); D-SC-8(iii)
+amended (an impl defined inside the class that is its self has its structural
+`require`s checked when the class completes); D-SC-9 amended (one more kind, the
+error `StructuralRequirementCalled`: a requirement `fn` is never itself the
+callee, D-SC-4); D-SC-5(b) clarified (a found member that is itself a
+requirement `fn` does not satisfy). Residue of round 2, id pending (SC-1 holds
+no reservation above W-151): lookup ambiguity between a template-constraint
+requirement and the same function found through an interface (p002200:385-399),
+pinned by `fail_todo_ambiguous_with_interface`.
 
 ### SL-1: Core.Slice, Core.Buf, heap allocation, fail-stop (2026-10-05)
 

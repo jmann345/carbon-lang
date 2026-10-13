@@ -29,13 +29,14 @@
 // functions/overloading_generic.carbon (`unused x: T`); the value-`let`
 // arguments avoid a copy (no `Core.Copy` requirement is stated or needed).
 //
-// MEASUREMENT: awaiting the fork toolchain run. The upstream nightly does not
-// implement `template constraint` (SC-1 is fork-only), so this program has
-// not been run; the EXPECT lines are hand-derived from each member's own body
+// MEASUREMENT: the EXPECT lines are hand-derived from each member's own body
 // and the first-match rule (R16(d)), never from an implementation run. The
 // SKIP line was removed at SC-1c (fork/structural/plan.md §5.A, commit-2
-// landed note finding 2(b)); the scoreboard flip to PASS is EXPECTED, not of
-// record, until the fork toolchain's conformance run (R9).
+// landed note finding 2(b)). Run 2026-10-13 on the container-built fork
+// toolchain (the upstream nightly does not implement `template constraint`):
+// PASS, printing exactly the EXPECT lines (plan "Landed notes (fill rounds 1
+// and 2)"); the flip is not of record until fork/conformance/out/
+// scoreboard.json is updated (R9).
 
 import Core library "io";
 

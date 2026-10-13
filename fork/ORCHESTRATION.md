@@ -33,7 +33,10 @@ post-advance firing: expect a small deferred set); the owner's machine is never
 used. Appended 2026-10-12 (SC-1 commit-3 fold): SC-1 (template structural
 conformance, W-027) is OPEN on claude/carbon-fork-0-1-sc and HELD awaiting the
 fork toolchain's autoupdate + gate + conformance — see the Branches row; no
-measured numbers yet, so the floor above stands.
+measured numbers yet, so the floor above stands. Appended 2026-10-13 (SC-1 fill
+rounds 1 and 2): the goldens are filled on the container-built toolchain and
+its gate and conformance ran (Branches row); the numbers are not of record
+until scoreboard.json is updated (R9), so the floor above still stands.
 
 FIFTY PRs. Seven weekly checks held the cut because the merge was too large to
 do safely by hand; it was done in one planned flow instead — two adversarial
@@ -357,7 +360,7 @@ code). Next check: Monday 14:00 UTC.
 
 | Branch | State |
 | --- | --- |
-| `claude/carbon-fork-0-1-sc` | OPEN — SC-1 (W-027, fork/structural/plan.md rev 2): `template constraint` member requirements in three commits (33b22ecbd SC-1a, 1f207c892 SC-1b, the SC-1c discharge commit) plus three fixer commits (0a1339807, 098ba3d64, and the commit-3 fold) folding the implementation reviews of commits 1, 2 and 3; docs page ported, two conformance programs under the structural bullet, ledger W-027 → implemented (W-134..W-143 and W-151 filed). NO FILL HAS RUN (Actions disabled; the upstream nightly lacks the feature): every SC-1 golden carries AUTOUPDATE and no CHECK lines, so the branch is HELD "awaiting the fork toolchain's autoupdate + gate + conformance". Dispatch list, in order: `autoupdate` to fixpoint on the branch head (expected movers: the two §6 goldens — parse/testdata/generics/named_constraint/template_constraint.carbon and check/testdata/named_constraint/invalid_members.carbon — plus every new golden under check/testdata/named_constraint/, check/testdata/interop/cpp/class/import/template_constraint.carbon and lower/testdata/template/template_constraint.carbon; any other pre-existing mover is a plan miss), then `gate` (nine new diagnostic kinds and `TemplateModifier` in the coverage tests), then `conformance` (expected 130 / 0 / 21 over 151, 49/56 — `42\n7` and `7\n0` only from a working check, D-SC-14's falsifier). |
+| `claude/carbon-fork-0-1-sc` | OPEN — SC-1 (W-027, fork/structural/plan.md rev 2): `template constraint` member requirements in three commits (33b22ecbd SC-1a, 1f207c892 SC-1b, the SC-1c discharge commit) plus three fixer commits (0a1339807, 098ba3d64, and the commit-3 fold) folding the implementation reviews of commits 1, 2 and 3; docs page ported, two conformance programs under the structural bullet, ledger W-027 → implemented (W-134..W-143 and W-151 filed). FILLED 2026-10-13 on the container-built toolchain (carbonbuild: fastbuild, assertions on; Actions stays disabled and the upstream nightly lacks the feature): fill round 1 (1a7cce0b2 fixes, bcaeadb98 goldens) and fill round 2 (the round-2 fixes and goldens, folding the two fill reviews, with the toolchain stamped at the fixes' commit), autoupdate to fixpoint over the 19 SC-1 goldens; file_test gate 1959 passed / 0 failed; conformance into a private outdir 130 / 0 / 21 over 151, 49/56, exactly generics/structural_conformance (SKIP → PASS, `42`, `7`) and the new interop/cpp_structural_conformance (PASS, `7`, `0`) moving — not of record until fork/conformance/out/scoreboard.json is updated (R9). Fill-caught misses and the round-2 decisions are in the plan's "Landed notes (fill rounds 1 and 2)"; PR after the records review. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |

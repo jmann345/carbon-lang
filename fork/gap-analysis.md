@@ -18,10 +18,11 @@ with real test coverage), **PARTIAL** (works with material gaps),
 **30 DONE / 22 PARTIAL / 3 MISSING / 1 DESIGN-ONLY** across 56 milestone
 bullets (reconciled 2026-10-12 against the EXPECTED conformance scoreboard —
 130 PASS / 0 FAIL / 21 SKIP over 151 programs, 49/56 bullets PASS, stated as
-expected, not of record: SC-1's two structural programs have never been run,
-because the upstream nightly does not implement `template constraint` and
-GitHub Actions is disabled, so the floor of record stays 128 / 0 / 22 over
-150, 48/56, run 37402970811 — and the
+expected, not of record: SC-1's two structural programs have run only on the
+container-built fork toolchain (2026-10-13, both PASS, 130 / 0 / 21 into a
+private outdir), because the upstream nightly does not implement `template
+constraint` and GitHub Actions is disabled, so the floor of record stays 128 /
+0 / 22 over 150, 48/56, run 37402970811 — and the
 fork/inventory/work-items.json ledger; the original 2026-07-19 audit read
 24 / 18 / 13 / 1; the if-let / let-else row flipped MISSING → PARTIAL at the
 W-012 landing later the same day). The front half of the compiler is done;
@@ -56,7 +57,7 @@ open back half.
 | Generics: Checked generics | DONE | Interfaces, impls (forall/blanket/final), witness tables, associated constants, where-rewrites, named constraints, deduction, specialization + match_first — ~227 golden tests; residual gaps (== constraints, observe semantics, interface defaults) are edges. |
 | Generics: Definition-checked variadics | DESIGN-ONLY | Complete 964-line design (docs/design/variadics.md, accepted p002240) but zero implementation — no `...`/`each` tokens exist in token_kind.def (verified). |
 | Generics: Integrated templates | PARTIAL | `template T: type` checks and simple dependent member access works by way of deferred actions, but operators/conversions on dependent values are fail_todo, lowering hits CARBON_FATAL 'Template lowering not implemented yet' (lower/handle.cpp:363), and templates.md is a self-described skeletal placeholder. |
-| Generics: Template-style structural conformance to nominal constraints | PARTIAL | `template constraint` METHOD and associated-function requirements landed (SC-1, F-010 B1, fork/structural/plan.md, 2026-10-12): a `template T: HasGet` binding is satisfied by a type's own matching `fn` members, no `impl`; a C++ class satisfies through its imported methods (`ref self` for a non-`const` method, value `self` for a `const` one); docs/design/generics/template_constraints.md ported. Status flip MISSING → PARTIAL is EXPECTED, not of record: the two programs generics/structural_conformance.carbon (SKIP removed, expected `42` then `7`) and interop/cpp_structural_conformance.carbon (new, expected `7` then `0`) have not been run — the upstream nightly does not implement the feature and Actions is disabled — so R9's scoreboard record is outstanding with no dispatch date, and every SC-1 golden awaits its autoupdate fill. Remaining: field requirements (F-010b, deferred against its recorded recommendation; W-134), associated-constant requirements (W-135), parameterized requirement functions (F-010l; W-136), default definitions in constraints (W-137), `require` validity blocks and boolean predicates (SC-B2, W-028), concept mapping (SC-B3, W-029). |
+| Generics: Template-style structural conformance to nominal constraints | PARTIAL | `template constraint` METHOD and associated-function requirements landed (SC-1, F-010 B1, fork/structural/plan.md, 2026-10-12): a `template T: HasGet` binding is satisfied by a type's own matching `fn` members, no `impl`; a C++ class satisfies through its imported methods (`ref self` for a non-`const` method, value `self` for a `const` one); docs/design/generics/template_constraints.md ported. Status flip MISSING → PARTIAL is EXPECTED, not of record: the two programs generics/structural_conformance.carbon (SKIP removed, expected `42` then `7`) and interop/cpp_structural_conformance.carbon (new, expected `7` then `0`) have run only on the container-built fork toolchain (2026-10-13: both PASS, `42` `7` and `7` `0`; file_test gate 1959 / 0 after two fill rounds) — the upstream nightly does not implement the feature and Actions is disabled — so R9's scoreboard record is outstanding until fork/conformance/out/scoreboard.json is updated. Remaining: field requirements (F-010b, deferred against its recorded recommendation; W-134), associated-constant requirements (W-135), parameterized requirement functions (F-010l; W-136), default definitions in constraints (W-137), `require` validity blocks and boolean predicates (SC-B2, W-028), concept mapping (SC-B3, W-029). |
 | Generics: C++ interop — importing C++ templates, instantiating on Carbon types | PARTIAL | Class/function/alias/variable templates import and instantiate on C++ types and Carbon builtins, but Carbon class types as template args error 'unsupported type used as template argument' (interop/cpp/template/generic_call.carbon). |
 | Generics: C++ interop — exporting Carbon templates/checked generics as C++ templates | PARTIAL | check/cpp/export.cpp creates clang FunctionTemplateDecls for type-parameter checked generics; non-type and enclosing-scope generics fail_todo; no Carbon-template export. |
 | Generics: C++ interop — C++20 concepts <-> named predicates mapping | PARTIAL | Concepts import as compile-time predicates (interop/cpp/template/concept.carbon passes); the export direction (Carbon predicates as C++20 concepts) has no trace. |
@@ -197,7 +198,8 @@ Template bindings and simple dependent member access exist, but dependent
 operators/conversions are fail_todo and template lowering is a hard fatal.
 Structural conformance to nominal constraints has its design in
 docs/design/generics/template_constraints.md (F-010; member requirements, B1,
-landed on the SC-1 branch 2026-10-12 with the fill pending —
+landed on the SC-1 branch 2026-10-12, goldens filled on the container-built
+toolchain 2026-10-13 —
 fork/structural/plan.md); templates.md links it. Also unlocks C++ templates
 instantiated on Carbon types.
 

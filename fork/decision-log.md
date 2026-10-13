@@ -4564,37 +4564,37 @@ reviews' probes.
     `BoundInStruct` and overload-set use in the requirement-call splits.
 
 FILL-CAUGHT MISSES (R28(d): a reviewed prediction the fill overturned; bcaeadb98
-lists (a) to (i), 502e7861a adds (j), bc8b37290 adds (k) and (l), ff490bd48
-adds (m)). (a) §4.A
-parse row: the tree prints `NamedConstraintIntroducer` before
-`TemplateModifier`, the class/introducer.carbon:30-31 placement the row itself
-cites; the prediction's order was wrong, the row is amended. (b) §4.B
-checked-binding row, `fail_implicit_binding_compound_use`, "EXACTLY ONE
-diagnostic": round 1's fill added `MissingGenericFunctionDefinition` at
-`CallGet`'s `x.Get()`, its note at the requirement. D-SC-6's cascade guard
-covered the conversion of `x`, but `CallGet`'s template body was then
-instantiated for `Bad`'s symbolic specific, where `x.Get` on the
-checked-symbolic `T` resolved to the bodiless requirement (the facet redirect
-applies to a concrete self only). Left OPEN at round 1, recorded as an
-error-recovery cascade and not silenced (bcaeadb98); FIXED at round 2 (review 1
-MAJOR-2, review 2 F1): D-SC-8(i) gives the diagnosed checked binding an error
-type, as an invalid binding type does (handle_binding_pattern.cpp:329-338),
-D-SC-6's positive branch lost its only input and was deleted (R17), and
-502e7861a shows exactly one diagnostic, the row as written. (c) §4.B unsatisfied
-row, `fail_incomplete` and `fail_incomplete_class_param`: the error line is
-R-6's Context diagnostic `StructuralRequirementIncompleteType` itself
-("incomplete type `Inc` cannot satisfy template constraint `HasGet`"), followed
-by `ClassForwardDeclaredHere` and `InitializingGenericParam`, with no
-`DeductionGenericHere` since both pass the type explicitly; within R-6's
-allowance, the row is amended. (d) §4.B ladder row: `c.DoF()` cannot name a
-member of a non-`extend` impl (`MemberNameNotFoundInInstScope`); the splits take
-p002200's `x.(NewF.DoF)()` (proposals/p002200-template-generics.md:624, R27)
-since 1a7cce0b2 and its changed-constraint `G` since round 2 (review 2 M5),
-after which both predictions hold and D-SC-19's break condition did not fire.
-(e) every "No STDERR" positive row carried upstream's `UnusedBinding` warnings
-at round 1; round 2 spells `unused` on those bindings (review 2 M2), so the rows
-hold as written. (f) satisfy `method`: the `facet_value`/`converted` pair prints
-twice (deduction, then the argument), upstream's shape
+lists (a) to (i), 502e7861a adds (j), bc8b37290 adds (k) and (l), ff490bd48 adds
+(m), 18775fee3 adds (n) and (o)). (a) §4.A parse row: the tree prints
+`NamedConstraintIntroducer` before `TemplateModifier`, the
+class/introducer.carbon:30-31 placement the row itself cites; the prediction's
+order was wrong, the row is amended. (b) §4.B checked-binding row,
+`fail_implicit_binding_compound_use`, "EXACTLY ONE diagnostic": round 1's fill
+added `MissingGenericFunctionDefinition` at `CallGet`'s `x.Get()`, its note at
+the requirement. D-SC-6's cascade guard covered the conversion of `x`, but
+`CallGet`'s template body was then instantiated for `Bad`'s symbolic specific,
+where `x.Get` on the checked-symbolic `T` resolved to the bodiless requirement
+(the facet redirect applies to a concrete self only). Left OPEN at round 1,
+recorded as an error-recovery cascade and not silenced (bcaeadb98); FIXED at
+round 2 (review 1 MAJOR-2, review 2 F1): D-SC-8(i) gives the diagnosed checked
+binding an error type, as an invalid binding type does
+(handle_binding_pattern.cpp:329-338), D-SC-6's positive branch lost its only
+input and was deleted (R17), and 502e7861a shows exactly one diagnostic, the row
+as written. (c) §4.B unsatisfied row, `fail_incomplete` and
+`fail_incomplete_class_param`: the error line is R-6's Context diagnostic
+`StructuralRequirementIncompleteType` itself ("incomplete type `Inc` cannot
+satisfy template constraint `HasGet`"), followed by `ClassForwardDeclaredHere`
+and `InitializingGenericParam`, with no `DeductionGenericHere` since both pass
+the type explicitly; within R-6's allowance, the row is amended. (d) §4.B ladder
+row: `c.DoF()` cannot name a member of a non-`extend` impl
+(`MemberNameNotFoundInInstScope`); the splits take p002200's `x.(NewF.DoF)()`
+(proposals/p002200-template-generics.md:624, R27) since 1a7cce0b2 and its
+changed-constraint `G` since round 2 (review 2 M5), after which both predictions
+hold and D-SC-19's break condition did not fire. (e) every "No STDERR" positive
+row carried upstream's `UnusedBinding` warnings at round 1; round 2 spells
+`unused` on those bindings (review 2 M2), so the rows hold as written. (f)
+satisfy `method`: the `facet_value`/`converted` pair prints twice (deduction,
+then the argument), upstream's shape
 (interop/cpp/function/export/generic.carbon:446-449), where the row predicted
 one; the row is amended. (g) the compound, dependent and import positives had no
 dump range, so their SemIR claims were verified by round-1 probes, not goldens;
@@ -4620,14 +4620,23 @@ fill prints the facet type as `J & HasGet`, and the row is amended. (m) the
 round-4 §4.B requirement-call row predicted exactly one error and its
 requirement note per value use; each of the nine uses that is a call argument
 also carries `InCallToFunctionParam`, the context the call-argument conversion
-attaches to any error inside it (upstream's shape), and the row is amended. One
-round-3 clause is withdrawn from the held predictions rather than counted as a
-miss: the requirement-call row's `UseStructurally` note was read off the
-pre-fill build of round 3's own sources (round 3's review 2, MINOR-7). No miss
-hides a defect: (a), (c), (f), (l) and (m) were prediction errors, (b) and (e) a
-cascade and a warning class now gone, (d), (j) and (k) test-source spellings,
-(g) a coverage gap now dumped where the claim needed a dump, and (h) and (i)
-design sentences amended in place beside their fixes.
+attaches to any error inside it (upstream's shape), and the row is amended. (n)
+the round-5 compound row predicted no `.Self` binding in the
+`requirement_typeof` range; the range shows `%.Self.frozen: type`, upstream's
+frozen `.Self` of the `type` facet its `T: type` parameters spell (as every such
+compound dump already did), and no constraint's `.Self`. (o) the round-5 lower
+row predicted `Take` specifics over `C.N`'s and `C.Get`'s function types; the IR
+has one `Take` definition called for the three tuple shapes, since the mangled
+name of those specifics does not distinguish the tuple types, as trunk 0bdce60a5
+lowers the same calls written without a template. One round-3 clause is
+withdrawn from the held predictions rather than counted as a miss: the
+requirement-call row's `UseStructurally` note was read off the pre-fill build of
+round 3's own sources (round 3's review 2, MINOR-7). No miss hides a defect:
+(a), (c), (f), (l), (m), (n) and (o) were prediction errors (the mangling (o)
+shows is trunk's, outside SC-1), (b) and (e) a cascade and a warning class now
+gone, (d), (j) and (k) test-source spellings, (g) a coverage gap now dumped
+where the claim needed a dump, and (h) and (i) design sentences amended in place
+beside their fixes.
 
 REVIEWS. Fill round 1 received two implementation reviews, both
 APPROVE-WITH-FIXES with no BLOCKER: review 1, 3 MAJOR and 5 MINOR (MAJOR-1
@@ -4773,24 +4782,37 @@ round-4 sources before the commit, stamped 0.0.0-0.dev+2497d5000.dirty, the
 uncommitted edits being exactly aa67ea281's): autoupdate over the 19 SC-1
 goldens to a fixpoint, its first pass reporting compound `checked_generic_name`
 as a failing positive (its statement use of the requirement, now refused,
-respelled before aa67ea281), the last pass changing nothing; gate 1959 passed,
-0 failed; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets
-49 PASS, 0 FAIL, 7 SKIP of 56. Re-run on the toolchain rebuilt from ff490bd48
-with a clean tree (stamped 0.0.0-0.dev+ff490bd48): autoupdate over the 19 SC-1
+respelled before aa67ea281), the last pass changing nothing; gate 1959 passed, 0
+failed; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49
+PASS, 0 FAIL, 7 SKIP of 56. Re-run on the toolchain rebuilt from ff490bd48 with
+a clean tree (stamped 0.0.0-0.dev+ff490bd48): autoupdate over the 19 SC-1
 goldens changed nothing; gate 1959 passed, 0 failed, exit 0, no `!` or `?` mark;
 conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
 FAIL, 7 SKIP of 56, 108.2 s. Every check-clean probe of round 2's and round 3's
 reviews and of this round (60 programs) compiles on it; the three that abort at
-sem_ir/generic.cpp:84 (round 2's p40, p41, p43) abort so on trunk 0bdce60a5
-too. Re-run for the records commit after d232d4753, on d232d4753 with that
-installed toolchain (no toolchain source differs from aa67ea281): autoupdate
-over the 19 SC-1 goldens changed nothing, the satisfy golden whose W-168 comment
-round 4 edited printing a single dot; gate 1959 passed, 0 failed, exit 0, no `!`
-or `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151,
-bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 48.9 s. Against
-fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
-exactly two programs move in every run: generics/structural_conformance.carbon
-SKIP to PASS (`42` then `7`) and the new
+sem_ir/generic.cpp:84 (round 2's p40, p41, p43) abort so on trunk 0bdce60a5 too.
+Re-run for the records commit after d232d4753, on d232d4753 with that installed
+toolchain (no toolchain source differs from aa67ea281): autoupdate over the 19
+SC-1 goldens changed nothing, the satisfy golden whose W-168 comment round 4
+edited printing a single dot; gate 1959 passed, 0 failed, exit 0, no `!` or `?`
+mark; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49
+PASS, 0 FAIL, 7 SKIP of 56, 48.9 s. Round 5 (the toolchain built from the
+round-5 sources before the commit, stamped 0.0.0-0.dev+77838fdd5.dirty, the
+uncommitted edits being exactly 616d0bc4f's): autoupdate over the 19 SC-1
+goldens to a fixpoint (pass 1 rewrote 5, pass 2 none); gate 1959 passed, 0
+failed; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49
+PASS, 0 FAIL, 7 SKIP of 56. Re-run on the toolchain rebuilt from 18775fee3 with
+a clean tree (stamped 0.0.0-0.dev+18775fee3): autoupdate over the 19 SC-1
+goldens changed nothing; gate 1959 passed, 0 failed, exit 0, no `!` or `?` mark;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56, 60.9 s. The probes of round 2's, round 3's and round 4's
+reviews and round 5's own (39, and a three-file import) run on it: every round-4
+abort is a check error or a running program; the aborts left (round 2's p40,
+p41, p43 at sem_ir/generic.cpp:84; `typeof` of a bound method; C++ calling a
+Carbon template; the nested-tuple and `if` lowering of a function value) abort
+so on trunk 0bdce60a5 too. Against fork/conformance/out/scoreboard.json (128 / 0
+/ 22 over 150, run 37402970811) exactly two programs move in every run:
+generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
 interop/cpp_structural_conformance.carbon PASS (`7` then `0`), plan §5's 130 / 0
 / 21 over 151, EXPECTED and not of record.
 
@@ -4836,27 +4858,30 @@ D-SC-20 amendments, round 3's thunk decision marked superseded, round 3's tally
 and its `UseStructurally` clause corrected, the round-3 review record, round 4's
 dispositions and decisions, and §4.B rows for round 4's splits written before
 the build under test ran on them; W-168 filed and W-027 re-cited; this entry;
-the design page (the value rule, "class or union", the qualified alias
-sentence, the D-SC-5(c) label); the ORCHESTRATION status paragraph and Branches
-row. Round 4's records commit, d232d4753: the four round-4 §4.B rows and the
-compound row's amendment marked FILLED, miss (m), the round-4 measurements here
-and in the plan, W-027's notes, and the Branches row. The records commit after
-d232d4753: round 4's commit hashes at the head of this entry and of the plan's
-note, round 3's review counts and per-finding dispositions (REVIEWS above), the
-re-measure on d232d4753 here and in the plan, the ORCHESTRATION status
-paragraph and Branches row, and W-027's notes and evidence. Round 5's fixes
-commit: the plan's D-SC-20 replaced and D-SC-9 amended, the round-1 `.Self`
-decision marked superseded, round 4's BLOCKER-1 bullet and decision amended
-(their root-cause and "only uses" claims), round 4's review record, round 5's
-dispositions and decision, and §4.B rows for round 5's splits written before the
-fill; this entry (round 4's root-cause sentence amended, ROUND 5's DECISION, the
-round-4 review record); the design page (the value rule, `typeof`, the kind's
-name); the ORCHESTRATION status paragraph and Branches row; W-027's evidence and
-W-168's cites re-pointed at the moved lines (name_lookup.cpp:548,
-member_access.cpp:455-457), as are the comments of satisfy
-`fail_todo_ambiguous_with_interface`, require
+the design page (the value rule, "class or union", the qualified alias sentence,
+the D-SC-5(c) label); the ORCHESTRATION status paragraph and Branches row. Round
+4's records commit, d232d4753: the four round-4 §4.B rows and the compound row's
+amendment marked FILLED, miss (m), the round-4 measurements here and in the
+plan, W-027's notes, and the Branches row. The records commit after d232d4753:
+round 4's commit hashes at the head of this entry and of the plan's note, round
+3's review counts and per-finding dispositions (REVIEWS above), the re-measure
+on d232d4753 here and in the plan, the ORCHESTRATION status paragraph and
+Branches row, and W-027's notes and evidence. Round 5's fixes commit 616d0bc4f
+and goldens commit 18775fee3; its fixes commit: the plan's D-SC-20 replaced and
+D-SC-9 amended, the round-1 `.Self` decision marked superseded, round 4's
+BLOCKER-1 bullet and decision amended (their root-cause and "only uses" claims),
+round 4's review record, round 5's dispositions and decision, and §4.B rows for
+round 5's splits written before the fill; this entry (round 4's root-cause
+sentence amended, ROUND 5's DECISION, the round-4 review record); the design
+page (the value rule, `typeof`, the kind's name); the ORCHESTRATION status
+paragraph and Branches row; W-027's evidence and W-168's cites re-pointed at the
+moved lines (name_lookup.cpp:548, member_access.cpp:455-457), as are the
+comments of satisfy `fail_todo_ambiguous_with_interface`, require
 `fail_todo_require_in_interface_in_generic_class_impl` and requirement-call
-`fail_todo_runtime_facet`.
+`fail_todo_runtime_facet`. Round 5's records commit, after 18775fee3: the three
+round-5 §4.B rows marked FILLED, misses (n) and (o), the round-5 measurements
+here and in the plan, the ORCHESTRATION status paragraph and Branches row, and
+W-027's notes.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

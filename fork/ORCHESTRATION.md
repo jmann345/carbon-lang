@@ -10,23 +10,22 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-06 (post-PR #50: UPSTREAM ADVANCE (UA-1) LANDED — the
-cut moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
-commits, 105 conflicts (31 sources and docs, 74 goldens), every class-B
-mechanism re-expressed inside upstream's structure (D-UA-6 redeclarations,
-D-UA-7 thunk fence, D-UA-9 destroy witnesses), two class-C deletions (S3b
-publication, the F8d embedding), one source conflict at the SL-2 re-merge.
-Floor UNCHANGED at 128 PASS / 0 / 22 SKIP over 150 (quoted from
-scoreboard.json, run 37402970811), 48/56 bullets — the bar was non-regression
-and it held; the pre-merge board was trunk's pre-SL-2 floor exactly. Two
-upstream latent bugs fixed on the way: a null `QualType` in the
-generic-function arm of `TryMapType`, and `if`-expression arm / short-circuit
-operand cleanups that destroyed an unconstructed temporary on the other path
-(caught by upstream's new SSA verifier against the fork's `?` operator). The
-mirrored-nightly A/B was not run (no nightly at or after 2026-10-02 mirrored).
-NEXT: UA-2 reconciliation (fork/upstream/plan.md §8.5: un-SKIP the §0.6
-probes, the W-108 pin golden, ledger and gap-analysis re-cites, the
-pre-existing manufactured decision-log heading, optional A/B for the record;
+Last updated: 2026-10-06 (post-PR #50: UPSTREAM ADVANCE (UA-1) LANDED — the cut
+moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183 commits,
+105 conflicts (31 sources and docs, 74 goldens), every class-B mechanism
+re-expressed inside upstream's structure (D-UA-6 redeclarations, D-UA-7 thunk
+fence, D-UA-9 destroy witnesses), two class-C deletions (S3b publication, the
+F8d embedding), one source conflict at the SL-2 re-merge. Floor UNCHANGED at 128
+PASS / 0 / 22 SKIP over 150 (quoted from scoreboard.json, run 37402970811),
+48/56 bullets — the bar was non-regression and it held; the pre-merge board was
+trunk's pre-SL-2 floor exactly. Two upstream latent bugs fixed on the way: a
+null `QualType` in the generic-function arm of `TryMapType`, and `if`-expression
+arm / short-circuit operand cleanups that destroyed an unconstructed temporary
+on the other path (caught by upstream's new SSA verifier against the fork's `?`
+operator). The mirrored-nightly A/B was not run (no nightly at or after
+2026-10-02 mirrored). NEXT: UA-2 reconciliation (fork/upstream/plan.md §8.5:
+un-SKIP the §0.6 probes, the W-108 pin golden, ledger and gap-analysis re-cites,
+the pre-existing manufactured decision-log heading, optional A/B for the record;
 expected ceiling 129 / 0 / 20 over 150 if the probes flip), then variadics,
 CMake integration, safe-Carbon design. Next cron Monday 2026-10-12 (first
 post-advance firing: expect a small deferred set); the owner's machine is never
@@ -42,23 +41,25 @@ disabled), so none of it is of record (R9) and the floor above still stands. Its
 PR is to be opened and held open until the land sequence (Branches row). Fill
 round 3 (same day; 0efe76e7d, bc8b37290, 5171e5eda) folded round 2's two
 implementation reviews (REJECT on one BLOCKER, and APPROVE-WITH-FIXES; 15
-findings: 13 fixed as asked, MAJOR-1 and F5 in part, F5's ledger id following
-at round 4) and re-measured the same numbers on the toolchain stamped
+findings: 13 fixed as asked, MAJOR-1 and F5 in part, F5's ledger id following at
+round 4) and re-measured the same numbers on the toolchain stamped
 0.0.0-0.dev+bc8b37290, again on 5171e5eda for the records commit after it,
 2497d5000. Fill round 4 (same day; aa67ea281, ff490bd48, d232d4753) folds round
 3's two implementation reviews (REJECT on one BLOCKER, and APPROVE-WITH-FIXES;
 13 findings, 13 fixed as asked, though round 4's own reviews found the BLOCKER's
 crash class still open through `typeof` and template instantiation): a
 requirement passed as a value, which checked clean and aborted lowering, is
-refused; an impl inside a `union` body has its structural `require` checked;
-the round-2 residue is W-168. Re-measured on the toolchain stamped
+refused; an impl inside a `union` body has its structural `require` checked; the
+round-2 residue is W-168. Re-measured on the toolchain stamped
 0.0.0-0.dev+ff490bd48: the same numbers, again on d232d4753 for the records
 commit after it. Fill round 5 (same day) folds round 4's two implementation
-reviews (both REJECT; 9 findings, all fixed, none rejected): a requirement
-named with no self type is now a value of its own concrete type, so `typeof`
-of it and a template instantiated with a facet type no longer abort lowering;
-the `.Self` lookup is deleted; value uses are refused by type, at instantiation
-too. Commits and measurements: the Branches row.
+reviews (both REJECT; 9 findings, all fixed, none rejected): a requirement named
+with no self type is now a value of its own concrete type, so `typeof` of it and
+a template instantiated with a facet type no longer abort lowering; the `.Self`
+lookup is deleted; value uses are refused by type, at instantiation too. Commits
+616d0bc4f (fixes) and 18775fee3 (goldens); re-measured on the toolchain stamped
+0.0.0-0.dev+18775fee3: the same numbers, the branch head being the records
+commit after them (Branches row).
 
 FIFTY PRs. Seven weekly checks held the cut because the merge was too large to
 do safely by hand; it was done in one planned flow instead — two adversarial
@@ -382,7 +383,7 @@ code). Next check: Monday 14:00 UTC.
 
 | Branch | State |
 | --- | --- |
-| `claude/carbon-fork-0-1-sc` | IMPLEMENTED, FILLED, GATED AND CONFORMANCE-VERIFIED ON THE CONTAINER-BUILT TOOLCHAIN — PR TO OPEN, HELD OPEN until the land sequence. SC-1 (W-027, fork/structural/plan.md rev 2): `template constraint` method and associated-function requirements in three commits (33b22ecbd SC-1a, 1f207c892 SC-1b, 43575bf1d SC-1c) with their review folds (0a1339807, 098ba3d64, 42841fa8d), then five fill rounds (1a7cce0b2 fixes, bcaeadb98 goldens, 2f4ebbf6e records; 6f2f40d3c fixes, 502e7861a goldens, cb85e6b8b records, and the fill-rounds records commit 830447980; 0efe76e7d fixes, bc8b37290 goldens, 5171e5eda records and the records commit 2497d5000 after it, folding round 2's two implementation reviews (REJECT: 1 BLOCKER, 1 MAJOR, 4 MINOR; APPROVE-WITH-FIXES: 2 MAJOR, 7 MINOR; 13 of the 15 fixed as asked, MAJOR-1 in part with its second guard declined on evidence, F5 in part with its ledger id deferred to round 4): a requirement `fn` as an impl member, which passed check and aborted lowering, is now rejected at the impl; round 4's aa67ea281 fixes, ff490bd48 goldens, d232d4753 records and the records commit 77838fdd5 after it, folding round 3's two implementation reviews (REJECT: 1 BLOCKER, 1 MAJOR, 2 MINOR; APPROVE-WITH-FIXES: 2 MAJOR, 7 MINOR; 13 fixed as asked): a requirement passed as a value, which checked clean and aborted lowering, is refused in `Convert`; an impl inside a `union` body has its structural `require` checked at the union's end; and round 5's fixes, goldens and records commits, the head, folding round 4's two implementation reviews (REJECT: 2 BLOCKER, 2 MAJOR, 1 MINOR; REJECT: 1 BLOCKER, 1 MAJOR, 2 MINOR; 9 findings, all fixed, none rejected): round 4's check was a use-site guard (R17), and `typeof` of a requirement and a template instantiated with a facet type still checked clean and aborted lowering, so a requirement named with no self type is now a value of its own concrete type, `StructuralRequirementType` (D-SC-20 replaced, the `.Self` lookup deleted), its value uses refused by type and at instantiation, the kind renamed `StructuralRequirementUsed`); docs page ported, two conformance programs under the structural bullet, ledger W-027 → implemented (W-134..W-143, W-151 and W-168 filed, W-168 the round-2 residue). Container results, as measured there (carbonbuild: fastbuild of the branch, Carbon assertions on; toolchain 0.0.0-0.dev+ff490bd48 since round 4, 0.0.0-0.dev+bc8b37290 at round 3, 0.0.0-0.dev+6f2f40d3c before): autoupdate to fixpoint over the 19 SC-1 goldens; file_test gate 1959 passed / 0 failed (re-run on bc8b37290, on 5171e5eda with that toolchain, on ff490bd48, and on d232d4753 with that toolchain); conformance into a private outdir 130 / 0 / 21 over 151, 49/56 (the same on 5171e5eda, on ff490bd48 and on d232d4753), exactly generics/structural_conformance (SKIP → PASS, `42`, `7`) and the new interop/cpp_structural_conformance (PASS, `7`, `0`) moving. Hosted results: NOT RUN (Actions disabled), so none of this is of record (R9) until a hosted autoupdate, gate and conformance run on the PR head; fork/ORCHESTRATION.md conflicts with trunk's later header and Branches edits and is resolved at the merge. Round 5's own diff has no implementation review on record. Records: the plan's "Landed notes (SC-1 fill rounds, 2026-10-13)" and the decision log's "SC-1 fill rounds (2026-10-13)", which holds all five rounds (the separate round-3 entry is folded into it). |
+| `claude/carbon-fork-0-1-sc` | IMPLEMENTED, FILLED, GATED AND CONFORMANCE-VERIFIED ON THE CONTAINER-BUILT TOOLCHAIN — PR TO OPEN, HELD OPEN until the land sequence. SC-1 (W-027, fork/structural/plan.md rev 2): `template constraint` method and associated-function requirements in three commits (33b22ecbd SC-1a, 1f207c892 SC-1b, 43575bf1d SC-1c) with their review folds (0a1339807, 098ba3d64, 42841fa8d), then five fill rounds (1a7cce0b2 fixes, bcaeadb98 goldens, 2f4ebbf6e records; 6f2f40d3c fixes, 502e7861a goldens, cb85e6b8b records, and the fill-rounds records commit 830447980; 0efe76e7d fixes, bc8b37290 goldens, 5171e5eda records and the records commit 2497d5000 after it, folding round 2's two implementation reviews (REJECT: 1 BLOCKER, 1 MAJOR, 4 MINOR; APPROVE-WITH-FIXES: 2 MAJOR, 7 MINOR; 13 of the 15 fixed as asked, MAJOR-1 in part with its second guard declined on evidence, F5 in part with its ledger id deferred to round 4): a requirement `fn` as an impl member, which passed check and aborted lowering, is now rejected at the impl; round 4's aa67ea281 fixes, ff490bd48 goldens, d232d4753 records and the records commit 77838fdd5 after it, folding round 3's two implementation reviews (REJECT: 1 BLOCKER, 1 MAJOR, 2 MINOR; APPROVE-WITH-FIXES: 2 MAJOR, 7 MINOR; 13 fixed as asked): a requirement passed as a value, which checked clean and aborted lowering, is refused in `Convert`; an impl inside a `union` body has its structural `require` checked at the union's end; and round 5's 616d0bc4f fixes, 18775fee3 goldens and the records commit after it, the head, folding round 4's two implementation reviews (REJECT: 2 BLOCKER, 2 MAJOR, 1 MINOR; REJECT: 1 BLOCKER, 1 MAJOR, 2 MINOR; 9 findings, all fixed, none rejected): round 4's check was a use-site guard (R17), and `typeof` of a requirement and a template instantiated with a facet type still checked clean and aborted lowering, so a requirement named with no self type is now a value of its own concrete type, `StructuralRequirementType` (D-SC-20 replaced, the `.Self` lookup deleted), its value uses refused by type and at instantiation, the kind renamed `StructuralRequirementUsed`); docs page ported, two conformance programs under the structural bullet, ledger W-027 → implemented (W-134..W-143, W-151 and W-168 filed, W-168 the round-2 residue). Container results, as measured there (carbonbuild: fastbuild of the branch, Carbon assertions on; toolchain 0.0.0-0.dev+18775fee3 since round 5, 0.0.0-0.dev+ff490bd48 at round 4, 0.0.0-0.dev+bc8b37290 at round 3, 0.0.0-0.dev+6f2f40d3c before): autoupdate to fixpoint over the 19 SC-1 goldens; file_test gate 1959 passed / 0 failed (re-run on bc8b37290, on 5171e5eda with that toolchain, on ff490bd48, on d232d4753 with that toolchain, and on 18775fee3); conformance into a private outdir 130 / 0 / 21 over 151, 49/56 (the same on 5171e5eda, on ff490bd48, on d232d4753 and on 18775fee3), exactly generics/structural_conformance (SKIP → PASS, `42`, `7`) and the new interop/cpp_structural_conformance (PASS, `7`, `0`) moving. Hosted results: NOT RUN (Actions disabled), so none of this is of record (R9) until a hosted autoupdate, gate and conformance run on the PR head; fork/ORCHESTRATION.md conflicts with trunk's later header and Branches edits and is resolved at the merge. Round 5's own diff has no implementation review on record. Records: the plan's "Landed notes (SC-1 fill rounds, 2026-10-13)" and the decision log's "SC-1 fill rounds (2026-10-13)", which holds all five rounds (the separate round-3 entry is folded into it). |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
 | `claude/carbon-fork-0-1-{b1,b1b}` | MERGED by way of PRs #15/#16 — error-handling B1 complete. |

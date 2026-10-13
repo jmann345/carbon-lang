@@ -120,13 +120,43 @@ class C {
 }
 
 impl C as I {
+  // CHECK:STDERR: fail_impl_member_alias.carbon:[[@LINE+10]]:9: error: associated function F implemented by non-function [ImplFunctionWithNonFunction]
+  // CHECK:STDERR:   alias F = HasGet.Get;
+  // CHECK:STDERR:         ^
+  // CHECK:STDERR: fail_impl_member_alias.carbon:[[@LINE-13]]:3: note: associated function F declared here [AssociatedFunctionHere]
+  // CHECK:STDERR:   fn F(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_impl_member_alias.carbon:[[@LINE-24]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   alias F = HasGet.Get;
+  // CHECK:STDERR: fail_impl_member_alias.carbon:[[@LINE+10]]:9: error: associated function Mk implemented by non-function [ImplFunctionWithNonFunction]
+  // CHECK:STDERR:   alias Mk = HasMake.Make;
+  // CHECK:STDERR:         ^~
+  // CHECK:STDERR: fail_impl_member_alias.carbon:[[@LINE-23]]:3: note: associated function Mk declared here [AssociatedFunctionHere]
+  // CHECK:STDERR:   fn Mk() -> Self;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_impl_member_alias.carbon:[[@LINE-31]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Make() -> Self;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   alias Mk = HasMake.Make;
 }
 
 class D {
   fn Get(unused self) -> i32 { return 5; }
   extend impl as I {
+    // CHECK:STDERR: fail_impl_member_alias.carbon:[[@LINE+10]]:11: error: associated function F implemented by non-function [ImplFunctionWithNonFunction]
+    // CHECK:STDERR:     alias F = HasGet.Get;
+    // CHECK:STDERR:           ^
+    // CHECK:STDERR: fail_impl_member_alias.carbon:[[@LINE-40]]:3: note: associated function F declared here [AssociatedFunctionHere]
+    // CHECK:STDERR:   fn F(self) -> i32;
+    // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+    // CHECK:STDERR: fail_impl_member_alias.carbon:[[@LINE-51]]:3: note: requirement declared here [StructuralRequirementHere]
+    // CHECK:STDERR:   fn Get(self) -> i32;
+    // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+    // CHECK:STDERR:
     alias F = HasGet.Get;
     fn Mk() -> D { return {}; }
   }
@@ -142,6 +172,19 @@ template constraint HasF {
 
 fn ViaHasF[template T: HasF](x: T) -> i32 { return x.F(); }
 
+// CHECK:STDERR: fail_impl_member_alias.carbon:[[@LINE+13]]:42: error: cannot convert type `D` into type implementing `HasF` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn UseStructurally(d: D) -> i32 { return ViaHasF(d); }
+// CHECK:STDERR:                                          ^~~~~~~~~~
+// CHECK:STDERR: fail_impl_member_alias.carbon:[[@LINE+10]]:42: note: member `F` of type `D` does not match the signature required by template constraint `HasF` [StructuralMemberMismatch]
+// CHECK:STDERR: fn UseStructurally(d: D) -> i32 { return ViaHasF(d); }
+// CHECK:STDERR:                                          ^~~~~~~~~~
+// CHECK:STDERR: fail_impl_member_alias.carbon:[[@LINE-11]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn F(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_impl_member_alias.carbon:[[@LINE-11]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn ViaHasF[template T: HasF](x: T) -> i32 { return x.F(); }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn UseStructurally(d: D) -> i32 { return ViaHasF(d); }
 
 // --- fail_ladder_alias.carbon
@@ -159,6 +202,16 @@ interface NewF {
 }
 
 impl forall [template T: HasGet] T as NewF {
+  // CHECK:STDERR: fail_ladder_alias.carbon:[[@LINE+10]]:9: error: associated function DoF implemented by non-function [ImplFunctionWithNonFunction]
+  // CHECK:STDERR:   alias DoF = HasGet.Get;
+  // CHECK:STDERR:         ^~~
+  // CHECK:STDERR: fail_ladder_alias.carbon:[[@LINE-7]]:3: note: associated function DoF declared here [AssociatedFunctionHere]
+  // CHECK:STDERR:   fn DoF(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_ladder_alias.carbon:[[@LINE-14]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   alias DoF = HasGet.Get;
 }
 

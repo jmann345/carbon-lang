@@ -267,7 +267,15 @@ interface I2 {
 
 class C {
   fn Get(unused self) -> i32 { return 1; }
+  // CHECK:STDERR: fail_require_mixed_in_class_impl_order.carbon:[[@LINE+4]]:3: error: interface `I1` being implemented requires that `C` implements `J & HasGet` [InterfaceRequireImplsNotImplemented]
+  // CHECK:STDERR:   impl as I1 {}
+  // CHECK:STDERR:   ^~~~~~~~~~~~
+  // CHECK:STDERR:
   impl as I1 {}
+  // CHECK:STDERR: fail_require_mixed_in_class_impl_order.carbon:[[@LINE+4]]:3: error: interface `I2` being implemented requires that `C` implements `J` [InterfaceRequireImplsNotImplemented]
+  // CHECK:STDERR:   impl as I2 {}
+  // CHECK:STDERR:   ^~~~~~~~~~~~
+  // CHECK:STDERR:
   impl as I2 {}
   impl as J {}
 }
@@ -335,6 +343,10 @@ interface I {
 
 class Lacking {
   class Inner {
+    // CHECK:STDERR: fail_require_self_class_being_defined_lacking.carbon:[[@LINE+4]]:5: error: interface `I` being implemented requires that `Lacking` implements `HasGet` [InterfaceRequireImplsNotImplemented]
+    // CHECK:STDERR:     impl Lacking as I {}
+    // CHECK:STDERR:     ^~~~~~~~~~~~~~~~~~~
+    // CHECK:STDERR:
     impl Lacking as I {}
   }
 }
@@ -359,12 +371,20 @@ interface I {
 
 class Box(T: type) {
   fn Get(unused self) -> i32 { return 1; }
+  // CHECK:STDERR: fail_todo_require_in_interface_in_generic_class_impl.carbon:[[@LINE+4]]:3: error: interface `I` being implemented requires that `Box(T)` implements `HasGet` [InterfaceRequireImplsNotImplemented]
+  // CHECK:STDERR:   impl as I {}
+  // CHECK:STDERR:   ^~~~~~~~~~~
+  // CHECK:STDERR:
   impl as I {}
 }
 
 class Outer(T: type) {
   class Inner {
     fn Get(unused self) -> i32 { return 1; }
+    // CHECK:STDERR: fail_todo_require_in_interface_in_generic_class_impl.carbon:[[@LINE+4]]:5: error: interface `I` being implemented requires that `Inner` implements `HasGet` [InterfaceRequireImplsNotImplemented]
+    // CHECK:STDERR:     impl as I {}
+    // CHECK:STDERR:     ^~~~~~~~~~~
+    // CHECK:STDERR:
     impl as I {}
   }
 }

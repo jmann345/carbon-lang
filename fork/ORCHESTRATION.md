@@ -75,9 +75,9 @@ W-160 and mints fork design id F-014. A reserved id that goes unused stays
 unused. EV-1 merges after PR 52 (its state C integration commit); ST-1's order
 is set at its sign-off.
 
-Later on 2026-10-13: PR #54 (EV-1, claude/carbon-fork-0-1-ev, head cb3ef2e74:
-the three evaluator guides, twelve transcribed programs, W-062 discharged,
-W-152, W-153 and W-155 filed, expected 137/0/22 over 159) and PR #55 (ST-1,
+Later on 2026-10-13: PR 54 (EV-1, claude/carbon-fork-0-1-ev, head cb3ef2e74: the
+three evaluator guides, twelve transcribed programs, W-062 discharged, W-152,
+W-153 and W-155 filed, expected 137/0/22 over 159) and PR 55 (ST-1,
 claude/carbon-fork-0-1-st, head 21307851a: str comparison, Core.StringBuf and
 concatenation under F-014, W-057 discharged, W-160 to W-167 filed, expected
 133/0/21 over 154) are OPEN and HELD; both were verified on the container-built
@@ -86,11 +86,9 @@ hosted run. SC-1 is through fill round 3 (head 2497d5000, gate 1959/1959,
 conformance 130/0/21 over 151) with a round-3 review in progress; W-168 and
 W-169 are reserved for its late residues. OP-1 (claude/carbon-fork-0-1-op,
 fork/optional/plan.md: Core.Optional comparison for W-058) is in planning with
-ids from W-170 and fork design id F-015 if minted. Merge order now: #53, #51,
-
-## 52, SC-1, #54 (EV-1, after its state C integration commit), #55 (ST-1), then
-
-OP-1. None is merged.
+ids from W-170 and fork design id F-015 if minted. Merge order now: PR 53, PR
+51, PR 52, SC-1, PR 54 (EV-1, after its state C integration commit), PR 55
+(ST-1), then OP-1. None is merged.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
@@ -419,7 +417,7 @@ Nightly Release is guarded to the upstream repository (user decision — the
 workflow needs an upstream-only GCS credential and never built fork
 code). Next check: Monday 14:00 UTC.
 
-### Branches
+## Branches
 
 | Branch | State |
 | --- | --- |
@@ -439,7 +437,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-7mwfb7-design-docs` | STRANDED source for the F-008..F-011 design docs (the veto-digest gate dissolved under R29). The F-009 overloading page (functions_overloading.md + its cross-references) is PORTED by the OV-1/OV-3 slices — do not re-land it; the F-008/F-010/F-011 portions are ported by their own workstreams (F-011's if-let docs landed with W-012). Reconstruct per the recipe pattern used for b0/w5 (overlay real content onto fresh branch off trunk; targeted-merge diverged files; prek + gate + PR). |
 | `claude/carbon-fork-0-1-{7mwfb7,b0,7mwfb7-upstream-20260727}` and other `7mwfb7-*` | MERGED or superseded; do not stack new commits. |
 
-#### Scoreboard (source of truth: run the suite, don't trust this line)
+### Scoreboard (source of truth: run the suite, don't trust this line)
 
 126 PASS / 23 SKIP / 0 FAIL programs (149 total); **47/56 bullets green**
 (GitHub-hosted scoreboard at the PR #48 head, run 37357609478; verified from
@@ -454,7 +452,7 @@ question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a → 
 regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
 `conformance`; R28).
 
-#### CI on jmann345/carbon-lang (GitHub-hosted only — R28)
+### CI on jmann345/carbon-lang (GitHub-hosted only — R28)
 
 -   `Fork: hosted verification` (`.github/workflows/fork_hosted.yaml`,
     workflow_dispatch input `mode` ∈ compile | autoupdate | gate |
@@ -472,7 +470,7 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     owner's machine is off limits (R28; runner files removed by the
     one-shot `fork_runner_cleanup.yaml`, run 36229750515).
 
-#### Toolchains in the container
+### Toolchains in the container
 
 -   `/home/user/arbiter/carbon_toolchain-0.0.0-0.nightly.2026.07.19/bin/carbon`
     — upstream nightly
@@ -487,7 +485,7 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     does; it proves nothing about behavior, and the hosted runs stay the
     arbiter (R28).
 
-#### Next actions (dependency order)
+### Next actions (dependency order)
 
 1.  A W-008 slice (tuple/var/ref/compile-time case patterns,
     non-binding payload subpatterns — unblocks W-066's usefulness
@@ -507,7 +505,7 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
 4.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI; W-066 match usefulness diagnostics.
 
-#### Standing user directives
+### Standing user directives
 
 -   Design forks decided by the user; sub-forks follow the V-2 veto-digest
     model (synchronous only for genuine forks / directive-reversals /

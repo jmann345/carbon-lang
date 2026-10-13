@@ -73,8 +73,8 @@ auto CheckRequireDeclsSatisfied(Context& context, SemIR::LocId loc_id,
                                 SemIR::TypeInstId full_constraint_id) -> void;
 
 // Fork (SC-1, fork/structural/plan.md D-SC-8(iii)): at the end of the
-// definition of the class `class_id`, checks the `require` declarations naming
-// a `template constraint` whose self is that class, which
+// definition of the class or union `class_id`, checks the `require`
+// declarations naming a `template constraint` whose self is that class, which
 // `CheckRequireDeclsSatisfied` deferred while the class was being defined.
 auto CheckDeferredRequireDeclsAtClassEnd(Context& context,
                                          SemIR::ClassId class_id) -> void;

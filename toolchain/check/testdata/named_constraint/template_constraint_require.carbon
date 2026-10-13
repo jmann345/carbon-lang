@@ -242,6 +242,65 @@ class Lacking {
   impl as I {}
 }
 
+// --- require_in_interface_in_union_impl.carbon
+library "[[@TEST_NAME]]";
+
+// A union is a class (D-SC-12): an impl inside a union body is checked when the
+// union's definition ends, as an in-class impl is at its class's end
+// (D-SC-8(iii), amended at fill round 4, review findings MAJOR-1 of both
+// reviews: the union's end never checked it, and the program ran).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface I {
+  require impls HasGet;
+  fn F(self) -> i32;
+}
+
+union U {
+  var a: i32;
+  var b: i32;
+  impl as I {
+    fn F(self) -> i32 { return self.Get(); }
+  }
+  fn Get(unused self) -> i32 { return 5; }
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+
+fn Test(u: U) -> i32 { return u.(I.F)() + CallGet(u); }
+
+// --- fail_require_in_interface_in_union_impl_lacking.carbon
+library "[[@TEST_NAME]]";
+
+// The negative: neither union has a `Get` when its definition ends. For
+// `HasGet & J`, `J` is checked at the impl and `HasGet` at the union's end.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface J {}
+
+interface I {
+  require impls HasGet;
+}
+
+interface I2 {
+  require impls HasGet & J;
+}
+
+union Lacking {
+  var a: i32;
+  impl as I {}
+}
+
+union LackingMixed {
+  var a: i32;
+  impl as J {}
+  impl as I2 {}
+}
+
 // --- fail_require_mixed_in_class_impl_order.carbon
 library "[[@TEST_NAME]]";
 
@@ -355,12 +414,12 @@ class Lacking {
 library "[[@TEST_NAME]]";
 
 // An impl inside a generic class has the checked-symbolic self `Box(T)`, which
-// never satisfies a structural requirement (D-SC-6), so the `require` fails at
-// the class end although every `Box(X)` has `Get`; likewise the self of a class
-// nested in a generic class. Known limitation (W-139). A `template` class
-// parameter makes the self template-phase, which defers the check (D-SC-19).
-// Expected: `InterfaceRequireImplsNotImplemented` for `Box(T)` and for `Inner`,
-// nothing for `Box2`.
+// never satisfies a structural requirement (D-SC-6;
+// structural_conformance.cpp:495), so the `require` fails at the class end
+// although every `Box(X)` has `Get`; likewise in a class nested in one. Known
+// limitation (W-139). A `template` class parameter makes the self
+// template-phase, deferring the check (D-SC-19). Expected:
+// `InterfaceRequireImplsNotImplemented` for `Box(T)` and `Inner`, not `Box2`.
 template constraint HasGet {
   fn Get(self) -> i32;
 }
@@ -399,7 +458,7 @@ library "[[@TEST_NAME]]";
 
 // A class whose only `Get` is the requirement, reached through its `extend
 // impl` of an interface that does `extend require impls HasGet`, does not
-// satisfy `HasGet` (D-SC-5(b): the requirement is not a member of the type),
+// satisfy `HasGet` (D-SC-5(c): the requirement is not a member of the type),
 // and calling that requirement is an error of its own (D-SC-4; fill round 2,
 // review finding MINOR-1).
 template constraint HasGet {

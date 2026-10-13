@@ -78,6 +78,9 @@ auto Context::VerifyOnFinish() const -> void {
   CARBON_CHECK(match_statement_stack_.empty());
   CARBON_CHECK(impl_lookup_stack_.empty());
   CARBON_CHECK(declaring_impl_decls_.empty());
+  // Fork (SC-1): every waiting structural `require` is checked at its class's
+  // or union's end.
+  CARBON_CHECK(deferred_structural_requires_.empty());
   CARBON_CHECK(return_form_expr_ == std::nullopt);
 
 #ifndef NDEBUG

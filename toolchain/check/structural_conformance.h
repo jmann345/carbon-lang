@@ -59,8 +59,7 @@ auto FacetTypeHasStructuralRequirements(Context& context, SemIR::TypeId type_id)
     -> SemIR::NamedConstraintId;
 
 // Returns the `template constraint` that declares the function `function_id`
-// as a structural requirement, or `None` if it is any other function (a thunk
-// included, though it takes its callee's parent scope).
+// as a structural requirement, or `None` if it is any other function.
 auto GetStructuralRequirementConstraint(Context& context,
                                         SemIR::FunctionId function_id)
     -> SemIR::NamedConstraintId;
@@ -77,6 +76,14 @@ auto NoteStructuralRequirementHere(DiagnosticBuilder& builder,
 auto CheckCalleeIsNotStructuralRequirement(Context& context,
                                            SemIR::LocId loc_id,
                                            SemIR::FunctionId function_id)
+    -> bool;
+
+// D-SC-20 as amended at fill round 4: a requirement `fn` named with no type
+// that satisfies it is never a runtime value. If the value `expr_id` is a
+// requirement, a bound method of one, or a tuple or struct literal holding one,
+// diagnoses it when `diagnose` and returns false.
+auto CheckValueIsNotStructuralRequirement(Context& context,
+                                          SemIR::InstId expr_id, bool diagnose)
     -> bool;
 
 }  // namespace Carbon::Check

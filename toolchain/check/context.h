@@ -597,8 +597,8 @@ class Context {
 
   // Fork (SC-1, fork/structural/plan.md D-SC-8(iii)): a `require` naming a
   // `template constraint`, of the interface implemented by `impl_id`, whose
-  // self is the class `class_id` still being defined; checked when that
-  // class's definition ends.
+  // self is the class or union `class_id` still being defined; checked when
+  // that class's or union's definition ends.
   struct DeferredStructuralRequire {
     SemIR::ClassId class_id;
     SemIR::ImplId impl_id;

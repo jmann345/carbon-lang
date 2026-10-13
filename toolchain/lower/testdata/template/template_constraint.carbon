@@ -84,6 +84,31 @@ fn Run() -> i32 {
   return c.(I.F)();
 }
 
+// --- requirement_through_type_as_value.carbon
+library "[[@TEST_NAME]]";
+
+// A requirement named through a type that satisfies it is that type's own
+// member (D-SC-4), a value like any function: `Take(C.(HasN.N))` lowers as
+// `Take(C.N)`, in a template too. Named with no such type, it is rejected (fill
+// round 4, review finding BLOCKER-1; check/testdata/named_constraint/
+// fail_template_constraint_requirement_call.carbon, `fail_requirement_as_value`).
+template constraint HasN {
+  fn N() -> i32;
+}
+
+class C {
+  fn N() -> i32 { return 5; }
+}
+
+fn Take[T: type](unused f: T) -> i32 { return 1; }
+
+fn Dependent[template T: HasN](unused x: T) -> i32 { return Take(T.N); }
+
+fn Run() -> i32 {
+  let c: C = {};
+  return Take(C.(HasN.N)) + Take((C as HasN).N) + Dependent(c);
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'call_method.carbon'
 // CHECK:STDOUT: source_filename = "call_method.carbon"

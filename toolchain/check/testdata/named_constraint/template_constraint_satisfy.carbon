@@ -189,7 +189,7 @@ library "[[@TEST_NAME]]";
 // `C.Make` (and, for the interface, before impl lookup: upstream's own TODO at
 // member_access.cpp:430-432), so it is still diagnosed (fill round 2, review
 // finding MINOR-3; residue in fork/structural/plan.md, "Landed notes (SC-1 fill
-// rounds, 2026-10-13)", ledger id pending).
+// rounds, 2026-10-13)", W-168).
 template constraint HasMake {
   fn Make() -> Self;
 }

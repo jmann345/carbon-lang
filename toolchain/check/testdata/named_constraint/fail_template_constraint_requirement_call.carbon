@@ -94,13 +94,15 @@ library "[[@TEST_NAME]]";
 // implements no associated function, as `alias F = I2.Get` of an interface
 // `I2` does not: `ImplFunctionWithNonFunction` with the requirement's note, for
 // a method, an associated function, and an `extend impl` in a class, and no
-// thunk (D-SC-5(b); fill round 3, review findings BLOCKER-1 and MAJOR-1: the
+// thunk (D-SC-5(c); fill round 3, review findings BLOCKER-1 and MAJOR-1: the
 // thunk took the constraint's scope, passed check, crashed in the mangler and
 // read as a requirement at its uses). The uses through `I` add nothing; a
 // structural use of `D` finds the rejected member as an error, not a function,
-// and reports it as not matching `HasF`. `(C as HasGet).Get` names `C`'s own
-// member and is accepted (lower/testdata/template/template_constraint.carbon,
-// `impl_member_alias`).
+// and reports it as not matching `HasF`, a follow-on of the impl's error (fill
+// round 4, review finding MINOR-1). `(C as HasGet).Get` names `C`'s own member
+// and is accepted (lower/testdata/template/template_constraint.carbon,
+// `impl_member_alias`). `E` is upstream's twin, an alias of another interface's
+// member: the same error, with no requirement note.
 template constraint HasGet {
   fn Get(self) -> i32;
 }
@@ -186,6 +188,93 @@ fn ViaHasF[template T: HasF](x: T) -> i32 { return x.F(); }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn UseStructurally(d: D) -> i32 { return ViaHasF(d); }
+
+interface I2 {
+  fn Get(self) -> i32;
+}
+
+interface OnlyF {
+  fn F(self) -> i32;
+}
+
+class E {
+  extend impl as I2 {
+    fn Get(unused self) -> i32 { return 6; }
+  }
+}
+
+impl E as OnlyF {
+  alias F = I2.Get;
+}
+
+// --- fail_requirement_as_value.carbon
+library "[[@TEST_NAME]]";
+
+// A requirement named with no type that satisfies it is never a runtime value
+// (D-SC-20 as amended at fill round 4, review finding BLOCKER-1: passed to a
+// function, it checked clean and aborted lowering at its `.Self`-symbolic
+// type). Every value use is rejected where the value is formed: an expression
+// statement, an argument, and an element of a tuple or struct literal.
+template constraint HasN {
+  fn N() -> i32;
+}
+
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+template constraint Has(X: type) {
+  fn N() -> X;
+}
+
+interface J {}
+
+fn Take[T: type](unused f: T) -> i32 { return 1; }
+
+fn Statement() { HasN.N; }
+
+fn Arg() -> i32 { return Take(HasN.N); }
+
+fn Method() -> i32 { return Take(HasGet.Get); }
+
+fn GenericConstraint() -> i32 { return Take(Has(i32).N); }
+
+fn FacetType() -> i32 { return Take((HasGet & J).Get); }
+
+fn TupleElement() -> i32 { return Take((HasN.N, 1)); }
+
+fn StructField() -> i32 { return Take({.f = HasN.N}); }
+
+// --- fail_requirement_through_checked_binding_as_value.carbon
+library "[[@TEST_NAME]]";
+
+// Found through a checked binding's facet type, by `extend require`, a
+// requirement is not a value either, by itself or bound to an object (fill
+// round 4: the bound method checked clean and aborted lowering of the
+// specific).
+template constraint HasN {
+  fn N() -> i32;
+}
+
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface I {
+  extend require impls HasN;
+}
+
+interface K {
+  extend require impls HasGet;
+}
+
+fn Take[T: type](unused f: T) -> i32 { return 1; }
+
+fn Assoc[T: I](unused x: T) -> i32 { return Take(T.N); }
+
+fn Bound[T: K](x: T) -> i32 { return Take(x.Get); }
+
+fn BoundInTuple[T: K](x: T) -> i32 { return Take((x.Get, 1)); }
 
 // --- fail_ladder_alias.carbon
 library "[[@TEST_NAME]]";

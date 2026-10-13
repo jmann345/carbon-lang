@@ -9,6 +9,7 @@
 #include "toolchain/check/decl_name_stack.h"
 #include "toolchain/check/generic.h"
 #include "toolchain/check/handle.h"
+#include "toolchain/check/impl.h"
 #include "toolchain/check/name_component.h"
 #include "toolchain/lex/token_kind.h"
 #include "toolchain/parse/node_ids.h"
@@ -91,6 +92,11 @@ auto HandleParseNode(Context& context, Parse::UnionDefinitionId node_id)
   ComputeUnionObjectRepr(context, node_id, class_id,
                          context.field_decls_stack().PeekArray(),
                          context.vtable_stack().PeekCurrentBlockContents());
+
+  // Fork (SC-1, fork/structural/plan.md D-SC-8(iii) as amended at fill round
+  // 4): a union is a class, so the `template constraint` requirements that
+  // wait for it are checked here, as at a class's end.
+  CheckDeferredRequireDeclsAtClassEnd(context, class_id);
 
   context.inst_block_stack().Pop();
   context.field_decls_stack().PopArray();

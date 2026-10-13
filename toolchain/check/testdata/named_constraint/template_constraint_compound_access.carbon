@@ -127,7 +127,9 @@ library "[[@TEST_NAME]]";
 // constraint's facet type (D-SC-20): naming it in a checked generic attaches
 // nothing to that generic's eval block, and in a non-generic function the
 // compound access is not template-dependent (fill round 1, fix 2; fill round 2,
-// review findings F3 / F4).
+// review findings F3 / F4). `G` names it as the member of a compound access,
+// since naming it as a statement is a value use (fill round 4, review finding
+// BLOCKER-1; requirement-call `fail_requirement_as_value`).
 template constraint HasGet {
   fn Get(self) -> i32;
 }
@@ -137,11 +139,10 @@ class C {
 }
 
 //@dump-sem-ir-begin
-fn G[T: type](unused x: T) { HasGet.Get; }
+fn G[T: type](unused x: T, c: C) -> i32 { return c.(HasGet.Get)(); }
 
 fn Test(c: C) -> i32 {
-  G(c);
-  return c.(HasGet.Get)();
+  return G(c, c) + c.(HasGet.Get)();
 }
 //@dump-sem-ir-end
 

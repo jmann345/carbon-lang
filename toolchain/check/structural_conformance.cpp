@@ -58,7 +58,7 @@ enum class MemberFailure : uint8_t {
   // The member is private or protected from here.
   Inaccessible,
   // The lookup found a requirement `fn`, which is not a member of the type
-  // (D-SC-5(b)).
+  // (D-SC-5(c)).
   IsRequirement,
 };
 
@@ -438,7 +438,7 @@ static auto CheckRequirementFunction(
   if (!callee_fn) {
     return MemberFailureInfo{.failure = MemberFailure::Mismatch};
   }
-  // D-SC-5(b): a requirement `fn` is a declaration of a constraint, not a
+  // D-SC-5(c): a requirement `fn` is a declaration of a constraint, not a
   // member of the type, so a lookup in the type that finds one -- through
   // `alias Get = HasGet.Get`, an `extend impl` of an interface whose `extend
   // require` names the constraint, or a facet type as the self -- finds no
@@ -638,13 +638,6 @@ auto GetStructuralRequirementConstraint(Context& context,
                                         SemIR::FunctionId function_id)
     -> SemIR::NamedConstraintId {
   const auto& function = context.functions().Get(function_id);
-  // A thunk takes its callee's parent scope (thunk.cpp, `CloneFunctionDecl`),
-  // so only a plain function the constraint's body declares is a requirement
-  // (fill round 3, review finding MAJOR-1).
-  if (function.special_function_kind !=
-      SemIR::Function::SpecialFunctionKind::None) {
-    return SemIR::NamedConstraintId::None;
-  }
   auto with_self_decl =
       context.name_scopes().TryGetInstAs<SemIR::NamedConstraintWithSelfDecl>(
           function.parent_scope_id);
@@ -656,6 +649,23 @@ auto GetStructuralRequirementConstraint(Context& context,
   return with_self_decl->named_constraint_id;
 }
 
+// Diagnoses a use at `loc_id` of the requirement `function_id` of
+// `constraint_id`, as a callee or as a value.
+static auto DiagnoseStructuralRequirementUse(
+    Context& context, SemIR::LocId loc_id, SemIR::FunctionId function_id,
+    SemIR::NamedConstraintId constraint_id) -> void {
+  const auto& function = context.functions().Get(function_id);
+  CARBON_DIAGNOSTIC(StructuralRequirementCalled, Error,
+                    "requirement `{0}` of template constraint `{1}` can only "
+                    "be used through a type that satisfies it",
+                    SemIR::NameId, SemIR::NameId);
+  auto builder = context.emitter().Build(
+      loc_id, StructuralRequirementCalled, function.name_id,
+      context.named_constraints().Get(constraint_id).name_id);
+  NoteStructuralRequirementHere(builder, function.latest_decl_id());
+  builder.Emit();
+}
+
 auto CheckCalleeIsNotStructuralRequirement(Context& context,
                                            SemIR::LocId loc_id,
                                            SemIR::FunctionId function_id)
@@ -664,17 +674,50 @@ auto CheckCalleeIsNotStructuralRequirement(Context& context,
   if (!constraint_id.has_value()) {
     return true;
   }
-  const auto& function = context.functions().Get(function_id);
-  CARBON_DIAGNOSTIC(StructuralRequirementCalled, Error,
-                    "requirement `{0}` of template constraint `{1}` can only "
-                    "be called through a type that satisfies it",
-                    SemIR::NameId, SemIR::NameId);
-  auto builder = context.emitter().Build(
-      loc_id, StructuralRequirementCalled, function.name_id,
-      context.named_constraints().Get(constraint_id).name_id);
-  NoteStructuralRequirementHere(builder, function.latest_decl_id());
-  builder.Emit();
+  DiagnoseStructuralRequirementUse(context, loc_id, function_id, constraint_id);
   return false;
+}
+
+auto CheckValueIsNotStructuralRequirement(Context& context,
+                                          SemIR::InstId expr_id, bool diagnose)
+    -> bool {
+  // The value itself, and the elements of a tuple or struct literal, which a
+  // conversion to the literal's own type does not visit one by one.
+  llvm::SmallVector<SemIR::InstId> work = {expr_id};
+  while (!work.empty()) {
+    auto inst_id = work.pop_back_val();
+    auto inst = context.insts().Get(inst_id);
+    if (auto literal = inst.TryAs<SemIR::TupleLiteral>()) {
+      llvm::append_range(work, context.inst_blocks().Get(literal->elements_id));
+      continue;
+    }
+    if (auto literal = inst.TryAs<SemIR::StructLiteral>()) {
+      llvm::append_range(work, context.inst_blocks().Get(literal->elements_id));
+      continue;
+    }
+    // A function value, or a bound method of one (`x.Get` where lookup in a
+    // checked `x`'s type found the requirement).
+    if (!context.types().Is<SemIR::FunctionType>(inst.type_id()) &&
+        !context.types().Is<SemIR::BoundMethodType>(inst.type_id())) {
+      continue;
+    }
+    auto callee = SemIR::GetCallee(context.sem_ir(), inst_id);
+    auto* callee_fn = std::get_if<SemIR::CalleeFunction>(&callee);
+    if (!callee_fn) {
+      continue;
+    }
+    auto constraint_id =
+        GetStructuralRequirementConstraint(context, callee_fn->function_id);
+    if (!constraint_id.has_value()) {
+      continue;
+    }
+    if (diagnose) {
+      DiagnoseStructuralRequirementUse(context, SemIR::LocId(inst_id),
+                                       callee_fn->function_id, constraint_id);
+    }
+    return false;
+  }
+  return true;
 }
 
 }  // namespace Carbon::Check

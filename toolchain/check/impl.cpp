@@ -55,7 +55,7 @@ auto CheckAssociatedFunctionImplementation(
     bool defer_thunk_definition) -> SemIR::InstId {
   auto impl_function_type = context.types().TryGetAs<SemIR::FunctionType>(
       context.insts().Get(impl_decl_id).type_id());
-  // Fork (SC-1, fork/structural/plan.md D-SC-5(b) as amended at fill round 3,
+  // Fork (SC-1, fork/structural/plan.md D-SC-5(c) as amended at fill round 3,
   // review finding BLOCKER-1): a requirement `fn` of a `template constraint`
   // is a declaration of the constraint, not a function a thunk can call, so
   // `alias F = HasGet.Get` implements nothing, as `alias F = I2.Get` does not.
@@ -862,10 +862,10 @@ enum class InterfaceRequirePhase : uint8_t {
 }  // namespace
 
 // Fork (SC-1, fork/structural/plan.md D-SC-8(iii), amended at fill rounds 2
-// and 3): structural satisfaction reads the members of a complete type
+// to 4): structural satisfaction reads the members of a complete type
 // (D-SC-5(a)), and a class is incomplete within its definition, so a
 // `require` whose facet type names a `template constraint` and whose self is a
-// class still being defined is checked when that class's definition ends.
+// class or union still being defined is checked when that definition ends.
 // Returns that class, or `None` for any other `require`.
 static auto GetRequireSelfClassBeingDefined(
     Context& context, SemIR::ConstantId req_self_const_id,

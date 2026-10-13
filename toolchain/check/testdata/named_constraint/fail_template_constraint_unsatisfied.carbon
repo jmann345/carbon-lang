@@ -456,17 +456,19 @@ library "[[@TEST_NAME]]";
 
 // A member with compile-time parameters of its own never matches a requirement,
 // which has none (D-SC-2; fill round 2, review finding MINOR-4). The member
-// differs from the requirement in nothing else (fill round 3, review finding
-// F3), so this split moves when W-136 deduces own parameters.
+// differs from the requirement in nothing else, and a call deduces its `U` from
+// the requirement's `i32` (fill rounds 3 and 4, review findings F3 and MINOR-3:
+// an undeducible `U` would not match under any deduction), so this split moves
+// when W-136 deduces own parameters.
 template constraint HasGet {
-  fn Get(self) -> i32;
+  fn Get(self, n: i32) -> i32;
 }
 
 class Box(T: type) {
-  fn Get[unused U: type](unused self) -> i32 { return 1; }
+  fn Get[U: type](unused self, unused n: U) -> i32 { return 1; }
 }
 
-fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(1); }
 
 fn Test(b: Box(i32)) -> i32 {
   // CHECK:STDERR: fail_own_params.carbon:[[@LINE+13]]:10: error: cannot convert type `Box(i32)` into type implementing `HasGet` [ConversionFailureTypeToFacet]
@@ -489,7 +491,7 @@ fn Test(b: Box(i32)) -> i32 {
 library "[[@TEST_NAME]]";
 
 // The requirement itself is not a member of the type: a class whose only `Get`
-// is an `alias` of the requirement does not satisfy the constraint (D-SC-5(b);
+// is an `alias` of the requirement does not satisfy the constraint (D-SC-5(c);
 // fill round 2, review finding F2).
 template constraint HasGet {
   fn Get(self) -> i32;
@@ -522,7 +524,7 @@ fn Test(c: C) -> i32 {
 library "[[@TEST_NAME]]";
 
 // A facet type is not a type with members: lookup into `HasCount` finds the
-// requirement `Count` itself, which does not satisfy the constraint (D-SC-5(b);
+// requirement `Count` itself, which does not satisfy the constraint (D-SC-5(c);
 // fill round 2, review finding MINOR-1).
 template constraint HasCount {
   fn Count() -> i32;

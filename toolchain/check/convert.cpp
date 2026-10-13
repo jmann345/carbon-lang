@@ -2618,6 +2618,15 @@ auto Convert(Context& context, SemIR::LocId loc_id, SemIR::InstId expr_id,
     return SemIR::ErrorInst::InstId;
   }
 
+  // Fork (SC-1, fork/structural/plan.md D-SC-20 as amended at fill round 4,
+  // review finding BLOCKER-1): a `template constraint` requirement is never a
+  // runtime value, whatever the target. Its uses that are not values (a callee,
+  // the member of a compound access, an `alias`) never pass through here.
+  if (!CheckValueIsNotStructuralRequirement(context, expr_id,
+                                            target.diagnose)) {
+    return SemIR::ErrorInst::InstId;
+  }
+
   if (target.kind == ConversionTarget::NoOp) {
     CARBON_CHECK(target.type_id == sem_ir.insts().Get(expr_id).type_id());
     return expr_id;

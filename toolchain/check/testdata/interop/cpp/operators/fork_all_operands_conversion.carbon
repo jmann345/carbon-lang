@@ -35,5 +35,9 @@ import Cpp library "plus_with_bool_conversion.h";
 fn F() {
   let b1: bool = true;
   let b2: bool = false;
+  // CHECK:STDERR: fail_todo_import_plus_with_bool_conversion.carbon:[[@LINE+4]]:40: error: cannot access member of interface `Core.AddWith(bool)` in type `bool` that does not implement that interface [MissingImplInMemberAccess]
+  // CHECK:STDERR:   let unused c: Cpp.BoolConvertibleC = b1 + b2;
+  // CHECK:STDERR:                                        ^~~~~~~
+  // CHECK:STDERR:
   let unused c: Cpp.BoolConvertibleC = b1 + b2;
 }

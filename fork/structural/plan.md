@@ -338,7 +338,7 @@ listing them verbatim at discharge (§8.5).
     bodiless requirement — so D-SC-8(i) now gives the diagnosed binding an
     error type, as an invalid binding type does, the positive branch is
     deleted, and the one diagnostic holds by that recovery; "Landed notes
-    (fill rounds 1 and 2)"). Otherwise a checked-symbolic self is
+    (SC-1 fill rounds, 2026-10-13)"). Otherwise a checked-symbolic self is
     unsatisfied: a checked-generic `U: type` passed to `template T: HasGet`
     fails at the checked function's DEFINITION with
     `ConversionFailureTypeToFacet` plus the note
@@ -1056,16 +1056,16 @@ convention).
 
 | File | Splits | Prediction |
 | --- | --- | --- |
-| check/testdata/named_constraint/template_constraint_satisfy.carbon (new) | `method.carbon`: `class C { fn Get(self) -> i32 { return 1; } } fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); } fn Test(c: C) -> i32 { return CallGet(c); }` with `//@dump-sem-ir-begin/end` around `Test`; `ref_self.carbon` (`fn Get(ref self)` both sides, called on a `var`); `assoc_fn.carbon` (`fn Make() -> Self;` satisfied, called as `T.Make()`); `alias_member.carbon` (p002200's `class D { impl as A { fn F(self) {} } alias F = A.F; }` satisfies `HasF`); `class_param.carbon` (added 2026-10-06, review fold: B6): `class Box(template T: HasGet) { fn Call(self, x: T) -> i32 { return x.Get(); } } fn Test(c: C) -> i32 { var b: Box(C) = {}; return b.Call(c); }` — the class-parameter site the stranded page names (:461-462); `class D(template T: type) {}` is the landed spelling (class/destroy_calls.carbon:68) | No STDERR. In `Test`: `%HasGet.facet: %HasGet.type = facet_value %C, () [concrete]` (EMPTY witness list — D-SC-4; the shape `facet_value <type>, (<witnesses>)` from member_access.carbon:162, re-cited B8; empty-list precedent named_constraint/empty.carbon:59), `%CallGet.specific_fn … @CallGet(%HasGet.facet)` (the interface/final.carbon:88-89 shape), a `call`, and NO `name_ref Get` line from the check itself (the desugared `loc_id` of D-SC-5(b) keeps it out of the block — if the fill shows one, the prediction moves to "one extra `name_ref`", not the design; A5(i)). The generic body is unchanged from member_access.carbon's action shape (:237-243). `alias_member` compiles with no visible SemIR from the check (same desugared-loc reason) and exercises the A10 predicate (`GetCallee` on an `ImplWitnessAccess`). The `facet_value`/`specific_function` lines are golden-backed; the template-phase `Self` and requirement `fn_decl` shapes are derived from interface analogues (A9) |
-| check/testdata/named_constraint/fail_template_constraint_unsatisfied.carbon (new) | `fail_missing.carbon` (class without `Get`); `fail_wrong_return.carbon` (`-> bool`); `fail_wrong_self.carbon` (`ref self` vs value `self`); `fail_wrong_arity.carbon` (`fn Get(self, n: i32)`); `fail_external_impl.carbon` (p002200's `class C {} impl C as A { fn F(self) {} }` — lookup in `C` finds nothing); `fail_private.carbon` (`private fn Get(self)`, called from outside `C`); `fail_overload_set.carbon` (the class's `Get` is an `overload fn` set); `fail_incomplete.carbon` (amended 2026-10-06, review fold: B6): `class Inc; fn F(template T: HasGet) {} fn Test() { F(Inc); }` — the TYPE is the facet argument (rev 1's `CallGet(p)` with `p: Inc*` deduced `T = Inc*`, whose member lookup finds no `Get` and never reaches completeness; explicit template parameter spelling from lower/testdata/template/merging.carbon:20); `fail_incomplete_class_param.carbon` (added, B6): `class Inc; class Box(template T: HasGet) {} fn Test() { var b: Box(Inc) = {}; }` | Each: `ConversionFailureTypeToFacet` "cannot convert type `C` into type implementing `HasGet`" at the call (as fail_convert_facet_value_to_missing_impl.carbon:20-25 shows the facet-to-facet twin) + `DeductionGenericHere` note + `StructuralMemberMissing` or `StructuralMemberMismatch` + `StructuralRequirementHere`. `fail_private` (amended 2026-10-06, review fold: A1): `ConversionFailureTypeToFacet` + `StructuralMemberInaccessible` ("member `Get` of type `C` is private here …") + `StructuralRequirementHere`; NO `ClassInvalidMemberAccess` (the access check is applied to the found result, D-SC-5(b)). `fail_incomplete` and `fail_incomplete_class_param`: `IncompleteTypeInConversion`-class error with the structural context note (the exact kind is whatever `RequireCompleteType`'s caller supplies — this plan supplies a Context note "while checking `HasGet` requirements"; if a reviewer prefers an existing kind, §7 R-6); the class-parameter split reaches the chokepoint through the class's parameter conversion, not deduction, so no `DeductionGenericHere` |
-| check/testdata/named_constraint/fail_template_constraint_checked_binding.carbon (new) | `fail_generic_binding.carbon`: `fn Bad(generic T: HasGet) {}`; `fail_implicit_binding.carbon`: `fn Bad[T: HasGet](x: T) {}`; `fail_implicit_binding_compound_use.carbon` (added 2026-10-06, review fold: B7): `interface I {} fn Bad[T: HasGet & I](x: T) -> i32 { return CallGet(x); }`; `fail_symbolic_arg.carbon`: `fn Caller[U: type](x: U) { CallGet(x); }`; `fail_require_in_interface_symbolic.carbon` (added, B7): `interface I { require impls HasGet; } fn G[T: I](x: T) -> i32 { return CallGet(x); }`; `fail_require_in_interface_blanket.carbon`: `interface I { require impls HasGet; } impl forall [T: type] T as I {}` | First two: `TemplateConstraintOnNonTemplateBinding` at the binding. `fail_implicit_binding_compound_use`: EXACTLY ONE diagnostic, `TemplateConstraintOnNonTemplateBinding` at the binding, and nothing at `CallGet(x)` — D-SC-6's cascade guard (the self's facet type `HasGet & I` lists the requirement). `fail_symbolic_arg`: `ConversionFailureTypeToFacet` (`U` has type `type`, so it is a type, not a facet value) + `StructuralRequirementNeedsConcreteType` + `DeductionGenericHere` (D-SC-6). `fail_require_in_interface_symbolic`: `ConversionFailureFacetToFacet` (`T` is a facet value of type `I`, the fail_convert_facet_value_to_missing_impl.carbon:20-25 shape) + `StructuralRequirementNeedsConcreteType` + `DeductionGenericHere` — the interface-forwarding case rejected per D-SC-6. `fail_require_in_interface_blanket`: `InterfaceRequireImplsNotImplemented` (impl.cpp:946-956 — the interface's own `require` loop; `IdentifiedRequireImplsNotImplemented` :891-904 is the identified-facet-type loop and does not fire here), with NO structural note (D-SC-9; amended 2026-10-06, review fold: A5(ii)) — pinning D-SC-8(iii) for a CHECKED blanket AMENDED 2026-10-13: fill round 1 overturned the exactly-one prediction (miss (b): a MissingGenericFunctionDefinition cascade inside `CallGet`); fill round 2 restores it by giving the diagnosed binding an error type (D-SC-6 amended) and adds `fail_implicit_binding_direct_use`, `fail_implicit_binding_assoc_fn_use`, `fail_wrap_checked_binding` and `fail_extend_require_in_interface_symbolic` (`StructuralRequirementCalled`) |
-| check/testdata/named_constraint/template_constraint_dependent.carbon (new) | `dependent_caller.carbon`: `fn Outer[template U: type](x: U) -> i32 { return CallGet(x); } fn Test(c: C) -> i32 { return Outer(c); }`; `fail_dependent_caller_unsatisfied.carbon`: `Outer(d)` with `D` lacking `Get` | Positive: in `@Outer` a `call_action` (the call.carbon shape) and no facet value until the specific `Outer(C)` resolves — D-SC-3. Negative: `ResolvingSpecificHere` "unable to monomorphize specific `Outer(D)`" + the `ConversionFailureTypeToFacet` notes located at `CallGet(x)` (the member_access.carbon:43-49 shape) |
-| check/testdata/named_constraint/template_constraint_compound_access.carbon (new) | `compound.carbon`: `fn F[template T: HasGet](x: T) -> i32 { return x.(HasGet.Get)(); }` + `Test(c: C)`; `fail_compound_unsatisfied.carbon` | Positive: in the specific, a `bound_method %x…, @C.%Get.decl`-shaped call (the type's OWN function, D-SC-4). Negative: the conversion diagnostics at the compound access |
+| check/testdata/named_constraint/template_constraint_satisfy.carbon (new) | `method.carbon`: `class C { fn Get(self) -> i32 { return 1; } } fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); } fn Test(c: C) -> i32 { return CallGet(c); }` with `//@dump-sem-ir-begin/end` around `Test`; `ref_self.carbon` (`fn Get(ref self)` both sides, called on a `var`); `assoc_fn.carbon` (`fn Make() -> Self;` satisfied, called as `T.Make()`); `alias_member.carbon` (p002200's `class D { impl as A { fn F(self) {} } alias F = A.F; }` satisfies `HasF`); `class_param.carbon` (added 2026-10-06, review fold: B6): `class Box(template T: HasGet) { fn Call(self, x: T) -> i32 { return x.Get(); } } fn Test(c: C) -> i32 { var b: Box(C) = {}; return b.Call(c); }` — the class-parameter site the stranded page names (:461-462); `class D(template T: type) {}` is the landed spelling (class/destroy_calls.carbon:68) | No STDERR. In `Test`: `%HasGet.facet: %HasGet.type = facet_value %C, () [concrete]` (EMPTY witness list — D-SC-4; the shape `facet_value <type>, (<witnesses>)` from member_access.carbon:162, re-cited B8; empty-list precedent named_constraint/empty.carbon:59), `%CallGet.specific_fn … @CallGet(%HasGet.facet)` (the interface/final.carbon:88-89 shape), a `call`, and NO `name_ref Get` line from the check itself (the desugared `loc_id` of D-SC-5(b) keeps it out of the block — if the fill shows one, the prediction moves to "one extra `name_ref`", not the design; A5(i)). The generic body is unchanged from member_access.carbon's action shape (:237-243). `alias_member` compiles with no visible SemIR from the check (same desugared-loc reason) and exercises the A10 predicate (`GetCallee` on an `ImplWitnessAccess`). The `facet_value`/`specific_function` lines are golden-backed; the template-phase `Self` and requirement `fn_decl` shapes are derived from interface analogues (A9) AMENDED 2026-10-13 (fill rounds, misses (e) and (f)): "No STDERR" holds once round 2 spells `unused` on the unused bindings (round 1 carried upstream's `UnusedBinding` warnings); `method` prints the `facet_value`/`converted` pair twice (deduction, then the argument; the interop/cpp/function/export/generic.carbon:446-449 shape); `assoc_fn` is positive only through fill round 1's D-SC-4 redirect, and its round-2 dump shows `MakeIt(C)` calling `@C.%C.Make.decl` ("Landed notes (SC-1 fill rounds, 2026-10-13)") |
+| check/testdata/named_constraint/fail_template_constraint_unsatisfied.carbon (new) | `fail_missing.carbon` (class without `Get`); `fail_wrong_return.carbon` (`-> bool`); `fail_wrong_self.carbon` (`ref self` vs value `self`); `fail_wrong_arity.carbon` (`fn Get(self, n: i32)`); `fail_external_impl.carbon` (p002200's `class C {} impl C as A { fn F(self) {} }` — lookup in `C` finds nothing); `fail_private.carbon` (`private fn Get(self)`, called from outside `C`); `fail_overload_set.carbon` (the class's `Get` is an `overload fn` set); `fail_incomplete.carbon` (amended 2026-10-06, review fold: B6): `class Inc; fn F(template T: HasGet) {} fn Test() { F(Inc); }` — the TYPE is the facet argument (rev 1's `CallGet(p)` with `p: Inc*` deduced `T = Inc*`, whose member lookup finds no `Get` and never reaches completeness; explicit template parameter spelling from lower/testdata/template/merging.carbon:20); `fail_incomplete_class_param.carbon` (added, B6): `class Inc; class Box(template T: HasGet) {} fn Test() { var b: Box(Inc) = {}; }` | Each: `ConversionFailureTypeToFacet` "cannot convert type `C` into type implementing `HasGet`" at the call (as fail_convert_facet_value_to_missing_impl.carbon:20-25 shows the facet-to-facet twin) + `DeductionGenericHere` note + `StructuralMemberMissing` or `StructuralMemberMismatch` + `StructuralRequirementHere`. `fail_private` (amended 2026-10-06, review fold: A1): `ConversionFailureTypeToFacet` + `StructuralMemberInaccessible` ("member `Get` of type `C` is private here …") + `StructuralRequirementHere`; NO `ClassInvalidMemberAccess` (the access check is applied to the found result, D-SC-5(b)). `fail_incomplete` and `fail_incomplete_class_param`: `IncompleteTypeInConversion`-class error with the structural context note (the exact kind is whatever `RequireCompleteType`'s caller supplies — this plan supplies a Context note "while checking `HasGet` requirements"; if a reviewer prefers an existing kind, §7 R-6); the class-parameter split reaches the chokepoint through the class's parameter conversion, not deduction, so no `DeductionGenericHere` AMENDED 2026-10-13 (fill round 1, miss (c)): the error line of both incomplete splits is the Context diagnostic `StructuralRequirementIncompleteType` itself ("incomplete type `Inc` cannot satisfy template constraint `HasGet`"), followed by `ClassForwardDeclaredHere` and `InitializingGenericParam`; neither carries `DeductionGenericHere`, since `F(Inc)` passes the type explicitly too |
+| check/testdata/named_constraint/fail_template_constraint_checked_binding.carbon (new) | `fail_generic_binding.carbon`: `fn Bad(generic T: HasGet) {}`; `fail_implicit_binding.carbon`: `fn Bad[T: HasGet](x: T) {}`; `fail_implicit_binding_compound_use.carbon` (added 2026-10-06, review fold: B7): `interface I {} fn Bad[T: HasGet & I](x: T) -> i32 { return CallGet(x); }`; `fail_symbolic_arg.carbon`: `fn Caller[U: type](x: U) { CallGet(x); }`; `fail_require_in_interface_symbolic.carbon` (added, B7): `interface I { require impls HasGet; } fn G[T: I](x: T) -> i32 { return CallGet(x); }`; `fail_require_in_interface_blanket.carbon`: `interface I { require impls HasGet; } impl forall [T: type] T as I {}` | First two: `TemplateConstraintOnNonTemplateBinding` at the binding. `fail_implicit_binding_compound_use`: EXACTLY ONE diagnostic, `TemplateConstraintOnNonTemplateBinding` at the binding, and nothing at `CallGet(x)` — D-SC-6's cascade guard (the self's facet type `HasGet & I` lists the requirement). `fail_symbolic_arg`: `ConversionFailureTypeToFacet` (`U` has type `type`, so it is a type, not a facet value) + `StructuralRequirementNeedsConcreteType` + `DeductionGenericHere` (D-SC-6). `fail_require_in_interface_symbolic`: `ConversionFailureFacetToFacet` (`T` is a facet value of type `I`, the fail_convert_facet_value_to_missing_impl.carbon:20-25 shape) + `StructuralRequirementNeedsConcreteType` + `DeductionGenericHere` — the interface-forwarding case rejected per D-SC-6. `fail_require_in_interface_blanket`: `InterfaceRequireImplsNotImplemented` (impl.cpp:946-956 — the interface's own `require` loop; `IdentifiedRequireImplsNotImplemented` :891-904 is the identified-facet-type loop and does not fire here), with NO structural note (D-SC-9; amended 2026-10-06, review fold: A5(ii)) — pinning D-SC-8(iii) for a CHECKED blanket AMENDED 2026-10-13: fill round 1 overturned the exactly-one prediction (miss (b): a MissingGenericFunctionDefinition cascade inside `CallGet`); fill round 2 restores it by giving the diagnosed binding an error type (D-SC-6 amended) and adds `fail_implicit_binding_direct_use`, `fail_implicit_binding_assoc_fn_use`, `fail_wrap_checked_binding` and `fail_extend_require_in_interface_symbolic` (`StructuralRequirementCalled`); `fail_require_in_interface_blanket` filled with no diagnostic at the first fill (the `require` of a facet type naming no interface was dropped) and holds as written since fill round 1 keeps it (D-SC-8(iii)) |
+| check/testdata/named_constraint/template_constraint_dependent.carbon (new) | `dependent_caller.carbon`: `fn Outer[template U: type](x: U) -> i32 { return CallGet(x); } fn Test(c: C) -> i32 { return Outer(c); }`; `fail_dependent_caller_unsatisfied.carbon`: `Outer(d)` with `D` lacking `Get` | Positive: in `@Outer` a `call_action` (the call.carbon shape) and no facet value until the specific `Outer(C)` resolves — D-SC-3. Negative: `ResolvingSpecificHere` "unable to monomorphize specific `Outer(D)`" + the `ConversionFailureTypeToFacet` notes located at `CallGet(x)` (the member_access.carbon:43-49 shape) AMENDED 2026-10-13 (miss (g)): the golden has no dump range, so the positive's `call_action` claim was verified by a fill-round-1 probe and is not golden-pinned; the golden pins the positive's absence of diagnostics and the negative's notes |
+| check/testdata/named_constraint/template_constraint_compound_access.carbon (new) | `compound.carbon`: `fn F[template T: HasGet](x: T) -> i32 { return x.(HasGet.Get)(); }` + `Test(c: C)`; `fail_compound_unsatisfied.carbon` | Positive: in the specific, a `bound_method %x…, @C.%Get.decl`-shaped call (the type's OWN function, D-SC-4). Negative: the conversion diagnostics at the compound access AMENDED 2026-10-13 (fill rounds 1 and 2, miss (g)): both splits CHECK-failed at eval.cpp:151 on the first fill until D-SC-20's `.Self` lookup; the positive had no dump range at round 1 and is dumped since round 2, where the specific's call binds `name_ref Get, @C.%C.Get.decl`, the type's own function as predicted |
 | check/testdata/named_constraint/template_constraint_require.carbon (new) | `require_in_template.carbon`: `template constraint Both { fn Get(self) -> i32; require impls Core.Destroy; }` satisfied by a class; `require_in_interface_concrete.carbon`: `interface I { require impls HasGet; } impl C as I {}` with `C` having `Get`; `require_in_interface_template_blanket.carbon` (added 2026-10-06, review fold: A3): `interface I { require impls HasGet; } impl forall [template T: type] T as I {}` followed by `class Lacking {} fn Use[U: I](x: U) {} fn Test(l: Lacking) { Use(l); }` | Positive. `Both`'s facet value lists ONE witness (`Destroy`), structural check silent. `impl C as I` passes `CheckRequireDeclsSatisfied`. `require_in_interface_template_blanket`: NO STDERR — the template-phase self is deferred at the `require` entry point (D-SC-19), and the specific `Lacking as I` resolves through the blanket impl with no re-check; this split PINS the SC-1 gap named in D-SC-19 and §1.G, so a later re-check lands as a `fail_` rename, not a surprise |
 | check/testdata/named_constraint/fail_template_constraint_impl_as.carbon (new) | `fail_impl_as.carbon`: `impl C as HasGet {}` | `ImplOfNotOneInterface` "impl as 0 interfaces, expected 1" (impl.cpp:1026-1029) — F-010m pinned (D-SC-8(ii)) |
 | check/testdata/named_constraint/template_constraint_impl_forall_template.carbon (new; added 2026-10-06, review fold: A3) | `ladder.carbon`: `interface NewF { fn DoF(self) -> i32; } impl forall [template T: HasGet] T as NewF { fn DoF(self) -> i32 { return self.Get(); } } fn Test(c: C) -> i32 { return c.DoF(); }` — p002200:605-610's migration-ladder step; `fail_ladder_unsatisfied.carbon`: the same with `class D {}` lacking `Get` and `d.DoF()` | PREDICTED positive (lower-confidence, R-11: no golden in tree has `impl forall [template`): the impl's `[template]`-phase `T` deduces `C` in `EvalLookupSingleFinalWitness`, the `T: HasGet` conversion of the deduced `C` runs the full check at that point (concrete self), and `self.Get()` replays as an `AccessMemberAction`. Negative: `D` fails the `T: HasGet` conversion during impl deduction, so no impl is found — `MissingImplInMemberAccess` (the existing shape) at `d.DoF()`; NO structural note, since impl-deduction probes run `diagnose = false`. If the positive split fails to fill, D-SC-19's break condition applies AMENDED 2026-10-13 (miss (d)): `c.DoF()` cannot name a non-`extend` impl's member; the splits spell p002200's `x.(NewF.DoF)()` inside the changed-constraint `fn G[template T: NewF](x: T)` called as `G(c)` (p002200-template-generics.md:617-634, R27), plus the same call outside a template; both predictions hold, and `G(d)` fails with `ConversionFailureTypeToFacet` and no structural note |
 | check/testdata/named_constraint/template_constraint_overload.carbon (new) | `overload.carbon`: `overload fn F[template T: HasGet](x: T) -> i32 { return 1; } overload fn F(x: i32) -> i32 { return 2; }` called with a `C` and with an `i32` (the OV-1 same-file set shape, fork/overload/plan.md §4.A); `overload_catch_all.carbon` (added 2026-10-06, review fold: B2): the §5.A `Pick` set — `[template T: HasGet]` then `[template T: type]` — called with `C` and with `Lacking`, with `//@dump-sem-ir-begin/end` around the caller | Positive, no STDERR: the `i32` call skips member 1 silently (D-SC-12). `overload_catch_all`: the caller shows two `specific_function` lines, `@Pick(%HasGet.facet)` for `C` and the second member's specific for `Lacking` — the golden-side pin of the conformance program's falsifier, filled before the conformance run. Falsifier for a `diagnose` leak |
-| check/testdata/named_constraint/template_constraint_import.carbon (new; multi-file) | `a.carbon`: `library "a"; template constraint HasGet { fn Get(self) -> i32; }`; `b.carbon`: `import library "a"; class C {…} fn CallGet[template T: HasGet](x: T)…; fn Test(c: C) …` | Positive; the imports block shows `%Main.HasGet = import_ref Main//a, HasGet, …` and the requirement as a loaded import-ref (D-SC-15). The import_constraint_decl.carbon shape (:12-60) |
+| check/testdata/named_constraint/template_constraint_import.carbon (new; multi-file) | `a.carbon`: `library "a"; template constraint HasGet { fn Get(self) -> i32; }`; `b.carbon`: `import library "a"; class C {…} fn CallGet[template T: HasGet](x: T)…; fn Test(c: C) …` | Positive; the imports block shows `%Main.HasGet = import_ref Main//a, HasGet, …` and the requirement as a loaded import-ref (D-SC-15). The import_constraint_decl.carbon shape (:12-60) AMENDED 2026-10-13 (miss (g)): the golden has no dump range, so the imports-block claim is not golden-pinned; the golden pins that `b.carbon` checks with no diagnostics |
 | lower/testdata/template/template_constraint.carbon (new) | `call_method.carbon`: the §5.A conformance body minus `Core.Print` and minus the overload set (`fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }` returning `CallGet(s)`) — the lower pin is for the dependent method call, not for overload resolution | A `define i32 @…CallGet…(%C …)`-style specific calling `@C.Get` and a caller `define`; no `splice`-related fatal (§1.E); the merging.carbon:241-272 `InitAndCallF` precedent (A8) |
 
 ### §4.C Commit 3
@@ -2030,7 +2030,7 @@ files are unchanged before and after: template_constraints.md 1/12/19/0/0, 83,
 "7700 splice-stepping …", UA-2's, untouched); gap-analysis.md 1/5/23/0/0, 0;
 ORCHESTRATION.md 1/1/5/0/0, 8, 4. The hazard greps over the diff are empty.
 
-### Landed notes (fill rounds 1 and 2)
+### Landed notes (SC-1 fill rounds, 2026-10-13)
 
 The fills ran on 2026-10-13 on the container-built toolchain (the carbonbuild
 scripts: a fastbuild of the branch with Carbon's assertions on, the pinned LLVM,
@@ -2041,13 +2041,13 @@ corrections), bcaeadb98 (the goldens) and 2f4ebbf6e (records); its two
 implementation reviews (APPROVE-WITH-FIXES both: 3 MAJOR and 5 MINOR, 5 MAJOR
 and 6 MINOR, no BLOCKER) are folded by fill round 2: 6f2f40d3c (fixes and test
 sources), 502e7861a (the goldens, autoupdated by the toolchain built from
-6f2f40d3c with a clean tree, `carbon version` 0.0.0-0.dev+6f2f40d3c) and the
-records commit carrying this note. Measured at round 2: autoupdate to fixpoint
-over the 19 SC-1 goldens (pass 1 rewrote 11, pass 2 rewrote 4 with `locNN`
-renumbering only, pass 3 none); file_test over all toolchain testdata 1959
-passed, 0 failed; conformance into a private outdir 130 PASS / 0 FAIL / 21 SKIP
-of 151, bullets 49/56, exactly generics/structural_conformance (SKIP to PASS,
-`42` then `7`) and interop/cpp_structural_conformance (PASS, `7` then `0`)
+6f2f40d3c with a clean tree, `carbon version` 0.0.0-0.dev+6f2f40d3c) and
+cb85e6b8b (records, this note's first version). Measured at round 2: autoupdate
+to fixpoint over the 19 SC-1 goldens (pass 1 rewrote 11, pass 2 rewrote 4 with
+`locNN` renumbering only, pass 3 none); file_test over all toolchain testdata
+1959 passed, 0 failed; conformance into a private outdir 130 PASS / 0 FAIL / 21
+SKIP of 151, bullets 49/56, exactly generics/structural_conformance (SKIP to
+PASS, `42` then `7`) and interop/cpp_structural_conformance (PASS, `7` then `0`)
 moving. Not of record until fork/conformance/out/scoreboard.json is updated
 (R9).
 
@@ -2166,3 +2166,102 @@ template T: Has(U), x: T)`), and each aborts identically on the trunk build of
 0bdce60a5 with an interface in place of the template constraint (check: "impl
 as non-facet type `<splice of ...>`"; lower: type.cpp:459 "Found symbolic type
 id after resolution"), so they are upstream's, not SC-1's.
+
+Added 2026-10-13 by the fill-rounds records commit, which renamed this note from
+"Landed notes (fill rounds 1 and 2)"; the decision log's "SC-1 fill rounds
+(2026-10-13)" entry states the same facts.
+
+Round 1's four defects as R29(a) implementation decisions, each with its design
+citation and break condition (the paragraph "Round 1's four mechanisms" above
+names the splits that pin them):
+
+-   **Member specific** (structural_conformance.cpp:274 `RequirementMatches`,
+    :280-295). The first fill, on the toolchain built from 42841fa8d,
+    CHECK-failed at sem_ir/generic.cpp:84 on satisfy `generic_self` and
+    unsatisfied `fail_generic_self_wrong_return`, because the class specific
+    `Box(i32)` was passed where the member function's own specific is read. The
+    member is read in its own specific, formed from the enclosing arguments as a
+    call forms it (call.cpp:109-118), and a member with compile-time parameters
+    of its own never matches. Design: D-SC-5(d); D-SC-2 with review fold A12.
+    Break condition: W-136 lands, and the member's own parameters are then
+    deduced against the requirement's.
+-   **`.Self` lookup** (name_lookup.cpp:338, generic.cpp:268). Both
+    compound-access splits CHECK-failed at eval.cpp:151 ("does not belong to
+    generic"), and a probe's non-generic `c.(HasGet.Get)()` reached
+    lower/handle.cpp:404's FATAL on an unresolved splice. Design: D-SC-10, whose
+    phase claim this falsified (miss (h)) but whose break condition was not
+    needed; D-SC-20 (§0.3), recorded at round 2. Break condition: D-SC-20's.
+-   **Facet redirect** (member_access.cpp:451-509). Satisfy `assoc_fn` failed
+    "use of undefined generic function" at the requirement: the replayed
+    `T.Make()` on the facet value found the requirement with `Self := C`. A
+    requirement found for a concrete self names the self type's own member,
+    access re-checked against that type; a symbolic self keeps it. Design:
+    D-SC-4 and §1.B.2 (miss (i)). Break condition: D-SC-4's (a consumer needing
+    a table, W-138), and the redirect then reads the table.
+-   **`require` kept** (handle_require.cpp:303-309). Checked-binding
+    `fail_require_in_interface_blanket` filled clean because a `require` of a
+    facet type naming no interface was dropped. It is kept when the facet type
+    has structural requirements. Design: D-SC-8(iii), not enforced before. Break
+    condition: upstream gives an interface-free `require` a meaning of its own,
+    or pins it as a no-op, and the structural requirement attaches there. Round
+    2's class-end deferral (MAJOR-3) extends it.
+
+The §4 rows the fills corrected, each prediction as the goldens now hold it
+(each row carries a dated amendment):
+
+-   §4.A parse: `NamedConstraintIntroducer`, then `TemplateModifier` (miss (a)).
+-   §4.B satisfy: no STDERR once round 2 spells `unused` (miss (e)); `method`
+    prints the `facet_value`/`converted` pair twice, deduction then argument
+    (miss (f)); `assoc_fn` positive through the facet redirect, `MakeIt(C)`
+    calling `@C.%C.Make.decl` (dumped at round 2).
+-   §4.B unsatisfied: `fail_incomplete` and `fail_incomplete_class_param` report
+    the Context error `StructuralRequirementIncompleteType` with
+    `ClassForwardDeclaredHere` and `InitializingGenericParam`, and no
+    `DeductionGenericHere` (miss (c)).
+-   §4.B checked binding: `fail_implicit_binding_compound_use` has exactly one
+    diagnostic since round 2 (miss (b)); `fail_require_in_interface_blanket` has
+    `InterfaceRequireImplsNotImplemented` since round 1's `require` fix.
+-   §4.B dependent and import: positive and STDERR-free with no dump range; the
+    `call_action` and imports-block shapes were probe-verified at round 1 and
+    are not golden-pinned (miss (g)).
+-   §4.B compound: positive since the `.Self` fix, dumped since round 2 with the
+    specific binding `@C.%C.Get.decl` (miss (g)).
+-   §4.B ladder: p002200's spelling; positive, and `fail_ladder_unsatisfied`
+    gives `MissingImplInMemberAccess` with no structural note (miss (d)).
+
+Held as written: the other §4.A rows; the §4.B impl_as, require, overload and
+lower rows; §4.C, all six interop splits as the golden's header predicts.
+
+Review record: the two round-1 reviews are as stated at the head of this note
+(19 findings, all folded by round 2, none rejected; the per-finding list above).
+Round 2's own diff (6f2f40d3c, 502e7861a, cb85e6b8b) has no implementation
+review on record at this commit.
+
+W-151: the commit-3 residue first filed as W-144 was renumbered to W-151 by
+2f4ebbf6e, because SAFE-1 (PR 53) allocated W-144..W-150; trunk's id
+reservations (9d3ca60a3) give SC-1 nothing above W-151, so the MINOR-3 residue
+takes the next free id at landing.
+
+Measured, on the container only (not of record, R9; hosted: not run, Actions
+disabled). Round 1: autoupdate over the 18 goldens in three passes (all 18
+rewritten; then the 3 files whose STDERR lines sit above dumped source, `loc`
+and `line:` numbers only; then none), gate 1958 passed and 0 failed, conformance
+at 2f4ebbf6e 130 / 0 / 21 over 151 with 49 of 56 bullets. Round 2: as stated at
+the head of this note. Re-run on cb85e6b8b with the toolchain stamped
+0.0.0-0.dev+6f2f40d3c (no toolchain source differs): gate 1959 passed and 0
+failed; conformance PASS 130 with every failure class 0 and SKIP 21 of 151,
+bullets 49 PASS, 0 FAIL, 7 SKIP of 56, the same two programs moving against
+fork/conformance/out/scoreboard.json.
+
+Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
+markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a
+fixpoint over the six changed files (pass 1 reflowed one line of this note and
+one decision-log paragraph, MD013; pass 2 clean); `runner.py --self-test` OK
+with 151 programs and 56 bullets (both programs' edits are comment-only); the
+ledger parses, 136 items, W-151 the maximum id. R31 record (H1/H2/H3/H4/H5, dash
+items, numbered items): this file 1/12/23/0/0, 111, 53 before and 1/12/23/0/0,
+122, 53 after (the heading renamed in place; eleven new items, the four defects
+and the seven corrected rows); decision-log.md 1/2/44/1/6, 23, 0 before and
+1/2/45/1/6, 27, 0 after (the new entry's heading and its four defects);
+ORCHESTRATION.md 1/1/5/0/0, 8, 4 before and after; gap-analysis.md not edited,
+1/5/23/0/0, 0, 0. The hazard greps over the diff are empty.

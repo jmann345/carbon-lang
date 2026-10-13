@@ -42,9 +42,9 @@
 // and the first-match rule (R16(d)), never from an implementation run. Run
 // 2026-10-13 on the container-built fork toolchain (the upstream nightly does
 // not implement `template constraint`): PASS, printing exactly the EXPECT
-// lines (fork/structural/plan.md "Landed notes (fill rounds 1 and 2)"); the
-// count is not of record until fork/conformance/out/scoreboard.json is
-// updated (R9).
+// lines (fork/structural/plan.md "Landed notes (SC-1 fill rounds,
+// 2026-10-13)"); the count is not of record until
+// fork/conformance/out/scoreboard.json is updated (R9).
 
 import Core library "io";
 import Cpp inline '''

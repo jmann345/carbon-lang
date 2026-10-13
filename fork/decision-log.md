@@ -3799,7 +3799,11 @@ toolchain's autoupdate + gate + conformance", with the dispatch list in
 ORCHESTRATION's Branches row. Design authority was not reopened: F-010 as
 decided on 2026-07-19 and the stranded page's semantics stand; every decision
 below is an R29(a) auto-adopt recorded for after-the-fact veto, each with its
-break condition in the plan.
+break condition in the plan. (Superseded in part 2026-10-13: "NO FILL HAS RUN"
+and the HELD label describe the branch at commit 3. The goldens have since been
+filled, gated and conformance-checked on the container-built toolchain, recorded
+in the next entry, "SC-1 fill rounds (2026-10-13)"; no hosted run has happened,
+so the not-of-record sentence stands.)
 
 WHAT LANDED, by mechanism. (1) SURFACE (parse/node_kind.def:437,
 check/keyword_modifier_set.h:52 and :153). `template` is a declaration MODIFIER
@@ -4209,24 +4213,263 @@ appendix. Measured: autoupdate to fixpoint over the 19 SC-1 goldens; file_test
 SKIP of 151, 49/56, exactly generics/structural_conformance (SKIP to PASS) and
 interop/cpp_structural_conformance (PASS) moving; not of record until
 scoreboard.json is updated (R9). Fill-caught misses (a) to (j), each with its
-dated plan amendment, are in fork/structural/plan.md "Landed notes (fill rounds
-1 and 2)". Decisions the fill added, auto-adopted under R29(a) and veto-able:
-D-SC-20 (a requirement named with no self type has `Self := .Self` of the
-constraint's facet type, so naming it neither enters a generic's eval block nor
-becomes template-dependent; break: a golden showing that unfrozen `.Self`
-substituted where a requirement's specific reaches a facet type, or upstream
-giving facet-type member lookups a self of their own, then a frozen or dedicated
-placeholder); D-SC-6 amended (D-SC-8(i) gives the diagnosed checked binding an
-error type, and the cascade guard is deleted: the guard let `CallGet(x)`
-instantiate a template body that reached the bodiless requirement); D-SC-8(iii)
-amended (an impl defined inside the class that is its self has its structural
-`require`s checked when the class completes); D-SC-9 amended (one more kind, the
-error `StructuralRequirementCalled`: a requirement `fn` is never itself the
-callee, D-SC-4); D-SC-5(b) clarified (a found member that is itself a
-requirement `fn` does not satisfy). Residue of round 2, id pending (SC-1 holds
-no reservation above W-151): lookup ambiguity between a template-constraint
-requirement and the same function found through an interface (p002200:385-399),
-pinned by `fail_todo_ambiguous_with_interface`.
+dated plan amendment, are in fork/structural/plan.md "Landed notes (SC-1 fill
+rounds, 2026-10-13)" and in the next entry. Decisions the fill added,
+auto-adopted under R29(a) and veto-able: D-SC-20 (a requirement named with no
+self type has `Self := .Self` of the constraint's facet type, so naming it
+neither enters a generic's eval block nor becomes template-dependent; break: a
+golden showing that unfrozen `.Self` substituted where a requirement's specific
+reaches a facet type, or upstream giving facet-type member lookups a self of
+their own, then a frozen or dedicated placeholder); D-SC-6 amended (D-SC-8(i)
+gives the diagnosed checked binding an error type, and the cascade guard is
+deleted: the guard let `CallGet(x)` instantiate a template body that reached the
+bodiless requirement); D-SC-8(iii) amended (an impl defined inside the class
+that is its self has its structural `require`s checked when the class
+completes); D-SC-9 amended (one more kind, the error
+`StructuralRequirementCalled`: a requirement `fn` is never itself the callee,
+D-SC-4); D-SC-5(b) clarified (a found member that is itself a requirement `fn`
+does not satisfy). Residue of round 2, id pending (SC-1 holds no reservation
+above W-151): lookup ambiguity between a template-constraint requirement and the
+same function found through an interface (p002200:385-399), pinned by
+`fail_todo_ambiguous_with_interface`.
+
+### SC-1 fill rounds (2026-10-13): four toolchain defects fixed on the container-built arbiter
+
+The SC-1 entry above committed every golden with `AUTOUPDATE` and no CHECK lines
+because NO FILL HAD RUN. The first fill ran on 2026-10-13 on the container-built
+toolchain: the carbonbuild scripts (a ninja fastbuild of the branch's own BUILD
+graph with Carbon's assertions and the SemIR verifier on, against the pinned
+llvm-project 6ec87e7ec4b3, with file_test and fork/conformance/runner.py run as
+the hosted modes run them), not hosted runners — GitHub Actions on the
+repository has been disabled since 2026-10-08, the upstream nightly does not
+implement `template constraint`, and R28 keeps the owner's machine out. On the
+toolchain built from 42841fa8d that fill crashed three goldens and filled two
+splits against the plan; the four toolchain defects behind them were root-caused
+by reading the code and confirmed with probes outside the worktree. Fill round
+1: 1a7cce0b2 (the four fixes and two test-source corrections), bcaeadb98 (the 18
+goldens, 1374 added lines, every one written by the autoupdater) and 2f4ebbf6e
+(records: the W-144 to W-151 renumber and the round-1 conformance run). Fill
+round 2, folding round 1's two implementation reviews: 6f2f40d3c (fixes and test
+sources), 502e7861a (11 goldens refilled by the toolchain stamped
+0.0.0-0.dev+6f2f40d3c from a clean tree) and cb85e6b8b (records: D-SC-20, the
+dated plan amendments, the ledger and Branches re-cites, the FILL appendix
+above). This entry rides the records commit after them. Each fix is an R29(a)
+implementation decision recorded for after-the-fact veto, with its design
+citation and break condition; none reopens F-010 or the intent of a D-SC
+decision. Every count below is a measurement on the container, not of record
+(R9): fork/conformance/out/scoreboard.json reads 128 / 0 / 22 over 150 until a
+run of record replaces it.
+
+THE FOUR DEFECTS (1a7cce0b2), each an implementation decision:
+
+-   **Member specific** (structural_conformance.cpp:274 `RequirementMatches`).
+    Symptom: satisfy `generic_self` and unsatisfied
+    `fail_generic_self_wrong_return` CHECK-failed at sem_ir/generic.cpp:84,
+    "Given a specific for the wrong generic" (`GetConstantInSpecific` under
+    `CheckRedeclParamLists` under `CheckFunctionTypeMatches`). Root cause: the
+    CLASS specific `Box(i32)` that `GetCallee` returns was passed as the
+    member's specific, but a method of `class Box(T: type)` is a generic
+    function of its own (class/method/generic_method.carbon:138) whose parameter
+    patterns and return type are read in THAT generic's specific; the commit-2
+    review's MAJOR fix had named the wrong specific. Decision: the member is
+    read in its own specific, formed from the enclosing arguments as a call
+    forms it (call.cpp:109-118, `DeduceGenericCallArguments` with the enclosing
+    specific; since round 2's M3, `CopySpecificToGeneric` after a binding-count
+    guard, structural_conformance.cpp:280-295), and a member with compile-time
+    parameters of its own never matches. Design: D-SC-5(d), both sides read in
+    their own specifics; D-SC-2 with review fold A12, a requirement has no
+    parameters of its own. Break condition: W-136 (parameterized requirement
+    functions) lands; then the member's own parameters are deduced against the
+    requirement's, as a call deduces them, instead of never matching.
+-   **`.Self` lookup** (name_lookup.cpp:338
+    `GetPeriodSelfForTemplateConstraintLookup`, generic.cpp:268). Symptom: both
+    splits of template_constraint_compound_access CHECK-failed at eval.cpp:151,
+    "Binding {name: SelfType, index: 0, is_template: 1} does not belong to
+    generic", while resolving `F(C)`; a probe showed a second face,
+    `c.(HasGet.Get)()` in a non-generic function reaching lower/handle.cpp:404's
+    FATAL on an unresolved `splice_inst`. Root cause: a lookup with no self type
+    into a facet type enters the constraint's with-self scope with the
+    constraint's own abstract `Self`. An interface never leaks it, because its
+    with-self members are `Self`-free associated entities; a requirement `fn` is
+    the first with-self member whose value depends on `Self`, so naming it
+    inside any generic attached that binding to the generic's eval block
+    (eval.cpp:132-151), and its template phase (D-SC-10) made the name
+    template-dependent. Decision: such a lookup into a TEMPLATE constraint uses
+    `.Self` of the constraint's facet type, which depends on no generic
+    parameter (sem_ir/constant.h:254), and
+    `GetOrAddInstWithSpecificConstantValue` returns early for such a constant,
+    as `AttachDependentInstToCurrentGeneric` already assumes (inst.cpp:27-43);
+    interfaces and plain constraints keep the abstract `Self`, so no upstream
+    golden moved. Design: D-SC-10, whose "nothing in SC-1 depends on the phase"
+    was false (miss (h)) but whose break condition (pass `false`) was not
+    needed, the phase of `Self` itself standing; recorded at round 2 as D-SC-20
+    (review 2 F4). Break condition: D-SC-20's, a golden showing the unfrozen
+    `.Self` substituted where a requirement's specific reaches a facet type, or
+    upstream giving facet-type member lookups a self of their own; then a frozen
+    or dedicated placeholder printed as the constraint's `Self`.
+-   **Facet redirect** (member_access.cpp:451-509,
+    `LookupMemberNameInTypeScopes`). Symptom: satisfy `assoc_fn` (`T.Make()`
+    with `template T: HasMake`, positive in plan §4.B) failed "use of undefined
+    generic function" at the bodiless requirement `fn Make() -> Self;`. Root
+    cause: the `AccessMemberAction` replays in `MakeIt(C)` with the facet value
+    `facet_value C, ()` as its base, and member access on a facet looks into its
+    facet type's extended scopes, so it found the REQUIREMENT with `Self := C`.
+    Decision: a requirement found for a CONCRETE self names the self type's own
+    member of that name, with access re-checked against the self type's scope
+    (the lookup body became `LookupMemberNameInTypeScopesImpl`, so the redirect
+    does not recurse); a symbolic self keeps the requirement. Design: D-SC-4,
+    the type's own member set is the structural witness; §1.B.2's "at
+    instantiation the action resolves in the concrete type" held for `x.Get()`
+    but not for an access on the facet value itself (miss (i)). Break condition:
+    D-SC-4's, a consumer that needs a witness table (W-138's blanket impl over a
+    template constraint, SC-B3's concept export); then the redirect reads that
+    table instead of the type's scopes.
+-   **`require` kept** (handle_require.cpp:303-309). Symptom: checked-binding
+    `fail_require_in_interface_blanket` filled with no diagnostic (plan:
+    `InterfaceRequireImplsNotImplemented`), and a probe showed a concrete `impl
+    C as I` with `C` lacking `Get` accepted as well. Root cause: a `require`
+    whose identified facet type lists no interface was dropped as adding "no
+    actual constraints", and `HasGet` lists none, so `interface I { require
+    impls HasGet; }` recorded nothing for `CheckRequireDeclsSatisfied`.
+    Decision: the `require` is kept when the identified facet type has
+    structural requirements. Design: D-SC-8(iii) as written, which had never
+    been enforced. Break condition: upstream gives a `require` of an
+    interface-free facet type a meaning of its own, or pins it as a no-op in a
+    golden; then the structural requirement attaches to that representation.
+    Round 2 extended the decision (review 1 MAJOR-3): the kept `require` made
+    `class C { fn Get…; impl as I {…} }` fail with "incomplete type `C`", so a
+    structural `require` of an impl defined inside the class that is its self is
+    checked when the class completes (impl.cpp:853
+    `IsStructuralRequireDeferredToClassEnd` and :1017
+    `CheckDeferredRequireDeclsAtClassEnd`, handle_class.cpp:386; D-SC-8(iii)
+    amended).
+
+FILL-CAUGHT MISSES (R28(d): a reviewed prediction the fill overturned; bcaeadb98
+lists (a) to (i), 502e7861a adds (j)). (a) §4.A parse row: the tree prints
+`NamedConstraintIntroducer` before `TemplateModifier`, the
+class/introducer.carbon:30-31 placement the row itself cites; the prediction's
+order was wrong, the row is amended. (b) §4.B checked-binding row,
+`fail_implicit_binding_compound_use`, "EXACTLY ONE diagnostic": round 1's fill
+added `MissingGenericFunctionDefinition` at `CallGet`'s `x.Get()`, its note at
+the requirement. D-SC-6's cascade guard covered the conversion of `x`, but
+`CallGet`'s template body was then instantiated for `Bad`'s symbolic specific,
+where `x.Get` on the checked-symbolic `T` resolved to the bodiless requirement
+(the facet redirect applies to a concrete self only). Left OPEN at round 1,
+recorded as an error-recovery cascade and not silenced (bcaeadb98); FIXED at
+round 2 (review 1 MAJOR-2, review 2 F1): D-SC-8(i) gives the diagnosed checked
+binding an error type, as an invalid binding type does
+(handle_binding_pattern.cpp:329-338), D-SC-6's positive branch lost its only
+input and was deleted (R17), and 502e7861a shows exactly one diagnostic, the row
+as written. (c) §4.B unsatisfied row, `fail_incomplete` and
+`fail_incomplete_class_param`: the error line is R-6's Context diagnostic
+`StructuralRequirementIncompleteType` itself ("incomplete type `Inc` cannot
+satisfy template constraint `HasGet`"), followed by `ClassForwardDeclaredHere`
+and `InitializingGenericParam`, with no `DeductionGenericHere` since both pass
+the type explicitly; within R-6's allowance, the row is amended. (d) §4.B ladder
+row: `c.DoF()` cannot name a member of a non-`extend` impl
+(`MemberNameNotFoundInInstScope`); the splits take p002200's `x.(NewF.DoF)()`
+(proposals/p002200-template-generics.md:624, R27) since 1a7cce0b2 and its
+changed-constraint `G` since round 2 (review 2 M5), after which both predictions
+hold and D-SC-19's break condition did not fire. (e) every "No STDERR" positive
+row carried upstream's `UnusedBinding` warnings at round 1; round 2 spells
+`unused` on those bindings (review 2 M2), so the rows hold as written. (f)
+satisfy `method`: the `facet_value`/`converted` pair prints twice (deduction,
+then the argument), upstream's shape
+(interop/cpp/function/export/generic.carbon:446-449), where the row predicted
+one; the row is amended. (g) the compound, dependent and import positives had no
+dump range, so their SemIR claims were verified by round-1 probes, not goldens;
+round 2 dumps `compound` (`name_ref Get, @C.%C.Get.decl`: the type's own
+function, D-SC-4) and adds the dumped `assoc_fn_compound` and
+`checked_generic_name` (review 1 MINOR-4, review 2 F3), while dependent and
+import stay STDERR-only, their positive claim being the absence of diagnostics;
+the three rows are amended. (h) D-SC-10's "Nothing in SC-1 depends on the
+phase": false, the `.Self` defect. (i) §1.B.2's "the action resolves in the
+concrete type": false for an access on the facet value, the facet redirect. (j)
+round 2's first fill: two new negative splits named
+`fail_require_in_interface_concrete` and
+`fail_require_in_interface_in_class_impl` collided with the `[[@TEST_NAME]]`
+libraries of the positive splits of those names (`DuplicateLibraryApi`) and were
+renamed `..._lacking` before 6f2f40d3c. No miss hides a defect: (a), (c) and (f)
+were prediction errors, (b) and (e) a cascade and a warning class now gone, (d)
+and (j) test-source spellings, (g) a coverage gap now dumped where the claim
+needed a dump, and (h) and (i) design sentences amended in place beside their
+fixes.
+
+REVIEWS. Fill round 1 received two implementation reviews, both
+APPROVE-WITH-FIXES with no BLOCKER: review 1, 3 MAJOR and 5 MINOR (MAJOR-1
+`C.(HasMake.Make)()` and its sibling spellings rejected because the compound
+redirect converted the base's TYPE; MAJOR-2 miss (b); MAJOR-3 the in-class impl;
+MINOR-1 a found member that is itself a requirement `fn`; MINOR-2 a requirement
+called directly; MINOR-3 the lookup ambiguity with an interface; MINOR-4
+coverage; MINOR-5 stale records) and review 2, 5 MAJOR and 6 MINOR (F1..F5 and
+M1..M6, overlapping review 1 at F1 with MAJOR-2, F2 with MINOR-1, F3 with
+MINOR-4, F4 with MINOR-2 and the unrecorded `.Self` decision, F5 with MINOR-5;
+M1 the "enclosing specific" comments, M2 `unused`, M3 `CopySpecificToGeneric`,
+M4 the redirect's documentation, M5 the ladder port, M6 an unstamped toolchain).
+All 19 findings were folded by round 2 and none was rejected; review 1 MINOR-1's
+suggested `ErrorInst` for a redirected lookup that finds the requirement again
+was narrowed with evidence (the requirement is kept and its two harms closed:
+such a type does not satisfy, and a requirement is never called, pinned by
+`fail_extend_impl_extend_require_self`), and MINOR-3 was taken as its reviewer's
+second option, a residue. Per-finding dispositions and pinning splits are in the
+plan's "Landed notes (SC-1 fill rounds, 2026-10-13)". Round 2's own diff
+(6f2f40d3c, 502e7861a, cb85e6b8b) has no implementation review on record at this
+commit.
+
+MEASURED, on the container only. Round 1 (the toolchain built from 1a7cce0b2's
+sources): autoupdate over the 18 goldens rewrote all 18; the gate then ran 1958
+tests, 1955 passing and 3 reporting "Autoupdate would make changes"
+(template_constraint_overload, template_constraint_satisfy and the lower golden,
+whose pass-1 STDERR lines sit above dumped source, R26); pass 2 over all 1958
+testdata files rewrote exactly those 3, `loc` and `line:` numbers only; pass 3
+changed nothing; gate 1958 passed, 0 failed; conformance at 2f4ebbf6e into a
+private outdir PASS 130, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
+OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 of 151, bullets 49 PASS and 7 SKIP
+of 56. Round 2 (the toolchain stamped 0.0.0-0.dev+6f2f40d3c, clean tree):
+autoupdate over the 19 SC-1 goldens to fixpoint in three passes (11 files, then
+4 with `locNN` renumbering only, then none), byte-identical to the fill made on
+the pre-commit build of the same sources; gate on 502e7861a 1959 passed and 0
+failed (one more test, fail_template_constraint_requirement_call.carbon);
+conformance PASS 130, SKIP 21 of 151, 49 of 56 bullets, every failure class 0.
+Re-run for this entry on cb85e6b8b with the same installed toolchain (no
+toolchain source differs from 6f2f40d3c): gate 1959 passed, 0 failed, exit 0;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56. Against fork/conformance/out/scoreboard.json (128 / 0 / 22
+over 150, run 37402970811) exactly two programs move in every run:
+generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
+interop/cpp_structural_conformance.carbon PASS (`7` then `0`), plan §5's 130 / 0
+/ 21 over 151, EXPECTED and not of record.
+
+RENUMBER (2f4ebbf6e). SAFE-1 (PR 53) allocated W-144..W-150 after SC-1's
+commit-3 fixer had filed its look-through residue as W-144, so that residue
+became W-151, the next id above every branch's ledger (origin/trunk W-125, ua2
+W-126/W-127, cmake W-128..W-133, safe W-144..W-150, this branch W-134..W-143),
+at every citation on the branch: the ledger item, whose notes record the
+renumbering; the plan's commit-3 landed notes; the SC-1 entry; the Branches row;
+the structural_conformance.cpp comment; and two same-length comment lines of the
+interop golden, so no CHECK line or `[[@LINE]]` offset moved. Trunk's id
+reservations since (9d3ca60a3: W-151 is SC-1's renumber, W-152..W-159 EV-1's,
+ST-1 from W-160) leave SC-1 no id above W-151, so round 2's residue (the
+requirement-versus-interface ambiguity, p002200:385-399, pinned by
+`fail_todo_ambiguous_with_interface`) takes the next free id at landing.
+
+RECORDS. The plan's fill-round note is renamed "Landed notes (SC-1 fill rounds,
+2026-10-13)" (it was "Landed notes (fill rounds 1 and 2)") and extended with the
+four decisions, the §4 rows the fills corrected and the review record; the §4
+rows that misses (c), (e), (f) and (g) falsified gain dated amendments, so every
+miss that falsified plan text now carries one; ORCHESTRATION's status paragraph
+and Branches row, W-027's notes and the two conformance programs' cites follow
+the rename. Gap row 55 needed no change: it already states the container
+measurement and keeps MISSING to PARTIAL EXPECTED, not DONE (D-SC-17).
+
+NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
+four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with
+assertions (the container's LLVM is a Release build, so an LLVM-side assertion
+cannot show here, while Carbon's own checks are on); an opt-mode toolchain (the
+hosted conformance tarball is built `-c opt`); macOS, Windows and ASan. Until a
+hosted autoupdate, gate and conformance run on the PR head, the goldens are the
+container's fill, the gate count is the container's, and gap row 55's MISSING to
+PARTIAL stays EXPECTED (R9, R28).
 
 ### SL-1: Core.Slice, Core.Buf, heap allocation, fail-stop (2026-10-05)
 

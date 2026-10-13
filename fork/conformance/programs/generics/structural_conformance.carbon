@@ -34,9 +34,9 @@
 // SKIP line was removed at SC-1c (fork/structural/plan.md §5.A, commit-2
 // landed note finding 2(b)). Run 2026-10-13 on the container-built fork
 // toolchain (the upstream nightly does not implement `template constraint`):
-// PASS, printing exactly the EXPECT lines (plan "Landed notes (fill rounds 1
-// and 2)"); the flip is not of record until fork/conformance/out/
-// scoreboard.json is updated (R9).
+// PASS, printing exactly the EXPECT lines (plan "Landed notes (SC-1 fill
+// rounds, 2026-10-13)"); the flip is not of record until
+// fork/conformance/out/scoreboard.json is updated (R9).
 
 import Core library "io";
 

@@ -1911,10 +1911,10 @@ every D-SC, trailers and no model identifiers) stands as the review stated it.
     member 2 — the commit-2 finding-3 class, reachable only through interop,
     with no golden. ACCEPTED exactly as the reviewer asked, the import NOT gated
     on `diagnose` (the §5.B program's own member-1 probe is a `diagnose =
-    false` path and must import): (a) residue W-144 "C++ member import inside a
+    false` path and must import): (a) residue W-151 "C++ member import inside a
     non-diagnosing structural probe can emit (R-7)", blocked_by [], citing the
     import.cpp sites, the mechanism being to thread `diagnose` into
-    `ImportCppDecl` (check/cpp/, untouched by §2.C) — W-144 is allocated above
+    `ImportCppDecl` (check/cpp/, untouched by §2.C) — W-151 is allocated above
     W-143 under the same cross-branch assumption as W-134..W-143; (b) split
     `fail_todo_probe_import_leak.carbon` added to interop/cpp/class/import/
     template_constraint.carbon with its own header `unmappable_param.h`
@@ -1939,11 +1939,11 @@ every D-SC, trailers and no model identifiers) stands as the review stated it.
     2026-10-12 (SC-1 commit-3 fold): SC-1 … is OPEN on claude/carbon-fork-0-1-sc
     and HELD awaiting the fork toolchain's autoupdate + gate + conformance — see
     the Branches row; no measured numbers yet, so the floor above stands"), and
-    the Branches row now counts three fixer commits and W-134..W-144. Deviation
-    (4) of the commit-3 body is thereby withdrawn for the status paragraph and
-    stands for the Scoreboard section and the floor (no measured numbers exist,
-    R9), which is a narrower reading of §8.7, recorded here rather than as an
-    amendment of the signed-off plan. Counts unchanged.
+    the Branches row now counts three fixer commits and W-134..W-143 and W-151.
+    Deviation (4) of the commit-3 body is thereby withdrawn for the status
+    paragraph and stands for the Scoreboard section and the floor (no measured
+    numbers exist, R9), which is a narrower reading of §8.7, recorded here
+    rather than as an amendment of the signed-off plan. Counts unchanged.
 -   Finding 7 (MINOR, confirmed): the page's 0.1 limits said "filed as a ledger
     residue" without an id at F-010l (:270), F-010b and the associated-constant
     deferral (:288), the `impl … as I & SomeTemplateConstraint` gap (:448) and
@@ -1956,7 +1956,7 @@ every D-SC, trailers and no model identifiers) stands as the review stated it.
     commit-1 recovery (treated as a template constraint after the diagnostic).
 
 §1.G addition by this note: "C++ member import inside a non-diagnosing
-structural probe can emit (R-7)" (finding 5; W-144).
+structural probe can emit (R-7)" (finding 5; W-151).
 
 Verification for the fixer commit, same harness as commits 1-3 (no bazel run,
 no fill): clang++ -fsyntax-only with the toolchain's -Werror set against the
@@ -1967,7 +1967,7 @@ prek (rumdl, google-doc-style, markdown-toc, prettier on the ledger,
 clang-format, check-toolchain-diagnostics, codespell, copyright, check-links)
 at a fixpoint over every touched file (pass 1 reformatted only the C++ the hook
 had drifted; pass 2 clean); `runner.py --self-test` OK (151 programs; no
-program changed); the ledger parses and W-144 is the unique maximum id.
+program changed); the ledger parses and W-151 is the unique maximum id.
 
 R31 record for this note (H1/H2/H3/H4, dash items, numbered items): plan.md
 before 1 / 12 / 21 / 0, 83 dash, 53 numbered (identical to the commit-2

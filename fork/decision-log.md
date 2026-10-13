@@ -3883,7 +3883,7 @@ type), and the notes `StructuralMemberMissing` (at the conversion),
 `NoteStructuralConformanceFailure` (explain mode re-runs the check and notes the
 FIRST unsatisfied requirement) → `Emit` for both conversion-failure kinds;
 impl.cpp's two `require` emits stay note-less (A5(ii)). (7) COMPOUND ACCESS
-(member_access.cpp:826, :965). `RedirectStructuralRequirementAccess` in
+(member_access.cpp:921, :1050). `RedirectStructuralRequirementAccess` in
 `PerformCompoundMemberAccessAction`, before instance binding: a member that is a
 `CalleeFunction` whose parent scope is a template constraint's with-self scope
 converts the base type to the constraint's facet type (the check) and then looks
@@ -4096,7 +4096,7 @@ emits), the ported page's sentence split around an HTML comment (folded:
 comment moved, sentence rejoined), "fifteen" for sixteen new goldens (folded),
 the gap analysis's self-contradictory W7 paragraph (folded: rewritten), the
 look-through's import not being `diagnose`-aware — R-7 by construction (folded
-as asked: residue W-144, the `fail_todo_probe_import_leak` split, the comment),
+as asked: residue W-151, the `fail_todo_probe_import_leak` split, the comment),
 the ORCHESTRATION status paragraph silent on the HELD SC branch (folded: one
 dated sentence), the page's un-numbered residue mentions and the unstated
 D-SC-16 rule (folded: W-134/W-135/W-136/W-142 appended in place, one D-SC-16
@@ -4123,41 +4123,41 @@ A/B (the nightly lacks the feature). The R31 record for this entry's files is
 in the SC-1c commit body: heading and list counts per level before and after
 prek, the hazard greps empty.
 
-RESIDUE, filed with blocked_by [] (ids W-134..W-144, allocated above W-133 —
-the maximum across origin/trunk (W-125), origin/claude/carbon-fork-0-1-ua2
-(W-126/W-127), origin/claude/carbon-fork-0-1-cmake (W-128..W-133) and
-origin/claude/carbon-fork-0-1-safe (nothing above W-125 at its fetch) — on
-the assumption, stated in the ledger's `source` sentence and verified at
-merge as CM-1's entry did for PR 51, that those branches keep their ids):
-W-134 field requirements in template constraints (D-SC-2; F-010b reversed);
-W-135 associated-constant requirements (D-SC-2; details.md:1073-1075
-narrowed); W-136 parameterized requirement functions (D-SC-2; F-010l);
-W-137 function definitions (defaults) in template constraints (D-SC-2);
-W-138 structural witness table for blanket impls over template constraints
-(D-SC-4's break condition); W-139 checked generics calling
-template-constrained functions (D-SC-6; leads issue 2153); W-140 forward
-structural requirements through an interface's `require impls` for checked
-bindings (D-SC-6; review fold B7; waits on upstream's interface/require.carbon
-TODO); W-141 re-run deferred structural `require` checks at template
-blanket-impl specifics (D-SC-19; review fold A3); W-142 structural
-requirements on an impl's `as` facet type (commit-2 review finding 4); W-143
-inherited methods in structural matching (commit-2 review finding 5's
-observation, filed at this discharge as the note asked); W-144 C++ member
-import inside a non-diagnosing structural probe can emit (R-7; the commit-3
-review's finding — `ImportCppFunctionDecl` emits unconditionally,
-cpp/import.cpp:2152 and :2213 and the type-mapping TODOs, and the look-through
-calls it in both check modes; filed by the commit-3 fixer with the
-`fail_todo_probe_import_leak` split). W-028 (SC-B2) and
-W-029 (SC-B3) lose their W-027 edge. NOT filed, each conditional on a fill
-that has not run: "`impl forall [template T: HasGet]` migration-ladder step"
-(only if D-SC-19's break condition fires on the `ladder` split); "`const` C++
-method conformance sibling" (B14's condition is now predicted false — see
-D-SC-11 refined); "SemIR dump of a structural facet value hangs file_test"
-(only if the W-121 pre-registration of plan §8.1 fires); "C++ method `self`
-qualifiers in structural matching" (only if the look-through's imported `self`
-cannot match — predicted to match); "satisfaction cache" (D-SC-7's break
-condition). Resolved rather than filed: commit 2's "single-member C++ overload
-sets in structural matching" (the SC-1c look-through).
+RESIDUE, filed with blocked_by [] (ids W-134..W-143 and W-151, allocated above
+W-133 — the maximum across origin/trunk (W-125),
+origin/claude/carbon-fork-0-1-ua2 (W-126/W-127),
+origin/claude/carbon-fork-0-1-cmake (W-128..W-133) and
+origin/claude/carbon-fork-0-1-safe (nothing above W-125 at its fetch) — on the
+assumption, stated in the ledger's `source` sentence and verified at merge as
+CM-1's entry did for PR 51, that those branches keep their ids): W-134 field
+requirements in template constraints (D-SC-2; F-010b reversed); W-135
+associated-constant requirements (D-SC-2; details.md:1073-1075 narrowed); W-136
+parameterized requirement functions (D-SC-2; F-010l); W-137 function definitions
+(defaults) in template constraints (D-SC-2); W-138 structural witness table for
+blanket impls over template constraints (D-SC-4's break condition); W-139
+checked generics calling template-constrained functions (D-SC-6; leads issue
+2153); W-140 forward structural requirements through an interface's `require
+impls` for checked bindings (D-SC-6; review fold B7; waits on upstream's
+interface/require.carbon TODO); W-141 re-run deferred structural `require`
+checks at template blanket-impl specifics (D-SC-19; review fold A3); W-142
+structural requirements on an impl's `as` facet type (commit-2 review finding
+4); W-143 inherited methods in structural matching (commit-2 review finding 5's
+observation, filed at this discharge as the note asked); W-151 C++ member import
+inside a non-diagnosing structural probe can emit (R-7; the commit-3 review's
+finding — `ImportCppFunctionDecl` emits unconditionally, cpp/import.cpp:2152 and
+:2213 and the type-mapping TODOs, and the look-through calls it in both check
+modes; filed by the commit-3 fixer with the `fail_todo_probe_import_leak`
+split). W-028 (SC-B2) and W-029 (SC-B3) lose their W-027 edge. NOT filed, each
+conditional on a fill that has not run: "`impl forall [template T: HasGet]`
+migration-ladder step" (only if D-SC-19's break condition fires on the `ladder`
+split); "`const` C++ method conformance sibling" (B14's condition is now
+predicted false — see D-SC-11 refined); "SemIR dump of a structural facet value
+hangs file_test" (only if the W-121 pre-registration of plan §8.1 fires); "C++
+method `self` qualifiers in structural matching" (only if the look-through's
+imported `self` cannot match — predicted to match); "satisfaction cache"
+(D-SC-7's break condition). Resolved rather than filed: commit 2's
+"single-member C++ overload sets in structural matching" (the SC-1c
+look-through).
 
 PLAN §0.2 CORRECTIONS carried into the ledger (W-027's discharge note): the
 chokepoint is convert.cpp:1955, not :1596 (item 1); `facet_type_info.h` split

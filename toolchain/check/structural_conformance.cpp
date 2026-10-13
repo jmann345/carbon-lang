@@ -187,7 +187,7 @@ static auto PassingModeForCppParameterType(clang::QualType type)
 // parameter is `Self&` (so `ref self`, §0.1 row 19), a `const` method's is
 // `const Self&` (so value `self`) -- D-SC-11's spelling rule, refined.
 //
-// The import is NOT `diagnose`-aware (R-7 residue, ledger W-144):
+// The import is NOT `diagnose`-aware (R-7 residue, ledger W-151):
 // `ImportCppFunctionDecl` emits unconditionally -- cpp/import.cpp's
 // "Unsupported: Template function" and fenced-thunk TODOs, and the
 // parameter/return type-mapping TODOs under `CreateFunctionSignatureInsts` --

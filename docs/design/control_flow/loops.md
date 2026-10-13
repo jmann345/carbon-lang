@@ -113,6 +113,10 @@ while (iter.HasValue()) {
 }
 ```
 
+> **Fork amendment (2026-10-13, F-015).** In the fork, `Core.Optional`'s API is
+> designed in [Optional](../optional.md): `HasValue()` and `Get()` above are
+> that API, and the toolchain's `for` calls them by name.
+
 ### `break`
 
 The `break` statement immediately ends a `while` or `for` loop. Execution will

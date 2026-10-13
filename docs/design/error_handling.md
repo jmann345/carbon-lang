@@ -443,6 +443,14 @@ alternatives to match on (`core/prelude/types/optional.carbon`). Rebuilding
 design's B1 stage depends on; see
 [Implementation staging](#implementation-staging).
 
+> **Fork amendment (2026-10-13, OP-1, F-015):** W-058 was discharged without
+> rebuilding `Core.Optional` as a choice: the fork's
+> [Optional design](optional.md) keeps the class (D-EH-1), so the `match` body
+> above does not apply in 0.1, the landed `Try` impl stays as the amendment
+> above records it, signature and body, and `.Some`/`.None` patterns over
+> `Core.Optional` remain future work (W-177). EH-A's amendment above cites the
+> class at `core/prelude/types/optional.carbon:29`; it is at :30 in the fork.
+
 An implementation must uphold: `Branch` consumes `self` and returns exactly one
 alternative; `FromBreak` produces a value whose own `Branch` takes the failure
 path with an equal break value. The compiler does not verify these laws; they

@@ -859,6 +859,11 @@ There are no [null pointers](https://en.wikipedia.org/wiki/Null_pointer) in
 Carbon. To represent a pointer that may not refer to a valid object, use the
 type `Optional(T*)`.
 
+> **Fork amendment (2026-10-13, F-015).** `Core.Optional(T)` is designed in
+> [Optional](optional.md). `Optional(T*)` stores the null pointer as its empty
+> value, so it has a C++ pointer's ABI; `Optional(T*)` compares exactly when
+> `T*` is `Core.Eq`, and the built-in pointer types have no `==` yet (W-174).
+
 **Future work:** Perhaps Carbon will have
 [stricter pointer provenance](https://www.ralfj.de/blog/2022/04/11/provenance-exposed.html)
 or restrictions on casts between pointers and integers.

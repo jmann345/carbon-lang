@@ -63,16 +63,9 @@ interface I {}
 
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
-// CHECK:STDERR: fail_implicit_binding_compound_use.carbon:[[@LINE+11]]:8: error: template constraint `HasGet` can only constrain a `template` binding [TemplateConstraintOnNonTemplateBinding]
+// CHECK:STDERR: fail_implicit_binding_compound_use.carbon:[[@LINE+4]]:8: error: template constraint `HasGet` can only constrain a `template` binding [TemplateConstraintOnNonTemplateBinding]
 // CHECK:STDERR: fn Bad[T: HasGet & I](x: T) -> i32 { return CallGet(x); }
 // CHECK:STDERR:        ^~~~~~~~~~~~~
-// CHECK:STDERR:
-// CHECK:STDERR: fail_implicit_binding_compound_use.carbon:[[@LINE-6]]:54: error: use of undefined generic function [MissingGenericFunctionDefinition]
-// CHECK:STDERR: fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
-// CHECK:STDERR:                                                      ^~~~~
-// CHECK:STDERR: fail_implicit_binding_compound_use.carbon:[[@LINE-14]]:3: note: generic function declared here [MissingGenericFunctionDefinitionHere]
-// CHECK:STDERR:   fn Get(self) -> i32;
-// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn Bad[T: HasGet & I](x: T) -> i32 { return CallGet(x); }
 
@@ -159,6 +152,10 @@ template constraint HasGet {
   fn Get(self) -> i32;
 }
 
+// CHECK:STDERR: fail_implicit_binding_direct_use.carbon:[[@LINE+4]]:8: error: template constraint `HasGet` can only constrain a `template` binding [TemplateConstraintOnNonTemplateBinding]
+// CHECK:STDERR: fn Bad[T: HasGet](x: T) -> i32 { return x.Get(); }
+// CHECK:STDERR:        ^~~~~~~~~
+// CHECK:STDERR:
 fn Bad[T: HasGet](x: T) -> i32 { return x.Get(); }
 
 // --- fail_implicit_binding_assoc_fn_use.carbon
@@ -176,6 +173,10 @@ interface I {}
 
 fn Use[template T: HasMake](unused x: T) -> i32 { return T.Make().Get(); }
 
+// CHECK:STDERR: fail_implicit_binding_assoc_fn_use.carbon:[[@LINE+4]]:8: error: template constraint `HasMake` can only constrain a `template` binding [TemplateConstraintOnNonTemplateBinding]
+// CHECK:STDERR: fn Bad[T: HasMake & I](x: T) -> i32 { return Use(x); }
+// CHECK:STDERR:        ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Bad[T: HasMake & I](x: T) -> i32 { return Use(x); }
 
 // --- fail_wrap_checked_binding.carbon
@@ -192,6 +193,10 @@ constraint Wrap {
   require impls HasGet;
 }
 
+// CHECK:STDERR: fail_wrap_checked_binding.carbon:[[@LINE+4]]:8: error: template constraint `HasGet` can only constrain a `template` binding [TemplateConstraintOnNonTemplateBinding]
+// CHECK:STDERR: fn Bad[T: Wrap](unused x: T) {}
+// CHECK:STDERR:        ^~~~~~~
+// CHECK:STDERR:
 fn Bad[T: Wrap](unused x: T) {}
 
 // --- fail_extend_require_in_interface_symbolic.carbon
@@ -210,4 +215,11 @@ interface I {
   extend require impls HasGet;
 }
 
+// CHECK:STDERR: fail_extend_require_in_interface_symbolic.carbon:[[@LINE+7]]:34: error: requirement `Get` of template constraint `HasGet` can only be called through a type that satisfies it [StructuralRequirementCalled]
+// CHECK:STDERR: fn G[T: I](x: T) -> i32 { return x.Get(); }
+// CHECK:STDERR:                                  ^~~~~~~
+// CHECK:STDERR: fail_extend_require_in_interface_symbolic.carbon:[[@LINE-10]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn G[T: I](x: T) -> i32 { return x.Get(); }

@@ -467,6 +467,19 @@ class Box(T: type) {
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
 fn Test(b: Box(i32)) -> i32 {
+  // CHECK:STDERR: fail_own_params.carbon:[[@LINE+13]]:10: error: cannot convert type `Box(i32)` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   return CallGet(b);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_own_params.carbon:[[@LINE-9]]:3: note: member `Get` of type `Box(i32)` does not match the signature required by template constraint `HasGet` [StructuralMemberMismatch]
+  // CHECK:STDERR:   fn Get[U: type](unused self, unused u: U) -> i32 { return 1; }
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_own_params.carbon:[[@LINE-16]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_own_params.carbon:[[@LINE-12]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+  // CHECK:STDERR: fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return CallGet(b);
 }
 
@@ -487,6 +500,19 @@ class C {
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
 fn Test(c: C) -> i32 {
+  // CHECK:STDERR: fail_alias_requirement.carbon:[[@LINE+13]]:10: error: cannot convert type `C` into type implementing `HasGet` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   return CallGet(c);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_alias_requirement.carbon:[[@LINE+10]]:10: note: type `C` has no member named `Get` required by template constraint `HasGet` [StructuralMemberMissing]
+  // CHECK:STDERR:   return CallGet(c);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_alias_requirement.carbon:[[@LINE-16]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_alias_requirement.carbon:[[@LINE-12]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+  // CHECK:STDERR: fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return CallGet(c);
 }
 
@@ -503,5 +529,18 @@ template constraint HasCount {
 fn F(template T: HasCount) -> i32 { return T.Count(); }
 
 fn Test() -> i32 {
+  // CHECK:STDERR: fail_facet_type_self.carbon:[[@LINE+13]]:10: error: cannot convert type `HasCount` into type implementing `HasCount` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   return F(HasCount);
+  // CHECK:STDERR:          ^~~~~~~~~~~
+  // CHECK:STDERR: fail_facet_type_self.carbon:[[@LINE+10]]:10: note: type `HasCount` has no member named `Count` required by template constraint `HasCount` [StructuralMemberMissing]
+  // CHECK:STDERR:   return F(HasCount);
+  // CHECK:STDERR:          ^~~~~~~~~~~
+  // CHECK:STDERR: fail_facet_type_self.carbon:[[@LINE-12]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Count() -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_facet_type_self.carbon:[[@LINE-12]]:6: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+  // CHECK:STDERR: fn F(template T: HasCount) -> i32 { return T.Count(); }
+  // CHECK:STDERR:      ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return F(HasCount);
 }

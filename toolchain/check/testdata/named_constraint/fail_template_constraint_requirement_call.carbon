@@ -32,8 +32,22 @@ class C {
   fn Make() -> C { return {}; }
 }
 
+// CHECK:STDERR: fail_direct_call.carbon:[[@LINE+7]]:24: error: requirement `Count` of template constraint `HasCount` can only be called through a type that satisfies it [StructuralRequirementCalled]
+// CHECK:STDERR: fn K() -> i32 { return HasCount.Count(); }
+// CHECK:STDERR:                        ^~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_direct_call.carbon:[[@LINE-14]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Count() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn K() -> i32 { return HasCount.Count(); }
 
+// CHECK:STDERR: fail_direct_call.carbon:[[@LINE+7]]:22: error: requirement `Make` of template constraint `HasMake` can only be called through a type that satisfies it [StructuralRequirementCalled]
+// CHECK:STDERR: fn M() -> C { return HasMake.Make(); }
+// CHECK:STDERR:                      ^~~~~~~~~~~~~~
+// CHECK:STDERR: fail_direct_call.carbon:[[@LINE-19]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Make() -> Self;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn M() -> C { return HasMake.Make(); }
 
 // --- fail_todo_runtime_facet.carbon
@@ -53,10 +67,21 @@ class C {
 
 fn ViaLet() -> C {
   let F: HasMake = C;
+  // CHECK:STDERR: fail_todo_runtime_facet.carbon:[[@LINE+7]]:10: error: requirement `Make` of template constraint `HasMake` can only be called through a type that satisfies it [StructuralRequirementCalled]
+  // CHECK:STDERR:   return F.Make();
+  // CHECK:STDERR:          ^~~~~~~~
+  // CHECK:STDERR: fail_todo_runtime_facet.carbon:[[@LINE-12]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Make() -> Self;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return F.Make();
 }
 
 fn ViaLetCompound() -> C {
   let F: HasMake = C;
+  // CHECK:STDERR: fail_todo_runtime_facet.carbon:[[@LINE+4]]:10: error: semantics TODO: `compound member access to a `template constraint` requirement through a runtime facet value` [SemanticsTodo]
+  // CHECK:STDERR:   return F.(HasMake.Make)();
+  // CHECK:STDERR:          ^~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return F.(HasMake.Make)();
 }

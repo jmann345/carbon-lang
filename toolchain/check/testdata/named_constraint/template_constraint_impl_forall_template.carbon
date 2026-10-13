@@ -33,10 +33,6 @@ interface NewF {
 }
 
 class C {
-  // CHECK:STDERR: ladder.carbon:[[@LINE+4]]:10: warning: binding `self` unused [UnusedBinding]
-  // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
-  // CHECK:STDERR:          ^~~~
-  // CHECK:STDERR:
   fn Get(unused self) -> i32 { return 1; }
 }
 
@@ -69,6 +65,13 @@ impl forall [template T: HasGet] T as NewF {
 
 fn G[template T: NewF](x: T) { x.(NewF.DoF)(); }
 
+// CHECK:STDERR: fail_ladder_unsatisfied.carbon:[[@LINE+7]]:17: error: cannot convert type `D` into type implementing `NewF` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn Test(d: D) { G(d); }
+// CHECK:STDERR:                 ^~~~
+// CHECK:STDERR: fail_ladder_unsatisfied.carbon:[[@LINE-5]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn G[template T: NewF](x: T) { x.(NewF.DoF)(); }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Test(d: D) { G(d); }
 
 fn TestQualified(d: D) -> i32 {

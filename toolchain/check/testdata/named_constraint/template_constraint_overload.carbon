@@ -23,10 +23,6 @@ template constraint HasGet {
 }
 
 class C {
-  // CHECK:STDERR: overload.carbon:[[@LINE+4]]:10: warning: binding `self` unused [UnusedBinding]
-  // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
-  // CHECK:STDERR:          ^~~~
-  // CHECK:STDERR:
   fn Get(unused self) -> i32 { return 1; }
 }
 
@@ -45,18 +41,10 @@ template constraint HasGet {
 }
 
 class C {
-  // CHECK:STDERR: overload_catch_all.carbon:[[@LINE+4]]:10: warning: binding `self` unused [UnusedBinding]
-  // CHECK:STDERR:   fn Get(self) -> i32 { return 42; }
-  // CHECK:STDERR:          ^~~~
-  // CHECK:STDERR:
   fn Get(unused self) -> i32 { return 42; }
 }
 
 class Lacking {
-  // CHECK:STDERR: overload_catch_all.carbon:[[@LINE+4]]:12: warning: binding `self` unused [UnusedBinding]
-  // CHECK:STDERR:   fn Other(self) -> i32 { return 0; }
-  // CHECK:STDERR:            ^~~~
-  // CHECK:STDERR:
   fn Other(unused self) -> i32 { return 0; }
 }
 
@@ -83,11 +71,11 @@ fn Test(c: C, l: Lacking) -> i32 { return Pick(c) + Pick(l); }
 // CHECK:STDOUT:   %pattern_type.98b: type = pattern_type %C [concrete]
 // CHECK:STDOUT:   %Lacking: type = class_type @Lacking [concrete]
 // CHECK:STDOUT:   %pattern_type.3e9: type = pattern_type %Lacking [concrete]
-// CHECK:STDOUT:   %Pick.type.113fcf.1: type = fn_type @Pick.loc25 [concrete]
+// CHECK:STDOUT:   %Pick.type.113fcf.1: type = fn_type @Pick.loc17 [concrete]
 // CHECK:STDOUT:   %Pick.bd7a10.1: %Pick.type.113fcf.1 = struct_value () [concrete]
 // CHECK:STDOUT:   %Pick.overload_set.type: type = overload_set_type @Pick.overload_set [concrete]
 // CHECK:STDOUT:   %Pick.overload_set.value: %Pick.overload_set.type = overload_set_value @Pick.overload_set [concrete]
-// CHECK:STDOUT:   %Pick.type.113fcf.2: type = fn_type @Pick.loc26 [concrete]
+// CHECK:STDOUT:   %Pick.type.113fcf.2: type = fn_type @Pick.loc18 [concrete]
 // CHECK:STDOUT:   %Pick.bd7a10.2: %Pick.type.113fcf.2 = struct_value () [concrete]
 // CHECK:STDOUT:   %c.param_patt: %pattern_type.98b = value_param_pattern [concrete]
 // CHECK:STDOUT:   %c.patt: %pattern_type.98b = wrapper_binding_pattern c, %c.param_patt [concrete]
@@ -96,8 +84,8 @@ fn Test(c: C, l: Lacking) -> i32 { return Pick(c) + Pick(l); }
 // CHECK:STDOUT:   %Test.type: type = fn_type @Test [concrete]
 // CHECK:STDOUT:   %Test: %Test.type = struct_value () [concrete]
 // CHECK:STDOUT:   %HasGet.facet: %HasGet.type = facet_value %C, () [concrete]
-// CHECK:STDOUT:   %Pick.specific_fn.cf8: <specific function> = specific_function %Pick.bd7a10.1, @Pick.loc25(%HasGet.facet) [concrete]
-// CHECK:STDOUT:   %Pick.specific_fn.e53: <specific function> = specific_function %Pick.bd7a10.2, @Pick.loc26(%Lacking) [concrete]
+// CHECK:STDOUT:   %Pick.specific_fn.cf8: <specific function> = specific_function %Pick.bd7a10.1, @Pick.loc17(%HasGet.facet) [concrete]
+// CHECK:STDOUT:   %Pick.specific_fn.e53: <specific function> = specific_function %Pick.bd7a10.2, @Pick.loc18(%Lacking) [concrete]
 // CHECK:STDOUT:   %AddWith.type.be9: type = facet_type <@AddWith, @AddWith(%i32)> [concrete]
 // CHECK:STDOUT:   %Int.as.AddWith.impl.Op.type.610: type = fn_type @Int.as.AddWith.impl.Op.1, @Int.as.AddWith.impl.3af(%N) [symbolic]
 // CHECK:STDOUT:   %Int.as.AddWith.impl.Op.732: %Int.as.AddWith.impl.Op.type.610 = struct_value () [symbolic]
@@ -126,7 +114,7 @@ fn Test(c: C, l: Lacking) -> i32 { return Pick(c) + Pick(l); }
 // CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32 [concrete = constants.%return.patt.e1b]
 // CHECK:STDOUT:   } {
 // CHECK:STDOUT:     %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
-// CHECK:STDOUT:     %.loc29_30: Core.Form = init_form %i32 [concrete = constants.%.795f]
+// CHECK:STDOUT:     %.loc21_30: Core.Form = init_form %i32 [concrete = constants.%.795f]
 // CHECK:STDOUT:     %c.param: %C = value_param call_param0
 // CHECK:STDOUT:     %C.ref: type = name_ref C, file.%C.decl [concrete = constants.%C]
 // CHECK:STDOUT:     %c: %C = wrapper_binding c, %c.param
@@ -140,29 +128,29 @@ fn Test(c: C, l: Lacking) -> i32 { return Pick(c) + Pick(l); }
 // CHECK:STDOUT:
 // CHECK:STDOUT: fn @Test(%c.param: %C, %l.param: %Lacking) -> out %return.param: %i32 {
 // CHECK:STDOUT: !entry:
-// CHECK:STDOUT:   %Pick.ref.loc29_43: %Pick.overload_set.type = name_ref Pick, file.%Pick.overload_set.value [concrete = constants.%Pick.overload_set.value]
+// CHECK:STDOUT:   %Pick.ref.loc21_43: %Pick.overload_set.type = name_ref Pick, file.%Pick.overload_set.value [concrete = constants.%Pick.overload_set.value]
 // CHECK:STDOUT:   %c.ref: %C = name_ref c, %c
-// CHECK:STDOUT:   %Pick.ref.loc29_49: %Pick.type.113fcf.1 = name_ref Pick, file.%Pick.decl.loc25 [concrete = constants.%Pick.bd7a10.1]
-// CHECK:STDOUT:   %HasGet.facet.loc29_49.1: %HasGet.type = facet_value constants.%C, () [concrete = constants.%HasGet.facet]
-// CHECK:STDOUT:   %.loc29_49.1: %HasGet.type = converted constants.%C, %HasGet.facet.loc29_49.1 [concrete = constants.%HasGet.facet]
-// CHECK:STDOUT:   %HasGet.facet.loc29_49.2: %HasGet.type = facet_value constants.%C, () [concrete = constants.%HasGet.facet]
-// CHECK:STDOUT:   %.loc29_49.2: %HasGet.type = converted constants.%C, %HasGet.facet.loc29_49.2 [concrete = constants.%HasGet.facet]
-// CHECK:STDOUT:   %Pick.specific_fn.loc29_49: <specific function> = specific_function %Pick.ref.loc29_49, @Pick.loc25(constants.%HasGet.facet) [concrete = constants.%Pick.specific_fn.cf8]
-// CHECK:STDOUT:   %Pick.call.loc29_49: init %i32 = call %Pick.specific_fn.loc29_49(%c.ref)
-// CHECK:STDOUT:   %Pick.ref.loc29_53: %Pick.overload_set.type = name_ref Pick, file.%Pick.overload_set.value [concrete = constants.%Pick.overload_set.value]
+// CHECK:STDOUT:   %Pick.ref.loc21_49: %Pick.type.113fcf.1 = name_ref Pick, file.%Pick.decl.loc17 [concrete = constants.%Pick.bd7a10.1]
+// CHECK:STDOUT:   %HasGet.facet.loc21_49.1: %HasGet.type = facet_value constants.%C, () [concrete = constants.%HasGet.facet]
+// CHECK:STDOUT:   %.loc21_49.1: %HasGet.type = converted constants.%C, %HasGet.facet.loc21_49.1 [concrete = constants.%HasGet.facet]
+// CHECK:STDOUT:   %HasGet.facet.loc21_49.2: %HasGet.type = facet_value constants.%C, () [concrete = constants.%HasGet.facet]
+// CHECK:STDOUT:   %.loc21_49.2: %HasGet.type = converted constants.%C, %HasGet.facet.loc21_49.2 [concrete = constants.%HasGet.facet]
+// CHECK:STDOUT:   %Pick.specific_fn.loc21_49: <specific function> = specific_function %Pick.ref.loc21_49, @Pick.loc17(constants.%HasGet.facet) [concrete = constants.%Pick.specific_fn.cf8]
+// CHECK:STDOUT:   %Pick.call.loc21_49: init %i32 = call %Pick.specific_fn.loc21_49(%c.ref)
+// CHECK:STDOUT:   %Pick.ref.loc21_53: %Pick.overload_set.type = name_ref Pick, file.%Pick.overload_set.value [concrete = constants.%Pick.overload_set.value]
 // CHECK:STDOUT:   %l.ref: %Lacking = name_ref l, %l
-// CHECK:STDOUT:   %Pick.ref.loc29_59: %Pick.type.113fcf.2 = name_ref Pick, file.%Pick.decl.loc26 [concrete = constants.%Pick.bd7a10.2]
-// CHECK:STDOUT:   %Pick.specific_fn.loc29_59: <specific function> = specific_function %Pick.ref.loc29_59, @Pick.loc26(constants.%Lacking) [concrete = constants.%Pick.specific_fn.e53]
-// CHECK:STDOUT:   %Pick.call.loc29_59: init %i32 = call %Pick.specific_fn.loc29_59(%l.ref)
+// CHECK:STDOUT:   %Pick.ref.loc21_59: %Pick.type.113fcf.2 = name_ref Pick, file.%Pick.decl.loc18 [concrete = constants.%Pick.bd7a10.2]
+// CHECK:STDOUT:   %Pick.specific_fn.loc21_59: <specific function> = specific_function %Pick.ref.loc21_59, @Pick.loc18(constants.%Lacking) [concrete = constants.%Pick.specific_fn.e53]
+// CHECK:STDOUT:   %Pick.call.loc21_59: init %i32 = call %Pick.specific_fn.loc21_59(%l.ref)
 // CHECK:STDOUT:   %impl.elem1: %.d47 = impl_witness_access constants.%AddWith.impl_witness.833, element1 [concrete = constants.%Int.as.AddWith.impl.Op.365]
-// CHECK:STDOUT:   %bound_method.loc29_51.1: <bound method> = bound_method %Pick.call.loc29_49, %impl.elem1
+// CHECK:STDOUT:   %bound_method.loc21_51.1: <bound method> = bound_method %Pick.call.loc21_49, %impl.elem1
 // CHECK:STDOUT:   %specific_fn: <specific function> = specific_function %impl.elem1, @Int.as.AddWith.impl.Op.1(constants.%int_32) [concrete = constants.%Int.as.AddWith.impl.Op.specific_fn.f25]
-// CHECK:STDOUT:   %bound_method.loc29_51.2: <bound method> = bound_method %Pick.call.loc29_49, %specific_fn
-// CHECK:STDOUT:   %.loc29_49.3: %i32 = value_of_initializer %Pick.call.loc29_49
-// CHECK:STDOUT:   %.loc29_49.4: %i32 = converted %Pick.call.loc29_49, %.loc29_49.3
-// CHECK:STDOUT:   %.loc29_59.1: %i32 = value_of_initializer %Pick.call.loc29_59
-// CHECK:STDOUT:   %.loc29_59.2: %i32 = converted %Pick.call.loc29_59, %.loc29_59.1
-// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call: init %i32 = call %bound_method.loc29_51.2(%.loc29_49.4, %.loc29_59.2)
+// CHECK:STDOUT:   %bound_method.loc21_51.2: <bound method> = bound_method %Pick.call.loc21_49, %specific_fn
+// CHECK:STDOUT:   %.loc21_49.3: %i32 = value_of_initializer %Pick.call.loc21_49
+// CHECK:STDOUT:   %.loc21_49.4: %i32 = converted %Pick.call.loc21_49, %.loc21_49.3
+// CHECK:STDOUT:   %.loc21_59.1: %i32 = value_of_initializer %Pick.call.loc21_59
+// CHECK:STDOUT:   %.loc21_59.2: %i32 = converted %Pick.call.loc21_59, %.loc21_59.1
+// CHECK:STDOUT:   %Int.as.AddWith.impl.Op.call: init %i32 = call %bound_method.loc21_51.2(%.loc21_49.4, %.loc21_59.2)
 // CHECK:STDOUT:   return %Int.as.AddWith.impl.Op.call
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

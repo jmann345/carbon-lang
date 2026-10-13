@@ -24,10 +24,6 @@ template constraint HasGet {
 }
 
 class StructuralOnly {
-  // CHECK:STDERR: call_method.carbon:[[@LINE+4]]:10: warning: binding `self` unused [UnusedBinding]
-  // CHECK:STDERR:   fn Get(self) -> i32 { return 42; }
-  // CHECK:STDERR:          ^~~~
-  // CHECK:STDERR:
   fn Get(unused self) -> i32 { return 42; }
 }
 
@@ -62,7 +58,7 @@ fn Run() -> i32 {
 // CHECK:STDOUT: source_filename = "call_method.carbon"
 // CHECK:STDOUT:
 // CHECK:STDOUT: @StructuralOnly.val = internal constant {} zeroinitializer
-// CHECK:STDOUT: @StructuralOnly.val.loc18_28.6 = internal constant {} zeroinitializer
+// CHECK:STDOUT: @StructuralOnly.val.loc14_28.6 = internal constant {} zeroinitializer
 // CHECK:STDOUT:
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @_CGet.StructuralOnly.Main(ptr %self) #0 !dbg !14 {
@@ -73,9 +69,9 @@ fn Run() -> i32 {
 // CHECK:STDOUT: ; Function Attrs: nounwind
 // CHECK:STDOUT: define i32 @main() #0 !dbg !21 {
 // CHECK:STDOUT: entry:
-// CHECK:STDOUT:   %.loc18_28.2.temp = alloca {}, align 1, !dbg !24
-// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc18_28.2.temp), !dbg !24
-// CHECK:STDOUT:   %CallGet.call = call i32 @_CCallGet.Main.f62a2c791da98824(ptr @StructuralOnly.val.loc18_28.6), !dbg !28
+// CHECK:STDOUT:   %.loc14_28.2.temp = alloca {}, align 1, !dbg !24
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc14_28.2.temp), !dbg !24
+// CHECK:STDOUT:   %CallGet.call = call i32 @_CCallGet.Main.f62a2c791da98824(ptr @StructuralOnly.val.loc14_28.6), !dbg !28
 // CHECK:STDOUT:   call void @"_CSelfDestruct.5f34240af69d1bb5:core.Destroy.Core"(ptr @StructuralOnly.val), !dbg !24
 // CHECK:STDOUT:   ret i32 %CallGet.call, !dbg !29
 // CHECK:STDOUT: }
@@ -120,25 +116,98 @@ fn Run() -> i32 {
 // CHECK:STDOUT: !11 = !DISubroutineType(types: !10)
 // CHECK:STDOUT: !12 = !{null, !7}
 // CHECK:STDOUT: !13 = !DISubroutineType(types: !12)
-// CHECK:STDOUT: !14 = distinct !DISubprogram(name: "Get", linkageName: "_CGet.StructuralOnly.Main", scope: null, file: !4, line: 12, type: !9, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !20)
+// CHECK:STDOUT: !14 = distinct !DISubprogram(name: "Get", linkageName: "_CGet.StructuralOnly.Main", scope: null, file: !4, line: 8, type: !9, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !20)
 // CHECK:STDOUT: !15 = !DILocalVariable(arg: 1, scope: !14, type: !7)
-// CHECK:STDOUT: !19 = !DILocation(line: 12, column: 25, scope: !14)
+// CHECK:STDOUT: !19 = !DILocation(line: 8, column: 32, scope: !14)
 // CHECK:STDOUT: !20 = !{!15}
-// CHECK:STDOUT: !21 = distinct !DISubprogram(name: "Run", linkageName: "main", scope: null, file: !4, line: 17, type: !11, spFlags: DISPFlagDefinition, unit: !5)
-// CHECK:STDOUT: !24 = !DILocation(line: 18, column: 27, scope: !21)
-// CHECK:STDOUT: !28 = !DILocation(line: 19, column: 10, scope: !21)
-// CHECK:STDOUT: !29 = !DILocation(line: 19, column: 3, scope: !21)
-// CHECK:STDOUT: !30 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.cb8adced19392b99:core.Destroy.Core", scope: null, file: !4, line: 18, type: !13, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !33)
+// CHECK:STDOUT: !21 = distinct !DISubprogram(name: "Run", linkageName: "main", scope: null, file: !4, line: 13, type: !11, spFlags: DISPFlagDefinition, unit: !5)
+// CHECK:STDOUT: !24 = !DILocation(line: 14, column: 27, scope: !21)
+// CHECK:STDOUT: !28 = !DILocation(line: 15, column: 10, scope: !21)
+// CHECK:STDOUT: !29 = !DILocation(line: 15, column: 3, scope: !21)
+// CHECK:STDOUT: !30 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.cb8adced19392b99:core.Destroy.Core", scope: null, file: !4, line: 14, type: !13, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !33)
 // CHECK:STDOUT: !31 = !DILocalVariable(arg: 1, scope: !30, type: !7)
-// CHECK:STDOUT: !32 = !DILocation(line: 18, column: 27, scope: !30)
+// CHECK:STDOUT: !32 = !DILocation(line: 14, column: 27, scope: !30)
 // CHECK:STDOUT: !33 = !{!31}
-// CHECK:STDOUT: !34 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.5f34240af69d1bb5:core.Destroy.Core", scope: null, file: !4, line: 18, type: !13, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !37)
+// CHECK:STDOUT: !34 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.5f34240af69d1bb5:core.Destroy.Core", scope: null, file: !4, line: 14, type: !13, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !37)
 // CHECK:STDOUT: !35 = !DILocalVariable(arg: 1, scope: !34, type: !7)
-// CHECK:STDOUT: !36 = !DILocation(line: 18, column: 27, scope: !34)
+// CHECK:STDOUT: !36 = !DILocation(line: 14, column: 27, scope: !34)
 // CHECK:STDOUT: !37 = !{!35}
-// CHECK:STDOUT: !38 = distinct !DISubprogram(name: "CallGet", linkageName: "_CCallGet.Main.f62a2c791da98824", scope: null, file: !4, line: 15, type: !9, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !45)
+// CHECK:STDOUT: !38 = distinct !DISubprogram(name: "CallGet", linkageName: "_CCallGet.Main.f62a2c791da98824", scope: null, file: !4, line: 11, type: !9, spFlags: DISPFlagDefinition, unit: !5, retainedNodes: !45)
 // CHECK:STDOUT: !39 = !DILocalVariable(arg: 1, scope: !38, type: !7)
-// CHECK:STDOUT: !43 = !DILocation(line: 15, column: 54, scope: !38)
-// CHECK:STDOUT: !44 = !DILocation(line: 15, column: 47, scope: !38)
+// CHECK:STDOUT: !43 = !DILocation(line: 11, column: 54, scope: !38)
+// CHECK:STDOUT: !44 = !DILocation(line: 11, column: 47, scope: !38)
 // CHECK:STDOUT: !45 = !{!39}
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; ---
+// CHECK:STDOUT: ; ModuleID = 'compound_nongeneric.carbon'
+// CHECK:STDOUT: source_filename = "compound_nongeneric.carbon"
+// CHECK:STDOUT:
+// CHECK:STDOUT: @C.val = internal constant {} zeroinitializer
+// CHECK:STDOUT: @C.val.loc15_15.6 = internal constant {} zeroinitializer
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @_CGet.C.Main(ptr %self) #0 !dbg !48 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret i32 42, !dbg !53
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define i32 @main() #0 !dbg !55 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   %.loc15_15.2.temp = alloca {}, align 1, !dbg !58
+// CHECK:STDOUT:   call void @llvm.lifetime.start.p0(ptr %.loc15_15.2.temp), !dbg !58
+// CHECK:STDOUT:   %C.Get.call = call i32 @_CGet.C.Main(ptr @C.val.loc15_15.6), !dbg !61
+// CHECK:STDOUT:   call void @"_CSelfDestruct.08d9e38b928ba575:core.Destroy.Core"(ptr @C.val), !dbg !58
+// CHECK:STDOUT:   ret i32 %C.Get.call, !dbg !62
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.cb8adced19392b99:core.Destroy.Core"(ptr %self) #0 !dbg !63 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret void, !dbg !65
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nounwind
+// CHECK:STDOUT: define weak_odr void @"_CSelfDestruct.08d9e38b928ba575:core.Destroy.Core"(ptr %self) #0 !dbg !67 {
+// CHECK:STDOUT: entry:
+// CHECK:STDOUT:   ret void, !dbg !69
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+// CHECK:STDOUT: declare void @llvm.lifetime.start.p0(ptr captures(none)) #1
+// CHECK:STDOUT:
+// CHECK:STDOUT: attributes #0 = { nounwind }
+// CHECK:STDOUT: attributes #1 = { nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+// CHECK:STDOUT:
+// CHECK:STDOUT: !llvm.dbg.cu = !{!47}
+// CHECK:STDOUT: !llvm.module.flags = !{!2, !3}
+// CHECK:STDOUT:
+// CHECK:STDOUT: !2 = !{i32 7, !"Dwarf Version", i32 5}
+// CHECK:STDOUT: !3 = !{i32 2, !"Debug Info Version", i32 3}
+// CHECK:STDOUT: !6 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+// CHECK:STDOUT: !7 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: null, size: 64)
+// CHECK:STDOUT: !8 = !{!6, !7}
+// CHECK:STDOUT: !9 = !DISubroutineType(types: !8)
+// CHECK:STDOUT: !10 = !{!6}
+// CHECK:STDOUT: !11 = !DISubroutineType(types: !10)
+// CHECK:STDOUT: !12 = !{null, !7}
+// CHECK:STDOUT: !13 = !DISubroutineType(types: !12)
+// CHECK:STDOUT: !46 = !DIFile(filename: "compound_nongeneric.carbon", directory: "")
+// CHECK:STDOUT: !47 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !46, producer: "carbon", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug)
+// CHECK:STDOUT: !48 = distinct !DISubprogram(name: "Get", linkageName: "_CGet.C.Main", scope: null, file: !46, line: 11, type: !9, spFlags: DISPFlagDefinition, unit: !47, retainedNodes: !54)
+// CHECK:STDOUT: !49 = !DILocalVariable(arg: 1, scope: !48, type: !7)
+// CHECK:STDOUT: !53 = !DILocation(line: 11, column: 32, scope: !48)
+// CHECK:STDOUT: !54 = !{!49}
+// CHECK:STDOUT: !55 = distinct !DISubprogram(name: "Run", linkageName: "main", scope: null, file: !46, line: 14, type: !11, spFlags: DISPFlagDefinition, unit: !47)
+// CHECK:STDOUT: !58 = !DILocation(line: 15, column: 14, scope: !55)
+// CHECK:STDOUT: !61 = !DILocation(line: 16, column: 10, scope: !55)
+// CHECK:STDOUT: !62 = !DILocation(line: 16, column: 3, scope: !55)
+// CHECK:STDOUT: !63 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.cb8adced19392b99:core.Destroy.Core", scope: null, file: !46, line: 15, type: !13, spFlags: DISPFlagDefinition, unit: !47, retainedNodes: !66)
+// CHECK:STDOUT: !64 = !DILocalVariable(arg: 1, scope: !63, type: !7)
+// CHECK:STDOUT: !65 = !DILocation(line: 15, column: 14, scope: !63)
+// CHECK:STDOUT: !66 = !{!64}
+// CHECK:STDOUT: !67 = distinct !DISubprogram(name: "SelfDestruct", linkageName: "_CSelfDestruct.08d9e38b928ba575:core.Destroy.Core", scope: null, file: !46, line: 15, type: !13, spFlags: DISPFlagDefinition, unit: !47, retainedNodes: !70)
+// CHECK:STDOUT: !68 = !DILocalVariable(arg: 1, scope: !67, type: !7)
+// CHECK:STDOUT: !69 = !DILocation(line: 15, column: 14, scope: !67)
+// CHECK:STDOUT: !70 = !{!68}
 // CHECK:STDOUT:

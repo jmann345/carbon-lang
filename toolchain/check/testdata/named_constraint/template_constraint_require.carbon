@@ -25,10 +25,6 @@ template constraint Both {
 }
 
 class C {
-  // CHECK:STDERR: require_in_template.carbon:[[@LINE+4]]:10: warning: binding `self` unused [UnusedBinding]
-  // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
-  // CHECK:STDERR:          ^~~~
-  // CHECK:STDERR:
   fn Get(unused self) -> i32 { return 1; }
 }
 
@@ -48,10 +44,6 @@ interface I {
 }
 
 class C {
-  // CHECK:STDERR: require_in_interface_concrete.carbon:[[@LINE+4]]:10: warning: binding `self` unused [UnusedBinding]
-  // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
-  // CHECK:STDERR:          ^~~~
-  // CHECK:STDERR:
   fn Get(unused self) -> i32 { return 1; }
 }
 
@@ -75,10 +67,6 @@ impl forall [template T: type] T as I {}
 
 class Lacking {}
 
-// CHECK:STDERR: require_in_interface_template_blanket.carbon:[[@LINE+4]]:14: warning: binding `x` unused [UnusedBinding]
-// CHECK:STDERR: fn Use[U: I](x: U) {}
-// CHECK:STDERR:              ^~~~
-// CHECK:STDERR:
 fn Use[U: I](unused x: U) {}
 
 fn Test(l: Lacking) { Use(l); }
@@ -99,6 +87,10 @@ interface I {
 
 class D {}
 
+// CHECK:STDERR: fail_require_in_interface_concrete_lacking.carbon:[[@LINE+4]]:1: error: interface `I` being implemented requires that `D` implements `HasGet` [InterfaceRequireImplsNotImplemented]
+// CHECK:STDERR: impl D as I {}
+// CHECK:STDERR: ^~~~~~~~~~~~~
+// CHECK:STDERR:
 impl D as I {}
 
 // --- require_in_constraint.carbon
@@ -139,6 +131,19 @@ class Lacking {}
 fn CallGet[template T: P](x: T) -> i32 { return x.Get(); }
 
 fn Test(l: Lacking) -> i32 {
+  // CHECK:STDERR: fail_require_in_constraint_unsatisfied.carbon:[[@LINE+13]]:10: error: cannot convert type `Lacking` into type implementing `P` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   return CallGet(l);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_require_in_constraint_unsatisfied.carbon:[[@LINE+10]]:10: note: type `Lacking` has no member named `Get` required by template constraint `HasGet` [StructuralMemberMissing]
+  // CHECK:STDERR:   return CallGet(l);
+  // CHECK:STDERR:          ^~~~~~~~~~
+  // CHECK:STDERR: fail_require_in_constraint_unsatisfied.carbon:[[@LINE-18]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_require_in_constraint_unsatisfied.carbon:[[@LINE-12]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+  // CHECK:STDERR: fn CallGet[template T: P](x: T) -> i32 { return x.Get(); }
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return CallGet(l);
 }
 
@@ -222,6 +227,10 @@ interface I {
 }
 
 class Lacking {
+  // CHECK:STDERR: fail_require_in_interface_in_class_impl_lacking.carbon:[[@LINE+4]]:3: error: interface `I` being implemented requires that `Lacking` implements `HasGet` [InterfaceRequireImplsNotImplemented]
+  // CHECK:STDERR:   impl as I {}
+  // CHECK:STDERR:   ^~~~~~~~~~~
+  // CHECK:STDERR:
   impl as I {}
 }
 
@@ -242,9 +251,20 @@ interface I {
 }
 
 class C {
+  // CHECK:STDERR: fail_extend_impl_extend_require_self.carbon:[[@LINE+4]]:3: error: interface `I` being implemented requires that `C` implements `HasGet` [InterfaceRequireImplsNotImplemented]
+  // CHECK:STDERR:   extend impl as I {}
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   extend impl as I {}
 }
 
 fn Test(c: C) -> i32 {
+  // CHECK:STDERR: fail_extend_impl_extend_require_self.carbon:[[@LINE+7]]:10: error: requirement `Get` of template constraint `HasGet` can only be called through a type that satisfies it [StructuralRequirementCalled]
+  // CHECK:STDERR:   return c.Get();
+  // CHECK:STDERR:          ^~~~~~~
+  // CHECK:STDERR: fail_extend_impl_extend_require_self.carbon:[[@LINE-19]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn Get(self) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   return c.Get();
 }

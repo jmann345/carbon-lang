@@ -22,10 +22,6 @@ template constraint HasGet {
 }
 
 class C {
-  // CHECK:STDERR: dependent_caller.carbon:[[@LINE+4]]:10: warning: binding `self` unused [UnusedBinding]
-  // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
-  // CHECK:STDERR:          ^~~~
-  // CHECK:STDERR:
   fn Get(unused self) -> i32 { return 1; }
 }
 

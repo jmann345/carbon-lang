@@ -66,14 +66,18 @@ golden changes. The row stays **PARTIAL**, bounded by exactly two items filed
 here, both operations of `Core.Optional` itself that are missing or broken
 through its documented API: an Optional never destroys the value it holds
 (W-170), and `Core.Optional(bool)`'s `Get()` and copy crash the compiler
-(W-171). That is the test D-ST-16 (fork/string/plan.md) applied to keep row 79
-PARTIAL and named as its own break condition, so the row-82/row-77 precedents
-(DONE with filed limits) are not claimed (D-OP-13). The row moves to DONE only
-when those two arbiters PASS in a conformance run of record and F-013's TY4 (PR
-53, which lands first) is no longer falsified by `Get()` on an empty
-`Optional(T*)` (W-173) (amended 2026-10-13, review fold: B-2, B-3). Every other
-residue is a 0.1 limit beyond the bullet's text or another bullet's item (§1.7).
-All conformance totals are expected, not of record (Actions is disabled).
+(W-171), whose root cause also makes `Get()`, a copy and `==` on
+`Core.Optional(Core.Optional(U*))` return wrong values with no diagnostic, so
+W-171 has a second arbiter, optional_nested_pointer, a fourth write-tests-first
+SKIP (amended 2026-10-13, implementation review fold: R1-1). That is the test
+D-ST-16 (fork/string/plan.md) applied to keep row 79 PARTIAL and named as its
+own break condition, so the row-82/row-77 precedents (DONE with filed limits)
+are not claimed (D-OP-13). The row moves to DONE only when the arbiters of those
+two items PASS in a conformance run of record and F-013's TY4 (PR 53, which
+lands first) is no longer falsified by `Get()` on an empty `Optional(T*)`
+(W-173) (amended 2026-10-13, review fold: B-2, B-3). Every other residue is a
+0.1 limit beyond the bullet's text or another bullet's item (§1.7). All
+conformance totals are expected, not of record (Actions is disabled).
 
 **Id allocation (recorded so no workstream collides):** the ledger maximum
 across trunk and every live branch is W-167 (ST-1, PR 55), re-scanned for this
@@ -216,7 +220,7 @@ those examples assume (W-177).
 | 5 | Conversions | LANDED | private `interface OptionalAs(T)` :99-101 with impls `T` to `Optional(T)` (:103-108), `U: ImplicitAs(T)` to `Optional(T)` (:110-115) and `Optional(U)` to `Optional(T)` (:117-126), behind the public `impl forall [T: OptionalStorage, U: OptionalAs(T)] U as ImplicitAs(Optional(T))` (:128-133). No `As` between Optionals (W-175, M-10). |
 | 6 | `Copy`, `UnformedInit` | LANDED | `impl forall [T: OptionalStorage] Optional(T) as Copy` :50-54, through the storage `Copy`; `UnformedInit` when the storage is (:48). |
 | 7 | `Try` | LANDED (EH-A) | :56-78: `final impl forall [T: Destroy & OptionalStorage] Optional(T) as Try where .ContinueType = T and .BreakType = ()` (:69-70), body over `HasValue()`/`Get()` (:71-76), `FromBreak(unused b: ())` (:77). W-058's notes require the signature to stay; OP-1 changes none of :56-78 (D-OP-7). |
-| 8 | Comparison | MISSING | `grep -n 'EqWith\|OrderedWith' core/prelude/types/optional.carbon` is empty. The interfaces (core/prelude/operators/comparison.carbon): `EqWith` :12-17, `constraint Eq` :19-21, `OrderedWith` :24-32 (no `Compare`, TODO :25), `constraint Ordered` :34-36; comparison.carbon `export import`s `prelude/types/bool` (:7). Same-type precedents: `final impl forall [N: IntLiteral, M: IntLiteral] Int(N) as EqWith(Int(M))` (int.carbon:93-96) and its `OrderedWith` (:98-104), and the same `final` shape in uint.carbon:125-134, float.carbon:165-170 and cpp/int.carbon:341-375; `impl Char as EqWith(Char)` (char.carbon:49-52) and ST-1's `impl String as EqWith(String)` (string.carbon:116-121 on the st branch) are not `final`; every one defines `NotEqual` explicitly. |
+| 8 | Comparison | MISSING | `grep -n 'EqWith\|OrderedWith' core/prelude/types/optional.carbon` is empty. The interfaces (core/prelude/operators/comparison.carbon): `EqWith` :12-17, `constraint Eq` :19-21, `OrderedWith` :24-32 (no `Compare`, TODO :25), `constraint Ordered` :34-36; comparison.carbon `export import`s `prelude/types/bool` (:7). Precedents for `final` comparison impls (the integer ones cross-width, `Int(N)` with `Int(M)`; the float and C++ ones same-type; corrected 2026-10-13, implementation review fold: IR2-5): `final impl forall [N: IntLiteral, M: IntLiteral] Int(N) as EqWith(Int(M))` (int.carbon:93-96) and its `OrderedWith` (:98-104), and the same `final` shape in uint.carbon:125-134, float.carbon:165-170 and cpp/int.carbon:341-375; `impl Char as EqWith(Char)` (char.carbon:49-52) and ST-1's `impl String as EqWith(String)` (string.carbon:116-121 on the st branch) are not `final`; every one defines `NotEqual` explicitly. |
 | 9 | Users that fix the API | LANDED | `for` calls `HasValue` and `Get` by name (check/handle_loop_statement.cpp:194, :280-281, :290-291, `CoreIdentifier::HasValue` and `CoreIdentifier::Get`); a nullable C++ `T*` imports as `Core.Optional(T*)` (check/cpp/import.cpp:1481-1507, `MakeOptionalType`) and `Core.Optional(T*)` exports as `T*` (sem_ir/type_info.cpp:149, :190, the `"Optional"` name case; check/cpp/type_mapping.cpp:267-285); `main`'s `argv: Core.Optional(char*)*` (check/handle_function.cpp:733); prelude users iterate.carbon:17, :24-31, :74-81, range.carbon:20-26, cpp/nullptr.carbon:50-54 (`Cpp.nullptr` converts to `Optional(T*).None()`, with `// TODO: impl as EqWith(Self)` at :48) and cpp/slice.carbon:49. |
 | 10 | Pointers | LANDED, no `==` | No `T* as EqWith(T*)` in core/ (M-10: `p == q` on two `i32*` is "cannot access member of interface `Core.EqWith(i32*)`"), no pointer comparison builtin (sem_ir/builtin_function_kind.def:150-154), no pointer comparison in the design (comparison_operators.md:479-505, values.md:1119-1131). The comparison impls therefore apply to `Optional(T*)` exactly when `T*` is `Core.Eq`: never for a built-in pointer such as `i32*` (W-174), and for `C*` when the user library that owns `C` implements `C* as Core.EqWith(C*)` (M-18) (amended 2026-10-13, review fold: A-1). |
 | 11 | min_prelude | LANDED, separate | toolchain/testing/testdata/min_prelude/parts/optional.carbon:19-35 is its own `class Optional(T: Copy)` with public fields and no impls, included by min_prelude/for.carbon:10 and parts/iterate.carbon:6, so by the two goldens that include for.carbon (check/testdata/for/basic.carbon, for/pattern.carbon). The 315 goldens that include min_prelude/full.carbon (`grep -rl 'INCLUDE-FILE: toolchain/testing/testdata/min_prelude/full.carbon' toolchain`) load the install tree's core/ instead (`--expect-full-prelude`, toolchain/testing/file_test.cpp:178-197). |
@@ -765,25 +769,27 @@ discharge (§2.6) with these decisions by number.
     over from `T`'s. Break condition: upstream decides that `Optional` is not
     ordered or orders `None` last; the `OrderedWith` impl is deleted or its four
     bodies changed, and `optional_compare_diff` with them.
--   **D-OP-3: the spelling `final impl forall [T: Destroy & OptionalStorage &
-    Eq] Optional(T) as EqWith(Optional(T))` and its `Ordered` twin.** The
-    constraints `Eq`/`Ordered` (comparison.carbon:19-21, :34-36) because `[T:
-    EqWith(T)]` is "name `T` not found" (M-2); `OptionalStorage` because the
-    class forces it (:30); `Destroy` because each `Get()` copy is destroyed
-    (M-2, the `Try` impl's bound for the same reason, :62-64); the conditional
-    form is details.md's conditional conformance (:4457-4469), whose own example
-    is comparing containers of comparable elements. `final`: EqWith and
-    OrderedWith have no associated constants, so `final` is not needed for
-    generic code to type-check (both variants check, M-3); it is chosen because
-    comparison is part of the type's definition, so when the payload is
-    `Core.Eq` (and `Destroy`) a payload type's library cannot change what `==`
-    means on its Optionals (M-11: without `final` a user impl silently wins),
-    while for a payload that is not `Core.Eq` the final impl does not match and
-    that library's `impl Optional(Q) as EqWith(Optional(Q))` is legal and
-    defines `==` (amended 2026-10-13, review fold: A-10); the same-type integer,
-    float and C++-integer impls are `final` too (int.carbon:93-104,
-    float.carbon:165-170, cpp/int.carbon:341-375) and so is the `Try` impl (:69;
-    for `Try`, `final` is load-bearing, because generic code reads its
+-   **D-OP-3: the spelling
+    `final impl forall [T: Destroy & OptionalStorage & Eq] Optional(T) as EqWith(Optional(T))`
+    and its `Ordered` twin.** The constraints `Eq`/`Ordered`
+    (comparison.carbon:19-21, :34-36) because `[T: EqWith(T)]` is "name `T` not
+    found" (M-2); `OptionalStorage` because the class forces it (:30); `Destroy`
+    because each `Get()` copy is destroyed (M-2, the `Try` impl's bound for the
+    same reason, :62-64); the conditional form is details.md's conditional
+    conformance (:4457-4469), whose own example is comparing containers of
+    comparable elements. `final`: EqWith and OrderedWith have no associated
+    constants, so `final` is not needed for generic code to type-check (both
+    variants check, M-3); it is chosen because comparison is part of the type's
+    definition, so when the payload is `Core.Eq` (and `Destroy`) a payload
+    type's library cannot change what `==` means on its Optionals (M-11: without
+    `final` a user impl silently wins), while for a payload that is not
+    `Core.Eq` the final impl does not match and that library's `impl Optional(Q)
+    as EqWith(Optional(Q))` is legal and defines `==` (amended 2026-10-13,
+    review fold: A-10); the prelude's integer comparison impls (cross-width,
+    `Int(N)` with `Int(M)`) and its float and C++-integer ones are `final` too
+    (int.carbon:93-104, float.carbon:165-170, cpp/int.carbon:341-375; corrected
+    2026-10-13, implementation review fold: IR2-5) and so is the `Try` impl
+    (:69; for `Try`, `final` is load-bearing, because generic code reads its
     associated constants `ContinueType` and `BreakType`, details.md:5262-5379,
     and R27 records the W-072 incident that restored the sketch's `final`). The
     `final` impls may be declared here: optional.carbon declares the root of the
@@ -908,10 +914,16 @@ discharge (§2.6) with these decisions by number.
     `optional_pointer_compare` (W-174), whose SKIP line quotes the measured
     diagnostic, whose header says it does not bound the row, and whose body
     needs no change when W-174 lands. optional_basic.carbon's and
-    optional_pointer_niche.carbon's headers are refreshed, bodies untouched.
-    Break condition: a program stops passing on a toolchain that contains OP-1;
-    its EXPECT is re-derived from the design, never from the run (R16(d)), and
-    the cause fixed or filed before the program changes.
+    optional_pointer_niche.carbon's headers are refreshed, bodies untouched. The
+    implementation review's fold adds a fourth write-tests-first SKIP,
+    `optional_nested_pointer` (W-171's second arbiter, whose SKIP line quotes
+    the measured wrong output), and a generic `!=` on a NaN payload to
+    `optional_compare_generic`, whose new EXPECT line `0` follows from D-OP-1
+    and comparison_operators.md:311-314 (amended 2026-10-13, implementation
+    review fold: R1-1, R1-5). Break condition: a program stops passing on a
+    toolchain that contains OP-1; its EXPECT is re-derived from the design,
+    never from the run (R16(d)), and the cause fixed or filed before the program
+    changes.
 -   **D-OP-12: payload destruction is not OP-1's.** An Optional never destroys
     the value it holds (M-5, M-6). A 16-line prototype that declares `Destroy`
     for the default storage and for `Optional(T)` destroys it correctly, but
@@ -920,13 +932,14 @@ discharge (§2.6) with these decisions by number.
     docs/design/unions.md:233-239 admits them) and 26 goldens move, 10 of them
     C++ interop check goldens (M-6). Fixing it needs a destroy that keeps the
     pointer niche trivially destructible, which is design work beyond
-    comparison: under classes.md:1992-2003 a class that defines a destructor is
-    not `TrivialDestructor`, and p001154:211-227's way out (a conditional
-    `TrivialDestructor` impl for `Optional(U)`) is a considered alternative, not
-    adopted (amended 2026-10-13, review fold: A-9); filed as W-170 with the
-    prototype and the blast radius. Break condition: such a destroy is found and
-    measured with no union or interop regression; W-170 lands it and D-OP-13
-    re-evaluates the row.
+    comparison: under classes.md:1992-2003 a class that defines a destructor
+    with a non-empty body is not `TrivialDestructor` (corrected 2026-10-13,
+    implementation review fold: R1-7), and p001154:211-227's way out (a
+    conditional `TrivialDestructor` impl for `Optional(U)`) is a considered
+    alternative, not adopted (amended 2026-10-13, review fold: A-9); filed as
+    W-170 with the prototype and the blast radius. Break condition: such a
+    destroy is found and measured with no union or interop regression; W-170
+    lands it and D-OP-13 re-evaluates the row.
 -   **D-OP-13: row 78 stays PARTIAL, bounded by W-170 and W-171.** The bullet's
     design gap is closed (F-015) and comparison exists, but two operations of
     `Core.Optional` itself fail through its documented API: destroying a
@@ -944,13 +957,23 @@ discharge (§2.6) with these decisions by number.
     has no negative constraints) and any body, a non-final specific impl for
     `bool` included, must read the `bool` through the same `MaybeUnformed` path,
     and because W-171 is row-bounding (amended 2026-10-13, review fold: A-8).
-    Break condition: `optional_destroys_value` and `optional_bool` both un-SKIP
-    to PASS in a conformance run of record (W-170 and W-171 landed), and F-013's
-    TY4 is not falsified by `Get()` on an empty `Optional(T*)` (W-173 lands a
-    checked `Get`, or TY4 is amended to name that obligation); only then does
-    the row move to DONE, with the remaining residues as filed limits, in the
-    commit that un-SKIPs the arbiters and quotes that run, never by a
-    records-only commit (R9) (amended 2026-10-13, review fold: B-2, B-3).
+    OP-1 likewise turns `==` on `Core.Optional(Core.Optional(U*))`, for a
+    `Core.Eq` pointer type `U*`, from a check error into W-171's silent wrong
+    answer, and `==` on `Core.Optional(Core.IntLiteral)` from a check error into
+    a lowering crash (W-190, a generic defect that `Eq2(1, 2)` reaches on
+    trunk); both are accepted on the same grounds (no bound can exclude those
+    payloads, `Get()` and the copy of the nested value and the generic `==` on
+    `Core.IntLiteral` are already wrong on trunk, and W-171 is row-bounding,
+    with an arbiter for the nested case), and F-015 states both (amended
+    2026-10-13, implementation review fold: R1-1, R1-4). Break condition:
+    `optional_destroys_value`, `optional_bool` and `optional_nested_pointer`
+    (amended 2026-10-13, implementation review fold: R1-1) all un-SKIP to PASS
+    in a conformance run of record (W-170 and W-171 landed), and F-013's TY4 is
+    not falsified by `Get()` on an empty `Optional(T*)` (W-173 lands a checked
+    `Get`, or TY4 is amended to name that obligation); only then does the row
+    move to DONE, with the remaining residues as filed limits, in the commit
+    that un-SKIPs the arbiters and quotes that run, never by a records-only
+    commit (R9) (amended 2026-10-13, review fold: B-2, B-3).
     `optional_pointer_compare` (W-174) does not bound the row: pointer `==`
     belongs to "Stdlib: pointer types", and `Optional(T*)` already compares
     whenever `T*` is `Core.Eq` (M-18).
@@ -993,7 +1016,7 @@ default storage's bound) or a pointer, and generic code names
 | `fn HasValue(self) -> bool` | whether it holds a value |
 | `fn Get(self) -> T` | a copy of the held value; requires `HasValue()`, unchecked in 0.1 (W-173, M-9) |
 | `impl forall [T: OptionalStorage] Optional(T) as Copy` | copies the held value, if any |
-| `impl forall [T: OptionalStorage & UnformedInit] Optional(T) as UnformedInit` | an Optional may be declared without an initializer when its storage may |
+| `impl forall [T: OptionalStorage & UnformedInit] Optional(T) as UnformedInit` | an Optional may be declared without an initializer when `T` may (`T: UnformedInit`) (corrected 2026-10-13, implementation review fold: IR2-6) |
 | `ImplicitAs(Optional(T))` from `T`, from any `U: ImplicitAs(T)` and from `Optional(U)` | `Some` of the (converted) value; empty stays empty |
 | `final impl forall [T: Destroy & OptionalStorage] Optional(T) as Try where .ContinueType = T and .BreakType = ()` | `o?` continues with the value or propagates absence as `()` (D9) |
 | `final impl forall [T: Destroy & OptionalStorage & Eq] Optional(T) as EqWith(Optional(T))` | `==` and `!=` (new, §1.2) |
@@ -1030,7 +1053,12 @@ of each held value and destroys it before it returns; neither operand changes
 (D-OP-4, M-5, `optional_compare_payload`). That copy and destroy are observable
 for a `T` whose `Copy` or `Destroy` has an effect, a disclosed divergence from
 comparison_operators.md:316 and :434 (V-3) (amended 2026-10-13, review fold:
-A-2).
+A-2). Both statements hold where `T`'s own `Destroy` is complete: when `T` is
+itself an Optional, the copy that `Get()` returns is destroyed without its held
+value (W-170), so comparing two `Core.Optional(Core.Optional(P))` values whose
+inner values hold `P1` and `P2` leaks one `P` per operand (review 1's
+nesttrace.carbon prints `101 102 101 102 202 201 0` for `o1 == o2`)
+(amended 2026-10-13, implementation review fold: R1-2).
 
 Generic code compares Optionals by naming the payload's constraint (measured,
 M-4 and `optional_compare_generic`):
@@ -1042,6 +1070,13 @@ fn Same[T: Core.Eq & Core.Copy & Core.Destroy](a: Core.Optional(T),
 }
 ```
 
+In 0.1 a checked generic can compare only `Core.Optional(T)` values it receives:
+a local or temporary `Core.Optional(T)` in its body is rejected, "cannot access
+member of interface `Core.Destroy` in type `Core.Optional(T as
+Core.OptionalStorage)`", because `Core.Optional` declares no `Destroy` impl
+(W-170; review 1's gentemp.carbon, gentemp2.carbon and gentemp3.carbon, the same
+on trunk) (amended 2026-10-13, implementation review fold: R1-2).
+
 `Core.Optional(T*)` compares exactly when `T*` is `Core.Eq`. The prelude gives
 built-in pointer types no `==` (§0.1 row 10, W-174), so `Core.Optional(i32*)`
 and the other nullable C++ pointers do not compare, and their empty test is
@@ -1049,7 +1084,10 @@ and the other nullable C++ pointers do not compare, and their empty test is
 Core.EqWith(C*)`, and `Core.Optional(C*)` then compares through the null niche
 (M-18, the `user_pointer` split of §2.3) (amended 2026-10-13, review fold: A-1).
 `Core.Optional(bool)` is `Core.Eq`, but in 0.1 comparing it crashes the compiler
-(W-171, M-20) (amended 2026-10-13, review fold: A-8).
+(W-171, M-20) (amended 2026-10-13, review fold: A-8). The same root cause makes
+`==` on `Core.Optional(Core.Optional(U*))` return wrong values silently (W-171),
+and `==` on `Core.Optional(Core.IntLiteral)` passes check and aborts lowering
+(W-190) (amended 2026-10-13, implementation review fold: R1-1, R1-4).
 
 ### §1.3 Ownership and lifetime
 
@@ -1066,15 +1104,19 @@ Core.EqWith(C*)`, and `Core.Optional(C*)` then compares through the null niche
     `optional_destroys_value` as its write-tests-first arbiter (M-20) (amended
     2026-10-13, review fold: B-2). The fix must keep `Core.Optional(T*)`
     trivially destructible for union fields (M-6): under classes.md:1992-2003 a
-    class that defines a destructor is not `TrivialDestructor`, and p001154's
-    conditional `TrivialDestructor` impl was a considered alternative, not
-    adopted (amended 2026-10-13, review fold: A-9). The PASS programs and the
-    examples do not rely on either behavior (`optional_compare_payload` prints
-    its counts before any Optional is destroyed).
+    class that defines a destructor with a non-empty body is not
+    `TrivialDestructor` (corrected 2026-10-13, implementation review fold:
+    R1-7), and p001154's conditional `TrivialDestructor` impl was a considered
+    alternative, not adopted (amended 2026-10-13, review fold: A-9). The PASS
+    programs and the examples do not rely on either behavior (`optional_compare_payload`
+    prints its counts before any Optional is destroyed).
 -   Comparisons never move or destroy a held value; a comparison of two
     non-empty operands runs `T.Copy` and `T.Destroy` once per value, and one
     with an empty operand runs neither (D-OP-4, M-5, V-3) (amended 2026-10-13,
-    review fold: A-2).
+    review fold: A-2). Until W-170 lands, comparing two non-empty
+    `Core.Optional(Core.Optional(T))` values also leaks one copy of each `T`
+    that the inner values hold (amended 2026-10-13, implementation review fold:
+    R1-2).
 -   `Core.Optional(T)` is not `Core.Plain` for any `T` under F-013 (D-SAFE-9;
     mutation_safety.md:317 on the safe branch): its payload sub-object exists
     only for a non-empty value, so assigning an Optional through a shared path
@@ -1135,7 +1177,11 @@ requires it.
     rejects `Core.Optional(T*)` union fields and moves 26 goldens (M-6);
     classes.md:1992-2003 and p001154:211-227 are the design inputs (A-9).
     Arbiter: `optional_destroys_value` (SKIP, M-20) (amended 2026-10-13, review
-    fold: A-9, B-2).
+    fold: A-9, B-2). Its consequences for comparison: a checked generic cannot
+    hold or compare a local or temporary `Core.Optional(T)`, and comparing two
+    nested non-empty Optionals leaks one payload copy per operand; M-6's
+    prototype removes both (amended 2026-10-13, implementation review fold:
+    R1-2).
 -   W-171 (Stdlib: Optional; row-bounding): `Core.Optional(bool)`'s `Get()` and
     copy crash the compiler (lowering: LLVM verifier "Function return type does
     not match operand type of return inst!", and handle_call.cpp:984 `args_ok`);
@@ -1144,7 +1190,14 @@ requires it.
     the same crash is reached from `==` on `Optional(bool)`, where trunk and
     upstream give a check error (A-8). Arbiter: `optional_bool` (SKIP, M-20).
     SC-1 moves the CHECK from convert.cpp:1698 to :1712 (amended 2026-10-13,
-    review fold: A-8, B-2, B-8).
+    review fold: A-8, B-2, B-8). The root cause is wider than `bool`: the
+    default storage's `Get` and `Copy` (:169-171, :172-178) read
+    `MaybeUnformed(T) unsafe as T` and pass the field's address where `T`'s
+    value is expected, with no load, so for `Core.Optional(Core.Optional(U*))`,
+    where both sides are a `ptr`, nothing aborts and `Get()` and a copy return
+    wrong values (on trunk too), and OP-1's `==` on it returns wrong answers
+    where trunk gave a check error; second arbiter `optional_nested_pointer`
+    (SKIP) (amended 2026-10-13, implementation review fold: R1-1).
 -   W-172 (Generics: generic functions and types; found while measuring): a
     float or character literal passed for a `T: Core.Copy & Core.Destroy`
     parameter of a generic class's method (`Core.Optional(f64).Some(2.5)`,
@@ -1207,6 +1260,17 @@ requires it.
     declaration and fails "`impl` will never be used" only at an `==` (M-11).
     Pinned by the `fail_specialize` and `todo_fail_specialize_unused` splits
     (§2.3) (amended 2026-10-13, review fold: A-10).
+-   W-190 (Generics: generic functions and types; found by the implementation
+    review, R1-4; the first id after DD-1's reserved W-180..W-189, re-scanned at
+    discharge with the others): a checked generic body that applies a
+    compile-time-only operation to a symbolic `T` aborts lowering instead of
+    being evaluated or diagnosed. With OP-1, `==` on two
+    `Core.Optional(Core.IntLiteral)` values checks clean and `carbon compile`
+    aborts in lowering `Equal` (optional.carbon:217, the call at :224) on an
+    `llvm::cast` assertion, where trunk gives `MissingImplInMemberAccess`;
+    without Optional, `fn Eq2[T: Core.Eq](a: T, b: T)` called as `Eq2(1, 2)`
+    aborts the same way on trunk (amended 2026-10-13, implementation review
+    fold: R1-4).
 -   Not filed again: assignment does not destroy the old value (ST-1's W-160);
     temporaries of a declaration initializer live to the end of the block
     (ST-1's M-7, design per F-013 D-SAFE-12).
@@ -2231,13 +2295,24 @@ fork/conformance/README.md: the program table is regenerated by `python3
 fork/conformance/runner.py --update-readme-table` (seven rows new or changed,
 M-16; amended 2026-10-13, review fold: B-2), never edited by hand.
 
+The implementation review's fold adds
+fork/conformance/programs/stdlib/optional_nested_pointer.carbon, a
+write-tests-first SKIP and W-171's second arbiter (R6: compiled on the OP-1
+install it exits 0 printing `1 1 1 0 0` where its EXPECT, derived from F-015's
+rules in §5, is `1 0 0 1 1`; on trunk the four lines before its `==` print `1 1
+1 0` and the `==` is the `MissingImplInMemberAccess` diagnostic; R10: its SKIP
+line states both), and to optional_compare_generic.carbon a `Differ` generic (`a
+!= b`) with one new line, `Differ` over two `Some` values holding the same NaN,
+whose EXPECT is `0` (§5). Their texts are the files of the fold commit, not
+reproduced here (amended 2026-10-13, implementation review fold: R1-1, R1-5).
+
 The residue ids W-170 (optional_destroys_value, optional_compare_payload), W-171
-(optional_bool), W-174 (optional_pointer_compare, optional_pointer_niche), W-176
-(optional_compare_generic) and W-174, W-176, W-178 and W-179
-(check/testdata/optional/fail_compare.carbon) are written into program headers
-and a golden source (amended 2026-10-13, review fold: B-2, A-10); if §2.6's
-re-scan re-allocates them, the discharge commit renumbers them there too, and
-refills that golden.
+(optional_bool, optional_nested_pointer), W-174 (optional_pointer_compare,
+optional_pointer_niche), W-176 (optional_compare_generic) and W-174, W-176,
+W-178 and W-179 (check/testdata/optional/fail_compare.carbon) are written into
+program headers and a golden source (amended 2026-10-13, review fold: B-2,
+A-10); if §2.6's re-scan re-allocates them, the discharge commit renumbers them
+there too, and refills that golden.
 
 ### §2.5 Docs (D-OP-14; dated amendments, never rewrites)
 
@@ -2288,7 +2363,9 @@ refills that golden.
 The normative sentences of docs/design/optional.md, verbatim (`<date>` is the
 landing date; each group goes in the section its comment names, and the links
 the page adds to the documents named are not part of the wording) (amended
-2026-10-13, review fold: B-7, A-1, A-2, A-8, A-10, B-3, B-5):
+2026-10-13, review fold: B-7, A-1, A-2, A-8, A-10, B-3, B-5; the last two
+sentences of the pointer and `bool` paragraph amended 2026-10-13, implementation
+review fold: R1-1, R1-4):
 
 ```markdown
 <!-- Status line, under the title -->
@@ -2315,7 +2392,12 @@ prelude gives the built-in pointer types no `==` (W-174), so
 `Core.Optional(i32*)` does not compare; a library that owns a class `C` may
 implement `C* as Core.EqWith(C*)`, and `Core.Optional(C*)` then compares.
 `Core.Optional(bool)` is `Core.Eq`, but in 0.1 comparing two of them, like
-reading or copying one, crashes the compiler (W-171).
+reading or copying one, crashes the compiler (W-171). The same defect makes
+reading, copying and comparing a `Core.Optional(Core.Optional(U*))` return wrong
+values with no diagnostic (W-171). For a payload that exists only at compile
+time, such as `Core.IntLiteral`, comparing two `Core.Optional(T)` values passes
+check and then crashes the compiler in lowering, as a checked generic's `==` on
+`Core.IntLiteral` does without Optional (W-190).
 
 In 0.1 a comparison of two non-empty values reads each through `Get()`, which
 runs `T`'s `Copy` once and its `Destroy` once per value. The comparison
@@ -2390,14 +2472,21 @@ names a value; in this design `None` is a function, `Optional(T).None()`.
     amendment (<date>, OP-1, F-015).** In 0.1, `Get()` on an empty
     `Core.Optional(T*)` is unchecked and returns the null pointer, whose
     dereference needs no `unsafe` (fork/optional/plan.md M-9), so TY4 does not
-    yet hold on that path; W-173 tracks the checked `Get()` that restores it.";
-    and after docs/design/safety/mutation_safety.md's staging paragraph for
-    EX-M-5 and EX-M-6 (:801-803 there), a blockquote: "**Fork amendment (<date>,
-    OP-1, F-015).** The fork's Optional design keeps `Core.Optional` a class, so
-    no choice-based redesign comes from W-058; the `match` forms of EX-M-5 and
+    yet hold on that path; W-173 tracks the checked `Get()` that restores it,
+    and a `match` over a `Core.Optional`, which TY4 also names, waits on W-177."
+    (amended 2026-10-13, implementation review fold: IR2-8); and after
+    docs/design/safety/mutation_safety.md's staging paragraph for EX-M-5 and
+    EX-M-6 (:801-803 there), a blockquote: "**Fork amendment (<date>, OP-1,
+    F-015).** The fork's Optional design keeps `Core.Optional` a class, so no
+    choice-based redesign comes from W-058; the `match` forms of EX-M-5 and
     EX-M-6 wait on W-177." If PR 53 is not on trunk at discharge, the two texts
     go to SAFE-1's merge of trunk through fork/ORCHESTRATION.md (the ST-1
-    handling of its SAFE-1 reconciliation).
+    handling of its SAFE-1 reconciliation). The commit that lands the two
+    amendments also links, from docs/design/optional.md, TY4
+    (safety/type_safety.md, "TY4: null is never a hole"), D-SAFE-9 and
+    `Core.Plain` (safety/mutation_safety.md) and EX-M-5 and EX-M-6, which the
+    page names without links until PR 53 is on trunk (amended 2026-10-13,
+    implementation review fold: IR2-8).
 
 The amendments and the status line carry the landing date, not this plan's.
 
@@ -2417,7 +2506,11 @@ pages (rev 2).
     docs/design/optional.md, the README amendment (W-174), error_handling.md's
     amendment (W-177), and the program headers and the golden source §2.4 lists
     (W-170, W-171, W-174, W-176, W-178, W-179) (amended 2026-10-13, review fold:
-    B-2, A-10).
+    B-2, A-10). W-190, the implementation review's residue, is the first id
+    after DD-1's reserved W-180..W-189; if it is taken at discharge, it takes
+    the maximum plus one, skipping every reserved block, and the same commit
+    renumbers it in docs/design/optional.md (amended 2026-10-13, implementation
+    review fold: R1-4).
 -   **fork/inventory/work-items.json, W-058:** title prefixed "OP-1 (LANDED
     <date>): ", kind `implemented`; evidence:
     core/prelude/types/optional.carbon:13, :27 and :205-275 (the landed lines;
@@ -2427,14 +2520,15 @@ pages (rev 2).
     KEEP)", the residues W-170..W-179 by title, and the decision-log citation as
     the heading text without the date, double-quoted: "OP-1 / F-015:
     Core.Optional comparison and design" (the rows-79/82 citation form).
--   **New items W-170..W-179** (amended 2026-10-13, review fold: A-10), each
+-   **New items W-170..W-179 and W-190** (amended 2026-10-13, review fold:
+    A-10; W-190 amended 2026-10-13, implementation review fold: R1-4), each
     `{id, kind, title, subsystem, size, bullet, evidence, blocked_by, notes}`,
     `blocked_by: []` unless stated:
 
 | Id | Kind | Title | Subsystem | Size | Bullet | Evidence (all measured, §0.2) |
 | --- | --- | --- | --- | --- | --- | --- |
-| W-170 | missing-feature | OP-1 residue: a `Core.Optional` never destroys the value it holds | core/prelude (+ the union field rule) | M | Stdlib: Optional | optional.carbon:140-143, maybe_unformed.carbon:12-15, M-5's probe, M-6's prototype and its 26 goldens with `UnionFieldNotTriviallyCopyable` for `Core.Optional(i32*)`; notes: the destroy must stay trivial for the pointer niche (unions.md:233-239, p006357:247-249); row-bounding (D-OP-13); arbiter `programs/stdlib/optional_destroys_value.carbon` (SKIP, M-20); design inputs classes.md:1992-2003 (a class defining a destructor is not `TrivialDestructor`) and p001154:211-227 (the considered conditional `TrivialDestructor` `Optional` sketch) (amended 2026-10-13, review fold: B-2, A-9) |
-| W-171 | toolchain-defect | OP-1 residue: `Core.Optional(bool)`'s `Get()` and copy crash the compiler | toolchain/check (convert.cpp) + toolchain/lower | M | Stdlib: Optional | M-7's three reproducers and messages, check/convert.cpp:1687-1704 (the CHECK at :1698), upstream-trunk 62f1cc6a3 convert.cpp:1559-1562, nightly 2026.10.12; notes: with OP-1 `==` on `Optional(bool)` reaches the same crash, where trunk and upstream give a check error (M-20); row-bounding; arbiter `programs/stdlib/optional_bool.carbon` (SKIP, M-20); SC-1 moves the CHECK to convert.cpp:1712, re-read at the merge of trunk (amended 2026-10-13, review fold: A-8, B-2, B-8) |
+| W-170 | missing-feature | OP-1 residue: a `Core.Optional` never destroys the value it holds | core/prelude (+ the union field rule) | M | Stdlib: Optional | optional.carbon:140-143, maybe_unformed.carbon:12-15, M-5's probe, M-6's prototype and its 26 goldens with `UnionFieldNotTriviallyCopyable` for `Core.Optional(i32*)`; notes: the destroy must stay trivial for the pointer niche (unions.md:233-239, p006357:247-249); row-bounding (D-OP-13); arbiter `programs/stdlib/optional_destroys_value.carbon` (SKIP, M-20); design inputs classes.md:1992-2003 (a class that defines a destructor with a non-empty body is not `TrivialDestructor`, :1995-1996; corrected 2026-10-13, implementation review fold: R1-7) and p001154:211-227 (the considered conditional `TrivialDestructor` `Optional` sketch) (amended 2026-10-13, review fold: B-2, A-9); consequences measured by the implementation review: in a checked generic `[T: Core.Eq & Core.Copy & Core.Destroy]`, `Core.Optional(T).Some(a).HasValue()`, `Mk(a) == b` with `Mk` returning `Core.Optional(T)`, and `let o: Core.Optional(T) = ...; o == b` each fail with "cannot access member of interface `Core.Destroy` in type `Core.Optional(T as Core.OptionalStorage)` that does not implement that interface" (trunk too), so generic code compares only Optionals it receives; `o1 == o2` on two `Core.Optional(Core.Optional(P))` values holding P1 and P2 prints `101 102 101 102 202 201 0`, four `P` copies and two destroys, leaking one `P` per operand; on M-6's prototype the three generic forms check and the trace balances (`101 102 101 102 202 201 202 201 0`) (amended 2026-10-13, implementation review fold: R1-2) |
+| W-171 | toolchain-defect | OP-1 residue: `Core.Optional`'s default storage mis-lowers `MaybeUnformed(T) unsafe as T` when `T`'s value representation differs: `Get()` and copy crash the compiler for `bool` and silently return the storage address for `Core.Optional(U*)` | toolchain/check (convert.cpp) + toolchain/lower | M | Stdlib: Optional | M-7's three reproducers and messages, check/convert.cpp:1687-1704 (the CHECK at :1698), upstream-trunk 62f1cc6a3 convert.cpp:1559-1562, nightly 2026.10.12; notes: with OP-1 `==` on `Optional(bool)` reaches the same crash, where trunk and upstream give a check error (M-20); row-bounding; arbiter `programs/stdlib/optional_bool.carbon` (SKIP, M-20); SC-1 moves the CHECK to convert.cpp:1712, re-read at the merge of trunk (amended 2026-10-13, review fold: A-8, B-2, B-8); the root cause, optional.carbon:169-171 and :172-178: for `tt: Core.Optional(Core.Optional(i32*))` the unoptimized IR of `*tt.Get().Get()` has the storage `Get` pass `getelementptr inbounds nuw <{ ptr, i1 }>, ptr %value, i32 0, i32 0` to the inner `Optional(i32*)` `Copy`, which is `ret ptr %self`, with no load; reproducers (review 1, re-run by the fold): `Some(None).Get().HasValue()` and the same through a copy print 1 on trunk and OP-1, `*tt.Get().Get()` prints an address, not 7, and with OP-1 `Some(Some(&c1)) == Some(Some(&c2))` with equal pointees prints 0, concrete and through a generic, where trunk gives `MissingImplInMemberAccess`; second arbiter `programs/stdlib/optional_nested_pointer.carbon` (SKIP) (amended 2026-10-13, implementation review fold: R1-1) |
 | W-172 | toolchain-defect | OP-1 residue (found while measuring): a float or character literal argument for a `T: Core.Copy & Core.Destroy` parameter aborts check in `CanDestroyType` | toolchain/check (custom_witness.cpp) | S | Generics: generic functions and types | M-8's `Core.Optional(f64).Some(2.5)`, `Core.Optional(char).Some('a')` and `Box(f64).Make(2.5)`, check/custom_witness.cpp:487, nightly :401 |
 | W-173 | missing-feature | OP-1 residue: `Core.Optional(T).Get()` on an empty value is unchecked | core/prelude | S | Stdlib: Optional | optional.carbon:40-42, :169-171, :200-202; M-9; notes: a fail-stop like D-SL-4 refills every lower golden that instantiates `Get`; for `Core.Optional(T*)` the null returned is dereferenced with no `unsafe`, M-9 being a counterexample to F-013's TY4 (docs/design/safety/type_safety.md:179-195 and :342 on the safe branch), related to SAFE-1's W-146 and SP4's checked-access model with an `unsafe` opt-out (spatial_safety.md:206); a DONE gate of D-OP-13 while TY4 stands as written (amended 2026-10-13, review fold: B-3) |
 | W-174 | design-needed | OP-1 residue: the prelude gives built-in pointer types no `==`, so `Core.Optional(T*)` compares only when `T*` is `Core.Eq` (never for a built-in pointer) | core/prelude + sem_ir builtins | S | Stdlib: pointer types | M-10, comparison_operators.md:479-505, values.md:1119-1131, nullptr.carbon:48, sem_ir/builtin_function_kind.def:150-154, programs/stdlib/optional_pointer_compare.carbon (SKIP); notes: address identity is the expected rule, with p006357's cross-object caveat (:76-85); a user library already makes `Optional(C*)` compare with its own `impl C* as EqWith(C*)` (M-18), and a `final` prelude pointer `EqWith`, which must live in comparison.carbon, would make every such impl "`impl` will never be used" and change `==` on `Optional(C*)` to the prelude's rule (M-18), so the design must decide `final` against non-final and state what happens to user pointer impls; the arbiter does not bound the Optional row (amended 2026-10-13, review fold: A-1) |
@@ -2443,6 +2537,7 @@ pages (rev 2).
 | W-177 | missing-feature | OP-1 residue: `Core.Optional` is not matchable (no `.Some`/`.None` patterns, `match` or `if let`) | toolchain/check + core/prelude | L | Control flow: matching — sum-type consumption incl. std::variant/std::optional interop | sum_types.md:63-75, :154-184, pattern_matching.md:501-527, error_handling.md:392-405, :432-433, D-EH-1; notes: related W-011; the `Try` signature and the pointer ABI are constraints; SAFE-1's EX-M-5 and EX-M-6 (mutation_safety.md:664-683, :724-725, :801-803 on the safe branch) wait on this item, not on a choice-based redesign from W-058 (amended 2026-10-13, review fold: B-5) |
 | W-178 | missing-feature | OP-1 residue: the `like` operator is not parsed, so no comparison admits implicit operand conversions | toolchain/parse + toolchain/check | M | Generics: Checked generics | toolchain/lex/token_kind.def:214, details.md:6598, comparison_operators.md:289-300, M-10 |
 | W-179 | toolchain-defect | OP-1 residue (found by review): a non-final impl that a `final` impl completely subsumes is diagnosed only where it is used, not at its declaration as p5337 specifies | toolchain/check (impl lookup and impl declaration checks) | S | Generics: Checked generics | proposals/p005337-interface-extension-and-final-impl-update.md:280-286; M-11 (the declaration alone compiles); check/testdata/optional/fail_compare.carbon splits `fail_specialize` (the use-site `ImplFinalOverlapsNonFinal`) and `todo_fail_specialize_unused` (compiles); notes: rename the split to `fail_specialize_unused` when the declaration is diagnosed (amended 2026-10-13, review fold: A-10) |
+| W-190 | toolchain-defect | OP-1 residue (found by the implementation review): a checked generic body that applies a compile-time-only operation to a symbolic `T` (`Core.IntLiteral`'s `==`) aborts lowering instead of being evaluated or diagnosed | toolchain/lower (+ toolchain/check) | S | Generics: generic functions and types | review 1's lit.carbon (`a == b` on two `Core.Optional(Core.IntLiteral)` parameters: with OP-1 `--phase=check` exits 0 and `carbon compile` aborts, exit 134, at "Lowering function Equal(Core.IntLiteral as Core.OptionalStorage & Core.Destroy & Core.Eq)", optional.carbon:217, the call at :224, with "llvm::cast ... [To = llvm::IntegerType, From = llvm::Type]: Assertion ... failed"; trunk: `MissingImplInMemberAccess`) and genlit.carbon (`fn Eq2[T: Core.Eq](a: T, b: T) -> bool { return a == b; }` with `Eq2(1, 2)` aborts the same way on trunk, "Lowering function Eq2(Core.IntLiteral as Core.Eq)"); notes: no ledger item on any ref names it (a grep for "compile-time-only" finds none); the id is the first after DD-1's W-180..W-189, re-scanned at discharge (amended 2026-10-13, implementation review fold: R1-4) |
 
 -   **The ledger's `source` field** gains the dated sentence every discharge
     appends ("Updated <date> by the OP-1 discharge: W-058 DISCHARGED ...;
@@ -2451,6 +2546,15 @@ pages (rev 2).
     `Core.Optional` a class (F-015, D-EH-1); matchability is W-177; a
     `std::optional` mapping (this item's open half) amends F-015 first if it
     targets `Core.Optional`."
+-   **W-049's notes** gain (amended 2026-10-13, implementation review fold:
+    R1-3): "OP-1 (<date>): comparing two `Core.Optional(T)` values for an
+    imported C++ class `T` that is `Core.Eq` (a header struct with `operator==`)
+    fails to check with 'semantics TODO: `interop with non-identifier package
+    name`' at core/prelude/types/optional.carbon:30:1, raised at
+    toolchain/check/cpp/export.cpp:141 (the keyword package name `Core`), on
+    trunk too; `Core.Optional(Cpp.S)` construction and `HasValue()` work, and
+    Optionals of Carbon payloads compare in a file that imports C++
+    (fork/optional/plan.md, implementation review fold, R1-3)."
 -   **W-006's notes** gain: "Risk 9 resolved at OP-1 (F-015, <date>): Optional's
     design landed outside W5, not folded into its deliverables, with the class
     kept per D-EH-1; matchability is W-177 and the `std::optional` mapping
@@ -2473,32 +2577,39 @@ pages (rev 2).
     empty values are equal, an empty value orders before every value, two values
     compare as `T` does). Still PARTIAL: an Optional never destroys the value it
     holds (W-170), and `Core.Optional(bool)`'s `Get()` and copy crash the
-    compiler on trunk and upstream (W-171); since OP-1, `==` on
-    `Core.Optional(bool)` reaches the same crash where it was a check error
-    (amended 2026-10-13, review fold: A-8); DONE needs optional_destroys_value
-    and optional_bool to PASS in a run of record and F-013's TY4 to hold for
-    `Get()` (amended 2026-10-13, review fold: B-2, B-3). Other 0.1 limits, each
-    filed: `Get()` on an empty value is unchecked, which for `Core.Optional(T*)`
-    falsifies F-013's TY4 (W-173); `Optional(T*)` compares only when `T*` is
-    `Core.Eq`, and built-in pointers have no `==` (W-174) (amended 2026-10-13,
-    review fold: A-1); no explicit `as` between Optionals (W-175); `T` must be
-    `Core.Copy & Core.Destroy` or a pointer (W-176); not matchable (W-177); a
-    float or character literal passed to `Some` aborts check (W-172); a user
+    compiler on trunk and upstream (W-171), whose root cause also makes `Get()`
+    and copy of `Core.Optional(Core.Optional(U*))` return wrong values with no
+    diagnostic; since OP-1, `==` on `Core.Optional(bool)` reaches the same
+    crash, and `==` on `Core.Optional(Core.Optional(U*))` the same wrong values,
+    where each was a check error (amended 2026-10-13, review fold: A-8; amended
+    2026-10-13, implementation review fold: R1-1); DONE needs
+    optional_destroys_value, optional_bool and optional_nested_pointer to PASS
+    in a run of record and F-013's TY4 to hold for `Get()` (amended 2026-10-13,
+    review fold: B-2, B-3). Other 0.1 limits, each filed: `Get()` on an empty
+    value is unchecked, which for `Core.Optional(T*)` falsifies F-013's TY4
+    (W-173); `Optional(T*)` compares only when `T*` is `Core.Eq`, and built-in
+    pointers have no `==` (W-174) (amended 2026-10-13, review fold: A-1); no
+    explicit `as` between Optionals (W-175); `T` must be `Core.Copy &
+    Core.Destroy` or a pointer (W-176); not matchable (W-177); a float or
+    character literal passed to `Some` aborts check (W-172); a user
     specialization that the `final` impls subsume is diagnosed only where it is
-    used (W-179). Conformance: 6 of 9 programs PASS (stdlib/optional_basic,
+    used (W-179); `==` on `Core.Optional(Core.IntLiteral)` passes check and
+    aborts lowering (W-190) (amended 2026-10-13, implementation review fold:
+    R1-4). Conformance: 6 of 10 programs PASS (stdlib/optional_basic,
     optional_pointer_niche, optional_missing_ops SKIP -> PASS,
     optional_compare_diff with a C++17 std::optional oracle over every case of
     the six operators, optional_compare_generic, optional_compare_payload) and
-    three are write-tests-first SKIPs: optional_destroys_value (W-170) and
-    optional_bool (W-171), the arbiters of this row, and
+    four are write-tests-first SKIPs: optional_destroys_value (W-170),
+    optional_bool and optional_nested_pointer (W-171), the arbiters of this row
+    (amended 2026-10-13, implementation review fold: R1-1), and
     optional_pointer_compare (W-174), which does not bound it (amended
     2026-10-13, review fold: B-2) — EXPECTED, not of record: container run
     <date> on the carbonbuild toolchain of <sha> (scoreboard generated
-    <timestamp>), <P>/0/<S> over <N>; floor of record <the base's totals and
-    run, re-read at the merge of trunk; today 128/0/22, run 37402970811>; the
-    hosted run R9 requires is pending with no dispatch date (Actions disabled)."
-    The run is cited by toolchain sha, `generated` timestamp and totals, never
-    by an output directory (ST-1's RV1-5).
+    <timestamp>), <P>/0/<S> over <N>; floor of record
+    <the base's totals and run> (re-read at the merge of trunk; today 128/0/22,
+    run 37402970811); the hosted run R9 requires is pending with no dispatch
+    date (Actions disabled)." The run is cited by toolchain sha, `generated`
+    timestamp and totals, never by an output directory (ST-1's RV1-5).
 -   **Header:** the counts do not change (row 78 stays PARTIAL); the scoreboard
     sentence is rewritten in CM-1's words with the new expected totals, applied
     to whatever the header reads at the merge of trunk.
@@ -2506,7 +2617,9 @@ pages (rev 2).
     remain" (or, if ST-1 has landed, its replacement "a designed
     (non-placeholder) Optional remains") becomes "the Optional design (F-015)
     and its comparisons landed at OP-1 (W-058 DISCHARGED <date>); the Optional's
-    destruction of its value (W-170) and `Core.Optional(bool)` (W-171) remain";
+    destruction of its value (W-170) and the default storage's defect for
+    `Core.Optional(bool)` and nested pointer-niche Optionals (W-171) remain"
+    (amended 2026-10-13, implementation review fold: R1-1);
     the "Depends on" line (:226-230) names, for the Optional half, only W-177
     (sum types, for matchability) and W-011 (std::optional interop) (§0.3
     item 8).
@@ -2540,17 +2653,31 @@ pages (rev 2).
     `Optional(T).None` as a value; and F-015 states that `Get()` on an empty
     `Optional(T*)` falsifies F-013's TY4 until W-173 lands (amended 2026-10-13,
     review fold: A-2, A-9, B-3).
+-   **The trunk non-vacuity counts** that commit 5's message, the decision-log
+    entry and the PR body quote are the implementation review's re-measurement
+    on the trunk install (`--phase=check`), which corrects commit 4's message
+    (a8daacf11: "1, 6, 6 and 3 MissingImplInMemberAccess errors", which no
+    amend may change): optional_missing_ops 1; optional_compare_diff 6;
+    optional_compare_generic 4 (3 `EqWith`, 1 `OrderedWith`) and 2 "cannot
+    convert type `Core.Optional(i32 as Core.OptionalStorage)`" at commit 4, and
+    5 (4 `EqWith`, 1 `OrderedWith`) and the same 2 after the fold's `Differ`
+    line; optional_compare_payload 3; optional_nested_pointer's `==` 1; the
+    quoted counts are re-read from §8.8's run on the merge commit
+    (amended 2026-10-13, implementation review fold: R1-6, IR2-10).
 -   **fork/ORCHESTRATION.md:** the Branches row for `claude/carbon-fork-0-1-op`
     (trunk 162c7e839's :429, "PLANNING", edited in place), the "Last updated" or
     "Later on" stamp paragraph (the PR, the verification record, the not-run
     list), the Scoreboard subsection, the reservation sentence of trunk
     162c7e839 (:87-89, "ids from W-170 and fork design id F-015 if minted") made
-    exact ("uses W-170..W-179, minted F-015") (amended 2026-10-13, review fold:
-    A-10), and a dated correction of "Next actions" item 3 (§0.3 item 9). Before
+    exact ("uses W-170..W-179 and W-190, minted F-015") (amended 2026-10-13,
+    review fold: A-10; W-190 amended 2026-10-13, implementation review fold:
+    R1-4), and a dated correction of "Next actions" item 3 (§0.3 item 9). Before
     commit 5, the then-current trunk is merged into the branch with a merge
     commit, never a rebase (AGENTS.md; the EV-1 precedent dff212ccc), so commit
     5 edits trunk's records in place, and §8.8 re-verifies that merge commit
-    before commit 5 is written (amended 2026-10-13, review fold: B-4).
+    before commit 5 is written (amended 2026-10-13, review fold: B-4). When that
+    merge is taken is §3's timing rule (amended 2026-10-13, implementation
+    review fold: IR2-12).
 -   **Landing-date stamps** to re-stamp in a new commit if the merge date
     differs: optional.md's status line, the amendment lines, W-058's title, row
     78's "DISCHARGED <date>", the §W9 sentence and the decision-log heading;
@@ -2593,6 +2720,19 @@ implementation review", the ST-1 precedent) with an "Implementation review fold
 record" in this plan, any refill being its own "Autoupdate testdata goldens on
 the container arbiter" commit; then the merge of trunk, a merge commit and never
 a rebase; then §8.8 on the merge commit; then commit 5.
+
+**Timing of the merge of trunk** (amended 2026-10-13, implementation review
+fold: IR2-12): the merge that precedes commit 5 is taken when OP-1 is next in
+D-OP-15's land queue, that is, once PR 53, PR 51, PR 52, SC-1, PR 54 and PR 55
+have merged, or once the orchestrator re-orders the queue under D-OP-15's break
+condition. Commit 5 then anchors its records on the trunk that OP-1 lands on, PR
+53's two SAFE-1 amendments go into commit 5 directly, and §8.8 runs once. Until
+then the branch holds commits 2 to 4 and the fold, and the PR may be opened
+before commit 5 exists; if a merge of trunk is taken earlier, for example to
+resolve a conflict, §8.8 runs on it too, and commit 5 is still written only
+after the last merge of trunk before landing; a merge of trunk after commit 5
+re-runs §8.8, re-anchors commit 5's records and re-stamps the landing dates,
+each in a new commit.
 
 Before each of commits 2, 4 and 5 and each fix commit, `uvx prek run --files
 <that commit's files>` runs to a fixpoint (a run that changes nothing), with
@@ -2646,6 +2786,13 @@ ST-1's +5 PASS −1 SKIP, SC-1's and EV-1's programs), so the absolute numbers a
 re-quoted from the run on the merge commit (§8.8), never added by hand (R9);
 only the delta relative to trunk is this plan's claim.
 
+After the implementation review's fold the expected result is **132 PASS / 0
+FAIL / 25 SKIP over 157, bullets 48/56**: optional_nested_pointer is one more
+write-tests-first SKIP, and optional_compare_generic stays PASS with six lines;
+the delta on the floor is PASS +4, SKIP +3, programs +7, and the Optional bullet
+rolls up as PASS over ten programs (amended 2026-10-13, implementation review
+fold: R1-1, R1-5).
+
 EXPECT derivations (R16(d): from the design rules of §1.2 and independent
 reasoning; each was written down before its program first ran):
 
@@ -2695,6 +2842,19 @@ reasoning; each was written down before its program first ran):
     `true`, 1; `None()` holds none, 0; `Some(true) == Some(true)`, both holding
     `true`, 1; `Some(true) == Some(false)`, the values differ, 0. Exit 0
     (amended 2026-10-13, review fold: B-2).
+-   **optional_nested_pointer** (SKIP; for the un-SKIP, from F-015's API, copy
+    and comparison rules): `Some(None)` holds a value, 1; its value is empty,
+    0; a copy of it holds the same empty inner value, 0; reading through both
+    levels of `Some(Some(&n))` reaches `n`, which holds 7, so the test prints
+    1; `a == b` on two outer values whose inner values hold pointers to two
+    `C` objects with equal `v` is `C*`'s own `==` on those pointers, which
+    compares the objects, 1; exit 0; measured today, with OP-1, `1 1 1 0 0`
+    (amended 2026-10-13, implementation review fold: R1-1).
+-   **optional_compare_generic's NaN line**: `Differ(some_nan, some_nan)` on
+    two non-empty values is `f64`'s `!=` on the two NaNs (D-OP-1: "`!=` on
+    them is `T`'s `!=`"), and a NaN compares neither equal nor not-equal
+    (comparison_operators.md:311-314), so `!=` is false, 0
+    (amended 2026-10-13, implementation review fold: R1-5).
 
 Non-vacuity (M-16): on the trunk install, optional_missing_ops,
 optional_compare_diff, optional_compare_generic and optional_compare_payload are
@@ -2704,14 +2864,24 @@ B-1). What the PASS programs do not observe: that a held value is destroyed
 (W-170) and `Optional(bool)` (W-171); the SKIPped arbiters
 optional_destroys_value and optional_bool observe exactly these, so the landing
 of either item is visible on the scoreboard (amended 2026-10-13, review fold:
-B-2).
+B-2); optional_nested_pointer observes W-171's silent case (amended 2026-10-13,
+implementation review fold: R1-1). Review 1's mutant M2 (`NotEqual` returning
+`not (self.Get() == other.Get())`, §7 A-8) survived every program of commit 4;
+with the fold's NaN line optional_compare_generic prints `2 1 1 0 1 1` under it
+(OUTPUT-MISMATCH), so A-8 has a program-level arbiter. Mutants of the M7 class (`Get()`
+before the `HasValue()` tests) read uninitialized storage, so no program
+arbitrates them deterministically; lower/testdata/optional/compare.carbon does,
+and is their only arbiter (amended 2026-10-13, implementation review fold:
+R1-5).
 
 ## §6 Churn and collision analysis (verified by `git diff --stat trunk...<branch>` at the heads named)
 
 -   **Files:** core/prelude/types/optional.carbon (two lines replaced, 71
     appended); three new goldens; fork/conformance/programs/stdlib/ (one
     modified, six new programs and one oracle, two headers) (amended 2026-10-13,
-    review fold: B-2); fork/conformance/README.md (generated table);
+    review fold: B-2), and with the implementation review's fold one more new
+    program and one more modified (amended 2026-10-13, implementation review
+    fold: R1-1, R1-5); fork/conformance/README.md (generated table);
     docs/design/optional.md (new), docs/design/control_flow/loops.md,
     docs/design/error_handling.md, docs/design/README.md (one blockquote each);
     docs/design/safety/type_safety.md and mutation_safety.md (one blockquote
@@ -2796,9 +2966,13 @@ B-2).
     Accepted in D-OP-13: the crash is `Get()`'s and already reachable on trunk;
     no bound can exclude `bool`. Falsifier: a PASS program, golden or example in
     the OP-1 PR compares `Core.Optional(bool)` values (the SKIPped arbiter
-    optional_bool does so on purpose; amended 2026-10-13, review fold: B-2).
-    Contingency: rewrite it to a non-`bool` payload and name W-171 in its
-    header.
+    optional_bool does so on purpose; amended 2026-10-13, review fold: B-2). The
+    same holds for `==` on `Core.Optional(Core.Optional(U*))`, a silent wrong
+    answer (W-171; the SKIPped arbiter optional_nested_pointer compares them on
+    purpose), and on `Core.Optional(Core.IntLiteral)`, a lowering crash (W-190),
+    and the falsifier covers those payloads too (amended 2026-10-13,
+    implementation review fold: R1-1, R1-4). Contingency: rewrite it to another
+    payload and name W-171 or W-190 in its header.
 -   **R-4: the composition with ST-1 changes at the merge of trunk.** M-13
     measured 1950 of 1950 on ST-1's head with v1 and again with v2, §2.1 byte
     for byte (amended 2026-10-13, review fold: A-5), and M-21 filled OP-1's
@@ -2847,7 +3021,9 @@ B-2).
     with the same semantics (D-OP-4), the `Try` body becomes error_handling.md's
     sketch (D-OP-7); optional_compare_diff and the payload program keep their
     EXPECT (a choice compares without copying, so the payload program's counts
-    still hold: copies made and destroyed balance).
+    still hold: copies made and destroyed balance, where `T`'s own `Destroy` is
+    complete; for a nested non-empty Optional payload they balance only once
+    W-170 lands (amended 2026-10-13, implementation review fold: R1-2)).
 -   **R-10: temporary lifetimes change.** The payload program's middle counts
     assume a comparison's `Get()` copies die by the end of its call and an
     expression statement's temporaries by the end of the statement (M-5; F-013
@@ -2930,17 +3106,20 @@ The carbonbuild scripts are the session scratchpad's
     `XDG_CACHE_HOME=/home/user/carbon-build/carbon-op/cache $CB/conformance.sh
     /home/user/carbon-op /home/user/carbon-build/carbon-op/conf-out` → §5's
     delta on the base of record, the Optional bullet PASS with six PASS and
-    three SKIP, no other status change (amended 2026-10-13, review fold: B-2).
-    fork/conformance/out/scoreboard.json is not overwritten by a container run;
-    the totals go into the landed notes, row 78's "expected, not of record"
-    sentence and the PR body, cited by toolchain sha, `generated` timestamp and
-    totals. Then the non-vacuity falsifier (R16, M-19): the Optional programs
-    run against copies of the built install carrying mutant A's and mutant B's
-    optional.carbon make `optional_compare_diff` DIFF-MISMATCH and change no
-    other status (amended 2026-10-13, review fold: A-3, B-1).
+    three SKIP, no other status change (amended 2026-10-13, review fold: B-2);
+    four SKIP after the implementation review's fold (amended 2026-10-13,
+    implementation review fold: R1-1). fork/conformance/out/scoreboard.json is
+    not overwritten by a container run; the totals go into the landed notes, row
+    78's "expected, not of record" sentence and the PR body, cited by toolchain
+    sha, `generated` timestamp and totals. Then the non-vacuity falsifier (R16,
+    M-19): the Optional programs run against copies of the built install
+    carrying mutant A's and mutant B's optional.carbon make
+    `optional_compare_diff` DIFF-MISMATCH and change no other status (amended
+    2026-10-13, review fold: A-3, B-1).
 5.  **Runner:** `python3 fork/conformance/runner.py --update-readme-table`, then
     `--self-test` → `self-test: 156 programs parsed, 56 bullets in table, OK` on
-    9d3ca60a3 plus OP-1 (R7).
+    9d3ca60a3 plus OP-1 (R7); 157 programs after the implementation review's
+    fold (amended 2026-10-13, implementation review fold: R1-1).
 6.  **prek fixpoint** (R22, R25), per commit as §3 says: `uvx prek run --files
     <that commit's files>` until a run changes nothing, before each of commits
     2, 4 and 5 and each fix commit; for every `.md` in the commit, heading
@@ -3004,9 +3183,13 @@ trunk).
     (§3) (amended 2026-10-13, review fold: B-9).
 -   No PASS program, golden or doc example compares `Core.Optional(bool)` values
     (W-171; the SKIPped arbiter optional_bool does, on purpose; amended
-    2026-10-13, review fold: B-2) or passes a float or character literal to
-    `Some` (W-172: bind a typed value first); no example relies on an Optional
-    destroying its value (W-170) or calls `Get()` without `HasValue()` (W-173).
+    2026-10-13, review fold: B-2), `Core.Optional(Core.Optional(U*))` values
+    (W-171; the SKIPped arbiter optional_nested_pointer does, on purpose) or
+    `Core.Optional(Core.IntLiteral)` values (W-190) (amended 2026-10-13,
+    implementation review fold: R1-1, R1-4), or passes a float or character
+    literal to `Some` (W-172: bind a typed value first); no example relies on an
+    Optional destroying its value (W-170) or calls `Get()` without `HasValue()`
+    (W-173).
 -   docs/design/optional.md's declarations are copied from the landed
     optional.carbon and diffed against it before commit 4 (R27); its examples
     are this plan's programs or compiled on the landed toolchain.
@@ -3089,3 +3272,89 @@ W-179 are this workstream's, as trunk's fork/ORCHESTRATION.md records, and
 F-015 is minted. Implementation follows §3's commits 2 to 5, with the
 implementation review and its fold between commits 4 and 5; the merge position
 is last, after PR 55 (ST-1), with DD-1 (ids from W-180) after it.
+
+## Implementation review fold record (2026-10-13)
+
+Two implementation reviews of commits 2 to 4 (5d9edb3e0, 4dc9dbefc, a8daacf11)
+and of the implementer's pre-review fix commit 1fc03110e returned
+APPROVE-WITH-FIXES: review 1 (correctness and soundness; ids R1-1 to R1-7) with
+1 MAJOR and 6 MINOR findings, and review 2 (R27 fidelity, R16 derivations, the
+F-015 page as a design document against §2.5's sentences, prelude style and
+readiness for commit 5; ids IR2-1 to IR2-12, written OP1-IR2-n by the review)
+with 1 MAJOR and 11 MINOR. Neither found a BLOCKER. Two pairs are one finding
+seen twice (R1-6 and IR2-10, R1-7 and IR2-9). All 19 are folded and none is
+rejected. The fold changes no prelude line, C++ source or golden, so the build
+of 5d9edb3e0 (`carbon version` 0.0.0-0.dev+5d9edb3e0) and commit 3's fill stand
+and no autoupdate commit is needed; it adds one program, extends one,
+regenerates the README table, and amends docs/design/optional.md and this plan,
+each plan amendment marked "(amended 2026-10-13, implementation review fold:
+<id>)" or "(corrected ...)". The fixer reproduced every finding about behavior
+in its own scratch tree (session scratch `op1-impl/fixer`: the OP-1 install of
+5d9edb3e0 with its runtimes cache, the trunk install 0.0.0-0.dev+0bdce60a5, a
+copy of the OP-1 install carrying M-6's `Destroy` prototype, a copy carrying
+review 1's mutant M2, copies of the caches of the implementer's mutant A and B
+installs, and the reviews' probes copied from `op1-impl/rev1/p`, `rev1/cpp` and
+`rev2/probe`), with each expected line written down before the run.
+
+| Finding | Grade | Disposition | Where folded |
+| --- | --- | --- | --- |
+| R1-1: W-171's root cause also mis-lowers `Get()` and copy of `Core.Optional(Core.Optional(U*))`, and OP-1's `==` now returns wrong answers there | MAJOR | Reproduced on the OP-1 install: cptr.carbon prints `1 0 0 1 1 1 -1 1 0 0 1 1 1 0 1 -2 0 0 0 1 0 0`, its nested `oo1 == oo2` and `Same(oo1, oo2)` printing 0 where F-015 gives 1; nestnone.carbon prints `1 1 1` (expected `1 0 0`) on OP-1 and on trunk; nestptr_get.carbon prints addresses where 7 is right; trunk rejects the nested `==` with `MissingImplInMemberAccess`; the unoptimized IR (`--optimize=none --dump-llvm-ir`) of nestptr_get has the storage `Get` (optional.carbon:169) pass `getelementptr inbounds nuw <{ ptr, i1 }>, ptr %value, i32 0, i32 0` to the inner `Optional(i32*)` `Copy`, which is `ret ptr %self`. Folded as proposed, with the arbiter made deterministic: optional_nested_pointer.carbon (SKIP; EXPECT `1 0 0 1 1` from F-015's rules; measured `1 1 1 0 0` with OP-1 in three runs; on trunk the four lines before its `==` print `1 1 1 0`) prints `B(*...Get().Get() == 7)` rather than the pointee, so that its SKIP line quotes exact output, and adds the copy case; W-171 widened in §1.7 and in §2.6's title and notes; the F-015 sentence extended on the page and in §2.5; the page's W-171 limit and its close condition; D-OP-13, R-3, the Outcome, row 78, §W9; §5 re-derived to 132/0/25 over 157; the README table regenerated | Outcome; D-OP-11; D-OP-13; §1.2; §1.7 W-171; §2.4; §2.5; §2.6 W-171, row 78, §W9; §5; §6; §7 R-3; §8.4, §8.5; hand-off; optional.md Comparison and 0.1 limits |
+| R1-2: W-170's consequences for comparison are unrecorded | MINOR | Reproduced: gentemp.carbon, gentemp2.carbon and gentemp3.carbon each fail on OP-1 with "cannot access member of interface `Core.Destroy` in type `Core.Optional(T as Core.OptionalStorage)`" (on trunk gentemp and gentemp3 fail the same way, and gentemp2 stops at `EqWith` first), and all three check on the copy carrying M-6's prototype; nesttrace.carbon prints `101 102 -1 101 102 -2 101 102 101 102 202 201 0 -3 202 201` on OP-1 and `... 101 102 101 102 202 201 202 201 0 -3 ...` on the prototype. Folded as proposed | §1.2; §1.3; §1.7 W-170; §2.6 W-170; §7 R-9; optional.md Comparison and Ownership and lifetime |
+| R1-3: comparing `Core.Optional(Cpp.S)` fails with an export TODO | MINOR | Reproduced (`--phase=check` with review 1's s.h): cppeq.carbon and cppopt0.carbon check; cppopt.carbon fails with "semantics TODO: `interop with non-identifier package name`" at optional.carbon:30:1, raised at check/cpp/export.cpp:141, and on trunk with that TODO and `MissingImplInMemberAccess`; cppfile.carbon checks. Folded as proposed: a paragraph in optional.md's C++ interoperability and a W-049 limit; W-049's notes at commit 5 | §2.6 W-049; optional.md C++ interoperability and 0.1 limits |
+| R1-4: `==` on `Core.Optional(Core.IntLiteral)` passes check and aborts lowering | MINOR | Reproduced: lit.carbon is `MissingImplInMemberAccess` on trunk, and with OP-1 checks with exit 0 and aborts `carbon compile`, exit 134, at "Lowering function Equal(Core.IntLiteral as Core.OptionalStorage & Core.Destroy & Core.Eq)" (optional.carbon:217, the call at :224) with the `llvm::cast<llvm::IntegerType>` assertion; genlit.carbon aborts the same way on trunk and on OP-1. Folded as proposed, filed as W-190: the ledger maximum over trunk and every local and `origin` `claude/carbon-fork-0-1-*` ref is W-168 (sc), no text on any ref names an id from W-190 up, and DD-1's plan reserves W-180..W-189, so W-190 is the next free id, re-scanned at discharge with the others; no ledger item names the defect (a grep for "compile-time-only" over every ref's ledger finds none) | D-OP-13; §1.2; §1.7 W-190; §2.5; §2.6 id re-scan, W-190, row 78, ORCHESTRATION; §7 R-3; hand-off; optional.md Comparison and 0.1 limits |
+| R1-5: two body mutants survive every program | MINOR | Reproduced: review 1's runmut.out records M2 and M7 surviving all nine programs; nan.carbon prints `0 0` for `nan == nan` and `nan != nan` (handle_call.cpp:60 lowers `float.neq` to `FCMP_ONE`, as comparison_operators.md:311-314 designs for NaN). Folded through the generic rather than as a concrete line: optional_compare_generic gains `Differ[T: Core.Eq & Core.Copy & Core.Destroy]` (`a != b`) and `Differ(some_nan, some_nan)`, EXPECT `0` from D-OP-1 and comparison_operators.md:311-314; it prints `2 1 1 0 1 0` with OP-1 and `2 1 1 0 1 1` under M2 (OUTPUT-MISMATCH); §5 records that M7-class mutants have only the lower golden as arbiter | D-OP-11; §2.4; §5 |
+| R1-6 / IR2-10: commit 4's message misstates the trunk non-vacuity counts | MINOR | Re-measured on the trunk install (`--phase=check`): optional_missing_ops 1, optional_compare_diff 6, optional_compare_generic 4 (3 `EqWith`, 1 `OrderedWith`) and 2 "cannot convert type", optional_compare_payload 3; after the fold, optional_compare_generic gives 5 (4 `EqWith`, 1 `OrderedWith`) and the same 2, and optional_nested_pointer 1. Folded: here and in §2.6, for commit 5's message, the decision-log entry and the PR body; a8daacf11's message stays, since no commit is amended | §2.6 |
+| R1-7 / IR2-9: the plan keeps the imprecise `TrivialDestructor` rule | MINOR | Verified (classes.md:1995-1996: "does not define a destructor or the class defines the destructor with an empty body"). Folded: §1.3, D-OP-12 and the §2.6 W-170 row say "a class that defines a destructor with a non-empty body", as the page does since 1fc03110e | §1.3; D-OP-12; §2.6 W-170 |
+| IR2-1: optional.md's claim about `?` in a `Core.Result`-returning function is false | MAJOR | Reproduced: review 2's unit_err.carbon (`Core.Result(i32, ())`) compiles, links and prints `-1 5` on OP-1; int_err.carbon (`Core.Result(i32, i32)`) fails at the `?` with "cannot implicitly convert expression of type `()` to `i32`", noted at result.carbon:51 (`FromBreak(b: E)`). Folded: the Propagation and iteration sentence states the measured behavior (compiles only when `()` converts to `E`; `.Err(())` for `E = ()`); optional.carbon:56-78 untouched | optional.md Propagation and iteration |
+| IR2-2: D-EH-1 is quoted without its clause giving the choice question to W-058 | MINOR | Verified (decision-log.md:5611-5615). Folded: "A class, not a choice" says D-EH-1 kept the class at EH-A and left re-platforming onto `choice` to W-058's design, which this page is, and that F-015 keeps the class by D-OP-7; error_handling.md's amendment keeps its plan-verbatim "(D-EH-1)" | optional.md A class, not a choice |
+| IR2-3: W-173's close condition mixes in the row's DONE gate | MINOR | Folded as proposed: the W-173 limit closes when `Get()` on an empty value is a fail-stop; the TY4 alternative stays in D-OP-13's DONE gate and in the normative Ownership paragraph, which says when the TY4 contradiction ends | optional.md 0.1 limits |
+| IR2-4: Pattern matching conflicts with W-177's close condition | MINOR | Folded: the examples wait on W-177, which may close by `Match` for classes or by a `choice` that keeps the constraints of "A class, not a choice", and no choice redesign comes from this design | optional.md Pattern matching |
+| IR2-5: "same-type integer comparisons" mislabels the precedent | MINOR | Verified (int.carbon:91-104 and uint.carbon's `Int(N)`/`UInt(N)` with `Int(M)`/`UInt(M)`; float.carbon:165-170 and cpp/int.carbon:341-375 same-type). Folded: optional.md names the integer comparisons as `Int(N)` with `Int(M)`; §0.1 row 8 and D-OP-3 corrected in place | §0.1 row 8; D-OP-3; optional.md Comparison |
+| IR2-6: the `UnformedInit` row misstates the bound | MINOR | Verified (optional.carbon:48, `[T: OptionalStorage & UnformedInit]`). Folded: the page's and §1.1's rows read "when `T` may (`T: UnformedInit`)" | §1.1; optional.md The type |
+| IR2-7: the Overview overclaims, and the limits omit the side-effect divergence | MINOR | Folded both ways: the Overview says "the fork's design for those uses" and that the limits section lists each filed limit and the one divergence it discloses; a paragraph after the limits list states the copy-and-destroy divergence and that W-177 or a by-reference accessor closes it (no work item tracks it on its own) | optional.md Overview and 0.1 limits |
+| IR2-8: the TY4 amendment misses TY4's `match` path, and the safety terms are unlinked | MINOR | Verified (type_safety.md:186-188 at adaae4e35 names "a `match`"; adaae4e35 is not an ancestor of trunk 162c7e839). Folded: §2.5's TY4 amendment text gains the `match` clause, and the commit that lands it links TY4, D-SAFE-9, `Core.Plain` and EX-M-5/6 from optional.md | §2.5 |
+| IR2-11: the pre-review fix commit sits outside §3 | MINOR | Folded: 1fc03110e is recorded here as the implementer's pre-review commit (the D-EH-1 quotation and the `TrivialDestructor` rule on optional.md), reviewed by both reviews, and refined by IR2-2; the fold commit carries §3's title | this record |
+| IR2-12: when the merge of trunk before commit 5 is taken is ambiguous | MINOR | Verified (origin/trunk is 162c7e839; none of PR 53, PR 51, PR 52, SC-1, PR 54 and PR 55 has merged). Folded: §3's timing rule, to which §2.6 points | §2.6 ORCHESTRATION; §3 |
+
+Fix-round verification, at the fold's tree with the toolchain of 5d9edb3e0 (the
+fold changes no file that the build compiles):
+
+-   **Gate:** gate.sh printed `1945 passed, 0 failed (exit 0, 36s)`; the log
+    reads `[==========] 1945 tests from 1 test suite ran.` and
+    `[  PASSED  ] 1945 tests.` with no `[  FAILED  ]` line.
+-   **Conformance** into `op1-impl/conf-fix`, with
+    `XDG_CACHE_HOME=/home/user/carbon-build/carbon-op/cache`: scoreboard
+    generated 2026-10-13T23:47:56Z, PASS 132, COMPILE-FAIL 0, LINK-FAIL 0,
+    RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 25 of 157, bullets
+    48 PASS and 8 SKIP of 56, in 43.0 s. Against the implementation run
+    (`op1-impl/conf`) the only change is the new SKIP optional_nested_pointer;
+    against fork/conformance/out/scoreboard.json (128/0/22 over 150) the eight
+    changes are all Optional (optional_missing_ops SKIP to PASS and seven new
+    programs), the 16 error_handling programs PASS, and the Optional bullet is
+    PASS over ten programs with its gap status PARTIAL. This is §5's amended
+    expectation, not of record.
+-   **Mutants (§8.4):** the Optional programs on the implementer's mutant A
+    and B installs (private copies of their caches) make optional_compare_diff
+    DIFF-MISMATCH and change nothing else; on review 1's M2 only
+    optional_compare_generic changes, to OUTPUT-MISMATCH; on the OP-1 install
+    every one is PASS or SKIP as above.
+-   **Runner:** `--update-readme-table` wrote 157 rows, one new;
+    `--self-test` printed `self-test: 157 programs parsed, 56 bullets in table,
+    OK`.
+-   **Docs:** the page's API listing and examples are unchanged, so R27 and the
+    examples' compile check stand. R31 counts before this commit's edits and
+    after its prek fixpoint: optional.md h1 1, h2 11, h3 3, numbered 0
+    unchanged, dash items 53 before and 55 after (the W-190 and W-049
+    limits); this plan h1 1, h3 17, numbered 25 unchanged, h2 12 before and 13
+    after (this section), dash items 124 before and 134 after (§1.7 W-190,
+    §2.6's W-049 notes and non-vacuity counts, §5's two derivations and this
+    record's five); fork/conformance/README.md h1 1, h2 4, h3 3, dash items
+    22, numbered 6, unchanged. The R31(c) grep of the commit's diff finds no
+    manufactured heading. prek (with the four SKIPs of §3) reached its
+    fixpoint on its third run over the five files: the first rewrapped this
+    commit's lines and, in row 78's quoted text, the paragraph around the
+    placeholder `<the base's totals and run, ...>`, which rumdl keeps on one
+    line, so the fold shortened the placeholder to `<the base's totals and
+    run>` with its gloss in parentheses; the second rewrapped that paragraph;
+    the third changed nothing, and so did two more after this sentence was
+    written.

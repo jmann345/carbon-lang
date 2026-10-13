@@ -34,8 +34,8 @@ p006357, future work).
 ## Overview
 
 `Core.Optional(T)` holds either no value or one value of type `T`. Upstream's
-design already depends on it in four places, and this page is the design they
-assume:
+design already depends on it in four places, and this page is the fork's design
+for those uses:
 
 -   **Nullable pointers.** "There are no null pointers in Carbon. To represent a
     pointer that may not refer to a valid object, use the type `Optional(T*)`."
@@ -57,8 +57,8 @@ statements" (p006357), and the prelude calls the API a placeholder. This page is
 the fork's answer, fork design F-015, recorded in the fork decision log for
 after-the-fact veto. It adopts the type as the prelude implements it, adds
 comparison, and states the ownership rules. The [0.1 limits](#01-limits)
-section lists every place where the 0.1 toolchain falls short of it, with the
-condition under which each limit closes.
+section lists each filed limit of the 0.1 toolchain against it, and the one
+divergence it discloses, with the condition under which each closes.
 
 A typical use tests for a value before reading it:
 
@@ -89,7 +89,7 @@ pointer, and generic code names `Core.Copy & Core.Destroy` for its `T` (W-176).
 | `fn HasValue(self) -> bool` | whether it holds a value |
 | `fn Get(self) -> T` | a copy of the held value; requires `HasValue()`, unchecked in 0.1 (W-173) |
 | `impl forall [T: OptionalStorage] Optional(T) as Copy` | copies the held value, if any |
-| `impl forall [T: OptionalStorage & UnformedInit] Optional(T) as UnformedInit` | an Optional may be declared without an initializer when its storage may |
+| `impl forall [T: OptionalStorage & UnformedInit] Optional(T) as UnformedInit` | an Optional may be declared without an initializer when `T` may (`T: UnformedInit`) |
 | `ImplicitAs(Optional(T))` from `T`, from any `U: ImplicitAs(T)` and from `Optional(U)` | `Some` of the (converted) value; empty stays empty |
 | `final impl forall [T: Destroy & OptionalStorage] Optional(T) as Try where .ContinueType = T and .BreakType = ()` | `o?` continues with the value or propagates absence as `()` (D9) |
 | `final impl forall [T: Destroy & OptionalStorage & Eq] Optional(T) as EqWith(Optional(T))` | `==` and `!=` ([Comparison](#comparison)) |
@@ -181,10 +181,12 @@ impl forall [T: Destroy & OptionalStorage,
 The design's own examples spell `Optional` as a `choice` with alternatives
 `.Some` and `.None` ([Sum types](sum_types.md#choice-declarations)), and as a
 class that implements `Match`
-([User-defined sum types](sum_types.md#user-defined-sum-types)). The fork keeps
-the prelude's class (fork decision D-EH-1, which resolved SF-9: "`Core.Optional`
-KEEPS its placeholder class identity"), because the names and the layout it has
-are already load-bearing:
+([User-defined sum types](sum_types.md#user-defined-sum-types)). The fork's
+error-handling step kept the prelude's class (fork decision D-EH-1, which
+resolved SF-9: "`Core.Optional` KEEPS its placeholder class identity") and left
+re-platforming it onto `choice` to the Optional design, W-058, which is this
+page. F-015 keeps the class (fork decision D-OP-7), because the names and the
+layout it has are already load-bearing:
 
 -   the toolchain's `for` calls `HasValue` and `Get` by name
     (toolchain/check/handle_loop_statement.cpp);
@@ -280,12 +282,24 @@ fn Same[T: Core.Eq & Core.Copy & Core.Destroy](a: Core.Optional(T),
 }
 ```
 
+In 0.1 a checked generic can compare only `Core.Optional(T)` values that it
+receives: a local or temporary `Core.Optional(T)` in its body, such as
+`Core.Optional(T).Some(a) == b` or a `let` of that type, is rejected with
+"cannot access member of interface `Core.Destroy` in type
+`Core.Optional(T as Core.OptionalStorage)`", because `Core.Optional` declares
+no `Destroy` impl (W-170).
+
 A pointer-niche `Core.Optional(T*)` compares exactly when `T*` is `Core.Eq`. The
 prelude gives the built-in pointer types no `==` (W-174), so
 `Core.Optional(i32*)` does not compare; a library that owns a class `C` may
 implement `C* as Core.EqWith(C*)`, and `Core.Optional(C*)` then compares.
 `Core.Optional(bool)` is `Core.Eq`, but in 0.1 comparing two of them, like
-reading or copying one, crashes the compiler (W-171).
+reading or copying one, crashes the compiler (W-171). The same defect makes
+reading, copying and comparing a `Core.Optional(Core.Optional(U*))` return wrong
+values with no diagnostic (W-171). For a payload that exists only at compile
+time, such as `Core.IntLiteral`, comparing two `Core.Optional(T)` values passes
+check and then crashes the compiler in lowering, as a checked generic's `==` on
+`Core.IntLiteral` does without Optional (W-190).
 
 For example, with a library's own pointer equality, which compares the objects
 the pointers refer to, `Core.Optional(C*)` values compare through the null
@@ -326,7 +340,8 @@ where the impl would be used, not at its declaration (W-179).
 `final` is a choice, not a necessity: `EqWith` and `OrderedWith` have no
 associated constants, so generic code type-checks without it. It is chosen
 because comparison is part of the type's definition, as for the prelude's
-same-type integer and floating-point comparisons, which are `final` too. A
+integer comparisons (`Int(N)` with `Int(M)`) and floating-point comparisons,
+which are `final` too. A
 payload that is not `Core.Eq` is not matched by the final impl, so its library
 may still implement `Core.Optional(Q) as Core.EqWith(Core.Optional(Q))` and
 define `==` on its Optionals. The prelude may declare these `final` impls
@@ -365,7 +380,10 @@ and is skipped until W-170 lands.
 
 Comparisons never move or destroy a held value. A comparison of two non-empty
 operands runs `T.Copy` and `T.Destroy` once per value, through `Get()`, and one
-with an empty operand runs neither ([Comparison](#comparison)).
+with an empty operand runs neither ([Comparison](#comparison)). Until W-170
+lands, a comparison of two non-empty `Core.Optional(Core.Optional(T))` values
+also leaks one copy of each `T` that the inner values hold: each outer `Get()`
+copy is a `Core.Optional(T)`, and destroying it does not destroy its value.
 
 `Get()` requires `HasValue()`. In 0.1 the requirement is not checked (W-173): on
 an empty value `Get()` returns the unformed storage, and for `Core.Optional(T*)`
@@ -386,9 +404,11 @@ workstream (W-160: assignment does not destroy the overwritten value).
 `?` on a `Core.Optional(T)` continues with the held value or propagates absence:
 the `Try` impl has `ContinueType = T` and `BreakType = ()`
 ([Error handling](error_handling.md#optional-and-user-types), decision D9).
-There is no bridge to `Core.Result`: `?` on an Optional inside a
-`Result`-returning function is a compile error unless `()` converts to the
-function's error type, which the prelude never provides. The landed `Try` body
+There is no implicit bridge to `Core.Result` (D9): inside a function that
+returns `Core.Result(T, E)`, `?` on an Optional propagates absence as the `()`
+that its `Try` impl breaks with, so it compiles only when `()` converts to `E`.
+For `E = ()`, absence propagates as `.Err(())`; for any other `E` it is a
+conversion error from `()` to `E`. The landed `Try` body
 dispatches through `HasValue()` and `Get()`, the same two-way split as the
 design's `match` sketch, because `Core.Optional` is not a choice.
 
@@ -415,8 +435,10 @@ through which a class becomes matchable, is not implemented. The examples in the
 design that match on `Optional`, in [Sum types](sum_types.md),
 [Pattern matching](pattern_matching.md#alternative-patterns) and the `Try`
 sketch of [Error handling](error_handling.md#the-coretry-interface), and the
-safety design's examples EX-M-5 and EX-M-6, wait on W-177, not on a redesign of
-`Core.Optional` as a choice.
+safety design's examples EX-M-5 and EX-M-6, wait on W-177, which may close by
+`Match` for classes or by a `choice` that keeps the constraints of
+[A class, not a choice](#a-class-not-a-choice); no redesign of `Core.Optional`
+as a choice comes from this design.
 
 ## C++ interoperability
 
@@ -424,6 +446,13 @@ A nullable C++ `T*` imports as `Core.Optional(T*)`, and `Core.Optional(T*)`
 exports as `T*`; the null niche makes the two the same bits. `Cpp.nullptr`
 converts to `Optional(T*).None()`. Comparing two C++ pointers in Carbon, and
 therefore two `Core.Optional(T*)` values for a built-in `T*`, needs W-174.
+
+An imported C++ class whose `operator==` makes it `Core.Eq` can be held, and
+`Some`, `HasValue()` and `Get()` work, but in 0.1 `==` on two
+`Core.Optional(T)` values for such a class `T` fails to check with "semantics
+TODO: `interop with non-identifier package name`" at the prelude's `Optional`
+class: the comparison would need the toolchain to name the `Core` package from
+C++, which it does not yet do (toolchain/check/cpp/export.cpp, W-049).
 
 A mapping of C++'s `std::optional<T>` in either direction is not designed here:
 it is the open half of the fork's work on sum-type consumption with
@@ -438,17 +467,19 @@ Each limit is a filed fork work item, with the condition under which it closes:
     [Ownership and lifetime](#ownership-and-lifetime). Closes when a `Destroy`
     for `Core.Optional` lands that keeps `Core.Optional(T*)` trivially
     destructible, and optional_destroys_value.carbon passes.
--   **W-171: `Core.Optional(bool)`'s `Get()` and copy crash the compiler.**
-    `==` on two of them reaches the same crash. Closes when
-    `Core.Optional(bool)` lowers, and optional_bool.carbon passes.
+-   **W-171: the default storage misreads a payload whose value representation
+    differs from that of its `MaybeUnformed` field.** For
+    `Core.Optional(bool)`, `Get()`, a copy and `==` crash the compiler; for
+    `Core.Optional(Core.Optional(U*))` they return wrong values with no
+    diagnostic. Closes when both lower correctly, and optional_bool.carbon and
+    optional_nested_pointer.carbon pass.
 -   **W-172: a float or character literal argument for a
     `T: Core.Copy & Core.Destroy` parameter aborts check.**
     `Core.Optional(f64).Some(2.5)` is an example; bind a typed value first
     (`let f: f64 = 2.5;`). Closes when the toolchain handles literal types
     there.
 -   **W-173: `Get()` on an empty Optional is unchecked.** Closes when `Get()`
-    on an empty value is a fail-stop, or when TY4 is amended to name the
-    obligation.
+    on an empty value is a fail-stop.
 -   **W-174: the built-in pointer types have no `==`.** So `Core.Optional(T*)`
     compares only when a library gives `T*` an equality. Closes when the
     prelude gives `T*` an `EqWith(T*)` impl, whose design must say whether it
@@ -471,8 +502,23 @@ Each limit is a filed fork work item, with the condition under which it closes:
 -   **W-179: a non-final impl that a `final` impl completely subsumes is
     diagnosed only where it is used.** Closes when its declaration is
     diagnosed, as proposal p5337 specifies.
+-   **W-190: a checked generic's `==` on a compile-time-only type aborts
+    lowering.** `Core.Optional(Core.IntLiteral)` values compare through the
+    generic impl, which lowers `Core.IntLiteral`'s compile-time-only `==` as a
+    run-time call; `Eq2(1, 2)` for `fn Eq2[T: Core.Eq](a: T, b: T)` aborts the
+    same way. Closes when such a call is evaluated at compile time or
+    diagnosed.
+-   **W-049: comparing `Core.Optional(T)` for an imported C++ class `T` fails
+    to check.** See [C++ interoperability](#c-interoperability). Filed by the
+    C++ export work. Closes when the toolchain can name the `Core` package
+    from C++.
 -   **Assignment does not destroy the overwritten value** (W-160, filed by the
     strings workstream). Closes with assignment that destroys the old value.
+
+One divergence is disclosed rather than filed: in 0.1 a comparison of two
+non-empty values runs `T`'s `Copy` and `Destroy` once per value
+([Comparison](#comparison)). It closes when `Core.Optional` becomes matchable
+(W-177) or gains a by-reference accessor.
 
 ## Alternatives considered
 

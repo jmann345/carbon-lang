@@ -360,6 +360,7 @@ fails if this table is stale):
 | `stdlib/optional_compare_payload.carbon` | Stdlib: Optional | run |
 | `stdlib/optional_destroys_value.carbon` | Stdlib: Optional | SKIP |
 | `stdlib/optional_missing_ops.carbon` | Stdlib: Optional | run |
+| `stdlib/optional_nested_pointer.carbon` | Stdlib: Optional | SKIP |
 | `stdlib/optional_pointer_compare.carbon` | Stdlib: Optional | SKIP |
 | `stdlib/optional_pointer_niche.carbon` | Stdlib: Optional | run |
 | `stdlib/pointers.carbon` | Stdlib: pointer types | run |

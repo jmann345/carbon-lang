@@ -10,8 +10,9 @@
 //   1
 //   0
 //   1
+//   0
 //
-// Comparison in checked-generic code: `Count` and `Before` compare
+// Comparison in checked-generic code: `Count`, `Differ` and `Before` compare
 // `Core.Optional(T)` values through the conditional impls
 // `Optional(T) as EqWith(Optional(T))` and
 // `Optional(T) as OrderedWith(Optional(T))`, both in
@@ -24,8 +25,11 @@
 // user code (W-176). Expected, from F-015's rules: two of three `i32` values
 // equal `Some(7)`; one `Point` equals `Some(p)` (`q` differs in `y`, an empty
 // value differs from every value); `Some(None)` equals only itself, not
-// `None` and not `Some(Some(7))`; `Some(7)` does not order before `None`; and
-// `None` orders before `Some(None)`.
+// `None` and not `Some(Some(7))`; `Some(7)` does not order before `None`;
+// `None` orders before `Some(None)`; and two values holding the same NaN do
+// not differ, because `!=` on two non-empty values is `T`'s `!=`, and `f64`'s
+// `!=` is false for a NaN, which compares neither equal nor not-equal
+// (docs/design/expressions/comparison_operators.md, `EqWith`).
 
 import Core library "io";
 
@@ -63,6 +67,12 @@ fn Count[T: Core.Eq & Core.Copy & Core.Destroy](
   return n;
 }
 
+// Whether `a` and `b` differ.
+fn Differ[T: Core.Eq & Core.Copy & Core.Destroy](
+    a: Core.Optional(T), b: Core.Optional(T)) -> bool {
+  return a != b;
+}
+
 // Whether `a` orders before `b`.
 fn Before[T: Core.Ordered & Core.Copy & Core.Destroy](
     a: Core.Optional(T), b: Core.Optional(T)) -> bool {
@@ -91,5 +101,10 @@ fn Run() -> i32 {
 
   Core.Print(if Before(seven, none) then 1 else 0);
   Core.Print(if Before(outer_none, some_none) then 1 else 0);
+
+  let zero: f64 = 0.0;
+  let nan: f64 = zero / zero;
+  let some_nan: Core.Optional(f64) = Core.Optional(f64).Some(nan);
+  Core.Print(if Differ(some_nan, some_nan) then 1 else 0);
   return 0;
 }

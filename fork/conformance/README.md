@@ -341,7 +341,16 @@ fails if this table is stale):
 | `project/dropin_clang_cpp_toolchain.carbon` | Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems | run |
 | `project/dropin_clang_make_cmake.carbon` | Project: toolchain drop-in usage as Clang C++ toolchain with common Make/CMake build systems | SKIP |
 | `project/evaluator_docs_getting_started.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
-| `project/evaluator_docs_review.carbon` | Project: basic evaluator documentation (getting started to FAQs) | SKIP |
+| `project/evaluator_tutorial_choice_match.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
+| `project/evaluator_tutorial_classes.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
+| `project/evaluator_tutorial_cpp_library.carbon` | Project: basic evaluator documentation (getting started to FAQs) | SKIP |
+| `project/evaluator_tutorial_errors.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
+| `project/evaluator_tutorial_functions.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
+| `project/evaluator_tutorial_generics.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
+| `project/evaluator_tutorial_hello.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
+| `project/evaluator_tutorial_interop_call_carbon.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
+| `project/evaluator_tutorial_interop_use_cpp.carbon` | Project: basic evaluator documentation (getting started to FAQs) | run |
+| `project/evaluator_tutorial_package` | Project: basic evaluator documentation (getting started to FAQs) | multi-unit (3 units) |
 | `project/most_features_interop_matrix.carbon` | Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation | run |
 | `project/most_features_language_matrix.carbon` | Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation | run |
 | `project/most_features_missing_match.carbon` | Project: toolchain implements most 0.1 language features incl. C++ interop without undermining evaluation | run |

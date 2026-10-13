@@ -58,6 +58,21 @@ auto NoteStructuralConformanceFailure(Context& context, SemIR::LocId loc_id,
 auto FacetTypeHasStructuralRequirements(Context& context, SemIR::TypeId type_id)
     -> SemIR::NamedConstraintId;
 
+// Returns the `template constraint` that declares the function `function_id`
+// as a structural requirement, or `None` if it is any other function.
+auto GetStructuralRequirementConstraint(Context& context,
+                                        SemIR::FunctionId function_id)
+    -> SemIR::NamedConstraintId;
+
+// D-SC-4: a requirement `fn` has no body and is never itself called; a call
+// through a type that satisfies the constraint targets the type's own member
+// (`LookupMemberNameInTypeScopes`, the compound redirect). If `function_id` is
+// a requirement, diagnoses the call at `loc_id` and returns false.
+auto CheckCalleeIsNotStructuralRequirement(Context& context,
+                                           SemIR::LocId loc_id,
+                                           SemIR::FunctionId function_id)
+    -> bool;
+
 }  // namespace Carbon::Check
 
 #endif  // CARBON_TOOLCHAIN_CHECK_STRUCTURAL_CONFORMANCE_H_

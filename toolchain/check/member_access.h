@@ -37,12 +37,19 @@ struct MemberLookupInfo {
   SemIR::AccessKind access_kind = SemIR::AccessKind::Public;
 };
 
-// Fork (SC-1, fork/structural/plan.md D-SC-5(b)): the member-access lookup
-// path, exposed for the structural-conformance check. Performs a member name
-// lookup for `name_id` in `lookup_scopes` (the scopes of
-// `name_scope_const_id`), including impl lookup through an alias of an
-// associated entity and the on-demand import of C++ members, and returns the
+// The member-access lookup path, used by member access and, exposed by the
+// fork (SC-1, fork/structural/plan.md D-SC-5(b)), by the structural-conformance
+// check. Performs a member name lookup for `name_id` in `lookup_scopes` (the
+// scopes of `name_scope_const_id`), including impl lookup through an alias of
+// an associated entity and the on-demand import of C++ members, and returns the
 // `NameRef` for the member (or `ErrorInst` if nothing was found).
+//
+// D-SC-4 redirect: when the lookup finds a requirement `fn` of a `template
+// constraint` whose `Self` is concrete (`T.Make` once a template's `T` is a
+// class `C`, or `(C as HasMake).Make`), the result is instead the self type's
+// own member of that name, looked up in the self type's scopes, so it can be a
+// member of a different scope than `lookup_scopes`; an `access_info` is then
+// re-derived for the self type's scope.
 //
 // `access_info` is the access context to check against, or `nullopt` to find
 // members regardless of their access (the caller then applies

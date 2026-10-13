@@ -27,7 +27,7 @@ class C {
   // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
   // CHECK:STDERR:          ^~~~
   // CHECK:STDERR:
-  fn Get(self) -> i32 { return 1; }
+  fn Get(unused self) -> i32 { return 1; }
 }
 
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
@@ -50,7 +50,7 @@ class C {
   // CHECK:STDERR:   fn Get(ref self) -> i32 { return 1; }
   // CHECK:STDERR:          ^~~~~~~~
   // CHECK:STDERR:
-  fn Get(ref self) -> i32 { return 1; }
+  fn Get(unused ref self) -> i32 { return 1; }
 }
 
 fn CallGet[template T: HasGet](p: T*) -> i32 { return p->Get(); }
@@ -73,9 +73,11 @@ class C {
   fn Make() -> C { return {}; }
 }
 
+//@dump-sem-ir-begin
 fn MakeIt(template T: HasMake) -> T { return T.Make(); }
 
 fn Test() -> C { return MakeIt(C); }
+//@dump-sem-ir-end
 
 // --- alias_member.carbon
 library "[[@TEST_NAME]]";
@@ -97,7 +99,7 @@ class D {
     // CHECK:STDERR:     fn F(self) {}
     // CHECK:STDERR:          ^~~~
     // CHECK:STDERR:
-    fn F(self) {}
+    fn F(unused self) {}
   }
   alias F = A.F;
 }
@@ -120,7 +122,7 @@ class C {
   // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
   // CHECK:STDERR:          ^~~~
   // CHECK:STDERR:
-  fn Get(self) -> i32 { return 1; }
+  fn Get(unused self) -> i32 { return 1; }
 }
 
 class Box(template T: HasGet) {
@@ -128,7 +130,7 @@ class Box(template T: HasGet) {
   // CHECK:STDERR:   fn Call(self, x: T) -> i32 { return x.Get(); }
   // CHECK:STDERR:           ^~~~
   // CHECK:STDERR:
-  fn Call(self, x: T) -> i32 { return x.Get(); }
+  fn Call(unused self, x: T) -> i32 { return x.Get(); }
 }
 
 //@dump-sem-ir-begin
@@ -143,8 +145,9 @@ library "[[@TEST_NAME]]";
 
 // A member of a GENERIC class specific (commit-2 review, MAJOR finding):
 // `Box(i32).Get` declares `self: Box(T)`, and the matcher reads it in the
-// member's enclosing specific so that it equals the requirement's
-// `Self := Box(i32)`. Spelling from class/method/generic_method.carbon.
+// member's own specific, formed from the arguments of its enclosing specific
+// `Box(i32)`, so that it equals the requirement's `Self := Box(i32)`. Spelling
+// from class/method/generic_method.carbon.
 template constraint HasGet {
   fn Get(self) -> i32;
 }
@@ -154,12 +157,79 @@ class Box(T: type) {
   // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
   // CHECK:STDERR:          ^~~~
   // CHECK:STDERR:
-  fn Get(self) -> i32 { return 1; }
+  fn Get(unused self) -> i32 { return 1; }
 }
 
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
 fn Test(b: Box(i32)) -> i32 { return CallGet(b); }
+
+// --- nested_generic.carbon
+library "[[@TEST_NAME]]";
+
+// A member of a class nested in a generic class (fill round 2, review finding
+// MINOR-4): `Outer(i32).Inner(bool).Get` is generic over both classes'
+// parameters, and its own specific is formed from the arguments of
+// `Outer(i32).Inner(bool)`.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+class Outer(T: type) {
+  class Inner(U: type) {
+    fn Get(unused self) -> i32 { return 1; }
+  }
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+
+fn Test(b: Outer(i32).Inner(bool)) -> i32 { return CallGet(b); }
+
+// --- as_facet.carbon
+library "[[@TEST_NAME]]";
+
+// An associated-function requirement named on a concrete facet value outside
+// any template: the lookup finds the requirement with `Self := C` and names
+// `C`'s own `Make` instead (D-SC-4; fill round 1, fix 3).
+template constraint HasMake {
+  fn Make() -> Self;
+}
+
+class C {
+  fn Make() -> C { return {}; }
+}
+
+//@dump-sem-ir-begin
+fn Test() -> C { return (C as HasMake).Make(); }
+//@dump-sem-ir-end
+
+// --- fail_todo_ambiguous_with_interface.carbon
+library "[[@TEST_NAME]]";
+
+// p002200:385-399: a name that lookup finds both through a template constraint
+// and through an interface, where both resolve to the type's same function, is
+// not ambiguous. Lookup decides ambiguity across extended scopes before the
+// D-SC-4 redirect resolves the requirement to `C.Make` (and, for the interface,
+// before impl lookup: upstream's own TODO in member_access.cpp), so it is still
+// diagnosed (fill round 2, review finding MINOR-3; residue in
+// fork/structural/plan.md, "Landed notes (fill round 2)").
+template constraint HasMake {
+  fn Make() -> Self;
+}
+
+interface J {
+  fn Make() -> Self;
+}
+
+class C {
+  extend impl as J {
+    fn Make() -> C { return {}; }
+  }
+}
+
+fn ViaT(template T: HasMake & J) -> T { return T.Make(); }
+
+fn Test() -> C { return ViaT(C); }
 
 // CHECK:STDOUT: --- method.carbon
 // CHECK:STDOUT:

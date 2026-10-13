@@ -27,12 +27,14 @@ class C {
   // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
   // CHECK:STDERR:          ^~~~
   // CHECK:STDERR:
-  fn Get(self) -> i32 { return 1; }
+  fn Get(unused self) -> i32 { return 1; }
 }
 
+//@dump-sem-ir-begin
 fn F[template T: HasGet](x: T) -> i32 { return x.(HasGet.Get)(); }
 
 fn Test(c: C) -> i32 { return F(c); }
+//@dump-sem-ir-end
 
 // --- fail_compound_unsatisfied.carbon
 library "[[@TEST_NAME]]";
@@ -69,3 +71,65 @@ fn Test(d: D) -> i32 {
   // CHECK:STDERR:
   return F(d);
 }
+
+// --- assoc_fn_compound.carbon
+library "[[@TEST_NAME]]";
+
+// An associated-function requirement through compound access: the base itself,
+// a type or a facet, is converted to the constraint, as for an interface's
+// non-instance member (fill round 2, review finding MAJOR-1).
+template constraint HasMake {
+  fn Make() -> Self;
+}
+
+class C {
+  fn Make() -> C { return {}; }
+}
+
+//@dump-sem-ir-begin
+fn ViaT(template T: HasMake) -> T { return T.(HasMake.Make)(); }
+
+fn ViaType() -> C { return C.(HasMake.Make)(); }
+
+fn ViaFacet() -> C { return (C as HasMake).(HasMake.Make)(); }
+
+fn Test() -> C { return ViaT(C); }
+//@dump-sem-ir-end
+
+// --- fail_assoc_fn_compound_unsatisfied.carbon
+library "[[@TEST_NAME]]";
+
+template constraint HasMake {
+  fn Make() -> Self;
+}
+
+class D {}
+
+fn Test() -> D {
+  return D.(HasMake.Make)();
+}
+
+// --- checked_generic_name.carbon
+library "[[@TEST_NAME]]";
+
+// A requirement named through its facet type has `Self := .Self` of the
+// constraint's facet type (D-SC-20): naming it in a checked generic attaches
+// nothing to that generic's eval block, and in a non-generic function the
+// compound access is not template-dependent (fill round 1, fix 2; fill round 2,
+// review findings F3 / F4).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+class C {
+  fn Get(unused self) -> i32 { return 1; }
+}
+
+//@dump-sem-ir-begin
+fn G[T: type](unused x: T) { HasGet.Get; }
+
+fn Test(c: C) -> i32 {
+  G(c);
+  return c.(HasGet.Get)();
+}
+//@dump-sem-ir-end

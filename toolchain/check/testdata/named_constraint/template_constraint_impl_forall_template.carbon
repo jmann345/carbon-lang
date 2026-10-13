@@ -12,9 +12,14 @@
 
 // p002200's migration-ladder step: a blanket impl over a `template constraint`
 // (fork decision F-010 / SC-1, fork/structural/plan.md D-SC-19, R-11: no
-// golden in tree used `impl forall [template` before this one). The interface
-// member is called qualified, `c.(NewF.DoF)()`, as p002200's ladder spells it:
-// the impl is not `extend`, so `DoF` is not a member name of the class.
+// golden in tree used `impl forall [template` before this one). `G` is the
+// ladder's "changed constraint" step as p002200 spells it,
+// `fn G[template T:! NewF](x: T) { x.(NewF.DoF)(); }`
+// (proposals/p002200-template-generics.md:617-634), with this toolchain's `:`
+// binding (R3), and `Test` is its "still works" call `G(y)`. The interface
+// member is called qualified because the impl is not `extend`, so `DoF` is not
+// a member name of the class; `TestQualified` makes that call outside a
+// template.
 
 // --- ladder.carbon
 library "[[@TEST_NAME]]";
@@ -32,14 +37,18 @@ class C {
   // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
   // CHECK:STDERR:          ^~~~
   // CHECK:STDERR:
-  fn Get(self) -> i32 { return 1; }
+  fn Get(unused self) -> i32 { return 1; }
 }
 
 impl forall [template T: HasGet] T as NewF {
   fn DoF(self) -> i32 { return self.Get(); }
 }
 
-fn Test(c: C) -> i32 { return c.(NewF.DoF)(); }
+fn G[template T: NewF](x: T) { x.(NewF.DoF)(); }
+
+fn Test(c: C) { G(c); }
+
+fn TestQualified(c: C) -> i32 { return c.(NewF.DoF)(); }
 
 // --- fail_ladder_unsatisfied.carbon
 library "[[@TEST_NAME]]";
@@ -58,7 +67,11 @@ impl forall [template T: HasGet] T as NewF {
   fn DoF(self) -> i32 { return self.Get(); }
 }
 
-fn Test(d: D) -> i32 {
+fn G[template T: NewF](x: T) { x.(NewF.DoF)(); }
+
+fn Test(d: D) { G(d); }
+
+fn TestQualified(d: D) -> i32 {
   // CHECK:STDERR: fail_ladder_unsatisfied.carbon:[[@LINE+4]]:10: error: cannot access member of interface `NewF` in type `D` that does not implement that interface [MissingImplInMemberAccess]
   // CHECK:STDERR:   return d.(NewF.DoF)();
   // CHECK:STDERR:          ^~~~~~~~~~~~

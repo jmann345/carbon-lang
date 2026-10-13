@@ -308,9 +308,6 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
   auto type_expr = HandleAnyBindingPatternType(
       context, node_id, node_kind, type_start_or_self_type, is_generic);
 
-  SemIR::ExprRegionId type_expr_region_id =
-      ConsumeExprRegionForPattern(context, type_expr.inst_id);
-
   // The name in a generic binding may be wrapped in `template`.
   bool is_template =
       context.node_stack()
@@ -321,7 +318,9 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
   // Fork (SC-1, fork/structural/plan.md D-SC-8(i)): a `template constraint`
   // can only constrain a `template` binding. A checked binding whose facet
   // type mentions one, directly or through a named constraint's `require`
-  // block, is diagnosed here; the pattern keeps its type, so nothing cascades.
+  // block, is diagnosed here and gets an error type, as an invalid binding
+  // type does, so no use of the binding cascades (fill round 2, review
+  // findings MAJOR-2 / F1).
   if (is_generic && !is_template) {
     if (auto constraint_id = FacetTypeHasStructuralRequirements(
             context, type_expr.type_component_id);
@@ -333,8 +332,14 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
       context.emitter().Emit(
           node_id, TemplateConstraintOnNonTemplateBinding,
           context.named_constraints().Get(constraint_id).name_id);
+      type_expr.inst_id = SemIR::ErrorInst::InstId;
+      type_expr.type_component_id = SemIR::ErrorInst::TypeId;
+      type_expr.type_component_inst_id = SemIR::ErrorInst::TypeInstId;
     }
   }
+
+  SemIR::ExprRegionId type_expr_region_id =
+      ConsumeExprRegionForPattern(context, type_expr.inst_id);
 
   // The name in a runtime binding may be wrapped in `runtime`; discard it.
   context.node_stack()

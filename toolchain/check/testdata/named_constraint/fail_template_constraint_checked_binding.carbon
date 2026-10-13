@@ -52,9 +52,9 @@ fn Bad[T: HasGet](x: T) {}
 // --- fail_implicit_binding_compound_use.carbon
 library "[[@TEST_NAME]]";
 
-// D-SC-6's cascade guard (review fold B7): after the binding is diagnosed, the
-// use of `x` converts to `HasGet` without a second diagnostic because `T`'s own
-// facet type already lists the requirement.
+// After the binding is diagnosed it has an error type (D-SC-8(i); fill round 2,
+// review findings MAJOR-2 / F1), so the use of `x` in `CallGet(x)` adds no
+// second diagnostic (review fold B7).
 template constraint HasGet {
   fn Get(self) -> i32;
 }
@@ -148,3 +148,66 @@ interface I {
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 impl forall [T: type] T as I {}
+
+// --- fail_implicit_binding_direct_use.carbon
+library "[[@TEST_NAME]]";
+
+// The direct-use sibling of `fail_implicit_binding_compound_use`: a member
+// access on the error-typed binding adds no second diagnostic either (fill
+// round 2, review finding F1).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+fn Bad[T: HasGet](x: T) -> i32 { return x.Get(); }
+
+// --- fail_implicit_binding_assoc_fn_use.carbon
+library "[[@TEST_NAME]]";
+
+// The associated-function sibling, through a template callee (fill round 2,
+// review finding MAJOR-2: this shape used to add a second, location-less
+// diagnostic inside `Use`).
+template constraint HasMake {
+  fn Make() -> Self;
+  fn Get(self) -> i32;
+}
+
+interface I {}
+
+fn Use[template T: HasMake](unused x: T) -> i32 { return T.Make().Get(); }
+
+fn Bad[T: HasMake & I](x: T) -> i32 { return Use(x); }
+
+// --- fail_wrap_checked_binding.carbon
+library "[[@TEST_NAME]]";
+
+// D-SC-8(i) through a plain constraint's `require impls` of a template
+// constraint, which fill round 1's fix 4 keeps (fill round 2, review finding
+// MINOR-4).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+constraint Wrap {
+  require impls HasGet;
+}
+
+fn Bad[T: Wrap](unused x: T) {}
+
+// --- fail_extend_require_in_interface_symbolic.carbon
+library "[[@TEST_NAME]]";
+
+// The `extend` sibling of `fail_require_in_interface_symbolic`: `x.Get()` finds
+// the requirement through `I`'s `extend require` with `Self := T`, a checked
+// generic binding that cannot satisfy the constraint (D-SC-6), and a
+// requirement is never itself called (D-SC-4; fill round 2, review finding
+// MINOR-2).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface I {
+  extend require impls HasGet;
+}
+
+fn G[T: I](x: T) -> i32 { return x.Get(); }

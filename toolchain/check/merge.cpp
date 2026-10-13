@@ -426,7 +426,13 @@ static auto CheckRedeclParams(Context& context, SemIR::LocId new_decl_loc_id,
                               bool check_syntax,
                               SemIR::SpecificId new_specific_id) -> bool {
   // This will often occur for empty params.
-  if (new_param_patterns_id == prev_param_patterns_id) {
+  //
+  // Fork (SC-1, fork/structural/plan.md D-SC-5(d)): with a `new_specific_id`,
+  // one present block read in two different specifics can differ, so it is
+  // compared below (fill round 2, review finding F2).
+  if (new_param_patterns_id == prev_param_patterns_id &&
+      (!new_param_patterns_id.has_value() || !new_specific_id.has_value() ||
+       new_specific_id == prev_specific_id)) {
     return true;
   }
 

@@ -28,7 +28,7 @@ class StructuralOnly {
   // CHECK:STDERR:   fn Get(self) -> i32 { return 42; }
   // CHECK:STDERR:          ^~~~
   // CHECK:STDERR:
-  fn Get(self) -> i32 { return 42; }
+  fn Get(unused self) -> i32 { return 42; }
 }
 
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
@@ -36,6 +36,25 @@ fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 fn Run() -> i32 {
   let s: StructuralOnly = {};
   return CallGet(s);
+}
+
+// --- compound_nongeneric.carbon
+library "[[@TEST_NAME]]";
+
+// Compound access through a requirement in a non-generic function is not
+// template-dependent and lowers to a call of the type's own method (D-SC-20;
+// fill round 1, fix 2; fill round 2, review finding F3).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+class C {
+  fn Get(unused self) -> i32 { return 42; }
+}
+
+fn Run() -> i32 {
+  let c: C = {};
+  return c.(HasGet.Get)();
 }
 
 // CHECK:STDOUT: ; ---

@@ -26,7 +26,7 @@ class C {
   // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
   // CHECK:STDERR:          ^~~~
   // CHECK:STDERR:
-  fn Get(self) -> i32 { return 1; }
+  fn Get(unused self) -> i32 { return 1; }
 }
 
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }

@@ -292,11 +292,21 @@ struct ProhibitedAccessInfo {
   bool is_parent_access;
 };
 
+// Fork (SC-1): returns whether a lookup has a self type, as in `x.F` or `T.F`,
+// rather than being a lookup directly into a facet type, as in `I.F`, or into a
+// non-lexical scope (the cases `GetSelfFacetForInterfaceFromLookupSelfType`
+// answers with the abstract `Self`).
+static auto HasLookupSelfType(Context& context,
+                              SemIR::ConstantId self_type_const_id) -> bool {
+  return self_type_const_id.has_value() &&
+         !context.constant_values().InstIs<SemIR::FacetType>(
+             self_type_const_id);
+}
+
 static auto GetSelfFacetForInterfaceFromLookupSelfType(
     Context& context, const SemIR::GenericId generic_with_self_id,
     SemIR::ConstantId self_type_const_id) -> SemIR::ConstantId {
-  if (self_type_const_id.has_value() &&
-      !context.constant_values().InstIs<SemIR::FacetType>(self_type_const_id)) {
+  if (HasLookupSelfType(context, self_type_const_id)) {
     // Extended name lookup into the type of `x`, such as in a member access
     // `x.F`. We can find a facet type extended scope from the type of `x`.
     return self_type_const_id;
@@ -315,27 +325,16 @@ static auto GetSelfFacetForInterfaceFromLookupSelfType(
   return context.constant_values().Get(self_specific_args.back());
 }
 
-// Returns whether a lookup has a self type, as in `x.F` or `T.F`, rather than
-// being a lookup directly into a facet type, as in `I.F`, or into a
-// non-lexical scope (the cases `GetSelfFacetForInterfaceFromLookupSelfType`
-// answers with the abstract `Self`).
-static auto HasLookupSelfType(Context& context,
-                              SemIR::ConstantId self_type_const_id) -> bool {
-  return self_type_const_id.has_value() &&
-         !context.constant_values().InstIs<SemIR::FacetType>(
-             self_type_const_id);
-}
-
-// Fork (SC-1, fork/structural/plan.md D-SC-4): the self facet for a lookup
-// with no self type into a `template constraint` (`HasGet.Get`) is `.Self` of
-// the constraint's facet type. A requirement `fn` is the one member of a
-// with-self scope whose value depends on `Self` (an interface's members are
-// `Self`-free associated entities), and the constraint's own `Self` binding is
-// a parameter of the constraint's generic: it must not reach the eval block of
-// a generic that names the requirement (eval.cpp, "does not belong to
-// generic"), and its template phase (D-SC-10) must not make the name
-// template-dependent. `.Self` depends on no generic parameter
-// (`DependsOnGenericParameter`, sem_ir/constant.h).
+// Fork (SC-1, fork/structural/plan.md D-SC-20, refining D-SC-10): the self
+// facet for a lookup with no self type into a `template constraint`
+// (`HasGet.Get`) is `.Self` of the constraint's facet type. A requirement `fn`
+// is the one member of a with-self scope whose value depends on `Self` (an
+// interface's members are `Self`-free associated entities), and the
+// constraint's own `Self` binding is a parameter of the constraint's generic:
+// it must not reach the eval block of a generic that names the requirement
+// (eval.cpp, "does not belong to generic"), and its template phase (D-SC-10)
+// must not make the name template-dependent. `.Self` depends on no generic
+// parameter (`DependsOnGenericParameter`, sem_ir/constant.h).
 static auto GetPeriodSelfForTemplateConstraintLookup(
     Context& context, SemIR::LocId loc_id,
     SemIR::NamedConstraintId named_constraint_id, SemIR::SpecificId specific_id)

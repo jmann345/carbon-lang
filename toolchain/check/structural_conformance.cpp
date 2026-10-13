@@ -79,31 +79,6 @@ static auto SelfIsTemplatePhase(Context& context, SemIR::ConstantId self)
          SemIR::ConstantDependence::Template;
 }
 
-// D-SC-6: a checked-symbolic self satisfies a structural requirement only if
-// its own facet type already lists that same requirement. This is a cascade
-// guard: D-SC-8(i) rejects such bindings, and the only input reaching here is
-// the error-recovery path after that diagnostic.
-static auto SelfFacetCarriesRequirement(
-    Context& context, SemIR::LocId loc_id, SemIR::ConstantId self,
-    const SemIR::IdentifiedFacetType::StructuralRequirement& requirement)
-    -> bool {
-  auto self_inst_id = context.constant_values().GetInstId(self);
-  auto self_type_id = context.insts().Get(self_inst_id).type_id();
-  if (!context.types().IsConstrainedFacetType(self_type_id)) {
-    return false;
-  }
-  auto identified_id = TryToIdentifyFacetType(
-      context, loc_id, self, context.types().GetTypeInstId(self_type_id),
-      /*allow_partially_identified=*/true);
-  if (!identified_id.has_value()) {
-    return false;
-  }
-  return llvm::is_contained(context.identified_facet_types()
-                                .Get(identified_id)
-                                .structural_requirements(),
-                            requirement);
-}
-
 // D-SC-5(a): the self type must be complete. In check mode with `diagnose`
 // this is an error with a context note; otherwise an incomplete type is
 // silently unsatisfied (R-7).
@@ -289,11 +264,13 @@ static auto ImportSingleCppOverloadCandidate(
 // (commit-2 review, MAJOR finding): a member of a generic class specific such
 // as `Box(i32).Get` declares `self: Box(T)`, and only the substituted
 // `Box(i32)` can equal the requirement's `Self := Box(i32)`. That specific is
-// of the member function's generic (`Box.Get` is generic over `T`), formed from
-// the arguments of its enclosing specific (`GetCallee`'s `Box(i32)`) as a call
-// forms it (call.cpp, `DeduceGenericCallArguments`); a member with compile-time
-// parameters of its own never matches, since a requirement has none (D-SC-2,
-// review fold A12).
+// of the member function's generic (`Box.Get` is generic over `T`), whose
+// bindings are its enclosing generic's followed by its own, so a member with no
+// compile-time parameters of its own has exactly its enclosing specific's
+// bindings and its specific is that specific copied to its generic
+// (`CopySpecificToGeneric`), as a call forms it (call.cpp,
+// `DeduceGenericCallArguments`). A member with parameters of its own never
+// matches, since a requirement has none (D-SC-2, review fold A12).
 static auto RequirementMatches(
     Context& context, SemIR::LocId loc_id,
     const SemIR::IdentifiedFacetType::StructuralRequirement& requirement,
@@ -302,17 +279,19 @@ static auto RequirementMatches(
     SemIR::SpecificId member_enclosing_specific_id) -> bool {
   auto member_specific_id = SemIR::SpecificId::None;
   if (member_fn.generic_id.has_value()) {
-    auto enclosing_args_id =
-        context.specifics().GetArgsOrEmpty(member_enclosing_specific_id);
+    auto num_enclosing_args = context.inst_blocks()
+                                  .Get(context.specifics().GetArgsOrEmpty(
+                                      member_enclosing_specific_id))
+                                  .size();
     auto num_bindings =
         context.inst_blocks()
             .Get(context.generics().Get(member_fn.generic_id).bindings_id)
             .size();
-    if (context.inst_blocks().Get(enclosing_args_id).size() != num_bindings) {
+    if (num_enclosing_args != num_bindings) {
       return false;
     }
-    member_specific_id =
-        MakeSpecific(context, loc_id, member_fn.generic_id, enclosing_args_id);
+    member_specific_id = CopySpecificToGeneric(
+        context, loc_id, member_enclosing_specific_id, member_fn.generic_id);
   }
 
   auto with_self_specific_id = MakeSpecificWithInnerSelf(
@@ -324,6 +303,14 @@ static auto RequirementMatches(
   return CheckFunctionTypeMatches(
       context, member_fn, requirement_fn, requirement_specific_id,
       /*check_syntax=*/false, /*diagnose=*/false, member_specific_id);
+}
+
+// The note at a requirement `fn`'s declaration.
+static auto NoteRequirementHere(DiagnosticBuilder& builder,
+                                SemIR::InstId requirement_decl_id) -> void {
+  CARBON_DIAGNOSTIC(StructuralRequirementHere, Note,
+                    "requirement declared here");
+  builder.Note(requirement_decl_id, StructuralRequirementHere);
 }
 
 // Explain mode: notes for one unsatisfied requirement of a concrete self. The
@@ -372,9 +359,7 @@ static auto NoteMemberFailure(DiagnosticBuilder& builder, SemIR::LocId loc_id,
       break;
     }
   }
-  CARBON_DIAGNOSTIC(StructuralRequirementHere, Note,
-                    "requirement declared here");
-  builder.Note(requirement_decl_id, StructuralRequirementHere);
+  NoteRequirementHere(builder, requirement_decl_id);
 }
 
 // Checks one requirement `fn` of `constraint` against the concrete self type.
@@ -435,6 +420,15 @@ static auto CheckRequirementFunction(
   if (!callee_fn) {
     return MemberFailureInfo{.failure = MemberFailure::Mismatch};
   }
+  // D-SC-5(b): a requirement `fn` is a declaration of a constraint, not a
+  // member of the type, so a lookup in the type that finds one -- through
+  // `alias Get = HasGet.Get`, an `extend impl` of an interface whose `extend
+  // require` names the constraint, or a facet type as the self -- finds no
+  // member (fill round 2, review findings F2 / MINOR-1).
+  if (GetStructuralRequirementConstraint(context, callee_fn->function_id)
+          .has_value()) {
+    return MemberFailureInfo{.failure = MemberFailure::Missing};
+  }
   const auto& member_fn = context.functions().Get(callee_fn->function_id);
   if (!RequirementMatches(context, loc_id, requirement, constraint,
                           requirement_fn, member_fn,
@@ -449,8 +443,9 @@ static auto CheckRequirementFunction(
 static auto CheckRequirements(Context& context, SemIR::LocId loc_id,
                               SemIR::IdentifiedFacetTypeId identified_id,
                               ReportMode mode) -> StructuralCheckResult {
-  // The identified facet type store can grow during the check (D-SC-6
-  // identifies the self's own facet type), so copy the requirements.
+  // The identified facet type store can grow during the check (member lookup
+  // can identify facet types, as the impl lookup behind an `alias` of an
+  // interface member does), so copy the requirements.
   llvm::SmallVector<SemIR::IdentifiedFacetType::StructuralRequirement>
       requirements(context.identified_facet_types()
                        .Get(identified_id)
@@ -473,11 +468,10 @@ static auto CheckRequirements(Context& context, SemIR::LocId loc_id,
       continue;
     }
 
-    // D-SC-6: a checked-symbolic self.
+    // D-SC-6: a checked-symbolic self never satisfies a structural
+    // requirement. (A checked binding whose own facet type names a template
+    // constraint has an error type, D-SC-8(i), so it is not such a self.)
     if (self.is_symbolic()) {
-      if (SelfFacetCarriesRequirement(context, loc_id, self, requirement)) {
-        continue;
-      }
       if (mode.explain) {
         CARBON_DIAGNOSTIC(StructuralRequirementNeedsConcreteType, Note,
                           "template constraint `{0}` can only be satisfied by "
@@ -616,6 +610,42 @@ auto FacetTypeHasStructuralRequirements(Context& context, SemIR::TypeId type_id)
     }
   }
   return SemIR::NamedConstraintId::None;
+}
+
+auto GetStructuralRequirementConstraint(Context& context,
+                                        SemIR::FunctionId function_id)
+    -> SemIR::NamedConstraintId {
+  const auto& function = context.functions().Get(function_id);
+  auto with_self_decl =
+      context.name_scopes().TryGetInstAs<SemIR::NamedConstraintWithSelfDecl>(
+          function.parent_scope_id);
+  if (!with_self_decl || !context.named_constraints()
+                              .Get(with_self_decl->named_constraint_id)
+                              .is_template) {
+    return SemIR::NamedConstraintId::None;
+  }
+  return with_self_decl->named_constraint_id;
+}
+
+auto CheckCalleeIsNotStructuralRequirement(Context& context,
+                                           SemIR::LocId loc_id,
+                                           SemIR::FunctionId function_id)
+    -> bool {
+  auto constraint_id = GetStructuralRequirementConstraint(context, function_id);
+  if (!constraint_id.has_value()) {
+    return true;
+  }
+  const auto& function = context.functions().Get(function_id);
+  CARBON_DIAGNOSTIC(StructuralRequirementCalled, Error,
+                    "requirement `{0}` of template constraint `{1}` can only "
+                    "be called through a type that satisfies it",
+                    SemIR::NameId, SemIR::NameId);
+  auto builder = context.emitter().Build(
+      loc_id, StructuralRequirementCalled, function.name_id,
+      context.named_constraints().Get(constraint_id).name_id);
+  NoteRequirementHere(builder, function.latest_decl_id());
+  builder.Emit();
+  return false;
 }
 
 }  // namespace Carbon::Check

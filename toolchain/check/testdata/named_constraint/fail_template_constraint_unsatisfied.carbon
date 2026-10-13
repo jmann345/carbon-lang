@@ -421,8 +421,9 @@ fn Test(d: D) {
 library "[[@TEST_NAME]]";
 
 // The generic-class sibling of `fail_wrong_return`: the member's return type
-// is read in its enclosing specific, `Box(bool).Get` returns `bool`, which does
-// not match the required `i32` (commit-2 review, MAJOR finding).
+// is read in its own specific, formed from the arguments of its enclosing
+// specific `Box(bool)`, so `Box(bool).Get` returns `bool`, which does not match
+// the required `i32` (commit-2 review, MAJOR finding).
 template constraint HasGet {
   fn Get(self) -> i32;
 }
@@ -448,4 +449,59 @@ fn Test(b: Box(bool)) -> i32 {
   // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   return CallGet(b);
+}
+
+// --- fail_own_params.carbon
+library "[[@TEST_NAME]]";
+
+// A member with compile-time parameters of its own never matches a requirement,
+// which has none (D-SC-2; fill round 2, review finding MINOR-4).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+class Box(T: type) {
+  fn Get[U: type](unused self, unused u: U) -> i32 { return 1; }
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+
+fn Test(b: Box(i32)) -> i32 {
+  return CallGet(b);
+}
+
+// --- fail_alias_requirement.carbon
+library "[[@TEST_NAME]]";
+
+// The requirement itself is not a member of the type: a class whose only `Get`
+// is an `alias` of the requirement does not satisfy the constraint (D-SC-5(b);
+// fill round 2, review finding F2).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+class C {
+  alias Get = HasGet.Get;
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+
+fn Test(c: C) -> i32 {
+  return CallGet(c);
+}
+
+// --- fail_facet_type_self.carbon
+library "[[@TEST_NAME]]";
+
+// A facet type is not a type with members: lookup into `HasCount` finds the
+// requirement `Count` itself, which does not satisfy the constraint (D-SC-5(b);
+// fill round 2, review finding MINOR-1).
+template constraint HasCount {
+  fn Count() -> i32;
+}
+
+fn F(template T: HasCount) -> i32 { return T.Count(); }
+
+fn Test() -> i32 {
+  return F(HasCount);
 }

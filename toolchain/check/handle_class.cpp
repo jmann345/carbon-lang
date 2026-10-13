@@ -381,6 +381,11 @@ auto HandleParseNode(Context& context, Parse::ClassDefinitionId node_id)
                          context.vtable_stack().PeekCurrentBlockContents(),
                          context.inst_block_stack().PeekCurrentBlockContents());
 
+  // Fork (SC-1, fork/structural/plan.md D-SC-8(iii)): now that the class is
+  // complete, check the `template constraint` requirements of its impls.
+  CheckDeferredRequireDeclsAtClassEnd(
+      context, context.inst_block_stack().PeekCurrentBlockContents());
+
   context.inst_block_stack().Pop();
   context.field_decls_stack().PopArray();
   context.vtable_stack().Pop();

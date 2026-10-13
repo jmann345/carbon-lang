@@ -21,6 +21,7 @@
 #include "toolchain/check/interface.h"
 #include "toolchain/check/name_lookup.h"
 #include "toolchain/check/period_self.h"
+#include "toolchain/check/structural_conformance.h"
 #include "toolchain/check/type.h"
 #include "toolchain/check/type_completion.h"
 #include "toolchain/diagnostics/emitter.h"
@@ -343,18 +344,14 @@ static auto GetStructuralRequirementRef(Context& context,
   if (!callee_fn) {
     return std::nullopt;
   }
-  const auto& function = context.functions().Get(callee_fn->function_id);
-  auto with_self_decl =
-      context.name_scopes().TryGetInstAs<SemIR::NamedConstraintWithSelfDecl>(
-          function.parent_scope_id);
-  if (!with_self_decl || !context.named_constraints()
-                              .Get(with_self_decl->named_constraint_id)
-                              .is_template) {
+  auto named_constraint_id =
+      GetStructuralRequirementConstraint(context, callee_fn->function_id);
+  if (!named_constraint_id.has_value()) {
     return std::nullopt;
   }
   return StructuralRequirementRef{
-      .function = &function,
-      .named_constraint_id = with_self_decl->named_constraint_id,
+      .function = &context.functions().Get(callee_fn->function_id),
+      .named_constraint_id = named_constraint_id,
       .with_self_specific_id = callee_fn->enclosing_specific_id};
 }
 
@@ -471,7 +468,11 @@ auto LookupMemberNameInTypeScopes(Context& context, SemIR::LocId loc_id,
   // lookup above). The self's conversion to the constraint already ran the
   // structural check. A symbolic self keeps the requirement: a template's
   // dependent access is an action replayed with the concrete self, and a
-  // checked binding of a template constraint is rejected (D-SC-8(i)).
+  // checked binding of a template constraint is rejected (D-SC-8(i)). A self
+  // whose own scopes find only the requirement again (its class extends an
+  // interface whose `extend require` names the constraint) also keeps it: such
+  // a self does not satisfy the constraint (`CheckRequirementFunction`), and a
+  // requirement is never called (`CheckCalleeIsNotStructuralRequirement`).
   auto requirement = GetStructuralRequirementRef(context, member_id);
   if (!requirement || !requirement->with_self_specific_id.has_value()) {
     return member_id;
@@ -912,9 +913,11 @@ auto GetAssociatedValue(Context& context, SemIR::LocId loc_id,
 }
 
 // Fork (SC-1, fork/structural/plan.md D-SC-4): if `member_id` names a
-// requirement `fn` of a `template constraint`, converts the base type to the
-// constraint's facet type (the structural check) and returns the base type's
-// own member of the requirement's name, to be instance-bound by the caller.
+// requirement `fn` of a `template constraint`, converts the requirement's self
+// type (the base's type for a method, the base itself for an associated
+// function) to the constraint's facet type (the structural check) and returns
+// that type's own member of the requirement's name, to be instance-bound by
+// the caller.
 // Returns `ErrorInst` if the conversion or the lookup failed (diagnosed when
 // `diagnose`; silent otherwise, R-7), and `None` if `member_id` is not such a
 // requirement.
@@ -950,31 +953,66 @@ static auto RedirectStructuralRequirementAccess(
   auto facet_type_id = GetNamedConstraintType(
       context, requirement->named_constraint_id, without_self_specific_id);
 
-  // The base type must satisfy the constraint: convert it, as a type, to the
+  // The requirement's self type must satisfy the constraint: convert it to the
   // constraint's facet type. When `diagnose`, the conversion diagnoses an
-  // unsatisfied requirement with its structural notes.
-  auto base_type_id = context.insts().Get(base_id).type_id();
-  auto unqualified_base_type_id =
-      context.types().GetUnqualifiedTypeAndQualifiers(base_type_id).first;
-  auto base_type_inst_id =
-      context.types().GetTypeInstId(unqualified_base_type_id);
-  if (ConvertToValueOfType(context, loc_id, base_type_inst_id, facet_type_id,
-                           diagnose) == SemIR::ErrorInst::InstId) {
-    return SemIR::ErrorInst::InstId;
+  // unsatisfied requirement with its structural notes. For a method, the self
+  // type is the type of the base (`x.(HasGet.Get)` with `x: C`), as Step 2a
+  // performs impl lookup in the base's type; for an associated function it is
+  // the base itself, a type or a facet (`C.(HasMake.Make)`, or `T` in
+  // `T.(HasMake.Make)` once a template's `T` is concrete), as Step 2b converts
+  // the base itself (`GetAssociatedValueImpl`; fill round 2, review finding
+  // MAJOR-1).
+  auto lookup_const_id = SemIR::ConstantId::None;
+  auto self_type_const_id = SemIR::ConstantId::None;
+  bool is_method = function.self_param_id.has_value();
+  if (is_method) {
+    auto base_type_id = context.insts().Get(base_id).type_id();
+    auto unqualified_base_type_id =
+        context.types().GetUnqualifiedTypeAndQualifiers(base_type_id).first;
+    if (ConvertToValueOfType(
+            context, loc_id,
+            context.types().GetTypeInstId(unqualified_base_type_id),
+            facet_type_id, diagnose) == SemIR::ErrorInst::InstId) {
+      return SemIR::ErrorInst::InstId;
+    }
+    lookup_const_id = context.types().GetConstantId(unqualified_base_type_id);
+    self_type_const_id = base_type_id.AsConstantId();
+  } else {
+    auto self_facet_id =
+        ConvertToValueOfType(context, loc_id, base_id, facet_type_id, diagnose);
+    if (self_facet_id == SemIR::ErrorInst::InstId) {
+      return SemIR::ErrorInst::InstId;
+    }
+    // A satisfied conversion of a non-dependent base gives a concrete facet;
+    // only a runtime facet value is not constant, as upstream's associated
+    // value lookup also leaves open.
+    auto self_facet_const_id = context.constant_values().Get(self_facet_id);
+    if (!self_facet_const_id.is_concrete()) {
+      if (diagnose) {
+        context.TODO(loc_id,
+                     "compound member access to a `template constraint` "
+                     "requirement through a runtime facet value");
+      }
+      return SemIR::ErrorInst::InstId;
+    }
+    lookup_const_id =
+        GetCanonicalQuerySelfForLookupImplWitness(context, self_facet_const_id);
+    if (lookup_const_id == SemIR::ErrorInst::ConstantId) {
+      return SemIR::ErrorInst::InstId;
+    }
+    self_type_const_id = lookup_const_id;
   }
 
   // The structural witness is the type's own member set: look the requirement's
-  // name up in the base type's scopes, as `x.Get` would, with the access
-  // context of that scope.
-  auto lookup_const_id =
-      context.types().GetConstantId(unqualified_base_type_id);
+  // name up in the self type's scopes, as `x.Get` or `C.Make` would, with the
+  // access context of that scope.
   llvm::SmallVector<LookupScope> lookup_scopes;
   if (!AppendLookupScopesForConstant(
-          context, loc_id, lookup_const_id, base_type_id.AsConstantId(),
+          context, loc_id, lookup_const_id, self_type_const_id,
           /*extended_scope=*/false, &lookup_scopes)) {
     // The conversion succeeded, so the type was a name scope with the member.
     CARBON_FATAL("Structurally satisfying type {0} is not a name scope",
-                 context.types().GetAsInst(unqualified_base_type_id));
+                 context.constant_values().GetInstId(lookup_const_id));
   }
   AccessInfo access_info = {
       .constant_id = lookup_const_id,
@@ -984,8 +1022,8 @@ static auto RedirectStructuralRequirementAccess(
   MemberLookupInfo info;
   auto redirected_id = LookupMemberNameInTypeScopes(
       context, loc_id, base_id, function.name_id, lookup_const_id,
-      lookup_scopes, /*lookup_in_type_of_base=*/true, /*required=*/diagnose,
-      access_info, diagnose, &info);
+      lookup_scopes, /*lookup_in_type_of_base=*/is_method,
+      /*required=*/diagnose, access_info, diagnose, &info);
   if (!info.found) {
     return SemIR::ErrorInst::InstId;
   }

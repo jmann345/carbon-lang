@@ -27,7 +27,7 @@ class C {
   // CHECK:STDERR:   fn Get(self) -> i32 { return 1; }
   // CHECK:STDERR:          ^~~~
   // CHECK:STDERR:
-  fn Get(self) -> i32 { return 1; }
+  fn Get(unused self) -> i32 { return 1; }
 }
 
 overload fn F[template T: HasGet](x: T) -> i32 { return x.Get(); }
@@ -49,7 +49,7 @@ class C {
   // CHECK:STDERR:   fn Get(self) -> i32 { return 42; }
   // CHECK:STDERR:          ^~~~
   // CHECK:STDERR:
-  fn Get(self) -> i32 { return 42; }
+  fn Get(unused self) -> i32 { return 42; }
 }
 
 class Lacking {
@@ -57,7 +57,7 @@ class Lacking {
   // CHECK:STDERR:   fn Other(self) -> i32 { return 0; }
   // CHECK:STDERR:            ^~~~
   // CHECK:STDERR:
-  fn Other(self) -> i32 { return 0; }
+  fn Other(unused self) -> i32 { return 0; }
 }
 
 overload fn Pick[template T: HasGet](x: T) -> i32 { return x.Get(); }

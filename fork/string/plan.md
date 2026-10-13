@@ -6,14 +6,22 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # String plan: byte-wise comparison, the owning `Core.StringBuf` and concatenation (ST-1, W-057)
 
-**Status:** rev 2 (2026-10-13), folding the two plan reviews of R29(c) (rev A:
-design soundness and toolchain correctness, REJECT with 2 BLOCKER, 2 MAJOR and 7
-MINOR findings; rev B: APPROVE-WITH-AMENDMENTS with 5 MAJOR and 7 MINOR). Every
-finding is folded in place, each amended sentence or row marked "(amended
-2026-10-13, review fold: A-n)" or "(... review fold: Bn)", and tabled in the
-[Review fold record](#review-fold-record-rev-2-2026-10-13); none is rejected.
-Because rev A REJECTed, rev 2 goes to a focused re-review before implementation
-(the fork/w012/plan.md and fork/upstream/plan.md precedent). Rev 1 was the
+**Status:** rev 3, 2026-10-13 -- SIGNED OFF FOR IMPLEMENTATION. Rev 3 folds
+the focused re-review of rev 2 (APPROVE-WITH-AMENDMENTS: both of rev A's
+BLOCKERs verified RESOLVED, one new MAJOR and three new MINOR findings), each
+amended sentence or row marked "(amended 2026-10-13, review fold: RR-N-1)"
+through "RR-N-4" and tabled in the
+[Review fold record (rev 3)](#review-fold-record-rev-3-2026-10-13); none is
+rejected, and the three reviews are listed in the [Sign-off](#sign-off). Rev 3
+changes no measured text: §2.1 to §2.4 are byte-identical to rev 2's, so every
+measurement below stands, and it adds one measurement, M-25. Rev 2 (381f79b92)
+folded the two plan reviews of R29(c) (rev A: design soundness and toolchain
+correctness, REJECT with 2 BLOCKER, 2 MAJOR and 7 MINOR findings; rev B:
+APPROVE-WITH-AMENDMENTS with 5 MAJOR and 7 MINOR), each amended sentence or row
+marked "(amended 2026-10-13, review fold: A-n)" or "(... review fold: Bn)" and
+tabled in the [Review fold record](#review-fold-record-rev-2-2026-10-13); none
+was rejected. Because rev A REJECTed, rev 2 went to that focused re-review (the
+fork/w012/plan.md and fork/upstream/plan.md precedent). Rev 1 was the
 planner's draft (bff5ba4e8). Nothing below is implemented. Branch
 `claude/carbon-fork-0-1-st`, cut from trunk 80a11e7f0, whose toolchain, core and
 docs sources are identical to 0bdce60a5 (the only later trunk commits are
@@ -37,18 +45,21 @@ docs/project/milestones.md:202 "String and related types used with string
 literals" (under "Types with important language support", :201). **Outcome this
 plan commits to:** row 77 PARTIAL → DONE, expected and not of record until a
 conformance run of record, with the 0.1 limits filed as W-160..W-167 (W-160 and
-W-167 under "Type system: User-defined types (classes)", W-166 under SAFE-1's
-loan checker W-148) and UA-2's W-126 named, under the precedent of row 82 (DONE
-with filed limits W-119/W-120) and distinguished from row 79's PARTIAL by
-D-ST-16 (amended 2026-10-13, review fold: A-4 / B3). The bullet's PASS rollup
-does not move (it already rolls up PASS with one SKIP), so the bullet count
-stays 48/56.
+W-167 under "Type system: User-defined types (classes)", whose row stays DONE
+with its access-control phrase amended for W-167 (§2.6; amended 2026-10-13,
+review fold: RR-N-3), and W-166 under SAFE-1's loan checker W-148) and UA-2's
+W-126 named, under the precedent of row 82 (DONE with filed limits W-119/W-120)
+and distinguished from row 79's PARTIAL by D-ST-16 (amended 2026-10-13, review
+fold: A-4 / B3). The bullet's PASS rollup does not move (it already rolls up
+PASS with one SKIP), so the bullet count stays 48/56.
 
 **Id allocation (recorded so no workstream collides):** the ledger maximum
 across trunk and every live branch was W-150 (SAFE-1, PR 53) when rev 1 was
 written; W-151 is reserved for SC-1's W-144 renumber, and is on the SC-1
 branch's ledger since 2f4ebbf6e (re-read for rev 2: trunk W-125, safe W-150, sc
-W-151, cmake W-133, ua2 W-127, ev W-125); W-152..W-159 are reserved for the
+W-151, cmake W-133, ua2 W-127, ev W-125; re-read for rev 3, unchanged, with
+no id at or above W-152 on any branch, and the reservation is trunk
+9d3ca60a3's fork/ORCHESTRATION.md:69-75); W-152..W-159 are reserved for the
 concurrent EV-1 workstream
 (fork/evaluator/plan.md on claude/carbon-fork-0-1-ev); ST-1's residues start at
 W-160 and this plan uses W-160..W-167 (amended 2026-10-13, review fold: A-1,
@@ -265,14 +276,16 @@ cd /home/user/carbon-st && XDG_CACHE_HOME=$S/cache-v5 python3 fork/conformance/r
     Rev 2, with the relinked file_test of M-19 (the §2.2 fix in), over the whole
     manifest and nothing excluded: `Ran 1942 tests`, 1940 passed, 2 failed
     (string_indexing.carbon and operators.carbon), no abort, 26 s wall.
-    operators.carbon autoupdated in the mirror needs THREE passes: pass 1
-    replaces the four `MissingImplInMemberAccess` lines of
+    operators.carbon autoupdated in the mirror converges on its THIRD run (the
+    runs are counted up to and including the one that prints only `.`; amended
+    2026-10-13, review fold: RR-N-4): run 1 replaces the four
+    `MissingImplInMemberAccess` lines of
     `fail_todo_import_plus_with_string_view_conversion` with
     `CppCallArgTypeNotSupported`, `ConversionFailure` and its note, and places
     the prelude-located `SemanticsTodo` (string.carbon:141:1) inside the
     PRECEDING split, `fail_todo_rewrite_equal`, whose `[[@LINE+4]]` becomes
-    `[[@LINE+8]]`; pass 2 renumbers that split's SemIR (`.loc23` to `.loc27`,
-    three lines); pass 3 prints `.`. Net +16/−5 lines, two upstream splits
+    `[[@LINE+8]]`; run 2 renumbers that split's SemIR (`.loc23` to `.loc27`,
+    three lines); run 3 prints `.`. Net +16/−5 lines, two upstream splits
     touched (amended 2026-10-13, review fold: A-5).
 -   **M-11 (new goldens).** The §2.3 sources, autoupdated in a scratch mirror at
     substitute manifest paths (the trunk file_test runs only files in its
@@ -286,9 +299,10 @@ cd /home/user/carbon-st && XDG_CACHE_HOME=$S/cache-v5 python3 fork/conformance/r
     (25), `interop/cpp/stdlib/string_buf.carbon` 332 (264),
     `interop/cpp/operators/fork_all_operands_conversion.carbon` 43 (4); lower
     `string/compare.carbon` 81 (62), `string/string_buf.carbon` 215 (176),
-    `string/subscript.carbon` 130 (110). Every one reaches its fixpoint in one
-    pass (the second prints `.`) and then passes in test mode. §4 quotes their
-    key lines (amended 2026-10-13, review fold: A-1, B2, B4).
+    `string/subscript.carbon` 130 (110). Every one converges on its second
+    autoupdate run (the first fills it, the second prints `.`; amended
+    2026-10-13, review fold: RR-N-4) and then passes in test mode. §4 quotes
+    their key lines (amended 2026-10-13, review fold: A-1, B2, B4).
 -   **M-12 (conformance).** The five §2.4 programs on the prototype: 5 PASS,
     including the DIFF check against the C++17 oracle; on the trunk install all
     five are COMPILE-FAIL (not vacuous). The full existing suite on the
@@ -414,6 +428,24 @@ cd /home/user/carbon-st && XDG_CACHE_HOME=$S/cache-v5 python3 fork/conformance/r
     `str` split pinned before ST-1; the filled file passes unchanged on the
     UNMODIFIED trunk file_test, so it pins only pre-existing behavior (amended
     2026-10-13, review fold: B4).
+-   **M-25 (the self-aliasing append and its rewrite; rev 3).** In the rev 3
+    fixer's scratch tree
+    (`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/st1-fix3`)
+    with rev 2's M-19 install copy, whose string.carbon is byte-identical to
+    §2.1, and a fresh `XDG_CACHE_HOME`; every line was predicted by hand before
+    the run. A probe `var s: Core.StringBuf = Core.StringBuf.Make("abc"); s +=
+    Core.StringBuf.Make(s);` then `var t: Core.StringBuf =
+    Core.StringBuf.Make("xy"); t += t;` prints `abcabc`, 6, 1 (for `s ==
+    "abcabc"`) and `xyxy`, and the §8.8 shim reports `malloc=6 free=5 bad=0`
+    (stdio's buffer and five blocks; the copy is freed at the end of its
+    statement). The six String programs extracted from §2.4 (string_basic from
+    the tree): runner 6/6 PASS, and exactly M-23's shim counts. With
+    string_buf_lifetime's `s += s;` and string_concat_loop's `big += big;`
+    rewritten to `s += Core.StringBuf.Make(s);` and `big +=
+    Core.StringBuf.Make(big);` (D-ST-14's W-148 remedy), EXPECT unchanged: 6/6
+    PASS, and the two counts become `malloc=9 free=8` and `malloc=30 free=29`
+    (one more block per rewritten append, every block freed, `bad=0`) (amended
+    2026-10-13, review fold: RR-N-1).
 
 Not measured, and why: an ST-1 toolchain built from this worktree by
 carbonbuild (M-19 is the trunk build with one object swapped, which is
@@ -520,37 +552,44 @@ discharge (§2.6) with these decisions by number.
     ImplicitAs(str)` (README.md:633-634's owning-to-view conversion) and the
     explicit `AsStr()`; there is no implicit `str` to `StringBuf` conversion,
     since README.md specifies only the other direction and an implicit
-    allocation would hide cost (pinned as `fail_view_to_owned`). A view is
-    valid until its `StringBuf` is destroyed or appended to, and a view of a
-    temporary `StringBuf` until the end of the full-expression that creates
-    it: F-013 D-SAFE-12's rule (values.md:168 leaves the question open
-    upstream). Today's toolchain destroys a declaration initializer's
-    temporaries at the end of the enclosing block (M-7); that is behavior,
-    not design, and no ST-1 program, golden or doc example relies on it
-    (D-ST-14 rewrites string_missing_ops line 26, and the `LetView` golden
-    binds a `var` owner). The conversion makes three natural shapes silent
-    use-after-frees today (M-21): a `-> str` function returning a `+` result
-    or a local `StringBuf`, a `str` field initialized from a temporary, and a
-    view held across `+=`; nothing diagnoses them until SAFE-1's stage 4 loan
-    checker (W-148), so they are filed as W-166, `StringBuf.AsStr` and
-    `StringBuf as ImplicitAs(str)`'s `Convert` join W-144's list of view
-    producers that need `bound self` (§2.6), and the docs and hand-off carry
-    the rule "a function returning `str` never returns a `+` result or a
-    local `StringBuf`; it returns `Core.StringBuf`" (amended 2026-10-13,
-    review fold: A-2, A-11 / B1). Break condition: W-148 lands and rejects
-    one of ST-1's own programs or goldens, or the toolchain's temporaries
-    become full-expression-scoped and a program's output changes; then the
-    construct is rewritten to bind a `var` owner, with its EXPECT unchanged.
+    allocation would hide cost (pinned as `fail_view_to_owned`). A view is valid
+    until its `StringBuf` is destroyed or appended to, and a view of a temporary
+    `StringBuf` until the end of the full-expression that creates it: F-013
+    D-SAFE-12's rule (values.md:168 leaves the question open upstream). Today's
+    toolchain destroys a declaration initializer's temporaries at the end of the
+    enclosing block (M-7); that is behavior, not design, and no ST-1 program,
+    golden or doc example relies on it (D-ST-14 rewrites string_missing_ops line
+    26, and the `LetView` golden binds a `var` owner). The conversion makes
+    three natural shapes silent use-after-frees today (M-21): a `-> str`
+    function returning a `+` result or a local `StringBuf`, a `str` field
+    initialized from a temporary, and a view held across `+=`; nothing diagnoses
+    them until SAFE-1's stage 4 loan checker (W-148), so they are filed as
+    W-166, `StringBuf.AsStr` and `StringBuf as ImplicitAs(str)`'s `Convert` join
+    W-144's list of view producers that need `bound self` (§2.6), together with
+    the interface declaration `ImplicitAs(Dest).Convert` that the `Convert` impl
+    needs it on (D-ST-11; amended 2026-10-13, review fold: RR-N-2), and the docs
+    and hand-off carry the rule "a function returning `str` never returns a `+`
+    result or a local `StringBuf`; it returns `Core.StringBuf`" (amended
+    2026-10-13, review fold: A-2, A-11 / B1). Break condition: W-148 lands and
+    rejects one of ST-1's own programs or goldens beyond the four expected trips
+    D-ST-14 names, or the toolchain's temporaries become full-expression-scoped
+    and a program's output changes; then a view of a temporary is rewritten to
+    bind a `var` owner and a self-aliasing append to append a copy, `s +=
+    Core.StringBuf.Make(s);`, each with its EXPECT unchanged (amended
+    2026-10-13, review fold: RR-N-1).
 -   **D-ST-7: concatenation.** `+` on each of the four operand pairs of `str`
     and `StringBuf` builds a new `StringBuf` (`where .Result = StringBuf`)
     through `StringBuf.Concat(a: str, b: str)`; `+=` with a `str` or `StringBuf`
     right operand appends by allocating the joined block, copying both parts,
-    freeing the old block and only then updating `self`, so `s += s` is sound
-    (M-3, M-4). No `char` or `CharLiteral` operand (`s + 'c'` stays "cannot
-    access member of interface `Core.AddWith(Core.CharLiteral)`"). Loops append
-    with `+=`: `s = s + t` leaks through M-5's assignment gap, which is W-160.
-    Break condition: upstream decides issue 457 against `+` for strings; the
-    four `AddWith` impls are deleted and `Concat` and `+=` remain.
+    freeing the old block and only then updating `self`, so `s += s` is
+    memory-safe today (M-3, M-4, M-25); it is not part of the design, since
+    F-013 rejects it once W-148 lands (§1.4), and `s += Core.StringBuf.Make(s);`
+    is the spelling that stays valid (amended 2026-10-13, review fold: RR-N-1).
+    No `char` or `CharLiteral` operand (`s + 'c'` stays "cannot access member of
+    interface `Core.AddWith(Core.CharLiteral)`"). Loops append with `+=`: `s = s +
+    t` leaks through M-5's assignment gap, which is W-160. Break condition:
+    upstream decides issue 457 against `+` for strings; the four `AddWith` impls
+    are deleted and `Concat` and `+=` remain.
 -   **D-ST-8: comparisons for all four operand pairs, as explicit impls.**
     `EqWith` and `OrderedWith` are implemented for (`str`, `str`), (`str`,
     `StringBuf`), (`StringBuf`, `str`) and (`StringBuf`, `StringBuf`), because
@@ -591,13 +630,25 @@ discharge (§2.6) with these decisions by number.
     does not enforce that rule (M-17) and the plan does not rely on its absence.
     The name is `Slice(T).UnsafeMake`'s (D-SL-11). SAFE-1's W-144 renames every
     `UnsafeMake` to `unsafe fn Make` when stage 1 lands; this one joins that
-    list, with `StringBuf.AsStr` and `StringBuf as ImplicitAs(str)`'s
-    `Convert` as view producers that need `bound self` (§2.6; amended
-    2026-10-13, review fold: A-2 / B1). The toolchain's hole lets user code
-    forge a `StringBuf` (M-17), which is filed as W-167, not used (amended
-    2026-10-13, review fold: A-3). Break condition: `friend` is implemented
-    (check/handle_class.cpp:364-371 is a TODO today); then `UnsafeMake` becomes
-    private to `String` and `StringBuf`.
+    list, with `StringBuf.AsStr` and `StringBuf as ImplicitAs(str)`'s `Convert`
+    as view producers that need `bound self` (§2.6; amended 2026-10-13, review
+    fold: A-2 / B1). Because an impl may drop but not add `bound` (F-013 T5(e),
+    temporal_safety.md:507-512 on the safe branch), the `Convert` impl can carry
+    `bound self` only if the interface declaration `ImplicitAs(Dest).Convert`
+    (core/prelude/operators/as.carbon:23) carries it, as SP3 has `IndexWith.At`
+    and `Copy.Op` carry it; so that declaration joins the list, with
+    `As(Dest).Convert` (:18) and `UnsafeAs(Dest).Convert` (:13), through which
+    the workaround blankets at :27-34 forward `b as str`. Without it the
+    converted view reads as free under T5(a), and W-148 would not flag `fn
+    Join(a: str, b: str) -> str { return a + b; }`. SAFE-1's SP3 has the same
+    gap for `Slice(T) as ImplicitAs(Slice(const T))`'s `Convert`, and T2's
+    clause that every `ImplicitAs` impl is not a loan boundary must read an
+    owner-to-view `Convert` as a `bound self` producer; both are items of the
+    SAFE-1 reconciliation (§2.6) (amended 2026-10-13, review fold: RR-N-2). The
+    toolchain's hole lets user code forge a `StringBuf` (M-17), which is filed
+    as W-167, not used (amended 2026-10-13, review fold: A-3). Break condition:
+    `friend` is implemented (check/handle_class.cpp:364-371 is a TODO today);
+    then `UnsafeMake` becomes private to `String` and `StringBuf`.
 -   **D-ST-12: C++ interop.** A `StringBuf` reaches a `std::string_view`
     parameter through its view, `Cpp.F(s.AsStr())`, because C++ overload
     resolution does not see Carbon `ImplicitAs` conversions (M-9). Passing it
@@ -630,11 +681,28 @@ discharge (§2.6) with these decisions by number.
     fixes. Names are kept (string_missing_ops stays string_missing_ops: the
     scoreboard identity matters more than the name). Break condition: one of
     the six String programs stops passing on a toolchain that contains ST-1 —
-    in particular when W-148's checker lands, which no ST-1 program should
-    trip, since none binds a view of a temporary past its full-expression;
-    the program's EXPECT is then re-derived from the design, never from the
-    run (R16(d)), and the cause fixed or filed before the program changes
-    (amended 2026-10-13, review fold: B9).
+    in particular when W-148's checker lands; the program's EXPECT is then
+    re-derived from the design, never from the run (R16(d)), and the cause
+    fixed or filed before the program changes (amended 2026-10-13, review
+    fold: B9). No ST-1 program binds a view of a temporary past its
+    full-expression, but four lines are expected W-148 trips: the
+    self-aliasing appends string_buf_lifetime's `s += s;`,
+    string_concat_loop's `big += big;` and the check golden append.carbon's
+    `b += b;` (`StrictSharedBorrowInvalidated` under F-013 T4 with M8,
+    §1.4), and view.carbon's `fn View(b: Core.StringBuf) -> str { return b;
+    }`, which is expected to need `bound b` under T5(a) and SP3's audit rule.
+    They stay as written in ST-1: unlike line 26, which relied on an
+    undesigned lifetime and could not discriminate, a self-append is
+    memory-safe under any lifetime rule, it is the suite's only exercise of
+    D-ST-7's read-before-free order, and its rejection is not observable
+    before W-148. When W-148 lands, the two program lines become `s +=
+    Core.StringBuf.Make(s);` and `big += Core.StringBuf.Make(big);`, EXPECT
+    unchanged and disclosed in the R6 template (measured now, M-25: both
+    still PASS, and §8.8's counts become 9/8 and 30/29); the commit that
+    lands W-148, which refills every golden its checker changes, rewrites
+    append.carbon's line the same way, moves `b += b;` into a `fail_` split
+    that pins the new diagnostic, and adds `bound b` to `View` (amended
+    2026-10-13, review fold: RR-N-1).
 -   **D-ST-15: docs.** A new normative page docs/design/strings.md, marked as a
     dated fork amendment, plus dated blockquote amendments (never rewrites) at
     README.md "String types", arithmetic.md "Strings" and the interop README's
@@ -647,17 +715,16 @@ discharge (§2.6) with these decisions by number.
     approved-design ... String with comparison/ownership story"
     (gap-analysis.md:241-244), is met under R29(a): F-014 is a decided fork
     design, recorded for after-the-fact veto as F-012 is for slices, whose
-    comparison and ownership story, limits included, is
-    docs/design/strings.md. Row 79 stays PARTIAL because a design-specified
-    operation OF ITS OWN TYPE is missing (write-through indexing,
-    indexing.md's `IndirectIndexWith`, W-109); ST-1 leaves no
-    design-specified string operation missing (README.md:627-634 specifies
-    the two types and the owning-to-view conversion), and every open item is
-    either a language-wide mechanism filed under its own bullet or a limit
-    beyond the bullet's text. Named in the row: assignment does not destroy
-    the overwritten value (W-160, refiled under "Type system: User-defined
-    types (classes)": handle_operator.cpp:119-120, every class with a
-    `Destroy`, `Core.Buf` included); a class that declares `Destroy` does not
+    comparison and ownership story, limits included, is docs/design/strings.md.
+    Row 79 stays PARTIAL because a design-specified operation OF ITS OWN TYPE is
+    missing (write-through indexing, indexing.md's `IndirectIndexWith`, W-109);
+    ST-1 leaves no design-specified string operation missing (README.md:627-634
+    specifies the two types and the owning-to-view conversion), and every open
+    item is either a language-wide mechanism filed under its own bullet or a
+    limit beyond the bullet's text. Named in the row: assignment does not
+    destroy the overwritten value (W-160, refiled under "Type system:
+    User-defined types (classes)": handle_operator.cpp:119-120, every class with
+    a `Destroy`, `Core.Buf` included); a class that declares `Destroy` does not
     destroy a `StringBuf` field (UA-2's W-126); a `str` view can outlive its
     owner (W-166, SAFE-1's loan checker W-148); struct-literal construction
     bypasses private-field access, so a forged `StringBuf` can free a non-heap
@@ -670,13 +737,15 @@ discharge (§2.6) with these decisions by number.
     in the builtin's lowering; it is not part of SAFE-1's W-146, whose title
     covers arrays and division only, and is linked to it as related);
     compile-time string comparison (W-163). W-164 (M-15) and W-165 (M-20) are
-    filed under the generics and string-mapping bullets; row 51's and row
-    81's text does not change (amended 2026-10-13, review fold: A-4 / B3,
-    A-10, B12). Break condition: a program that uses only the documented API
-    (no `=` on a `Core.StringBuf`) leaks or double-frees under the §8.8 shim
-    check, or a design-specified string operation is shown missing; then the
-    row stays PARTIAL with it named (amended 2026-10-13, review fold: B3 /
-    B9).
+    filed under the generics and string-mapping bullets; row 51's and row 81's
+    text does not change (amended 2026-10-13, review fold: A-4 / B3, A-10, B12);
+    row 41 ("Type system: User-defined types (classes)") stays DONE, its "access
+    control fully checked" amended to name W-167 (§2.6; amended 2026-10-13,
+    review fold: RR-N-3). Break condition: a program that uses only the
+    documented API (no `=` on a `Core.StringBuf`) leaks or double-frees under
+    the §8.8 shim check, or a design-specified string operation is shown
+    missing; then the row stays PARTIAL with it named (amended 2026-10-13,
+    review fold: B3 / B9).
 
 ## §1 Design
 
@@ -767,11 +836,22 @@ var s: Core.StringBuf = piece + piece + piece;  // a temporary, then s
 s += "!";  // one new block; the previous one is freed
 ```
 
-The append is written so that its right operand may view `self` (`s += s`, or `s
-+= v` where `v` is `s.AsStr()`): `JoinBytes` reads both parts into the new block
-before `HeapFree` releases the old one. Sizes add in `i64`; a sum past the
-address space reaches `"heap.allocate"` as an impossible count and fails-stop as
-an allocation failure.
+The append reads both parts into the new block (`JoinBytes`) before `HeapFree`
+releases the old one, so a right operand that is or views `self` (`s += s`, or
+`s += v` where `v` is `s.AsStr()`) is memory-safe and accepted today (M-3,
+M-25). It is not part of the design. Under F-013, which ST-1 adopts as governing
+(D-ST-6), `s += s` binds the by-value non-`Plain` parameter `other` of
+`AddAssignWith(StringBuf).Op` to the owner `s`, a shared loan on `s` for the
+call (T2's value-binding clause, mutation_safety.md M8), and the `ref self` call
+is an invalidating operation on `s` (M3(d)), so T4 makes it
+`StrictSharedBorrowInvalidated` once W-148's loan checker lands, as Rust rejects
+`s.push_str(&s)`; `s += v` is rejected the same way once `AsStr` and `Convert`
+carry `bound self` (W-144, D-ST-11). The spelling that stays valid appends a
+copy, `s += Core.StringBuf.Make(s);` (M-25: the same bytes, one more block), and
+D-ST-14 names the three existing self-appends as expected W-148 trips (amended
+2026-10-13, review fold: RR-N-1). Sizes add in `i64`; a sum past the address
+space reaches `"heap.allocate"` as an impossible count and fails-stop as an
+allocation failure.
 
 ### §1.5 Subscripts
 
@@ -1580,12 +1660,12 @@ measured +79/-33 CHECK lines) and
 toolchain/check/testdata/interop/cpp/operators/operators.carbon, splits
 `fail_todo_import_plus_with_string_view_conversion.carbon` (D-ST-7 plus D-ST-12)
 and `fail_todo_rewrite_equal.carbon` (which receives the prelude-located
-`SemanticsTodo` and a `.loc` renumbering; measured in M-10, three autoupdate
-passes; amended 2026-10-13, review fold: A-5). The first split keeps its name:
-it still fails, and its TODO (C++ operators found through conversions of
-Carbon operands) is still open upstream, but this split no longer exercises
-it: `s1 + s2` on `str` now has a Carbon meaning, so the conversion of its
-result is what fails. The TODO stays pinned by the new fork-owned
+`SemanticsTodo` and a `.loc` renumbering; measured in M-10, converging on the
+third autoupdate run; amended 2026-10-13, review fold: A-5, RR-N-4). The first
+split keeps its name: it still fails, and its TODO (C++ operators found through
+conversions of Carbon operands) is still open upstream, but this split no longer
+exercises it: `s1 + s2` on `str` now has a Carbon meaning, so the conversion of
+its result is what fails. The TODO stays pinned by the new fork-owned
 fork_all_operands_conversion.carbon with `bool` operands (M-24), and the
 divergence register of §2.6 records that the upstream split's subject changed
 (amended 2026-10-13, review fold: A-5 / B4).
@@ -1959,27 +2039,31 @@ run) and `--self-test` (R7).
 -   **docs/design/strings.md (new, normative).** Status line "Fork design
     (F-014, <date>): the string types as implemented; toolchain status: ST-1
     landed <date>" (amended 2026-10-13, review fold: B12). Sections: Overview
-    (the two types, §1.1's table, the `str` keyword and the
-    `Core.String`/`Core.Str` naming note with p006177:147-154); Comparison
-    (§1.2, with the unsigned-byte order and its `char_traits<char>` parity);
-    Concatenation (§1.4); Ownership and lifetime (§1.3, including `returned
-    var`, and the view rule of D-ST-6 stated as the design: a view of a
-    temporary is valid until the end of its full-expression, F-013 D-SAFE-12,
+    (the two types, §1.1's table, the `str` keyword and the `Core.String`/`Core.Str`
+    naming note with p006177:147-154); Comparison (§1.2, with the unsigned-byte
+    order and its `char_traits<char>` parity); Concatenation (§1.4, with the
+    self-aliasing append `s += s` stated as accepted and memory-safe today and
+    rejected by F-013's T4 with M8 once W-148 lands, and `s +=
+    Core.StringBuf.Make(s);` as the spelling that stays valid; amended
+    2026-10-13, review fold: RR-N-1); Ownership and lifetime (§1.3, including
+    `returned var`, and the view rule of D-ST-6 stated as the design: a view of
+    a temporary is valid until the end of its full-expression, F-013 D-SAFE-12,
     with values.md:168 cited as upstream's open question; the block-scoped
-    destruction of M-7 is described as today's toolchain behavior that
-    programs must not rely on, and the rule "a function returning `str` never
-    returns a `+` result or a local `StringBuf`; it returns `Core.StringBuf`"
-    is stated with M-21's `Join` as its example; amended 2026-10-13, review
-    fold: A-2, A-11 / B1); Subscripts (§1.5); Interoperability (§1.6); 0.1
-    limits (W-160..W-163 and W-165..W-167 by title, each with its break
-    condition, plus UA-2's W-126 and UA-1's W-122 by reference; W-167 is
-    stated as applying to `Core.Buf` too; amended 2026-10-13, review fold:
-    A-2, A-3, A-10); Alternatives considered (§7's A-1..A-8); References
-    (README.md String types, string_literals.md, comparison_operators.md,
-    arithmetic.md, p006177, milestones.md:202). Every API line in it is copied
-    from §2.1 and diffed against the landed prelude (R27); every example in it
-    binds a `var` owner, never a `str` view of a temporary (amended
-    2026-10-13, review fold: A-11).
+    destruction of M-7 is described as today's toolchain behavior that programs
+    must not rely on, and the rule "a function returning `str` never returns a
+    `+` result or a local `StringBuf`; it returns `Core.StringBuf`" is stated
+    with M-21's `Join` as its example; amended 2026-10-13, review fold: A-2,
+    A-11 / B1); Subscripts (§1.5); Interoperability (§1.6); 0.1 limits
+    (W-160..W-163 and W-165..W-167 by title, each with its break condition, plus
+    UA-2's W-126 and UA-1's W-122 by reference; W-167 is stated as applying to
+    `Core.Buf` too; amended 2026-10-13, review fold: A-2, A-3, A-10);
+    Alternatives considered (§7's A-1..A-8); References (README.md String types,
+    string_literals.md, comparison_operators.md, arithmetic.md, p006177,
+    milestones.md:202). Every API line in it is copied from §2.1 and diffed
+    against the landed prelude (R27); every example in it binds a `var` owner,
+    never a `str` view of a temporary (amended 2026-10-13, review fold: A-11),
+    and appends a copy of a string to itself, never `s += s` (amended
+    2026-10-13, review fold: RR-N-1).
 -   **docs/design/README.md**, after :634 ("There is an implicit conversion ...
     from `String` to `StringView`."): a blockquote "**Fork amendment
     (<date>, F-014).** In the fork the view is `str`, the prelude class
@@ -2059,6 +2143,13 @@ run) and `--self-test` (R7).
     for the `unsafe fn Make` rename), at their landed string.carbon lines; if
     PR 53 has not landed, the same three go into the ORCHESTRATION note of the
     SAFE-1 reconciliation below (amended 2026-10-13, review fold: A-2 / B1).
+    It also gains the interface declaration `ImplicitAs(Dest).Convert`
+    (core/prelude/operators/as.carbon:23), with `As(Dest).Convert` (:18) and
+    `UnsafeAs(Dest).Convert` (:13) for the workaround blankets at :27-34, as
+    needing `bound self` beside `IndexWith.At` and `Copy.Op`: by F-013 T5(e)
+    an impl may drop but not add `bound`, so without it the `Convert` impl
+    cannot keep the loan (D-ST-11; the same fallback applies if PR 53 has not
+    landed; amended 2026-10-13, review fold: RR-N-2).
 -   **fork/gap-analysis.md:** row 77 (re-read its line) → DONE with the text
     below; the header counts as a DELTA (DONE +1, PARTIAL −1) applied to
     whatever the header reads at rebase, and its scoreboard sentence written
@@ -2104,6 +2195,15 @@ run) and `--self-test` (R7).
     dispatch date (Actions disabled)." (amended 2026-10-13, review fold: A-2,
     A-3, A-4 / B3, A-10, B5). If UA-2 has not landed at ST-1's rebase, W-126
     is named by its title without the id and is not re-filed.
+-   **Row 41** ("Type system: User-defined types (classes)"; re-read its
+    line, :41 here and :42 to :45 on the cmake, safe and sc branches, R7)
+    stays DONE, and its text "access control fully checked and lowered"
+    becomes "access control checked for member access (struct-literal
+    construction is not: W-167, classes.md:2156-2159) and lowered", because
+    W-167 falsifies "fully checked". W-160 is listed in the ledger only, as
+    W-164 and W-165 are for rows 51 and 81: the row's text makes no claim
+    about assignment. No header count changes (amended 2026-10-13, review
+    fold: RR-N-3).
 -   **fork/decision-log.md:** a new entry immediately above the newest landed
     entry, which follows "### Full autonomy and the throughput protocol
     (2026-09-27)" (:2843-2862): today that is :2863 "### SL-2: std::span ↔
@@ -2151,7 +2251,24 @@ run) and `--self-test` (R7).
     read through `Core.String` is not one of SP2's checked shapes; (3)
     initialization_safety.md:103-104's `types/string.carbon :28` becomes `:34`;
     (4) the W-144 evidence item above; (5) strings.md states D-SAFE-12 as the
-    view rule (§2.5).
+    view rule (§2.5); (6) dated amendments to spatial_safety.md SP3 (:159-201)
+    and to temporal_safety.md T2's "Copies preserve loans" paragraph
+    (:264-273): the interface declaration `ImplicitAs(Dest).Convert`
+    (core/prelude/operators/as.carbon:23), with `As(Dest).Convert` and
+    `UnsafeAs(Dest).Convert` for the workaround blankets at :27-34, carries
+    `bound self` per T5(e), beside `IndexWith.At` and `Copy.Op`, because an
+    owner-to-view `Convert` (`Slice(T) as ImplicitAs(Slice(const T))`'s at
+    slice.carbon:80-84, `StringBuf as ImplicitAs(str)`'s) creates a loan
+    rather than preserving one, so T2's "every `ImplicitAs` impl is not a
+    loan boundary" reads such a `Convert` as a `bound self` producer (amended
+    2026-10-13, review fold: RR-N-2); (7) under T4 (temporal_safety.md:303-317),
+    a dated ST-1 example: "`s += s;` on a `Core.StringBuf` is
+    `StrictSharedBorrowInvalidated`: the by-value `other` is a shared loan on
+    `s` (M8) and the `ref self` call invalidates `s` (M3(d)); it is
+    memory-safe in today's toolchain, and the fork's spelling is `s +=
+    Core.StringBuf.Make(s);`", and, if W-148 is on trunk at discharge, its
+    notes name D-ST-14's four expected trips (amended 2026-10-13, review fold:
+    RR-N-1).
 -   **Cross-branch re-cites, conditional:** if SAFE-1 (PR 53) has landed first,
     its citations of string.carbon:16-27 and :16-28
     (docs/design/safety/mutation_safety.md:312, rust_interop.md:202,
@@ -2162,10 +2279,12 @@ run) and `--self-test` (R7).
 
 ## §3 Commit structure (one PR, "ST-1: str comparison, Core.StringBuf and concatenation", R29(b))
 
-1.  **Plan.** Rev 1 (bff5ba4e8), then rev 2 (this commit) folding the two plan
+1.  **Plan.** Rev 1 (bff5ba4e8); rev 2 (381f79b92) folding the two plan
     reviews with each amendment marked "(amended 2026-10-13, review fold: A-n)"
-    or "(... review fold: Bn)" and the Review fold record; a focused re-review
-    of rev 2 follows, because rev A REJECTed, and any rev 3 is a new commit.
+    or "(... review fold: Bn)" and the rev 2 Review fold record; rev 3 (this
+    commit) folding the focused re-review of rev 2, marked "(... review fold:
+    RR-N-n)", with the rev 3 fold record and the Sign-off. Each revision is a
+    new commit.
 2.  **Prelude and toolchain, CHECK-free.** core/prelude/types/string.carbon
     (§2.1), toolchain/check/cpp/export.cpp (§2.2), the eight golden sources of
     §2.3 with `// AUTOUPDATE` and no CHECK lines. The prelude and the null check
@@ -2175,13 +2294,15 @@ run) and `--self-test` (R7).
     two refills), nothing else, and no abort (M-10's rev 2 run; amended
     2026-10-13, review fold: A-1, B4).
 3.  **Fill.** Only the output of `autoupdate.sh` run to its fixpoint BEFORE the
-    commit is made (R26): the eight new goldens filled and the two refilled.
-    The fixpoint is reached when a pass prints only `.`; operators.carbon needs
-    three passes (M-10: the second renumbers `.loc` lines only, the third
-    prints `.`), every other file one. Any pass after the first that changes
-    more than `.loc` numbers is a stop (R26). Message "Autoupdate testdata
-    goldens on the container arbiter" (the UA-2 precedent, f96fe8a7a)
-    (amended 2026-10-13, review fold: A-5, B10).
+    commit is made (R26): the eight new goldens filled and the two refilled. The
+    fixpoint is reached when a run of `autoupdate.sh` prints only `.`, and runs
+    are counted up to and including that one: operators.carbon converges on its
+    third run (M-10: the first refills it, the second renumbers `.loc` lines
+    only, the third prints `.`), every other golden on its second (the first
+    fills it, the second prints `.`). Any run after the first that changes more
+    than `.loc` numbers is a stop (R26) (amended 2026-10-13, review fold:
+    RR-N-4). Message "Autoupdate testdata goldens on the container arbiter" (the
+    UA-2 precedent, f96fe8a7a) (amended 2026-10-13, review fold: A-5, B10).
 4.  **Conformance and docs.** The five programs and the oracle of §2.4
     (string_missing_ops with its line 26 repair, disclosed in this commit's
     message in the R6 template's words), string_basic.carbon's header, the
@@ -2228,7 +2349,7 @@ review fold: A-1 / B4).
 | lower/testdata/string/string_buf.carbon | `Concat`, `Chain`, `Field` | `call void @"_COp.String.Core:AddWith.<hash>.Core"(ptr %s.var, ptr %a, ptr %b)`; `call void @"_COp.StringBuf.Core:AddAssignWith.<hash>.Core"(ptr %s.var, ptr @String.val...)`; at exit `call void @_CSelfDestruct.Destroy.Core.<hash>(ptr %s.var)`, whose `linkonce_odr` body calls `@"_COp.StringBuf.Core:Destroy.Core"(ptr %self)` then the field walk (`ret void`); in `Chain` the intermediate `%.loc27_29.1.temp` is destroyed at the function's end, just before `%s.var` (M-7; the header comment now says so, A-6 / B6); in `Field` (rev 2) `%h.var` is destroyed by `@"_CSelfDestruct.<hash>:core.Destroy.Core"`, whose `weak_odr` `_CSubobjectDestroy` calls `@_CSelfDestruct.Destroy.Core.<hash>(ptr %...text)`, the `StringBuf` field's declared `Destroy` (amended 2026-10-13, review fold: A-6 / B6, B2) | measured |
 | lower/testdata/string/subscript.carbon | `Literal`, `Unsigned`, `Signed` | `Literal`: `getelementptr inbounds i8, ptr ..., i64 0`; `Unsigned`: `call i64 @"_CConvert.UInt.<hash>.Core:ImplicitAs..."(i8 %i)`, whose body ends in `zext i8 ... to i64`, feeding the `getelementptr`; `Signed`: `getelementptr inbounds i8, ptr ..., i64 %i` | measured |
 | check/testdata/operators/overloaded/string_indexing.carbon (refill) | `test_string_indexing.carbon` | two functions `@str.as.IndexWith.impl.At.1`/`.2` (the `i64` impl function and its thunk), the literal's `%Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %i64`, the call results still `[concrete = constants.%int_84]` and `%int_116`; +79/−33 CHECK lines; the `fail_` splits' diagnostics unchanged | measured |
-| check/testdata/interop/cpp/operators/operators.carbon (refill of two splits) | `fail_todo_import_plus_with_string_view_conversion.carbon` and `fail_todo_rewrite_equal.carbon` | in the first, the four `MissingImplInMemberAccess` lines for `Core.AddWith(str)` are replaced by `` call argument of type `Core.StringBuf` is not supported [CppCallArgTypeNotSupported] `` at column 46 (`[[@LINE+11]]`), then `` cannot implicitly convert expression of type `Core.StringBuf` to `Cpp.StringViewConvertibleC` [ConversionFailure] `` and its `` type `Core.StringBuf` does not implement interface `Core.ImplicitAs(Cpp.StringViewConvertibleC)` `` note; the prelude-located `SemanticsTodo` of the `fail_buf_arg` row lands in the PRECEDING split, `fail_todo_rewrite_equal`, whose `[[@LINE+4]]` becomes `[[@LINE+8]]`, and the second autoupdate pass renumbers three of its SemIR lines (`.loc23` to `.loc27`); the third pass prints `.`; +16/−5 lines in all; every other split unchanged | measured (M-10 rev 2; amended 2026-10-13, review fold: A-5 / B4) |
+| check/testdata/interop/cpp/operators/operators.carbon (refill of two splits) | `fail_todo_import_plus_with_string_view_conversion.carbon` and `fail_todo_rewrite_equal.carbon` | in the first, the four `MissingImplInMemberAccess` lines for `Core.AddWith(str)` are replaced by `` call argument of type `Core.StringBuf` is not supported [CppCallArgTypeNotSupported] `` at column 46 (`[[@LINE+11]]`), then `` cannot implicitly convert expression of type `Core.StringBuf` to `Cpp.StringViewConvertibleC` [ConversionFailure] `` and its `` type `Core.StringBuf` does not implement interface `Core.ImplicitAs(Cpp.StringViewConvertibleC)` `` note; the prelude-located `SemanticsTodo` of the `fail_buf_arg` row lands in the PRECEDING split, `fail_todo_rewrite_equal`, whose `[[@LINE+4]]` becomes `[[@LINE+8]]`, and the second autoupdate run renumbers three of its SemIR lines (`.loc23` to `.loc27`); the third run prints `.`; +16/−5 lines in all; every other split unchanged | measured (M-10 rev 2; amended 2026-10-13, review fold: A-5 / B4, RR-N-4) |
 
 Falsifiers: any crash; any golden outside this table in the fill's diff; a
 `fail_` split that compiles; the `StringAt` values other than 84 and 116; any
@@ -2406,6 +2527,15 @@ whose expected counts (M-23) are re-derivable by hand from the program text
     plan's (a golden outside §4 moves, a §4 key line changes, a program's
     output changes). Contingency: refill, and explain the difference in a plan
     revision before the fill commit (amended 2026-10-13, review fold: B7).
+-   **R-10: W-148's loan checker rejects ST-1 lines.** F-013 makes the
+    self-aliasing append `StrictSharedBorrowInvalidated` and is expected to
+    require `bound b` on view.carbon's `View`; D-ST-14 names the four lines.
+    Falsifier: when W-148 lands, it rejects an ST-1 program or golden line
+    other than those four, or accepts the three self-appends (then §1.4's
+    reading of T4 with M8 is wrong, and strings.md is amended with the
+    checker's actual rule). Contingency: D-ST-6's and D-ST-14's break
+    conditions; the two program rewrites are measured already (M-25) (amended
+    2026-10-13, review fold: RR-N-1).
 
 Rejected alternatives (each with the evidence that rejects it):
 
@@ -2462,10 +2592,11 @@ directory (amended 2026-10-13, review fold: B12).
     `install/bin/carbon version` prints `0.0.0-0.dev+<sha>`.
 2.  **Fill to fixpoint** (R26): `$CB/autoupdate.sh /home/user/carbon-st` with
     the ten golden paths of §4, repeated until a run prints only `.`:
-    operators.carbon needs three runs (the second renumbers `.loc` lines only,
-    M-10), every other golden one; a run after the first that changes more
+    operators.carbon converges on its third run (the first refills it, the
+    second renumbers `.loc` lines only, M-10), every other golden on its
+    second (the first fills it); a run after the first that changes more
     than `.loc` numbers is a stop. Commit 3 holds exactly the files the fill
-    changed (amended 2026-10-13, review fold: A-5).
+    changed (amended 2026-10-13, review fold: A-5, RR-N-4).
 3.  **Gate:** `$CB/gate.sh /home/user/carbon-st` → the rebased base's file_test
     count plus 8, 0 failed, no `!` or `?` marks (1950 = 1942 + 8 on
     80a11e7f0; UA-2 adds 3 and SC-1 16 if they land first) (amended
@@ -2507,8 +2638,10 @@ directory (amended 2026-10-13, review fold: B12).
     stderr, M-23's counts: string_basic `malloc=1 free=0`, string_missing_ops 2
     and 1, string_ordering_diff 3 and 2, string_buf_lifetime 8 and 7,
     string_concat_loop 20 and 19, string_subscripts 28 and 27, every one
-    `bad=0`. Any other count is D-ST-16's break condition. The shim (scratch
-    only, never committed):
+    `bad=0`. After D-ST-14's W-148 rewrite of the two self-appends,
+    string_buf_lifetime is 9 and 8 and string_concat_loop 30 and 29 (M-25;
+    amended 2026-10-13, review fold: RR-N-1). Any other count is D-ST-16's break
+    condition. The shim (scratch only, never committed):
 
     ```c
     // Counts malloc and free, and counts as "bad" a free of a pointer that
@@ -2587,7 +2720,11 @@ by design).
     string.carbon:141 (`class StringBuf`); an edit above that line moves both,
     and autoupdate follows.
 -   In programs and docs, loops append with `+=`; never show `s = s + t` (W-160)
-    and never pass a `Core.StringBuf` straight to C++ (use `AsStr()`).
+    and never pass a `Core.StringBuf` straight to C++ (use `AsStr()`). New
+    code appends a string to itself as `s += Core.StringBuf.Make(s);`, never
+    `s += s` (F-013's T4 rejects it once W-148 lands); the three existing
+    self-appends and `View` are D-ST-14's expected W-148 trips and are copied
+    as written (amended 2026-10-13, review fold: RR-N-1).
 -   A function that builds a string returns `Core.StringBuf`, with `returned
     var` or as a direct `return a + b;`; `return s;` of a plain `var` is a copy
     error (pinned). A function returning `str` never returns a `+` result or a
@@ -2614,7 +2751,10 @@ by design).
     orchestrator says so (amended 2026-10-13, review fold: B12).
 -   Row 51 ("Generics: generic functions and types", DONE) and row 81 (the
     string-mapping bullet, DONE) are left unchanged: W-164 and W-165 are listed
-    in the ledger only (amended 2026-10-13, review fold: B12).
+    in the ledger only (amended 2026-10-13, review fold: B12). Row 41 ("Type
+    system: User-defined types (classes)", DONE) stays DONE, with "access
+    control fully checked" amended to name W-167 and W-160 in the ledger only
+    (§2.6; amended 2026-10-13, review fold: RR-N-3).
 -   Fix-ups after a commit exists are new commits, never amends (§3; amended
     2026-10-13, review fold: B10).
 
@@ -2658,3 +2798,52 @@ rev 2 goes to a focused re-review before implementation.
 | B10: wording implies amending commits; prek timing unspecified | MINOR | Folded as proposed: fix commits, never amends; prek to a fixpoint before commits 2, 4 and 5 with R31 counts | §3; §7 R-1; §8.6; hand-off |
 | B11: the §8.7 grep contradicts §4 | MINOR | Reproduced against the rev 2 fills (6 of 8 new goldens and operators.carbon's `CHECK:STDERR` lines name `StringBuf`; export.cpp does not). Folded with the measured list | §8.7 |
 | B12: commands not self-contained; dates and cross-branch lines will be wrong | MINOR | Folded: (1) the absolute carbonbuild path and a concrete outdir; (2) the patch fixed (A-9); (3) `<date>` in the three amendments and strings.md; (4) values.md:168 → :176 named, and in the re-read list; (5) the hand-off names where the trailer comes from (the harness attribution notice) without reproducing it, because the brief forbids model names in repository files; row 51 and row 81 stay unchanged | §2.2; §2.5; §6; §8 preamble, §8.4; hand-off |
+
+## Review fold record (rev 3, 2026-10-13)
+
+The focused re-review of rev 2 (381f79b92) returned APPROVE-WITH-AMENDMENTS. It
+re-measured both of rev A's BLOCKERs in its own scratch tree
+(`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/st1-rr`:
+an install copy carrying the §2.1 block extracted from this file, export.cpp
+with §2.2 applied by `git apply`, a file_test and busybox relinked from the
+trunk objects) and found both RESOLVED: the full manifest ran 1942 tests, 1940
+passed, the two expected refills failed and nothing aborted; the eight new
+goldens filled at M-11's sizes, byte-identical to rev 2's fills; the six
+programs passed and §8.8's shim reproduced M-23's counts. It added one MAJOR and
+three MINOR findings. Its ids are cited here with an "RR-" prefix, so that its
+A-1 and A-2 are not confused with rev A's. All six are folded or verified; none
+is rejected. The fixer re-read every cited SAFE-1 line on
+claude/carbon-fork-0-1-safe (adaae4e35) and re-ran the one measurement a finding
+rests on (M-25). Rev 3 changes no text of §2.1 to §2.4, so M-10, M-11, M-12,
+M-19 to M-21, M-23 and M-24 stand as measured.
+
+| Finding | Grade | Disposition | Where folded |
+| --- | --- | --- | --- |
+| RR-A-1: the interop golden's `as_str` split; W-165; the two rev 1 predicted goldens | BLOCKER (rev A's A-1) | Verified RESOLVED by the re-review (the rev 1 split still aborts its relinked file_test; the rev 2 source fills to 332 lines, 264 CHECK, and passes; the trunk-only reproducer aborts unmodified trunk; real libc++ is unaffected). No change required | None |
+| RR-A-2: the `StringBuf` to `str` use-after-free | BLOCKER (rev A's A-2) | Verified RESOLVED by the re-review (an independent probe reproduces the four shapes on the ST-1 install, and the documented `-> Core.StringBuf` shape is clean, `malloc=13 free=12 bad=0`; W-166 is named everywhere required; no ST-1 program, golden or doc example uses a W-166 shape). No change required for the blocker; its precision gap is RR-N-2 | None |
+| RR-N-1: self-aliasing append (`s += s`) is presented as designed, but F-013 rejects it, so D-ST-14's "no ST-1 program should trip W-148" is false | MAJOR | Reproduced: on the safe branch, T2's value-binding clause (temporal_safety.md:249-257) and M8 (mutation_safety.md:272-283) make the by-value `other` a shared loan on `s`, M3(d) (:172) makes the `ref self` call invalidating, and T4 (temporal_safety.md:303-317) makes the pair `StrictSharedBorrowInvalidated`; at runtime `s += Core.StringBuf.Make(s)` and `t += t` are correct and leak-free (M-25: `abcabc`, 6, 1, `xyxy`, `malloc=6 free=5 bad=0`). Folded with the reviewer's second option, keeping the lines: D-ST-7, §1.4 and strings.md state the append as accepted and memory-safe today and rejected once W-148 lands, with `s += Core.StringBuf.Make(s);` as the spelling that stays valid. D-ST-14 names the three self-appends and `View` (expected to need `bound b`) as expected W-148 trips, with the program rewrite measured now (M-25: 6/6 PASS, 9/8 and 30/29) and the golden rewrite assigned to W-148's landing. D-ST-6's break-condition remedy covers them, R-10 makes the trip falsifiable, and the SAFE-1 reconciliation gains the T4 example. The lines stay rather than being rewritten now because, unlike line 26 (B1), a self-append does not rely on an undesigned lifetime, is memory-safe under any lifetime rule, and is the suite's only exercise of D-ST-7's read-before-free order | Status; §0.2 M-25; D-ST-6; D-ST-7; D-ST-14; §1.4; §2.5 strings.md; §2.6 SAFE-1 reconciliation (7); §7 R-10; §8.8; hand-off |
+| RR-N-2: the W-144 addition names the impl's `Convert`, but by T5(e) only the interface declaration can carry `bound self` | MINOR | Reproduced: T5(e) (temporal_safety.md:507-512) lets an impl drop but not add `bound`; SP3 (spatial_safety.md:159-201) puts `bound self` on the declarations `IndexWith.At` and `Copy.Op` but not on `ImplicitAs(Dest).Convert` (core/prelude/operators/as.carbon:23), although SP3 lists `Slice(T) as ImplicitAs(Slice(const T))`'s `Convert` as a view producer; T2's "every `ImplicitAs` impl is not a loan boundary" (:264-273) does not cover an owner-to-view conversion. Folded as proposed: D-ST-6, D-ST-11 and §2.6's W-144 item name the interface declaration (with `As(Dest).Convert` and `UnsafeAs(Dest).Convert`, through which the workaround blankets at as.carbon:27-34 forward `b as str`), and the SAFE-1 reconciliation gains item (6) for the gap shared with SP3 and the T2 clause | D-ST-6; D-ST-11; §2.6 W-144, SAFE-1 reconciliation (6) |
+| RR-N-3: W-167 and W-160 are filed under row 41, whose DONE text says "access control fully checked" | MINOR | Reproduced (the row's text is identical on trunk and on the cmake, safe, sc, ua2 and ev branches, at :41 to :45). Folded with the reviewer's second option: row 41 stays DONE and its text becomes "access control checked for member access (struct-literal construction is not: W-167, classes.md:2156-2159) and lowered"; W-160 stays ledger-only, because the row makes no claim about assignment; no header count changes | Outcome paragraph; D-ST-16; §2.6 row 41; hand-off |
+| RR-N-4: the autoupdate pass counts use two conventions | MINOR | Reproduced (M-11 counted changing passes, §3 and §8.2 counted runs for operators.carbon and changing passes for the rest). Folded as proposed: runs are counted up to and including the one that prints only `.`; operators.carbon converges on its third run, every other golden on its second | §0.2 M-10, M-11; §2.3 refill paragraph; §3 commit 3; §4 operators row; §8.2 |
+
+## Sign-off
+
+Three reviews, every finding folded or verified, none rejected:
+
+| Review | Of | Verdict | Findings |
+| --- | --- | --- | --- |
+| Rev A: design soundness and toolchain correctness | rev 1 (bff5ba4e8) | REJECT | 11: 2 BLOCKER, 2 MAJOR, 7 MINOR; all folded in rev 2 (381f79b92) |
+| Rev B | rev 1 (bff5ba4e8) | APPROVE-WITH-AMENDMENTS | 12: 5 MAJOR, 7 MINOR; all folded in rev 2 (381f79b92) |
+| Focused re-review | rev 2 (381f79b92) | APPROVE-WITH-AMENDMENTS | 6: rev A's 2 BLOCKERs verified RESOLVED, 1 MAJOR and 3 MINOR new; the four new ones folded in rev 3 (this revision) |
+
+The re-review's verdict is not REJECT, and rev 3 folds all of its findings, so
+the plan is signed off for implementation at rev 3: R29(c)'s two plan reviews
+and the focused re-review that rev A's REJECT required are complete. The
+implementation follows §3's commits 2 to 5 on `claude/carbon-fork-0-1-st`,
+against the measured texts of §2.1 to §2.4 and §4's matrix, with §8's
+verification, and residues allocated from W-160 by the rule of the id allocation
+paragraph. Merge position for fork/ORCHESTRATION.md's merge order, which defers
+ST-1's position to this sign-off: after PR 53, PR 51, PR 52 and SC-1, the order
+§5's deltas, §6's rebase notes and §2.6's conditional SAFE-1 reconciliation
+assume; ST-1 and EV-1 share only the same-anchor records of §6, so their
+relative order is the orchestrator's.

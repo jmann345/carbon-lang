@@ -2360,6 +2360,9 @@ Round 3's fill predictions, checked against the fill: every round-3 row of §4.B
 held, the printed facet type `J & HasGet` (written `HasGet & J`) aside, after
 miss (k).
 
+Round 3's own diff (0efe76e7d, bc8b37290 and its records commit) has no
+implementation review on record at this commit.
+
 W-151: the commit-3 residue first filed as W-144 was renumbered to W-151 by
 2f4ebbf6e, because SAFE-1 (PR 53) allocated W-144..W-150; trunk's id
 reservations (9d3ca60a3) give SC-1 nothing above W-151, so the MINOR-3 residue
@@ -2377,9 +2380,13 @@ bullets 49 PASS, 0 FAIL, 7 SKIP of 56, the same two programs moving against
 fork/conformance/out/scoreboard.json. Round 3, on the toolchain built from the
 round-3 sources before the commit (stamped 0.0.0-0.dev+830447980.dirty):
 autoupdate over the 19 SC-1 goldens rewrote 4 and reported miss (k), and after
-the respelling a second pass rewrote none; gate 1959 passed and 0 failed.
-Conformance and the clean-stamp re-run are recorded by the round-3 records
-commit.
+the respelling a second pass rewrote none; gate 1959 passed and 0 failed;
+conformance 130 / 0 / 21 over 151 with 49 of 56 bullets. Re-run on the toolchain
+rebuilt from bc8b37290 with a clean tree (stamped 0.0.0-0.dev+bc8b37290,
+recorded by the round-3 records commit): gate 1959 passed and 0 failed;
+conformance 130 / 0 / 21 over 151 with 49 of 56 bullets; the same two programs
+moving. Round 3's commits: 0efe76e7d (fixes, test sources, docs, records),
+bc8b37290 (goldens) and the round-3 records commit.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

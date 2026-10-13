@@ -4530,13 +4530,22 @@ by the orchestrator. Per-finding dispositions are in the plan's "Landed notes
 (SC-1 fill rounds, 2026-10-13)".
 
 MEASURED, on the container only (not of record, R9; hosted: not run, Actions
-disabled): on the toolchain built from the round-3
-sources before the commit (stamped 0.0.0-0.dev+830447980.dirty, the round-3
-source edits being the only difference), autoupdate over the 19 SC-1 goldens
-rewrote 4 (requirement-call, unsatisfied, require, lower) and reported miss (k);
-after the respelling a second pass rewrote none; the file_test gate over all
-toolchain testdata then passed 1959, failed 0. Conformance and the clean-stamp
-re-run are recorded by the round-3 records commit.
+disabled): on the toolchain built from the round-3 sources before the commit
+(stamped 0.0.0-0.dev+830447980.dirty, the round-3 source edits being the only
+difference), autoupdate over the 19 SC-1 goldens rewrote 4 (requirement-call,
+unsatisfied, require, lower) and reported miss (k); after the respelling a
+second pass rewrote none; the file_test gate over all toolchain testdata then
+passed 1959, failed 0; conformance into a private outdir PASS 130, COMPILE-FAIL
+0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 of 151,
+bullets 49 PASS, 0 FAIL, 7 SKIP of 56. Re-run by the round-3 records commit on
+the toolchain rebuilt from bc8b37290 with a clean tree (stamped
+0.0.0-0.dev+bc8b37290): gate 1959 passed, 0 failed; conformance PASS 130,
+COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0,
+SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56. Against
+fork/conformance/out/scoreboard.json exactly generics/structural_conformance
+(SKIP to PASS) and the new interop/cpp_structural_conformance (PASS) move, as at
+rounds 1 and 2. Commits: 0efe76e7d (fixes, test sources, docs and records),
+bc8b37290 (the goldens, CHECK lines only) and the round-3 records commit.
 
 ### SL-1: Core.Slice, Core.Buf, heap allocation, fail-stop (2026-10-05)
 

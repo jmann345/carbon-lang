@@ -3,27 +3,31 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // CONFORMANCE-BULLET: Stdlib: String and string-literal types
-// SKIP: known-missing slice of this PARTIAL bullet: Core.String has no equality/concatenation impls and no owning variant (core/prelude/types/string.carbon is only Size/Copy/IndexWith); on the arbiter toolchain `a == b` on `str` fails with "error: cannot access member of interface `Core.EqWith(str)` in type `str` that does not implement that interface" and `a + b` fails with "error: cannot access member of interface `Core.AddWith(str)` in type `str` that does not implement that interface"
 // EXPECT-EXIT: 0
 // EXPECT-STDOUT:
 //   1
 //   4
 //
-// Write-tests-first program for the missing slice of the String bullet
-// (working slice: string_basic.carbon). Un-SKIP once `String as
-// EqWith(String)` and `String as AddWith(String)` (or an owning string type)
-// land in core/prelude/types/string.carbon. Both errors below were captured
-// verbatim from carbon_toolchain-0.0.0-0.nightly.2026.07.19 `carbon compile`.
+// Written test-first for the String bullet and un-SKIPped at ST-1
+// (fork/string/plan.md; working slice: string_basic.carbon). `a == b` is the
+// byte-wise `String as EqWith(String)` impl and `a + b` is `String as
+// AddWith(String)`, whose result is the owning `Core.StringBuf`, so `c` is a
+// `var` that owns it; both are in core/prelude/types/string.carbon. At the
+// un-SKIP the test-first `let c: str = a + b;` became
+// `var c: Core.StringBuf = a + b;`, the EXPECT unchanged: a `str` view of that
+// temporary would be used after its full-expression, which the fork's design
+// rejects (F-013 D-SAFE-12) and which this toolchain allows only because it
+// destroys a declaration's temporaries at the end of the block.
 
 import Core library "io";
 
 fn Run() -> i32 {
   let a: str = "hi";
   let b: str = "hi";
-  // Missing: `String as EqWith(String)`.
+  // `String as EqWith(String)`: byte-wise.
   Core.Print(if a == b then 1 else 0);
-  // Missing: `String as AddWith(String)` (concatenation).
-  let c: str = a + b;
+  // `String as AddWith(String)`: concatenation into a `Core.StringBuf`.
+  var c: Core.StringBuf = a + b;
   Core.Print(c.Size() as i32);
   return 0;
 }

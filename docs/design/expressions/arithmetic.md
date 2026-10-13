@@ -187,6 +187,10 @@ Because floating-point arithmetic follows IEEE 754 rules: overflow results in
 `+` for concatenation. See
 [#457](https://github.com/carbon-language/carbon-lang/issues/457).
 
+> **Fork amendment (2026-10-13, F-014):** strings are library types, and `+`
+> concatenates them: on `str` and `Core.StringBuf` operands it returns a new
+> `Core.StringBuf`, and `+=` appends. See [Strings](../strings.md).
+
 ### Character types
 
 Character types (`char` and `Core.CharLiteral`) support arithmetic operations

@@ -361,7 +361,11 @@ fails if this table is stale):
 | `stdlib/slices_bounds_fail_stop.carbon` | Stdlib: Slices | run |
 | `stdlib/slices_heap_buf.carbon` | Stdlib: Slices | run |
 | `stdlib/string_basic.carbon` | Stdlib: String and string-literal types | run |
-| `stdlib/string_missing_ops.carbon` | Stdlib: String and string-literal types | SKIP |
+| `stdlib/string_buf_lifetime.carbon` | Stdlib: String and string-literal types | run |
+| `stdlib/string_concat_loop.carbon` | Stdlib: String and string-literal types | run |
+| `stdlib/string_missing_ops.carbon` | Stdlib: String and string-literal types | run |
+| `stdlib/string_ordering_diff.carbon` | Stdlib: String and string-literal types | differential |
+| `stdlib/string_subscripts.carbon` | Stdlib: String and string-literal types | run |
 | `stdlib/tuples_arrays_structs.carbon` | Stdlib: tuple/array library parts | run |
 | `types/choice_basic.carbon` | Type system: Sum types (discriminated unions) | run |
 | `types/choice_discriminant_diff.carbon` | Type system: Sum types (discriminated unions) | differential |

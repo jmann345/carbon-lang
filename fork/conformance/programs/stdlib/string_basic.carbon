@@ -10,20 +10,21 @@
 //   1
 //   1
 //
-// Working slice of the (PARTIAL) String bullet: string literals have type
-// `str` (Core.String, a non-owning {Char*, u64} — core/prelude/types/string.carbon),
-// `.Size()` returns u64, `s[i]` returns `char` via the `String as IndexWith`
-// impl ("string.at" builtin, toolchain/check/testdata/operators/overloaded/
-// string_indexing.carbon), and `str` is Copy. Chars print one at a time with
-// Core.PrintChar (inline putchar), the same loop as Core.PrintStr's body
-// (core/io.impl.carbon), because PrintStr itself does not link here (README).
+// Working slice of the String bullet: string literals have type `str`
+// (Core.String, a non-owning {Char*, i64} — core/prelude/types/string.carbon),
+// `.Size()` returns i64, `s[i]` returns `char` through the `String as
+// IndexWith` impl ("string.at" builtin, toolchain/check/testdata/operators/
+// overloaded/string_indexing.carbon), and `str` is Copy. Chars print one at a
+// time with Core.PrintChar (inline putchar), the same loop as Core.PrintStr's
+// body (core/io.impl.carbon), because PrintStr itself does not link here
+// (README).
 //
-// Caution: all indexes below are `i64`-typed on purpose. Indexing a runtime
-// `str` with a bare literal (`s[0]`, index type Core.IntLiteral) crashes this
-// arbiter toolchain in lowering: "GEP indexes must be integers ... {}
-// zeroinitializer", CHECK failure at toolchain/lower/lower.cpp:45. `as i64`
-// sidesteps it. The known-missing library slice (str `==`, `+`, owning
-// string) is encoded in string_missing_ops.carbon.
+// The indexes below are `i64`-typed, as written before ST-1, when a bare
+// literal subscript on a runtime `str` crashed lowering; since ST-1 the
+// subscript converts to `i64` first (fork/string/plan.md D-ST-9,
+// string_subscripts.carbon). Comparison, concatenation and the owning
+// `Core.StringBuf` are exercised by string_missing_ops.carbon and the other
+// string_* programs.
 
 import Core library "io";
 

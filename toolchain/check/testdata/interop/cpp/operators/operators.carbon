@@ -415,9 +415,13 @@ fn F() {
   let unused equal: bool = c1 == c2;
 
   // Rewrite.
-  // CHECK:STDERR: fail_todo_rewrite_equal.carbon:[[@LINE+4]]:32: error: semantics TODO: `Rewriting operator!= using operator== is not supported` [SemanticsTodo]
+  // CHECK:STDERR: fail_todo_rewrite_equal.carbon:[[@LINE+8]]:32: error: semantics TODO: `Rewriting operator!= using operator== is not supported` [SemanticsTodo]
   // CHECK:STDERR:   let unused not_equal: bool = c1 != c2;
   // CHECK:STDERR:                                ^~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: {{.*}}/prelude/types/string.carbon:141:1: error: semantics TODO: `interop with non-identifier package name` [SemanticsTodo]
+  // CHECK:STDERR: class StringBuf {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   let unused not_equal: bool = c1 != c2;
   //@dump-sem-ir-end
@@ -489,7 +493,14 @@ import Cpp library "plus_with_string_view_conversion.h";
 fn F() {
   let s1: str = "hello";
   let s2: str = "world";
-  // CHECK:STDERR: fail_todo_import_plus_with_string_view_conversion.carbon:[[@LINE+4]]:46: error: cannot access member of interface `Core.AddWith(str)` in type `str` that does not implement that interface [MissingImplInMemberAccess]
+  // CHECK:STDERR: fail_todo_import_plus_with_string_view_conversion.carbon:[[@LINE+11]]:46: error: call argument of type `Core.StringBuf` is not supported [CppCallArgTypeNotSupported]
+  // CHECK:STDERR:   let unused c: Cpp.StringViewConvertibleC = s1 + s2;
+  // CHECK:STDERR:                                              ^~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_todo_import_plus_with_string_view_conversion.carbon:[[@LINE+7]]:46: error: cannot implicitly convert expression of type `Core.StringBuf` to `Cpp.StringViewConvertibleC` [ConversionFailure]
+  // CHECK:STDERR:   let unused c: Cpp.StringViewConvertibleC = s1 + s2;
+  // CHECK:STDERR:                                              ^~~~~~~
+  // CHECK:STDERR: fail_todo_import_plus_with_string_view_conversion.carbon:[[@LINE+4]]:46: note: type `Core.StringBuf` does not implement interface `Core.ImplicitAs(Cpp.StringViewConvertibleC)` [MissingImplInMemberAccessInContext]
   // CHECK:STDERR:   let unused c: Cpp.StringViewConvertibleC = s1 + s2;
   // CHECK:STDERR:                                              ^~~~~~~
   // CHECK:STDERR:
@@ -2565,9 +2576,9 @@ fn F() {
 // CHECK:STDOUT:   name_binding_decl {
 // CHECK:STDOUT:     %equal.patt: %pattern_type.831 = value_binding_pattern equal [concrete = constants.%equal.patt]
 // CHECK:STDOUT:   }
-// CHECK:STDOUT:   %c1.ref.loc23: ref %EqualC = name_ref c1, %c1
-// CHECK:STDOUT:   %c2.ref.loc23: ref %EqualC = name_ref c2, %c2
-// CHECK:STDOUT:   %.loc23: type = type_literal bool [concrete = bool]
+// CHECK:STDOUT:   %c1.ref.loc27: ref %EqualC = name_ref c1, %c1
+// CHECK:STDOUT:   %c2.ref.loc27: ref %EqualC = name_ref c2, %c2
+// CHECK:STDOUT:   %.loc27: type = type_literal bool [concrete = bool]
 // CHECK:STDOUT:   %not_equal: bool = wrapper_binding not_equal, <error> [concrete = <error>]
 // CHECK:STDOUT:   name_binding_decl {
 // CHECK:STDOUT:     %not_equal.patt: %pattern_type.831 = value_binding_pattern not_equal [concrete = constants.%not_equal.patt]

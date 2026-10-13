@@ -4515,7 +4515,8 @@ reviews' probes.
     parity the impl-member decision relies on.
 
 FILL-CAUGHT MISSES (R28(d): a reviewed prediction the fill overturned; bcaeadb98
-lists (a) to (i), 502e7861a adds (j), bc8b37290 adds (k) and (l)). (a) §4.A
+lists (a) to (i), 502e7861a adds (j), bc8b37290 adds (k) and (l), ff490bd48
+adds (m)). (a) §4.A
 parse row: the tree prints `NamedConstraintIntroducer` before
 `TemplateModifier`, the class/introducer.carbon:30-31 placement the row itself
 cites; the prediction's order was wrong, the row is amended. (b) §4.B
@@ -4566,8 +4567,15 @@ split `require_self_class_being_defined` spelled its other-self `require` as
 respelled `require U impls HasGet & J(Self)`, the review's probe shape, before
 0efe76e7d. (l) the round-3 §4.B require row predicted
 `InterfaceRequireImplsNotImplemented` naming `HasGet & J` at `impl as I1`; the
-fill prints the facet type as `J & HasGet`, and the row is amended. No miss
-hides a defect: (a), (c), (f) and (l) were prediction errors, (b) and (e) a
+fill prints the facet type as `J & HasGet`, and the row is amended. (m) the
+round-4 §4.B requirement-call row predicted exactly one error and its
+requirement note per value use; each of the nine uses that is a call argument
+also carries `InCallToFunctionParam`, the context the call-argument conversion
+attaches to any error inside it (upstream's shape), and the row is amended. One
+round-3 clause is withdrawn from the held predictions rather than counted as a
+miss: the requirement-call row's `UseStructurally` note was read off the
+pre-fill build of round 3's own sources (round 3's review 2, MINOR-7). No miss
+hides a defect: (a), (c), (f), (l) and (m) were prediction errors, (b) and (e) a
 cascade and a warning class now gone, (d), (j) and (k) test-source spellings,
 (g) a coverage gap now dumped where the claim needed a dump, and (h) and (i)
 design sentences amended in place beside their fixes.
@@ -4671,7 +4679,21 @@ Re-run by 5171e5eda on the toolchain rebuilt from bc8b37290 with a clean tree
 for this record on 5171e5eda with that installed toolchain (no toolchain source
 differs from bc8b37290): gate 1959 passed, 0 failed, exit 0, no `!` or `?` mark
 in the log; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets
-49 PASS, 0 FAIL, 7 SKIP of 56, 59.7 s. Against
+49 PASS, 0 FAIL, 7 SKIP of 56, 59.7 s. Round 4 (the toolchain built from the
+round-4 sources before the commit, stamped 0.0.0-0.dev+2497d5000.dirty, the
+uncommitted edits being exactly aa67ea281's): autoupdate over the 19 SC-1
+goldens to a fixpoint, its first pass reporting compound `checked_generic_name`
+as a failing positive (its statement use of the requirement, now refused,
+respelled before aa67ea281), the last pass changing nothing; gate 1959 passed,
+0 failed; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets
+49 PASS, 0 FAIL, 7 SKIP of 56. Re-run on the toolchain rebuilt from ff490bd48
+with a clean tree (stamped 0.0.0-0.dev+ff490bd48): autoupdate over the 19 SC-1
+goldens changed nothing; gate 1959 passed, 0 failed, exit 0, no `!` or `?` mark;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56, 108.2 s. Every check-clean probe of round 2's and round 3's
+reviews and of this round (60 programs) compiles on it; the three that abort at
+sem_ir/generic.cpp:84 (round 2's p40, p41, p43) abort so on trunk 0bdce60a5
+too. Against
 fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
 exactly two programs move in every run: generics/structural_conformance.carbon
 SKIP to PASS (`42` then `7`) and the new
@@ -4722,7 +4744,9 @@ dispositions and decisions, and §4.B rows for round 4's splits written before
 the build under test ran on them; W-168 filed and W-027 re-cited; this entry;
 the design page (the value rule, "class or union", the qualified alias
 sentence, the D-SC-5(c) label); the ORCHESTRATION status paragraph and Branches
-row.
+row. Round 4's records commit, after ff490bd48: the four round-4 §4.B rows and
+the compound row's amendment marked FILLED, miss (m), the round-4 measurements
+here and in the plan, W-027's notes, and the Branches row.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

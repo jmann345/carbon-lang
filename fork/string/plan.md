@@ -36,6 +36,16 @@ goldens rev 1 could only predict are measured (amended 2026-10-13, review fold:
 A-1). Nothing was built with Bazel, nothing was installed, no worktree was
 modified, and the owner's runner was not used (R28).
 
+**Since rev 3 (2026-10-13):** implemented by 84ff63560 (§3 commit 2),
+16a87052f (commit 3) and d8d10bf70 (commit 4). The two implementation reviews
+(both APPROVE-WITH-FIXES, 15 MINOR findings in all) are folded by a fix commit
+that changes no code, golden or program and records each finding in the
+[Implementation review fold
+record](#implementation-review-fold-record-2026-10-13); its in-place
+amendments to this plan are marked "(amended 2026-10-13, implementation review
+fold: RV1-n)" or "(... ST1-IR2-n)", and the two §4 key lines it corrects
+"(amended at landing ...)". The discharge, §3 commit 5, is next.
+
 **Item:** W-057 ("W9c: string equality, concatenation, and owning variant", size
 M, subsystem core/prelude, bullet "Stdlib: String and string-literal types").
 **Milestone row:** fork/gap-analysis.md:77, PARTIAL. The row moves to :78, :80
@@ -759,7 +769,9 @@ the public `UnsafeMake` (D-ST-11) and the `i64` subscript parameter (§1.5).
 
 `Core.StringBuf` is new: an owning byte string with the same `{pointer, size}`
 representation over a block from `"heap.allocate"`, freed by its declared
-`Destroy` impl. Its API is deliberately small; the view carries the read API.
+`Destroy` impl. Its API is deliberately small: `Size()` and the comparisons
+(§1.2) are on both types, and subscripts are on the view only (amended
+2026-10-13, implementation review fold: ST1-IR2-1).
 
 | Member | Meaning |
 | --- | --- |
@@ -902,9 +914,11 @@ No `std::string` mapping in either direction (W-161).
     (`IsMoveEquivalentToCopy`, check/cpp/overload_resolution.cpp:157-172);
     upstream has the same code (amended 2026-10-13, review fold: A-1).
 -   W-166 (SAFE-1's loan checker): a `str` view of a `Core.StringBuf` can
-    outlive its owner with no diagnostic: a `-> str` function returning a `+`
-    result or a local owner, a `str` field initialized from a temporary, a
-    view held across `+=` (M-21; amended 2026-10-13, review fold: A-2).
+    outlive its owner with no diagnostic, for example a `-> str` function
+    returning a `+` result or a local owner, a `str` field initialized from a
+    temporary, a `+` result assigned to an existing `str` variable, a view
+    held across `+=` (M-21; amended 2026-10-13, review fold: A-2; the
+    assignment shape amended 2026-10-13, implementation review fold: RV1-2).
 -   W-167 (classes bullet): struct-literal construction of a class bypasses
     private-field access control (classes.md:2156-2159), so user code can
     forge a `Core.StringBuf` or `Core.Buf` whose `Destroy` frees a non-heap
@@ -2056,7 +2070,11 @@ run) and `--self-test` (R7).
     A-11 / B1); Subscripts (§1.5); Interoperability (§1.6); 0.1 limits
     (W-160..W-163 and W-165..W-167 by title, each with its break condition, plus
     UA-2's W-126 and UA-1's W-122 by reference; W-167 is stated as applying to
-    `Core.Buf` too; amended 2026-10-13, review fold: A-2, A-3, A-10);
+    `Core.Buf` too; amended 2026-10-13, review fold: A-2, A-3, A-10; W-164 joins
+    the list, and Comparison's "generic code sees `str` as `Core.Ordered`" names
+    it with the statement-form workaround, because the `if`-expression `Min` of
+    compare.carbon's `generic.carbon` split crashes lowering when a reader
+    compiles it; amended 2026-10-13, implementation review fold: RV1-3);
     Alternatives considered (§7's A-1..A-8); References (README.md String types,
     string_literals.md, comparison_operators.md, arithmetic.md, p006177,
     milestones.md:202). Every API line in it is copied from §2.1 and diffed
@@ -2083,8 +2101,11 @@ run) and `--self-test` (R7).
     "**Fork amendment (<date>, F-014).** The owning `Core.StringBuf` has no
     C++ mapping; it reaches a `std::string_view` parameter through its view,
     `Cpp.F(s.AsStr())`, because C++ overload resolution does not see Carbon
-    conversions (W-161)." The three amendments carry the landing date, not
-    this plan's (amended 2026-10-13, review fold: B12).
+    conversions (W-161).", ending in a link to
+    ../strings.md#interoperability titled "Strings", as its two siblings end
+    (amended 2026-10-13, implementation review fold: ST1-IR2-7). The three
+    amendments carry the landing date, not this plan's (amended 2026-10-13,
+    review fold: B12).
 
 ### §2.6 Records (commit 5, after verification)
 
@@ -2094,7 +2115,11 @@ run) and `--self-test` (R7).
     check/cpp/export.cpp (the null check), the eight new goldens and the
     two refilled ones, the five programs; notes: what landed by D-ST
     number, §0.3 items 1-2 as corrected, "not prelude-only: one toolchain
-    null check", and the string_missing_ops line 26 repair (D-ST-14).
+    null check", and the string_missing_ops line 26 repair (D-ST-14). Where
+    it cites the decision-log entry, it quotes the heading text without the
+    date, double-quoted as rows 79 and 82 do: "ST-1 / F-014: str comparison,
+    Core.StringBuf, concatenation" (amended 2026-10-13, implementation review
+    fold: ST1-IR2-3).
 -   **New items W-160..W-167**, each `{id, kind, title, subsystem, size, bullet,
     evidence, blocked_by, notes}` with the mechanism and the break condition
     (amended 2026-10-13, review fold: A-1, A-2, A-3, A-10, B3): W-160
@@ -2107,7 +2132,12 @@ run) and `--self-test` (R7).
     "Type system: C++ interop — importing C++ types / exporting Carbon types";
     evidence export.cpp:139-142 (W-049's TODO), M-9; mechanism: a `std::string`
     mapping or a thunk-side conversion, and Carbon conversions in
-    `InventClangArg`); W-162 (`missing-feature`, lower/handle_call.cpp
+    `InventClangArg`; notes: the TODO of a direct `Core.StringBuf` argument is
+    diagnosed once per use, at string.carbon:141, because §2.2's null check
+    records no failed export and every use re-runs `ExportNameScopeToCpp`, so
+    this item deduplicates the TODO or caches the failure (amended
+    2026-10-13, implementation review fold: RV1-6)); W-162
+    (`missing-feature`, lower/handle_call.cpp
     `StringAt` arm, S, bullet String; evidence lower/handle_call.cpp:422-448,
     D-SL-4, M-6; mechanism: the `fail_stop` sequence in the lowering arm;
     `blocked_by: []`, notes "related: W-146, the same stage-2 shape for
@@ -2130,7 +2160,12 @@ run) and `--self-test` (R7).
     (type/init/spatial/temporal/mutation + safe-Rust-interop analysis)", the
     bullet SAFE-1 files W-148 under; evidence M-21's four shapes (a `-> str`
     function returning a `+` result or a local owner, a `str` field initialized
-    from a temporary, a view held across `+=`), D-ST-6; `blocked_by:
+    from a temporary, a view held across `+=`), D-ST-6, and a fifth shape, a
+    `+` result assigned to an existing `str` variable: `var w: str = "";`,
+    then `w = "ef" + "gh";` and one more 4-byte `Core.StringBuf.Make`, prints
+    `YYYY`, not `efgh` (shim `malloc=5 free=4 bad=0`; amended 2026-10-13,
+    implementation review fold: RV1-2); notes: the shapes are examples, not an
+    exhaustive list; `blocked_by:
     ["W-148"]` when W-148 is on trunk at discharge, else the dependency in the
     notes); W-167 (`missing-feature`, title "struct-literal construction of a
     class bypasses private-field access control", toolchain/check, S, bullet
@@ -2163,9 +2198,9 @@ run) and `--self-test` (R7).
     owning `Core.StringBuf` landed at ST-1 (W-057 DISCHARGED <date>); a designed
     (non-placeholder) Optional remains".
 -   Row 77's new text: "DONE | ST-1 landed (W-057 DISCHARGED <date>,
-    fork/string/plan.md, decision-log 'ST-1: str comparison, Core.StringBuf,
-    concatenation (F-014)'): string literals are `str` (`Core.String`, the
-    non-owning `{Char*, i64}` view, core/prelude/types/string.carbon) with
+    fork/string/plan.md, decision-log "ST-1 / F-014: str comparison,
+    Core.StringBuf, concatenation"): string literals are `str` (`Core.String`,
+    the non-owning `{Char*, i64}` view, core/prelude/types/string.carbon) with
     byte-wise `==`/`!=` and lexicographic unsigned-byte `<`/`<=`/`>`/`>=`; the
     owning `Core.StringBuf` (a heap block freed by its declared `Destroy`; not
     copyable, `Core.StringBuf.Make(s)` copies; not `UnformedInit`) converts
@@ -2188,13 +2223,20 @@ run) and `--self-test` (R7).
     6/6 programs PASS (stdlib/string_basic, string_missing_ops SKIP -> PASS,
     string_ordering_diff with a C++17 oracle, string_buf_lifetime,
     string_concat_loop, string_subscripts) — EXPECTED, not of record:
-    container run <date> on the carbonbuild toolchain of <sha>
-    (/home/user/carbon-build/carbon-st/conf-out), <P>/0/<S> over <N>; floor of
+    container run <date> on the carbonbuild toolchain of <sha> (scoreboard
+    generated <timestamp>), <P>/0/<S> over <N>; floor of
     record <the base's scoreboard totals and run, re-read at rebase; today
     128/0/22, run 37402970811>; the hosted run R9 requires is pending with no
     dispatch date (Actions disabled)." (amended 2026-10-13, review fold: A-2,
     A-3, A-4 / B3, A-10, B5). If UA-2 has not landed at ST-1's rebase, W-126
-    is named by its title without the id and is not re-filed.
+    is named by its title without the id and is not re-filed. The
+    decision-log citation is the entry's heading text without the date,
+    double-quoted as rows 79 and 82 cite theirs, so a grep finds it (rev 3
+    cited a string that matched no heading); the run is cited by toolchain
+    sha, the scoreboard's `generated` timestamp and its totals, never by an
+    output directory, because the container runs write to session scratch
+    directories that do not survive the session (amended 2026-10-13,
+    implementation review fold: ST1-IR2-3, RV1-5 / ST1-IR2-4).
 -   **Row 41** ("Type system: User-defined types (classes)"; re-read its
     line, :41 here and :42 to :45 on the cmake, safe and sc branches, R7)
     stays DONE, and its text "access control fully checked and lowered"
@@ -2231,11 +2273,45 @@ run) and `--self-test` (R7).
     autoupdate); the fork-owned fork_all_operands_conversion.carbon pins that
     TODO instead (when upstream implements C++ operator lookup through operand
     conversions, it refills and is renamed or removed with upstream's split)
-    (amended 2026-10-13, review fold: A-5 / B4).
+    (amended 2026-10-13, review fold: A-5 / B4). One sentence of the entry
+    says that two of §4's key lines were quoted inexactly by this plan and
+    are amended at landing (the generic `Min` call's `to %.loc9_16.1`, and
+    the `zext` one call deeper, in `FromUInt`), with no golden change
+    (amended 2026-10-13, implementation review fold: RV1-1 / ST1-IR2-9).
 -   **fork/ORCHESTRATION.md:** the Branches table row for
     `claude/carbon-fork-0-1-st`, the "Last updated" / "Later on" stamp
     paragraph (PR, verification record, the not-run list) and the Scoreboard
-    subsection (amended 2026-10-13, review fold: B5).
+    subsection (amended 2026-10-13, review fold: B5). Before commit 5, trunk
+    9d3ca60a3 (fork/ORCHESTRATION.md only: the id reservations at :69-75 and
+    the `claude/carbon-fork-0-1-st` Branches row at :413) is merged into the
+    branch with a merge commit, never a rebase (AGENTS.md; the EV-1
+    precedent dff212ccc), so that commit 5 edits trunk's existing st row in
+    place instead of adding a second one, and cites the reservation lines
+    from the merged tree. Commit 5's ORCHESTRATION note (the "Next actions"
+    for ST-1's merge) also carries: (1) the landing-date stamps to re-stamp
+    in a new commit at the merge if the merge date differs from the one
+    written, namely strings.md's status line (:29-30), the three Fork
+    amendment lines (docs/design/README.md:636,
+    docs/design/expressions/arithmetic.md:190,
+    docs/design/interoperability/README.md:303), W-057's "LANDED <date>"
+    title, row 77's "DISCHARGED <date>", the §W9 paragraph's "DISCHARGED
+    <date>" and the decision-log heading's date; (2) that strings.md cites
+    W-126 (filed on the UA-2 branch only) and W-148 (on the SAFE-1 branch
+    only) on the assumption that PR 51 and PR 53 merge before ST-1, the
+    ORCHESTRATION merge order, and that either id is replaced by its item's
+    title in a new commit if its PR has not merged by then; (3) the fresh id
+    scan below (amended 2026-10-13, implementation review fold: RV1-4 /
+    ST1-IR2-2, ST1-IR2-5, ST1-IR2-6).
+-   **Id re-scan, immediately before commit 5 writes the ledger:** the
+    maximum `W-` id of fork/inventory/work-items.json on trunk and on every
+    local and `origin` `claude/carbon-fork-0-1-*` ref, quoted in commit 5's
+    message and the landed notes (the fix round's scan, 68 refs: trunk
+    W-125, ua2 W-127, cmake W-133, safe W-150, sc W-151, ev W-155; W-160 to
+    W-167 unfiled on every ref). If re-allocation triggers, the same commit
+    renumbers the residue ids where they are already written:
+    docs/design/strings.md (W-160 to W-167), the interoperability README's
+    amendment (W-161) and string_concat_loop.carbon's header (W-160)
+    (amended 2026-10-13, implementation review fold: ST1-IR2-5).
 -   **SAFE-1 reconciliation** (amended 2026-10-13, review fold: B1). If PR 53
     has landed first (the ORCHESTRATION merge order), ST-1 makes these edits at
     its rebase; otherwise they go, verbatim, into ORCHESTRATION's "Next
@@ -2334,7 +2410,7 @@ review fold: A-1 / B4).
 | --- | --- | --- | --- |
 | check/testdata/string/compare.carbon | `str_str.carbon` | `@Eq`: `impl_witness_access constants.%EqWith.impl_witness..., element0 [concrete = constants.%str.as.EqWith.impl.Equal]` and `%str.as.EqWith.impl.Equal.call: init bool = call %bound_method(%a.ref, %b.ref)`; `@Ne` element1 `NotEqual`; `@Lt` `%str.as.OrderedWith.impl.Less.call`; `@Ge` element3 `GreaterOrEquivalent`; the `imports` block gains `import_ref Core//prelude/types/string` entries for the four `OrderedWith` functions | measured |
 | same | `mixed.carbon` | `@EqBufStr`: `%StringBuf.as.EqWith.impl.Equal.call`; `@LtStrBuf`: `%str.as.OrderedWith.impl.Less.call` through a second `str` impl (`@str.as.OrderedWith.impl.<hash>`, the (`str`, `StringBuf`) one); `@GtBufBuf`: element2, `%StringBuf.as.OrderedWith.impl.Greater.call` | measured |
-| same | `generic.carbon` | `@UseMin`: `%Min.call: init %str... = call %Min.specific_fn(%String.val..., %String.val...)`, so `str` satisfies `Core.Ordered & Core.Copy` (a check golden: M-15's crash is in lowering) | measured |
+| same | `generic.carbon` | `@UseMin`: `%Min.call: init %str... to %.loc9_16.1 = call %Min.specific_fn(%String.val..., %String.val...)`, so `str` satisfies `Core.Ordered & Core.Copy` (a check golden: M-15's crash is in lowering); the fill's line, compare.carbon:485, is `%Min.call: init %str.3d4 to %.loc9_16.1 = call %Min.specific_fn(%String.val.loc9_33, %String.val.loc9_41)`, and rev 3 left out its `to %.loc9_16.1` (amended at landing 2026-10-13, implementation review fold: RV1-1 / ST1-IR2-9) | measured |
 | check/testdata/string/string_buf.carbon | `concat.carbon` | `@Concat`: `return %str.as.AddWith.impl.Op.call to %return.param`; `@Chain`: `temporary ..., %str.as.AddWith.impl.Op.call` (`ref %StringBuf`) then `%StringBuf.as.AddWith.impl.Op.call`, with the temporary's `Destroy` facet; `@Dup`: `converted %s.ref, %StringBuf.as.ImplicitAs.impl.Convert.call` feeding `%StringBuf.Make.call` | measured |
 | same | `append.carbon` | `@Append`: two `%StringBuf.as.AddAssignWith.impl.Op.call` (the `"!"` literal and `b` itself), `%StringBuf.Size.call`, and `%Destroy.WithSelf.SelfDestruct.call` on `%b.var` before the return | measured |
 | same | `view.carbon` | `@View`: `%StringBuf.as.ImplicitAs.impl.Convert.call: init %str` and `converted %b.ref`; `@LetView` (rev 2: a `var` owner, then a view of it): `%str.as.AddWith.impl.Op.call: init %StringBuf to %.loc7_3.1` into `%c.var`, then `%StringBuf.as.ImplicitAs.impl.Convert.call: init %str` on `%c.ref` into a `temporary_storage` for the `str`, and the `SelfDestruct` of `%c.var` before the return (amended 2026-10-13, review fold: A-11 / B1) | measured |
@@ -2347,7 +2423,7 @@ review fold: A-1 / B4).
 | check/testdata/interop/cpp/operators/fork_all_operands_conversion.carbon (new in rev 2) | `fail_todo_import_plus_with_bool_conversion.carbon` | `` error: cannot access member of interface `Core.AddWith(bool)` in type `bool` that does not implement that interface [MissingImplInMemberAccess] `` at column 40, `b1 + b2`; 43 lines, 4 CHECK; the same file passes on the unmodified trunk file_test | measured (M-24; amended 2026-10-13, review fold: B4) |
 | lower/testdata/string/compare.carbon | `Eq`, `Lt`, `EqBufStr` | `call i1 @"_CEqual.String.Core:EqWith.<hash>.Core"(ptr %a, ptr %b)` with a matching `declare` (the body is in the prelude object); `@"_CLess.String.Core:OrderedWith.<hash>.Core"`; `@"_CEqual.StringBuf.Core:EqWith.<hash>.Core"` | measured |
 | lower/testdata/string/string_buf.carbon | `Concat`, `Chain`, `Field` | `call void @"_COp.String.Core:AddWith.<hash>.Core"(ptr %s.var, ptr %a, ptr %b)`; `call void @"_COp.StringBuf.Core:AddAssignWith.<hash>.Core"(ptr %s.var, ptr @String.val...)`; at exit `call void @_CSelfDestruct.Destroy.Core.<hash>(ptr %s.var)`, whose `linkonce_odr` body calls `@"_COp.StringBuf.Core:Destroy.Core"(ptr %self)` then the field walk (`ret void`); in `Chain` the intermediate `%.loc27_29.1.temp` is destroyed at the function's end, just before `%s.var` (M-7; the header comment now says so, A-6 / B6); in `Field` (rev 2) `%h.var` is destroyed by `@"_CSelfDestruct.<hash>:core.Destroy.Core"`, whose `weak_odr` `_CSubobjectDestroy` calls `@_CSelfDestruct.Destroy.Core.<hash>(ptr %...text)`, the `StringBuf` field's declared `Destroy` (amended 2026-10-13, review fold: A-6 / B6, B2) | measured |
-| lower/testdata/string/subscript.carbon | `Literal`, `Unsigned`, `Signed` | `Literal`: `getelementptr inbounds i8, ptr ..., i64 0`; `Unsigned`: `call i64 @"_CConvert.UInt.<hash>.Core:ImplicitAs..."(i8 %i)`, whose body ends in `zext i8 ... to i64`, feeding the `getelementptr`; `Signed`: `getelementptr inbounds i8, ptr ..., i64 %i` | measured |
+| lower/testdata/string/subscript.carbon | `Literal`, `Unsigned`, `Signed` | `Literal`: `getelementptr inbounds i8, ptr ..., i64 0`; `Unsigned`: `call i64 @"_CConvert.UInt.<hash>.Core:ImplicitAs..."(i8 %i)`, whose body calls `@"_CConvert.Int.<hash>.Core:FromUInt..."(i8 %self)`, whose body has the `zext i8 ... to i64`, feeding the `getelementptr`; `Signed`: `getelementptr inbounds i8, ptr ..., i64 %i`. The fill's lines (subscript.carbon:38, :41, :58, :65; their `, !dbg` suffixes omitted): `%UInt.as.ImplicitAs.impl.Convert.call = call i64 @"_CConvert.UInt.9452f4c51951679b.Core:ImplicitAs.f48df0d8add56b17.Core.28ad8c0e3712175a"(i8 %i)`, the `getelementptr inbounds i8, ptr %str.as.IndexWith.impl.At.call.string.ptr, i64 %UInt.as.ImplicitAs.impl.Convert.call`, the `_CConvert.UInt...` body's `%1 = call i64 @"_CConvert.Int.9452f4c51951679b.Core:FromUInt.94db85caea4a44af.Core.60d2bb209e06e693"(i8 %self)`, and that callee's `%2 = zext i8 %1 to i64`; rev 3 placed the `zext` one call too high (amended at landing 2026-10-13, implementation review fold: RV1-1 / ST1-IR2-9) | measured |
 | check/testdata/operators/overloaded/string_indexing.carbon (refill) | `test_string_indexing.carbon` | two functions `@str.as.IndexWith.impl.At.1`/`.2` (the `i64` impl function and its thunk), the literal's `%Core.IntLiteral.as.ImplicitAs.impl.Convert.call: init %i64`, the call results still `[concrete = constants.%int_84]` and `%int_116`; +79/−33 CHECK lines; the `fail_` splits' diagnostics unchanged | measured |
 | check/testdata/interop/cpp/operators/operators.carbon (refill of two splits) | `fail_todo_import_plus_with_string_view_conversion.carbon` and `fail_todo_rewrite_equal.carbon` | in the first, the four `MissingImplInMemberAccess` lines for `Core.AddWith(str)` are replaced by `` call argument of type `Core.StringBuf` is not supported [CppCallArgTypeNotSupported] `` at column 46 (`[[@LINE+11]]`), then `` cannot implicitly convert expression of type `Core.StringBuf` to `Cpp.StringViewConvertibleC` [ConversionFailure] `` and its `` type `Core.StringBuf` does not implement interface `Core.ImplicitAs(Cpp.StringViewConvertibleC)` `` note; the prelude-located `SemanticsTodo` of the `fail_buf_arg` row lands in the PRECEDING split, `fail_todo_rewrite_equal`, whose `[[@LINE+4]]` becomes `[[@LINE+8]]`, and the second autoupdate run renumbers three of its SemIR lines (`.loc23` to `.loc27`); the third run prints `.`; +16/−5 lines in all; every other split unchanged | measured (M-10 rev 2; amended 2026-10-13, review fold: A-5 / B4, RR-N-4) |
 
@@ -2600,7 +2676,14 @@ directory (amended 2026-10-13, review fold: B12).
 3.  **Gate:** `$CB/gate.sh /home/user/carbon-st` → the rebased base's file_test
     count plus 8, 0 failed, no `!` or `?` marks (1950 = 1942 + 8 on
     80a11e7f0; UA-2 adds 3 and SC-1 16 if they land first) (amended
-    2026-10-13, review fold: B4, B7).
+    2026-10-13, review fold: B4, B7). The verdict is read from gate.sh's exit
+    status and from the log's `[==========] N tests from ... ran.` and
+    `[  PASSED  ] N tests.` lines, never from the failed count of gate.sh's
+    summary line: that count is parsed from a `[  FAILED  ] N tests` line
+    which file_test's brief output never prints, so a red run reads "0
+    failed" (commit 2's run printed `1940 passed, 0 failed (exit 1, 26s)`)
+    until the harness fix lands with the carbonbuild scripts (amended
+    2026-10-13, implementation review fold: ST1-IR2-8).
 4.  **Conformance:** `XDG_CACHE_HOME=/home/user/carbon-build/carbon-st/cache
     $CB/conformance.sh /home/user/carbon-st
     /home/user/carbon-build/carbon-st/conf-out` (the new install digest gives a
@@ -2610,7 +2693,19 @@ directory (amended 2026-10-13, review fold: B12).
     container run unless the orchestrator designates container runs as of
     record (the pending carbonbuild/R28 amendment); the totals go into the
     landed notes, the row text's "expected, not of record" sentence (§2.6) and
-    the PR body (amended 2026-10-13, review fold: B5, B12).
+    the PR body (amended 2026-10-13, review fold: B5, B12). As run, the
+    orchestrator directed both container runs into session scratch
+    directories instead of conf-out: the implementation run into
+    `st1-impl/conf` (whose runtimes-cache location was not recorded) and the
+    fix round's into `st1-impl/conf-fix` with the `XDG_CACHE_HOME` above,
+    created first: the driver falls back to a temporary cache per invocation
+    when that directory is missing
+    (toolchain/driver/runtimes_cache.cpp:193-203), so every link then
+    rebuilds the runtimes.
+    Commit 5 cites a run by toolchain sha, the scoreboard's `generated`
+    timestamp and its totals (§2.6), and the shim of step 8 runs on that
+    run's `bin/` (amended 2026-10-13, implementation review fold: RV1-5 /
+    ST1-IR2-4).
 5.  **Runner:** `python3 fork/conformance/runner.py --self-test` clean after
     `--update-readme-table` (R7).
 6.  **prek fixpoint** (R22, R25), per commit as §3 says: `uvx prek run --files
@@ -2740,7 +2835,15 @@ by design).
     pages of §2.6's reconciliation. Allocate the residues from max(trunk,
     every live `claude/carbon-fork-0-1-*` branch) + 1, skipping W-151 and
     W-152..W-159; if W-160..W-167 are taken, re-allocate and say so in the
-    landed notes (amended 2026-10-13, review fold: A-8, B8, B12).
+    landed notes (amended 2026-10-13, review fold: A-8, B8, B12). Also
+    re-read at rebase: every landing-date stamp (strings.md's status line,
+    the three Fork amendment lines, and commit 5's W-057 title, row 77, §W9
+    paragraph and decision-log heading), re-stamped in a new commit if the
+    merge date differs; strings.md's W-126 and W-148, which assume that PR 51
+    and PR 53 merge first; and, if re-allocation triggers, the residue ids
+    already written in strings.md, the interoperability README's amendment
+    and string_concat_loop.carbon's header (§2.6; amended 2026-10-13,
+    implementation review fold: RV1-4 / ST1-IR2-2, ST1-IR2-5).
 -   Never run `git add -A` (R20); commit with the author and committer
     conventions of the brief, and end each message with exactly the
     attribution trailer lines that the session's harness attribution notice
@@ -2847,3 +2950,65 @@ ST-1's position to this sign-off: after PR 53, PR 51, PR 52 and SC-1, the order
 §5's deltas, §6's rebase notes and §2.6's conditional SAFE-1 reconciliation
 assume; ST-1 and EV-1 share only the same-anchor records of §6, so their
 relative order is the orchestrator's.
+
+## Implementation review fold record (2026-10-13)
+
+Two implementation reviews of commits 2 to 4 (84ff63560, 16a87052f,
+d8d10bf70) returned APPROVE-WITH-FIXES: review 1 (ids RV1-1 to RV1-6) with 6
+MINOR findings, review 2 (ids ST1-IR2-1 to ST1-IR2-9) with 9 MINOR. Neither
+found a BLOCKER or a MAJOR, and none of their probes broke the prelude. Three
+pairs are one finding seen twice (RV1-1 and ST1-IR2-9, RV1-4 and ST1-IR2-2,
+RV1-5 and ST1-IR2-4). All 15 are folded and none is rejected; two name an
+action that the session's permission policy refused to the fixer, the merge of
+ST1-IR2-6 and the harness change of ST1-IR2-8, and those are handed on with
+their fold recorded below. The fix commit changes no code, golden or program,
+so the build of 84ff63560 and commit 3's fill stand. The fixer reproduced every
+finding about behavior in its own scratch tree (session scratch
+`st1-impl/fix`: the ST-1 install of 84ff63560, a private copy of review 1's
+runtimes cache for that install digest, and the §8.8 shim, byte-identical to
+its text above), with each expected line written down before the run.
+
+| Finding | Grade | Disposition | Where folded |
+| --- | --- | --- | --- |
+| RV1-1 / ST1-IR2-9: two §4 key lines are not reproduced literally | MINOR | Reproduced (check compare.carbon:485 reads `init %str.3d4 to %.loc9_16.1 = call`; in lower subscript.carbon the `_CConvert.UInt...:ImplicitAs` body calls `_CConvert.Int...:FromUInt` at :58, whose body has the `zext` at :65). Folded: both §4 rows amended at landing with the fill's lines; §2.6's decision-log entry gains one sentence; no golden changes | §4 `generic.carbon` and lower subscript rows; §2.6 decision log |
+| RV1-2: W-166's shapes leave out a `+` result assigned to an existing `str` | MINOR | Reproduced (`assign.carbon`: `w = "ef" + "gh";` and then one 4-byte `Make` prints `YYYY`; the `var`-owner control prints `efgh`; shim `malloc=5 free=4 bad=0`). Folded: strings.md's W-166 bullet opens "For example" and names the shape; §1.7 and §2.6's W-166 evidence gain it | strings.md 0.1 limits; §1.7 W-166; §2.6 W-166 |
+| RV1-3: strings.md says generic code sees `str` as `Core.Ordered` without W-164 | MINOR | Reproduced (`gen_if.carbon`: the `if`-expression `Min("pear", "apple")` aborts `carbon compile`, exit 134, with the PHI assertion; the statement form prints 5). Folded: one sentence at Comparison with the statement form, and W-164 joins strings.md's 0.1 limits; §2.5 records the departure from its list | strings.md Comparison and 0.1 limits; §2.5 |
+| RV1-4 / ST1-IR2-2: the "landed 2026-10-13" stamps assume a merge date | MINOR | Verified (none of PRs 51, 52, 53 or SC-1 is merged; trunk is 9d3ca60a3). Folded as both propose: every landing-date stamp is on the hand-off's re-read list and in commit 5's ORCHESTRATION note, to be re-stamped in a new commit at the merge if the date differs; no stamp changes now, because the merge date is not known | §2.6 ORCHESTRATION; hand-off |
+| RV1-5 / ST1-IR2-4: the records name a conformance directory the run did not use, and a cache path that did not exist | MINOR | Reproduced (/home/user/carbon-build/carbon-st/cache did not exist before this round, and /root/.cache/carbon_runtimes holds no runtimes for 84ff63560). Cause, read from toolchain/driver/runtimes_cache.cpp:193-203: when `XDG_CACHE_HOME` names a missing directory the driver falls back to a temporary cache per invocation, so every `carbon link` of that run rebuilt the runtimes and nothing persisted (the run took 2917 s; the fix round's first attempt, with the directory still missing, was stopped after 21 programs and restarted once the directory existed). Folded: row 77 cites a run by toolchain sha, `generated` timestamp and totals; §8.4 records the as-run directories and that the cache directory must exist; the fix round re-ran conformance and the §8.8 shim with that `XDG_CACHE_HOME` (results below) | §2.6 row 77; §8.4 |
+| RV1-6: each direct C++ use of a `StringBuf` repeats the prelude-located TODO | MINOR | Reproduced (`twice.carbon`, two `Cpp.ViewSize(s)` calls: the `SemanticsTodo` at string.carbon:141:1 twice, each before its `CppCallArgTypeNotSupported`; exit 1, no crash). Folded as directed, with no code change: W-161's notes | §2.6 W-161 |
+| ST1-IR2-1: strings.md says `Size()` and comparison need the view, and introduces the accepted forms as the error | MINOR | Verified against string.carbon:150 (`StringBuf.Size`) and :205-275 (the `EqWith` and `OrderedWith` impls with a `StringBuf` operand). Folded: Overview now says `Size()` and the comparisons are on both types and subscripts on `str` only; Ownership and lifetime introduces "the two accepted forms"; §1.1 amended. The optional point stands as written: `IsEq[T: Core.Eq]` with `str` prints 1 then 0 (`gen_stmt.carbon`), so the `Core.Eq` claim is measured, though no golden pins it | strings.md Overview, Ownership and lifetime; §1.1 |
+| ST1-IR2-3: row 77's decision-log citation matches no heading | MINOR | Verified (rows 79 and 82 cite "SL-1: ..." and "SL-2: ...", the headings at decision-log.md:3747 and :2863 without their dates). Folded: row 77 and W-057 cite "ST-1 / F-014: str comparison, Core.StringBuf, concatenation" | §2.6 W-057, row 77 |
+| ST1-IR2-5: the id re-read is stale for EV, and ids are written into three files | MINOR | Reproduced (68 refs with a ledger: trunk W-125, ua2 W-127, cmake W-133, safe W-150, sc W-151, ev W-155; W-160 to W-167 unfiled on all). Folded: §2.6's id re-scan item with the renumbering file list, the ORCHESTRATION note's W-126 and W-148 condition, and the hand-off | §2.6; hand-off |
+| ST1-IR2-6: the branch lacks trunk 9d3ca60a3 | MINOR | Verified (`git diff --stat 80a11e7f0 9d3ca60a3`: fork/ORCHESTRATION.md only, 11 insertions, the reservations at :69-75 and the st row at :413). The fixer's merge was refused by the session's permission policy, so the branch is unchanged. Folded as commit 5's first step: a merge commit, never a rebase (the EV-1 precedent dff212ccc), then the st row edited in place | §2.6 ORCHESTRATION |
+| ST1-IR2-7: the interoperability amendment does not link strings.md | MINOR | Folded as recommended: the amendment ends `See [Strings](../strings.md#interoperability).`; §2.5 records the departure from its text | interoperability/README.md:303-306; §2.5 |
+| ST1-IR2-8: gate.sh prints "0 failed" on a red run | MINOR | Reproduced (the unmodified script, fed gate_commit2.log, prints `1940 passed, 0 failed (exit 1, ...)` and no failing files). A fix was written and checked in scratch (`st1-impl/fix/gate.sh.new`: failures counted from the unique `[  FAILED  ] ToolchainFileTest` lines and as ran minus passed, a `gate: PASS` or `gate: FAILED` line, the failing files always listed, an aborted run reported with the log tail): fed gate_commit2.log it prints 10 failed, FAILED and the ten files; gate_commit3.log, 1950 passed and PASS; a truncated log with exit 134, FAILED and the tail. It is not installed: the session's permission policy refused replacing the shared harness script, so it goes with the carbonbuild landing (the R28 amendment). §8.3 reads the verdict from the exit status and the log | §8.3 |
+
+Fix-round verification, at the fix commit's tree with the toolchain of
+84ff63560 (the commit changes no file the gate or the runner compiles):
+
+-   **Gate:** gate.sh printed `1950 passed, 0 failed (exit 0, 61s)`, and the
+    log reads `[==========] 1950 tests from 1 test suite ran.` and
+    `[  PASSED  ] 1950 tests.` with no `[  FAILED  ]` line.
+-   **Conformance** into `st1-impl/conf-fix`, with
+    `XDG_CACHE_HOME=/home/user/carbon-build/carbon-st/cache` created first:
+    scoreboard generated 2026-10-13T19:47:00Z, PASS 133, COMPILE-FAIL 0,
+    LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 of
+    154, bullets 48 PASS and 8 SKIP of 56, in 83.4 s. Against
+    fork/conformance/out/scoreboard.json (128/0/22 over 150) the only status
+    changes are the five String programs of §5, and against the
+    implementation run's scoreboard there is none. The String bullet is PASS
+    over six programs. This is §5's expected result, not of record.
+-   **Allocation check (§8.8)** on that run's six String binaries: 1/0, 2/1,
+    3/2, 8/7, 20/19 and 28/27 (malloc/free), every one `bad=0`, M-23
+    exactly.
+-   **Runner:** `--self-test` prints "154 programs parsed, 56 bullets in
+    table, OK".
+-   **Docs:** R27 does not apply to the edits (strings.md's API listing is
+    unchanged). R31 counts before and after this commit's prek: strings.md
+    h1 1, h2 10, h3 2 before and after, dash items 47 before and 48 after
+    (the new W-164 limit), numbered items 0; the interoperability README h1
+    1, h2 13, h3 16, dash items 37 and numbered items 3, unchanged; this
+    plan h1 1, h2 13 before and 14 after (this section), h3 17, dash items
+    117 before and 123 after (§2.6's id re-scan item and this list's five),
+    numbered items 20. prek reached its fixpoint on the second run; the
+    first rewrapped only this commit's own §2.5 lines.

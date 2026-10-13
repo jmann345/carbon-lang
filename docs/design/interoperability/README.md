@@ -303,7 +303,7 @@ default until layout compatibility is established.
 > **Fork amendment (2026-10-13, F-014).** The owning `Core.StringBuf` has no C++
 > mapping; it reaches a `std::string_view` parameter through its view,
 > `Cpp.F(s.AsStr())`, because C++ overload resolution does not see Carbon
-> conversions (W-161).
+> conversions (W-161). See [Strings](../strings.md#interoperability).
 
 > References:
 >

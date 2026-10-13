@@ -54,8 +54,8 @@ but are not validated, compared or iterated as characters (proposal
     impl frees. It is not copyable; `Core.StringBuf.Make(s)` is the explicit
     copy. It converts implicitly to `str`.
 
-The view carries the read API (`Size()`, `s[i]`, comparison), so a
-`Core.StringBuf` is read through its view:
+`Size()` and the comparisons are provided on both types. Subscripts are
+provided on `str` only, so a `Core.StringBuf` is subscripted through its view:
 
 ```carbon
 var s: Core.StringBuf = Core.StringBuf.Make("Carbon");
@@ -165,7 +165,11 @@ differential oracle for Carbon's string comparisons. The order is transitive and
 consistent under reversal, and equality refines it (equal bytes and sizes
 exactly when neither string orders before the other), as
 [Comparison operators](expressions/comparison_operators.md#compatibility-of-equality-and-ordering)
-asks. Generic code sees `str` as `Core.Eq` and `Core.Ordered`.
+asks. Generic code sees `str` as `Core.Eq` and `Core.Ordered`. In such code, an
+`if` expression whose type is the generic parameter, such as
+`return if a < b then a else b;`, crashes the toolchain today (W-164, see
+[0.1 limits](#01-limits)); use the statement form,
+`if (a < b) { return a; } return b;`.
 
 ```carbon
 var joined: Core.StringBuf = "app" + "le";
@@ -231,7 +235,7 @@ copy is the spelling that stays valid.
     declare its own `Destroy` is destroyed.
 -   It is never copied implicitly. A function returns a string it builds as
     `Core.StringBuf`, either directly or through `returned var`; `return s;` of
-    a plain `var` is a copy, and an error:
+    a plain `var` would copy it, and is an error. The two accepted forms:
 
     ```carbon
     fn Concat(a: str, b: str) -> Core.StringBuf { return a + b; }
@@ -329,14 +333,20 @@ removed:
     "x")` for a `bool` generic parameter is rejected. Removed by comparison
     builtins with compile-time evaluation, or by compile-time evaluation of
     function bodies.
+-   **W-164: an `if` expression whose type is a generic parameter crashes the
+    toolchain.** It is not specific to strings: in a function generic over
+    `T: Core.Ordered & Core.Copy`, `return if a < b then a else b;` crashes
+    lowering for `str` and for a class type alike. Use the `if` statement form.
+    Removed when lowering handles such an `if` expression.
 -   **W-165: an initializing `str` argument to an uninstantiated
     `basic_string_view<char>` parameter crashes Clang.** Only a mock
     `basic_string_view` whose specialization no code instantiates is affected;
     libc++'s `<string_view>` is not. Removed when overload resolution checks
     that the parameter type is complete before querying its move constructor.
 -   **W-166: a `str` view of a `Core.StringBuf` can outlive its owner with no
-    diagnostic.** A `-> str` function returning a `+` result or a local owner, a
-    `str` field initialized from a temporary, and a view held across `+=`
+    diagnostic.** For example, a `-> str` function returning a `+` result or a
+    local owner, a `str` field initialized from a temporary, a `+` result
+    assigned to an existing `str` variable, and a view held across `+=` all
     compile and read freed memory. Removed when the loan checker of F-013
     (W-148) lands and diagnoses them; until then, follow the rules of
     [Ownership and lifetime](#ownership-and-lifetime).

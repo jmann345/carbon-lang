@@ -2111,7 +2111,10 @@ PASS, `42` then `7`) and interop/cpp_structural_conformance (PASS, `7` then `0`)
 moving. Fill round 3 folds round 2's two implementation reviews: 0efe76e7d
 (fixes, test sources, the design page, records), bc8b37290 (4 goldens refilled)
 and 5171e5eda (records); it re-measured the same totals on the toolchain stamped
-0.0.0-0.dev+bc8b37290 (below). Not of record until
+0.0.0-0.dev+bc8b37290 (below). Fill round 4 folds round 3's two implementation
+reviews: aa67ea281 (fixes, test sources, the design page, records), ff490bd48 (6
+goldens refilled) and d232d4753 (records); it re-measured the same totals on the
+toolchain stamped 0.0.0-0.dev+ff490bd48 (below). Not of record until
 fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
@@ -2447,13 +2450,13 @@ counted as a prediction that held (fill round 4, review finding MINOR-7 of round
 3's review 2, R16(d)).
 
 Round 3's own diff (0efe76e7d, bc8b37290, 5171e5eda, 2497d5000) had two
-implementation reviews: review 1, REJECT (BLOCKER-1, MAJOR-1, MINOR-1,
-MINOR-2), and review 2, APPROVE-WITH-FIXES (MAJOR-1, MAJOR-2, MINOR-1 to
-MINOR-7), 13 findings, with the two MAJOR-1s the same defect and review 1
-MINOR-1 / review 2 MINOR-2 and review 1 MINOR-2 / review 2 MINOR-5 overlapping.
-Both confirmed round 3's folds on the 0.0.0-0.dev+bc8b37290 driver, its gate
-(1959 passed, 0 failed) and its conformance (130 / 0 / 21 over 151) privately.
-Fill round 4 folds all 13, below.
+implementation reviews: review 1, REJECT, 1 BLOCKER, 1 MAJOR and 2 MINOR
+(BLOCKER-1, MAJOR-1, MINOR-1, MINOR-2), and review 2, APPROVE-WITH-FIXES, 2
+MAJOR and 7 MINOR (MAJOR-1, MAJOR-2, MINOR-1 to MINOR-7), 13 findings, with the
+two MAJOR-1s the same defect and review 1 MINOR-1 / review 2 MINOR-2 and review
+1 MINOR-2 / review 2 MINOR-5 overlapping. Both confirmed round 3's folds on the
+0.0.0-0.dev+bc8b37290 driver, its gate (1959 passed, 0 failed) and its
+conformance (130 / 0 / 21 over 151) privately. Fill round 4 folds all 13, below.
 
 Fill round 4 (2026-10-13), by review finding (review 1 BLOCKER-1 / MAJOR-1 /
 MINOR-n, review 2 MAJOR-n / MINOR-n), each reproduced first on the toolchain
@@ -2604,7 +2607,14 @@ goldens changed nothing; gate 1959 passed and 0 failed, exit 0, no `!` or `?`
 mark; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49
 PASS, 0 FAIL, 7 SKIP of 56, the same two programs moving against
 fork/conformance/out/scoreboard.json. Round 4's commits: aa67ea281 (fixes, test
-sources, docs, records), ff490bd48 (goldens) and the records commit after it.
+sources, docs, records), ff490bd48 (goldens) and d232d4753 (records). Re-run
+for the records commit after d232d4753, on d232d4753 with the installed
+toolchain stamped 0.0.0-0.dev+ff490bd48 (no toolchain source differs):
+autoupdate over the 19 SC-1 goldens changed nothing (one dot per file, the
+satisfy golden whose W-168 comment round 4 edited among them); gate 1959 passed
+and 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every failure
+class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 48.9 s, the same
+two programs moving.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

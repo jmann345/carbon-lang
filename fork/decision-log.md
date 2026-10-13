@@ -4269,14 +4269,19 @@ above), then 830447980, the records commit that wrote this entry. Fill round 3,
 folding round 2's two implementation reviews: 0efe76e7d (fixes, test sources,
 the design page and records), bc8b37290 (4 goldens refilled, CHECK lines only)
 and 5171e5eda (records: the re-measure on a clean-stamped toolchain). The
-records commit after 5171e5eda appends round 2's review record and round 3's
-decisions here and folds in the separate entry "SC-1 fill round 3 (2026-10-13)"
-that 0efe76e7d had added after this one, so that one entry holds every fill
-round. Each fix is an R29(a) implementation decision recorded for after-the-fact
-veto, with its design citation and break condition; none reopens F-010 or the
-intent of a D-SC decision. Every count below is a measurement on the container,
-not of record (R9): fork/conformance/out/scoreboard.json reads 128 / 0 / 22 over
-150 until a run of record replaces it.
+records commit after 5171e5eda, 2497d5000, appends round 2's review record and
+round 3's decisions here and folds in the separate entry "SC-1 fill round 3
+(2026-10-13)" that 0efe76e7d had added after this one, so that one entry holds
+every fill round. Fill round 4, folding round 3's two implementation reviews:
+aa67ea281 (fixes, test sources, the design page and records), ff490bd48 (6
+goldens refilled, CHECK lines only) and d232d4753 (records: the re-measure on a
+clean-stamped toolchain, miss (m)); the records commit after d232d4753 adds
+round 3's per-finding dispositions and the re-measure on d232d4753. Each fix is
+an R29(a) implementation decision recorded for after-the-fact veto, with its
+design citation and break condition; none reopens F-010 or the intent of a D-SC
+decision. Every count below is a measurement on the container, not of record
+(R9): fork/conformance/out/scoreboard.json reads 128 / 0 / 22 over 150 until a
+run of record replaces it.
 
 THE FOUR DEFECTS (1a7cce0b2), each an implementation decision:
 
@@ -4636,19 +4641,38 @@ splits (as filled) and the round-3 splits (predicted before the fill) and
 comments the two uncommented fail splits. Per-finding detail and pinning splits
 are in the plan's "Landed notes (SC-1 fill rounds, 2026-10-13)". Round 3's own
 diff (0efe76e7d, bc8b37290, 5171e5eda, 2497d5000) then received two
-implementation reviews, 13 findings in all. Review 1, REJECT: BLOCKER-1 a
-requirement passed as a value (`Take(HasN.N)`), which checked clean and aborted
-lowering, the round-2 crash class through a use site round 3 did not guard;
-MAJOR-1 an impl inside a `union` body whose structural `require` was never
-checked; MINOR-1 the impl.cpp:58 cite of D-SC-5(b); MINOR-2 the ambiguity
-residue without an id. Review 2, APPROVE-WITH-FIXES: MAJOR-1 the same union
-defect; MAJOR-2 model names in the PR body draft; MINOR-1 the thunk test
-unreachable and its "pinned by" claim; MINOR-2 the D-SC-5 letter at five more
-places; MINOR-3 `fail_own_params`' undeducible `U`; MINOR-4 a design-page
-sentence false for the page's own `C`; MINOR-5 the residue's id and a missing
-file:line; MINOR-6 the overstated round-3 tally; MINOR-7 a round-3 clause
-observed on the build under test and counted as a prediction. Fill round 4 folds
-all 13 (ROUND 4 below).
+implementation reviews, 13 findings in all. Review 1, REJECT, 1 BLOCKER, 1 MAJOR
+and 2 MINOR: BLOCKER-1 a requirement passed as a value (`Take(HasN.N)`), which
+checked clean and aborted lowering, the round-2 crash class through a use site
+round 3 did not guard; MAJOR-1 an impl inside a `union` body whose structural
+`require` was never checked; MINOR-1 the impl.cpp:58 cite of D-SC-5(b); MINOR-2
+the ambiguity residue without an id. Review 2, APPROVE-WITH-FIXES, 2 MAJOR and 7
+MINOR: MAJOR-1 the same union defect; MAJOR-2 model names in the PR body draft;
+MINOR-1 the thunk test unreachable and its "pinned by" claim; MINOR-2 the D-SC-5
+letter at five more places; MINOR-3 `fail_own_params`' undeducible `U`; MINOR-4
+a design-page sentence false for the page's own `C`; MINOR-5 the residue's id
+and a missing file:line; MINOR-6 the overstated round-3 tally; MINOR-7 a round-3
+clause observed on the build under test and counted as a prediction. Fill round
+4 (aa67ea281, ff490bd48, d232d4753) folds all 13, each reproduced first on the
+toolchain stamped 0.0.0-0.dev+bc8b37290, none rejected and none taken in part.
+Dispositions: review 1 BLOCKER-1, MAJOR-1 of both reviews and review 2 MINOR-1
+are ROUND 4's DECISIONS above; review 1 MINOR-1 and review 2 MINOR-2 cite
+D-SC-5(c) at impl.cpp:58, structural_conformance.cpp:61 and :441, in the
+comments of requirement-call `fail_impl_member_alias`, unsatisfied
+`fail_alias_requirement` and `fail_facet_type_self` and require
+`fail_extend_impl_extend_require_self`, and on the design page, while the cites
+of the lookup path and the access decision keep D-SC-5(b); review 1 MINOR-2 and
+review 2 MINOR-5 file W-168 (RENUMBER below) and cite
+structural_conformance.cpp:495 in the generic-class `fail_todo` comment; review
+2 MAJOR-2 is outside the repository (the PR body draft names no model); MINOR-3
+respells unsatisfied `fail_own_params` to the deducible shape, `fn Get[U:
+type](unused self, unused n: U) -> i32` against the requirement `fn Get(self, n:
+i32) -> i32`, which W-136's break condition would flip; MINOR-4 qualifies the
+design page's accepted alias to a class that declares its own matching `F`;
+MINOR-6 restates round 3's tally (above); MINOR-7 withdraws the observed
+`UseStructurally` clause from the held predictions (FILL-CAUGHT MISSES above).
+Per-finding detail and pinning splits are in the plan's "Landed notes (SC-1 fill
+rounds, 2026-10-13)".
 
 MEASURED, on the container only. Round 1 (the toolchain built from 1a7cce0b2's
 sources): autoupdate over the 18 goldens rewrote all 18; the gate then ran 1958
@@ -4693,7 +4717,12 @@ conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
 FAIL, 7 SKIP of 56, 108.2 s. Every check-clean probe of round 2's and round 3's
 reviews and of this round (60 programs) compiles on it; the three that abort at
 sem_ir/generic.cpp:84 (round 2's p40, p41, p43) abort so on trunk 0bdce60a5
-too. Against
+too. Re-run for the records commit after d232d4753, on d232d4753 with that
+installed toolchain (no toolchain source differs from aa67ea281): autoupdate
+over the 19 SC-1 goldens changed nothing, the satisfy golden whose W-168 comment
+round 4 edited printing a single dot; gate 1959 passed, 0 failed, exit 0, no `!`
+or `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151,
+bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 48.9 s. Against
 fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
 exactly two programs move in every run: generics/structural_conformance.carbon
 SKIP to PASS (`42` then `7`) and the new
@@ -4744,9 +4773,13 @@ dispositions and decisions, and §4.B rows for round 4's splits written before
 the build under test ran on them; W-168 filed and W-027 re-cited; this entry;
 the design page (the value rule, "class or union", the qualified alias
 sentence, the D-SC-5(c) label); the ORCHESTRATION status paragraph and Branches
-row. Round 4's records commit, after ff490bd48: the four round-4 §4.B rows and
-the compound row's amendment marked FILLED, miss (m), the round-4 measurements
-here and in the plan, W-027's notes, and the Branches row.
+row. Round 4's records commit, d232d4753: the four round-4 §4.B rows and the
+compound row's amendment marked FILLED, miss (m), the round-4 measurements here
+and in the plan, W-027's notes, and the Branches row. The records commit after
+d232d4753: round 4's commit hashes at the head of this entry and of the plan's
+note, round 3's review counts and per-finding dispositions (REVIEWS above), the
+re-measure on d232d4753 here and in the plan, the ORCHESTRATION status
+paragraph and Branches row, and W-027's notes and evidence.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

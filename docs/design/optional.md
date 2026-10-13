@@ -182,8 +182,9 @@ The design's own examples spell `Optional` as a `choice` with alternatives
 `.Some` and `.None` ([Sum types](sum_types.md#choice-declarations)), and as a
 class that implements `Match`
 ([User-defined sum types](sum_types.md#user-defined-sum-types)). The fork keeps
-the prelude's class (fork decision D-EH-1, which resolved SF-9 as "keep the
-class"), because the names and the layout it has are already load-bearing:
+the prelude's class (fork decision D-EH-1, which resolved SF-9: "`Core.Optional`
+KEEPS its placeholder class identity"), because the names and the layout it has
+are already load-bearing:
 
 -   the toolchain's `for` calls `HasValue` and `Get` by name
     (toolchain/check/handle_loop_statement.cpp);
@@ -352,11 +353,12 @@ holds one ("`if (me.holds_value) value.Destroy();`", proposal p001154, a
 considered alternative). The 0.1 storage holds the value in a
 `MaybeUnformed(T)`, which runs no destructor, and no `Destroy` impl for
 `Core.Optional` exists. Declaring one is not enough: under
-[Destructors](classes.md#destructors), a class that defines a destructor is
-not `TrivialDestructor`, so a declared `Destroy` on `Optional(T)` would make
-the pointer niche nontrivial and reject the `Core.Optional(T*)` union fields
-that [Unions](unions.md#trivially-destructible-and-trivially-copyable-types)
-admits. Proposal p001154's way out, a conditional `TrivialDestructor` impl for
+[Destructors](classes.md#destructors), a class that defines a destructor with
+a non-empty body is not `TrivialDestructor`, so a declared `Destroy` on
+`Optional(T)` would make the pointer niche nontrivial and reject the
+`Core.Optional(T*)` union fields that
+[Unions](unions.md#trivially-destructible-and-trivially-copyable-types) admits.
+Proposal p001154's way out, a conditional `TrivialDestructor` impl for
 `Optional(U)`, was considered there and not adopted. The program
 fork/conformance/programs/stdlib/optional_destroys_value.carbon states the rule
 and is skipped until W-170 lands.

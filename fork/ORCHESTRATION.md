@@ -10,7 +10,8 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-12 (weekly check fired; BLOCKED: GitHub Actions on
+Last updated: 2026-10-13 (the ST-1 discharge: the dated paragraph after this
+one). Earlier, 2026-10-12 (weekly check fired; BLOCKED: GitHub Actions on
 the repository is DISABLED — every `workflow_dispatch` of `Fork: hosted
 verification` returns "Actions has been disabled for this repository", the
 repository's own scheduled workflows last ran 2026-10-08, the repository is
@@ -48,6 +49,32 @@ container to install bazelisk + LLVM 21.1.8 and build against upstream's
 public read-only bazel cache (the tool-permission layer declined that setup
 when attempted) — until one of these, no code lands. Next cron Monday
 2026-10-19; the owner's machine is never used.
+
+ST-1 discharge (2026-10-13; pushed, PR to open and hold): ST-1
+(claude/carbon-fork-0-1-st, fork/string/plan.md rev 3, W-057, gap row 77,
+fork design F-014) is IMPLEMENTED AND DISCHARGED off trunk 80a11e7f0 —
+84ff63560 (core/prelude/types/string.carbon 32 → 275 lines: byte-wise `==`,
+`!=`, `<`, `<=`, `>` and `>=` on `str`, the owning `Core.StringBuf`, `+` and
+`+=`, `i64` `str` subscripts; the export.cpp null check; eight CHECK-free
+goldens), 16a87052f (the autoupdate fill: exactly the ten predicted goldens),
+d8d10bf70 (string_missing_ops SKIP → PASS, four new String programs,
+docs/design/strings.md, three dated amendments), 34e3af720 (both
+implementation reviews folded, 15 MINOR, none rejected) and the discharge
+commit (row 77 PARTIAL → DONE with filed limits, header 31 / 20 / 4 / 1,
+W-057 DISCHARGED, W-160..W-167 filed, the F-014 decision-log entry).
+Verification is container-built and NOT of record (Actions disabled): the
+carbonbuild toolchain of 84ff63560, file_test 1950/1950 (1942 + 8), the
+expected scoreboard 133 PASS / 0 FAIL / 21 SKIP over 154, 48/56 bullets
+(scoreboard generated 2026-10-13T19:47:00Z), the five String programs the only
+change from the floor of record 128 / 0 / 22 over 150, and the plan's
+allocation shim balanced (`bad=0`) on all six String programs. Not run: Bazel
+and its tests, clangd-tidy, any hosted run, an opt-mode toolchain, LLVM
+assertions, non-Linux. Merge position: LAST, after PR 53, PR 51, PR 52, SC-1
+and EV-1. Trunk 9d3ca60a3 (the id reservations and the EV-1 and ST-1 Branches
+rows) is NOT merged into the branch, because the session's permission policy
+refused that merge twice; merging it conflicts on the ST-1 Branches row only.
+The merge steps are Next actions item 5; the SAFE-1 reconciliation ST-1 owes
+at its rebase is item 6.
 
 Later on 2026-10-12 (after the weekly stamp above): three PRs are OPEN and HELD
 against trunk 0bdce60a5 — PR #51 (UA-2, claude/carbon-fork-0-1-ua2, head
@@ -400,6 +427,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-ua2` | HELD OPEN as PR #51 — UA-2 reconciliation at 05a5c30f7, fill + of-record conformance 37413300832 (131/0/19 over 150) done, gate impossible (Actions disabled); merge when a gate runs. |
 | `claude/carbon-fork-0-1-cmake` | HELD OPEN as PR #52 — CM-1 CMake integration at ea573f672 (gap rows 84/87 expected DONE, W-060/W-061 discharged, W-128..W-133); verification record in the PR; merge when the land sequence runs. |
 | `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at adaae4e35, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence. |
+| `claude/carbon-fork-0-1-st` | DISCHARGED AND PUSHED, PR to open and hold — ST-1 str comparison, `Core.StringBuf` and concatenation (F-014; W-057 DISCHARGED, gap row 77 expected DONE, W-160..W-167 filed) at 84ff63560, 16a87052f, d8d10bf70 and 34e3af720 plus the discharge commit; container-built verification only (file_test 1950/1950; expected 133/0/21 over 154, 48/56), not of record; merges LAST, after PR 53, PR 51, PR 52, SC-1 and EV-1 (Next actions 5 and 6). |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED, FILL IN PROGRESS — SC-1 template structural conformance, commits 1-3 at 42841fa8d with reviews folded (W-134..W-144; W-144 renumbers to W-151 at landing); PR after the fill converges. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
@@ -412,11 +440,15 @@ code). Next check: Monday 14:00 UTC.
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
 
-126 PASS / 23 SKIP / 0 FAIL programs (149 total); **47/56 bullets green**
-(GitHub-hosted scoreboard at the PR #48 head, run 37357609478; verified from
-fork/conformance/out/scoreboard.json — the error-handling control-flow bullet is
-the fork's first error-handling flip, now 4 programs deep incl. the W72b
-threading arbiter). History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79 at S3a → 80
+128 PASS / 22 SKIP / 0 FAIL programs (150 total); **48/56 bullets green**
+(fork/conformance/out/scoreboard.json, generated 2026-10-06 by the hosted
+conformance run 37402970811 on 606a99c5a: the floor of record, re-quoted from
+the file at the ST-1 discharge, a quotation fix, not a regeneration; the line
+had read 126 / 23 / 0 over 149 and 47/56 from the PR 48 run 37357609478).
+Expected at ST-1, NOT of record: 133 PASS / 21 SKIP / 0 FAIL over 154, 48/56
+(a container run on the carbonbuild toolchain of 84ff63560, scoreboard
+generated 2026-10-13T19:47:00Z; the String bullet PASS over six programs).
+History: 73 → 77 at S2d/S2e → 78 at PR #11 → 79 at S3a → 80
 at S3b → 81 at S3c → 83 at B1b (error_handling/control_flow_constructs flip +
 question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a → 88 F8b
 → 89 F8c → 90 F8d → 91 W72b → 92 W-067 → 93 W-068 → 95 W-069 → 96 multifile →
@@ -477,6 +509,110 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     subpatterns (W-008).
 4.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI; W-066 match usefulness diagnostics.
+5.  ST-1 merge (`claude/carbon-fork-0-1-st`, F-014, W-057; merges LAST,
+    after PR 53, PR 51, PR 52, SC-1 and EV-1), in this order:
+    -   Merge trunk into the branch with a merge commit, never a rebase
+        (AGENTS.md; the EV-1 precedent dff212ccc). Trunk 9d3ca60a3's ST-1
+        Branches row conflicts with the branch's row: keep trunk's EV-1 row
+        and the branch's ST-1 row, and drop trunk's "PLAN rev 1 in review"
+        row; the id reservations (trunk's fork/ORCHESTRATION.md:69-75) merge
+        cleanly.
+    -   At the rebase onto a trunk holding PR 53, PR 51, PR 52, SC-1 and EV-1
+        (fork/string/plan.md §6's same-anchor rules): re-anchor the F-014
+        decision-log entry above the then-newest landed entry; re-apply the
+        gap header's delta (the String row from PARTIAL to DONE) to whatever
+        the header reads; re-read row 77's and row 41's lines; regenerate the
+        conformance README table with `runner.py --update-readme-table`;
+        append W-160..W-167 after the then-last ledger item; rebuild, refill
+        (plan §7 R-9: SC-1's member-access changes) and re-run file_test (the
+        base's count plus 8) and conformance, and re-quote the totals from
+        that run (R9), never adding them by hand.
+    -   Re-stamp, in a new commit if the merge date is not 2026-10-13, every
+        landing-date stamp: strings.md's status line (:29-30), the three Fork
+        amendment lines (docs/design/README.md:636,
+        docs/design/expressions/arithmetic.md:190,
+        docs/design/interoperability/README.md:303), W-057's "LANDED
+        2026-10-13" title, row 77's "DISCHARGED 2026-10-13", the §W9
+        paragraph's "DISCHARGED 2026-10-13" and the decision-log heading's
+        date.
+    -   strings.md, row 77 and the ledger cite W-126 (filed on the UA-2
+        branch only) and W-148 (on the SAFE-1 branch only) on the assumption
+        that PR 51 and PR 53 merge before ST-1, as this merge order has them;
+        if either has not merged by then, its id is replaced by its item's
+        title in a new commit.
+    -   The id scan at the discharge read 68 refs: trunk W-125, ua2 W-127,
+        cmake W-133, safe W-150, sc W-151, ev W-155, and W-160..W-167 unfiled
+        elsewhere. Re-run it at the rebase; if any of W-160..W-167 is taken,
+        re-allocate and renumber, in the same commit, docs/design/strings.md
+        (W-160..W-167), the interoperability README's amendment (W-161) and
+        string_concat_loop.carbon's header (W-160).
+    -   When Actions returns, the hosted conformance run on the PR head is
+        the record (expected: PASS +5, SKIP −1, programs +4 over the base,
+        the String bullet PASS over six programs), and the "not of record"
+        phrases go in a records commit.
+    -   The carbonbuild gate.sh prints "0 failed" on a red file_test run
+        (ST1-IR2-8); its fix goes in with the carbonbuild landing (the
+        pending R28 amendment), and until then the gate verdict is read from
+        the exit status and the log lines (plan §8.3).
+6.  The SAFE-1 reconciliation ST-1 owes, verbatim from fork/string/plan.md
+    §2.6 (PR 53 had not landed at ST-1's discharge). ST-1 merges after PR 53,
+    so ST-1 makes these edits at its rebase; if ST-1 lands first, SAFE-1's
+    rebase makes them:
+    -   **W-144 (SAFE-1's, if on trunk at discharge):** its evidence gains
+        `StringBuf.AsStr`, `StringBuf as ImplicitAs(str)`'s `Convert` (the view
+        producers that need `bound self`) and `String.UnsafeMake` (an
+        `UnsafeMake` for the `unsafe fn Make` rename), at their landed
+        string.carbon lines; if PR 53 has not landed, the same three go into the
+        ORCHESTRATION note of the SAFE-1 reconciliation below (amended
+        2026-10-13, review fold: A-2 / B1). It also gains the interface
+        declaration `ImplicitAs(Dest).Convert`
+        (core/prelude/operators/as.carbon:23), with `As(Dest).Convert` (:18) and
+        `UnsafeAs(Dest).Convert` (:13) for the workaround blankets at :27-34, as
+        needing `bound self` beside `IndexWith.At` and `Copy.Op`: by F-013 T5(e)
+        an impl may drop but not add `bound`, so without it the `Convert` impl
+        cannot keep the loan (D-ST-11; the same fallback applies if PR 53 has
+        not landed; amended 2026-10-13, review fold: RR-N-2).
+    -   **SAFE-1 reconciliation** (amended 2026-10-13, review fold: B1). If PR
+        53 has landed first (the ORCHESTRATION merge order), ST-1 makes these
+        edits at its rebase; otherwise they go, verbatim, into ORCHESTRATION's
+        "Next actions" for SAFE-1's rebase: (1) under EX-TM-7b's outcome
+        (temporal_safety.md:831-840 on the safe branch), a dated ST-1 amendment:
+        "Measured (ST-1 M-7, <date>): today's toolchain destroys a declaration
+        initializer's temporaries at the end of the enclosing block, so this
+        `v[0]` reads the live block (it prints 7 after a second `Make(4, 9)`);
+        the design's loan still ends at the full-expression, and the next
+        statement's use is `StrictBorrowOfTemporary`"; (2) dated amendments to
+        spatial_safety.md SP2's one-gap list (:130-149) and to :433-438: `str`
+        subscripts through the `"string.at"` builtin are unchecked (W-162), so a
+        read through `Core.String` is not one of SP2's checked shapes; (3)
+        initialization_safety.md:103-104's `types/string.carbon :28` becomes
+        `:34`; (4) the W-144 evidence item above; (5) strings.md states
+        D-SAFE-12 as the view rule (§2.5); (6) dated amendments to
+        spatial_safety.md SP3 (:159-201) and to temporal_safety.md T2's "Copies
+        preserve loans" paragraph (:264-273): the interface declaration
+        `ImplicitAs(Dest).Convert` (core/prelude/operators/as.carbon:23), with
+        `As(Dest).Convert` and `UnsafeAs(Dest).Convert` for the workaround
+        blankets at :27-34, carries `bound self` per T5(e), beside
+        `IndexWith.At` and `Copy.Op`, because an owner-to-view `Convert` (`Slice(T)
+        as ImplicitAs(Slice(const T))`'s at slice.carbon:80-84, `StringBuf as
+        ImplicitAs(str)`'s) creates a loan rather than preserving one, so T2's
+        "every `ImplicitAs` impl is not a loan boundary" reads such a `Convert`
+        as a `bound self` producer (amended 2026-10-13, review fold: RR-N-2);
+        (7) under T4 (temporal_safety.md:303-317), a dated ST-1 example: "`s +=
+        s;` on a `Core.StringBuf` is `StrictSharedBorrowInvalidated`: the
+        by-value `other` is a shared loan on `s` (M8) and the `ref self` call
+        invalidates `s` (M3(d)); it is memory-safe in today's toolchain, and the
+        fork's spelling is `s += Core.StringBuf.Make(s);`", and, if W-148 is on
+        trunk at discharge, its notes name D-ST-14's four expected trips
+        (amended 2026-10-13, review fold: RR-N-1).
+    -   **Cross-branch re-cites, conditional:** if SAFE-1 (PR 53) has landed
+        first, its citations of string.carbon:16-27 and :16-28
+        (docs/design/safety/mutation_safety.md:312, rust_interop.md:202,
+        temporal_safety.md:736 and :960) become :16-32 and :16-34, and
+        mutation_safety.md's `Plain` table gains the row "`Core.StringBuf` |
+        no | owns a heap block, `impl as Destroy` frees it
+        (string.carbon:141-171)" with a dated ST-1 note; the decision log's
+        historical entries are not edited.
 
 ### Standing user directives
 

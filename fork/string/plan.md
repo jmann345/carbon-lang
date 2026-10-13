@@ -44,7 +44,10 @@ that changes no code, golden or program and records each finding in the
 record](#implementation-review-fold-record-2026-10-13); its in-place
 amendments to this plan are marked "(amended 2026-10-13, implementation review
 fold: RV1-n)" or "(... ST1-IR2-n)", and the two §4 key lines it corrects
-"(amended at landing ...)". The discharge, §3 commit 5, is next.
+"(amended at landing ...)". The fix commit is 34e3af720. The discharge, §3
+commit 5, followed: its records, the deltas from this plan and the review
+record are in the [Landed notes (ST-1,
+2026-10-13)](#landed-notes-st-1-2026-10-13).
 
 **Item:** W-057 ("W9c: string equality, concatenation, and owning variant", size
 M, subsystem core/prelude, bullet "Stdlib: String and string-literal types").
@@ -3012,3 +3015,131 @@ Fix-round verification, at the fix commit's tree with the toolchain of
     117 before and 123 after (§2.6's id re-scan item and this list's five),
     numbered items 20. prek reached its fixpoint on the second run; the
     first rewrapped only this commit's own §2.5 lines.
+
+## Landed notes (ST-1, 2026-10-13)
+
+ST-1 landed on claude/carbon-fork-0-1-st off trunk 80a11e7f0: 84ff63560 (§3
+commit 2: string.carbon, export.cpp, the eight CHECK-free golden sources),
+16a87052f (commit 3: the autoupdate fill), d8d10bf70 (commit 4: the five
+programs and the oracle, string_basic's header, the program table, strings.md
+and the three amendments), 34e3af720 (the fold of the two implementation
+reviews) and the discharge commit (§3 commit 5), which writes the records of
+§2.6: W-057 DISCHARGED and W-160..W-167 filed in
+fork/inventory/work-items.json; row 77 DONE with §2.6's text, the header's
+delta (31 / 20 / 4 / 1), row 41's access-control phrase and §W9's "Depends on"
+line and paragraph in fork/gap-analysis.md; the decision-log entry "ST-1 /
+F-014: str comparison, Core.StringBuf, concatenation (2026-10-13)" above SL-2;
+fork/ORCHESTRATION.md's "Last updated" line, a dated ST-1 paragraph, the
+Branches row, the Scoreboard line and Next actions 5 and 6; and these notes.
+Every count below is quoted from a run (R9). Deltas from this plan, honestly:
+
+-   **Fill-caught misses (R28(d)): two, both quotation precision, none of
+    behavior.** Every §4 key line was reproduced and no §4 falsifier fired.
+    (1) The `generic.carbon` row quoted `%Min.call: init %str... = call ...`;
+    the fill, check string/compare.carbon:485, reads `%Min.call: init
+    %str.3d4 to %.loc9_16.1 = call %Min.specific_fn(%String.val.loc9_33,
+    %String.val.loc9_41)`. (2) The lower subscript row put the `zext` in the
+    `_CConvert.UInt...:ImplicitAs` body; that body (subscript.carbon:58) calls
+    `_CConvert.Int...:FromUInt`, whose body has it (:65), and the result feeds
+    the `getelementptr` as predicted. Both were recorded in 16a87052f's
+    message and §4 is amended at landing (RV1-1 / ST1-IR2-9); no golden
+    changed. Why review did not see them: the focused re-review compared its
+    fills with rev 2's fills byte for byte, not §4's quotations with a fill.
+-   **The fill otherwise matched §4 and M-10/M-11 exactly.** Run 1 rewrote the
+    ten files; run 2 printed `...!......` (operators.carbon's three `.loc23` →
+    `.loc27` lines only); run 3 printed only `.`, so operators.carbon
+    converged on its third run and the other nine on their second (§3, R26).
+    Sizes equal M-11's, string_indexing +79/−33 CHECK lines, operators.carbon
+    +16/−5 lines; the fills are byte-identical to the focused re-review's
+    scratch fills apart from the scratch file names in the three lower
+    goldens' `ModuleID`, `source_filename` and `DIFile` lines.
+-   **Gate.** On commit 2 alone file_test ran 1950 tests, 1940 passed and ten
+    were marked `!` (the eight new goldens and the two refills), no `?`, no
+    abort, as §3 predicted; after the fill, at HEAD and again on the fix
+    commit's tree, 1950 passed (1942 + 8). The harness's summary line printed
+    "1940 passed, 0 failed (exit 1, 26s)" on the red run (ST1-IR2-8): §8.3
+    reads the verdict from the exit status and the log, and the fixed gate.sh
+    waits for the carbonbuild landing because the session's permission policy
+    refused replacing the shared script.
+-   **Conformance, expected and not of record.** Two container runs on the
+    carbonbuild toolchain of 84ff63560 (322/322 steps, 8 min 25 s, no
+    warnings; install 2246 files; `carbon version` 0.0.0-0.dev+84ff63560):
+    the implementation run (scoreboard generated 2026-10-13T19:09:12Z, 2916.6
+    s, a cold and, as RV1-5 found, missing runtimes cache) and the fix-round
+    run (generated 2026-10-13T19:47:00Z, 83.4 s), both PASS 133, every FAIL
+    kind 0, SKIP 21 of 154, bullets 48 PASS / 8 SKIP of 56: §5's delta on the
+    floor of record (128 / 0 / 22 over 150, run 37402970811), the five String
+    programs the only status changes, the String bullet PASS over six
+    programs. The five new or un-SKIPped programs fail `--phase=check` on the
+    trunk install (not vacuous). §8.8's shim: 1/0, 2/1, 3/2, 8/7, 20/19,
+    28/27, every one `bad=0`, M-23 exactly.
+-   **Directories.** Both runs wrote to session scratch, not §8.4's
+    conf-out, as the orchestrator directed; row 77 cites the fix-round run by
+    toolchain sha, `generated` timestamp and totals (§8.4 as amended, RV1-5 /
+    ST1-IR2-4).
+-   **Build start.** The one-minute load average was 4.08 at the build's
+    start, just over R-8's 4, seven seconds after SC-1's conformance runner
+    exited; the build was started rather than delayed.
+-   **Docs.** strings.md is the implementer's text from §2.5's outline (the
+    plan gives none verbatim); the fold added W-164 to its limits and a link
+    to the interoperability amendment (§2.5 records both). The
+    interoperability README's References begin at :303, not :304; the
+    amendment sits before them. §3 item 4 named no title, so d8d10bf70's is
+    the implementer's.
+-   **The trunk merge was not made.** §2.6 makes the merge of trunk 9d3ca60a3
+    (fork/ORCHESTRATION.md only) commit 5's first step; the session's
+    permission policy refused it to the fold fixer and again to the records
+    writer, and it was not retried. So the discharge commit writes the ST-1
+    Branches row on the branch's own fork/ORCHESTRATION.md, at trunk's
+    position after the SAFE-1 row, and cites the id reservation from trunk's
+    fork/ORCHESTRATION.md:69-75. The later merge conflicts on that row only:
+    keep trunk's EV-1 row and the branch's ST-1 row (ORCHESTRATION Next
+    actions 5).
+-   **Ids.** The re-scan immediately before the discharge read 68 refs (trunk,
+    origin/trunk and every local and origin `claude/carbon-fork-0-1-*` ref):
+    trunk W-125, ua2 W-127, cmake W-133, safe W-150, sc W-151, ev W-155 (EV-1
+    filed W-152, W-153 and W-155); no ref files any of W-160..W-167, so the
+    ids stand and nothing was renumbered.
+-   **Conditional items, by the state at discharge.** PR 53 has not landed:
+    W-144's additions, the seven SAFE-1 reconciliation edits and the
+    cross-branch re-cites are written verbatim into ORCHESTRATION's Next
+    actions 6, for ST-1's rebase (ST-1 merges after PR 53); W-148 is not on
+    trunk, so W-166's `blocked_by` is empty and its notes carry the
+    dependency. PR 51 has not landed: row 77, strings.md and the ledger cite
+    W-126 by id on the merge-order assumption, and Next actions 5 says what
+    happens otherwise. Rows 51 and 81 are unchanged; row 41 stays DONE with
+    its phrase narrowed (RR-N-3).
+-   **Line numbers moved by the records.** The gap-analysis header grew by
+    four lines, so row 77 is line 81 and row 41 line 45 on this branch; the
+    records name the rows by bullet text (R7).
+
+Review record: five reviews, 44 findings, none rejected. The per-finding tables
+are the [Review fold record (rev 2)](#review-fold-record-rev-2-2026-10-13), the
+[Review fold record (rev 3)](#review-fold-record-rev-3-2026-10-13) and the
+[Implementation review fold record](#implementation-review-fold-record-2026-10-13).
+
+| Review | Of | Verdict | Findings | Folded in |
+| --- | --- | --- | --- | --- |
+| Plan review A: design soundness and toolchain correctness | rev 1 (bff5ba4e8) | REJECT | 11: 2 BLOCKER, 2 MAJOR, 7 MINOR | rev 2 (381f79b92) |
+| Plan review B | rev 1 (bff5ba4e8) | APPROVE-WITH-AMENDMENTS | 12: 5 MAJOR, 7 MINOR | rev 2 (381f79b92) |
+| Focused re-review | rev 2 (381f79b92) | APPROVE-WITH-AMENDMENTS | 6: review A's 2 BLOCKERs verified RESOLVED, 1 MAJOR and 3 MINOR new | rev 3 (c848a7402), signed off |
+| Implementation review 1 | 84ff63560, 16a87052f, d8d10bf70 | APPROVE-WITH-FIXES | 6 MINOR (RV1-1 to RV1-6) | 34e3af720 |
+| Implementation review 2 | 84ff63560, 16a87052f, d8d10bf70 | APPROVE-WITH-FIXES | 9 MINOR (ST1-IR2-1 to ST1-IR2-9) | 34e3af720 |
+
+The implementation-review findings as the discharge leaves them (three pairs
+are one finding seen twice):
+
+| Finding | Folded at 34e3af720 | State after the discharge |
+| --- | --- | --- |
+| RV1-1 / ST1-IR2-9 | §4's two key lines amended at landing | Closed; the decision-log entry carries §2.6's sentence |
+| RV1-2 | strings.md's W-166 bullet and §1.7, §2.6 gain the assignment shape | Closed; W-166's evidence carries it |
+| RV1-3 | strings.md names W-164 at Comparison and in its limits | Closed; W-164 filed |
+| RV1-4 / ST1-IR2-2 | the landing-date stamps on the re-read list | Open until the merge: ORCHESTRATION Next actions 5 lists every stamp |
+| RV1-5 / ST1-IR2-4 | row 77 cites a run by sha, timestamp and totals; §8.4 as run | Closed; row 77 cites the fix-round run |
+| RV1-6 | W-161's notes | Closed; W-161 filed with the note |
+| ST1-IR2-1 | strings.md's Overview and "the two accepted forms"; §1.1 | Closed |
+| ST1-IR2-3 | the decision-log citation without its date | Closed; row 77 and W-057 cite the heading text |
+| ST1-IR2-5 | §2.6's id re-scan item | Closed; the re-scan ran, no re-allocation |
+| ST1-IR2-6 | the trunk merge made commit 5's first step | Open: the merge was refused again; ORCHESTRATION Next actions 5 |
+| ST1-IR2-7 | the interoperability amendment's link | Closed |
+| ST1-IR2-8 | §8.3 reads the verdict from the exit status and the log | Open: the fixed gate.sh waits for the carbonbuild landing |

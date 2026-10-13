@@ -66,6 +66,15 @@ lands first). Each PR body carries its own verification record and names exactly
 what did not run. None is merged. Merge order when the land sequence runs: #53
 (no program moves), #51, #52, then SC-1.
 
+Id reservations (2026-10-13, so concurrent workstreams never collide): W-151 is
+SC-1's renumber of its W-144 (SAFE-1 owns W-144); W-152 to W-159 are reserved
+for EV-1 (claude/carbon-fork-0-1-ev, fork/evaluator/plan.md, signed off at rev
+2: the evaluator guides for W-062, gap row 90); ST-1 (claude/carbon-fork-0-1-st,
+fork/string/plan.md: Core.String operations for W-057, gap row 77) starts at
+W-160 and mints fork design id F-014. A reserved id that goes unused stays
+unused. EV-1 merges after PR 52 (its state C integration commit); ST-1's order
+is set at its sign-off.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -400,6 +409,8 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-ua2` | HELD OPEN as PR #51 — UA-2 reconciliation at 05a5c30f7, fill + of-record conformance 37413300832 (131/0/19 over 150) done, gate impossible (Actions disabled); merge when a gate runs. |
 | `claude/carbon-fork-0-1-cmake` | HELD OPEN as PR #52 — CM-1 CMake integration at ea573f672 (gap rows 84/87 expected DONE, W-060/W-061 discharged, W-128..W-133); verification record in the PR; merge when the land sequence runs. |
 | `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at adaae4e35, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence. |
+| `claude/carbon-fork-0-1-ev` | PLAN SIGNED OFF (rev 2) — EV-1 evaluator guides (W-062, gap row 90); ids W-152..W-159 reserved; implementation in progress on the container toolchain; merges after PR 52. |
+| `claude/carbon-fork-0-1-st` | PLAN rev 1 in review — ST-1 Core.String operations (W-057, gap row 77); ids from W-160, F-014. |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED, FILL IN PROGRESS — SC-1 template structural conformance, commits 1-3 at 42841fa8d with reviews folded (W-134..W-144; W-144 renumbers to W-151 at landing); PR after the fill converges. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |

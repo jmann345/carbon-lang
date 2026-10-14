@@ -4906,7 +4906,11 @@ the trunk analogs on 0bdce60a5.
     continues; the check gives `StructuralCheckResult::Error` only when nothing
     else fails; `LookupImplWitness` then still looks up the facet type's
     interfaces, giving `None` (the conversion error, with no structural note)
-    when one is missing. Design: D-SC-9 as amended at fill round 10; upstream's
+    when one is missing, after the incomplete-type error of D-SC-5(a) too (an
+    incomplete class that does not implement one is reported for it as well,
+    sc1-fix10/q q01, as trunk reports it for the interface alone, sc1-fix10/t
+    n02; pinned by `fail_incomplete_and_interface`, added after 001cdb4c7).
+    Design: D-SC-9 as amended at fill round 10; upstream's
     redeclaration checks, which test both sides (merge.cpp
     `EntityHasParamError`, function.cpp `CheckFunctionReturnTypeMatches`). Break
     condition: as ROUND 9's, or a program is found whose genuine failure the

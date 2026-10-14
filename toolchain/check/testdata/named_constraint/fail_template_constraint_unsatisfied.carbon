@@ -299,6 +299,31 @@ fn Test() {
   F(Inc);
 }
 
+// --- fail_incomplete_and_interface.carbon
+library "[[@TEST_NAME]]";
+
+// After the incomplete-type error the facet type's interfaces are still looked
+// up (D-SC-9 as amended at fill round 10): `Inc`, which does not implement `I`,
+// is also reported for it, as trunk 0bdce60a5 reports an incomplete class
+// against `I` alone, and `Impl`, which does, is not.
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+interface I {}
+
+class Inc;
+
+class Impl;
+impl Impl as I {}
+
+fn F(template T: HasGet & I) {}
+
+fn Test() {
+  F(Inc);
+  F(Impl);
+}
+
 // --- fail_incomplete_class_param.carbon
 library "[[@TEST_NAME]]";
 

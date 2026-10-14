@@ -31,7 +31,7 @@ library "[[@TEST_NAME]]";
 
 fn Consume(x: i64);
 
-fn F(... each n: i64) {
+fn F(... unused each n: i64) {
   // CHECK:STDERR: fail_without_each_name.carbon:[[@LINE+8]]:3: error: pack expansion does not use any each-name [PackExpansionWithoutEachName]
   // CHECK:STDERR:   ... Consume(1);
   // CHECK:STDERR:   ^~~
@@ -64,4 +64,26 @@ base class B {
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   virtual fn F(self, ... each n: i64);
+}
+
+// --- fail_incomplete_element.carbon
+library "[[@TEST_NAME]]";
+
+interface I;
+
+fn G(... unused each x: type) {}
+
+fn F(... each p: I*) {
+  G(... *each p);
+}
+
+// --- fail_incomplete_element_after_error.carbon
+library "[[@TEST_NAME]]";
+
+interface I;
+
+fn G(... unused each x: I) {}
+
+fn F(... each p: I) {
+  G(... each p);
 }

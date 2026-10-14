@@ -66,3 +66,26 @@ library "[[@TEST_NAME]]";
 // CHECK:STDERR:                 ^~~~~~~~~~~
 // CHECK:STDERR:
 fn F(... unused each n: i64);
+
+// --- fail_underscore_without_each.carbon
+library "[[@TEST_NAME]]";
+
+fn F(... _: i64) {}
+
+// --- fail_self_without_each.carbon
+library "[[@TEST_NAME]]";
+
+class C {
+  fn F(... self) {}
+}
+
+// --- fail_invalid_element_type.carbon
+library "[[@TEST_NAME]]";
+
+fn F(... unused each n: Undeclared) {}
+
+fn G() {
+  F();
+  F(1);
+  F(1, 2);
+}

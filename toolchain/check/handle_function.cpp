@@ -868,6 +868,12 @@ static auto DiagnoseOverloadGates(
         param_pattern_id == SemIR::ErrorInst::InstId) {
       continue;
     }
+    // Fork (VA-1, D-VA-4): resolution does not group a member's arguments
+    // into its pack.
+    if (context.insts().Is<SemIR::PackExpansionPattern>(param_pattern_id)) {
+      context.TODO(param_pattern_id, "variadic member of an overload set");
+      break;
+    }
     bool is_value_param = false;
     if (auto binding = context.insts().TryGetAs<SemIR::WrapperBindingPattern>(
             param_pattern_id)) {

@@ -249,12 +249,18 @@ auto HandleParseNode(Context& context, Parse::PackExpansionExprId node_id)
   // each specific's pack type must be complete, even when nothing else requires
   // it, as when the call converts the elements to another type. For a symbolic
   // type, `RequireCompleteType` records that requirement in the generic (fork
-  // VA-1, D-VA-7). The element type is complete, so the pack type is too, and
-  // no diagnostic context is needed here.
-  bool complete = RequireCompleteType(context, pack_type_id, node_id,
-                                      [](auto& /*builder*/) {});
-  CARBON_CHECK(complete, "Expected {0} to be a complete type",
-               context.types().GetAsInst(pack_type_id));
+  // VA-1, D-VA-7). Forming a value does not require every type complete (an
+  // incomplete facet type, such as a forward-declared interface's, is not
+  // diagnosed), so the element type can be incomplete here.
+  if (!RequireCompleteType(context, pack_type_id, node_id, [&](auto& builder) {
+        CARBON_DIAGNOSTIC(IncompleteTypeInPackExpansion, Context,
+                          "forming a pack of incomplete type {0}",
+                          SemIR::TypeId);
+        builder.Context(node_id, IncompleteTypeInPackExpansion, result_type_id);
+      })) {
+    context.node_stack().Push(node_id, SemIR::ErrorInst::InstId);
+    return true;
+  }
 
   // "`...` in a tuple literal behaves like a series of comma-separated tuple
   // elements" (docs/design/variadics.md, "Pack expansion expressions and

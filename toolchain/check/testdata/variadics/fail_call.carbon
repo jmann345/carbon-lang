@@ -72,3 +72,27 @@ fn F() {
   // CHECK:STDERR:
   ForEach(1, {} as C);
 }
+
+// --- fail_self_after_pack.carbon
+library "[[@TEST_NAME]]";
+
+class C {
+  fn F(... each n: i64, self: Self);
+}
+
+fn G(c: C) {
+  c.F(1, 2);
+}
+
+// --- fail_self_in_implicit_list_with_pack.carbon
+library "[[@TEST_NAME]]";
+
+class C {
+  fn F[self: Self](... each n: i64, last: i64);
+  fn G[self: Self](... each n: i64);
+}
+
+fn H(c: C) {
+  c.F(1, 2);
+  c.G(1, 2);
+}

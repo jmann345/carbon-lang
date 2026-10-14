@@ -350,7 +350,15 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
     is_each = false;
   } else if (!is_each && pack_scope) {
     // "a binding pattern within a pack expansion pattern must declare an
-    // each-name" (docs/design/variadics.md, "Pack expansion patterns").
+    // each-name" (docs/design/variadics.md, "Pack expansion patterns"). Only
+    // an identifier can follow `each`, so `_` and `self` get no suggestion.
+    if (!name_id.AsIdentifierId().has_value()) {
+      CARBON_DIAGNOSTIC(PackExpansionBindingNotIdentifier, Error,
+                        "binding pattern in a pack expansion must declare an "
+                        "each-name, `each` followed by an identifier");
+      context.emitter().Emit(name_node, PackExpansionBindingNotIdentifier);
+      return false;
+    }
     CARBON_DIAGNOSTIC(PackExpansionBindingWithoutEach, Error,
                       "binding pattern in a pack expansion must declare an "
                       "each-name, such as `each {0}`",

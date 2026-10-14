@@ -117,7 +117,7 @@ overload fn G(unused b: bool) {}
 // CHECK:STDERR: overload fn G(... each n: i64) {}
 // CHECK:STDERR:                   ^~~~~~~~~~~
 // CHECK:STDERR:
-overload fn G(... each n: i64) {}
+overload fn G(... unused each n: i64) {}
 
 fn F() {
   // CHECK:STDERR: fail_todo_overload_member.carbon:[[@LINE+4]]:3: error: semantics TODO: `variadic member of an overload set` [SemanticsTodo]

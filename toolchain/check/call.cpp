@@ -312,12 +312,17 @@ static auto DiagnosePackExpansionArgWithoutPackParam(Context& context,
 }
 
 // Returns the index of the pack expansion pattern in `function`'s parameter
-// patterns, or `nullopt` if it has none.
+// patterns, or `nullopt` if it has none. An imported pattern is found through
+// its constant value; a local pattern whose operand was diagnosed has an error
+// constant value, and is found by its kind.
 static auto FindPackExpansionParam(Context& context,
                                    const SemIR::Function& function)
     -> std::optional<size_t> {
   for (auto [index, pattern_id] : llvm::enumerate(
            context.inst_blocks().GetOrEmpty(function.param_patterns_id))) {
+    if (context.insts().Is<SemIR::PackExpansionPattern>(pattern_id)) {
+      return index;
+    }
     auto const_inst_id =
         context.constant_values().GetConstantInstId(pattern_id);
     if (const_inst_id.has_value() &&
@@ -353,10 +358,25 @@ static auto GroupPackArguments(
     return true;
   }
 
-  size_t self_size = self_id.has_value() ? 1 : 0;
-  size_t num_params =
-      context.inst_blocks().GetOrEmpty(function.param_patterns_id).size() -
-      self_size;
+  auto param_patterns =
+      context.inst_blocks().GetOrEmpty(function.param_patterns_id);
+  // The pack's operand was diagnosed at the declaration, so the pack's arity
+  // and element type are unknown.
+  if (context.constant_values().Get(param_patterns[*pack_index]) ==
+      SemIR::ErrorInst::ConstantId) {
+    return false;
+  }
+  // A bound `self` matches the first explicit parameter. When that is not the
+  // `self` pattern, the declaration put `self` elsewhere, which was diagnosed
+  // there (`SelfNotFirstParam`, `SelfInImplicitParamList`).
+  size_t self_size = 0;
+  if (self_id.has_value()) {
+    if (!SemIR::IsSelfPattern(context.sem_ir(), param_patterns.front())) {
+      return false;
+    }
+    self_size = 1;
+  }
+  size_t num_params = param_patterns.size() - self_size;
   size_t num_before = *pack_index - self_size;
   size_t num_after = num_params - num_before - 1;
   if (arg_ids.size() < num_before + num_after) {

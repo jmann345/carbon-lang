@@ -15,9 +15,11 @@ enum class PointerDereferenceKind : bool { Star, Arrow };
 
 // Returns whether `type_id` is a template-dependent type whose kind is not
 // known where the template is defined: a template type parameter, its facet
-// access type, or the type of a template-dependent expression. Every other
-// type, including a template-dependent class type such as `C(T)`, has a kind
-// that the eager code can act on.
+// access type, the type of a template-dependent expression, or a type that a
+// template-dependent operation produces, such as `T.Elem`, each with or
+// without a qualifier such as `const`. Every other type, including a
+// template-dependent class type such as `C(T)`, has a kind that the eager code
+// can act on.
 auto IsOpaqueTemplateDependentType(Context& context, SemIR::TypeId type_id)
     -> bool;
 

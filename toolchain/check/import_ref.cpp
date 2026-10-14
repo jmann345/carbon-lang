@@ -928,6 +928,52 @@ struct GenericData {
 };
 }  // namespace
 
+// Returns whether an imported generic's eval block holds actions or the splices
+// of their results. Such a generic is resolved for each instantiation (a
+// template, or a checked generic that calls a C++ template or an `eval fn`),
+// and instantiating it in this file needs a representation of that
+// resolution that does not exist yet (lowering's "Cross-file template
+// lowering" has the same gap).
+static auto IsResolvedPerInstantiation(ImportContext& context,
+                                       SemIR::InstBlockId eval_block_id)
+    -> bool {
+  return eval_block_id.has_value() &&
+         llvm::any_of(context.import_inst_blocks().Get(eval_block_id),
+                      [&](SemIR::InstId inst_id) {
+                        auto kind = context.import_insts().Get(inst_id).kind();
+                        return kind.is_action() ||
+                               kind == SemIR::SpliceInst::Kind ||
+                               kind == SemIR::SpliceBlock::Kind;
+                      });
+}
+
+// Diagnoses the use of a generic that is resolved for each instantiation, at
+// the location of the importing file's `import` declaration (`LocId::None`
+// only for an indirect import, which has none).
+static auto DiagnoseResolvedPerInstantiation(ImportContext& context) -> void {
+  auto import_decl_id =
+      context.local_ir().import_irs().Get(context.import_ir_id()).decl_id;
+  context.local_context().TODO(
+      import_decl_id.has_value() ? SemIR::LocId(import_decl_id)
+                                 : SemIR::LocId::None,
+      "using a generic from another library whose definition is resolved "
+      "for each instantiation, such as a template");
+}
+
+// Returns whether the declaration of an imported generic is resolved for each
+// instantiation, such as a function template whose return type `Vec(F(N))`
+// calls a function on a template parameter. Its signature cannot be imported,
+// so the entity is diagnosed when it is first resolved and resolves to an
+// error.
+static auto IsDeclResolvedPerInstantiation(ImportContext& context,
+                                           SemIR::GenericId import_generic_id)
+    -> bool {
+  return import_generic_id.has_value() &&
+         IsResolvedPerInstantiation(
+             context,
+             context.import_generics().Get(import_generic_id).decl_block_id);
+}
+
 // Gets a local version of the data associated with a generic. This is processed
 // through `ResolveResult::FinishGenericOrDone`.
 static auto GetLocalGenericData(ImportRefResolver& resolver,
@@ -1169,21 +1215,11 @@ static auto TryFinishGeneric(ImportRefResolver& resolver,
       GetLocalSpecificData(resolver, import_generic.self_specific_id);
 
   // A definition that holds actions or the splices of their results is
-  // resolved for each instantiation (a template's, or a checked generic's that
-  // calls a C++ template or an `eval fn`). Instantiating it in this file needs
-  // a representation of that resolution that does not exist yet (lowering's
-  // "Cross-file template lowering" has the same gap), so the definition is
-  // not imported and the import is diagnosed once, at the `import`.
+  // resolved for each instantiation, so it is not imported, and the import is
+  // diagnosed once, at the `import`.
   auto definition_block_id = import_generic.definition_block_id;
   bool resolved_per_instantiation =
-      definition_block_id.has_value() &&
-      llvm::any_of(
-          resolver.import_ir().inst_blocks().Get(definition_block_id),
-          [&](SemIR::InstId inst_id) {
-            auto kind = resolver.import_ir().insts().Get(inst_id).kind();
-            return kind.is_action() || kind == SemIR::SpliceInst::Kind ||
-                   kind == SemIR::SpliceBlock::Kind;
-          });
+      IsResolvedPerInstantiation(resolver, definition_block_id);
 
   llvm::SmallVector<SemIR::InstId> definition_block;
   if (definition_block_id.has_value() && !resolved_per_instantiation) {
@@ -1203,13 +1239,7 @@ static auto TryFinishGeneric(ImportRefResolver& resolver,
                             specific_data, local_generic_id);
 
   if (resolved_per_instantiation) {
-    auto import_decl_id =
-        resolver.local_ir().import_irs().Get(resolver.import_ir_id()).decl_id;
-    resolver.local_context().TODO(
-        import_decl_id.has_value() ? SemIR::LocId(import_decl_id)
-                                   : SemIR::LocId::None,
-        "using a generic from another library whose definition is resolved "
-        "for each instantiation, such as a template");
+    DiagnoseResolvedPerInstantiation(resolver);
     // An empty definition: its uses resolve, so the missing body is not
     // diagnosed a second time, and the file is not lowered.
     local_generic.definition_block_id = SemIR::InstBlockId::Empty;
@@ -2140,6 +2170,10 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
 
   SemIR::ClassId class_id = SemIR::ClassId::None;
   if (!class_const_id.has_value()) {
+    if (IsDeclResolvedPerInstantiation(resolver, import_class.generic_id)) {
+      DiagnoseResolvedPerInstantiation(resolver);
+      return ResolveResult::Done(SemIR::ErrorInst::ConstantId);
+    }
     auto import_specific_id = SemIR::SpecificId::None;
     if (auto import_generic_class_type =
             resolver.import_types().TryGetAs<SemIR::GenericClassType>(
@@ -2705,6 +2739,10 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
 
   SemIR::FunctionId function_id = SemIR::FunctionId::None;
   if (!function_const_id.has_value()) {
+    if (IsDeclResolvedPerInstantiation(resolver, import_function.generic_id)) {
+      DiagnoseResolvedPerInstantiation(resolver);
+      return ResolveResult::Done(SemIR::ErrorInst::ConstantId);
+    }
     auto import_specific_id = resolver.import_types()
                                   .GetAs<SemIR::FunctionType>(inst.type_id)
                                   .specific_id;
@@ -2996,6 +3034,10 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
   if (resolver.HasNewWork()) {
     return ResolveResult::Retry();
   }
+  if (fn_val_id == SemIR::ErrorInst::InstId) {
+    // The function could not be imported (`IsDeclResolvedPerInstantiation`).
+    return ResolveResult::Done(SemIR::ErrorInst::ConstantId);
+  }
   auto fn_type_id = resolver.local_insts().Get(fn_val_id).type_id();
   return ResolveResult::Deduplicated<SemIR::FunctionType>(
       resolver, {.type_id = SemIR::TypeType::TypeId,
@@ -3031,6 +3073,10 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
       resolver.import_classes().Get(inst.class_id).first_owning_decl_id);
   if (resolver.HasNewWork()) {
     return ResolveResult::Retry();
+  }
+  if (class_val_id == SemIR::ErrorInst::InstId) {
+    // The class could not be imported (`IsDeclResolvedPerInstantiation`).
+    return ResolveResult::Done(SemIR::ErrorInst::ConstantId);
   }
   auto class_val = resolver.local_insts().Get(class_val_id);
   CARBON_CHECK(

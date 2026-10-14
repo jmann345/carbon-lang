@@ -541,3 +541,38 @@ fn Use(x: i32) -> i64 {
 // CHECK:STDOUT:   %.loc5_11.3 => <not constant>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
+
+// --- template_interface_facet_value.carbon
+library "[[@TEST_NAME]]";
+
+interface Tag(T: type) {}
+class W {}
+impl i32 as Tag(W) {}
+
+fn F(template U: type) {
+  let unused t: Tag(U) = i32;
+}
+
+fn Use() {
+  F(W);
+}
+
+// --- template_interface_final_impl.carbon
+library "[[@TEST_NAME]]";
+
+interface Tag(T: type) {
+  fn Id() -> i32;
+}
+final impl forall [T: type] i32 as Tag(T) {
+  fn Id() -> i32 { return 3; }
+}
+
+//@dump-sem-ir-begin
+fn Get[template U: type](unused u: U) -> i32 {
+  return (i32 as Tag(U)).Id();
+}
+//@dump-sem-ir-end
+
+fn Use() -> i32 {
+  return Get(true);
+}

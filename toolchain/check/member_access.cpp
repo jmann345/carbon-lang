@@ -770,8 +770,8 @@ static auto LookupMemberInTemplateConstraint(Context& context,
   return PerformInstanceBinding(context, loc_id, base_id, member_id);
 }
 
-// Returns the entity a member access result names, for comparing the results
-// of the two lookups: the function a bound method binds, or the result itself.
+// Returns whether two member access results name the same entity: the
+// function a bound method binds, or the result itself.
 static auto SameMemberEntity(Context& context, SemIR::InstId a_id,
                              SemIR::InstId b_id) -> bool {
   auto a = SemIR::GetCallee(context.sem_ir(), a_id);

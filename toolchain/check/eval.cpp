@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <array>
+#include <concepts>
 #include <optional>
 #include <utility>
 
@@ -3130,6 +3131,20 @@ static auto TryEvalTypedInst(EvalContext& eval_context, SemIR::InstId inst_id,
         !ReplaceAllFieldsWithConstantValues(eval_context, &inst, &phase)) {
       if constexpr (ConstantKind == SemIR::InstConstantKind::Always) {
         CARBON_FATAL("{0} should always be constant", InstT::Kind);
+      }
+      if constexpr (std::same_as<InstT, SemIR::ArrayType>) {
+        // In a template's specific, the bound can be the result of an action,
+        // such as an index or a call, that is not a constant there. It is
+        // diagnosed, as a bound written that way outside a template is
+        // (handle_array.cpp), so that the types formed from the array type
+        // are errors instead of instructions that are not constant.
+        if (eval_context.specific_id().has_value()) {
+          auto bound_id =
+              eval_context.insts().GetAs<SemIR::ArrayType>(inst_id).bound_id;
+          DiagnoseNonConstantValue(eval_context.context(),
+                                   eval_context.GetDiagnosticLoc({bound_id}));
+          return SemIR::ErrorInst::ConstantId;
+        }
       }
       return SemIR::ConstantId::NotConstant;
     }

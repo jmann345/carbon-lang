@@ -547,3 +547,64 @@ fn Use(e: Empty) -> i32 {
 // CHECK:STDOUT:   %.loc12_14.3 => <not constant>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
+
+// --- fail_tuple_index_const_param_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn Second[template T: type](p: const T) -> i32 {
+  return p.1;
+}
+
+fn Use(t: (i32, i32)) -> i32 {
+  return Second(t as const (i32, i32));
+}
+
+// --- tuple_index_associated_type.carbon
+library "[[@TEST_NAME]]";
+
+interface Container {
+  let Elem: type;
+  fn Get(self) -> Elem;
+}
+
+class Pairs {
+  var p: (i32, i32);
+  impl as Container where .Elem = (i32, i32) {
+    fn Get(self) -> (i32, i32) { return self.p; }
+  }
+}
+
+//@dump-sem-ir-begin
+fn First[template T: Container](x: T) -> i32 {
+  let e: T.Elem = x.Get();
+  return e.0;
+}
+//@dump-sem-ir-end
+
+fn Use(c: Pairs) -> i32 {
+  return First(c);
+}
+
+// --- fail_index_in_array_bound_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn Make(template T: type, template a: T) -> i32 {
+  var r: array(i32, a[0]);
+  r[0] = 5;
+  return r[0];
+}
+
+fn Use() -> i32 {
+  return Make(array(i32, 1), (1,));
+}
+
+// --- fail_redecl_differs_in_dependent_operation.carbon
+library "[[@TEST_NAME]]";
+
+class C(N: i32) {}
+
+fn F(template T: type, template v: T) -> array(i32, v.0);
+fn F(template T: type, template v: T) -> array(i32, v.1);
+
+fn G(template P: type, template p: P) -> C(*p);
+fn G(template P: type, template p: P) -> C(p[0]);

@@ -748,6 +748,46 @@ class Stringifier {
     step_stack_->PushInstId(inst.inst_id);
   }
 
+  auto StringifyInst(InstId /*inst_id*/, AddrOfAction inst) -> void {
+    step_stack_->Push("&", InstId(inst.lvalue_id));
+  }
+
+  auto StringifyInst(InstId /*inst_id*/, CallAction inst) -> void {
+    // The first instruction is the callee, and the rest are the arguments.
+    auto callee_and_args = sem_ir_->inst_blocks().Get(inst.inst_block_id);
+    step_stack_->PushString(")");
+    llvm::ListSeparator sep;
+    for (auto arg_id : llvm::reverse(callee_and_args.drop_front())) {
+      step_stack_->Push(arg_id, &sep);
+    }
+    step_stack_->Push(callee_and_args.front(), "(");
+  }
+
+  auto StringifyInst(InstId /*inst_id*/, CompoundMemberAccessAction inst)
+      -> void {
+    step_stack_->Push(InstId(inst.base_id), ".(", InstId(inst.member_expr_id),
+                      ")");
+  }
+
+  auto StringifyInst(InstId /*inst_id*/, IndexAction inst) -> void {
+    step_stack_->Push(InstId(inst.operand_id), "[", InstId(inst.index_id), "]");
+  }
+
+  auto StringifyInst(InstId /*inst_id*/, PointerDereferenceAction inst)
+      -> void {
+    // The operand of `->` is printed as the dereference that `->` performs,
+    // followed by the member access.
+    if (inst.is_arrow.ToBool()) {
+      step_stack_->Push("(*", InstId(inst.pointer_id), ")");
+    } else {
+      step_stack_->Push("*", InstId(inst.pointer_id));
+    }
+  }
+
+  auto StringifyInst(InstId /*inst_id*/, TupleIndexAction inst) -> void {
+    step_stack_->Push(InstId(inst.tuple_id), ".", InstId(inst.index_id));
+  }
+
   // Determine the specific interface that an impl witness instruction provides
   // an implementation of.
   // TODO: Should we track this in the type?

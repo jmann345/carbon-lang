@@ -236,3 +236,26 @@ fn Use(c: C) -> i32 {
   // CHECK:STDERR:
   return H(c);
 }
+
+// --- fail_todo_field_of_template_class.carbon
+library "[[@TEST_NAME]]";
+
+interface A {
+  fn F(self) -> i32;
+}
+
+class C {
+  var n: i32;
+  impl as A {
+    fn F(self) -> i32 { return self.n; }
+  }
+}
+
+class W(template T: A) {
+  var c: T;
+  fn Go(self) -> i32 { return self.c.F(); }
+}
+
+fn Use(w: W(C)) -> i32 {
+  return w.Go();
+}

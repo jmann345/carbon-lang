@@ -18,13 +18,18 @@ namespace Carbon::Check {
 
 auto IsOpaqueTemplateDependentType(Context& context, SemIR::TypeId type_id)
     -> bool {
+  // A qualifier does not tell what kind of type is qualified: `const T` is as
+  // opaque as `T`.
+  type_id = context.types().GetUnqualifiedType(type_id);
   if (OperandDependence(context, type_id) !=
       SemIR::ConstantDependence::Template) {
     return false;
   }
+  // A template parameter, the type of a dependent operation's result, or a
+  // type that a dependent operation produces, such as `T.Elem`.
   return context.types()
       .IsOneOf<SemIR::SymbolicBinding, SemIR::FacetAccessType,
-               SemIR::TypeOfInst>(type_id);
+               SemIR::TypeOfInst, SemIR::SpliceInst>(type_id);
 }
 
 // Diagnoses a dereference of a value of a non-pointer type.
@@ -62,9 +67,8 @@ auto PerformPointerDereference(Context& context, SemIR::LocId loc_id,
                                PointerDereferenceKind kind) -> SemIR::InstId {
   // Proposal 2200: a dereference of a template-dependent operand whose type's
   // kind is not known yet is checked when the template is instantiated.
-  if (IsOpaqueTemplateDependentType(
-          context, context.types().GetUnqualifiedType(
-                       context.insts().Get(base_id).type_id()))) {
+  if (IsOpaqueTemplateDependentType(context,
+                                    context.insts().Get(base_id).type_id())) {
     return AddDependentActionSplice<SemIR::PointerDereferenceAction>(
         context, loc_id,
         {.type_id = SemIR::InstType::TypeId,

@@ -400,3 +400,45 @@ fn Use(n: i32) -> i32 {
 // CHECK:STDOUT:   %.loc9_17.8 => <not constant>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
+
+// --- deref_const_param.carbon
+library "[[@TEST_NAME]]";
+
+fn Deref[template T: type](p: const T) -> i32 {
+  return *p;
+}
+
+fn Use(n: i32*) -> i32 {
+  return Deref(n as const (i32*));
+}
+
+// --- fail_arrow_non_pointer_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+class Node {
+  var n: i32;
+}
+
+fn Next[template T: type](x: T) -> i32 {
+  return x->n;
+}
+
+fn Use(node: Node) -> i32 {
+  return Next(node);
+}
+
+// --- fail_addr_of_value_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+class Counter {
+  var n: i32;
+}
+
+fn Read[template T: type](x: T) -> i32 {
+  let p: i32* = &x.n;
+  return *p;
+}
+
+fn Use(c: Counter) -> i32 {
+  return Read(c);
+}

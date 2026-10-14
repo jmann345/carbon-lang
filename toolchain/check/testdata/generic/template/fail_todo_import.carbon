@@ -26,6 +26,17 @@ fn Plain(x: ()) -> () {
   return x;
 }
 
+class Holder {
+  alias Item = ();
+  var item: ();
+}
+
+fn Elem[template T: type](x: T) -> T.Item {
+  return x.item;
+}
+
+class Pick(template T: type, unused U: T.Item) {}
+
 // --- fail_todo_import_function.carbon
 library "[[@TEST_NAME]]";
 
@@ -60,3 +71,19 @@ import library "lib";
 fn Use() -> () {
   return Plain(());
 }
+
+// --- fail_todo_import_function_declaration.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use(h: Holder) -> () {
+  return Elem(h);
+}
+
+// --- fail_todo_import_class_declaration.carbon
+library "[[@TEST_NAME]]";
+
+import library "lib";
+
+fn Use(unused p: Pick(Holder, ())) {}

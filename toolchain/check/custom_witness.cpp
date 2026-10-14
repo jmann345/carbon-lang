@@ -226,10 +226,11 @@ static auto HasClassKeyedImpl(Context& context, SemIR::ClassType class_type,
                               SemIR::CoreInterface core_interface,
                               bool outside_core_only) -> bool;
 
-// Returns whether destroying an adapter whose adapted type is
-// `adapted_type_id` does any work. An adapter declares no fields: its object
-// is an object of the adapted type (docs/design/classes.md, "Adapters"), so it
-// is destroyed as that type is, and trivially exactly when that type is.
+// Fork (OP-2, fork/optional2/plan.md D-OP2-3, fork design F-016): returns
+// whether destroying an adapter whose adapted type is `adapted_type_id` does
+// any work. An adapter declares no fields: its object is an object of the
+// adapted type (docs/design/classes.md, "Adapters"), so it is destroyed as that
+// type is, and trivially exactly when that type is.
 static auto AdapterHasDestroyWork(Context& context,
                                   SemIR::TypeId adapted_type_id) -> bool {
   return adapted_type_id != SemIR::ErrorInst::TypeId &&
@@ -330,6 +331,7 @@ static auto CanDestroyClass(Context& context, SemIR::LocId loc_id,
     return DestroyFormat::NoDestroy;
   }
 
+  // Fork (OP-2, D-OP2-3, F-016): an adapter is destroyed as its adapted type.
   if (class_info.adapt_id.has_value()) {
     return AdapterHasDestroyWork(context, object_repr_id)
                ? DestroyFormat::NonTrivial
@@ -1042,10 +1044,11 @@ static auto MakeSubobjectDestroyOpBody(Context& context, SemIR::LocId loc_id,
           // destroy synthesis (D-UA-15 residue).
           return;
         }
+        // Fork (OP-2, D-OP2-3, F-016): an adapter is destroyed as its adapted
+        // type, by that type's `SelfDestruct` on `self` converted to it.
         if (auto adapted_type_id = class_info.GetAdaptedType(
                 context.sem_ir(), class_type.specific_id);
             adapted_type_id.has_value()) {
-          // An adapter is destroyed as its adapted type.
           if (AdapterHasDestroyWork(context, adapted_type_id)) {
             auto adapted_id = AddInst<SemIR::AsCompatible>(
                 context, loc_id,

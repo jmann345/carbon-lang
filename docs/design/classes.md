@@ -1808,7 +1808,9 @@ The rules for adapters are:
 > member for the `TrivialDestructor` rule under [Destructors](#destructors).
 > Destroying an adapter destroys that object as the adapted type's destructor
 > does, and an adapter is trivially destructible exactly when its adapted type
-> is. The fork's 0.1 toolchain implements this (fork/optional2/plan.md,
+> is. So an adapter may implement `UnformedInit`, whose unformed object is left
+> uninitialized in 0.1, only when its adapted type's destructor accepts such an
+> object. The fork's 0.1 toolchain implements this (fork/optional2/plan.md,
 > D-OP2-3); before it, an adapter's object was never destroyed.
 
 Inside an adapter, the `Self` type matches the adapter. Members of the original

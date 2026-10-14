@@ -423,7 +423,11 @@ that its `Try` impl breaks with, so it compiles only when `()` converts to `E`.
 For `E = ()`, absence propagates as `.Err(())`; for any other `E` it is a
 conversion error from `()` to `E`. The landed `Try` body
 dispatches through `HasValue()` and `Get()`, the same two-way split as the
-design's `match` sketch, because `Core.Optional` is not a choice.
+design's `match` sketch, because `Core.Optional` is not a choice. `?` builds a
+`Core.ControlFlow(T, ())`, which is a `choice`, and in 0.1 a `choice` payload
+must be a scalar or a pointer (SF-6), so `o?` on an Optional of a class or a
+tuple is rejected, as `?` on a `Core.Result` of one is: the Sum types bullet's
+W-010 residue.
 
 A `for` loop over a type that implements `Iterate` calls its `Next`, which
 returns `Optional(ElementType)`, and stops at the first empty value; the
@@ -515,9 +519,12 @@ Each limit is a filed fork work item, with the condition under which it closes:
     when a `const C` is destroyed as a `C` is.
 -   **W-200: only `Core.Optional(T*)` may be declared without an
     initializer.** An unformed default storage would leave the flag that says
-    whether it holds a value uninitialized for its destroy to read. Closes when
-    a variable's destroy runs only once it is formed, as for `Core.Buf`
-    (W-115).
+    whether it holds a value uninitialized for its destroy to read. For the
+    same reason, a class with a non-pointer `Core.Optional` field, or an
+    adapter of one, must not implement `Core.UnformedInit`, as one with a
+    `Core.Buf` field must not: the toolchain accepts the impl, but its unformed
+    object's destroy reads that flag. Closes when a variable's destroy runs
+    only once it is formed, as for `Core.Buf` (W-115).
 -   **W-195: a checked generic's `==` on a compile-time-only type aborts
     lowering.** `Core.Optional(Core.IntLiteral)` values compare through the
     generic impl, which lowers `Core.IntLiteral`'s compile-time-only `==` as a

@@ -1690,6 +1690,9 @@ static auto PerformBuiltinConversion(Context& context, SemIR::LocId loc_id,
         if ((removed_quals & SemIR::TypeQualifiers::MaybeUnformed) !=
                 SemIR::TypeQualifiers::None &&
             category == SemIR::ExprCategory::Value) {
+          // Fork (OP-2, fork/optional2/plan.md D-OP2-2, W-171): the
+          // `MaybeUnformed(T)` operand's representation is the one that can be
+          // a pointer when the two differ, so the CHECK below tests it.
           auto unformed_value_rep =
               SemIR::ValueRepr::ForType(context.sem_ir(), value_type_id);
           auto value_rep =

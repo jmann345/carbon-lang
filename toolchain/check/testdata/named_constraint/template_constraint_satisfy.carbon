@@ -71,6 +71,25 @@ fn MakeIt(template T: HasMake) -> T { return T.Make(); }
 fn Test() -> C { return MakeIt(C); }
 //@dump-sem-ir-end
 
+// --- method_for_assoc_fn.carbon
+library "[[@TEST_NAME]]";
+
+// A requirement without `self` is satisfied by a method whose `self` takes the
+// requirement's first parameter, since `T.Get(x)` calls it with `x` as its
+// `self` (D-SC-5(d) as amended at fill round 12). The converse is not
+// (`fail_template_constraint_unsatisfied`'s `fail_static_for_method`).
+template constraint HasGet {
+  fn Get(x: Self) -> i32;
+}
+
+class C {
+  fn Get(unused self) -> i32 { return 1; }
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return T.Get(x); }
+
+fn Test(c: C) -> i32 { return CallGet(c); }
+
 // --- alias_member.carbon
 library "[[@TEST_NAME]]";
 

@@ -78,9 +78,10 @@ struct MemberFailureInfo {
   // The `template constraint` that declares the found requirement
   // (`IsRequirement`).
   SemIR::NamedConstraintId found_constraint_id = SemIR::NamedConstraintId::None;
-  // Whether the found function's signature differs from the requirement's
-  // only where the requirement's declaration or the function's own has an
-  // error (`Mismatch`; D-SC-9 as amended at fill round 11).
+  // Whether the found function matches the requirement only because a part of
+  // the requirement's declaration or its own with an error was compared by
+  // what the error left of it (`Mismatch`; D-SC-9 as amended at fill round
+  // 12).
   bool signature_error = false;
 };
 
@@ -399,53 +400,6 @@ static auto NoteMemberFailure(Context& context, DiagnosticBuilder& builder,
   NoteStructuralRequirementHere(builder, requirement_decl_id);
 }
 
-// D-SC-9 as amended at fill rounds 9 to 11: returns whether a member function
-// whose signature does not match a requirement's differs from it only where
-// the requirement's declaration or the member's has an error: in a parameter
-// whose type is an error, compared pair by pair, or in a return type that is
-// an error. Each such error was diagnosed at its declaration, and building the
-// thunk for an impl member against an interface member reports nothing for it
-// (an argument or a result of an error type converts silently), so such a
-// mismatch is skipped. Every other difference is a genuine failure that the
-// thunk would report, and so is reported here: a different `self` form, a
-// different number of parameters, a parameter that differs where neither side
-// has an error, a return type that differs where neither is an error, and a
-// different evaluation mode. Upstream's redeclaration check is not the analog:
-// it fails silently on any parameter error (merge.cpp `EntityHasParamError`).
-static auto OnlyErrorsDiffer(Context& context,
-                             const SemIR::Function& requirement_fn,
-                             const SemIR::Function& member_fn,
-                             const ComparisonSpecifics& specifics) -> bool {
-  if (requirement_fn.self_param_id.has_value() !=
-      member_fn.self_param_id.has_value()) {
-    return false;
-  }
-  bool found_error = false;
-  if (!CheckRedeclParamsMatchExceptErrors(
-          context, DeclParams(member_fn), DeclParams(requirement_fn),
-          specifics.requirement_specific_id, specifics.member_specific_id,
-          &found_error)) {
-    return false;
-  }
-  if (requirement_fn.GetDeclaredReturnType(context.sem_ir(),
-                                           specifics.requirement_specific_id) ==
-          SemIR::ErrorInst::TypeId ||
-      member_fn.GetDeclaredReturnType(context.sem_ir(),
-                                      specifics.member_specific_id) ==
-          SemIR::ErrorInst::TypeId) {
-    found_error = true;
-  } else if (!CheckFunctionReturnTypeMatches(context, member_fn, requirement_fn,
-                                             specifics.requirement_specific_id,
-                                             /*diagnose=*/false,
-                                             specifics.member_specific_id)) {
-    return false;
-  }
-  if (requirement_fn.evaluation_mode != member_fn.evaluation_mode) {
-    return false;
-  }
-  return found_error;
-}
-
 // Checks one requirement `fn` of `constraint` against the concrete self type.
 // Returns the failure, or `nullopt` when satisfied.
 static auto CheckRequirementFunction(
@@ -535,15 +489,36 @@ static auto CheckRequirementFunction(
     return MemberFailureInfo{.failure = MemberFailure::Mismatch,
                              .member_decl_id = member_fn.latest_decl_id()};
   }
+  // D-SC-5(d) as amended at fill round 12: a requirement with `self` promises
+  // a call as `x.F(...)`, which only a member with `self` serves; one without
+  // `self` promises `T.F(...)`, which a method serves too, its `self` passed
+  // first. `CheckFunctionTypeMatches` compares a `self` parameter as any
+  // parameter of its type, so this is checked here.
+  if (requirement_fn.self_param_id.has_value() &&
+      !member_fn.self_param_id.has_value()) {
+    return MemberFailureInfo{.failure = MemberFailure::Mismatch,
+                             .member_decl_id = member_fn.latest_decl_id()};
+  }
+  // D-SC-9 as amended at fill round 12, the one rule for errors: the member is
+  // compared as without an error, except that each part of either declaration
+  // with an error is compared by what the error left of it (a parameter or
+  // return type that is the error matches any type; a parameter whose default
+  // value is the error is compared by its type; see `CheckRedeclParamsMatch`).
+  // A member that fails is reported as without the error; one that matches
+  // only through such a part is skipped with no further diagnostic, as its
+  // error was diagnosed at its declaration.
+  bool found_error = false;
   if (!CheckFunctionTypeMatches(context, member_fn, requirement_fn,
                                 specifics->requirement_specific_id,
                                 /*check_syntax=*/false, /*diagnose=*/false,
-                                specifics->member_specific_id)) {
-    return MemberFailureInfo{
-        .failure = MemberFailure::Mismatch,
-        .member_decl_id = member_fn.latest_decl_id(),
-        .signature_error =
-            OnlyErrorsDiffer(context, requirement_fn, member_fn, *specifics)};
+                                specifics->member_specific_id, &found_error)) {
+    return MemberFailureInfo{.failure = MemberFailure::Mismatch,
+                             .member_decl_id = member_fn.latest_decl_id()};
+  }
+  if (found_error) {
+    return MemberFailureInfo{.failure = MemberFailure::Mismatch,
+                             .member_decl_id = member_fn.latest_decl_id(),
+                             .signature_error = true};
   }
   return std::nullopt;
 }
@@ -560,9 +535,9 @@ static auto CheckRequirements(Context& context, SemIR::LocId loc_id,
                        .Get(identified_id)
                        .structural_requirements());
 
-  // Whether a requirement was skipped because its member differs from it only
-  // where one of the two declarations has an error (D-SC-9 as amended at fill
-  // rounds 9 to 11).
+  // Whether a requirement was skipped because its member matches it only
+  // through a part of one of the two declarations with an error (D-SC-9 as
+  // amended at fill rounds 9 to 12).
   bool signature_error = false;
   for (const auto& requirement : requirements) {
     const auto& constraint = context.named_constraints().Get(
@@ -635,12 +610,13 @@ static auto CheckRequirements(Context& context, SemIR::LocId loc_id,
       if (!failure) {
         continue;
       }
-      // D-SC-9 as amended at fill rounds 9 to 11: a member function that
-      // differs from the requirement only where the requirement's declaration
-      // or its own has an error is skipped with no further diagnostic, in both
-      // modes, as building an impl member's thunk reports nothing for such a
-      // difference; every other requirement is still checked, and every other
-      // failure, including a member that is not a function, is reported.
+      // D-SC-9 as amended at fill rounds 9 to 12: a member function that
+      // matches the requirement only through a part with an error is skipped
+      // with no further diagnostic, in both modes, since that error was
+      // diagnosed at its declaration; every other requirement is still
+      // checked, and every other failure, including a member that is not a
+      // function, is reported. The result is then an error, not a
+      // satisfaction (W-233).
       if (failure->signature_error) {
         signature_error = true;
         continue;

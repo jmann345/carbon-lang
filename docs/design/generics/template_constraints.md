@@ -265,7 +265,12 @@ satisfies only from inside its own class), and the signature comparison is the
 toolchain's redeclaration matcher with parameter names ignored and both sides
 read in their own specifics (a member of a generic class specific such as
 `Box(i32).Get` is compared after substitution). The `self` form is part of the
-signature: `fn Get(self)` does not match `fn Get(ref self)`. A default
+signature: `fn Get(self)` does not match `fn Get(ref self)`. A requirement with
+`self` needs a member with `self`: a member function whose first parameter has
+the self type does not satisfy `fn Get(self)`, since it cannot be called as
+`x.Get()`; a requirement without `self`, `fn Get(x: Self)`, is satisfied by a
+method, whose `self` takes the first parameter's place when `T.Get(x)` calls it
+(D-SC-5(d) as amended at fill round 12). A default
 definition (a requirement with a body) is a semantics TODO in SC-1 ("function
 definition in `template constraint`"); a `fn` in a plain, non-`template`
 `constraint` is an error. A requirement with a tuple pattern parameter,
@@ -627,11 +632,16 @@ constraint (W-169). Requiring the facet type that
 for `Core.Slice(Self)` and `Core.Optional(Self)` (`Core.Optional` through its
 blanket `OptionalStorage` impl). Requiring a template constraint does not, since
 a checked-symbolic self never satisfies one (D-SC-6), and a member access into
-`Self` has no such workaround. A member that differs from a requirement
-rejected this way only where the requirement's error is gets no diagnostic of
-its own, the requirement's error having been reported; any other difference
-from it, and the type's other requirements, constraints and interfaces, are
-still checked and reported (D-SC-9 as amended at fill rounds 9 to 11). A
+`Self` has no such workaround. A member is compared with a requirement rejected
+this way, or with any requirement when its own declaration has an error, as
+without the error, each part with an error compared by what the error left of
+it: a parameter or return type that is the error matches any type, and a
+parameter whose default value is the error is compared by its type. A member
+that matches only through such a part gets no diagnostic of its own, the error
+having been reported; a member that differs anywhere else is reported as
+without the error, and the type's other requirements, constraints and
+interfaces are still checked and reported (D-SC-9 as amended at fill rounds 9
+to 12). A
 `require` whose facet type takes `Self` as an argument (`require Self impls
 Conv(Self)`, `require impls Has(Self)`), which a template-phase `Self` rejected,
 is accepted. Deferring the checks that involve `Self`, as this section

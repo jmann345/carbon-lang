@@ -254,7 +254,8 @@ auto CheckFunctionReturnTypeMatches(Context& context,
                                     const SemIR::Function& prev_function,
                                     SemIR::SpecificId prev_specific_id,
                                     bool diagnose,
-                                    SemIR::SpecificId new_specific_id) -> bool {
+                                    SemIR::SpecificId new_specific_id,
+                                    bool* found_error) -> bool {
   // TODO: Pass a specific ID for `prev_function` instead of substitutions and
   // use it here.
   auto new_return_type_id =
@@ -263,6 +264,12 @@ auto CheckFunctionReturnTypeMatches(Context& context,
       prev_function.GetDeclaredReturnType(context.sem_ir(), prev_specific_id);
   if (new_return_type_id == SemIR::ErrorInst::TypeId ||
       prev_return_type_id == SemIR::ErrorInst::TypeId) {
+    // Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
+    // in the errors-match mode, an error return type matches any type.
+    if (found_error) {
+      *found_error = true;
+      return true;
+    }
     return false;
   }
   if (!context.types().AreEqualAcrossDeclarations(new_return_type_id,
@@ -356,15 +363,17 @@ auto CheckFunctionTypeMatches(Context& context,
                               const SemIR::Function& prev_function,
                               SemIR::SpecificId prev_specific_id,
                               bool check_syntax, bool diagnose,
-                              SemIR::SpecificId new_specific_id) -> bool {
+                              SemIR::SpecificId new_specific_id,
+                              bool* found_error) -> bool {
   if (!CheckRedeclParamsMatch(context, DeclParams(new_function),
                               DeclParams(prev_function), prev_specific_id,
-                              diagnose, check_syntax, new_specific_id)) {
+                              diagnose, check_syntax, new_specific_id,
+                              found_error)) {
     return false;
   }
   if (!CheckFunctionReturnTypeMatches(context, new_function, prev_function,
                                       prev_specific_id, diagnose,
-                                      new_specific_id)) {
+                                      new_specific_id, found_error)) {
     return false;
   }
   if (!CheckFunctionEvaluationModeMatches(context, new_function, prev_function,

@@ -117,6 +117,28 @@ fn Test(c: C) -> i32 {
   return CallGet(c);
 }
 
+// --- fail_static_for_method.carbon
+library "[[@TEST_NAME]]";
+
+// A requirement with `self` is not satisfied by a member without one, even when
+// the member's first parameter has the self type: the requirement promises a
+// call as `x.Get()`, which such a member does not serve (D-SC-5(d) as amended
+// at fill round 12). The converse is satisfied
+// (`template_constraint_satisfy`'s `method_for_assoc_fn`).
+template constraint HasGet {
+  fn Get(self) -> i32;
+}
+
+class C {
+  fn Get(unused c: C) -> i32 { return 1; }
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+
+fn Test(c: C) -> i32 {
+  return CallGet(c);
+}
+
 // --- fail_wrong_arity.carbon
 library "[[@TEST_NAME]]";
 
@@ -678,15 +700,23 @@ fn TestMissing(e: E) -> i32 { return G1(e); }
 library "[[@TEST_NAME]]";
 
 // A requirement with an error does not hide a difference from the member that
-// the error does not cause: a different number of parameters, a parameter that
-// differs where neither side has an error, a member that is not a method, a
-// different return type where neither is an error, or a member that is not a
-// function. Each is reported as for a requirement with no error, as building
-// the thunk for an impl member reports each against an interface member with
-// the error on trunk 0bdce60a5. A member that differs only in the parameter or
-// the return type with the error (`ReturnOnly`, `ParamOnly`) is skipped (D-SC-9
-// as amended at fill round 11, round 10's review 1 finding MAJOR-1 and review 2
-// finding MAJOR-1).
+// the error does not cause. The member is compared as for a requirement with no
+// error, with each part that has an error compared by what the error left of
+// it: a parameter type or a return type that is the error matches any type, and
+// a parameter whose default value is the error is compared by its type alone
+// (D-SC-9 as amended at fill round 12). So a different number of parameters, a
+// parameter that differs where neither side has an error, a member without the
+// `self` the requirement has, a different return type where neither is an
+// error, a member that is not a function, and a parameter type that differs
+// beside an erroneous default value are each reported, as without the error.
+// Building the thunk for an impl member reports each against an interface
+// member with the error on trunk 0bdce60a5 except `OtherParamConvertible`,
+// whose `i64` the thunk converts to, and `DefaultType`, whose interface analog
+// the thunk does not compare beside the erroneous default value. A member that
+// matches only through an error (`ReturnOnly`, `ParamOnly`, `DefaultOnly`,
+// `DefaultBothErrors` and `MethodForStatic`) is skipped (round 10's review 1
+// finding MAJOR-1 and review 2 finding MAJOR-1; round 11's review 1 findings
+// MAJOR-1 and MAJOR-2 and review 2 findings MAJOR-1 and MINOR-1).
 template constraint HasReturnError {
   // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+4]]:25: error: name `Undefined` not found [NameNotFound]
   // CHECK:STDERR:   fn F(self, x: i32) -> Undefined;
@@ -701,6 +731,14 @@ template constraint HasParamError {
   // CHECK:STDERR:                 ^~~~~~~~~
   // CHECK:STDERR:
   fn F(self, x: Undefined, y: i32) -> i32;
+}
+
+template constraint HasDefaultError {
+  fn F(self, x: i32, y: i32 = Undefined) -> i32;
+}
+
+template constraint HasStaticParamError {
+  fn F(w: Self, x: Undefined) -> i32;
 }
 
 class Arity {
@@ -739,9 +777,39 @@ class ParamOnly {
   fn F(unused self, unused ref x: i32, unused y: i32) -> i32 { return 1; }
 }
 
+class OtherParamConvertible {
+  fn F(unused self, unused x: i32, unused y: i64) -> i32 { return 1; }
+}
+
+class DefaultParamType {
+  fn F(unused self, unused x: bool, unused y: i32 = 1) -> i32 { return 1; }
+}
+
+class DefaultType {
+  fn F(unused self, unused x: i32, unused y: bool = true) -> i32 { return 1; }
+}
+
+class DefaultOnly {
+  fn F(unused self, unused x: i32, unused y: i32 = 1) -> i32 { return 1; }
+}
+
+class DefaultBothErrors {
+  fn F(unused self, unused x: i32, unused y: i32 = Undefined) -> i32 {
+    return 1;
+  }
+}
+
+class MethodForStatic {
+  fn F(unused self, unused x: i32) -> i32 { return 1; }
+}
+
 fn CallR[template T: HasReturnError](unused x: T) -> i32 { return 0; }
 
 fn CallP[template T: HasParamError](unused x: T) -> i32 { return 0; }
+
+fn CallD[template T: HasDefaultError](unused x: T) -> i32 { return 0; }
+
+fn CallS[template T: HasStaticParamError](unused x: T) -> i32 { return 0; }
 
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:40: error: cannot convert type `Arity` into type implementing `HasReturnError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestArity(a: Arity) -> i32 { return CallR(a); }
@@ -849,6 +917,20 @@ fn TestOtherParam(o: OtherParam) -> i32 { return CallP(o); }
 fn TestParamReturn(p: ParamReturn) -> i32 { return CallP(p); }
 
 fn TestOnly(r: ReturnOnly, p: ParamOnly) -> i32 { return CallR(r) + CallP(p); }
+
+fn TestOtherParamConvertible(o: OtherParamConvertible) -> i32 {
+  return CallP(o);
+}
+
+fn TestDefaultParamType(d: DefaultParamType) -> i32 { return CallD(d); }
+
+fn TestDefaultType(d: DefaultType) -> i32 { return CallD(d); }
+
+fn TestDefaultOnly(d: DefaultOnly, b: DefaultBothErrors) -> i32 {
+  return CallD(d) + CallD(b);
+}
+
+fn TestMethodForStatic(m: MethodForStatic) -> i32 { return CallS(m); }
 
 // --- fail_requirement_signature_error_other_member.carbon
 library "[[@TEST_NAME]]";
@@ -1108,14 +1190,20 @@ fn TestLacking(l: LackingG) -> i32 { return Call(l); }
 library "[[@TEST_NAME]]";
 
 // A member whose own declaration has an error does not hide a difference from
-// the requirement that the error does not cause: a different number of
-// parameters, a parameter that differs where neither side has an error, a
-// different `self` form, a different return type where neither is an error, or
-// a member that is not a method. Each is reported after the member's error, as
-// building the thunk for such an impl member reports each on trunk 0bdce60a5,
-// and as round 9 reported the first three. A member that differs only where
-// its errors are (`ErrorsOnly`) is skipped (D-SC-9 as amended at fill round 11,
-// round 10's review 1 finding MAJOR-1 and review 2 finding MAJOR-1).
+// the requirement that the error does not cause, compared as in
+// `fail_requirement_signature_error_genuine` (D-SC-9 as amended at fill round
+// 12): a different number of parameters, a parameter that differs where neither
+// side has an error, a different `self` form, a different return type where
+// neither is an error, a member without the `self` the requirement has, a
+// `var` parameter where the requirement's is not, compile-time parameters of
+// the member's own, and a parameter type that differs beside an erroneous
+// default value. Each is reported after the member's error, as without the
+// error. Building the thunk for such an impl member reports each on trunk
+// 0bdce60a5 except `ParamErrorVar` and `ParamErrorGeneric`, which the thunk
+// adapts or does not compare beside the error, and round 9 reported the first
+// three. A member that matches only through its errors (`ErrorsOnly`,
+// `DefaultOnly`) is skipped (round 10's review 1 finding MAJOR-1 and review 2
+// finding MAJOR-1; round 11's review 1 findings MAJOR-1 and MAJOR-2).
 template constraint HasF {
   fn F(self, x: i32, y: i32) -> i32;
 }
@@ -1186,6 +1274,28 @@ class ErrorsOnly {
   // CHECK:STDERR:                                                            ^~~~~~~~~
   // CHECK:STDERR:
   fn F(unused self, unused x: Undefined, unused y: i32) -> Undefined {
+    return 1;
+  }
+}
+
+class ParamErrorVar {
+  fn F(unused self, unused x: Undefined, unused var y: i32) -> i32 { return 1; }
+}
+
+class ParamErrorGeneric {
+  fn F[unused U: type](unused self, unused x: Undefined, unused y: i32) -> i32 {
+    return 1;
+  }
+}
+
+class DefaultErrorType {
+  fn F(unused self, unused x: i32, unused y: bool = Undefined) -> i32 {
+    return 1;
+  }
+}
+
+class DefaultOnly {
+  fn F(unused self, unused x: i32, unused y: i32 = Undefined) -> i32 {
     return 1;
   }
 }
@@ -1298,6 +1408,14 @@ fn TestParamErrorReturn(f: ParamErrorReturn) -> i32 { return Call(f); }
 fn TestParamErrorNoSelf(g: ParamErrorNoSelf) -> i32 { return Call(g); }
 
 fn TestErrorsOnly(h: ErrorsOnly) -> i32 { return Call(h); }
+
+fn TestParamErrorVar(i: ParamErrorVar) -> i32 { return Call(i); }
+
+fn TestParamErrorGeneric(j: ParamErrorGeneric) -> i32 { return Call(j); }
+
+fn TestDefaultErrorType(k: DefaultErrorType) -> i32 { return Call(k); }
+
+fn TestDefaultOnly(l: DefaultOnly) -> i32 { return Call(l); }
 
 // --- fail_todo_requirement_signature_error_overload.carbon
 library "[[@TEST_NAME]]";

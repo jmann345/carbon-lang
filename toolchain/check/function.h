@@ -76,11 +76,16 @@ auto MakeGeneratedFunctionDecl(Context& context, SemIR::LocId loc_id,
 // specified, is the specific version of `new_function` to compare — a member
 // of a generic class specific matched against a requirement declared outside
 // that generic.
+//
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
+// `found_error`, when not null, selects the errors-match mode, in which an
+// error return type matches any type and sets `*found_error`.
 auto CheckFunctionReturnTypeMatches(
     Context& context, const SemIR::Function& new_function,
     const SemIR::Function& prev_function, SemIR::SpecificId prev_specific_id,
     bool diagnose = true,
-    SemIR::SpecificId new_specific_id = SemIR::SpecificId::None) -> bool;
+    SemIR::SpecificId new_specific_id = SemIR::SpecificId::None,
+    bool* found_error = nullptr) -> bool;
 
 // Checks that `new_function` has the same parameter types and return type as
 // `prev_function`, or if `prev_function_id` is specified, a specific version of
@@ -89,11 +94,18 @@ auto CheckFunctionReturnTypeMatches(
 // `check_syntax` is false if the redeclaration can be called via a thunk with
 // implicit conversions from the original declaration. `new_specific_id` is as
 // for `CheckFunctionReturnTypeMatches`.
+//
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
+// `found_error`, when not null, selects the errors-match mode of
+// `CheckRedeclParamsMatch` and `CheckFunctionReturnTypeMatches`: the
+// comparison is the same, except that a part with an error is compared as they
+// describe instead of failing it, and `*found_error` is set when one is.
 auto CheckFunctionTypeMatches(
     Context& context, const SemIR::Function& new_function,
     const SemIR::Function& prev_function, SemIR::SpecificId prev_specific_id,
     bool check_syntax, bool diagnose = true,
-    SemIR::SpecificId new_specific_id = SemIR::SpecificId::None) -> bool;
+    SemIR::SpecificId new_specific_id = SemIR::SpecificId::None,
+    bool* found_error = nullptr) -> bool;
 
 inline auto CheckFunctionTypeMatches(Context& context,
                                      const SemIR::Function& new_function,

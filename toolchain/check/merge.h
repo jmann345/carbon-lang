@@ -128,11 +128,19 @@ struct DeclParams {
 // specified, is the specific in which `new_entity`'s parameters are read, as
 // `prev_specific_id` is for `prev_entity` — a member of a generic class
 // specific compared against a requirement declared outside that generic.
+//
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
+// `found_error`, when not null, selects the errors-match mode, which the
+// structural check uses with `diagnose` false: a parameter with an error no
+// longer fails the comparison as a whole, but is compared by its type alone,
+// with an error type matching any type, and `*found_error` is set when such a
+// parameter is compared. Everything else is compared as without it.
 auto CheckRedeclParamsMatch(
     Context& context, const DeclParams& new_entity,
     const DeclParams& prev_entity, SemIR::SpecificId prev_specific_id,
     bool diagnose, bool check_syntax,
-    SemIR::SpecificId new_specific_id = SemIR::SpecificId::None) -> bool;
+    SemIR::SpecificId new_specific_id = SemIR::SpecificId::None,
+    bool* found_error = nullptr) -> bool;
 
 // Returns whether the explicit parameters AFTER the leading `self` parameter of
 // two method declarations have matching types (binding names and syntax are
@@ -152,22 +160,6 @@ inline auto CheckRedeclParamsMatch(Context& context,
                                 SemIR::SpecificId::None, /*diagnose=*/true,
                                 /*check_syntax=*/true);
 }
-
-// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 11):
-// Returns whether the parameters of two entities match as
-// `CheckRedeclParamsMatch` compares them with no diagnostic and no syntax
-// check, except that a pair of corresponding parameters is not compared when
-// either parameter has an error type; `*found_error` is set when such a pair is
-// skipped. The parameter lists must still agree in presence and length. The
-// structural check uses this to tell a mismatch that an error causes from a
-// genuine one, as building a thunk for an impl member reports a difference in
-// every other parameter.
-auto CheckRedeclParamsMatchExceptErrors(Context& context,
-                                        const DeclParams& new_entity,
-                                        const DeclParams& prev_entity,
-                                        SemIR::SpecificId prev_specific_id,
-                                        SemIR::SpecificId new_specific_id,
-                                        bool* found_error) -> bool;
 
 // Provides type traits and data for merging redeclarations.
 template <typename EntityT>

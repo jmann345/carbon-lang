@@ -221,13 +221,18 @@ static auto EntityHasParamError(Context& context, const DeclParams& info)
 
 // Returns false if a param differs for a redeclaration. The caller is expected
 // to provide a diagnostic.
+//
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
+// `found_error`, when not null, selects the errors-match mode that
+// `CheckRedeclParamsMatch` describes.
 static auto CheckRedeclParam(Context& context, bool is_implicit_param,
                              int32_t param_index,
                              SemIR::InstId orig_new_param_pattern_id,
                              SemIR::InstId orig_prev_param_pattern_id,
                              SemIR::SpecificId prev_specific_id, bool diagnose,
                              bool check_syntax,
-                             SemIR::SpecificId new_specific_id) -> bool {
+                             SemIR::SpecificId new_specific_id,
+                             bool* found_error) -> bool {
   CARBON_DIAGNOSTIC(
       RedeclParamPrevious, Note,
       "previous declaration's corresponding {0:implicit |}parameter here",
@@ -290,6 +295,35 @@ static auto CheckRedeclParam(Context& context, bool is_implicit_param,
         context.sem_ir(), prev_specific_id, patterns.prev_id);
     auto prev_param_pattern =
         context.constant_values().GetInst(prev_param_const_id);
+
+    // Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
+    // in the errors-match mode, a pattern with an error is compared by its
+    // type alone, and an error type matches any type. A pattern's type is the
+    // error when its parameter's type is; its constant value is the error, and
+    // its type is not, when its default value is. Both types are read from the
+    // patterns as declared, since the constant value of a pattern with an
+    // erroneous default value is the error.
+    if (found_error) {
+      auto new_declared_type_id = SemIR::GetTypeOfInstInSpecific(
+          context.sem_ir(), new_specific_id, patterns.new_id);
+      auto prev_declared_type_id = SemIR::GetTypeOfInstInSpecific(
+          context.sem_ir(), prev_specific_id, patterns.prev_id);
+      if (new_declared_type_id == SemIR::ErrorInst::TypeId ||
+          prev_declared_type_id == SemIR::ErrorInst::TypeId) {
+        *found_error = true;
+        continue;
+      }
+      if (new_param_pattern.Is<SemIR::ErrorInst>() ||
+          prev_param_pattern.Is<SemIR::ErrorInst>()) {
+        if (!context.types().AreEqualAcrossDeclarations(
+                new_declared_type_id, prev_declared_type_id)) {
+          return false;
+        }
+        *found_error = true;
+        continue;
+      }
+    }
+
     if (new_param_pattern.kind() != prev_param_pattern.kind()) {
       emit_general_diagnostic();
       return false;
@@ -402,14 +436,15 @@ static auto CheckRedeclParamLists(
     Context& context, llvm::ArrayRef<SemIR::InstId> new_param_pattern_ids,
     llvm::ArrayRef<SemIR::InstId> prev_param_pattern_ids,
     bool is_implicit_param, SemIR::SpecificId prev_specific_id, bool diagnose,
-    bool check_syntax, SemIR::SpecificId new_specific_id) -> bool {
+    bool check_syntax, SemIR::SpecificId new_specific_id, bool* found_error)
+    -> bool {
   CARBON_CHECK(new_param_pattern_ids.size() == prev_param_pattern_ids.size());
   for (auto [index, new_param_pattern_id, prev_param_pattern_id] :
        llvm::enumerate(new_param_pattern_ids, prev_param_pattern_ids)) {
     if (!CheckRedeclParam(context, is_implicit_param, index,
                           new_param_pattern_id, prev_param_pattern_id,
                           prev_specific_id, diagnose, check_syntax,
-                          new_specific_id)) {
+                          new_specific_id, found_error)) {
       return false;
     }
   }
@@ -417,14 +452,12 @@ static auto CheckRedeclParamLists(
 }
 
 // Returns false if the param refs differ for a redeclaration.
-static auto CheckRedeclParams(Context& context, SemIR::LocId new_decl_loc_id,
-                              SemIR::InstBlockId new_param_patterns_id,
-                              SemIR::LocId prev_decl_loc_id,
-                              SemIR::InstBlockId prev_param_patterns_id,
-                              bool is_implicit_param,
-                              SemIR::SpecificId prev_specific_id, bool diagnose,
-                              bool check_syntax,
-                              SemIR::SpecificId new_specific_id) -> bool {
+static auto CheckRedeclParams(
+    Context& context, SemIR::LocId new_decl_loc_id,
+    SemIR::InstBlockId new_param_patterns_id, SemIR::LocId prev_decl_loc_id,
+    SemIR::InstBlockId prev_param_patterns_id, bool is_implicit_param,
+    SemIR::SpecificId prev_specific_id, bool diagnose, bool check_syntax,
+    SemIR::SpecificId new_specific_id, bool* found_error) -> bool {
   // This will often occur for empty params.
   //
   // Fork (SC-1, fork/structural/plan.md D-SC-5(d)): with a `new_specific_id`,
@@ -489,7 +522,7 @@ static auto CheckRedeclParams(Context& context, SemIR::LocId new_decl_loc_id,
   }
   return CheckRedeclParamLists(
       context, new_param_pattern_ids, prev_param_pattern_ids, is_implicit_param,
-      prev_specific_id, diagnose, check_syntax, new_specific_id);
+      prev_specific_id, diagnose, check_syntax, new_specific_id, found_error);
 }
 
 // Returns true if the two nodes represent the same syntax.
@@ -637,30 +670,35 @@ auto CheckRedeclExplicitParamsAfterSelfMatch(Context& context,
                                /*is_implicit_param=*/false,
                                SemIR::SpecificId::None,
                                /*diagnose=*/false, /*check_syntax=*/false,
-                               /*new_specific_id=*/SemIR::SpecificId::None);
+                               /*new_specific_id=*/SemIR::SpecificId::None,
+                               /*found_error=*/nullptr);
 }
 
 auto CheckRedeclParamsMatch(Context& context, const DeclParams& new_entity,
                             const DeclParams& prev_entity,
                             SemIR::SpecificId prev_specific_id, bool diagnose,
                             bool check_syntax,
-                            SemIR::SpecificId new_specific_id) -> bool {
-  if (EntityHasParamError(context, new_entity) ||
-      EntityHasParamError(context, prev_entity)) {
+                            SemIR::SpecificId new_specific_id,
+                            bool* found_error) -> bool {
+  // Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
+  // in the errors-match mode, a parameter with an error is compared where it
+  // is, by `CheckRedeclParam`.
+  if (!found_error && (EntityHasParamError(context, new_entity) ||
+                       EntityHasParamError(context, prev_entity))) {
     return false;
   }
   if (!CheckRedeclParams(
           context, new_entity.loc_id, new_entity.implicit_param_patterns_id,
           prev_entity.loc_id, prev_entity.implicit_param_patterns_id,
           /*is_implicit_param=*/true, prev_specific_id, diagnose, check_syntax,
-          new_specific_id)) {
+          new_specific_id, found_error)) {
     return false;
   }
-  if (!CheckRedeclParams(context, new_entity.loc_id,
-                         new_entity.param_patterns_id, prev_entity.loc_id,
-                         prev_entity.param_patterns_id,
-                         /*is_implicit_param=*/false, prev_specific_id,
-                         diagnose, check_syntax, new_specific_id)) {
+  if (!CheckRedeclParams(
+          context, new_entity.loc_id, new_entity.param_patterns_id,
+          prev_entity.loc_id, prev_entity.param_patterns_id,
+          /*is_implicit_param=*/false, prev_specific_id, diagnose, check_syntax,
+          new_specific_id, found_error)) {
     return false;
   }
   if (check_syntax &&
@@ -671,55 +709,6 @@ auto CheckRedeclParamsMatch(Context& context, const DeclParams& new_entity,
     return false;
   }
   return true;
-}
-
-auto CheckRedeclParamsMatchExceptErrors(Context& context,
-                                        const DeclParams& new_entity,
-                                        const DeclParams& prev_entity,
-                                        SemIR::SpecificId prev_specific_id,
-                                        SemIR::SpecificId new_specific_id,
-                                        bool* found_error) -> bool {
-  auto has_error = [&](SemIR::InstId param_pattern_id) {
-    return context.insts().Get(param_pattern_id).type_id() ==
-           SemIR::ErrorInst::TypeId;
-  };
-  auto lists_match = [&](bool is_implicit_param,
-                         SemIR::InstBlockId new_param_patterns_id,
-                         SemIR::InstBlockId prev_param_patterns_id) {
-    if (new_param_patterns_id.has_value() !=
-        prev_param_patterns_id.has_value()) {
-      return false;
-    }
-    if (!new_param_patterns_id.has_value()) {
-      return true;
-    }
-    auto new_param_pattern_ids =
-        context.inst_blocks().Get(new_param_patterns_id);
-    auto prev_param_pattern_ids =
-        context.inst_blocks().Get(prev_param_patterns_id);
-    if (new_param_pattern_ids.size() != prev_param_pattern_ids.size()) {
-      return false;
-    }
-    for (auto [index, new_param_pattern_id, prev_param_pattern_id] :
-         llvm::enumerate(new_param_pattern_ids, prev_param_pattern_ids)) {
-      if (has_error(new_param_pattern_id) || has_error(prev_param_pattern_id)) {
-        *found_error = true;
-        continue;
-      }
-      if (!CheckRedeclParam(context, is_implicit_param, index,
-                            new_param_pattern_id, prev_param_pattern_id,
-                            prev_specific_id, /*diagnose=*/false,
-                            /*check_syntax=*/false, new_specific_id)) {
-        return false;
-      }
-    }
-    return true;
-  };
-  return lists_match(/*is_implicit_param=*/true,
-                     new_entity.implicit_param_patterns_id,
-                     prev_entity.implicit_param_patterns_id) &&
-         lists_match(/*is_implicit_param=*/false, new_entity.param_patterns_id,
-                     prev_entity.param_patterns_id);
 }
 
 // Fills the previous class id, type id, and import ir id.

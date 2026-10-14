@@ -90,6 +90,26 @@ fn CallGet[template T: HasGet](x: T) -> i32 { return T.Get(x); }
 
 fn Test(c: C) -> i32 { return CallGet(c); }
 
+// --- return_form_not_compared.carbon
+library "[[@TEST_NAME]]";
+
+// The form of the return is not compared, as upstream's comparison does not
+// compare it, so a member that returns by value satisfies a requirement that
+// returns `ref` (D-SC-5(d) as amended at fill round 14; round 14's review 1
+// finding MINOR-2 and review 2 finding MINOR-3). Its break condition,
+// upstream's comparison comparing return forms, makes this split fail.
+template constraint HasGet {
+  fn Get(self) -> ref i32;
+}
+
+class C {
+  fn Get(unused self) -> i32 { return 1; }
+}
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+
+fn Test(c: C) -> i32 { return CallGet(c); }
+
 // --- alias_member.carbon
 library "[[@TEST_NAME]]";
 

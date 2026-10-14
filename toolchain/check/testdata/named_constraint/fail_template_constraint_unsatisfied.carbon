@@ -725,22 +725,26 @@ library "[[@TEST_NAME]]";
 // parameter with an error (`ParamRef`, `DefaultRef`, `DefaultVar`), and a
 // default value or a return type that only one side has (`DefaultAbsent`,
 // `ReturnAbsent`, and `FormDefault` beside a parameter declared with a form
-// that has an error) are each reported, as without the error, as is a binding
-// against a parameter that is an expression pattern with an error (`ExprParam`:
-// `y` alone, compared by its pattern's kind). Building the thunk for an impl
-// member reports each against an interface member with the error on trunk
-// 0bdce60a5 except `OtherParamConvertible`, whose `i64` the thunk converts to,
-// `DefaultType`, `ParamRef`, `DefaultRef`, `DefaultVar`, `DefaultAbsent`,
-// `ReturnAbsent` and `FormDefault`, whose interface analogs the thunk does not
-// compare beside the erroneous part, and `ExprParam`, whose analog aborts the
-// thunk at thunk.cpp:169, as W-236's default value does. A member that matches
+// that has an error) are each reported, as without the error. Building the
+// thunk for an impl member reports each against an interface member with the
+// error on trunk 0bdce60a5 except `OtherParamConvertible`, whose `i64` the
+// thunk converts to, and `DefaultType`, `ParamRef`, `DefaultRef`, `DefaultVar`,
+// `DefaultAbsent`, `ReturnAbsent` and `FormDefault`, whose interface analogs
+// the thunk does not compare beside the erroneous part. A member that matches
 // only through an error (`ReturnOnly`, `ParamOnly`, `DefaultOnly`,
 // `DefaultBothErrors`, `MethodForStatic`, and `FormOnly`, whose `y: i32` the
 // erroneous form's parameter counts as equal to, binding form included) is
-// skipped (round 10's review 1 finding MAJOR-1 and review 2 finding MAJOR-1;
-// round 11's review 1 findings MAJOR-1 and MAJOR-2 and review 2 findings
-// MAJOR-1 and MINOR-1; round 12's review 1 findings MAJOR-1 and MINOR-1 and
-// review 2 finding MAJOR-1; round 13's review 1 findings MAJOR-1 and MINOR-3).
+// skipped, as is `ReturnForm`, whose return by value matches the requirement's
+// `ref` return, since the form of the return is not compared (D-SC-5(d) as
+// amended at fill round 14), where trunk's thunk reports its interface analog
+// ("cannot bind durable reference to non-reference value"). A requirement with
+// an expression pattern parameter, which this split held through fill round 14
+// (`ExprParam`), is refused since fill round 15 (W-238) (round 10's review 1
+// finding MAJOR-1 and review 2 finding MAJOR-1; round 11's review 1 findings
+// MAJOR-1 and MAJOR-2 and review 2 findings MAJOR-1 and MINOR-1; round 12's
+// review 1 findings MAJOR-1 and MINOR-1 and review 2 finding MAJOR-1; round
+// 13's review 1 findings MAJOR-1 and MINOR-3; round 14's review 1 findings
+// MAJOR-1 and MINOR-2 and review 2 findings MINOR-1 and MINOR-3).
 template constraint HasReturnError {
   // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+4]]:25: error: name `Undefined` not found [NameNotFound]
   // CHECK:STDERR:   fn F(self, x: i32) -> Undefined;
@@ -781,16 +785,8 @@ template constraint HasFormError {
   fn F(self, x: i32, y:? form(ref Undefined)) -> i32;
 }
 
-template constraint HasExprParam {
-  // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+8]]:22: error: name `y` not found [NameNotFound]
-  // CHECK:STDERR:   fn F(self, x: i32, y) -> i32;
-  // CHECK:STDERR:                      ^
-  // CHECK:STDERR:
-  // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+4]]:22: error: semantics TODO: `expression pattern` [SemanticsTodo]
-  // CHECK:STDERR:   fn F(self, x: i32, y) -> i32;
-  // CHECK:STDERR:                      ^
-  // CHECK:STDERR:
-  fn F(self, x: i32, y) -> i32;
+template constraint HasReturnForm {
+  fn F(self, x: Undefined) -> ref i32;
 }
 
 class Arity {
@@ -887,8 +883,8 @@ class FormDefault {
   fn F(unused self, unused x: i32, unused y: i32 = 1) -> i32 { return 1; }
 }
 
-class ExprParam {
-  fn F(unused self, unused x: i32, unused y: i32) -> i32 { return 1; }
+class ReturnForm {
+  fn F(unused self, unused x: i32) -> i32 { return 1; }
 }
 
 fn CallR[template T: HasReturnError](unused x: T) -> i32 { return 0; }
@@ -901,7 +897,7 @@ fn CallS[template T: HasStaticParamError](unused x: T) -> i32 { return 0; }
 
 fn CallF[template T: HasFormError](unused x: T) -> i32 { return 0; }
 
-fn CallE[template T: HasExprParam](unused x: T) -> i32 { return 0; }
+fn CallRF[template T: HasReturnForm](unused x: T) -> i32 { return 0; }
 
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:40: error: cannot convert type `Arity` into type implementing `HasReturnError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestArity(a: Arity) -> i32 { return CallR(a); }
@@ -1155,20 +1151,7 @@ fn TestFormOnly(f: FormOnly) -> i32 { return CallF(f); }
 // CHECK:STDERR:
 fn TestFormDefault(f: FormDefault) -> i32 { return CallF(f); }
 
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:48: error: cannot convert type `ExprParam` into type implementing `HasExprParam` [ConversionFailureTypeToFacet]
-// CHECK:STDERR: fn TestExprParam(e: ExprParam) -> i32 { return CallE(e); }
-// CHECK:STDERR:                                                ^~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-270]]:3: note: member `F` of type `ExprParam` does not match the signature required by template constraint `HasExprParam` [StructuralMemberMismatch]
-// CHECK:STDERR:   fn F(unused self, unused x: i32, unused y: i32) -> i32 { return 1; }
-// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-371]]:3: note: requirement declared here [StructuralRequirementHere]
-// CHECK:STDERR:   fn F(self, x: i32, y) -> i32;
-// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE-263]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
-// CHECK:STDERR: fn CallE[template T: HasExprParam](unused x: T) -> i32 { return 0; }
-// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// CHECK:STDERR:
-fn TestExprParam(e: ExprParam) -> i32 { return CallE(e); }
+fn TestReturnForm(r: ReturnForm) -> i32 { return CallRF(r); }
 
 // --- fail_requirement_signature_error_other_member.carbon
 library "[[@TEST_NAME]]";
@@ -1437,11 +1420,16 @@ library "[[@TEST_NAME]]";
 // the member's own, a parameter type that differs beside an erroneous default
 // value, a binding form that differs at the parameter with the error
 // (`ParamErrorRef`, `DefaultErrorRef`), a default value or a return type that
-// only the member has (`DefaultError`, `ReturnErrorAbsent`), and a default
-// value that only the requirement has beside the member's parameter declared
-// with a form that has an error (`FormErrorNoDefault`). Each is reported after
-// the member's error, as without the error. Building the thunk for such an impl
-// member reports each on trunk 0bdce60a5 except `ParamErrorVar`,
+// only the member has (`DefaultError`, `ReturnErrorAbsent`), a default value
+// that only the requirement has beside the member's parameter declared with a
+// form that has an error (`FormErrorNoDefault`), a `self` declared with a form
+// that has an error, which declares no `self`, so that the member is one
+// without the `self` the requirement has (`SelfFormError`: D-SC-5(d)'s `self`
+// check runs before the comparison), and a binding against the member's
+// parameter that is an expression pattern with an error (`ExprParam`, compared
+// by its pattern's kind). Each is reported after the member's error, as without
+// the error. Building the thunk for such an impl member reports each on trunk
+// 0bdce60a5 except `ParamErrorVar`,
 // `ParamErrorGeneric`, `ParamErrorRef` and `ReturnErrorAbsent`, which the thunk
 // adapts or does not compare beside the error, `DefaultError`, as the thunk
 // accepts a default value of an impl member's own, and `FormErrorNoDefault`,
@@ -1452,7 +1440,8 @@ library "[[@TEST_NAME]]";
 // interface analog aborts trunk's thunk (W-236) (round 10's review 1 finding
 // MAJOR-1 and review 2 finding MAJOR-1; round 11's review 1 findings MAJOR-1
 // and MAJOR-2; round 12's review 1 findings MAJOR-1 and MINOR-1 and review 2
-// finding MAJOR-1; round 13's review 1 finding MAJOR-1).
+// finding MAJOR-1; round 13's review 1 finding MAJOR-1; round 14's review 1
+// findings MAJOR-1 and MINOR-1 and review 2 finding MINOR-2).
 template constraint HasF {
   fn F(self, x: i32, y: i32) -> i32;
 }
@@ -1627,6 +1616,16 @@ class FormErrorNoDefault {
   fn F(unused self, unused x: i32, y:? form(ref Undefined)) -> i32 {
     return 1;
   }
+}
+
+class SelfFormError {
+  fn F(self:? form(ref Undefined), unused x: i32, unused y: i32) -> i32 {
+    return 1;
+  }
+}
+
+class ExprParam {
+  fn F(unused self, unused x: i32, z) -> i32 { return 1; }
 }
 
 fn Call[template T: HasF](unused x: T) -> i32 { return 0; }
@@ -1865,6 +1864,10 @@ fn TestFormErrorOnly(q: FormErrorOnly) -> i32 { return Call(q); }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn TestFormErrorNoDefault(r: FormErrorNoDefault) -> i32 { return CallD(r); }
+
+fn TestSelfFormError(s: SelfFormError) -> i32 { return Call(s); }
+
+fn TestExprParam(t: ExprParam) -> i32 { return Call(t); }
 
 // --- fail_todo_requirement_signature_error_overload.carbon
 library "[[@TEST_NAME]]";

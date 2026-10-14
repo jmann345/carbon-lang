@@ -12,8 +12,9 @@
 
 // The member-requirement forms SC-1 defers (fork decision F-010 / SC-1,
 // D-SC-2): a function definition (a default), a requirement with its own
-// compile-time parameters (F-010l), an associated constant and, since fill
-// round 10, a requirement with a tuple pattern parameter.
+// compile-time parameters (F-010l), an associated constant, since fill round
+// 10 a requirement with a tuple pattern parameter and, since fill round 15, one
+// with an expression pattern parameter.
 
 // --- fail_todo_definition.carbon
 library "[[@TEST_NAME]]";
@@ -87,6 +88,35 @@ template constraint HasF {
 class D {
   fn F(unused self, (unused a: i32, unused b: i32)) {}
   fn G(unused self, (unused a: i32, unused b: i32) = (1, 2)) {}
+}
+
+fn Call[template T: HasF](unused x: T) -> i32 { return 0; }
+
+fn Test(d: D) -> i32 { return Call(d); }
+
+// --- fail_todo_expr_pattern_param.carbon
+library "[[@TEST_NAME]]";
+
+// TODO: W-238. A requirement with an expression pattern parameter, directly or
+// under `var` (`G`), is refused and not collected, as one with a tuple pattern
+// parameter is (D-SC-2 as amended at fill round 15, round 14's review 1 finding
+// MAJOR-1 and review 2 finding MINOR-1): such a parameter is itself a TODO, and
+// the signature comparison fails fatally on two `ExprPattern`s, as trunk
+// 0bdce60a5's does for a redeclaration and for an impl of an interface with
+// such a member. `H`'s `y` is an expression pattern with an error, which fill
+// round 14 compared by its kind alone (`ExprParam`, then in
+// fail_template_constraint_unsatisfied.carbon). A use of a type with matching
+// members reports nothing further.
+template constraint HasF {
+  fn F(self, x: i32, 1) -> i32;
+  fn G(self, x: i32, var 1) -> i32;
+  fn H(self, x: i32, y) -> i32;
+}
+
+class D {
+  fn F(unused self, unused x: i32, 1) -> i32 { return 1; }
+  fn G(unused self, unused x: i32, var 1) -> i32 { return 1; }
+  fn H(unused self, unused x: i32, unused y: i32) -> i32 { return 1; }
 }
 
 fn Call[template T: HasF](unused x: T) -> i32 { return 0; }

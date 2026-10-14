@@ -279,9 +279,9 @@ static auto GetDeclaredParamPattern(Context& context, SemIR::InstId pattern_id,
   if (inst.Is<SemIR::ErrorInst>()) {
     return std::nullopt;
   }
-  // Any other pattern is compared by its kind alone: a leaf parameter pattern,
-  // a member's `TuplePattern` (no requirement has one, W-234) or an erroneous
-  // `ExprPattern` (`fn F(y)`).
+  // Any other pattern is compared by its kind and type alone: a leaf parameter
+  // pattern, or a member's `TuplePattern` or `ExprPattern`, which no
+  // requirement has (W-234, W-238), so that it never matches.
   return DeclaredParamPattern{.kind = inst.kind()};
 }
 

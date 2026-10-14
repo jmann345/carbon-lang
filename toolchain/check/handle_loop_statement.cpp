@@ -16,6 +16,7 @@
 #include "toolchain/check/pattern_match.h"
 #include "toolchain/check/refutable_binding.h"
 #include "toolchain/check/type.h"
+#include "toolchain/check/type_completion.h"
 #include "toolchain/sem_ir/absolute_node_ref.h"
 #include "toolchain/sem_ir/expr_info.h"
 #include "toolchain/sem_ir/ids.h"
@@ -253,10 +254,17 @@ auto HandleParseNode(Context& context, Parse::ForHeaderId node_id) -> bool {
 
   // Call `<range>.(Iterate.Next)(&cursor)`.
   auto cursor_type_inst_id = context.types().GetTypeInstId(cursor_type_id);
+  auto cursor_ptr_type_id = GetPointerType(context, cursor_type_inst_id);
+  // The code that forms an instruction enforces its type's completeness
+  // (type_completion.h): for a template-dependent cursor type, this records
+  // the requirement, so that each specific completes the pointer type its
+  // `Next` call passes. A pointer type is always complete, so the
+  // diagnostic context adds nothing.
+  RequireCompleteType(context, cursor_ptr_type_id, SemIR::LocId(node_id),
+                      [](auto& /*builder*/) {});
   auto cursor_addr_id = AddInst<SemIR::AddrOf>(
       context, node_id,
-      {.type_id = GetPointerType(context, cursor_type_inst_id),
-       .lvalue_id = cursor_var_id});
+      {.type_id = cursor_ptr_type_id, .lvalue_id = cursor_var_id});
   // A range that implements neither fails both lookups; reporting the second
   // would say the same thing about the same expression a second time.
   // TODO: We should only perform the impl lookup once.

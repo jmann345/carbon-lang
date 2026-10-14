@@ -436,9 +436,11 @@ auto FunctionContext::InitializeStorage(TypeInFile type, SemIR::InstId dest_id,
 }
 
 auto FunctionContext::InitializeStorage(SemIR::InstId init_id) -> void {
-  InitializeStorage(GetTypeIdOfInst(init_id),
-                    SemIR::FindStorageArgForInitializer(sem_ir(), init_id),
-                    init_id);
+  InitializeStorage(
+      GetTypeIdOfInst(init_id),
+      SemIR::FindStorageArgForInitializer(
+          sem_ir(), init_id, /*allow_transitive=*/true, specific_id_),
+      init_id);
 }
 
 auto FunctionContext::GetTypeIdOfInst(SemIR::InstId inst_id) -> TypeInFile {

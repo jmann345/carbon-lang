@@ -437,6 +437,10 @@ auto FileContext::GetOrCreateLLVMFunction(
     arg.setName(sem_ir().names().GetIRBaseName(name_id));
   }
   if (function_type_info.sret_type != nullptr) {
+    CARBON_CHECK(!llvm_function->arg_empty(),
+                 "Return slot for {0} without parameters: a parameter type was "
+                 "not complete when the function type was built",
+                 mangled_name);
     auto& return_arg = *llvm_function->args().begin();
     return_arg.addAttr(llvm::Attribute::getWithStructRetType(
         llvm_context(), function_type_info.sret_type));

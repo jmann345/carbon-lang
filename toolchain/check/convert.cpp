@@ -405,6 +405,24 @@ static auto ConvertAggregateElement(
   return Convert(context, loc_id, src_elem_id, target);
 }
 
+// Returns whether a conversion that would allocate its own temporary storage
+// for an aggregate value depends on a template parameter. The temporary is a
+// storage root that the conversion creates after the source's elements, so an
+// element whose in-place initializer is resolved for each instantiation, such
+// as a call of a template that returns an aggregate, would be redirected in the
+// specific to a root that follows it. Such a conversion is instead left to
+// `Convert`, which defers it as one action, so that each specific allocates
+// the temporary as a concrete conversion does.
+static auto IsTemplateDependentValueTemporary(Context& context,
+                                              SemIR::InstId value_id,
+                                              SemIR::TypeId target_type_id)
+    -> bool {
+  return OperandDependence(context, SemIR::MetaInstId(value_id)) ==
+             SemIR::ConstantDependence::Template ||
+         OperandDependence(context, target_type_id) ==
+             SemIR::ConstantDependence::Template;
+}
+
 // Performs a conversion from a tuple to an array type. This function only
 // converts the type, and does not perform a final conversion to the requested
 // expression category.
@@ -457,6 +475,13 @@ static auto ConvertTupleToArray(Context& context, SemIR::TupleType tuple_type,
                              *array_bound, tuple_elem_types.size());
     }
     return SemIR::ErrorInst::InstId;
+  }
+
+  // The bound and the element count are checked above, where the function is
+  // defined; the elements are converted for each instantiation.
+  if (!target.storage_id.has_value() &&
+      IsTemplateDependentValueTemporary(context, value_id, target.type_id)) {
+    return value_id;
   }
 
   PendingBlock target_block_storage(&context);
@@ -1076,9 +1101,15 @@ static auto ConvertStructToUnion(Context& context, SemIR::StructType src_type,
   auto& sem_ir = context.sem_ir();
   PendingBlock target_block(&context);
 
+  // A template-dependent union value is converted for each instantiation,
+  // after the designated field is checked below.
+  bool defer_value =
+      !target.is_initializer() &&
+      IsTemplateDependentValueTemporary(context, value_id, target.type_id);
+
   // If we're trying to create a union value, form temporary storage to hold
   // the initializer.
-  if (!target.is_initializer()) {
+  if (!target.is_initializer() && !defer_value) {
     target.kind = ConversionTarget::Initializing;
     target.storage_access_block = &target_block;
     target.storage_id = target_block.AddInst<SemIR::TemporaryStorage>(
@@ -1119,6 +1150,9 @@ static auto ConvertStructToUnion(Context& context, SemIR::StructType src_type,
   auto dest_field = *dest_field_it;
   auto dest_field_index =
       static_cast<size_t>(dest_field_it - dest_elem_fields.begin());
+  if (defer_value) {
+    return value_id;
+  }
 
   // If we're initializing from a struct literal, we will use its element
   // directly. Otherwise, materialize a temporary if needed and index into the
@@ -1147,6 +1181,29 @@ static auto ConvertStructToUnion(Context& context, SemIR::StructType src_type,
       {.type_id = target.type_id,
        .elements_id = sem_ir.inst_blocks().Add({init_id}),
        .dest_id = target.storage_id});
+}
+
+// Returns whether the struct type `src_type` names exactly the fields of
+// `dest_type` that a struct can initialize, which excludes a class's vptr and
+// a choice's payload.
+static auto HasSameFieldNames(Context& context, SemIR::StructType src_type,
+                              SemIR::StructType dest_type) -> bool {
+  auto src_fields = context.struct_type_fields().Get(src_type.fields_id);
+  int32_t num_dest_fields = 0;
+  for (auto dest_field :
+       context.struct_type_fields().Get(dest_type.fields_id)) {
+    if (dest_field.name_id == SemIR::NameId::Vptr ||
+        dest_field.name_id == SemIR::NameId::ChoicePayload) {
+      continue;
+    }
+    ++num_dest_fields;
+    if (!llvm::any_of(src_fields, [&](const SemIR::StructTypeField& field) {
+          return field.name_id == dest_field.name_id;
+        })) {
+      return false;
+    }
+  }
+  return static_cast<int32_t>(src_fields.size()) == num_dest_fields;
 }
 
 // Performs a conversion from a struct to a class type. This function only
@@ -1196,8 +1253,15 @@ static auto ConvertStructToClass(Context& context, SemIR::StructType src_type,
       context.types().GetAs<SemIR::StructType>(object_repr_id);
 
   // If we're trying to create a class value, form temporary storage to hold the
-  // initializer.
+  // initializer. A template-dependent source whose fields are exactly the
+  // class's is converted for each instantiation instead; any other source is
+  // converted here, so that a missing or unexpected field is diagnosed where
+  // the function is defined.
   if (!target.is_initializer()) {
+    if (IsTemplateDependentValueTemporary(context, value_id, target.type_id) &&
+        HasSameFieldNames(context, src_type, dest_struct_type)) {
+      return value_id;
+    }
     target.kind = ConversionTarget::Initializing;
     target.storage_access_block = &target_block;
     target.storage_id = target_block.AddInst<SemIR::TemporaryStorage>(
@@ -1211,7 +1275,9 @@ static auto ConvertStructToClass(Context& context, SemIR::StructType src_type,
   // default is available, or `ErrorInst::InstId` if a diagnosed error
   // occurs.
   auto get_default = [&](SemIR::NameId name_id) {
-    if (!context.insts().Is<SemIR::StructLiteral>(value_id)) {
+    // A deferred conversion refers to the literal through a `SpecificInst`.
+    if (!GetAggregateLiteralElements<SemIR::StructLiteral>(context, value_id)
+             .has_value()) {
       return SemIR::InstId::None;
     }
 
@@ -2174,6 +2240,19 @@ auto CategoryConverter::DoStep(const SemIR::InstId expr_id,
       return Done{SemIR::ErrorInst::InstId};
 
     case SemIR::ExprCategory::Dependent:
+      if (target_.kind == ConversionTarget::Value) {
+        // The result is known to be a value, so record that in the action:
+        // a binding of it, and every use of the binding, then has the value
+        // category in the definition, as it does on instantiation.
+        auto type_inst_id = context_.types().GetTypeInstId(
+            context_.insts().Get(expr_id).type_id());
+        return Done{AddDependentActionSplice<SemIR::ConvertToValueAction>(
+            context_, loc_id_,
+            {.type_id = SemIR::InstType::TypeId,
+             .inst_id = expr_id,
+             .target_type_inst_id = type_inst_id},
+            type_inst_id)};
+      }
       return Done{AddDependentActionSplice<SemIR::ConvertToCategoryAction>(
           context_, loc_id_,
           {.type_id = SemIR::InstType::TypeId,
@@ -2307,6 +2386,105 @@ static auto PerformCategoryConversion(Context& context, SemIR::LocId loc_id,
   return CategoryConverter(context, loc_id, target).Convert(expr_id);
 }
 
+// Returns the operand of `arg` if it names an instruction whose value is used.
+static auto GetInstOperand(SemIR::IdAndKind arg) -> SemIR::InstId {
+  if (auto id = arg.TryAs<SemIR::InstId>()) {
+    return *id;
+  }
+  if (auto id = arg.TryAs<SemIR::DestInstId>()) {
+    return *id;
+  }
+  return SemIR::InstId::None;
+}
+
+// Returns whether `inst_id` allocates storage: such an instruction is one
+// object, which every use must share, so it is never copied.
+static auto IsStorageRoot(Context& context, SemIR::InstId inst_id) -> bool {
+  return context.insts().IsOneOf<SemIR::VarStorage, SemIR::TemporaryStorage>(
+      inst_id);
+}
+
+// Prepares the storage of a template-dependent initialization for an
+// `InitializeAction`. The instructions in the pending storage access block
+// that `target.storage_id` depends on are copied into a `SpliceBlock` that is
+// in no block, whose `InstValue` is returned as the action's storage; the
+// action adds the copies to its own storage access block in each specific. A
+// pending storage root (the `for` cursor's `VarStorage`, a temporary) is not
+// copied: the pending block is inserted here, so that the root precedes the
+// action's splice. Returns `target.storage_id` if nothing is pending.
+static auto CloneStorageAccessChain(Context& context, SemIR::LocId loc_id,
+                                    const ConversionTarget& target)
+    -> SemIR::InstId {
+  auto pending = target.storage_access_block->insts();
+  llvm::SmallVector<SemIR::InstId> worklist = {target.storage_id};
+  llvm::SmallVector<SemIR::InstId> chain_ids;
+  while (!worklist.empty()) {
+    auto inst_id = worklist.pop_back_val();
+    if (!llvm::is_contained(pending, inst_id) ||
+        llvm::is_contained(chain_ids, inst_id)) {
+      continue;
+    }
+    chain_ids.push_back(inst_id);
+    auto inst = context.insts().Get(inst_id);
+    for (auto arg : {inst.arg0_and_kind(), inst.arg1_and_kind()}) {
+      if (auto operand_id = GetInstOperand(arg); operand_id.has_value()) {
+        worklist.push_back(operand_id);
+      }
+    }
+  }
+  if (chain_ids.empty()) {
+    return target.storage_id;
+  }
+  // The chain in block order, which is an order in which operands precede
+  // their uses.
+  llvm::SmallVector<SemIR::InstId> ordered;
+  for (auto inst_id : pending) {
+    if (llvm::is_contained(chain_ids, inst_id)) {
+      ordered.push_back(inst_id);
+    }
+  }
+  if (llvm::any_of(ordered, [&](SemIR::InstId inst_id) {
+        return IsStorageRoot(context, inst_id);
+      })) {
+    target.storage_access_block->InsertHere();
+  }
+  // Copy the non-root instructions, remapping operands that name an earlier
+  // copy.
+  Map<SemIR::InstId, SemIR::InstId> copies;
+  llvm::SmallVector<SemIR::InstId> copy_ids;
+  for (auto inst_id : ordered) {
+    if (IsStorageRoot(context, inst_id)) {
+      continue;
+    }
+    auto loc_and_inst = context.insts().GetWithLocId(inst_id);
+    auto remap = [&](SemIR::IdAndKind arg) -> int32_t {
+      auto operand_id = GetInstOperand(arg);
+      if (operand_id.has_value()) {
+        if (auto copy = copies.Lookup(operand_id)) {
+          return copy.value().index;
+        }
+      }
+      return arg.value();
+    };
+    loc_and_inst.inst.SetArgs(remap(loc_and_inst.inst.arg0_and_kind()),
+                              remap(loc_and_inst.inst.arg1_and_kind()));
+    auto copy_id = AddInstInNoBlock(context, loc_and_inst);
+    copies.Insert(inst_id, copy_id);
+    copy_ids.push_back(copy_id);
+  }
+  if (copy_ids.empty()) {
+    return target.storage_id;
+  }
+  auto block_id = AddInstInNoBlock<SemIR::SpliceBlock>(
+      context, loc_id,
+      {.type_id = SemIR::InstType::TypeId,
+       .block_id = context.inst_blocks().Add(copy_ids),
+       .result_id = copies.Lookup(target.storage_id).value()});
+  return context.constant_values().GetInstId(context.constants().GetOrAdd(
+      SemIR::InstValue{.type_id = SemIR::InstType::TypeId, .inst_id = block_id},
+      SemIR::ConstantDependence::None));
+}
+
 // If the conversion from `expr_id` to `target` is template-dependent, adds and
 // returns a conversion action. Otherwise, returns InstId::None.
 static auto AddConvertActionIfDependent(Context& context, SemIR::LocId loc_id,
@@ -2314,8 +2492,16 @@ static auto AddConvertActionIfDependent(Context& context, SemIR::LocId loc_id,
                                         ConversionTarget target)
     -> SemIR::InstId {
   if (context.insts().Get(expr_id).type_id() == target.type_id) {
-    // No conversion required.
-    return SemIR::InstId::None;
+    // No type conversion is required. A template-dependent operand that is not
+    // already an initializer still needs a copy into the target's storage, and
+    // how it is copied (element by element for a struct, tuple or array value,
+    // through `Core.Copy` otherwise) is known only for a concrete type, so
+    // that copy is deferred, with its storage, below.
+    if (!target.is_initializer() || !target.storage_id.has_value() ||
+        SemIR::IsInitializerCategory(
+            SemIR::GetExprCategory(context.sem_ir(), expr_id))) {
+      return SemIR::InstId::None;
+    }
   }
 
   // Compute the dependence that the action we create below is going to have. We
@@ -2344,6 +2530,14 @@ static auto AddConvertActionIfDependent(Context& context, SemIR::LocId loc_id,
         num_storage_args + 1, SemIR::InstType::TypeInstId);
     auto action_type_id = GetTupleType(context, action_type_elements_id);
 
+    // The action carries its own copy of the instructions that compute
+    // `target.storage_id` from the pending storage access block, so that each
+    // specific can place them where the initialization needs them (in place
+    // of a storage argument of the initializer, as `MergeReplacing` does for a
+    // concrete initialization); the template's own body keeps the originals
+    // for its other uses.
+    auto action_storage_id = CloneStorageAccessChain(context, loc_id, target);
+
     // Create the initialization action.
     auto action_id = AddDependentActionInst<SemIR::InitializeAction>(
         context, loc_id,
@@ -2352,7 +2546,7 @@ static auto AddConvertActionIfDependent(Context& context, SemIR::LocId loc_id,
          .target_id =
              context.bundles().AddCanonical(SemIR::InitializeAction::Target{
                  .target_type_inst_id = target_type_inst_id,
-                 .storage_id = target.storage_id,
+                 .storage_id = action_storage_id,
                  .in_place = SemIR::BoolValue::From(
                      target.kind == ConversionTarget::InPlaceInitializing)})});
 
@@ -2439,24 +2633,36 @@ static auto AddConvertActionIfDependent(Context& context, SemIR::LocId loc_id,
 auto PerformAction(Context& context, SemIR::LocId loc_id,
                    SemIR::ConvertAction action) -> SemIR::InstId {
   const auto& target_bundle = context.bundles().Get(action.target_id);
+  // An initializing target always has a storage access block, which the
+  // aggregate conversions add element storage to. This action carries no
+  // storage, so the block holds only what the conversion itself creates.
+  PendingBlock target_block(&context);
   ConversionTarget target = {
       .kind = ConversionTarget::Kind(target_bundle.conversion_kind.index),
       .type_id = context.types().GetTypeIdForTypeInstId(
-          target_bundle.target_type_inst_id)};
+          target_bundle.target_type_inst_id),
+      .storage_access_block = &target_block};
 
   auto expr_id =
       PerformBuiltinConversion(context, loc_id, action.inst_id, target);
   expr_id = PerformUserDefinedConversion(context, loc_id, expr_id, target);
-  return PerformCategoryConversion(context, loc_id, expr_id, target);
+  expr_id = PerformCategoryConversion(context, loc_id, expr_id, target);
+  target_block.InsertHere();
+  return expr_id;
 }
 
 auto PerformAction(Context& context, SemIR::LocId loc_id,
                    SemIR::ConvertToCategoryAction action) -> SemIR::InstId {
+  PendingBlock target_block(&context);
   ConversionTarget target = {
       .kind = ConversionTarget::Kind(action.conversion_kind.index),
-      .type_id = context.insts().Get(action.inst_id).type_id()};
+      .type_id = context.insts().Get(action.inst_id).type_id(),
+      .storage_access_block = &target_block};
 
-  return PerformCategoryConversion(context, loc_id, action.inst_id, target);
+  auto expr_id =
+      PerformCategoryConversion(context, loc_id, action.inst_id, target);
+  target_block.InsertHere();
+  return expr_id;
 }
 
 auto PerformAction(Context& context, SemIR::LocId loc_id,
@@ -2486,8 +2692,21 @@ auto PerformAction(Context& context, SemIR::SpecificId specific_id,
 
   const auto& target_bundle = context.bundles().Get(action.target_id);
   PendingBlock target_block(&context);
-  auto specific_storage_id = AddSpecificInstToPendingBlock(
-      target_block, target_bundle.storage_id, specific_id);
+  // The storage is either an instruction in the template's body or the
+  // `InstValue` of a copy of the instructions that compute it, which this
+  // specific places where the initialization needs them.
+  auto storage_id = target_bundle.storage_id;
+  if (auto inst_value =
+          context.insts().TryGetAsIfValid<SemIR::InstValue>(storage_id)) {
+    auto splice_block =
+        context.insts().GetAs<SemIR::SpliceBlock>(inst_value->inst_id);
+    for (auto inst_id : context.inst_blocks().Get(splice_block.block_id)) {
+      target_block.AddInstId(inst_id);
+    }
+    storage_id = splice_block.result_id;
+  }
+  auto specific_storage_id =
+      AddSpecificInstToPendingBlock(target_block, storage_id, specific_id);
   ConversionTarget target = {
       .kind = ConversionTarget::Kind(target_bundle.in_place.ToBool()
                                          ? ConversionTarget::InPlaceInitializing

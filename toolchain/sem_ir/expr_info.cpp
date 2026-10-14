@@ -232,9 +232,9 @@ auto GetExprCategory(const File& file, InstId inst_id,
 }
 
 auto FindStorageArgForInitializer(const File& sem_ir, InstId init_id,
-                                  bool allow_transitive) -> InstId {
+                                  bool allow_transitive, SpecificId specific_id)
+    -> InstId {
   const File* ir = &sem_ir;
-  auto specific_id = SemIR::SpecificId::None;
   while (true) {
     Inst init_untyped = ir->insts().Get(init_id);
     CARBON_KIND_SWITCH(init_untyped) {
@@ -310,6 +310,12 @@ auto FindStorageArgForInitializer(const File& sem_ir, InstId init_id,
         }
         auto const_id =
             GetConstantValueInSpecific(sem_ir, specific_id, inst.inst_id);
+        if (!const_id.is_concrete()) {
+          // The action that produces the spliced instruction has not been
+          // performed: in a template's definition, the initializer and its
+          // storage argument are known only on instantiation.
+          return InstId::None;
+        }
         init_id = sem_ir.constant_values()
                       .GetInstAs<SemIR::InstValue>(const_id)
                       .inst_id;

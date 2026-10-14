@@ -58,8 +58,9 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
 
 auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
                 SemIR::Temporary inst) -> void {
-  if (SemIR::GetExprCategory(context.sem_ir(), inst.init_id) !=
-      SemIR::ExprCategory::InPlaceInitializing) {
+  if (SemIR::GetExprCategory(
+          context.sem_ir(), inst.init_id, &context.specific_sem_ir(),
+          context.specific_id()) != SemIR::ExprCategory::InPlaceInitializing) {
     context.InitializeStorage(context.GetTypeIdOfInst(inst_id), inst.storage_id,
                               inst.init_id);
   }
@@ -74,8 +75,9 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
 
 auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
                 SemIR::ValueAsRef inst) -> void {
-  CARBON_CHECK(SemIR::GetExprCategory(context.sem_ir(), inst.value_id) ==
-               SemIR::ExprCategory::Value);
+  CARBON_CHECK(SemIR::GetExprCategory(
+                   context.sem_ir(), inst.value_id, &context.specific_sem_ir(),
+                   context.specific_id()) == SemIR::ExprCategory::Value);
   auto inst_type = context.GetTypeIdOfInst(inst_id);
   auto value_repr = context.GetValueRepr(inst_type);
   CARBON_CHECK(value_repr.repr.kind == SemIR::ValueRepr::Pointer);
@@ -84,7 +86,9 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
 
 auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
                 SemIR::ValueOfInitializer inst) -> void {
-  CARBON_CHECK(SemIR::GetExprCategory(context.sem_ir(), inst.init_id) ==
+  CARBON_CHECK(SemIR::GetExprCategory(context.sem_ir(), inst.init_id,
+                                      &context.specific_sem_ir(),
+                                      context.specific_id()) ==
                SemIR::ExprCategory::ReprInitializing);
   auto inst_type = context.GetTypeIdOfInst(inst_id);
   auto value_repr = context.GetValueRepr(inst_type);

@@ -6,8 +6,45 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Operator export plan: Carbon operator impls as C++ operator overloads (OX-1, W-054)
 
-**Status:** rev 3 -- NOT signed off: RR-1, RR-2 (the re-review's B-1 and
-OX-B-1). Rev 3 (2026-10-14) folds the focused re-review of rev 2 (7d71f02b3),
+**Status:** rev 4 -- NOT signed off: RR-1-NR, NEW-B1 (the second focused
+re-review's two BLOCKER findings, cited here as RR2-1 and RR2-2). Rev 4
+(2026-10-14) folds the second focused re-review, of rev 3 (fd324a642), which
+returned REJECT with 2 BLOCKER and 3 MINOR findings: rev 3's fold of RR-1 not
+resolved (its RR-1-NR), RR-2 resolved only in its narrow form, the same hazard
+through Carbon's calls and conversions (its NEW-B1), and three MINOR findings
+(its m-1 to m-3). This plan cites them as RR2-1 (RR-1-NR), RR2-2 (NEW-B1) and
+RR2-3 to RR2-5 (m-1 to m-3), so that none reads as a rev 3 RR-n or a
+measurement. All five are folded and none is rejected. RR2-1 and RR2-2 take the
+route the re-review proposes: no export can emit a diagnostic, whatever makes
+the lookup (D-OX-9), Carbon's operator expressions still never select an
+exported operator (D-OX-11), and the guarantee is restated to what holds: a C++
+template sees a Carbon class's exported operators whoever instantiates it
+(D-OX-21). The fold goes one step further than the finding asked, with its
+evidence (R17): the dynamically scoped flag of rev 2 and rev 3 is removed
+rather than kept beside the new rule, because with it a trait's value depended
+on whether Carbon's deduction or C++ code instantiated it first (M-33, M-37),
+and the lookup cache it protected is gone too, because every lookup of an
+operator name now asks again (D-OX-12), which leaves W-205 nothing to cover.
+Every amended sentence is marked "(amended 2026-10-14, review fold: RR2-n)" and
+tabled in the
+[second focused re-review fold](#second-focused-re-review-rev-4-2026-10-14).
+The verdict was REJECT, so rev 4 is not signed off: RR2-1 and RR2-2 were the
+blockers, and whether their fold resolves them is the next re-review's to
+confirm. The rev 4 fixer re-measured in its own scratch tree,
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/ox1-fixer2`
+(`$K` below), with its binaries, fills and conformance output on a tmpfs,
+`/dev/shm/ox1-fx2` (`$L`, linked as `$K/shm`); the second re-reviewer's trees
+are `$RR2`, `…/scratchpad/ox1-rr2`, and `/dev/shm/ox1-rr2`. The prototype `v7`
+(§2.1 to §2.4) replaces `v6`: no flag and no context.h hunk, a SemIR predicate
+that decides without a diagnostic whether a class can be exported, the deleted
+operator template standing for every impl whose operand C++ cannot be given,
+every operator lookup asked again, and exported operators left out of Carbon's
+notes. M-8 to M-14, M-16, M-18 to M-20, M-22, M-23, M-26 and M-30 to M-36 were
+re-run on `v7`, and M-37 to M-40 added; every other number of rev 3 stands as
+measured.
+
+**Rev 3** (2026-10-14, fd324a642, not signed off: RR-1, RR-2, the first
+re-review's B-1 and OX-B-1) folded the focused re-review of rev 2 (7d71f02b3),
 which returned REJECT with 2 BLOCKER, 1 MAJOR and 3 MINOR findings: review A's
 B-1 (A-1 here) and review B's OX-B-1 (B-1 here) not resolved, review B's OX-B-2
 (B-2 here) resolved, and four new findings. This plan cites the re-review's
@@ -81,7 +118,10 @@ listed, which is the identity check (rev 1 claimed the embedded copy was `v4`
 "byte for byte"; it was not; amended 2026-10-14, review fold: A-10, B-7). At rev
 3 the spec is the prototype `v6`, `$G/ox1-v6.diff` (sha256 41091975…8dc7ba, 1033
 lines), embedded and identified the same way (§2.1; amended 2026-10-14, review
-fold: RR-1, RR-2, RR-3, RR-5).
+fold: RR-1, RR-2, RR-3, RR-5). At rev 4 the spec is the prototype `v7`,
+`$K/ox1-v7.diff` (sha256 c5e39e50…9403f4, 1333 lines, four files: it has no
+context.h hunk), embedded and identified the same way (§2.1; amended 2026-10-14,
+review fold: RR2-1, RR2-2, RR2-5).
 
 **Item:** W-054, "Export Carbon operator impls as C++ operator overloads" (kind
 missing-feature, size L, subsystem toolchain/check/cpp, blocked_by W-007).
@@ -119,34 +159,48 @@ move-only classes included (D-OX-5); an impl whose operand has no C++ form is
 omitted, one whose result alone has none is declared deleted, as is the default
 `!=` beside it (D-OX-9), and the generic impls of an operator are one deleted
 operator template, so that C++ rejects an operand Carbon would resolve to a
-generic impl rather than convert it for a concrete one (D-OX-22); Carbon's own
-operator lookup, the template deduction Clang defers to overload resolution
-included, exports nothing and never sees an exported operator as a C++
-candidate, so every Carbon-only program (one whose C++ code looks no operator
-up on a Carbon class or namespace) compiles and lowers as on trunk (D-OX-11,
-D-OX-21; M-9, M-10, M-20, M-22, M-23, M-26, M-31); six new conformance
+generic impl rather than convert it for a concrete one (D-OX-22); no export can
+emit a diagnostic, whatever makes the lookup, C++ code or a Carbon operator
+expression, call or conversion that asks C++, because a class that cannot be
+exported is never named: an impl whose result names one is declared deleted, and
+one whose operand names one is stood for by the deleted operator template
+(D-OX-9, D-OX-22; M-37, M-39); every lookup of an operator name asks again, so a
+lookup finds every impl declared before it, whatever lookups came earlier
+(D-OX-12; M-38); a Carbon operator expression never selects an exported operator
+(D-OX-11; M-10, M-22, M-26); and a C++ template sees a Carbon class's exported
+operators whoever instantiates it, so a Carbon expression, call or conversion
+can select, and lower through, a C++ function that an exported operator makes
+viable, and under C++20 that function can be a rewritten candidate, which Carbon
+cannot call yet (W-045) (D-OX-21; M-31, M-37, M-40; rev 3 stated that every
+Carbon-only program compiles and lowers as on trunk, which RR2-1 and RR2-2
+falsified; amended 2026-10-14, review fold: RR2-1, RR2-2); six new conformance
 programs, one per family plus the non-member form, PASS with hand-derived
-EXPECTs (§1.8); four new goldens (three check, one lower; 55 splits) fill by
+EXPECTs (§1.8); four new goldens (three check, one lower; 66 splits) fill by
 autoupdate in two passes with no existing golden changing (M-8, M-12; the
 deleted operators, the scope of Carbon's lookup and the 55 splits amended
-2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5); F-017 is minted with a new
-design page, docs/design/interoperability/operators.md, and a dated amendment
-to docs/design/interoperability/README.md (D-OX-13); the row moves MISSING →
+2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5; the 66 splits amended
+2026-10-14, review fold: RR2-1, RR2-2, RR2-4); F-017 is minted with a new design
+page, docs/design/interoperability/operators.md, and a dated amendment to
+docs/design/interoperability/README.md (D-OX-13); the row moves MISSING →
 PARTIAL, **expected, not of record** (D-OX-14), bounded by W-208 (conversions),
-with W-202, W-204 to W-207 and W-209 to W-211 filed under it as limits and
-W-203, a pre-existing defect the audit found, filed under the type-export row;
-the header moves +1 PARTIAL, −1 MISSING (rev 1 said DONE and +1 DONE; amended
-2026-10-14, review fold: A-6, B-4, B-3). Conformance: PASS +7, SKIP −1,
-programs +6, bullets +1 PASS (from the floor of record 128 / 0 / 22 over 150,
-48/56, to 135 / 0 / 21 over 156, 49/56, measured in the container on `v5` and
-`v6`, M-13): the bullet's programs all pass while the row stays PARTIAL, as
-OP-1's Optional row did (fork/ORCHESTRATION.md, PR 56).
+with W-202, W-204, W-206, W-207 and W-209 to W-211 filed under it as limits
+(W-205 is not filed: every lookup asking again leaves it nothing to cover;
+amended 2026-10-14, review fold: RR2-1) and W-203, a pre-existing defect the
+audit found, filed under the type-export row; the header moves +1 PARTIAL, −1
+MISSING (rev 1 said DONE and +1 DONE; amended 2026-10-14, review fold: A-6, B-4,
+B-3). Conformance: PASS +7, SKIP −1, programs +6, bullets +1 PASS (from the
+floor of record 128 / 0 / 22 over 150, 48/56, to 135 / 0 / 21 over 156, 49/56,
+measured in the container on `v5`, `v6` and `v7`, M-13): the bullet's programs
+all pass while the row stays PARTIAL, as OP-1's Optional row did
+(fork/ORCHESTRATION.md, PR 56).
 
 **Id allocation (recorded so no workstream collides):** re-scanned for rev 2 and
-again for rev 3 (the same results; SC-1's local and `origin` heads are now both
-444ccbafe; amended 2026-10-14, review fold: RR-4) over the 76 refs `trunk`,
-`origin/trunk` and every local and `origin` `claude/carbon-fork-0-1-*` branch
-with the commands below (M-18): the ledger maximum is W-234 (SC-1 round 10,
+again for rev 3 (the same results; SC-1's local and `origin` heads were then
+both 444ccbafe; amended 2026-10-14, review fold: RR-4), and for rev 4 over 77
+refs (the same results; SC-1's local and `origin` heads now both 62e25dcdd;
+amended 2026-10-14, review fold: RR2-1), over the refs `trunk`, `origin/trunk`
+and every local and `origin` `claude/carbon-fork-0-1-*` branch with the commands
+below (M-18): the ledger maximum is W-234 (SC-1 round 10,
 claude/carbon-fork-0-1-sc at 0d7ee5c19 and 444ccbafe; its `origin` copy,
 ae807c7e8, has W-232), and no ref other than this branch allocates any of
 W-202..W-211 or F-017: they appear only as reservation text, in trunk's and
@@ -162,19 +216,24 @@ W-202..W-211** and, at rev 2, uses all ten (§1.10: W-210 and W-211, rev 1's
 spares, are filed by the folds of B-3 and A-3; amended 2026-10-14, review fold:
 B-3, A-3); rev 3 files nothing new: RR-4's memoized templates and the fixer's
 namespace-order finding (M-36) extend W-205, whose subject, what C++ code sees
-after an earlier lookup, they share (amended 2026-10-14, review fold: RR-4). A
-residue that the implementation reviews find therefore needs a new block from
-the orchestrator, recorded in fork/ORCHESTRATION.md before the id is written; it
-never takes an id from a block reserved to another workstream. **OX-1 mints fork
-design id F-017** (D-OX-13). An id counts as **taken** only by an allocation on
-a ref other than this branch: a ledger entry `"id": "W-202"` to `"id": "W-211"`
-in that ref's fork/inventory/work-items.json, or a decision-log heading naming
-F-017; a mention in a plan, a stamp or a row is the reservation, not an
-allocation (amended 2026-10-14, review fold: B-8). Immediately before the
-discharge commit writes the ledger, the commands are re-run; if an id is taken
-by then, the residues re-allocate from a block the orchestrator assigns
-(skipping every reserved block), the design id from the next free F-id, and the
-landed notes say so.
+after an earlier lookup, they share (amended 2026-10-14, review fold: RR-4). Rev
+4 files nothing new and uses nine of the ten: W-205 is not filed, because every
+lookup of an operator name now asks again (D-OX-12), which leaves of its subject
+only C++'s own rule for a template instantiated before an impl is declared
+(M-33, M-38); it stays reserved to OX-1, unused, and is never reused (amended
+2026-10-14, review fold: RR2-1). A residue that the implementation reviews find
+therefore needs a new block from the orchestrator, recorded in
+fork/ORCHESTRATION.md before the id is written; it never takes an id from a
+block reserved to another workstream. **OX-1 mints fork design id F-017**
+(D-OX-13). An id counts as **taken** only by an allocation on a ref other than
+this branch: a ledger entry `"id": "W-202"` to `"id": "W-211"` in that ref's
+fork/inventory/work-items.json, or a decision-log heading naming F-017; a
+mention in a plan, a stamp or a row is the reservation, not an allocation
+(amended 2026-10-14, review fold: B-8). Immediately before the discharge commit
+writes the ledger, the commands are re-run; if an id is taken by then, the
+residues re-allocate from a block the orchestrator assigns (skipping every
+reserved block), the design id from the next free F-id, and the landed notes say
+so.
 
 ```bash
 cd /home/user/carbon-ox
@@ -226,11 +285,11 @@ for r in $refs; do git grep -l -E 'W-20[2-9]|W-21[01]|F-017' "$r" -- fork docs; 
     proposals/p006254-c-interop-toolchain-implementation-for-function-calls.md
     at :210-216, "Operator calls": "Carbon identifies the operator call, looks
     up potential C++ operator functions (both member and non-member), and uses
-    Clang's overload resolution to select the best candidate". D-OX-11 and
-    D-OX-21 keep exported Carbon impls out of that candidate set: an exported
-    operator is not a C++ operator function but a Carbon impl seen from C++,
-    which Carbon's impl lookup finds itself (amended 2026-10-14, review fold:
-    B-11).
+    Clang's overload resolution to select the best candidate". D-OX-11 keeps
+    exported Carbon impls out of that candidate set: an exported operator is
+    not a C++ operator function but a Carbon impl seen from C++, which
+    Carbon's impl lookup finds itself (amended 2026-10-14, review fold: B-11;
+    D-OX-21's share of it removed, review fold: RR2-1).
 -   proposals/p000845-as-expressions.md:184-187: "The `As` interface provides
     the same functionality as single-argument `explicit` constructors and
     `explicit` conversion functions in C++, and can be used to expose those
@@ -286,18 +345,20 @@ the export is the design overview's (:3666-3668, provisional); its form — memb
 or non-member, the default `!=`, the void compound assignments, the by-value
 `operator[]`, the omission of operand-unmappable impls, the deleted declaration
 of result-unmappable ones and of their default `!=`, the deleted operator
-template of generic impls, and Carbon's own lookup, overload resolution
-included, exporting nothing (amended 2026-10-14, review fold: RR-1, RR-3, RR-5)
-— fills a silence of the accepted design (the README section is empty) and is
-minted as fork design F-017 for after-the-fact veto (R29(a)). p006254's
-"Operator calls" is kept: Carbon still resolves among the C++ operator functions
-with Clang's overload resolution, and an exported Carbon impl is not one of them
-(D-OX-11; amended 2026-10-14, review fold: B-11). Conversions are not exported
-in 0.1 and the row stays PARTIAL for them (D-OX-18), so the overview's
-`ImplicitAs` sentence is deferred, not contradicted (amended 2026-10-14, review
-fold: A-6, B-4). The divergences it documents (C++ conversions on operands,
-base-class member lookup, the impl function's own signature, by-value operands;
-D-OX-15) are the overview's own caveat (:3672-3673) and follow OV-3's precedent.
+template of generic impls and of impls whose operand C++ cannot export, every
+operator lookup asked again and none able to diagnose, and C++ templates seeing
+the exports whoever instantiates them (amended 2026-10-14, review fold: RR-1,
+RR-3, RR-5, RR2-1, RR2-2) — fills a silence of the accepted design (the README
+section is empty) and is minted as fork design F-017 for after-the-fact veto
+(R29(a)). p006254's "Operator calls" is kept: Carbon still resolves among the
+C++ operator functions with Clang's overload resolution, and an exported Carbon
+impl is not one of them (D-OX-11; amended 2026-10-14, review fold: B-11).
+Conversions are not exported in 0.1 and the row stays PARTIAL for them
+(D-OX-18), so the overview's `ImplicitAs` sentence is deferred, not contradicted
+(amended 2026-10-14, review fold: A-6, B-4). The divergences it documents (C++
+conversions on operands, base-class member lookup, the impl function's own
+signature, by-value operands; D-OX-15) are the overview's own caveat
+(:3672-3673) and follow OV-3's precedent.
 
 ## §0 Audit: what exists, what was measured, what is stale
 
@@ -318,8 +379,8 @@ D-OX-15) are the overview's own caveat (:3672-3673) and follow OV-3's precedent.
 | 11 | `inline Cpp` | LANDED | generate_ast.cpp:59-86 and :616-700 (the code is parsed into the file's Clang AST against the exported declarations, in place); the default language mode is C++17 (M-6). |
 | 12 | Arbiter | SKIP | fork/conformance/programs/interop/cpp_operator_export.carbon, EXPECT `42`, `return 1;` guard, the body commented out. |
 | 13 | Docs | SILENT | docs/design/interoperability/README.md:350, an empty "TODO" section; docs/design/README.md:3657-3693, provisional. DD-1 (claude/carbon-fork-0-1-dd) fills the README section and says the export is not implemented (§6.2). |
-| 14 | Clang's per-name lookup cache | LANDED (Clang) | clang/lib/AST/DeclBase.cpp:1921-1965 in /home/user/llvm-src: `DeclContext::lookupImpl` `try_emplace`s (:1952) an entry for the name, asks the external source only for a new entry or one with external declarations, and keeps the entry, empty or not, for every later lookup; upstream e476a2bd3 erases an empty entry the source did not fill, so that a later lookup asks again (D-OX-12, D-OX-21; amended 2026-10-14, review fold: A-4). |
-| 15 | Clang's deferred template deduction, and its memoized instantiations | LANDED (Clang) | clang/lib/Sema/SemaOverload.cpp in /home/user/llvm-src: for an operator's candidate set (`CSK_Operator`), `shouldDeferTemplateArgumentDeduction` holds (:13604-13623), so `AddTemplateOverloadCandidate` records a function template as a deferred candidate (:8384-8403), and `BestViableFunction` deduces its arguments in `InjectNonDeducedTemplateCandidates` (:11559-11584) unless a non-template candidate is a perfect match (:11641-11661). The deduction instantiates what the template's signature names, a SFINAE trait among them, and Clang keeps each class-template specialization it instantiates, so a trait's value is fixed by the operators visible at its first instantiation (D-OX-21, M-31, M-33; added 2026-10-14, review fold: RR-1, RR-4). |
+| 14 | Clang's per-name lookup cache | LANDED (Clang) | clang/lib/AST/DeclBase.cpp:1921-1965 in /home/user/llvm-src: `DeclContext::lookupImpl` `try_emplace`s (:1952) an entry for the name, asks the external source only for a new entry or one with external declarations, and keeps the entry, empty or not, for every later lookup; upstream e476a2bd3 erases an empty entry the source did not fill, so that a later lookup asks again; an entry marked as having external declarations (`StoredDeclsList::setHasExternalDecls`, DeclContextInternals.h) is asked about again at every lookup (:1953), which OX-1 relies on for every operator name it answers (D-OX-12; amended 2026-10-14, review fold: A-4, RR2-1). |
+| 15 | Clang's deferred template deduction, and its memoized instantiations | LANDED (Clang) | clang/lib/Sema/SemaOverload.cpp in /home/user/llvm-src: for every candidate-set kind but `CSK_InitByUserDefinedConversion` and `CSK_CodeCompletion`, an operator's (`CSK_Operator`) and a call's (`CSK_Normal`) among them, `shouldDeferTemplateArgumentDeduction` holds (:13603-13623), so `AddTemplateOverloadCandidate` records a function template as a deferred candidate (:8384-8403), and `BestViableFunction` deduces its arguments in `InjectNonDeducedTemplateCandidates` (:11559-11584) unless a non-template candidate is a perfect match (:11641-11661). The deduction instantiates what the template's signature names, a SFINAE trait among them, and Clang keeps each class-template specialization it instantiates, so a trait's value is fixed by the operators visible at its first instantiation (D-OX-21, M-31, M-33; added 2026-10-14, review fold: RR-1, RR-4; rev 3 named the operator's kind only, amended 2026-10-14, review fold: RR2-2). |
 
 ### §0.2 Measurements
 
@@ -350,9 +411,15 @@ Rev 2's setup, under `$F` (amended 2026-10-14, review fold: all): `$F/bin/`
 holds copies of the planner's scripts, with `relink.py` taught to take a
 precompiled object (`<obj>=<path>.o`) and a `TARGETS` list; `$F/src/v5/` holds
 the five patched sources and `$F/inc/` the two patched headers (export.h, and
-check/cpp/context.h, whose `CppContext` gains one trailing `bool`, constructed
-only in generate_ast.cpp, which is recompiled; the destructor of the trunk
-object needs no change for a trivially destructible member). `v5` is §2.1 to
+check/cpp/context.h, whose `CppContext` gains one trailing `bool`;
+generate_ast.cpp, which allocates the `CppContext` with `std::make_unique`, is
+recompiled, but the constructor is defined in check/cpp/context.cpp, whose
+trunk object rev 2's and rev 3's relinks kept, so the measured `v5` and `v6`
+never ran the member's `= false` initializer; the second re-reviewer's relink
+of `v6` with context.cpp recompiled reproduced all 105 single-file probes, so
+no measurement moves, and §8.5 now recompiles context.cpp whenever context.h
+changes; rev 2 said the class was constructed only in generate_ast.cpp;
+amended 2026-10-14, review fold: RR2-5). `v5` is §2.1 to
 §2.4 (`$F/tc/v5f`, installed as `$F/install-v5`; an earlier link, `$F/tc/v5`,
 differed from it in two comments only and measured identically wherever both
 ran). `bin/probe.sh <install> <cache> <out> <programs...>` compiles each
@@ -384,6 +451,27 @@ probes are the re-reviewer's (`$G/probes/RR`, copied from `$RR/p`), rev 2's 69
 run with `bin/probe.sh`; compact logs and fill snapshots are under `$G` and
 `$G/ev`. `XDG_CACHE_HOME` was a directory under `$H/cache/` for every `carbon`
 run.
+
+Rev 4's setup, under `$K` and `$L` (amended 2026-10-14, review fold: RR2-1 to
+RR2-5): `$K/bin/` holds copies of the second re-reviewer's scripts
+(`relink.py`, `probe2.sh`, `mrun.sh`, `mkinst.sh`, `fill.sh`, `ft.sh`), their
+scratch paths moved under `$L`, with `multi.sh` (the seven multi-unit probes of
+every round, library unit first) and `cmp3.py` (three probe logs joined by
+name). `$K/src/` holds `v7`'s three patched sources and `$K/inc/` its one
+patched header, export.h; `v7` changes no other header, so its relink compiles
+export.cpp, operators.cpp and generate_ast.cpp only (a variant that changes
+check/cpp/context.h also recompiles context.cpp, §8.5). `$K/ox1-v7.diff` is
+what `git diff` prints in a scratch repository of f67ab650d's four files after
+they are replaced. `v7` is `$L/tc/v7`, installed as `$L/install-v7`; the
+mutants of M-14 are `$L/tc/m1` to `m3`, built from `$K/mut/m*_export.cpp`. The
+probe lists are `$K/lists/single.txt` (the second re-reviewer's 105
+single-file probes of every round), `atk.txt` (its 25 probes, `$RR2/probes`)
+and `x.txt` (the rev 4 fixer's, `$K/probes/X` and `Y`), each run with
+`bin/probe2.sh`, and the seven multi-unit probes; the logs are
+`$K/runs-{single,atk,x,multi}-*.log`, the trunk and `v6` logs of the single-file
+list being the second re-reviewer's (`/dev/shm/ox1-rr2/runs-{trunk,v6}.log`)
+and `v6` its `/dev/shm/ox1-rr2/install-v6`. `XDG_CACHE_HOME` was a directory
+under `$L` for every `carbon` run.
 
 **M-1. The arbiter's body fails on trunk and on the nightly, for one reason.**
 The SKIP body, uncommented (`$X/probes/p1/op_export.carbon`), compiled with the
@@ -547,6 +635,8 @@ existing golden moves; it does not cover the shapes of M-20 to M-26, which the
 goldens did not contain and which §2.5's new splits now pin (amended 2026-10-14,
 review fold: B-1). Re-run on `v6`: 1942 passed, `.failed` empty, 46.5 s wall
 time (`$G/ev/ft-v6.summary`; amended 2026-10-14, review fold: RR-1, RR-3, RR-5).
+Re-run on `v7`: 1942 passed, `.failed` empty, 71.2 s wall time
+(`$L/ft-v7f.log`; amended 2026-10-14, review fold: RR2-1, RR2-2).
 
 **M-9. Carbon-only code, and why rev 1's fix was not enough.** Carbon's own
 operator expressions ask C++ whenever an operand is a C++ type (§0.1 row 9),
@@ -572,7 +662,13 @@ flag across overload resolution, and no impl's signature is mapped for a
 Carbon-only expression at all (M-31; amended 2026-10-14, review fold: RR-1) (rev
 1 said the
 silent omission was the fix and that R-1's third shape would be a BLOCKER, which
-review A found; amended 2026-10-14, review fold: A-1, B-1).
+review A found; amended 2026-10-14, review fold: A-1, B-1). On `v7` there is
+no flag (D-OX-21 at rev 4): Carbon's own lookups export as any lookup does, and
+no export can diagnose, because nothing that names a class C++ cannot export is
+declared (D-OX-9); `side2.carbon` and every Carbon-only shape of M-20, M-22,
+M-23 and M-31 compile on `v7`, and the second re-reviewer's a1, a4, b1, c1 and
+c3, which `v6` rejected at `Holder`, compile and run (M-37) (amended
+2026-10-14, review fold: RR2-1, RR2-2).
 
 **M-10. Carbon operator expressions keep calling the impl.** With `v1`,
 `$X/probes/mixed/mixed.carbon`'s Carbon function `m+f` (`impl Money as
@@ -600,7 +696,15 @@ it. Rev 1's accepted side effect, the unused
 Carbon-only `$X/probes/side/side.carbon` defined (§7 R-5), is gone: the
 LLVM IR of `side.carbon` (`--phase=lower --dump-llvm-ir`) has 2 definitions
 and no `carbon_thunk` on trunk and on `v5`, and 3, one a thunk, on `v4`
-(`$F/probes/R5/`; amended 2026-10-14, review fold: A-3, A-4, B-1).
+(`$F/probes/R5/`; amended 2026-10-14, review fold: A-3, A-4, B-1). On `v7` the
+two removal passes stand without the flag, and the notes of a rejected
+expression leave exported operators out (D-OX-11; RR2-3); `mixed.carbon` prints
+`42 42`, and `carbon_side_cpp_operand`'s `CarbonSide` still calls
+`_COp.Money...` directly. Because Carbon's lookups now export, a module can
+define the Carbon thunk of an operator that nothing calls: `side.carbon`
+defines 3 functions on `v7`, one a `_COp__carbon_thunk`, as on `v4`, where
+trunk and `v6` define 2, and its `CarbonSide` calls the impl as on trunk (M-40)
+(amended 2026-10-14, review fold: RR2-1, RR2-3).
 
 **M-11. The edges, each measured on `v4` and re-run on `v5` unless named.** (a)
 A generic impl, `impl forall [T: Core.ImplicitAs(i32)] Money as Core.MulWith(T)`
@@ -636,62 +740,67 @@ prints `42`, while Carbon's `m*k` with `k: i64` fails `cannot access member of
 interface 'Core.MulWith(i64)' in type 'Money' that does not implement that
 interface` (`e13b`) — the documented divergence (§1.7), now pinned on both
 sides (`arithmetic` and `fail_conversion_carbon_side`; amended 2026-10-14,
-review fold: A-9, B-10).
+review fold: A-9, B-10). On `v7`, (c)'s second block compiles and `e4_cache`
+prints `5 42`: every lookup asks again (D-OX-12, M-38) (amended 2026-10-14,
+review fold: RR2-1).
 
 **M-12. The new goldens fill, and fail without the feature (re-measured at
-rev 3).** `bin/fill3.sh` with `v6`'s file_test on the four sources of §2.5:
-three autoupdate passes, then test mode, 4 passed (`$G/ev/fill-v6.*`). Pass 2
-changes **all four** files (36, 28, 6 and 38 diff lines: the `[[@LINE...]]`
-offsets of `CHECK:STDERR` source snippets in the two check goldens with
-diagnostics, the AST golden's `<line:N:...>` positions, and the lower
-golden's debug-location lines), and pass 3 equals pass 2, so the fill needs
-two passes (R26) and a third is the fixpoint check (rev 1 said pass 2 changed
-only the AST golden; review A measured both check goldens changing; amended
-2026-10-14, review fold: A-10). CHECK lines written: 156 (check
-`operator.carbon`, 1354 lines: the `CHECK:STDERR` of the 19 `fail_` splits
-and two unused-binding warnings of `carbon_side_candidates`), 220
-(`operator_ast.carbon`, 288 lines), 15 (`operator_cxx20.carbon`, 130 lines),
-1215 (lower `operator.carbon`, 1439 lines, with
-`--clang-arg=-fno-exceptions`); rev 2's sources wrote 91, 183, 15 and 1079
-over 1062, 243, 130 and 1255 lines. Every `fail_` split fails for its
-intended reason (§4), and no other split has an error (rev 2 said no other
-split had a diagnostic, overlooking the same two warnings in its own fill; a
-fixer correction). The same sources under trunk's file_test
-(`$G/ev/fill-trunk.au1.summary`): 23 positive splits fail (`split ... failed;
-if failure is expected, add the fail_ prefix`), 22 names because `non_member`
+rev 4).** `bin/fill.sh` with `v7`'s file_test on the four sources of §2.5: three
+autoupdate passes, then test mode, 4 passed (`$L/fill-v7f.*`). Pass 2 changes
+three files (30, 28 and 6 diff lines: the `[[@LINE...]]` offsets of
+`CHECK:STDERR` source snippets in the two check goldens with diagnostics, and
+the AST golden's `<line:N:...>` positions) and not the lower golden, which no
+longer has a diagnostic above its code; pass 3 equals pass 2, so the fill needs
+two passes (R26) and a third is the fixpoint check (rev 3's pass 2 changed all
+four, the lower golden's debug locations moving below rev 3's unused-binding
+warnings; amended 2026-10-14, review fold: RR2-4). CHECK lines written: 122
+(check `operator.carbon`, 1580 lines: the `CHECK:STDERR` of its 17 `fail_`
+splits), 217 (`operator_ast.carbon`, 284 lines), 19 (`operator_cxx20.carbon`,
+170 lines) and 1701 (lower `operator.carbon`, 2025 lines, with
+`--clang-arg=-fno-exceptions`); rev 3's sources wrote 156, 220, 15 and 1215.
+Every `fail_` split fails for its intended reason (§4), and no other split has
+any diagnostic, a warning included: the unused bindings of rev 2's
+`carbon_side_candidates`, rev 3's splits, the AST golden and the lower
+`generic_impl` are now named `_` or marked `unused` (rev 3 counted only
+`carbon_side_candidates`'s two warnings and missed eight; amended 2026-10-14,
+review fold: RR2-4). The same sources under trunk's file_test
+(`$L/fill-trunk4.au1`): 29 positive splits fail, 28 names because `non_member`
 is a split of both the check and the lower golden: arithmetic,
 signature_from_impl_function, compound_assignment, comparison,
 move_only_not_equal, bitwise, index, non_member (check), non_member_nested,
 namespace, base_class, unmappable_impl, deleted_result_unselected,
-cpp_side_unrelated_impl, carbon_side_then_cpp, operator (the AST golden),
+unexportable_operand_class, non_member_unexportable_operand, sfinae_detection,
+cpp_side_unrelated_impl, carbon_side_then_cpp, carbon_side_trait_sees_export,
+non_member_before_operand, impl_after_lookup, operator (the AST golden),
 move_only_equality, member, default_not_equal, non_member (lower),
-carbon_side_cpp_operand, carbon_side_default_not_equal and generic_impl (rev
-2's generic_impl_hidden; rev 1 listed 13 names for 14 failures; amended
-2026-10-14, review fold: B-6, RR-3). The Carbon-side regression guards —
+carbon_side_cpp_operand, carbon_side_default_not_equal and generic_impl; and
+two `fail_` splits compile there, `fail_user_cpp_operator_ambiguous`, which
+pins an ambiguity that only the export creates (W-211; rev 2 and rev 3 did not
+list it), and `fail_todo_carbon_side_rewritten_candidate`, which pins a C++20
+candidate that only the export makes viable (M-37). The Carbon-side splits
 `carbon_side_unmappable`, `carbon_side_unexportable_class`,
 `carbon_side_generic_class`, `carbon_side_unrelated_impl`,
 `carbon_side_candidates`, `carbon_side_user_cpp_operator`,
-`carbon_side_deferred_template`, `todo_carbon_side_memoized_trait` and the
-lower `carbon_side_template_candidate` — and the library split `money_lib`
-pass on trunk, as they must. Under rev 2's `v5` file_test (`$F/tc/v5f`,
-`$G/ev/fill-v5.au1.summary`), `carbon_side_deferred_template` fails with
-`Holder`'s TODO (RR-1), `todo_carbon_side_memoized_trait` fails its
-`static_assert`, because `v5` exported `Money::operator+(Money)` during the
-deduction, `fail_generic_impl_conversion`,
-`fail_generic_impl_conversion_non_member` and `fail_deleted_result_not_equal`
-compile, and the lower golden's `carbon_side_template_candidate` module
-differs from `v6`'s, its `CarbonSide` calling the C++ template's thunk
-`_ZplIN6Carbon5MoneyE...RK3Foo.carbon_thunk.__` (RR-2; `generic_impl`'s
-module differs only in the LLVM type-name suffixes and metadata numbers that
-follow it): each rev 3 guard catches the `v5` defect it pins (amended
-2026-10-14, review fold: RR-1 to RR-6). Rev 2's measurement of `v4` stands:
-under `v4`'s file_test (`$F/fill-v4.au1`) the file aborts at the move-only
-splits (`CHECK failure at .../export.cpp:2152: equal_call.isUsable()`, M-21);
-without them (`$F/gen-nomove/`), `carbon_side_unexportable_class`,
-`carbon_side_generic_class`, `carbon_side_unrelated_impl`,
-`carbon_side_candidates`, `carbon_side_user_cpp_operator`,
-`carbon_side_then_cpp`, `cpp_side_unrelated_impl` and `non_member_nested`
-fail, and `fail_deleted_result` compiles.
+`carbon_side_deferred_template`, the four `carbon_side_*_unexportable` splits
+and the lower `carbon_side_template_candidate`, `carbon_side_template_body`,
+`carbon_side_call_template` and `carbon_side_conversion_template`, and the
+library split `money_lib`, pass on trunk, the four lower ones with other calls
+(M-37). Under `v6`'s file_test (the second re-reviewer's
+`/dev/shm/ox1-rr2/tc/v6`, `$L/fill-v6r4.au1`) ten rev 4 splits fail, each
+catching a `v6` defect or its flag: the four `carbon_side_*_unexportable`
+splits, `unexportable_operand_class`, `sfinae_detection` and
+`non_member_unexportable_operand` with `Holder`'s TODO,
+`carbon_side_trait_sees_export` (the flag kept the trait false), and
+`impl_after_lookup` and `non_member_before_operand` (the cached answer);
+`fail_todo_carbon_side_rewritten_candidate` compiles there, the flag having
+hidden the export from the deduction; and the lower
+`carbon_side_template_candidate`'s `CarbonSide` calls the impl instead of the
+template (amended 2026-10-14, review fold: RR2-1, RR2-2, RR2-4). Rev 3's and
+rev 2's measurements of `v5` and `v4` stand for their own sources: under `v5`
+rev 3's guards `carbon_side_deferred_template` and
+`todo_carbon_side_memoized_trait` failed, and under `v4` the file aborted at
+the move-only splits (`CHECK failure at .../export.cpp:2152:
+equal_call.isUsable()`, M-21).
 
 **M-13. Conformance (re-run on `v5`).** Trunk, the 150 programs of record: 128
 PASS / 0 FAIL / 22 SKIP, 48/56 bullets (`$X/conf-trunk`; the floor of record).
@@ -704,7 +813,9 @@ programs, rev 2's compare and nonmember programs and headers): 135 PASS / 0 FAIL
 bullets, one error, the stale README program table that commit 5 regenerates
 (§3). Re-run on `v6` over the same tree (whose seven programs equal §2.6's
 byte for byte): 135 / 0 / 21 over 156, 49/56 (`$G/ev/conf-full-v6.log`; amended
-2026-10-14, review fold: RR-1, RR-3, RR-5).
+2026-10-14, review fold: RR-1, RR-3, RR-5). Re-run on `v7` over the same tree:
+135 / 0 / 21 over 156, 49/56 (`$L/conf-full-v7f.log`; amended 2026-10-14,
+review fold: RR2-1, RR2-2).
 
 **M-14. The programs are not vacuous (re-run on `v5`, three mutants).** Each
 mutant is `v5`'s export.cpp with one edit, relinked with `v5`'s other objects
@@ -725,6 +836,14 @@ every within-family swap of the comparison operators changes a printed value
 2026-10-14, review fold: A-8). Re-run on `v6`, the same three edits applied to
 `v6`'s export.cpp: the same seven outcomes per mutant
 (`$G/ev/conf-progs-m*.log`; amended 2026-10-14, review fold: RR-3, RR-5).
+Re-run on `v7`, the same three edits applied to `v7`'s export.cpp
+(`$K/mut/m*.diff`): M1 and M2 give the same outcomes; M3 makes
+cpp_operator_export_compare and cpp_operator_export_nonmember both
+COMPILE-FAIL, the second with `use of overloaded operator '<' is ambiguous`
+where `v6` printed `0` for `100`, because the swapped table builds the default
+`!=` during the `<` lookup, and its reuse looks for it under `operator!=`
+(D-OX-12); each mutant still fails the programs it failed
+(`$L/conf-progs-m*.log`; amended 2026-10-14, review fold: RR2-1).
 
 **M-15. The un-SKIP is the sketch.** The arbiter's commented body, uncommented,
 diffed against §2.6's program from `import Core` to `fn Run`: identical, the C++
@@ -754,7 +873,16 @@ e27b917c8; amended 2026-10-14, review fold: A-10, B-8). Re-run with `v6`'s diff
 be623188d (its rev 2 plan), the other heads as named, and EV-1, SAFE-1, CM-1 and
 UA-2 (cb3ef2e74, adaae4e35, ea573f672, f96fe8a7a); no branch touches any of the
 five files except ST-1's export.cpp hunk (amended 2026-10-14, review fold:
-RR-1, RR-3, RR-5).
+RR-1, RR-3, RR-5). Re-run with `v7`'s diff (`$L/applytest/`): it applies with
+no offset at f67ab650d, trunk 3eb7f36f0, SC-1 62e25dcdd (local and `origin`),
+OP-1, OP-2, DD-1, EV-1, SAFE-1, CM-1, UA-2 and VA-1's `origin` head
+ec0b1a7b0; at ST-1 with two export.cpp hunks at offset 5; and at VA-1's local
+head 275967b1d, its C4 commit, not yet pushed, with one export.cpp hunk at
+offset 12: VA-1 now adds 12 lines to `ExportFunctionToCpp` (export.cpp:1597, a
+TODO for exporting a variadic function), so export.cpp has a second contender,
+disjoint from OX-1's hunks (§6.2). At upstream/trunk 66a250ad9 only
+generate_ast.cpp's and operators.cpp's include hunks fail, and `v7` has no
+context.h hunk to refresh (amended 2026-10-14, review fold: RR2-1, RR2-5).
 
 **M-17. Upstream has not started operator export.** In /home/user/carbon-lang,
 `git merge-base 0bdce60a5 upstream/trunk` is c1e83b0b7, the true upstream cut;
@@ -768,10 +896,12 @@ negative lookups), 62f1cc6a3 (`GenericClassType` renamed
 toolchain/check/cpp` finds only the import direction (import.cpp:1880,
 thunk.cpp:400, impl_lookup.cpp:188). OX-1 uses none of the renamed entities; its
 names (`ExportOperatorsToCpp`, `ExportNonMemberOperatorsToCpp`,
-`IsExportedCarbonOperator`, `in_carbon_operator_lookup`) have no upstream
-counterpart to align with; e476a2bd3's change is the one to re-integrate at the
-next advance, and its negative-lookup erasure is the same mechanism D-OX-21
-uses (§6.3).
+`IsExportedCarbonOperator`, `CanExportTypeWithoutDiagnostic`) have no
+upstream counterpart to align with; e476a2bd3's change is the one to
+re-integrate at the next advance: its negative-lookup erasure lets a failed
+identifier lookup be asked again, as D-OX-12 lets every operator lookup be
+(§6.3; rev 3 named `in_carbon_operator_lookup`, which `v7` removes; amended
+2026-10-14, review fold: RR2-1).
 
 **M-18. Ids (re-run at rev 2).** The id-allocation commands of the head, over
 76 refs: ledger maximum W-234 (claude/carbon-fork-0-1-sc at 0d7ee5c19); no
@@ -779,7 +909,9 @@ allocation of W-202..W-211 or F-017 on any other ref; the mentions are the
 reservation text listed in the head; F-016 is OP-2's (rev 1 measured W-232;
 amended 2026-10-14, review fold: A-10, B-8). Re-run at rev 3: the same, W-234
 now on claude/carbon-fork-0-1-sc and its `origin` copy, both at 444ccbafe
-(amended 2026-10-14, review fold: RR-4).
+(amended 2026-10-14, review fold: RR-4). Re-run at rev 4 over 77 refs: the
+same, SC-1's local and `origin` heads both at 62e25dcdd (amended 2026-10-14,
+review fold: RR2-1).
 
 **M-19. Cost, per family (`v5`, export.cpp line spans with their comments).**
 Shared by every family: the entry type and table header (14 + 4 lines),
@@ -810,7 +942,22 @@ deleted templates 133 (`BuildDeletedOperatorTemplate` 95,
 `ExportGenericImplAsDeletedOperator` 38): about 480 shared lines, and 133 for
 the generic impls. Compile cost adds, for a Carbon operator expression whose
 overload resolution deduced a deleted operator template C++ code exported
-earlier, a second `BestViableFunction` over the same candidates.
+earlier, a second `BestViableFunction` over the same candidates. At rev 4
+(`v7`; amended 2026-10-14, review fold: RR2-1, RR2-2): the non-diagnosing
+predicate, `CanExportTypeWithoutDiagnostic` and
+`CanExportClassWithoutDiagnostic` with their wrapper and forward declaration,
+229 lines; `ClassifyOperatorExport` 37; `ExportImplFunctionAsCppOperator` with
+its result type 70; `GetExportedOperatorInstId` 19;
+`BuildDefaultNotEqualOperator` 134; `BuildDeletedOperatorTemplate` 89 and
+`ExportDeletedOperatorTemplate` 63; `ExportImplOperators` 51;
+`ExportOperatorsToCpp` 43; `ExportNonMemberOperatorsToCpp` 55;
+`IsExportedCarbonOperator` 15; the generate_ast.cpp arm 32 with its include;
+the operators.cpp hunk 44, its flag scope gone and a notes filter added; and no
+context.h member: 1226 lines added in all, 1119 of them in export.cpp. Compile
+cost: every lookup of an operator name in a Carbon class or namespace walks
+`context.impls()` again (D-OX-12), Carbon's own lookups included, and each
+class type of a signature is checked by a SemIR walk of its enclosing scopes,
+fields, base and virtual functions.
 
 **M-20. Review A's side shapes, on trunk, `v4` and `v5` (A-1).** Review A's
 probes (`$F/probes/A-side/`), each with `impl Money as Core.AddWith(Cpp.Foo)`
@@ -832,8 +979,15 @@ and trunk and `v5` both report the same TODO at the same field, because C++
 overload resolution completes `Holder` to rank the candidate; so does `m + m`
 on `v5`, whose `AddWith(Holder)` candidate it must rank. It is the landed
 OV-3 behavior for a member C++ cannot export (D-OV-18), kept by D-OX-9 and
-pinned by `fail_todo_unexportable_operand_class` (amended 2026-10-14, review
-fold: A-1).
+pinned at rev 2 and rev 3 by `fail_todo_unexportable_operand_class` (amended
+2026-10-14, review fold: A-1). On `v7` all seven shapes compile, (e) and (g)
+included, and (e)'s C++ `m + m` runs: the `AddWith(Holder)` impl is never
+declared, the deleted operator template standing for it, so nothing completes
+`Holder` and the exact match selects the `Money` impl (D-OX-9 (3);
+`unexportable_operand_class`, M-38). OX-1 thereby departs from D-OV-18 for
+operators: an overload-set member that names such a class still reports the
+class's TODO at a C++ call, and an operator never does (amended 2026-10-14,
+review fold: RR2-1).
 
 **M-21. The default `!=` of a move-only class (A-2).** Review A's
 `n1_nocopy_default_ne.carbon` (`class Money { var n: Cpp.NoCopy; }`, `NoCopy`
@@ -876,7 +1030,9 @@ Carbon::Money&, const Carbon::Money&)` duplicates `impl Money as
 AddWith(Money)`, prints `1042` on trunk and is ambiguous on `v4` and `v5`,
 because C++ now sees two equally good candidates; that is filed as W-211 and
 pinned by `fail_user_cpp_operator_ambiguous` (amended 2026-10-14, review fold:
-A-3, B-1; the `v6` results added, RR-2).
+A-3, B-1; the `v6` results added, RR-2). On `v7` the same: `gen`, `enum`,
+`amb`, `u2`, `userop` and `v_member_after_cpp` behave as on `v6`, and `u1` is
+ambiguous (M-38) (amended 2026-10-14, review fold: RR2-1).
 
 **M-23. A Carbon-only expression and later C++ lookups (A-4).** Review A's
 `o1_carbon_side_poisons.carbon` and `o2_without_carbon_side.carbon` differ by
@@ -885,8 +1041,11 @@ AddWith(Cpp.Foo)` and `impl Money as AddWith(Money)`; a later `inline Cpp`
 block applies `a + b` to two `Money`. `v4` rejects `o1` (`invalid operands`,
 the note naming only the `Foo` candidate) and compiles `o2`; `v5` compiles both,
 because Carbon's lookup leaves no answer cached (D-OX-21). Pinned by
-`carbon_side_then_cpp`. The C++-to-C++ order of M-11(c) is unchanged (W-205)
-(amended 2026-10-14, review fold: A-4).
+`carbon_side_then_cpp`. The C++-to-C++ order of M-11(c) was unchanged at
+rev 2 and rev 3 (W-205) (amended 2026-10-14, review fold: A-4). On `v7`, which
+has no flag, `o1` compiles because the C++ lookup asks again, as every lookup
+does (D-OX-12), and M-11(c) compiles too (amended 2026-10-14, review fold:
+RR2-1).
 
 **M-24. A nested operand class (A-5).** Review A's `n_nested.carbon`, adapted
 (`$F/probes/V/v_nested.carbon`: `class Outer { class Inner }`, `impl i32 as
@@ -927,7 +1086,12 @@ like every exported operator, so the filter recognizes it (amended 2026-10-14,
 review fold: B-1). On `v6`, `ne.carbon`'s module has the same function
 definitions as trunk's (M-31), and the re-reviewer's `ne_after.carbon`, where
 C++ code uses the default `!=` first, prints `10 10 1 0` (amended 2026-10-14,
-review fold: RR-2).
+review fold: RR-2). On `v7`, `CarbonNe` still makes one call, of
+`_CNotEqual.EqWith.Core.8d8286e58955f8ab`, and the module also defines
+`_CEqual__carbon_thunk.Foo.Cpp:EqWith...`, the Carbon thunk of the `==` that
+Carbon's lookup exported, which nothing calls (15 definitions, trunk 14;
+M-40); `ne_after.carbon` prints `10 10 1 0` (amended 2026-10-14, review fold:
+RR2-1).
 
 **M-27. A result with no C++ form (B-2).** Review B's `sel.carbon`: `impl Money
 as AddWith(i32) where .Result = (i32, i32)` and `impl Money as AddWith(i64)
@@ -988,7 +1152,7 @@ operator form, fails on `v5` only at `a.Op(b)`. Re-run on `v6`
 (`$G/runs-fx-v6.log`): identical to `$F/runs-v5f.log` except `e1_generic` and
 `v_generic_conv`, now rejected at their C++ use (M-32); the re-reviewer's 26
 probes on trunk and `v6` are `$G/runs-rr-trunk.log` and `$G/runs-rr-v6.log`
-(amended 2026-10-14, review fold: RR-1 to RR-6).
+(amended 2026-10-14, review fold: RR-1 to RR-6). Re-run on `v7`: M-38.
 
 **M-31. Overload resolution's deferred deduction, and the scope of
 Carbon's lookup (RR-1, RR-2).** Clang 21 records a function-template
@@ -1023,7 +1187,18 @@ and the 69 of M-30 identical to `v5`'s. Pinned by
 `carbon_side_deferred_template` (t5's shape without a std header; it
 fails on `v5`) and the lower `carbon_side_template_candidate` (t4's
 shape; on `v5` its `CarbonSide` calls the template's thunk) (added
-2026-10-14, review fold: RR-1, RR-2).
+2026-10-14, review fold: RR-1, RR-2). On `v7`, which has no flag (D-OX-21 at
+rev 4): `o2_optional_holder` prints `0`, `t5_carbon_only_holder` `102`,
+`o3_optional_observable` `0` and `t4_carbon_only` `102`. No program is
+rejected, and t4's and o3's C++ templates are viable through an exported
+operator and selected, which rev 4 states as the rule rather than hides
+(D-OX-21, M-37): o3's `m == o` calls libc++'s `operator==(const T&, const
+optional<U>&)`, which for an empty optional returns false without comparing,
+where Carbon's impl returns true, and otherwise compares `m == *o` through the
+exported `Money::operator==(std::optional<int>)`, an `int` converting to
+`std::optional<int>`; t5's `Holder` impl is stood for by the deleted operator
+template, so nothing completes `Holder` (amended 2026-10-14, review fold:
+RR2-1, RR2-2).
 
 **M-32. Generic impls as a deleted operator template (RR-3).** `$G/probes/G` on
 `v6` (trunk exports no operator, so every C++ use there is `invalid operands`):
@@ -1050,7 +1225,11 @@ viable: `g9_carbon_after_cpp` (C++'s `m * 3L` exports the template first; then
 Carbon's `m * f` for `f: Cpp.Foo`, with `impl Cpp.Foo as ImplicitAs(i32)`)
 prints `2 42` on `v6`, and on `n1`, without the second pass, Carbon's `m * f`
 fails with `overload resolution selected deleted operator '*'` (added
-2026-10-14, review fold: RR-3).
+2026-10-14, review fold: RR-3). Re-run on `v7`: the same (M-38). The template
+now also stands for a concrete impl whose operand C++ cannot export (D-OX-22,
+M-39), and it is registered under the first impl it stands for, not that
+impl's function, so that a later lookup reuses it (amended 2026-10-14, review
+fold: RR2-1).
 
 **M-33. Templates instantiated before an export (RR-4).** The re-reviewer's `t1`
 to `t3` (`$G/probes/RR/T`) share an inline `HasPlus<T>` trait (`T + T`) and t4's
@@ -1067,7 +1246,11 @@ fire, but D-OX-11's, D-OX-21's and the page's statements are qualified for them,
 and W-205, the residue for what C++ code sees after an earlier lookup, is
 extended to cover them. Pinned by `todo_carbon_side_memoized_trait` (t1's order,
 with a `static_assert` that the trait is false; on `v5` it fails, because `v5`
-exported during the deduction) (added 2026-10-14, review fold: RR-4).
+exported during the deduction) (added 2026-10-14, review fold: RR-4). On
+`v7` `t1` prints `102 1`, `t2` `1` and `t3` `102 1`: the trait has one value
+whoever instantiates it first, and `carbon_side_trait_sees_export` (rev 3's
+`todo_carbon_side_memoized_trait`, its `static_assert` inverted) pins `t1`'s
+order (amended 2026-10-14, review fold: RR2-1).
 
 **M-34. The default `!=` beside a deleted `==` (RR-5).** The re-reviewer's
 `ne_deleted_eq2.carbon`: `impl Money as EqWith(i32)` whose `Equal` returns
@@ -1096,7 +1279,11 @@ own type export does the same: `$G/probes/S/s1_trunk_sfinae_fn.carbon`, a trait
 that detects a C++ call of an exported `fn Take(h: Holder)`, is rejected on
 trunk and `v6` with the same TODO at the same field. D-OX-9 (3) counts a
 detection as a use, and `fail_todo_sfinae_detection` pins it (added 2026-10-14,
-review fold: RR-6).
+review fold: RR-6). On `v7` `sfinae_detect` prints `0`, as on trunk:
+`Money + Money` selects the deleted operator template that stands for the
+`Holder` impl, a substitution failure, and nothing completes `Holder`;
+`s1_trunk_sfinae_fn` is still rejected, the export of a function not being an
+operator's (`sfinae_detection`; amended 2026-10-14, review fold: RR2-1).
 
 **M-36. A non-member operator whose operand class C++ has not yet named (found
 by the rev 3 fixer).** `$G/probes/W/w1_namespace_order.carbon`: `impl Money as
@@ -1109,7 +1296,93 @@ already exported (D-OX-3), and Clang keeps the answer (M-4).
 `w2_namespace_order_seen`, whose C++ names `Euro` first (as a parameter type),
 prints `40 2`. It is an order of C++ code, as W-205's impl declared after a
 lookup is, so W-205 is extended to it, and `fail_todo_non_member_before_operand`
-pins it (added 2026-10-14, fixer finding).
+pins it (added 2026-10-14, fixer finding). On `v7` `w1` prints `40 2`: the
+second lookup asks again (D-OX-12), and `non_member_before_operand` pins it
+(amended 2026-10-14, review fold: RR2-1).
+
+**M-37. The second re-review's probes, and the rule (RR2-1, RR2-2).** Its 25
+probes (`$RR2/probes`, `$K/lists/atk.txt`) on trunk, `v6` and `v7`
+(`$K/runs-atk-{trunk,v6,v7}.log`). Every Carbon-only shape that `v6` rejected
+at `Holder` compiles and runs on `v7`: a1 (an unconstrained template whose body
+tests `HasPlus<T>`) and a4 (the same, `constexpr`) print `102`, and b1 (a Carbon
+call of a SFINAE function template), c1 and c3 (an `as` conversion and an
+implicit argument conversion through SFINAE converting constructors) print
+`100`, where trunk prints `1`; their siblings without `Holder`, a2, a6, b2, c2
+and c4, print the same on `v6` and `v7`; a3 (a template whose body adds
+`a+a` when `HasPlus<T>` holds) prints `10` on both, its module calling the
+exported `_ZNK6Carbon5MoneyplES0_` from the template (M-40). e4 (Carbon's
+`m+f` through a user-defined conversion to `Bar`, whose constructor templates
+test `HasPlus`) prints `102` on `v7`, where trunk and `v6` print `3`: the
+deduction inside Carbon's own overload resolution sees the export too. e2
+(C++20: a hand-written `operator==(const Foo&, const T&)` enabled by
+`HasEq<T>`) is rejected on `v7` with ``semantics TODO: `Rewriting operator==
+using operator== is not supported` ``, where trunk and `v6` print `1`: the
+exported `Money::operator==(Money)` makes the reversed candidate `f == m`
+viable, Carbon's lookup selects it, the only C++ candidate that is not an
+export, and Carbon cannot call a rewritten candidate yet (W-045's "secondary
+==/<=> rewrites"); `fail_todo_carbon_side_rewritten_candidate` pins it. e6 and
+e6b are rejected as on trunk, and e6b's notes are trunk's but for the
+hand-written template, noted as a candidate rather than a substitution
+failure, the export having made it viable; `v6`'s extra `Holder` TODO is gone
+(RR2-3). e1 prints `10` on all three, and a5 is rejected on all three for its
+`auto` return type. cx1 to cx6, the second re-reviewer's C++ programs, print
+`42 33 10`, `42 42 42`, `10 1`, `10 100`, `42 42 10` and `7 42` on `v6` and
+`v7`, and cx3b is rejected under C++17, as expected; trunk rejects all seven.
+So on `v7` no export emits a diagnostic, and a C++ template behaves one way
+whoever instantiates it, where rev 3's flag gave t4 and a1 different answers
+to the same question, `HasPlus<Money>`, by whether a template asked it in its
+signature or its body, and t1 and t3 different trait values by which side
+asked first (M-33).
+
+**M-38. Every earlier probe, on `v7` (RR2-1, RR2-2).** The 105 single-file
+probes of every round (`$K/lists/single.txt`, the second re-reviewer's list)
+on `v7` (`$K/runs-single-v7.log`), joined by name with the second
+re-reviewer's trunk and `v6` logs (`$K/bin/cmp3.py`): 97 equal `v6`, and the 8
+that differ are this fold's: `e_cpp_unrelated` (M-20 (e)) compiles where `v6`
+reported `Holder`'s TODO; `sfinae_detect` prints `0`, trunk's result, where
+`v6` reported it (M-35); `e4_cache` prints `5 42` and `w1_namespace_order`
+`40 2`, because every lookup asks again (M-11(c), M-36); and `t1_carbon_first`
+(`102 1`), `t4_carbon_only` (`102`), `t5_carbon_only_holder` (`102`) and
+`o3_optional_observable` (`0`) select the C++ template that an export makes
+viable, by the rule (M-31, M-33, M-37). `ne_deleted_eq_carbon_only` aborts in
+lowering on trunk, `v6` and `v7` alike (M-34). The seven multi-unit probes
+(`$K/bin/multi.sh`) behave as on trunk and `v6` (`$K/runs-multi-v7.log`,
+`$K/runs-multi-trunk.log`; `e6c` still prints an indeterminate value, W-203).
+
+**M-39. The rev 4 fixer's probes (`$K/probes/X` and `Y`;
+`$K/runs-x-{trunk,v6,v7}.log`).** `x1_reask_member` (lookups of `+`, `!=`,
+`==` and a generic `*` on one class, in two C++ blocks with a Carbon `m+f`
+between them) prints `40012 42 2012` on `v6` and `v7`, and
+`x2_reask_nonmember`, its non-member form, `42012 42102`: an answer asked again
+holds one declaration per impl, one default `!=` and one deleted template,
+never a duplicate. `x3_unexportable_operand` (`AddWith(Holder)` beside
+`AddWith(Money)` and `AddWith(i64)`) prints `42 2`, and `x3b`, with an `int`
+operand, is rejected with `overload resolution selected deleted operator '+'`,
+where `v6` reports `Holder`'s TODO; `x4_unexportable_result` (`.Result =
+Holder`) is rejected the same way in C++, and its Carbon-only form `x4b`
+prints `42` on all three; `x5_nonmember_unexportable` (`impl i32 as
+SubWith(Holder)` beside `SubWith(Money)`, C++ naming `Carbon::Holder` through
+a pointer) prints `42`, where `v6` reports the TODO; `x6_virtual_operand` (a
+class with a virtual function as an operand) prints `42` on `v6` and `v7`, the
+predicate admitting it; `x7_cxx20_rewritten` is M-37's e2.
+`y1_incomplete_result` (an impl whose function's result class is completed
+after the impl, its function never defined) compiles on `v6` and `v7` and fails
+to link, the function having no definition; trunk rejects its C++ `+`.
+
+**M-40. What the Carbon-only programs' modules define (`--phase=lower
+--dump-llvm-ir`, `$K/ll/`).** On trunk, `v6` and `v7`: `side.carbon` defines
+2, 2 and 3 functions and `ne.carbon` 14, 14 and 15, the extra one each time
+the Carbon thunk of an operator that Carbon's lookup exported and nothing
+calls, their `CarbonSide` and `CarbonNe` calling the impl and the interface's
+default `NotEqual` on all three; `t4_carbon_only` defines 14, 14 and 18, its
+`CarbonSide` on `v7` calling the hand-written template's specialization,
+`_ZplIN6Carbon5MoneyETnN8EnableIf...RK3Foo`, beside the thunks of both
+exported operators; `o1_optional` and `o3_optional_observable` define 20, 20
+and 33, their `CarbonSide` on `v7` calling libc++'s `operator==`, which calls
+the exported `_ZNK6Carbon5MoneyeqENSt2_C8optionalIiEE`; and
+`a3_body_route_export` defines 16, 19 and 19, its template calling
+`_ZNK6Carbon5MoneyplES0_` on `v6` and `v7`. The lower golden pins these
+shapes (§4).
 
 ### §0.3 Ledger and brief claims found stale (each corrected where §2 says)
 
@@ -1159,13 +1432,23 @@ pins it (added 2026-10-14, fixer finding).
     which a deleted operator template does (D-OX-22), and D-OX-11 said every
     `OverloadingResult` was the one Clang gives without exported operators,
     which the deduction Clang defers to overload resolution falsified (M-31;
-    amended 2026-10-14, review fold: RR-1, RR-2, RR-3).
+    amended 2026-10-14, review fold: RR-1, RR-2, RR-3). At rev 4, four of rev
+    3's claims were stale: §0.1 row 15 named only an operator's candidate set
+    as deferring template deduction, which every kind but two does (RR2-2);
+    the setup said `CppContext` was constructed only in generate_ast.cpp,
+    whose constructor is context.cpp's (RR2-5); §4 and M-12 allowed only
+    `carbon_side_candidates`'s two warnings, where the fill had ten (RR2-4);
+    and D-OX-11 and D-OX-21 said a Carbon-only program lowers as on trunk,
+    which the second re-reviewer's a1 to c4 falsified on `v6` (RR2-1, RR2-2)
+    (amended 2026-10-14, review fold: RR2-1 to RR2-5).
 
 ### §0.4 Decisions this plan auto-adopts (R29(a): the design recommendation under V-2/V-3, veto-able after the fact)
 
 Each decision carries the one sentence that would break it. D-OX-21 is rev 2's
 (amended 2026-10-14, review fold: A-1, A-4); its scope, and D-OX-22, are rev 3's
-(amended 2026-10-14, review fold: RR-1, RR-3).
+(amended 2026-10-14, review fold: RR-1, RR-3). Rev 4 rewrites D-OX-12 and
+D-OX-21 and amends D-OX-3, D-OX-4, D-OX-9, D-OX-11, D-OX-14, D-OX-16, D-OX-20
+and D-OX-22 (amended 2026-10-14, review fold: RR2-1, RR2-2).
 
 -   **D-OX-1 (the operator set).** Exported: the members of the `Core`
     interfaces whose Carbon operator has a C++ overloadable counterpart —
@@ -1206,11 +1489,12 @@ Each decision carries the one sentence that would break it. D-OX-21 is rev 2's
     `Self` with `MapToCppType` before checking the interface; amended
     2026-10-14, review fold: A-5, A-1). **Breaks if** `int-Carbon::Money` (or
     `Foo+Carbon::Money` for an imported `Foo`, or `int-Carbon::Outer::Inner`)
-    does not reach the `i32` (or `Cpp.Foo`) impl in C++ when C++ named the
-    operand class before its first lookup of the operator in that namespace (M-7
-    `nm.carbon`, M-24, the `non_member` and `non_member_nested` splits, the
-    nonmember program; the other order is W-205's, M-36, D-OX-12; amended
-    2026-10-14, fixer finding).
+    does not reach the `i32` (or `Cpp.Foo`) impl in C++, whether C++ named the
+    operand class before or after its first lookup of the operator in that
+    namespace (M-7 `nm.carbon`, M-24, M-36, the `non_member`,
+    `non_member_nested` and `non_member_before_operand` splits, the nonmember
+    program; rev 3 left the second order to W-205; amended 2026-10-14, fixer
+    finding, and review fold: RR2-1).
 -   **D-OX-4 (which impls).** Only impls of the checking file's
     `context.impls()`: concrete (no `generic_id`), complete at the time C++
     looks the operator up, of an interface in package `Core` with a row for the
@@ -1222,8 +1506,11 @@ Each decision carries the one sentence that would break it. D-OX-21 is rev 2's
     amended 2026-10-14, review fold: RR-3); an impl on a specific of a generic
     class (W-202), an impl of an imported library (W-204, blocked by W-203) and
     an impl with no such class among its types (W-210) are filed (amended
-    2026-10-14, review fold: A-1, B-3). **Breaks if** a concrete, complete impl
-    of the file with such a class as `Self` or operand is not exported.
+    2026-10-14, review fold: A-1, B-3). An impl whose operand or result names a
+    class that C++ cannot export without a diagnostic is classified by D-OX-9
+    (3) (amended 2026-10-14, review fold: RR2-1). **Breaks if** a concrete,
+    complete impl of the file with such a class as `Self` or operand is not
+    exported, and its signature names no class that D-OX-9 (3) rejects.
 -   **D-OX-5 (the default `!=`).** An `EqWith` impl that does not declare
     `NotEqual` gets `operator!=` built in C++ as `!(a==b)` over the exported
     `operator==`, of the same form (member or non-member); a declared
@@ -1269,42 +1556,56 @@ Each decision carries the one sentence that would break it. D-OX-21 is rev 2's
     value; several `IndexWith` impls form one C++ overload set. **Breaks if**
     C++ `t[i]` differs from Carbon `t[i]` for the same impl (the index program).
 -   **D-OX-9 (what has no C++ form).** Decided per impl function, after D-OX-4
-    has selected the impl, by `ClassifyOperatorExport` (§2.1). (1) An operand
-    (`self` or the parameter) whose type has no C++ mapping, decided without
-    exporting anything (a type whose mapping stops at a tuple, a struct or
-    another kind `MapToCppType` does not map, under `const`, pointer and array
-    wrappers): the impl is omitted without a diagnostic, because C++ cannot
-    form such an operand, so the omission cannot change which impl a C++
-    expression selects. (2) A result with no C++ mapping, decided the same way,
-    or an array result, which C++ cannot return by value: the operator is
-    declared deleted, with a `void` result, so a C++ expression that would
-    select it is rejected (`overload resolution selected deleted operator`)
-    rather than resolved to another impl by a conversion (M-27); the default
-    `!=` beside it is deleted too (D-OX-5, M-34; amended 2026-10-14, review
-    fold: RR-5). (3) Any other type, a Carbon class included, is mapped, and a
-    diagnostic from exporting it — a class C++ cannot export, such as one with a
-    tuple field — is reported at the C++ use, as for any exported declaration
-    that names that class and as OV-3 landed it for an overload-set member
-    (D-OV-18, M-20). A C++ detection that ranks such an operator, a SFINAE trait
-    for one, is a use: the diagnostic is a hard error there, not a substitution
-    failure, as it is on trunk for a detection of an exported function that
-    names the class (M-35; amended 2026-10-14, review fold: RR-6). (4) A generic
-    impl has no C++ form at all; the operator's generic impls are one deleted
-    operator template (D-OX-22; amended 2026-10-14, review fold: RR-3). No impl
-    is mapped for Carbon's own operator expressions (D-OX-21). Rev 1
-    omitted every impl whose signature mapped to null, decided by mapping it,
-    and argued that C++ cannot form an unmappable operand; that argument holds
-    for operands only, the mapping itself diagnosed for some classes, and the
-    omission of a result-unmappable impl let C++ select another impl (amended
-    2026-10-14, review fold: A-1, B-2). **Breaks if** a Carbon-only expression
-    trunk accepts is rejected (the `carbon_side_*` splits), or a C++ expression
-    selects an impl other than the one C++ overload resolution would select over
-    all of the operator's impls of the file, a generic impl standing as its
-    deleted template (the `fail_deleted_result`,
-    `fail_deleted_result_not_equal`, `fail_generic_impl_conversion` and
-    `fail_generic_impl_conversion_non_member` splits; rev 2 exempted generic
-    impls on a false premise, M-28; amended 2026-10-14, review fold: RR-3,
-    RR-5).
+    has selected the impl and before any type of it is mapped, by
+    `ClassifyOperatorExport` (§2.1). (1) An operand (`self` or the parameter)
+    whose type has no C++ mapping, decided without exporting anything (a type
+    whose mapping stops at a tuple, a struct or another kind `MapToCppType`
+    does not map, under `const`, pointer and array wrappers): the impl is
+    omitted without a diagnostic, because C++ cannot form such an operand, so
+    the omission cannot change which impl a C++ expression selects. (2) A
+    result with no C++ mapping, decided the same way, or an array result,
+    which C++ cannot return by value: the operator is declared deleted, with a
+    `void` result, so a C++ expression that would select it is rejected
+    (`overload resolution selected deleted operator`) rather than resolved to
+    another impl by a conversion (M-27); the default `!=` beside it is deleted
+    too (D-OX-5, M-34; amended 2026-10-14, review fold: RR-5). (3) A type that
+    names a Carbon class is checked by `CanExportTypeWithoutDiagnostic`, which
+    reads SemIR only and repeats the checks of the class's export and
+    completion, its enclosing scopes, a specific's bindings and arguments, its
+    base, fields and own virtual functions, recursively, and answers no for
+    whatever it cannot decide (an abstract class, a function type): an
+    operand whose type it rejects is never named, the operator's deleted
+    operator template standing for the impl (D-OX-22), and a result it rejects
+    makes the operator deleted, as in (2); a non-member impl whose operand
+    class it rejects is not declared at all, C++ being unable to form that
+    operand. Nothing declared names a class that cannot be exported, so
+    nothing completes one, and no export emits a diagnostic, whatever makes
+    the lookup: C++ code, a detection such as a SFINAE trait, or a Carbon
+    operator expression, call or conversion (M-37, M-39). The predicate errs
+    in the safe direction: a class it wrongly rejects makes a C++ use with
+    that operand select the deleted template and be rejected, never convert
+    for another impl (§7 A-12). Rev 3 exported such a class and let its
+    export report its own semantics TODO at every lookup that ranked the
+    operator, the OV-3 behavior of D-OV-18, which the second re-review showed
+    rejecting Carbon-only programs through C++ templates, calls and
+    conversions (amended 2026-10-14, review fold: RR-6, RR2-1, RR2-2). (4) A
+    generic impl has no C++ form at all; the operator's generic impls are one
+    deleted operator template (D-OX-22; amended 2026-10-14, review fold:
+    RR-3). Rev 1 omitted every impl whose signature mapped to null, decided by
+    mapping it, and argued that C++ cannot form an unmappable operand; that
+    argument holds for operands only, the mapping itself diagnosed for some
+    classes, and the omission of a result-unmappable impl let C++ select
+    another impl (amended 2026-10-14, review fold: A-1, B-2). **Breaks if**
+    any export emits a diagnostic (the `*_unexportable*` splits,
+    `sfinae_detection`, M-37, M-39), or a C++ expression selects an impl other
+    than the one C++ overload resolution would select over all of the
+    operator's impls of the file, a generic impl or an impl whose operand
+    cannot be exported standing as the deleted template (the
+    `fail_deleted_result`, `fail_deleted_result_not_equal`,
+    `fail_generic_impl_conversion`, `fail_generic_impl_conversion_non_member`,
+    `fail_unexportable_operand_conversion` and
+    `fail_unexportable_result_class` splits; rev 2 exempted generic impls on a
+    false premise, M-28; amended 2026-10-14, review fold: RR-3, RR-5, RR2-1).
 -   **D-OX-10 (thunks and symbols).** No new thunk kind: the C++ operator is
     built by `BuildCppToCarbonThunkDecl` under the operator's name, or by
     `BuildCppOperatorDecl` for the non-member form, and calls the generated
@@ -1317,51 +1618,56 @@ Each decision carries the one sentence that would break it. D-OX-21 is rev 2's
     C++ type are two same-signature declarations, ambiguous at every C++ use
     (W-207, the W-118 shape). **Breaks if** two impls' thunks mangle equal
     (lowering would reuse one, the OV-3 R-10 failure).
--   **D-OX-11 (Carbon is unchanged).** An exported Carbon operator is never a
-    C++ candidate for Carbon's own operator lookup, in any of Clang's results:
-    Carbon's lookup, overload resolution and the template deduction Clang defers
-    to it included, exports nothing (D-OX-21), and `FindClangOperator` marks
-    every candidate that `IsExportedCarbonOperator` recognizes — a declaration
+-   **D-OX-11 (Carbon never calls an export).** An exported Carbon operator is
+    never selected by Carbon's own operator lookup: `FindClangOperator` marks
+    every candidate that `IsExportedCarbonOperator` recognizes, a declaration
     registered in `clang_decls` as an exported operator, the default `!=`
-    included, or a specialization of a deleted operator template (D-OX-22) —
+    included, or a specialization of a deleted operator template (D-OX-22),
     non-viable, before `BestViableFunction` and again after it for the
-    specializations deduced there, resolving once more if one was viable (M-32).
-    So for a Carbon-only program, one whose C++ code looks no operator up on a
-    Carbon class or namespace, the success, ambiguous, deleted and no-viable
-    results are each the one Clang gives without exported operators, and a
-    hand-written C++ operator Carbon used before is still the one it uses. After
-    C++ code has looked an operator up, Clang keeps what it instantiated then: a
-    template formed while an exported operator was visible stays as formed, so a
-    later Carbon expression can select a C++ function that such a template makes
-    viable (M-33, W-205), though never an exported operator. p006254's "Operator
-    calls" stands: an exported operator is Carbon's own impl seen from C++, not
-    a C++ operator function (rev 1 checked only the `OR_Success` result, after
-    overload resolution, and missed the non-member default `!=`; rev 2's removal
-    ran before the deduction that could export, and its "every
-    `OverloadingResult`" claim was false; amended 2026-10-14, review fold: A-3,
-    B-1, B-11, RR-1, RR-2, RR-3, RR-4). **Breaks if** a Carbon operator
-    expression calls an exported C++ operator, or a Carbon-only program trunk
-    accepts is rejected or selects another C++ function (the lower
-    `carbon_side_cpp_operand`, `carbon_side_default_not_equal`,
-    `carbon_side_template_candidate` and `generic_impl` splits,
-    `carbon_side_candidates`, `carbon_side_user_cpp_operator`,
-    `carbon_side_deferred_template`, M-22, M-26, M-31, M-32).
--   **D-OX-12 (laziness and caching).** Operators are exported when C++ code
-    looks their name up in the class or namespace, and Clang keeps the answer
-    (M-4), as for every exported name; an impl declared after C++ code looked
-    the operator up is not seen by later C++ code, nor is a non-member operator
-    whose operand class C++ had not named when it first looked the operator up
-    in that namespace (M-36), and a class-template specialization keeps the
-    operators visible at its first instantiation (M-33; Clang caches a concept's
-    satisfaction the same way, the re-reviewer notes) (W-205; the last two
-    amended 2026-10-14, review fold: RR-4, and the fixer's M-36). Carbon's own
-    lookups leave no answer (D-OX-21), so they do not narrow what C++ name
-    lookup sees (rev 1's caching applied to Carbon's lookups too; amended
-    2026-10-14, review fold: A-4). **Breaks if** an operator C++ looks up after
-    its impl is complete, and after C++ has named its operand class, is not
-    found (the `fail_impl_after_use`, `fail_todo_impl_after_lookup`,
-    `fail_todo_non_member_before_operand` and `carbon_side_then_cpp` splits pin
-    the orders).
+    specializations deduced there, resolving once more if one was viable
+    (M-32), and leaves them out of the notes of a rejected expression (RR2-3).
+    So the success, ambiguous, deleted and no-viable results are each the one
+    Clang gives over the C++ candidates that are not exports, and a
+    hand-written C++ operator Carbon used before is still the one it uses
+    (M-22). Which C++ functions are viable is C++'s question, answered as for
+    C++ code: a template that an exported operator makes viable is a candidate
+    (D-OX-21), and Carbon can select it, and lower through it and through the
+    export it calls (M-37, M-40). p006254's "Operator calls" stands: an
+    exported operator is Carbon's own impl seen from C++, not a C++ operator
+    function (rev 1 checked only the `OR_Success` result, after overload
+    resolution, and missed the non-member default `!=`; rev 2's removal ran
+    before the deduction that could export, rev 3's flag hid the exports from
+    the deductions of Carbon's own operator lookup only, and both promised
+    that a Carbon-only program lowers as on trunk, which the C++ templates
+    that Carbon's calls, conversions and selections instantiate falsified;
+    amended 2026-10-14, review fold: A-3, B-1, B-11, RR-1, RR-2, RR-3, RR-4,
+    RR2-1, RR2-2, RR2-3). **Breaks if** a Carbon operator expression calls an
+    exported C++ operator, or its result differs from the one Clang gives over
+    the C++ candidates that are not exports (the lower
+    `carbon_side_cpp_operand`, `carbon_side_default_not_equal` and
+    `generic_impl` splits, `carbon_side_candidates`,
+    `carbon_side_user_cpp_operator`, M-22, M-26, M-32).
+-   **D-OX-12 (laziness, and no cache).** Operators are exported when a
+    lookup of their name reaches the class or namespace, whatever makes it,
+    and Clang is asked again at every later lookup: the external source marks
+    the name's entry as having external declarations, empty or not
+    (`StoredDeclsList::setHasExternalDecls`, §0.1 row 14), and answers with
+    every declaration exported so far and any the file's impls now allow,
+    reusing each one built before (`clang_decls` for an impl's operator, the
+    previous answer for a default `!=` and a deleted template). So an impl
+    declared before a lookup is found by it, whatever lookups came earlier
+    (M-11(c), M-23, M-36). What C++ code sees still follows C++'s own order:
+    an impl declared after a C++ use is not seen by it (`fail_impl_after_use`),
+    and a class-template specialization keeps what was declared at its first
+    instantiation (M-33). Rev 1 to rev 3 kept Clang's first answer, so an
+    impl declared after a C++ lookup, or a non-member operator whose operand
+    class C++ had not yet named, was missed (W-205), and rev 2 and rev 3 kept
+    Carbon's own lookups out of the cache with D-OX-21's flag (amended
+    2026-10-14, review fold: A-4, RR-4, RR2-1). **Breaks if** an operator C++
+    looks up after its impl is complete is not found (the
+    `impl_after_lookup`, `non_member_before_operand` and
+    `carbon_side_then_cpp` splits), or an answer asked again holds a duplicate
+    declaration (M-39's `x1` and `x2`).
 -   **D-OX-13 (F-017 and its docs).** The accepted design leaves the operator
     model empty (README :350) and the overview is provisional, so the mapping
     is fork design F-017, documented on a new page,
@@ -1377,9 +1683,11 @@ Each decision carries the one sentence that would break it. D-OX-21 is rev 2's
     design overview's operator-overloading interop section maps `ImplicitAs`
     to C++ implicit conversions in the same paragraph as `BitComplement` to
     `operator~` (docs/design/README.md:3676-3681), and conversions are not
-    exported in 0.1 (D-OX-18). Every other limit — W-202 and W-204 to W-207,
-    W-209 to W-211 — is a generic, cross-library, ordering, not-yet-designed,
-    non-Carbon or C++-side case, filed under the row as a limit; the concrete
+    exported in 0.1 (D-OX-18). Every other limit — W-202, W-204, W-206,
+    W-207 and W-209 to W-211 — is a generic, cross-library, not-yet-designed,
+    non-Carbon or C++-side case, filed under the row as a limit (W-205, the
+    ordering case, is not filed at rev 4; amended 2026-10-14, review fold:
+    RR2-1); the concrete
     set D-OX-4 names is usable from C++ in both operand positions (M-7, M-13,
     M-24). The bullet's seven programs all PASS while the row is PARTIAL, as
     for OP-1's Optional row (rev 1 recorded DONE and kept PARTIAL as a fallback,
@@ -1412,11 +1720,12 @@ Each decision carries the one sentence that would break it. D-OX-21 is rev 2's
     an impl that no C++ overload resolution over the exported declarations
     would select (that would be a toolchain defect, not a divergence).
 -   **D-OX-16 (W-007 discipline).** New functions, one new switch arm
-    (generate_ast.cpp, not a contention file), one `CppContext` member
-    (check/cpp/context.h, not a contention file), `FindClangOperator`'s lookup
-    and overload resolution inside one flag scope, with a candidate-removal
-    helper run before and after resolution (operators.cpp, not a contention
-    file; amended 2026-10-14, review fold: RR-1, RR-3), and one in-function hunk
+    (generate_ast.cpp, not a contention file), `FindClangOperator`'s
+    candidate-removal helper run before and after overload resolution and a
+    filter for its notes (operators.cpp, not a contention file; rev 2 and rev 3
+    also added a `CppContext` member in check/cpp/context.h and a flag scope,
+    which rev 4 removes; amended 2026-10-14, review fold: RR-1, RR-3, RR2-1,
+    RR2-3), and one in-function hunk
     in a contention file: the condition
     `target.self_param && isa<clang::CXXMethodDecl>(function_decl)` in
     `BuildCppToCarbonThunkBody` (export.cpp:1247). It is behaviour-preserving,
@@ -1476,62 +1785,79 @@ Each decision carries the one sentence that would break it. D-OX-21 is rev 2's
 -   **D-OX-20 (no new SemIR, no new diagnostics).** The feature adds no
     instruction kind, no `CARBON_DIAGNOSTIC`, and no SemIR formatting; its
     observable outputs are C++ declarations (the AST golden), generated thunks
-    (the lower golden), Clang's own diagnostics, and the existing semantics
-    TODOs of type export (D-OX-9 (3); `BuildCppOperatorDecl` reuses the texts
-    `BuildCppToCarbonThunkFunctionType` uses). **Breaks if** an implementation
+    (the lower golden) and Clang's own diagnostics, and no Carbon
+    diagnostic: no export emits one (D-OX-9 (3)), and the semantics TODO texts
+    that `BuildCppOperatorDecl` keeps from `BuildCppToCarbonThunkFunctionType`
+    for a type that does not map are unreachable after the classification
+    (rev 3 relied on the existing semantics TODOs of type export; amended
+    2026-10-14, review fold: RR2-1). **Breaks if** an implementation
     review finds a case that needs a Carbon diagnostic to be usable (it would
     be added with its own golden split and recorded here).
--   **D-OX-21 (Carbon's own lookup exports nothing; rev 2, its scope widened at
-    rev 3).** While `FindClangOperator` resolves a Carbon operator expression's
-    C++ candidates — `Sema::LookupOverloadedBinOp`, then
-    `OverloadCandidateSet::BestViableFunction`, in which Clang deduces the
-    template candidates it deferred (§0.1 row 15) —
-    `CppContext::in_carbon_operator_lookup()` is set, and the external source's
-    `CXXOperatorName` arm answers nothing, exports nothing, and erases the empty
-    entry `DeclContext::lookupImpl` created, as upstream e476a2bd3 does for a
-    failed identifier lookup, so that the next C++ lookup of that name asks
-    again. This is the new piece of `Context` state that rev 1 rejected (§7
-    A-8); it is adopted because Carbon's lookup needs no exported operator
-    (Carbon finds its own impl by impl lookup, and D-OX-11 discards exported
-    candidates anyway), and because exporting during it rejected Carbon-only
-    programs (M-20, M-31), made them ambiguous (M-22), narrowed later C++
-    lookups (M-23), defined unused thunks (M-10) and made a C++ template viable
-    for a Carbon-only expression (M-31). Rev 2 cleared the flag before
-    `BestViableFunction`, so a lookup nested in the deferred deduction still
-    exported (RR-1). A template that Carbon's deduction instantiates keeps what
-    it saw then (M-33): that is Clang's memoization, not a cached lookup, and
-    W-205's (amended 2026-10-14, review fold: A-1, A-4, A-3, B-1, RR-1, RR-2,
-    RR-4). **Breaks if** a C++ name lookup after a Carbon expression misses an
-    impl that a lookup without that expression finds (the `carbon_side_then_cpp`
-    split, M-23; the template instantiations Carbon's deduction formed are
-    excepted, M-33), a Carbon expression exports or maps an impl during its
-    overload resolution (`carbon_side_deferred_template`, M-31), or upstream's
-    advance changes the lookup-cache contract the erasure relies on, or Clang's
-    deferral of template deduction (§6.3 and R-5, re-checked at each advance).
--   **D-OX-22 (generic impls are one deleted operator template; rev 3).** C++
-    cannot call a generic impl (W-202), and leaving it out let a C++ operand
-    that converts to a concrete impl's parameter type select that impl where
-    Carbon selects the generic one (M-28), B-2's hazard. So for the generic
-    impls of a binary operator whose `Self` is the class, the member walk
-    declares one deleted member template `template <typename T> void
+-   **D-OX-21 (one lookup for everyone; rev 2, rewritten at rev 4).** A
+    lookup of an operator name in an exported Carbon class or namespace
+    exports the same declarations whoever makes it: C++ code, Carbon's
+    operator lookup (`FindClangOperator`, §0.1 row 9), Carbon's call and
+    conversion resolution (overload_resolution.cpp, `LookupCppConversion`),
+    Clang's deduction of a deferred template candidate for any of them (§0.1
+    row 15), or a template instantiated at the end of the file. No export can
+    be rejected (D-OX-9), no answer is cached (D-OX-12), and Carbon's operator
+    expressions never select an export (D-OX-11). So a C++ template sees a
+    Carbon class's exported operators whoever instantiates it, and Carbon's
+    expressions, calls and conversions with a C++ operand or callee can
+    select a C++ function that an exported operator makes viable: its body may
+    call the export (a3, M-37), a trait it tests has the same value whichever
+    side asked first (M-33), libc++'s `std::optional` comparisons apply to a
+    class with an exported `==` (o3, M-31), and under C++20 a reversed
+    candidate so enabled is selected and rejected with the import direction's
+    existing TODO for rewritten candidates (W-045;
+    `fail_todo_carbon_side_rewritten_candidate`). A module also defines the
+    Carbon thunks of the operators that Carbon's lookups exported, which
+    nothing may call (M-10, M-40). Rev 2 and rev 3 set
+    `CppContext::in_carbon_operator_lookup()` while `FindClangOperator`
+    resolved a Carbon expression's candidates, so that those lookups exported
+    and cached nothing; it is removed, because a dynamic scope cannot tell the
+    instantiations Clang performs for a Carbon expression from those it
+    performs for C++ code, one `PerformPendingInstantiations` loop
+    instantiating both a1's Carbon-selected `operator+<Money>` and cx1's
+    C++-selected `Sum<Money>`, and because inside its scope it made a trait's
+    value depend on who instantiated it first (§7 A-8, A-18; amended
+    2026-10-14, review fold: A-1, A-4, A-3, B-1, RR-1, RR-2, RR-4, RR2-1,
+    RR2-2). **Breaks if** an export emits a diagnostic (D-OX-9), a C++
+    template behaves differently for C++ code than for a Carbon expression,
+    call or conversion (`carbon_side_trait_sees_export` and the lower
+    `carbon_side_template_candidate`, `carbon_side_template_body`,
+    `carbon_side_call_template` and `carbon_side_conversion_template`
+    splits), or the leads require Carbon-only programs to lower exactly as on
+    trunk: then a mechanism must classify each of Clang's instantiations by
+    its origin, which a scoped flag cannot (§7 A-18).
+-   **D-OX-22 (the impls C++ cannot call are one deleted operator template;
+    rev 3, extended at rev 4).** C++ cannot call a generic impl (W-202), nor
+    an impl whose operand names a class that cannot be exported without a
+    diagnostic (D-OX-9 (3)), and leaving either out let a C++ operand that
+    converts to a concrete impl's parameter type select that impl where
+    Carbon selects the one left out (M-28), B-2's hazard. So for the binary
+    operator impls of these two kinds whose `Self` is the class, the member
+    walk declares one deleted member template `template <typename T> void
     operator@(T) const = delete;` (`&` instead of `const` for `ref self`), and
     for those whose operand is a Carbon class and whose `Self` is not, the
     non-member walk declares one deleted template `template <typename T> void
     operator@(T, C) = delete;` per operand class `C` (`T&` first for `ref
-    self`), each registered under a generic impl function's first declaration;
-    `IsExportedCarbonOperator` recognizes a specialization by its template. C++
-    prefers a non-template to a template specialization when their conversions
-    tie ([over.match.best.general]), so an operand that exactly matches a
-    concrete impl still selects it, and any other operand selects the deleted
-    template and is rejected (M-32). A unary generic impl needs no template: C++
-    converts no object operand of a member operator. **Breaks if** C++ selects a
-    concrete impl by converting an operand that Carbon would resolve to a
-    generic impl (`fail_generic_impl_conversion`,
-    `fail_generic_impl_conversion_non_member`), rejects an operand that exactly
-    matches a concrete impl (the lower `generic_impl` split), or the template is
-    a candidate for Carbon's own lookup (`generic_impl`'s
-    `CarbonSideCppOperand`, `g9_carbon_after_cpp`, M-32) (added 2026-10-14,
-    review fold: RR-3).
+    self`); each is registered under the first impl it stands for, and a later
+    lookup reuses it (D-OX-12); `IsExportedCarbonOperator` recognizes a
+    specialization by its template. C++ prefers a non-template to a template
+    specialization when their conversions tie ([over.match.best.general]), so
+    an operand that exactly matches a concrete impl still selects it, and any
+    other operand selects the deleted template and is rejected (M-32, M-39). A
+    unary impl needs no template: C++ converts no object operand of a member
+    operator (amended 2026-10-14, review fold: RR2-1). **Breaks if** C++
+    selects a concrete impl by converting an operand that Carbon would resolve
+    to an impl the template stands for (`fail_generic_impl_conversion`,
+    `fail_generic_impl_conversion_non_member`,
+    `fail_unexportable_operand_conversion`), rejects an operand that exactly
+    matches a concrete impl (the lower `generic_impl` split,
+    `unexportable_operand_class`), or the template is a candidate for Carbon's
+    own lookup (`generic_impl`'s `CarbonSideCppOperand`,
+    `g9_carbon_after_cpp`, M-32) (added 2026-10-14, review fold: RR-3).
 
 ## §1 Design
 
@@ -1569,9 +1895,10 @@ D-OX-9 decides what has no C++ form (rev 1 said `R` was the interface's
 `OperatorExportTable` (§2.1), one row per interface member with its explicit
 parameter count (0 unary, 1 binary) and `OverloadedOperatorKind`; one operator
 name can come from two interfaces (`-` from `SubWith` and `Negate`), which
-Clang tells apart by parameter count. A generic impl has no row form: the
-operator's generic impls are one deleted template, `void` in either form
-(D-OX-22; amended 2026-10-14, review fold: RR-3).
+Clang tells apart by parameter count. A generic impl, or one whose operand
+C++ cannot export, has no row form: the operator's impls of those kinds are one
+deleted template, `void` in either form (D-OX-22; amended 2026-10-14, review
+fold: RR-3, RR2-1).
 
 ### §1.2 How C++ finds it (D-OX-2, D-OX-3, D-OX-12, D-OX-21)
 
@@ -1579,9 +1906,10 @@ Clang asks the external source for an operator name in two contexts (M-4): the
 left operand's class, for member candidates, and each associated namespace, for
 argument-dependent lookup. A new arm of `FindExternalVisibleDeclsByName`'s
 name-kind switch answers both: `ExportOperatorsToCpp` for a Carbon-owned record,
-`ExportNonMemberOperatorsToCpp` for a Carbon-owned namespace. While Carbon's own
-operator lookup is running (D-OX-21), the arm instead answers nothing and erases
-the entry Clang created, so that nothing is exported or cached. Each walk visits
+`ExportNonMemberOperatorsToCpp` for a Carbon-owned namespace. The arm answers
+every lookup the same way, whoever makes it (D-OX-21; rev 2 and rev 3 answered
+nothing while Carbon's own operator lookup ran; amended 2026-10-14, review
+fold: RR2-1). Each walk visits
 `context.impls()` in order and first keeps, from SemIR alone, the impls D-OX-4
 admits whose interface has a row for the operator (`IsOperatorImplOfKind`:
 complete, non-generic, `Core`, and the table; M-3), so an impl of any other
@@ -1591,8 +1919,9 @@ constant is the record's class type. The non-member walk keeps the impls whose
 `Self` is not a Carbon class C++ sees as a record of its own
 (`GetCarbonRecordClassType`: a class type from a Carbon scope that is not a
 recognized type such as `i32`), whose one interface argument is such a class,
-non-generic and already exported, and whose exported declaration has this
-namespace as its innermost enclosing namespace (`getEnclosingNamespaceContext`),
+non-generic, already exported and exportable without a diagnostic (D-OX-9 (3)),
+and whose exported declaration has this namespace as its innermost enclosing
+namespace (`getEnclosingNamespaceContext`),
 where argument-dependent lookup on it looks (M-24; amended 2026-10-14, review
 fold: A-1, A-5). For each kept impl and each table row of the operator, the
 function the impl declares under the row's member name
@@ -1602,13 +1931,14 @@ exported or deleted declaration is registered in `clang_decls`, keyed by the
 declaration and the all-by-value signature and mapped to the function's first
 declaration, as `GetOrExportFunctionToCpp` records an exported function
 (:1632-1642); the registration is what `IsExportedCarbonOperator` looks up
-(D-OX-11). The generic impls a walk meets are not exported; the walk declares
-one deleted operator template for them (D-OX-22), registered the same way.
-Carbon's own lookup keeps the flag set through overload resolution, in which
-Clang deduces template candidates (D-OX-21) (amended 2026-10-14, review fold:
-RR-1, RR-3). Clang caches the list per context and name; an empty answer from a
-C++ lookup is cached as "none" (`SetNoExternalVisibleDeclsForName`, as the
-identifier path's null case does at generate_ast.cpp:410).
+(D-OX-11). The generic impls a walk meets, and the impls whose operand C++
+cannot export (D-OX-9 (3)), are not exported; the walk declares one deleted
+operator template for them (D-OX-22), registered under the first of them.
+Clang would keep the list per context and name; the arm marks the entry as
+still having external declarations, empty or not, so that the next lookup asks
+again and receives the declarations built before, reused, beside any new ones
+(D-OX-12; rev 3 cached a C++ lookup's answer, an empty one as "none"; amended
+2026-10-14, review fold: RR-1, RR-3, RR2-1).
 
 ### §1.3 Equality, inequality and ordering (D-OX-5, D-OX-6)
 
@@ -1646,7 +1976,7 @@ member returning the element by value.
 | Generic impl; impl on a specific of a generic class | M-11(a), M-28, M-32 | a generic `Op` needs a C++ template to be callable; meanwhile the operator's generic impls are one deleted operator template (D-OX-22), so C++ rejects an operand Carbon would resolve to a generic impl instead of converting it for a concrete impl; a specific of a generic class exports nothing | W-202 |
 | Impls of an imported library | M-11(d) | only `context.impls()` is walked; and an imported class exports as an empty record | W-204 (blocked by W-203) |
 | An imported Carbon class at all | M-11(d) | pre-existing: fields are not exported, by-value results corrupt memory | W-203 (type-export row) |
-| An impl declared after C++ code looked its operator up; a non-member operator whose operand class C++ had not named at that lookup; a template instantiated before an export | M-11(c), M-33, M-36 | Clang's cached answer (M-4) and its memoized template specializations; Carbon's own lookups cache nothing (D-OX-21, M-23) | W-205 |
+| A template that C++ instantiated before an impl was declared | M-33 | C++'s own rule, as for `fail_impl_after_use`: a class-template specialization keeps what was declared at its first instantiation; every lookup asks again, so an impl declared before a lookup is found (D-OX-12; rev 1 to rev 3 filed the cached answers here, M-11(c), M-36) | (C++'s rule; W-205 unused) |
 | `<=>` | §0.3 item 6 | no `OrderedWith.Compare` in the prelude | W-206 |
 | Two impls mapping to one C++ signature | M-11(e) | non-injective type mapping; C++ ambiguity | W-207 |
 | `a[i] = v` | — | the prelude's `IndexWith` has only `At` (W-109) | W-209 |
@@ -1655,51 +1985,58 @@ member returning the element by value.
 | Postfix `++`/`--`, unary `+`, `!`, `&&`, <code>\|\|</code>, `,`, `->`, unary `*` and `&`, `()`, `=` | the `fail_postfix_increment` split | Carbon has no interface for them | (by design, §2.7) |
 | An impl whose operand has no C++ form | M-9, `unmappable_impl` | omitted: C++ cannot form the operand (D-OX-9 (1)) | (by design) |
 | An impl whose result alone has no C++ form | M-27, M-34 | declared deleted, and the default `!=` beside it too (D-OX-9 (2)) | (by design) |
-| An impl whose signature names a class C++ cannot export | M-20 (e), M-35 | the class's own export diagnostic at the C++ use, a detection included, where it is a hard error, as for an overload-set member (D-OV-18; D-OX-9 (3)) | (the class's export; by design) |
+| An impl whose signature names a class C++ cannot export | M-20 (e), M-35, M-37, M-39 | never named: an operand that names it is stood for by the deleted operator template, a result that names it makes the operator deleted, and a non-member impl whose operand class it is is not declared, so nothing completes the class and no export diagnoses (D-OX-9 (3), D-OX-22) | (by design) |
 
 (The W-208, W-210, W-211, D-OX-9 and M-28 rows amended 2026-10-14, review
 fold: A-6, B-4, B-3, A-3, A-1, B-2; the generic-impl, W-205, result and class
 rows amended 2026-10-14, review fold: RR-3, RR-4, RR-5, RR-6, with the fixer's
-M-36 in the W-205 row.)
+M-36 in the W-205 row; the W-205 and class rows amended again 2026-10-14,
+review fold: RR2-1.)
 
 ### §1.6 The diagnostic policy (D-OX-9)
 
-Nothing is mapped for Carbon's own operator expressions (D-OX-21). For a C++
-lookup, `ClassifyOperatorExport` decides each selected impl function before
-anything is built. `IsUnmappableWithoutExport` strips `const`, pointer and
-array types to their leaf; a class or function leaf is never reported
-unmappable, because mapping it exports it; any other type is mapped, which
-exports nothing, and a null mapping is "no C++ form". An operand with no C++
-form omits the impl; a result with none, or an array result, makes a deleted
-declaration, and the default `!=` beside it is deleted too (M-34); the generic
-impls of an operator make one deleted operator template (D-OX-22); every other
-impl is exported, and its class types are exported as for any declaration that
-names them, so a class C++ cannot export reports its own semantics TODO at the
-C++ use (M-20 (e), as `v_trunk_holder_fn1.carbon` does on trunk), a C++
-detection that ranks the operator included, where the TODO is a hard error
-rather than a substitution failure, as on trunk for a detection of an exported
-function that names the class (M-35) (amended 2026-10-14, review fold: RR-3,
-RR-5, RR-6). Every other failure is Clang's own diagnostic at the C++ use
-(`invalid operands to binary expression`, `no viable overloaded '+='`, `cannot
-increment value of type`, `overload resolution selected deleted operator`),
-with Clang's notes listing the exported candidates (M-11(c), M-27) (amended
-2026-10-14, review fold: A-1, B-2).
+No export emits a diagnostic, whatever makes the lookup (amended 2026-10-14,
+review fold: RR2-1, RR2-2). `ClassifyOperatorExport` decides each selected impl
+function before anything is built or mapped. `IsUnmappableWithoutExport`
+strips `const`, pointer and array types to their leaf; a class or function leaf
+is never reported unmappable, because mapping it exports it; any other type is
+mapped, which exports nothing, and a null mapping is "no C++ form".
+`CanExportTypeWithoutDiagnostic` then decides from SemIR whether every class a
+type names can be exported and completed without a diagnostic, answering no
+when it cannot decide. An operand with no C++ form omits the impl; an operand
+that names a class it rejects leaves the impl to the operator's deleted
+operator template (D-OX-22), as a generic impl is; a result with no C++ form,
+an array result or a result that names a class it rejects makes a deleted
+declaration, and the default `!=` beside it is deleted too (M-34); every other
+impl is exported, naming only classes that export cleanly. Every failure is
+then Clang's own diagnostic at a C++ use (`invalid operands to binary
+expression`, `no viable overloaded '+='`, `cannot increment value of type`,
+`overload resolution selected deleted operator`), with Clang's notes listing
+the exported candidates (M-11(c), M-27), and a C++ detection of an operator, a
+SFINAE trait among them, is a substitution failure where a use would be
+rejected, never a hard error (M-35). Rev 3 exported a class C++ cannot export
+and reported its semantics TODO at every lookup that ranked the operator, a
+detection and Carbon's own expressions, calls and conversions included (M-20
+(e), M-35, M-37) (amended 2026-10-14, review fold: A-1, B-2, RR-3, RR-5, RR-6,
+RR2-1, RR2-2).
 
 ### §1.7 Carbon's own expressions, and the divergences (D-OX-11, D-OX-15, D-OX-21)
 
 Carbon's operator expressions ask C++ in two places, `BuildBinaryOperator` (and
 `BuildUnaryOperator`) before Carbon's impl lookup and `LookupCppImpl` within it
-(§0.1 row 9), both through `FindClangOperator`. That lookup, with the overload
-resolution in which Clang deduces deferred template candidates, exports nothing
-and leaves nothing cached (D-OX-21), and a candidate C++ code exported earlier,
-a deleted template's specialization included, is non-viable (D-OX-11, D-OX-22),
-so in a Carbon-only program Carbon sees exactly the C++ operator functions it
-saw before OX-1: the Carbon impl stands where it stood, and a hand-written C++
-operator it used is still used (M-22, M-26, M-31). Once C++ code has looked an
-operator up, a template it instantiated then keeps the operators it saw, so a
-later Carbon expression can find that template's function viable where trunk
-does not (M-33, W-205); the call is to that C++ function, never to an exported
-operator (amended 2026-10-14, review fold: RR-1, RR-2, RR-4). In C++, the
+(§0.1 row 9), both through `FindClangOperator`. That lookup exports and asks
+again as any lookup does (D-OX-21, D-OX-12), and every exported candidate, a
+deleted template's specialization included, is non-viable for it and left out
+of its notes (D-OX-11, D-OX-22), so the Carbon impl stands where it stood and
+a hand-written C++ operator it used is still used (M-22, M-26). A C++
+template, though, sees the exported operators whoever instantiates it, so a
+Carbon operator expression, call or conversion can select a C++ function that
+an exported operator makes viable, and lower through the export that function
+calls; under C++20 the function can be a rewritten candidate, which Carbon
+cannot call yet (W-045) (M-31, M-37, M-40; rev 3 said a Carbon-only program
+sees exactly the C++ functions it saw before OX-1, which held for its operator
+expressions' own deductions only; amended 2026-10-14, review fold: RR-1, RR-2,
+RR-4, RR2-1, RR2-2). In C++, the
 exported declarations take part in ordinary C++ overload resolution, with the
 four documented divergences of D-OX-15: operand conversions, base-class member
 lookup, the impl function's own signature, and by-value operands (M-11(f), M-7,
@@ -1762,7 +2099,7 @@ B-12).
 | W-202 | OX-1 residue: generic operator impls are not callable from C++ (an operator's generic impls are one deleted operator template), and the operator impls of a generic class's specifics are not exported | the row | — |
 | W-203 | Exporting a Carbon class imported from another library yields an empty C++ record: no fields, and a by-value result corrupts memory (upstream defect) | Type system: C++ interop — importing C++ types / exporting Carbon types | — |
 | W-204 | OX-1 residue: operator impls declared in an imported library are not exported to C++ | the row | W-203 |
-| W-205 | OX-1 residue: what C++ code sees depends on its earlier lookups: an operator impl declared after C++ code looked that operator up on the class or namespace, or a non-member operator whose operand class C++ had not named at that lookup, is not seen by later C++ code, and a template instantiated before an export keeps the operators it saw | the row | — |
+| W-205 | Not filed at rev 4, reserved and unused: rev 1 to rev 3 filed here what C++ code saw after its earlier lookups, which every lookup asking again removes (D-OX-12); a template instantiated before an impl is declared follows C++'s own rule (M-33) | — | — |
 | W-206 | OX-1 residue: `<=>` is not exported; the prelude's `OrderedWith` has no `Compare` | the row | — |
 | W-207 | OX-1 residue: two operator impls whose operand types map to one C++ type are ambiguous at every C++ use (the W-118 shape) | the row | — |
 | W-208 | OX-1 residue (bounds the row): `As` and `ImplicitAs` impls are not exported as C++ conversions | the row | — |
@@ -1772,47 +2109,50 @@ B-12).
 
 (W-202's and W-208's titles and the W-210 and W-211 rows amended 2026-10-14,
 review fold: B-2, A-6, B-4, B-3, A-3; W-202's and W-205's titles amended
-2026-10-14, review fold: RR-3, RR-4, with the fixer's M-36 in W-205's.)
+2026-10-14, review fold: RR-3, RR-4, with the fixer's M-36 in W-205's; W-205
+withdrawn 2026-10-14, review fold: RR2-1.)
 
 ## §2 Implementation spec, file by file
 
-### §2.1 to §2.4 Toolchain (five files, one diff; clang-format 21.1.8 clean; compiled and measured as `v6`)
+### §2.1 to §2.4 Toolchain (four files, one diff; clang-format 21.1.8 clean; compiled and measured as `v7`)
 
-The diff below is `v6` (`$G/ox1-v6.diff`, sha256
-41091975bee87a616dd9b6399d25d92c426ca78ad396f3a4dc9257f73b8dc7ba, 1033 lines):
-920 lines added and 6 removed over export.cpp (+797, −1), export.h (+29),
-generate_ast.cpp (+41), operators.cpp (+42, −5) and context.h (+11); rev 2's
-`v5` (`$F/ox1-v5.diff`, 829 lines) differs from it in export.cpp, export.h and
-operators.cpp only (amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5).
-The copy below is the same diff after prek, which strips the leading space of a
-blank context line; it applies to f67ab650d with `git apply` and yields these
-files, the identity check (amended 2026-10-14, review fold: A-10, B-7):
+The diff below is `v7` (`$K/ox1-v7.diff`, sha256
+c5e39e506449e41fc82afbac8b3529db4f01485141e612dffb5e8b9c879403f4, 1333 lines):
+1226 lines added and 4 removed over export.cpp (+1119, −1), export.h (+31),
+generate_ast.cpp (+32) and operators.cpp (+44, −3); check/cpp/context.h, which
+rev 2's and rev 3's flag changed, is untouched. Rev 3's `v6`
+(`$G/ox1-v6.diff`, 1033 lines) differs from it in every file (amended
+2026-10-14, review fold: RR2-1, RR2-2, RR2-3). The copy below is the same diff
+after prek, which strips the leading space of a blank context line; it applies
+to f67ab650d with `git apply` and yields these files, the identity check
+(amended 2026-10-14, review fold: A-10, B-7):
 
 ```text
-49c2864fc23e07acd9606467956f838af444d940d5721efb7785911acdd96c1d  toolchain/check/cpp/context.h
-362647cf5bb632f3db93ba9ef47273c1fe0105a813b7c1c183d528cd302e387a  toolchain/check/cpp/export.cpp
-0abcc5ea94500202abf6248b61779d47c71dce352ade48c8bcff89e12e8d55bb  toolchain/check/cpp/export.h
-6bc75af70f9cc134725fda3fba77b8b884a7a0ba88eeacf7414d53a8abb1ad41  toolchain/check/cpp/generate_ast.cpp
-b7cb1724c61e403176d1cc501beeacfa1ea1d7743ce60399339592ab6ac36e57  toolchain/check/cpp/operators.cpp
+ba45067b90dad0a39bb639b5bb87bbc0c6d49040961f95e1f754cdd49ca38a89  toolchain/check/cpp/export.cpp
+81a3b30ec0cc2402319edb63efb6232708818251013075b7d07856f392af63f5  toolchain/check/cpp/export.h
+d86af1cc23face4f72e152dd0435d4ab76990f3eba4a2b6083e7a48203865634  toolchain/check/cpp/generate_ast.cpp
+665de04602c5689361e70b366c70f30081ed1df55b06c12a528e9525066b3052  toolchain/check/cpp/operators.cpp
 ```
 
-It applies to every live branch's five files and to ST-1's with offset 5, and
-needs three context refreshes on upstream/trunk (M-16); every file passes
-`clang-format --style=file` from the CI pin (R18). Invariants, by hunk (rev 1's
-`IsOperatorSignatureMappable` and the post-resolution guard are gone; amended
-2026-10-14, review fold: A-1, A-2, A-3, A-4, A-5, B-1, B-2; rev 3's changes
-amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
+It applies to every live branch's four files, to ST-1's and to VA-1's local
+head with offsets 5 and 12, and needs two context refreshes on upstream/trunk
+(M-16); every file passes `clang-format --style=file` from the CI pin (R18).
+Invariants, by hunk (rev 1's `IsOperatorSignatureMappable` and the
+post-resolution guard are gone; amended 2026-10-14, review fold: A-1, A-2, A-3,
+A-4, A-5, B-1, B-2; rev 3's changes amended 2026-10-14, review fold: RR-1,
+RR-2, RR-3, RR-5; rev 4's amended 2026-10-14, review fold: RR2-1, RR2-2, RR2-3,
+RR2-5):
 
--   **context.h, `in_carbon_operator_lookup()` (new).** One `bool` member,
-    appended after the existing ones, and its reference accessor (D-OX-21).
-    Only operators.cpp sets it, with `llvm::SaveAndRestore`, and only
-    generate_ast.cpp reads it.
+-   **check/cpp/context.h (no hunk at rev 4).** Rev 2's and rev 3's
+    `in_carbon_operator_lookup()` member is gone with the flag (D-OX-21), so
+    `CppContext`, and the constructor that context.cpp defines for it, are
+    unchanged (RR2-5).
 -   **export.cpp, the includes and the table (new).** `OperatorExportTable` is
     §1.1; `num_explicit_params` separates `-a` from `a-b`.
     `IsOperatorImplOfKind` is the walks' SemIR-only first test (complete,
     generic or not as the caller asks, `Core`, a table row for the operator
     kind, a binary one for a generic impl); `type_info.h` is included for
-    `RecognizedTypeInfo`.
+    `RecognizedTypeInfo`, and `type_completion.h` for `TryToCompleteType`.
 -   **export.cpp, `BuildCppToCarbonThunkBody` (the one in-function hunk,
     D-OX-16).** The `this` argument is passed only for a method; the
     non-member form's first parameter is `self` and is passed by the loop that
@@ -1822,30 +2162,51 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
     `cast<clang::CXXMethodDecl>(function_decl)` under `target.self_param`.
 -   **export.cpp, the classification (D-OX-9).** `IsUnmappableWithoutExport`
     never maps a class or function type (whose mapping exports it) and maps
-    every other type, which exports nothing; `ClassifyOperatorExport` returns
-    `Omit` for an operand with no C++ form, `Deleted` for a result with none
-    or an array result, and `Export` otherwise.
+    every other type, which exports nothing. `CanExportTypeWithoutDiagnostic`
+    strips `const`, pointer and array types and fails a function type, a
+    symbolic type and an error; a recognized `Optional` of a pointer, `Result`
+    or `Slice` passes if its arguments do, any other `Optional` being a class
+    of package `Core`, and a class goes to `CanExportClassWithoutDiagnostic`,
+    which repeats from SemIR what exporting and completing the class check: a
+    class imported from C++ passes; the class must complete
+    (`TryToCompleteType`, which does not diagnose) and must not be abstract;
+    each enclosing scope up to one already mapped is a namespace with an
+    identifier name or a non-specific class that passes; a specific's bindings
+    are types and its arguments map and pass; its base, fields and own
+    virtual functions' parameter and return types pass, none of the latter an
+    array by value. A class reached again through its own fields is decided by
+    the outer call. `ClassifyOperatorExport` returns `Omit` for an operand
+    with no C++ form, `Template` for an operand the predicate rejects,
+    `Deleted` for a result with no C++ form, an array result or a result the
+    predicate rejects, and `Export` otherwise; the member form does not check
+    `self`, the record's own class.
 -   **export.cpp, the shared export path.** `GetImplMemberFunctionId` returns
-    `None` for a member the impl leaves to its default and for a name the impl's
-    checking poisoned (M-3), and rejects a function with an enclosing specific
-    unless the impl is generic, whose functions have one.
+    `None` for a member the impl leaves to its default and for a name the
+    impl's checking poisoned (M-3), and rejects a function with an enclosing
+    specific unless the impl is generic, whose functions have one.
     `ExportImplFunctionAsCppOperator` reuses an earlier export through
     `clang_decls`, builds the `FunctionInfo` itself (the impl scope cannot be
     exported, M-2), checks the shape (a `self`, the row's parameter count),
-    classifies, and then declares: a member operator to export by the existing
-    `BuildCppToCarbonThunkDecl` with the operator's `DeclarationName`, a
-    non-member or deleted one by `BuildCppOperatorDecl`; an exported one gets
-    its body from the existing `BuildCppToCarbonThunk`; an exported or deleted
-    one is registered (`RegisterExportedOperator`: the declaration with the
-    all-by-value signature, mapped to the function's first declaration).
-    `BuildCppOperatorDecl` maps each parameter with `MapToCppParamType` (a `ref`
-    parameter becomes `S&`), reporting the same semantics TODOs as
-    `BuildCppToCarbonThunkFunctionType` if a class export fails, gives a member
-    `const` or `&` as an exported method has, and declares it inline,
-    always-inline and internal-linkage, or deleted with a `void` result.
--   **export.cpp, the default `!=`.** `BuildDefaultNotEqualOperator` gives the
-    new declaration `operator==`'s type, parameters, inline, always-inline and
-    internal-linkage attributes, and the body `!(this->operator==(p))` or
+    classifies, and then declares, or reports that the deleted operator
+    template stands for the function (`ImplOperatorExport`): a member operator
+    to export by the existing `BuildCppToCarbonThunkDecl` with the operator's
+    `DeclarationName`, a non-member or deleted one by `BuildCppOperatorDecl`;
+    an exported one gets its body from the existing `BuildCppToCarbonThunk`;
+    an exported or deleted one is registered (`RegisterExportedOperator`: the
+    declaration with the all-by-value signature, mapped to the function's
+    first declaration), and `GetExportedOperatorInstId` reads a registration
+    back. `BuildCppOperatorDecl` maps each parameter with `MapToCppParamType`
+    (a `ref` parameter becomes `S&`), gives a member `const` or `&` as an
+    exported method has, and declares it inline, always-inline and
+    internal-linkage, or deleted with a `void` result; the semantics TODOs it
+    keeps for a type that does not map are unreachable after the
+    classification.
+-   **export.cpp, the default `!=`.** `BuildDefaultNotEqualOperator` first
+    reuses the `operator!=` that an earlier lookup built beside the same
+    `operator==` (the context's `noload_lookup` of the name, matched by its
+    registration), so that an answer asked again holds one. Otherwise it gives
+    the new declaration `operator==`'s type, parameters, inline, always-inline
+    and internal-linkage attributes, and the body `!(this->operator==(p))` or
     `!operator==(p0, p1)`, each by-value parameter passed as an xvalue
     (`ImplicitCastExpr` `CK_NoOp` to `VK_XValue`), under a `Sema::SFINAETrap`;
     if the call, the negation or the return is invalid, the declaration is
@@ -1853,90 +2214,70 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
     `BuildCppToCarbonThunk` hands its decls on (export.cpp:1463-1464), so
     CodeGen emits it on use, and is registered under `Equal`'s first
     declaration (the reverse map keeps `operator==`, which was registered
-    first). Beside a deleted `operator==` it builds no body: the declaration, of
-    `operator==`'s `void` type, is deleted and registered (RR-5).
+    first). Beside a deleted `operator==` it builds no body: the declaration,
+    of `operator==`'s `void` type, is deleted and registered (RR-5).
 -   **export.cpp, the walks.** `ExportImplOperators` takes one impl's rows for
-    the operator (a non-member only binary rows, never `operator[]`) and builds
-    the default `!=` from the exported `operator==`, deleted or not.
+    the operator (a non-member only binary rows, never `operator[]`), builds
+    the default `!=` from the exported `operator==`, deleted or not, and
+    returns whether a row's function is left to the deleted operator template.
     `ExportOperatorsToCpp` returns nothing for a specific of a generic class
-    (W-202) and keeps the impls whose `Self` is the record's class: the concrete
-    ones are exported, and the first generic one of the operator makes the
-    record's deleted operator template. `ExportNonMemberOperatorsToCpp` keeps
-    the impls whose `Self` is not a Carbon record class
-    (`GetCarbonRecordClassType`, SemIR only) and whose one interface argument is
-    one, exported, with this namespace as its innermost enclosing namespace
+    (W-202) and keeps the impls whose `Self` is the record's class: a concrete
+    one is exported, and the first generic one, or the first concrete one
+    left to the template, makes the record's deleted operator template.
+    `ExportNonMemberOperatorsToCpp` keeps the impls whose `Self` is not a
+    Carbon record class (`GetCarbonRecordClassType`, SemIR only) and whose one
+    interface argument is one, exported, exportable without a diagnostic and
+    with this namespace as its innermost enclosing namespace
     (`getEnclosingNamespaceContext()->Equals`): a concrete one is exported, and
-    a generic one makes one deleted operator template per operand class.
--   **export.cpp, the deleted operator templates (D-OX-22; new at rev 3).**
-    `BuildDeletedOperatorTemplate` builds a `FunctionTemplateDecl` over a
+    a generic one, or a concrete one left to the template, makes one deleted
+    operator template per operand class.
+-   **export.cpp, the deleted operator templates (D-OX-22; extended at rev
+    4).** `BuildDeletedOperatorTemplate` builds a `FunctionTemplateDecl` over a
     `CXXMethodDecl` of type `void (T) const` (`&` for `ref self`) or a
     `FunctionDecl` of type `void (T, C)` (`T&` first for `ref self`), whose
-    `TemplateTypeParmDecl` is at depth 0, index 0; each parameter has a trivial
-    `TypeSourceInfo` and is set into the function type's `FunctionProtoTypeLoc`,
-    which template argument deduction substitutes (the first `v6` link, without
-    them, crashed in `Sema::SubstParmVarDecl` on the first deduction, M-32's
-    probes); the function is deleted, the template added to the context and the
-    function registered under the generic impl function's first declaration.
-    `ExportGenericImplAsDeletedOperator` finds the impl's function for the
-    operator's row (`Equal`'s for a default `NotEqual`), builds its
-    `FunctionInfo` for the `self` kind and the operand, and declares the
-    template.
+    `TemplateTypeParmDecl` is at depth 0, index 0; each parameter has a
+    trivial `TypeSourceInfo` and is set into the function type's
+    `FunctionProtoTypeLoc`, which template argument deduction substitutes (the
+    first `v6` link, without them, crashed in `Sema::SubstParmVarDecl` on the
+    first deduction, M-32's probes); the function is deleted, the template
+    added to the context and the function registered under the first impl the
+    template stands for. `ExportDeletedOperatorTemplate` finds that impl's
+    function for the operator's row (`Equal`'s for a default `NotEqual`), maps
+    the non-member form's operand class, reuses the template that an earlier
+    lookup declared in the context (for that operand class), and declares one
+    otherwise.
 -   **export.cpp, `IsExportedCarbonOperator`.** True for an overloaded
-    operator registered in `clang_decls` under the all-by-value signature and
-    not imported: exactly the declarations OX-1 created, member or non-member,
-    the default `!=` and the deleted operator templates included, a template's
+    operator that `GetExportedOperatorInstId` finds registered and not
+    imported: exactly the declarations OX-1 created, member or non-member, the
+    default `!=` and the deleted operator templates included, a template's
     specialization being recognized by its primary template's templated
-    declaration, and never Clang's implicit members of an exported record. The
-    signature is looked up, never added (`CanonicalValueStore::Lookup`).
+    declaration, and never Clang's implicit members of an exported record.
+    The signature is looked up, never added (`CanonicalValueStore::Lookup`).
 -   **export.h.** Three declarations, with comments naming F-017 and the page.
 -   **generate_ast.cpp, the `CXXOperatorName` arm.** Placed first in the
-    switch, before `Identifier`. During Carbon's own lookup it erases the empty
-    `StoredDeclsMap` entry `lookupImpl` created (`DeclContextInternals.h`) and
-    returns false; otherwise record → member walk, namespace → non-member
-    walk, an empty answer cached as none; the arm returns before the
+    switch, before `Identifier`: record → member walk, namespace → non-member
+    walk, whoever asks; the entry is set to the answer, or to none, and marked
+    as still having external declarations (`DeclContextInternals.h`), so that
+    every later lookup asks again (D-OX-12); the arm returns before the
     identifier-based lookup below it, which never sees an operator name.
--   **operators.cpp, `FindClangOperator`.** `LookupOverloadedBinOp` and
-    `BestViableFunction` both run with `in_carbon_operator_lookup()` set
-    (D-OX-21), so the template deduction Clang defers to `BestViableFunction`
-    exports nothing either (RR-1). `RemoveExportedCarbonOperators` makes every
-    candidate whose function `IsExportedCarbonOperator` recognizes non-viable,
-    with `ovl_non_default_multiversion_function`, the failure kind Clang's
-    `NoteFunctionCandidate` skips silently, before `BestViableFunction` and
-    again after it, for the specializations of deleted operator templates
+-   **operators.cpp, `FindClangOperator`.** No flag: `LookupOverloadedBinOp`
+    can export as any lookup can (D-OX-21). `RemoveExportedCarbonOperators`
+    makes every candidate whose function `IsExportedCarbonOperator` recognizes
+    non-viable, with `ovl_non_default_multiversion_function`, the failure kind
+    Clang's `NoteFunctionCandidate` skips silently, before `BestViableFunction`
+    and again after it, for the specializations of deleted operator templates
     deduced there; if one of those was viable, `BestViableFunction` runs again
     over the same candidates, which resets every candidate's `Best` flag
-    (SemaOverload.cpp:11679) and has nothing left to defer. The switch below
-    takes the result, so it sees Clang's result without exported operators
+    (SemaOverload.cpp:11679) and has nothing left to defer. The
+    `NoteCandidates` calls of the ambiguous and deleted arms take a filter
+    that leaves exported operators out of the notes, the deferred candidates
+    that `CompleteCandidates` deduces for them included (RR2-3). The switch
+    below takes the result, Clang's over the candidates that are not exports
     (D-OX-11).
 
 ```diff
---- a/toolchain/check/cpp/context.h
-+++ b/toolchain/check/cpp/context.h
-@@ -69,6 +69,14 @@ class CppContext {
-     boundary_write_decl_ = decl;
-   }
-
-+  // Whether Carbon's own operator lookup is asking Clang for C++ operator
-+  // candidates (operators.cpp `FindClangOperator`). While it is, no Carbon
-+  // operator impl is exported as a C++ operator and no answer for an operator
-+  // name is cached (fork decision F-017).
-+  auto in_carbon_operator_lookup() -> bool& {
-+    return in_carbon_operator_lookup_;
-+  }
-+
-  private:
-   // The C++ compilation domain.
-   SemIR::CppDomain* domain_;
-@@ -97,6 +105,9 @@ class CppContext {
-
-   // Listener for Clang diagnostics while checking this Carbon context.
-   std::unique_ptr<CppDiagnosticListener> diagnostic_listener_;
-+
-+  // See `in_carbon_operator_lookup()`.
-+  bool in_carbon_operator_lookup_ = false;
- };
-
- }  // namespace Carbon::Check
+diff --git a/toolchain/check/cpp/export.cpp b/toolchain/check/cpp/export.cpp
+index 518dd86..226cf79 100644
 --- a/toolchain/check/cpp/export.cpp
 +++ b/toolchain/check/cpp/export.cpp
 @@ -12,6 +12,7 @@
@@ -1947,7 +2288,12 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
  #include "toolchain/check/cpp/access.h"
  #include "toolchain/check/cpp/import.h"
  #include "toolchain/check/cpp/location.h"
-@@ -29,6 +30,7 @@
+@@ -25,10 +26,12 @@
+ #include "toolchain/check/pattern.h"
+ #include "toolchain/check/thunk.h"
+ #include "toolchain/check/type.h"
++#include "toolchain/check/type_completion.h"
+ #include "toolchain/diagnostics/format_providers.h"
  #include "toolchain/sem_ir/generic.h"
  #include "toolchain/sem_ir/mangler.h"
  #include "toolchain/sem_ir/pattern.h"
@@ -1955,7 +2301,7 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
  #include "toolchain/sem_ir/typed_insts.h"
  #include "toolchain/sem_ir/vtable.h"
 
-@@ -1244,7 +1246,9 @@ static auto BuildCppToCarbonThunkBody(Context& context,
+@@ -1244,7 +1247,9 @@ static auto BuildCppToCarbonThunkBody(Context& context,
 
    llvm::SmallVector<clang::Expr*> call_args;
    // For methods, pass the `this` pointer as the first argument to the callee.
@@ -1966,7 +2312,7 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
      call_args.push_back(
          GetThisArg(sema, clang_loc, cast<clang::CXXMethodDecl>(function_decl)));
    }
-@@ -1901,4 +1905,796 @@ auto ExportVarToCpp(Context& context, SemIR::InstId inst_id,
+@@ -1901,4 +1906,1117 @@ auto ExportVarToCpp(Context& context, SemIR::InstId inst_id,
    return var_decl;
  }
 
@@ -2092,37 +2438,288 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +  return MapToCppType(context, type_id).isNull();
 +}
 +
++static auto CanExportClassWithoutDiagnostic(
++    Context& context, SemIR::TypeId class_type_id, SemIR::ClassType class_type,
++    llvm::SmallVectorImpl<SemIR::TypeId>& classes_in_progress) -> bool;
++
++// Returns whether mapping `type_id` to C++, and completing in C++ every Carbon
++// class that the mapping names, emits no diagnostic. C++ overload resolution
++// completes the class of a by-value parameter to rank a candidate, so an
++// exported operator whose signature named a class that C++ cannot export would
++// report that class's diagnostic at every lookup that ranks it, whatever made
++// the lookup (fork decision F-017). Only SemIR is read, and the answer is
++// conservative: a type it cannot decide is reported as not exportable, and the
++// caller then declares a deleted operator in place of the impl, never one that
++// C++ could select by a conversion.
++static auto CanExportTypeWithoutDiagnostic(
++    Context& context, SemIR::TypeId type_id,
++    llvm::SmallVectorImpl<SemIR::TypeId>& classes_in_progress) -> bool {
++  while (true) {
++    auto inst = context.types().GetAsInst(type_id);
++    if (auto const_type = inst.TryAs<SemIR::ConstType>()) {
++      type_id = context.types().GetTypeIdForTypeInstId(const_type->inner_id);
++    } else if (auto pointer_type = inst.TryAs<SemIR::PointerType>()) {
++      type_id =
++          context.types().GetTypeIdForTypeInstId(pointer_type->pointee_id);
++    } else if (auto array_type = inst.TryAs<SemIR::ArrayType>()) {
++      type_id = context.types().GetTypeIdForTypeInstId(
++          array_type->element_type_inst_id);
++    } else {
++      break;
++    }
++  }
++  auto inst = context.types().GetAsInst(type_id);
++  if (inst.Is<SemIR::FunctionType>() || inst.Is<SemIR::SymbolicBinding>() ||
++      inst.Is<SemIR::FacetAccessType>() || inst.Is<SemIR::ErrorInst>()) {
++    // Mapping a function type exports the function, which can diagnose.
++    return false;
++  }
++  auto class_type = inst.TryAs<SemIR::ClassType>();
++  if (!class_type) {
++    // No other type exports anything when it is mapped.
++    return true;
++  }
++  // The type arguments of a recognized type that `MapToCppType` maps.
++  auto type_info =
++      SemIR::RecognizedTypeInfo::ForType(context.sem_ir(), *class_type);
++  auto can_export_args = [&]() {
++    for (auto arg_id : context.inst_blocks().GetOrEmpty(type_info.args_id)) {
++      if (auto facet = context.insts().TryGetAs<SemIR::FacetValue>(arg_id)) {
++        arg_id = facet->type_inst_id;
++      }
++      auto arg_type_id = context.types().TryGetTypeIdForTypeConstantId(
++          context.constant_values().Get(arg_id));
++      if (!arg_type_id.has_value() ||
++          !CanExportTypeWithoutDiagnostic(context, arg_type_id,
++                                          classes_in_progress)) {
++        return false;
++      }
++    }
++    return true;
++  };
++  switch (type_info.kind) {
++    case SemIR::RecognizedTypeInfo::None:
++      return CanExportClassWithoutDiagnostic(context, type_id, *class_type,
++                                             classes_in_progress);
++    case SemIR::RecognizedTypeInfo::Optional: {
++      // Only an optional pointer maps to a C++ pointer; any other `Optional` is
++      // exported as a class of package `Core`.
++      auto args = context.inst_blocks().GetOrEmpty(type_info.args_id);
++      if (args.size() != 1 ||
++          !context.insts().Is<SemIR::PointerType>(args.front())) {
++        return CanExportClassWithoutDiagnostic(context, type_id, *class_type,
++                                               classes_in_progress);
++      }
++      return can_export_args();
++    }
++    case SemIR::RecognizedTypeInfo::Result:
++    case SemIR::RecognizedTypeInfo::Slice:
++      return can_export_args();
++    default:
++      return true;
++  }
++}
++
++// Returns whether `class_type` can be exported to C++ and completed there
++// without a diagnostic: the checks of `ExportClassToCpp`,
++// `ExportNameScopeToCpp`, `ExportClassSpecificToCpp`, `ExportGenericBindings`
++// and `CarbonExternalASTSource::CompleteType` (its fields, base, destructor and
++// virtual functions), read from SemIR. `classes_in_progress` holds the classes
++// whose answer is being computed, so that a class reached again through its own
++// fields is decided by the outer call.
++static auto CanExportClassWithoutDiagnostic(
++    Context& context, SemIR::TypeId class_type_id, SemIR::ClassType class_type,
++    llvm::SmallVectorImpl<SemIR::TypeId>& classes_in_progress) -> bool {
++  const auto& class_info = context.classes().Get(class_type.class_id);
++  if (class_info.scope_id.has_value() &&
++      context.name_scopes().Get(class_info.scope_id).is_cpp_scope()) {
++    // A class imported from C++ is not exported.
++    return true;
++  }
++  if (llvm::is_contained(classes_in_progress, class_type_id)) {
++    return true;
++  }
++  if (!TryToCompleteType(context, class_type_id, SemIR::LocId::None) ||
++      class_info.inheritance_kind == SemIR::Class::InheritanceKind::Abstract) {
++    return false;
++  }
++  classes_in_progress.push_back(class_type_id);
++  auto result = [&]() {
++    // The enclosing scopes, up to one that is already mapped to C++.
++    for (auto scope_id = class_info.parent_scope_id;;) {
++      if (!scope_id.has_value()) {
++        return false;
++      }
++      const auto& scope = context.name_scopes().Get(scope_id);
++      if (scope.clang_decl_context_id().has_value()) {
++        break;
++      }
++      auto scope_inst_id =
++          context.constant_values().GetConstantInstId(scope.inst_id());
++      if (context.insts().Is<SemIR::Namespace>(scope_inst_id)) {
++        if (!GetClangIdentifierInfo(context, scope.name_id())) {
++          return false;
++        }
++      } else if (auto parent_class = context.insts().TryGetAs<SemIR::ClassType>(
++                     scope_inst_id)) {
++        if (parent_class->specific_id.has_value() ||
++            !CanExportClassWithoutDiagnostic(
++                context, context.types().GetTypeIdForTypeInstId(scope_inst_id),
++                *parent_class, classes_in_progress)) {
++          return false;
++        }
++      } else {
++        return false;
++      }
++      scope_id = scope.parent_scope_id();
++    }
++    // A specific of a generic class: every binding is a type, and every
++    // argument maps.
++    if (class_type.specific_id.has_value()) {
++      if (!class_info.generic_id.has_value()) {
++        return false;
++      }
++      for (auto binding_id : context.inst_blocks().Get(
++               context.generics().Get(class_info.generic_id).bindings_id)) {
++        auto binding = context.insts().TryGetAs<SemIR::SymbolicBinding>(
++            context.constant_values().GetConstantInstId(binding_id));
++        if (!binding ||
++            !context.types().Is<SemIR::FacetType>(binding->type_id)) {
++          return false;
++        }
++      }
++      for (auto arg_id : context.inst_blocks().Get(
++               context.specifics().Get(class_type.specific_id).args_id)) {
++        auto arg_type_id = context.types().TryGetTypeIdForTypeConstantId(
++            context.constant_values().Get(arg_id));
++        if (!arg_type_id.has_value() ||
++            IsUnmappableWithoutExport(context, arg_type_id) ||
++            !CanExportTypeWithoutDiagnostic(context, arg_type_id,
++                                            classes_in_progress)) {
++          return false;
++        }
++      }
++    }
++    // The base class and the fields, each of which C++ completes.
++    if (auto base_type_id =
++            class_info.GetBaseType(context.sem_ir(), class_type.specific_id);
++        base_type_id.has_value() &&
++        !CanExportTypeWithoutDiagnostic(context, base_type_id,
++                                        classes_in_progress)) {
++      return false;
++    }
++    for (const auto& field : class_info.GetStructTypeFields(
++             context.sem_ir(), class_type.specific_id)) {
++      auto field_type_id =
++          context.types().GetTypeIdForTypeInstId(field.type_inst_id);
++      if (IsUnmappableWithoutExport(context, field_type_id) ||
++          !CanExportTypeWithoutDiagnostic(context, field_type_id,
++                                          classes_in_progress)) {
++        return false;
++      }
++    }
++    // The class's own virtual functions are declared at completion.
++    if (class_info.vtable_decl_id.has_value()) {
++      LoadImportRef(context, class_info.vtable_decl_id);
++      auto vtable_decl_id = context.constant_values().GetConstantInstId(
++          class_info.vtable_decl_id);
++      for (auto entry_id : context.inst_blocks().Get(
++               context.vtables()
++                   .Get(context.insts()
++                            .GetAs<SemIR::VtableDecl>(vtable_decl_id)
++                            .vtable_id)
++                   .virtual_functions_id)) {
++        if (!entry_id.has_value()) {
++          continue;
++        }
++        auto callee = GetCalleeAsFunction(context.sem_ir(), entry_id);
++        const auto& function = context.functions().Get(callee.function_id);
++        if (function.parent_scope_id != class_info.scope_id) {
++          continue;
++        }
++        FunctionInfo target(context, callee.function_id, function,
++                            /*decl_context=*/nullptr,
++                            /*export_as_constructor=*/false);
++        for (const auto& param : target.explicit_params) {
++          if (IsUnmappableWithoutExport(context, param.type_id) ||
++              context.types().Is<SemIR::ArrayType>(param.type_id) ||
++              !CanExportTypeWithoutDiagnostic(context, param.type_id,
++                                              classes_in_progress)) {
++            return false;
++          }
++        }
++        if (target.return_type_id.has_value() &&
++            (IsUnmappableWithoutExport(context, target.return_type_id) ||
++             context.types().Is<SemIR::ArrayType>(target.return_type_id) ||
++             !CanExportTypeWithoutDiagnostic(context, target.return_type_id,
++                                             classes_in_progress))) {
++          return false;
++        }
++      }
++    }
++    return true;
++  }();
++  classes_in_progress.pop_back();
++  return result;
++}
++
++// Returns whether `type_id` can be exported without a diagnostic
++// (`CanExportTypeWithoutDiagnostic`).
++static auto CanExportWithoutDiagnostic(Context& context, SemIR::TypeId type_id)
++    -> bool {
++  llvm::SmallVector<SemIR::TypeId> classes_in_progress;
++  return CanExportTypeWithoutDiagnostic(context, type_id, classes_in_progress);
++}
++
 +namespace {
 +// How an operator impl's function is exported (fork decision F-017).
 +enum class OperatorExportKind : uint8_t {
 +  // Declared and defined, calling the impl's function.
 +  Export,
-+  // Declared deleted: the result has no by-value C++ form.
++  // Declared deleted: the result has no by-value C++ form, or names a class
++  // that cannot be exported without a diagnostic.
 +  Deleted,
++  // Not declared, and stood for by the operator's deleted operator template:
++  // an operand names a type that cannot be exported without a diagnostic.
++  Template,
 +  // Not declared: an operand has no C++ form.
 +  Omit,
 +};
 +}  // namespace
 +
-+// Classifies `target`, an operator impl's function. C++ cannot form an operand
-+// of a type that has no C++ mapping, so omitting such an impl cannot change
-+// which impl a C++ expression selects. An impl whose result alone has no
-+// by-value C++ form is declared deleted, so that a C++ expression that would
-+// select it is rejected rather than resolved to another impl by a conversion.
-+// A class type in the signature is exported, and a failure to export it is
-+// diagnosed at that C++ use, as for any exported declaration that names it.
-+static auto ClassifyOperatorExport(Context& context, const FunctionInfo& target)
-+    -> OperatorExportKind {
-+  if (IsUnmappableWithoutExport(context, target.self_param->type_id) ||
-+      llvm::any_of(target.explicit_params,
-+                   [&](const FunctionInfo::Param& param) {
-+                     return IsUnmappableWithoutExport(context, param.type_id);
-+                   })) {
++// Classifies `target`, an operator impl's function, before any type of it is
++// mapped. C++ cannot form an operand of a type that has no C++ mapping, so
++// omitting such an impl cannot change which impl a C++ expression selects. An
++// operand whose type cannot be exported without a diagnostic is never named
++// either: the operator's deleted operator template stands for the impl, so that
++// C++ rejects an operand it would otherwise convert for another impl. An impl
++// whose result has no by-value C++ form, or cannot be exported without a
++// diagnostic, is declared deleted, so that a C++ expression that would select
++// it is rejected rather than resolved to another impl by a conversion. No
++// export of an operator can therefore emit a diagnostic.
++static auto ClassifyOperatorExport(Context& context, const FunctionInfo& target,
++                                   bool is_member) -> OperatorExportKind {
++  llvm::SmallVector<SemIR::TypeId> operand_type_ids;
++  if (!is_member) {
++    operand_type_ids.push_back(target.self_param->type_id);
++  }
++  for (const auto& param : target.explicit_params) {
++    operand_type_ids.push_back(param.type_id);
++  }
++  if (llvm::any_of(operand_type_ids, [&](SemIR::TypeId type_id) {
++        return IsUnmappableWithoutExport(context, type_id);
++      })) {
 +    return OperatorExportKind::Omit;
++  }
++  if (!llvm::all_of(operand_type_ids, [&](SemIR::TypeId type_id) {
++        return CanExportWithoutDiagnostic(context, type_id);
++      })) {
++    return OperatorExportKind::Template;
 +  }
 +  if (target.return_type_id.has_value() &&
 +      (IsUnmappableWithoutExport(context, target.return_type_id) ||
-+       context.types().Is<SemIR::ArrayType>(target.return_type_id))) {
++       context.types().Is<SemIR::ArrayType>(target.return_type_id) ||
++       !CanExportWithoutDiagnostic(context, target.return_type_id))) {
 +    return OperatorExportKind::Deleted;
 +  }
 +  return OperatorExportKind::Export;
@@ -2262,35 +2859,50 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +  return function_decl;
 +}
 +
++namespace {
++// The outcome of exporting one operator impl function.
++struct ImplOperatorExport {
++  // The C++ operator declared for the function, or null.
++  clang::FunctionDecl* decl = nullptr;
++  // Whether the operator's deleted operator template stands for the function
++  // (`OperatorExportKind::Template`).
++  bool needs_template = false;
++};
++}  // namespace
++
 +// Exports `function_id`, an impl's member, as the C++ operator `entry.op_kind`
 +// of `decl_context`: a member operator of a record, through the same C++ and
 +// Carbon thunks as an exported method, or a non-member operator of a
-+// namespace. Returns null if the function's shape is not the operator's or the
-+// impl is omitted (`ClassifyOperatorExport`).
++// namespace. Declares nothing if the function's shape is not the operator's or
++// `ClassifyOperatorExport` omits it or leaves it to the deleted operator
++// template. An earlier export of the function is reused, because every C++
++// lookup of an operator name asks again (`FindExternalVisibleDeclsByName`).
 +static auto ExportImplFunctionAsCppOperator(Context& context,
 +                                            clang::DeclContext* decl_context,
 +                                            SemIR::FunctionId function_id,
 +                                            const OperatorExportEntry& entry)
-+    -> clang::FunctionDecl* {
++    -> ImplOperatorExport {
 +  const auto& function = context.functions().Get(function_id);
 +  SemIR::LocId loc_id(function.first_decl_id());
 +
-+  // Reuse an earlier export of this function.
 +  if (const auto* clang_decl =
 +          context.clang_decls().Lookup(function.first_decl_id())) {
-+    return dyn_cast<clang::FunctionDecl>(clang_decl->decl());
++    return {.decl = dyn_cast<clang::FunctionDecl>(clang_decl->decl())};
 +  }
 +
 +  FunctionInfo target(context, function_id, function, decl_context,
 +                      /*export_as_constructor=*/false);
 +  if (!target.self_param || static_cast<int>(target.explicit_params.size()) !=
 +                                entry.num_explicit_params) {
-+    return nullptr;
++    return {};
 +  }
 +  clang::FunctionDecl* operator_decl = nullptr;
-+  switch (ClassifyOperatorExport(context, target)) {
++  switch (ClassifyOperatorExport(context, target,
++                                 isa<clang::CXXRecordDecl>(decl_context))) {
 +    case OperatorExportKind::Omit:
-+      return nullptr;
++      return {};
++    case OperatorExportKind::Template:
++      return {.needs_template = true};
 +    case OperatorExportKind::Deleted:
 +      operator_decl = BuildCppOperatorDecl(context, loc_id, target,
 +                                           decl_context, entry.op_kind,
@@ -2313,10 +2925,30 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +      break;
 +  }
 +  if (!operator_decl) {
-+    return nullptr;
++    return {};
 +  }
 +  RegisterExportedOperator(context, operator_decl, function.first_decl_id());
-+  return operator_decl;
++  return {.decl = operator_decl};
++}
++
++// Returns the instruction that `decl` is registered under in `clang_decls` if
++// it is an exported operator (`RegisterExportedOperator`), and `None`
++// otherwise.
++static auto GetExportedOperatorInstId(Context& context,
++                                      clang::FunctionDecl* decl)
++    -> SemIR::InstId {
++  auto signature_id = context.clang_decl_signatures().Lookup(
++      GetExportedOperatorSignature(decl));
++  if (!signature_id.has_value()) {
++    return SemIR::InstId::None;
++  }
++  auto clang_decl_id = context.clang_decls().LookupId(
++      SemIR::ClangDeclKey::ForFunctionDecl(decl, signature_id));
++  if (!clang_decl_id.has_value() ||
++      context.clang_decls().Get(clang_decl_id).is_imported) {
++    return SemIR::InstId::None;
++  }
++  return context.clang_decls().Get(clang_decl_id).inst_id;
 +}
 +
 +// Builds `operator!=` for an `EqWith` impl that leaves `NotEqual` to its
@@ -2327,7 +2959,8 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +// xvalue, as a C++ implicit move would, so a move-only class works; if the call
 +// is still invalid (a class C++ can neither copy nor move), no `operator!=` is
 +// declared and nothing is diagnosed. A deleted `operator==` gets a deleted
-+// `operator!=` of the same type.
++// `operator!=` of the same type. The `operator!=` that an earlier lookup of the
++// name in this context built is reused.
 +static auto BuildDefaultNotEqualOperator(Context& context,
 +                                         clang::FunctionDecl* equal_decl,
 +                                         SemIR::InstId equal_inst_id)
@@ -2340,6 +2973,13 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +  clang::DeclarationNameInfo name_info(
 +      ast_context.DeclarationNames.getCXXOperatorName(clang::OO_ExclaimEqual),
 +      clang_loc);
++  for (auto* decl : decl_context->noload_lookup(name_info.getName())) {
++    if (auto* function_decl = dyn_cast<clang::FunctionDecl>(decl);
++        function_decl &&
++        GetExportedOperatorInstId(context, function_decl) == equal_inst_id) {
++      return function_decl;
++    }
++  }
 +  auto type = equal_decl->getType();
 +  auto* tinfo = ast_context.getTrivialTypeSourceInfo(type, clang_loc);
 +  auto* equal_method_decl = dyn_cast<clang::CXXMethodDecl>(equal_decl);
@@ -2446,21 +3086,22 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +  return not_equal_decl;
 +}
 +
-+// Declares a deleted C++ operator template for `target`, the function of a
-+// generic impl of the binary operator `op_kind`: a member
-+// `template <typename T> void operator@(T) const = delete;` of a record
-+// (`&` instead of `const` for `ref self`), or a non-member
++// Declares a deleted C++ operator template in `decl_context` for the binary
++// operator `op_kind`, which stands for the operator's impls that C++ cannot
++// call: a member `template <typename T> void operator@(T) const = delete;` of a
++// record (`&` instead of `const` for `ref self`), or a non-member
 +// `template <typename T> void operator@(T, C) = delete;` of a namespace (`T&`
-+// for `ref self`), whose `C` is `target`'s parameter. C++ cannot call a generic
-+// impl; without this declaration, a C++ operand that converts to a concrete
-+// impl's parameter type would select that impl where Carbon selects the generic
-+// one. A non-template exact match is still preferred to the template. Returns
-+// null after a diagnostic if `C` does not map.
-+static auto BuildDeletedOperatorTemplate(Context& context,
-+                                         const FunctionInfo& target,
-+                                         clang::DeclContext* decl_context,
-+                                         clang::OverloadedOperatorKind op_kind)
-+    -> clang::FunctionTemplateDecl* {
++// for `ref self`), whose `C` is `operand_type`. `target` is the function of one
++// of those impls, and `impl_inst_id` the impl that the template is registered
++// under. They are the generic impls, and the concrete ones whose operand C++
++// cannot be given without a diagnostic (`OperatorExportKind::Template`):
++// without this declaration, a C++ operand that converts to another impl's
++// parameter type would select that impl where Carbon selects one of them. A
++// non-template exact match is still preferred to the template.
++static auto BuildDeletedOperatorTemplate(
++    Context& context, const FunctionInfo& target, SemIR::InstId impl_inst_id,
++    clang::DeclContext* decl_context, clang::OverloadedOperatorKind op_kind,
++    clang::QualType operand_type) -> clang::FunctionTemplateDecl* {
 +  clang::ASTContext& ast_context = context.ast_context();
 +  SemIR::LocId loc_id(target.function.first_decl_id());
 +  auto clang_loc = GetCppLocation(context, loc_id);
@@ -2484,12 +3125,6 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +  } else {
 +    param_types.push_back(
 +        ref_self ? ast_context.getLValueReferenceType(param_type) : param_type);
-+    auto operand_type =
-+        MapToCppParamType(context, loc_id, target.explicit_params.front());
-+    if (operand_type.isNull()) {
-+      context.TODO(loc_id, "failed to map Carbon type to C++");
-+      return nullptr;
-+    }
 +    param_types.push_back(operand_type);
 +  }
 +  auto function_type = ast_context.getFunctionType(ast_context.VoidTy,
@@ -2537,15 +3172,15 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +    template_decl->setAccess(clang::AS_public);
 +  }
 +  decl_context->addHiddenDecl(template_decl);
-+  RegisterExportedOperator(context, function_decl,
-+                           target.function.first_decl_id());
++  RegisterExportedOperator(context, function_decl, impl_inst_id);
 +  return template_decl;
 +}
 +
-+// Declares the deleted operator template (`BuildDeletedOperatorTemplate`) for
-+// `impl`, a generic impl of the binary operator `op_kind`, in `decl_context`,
-+// appending it to `operator_decls`.
-+static auto ExportGenericImplAsDeletedOperator(
++// Declares the deleted operator template (`BuildDeletedOperatorTemplate`) that
++// stands for `impl`, an impl of the binary operator `op_kind`, in
++// `decl_context`, or reuses the one an earlier lookup of the name in this
++// context declared, and appends it to `operator_decls`.
++static auto ExportDeletedOperatorTemplate(
 +    Context& context, const SemIR::Impl& impl, clang::DeclContext* decl_context,
 +    clang::OverloadedOperatorKind op_kind,
 +    llvm::SmallVectorImpl<clang::NamedDecl*>& operator_decls) -> void {
@@ -2573,23 +3208,49 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +    if (!target.self_param || target.explicit_params.size() != 1) {
 +      return;
 +    }
-+    if (auto* template_decl = BuildDeletedOperatorTemplate(
-+            context, target, decl_context, op_kind)) {
-+      operator_decls.push_back(template_decl);
++    // The non-member form names the operand class, which the walk has checked.
++    clang::QualType operand_type;
++    if (!isa<clang::CXXRecordDecl>(decl_context)) {
++      operand_type = MapToCppParamType(
++          context, SemIR::LocId(target.function.first_decl_id()),
++          target.explicit_params.front());
++      if (operand_type.isNull()) {
++        return;
++      }
 +    }
++    for (auto* decl : decl_context->noload_lookup(
++             context.ast_context().DeclarationNames.getCXXOperatorName(
++                 op_kind))) {
++      auto* template_decl = dyn_cast<clang::FunctionTemplateDecl>(decl);
++      if (template_decl &&
++          GetExportedOperatorInstId(context, template_decl->getTemplatedDecl())
++              .has_value() &&
++          (operand_type.isNull() ||
++           context.ast_context().hasSameType(
++               template_decl->getTemplatedDecl()->getParamDecl(1)->getType(),
++               operand_type))) {
++        operator_decls.push_back(template_decl);
++        return;
++      }
++    }
++    operator_decls.push_back(
++        BuildDeletedOperatorTemplate(context, target, impl.first_decl_id(),
++                                     decl_context, op_kind, operand_type));
 +    return;
 +  }
 +}
 +
 +// Exports the members of `impl` that C++ spells `op_kind` as operators of
 +// `decl_context` (the member walk's record or the non-member walk's
-+// namespace), appending them to `operator_decls`.
++// namespace), appending them to `operator_decls`. Returns whether the
++// operator's deleted operator template stands for one of them.
 +static auto ExportImplOperators(
 +    Context& context, const SemIR::Impl& impl, clang::DeclContext* decl_context,
 +    clang::OverloadedOperatorKind op_kind,
-+    llvm::SmallVectorImpl<clang::NamedDecl*>& operator_decls) -> void {
++    llvm::SmallVectorImpl<clang::NamedDecl*>& operator_decls) -> bool {
 +  const auto& interface = context.interfaces().Get(impl.interface.interface_id);
 +  bool is_member = isa<clang::CXXRecordDecl>(decl_context);
++  bool needs_template = false;
 +  for (const auto& entry : OperatorExportTable) {
 +    // C++ requires `operator[]` to be a member, and a non-member operator has
 +    // the operand that argument-dependent lookup found it by.
@@ -2600,33 +3261,35 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +                        entry.op_kind == clang::OO_Subscript))) {
 +      continue;
 +    }
-+    clang::FunctionDecl* operator_decl = nullptr;
++    ImplOperatorExport result;
 +    if (auto function_id =
 +            GetImplMemberFunctionId(context, impl, entry.member_name);
 +        function_id.has_value()) {
-+      operator_decl = ExportImplFunctionAsCppOperator(context, decl_context,
-+                                                      function_id, entry);
++      result = ExportImplFunctionAsCppOperator(context, decl_context,
++                                               function_id, entry);
 +    } else if (entry.member_name == CoreIdentifier::NotEqual) {
 +      if (auto equal_id =
 +              GetImplMemberFunctionId(context, impl, CoreIdentifier::Equal);
 +          equal_id.has_value()) {
-+        if (auto* equal_decl = ExportImplFunctionAsCppOperator(
-+                context, decl_context, equal_id,
-+                {.interface_name = CoreIdentifier::EqWith,
-+                 .member_name = CoreIdentifier::Equal,
-+                 .num_explicit_params = 1,
-+                 .op_kind = clang::OO_EqualEqual});
-+            equal_decl) {
-+          operator_decl = BuildDefaultNotEqualOperator(
-+              context, equal_decl,
++        result = ExportImplFunctionAsCppOperator(
++            context, decl_context, equal_id,
++            {.interface_name = CoreIdentifier::EqWith,
++             .member_name = CoreIdentifier::Equal,
++             .num_explicit_params = 1,
++             .op_kind = clang::OO_EqualEqual});
++        if (result.decl) {
++          result.decl = BuildDefaultNotEqualOperator(
++              context, result.decl,
 +              context.functions().Get(equal_id).first_decl_id());
 +        }
 +      }
 +    }
-+    if (operator_decl) {
-+      operator_decls.push_back(operator_decl);
++    if (result.decl) {
++      operator_decls.push_back(result.decl);
 +    }
++    needs_template |= result.needs_template;
 +  }
++  return needs_template;
 +}
 +
 +auto ExportOperatorsToCpp(Context& context, clang::CXXRecordDecl* record_decl,
@@ -2649,20 +3312,25 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +  // declaration order for the impls this file declares. Only an impl whose
 +  // `Self` is exactly this class exports here, as a member operator, so C++
 +  // finds it by member lookup on the left operand as Carbon finds it by impl
-+  // lookup on `Self`. The generic impls of the operator share one deleted
-+  // operator template.
-+  bool has_generic_impl = false;
++  // lookup on `Self`. The impls of the operator that C++ cannot call, generic
++  // ones included, share one deleted operator template.
++  bool has_template = false;
 +  for (const auto& impl : context.impls().values()) {
 +    if (context.constant_values().Get(impl.self_id) != class_const_id) {
 +      continue;
 +    }
++    bool needs_template = false;
 +    if (IsOperatorImplOfKind(context, impl, op_kind, /*generic=*/false)) {
-+      ExportImplOperators(context, impl, record_decl, op_kind, operator_decls);
-+    } else if (!has_generic_impl &&
-+               IsOperatorImplOfKind(context, impl, op_kind, /*generic=*/true)) {
-+      has_generic_impl = true;
-+      ExportGenericImplAsDeletedOperator(context, impl, record_decl, op_kind,
-+                                         operator_decls);
++      needs_template = ExportImplOperators(context, impl, record_decl, op_kind,
++                                           operator_decls);
++    } else {
++      needs_template =
++          IsOperatorImplOfKind(context, impl, op_kind, /*generic=*/true);
++    }
++    if (needs_template && !has_template) {
++      has_template = true;
++      ExportDeletedOperatorTemplate(context, impl, record_decl, op_kind,
++                                    operator_decls);
 +    }
 +  }
 +  return operator_decls;
@@ -2694,15 +3362,17 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +                                   clang::OverloadedOperatorKind op_kind)
 +    -> llvm::SmallVector<clang::NamedDecl*> {
 +  llvm::SmallVector<clang::NamedDecl*> operator_decls;
-+  // The operand classes whose generic impls have a deleted operator template.
-+  llvm::SmallVector<SemIR::ClassId> generic_operand_class_ids;
++  // The operand classes whose deleted operator template is declared.
++  llvm::SmallVector<SemIR::ClassId> template_operand_class_ids;
 +  for (const auto& impl : context.impls().values()) {
 +    // A binary operator impl whose operand type is a Carbon class exported
 +    // with this namespace as its innermost enclosing namespace, where C++'s
 +    // argument-dependent lookup on that operand looks, and whose `Self` is not
 +    // a Carbon class: such a `Self` has the impl as a member operator instead
 +    // (`ExportOperatorsToCpp`). Only SemIR is read before the impl is known
-+    // to be one.
++    // to be one. An operand class that cannot be exported without a
++    // diagnostic is never named, so its impls are not declared at all: C++
++    // cannot form such an operand.
 +    bool generic = impl.generic_id.has_value();
 +    if (!IsOperatorImplOfKind(context, impl, op_kind, generic) ||
 +        !impl.interface.specific_id.has_value() ||
@@ -2720,20 +3390,24 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +    }
 +    const auto* operand_decl = context.clang_decls().Lookup(
 +        context.classes().Get(operand_class->class_id).first_decl_id());
-+    if (!operand_decl || !operand_decl->decl()
-+                              ->getDeclContext()
-+                              ->getEnclosingNamespaceContext()
-+                              ->Equals(namespace_decl)) {
++    if (!operand_decl ||
++        !operand_decl->decl()
++             ->getDeclContext()
++             ->getEnclosingNamespaceContext()
++             ->Equals(namespace_decl) ||
++        !CanExportWithoutDiagnostic(
++            context, context.types().GetTypeIdForTypeConstantId(
++                         context.constant_values().Get(args.front())))) {
 +      continue;
 +    }
-+    if (!generic) {
-+      ExportImplOperators(context, impl, namespace_decl, op_kind,
-+                          operator_decls);
-+    } else if (!llvm::is_contained(generic_operand_class_ids,
-+                                   operand_class->class_id)) {
-+      generic_operand_class_ids.push_back(operand_class->class_id);
-+      ExportGenericImplAsDeletedOperator(context, impl, namespace_decl, op_kind,
-+                                         operator_decls);
++    bool needs_template =
++        generic || ExportImplOperators(context, impl, namespace_decl, op_kind,
++                                       operator_decls);
++    if (needs_template && !llvm::is_contained(template_operand_class_ids,
++                                              operand_class->class_id)) {
++      template_operand_class_ids.push_back(operand_class->class_id);
++      ExportDeletedOperatorTemplate(context, impl, namespace_decl, op_kind,
++                                    operator_decls);
 +    }
 +  }
 +  return operator_decls;
@@ -2745,27 +3419,22 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +  if (!function_decl->isOverloadedOperator()) {
 +    return false;
 +  }
-+  // A specialization of a deleted operator template that stands for generic
-+  // impls is recognized by its template.
++  // A specialization of a deleted operator template is recognized by its
++  // template.
 +  if (const auto* primary_template = function_decl->getPrimaryTemplate()) {
 +    function_decl = primary_template->getTemplatedDecl();
 +  }
-+  auto signature_id = context.clang_decl_signatures().Lookup(
-+      GetExportedOperatorSignature(function_decl));
-+  if (!signature_id.has_value()) {
-+    return false;
-+  }
-+  auto clang_decl_id =
-+      context.clang_decls().LookupId(SemIR::ClangDeclKey::ForFunctionDecl(
-+          const_cast<clang::FunctionDecl*>(function_decl), signature_id));
-+  return clang_decl_id.has_value() &&
-+         !context.clang_decls().Get(clang_decl_id).is_imported;
++  return GetExportedOperatorInstId(
++             context, const_cast<clang::FunctionDecl*>(function_decl))
++      .has_value();
 +}
 +
  }  // namespace Carbon::Check
+diff --git a/toolchain/check/cpp/export.h b/toolchain/check/cpp/export.h
+index c02a6ae..0787797 100644
 --- a/toolchain/check/cpp/export.h
 +++ b/toolchain/check/cpp/export.h
-@@ -141,6 +141,35 @@ auto ExportDestructorToCpp(Context& context, const SemIR::Class& class_info,
+@@ -141,6 +141,37 @@ auto ExportDestructorToCpp(Context& context, const SemIR::Class& class_info,
  auto ExportVarToCpp(Context& context, SemIR::InstId inst_id,
                      SemIR::VarStorage var_storage) -> clang::VarDecl*;
 
@@ -2773,10 +3442,12 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +// spells as `op_kind` as member operators of `record_decl`, and returns them
 +// (fork decision F-017; docs/design/interoperability/operators.md). Only a
 +// complete, non-generic impl in this file whose `Self` is exactly the class
-+// exports. An impl with an operand that has no C++ mapping is omitted, and one
-+// whose result alone has none is declared deleted; the class's generic impls of
-+// a binary operator are declared as one deleted operator template. Returns an
-+// empty list when no impl exports.
++// exports. Nothing exported can diagnose: an impl with an operand that has no
++// C++ mapping is omitted, one whose result has none or names a class that C++
++// cannot export without a diagnostic is declared deleted, and the class's
++// generic impls of a binary operator, with its impls whose operand names such a
++// class, are declared as one deleted operator template. Declarations an earlier
++// call returned are returned again. Returns an empty list when no impl exports.
 +auto ExportOperatorsToCpp(Context& context, clang::CXXRecordDecl* record_decl,
 +                          clang::OverloadedOperatorKind op_kind)
 +    -> llvm::SmallVector<clang::NamedDecl*>;
@@ -2785,8 +3456,8 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +// whose operand type is an exported Carbon class whose innermost enclosing
 +// namespace is `namespace_decl`, as non-member operators of that namespace that
 +// C++ finds by argument-dependent lookup on the operand (fork decision F-017),
-+// and one deleted operator template per operand class for such impls that are
-+// generic. Returns them.
++// as `ExportOperatorsToCpp` exports member operators, with one deleted operator
++// template per operand class. Returns them.
 +auto ExportNonMemberOperatorsToCpp(Context& context,
 +                                   clang::NamespaceDecl* namespace_decl,
 +                                   clang::OverloadedOperatorKind op_kind)
@@ -2801,6 +3472,8 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
  }  // namespace Carbon::Check
 
  #endif  // CARBON_TOOLCHAIN_CHECK_CPP_EXPORT_H_
+diff --git a/toolchain/check/cpp/generate_ast.cpp b/toolchain/check/cpp/generate_ast.cpp
+index 0a71687..98128f5 100644
 --- a/toolchain/check/cpp/generate_ast.cpp
 +++ b/toolchain/check/cpp/generate_ast.cpp
 @@ -9,6 +9,7 @@
@@ -2811,7 +3484,7 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
  #include "clang/AST/Mangle.h"
  #include "clang/Basic/DiagnosticParse.h"
  #include "clang/Basic/FileManager.h"
-@@ -363,6 +364,46 @@ auto CarbonExternalASTSource::FindExternalVisibleDeclsByName(
+@@ -363,6 +364,37 @@ auto CarbonExternalASTSource::FindExternalVisibleDeclsByName(
 
    clang::IdentifierInfo* identifier = nullptr;
    switch (decl_name.getNameKind()) {
@@ -2820,24 +3493,13 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +      // the class's Carbon operator impls by member lookup (fork decision
 +      // F-017), and an impl whose `Self` is not a Carbon class by
 +      // argument-dependent lookup in its operand class's namespace. No other
-+      // Carbon entity answers an operator name.
++      // Carbon entity answers an operator name. The answer grows as the file
++      // declares impls and C++ names their operand classes, so no answer is
++      // final: the entry stays marked as having external declarations, empty
++      // or not, and every later lookup, whatever makes it, asks again and gets
++      // every declaration exported so far.
 +      auto* mutable_decl_context =
 +          const_cast<clang::DeclContext*>(decl_context);
-+      if (context_->cpp_context()->in_carbon_operator_lookup()) {
-+        // Carbon's own operator lookup asks C++ for C++ operator functions,
-+        // never for a Carbon impl, which its impl lookup finds: it exports
-+        // nothing and leaves no answer cached, so that a later C++ lookup of
-+        // this name still exports every impl. Remove the empty entry
-+        // `DeclContext::lookupImpl` created for this name.
-+        if (auto* lookup_map =
-+                mutable_decl_context->getPrimaryContext()->getLookupPtr()) {
-+          if (auto it = lookup_map->find(decl_name);
-+              it != lookup_map->end() && it->second.isNull()) {
-+            lookup_map->erase(it);
-+          }
-+        }
-+        return false;
-+      }
 +      llvm::SmallVector<clang::NamedDecl*> operator_decls;
 +      if (auto* record_decl =
 +              dyn_cast<clang::CXXRecordDecl>(mutable_decl_context)) {
@@ -2850,22 +3512,21 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
 +      }
 +      if (operator_decls.empty()) {
 +        SetNoExternalVisibleDeclsForName(decl_context, decl_name);
-+        return false;
++      } else {
++        SetExternalVisibleDeclsForName(decl_context, decl_name, operator_decls);
 +      }
-+      SetExternalVisibleDeclsForName(decl_context, decl_name, operator_decls);
-+      return true;
++      (*decl_context->getPrimaryContext()->getLookupPtr())[decl_name]
++          .setHasExternalDecls();
++      return !operator_decls.empty();
 +    }
      case clang::DeclarationName::Identifier: {
        identifier = decl_name.getAsIdentifierInfo();
        break;
+diff --git a/toolchain/check/cpp/operators.cpp b/toolchain/check/cpp/operators.cpp
+index 73cc8c1..b1923e6 100644
 --- a/toolchain/check/cpp/operators.cpp
 +++ b/toolchain/check/cpp/operators.cpp
-@@ -7,10 +7,12 @@
- #include "clang/Sema/Initialization.h"
- #include "clang/Sema/Overload.h"
- #include "clang/Sema/Sema.h"
-+#include "llvm/Support/SaveAndRestore.h"
- #include "toolchain/base/kind_switch.h"
+@@ -11,6 +11,7 @@
  #include "toolchain/check/convert.h"
  #include "toolchain/check/core_identifier.h"
  #include "toolchain/check/cpp/custom_type_mapping.h"
@@ -2873,16 +3534,16 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
  #include "toolchain/check/cpp/import.h"
  #include "toolchain/check/cpp/location.h"
  #include "toolchain/check/cpp/overload_resolution.h"
-@@ -861,6 +863,26 @@ auto LookupCppOperator(Context& context, SemIR::LocId loc_id, Operator op,
+@@ -861,6 +862,26 @@ auto LookupCppOperator(Context& context, SemIR::LocId loc_id, Operator op,
    return FindClangOperator(context, loc_id, *op_kind, *maybe_arg_exprs);
  }
 
-+// A Carbon operator impl that C++ code exported earlier is not a C++ operator
-+// function but Carbon's own impl seen from C++, which Carbon's impl lookup
-+// finds itself (fork decision F-017): marks each such candidate non-viable, so
-+// that overload resolution gives the result Clang gives without it, and returns
-+// whether one was viable. `ovl_non_default_multiversion_function` is the
-+// failure kind Clang itself ignores silently in its notes.
++// A Carbon operator impl exported to C++ is not a C++ operator function but
++// Carbon's own impl seen from C++, which Carbon's impl lookup finds itself
++// (fork decision F-017): marks each such candidate non-viable, so that overload
++// resolution gives the result Clang gives without it, and returns whether one
++// was viable. `ovl_non_default_multiversion_function` is the failure kind Clang
++// itself ignores silently in its notes.
 +static auto RemoveExportedCarbonOperators(
 +    Context& context, clang::OverloadCandidateSet& candidate_set) -> bool {
 +  bool removed_viable = false;
@@ -2900,39 +3561,54 @@ amended 2026-10-14, review fold: RR-1, RR-2, RR-3, RR-5):
  static auto FindClangOperator(Context& context, SemIR::LocId loc_id,
                                clang::OverloadedOperatorKind op_kind,
                                llvm::ArrayRef<clang::Expr*> arg_exprs)
-@@ -873,12 +895,27 @@ static auto FindClangOperator(Context& context, SemIR::LocId loc_id,
+@@ -877,8 +898,26 @@ static auto FindClangOperator(Context& context, SemIR::LocId loc_id,
+   sema.LookupOverloadedBinOp(candidate_set, op_kind, clang::UnresolvedSet<0>{},
+                              arg_exprs);
 
-   clang::Sema& sema = context.clang_sema();
-
--  // This works for both unary and binary operators.
--  sema.LookupOverloadedBinOp(candidate_set, op_kind, clang::UnresolvedSet<0>{},
--                             arg_exprs);
--
-+  // This works for both unary and binary operators. Carbon's own lookup
-+  // exports no Carbon operator impl to C++ (fork decision F-017), including
-+  // during overload resolution: Clang deduces a template candidate's arguments
-+  // in `BestViableFunction`, and that deduction can look operators up.
++  // The lookup can export Carbon operator impls, as any C++ lookup of an
++  // operator on a Carbon class can; none of them is a candidate for Carbon's
++  // own expression (fork decision F-017). Clang deduces the arguments of a
++  // template candidate in `BestViableFunction`, after the first removal, so a
++  // deleted operator template's specialization is removed after it, and the
++  // candidates are resolved again if one was viable.
++  RemoveExportedCarbonOperators(context, candidate_set);
    clang::OverloadCandidateSet::iterator best_viable_fn;
 -  switch (candidate_set.BestViableFunction(sema, loc, best_viable_fn)) {
-+  clang::OverloadingResult result;
-+  {
-+    llvm::SaveAndRestore in_carbon_operator_lookup(
-+        context.cpp_context()->in_carbon_operator_lookup(), true);
-+    sema.LookupOverloadedBinOp(candidate_set, op_kind,
-+                               clang::UnresolvedSet<0>{}, arg_exprs);
-+    RemoveExportedCarbonOperators(context, candidate_set);
++  auto result = candidate_set.BestViableFunction(sema, loc, best_viable_fn);
++  if (RemoveExportedCarbonOperators(context, candidate_set)) {
 +    result = candidate_set.BestViableFunction(sema, loc, best_viable_fn);
-+    // A deleted operator template exported for a generic impl is deduced in
-+    // `BestViableFunction`, after the removal above.
-+    if (RemoveExportedCarbonOperators(context, candidate_set)) {
-+      result = candidate_set.BestViableFunction(sema, loc, best_viable_fn);
-+    }
 +  }
++  // Clang's notes deduce any template candidate still deferred; an exported
++  // operator is not noted either.
++  auto is_not_exported = [&](clang::OverloadCandidate& candidate) {
++    return !candidate.Function ||
++           !IsExportedCarbonOperator(context, candidate.Function);
++  };
 +
 +  switch (result) {
      case clang::OverloadingResult::OR_Success: {
        if (!best_viable_fn->Function) {
          // The best viable candidate was a builtin. Let the Carbon operator
+@@ -931,7 +970,8 @@ static auto FindClangOperator(Context& context, SemIR::LocId loc_id,
+               loc, sema.PDiag(clang::diag::err_ovl_ambiguous_oper_binary)
+                        << spelling << arg_exprs[0]->getType()
+                        << arg_exprs[1]->getType()),
+-          sema, clang::OCD_AmbiguousCandidates, arg_exprs, spelling, loc);
++          sema, clang::OCD_AmbiguousCandidates, arg_exprs, spelling, loc,
++          is_not_exported);
+       return SemIR::ErrorInst::InstId;
+     }
+     case clang::OverloadingResult::OR_Deleted:
+@@ -947,7 +987,8 @@ static auto FindClangOperator(Context& context, SemIR::LocId loc_id,
+                               best_viable_fn->Function->getOverloadedOperator())
+                        << (message != nullptr)
+                        << (message ? message->getString() : llvm::StringRef())),
+-          sema, clang::OCD_AllCandidates, arg_exprs, spelling, loc);
++          sema, clang::OCD_AllCandidates, arg_exprs, spelling, loc,
++          is_not_exported);
+       return SemIR::ErrorInst::InstId;
+   }
+ }
 ```
 
 ### §2.5 Goldens (sources only: `// AUTOUPDATE`, no CHECK lines; R15, R16(a))
@@ -2948,11 +3624,27 @@ A-3, A-4, A-5, A-7, A-9, B-1, B-2, B-3, B-10). Rev 3 adds eight splits —
 `generic_impl`, with a `long` C++ operand and a Carbon function with a C++
 operand, adds a generic `DivWith` impl to the AST golden, and comments
 `fail_todo_generic_impl` and the file headers (amended 2026-10-14, review fold:
-RR-1 to RR-6, and the fixer's M-36). Splits whose name begins `fail_` must fail;
-the others must compile (M-12 measured both ways on trunk, `v4`, `v5` and `v6`).
-No existing golden changes (M-8).
+RR-1 to RR-6, and the fixer's M-36). Rev 4 renames four splits that now
+compile, `fail_todo_unexportable_operand_class` to
+`unexportable_operand_class`, `fail_todo_sfinae_detection` to
+`sfinae_detection` (now with an `Euro` that has `+`),
+`fail_todo_non_member_before_operand` to `non_member_before_operand` and
+`fail_todo_impl_after_lookup` to `impl_after_lookup`, and
+`todo_carbon_side_memoized_trait` to `carbon_side_trait_sees_export`, its
+`static_assert` inverted; adds `fail_unexportable_operand_conversion`,
+`fail_unexportable_result_class`, `non_member_unexportable_operand` and the
+four `carbon_side_*_unexportable` splits (the second re-reviewer's a1, a4, b1
+and c1 with c3) to the check golden, `fail_todo_carbon_side_rewritten_candidate`
+(its e2) to the C++20 golden, and `carbon_side_template_body`,
+`carbon_side_call_template` and `carbon_side_conversion_template` (its a3, b2
+and c2) to the lower golden, whose `carbon_side_template_candidate` now
+expects the template; names every unused binding `_` or marks it `unused`;
+and rewrites the comments that said Carbon's lookup exports nothing (amended
+2026-10-14, review fold: RR2-1, RR2-2, RR2-4). Splits whose name begins
+`fail_` must fail; the others must compile (M-12 measured both ways on trunk,
+`v4`, `v5`, `v6` and `v7`). No existing golden changes (M-8).
 
-#### toolchain/check/testdata/interop/cpp/class/export/operator.carbon (43 splits)
+#### toolchain/check/testdata/interop/cpp/class/export/operator.carbon (50 splits)
 
 ```carbon
 // Part of the Carbon Language project, under the Apache License v2.0 with LLVM
@@ -2974,14 +3666,17 @@ No existing golden changes (M-8).
 // sees as anything else and whose operand is the class is a non-member
 // operator in the class's innermost enclosing namespace, found by
 // argument-dependent lookup. An impl with an operand that has no C++ form is
-// omitted, one whose result alone has none is declared deleted, and the
-// generic impls of an operator are one deleted operator template. Carbon's own
-// operator expressions export nothing, during overload resolution included,
-// and an exported operator is never a C++ candidate for them (the
-// `carbon_side_*` splits). The `static_assert`s pin the C++ result types. The
-// sibling operator_ast.carbon pins the declarations Clang is handed,
+// omitted, one whose result has none or names a class that C++ cannot export
+// is declared deleted, and the generic impls of an operator, with the impls
+// whose operand names such a class, are one deleted operator template, so no
+// export emits a diagnostic. Every C++ lookup of an operator name asks again,
+// whatever made it. An exported operator is never a C++ candidate for Carbon's
+// own operator expressions, but C++ templates see the exported operators
+// whether C++ code or a Carbon expression, call or conversion instantiates them
+// (the `carbon_side_*` splits). The `static_assert`s pin the C++ result types.
+// The sibling operator_ast.carbon pins the declarations Clang is handed,
 // operator_cxx20.carbon the C++20 behavior, and lower/.../operator.carbon the
-// thunks.
+// thunks and which function a Carbon expression calls.
 
 // --- arithmetic.carbon
 
@@ -3502,7 +4197,7 @@ impl forall [T: Core.ImplicitAs(i32)] Money as Core.MulWith(T) where .Result = i
   fn Op(self, k: T) -> i32 { return self.cents * (k as i32); }
 }
 impl Money as Core.MulWith(i64) where .Result = i32 {
-  fn Op(self, k: i64) -> i32 { return self.cents; }
+  fn Op(self, _: i64) -> i32 { return self.cents; }
 }
 
 inline Cpp '''
@@ -3525,7 +4220,7 @@ impl forall [T: Core.ImplicitAs(i32)] T as Core.MulWith(Money) where .Result = i
   fn Op(self, m: Money) -> i32 { return (self as i32) * m.cents; }
 }
 impl i64 as Core.MulWith(Money) where .Result = i32 {
-  fn Op(self, m: Money) -> i32 { return m.cents; }
+  fn Op(unused self, m: Money) -> i32 { return m.cents; }
 }
 
 inline Cpp '''
@@ -3626,15 +4321,15 @@ impl Money as Core.EqWith(i32) {
   fn Equal(self, k: i32) -> (Tag, bool) { return ({}, self.cents == k); }
 }
 impl Money as Core.EqWith(i64) {
-  fn Equal(self, k: i64) -> bool { return false; }
-  fn NotEqual(self, k: i64) -> bool { return true; }
+  fn Equal(unused self, _: i64) -> bool { return false; }
+  fn NotEqual(unused self, _: i64) -> bool { return true; }
 }
 
 inline Cpp '''
 inline bool Use(Carbon::Money m, int k) { return m != k; }
 ''';
 
-// --- fail_todo_unexportable_operand_class.carbon
+// --- unexportable_operand_class.carbon
 
 library "[[@TEST_NAME]]";
 
@@ -3657,20 +4352,107 @@ impl Money as Core.AddWith(Holder) where .Result = i32 {
 }
 
 inline Cpp '''
-// Both `+` impls are C++ candidates, and ranking the `Holder` one makes C++
-// complete `Carbon::Holder`: the class's own export diagnoses its field, as
-// for a C++ call of an exported function that takes a `Holder` (the OV-3
-// overload-set shape, D-OV-18).
+// The `Holder` impl is not declared: the deleted operator template stands for
+// it, so no candidate names `Carbon::Holder` and nothing completes it, and the
+// exact match selects the `Money` impl.
 inline int Use(Carbon::Money m) { return m + m; }
 ''';
 
-// --- fail_todo_sfinae_detection.carbon
+// --- fail_unexportable_operand_conversion.carbon
 
 library "[[@TEST_NAME]]";
 
 import Cpp;
 
 class Money {
+  var cents: i32;
+}
+
+class Holder {
+  var t: (i32, i32);
+}
+
+impl Money as Core.AddWith(Holder) where .Result = i32 {
+  fn Op(self, h: Holder) -> i32 { return self.cents + h.t.0; }
+}
+impl Money as Core.AddWith(i64) where .Result = i32 {
+  fn Op(self, k: i64) -> i32 { return self.cents + (k as i32); }
+}
+
+inline Cpp '''
+// The deleted operator template that stands for the `Holder` impl matches an
+// `int` exactly, so C++ rejects `m + k` rather than convert `k` to `long` for
+// the `i64` impl, which Carbon's `m + k` does not select for `k: i32`.
+inline int Use(Carbon::Money m, int k) { return m + k; }
+''';
+
+// --- fail_unexportable_result_class.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp;
+
+inline Cpp '''
+struct Foo { int n; };
+''';
+
+class Money {
+  var cents: i32;
+}
+
+class Holder {
+  var t: (i32, i32);
+}
+
+impl Money as Core.AddWith(Cpp.Foo) where .Result = Holder {
+  fn Op(self, f: Cpp.Foo) -> Holder { return {.t = (self.cents, f.n)}; }
+}
+
+inline Cpp '''
+// The result names `Holder`, which C++ cannot export: the operator is declared
+// deleted, with a `void` result, and `Holder` is never completed.
+inline void Use(Carbon::Money m, Foo f) { m + f; }
+''';
+
+// --- non_member_unexportable_operand.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp;
+
+class Money {
+  var cents: i32;
+}
+
+class Holder {
+  var t: (i32, i32);
+}
+
+impl i32 as Core.SubWith(Holder) where .Result = i32 {
+  fn Op(self, h: Holder) -> i32 { return self - h.t.0; }
+}
+impl i32 as Core.SubWith(Money) where .Result = i32 {
+  fn Op(self, m: Money) -> i32 { return self - m.cents; }
+}
+
+inline Cpp '''
+// C++ names `Holder` without completing it, so argument-dependent lookup on
+// `m` finds an exported operand class that C++ cannot export: the non-member
+// walk declares nothing for its impl, and nothing completes `Holder`.
+inline int Use(Carbon::Holder* p, Carbon::Money m) { return 50 - m; }
+''';
+
+// --- sfinae_detection.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp;
+
+class Money {
+  var cents: i32;
+}
+
+class Euro {
   var cents: i32;
 }
 
@@ -3682,16 +4464,22 @@ class Holder {
 impl Money as Core.AddWith(Holder) where .Result = i32 {
   fn Op(self, h: Holder) -> i32 { return self.cents + h.t.0; }
 }
+impl Euro as Core.AddWith(Euro) where .Result = i32 {
+  fn Op(self, o: Euro) -> i32 { return self.cents + o.cents; }
+}
+impl Euro as Core.AddWith(Holder) where .Result = i32 {
+  fn Op(self, h: Holder) -> i32 { return self.cents + h.t.0; }
+}
 
 inline Cpp '''
 template <class T> T&& Decl();
 template <class T, class = void> struct HasPlus { static constexpr bool value = false; };
 template <class T> struct HasPlus<T, decltype(void(Decl<const T&>() + Decl<const T&>()))> { static constexpr bool value = true; };
-// Detection only, no use: ranking the `Holder` candidate completes
-// `Carbon::Holder`, whose export diagnoses its field. A Carbon diagnostic is
-// not a substitution failure, so the detection is a hard error, as it is for a
-// detection of an exported function that takes a `Holder`.
-inline bool Detect() { return HasPlus<Carbon::Money>::value; }
+// A detection completes no class: `Money + Money` selects the deleted operator
+// template that stands for the `Holder` impl, a substitution failure, as Carbon
+// has no `Money + Money`; `Euro + Euro` selects the `Euro` impl.
+static_assert(!HasPlus<Carbon::Money>::value);
+static_assert(HasPlus<Carbon::Euro>::value);
 ''';
 
 // --- cpp_side_unrelated_impl.carbon
@@ -3737,8 +4525,9 @@ class Money {
 
 // Carbon's impl lookup for `Money as AddWith(Cpp.Foo)` asks C++ for an
 // operator, which looks up `operator+` in the exported `Carbon::Money`. That
-// lookup exports nothing, so the tuple result is never mapped to C++, and this
-// Carbon-only expression is checked as it would be without operator export.
+// lookup declares the impl's operator deleted, its tuple result having no C++
+// form, and an exported operator is not a candidate for Carbon's lookup, which
+// finds no C++ operator and uses the impl.
 impl Money as Core.AddWith(Cpp.Foo) where .Result = (i32, i32) {
   fn Op(self, f: Cpp.Foo) -> (i32, i32) { return (self.cents, f.n); }
 }
@@ -3773,7 +4562,9 @@ impl Money as Core.SubWith(Holder) where .Result = i32 {
   fn Op(self, h: Holder) -> i32 { return self.cents - h.t.0; }
 }
 
-// Carbon-only: neither lookup maps `Holder`, which C++ cannot export.
+// Carbon-only: no lookup maps `Holder`, which C++ cannot export. The `+`
+// impl's result names it, so its operator is deleted; the `-` impl's operand
+// names it, so the deleted operator template stands for that impl.
 fn Use(m: Money, f: Cpp.Foo) -> i32 { return (m + f).t.0 + (m - f); }
 
 // --- carbon_side_generic_class.carbon
@@ -3805,7 +4596,8 @@ impl Money as Core.SubWith(Cpp.Foo) where .Result = Vec(3) {
   fn Op(self, f: Cpp.Foo) -> Vec(3) { return {.x = self.cents - f.n}; }
 }
 
-// Carbon-only: neither result, a specific C++ cannot export, is mapped.
+// Carbon-only: neither result, a specific C++ cannot export, is mapped; both
+// operators are deleted.
 fn Use(m: Money, f: Cpp.Foo) -> i32 { return (m + f).v.0 + (m - f).x; }
 
 // --- carbon_side_unrelated_impl.carbon
@@ -3858,15 +4650,16 @@ impl Money as Core.AddWith(i32) where .Result = i32 {
   fn Op(self, k: i32) -> i32 { return self.cents + k; }
 }
 impl Money as Core.AddWith(i64) where .Result = i32 {
-  fn Op(self, k: i64) -> i32 { return self.cents; }
+  fn Op(self, _: i64) -> i32 { return self.cents; }
 }
 impl forall [T: type] Money as Core.AddWith(T) where .Result = i32 {
-  fn Op(self, x: T) -> i32 { return self.cents; }
+  fn Op(self, _: T) -> i32 { return self.cents; }
 }
 
 // Carbon-only: `Foo` converts to both `int` and `long`, so the two concrete
-// impls would be equally good C++ candidates. Carbon's own lookup exports
-// neither, finds no C++ candidate, and selects the generic impl.
+// impls would be equally good C++ candidates. Carbon's lookup exports them, but
+// an exported operator is not a candidate for it, so it finds no C++
+// candidate, and selects the generic impl.
 fn Use(m: Money, f: Cpp.Foo) -> i32 { return m + f; }
 
 // --- carbon_side_user_cpp_operator.carbon
@@ -3893,7 +4686,8 @@ inline int operator+(const Carbon::Money& m, const Foo& f) { return m.cents + f.
 ''';
 
 // Carbon's lookup finds the hand-written operator as its only C++ candidate,
-// as it did before operator impls were exported.
+// as it did before operator impls were exported: the exported
+// `Money::operator+(Foo)` is not one.
 fn Use(m: Money, f: Cpp.Foo) -> i32 { return m + f; }
 
 // --- carbon_side_then_cpp.carbon
@@ -3915,7 +4709,7 @@ impl Money as Core.AddWith(Cpp.Foo) where .Result = i32 {
 }
 
 // Carbon's lookup for this expression asks C++ about `operator+` in
-// `Carbon::Money` and leaves no answer cached...
+// `Carbon::Money`, which exports the `Cpp.Foo` impl...
 fn CarbonSide(m: Money, f: Cpp.Foo) -> i32 { return m + f; }
 
 impl Money as Core.AddWith(Money) where .Result = i32 {
@@ -3923,7 +4717,7 @@ impl Money as Core.AddWith(Money) where .Result = i32 {
 }
 
 inline Cpp '''
-// ...so C++'s first lookup of it, here, exports both impls.
+// ...and every lookup asks again, so this one exports the `Money` impl too.
 inline int CppSide(Carbon::Money a, Carbon::Money b) { return a + b; }
 ''';
 
@@ -3965,12 +4759,14 @@ impl Money as Core.AddWith(Cpp.Foo) where .Result = i32 {
 }
 
 // Carbon-only: Carbon's lookup finds the template, whose deduction Clang
-// defers to overload resolution, where it looks up `Money + Money`. That
-// nested lookup is Carbon's too and exports nothing, so `Holder` is never
-// mapped, the template is not viable, and Carbon's impl is selected.
+// defers to overload resolution, where it looks up `Money + Money`. That lookup
+// exports `Money::operator+(Money)`, as any C++ lookup would, and the deleted
+// operator template for the `Holder` impl, so `Holder` is never completed; the
+// template is viable, and Carbon calls it, a C++ function (the lower
+// `carbon_side_template_candidate` split pins the call).
 fn Use(m: Money, f: Cpp.Foo) -> i32 { return m + f; }
 
-// --- todo_carbon_side_memoized_trait.carbon
+// --- carbon_side_trait_sees_export.carbon
 
 library "[[@TEST_NAME]]";
 
@@ -3999,15 +4795,167 @@ impl Money as Core.AddWith(Cpp.Foo) where .Result = i32 {
 }
 
 // Deducing the template's arguments for this expression instantiates
-// `HasPlus<Carbon::Money>` while Carbon's lookup exports nothing...
+// `HasPlus<Carbon::Money>`, whose lookup exports `Money::operator+(Money)`...
 fn CarbonSide(m: Money, f: Cpp.Foo) -> i32 { return m + f; }
 
 inline Cpp '''
-// ...and Clang keeps that instantiation: the trait stays false here, although
-// a C++ lookup of `operator+` would now export `Money::operator+(Money)` (fork
-// work item W-205). Without `CarbonSide`, the trait is true.
-static_assert(!HasPlus<Carbon::Money>::value);
+// ...so the trait that Clang keeps is true, as it is when C++ code instantiates
+// it first: a template sees the exported operators whoever instantiates it.
+static_assert(HasPlus<Carbon::Money>::value);
 ''';
+
+// --- carbon_side_template_body_unexportable.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp;
+
+inline Cpp '''
+struct Foo { int n; };
+template <class T> T&& Decl();
+template <class T, class = void> struct HasPlus { static constexpr bool value = false; };
+template <class T> struct HasPlus<T, decltype(void(Decl<const T&>() + Decl<const T&>()))> { static constexpr bool value = true; };
+// An unconstrained template that tests `T + T` in its body.
+template <class T>
+int operator+(const T& a, const Foo& f) { return HasPlus<T>::value ? 100 + f.n : 1; }
+''';
+
+class Money {
+  var cents: i32;
+}
+
+class Holder {
+  var t: (i32, i32);
+}
+
+impl Money as Core.AddWith(Money) where .Result = i32 {
+  fn Op(self, o: Money) -> i32 { return self.cents + o.cents; }
+}
+impl Money as Core.AddWith(Holder) where .Result = i32 {
+  fn Op(self, h: Holder) -> i32 { return self.cents + h.t.0; }
+}
+impl Money as Core.AddWith(Cpp.Foo) where .Result = i32 {
+  fn Op(self, f: Cpp.Foo) -> i32 { return self.cents + f.n; }
+}
+
+// Carbon-only: Carbon's `m + f` selects the template, whose body Clang
+// instantiates at the end of the file and which looks up `Money + Money`; no
+// export there names `Holder`, so the program compiles.
+fn Use(m: Money, f: Cpp.Foo) -> i32 { return m + f; }
+
+// --- carbon_side_constexpr_body_unexportable.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp;
+
+inline Cpp '''
+struct Foo { int n; };
+template <class T> T&& Decl();
+template <class T, class = void> struct HasPlus { static constexpr bool value = false; };
+template <class T> struct HasPlus<T, decltype(void(Decl<const T&>() + Decl<const T&>()))> { static constexpr bool value = true; };
+// A `constexpr` template, whose body Clang instantiates when Carbon's lookup
+// marks the selected specialization referenced.
+template <class T>
+constexpr int operator+(const T& a, const Foo& f) { return HasPlus<T>::value ? 100 + f.n : 1; }
+''';
+
+class Money {
+  var cents: i32;
+}
+
+class Holder {
+  var t: (i32, i32);
+}
+
+impl Money as Core.AddWith(Money) where .Result = i32 {
+  fn Op(self, o: Money) -> i32 { return self.cents + o.cents; }
+}
+impl Money as Core.AddWith(Holder) where .Result = i32 {
+  fn Op(self, h: Holder) -> i32 { return self.cents + h.t.0; }
+}
+impl Money as Core.AddWith(Cpp.Foo) where .Result = i32 {
+  fn Op(self, f: Cpp.Foo) -> i32 { return self.cents + f.n; }
+}
+
+fn Use(m: Money, f: Cpp.Foo) -> i32 { return m + f; }
+
+// --- carbon_side_call_unexportable.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp;
+
+inline Cpp '''
+template <class T> T&& Decl();
+template <class T, class = void> struct HasPlus { static constexpr bool value = false; };
+template <class T> struct HasPlus<T, decltype(void(Decl<const T&>() + Decl<const T&>()))> { static constexpr bool value = true; };
+template <bool B> struct EnableIf {};
+template <> struct EnableIf<true> { using type = int; };
+template <class T, typename EnableIf<HasPlus<T>::value>::type = 0>
+int Pick(const T&, int) { return 100; }
+template <class T> int Pick(const T&, long) { return 1; }
+''';
+
+class Money {
+  var cents: i32;
+}
+
+class Holder {
+  var t: (i32, i32);
+}
+
+impl Money as Core.AddWith(Money) where .Result = i32 {
+  fn Op(self, o: Money) -> i32 { return self.cents + o.cents; }
+}
+impl Money as Core.AddWith(Holder) where .Result = i32 {
+  fn Op(self, h: Holder) -> i32 { return self.cents + h.t.0; }
+}
+
+// Carbon-only: Carbon's call deduces the SFINAE overload, whose lookup of
+// `Money + Money` names no `Holder` (the lower `carbon_side_call_template`
+// split pins which overload is called).
+fn Use(m: Money) -> i32 { return Cpp.Pick(m, 0 as i32); }
+
+// --- carbon_side_conversion_unexportable.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp;
+
+inline Cpp '''
+template <class T> T&& Decl();
+template <class T, class = void> struct HasPlus { static constexpr bool value = false; };
+template <class T> struct HasPlus<T, decltype(void(Decl<const T&>() + Decl<const T&>()))> { static constexpr bool value = true; };
+template <bool B> struct EnableIf {};
+template <> struct EnableIf<true> { using type = int; };
+struct Bar {
+  int v;
+  template <class T, typename EnableIf<!HasPlus<T>::value>::type = 0> Bar(const T&) : v(1) {}
+  template <class T, typename EnableIf<HasPlus<T>::value>::type = 0> Bar(const T&) : v(100) {}
+};
+inline int GetV(const Bar& b) { return b.v; }
+''';
+
+class Money {
+  var cents: i32;
+}
+
+class Holder {
+  var t: (i32, i32);
+}
+
+impl Money as Core.AddWith(Money) where .Result = i32 {
+  fn Op(self, o: Money) -> i32 { return self.cents + o.cents; }
+}
+impl Money as Core.AddWith(Holder) where .Result = i32 {
+  fn Op(self, h: Holder) -> i32 { return self.cents + h.t.0; }
+}
+
+// Carbon-only: an `as` conversion and an implicit argument conversion through
+// SFINAE-constrained converting constructors, whose lookup of `Money + Money`
+// names no `Holder`.
+fn Use(m: Money) -> i32 { let b: Cpp.Bar = m as Cpp.Bar; return b.v + Cpp.GetV(m); }
 
 // --- fail_user_cpp_operator_ambiguous.carbon
 
@@ -4070,7 +5018,7 @@ impl Money as Core.AddWith(Money) where .Result = i32 {
   fn Op(self, o: Money) -> i32 { return self.cents + o.cents; }
 }
 
-// --- fail_todo_non_member_before_operand.carbon
+// --- non_member_before_operand.carbon
 
 library "[[@TEST_NAME]]";
 
@@ -4094,16 +5042,18 @@ impl i32 as Core.MulWith(Euro) where .Result = i32 {
 inline Cpp '''
 // C++'s first lookup of `operator*` in namespace `Carbon` is argument-dependent
 // lookup for `m * 2`, before C++ has named `Euro`: the `i32` impl, whose
-// operand C++ has not seen, is not exported, and the answer is kept (fork work
-// item W-205).
+// operand C++ has not seen, is not exported then...
 inline int First(Carbon::Money m) { return m * 2; }
 ''';
+
+// ...and every lookup asks again, so this one, after C++ named `Euro`, exports
+// it.
 
 inline Cpp '''
 inline int Second(Carbon::Euro e) { return 2 * e; }
 ''';
 
-// --- fail_todo_impl_after_lookup.carbon
+// --- impl_after_lookup.carbon
 
 library "[[@TEST_NAME]]";
 
@@ -4121,6 +5071,8 @@ inline Cpp '''
 inline int First(Carbon::Money m) { return m + m; }
 ''';
 
+// Declared after C++ looked `operator+` up: every lookup asks again, so the
+// next one exports this impl too.
 impl Money as Core.AddWith(i32) where .Result = i32 {
   fn Op(self, k: i32) -> i32 { return self.cents + k; }
 }
@@ -4217,7 +5169,7 @@ impl forall [T: Core.ImplicitAs(i32)] Money as Core.DivWith(T) where .Result = i
   fn Op(self, k: T) -> i32 { return self.cents / (k as i32); }
 }
 impl Money as Core.DivWith(i64) where .Result = i32 {
-  fn Op(self, k: i64) -> i32 { return self.cents; }
+  fn Op(self, _: i64) -> i32 { return self.cents; }
 }
 
 inline Cpp '''
@@ -4228,7 +5180,7 @@ inline int Use(Carbon::Money a, Carbon::Money b) {
 ''';
 ```
 
-#### toolchain/check/testdata/interop/cpp/class/export/operator_cxx20.carbon (4 splits, `-std=c++20`)
+#### toolchain/check/testdata/interop/cpp/class/export/operator_cxx20.carbon (5 splits, `-std=c++20`)
 
 ```carbon
 // Part of the Carbon Language project, under the Apache License v2.0 with LLVM
@@ -4248,8 +5200,10 @@ inline int Use(Carbon::Money a, Carbon::Money b) {
 // docs/design/interoperability/operators.md): `operator!=` is always declared
 // beside `operator==`, and no `operator<=>` is exported, so C++20 synthesizes
 // no reversed or rewritten candidate, and C++ accepts exactly the operand
-// orders that Carbon has impls for. The sibling operator.carbon pins the
-// default language mode, C++17.
+// orders that Carbon has impls for. A C++ template's own reversed candidate
+// can still be made viable by an exported operator, and Carbon's operator
+// expression then selects it. The sibling operator.carbon pins the default
+// language mode, C++17.
 
 // --- move_only_equality.carbon
 
@@ -4346,9 +5300,43 @@ inline Cpp '''
 inline bool Forward(Carbon::Money m) { return m < 5; }
 inline bool Reversed(Carbon::Money m) { return 5 > m; }
 ''';
+
+// --- fail_todo_carbon_side_rewritten_candidate.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp;
+
+inline Cpp '''
+struct Foo { int n; };
+template <class T> T&& Decl();
+template <class T, class = void> struct HasEq { static constexpr bool value = false; };
+template <class T> struct HasEq<T, decltype(void(Decl<const T&>() == Decl<const T&>()))> { static constexpr bool value = true; };
+template <bool B> struct EnableIf {};
+template <> struct EnableIf<true> { using type = int; };
+template <class T, typename EnableIf<HasEq<T>::value>::type = 0>
+bool operator==(const Foo&, const T&) { return false; }
+''';
+
+class Money {
+  var cents: i32;
+}
+
+impl Money as Core.EqWith(Money) {
+  fn Equal(self, o: Money) -> bool { return self.cents == o.cents; }
+}
+impl Money as Core.EqWith(Cpp.Foo) {
+  fn Equal(unused self, _: Cpp.Foo) -> bool { return true; }
+}
+
+// Carbon-only: C++20 forms the reversed candidate `f == m` from the template,
+// which `Money == Money`, an exported operator, makes viable. Carbon's lookup
+// selects it, the only C++ candidate that is not an exported operator, and
+// Carbon cannot yet call a rewritten candidate (fork work item W-045).
+fn Use(m: Money, f: Cpp.Foo) -> bool { return m == f; }
 ```
 
-#### toolchain/lower/testdata/interop/cpp/class/export/operator.carbon (7 splits)
+#### toolchain/lower/testdata/interop/cpp/class/export/operator.carbon (10 splits)
 
 ```carbon
 // Part of the Carbon Language project, under the Apache License v2.0 with LLVM
@@ -4369,9 +5357,11 @@ inline bool Reversed(Carbon::Money m) { return 5 > m; }
 // thunk, `_COp__carbon_thunk.<class>.<package>:<interface>...`, which calls
 // the impl member `_COp.<class>...`; a default `!=` negates the `==` thunk's
 // result; a Carbon operator expression with a C++ operand still calls the
-// Carbon impl directly, not its C++ export, even after C++ code exported it,
-// nor a C++ template that only an exported operator would make viable; and a
-// generic impl's deleted operator template yields to a concrete impl's exact
+// Carbon impl directly, not its C++ export, even after C++ code exported it;
+// a C++ template sees the exported operators whoever instantiates it, so a
+// Carbon expression, call or conversion can select a C++ function that only an
+// exported operator makes viable, and that function can call the export; and
+// a generic impl's deleted operator template yields to a concrete impl's exact
 // match in C++ and is never Carbon's candidate.
 
 // --- member.carbon
@@ -4529,11 +5519,109 @@ impl Money as Core.AddWith(Cpp.Foo) where .Result = i32 {
   fn Op(self, f: Cpp.Foo) -> i32 { return self.cents + f.n; }
 }
 
-// Carbon-only: the template would be viable only through an exported
-// `Money::operator+(Money)`, which Carbon's lookup, the deduction Clang defers
-// to overload resolution included, never exports; this calls `_COp.Money...`
-// directly.
+// Carbon-only: the template is viable through the exported
+// `Money::operator+(Money)`, which the deduction Clang defers to overload
+// resolution sees, so this calls the template's specialization, a C++
+// function, and not `_COp.Money...`.
 fn CarbonSide(m: Money, f: Cpp.Foo) -> i32 { return m + f; }
+
+// --- carbon_side_template_body.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp;
+
+inline Cpp '''
+struct Foo { int n; };
+template <class T> T&& Decl();
+template <class T, class = void> struct HasPlus { static constexpr bool value = false; };
+template <class T> struct HasPlus<T, decltype(void(Decl<const T&>() + Decl<const T&>()))> { static constexpr bool value = true; };
+// An unconstrained template whose body applies `T + T` when it can.
+template <class T>
+int operator+(const T& a, const Foo& f) {
+  if constexpr (HasPlus<T>::value) {
+    return a + a;
+  } else {
+    return f.n;
+  }
+}
+''';
+
+class Money {
+  var cents: i32;
+}
+
+impl Money as Core.AddWith(Money) where .Result = i32 {
+  fn Op(self, o: Money) -> i32 { return self.cents + o.cents; }
+}
+impl Money as Core.AddWith(Cpp.Foo) where .Result = i32 {
+  fn Op(self, f: Cpp.Foo) -> i32 { return self.cents + f.n; }
+}
+
+// Carbon-only: `m + f` calls the template's specialization, a C++ function;
+// its body, C++ code, calls the exported `Money::operator+(Money)`, whose thunk
+// calls the `Money` impl.
+fn CarbonSide(m: Money, f: Cpp.Foo) -> i32 { return m + f; }
+
+// --- carbon_side_call_template.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp;
+
+inline Cpp '''
+template <class T> T&& Decl();
+template <class T, class = void> struct HasPlus { static constexpr bool value = false; };
+template <class T> struct HasPlus<T, decltype(void(Decl<const T&>() + Decl<const T&>()))> { static constexpr bool value = true; };
+template <bool B> struct EnableIf {};
+template <> struct EnableIf<true> { using type = int; };
+template <class T, typename EnableIf<HasPlus<T>::value>::type = 0>
+int Pick(const T&, int) { return 100; }
+template <class T> int Pick(const T&, long) { return 1; }
+''';
+
+class Money {
+  var cents: i32;
+}
+
+impl Money as Core.AddWith(Money) where .Result = i32 {
+  fn Op(self, o: Money) -> i32 { return self.cents + o.cents; }
+}
+
+// Carbon-only: the call's deduction sees the exported `Money::operator+`, so it
+// calls the `int` overload, the exact match.
+fn CarbonSide(m: Money) -> i32 { return Cpp.Pick(m, 0 as i32); }
+
+// --- carbon_side_conversion_template.carbon
+
+library "[[@TEST_NAME]]";
+
+import Cpp;
+
+inline Cpp '''
+template <class T> T&& Decl();
+template <class T, class = void> struct HasPlus { static constexpr bool value = false; };
+template <class T> struct HasPlus<T, decltype(void(Decl<const T&>() + Decl<const T&>()))> { static constexpr bool value = true; };
+template <bool B> struct EnableIf {};
+template <> struct EnableIf<true> { using type = int; };
+struct Bar {
+  int v;
+  template <class T, typename EnableIf<!HasPlus<T>::value>::type = 0> Bar(const T&) : v(1) {}
+  template <class T, typename EnableIf<HasPlus<T>::value>::type = 0> Bar(const T&) : v(100) {}
+};
+''';
+
+class Money {
+  var cents: i32;
+}
+
+impl Money as Core.AddWith(Money) where .Result = i32 {
+  fn Op(self, o: Money) -> i32 { return self.cents + o.cents; }
+}
+
+// Carbon-only: the conversion's deduction sees the exported
+// `Money::operator+`, so it calls the constructor that sets `v` to 100.
+fn CarbonSide(m: Money) -> i32 { let b: Cpp.Bar = m as Cpp.Bar; return b.v; }
 
 // --- generic_impl.carbon
 
@@ -4556,7 +5644,7 @@ impl forall [T: Core.ImplicitAs(i32)] Money as Core.MulWith(T) where .Result = i
   fn Op(self, k: T) -> i32 { return self.cents * (k as i32); }
 }
 impl Money as Core.MulWith(i64) where .Result = i32 {
-  fn Op(self, k: i64) -> i32 { return self.cents; }
+  fn Op(self, _: i64) -> i32 { return self.cents; }
 }
 
 inline Cpp '''
@@ -4583,7 +5671,9 @@ The arbiter keeps its filename and bullet; its SKIP line, guard and the
 "Write-tests-first stub" header go, its body is the sketch (M-15). Each EXPECT
 is re-derived in §1.8. Rev 2 re-encodes the compare and nonmember programs'
 comparisons and adds the divergence cross-references to the arithmetic and
-index headers (amended 2026-10-14, review fold: A-8, A-9).
+index headers (amended 2026-10-14, review fold: A-8, A-9). Rev 3 and rev 4
+change no program; all seven pass on `v7` (M-13; amended 2026-10-14, review
+fold: RR2-1).
 
 #### interop/cpp_operator_export.carbon (SKIP → PASS)
 
@@ -5177,7 +6267,11 @@ A-6, A-7, B-2, B-3, B-4, B-11). Rev 3 rewrites "Implementations with no C++
 form", "Carbon operator expressions are unchanged" and two of the 0.1 limits,
 for the deleted default `!=`, the generic impls' deleted template, detections
 and C++ code's earlier lookups, and adds an alternative (amended 2026-10-14,
-review fold: RR-1 to RR-6).
+review fold: RR-1 to RR-6). Rev 4 rewrites the last paragraph of
+"Implementations with no C++ form" for classes C++ cannot export, replaces
+"Carbon operator expressions are unchanged", whose title no longer holds, with
+"Carbon operator expressions", drops W-205's limit and adds an alternative
+(amended 2026-10-14, review fold: RR2-1, RR2-2).
 
 ````markdown
 # Exporting Carbon operators to C++
@@ -5196,7 +6290,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -   [Equality and inequality](#equality-and-inequality)
 -   [Assignment, increment, and indexing](#assignment-increment-and-indexing)
 -   [Implementations with no C++ form](#implementations-with-no-c-form)
--   [Carbon operator expressions are unchanged](#carbon-operator-expressions-are-unchanged)
+-   [Carbon operator expressions](#carbon-operator-expressions)
 -   [Divergences](#divergences)
 -   [Conversions](#conversions)
 -   [Hand-written C++ operators](#hand-written-c-operators)
@@ -5363,29 +6457,34 @@ the generic impl rather than convert it to a concrete impl's parameter type; an
 operand that exactly matches a concrete impl still selects it, because C++
 prefers a function that is not a template.
 
-A class that C++ cannot export at all, such as one with a tuple field, makes a
-C++ use of an operator whose impls name it report that class's export error, as
-it does for a C++ call of any exported function that names it. A C++ detection
-that only asks whether the operator applies, such as a type trait, is such a
-use: the error is not a substitution failure, so the detection does not compile.
+A class that C++ cannot export at all, such as one with a tuple field, is never
+named by an exported operator: an impl whose operand is such a class is
+represented by the same deleted operator template as a generic impl, and one
+whose result is such a class is exported as a deleted operator. So no use of an
+operator, and no type trait that asks whether one applies, ever needs that
+class, and exporting operators never reports an error of its own; an operand
+that exactly matches another impl still selects it.
 
-## Carbon operator expressions are unchanged
+## Carbon operator expressions
 
 When an operand of a Carbon operator expression is a C++ type, Carbon also asks
 C++ for a matching operator, which it resolves with C++ overload resolution
 (see the
 [C++ interop proposal's operator calls](/proposals/p006254-c-interop-toolchain-implementation-for-function-calls.md#operator-calls)).
-That lookup, with the overload resolution after it, does not export any Carbon
-impl, and an operator that C++ code exported earlier is not among its
-candidates: it is Carbon's own impl seen from C++, which Carbon's impl lookup
-finds itself. So in a program whose C++ code applies no operator to a Carbon
-type, a Carbon operator expression calls the same function it called before
-operators were exported, a hand-written C++ operator included. C++ code that
-looked an operator up may have instantiated a template, such as a type trait,
-while the exported operator was visible, and C++ keeps that instantiation; a
-later Carbon operator expression can then find a C++ function viable that it
-would not have found otherwise, though it never calls an exported operator
-itself.
+An exported operator is never one of its candidates: it is Carbon's own impl
+seen from C++, which Carbon's impl lookup finds itself, so the Carbon impl is
+called directly, and a hand-written C++ operator that Carbon used before is
+still used.
+
+A C++ template, though, sees a Carbon class's exported operators whatever
+instantiates it: C++ code, or a Carbon operator expression, call or conversion
+that asks C++ for a function. A C++ function that is viable only because a
+Carbon class has an exported operator, such as a template constrained on that
+operator or one of the standard library's generic comparisons, is therefore a
+candidate for Carbon too: Carbon can call it, and it can call the exported
+operator. Under C++20 such a function can be a rewritten candidate, such as a
+reversed `==`, which Carbon cannot call yet. A template that C++ instantiated
+before an `impl` was declared keeps what it saw then, as in C++.
 
 ## Divergences
 
@@ -5430,7 +6529,7 @@ Carbon operator impls were exported. Where it duplicates an impl, C++ now finds
 two equally good candidates and reports the use as ambiguous (fork work item
 W-211); remove the hand-written operator. Carbon's own operator expressions are
 not affected (see
-[Carbon operator expressions are unchanged](#carbon-operator-expressions-are-unchanged)).
+[Carbon operator expressions](#carbon-operator-expressions)).
 
 ## 0.1 limits
 
@@ -5442,15 +6541,6 @@ not affected (see
 -   Only the impls of the file that contains the `inline Cpp` block are
     exported; the impls of an imported library are not (W-204), and a class
     imported from another library is not yet exported correctly (W-203).
--   What C++ code sees depends on its earlier lookups (W-205): an impl declared
-    after C++ code has looked up that operator on the class or namespace is not
-    seen by later C++ code, nor is a non-member operator whose operand class C++
-    had not yet named when it first looked the operator up in that namespace,
-    and a template that C++ instantiated before an operator was exported keeps
-    the operators it saw then. A Carbon operator expression is not such a
-    lookup, but a template that its overload resolution instantiates keeps what
-    it saw: a type trait instantiated there does not see an operator that C++
-    code exports later.
 -   `<=>` is not exported until `OrderedWith` declares its three-way `Compare`
     (W-206).
 -   Two impls whose operand types map to one C++ type make every use of that
@@ -5482,6 +6572,11 @@ not affected (see
 -   Leaving a generic impl out of C++ entirely: rejected for the same reason;
     its deleted operator template keeps C++ from converting the operand for a
     concrete impl.
+-   Hiding the exported operators from the C++ templates that Carbon's own
+    operator lookup instantiates: rejected, because Clang instantiates
+    templates for Carbon and for C++ code in the same places, so the same
+    template would answer differently for each, and a type trait would keep
+    whichever answer came first.
 -   Making each exported operator evaluate the Carbon operator expression
     rather than call the impl's function: rejected for 0.1, because only
     concrete impls are exported, for which impl lookup selects exactly that
@@ -5529,10 +6624,12 @@ becomes (the status, W-208's clause and the residue list amended 2026-10-14,
 review fold: A-6, B-4, B-3, A-3; the decision-log entry and the README
 amendment are no longer cited from commit 5, which precedes them, B-5; the
 deleted operators, Carbon's lookup and W-202's and W-205's clauses amended
-2026-10-14, review fold: RR-1, RR-2, RR-3, RR-4, RR-5):
+2026-10-14, review fold: RR-1, RR-2, RR-3, RR-4, RR-5; the diagnostics,
+Carbon's lookup, the deleted templates and W-205 amended 2026-10-14, review
+fold: RR2-1, RR2-2):
 
 ```text
-OX-1 landed (W-054 DISCHARGED <date>, fork/opexport/plan.md, fork design F-017, docs/design/interoperability/operators.md): an impl of a `Core` operator interface for a Carbon class is a C++ operator on the exported Carbon type — the arithmetic, negation, bitwise and shift, compound-assignment, increment and decrement, comparison and indexing interfaces, 31 members — a member operator (`const` for `self`, `&` for `ref self`) when the impl's `Self` is the class, and otherwise a non-member operator in the class's innermost enclosing namespace found by argument-dependent lookup (`int - Carbon::Money` from `impl i32 as SubWith(Money)`, `Foo + Carbon::Money` from an imported C++ `Self`); `!=` is exported for an impl that keeps `EqWith`'s default `NotEqual`, as `!(a == b)`, so C++17 has it and C++20 synthesizes no reversed `==`; an impl whose operand has no C++ form is omitted, one whose result alone has none is declared deleted, as is the default `!=` beside it, and the generic impls of an operator are one deleted operator template, so C++ rejects an operand Carbon would resolve to a generic impl; Carbon's own operator lookup, overload resolution included, exports nothing and never calls an exported operator (cpp/class/export/operator.carbon, operator_ast.carbon, operator_cxx20.carbon, lower cpp/class/export/operator.carbon). 7/7 programs PASS — interop/cpp_operator_export (SKIP -> PASS, EXPECT 42) and cpp_operator_export_{arithmetic,compound,compare,bitwise,index,nonmember} — expected, not of record: container run on the built toolchain, GitHub Actions disabled. C++ resolves the exported operators under C++'s rules (operand conversions, base-class lookup, the impl function's own signature, by-value operands), a documented divergence. PARTIAL: the design overview maps `ImplicitAs` to C++ implicit conversions in the same section (docs/design/README.md:3679-3681), and `As`/`ImplicitAs` are not exported (W-208). Filed limits: generic impls, not callable from C++, and generic-class specifics (W-202), impls of an imported library (W-204, blocked by W-203), what C++ code sees after its earlier lookups (W-205), `<=>` (W-206), same-signature impls (W-207), `ref` indexing (W-209), impls with no Carbon class among their types (W-210), hand-written C++ operators that duplicate an impl (W-211).
+OX-1 landed (W-054 DISCHARGED <date>, fork/opexport/plan.md, fork design F-017, docs/design/interoperability/operators.md): an impl of a `Core` operator interface for a Carbon class is a C++ operator on the exported Carbon type — the arithmetic, negation, bitwise and shift, compound-assignment, increment and decrement, comparison and indexing interfaces, 31 members — a member operator (`const` for `self`, `&` for `ref self`) when the impl's `Self` is the class, and otherwise a non-member operator in the class's innermost enclosing namespace found by argument-dependent lookup (`int - Carbon::Money` from `impl i32 as SubWith(Money)`, `Foo + Carbon::Money` from an imported C++ `Self`); `!=` is exported for an impl that keeps `EqWith`'s default `NotEqual`, as `!(a == b)`, so C++17 has it and C++20 synthesizes no reversed `==`; an impl whose operand has no C++ form is omitted, one whose result has none or names a class C++ cannot export is declared deleted, as is the default `!=` beside it, and the generic impls of an operator, with those whose operand C++ cannot export, are one deleted operator template, so C++ rejects an operand Carbon would resolve to one of them; no export emits a diagnostic, every operator lookup asks again, and Carbon's own operator expressions never call an exported operator, while C++ templates see the exports whoever instantiates them (cpp/class/export/operator.carbon, operator_ast.carbon, operator_cxx20.carbon, lower cpp/class/export/operator.carbon). 7/7 programs PASS — interop/cpp_operator_export (SKIP -> PASS, EXPECT 42) and cpp_operator_export_{arithmetic,compound,compare,bitwise,index,nonmember} — expected, not of record: container run on the built toolchain, GitHub Actions disabled. C++ resolves the exported operators under C++'s rules (operand conversions, base-class lookup, the impl function's own signature, by-value operands), a documented divergence. PARTIAL: the design overview maps `ImplicitAs` to C++ implicit conversions in the same section (docs/design/README.md:3679-3681), and `As`/`ImplicitAs` are not exported (W-208). Filed limits: generic impls, not callable from C++, and generic-class specifics (W-202), impls of an imported library (W-204, blocked by W-203), `<=>` (W-206), same-signature impls (W-207), `ref` indexing (W-209), impls with no Carbon class among their types (W-210), hand-written C++ operators that duplicate an impl (W-211).
 ```
 
 **The header** (commit 5): "N DONE / M PARTIAL / K MISSING / L DESIGN-ONLY" as
@@ -5545,41 +6642,42 @@ before and after; commit 6 recounts it on the merge commit (amended 2026-10-14,
 review fold: A-6, B-4, B-5).
 
 **The ledger** (commit 6, fork/inventory/work-items.json). W-054 becomes (its
-title, evidence and notes amended 2026-10-14, review fold: RR-1, RR-2, RR-3):
+title, evidence and notes amended 2026-10-14, review fold: RR-1, RR-2, RR-3, and
+again, review fold: RR2-1, RR2-2, RR2-3):
 
 ```json
 {
  "id": "W-054",
- "title": "OX-1 (LANDED <date>): Carbon operator impls exported as C++ operator overloads (fork design F-017) — member operators for impls on the exported class, non-member operators found by argument-dependent lookup otherwise, the default `!=`, deleted operators for results with no C++ form and deleted operator templates for generic impls; Carbon's own operator lookup, overload resolution included, exports nothing and never calls an export",
+ "title": "OX-1 (LANDED <date>): Carbon operator impls exported as C++ operator overloads (fork design F-017) — member operators for impls on the exported class, non-member operators found by argument-dependent lookup otherwise, the default `!=`, deleted operators for results with no C++ form or that name a class C++ cannot export, and deleted operator templates for generic impls and impls whose operand C++ cannot export; no export emits a diagnostic, every operator lookup asks again, and Carbon's own operator expressions never call an export",
  "kind": "implemented",
- "subsystem": "toolchain/check/cpp (export, generate_ast, operators, context) + docs/design/interoperability",
+ "subsystem": "toolchain/check/cpp (export, generate_ast, operators) + docs/design/interoperability",
  "size": "L",
  "bullet": "Type system: C++ interop — exporting Carbon operator overloads into C++",
  "evidence": [
-  "toolchain/check/cpp/export.cpp (`OperatorExportTable`, `IsOperatorImplOfKind`, `IsUnmappableWithoutExport`, `ClassifyOperatorExport`, `GetImplMemberFunctionId`, `RegisterExportedOperator`, `BuildCppOperatorDecl`, `ExportImplFunctionAsCppOperator`, `BuildDefaultNotEqualOperator`, `BuildDeletedOperatorTemplate`, `ExportGenericImplAsDeletedOperator`, `ExportImplOperators`, `ExportOperatorsToCpp`, `ExportNonMemberOperatorsToCpp`, `IsExportedCarbonOperator`; the one in-function hunk, `BuildCppToCarbonThunkBody`'s `isa<clang::CXXMethodDecl>` condition)",
-  "toolchain/check/cpp/generate_ast.cpp (`FindExternalVisibleDeclsByName`: the `CXXOperatorName` arm, which answers nothing and caches nothing during Carbon's own operator lookup)",
-  "toolchain/check/cpp/operators.cpp (`FindClangOperator`: Carbon's lookup and overload resolution run with `in_carbon_operator_lookup()` set; `RemoveExportedCarbonOperators` makes exported Carbon operators non-viable before and after `BestViableFunction`) and toolchain/check/cpp/context.h (`CppContext::in_carbon_operator_lookup()`)",
-  "toolchain/check/testdata/interop/cpp/class/export/operator.carbon (43 splits), operator_ast.carbon and operator_cxx20.carbon (4 splits); toolchain/lower/testdata/interop/cpp/class/export/operator.carbon (7 splits); filled at <fill commit>",
+  "toolchain/check/cpp/export.cpp (`OperatorExportTable`, `IsOperatorImplOfKind`, `IsUnmappableWithoutExport`, `CanExportTypeWithoutDiagnostic`, `CanExportClassWithoutDiagnostic`, `ClassifyOperatorExport`, `GetImplMemberFunctionId`, `RegisterExportedOperator`, `GetExportedOperatorInstId`, `BuildCppOperatorDecl`, `ExportImplFunctionAsCppOperator`, `BuildDefaultNotEqualOperator`, `BuildDeletedOperatorTemplate`, `ExportDeletedOperatorTemplate`, `ExportImplOperators`, `ExportOperatorsToCpp`, `ExportNonMemberOperatorsToCpp`, `IsExportedCarbonOperator`; the one in-function hunk, `BuildCppToCarbonThunkBody`'s `isa<clang::CXXMethodDecl>` condition)",
+  "toolchain/check/cpp/generate_ast.cpp (`FindExternalVisibleDeclsByName`: the `CXXOperatorName` arm, which answers every lookup alike and marks the entry so that Clang asks again)",
+  "toolchain/check/cpp/operators.cpp (`FindClangOperator`: `RemoveExportedCarbonOperators` makes exported Carbon operators non-viable before and after `BestViableFunction`, and its notes leave them out)",
+  "toolchain/check/testdata/interop/cpp/class/export/operator.carbon (50 splits), operator_ast.carbon and operator_cxx20.carbon (5 splits); toolchain/lower/testdata/interop/cpp/class/export/operator.carbon (10 splits); filled at <fill commit>",
   "fork/conformance/programs/interop/cpp_operator_export.carbon (SKIP -> PASS) and cpp_operator_export_{arithmetic,compound,compare,bitwise,index,nonmember}.carbon",
   "docs/design/interoperability/operators.md (F-017); <the README text at the merge commit: DD-1's operator section as §6.2.1 edits it, or this plan's dated amendment if DD-1 has not merged>; fork/opexport/plan.md; fork/decision-log.md \"OX-1 / F-017\"",
   "fork/gap-analysis.md, the row \"Type system: C++ interop — exporting Carbon operator overloads into C++\" (line 48 at f67ab650d; the original evidence's :30 was stale), PARTIAL, bounded by W-208"
  ],
  "blocked_by": [],
- "notes": "Discharged by OX-1 (fork/opexport/plan.md). W-007's precondition was met by sequencing, as for EH-B, UN-2 and OV-3: no other export.cpp contender was in flight except ST-1's disjoint 5-line hunk (PR 55), and every OX-1 edit is a new function, a new switch arm in generate_ast.cpp, a `CppContext` member, the lookup and overload resolution inside one flag scope with a candidate-removal helper in operators.cpp, or the one behaviour-preserving condition in BuildCppToCarbonThunkBody; thunk.cpp and type_mapping.cpp untouched. The row stays PARTIAL for conversions (W-208). Residues W-202, W-204..W-211 under this row; W-203 under the type-export row."
+ "notes": "Discharged by OX-1 (fork/opexport/plan.md). W-007's precondition was met by sequencing, as for EH-B, UN-2 and OV-3: no other export.cpp contender was in flight except ST-1's disjoint 5-line hunk (PR 55), and every OX-1 edit is a new function, a new switch arm in generate_ast.cpp, a candidate-removal helper and a notes filter in operators.cpp, or the one behaviour-preserving condition in BuildCppToCarbonThunkBody; thunk.cpp and type_mapping.cpp untouched. The row stays PARTIAL for conversions (W-208). Residues W-202, W-204 and W-206..W-211 under this row; W-203 under the type-export row; W-205 reserved and unused."
 }
 ```
 
 New items (commit 6; `kind`, `subsystem` and `size` as below, `evidence` as
 cited; W-202, W-205 and W-208 amended and W-210 and W-211 added 2026-10-14,
 review fold: B-2, A-4, A-6, B-4, B-3, A-3; W-202 and W-205 amended again
-2026-10-14, review fold: RR-3, RR-4, with the fixer's M-36):
+2026-10-14, review fold: RR-3, RR-4, with the fixer's M-36; W-205 withdrawn and
+W-202's evidence amended 2026-10-14, review fold: RR2-1):
 
 ```json
 [
- {"id": "W-202", "title": "OX-1 residue: generic operator impls are not callable from C++ (an operator's generic impls are one deleted operator template), and the operator impls of a generic class's specifics are not exported", "kind": "missing-feature", "subsystem": "toolchain/check/cpp (export)", "size": "M", "bullet": "Type system: C++ interop — exporting Carbon operator overloads into C++", "evidence": ["toolchain/check/cpp/export.cpp `BuildDeletedOperatorTemplate` and `ExportGenericImplAsDeletedOperator` (the deleted template) and `ExportOperatorsToCpp` (skips a class specific)", "toolchain/check/testdata/interop/cpp/class/export/operator.carbon splits fail_todo_generic_impl (`impl forall [T: Core.ImplicitAs(i32)] Money as Core.MulWith(T)`: C++ `m * 3` is `overload resolution selected deleted operator '*'`; Carbon's `m * 3` compiles), fail_generic_impl_conversion and fail_generic_impl_conversion_non_member (beside a concrete `i64` impl, C++ `m * k` and `k * m` for an `int k` are rejected, not converted)", "toolchain/lower/testdata/interop/cpp/class/export/operator.carbon split generic_impl (a `long` operand selects the `i64` impl; Carbon's `m * k` for `k: i32` and `m * f` for a C++ operand call the generic impl)", "fork/opexport/plan.md M-11(a), M-28, M-32, D-OX-22"], "blocked_by": [], "notes": "A generic impl's `Op` needs a C++ template that calls the impl's specific for each C++ argument type (or one declaration per argument type C++ asks about), the machinery of the generics-export row (W-117 is the overload-set analogue). Until then each operator's generic impls are one deleted operator template, so a C++ use that Carbon would resolve to a generic impl is rejected rather than converted for a concrete impl (M-28, M-32); rev 2 of the plan left them invisible, a silent mis-selection. Filed at the OX-1 discharge."},
+ {"id": "W-202", "title": "OX-1 residue: generic operator impls are not callable from C++ (an operator's generic impls are one deleted operator template), and the operator impls of a generic class's specifics are not exported", "kind": "missing-feature", "subsystem": "toolchain/check/cpp (export)", "size": "M", "bullet": "Type system: C++ interop — exporting Carbon operator overloads into C++", "evidence": ["toolchain/check/cpp/export.cpp `BuildDeletedOperatorTemplate` and `ExportDeletedOperatorTemplate` (the deleted template) and `ExportOperatorsToCpp` (skips a class specific)", "toolchain/check/testdata/interop/cpp/class/export/operator.carbon splits fail_todo_generic_impl (`impl forall [T: Core.ImplicitAs(i32)] Money as Core.MulWith(T)`: C++ `m * 3` is `overload resolution selected deleted operator '*'`; Carbon's `m * 3` compiles), fail_generic_impl_conversion and fail_generic_impl_conversion_non_member (beside a concrete `i64` impl, C++ `m * k` and `k * m` for an `int k` are rejected, not converted)", "toolchain/lower/testdata/interop/cpp/class/export/operator.carbon split generic_impl (a `long` operand selects the `i64` impl; Carbon's `m * k` for `k: i32` and `m * f` for a C++ operand call the generic impl)", "fork/opexport/plan.md M-11(a), M-28, M-32, D-OX-22"], "blocked_by": [], "notes": "A generic impl's `Op` needs a C++ template that calls the impl's specific for each C++ argument type (or one declaration per argument type C++ asks about), the machinery of the generics-export row (W-117 is the overload-set analogue). Until then each operator's generic impls are one deleted operator template, so a C++ use that Carbon would resolve to a generic impl is rejected rather than converted for a concrete impl (M-28, M-32); rev 2 of the plan left them invisible, a silent mis-selection. Filed at the OX-1 discharge."},
  {"id": "W-203", "title": "Exporting a Carbon class imported from another library yields an empty C++ record: no fields, and an exported method returning it by value corrupts memory (upstream defect)", "kind": "toolchain-defect", "subsystem": "toolchain/check/cpp (export)", "size": "M", "bullet": "Type system: C++ interop — importing C++ types / exporting Carbon types", "evidence": ["fork/opexport/plan.md M-11(d): `.cents` of an imported class is `no member named 'cents'`; an exported `Plus` returning the imported class then `Get()` prints -1265344497 on trunk 0bdce60a5 and -1536643875 on the nightly 2026.10.12 where 42 is right; the C++ AST shows `class Money definition ... empty aggregate` with no FieldDecl", "toolchain/check/cpp/export.cpp:570-618 `ExportAllFieldsToCpp` (a struct field whose class-scope entry is not found is skipped, :581-583)"], "blocked_by": [], "notes": "Found by the OX-1 audit; pre-existing and upstream. The root cause is not yet confirmed: the hypothesis is that `LookupClassFieldByStructField` does not find an imported class's fields in its scope before their import refs are loaded. Fix belongs to the type-export row, not to OX-1."},
  {"id": "W-204", "title": "OX-1 residue: operator impls declared in an imported library are not exported to C++", "kind": "missing-feature", "subsystem": "toolchain/check/cpp (export)", "size": "M", "bullet": "Type system: C++ interop — exporting Carbon operator overloads into C++", "evidence": ["toolchain/check/cpp/export.cpp `ExportOperatorsToCpp` walks `context.impls()` only (the impl lookup's import of associated libraries' impls, check/impl_lookup.cpp:669-691, has no counterpart)", "operator.carbon splits money_lib + fail_todo_imported_class", "fork/opexport/plan.md M-11(d)"], "blocked_by": ["W-203"], "notes": "Needs the class's defining library's impls imported (filtered to the Core operator interfaces), and W-203's class export fixed first. When it lands, check that two files exporting the same impl's operator do not both define the external `<member>__carbon_thunk` symbol at link time (exported methods share that open question)."},
- {"id": "W-205", "title": "OX-1 residue: what C++ code sees depends on its earlier lookups: an operator impl declared after C++ code looked that operator up on the class or namespace, or a non-member operator whose operand class C++ had not named at that lookup, is not seen by later C++ code, and a template instantiated before an export keeps the operators it saw", "kind": "missing-feature", "subsystem": "toolchain/check/cpp (generate_ast)", "size": "S", "bullet": "Type system: C++ interop — exporting Carbon operator overloads into C++", "evidence": ["operator.carbon split fail_todo_impl_after_lookup (the second block's `m + 1` is `invalid operands`, the note names only the first impl)", "operator.carbon split fail_todo_non_member_before_operand (`m * 2` before C++ names `Euro`; then `2 * e` is `invalid operands`)", "operator.carbon split todo_carbon_side_memoized_trait (a trait that Carbon's overload resolution instantiated stays false after C++ could export the operator)", "clang/lib/AST/DeclBase.cpp:1952-1954 (a stored answer is returned without asking again)", "upstream e476a2bd3 (re-enables external lookup for identifiers after a failure; not yet on the fork)", "fork/opexport/plan.md M-11(c), M-33, M-36"], "blocked_by": [], "notes": "Only C++ code's lookups are cached: Carbon's own operator expressions export nothing and leave no answer (D-OX-21; the carbon_side_then_cpp split), but a template their overload resolution instantiates keeps what it saw, as one that C++ code instantiates does (Clang's memoization; a concept's satisfaction is cached the same way). A use before the impl (fail_impl_after_use) is C++'s own rule and not this item. The fix re-asks the source when the impls or the exported operand classes have grown since the cached answer; a memoized instantiation cannot be revisited, so whether to export a class's operators eagerly when C++ first names the class is the open design."},
  {"id": "W-206", "title": "OX-1 residue: `<=>` is not exported; the prelude's `OrderedWith` has no `Compare`", "kind": "missing-feature", "subsystem": "core/prelude + toolchain/check/cpp (export)", "size": "S", "bullet": "Type system: C++ interop — exporting Carbon operator overloads into C++", "evidence": ["core/prelude/operators/comparison.carbon:24 (`TODO: fn Compare`)", "docs/design/expressions/comparison_operators.md:345-380 (`fn Compare(self, u: U) -> Ordering`)"], "blocked_by": [], "notes": "When `Compare` lands, export it as `operator<=>` returning a C++ ordering type that `Ordering`'s four values map to (`std::partial_ordering`, given `Incomparable`), and revisit D-OX-6: `<=>` lets C++20 rewrite the relational operators."},
  {"id": "W-207", "title": "OX-1 residue: two operator impls whose operand types map to one C++ type are ambiguous at every C++ use (the W-118 shape)", "kind": "missing-feature", "subsystem": "toolchain/check/cpp (export)", "size": "S", "bullet": "Type system: C++ interop — exporting Carbon operator overloads into C++", "evidence": ["fork/opexport/plan.md M-11(e) (`AddWith(i64)` beside `AddWith(Cpp.long)`: Carbon rejects the pair as same-structure non-final impls; C++ reports `use of overloaded operator '+' is ambiguous`)"], "blocked_by": [], "notes": "Reachable only with `final` impls or types such as `Core.CppCompat.Long64` beside `i64` (W-118's notes). Each impl keeps its own thunk symbol, so no call has the wrong ABI."},
  {"id": "W-208", "title": "OX-1 residue (bounds the row): `As` and `ImplicitAs` impls are not exported as C++ conversions", "kind": "missing-feature", "subsystem": "toolchain/check/cpp (export, generate_ast)", "size": "M", "bullet": "Type system: C++ interop — exporting Carbon operator overloads into C++", "evidence": ["docs/design/README.md:3679-3681 (`ImplicitAs(U)` corresponds to implicit conversions in C++, in the operator-overloading interop section)", "proposals/p000845-as-expressions.md:184-187 (`As` exposes C++'s `explicit` constructors and conversion functions for interoperability)", "toolchain/check/cpp/operators.cpp:42-52 (the import direction's `As`/`ImplicitAs`: `TODO: Support destructors and conversions`)", "fork/opexport/plan.md D-OX-18"], "blocked_by": [], "notes": "The row is PARTIAL until this lands. Clang collects conversion functions from the class definition, so these need an eager export at `CompleteType`, explicit for `As`, implicit for `ImplicitAs`; and C++ may convert by constructor or by conversion function (an `impl X as ImplicitAs(C)` is a converting constructor of `C`), a design choice F-017 does not make. docs/project/milestones.md:200 (the prelude's 'operators, conversions') does not bear on the scope."},
@@ -5590,18 +6688,17 @@ review fold: B-2, A-4, A-6, B-4, B-3, A-3; W-202 and W-205 amended again
 ```
 
 W-007's notes gain (commit 6; the operators.cpp clause amended 2026-10-14,
-review fold: RR-1, RR-3): "OX-1 (<date>, fork/opexport/plan.md D-OX-16):
-landed additively by sequencing — new functions in export.cpp and export.h, a
-new `CXXOperatorName` arm in generate_ast.cpp, a `CppContext` member in
-check/cpp/context.h, `LookupOverloadedBinOp` and `BestViableFunction` inside one
-flag scope with a candidate-removal helper in operators.cpp's
-`FindClangOperator`, and ONE in-function hunk in a
-contention file, `BuildCppToCarbonThunkBody`'s `target.self_param &&
+review fold: RR-1, RR-3, and again, with VA-1's hunk, review fold: RR2-1): "OX-1
+(<date>, fork/opexport/plan.md D-OX-16): landed additively by sequencing — new
+functions in export.cpp and export.h, a new `CXXOperatorName` arm in
+generate_ast.cpp, a candidate-removal helper and a notes filter in
+operators.cpp's `FindClangOperator`, and ONE in-function hunk in a contention
+file, `BuildCppToCarbonThunkBody`'s `target.self_param &&
 isa<clang::CXXMethodDecl>(function_decl)` condition, behaviour-preserving for
 every earlier caller; thunk.cpp and type_mapping.cpp untouched; nothing moved or
-renamed; ST-1's disjoint export.cpp hunk, in PR 55, was the only other contender
-in flight. W-054's blocked_by edge is cleared. Remaining contender: SC-B3
-(W-029)."
+renamed; ST-1's disjoint export.cpp hunk, in PR 55, and VA-1's, in
+`ExportFunctionToCpp`, were the other contenders in flight. W-054's blocked_by
+edge is cleared. Remaining contender: SC-B3 (W-029)."
 
 **The decision log** (commit 6, fork/decision-log.md, newest first under
 "Decided"): an entry headed "### OX-1 / F-017: Carbon operator impls exported as
@@ -5611,12 +6708,12 @@ of record, the header delta, the conformance totals as expected); the context
 (the empty README section, the provisional overview and its `ImplicitAs`
 sentence, p006254's "Operator calls", V-3); the landed commits by hash (§3's
 commits 2 to 6, the plan's revisions, the review folds, the merge of trunk);
-WHAT LANDED by mechanism (the table, the two walks, the classification, the
-deleted declarations, the deleted operator templates, the default `!=`, Carbon's
-lookup and overload resolution exporting nothing, the candidate removal before
-and after resolution, the one in-function hunk); D-OX-1..D-OX-22 as a veto
-digest,
-one line each with its break condition; the residues W-202..W-211;
+WHAT LANDED by mechanism (the table, the two walks, the classification and its
+non-diagnosing class predicate, the deleted declarations, the deleted operator
+templates, the default `!=`, every operator lookup asked again, the candidate
+removal before and after resolution and the notes filter, the one in-function
+hunk); D-OX-1..D-OX-22 as a veto digest, one line each with its break
+condition; the residues W-202..W-204 and W-206..W-211 (W-205 unused);
 DEVIATIONS from this plan (each with its measurement); the verification record
 of §8 (what ran, on which commit, what did not); and the V-3a divergence-risk
 register entries (process.md standing rule 7, as the OV-3, ST-1 and OP-2
@@ -5624,11 +6721,11 @@ entries carry them, reviewed at each upstream merge): (1) the
 `CXXOperatorName` arm of `FindExternalVisibleDeclsByName` against upstream
 e476a2bd3's restructure (a `GetCarbonOwnedDecl` prologue, the re-export guard
 for a filled entry and the negative-lookup erasure): on merge, keep upstream's
-prologue and put the arm after it, drop OX-1's own erasure code if upstream's
-covers operator names, and drop the duplicate `DeclContextInternals.h`
-include; (2) `CppContext::in_carbon_operator_lookup()` and the suppression in
-`FindClangOperator`: if upstream gives the external source its own notion of
-which lookups come from Carbon, use it; (3) the candidate filter's use of
+prologue and put the arm after it, and drop the duplicate
+`DeclContextInternals.h` include; (2) the arm's marking of every operator
+entry as having external declarations, so that Clang asks again at every
+lookup (D-OX-12): if upstream gives the external source a way to extend or
+invalidate a stored answer, use it; (3) the candidate filter's use of
 `ovl_non_default_multiversion_function` as a silent non-viable marker: if
 Clang changes how that kind is noted, or upstream adds a way to exclude
 candidates, switch; (4) the `isa<clang::CXXMethodDecl>` conjunct in
@@ -5638,20 +6735,26 @@ candidates, switch; (4) the `isa<clang::CXXMethodDecl>` conjunct in
 and `FindClangOperator`'s second `BestViableFunction`, against Clang changes to
 the instantiation of a declaration built that way or to `OverloadCandidateSet`'s
 deferral and its `Best` flags: at each LLVM update, re-run M-31's and M-32's
-probes. The entry is the decision record F-017 (the register entries and the
-merge added 2026-10-14, review fold: B-12, B-5; the fifth entry and D-OX-22
-added 2026-10-14, review fold: RR-1, RR-3).
+probes; and (6) `CanExportClassWithoutDiagnostic`, which repeats the checks of
+`ExportClassToCpp`, `ExportNameScopeToCpp`, `ExportClassSpecificToCpp`,
+`ExportGenericBindings` and `CompleteType`: whenever upstream or the fork
+changes any of them, re-check it and re-run M-37's and M-39's probes. The
+entry is the decision record F-017 (the register entries and the merge added
+2026-10-14, review fold: B-12, B-5; the fifth entry and D-OX-22 added
+2026-10-14, review fold: RR-1, RR-3; the second and sixth entries amended
+2026-10-14, review fold: RR2-1).
 
 **fork/ORCHESTRATION.md** (commit 6, on the merge commit, whose trunk side
 carries the Branches row for `claude/carbon-fork-0-1-ox` that 44761146d added;
 f67ab650d has none): a dated stamp paragraph after the latest one — "OX-1
 (claude/carbon-fork-0-1-ox, head <hash>: Carbon operator impls exported as C++
-operator overloads, fork design F-017; W-054 discharged, W-202 to W-211 filed;
-expected <totals>; row PARTIAL, bounded by W-208) is OPEN and HELD, verified on
-the container-built toolchain at the merge commit" — and that Branches row
-changed from PLANNING to "HELD OPEN as PR <n> — OX-1 at <hash> (W-054
-discharged; W-202..W-211 filed; expected <totals>; row PARTIAL, W-208);
-merged trunk after DD-1 and PR 57" (amended 2026-10-14, review fold: B-5).
+operator overloads, fork design F-017; W-054 discharged, W-202 to W-204 and
+W-206 to W-211 filed; expected <totals>; row PARTIAL, bounded by W-208) is OPEN
+and HELD, verified on the container-built toolchain at the merge commit" — and
+that Branches row changed from PLANNING to "HELD OPEN as PR <n> — OX-1 at <hash>
+(W-054 discharged; W-202..W-204 and W-206..W-211 filed; expected <totals>; row
+PARTIAL, W-208); merged trunk after DD-1 and PR 57" (amended 2026-10-14, review
+fold: B-5; the residue list amended 2026-10-14, review fold: RR2-1).
 
 **fork/conformance/README.md** (commit 5): the generated program table, by
 `python3 fork/conformance/runner.py --update-readme-table` (the arbiter's row
@@ -5667,13 +6770,15 @@ new commit, never by amending or rebasing one (AGENTS.md: the history of a PR is
 never rewritten; amended 2026-10-14, review fold: B-12).
 
 1.  **This plan** (fork/opexport/plan.md), then its review folds: rev 2
-    (folding reviews A and B of rev 1, 3128eded5), rev 3 (this revision,
-    folding the focused re-review of rev 2, 7d71f02b3), and a rev 4 if the next
-    re-review asks for one (amended 2026-10-14, review fold: RR-1, RR-2).
-2.  **Toolchain**: toolchain/check/cpp/export.cpp, export.h, generate_ast.cpp,
-    operators.cpp and context.h, §2.1 to §2.4 applied with `git apply`. Alone it
-    keeps file_test green (M-8: 1942 of 1942 with `v5` and with `v6`), so it is
-    a commit of its own.
+    (folding reviews A and B of rev 1, 3128eded5), rev 3 (folding the focused
+    re-review of rev 2, 7d71f02b3), rev 4 (this revision, folding the second
+    focused re-review, of rev 3, fd324a642), and a rev 5 if the next re-review
+    asks for one (amended 2026-10-14, review fold: RR-1, RR-2, RR2-1).
+2.  **Toolchain**: toolchain/check/cpp/export.cpp, export.h, generate_ast.cpp
+    and operators.cpp, §2.1 to §2.4 applied with `git apply`. Alone it keeps
+    file_test green (M-8: 1942 of 1942 with `v5`, `v6` and `v7`), so it is a
+    commit of its own (context.h no longer changes; amended 2026-10-14, review
+    fold: RR2-1).
 3.  **Golden sources**: the four files of §2.5 with `// AUTOUPDATE` and no
     CHECK lines. file_test is red from here until commit 4, as R19 expects for
     unfilled goldens.
@@ -5688,7 +6793,8 @@ never rewritten; amended 2026-10-14, review fold: B-12).
     build (which commits 3 and 4 do not change), as expected, not of record.
     The row names no record that commit 6 writes.
 6.  **Discharge**, after everything in the next paragraph: the ledger (W-054,
-    W-202..W-211, W-007's notes), the decision-log entry, the ORCHESTRATION
+    W-202..W-204 and W-206..W-211, W-007's notes; amended 2026-10-14, review
+    fold: RR2-1), the decision-log entry, the ORCHESTRATION
     stamp and Branches row, the row's and header's re-quote and the README
     table from §8.8's run on the merge commit, and this plan's landed notes;
     preceded by the id re-scan of the head.
@@ -5740,15 +6846,17 @@ review fold: B-5). Each kind of conflict has a fixed rule:
 ## §4 Testdata matrix (R16: autoupdate fills; the fill must reproduce these lines)
 
 No existing golden is refilled (M-8). Predicted key lines, each taken from the
-`v6` fill in the scratch mirror (`$G/ev/fill-v6.snap3/`, M-12; rev 2's were
-from the `v5` fill, `$F/fill-v5f.snap3/`) with the split's own filename in
-place of the substitute's (amended 2026-10-14, review fold: A-1, A-2, A-3, A-4,
-A-5, A-7, A-9, B-1, B-2, B-3, B-6, B-10; the rev 3 rows and counts amended
-2026-10-14, review fold: RR-1 to RR-6):
+`v7` fill in the scratch mirror (`$L/fill-v7f.snap3/`, M-12; rev 3's were from
+the `v6` fill, `$G/ev/fill-v6.snap3/`, and rev 2's from the `v5` fill,
+`$F/fill-v5f.snap3/`) with the split's own filename in place of the
+substitute's (amended 2026-10-14, review fold: A-1, A-2, A-3, A-4, A-5, A-7,
+A-9, B-1, B-2, B-3, B-6, B-10; the rev 3 rows and counts amended 2026-10-14,
+review fold: RR-1 to RR-6; the rev 4 rows, counts and falsifiers amended
+2026-10-14, review fold: RR2-1, RR2-2, RR2-4):
 
 | File / split | Must | Key line(s) |
 | --- | --- | --- |
-| check operator.carbon: arithmetic, signature_from_impl_function, compound_assignment, comparison, move_only_not_equal, bitwise, index, non_member, non_member_nested, namespace, base_class, unmappable_impl, deleted_result_unselected, cpp_side_unrelated_impl, carbon_side_unmappable, carbon_side_unexportable_class, carbon_side_generic_class, carbon_side_unrelated_impl, carbon_side_candidates, carbon_side_user_cpp_operator, carbon_side_then_cpp, carbon_side_deferred_template, todo_carbon_side_memoized_trait, money_lib | compile | no output (no SemIR ranges; the `static_assert`s hold) but `carbon_side_candidates`'s two `warning: binding ... unused [UnusedBinding]` (in rev 2's fill too; a fixer correction) |
+| check operator.carbon: arithmetic, signature_from_impl_function, compound_assignment, comparison, move_only_not_equal, bitwise, index, non_member, non_member_nested, namespace, base_class, unmappable_impl, deleted_result_unselected, unexportable_operand_class, non_member_unexportable_operand, sfinae_detection, cpp_side_unrelated_impl, carbon_side_unmappable, carbon_side_unexportable_class, carbon_side_generic_class, carbon_side_unrelated_impl, carbon_side_candidates, carbon_side_user_cpp_operator, carbon_side_then_cpp, carbon_side_deferred_template, carbon_side_trait_sees_export, carbon_side_template_body_unexportable, carbon_side_constexpr_body_unexportable, carbon_side_call_unexportable, carbon_side_conversion_unexportable, non_member_before_operand, impl_after_lookup, money_lib | compile | no output at all (no SemIR ranges, no warning; the `static_assert`s hold) |
 | fail_conversion_carbon_side | fail | ``error: cannot access member of interface `Core.MulWith(i64)` in type `Money` that does not implement that interface [MissingImplInMemberAccess]`` |
 | fail_compound_assignment_rvalue | fail | `error: no viable overloaded '+=' [CppInteropParseError]`; note `candidate function not viable: expects an lvalue for object argument` |
 | fail_postfix_increment | fail | `error: cannot increment value of type 'Carbon::Money' [CppInteropParseError]` |
@@ -5760,59 +6868,64 @@ A-5, A-7, A-9, B-1, B-2, B-3, B-6, B-10; the rev 3 rows and counts amended
 | fail_generic_impl_conversion_non_member | fail | the same error and notes, for the non-member `operator*` |
 | fail_deleted_result | fail | `error: overload resolution selected deleted operator '+' [CppInteropParseError]`; notes `candidate function has been explicitly deleted` and `candidate function` |
 | fail_deleted_result_not_equal | fail | `error: overload resolution selected deleted operator '!=' [CppInteropParseError]`; notes `candidate function has been explicitly deleted` and `candidate function` |
-| fail_todo_unexportable_operand_class | fail | ``error: semantics TODO: `failed to map Carbon type to C++` [SemanticsTodo]`` at Holder's field `t` |
-| fail_todo_sfinae_detection | fail | the same TODO at Holder's field `t`, from the trait's detection alone |
+| fail_unexportable_operand_conversion | fail | `error: overload resolution selected deleted operator '+' [CppInteropParseError]`; notes `candidate function [with $0 = int] has been explicitly deleted`, at the `Holder` impl's `Op`, and `candidate function`, the `i64` impl's |
+| fail_unexportable_result_class | fail | `error: overload resolution selected deleted operator '+' [CppInteropParseError]`; note `candidate function has been explicitly deleted` |
 | fail_user_cpp_operator_ambiguous | fail | `error: use of overloaded operator '+' is ambiguous (with operand types 'Carbon::Money' and 'Carbon::Money') [CppInteropParseError]`; two `candidate function` notes |
 | fail_todo_non_carbon_operands | fail | `error: invalid operands to binary expression ('Foo' and 'int') [CppInteropParseError]` |
-| fail_todo_non_member_before_operand | fail | `error: invalid operands to binary expression ('int' and 'Carbon::Euro') [CppInteropParseError]` (the `Second` line only) |
 | fail_impl_after_use | fail | `error: invalid operands to binary expression ('Carbon::Money' and 'Carbon::Money')` |
-| fail_todo_impl_after_lookup | fail | `error: invalid operands ... ('Carbon::Money' and 'int')`; note `candidate function not viable: no known conversion from 'int' to 'Carbon::Money' for 1st argument` |
 | fail_todo_imported_class | fail | `error: invalid operands to binary expression ('Carbon::Money' and 'Carbon::Money')` |
-| check operator_ast.carbon: operator | compile | `CXXMethodDecl ... used operator+= 'void (int) &' inline internal-linkage`; `CXXMethodDecl ... used operator+ 'Carbon::Money (Carbon::Money) const'` calling `Op__carbon_thunk`; `CXXMethodDecl ... used operator!= 'bool (Carbon::Money) const'` whose body is `UnaryOperator ... prefix '!'` over the `.operator==` call with an `ImplicitCastExpr ... 'Carbon::Money' xvalue <NoOp>` argument; `CXXMethodDecl ... operator* 'void (int) const' inline delete external-linkage` beside `used operator* 'int (Carbon::Money) const'`; `FunctionTemplateDecl ... operator/` with `TemplateTypeParmDecl ... typename depth 0 index 0` and `CXXMethodDecl ... operator/ 'void (type-parameter-0-0) const' inline delete`, beside `used operator/ 'int (long) const'`; `FunctionDecl ... used operator- 'int (int, Carbon::Money)' inline internal-linkage` in `namespace Carbon` (220 CHECK lines) |
+| check operator_ast.carbon: operator | compile | `CXXMethodDecl ... used operator+= 'void (int) &' inline internal-linkage`; `CXXMethodDecl ... used operator+ 'Carbon::Money (Carbon::Money) const'` calling `Op__carbon_thunk`; `CXXMethodDecl ... used operator!= 'bool (Carbon::Money) const'` whose body is `UnaryOperator ... prefix '!'` over the `.operator==` call with an `ImplicitCastExpr ... 'Carbon::Money' xvalue <NoOp>` argument; `CXXMethodDecl ... operator* 'void (int) const' inline delete external-linkage` beside `used operator* 'int (Carbon::Money) const'`; `FunctionTemplateDecl ... operator/` with `TemplateTypeParmDecl ... typename depth 0 index 0` and `CXXMethodDecl ... operator/ 'void (type-parameter-0-0) const' inline delete`, beside `used operator/ 'int (long) const'`; `FunctionDecl ... used operator- 'int (int, Carbon::Money)' inline internal-linkage` in `namespace Carbon` (217 CHECK lines) |
 | check operator_cxx20.carbon: move_only_equality | compile | no output |
 | fail_reversed_equality | fail | `error: invalid operands to binary expression ('int' and 'Carbon::Money') [CppInteropParseError]` (the `Reversed` line) |
 | fail_reversed_equality_non_member | fail | `error: invalid operands to binary expression ('Carbon::Money' and 'int') [CppInteropParseError]`; note `candidate function not viable: no known conversion from 'Carbon::Money' to 'int' for 1st argument` |
-| fail_reversed_ordering | fail | `error: invalid operands to binary expression ('int' and 'Carbon::Money') [CppInteropParseError]` (15 CHECK lines in the file) |
+| fail_reversed_ordering | fail | `error: invalid operands to binary expression ('int' and 'Carbon::Money') [CppInteropParseError]` |
+| fail_todo_carbon_side_rewritten_candidate | fail | ``error: semantics TODO: `Rewriting operator== using operator== is not supported` [SemanticsTodo]`` at Carbon's `m == f` (19 CHECK lines in the file) |
 | lower operator.carbon: member | compile | `define void @"_COp__carbon_thunk.Money.Main:AddWith.7b773fb4f7cbc162.Core"`; `define internal i32 @_ZNK6Carbon5MoneyplES0_` calling it; `define internal void @_ZNR6Carbon5MoneypLEi` |
 | default_not_equal | compile | `define internal noundef zeroext i1 @_ZNK6Carbon5MoneyneES0_` calling `@_ZNK6Carbon5MoneyeqES0_` and negating its result |
 | non_member | compile | `define internal noundef i32 @_ZN6CarbonmiEiNS_5MoneyE` calling `@"_COp__carbon_thunk.Int.be1e879c1ad406d8.Core:SubWith.7b773fb4f7cbc162.Core"` |
 | carbon_side_cpp_operand | compile | `define i32 @_CCarbonSide.Main` whose one call is `call i32 @"_COp.Money.Main:AddWith.1ea11ae296c4d4df.Core"`; `@_CCppSide.Main` reaches `@_ZNK6Carbon5MoneyplE3Foo` |
 | carbon_side_default_not_equal | compile | `define i1 @_CCarbonSide.Main` calling `@_CNotEqual.EqWith.Core.8d8286e58955f8ab` (the interface's default for the impl), which calls `@"_CEqual.Foo.Cpp:EqWith.7b773fb4f7cbc162.Core"`; `@_CCppSide.Main` reaches `@_ZN6CarbonneE3FooNS_5MoneyE`, which calls `@_ZN6CarboneqE3FooNS_5MoneyE` |
-| carbon_side_template_candidate | compile | `define i32 @_CCarbonSide.Main` whose one call is `call i32 @"_COp.Money.Main:AddWith.1ea11ae296c4d4df.Core"`; no `_Zpl` symbol and no `carbon_thunk` in the module |
-| generic_impl | compile | `define i32 @_CCarbonSide.Main` calling the generic impl's specific `@"_COp.Money.Main:MulWith.dc0fcff0a74064b8.Core.cfa19092a257b072"`; `define i32 @_CCarbonSideCppOperand.Main` calling its specific `@"_COp.Money.Main:MulWith.dc0fcff0a74064b8.Core.c939ee6833dfffac"`; `define internal noundef i32 @_ZNK6Carbon5MoneymlEl` calling `@"_COp__carbon_thunk.Money.Main:MulWith.f249b435619a5146.Core"` (1215 CHECK lines in the file) |
+| carbon_side_template_candidate | compile | `define i32 @_CCarbonSide.Main` whose one call is of `@_ZplIN6Carbon5MoneyETnN8EnableIfIXsr7HasPlusIT_EE5valueEE4typeELi0EEiRKS3_RK3Foo.carbon_thunk.__`, the template's specialization; the module also defines the Carbon thunks of both exported `operator+` |
+| carbon_side_template_body | compile | `define i32 @_CCarbonSide.Main` calling `@_ZplIN6Carbon5MoneyEEiRKT_RK3Foo.carbon_thunk.__`; `@_ZplIN6Carbon5MoneyEEiRKT_RK3Foo` calls `@_ZNK6Carbon5MoneyplES0_`, which calls `@"_COp__carbon_thunk.Money.Main:AddWith.7b773fb4f7cbc162.Core"` |
+| carbon_side_call_template | compile | `define i32 @_CCarbonSide.Main` calling `@_Z4PickIN6Carbon5MoneyETnN8EnableIfIXsr7HasPlusIT_EE5valueEE4typeELi0EEiRKS3_i.carbon_thunk.__`, the `int` overload |
+| carbon_side_conversion_template | compile | `define i32 @_CCarbonSide.Main` calling `@_ZN3BarC1IN6Carbon5MoneyETnN8EnableIfIXsr7HasPlusIT_EE5valueEE4typeELi0EEERKS4_.carbon_thunk._`, the constructor that `HasPlus` enables (its sibling would mangle `EnableIfIXntsr7HasPlus`) |
+| generic_impl | compile | `define i32 @_CCarbonSide.Main` calling the generic impl's specific `@"_COp.Money.Main:MulWith.dc0fcff0a74064b8.Core.cfa19092a257b072"`; `define i32 @_CCarbonSideCppOperand.Main` calling its specific `@"_COp.Money.Main:MulWith.dc0fcff0a74064b8.Core.c939ee6833dfffac"`; `define internal noundef i32 @_ZNK6Carbon5MoneymlEl` calling `@"_COp__carbon_thunk.Money.Main:MulWith.f249b435619a5146.Core"` (1701 CHECK lines in the file) |
 
 The fingerprints in symbol names are the fill's; a reviewer checks the shapes,
 not the hex digits, which depend on the specific's fingerprint and are
 reproduced by any fill of the same sources. Falsifiers: any crash; a golden
 outside §2.5's four in the fill's diff; a `fail_` split that compiles or a
-non-`fail_` split with an error, or with a warning other than
-`carbon_side_candidates`'s two (amended 2026-10-14, a fixer correction); any key
+non-`fail_` split with any diagnostic, a warning included (rev 3 excepted
+`carbon_side_candidates`'s two warnings and missed eight; amended 2026-10-14, a
+fixer correction, and review fold: RR2-4); any key
 line above that the fill does not reproduce; a third autoupdate pass that
 changes anything (R26).
 
 ## §5 Conformance: one SKIP → PASS, six new; delta PASS +7, SKIP −1, programs +6
 
 From the floor of record 128 / 0 / 22 over 150, 48/56 bullets (trunk;
-re-measured in the container, M-13) to 135 / 0 / 21 over 156, 49/56 (M-13, `v5`
-and `v6`). Programs that move: interop/cpp_operator_export (SKIP → PASS). New,
-PASS: interop/cpp_operator_export_arithmetic, _compound, _compare, _bitwise,
-_index, _nonmember. No other program changes status (128 of 128 PASS stay PASS
-under `v4`; the full tree under `v5` and under `v6` has no failure). The bullet
-"Type system: C++ interop — exporting Carbon operator overloads into C++" goes
-from SKIP to PASS with 7 programs, while its row is PARTIAL (D-OX-14). At OX-1's
-land time the totals are measured, not computed: §8.8 runs the conformance suite
-on the merge commit, and commit 6 quotes that run (amended 2026-10-14, review
-fold: B-5).
+re-measured in the container, M-13) to 135 / 0 / 21 over 156, 49/56 (M-13, `v5`,
+`v6` and `v7`). Programs that move: interop/cpp_operator_export (SKIP → PASS).
+New, PASS: interop/cpp_operator_export_arithmetic, _compound, _compare,
+_bitwise, _index, _nonmember. No other program changes status (128 of 128 PASS
+stay PASS under `v4`; the full tree under `v5`, `v6` and `v7` has no failure).
+The bullet "Type system: C++ interop — exporting Carbon operator overloads into
+C++" goes from SKIP to PASS with 7 programs, while its row is PARTIAL (D-OX-14).
+At OX-1's land time the totals are measured, not computed: §8.8 runs the
+conformance suite on the merge commit, and commit 6 quotes that run (amended
+2026-10-14, review fold: B-5).
 
 ## §6 Churn and collision analysis
 
 ### §6.1 Churn
 
-toolchain: export.cpp +797/−1, export.h +29, generate_ast.cpp +41,
-operators.cpp +42/−5, context.h +11 (rev 2: +625/−1, +27, +41, +22/−3, +11).
-Goldens: four new files (1198, 68, 115 and 223 source lines; after the fill
-1354, 288, 130 and 1439 lines); no existing golden changes (the toolchain and
-golden counts amended 2026-10-14, review fold: RR-1 to RR-6). Programs: one
+toolchain: export.cpp +1119/−1, export.h +31, generate_ast.cpp +32,
+operators.cpp +44/−3, and no context.h change (rev 3: +797/−1, +29, +41,
++42/−5, +11; rev 2: +625/−1, +27, +41, +22/−3, +11). Goldens: four new files
+(1458, 68, 151 and 323 source lines; after the fill 1580, 284, 170 and 2025
+lines); no existing golden changes (the toolchain and golden counts amended
+2026-10-14, review fold: RR-1 to RR-6, and again, review fold: RR2-1, RR2-2,
+RR2-4). Programs: one
 modified, six new. Docs: one new page (≈300 lines), one 8-line amendment.
 Records: the row and header, the ledger (one item replaced, ten added, one note
 extended), the decision log, ORCHESTRATION, the conformance README table
@@ -5823,17 +6936,18 @@ extended), the decision log, ORCHESTRATION, the conformance README table
 | Branch (PR) | Head | Shared paths | Resolution |
 | --- | --- | --- | --- |
 | ST-1 (PR 55) | 21307851a | export.cpp (+5 at :293-300), interop README (+5 at :300), prelude and its full-prelude goldens, records | the diff applies at offset 5 (M-16); the README hunks are disjoint; OX-1's lower golden is refilled at the merge if the prelude change moves it (§3) |
-| SC-1 | 444ccbafe (re-measured at rev 3; still none of OX-1's files) | records only (no file under toolchain/check/cpp; its toolchain work is in check/, impl_lookup.cpp among it, which OX-1 does not edit) | applies cleanly (M-16) |
+| SC-1 | 62e25dcdd (re-measured at rev 4; still none of OX-1's files) | records only (no file under toolchain/check/cpp; its toolchain work is in check/, impl_lookup.cpp among it, which OX-1 does not edit) | applies cleanly (M-16) |
 | UA-2 (PR 51) | f96fe8a7a | records only | none |
 | CM-1 (PR 52), SAFE-1 (PR 53), EV-1 (PR 54) | ea573f672, adaae4e35, cb3ef2e74 | records only | none |
 | OP-1 (PR 56) | 379f20f67 | records only (prelude and other check files) | none |
 | OP-2 (PR 57) | 628273444 | records; core/prelude/types/optional.carbon and toolchain/lower/handle.cpp, which refill full-prelude lower goldens | the diff applies cleanly; OX-1's lower golden includes the full prelude, so it is refilled at the merge if needed (§3) |
 | DD-1 (PR 58) | fcee90d9b | docs/design/interoperability/README.md (+847: it fills "The operator interoperability model"), docs/design/README.md (a fork note at :3659 linking that section), records; its records mention W-202..W-211 only as OX-1's reservation | §6.2.1's three replacements at OX-1's merge of trunk after DD-1 |
-| VA-1 | be623188d (its rev 2 plan; re-measured at rev 3) | records only: its plan names no file under toolchain/check/cpp, and its toolchain edits (check/context.h, call.cpp, deduce.cpp, lower and parse files, among others) touch none of OX-1's five files nor W-007's three | the id blocks are disjoint; VA-1 merges after OX-1 or DD-1, whichever is later (ORCHESTRATION at 3eb7f36f0) |
+| VA-1 | 275967b1d (local, its C4 commit; `origin` ec0b1a7b0; re-measured at rev 4) | export.cpp: C4 adds a 12-line TODO for exporting a variadic function to `ExportFunctionToCpp` (export.cpp:1597), a W-007 contention-file hunk disjoint from OX-1's; records; its other toolchain edits (check/context.h, call.cpp, deduce.cpp, lower and parse files, among others) touch none of OX-1's four files | the diff applies at offset 12 (M-16); VA-1 merges after OX-1 or DD-1, whichever is later (ORCHESTRATION at 3eb7f36f0), and its merge of trunk takes OX-1's hunks unchanged; the id blocks are disjoint |
 
 (Heads, the PR 55 and PR 57 prelude paths and the VA-1 row amended 2026-10-14,
 review fold: A-10, B-5, B-8; SC-1's and VA-1's heads re-measured with `v6`'s
-diff, amended 2026-10-14, review fold: RR-1, RR-3, RR-5.)
+diff, amended 2026-10-14, review fold: RR-1, RR-3, RR-5, and with `v7`'s, VA-1's
+export.cpp hunk found, amended 2026-10-14, review fold: RR2-1.)
 
 #### §6.2.1 The merge-time edit of DD-1's text
 
@@ -5888,28 +7002,32 @@ Upstream has not started operator export (M-17). At the next advance,
 e476a2bd3's restructured `FindExternalVisibleDeclsByName` (a
 `GetCarbonOwnedDecl` prologue, a re-export guard for an entry already filled,
 and the erasure of an empty entry after a failed identifier lookup) takes OX-1's
-arm as one more case after the prologue; its erasure is the mechanism D-OX-21
-already uses for Carbon's own operator lookups, and applying it to an empty C++
-operator answer too would close W-205's first half. context.h's,
-generate_ast.cpp's and operators.cpp's hunks need their context refreshed, and
-the fork's `DeclContextInternals.h` include is dropped as upstream's duplicate
-(M-16; the decision log's V-3a entries, §2.8).
+arm as one more case after the prologue; its erasure lets a failed identifier
+lookup be asked again, as OX-1's marking of every operator entry lets every
+operator lookup be (D-OX-12). generate_ast.cpp's and operators.cpp's include
+hunks need their context refreshed, and the fork's `DeclContextInternals.h`
+include is dropped as upstream's duplicate (M-16; the decision log's V-3a
+entries, §2.8; rev 3 used the erasure for Carbon's own lookups and refreshed
+context.h too; amended 2026-10-14, review fold: RR2-1).
 
 ## §7 Risks and rejected alternatives (falsifiable)
 
 ### §7.1 Risks
 
--   **R-1 (Carbon-only code rejected).** Carbon's own operator expressions with
-    a C++ operand reach Clang's operator lookup in the exported class (M-9).
-    Rev 2 removes the cause instead of filtering its effects: that lookup
-    exports nothing (D-OX-21); rev 3 widens it to overload resolution, in which
-    Clang deduces deferred template candidates, after rev 2's version was
-    falsified by exactly this risk (M-31). Falsifier: any `carbon_side_*` split
-    (`carbon_side_deferred_template` and the lower
-    `carbon_side_template_candidate` among them), or any Carbon-only probe of
-    M-20, M-22, M-23, M-26 or M-31 that trunk accepts, rejected or lowered
-    differently on the implementation (rev 1's R-1 fired on review A's third
-    shapes; amended 2026-10-14, review fold: A-1, B-1, RR-1, RR-2).
+-   **R-1 (Carbon-only code rejected).** Carbon's own operator expressions,
+    calls and conversions with a C++ operand or callee reach Clang's lookups in
+    the exported class, directly or through the templates they instantiate
+    (M-9, M-37). Rev 4 removes the cause instead of narrowing when it may
+    fire: no export can emit a diagnostic (D-OX-9), and no answer is cached
+    (D-OX-12); rev 2's and rev 3's flag, which kept Carbon's operator lookup
+    from exporting, was falsified twice by exactly this risk (M-31, M-37) and
+    is gone. Falsifier: any `carbon_side_*` split, the four
+    `carbon_side_*_unexportable` splits among them, or any Carbon-only probe
+    of M-20, M-22, M-23, M-26, M-31 or M-37 rejected by an export's
+    diagnostic, or a Carbon operator expression lowered through an exported
+    operator. A Carbon-only program can still change in two ways the rule
+    states (R-11) (rev 1's R-1 fired on review A's third shapes; amended
+    2026-10-14, review fold: A-1, B-1, RR-1, RR-2, RR2-1, RR2-2).
 -   **R-2 (the condition hunk).** D-OX-16's claim that every earlier caller
     passes a method under `self_param`. Falsifier: any existing golden changing
     (M-8 says none), or a `cast` assertion in the gate.
@@ -5926,21 +7044,22 @@ the fork's `DeclContextInternals.h` include is dropped as upstream's duplicate
     it only answers for impls whose operand is a Carbon class with that
     namespace as its innermost enclosing namespace. Falsifier: a support-header
     use that changes behaviour; none exists in the goldens (M-8).
--   **R-5 (the lookup-cache contract).** D-OX-21 erases the empty entry that
-    `DeclContext::lookupImpl` creates before asking the source, relying on
-    lookupImpl not touching that entry afterwards (DeclBase.cpp:1952-1965) and
-    on Clang asking again for a missing entry — the contract upstream
-    e476a2bd3 relies on too; and on Clang deducing an operator candidate set's
-    deferred template candidates inside `BestViableFunction` (§0.1 row 15),
-    which rev 3 keeps inside the flag's scope, and re-resolves after when a
-    deleted template's specialization was viable: if Clang moved that deduction
-    elsewhere, into a later diagnostic pass for one, a nested lookup there could
-    export again. Falsifier: `carbon_side_then_cpp`,
-    `carbon_side_deferred_template`, `carbon_side_template_candidate` or
-    `generic_impl` failing, or a Clang update that changes lookupImpl,
+-   **R-5 (the lookup-cache contract).** D-OX-12 marks every operator entry
+    as having external declarations, relying on `DeclContext::lookupImpl`
+    asking the source again for such an entry (DeclBase.cpp:1951-1954) and on
+    `SetExternalVisibleDeclsForName` replacing the declarations it answered
+    before with the new list (`replaceExternalDecls`), which keeps C++ code's
+    own declarations of the name; and the second removal pass relies on Clang
+    deducing an operator candidate set's deferred template candidates inside
+    `BestViableFunction` (§0.1 row 15). Falsifier: `impl_after_lookup`,
+    `non_member_before_operand`, `carbon_side_then_cpp` or `generic_impl`
+    failing, M-39's `x1` or `x2` printing anything else, or a Clang update
+    that changes lookupImpl, the `StoredDeclsList` external-declarations bit,
     `shouldDeferTemplateArgumentDeduction` or `BestViableFunction` (re-checked
-    at each advance, §6.3). Rev 1's R-5 (unused thunks from Carbon's lookup) is
-    gone (M-10) (amended 2026-10-14, review fold: A-4, RR-1).
+    at each advance, §6.3). Rev 2's and rev 3's erasure of the entry during
+    Carbon's own lookup is gone with the flag, and rev 1's R-5 (unused thunks
+    from Carbon's lookup) is back as a stated consequence (R-11) (amended
+    2026-10-14, review fold: A-4, RR-1, RR2-1).
 -   **R-6 (fill drift).** All four goldens need two autoupdate passes (M-12). A
     third pass that changes anything is nondeterminism: stop and diagnose (R26).
 -   **R-7 (the row's status).** D-OX-14 records PARTIAL on the overview's
@@ -5951,19 +7070,24 @@ the fork's `DeclContextInternals.h` include is dropped as upstream's duplicate
 -   **R-8 (the non-viable marker).** The candidate filter reuses
     `ovl_non_default_multiversion_function`, whose notes Clang skips
     (SemaOverload.cpp `NoteFunctionCandidate`, "Do nothing, these should simply
-    be ignored"). Falsifier: a Clang note printed for an exported operator in a
-    Carbon-side diagnostic, or a Clang update that changes the kind's handling
-    (a V-3a register entry, §2.8).
--   **R-9 (class export diagnostics at a C++ use).** D-OX-9 (3) reports a class
-    C++ cannot export at every C++ use of an operator whose impls name it
-    (M-20 (e)), as OV-3 does for overload sets, and a C++ detection that ranks
-    such an operator is a use: the diagnostic is a hard error there, which a
-    detection idiom over an exported class's operators cannot avoid while one
-    sibling impl names a class C++ cannot export, as on trunk for a detection of
-    an exported function that names the class (M-35). Falsifier: a class that
-    C++ can export reporting a diagnostic there (that would be a type-export
-    defect to file under the type-export row) (amended 2026-10-14, review fold:
-    RR-6).
+    be ignored"), and the notes of a Carbon-side diagnostic also filter
+    exported operators out, the deferred specializations deduced for the
+    notes included (RR2-3). Falsifier: a Clang note printed for an exported
+    operator in a Carbon-side diagnostic, or a Clang update that changes the
+    kind's handling (a V-3a register entry, §2.8) (amended 2026-10-14, review
+    fold: RR2-3).
+-   **R-9 (the non-diagnosing predicate).** `CanExportTypeWithoutDiagnostic`
+    repeats from SemIR the checks of the class export and completion code
+    (D-OX-9 (3)); if that code gains a check the predicate lacks, an export
+    could diagnose again, and if the predicate rejects a class that exports
+    cleanly, a C++ use with that operand is rejected by the deleted template
+    where it could have worked. Falsifier: a diagnostic from an export (M-37's
+    and M-39's probes, the `*_unexportable*` splits), or a deleted-template
+    rejection for an operand whose class C++ can export (`x6_virtual_operand`
+    is the check for virtual functions); re-checked whenever the export code
+    changes (the sixth V-3a entry, §2.8). Rev 3's R-9 accepted the class's own
+    diagnostic at every C++ use, a detection included (amended 2026-10-14,
+    review fold: RR-6, RR2-1).
 -   **R-10 (the deleted template's construction).**
     `BuildDeletedOperatorTemplate` builds a function template outside the
     parser, and template argument deduction substitutes into its declaration:
@@ -5972,6 +7096,18 @@ the fork's `DeclContextInternals.h` include is dropped as upstream's duplicate
     or a deduction that fails where a written template's succeeds, in M-32's
     probes or the generic splits; re-checked at each LLVM update (the fifth V-3a
     entry, §2.8) (added 2026-10-14, review fold: RR-3).
+-   **R-11 (what the rule changes for Carbon-only programs).** A C++ template
+    sees the exported operators whoever instantiates it (D-OX-21), so a
+    Carbon-only program can change in two ways: a Carbon expression, call or
+    conversion can select and lower through a C++ function that an export
+    makes viable (t4, o3, a2, a3, b2, c2, e4; M-37, M-40), and under C++20 a
+    reversed candidate so enabled is rejected with the import direction's
+    TODO for rewritten candidates (e2, W-045); a module also defines the
+    Carbon thunks of the operators that Carbon's lookups exported (M-40).
+    Each is pinned (§4) and documented on the page. Falsifier: the leads
+    require such a program to lower as on trunk; then rev 3's guarantee needs
+    a mechanism that classifies Clang's instantiations by origin (§7 A-18)
+    (added 2026-10-14, review fold: RR2-1, RR2-2).
 
 ### §7.2 Rejected alternatives
 
@@ -6004,7 +7140,11 @@ the fork's `DeclContextInternals.h` include is dropped as upstream's duplicate
     rev 2** as D-OX-21, because the silent omission and the guard that rev 1
     preferred were each falsified (M-20, M-22, M-23, M-26) (amended 2026-10-14,
     review fold: A-1, A-4); its scope covers overload resolution from rev 3
-    (M-31; amended 2026-10-14, review fold: RR-1).
+    (M-31; amended 2026-10-14, review fold: RR-1). **Rejected again at rev 4**:
+    a dynamic scope around one call site cannot cover the instantiations Clang
+    performs for a Carbon expression after it, and inside it made a trait's
+    value depend on who asked first (M-33, M-37, D-OX-21; amended 2026-10-14,
+    review fold: RR2-1).
 -   **§7 A-9: export conversions (`As`, `ImplicitAs`) now.** Rejected for 0.1
     (D-OX-18): a design of its own; the row stays PARTIAL for it (W-208).
 -   **§7 A-10: a differential `.diff.cpp` oracle per program.** Rejected: the
@@ -6026,7 +7166,12 @@ the fork's `DeclContextInternals.h` include is dropped as upstream's duplicate
     form lets C++ pick another impl by a derived-to-base or other conversion,
     B-2's hazard. The class's own diagnostic is what an exported method or
     overload set reports for the same class (M-20, D-OV-18) (amended
-    2026-10-14, review fold: A-1).
+    2026-10-14, review fold: A-1). **Adopted at rev 4 in a conservative form**
+    (D-OX-9 (3)): nothing it rejects is omitted, an operand it rejects being
+    stood for by the deleted operator template, which an operand of any other
+    type selects rather than convert for another impl, so its inexactness can
+    only reject a C++ use, never redirect one (amended 2026-10-14, review fold:
+    RR2-1).
 -   **§7 A-13: `const&` operands for exported operators.** Rejected for 0.1: it
     would remove M-25's by-value divergence and D-OX-5's xvalue, but it departs
     from the exported-method mapping D-OX-2 keeps (export.cpp `PassAsConstRef`
@@ -6063,6 +7208,18 @@ the fork's `DeclContextInternals.h` include is dropped as upstream's duplicate
     (M-33); the second pass runs only when a deleted template's specialization
     was viable, and resolves the candidates Clang itself formed (added
     2026-10-14, review fold: RR-3).
+-   **§7 A-18: keep rev 3's flag beside the non-diagnosing exports (rev 3's
+    resolution of RR-2, which made t4 and o3 print trunk's `7` and `1`).**
+    Rejected at rev 4: the flag hides the exports from the deductions of
+    Carbon's own operator lookup only, so the same C++ question,
+    `HasPlus<Money>`, gets one answer in a template's signature and another in
+    its body (t4 against a1), and a trait keeps whichever answer came first
+    (t1 against t3, M-33); one `PerformPendingInstantiations` loop
+    instantiates a1's Carbon-selected `operator+<Money>` and cx1's C++
+    `Sum<Money>`, which no scope can tell apart (D-OX-21). If the leads
+    require Carbon-only programs to lower exactly as on trunk, the mechanism
+    must classify each instantiation by origin, which Clang does not record
+    (added 2026-10-14, review fold: RR2-1, RR2-2).
 
 ## §8 Verification and discharge
 
@@ -6092,15 +7249,21 @@ B-12).
 5.  The mutants of M-14, rebuilt from the implemented export.cpp with the
     planner's relink recipe (`$F/bin/relink.py <dir>
     obj/toolchain/check/cpp/export.cpp.o=<mutant source>` plus the build's own
-    generate_ast and operators objects, `TARGETS=bin/carbon-busybox`) or by a
-    second full build, each run with `--filter cpp_operator_export`: each must
-    fail the programs M-14 names (rev 3 rebuilt them from `v6`, M-14).
+    generate_ast and operators objects, `TARGETS=bin/carbon-busybox`; a
+    relink of a change to check/cpp/context.h also recompiles
+    obj/toolchain/check/cpp/context.cpp.o, which defines `CppContext`'s
+    constructor) or by a second full build, each run with `--filter
+    cpp_operator_export`: each must fail the programs M-14 names (rev 3
+    rebuilt them from `v6` and rev 4 from `v7`, M-14; the context.cpp clause
+    amended 2026-10-14, review fold: RR2-5).
 6.  The probes of M-9, M-10 and M-20 to M-30 (`$F/probes/list3.txt`, with
     `$F/bin/probe.sh <install> <cache> <out> $(cat $F/probes/list3.txt)`), and
     those of M-31 to M-36 (`$G/probes/RR`, `G`, `S` and `W`, with
-    `$G/bin/probe.sh`): each prints what §0.2 says, `$G/runs-fx-v6.log` and
-    `$G/runs-rr-v6.log` being rev 3's results (amended 2026-10-14, review fold:
-    RR-1 to RR-6).
+    `$G/bin/probe.sh`), and those of M-37 to M-39 (`$K/lists/single.txt`,
+    `atk.txt` and `x.txt` with `$K/bin/probe2.sh <install> <cache> <out>
+    <list>`, and `$K/bin/multi.sh <install> <cache> <out>`): each prints what
+    §0.2 says, `$K/runs-*-v7.log` being rev 4's results (amended 2026-10-14,
+    review fold: RR-1 to RR-6, RR2-1, RR2-2).
 7.  prek: before each commit, to a fixpoint (a run that changes nothing), with
     R31's heading and list-item counts before and after for every `.md`:
 
@@ -6123,8 +7286,9 @@ question (W-204's note) cannot be exercised until W-203 is fixed.
 ## Hand-off notes for the implementer
 
 -   §2.1 to §2.4 is a measured diff: apply it (`git apply`) rather than
-    retyping, check the five sha256 sums §2.1 lists, and keep it identical
-    unless a review finding changes it.
+    retyping, check the four sha256 sums §2.1 lists, and keep it identical
+    unless a review finding changes it (amended 2026-10-14, review fold:
+    RR2-1).
 -   The previews used substituted file names; the real files' `[[@TEST_NAME]]`
     and TIP lines differ, which is why the fill must run on the real paths.
 -   `$F/probes/list3.txt` (69 programs) with `$F/bin/probe.sh` is the quickest
@@ -6134,11 +7298,20 @@ question (W-204's note) cannot be exercised until W-203 is fixed.
     (`$G/probes/RR`, `G`, `S`, `W`; `$G/runs-rr-trunk.log`, `$G/runs-rr-v6.log`
     and M-31 to M-36) cover the deferred deduction, the deleted templates, the
     deleted `!=`, detections and the namespace order (amended 2026-10-14, review
-    fold: RR-1 to RR-6).
+    fold: RR-1 to RR-6); rev 4's lists, `$K/lists/single.txt` (105 programs),
+    `atk.txt` (25) and `x.txt` (10), with `$K/runs-*-{trunk,v6,v7}.log`, are
+    the regression set for D-OX-9's predicate, D-OX-12's re-asking and the
+    rule of D-OX-21 (amended 2026-10-14, review fold: RR2-1, RR2-2).
 -   Clang's deferral of template deduction into `BestViableFunction` (§0.1
-    row 15) is part of D-OX-21's contract, and the deleted templates are
-    built outside the parser (R-10): at any LLVM update, re-run M-31's and
-    M-32's probes (added 2026-10-14, review fold: RR-1, RR-3).
+    row 15) is part of the second removal pass's contract, the deleted
+    templates are built outside the parser (R-10), and D-OX-12 relies on the
+    external-declarations bit (R-5): at any LLVM update, re-run M-31's, M-32's
+    and M-39's probes (added 2026-10-14, review fold: RR-1, RR-3; amended
+    2026-10-14, review fold: RR2-1).
+-   `CanExportClassWithoutDiagnostic` mirrors the class export code; a change
+    to `ExportClassToCpp`, `ExportNameScopeToCpp`, the specific export or
+    `CompleteType` must be mirrored there (R-9; added 2026-10-14, review fold:
+    RR2-1).
 -   The re-reviewer's Carbon-only `ne_deleted_eq_carbon_only.carbon` aborts in
     lowering on trunk too (M-34): a pre-existing defect, not OX-1's, unfiled
     because OX-1 has no id left; report it to the orchestrator, who may assign a
@@ -6146,8 +7319,9 @@ question (W-204's note) cannot be exercised until W-203 is fixed.
 -   Watch R31 in every markdown edit: §1.8 and §2.8 hold arithmetic and code
     spans that a reflow could push to a line start, and the page's two
     table-of-contents markers (§2.7) must be written on the page only.
--   All ten reserved ids are used; a new residue needs a new block from the
-    orchestrator (the head).
+-   Nine of the ten reserved ids are used; W-205 stays reserved and unused,
+    and is never reused; a new residue needs a new block from the orchestrator
+    (the head; amended 2026-10-14, review fold: RR2-1).
 -   If DD-1 has merged when OX-1 merges trunk, apply §6.2.1's three
     replacements in the merge and drop the amendment block of §2.7.
 
@@ -6258,3 +7432,47 @@ head moved to 444ccbafe and VA-1's to be623188d, at which the diff and the id
 scan were re-run (M-16, M-18); and because the root file system had under 60 MB
 free, the rev 3 binaries, mirrors and caches were kept on a tmpfs (`$H`) and
 only compact evidence under `$G`.
+
+### Second focused re-review (rev 4, 2026-10-14)
+
+The second focused re-review, of rev 3 (fd324a642), returned **REJECT** with 2
+BLOCKER and 3 MINOR findings. It applied rev 3's embedded diff (its five
+sha256 sums and its +920/−6 matched §2.1), relinked `v6` with context.cpp
+recompiled, reproduced every earlier probe and the fill byte for byte, and
+found rev 3's fold of RR-1 not resolved, RR-2 resolved only in its narrow
+form, and the same hazard through Carbon's calls and conversions; it edited
+no repository file. This plan cites its findings as RR2-1 (its RR-1-NR), RR2-2
+(its NEW-B1) and RR2-3 to RR2-5 (its m-1 to m-3). All five are folded and none
+is rejected. The rev 4 fixer re-opened every cited location
+(SemaOverload.cpp :8384-8403, :11641-11661, :13440-13475 and :13603-13623;
+SemaExpr.cpp :19352-19355; Sema.cpp :1287; DeclBase.cpp :1921-1965 and
+:1651-1680; DeclContextInternals.h's `StoredDeclsList`; overload_resolution.cpp
+:312; operators.cpp's v6 lines :352, :405, :905, :937, :966 and :980;
+generate_ast.cpp :1133; context.cpp :13-15) and re-ran each measurement in its
+own trees, `$K` and `$L` (head), on the trunk install, the second
+re-reviewer's `v6` and the rev 4 prototype `v7`; each reproduction is the §0.2
+entry the table names. Rev 4 changes §2.1 to §2.4 (`v7`), §2.5 (four splits
+renamed and one inverted, eleven added, the comments and unused bindings
+rewritten) and no program, so M-8 to M-14, M-16, M-18 to M-20, M-22, M-23,
+M-26 and M-30 to M-36 were re-run and M-37 to M-40 added. The verdict was
+REJECT, so rev 4 is not signed off (the head's Status): whether RR2-1's and
+RR2-2's fold resolves them is the next re-review's to confirm.
+
+| Finding | Grade | Disposition | Where folded |
+| --- | --- | --- | --- |
+| RR2-1 (its RR-1-NR, re-opening RR-1): a Carbon-only operator expression still exports, after the flag's scope and in the instantiation it schedules, and is rejected at an unrelated `Holder` or lowers through an export | BLOCKER | Reproduced (M-37: on `v6`, a1 and a4 fail with `Holder`'s TODO where trunk prints `1`, and a2, a3 and a6 print `102`, `10` and `102`; the cited `MarkFunctionReferenced`, fragment-end `PerformPendingInstantiations` and `NoteCandidates` paths re-read). Folded by the route proposed, and one step further: no export can emit a diagnostic, because `ClassifyOperatorExport` checks every class a signature names with a SemIR predicate before anything is mapped, an operand that fails being stood for by the deleted operator template and a result that fails making the operator deleted (D-OX-9 (3), D-OX-22; fix 1); `RemoveExportedCarbonOperators` keeps both passes (fix 2); the Outcome, D-OX-11, D-OX-21, R-1, §1.7, the page's section, the row and W-054 state what holds, a Carbon operator expression never selecting an export and a C++ template seeing the exports whoever instantiates it, and a2, a3, b2 and c2 are documented (fix 3); a1, a3 (lower), a4, b1 and c1 are pinned (fix 4); every probe of every round re-run on `v7` (fix 5, M-37 to M-40). Further than proposed, with evidence (R17): the flag is removed rather than kept beside the new rule, because with it a template's answer depended on whether it was asked in a signature or a body and by which side first (t4 against a1, t1 against t3; §7 A-18), and the lookup cache it protected is replaced by asking again at every lookup (D-OX-12), so `carbon_side_then_cpp` holds without it and W-205 is left with nothing to cover. Consequences stated, not hidden: t4 and o3 select the C++ template again, as on `v5` (M-31), e4 prints `102`, a C++20 reversed candidate is rejected with W-045's TODO (e2, `fail_todo_carbon_side_rewritten_candidate`), and unused Carbon thunks are defined (M-40); R-11 | Head (Status, Outcome, ids, design authority, V-3); §0.1 row 14; §0.2 setup, M-9 to M-14, M-17, M-19, M-20, M-23, M-26, M-31 to M-33, M-35 to M-40; §0.3; D-OX-4, D-OX-9, D-OX-11, D-OX-12, D-OX-14, D-OX-16, D-OX-20, D-OX-21, D-OX-22; §1.1; §1.2; §1.5; §1.6; §1.7; §1.10; §2.1; §2.5; §2.7 page; §2.8 (row, W-054, W-202, W-205, W-007, decision log, ORCHESTRATION); §3; §4; §6.1; §6.3; §7 R-1, R-5, R-9, R-11, A-8, A-12, A-18; §8; hand-off |
+| RR2-2 (its NEW-B1): the same hazard through Carbon's call and conversion resolution, which Clang also defers | BLOCKER | Reproduced (M-37: on `v6`, b1, c1 and c3 fail with `Holder`'s TODO where trunk prints `1`, and b2, c2 and c4 print `100`; SemaOverload.cpp:13603-13623 re-read: every kind but `CSK_InitByUserDefinedConversion` and `CSK_CodeCompletion` defers). Folded as proposed, by construction rather than by more scopes: the non-diagnosing exports cover overload_resolution.cpp and `LookupCppConversion` because nothing an export declares can diagnose, whatever lookup builds it (b1, c1 and c3 print `100` on `v7`); §0.1 row 15 corrected; one rule for every template instantiated against a Carbon class, whoever triggers it (D-OX-21); b1 and c1 (with c3) pinned by `carbon_side_call_unexportable` and `carbon_side_conversion_unexportable`, b2 and c2 by the lower `carbon_side_call_template` and `carbon_side_conversion_template` | Head (Outcome); §0.1 row 15; §0.2 M-9, M-12, M-37, M-38; D-OX-11, D-OX-21; §1.7; §2.5; §2.7 page; §4; §7 R-1, R-11, A-18 |
+| RR2-3 (its m-1): `FindClangOperator`'s diagnostic arms deduce deferred templates after the scope, export, gain an extra `Holder` TODO and note a template viable only through the export | MINOR | Reproduced (M-37: e6b on `v6` reports `Holder`'s TODO before the deleted-function error, and notes the template as a candidate). Folded by the root cause, as the finding proposes: with no export able to diagnose, e6b's extra TODO is gone on `v7`; and both `NoteCandidates` calls take a filter that leaves exported operators out of the notes, the deferred specializations that `CompleteCandidates` deduces for them included. The template noted as viable is the rule of D-OX-21, not a leak (its notes are trunk's otherwise) | §0.2 M-10, M-37; D-OX-11, D-OX-16; §2.1; §7 R-8 |
+| RR2-4 (its m-2): §4's falsifier fires on the plan's own fill: two positive splits and three `fail_` splits carry unused-binding warnings, and M-12 repeats rev 2's oversight | MINOR | Reproduced (the `v6` fill, `/dev/shm/ox1-rr2/fill-v6.snap3`, has ten `UnusedBinding` warnings: the AST golden's `operator`, the lower `generic_impl`, `fail_generic_impl_conversion`, `fail_generic_impl_conversion_non_member`, `fail_deleted_result_not_equal`'s four and `carbon_side_candidates`'s two). Folded by the first route the finding offers: every unused binding is named `_` or marked `unused`, the fill was redone by autoupdate (M-12: no warning in any split, and pass 2 no longer changes the lower golden), and §4's falsifier now admits no diagnostic in a positive split | §0.2 M-12; §0.3; §2.5; §4 |
+| RR2-5 (its m-3): the setup's claim that `CppContext` is constructed only in generate_ast.cpp is false, and the measured `v6` never ran the `= false` initializer | MINOR | Reproduced (the constructor is check/cpp/context.cpp:13-15; rev 3's relink log names export, operators and generate_ast only). Folded as proposed: the sentence corrected, and §8.5's relink recipe recompiles context.cpp.o whenever context.h changes; `v7` removes the context.h member, so its relink needs neither | §0.2 setup; §0.3; §2.1; §8.5 |
+
+Corrections the rev 4 fixer made that no review raised, found while
+re-measuring: VA-1's local head 275967b1d (its C4 commit) adds a 12-line hunk
+to export.cpp's `ExportFunctionToCpp`, a second contender in that W-007 file,
+which §6.2, M-16 and W-007's notes now record (the diff applies at offset 12);
+SC-1's heads moved to 62e25dcdd; rev 2's and rev 3's M-12 did not list
+`fail_user_cpp_operator_ambiguous` among the `fail_` splits that compile on
+trunk (it pins an ambiguity only the export creates); and under the swapped
+table of M-14's M3, `v7`'s nonmember program fails to compile rather than
+print a wrong value, because the default `!=` built during a `<` lookup is not
+found again under its own name (M-14).

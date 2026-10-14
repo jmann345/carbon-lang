@@ -2429,29 +2429,17 @@ fn F() {
 // CHECK:STDOUT:   %A.type: type = generic_class_type @A [concrete]
 // CHECK:STDOUT:   %A.generic: %A.type = struct_value () [concrete]
 // CHECK:STDOUT:   %A.47a: type = class_type @A, @A(%T) [template]
-// CHECK:STDOUT:   %.972: type = type_of_inst @A.MakeA.%.loc12_20.1 [template]
-// CHECK:STDOUT:   %.a5e: %.972 = splice_inst @A.MakeA.%.loc12_20.1 [template]
-// CHECK:STDOUT:   %.5372ba.1: type = splice_inst @A.MakeA.%.loc12_20.4 [template]
-// CHECK:STDOUT:   %.cd79f1.1: Core.Form = init_form %.5372ba.1 [template]
-// CHECK:STDOUT:   %pattern_type.fcb8f3.1: type = pattern_type %.5372ba.1 [template]
-// CHECK:STDOUT:   %return.param_patt.2e9ac5.1: %pattern_type.fcb8f3.1 = out_param_pattern [template]
-// CHECK:STDOUT:   %return.patt.7fc6a1.1: %pattern_type.fcb8f3.1 = return_slot_pattern %return.param_patt.2e9ac5.1, %.5372ba.1 [template]
-// CHECK:STDOUT:   %.293: <instruction> = call_action (%A.generic, %T), false [template]
-// CHECK:STDOUT:   %.3aa: type = type_of_inst %.293 [template]
-// CHECK:STDOUT:   %.f2d: %.3aa = splice_inst %.293 [template]
-// CHECK:STDOUT:   %.c8c: <instruction> = convert_to_value_action %.f2d, type [template]
-// CHECK:STDOUT:   %.5372ba.2: type = splice_inst %.c8c [template]
-// CHECK:STDOUT:   %.cd79f1.2: Core.Form = init_form %.5372ba.2 [template]
-// CHECK:STDOUT:   %pattern_type.fcb8f3.2: type = pattern_type %.5372ba.2 [template]
-// CHECK:STDOUT:   %return.param_patt.2e9ac5.2: %pattern_type.fcb8f3.2 = out_param_pattern [template]
-// CHECK:STDOUT:   %return.patt.7fc6a1.2: %pattern_type.fcb8f3.2 = return_slot_pattern %return.param_patt.2e9ac5.2, %.5372ba.2 [template]
+// CHECK:STDOUT:   %.31b: Core.Form = init_form %A.47a [template]
+// CHECK:STDOUT:   %pattern_type.44a: type = pattern_type %A.47a [template]
+// CHECK:STDOUT:   %return.param_patt.e92: %pattern_type.44a = out_param_pattern [template]
+// CHECK:STDOUT:   %return.patt.ca0: %pattern_type.44a = return_slot_pattern %return.param_patt.e92, %A.47a [template]
 // CHECK:STDOUT:   %A.MakeA.type.45c: type = fn_type @A.MakeA, @A(%T) [template]
 // CHECK:STDOUT:   %A.MakeA.ec3: %A.MakeA.type.45c = struct_value () [template]
 // CHECK:STDOUT:   %require_complete.944: <witness> = require_complete_type %T [template]
 // CHECK:STDOUT:   %A.elem.d41: type = unbound_element_type %A.47a, %T [template]
 // CHECK:STDOUT:   %struct_type.field.686: type = struct_type {.field: %T} [template]
 // CHECK:STDOUT:   %complete_type.725: <witness> = complete_type_witness %struct_type.field.686 [template]
-// CHECK:STDOUT:   %require_complete.cb0: <witness> = require_complete_type %.5372ba.1 [template]
+// CHECK:STDOUT:   %require_complete.c7a: <witness> = require_complete_type %A.47a [template]
 // CHECK:STDOUT:   %.a08: type = type_of_inst @A.MakeA.%.loc13_23.3 [template]
 // CHECK:STDOUT:   %.5c2: %.a08 = splice_inst @A.MakeA.%.loc13_23.3 [template]
 // CHECK:STDOUT:   %.308: type = type_of_inst @A.MakeA.%.loc13_30.3 [template]
@@ -2459,23 +2447,23 @@ fn F() {
 // CHECK:STDOUT:   %struct_type.field.8e0: type = struct_type {.field: %.308} [template]
 // CHECK:STDOUT:   %struct: %struct_type.field.8e0 = struct_value (%.151) [template]
 // CHECK:STDOUT:   %tuple.type: type = tuple_type (<instruction>) [concrete]
-// CHECK:STDOUT:   %.5d6: %.5372ba.1 = splice_inst @A.MakeA.%tuple.elem0 [template]
-// CHECK:STDOUT:   %A.d32110.1: type = class_type @A, @A(%B) [concrete]
+// CHECK:STDOUT:   %inst.splice_block.426619.1: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %.3cd: ref <instruction> = splice_block %.473 {
+// CHECK:STDOUT:       %.473: ref @A.MakeA.%T (%T) = class_element_access @A.MakeA.%return.param, element0
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %.b66: %T = splice_inst @A.MakeA.%tuple.elem0 [template]
+// CHECK:STDOUT:   %A.val: %A.47a = struct_value (%.b66) [template]
+// CHECK:STDOUT:   %A.d32: type = class_type @A, @A(%B) [concrete]
 // CHECK:STDOUT:   %A.MakeA.type.315: type = fn_type @A.MakeA, @A(%B) [concrete]
 // CHECK:STDOUT:   %A.MakeA.05c: %A.MakeA.type.315 = struct_value () [concrete]
-// CHECK:STDOUT:   %A.elem.483: type = unbound_element_type %A.d32110.1, %B [concrete]
+// CHECK:STDOUT:   %A.elem.483: type = unbound_element_type %A.d32, %B [concrete]
 // CHECK:STDOUT:   %struct_type.field.8fb: type = struct_type {.field: %B} [concrete]
 // CHECK:STDOUT:   %complete_type.08c: <witness> = complete_type_witness %struct_type.field.8fb [concrete]
-// CHECK:STDOUT:   %inst.class_type: <instruction> = inst_value [concrete] {
-// CHECK:STDOUT:     %A.d32110.2: type = class_type @A, @A(%B) [concrete = %A.d32110.1]
-// CHECK:STDOUT:   }
-// CHECK:STDOUT:   %inst.splice_block.426619.1: <instruction> = inst_value [concrete] {
-// CHECK:STDOUT:     %.b5f: type = splice_block %A.d32110.1 [concrete = %A.d32110.1] {}
-// CHECK:STDOUT:   }
-// CHECK:STDOUT:   %.22c: Core.Form = init_form %A.d32110.1 [concrete]
-// CHECK:STDOUT:   %pattern_type.b3e: type = pattern_type %A.d32110.1 [concrete]
+// CHECK:STDOUT:   %.22c: Core.Form = init_form %A.d32 [concrete]
+// CHECK:STDOUT:   %pattern_type.b3e: type = pattern_type %A.d32 [concrete]
 // CHECK:STDOUT:   %return.param_patt.368: %pattern_type.b3e = out_param_pattern [concrete]
-// CHECK:STDOUT:   %return.patt.806: %pattern_type.b3e = return_slot_pattern %return.param_patt.368, %A.d32110.1 [concrete]
+// CHECK:STDOUT:   %return.patt.806: %pattern_type.b3e = return_slot_pattern %return.param_patt.368, %A.d32 [concrete]
 // CHECK:STDOUT:   %A.MakeA.specific_fn: <specific function> = specific_function %A.MakeA.05c, @A.MakeA(%B) [concrete]
 // CHECK:STDOUT:   %pattern_type.a96: type = pattern_type %empty_struct_type [concrete]
 // CHECK:STDOUT:   %self.param_patt.52f: %pattern_type.a96 = ref_param_pattern [concrete]
@@ -2511,20 +2499,16 @@ fn F() {
 // CHECK:STDOUT:     %MakeB.ref: %B.MakeB.type = name_ref MakeB, @B.%B.MakeB.decl [concrete = %B.MakeB]
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %inst.splice_block.426619.2: <instruction> = inst_value [concrete] {
-// CHECK:STDOUT:     %.4f4: init %B = splice_block %B.MakeB.call {
-// CHECK:STDOUT:       %.cbc: ref %B = splice_block %.927 {
-// CHECK:STDOUT:         %.a33: ref %A.d32110.1 = specific_inst @A.MakeA.%return.param, @A.MakeA(%B)
-// CHECK:STDOUT:         %.927: ref %B = class_element_access %.a33, element0
+// CHECK:STDOUT:     %.b1a: init %B = splice_block %B.MakeB.call {
+// CHECK:STDOUT:       %.88e: ref %B = splice_block %.55a {
+// CHECK:STDOUT:         %.473: ref @A.MakeA.%T (%T) = class_element_access @A.MakeA.%return.param, element0
+// CHECK:STDOUT:         %.55a: ref %B = specific_inst %.473, @A.MakeA(%B)
 // CHECK:STDOUT:       }
-// CHECK:STDOUT:       %B.MakeB.call: init %B to %.cbc = call %B.MakeB()
+// CHECK:STDOUT:       %B.MakeB.call: init %B to %.88e = call %B.MakeB()
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %inst.splice_block.426619.3: <instruction> = inst_value [concrete] {
-// CHECK:STDOUT:     %.f90: init %A.d32110.1 = splice_block %.7ff {
-// CHECK:STDOUT:       %.afa: %struct_type.field.8fb = specific_inst @A.MakeA.%.loc13_31, @A.MakeA(%B)
-// CHECK:STDOUT:       %.00c: init %B = specific_inst @A.MakeA.%.loc13_30.2, @A.MakeA(%B)
-// CHECK:STDOUT:       %.7ff: init %A.d32110.1 to %.a33 = class_init (%.00c)
-// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %.da8: init %B = splice_block %.b1a {}
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %tuple: %tuple.type = tuple_value (%inst.splice_block.426619.3) [concrete]
 // CHECK:STDOUT: }
@@ -2576,15 +2560,15 @@ fn F() {
 // CHECK:STDOUT:     %self.param_patt: %pattern_type.b3e = ref_param_pattern [concrete = constants.%self.param_patt.148]
 // CHECK:STDOUT:     %self.patt: %pattern_type.b3e = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.246]
 // CHECK:STDOUT:   } {
-// CHECK:STDOUT:     %self.param: ref %A.d32110.1 = ref_param call_param0
-// CHECK:STDOUT:     %self: ref %A.d32110.1 = wrapper_binding self, %self.param
+// CHECK:STDOUT:     %self.param: ref %A.d32 = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %A.d32 = wrapper_binding self, %self.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT:   %Destroy.WithSelf.Op.decl.5f94cf.4: %Destroy.WithSelf.Op.type.ef016f.4 = fn_decl @Destroy.WithSelf.Op.loc22_14.4 [concrete = constants.%Destroy.WithSelf.Op.403171.4] {
 // CHECK:STDOUT:     %self.param_patt: %pattern_type.b3e = ref_param_pattern [concrete = constants.%self.param_patt.148]
 // CHECK:STDOUT:     %self.patt: %pattern_type.b3e = wrapper_binding_pattern self, %self.param_patt [concrete = constants.%self.patt.246]
 // CHECK:STDOUT:   } {
-// CHECK:STDOUT:     %self.param: ref %A.d32110.1 = ref_param call_param0
-// CHECK:STDOUT:     %self: ref %A.d32110.1 = wrapper_binding self, %self.param
+// CHECK:STDOUT:     %self.param: ref %A.d32 = ref_param call_param0
+// CHECK:STDOUT:     %self: ref %A.d32 = wrapper_binding self, %self.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -2598,17 +2582,15 @@ fn F() {
 // CHECK:STDOUT:
 // CHECK:STDOUT:   class {
 // CHECK:STDOUT:     %A.MakeA.decl: @A.%A.MakeA.type (%A.MakeA.type.45c) = fn_decl @A.MakeA [template = @A.%A.MakeA (constants.%A.MakeA.ec3)] {
-// CHECK:STDOUT:       %return.param_patt.loc12_20.1: @A.MakeA.%pattern_type (%pattern_type.fcb8f3.1) = out_param_pattern [template = %return.param_patt.loc12_20.2 (constants.%return.param_patt.2e9ac5.1)]
-// CHECK:STDOUT:       %return.patt.loc12_14.1: @A.MakeA.%pattern_type (%pattern_type.fcb8f3.1) = return_slot_pattern %return.param_patt.loc12_20.1, %.loc12_20.9 [template = %return.patt.loc12_14.2 (constants.%return.patt.7fc6a1.1)]
+// CHECK:STDOUT:       %return.param_patt.loc12_20.1: @A.MakeA.%pattern_type (%pattern_type.44a) = out_param_pattern [template = %return.param_patt.loc12_20.2 (constants.%return.param_patt.e92)]
+// CHECK:STDOUT:       %return.patt.loc12_14.1: @A.MakeA.%pattern_type (%pattern_type.44a) = return_slot_pattern %return.param_patt.loc12_20.1, %A.loc12_20.2 [template = %return.patt.loc12_14.2 (constants.%return.patt.ca0)]
 // CHECK:STDOUT:     } {
 // CHECK:STDOUT:       %A.ref: %A.type = name_ref A, file.%A.decl [concrete = constants.%A.generic]
 // CHECK:STDOUT:       %T.ref.loc12: type = name_ref T, @A.%T.loc10_19.2 [template = %T (constants.%T)]
-// CHECK:STDOUT:       %.loc12_20.7: type = type_of_inst %.loc12_20.1 [template = %.loc12_20.2 (constants.%.972)]
-// CHECK:STDOUT:       %.loc12_20.8: @A.MakeA.%.loc12_20.2 (%.972) = splice_inst %.loc12_20.1 [template = %.loc12_20.3 (constants.%.a5e)]
-// CHECK:STDOUT:       %.loc12_20.9: type = splice_inst %.loc12_20.4 [template = %.loc12_20.5 (constants.%.5372ba.1)]
-// CHECK:STDOUT:       %.loc12_20.10: Core.Form = init_form %.loc12_20.9 [template = %.loc12_20.6 (constants.%.cd79f1.1)]
-// CHECK:STDOUT:       %return.param: ref @A.MakeA.%.loc12_20.5 (%.5372ba.1) = out_param call_param0
-// CHECK:STDOUT:       %return: ref @A.MakeA.%.loc12_20.5 (%.5372ba.1) = return_slot %return.param
+// CHECK:STDOUT:       %A.loc12_20.2: type = class_type @A, @A(constants.%T) [template = %A.loc12_20.1 (constants.%A.47a)]
+// CHECK:STDOUT:       %.loc12_20.2: Core.Form = init_form %A.loc12_20.2 [template = %.loc12_20.1 (constants.%.31b)]
+// CHECK:STDOUT:       %return.param: ref @A.MakeA.%A.loc12_20.1 (%A.47a) = out_param call_param0
+// CHECK:STDOUT:       %return: ref @A.MakeA.%A.loc12_20.1 (%A.47a) = return_slot %return.param
 // CHECK:STDOUT:     }
 // CHECK:STDOUT:     <elided>
 // CHECK:STDOUT:     complete_type_witness = %complete_type.loc18_1.1
@@ -2624,18 +2606,14 @@ fn F() {
 // CHECK:STDOUT:
 // CHECK:STDOUT: generic fn @A.MakeA(@A.%T.loc10_19.2: type) {
 // CHECK:STDOUT:   %T: type = symbolic_binding T, 0, template [template = %T (constants.%T)]
-// CHECK:STDOUT:   %.loc12_20.1: <instruction> = call_action (%A.ref, %T.ref.loc12), false [template]
-// CHECK:STDOUT:   %.loc12_20.2: type = type_of_inst %.loc12_20.1 [template = %.loc12_20.2 (constants.%.972)]
-// CHECK:STDOUT:   %.loc12_20.3: @A.MakeA.%.loc12_20.2 (%.972) = splice_inst %.loc12_20.1 [template = %.loc12_20.3 (constants.%.a5e)]
-// CHECK:STDOUT:   %.loc12_20.4: <instruction> = convert_to_value_action %.loc12_20.8, type [template]
-// CHECK:STDOUT:   %.loc12_20.5: type = splice_inst %.loc12_20.4 [template = %.loc12_20.5 (constants.%.5372ba.1)]
-// CHECK:STDOUT:   %.loc12_20.6: Core.Form = init_form %.loc12_20.5 [template = %.loc12_20.6 (constants.%.cd79f1.1)]
-// CHECK:STDOUT:   %pattern_type: type = pattern_type %.loc12_20.5 [template = %pattern_type (constants.%pattern_type.fcb8f3.1)]
-// CHECK:STDOUT:   %return.param_patt.loc12_20.2: @A.MakeA.%pattern_type (%pattern_type.fcb8f3.1) = out_param_pattern [template = %return.param_patt.loc12_20.2 (constants.%return.param_patt.2e9ac5.1)]
-// CHECK:STDOUT:   %return.patt.loc12_14.2: @A.MakeA.%pattern_type (%pattern_type.fcb8f3.1) = return_slot_pattern %return.param_patt.loc12_20.2, %.loc12_20.5 [template = %return.patt.loc12_14.2 (constants.%return.patt.7fc6a1.1)]
+// CHECK:STDOUT:   %A.loc12_20.1: type = class_type @A, @A(%T) [template = %A.loc12_20.1 (constants.%A.47a)]
+// CHECK:STDOUT:   %.loc12_20.1: Core.Form = init_form %A.loc12_20.1 [template = %.loc12_20.1 (constants.%.31b)]
+// CHECK:STDOUT:   %pattern_type: type = pattern_type %A.loc12_20.1 [template = %pattern_type (constants.%pattern_type.44a)]
+// CHECK:STDOUT:   %return.param_patt.loc12_20.2: @A.MakeA.%pattern_type (%pattern_type.44a) = out_param_pattern [template = %return.param_patt.loc12_20.2 (constants.%return.param_patt.e92)]
+// CHECK:STDOUT:   %return.patt.loc12_14.2: @A.MakeA.%pattern_type (%pattern_type.44a) = return_slot_pattern %return.param_patt.loc12_20.2, %A.loc12_20.1 [template = %return.patt.loc12_14.2 (constants.%return.patt.ca0)]
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
-// CHECK:STDOUT:   %require_complete: <witness> = require_complete_type %.loc12_20.5 [template = %require_complete (constants.%require_complete.cb0)]
+// CHECK:STDOUT:   %require_complete.loc12: <witness> = require_complete_type %A.loc12_20.1 [template = %require_complete.loc12 (constants.%require_complete.c7a)]
 // CHECK:STDOUT:   %.loc13_23.3: <instruction> = access_member_action %T.ref.loc13, MakeB [template]
 // CHECK:STDOUT:   %.loc13_23.4: type = type_of_inst %.loc13_23.3 [template = %.loc13_23.4 (constants.%.a08)]
 // CHECK:STDOUT:   %.loc13_23.5: @A.MakeA.%.loc13_23.4 (%.a08) = splice_inst %.loc13_23.3 [template = %.loc13_23.5 (constants.%.5c2)]
@@ -2644,20 +2622,24 @@ fn F() {
 // CHECK:STDOUT:   %.loc13_30.5: @A.MakeA.%.loc13_30.4 (%.308) = splice_inst %.loc13_30.3 [template = %.loc13_30.5 (constants.%.151)]
 // CHECK:STDOUT:   %struct_type.field: type = struct_type {.field: @A.MakeA.%.loc13_30.4 (%.308)} [template = %struct_type.field (constants.%struct_type.field.8e0)]
 // CHECK:STDOUT:   %struct: @A.MakeA.%struct_type.field (%struct_type.field.8e0) = struct_value (%.loc13_30.5) [template = %struct (constants.%struct)]
-// CHECK:STDOUT:   %.loc13_32.2: %tuple.type = initialize_action %.loc13_31, %.loc12_20.5, %return.param, false [template]
-// CHECK:STDOUT:   %tuple.elem0: <instruction> = tuple_access %.loc13_32.2, element0 [template]
-// CHECK:STDOUT:   %.loc13_32.3: @A.MakeA.%.loc12_20.5 (%.5372ba.1) = splice_inst %tuple.elem0 [template = %.loc13_32.3 (constants.%.5d6)]
+// CHECK:STDOUT:   %require_complete.loc13: <witness> = require_complete_type %T [template = %require_complete.loc13 (constants.%require_complete.944)]
+// CHECK:STDOUT:   %.loc13_31.4: %tuple.type = initialize_action %.loc13_30.2, %T, constants.%inst.splice_block.426619.1, true [template]
+// CHECK:STDOUT:   %tuple.elem0: <instruction> = tuple_access %.loc13_31.4, element0 [template]
+// CHECK:STDOUT:   %.loc13_31.5: @A.MakeA.%T (%T) = splice_inst %tuple.elem0 [template = %.loc13_31.5 (constants.%.b66)]
+// CHECK:STDOUT:   %A.val: @A.MakeA.%A.loc12_20.1 (%A.47a) = struct_value (%.loc13_31.5) [template = %A.val (constants.%A.val)]
 // CHECK:STDOUT:
-// CHECK:STDOUT:   fn() -> out %return.param: @A.MakeA.%.loc12_20.5 (%.5372ba.1) {
+// CHECK:STDOUT:   fn() -> out %return.param: @A.MakeA.%A.loc12_20.1 (%A.47a) {
 // CHECK:STDOUT:   !entry:
 // CHECK:STDOUT:     %T.ref.loc13: type = name_ref T, @A.%T.loc10_19.2 [template = %T (constants.%T)]
 // CHECK:STDOUT:     %.loc13_23.1: type = type_of_inst %.loc13_23.3 [template = %.loc13_23.4 (constants.%.a08)]
 // CHECK:STDOUT:     %.loc13_23.2: @A.MakeA.%.loc13_23.4 (%.a08) = splice_inst %.loc13_23.3 [template = %.loc13_23.5 (constants.%.5c2)]
 // CHECK:STDOUT:     %.loc13_30.1: type = type_of_inst %.loc13_30.3 [template = %.loc13_30.4 (constants.%.308)]
 // CHECK:STDOUT:     %.loc13_30.2: @A.MakeA.%.loc13_30.4 (%.308) = splice_inst %.loc13_30.3 [template = %.loc13_30.5 (constants.%.151)]
-// CHECK:STDOUT:     %.loc13_31: @A.MakeA.%struct_type.field (%struct_type.field.8e0) = struct_literal (%.loc13_30.2) [template = %struct (constants.%struct)]
-// CHECK:STDOUT:     %.loc13_32.1: @A.MakeA.%.loc12_20.5 (%.5372ba.1) = splice_inst %tuple.elem0 [template = %.loc13_32.3 (constants.%.5d6)]
-// CHECK:STDOUT:     return %.loc13_32.1 to %return.param
+// CHECK:STDOUT:     %.loc13_31.1: @A.MakeA.%struct_type.field (%struct_type.field.8e0) = struct_literal (%.loc13_30.2) [template = %struct (constants.%struct)]
+// CHECK:STDOUT:     %.loc13_31.2: @A.MakeA.%T (%T) = splice_inst %tuple.elem0 [template = %.loc13_31.5 (constants.%.b66)]
+// CHECK:STDOUT:     %.loc13_31.3: init @A.MakeA.%A.loc12_20.1 (%A.47a) to %return.param = class_init (%.loc13_31.2) [template = %A.val (constants.%A.val)]
+// CHECK:STDOUT:     %.loc13_32: init @A.MakeA.%A.loc12_20.1 (%A.47a) = converted %.loc13_31.1, %.loc13_31.3 [template = %A.val (constants.%A.val)]
+// CHECK:STDOUT:     return %.loc13_32 to %return.param
 // CHECK:STDOUT:   }
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
@@ -2665,13 +2647,13 @@ fn F() {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %A.ref: %A.type = name_ref A, file.%A.decl [concrete = constants.%A.generic]
 // CHECK:STDOUT:   %B.ref: type = name_ref B, file.%B.decl [concrete = constants.%B]
-// CHECK:STDOUT:   %A: type = class_type @A, @A(constants.%B) [concrete = constants.%A.d32110.1]
+// CHECK:STDOUT:   %A: type = class_type @A, @A(constants.%B) [concrete = constants.%A.d32]
 // CHECK:STDOUT:   %.loc22_7: %A.MakeA.type.315 = specific_constant @A.%A.MakeA.decl, @A(constants.%B) [concrete = constants.%A.MakeA.05c]
 // CHECK:STDOUT:   %MakeA.ref: %A.MakeA.type.315 = name_ref MakeA, %.loc22_7 [concrete = constants.%A.MakeA.05c]
 // CHECK:STDOUT:   %A.MakeA.specific_fn: <specific function> = specific_function %MakeA.ref, @A.MakeA(constants.%B) [concrete = constants.%A.MakeA.specific_fn]
-// CHECK:STDOUT:   %.loc22_14.1: ref %A.d32110.1 = temporary_storage
-// CHECK:STDOUT:   %A.MakeA.call: init %A.d32110.1 to %.loc22_14.1 = call %A.MakeA.specific_fn()
-// CHECK:STDOUT:   %.loc22_14.2: ref %A.d32110.1 = temporary %.loc22_14.1, %A.MakeA.call
+// CHECK:STDOUT:   %.loc22_14.1: ref %A.d32 = temporary_storage
+// CHECK:STDOUT:   %A.MakeA.call: init %A.d32 to %.loc22_14.1 = call %A.MakeA.specific_fn()
+// CHECK:STDOUT:   %.loc22_14.2: ref %A.d32 = temporary %.loc22_14.1, %A.MakeA.call
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.bound: <bound method> = bound_method %.loc22_14.2, constants.%Destroy.WithSelf.SelfDestruct.db3fdb.4
 // CHECK:STDOUT:   %Destroy.WithSelf.SelfDestruct.call: init %empty_tuple.type = call %Destroy.WithSelf.SelfDestruct.bound(%.loc22_14.2)
 // CHECK:STDOUT:   <elided>
@@ -2716,7 +2698,7 @@ fn F() {
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc22_14.4(%self.param: ref %A.d32110.1) {
+// CHECK:STDOUT: fn @Destroy.WithSelf.SubobjectDestroy.loc22_14.4(%self.param: ref %A.d32) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %field.ref: %A.elem.483 = name_ref field, @A.%field_decl [concrete = @A.%field_decl]
 // CHECK:STDOUT:   %.loc22: ref %B = class_element_access %self.param, element0
@@ -2725,9 +2707,9 @@ fn F() {
 // CHECK:STDOUT:   return
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc22_14.4(%self.param: ref %A.d32110.1) = "no_op";
+// CHECK:STDOUT: fn @Destroy.WithSelf.Op.loc22_14.4(%self.param: ref %A.d32) = "no_op";
 // CHECK:STDOUT:
-// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc22_14.4(%self.param: ref %A.d32110.1) {
+// CHECK:STDOUT: fn @Destroy.WithSelf.SelfDestruct.loc22_14.4(%self.param: ref %A.d32) {
 // CHECK:STDOUT: !entry:
 // CHECK:STDOUT:   %Destroy.WithSelf.Op.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.Op.decl.5f94cf.4(%self.param)
 // CHECK:STDOUT:   %Destroy.WithSelf.SubobjectDestroy.call: init %empty_tuple.type = call generated.%Destroy.WithSelf.SubobjectDestroy.decl.763c71.4(%self.param)
@@ -2750,15 +2732,11 @@ fn F() {
 // CHECK:STDOUT:
 // CHECK:STDOUT: specific @A.MakeA(constants.%T) {
 // CHECK:STDOUT:   %T => constants.%T
-// CHECK:STDOUT:   %.loc12_20.1 => constants.%.293
-// CHECK:STDOUT:   %.loc12_20.2 => constants.%.3aa
-// CHECK:STDOUT:   %.loc12_20.3 => constants.%.f2d
-// CHECK:STDOUT:   %.loc12_20.4 => constants.%.c8c
-// CHECK:STDOUT:   %.loc12_20.5 => constants.%.5372ba.2
-// CHECK:STDOUT:   %.loc12_20.6 => constants.%.cd79f1.2
-// CHECK:STDOUT:   %pattern_type => constants.%pattern_type.fcb8f3.2
-// CHECK:STDOUT:   %return.param_patt.loc12_20.2 => constants.%return.param_patt.2e9ac5.2
-// CHECK:STDOUT:   %return.patt.loc12_14.2 => constants.%return.patt.7fc6a1.2
+// CHECK:STDOUT:   %A.loc12_20.1 => constants.%A.47a
+// CHECK:STDOUT:   %.loc12_20.1 => constants.%.31b
+// CHECK:STDOUT:   %pattern_type => constants.%pattern_type.44a
+// CHECK:STDOUT:   %return.param_patt.loc12_20.2 => constants.%return.param_patt.e92
+// CHECK:STDOUT:   %return.patt.loc12_14.2 => constants.%return.patt.ca0
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: specific @A(constants.%B) {
@@ -2769,7 +2747,7 @@ fn F() {
 // CHECK:STDOUT:   %A.MakeA.type => constants.%A.MakeA.type.315
 // CHECK:STDOUT:   %A.MakeA => constants.%A.MakeA.05c
 // CHECK:STDOUT:   %require_complete => constants.%complete_type.357
-// CHECK:STDOUT:   %A => constants.%A.d32110.1
+// CHECK:STDOUT:   %A => constants.%A.d32
 // CHECK:STDOUT:   %A.elem => constants.%A.elem.483
 // CHECK:STDOUT:   %struct_type.field => constants.%struct_type.field.8fb
 // CHECK:STDOUT:   %complete_type.loc18_1.2 => constants.%complete_type.08c
@@ -2777,18 +2755,14 @@ fn F() {
 // CHECK:STDOUT:
 // CHECK:STDOUT: specific @A.MakeA(constants.%B) {
 // CHECK:STDOUT:   %T => constants.%B
-// CHECK:STDOUT:   %.loc12_20.1 => constants.%inst.class_type
-// CHECK:STDOUT:   %.loc12_20.2 => type
-// CHECK:STDOUT:   %.loc12_20.3 => constants.%A.d32110.1
-// CHECK:STDOUT:   %.loc12_20.4 => constants.%inst.splice_block.426619.1
-// CHECK:STDOUT:   %.loc12_20.5 => constants.%A.d32110.1
-// CHECK:STDOUT:   %.loc12_20.6 => constants.%.22c
+// CHECK:STDOUT:   %A.loc12_20.1 => constants.%A.d32
+// CHECK:STDOUT:   %.loc12_20.1 => constants.%.22c
 // CHECK:STDOUT:   %pattern_type => constants.%pattern_type.b3e
 // CHECK:STDOUT:   %return.param_patt.loc12_20.2 => constants.%return.param_patt.368
 // CHECK:STDOUT:   %return.patt.loc12_14.2 => constants.%return.patt.806
 // CHECK:STDOUT:
 // CHECK:STDOUT: !definition:
-// CHECK:STDOUT:   %require_complete => constants.%complete_type.08c
+// CHECK:STDOUT:   %require_complete.loc12 => constants.%complete_type.08c
 // CHECK:STDOUT:   %.loc13_23.3 => constants.%inst.name_ref
 // CHECK:STDOUT:   %.loc13_23.4 => constants.%B.MakeB.type
 // CHECK:STDOUT:   %.loc13_23.5 => constants.%B.MakeB
@@ -2797,8 +2771,10 @@ fn F() {
 // CHECK:STDOUT:   %.loc13_30.5 => <not constant>
 // CHECK:STDOUT:   %struct_type.field => constants.%struct_type.field.8fb
 // CHECK:STDOUT:   %struct => <not constant>
-// CHECK:STDOUT:   %.loc13_32.2 => constants.%tuple
+// CHECK:STDOUT:   %require_complete.loc13 => constants.%complete_type.357
+// CHECK:STDOUT:   %.loc13_31.4 => constants.%tuple
 // CHECK:STDOUT:   %tuple.elem0 => constants.%inst.splice_block.426619.3
-// CHECK:STDOUT:   %.loc13_32.3 => <not constant>
+// CHECK:STDOUT:   %.loc13_31.5 => <not constant>
+// CHECK:STDOUT:   %A.val => <not constant>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:

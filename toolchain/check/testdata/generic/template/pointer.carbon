@@ -79,6 +79,10 @@ class C(T: type) {
 }
 
 fn F[template T: type](c: C(T)) -> T {
+  // CHECK:STDERR: fail_deref_class_type_param.carbon:[[@LINE+4]]:10: error: cannot dereference operand of non-pointer type `C(T)` [DerefOfNonPointer]
+  // CHECK:STDERR:   return *c;
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR:
   return *c;
 }
 

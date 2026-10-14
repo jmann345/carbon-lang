@@ -2373,10 +2373,11 @@ with one, is reported as trunk's impl analog reports it; a tuple pattern
 parameter under a default value is the TODO too; the impl-lookup cycle after the
 error and W-233's member side are pinned; the ledger's SC-1 cites are checked
 mechanically at the head: 2ee29f311 (fixes, test sources, the design page),
-e7783c80e (2 goldens, CHECK lines only) and the records commit after it, which
+e7783c80e (2 goldens, CHECK lines only) and fa9038828 (records), which
 completes round 10's review record; it measured the same totals on the toolchain
-built from its sources and again on the toolchain stamped 0.0.0-0.dev+e7783c80e
-(below). Not of record
+built from its sources, again on the toolchain stamped 0.0.0-0.dev+e7783c80e
+(below) and again on fa9038828 for the records commit after it, which checks
+round 11's records against the head. Not of record
 until fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
@@ -3852,7 +3853,8 @@ trunk's interface analog does and nothing for the error; "Error only when
 nothing else fails" is the right rule; and looking the interfaces up after
 `Error` changes no overload or blanket-impl selection, both results rejecting
 (review 1's o01 to o05, review 2's o5), the one new diagnostic an impl-lookup
-cycle that trunk's analog reports too (review 1's o04, review 2's c1). Both
+cycle that trunk's analog reports too (review 1's o04 and o04t, review 2's c1
+and c1t). Both
 found the skip itself too broad, MAJOR-1 of both: it fired on any mismatch when
 either signature had an error anywhere, so a different parameter count, `self`
 form, parameter type or return type next to the error, and a member that is not
@@ -3915,7 +3917,11 @@ rebuilt round-9 toolchain and their trunk analogs on 0bdce60a5:
     PR body's Review record and Verification paragraphs move verbatim into the
     PR's first comment, as PR 58 did, the body naming it in one line; both are
     re-measured with len() after this round's additions (outside the
-    repository).
+    repository). The records commit after fa9038828 keeps in the body a
+    per-round summary of the review record and the latest gate and conformance
+    lines, as the description's layout requires, and moves the NOT run
+    paragraph to that comment beside them, each file measured under the limit
+    with len().
 -   MINOR-1 (review 1): reproduced (tp01, tp10 and tp11 abort at merge.cpp:391
     on 001cdb4c7; tp08 is a plain mismatch and tp09 checks clean). Taken:
     `HasTupleParamPattern` looks through a `DefaultValuePattern` as through
@@ -4249,7 +4255,7 @@ on trunk, fb12f63cb, the round-9 build and the round-10 build are as round 9's
 review record states (sc1-records10/z). Round 10's commits: 3ae639811 (fixes,
 test sources, docs, records), 001cdb4c7 (goldens), 04755f23b (the
 incomplete-type split and its records), 0d7ee5c19 (its golden), 6247769bb
-(records) and the records commit after it. Round 11 (the toolchain built from
+(records) and 444ccbafe (records). Round 11 (the toolchain built from
 the round-11 sources before the commit, stamped 0.0.0-0.dev+444ccbafe.dirty, the
 uncommitted edits being exactly 2ee29f311's): autoupdate over the 19 SC-1
 goldens to a fixpoint from exactly 2ee29f311's test sources (pass 1 rewrote the
@@ -4276,7 +4282,20 @@ reported across the import. The comparison was first run on a development build
 whose merge.cpp had an `#include <tuple>`, removed before the commit, which
 moved the abort at merge.cpp:391 to :393 in 7 files and changed nothing else.
 Round 11's commits: 2ee29f311 (fixes, test sources, the design page), e7783c80e
-(goldens) and the records commit after it.
+(goldens), fa9038828 (records) and the records commit after it. Re-run by that
+records commit on fa9038828 with the toolchain stamped 0.0.0-0.dev+e7783c80e (no
+toolchain or test source differs from e7783c80e): gate 1959 passed, 0 failed,
+exit 0, 70 s; conformance PASS 130, every failure class 0, SKIP 21 of 151,
+bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 97.3 s, the same two programs moving
+(sc1-records11/conf, in a private cache); `runner.py --self-test` OK (151
+programs, 56 bullets); `git merge-tree` of fa9038828 against trunk 3eb7f36f0
+conflicts in fork/ORCHESTRATION.md only. On trunk 0bdce60a5 the same commit
+re-ran the analogs that round 11's records cite, each as recorded: the two new
+splits' classes (sc1-fix11/p/s: `tr_ReturnOnly`, `tr_ParamOnly` and
+`tm_ErrorsOnly` give their declarations' errors alone, each other class the
+thunk's report at the impl too), z1t to z9t (each the error count of its fork
+probe), e1t (the interface's error alone) and e2t (clean), W-233's o01, o02 and
+k01, and the cycle's o04t and c1t.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

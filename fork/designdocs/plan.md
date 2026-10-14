@@ -6,14 +6,24 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Design docs without placeholders: status notes, measured 0.1 behavior, the interop TODO sections, the F-008 threads page (DD-1, W-065)
 
-**Status:** rev 2, 2026-10-13: the two plan reviews of R29(c) (A: fidelity
-to the toolchain and the accepted proposals; B: process, records and
-Goodhart) are folded by a separate fixer (R11), all 33 findings, none
-rejected; the [review fold record](#review-fold-record-rev-2-2026-10-13) at
-the end lists each disposition. Rev 1 (bed95d667) was the planner draft. Fold
-marks read "(amended 2026-10-13, review fold: A-n / B-n)"; reviewer B's
-majors and minors, numbered M-n and m-n in its review, are marked B-M-n and
-B-m-n. Branch `claude/carbon-fork-0-1-dd` in the
+**Status:** rev 3 -- NOT signed off: A-1. The focused re-review of rev 2
+(a1d96520a) returned REJECT with one BLOCKER, A-1 (rev 2 still called leads
+issue 686 open, but the leads answered it on 2022-11-12), and four MINOR
+findings, N-1 to N-4. A separate fixer (R11) folds all five into rev 3, none
+rejected, A-1 with one cited wording deviation; the
+[re-review fold record](#focused-re-review-rev-3-2026-10-13) lists each
+disposition. Rev-3 fold marks read "(amended 2026-10-13, review fold:
+RR-x)", where x is the re-review's own finding id (RR-A-1, RR-N-1 to RR-N-4).
+Because the re-review's verdict was REJECT, rev 3 is not signed off until a
+further focused re-review confirms the A-1 fold. Rev 2 (a1d96520a) folded the
+two plan reviews of R29(c) (A: fidelity to the toolchain and the accepted
+proposals; B: process, records and Goodhart) by a separate fixer (R11), all
+33 findings, none rejected; the
+[review fold record](#review-fold-record-rev-2-2026-10-13) at the end lists
+each disposition. Rev 1 (bed95d667) was the planner draft. Rev-2 fold marks
+read "(amended 2026-10-13, review fold: A-n / B-n)"; reviewer B's majors and
+minors, numbered M-n and m-n in its review, are marked B-M-n and B-m-n.
+Branch `claude/carbon-fork-0-1-dd` in the
 worktree `/home/user/carbon-dd`, cut from trunk 162c7e839 ("ORCHESTRATION:
 repair the R31 heading manufactured by the previous stamp"), whose toolchain,
 prelude and docs/design/ sources are identical to 0bdce60a5 (`git diff --stat
@@ -46,31 +56,40 @@ never landed although the workstream context assumed it had (D-DD-7).
 
 **What this workstream does and does not do.** It documents the existing
 behavior of the fork toolchain; it decides nothing. Every replaced placeholder
-becomes a dated status note that names the accepted proposals or fork decision
-behind the page and the toolchain's status, and the behavior is added in new
-sections whose every code block is a complete file compile-verified on the fork
-toolchain (R3, R6) and on the upstream nightly
+becomes a dated status note that names the accepted proposals, leads decision or
+fork decision behind the page (amended 2026-10-13, review fold: RR-A-1) and the
+toolchain's status, and the behavior is added in new sections whose every code
+block is a complete file compile-verified on the fork toolchain (R3, R6) and on
+the upstream nightly
 `/home/user/nightly/tc/carbon_toolchain-0.0.0-0.nightly.2026.10.12/bin/carbon`
 (`0.0.0-0.nightly.2026.10.12+62f1cc6`), labelled fork-only where the nightly
 rejects it. No toolchain, prelude, golden, `.github/` or `toolchain/`/`core/`
 file changes. The toolchain defects found while measuring are filed with their
-exact evidence (R10) as residues W-182..W-185, W-189 and W-190 at discharge,
-with the open assignment question as W-188, or folded into the existing items
-that already own them: W-155 (EV-1, PR 54), W-167 (ST-1, PR 55), W-080, W-053
-and W-014 (D-DD-10; amended 2026-10-13, review fold: A-1 / A-4 / A-11 / B-M-1).
-**No fork design id is minted**: F-016 stays unallocated by this plan (D-DD-3).
-**Id reservation** (recorded here and in the discharge's ORCHESTRATION stamp):
-the ledger maximum over trunk and every live branch is W-168 (SC-1, head
-77838fdd5); W-169 is SC-1's; W-170..W-179 are OP-1's; **DD-1 reserves
-W-180..W-194**, extended from rev 1's W-180..W-189 because the folds need W-190
-(amended 2026-10-13, review fold: A-1 / A-4 / B-M-1). W-180, W-181 and W-186
-were rev 1's ids for defects that other items own and are withdrawn unused;
-W-187 is contingent (D-DD-9); W-191..W-194 are spare. `git grep 'W-19[0-9]'`
-finds no id in that range on trunk or on any live branch head (the OP-1 plan's
-one `W-180` is its forward reference to this reservation). A reserved id that
-goes unused stays unused. **Merge position:** after OP-1, the last of the
-current queue (PR 53, PR 51, PR 52, SC-1, PR 54, PR 55, OP-1, then DD-1;
-fork/ORCHESTRATION.md "Later on 2026-10-13").
+exact evidence (R10) as residues W-182..W-185, W-188, W-189 and W-191 at
+discharge (W-191 renumbered from rev 2's W-190; RR-FX-1), W-188 being the
+assignment of a literal right-hand side that reads the target, whose result
+differs from leads issue 686's answer, or folded into the existing items that
+already own them: W-155 (EV-1, PR 54), W-167 (ST-1, PR 55), W-080, W-053 and
+W-014 (D-DD-10; amended 2026-10-13, review fold: A-1 / A-4 / A-11 / B-M-1;
+RR-A-1). **No fork design id is minted**: F-016 stays unallocated by this plan
+(D-DD-3). **Id reservation** (recorded here and in the discharge's ORCHESTRATION
+stamp): the ledger maximum over trunk and every live branch is W-168 (SC-1; head
+77838fdd5 at rev 2, a9c887101 at rev 3); W-169 is SC-1's; W-170..W-179 are
+OP-1's; **DD-1 reserves W-180..W-189 and W-191..W-194**. Rev 2 extended rev 1's
+W-180..W-189 to W-194 because its folds needed one more id, and used W-190 for
+the template-export crash. OP-1's implementation-review fold (49e2cf2bf, OP-1
+head aa89cd7cd) had meanwhile taken W-190, "the first id after DD-1's reserved
+W-180..W-189", for its own lowering defect and written it into
+docs/design/optional.md (:302 and :505) on its branch, which merges before DD-1.
+W-190 is therefore OP-1's, and rev 2's W-190 is renumbered W-191 (amended
+2026-10-13, review fold: A-1 / A-4 / B-M-1; RR-FX-1, the fixer's own finding).
+W-180, W-181 and W-186 were rev 1's ids for defects that other items own and are
+withdrawn unused; W-187 is contingent (D-DD-9); W-192..W-194 are spare. The
+rev-3 scan, `git grep -E 'W-1[89][0-9]'` over trunk and every live branch head,
+finds outside this plan only OP-1's references to DD-1's W-180..W-189 and OP-1's
+own W-190. A reserved id that goes unused stays unused. **Merge position:**
+after OP-1, the last of the current queue (PR 53, PR 51, PR 52, SC-1, PR 54, PR
+55, OP-1, then DD-1; fork/ORCHESTRATION.md "Later on 2026-10-13").
 
 ## §0 Audit: what the pages say, what the toolchain does, what is stale
 
@@ -155,7 +174,7 @@ the remainder of which are in category C. §0.1f classifies every
 | B | interoperability/README.md:156, :240, :242, :244, :246, :250, :275, :350 | **In scope**: real content (§2.7) |
 | C' (TODO-only section) | README.md:3815 `### Enums` (body `> **TODO**`) | **In scope** (§2.9): C++ enums are a major C++ feature under milestones.md:73-75 |
 | C' | README.md:3986 (Abstract machine and execution model) | **In scope** (§2.9 item 4): content, the 0.1 execution model as values.md, the statement pages, F-008's memory model and error_handling.md fix it, each cited; it has no milestone deferral (amended 2026-10-13, review fold: A-8 / B-M-4) |
-| C' | README.md:3990, :3994 (Co-routines, Concurrency) | **In scope** (§2.9 item 4): one dated status note each, citing the milestone deferral (milestones.md:268 and :271) and, for concurrency, the 0.1 contract on the threads page |
+| C' | README.md:3990, :3994 (Co-routines, Concurrency) | **In scope** (§2.9 item 4): the upstream `> **TODO:**` marker stays (D-DD-1, as in comparison_operators.md), and a dated status note after it cites the milestone deferral (milestones.md:268 and :271) and, for concurrency, the 0.1 contract on the threads page; listed in row 91 as not designed, by milestone deferral (amended 2026-10-13, review fold: RR-N-3) |
 | C' | assignment.md:159-164 (`_TODO_: Describe the rules ...`) | **In scope** (§2.3): statements are core 0.1 components (milestones.md:65-67) |
 | C' | expressions/comparison_operators.md:474-477 (Custom result types) | **In scope** (§2.10): the upstream `**TODO:**` marker stays, and a dated status note after it states the 0.1 behavior (`bool` results, core/prelude/operators/comparison.carbon:10-31; W-045 for C++ operators with other results); listed in row 91 as an extension not designed, beyond proposal 702's `bool` results (amended 2026-10-13, review fold: A-8 / B-M-4) |
 | C' | README.md:3905 (Lifetime and move semantics) | **Closed by held PR 53** (SAFE-1 replaces :3905-3907); allowlisted at state T |
@@ -184,9 +203,9 @@ the remainder of which are in category C. §0.1f classifies every
 | PR-I struct literal initializing a class with a `private` field, outside the class | RUNS (accepted) | same | W-167 (ST-1, PR 55) already owns it; PR-I joins its evidence at integration (amended 2026-10-13, review fold: B-M-1) |
 | PR-L exhaustive `match` with an irrefutable arm, no trailing `return` | "missing `return` at end of function with declared return type" | — | W-155 (EV-1, PR 54) already owns it and names the irrefutable `case x: i32` arm; R20 and PR-L join its evidence at integration (amended 2026-10-13, review fold: B-M-1) |
 | PR-R four constant `(bool, bool)` arms, no `default` | REJECTS: "`match` on `(bool, bool)` has no `default` arm and no `case` arm that matches every value" | no `match` | W-189: pattern_matching.md:589-592 makes the set exhaustive; fork/w078b/plan.md:109-125 recorded the boundary (its R-6) with no owning item (amended 2026-10-13, review fold: A-4) |
-| PR-S a Carbon function with a `template` parameter, called from C++ | CRASH rc 134: "CHECK failure at toolchain/sem_ir/generic.cpp:96: ... Queried generic_inst_in_def1 {kind: CallAction, ...} ... before it was resolved." (the same with `return x;`, `CompoundMemberAccessAction`; identical on OP-1's toolchain) | RUNS, prints `42` | W-190; the C++-use section states the limit (amended 2026-10-13, review fold: B-M-5) |
+| PR-S a Carbon function with a `template` parameter, called from C++ | CRASH rc 134: "CHECK failure at toolchain/sem_ir/generic.cpp:96: ... Queried generic_inst_in_def1 {kind: CallAction, ...} ... before it was resolved." (the same with `return x;`, `CompoundMemberAccessAction`; identical on OP-1's toolchain) | RUNS, prints `42` | W-191 (rev 2's W-190; RR-FX-1); the C++-use section states the limit (amended 2026-10-13, review fold: B-M-5) |
 | PR-T a checked generic's symbolic type parameter as a C++ template argument (`var unused b: Cpp.Box(T);` in `fn MakeBox[T: type]`) | REJECTS: "cannot convert type `<splice of <cannot stringify inst...>>` into type implementing `Core.DefaultOrUnformed`" | the same shape | W-043 owns it; prose only, because the message names internal instruction ids (amended 2026-10-13, review fold: B-M-5) |
-| PR-U tuple and struct swaps: `let u = (t.1, t.0); t = u;`, `s = {.a = s.b, .b = s.a};`, and `var old = t; t = (old.1, old.0);` | RUNS: `2 1`, `2 2`, `2 1` | the same | §2.3 states what was measured; W-188 records the open question of the literal form (amended 2026-10-13, review fold: A-1) |
+| PR-U tuple and struct swaps: `let u = (t.1, t.0); t = u;`, `s = {.a = s.b, .b = s.a};`, and `var old = t; t = (old.1, old.0);` | RUNS: `2 1`, `2 2`, `2 1` | the same | §2.3 states what was measured and leads issue 686's answer, under which both literal forms leave `(2, 1)`; W-188 (toolchain-defect) records the literal form's divergence from it (amended 2026-10-13, review fold: A-1; RR-A-1) |
 | PR-G2 `import Cpp;` then `inline Cpp` | RUNS, prints `41` | the same | the inline rule: an `import Cpp` earlier in the file (amended 2026-10-13, review fold: A-14 / B-m-4) |
 | SC-1 toolchains (`carbon-sc`: 0.0.0-0.dev+bc8b37290 at rev 1; ff490bd48 re-measured for rev 2) | all 16 RUNS samples PASS; all 30 REJECTS diagnostics identical to trunk's; at ff490bd48 every rev-1 page sample and fixture (47) and every rev-2 one gives trunk's result | — | state L needs no sample change for SC-1; the branch head 77838fdd5 has no build (§8.10) |
 | OP-1 toolchain (`carbon-op`, 0.0.0-0.dev+5d9edb3e0) | every rev-1 page sample and fixture (47) and every rev-2 one gives trunk's result | — | the same for OP-1 (amended 2026-10-13, review fold: A-12 / B-m-1) |
@@ -219,7 +238,7 @@ document reviews receive this table in their brief (D-DD-11).
 | :140 | integrated templates | templates.md (DD-1); README.md "Checked and template parameters" | row 54 PARTIAL (W-014, W-183) |
 | :141-143 | template-style structural conformance | templates.md status and README.md :2890 note (state T, F-010); generics/template_constraints.md on SC-1 (held; linked at state L) | row 55 MISSING (SC-1, W-028) |
 | :145 | importing C++ templates, instantiating on Carbon types | interop README "Using C++ templates" (DD-1, new, P17); README.md "Templates" (:3698, directional) | row 56 PARTIAL (W-043) |
-| :146 | exporting Carbon templates | interop README "Using Carbon from C++" (DD-1, new: a call from C++ stops the compiler, PR-S); README.md "Templates" (:3698) | row 57 PARTIAL (W-044, W-190) |
+| :146 | exporting Carbon templates | interop README "Using Carbon from C++" (DD-1, new: a call from C++ stops the compiler, PR-S); README.md "Templates" (:3698) | row 57 PARTIAL (W-044, W-191; RR-FX-1) |
 | :147-148 | exporting checked generics as C++ templates | interop README "Using Carbon from C++" (P18, R33) | row 57 PARTIAL (W-044) |
 | :149-150 | C++20 concepts and named predicates | interop README "Using C++ templates" (import pinned by testdata; export W-029); template_constraints.md "Mapping to and from C++20 concepts" on SC-1 (held; linked at state L) | row 58 PARTIAL (W-029) |
 | :155-156 | separate declaration and definition; function overloading | functions.md; functions_overloading.md (F-009) | rows 59-60 DONE |
@@ -372,8 +391,9 @@ commit, measured on the merged trunk.
 9.  W-044's notes say that export of a Carbon `template` function, as distinct
     from a checked generic, "exists at all only after template lowering
     (W-014)". The nightly exports and runs
-    one (PR-S prints `42`); the fork's toolchain stops at a CHECK. W-190
-    records it (added 2026-10-13, review fold: B-M-5).
+    one (PR-S prints `42`); the fork's toolchain stops at a CHECK. W-191
+    records it (added 2026-10-13, review fold: B-M-5; renumbered from W-190,
+    RR-FX-1).
 
 ### §0.5 Decisions this plan auto-adopts (R29(a), each with a break condition)
 
@@ -381,15 +401,24 @@ commit, measured on the merged trunk.
     example stays. Only placeholder markers are replaced: the boilerplate
     paragraph and its `## TODO` heading become `## Status` with one dated
     status blockquote; a `TODO:` heading loses its prefix and gains content; a
-    TODO-only body becomes content or a dated status note. New behavior goes in
+    TODO-only body that has something to document becomes content (with a
+    dated status note before it where no accepted proposal states the rules,
+    as in assignment.md); a TODO note beside content becomes a dated note
+    only where that note supplies what the marker asks for (README.md :2890,
+    settled by F-010; :3911, an inline summary and the updated reference). New
+    behavior goes in
     new sections titled "_topic_ in the 0.1 toolchain" (or under the formerly
     empty heading), after the original content. Where an original example is
     rejected by the toolchain, a dated "Fork note" directly after it quotes the
     measured diagnostic and points to the working form. A marker is never
-    relabelled to get past the W2 rule: where a section has nothing to
-    document beyond a future extension (comparison_operators.md "Custom result
-    types"), the upstream marker stays and a dated note beside it states the
-    0.1 behavior (amended 2026-10-13, review fold: A-8 / B-M-4). Break: a
+    relabelled or replaced to get past the W2 rule: where a section has nothing
+    to document beyond a future extension or a milestone deferral
+    (comparison_operators.md "Custom result types"; README.md "Co-routines"
+    and "Concurrency", deferred by milestones.md:268 and :271), the upstream
+    marker stays and a dated note beside it states the 0.1 status (amended
+    2026-10-13, review fold: A-8 / B-M-4; RR-N-3: rev 2's §2.9 item 4
+    replaced the Co-routines and Concurrency markers, which this rule now
+    forbids, and item 4 keeps them). Break: a
     reviewer shows that a note changes the meaning of accepted proposal text;
     that note is withdrawn and the divergence becomes a residue (D-DD-3).
 -   **D-DD-2 Scope and the W2 arbiter.** The arbiter is a script rule over all
@@ -422,16 +451,26 @@ commit, measured on the merged trunk.
     placeholder under another name; it joins the scope in the fold and the
     rule gains a clause.
 -   **D-DD-3 Documentation, not design; F-016 not minted.** Each page states
-    what an accepted proposal or fork decision fixes, what the toolchain does,
-    and where they differ (both cited). Toolchain defects are residues; open
-    questions stay open on the page. A behavior that no proposal or fork
-    decision rules on is stated as measured, never as a rule: rev 1's
-    assignment text asserted an operation order for leads issue 686 and has
-    been reduced to the measurements (§2.3; amended 2026-10-13, review fold:
-    A-1). Break: if a page cannot be written without choosing a rule that
-    neither a proposal, a fork decision, nor the toolchain fixes, the page
-    names the open question and a residue is filed; minting F-016 needs the
-    orchestrator.
+    what an accepted proposal, a leads decision, or a fork decision fixes,
+    what the toolchain does, and where they differ (both cited). A leads
+    decision is the answer the leads record on a closed question-for-leads
+    issue, which docs/project/evolution.md:425-428 makes "where the leads
+    signal how it is resolved"; the page cites the issue and says when no
+    proposal incorporates the answer yet. Toolchain defects, including a
+    divergence from a leads decision, are residues; open questions stay open
+    on the page, and a question is called open only after its issue's status
+    has been checked. A behavior that none of these sources rules on is
+    stated as measured, never as a rule. Rev 1's assignment text asserted an
+    operation order for leads issue 686 without citing the leads' answer; rev
+    2 reduced it to the measurements and called the question open; rev 3
+    states the answer the leads gave on 2022-11-12 (issue 686's closing
+    comment; issue 2489 tracks the proposal that is to incorporate it), which
+    gives `(2, 1)` for both literal swaps, and the toolchain's `(2, 2)` as
+    W-188 (§2.3, §8.10; amended 2026-10-13, review fold: A-1; RR-A-1). Break:
+    if a page cannot be written without choosing a rule that neither a
+    proposal, a leads decision, a fork decision, nor the toolchain fixes, the
+    page names the open question and a residue is filed; minting F-016 needs
+    the orchestrator.
 -   **D-DD-4 Sample policy.** Every new code block is a complete Carbon file
     compile-verified on the fork toolchain and on the nightly. A RUNS sample is
     transcribed byte for byte into a conformance program (D-DD-5); a REJECTS
@@ -536,18 +575,23 @@ commit, measured on the merged trunk.
     "Strings"), and W-187 is filed to apply the state-L texts and ledger
     amendments and flip row 91 when those PRs land (amended 2026-10-13, review
     fold: B-M-3).
--   **D-DD-10 Residues.** W-182 to W-185 and W-188 to W-190 (§8.5) are filed at
-    discharge with kind, bullet, evidence and the measured probe. W-188 is
-    design-needed, not a toolchain defect: it is the open question that
-    assignment.md names (D-DD-3), the result of a tuple or struct assignment
-    whose literal right-hand side reads the target; review A asked for a
-    toolchain-defect residue at state L on the ground that F-013 D-SAFE-17
-    designs `(2, 1)`, but D-SAFE-17 rules on value bindings only
-    (claude/carbon-fork-0-1-safe:docs/design/values.md:485, "a value binding of
-    a `Core.Plain` type acquires eagerly"; safety/mutation_safety.md:415-416
-    lists `let`, by-value parameters and by-value `self`), and a literal's
-    elements are not a binding, so filing a defect would decide issue 686; the
-    integration commit adds D-SAFE-17's scope to W-188's notes. Existing items
+-   **D-DD-10 Residues.** W-182 to W-185, W-188, W-189 and W-191 (§8.5; W-191
+    is rev 2's W-190, renumbered because OP-1 holds W-190, RR-FX-1) are filed
+    at discharge with kind, bullet, evidence and the measured probe. W-188 is a
+    toolchain-defect: a tuple or struct assignment whose literal right-hand
+    side reads the target is assigned in place, element by element, and
+    leaves `(2, 2)`, where the answer the leads gave on issue 686 (initialize
+    a temporary from the right-hand side, destroy the destination, move the
+    temporary into it; §8.10) gives `(2, 1)`; the upstream nightly behaves the
+    same. F-013 D-SAFE-17 (claude/carbon-fork-0-1-safe:docs/design/values.md
+    :485, "a value binding of a `Core.Plain` type acquires eagerly";
+    safety/mutation_safety.md:415-416 lists `let`, by-value parameters and
+    by-value `self`) rules on value bindings only; it gives the `let` form's
+    `(2, 1)`, which agrees with issue 686's answer, and the integration commit
+    adds that to W-188's notes (amended 2026-10-13, review fold: RR-A-1: rev
+    2 filed W-188 as design-needed on the premise that issue 686 was
+    unanswered, which the online check of §8.10 refutes; that deviation from
+    review A's fix is withdrawn). Existing items
     are amended only where a finding sits inside their stated scope: W-080 (the
     `var 5 = n;` crash), W-053 (ranges whose iterators are raw pointers), W-043
     (its open "verify" note answered) at discharge; W-014 (PR-A's two crash
@@ -561,6 +605,9 @@ commit, measured on the merged trunk.
     shows a residue is inside an existing item's scope, it is folded there and
     its id stays unused.
 -   **D-DD-11 Reviews.** Two plan reviews (R29(c)) then a separate fixer (R11);
+    a focused re-review of the fold and a separate fixer, repeated until a
+    re-review returns a verdict other than REJECT, which the Status line
+    records as the sign-off (amended 2026-10-13, review fold: RR-A-1);
     the writer; two document reviews of the landed pages by fresh agents
     (review A: contradictions with accepted proposals, sibling pages and fork
     decisions, including the held PRs' pages DD-1 meets at state L, and, for
@@ -631,10 +678,11 @@ commit, measured on the merged trunk.
 -   **interoperability/threads_and_atomics.md (new):** Overview, the contract,
     "In the 0.1 toolchain", Alternatives considered, References.
 -   **README.md:** a fork note after the "This document is provisional"
-    disclosure; `### Enums` content; Abstract machine content; Metaprogramming,
-    Co-routines and Concurrency notes; the template-constraints note; five
-    "Fork note" blockquotes after stale provisional notes (amended 2026-10-13,
-    review fold: A-5 / A-8 / B-2 / B-M-8).
+    disclosure; `### Enums` content; Abstract machine content; a Metaprogramming
+    note; Co-routines and Concurrency notes beside their kept upstream markers
+    (amended 2026-10-13, review fold: RR-N-3); the template-constraints note;
+    five "Fork note" blockquotes after stale provisional notes (amended
+    2026-10-13, review fold: A-5 / A-8 / B-2 / B-M-8).
 -   **Two more pages:** code_and_name_organization/README.md and
     expressions/comparison_operators.md, one note each; the comparison note
     follows the kept upstream marker (amended 2026-10-13, review fold: A-8).
@@ -670,10 +718,12 @@ for fixtures. Exit status 1 on any error, with every error listed.
 ### §1.4 Residue policy
 
 A toolchain behavior is filed when it is a crash, or a divergence from an
-accepted proposal or fork decision that blocks a 0.1 bullet's documented
-behavior (W-182..W-185, W-188..W-190), unless an existing item already owns
-it, in which case that item's evidence gains the finding (W-080, W-053, W-155,
-W-167, W-014; D-DD-10) (amended 2026-10-13, review fold: A-1 / A-4 / B-M-1).
+accepted proposal, a leads decision or a fork decision that blocks a 0.1
+bullet's documented behavior (W-182..W-185, W-188, W-189, W-191), unless an
+existing
+item already owns it, in which case that item's evidence gains the finding
+(W-080, W-053, W-155, W-167, W-014; D-DD-10) (amended 2026-10-13, review fold:
+A-1 / A-4 / B-M-1; RR-A-1).
 A divergence that does not block a bullet (the parenthesized guard of R19,
 constant-value aliases) is documented on the page with both citations and not
 filed, because upstream owns both the text and the parser. Every filed
@@ -996,12 +1046,15 @@ stay after it.
 
 (The text below is amended 2026-10-13, review fold: A-1 / B-M-1 / B-m-7: the
 status note no longer calls issue 686 open, and the last paragraph states only
-measurements.)
+measurements; amended 2026-10-13, review fold: RR-A-1: the last paragraph
+states the answer the leads gave on issue 686, checked online (§8.10), and the
+toolchain's divergence from it, W-188, and the status note says that no
+proposal incorporates that answer yet.)
 
 ````markdown
 > **Fork status (2026-10-DD).** No accepted proposal states these rules:
 > proposal 2511 leaves the semantics of assignment for these types to leads
-> issue 686, below, whose rules are not part of the proposal. The 0.1
+> issue 686, below, whose answer no proposal incorporates yet. The 0.1
 > toolchain implements the following.
 
 A tuple or a struct assigns element by element from a value of the same type,
@@ -1081,21 +1134,49 @@ assigns element by element from the literal and leaves `(2, 2)`, and
 `s = {.a = s.b, .b = s.a};` does the same to a struct holding `.a = 1` and
 `.b = 2`. Binding the right-hand side first,
 `let u: (i32, i32) = (t.1, t.0); t = u;`, or copying into a `var` first, as
-the last lines of the example do, leaves `(2, 1)`. No accepted rule says which
-result the language intends for the literal form; that is leads issue 686's
-subject (fork work item W-188).
+the last lines of the example do, leaves `(2, 1)`. Leads issue 686, linked
+below, was answered in 2022: by default, assignment initializes a temporary
+from the right-hand side, destroys the destination, and moves the temporary
+into it, and a type may customize assignment where a different approach is
+more efficient. No proposal incorporates that answer yet (proposal 2511 does
+not; [issue 2489](https://github.com/carbon-language/carbon-lang/issues/2489)
+tracks one). Under it, both literal forms leave `(2, 1)`; the 0.1 toolchain's
+`(2, 2)` differs (fork work item W-188).
 ````
 
-At state L (PR 53 merged), the last sentence becomes:
+At state L (PR 53 merged), this sentence follows the last one (amended
+2026-10-13, review fold: RR-A-1: rev 2's state-L text called the literal
+form's result an open question):
 
 ````markdown
 Fork decision F-013 (D-SAFE-17,
 [Value expressions](values.md#value-expressions)) makes a value binding of a
-`Core.Plain` type, such as `i32` or a tuple of `i32`, acquire eagerly, which is
-the `let` form's `(2, 1)`. Neither F-013 nor an accepted proposal says whether
-a literal's elements are acquired the same way, so the literal form's result
-is an open question (leads issue 686, fork work item W-188).
+`Core.Plain` type, such as `i32` or a tuple of `i32`, acquire eagerly, which
+gives the `let` form's `(2, 1)`; F-013 and the answer to issue 686 agree on
+that result.
 ````
+
+**The issue 686 record, checked online on 2026-10-13** (added 2026-10-13,
+review fold: RR-A-1). Issue 686, "Operation order in struct/class
+assignment/initialization"
+(https://github.com/carbon-language/carbon-lang/issues/686), opened by josh11b
+on 2021-07-28, was closed as completed by chandlerc on 2022-11-12. The
+closing comment reads "Confirmed with leads and we're good with the correct
+thing @zygoloid describes here:", then zygoloid's three steps, "initialize a
+temporary object from the right-hand side", "destroy the destination", and
+"move the right-hand side into the left-hand side", then "And then allow
+customizing assignment when a different approach would be more efficient",
+and "Marking as closed with this answer, but this one we do still need a
+proposal for (and I think for assignment more generally)". On 2023-06-02
+josh11b wrote that proposal 2511 "implements assignment statements, but did
+not incorporate the decision of this issue", and that issue 2489 "is tracking
+that work". Issue 2489, "Create assignment order proposal"
+(https://github.com/carbon-language/carbon-lang/issues/2489), opened by
+josh11b on 2022-12-21, is open and says that issue 686 "has a decision for
+how assignment works for classes by default". The page's clause on
+customizing follows the closing comment's own wording; the re-review's
+suggested "where reinitializing in place is safe" is not what the comment
+says, which is the one cited wording deviation of the RR-A-1 fold.
 
 Counts after: unchanged (no heading, no list item). Samples: P03
 (design_docs_assignment.carbon, fork-only), R07, X01 (quote fixture for the
@@ -2417,7 +2498,7 @@ inline int UseTimes() { return Carbon::Times<3>(2); }
 The toolchain reports
 ``semantics TODO: `binding maps to a non-type template parameter` `` (fork work
 item W-044). A Carbon function with a `template` parameter cannot yet be
-called from C++: the call stops the compiler (fork work item W-190). Carbon
+called from C++: the call stops the compiler (fork work item W-191). Carbon
 operator implementations are not exported as C++ operators
 ([The operator interoperability model](#the-operator-interoperability-model)),
 and inheritance across the boundary is described in
@@ -2829,10 +2910,17 @@ the block below; the paragraph at :3914-3916 and the References line stay.
 State L replaces the last clause, from "[Templates]", with
 `[Template constraints](generics/template_constraints.md) specifies them.`
 
-**Item 4, the three `> **TODO:**` bodies at :3988, :3992 and :3996** become,
-in order, content for the abstract machine (it has no milestone deferral) and
-a dated note citing the milestone's deferral for each of the other two
-(amended 2026-10-13, review fold: A-8 / B-M-4):
+**Item 4, the three `> **TODO:**` bodies at :3988, :3992 and :3996.** The
+first, Abstract machine and execution model, becomes the content below (it has
+no milestone deferral, and the designs it cites fix the 0.1 model). The other
+two, Co-routines and Concurrency, keep their upstream `> **TODO:**` line, as
+comparison_operators.md's "Custom result types" keeps its marker (D-DD-1),
+and its dated note below (the second block for Co-routines, the third for
+Concurrency) follows the marker after a blank line, citing the milestone's
+deferral (amended 2026-10-13, review fold: A-8 / B-M-4; RR-N-3:
+rev 2 replaced these two markers with the notes). Each of the two sections
+then holds its marker and a statement of the 0.1 status, so rule (c) does
+not hit it, as for comparison_operators.md (§2.10):
 
 ````markdown
 In 0.1 there is no separate abstract-machine specification (fork note,
@@ -2913,18 +3001,32 @@ dated note follows :149. State T:
 
 ````markdown
 > **Fork note (2026-10-DD):** In this fork, what is provisional is marked in
-> place. Each former placeholder page or section carries a dated status note
-> that says what an accepted proposal or fork decision fixes, what the 0.1
-> toolchain implements, and where the two differ, and the provisional notes
-> that remain qualify the text beside them.
+> place. Each former placeholder page or section now carries measured 0.1
+> content or a dated status note: the pages that described themselves as
+> placeholders ([Templates](templates.md),
+> [Metaprogramming](metaprogramming.md), [Aliases](aliases.md),
+> [Blocks and statements](blocks_and_statements.md), and the `match` section
+> of [Pattern matching](pattern_matching.md#pattern-match-control-flow)), the
+> interoperability README's former `TODO` sections, this document's
+> [Enums](#enums) and [Execution abstractions](#execution-abstractions)
+> sections, and the rules for
+> [assigning tuples, structs, and data classes](assignment.md#tuples-structs-choice-types-and-data-classes).
+> The provisional notes that remain qualify the text beside them.
 > `fork/designdocs/check_samples.py` reports any placeholder
 > self-description, `TODO` heading, or `TODO`-only section that returns.
 ````
 
-State L (PR 53 and PR 55 merged, the W2 `ALLOWLIST` empty) adds, before the
-last sentence: "No section of this document or of the pages it links is an
-empty placeholder." The note's first sentence is the `QUALIFIED` entry's quote
-(§2.12 item 5).
+(The note is amended 2026-10-13, review fold: RR-N-2: rev 2 said that every
+former placeholder page or section carries a dated status note, which is
+false for the interop README's sections, Enums, and the abstract machine,
+which receive measured content, and it did not name the pages.) State L
+(PR 53 and PR 55 merged, the W2 `ALLOWLIST` empty) adds, before the last
+sentence: "No section under docs/design/ is an empty placeholder." (amended
+2026-10-13, review fold: RR-N-2: rev 2's sentence also covered every page the
+README links, among them docs/project/ and proposals/, which the W2 rule does
+not read). The note's first sentence is the `QUALIFIED` entry's quote
+(§2.12 item 5), and it spans a blockquote line break, which the matcher
+handles (§2.12 item 3).
 
 Counts after: no heading or list change in README.md (the notes are
 blockquotes; the Enums sample is a fenced block). Sample: P15
@@ -3047,14 +3149,15 @@ i32) = (t.1, t.0); t = u;`", both in assignment.md's "Tuples, structs, choice
 types, and data classes". X02's body is pattern_matching.md's first `match`
 example (:730-745), unchanged, and its QUOTE is its EXPECT-ERROR message,
 which the status note of §2.6 quotes in "Pattern match control flow". X01's
-header says what it pins (amended 2026-10-13, review fold: B-m-7): "Pins the
-0.1 toolchain's current result for a swap written as a literal, which no
-accepted proposal or fork decision rules on (leads issue 686; fork work item
-W-188, the open question). The expected lines restate the page's measured
-sentence, not a design rule: this fixture keeps the page honest about current
-behavior and must change, with the page, when W-188 is decided." (Not filing
-was not an option under §1.4's own rule, since the page names an open
-question; W-188 is the residue.) The bodies of R11, X01 and X03:
+header says what it pins (amended 2026-10-13, review fold: B-m-7; RR-A-1):
+"Pins the 0.1 toolchain's current result for a tuple and a struct swap
+written as a literal, `(2, 2)`, which differs from the answer the leads gave
+on issue 686 (a temporary from the right-hand side, then the destination
+destroyed and the temporary moved in, which gives `(2, 1)`). The expected
+lines restate the page's measured sentence, not a design rule: this fixture
+keeps the page honest about current behavior and changes, with the page,
+when the toolchain defect W-188 is fixed." (W-188 is filed under §1.4's rule
+as a divergence from a leads decision.) The bodies of R11, X01 and X03:
 
 ```carbon
 fn Convert[template T: type](source: T, template U: type) -> U {
@@ -3109,7 +3212,13 @@ fork/evaluator/check_samples.py; ruff-clean; `main()` returns the status):
     after its leading comment block (EV-1's `strip_leading_comments`).
 3.  Fixture check: each `block` fixture's body equals the page block; every
     fixture's EXPECT-ERROR message (or QUOTE) occurs in its section's prose
-    after collapsing all whitespace runs to one space on both sides.
+    after normalizing both sides: first each prose line loses its leading
+    blockquote markers (the regular expression `^\s*>\s?`, applied
+    repeatedly, so a nested quote loses every level), then all whitespace
+    runs collapse to one space. A quote that spans a blockquote line break,
+    as the README note's `QUALIFIED` quote does, then matches (amended
+    2026-10-13, review fold: RR-N-1: rev 2 collapsed whitespace only, which
+    left the `>` marker inside that quote).
 4.  Count check: the number of `carbon` blocks in each mapped section equals
     the number the table maps there (no unmapped block in a DD-1 section).
 5.  W2 rule over docs/design/ (fence-aware): (a) the boilerplate regex
@@ -3120,10 +3229,12 @@ fork/evaluator/check_samples.py; ruff-clean; `main()` returns the status):
     least one being a TODO marker. Hits are keyed by (file, section heading,
     clause). `QUALIFIED` holds (README.md, "This document is provisional", a)
     with the quote "In this fork, what is provisional is marked in place"; the
-    entry passes only while that quote occurs in the same section, and it stays
-    at state L. `ALLOWLIST` is set per commit and shrinks (amended 2026-10-13,
-    review fold: A-5 / B-2 / B-M-2): after commit 1 it holds the sixteen hits
-    that commits 2 and 3 and the held PRs remove (interop README: eight `TODO:`
+    entry passes only while that quote occurs in the same section, matched after
+    item 3's normalization (blockquote markers stripped, then whitespace
+    collapsed; amended 2026-10-13, review fold: RR-N-1), and it stays at state
+    L. `ALLOWLIST` is set per commit and shrinks (amended 2026-10-13, review
+    fold: A-5 / B-2 / B-M-2): after commit 1 it holds the sixteen hits that
+    commits 2 and 3 and the held PRs remove (interop README: eight `TODO:`
     headings and the :275 TODO-only body; README.md: Enums, Lifetime and move
     semantics, Abstract machine and execution model, Co-routines, Concurrency,
     and the disclosure, which commit 3 moves to `QUALIFIED`; arithmetic.md:
@@ -3142,6 +3253,15 @@ fork/evaluator/check_samples.py; ruff-clean; `main()` returns the status):
     environment.
 7.  Output: one line per error, then a summary (`N program blocks, M fixtures,
     W2 hits`); exit 1 on any error.
+8.  Matcher self-check (commit 1; added 2026-10-13, review fold: RR-N-1):
+    `--self-check`, which every default run also performs first, runs item
+    3's quote matcher over built-in texts and exits 1 on any wrong answer. A
+    two-line blockquote whose lines are `> In this fork, what is provisional
+    is marked in` and `> place. Each former placeholder` must contain the
+    `QUALIFIED` quote; the same two lines with a nested `> >` prefix must
+    contain it too; a one-line prose sentence must contain a quote taken from
+    its middle, as R11's and X02's are; and a quote that is absent must not
+    match. Commit 1's message records the self-check's output.
 
 The W2 rule as specified found the 36 hits of §0.1c at 162c7e839 (prototype run
 for this plan), 37 with clause (a)'s added phrase. Expected results, which each
@@ -3162,9 +3282,10 @@ applies, after merging trunk with every held PR on it:
 -   **Held-PR citations.** "(fork work item W-155, on held PR 54)" in
     blocks_and_statements.md and pattern_matching.md, and "(fork work item
     W-167, on held PR 55)" in assignment.md, lose ", on held PR nn".
--   **assignment.md** (PR 53): the swap paragraph's last sentence becomes the
-    state-L text of §2.3 (F-013 D-SAFE-17 for the `let` form; W-188 for the
-    literal form), and W-188's notes gain D-SAFE-17's scope (§8.5).
+-   **assignment.md** (PR 53): the swap paragraph gains the state-L sentence
+    of §2.3 (F-013 D-SAFE-17 for the `let` form, which agrees with issue 686's
+    answer), and W-188's notes gain D-SAFE-17's scope (§8.5) (amended
+    2026-10-13, review fold: RR-A-1).
 -   **threads_and_atomics.md** (PR 53): contract item 2's last sentence becomes
     the block below; the Alternatives sentence's "a `Core.Sync` library veneer
     over the C++ types" gains ", a set of wrapper types unrelated to the
@@ -3186,9 +3307,11 @@ applies, after merging trunk with every held PR on it:
     in" and the link `[Template
     constraints](../generics/template_constraints.md#mapping-to-and-from-c20-concepts)`
     (SC-1).
--   **README.md**: the disclosure note gains its state-L sentence (§2.9 item
-    6), the :2890 note its state-L clause (§2.9 item 3); templates.md its
-    state-L status sentence and list text (§2.4).
+-   **README.md**: the disclosure note gains its state-L sentence (item 6 of
+    §2.9), the :2890 note its state-L clause (item 3 of §2.9); templates.md
+    its state-L status sentence and list text (§2.4) (amended 2026-10-13,
+    review fold: RR-N-4: rev 2's wrap put "6)" at a continuation line's
+    start).
 
 The threads page's contract item 2, from "The 0.1 toolchain does not detect
 data races", at state L:
@@ -3236,7 +3359,11 @@ W-014, W-155 and W-167 evidence amendments, and the header recomputed (amended
 B-M-3 / B-M-7 / B-m-8.)
 
 -   **Plan:** "DD-1 plan (rev 1): ..." (bed95d667), then "DD-1 plan (rev 2):
-    reviews A and B folded, ..." (this revision).
+    reviews A and B folded, ..." (a1d96520a), then "DD-1 plan (rev 3):
+    focused re-review folded, NOT signed off" (this revision; amended
+    2026-10-13, review fold: RR-A-1). Implementation starts only after a
+    focused re-review of rev 3 returns a verdict other than REJECT and the
+    plan's Status line records the sign-off.
 -   **DD-1 (1/4): language pages** — §2.1-§2.6 and §2.10, programs P01-P06,
     their fixtures, the checker with the language-page table and the commit-1
     `ALLOWLIST` (sixteen entries), the stub's SKIP reason refreshed (§2.11), the
@@ -3373,7 +3500,7 @@ expected output, derived from the sample's source alone:
 | P17 | `Larger(3, 7)` is `7`; `Box(i32).Make(5).Get()` is `5`; the boxed `Point`'s `y` is `4` |
 | P18 | `Make(4)` holds 4, `Add(3)` makes 7, `Twice(7)` is `14`; `Make(21)` doubled by `Double` holds 42, so `Value()` is `42` |
 | P19 | 2 + 4 + 6 = `12`; after `push_back(8)` the vector has four elements, so `4` |
-| X01 | the page's measured rule, element by element from the literal: from (1, 2), `t.0` becomes `t.1`, 2, then `t.1` becomes the new `t.0`, 2: `2`, `2`; the struct the same: `2`, `2` (not a design derivation; see X01's header, §2.12) |
+| X01 | the toolchain's measured behavior, element by element from the literal: from (1, 2), `t.0` becomes `t.1`, 2, then `t.1` becomes the new `t.0`, 2: `2`, `2`; the struct the same: `2`, `2`. Not a design derivation: issue 686's answer gives `2`, `1` for both, and W-188 is the defect (X01's header, §2.12; amended 2026-10-13, review fold: RR-A-1) |
 | X03 | `u` is bound to (2, 1) before `t` changes, so `t` becomes (2, 1): `2`, `1` |
 
 **Runner runs (2026-10-13, private `--out`):** rev 1 ran the sixteen
@@ -3404,7 +3531,7 @@ toolchain: 128 / 0 / 22 over 150, 48/56 bullets PASS.
 | a C++20 concept applied to types is a compile-time `bool` (interop README, C++ templates) | interop/cpp/template/concept.carbon split `use_concept.carbon` (`X(Cpp.IsLarge(Cpp.Small))`); W-029 for export (added 2026-10-13, review fold: B-M-5) |
 | a symbolic generic parameter is not a C++ template argument (interop README, C++ templates) | W-043; probe PR-T; fork/conformance/programs/interop/cpp_template_symbolic_arg.carbon (SKIP) (added 2026-10-13, review fold: B-M-5) |
 | `ref self` and `self` methods called from C++ (interop README, C++ use of Carbon) | interop/cpp/class/export/method.carbon splits `ref_method_lvalue.carbon`, `fail_ref_method_rvalue.carbon`, `fail_ref_method_const_lvalue.carbon`, `method_rvalue.carbon`, `method_const_lvalue.carbon` (added 2026-10-13, review fold: B-M-5) |
-| a Carbon `template` function called from C++ stops the compiler (interop README, C++ use of Carbon) | W-190; probe PR-S (added 2026-10-13, review fold: B-M-5) |
+| a Carbon `template` function called from C++ stops the compiler (interop README, C++ use of Carbon) | W-191 (rev 2's W-190; RR-FX-1); probe PR-S (added 2026-10-13, review fold: B-M-5) |
 | member and argument-dependent `begin`/`end` make a C++ range (interop README, ranges) | fork/conformance/programs/interop/cpp_range_member_begin_end_iterate.carbon and cpp_range_adl_begin_end_iterate.carbon (PASS); gap row 83 (added 2026-10-13, review fold: B-M-5) |
 | the abstract-machine content (README.md) | values.md "Expression categories" (:71) and "Value expressions" (:440, use after mutation erroneous :455-468); blocks_and_statements.md; F-008's contract (threads page); error_handling.md "Unrecoverable errors" (:873-882) (added 2026-10-13, review fold: A-8) |
 | reference-typed fields read through `*` (interop README) | interop/cpp/class/import/field.carbon `use_struct_fields.carbon` (`*s.r`); probe PR-O |
@@ -3912,7 +4039,8 @@ import. Fork and nightly: RUNS, exit 0, prints `41`.
 ## §5 Gap-row effect and scoreboard delta
 
 (Rewritten 2026-10-13, review fold: A-2 / B-1 / B-M-3 / B-M-4 / B-M-7 /
-B-M-8 / B-m-8.)
+B-M-8 / B-m-8; row 91's cell amended 2026-10-13, review fold: RR-N-3, for
+the kept Co-routines and Concurrency markers.)
 
 -   **Conformance (state T, expected, not of record):** programs 150 plus
     nineteen: 169; PASS 128 plus nineteen: 147; SKIP 22 (the stub stays);
@@ -3937,10 +4065,13 @@ B-M-8 / B-m-8.)
     that had none (C++ templates, C++ use of Carbon, C++ ranges); every
     milestone language and interop item maps to a design section (plan
     §0.1e); docs/design/interoperability/threads_and_atomics.md states the
-    F-008 contract; the design README's TODO-only sections and
-    assignment.md's are replaced, comparison_operators.md's marker is kept
-    beside a statement of the 0.1 behavior, and the README's 'provisional or
-    placeholder' disclosure is qualified by a dated note.
+    F-008 contract; the design README's Enums and abstract-machine sections
+    and assignment.md's TODO-only section are written from measured behavior
+    and the records that fix it, the upstream markers of the README's
+    Co-routines and Concurrency sections and of comparison_operators.md's
+    custom result types are kept, each beside a dated statement of the 0.1
+    status, and the README's 'provisional or placeholder' disclosure is
+    qualified by a dated note.
     fork/designdocs/check_samples.py's W2 rule finds no placeholder
     self-description, TODO heading or TODO-only section under docs/design/
     beyond that one qualified disclosure. Not designed, by milestone deferral
@@ -3952,8 +4083,9 @@ B-M-8 / B-m-8.)
     §0.1f). Nineteen documentation-sync programs PASS under their feature
     bullets (expected; local run 2026-10-DD). DONE on two document reviews
     (rows 88-90 precedent); toolchain defects found are filed under their own
-    bullets (W-182..W-185, W-188..W-190) or added to the items that own them
-    (W-080, W-053, W-155, W-167, W-014). Not run: <§8.10 verbatim>."
+    bullets (W-182..W-185, W-188, W-189, W-191) or added to the items that
+    own them (W-080, W-053, W-155, W-167, W-014). Not run: <§8.10
+    verbatim>."
 -   **Row 70** (`C++ interop: threading, atomics, memory model,
     synchronization`), discharge commit, after the document-review fold:
     PARTIAL → **DONE** (expected); the cell's "Missing: ..." sentence becomes
@@ -3983,7 +4115,8 @@ safety/mutation_safety.md (SAFE-1's) (amended 2026-10-13, review fold: A-2 /
 B-1 / B-M-5 / B-M-6). The held PRs' overlaps and their resolutions are §0.2's
 table; name collisions: no held branch adds a `design_docs_*` program or a
 fork/designdocs/ path (`git ls-tree` on each branch head), and the residue ids
-W-180..W-194 are reserved (§0.4 of ORCHESTRATION at discharge). Upstream
+W-180..W-189 and W-191..W-194 are reserved (§0.4 of ORCHESTRATION at
+discharge; W-190 is OP-1's, RR-FX-1). Upstream
 convergence: every DD-1 edit to
 an upstream page is a dated blockquote or a new section after the original
 text, so a weekly upstream merge that rewrites a page conflicts only where
@@ -4062,7 +4195,10 @@ favor of upstream's accepted text.
     word that check-google-doc-style rewrites are quoted between its ignore and
     resume markers.
 2.  **Plan reviews:** two (R29(c)); fixer separate (R11); fold marks
-    "(amended <date>, review fold: A-n / B-n)" and a fold record.
+    "(amended <date>, review fold: A-n / B-n)" and a fold record; then
+    focused re-reviews, each folded by a separate fixer with "RR-x" marks,
+    until one returns a verdict other than REJECT (amended 2026-10-13,
+    review fold: RR-A-1).
 3.  **Document reviews:** two fresh agents after commit 3 (D-DD-11, with the
     milestone list and §0.1e in the brief); the fixer separate, and its fold
     commit lands before the discharge commit; then one implementation review
@@ -4101,8 +4237,10 @@ favor of upstream's accepted text.
     PR-I: `var s: Secret = {.x = 1}; s = {.x = 2};` for a class whose one field
     is `private`, outside the class, accepted on the fork and the nightly";
     W-188's notes gain "F-013 D-SAFE-17 (docs/design/values.md:485) makes a
-    `Plain` value binding acquire eagerly; it does not say whether a literal's
-    elements are acquired the same way".
+    `Plain` value binding acquire eagerly, which gives the `let` form's
+    `(2, 1)` and agrees with issue 686's answer; it does not rule on a
+    literal's elements, which issue 686's answer covers" (amended 2026-10-13,
+    review fold: RR-A-1).
     **Duplicate scan before filing** (B-M-1): for each residue, search the
     titles, evidence and notes of trunk's ledger and of every live branch
     head's (`git show <head>:fork/inventory/work-items.json`) for its defining
@@ -4130,13 +4268,22 @@ favor of upstream's accepted text.
     -   **W-185** (language-gap; bullet "Control flow: conditions"): a block is
         not accepted as a statement (R04; p000162:65;
         blocks_and_statements.md:44-51); nightly agrees.
-    -   **W-188** (design-needed; bullet "Type system: User-defined types
-        (classes)"): the result of a tuple or struct assignment whose literal
-        right-hand side reads the target (`t = (t.1, t.0);` leaves `(2, 2)`,
-        the `let` and `var` forms `(2, 1)`); proposal 2511 leaves it to leads
-        issue 686 (p002511:104-107); evidence X01, X03, PR-U, assignment.md
-        "Tuples, structs, choice types, and data classes" (D-DD-10 says why
-        this is not a toolchain-defect).
+    -   **W-188** (toolchain-defect; bullet "Type system: User-defined types
+        (classes)") (amended 2026-10-13, review fold: RR-A-1: rev 2 filed it
+        design-needed on the false premise that issue 686 was unanswered): a
+        tuple or struct assignment whose literal right-hand side reads the
+        target is assigned in place, element by element (`t = (t.1, t.0);`
+        and `s = {.a = s.b, .b = s.a};` leave `(2, 2)`; the `let` and `var`
+        forms `(2, 1)`), which diverges from the answer the leads gave on
+        issue 686 on 2022-11-12 (initialize a temporary from the right-hand
+        side, destroy the destination, move the temporary into it; both
+        literal forms then leave `(2, 1)`); the upstream nightly 2026.10.12
+        behaves the same. No proposal incorporates the answer yet
+        (p002511:104-107 says that the issue's rules are not part of proposal
+        2511; open issue 2489, "Create assignment order proposal", tracks
+        one). Evidence:
+        X01, X03, PR-U, the issue 686 closing comment and issue 2489 (§8.10),
+        assignment.md "Tuples, structs, choice types, and data classes".
     -   **W-189** (missing-feature; bullet "Control flow: matching — good
         switch equivalents"): a set of constant tuple patterns never counts as
         exhaustive, although pattern_matching.md:589-592 treats constant tuples
@@ -4144,8 +4291,10 @@ favor of upstream's accepted text.
         toolchain/check/testdata/match/fail_int_nonexhaustive.carbon:120
         (`fail_bool_pair_enumeration.carbon`), fork/w078b/plan.md:109-125 (its
         R-6, the W-076 root-only record, which no open item owns).
-    -   **W-190** (toolchain-defect; bullet "Generics: C++ interop — exporting
-        Carbon templates/checked generics as C++ templates"): calling a Carbon
+    -   **W-191** (toolchain-defect; bullet "Generics: C++ interop — exporting
+        Carbon templates/checked generics as C++ templates") (renumbered from
+        rev 2's W-190, which OP-1 holds; amended 2026-10-13, review fold:
+        RR-FX-1): calling a Carbon
         function with a `template` parameter from C++ stops check at
         "CHECK failure at toolchain/sem_ir/generic.cpp:96: ... before it was
         resolved." (PR-S, both bodies; identical on the OP-1 toolchain); the
@@ -4154,7 +4303,10 @@ favor of upstream's accepted text.
         stale.
     -   **W-187** only under D-DD-9's break condition. **W-180, W-181, W-186**
         withdrawn at rev 2 (owned by W-155, W-080 and W-167), never filed.
-        **W-191..W-194** spare for later folds.
+        **W-190** is OP-1's (its lowering defect, written into
+        docs/design/optional.md on its branch), outside DD-1's reservation.
+        **W-192..W-194** spare for later folds (amended 2026-10-13, review
+        fold: RR-FX-1).
 6.  **Gap analysis:** §5's row texts and header delta.
 7.  **Decision log:** heading `### DD-1: design docs without placeholders
     (2026-10-DD)` inserted directly after the "### Full autonomy and the
@@ -4169,8 +4321,9 @@ favor of upstream's accepted text.
     +1, every other count unchanged; its lists are dash items, and the new dash
     count equals the old plus the items the entry adds.
 8.  **ORCHESTRATION:** the "Last updated" paragraph, a branch row
-    `claude/carbon-fork-0-1-dd`, the id reservation W-180..W-194 (with W-180,
-    W-181 and W-186 withdrawn), and the merge position.
+    `claude/carbon-fork-0-1-dd`, the id reservation W-180..W-189 and
+    W-191..W-194 (with W-180, W-181 and W-186 withdrawn, and W-190 OP-1's;
+    amended 2026-10-13, review fold: RR-FX-1), and the merge position.
 9.  **Landed notes** appended to this plan: commits, deviations (R17: one
     sentence each), measured totals.
 10. **Not run** (added 2026-10-13, review fold: B-M-7). Copied verbatim into
@@ -4191,8 +4344,19 @@ favor of upstream's accepted text.
         measured on its build at 5d9edb3e0;
     -   no state-L toolchain (trunk with every held PR merged) exists until
         the integration commit builds one;
-    -   no online check of issue 686, issue 749 or PR 89: their status is
-        read from the repository only (PR 89 has no file under proposals/).
+    -   online status checks, made on 2026-10-13, cover four records only;
+        no other issue or PR the pages cite was checked online (amended
+        2026-10-13, review fold: RR-A-1: rev 2 checked none). Issue 686
+        (https://github.com/carbon-language/carbon-lang/issues/686) was
+        closed as completed on 2022-11-12 with the leads' answer: "initialize
+        a temporary object from the right-hand side", "destroy the
+        destination", "move the right-hand side into the left-hand side"
+        (the full record is under §2.3). Issue 2489
+        (https://github.com/carbon-language/carbon-lang/issues/2489), which
+        tracks the proposal for that answer, is open. Issue 749 was closed
+        as completed on 2021-08-25, and PR 89 was closed unmerged on
+        2021-08-29, as the aliases.md and metaprogramming.md status notes
+        say.
 
 ## Hand-off notes for the writer
 
@@ -4215,30 +4379,33 @@ favor of upstream's accepted text.
     program change other than the stub's SKIP line and the nineteen new
     programs (amended 2026-10-13, review fold: A-2 / B-1).
 8.  Dates: replace every `2026-10-DD` with the commit date.
-9.  Never rename a marker to get past the W2 rule (D-DD-1), and never state a
-    rule that no proposal or fork decision states; write what was measured
-    (D-DD-3; added 2026-10-13, review fold: A-1 / A-8 / B-M-4).
+9.  Never rename or replace a marker to get past the W2 rule (D-DD-1), and
+    never state a rule that no proposal, leads decision or fork decision
+    states; write what was measured, and call a question open only after
+    checking its issue's status (D-DD-3; added 2026-10-13, review fold: A-1 /
+    A-8 / B-M-4; amended 2026-10-13, review fold: RR-A-1 / RR-N-3).
 
 ## Review fold record (rev 2, 2026-10-13)
 
-Plan review A (fidelity to the toolchain and the accepted proposals: REJECT,
-one BLOCKER, four MAJOR, ten MINOR) and plan review B (process, records and
+Plan review A (fidelity to the toolchain and the accepted proposals: REJECT, one
+BLOCKER, four MAJOR, ten MINOR) and plan review B (process, records and
 Goodhart: REJECT, two BLOCKER, eight MAJOR, eight MINOR) were folded by a
 separate fixer (R11) into rev 2. All 33 findings are folded and none is
 rejected. A-1 is folded with one cited deviation from its suggested fix, given
-in its row. Every measurement a finding is about was re-run in the fixer's own
-scratch (`.../scratchpad/dd1-fixer/`, with `XDG_CACHE_HOME` there): all 47 rev-1
-page samples and fixtures on the fork toolchain, the nightly, and the OP-1
-(5d9edb3e0) and SC-1 (ff490bd48) toolchains, each identical to §4.1; the
-rev-2 samples and probes on those four plus UA-2 and ST-1; the nineteen
-programs through the runner on the fork toolchain and the nightly; the W2
-rule over trunk and every held branch's docs/design/; the id and duplicate
-scans over every live branch head. Reviewer B's majors and minors are written
-B-M-n and B-m-n in the marks.
+in its row (withdrawn at rev 3; amended 2026-10-13, review fold: RR-A-1). Every
+measurement a finding is about was re-run in the fixer's own scratch
+(`.../scratchpad/dd1-fixer/`, with `XDG_CACHE_HOME` there): all 47 rev-1 page
+samples and fixtures on the fork toolchain, the nightly, and the OP-1
+(5d9edb3e0) and SC-1 (ff490bd48) toolchains, each identical to §4.1; the rev-2
+samples and probes on those four plus UA-2 and ST-1; the nineteen programs
+through the runner on the fork toolchain and the nightly; the W2 rule over trunk
+and every held branch's docs/design/; the id and duplicate scans over every live
+branch head. Reviewer B's majors and minors are written B-M-n and B-m-n in the
+marks.
 
 | Finding | Severity | Disposition | Where |
 | --- | --- | --- | --- |
-| A-1 | BLOCKER | Folded. The paragraph states only measurements (literal form `(2, 2)`, `let` and `var` forms `(2, 1)`, PR-U), the status note no longer calls issue 686 open (p002511:104-107), X01 quotes the measured sentence and gains the struct swap, X03 pins the `let` form, PR 53's values.md and mutation_safety.md hunks join §0.2, and a state-L text cites D-SAFE-17. One deviation, cited: W-188 is a design-needed residue filed at discharge, not a toolchain-defect at state L, because D-SAFE-17 rules on value bindings only (values.md:485 on PR 53; mutation_safety.md:415-416), so the literal form's result stays open and a defect would decide issue 686 | §2.3, §2.12, §2.13, §0.2, §0.1d, D-DD-3, D-DD-10, §8.5 |
+| A-1 | BLOCKER | Folded. The paragraph states only measurements (literal form `(2, 2)`, `let` and `var` forms `(2, 1)`, PR-U), the status note no longer calls issue 686 open (p002511:104-107), X01 quotes the measured sentence and gains the struct swap, X03 pins the `let` form, PR 53's values.md and mutation_safety.md hunks join §0.2, and a state-L text cites D-SAFE-17. Rev 2 also deviated from the suggested fix by filing W-188 as design-needed on the premise that issue 686 was unanswered; the focused re-review refuted that premise (issue 686 was closed with the leads' answer on 2022-11-12), and rev 3 withdraws the deviation: W-188 is a toolchain-defect filed at discharge, and the page states the answer (amended 2026-10-13, review fold: RR-A-1) | §2.3, §2.12, §2.13, §0.2, §0.1d, D-DD-3, D-DD-10, §8.5 |
 | A-2 | MAJOR | Folded with B-1: the stub stays SKIP with a refreshed R10 reason; the nineteen programs go under already-PASS feature bullets; bullets stay 48/56; §0.1b states EV-1's precedent correctly | D-DD-5, §0.1b, §0.4 item 3, §2.11, §4.1, §5, R-4 |
 | A-3 | MAJOR | Folded: the reference mapping is the toolchain's, proposal 5434 defers it (p005434:897-900); the README :3733 note covers primitives (5448), pointers (6357), and the `T&` sentence at :3757-3758 | §2.7 pointers section, §2.9 item 5, §0.1c, D-DD-8 |
 | A-4 | MAJOR | Folded: "as specified above" is qualified; a "Not in the 0.1 toolchain" item states the tuple-exhaustiveness difference; W-189 filed; probe PR-R | §2.6, §0.1, §0.1d, §4.3, §8.5 |
@@ -4259,7 +4426,7 @@ B-M-n and B-m-n in the marks.
 | M-2 | MAJOR | Folded: a per-commit `ALLOWLIST` (sixteen, six, two, none) with expected W2 output in each message | D-DD-2, D-DD-6, §2.12, §3, §8.1 |
 | M-3 | MAJOR | Folded: row 91 is written DONE only by the integration commit once PR 53 and PR 55 are on trunk; D-DD-9's break covers PR 53, PR 54 and PR 55 | D-DD-9, D-DD-13, §2.14, §3, §5 |
 | M-4 | MAJOR | Folded: no relabelled marker (D-DD-1); review A judges each replaced marker and both reviews read as evaluators; row 91 lists the not-designed sections with milestone lines; D-DD-2 records its narrowing of W-065's arbiter | D-DD-1, D-DD-2, D-DD-11, §2.9, §2.10, §5, R-2 |
-| M-5 | MAJOR | Folded: §0.1e maps every milestone item; three measured sections added (C++ templates P17, C++ use of Carbon P18 and R33, C++ ranges P19 and R34) and a measured inheritance sentence; W-190 filed for the template-export crash (PR-S); both document reviews get the milestone list | §0.1e, §2.7, §2.11, §4.1-§4.3, §8.5, D-DD-11 |
+| M-5 | MAJOR | Folded: §0.1e maps every milestone item; three measured sections added (C++ templates P17, C++ use of Carbon P18 and R33, C++ ranges P19 and R34) and a measured inheritance sentence; W-190 filed for the template-export crash (PR-S; renumbered W-191 at rev 3, RR-FX-1); both document reviews get the milestone list | §0.1e, §2.7, §2.11, §4.1-§4.3, §8.5, D-DD-11 |
 | M-6 | MAJOR | Folded: state-L texts link M7 and D-SAFE-16 from contract item 2 and disambiguate `Core.Sync`; PR 53's safety pages join §0.2 | §2.13, §0.2 |
 | M-7 | MAJOR | Folded: §8.10 "Not run", required verbatim in commits, the decision log, rows 91 and 70, and the PR body; a PR body spec in §3 | §8.10, D-DD-12, §3, §5 |
 | M-8 | MAJOR | Folded: §0.1f classifies all 64 occurrences; the tuples note joins the cohesion notes; the mixins TODO is classified (deferred by milestones.md:273); row 91 says inline notes stay by design, with the count | §0.1c, §0.1f, §2.9 item 5, D-DD-8, §5 |
@@ -4269,5 +4436,41 @@ B-M-n and B-m-n in the marks.
 | m-4 | MINOR | Folded with A-14 | as A-14 |
 | m-5 | MINOR | Folded: the anchor is :1038-1039; heading sets use `grep -nE '^#{1,6} '` over fence-masked text | §2.9 item 5, §0.1c, §0.3, §8.1 |
 | m-6 | MINOR | Folded: the status note lists the differences and says no other is known | §2.4 |
-| m-7 | MINOR | Folded with A-1: X01's header says what it pins and why it is not a design derivation; W-188 is the residue | §2.12, §4.1 |
+| m-7 | MINOR | Folded with A-1: X01's header says what it pins and why it is not a design derivation; W-188 is the residue (at rev 3, the header says the pinned result differs from issue 686's answer; amended 2026-10-13, review fold: RR-A-1) | §2.12, §4.1 |
 | m-8 | MINOR | Folded: the document-review fold commit precedes the discharge, which writes row 91 PARTIAL | §3, D-DD-11, D-DD-13, §8.3 |
+
+### Focused re-review (rev 3, 2026-10-13)
+
+The focused re-review of rev 2 (a1d96520a) returned **REJECT**: A-1 NOT
+RESOLVED (BLOCKER), B-1 and B-2 RESOLVED, and four new MINOR findings, N-1 to
+N-4. Its consistency checks passed: the W2 allowlist counts per commit (16, 6,
+then 2), D-DD-13 against §5 and §3, B-1's sixteen bullets against
+fork/conformance/out/scoreboard.json (every one PASS, so bullets stay 48/56),
+§0.1b against EV-1's plan (fork/evaluator/plan.md:562-567 on PR 54), and the
+id reservation as of its scan. A separate fixer (R11) folds all five findings
+into rev 3, none rejected, and adds one finding of its own, RR-FX-1. Marks
+read "RR-" followed by the re-review's own finding id. Because the verdict was
+REJECT, the Status line reads "rev 3 -- NOT signed off: A-1", and no Sign-off
+section is written until a further focused re-review returns a verdict other
+than REJECT.
+
+The fixer's verification, in its own scratch (`.../scratchpad/dd1/rr3/`,
+with `XDG_CACHE_HOME` there): X01 and X03 on the fork toolchain (0bdce60a5)
+and the nightly 2026.10.12, where X01 prints `2 2 2 2` and X03 `2 1` on both,
+as the re-review measured; issue 686, issue 2489, issue 749 and PR 89 read
+online (§2.3's record, §8.10); the blockquote-aware quote matcher prototyped
+over the note of §2.9 item 6, where the `QUALIFIED` quote matches once the
+markers are stripped and fails with whitespace collapsing alone, which
+reproduces N-1, while X01's and X03's quotes still match the amended §2.3
+text; the id scan over trunk and every live branch head (RR-FX-1); and the
+R31 scan of this file at every indent, outside fences and inside the
+page-text fences (counts in the commit message).
+
+| Finding | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| RR-A-1 (A-1) | BLOCKER | Folded. Issue 686 checked online: closed as completed on 2022-11-12 with the leads' answer; issue 2489, which tracks the proposal, is open. §2.3's state-T paragraph states the answer, that no proposal incorporates it yet (proposal 2511 does not; issue 2489 tracks one), that both literal forms leave `(2, 1)` under it, and that the toolchain's `(2, 2)` differs (W-188); the status note says the answer is not yet in a proposal; the state-L sentence cites D-SAFE-17 for the `let` form and says that F-013 and issue 686 agree on `(2, 1)`. W-188 is a toolchain-defect filed at discharge, with the issue 686 closing comment and issue 2489 beside X01, X03 and PR-U as evidence; X01's header says it pins the current result, which differs from the answer, and changes when W-188 is fixed. "Open question" is gone from the header, §0.1d, D-DD-10, §2.3, §2.12, §8.5 and the rev-2 A-1 row, and rev 2's deviation from review A's fix is withdrawn. D-DD-3 and §1.4 add leads decisions as a source, and §8.10 records the check. One cited wording deviation: the page's clause on customizing follows the closing comment ("allow customizing assignment when a different approach would be more efficient"), not the suggested "where reinitializing in place is safe", which the comment does not say | header, §0.1d, D-DD-3, D-DD-10, D-DD-11, §1.4, §2.3, §2.12, §2.13, §3, §4.1, §8.2, §8.5, §8.10, hand-off note 9, rev-2 A-1 and m-7 rows |
+| RR-N-1 (N-1) | MINOR | Folded: §2.12 items 3 and 5 strip leading blockquote markers (`^\s*>\s?`, repeated) from each prose line before collapsing whitespace; item 8 adds a matcher self-check with a two-line and a nested blockquote text, which every default run performs first and commit 1's message records | §2.12 items 3, 5 and 8; §2.9 item 6 |
+| RR-N-2 (N-2) | MINOR | Folded: the note says that each former placeholder page or section now carries measured 0.1 content or a dated status note, and names them; the state-L sentence is limited to docs/design/ | §2.9 item 6 |
+| RR-N-3 (N-3) | MINOR | Folded, first option: the Co-routines and Concurrency markers stay, each followed by its dated deferral note, as comparison_operators.md's marker does; D-DD-1 states one rule for future extensions and milestone deferrals; §0.1c, §1.1 and row 91's cell follow. Rule (c) does not hit a section that holds a marker and a note, so the allowlist counts per commit (16, 6, 2, 0) are unchanged | D-DD-1, §0.1c, §1.1, §2.9 item 4, §5, hand-off note 9 |
+| RR-N-4 (N-4) | MINOR | Folded: §2.13 reads "(item 6 of §2.9)" and "(item 3 of §2.9)". Rev 2's count matched only digit-and-period markers and could not see a "6)" continuation, so its commit message's R31 claim was incomplete; rev 3 scans `^\s*[0-9]+[.)]` at every indent, outside fences and inside the page-text fences, before and after prek | §2.13 |
+| RR-FX-1 (fixer) | — | Added: OP-1's implementation-review fold (49e2cf2bf, 2026-10-13 23:53 UTC, after rev 2, and not in the re-review's scan, which found no W-18x or W-19x id on any head; OP-1 head aa89cd7cd) took W-190 for its own lowering defect as "the first id after DD-1's reserved W-180..W-189" and wrote it into docs/design/optional.md (:302 and :505) on its branch, which merges before DD-1. Rev 2's W-190 is renumbered W-191; the reservation is W-180..W-189 and W-191..W-194, with W-192..W-194 spare | header, §0.1d, §0.1e, §0.4 item 9, D-DD-10, §1.4, §2.7, §4.2, §5, §6, §8.5, §8.8, rev-2 M-5 row |

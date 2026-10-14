@@ -291,7 +291,15 @@ fails if this table is stale):
 | `generics/templates_dependent_member.carbon` | Generics: Integrated templates | SKIP |
 | `generics/templates_type_param.carbon` | Generics: Integrated templates | run |
 | `generics/templates_value_param.carbon` | Generics: Integrated templates | run |
-| `generics/variadics_each.carbon` | Generics: Definition-checked variadics | SKIP |
+| `generics/variadics_arg_order.carbon` | Generics: Definition-checked variadics | run |
+| `generics/variadics_each.carbon` | Generics: Definition-checked variadics | run |
+| `generics/variadics_empty_pack.carbon` | Generics: Definition-checked variadics | run |
+| `generics/variadics_expansion_args.carbon` | Generics: Definition-checked variadics | run |
+| `generics/variadics_fixed_params.carbon` | Generics: Definition-checked variadics | run |
+| `generics/variadics_forward.carbon` | Generics: Definition-checked variadics | run |
+| `generics/variadics_generic_element.carbon` | Generics: Definition-checked variadics | run |
+| `generics/variadics_no_copy.carbon` | Generics: Definition-checked variadics | run |
+| `generics/variadics_sum_diff.carbon` | Generics: Definition-checked variadics | differential |
 | `interop/cpp_adl_swap_extension_point.carbon` | Functions: C++ interop — open overload sets as extension points (swap etc.) | SKIP |
 | `interop/cpp_atomic_carbon_class_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |
 | `interop/cpp_atomic_global_counter_diff.carbon` | C++ interop: threading, atomics, memory model, synchronization | differential |

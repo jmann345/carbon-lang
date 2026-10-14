@@ -732,9 +732,18 @@ static auto BuildTypeForInst(FileContext& context, SemIR::PointerType /*inst*/)
           nullptr};
 }
 
-static auto BuildTypeForInst(FileContext& /*context*/, SemIR::PackType /*inst*/)
+// Fork (VA-1, D-VA-3): a pack type `«E; N»` is laid out as `N` objects of type
+// `E`. A value of a pack type is the address of a pack of its elements' value
+// representations, whose type is lowered the same way.
+static auto BuildTypeForInst(FileContext& context, SemIR::PackType inst)
     -> LoweredTypes {
-  CARBON_FATAL("Unexpected pack type in lowering");
+  auto arity = context.sem_ir().GetZExtIntValue(inst.arity_id);
+  CARBON_CHECK(arity, "Lowering pack type of unknown arity");
+  return {llvm::ArrayType::get(
+              context.GetType(context.sem_ir().types().GetTypeIdForTypeInstId(
+                  inst.element_type_inst_id)),
+              *arity),
+          nullptr};
 }
 
 static auto BuildTypeForInst(FileContext& /*context*/,

@@ -9,6 +9,7 @@
 
 #include "common/map.h"
 #include "common/raw_string_ostream.h"
+#include "llvm/ADT/STLFunctionalExtras.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
@@ -105,6 +106,25 @@ class FunctionContext {
   // Builds LLVM IR for the specified instruction.
   auto LowerInst(SemIR::InstId inst_id) -> void;
 
+  // Builds LLVM IR for the body of a pack expansion of `arity` elements, once
+  // per element, with the iteration's `PackIndex` lowered to the element's
+  // index (docs/design/variadics.md, "Execution Semantics": the body is
+  // executed N times, with `$I` ranging from 0 to N - 1). `finish_iteration`,
+  // if given, is called with the index after each iteration's body, while the
+  // values that the iteration computed are still available; they are
+  // discarded before the next iteration.
+  auto LowerPackExpansionBody(
+      uint64_t arity, SemIR::InstBlockId body_block_id,
+      llvm::function_ref<auto(uint64_t index)->void> finish_iteration = {})
+      -> void;
+
+  // Returns the pack index of the current iteration of the pack expansion
+  // being lowered.
+  auto pack_index() const -> uint64_t {
+    CARBON_CHECK(pack_index_, "Pack index used outside a pack expansion");
+    return *pack_index_;
+  }
+
   // Returns a phi node corresponding to the block argument of the given basic
   // block.
   auto GetBlockArg(SemIR::InstBlockId block_id, TypeInFile type)
@@ -141,6 +161,9 @@ class FunctionContext {
     bool added = locals_.Insert(inst_id, value).is_inserted();
     CARBON_CHECK(added, "Duplicate local insert: {0} {1}", inst_id,
                  sem_ir().insts().Get(inst_id));
+    if (pack_index_) {
+      pack_iteration_locals_.push_back(inst_id);
+    }
   }
 
   // Returns whether a lowered value has been set for the given instruction.
@@ -429,6 +452,12 @@ class FunctionContext {
 
   // Maps a function's SemIR::File instructions to lowered values.
   Map<SemIR::InstId, llvm::Value*> locals_;
+
+  // While lowering the body of a pack expansion, the index of the current
+  // element, and the instructions given a value in `locals_` during the
+  // current iteration.
+  std::optional<uint64_t> pack_index_;
+  llvm::SmallVector<SemIR::InstId> pack_iteration_locals_;
 };
 
 namespace Internal {

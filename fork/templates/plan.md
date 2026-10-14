@@ -903,6 +903,13 @@ by most translation units) and are hand-predicted in Appendix D; the six
 DD-1 forms that need them (X13 to X16, X19, X24) are the only fixtures that
 fail with v13 under PR 58's checker (§2.9).
 
+Measured at implementation (amended 2026-10-14, implementation: measured):
+each commit is red alone exactly on these sets and its new goldens, except
+that two of Appendix A's splits need C4 and are added by C4, not C3
+(index.carbon's `index_class_with_index_with` and pointer.carbon's
+`fail_deref_class_type_param`), so C4 alone is also red on index.carbon and
+pointer.carbon (§8, "Measured at implementation").
+
 New golden sources (Appendix A) were run through v13's `file_test
 --autoupdate` by writing each into a path that is in the trunk build's
 manifest, in a scratch mirror (`$X/bin/au_carrier.sh`; `file_test` runs only
@@ -952,6 +959,41 @@ it, §3), so those files take the merged trunk's text without conflict;
 fork/conformance/README.md conflicts only in its generated program table, which
 F6 regenerates with `python3 fork/conformance/runner.py --update-readme-table`
 and checks with `--self-test`.
+
+**Composition at state T, 2026-10-14, SC-1 head a35535174, VA-1 head b0822a744
+(amended 2026-10-14, implementation: held state).** M merged no PR (§1.12), so
+the dry run and the compositions that §3 places at M were measured on copies,
+with the whole of TP-1 at the branch head 6efc3f257 rather than v13. The full
+TP-1 diff (`git diff b2576f6c3..6efc3f257 -- toolchain core`: 45 files, 25
+sources, 13 new goldens and the seven refills of §4) was dry-run with `patch`
+onto a `git archive` of each branch head and then applied there. Every
+translation unit that includes a changed file (by the branch build's `ninja -t
+deps`; 270 of 320 translation units on SC-1 and 271 of 321 on VA-1, because
+inst_kind.def and diagnostics/kind.def are X-macro lists) was compiled from the
+composed sources and relinked over the rest of the branch's own objects into
+`/dev/shm`. SC-1's build is `/home/user/carbon-build/carbon-sc`,
+0.0.0-0.dev+5d778d044, whose toolchain equals a35535174's (the commits after it
+change one golden and records); VA-1's is `/home/user/carbon-build/carbon-va`,
+0.0.0-0.dev+88b1b5bd2, whose toolchain equals b0822a744's. Each composition was
+gated twice: over the branch's own testdata (a `git archive` mirror, with the
+branch build's manifest) and over the composed testdata (the branch's goldens
+plus TP-1's 13 new and 7 refilled ones, with a manifest that adds the 13). The
+mirrors were deleted after the measurement (`$I/stage4/comp/`, the logs).
+
+| Composition | Dry run of the TP-1 diff | Gate, branch's testdata | Gate, composed testdata | Programs and fixtures |
+| --- | --- | --- | --- | --- |
+| SC-1 a35535174, without S (the M state; mutant M18) | 45 files: convert.cpp's hunk for `PerformAction(ConvertAction)` and `(ConvertToCategoryAction)` fails, as above, and is resolved by the rule (SC-1's check first, then A2's `PendingBlock`); member_access.cpp's two include hunks fail (SC-1 already includes `<variant>`; `pointer_dereference.h` goes beside SC-1's `structural_conformance.h`); every other hunk applies, with offsets, and member_access.cpp's `PerformTupleAccess` hunk with fuzz 2, before SC-1's D-SC-20 return as the rule requires | 1943 of 1959: TP-1's seven refills and nine SC-1 goldens (interop/cpp/class/import/template_constraint.carbon, seven named_constraint/template_constraint*.carbon, lower/testdata/template/template_constraint.carbon), whose splits now report `TemplateMemberLookupAmbiguous` for a requirement | 1963 of 1972: the same nine | the eight programs print their EXPECT lines; R09 prints `25`; X21 is rejected with the `TemplateMemberLookupAmbiguous` note |
+| SC-1 a35535174, with S (§2.5's text) | the same tree, with S in `LookupMemberInTemplateConstraint` | 1952 of 1959: only TP-1's seven refills (scv13b's result) | 1972 of 1972 | as without S |
+| VA-1 b0822a744 | 45 files apply, with offsets; two hunks with fuzz 1 (call.cpp's in `PerformCallHelper`, inst_kind.def's `PointerDereferenceAction` line), each at its place | 1953 of 1960: only TP-1's seven refills | 1973 of 1973 | as on SC-1 |
+
+The rules of the table above hold at state T: M composes with SC-1 by the
+convert.cpp rule and with VA-1 textually, and S restores SC-1's nine goldens,
+so mutant M18 (S reverted) is killed. With TP-1's own fills in the composed
+trees, every golden passes on both branches, so at state T F6 has nothing to
+refill on SC-1 or VA-1: TP-1's seven refills apply unchanged, and no SC-1 or
+VA-1 golden changes. PR 51's split is not on either branch, so its rename is
+measured at land time. Each branch's build passes its own mirror (SC-1 1959
+of 1959, run after SC-1's round 17 had rebuilt it; VA-1 1960 of 1960).
 
 ### §0.10 What the arbiter's third clause means
 
@@ -1590,6 +1632,23 @@ autoupdate fixpoint, gate and conformance re-run on the merged head, and the
 two implementation reviews then review that head, so C5's composition with
 SC-1 and A2's with SC-1's structural checks are reviewed. L, R and D follow
 the reviews' fix commits.
+
+**Held state (amended 2026-10-14, implementation: held state).** GitHub
+Actions is disabled on the repository, so none of PR 51 to PR 59 is on trunk,
+and trunk is 8bfd78ae3, records-only commits over b2576f6c3. M is therefore
+the merge of trunk as it is: it brings fork/ORCHESTRATION.md and
+fork/decision-log.md only, with no conflict and no toolchain, core or testdata
+file (6efc3f257), so its build, gate and conformance are commit P's. The
+compositions with SC-1 and VA-1 that §3 places in M, S and F6 are measured,
+not committed: the full TP-1 diff is composed over each branch's head and
+relinked over its own build (§0.9, "Composition at state T"), S's text is
+measured there, and S, F6 and L stay land-time commits with the texts of
+§2.5, §3 and Appendix C. The implementation reviews review the branch head
+with trunk's records merged, plus those measurements. When PR 51 to PR 59
+are on trunk, M is repeated as a merge of that trunk, the composition is
+measured again on the merged tree, and S, F6 and L follow it as §3 orders
+them. D-TP-19's break condition is kept: if the merge order of record
+changes, the merge position is decided again.
 
 ### §1.13 Residues filed (W-250..W-265; W-266..W-269 spare)
 
@@ -3008,6 +3067,40 @@ golden. L is reviewed by a document review (two reviewers, R29(c)) before R
 and D, as PR 58's page needed four rounds; a fold of that review is a fix
 commit of L and re-runs the checker.
 
+**Measured with TP-1's toolchain (amended 2026-10-14, implementation: held
+state).** L stays a land-time commit (§1.12), so its checker run is
+simulated on copies, as above, with the install of the branch head
+(`/home/user/carbon-build/carbon-tp/install/bin/carbon`, 0.0.0-0.dev+df6487a05,
+whose sources equal M's). Each copy is a `git archive` of fcee90d9b's `docs`
+and `fork` under `$I/sim-l` (`/home/user/carbon-dd` is not edited). Appendix
+C, extracted from this plan, is byte-identical to `$Y/sim/ext4` and was
+applied with `patch` (`root-c`); `$X/sim/l/apply_l.py <root> 2026-10-20`
+was run on a second copy (`root-a`). The two differ only in page prose
+that rev 3 rewrote after `apply_l.py` was written (the 0.1 section's
+introduction, one dated note and three limit bullets); the fixtures and the
+`SAMPLES` lines are identical, and the checker reports the same on both.
+
+<!-- google-doc-style-ignore -->
+
+```text
+root-base (fcee90d9b, before the edits), without and with --toolchain:
+check_samples: 19 program blocks, 67 fixtures, 3 W2 hits (2 allowlisted, 1 qualified); 0 errors
+check_samples: 19 program blocks, 67 fixtures (compiled), 3 W2 hits (2 allowlisted, 1 qualified); 19 errors
+root-c (Appendix C) and root-a (apply_l.py), the same two lines for both:
+check_samples: 19 program blocks, 70 fixtures, 3 W2 hits (2 allowlisted, 1 qualified); 0 errors
+check_samples: 19 program blocks, 70 fixtures (compiled), 3 W2 hits (2 allowlisted, 1 qualified); 0 errors
+```
+
+<!-- google-doc-style-resume -->
+
+With the toolchain, the 19 errors before the edits are exactly the nineteen
+fixtures that L rewrites (X13 to X21, X23 to X25, X28 to X33, R09): each now
+compiles or runs where it pins an error or a crash. After the edits there is
+no error, so the six C3 fixtures (X13, X14, X15, X16, X19, X24) pass, and so
+do X21's `TemplateMemberLookupAmbiguous` quote, X34's and X35's crash stages,
+X36's `2` and R09's `25`. On the merged tree, at land time, L re-runs both
+commands, and D records them.
+
 ## §3 Commits (one PR, "TP-1: integrated templates", R29(b))
 
 **D-TP-22 (rewritten 2026-10-14, review fold: B-B2).** Five implementation
@@ -3086,6 +3179,19 @@ commit's files, which merges the two.
     entry, ORCHESTRATION, the plan's landed notes with the measured gate,
     conformance and checker runs of the merged tree, and the outcomes of both
     id re-scans, the one before L and the one run immediately before D.
+
+**Held state (amended 2026-10-14, implementation: held state).** While PR 51
+to PR 59 are held (§1.12), items 7, 8 and 11 run in two parts. Now: M is the
+merge of trunk 8bfd78ae3 (6efc3f257, "TP-1 (M): merge of trunk 8bfd78ae3
+(held state: records only)"), records only; S, F6 and L are measured on
+composed copies and not committed (§0.9 "Composition at state T", §2.9
+"Measured with TP-1's toolchain"); the implementation reviews (item 9) review
+the branch head and those measurements, and their fix commits (item 10), R
+and D follow as above. D records every land-time item (M with the PRs, S, F6,
+L with its document review, and the id re-scan before L) in the plan's landed
+notes and in ORCHESTRATION's Next actions. At land time, M is repeated as a
+merge of the trunk that holds the PRs, and S, F6 and L are committed with the
+texts above, each with the build, gate and checker runs of §8.
 
 **Fix commits and the shrink line.** TP-1 is about VA-1's size in toolchain
 code: the measured v14 patch is 14 files and about 620 changed lines with
@@ -3354,6 +3460,79 @@ container arbiter's, in
     gtest unit tests, lit, fuzzers, clangd-tidy's compile_commands); ASan and
     macOS/Windows; LLVM with assertions (the container's LLVM is Release); the
     owner's runner (R28).
+
+**Measured at implementation (amended 2026-10-14, implementation: measured).**
+The implementer's scratch is `$I`,
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/tp1-impl`
+(`impl/` for C1 to F5, `stage4/` for P, the mutants, M and the compositions,
+`sim-l/` for L).
+
+-   Baseline: `$Y/v14.diff` relinked over the trunk objects, 1935 of 1942
+    with the seven refills of §0.8, failure output byte-identical to
+    `$Y/gate-v14.log`; conformance 128/0/22 over 150.
+-   Build (item 1): C1 a full build (322 steps), C3 and C5 X-macro rebuilds
+    (181 and 272 steps), C2 and C4 incremental; `-Werror` clean. M changes
+    no toolchain, core or testdata file and is not rebuilt: the install of
+    record, 0.0.0-0.dev+df6487a05, is built from sources equal to M's.
+-   Gate (items 2 and 3), each commit alone, then with its fill, every fill
+    at its autoupdate fixpoint (a second pass changed nothing, except F3's,
+    which moved location numbers only; its third changed nothing): C1
+    (675e0dd94) 1939 of 1946, F1 (283197da2) 1946; C2 (637e3efaf) 1945 of
+    1947, F2 (1eff04d24) 1947; C3 (438b3c971) 1945 of 1952, F3 (a8b3c7900)
+    1952; C4 (781908afb) 1947 of 1954, F4 (989a6496c) 1954; C5 (df6487a05)
+    1954 of 1955, F5 (96fa092b6) 1955; P (32c8ed777) and M (6efc3f257)
+    1955 of 1955. No commit crashed. Each red set is §0.8's, except that two
+    of Appendix A's splits need C4 and are added by C4, not C3:
+    index.carbon's `index_class_with_index_with` (without C4, `Get(v, 0)`
+    fails with `DeductionIncomplete`) and pointer.carbon's
+    `fail_deref_class_type_param` (without C4, `C(T)` is a `call_action`
+    splice and the message prints `<cannot stringify ...>`), so C4 alone is
+    red on seven files, index.carbon and pointer.carbon among them.
+-   Conformance (item 4): 128/0/22 over 150 at C2, C3 and C5; 136/0/22 over
+    158 at P and at M, 48 of 56 bullets PASS; `runner.py --self-test`
+    reports "158 programs parsed, 56 bullets in table, OK". The eight
+    programs print their EXPECT lines: templates_dependent_pointer `4 7 8`,
+    templates_dependent_index `5 2 8`, templates_for_dependent_range
+    `6 10 12`, templates_dependent_call `8 25`, templates_constraint_lookup
+    `25 6`, templates_deduce_class_args `21 42 3`, templates_dependent_var
+    `5 6 11 0 1`, and templates_return_aggregates_diff
+    `8 10 8 6 9 4 5 7 7`, as its C++ oracle does.
+-   Mutants (item 5): each was relinked over the build of C5 (M18 over the
+    SC-1 composition, §0.9) and run on its named goldens alone, the full
+    gate (1955 files) and the eight programs (`$I/stage4/mut/`). A golden
+    file stops at its first crash, so where the named split is not the
+    first to crash, it was also compiled alone. Nineteen are killed; M17
+    survives, and is open for the fixer.
+-   clang-tidy and prek (item 6): no clang-tidy diagnostic on the changed
+    lines of any changed `.cpp` (the repository's configuration without its
+    `modernize-*` checks); prek clean on every commit's paths.
+-   Merge and land-time integration (item 7): M merged trunk's records only
+    (§1.12); the dry run and the compositions are §0.9's "Composition at
+    state T", and the checker runs are §2.9's "Measured with TP-1's
+    toolchain".
+
+| Mutant | Named killer (§8 item 5) | Measured |
+| --- | --- | --- |
+| M1 | initialize.carbon, templates_return_aggregates_diff: crash | killed: check and lower initialize.carbon abort in `return_tuple` (`CHECK failure at toolchain/check/convert.cpp:2278: new_storage_id.has_value()`), and so does the program's compile; templates_dependent_var also prints a garbage value for 11 |
+| M2 | lower initialize.carbon `return_tuple_of_call`: RC-5's CHECK | killed: lowering `G(i32)` aborts (`function_context.cpp:223: const_id.is_concrete()`, a `SpecificInst` with a non-concrete value); check initialize.carbon changes; the differential program aborts |
+| M3 | initialize.carbon `return_struct_convert`: segfault | killed: check and lower initialize.carbon segfault in `return_struct_convert` |
+| M4 | for_range.carbon `range_param`: CHECK | killed: checking `range_param`'s `for` header aborts (`inst.h:249`, a `TupleAccess` cast to `InstValue`); templates_for_dependent_range aborts |
+| M5 | `destructure_param`: FATAL | killed: lowering `Sum((i32, i32))` in `destructure_param` aborts (`FATAL failure at toolchain/lower/aggregate.cpp:69: Unexpected expression category for aggregate access into ... SpliceInst`); the differential program aborts |
+| M6 | lower `class_method_return_tuple`: CHECK | killed: lower initialize.carbon aborts first in `return_tuple` (`Dup(i32)`, `function_context.cpp:223` on an `InPlaceInit`); `class_method_return_tuple` alone aborts the same way in `Both(i32)`; the differential program aborts |
+| M7 | lower `return_tuple`: CHECK | killed: lowering `Dup(i32)` in `return_tuple` aborts (`value_store.h:284: id.index >= 0: inst<none>`); the differential program aborts |
+| M8 | `destructure_param`: lowering CHECK on a symbolic splice | killed: lowering `Sum((i32, i32))` aborts (`function_context.cpp:223` on a `SpliceInst`); check initialize.carbon changes; the differential program aborts |
+| M9 | lower for_range.carbon `range_param_called_array`: B5's CHECK | killed: B5's `CHECK failure at toolchain/lower/file_context.cpp:443` ("Return slot for ... without parameters") lowering `Sum(array(i32, 3))`; check for_range.carbon changes |
+| M10 | templates_dependent_call: `CallToNonCallable` | killed: the program does not compile (``value of type `<type of Twice>` is not callable``); call.carbon, call_wrong_arg_type.carbon and lower dependent_call.carbon change |
+| M11 | deduce_class_args.carbon: `DeductionIncomplete` | killed: `holder`, `holder_copy_constraint` and `holder_pointer` report `DeductionIncomplete`; convert.carbon, destroy_calls.carbon, index.carbon, pointer.carbon and lower template/class.carbon change; templates_deduce_class_args does not compile |
+| M12 | default_init.carbon `var_uninit`: v6's shape | killed: `var_uninit`'s definition selects the prelude's `DefaultOrUnformed` impl (`impl_witness ..., @T.as_type.as.DefaultOrUnformed.impl(%Default.facet) [template]`); only default_init.carbon changes |
+| M13 | constraint_lookup `fail_different_entities` succeeds | killed: "split `fail_different_entities.carbon` succeeded" |
+| M14 | pointer.carbon: `DerefOfNonPointer` in the definition | killed: `deref_param` and `fail_deref_non_pointer_on_instantiation` report `DerefOfNonPointer`, and `arrow_member` `ArrowOperatorOfNonPointer`, where the function is defined; unimplemented.carbon and lower pointer_index.carbon change; templates_dependent_pointer does not compile |
+| M15 | `fail_field_vs_constraint_method` succeeds | killed: "split `fail_field_vs_constraint_method.carbon` succeeded" |
+| M16 | lower `var_with_destructor`; templates_dependent_var prints garbage for 11 | killed: `Copy` writes a temporary, not `%y.var`; templates_dependent_var prints `5 6 -2036312640 0 1`; check initialize.carbon and for_range.carbon change |
+| M17 | default_init.carbon `template_interface_concrete_self`: an error in the definition | **survives**: gate 1955 of 1955, the eight programs pass. The split's `return x;` is one deferred `initialize_action` into the return slot, so no `i32 as ImplicitAs(U)` lookup is made in the definition (its SemIR has no `lookup_impl_witness`); its SemIR, and that of two probes (a class with `impl as Core.ImplicitAs(i64)` returned as `U`, and `x.(Tag(U).Id)()` with a `final impl forall [T: type] i32 as Tag(T)`), is identical with and without the mutant (`$I/stage4/mutprobe/M17`). Open for the fixer |
+| M18 | SC-1's nine template-constraint goldens | killed: over SC-1 a35535174 without S, nine SC-1 template-constraint goldens fail (1943 of 1959 on SC-1's testdata, 1963 of 1972 on the composed testdata), their splits reporting `TemplateMemberLookupAmbiguous`; with S, none (§0.9) |
+| M19 | `let_class_value_of_call`, `let_array_value_of_calls`: invalid SemIR during checking | killed: ``Built invalid semantics IR`` (a `temporary_storage` not dominated by its evaluation) checking `let_class_value_of_call`; `let_array_value_of_calls` alone fails the same way |
+| M20 | `fail_class_value_unexpected_field` succeeds | killed: "split `fail_class_value_unexpected_field.carbon` succeeded" |
 
 ## Hand-off notes for the implementer
 

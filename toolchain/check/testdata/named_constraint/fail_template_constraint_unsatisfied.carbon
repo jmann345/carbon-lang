@@ -560,10 +560,18 @@ library "[[@TEST_NAME]]";
 // finding MINOR-1). A type with no member of the requirement's name is still
 // reported, as a type that does not implement such an interface is.
 template constraint H {
+  // CHECK:STDERR: fail_requirement_signature_error.carbon:[[@LINE+4]]:11: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(x: Undefined) -> i32;
+  // CHECK:STDERR:           ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(x: Undefined) -> i32;
 }
 
 template constraint HasF {
+  // CHECK:STDERR: fail_requirement_signature_error.carbon:[[@LINE+4]]:17: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(self) -> Undefined;
+  // CHECK:STDERR:                 ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(self) -> Undefined;
   fn G(self) -> i32;
 }
@@ -588,4 +596,17 @@ fn G2[template T: HasF](x: T) -> i32 { return x.G(); }
 
 fn Test(c: C, d: D) -> i32 { return P(c) + G1(c) + G1(c) + G2(d) + G2(d); }
 
+// CHECK:STDERR: fail_requirement_signature_error.carbon:[[@LINE+13]]:38: error: cannot convert type `E` into type implementing `H` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn TestMissing(e: E) -> i32 { return G1(e); }
+// CHECK:STDERR:                                      ^~~~~
+// CHECK:STDERR: fail_requirement_signature_error.carbon:[[@LINE+10]]:38: note: type `E` has no member named `F` required by template constraint `H` [StructuralMemberMissing]
+// CHECK:STDERR: fn TestMissing(e: E) -> i32 { return G1(e); }
+// CHECK:STDERR:                                      ^~~~~
+// CHECK:STDERR: fail_requirement_signature_error.carbon:[[@LINE-38]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn F(x: Undefined) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_requirement_signature_error.carbon:[[@LINE-15]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn G1[template T: H](unused x: T) -> i32 { return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TestMissing(e: E) -> i32 { return G1(e); }

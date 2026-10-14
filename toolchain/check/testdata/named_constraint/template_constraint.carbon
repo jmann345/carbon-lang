@@ -219,10 +219,24 @@ template constraint HasGet {
 }
 
 template constraint HasAll {
+  // CHECK:STDERR: fail_todo_self_facet_in_signature.carbon:[[@LINE+7]]:19: error: cannot convert type `Self` that implements `HasAll` into type implementing `Core.Destroy & Core.Copy` [ConversionFailureFacetToFacet]
+  // CHECK:STDERR:   fn All(self) -> Core.Slice(Self);
+  // CHECK:STDERR:                   ^~~~~~~~~~~~~~~~
+  // CHECK:STDERR: {{.*}}/prelude/types/slice.carbon:24:13: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+  // CHECK:STDERR: class Slice(T: Copy & Destroy) {
+  // CHECK:STDERR:             ^~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn All(self) -> Core.Slice(Self);
 }
 
 template constraint HasNext {
+  // CHECK:STDERR: fail_todo_self_facet_in_signature.carbon:[[@LINE+7]]:20: error: cannot convert type `Self` that implements `HasNext` into type implementing `Core.OptionalStorage` [ConversionFailureFacetToFacet]
+  // CHECK:STDERR:   fn Next(self) -> Core.Optional(Self);
+  // CHECK:STDERR:                    ^~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR: {{.*}}/prelude/types/optional.carbon:30:16: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+  // CHECK:STDERR: class Optional(T: OptionalStorage) {
+  // CHECK:STDERR:                ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn Next(self) -> Core.Optional(Self);
 }
 

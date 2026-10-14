@@ -4321,7 +4321,16 @@ the reviews' probe counts, the scope of each review's re-runs as their
 directories show, the round's four answers checked against the head), confirms
 the overload clause of ROUND 9's DECISION with a probe, adds round 9 to the
 R16(d) sentence of FILL-CAUGHT MISSES and to RECORDS, and records the re-measure
-on 6231d5b42. Each fix is an R29(a) implementation decision recorded for
+on 6231d5b42; that records commit is ae807c7e8. Fill round 10 (same day),
+folding round 9's two implementation reviews: 3ae639811 (only the requirement
+that cannot be compared is skipped and the member's error is covered, ROUND 10's
+first decision; a requirement with a tuple pattern parameter refused, ROUND 10's
+second; test sources, the design page, gap row 60 and records; W-233 and W-234
+filed), 001cdb4c7 (3 goldens, CHECK lines only), 04755f23b (the split pinning an
+incomplete type's interfaces after its structural error, with its records),
+0d7ee5c19 (its golden, CHECK lines only) and the records commit after them (the
+round-10 rows marked FILLED, the commit hashes, the clean-stamp re-measure).
+Each fix is an R29(a) implementation decision recorded for
 after-the-fact veto, with its design citation and break condition; none reopens
 F-010 or the intent of a D-SC decision. Round 7's takes D-SC-10's own break
 condition on a falsifier other than the one it named (a template-phase `Self`
@@ -5683,7 +5692,39 @@ identical, line for line, to the run on a5078358c (sc1-fix9 clean9_*), but for
 the stack addresses of the nine sem_ir/mangler.cpp:185 aborts (round 6's v01 and
 vt01b; round 7's g07, g14, g15, g07t, g07t2, g14t and g15t); the 64 runs of
 round 8's reviews and round 9 give 20 clean, 42 check errors and the 2
-trunk-spelling aborts again (sc1-records9 rec_*). Against
+trunk-spelling aborts again (sc1-records9 rec_*). Round 10 (the toolchain built
+from the round-10 sources before the commit,
+stamped 0.0.0-0.dev+ae807c7e8.dirty, the uncommitted edits being exactly
+3ae639811's): autoupdate over the 19 SC-1 goldens to a fixpoint from exactly
+3ae639811's test sources (pass 1 rewrote the 3 with new source lines, pass 2
+none; the result is 001cdb4c7); gate 1959 passed, 0 failed, exit 0, 64 s, no `!`
+or `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151,
+bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 129.4 s; the full check-phase diagnostics
+of 2172 probe files (round 9's 2047, round 9's reviews' 108 and round 10's 17)
+against the round-9 toolchain rebuilt from ae807c7e8's toolchain sources
+(sc1-fix10/r9-install) are identical for 2065 and differ for 79 aborts only in
+the trace's program-arguments line, for 13 only by added errors (the genuine
+failures MAJOR-1 named: round 9's review 1's a01, a03 to a06 and e03, review 2's
+a01 to a04, and the three new splits that pin them), for 10 only by removed
+lines (the follow-on mismatch error with its notes after the member's own error:
+b01, b02, b12, p31 three times, f03, a09, a10 and s02) and for 5 by both
+(`fail_member_signature_error`; four tuple-pattern files, each an abort now the
+TODO); the 31 import sets (round 9's 29, review 1's d1 and review 2's imp1) give
+the same results but for abort code offsets, d1's use_missing_g now reporting
+the missing `G` across the import. Re-run on the toolchain rebuilt from
+001cdb4c7 with a clean tree (stamped 0.0.0-0.dev+001cdb4c7, no toolchain source
+differing from 3ae639811): autoupdate over the 19 SC-1 goldens changed nothing
+(one dot each, git status clean); gate 1959 passed, 0 failed, exit 0, 254 s, no
+`!` or `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151,
+bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 500.7 s (other workstreams' builds
+loading the machine), the same two programs moving; the 2172 probe files compare
+with the round-9 toolchain exactly as on the pre-commit build (2065 identical,
+each of the 107 differing files' diffs byte-identical), and the 31 import sets
+give results identical, line for line, to the pre-commit build's. On 04755f23b
+with that toolchain (no toolchain source differs): autoupdate over the 19 SC-1
+goldens rewrote the unsatisfied golden (the new split, 31 CHECK lines), a second
+pass none, the result 0d7ee5c19; gate on 0d7ee5c19 1959 passed, 0 failed, exit
+0, 117 s, no `!` or `?` mark. Against
 fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
 exactly two programs move in every run: generics/structural_conformance.carbon
 SKIP to PASS (`42` then `7`) and the new
@@ -5864,7 +5905,28 @@ counts, review 2's runs narrowed to what its directory shows, the round's four
 answers checked against the round-9 head); ROUND 9's DECISION's overload clause
 confirmed by a probe, here and in the plan; round 9 added to the R16(d) sentence
 of FILL-CAUGHT MISSES; the re-measure and probe re-run on 6231d5b42 here and in
-the plan; W-027's notes. No residue is filed by it.
+the plan; W-027's notes. No residue is filed by it. Round 10's fixes commit
+3ae639811: D-SC-2 (the tuple-pattern TODO), D-SC-9 (narrowed to the requirement
+that cannot be compared) and D-SC-10's cite (re-pointed at the round-10 head),
+the §4 rows for round 10, round 9's decision narrowed, round 9's review record,
+round 10's dispositions and decisions in the plan; this entry (ROUND 9's
+DECISION narrowed, ROUND 10's DECISION, the R16(d) sentence of FILL-CAUGHT
+MISSES, round 9's review record); the design page's as-landed note; gap row 60
+(`Core.Optional(Self)`, ten fill rounds, W-233, W-234); W-233 and W-234 filed;
+the cites that round 10 moved re-pointed at the round-10 head in W-027's
+evidence, W-138, W-139 and the require golden's comment
+(structural_conformance.cpp's cites from :86 to :852 now :89 to :864,
+`RequirementSignatureHasError` at :483 now `FunctionSignatureHasError` at :396;
+impl_lookup.cpp :1009-1026, which did not match the branch at the round-9 head
+either (:1015-1040), now :1015-1047 and :1144-1146), the earlier rounds' records
+keeping their positions of record. Round 10's 04755f23b: the split
+`fail_incomplete_and_interface` and its §4 row, and the sentence of ROUND 10's
+first decision that the interfaces are looked up after the incomplete-type error
+too, here and in the plan; its golden is 0d7ee5c19. Round 10's records commit,
+after 0d7ee5c19: the round-10 §4 rows marked FILLED, round 10's commit hashes
+and the clean-stamp re-measure here, in the plan, in ORCHESTRATION's status
+paragraph and Branches row and in W-027's title, evidence and notes (ten fill
+rounds), ae807c7e8 named as the records commit after 6231d5b42.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

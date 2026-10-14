@@ -167,6 +167,13 @@ fn G[template T: A](x: T) -> i32 {
 }
 
 fn Use(c: C) -> i32 {
+  // CHECK:STDERR: fail_different_entities.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `G(C as A)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return G(c);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_different_entities.carbon:[[@LINE-7]]:27: note: member name `F` names different entities in type `C` and in its constraint `A` [TemplateMemberLookupAmbiguous]
+  // CHECK:STDERR:   return x.(A.F)() * 10 + x.F();
+  // CHECK:STDERR:                           ^~~
+  // CHECK:STDERR:
   return G(c);
 }
 
@@ -191,6 +198,13 @@ fn DrawTemplate[template T: Renderable](c: T) -> i32 {
 }
 
 fn Use(c: Cowboy) -> i32 {
+  // CHECK:STDERR: fail_cowboy.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `DrawTemplate(Cowboy as Renderable)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return DrawTemplate(c);
+  // CHECK:STDERR:          ^~~~~~~~~~~~
+  // CHECK:STDERR: fail_cowboy.carbon:[[@LINE-7]]:10: note: member name `Draw` names different entities in type `Cowboy` and in its constraint `Renderable` [TemplateMemberLookupAmbiguous]
+  // CHECK:STDERR:   return c.Draw();
+  // CHECK:STDERR:          ^~~~~~
+  // CHECK:STDERR:
   return DrawTemplate(c);
 }
 
@@ -213,5 +227,12 @@ fn H[template T: A](x: T) -> i32 {
 }
 
 fn Use(c: C) -> i32 {
+  // CHECK:STDERR: fail_field_vs_constraint_method.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `H(C as A)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return H(c);
+  // CHECK:STDERR:          ^
+  // CHECK:STDERR: fail_field_vs_constraint_method.carbon:[[@LINE-7]]:10: note: member name `F` names different entities in type `C` and in its constraint `A` [TemplateMemberLookupAmbiguous]
+  // CHECK:STDERR:   return x.F;
+  // CHECK:STDERR:          ^~~
+  // CHECK:STDERR:
   return H(c);
 }

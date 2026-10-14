@@ -4310,9 +4310,13 @@ rejected signatures under F-010, a follow-on diagnostic left unpinned),
 re-points at the round-8 head the plan.md and member_access.cpp cites of round
 5's and round 6's dispositions that round 8 moved, corrects the exceptions
 stated for the round-8 probe comparisons, and records the re-measure on
-a13e70542. Each fix is an R29(a) implementation decision recorded for
-after-the-fact veto, with its design citation and break condition; none reopens
-F-010 or the intent of a D-SC decision. Round 7's takes D-SC-10's own break
+a13e70542. Fill round 9 (same day), folding round 8's two implementation
+reviews: the fixes commit (the follow-on diagnostic after a requirement's error
+removed, ROUND 9's DECISION; test sources, the design page, gap row 60 and
+records), the goldens commit (CHECK lines only) and the records commit after
+them. Each fix is an R29(a) implementation decision recorded for after-the-fact
+veto, with its design citation and break condition; none reopens F-010 or the
+intent of a D-SC decision. Round 7's takes D-SC-10's own break
 condition on a falsifier other than the one it named (a template-phase `Self`
 breaking a positive golden at the commit-1 fill; the falsifier was round 6's
 review 1 BLOCKER-1), R29(a), veto-able, and round 8 keeps it as a trade,
@@ -4702,8 +4706,10 @@ with their break conditions.
     and review 2 MAJOR-1 and MAJOR-2: this decision said that requirements were
     unaffected and that only the `Self.N` shape moved, "accepted before and
     never satisfiable"; on fb12f63cb that shape and `Box(Self)`,
-    `Self.(J.Elem)` and `Core.Slice(Self)` signatures were satisfied and ran,
-    and the `require` change went unrecorded.) The reviewer's second option,
+    `Self.(J.Elem)`, `Core.Slice(Self)` and `Core.Optional(Self)` signatures
+    were satisfied and ran, the last two by a class declaring `impl as
+    Core.Copy` and `impl as Core.Destroy` (cite corrected at fill round 9), and
+    the `require` change went unrecorded.) The reviewer's second option,
     refusing each such name and diagnosing nested declarations as TODOs, is not
     taken: it adds two rules where one flag suffices (R17). Its first reason
     here, that it keeps "a phase nothing in SC-1 uses", was false (the `Self.N`
@@ -4776,22 +4782,36 @@ the round-6 behavior on the toolchain of fb12f63cb.
     `Self` that must satisfy a facet type the constraint does not require
     (`Box(Self)` for `class Box(T: J)`, `Self.(J.Elem)`, `Core.Slice(Self)`,
     `Core.Optional(Self)`); on fb12f63cb the `Self.N` pointer signatures,
-    `Box(Self)`, `Self.(J.Elem)` and `Core.Slice(Self)` were satisfied and
-    ran (sc1-review7/adv2/p11 q01, q04 to q06; sc1-review7/adv1/p6 f14, f18,
-    f22). Requiring a nominal facet type (`require impls J`) restores those
-    cases; requiring a template constraint does not (D-SC-6). Gained: a
-    `require` whose facet type takes `Self` as an argument (`require Self
-    impls Conv(Self)`, `require impls Has(Self)`), rejected since SC-1a as
-    "constrained by a non-facet type", against the design page's "compose
-    freely" (sc1-review7/adv2 s02, s04, r01, t01). Unchanged and never
+    `Box(Self)`, `Self.(J.Elem)`, `Core.Slice(Self)` and `Core.Optional(Self)`
+    were satisfied and ran (sc1-review7/adv2/p11 q01, q04 to q06;
+    sc1-review7/adv1/p6 f14, f18; sc1-fix9/p z06 and z08, a class declaring
+    `impl as Core.Copy` and `impl as Core.Destroy` before the member, where this
+    decision cited f22, which declares the constraint and no satisfying type;
+    corrected at fill round 9, round 8's review 1 MINOR-1), and since fill round
+    9 the declaration golden's `fail_todo_` splits hold those satisfying classes
+    and their uses. Requiring the facet type that `Self` must satisfy restores
+    the facet cases: `require impls J` for `Box(Self)` and `Self.(J.Elem)`, and
+    `require impls Core.Copy & Core.Destroy` for `Core.Slice(Self)` and
+    `Core.Optional(Self)` (`self_facet_in_signature_required`); requiring a
+    template constraint does not (D-SC-6), and a member access into `Self` has
+    no workaround in SC-1 (reworded at fill round 9, round 8's review 2
+    MINOR-4). Gained: a `require` whose facet type takes `Self` as an argument
+    (`require Self impls Conv(Self)`, `require impls Has(Self)`), rejected since
+    SC-1a as "constrained by a non-facet type", against the design page's
+    "compose freely" (sc1-review7/adv2 s02, s04, r01, t01). Unchanged and never
     satisfiable: a requirement named unqualified in another's signature (`fn
     M(p: typeof(N)*)`), which names the requirement's own function for the
     satisfying type. Round 6's review 1 offered a second option, the template
-    phase kept with each name of the body that depends on `Self` refused or
-    made a TODO: it keeps the lost signatures but keeps rejecting the gained
+    phase kept with each name of the body that depends on `Self` refused or made
+    a TODO: it keeps the lost signatures but keeps rejecting the gained
     `require`s, since the template-phase `Self` made `Conv(Self)` a splice, and
     leaves each further kind of such name to the crash class of round 6's
-    BLOCKER-1, check-clean non-template code that aborts lowering. Decision:
+    BLOCKER-1, check-clean non-template code that aborts lowering; and it keeps
+    the hard "unable to monomorphize" error that the template-phase `Self` gave
+    a type not satisfying such a signature, even in an overload probe and with
+    `require impls J` (sc1-review8/adv1/p b01 to b04 on fb12f63cb), against
+    D-SC-12, which only SC-B2's probe subsystem can capture (added at fill round
+    9, round 8's review 1 MINOR-2). Decision:
     keep the checked-phase `Self`. Its losses are recorded in D-SC-10 as
     restated at fill round 8 and in the design page's as-landed note, pinned
     by declaration `fail_todo_self_member_in_signature`,
@@ -4805,9 +4825,45 @@ the round-6 behavior on the toolchain of fb12f63cb.
     SC-B2's template phase (W-028) lands; then the declaration golden's
     `fail_todo_` splits on `Self` become positive (W-169), and the require
     golden's `require_self_argument` splits stay as they are, or the phase is
-    scoped to the validity blocks' own checks. Consequence if taken: SC-B2
-    re-runs round 6's review-1 BLOCKER-1 probes and round 7's reviews' probes
-    named here before it lands.
+    scoped to the validity blocks' own checks. Consequence if taken: SC-B2 makes
+    positive the satisfying classes and uses that the `fail_todo_` splits hold
+    since fill round 9, keeps `self_facet_in_signature_required`'s overload
+    probe silent for `D` and lower `overload_probe_require` returning 0, and
+    keeps round 6's review-1 BLOCKER-1 shapes diagnosed as declaration
+    `fail_self_dependent_name` and `nested_class` and requirement-call
+    `fail_nested_requirement_as_value` pin them (re-pointed at fill round 9 from
+    probe directories outside the repository, round 8's review 2 MINOR-3).
+
+ROUND 9's DECISION (folding round 8's two implementation reviews, REVIEWS
+below), reproduced first on the toolchain stamped 0.0.0-0.dev+3245ec0d2, with
+the round-6 behavior on the toolchain of fb12f63cb.
+
+-   **A mismatch against a requirement with an error is not diagnosed again**
+    (structural_conformance.cpp `RequirementSignatureHasError` and its use in
+    `CheckRequirements`; round 8's review 1 MINOR-3 and review 2 MINOR-1).
+    Symptom: a requirement whose declaration has an error in a parameter or
+    return type (`fn F(x: Undefined) -> i32`, and since fill round 7 every W-169
+    shape) made each use of a type with a member of that name fail with
+    `ConversionFailureTypeToFacet` and a "does not match" note after the
+    definition's error (sc1-review8/adv1/p d01: two uses, two more errors),
+    where trunk 0bdce60a5's interface analog reports the definition's error
+    alone (d01t). Root cause: `CheckFunctionTypeMatches` fails on an error type
+    without a diagnostic, as upstream's redeclaration checks do (function.cpp
+    `CheckFunctionReturnTypeMatches`, merge.cpp `EntityHasParamError`), and the
+    structural check reported that failure as a mismatch. Decision: a `Mismatch`
+    against a requirement whose declaration has an error type in a parameter or
+    its return gives `StructuralCheckResult::Error`, so the conversion fails
+    with no further diagnostic in both modes and an overload probe skips the
+    member as before; a missing, inaccessible or requirement-only member is
+    still reported, as trunk reports a type that does not implement such an
+    interface. Design: D-SC-9 as amended at fill round 9; upstream's suppression
+    of follow-on diagnostics after an error type. Break condition: some member
+    is found to satisfy a requirement whose declaration has an error, or
+    upstream starts diagnosing an impl member against an erroneous interface
+    member; then the guard goes and the uses report. Pinned by unsatisfied
+    `fail_requirement_signature_error` (expected from the trunk analog
+    sc1-fix9/t/e01t: the two definition errors and the missing-member error) and
+    by the uses in the declaration golden's `fail_todo_` splits, each silent.
 
 FILL-CAUGHT MISSES (R28(d): a reviewed prediction the fill overturned; bcaeadb98
 lists (a) to (i), 502e7861a adds (j), bc8b37290 adds (k) and (l), ff490bd48 adds
@@ -5205,15 +5261,76 @@ page's name-lookup paragraph, and pins it by requirement-call
 `fail_todo_symbolic_facet`; MINOR-3 rewords D-SC-20 and the requirement-call
 comment; MINOR-4 is taken as asked (this entry's head and ROUND 7's first
 decision, the design page's dependency list, W-027's cite at :126-133 and
-:160-162). W-169, the id reserved for SC-1, is used. One round-8 observation is
+:160-162). W-169, the id reserved for SC-1, is used. One round-8 observation was
 left unpinned and unfiled: a requirement whose signature has an error (`fn F(x:
-Undefined) -> i32`) still fails each use with `ConversionFailureTypeToFacet` and
-the "does not match" note after the definition's error (sc1-fix8/p8 s05), as
+Undefined) -> i32`) still failed each use with `ConversionFailureTypeToFacet`
+and the "does not match" note after the definition's error (sc1-fix8/p8 s05), as
 before round 7, where the `interface` analog on trunk 0bdce60a5 reports the
-definition's error alone (sc1-records8/t/s05t.carbon); it follows a hard error,
-accepts no program and aborts nothing, and no id is left reserved for SC-1.
-Per-finding detail is in the plan's "Landed notes (SC-1 fill rounds,
-2026-10-13)".
+definition's error alone (sc1-records8/t/s05t.carbon); it followed a hard error,
+accepted no program and aborted nothing. Fill round 9 fixes it (ROUND 9's
+DECISION, pinned by unsatisfied `fail_requirement_signature_error`); the reason
+given here for leaving it, that no id was left reserved, was process, not
+evidence (round 8's review 2 MINOR-1). Per-finding detail is in the plan's
+"Landed notes (SC-1 fill rounds, 2026-10-13)".
+
+Round 8's own diff (4c2ecee22, 3245ec0d2, 253dd4031, a13e70542, ee1f905b0) then
+received two implementation reviews, 12 findings in all, both APPROVE-WITH-FIXES
+with no BLOCKER. Review 1, 4 MINOR: MINOR-1 the records overstate the loss of
+`Core.Slice(Self)`, cited by f22, which declares the constraint and no
+satisfying type, and claim no workaround for it; MINOR-2 ROUND 8's DECISION
+omits that on fb12f63cb a type not satisfying a `Self`-dependent signature was a
+hard "unable to monomorphize" error even in an overload probe and with `require
+impls J`; MINOR-3 the per-use follow-on of a requirement with an error, unpinned
+and unfiled; MINOR-4 gap row 60 silent on the limit and four rounds stale.
+Review 2, 2 MAJOR and 6 MINOR: MAJOR-1 the PR body's lead silent on the trade;
+MAJOR-2 the same gap row; MINOR-1 the same follow-on, its reason for being left
+(no id reserved) process, not evidence; MINOR-2 `fail_todo_symbolic_facet`
+naming no ledger id; MINOR-3 the trade's recorded shapes pinned only by probes
+outside the repository; MINOR-4 "requiring a nominal facet type restores those
+cases" overclaiming for a member access into `Self` and for
+`Core.Optional(Self)`; MINOR-5 D-SC-10's heading still stating the template
+phase; MINOR-6 the code comment at the trade not naming its consequence. On the
+round's question (whether the branch is dry and landable as scoped), both found
+no behavior change hidden in round 8's toolchain diff (the TODO text chosen by
+`is_constant()`, control flow and `ErrorInst` return unchanged; a header
+comment; CHECK lines only added), the records of the trade honest but for the
+two summary surfaces and the overstatements above, and the trade acceptable
+under F-010 with SC-B2's template phase as its lift; round 6's review-1 second
+option is not strictly better: on fb12f63cb it gave the hard errors above
+against D-SC-12 (b01 to b04), it keeps rejecting `require Self impls Conv(Self)`
+(a08), it must refuse nested template constraints, losing c01, which runs now
+and aborted lowering on fb12f63cb, and a kind of name its refusal misses checks
+clean and aborts lowering (n01); the lost signatures fail closed with trunk's
+definition errors, and most have a workaround. Both re-ran every earlier probe
+set (review 1: 1983 runs and the 29 import sets, identical to the records
+commit's run line for line but for stack addresses), the gate (1959 passed, 0
+failed) and conformance (130 / 0 / 21 over 151, 49 of 56) privately. Review 1's
+probes are sc1-review8/adv1 (p, x), review 2's sc1-review8/adv2 (p, splits,
+lsplits). Fill round 9 folds all 12, each reproduced first on the toolchain
+stamped 0.0.0-0.dev+3245ec0d2 and, for the round-6 behavior, on that of
+fb12f63cb. Dispositions: review 1's MINOR-3 and review 2's MINOR-1 are ROUND 9's
+DECISION, taken as review 1's preferred option, so no id is filed for them;
+review 1's MINOR-1 is taken in part: the f22 cite is replaced, but its claim
+that no class can name `Core.Slice` or `Core.Optional` of itself is rejected on
+evidence, since a class declaring `impl as Core.Copy` and `impl as Core.Destroy`
+before such a member checks on trunk 0bdce60a5, fb12f63cb and the round-9 build
+(sc1-fix9/p z01, z05; the review's x/s1 and x/s5 omit the `Core.Destroy` impl)
+and on fb12f63cb satisfied both signatures and ran (z06, z08), while `require
+impls Core.Copy & Core.Destroy` restores both now (z07, z09), so the records say
+both were lost and restorable; review 1's MINOR-2 is recorded in ROUND 8's
+DECISION, D-SC-10 and W-028 and pinned by `self_facet_in_signature_required`'s
+overload set and lower `overload_probe_require`; review 1's MINOR-4 and review
+2's MAJOR-2 edit gap row 60; review 2's MAJOR-1 edits the PR body (outside the
+repository); review 2's MINOR-2 files W-232, the id given to SC-1's round 9 in
+place of W-200, which OP-2's reservation W-196..W-201 holds; review 2's MINOR-3
+pins the shapes in the declaration golden (the `Core.Slice(Self)` and
+`Core.Optional(Self)` declarations, the satisfying classes with their now silent
+uses, the `Core.Copy & Core.Destroy` workaround, `fn Get2(self) -> A`) and
+re-points ROUND 8's consequence, W-169 and W-028 at them; review 2's MINOR-4,
+MINOR-5 and MINOR-6 reword the workaround (D-SC-10, ROUND 8's DECISION, the
+design page, the PR body), annotate D-SC-10's heading and rewrite
+handle_named_constraint.cpp:127-132 in its six lines. Per-finding detail is in
+the plan's "Landed notes (SC-1 fill rounds, 2026-10-13)".
 
 MEASURED, on the container only. Round 1 (the toolchain built from 1a7cce0b2's
 sources): autoupdate over the 18 goldens rewrote all 18; the gate then ran 1958

@@ -28,8 +28,10 @@ enum class StructuralCheckResult : uint8_t {
   // reports lookup failure and may explain it with
   // `NoteStructuralConformanceFailure`.
   Unsatisfied,
-  // The program is invalid and a diagnostic was emitted (an incomplete self
-  // type, D-SC-5(a)). Only possible with `diagnose`.
+  // The program is invalid and a diagnostic was emitted: an incomplete self
+  // type, D-SC-5(a), only with `diagnose`; or, in either mode, a mismatch
+  // against a requirement whose declaration has an error, diagnosed there
+  // (D-SC-9 as amended at fill round 9).
   Error,
 };
 

@@ -548,3 +548,44 @@ fn Test() -> i32 {
   // CHECK:STDERR:
   return F(HasCount);
 }
+
+// --- fail_requirement_signature_error.carbon
+library "[[@TEST_NAME]]";
+
+// A requirement whose declaration has an error is reported there alone: a
+// member that does not match it fails the check with no further diagnostic, in
+// an overload probe and at a direct use alike, as an interface member's error
+// leaves the impls of the interface undiagnosed on trunk 0bdce60a5 (D-SC-9 as
+// amended at fill round 9, round 8's review 1 finding MINOR-3 and review 2
+// finding MINOR-1). A type with no member of the requirement's name is still
+// reported, as a type that does not implement such an interface is.
+template constraint H {
+  fn F(x: Undefined) -> i32;
+}
+
+template constraint HasF {
+  fn F(self) -> Undefined;
+  fn G(self) -> i32;
+}
+
+class C {
+  fn F(unused x: i32) -> i32 { return 1; }
+}
+
+class D {
+  fn F(unused self) -> i32 { return 1; }
+  fn G(unused self) -> i32 { return 2; }
+}
+
+class E {}
+
+overload fn P[template T: H](unused x: T) -> i32 { return 10; }
+overload fn P[T: type](unused x: T) -> i32 { return 20; }
+
+fn G1[template T: H](unused x: T) -> i32 { return 0; }
+
+fn G2[template T: HasF](x: T) -> i32 { return x.G(); }
+
+fn Test(c: C, d: D) -> i32 { return P(c) + G1(c) + G1(c) + G2(d) + G2(d); }
+
+fn TestMissing(e: E) -> i32 { return G1(e); }

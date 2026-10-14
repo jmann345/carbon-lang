@@ -344,6 +344,54 @@ fn Run() -> i32 {
   return CallDo(c) + CallGet(c);
 }
 
+// --- overload_probe_require.carbon
+library "[[@TEST_NAME]]";
+
+// A member of an overload set constrained by a template constraint whose
+// requirement signature names `Box(Self)`, with `require impls J`, is probed
+// without diagnostics: `C` selects it and `D`, which does not implement `J`,
+// selects the next member, so `Run` returns 10 + 20 - 30 = 0 (D-SC-12; fill
+// round 9, round 8's review 1 finding MINOR-2; the check split
+// `self_facet_in_signature_required` in
+// named_constraint/template_constraint.carbon).
+interface J {
+  fn K(self) -> i32;
+}
+
+class Box(T: J) {
+  var k: i32;
+}
+
+template constraint HasWrap {
+  require impls J;
+  fn Wrap(self) -> Box(Self);
+  fn V(self) -> i32;
+}
+
+class C {
+  var v: i32;
+  impl as J {
+    fn K(self) -> i32 { return self.v; }
+  }
+  fn Wrap(self) -> Box(C) { return {.k = self.v}; }
+  fn V(self) -> i32 { return self.v; }
+}
+
+class D {
+  var v: i32;
+  fn Wrap(self) -> i32 { return self.v; }
+  fn V(self) -> i32 { return self.v; }
+}
+
+overload fn P[template T: HasWrap](unused x: T) -> i32 { return 10; }
+overload fn P[T: type](unused x: T) -> i32 { return 20; }
+
+fn Run() -> i32 {
+  let c: C = {.v = 3};
+  let d: D = {.v = 3};
+  return P(c) + P(d) - 30;
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'call_method.carbon'
 // CHECK:STDOUT: source_filename = "call_method.carbon"

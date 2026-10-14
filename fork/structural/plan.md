@@ -474,11 +474,22 @@ listing them verbatim at discharge (§8.5).
     facet type's requirements, `InterfaceRequireImplsNotImplemented` :946-956
     for the interface's own `require` block) stay `Emit` with NO structural
     note in SC-1 — the notes are wired only into convert.cpp:1503-1527
-    (amended 2026-10-06, review fold: A5(ii)). Break condition: a reviewer
-    finds an existing kind whose text already fits — then that kind is reused
-    and the count drops.
+    (amended 2026-10-06, review fold: A5(ii)). A member that does not match a
+    requirement whose own declaration has an error adds no error and no note of
+    its own: that error was reported at the requirement, so the check fails with
+    no further diagnostic, in both modes, as an interface member's error leaves
+    the interface's impls undiagnosed on trunk 0bdce60a5 (amended 2026-10-14,
+    fill round 9, round 8's review 1 finding MINOR-3 and review 2 finding
+    MINOR-1; structural_conformance.cpp `RequirementSignatureHasError`, pinned
+    by unsatisfied `fail_requirement_signature_error` and the uses in the
+    declaration golden's `fail_todo_` splits). Break condition: a reviewer finds
+    an existing kind whose text already fits — then that kind is reused and the
+    count drops.
 -   **D-SC-10 — `Self` inside a template constraint is a TEMPLATE-phase
-    binding.** `is_template = true` flows into `AddSelfSymbolicBindingToScope`
+    binding.** (BREAK CONDITION TAKEN 2026-10-14, fill round 7: a CHECKED-phase
+    binding as landed; restated at fill round 8, W-169; heading annotated at
+    fill round 9, round 8's review 2 finding MINOR-5.) `is_template = true`
+    flows into `AddSelfSymbolicBindingToScope`
     (handle_named_constraint.cpp:134-136), exactly the hook upstream left for it
     (§0.1 row 5), so a requirement's `self` and `Self`-typed parameters carry
     `[template]` phase like `x: T` for `template T`. Nothing in SC-1 depends on
@@ -521,13 +532,30 @@ listing them verbatim at discharge (§8.5).
     as trunk's interface `fail_todo_self_period_associated_type`), and every
     use of `Self` that must satisfy a facet type the constraint does not
     itself require (`Box(Self)` for `class Box(T: J)`, `Self.(J.Elem)`,
-    `Core.Slice(Self)`, `Core.Optional(Self)`). Of these, `typeof(Self.N)*`
-    as a parameter or return type, `Box(Self)`, `Self.(J.Elem)` and
-    `Core.Slice(Self)` were satisfiable and ran on fb12f63cb (round 7's review
-    probes q01, q04 to q06, f14, f18 and f22), so programs valid under F-010's
-    definition-time rule are lost; requiring a nominal facet type with
-    `require impls J` restores those cases (f15, f17), and requiring a
-    template constraint does not (D-SC-6). Unchanged since SC-1a and never
+    `Core.Slice(Self)`, `Core.Optional(Self)`). Of these, `typeof(Self.N)*` as a
+    parameter or return type, `Box(Self)`, `Self.(J.Elem)`, `Core.Slice(Self)`
+    and `Core.Optional(Self)` were satisfiable and ran on fb12f63cb (round 7's
+    review probes q01, q04 to q06, f14 and f18; for `Core.Slice(Self)` and
+    `Core.Optional(Self)`, a class that declares `impl as Core.Copy` and `impl
+    as Core.Destroy` before the member, fill round 9's probes z06 and z08, where
+    round 8 cited f22, which declares the constraint and no satisfying type), as
+    did `Self.A` for a type with its own `A` (z10), so programs valid under
+    F-010's definition-time rule are lost; since fill round 9 the declaration
+    golden's `fail_todo_` splits hold those satisfying classes and their uses.
+    Requiring the facet type that `Self` must satisfy restores the facet cases:
+    `require impls J` for `Box(Self)` and `Self.(J.Elem)` (f15, f17), and
+    `require impls Core.Copy & Core.Destroy` for `Core.Slice(Self)` and
+    `Core.Optional(Self)` (z07, z09), all pinned by
+    `self_facet_in_signature_required`; requiring a template constraint does not
+    (D-SC-6), and a member access into `Self` has no workaround in SC-1 (amended
+    at fill round 9, round 8's review 1 finding MINOR-1 and review 2 findings
+    MINOR-3 and MINOR-4). The template-phase `Self` of fill rounds 1 to 6 also
+    made a type that does not satisfy such a signature a hard "unable to
+    monomorphize" error at its use, even in an overload probe and with `require
+    impls J` (round 8's review 1 probes b01 to b04), against D-SC-12; a template
+    phase brought back keeps such a probe silent, as
+    `self_facet_in_signature_required`'s `P` and lower `overload_probe_require`
+    pin (round 8's review 1 finding MINOR-2). Unchanged since SC-1a and never
     satisfiable: a requirement named unqualified in another's signature (`fn
     M(p: typeof(N)*)`), which names the requirement's own function for the
     satisfying type. Moved from rejected to accepted: a `require` whose facet
@@ -793,11 +821,10 @@ listing them verbatim at discharge (§8.5).
     except, as an associated function, through a facet that is symbolic for a
     concrete base (a constraint argument naming a checked generic's parameter,
     `C.(Has(T).N)()`, or a constraint declared in another constraint's or an
-    interface's body, `C.(Outer.Inner.N)()`): that is a TODO, and
-    `(C as Has(T)).N` keeps the
-    requirement, while a method requirement is redirected through the value's
-    type (fill round 8, round 7's MINOR-2 of both reviews; requirement-call
-    `fail_todo_symbolic_facet`);
+    interface's body, `C.(Outer.Inner.N)()`): that is a TODO, filed as W-232 at
+    fill round 9, and `(C as Has(T)).N` keeps the requirement, while a method
+    requirement is redirected through the value's type (fill round 8, round 7's
+    MINOR-2 of both reviews; requirement-call `fail_todo_symbolic_facet`);
     an `alias` of it is that value; `typeof(HasN.N)` is its type, usable as a
     type (a pointer, a field, an impl's self, a generic argument) but with no
     values. Named, a value that names or holds it is refused (amended at fill
@@ -1223,6 +1250,7 @@ convention).
 | check/testdata/named_constraint/fail_todo_template_constraint_members.carbon (new) | `fail_todo_definition.carbon`: `fn G(self) -> i32 { return 1; }` in a template constraint; `fail_todo_parameterized.carbon`: `fn H[U: type](self, u: U);`; `fail_todo_assoc_const.carbon`: `let X: type;` | `SemanticsTodo` with the D-SC-2 strings. `fail_todo_assoc_const` (amended 2026-10-06, review fold: B13): the parser accepts `let X: type;` in `DeclScopeLoopAsRegular` without error (`HandleLetAfterPattern` consumes `=` only if present, parse/handle_let.cpp:89-92), so check emits exactly two diagnostics — `SemanticsTodo` "associated constant requirement in `template constraint`" at the `let` introducer (`HandleIntroducer`, handle_let_and_var.cpp:67-81, runs first) and then `ExpectedInitializerAfterLet` (kind.def:471; handle_let_and_var.cpp:405) at the declaration — in that order |
 | check/testdata/named_constraint/template_constraint.carbon (round-7 splits, 2026-10-14) | new `fail_self_dependent_name` (`HasN` with `alias A = Self` and a nested `class Inner { var k: i32; }`; `AliasOfSelf`: `let unused y: HasN.A* = 1`; `NestedClassAs`: `let unused x: bool = 1 as HasN.Inner`; `NestedClassPointer`: `let unused y: HasN.Inner* = 1`); new `nested_class` (`Outer.Inner.N()` for a class with a method declared in a template constraint); `decl`'s comment | Round 7, written after the development build ran these shapes (observed, not counted, R16(d)): the fail split has the diagnostics of the `constraint` spelling on trunk 0bdce60a5, a `ConversionFailure` to `Self*`, to `Inner` with `as` followed by `Inner` to `bool`, and to `Inner*`, each with its `MissingImplInMemberAccessInContext` note; `nested_class` has no STDERR (its lowering aborts at sem_ir/mangler.cpp:185, as the `constraint` spelling does on trunk); the dumps of `decl`, `forward`, `compose` and `generic` show `Self`, the requirements' function types and their patterns `[symbolic]` where they were `[template]` (D-SC-10 as amended) FILLED 2026-10-14 (fill round 7, 36181a729): as written, observed and not counted |
 | check/testdata/named_constraint/template_constraint.carbon (round-8 splits, 2026-10-14) | new `fail_todo_self_member_in_signature` (`HasNM` with `fn M(p: typeof(Self.N)*) -> i32`; `HasA` with `alias A = i32` and `fn Get(self) -> Self.A`); new `fail_todo_self_facet_in_signature` (`fn Wrap(self) -> Box(Self)` for `class Box(T: J)`; `fn Get(self) -> Self.(HasElem.Elem)`); new `self_facet_in_signature_required` (the same two with `require impls J` and `require impls HasElem`, a class `C` that has `impl as J`, `Wrap`, `V` and `Get`, `impl C as HasElem where .Elem = i32`, called through `CallWrap` and `CallGet`); new `fail_todo_unqualified_requirement_in_signature` (`fn M(p: typeof(N)*) -> i32`, a class mirroring it, `CallN(c)`) | Round 8, written after the round-7 build ran these shapes in the reviews' probes (observed, not counted, R16(d)): `IncompleteTypeInMemberAccessOfFacet` at `Self` of `Self.N` and of `Self.A`, each with `NamedConstraintIncompleteWithinDefinition` at the constraint; `ConversionFailureFacetToFacet` at `Box(Self)` with `InitializingGenericParam` at `T: J`, and at `Self.(HasElem.Elem)`; no STDERR for the required split; `ConversionFailureTypeToFacet` at `CallN(c)` with `StructuralMemberMismatch` at `C.M`, `StructuralRequirementHere` and `DeductionGenericHere`; the dumps of the four dumped splits unchanged FILLED 2026-10-14 (fill round 8, 3245ec0d2): as written, observed and not counted |
+| check/testdata/named_constraint/template_constraint.carbon (round-9 changes, 2026-10-14) | `fail_todo_self_member_in_signature` gains `fn Get2(self) -> A` in `HasA`, a class `C` with `N` and `M(p: typeof(N)*)`, and `Test(c)` calling `CallN(c)`; `fail_todo_self_facet_in_signature` gains `HasAll` (`fn All(self) -> Core.Slice(Self)`), `HasNext` (`fn Next(self) -> Core.Optional(Self)`), a class `C` with `impl as J`, `Wrap` and `Get` and `impl C as HasElem where .Elem = i32`, a class `S` declaring `impl as Core.Copy` and `impl as Core.Destroy` before `All` and `Next`, and `Test(c, s)` calling `CallWrap(c)` twice, `CallGet(c)`, `CallAll(s)` and `CallNext(s)`; `self_facet_in_signature_required` gains `HasAll` and `HasNext` with `require impls Core.Copy & Core.Destroy`, the class `S` and `TestSlice(s)`, a class `D` with `Wrap` returning `i32` and `V`, and `overload fn P[template T: HasWrap]` / `P[T: type]` called as `P(c) + P(d)` | Round 9, predicted by hand before the fill (counted): no diagnostic at `Get2` and none at any use in the two `fail_todo_` splits (D-SC-9 as amended at fill round 9); no STDERR for the required split, `P(d)` skipping the constrained member (D-SC-12). Observed on the development build before the fill (not counted, R16(d)): `ConversionFailureFacetToFacet` at `Core.Slice(Self)`, into `Core.Destroy & Core.Copy`, and at `Core.Optional(Self)`, into `Core.OptionalStorage`, each with `InitializingGenericParam` at the prelude class's parameter |
 
 ### §4.B Commit 2
 
@@ -1260,6 +1288,9 @@ convention).
 | check/testdata/named_constraint/template_constraint_require.carbon (round-8 splits, 2026-10-14) | new `require_self_argument` (`ConvSelf` with `require Self impls Conv(Self)`, `HasSelf` with `require impls Has(Self)`, a class `C` satisfying both, `Test(c)` calling `CallDo` and `CallGet`); new `fail_require_self_argument_unsatisfied` (`D` without `impl D as Conv(D)` and with `fn Get(self) -> i32`, `TestConv` and `TestHas`) | Round 8, observed, not counted (R16(d)): no STDERR for the positive split; `ConversionFailureTypeToFacet` at `CallConv(d)` with `DeductionGenericHere` only (a nominal `require` has no structural note, D-SC-9), and at `CallHas(d)` with `StructuralMemberMismatch` at `D.Get`, `StructuralRequirementHere` at `Has`'s `Get` and `DeductionGenericHere` FILLED 2026-10-14 (fill round 8, 3245ec0d2): as written, observed and not counted |
 | check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon (round-8 changes, 2026-10-14) | new `fail_todo_symbolic_facet` (`Has(X: type)` with `N` and `Get`, `Outer` declaring `Inner` with `M` and `G`, a class `C` with all four; `Compound` `C.(Has(T).N)()`, `ThroughAs` `(C as Has(T)).N()` and `Method` `c.(Has(T).Get)()` in checked generics `[T: type]`, `NestedCompound` `C.(Outer.Inner.M)()` and `NestedMethod` `c.(Outer.Inner.G)()`); `fail_todo_runtime_facet`'s cite and `fail_requirement_as_value`'s first sentence | Round 8, observed, not counted (R16(d)): the `SemanticsTodo` "through a symbolic facet" at `Compound` and `NestedCompound`; `StructuralRequirementUsed` at `(C as Has(T)).N` with its note; no diagnostic for the two method forms; `fail_todo_runtime_facet` keeps "through a runtime facet value" FILLED 2026-10-14 (fill round 8, 3245ec0d2): as written, observed and not counted |
 | lower/testdata/template/template_constraint.carbon (round-8 split, 2026-10-14) | new `require_self_argument` (the require split's constraints and class, `Run` returning `CallDo(c) + CallGet(c)`) | Round 8, observed, not counted (R16(d)): `CallDo`'s specific calls `C.Do` of `impl C as Conv(C)` and then `C.V`, `CallGet`'s calls `C.Get` and then `C.V`, and `main` adds the two results FILLED 2026-10-14 (fill round 8, 3245ec0d2): as written, observed and not counted |
+| check/testdata/named_constraint/fail_template_constraint_unsatisfied.carbon (round-9 split, 2026-10-14) | new `fail_requirement_signature_error` (`H` with `fn F(x: Undefined) -> i32`; `HasF` with `fn F(self) -> Undefined` and `G`; classes `C` with `F(x: i32)`, `D` with `F` and `G`, and an empty `E`; `overload fn P[template T: H]` / `P[T: type]`; `Test(c, d)` with `P(c)`, `G1(c)` twice and `G2(d)` twice; `TestMissing(e)` with `G1(e)`) | Round 9, predicted by hand before the fill from the trunk interface analog (sc1-fix9/t/e01t on 0bdce60a5; counted): `NameNotFound` at each `Undefined`; nothing at `Test`; at `G1(e)`, `ConversionFailureTypeToFacet` with `StructuralMemberMissing`, `StructuralRequirementHere` at `H.F` and `DeductionGenericHere` |
+| check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon (round-9 change, 2026-10-14) | `fail_todo_symbolic_facet`'s comment names W-232, rewrapped in its eight lines | Round 9: no CHECK line moves |
+| lower/testdata/template/template_constraint.carbon (round-9 split, 2026-10-14) | new `overload_probe_require` (`HasWrap` with `require impls J`, `fn Wrap(self) -> Box(Self)` and `V`; `C` with `impl as J`; `D` without; `overload fn P[template T: HasWrap]` / `P[T: type]`; `Run` returning `P(c) + P(d) - 30`) | Round 9, predicted by hand before the fill (counted): `Run` calls `P`'s specific for `C`, which returns 10, and the next member's for `D`, which returns 20; run as a program it returns 0 |
 
 ### §4.C Commit 3
 
@@ -3312,14 +3343,24 @@ and break condition:
     made a TODO; it keeps those signatures, but it keeps rejecting the
     `require`s (the template-phase `Self` made `Conv(Self)` a splice) and
     leaves each further kind of such name to the crash class of round 6's
-    BLOCKER-1. Design: D-SC-10 as restated at fill round 8; F-010's
-    definition-time rule stays the target, its gap filed as W-169. Break
-    condition: SC-B2's template phase (W-028) lands; then the `fail_todo_`
-    splits of the declaration golden become positive, and the require golden's
-    `require_self_argument` splits stay as they are, or the phase is scoped to
-    the validity blocks' own checks. Consequence if taken: SC-B2 re-runs round
-    6's review-1 BLOCKER-1 probes and round 7's reviews' probes named above
-    before it lands (W-028's notes).
+    BLOCKER-1; and, as round 8's review 1 found (finding MINOR-2, added at fill
+    round 9), it keeps the hard "unable to monomorphize" error that the
+    template-phase `Self` gave a type not satisfying such a signature, even in
+    an overload probe and with `require impls J` (b01 to b04 on fb12f63cb),
+    against D-SC-12, which only SC-B2's probe subsystem can capture. Design:
+    D-SC-10 as restated at fill round 8; F-010's definition-time rule stays the
+    target, its gap filed as W-169. Break condition: SC-B2's template phase
+    (W-028) lands; then the `fail_todo_` splits of the declaration golden become
+    positive, and the require golden's `require_self_argument` splits stay as
+    they are, or the phase is scoped to the validity blocks' own checks.
+    Consequence if taken: SC-B2 makes positive the satisfying classes and uses
+    that the `fail_todo_` splits hold since fill round 9, keeps
+    `self_facet_in_signature_required`'s overload probe silent for `D` and lower
+    `overload_probe_require` returning 0, and keeps round 6's review-1 BLOCKER-1
+    shapes diagnosed as declaration `fail_self_dependent_name` and
+    `nested_class` and requirement-call `fail_nested_requirement_as_value` pin
+    them (W-028's notes; re-pointed at fill round 9 from probe directories
+    outside the repository, round 8's review 2 finding MINOR-3).
 
 Round 8's §4 rows were written after the round-7 build ran their shapes in the
 reviews' probes and the development build ran the splits (R16(d)): they record
@@ -3342,10 +3383,159 @@ followed at its use by the "does not match" note as before round 7) behave as
 the splits record, and lower `require_self_argument` run as a program returns 5,
 `CallDo`'s 3 plus `CallGet`'s 2 derived by hand. The follow-on at the uses of a
 requirement whose signature has an error (s05: `ConversionFailureTypeToFacet`
-with the "does not match" note after the definition's error) is pinned by no
+with the "does not match" note after the definition's error) was pinned by no
 golden and filed under no id; its `interface` analog on trunk 0bdce60a5 reports
 the definition's error alone (sc1-records8/t/s05t.carbon), so it is a second
-diagnostic after a hard error, with no program accepted and no abort.
+diagnostic after a hard error, with no program accepted and no abort. Fixed at
+fill round 9 (round 9's decision below; unsatisfied
+`fail_requirement_signature_error`).
+
+Round 8's own diff (4c2ecee22, 3245ec0d2, 253dd4031, a13e70542, ee1f905b0) had
+two implementation reviews, 12 findings in all: review 1, APPROVE-WITH-FIXES, 4
+MINOR (MINOR-1 to MINOR-4); review 2, APPROVE-WITH-FIXES, 2 MAJOR and 6 MINOR
+(MAJOR-1, MAJOR-2, MINOR-1 to MINOR-6). Both confirmed round 8 privately on the
+driver stamped 0.0.0-0.dev+3245ec0d2: its only toolchain changes are the TODO
+text, chosen by `is_constant()` with the control flow and the `ErrorInst` return
+unchanged (member_access.cpp:1013-1036), and a header comment; its golden commit
+adds CHECK lines only; the gate (1959 passed, 0 failed), conformance (130 / 0 /
+21 over 151, 49 of 56) and every earlier probe run line for line (review 1: 1983
+runs and the 29 import sets). On the round's question (whether the branch is dry
+and the trade honestly recorded and acceptable), both found the records honest
+in D-SC-10, ROUND 8's DECISION, the as-landed note, W-028 and W-169, and the
+trade acceptable under F-010 with SC-B2 as its lift, and neither found round 6's
+review-1 second option strictly better. Review 1's evidence: on fb12f63cb a type
+that does not satisfy a `Self`-dependent signature was a hard "unable to
+monomorphize" error even in an overload probe and with `require impls J` (b01 to
+b04), against D-SC-12; the second option keeps rejecting `require Self impls
+Conv(Self)` (a08) and must refuse nested template constraints, losing c01, which
+runs now and aborted lowering at lower/handle.cpp:405 on fb12f63cb; most of the
+loss has a workaround. Review 2's: the second option's refusal must cover every
+kind of name that depends on `Self`, and a kind it misses checks clean and
+aborts lowering (n01 on fb12f63cb); the lost signatures fail closed with trunk's
+definition errors (d01, d01t); relative to trunk nothing is lost. Both found the
+per-use follow-on of a requirement with an error unpinned and unfiled, and gap
+row 60 silent on the trade (review 2 also the PR body's lead). Review 1's probes
+are sc1-review8/adv1 (p, x), review 2's sc1-review8/adv2 (p, splits, lsplits).
+
+Fill round 9 (2026-10-14), by review finding, each reproduced first on the
+toolchain stamped 0.0.0-0.dev+3245ec0d2 with the reviews' probes, and on the
+toolchain of fb12f63cb for the round-6 behavior:
+
+-   MINOR-3 (review 1) and MINOR-1 (review 2): the per-use follow-on reproduces
+    (review 1's d01: two direct uses, two more `ConversionFailureTypeToFacet`
+    errors with the "does not match" note; review 2's d01 and d02, d02 also on
+    fb12f63cb). Taken as review 1's preferred option, round 9's decision below:
+    a member that does not match a requirement whose own declaration has an
+    error fails the check with no further diagnostic. The records' reason for
+    leaving it, that no id was left reserved, is withdrawn. Pinned by
+    unsatisfied `fail_requirement_signature_error` (d01's three uses, two uses
+    of a requirement with an erroneous return type, and a type with no member of
+    the name, still reported), its expectation derived by hand from the trunk
+    interface analog sc1-fix9/t/e01t (the two definition errors and the
+    missing-impl error on 0bdce60a5), and by the uses in the declaration
+    golden's `fail_todo_` splits. No id is filed for it.
+-   MINOR-1 (review 1): taken in part. f22, the evidence cited for
+    `Core.Slice(Self)`, declares the constraint and no satisfying type, so that
+    cite is replaced. The finding's claim that no class can name `Core.Slice` or
+    `Core.Optional` of itself in its own members is rejected on evidence: a
+    class that declares `impl as Core.Copy` and `impl as Core.Destroy` before
+    such a member checks on trunk 0bdce60a5, on fb12f63cb and on the round-9
+    build (sc1-fix9/p z01, z05; the review's x/s1 and x/s5 declare no
+    `Core.Destroy` impl), and on fb12f63cb it satisfied `fn All(self) ->
+    Core.Slice(Self)` and `fn Next(self) -> Core.Optional(Self)` and ran (z06,
+    z08). D-SC-10, the decision log's ROUND 7's first decision and ROUND 8's
+    DECISION, W-169's and W-028's notes and the design page's as-landed note now
+    say that both were satisfied and ran, citing z06 and z08, and that `require
+    impls Core.Copy & Core.Destroy` restores both (z07, z09 run on the round-9
+    build); review 2's MINOR-3 below pins them. W-028's list keeps `Self.A`,
+    which ran on fb12f63cb for a type with its own `A` (z10) and not for one
+    without (review 1's a06).
+-   MINOR-2 (review 1): taken. On fb12f63cb b01 to b04 fail with "unable to
+    monomorphize", b03 with `require impls J` too; on the round-9 build b03 runs
+    and the others are rejected at the definition. Recorded in ROUND 8's
+    DECISION (the decision log's and the one above), D-SC-10 and W-028's notes,
+    whose re-flip must keep such a probe silent. Pinned by
+    `self_facet_in_signature_required` (class `D`, without `J`, and the overload
+    set `P`; expected from D-SC-12 and the design page's overload rule: no
+    STDERR, `P(c)` selecting the constrained member and `P(d)` the next) and by
+    lower `overload_probe_require` (`Run` returns 10 + 20 - 30 = 0, derived by
+    hand; it returns 0 on the round-9 build and is "unable to monomorphize" on
+    fb12f63cb).
+-   MINOR-4 (review 1) and MAJOR-2 (review 2): gap row 60 says "after nine fill
+    rounds" and its Remaining list names the W-169 limit, with SC-B2 as its lift
+    and the workaround, and W-232; the first cell is unchanged and the
+    conformance runner's `--self-test` passes (R7).
+-   MAJOR-1 (review 2): the PR body's lead paragraph states the trade, the
+    workarounds and W-169 (outside the repository).
+-   MINOR-2 (review 2): the compound access to an associated-function
+    requirement through a symbolic facet is filed as W-232, the id given to
+    SC-1's round 9 in place of W-200, which OP-2's reservation W-196..W-201
+    holds (orchestrator task 38); `fail_todo_symbolic_facet`'s comment,
+    D-SC-20's limit sentence and the design page's name-lookup paragraph name
+    it.
+-   MINOR-3 (review 2): the recorded parts of the trade are pinned in the
+    repository. `fail_todo_self_facet_in_signature` adds `Core.Slice(Self)` and
+    `Core.Optional(Self)`, and each `fail_todo_` split holds the class that
+    satisfied it on fb12f63cb with a use (`C` and `S` there, `C` for
+    `typeof(Self.N)*`), silent after the definition's errors;
+    `self_facet_in_signature_required` adds the `Core.Copy & Core.Destroy`
+    workaround with class `S`; `HasA` adds `fn Get2(self) -> A`, the unqualified
+    alias accepted. ROUND 8's decision's consequence and W-169's and W-028's
+    notes point at these splits rather than at probe directories outside the
+    repository. Extracted, the two `fail_todo_` splits check clean on fb12f63cb,
+    where the constraints were satisfied.
+-   MINOR-4 (review 2): the workaround is reworded in D-SC-10, ROUND 8's
+    DECISION, the design page and the PR body: requiring the facet type that
+    `Self` must satisfy restores the facet cases (`require impls J`; `require
+    impls Core.Copy & Core.Destroy`, which restores `Core.Optional(Self)` as
+    well, z09, beyond the finding's "lets it be declared"), and a member access
+    into `Self` has no workaround in SC-1.
+-   MINOR-5 (review 2): D-SC-10's heading carries its taken break condition, as
+    D-SC-6's carries its supersession.
+-   MINOR-6 (review 2): the comment at handle_named_constraint.cpp:127-132 cites
+    D-SC-10 as restated at fill round 8 and says that a requirement's signature
+    is therefore checked at the definition (W-169), in the same six lines, so no
+    cite of :126-133 moves; it is rebuilt with round 9's toolchain change.
+
+Rejected or narrowed: review 1's MINOR-1 in part (its "never satisfiable" claim,
+above); none of the other 11.
+
+Round 9's decision as an R29(a) implementation decision, with design citation
+and break condition:
+
+-   **A mismatch against a requirement with an error is not diagnosed again**
+    (structural_conformance.cpp `RequirementSignatureHasError` and its use in
+    `CheckRequirements`; round 8's review 1 MINOR-3 and review 2 MINOR-1).
+    Symptom: a requirement whose declaration has an error in a parameter or
+    return type (`fn F(x: Undefined) -> i32`, and since fill round 7 every W-169
+    shape) made each use of a type with a member of that name fail with
+    `ConversionFailureTypeToFacet` and a "does not match" note after the
+    definition's error, where trunk's interface analog reports the definition's
+    error alone. Root cause: `CheckFunctionTypeMatches` fails on an error type
+    without a diagnostic, as upstream's redeclaration checks do (function.cpp
+    `CheckFunctionReturnTypeMatches`, merge.cpp `EntityHasParamError`), and the
+    check reported that failure as a mismatch. Decision: a `Mismatch` against a
+    requirement whose declaration has an error type in a parameter or its return
+    gives `StructuralCheckResult::Error`, so the conversion fails with no
+    further diagnostic in both modes and an overload probe skips the member as
+    before; a missing, inaccessible or requirement-only member is still
+    reported. Design: D-SC-9 as amended at fill round 9; upstream's suppression
+    of follow-on diagnostics after an error type. Break condition: some member
+    is found to satisfy a requirement whose declaration has an error, or
+    upstream starts diagnosing an impl member against an erroneous interface
+    member; then the guard goes and the split's uses report. Pinned by
+    unsatisfied `fail_requirement_signature_error` and the uses in the
+    declaration golden's `fail_todo_` splits.
+
+Round 9's new expectations were derived by hand before the fill (the trunk
+analog e01t run on 0bdce60a5 for the unsatisfied split; D-SC-12 for the overload
+probe; the definition errors alone for the `fail_todo_` uses), and the
+development build matched each (R16(d)). Extracted and checked on fb12f63cb, on
+36181a729 and on the round-9 build, the member and facet `fail_todo_` splits
+give no error and none, 3 and 9 errors, and 2 and 4;
+`fail_requirement_signature_error` 7, 7 and 3 errors;
+`self_facet_in_signature_required` and `overload_probe_require` "unable to
+monomorphize", then no error and no error.
 
 Measured, on the container only (not of record, R9; hosted: not run, Actions
 disabled). Round 1: autoupdate over the 18 goldens in three passes (all 18

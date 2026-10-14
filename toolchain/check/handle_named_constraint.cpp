@@ -124,12 +124,12 @@ auto HandleParseNode(Context& context,
   auto& constraint_info = context.named_constraints().Get(named_constraint_id);
 
   // TODO: Support for `template constraint`.
-  // Fork (SC-1, fork/structural/plan.md D-SC-10 as amended at fill round 7):
-  // `Self` is a checked-phase binding in a `template constraint` too. A
-  // template-phase `Self` made every name of the body that depends on it (an
-  // alias of `Self`, a nested class or constraint) template-dependent where it
-  // is named with no self type, so non-template code recorded actions that
-  // nothing performs. The template phase is SC-B2's prerequisite.
+  // Fork (SC-1, fork/structural/plan.md D-SC-10 as restated at fill round 8):
+  // `Self` is a checked-phase binding in a `template constraint` too, since a
+  // template-phase `Self` made the names of the body that depend on it
+  // template-dependent in non-template code. A requirement's signature is
+  // therefore checked at the definition as an interface member's is (W-169);
+  // the template phase is SC-B2's prerequisite (W-028).
   bool is_template = false;
 
   // Track that this declaration is the definition.

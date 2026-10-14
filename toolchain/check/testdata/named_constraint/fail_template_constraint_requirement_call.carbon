@@ -96,12 +96,12 @@ library "[[@TEST_NAME]]";
 // template constraint declared in another constraint's or an interface's body
 // (`Outer.Inner`). An associated-function requirement is not redirected
 // through it: the compound access is the fork's TODO at
-// member_access.cpp:1013-1036, and a simple member access of the facet keeps
-// the requirement, refused as a value (D-SC-4, D-SC-20). A method requirement
-// is redirected, since its redirect looks into the value's type (fill round 8,
-// round 7's review 1 finding MINOR-2 and review 2 finding MINOR-2). The
-// interface analog of `Compound`, a blanket impl named as `C.(I(T).N)()`, is
-// accepted on trunk 0bdce60a5.
+// member_access.cpp:1013-1036 (ledger W-232), and a simple member access of the
+// facet keeps the requirement, refused as a value (D-SC-4, D-SC-20). A method
+// requirement is redirected, since its redirect looks into the value's type
+// (fill round 8, round 7's review 1 finding MINOR-2 and review 2 finding
+// MINOR-2). The interface analog of `Compound`, a blanket impl named as
+// `C.(I(T).N)()`, is accepted on trunk 0bdce60a5.
 template constraint Has(X: type) {
   fn N() -> i32;
   fn Get(self) -> i32;

@@ -133,10 +133,12 @@ library "[[@TEST_NAME]]";
 // upstream's "member access into facet of incomplete type", as `Self.U2` is in
 // an interface being defined (trunk 0bdce60a5,
 // impl/use_assoc_entity.carbon `fail_todo_self_period_associated_type`).
-// Through fill round 6 the template-phase `Self` deferred the access, and a
-// class with `fn M(p: typeof(N)*)` satisfied `HasNM`; the template phase is
-// SC-B2's (W-028), and the shape is filed as W-169 (round 7's review 2 finding
-// MAJOR-1). The unqualified alias, `-> A`, is accepted.
+// Through fill round 6 the template-phase `Self` deferred the access, and `C`
+// below satisfied `HasNM`; the template phase is SC-B2's (W-028), and the shape
+// is filed as W-169 (round 7's review 2 finding MAJOR-1). `C`'s use fails with
+// no diagnostic of its own, the requirement's error having been reported at
+// its declaration (D-SC-9 as amended at fill round 9). The unqualified alias,
+// `-> A`, is accepted (`Get2`).
 template constraint HasNM {
   fn N() -> i32;
   // CHECK:STDERR: fail_todo_self_member_in_signature.carbon:[[@LINE+7]]:18: error: member access into facet of incomplete type `HasNM` [IncompleteTypeInMemberAccessOfFacet]
@@ -159,7 +161,17 @@ template constraint HasA {
   // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   fn Get(self) -> Self.A;
+  fn Get2(self) -> A;
 }
+
+class C {
+  fn N() -> i32 { return 1; }
+  fn M(unused p: typeof(N)*) -> i32 { return 2; }
+}
+
+fn CallN[template T: HasNM](unused x: T) -> i32 { return T.N(); }
+
+fn Test(c: C) -> i32 { return CallN(c); }
 
 // --- fail_todo_self_facet_in_signature.carbon
 library "[[@TEST_NAME]]";
@@ -167,10 +179,13 @@ library "[[@TEST_NAME]]";
 // A requirement's signature in which `Self` must satisfy a facet type that the
 // constraint does not itself require is rejected at the definition, as an
 // interface member's is (D-SC-10 as amended at fill round 8, round 7's review 1
-// finding MAJOR-1): `Box(Self)` for `class Box(T: J)`, and `Self.(J.Elem)`.
-// Definition-time checking would defer both to the satisfying type, and
-// through fill round 6 a class that implements `J` satisfied them; they come
-// back with SC-B2's template phase (W-169). Requiring `J` is the workaround
+// finding MAJOR-1): `Box(Self)` for `class Box(T: J)`, `Self.(J.Elem)`,
+// `Core.Slice(Self)` and `Core.Optional(Self)`. Definition-time checking would
+// defer each to the satisfying type, and through fill round 6 `C` and `S` below
+// satisfied them; they come back with SC-B2's template phase (W-169). Their
+// uses fail with no diagnostic of their own, the requirement's error having
+// been reported at its declaration (D-SC-9 as amended at fill round 9).
+// Requiring the facet type that `Self` must satisfy is the workaround
 // (`self_facet_in_signature_required`).
 interface J {
   fn K(self) -> i32;
@@ -203,15 +218,64 @@ template constraint HasGet {
   fn Get(self) -> Self.(HasElem.Elem);
 }
 
+template constraint HasAll {
+  fn All(self) -> Core.Slice(Self);
+}
+
+template constraint HasNext {
+  fn Next(self) -> Core.Optional(Self);
+}
+
+class C {
+  var v: i32;
+  impl as J {
+    fn K(self) -> i32 { return self.v; }
+  }
+  fn Wrap(self) -> Box(C) { return {.k = self.v}; }
+  fn Get(self) -> i32 { return self.v; }
+}
+
+impl C as HasElem where .Elem = i32 {}
+
+class S {
+  impl as Core.Copy {
+    fn Op(unused self) -> Self { return {}; }
+  }
+  impl as Core.Destroy {
+    fn Op(unused ref self) {}
+  }
+  fn All(self) -> Core.Slice(Self);
+  fn Next(self) -> Core.Optional(Self);
+}
+
+fn CallWrap[template T: HasWrap](x: T) -> i32 { return x.Wrap().k; }
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+
+fn CallAll[template T: HasAll](unused x: T) -> i32 { return 1; }
+
+fn CallNext[template T: HasNext](unused x: T) -> i32 { return 2; }
+
+fn Test(c: C, s: S) -> i32 {
+  return CallWrap(c) + CallWrap(c) + CallGet(c) + CallAll(s) + CallNext(s);
+}
+
 // --- self_facet_in_signature_required.carbon
 library "[[@TEST_NAME]]";
 
 // The workaround for `fail_todo_self_facet_in_signature`: a constraint that
-// requires, with `require impls`, the nominal facet type that `Self` must
-// satisfy can name it in a signature (fill round 8, round 7's review 1 finding
-// MAJOR-1). An interface on trunk 0bdce60a5 rejects the same signatures even
-// with the `require`. A required template constraint does not help, since a
-// checked-symbolic self never satisfies one (D-SC-6).
+// requires, with `require impls`, the facet type that `Self` must satisfy can
+// name it in a signature (fill round 8, round 7's review 1 finding MAJOR-1).
+// `Core.Slice(Self)` and `Core.Optional(Self)` need `Core.Copy &
+// Core.Destroy`, `Core.Optional` through its blanket `OptionalStorage` impl
+// (core/prelude/types/optional.carbon:148), so requiring that restores both
+// (fill round 9). An interface on trunk 0bdce60a5 rejects the same signatures
+// even with the `require`. A required template constraint does not help, since
+// a checked-symbolic self never satisfies one (D-SC-6). A member of an overload
+// set constrained by `HasWrap` is probed without diagnostics, so `D`, which
+// does not implement `J`, selects the next member (D-SC-12); on fb12f63cb, with
+// the template-phase `Self`, `P(d)` was a hard "unable to monomorphize" error
+// even with the `require` (fill round 9, round 8's review 1 finding MINOR-2).
 interface J {
   fn K(self) -> i32;
 }
@@ -235,6 +299,16 @@ template constraint HasGet {
   fn Get(self) -> Self.(HasElem.Elem);
 }
 
+template constraint HasAll {
+  require impls Core.Copy & Core.Destroy;
+  fn All(self) -> Core.Slice(Self);
+}
+
+template constraint HasNext {
+  require impls Core.Copy & Core.Destroy;
+  fn Next(self) -> Core.Optional(Self);
+}
+
 class C {
   var v: i32;
   impl as J {
@@ -252,6 +326,34 @@ fn CallWrap[template T: HasWrap](x: T) -> i32 { return x.Wrap().k + x.V(); }
 fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
 
 fn Test(c: C) -> i32 { return CallWrap(c) + CallGet(c); }
+
+class S {
+  impl as Core.Copy {
+    fn Op(unused self) -> Self { return {}; }
+  }
+  impl as Core.Destroy {
+    fn Op(unused ref self) {}
+  }
+  fn All(self) -> Core.Slice(Self);
+  fn Next(self) -> Core.Optional(Self);
+}
+
+fn CallAll[template T: HasAll](unused x: T) -> i32 { return 1; }
+
+fn CallNext[template T: HasNext](unused x: T) -> i32 { return 2; }
+
+fn TestSlice(s: S) -> i32 { return CallAll(s) + CallNext(s); }
+
+class D {
+  var v: i32;
+  fn Wrap(self) -> i32 { return self.v; }
+  fn V(self) -> i32 { return self.v; }
+}
+
+overload fn P[template T: HasWrap](unused x: T) -> i32 { return 10; }
+overload fn P[T: type](unused x: T) -> i32 { return 20; }
+
+fn TestProbe(c: C, d: D) -> i32 { return P(c) + P(d); }
 
 // --- fail_todo_unqualified_requirement_in_signature.carbon
 library "[[@TEST_NAME]]";

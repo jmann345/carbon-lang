@@ -515,7 +515,7 @@ states ("`C.F` and `HasF.F` refer to the same function"); see
 requirement is not yet redirected through a facet that is symbolic because the
 constraint's arguments name a checked generic's parameter (`C.(Has(T).N)()`) or
 because the constraint is declared in another constraint's or an interface's
-body (`C.(Outer.Inner.N)()`): the compound access is a TODO, and `(C as
+body (`C.(Outer.Inner.N)()`): the compound access is a TODO (W-232), and `(C as
 Has(T)).N` keeps the requirement; a method requirement reached through a value,
 `c.(Has(T).Get)()`, is redirected (fill round 8). A requirement is never itself
 the callee: `HasCount.Count()` names it with no type to satisfy it and is
@@ -617,14 +617,20 @@ for `class Box(T: J)`, `Self.(J.Elem)`, `Core.Slice(Self)`,
 `Core.Optional(Self)`) is rejected as not satisfying it. A requirement named
 unqualified in another's signature (`fn M(p: typeof(N)*)`) is accepted, but it
 names the requirement's own function for the satisfying type, which no member's
-type is, so no type satisfies the constraint. When the facet type that `Self`
-must satisfy is nominal, requiring it (`require impls J`) lets the signature
-name it; requiring a template constraint does not, since a checked-symbolic self
-never satisfies one (D-SC-6). A `require` whose facet type takes `Self` as an
-argument (`require Self impls Conv(Self)`, `require impls Has(Self)`), which a
-template-phase `Self` rejected, is accepted. Deferring the checks that involve
-`Self`, as this section describes, needs a template-phase `Self`, which SC-B2
-takes up with validity blocks (W-028).
+type is, so no type satisfies the constraint. Requiring the facet type that
+`Self` must satisfy lets the signature name it: `require impls J` for
+`Box(Self)` and `Self.(J.Elem)`, and `require impls Core.Copy & Core.Destroy`
+for `Core.Slice(Self)` and `Core.Optional(Self)` (`Core.Optional` through its
+blanket `OptionalStorage` impl). Requiring a template constraint does not, since
+a checked-symbolic self never satisfies one (D-SC-6), and a member access into
+`Self` has no such workaround. A type whose member does not match a requirement
+rejected this way fails the constraint with no diagnostic of its own, the
+requirement's error having been reported (D-SC-9 as amended at fill round 9). A
+`require` whose facet type takes `Self` as an argument (`require Self impls
+Conv(Self)`, `require impls Has(Self)`), which a template-phase `Self` rejected,
+is accepted. Deferring the checks that involve `Self`, as this section
+describes, needs a template-phase `Self`, which SC-B2 takes up with validity
+blocks (W-028).
 
 ### Probe-mode evaluation
 

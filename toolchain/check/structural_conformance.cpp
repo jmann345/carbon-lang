@@ -475,6 +475,29 @@ static auto CheckRequirementFunction(
   return std::nullopt;
 }
 
+// Returns whether the requirement's own declaration has an error in a parameter
+// or return type. That error was diagnosed at the declaration, and no member's
+// signature can be compared with it: upstream's redeclaration check fails with
+// no further diagnostic on such a type (merge.cpp `EntityHasParamError`,
+// function.cpp `CheckFunctionReturnTypeMatches`).
+static auto RequirementSignatureHasError(Context& context,
+                                         const SemIR::Function& requirement_fn)
+    -> bool {
+  if (requirement_fn.GetDeclaredReturnType(context.sem_ir()) ==
+      SemIR::ErrorInst::TypeId) {
+    return true;
+  }
+  for (auto param_patterns_id : {requirement_fn.implicit_param_patterns_id,
+                                 requirement_fn.param_patterns_id}) {
+    for (auto param_id : context.inst_blocks().GetOrEmpty(param_patterns_id)) {
+      if (context.insts().Get(param_id).type_id() == SemIR::ErrorInst::TypeId) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 // Both modes of the check (see `ReportMode`).
 static auto CheckRequirements(Context& context, SemIR::LocId loc_id,
                               SemIR::IdentifiedFacetTypeId identified_id,
@@ -557,6 +580,14 @@ static auto CheckRequirements(Context& context, SemIR::LocId loc_id,
                                    self_type_id, requirement_fn);
       if (!failure) {
         continue;
+      }
+      // D-SC-9 as amended at fill round 9: a member that does not match a
+      // requirement whose declaration has an error fails the check with no
+      // further diagnostic, in both modes, as an interface member's error
+      // leaves its impls undiagnosed.
+      if (failure->failure == MemberFailure::Mismatch &&
+          RequirementSignatureHasError(context, requirement_fn)) {
+        return StructuralCheckResult::Error;
       }
       if (mode.explain) {
         NoteMemberFailure(context, *mode.explain, loc_id, *failure,

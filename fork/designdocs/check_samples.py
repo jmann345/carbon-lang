@@ -378,27 +378,23 @@ SAMPLES = [
 # W2 hits that stay by design because a DD-1 note in the same section answers
 # them: (page, section, clause) -> the note's quoted text, which must occur in
 # that section.
-QUALIFIED = {}
+QUALIFIED = {
+    ("README.md", "This document is provisional", "a"): (
+        "In this fork, what is provisional is marked in place"
+    ),
+}
 
 # W2 hits that a later DD-1 commit or a held PR removes: (page, section,
 # clause) -> who removes it. The list shrinks commit by commit (plan section
 # 2.12 item 5) and is empty at state L.
 ALLOWLIST = {
-    ("README.md", "Abstract machine and execution model", "c"): "DD-1 commit 3",
-    ("README.md", "Co-routines", "c"): "DD-1 commit 3",
-    ("README.md", "Concurrency", "c"): "DD-1 commit 3",
-    (
-        "README.md",
-        "This document is provisional",
-        "a",
-    ): "DD-1 commit 3, which moves it to QUALIFIED",
     ("README.md", "Lifetime and move semantics", "c"): "held PR 53 (SAFE-1)",
     ("expressions/arithmetic.md", "Strings", "c"): "held PR 55 (ST-1)",
 }
 
-# The quote of the README disclosure's QUALIFIED entry (commit 3), also used
-# by the matcher self-check.
-DISCLOSURE_QUOTE = "In this fork, what is provisional is marked in place"
+# The quote of the README disclosure's QUALIFIED entry, also used by the
+# matcher self-check.
+DISCLOSURE_QUOTE = QUALIFIED[("README.md", "This document is provisional", "a")]
 
 BOILERPLATE = re.compile(
     r"skeletal\s+design|it\s+is\s+a\s+placeholder|"
@@ -693,8 +689,8 @@ def w2_hits() -> set[tuple[str, str, str]]:
     return hits
 
 
-def check_w2(errors: list[str]) -> list[str]:
-    """Check 4; returns one report line per W2 hit."""
+def check_w2(errors: list[str]) -> tuple[list[str], int]:
+    """Check 4; returns a report line per accepted hit, and the hit count."""
     hits = w2_hits()
     report = []
     for key in sorted(hits):
@@ -717,7 +713,7 @@ def check_w2(errors: list[str]) -> list[str]:
                 f"W2 entry no longer hits: docs/design/{page} | {heading} "
                 f"| ({clause})"
             )
-    return report
+    return report, len(hits)
 
 
 def first_error(stderr: str) -> str | None:
@@ -840,7 +836,7 @@ def main() -> int:
         return 0
     errors: list[str] = []
     programs, fixtures = check_samples(errors)
-    report = check_w2(errors)
+    report, hits = check_w2(errors)
     if args.toolchain:
         check_toolchain(args.toolchain.resolve(), fixtures, errors)
     for line in report:
@@ -849,7 +845,6 @@ def main() -> int:
         print(error, file=sys.stderr)
     allowlisted = sum(line.startswith("W2 allowlisted") for line in report)
     qualified = sum(line.startswith("W2 qualified") for line in report)
-    hits = len(report) + sum(e.startswith("W2 hit") for e in errors)
     print(
         f"check_samples: {programs} program blocks, {len(fixtures)} fixtures"
         f"{' (compiled)' if args.toolchain else ''}, {hits} W2 hits "

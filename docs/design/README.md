@@ -148,6 +148,21 @@ design have things that have not been decided through the Carbon process. This
 preliminary material fills in gaps until aspects of the design can be filled in.
 Features that are provisional have been marked as such on a best-effort basis.
 
+> **Fork note (2026-10-14):** In this fork, what is provisional is marked in
+> place. Each former placeholder page or section now carries measured 0.1
+> content or a dated status note: the pages that described themselves as
+> placeholders ([Templates](templates.md),
+> [Metaprogramming](metaprogramming.md), [Aliases](aliases.md),
+> [Blocks and statements](blocks_and_statements.md), and the `match` section
+> of [Pattern matching](pattern_matching.md#pattern-match-control-flow)), the
+> interoperability README's former `TODO` sections, this document's
+> [Enums](#enums) and [Execution abstractions](#execution-abstractions)
+> sections, and the rules for
+> [assigning tuples, structs, and data classes](assignment.md#tuples-structs-choice-types-and-data-classes).
+> The provisional notes that remain qualify the text beside them.
+> `fork/designdocs/check_samples.py` reports any placeholder
+> self-description, `TODO` heading, or `TODO`-only section that returns.
+
 ### Tour of the basics
 
 Here is a simple function showing some Carbon code:
@@ -813,6 +828,9 @@ Tuple types are
 > proposal process yet. Many of these questions were discussed in dropped
 > proposal [#111](https://github.com/carbon-language/carbon-lang/pull/111).
 
+> **Fork note (2026-10-14):** proposal 3646 has since accepted the tuple
+> design; see [Tuples](tuples.md).
+
 > References: [Tuples](tuples.md)
 
 ### Struct types
@@ -1037,6 +1055,9 @@ function or class itself is visible until the end of the enclosing scope.
 
 > **Note:** This is provisional, no design for patterns has been through the
 > proposal process yet.
+
+> **Fork note (2026-10-14):** proposal 2188 has since accepted the pattern
+> design; see [Pattern matching](pattern_matching.md).
 
 A _pattern_ says how to receive some data that is being matched against. There
 are two kinds of patterns:
@@ -2887,7 +2908,10 @@ controlled by the SFINAE rule of C++
 [2](https://en.cppreference.com/w/cpp/language/sfinae)) but by explicit
 constraints declared in the function signature and evaluated at compile-time.
 
-> **TODO:** The design for template constraints is still under development.
+> **Note (fork, 2026-10-14):** Template constraints are fixed by fork decision
+> [F-010](/fork/decision-log.md): `template constraint` declarations with
+> member requirements, `require` validity blocks, and boolean predicates;
+> [Templates](templates.md#status) gives their status.
 
 The [expression phase](#expression-phases) of a checked parameter is a symbolic
 constant whereas the expression phase of a template parameter is template
@@ -3586,6 +3610,10 @@ include:
 > **Note:** This is provisional, no design for importing C++ has been through
 > the proposal process yet.
 
+> **Fork note (2026-10-14):** proposal 6358 has since accepted the import
+> design; see
+> [Importing C++ APIs into Carbon](interoperability/README.md#importing-c-apis-into-carbon).
+
 A C++ library header file may be [imported](#imports) into Carbon using an
 `import` declaration of the special `Cpp` package.
 
@@ -3658,6 +3686,10 @@ ABI compatibility.
 
 > **Note:** This is provisional, no design for this has been through the
 > proposal process yet.
+
+> **Fork note (2026-10-14):** proposal 6254 fixes how a call to a C++ operator
+> is resolved; the 0.1 status of both directions is in
+> [The operator interoperability model](interoperability/README.md#the-operator-interoperability-model).
 
 [Operator overloading](#operator-overloading) is supported in Carbon, but is
 done by [implementing an interface](#interfaces-and-implementations) instead of
@@ -3732,6 +3764,12 @@ if it were a C++ template.
 
 > **Note:** This is provisional, no design for this has been through the
 > proposal process yet.
+
+> **Fork note (2026-10-14):** proposal 5448 has since accepted the
+> primitive-type mapping (see [Integers](interoperability/README.md#integers))
+> and proposal 6357 the pointer mapping. C++ references are not translated to
+> `T*` in 0.1; see
+> [Advanced type mapping](interoperability/README.md#advanced-type-mapping-pointers-references-and-const).
 
 The Carbon integer types, like `i32` and `u64`, are considered equal to the
 corresponding fixed-width integer types in C++, like `int32_t` and `uint64_t`,
@@ -3941,8 +3979,9 @@ This leads to Carbon's incremental path to safety:
 
 ### Metaprogramming
 
-> **TODO:** References need to be evolved. Needs a detailed design and a high
-> level summary provided inline.
+> **Note (fork, 2026-10-14):** Compile-time evaluation is implemented in 0.1,
+> with the `eval fn` and `musteval fn` forms;
+> [Metaprogramming](metaprogramming.md) gives its status.
 
 Carbon provides metaprogramming facilities that look similar to regular Carbon
 code. These are structured, and do not offer arbitrary inclusion or
@@ -4018,12 +4057,33 @@ the critical underpinnings of such abstractions.
 
 #### Abstract machine and execution model
 
-> **TODO:**
+In 0.1 there is no separate abstract-machine specification (fork note,
+2026-10-14). The execution model is the one these designs fix together:
+[Values, variables, and pointers](values.md) gives the expression categories,
+when objects are created and destroyed, the storage they occupy, and which
+uses of a value are erroneous; a function body's statements run in order
+([Blocks and statements](blocks_and_statements.md)); Carbon code runs under the
+C++ memory model, with C++'s threads, atomics, and synchronization
+([Threads, atomics, and the memory model](interoperability/threads_and_atomics.md),
+fork decision F-008); and an unrecoverable failure terminates the program
+without unwinding ([Error handling](error_handling.md#unrecoverable-errors)).
 
 #### Co-routines
 
 > **TODO:**
 
+> **Note (fork, 2026-10-14):** Coroutines, async, and generators are deferred
+> until at least 0.2
+> ([milestones](/docs/project/milestones.md#features-explicitly-deferred-until-at-least-02),
+> [why](/docs/project/milestones.md#why-are-coroutines-and-async-in-this-milestone));
+> there is no design and no toolchain support.
+
 #### Concurrency
 
 > **TODO:**
+
+> **Note (fork, 2026-10-14):** Carbon-native threading is deferred until at
+> least 0.2
+> ([milestones](/docs/project/milestones.md#features-explicitly-deferred-until-at-least-02)).
+> In 0.1, concurrency is C++'s; see
+> [Threads, atomics, and the memory model](interoperability/threads_and_atomics.md).

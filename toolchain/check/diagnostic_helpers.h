@@ -27,6 +27,11 @@ class LocIdForDiagnostics {
     return LocIdForDiagnostics(SemIR::LocId(node_id), true);
   }
 
+  // Constructs a token-only location for a diagnostic at `loc_id`.
+  static auto TokenOnly(SemIR::LocId loc_id) -> LocIdForDiagnostics {
+    return LocIdForDiagnostics(loc_id, true);
+  }
+
   template <typename LocT>
     requires std::constructible_from<SemIR::LocId, LocT>
   explicit(false) LocIdForDiagnostics(LocT loc_id)

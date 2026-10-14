@@ -20,6 +20,7 @@
 #include "toolchain/check/interface.h"
 #include "toolchain/check/name_lookup.h"
 #include "toolchain/check/period_self.h"
+#include "toolchain/check/pointer_dereference.h"
 #include "toolchain/check/type.h"
 #include "toolchain/check/type_completion.h"
 #include "toolchain/diagnostics/emitter.h"
@@ -892,6 +893,17 @@ auto PerformAction(Context& context, SemIR::LocId loc_id,
 auto PerformTupleAccess(Context& context, SemIR::LocId loc_id,
                         SemIR::InstId tuple_inst_id,
                         SemIR::InstId index_inst_id) -> SemIR::InstId {
+  // Proposal 2200: tuple element access into a template-dependent operand
+  // whose type's kind is not known yet is checked on instantiation.
+  if (IsOpaqueTemplateDependentType(
+          context, context.insts().Get(tuple_inst_id).type_id())) {
+    return AddDependentActionSplice<SemIR::TupleIndexAction>(
+        context, loc_id,
+        {.type_id = SemIR::InstType::TypeId,
+         .tuple_id = tuple_inst_id,
+         .index_id = index_inst_id},
+        SemIR::TypeInstId::None);
+  }
   tuple_inst_id = ConvertToValueOrRefExpr(context, tuple_inst_id);
   auto tuple_type_id = context.insts().Get(tuple_inst_id).type_id();
 
@@ -947,6 +959,11 @@ auto PerformTupleAccess(Context& context, SemIR::LocId loc_id,
                                           {.type_id = element_type_id,
                                            .tuple_id = tuple_inst_id,
                                            .index = tuple_index});
+}
+
+auto PerformAction(Context& context, SemIR::LocId loc_id,
+                   SemIR::TupleIndexAction action) -> SemIR::InstId {
+  return PerformTupleAccess(context, loc_id, action.tuple_id, action.index_id);
 }
 
 }  // namespace Carbon::Check

@@ -838,6 +838,20 @@ static auto PerformCallHelper(Context& context, SemIR::LocId loc_id,
                               SemIR::InstId callee_id,
                               llvm::ArrayRef<SemIR::InstId> arg_ids,
                               bool is_desugared) {
+  // A function's type has one value, the function (proposal 2875), so a
+  // callee of function type with no constant value, such as a template's
+  // parameter `h: G` once `G` is `<type of F>`, calls that function. The
+  // callee expression has already been evaluated; only its value is replaced.
+  if (!context.constant_values().Get(callee_id).is_constant()) {
+    auto callee_type_id = context.insts().Get(callee_id).type_id();
+    if (context.types().Is<SemIR::FunctionType>(callee_type_id)) {
+      callee_id = AddInst<SemIR::StructValue>(
+          context, loc_id,
+          {.type_id = callee_type_id,
+           .elements_id = SemIR::InstBlockId::Empty});
+    }
+  }
+
   // Try treating the callee as a function first.
   auto callee = GetCallee(context.sem_ir(), callee_id);
   CARBON_KIND_SWITCH(callee) {

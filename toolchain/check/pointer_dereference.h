@@ -5,19 +5,33 @@
 #ifndef CARBON_TOOLCHAIN_CHECK_POINTER_DEREFERENCE_H_
 #define CARBON_TOOLCHAIN_CHECK_POINTER_DEREFERENCE_H_
 
-#include "llvm/ADT/STLFunctionalExtras.h"
 #include "toolchain/check/context.h"
-#include "toolchain/parse/node_ids.h"
 #include "toolchain/sem_ir/ids.h"
 
 namespace Carbon::Check {
 
+// Which operator a pointer dereference is for, which selects its diagnostic.
+enum class PointerDereferenceKind : bool { Star, Arrow };
+
+// Returns whether `type_id` is a template-dependent type whose kind is not
+// known where the template is defined: a template type parameter, its facet
+// access type, or the type of a template-dependent expression. Every other
+// type, including a template-dependent class type such as `C(T)`, has a kind
+// that the eager code can act on.
+auto IsOpaqueTemplateDependentType(Context& context, SemIR::TypeId type_id)
+    -> bool;
+
 // Creates SemIR to perform a pointer dereference with base expression
-// `base_id`. Returns the result of the access.
-auto PerformPointerDereference(
-    Context& context, SemIR::LocId loc_id, SemIR::InstId base_i,
-    llvm::function_ref<auto(SemIR::TypeId not_pointer_type_id)->void>
-        diagnose_not_pointer) -> SemIR::InstId;
+// `base_id`, for `*` or for the base of `->`. A template-dependent operand of
+// opaque type is dereferenced when the template is instantiated. Returns the
+// result of the access.
+auto PerformPointerDereference(Context& context, SemIR::LocId loc_id,
+                               SemIR::InstId base_id,
+                               PointerDereferenceKind kind) -> SemIR::InstId;
+
+// Creates SemIR to take the address of `operand_id`, `&operand`.
+auto PerformAddrOf(Context& context, SemIR::LocId loc_id,
+                   SemIR::InstId operand_id) -> SemIR::InstId;
 
 }  // namespace Carbon::Check
 

@@ -12,12 +12,12 @@
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/generic/template/unimplemented.carbon
 
-// --- fail_todo_unimplemented_operator.carbon
+// --- deref_dependent_member.carbon
 
 library "[[@TEST_NAME]]";
 
-// Check that we get a reasonable diagnostic for an unimplemented operation on a
-// template dependent expression.
+// A dereference of a template-dependent expression is checked when the
+// template is instantiated.
 fn F[template T: type](x: T) {
   // CHECK:STDERR: fail_todo_unimplemented_operator.carbon:[[@LINE+4]]:3: error: cannot dereference operand of non-pointer type `<dependent type>` [DerefOfNonPointer]
   // CHECK:STDERR:   *x.n;
@@ -26,7 +26,7 @@ fn F[template T: type](x: T) {
   *x.n;
 }
 
-// --- fail_todo_unimplemented_value.carbon
+// --- fail_deref_dependent_member_non_pointer.carbon
 
 library "[[@TEST_NAME]]";
 
@@ -34,9 +34,25 @@ class C {
   var n: i32;
 }
 
-// Check that we get a reasonable diagnostic for an unimplemented operation on a
-// template dependent value where the type is concrete but determined through
-// the template dependent value.
+fn F[template T: type](x: T) {
+  *x.n;
+}
+
+fn G(c: C) {
+  F(c);
+}
+
+// --- deref_dependent_value.carbon
+
+library "[[@TEST_NAME]]";
+
+class C {
+  var n: i32;
+}
+
+// `c.n` uses the value of a template parameter, so a dereference of it is
+// checked when the template is instantiated (proposal 2200, "Use of dependent
+// value is dependent").
 fn F(template c: C) {
   // CHECK:STDERR: fail_todo_unimplemented_value.carbon:[[@LINE+4]]:3: error: cannot dereference operand of non-pointer type `<dependent type>` [DerefOfNonPointer]
   // CHECK:STDERR:   *c.n;

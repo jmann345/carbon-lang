@@ -139,6 +139,18 @@ struct AddrOf {
   InstId lvalue_id;
 };
 
+// An action that takes the address of a template-dependent operand, `&expr`.
+struct AddrOfAction {
+  static constexpr auto Kind = InstKind::AddrOfAction.Define<Parse::NodeId>(
+      {.ir_name = "addr_of_action",
+       .expr_category = ActionExprCategory(ExprCategory::Value),
+       .constant_kind = InstConstantKind::InstAction,
+       .is_lowered = false});
+
+  TypeId type_id;
+  MetaInstId lvalue_id;
+};
+
 // Binds a name as an alias. See AnyBinding for member documentation.
 struct AliasBinding {
   static constexpr auto Kind = InstKind::AliasBinding.Define<Parse::NodeId>(
@@ -1279,6 +1291,19 @@ struct ImportRefLoaded {
   EntityNameId entity_name_id;
 };
 
+// An action that indexes a template-dependent operand, `expr[index]`.
+struct IndexAction {
+  static constexpr auto Kind = InstKind::IndexAction.Define<Parse::NodeId>(
+      {.ir_name = "index_action",
+       .expr_category = ActionExprCategory(ExprCategory::Dependent),
+       .constant_kind = InstConstantKind::InstAction,
+       .is_lowered = false});
+
+  TypeId type_id;
+  MetaInstId operand_id;
+  MetaInstId index_id;
+};
+
 // An initializing primitive form.
 struct InitForm {
   static constexpr auto Kind = InstKind::InitForm.Define<Parse::NodeId>(
@@ -1657,6 +1682,21 @@ struct PatternType {
   // Always the builtin type TypeType.
   TypeId type_id;
   TypeInstId scrutinee_type_inst_id;
+};
+
+// An action that dereferences a template-dependent operand, `*expr`, or the
+// base of `expr->member` when `is_arrow`.
+struct PointerDereferenceAction {
+  static constexpr auto Kind =
+      InstKind::PointerDereferenceAction.Define<Parse::NodeId>(
+          {.ir_name = "pointer_dereference_action",
+           .expr_category = ActionExprCategory(ExprCategory::Dependent),
+           .constant_kind = InstConstantKind::InstAction,
+           .is_lowered = false});
+
+  TypeId type_id;
+  MetaInstId pointer_id;
+  BoolValue is_arrow;
 };
 
 // Modifies a pointee type to be a pointer. This is tracking the `*` in
@@ -2306,6 +2346,20 @@ struct TupleAccess {
   TypeId type_id;
   InstId tuple_id;
   ElementIndex index;
+};
+
+// An action that accesses a tuple element of a template-dependent operand,
+// `expr.N`.
+struct TupleIndexAction {
+  static constexpr auto Kind = InstKind::TupleIndexAction.Define<Parse::NodeId>(
+      {.ir_name = "tuple_index_action",
+       .expr_category = ActionExprCategory(ExprCategory::Dependent),
+       .constant_kind = InstConstantKind::InstAction,
+       .is_lowered = false});
+
+  TypeId type_id;
+  MetaInstId tuple_id;
+  MetaInstId index_id;
 };
 
 // Initializes the destination tuple with the given elements.

@@ -288,7 +288,15 @@ fails if this table is stale):
 | `generics/checked_generics.carbon` | Generics: Checked generics | run |
 | `generics/generic_class.carbon` | Generics: generic functions and types | run |
 | `generics/structural_conformance.carbon` | Generics: Template-style structural conformance to nominal constraints | SKIP |
+| `generics/templates_constraint_lookup.carbon` | Generics: Integrated templates | run |
+| `generics/templates_deduce_class_args.carbon` | Generics: Integrated templates | run |
+| `generics/templates_dependent_call.carbon` | Generics: Integrated templates | run |
+| `generics/templates_dependent_index.carbon` | Generics: Integrated templates | run |
 | `generics/templates_dependent_member.carbon` | Generics: Integrated templates | SKIP |
+| `generics/templates_dependent_pointer.carbon` | Generics: Integrated templates | run |
+| `generics/templates_dependent_var.carbon` | Generics: Integrated templates | run |
+| `generics/templates_for_dependent_range.carbon` | Generics: Integrated templates | run |
+| `generics/templates_return_aggregates_diff.carbon` | Generics: Integrated templates | differential |
 | `generics/templates_type_param.carbon` | Generics: Integrated templates | run |
 | `generics/templates_value_param.carbon` | Generics: Integrated templates | run |
 | `generics/variadics_each.carbon` | Generics: Definition-checked variadics | SKIP |

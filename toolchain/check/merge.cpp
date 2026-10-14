@@ -227,22 +227,23 @@ struct DeclaredParamPattern {
   // The pattern this one wraps: the subpattern of a `DefaultValuePattern`, of a
   // `var` pattern or of a `WrapperBindingPattern`; `None` for any other.
   SemIR::InstId subpattern_id = SemIR::InstId::None;
-  // Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 16):
-  // whether the pattern this one wraps is an `ExprPattern` of an import IR,
-  // which is not imported, as upstream cannot import one (W-238);
-  // `subpattern_id` is then `None`.
-  bool wraps_imported_expr_pattern = false;
+  // Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 16
+  // and 17): whether the pattern this one wraps is a `TuplePattern` or an
+  // `ExprPattern` of an import IR, the kinds that no requirement has (W-234,
+  // W-238). It is not imported, as upstream cannot import an `ExprPattern` or
+  // a `TuplePattern` that holds one; `subpattern_id` is then `None`.
+  bool wraps_unimported_pattern = false;
 };
 
-// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 13, 14
-// and 16): returns the parameter pattern `pattern_id`, whose constant value is
-// `const_inst`, as declared. A pattern with an error has the error as its
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 13, 14,
+// 16 and 17): returns the parameter pattern `pattern_id`, whose constant value
+// is `const_inst`, as declared. A pattern with an error has the error as its
 // constant value, so it is read from the instruction that declares it, and the
-// subpattern of an imported one is imported in turn, unless it is an
-// `ExprPattern` (see `wraps_imported_expr_pattern`). Returns `std::nullopt`
-// only for a parameter that is the error itself, as one declared with a form
-// that has an error is (`y:? form(ref Undefined)`). The kinds with a
-// subpattern are those of `CheckRedeclParam`'s switch; a kind with a
+// subpattern of an imported one is imported in turn, unless it is a
+// `TuplePattern` or an `ExprPattern` (see `wraps_unimported_pattern`). Returns
+// `std::nullopt` only for a parameter that is the error itself, as one declared
+// with a form that has an error is (`y:? form(ref Undefined)`). The kinds with
+// a subpattern are those of `CheckRedeclParam`'s switch; a kind with a
 // subpattern that it gains is added here too.
 static auto GetDeclaredParamPattern(Context& context, SemIR::InstId pattern_id,
                                     SemIR::Inst const_inst)
@@ -264,10 +265,11 @@ static auto GetDeclaredParamPattern(Context& context, SemIR::InstId pattern_id,
       return DeclaredParamPattern{.kind = inst.kind(),
                                   .subpattern_id = subpattern_id};
     }
-    if (context.import_irs().Get(ir_id).sem_ir->insts().Is<SemIR::ExprPattern>(
-            subpattern_id)) {
+    const auto& import_insts = context.import_irs().Get(ir_id).sem_ir->insts();
+    if (import_insts.Is<SemIR::TuplePattern>(subpattern_id) ||
+        import_insts.Is<SemIR::ExprPattern>(subpattern_id)) {
       return DeclaredParamPattern{.kind = inst.kind(),
-                                  .wraps_imported_expr_pattern = true};
+                                  .wraps_unimported_pattern = true};
     }
     auto local_id =
         AddImportRef(context, SemIR::ImportIRInst(ir_id, subpattern_id),
@@ -289,7 +291,8 @@ static auto GetDeclaredParamPattern(Context& context, SemIR::InstId pattern_id,
   }
   // Any other pattern is compared by its kind and type alone: a leaf parameter
   // pattern, or a member's `TuplePattern` or `ExprPattern`, which no
-  // requirement has (W-234, W-238), so that it never matches.
+  // requirement has (W-234, W-238), so that it matches only a parameter that is
+  // the error itself.
   return DeclaredParamPattern{.kind = inst.kind()};
 }
 
@@ -415,15 +418,15 @@ static auto CheckRedeclParam(Context& context, bool is_implicit_param,
                                                         prev_type_id)) {
           return false;
         }
-        // Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round
-        // 16): an imported `ExprPattern` that one wraps is compared with the
-        // pattern in its place in the other by its kind alone, as a local one
-        // is. No requirement has one (W-238), so it matches only a pattern
-        // that is the error itself.
-        if (new_declared->wraps_imported_expr_pattern ||
-            prev_declared->wraps_imported_expr_pattern) {
+        // Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds
+        // 16 and 17): an imported `TuplePattern` or `ExprPattern` that one
+        // wraps is compared with the pattern in its place in the other by its
+        // kind alone, as a local one is. No requirement has one (W-234,
+        // W-238), so it matches only a pattern that is the error itself.
+        if (new_declared->wraps_unimported_pattern ||
+            prev_declared->wraps_unimported_pattern) {
           auto [other_id, other_specific_id] =
-              new_declared->wraps_imported_expr_pattern
+              new_declared->wraps_unimported_pattern
                   ? std::pair(prev_declared->subpattern_id, prev_specific_id)
                   : std::pair(new_declared->subpattern_id, new_specific_id);
           if (other_id.has_value() &&

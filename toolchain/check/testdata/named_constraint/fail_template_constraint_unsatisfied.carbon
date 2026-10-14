@@ -1914,8 +1914,10 @@ fn TestExprParam(t: ExprParam) -> i32 { return Call(t); }
 // --- fail_member_signature_error_import_lib.carbon
 library "[[@TEST_NAME]]";
 
-// Members whose parameter wraps an expression pattern with an error, under
-// `var` and under a default value, for `fail_member_signature_error_import`.
+// Members whose parameter wraps an expression pattern, for
+// `fail_member_signature_error_import`: one with an error under `var` and
+// under a default value, and one in a tuple pattern under a default value with
+// an error.
 class VarExpr {
   // CHECK:STDERR: fail_member_signature_error_import_lib.carbon:[[@LINE+8]]:25: error: name `z` not found [NameNotFound]
   // CHECK:STDERR:   fn F(unused self, var z) -> i32 { return 1; }
@@ -1940,6 +1942,10 @@ class DefaultExpr {
   fn F(unused self, (z) = 1) -> i32 { return 1; }
 }
 
+class DefaultTupleExpr {
+  fn F(unused self, (1, unused w: i32) = Undefined) -> i32 { return 1; }
+}
+
 // --- fail_member_signature_error_import.carbon
 library "[[@TEST_NAME]]";
 
@@ -1953,9 +1959,12 @@ import library "member_signature_error_import_lib";
 // against `var y: i32` and skipped against a parameter declared with a form
 // that has an error, and `DefaultExpr` is reported against `y: i32 = 1` and
 // against that parameter without a default value, and skipped against it with
-// one. Each use aborted at import_ref.cpp:5172 before round 16; trunk
-// 0bdce60a5 calls such an imported member, and uses an imported impl whose
-// member has one, without aborting.
+// one. A tuple pattern that holds one is not imported either (fill round 17,
+// finding MAJOR-1 of both of round 16's reviews; W-234), so `DefaultTupleExpr`
+// is reported against `y: i32 = 1` and skipped against that parameter with a
+// default value. Each use aborted at import_ref.cpp:5172 before the round that
+// added it; trunk 0bdce60a5 calls such an imported member, and uses an
+// imported impl whose member has one, without aborting.
 template constraint HasVar {
   fn F(self, var y: i32) -> i32;
 }
@@ -2041,6 +2050,12 @@ fn TestDefault(d: DefaultExpr) -> i32 { return CallDefault(d); }
 fn TestDefaultFormError(d: DefaultExpr) -> i32 { return CallFormError(d); }
 
 fn TestDefaultFormErrorDefault(d: DefaultExpr) -> i32 {
+  return CallFormErrorDefault(d);
+}
+
+fn TestDefaultTuple(d: DefaultTupleExpr) -> i32 { return CallDefault(d); }
+
+fn TestDefaultTupleFormErrorDefault(d: DefaultTupleExpr) -> i32 {
   return CallFormErrorDefault(d);
 }
 

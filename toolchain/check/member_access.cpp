@@ -5,6 +5,7 @@
 #include "toolchain/check/member_access.h"
 
 #include <optional>
+#include <variant>
 
 #include "llvm/ADT/STLExtras.h"
 #include "toolchain/base/kind_switch.h"
@@ -698,10 +699,136 @@ static auto PerformActionHelper(Context& context, SemIR::LocId loc_id,
   return SemIR::ErrorInst::InstId;
 }
 
+// Returns the facet type that constrains the template parameter whose type the
+// deferred member access's operand had in the template's definition, and sets
+// `*facet_const_id` to the argument's facet value; or returns `None` if the
+// operand's type was not a constrained template parameter.
+static auto GetTemplateConstraintFacetType(Context& context,
+                                           SemIR::InstId base_id,
+                                           SemIR::ConstantId* facet_const_id)
+    -> SemIR::TypeId {
+  auto specific_inst = context.insts().TryGetAs<SemIR::SpecificInst>(base_id);
+  if (!specific_inst) {
+    return SemIR::TypeId::None;
+  }
+  auto facet_access_type = context.types().TryGetAs<SemIR::FacetAccessType>(
+      context.insts().Get(specific_inst->inst_id).type_id());
+  if (!facet_access_type) {
+    return SemIR::TypeId::None;
+  }
+  *facet_const_id = SemIR::GetConstantValueInSpecific(
+      context.sem_ir(), specific_inst->specific_id,
+      facet_access_type->facet_value_inst_id);
+  auto facet_id = context.constant_values().GetInstIdIfValid(*facet_const_id);
+  if (!facet_id.has_value()) {
+    return SemIR::TypeId::None;
+  }
+  auto facet_type_id = context.insts().Get(facet_id).type_id();
+  if (!context.types().IsConstrainedFacetType(facet_type_id)) {
+    return SemIR::TypeId::None;
+  }
+  return facet_type_id;
+}
+
+// Looks `name_id` up in the constraint of the template parameter whose type the
+// deferred member access's operand had in the template's definition: for
+// `x: T` with `template T:! I`, `x.F` also finds `I.F` for the argument's facet
+// (proposal 2200, "Name lookup"). Returns `None` if the operand's type was not
+// such a parameter or the constraint has no such member.
+static auto LookupMemberInTemplateConstraint(Context& context,
+                                             SemIR::LocId loc_id,
+                                             SemIR::InstId base_id,
+                                             SemIR::NameId name_id)
+    -> SemIR::InstId {
+  auto facet_const_id = SemIR::ConstantId::None;
+  auto facet_type_id =
+      GetTemplateConstraintFacetType(context, base_id, &facet_const_id);
+  if (!facet_type_id.has_value()) {
+    return SemIR::InstId::None;
+  }
+  auto facet_type_const_id = context.types().GetConstantId(facet_type_id);
+  llvm::SmallVector<LookupScope> lookup_scopes;
+  if (!AppendLookupScopesForConstant(context, loc_id, facet_type_const_id,
+                                     facet_const_id, /*extended_scope=*/false,
+                                     &lookup_scopes)) {
+    return SemIR::InstId::None;
+  }
+  // Probe first, so that a name the constraint lacks is not diagnosed.
+  if (!LookupQualifiedName(context, loc_id, name_id, lookup_scopes,
+                           /*required=*/false)
+           .scope_result.is_found()) {
+    return SemIR::InstId::None;
+  }
+  // An associated entity found in the constraint is accessed in the
+  // argument's type through its impl, as `x.(I.F)` is.
+  auto member_id = LookupMemberNameInScope(
+      context, loc_id, base_id, name_id, facet_type_const_id, lookup_scopes,
+      /*lookup_in_type_of_base=*/true, /*required=*/true);
+  if (member_id == SemIR::ErrorInst::InstId) {
+    return member_id;
+  }
+  return PerformInstanceBinding(context, loc_id, base_id, member_id);
+}
+
+// Returns the entity a member access result names, for comparing the results
+// of the two lookups: the function a bound method binds, or the result itself.
+static auto SameMemberEntity(Context& context, SemIR::InstId a_id,
+                             SemIR::InstId b_id) -> bool {
+  auto a = SemIR::GetCallee(context.sem_ir(), a_id);
+  auto b = SemIR::GetCallee(context.sem_ir(), b_id);
+  auto* a_fn = std::get_if<SemIR::CalleeFunction>(&a);
+  auto* b_fn = std::get_if<SemIR::CalleeFunction>(&b);
+  if (a_fn && b_fn) {
+    return a_fn->function_id == b_fn->function_id &&
+           a_fn->enclosing_specific_id == b_fn->enclosing_specific_id;
+  }
+  if (a_fn || b_fn) {
+    // A function and a member that is not a function: a field, or a
+    // constant of another kind.
+    return false;
+  }
+  // Two members that are not functions name the same entity only if they
+  // have the same constant value; a member without one (a field) is distinct
+  // from every other result.
+  auto a_const_id = context.constant_values().Get(a_id);
+  return a_const_id.is_constant() &&
+         a_const_id == context.constant_values().Get(b_id);
+}
+
 auto PerformAction(Context& context, SemIR::LocId loc_id,
                    SemIR::AccessMemberAction action) -> SemIR::InstId {
-  return PerformActionHelper(context, loc_id, action.base_id, action.name_id,
-                             /*required=*/true);
+  // Proposal 2200: a member of a template-dependent operand is looked up in
+  // the argument's type and in the template parameter's constraint; if both
+  // find it, they must find the same entity.
+  auto constraint_member_id = LookupMemberInTemplateConstraint(
+      context, loc_id, action.base_id, action.name_id);
+  if (!constraint_member_id.has_value()) {
+    return PerformActionHelper(context, loc_id, action.base_id, action.name_id,
+                               /*required=*/true);
+  }
+  auto type_member_id = PerformActionHelper(context, loc_id, action.base_id,
+                                            action.name_id, /*required=*/false);
+  if (!type_member_id.has_value() ||
+      type_member_id == SemIR::ErrorInst::InstId) {
+    return constraint_member_id;
+  }
+  if (constraint_member_id != SemIR::ErrorInst::InstId &&
+      !SameMemberEntity(context, type_member_id, constraint_member_id)) {
+    CARBON_DIAGNOSTIC(TemplateMemberLookupAmbiguous, Error,
+                      "member name `{0}` names different entities in type {1} "
+                      "and in its constraint {2}",
+                      SemIR::NameId, SemIR::TypeId, SemIR::TypeId);
+    // The argument's type, and the constraint's facet type: the type of the
+    // facet value that `LookupMemberInTemplateConstraint` found.
+    auto base_type_id = context.insts().Get(action.base_id).type_id();
+    auto facet_const_id = SemIR::ConstantId::None;
+    auto facet_type_id = GetTemplateConstraintFacetType(context, action.base_id,
+                                                        &facet_const_id);
+    context.emitter().Emit(loc_id, TemplateMemberLookupAmbiguous,
+                           action.name_id, base_type_id, facet_type_id);
+    return SemIR::ErrorInst::InstId;
+  }
+  return type_member_id;
 }
 
 auto PerformAction(Context& context, SemIR::LocId loc_id,

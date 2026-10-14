@@ -4290,9 +4290,11 @@ the commit hashes); the records commit after 857d5b048 completes round 5's
 review record with the cites of its dispositions, gives ROUND 6's DECISION the
 consequence of its break condition, re-points round 5's convert.cpp cites at the
 round-6 head and records the re-measure on 857d5b048. Fill round 7 (same day),
-folding round 6's two implementation reviews: the round-7 fixes commit (the
-fixes, test sources, the design page and records, convert.cpp cites re-pointed
-at the round-7 head) and its goldens commit (2 goldens, CHECK lines only). Each
+folding round 6's two implementation reviews: c0fa52df2 (the fixes, test
+sources, the design page and records, convert.cpp cites re-pointed at the
+round-7 head), 36181a729 (2 goldens, CHECK lines only) and the records commit
+after them (the clean-stamp re-measure, the round-7 rows marked FILLED, the
+commit hashes). Each
 fix is an R29(a) implementation decision recorded for after-the-fact veto, with
 its design citation and break condition; none reopens F-010 or the intent of a
 D-SC decision, and round 7's takes D-SC-10's own break condition. Every count
@@ -5101,7 +5103,13 @@ aborts (round 4's v18b now refused, an empty array parameter of the type); the
 through `Self.N` now rejected); the 42 as before; round 6's reviews' 347 probes
 give 241 check errors, 88 compile and run and 18 aborts (39 on fb12f63cb), each
 with a trunk-spelled analog aborting at the same site on 0bdce60a5, and their 49
-trunk analogs and 14 import sets as before. Against
+trunk analogs and 14 import sets as before. Re-run on the toolchain rebuilt
+from 36181a729 with a clean tree (stamped 0.0.0-0.dev+36181a729): autoupdate
+over the 19 SC-1 goldens changed nothing (one dot each, git status clean); gate
+1959 passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every
+failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 65.9 s;
+every probe run line for line as on the pre-commit build (but for the stack
+addresses of the two mangler.cpp:185 aborts). Against
 fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
 exactly two programs move in every run:
 generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new

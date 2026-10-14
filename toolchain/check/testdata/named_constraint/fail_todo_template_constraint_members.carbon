@@ -72,6 +72,10 @@ template constraint HasF {
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   fn F(self, (a: i32, b: i32));
+  // CHECK:STDERR: fail_todo_tuple_pattern_param.carbon:[[@LINE+4]]:3: error: semantics TODO: `tuple pattern parameter in `template constraint`` [SemanticsTodo]
+  // CHECK:STDERR:   fn G(self, (a: i32, b: i32) = (1, 2));
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn G(self, (a: i32, b: i32) = (1, 2));
 }
 

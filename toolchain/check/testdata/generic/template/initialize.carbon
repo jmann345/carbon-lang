@@ -1506,3 +1506,118 @@ fn Use(o: Outer) -> i32 {
 // CHECK:STDOUT:   %.loc5_26.6 => <not constant>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
+
+// --- return_tuple_constant_element.carbon
+library "[[@TEST_NAME]]";
+
+//@dump-sem-ir-begin
+fn M[template T: type](x: T) -> (T, T) {
+  return (x, 1);
+}
+//@dump-sem-ir-end
+
+fn Use() -> (i32, i32) {
+  return M(4 as i32);
+}
+
+// --- return_struct_constant_field.carbon
+library "[[@TEST_NAME]]";
+
+fn M[template T: type](x: T) -> {.a: T, .b: T} {
+  return {.a = x, .b = 2};
+}
+
+fn Use() -> {.a: i32, .b: i32} {
+  return M(4 as i32);
+}
+
+// --- return_array_constant_element.carbon
+library "[[@TEST_NAME]]";
+
+fn M[template T: type](x: T) -> array(T, 2) {
+  return (x, 3);
+}
+
+fn Use() -> array(i32, 2) {
+  return M(4 as i32);
+}
+
+// --- var_tuple_constant_element.carbon
+library "[[@TEST_NAME]]";
+
+fn M[template T: type](x: T) -> (T, T) {
+  var p: (T, T) = (x, 1);
+  return p;
+}
+
+fn Use() -> (i32, i32) {
+  return M(4 as i32);
+}
+
+// --- assign_tuple_constant_element.carbon
+library "[[@TEST_NAME]]";
+
+fn M[template T: type](x: T, y: T) -> (T, T) {
+  var t: (T, T) = (x, y);
+  t = (x, 1);
+  return t;
+}
+
+fn Use() -> (i32, i32) {
+  return M(4 as i32, 9 as i32);
+}
+
+// --- return_nested_constant_element.carbon
+library "[[@TEST_NAME]]";
+
+fn M[template T: type](x: T) -> ((T, T), T) {
+  return ((x, 2), 3);
+}
+
+fn Use() -> ((i32, i32), i32) {
+  return M(4 as i32);
+}
+
+// --- template_value_element.carbon
+library "[[@TEST_NAME]]";
+
+fn M(template N: i32, x: i32) -> (i32, i32) {
+  return (N, x);
+}
+
+fn Use() -> (i32, i32) {
+  return M(3, 4);
+}
+
+// --- return_class_constant_field.carbon
+library "[[@TEST_NAME]]";
+
+class P(T: type) {
+  var a: T;
+  var b: T;
+}
+
+fn M[template T: type](x: T) -> P(T) {
+  return {.a = x, .b = 1};
+}
+
+fn Use() -> P(i32) {
+  return M(4 as i32);
+}
+
+// --- var_class_constant_field.carbon
+library "[[@TEST_NAME]]";
+
+class P(T: type) {
+  var a: T;
+  var b: T;
+}
+
+fn M[template T: type](x: T) -> T {
+  var p: P(T) = {.a = x, .b = 2};
+  return p.b;
+}
+
+fn Use() -> i32 {
+  return M(4 as i32);
+}

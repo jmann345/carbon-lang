@@ -65,6 +65,9 @@ auto FunctionContext::TryToReuseBlock(SemIR::InstBlockId block_id,
   return true;
 }
 
+// `LowerInst` lowers the block that a constant splice splices
+// (`LowerStorageInConstantSplice`), whose nesting bounds the recursion.
+// NOLINTNEXTLINE(misc-no-recursion)
 auto FunctionContext::LowerBlockContents(SemIR::InstBlockId block_id) -> void {
   auto inst_id_for_stack_trace = SemIR::InstId::None;
 
@@ -119,12 +122,50 @@ static auto LowerInstHelper(FunctionContext& context, SemIR::InstId inst_id,
   }
 }
 
+// In a template's specific, a splice whose value is constant can splice a
+// block that also holds instructions that are not constant, such as the copy
+// of an in-place initializer's storage access chain (D-TP-3): the
+// `tuple_access %return.param, element1` that the `1` of `return (x, 1);`
+// initializes. This lowers them where the splice is, as a non-template
+// function lowers the same instructions in its body, so that the aggregate
+// initializer that stores the constant element finds its storage
+// (`EmitAggregateInitializer`, and the `ArrayInit` handler).
+// NOLINTNEXTLINE(misc-no-recursion)
+static auto LowerStorageInConstantSplice(FunctionContext& context,
+                                         SemIR::InstId inst_id) -> void {
+  CARBON_KIND_SWITCH(context.sem_ir().insts().Get(inst_id)) {
+    case CARBON_KIND(SemIR::SpliceInst inst): {
+      auto [inst_ir, inst_value_id] = GetConstantValueInSpecific(
+          context.specific_sem_ir(), context.specific_id(), context.sem_ir(),
+          inst.inst_id);
+      if (inst_ir != &context.sem_ir() || !inst_value_id.is_concrete()) {
+        return;
+      }
+      auto spliced_id = inst_ir->constant_values()
+                            .GetInstAs<SemIR::InstValue>(inst_value_id)
+                            .inst_id;
+      context.AddInstToCurrentFingerprint(spliced_id);
+      context.LowerInst(spliced_id);
+      return;
+    }
+    case CARBON_KIND(SemIR::SpliceBlock inst): {
+      // `LowerInst` skips the constant instructions of the block.
+      context.LowerBlockContents(inst.block_id);
+      return;
+    }
+    default:
+      return;
+  }
+}
+
 // TODO: Consider renaming Handle##Name, instead relying on typed_inst overload
 // resolution. That would allow putting the nonexistent handler implementations
 // in `requires`-style overloads.
+// NOLINTNEXTLINE(misc-no-recursion)
 auto FunctionContext::LowerInst(SemIR::InstId inst_id) -> void {
   // Skip over constants. `FileContext::GetConstant` lowers them as needed.
   if (IsConstant(inst_id)) {
+    LowerStorageInConstantSplice(*this, inst_id);
     return;
   }
 

@@ -288,6 +288,7 @@ fails if this table is stale):
 | `generics/checked_generics.carbon` | Generics: Checked generics | run |
 | `generics/generic_class.carbon` | Generics: generic functions and types | run |
 | `generics/structural_conformance.carbon` | Generics: Template-style structural conformance to nominal constraints | SKIP |
+| `generics/templates_constant_elements.carbon` | Generics: Integrated templates | run |
 | `generics/templates_constraint_lookup.carbon` | Generics: Integrated templates | run |
 | `generics/templates_deduce_class_args.carbon` | Generics: Integrated templates | run |
 | `generics/templates_dependent_call.carbon` | Generics: Integrated templates | run |

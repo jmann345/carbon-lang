@@ -2860,6 +2860,60 @@ if-let/let-else/while-let (flips a MISSING bullet on landed match
 machinery), then the error-handling chain W-016..W-019 (Result, `?`,
 exception interop), then unions W-009/W-015.
 
+### OX-1 parked: operator export to C++ cannot be made invisible to Carbon's own resolution (2026-10-14)
+
+**Context.** Workstream OX-1 planned W-054, "Export Carbon operator impls as
+C++ operator overloads" (gap row 48, the last MISSING row once the held PRs
+land), on branch claude/carbon-fork-0-1-ox (cut from f67ab650d; plan
+fork/opexport/plan.md). The plan went through six revisions in one day:
+rev 1 (prototype v4) was REJECTed by both adversarial reviews, and four
+focused re-reviews then REJECTed rev 2, rev 3, rev 4 and rev 5 (prototypes
+v5 to v8), each on the same class of defect found through a new path. The
+branch is pushed as a record (head 14f06b8b3, rev 6) and has no PR.
+
+**Root cause, as the plan's Parking record states it.** The prototypes
+exported a Carbon operator impl as a Clang declaration lazily, when a Clang
+name lookup reached the exported class or its namespace, and Carbon's own
+resolution consults the same Clang Sema (FindClangOperator for an operator
+expression with a C++ operand, overload_resolution.cpp for a call of a C++
+function, LookupCppConversion for a conversion, type_mapping.cpp's lookups
+in the Carbon-owned namespace). Whatever an export declares is therefore an
+input to Carbon's own resolution, and Clang's deferred work (pending
+instantiations at a fragment's end, MarkFunctionReferenced for a constexpr
+function, NoteCandidates, deferred deduction of template candidates) runs
+outside any scope a flag could delimit. Scoping (v5, v6) failed on
+Carbon-only programs that trunk accepts; limiting what an export may do
+through a non-diagnosing predicate and a first resolution with the exports
+present (v7, v8) still left the three invariants of the fourth re-review
+failing on named programs: an export diagnosed a Carbon-only program at an
+unrelated sibling impl, an export changed which impl Carbon called, and two
+qualified C++ uses found nothing. Each proposed fix added a case to a
+hand-written mirror of code the fork does not own; under R17 that is the
+signal that the route is wrong.
+
+**Decision (R29, auto-adopted; break condition in the plan).** OX-1 is
+PARKED at plan rev 6 with the orchestrator's pre-registered break condition
+("a fourth REJECT parks the workstream rather than re-prototyping"). A
+future plan must separate operator exports from the Sema Carbon's own
+lookups use: exports produced only for C++ consumers, or an equivalent
+separation under which no lookup Carbon's resolution makes can create,
+see or instantiate against an exported operator. The plan's Parking record
+lists the measurements that planner takes first, on trunk, before choosing
+a design. Resumption condition: a measured design under which the fourth
+re-review's three invariants hold by construction.
+
+**Consequences.** Gap row 48 stays MISSING; W-054 stays open with a note
+pointing at the parking record at its next ledger edit; W-202 to W-211 and
+W-245 to W-249 stay reserved to OX-1 and unused in every ledger; F-017 stays
+reserved and unminted; the v8 prototype's measurements (the seven
+conformance programs printing their hand-derived values from C++, file_test
+1942 of 1942 unchanged, conformance 135 PASS / 0 FAIL / 21 SKIP over 156
+expected) stand in the plan as evidence for the C++ side, not as a landable
+result. W-203 (an exported Carbon class imported from another library
+yields an empty C++ record, a pre-existing upstream defect the planner
+found) is recorded in the plan and is filed in the ledger by whichever
+workstream next touches check/cpp export.
+
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 
 Milestone bullet "Stdlib C++ interop: transparent non-owning contiguous

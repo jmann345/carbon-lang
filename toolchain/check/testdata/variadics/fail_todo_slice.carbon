@@ -42,7 +42,7 @@ fn F(... each b: bool) {
 library "[[@TEST_NAME]]";
 
 fn F(... each n: i64) {
-  let unused t: auto = (... each n);
+  let unused t: (i64, i64) = (... each n);
 }
 
 // --- fail_todo_merged_segments.carbon
@@ -67,7 +67,7 @@ fn F(... (each a: i64, each b: i64));
 // --- fail_todo_tuple_operand.carbon
 library "[[@TEST_NAME]]";
 
-fn F(... (each a: i64));
+fn F(... (each a: i64,));
 
 // --- fail_todo_overload_member.carbon
 library "[[@TEST_NAME]]";
@@ -142,7 +142,7 @@ impl D as Core.ImplicitAs(C) {
   fn Convert(self) -> C;
 }
 
-fn ForEach(... each c: C);
+fn ForEach(... unused each c: C) {}
 
 fn F(... each d: D) {
   ForEach(... each d);

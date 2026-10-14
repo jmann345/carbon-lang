@@ -42,7 +42,7 @@ library "[[@TEST_NAME]]";
 
 class C {}
 
-fn ForEach(... each n: i64);
+fn ForEach(... unused each n: i64) {}
 
 fn F() {
   ForEach(1, {} as C);

@@ -48,7 +48,7 @@ fn ForwardDoubled(... each m: i64) {
 // --- forward_fixed.carbon
 library "[[@TEST_NAME]]";
 
-fn Middle(first: i64, ... each mid: i64, last: i64);
+fn Middle(unused first: i64, ... unused each mid: i64, unused last: i64) {}
 
 //@dump-sem-ir-begin
 fn Outer(... each x: i64) {
@@ -59,7 +59,7 @@ fn Outer(... each x: i64) {
 // --- forward_generic.carbon
 library "[[@TEST_NAME]]";
 
-fn Consume[T: type](x: T);
+fn Consume[T: type](unused x: T) {}
 
 fn ForEach[T: type](... each x: T) {
   ... Consume(each x);
@@ -82,7 +82,7 @@ impl Wrap as Core.ImplicitAs(i64) {
   fn Convert(self) -> i64 { return self.n; }
 }
 
-fn ForEach(... each n: i64);
+fn ForEach(... unused each n: i64) {}
 
 //@dump-sem-ir-begin
 fn Unwrap(... each w: Wrap) {

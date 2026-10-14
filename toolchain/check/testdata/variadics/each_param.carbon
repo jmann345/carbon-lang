@@ -49,7 +49,7 @@ fn Call() {
 // --- deduced_element_type.carbon
 library "[[@TEST_NAME]]";
 
-fn Consume[T: type](x: T);
+fn Consume[T: type](unused x: T) {}
 
 //@dump-sem-ir-begin
 fn ForEach[T: type](first: T, ... each next: T) {
@@ -82,7 +82,7 @@ library "[[@TEST_NAME]]";
 fn Consume(x: i64);
 
 class C {
-  fn ForEach[self: Self](... each n: i64) {
+  fn ForEach(unused self, ... each n: i64) {
     ... Consume(each n);
   }
 }
@@ -117,7 +117,7 @@ fn Call(c: C, d: C) {
 // --- generic_caller.carbon
 library "[[@TEST_NAME]]";
 
-fn Consume[T: type](x: T);
+fn Consume[T: type](unused x: T) {}
 
 fn ForEach[T: type](... each x: T) {
   ... Consume(each x);

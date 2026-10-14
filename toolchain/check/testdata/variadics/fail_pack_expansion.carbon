@@ -37,5 +37,5 @@ fn F(... each a: i64, ... each b: i64);
 library "[[@TEST_NAME]]";
 
 base class B {
-  virtual fn F[self: Self](... each n: i64);
+  virtual fn F(self, ... each n: i64);
 }

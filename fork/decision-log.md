@@ -4362,10 +4362,14 @@ note, and records the re-measure on 9af776bac. Fill round 13 (same day), folding
 round 12's two implementation reviews: dfd22bdd6 (the errors-match mode compares
 a parameter with an error as declared, ROUND 13's DECISION; the three missing
 fork markers; test sources and the design page), 2af5604a3 (1 golden, CHECK
-lines only) and the records commit after them (round 12's review record; ROUND
-12's decisions narrowed and amended; ROUND 13's DECISION; W-235's note corrected
-and W-236 filed; the ledger's SC-1 cites that round 13 moved re-pointed; gap row
-60; ORCHESTRATION; the re-measure on 2af5604a3). Each fix is an R29(a)
+lines only) and 6992c6cc5 (records: round 12's review record; ROUND 12's
+decisions narrowed and amended; ROUND 13's DECISION; W-235's note corrected and
+W-236 filed; the ledger's SC-1 cites that round 13 moved re-pointed; gap row 60;
+ORCHESTRATION; the re-measure on 2af5604a3); the records commit after 6992c6cc5
+restores the bold markers of ROUND 12's two decision items, which 6992c6cc5
+dropped, checks round 13's records against the head (the split counts, the
+autoupdate's removed lines, the four statements of the rule, W-236's reproducers
+on trunk) and records the re-measure on 6992c6cc5. Each fix is an R29(a)
 implementation decision recorded for after-the-fact veto, with its design
 citation and break condition; none reopens F-010 or the intent of a D-SC
 decision. Round 7's takes D-SC-10's own break condition on a falsifier other
@@ -5076,7 +5080,7 @@ below), reproduced first on the toolchain stamped 0.0.0-0.dev+e7783c80e with
 the reviews' probes (sc1-review11/adv1 and adv2) and their trunk analogs on
 0bdce60a5.
 
--   One rule for errors: the comparison's errors-match mode** (function.cpp
+-   **One rule for errors: the comparison's errors-match mode** (function.cpp
     `CheckFunctionTypeMatches` and `CheckFunctionReturnTypeMatches` (:265-274),
     merge.cpp `CheckRedeclParamsMatch` (:683-689), `CheckRedeclParams`,
     `CheckRedeclParamLists` and `CheckRedeclParam` (:299-325), each with a
@@ -5122,7 +5126,7 @@ the reviews' probes (sc1-review11/adv1 and adv2) and their trunk analogs on
     = Undefined` against `y: i32`, silent where trunk's analog reports), and "No
     case is silent here that trunk's impl analog reports" held only for the two
     matrices named.
--   A requirement with `self` needs a member with `self`**
+-   **A requirement with `self` needs a member with `self`**
     (structural_conformance.cpp:492-501, in `CheckRequirementFunction`; round
     11's review 1 MAJOR-2). Symptom: a static member whose first parameter has
     the self type satisfied a method requirement and failed at the use `x.Get()`
@@ -6317,10 +6321,24 @@ FAIL, 7 SKIP of 56. Re-run on the toolchain rebuilt from dfd22bdd6 (stamped
 and a second pass changed nothing; gate 1959 passed, 0 failed, exit 0, no `!` or
 `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets
 49 PASS, 0 FAIL, 7 SKIP of 56, the same two programs moving (sc1-fix13/conf2, in
-a private cache); the matrices and probes as in the plan's round-13 note.
-Against fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run
-37402970811) exactly two programs move in every run:
-generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
+a private cache); the matrices and probes as in the plan's round-13 note. Round
+13's commits: dfd22bdd6 (fixes, test sources, the design page), 2af5604a3
+(goldens) and 6992c6cc5 (records), which re-ran the gate after its test
+comment's edit (1959 passed, 0 failed, exit 0, 41 s) and conformance (the same
+totals, 56.7 s, sc1-fix13/conf3), and the records commit after it. Re-run on
+6992c6cc5 for the records commit after it with that toolchain (no toolchain
+source differs from dfd22bdd6, and no test source but 6992c6cc5's comment): gate
+1959 passed, 0 failed, exit 0, 40 s, no `!` or `?` mark; conformance PASS 130,
+every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56,
+86.9 s, the same two programs moving (sc1-records13/conf, in a private cache);
+`runner.py --self-test` OK (151 programs, 56 bullets); `git merge-tree` of
+6992c6cc5 against trunk 3eb7f36f0 conflicts in fork/ORCHESTRATION.md only;
+W-236's six reproducers (sc1-fix13/p/w236) give on trunk 0bdce60a5 what they
+give on the round-13 build: h5t, i64, other and static abort at thunk.cpp:169,
+and same and implonly compile (sc1-records13/w236). Against
+fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
+exactly two programs move in every run: generics/structural_conformance.carbon
+SKIP to PASS (`42` then `7`) and the new
 interop/cpp_structural_conformance.carbon PASS (`7` then `0`), plan §5's 130 / 0
 / 21 over 151, EXPECTED and not of record.
 
@@ -6609,7 +6627,21 @@ W-027's notes; the cites of W-138, W-139, W-143, W-234 and W-235 that round 13
 moved, re-pointed; W-235's note corrected; W-236 filed (trunk's thunk aborts on
 an interface member's default value when a thunk is built); the
 template_constraint_require golden's comment cite of D-SC-6's branch
-(structural_conformance.cpp:569).
+(structural_conformance.cpp:569). That records commit is 6992c6cc5. The records
+commit after 6992c6cc5: 6992c6cc5 named at the head of this entry and of the
+plan's note, in MEASURED, in RECORDS, in ORCHESTRATION's status paragraph and
+Branches row and in W-027's notes; the bold markers of ROUND 12's two decision
+items restored (6992c6cc5's edit of those items dropped them); round 13's
+records checked against the head (sc1-records13): the two `_genuine` splits give
+20 and 31 errors and `fail_static_for_method` 1, every other split its round-12
+count; each of 2af5604a3's 52 removed CHECK lines matches one of its 185 added
+lines once its `@LINE` offset is normalized; D-SC-9's statement of the rule and
+ROUND 13's DECISION's are the same word for word, and the comment at
+structural_conformance.cpp:502-516 and the design page carry each of its clauses
+in the same words, written as sentences among their own on what is reported, the
+page naming "the signature comparison" for D-SC-5(d)'s; W-236's reproducers
+re-run on trunk; the re-measure on 6992c6cc5 here and in the plan. No residue is
+filed by it.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

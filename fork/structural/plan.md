@@ -2469,10 +2469,11 @@ value counting as equal; the rule is stated identically in the code, D-SC-9, the
 decision log and the design page; the three missing fork markers are added;
 trunk's thunk abort on an interface member's default value is filed as W-236:
 dfd22bdd6 (fixes, test sources, the design page), 2af5604a3 (1 golden, CHECK
-lines only) and the records commit after them, which writes round 12's review
-record below; it measured the same totals on the toolchain built from its
-sources and again on the toolchain stamped 0.0.0-0.dev+dfd22bdd6 (below). Not of
-record until fork/conformance/out/scoreboard.json is updated (R9).
+lines only) and 6992c6cc5 (records), which writes round 12's review record
+below; it measured the same totals on the toolchain built from its sources,
+again on the toolchain stamped 0.0.0-0.dev+dfd22bdd6 (below) and again on
+6992c6cc5 for the records commit after it. Not of record until
+fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
 one falsified carries a dated amendment above):
@@ -4787,8 +4788,28 @@ conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
 FAIL, 7 SKIP of 56, 76.0 s, exactly the same two programs moving against
 fork/conformance/out/scoreboard.json (sc1-fix13/conf2, in a private cache).
 Round 13's commits: dfd22bdd6 (fixes, test sources, the design page), 2af5604a3
-(goldens) and the records commit after them, which re-ran the gate after its
-test comment's edit.
+(goldens) and 6992c6cc5 (records), which re-ran the gate after its test
+comment's edit (1959 passed, 0 failed, exit 0, 41 s) and conformance (the same
+totals, 56.7 s, sc1-fix13/conf3), and the records commit after it. Re-run on
+6992c6cc5 for the records commit after it with that toolchain (no toolchain
+source differs from dfd22bdd6, and no test source but 6992c6cc5's comment): gate
+1959 passed, 0 failed, exit 0, 40 s, no `!` or `?` mark; conformance PASS 130,
+every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56,
+86.9 s, the same two programs moving (sc1-records13/conf, in a private cache);
+`runner.py --self-test` OK (151 programs, 56 bullets); `git merge-tree` of
+6992c6cc5 against trunk 3eb7f36f0 conflicts in fork/ORCHESTRATION.md only;
+W-236's six reproducers (sc1-fix13/p/w236) give on trunk 0bdce60a5 what they
+give on the round-13 build: h5t, i64, other and static abort at thunk.cpp:169,
+and same and implonly compile (sc1-records13/w236). For the records commit after
+6992c6cc5, round 13's records checked against the head (sc1-records13): the two
+`_genuine` splits give 20 and 31 errors and `fail_static_for_method` 1, every
+other split its round-12 count; each of 2af5604a3's 52 removed CHECK lines
+matches one of its 185 added lines once its `@LINE` offset is normalized;
+D-SC-9's statement of the rule and ROUND 13's DECISION's are the same word for
+word, and the comment at structural_conformance.cpp:502-516 and the design page
+carry each of its clauses in the same words, written as sentences among their
+own on what is reported, the page naming "the signature comparison" for
+D-SC-5(d)'s.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

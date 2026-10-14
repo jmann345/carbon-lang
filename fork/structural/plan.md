@@ -173,7 +173,13 @@ listing them verbatim at discharge (§8.5).
     constraint`"), and a requirement `fn` with its own compile-time bindings
     ("parameterized requirement in `template constraint`" — sub-fork F-010l, the
     stranded page :236-237 recommends deferring past 0.1; such a `fn` is also
-    NOT collected into `structural_members_id`, §1.A.3). DISCLOSURE (amended
+    NOT collected into `structural_members_id`, §1.A.3), and, since fill round
+    10, a requirement `fn` with a tuple pattern parameter ("tuple pattern
+    parameter in `template constraint`", also not collected, W-234; round 9's
+    review 2 finding MINOR-2: the signature comparison fails fatally on a
+    `TuplePattern`,
+    merge.cpp `CheckRedeclParam`, as trunk 0bdce60a5's does for an impl of an
+    interface with such a member and for a redeclaration). DISCLOSURE (amended
     2026-10-06, review fold: B3): deferring `var` field requirements REVERSES
     the recorded F-010b recommendation ("keep them, per proposal 2200" —
     stranded page :245-248 and :798-800; p002200:352-354 admits "function and
@@ -427,70 +433,81 @@ listing them verbatim at discharge (§8.5).
     TEMPLATE blanket `impl forall
     [template T: type] T as I {}` is deferred, not rejected (D-SC-19). Break
     condition for (i): upstream's issue 2153 resolution (as D-SC-6).
--   **D-SC-9 — diagnostics: EIGHT new kinds (heading corrected from "six",
-    body from seven — amended 2026-10-06, review fold: B4 / A1), notes
-    attached to the EXISTING conversion error.**
-    `DiagnoseConversionFailureToConstraintValue`
-    (convert.cpp:1503-1527) switches from `Emit` to `Build` + notes +
-    `Emit`, and `NoteStructuralConformanceFailure` (structural_conformance.h)
-    re-runs the check in explain mode to add, for the FIRST unsatisfied
-    requirement in declaration order (the stranded page's rule, :566-579):
+-   **D-SC-9 — diagnostics: EIGHT new kinds (heading corrected from "six", body
+    from seven — amended 2026-10-06, review fold: B4 / A1), notes attached to
+    the EXISTING conversion error.**
+    `DiagnoseConversionFailureToConstraintValue` (convert.cpp:1503-1527)
+    switches from `Emit` to `Build` + notes + `Emit`, and
+    `NoteStructuralConformanceFailure` (structural_conformance.h) re-runs the
+    check in explain mode to add, for the FIRST unsatisfied requirement in
+    declaration order (the stranded page's rule, :566-579):
     `StructuralMemberMissing` (Note, "type {0} has no member named `{1}`
-    required by template constraint `{2}`"),
-    `StructuralMemberMismatch` (Note, "member `{1}` of type {0} does not
-    match the signature required by template constraint `{2}`"),
-    `StructuralRequirementHere` (Note, "requirement declared here", at the
-    requirement `fn`), `StructuralMemberInaccessible` (Note, "member `{1}`
-    of type {0} is {2:private|protected} here and cannot satisfy template
-    constraint `{3}`" — D-SC-5(b), A1; the text mirrors
-    `ClassInvalidMemberAccess`, name_lookup.cpp:237-240, which is
-    Error-severity and so cannot itself be a note),
-    `StructuralRequirementNeedsConcreteType` (Note,
-    "template constraint `{0}` can only be satisfied by a concrete type;
+    required by template constraint `{2}`"), `StructuralMemberMismatch` (Note,
+    "member `{1}` of type {0} does not match the signature required by template
+    constraint `{2}`"), `StructuralRequirementHere` (Note, "requirement declared
+    here", at the requirement `fn`), `StructuralMemberInaccessible` (Note,
+    "member `{1}` of type {0} is {2:private|protected} here and cannot satisfy
+    template constraint `{3}`" — D-SC-5(b), A1; the text mirrors
+    `ClassInvalidMemberAccess`, name_lookup.cpp:237-240, which is Error-severity
+    and so cannot itself be a note), `StructuralRequirementNeedsConcreteType`
+    (Note, "template constraint `{0}` can only be satisfied by a concrete type;
     {1} is a checked generic binding" — D-SC-6). Errors:
-    `TemplateConstraintOnNonTemplateBinding` ("template constraint `{0}`
-    can only constrain a `template` binding" — D-SC-8),
-    `FunctionInNonTemplateConstraint` ("function declaration in a
-    non-`template` `constraint`; use `template constraint` to declare a
-    structural requirement" — §0.1 row 7's TODO retired),
-    `NamedConstraintRedeclTemplateMismatch` ("redeclarations of `constraint
-    {0}` must match use of `template`", with the existing `RedeclPrevDecl`
-    note — the `RedeclExternMismatch` shape, merge.cpp:45-57; D-SC-16).
-    That is 8 kinds (9 if R-6's completeness context note is counted), each
-    covered by a §4 golden (coverage_test); fill round 2 adds one more, the
-    error `StructuralRequirementCalled` ("requirement `{0}` of template
-    constraint `{1}` can only be called through a type that satisfies it",
-    D-SC-4: a requirement `fn` is never itself the callee; its text says
-    "used" for "called" since fill round 4, when it also reports a requirement
-    used as a value, D-SC-20, and the kind is named `StructuralRequirementUsed`
-    since fill round 5, review 2 finding MINOR-1), so 9 kinds, 10 with R-6's
-    (amended 2026-10-13); fill round 3 adds the note
+    `TemplateConstraintOnNonTemplateBinding` ("template constraint `{0}` can
+    only constrain a `template` binding" — D-SC-8),
+    `FunctionInNonTemplateConstraint` ("function declaration in a non-`template`
+    `constraint`; use `template constraint` to declare a structural requirement"
+    — §0.1 row 7's TODO retired), `NamedConstraintRedeclTemplateMismatch`
+    ("redeclarations of `constraint {0}` must match use of `template`", with the
+    existing `RedeclPrevDecl` note — the `RedeclExternMismatch` shape,
+    merge.cpp:45-57; D-SC-16). That is 8 kinds (9 if R-6's completeness context
+    note is counted), each covered by a §4 golden (coverage_test); fill round 2
+    adds one more, the error `StructuralRequirementCalled` ("requirement `{0}`
+    of template constraint `{1}` can only be called through a type that
+    satisfies it", D-SC-4: a requirement `fn` is never itself the callee; its
+    text says "used" for "called" since fill round 4, when it also reports a
+    requirement used as a value, D-SC-20, and the kind is named
+    `StructuralRequirementUsed` since fill round 5, review 2 finding MINOR-1),
+    so 9 kinds, 10 with R-6's (amended 2026-10-13); fill round 3 adds the note
     `StructuralMemberIsRequirement` ("name `{1}` in type {0} refers to a
     requirement of template constraint `{2}`, not to a member of the type",
     D-SC-5(c) as amended; review finding F7), so 10 kinds, 11 with R-6's
-    (amended 2026-10-13). The deferred forms of D-SC-2 use
-    `context.TODO` (`SemanticsTodo`, no kind). impl.cpp's two `require`
-    emits (`IdentifiedRequireImplsNotImplemented` :891-904 for the identified
-    facet type's requirements, `InterfaceRequireImplsNotImplemented` :946-956
-    for the interface's own `require` block) stay `Emit` with NO structural
-    note in SC-1 — the notes are wired only into convert.cpp:1503-1527
-    (amended 2026-10-06, review fold: A5(ii)). A member that does not match a
-    requirement whose own declaration has an error adds no error and no note of
-    its own: that error was reported at the requirement, so the check fails with
-    no further diagnostic, in both modes, as an interface member's error leaves
-    the interface's impls undiagnosed on trunk 0bdce60a5 (amended 2026-10-14,
-    fill round 9, round 8's review 1 finding MINOR-3 and review 2 finding
-    MINOR-1; structural_conformance.cpp `RequirementSignatureHasError`, pinned
-    by unsatisfied `fail_requirement_signature_error` and the uses in the
-    declaration golden's `fail_todo_` splits). Break condition: a reviewer finds
-    an existing kind whose text already fits — then that kind is reused and the
-    count drops.
+    (amended 2026-10-13). The deferred forms of D-SC-2 use `context.TODO`
+    (`SemanticsTodo`, no kind). impl.cpp's two `require` emits (`IdentifiedRequireImplsNotImplemented`
+    :891-904 for the identified facet type's requirements,
+    `InterfaceRequireImplsNotImplemented` :946-956 for the interface's own
+    `require` block) stay `Emit` with NO structural note in SC-1 — the notes are
+    wired only into convert.cpp:1503-1527 (amended 2026-10-06, review fold:
+    A5(ii)). A member that does not match a requirement because the
+    requirement's own declaration or the member's has an error in a parameter or
+    return type adds no error and no note of its own: that error was reported at
+    the declaration, so that requirement is skipped with no further diagnostic,
+    in both modes, as an error in an interface member or in an impl member
+    leaves that member undiagnosed on trunk 0bdce60a5, while every other
+    requirement, template constraint and interface of the facet type is still
+    checked and reported; the check fails with no diagnostic only when nothing
+    else fails (amended 2026-10-14, fill round 9, round 8's review 1 finding
+    MINOR-3 and review 2 finding MINOR-1; narrowed at fill round 10, round 9's
+    review 1 findings MAJOR-1 and MINOR-2 and review 2 findings MAJOR-1 and
+    MINOR-1: round 9 returned at the first such mismatch, which hid a genuine
+    failure of a later requirement, and tested the requirement's side only;
+    structural_conformance.cpp `FunctionSignatureHasError` and
+    `CheckRequirements`, impl_lookup.cpp `LookupImplWitness`; pinned by
+    unsatisfied `fail_requirement_signature_error` and its `_other_member`,
+    `_other_constraint` and `_require` siblings, `fail_member_signature_error`
+    and the uses in the declaration golden's `fail_todo_` splits). A deduction
+    that meets such a requirement is a rejection, so an overload set whose other
+    members all reject reports `OverloadNoMatch` and a blanket impl is not
+    applied, as for a member's or a candidate's own error on trunk (W-233).
+    Break condition: a reviewer finds an existing kind whose text already fits —
+    then that kind is reused and the count drops.
 -   **D-SC-10 — `Self` inside a template constraint is a TEMPLATE-phase
     binding.** (BREAK CONDITION TAKEN 2026-10-14, fill round 7: a CHECKED-phase
     binding as landed; restated at fill round 8, W-169; heading annotated at
     fill round 9, round 8's review 2 finding MINOR-5.) `is_template = true`
     flows into `AddSelfSymbolicBindingToScope`
-    (handle_named_constraint.cpp:134-136), exactly the hook upstream left for it
+    (handle_named_constraint.cpp:160-162 at the round-10 head; :141-143 at
+    8068151ed, where the plan cited :134-136; re-pointed at fill round 10, round
+    9's review 2 finding MINOR-4), exactly the hook upstream left for it
     (§0.1 row 5), so a requirement's `self` and `Self`-typed parameters carry
     `[template]` phase like `x: T` for `template T`. Nothing in SC-1 depends on
     the phase (signatures are matched through specifics, which substitute either
@@ -1251,6 +1268,7 @@ convention).
 | check/testdata/named_constraint/template_constraint.carbon (round-7 splits, 2026-10-14) | new `fail_self_dependent_name` (`HasN` with `alias A = Self` and a nested `class Inner { var k: i32; }`; `AliasOfSelf`: `let unused y: HasN.A* = 1`; `NestedClassAs`: `let unused x: bool = 1 as HasN.Inner`; `NestedClassPointer`: `let unused y: HasN.Inner* = 1`); new `nested_class` (`Outer.Inner.N()` for a class with a method declared in a template constraint); `decl`'s comment | Round 7, written after the development build ran these shapes (observed, not counted, R16(d)): the fail split has the diagnostics of the `constraint` spelling on trunk 0bdce60a5, a `ConversionFailure` to `Self*`, to `Inner` with `as` followed by `Inner` to `bool`, and to `Inner*`, each with its `MissingImplInMemberAccessInContext` note; `nested_class` has no STDERR (its lowering aborts at sem_ir/mangler.cpp:185, as the `constraint` spelling does on trunk); the dumps of `decl`, `forward`, `compose` and `generic` show `Self`, the requirements' function types and their patterns `[symbolic]` where they were `[template]` (D-SC-10 as amended) FILLED 2026-10-14 (fill round 7, 36181a729): as written, observed and not counted |
 | check/testdata/named_constraint/template_constraint.carbon (round-8 splits, 2026-10-14) | new `fail_todo_self_member_in_signature` (`HasNM` with `fn M(p: typeof(Self.N)*) -> i32`; `HasA` with `alias A = i32` and `fn Get(self) -> Self.A`); new `fail_todo_self_facet_in_signature` (`fn Wrap(self) -> Box(Self)` for `class Box(T: J)`; `fn Get(self) -> Self.(HasElem.Elem)`); new `self_facet_in_signature_required` (the same two with `require impls J` and `require impls HasElem`, a class `C` that has `impl as J`, `Wrap`, `V` and `Get`, `impl C as HasElem where .Elem = i32`, called through `CallWrap` and `CallGet`); new `fail_todo_unqualified_requirement_in_signature` (`fn M(p: typeof(N)*) -> i32`, a class mirroring it, `CallN(c)`) | Round 8, written after the round-7 build ran these shapes in the reviews' probes (observed, not counted, R16(d)): `IncompleteTypeInMemberAccessOfFacet` at `Self` of `Self.N` and of `Self.A`, each with `NamedConstraintIncompleteWithinDefinition` at the constraint; `ConversionFailureFacetToFacet` at `Box(Self)` with `InitializingGenericParam` at `T: J`, and at `Self.(HasElem.Elem)`; no STDERR for the required split; `ConversionFailureTypeToFacet` at `CallN(c)` with `StructuralMemberMismatch` at `C.M`, `StructuralRequirementHere` and `DeductionGenericHere`; the dumps of the four dumped splits unchanged FILLED 2026-10-14 (fill round 8, 3245ec0d2): as written, observed and not counted |
 | check/testdata/named_constraint/template_constraint.carbon (round-9 changes, 2026-10-14) | `fail_todo_self_member_in_signature` gains `fn Get2(self) -> A` in `HasA`, a class `C` with `N` and `M(p: typeof(N)*)`, and `Test(c)` calling `CallN(c)`; `fail_todo_self_facet_in_signature` gains `HasAll` (`fn All(self) -> Core.Slice(Self)`), `HasNext` (`fn Next(self) -> Core.Optional(Self)`), a class `C` with `impl as J`, `Wrap` and `Get` and `impl C as HasElem where .Elem = i32`, a class `S` declaring `impl as Core.Copy` and `impl as Core.Destroy` before `All` and `Next`, and `Test(c, s)` calling `CallWrap(c)` twice, `CallGet(c)`, `CallAll(s)` and `CallNext(s)`; `self_facet_in_signature_required` gains `HasAll` and `HasNext` with `require impls Core.Copy & Core.Destroy`, the class `S` and `TestSlice(s)`, a class `D` with `Wrap` returning `i32` and `V`, and `overload fn P[template T: HasWrap]` / `P[T: type]` called as `P(c) + P(d)` | Round 9, predicted by hand before the fill (counted): no diagnostic at `Get2` and none at any use in the two `fail_todo_` splits (D-SC-9 as amended at fill round 9); no STDERR for the required split, `P(d)` skipping the constrained member (D-SC-12). Observed on the development build before the fill (not counted, R16(d)): `ConversionFailureFacetToFacet` at `Core.Slice(Self)`, into `Core.Destroy & Core.Copy`, and at `Core.Optional(Self)`, into `Core.OptionalStorage`, each with `InitializingGenericParam` at the prelude class's parameter FILLED 2026-10-14 (fill round 9, a5078358c): as predicted, and as observed |
+| check/testdata/named_constraint/fail_todo_template_constraint_members.carbon (round-10 split, 2026-10-14) | new `fail_todo_tuple_pattern_param` (`HasF` with `fn F(self, (a: i32, b: i32))`; a class `D` with the same member; `Call[template T: HasF]` and `Test(d)` calling `Call(d)`); the file comment names the form | Round 10, derived by hand from D-SC-2 as amended at fill round 10 (the trunk analogs v06t and v06r abort on 0bdce60a5; observed on the development build first, so not counted, R16(d)): `SemanticsTodo` "tuple pattern parameter in `template constraint`" at the requirement; nothing at `Call(d)`, the requirement not being collected; no abort |
 
 ### §4.B Commit 2
 
@@ -1291,6 +1309,9 @@ convention).
 | check/testdata/named_constraint/fail_template_constraint_unsatisfied.carbon (round-9 split, 2026-10-14) | new `fail_requirement_signature_error` (`H` with `fn F(x: Undefined) -> i32`; `HasF` with `fn F(self) -> Undefined` and `G`; classes `C` with `F(x: i32)`, `D` with `F` and `G`, and an empty `E`; `overload fn P[template T: H]` / `P[T: type]`; `Test(c, d)` with `P(c)`, `G1(c)` twice and `G2(d)` twice; `TestMissing(e)` with `G1(e)`) | Round 9, predicted by hand before the fill from the trunk interface analog (sc1-fix9/t/e01t on 0bdce60a5; counted): `NameNotFound` at each `Undefined`; nothing at `Test`; at `G1(e)`, `ConversionFailureTypeToFacet` with `StructuralMemberMissing`, `StructuralRequirementHere` at `H.F` and `DeductionGenericHere` FILLED 2026-10-14 (fill round 9, a5078358c): as predicted |
 | check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon (round-9 change, 2026-10-14) | `fail_todo_symbolic_facet`'s comment names W-232, rewrapped in its eight lines | Round 9: no CHECK line moves FILLED 2026-10-14 (fill round 9, a5078358c): as predicted |
 | lower/testdata/template/template_constraint.carbon (round-9 split, 2026-10-14) | new `overload_probe_require` (`HasWrap` with `require impls J`, `fn Wrap(self) -> Box(Self)` and `V`; `C` with `impl as J`; `D` without; `overload fn P[template T: HasWrap]` / `P[T: type]`; `Run` returning `P(c) + P(d) - 30`) | Round 9, predicted by hand before the fill (counted): `Run` calls `P`'s specific for `C`, which returns 10, and the next member's for `D`, which returns 20; run as a program it returns 0 FILLED 2026-10-14 (fill round 9, a5078358c): as predicted |
+| check/testdata/named_constraint/fail_template_constraint_unsatisfied.carbon (round-10 splits, 2026-10-14) | `fail_requirement_signature_error`'s comment narrowed; new `fail_requirement_signature_error_other_member` (`HasFG` with `fn F(self) -> Undefined` then `G`, `HasGF` the reverse; `Lacking` with `F` only, `WrongG` with `G` returning `bool`; `TestLacking` and `TestLackingGF` calling `CallFG(l)` and `CallGF(l)`, `TestWrongG` calling `CallFG(w)`), `fail_requirement_signature_error_other_constraint` (`HasF` in error, `HasG`, an interface `I`; `D` with `F` only; `CallFG[template T: HasF & HasG]`, `CallGF[template T: HasG & HasF]` and `CallFI[template T: HasF & I]`, each called with `d`), `fail_requirement_signature_error_require` (`HasFG` in error; `interface I { require impls HasFG; }`; `Lacking` and `Complete` each with `impl as I {}`, only `Complete` declaring `G`), `fail_member_signature_error` (`HasFG` with `F(self, x: i32) -> i32` and `G`; `ReturnError` and `ParamError` with an error in `F`'s return or parameter and `G`; `LackingG` with an error in `F` and no `G`), `fail_todo_requirement_signature_error_overload` (`H` in error; `C` with `F`; `overload fn P[template T: H]` / `P(x: i32)` called as `P(c)`) and `fail_todo_requirement_signature_error_blanket` (`HasF` in error; `impl forall [template T: HasF] T as I`; `D` with `F`; `d.(I.K)()`) | Round 10, derived by hand from the trunk analogs on 0bdce60a5 (round 9's review 1 t01, t03, t04, t13 and review 2 a01t, a03t, a04t, b01t, t02, t12; the fixer's n01 for the printed facet types and o01, o02 and k01 for the overload and blanket shapes; observed on the development build first, so not counted, R16(d)): `NameNotFound` at each `Undefined`; at each `Lacking` use `ConversionFailureTypeToFacet` with `StructuralMemberMissing` for `G` of the constraint used, `StructuralRequirementHere` at that `G` and `DeductionGenericHere`; at `CallFG(w)` the same with `StructuralMemberMismatch` at `WrongG.G`; at `CallFG(d)` and `CallGF(d)` the facet type printed `HasF & HasG`, the note for `HasG`'s `G`; at `CallFI(d)` `ConversionFailureTypeToFacet` into `I & HasF` with `DeductionGenericHere` and no structural note; `InterfaceRequireImplsNotImplemented` at `Lacking`'s `impl as I` and nothing at `Complete`'s; nothing at `Test(r, p)` and the missing `G` at `Call(l)`; `OverloadNoMatch` with `OverloadCandidateRejected` notes (deduction, then conversion) at `P(c)`; `MissingImplInMemberAccess` at `d.(I.K)()` (W-233) |
+| lower/testdata/template/template_constraint.carbon (round-10 change, 2026-10-14) | `overload_probe_require`'s `Run` returns `P(c) * 2 + P(d) - 40` and its comment gives both selections (round 9's review 1 finding MINOR-4) | Round 10, derived by hand: `C` selects the constrained member, which returns 10, and `D` the next, which returns 20, so 10 * 2 + 20 - 40 = 0, where the swapped selection gives 10; run as a program it returns 0 |
+| check/testdata/named_constraint/template_constraint_require.carbon (round-10 change, 2026-10-14) | `fail_todo_require_in_interface_in_generic_class_impl`'s comment re-points structural_conformance.cpp:533 to :541, in its line | Round 10: no CHECK line moves |
 
 ### §4.C Commit 3
 
@@ -3551,7 +3572,13 @@ and break condition:
     gives `StructuralCheckResult::Error`, so the conversion fails with no
     further diagnostic in both modes and an overload probe skips the member as
     before; a missing, inaccessible or requirement-only member is still
-    reported. Design: D-SC-9 as amended at fill round 9; upstream's suppression
+    reported. (Narrowed at fill round 10, round 9's review 1 MAJOR-1 and review
+    2 MAJOR-1: the `Error` was returned at that mismatch, so the missing,
+    inaccessible or mismatched member of a later requirement, of another
+    template constraint or of an interface went unreported; since round 10's
+    first decision only the requirement with the error is skipped, and an
+    overload set whose other members all reject reports `OverloadNoMatch`,
+    W-233.) Design: D-SC-9 as amended at fill round 9; upstream's suppression
     of follow-on diagnostics after an error type. Break condition: some member
     is found to satisfy a requirement whose declaration has an error, or
     upstream starts diagnosing an impl member against an erroneous interface
@@ -3572,6 +3599,139 @@ give no error and none, 3 and 9 errors, and 2 and 4;
 `fail_requirement_signature_error` 7, 7 and 3 errors;
 `self_facet_in_signature_required` and `overload_probe_require` "unable to
 monomorphize", then no error and no error.
+
+Round 9's own diff (58dc46eb6, a5078358c, 6231d5b42, ae807c7e8) had two
+implementation reviews, 11 findings in all: review 1, APPROVE-WITH-FIXES, 1
+MAJOR and 4 MINOR (MAJOR-1, MINOR-1 to MINOR-4); review 2, APPROVE-WITH-FIXES,
+1 MAJOR and 5 MINOR (MAJOR-1, MINOR-1 to MINOR-5). Both checked round 9 on the
+driver stamped 0.0.0-0.dev+a5078358c: no crash and no invalid program accepted
+(every `Error` path needs an `ErrorInst` in a requirement's declaration, which
+is diagnosed in the same invocation, and any error stops lowering,
+toolchain/driver/compile_driver.cpp:635-640); gate 1959 passed and 0 failed;
+conformance 130 / 0 / 21 over 151, 49 of 56. Review 1 also re-ran the earlier
+probe sets (2081 result lines) and the 29 import sets, identical to the fixer's
+runs but for stack addresses, re-classified the 132 differing files of round 9's
+2047-file comparison as recorded, and re-ran them and 80 identical ones. On the
+round's question, both found the cascade gone and the guard too broad: it
+returned at the first mismatch against a requirement with an error, so a missing
+or mismatched member of a later requirement, another template constraint or an
+interface of the facet type, and the class-end `require`, went unreported, in an
+order-dependent way (review 1's a01, a03 to a06, e03 and imp/d1; review 2's a01
+to a05), where trunk 0bdce60a5's interface analogs report each (t01, t03, t04,
+t13; a01t to a04t) and the round-7 build reported each with the follow-on note,
+so the records' "a missing member is still reported" overclaimed. Both found the
+partial rejection of round 8's review 1 MINOR-1 right (z01 and z05 check and run
+on trunk, fb12f63cb and a5078358c; z06, z08 and z10 ran on fb12f63cb and are
+rejected now; z07 and z09 run), the new splits pinning what the records say
+(`require_self_argument` 5, `overload_probe_require` 0), the PR body naming all
+44 commits and stating the trade, gap row 60 naming W-169 and W-232, W-232
+R10-exact, and no model identifier. Review 1's probes are sc1-review9/adv1 (a:
+29 probes; ti: 10 trunk analogs; imp/d1; lsplit), review 2's sc1-review9/adv2
+(p: 21; t: 10 trunk analogs; v: 26; z: 10; imp1). The round counts 2 MAJOR, one
+finding of both reviews, and no BLOCKER.
+
+Fill round 10 (2026-10-14), by review finding, each reproduced first on the
+toolchain stamped 0.0.0-0.dev+a5078358c with the reviews' probes, and their
+trunk analogs on 0bdce60a5:
+
+-   MAJOR-1 (both reviews): reproduced (review 1's a01, a03 to a06 and e03 give
+    the definition's error alone, a02 reports `G`; review 2's a01 to a04 alike,
+    a05 reports `G`). Taken as both reviews direct, round 10's first decision
+    below: such a mismatch skips only that requirement, the check gives `Error`
+    only when nothing else fails, and `LookupImplWitness` still looks up the
+    interfaces after it (review 2's third step). Pinned by the new splits
+    `fail_requirement_signature_error_other_member`, `_other_constraint` and
+    `_require`, their expectations derived by hand from the trunk analogs; the
+    claim is corrected in D-SC-9, round 9's decision here and in the decision
+    log, the split's comment, the design page and the PR body.
+-   MINOR-2 (review 1) and MINOR-1 (review 2), the member side: reproduced (b02
+    and b12; b01). Taken: the error test applies to the found member too, round
+    10's first decision; pinned by `fail_member_signature_error`, expected from
+    t02, t12 and b01t.
+-   MINOR-1 (review 1) and MINOR-1 (review 2), the deductions: reproduced (c01,
+    `OverloadNoMatch`; c05, `MissingImplInMemberAccess`). Taken as each
+    reviewer's second option: an overload probe and impl selection treat a
+    deduction that meets the error as a rejection, which is the fork's overload
+    resolution and upstream's impl selection after a member's or a candidate's
+    own error on trunk 0bdce60a5 (sc1-fix10/p o01 and o02, an overload member
+    with an error in its parameter or in its binding's facet type:
+    `OverloadNoMatch`; k01, a blanket impl whose constraint has an error:
+    `MissingImplInMemberAccess`), so SC-1 does not special-case it. The claims
+    are narrowed (the split's comment, D-SC-9, round 9's decision), the two
+    shapes pinned as `fail_todo_requirement_signature_error_overload` and
+    `fail_todo_requirement_signature_error_blanket`, and W-233 filed.
+-   MINOR-4 (review 1): taken. `overload_probe_require`'s `Run` returns `P(c) *
+    2 + P(d) - 40`, 0 for the recorded selection and 10 for the swapped one; it
+    returns 0 on the round-10 build.
+-   MINOR-2 (review 2): reproduced (v06_tuplepat_good and v06_tuplepat_bad abort
+    at merge.cpp:391 on a5078358c; v06t and v06r at merge.cpp:360 on trunk).
+    Taken as the preferred option, round 10's second decision below: such a
+    requirement is a TODO and is not collected; pinned by
+    `fail_todo_tuple_pattern_param` and filed as W-234. v06d and both v06 probes
+    now give the TODO alone.
+-   MINOR-3 (both reviews): gap row 60's list adds `Core.Optional(Self)`; the
+    first cell is unchanged and `runner.py --self-test` passes (R7).
+-   MINOR-4 (review 2): D-SC-10's cite is re-pointed at the round-10 head
+    (handle_named_constraint.cpp:160-162; :141-143 at 8068151ed).
+-   MINOR-5 (review 2): the design page's as-landed note says two kinds of
+    signature are rejected because of the checked-phase `Self`, and that the
+    unqualified spelling has never been satisfiable.
+
+Rejected: none. Review 1's MINOR-1 and the deduction half of review 2's MINOR-1
+are taken as the reviewers' second options, residue W-233; review 2's MINOR-2
+as its preferred option, with the new TODO filed as W-234.
+
+Round 10's decisions as R29(a) implementation decisions, with design citation
+and break condition:
+
+-   **Only the requirement that cannot be compared is skipped**
+    (structural_conformance.cpp `FunctionSignatureHasError` and
+    `CheckRequirements`, impl_lookup.cpp `LookupImplWitness`; round 9's review 1
+    MAJOR-1 and MINOR-2, review 2 MAJOR-1 and MINOR-1). Symptom: round 9's guard
+    returned at the first mismatch against a requirement whose declaration has
+    an error, so a genuine failure of a later requirement, another template
+    constraint, an interface of the facet type or the class-end `require` went
+    unreported, depending on declaration order; and a member whose own signature
+    has an error was still reported as a mismatch at each use. Root cause: the
+    guard was a `return` inside the per-requirement loop, and it tested one side
+    of the comparison that `CheckFunctionTypeMatches` fails silently on.
+    Decision: such a mismatch, on either side, is skipped with no diagnostic and
+    the loop continues, so every other requirement is checked and reported as
+    before; the check gives `StructuralCheckResult::Error` only when nothing
+    else fails; `LookupImplWitness` then still looks up the facet type's
+    interfaces, giving `None` (the conversion error, with no structural note)
+    when one is missing and the error value otherwise. Design: D-SC-9 as amended
+    at fill round 10; upstream's redeclaration checks, which test both sides
+    (merge.cpp `EntityHasParamError`, function.cpp
+    `CheckFunctionReturnTypeMatches`), and trunk's interface analogs, which
+    report every other member, constraint and interface. Break condition: as
+    round 9's, or a program is found whose genuine failure the skip still hides;
+    then the skip narrows further. Pinned by unsatisfied
+    `fail_requirement_signature_error` and its `_other_member`,
+    `_other_constraint` and `_require` siblings and
+    `fail_member_signature_error`.
+-   **A requirement with a tuple pattern parameter is a TODO**
+    (handle_named_constraint.cpp `HasTupleParamPattern` and
+    `CollectStructuralMembers`; round 9's review 2 MINOR-2). Symptom: any use of
+    a type against such a requirement aborted at merge.cpp:391. Root cause:
+    upstream's parameter-pattern comparison has no case for a `TuplePattern`,
+    and trunk aborts so for an impl of such an interface member and for a
+    redeclaration (merge.cpp:360). Decision: "tuple pattern parameter in
+    `template constraint`" at the requirement when the constraint's definition
+    ends, and the requirement is not collected, as a parameterized one is not.
+    Design: D-SC-2 as amended at fill round 10. Break condition: upstream's
+    comparison handles a `TuplePattern`; then the TODO goes and the split
+    becomes positive (W-234).
+
+Round 10's expectations were derived by hand from the trunk analogs, as the §4
+rows say, but the development build ran the reviews' shapes before the splits
+were written, so none is counted (R16(d)). Extracted and checked on 36181a729,
+on the round-9 toolchain and on the round-10 build, the splits give
+`fail_requirement_signature_error_other_member` 5, 3 and 5 errors,
+`_other_constraint` 4, 1 and 4, `_require` 3, 1 and 2,
+`fail_member_signature_error` 6, 6 and 4, the two
+`fail_todo_requirement_signature_error_` splits 2 each on all three, and
+`fail_todo_tuple_pattern_param` an abort, an abort and 1.
 
 Measured, on the container only (not of record, R9; hosted: not run, Actions
 disabled). Round 1: autoupdate over the 18 goldens in three passes (all 18

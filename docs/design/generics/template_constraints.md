@@ -608,24 +608,26 @@ what [probe-mode evaluation](#probe-mode-evaluation) replays.
 As landed (SC-1, D-SC-10 as amended at fill rounds 7 and 8): `Self` in a
 template constraint is a checked-phase binding, as in a `constraint`, so a
 requirement's signature is checked at the definition as an interface member's
-is. Three kinds of signature that this section makes valid are therefore
-rejected or unsatisfiable (W-169). A member access into `Self`, of a
-requirement or of an alias (`fn M(p: typeof(Self.N)*)`, `-> Self.A`), is
-rejected as `Self.N` is in an interface being defined. A use of `Self` that
-must satisfy a facet type the constraint does not itself require (`Box(Self)`
-for `class Box(T: J)`, `Self.(J.Elem)`, `Core.Slice(Self)`,
-`Core.Optional(Self)`) is rejected as not satisfying it. A requirement named
-unqualified in another's signature (`fn M(p: typeof(N)*)`) is accepted, but it
-names the requirement's own function for the satisfying type, which no member's
-type is, so no type satisfies the constraint. Requiring the facet type that
+is. Two kinds of signature that this section makes valid are therefore
+rejected (W-169). A member access into `Self`, of a requirement or of an alias
+(`fn M(p: typeof(Self.N)*)`, `-> Self.A`), is rejected as `Self.N` is in an
+interface being defined. A use of `Self` that must satisfy a facet type the
+constraint does not itself require (`Box(Self)` for `class Box(T: J)`,
+`Self.(J.Elem)`, `Core.Slice(Self)`, `Core.Optional(Self)`) is rejected as not
+satisfying it. A third kind, a requirement named unqualified in another's
+signature (`fn M(p: typeof(N)*)`), has never been satisfiable, with either
+phase of `Self`: it is accepted, but it names the requirement's own function for
+the satisfying type, which no member's type is, so no type satisfies the
+constraint (W-169). Requiring the facet type that
 `Self` must satisfy lets the signature name it: `require impls J` for
 `Box(Self)` and `Self.(J.Elem)`, and `require impls Core.Copy & Core.Destroy`
 for `Core.Slice(Self)` and `Core.Optional(Self)` (`Core.Optional` through its
 blanket `OptionalStorage` impl). Requiring a template constraint does not, since
 a checked-symbolic self never satisfies one (D-SC-6), and a member access into
-`Self` has no such workaround. A type whose member does not match a requirement
-rejected this way fails the constraint with no diagnostic of its own, the
-requirement's error having been reported (D-SC-9 as amended at fill round 9). A
+`Self` has no such workaround. A member that does not match a requirement
+rejected this way gets no diagnostic of its own, the requirement's error having
+been reported, while the type's other requirements, constraints and interfaces
+are still checked and reported (D-SC-9 as amended at fill rounds 9 and 10). A
 `require` whose facet type takes `Self` as an argument (`require Self impls
 Conv(Self)`, `require impls Has(Self)`), which a template-phase `Self` rejected,
 is accepted. Deferring the checks that involve `Self`, as this section

@@ -77,6 +77,9 @@ struct MemberFailureInfo {
   // The `template constraint` that declares the found requirement
   // (`IsRequirement`).
   SemIR::NamedConstraintId found_constraint_id = SemIR::NamedConstraintId::None;
+  // Whether the found function's own declaration has an error in a parameter
+  // or return type (`Mismatch`).
+  bool signature_error = false;
 };
 
 }  // namespace
@@ -384,6 +387,29 @@ static auto NoteMemberFailure(Context& context, DiagnosticBuilder& builder,
   NoteStructuralRequirementHere(builder, requirement_decl_id);
 }
 
+// Returns whether the declaration of `function`, a requirement or a type's
+// member, has an error in a parameter or return type. That error was diagnosed
+// at the declaration, and the other signature cannot be compared with it:
+// upstream's redeclaration check fails with no further diagnostic when either
+// side has such a type (merge.cpp `EntityHasParamError`, function.cpp
+// `CheckFunctionReturnTypeMatches`).
+static auto FunctionSignatureHasError(Context& context,
+                                      const SemIR::Function& function) -> bool {
+  if (function.GetDeclaredReturnType(context.sem_ir()) ==
+      SemIR::ErrorInst::TypeId) {
+    return true;
+  }
+  for (auto param_patterns_id :
+       {function.implicit_param_patterns_id, function.param_patterns_id}) {
+    for (auto param_id : context.inst_blocks().GetOrEmpty(param_patterns_id)) {
+      if (context.insts().Get(param_id).type_id() == SemIR::ErrorInst::TypeId) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 // Checks one requirement `fn` of `constraint` against the concrete self type.
 // Returns the failure, or `nullopt` when satisfied.
 static auto CheckRequirementFunction(
@@ -469,33 +495,12 @@ static auto CheckRequirementFunction(
   if (!RequirementMatches(context, loc_id, requirement, constraint,
                           requirement_fn, member_fn,
                           callee_fn->enclosing_specific_id)) {
-    return MemberFailureInfo{.failure = MemberFailure::Mismatch,
-                             .member_decl_id = member_fn.latest_decl_id()};
+    return MemberFailureInfo{
+        .failure = MemberFailure::Mismatch,
+        .member_decl_id = member_fn.latest_decl_id(),
+        .signature_error = FunctionSignatureHasError(context, member_fn)};
   }
   return std::nullopt;
-}
-
-// Returns whether the requirement's own declaration has an error in a parameter
-// or return type. That error was diagnosed at the declaration, and no member's
-// signature can be compared with it: upstream's redeclaration check fails with
-// no further diagnostic on such a type (merge.cpp `EntityHasParamError`,
-// function.cpp `CheckFunctionReturnTypeMatches`).
-static auto RequirementSignatureHasError(Context& context,
-                                         const SemIR::Function& requirement_fn)
-    -> bool {
-  if (requirement_fn.GetDeclaredReturnType(context.sem_ir()) ==
-      SemIR::ErrorInst::TypeId) {
-    return true;
-  }
-  for (auto param_patterns_id : {requirement_fn.implicit_param_patterns_id,
-                                 requirement_fn.param_patterns_id}) {
-    for (auto param_id : context.inst_blocks().GetOrEmpty(param_patterns_id)) {
-      if (context.insts().Get(param_id).type_id() == SemIR::ErrorInst::TypeId) {
-        return true;
-      }
-    }
-  }
-  return false;
 }
 
 // Both modes of the check (see `ReportMode`).
@@ -510,6 +515,9 @@ static auto CheckRequirements(Context& context, SemIR::LocId loc_id,
                        .Get(identified_id)
                        .structural_requirements());
 
+  // Whether a requirement was skipped because its signature or its member's
+  // has an error (D-SC-9 as amended at fill rounds 9 and 10).
+  bool signature_error = false;
   for (const auto& requirement : requirements) {
     const auto& constraint = context.named_constraints().Get(
         requirement.constraint.named_constraint_id);
@@ -581,13 +589,16 @@ static auto CheckRequirements(Context& context, SemIR::LocId loc_id,
       if (!failure) {
         continue;
       }
-      // D-SC-9 as amended at fill round 9: a member that does not match a
-      // requirement whose declaration has an error fails the check with no
-      // further diagnostic, in both modes, as an interface member's error
-      // leaves its impls undiagnosed.
+      // D-SC-9 as amended at fill rounds 9 and 10: a member that does not
+      // match a requirement because the requirement's declaration or its own
+      // has an error is skipped with no further diagnostic, in both modes, as
+      // an error in an interface member or an impl member leaves that member
+      // undiagnosed; every other requirement is still checked.
       if (failure->failure == MemberFailure::Mismatch &&
-          RequirementSignatureHasError(context, requirement_fn)) {
-        return StructuralCheckResult::Error;
+          (failure->signature_error ||
+           FunctionSignatureHasError(context, requirement_fn))) {
+        signature_error = true;
+        continue;
       }
       if (mode.explain) {
         NoteMemberFailure(context, *mode.explain, loc_id, *failure,
@@ -597,7 +608,8 @@ static auto CheckRequirements(Context& context, SemIR::LocId loc_id,
       return StructuralCheckResult::Unsatisfied;
     }
   }
-  return StructuralCheckResult::Satisfied;
+  return signature_error ? StructuralCheckResult::Error
+                         : StructuralCheckResult::Satisfied;
 }
 
 auto CheckStructuralRequirements(Context& context, SemIR::LocId loc_id,

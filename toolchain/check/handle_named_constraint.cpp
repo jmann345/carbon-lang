@@ -204,13 +204,37 @@ auto HandleParseNode(Context& context,
   return true;
 }
 
+// Returns whether a parameter of `function` is a tuple pattern, directly or
+// under `var`.
+static auto HasTupleParamPattern(Context& context,
+                                 const SemIR::Function& function) -> bool {
+  for (auto param_patterns_id :
+       {function.implicit_param_patterns_id, function.param_patterns_id}) {
+    for (auto pattern_id :
+         context.inst_blocks().GetOrEmpty(param_patterns_id)) {
+      auto pattern = context.insts().Get(pattern_id);
+      while (auto var_pattern = pattern.TryAs<SemIR::AnyVarPattern>()) {
+        pattern = context.insts().Get(var_pattern->subpattern_id);
+      }
+      if (pattern.Is<SemIR::TuplePattern>()) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 // Collects the structural member requirements of a `template constraint` at
 // its `}`: the `FunctionDecl` instructions of its with-self body block, in
 // declaration order (D-SC-15). A declaration is a requirement only if it is
 // declared directly in the constraint-with-self scope and has no compile-time
 // parameters of its own beyond the with-self generic's (a parameterized
 // requirement is diagnosed as a TODO by `BuildFunctionDecl` and is not
-// collected, D-SC-2 / review fold A12).
+// collected, D-SC-2 / review fold A12). D-SC-2 as amended at fill round 10: a
+// requirement with a tuple pattern parameter is diagnosed as a TODO here and is
+// not collected, since the signature comparison fails fatally on a
+// `TuplePattern` (merge.cpp `CheckRedeclParam`, as upstream's does for an
+// impl of an interface with such a member).
 static auto CollectStructuralMembers(
     Context& context, const SemIR::NamedConstraint& constraint_info)
     -> SemIR::InstBlockId {
@@ -238,6 +262,10 @@ static auto CollectStructuralMembers(
                   .size()
             : 0;
     if (binding_count != with_self_binding_count) {
+      continue;
+    }
+    if (HasTupleParamPattern(context, function)) {
+      context.TODO(inst_id, "tuple pattern parameter in `template constraint`");
       continue;
     }
     members.push_back(inst_id);

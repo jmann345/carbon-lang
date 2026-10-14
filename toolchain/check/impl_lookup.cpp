@@ -1017,7 +1017,10 @@ auto LookupImplWitness(Context& context, SemIR::LocId loc_id,
   // interface witnesses, so that a facet type with no interfaces is still
   // satisfied only by a type with the required members. An unsatisfied
   // requirement is plain lookup failure (`None`), explained by the conversion's
-  // diagnostic (D-SC-9); a template-phase self is deferred (D-SC-19).
+  // diagnostic (D-SC-9); a template-phase self is deferred (D-SC-19). After an
+  // error the interfaces are still looked up, so that one the type does not
+  // implement is reported (D-SC-9 as amended at fill round 10).
+  bool structural_error = false;
   if (!context.identified_facet_types()
            .Get(identified_id)
            .structural_requirements()
@@ -1029,13 +1032,17 @@ auto LookupImplWitness(Context& context, SemIR::LocId loc_id,
       case StructuralCheckResult::Unsatisfied:
         return SemIR::InstBlockId::None;
       case StructuralCheckResult::Error:
-        return SemIR::InstBlockIdOrError::MakeError();
+        structural_error = true;
+        break;
     }
   }
 
   auto req_impls =
       context.identified_facet_types().Get(identified_id).required_impls();
   if (req_impls.empty()) {
+    if (structural_error) {
+      return SemIR::InstBlockIdOrError::MakeError();
+    }
     return SemIR::InstBlockId::Empty;
   }
 
@@ -1134,6 +1141,9 @@ auto LookupImplWitness(Context& context, SemIR::LocId loc_id,
     return SemIR::InstBlockId::None;
   }
 
+  if (structural_error) {
+    return SemIR::InstBlockIdOrError::MakeError();
+  }
   return context.inst_blocks().AddCanonical(result_witness_ids);
 }
 

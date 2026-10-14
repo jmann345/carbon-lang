@@ -350,10 +350,11 @@ library "[[@TEST_NAME]]";
 // A member of an overload set constrained by a template constraint whose
 // requirement signature names `Box(Self)`, with `require impls J`, is probed
 // without diagnostics: `C` selects it and `D`, which does not implement `J`,
-// selects the next member, so `Run` returns 10 + 20 - 30 = 0 (D-SC-12; fill
-// round 9, round 8's review 1 finding MINOR-2; the check split
-// `self_facet_in_signature_required` in
-// named_constraint/template_constraint.carbon).
+// selects the next member, so `Run` returns 10 * 2 + 20 - 40 = 0, where the
+// swapped selection would return 20 * 2 + 10 - 40 = 10 (D-SC-12; fill round 9,
+// round 8's review 1 finding MINOR-2; asymmetric since fill round 10, round 9's
+// review 1 finding MINOR-4; the check split `self_facet_in_signature_required`
+// in named_constraint/template_constraint.carbon).
 interface J {
   fn K(self) -> i32;
 }
@@ -389,7 +390,7 @@ overload fn P[T: type](unused x: T) -> i32 { return 20; }
 fn Run() -> i32 {
   let c: C = {.v = 3};
   let d: D = {.v = 3};
-  return P(c) + P(d) - 30;
+  return P(c) * 2 + P(d) - 40;
 }
 
 // CHECK:STDOUT: ; ---

@@ -553,12 +553,16 @@ fn Test() -> i32 {
 library "[[@TEST_NAME]]";
 
 // A requirement whose declaration has an error is reported there alone: a
-// member that does not match it fails the check with no further diagnostic, in
-// an overload probe and at a direct use alike, as an interface member's error
-// leaves the impls of the interface undiagnosed on trunk 0bdce60a5 (D-SC-9 as
-// amended at fill round 9, round 8's review 1 finding MINOR-3 and review 2
-// finding MINOR-1). A type with no member of the requirement's name is still
-// reported, as a type that does not implement such an interface is.
+// member that does not match it is skipped with no further diagnostic, as an
+// interface member's error leaves that member of the interface's impls
+// undiagnosed on trunk 0bdce60a5, so a direct use fails silently and an
+// overload probe rejects the member, as for a type that does not satisfy the
+// constraint (D-SC-9 as amended at fill rounds 9 and 10; round 8's review 1
+// finding MINOR-3 and review 2 finding MINOR-1). A type with no member of the
+// requirement's name is still reported, as a type that does not implement such
+// an interface is; `fail_requirement_signature_error_other_member` and
+// `fail_requirement_signature_error_other_constraint` show that every other
+// requirement is still checked.
 template constraint H {
   // CHECK:STDERR: fail_requirement_signature_error.carbon:[[@LINE+4]]:11: error: name `Undefined` not found [NameNotFound]
   // CHECK:STDERR:   fn F(x: Undefined) -> i32;
@@ -610,3 +614,185 @@ fn Test(c: C, d: D) -> i32 { return P(c) + G1(c) + G1(c) + G2(d) + G2(d); }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn TestMissing(e: E) -> i32 { return G1(e); }
+
+// --- fail_requirement_signature_error_other_member.carbon
+library "[[@TEST_NAME]]";
+
+// Only the requirement with the error is skipped: every other requirement of
+// the constraint is still checked and reported, before or after it in
+// declaration order, as trunk 0bdce60a5 reports a missing or mismatched member
+// of an impl of an interface whose other member has an error (D-SC-9 as
+// amended at fill round 10, round 9's review 1 finding MAJOR-1 and review 2
+// finding MAJOR-1).
+template constraint HasFG {
+  fn F(self) -> Undefined;
+  fn G(self) -> i32;
+}
+
+template constraint HasGF {
+  fn G(self) -> i32;
+  fn F(self) -> Undefined;
+}
+
+class Lacking {
+  fn F(unused self) -> i32 { return 1; }
+}
+
+class WrongG {
+  fn F(unused self) -> i32 { return 1; }
+  fn G(unused self) -> bool { return true; }
+}
+
+fn CallFG[template T: HasFG](unused x: T) -> i32 { return 0; }
+
+fn CallGF[template T: HasGF](unused x: T) -> i32 { return 0; }
+
+fn TestLacking(l: Lacking) -> i32 { return CallFG(l); }
+
+fn TestLackingGF(l: Lacking) -> i32 { return CallGF(l); }
+
+fn TestWrongG(w: WrongG) -> i32 { return CallFG(w); }
+
+// --- fail_requirement_signature_error_other_constraint.carbon
+library "[[@TEST_NAME]]";
+
+// A requirement with an error does not hide another template constraint or an
+// interface of the same facet type that the type does not satisfy, as trunk
+// 0bdce60a5 reports a type that does not implement the other interface of `HasF
+// & HasG` when a member of `HasF` has an error (D-SC-9 as amended at fill round
+// 10, round 9's review 1 finding MAJOR-1 and review 2 finding MAJOR-1).
+template constraint HasF {
+  fn F(self) -> Undefined;
+}
+
+template constraint HasG {
+  fn G(self) -> i32;
+}
+
+interface I {
+  fn K(self) -> i32;
+}
+
+class D {
+  fn F(unused self) -> i32 { return 1; }
+}
+
+fn CallFG[template T: HasF & HasG](unused x: T) -> i32 { return 0; }
+
+fn CallGF[template T: HasG & HasF](unused x: T) -> i32 { return 0; }
+
+fn CallFI[template T: HasF & I](unused x: T) -> i32 { return 0; }
+
+fn TestFG(d: D) -> i32 { return CallFG(d); }
+
+fn TestGF(d: D) -> i32 { return CallGF(d); }
+
+fn TestFI(d: D) -> i32 { return CallFI(d); }
+
+// --- fail_requirement_signature_error_require.carbon
+library "[[@TEST_NAME]]";
+
+// The `require` check at a class's end (D-SC-8(iii)) skips only the requirement
+// with the error too, as trunk 0bdce60a5 reports a type that does not implement
+// the interface an interface requires when another member of it has an error
+// (D-SC-9 as amended at fill round 10, round 9's review 1 finding MAJOR-1).
+template constraint HasFG {
+  fn F(self) -> Undefined;
+  fn G(self) -> i32;
+}
+
+interface I {
+  require impls HasFG;
+}
+
+class Lacking {
+  fn F(unused self) -> i32 { return 1; }
+  impl as I {}
+}
+
+class Complete {
+  fn F(unused self) -> i32 { return 1; }
+  fn G(unused self) -> i32 { return 2; }
+  impl as I {}
+}
+
+// --- fail_member_signature_error.carbon
+library "[[@TEST_NAME]]";
+
+// A member whose own declaration has an error is reported there alone: the
+// requirement it cannot be compared with is skipped with no further diagnostic,
+// as trunk 0bdce60a5 reports an impl member's error alone, and every other
+// requirement is still checked (D-SC-9 as amended at fill round 10, round 9's
+// review 1 finding MINOR-2 and review 2 finding MINOR-1).
+template constraint HasFG {
+  fn F(self, x: i32) -> i32;
+  fn G(self) -> i32;
+}
+
+class ReturnError {
+  fn F(unused self, unused x: i32) -> Undefined { return 0; }
+  fn G(unused self) -> i32 { return 2; }
+}
+
+class ParamError {
+  fn F(unused self, unused x: Undefined) -> i32 { return 1; }
+  fn G(unused self) -> i32 { return 2; }
+}
+
+class LackingG {
+  fn F(unused self, unused x: Undefined) -> i32 { return 1; }
+}
+
+fn Call[template T: HasFG](unused x: T) -> i32 { return 0; }
+
+fn Test(r: ReturnError, p: ParamError) -> i32 { return Call(r) + Call(p); }
+
+fn TestLacking(l: LackingG) -> i32 { return Call(l); }
+
+// --- fail_todo_requirement_signature_error_overload.carbon
+library "[[@TEST_NAME]]";
+
+// TODO: W-233. An overload probe rejects a member whose constraint has a
+// requirement with an error, as for a type that does not satisfy it, so when no
+// other member accepts the call `OverloadNoMatch` follows the requirement's
+// error, as it follows a member's own error in its parameter or its binding's
+// facet type on trunk 0bdce60a5 (fill round 10, round 9's review 1 finding
+// MINOR-1).
+template constraint H {
+  fn F(x: Undefined) -> i32;
+}
+
+class C {
+  fn F(unused x: i32) -> i32 { return 1; }
+}
+
+overload fn P[template T: H](unused x: T) -> i32 { return 10; }
+overload fn P(unused x: i32) -> i32 { return 20; }
+
+fn Test(c: C) -> i32 { return P(c); }
+
+// --- fail_todo_requirement_signature_error_blanket.carbon
+library "[[@TEST_NAME]]";
+
+// TODO: W-233. Impl selection does not apply a blanket impl whose deduction
+// meets a requirement with an error, so a use of the interface reports that the
+// type does not implement it after the requirement's error, as trunk 0bdce60a5
+// does for a blanket impl whose own constraint has an error (fill round 10,
+// round 9's review 2 finding MINOR-1).
+template constraint HasF {
+  fn F(self) -> Undefined;
+}
+
+interface I {
+  fn K(self) -> i32;
+}
+
+impl forall [template T: HasF] T as I {
+  fn K(unused self) -> i32 { return 3; }
+}
+
+class D {
+  fn F(unused self) -> i32 { return 1; }
+}
+
+fn Test(d: D) -> i32 { return d.(I.K)(); }

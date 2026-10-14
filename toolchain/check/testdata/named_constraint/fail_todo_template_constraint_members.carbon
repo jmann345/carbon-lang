@@ -12,7 +12,8 @@
 
 // The member-requirement forms SC-1 defers (fork decision F-010 / SC-1,
 // D-SC-2): a function definition (a default), a requirement with its own
-// compile-time parameters (F-010l), and an associated constant.
+// compile-time parameters (F-010l), an associated constant and, since fill
+// round 10, a requirement with a tuple pattern parameter.
 
 // --- fail_todo_definition.carbon
 library "[[@TEST_NAME]]";
@@ -54,3 +55,24 @@ template constraint HasX {
   // CHECK:STDERR:
   let X: type;
 }
+
+// --- fail_todo_tuple_pattern_param.carbon
+library "[[@TEST_NAME]]";
+
+// A requirement with a tuple pattern parameter is refused and not collected,
+// since the signature comparison does not support one: on trunk 0bdce60a5 it
+// fails fatally on a `TuplePattern` for an impl of an interface with such a
+// member and for a redeclaration (D-SC-2 as amended at fill round 10, round 9's
+// review 2 finding MINOR-2). A use of a type with such a member reports
+// nothing further.
+template constraint HasF {
+  fn F(self, (a: i32, b: i32));
+}
+
+class D {
+  fn F(unused self, (unused a: i32, unused b: i32)) {}
+}
+
+fn Call[template T: HasF](unused x: T) -> i32 { return 0; }
+
+fn Test(d: D) -> i32 { return Call(d); }

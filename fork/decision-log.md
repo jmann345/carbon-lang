@@ -4864,7 +4864,14 @@ the round-6 behavior on the toolchain of fb12f63cb.
     with no further diagnostic in both modes and an overload probe skips the
     member as before; a missing, inaccessible or requirement-only member is
     still reported, as trunk reports a type that does not implement such an
-    interface. Design: D-SC-9 as amended at fill round 9; upstream's suppression
+    interface. (Narrowed at fill round 10, round 9's review 1 MAJOR-1 and review
+    2 MAJOR-1: the `Error` was returned at that mismatch, so the missing,
+    inaccessible or mismatched member of a later requirement, of another
+    template constraint or of an interface went unreported, in an
+    order-dependent way, where trunk reports each; since ROUND 10's DECISION
+    only the requirement with the error is skipped, and an overload set whose
+    other members all reject reports `OverloadNoMatch`, W-233.) Design: D-SC-9
+    as amended at fill round 9; upstream's suppression
     of follow-on diagnostics after an error type. Break condition: some member
     is found to satisfy a requirement whose declaration has an error, or
     upstream starts diagnosing an impl member against an erroneous interface
@@ -4876,6 +4883,56 @@ the round-6 behavior on the toolchain of fb12f63cb.
     error and `C` declaring a mismatching `F`, `P(c)` calls the unconstrained
     member of the overload set, as a type that does not satisfy the constraint
     does (sc1-records9/p o01, its `Test` dumped on the round-9 build).
+
+ROUND 10's DECISION (folding round 9's two implementation reviews, REVIEWS
+below), reproduced first on the toolchain stamped 0.0.0-0.dev+a5078358c, with
+the trunk analogs on 0bdce60a5.
+
+-   **Only the requirement that cannot be compared is skipped**
+    (structural_conformance.cpp `FunctionSignatureHasError` and
+    `CheckRequirements`, impl_lookup.cpp `LookupImplWitness`; round 9's review 1
+    MAJOR-1 and MINOR-2, review 2 MAJOR-1 and MINOR-1). Symptom: ROUND 9's guard
+    returned at the first mismatch against a requirement whose declaration has
+    an error, so a genuine failure of a later requirement, another template
+    constraint, an interface of the facet type or the class-end `require` went
+    unreported, depending on declaration order (review 1's a01, a03 to a06, e03;
+    review 2's a01 to a04), where trunk's interface analogs report each (t01,
+    t03, t04, t13; a01t to a04t); and a member whose own signature has an error
+    was still reported as a mismatch at each use (b02, b12; b01), where trunk's
+    impl-member analogs are silent (t02, t12, b01t). Root cause: the guard was a
+    `return` inside the per-requirement loop, and it tested one side of the
+    comparison that `CheckFunctionTypeMatches` fails silently on. Decision: such
+    a mismatch, on either side, is skipped with no diagnostic and the loop
+    continues; the check gives `StructuralCheckResult::Error` only when nothing
+    else fails; `LookupImplWitness` then still looks up the facet type's
+    interfaces, giving `None` (the conversion error, with no structural note)
+    when one is missing. Design: D-SC-9 as amended at fill round 10; upstream's
+    redeclaration checks, which test both sides (merge.cpp
+    `EntityHasParamError`, function.cpp `CheckFunctionReturnTypeMatches`). Break
+    condition: as ROUND 9's, or a program is found whose genuine failure the
+    skip still hides; then the skip narrows further. Pinned by unsatisfied
+    `fail_requirement_signature_error_other_member`, `_other_constraint`,
+    `_require` and `fail_member_signature_error`. Not changed: a deduction that
+    meets such a requirement is a rejection, so an overload set whose other
+    members all reject reports `OverloadNoMatch` and a blanket impl is not
+    applied, as the fork's overload resolution and upstream's impl selection do
+    after a member's or a candidate's own error on trunk (sc1-fix10/p o01, o02,
+    k01); pinned as `fail_todo_requirement_signature_error_overload` and
+    `_blanket` and filed as W-233 (review 1 MINOR-1, review 2 MINOR-1, each
+    reviewer's second option).
+-   **A requirement with a tuple pattern parameter is a TODO**
+    (handle_named_constraint.cpp `HasTupleParamPattern` and
+    `CollectStructuralMembers`; round 9's review 2 MINOR-2). Symptom: any use of
+    a type against such a requirement aborted at merge.cpp:391
+    (sc1-review9/adv2/v v06). Root cause: upstream's parameter-pattern
+    comparison has no case for a `TuplePattern`; trunk aborts so for an impl of
+    such an interface member and for a redeclaration (merge.cpp:360; v06t,
+    v06r). Decision: "tuple pattern parameter in `template constraint`" at the
+    requirement when the constraint's definition ends, and the requirement is
+    not collected, as a parameterized one is not. Design: D-SC-2 as amended at
+    fill round 10. Break condition: upstream's comparison handles a
+    `TuplePattern`; then the TODO goes and `fail_todo_tuple_pattern_param`
+    becomes positive. Filed as W-234.
 
 FILL-CAUGHT MISSES (R28(d): a reviewed prediction the fill overturned; bcaeadb98
 lists (a) to (i), 502e7861a adds (j), bc8b37290 adds (k) and (l), ff490bd48 adds
@@ -4956,7 +5013,9 @@ round 7's and round 8's rows are written after their builds ran their shapes and
 are not counted either. Round 9's rows were predicted by hand before its fill
 and are counted, as the plan's round-9 §4 rows say: each held on a5078358c, so
 round 9 adds no miss, and its notes at the prelude classes' parameters, observed
-on the development build, are not counted. No miss hides a defect: (a), (c),
+on the development build, are not counted. Round 10's rows are derived by hand
+from the trunk analogs but written after its development build ran the reviews'
+shapes, so they are not counted either. No miss hides a defect: (a), (c),
 (f), (l), (m), (n) and (o) were prediction errors (the coalescing (o) shows is
 trunk's lowering, outside SC-1), (b) and (e) a cascade and a warning class now
 gone, (d), (j) and (k) test-source spellings, (g) a coverage gap now dumped
@@ -5374,6 +5433,52 @@ reword the workaround (D-SC-10, ROUND 8's DECISION, the design page, the PR
 body), annotate D-SC-10's heading and rewrite
 handle_named_constraint.cpp:127-132 in its six lines. Per-finding detail is in
 the plan's "Landed notes (SC-1 fill rounds, 2026-10-13)".
+
+Round 9's own diff (58dc46eb6, a5078358c, 6231d5b42, ae807c7e8) then received
+two implementation reviews, 11 findings in all: review 1, APPROVE-WITH-FIXES, 1
+MAJOR and 4 MINOR; review 2, APPROVE-WITH-FIXES, 1 MAJOR and 5 MINOR. Both
+checked round 9 on the driver stamped 0.0.0-0.dev+a5078358c (gate 1959 passed, 0
+failed; conformance 130 / 0 / 21 over 151, 49 of 56) and found no crash and no
+invalid program accepted: every `Error` path needs an `ErrorInst` in a
+requirement's declaration, diagnosed in the same invocation, and any error stops
+lowering (toolchain/driver/compile_driver.cpp:635-640). Review 1 re-ran the
+earlier probe sets (2081 result lines) and the 29 import sets, identical to the
+fixer's runs but for stack addresses, and re-classified and re-ran the 132
+differing files of round 9's 2047-file comparison. On the round's question both
+found the cascade gone and the guard too broad, the one finding of both reviews,
+MAJOR-1: it returned at the first mismatch against a requirement with an error,
+so a missing or mismatched member of a later requirement, another template
+constraint or an interface of the facet type, and the class-end `require`, went
+unreported, depending on declaration order, where trunk 0bdce60a5's interface
+analogs report each and the round-7 build reported each with the follow-on note;
+the records' "a missing member is still reported" overclaimed. Both found the
+partial rejection of round 8's review 1 MINOR-1 right (z01 and z05 check and run
+on trunk, fb12f63cb and a5078358c; z06, z08 and z10 ran on fb12f63cb and are
+rejected now; z07 and z09 run), the splits pinning what the records say, the PR
+body naming all 44 commits and stating the trade, gap row 60 naming W-169 and
+W-232, W-232 R10-exact and no model identifier. Review 1's other findings:
+MINOR-1 an overload probe's `OverloadNoMatch` after the requirement's error;
+MINOR-2 the member's own error still cascading; MINOR-3 gap row 60 omitting
+`Core.Optional(Self)`; MINOR-4 `overload_probe_require`'s 0 not telling the
+selection from the swapped one. Review 2's: MINOR-1 the member side and the
+blanket-impl deduction; MINOR-2 a tuple pattern parameter aborting at
+merge.cpp:391, trunk aborting so too; MINOR-3 as review 1's; MINOR-4 D-SC-10's
+stale handle_named_constraint.cpp:134-136; MINOR-5 the design page's "therefore"
+for the unqualified spelling. Review 1's probes are sc1-review9/adv1 (a, ti,
+imp/d1, lsplit), review 2's sc1-review9/adv2 (p, t, v, z, imp1). The round
+counts 2 MAJOR and no BLOCKER. Fill round 10 folds all 11, each reproduced first
+on the toolchain stamped 0.0.0-0.dev+a5078358c. Dispositions: both MAJOR-1s,
+review 1's MINOR-2 and the member half of review 2's MINOR-1 are ROUND 10's
+first decision, pinned by four new splits of the unsatisfied golden; review 1's
+MINOR-1 and the deduction half of review 2's MINOR-1 are taken as each
+reviewer's second option, the claims narrowed, the two shapes pinned as
+`fail_todo_` splits and W-233 filed; review 1's MINOR-4 makes the lower split's
+result asymmetric (10 * 2 + 20 - 40 = 0, the swapped selection 10); review 2's
+MINOR-2 is ROUND 10's second decision (W-234); both MINOR-3s add
+`Core.Optional(Self)` to gap row 60; review 2's MINOR-4 re-points D-SC-10's cite
+at the round-10 head (:160-162; :141-143 at 8068151ed) and MINOR-5 rewords the
+design page's as-landed note. None is rejected. Per-finding detail is in the
+plan's "Landed notes (SC-1 fill rounds, 2026-10-13)".
 
 MEASURED, on the container only. Round 1 (the toolchain built from 1a7cce0b2's
 sources): autoupdate over the 18 goldens rewrote all 18; the gate then ran 1958

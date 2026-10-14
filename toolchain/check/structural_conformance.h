@@ -30,8 +30,10 @@ enum class StructuralCheckResult : uint8_t {
   Unsatisfied,
   // The program is invalid and a diagnostic was emitted: an incomplete self
   // type, D-SC-5(a), only with `diagnose`; or, in either mode, a mismatch
-  // against a requirement whose declaration has an error, diagnosed there
-  // (D-SC-9 as amended at fill round 9).
+  // against a requirement because its declaration or the member's has an
+  // error, diagnosed there, with every other requirement satisfied (D-SC-9 as
+  // amended at fill rounds 9 and 10). The caller still looks up the facet
+  // type's interfaces.
   Error,
 };
 

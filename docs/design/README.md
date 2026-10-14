@@ -148,10 +148,10 @@ design have things that have not been decided through the Carbon process. This
 preliminary material fills in gaps until aspects of the design can be filled in.
 Features that are provisional have been marked as such on a best-effort basis.
 
-> **Fork note (2026-10-14):** In this fork, what is provisional is marked in
-> place. Each former placeholder page or section now carries measured 0.1
-> content or a dated status note: the pages that described themselves as
-> placeholders ([Templates](templates.md),
+> **Fork note (2026-10-14).** In this fork, what is provisional is marked in
+> place. Each former placeholder page or section now carries content that
+> documents the 0.1 toolchain's behavior, or a dated status note: the pages
+> that described themselves as placeholders ([Templates](templates.md),
 > [Metaprogramming](metaprogramming.md), [Aliases](aliases.md),
 > [Blocks and statements](blocks_and_statements.md), and the `match` section
 > of [Pattern matching](pattern_matching.md#pattern-match-control-flow)), the
@@ -159,9 +159,17 @@ Features that are provisional have been marked as such on a best-effort basis.
 > [Enums](#enums) and [Execution abstractions](#execution-abstractions)
 > sections, and the rules for
 > [assigning tuples, structs, and data classes](assignment.md#tuples-structs-choice-types-and-data-classes).
-> The provisional notes that remain qualify the text beside them.
-> `fork/designdocs/check_samples.py` reports any placeholder
-> self-description, `TODO` heading, or `TODO`-only section that returns.
+> Two sections stay empty until held work lands:
+> [Lifetime and move semantics](#lifetime-and-move-semantics) (held PR 53) and
+> the [Strings](expressions/arithmetic.md#strings) section of arithmetic
+> (held PR 55). The provisional notes that remain qualify the text beside
+> them. `fork/designdocs/check_samples.py` reports any placeholder
+> self-description, `TODO` heading, `TODO`-only section, or empty section that
+> returns. On the design pages, "the 0.1 toolchain" is this fork's toolchain, a
+> "fork decision F-nnn" is an entry of the
+> [fork's decision log](/fork/decision-log.md), a "fork work item W-nnn" is an
+> item of the [fork's work-item ledger](/fork/inventory/work-items.json), and a
+> "held PR" is a fork pull request that has not merged yet.
 
 ### Tour of the basics
 
@@ -828,7 +836,7 @@ Tuple types are
 > proposal process yet. Many of these questions were discussed in dropped
 > proposal [#111](https://github.com/carbon-language/carbon-lang/pull/111).
 
-> **Fork note (2026-10-14):** proposal 3646 has since accepted the tuple
+> **Fork note (2026-10-14).** Proposal 3646 has since accepted the tuple
 > design; see [Tuples](tuples.md).
 
 > References: [Tuples](tuples.md)
@@ -1056,7 +1064,7 @@ function or class itself is visible until the end of the enclosing scope.
 > **Note:** This is provisional, no design for patterns has been through the
 > proposal process yet.
 
-> **Fork note (2026-10-14):** proposal 2188 has since accepted the pattern
+> **Fork note (2026-10-14).** Proposal 2188 has since accepted the pattern
 > design; see [Pattern matching](pattern_matching.md).
 
 A _pattern_ says how to receive some data that is being matched against. There
@@ -2908,10 +2916,12 @@ controlled by the SFINAE rule of C++
 [2](https://en.cppreference.com/w/cpp/language/sfinae)) but by explicit
 constraints declared in the function signature and evaluated at compile-time.
 
-> **Note (fork, 2026-10-14):** Template constraints are fixed by fork decision
-> [F-010](/fork/decision-log.md): `template constraint` declarations with
-> member requirements, `require` validity blocks, and boolean predicates;
-> [Templates](templates.md#status) gives their status.
+> **Fork note (2026-10-14).** Template constraints are accepted: proposal 818
+> introduced `template constraint` declarations, whose member requirements
+> proposal 2200 specifies
+> ([named constraints](generics/details.md#named-constraints)); fork decision
+> [F-010](/fork/decision-log.md) adds `require` validity blocks and boolean
+> predicates; [Templates](templates.md#status) gives their status.
 
 The [expression phase](#expression-phases) of a checked parameter is a symbolic
 constant whereas the expression phase of a template parameter is template
@@ -3610,7 +3620,7 @@ include:
 > **Note:** This is provisional, no design for importing C++ has been through
 > the proposal process yet.
 
-> **Fork note (2026-10-14):** proposal 6358 has since accepted the import
+> **Fork note (2026-10-14).** Proposal 6358 has since accepted the import
 > design; see
 > [Importing C++ APIs into Carbon](interoperability/README.md#importing-c-apis-into-carbon).
 
@@ -3687,7 +3697,7 @@ ABI compatibility.
 > **Note:** This is provisional, no design for this has been through the
 > proposal process yet.
 
-> **Fork note (2026-10-14):** proposal 6254 fixes how a call to a C++ operator
+> **Fork note (2026-10-14).** Proposal 6254 fixes how a call to a C++ operator
 > is resolved; the 0.1 status of both directions is in
 > [The operator interoperability model](interoperability/README.md#the-operator-interoperability-model).
 
@@ -3765,7 +3775,7 @@ if it were a C++ template.
 > **Note:** This is provisional, no design for this has been through the
 > proposal process yet.
 
-> **Fork note (2026-10-14):** proposal 5448 has since accepted the
+> **Fork note (2026-10-14).** Proposal 5448 has since accepted the
 > primitive-type mapping (see [Integers](interoperability/README.md#integers))
 > and proposal 6357 the pointer mapping. C++ references are not translated to
 > `T*` in 0.1; see
@@ -3852,6 +3862,10 @@ corresponding interface.
 
 ### Enums
 
+> **Fork status (2026-10-14).** No accepted proposal covers C++ enumerations;
+> this section documents the 0.1 toolchain's behavior, pinned by
+> `toolchain/check/testdata/interop/cpp/enum/`.
+
 C++ enumerations are imported as Carbon types in the `Cpp` package. An
 enumerator is a member of its enumeration (`Cpp.Color.kGreen`); an unscoped
 enumeration's enumerators are also members of the enclosing scope, as in C++
@@ -3883,9 +3897,7 @@ fn Run() -> i32 {
 }
 ```
 
-This prints `5`, `1`, and `3`. No accepted proposal covers C++ enumerations;
-this is the 0.1 toolchain's behavior (fork, 2026-10-14), pinned by
-`toolchain/check/testdata/interop/cpp/enum/`.
+This prints `5`, `1`, and `3`.
 
 ### Unions
 
@@ -3979,9 +3991,9 @@ This leads to Carbon's incremental path to safety:
 
 ### Metaprogramming
 
-> **Note (fork, 2026-10-14):** Compile-time evaluation is implemented in 0.1,
-> with the `eval fn` and `musteval fn` forms;
-> [Metaprogramming](metaprogramming.md) gives its status.
+> **Fork note (2026-10-14).** No accepted proposal designs metaprogramming
+> yet. Compile-time evaluation is implemented in 0.1, with the `eval fn` and
+> `musteval fn` forms; [Metaprogramming](metaprogramming.md) gives its status.
 
 Carbon provides metaprogramming facilities that look similar to regular Carbon
 code. These are structured, and do not offer arbitrary inclusion or
@@ -4057,8 +4069,10 @@ the critical underpinnings of such abstractions.
 
 #### Abstract machine and execution model
 
-In 0.1 there is no separate abstract-machine specification (fork note,
-2026-10-14). The execution model is the one these designs fix together:
+> **Fork status (2026-10-14).** In 0.1 there is no separate abstract-machine
+> specification.
+
+The execution model is the one these designs fix together:
 [Values, variables, and pointers](values.md) gives the expression categories,
 when objects are created and destroyed, the storage they occupy, and which
 uses of a value are erroneous; a function body's statements run in order
@@ -4072,7 +4086,7 @@ without unwinding ([Error handling](error_handling.md#unrecoverable-errors)).
 
 > **TODO:**
 
-> **Note (fork, 2026-10-14):** Coroutines, async, and generators are deferred
+> **Fork note (2026-10-14).** Coroutines, async, and generators are deferred
 > until at least 0.2
 > ([milestones](/docs/project/milestones.md#features-explicitly-deferred-until-at-least-02),
 > [why](/docs/project/milestones.md#why-are-coroutines-and-async-in-this-milestone));
@@ -4082,7 +4096,7 @@ without unwinding ([Error handling](error_handling.md#unrecoverable-errors)).
 
 > **TODO:**
 
-> **Note (fork, 2026-10-14):** Carbon-native threading is deferred until at
+> **Fork note (2026-10-14).** Carbon-native threading is deferred until at
 > least 0.2
 > ([milestones](/docs/project/milestones.md#features-explicitly-deferred-until-at-least-02)).
 > In 0.1, concurrency is C++'s; see

@@ -21,6 +21,12 @@
 // toolchain and on the upstream nightly. A PASS shows that the documented
 // sample runs as documented; the design-docs bullet itself is arbitrated by
 // document review.
+//
+// Why this bullet: the sample maps C++ pointers to Carbon pointer types and
+// `Core.Optional(T*)` (proposal 6357), and C++ references to `ref` parameters.
+// A FAIL here is first a regression in that mapping (the interoperability
+// README's "Advanced type mapping: pointers, references, and `const`"), not in
+// Carbon's own pointer types.
 
 import Core library "io";
 
@@ -56,7 +62,7 @@ fn Run() -> i32 {
   // reference parameter takes a value.
   Cpp.AddTen(ref n);
   Core.Print(Cpp.Read(n));
-  // `const int*` is `const i32*`, and `i32*` converts to it.
+  // `const int* _Nonnull` is `const i32*`, and `i32*` converts to it.
   Core.Print(Cpp.ReadThrough(&n));
   // A returned non-`const` reference is a durable reference expression.
   var h: Cpp.Holder = Cpp.Holder.Holder();

@@ -25,8 +25,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 > accepted proposal, cited in
 > [Statements in the 0.1 toolchain](#statements-in-the-01-toolchain), which
 > documents what the 0.1 toolchain implements. One difference: the toolchain
-> does not accept a block on its own as a statement, so the overview's second
-> example is rejected.
+> does not accept a block on its own as a statement, which proposal 162's
+> grammar allows, so the overview's second example is rejected. How a leading
+> `{` is told apart from a struct literal is an open question of the
+> [struct literal design](classes.md#literals), and one option it lists would
+> keep this behavior.
 
 ## Overview
 
@@ -189,5 +192,8 @@ fn Foo() {
 
 The parser reads the `{` as the start of a struct literal and reports
 ``expected `.field: field_type` or `.field = value` `` (fork work item W-185).
-Until that is resolved, a nested scope needs a statement that has a block, such
-as `if (true) { ... }`.
+How a `{` at the start of a statement is told apart from a struct literal is an
+open question of the [struct literal design](classes.md#literals), and one of
+the options it lists, allowing `{` to start a compound statement only after a
+keyword that requires one, is what the toolchain does. In 0.1, a nested scope
+needs a statement that has a block, such as `if (true) { ... }`.

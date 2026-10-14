@@ -59,7 +59,8 @@ An `alias` declaration gives a second name to something that already has one:
 a namespace (`alias NS.Name = ...;`), in a class, and in a function body. The
 expression may name a type, a specific of a generic type, a namespace, a
 function, a class member (a field, a method, or an interface member), a
-file-scope variable, or a constant value. Every use of the alias is a use of the
+file-scope variable, or, unlike the language overview's rule (below), a
+constant value. Every use of the alias is a use of the
 original entity: a member alias of a field reads and writes that field, and an
 alias of a variable names the same storage.
 
@@ -122,7 +123,7 @@ Unlike the [language overview](README.md#aliases)'s rule that the right-hand
 side is a name and not a value, the toolchain accepts an alias of a constant
 value, such as `alias Limit = 4;` above (pinned by
 `toolchain/check/testdata/alias/builtins.carbon`). An alias of a runtime value
-is rejected, because an alias names an entity and holds no value of its own:
+is rejected:
 
 ```carbon
 fn Run() -> i32 {

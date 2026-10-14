@@ -213,7 +213,8 @@ fn Run() -> i32 {
 
 This prints `7`, `11`, `15`, `1`, and `4`. It compiles only with the fork's
 toolchain, where choice values are copyable; the upstream nightly reports
-``cannot copy value of type `Light` ``.
+``cannot copy value of type `Light` ``, and it does not implement `match`
+([`match` in the 0.1 toolchain](pattern_matching.md#match-in-the-01-toolchain)).
 
 Assigning one class object from another copies it, so the class must implement
 `Core.Copy`, which a class does not do by default:
@@ -231,8 +232,8 @@ fn Reset(ref p: Point, q: Point) {
 
 The toolchain reports ``cannot copy value of type `Point` ``. It also accepts a
 struct literal for a class with `private` fields outside the class, which the
-[`private` rule](classes.md#private-access) forbids (fork work item W-167, on
-held PR 55).
+[construction rule](classes.md#access-control-for-construction) forbids (fork
+work item W-167, on held PR 55).
 
 When the right-hand side reads the object being assigned, the result depends
 on how the statement is written. With `t` holding `(1, 2)`, `t = (t.1, t.0);`

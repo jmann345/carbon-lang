@@ -18,6 +18,11 @@
 // toolchain and on the upstream nightly. A PASS shows that the documented
 // sample runs as documented; the design-docs bullet itself is arbitrated by
 // document review.
+//
+// Why this bullet: `IntOfWidth`, an `eval fn` that returns `type`, is a type
+// function, the compile-time computation of a type that this bullet's generic
+// types also rely on. A FAIL here is first a regression in compile-time
+// evaluation (docs/design/metaprogramming.md), not in generics.
 
 import Core library "io";
 

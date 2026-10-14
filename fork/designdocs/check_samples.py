@@ -18,23 +18,27 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
 # 1. each program block equals its program's text after the leading comment
 #    block, and each block fixture's body equals its page block;
-# 2. each fixture's QUOTE, or else its EXPECT-ERROR message, occurs in the
-#    prose of its section, compared after blockquote markers are stripped and
-#    whitespace is collapsed;
+# 2. each fixture's QUOTE and EXPECT-ERROR message occur in the prose of its
+#    section, compared after blockquote markers are stripped and whitespace
+#    is collapsed, and the backticked values of the "This prints ..."
+#    sentence of each program's section equal its EXPECT-STDOUT lines;
 # 3. each mapped section has exactly the ```carbon blocks the table maps, and
 #    no indented ```carbon fence;
-# 4. the W2 rule (plan section 2.12 item 5) over docs/design/: no
-#    placeholder boilerplate, no heading that starts with TODO, and no
-#    section whose paragraphs are only TODO markers, except the hits that
-#    QUALIFIED and ALLOWLIST name. An entry of either list that no longer
-#    hits is an error, so neither list can go stale.
+# 4. the W2 rule (plan section 2.12 item 5) over docs/design/, matched
+#    without regard to case: (a) no placeholder boilerplate, also when a
+#    phrase wraps across blockquote lines; (b) no heading that starts with
+#    TODO; (c) no section whose paragraphs are only TODO or TBD markers (in a
+#    blockquote, a list item or an HTML comment too), optionally with "See"
+#    paragraphs; and (d) no empty section without subsections; except the
+#    hits that QUALIFIED and ALLOWLIST name. An entry of either list that no
+#    longer hits is an error, so neither list can go stale.
 #
 # `--toolchain PATH` also compiles every fixture: an EXPECT-ERROR fixture must
 # fail with its pinned message on the first error line, and an EXPECT-STDOUT
 # fixture must compile, link, run with exit 0 and print the pinned lines.
-# `--self-check` runs only the quote matcher's built-in cases, which every
-# default run also runs first. The script exits 1 on any error, and `main()`
-# returns the exit status.
+# `--self-check` runs only the built-in cases of the quote matcher and of the
+# W2 rule, which every default run also runs first. The script exits 1 on any
+# error, and `main()` returns the exit status.
 #
 # Run it from anywhere as `python3 fork/designdocs/check_samples.py`.
 
@@ -170,6 +174,12 @@ SAMPLES = [
         "R09_template_constraint_lookup.carbon",
     ),
     (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X05_template_structural_circle.carbon",
+    ),
+    (
         "metaprogramming.md",
         "Compile-time evaluation in the 0.1 toolchain",
         PROGRAM,
@@ -260,10 +270,22 @@ SAMPLES = [
         "R22_match_scrutinee_type.carbon",
     ),
     (
+        "pattern_matching.md",
+        "`match` in the 0.1 toolchain",
+        QUOTE,
+        "X06_match_qualified_alternative.carbon",
+    ),
+    (
         INTEROP,
         "Importing C++ code (inline)",
         PROGRAM,
         "design_docs_cpp_inline.carbon",
+    ),
+    (
+        INTEROP,
+        "Importing C++ code (inline)",
+        QUOTE,
+        "X04_cpp_inline_escapes.carbon",
     ),
     (
         INTEROP,
@@ -396,13 +418,24 @@ ALLOWLIST = {
 # matcher self-check.
 DISCLOSURE_QUOTE = QUALIFIED[("README.md", "This document is provisional", "a")]
 
+# Clause (a), matched without regard to case, over each file's text after
+# leading blockquote markers are stripped from every line.
 BOILERPLATE = re.compile(
     r"skeletal\s+design|it\s+is\s+a\s+placeholder|"
     r"should\s+not\s+be\s+treated\s+as\s+accepted|"
-    r"Please\s+feel\s+welcome\s+to\s+rewrite|provisional\s+or\s+placeholder"
+    r"Please\s+feel\s+welcome\s+to\s+rewrite|provisional\s+or\s+placeholder",
+    re.IGNORECASE,
 )
-TODO_MARKER = re.compile(r"^(>\s*)?[*_]*TODO")
+# Clause (c): a paragraph that starts with a TODO or TBD marker, optionally
+# bold or italic, inside a blockquote, a list item or an HTML comment.
+TODO_MARKER = re.compile(
+    r"^(>\s*)*([-*+]\s+|[0-9]+[.)]\s+)?(<!--\s*)?[*_]*(TODO|TBD)",
+    re.IGNORECASE,
+)
 SEE_MARKER = re.compile(r"^(See|> References)")
+# The sentence that states a program's output, up to its first `.`, `:` or
+# `;` outside a code span.
+PRINTS = re.compile(r"This prints ((?:`[^`]*`|[^`.:;])*)")
 HEADING = re.compile(r"^(#{1,6}) (.*)$")
 FENCE = re.compile(r"^\s*(`{3,}|~{3,})")
 BLOCKQUOTE = re.compile(r"^\s*>\s?")
@@ -432,27 +465,36 @@ def fence_mask(lines: list[str]) -> list[bool]:
     return mask
 
 
-def headings(lines: list[str], mask: list[bool]) -> list[tuple[int, str]]:
-    """Returns (index, text) for each heading line outside fences."""
+def heading_levels(
+    lines: list[str], mask: list[bool]
+) -> list[tuple[int, int, str]]:
+    """Returns (index, level, text) for each heading line outside fences."""
     result = []
     for i, line in enumerate(lines):
         if not mask[i]:
             m = HEADING.match(line)
             if m:
-                result.append((i, str(m.group(2)).strip()))
+                result.append((i, len(m.group(1)), str(m.group(2)).strip()))
     return result
+
+
+def headings(lines: list[str], mask: list[bool]) -> list[tuple[int, str]]:
+    """Returns (index, text) for each heading line outside fences."""
+    return [(i, text) for i, _, text in heading_levels(lines, mask)]
+
+
+def strip_quote_markers(line: str) -> str:
+    """Strips every leading blockquote marker of one line."""
+    while True:
+        new = BLOCKQUOTE.sub("", line, count=1)
+        if new == line:
+            return line
+        line = new
 
 
 def normalize(text: str) -> str:
     """Strips leading blockquote markers per line, then collapses spaces."""
-    stripped = []
-    for line in text.split("\n"):
-        while True:
-            new = BLOCKQUOTE.sub("", line, count=1)
-            if new == line:
-                break
-            line = new
-        stripped.append(line)
+    stripped = [strip_quote_markers(line) for line in text.split("\n")]
     return re.sub(r"\s+", " ", " ".join(stripped)).strip()
 
 
@@ -559,6 +601,29 @@ def diff(a: str, b: str, a_name: str, b_name: str) -> str:
     ).rstrip("\n")
 
 
+def printed_values(prose: str) -> list[str] | None:
+    """Returns the backticked values of the first "This prints" sentence."""
+    m = PRINTS.search(normalize(prose))
+    if m is None:
+        return None
+    return re.findall(r"`([^`]*)`", m.group(1))
+
+
+def check_prints(
+    section: Section, where: str, target: str, errors: list[str]
+) -> None:
+    """Checks that the section states its program's EXPECT-STDOUT lines."""
+    stated = printed_values(section.prose)
+    expected = parse_fixture(PROGRAMS / target).stdout
+    if stated is None:
+        errors.append(f"{where}: no 'This prints' sentence for {target}")
+    elif stated != expected:
+        errors.append(
+            f"{where}: the page says it prints {stated}, but {target} "
+            f"expects {expected}"
+        )
+
+
 def check_samples(errors: list[str]) -> tuple[int, list[Path]]:
     """Checks 1 to 3; returns the program count and the fixtures checked."""
     sections: dict[tuple[str, str], Section] = {}
@@ -589,6 +654,7 @@ def check_samples(errors: list[str]) -> tuple[int, list[Path]]:
             text = strip_leading_comments((PROGRAMS / target).read_text())
             if block is not None and block != text:
                 errors.append(diff(block, text, where, target))
+            check_prints(section, where, target, errors)
             continue
         if kind == UPSTREAM:
             continue
@@ -636,56 +702,68 @@ def check_samples(errors: list[str]) -> tuple[int, list[Path]]:
     return programs, fixtures
 
 
-def w2_hits() -> set[tuple[str, str, str]]:
-    """Applies the W2 rule to every page under docs/design/."""
+def w2_file_hits(rel: str, text: str) -> set[tuple[str, str, str]]:
+    """Applies the W2 rule to one page; `rel` names it in the hits."""
     hits: set[tuple[str, str, str]] = set()
-    for path in sorted(DESIGN.rglob("*.md")):
-        rel = path.relative_to(DESIGN).as_posix()
-        text = path.read_text()
-        lines = text.split("\n")
-        mask = fence_mask(lines)
-        heads = headings(lines, mask)
+    lines = text.split("\n")
+    mask = fence_mask(lines)
+    heads = heading_levels(lines, mask)
 
-        def section_at(index: int) -> str:
-            name = ""
-            for i, heading in heads:
-                if i <= index:
-                    name = heading
-            return name
+    def section_at(index: int) -> str:
+        name = ""
+        for i, _, heading in heads:
+            if i <= index:
+                name = heading
+        return name
 
-        # (a) placeholder boilerplate anywhere in the file.
-        for m in BOILERPLATE.finditer(text):
-            line = text.count("\n", 0, m.start())
-            hits.add((rel, section_at(line), "a"))
-        for k, (i, heading) in enumerate(heads):
-            # (b) a heading that starts with TODO.
-            if heading.startswith("TODO"):
-                hits.add((rel, heading, "b"))
-            # (c) a section whose paragraphs are all TODO markers, with
-            # optional "See ..." or "> References" paragraphs. A fenced
-            # block is one paragraph that is not a marker.
-            end = heads[k + 1][0] if k + 1 < len(heads) else len(lines)
-            paragraphs: list[str] = []
-            current: list[str] = []
-            for j in range(i + 1, end):
-                line = lines[j]
-                if not mask[j] and line.strip() in ("", ">"):
-                    if current:
-                        paragraphs.append(current[0])
-                        current = []
-                else:
-                    current.append(line)
-            if current:
-                paragraphs.append(current[0])
-            if (
-                paragraphs
-                and all(
-                    TODO_MARKER.match(p) or SEE_MARKER.match(p)
-                    for p in paragraphs
-                )
-                and any(TODO_MARKER.match(p) for p in paragraphs)
-            ):
-                hits.add((rel, heading, "c"))
+    # (a) placeholder boilerplate anywhere in the file, also when a phrase
+    # wraps across the lines of a blockquote.
+    unquoted = "\n".join(strip_quote_markers(line) for line in lines)
+    for m in BOILERPLATE.finditer(unquoted):
+        line = unquoted.count("\n", 0, m.start())
+        hits.add((rel, section_at(line), "a"))
+    for k, (i, level, heading) in enumerate(heads):
+        # (b) a heading that starts with TODO.
+        if heading.upper().startswith("TODO"):
+            hits.add((rel, heading, "b"))
+        # (c) a section whose paragraphs are all TODO or TBD markers, with
+        # optional "See ..." or "> References" paragraphs. A fenced block
+        # is one paragraph that is not a marker.
+        end = heads[k + 1][0] if k + 1 < len(heads) else len(lines)
+        paragraphs: list[str] = []
+        current: list[str] = []
+        for j in range(i + 1, end):
+            line = lines[j]
+            if not mask[j] and line.strip() in ("", ">"):
+                if current:
+                    paragraphs.append(current[0])
+                    current = []
+            else:
+                current.append(line)
+        if current:
+            paragraphs.append(current[0])
+        if (
+            paragraphs
+            and all(
+                TODO_MARKER.match(p) or SEE_MARKER.match(p) for p in paragraphs
+            )
+            and any(TODO_MARKER.match(p) for p in paragraphs)
+        ):
+            hits.add((rel, heading, "c"))
+        # (d) an empty section with no subsection: the next heading, if
+        # any, is at the same or a higher level.
+        if not paragraphs and (k + 1 == len(heads) or heads[k + 1][1] <= level):
+            hits.add((rel, heading, "d"))
+    return hits
+
+
+def w2_hits(root: Path = DESIGN) -> set[tuple[str, str, str]]:
+    """Applies the W2 rule to every page under `root` (docs/design/)."""
+    hits: set[tuple[str, str, str]] = set()
+    for path in sorted(root.rglob("*.md")):
+        hits |= w2_file_hits(
+            path.relative_to(root).as_posix(), path.read_text()
+        )
     return hits
 
 
@@ -786,7 +864,7 @@ def check_toolchain(
 
 
 def self_check() -> int:
-    """Runs the quote matcher on built-in texts; returns the wrong count."""
+    """Runs the built-in quote and W2 cases; returns the wrong count."""
     two_lines = (
         "> In this fork, what is provisional is marked in\n"
         "> place. Each former placeholder"
@@ -811,7 +889,40 @@ def self_check() -> int:
         if contains(text, quote) != want:
             wrong += 1
             print(f"self-check: wrong answer for {quote!r}", file=sys.stderr)
-    print(f"self-check: {len(cases)} cases, {wrong} wrong")
+    # The W2 rule on built-in pages: (page text, the hits it must give).
+    w2_cases = [
+        ("# T\n\n## S\n\nThis page is a skeletal\ndesign.\n", {("S", "a")}),
+        ("## S\n\n> This page is a skeletal\n> design.\n", {("S", "a")}),
+        ("## S\n\nIt has Provisional or\nplaceholder text.\n", {("S", "a")}),
+        ("## Todo: later\n\nText.\n", {("Todo: later", "b")}),
+        ("## S\n\n> **TODO:**\n\n## R\n\nText.\n", {("S", "c")}),
+        ("## S\n\n_TODO_: Describe it.\n\nSee issue 1.\n", {("S", "c")}),
+        ("## S\n\n-   TODO: describe it.\n", {("S", "c")}),
+        ("## S\n\n<!-- TODO: describe it. -->\n", {("S", "c")}),
+        ("## S\n\nTBD.\n", {("S", "c")}),
+        ("## S\n\n## R\n\nText.\n", {("S", "d")}),
+        ("## S\n\n### R\n\nText.\n", set()),
+        (
+            "## S\n\n> **TODO:**\n\n> **Fork note (2026-10-14).** Later.\n",
+            set(),
+        ),
+        ("## S\n\nText beside a note.\n\n> **TODO:** Refine.\n", set()),
+    ]
+    for text, want_hits in w2_cases:
+        got = {
+            (heading, clause) for _, heading, clause in w2_file_hits("", text)
+        }
+        if got != want_hits:
+            wrong += 1
+            print(
+                f"self-check: W2 gives {sorted(got)} for {text!r}, expected "
+                f"{sorted(want_hits)}",
+                file=sys.stderr,
+            )
+    print(
+        f"self-check: {len(cases)} quote cases, {len(w2_cases)} W2 cases, "
+        f"{wrong} wrong"
+    )
     return wrong
 
 
@@ -827,7 +938,7 @@ def main() -> int:
     parser.add_argument(
         "--self-check",
         action="store_true",
-        help="only run the quote matcher's built-in cases",
+        help="only run the quote matcher's and the W2 rule's built-in cases",
     )
     args = parser.parse_args()
     if self_check():

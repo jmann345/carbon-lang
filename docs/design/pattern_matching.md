@@ -839,7 +839,8 @@ so every example here needs the fork's toolchain. The implemented grammar is:
 
 A guard's condition is parenthesized, as an `if` statement's is; the
 unparenthesized guard of [Guards](#guards) is rejected with
-``expected `(` after `if` ``.
+``expected `(` after `if` ``. A `match` is a statement: proposal 2188 leaves
+`match` expressions to future work, and the toolchain does not parse them.
 
 The scrutinee may be of an integer type, `bool`, a choice type (including a
 specific of a generic choice and an imported choice such as
@@ -992,22 +993,32 @@ Not in the 0.1 toolchain, each a filed fork work item or a pinned
     with a `return`, and why `IsTrue` in
     [Refutability, overlap, usefulness, and exhaustiveness](#refutability-overlap-usefulness-and-exhaustiveness)
     is rejected (fork work item W-155, on held PR 54).
--   A set of constant tuple patterns never counts as exhaustive: the four arms
-    `case (false, false)`, `case (false, true)`, `case (true, false)` and
-    `case (true, true)` on a `(bool, bool)` scrutinee are rejected with
+-   A set of tuple patterns never counts as exhaustive unless one arm is
+    irrefutable: the four arms `case (false, false)`, `case (false, true)`,
+    `case (true, false)` and `case (true, true)` on a `(bool, bool)`
+    scrutinee are rejected with
     `` `match` on `(bool, bool)` has no `default` arm and no `case` arm that
-    matches every value ``, although the rules above treat constant tuples of
-    `bool` or choice values as tuple patterns, which makes those four arms
-    cover every value; a `default` or an irrefutable arm is needed (W-189;
-    pinned by `fail_bool_pair_enumeration.carbon` in
+    matches every value ``, and so are the two arms `case (true, x: i32)` and
+    `case (false, y: i32)` on a `(bool, i32)` scrutinee, although each set
+    covers every value by the rules above, which treat a constant tuple as a
+    tuple pattern and `bool` like a choice type; a `default` or an irrefutable
+    arm is needed (W-189; pinned by `fail_bool_pair_enumeration.carbon` in
     `toolchain/check/testdata/match/fail_int_nonexhaustive.carbon`).
 -   An alternative pattern inside a tuple pattern or a payload subpattern is
     read as an expression, so the usefulness example above cannot be written
     yet (W-182).
+-   An alternative pattern written with its choice type's name, such as
+    `Opt.None` or `Opt.Some(n: i32)` for a choice `Opt`: the first reports
+    ``semantics TODO: `qualified alternative pattern in match case` `` (pinned
+    by `fail_todo_qualified_pattern.carbon` in
+    `toolchain/check/testdata/match/fail_choice_alternative_pattern.carbon`),
+    and the second is not parsed as a pattern and reports
+    ``name `n` not found``; the leading-dot forms `.None` and `.Some(n: i32)`
+    work.
 -   A scrutinee of any other type, including floating-point types, `str`,
     classes, and template-dependent types, so the [Templates](#templates)
     rules do not apply yet; expression patterns that are not constants, such
-    as a variable; compile-time bindings in a `case`; and `match` expressions.
+    as a variable; and compile-time bindings in a `case`.
 -   A refutable pattern in a plain `var` declaration, such as `var 5 = n;`
     above, stops the compiler instead of being diagnosed (W-080).
 

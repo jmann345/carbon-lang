@@ -476,7 +476,7 @@ the equivalence relation provided by
 **TODO:** Support a lower-level extensibility mechanism that allows a result
 type other than `bool`.
 
-> **Fork status (2026-10-14):** No design exists yet for comparison results
+> **Fork note (2026-10-14).** No design exists yet for comparison results
 > other than `bool`. In 0.1, the comparison interfaces' functions return `bool`
 > (`core/prelude/operators/comparison.carbon`), as the rules above specify, and
 > a C++ comparison operator whose result is not `bool` is not usable where

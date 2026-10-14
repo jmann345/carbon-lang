@@ -536,8 +536,9 @@ Inheritance works across the boundary in both directions with a single base: a
 Carbon class can `extend base` a C++ class, using it as its hierarchy root, and
 override its virtual functions, and C++ code can derive a class from an
 exported Carbon base class (the fork's conformance programs
-`interop/inherit_carbon_extends_cpp.carbon` and
-`interop/inherit_cpp_extends_carbon.carbon`). Multiple, virtual, and diamond
+`fork/conformance/programs/interop/inherit_carbon_extends_cpp.carbon` and
+`fork/conformance/programs/interop/inherit_cpp_extends_carbon.carbon`).
+Multiple, virtual, and diamond
 inheritance, and exporting an abstract class whose destructor is not virtual,
 are fork work item W-046.
 
@@ -872,7 +873,7 @@ fn Run() -> i32 {
   // reference parameter takes a value.
   Cpp.AddTen(ref n);
   Core.Print(Cpp.Read(n));
-  // `const int*` is `const i32*`, and `i32*` converts to it.
+  // `const int* _Nonnull` is `const i32*`, and `i32*` converts to it.
   Core.Print(Cpp.ReadThrough(&n));
   // A returned non-`const` reference is a durable reference expression.
   var h: Cpp.Holder = Cpp.Holder.Holder();
@@ -975,9 +976,9 @@ A C++ range can be the range of a Carbon `for` loop. For a C++ class whose
 return an iterator of class type, the toolchain implements `Core.Iterate`, and
 the loop calls `begin` and `end` and dereferences and increments the iterator,
 as a C++ range-based `for` does (the fork's conformance programs
-`interop/cpp_range_member_begin_end_iterate.carbon` and
-`interop/cpp_range_adl_begin_end_iterate.carbon`). Standard library containers
-are ranges this way.
+`fork/conformance/programs/interop/cpp_range_member_begin_end_iterate.carbon`
+and `fork/conformance/programs/interop/cpp_range_adl_begin_end_iterate.carbon`).
+Standard library containers are ranges this way.
 
 ```carbon
 import Core library "io";

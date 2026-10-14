@@ -29,14 +29,22 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 > accepted design. The [overview](#overview) below is an older sketch, kept
 > unchanged. The fork notes in it mark the three places where it and the 0.1
 > toolchain differ (the illustrative `buf(T)`, the `Convert(i, f32)` example,
-> and specialization), and the open question of its last section is answered
-> by F-010, below; no other difference from proposal 2200 is known. Template
-> constraints are fixed by fork decision F-010 (`template constraint`
-> declarations, `require` validity blocks, and boolean predicates); the SC-1
-> workstream implements its member requirements, `require` blocks and
-> predicates are fork work item W-028, and none of them is in the toolchain
-> this page describes. What the 0.1 toolchain implements is documented, with
-> examples that compile, in
+> and specialization). The sketch also differs from proposal 2200 itself:
+> proposal 2200 lets a specialization change only an implementation and
+> rejects ad hoc API specialization (its "Alternatives considered"), which the
+> sketch's Overloading section anticipates, and its template constraints,
+> below, answer the open question of the sketch's last section. Where the 0.1
+> toolchain differs from proposal 2200 is listed under "Limits of the 0.1
+> toolchain" in
+> [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain) (fork work
+> items W-183 and W-014, and `match` on template-dependent values). Template
+> constraints are accepted: proposal 818 introduced `template constraint`
+> declarations, whose member requirements proposal 2200 specifies, and fork
+> decision F-010 adds `require` validity blocks and boolean predicates. Member
+> requirements are implemented on a held fork branch (SC-1), and `require`
+> blocks and predicates are fork work item W-028; none of them is in the
+> toolchain this page describes. What the 0.1 toolchain implements is
+> documented, with examples that compile, in
 > [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain).
 
 ## Overview
@@ -248,21 +256,18 @@ fn GetX[T: type](p: T) -> i32 {
 
 This reports ``type `T` does not support qualified expressions``.
 
-Limits of the 0.1 toolchain, each a filed fork work item:
+Limits of the 0.1 toolchain:
 
 -   Member lookup into a template parameter does not consult the parameter's
     constraint. Proposal 2200 looks a name up both in the argument type and in
     the interface constraint; the toolchain looks only in the argument type, so
     a member that the type provides only through an `impl` without `extend` is
-    not found (W-183). Declaring it with `extend impl as HasArea` makes the
-    call below compile.
+    not found (fork work item W-183). Declaring it with
+    `extend impl as HasArea` makes the last example below compile.
 -   A template function defined in one library and called from another stops
     the compiler during checking, as it does in the upstream nightly (W-014).
--   An interface constraint is satisfied only by types that implement the
-    interface; a type with matching members but no `impl` is rejected with
-    ``cannot convert type `Circle` into type implementing `HasArea` ``.
-    Structural constraints are F-010's template constraints (see Status).
--   A `match` on a template-dependent value is not supported, so the
+-   A `match` on a template-dependent value is not supported (it reports
+    ``semantics TODO: `match on unsupported scrutinee type` ``), so the
     [`match`-based rules](pattern_matching.md#templates) of pattern matching do
     not apply yet.
 
@@ -289,3 +294,10 @@ fn Use(q: Square) -> i32 {
 
 This reports ``unable to monomorphize specific `Report(Square as HasArea)` ``
 with the note ``member name `Area` not found in `Square` ``.
+
+As the accepted design specifies, an interface constraint is satisfied only by
+types that implement the interface: for a class `Circle` with an `Area` method
+and no `impl`, a call `Report(c)` is rejected with
+``cannot convert type `Circle` into type implementing `HasArea` ``. A
+constraint on the members a type declares is a `template constraint`
+(proposals 818 and 2200; see [Status](#status)).

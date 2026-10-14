@@ -42,8 +42,8 @@ The toolchain evaluates constant expressions during compilation wherever the
 language needs a constant, such as an array bound, a type, or a template
 argument. Two function modifiers extend this to calls. Accepted proposals 7140
 and 7697 and [function types](functions.md#function-types-and-values) use
-`musteval fn` in examples; `eval fn` appears in no proposal or design page, and
-no proposal of their own designs either modifier yet:
+`musteval fn` in examples, no proposal and no other design page shows
+`eval fn` in an example, and no proposal designs either modifier yet:
 
 -   an `eval fn` may be called during compilation when its arguments are
     constants, and may also be called at run time;
@@ -111,8 +111,10 @@ fn F(x: i32) -> i32 {
 }
 ```
 
-with ``non-constant call to compile-time-only function``. A plain `fn` is never
-evaluated during compilation:
+with ``non-constant call to compile-time-only function``. A plain `fn` with a
+body is not evaluated during compilation (only `eval` and `musteval`
+functions, and builtin functions such as the prelude's operator functions,
+are):
 
 ```carbon
 fn Three() -> i32 { return 3; }

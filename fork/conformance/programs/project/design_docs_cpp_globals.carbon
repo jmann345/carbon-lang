@@ -17,6 +17,11 @@
 // this fork's toolchain and on the upstream nightly. A PASS shows that the
 // documented sample runs as documented; the design-docs bullet itself is
 // arbitrated by document review.
+//
+// Why this bullet: the sample reads and assigns C++ variables of imported types
+// through the `Cpp` package. A FAIL here is first a regression in the import of
+// C++ variables (the interoperability README's "Accessing global variables"),
+// not in the import of C++ class types.
 
 import Core library "io";
 

@@ -127,6 +127,22 @@ no each) and a045da8e6, so VA-1 is planned on upstream's node shapes. Merge
 order: PR 53, PR 51, PR 52, SC-1, PR 54, PR 55, PR 56, PR 57, then DD-1; OX-1
 and VA-1 after DD-1 in the order their PRs open. None is merged.
 
+Later on 2026-10-14 (08:35 UTC): PR 58 (DD-1, claude/carbon-fork-0-1-dd, head
+fcee90d9b: design docs without placeholders, W-065 and the documentation half
+of W-020 discharged, W-182 to W-185, W-188, W-189 and W-191 to W-194 filed,
+W-240 to W-244 reserved and unused; expected 147/0/22 over 169; row 70 DONE
+expected, row 91 PARTIAL until state L) is OPEN and HELD; its fourth
+document-review round was a round of both document reviews under D-DD-11, not
+the "fourth focused round" the stamp above calls it, and both reviews returned
+APPROVE-WITH-AMENDMENTS, so no further round is owed. The PR description and
+the not-run list together exceed the length GitHub allows for a description,
+so the not-run list is the first comment on PR 58. SC-1 is in fill round 10
+(the round-9 review: no BLOCKER, both reviews APPROVE-WITH-FIXES; W-233 and
+W-234 filed; SC-1 reserves W-233 to W-239). OX-1 and VA-1 plans at rev 1 are
+under adversarial review. Merge order: PR 53, PR 51, PR 52, SC-1, PR 54, PR 55,
+PR 56, PR 57, then PR 58 through its state L integration commit; OX-1 and VA-1
+after PR 58. None is merged.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -467,7 +483,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at 628273444, stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1. |
 | `claude/carbon-fork-0-1-ox` | PLANNING — OX-1 operator export to C++ (W-054, gap row 48), cut from f67ab650d; reserves W-202..W-211, F-017 if minted; merges after DD-1. |
 | `claude/carbon-fork-0-1-va` | PLANNING — VA-1 definition-checked variadics, slice 1 (W-013, gap row 53), cut from f67ab650d; reserves W-212..W-231, F-018 if minted; merges after OX-1 or DD-1, whichever is later. |
-| `claude/carbon-fork-0-1-dd` | PLAN rev 3, NOT signed off — DD-1 design docs without placeholders (W-065, gap row 91); ids W-180..W-189 and W-191..W-194; second focused re-review in progress; merges last. |
+| `claude/carbon-fork-0-1-dd` | HELD OPEN as PR 58 — DD-1 design docs without placeholders at fcee90d9b (W-065 discharged; W-182..W-185, W-188, W-189, W-191..W-194 filed; W-240..W-244 reserved, unused; expected 147/0/22 over 169; row 70 DONE expected; row 91 PARTIAL until state L); four document-review rounds folded; merges last of the held PRs through its state L integration commit. |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED AND FILLED on the container toolchain — SC-1 template structural conformance through fill round 3 at 2497d5000 (gate 1959/1959, conformance 130/0/21 over 151; W-134..W-143, W-151; W-168/W-169 reserved); round-3 review in progress, PR after it. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |

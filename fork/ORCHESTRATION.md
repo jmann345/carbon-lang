@@ -10,43 +10,44 @@ One-read resume state for any fresh session. **Update this file whenever
 branches, in-flight CI, or next-actions change** (standing practice; the
 quantized-state files carry the deep detail).
 
-Last updated: 2026-10-12 (weekly check fired; BLOCKED: GitHub Actions on
-the repository is DISABLED — every `workflow_dispatch` of `Fork: hosted
-verification` returns "Actions has been disabled for this repository", the
-repository's own scheduled workflows last ran 2026-10-08, the repository is
-public, and this session has no access to repository settings — so under R28
-there is no autoupdate, gate or conformance arbiter at all. The session was
-also out of usage credits from 2026-10-06 04:30 UTC until this firing, and
-the container was recreated in between (worktrees, the clang-19 syntax
-harness and the bazel cache were lost; rebuilt: worktrees only). STATE: UA-2
-reconciliation on claude/carbon-fork-0-1-ua2 at ace101b0d is complete —
+Last updated: 2026-10-14 (DD-1 discharged in state T on
+claude/carbon-fork-0-1-dd, not pushed; see "DD-1 discharge (2026-10-14)" before
+the UA-1 paragraph below). Earlier, 2026-10-12 (weekly check fired; BLOCKED:
+GitHub Actions on the repository is DISABLED — every `workflow_dispatch` of
+`Fork: hosted verification` returns "Actions has been disabled for this
+repository", the repository's own scheduled workflows last ran 2026-10-08, the
+repository is public, and this session has no access to repository settings — so
+under R28 there is no autoupdate, gate or conformance arbiter at all. The
+session was also out of usage credits from 2026-10-06 04:30 UTC until this
+firing, and the container was recreated in between (worktrees, the clang-19
+syntax harness and the bazel cache were lost; rebuilt: worktrees only). STATE:
+UA-2 reconciliation on claude/carbon-fork-0-1-ua2 at ace101b0d is complete —
 three probes un-SKIPped and PASSING (templates_dependent_member,
 cpp_template_symbolic_arg, cpp_template_on_carbon_generic; the two Box(T)
 programs needed a constructor-initialized dependent `var` and a declared
-`Core.Copy`, root cause an upstream limitation of the REAL prelude's
-constrained `DefaultOrUnformed` impl, pinned by
-check/testdata/interop/cpp/template/dependent_var_full_prelude.carbon),
-W-108 DISCHARGED on the fill (a `Core.Buf` field is freed through the
-owner's synthesized SubobjectDestroy; an owner with its own `impl as Destroy`
-still leaks — the 0.1 limit), ledger and gap re-cites done, of-record
-conformance run 37413300832: 131 PASS / 0 FAIL / 19 SKIP over 150, 48/56
-bullets — but its gate never ran: implementation review APPROVE-WITH-FIXES
-(nine findings, all folded in round 3, 05a5c30f7: of-record runs recorded,
-W-126 declared-owner leak and W-127 real-prelude `DefaultOrUnformed` limit
-filed, the prelude pin's failing split retriaged to `fail_todo_` with its
-CHECK lines cleared for the next refill); PR #51 is OPEN and HELD, not
-merged — land sequence once Actions returns: autoupdate (one split) → gate →
-conformance → merge. SC-1 (template structural conformance,
-W-027) plan rev 2 signed off at e612aebc6 on claude/carbon-fork-0-1-sc after
-two reviews (both APPROVE-WITH-AMENDMENTS); the commit-1 implementer died
-with the credits and is NOT relaunched: new toolchain code cannot be filled
-or gated. Weekly: upstream 62f1cc6a3 is 36 commits past the cut with 70
-conflicting files (a tree-wide `ParameterizedClassType` rename); the cut
-HOLDS, recorded in the decision log. OWNER DECISION NEEDED (R29: recorded,
-not asked): re-enable Actions on the repository, or permit the session's
-container to install bazelisk + LLVM 21.1.8 and build against upstream's
-public read-only bazel cache (the tool-permission layer declined that setup
-when attempted) — until one of these, no code lands. Next cron Monday
+`Core.Copy`, root cause an upstream limitation of the REAL prelude's constrained
+`DefaultOrUnformed` impl, pinned by
+check/testdata/interop/cpp/template/dependent_var_full_prelude.carbon), W-108
+DISCHARGED on the fill (a `Core.Buf` field is freed through the owner's
+synthesized SubobjectDestroy; an owner with its own `impl as Destroy` still
+leaks — the 0.1 limit), ledger and gap re-cites done, of-record conformance run
+37413300832: 131 PASS / 0 FAIL / 19 SKIP over 150, 48/56 bullets — but its gate
+never ran: implementation review APPROVE-WITH-FIXES (nine findings, all folded
+in round 3, 05a5c30f7: of-record runs recorded, W-126 declared-owner leak and
+W-127 real-prelude `DefaultOrUnformed` limit filed, the prelude pin's failing
+split retriaged to `fail_todo_` with its CHECK lines cleared for the next
+refill); PR #51 is OPEN and HELD, not merged — land sequence once Actions
+returns: autoupdate (one split) → gate → conformance → merge. SC-1 (template
+structural conformance, W-027) plan rev 2 signed off at e612aebc6 on
+claude/carbon-fork-0-1-sc after two reviews (both APPROVE-WITH-AMENDMENTS); the
+commit-1 implementer died with the credits and is NOT relaunched: new toolchain
+code cannot be filled or gated. Weekly: upstream 62f1cc6a3 is 36 commits past
+the cut with 70 conflicting files (a tree-wide `ParameterizedClassType` rename);
+the cut HOLDS, recorded in the decision log. OWNER DECISION NEEDED (R29:
+recorded, not asked): re-enable Actions on the repository, or permit the
+session's container to install bazelisk + LLVM 21.1.8 and build against
+upstream's public read-only bazel cache (the tool-permission layer declined that
+setup when attempted) — until one of these, no code lands. Next cron Monday
 2026-10-19; the owner's machine is never used.
 
 Later on 2026-10-12 (after the weekly stamp above): three PRs are OPEN and HELD
@@ -89,6 +90,34 @@ fork/optional/plan.md: Core.Optional comparison for W-058) is in planning with
 ids from W-170 and fork design id F-015 if minted. Merge order now: PR 53, PR
 51, PR 52, SC-1, PR 54 (EV-1, after its state C integration commit), PR 55
 (ST-1), then OP-1. None is merged.
+
+DD-1 discharge (2026-10-14, state T; not pushed):
+claude/carbon-fork-0-1-dd carries DD-1 (fork/designdocs/plan.md rev 4, signed
+off at 97686069f: design docs without placeholders for W-065, gap row 91, and
+the F-008 threads page for W-020's documentation half, gap row 70) in commits
+3ff319642 (1/4: the language pages), a32421433 (2/4: the interoperability README
+and docs/design/interoperability/threads_and_atomics.md), 4287fe0c0 (3/4: the
+design README notes), 6f1ba74ba (the document-review fold: review 1 REJECT with
+one BLOCKER, review 2 APPROVE-WITH-AMENDMENTS; 27 of 28 findings folded, DR1-12
+deferred and folded at the discharge) and the discharge commit, DD-1 (4/4). Gap
+row 70 PARTIAL → DONE (expected), row 91 stays PARTIAL pending state L (PR 53's
+README.md "Lifetime and move semantics" and PR 55's arithmetic.md "Strings"),
+header 31 / 20 / 4 / 1; EXPECTED scoreboard 147 PASS / 0 FAIL / 22 SKIP over
+169, 48/56, whose nineteen new PASS lines are documentation-sync programs under
+already-PASS feature bullets, NOT OF RECORD. W-065 and W-020 discharged;
+W-182..W-185, W-188, W-189 and W-191 filed. Id reservation: W-180..W-194
+(W-180, W-181, W-186 withdrawn; W-187 contingent; W-190 unused; W-192..W-194
+spare); OP-1's residue is W-195. OP-2 (claude/carbon-fork-0-1-op2) reserves
+W-196..W-199. Merge position: last, after PR 56 (OP-1): PR 53, PR 51, PR 52,
+SC-1, PR 54, PR 55, PR 56, then DD-1, through its integration commit (state L:
+the merge of trunk after OP-1 lands, the state-L texts, an empty W2 allowlist,
+the W-014, W-155 and W-167 amendments and W-188's F-013 note, row 91 DONE when
+PR 53 and PR 55 are on trunk, and the re-measure on the merged toolchain). NEXT
+for DD-1: the second round of both document reviews, which D-DD-11's break
+condition owes because review 1 returned REJECT (the discharge was written
+first, at the orchestrator's direction, so the round reads the fold and the
+discharge together); the implementation review and its fold; then push, open
+the PR and HOLD it.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
@@ -427,6 +456,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-ev` | HELD OPEN as PR #54 — EV-1 evaluator guides and twelve transcribed programs at cb3ef2e74 (W-062 discharged; W-152, W-153, W-155 filed; expected 137/0/22 over 159); state T, merges after PR 52 through its state C integration commit. |
 | `claude/carbon-fork-0-1-st` | HELD OPEN as PR #55 — ST-1 str comparison, Core.StringBuf and concatenation (F-014) at 21307851a (W-057 discharged; W-160..W-167 filed; expected 133/0/21 over 154); merges after EV-1. |
 | `claude/carbon-fork-0-1-op` | PLANNING — OP-1 Core.Optional comparison (W-058); ids from W-170, F-015 if minted; merges last. |
+| `claude/carbon-fork-0-1-dd` | DISCHARGED in state T, not pushed — DD-1 design docs without placeholders (W-065, gap row 91) and the F-008 threads page (W-020's documentation half, gap row 70), plan rev 4 signed off at 97686069f, fold 6f1ba74ba, then the discharge commit (row 70 expected DONE; row 91 PARTIAL pending state L; W-182..W-185, W-188, W-189, W-191 filed; ids W-180..W-194, W-190 unused; expected 147/0/22 over 169); second document-review round and the implementation review next; merges last, after PR 56, through its state L integration commit. |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED AND FILLED on the container toolchain — SC-1 template structural conformance through fill round 3 at 2497d5000 (gate 1959/1959, conformance 130/0/21 over 151; W-134..W-143, W-151; W-168/W-169 reserved); round-3 review in progress, PR after it. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |
@@ -434,7 +464,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-w5-s3{,b,c}` | MERGED by way of PRs #12/#13/#14 — W5-S3 complete. |
 | `claude/carbon-fork-0-1-match-{replatform,s2d,s2e}` and `claude/carbon-fork-0-1-upstream-2026{0728,0808}` | MERGED by way of PRs #7/#8/#9/#10 and #6. |
 | `claude/carbon-fork-0-1-w5` | MERGED by way of PR #3 (composition gate run 30 green). |
-| `claude/carbon-fork-0-1-7mwfb7-design-docs` | STRANDED source for the F-008..F-011 design docs (the veto-digest gate dissolved under R29). The F-009 overloading page (functions_overloading.md + its cross-references) is PORTED by the OV-1/OV-3 slices — do not re-land it; the F-008/F-010/F-011 portions are ported by their own workstreams (F-011's if-let docs landed with W-012). Reconstruct per the recipe pattern used for b0/w5 (overlay real content onto fresh branch off trunk; targeted-merge diverged files; prek + gate + PR). |
+| `claude/carbon-fork-0-1-7mwfb7-design-docs` | STRANDED source for the F-008..F-011 design docs (the veto-digest gate dissolved under R29). The F-009 overloading page (functions_overloading.md + its cross-references) is PORTED by the OV-1/OV-3 slices — do not re-land it; the F-008/F-010/F-011 portions are ported by their own workstreams (F-011's if-let docs landed with W-012). Reconstruct per the recipe pattern used for b0/w5 (overlay real content onto fresh branch off trunk; targeted-merge diverged files; prek + gate + PR). Amended 2026-10-14 at the DD-1 discharge: the F-008 portion (its threading.md draft) is superseded by docs/design/interoperability/threads_and_atomics.md (DD-1, D-DD-7) and must not be ported; F-010 remains on SC-1 (claude/carbon-fork-0-1-sc); F-011 has landed (W-012). |
 | `claude/carbon-fork-0-1-{7mwfb7,b0,7mwfb7-upstream-20260727}` and other `7mwfb7-*` | MERGED or superseded; do not stack new commits. |
 
 ### Scoreboard (source of truth: run the suite, don't trust this line)
@@ -493,6 +523,11 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     bullets lacking one). W-066 stays blocked on W-008.
 2.  Reconstruct + land design-docs (F-008..F-011) — **gated on the
     user's veto-digest response** (presented 2026-07-20, unanswered).
+    (Corrected 2026-10-14 at the DD-1 discharge: the gate dissolved under
+    R29; F-009's and F-011's pages have landed, F-010's page is SC-1's, and
+    F-008's page is docs/design/interoperability/threads_and_atomics.md,
+    DD-1, so the stranded branch's F-008 draft is not ported; see its
+    Branches row.)
 3.  W5-S3p (prelude Result/Optional) stays GATED on the OPEN SF-9 fork
     (default (c) DEFER; carries W72c Try.FromContinue + the
     `final`-spelling recurrence flag); W5-S4 (std::variant mapping)

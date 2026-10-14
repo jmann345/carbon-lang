@@ -2015,6 +2015,12 @@ inline int CallTwice(int n) { return Carbon::Twice(n) + 1; }
 ```
 
 The toolchain reports ``name `Cpp` not found``.
+
+Where inline C++ may appear is question-for-leads
+[issue 6830](https://github.com/carbon-language/carbon-lang/issues/6830), which
+is open. It was closed on 2026-03-26 with inline C++ as a top-level declaration,
+spelled `inline Cpp '''...'''`, and reopened on 2026-03-30 because whether that
+declaration ends with a semicolon is not yet agreed.
 ````
 
 (Amended 2026-10-13, review fold: A-14 / B-m-4: "after any `import Cpp`" read
@@ -2026,7 +2032,13 @@ and probe PR-V, §4.3, the unescaped form's rejection; the page text is
 unchanged. DR1-12, the leads question on where `import Cpp inline` may
 appear, is not folded: its status could not be checked online in the fold's
 session, and D-DD-3 calls a question open only after that check; it is on
-the list for commit 4/4.)
+the list for commit 4/4. Amended 2026-10-14, discharge: DR1-12: the last
+paragraph is added after the online check of §8.10 found issue 6830 open,
+reopened over the trailing semicolon after it was called decided on placement
+and spelling; cited deviation: the fold's sentence for an open issue, "Where
+`import Cpp inline` may appear is open question-for-leads issue 6830.", would
+call the placement undecided, which the issue's record does not support, so
+the paragraph states that record.)
 
 **Line 240**, `### Constructors`:
 
@@ -4807,7 +4819,34 @@ is dropped there in favor of upstream's accepted text.
         fixtures and probes on the carbon-sc build at fb12f63cb, whose
         toolchain and prelude equal the head's (`git diff --stat fb12f63cb
         4bc4802ae -- toolchain core` is empty), and ran the W2 rule over the
-        head's docs/design/ (amended 2026-10-14, document-review fold).
+        head's docs/design/ (amended 2026-10-14, document-review fold);
+    -   the discharge checked leads issue 6830 online on 2026-10-14
+        (https://github.com/carbon-language/carbon-lang/issues/6830, read
+        through its github.com page, because the GitHub API and the
+        session's repository-attach tool still refused
+        carbon-language/carbon-lang): the issue is open. It was closed as
+        completed on 2026-03-26 with the comment "Let's call this decided",
+        landing on inline C++ as a top-level declaration spelled
+        `inline Cpp '''...'''` (the issue's suggested answers to its first
+        two questions, which that thread agreed to), and reopened on
+        2026-03-30 because no agreement was reached on a trailing
+        semicolon. DR1-12 is folded at the discharge with that record
+        (amended 2026-10-14, discharge);
+    -   no second round of the two document reviews ran before the
+        discharge: review 1 returned REJECT, so D-DD-11's break condition
+        asks for both reviews to read the fold before the discharge, and the
+        discharge was written first at the orchestrator's direction; the
+        second round reads the fold and the discharge together (amended
+        2026-10-14, discharge);
+    -   the heads re-read at the discharge with `git for-each-ref`: trunk
+        f67ab650d, SC-1 4bc4802ae (its build at fb12f63cb has the head's
+        toolchain and prelude), OP-1 379f20f67 (build 5d9edb3e0), PR 53
+        adaae4e35, PR 51 f96fe8a7a (build 05a5c30f7), PR 52 ea573f672, PR 54
+        cb3ef2e74 and PR 55 21307851a (build 84ff63560), unchanged since the
+        fold, and a new live head, OP-2 963adda99 (claude/carbon-fork-0-1-op2,
+        a plan only, reserving W-196 to W-199; no build); the discharge
+        changes no sample, fixture or program, so none was re-run on a held
+        build (amended 2026-10-14, discharge).
 
 ## Hand-off notes for the writer
 
@@ -5104,3 +5143,141 @@ hits, 2 allowlisted, 1 qualified, 0 errors); `--self-test`; a full local
 conformance run on the fork toolchain (147 PASS / 0 FAIL / 22 SKIP over 169
 programs, bullets 48/56); and the nineteen programs on the nightly (16 PASS,
 3 COMPILE-FAIL as labelled, the stub SKIP).
+
+## Landed notes (DD-1, 2026-10-14)
+
+**Discharge.** §3's commit "DD-1 (4/4): discharge — rows 70 and 91, ledger,
+decision-log entry, ORCHESTRATION, plan landed notes" writes §2.14 and §8.5 to
+§8.9 on top of the document-review fold (6f1ba74ba): fork/gap-analysis.md row
+70 PARTIAL → DONE (expected) with §5's sentence, row 91 PARTIAL with §5's
+discharge text as its whole cell, and the header 31 / 20 / 4 / 1 in the
+precedent's shape; fork/inventory/work-items.json, W-065 and W-020 DISCHARGED,
+W-080, W-053, W-043 and W-044 amended with §8.5's texts, W-182, W-183, W-184,
+W-185, W-188, W-189 and W-191 filed (132 items, the last W-191), and the
+`source` note; the decision-log entry "DD-1: design docs without placeholders
+(2026-10-14)", first in the landed region after "Full autonomy and the
+throughput protocol"; fork/ORCHESTRATION.md's "Last updated" line, the DD-1
+discharge paragraph with §8.8's reservation sentence verbatim and the merge
+position, the `claude/carbon-fork-0-1-dd` Branches row, the amended
+stranded-branch row and a dated correction of Next actions item 2; §8.10's
+three new items; and DR1-12's paragraph in the interop README's inline section,
+with §2.7's block and mark. No program, fixture, sample, checker, toolchain,
+prelude or golden file changes.
+
+**Commits.** Plan: bed95d667 (rev 1), a1d96520a (rev 2), 15c719ddc (rev 3),
+97686069f (rev 4, signed off). Implementation: 3ff319642 (1/4: language
+pages), a32421433 (2/4: interoperability), 4287fe0c0 (3/4: design README
+notes), 6f1ba74ba (the document-review fold) and the discharge commit (4/4),
+which cannot name its own sha; the implementation-review fold writes it into
+these notes, the decision-log entry, W-065's notes, row 91 and
+fork/ORCHESTRATION.md.
+
+**Ids.** The scan at the discharge read 74 refs (trunk, origin/trunk,
+upstream-trunk and the 71 local and origin `claude/carbon-fork-0-1-*` refs):
+ledger maxima trunk W-125, ua2 W-127, cmake W-133, safe W-150, ev W-155, st
+W-167, sc W-168, op and op2 W-195; upstream-trunk has no ledger. No ref files
+an id of W-180..W-194, and outside this plan only DD-1's own pages and X01,
+OP-1's and OP-2's records and trunk's fork/ORCHESTRATION.md name one. OP-2
+(963adda99, a new live head since the fold) records DD-1's block and reserves
+W-196..W-199. Filed: W-182, W-183, W-184, W-185, W-188, W-189, W-191. W-180,
+W-181 and W-186 withdrawn unused; W-187 contingent (D-DD-9); W-190 unused;
+W-192..W-194 spare. The duplicate scan of §8.5 over trunk's and the nine live
+heads' ledgers finds no item that owns any of the seven (W-010's pin of the same
+testdata file is another split; W-008's integer-leaf note concerns admitted
+case expressions; SC-1's W-027 and W-168 are other lookups; W-044 owns
+checked-generic export).
+
+**Line pins (DR2-1).** Re-opened at the discharge, where the pages are as the
+fold left them apart from the interop README's new paragraph:
+pattern_matching.md:685 is `var 5 = n;`, :613-618 the `IsTrue` body comments,
+:639-650 the usefulness example's `F`, :590-593 the constant-tuple rule, and
+blocks_and_statements.md:50-60 the bare-block example from its lead-in sentence
+to its closing fence. The ledger's other page cites were read at this commit.
+
+**Counts.** `TODO` lines over docs/design/*.md and docs/design/**/*.md: 110 in
+23 files at 162c7e839, 90 in 20 files at the discharge (the decision-log entry
+lists each file). The W2 rule: the two held-PR hits, allowlisted, and the
+README disclosure, qualified, as at commit 3 and the fold.
+
+**Measured totals at the discharge** (local, not of record): the fork
+toolchain's full conformance run, 147 PASS / 0 FAIL / 22 SKIP over 169
+programs, bullets 48 PASS, 0 FAIL, 8 SKIP of 56 (scoreboard generated
+2026-10-14T02:31:41Z); the nightly on the nineteen programs, 16 PASS and 3
+COMPILE-FAIL as labelled, the stub SKIP; `--self-test`, 169 programs, 56
+bullets, OK; the checker with and without `--toolchain`, 19 program blocks, 39
+fixtures, 3 W2 hits (2 allowlisted, 1 qualified), 0 errors.
+
+**Deviations, one sentence each:**
+
+-   The discharge was written at the orchestrator's direction before the second
+    round of both document reviews that D-DD-11's break condition owes, so that
+    round reads the fold and the discharge together.
+-   DR1-12's paragraph states issue 6830's record (open; closed on 2026-03-26
+    as decided, reopened on 2026-03-30 over the trailing semicolon) instead of
+    the fold's open-question sentence, which would call the placement
+    undecided.
+-   Edits were applied by scripts, not the editor tools (R25), with the R12 hook
+    run by hand on every file and prek to a fixpoint.
+-   The discharge commit's own sha is written by the implementation-review fold.
+-   The `claude/carbon-fork-0-1-dd` Branches row is added here because this
+    branch predates trunk's f67ab650d row, and a merge keeps one row.
+-   Next actions item 2 of fork/ORCHESTRATION.md gains a dated correction that
+    matches the stranded-branch row, beyond §8.8's list.
+-   W-065's evidence keeps its two OV-3 lines beside the re-pinned sections.
+-   The decision-log entry carries D-DD-1 to D-DD-13 verbatim.
+-   The stub's SKIP text describes, from commit 1 on, what commits 2 and 3 land,
+    as §2.11 placed it (DR1-15, DR2-10).
+
+**Found at the discharge, not edited** (for the implementation review): row 54
+of fork/gap-analysis.md still says "templates.md is a self-described skeletal
+placeholder", and the file's narrative sections (the W2 arbiter, W7, W8's "~10
+placeholder sections", the documentation-completeness summary) keep the
+2026-07-19 audit's wording; §2.14 names only rows 70 and 91 and the header.
+
+**Reviews.** Every review of this workstream so far:
+
+| Review | Of | Verdict | Findings | Folded in |
+| --- | --- | --- | --- | --- |
+| Plan review A | rev 1 (bed95d667) | REJECT | 15: 1 BLOCKER, 4 MAJOR, 10 MINOR | rev 2 (a1d96520a) |
+| Plan review B | rev 1 (bed95d667) | REJECT | 18: 2 BLOCKER, 8 MAJOR, 8 MINOR | rev 2 (a1d96520a) |
+| Focused re-review 1 | rev 2 (a1d96520a) | REJECT | 5: A-1 still open, 4 MINOR | rev 3 (15c719ddc), with RR-FX-1 |
+| Focused re-review 2 | rev 3 (15c719ddc) | APPROVE-WITH-AMENDMENTS | 3: 1 MAJOR, 2 MINOR | rev 4 (97686069f), with RR2-FX-1 |
+| Document review 1 (fidelity) | 3ff319642, a32421433, 4287fe0c0 | REJECT | 16: 1 BLOCKER, 4 MAJOR, 11 MINOR | 6f1ba74ba (15), the discharge (DR1-12) |
+| Document review 2 (readability, cohesion, Goodhart, records) | the same | APPROVE-WITH-AMENDMENTS | 12: 2 MAJOR, 10 MINOR | 6f1ba74ba, with DR-FX-1; DR2-1, DR2-11, DR2-12 carried out at the discharge |
+| Document reviews, second round (D-DD-11's break condition) | the fold and the discharge | not yet run | — | — |
+| Implementation review | programs, fixtures, checker, records | not yet run | — | — |
+
+The document-review findings and their state after the discharge commit (each
+"closed" state awaits the second round's verification):
+
+| Finding | Grade | State after the discharge |
+| --- | --- | --- |
+| DR1-1: templates.md's status note said no other difference from proposal 2200 was known | BLOCKER | Closed at the fold: both comparisons stated |
+| DR1-2: attribution of `template constraint` and member requirements | MAJOR | Closed at the fold: proposals 818 and 2200; F-010 for `require` and predicates; state-L texts follow |
+| DR1-3: held PR 53 names `Core.Thread` and `Core.Atomic(T)` | MAJOR | Closed at the fold: only `Core.MemoryOrder` stays open on the page |
+| DR1-4: the bare-block open question of classes.md:563-570 | MAJOR | Closed: the pages cite it at the fold; W-185 filed design-needed at the discharge |
+| DR1-5: the README note's two sections that stay empty | MAJOR | Closed at the fold: named, with a state-L replacement |
+| DR1-6: plain `fn` and builtin evaluation | MINOR | Closed at the fold (probe PR-W) |
+| DR1-7: the templates.md Limits list | MINOR | Closed at the fold |
+| DR1-8: `match` expressions, qualified alternatives, tuple patterns with bindings | MINOR | Closed: page and X06 at the fold; PR-X in W-189's evidence at the discharge |
+| DR1-9: the P13 comment | MINOR | Closed at the fold; P13 regenerated from its page block |
+| DR1-10: aliases.md's constant-value wording | MINOR | Closed at the fold; the optional sample comment declined |
+| DR1-11: assignment.md's link | MINOR | Closed at the fold |
+| DR1-12: leads issue 6830 on where inline C++ may appear | MINOR | Closed at the discharge: issue checked online (§8.10), the inline section states its record, with a cited wording deviation |
+| DR1-13: the README Metaprogramming note | MINOR | Closed at the fold |
+| DR1-14: the threads page's `Core.Sync` sentence | MINOR | Closed at the fold, with a cited deviation (§2.13's anchor kept) |
+| DR1-15: the stub's row 89 wording | MINOR | Closed at the fold; the anticipatory SKIP wording recorded above |
+| DR1-16: C++ escapes in inline C++ | MINOR | Closed at the fold (X04, probe PR-V) |
+| DR2-1: moved ledger cites | MAJOR | Closed at the discharge: pins re-opened (above) and written into the ledger |
+| DR2-2: placeholder forms the W2 rule missed | MAJOR | Closed at the fold: case-insensitive clauses, blockquote-stripped clause (a), 13 self-check cases |
+| DR2-3: two note labels | MINOR | Closed at the fold |
+| DR2-4: fork terms on the README note | MINOR | Closed at the fold, with a cited deviation ("held PR" defined, not renamed) |
+| DR2-5: wording on four pages | MINOR | Closed at the fold; the grammar item rejected (pattern_matching.md:816) |
+| DR2-6: assignment.md's fork-only sentence | MINOR | Closed at the fold |
+| DR2-7: "This prints" against EXPECT-STDOUT | MINOR | Closed at the fold (checker) |
+| DR2-8: TBD, list-item, HTML-comment and empty sections | MINOR | Closed at the fold: clause (c) extended, clause (d) added |
+| DR2-9: "Why this bullet" headers | MINOR | Closed at the fold (P05, P11, P13) |
+| DR2-10: the stub's qualified-list wording | MINOR | Closed at the fold; the anticipatory wording recorded above |
+| DR2-11: row 91's discharge text, the header shape, the `TODO` counts | MINOR | Closed at the discharge |
+| DR2-12: the stranded-branch row and W-044's notes | MINOR | Closed at the discharge |
+| DR-FX-1 (fixer): the `Circle` diagnostic had no fixture | — | Closed at the fold (X05) |

@@ -2860,6 +2860,754 @@ if-let/let-else/while-let (flips a MISSING bullet on landed match
 machinery), then the error-handling chain W-016..W-019 (Result, `?`,
 exception interop), then unions W-009/W-015.
 
+### DD-1: design docs without placeholders (2026-10-14)
+
+Milestone goals "Language design components are documented, cohesive, and
+understandable by evaluators without placeholders." and "Design for both Carbon
+use of C++ and C++ use of Carbon, including all major C++ language features
+except for coroutines, is documented, cohesive, and understandable by evaluators
+without placeholders." (docs/project/milestones.md:55-56 and :73-75);
+fork/gap-analysis.md row 91, "Goal: design docs documented, cohesive,
+understandable without placeholders", stays PARTIAL until DD-1's integration
+commit at state L (D-DD-13), and row 70, "C++ interop: threading, atomics,
+memory model, synchronization", goes PARTIAL → DONE by D-DD-7, which absorbs
+W-020's documentation half. The header moves 30 DONE / 21 PARTIAL / 4 MISSING /
+1 DESIGN-ONLY → 31 / 20 / 4 / 1 over 56, and the integration commit moves it
+once more when row 91 flips. The expected conformance scoreboard is 147 PASS / 0
+FAIL / 22 SKIP over 169 programs, 48/56 bullets (trunk's floor of record 128 / 0
+/ 22 over 150, 48/56, run 37402970811, plus nineteen PASS programs), stated as
+expected, not of record: GitHub Actions on the repository is disabled, so the
+hosted conformance run R9 makes the record has no dispatch date, and rows 70 and
+91 say so through the Not-run list below. The nineteen programs are
+documentation-sync programs under sixteen feature bullets that were already PASS
+(D-DD-5, the EV-1 shape), so no bullet rollup moves; the design-docs bullet's
+own program, design_docs_placeholders.carbon, stays SKIP with a refreshed R10
+reason, as row 88's program and SAFE-1's do. Landed on claude/carbon-fork-0-1-dd
+off trunk 162c7e839 (state T: every held PR unmerged) in the commits plan §3
+fixed, after the plan's own bed95d667 (rev 1), a1d96520a (rev 2, the two plan
+reviews folded), 15c719ddc (rev 3, focused re-review 1 folded, not signed off)
+and 97686069f (rev 4, focused re-review 2 folded, signed off): 3ff319642 (DD-1
+(1/4): the language pages), a32421433 (2/4: the interoperability README and the
+new threads page), 4287fe0c0 (3/4: the design README notes), 6f1ba74ba (the
+document-review fold) and the discharge commit carrying this entry, DD-1 (4/4).
+It touches no toolchain, prelude, golden, proposal or .github/ file. Every
+decision below is an R29(a) auto-adopt recorded for after-the-fact veto, each
+with its break condition. No fork design id is minted: F-016 stays unallocated
+(D-DD-3). The second round of both document reviews, which D-DD-11's break
+condition owes because document review 1 returned REJECT, had not run when this
+entry was written (DEVIATIONS, item 1).
+
+WHAT LANDED, page by page. (1) THE LANGUAGE PAGES (3ff319642, amended at
+6f1ba74ba). docs/design/aliases.md: `## TODO` becomes `## Status`, a dated note
+that no accepted proposal specifies `alias` (proposal 3938's "not fully
+designed"; the overview's syntax from proposal 107 and issue 749), and `##
+Aliases in the 0.1 toolchain` documents file, namespace, class and function
+scope aliases (P01), the rejected runtime value (R01), parameters (R02) and
+declarations through a namespace alias (R03), and the constant-value alias the
+toolchain accepts against the language overview's rule.
+docs/design/blocks_and_statements.md: `## Status` (proposals 162 and 2665; the
+toolchain rejects a bare block, which the struct literal design's open question
+at classes.md:563-570 leaves open, W-185) and `## Statements in the 0.1
+toolchain` (P02; R04, R05, R06). docs/design/assignment.md: the `_TODO_` line of
+"Tuples, structs, choice types, and data classes" becomes a dated status note
+with the measured rules, P03 (fork-only) and R07, and the swap paragraph states
+leads issue 686's answer and the toolchain's divergence from it (X01, X03,
+W-188). docs/design/templates.md: `## Status` (accepted proposal 2200; the page
+an older sketch, compared with proposal 2200 both ways; template constraints
+from proposals 818 and 2200, F-010's `require`; SC-1 held), three fork notes
+(the illustrative `buf(T)`, the rejected `Convert(i, f32)` pinned by R11,
+specialization by overload sets) and `## Templates in the 0.1 toolchain` (P04;
+R08, R09, R10; X05; limits W-183, W-014 and `match` on template-dependent
+values). docs/design/metaprogramming.md: `## Status` (no proposal; PR 89 closed
+unmerged; milestones.md:272 defers the long tail) and `## Compile-time
+evaluation in the 0.1 toolchain` (P05; R12, R13, R14; W-031, W-036, W-184).
+docs/design/pattern_matching.md: the placeholder paragraph of "Pattern match
+control flow" becomes a dated status note keeping proposal 5164's statement and
+quoting the first example's measured diagnostic (X02), and "`match` in the 0.1
+toolchain" follows "Guards" (P06, fork-only; R15 to R22; X06; limits W-155 on
+held PR 54, W-189, W-182, the qualified alternative pattern, and `match`
+expressions as proposal 2188's future work).
+docs/design/code_and_name_organization/README.md gains the aliasing note (R03)
+and docs/design/expressions/comparison_operators.md the custom-result-types note
+beside its kept upstream marker. (2) INTEROPERABILITY (a32421433, amended at
+6f1ba74ba and by this commit). docs/design/interoperability/README.md: the eight
+former `TODO:` sections are written from measured behavior, Importing C++ code
+(inline) (P07, R32, X04, and since this commit the status of leads issue 6830),
+Constructors (P08, R23), Struct literals (P09, fork-only, R24), Accessing C++
+classes, structs, and members (P10, R25, R26, and a measured inheritance
+sentence), Accessing global variables (P11, R27), Integers (P12, R28), Advanced
+type mapping: pointers, references, and `const` (P13, R29) and The operator
+interoperability model (P14, R30); three sections are added for milestone
+interop items that had none, Using C++ templates (P17), Using Carbon from C++
+(P18, R33, W-191) and C++ ranges in `for` loops (P19, R34); and Threads,
+atomics, and the memory model points to the new page.
+docs/design/interoperability/threads_and_atomics.md (new) states F-008's
+seven-point contract with re-verified citations, the 0.1 toolchain's behavior
+(P16), the alternatives F-008 weighed and its references; held PR 53 names
+`Core.Thread` and `Core.Atomic(T)`, and reserving `Core.MemoryOrder` stays open
+on the page. docs/design/README.md gains `### Enums` (P15). (3) THE DESIGN
+README NOTES (4287fe0c0, amended at 6f1ba74ba). docs/design/README.md: a dated
+note after the "This document is provisional" disclosure, which the W2 rule
+carries as its one QUALIFIED entry; five cohesion notes after stale
+"provisional" notes (tuples, proposal 3646; patterns, proposal 2188; importing,
+proposal 6358; operator overloading, proposal 6254; standard types, proposals
+5448 and 6357); the template-constraints note; the Metaprogramming note; the
+abstract machine's content; and dated deferral notes beside the kept Co-routines
+and Concurrency markers. (4) PROGRAMS, FIXTURES AND THE CHECKER (commits 1 and
+2, extended at 6f1ba74ba).
+fork/conformance/programs/project/design_docs_*.carbon, nineteen programs, each
+a page block transcribed byte for byte after the §2.11 header, three of them
+fork-only; the stub design_docs_placeholders.carbon keeps its SKIP with the
+§2.11 reason; fork/designdocs/samples/ holds thirty-nine fixtures (R01 to R30,
+R32 to R34, X01 to X06); fork/designdocs/check_samples.py diffs every page block
+against its program or fixture (R27), checks every quote and every "This prints"
+value against its program, runs the W2 rule over docs/design/ with its ALLOWLIST
+(two held-PR entries at state T, empty at state L) and its QUALIFIED list (the
+README disclosure), and with `--toolchain` compiles every fixture. (5) THE
+RECORDS (this commit): rows 70 and 91 and the header of fork/gap-analysis.md;
+the ledger; this entry; fork/ORCHESTRATION.md; the plan's §8.10 additions,
+§2.7's DR1-12 paragraph and "Landed notes (DD-1, 2026-10-14)".
+
+THE DECISIONS, D-DD-1 to D-DD-13, verbatim from fork/designdocs/plan.md §0.5 as
+folded through the two plan reviews (A-1 to A-15, B-1, B-2, B-M-1 to B-M-8,
+B-m-1 to B-m-8), the two focused re-reviews (RR-A-1, RR-N-1 to RR-N-4, RR-FX-1;
+RR2-1 to RR2-3, RR2-FX-1) and the document-review fold (DR1-n, DR2-n); each
+break condition is the decision's own, and the `§`, row and finding references
+are the plan's:
+
+-   **D-DD-1 Editing posture.** On upstream pages every original paragraph and
+    example stays. Only placeholder markers are replaced: the boilerplate
+    paragraph and its `## TODO` heading become `## Status` with one dated
+    status blockquote; a `TODO:` heading loses its prefix and gains content; a
+    TODO-only body that has something to document becomes content (with a
+    dated status note before it where no accepted proposal states the rules,
+    as in assignment.md); a TODO note beside content becomes a dated note
+    only where that note supplies what the marker asks for (README.md :2890,
+    settled by F-010; :3911, an inline summary and the updated reference). New
+    behavior goes in
+    new sections titled "_topic_ in the 0.1 toolchain" (or under the formerly
+    empty heading), after the original content. Where an original example is
+    rejected by the toolchain, a dated "Fork note" directly after it quotes the
+    measured diagnostic and points to the working form. A marker is never
+    relabelled or replaced to get past the W2 rule: where a section has nothing
+    to document beyond a future extension or a milestone deferral
+    (comparison_operators.md "Custom result types"; README.md "Co-routines"
+    and "Concurrency", deferred by milestones.md:268 and :271), the upstream
+    marker stays and a dated note beside it states the 0.1 status (amended
+    2026-10-13, review fold: A-8 / B-M-4; RR-N-3: rev 2's §2.9 item 4
+    replaced the Co-routines and Concurrency markers, which this rule now
+    forbids, and item 4 keeps them). Break: a
+    reviewer shows that a note changes the meaning of accepted proposal text;
+    that note is withdrawn and the divergence becomes a residue (D-DD-3).
+-   **D-DD-2 Scope and the W2 arbiter.** The arbiter is a script rule over all
+    of docs/design/ (§2.12): (a) no line matches the placeholder boilerplate
+    (`skeletal design`, `it is a placeholder`, `should not be treated as
+    accepted`, `Please feel welcome to rewrite`, and `provisional or
+    placeholder`, whitespace-tolerant); (b) no heading's text starts with
+    `TODO`; (c) no section's body consists only of TODO-marker paragraphs
+    (optionally with "See ..." or "References" paragraphs); and (d) no section
+    is empty without a subsection. Every clause matches regardless of case,
+    clause (a) also across blockquote line breaks, and clause (c)'s markers
+    include TBD and the list-item and HTML-comment forms (clause (d) and these
+    extensions amended 2026-10-14, document-review fold: DR2-2 / DR2-8, under
+    this decision's break condition: document review 2 showed placeholder
+    forms the rule missed). Inline notes beside
+    content (category C of §0.1c, §0.1f) are out of scope. Two lists qualify
+    the result. `QUALIFIED` holds hits that stay by design because a DD-1 note
+    in the same section answers them, and the checker requires that note's
+    quoted text there: one entry, README.md "This document is provisional"
+    (the upstream disclosure, kept under D-DD-1). `ALLOWLIST` holds hits that a
+    later commit or a held PR removes, and it shrinks commit by commit (§2.12
+    item 5): at commit 3 it holds exactly the two held-PR-owned hits of
+    §0.1c (PR 53's Lifetime section, PR 55's arithmetic Strings section), and
+    at state L it is empty. An allowlisted hit that no longer hits is itself an
+    error (amended 2026-10-13, review fold: A-5 / B-2 / B-M-2 / B-M-3).
+    **Deviation from W-065's arbiter, recorded:** W-065's notes call its
+    arbiter "grep-verifiable ('no TODO/placeholder markers')"; this rule is
+    narrower. Inline TODO, TBD and provisional notes beside content stay
+    (category C: 110 `TODO` occurrences in 23 files at 162c7e839, less the
+    ones DD-1 replaces), and DD-1's pages add quoted toolchain diagnostics
+    that contain `semantics TODO`. The discharge records the before and after
+    `TODO` counts per file in the decision-log entry, and row 91's text says
+    that the remaining inline notes stay by design (amended 2026-10-13,
+    review fold: B-M-4). Break: a document review finds a section a reader
+    cannot understand that the rule misses, or a replaced marker that is a
+    placeholder under another name; it joins the scope in the fold and the
+    rule gains a clause.
+-   **D-DD-3 Documentation, not design; F-016 not minted.** Each page states
+    what an accepted proposal, a leads decision, or a fork decision fixes,
+    what the toolchain does, and where they differ (both cited). A leads
+    decision is the answer the leads record on a closed question-for-leads
+    issue, which docs/project/evolution.md:425-428 makes "where the leads
+    signal how it is resolved"; the page cites the issue and says when no
+    proposal incorporates the answer yet. Toolchain defects, including a
+    divergence from a leads decision, are residues; open questions stay open
+    on the page, and a question is called open only after its issue's status
+    has been checked. A behavior that none of these sources rules on is
+    stated as measured, never as a rule. Rev 1's assignment text asserted an
+    operation order for leads issue 686 without citing the leads' answer; rev
+    2 reduced it to the measurements and called the question open; rev 3
+    states the answer the leads gave on 2022-11-12 (issue 686's closing
+    comment; issue 2489 tracks the proposal that is to incorporate it), which
+    gives `(2, 1)` for both literal swaps, and the toolchain's `(2, 2)` as
+    W-188 (§2.3, §8.10; amended 2026-10-13, review fold: A-1; RR-A-1). Break:
+    if a page cannot be written without choosing a rule that neither a
+    proposal, a leads decision, a fork decision, nor the toolchain fixes, the
+    page names the open question and a residue is filed; minting F-016 needs
+    the orchestrator.
+-   **D-DD-4 Sample policy.** Every new code block is a complete Carbon file
+    compile-verified on the fork toolchain and on the nightly. A RUNS sample is
+    transcribed byte for byte into a conformance program (D-DD-5); a REJECTS
+    sample is a fixture whose header pins the first error message, quoted in
+    the page prose; a note on an unchanged upstream example quotes its measured
+    diagnostic, pinned by a quote fixture (R11 for templates.md, X02 for
+    pattern_matching.md's first `match` example; amended 2026-10-13, review
+    fold: A-9). Fork-only samples say so in the
+    sentence after them. Break: if a re-measure at state L changes an outcome,
+    the page and fixture follow the toolchain, never the reverse.
+-   **D-DD-5 The stub stays SKIP; the samples become documentation-sync
+    programs under their feature bullets.** (Rewritten 2026-10-13, review
+    fold: A-2 / B-1.) design_docs_placeholders.carbon stays SKIP, as row 88's
+    program and SAFE-1's safe_carbon_design.carbon do, with its R10 reason
+    refreshed (§2.11): what DD-1 changed, the checker's W2 rule as the grep
+    arbiter, and the document reviews as the bullet's arbitration. The
+    nineteen transcribed programs (P01-P19) are filed under the feature
+    bullets they exercise, every one of which is already PASS on trunk
+    (fork/conformance/out/scoreboard.json), so they are EV-1's
+    "documentation-sync programs under a bullet that was already PASS"
+    (D-EV-16) and change no rollup: bullets stay 48/56. A sample program
+    cannot fail on the property the design-docs bullet names, so it never
+    feeds that bullet. Break: if the orchestrator rejects the programs, they
+    are dropped and the checker's `--toolchain` mode runs the RUNS samples in
+    the land sequence instead.
+-   **D-DD-6 The checker.** fork/designdocs/check_samples.py (§2.12), in the
+    EV-1 style: R27 byte diffs of page blocks against programs and fixtures,
+    quote checks, the W2 rule, and an optional `--toolchain` mode that compiles
+    every fixture and checks its first error (or runs it and checks its
+    stdout). It runs by hand per commit and in the land sequence, against the
+    allowlist that commit sets (§2.12 item 5), and each commit message records
+    the expected and the actual W2 output (amended 2026-10-13, review fold:
+    B-M-2); at state L,
+    if trunk's runner.py calls EV-1's checker from `--self-test`, DD-1's
+    toolchain-free checks join it the same way. Break: if joining makes
+    `--self-test` depend on a toolchain or exceed its budget, only the diff,
+    quote and W2 checks join.
+-   **D-DD-7 W-020's documentation half is absorbed.** A new page
+    docs/design/interoperability/threads_and_atomics.md (the path F-008's paper
+    names, threading-atomics.md:186-187) states F-008's seven-point contract
+    with re-verified citations and one measured sample (P16); the interop README
+    gains a short section pointing to it. W-020 is discharged and gap row 70
+    goes PARTIAL → DONE (expected). This departs from fork/ORCHESTRATION.md:437,
+    which says the F-008 portion of the stranded design-docs branch is ported
+    "by [its] own workstream" by reconstructing the stranded draft: F8a-F8d
+    finished without porting it, and the draft's seven open sub-forks are
+    disposed of here, each with the record that settles it (amended 2026-10-13,
+    review fold: A-10). (1) C++ language mode for examples and conformance:
+    settled by practice; the F8 programs compile the Carbon side in Clang's
+    default mode and the C++ oracle side at `-std=c++17`
+    (fork/f008/plan.md:213-215), and the page's sample uses no C++20-only API.
+    (2) Upstreaming policy for the fixes: not a design-page question; F-008
+    calls the fixes "upstreamable" (fork/decision-log.md:1036), and the page
+    states no policy. (3) `volatile` and C `_Atomic`: settled by F-008's
+    contract, which the decision signed off "with any option"
+    (threading-atomics.md:189-190), points 3 and 7 (:201-204, :221-224): no
+    `volatile` and no `_Atomic` interop in 0.1, stated as non-goals on the page
+    with no new diagnostics (the paper's open question 6, :514-517, asked only
+    whether to call them out). (4) Reserving `Core.Thread`, `Core.Atomic` and
+    `Core.MemoryOrder`: held PR 53 (F-013, D-SAFE-16, W-149) names
+    `Core.Thread` and `Core.Atomic(T)` for its stage 5, which the page states;
+    no record settles `Core.MemoryOrder`, so that part stays open, stated on
+    the page (D-DD-3), and is not filed because no 0.1 behavior depends on it
+    (amended 2026-10-14, document-review fold: DR1-3). (5)
+    Memory-model arbitration depth: settled by F8a's six programs (W-020's
+    notes: "all six F-008 conformance programs landed"), among them the
+    exact-total counter cpp_atomic_global_counter_diff.carbon; no TSan run is in
+    the scoreboard. (6) Whether L1's fix is 0.1-blocking: overtaken; F8d landed
+    the fix (fork/decision-log.md:1247, F8d landing note), and
+    cpp_thread_carbon_fn_diff.carbon PASSes. (7) The filename: settled by
+    threading-atomics.md:186-187 (the paper names `threads_and_atomics.md`),
+    W-020's title, and gap row 70. Break: if the orchestrator assigns W-020's
+    documentation half to another workstream before commit 2 is written, the
+    page and the pointer section are dropped and rows 70 and 91 stay PARTIAL,
+    bounded by W-020.
+-   **D-DD-8 Cohesion notes are bounded.** Beyond the placeholders, DD-1 adds
+    only the notes listed in §0.1c (five stale "provisional" notes, the
+    :3733 one also covering the `T&` to `T*` sentence at :3757-3758; the
+    template-constraints TODO; the code-organization aliasing example; the
+    comparison custom-result note beside its kept marker; the README
+    disclosure note after :149), the measured sentence on inheritance in the
+    interop members section, the three interop sections of §0.1e for
+    milestone items that had no design section, and the state-L texts of
+    §2.13 (the two EV-1 sentences, the expressions/literals.md:251 pointer to
+    strings.md, the F-013 citations on assignment.md and the threads page, and
+    the link from SAFE-1's M7 to the threads page) (amended 2026-10-13, review
+    fold: A-3 / A-5 / A-12 / B-2 / B-M-5 / B-M-6 / B-M-8). Break: a reviewer
+    judges a note to be design rather than documentation; it is reworded to
+    cite its source or removed.
+-   **D-DD-9 Two states.** State T is this branch (trunk 162c7e839, every PR
+    above unmerged). State L is the integration commit, which merges trunk
+    after OP-1 lands (never a rebase of submitted commits, AGENTS.md), resolves
+    §0.2's expected conflicts, applies the state-L texts of §2 and §2.13
+    (templates.md status, README :2890 note, the C++ templates section's
+    concept link, the EV-1 sentences, the PR 53 citations and link, the
+    strings pointer, the optional.md link, an empty W2 `ALLOWLIST`), adds
+    F-013's scope to W-188's notes, applies the ledger amendments that land on
+    held PRs' text (W-014, W-155, W-167), writes row 91 DONE when §5's
+    condition holds, and re-runs
+    every sample, fixture and the full suite on a toolchain built from the
+    merged trunk. Break: if DD-1 must merge before any of SC-1, PR 51, PR 53,
+    PR 54 or PR 55, it merges in state T, row 91 stays PARTIAL bounded by the
+    missing state-L items (for PR 53 and PR 55, the TODO-only sections they
+    replace, README.md "Lifetime and move semantics" and arithmetic.md
+    "Strings"), and W-187 is filed to apply the state-L texts and ledger
+    amendments and flip row 91 when those PRs land (amended 2026-10-13, review
+    fold: B-M-3).
+-   **D-DD-10 Residues.** W-182 to W-185, W-188, W-189 and W-191 (§8.5; W-191
+    is rev 2's W-190, renumbered at rev 3 while OP-1 held W-190, RR-FX-1; OP-1
+    has since moved to W-195 and W-190 stays unused, amended 2026-10-14,
+    review fold: RR2-1) are filed
+    at discharge with kind, bullet, evidence and the measured probe. W-188 is a
+    toolchain-defect: a tuple or struct assignment whose literal right-hand
+    side reads the target is assigned in place, element by element, and
+    leaves `(2, 2)`, where the answer the leads gave on issue 686 (initialize
+    a temporary from the right-hand side, destroy the destination, move the
+    temporary into it; §8.10) gives `(2, 1)`; the upstream nightly behaves the
+    same. F-013 D-SAFE-17 (claude/carbon-fork-0-1-safe:docs/design/values.md
+    :485, "a value binding of a `Core.Plain` type acquires eagerly";
+    safety/mutation_safety.md:415-416 lists `let`, by-value parameters and
+    by-value `self`) rules on value bindings only; it gives the `let` form's
+    `(2, 1)`, which agrees with issue 686's answer, and the integration commit
+    adds that to W-188's notes (amended 2026-10-13, review fold: RR-A-1: rev
+    2 filed W-188 as design-needed on the premise that issue 686 was
+    unanswered, which the online check of §8.10 refutes; that deviation from
+    review A's fix is withdrawn). Existing items
+    are amended only where a finding sits inside their stated scope: W-080 (the
+    `var 5 = n;` crash), W-053 (ranges whose iterators are raw pointers), W-043
+    (its open "verify" note answered) at discharge; W-014 (PR-A's two crash
+    sites), W-155 (R20 and PR-L) and W-167 (PR-I) in the integration commit,
+    since the second and third exist only on PR 54 and PR 55 and PR 51 rewrites
+    W-014's notes. Before filing, §8.5 scans titles and evidence across trunk
+    and every live branch head for the same defect, not only the id maximum. Rev
+    1's W-180 (W-155's defect), W-181 (inside W-080's lane) and W-186 (W-167's
+    defect) are withdrawn by this break and stay unused (amended 2026-10-13,
+    review fold: A-1 / A-4 / A-11 / B-M-1 / B-m-2 / B-m-3). Break: if review
+    shows a residue is inside an existing item's scope, it is folded there and
+    its id stays unused.
+-   **D-DD-11 Reviews.** Two plan reviews (R29(c)) then a separate fixer (R11);
+    a focused re-review of the fold and a separate fixer, repeated until a
+    re-review returns a verdict other than REJECT, which the Status line
+    records as the sign-off (amended 2026-10-13, review fold: RR-A-1);
+    the writer; two document reviews of the landed pages by fresh agents
+    (review A: contradictions with accepted proposals, sibling pages and fork
+    decisions, including the held PRs' pages DD-1 meets at state L, and, for
+    every replaced marker, a judgment whether the replacement is real content
+    or a placeholder under another name; review B: every §4 row re-run with
+    the checker's `--toolchain` mode and the runner, every citation opened).
+    Both receive the bullet text, milestones.md:55-75 and :110-215 with
+    §0.1e's coverage table, and read every touched page as an evaluator would
+    ("understandable by evaluators", milestones.md:55-56) (amended
+    2026-10-13, review fold: B-M-4 / B-M-5). Then a separate fixer, whose
+    fold commit lands before the discharge commit (§3); one implementation
+    review of programs, fixtures, checker and records (R29(c)); a separate
+    fixer. A review silent for over an hour is relaunched (R29(e)); findings
+    cite (R8); dispositions cite, not narrate (R17). Break: a document review
+    returning REJECT triggers a second round of both.
+-   **D-DD-12 Local gate (R28; a stated deviation from R23).** GitHub Actions
+    on the repository is disabled and the owner's runner is never used, so the
+    gate is local: prek to a fixpoint with R31 counts, `runner.py --self-test`,
+    the checker with `--toolchain`, a full local conformance run on the
+    container-built fork toolchain (private `--out`, R5) and a nightly run of
+    the nineteen programs; each commit message records the results and
+    §8.10's "Not run" list verbatim, as do the decision-log entry, the
+    evidence of rows 91 and 70, and the PR body (§3) (amended 2026-10-13,
+    review fold: B-M-7). Break: if a hosted or owner-dispatched conformance
+    run becomes available before merge, it is the record (R9) and the local
+    runs are corroboration.
+-   **D-DD-13 Gap-row effect.** Row 70 PARTIAL → DONE by D-DD-7, written by
+    the discharge commit after the document-review fold. Row 91 PARTIAL →
+    DONE on document review (the rows 88-90 precedent), written only by the
+    integration commit at state L, when PR 53 and PR 55 are on trunk, the W2
+    `ALLOWLIST` is empty, and the document-review fold has landed; until then
+    the discharge commit writes row 91 PARTIAL, bounded by "pending state L:
+    PR 53's and PR 55's sections". Header: DONE plus one and PARTIAL minus one
+    at the discharge, the same again at integration. Both are "expected, not
+    of record" until the conformance run of record (amended 2026-10-13, review
+    fold: B-M-3 / B-m-8). Break: if a document review leaves an in-scope
+    placeholder or an unmeasured claim unresolved after the fold, the row stays
+    PARTIAL with that finding as its bound.
+
+PLAN §0.4 CORRECTIONS, the stale claims the plan found, verbatim; each is
+corrected where its text says, and at this discharge W-065's evidence, W-020's
+notes, W-080's evidence and notes, W-043's notes and W-044's notes carry the
+ledger halves:
+
+-   **threads_and_atomics.md never landed.** The workstream context and W-065's
+    notes ("TA-0 (W-020) adds threads_and_atomics.md") treat it as landed;
+    `find . -name 'threads_and_atomics*'` is empty, W-020 is open ("Doc half
+    stays GATED on the design-docs veto digest", work-items.json), gap row 70
+    says "Missing: the memory-model design doc", and fork/ORCHESTRATION.md:437
+    records that the digest gate "dissolved under R29" and that the F-008
+    portion is "ported by [its] own workstream", which finished (F8a-F8d)
+    without porting it. D-DD-7 absorbs it.
+-   Gap row 91 says the interop README "has 9 'TODO:' section headings"; OV-3
+    retired `TODO: Overload resolution`, so there are 8 (§0.1 row 6). It also
+    says the F-008..F-011 pages "have not landed": F-009 (functions_overloading
+    .md) and F-011 (pattern_matching.md "Refutable pattern bindings") have;
+    F-010 is on the held SC-1 branch; F-008 is the first item of this list.
+-   W-065's evidence pins `pattern_matching.md:712-714` (now :718-721) and
+    `fork/gap-analysis.md:73` (now :91). The stub's SKIP text pins
+    pattern_matching.md "lines 712-714" and interop README "lines 210-218" with
+    "nine" headings including "TODO: Overload resolution" (now :156-:350,
+    eight). The stub stays SKIP (D-DD-5), and commit 1 rewrites its SKIP text
+    with current evidence (§2.11) (amended 2026-10-13, review fold: A-2 /
+    B-1).
+-   fork/conformance/programs/generics/templates_dependent_member.carbon is SKIP
+    on trunk with a 2026-07-19 reason ("Template lowering not implemented yet")
+    that no longer holds: the program PASSes when run on the fork toolchain
+    (P04's member access is the same shape). PR 51 removes the SKIP; DD-1 does
+    not touch the program (it is PR 51's).
+-   W-080's notes say a refutable `var` root "stays behind TODOs"; `var 5 = n;`
+    crashes instead (PR-B), on the fork and the nightly. The crash is in
+    W-080's lane (the `var` spelling of a refutable root, which its fix
+    diagnoses), so W-080's evidence gains the CHECK line and the probe; no
+    separate item is filed (amended 2026-10-13, review fold: A-11 / B-m-3).
+-   W-014's notes on the UA-2 branch name "the cross-file template lowering
+    CARBON_FATAL (lower/handle.cpp:513)" as the remaining cross-file blocker;
+    a cross-library call crashes earlier, in check (PR-A), on the fork
+    (import_ref.cpp:5087) and on the nightly (:4875). W-014's evidence gains
+    both sites in the integration commit, after PR 51 is on trunk, so the edit
+    applies to PR 51's text (amended 2026-10-13, review fold: A-13 / B-m-2).
+-   The workstream context describes "the operator interoperability model as
+    OV-3/UN-2 landed it". Neither touched operators: OV-3 exported overload sets
+    and UN-2 mapped unions. The operator model's 0.1 state is the upstream
+    import direction (p006254 "Operator calls") with W-045 (missing imports)
+    and W-054 (no export); §2.7 documents exactly that.
+-   Gap row 56 says "Carbon class types as template args error 'unsupported
+    type used as template argument'". P17 instantiates `Cpp.Box(Point)` on a
+    Carbon class and runs on the fork and the nightly, and the testdata the
+    row cites (template/type_param.carbon `fail_unsupported_type.carbon`) uses
+    `{}`, an empty struct type; W-043's own notes already ask to "re-check
+    which sub-case is live". W-043's notes gain the measured answer (concrete
+    Carbon classes work; the symbolic case PR-T does not); the row's status
+    is W-043's to re-arbitrate, so DD-1 does not edit row 56 (added
+    2026-10-13, review fold: B-M-5).
+-   W-044's notes say that export of a Carbon `template` function, as distinct
+    from a checked generic, "exists at all only after template lowering
+    (W-014)". The nightly exports and runs
+    one (PR-S prints `42`); the fork's toolchain stops at a CHECK. W-191
+    records it (added 2026-10-13, review fold: B-M-5; renumbered from W-190,
+    RR-FX-1; W-190 stays unused, amended 2026-10-14, review fold: RR2-1).
+
+Found at the discharge and not edited, because §2.14 names only rows 70 and 91
+and the header: row 54 ("Generics: Integrated templates") still ends
+"templates.md is a self-described skeletal placeholder", and the narrative
+sections of fork/gap-analysis.md (the W2 arbiter, W7, W8's "~10 placeholder
+sections" and the documentation-completeness summary) keep the 2026-07-19
+audit's description; both are on the implementation review's list (plan "Landed
+notes").
+
+RESIDUE, filed at this discharge from DD-1's block W-180..W-194, each with its
+kind, bullet, evidence, mechanism and break condition in the ledger: W-182
+(missing-feature, "Control flow: matching — sum-type consumption incl.
+std::variant/std::optional interop"), an alternative pattern inside a tuple
+pattern or a payload subpattern is checked as a designator expression, so
+pattern_matching.md's own usefulness example cannot be written (R21); W-183
+(language-gap, "Generics: Integrated templates"), member lookup into a
+constrained template parameter ignores the constraint (R09, PR-K;
+p002200:200-202 and :433-441); W-184 (toolchain-defect, "Project: toolchain
+implements most 0.1 language features incl. C++ interop without undermining
+evaluation"), unbounded compile-time recursion overflows the compiler's stack
+(PR-C; eval/recursion.carbon:28); W-185 (design-needed, "Control flow:
+conditions"), whether a block on its own is a statement (p000162:65 against the
+open question of classes.md:563-570; R04), its kind set to design-needed at the
+document-review fold (DR1-4); W-188 (toolchain-defect, "Type system:
+User-defined types (classes)"), a tuple or struct assignment whose literal
+right-hand side reads the target is assigned in place and leaves `(2, 2)`, where
+leads issue 686's answer gives `(2, 1)` (X01, X03, PR-U); W-189
+(missing-feature, "Control flow: matching — good switch equivalents"), a set of
+tuple patterns never counts as exhaustive unless one arm is irrefutable (PR-R,
+PR-X; fail_bool_pair_enumeration.carbon; pattern_matching.md:590-593); W-191
+(toolchain-defect, "Generics: C++ interop — exporting Carbon templates/checked
+generics as C++ templates"), a Carbon function with a `template` parameter
+called from C++ stops check at generic.cpp:96, where the nightly runs it (PR-S).
+Withdrawn at rev 2 and never filed: W-180 (W-155 owns it), W-181 (inside W-080's
+lane) and W-186 (W-167 owns it). W-187 is contingent on D-DD-9's break
+condition. W-190 stays unused and is never filed: OP-1 held it from 49e2cf2bf
+until its discharge (379f20f67) re-allocated it to W-195, and DD-1 moved off it
+at rev 3 (RR-FX-1, RR2-1). W-192..W-194 are spare. Amended at this discharge:
+W-065 DISCHARGED with its evidence re-pinned; W-020 DISCHARGED (DOC HALF
+DISCHARGED at DD-1); W-080's evidence gains PR-B's CHECK line (pattern.cpp:81 on
+the fork, :77 on the nightly; `var 5 = n;` at pattern_matching.md:685) and its
+notes "(the `var` root crashes; see the evidence)"; W-053's evidence gains R34;
+W-043's notes answer its verify note (P17, PR-T); W-044's notes point to W-191.
+At the integration commit: W-014's evidence gains PR-A's two crash sites (PR 51
+rewrites W-014's notes), W-155's gains R20 and PR-L (PR 54), W-167's gains PR-I
+(PR 55), and W-188's notes gain F-013 D-SAFE-17's scope (PR 53). The duplicate
+scan of plan §8.5 ran at this commit over the ledgers of trunk f67ab650d and the
+live heads dd, cmake, ev, op, op2, safe, sc, st and ua2, for each residue's
+crash site, diagnostic and design citation: no item names any of the seven
+(W-010's pin of fail_choice_alternative_pattern.carbon is its bare-payload
+split, W-008's integer-leaf note is about admitted case expressions, SC-1's
+W-027 and W-168 are other lookups, and W-044 owns checked-generic export). The
+id scan read 74 refs (trunk, origin/trunk, upstream-trunk and the 71 local and
+origin claude/carbon-fork-0-1-* refs): the ledger maximum is W-195 (OP-1 and
+OP-2), and no ref files an id of W-180..W-194; OP-2's plan (963adda99) records
+DD-1's block and reserves W-196..W-199.
+
+THE ARBITER AND THE COUNTS. D-DD-2 records a deviation from W-065's stated
+arbiter: W-065's notes call it "grep-verifiable ('no TODO/placeholder
+markers')", and the W2 rule is narrower, reporting placeholder boilerplate, TODO
+headings, TODO-only sections and empty sections, while inline TODO, TBD and
+provisional notes beside content stay by design and DD-1's pages add quoted
+toolchain diagnostics that contain `semantics TODO`. The `TODO` counts are line
+counts (`git grep -c TODO <commit> -- 'docs/design/*.md'
+'docs/design/**/*.md'`), measured at 162c7e839 and at this commit: 110 lines in
+23 files before, 90 lines in 20 files after. Per file, before → after: README.md
+17 → 15, aliases.md 2 → 0, assignment.md 1 → 0, blocks_and_statements.md 2 → 0,
+classes.md 3 → 3, control_flow/return.md 1 → 1, expressions/README.md 1 → 1,
+expressions/arithmetic.md 3 → 3, expressions/as_expressions.md 1 → 1,
+expressions/bitwise.md 1 → 1, expressions/comparison_operators.md 4 → 4,
+expressions/logical_operators.md 1 → 1, functions.md 2 → 2,
+functions_overloading.md 17 → 17, generics/details.md 17 → 17,
+interoperability/README.md 18 → 2, metaprogramming.md 2 → 1, pattern_matching.md
+1 → 6, sum_types.md 1 → 1, templates.md 2 → 1, unions.md 1 → 1, values.md 5 → 5,
+variadics.md 7 → 7. The W2 rule's output at this commit, as expected: the two
+held-PR hits (README.md "Lifetime and move semantics", PR 53;
+expressions/arithmetic.md "Strings", PR 55), allowlisted, and the README
+disclosure, qualified by its note. Not designed, by milestone deferral or as an
+extension, each beside a dated statement of the 0.1 status: Co-routines
+(milestones.md:268), Concurrency beyond C++'s (:271), metaprogramming beyond
+compile-time evaluation (:272), mixins (:273), and comparison results other than
+`bool` (beyond proposal 702).
+
+REVIEWS (D-DD-11, R29(c), R11). Plan reviews of rev 1 (bed95d667): A (fidelity
+to the toolchain and the accepted proposals) REJECT, fifteen findings (one
+BLOCKER, A-1; four MAJOR; ten MINOR); B (process, records and Goodhart) REJECT,
+eighteen (two BLOCKER, B-1 and B-2; eight MAJOR; eight MINOR); a separate fixer
+folded all thirty-three in rev 2 (a1d96520a), none rejected. Focused re-review
+1, of rev 2: REJECT, A-1 NOT RESOLVED (rev 2 still called leads issue 686 open,
+which the leads answered on 2022-11-12) and four new MINOR findings, N-1 to N-4;
+folded in rev 3 (15c719ddc), none rejected, with the fixer's RR-FX-1 (rev 2's
+W-190 renumbered W-191). Focused re-review 2, of rev 3: APPROVE-WITH-AMENDMENTS
+with no BLOCKER open, one MAJOR (RR2-1) and two MINOR (RR2-2, RR2-3), folded in
+rev 4 (97686069f) with the fixer's RR2-FX-1; signed off. Document reviews of
+commits 1 to 3 (3ff319642, a32421433, 4287fe0c0) by two fresh agents, each given
+the bullet text, milestones.md:55-75 and :110-215 and §0.1e's coverage table:
+review 1 (fidelity: contradictions with accepted proposals, sibling pages, fork
+decisions and the held PRs' pages, and whether each replaced marker is real
+content) returned REJECT with sixteen findings, one BLOCKER, DR1-1
+(templates.md's status note said that no other difference from proposal 2200 was
+known), four MAJOR (DR1-2, the attribution of `template constraint` and member
+requirements; DR1-3, held PR 53's `Core.Thread` and `Core.Atomic(T)`; DR1-4, the
+bare-block open question; DR1-5, the README note's two empty sections) and
+eleven MINOR (DR1-6 to DR1-16); review 2 (readability, cohesion, Goodhart and
+records-readiness, every §4 row re-run and every citation opened) returned
+APPROVE-WITH-AMENDMENTS with twelve findings, two MAJOR (DR2-1, the moved ledger
+cites; DR2-2, placeholder forms the W2 rule missed) and ten MINOR (DR2-3 to
+DR2-12). A separate fixer reproduced every finding and folded 27 of the 28 in
+6f1ba74ba ("DD-1: document-review fold") with its own DR-FX-1 (quote fixture
+X05): DR1-14 and DR2-4 with a cited deviation each, DR1-10's optional sample
+comment declined and one item of DR2-5 rejected, each with its evidence, and
+DR1-12 (the status of leads issue 6830) deferred to this commit because the
+issue could not be read online in the fold's session. This discharge read it
+(§8.10) and folds DR1-12 with a cited wording deviation (DEVIATIONS, item 2),
+and carries out DR2-1, DR2-11 and DR2-12 and the W-185 and W-189 changes as the
+fold's plan amendments direct. Because review 1 returned REJECT, D-DD-11's break
+condition owes a second round of both document reviews, which had not run when
+this entry was written (DEVIATIONS, item 1); after it come the one
+implementation review of programs, fixtures, checker and records (R29(c)) and
+its fold. Across the six reviews so far: 69 findings (33, 5, 3, 16 and 12),
+whose BLOCKERs are A-1 (raised by plan review A and again by focused re-review
+1), B-1 and B-2, RESOLVED at the sign-off, and DR1-1, folded at 6f1ba74ba for
+the second round to verify; every finding is folded or dispositioned with its
+evidence. The per-finding tables are the plan's review fold record (rev 2), its
+two focused re-review sections, its Document-review fold (2026-10-14) and its
+Landed notes (DD-1, 2026-10-14), which give each document-review finding's state
+after this commit.
+
+VERIFICATION, all LOCAL, never of record (D-DD-12). The fork toolchain is the
+container's CMake and Ninja build of trunk 0bdce60a5's sources
+(/home/user/carbon-build/carbon-trunk/install, `0.0.0-0.dev+0bdce60a5`; trunk
+162c7e839's toolchain, prelude and docs/design/ equal 0bdce60a5's); the nightly
+is `0.0.0-0.nightly.2026.10.12+62f1cc6`. At this commit: a full conformance run
+on the fork busybox with a private `--out` (scoreboard generated
+2026-10-14T02:31:41Z): PASS 147, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
+OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 22 of 169 programs, bullets 48 PASS, 0
+FAIL, 8 SKIP of 56, with the nineteen design_docs programs PASS, the stub SKIP
+and the threading bullet PASS over seven programs; the nineteen programs on the
+nightly (`--filter project/design_docs`): 16 PASS and 3 COMPILE-FAIL
+(design_docs_assignment, design_docs_cpp_struct_literals and design_docs_match,
+the three labelled fork-only), the stub SKIP; `runner.py --self-test`:
+"self-test: 169 programs parsed, 56 bullets in table, OK"; `python3
+fork/designdocs/check_samples.py`, without and with `--toolchain` on the fork
+toolchain, exit 0: "self-check: 4 quote cases, 13 W2 cases, 0 wrong" and
+"check_samples: 19 program blocks, 39 fixtures (compiled), 3 W2 hits (2
+allowlisted, 1 qualified); 0 errors", the expected W2 output (the two held-PR
+hits and the qualified disclosure, as at commit 3 and the fold); the JSON parse
+of fork/inventory/work-items.json (132 items, the last W-191); prek with
+SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
+to a fixpoint; and R31's heading and list-item counts before and after for every
+markdown file of this commit (its message and the plan's landed notes give
+them). The samples, fixtures and probes were measured on the fork toolchain, the
+nightly and the SC-1, OP-1, UA-2 and ST-1 builds at commits 1 to 3 and the fold
+(plan §0.1d, §4.1 and the fold record); this commit changes none of them.
+
+Not run (plan §8.10, verbatim; the local gate of D-DD-12):
+
+-   no conformance run of record: GitHub Actions on the repository is
+    disabled and the owner's runner is not used (R28), so every total is a
+    local run on the container-built toolchain;
+-   no bazel and no file_test: the container has no bazel, and DD-1
+    changes no golden;
+-   no platform other than Linux x86-64; the integer mapping on the
+    interop page (`long` is `i64`, `size_t` is `u64`) is stated for 64-bit
+    Linux;
+-   PR-C on the nightly did not finish: the run hung in the crash handler
+    and was terminated (an earlier run exited rc 139);
+-   no build of a branch-head commit itself (amended 2026-10-14, review
+    fold: RR2-2): the heads at rev 4 are trunk f67ab650d, SC-1 a9c887101
+    and OP-1 379f20f67 (PR 53 adaae4e35, PR 51 f96fe8a7a, PR 52
+    ea573f672, PR 54 cb3ef2e74 and PR 55 21307851a unchanged). SC-1 was
+    measured on its builds at bc8b37290 (rev 1), ff490bd48 (rev 2) and
+    18775fee3 (rev 4), the last with the head's toolchain and prelude
+    (`git diff --stat 18775fee3 a9c887101 -- toolchain core` is empty);
+    OP-1 on its build at 5d9edb3e0, whose toolchain/ and core/ differ from
+    the head's by three testdata goldens only. The writer re-reads the
+    heads at discharge with `git for-each-ref` and names the build each
+    was measured on;
+-   no state-L toolchain (trunk with every held PR merged) exists until
+    the integration commit builds one;
+-   online status checks, made on 2026-10-13, cover four records only;
+    no other issue or PR the pages cite was checked online (amended
+    2026-10-13, review fold: RR-A-1: rev 2 checked none). Issue 686
+    (https://github.com/carbon-language/carbon-lang/issues/686) was
+    closed as completed on 2022-11-12 with the leads' answer: "initialize
+    a temporary object from the right-hand side", "destroy the
+    destination", "move the right-hand side into the left-hand side"
+    (the full record is under §2.3). Issue 2489
+    (https://github.com/carbon-language/carbon-lang/issues/2489), which
+    tracks the proposal for that answer, is open. Issue 749 was closed
+    as completed on 2021-08-25, and PR 89 was closed unmerged on
+    2021-08-29, as the aliases.md and metaprogramming.md status notes
+    say;
+-   the document-review fold could not check leads issue 6830 online
+    (the GitHub API and github.com refused carbon-language/carbon-lang in
+    its session, and no record of the issue is in the repository), so
+    DR1-12 is not folded (amended 2026-10-14, document-review fold);
+-   SC-1's head moved after rev 4 to 4bc4802ae; the fold measured its new
+    fixtures and probes on the carbon-sc build at fb12f63cb, whose
+    toolchain and prelude equal the head's (`git diff --stat fb12f63cb
+    4bc4802ae -- toolchain core` is empty), and ran the W2 rule over the
+    head's docs/design/ (amended 2026-10-14, document-review fold);
+-   the discharge checked leads issue 6830 online on 2026-10-14
+    (https://github.com/carbon-language/carbon-lang/issues/6830, read
+    through its github.com page, because the GitHub API and the
+    session's repository-attach tool still refused
+    carbon-language/carbon-lang): the issue is open. It was closed as
+    completed on 2026-03-26 with the comment "Let's call this decided",
+    landing on inline C++ as a top-level declaration spelled
+    `inline Cpp '''...'''` (the issue's suggested answers to its first
+    two questions, which that thread agreed to), and reopened on
+    2026-03-30 because no agreement was reached on a trailing
+    semicolon. DR1-12 is folded at the discharge with that record
+    (amended 2026-10-14, discharge);
+-   no second round of the two document reviews ran before the
+    discharge: review 1 returned REJECT, so D-DD-11's break condition
+    asks for both reviews to read the fold before the discharge, and the
+    discharge was written first at the orchestrator's direction; the
+    second round reads the fold and the discharge together (amended
+    2026-10-14, discharge);
+-   the heads re-read at the discharge with `git for-each-ref`: trunk
+    f67ab650d, SC-1 4bc4802ae (its build at fb12f63cb has the head's
+    toolchain and prelude), OP-1 379f20f67 (build 5d9edb3e0), PR 53
+    adaae4e35, PR 51 f96fe8a7a (build 05a5c30f7), PR 52 ea573f672, PR 54
+    cb3ef2e74 and PR 55 21307851a (build 84ff63560), unchanged since the
+    fold, and a new live head, OP-2 963adda99 (claude/carbon-fork-0-1-op2,
+    a plan only, reserving W-196 to W-199; no build); the discharge
+    changes no sample, fixture or program, so none was re-run on a held
+    build (amended 2026-10-14, discharge).
+
+DEVIATIONS FROM THE PLAN, each the closest faithful form. (1) The discharge was
+written at the orchestrator's direction before the second round of both document
+reviews that D-DD-11's break condition owes, review 1 having returned REJECT,
+where the fold record has that round read the fold before the discharge. The
+round reads the fold and this discharge together; any finding is folded by a new
+commit, and one that leaves an in-scope placeholder or an unmeasured claim
+unresolved keeps its row PARTIAL with that finding as its bound (D-DD-13's break
+condition), row 70 included. (2) DR1-12: the fold's sentence for an open issue
+6830, "Where `import Cpp inline` may appear is open question-for-leads issue
+6830.", would call the placement undecided; the issue, read online at this
+discharge, was closed on 2026-03-26 as decided (inline C++ a top-level
+declaration spelled `inline Cpp '''...'''`) and reopened on 2026-03-30 over the
+trailing semicolon, so the paragraph added to the interop README's inline
+section states that record, and plan §2.7 carries it with its mark. (3) The
+edits were applied by scripts that copy the texts into place, not by the editor
+tools (R25), as at commits 1 to 3 and the fold; the R12 hook was run by hand on
+every file of this commit and passed, and prek ran to a fixpoint. (4) This
+commit cannot name its own sha: the records call it "the discharge commit, DD-1
+(4/4)", and the implementation-review fold writes the sha into them (the EV-1
+precedent, EV1-IR-5). (5) In fork/ORCHESTRATION.md the
+`claude/carbon-fork-0-1-dd` Branches row is added on this branch, which was cut
+before trunk's f67ab650d added one, so a merge keeps one row with this text
+(§8.8); and Next actions item 2, which still gated the F-008..F-011 design docs
+on the veto digest, gains a dated correction that matches the amended
+stranded-branch row, an extension of §8.8. (6) W-065's evidence keeps its two
+OV-3 lines beside the re-pinned DD-1 sections. (7) THE DECISIONS above are
+§0.5's text verbatim, not one sentence each, so they cannot drift from the plan.
+(8) The stub's SKIP reason, written at commit 1 and amended at the fold,
+describes from commit 1 on what commits 2 and 3 land, as §2.11 placed it
+(DR1-15, DR2-10); the PR lands as one unit.
+
+STATE L, the condition (D-DD-9, D-DD-13). The integration commit merges trunk
+after OP-1 lands (never a rebase of submitted commits), resolves §0.2's expected
+conflicts, applies the state-L texts of plan §2.3, §2.4, §2.9 items 3 and 6, and
+§2.13 (the held-PR citations, the F-013 citations on assignment.md and the
+threads page, M7's link to the threads page, the strings pointer in
+expressions/literals.md, the optional.md and template_constraints.md links, the
+README disclosure note's state-L sentence, the EV-1 sentences), empties the W2
+`ALLOWLIST`, writes the W-014, W-155 and W-167 amendments and W-188's F-013
+note, re-runs every sample, fixture and the full suite on a toolchain built from
+the merged trunk, and writes row 91 DONE (expected) only when PR 53 and PR 55
+are on trunk, the `ALLOWLIST` is empty and the document-review fold has landed,
+with the header moving once more. Break condition (D-DD-9): if DD-1 must merge
+before any of SC-1, PR 51, PR 53, PR 54 or PR 55, it merges in state T, row 91
+stays PARTIAL bounded by the missing state-L items, and W-187 is filed to apply
+them when those PRs land.
+
+PROCESS. R29(a): every D-DD above auto-adopts with its break condition and is
+recorded for after-the-fact veto; no question was asked (R29). R11: the planner,
+the two plan reviewers, the plan fixers, the two focused re-reviewers, the
+writer of commits 1 to 3, the two document reviewers, the document fixer and
+this records writer were separate agents. R3 and R6: every sample was derived
+from working code and testdata and compile-verified on the fork toolchain and
+the nightly before the plan fixed it (D-DD-4). R16(d): every EXPECT value is
+plan §4.1's hand derivation, made before any program ran. R27: check_samples.py
+diffs every page block against its program or fixture at every commit. R20:
+every commit names its paths (author jmann345, committer Claude). R22, R25 and
+R31: prek to a fixpoint before each commit, with the heading and list-item
+counts recorded before and after for every markdown file. A problem found after
+a commit existed was fixed by a new commit, never an amend (AGENTS.md). The gate
+that ran is local (D-DD-12), a stated deviation from R21's and R23's hosted
+authority while Actions is disabled; each commit message records its run. Break
+condition (D-DD-12): a hosted or owner-dispatched conformance run becomes
+available before the merge; then it is the record (R9), and the "not of record"
+phrases go in a records commit.
+
+_V-3a divergence-risk register entries (reviewed at each upstream merge):_ every
+DD-1 edit to an upstream page under docs/design/ is a dated blockquote ("Fork
+status" or "Fork note") or a new section after the original text, and every
+original paragraph and example stays (D-DD-1), so an upstream merge that
+rewrites a page conflicts only where upstream replaced the same placeholder, and
+there the fork side is dropped for upstream's accepted text; the two new
+fork-local pieces in upstream directories are
+docs/design/interoperability/threads_and_atomics.md and the three new interop
+README sections; the pages state measured toolchain behavior, so a toolchain
+change that alters a documented sample fails its program or fixture (R-1), and
+the page follows the toolchain, never the reverse (D-DD-4). No accepted proposal
+or leads answer is contradicted: where the toolchain diverges from one (W-183,
+W-185's grammar, W-188, W-189, the guard parentheses of R19, the constant-value
+alias), the page states both. Veto-able.
+
 ### SL-2: std::span ↔ Core.Slice mapping, owning-container views (2026-10-05)
 
 Milestone bullet "Stdlib C++ interop: transparent non-owning contiguous

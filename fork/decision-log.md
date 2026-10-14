@@ -4342,32 +4342,39 @@ design page), e7783c80e (2 goldens, CHECK lines only) and fa9038828 (records:
 round 10's review record; ROUND 9's and ROUND 10's decisions corrected and ROUND
 10's break condition taken; ROUND 11's DECISION; the ledger's SC-1 cites checked
 mechanically at the head and re-pointed; W-233 and W-234 amended; gap row 60;
-ORCHESTRATION; the re-measure on e7783c80e); 93f2b9f24, the records commit
-after fa9038828, checks round 11's records against the head (the split error
-counts, the trunk analogs of the two new splits, of the evaluation-mode
-divergence and of W-233, the ledger's SC-1 cites), keeps the PR body under
-GitHub's description limit with a summary of the review record and the
-verification, and records the re-measure on fa9038828; the records commit after
-93f2b9f24, 62e25dcdd, corrects its account of the PR body's layout and records
-the re-measure on 93f2b9f24. Fill round 12 (same day), folding round 11's two
-implementation reviews: a6289f86e (one rule for errors, the comparison's
-errors-match mode, ROUND 12's first decision; a requirement with `self` needs a
-member with `self`, its second; test sources and the design page), 62d39c9f6 (1
-golden, CHECK lines only) and 9af776bac (records: round 11's review record;
-ROUND 11's first decision superseded; ROUND 12's DECISION; W-235 filed; the
-ledger's SC-1 cites that round 12 moved re-pointed; gap row 60; ORCHESTRATION;
-the re-measure on 62d39c9f6); the records commit after 9af776bac corrects round
-11's finding count (ten, where 9af776bac said nine), adds round 11's review
-record to the plan's note, and records the re-measure on 9af776bac. Each fix is
-an R29(a) implementation decision
-recorded for after-the-fact veto, with its design citation and break condition;
-none reopens F-010 or the intent of a D-SC decision. Round 7's takes D-SC-10's
-own break condition on a falsifier other than the one it named (a template-phase
-`Self` breaking a positive golden at the commit-1 fill; the falsifier was round
-6's review 1 BLOCKER-1), R29(a), veto-able, and round 8 keeps it as a trade,
-re-weighed (ROUND 8's DECISION). Every count below is a measurement on the
-container, not of record (R9): fork/conformance/out/scoreboard.json reads 128 /
-0 / 22 over 150 until a run of record replaces it.
+ORCHESTRATION; the re-measure on e7783c80e); 93f2b9f24, the records commit after
+fa9038828, checks round 11's records against the head (the split error counts,
+the trunk analogs of the two new splits, of the evaluation-mode divergence and
+of W-233, the ledger's SC-1 cites), keeps the PR body under GitHub's description
+limit with a summary of the review record and the verification, and records the
+re-measure on fa9038828; the records commit after 93f2b9f24, 62e25dcdd, corrects
+its account of the PR body's layout and records the re-measure on 93f2b9f24.
+Fill round 12 (same day), folding round 11's two implementation reviews:
+a6289f86e (one rule for errors, the comparison's errors-match mode, ROUND 12's
+first decision; a requirement with `self` needs a member with `self`, its
+second; test sources and the design page), 62d39c9f6 (1 golden, CHECK lines
+only) and 9af776bac (records: round 11's review record; ROUND 11's first
+decision superseded; ROUND 12's DECISION; W-235 filed; the ledger's SC-1 cites
+that round 12 moved re-pointed; gap row 60; ORCHESTRATION; the re-measure on
+62d39c9f6); the records commit after 9af776bac corrects round 11's finding count
+(ten, where 9af776bac said nine), adds round 11's review record to the plan's
+note, and records the re-measure on 9af776bac. Fill round 13 (same day), folding
+round 12's two implementation reviews: dfd22bdd6 (the errors-match mode compares
+a parameter with an error as declared, ROUND 13's DECISION; the three missing
+fork markers; test sources and the design page), 2af5604a3 (1 golden, CHECK
+lines only) and the records commit after them (round 12's review record; ROUND
+12's decisions narrowed and amended; ROUND 13's DECISION; W-235's note corrected
+and W-236 filed; the ledger's SC-1 cites that round 13 moved re-pointed; gap row
+60; ORCHESTRATION; the re-measure on 2af5604a3). Each fix is an R29(a)
+implementation decision recorded for after-the-fact veto, with its design
+citation and break condition; none reopens F-010 or the intent of a D-SC
+decision. Round 7's takes D-SC-10's own break condition on a falsifier other
+than the one it named (a template-phase `Self` breaking a positive golden at the
+commit-1 fill; the falsifier was round 6's review 1 BLOCKER-1), R29(a),
+veto-able, and round 8 keeps it as a trade, re-weighed (ROUND 8's DECISION).
+Every count below is a measurement on the container, not of record (R9):
+fork/conformance/out/scoreboard.json reads 128 / 0 / 22 over 150 until a run of
+record replaces it.
 
 THE FOUR DEFECTS (1a7cce0b2), each an implementation decision:
 
@@ -5069,7 +5076,7 @@ below), reproduced first on the toolchain stamped 0.0.0-0.dev+e7783c80e with
 the reviews' probes (sc1-review11/adv1 and adv2) and their trunk analogs on
 0bdce60a5.
 
--   **One rule for errors: the comparison's errors-match mode** (function.cpp
+-   One rule for errors: the comparison's errors-match mode** (function.cpp
     `CheckFunctionTypeMatches` and `CheckFunctionReturnTypeMatches` (:265-274),
     merge.cpp `CheckRedeclParamsMatch` (:683-689), `CheckRedeclParams`,
     `CheckRedeclParamLists` and `CheckRedeclParam` (:299-325), each with a
@@ -5106,8 +5113,16 @@ the reviews' probes (sc1-review11/adv1 and adv2) and their trunk analogs on
     `DefaultBothErrors` and `MethodForStatic` silent beside `ReturnOnly` and
     `ParamOnly`) and `fail_member_signature_error_genuine` (23 errors;
     `DefaultOnly` silent beside `ErrorsOnly`), each class against its trunk
-    analog (sc1-fix12/p/s).
--   **A requirement with `self` needs a member with `self`**
+    analog (sc1-fix12/p/s). NARROWED at fill round 13 by ROUND 13's DECISION
+    (round 12's review 1 MAJOR-1 and review 2 MAJOR-1): the mode skipped a
+    parameter with an erroneous type whole and compared one with an erroneous
+    default value by its type alone, which hid the binding form and a default
+    value's presence, so "SC-1 so reports beside an error every difference it
+    reports without one" was false (sc1-review12/adv1/p/x x1, member `ref y: i32
+    = Undefined` against `y: i32`, silent where trunk's analog reports), and "No
+    case is silent here that trunk's impl analog reports" held only for the two
+    matrices named.
+-   A requirement with `self` needs a member with `self`**
     (structural_conformance.cpp:492-501, in `CheckRequirementFunction`; round
     11's review 1 MAJOR-2). Symptom: a static member whose first parameter has
     the self type satisfied a method requirement and failed at the use `x.Get()`
@@ -5123,7 +5138,67 @@ the reviews' probes (sc1-review11/adv1 and adv2) and their trunk analogs on
     as their trunk analogs are). Design: D-SC-5(d) as amended at fill round 12.
     Break condition: Carbon gives a static member a method-call form, or stops
     calling a method as `T.Get(x)`; then the test follows. Pinned by unsatisfied
-    `fail_static_for_method` and satisfy `method_for_assoc_fn`.
+    `fail_static_for_method` and satisfy `method_for_assoc_fn`. The decision
+    rejects programs that compiled and ran before it: a static member whose
+    first parameter has the self type, called as `T.Get(x)` or not called,
+    satisfied `fn Get(self)` through fill round 11 and is rejected from fill
+    round 12 (sc1-review12/adv2/m4 c1, printing `42` on a round-11 toolchain;
+    sc1-review12/adv1/p/b r05 and r13). No design text requires accepting them:
+    p002200:354-355, "Only types with matching declarations will satisfy the
+    template constraint" (recorded at fill round 13, round 12's review 2
+    MINOR-3).
+
+ROUND 13's DECISION (folding round 12's two implementation reviews, REVIEWS
+below), reproduced first on the toolchain stamped 0.0.0-0.dev+62d39c9f6 with the
+reviews' probes (sc1-review12/adv1 and adv2) and their trunk analogs on
+0bdce60a5.
+
+-   **The errors-match mode compares a parameter with an error as declared**
+    (merge.cpp `GetDeclaredParamPattern` :222-281 and `CheckRedeclParam`
+    :360-404; function.cpp `CheckFunctionReturnTypeMatches` :265-276; fork
+    markers added at merge.cpp `CheckRedeclParamLists` :514-516 and
+    `CheckRedeclParams` :537-539 and at the function.cpp
+    `CheckFunctionTypeMatches` definition :363-364; the rule restated in the
+    comment at structural_conformance.cpp:502-516; round 12's review 1 MAJOR-1,
+    MINOR-1 and MINOR-4 and review 2 MAJOR-1 and MINOR-1). Symptom: a binding
+    form or a default value's presence beside an error went unreported
+    (sc1-review12/adv1/p/x x1, member `ref y: i32 = Undefined` against `y: i32`,
+    which trunk's analog x1.t reports; sc1-review12/adv2/p bf1 to bf5, dp1,
+    dp2), an erroneous return type matched none, and the rule's four statements
+    did not describe the code. Root cause: round 12 stopped at the first pattern
+    with an error, whose constant value is the error, so nothing of it was left
+    to compare. Decision: the rule is now: a member satisfies a requirement
+    exactly when D-SC-5(d)'s comparison holds; when it does not, nothing more is
+    reported if the comparison would hold with each erroneous type and each
+    erroneous default value of either declaration counted as equal to the type
+    or default value in its place in the other (a type with an error anywhere in
+    it is the error, and so is a default value of a parameter whose type is the
+    error); everything else, including the binding form (`var`, `ref`) of a
+    parameter with an error and whether a default value or a return type is
+    there, is compared as without the error; such a silent failure is still a
+    failure for a direct use, an overload probe and a blanket impl (W-233). The
+    mode reads a pattern with an error as declared, an imported one in the file
+    that declares it, and compares it kind by kind with its subpatterns, types
+    where neither is the error; an erroneous return type matches any return type
+    but not none. Review 1's handling of a default value on one side only
+    (counted as equal) is not taken, since both reviews' oracles keep a default
+    value's presence; review 2's records-only option is not taken, since x1 is a
+    genuine failure trunk reports. SC-1 still hides two classes, stated in the
+    rule: a difference inside a composite type with an error, and the value of a
+    default value of a parameter whose type is the error (sc1-fix13/mx: 19 of
+    review 1's 878 cases, 10 of review 2's 1094); neither has a case trunk's
+    analog reports. Design: D-SC-9 as narrowed at fill round 13; D-SC-5(d).
+    Break condition: D-SC-5(d)'s own, the comparison proving too strict for a
+    shape the §4 matrix predicts positive; or a Carbon change that gives a
+    pattern with an error a constant value other than the error, after which the
+    mode reads it the ordinary way. Pinned by
+    `fail_requirement_signature_error_genuine` (20 errors; `ParamRef`,
+    `ReturnAbsent`, `DefaultAbsent`, `DefaultRef` and `DefaultVar` reported,
+    `ParamOnly`, `ReturnOnly`, `DefaultOnly`, `DefaultBothErrors` and
+    `MethodForStatic` silent) and `fail_member_signature_error_genuine` (31
+    errors; `DefaultError`, `ParamErrorRef`, `DefaultErrorRef` and
+    `ReturnErrorAbsent` reported, `ErrorsOnly` and `DefaultOnly` silent), each
+    class against its trunk analog and its no-error twin (sc1-fix13/p/s).
 
 FILL-CAUGHT MISSES (R28(d): a reviewed prediction the fill overturned; bcaeadb98
 lists (a) to (i), 502e7861a adds (j), bc8b37290 adds (k) and (l), ff490bd48 adds
@@ -5208,11 +5283,11 @@ on the development build, are not counted. Round 10's rows are derived by hand
 from the trunk analogs but written after its development build ran the reviews'
 shapes, so they are not counted either; nor are round 11's, derived from the
 trunk impl analogs after its development build ran the reviews' shapes, nor
-round 12's, derived from the rule and the trunk analogs after its development
-build ran the reviews' shapes. No miss hides a defect: (a), (c),
-(f), (l), (m), (n) and (o) were prediction errors (the coalescing (o) shows is
-trunk's lowering, outside SC-1), (b) and (e) a cascade and a warning class now
-gone, (d), (j) and (k) test-source spellings, (g) a coverage gap now dumped
+round 12's or round 13's, derived from the rule and the trunk analogs after
+their development builds ran the reviews' shapes. No miss hides a defect: (a),
+(c), (f), (l), (m), (n) and (o) were prediction errors (the coalescing (o) shows
+is trunk's lowering, outside SC-1), (b) and (e) a cascade and a warning class
+now gone, (d), (j) and (k) test-source spellings, (g) a coverage gap now dumped
 where the claim needed a dump, and (h) and (i) design sentences amended in place
 beside their fixes.
 
@@ -5848,6 +5923,58 @@ MINOR-3 names W-137, W-136, W-135 and W-234 in the four `fail_todo_` splits.
 None is rejected. Per-finding detail is in the plan's "Landed notes (SC-1 fill
 rounds, 2026-10-13)".
 
+Round 12's own diff (a6289f86e, 62d39c9f6, 9af776bac, 395096d51) then received
+two implementation reviews, 10 findings in all: review 1, APPROVE-WITH-FIXES, 1
+MAJOR and 4 MINOR; review 2, APPROVE-WITH-FIXES, 1 MAJOR and 4 MINOR. Both
+checked round 12 on the driver stamped 0.0.0-0.dev+62d39c9f6 against trunk
+0bdce60a5 and a round-11 toolchain each relinked from 62e25dcdd's sources and
+then deleted. On the round's questions both found that no non-SC-1 caller
+changes (every caller of the six functions that gained `found_error` but
+structural_conformance.cpp:511 (:518 at the round-13 head) passes null; the full
+gate 1959 / 0; review 1's 27 probes and review 2's SemIR and LLVM IR dumps
+byte-identical, normalized, on trunk, the relink and the driver), that no case
+of the two earlier matrices is silent where trunk's analog reports or aborts,
+that the `self` amendment is a fix toward D-SC-5(d)'s criterion and p002200's
+matching declarations which narrows acceptance where no design text requires
+accepting (conformance 130 / 0 / 21 of 151), that W-235 is exact and
+upstream-confirmed, that the 34 removed CHECK lines are `@LINE` shifts only and
+the split counts as recorded, that the PR body is at 64,921 characters with all
+59 commits named, and that the hunks merge cleanly with upstream/trunk
+66a250ad9. Both found, MAJOR-1 of both, that the errors-match mode compared a
+parameter with an error by its type alone, leaving its binding form and whether
+a default value is there uncompared: review 1's x1, member `ref y: i32 =
+Undefined` against `y: i32`, is silent where trunk's analog reports, and the
+rule's statements said every other difference is reported. Review 1's extended
+matrix (gen3.py, 878 cases with mechanical twins) measured 177 cases hidden by
+the rule, 5 of them reported by trunk; review 2's (gen.py, 1094 cases) 143, 42
+newly silent since round 11. Review 1's MINORs: MINOR-1 the presence classes and
+composite types unstated; MINOR-2 W-235's related note naming the impl member's
+default value as the trigger of trunk's thunk abort, which is the interface
+member's; MINOR-3 the D-SC-5(d) amendment undated and the page's "same notion of
+same signature" sentence no longer true; MINOR-4 three functions that gained
+`found_error` without a fork marker. Review 2's MINORs: MINOR-1 the same
+markers; MINOR-2 the same sentence, the amendments undated and the four
+statements not identical; MINOR-3 the amendment's record omitting the programs
+it newly rejects (c1 ran on round 11); MINOR-4 the same trigger and the split
+counts' wording. Review 1's probes are sc1-review12/adv1 (p/x, p/h, p/g, p/sp,
+p/tp, p/imp, p/b, p/n, p/nimp, p/w235; mx1, mx2, mx3); review 2's are
+sc1-review12/adv2 (x; p; m4; th; splits; up; r1m, r2m), with a check of 138
+cites. The round counts 2 MAJOR, MAJOR-1 the one finding of both reviews, and no
+BLOCKER. Fill round 13 folds all 10, each reproduced first on the toolchain
+stamped 0.0.0-0.dev+62d39c9f6. Dispositions: both MAJOR-1s are ROUND 13's
+DECISION, in review 2's option (b), which includes review 1's fix for the
+binding form, a default value's presence compared rather than counted as equal;
+review 1's MINOR-1 is taken by the code for the return type's and the default
+value's presence and stated for composite types; review 1's MINOR-2 and review
+2's MINOR-4 correct W-235's note and the plan's round-12 note, file the abort as
+W-236 and reword the counts; review 1's MINOR-3 and review 2's MINOR-2 date both
+amendments on the design page, qualify its sentence and state the rule
+identically in the four places, the W-233 clause included; review 1's MINOR-4
+and review 2's MINOR-1 add the three markers; review 2's MINOR-3 records the
+programs the `self` amendment rejects in D-SC-5(d) and ROUND 12's second
+decision. None is rejected. Per-finding detail is in the plan's "Landed notes
+(SC-1 fill rounds, 2026-10-13)".
+
 MEASURED, on the container only. Round 1 (the toolchain built from 1a7cce0b2's
 sources): autoupdate over the 18 goldens rewrote all 18; the gate then ran 1958
 tests, 1955 passing and 3 reporting "Autoupdate would make changes"
@@ -6048,15 +6175,15 @@ the stack addresses of the nine sem_ir/mangler.cpp:185 aborts (round 6's v01 and
 vt01b; round 7's g07, g14, g15, g07t, g07t2, g14t and g15t); the 64 runs of
 round 8's reviews and round 9 give 20 clean, 42 check errors and the 2
 trunk-spelling aborts again (sc1-records9 rec_*). Round 10 (the toolchain built
-from the round-10 sources before the commit,
-stamped 0.0.0-0.dev+ae807c7e8.dirty, the uncommitted edits being exactly
-3ae639811's): autoupdate over the 19 SC-1 goldens to a fixpoint from exactly
-3ae639811's test sources (pass 1 rewrote the 3 with new source lines, pass 2
-none; the result is 001cdb4c7); gate 1959 passed, 0 failed, exit 0, 64 s, no `!`
-or `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151,
-bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 129.4 s; the full check-phase diagnostics
-of 2172 probe files (round 9's 2047, round 9's reviews' 108 and round 10's 17)
-against the round-9 toolchain rebuilt from ae807c7e8's toolchain sources
+from the round-10 sources before the commit, stamped
+0.0.0-0.dev+ae807c7e8.dirty, the uncommitted edits being exactly 3ae639811's):
+autoupdate over the 19 SC-1 goldens to a fixpoint from exactly 3ae639811's test
+sources (pass 1 rewrote the 3 with new source lines, pass 2 none; the result is
+001cdb4c7); gate 1959 passed, 0 failed, exit 0, 64 s, no `!` or `?` mark;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56, 129.4 s; the full check-phase diagnostics of 2172 probe
+files (round 9's 2047, round 9's reviews' 108 and round 10's 17) against the
+round-9 toolchain rebuilt from ae807c7e8's toolchain sources
 (sc1-fix10/r9-install) are identical for 2065 and differ for 79 aborts only in
 the trace's program-arguments line, for 13 only by added errors (the genuine
 failures MAJOR-1 named: round 9's review 1's a01, a03 to a06 and e03, review 2's
@@ -6127,22 +6254,21 @@ reported across the import. The comparison was first run on a development build
 whose merge.cpp had an `#include <tuple>`, removed before the commit, which
 moved the abort at merge.cpp:391 to :393 in 7 files and changed nothing else.
 Round 11's commits: 2ee29f311 (fixes, test sources, the design page), e7783c80e
-(goldens), fa9038828 (records), 93f2b9f24 (records) and the records commit
-after it. Re-run by 93f2b9f24 on fa9038828 with the toolchain stamped
-0.0.0-0.dev+e7783c80e (no
-toolchain or test source differs from e7783c80e): gate 1959 passed, 0 failed,
-exit 0, 70 s; conformance PASS 130, every failure class 0, SKIP 21 of 151,
-bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 97.3 s, the same two programs moving
-(sc1-records11/conf, in a private cache); `runner.py --self-test` OK (151
-programs, 56 bullets); `git merge-tree` of fa9038828 against trunk 3eb7f36f0
-conflicts in fork/ORCHESTRATION.md only. 93f2b9f24 also re-ran on trunk
-0bdce60a5 the analogs that round 11's records cite: each class of the two new
-splits (sc1-fix11/p/s: `tr_ReturnOnly` and `tr_ParamOnly` give the interface's
-error alone and `tm_ErrorsOnly` the impl member's two, while each other class
-adds the thunk's report at the impl, two errors for `tr_NoSelf` and
-`tm_ParamErrorNoSelf` and one for the rest), z1t to z9t (each the error count of
-its fork probe on the round-11 build), e1t and e2t (the interface's error alone,
-and clean, where SC-1 reports e1 and e2), W-233's o01, o02 and k01
+(goldens), fa9038828 (records), 93f2b9f24 (records) and the records commit after
+it. Re-run by 93f2b9f24 on fa9038828 with the toolchain stamped
+0.0.0-0.dev+e7783c80e (no toolchain or test source differs from e7783c80e): gate
+1959 passed, 0 failed, exit 0, 70 s; conformance PASS 130, every failure class
+0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 97.3 s, the same two
+programs moving (sc1-records11/conf, in a private cache); `runner.py
+--self-test` OK (151 programs, 56 bullets); `git merge-tree` of fa9038828
+against trunk 3eb7f36f0 conflicts in fork/ORCHESTRATION.md only. 93f2b9f24 also
+re-ran on trunk 0bdce60a5 the analogs that round 11's records cite: each class
+of the two new splits (sc1-fix11/p/s: `tr_ReturnOnly` and `tr_ParamOnly` give
+the interface's error alone and `tm_ErrorsOnly` the impl member's two, while
+each other class adds the thunk's report at the impl, two errors for `tr_NoSelf`
+and `tm_ParamErrorNoSelf` and one for the rest), z1t to z9t (each the error
+count of its fork probe on the round-11 build), e1t and e2t (the interface's
+error alone, and clean, where SC-1 reports e1 and e2), W-233's o01, o02 and k01
 (`OverloadNoMatch`, `OverloadNoMatch`, `MissingImplInMemberAccess` after the
 error) and the cycle's o04t and c1t (the cycle, then
 `MissingImplInMemberAccess`), each as recorded. Re-run on 93f2b9f24 for the
@@ -6166,24 +6292,35 @@ files that still exist (1547 of 2442; sc1-review5, sc1-review6, sc1-fix5 and
 sc1-fix6 are gone from the scratch area), 1538 give round 11's results, 7 differ
 only in the line of an upstream abort (merge.cpp:391 now :425) and 2 only by
 removed lines (sc1-review10/adv1 b01, b02, their spurious mismatch gone); the 19
-import sets that still exist give round 11's results for all 31 runs; round
-11's reviews' 1989 probe files and round 12's own abort on no SC-1 path (the 60
-that abort are trunk spellings on upstream's paths), and the two reviews'
-matrices (330 and 275 cases) have no case silent where trunk's impl analog
-reports. Round 12's commits: a6289f86e (fixes, test sources, the design page),
-62d39c9f6 (goldens) and 9af776bac (records), which re-ran the gate after its
-test comment's edit (1959 passed, 0 failed, exit 0, 54 s), and the records
-commit after it. Re-run on 9af776bac for the records commit after it with that
+import sets that still exist give round 11's results for all 31 runs; round 11's
+reviews' 1989 probe files and round 12's own abort on no SC-1 path (the 60 that
+abort are trunk spellings on upstream's paths), and the two reviews' matrices
+(330 and 275 cases) have no case silent where trunk's impl analog reports. Round
+12's commits: a6289f86e (fixes, test sources, the design page), 62d39c9f6
+(goldens) and 9af776bac (records), which re-ran the gate after its test
+comment's edit (1959 passed, 0 failed, exit 0, 54 s), and the records commit
+after it. Re-run on 9af776bac for the records commit after it with that
 toolchain (no toolchain source differs from 62d39c9f6, and no test source but
 that comment): gate 1959 passed, 0 failed, exit 0, 78 s, no `!` or `?` mark;
 conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
 FAIL, 7 SKIP of 56, 114.4 s, the same two programs moving (sc1-records12/conf,
 in a private cache); `runner.py --self-test` OK (151 programs, 56 bullets); `git
 merge-tree` of 9af776bac against trunk 3eb7f36f0 conflicts in
-fork/ORCHESTRATION.md only. Against
-fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
-exactly two programs move in every run: generics/structural_conformance.carbon
-SKIP to PASS (`42` then `7`) and the new
+fork/ORCHESTRATION.md only. Round 13 (the toolchain built from the round-13
+sources before the commit, stamped 0.0.0-0.dev+395096d51.dirty, the uncommitted
+edits being exactly dfd22bdd6's): autoupdate of the unsatisfied golden from
+dfd22bdd6's test sources (185 CHECK lines added, 52 removed, each removed line
+an `@LINE` offset; the result is 2af5604a3); gate 1959 passed, 0 failed, exit 0;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56. Re-run on the toolchain rebuilt from dfd22bdd6 (stamped
+0.0.0-0.dev+dfd22bdd6): autoupdate over the 19 SC-1 goldens gave the same golden
+and a second pass changed nothing; gate 1959 passed, 0 failed, exit 0, no `!` or
+`?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets
+49 PASS, 0 FAIL, 7 SKIP of 56, the same two programs moving (sc1-fix13/conf2, in
+a private cache); the matrices and probes as in the plan's round-13 note.
+Against fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run
+37402970811) exactly two programs move in every run:
+generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
 interop/cpp_structural_conformance.carbon PASS (`7` then `0`), plan §5's 130 / 0
 / 21 over 151, EXPECTED and not of record.
 
@@ -6414,29 +6551,28 @@ filed by it. That records commit is fa9038828. The records commit after
 fa9038828: fa9038828 named at the head of this entry and of the plan's note, in
 MEASURED, in RECORDS, in ORCHESTRATION's status paragraph and Branches row and
 in W-027's notes; 444ccbafe named in the plan's round-10 commit list; review 1's
-cycle probe added to round 10's review record; the
-PR body's final layout added to review 2's MAJOR-2 disposition, here and in the
-plan; the re-measure and the trunk re-runs on fa9038828 here and in the plan. No
-residue is filed by it. That records commit is 93f2b9f24. The records commit
-after 93f2b9f24: 93f2b9f24 named at the head of this entry and of the plan's
-note, in MEASURED, in RECORDS, in ORCHESTRATION's status paragraph and Branches
-row and in W-027's notes; its account of the PR body's layout corrected in
-review 2's MAJOR-2 disposition, here and in the plan, and in ORCHESTRATION's
-status paragraph (the NOT run paragraph stays in the body, which fits under the
-limit with it); the re-measure on 93f2b9f24 here and in the plan. No residue is
-filed by it. That records commit is 62e25dcdd. Round 12's fixes commit
-a6289f86e: the toolchain change (the
-errors-match mode, the `self` test, both parallel functions deleted), the new
-split shapes and comments, the four `fail_todo_` comments naming their W-ids,
-the design page's `self` sentence and D-SC-9 sentence. The records commit after
-62d39c9f6: D-SC-5(d) (a requirement with `self` needs a member with `self`) and
-D-SC-9 (one rule, its divergence class), round 11's first decision superseded,
-round 11's review record, round 12's dispositions, decisions and expectations,
-the §4 rows for round 12, the re-measure and the round-12 summary in the plan;
-this entry (its head, ROUND 11's first decision superseded, ROUND 12's
-DECISION, the R16(d) sentence of FILL-CAUGHT MISSES, round 11's review record,
-MEASURED); ORCHESTRATION's status paragraph and Branches row (twelve fill
-rounds, the round-12 toolchain change unreviewed); gap row 60 (twelve fill
+cycle probe added to round 10's review record; the PR body's final layout added
+to review 2's MAJOR-2 disposition, here and in the plan; the re-measure and the
+trunk re-runs on fa9038828 here and in the plan. No residue is filed by it. That
+records commit is 93f2b9f24. The records commit after 93f2b9f24: 93f2b9f24 named
+at the head of this entry and of the plan's note, in MEASURED, in RECORDS, in
+ORCHESTRATION's status paragraph and Branches row and in W-027's notes; its
+account of the PR body's layout corrected in review 2's MAJOR-2 disposition,
+here and in the plan, and in ORCHESTRATION's status paragraph (the NOT run
+paragraph stays in the body, which fits under the limit with it); the re-measure
+on 93f2b9f24 here and in the plan. No residue is filed by it. That records
+commit is 62e25dcdd. Round 12's fixes commit a6289f86e: the toolchain change
+(the errors-match mode, the `self` test, both parallel functions deleted), the
+new split shapes and comments, the four `fail_todo_` comments naming their
+W-ids, the design page's `self` sentence and D-SC-9 sentence. The records commit
+after 62d39c9f6: D-SC-5(d) (a requirement with `self` needs a member with
+`self`) and D-SC-9 (one rule, its divergence class), round 11's first decision
+superseded, round 11's review record, round 12's dispositions, decisions and
+expectations, the §4 rows for round 12, the re-measure and the round-12 summary
+in the plan; this entry (its head, ROUND 11's first decision superseded, ROUND
+12's DECISION, the R16(d) sentence of FILL-CAUGHT MISSES, round 11's review
+record, MEASURED); ORCHESTRATION's status paragraph and Branches row (twelve
+fill rounds, the round-12 toolchain change unreviewed); gap row 60 (twelve fill
 rounds); W-027's title, evidence and notes (its structural_conformance.cpp list
 re-pointed at the round-12 head, which no records commit had done since round
 10); the cites of W-135, W-136, W-138, W-139, W-141, W-143, W-151, W-168 and
@@ -6447,14 +6583,33 @@ That records commit is 9af776bac. The records commit after 9af776bac: 9af776bac
 named at the head of this entry and of the plan's note, in MEASURED, in RECORDS,
 in ORCHESTRATION's status paragraph and Branches row and in W-027's notes, and
 62e25dcdd named at the head of this entry and of the plan's note, in RECORDS and
-in ORCHESTRATION's status paragraph; round 11's review
-counted as 10 findings, where 9af776bac counted 9 (the one finding of both
-reviews once, as no earlier round's count does), here, in the plan, in
-ORCHESTRATION and in W-027's notes; round 11's review record written in the
-plan's note, which 9af776bac listed but had not written there (the plan held
-only the per-finding dispositions); review 2's `d` probes listed as its
-directory shows; the re-measure on 9af776bac here and in the plan. No residue is
-filed by it.
+in ORCHESTRATION's status paragraph; round 11's review counted as 10 findings,
+where 9af776bac counted 9 (the one finding of both reviews once, as no earlier
+round's count does), here, in the plan, in ORCHESTRATION and in W-027's notes;
+round 11's review record written in the plan's note, which 9af776bac listed but
+had not written there (the plan held only the per-finding dispositions); review
+2's `d` probes listed as its directory shows; the re-measure on 9af776bac here
+and in the plan. No residue is filed by it. Round 13's fixes commit dfd22bdd6:
+the toolchain change (the errors-match mode reading a pattern with an error as
+declared, `GetDeclaredParamPattern`, an erroneous return type no longer matching
+none, the three fork markers), the rule restated in the comment, the new and
+renamed split classes and their comments, and the design page (the amendments
+dated, the "same notion" sentence qualified, the rule restated with its W-233
+clause). The records commit after 2af5604a3: D-SC-5(d) (the programs the `self`
+amendment rejects) and D-SC-9 (the rule narrowed, its divergence class, the
+cites at the round-13 head); round 12's review record, round 13's dispositions,
+decision and expectations, the §4 rows for round 13, the re-measure and the
+round-13 summary in the plan, and three round-12 statements corrected there (the
+thunk abort's trigger, the fork markers, the split counts' wording); this entry
+(its head, ROUND 12's decisions narrowed and amended, ROUND 13's DECISION, the
+R16(d) sentence of FILL-CAUGHT MISSES, round 12's review record, MEASURED);
+ORCHESTRATION's status paragraph and Branches row (thirteen fill rounds, the
+round-13 toolchain change unreviewed); gap row 60 (thirteen fill rounds);
+W-027's notes; the cites of W-138, W-139, W-143, W-234 and W-235 that round 13
+moved, re-pointed; W-235's note corrected; W-236 filed (trunk's thunk aborts on
+an interface member's default value when a thunk is built); the
+template_constraint_require golden's comment cite of D-SC-6's branch
+(structural_conformance.cpp:569).
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

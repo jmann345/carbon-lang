@@ -2376,8 +2376,9 @@ mechanically at the head: 2ee29f311 (fixes, test sources, the design page),
 e7783c80e (2 goldens, CHECK lines only) and fa9038828 (records), which
 completes round 10's review record; it measured the same totals on the toolchain
 built from its sources, again on the toolchain stamped 0.0.0-0.dev+e7783c80e
-(below) and again on fa9038828 for the records commit after it, which checks
-round 11's records against the head. Not of record
+(below), again on fa9038828 for 93f2b9f24, which checks round 11's records
+against the head, and again on 93f2b9f24 for the records commit after it. Not of
+record
 until fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
@@ -3917,11 +3918,12 @@ rebuilt round-9 toolchain and their trunk analogs on 0bdce60a5:
     PR body's Review record and Verification paragraphs move verbatim into the
     PR's first comment, as PR 58 did, the body naming it in one line; both are
     re-measured with len() after this round's additions (outside the
-    repository). The records commit after fa9038828 keeps in the body a
+    repository). The records commits after fa9038828 keep in the body a
     per-round summary of the review record and the latest gate and conformance
-    lines, as the description's layout requires, and moves the NOT run
-    paragraph to that comment beside them, each file measured under the limit
-    with len().
+    lines, as the description's layout requires, with the NOT run paragraph,
+    which the layout moves to the comment only when the body would exceed
+    65,000 characters, each file measured with len() (corrected by the records
+    commit after 93f2b9f24, which had said the paragraph moved).
 -   MINOR-1 (review 1): reproduced (tp01, tp10 and tp11 abort at merge.cpp:391
     on 001cdb4c7; tp08 is a plain mismatch and tp09 checks clean). Taken:
     `HasTupleParamPattern` looks through a `DefaultValuePattern` as through
@@ -4282,20 +4284,24 @@ reported across the import. The comparison was first run on a development build
 whose merge.cpp had an `#include <tuple>`, removed before the commit, which
 moved the abort at merge.cpp:391 to :393 in 7 files and changed nothing else.
 Round 11's commits: 2ee29f311 (fixes, test sources, the design page), e7783c80e
-(goldens), fa9038828 (records) and the records commit after it. Re-run by that
-records commit on fa9038828 with the toolchain stamped 0.0.0-0.dev+e7783c80e (no
+(goldens), fa9038828 (records), 93f2b9f24 (records) and the records commit
+after it. Re-run by 93f2b9f24 on fa9038828 with the toolchain stamped
+0.0.0-0.dev+e7783c80e (no
 toolchain or test source differs from e7783c80e): gate 1959 passed, 0 failed,
 exit 0, 70 s; conformance PASS 130, every failure class 0, SKIP 21 of 151,
 bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 97.3 s, the same two programs moving
 (sc1-records11/conf, in a private cache); `runner.py --self-test` OK (151
 programs, 56 bullets); `git merge-tree` of fa9038828 against trunk 3eb7f36f0
-conflicts in fork/ORCHESTRATION.md only. On trunk 0bdce60a5 the same commit
+conflicts in fork/ORCHESTRATION.md only. On trunk 0bdce60a5 93f2b9f24 also
 re-ran the analogs that round 11's records cite, each as recorded: the two new
 splits' classes (sc1-fix11/p/s: `tr_ReturnOnly`, `tr_ParamOnly` and
 `tm_ErrorsOnly` give their declarations' errors alone, each other class the
 thunk's report at the impl too), z1t to z9t (each the error count of its fork
 probe), e1t (the interface's error alone) and e2t (clean), W-233's o01, o02 and
-k01, and the cycle's o04t and c1t.
+k01, and the cycle's o04t and c1t. Re-run on 93f2b9f24 for the records commit
+after it with that toolchain: gate 1959 passed, 0 failed, exit 0, 69 s;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56, 53.9 s, the same two programs moving.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

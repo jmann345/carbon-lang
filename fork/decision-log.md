@@ -4342,12 +4342,14 @@ design page), e7783c80e (2 goldens, CHECK lines only) and fa9038828 (records:
 round 10's review record; ROUND 9's and ROUND 10's decisions corrected and ROUND
 10's break condition taken; ROUND 11's DECISION; the ledger's SC-1 cites checked
 mechanically at the head and re-pointed; W-233 and W-234 amended; gap row 60;
-ORCHESTRATION; the re-measure on e7783c80e); the records commit after fa9038828
-checks round 11's records against the head (the split error counts, the trunk
-analogs of the two new splits, of the evaluation-mode divergence and of W-233,
-the ledger's SC-1 cites), keeps the PR body under GitHub's description limit
-with a summary of the review record and the verification, and records the
-re-measure on fa9038828. Each fix is an R29(a)
+ORCHESTRATION; the re-measure on e7783c80e); 93f2b9f24, the records commit
+after fa9038828, checks round 11's records against the head (the split error
+counts, the trunk analogs of the two new splits, of the evaluation-mode
+divergence and of W-233, the ledger's SC-1 cites), keeps the PR body under
+GitHub's description limit with a summary of the review record and the
+verification, and records the re-measure on fa9038828; the records commit after
+93f2b9f24 corrects its account of the PR body's layout and records the
+re-measure on 93f2b9f24. Each fix is an R29(a)
 implementation decision
 recorded for after-the-fact veto, with its design citation and break condition;
 none reopens F-010 or the intent of a D-SC decision. Round 7's takes D-SC-10's
@@ -5691,11 +5693,13 @@ review 2's rule refined to compare the parameters pair by pair (z1, z2 against
 z1t, z2t) and review 1's question on the governing analog answered by the impl
 analog, pinned by two new splits of the unsatisfied golden; review 2's MAJOR-2
 moves the PR body's Review record and Verification paragraphs verbatim into its
-first comment, as PR 58 did (outside the repository), and the records commit
-after fa9038828 keeps in the body a per-round summary of the review record and
+first comment, as PR 58 did (outside the repository), and the records commits
+after fa9038828 keep in the body a per-round summary of the review record and
 the latest gate and conformance lines, as the description's layout requires,
-moving the NOT run paragraph to that comment beside them, each file measured
-under the limit with len(); review 1's MINOR-1 is
+with the NOT run paragraph, which the layout moves to the comment only when the
+body would exceed 65,000 characters, each file measured with len() (corrected by
+the records commit after 93f2b9f24, which had said the paragraph moved); review
+1's MINOR-1 is
 ROUND 11's second decision, W-234 amended; review 2's MINOR-1 adds the
 tuple-pattern TODO to the design page; review 1's MINOR-2 re-points the listed
 cites and, by a mechanical check of all 125 file:line cites in W-027, W-028,
@@ -5990,14 +5994,15 @@ reported across the import. The comparison was first run on a development build
 whose merge.cpp had an `#include <tuple>`, removed before the commit, which
 moved the abort at merge.cpp:391 to :393 in 7 files and changed nothing else.
 Round 11's commits: 2ee29f311 (fixes, test sources, the design page), e7783c80e
-(goldens), fa9038828 (records) and the records commit after it. Re-run by that
-records commit on fa9038828 with the toolchain stamped 0.0.0-0.dev+e7783c80e (no
+(goldens), fa9038828 (records), 93f2b9f24 (records) and the records commit
+after it. Re-run by 93f2b9f24 on fa9038828 with the toolchain stamped
+0.0.0-0.dev+e7783c80e (no
 toolchain or test source differs from e7783c80e): gate 1959 passed, 0 failed,
 exit 0, 70 s; conformance PASS 130, every failure class 0, SKIP 21 of 151,
 bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 97.3 s, the same two programs moving
 (sc1-records11/conf, in a private cache); `runner.py --self-test` OK (151
 programs, 56 bullets); `git merge-tree` of fa9038828 against trunk 3eb7f36f0
-conflicts in fork/ORCHESTRATION.md only. The same commit re-ran on trunk
+conflicts in fork/ORCHESTRATION.md only. 93f2b9f24 also re-ran on trunk
 0bdce60a5 the analogs that round 11's records cite: each class of the two new
 splits (sc1-fix11/p/s: `tr_ReturnOnly` and `tr_ParamOnly` give the interface's
 error alone and `tm_ErrorsOnly` the impl member's two, while each other class
@@ -6007,7 +6012,11 @@ its fork probe on the round-11 build), e1t and e2t (the interface's error alone,
 and clean, where SC-1 reports e1 and e2), W-233's o01, o02 and k01
 (`OverloadNoMatch`, `OverloadNoMatch`, `MissingImplInMemberAccess` after the
 error) and the cycle's o04t and c1t (the cycle, then
-`MissingImplInMemberAccess`), each as recorded. Against
+`MissingImplInMemberAccess`), each as recorded. Re-run on 93f2b9f24 for the
+records commit after it with that toolchain: gate 1959 passed, 0 failed, exit 0,
+69 s, no `!` or `?` mark; conformance PASS 130, every failure class 0, SKIP 21
+of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 53.9 s, the same two programs
+moving (sc1-records11/conf_head). Against
 fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
 exactly two programs move in every run: generics/structural_conformance.carbon
 SKIP to PASS (`42` then `7`) and the new
@@ -6244,7 +6253,14 @@ in W-027's notes; 444ccbafe named in the plan's round-10 commit list; review 1's
 cycle probe added to round 10's review record; the
 PR body's final layout added to review 2's MAJOR-2 disposition, here and in the
 plan; the re-measure and the trunk re-runs on fa9038828 here and in the plan. No
-residue is filed by it.
+residue is filed by it. That records commit is 93f2b9f24. The records commit
+after 93f2b9f24: 93f2b9f24 named at the head of this entry and of the plan's
+note, in MEASURED, in RECORDS, in ORCHESTRATION's status paragraph and Branches
+row and in W-027's notes; its account of the PR body's layout corrected in
+review 2's MAJOR-2 disposition, here and in the plan, and in ORCHESTRATION's
+status paragraph (the NOT run paragraph stays in the body, which fits under the
+limit with it); the re-measure on 93f2b9f24 here and in the plan. No residue is
+filed by it.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

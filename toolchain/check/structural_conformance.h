@@ -95,9 +95,9 @@ auto MakeStructuralRequirementName(Context& context, SemIR::LocId loc_id,
 // Returns the requirement `fn` that values of `type_id` name or hold: a
 // `StructuralRequirementType`, the `FunctionType` of a requirement, a tuple,
 // struct or array type with such an element type, or such a type under
-// `const`. Otherwise returns `None`. A class, adapter or `MaybeUnformed` type
-// with such a field is not looked into: a value of it is not converted field
-// by field.
+// `const`. Otherwise returns `None`. A class with such a field, an adapter of
+// such a type and `MaybeUnformed` of it are not looked into: a value of one is
+// not converted element by element.
 auto GetStructuralRequirementOfType(Context& context, SemIR::TypeId type_id)
     -> SemIR::FunctionId;
 

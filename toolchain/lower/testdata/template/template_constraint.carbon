@@ -299,6 +299,51 @@ fn Run() -> i32 {
          Pass(&w.f) + C.(w.f)();
 }
 
+// --- require_self_argument.carbon
+library "[[@TEST_NAME]]";
+
+// A `require` whose facet type takes `Self` as an argument, accepted since fill
+// round 7's checked-phase `Self`, adds nothing to lowering: the calls are to
+// the type's own methods and to its impl's (D-SC-10 as amended at fill round 8,
+// round 7's review 2 finding MAJOR-2; the check split of the same name in
+// named_constraint/template_constraint_require.carbon).
+interface Conv(T: type) {
+  fn Do(self) -> T;
+}
+
+template constraint Has(X: type) {
+  fn Get(self) -> X;
+}
+
+template constraint ConvSelf {
+  require Self impls Conv(Self);
+  fn V(self) -> i32;
+}
+
+template constraint HasSelf {
+  require impls Has(Self);
+  fn V(self) -> i32;
+}
+
+class C {
+  var v: i32;
+  fn Get(self) -> C { return {.v = self.v + 1}; }
+  fn V(self) -> i32 { return self.v; }
+}
+
+impl C as Conv(C) {
+  fn Do(self) -> C { return {.v = self.v + 2}; }
+}
+
+fn CallDo[template T: ConvSelf](x: T) -> i32 { return x.(Conv(T).Do)().V(); }
+
+fn CallGet[template T: HasSelf](x: T) -> i32 { return x.Get().V(); }
+
+fn Run() -> i32 {
+  let c: C = {.v = 1};
+  return CallDo(c) + CallGet(c);
+}
+
 // CHECK:STDOUT: ; ---
 // CHECK:STDOUT: ; ModuleID = 'call_method.carbon'
 // CHECK:STDOUT: source_filename = "call_method.carbon"

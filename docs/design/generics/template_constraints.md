@@ -511,35 +511,41 @@ constraint's facet type (the satisfaction check) and the requirement's name is
 then looked up in the base type, the semantics
 [proposal 2200](/proposals/p002200-template-generics.md#template-constraints)
 states ("`C.F` and `HasF.F` refer to the same function"); see
-[Structural witnesses](#structural-witnesses). A requirement is never itself the
-callee: `HasCount.Count()` names it with no type to satisfy it and is rejected
-with `StructuralRequirementUsed`, as is a call through a runtime facet value or
-through a self whose lookup finds only the requirement (D-SC-4, as landed at the
-2026-10-13 fill rounds). Named with no such type, as `HasCount.Count`, the
-requirement has a type of its own that does not depend on the constraint's
-`Self`, as an interface's `I.F` names an associated entity of a concrete type
-(D-SC-20, as amended at fill round 5). That type can be named with `typeof` and
-used as a type, but it has no values: passing `HasCount.Count` to a function,
-putting it in a tuple or struct, naming it as a statement, binding a value
-parameter of its `typeof`, or doing any of these in a template instantiated with
-a facet type, is the same error, as is a bound method of a requirement found
-through a checked generic binding. An object of that type, such as a class
-field, exists without being a value: it is destroyed with its enclosing object,
-and binding it to a `ref` parameter, calling a `ref self` method on it, or
-reaching it through a pointer reads no value and is accepted, while reading it
-as a value is the same error, and so is reading a value of a tuple, struct or
-array that holds it, or of the type under `const`. A class value with such a
-field is accepted, but a field accessed through a class value is read as a
-value, so a field that is or holds the type is reached through a reference to
-the object, in a `ref self` method rather than a value one. A `var` parameter
-of the type can be declared, and each call, which initializes it from a value,
-is the same error. A value typed by a generic parameter that is bound to that
-type is an empty value and is accepted; in a template it is accepted only where
-its conversion records no action, such as a `let` of the parameter's type,
-while a call argument or a `var` initializer of it is refused when the template
-is instantiated (D-SC-20, as amended at fill rounds 6 and 7). Named through a
-type that satisfies it, as `C.(HasCount.Count)`, it is that type's own function
-and is a value like any other (D-SC-20, as amended at fill round 4).
+[Structural witnesses](#structural-witnesses). As landed, an associated-function
+requirement is not yet redirected through a facet that is symbolic because the
+constraint's arguments name a checked generic's parameter (`C.(Has(T).N)()`) or
+because the constraint is declared in another constraint's or an interface's
+body (`C.(Outer.Inner.N)()`): the compound access is a TODO, and `(C as
+Has(T)).N` keeps the requirement; a method requirement reached through a value,
+`c.(Has(T).Get)()`, is redirected (fill round 8). A requirement is never itself
+the callee: `HasCount.Count()` names it with no type to satisfy it and is
+rejected with `StructuralRequirementUsed`, as is a call through a runtime facet
+value or through a self whose lookup finds only the requirement (D-SC-4, as
+landed at the 2026-10-13 fill rounds). Named with no such type, as
+`HasCount.Count`, the requirement has a type of its own that does not depend on
+the constraint's `Self`, as an interface's `I.F` names an associated entity of a
+concrete type (D-SC-20, as amended at fill round 5). That type can be named with
+`typeof` and used as a type, but it has no values: passing `HasCount.Count` to a
+function, putting it in a tuple or struct, naming it as a statement, binding a
+value parameter of its `typeof`, or doing any of these in a template
+instantiated with a facet type, is the same error, as is a bound method of a
+requirement found through a checked generic binding. An object of that type,
+such as a class field, exists without being a value: it is destroyed with its
+enclosing object, and binding it to a `ref` parameter, calling a `ref self`
+method on it, or reaching it through a pointer reads no value and is accepted,
+while reading it as a value is the same error, and so is reading a value of a
+tuple, struct or array that holds it, or of the type under `const`. A class
+value with such a field is accepted, but a field accessed through a class value
+is read as a value, so a field that is or holds the type is reached through a
+reference to the object, in a `ref self` method rather than a value one. A `var`
+parameter of the type can be declared, and each call, which initializes it from
+a value, is the same error. A value typed by a generic parameter that is bound
+to that type is an empty value and is accepted; in a template it is accepted
+only where its conversion records no action, such as a `let` of the parameter's
+type, while a call argument or a `var` initializer of it is refused when the
+template is instantiated (D-SC-20, as amended at fill rounds 6 and 7). Named
+through a type that satisfies it, as `C.(HasCount.Count)`, it is that type's own
+function and is a value like any other (D-SC-20, as amended at fill round 4).
 
 ## Satisfaction
 
@@ -599,13 +605,26 @@ not deferred to satisfaction checks. Definition-time checking produces, for each
 requirement, the residue of checks that depend on the concrete type; those are
 what [probe-mode evaluation](#probe-mode-evaluation) replays.
 
-As landed (SC-1, D-SC-10 as amended at fill round 7): `Self` in a template
-constraint is a checked-phase binding, as in a `constraint`, so a requirement's
-signature is checked at the definition as an interface's is, and one that names
-another requirement through `Self` (`fn M() -> typeof(Self.N)*`) is rejected
-there, as `Self.N` is in an interface being defined. Deferring the checks that
-involve `Self`, as this section describes, needs a template-phase `Self`, which
-SC-B2 takes up with validity blocks.
+As landed (SC-1, D-SC-10 as amended at fill rounds 7 and 8): `Self` in a
+template constraint is a checked-phase binding, as in a `constraint`, so a
+requirement's signature is checked at the definition as an interface member's
+is. Three kinds of signature that this section makes valid are therefore
+rejected or unsatisfiable (W-169). A member access into `Self`, of a
+requirement or of an alias (`fn M(p: typeof(Self.N)*)`, `-> Self.A`), is
+rejected as `Self.N` is in an interface being defined. A use of `Self` that
+must satisfy a facet type the constraint does not itself require (`Box(Self)`
+for `class Box(T: J)`, `Self.(J.Elem)`, `Core.Slice(Self)`,
+`Core.Optional(Self)`) is rejected as not satisfying it. A requirement named
+unqualified in another's signature (`fn M(p: typeof(N)*)`) is accepted, but it
+names the requirement's own function for the satisfying type, which no member's
+type is, so no type satisfies the constraint. When the facet type that `Self`
+must satisfy is nominal, requiring it (`require impls J`) lets the signature
+name it; requiring a template constraint does not, since a checked-symbolic self
+never satisfies one (D-SC-6). A `require` whose facet type takes `Self` as an
+argument (`require Self impls Conv(Self)`, `require impls Has(Self)`), which a
+template-phase `Self` rejected, is accepted. Deferring the checks that involve
+`Self`, as this section describes, needs a template-phase `Self`, which SC-B2
+takes up with validity blocks (W-028).
 
 ### Probe-mode evaluation
 
@@ -899,6 +918,11 @@ these land:
     (`toolchain/lower/handle.cpp`), and operators and conversions on
     template-dependent values are tracked by the templates workstream (W7, per
     [fork/gap-analysis.md](/fork/gap-analysis.md)).
+-   **A template-phase `Self` is SC-B2's prerequisite (W-028).** SC-1 checks a
+    template constraint's body with a checked-phase `Self` (D-SC-10 as amended
+    at fill round 7), so the deferral of the checks that involve `Self`
+    ([Definition-time checking](#definition-time-checking)) is not
+    implemented; the requirement signatures it would admit are filed as W-169.
 -   **Probe-mode evaluation is a new subsystem.** Checking today emits
     diagnostics eagerly; the capture-instead-of-emit replay that probes require
     generalizes an existing non-diagnosing lookup pattern but does not exist

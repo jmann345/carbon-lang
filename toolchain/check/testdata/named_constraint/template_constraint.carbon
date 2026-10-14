@@ -124,6 +124,133 @@ template constraint Outer {
 
 fn F() -> i32 { return Outer.Inner.N(); }
 
+// --- fail_todo_self_member_in_signature.carbon
+library "[[@TEST_NAME]]";
+
+// A requirement's signature is checked at the definition as an interface
+// member's is (D-SC-10 as amended at fill rounds 7 and 8), so a member access
+// into the constraint's own `Self`, of a requirement or of an alias, is
+// upstream's "member access into facet of incomplete type", as `Self.U2` is in
+// an interface being defined (trunk 0bdce60a5,
+// impl/use_assoc_entity.carbon `fail_todo_self_period_associated_type`).
+// Through fill round 6 the template-phase `Self` deferred the access, and a
+// class with `fn M(p: typeof(N)*)` satisfied `HasNM`; the template phase is
+// SC-B2's (W-028), and the shape is filed as W-169 (round 7's review 2 finding
+// MAJOR-1). The unqualified alias, `-> A`, is accepted.
+template constraint HasNM {
+  fn N() -> i32;
+  fn M(p: typeof(Self.N)*) -> i32;
+}
+
+template constraint HasA {
+  alias A = i32;
+  fn Get(self) -> Self.A;
+}
+
+// --- fail_todo_self_facet_in_signature.carbon
+library "[[@TEST_NAME]]";
+
+// A requirement's signature in which `Self` must satisfy a facet type that the
+// constraint does not itself require is rejected at the definition, as an
+// interface member's is (D-SC-10 as amended at fill round 8, round 7's review 1
+// finding MAJOR-1): `Box(Self)` for `class Box(T: J)`, and `Self.(J.Elem)`.
+// Definition-time checking would defer both to the satisfying type, and
+// through fill round 6 a class that implements `J` satisfied them; they come
+// back with SC-B2's template phase (W-169). Requiring `J` is the workaround
+// (`self_facet_in_signature_required`).
+interface J {
+  fn K(self) -> i32;
+}
+
+class Box(T: J) {
+  var k: i32;
+}
+
+template constraint HasWrap {
+  fn Wrap(self) -> Box(Self);
+}
+
+interface HasElem {
+  let Elem: type;
+}
+
+template constraint HasGet {
+  fn Get(self) -> Self.(HasElem.Elem);
+}
+
+// --- self_facet_in_signature_required.carbon
+library "[[@TEST_NAME]]";
+
+// The workaround for `fail_todo_self_facet_in_signature`: a constraint that
+// requires, with `require impls`, the nominal facet type that `Self` must
+// satisfy can name it in a signature (fill round 8, round 7's review 1 finding
+// MAJOR-1). An interface on trunk 0bdce60a5 rejects the same signatures even
+// with the `require`. A required template constraint does not help, since a
+// checked-symbolic self never satisfies one (D-SC-6).
+interface J {
+  fn K(self) -> i32;
+}
+
+class Box(T: J) {
+  var k: i32;
+}
+
+template constraint HasWrap {
+  require impls J;
+  fn Wrap(self) -> Box(Self);
+  fn V(self) -> i32;
+}
+
+interface HasElem {
+  let Elem: type;
+}
+
+template constraint HasGet {
+  require impls HasElem;
+  fn Get(self) -> Self.(HasElem.Elem);
+}
+
+class C {
+  var v: i32;
+  impl as J {
+    fn K(self) -> i32 { return self.v; }
+  }
+  fn Wrap(self) -> Box(C) { return {.k = self.v}; }
+  fn V(self) -> i32 { return self.v; }
+  fn Get(self) -> i32 { return self.v; }
+}
+
+impl C as HasElem where .Elem = i32 {}
+
+fn CallWrap[template T: HasWrap](x: T) -> i32 { return x.Wrap().k + x.V(); }
+
+fn CallGet[template T: HasGet](x: T) -> i32 { return x.Get(); }
+
+fn Test(c: C) -> i32 { return CallWrap(c) + CallGet(c); }
+
+// --- fail_todo_unqualified_requirement_in_signature.carbon
+library "[[@TEST_NAME]]";
+
+// A requirement's signature that names another requirement unqualified
+// (`typeof(N)`) is accepted at the definition, but it names the requirement's
+// own function for the satisfying type, which no member's type is, so a class
+// whose members mirror the requirements does not satisfy the constraint (fill
+// round 8, round 7's finding MINOR-1 of both reviews; W-169). An interface on
+// trunk 0bdce60a5 cannot be implemented with the same signature either.
+template constraint HasNM {
+  fn N() -> i32;
+  fn M(p: typeof(N)*) -> i32;
+}
+
+class C {
+  fn N() -> i32 { return 1; }
+  fn M(unused p: typeof(N)*) -> i32 { return 2; }
+}
+
+fn CallN[template T: HasNM](unused x: T) -> i32 { return T.N(); }
+
+fn Test(c: C) -> i32 { return CallN(c); }
+
 // CHECK:STDOUT: --- decl.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {

@@ -57,7 +57,7 @@ library "[[@TEST_NAME]]";
 // with no self, as for `HasMake.Make`, and a compound access through it is
 // upstream's open "associated value lookup on runtime facet value" case
 // (member_access.cpp:878-883, `GetAssociatedValueImpl`), mirrored by the fork's
-// TODO at member_access.cpp:1014-1023; ledger W-033 (runtime facet values).
+// TODO at member_access.cpp:1013-1036; ledger W-033 (runtime facet values).
 template constraint HasMake {
   fn Make() -> Self;
 }
@@ -86,6 +86,50 @@ fn ViaLetCompound() -> C {
   // CHECK:STDERR:
   return F.(HasMake.Make)();
 }
+
+// --- fail_todo_symbolic_facet.carbon
+library "[[@TEST_NAME]]";
+
+// A concrete type converted to a template constraint whose facet type is
+// symbolic gives a symbolic facet: through a constraint argument that names a
+// checked generic's parameter (`Has(T)`), or through the enclosing `Self` of a
+// template constraint declared in another constraint's or an interface's body
+// (`Outer.Inner`). An associated-function requirement is not redirected
+// through it: the compound access is the fork's TODO at
+// member_access.cpp:1013-1036, and a simple member access of the facet keeps
+// the requirement, refused as a value (D-SC-4, D-SC-20). A method requirement
+// is redirected, since its redirect looks into the value's type (fill round 8,
+// round 7's review 1 finding MINOR-2 and review 2 finding MINOR-2). The
+// interface analog of `Compound`, a blanket impl named as `C.(I(T).N)()`, is
+// accepted on trunk 0bdce60a5.
+template constraint Has(X: type) {
+  fn N() -> i32;
+  fn Get(self) -> i32;
+}
+
+template constraint Outer {
+  template constraint Inner {
+    fn M() -> i32;
+    fn G(self) -> i32;
+  }
+}
+
+class C {
+  fn N() -> i32 { return 1; }
+  fn Get(unused self) -> i32 { return 2; }
+  fn M() -> i32 { return 3; }
+  fn G(unused self) -> i32 { return 4; }
+}
+
+fn Compound[T: type](unused x: T) -> i32 { return C.(Has(T).N)(); }
+
+fn ThroughAs[T: type](unused x: T) -> i32 { return (C as Has(T)).N(); }
+
+fn Method[T: type](unused x: T, c: C) -> i32 { return c.(Has(T).Get)(); }
+
+fn NestedCompound() -> i32 { return C.(Outer.Inner.M)(); }
+
+fn NestedMethod(c: C) -> i32 { return c.(Outer.Inner.G)(); }
 
 // --- fail_impl_member_alias.carbon
 library "[[@TEST_NAME]]";
@@ -217,7 +261,7 @@ impl E as OnlyF {
 // --- fail_requirement_as_value.carbon
 library "[[@TEST_NAME]]";
 
-// A requirement named with no type that satisfies it is never a runtime value
+// A requirement named with no type that satisfies it is refused as a value
 // (D-SC-20 as amended at fill round 4, review finding BLOCKER-1: passed to a
 // function, it checked clean and aborted lowering at its `.Self`-symbolic
 // type). Since fill round 5 its type is the concrete

@@ -4299,11 +4299,17 @@ round's answer, the reviews' probe sets and their verdicts on the records, the
 cites of its dispositions), records round 7's other two fixes as decisions with
 their break conditions, gives ROUND 7's first break condition its consequence,
 re-points the structural_conformance.cpp and plan.md cites that round 7 moved at
-the round-7 head and records the re-measure on 30716a8c2. Each fix is an R29(a)
-implementation decision recorded for after-the-fact veto, with
-its design citation and break condition; none reopens F-010 or the intent of a
-D-SC decision, and round 7's takes D-SC-10's own break condition. Every count
-below is a measurement on the container, not of record (R9):
+the round-7 head and records the re-measure on 30716a8c2. Fill round 8 (same
+day), folding round 7's two implementation reviews: the round-8 fixes commit
+(the comment and TODO rewording, test sources, the design page and records) and
+the goldens commit after it (4 goldens, CHECK lines only). Each fix is an R29(a)
+implementation decision recorded for after-the-fact veto, with its design
+citation and break condition; none reopens F-010 or the intent of a D-SC
+decision. Round 7's takes D-SC-10's own break condition on a falsifier other
+than the one it named (a template-phase `Self` breaking a positive golden at the
+commit-1 fill; the falsifier was round 6's review 1 BLOCKER-1), R29(a),
+veto-able, and round 8 keeps it as a trade, re-weighed (ROUND 8's DECISION).
+Every count below is a measurement on the container, not of record (R9):
 fork/conformance/out/scoreboard.json reads 128 / 0 / 22 over 150 until a run of
 record replaces it.
 
@@ -4673,23 +4679,37 @@ with their break conditions.
     recorded actions that a non-generic function never performs; D-SC-10's
     "nothing in SC-1 depends on the phase" was false for every name of the body
     but a requirement, which D-SC-20 gives a concrete type. Decision: D-SC-10's
-    own break condition, the reviewer's preferred option: `Self` is a
+    own break condition, taken on a falsifier other than the one it named
+    (R29(a), veto-able), the reviewer's preferred option: `Self` is a
     checked-phase binding, as before SC-1 (the base 8068151ed passes `false`),
     so those names are symbolic as a `constraint`'s and are checked where they
     are used; the template phase is filed as an SC-B2 prerequisite (W-028).
-    Requirements are unaffected (matched through specifics, named with no self
-    type a concrete value); a requirement naming another through `Self`
-    (`fn M() -> typeof(Self.N)*`), accepted before and never satisfiable, is
-    now upstream's "member access into facet of incomplete type", as in an
-    interface being defined. The reviewer's second option, refusing each such
-    name and diagnosing nested declarations as TODOs, is not taken: it keeps a
-    phase nothing in SC-1 uses and adds two rules where one flag suffices
-    (R17). Design: D-SC-10 as amended at fill round 7. Break condition: SC-B2's
-    validity blocks, which need the template phase; then `Self` is a
-    template-phase binding again, flipped together with SC-B2's probe subsystem
-    (W-028), and round 6's review-1 BLOCKER-1 probes are re-run first, each to
-    be diagnosed or to abort only where its `interface` or `constraint` analog
-    aborts on trunk. Pinned by declaration
+    Requirements named with no self type keep their concrete value, but each
+    requirement's signature is now checked at the definition as an interface
+    member's is: every member access into `Self` (`typeof(Self.N)*`, `Self.A`)
+    is upstream's "member access into facet of incomplete type", and every use
+    of `Self` that must satisfy a facet type the constraint does not require
+    (`Box(Self)` for `Box(T: J)`, `Self.(J.Elem)`) is a conversion failure; a
+    `require` whose facet type takes `Self` as an argument, rejected through
+    round 6, is accepted. (Amended at fill round 8, round 7's review 1 MAJOR-1
+    and review 2 MAJOR-1 and MAJOR-2: this decision said that requirements were
+    unaffected and that only the `Self.N` shape moved, "accepted before and
+    never satisfiable"; on fb12f63cb that shape and `Box(Self)`,
+    `Self.(J.Elem)` and `Core.Slice(Self)` signatures were satisfied and ran,
+    and the `require` change went unrecorded.) The reviewer's second option,
+    refusing each such name and diagnosing nested declarations as TODOs, is not
+    taken: it adds two rules where one flag suffices (R17). Its first reason
+    here, that it keeps "a phase nothing in SC-1 uses", was false (the `Self.N`
+    signatures used it); the choice is re-weighed on the corrected facts as
+    ROUND 8's DECISION. Design: D-SC-10 as amended at fill round 7 and
+    restated at fill round 8. Break condition: SC-B2's validity blocks, which
+    need the template phase; then `Self` is a template-phase binding again,
+    flipped together with SC-B2's probe subsystem (W-028), and round 6's
+    review-1 BLOCKER-1 probes are re-run first, each to be diagnosed or to
+    abort only where its `interface` or `constraint` analog aborts on trunk,
+    with require `require_self_argument` and
+    `fail_require_self_argument_unsatisfied` kept as they are. Pinned by
+    declaration
     `fail_self_dependent_name` and `nested_class` and requirement-call
     `fail_nested_requirement_as_value`. The probes that still abort have
     trunk analogs aborting at the same site (sem_ir/mangler.cpp:185 for a
@@ -4719,20 +4739,68 @@ with their break conditions.
     `ConstPointer`, `ArrayLet`, `ArrayArg`, `Get`, `GetRef` and `StructField` in
     requirement-call `fail_requirement_typeof_value`.
 -   **A refused tuple-index base is diagnosed once**
-    (member_access.cpp:1178-1183 in `PerformTupleAccess`; round 6's review 2
-    MINOR-3). Symptom: after `StructuralRequirementUsed` refused the base of
-    `(HasN.N, 1).1`, or of `self.t.1` through a class value, a second error
-    followed, "type `<error>` does not support tuple indexing". Decision: a base
-    whose conversion returned `ErrorInst` gives `ErrorInst` with no further
-    diagnostic, as upstream's member access does for an error-typed base
-    (member_access.cpp:839). Trunk's own follow-on goes with it: for
-    `undefined.1` trunk 0bdce60a5 prints the name error and then the tuple-index
-    error, this branch the name error only; no golden pins it. Design: D-SC-20
-    (one refusal per use) and upstream's propagation of an error without a
-    second diagnostic. Break condition: upstream guards `PerformTupleAccess`
-    against an error base itself; then the fork hunk is deleted. Pinned by
-    `TupleIndex` in `fail_requirement_as_value` and by the single errors of
-    `Get` and `StructField`.
+    (member_access.cpp:1178-1183 in `PerformTupleAccess`, :1190-1195 at the
+    round-8 head; round 6's review 2 MINOR-3). Symptom: after
+    `StructuralRequirementUsed` refused the base of `(HasN.N, 1).1`, or of
+    `self.t.1` through a class value, a second error followed, "type `<error>`
+    does not support tuple indexing". Decision: a base whose conversion returned
+    `ErrorInst` gives `ErrorInst` with no further diagnostic, as upstream's
+    member access does for an error-typed base (member_access.cpp:839). Trunk's
+    own follow-on goes with it: for `undefined.1` trunk 0bdce60a5 prints the
+    name error and then the tuple-index error, this branch the name error only;
+    no golden pins it. Design: D-SC-20 (one refusal per use) and upstream's
+    propagation of an error without a second diagnostic. Break condition:
+    upstream guards `PerformTupleAccess` against an error base itself; then the
+    fork hunk is deleted. Pinned by `TupleIndex` in `fail_requirement_as_value`
+    and by the single errors of `Get` and `StructField`.
+
+ROUND 8's DECISION (folding round 7's two implementation reviews, REVIEWS
+below), reproduced first on the toolchain stamped 0.0.0-0.dev+36181a729, with
+the round-6 behavior on the toolchain of fb12f63cb.
+
+-   **The checked-phase `Self` is kept as a trade**
+    (handle_named_constraint.cpp:126-133, unchanged; round 7's review 1 MAJOR-1
+    and review 2 MAJOR-1, MAJOR-2 and MINOR-1). Facts: with a checked-phase
+    `Self`, a requirement's signature is checked at the definition as an
+    interface member's is. Lost (rejected at the definition, no crash or
+    miscompile, as trunk 0bdce60a5 diagnoses an interface's): every member
+    access into `Self` (`fn M(p: typeof(Self.N)*)`, `-> Self.A`; trunk's
+    interface `fail_todo_self_period_associated_type`), and every use of
+    `Self` that must satisfy a facet type the constraint does not require
+    (`Box(Self)` for `class Box(T: J)`, `Self.(J.Elem)`, `Core.Slice(Self)`,
+    `Core.Optional(Self)`); on fb12f63cb the `Self.N` pointer signatures,
+    `Box(Self)`, `Self.(J.Elem)` and `Core.Slice(Self)` were satisfied and
+    ran (sc1-review7/adv2/p11 q01, q04 to q06; sc1-review7/adv1/p6 f14, f18,
+    f22). Requiring a nominal facet type (`require impls J`) restores those
+    cases; requiring a template constraint does not (D-SC-6). Gained: a
+    `require` whose facet type takes `Self` as an argument (`require Self
+    impls Conv(Self)`, `require impls Has(Self)`), rejected since SC-1a as
+    "constrained by a non-facet type", against the design page's "compose
+    freely" (sc1-review7/adv2 s02, s04, r01, t01). Unchanged and never
+    satisfiable: a requirement named unqualified in another's signature (`fn
+    M(p: typeof(N)*)`), which names the requirement's own function for the
+    satisfying type. Round 6's review 1 offered a second option, the template
+    phase kept with each name of the body that depends on `Self` refused or
+    made a TODO: it keeps the lost signatures but keeps rejecting the gained
+    `require`s, since the template-phase `Self` made `Conv(Self)` a splice, and
+    leaves each further kind of such name to the crash class of round 6's
+    BLOCKER-1, check-clean non-template code that aborts lowering. Decision:
+    keep the checked-phase `Self`. Its losses are recorded in D-SC-10 as
+    restated at fill round 8 and in the design page's as-landed note, pinned
+    by declaration `fail_todo_self_member_in_signature`,
+    `fail_todo_self_facet_in_signature`, `self_facet_in_signature_required`
+    and `fail_todo_unqualified_requirement_in_signature`, and filed as W-169;
+    its gain is pinned by require `require_self_argument` and
+    `fail_require_self_argument_unsatisfied` and lower
+    `require_self_argument`. Design: F-010's definition-time rule
+    (docs/design/generics/template_constraints.md, Definition-time checking)
+    stays the target; D-SC-10 as restated at fill round 8. Break condition:
+    SC-B2's template phase (W-028) lands; then the declaration golden's
+    `fail_todo_` splits on `Self` become positive (W-169), and the require
+    golden's `require_self_argument` splits stay as they are, or the phase is
+    scoped to the validity blocks' own checks. Consequence if taken: SC-B2
+    re-runs round 6's review-1 BLOCKER-1 probes and round 7's reviews' probes
+    named here before it lands.
 
 FILL-CAUGHT MISSES (R28(d): a reviewed prediction the fill overturned; bcaeadb98
 lists (a) to (i), 502e7861a adds (j), bc8b37290 adds (k) and (l), ff490bd48 adds
@@ -4809,8 +4877,8 @@ sources (round 3's review 2, MINOR-7). Round 5's rows are withdrawn the same way
 (fill round 6, round 5's review 2 MINOR-1, R16(d)): the development build ran
 the reviews' shapes before they were written, so none of their clauses counts as
 a prediction that held, and (n) and (o) stand as errors in them; round 6's and
-round 7's rows are written after their builds ran their shapes and are not
-counted either. No miss
+round 7's and round 8's rows are written after their builds ran their shapes
+and are not counted either. No miss
 hides a defect: (a), (c), (f), (l), (m), (n) and (o) were prediction errors (the
 coalescing (o) shows is trunk's lowering, outside SC-1), (b) and (e) a cascade
 and a warning class now gone, (d), (j) and (k) test-source spellings, (g) a
@@ -5073,6 +5141,59 @@ the PR body (outside the repository); review 2 MINOR-3 is the third decision
 W-169 is not used. Per-finding detail is in the plan's "Landed notes (SC-1 fill
 rounds, 2026-10-13)".
 
+Round 7's own diff (c0fa52df2, 36181a729, 30716a8c2, fa4cd094d) then received
+two implementation reviews, 9 findings in all, both APPROVE-WITH-FIXES with no
+BLOCKER. Review 1, 1 MAJOR and 2 MINOR: MAJOR-1 the flip rejects every
+requirement signature in which `Self` must satisfy a facet type the constraint
+does not require, programs that ran on fb12f63cb among them, while the records
+said requirements were unaffected; MINOR-1 an unqualified sibling requirement in
+a signature accepted and never satisfiable; MINOR-2 the compound-access TODO
+saying "runtime facet value" for a symbolic facet. Review 2, 2 MAJOR and 4
+MINOR: MAJOR-1 the `Self.N` signature was satisfiable on fb12f63cb, so the
+records' "never satisfiable" and the declined option's "a phase nothing in SC-1
+uses" were false; MAJOR-2 the flip silently accepts `require ... impls I(Self)`,
+rejected since SC-1a; MINOR-1 the same unqualified spelling; MINOR-2 the same
+TODO and the header's "adapter field"; MINOR-3 "never a runtime value" left in
+D-SC-20 and a test comment, contrary to the PR body; MINOR-4 the break-condition
+wording, the design page's dependency list and W-027's `Self` cite. On the
+round's question (whether the branch is dry with `Self` checked-phase), both
+found every SC-1 feature working (template bodies naming requirements, compound
+access, the redirect for concrete selves, generic-class members, imports, the
+two conformance programs), no program that checks clean and then aborts or
+miscompiles because of SC-1 (every abort pairs with a trunk analog at the same
+site on 0bdce60a5: lower/file_context.h:187, sem_ir/mangler.cpp:185,
+check/eval.cpp:151, check/generic.cpp:477, sem_ir/inst.h:249, import_ref.cpp,
+lower/function_context.cpp:223, LLVM's PHI assertion), and the `const`, array
+and field rules complete for every shape asked; the rejection of the `Self.N`
+shape mirrors trunk's interfaces, and its record was wrong. Both re-ran every
+earlier probe set (old4 330, r4 223, r5 412, p6 42, r6a 315, r6b 81, round 7's
+14 and its trunk analogs, the 14 import sets) identically, and ran the gate
+(1959 passed, 0 failed) and conformance (130 / 0 / 21 over 151, 49 of 56)
+privately. Review 1's probes are sc1-review7/adv1 (p, p2 to p9, tr to tr6, imp:
+250 runs, 48 trunk analogs, 9 import sets), review 2's sc1-review7/adv2 (p, p2
+to p12, tr to tr6, imp7: about 170 probes). Fill round 8 folds all 9, each
+reproduced first on the toolchain stamped 0.0.0-0.dev+36181a729 and, for the
+round-6 behavior, on that of fb12f63cb, none rejected. Dispositions, with their
+cites at the round-8 head: MAJOR-1 of both reviews and review 2's MAJOR-2 are
+ROUND 8's DECISION above, review 2's MAJOR-1 taken as its second option (the
+trade recorded and re-weighed, the flip kept): D-SC-10 restated
+(fork/structural/plan.md:497-544), ROUND 7's first decision amended here, the
+design page's as-landed note (docs/design/generics/template_constraints.md,
+Definition-time checking), W-169 filed, W-028's notes, and the declaration and
+require splits named there; MINOR-1 of both reviews is taken as the recording
+option, pinned by `fail_todo_unqualified_requirement_in_signature` and filed
+with W-169, the declaration-time diagnosis declined as one more partial walk
+over a signature (R17); MINOR-2 of both rewords the TODO and its comment
+(member_access.cpp:1013-1036: "through a symbolic facet" for a constant facet
+that is not concrete, the runtime text kept for a runtime one) and the header
+(structural_conformance.h:97-99), records the limit in D-SC-20 and the design
+page's name-lookup paragraph, and pins it by requirement-call
+`fail_todo_symbolic_facet`; MINOR-3 rewords D-SC-20 and the requirement-call
+comment; MINOR-4 is taken as asked (this entry's head and ROUND 7's first
+decision, the design page's dependency list, W-027's cite at :126-133 and
+:160-162). W-169, the id reserved for SC-1, is used. Per-finding detail is in
+the plan's "Landed notes (SC-1 fill rounds, 2026-10-13)".
+
 MEASURED, on the container only. Round 1 (the toolchain built from 1a7cce0b2's
 sources): autoupdate over the 18 goldens rewrote all 18; the gate then ran 1958
 tests, 1955 passing and 3 reporting "Autoupdate would make changes"
@@ -5196,7 +5317,21 @@ runtimes into a cold cache while other workstreams' runs loaded the machine),
 the same two programs moving; every probe run of rounds 2 to 7 (the 1007 earlier
 runs, round 6's reviews' 347 and 49 trunk analogs, the 14 import sets and round
 7's 14) gives results identical, line for line, to the run on 36181a729, but for
-the stack addresses printed by the two sem_ir/mangler.cpp:185 aborts. Against
+the stack addresses printed by the two sem_ir/mangler.cpp:185 aborts. Round 8
+(the toolchain built from the round-8 sources before the commit, stamped
+0.0.0-0.dev+fa4cd094d.dirty, the uncommitted edits being exactly its fixes
+commit's): autoupdate over the 19 SC-1 goldens to a fixpoint (pass 1 rewrote
+the 4 with new splits, pass 2 none, and after a comment-only rebuild a third
+pass none); gate 1959 passed, 0 failed, exit 0, no `!` or `?` mark; conformance
+PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP
+of 56, 67.0 s; every earlier probe run (the 1007, round 6's 42, round 6's
+reviews' 347 and 49 trunk analogs, round 7's 14, the 51 runs of the further
+directories round 7's review 1 re-ran, round 7's reviews' 298 and 203) gives
+results identical, line for line, to the run on 36181a729, but for nine runs
+whose TODO now says "through a symbolic facet" and the stack addresses of the
+two mangler.cpp:185 aborts, and the 29 import sets of rounds 5 to 7 the same
+results; round 8's 14 probes (sc1-fix8/p8) behave as its splits record.
+Against
 fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
 exactly two programs move in every run:
 generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
@@ -5280,21 +5415,21 @@ bound to the type) and restated (name_lookup.cpp), D-SC-10's amendment and the
 round-1 mechanisms paragraph amended (`.Self` superseded), round 5's three §4.B
 rows marked NOT COUNTED and the lower row's (o) cause corrected, §4.B rows for
 round 6's splits (observed, not counted), the misses list's (o), round 5's
-review record, round 6's dispositions and decision, and the round-6
-measurements in the plan; this entry (the head, ROUND 5's DECISION restated,
-ROUND 6's DECISION, the round-5 review record, (o) and the R16(d) disclosure
-under FILL-CAUGHT MISSES, the measurements); the design page (objects of the
-type, values typed by a parameter bound to it); the ORCHESTRATION status
-paragraph, with df5120d03's rewrap of the UA-1 sentences undone, and Branches
-row; W-027's title, evidence and notes (six fill rounds). Round 6's records
-commit 857d5b048: the three round-6 §4.B rows marked FILLED, round 6's commit
-hashes and the clean-stamp re-measure here, in the plan, in ORCHESTRATION's
-Branches row and in W-027's notes. The records commit after 857d5b048: 857d5b048
-named at the head of this entry and of the plan's note; round 5's review record
-completed with the cites of its dispositions (REVIEWS above); the consequence of
-ROUND 6's break condition, here and in the plan; the convert.cpp cites of ROUND
-5's DECISION, here and in the plan, and of round 4's dispositions re-pointed at
-the round-6 head (round 6 moved them, and `Convert` and the `ConvertAction` and
+review record, round 6's dispositions and decision, and the round-6 measurements
+in the plan; this entry (the head, ROUND 5's DECISION restated, ROUND 6's
+DECISION, the round-5 review record, (o) and the R16(d) disclosure under
+FILL-CAUGHT MISSES, the measurements); the design page (objects of the type,
+values typed by a parameter bound to it); the ORCHESTRATION status paragraph,
+with df5120d03's rewrap of the UA-1 sentences undone, and Branches row; W-027's
+title, evidence and notes (six fill rounds). Round 6's records commit 857d5b048:
+the three round-6 §4.B rows marked FILLED, round 6's commit hashes and the
+clean-stamp re-measure here, in the plan, in ORCHESTRATION's Branches row and in
+W-027's notes. The records commit after 857d5b048: 857d5b048 named at the head
+of this entry and of the plan's note; round 5's review record completed with the
+cites of its dispositions (REVIEWS above); the consequence of ROUND 6's break
+condition, here and in the plan; the convert.cpp cites of ROUND 5's DECISION,
+here and in the plan, and of round 4's dispositions re-pointed at the round-6
+head (round 6 moved them, and `Convert` and the `ConvertAction` and
 `ConvertToCategoryAction` replays now call
 `CheckConversionIsNotOfStructuralRequirement`); the re-measure and probe re-run
 on 857d5b048 here and in the plan; the ORCHESTRATION status paragraph and
@@ -5324,7 +5459,20 @@ the plan) and in round 4's dispositions, and in round 5's dispositions
 plan.md:757-776, :739-742, :1171-1173, :1173 and :480-497 to :781-799, :761-764,
 :1218-1220, :1220 and :480-519; the re-measure and probe re-run on 30716a8c2
 here and in the plan; the ORCHESTRATION status paragraph (round 6's records
-commit 4bc4802ae named) and Branches row; W-027's notes.
+commit 4bc4802ae named) and Branches row; W-027's notes. Round 8's fixes commit:
+D-SC-10 restated (what the checked-phase `Self` rejects and accepts, the trade
+kept), D-SC-20 reworded ("never a runtime value") and amended (the
+symbolic-facet limit), round 7's BLOCKER-1 bullet and first decision amended,
+the third decision's cite re-pointed at the round-8 head, the §4.A and §4.B rows
+for round 8's splits (observed, not counted), round 7's review record, round 8's
+dispositions and decision, and the round-8 measurements in the plan; this entry
+(the head with the break-condition wording, ROUND 7's first decision amended,
+ROUND 8's DECISION, round 7's review record, the measurements, the R16(d)
+sentence of FILL-CAUGHT MISSES); the design page (the as-landed note of
+definition-time checking, the symbolic-facet limit in name lookup, the
+dependency list); the ORCHESTRATION status paragraph and Branches row; W-027's
+title, evidence and notes (eight fill rounds), W-028's notes (the template
+phase's restorations and the require splits it must keep) and W-169 filed.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

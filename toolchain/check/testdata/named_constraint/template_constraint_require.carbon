@@ -418,6 +418,89 @@ class Lacking {
   }
 }
 
+// --- require_self_argument.carbon
+library "[[@TEST_NAME]]";
+
+// A `require` whose facet type takes `Self` as an argument, an interface's or a
+// template constraint's, composes as in any named constraint (the design page,
+// "Composing with named-constraint requirements"). Through fill round 6 the
+// template-phase `Self` made the facet type a splice and the `require` was
+// "constrained by a non-facet type"; the checked-phase `Self` of fill round 7
+// accepts it (D-SC-10 as amended at fill round 8, round 7's review 2 finding
+// MAJOR-2). A template phase brought back for SC-B2 keeps this split and
+// `fail_require_self_argument_unsatisfied` as they are.
+interface Conv(T: type) {
+  fn Do(self) -> T;
+}
+
+template constraint Has(X: type) {
+  fn Get(self) -> X;
+}
+
+template constraint ConvSelf {
+  require Self impls Conv(Self);
+  fn V(self) -> i32;
+}
+
+template constraint HasSelf {
+  require impls Has(Self);
+  fn V(self) -> i32;
+}
+
+class C {
+  var v: i32;
+  fn Get(self) -> C { return {.v = self.v + 1}; }
+  fn V(self) -> i32 { return self.v; }
+}
+
+impl C as Conv(C) {
+  fn Do(self) -> C { return {.v = self.v + 2}; }
+}
+
+fn CallDo[template T: ConvSelf](x: T) -> i32 { return x.(Conv(T).Do)().V(); }
+
+fn CallGet[template T: HasSelf](x: T) -> i32 { return x.Get().V(); }
+
+fn Test(c: C) -> i32 { return CallDo(c) + CallGet(c); }
+
+// --- fail_require_self_argument_unsatisfied.carbon
+library "[[@TEST_NAME]]";
+
+// The negative of `require_self_argument`: `D` does not implement `Conv(D)`,
+// and its `Get` returns `i32`, not `D` (fill round 8, round 7's review 2
+// finding MAJOR-2).
+interface Conv(T: type) {
+  fn Do(self) -> T;
+}
+
+template constraint Has(X: type) {
+  fn Get(self) -> X;
+}
+
+template constraint ConvSelf {
+  require Self impls Conv(Self);
+  fn V(self) -> i32;
+}
+
+template constraint HasSelf {
+  require impls Has(Self);
+  fn V(self) -> i32;
+}
+
+class D {
+  var v: i32;
+  fn Get(self) -> i32 { return self.v; }
+  fn V(self) -> i32 { return self.v; }
+}
+
+fn CallConv[template T: ConvSelf](x: T) -> i32 { return x.V(); }
+
+fn CallHas[template T: HasSelf](x: T) -> i32 { return x.V(); }
+
+fn TestConv(d: D) -> i32 { return CallConv(d); }
+
+fn TestHas(d: D) -> i32 { return CallHas(d); }
+
 // --- fail_todo_require_in_interface_in_generic_class_impl.carbon
 library "[[@TEST_NAME]]";
 

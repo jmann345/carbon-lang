@@ -1010,15 +1010,27 @@ static auto RedirectStructuralRequirementAccess(
     if (self_facet_id == SemIR::ErrorInst::InstId) {
       return SemIR::ErrorInst::InstId;
     }
-    // A satisfied conversion of a non-dependent base gives a concrete facet;
-    // only a runtime facet value is not constant, as upstream's associated
-    // value lookup also leaves open.
+    // A satisfied conversion of a concrete base to a concrete facet type gives
+    // a concrete facet. A runtime facet value is not constant, as upstream's
+    // associated value lookup also leaves open. A facet type that depends on a
+    // symbolic constant gives a symbolic facet even for a concrete base: a
+    // constraint argument naming a checked generic's parameter
+    // (`C.(Has(T).N)`), or the enclosing `Self` of a constraint declared in
+    // another constraint's or an interface's body (`C.(Outer.Inner.N)`).
+    // Neither is redirected here; a method's redirect looks into the base's
+    // type instead.
     auto self_facet_const_id = context.constant_values().Get(self_facet_id);
     if (!self_facet_const_id.is_concrete()) {
       if (diagnose) {
-        context.TODO(loc_id,
-                     "compound member access to a `template constraint` "
-                     "requirement through a runtime facet value");
+        if (self_facet_const_id.is_constant()) {
+          context.TODO(loc_id,
+                       "compound member access to a `template constraint` "
+                       "requirement through a symbolic facet");
+        } else {
+          context.TODO(loc_id,
+                       "compound member access to a `template constraint` "
+                       "requirement through a runtime facet value");
+        }
       }
       return SemIR::ErrorInst::InstId;
     }

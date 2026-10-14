@@ -153,6 +153,22 @@ inline auto CheckRedeclParamsMatch(Context& context,
                                 /*check_syntax=*/true);
 }
 
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 11):
+// Returns whether the parameters of two entities match as
+// `CheckRedeclParamsMatch` compares them with no diagnostic and no syntax
+// check, except that a pair of corresponding parameters is not compared when
+// either parameter has an error type; `*found_error` is set when such a pair is
+// skipped. The parameter lists must still agree in presence and length. The
+// structural check uses this to tell a mismatch that an error causes from a
+// genuine one, as building a thunk for an impl member reports a difference in
+// every other parameter.
+auto CheckRedeclParamsMatchExceptErrors(Context& context,
+                                        const DeclParams& new_entity,
+                                        const DeclParams& prev_entity,
+                                        SemIR::SpecificId prev_specific_id,
+                                        SemIR::SpecificId new_specific_id,
+                                        bool* found_error) -> bool;
+
 // Provides type traits and data for merging redeclarations.
 template <typename EntityT>
 struct MergeRedeclEntityInfo;

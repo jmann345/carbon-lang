@@ -59,22 +59,25 @@ template constraint HasX {
 // --- fail_todo_tuple_pattern_param.carbon
 library "[[@TEST_NAME]]";
 
-// A requirement with a tuple pattern parameter is refused and not collected,
-// since the signature comparison does not support one: on trunk 0bdce60a5 it
-// fails fatally on a `TuplePattern` for an impl of an interface with such a
-// member and for a redeclaration (D-SC-2 as amended at fill round 10, round 9's
-// review 2 finding MINOR-2). A use of a type with such a member reports
-// nothing further.
+// A requirement with a tuple pattern parameter, directly, under `var` or under
+// a default value (`G`), is refused and not collected, since the signature
+// comparison does not support one: on trunk 0bdce60a5 it fails fatally on a
+// `TuplePattern` for an impl of an interface with such a member and for a
+// redeclaration (D-SC-2 as amended at fill rounds 10 and 11, round 9's review 2
+// finding MINOR-2 and round 10's review 1 finding MINOR-1). A use of a type
+// with such members reports nothing further.
 template constraint HasF {
   // CHECK:STDERR: fail_todo_tuple_pattern_param.carbon:[[@LINE+4]]:3: error: semantics TODO: `tuple pattern parameter in `template constraint`` [SemanticsTodo]
   // CHECK:STDERR:   fn F(self, (a: i32, b: i32));
   // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // CHECK:STDERR:
   fn F(self, (a: i32, b: i32));
+  fn G(self, (a: i32, b: i32) = (1, 2));
 }
 
 class D {
   fn F(unused self, (unused a: i32, unused b: i32)) {}
+  fn G(unused self, (unused a: i32, unused b: i32) = (1, 2)) {}
 }
 
 fn Call[template T: HasF](unused x: T) -> i32 { return 0; }

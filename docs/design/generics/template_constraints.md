@@ -268,7 +268,10 @@ read in their own specifics (a member of a generic class specific such as
 signature: `fn Get(self)` does not match `fn Get(ref self)`. A default
 definition (a requirement with a body) is a semantics TODO in SC-1 ("function
 definition in `template constraint`"); a `fn` in a plain, non-`template`
-`constraint` is an error.
+`constraint` is an error. A requirement with a tuple pattern parameter,
+directly, under `var` or under a default value, is a semantics TODO too ("tuple
+pattern parameter in `template constraint`") and is not collected, since the
+toolchain's signature comparison has no case for a tuple pattern (W-234).
 
 > **F-010l — parameterized member requirements: DEFERRED (SC-1, D-SC-2, as
 > recommended).** Whether a requirement declaration may itself be a `template`
@@ -624,10 +627,11 @@ constraint (W-169). Requiring the facet type that
 for `Core.Slice(Self)` and `Core.Optional(Self)` (`Core.Optional` through its
 blanket `OptionalStorage` impl). Requiring a template constraint does not, since
 a checked-symbolic self never satisfies one (D-SC-6), and a member access into
-`Self` has no such workaround. A member that does not match a requirement
-rejected this way gets no diagnostic of its own, the requirement's error having
-been reported, while the type's other requirements, constraints and interfaces
-are still checked and reported (D-SC-9 as amended at fill rounds 9 and 10). A
+`Self` has no such workaround. A member that differs from a requirement
+rejected this way only where the requirement's error is gets no diagnostic of
+its own, the requirement's error having been reported; any other difference
+from it, and the type's other requirements, constraints and interfaces, are
+still checked and reported (D-SC-9 as amended at fill rounds 9 to 11). A
 `require` whose facet type takes `Self` as an argument (`require Self impls
 Conv(Self)`, `require impls Has(Self)`), which a template-phase `Self` rejected,
 is accepted. Deferring the checks that involve `Self`, as this section

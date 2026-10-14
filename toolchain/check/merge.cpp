@@ -673,6 +673,55 @@ auto CheckRedeclParamsMatch(Context& context, const DeclParams& new_entity,
   return true;
 }
 
+auto CheckRedeclParamsMatchExceptErrors(Context& context,
+                                        const DeclParams& new_entity,
+                                        const DeclParams& prev_entity,
+                                        SemIR::SpecificId prev_specific_id,
+                                        SemIR::SpecificId new_specific_id,
+                                        bool* found_error) -> bool {
+  auto has_error = [&](SemIR::InstId param_pattern_id) {
+    return context.insts().Get(param_pattern_id).type_id() ==
+           SemIR::ErrorInst::TypeId;
+  };
+  auto lists_match = [&](bool is_implicit_param,
+                         SemIR::InstBlockId new_param_patterns_id,
+                         SemIR::InstBlockId prev_param_patterns_id) {
+    if (new_param_patterns_id.has_value() !=
+        prev_param_patterns_id.has_value()) {
+      return false;
+    }
+    if (!new_param_patterns_id.has_value()) {
+      return true;
+    }
+    auto new_param_pattern_ids =
+        context.inst_blocks().Get(new_param_patterns_id);
+    auto prev_param_pattern_ids =
+        context.inst_blocks().Get(prev_param_patterns_id);
+    if (new_param_pattern_ids.size() != prev_param_pattern_ids.size()) {
+      return false;
+    }
+    for (auto [index, new_param_pattern_id, prev_param_pattern_id] :
+         llvm::enumerate(new_param_pattern_ids, prev_param_pattern_ids)) {
+      if (has_error(new_param_pattern_id) || has_error(prev_param_pattern_id)) {
+        *found_error = true;
+        continue;
+      }
+      if (!CheckRedeclParam(context, is_implicit_param, index,
+                            new_param_pattern_id, prev_param_pattern_id,
+                            prev_specific_id, /*diagnose=*/false,
+                            /*check_syntax=*/false, new_specific_id)) {
+        return false;
+      }
+    }
+    return true;
+  };
+  return lists_match(/*is_implicit_param=*/true,
+                     new_entity.implicit_param_patterns_id,
+                     prev_entity.implicit_param_patterns_id) &&
+         lists_match(/*is_implicit_param=*/false, new_entity.param_patterns_id,
+                     prev_entity.param_patterns_id);
+}
+
 // Fills the previous class id, type id, and import ir id.
 static auto FillPrevEntityInfo(Context& context,
                                const SemIR::ImportIRInst& import_ir_inst,

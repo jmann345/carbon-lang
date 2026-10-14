@@ -205,7 +205,8 @@ auto HandleParseNode(Context& context,
 }
 
 // Returns whether a parameter of `function` is a tuple pattern, directly or
-// under `var`.
+// under `var` or a default value (fill round 11, review finding MINOR-1: a
+// `DefaultValuePattern` wraps its subpattern as `var` does).
 static auto HasTupleParamPattern(Context& context,
                                  const SemIR::Function& function) -> bool {
   for (auto param_patterns_id :
@@ -213,8 +214,15 @@ static auto HasTupleParamPattern(Context& context,
     for (auto pattern_id :
          context.inst_blocks().GetOrEmpty(param_patterns_id)) {
       auto pattern = context.insts().Get(pattern_id);
-      while (auto var_pattern = pattern.TryAs<SemIR::AnyVarPattern>()) {
-        pattern = context.insts().Get(var_pattern->subpattern_id);
+      while (true) {
+        if (auto var_pattern = pattern.TryAs<SemIR::AnyVarPattern>()) {
+          pattern = context.insts().Get(var_pattern->subpattern_id);
+        } else if (auto default_pattern =
+                       pattern.TryAs<SemIR::DefaultValuePattern>()) {
+          pattern = context.insts().Get(default_pattern->subpattern_id);
+        } else {
+          break;
+        }
       }
       if (pattern.Is<SemIR::TuplePattern>()) {
         return true;

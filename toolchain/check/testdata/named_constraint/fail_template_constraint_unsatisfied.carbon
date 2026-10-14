@@ -609,16 +609,19 @@ fn Test() -> i32 {
 library "[[@TEST_NAME]]";
 
 // A requirement whose declaration has an error is reported there alone: a
-// member that does not match it is skipped with no further diagnostic, as an
-// interface member's error leaves that member of the interface's impls
-// undiagnosed on trunk 0bdce60a5, so a direct use fails silently and an
-// overload probe rejects the member, as for a type that does not satisfy the
-// constraint (D-SC-9 as amended at fill rounds 9 and 10; round 8's review 1
-// finding MINOR-3 and review 2 finding MINOR-1). A type with no member of the
-// requirement's name is still reported, as a type that does not implement such
-// an interface is; `fail_requirement_signature_error_other_member` and
+// member that differs from it only where the error is (here the parameter or
+// the return type with the error) is skipped with no further diagnostic, as
+// building the thunk for an impl member reports nothing for such a difference
+// from an interface member with the error on trunk 0bdce60a5, so a direct use
+// fails silently and an overload probe rejects the member, as for a type that
+// does not satisfy the constraint (D-SC-9 as amended at fill rounds 9 to 11;
+// round 8's review 1 finding MINOR-3 and review 2 finding MINOR-1). A type with
+// no member of the requirement's name is still reported, as a type that does
+// not implement such an interface is;
+// `fail_requirement_signature_error_other_member` and
 // `fail_requirement_signature_error_other_constraint` show that every other
-// requirement is still checked.
+// requirement is still checked, and `fail_requirement_signature_error_genuine`
+// that every other difference from this one is.
 template constraint H {
   // CHECK:STDERR: fail_requirement_signature_error.carbon:[[@LINE+4]]:11: error: name `Undefined` not found [NameNotFound]
   // CHECK:STDERR:   fn F(x: Undefined) -> i32;
@@ -670,6 +673,83 @@ fn Test(c: C, d: D) -> i32 { return P(c) + G1(c) + G1(c) + G2(d) + G2(d); }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn TestMissing(e: E) -> i32 { return G1(e); }
+
+// --- fail_requirement_signature_error_genuine.carbon
+library "[[@TEST_NAME]]";
+
+// A requirement with an error does not hide a difference from the member that
+// the error does not cause: a different number of parameters, a parameter that
+// differs where neither side has an error, a member that is not a method, a
+// different return type where neither is an error, or a member that is not a
+// function. Each is reported as for a requirement with no error, as building
+// the thunk for an impl member reports each against an interface member with
+// the error on trunk 0bdce60a5. A member that differs only in the parameter or
+// the return type with the error (`ReturnOnly`, `ParamOnly`) is skipped (D-SC-9
+// as amended at fill round 11, round 10's review 1 finding MAJOR-1 and review 2
+// finding MAJOR-1).
+template constraint HasReturnError {
+  fn F(self, x: i32) -> Undefined;
+}
+
+template constraint HasParamError {
+  fn F(self, x: Undefined, y: i32) -> i32;
+}
+
+class Arity {
+  fn F(unused self) -> i32 { return 1; }
+}
+
+class ParamType {
+  fn F(unused self, unused x: bool) -> i32 { return 1; }
+}
+
+class NoSelf {
+  fn F(unused x: i32, unused y: i32) -> i32 { return 1; }
+}
+
+class Field {
+  var F: i32;
+}
+
+class ReturnOnly {
+  fn F(unused self, unused x: i32) -> i32 { return 1; }
+}
+
+class ParamArity {
+  fn F(unused self, unused x: i32) -> i32 { return 1; }
+}
+
+class OtherParam {
+  fn F(unused self, unused x: i32, unused y: bool) -> i32 { return 1; }
+}
+
+class ParamReturn {
+  fn F(unused self, unused x: i32, unused y: i32) -> bool { return true; }
+}
+
+class ParamOnly {
+  fn F(unused self, unused ref x: i32, unused y: i32) -> i32 { return 1; }
+}
+
+fn CallR[template T: HasReturnError](unused x: T) -> i32 { return 0; }
+
+fn CallP[template T: HasParamError](unused x: T) -> i32 { return 0; }
+
+fn TestArity(a: Arity) -> i32 { return CallR(a); }
+
+fn TestParamType(p: ParamType) -> i32 { return CallR(p); }
+
+fn TestNoSelf(n: NoSelf) -> i32 { return CallR(n); }
+
+fn TestField(f: Field) -> i32 { return CallR(f); }
+
+fn TestParamArity(p: ParamArity) -> i32 { return CallP(p); }
+
+fn TestOtherParam(o: OtherParam) -> i32 { return CallP(o); }
+
+fn TestParamReturn(p: ParamReturn) -> i32 { return CallP(p); }
+
+fn TestOnly(r: ReturnOnly, p: ParamOnly) -> i32 { return CallR(r) + CallP(p); }
 
 // --- fail_requirement_signature_error_other_member.carbon
 library "[[@TEST_NAME]]";
@@ -867,11 +947,14 @@ class Complete {
 // --- fail_member_signature_error.carbon
 library "[[@TEST_NAME]]";
 
-// A member whose own declaration has an error is reported there alone: the
-// requirement it cannot be compared with is skipped with no further diagnostic,
-// as trunk 0bdce60a5 reports an impl member's error alone, and every other
-// requirement is still checked (D-SC-9 as amended at fill round 10, round 9's
-// review 1 finding MINOR-2 and review 2 finding MINOR-1).
+// A member whose own declaration has an error is reported there alone when it
+// differs from the requirement only where the error is: the requirement is
+// skipped with no further diagnostic, as trunk 0bdce60a5 reports an impl
+// member's error alone when the error is the only difference from the
+// interface member, and every other requirement is still checked (D-SC-9 as
+// amended at fill rounds 10 and 11, round 9's review 1 finding MINOR-2 and
+// review 2 finding MINOR-1). `fail_member_signature_error_genuine` shows that
+// every other difference is reported.
 template constraint HasFG {
   fn F(self, x: i32) -> i32;
   fn G(self) -> i32;
@@ -922,15 +1005,84 @@ fn Test(r: ReturnError, p: ParamError) -> i32 { return Call(r) + Call(p); }
 // CHECK:STDERR:
 fn TestLacking(l: LackingG) -> i32 { return Call(l); }
 
+// --- fail_member_signature_error_genuine.carbon
+library "[[@TEST_NAME]]";
+
+// A member whose own declaration has an error does not hide a difference from
+// the requirement that the error does not cause: a different number of
+// parameters, a parameter that differs where neither side has an error, a
+// different `self` form, a different return type where neither is an error, or
+// a member that is not a method. Each is reported after the member's error, as
+// building the thunk for such an impl member reports each on trunk 0bdce60a5,
+// and as round 9 reported the first three. A member that differs only where
+// its errors are (`ErrorsOnly`) is skipped (D-SC-9 as amended at fill round 11,
+// round 10's review 1 finding MAJOR-1 and review 2 finding MAJOR-1).
+template constraint HasF {
+  fn F(self, x: i32, y: i32) -> i32;
+}
+
+class ReturnErrorArity {
+  fn F(unused self, unused x: i32) -> Undefined { return 1; }
+}
+
+class ReturnErrorParamType {
+  fn F(unused self, unused x: i32, unused y: bool) -> Undefined { return 1; }
+}
+
+class ReturnErrorRefSelf {
+  fn F(unused ref self, unused x: i32, unused y: i32) -> Undefined { return 1; }
+}
+
+class ParamErrorArity {
+  fn F(unused self, unused x: Undefined) -> i32 { return 1; }
+}
+
+class ParamErrorOtherParam {
+  fn F(unused self, unused x: Undefined, unused y: bool) -> i32 { return 1; }
+}
+
+class ParamErrorReturn {
+  fn F(unused self, unused x: Undefined, unused y: i32) -> bool { return true; }
+}
+
+class ParamErrorNoSelf {
+  fn F(unused w: i32, unused x: Undefined, unused y: i32) -> i32 { return 1; }
+}
+
+class ErrorsOnly {
+  fn F(unused self, unused x: Undefined, unused y: i32) -> Undefined {
+    return 1;
+  }
+}
+
+fn Call[template T: HasF](unused x: T) -> i32 { return 0; }
+
+fn TestReturnErrorArity(a: ReturnErrorArity) -> i32 { return Call(a); }
+
+fn TestReturnErrorParamType(b: ReturnErrorParamType) -> i32 { return Call(b); }
+
+fn TestReturnErrorRefSelf(c: ReturnErrorRefSelf) -> i32 { return Call(c); }
+
+fn TestParamErrorArity(d: ParamErrorArity) -> i32 { return Call(d); }
+
+fn TestParamErrorOtherParam(e: ParamErrorOtherParam) -> i32 { return Call(e); }
+
+fn TestParamErrorReturn(f: ParamErrorReturn) -> i32 { return Call(f); }
+
+fn TestParamErrorNoSelf(g: ParamErrorNoSelf) -> i32 { return Call(g); }
+
+fn TestErrorsOnly(h: ErrorsOnly) -> i32 { return Call(h); }
+
 // --- fail_todo_requirement_signature_error_overload.carbon
 library "[[@TEST_NAME]]";
 
 // TODO: W-233. An overload probe rejects a member whose constraint has a
-// requirement with an error, as for a type that does not satisfy it, so when no
-// other member accepts the call `OverloadNoMatch` follows the requirement's
+// requirement with an error, or whose argument's type has a member with an
+// error, as for a type that does not satisfy it, so when no other member
+// accepts the call `OverloadNoMatch` follows the requirement's or the member's
 // error, as it follows a member's own error in its parameter or its binding's
-// facet type on trunk 0bdce60a5 (fill round 10, round 9's review 1 finding
-// MINOR-1).
+// facet type on trunk 0bdce60a5 (fill rounds 10 and 11, round 9's review 1
+// finding MINOR-1 and round 10's review 2 finding MINOR-3).
 template constraint H {
   // CHECK:STDERR: fail_todo_requirement_signature_error_overload.carbon:[[@LINE+4]]:11: error: name `Undefined` not found [NameNotFound]
   // CHECK:STDERR:   fn F(x: Undefined) -> i32;
@@ -946,6 +1098,17 @@ class C {
 overload fn P[template T: H](unused x: T) -> i32 { return 10; }
 overload fn P(unused x: i32) -> i32 { return 20; }
 
+template constraint HasG {
+  fn G(self) -> i32;
+}
+
+class D {
+  fn G(unused self) -> Undefined { return 1; }
+}
+
+overload fn Q[template T: HasG](unused x: T) -> i32 { return 10; }
+overload fn Q(unused x: i32) -> i32 { return 20; }
+
 // CHECK:STDERR: fail_todo_requirement_signature_error_overload.carbon:[[@LINE+10]]:31: error: no member of overload set `P` accepts this call [OverloadNoMatch]
 // CHECK:STDERR: fn Test(c: C) -> i32 { return P(c); }
 // CHECK:STDERR:                               ^~~~
@@ -958,6 +1121,8 @@ overload fn P(unused x: i32) -> i32 { return 20; }
 // CHECK:STDERR:
 fn Test(c: C) -> i32 { return P(c); }
 
+fn TestMember(d: D) -> i32 { return Q(d); }
+
 // --- fail_todo_requirement_signature_error_blanket.carbon
 library "[[@TEST_NAME]]";
 
@@ -965,7 +1130,10 @@ library "[[@TEST_NAME]]";
 // meets a requirement with an error, so a use of the interface reports that the
 // type does not implement it after the requirement's error, as trunk 0bdce60a5
 // does for a blanket impl whose own constraint has an error (fill round 10,
-// round 9's review 2 finding MINOR-1).
+// round 9's review 2 finding MINOR-1). The facet type's interfaces are still
+// looked up after the error, so an impl-lookup cycle through them is reported
+// too (`J`), as trunk reports it for the analog whose `HasF` is an interface
+// with the error (fill round 11, round 10's review 2 finding MINOR-2).
 template constraint HasF {
   // CHECK:STDERR: fail_todo_requirement_signature_error_blanket.carbon:[[@LINE+4]]:17: error: name `Undefined` not found [NameNotFound]
   // CHECK:STDERR:   fn F(self) -> Undefined;
@@ -991,3 +1159,13 @@ class D {
 // CHECK:STDERR:                               ^~~~~~~
 // CHECK:STDERR:
 fn Test(d: D) -> i32 { return d.(I.K)(); }
+
+interface J {
+  fn L(self) -> i32;
+}
+
+impl forall [template T: HasF & J] T as J {
+  fn L(unused self) -> i32 { return 4; }
+}
+
+fn TestCycle(d: D) -> i32 { return d.(J.L)(); }

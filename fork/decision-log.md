@@ -4390,17 +4390,22 @@ functions, upstream's 66a250ad9) and records the re-measure on 9197882e5; that
 records commit is b3bb7bf31. Fill round 15 (same day), folding round 14's two
 implementation reviews: 4bf275786 (a requirement with an expression pattern
 parameter refused as a TODO, ROUND 15's first decision; test sources), fd736eb5d
-(2 goldens, CHECK lines only) and the records commit after them (records: round
-14's review record; ROUND 14's DECISION amended; ROUND 15's DECISION, its second
-item a statement of the `self` check's order; D-SC-2, D-SC-5(d) and D-SC-9
-amended, D-SC-9's maintenance note scoped and its mechanism cites re-pointed;
-W-238 filed; the ledger's SC-1 cites that round 15 moved re-pointed; gap row 60;
-ORCHESTRATION; the PR body and comment; the re-measure on fd736eb5d). Each fix
-is an R29(a) implementation decision recorded for after-the-fact veto, with
-its design citation and break condition; none reopens F-010 or the intent of a
-D-SC decision. Round 7's takes D-SC-10's own break condition on a falsifier
-other than the one it named (a template-phase `Self` breaking a positive golden
-at the commit-1 fill; the falsifier was round 6's review 1 BLOCKER-1), R29(a),
+(2 goldens, CHECK lines only) and f2f7b0a96 (records: round 14's review record;
+ROUND 14's DECISION amended; ROUND 15's DECISION, its second item a statement of
+the `self` check's order; D-SC-2, D-SC-5(d) and D-SC-9 amended, D-SC-9's
+maintenance note scoped and its mechanism cites re-pointed; W-238 filed; the
+ledger's SC-1 cites that round 15 moved re-pointed; gap row 60; ORCHESTRATION;
+the PR body and comment; the re-measure on fd736eb5d); the records commit after
+f2f7b0a96 names it, checks round 15's records against the head (the split
+counts, the autoupdate's removed lines, the statements of the rule and of the
+`self` check's order, the cites of ROUND 15's DECISION, of D-SC-9's mechanism
+and of W-238, the reproducers of W-235 to W-238 on trunk and the nightly, the
+matrices' remaining aborts) and records the re-measure on f2f7b0a96. Each fix is
+an R29(a) implementation decision recorded for after-the-fact veto, with its
+design citation and break condition; none reopens F-010 or the intent of a D-SC
+decision. Round 7's takes D-SC-10's own break condition on a falsifier other
+than the one it named (a template-phase `Self` breaking a positive golden at the
+commit-1 fill; the falsifier was round 6's review 1 BLOCKER-1), R29(a),
 veto-able, and round 8 keeps it as a trade, re-weighed (ROUND 8's DECISION).
 Every count below is a measurement on the container, not of record (R9):
 fork/conformance/out/scoreboard.json reads 128 / 0 / 22 over 150 until a run of
@@ -5412,8 +5417,7 @@ shapes, so they are not counted either; nor are round 11's, derived from the
 trunk impl analogs after its development build ran the reviews' shapes, nor
 round 12's, round 13's, round 14's or round 15's, derived from the rule and the
 trunk analogs after their development builds ran the reviews' shapes. No miss
-hides a
-defect: (a), (c), (f), (l), (m), (n) and (o) were prediction errors (the
+hides a defect: (a), (c), (f), (l), (m), (n) and (o) were prediction errors (the
 coalescing (o) shows is trunk's lowering, outside SC-1), (b) and (e) a cascade
 and a warning class now gone, (d), (j) and (k) test-source spellings, (g) a
 coverage gap now dumped where the claim needed a dump, and (h) and (i) design
@@ -6656,7 +6660,34 @@ merge.cpp:517, W-236's twelve give what round 14 recorded and W-237's three give
 `MissingDefinitionInImpl`, on the round-15 build; the matrices as in round 15's
 expectations; `git merge-tree` of fd736eb5d against trunk 8bfd78ae3 conflicts in
 fork/ORCHESTRATION.md only. Round 15's commits: 4bf275786 (the fix, test
-sources), fd736eb5d (goldens) and the records commit after them. Against
+sources), fd736eb5d (goldens) and f2f7b0a96 (records), which re-ran the gate
+(1959 passed, 0 failed, exit 0, 36 s) and conformance (the same totals, 49.0 s,
+sc1-fix15/conf2) on its tree with that toolchain, and the records commit after
+it. Re-run on f2f7b0a96 for the records commit after it with that toolchain (no
+toolchain or test source differs from fd736eb5d): gate 1959 passed, 0 failed,
+exit 0, 33 s, no `!` or `?` mark; conformance PASS 130, every failure class 0,
+SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 70.0 s, the same two
+programs moving and no program's status differing from sc1-fix15/conf
+(sc1-records15/conf, in a private cache); `runner.py --self-test` OK (151
+programs, 56 bullets); `git merge-tree` of f2f7b0a96 against trunk 8bfd78ae3
+conflicts in fork/ORCHESTRATION.md only; W-235's two redeclaration reproducers
+abort at merge.cpp:517 on the round-15 build and at merge.cpp:360 on trunk
+0bdce60a5 and the nightly 62f1cc6a3, W-236's twelve give on all three what round
+14 recorded (seven abort at thunk.cpp:169), and W-237's three give
+`MissingDefinitionInImpl` as filed; W-238's (sc1-records15/repro):
+sc1-review14/adv1/p/expr t_ex1 and t_as and adv2/ep l7 and l7b give the
+declarations' errors and the TODO at the requirement on the round-15 build,
+where trunk and the nightly reject `template constraint`; their analogs p/expr
+i_ex1 and redecl.carbon and ep/r1 abort at merge.cpp:517 here and at :360 on
+trunk and the nightly; ep/q2 and q3, the requirement imported, abort at
+import_ref.cpp:5172 here; sc1-fix15/p/w238 n1 and n2 and ep/t1 to t4, an
+imported interface member or function with such a parameter, abort at
+import_ref.cpp:5172 here, :5087 on trunk and :4875 on the nightly, as m1t, a
+call of such an imported method, does, and m1, a requirement compared with such
+an imported member, aborts at :5172 here; sc1-fix15/p/w238s s6 and s7 (`fn F(x:
+i32, 1 = 2)` outside a template constraint) abort at pattern.cpp:62 here and on
+trunk and at pattern.cpp:60 on the nightly, and s2, the same parameter in a
+requirement, at pattern.cpp:62 here. Against
 fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
 exactly two programs move in every run: generics/structural_conformance.carbon
 SKIP to PASS (`42` then `7`) and the new
@@ -7038,7 +7069,37 @@ cites 4bf275786 moved) and notes; the cites of W-028, W-135, W-136, W-137,
 W-168, W-169 and W-234 that 4bf275786 moved, re-pointed, and W-234's notes;
 W-236's evidence (`ExprParam`'s trunk analog dated to fill round 14); W-238
 filed (the expression-pattern refusal, with upstream's aborts on such a
-parameter, on import among them).
+parameter, on import among them). That records commit is f2f7b0a96. The records
+commit after f2f7b0a96: f2f7b0a96 named at the head of this entry and of the
+plan's note, in MEASURED, in RECORDS, in ORCHESTRATION's status paragraph and
+Branches row and in W-027's notes; round 15's records checked against the head
+(sc1-records15): `fail_requirement_signature_error_genuine` gives 23 errors,
+`fail_member_signature_error_genuine` 39, `fail_todo_expr_pattern_param` 9 and
+`fail_static_for_method` 1, `return_form_not_compared` none, and every other
+split its round-14 count; each of fd736eb5d's 46 removed CHECK lines matches one
+of its 124 added lines (88 in the unsatisfied golden, 36 in the members golden)
+once its `@LINE` offset is normalized, and no other line changes; D-SC-9's
+statement of the rule, ROUND 14's DECISION's in the decision log and the plan's
+round-14 decision's are still the same word for word, and the `self` sentence is
+in D-SC-9, in ROUND 15's DECISION in the decision log and in the plan, on the
+design page and in the member split's comment; the cites of ROUND 15's DECISION
+(handle_named_constraint.cpp:209-239 and :282-289, merge.cpp:282-284,
+pattern_match.cpp:1376, structural_conformance.cpp:492-501 and :519-523), of
+D-SC-9's mechanism (function.cpp:265-276, merge.cpp:222-286, :365-417 and
+:781-787, structural_conformance.cpp:502-531 and :622-632), of W-238
+(merge.cpp:516-517, import_ref.cpp:5165-5172; trunk 0bdce60a5's merge.cpp:360
+and import_ref.cpp:5087) and the ledger's cites that 4bf275786 moved
+(handle_named_constraint.cpp:55-57, :90-94, :128-135, :162-164 and :253; the
+members golden's :19, :36 and :49; the satisfy golden's :221) hold at the head;
+`GetRefusedParamPatternKind` has one caller, `CollectStructuralMembers`; against
+round 14's reviews' results, the round-15 re-runs in sc1-fix15/mx change 39 of
+mxx's 204 cases, 4 of mxy's 14 and 24 of mxg's 204 and none of mx3's 878, mx4's
+2320 and their 2320 twins, mxf's 56 cases and 42 twins or mxf2's 672, and the
+aborts fall from 45 to 17, each a case with the requirement imported, at
+import_ref.cpp:5172, that W-238 lists; the reproducers and the re-measure on
+f2f7b0a96 in MEASURED and in the plan; the lone lines of this entry's head and
+of the R16(d) sentence of FILL-CAUGHT MISSES rejoined, with the plan's and
+ORCHESTRATION's status paragraph's. No residue is filed by it.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

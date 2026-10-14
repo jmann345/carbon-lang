@@ -139,11 +139,25 @@ library "[[@TEST_NAME]]";
 // MAJOR-1). The unqualified alias, `-> A`, is accepted.
 template constraint HasNM {
   fn N() -> i32;
+  // CHECK:STDERR: fail_todo_self_member_in_signature.carbon:[[@LINE+7]]:18: error: member access into facet of incomplete type `HasNM` [IncompleteTypeInMemberAccessOfFacet]
+  // CHECK:STDERR:   fn M(p: typeof(Self.N)*) -> i32;
+  // CHECK:STDERR:                  ^~~~
+  // CHECK:STDERR: fail_todo_self_member_in_signature.carbon:[[@LINE-5]]:1: note: constraint is currently being defined [NamedConstraintIncompleteWithinDefinition]
+  // CHECK:STDERR: template constraint HasNM {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn M(p: typeof(Self.N)*) -> i32;
 }
 
 template constraint HasA {
   alias A = i32;
+  // CHECK:STDERR: fail_todo_self_member_in_signature.carbon:[[@LINE+7]]:19: error: member access into facet of incomplete type `HasA` [IncompleteTypeInMemberAccessOfFacet]
+  // CHECK:STDERR:   fn Get(self) -> Self.A;
+  // CHECK:STDERR:                   ^~~~
+  // CHECK:STDERR: fail_todo_self_member_in_signature.carbon:[[@LINE-5]]:1: note: constraint is currently being defined [NamedConstraintIncompleteWithinDefinition]
+  // CHECK:STDERR: template constraint HasA {
+  // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn Get(self) -> Self.A;
 }
 
@@ -167,6 +181,13 @@ class Box(T: J) {
 }
 
 template constraint HasWrap {
+  // CHECK:STDERR: fail_todo_self_facet_in_signature.carbon:[[@LINE+7]]:20: error: cannot convert type `Self` that implements `HasWrap` into type implementing `J` [ConversionFailureFacetToFacet]
+  // CHECK:STDERR:   fn Wrap(self) -> Box(Self);
+  // CHECK:STDERR:                    ^~~~~~~~~
+  // CHECK:STDERR: fail_todo_self_facet_in_signature.carbon:[[@LINE-8]]:11: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+  // CHECK:STDERR: class Box(T: J) {
+  // CHECK:STDERR:           ^~~~
+  // CHECK:STDERR:
   fn Wrap(self) -> Box(Self);
 }
 
@@ -175,6 +196,10 @@ interface HasElem {
 }
 
 template constraint HasGet {
+  // CHECK:STDERR: fail_todo_self_facet_in_signature.carbon:[[@LINE+4]]:19: error: cannot convert type `Self` that implements `HasGet` into type implementing `HasElem` [ConversionFailureFacetToFacet]
+  // CHECK:STDERR:   fn Get(self) -> Self.(HasElem.Elem);
+  // CHECK:STDERR:                   ^~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn Get(self) -> Self.(HasElem.Elem);
 }
 
@@ -249,6 +274,19 @@ class C {
 
 fn CallN[template T: HasNM](unused x: T) -> i32 { return T.N(); }
 
+// CHECK:STDERR: fail_todo_unqualified_requirement_in_signature.carbon:[[@LINE+13]]:31: error: cannot convert type `C` into type implementing `HasNM` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn Test(c: C) -> i32 { return CallN(c); }
+// CHECK:STDERR:                               ^~~~~~~~
+// CHECK:STDERR: fail_todo_unqualified_requirement_in_signature.carbon:[[@LINE-8]]:3: note: member `M` of type `C` does not match the signature required by template constraint `HasNM` [StructuralMemberMismatch]
+// CHECK:STDERR:   fn M(unused p: typeof(N)*) -> i32 { return 2; }
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_todo_unqualified_requirement_in_signature.carbon:[[@LINE-16]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn M(p: typeof(N)*) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_todo_unqualified_requirement_in_signature.carbon:[[@LINE-11]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallN[template T: HasNM](unused x: T) -> i32 { return T.N(); }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn Test(c: C) -> i32 { return CallN(c); }
 
 // CHECK:STDOUT: --- decl.carbon

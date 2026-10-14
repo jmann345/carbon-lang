@@ -497,8 +497,28 @@ fn CallConv[template T: ConvSelf](x: T) -> i32 { return x.V(); }
 
 fn CallHas[template T: HasSelf](x: T) -> i32 { return x.V(); }
 
+// CHECK:STDERR: fail_require_self_argument_unsatisfied.carbon:[[@LINE+7]]:35: error: cannot convert type `D` into type implementing `ConvSelf` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn TestConv(d: D) -> i32 { return CallConv(d); }
+// CHECK:STDERR:                                   ^~~~~~~~~~~
+// CHECK:STDERR: fail_require_self_argument_unsatisfied.carbon:[[@LINE-7]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallConv[template T: ConvSelf](x: T) -> i32 { return x.V(); }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TestConv(d: D) -> i32 { return CallConv(d); }
 
+// CHECK:STDERR: fail_require_self_argument_unsatisfied.carbon:[[@LINE+13]]:34: error: cannot convert type `D` into type implementing `HasSelf` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn TestHas(d: D) -> i32 { return CallHas(d); }
+// CHECK:STDERR:                                  ^~~~~~~~~~
+// CHECK:STDERR: fail_require_self_argument_unsatisfied.carbon:[[@LINE-20]]:3: note: member `Get` of type `D` does not match the signature required by template constraint `Has` [StructuralMemberMismatch]
+// CHECK:STDERR:   fn Get(self) -> i32 { return self.v; }
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_require_self_argument_unsatisfied.carbon:[[@LINE-38]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn Get(self) -> X;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_require_self_argument_unsatisfied.carbon:[[@LINE-20]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallHas[template T: HasSelf](x: T) -> i32 { return x.V(); }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TestHas(d: D) -> i32 { return CallHas(d); }
 
 // --- fail_todo_require_in_interface_in_generic_class_impl.carbon

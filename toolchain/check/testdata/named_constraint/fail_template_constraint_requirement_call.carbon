@@ -121,12 +121,27 @@ class C {
   fn G(unused self) -> i32 { return 4; }
 }
 
+// CHECK:STDERR: fail_todo_symbolic_facet.carbon:[[@LINE+4]]:51: error: semantics TODO: `compound member access to a `template constraint` requirement through a symbolic facet` [SemanticsTodo]
+// CHECK:STDERR: fn Compound[T: type](unused x: T) -> i32 { return C.(Has(T).N)(); }
+// CHECK:STDERR:                                                   ^~~~~~~~~~~~
+// CHECK:STDERR:
 fn Compound[T: type](unused x: T) -> i32 { return C.(Has(T).N)(); }
 
+// CHECK:STDERR: fail_todo_symbolic_facet.carbon:[[@LINE+7]]:52: error: requirement `N` of template constraint `Has` can only be used through a type that satisfies it [StructuralRequirementUsed]
+// CHECK:STDERR: fn ThroughAs[T: type](unused x: T) -> i32 { return (C as Has(T)).N(); }
+// CHECK:STDERR:                                                    ^~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_todo_symbolic_facet.carbon:[[@LINE-27]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn N() -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn ThroughAs[T: type](unused x: T) -> i32 { return (C as Has(T)).N(); }
 
 fn Method[T: type](unused x: T, c: C) -> i32 { return c.(Has(T).Get)(); }
 
+// CHECK:STDERR: fail_todo_symbolic_facet.carbon:[[@LINE+4]]:37: error: semantics TODO: `compound member access to a `template constraint` requirement through a symbolic facet` [SemanticsTodo]
+// CHECK:STDERR: fn NestedCompound() -> i32 { return C.(Outer.Inner.M)(); }
+// CHECK:STDERR:                                     ^~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn NestedCompound() -> i32 { return C.(Outer.Inner.M)(); }
 
 fn NestedMethod(c: C) -> i32 { return c.(Outer.Inner.G)(); }

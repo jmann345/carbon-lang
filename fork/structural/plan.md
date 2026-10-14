@@ -1250,7 +1250,7 @@ convention).
 | check/testdata/named_constraint/fail_todo_template_constraint_members.carbon (new) | `fail_todo_definition.carbon`: `fn G(self) -> i32 { return 1; }` in a template constraint; `fail_todo_parameterized.carbon`: `fn H[U: type](self, u: U);`; `fail_todo_assoc_const.carbon`: `let X: type;` | `SemanticsTodo` with the D-SC-2 strings. `fail_todo_assoc_const` (amended 2026-10-06, review fold: B13): the parser accepts `let X: type;` in `DeclScopeLoopAsRegular` without error (`HandleLetAfterPattern` consumes `=` only if present, parse/handle_let.cpp:89-92), so check emits exactly two diagnostics — `SemanticsTodo` "associated constant requirement in `template constraint`" at the `let` introducer (`HandleIntroducer`, handle_let_and_var.cpp:67-81, runs first) and then `ExpectedInitializerAfterLet` (kind.def:471; handle_let_and_var.cpp:405) at the declaration — in that order |
 | check/testdata/named_constraint/template_constraint.carbon (round-7 splits, 2026-10-14) | new `fail_self_dependent_name` (`HasN` with `alias A = Self` and a nested `class Inner { var k: i32; }`; `AliasOfSelf`: `let unused y: HasN.A* = 1`; `NestedClassAs`: `let unused x: bool = 1 as HasN.Inner`; `NestedClassPointer`: `let unused y: HasN.Inner* = 1`); new `nested_class` (`Outer.Inner.N()` for a class with a method declared in a template constraint); `decl`'s comment | Round 7, written after the development build ran these shapes (observed, not counted, R16(d)): the fail split has the diagnostics of the `constraint` spelling on trunk 0bdce60a5, a `ConversionFailure` to `Self*`, to `Inner` with `as` followed by `Inner` to `bool`, and to `Inner*`, each with its `MissingImplInMemberAccessInContext` note; `nested_class` has no STDERR (its lowering aborts at sem_ir/mangler.cpp:185, as the `constraint` spelling does on trunk); the dumps of `decl`, `forward`, `compose` and `generic` show `Self`, the requirements' function types and their patterns `[symbolic]` where they were `[template]` (D-SC-10 as amended) FILLED 2026-10-14 (fill round 7, 36181a729): as written, observed and not counted |
 | check/testdata/named_constraint/template_constraint.carbon (round-8 splits, 2026-10-14) | new `fail_todo_self_member_in_signature` (`HasNM` with `fn M(p: typeof(Self.N)*) -> i32`; `HasA` with `alias A = i32` and `fn Get(self) -> Self.A`); new `fail_todo_self_facet_in_signature` (`fn Wrap(self) -> Box(Self)` for `class Box(T: J)`; `fn Get(self) -> Self.(HasElem.Elem)`); new `self_facet_in_signature_required` (the same two with `require impls J` and `require impls HasElem`, a class `C` that has `impl as J`, `Wrap`, `V` and `Get`, `impl C as HasElem where .Elem = i32`, called through `CallWrap` and `CallGet`); new `fail_todo_unqualified_requirement_in_signature` (`fn M(p: typeof(N)*) -> i32`, a class mirroring it, `CallN(c)`) | Round 8, written after the round-7 build ran these shapes in the reviews' probes (observed, not counted, R16(d)): `IncompleteTypeInMemberAccessOfFacet` at `Self` of `Self.N` and of `Self.A`, each with `NamedConstraintIncompleteWithinDefinition` at the constraint; `ConversionFailureFacetToFacet` at `Box(Self)` with `InitializingGenericParam` at `T: J`, and at `Self.(HasElem.Elem)`; no STDERR for the required split; `ConversionFailureTypeToFacet` at `CallN(c)` with `StructuralMemberMismatch` at `C.M`, `StructuralRequirementHere` and `DeductionGenericHere`; the dumps of the four dumped splits unchanged FILLED 2026-10-14 (fill round 8, 3245ec0d2): as written, observed and not counted |
-| check/testdata/named_constraint/template_constraint.carbon (round-9 changes, 2026-10-14) | `fail_todo_self_member_in_signature` gains `fn Get2(self) -> A` in `HasA`, a class `C` with `N` and `M(p: typeof(N)*)`, and `Test(c)` calling `CallN(c)`; `fail_todo_self_facet_in_signature` gains `HasAll` (`fn All(self) -> Core.Slice(Self)`), `HasNext` (`fn Next(self) -> Core.Optional(Self)`), a class `C` with `impl as J`, `Wrap` and `Get` and `impl C as HasElem where .Elem = i32`, a class `S` declaring `impl as Core.Copy` and `impl as Core.Destroy` before `All` and `Next`, and `Test(c, s)` calling `CallWrap(c)` twice, `CallGet(c)`, `CallAll(s)` and `CallNext(s)`; `self_facet_in_signature_required` gains `HasAll` and `HasNext` with `require impls Core.Copy & Core.Destroy`, the class `S` and `TestSlice(s)`, a class `D` with `Wrap` returning `i32` and `V`, and `overload fn P[template T: HasWrap]` / `P[T: type]` called as `P(c) + P(d)` | Round 9, predicted by hand before the fill (counted): no diagnostic at `Get2` and none at any use in the two `fail_todo_` splits (D-SC-9 as amended at fill round 9); no STDERR for the required split, `P(d)` skipping the constrained member (D-SC-12). Observed on the development build before the fill (not counted, R16(d)): `ConversionFailureFacetToFacet` at `Core.Slice(Self)`, into `Core.Destroy & Core.Copy`, and at `Core.Optional(Self)`, into `Core.OptionalStorage`, each with `InitializingGenericParam` at the prelude class's parameter |
+| check/testdata/named_constraint/template_constraint.carbon (round-9 changes, 2026-10-14) | `fail_todo_self_member_in_signature` gains `fn Get2(self) -> A` in `HasA`, a class `C` with `N` and `M(p: typeof(N)*)`, and `Test(c)` calling `CallN(c)`; `fail_todo_self_facet_in_signature` gains `HasAll` (`fn All(self) -> Core.Slice(Self)`), `HasNext` (`fn Next(self) -> Core.Optional(Self)`), a class `C` with `impl as J`, `Wrap` and `Get` and `impl C as HasElem where .Elem = i32`, a class `S` declaring `impl as Core.Copy` and `impl as Core.Destroy` before `All` and `Next`, and `Test(c, s)` calling `CallWrap(c)` twice, `CallGet(c)`, `CallAll(s)` and `CallNext(s)`; `self_facet_in_signature_required` gains `HasAll` and `HasNext` with `require impls Core.Copy & Core.Destroy`, the class `S` and `TestSlice(s)`, a class `D` with `Wrap` returning `i32` and `V`, and `overload fn P[template T: HasWrap]` / `P[T: type]` called as `P(c) + P(d)` | Round 9, predicted by hand before the fill (counted): no diagnostic at `Get2` and none at any use in the two `fail_todo_` splits (D-SC-9 as amended at fill round 9); no STDERR for the required split, `P(d)` skipping the constrained member (D-SC-12). Observed on the development build before the fill (not counted, R16(d)): `ConversionFailureFacetToFacet` at `Core.Slice(Self)`, into `Core.Destroy & Core.Copy`, and at `Core.Optional(Self)`, into `Core.OptionalStorage`, each with `InitializingGenericParam` at the prelude class's parameter FILLED 2026-10-14 (fill round 9, a5078358c): as predicted, and as observed |
 
 ### §4.B Commit 2
 
@@ -1288,9 +1288,9 @@ convention).
 | check/testdata/named_constraint/template_constraint_require.carbon (round-8 splits, 2026-10-14) | new `require_self_argument` (`ConvSelf` with `require Self impls Conv(Self)`, `HasSelf` with `require impls Has(Self)`, a class `C` satisfying both, `Test(c)` calling `CallDo` and `CallGet`); new `fail_require_self_argument_unsatisfied` (`D` without `impl D as Conv(D)` and with `fn Get(self) -> i32`, `TestConv` and `TestHas`) | Round 8, observed, not counted (R16(d)): no STDERR for the positive split; `ConversionFailureTypeToFacet` at `CallConv(d)` with `DeductionGenericHere` only (a nominal `require` has no structural note, D-SC-9), and at `CallHas(d)` with `StructuralMemberMismatch` at `D.Get`, `StructuralRequirementHere` at `Has`'s `Get` and `DeductionGenericHere` FILLED 2026-10-14 (fill round 8, 3245ec0d2): as written, observed and not counted |
 | check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon (round-8 changes, 2026-10-14) | new `fail_todo_symbolic_facet` (`Has(X: type)` with `N` and `Get`, `Outer` declaring `Inner` with `M` and `G`, a class `C` with all four; `Compound` `C.(Has(T).N)()`, `ThroughAs` `(C as Has(T)).N()` and `Method` `c.(Has(T).Get)()` in checked generics `[T: type]`, `NestedCompound` `C.(Outer.Inner.M)()` and `NestedMethod` `c.(Outer.Inner.G)()`); `fail_todo_runtime_facet`'s cite and `fail_requirement_as_value`'s first sentence | Round 8, observed, not counted (R16(d)): the `SemanticsTodo` "through a symbolic facet" at `Compound` and `NestedCompound`; `StructuralRequirementUsed` at `(C as Has(T)).N` with its note; no diagnostic for the two method forms; `fail_todo_runtime_facet` keeps "through a runtime facet value" FILLED 2026-10-14 (fill round 8, 3245ec0d2): as written, observed and not counted |
 | lower/testdata/template/template_constraint.carbon (round-8 split, 2026-10-14) | new `require_self_argument` (the require split's constraints and class, `Run` returning `CallDo(c) + CallGet(c)`) | Round 8, observed, not counted (R16(d)): `CallDo`'s specific calls `C.Do` of `impl C as Conv(C)` and then `C.V`, `CallGet`'s calls `C.Get` and then `C.V`, and `main` adds the two results FILLED 2026-10-14 (fill round 8, 3245ec0d2): as written, observed and not counted |
-| check/testdata/named_constraint/fail_template_constraint_unsatisfied.carbon (round-9 split, 2026-10-14) | new `fail_requirement_signature_error` (`H` with `fn F(x: Undefined) -> i32`; `HasF` with `fn F(self) -> Undefined` and `G`; classes `C` with `F(x: i32)`, `D` with `F` and `G`, and an empty `E`; `overload fn P[template T: H]` / `P[T: type]`; `Test(c, d)` with `P(c)`, `G1(c)` twice and `G2(d)` twice; `TestMissing(e)` with `G1(e)`) | Round 9, predicted by hand before the fill from the trunk interface analog (sc1-fix9/t/e01t on 0bdce60a5; counted): `NameNotFound` at each `Undefined`; nothing at `Test`; at `G1(e)`, `ConversionFailureTypeToFacet` with `StructuralMemberMissing`, `StructuralRequirementHere` at `H.F` and `DeductionGenericHere` |
-| check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon (round-9 change, 2026-10-14) | `fail_todo_symbolic_facet`'s comment names W-232, rewrapped in its eight lines | Round 9: no CHECK line moves |
-| lower/testdata/template/template_constraint.carbon (round-9 split, 2026-10-14) | new `overload_probe_require` (`HasWrap` with `require impls J`, `fn Wrap(self) -> Box(Self)` and `V`; `C` with `impl as J`; `D` without; `overload fn P[template T: HasWrap]` / `P[T: type]`; `Run` returning `P(c) + P(d) - 30`) | Round 9, predicted by hand before the fill (counted): `Run` calls `P`'s specific for `C`, which returns 10, and the next member's for `D`, which returns 20; run as a program it returns 0 |
+| check/testdata/named_constraint/fail_template_constraint_unsatisfied.carbon (round-9 split, 2026-10-14) | new `fail_requirement_signature_error` (`H` with `fn F(x: Undefined) -> i32`; `HasF` with `fn F(self) -> Undefined` and `G`; classes `C` with `F(x: i32)`, `D` with `F` and `G`, and an empty `E`; `overload fn P[template T: H]` / `P[T: type]`; `Test(c, d)` with `P(c)`, `G1(c)` twice and `G2(d)` twice; `TestMissing(e)` with `G1(e)`) | Round 9, predicted by hand before the fill from the trunk interface analog (sc1-fix9/t/e01t on 0bdce60a5; counted): `NameNotFound` at each `Undefined`; nothing at `Test`; at `G1(e)`, `ConversionFailureTypeToFacet` with `StructuralMemberMissing`, `StructuralRequirementHere` at `H.F` and `DeductionGenericHere` FILLED 2026-10-14 (fill round 9, a5078358c): as predicted |
+| check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon (round-9 change, 2026-10-14) | `fail_todo_symbolic_facet`'s comment names W-232, rewrapped in its eight lines | Round 9: no CHECK line moves FILLED 2026-10-14 (fill round 9, a5078358c): as predicted |
+| lower/testdata/template/template_constraint.carbon (round-9 split, 2026-10-14) | new `overload_probe_require` (`HasWrap` with `require impls J`, `fn Wrap(self) -> Box(Self)` and `V`; `C` with `impl as J`; `D` without; `overload fn P[template T: HasWrap]` / `P[T: type]`; `Run` returning `P(c) + P(d) - 30`) | Round 9, predicted by hand before the fill (counted): `Run` calls `P`'s specific for `C`, which returns 10, and the next member's for `D`, which returns 20; run as a program it returns 0 FILLED 2026-10-14 (fill round 9, a5078358c): as predicted |
 
 ### §4.C Commit 3
 
@@ -2305,8 +2305,17 @@ names a symbolic facet: 4c2ecee22 (fixes, test sources, the design page,
 records), 3245ec0d2 (4 goldens, CHECK lines only), 253dd4031 and a13e70542
 (records); it measured the same totals on the toolchain built from its sources,
 again on the toolchain stamped 0.0.0-0.dev+3245ec0d2 (below) and again on
-a13e70542 for the records commit after it. Not of record until
-fork/conformance/out/scoreboard.json is updated (R9).
+a13e70542 for the records commit after it. Fill round 9 (same day) folds round
+8's two implementation reviews (APPROVE-WITH-FIXES both; 12 findings, one
+rejected in part): a mismatch against a requirement whose declaration has an
+error is not diagnosed again at each use, the trade's lost and restorable
+signatures are pinned in the repository, the records' overstatements are
+corrected and the symbolic-facet compound access is filed as W-232: 58dc46eb6
+(the fix, test sources, the design page, records), a5078358c (3 goldens, CHECK
+lines only) and the records commit after them; it measured the same totals on
+the toolchain built from its sources, again on the toolchain stamped
+0.0.0-0.dev+a5078358c (below) and again for the records commit. Not of record
+until fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
 one falsified carries a dated amendment above):
@@ -3120,7 +3129,8 @@ toolchain stamped 0.0.0-0.dev+fb12f63cb with the reviews' probes:
     parameter, `Take(*p)` through a `const` pointer, `let` and `Take` of an
     array field), and an `if` over them reached LLVM's PHI assertion. Fixed as
     asked: `GetStructuralRequirementOfType` follows a `ConstType`'s inner type
-    and an `ArrayType`'s element type (structural_conformance.cpp:779-788),
+    and an `ArrayType`'s element type (structural_conformance.cpp:779-788,
+    :810-819 at the round-9 head),
     and the header's array sentence is replaced (structural_conformance.h:
     95-100). Pinned by `ConstParam`, `ConstPointer`, `ArrayLet` and
     `ArrayArg` in requirement-call `fail_requirement_typeof_value`. A class,
@@ -3179,7 +3189,8 @@ records commit after 30716a8c2; c0fa52df2 recorded them as dispositions):
     decision below); the flip back must also keep the require golden's
     `require_self_argument` splits as they are.
 -   **`const` and array types hold a requirement's type**
-    (structural_conformance.cpp:779-788, structural_conformance.h:95-100; review
+    (structural_conformance.cpp:779-788, :810-819 at the round-9 head,
+    structural_conformance.h:95-100; review
     1 MAJOR-1 and review 2 MAJOR-1). Design: D-SC-20 as amended at fill round 7:
     a type holds a requirement's type when its values are built element by
     element (a tuple, struct or array element, or the type under `const`); a
@@ -3679,7 +3690,40 @@ PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP
 of 56 (51.4 s), the same two programs moving; every probe run (the 1969 earlier
 runs, round 8's 14 and the 29 import sets) gives results identical, line for
 line, to the run on 3245ec0d2, but for the stack addresses printed by the nine
-runs aborting at sem_ir/mangler.cpp:185.
+runs aborting at sem_ir/mangler.cpp:185. Round 9 (the toolchain built from the
+round-9 sources before the commit, stamped 0.0.0-0.dev+ee1f905b0.dirty, the
+uncommitted edits being exactly 58dc46eb6's): autoupdate over the 19 SC-1
+goldens to a fixpoint (pass 1 rewrote the 3 with new source lines, pass 2 none;
+the commit messages of 58dc46eb6 and a5078358c say 4, counting requirement-call,
+whose change is a comment and moved no CHECK line); gate 1959 passed, 0 failed,
+exit 0, 38 s, no `!` or `?` mark; conformance PASS 130, every failure class 0,
+SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 104.0 s; the full
+check-phase diagnostics of 2047 probe files (every earlier set, round 8's
+reviews' and round 9's own) against the toolchain of 36181a729 are identical for
+1915, differ for 77 aborts only in the trace's program-arguments and version
+lines, for 11 only in round 8's "through a symbolic facet" TODO text, and for 44
+only by removed lines, all 55 removed errors the follow-on
+`ConversionFailureTypeToFacet` with its mismatch, requirement and deduction
+notes. Re-run on the toolchain rebuilt from a5078358c with a clean tree (stamped
+0.0.0-0.dev+a5078358c, no toolchain source differing from 58dc46eb6): autoupdate
+over the 19 SC-1 goldens changed nothing (one dot each, git status clean); gate
+1959 passed, 0 failed, exit 0, 46 s, no `!` or `?` mark; conformance PASS 130,
+every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56,
+79.3 s; every probe run (the 1969 earlier runs, round 8's 14 and the 29 import
+sets) gives results identical, line for line, to the run on a13e70542
+(sc1-records8 rec_*), but for the addresses that abort traces print (the stack
+addresses of the nine sem_ir/mangler.cpp:185 aborts and the code offsets of five
+aborts of rounds 3 and 4's typeof probes); round 8's reviews' 48 runs and round
+9's 16 (sc1-fix9 p, t, splits) give 20 clean, 42 check errors and 2 aborts, n01c
+and n01i, the `constraint` and `interface` spellings that abort so on trunk
+0bdce60a5 (check/eval.cpp:151, check/generic.cpp:477). Re-run for the records
+commit after a5078358c, on its tree with that installed toolchain (no toolchain
+source differs; one comment of the require golden re-pointed): autoupdate over
+the 19 SC-1 goldens changed nothing; gate 1959 passed, 0 failed, exit 0, 93 s,
+no `!` or `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151,
+bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 58.4 s. Round 9's commits: 58dc46eb6
+(fix, test sources, docs, records), a5078358c (goldens) and the records commit
+after them.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

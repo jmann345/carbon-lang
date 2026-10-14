@@ -4311,15 +4311,17 @@ re-points at the round-8 head the plan.md and member_access.cpp cites of round
 5's and round 6's dispositions that round 8 moved, corrects the exceptions
 stated for the round-8 probe comparisons, and records the re-measure on
 a13e70542. Fill round 9 (same day), folding round 8's two implementation
-reviews: the fixes commit (the follow-on diagnostic after a requirement's error
+reviews: 58dc46eb6 (the follow-on diagnostic after a requirement's error
 removed, ROUND 9's DECISION; test sources, the design page, gap row 60 and
-records), the goldens commit (CHECK lines only) and the records commit after
-them. Each fix is an R29(a) implementation decision recorded for after-the-fact
-veto, with its design citation and break condition; none reopens F-010 or the
-intent of a D-SC decision. Round 7's takes D-SC-10's own break
-condition on a falsifier other than the one it named (a template-phase `Self`
-breaking a positive golden at the commit-1 fill; the falsifier was round 6's
-review 1 BLOCKER-1), R29(a), veto-able, and round 8 keeps it as a trade,
+records), a5078358c (3 goldens, CHECK lines only) and the records commit after
+them (the round-9 rows marked FILLED, the commit hashes, the
+structural_conformance.cpp cites that round 9 moved re-pointed at the round-9
+head, the re-measure). Each fix is an R29(a) implementation decision recorded
+for after-the-fact veto, with its design citation and break condition; none
+reopens F-010 or the intent of a D-SC decision. Round 7's takes D-SC-10's own
+break condition on a falsifier other than the one it named (a template-phase
+`Self` breaking a positive golden at the commit-1 fill; the falsifier was round
+6's review 1 BLOCKER-1), R29(a), veto-able, and round 8 keeps it as a trade,
 re-weighed (ROUND 8's DECISION). Every count below is a measurement on the
 container, not of record (R9): fork/conformance/out/scoreboard.json reads 128 /
 0 / 22 over 150 until a run of record replaces it.
@@ -4730,7 +4732,8 @@ with their break conditions.
     and check/generic.cpp:477 for an interface's nested declarations).
 -   **`const` and array types hold a requirement's type**
     (structural_conformance.cpp:779-788 in `GetStructuralRequirementOfType`,
-    structural_conformance.h:95-100; round 6's review 1 MAJOR-1, with review 2
+    :810-819 at the round-9 head, structural_conformance.h:95-100; round 6's
+    review 1 MAJOR-1, with review 2
     MAJOR-1 for a field read through a class value). Symptom: values of `const
     typeof(HasN.N)` and `array(typeof(HasN.N), 2)` were accepted (a by-value
     parameter, `Take(*p)` through a `const` pointer, `let` and `Take` of an
@@ -5076,7 +5079,8 @@ replayed category conversion (`ConvertToCategoryAction`, convert.cpp:2515),
 which refuses `T.N;`, `(T.N, 1);` and `{.a = T.N};` instantiated with `HasN`,
 pinned by `Discard`, `DiscardTuple` and `DiscardStruct`; review 1 MINOR-1 gives
 a value that deduction built the conversion's location
-(structural_conformance.cpp:821), pinned at the call by `TemplateValueParam` and
+(structural_conformance.cpp:821, :852 at the round-9 head), pinned at the call
+by `TemplateValueParam` and
 `GenericValueParam`, while at instantiation a constant argument and its
 conversion both have none, as for upstream's own conversion notes on such an
 argument (trunk 0bdce60a5), pinned so; review 2 MINOR-1 renames the kind
@@ -5184,7 +5188,8 @@ fb12f63cb, none rejected. Dispositions, with their cites at the
 round-8 head: BLOCKER-1 is ROUND 7's first decision above
 (handle_named_constraint.cpp:126-133; D-SC-10's amendment,
 fork/structural/plan.md:497-544; W-028's notes); review 1 MAJOR-1 is the second,
-fixed as asked (structural_conformance.cpp:779-788 follows `const` and array
+fixed as asked (structural_conformance.cpp:779-788, :810-819 at the round-9
+head, follows `const` and array
 element types; the header's array sentence replaced,
 structural_conformance.h:95-100), pinned by `ConstParam`, `ConstPointer`,
 `ArrayLet` and `ArrayArg`; review 2 MAJOR-1 is taken as its second option on
@@ -5488,8 +5493,39 @@ runs, round 8's 14 and the 29 import sets) gives results identical, line for
 line, to the run on 3245ec0d2 (sc1-fix8 clean8_*), but for the stack addresses
 of the nine runs aborting at sem_ir/mangler.cpp:185 (round 6's v01 and vt01b;
 round 7's g07, g14 and g15 and their trunk spellings g07t, g07t2, g14t and
-g15t). Against fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150,
-run 37402970811) exactly two programs move in every run:
+g15t). Round 9 (the toolchain built from the round-9 sources before the commit,
+stamped 0.0.0-0.dev+ee1f905b0.dirty, the uncommitted edits being exactly
+58dc46eb6's): autoupdate over the 19 SC-1 goldens to a fixpoint (pass 1 rewrote
+the 3 with new source lines, pass 2 none; the commit messages of 58dc46eb6 and
+a5078358c say 4, counting requirement-call, whose change is a comment and moved
+no CHECK line); gate 1959 passed, 0 failed, exit 0, 38 s, no `!` or `?` mark;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56, 104.0 s; the full check-phase diagnostics of 2047 probe
+files (every earlier set, round 8's reviews' and round 9's own) against the
+toolchain of 36181a729 are identical for 1915, differ for 77 aborts only in the
+trace's program-arguments and version lines, for 11 only in round 8's "through a
+symbolic facet" TODO text, and for 44 only by removed lines, all 55 removed
+errors the follow-on `ConversionFailureTypeToFacet` with its mismatch,
+requirement and deduction notes. Re-run on the toolchain rebuilt from a5078358c
+with a clean tree (stamped 0.0.0-0.dev+a5078358c, no toolchain source differing
+from 58dc46eb6): autoupdate over the 19 SC-1 goldens changed nothing (one dot
+each, git status clean); gate 1959 passed, 0 failed, exit 0, 46 s, no `!` or `?`
+mark; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49
+PASS, 0 FAIL, 7 SKIP of 56, 79.3 s; every probe run (the 1969 earlier runs,
+round 8's 14 and the 29 import sets) gives results identical, line for line, to
+the run on a13e70542 (sc1-records8 rec_*), but for the addresses that abort
+traces print (the stack addresses of the nine sem_ir/mangler.cpp:185 aborts and
+the code offsets of five aborts of rounds 3 and 4's typeof probes); round 8's
+reviews' 48 runs and round 9's 16 (sc1-fix9 p, t, splits) give 20 clean, 42
+check errors and 2 aborts, n01c and n01i, the `constraint` and `interface`
+spellings that abort so on trunk 0bdce60a5 (check/eval.cpp:151,
+check/generic.cpp:477). Re-run for the records commit after a5078358c, on its
+tree with that installed toolchain (no toolchain source differs; one comment of
+the require golden re-pointed): autoupdate over the 19 SC-1 goldens changed
+nothing; gate 1959 passed, 0 failed, exit 0, 93 s, no `!` or `?` mark;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56, 58.4 s. Against fork/conformance/out/scoreboard.json (128 /
+0 / 22 over 150, run 37402970811) exactly two programs move in every run:
 generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
 interop/cpp_structural_conformance.carbon PASS (`7` then `0`), plan §5's 130 / 0
 / 21 over 151, EXPECTED and not of record.

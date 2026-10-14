@@ -174,12 +174,13 @@ listing them verbatim at discharge (§8.5).
     ("parameterized requirement in `template constraint`" — sub-fork F-010l, the
     stranded page :236-237 recommends deferring past 0.1; such a `fn` is also
     NOT collected into `structural_members_id`, §1.A.3), and, since fill round
-    10, a requirement `fn` with a tuple pattern parameter ("tuple pattern
+    10, a requirement `fn` with a tuple pattern parameter, directly or under
+    `var`, and since fill round 11 under a default value too ("tuple pattern
     parameter in `template constraint`", also not collected, W-234; round 9's
-    review 2 finding MINOR-2: the signature comparison fails fatally on a
-    `TuplePattern`,
-    merge.cpp `CheckRedeclParam`, as trunk 0bdce60a5's does for an impl of an
-    interface with such a member and for a redeclaration). DISCLOSURE (amended
+    review 2 finding MINOR-2 and round 10's review 1 finding MINOR-1: the
+    signature comparison fails fatally on a `TuplePattern`, merge.cpp
+    `CheckRedeclParam`, as trunk 0bdce60a5's does for an impl of an interface
+    with such a member and for a redeclaration). DISCLOSURE (amended
     2026-10-06, review fold: B3): deferring `var` field requirements REVERSES
     the recorded F-010b recommendation ("keep them, per proposal 2200" —
     stranded page :245-248 and :798-800; p002200:352-354 admits "function and
@@ -477,25 +478,36 @@ listing them verbatim at discharge (§8.5).
     `InterfaceRequireImplsNotImplemented` :946-956 for the interface's own
     `require` block) stay `Emit` with NO structural note in SC-1 — the notes are
     wired only into convert.cpp:1503-1527 (amended 2026-10-06, review fold:
-    A5(ii)). A member that does not match a requirement because the
-    requirement's own declaration or the member's has an error in a parameter or
-    return type adds no error and no note of its own: that error was reported at
-    the declaration, so that requirement is skipped with no further diagnostic,
-    in both modes, as an error in an interface member or in an impl member
-    leaves that member undiagnosed on trunk 0bdce60a5, while every other
-    requirement, template constraint and interface of the facet type is still
-    checked and reported; the check fails with no diagnostic only when nothing
-    else fails (amended 2026-10-14, fill round 9, round 8's review 1 finding
-    MINOR-3 and review 2 finding MINOR-1; narrowed at fill round 10, round 9's
-    review 1 findings MAJOR-1 and MINOR-2 and review 2 findings MAJOR-1 and
-    MINOR-1: round 9 returned at the first such mismatch, which hid a genuine
-    failure of a later requirement, and tested the requirement's side only;
-    structural_conformance.cpp `FunctionSignatureHasError` and
-    `CheckRequirements`, impl_lookup.cpp `LookupImplWitness`; pinned by
-    unsatisfied `fail_requirement_signature_error` and its `_other_member`,
-    `_other_constraint` and `_require` siblings, `fail_member_signature_error`
-    and the uses in the declaration golden's `fail_todo_` splits). A deduction
-    that meets such a requirement is a rejection, so an overload set whose other
+    A5(ii)). A member function that differs from a requirement only where the
+    requirement's own declaration or the member's has an error (a parameter
+    whose type is an error, the parameters compared pair by pair, or a return
+    type that is an error) adds no error and no note of its own: that error was
+    reported at the declaration, so that requirement is skipped with no further
+    diagnostic, in both modes, as building the thunk for an impl member reports
+    nothing for such a difference from an interface member on trunk 0bdce60a5.
+    Every difference that the comparison reports for a requirement with no error
+    is still reported next to the error (the `self` form, the number of
+    parameters, a parameter or a return type that differs where neither side has
+    an error, the evaluation mode, compile-time parameters of the member's own,
+    a member that is not a function), as that thunk reports each but the
+    evaluation mode, which it does not compare, and every other requirement,
+    template constraint and interface of the facet type is still checked and
+    reported; the check fails with no diagnostic only when nothing else fails
+    (amended 2026-10-14, fill round 9, round 8's review 1 finding MINOR-3 and
+    review 2 finding MINOR-1; narrowed at fill round 10, round 9's review 1
+    findings MAJOR-1 and MINOR-2 and review 2 findings MAJOR-1 and MINOR-1:
+    round 9 returned at the first such mismatch, which hid a genuine failure of
+    a later requirement, and tested the requirement's side only; narrowed again
+    at fill round 11, round 10's review 1 finding MAJOR-1 and review 2 finding
+    MAJOR-1: round 10 skipped any mismatch when either signature had an error
+    anywhere, which hid each of those differences; structural_conformance.cpp
+    `OnlyErrorsDiffer` and `CheckRequirements`, merge.cpp
+    `CheckRedeclParamsMatchExceptErrors`, impl_lookup.cpp `LookupImplWitness`;
+    pinned by unsatisfied `fail_requirement_signature_error` and its `_genuine`,
+    `_other_member`, `_other_constraint` and `_require` siblings,
+    `fail_member_signature_error` and `fail_member_signature_error_genuine`, and
+    the uses in the declaration golden's `fail_todo_` splits). A deduction that
+    meets such a requirement is a rejection, so an overload set whose other
     members all reject reports `OverloadNoMatch` and a blanket impl is not
     applied, as for a member's or a candidate's own error on trunk (W-233).
     Break condition: a reviewer finds an existing kind whose text already fits —
@@ -1313,6 +1325,8 @@ convention).
 | check/testdata/named_constraint/fail_template_constraint_unsatisfied.carbon (round-10 split after 001cdb4c7, 2026-10-14) | new `fail_incomplete_and_interface` (`HasGet` and an empty `interface I`; incomplete classes `Inc` and `Impl`, with `impl Impl as I {}`; `F(template T: HasGet & I)` called with each) | Round 10, derived by hand from R-6's `fail_incomplete` and the trunk analog sc1-fix10/t n02 on 0bdce60a5 (observed on the round-10 build first, sc1-fix10/q q01 and q02, so not counted, R16(d)): `UnusedBinding` at `T`; at `F(Inc)` `StructuralRequirementIncompleteType` with `ClassForwardDeclaredHere` and `InitializingGenericParam`, then `ConversionFailureTypeToFacet` into `I & HasGet` with `InitializingGenericParam`; at `F(Impl)` the incomplete-type error alone FILLED 2026-10-14 (fill round 10, 0d7ee5c19): as derived |
 | lower/testdata/template/template_constraint.carbon (round-10 change, 2026-10-14) | `overload_probe_require`'s `Run` returns `P(c) * 2 + P(d) - 40` and its comment gives both selections (round 9's review 1 finding MINOR-4) | Round 10, derived by hand: `C` selects the constrained member, which returns 10, and `D` the next, which returns 20, so 10 * 2 + 20 - 40 = 0, where the swapped selection gives 10; run as a program it returns 0 FILLED 2026-10-14 (fill round 10, 001cdb4c7): as derived; the IR calls `P`'s `overload0` specific for `C`, doubled, and `overload1` for `D`, then subtracts 40, and the extracted split returns 0 |
 | check/testdata/named_constraint/template_constraint_require.carbon (round-10 change, 2026-10-14) | `fail_todo_require_in_interface_in_generic_class_impl`'s comment re-points structural_conformance.cpp:533 to :541, in its line | Round 10: no CHECK line moves FILLED 2026-10-14 (fill round 10, 001cdb4c7): as stated |
+| check/testdata/named_constraint/fail_template_constraint_unsatisfied.carbon (round-11 splits, 2026-10-14) | `fail_requirement_signature_error`'s and `fail_member_signature_error`'s comments narrowed; new `fail_requirement_signature_error_genuine` (`HasReturnError` with `fn F(self, x: i32) -> Undefined` and `HasParamError` with `fn F(self, x: Undefined, y: i32) -> i32`; classes `Arity`, `ParamType`, `NoSelf`, `Field` and `ReturnOnly` called through `CallR`, `ParamArity`, `OtherParam`, `ParamReturn` and `ParamOnly` through `CallP`) and `fail_member_signature_error_genuine` (`HasF` with `fn F(self, x: i32, y: i32) -> i32`; classes `ReturnErrorArity`, `ReturnErrorParamType`, `ReturnErrorRefSelf`, `ParamErrorArity`, `ParamErrorOtherParam`, `ParamErrorReturn`, `ParamErrorNoSelf` and `ErrorsOnly`, each called through `Call`); `fail_todo_requirement_signature_error_overload` adds `HasG`, `D` with `fn G(self) -> Undefined`, `overload fn Q[template T: HasG]` / `Q(x: i32)` called as `Q(d)`; `fail_todo_requirement_signature_error_blanket` adds `J`, `impl forall [template T: HasF & J] T as J` and `d.(J.L)()` | Round 11, derived by hand from the trunk impl analogs on 0bdce60a5 (sc1-fix11/p/s tr_* and tm_*, one per class; round 10's reviews' x1t to y3t, b07t to b11t, r01t to r04t, f01t, o6t and c1t; observed on the development build first, so not counted, R16(d)): `NameNotFound` at each `Undefined`; at each use of `Arity`, `ParamType`, `NoSelf`, `Field`, `ParamArity`, `OtherParam` and `ParamReturn` `ConversionFailureTypeToFacet` with `StructuralMemberMismatch` (at the member; at the use for `Field`), `StructuralRequirementHere` and `DeductionGenericHere`, and nothing at `TestOnly`; the same at each member-side use but `TestErrorsOnly`, which gives nothing; at `Q(d)` `OverloadNoMatch` with the two `OverloadCandidateRejected` notes (deduction, then conversion); at `d.(J.L)()` `ImplLookupCycle` with `ImplLookupCycleNote` at the impl, then `MissingImplInMemberAccess` FILLED 2026-10-14 (fill round 11, e7783c80e): as derived |
+| check/testdata/named_constraint/fail_todo_template_constraint_members.carbon (round-11 change, 2026-10-14) | `fail_todo_tuple_pattern_param` adds `fn G(self, (a: i32, b: i32) = (1, 2))` and `D`'s matching `G`; the comment names the three forms | Round 11, derived by hand from D-SC-2 as amended at fill round 11 (round 10's review 1 tp01 and tp11 abort at merge.cpp:391 on 001cdb4c7, tp01t on trunk; observed on the development build first, so not counted, R16(d)): a second `SemanticsTodo` "tuple pattern parameter in `template constraint`", at `G`; nothing at `Call(d)`; no abort FILLED 2026-10-14 (fill round 11, e7783c80e): as derived |
 
 ### §4.C Commit 3
 
@@ -2339,18 +2353,30 @@ toolchain built from its sources, again on the toolchain stamped
 0.0.0-0.dev+a5078358c (below) and again on 6231d5b42, for itself and for the
 records commit after it, ae807c7e8, which completes round 8's review record.
 Fill round 10 (same day) folds round 9's two implementation reviews
-(APPROVE-WITH-FIXES both; 11 findings, none rejected): a requirement that cannot
-be compared with a type's member, because its declaration or the member's has an
-error, is skipped alone, so the failures round 9's guard hid are reported again;
-a requirement with a tuple pattern parameter, which aborted every use, is a
-TODO; the follow-on of an overload set or a blanket impl after such an error is
-filed as W-233 and the TODO as W-234: 3ae639811 (fixes, test sources, the design
-page, records), 001cdb4c7 (3 goldens, CHECK lines only), 04755f23b (the split
-pinning an incomplete type's interfaces after its structural error, and its
-records), 0d7ee5c19 (its golden, CHECK lines only) and 6247769bb (records); it
-measured the same totals on the toolchain built from its sources, again on the
-toolchain stamped 0.0.0-0.dev+001cdb4c7 (below) and again on 6247769bb for the
-records commit after it, which completes round 9's review record. Not of record
+(APPROVE-WITH-FIXES both; 11 findings, none rejected): only a requirement that
+cannot be compared with a type's member, because its declaration or the member's
+has an error, is skipped, so the failures round 9's guard hid are reported again
+(its test was still too broad, round 11 below); a requirement with a tuple
+pattern parameter, which aborted every use, is a TODO; the follow-on of an
+overload set or a blanket impl after such an error is filed as W-233 and the
+TODO as W-234: 3ae639811 (fixes, test sources, the design page, records),
+001cdb4c7 (3 goldens, CHECK lines only), 04755f23b (the split pinning an
+incomplete type's interfaces after its structural error, and its records),
+0d7ee5c19 (its golden, CHECK lines only) and 6247769bb (records); it measured
+the same totals on the toolchain built from its sources, again on the toolchain
+stamped 0.0.0-0.dev+001cdb4c7 (below) and again on 6247769bb for the records
+commit after it, which completes round 9's review record. Fill round 11 (same
+day) folds round 10's two implementation reviews (APPROVE-WITH-FIXES both; 8
+findings, none rejected): a mismatch is skipped only where an error causes it,
+so every other difference from a requirement with an error, or from a member
+with one, is reported as trunk's impl analog reports it; a tuple pattern
+parameter under a default value is the TODO too; the impl-lookup cycle after the
+error and W-233's member side are pinned; the ledger's SC-1 cites are checked
+mechanically at the head: 2ee29f311 (fixes, test sources, the design page),
+e7783c80e (2 goldens, CHECK lines only) and the records commit after it, which
+completes round 10's review record; it measured the same totals on the toolchain
+built from its sources and again on the toolchain stamped 0.0.0-0.dev+e7783c80e
+(below). Not of record
 until fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
@@ -3596,7 +3622,11 @@ and break condition:
     of follow-on diagnostics after an error type. Break condition: some member
     is found to satisfy a requirement whose declaration has an error, or
     upstream starts diagnosing an impl member against an erroneous interface
-    member; then the guard goes and the split's uses report. Pinned by
+    member; then the guard goes and the split's uses report. (Corrected at fill
+    round 11, round 10's review 2 MAJOR-1: trunk 0bdce60a5 already diagnoses
+    such an impl member wherever it differs from the interface member outside
+    the error, sc1-review10/adv2 x1t to y3t, so the second condition reads:
+    upstream starts diagnosing a difference in the error alone.) Pinned by
     unsatisfied `fail_requirement_signature_error` and the uses in the
     declaration golden's `fail_todo_` splits. Checked by the records commit
     after 6231d5b42: with `H`'s requirement in error and `C` declaring a
@@ -3654,7 +3684,8 @@ sets in all. The round counts 2 MAJOR, one finding of both reviews, and no
 BLOCKER. The records commit after 6247769bb checked the round's four answers
 against the round-10 head, as the decision log's round-9 review record states:
 (a) round 9's guard removed the follow-on but was not confined to it; round 10's
-first decision confines it to the requirement that cannot be compared, the
+first decision skips only the requirement that cannot be compared (its test
+still too broad, round 10's review MAJOR-1, round 11's decision), the
 hidden failures are reported with their trunk analogs' error counts and the
 follow-on stays removed; an error nested in a requirement's parameter or return,
 in the constraint's argument or in a specific gives the errors at its
@@ -3749,13 +3780,23 @@ and break condition:
     the incomplete-type error of D-SC-5(a) too, so an incomplete class that does
     not implement one is reported for it as well (sc1-fix10/q q01; trunk reports
     it for the interface alone, sc1-fix10/t n02), pinned by
-    `fail_incomplete_and_interface`, added after 001cdb4c7. Design: D-SC-9 as
-    amended at fill round 10; upstream's redeclaration checks, which test both
-    sides (merge.cpp `EntityHasParamError`, function.cpp
-    `CheckFunctionReturnTypeMatches`), and trunk's interface analogs, which
-    report every other member, constraint and interface. Break condition: as
+    `fail_incomplete_and_interface`, added after 001cdb4c7. The impl-lookup
+    cycle through them is reported after the error too, as trunk reports it for
+    the analog (sc1-review10/adv2 c1, c1t; round 10's review 2 MINOR-2), pinned
+    in `fail_todo_requirement_signature_error_blanket` since fill round 11.
+    Design: D-SC-9 as amended at fill round 10; trunk's interface analogs, which
+    report every other member, constraint and interface. (Corrected at fill
+    round 11, round 10's review 2 MAJOR-1: this cited upstream's redeclaration
+    checks as testing both sides, which they do not alike, since a parameter
+    error silences the redeclaration's parameter check, `EntityHasParamError`,
+    while a return-type error does not, x5t, d02r, d03r.) Break condition: as
     round 9's, or a program is found whose genuine failure the skip still hides;
-    then the skip narrows further. Pinned by unsatisfied
+    then the skip narrows further. BREAK CONDITION TAKEN at fill round 11 (round
+    10's review 1 MAJOR-1 and review 2 MAJOR-1): the test was an error anywhere
+    in either signature, so a difference the error does not cause, and a member
+    that is not a function, went unreported (b07 to b12, r01 to r04, f01 to f03;
+    x1 to x6, y1 to y3, m5), and round 11's decision narrows the skip to the
+    error's own difference. Pinned by unsatisfied
     `fail_requirement_signature_error` and its `_other_member`,
     `_other_constraint` and `_require` siblings and
     `fail_member_signature_error`. Checked by the records commit after
@@ -3793,6 +3834,177 @@ on the round-9 toolchain and on the round-10 build, the splits give
 `fail_member_signature_error` 6, 6 and 4, the two
 `fail_todo_requirement_signature_error_` splits 2 each on all three, and
 `fail_todo_tuple_pattern_param` an abort, an abort and 1.
+
+Round 10's own diff (3ae639811, 001cdb4c7, 04755f23b, 0d7ee5c19, 6247769bb,
+444ccbafe) had two implementation reviews, 8 findings in all: review 1,
+APPROVE-WITH-FIXES, 1 MAJOR and 2 MINOR (MAJOR-1, MINOR-1, MINOR-2); review 2,
+APPROVE-WITH-FIXES, 2 MAJOR and 3 MINOR (MAJOR-1, MAJOR-2, MINOR-1 to MINOR-3).
+Both checked round 10 on the driver stamped 0.0.0-0.dev+001cdb4c7 against the
+round-9 toolchain rebuilt from ae807c7e8's sources (sc1-fix10/r9-install) and
+trunk 0bdce60a5; review 2 re-ran the gate (1959 passed, 0 failed) and
+conformance (130 / 0 / 21 over 151, 49 of 56) in a private cache. On the round's
+question both found the narrowed guard right on every mixed shape they built: an
+erroneous requirement before or after a genuine failure of another requirement,
+`HasF & HasG` and `HasF & I` in both orders, an interface `require`, an
+associated function, an import across a library boundary, an incomplete type, a
+template instantiation and a nested `require` each report the genuine failure as
+trunk's interface analog does and nothing for the error; "Error only when
+nothing else fails" is the right rule; and looking the interfaces up after
+`Error` changes no overload or blanket-impl selection, both results rejecting
+(review 1's o01 to o05, review 2's o5), the one new diagnostic an impl-lookup
+cycle that trunk's analog reports too (review 1's o04, review 2's c1). Both
+found the skip itself too broad, MAJOR-1 of both: it fired on any mismatch when
+either signature had an error anywhere, so a different parameter count, `self`
+form, parameter type or return type next to the error, and a member that is not
+a function, went unreported where trunk's impl analog reports each (review 1's
+b07 to b12, r01 to r04 and f01 to f03; review 2's x1 to x6, y1 to y3, m5 and
+imp/i1's `Arity`), a regression from round 9 on the member side (b07 to b12; x2,
+x3, x6, y3, `Arity`) that meets round 10's break condition; the records' "only
+the requirement that cannot be compared" and "upstream's redeclaration checks,
+which test both sides" overclaimed, since the redeclaration check reports a
+parameter difference next to a return-type error (x5t, d02r, d03r). Review 1's
+other findings: MINOR-1 a tuple pattern under a default value still aborting at
+merge.cpp:391 (tp01, tp10, tp11; trunk aborts so for tp01t and tp13t), W-234 and
+the PR body overclaiming; MINOR-2 the ledger cites stale at the head (W-135,
+W-136, W-137, W-138, W-139, W-141, W-143, W-151). Review 2's: MAJOR-2 the PR
+body at 96,027 characters, over GitHub's 65,536-character description limit;
+MINOR-1 the design page not listing the tuple-pattern TODO; MINOR-2 the cycle
+unrecorded; MINOR-3 W-233's member side unpinned and described as following a
+requirement's error only (o6; trunk's o6t is silent since there the type
+declares its impl). Both found the tuple-pattern TODO honest scope under R17
+(neither the design page nor p002200 covers a tuple pattern parameter, and trunk
+aborts for the impl and redeclaration analogs), pinned, not firing for a
+tuple-typed parameter (tp02, tp03) and changing no golden outside SC-1; the
+splits pinning what the records say (their error counts, and
+`overload_probe_require`'s 10 * 2 + 20 - 40 = 0 with 10 for the swapped
+selection, the IR selecting `P`'s first member for `C` and its second for `D`);
+the PR body naming all 50 commits, stating the trade and holding no model
+identifier; gap row 60 with ten rounds, `Core.Optional(Self)`, W-233 and W-234;
+and W-233's trunk claims (o01, o02 `OverloadNoMatch`; k01
+`MissingImplInMemberAccess`). Review 1 re-ran probes.sh (2174 result lines) and
+imps.sh (the 31 import sets), identical to sc1-records10's runs but for abort
+offsets, and re-classified 147 files of round 10's comparison (the 107 differing
+and 40 identical) as recorded. Review 1's probes are sc1-review10/adv1 (b: 17,
+f: 4, m: 21, o: 7, rq: 17, ti: 12 trunk analogs, tp: 14, lsplit: 2, imp/x1: an
+import set of 2 files), review 2's sc1-review10/adv2 (p: 22, t: 26 trunk
+analogs, ti: 10, cpp: 1, imp/i1: an import set of 2 files), 153 probe files and
+2 import sets in all. The round counts 2 MAJOR, MAJOR-1 the one finding of both
+reviews, and no BLOCKER.
+
+Fill round 11 (2026-10-14), by review finding, each reproduced first on the
+toolchain stamped 0.0.0-0.dev+001cdb4c7 with the reviews' probes, against the
+rebuilt round-9 toolchain and their trunk analogs on 0bdce60a5:
+
+-   MAJOR-1 (both reviews): reproduced (review 1's b07 to b12, r01 to r04 and
+    f01 to f03, review 2's x1 to x6, y1 to y3, m5 and imp/i1's `Arity` give the
+    declaration's error alone; round 9 reported b07 to b12, x2, x3, x6 and y3;
+    trunk's impl analogs report each). Taken, round 11's decision below, with
+    review 2's rule refined to compare the parameters pair by pair, since
+    trunk's thunk also reports a parameter that differs next to an erroneous one
+    (sc1-fix11/p/z z1, z2 against z1t, z2t), and with review 1's question on
+    which analog governs a parameter error next to a count or `self` difference
+    answered by the impl analog, which reports it (b07t, b09t, b10t, r01t,
+    r03t), not the redeclaration, which is silent (d01r), since a requirement is
+    checked as an interface member is. Pinned by
+    `fail_requirement_signature_error_genuine` and
+    `fail_member_signature_error_genuine`, each class's expectation derived from
+    its trunk impl analog (sc1-fix11/p/s); the claims are corrected in D-SC-9,
+    round 9's and round 10's decisions here and in the decision log, the two
+    split comments, the design page, ORCHESTRATION and the PR body.
+-   MAJOR-2 (review 2): reproduced (96,027 characters). Taken as directed: the
+    PR body's Review record and Verification paragraphs move verbatim into the
+    PR's first comment, as PR 58 did, the body naming it in one line; both are
+    re-measured with len() after this round's additions (outside the
+    repository).
+-   MINOR-1 (review 1): reproduced (tp01, tp10 and tp11 abort at merge.cpp:391
+    on 001cdb4c7; tp08 is a plain mismatch and tp09 checks clean). Taken:
+    `HasTupleParamPattern` looks through a `DefaultValuePattern` as through
+    `var` (round 11's toolchain change, handle_named_constraint.cpp); pinned by
+    `G` in `fail_todo_tuple_pattern_param`; W-234's title and evidence say
+    "directly, under `var` or under a default value". tp01, tp09, tp10 and tp11
+    now give the TODO alone, and tp08 the TODO instead of its mismatch, its
+    requirement no longer collected.
+-   MINOR-1 (review 2): taken. The design page's D-SC-2 account adds the
+    tuple-pattern TODO beside the default-definition one.
+-   MINOR-2 (review 1): reproduced, and a mechanical check of every file:line
+    cite in W-027, W-028, W-134 to W-143, W-151, W-168, W-169 and W-232 to W-234
+    at the head (125 cites, each a named symbol checked within two lines, the
+    rest read) found these off as well: W-027's handle_function.cpp:573-585
+    (:571-587), handle_let_and_var.cpp:69 (:69-82), import_ref.cpp:3708 (:3732),
+    type_completion.cpp :1108, :1168 and :1230 (:1109, :1169, :1231) and the
+    chokepoint's convert.cpp:1955 (that of 8068151ed; :1969 at the head);
+    W-134's and W-135's handle_let_and_var.cpp:69 (:77-80); W-138's
+    structural_conformance.cpp:507 (:552); W-139's
+    structural_conformance.cpp:541 (:587) and impl.cpp:1092 (:1091); W-140's
+    :1108-1230 (:1109-1236); W-141's impl.cpp:994-1090 and :926 (:993-1089,
+    :925). Each is re-pointed at the round-11 head with the reported ones (W-135
+    :44, W-136 :33, W-137 :18, W-138 custom_witness.cpp:1299, W-139 :524, W-141
+    :98, W-143 :299 `GetComparisonSpecifics` and :387, W-151 :273-274), and with
+    the cites round 11 moved (W-027's CollectStructuralMembers :246 and the
+    tuple-pattern TODO :275-278, W-234's :207-233 and :275-278); W-027's round-9
+    and round-10 cites of functions round 11 removed are marked as of those
+    heads.
+-   MINOR-2 (review 2): taken. Round 10's first decision says the facet type's
+    interfaces are looked up after the error too, so an impl-lookup cycle
+    through them is reported, as trunk reports it; pinned as `J` in
+    `fail_todo_requirement_signature_error_blanket`, expected from c1t.
+-   MINOR-3 (review 2): reproduced (o6: `OverloadNoMatch` after the member's
+    error). Taken: `fail_todo_requirement_signature_error_overload` adds the
+    member-side shape (`HasG`, `D`, `Q`); gap row 60 and the PR body say "after
+    a requirement's or member's signature error (W-233)", the row's first cell
+    unchanged, and W-233's evidence names the shape.
+
+Rejected: none. Review 2's MAJOR-1 rule is taken with its fourth step refined
+pair by pair, as stated, and review 1's (iii) is decided for the impl analog.
+
+Round 11's decision as an R29(a) implementation decision, with design citation
+and break condition:
+
+-   **A mismatch is skipped only where an error causes it**
+    (structural_conformance.cpp `OnlyErrorsDiffer`, replacing
+    `FunctionSignatureHasError`, and its use in `CheckRequirementFunction` and
+    `CheckRequirements`; merge.cpp `CheckRedeclParamsMatchExceptErrors`, new;
+    round 10's review 1 MAJOR-1 and review 2 MAJOR-1). Symptom: round 10 skipped
+    any mismatch when either signature had an error anywhere, so a member that
+    differs from the requirement in its parameter count, its `self` form, a
+    parameter or its return type next to the error, or that is not a function,
+    was not reported, where trunk's impl analog reports each and round 9
+    reported the member side. Root cause: the test asked whether an error was
+    present, not whether it caused the mismatch, and was applied to every
+    `Mismatch`, including the paths that compare no signature. Decision: a
+    member function whose signature does not match is skipped only when it
+    agrees with the requirement in the presence of `self`, the presence and
+    length of each parameter list, every pair of parameters where neither has an
+    error type (compared as D-SC-5(d) compares them), the return type where
+    neither is an error, and the evaluation mode, and some parameter or return
+    type has an error; every other mismatch, and every member that is not a
+    function or has compile-time parameters of its own, is reported as for a
+    requirement with no error. So each difference that the comparison reports
+    without the error is reported next to it, and only the error's own
+    difference is silent, as building an impl member's thunk reports nothing for
+    an argument or a result of an error type. The evaluation mode is compared as
+    D-SC-5(d) compares it although the thunk does not (trunk accepts an impl
+    member whose mode differs, sc1-fix11/p/e e2t, and SC-1 reports it with or
+    without an error, e2, e1). Design: D-SC-9 as amended at fill round 11; trunk
+    0bdce60a5's impl analog, which governs a parameter error next to a count or
+    `self` difference (b07t, b09t, b10t, r01t, r03t report it) where the
+    redeclaration analog is silent (d01r). Break condition: upstream's thunk
+    starts reporting a difference next to an erroneous parameter or result, or
+    stops reporting one; then the skip follows it. Pinned by unsatisfied
+    `fail_requirement_signature_error_genuine` (7 shapes reported, `ReturnOnly`
+    and `ParamOnly` silent) and `fail_member_signature_error_genuine` (7
+    reported, `ErrorsOnly` silent), with the earlier
+    `fail_requirement_signature_error`, `fail_member_signature_error` and their
+    siblings unchanged.
+
+Round 11's expectations were derived by hand from the trunk impl analogs, as the
+§4 rows say, but the development build ran the reviews' shapes before the splits
+were written, so none is counted (R16(d)). Extracted and checked on the round-11
+build, the splits give `fail_requirement_signature_error` 3 errors, `_genuine`
+9, `_other_member` 5, `_other_constraint` 4, `_require` 2,
+`fail_member_signature_error` 4, `fail_member_signature_error_genuine` 16, the
+two `fail_todo_requirement_signature_error_` splits 4 each (2 each on the
+round-10 build) and `fail_todo_tuple_pattern_param` 2 (1 on the round-10 build).
 
 Measured, on the container only (not of record, R9; hosted: not run, Actions
 disabled). Round 1: autoupdate over the 18 goldens in three passes (all 18
@@ -4037,7 +4249,34 @@ on trunk, fb12f63cb, the round-9 build and the round-10 build are as round 9's
 review record states (sc1-records10/z). Round 10's commits: 3ae639811 (fixes,
 test sources, docs, records), 001cdb4c7 (goldens), 04755f23b (the
 incomplete-type split and its records), 0d7ee5c19 (its golden), 6247769bb
-(records) and the records commit after it.
+(records) and the records commit after it. Round 11 (the toolchain built from
+the round-11 sources before the commit, stamped 0.0.0-0.dev+444ccbafe.dirty, the
+uncommitted edits being exactly 2ee29f311's): autoupdate over the 19 SC-1
+goldens to a fixpoint from exactly 2ee29f311's test sources (pass 1 rewrote the
+2 with new source lines, pass 2 none; the result is e7783c80e); gate 1959
+passed, 0 failed, exit 0, 37 s, no `!` or `?` mark. Re-run on the toolchain
+rebuilt from e7783c80e with a clean tree (stamped 0.0.0-0.dev+e7783c80e, no
+toolchain source differing from 2ee29f311): autoupdate over the 19 SC-1 goldens
+changed nothing (one dot each, git status clean); gate 1959 passed, 0 failed,
+exit 0, 35 s, no `!` or `?` mark; conformance PASS 130, every failure class 0,
+SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 72.6 s, the same two
+programs moving (sc1-fix11/conf, in a private cache); the check-phase
+diagnostics of 2442 probe files (round 10's 2172; round 10's reviews' 153 and
+the 98 single files of review 1's import-run copies, sc1-review10/adv1/imprun;
+round 11's 19, sc1-fix11/p/z), compared with the same files on the round-10
+toolchain before its rebuild (sc1-fix11 r10_all.txt), are identical for 2410,
+differ for 28 only by added errors (the genuine failures MAJOR-1 named: review
+1's b07 to b12, r01 to r04 and f01 to f03, review 2's x1 to x4, x6, y1 to y3 and
+m5; round 9's review 1 a08, a member that is a field; z1, z2, z5 and z8; and
+tp09, whose requirement under a default value is the TODO now) and for 4 by both
+(tp01, tp10 and tp11, each an abort now the TODO; tp08, its mismatch now the
+TODO), and none only by removed lines; the 33 import sets (round 10's 31, review
+1's x1 and review 2's i1) give the round-10 results but for i1's `Arity`, now
+reported across the import. The comparison was first run on a development build
+whose merge.cpp had an `#include <tuple>`, removed before the commit, which
+moved the abort at merge.cpp:391 to :393 in 7 files and changed nothing else.
+Round 11's commits: 2ee29f311 (fixes, test sources, the design page), e7783c80e
+(goldens) and the records commit after it.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

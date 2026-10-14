@@ -48,6 +48,26 @@ fn Use(h: Holder(array(i32, 2))) -> i32 {
   return h.First();
 }
 
+// --- index_class_with_index_with.carbon
+library "[[@TEST_NAME]]";
+
+class Vec(T: type) {
+  var tag: i32;
+  impl as Core.IndexWith(i32) where .ElementType = i32 {
+    fn At(self, unused i: i32) -> i32 { return self.tag; }
+  }
+}
+
+//@dump-sem-ir-begin
+fn Get[template T: type](v: Vec(T), i: i32) -> i32 {
+  return v[i];
+}
+//@dump-sem-ir-end
+
+fn Use(v: Vec(bool)) -> i32 {
+  return Get(v, 0);
+}
+
 // --- fail_tuple_index_non_tuple_on_instantiation.carbon
 library "[[@TEST_NAME]]";
 

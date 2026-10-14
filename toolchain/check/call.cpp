@@ -824,9 +824,23 @@ static auto IsCallPerformable(Context& context, SemIR::InstId callee_id,
       SemIR::ConstantDependence::Template) {
     return false;
   }
+  // A generic class, interface or named constraint applied to arguments forms
+  // a type. Its arguments are compile-time values that can be symbolic, as in
+  // a checked generic, so a template-dependent argument value makes the type
+  // dependent without making the call dependent; only an argument whose type
+  // is template-dependent defers the call. Forming the type now is what lets
+  // `Holder(T)` in a parameter's type deduce `T`.
+  bool forms_type =
+      context.types()
+          .IsOneOf<SemIR::GenericClassType, SemIR::GenericInterfaceType,
+                   SemIR::GenericNamedConstraintType>(
+              context.insts().Get(callee_id).type_id());
   for (auto arg_id : arg_ids) {
-    if (OperandDependence(context, arg_id) ==
-        SemIR::ConstantDependence::Template) {
+    auto dependence =
+        forms_type
+            ? OperandDependence(context, context.insts().Get(arg_id).type_id())
+            : OperandDependence(context, arg_id);
+    if (dependence == SemIR::ConstantDependence::Template) {
       return false;
     }
   }

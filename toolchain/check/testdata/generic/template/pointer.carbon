@@ -71,6 +71,17 @@ fn Use(n: i32*) -> i32 {
   return Deref(n);
 }
 
+// --- fail_deref_class_type_param.carbon
+library "[[@TEST_NAME]]";
+
+class C(T: type) {
+  var item: T;
+}
+
+fn F[template T: type](c: C(T)) -> T {
+  return *c;
+}
+
 // --- fail_deref_non_pointer_on_instantiation.carbon
 library "[[@TEST_NAME]]";
 

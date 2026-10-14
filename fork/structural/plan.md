@@ -2167,8 +2167,9 @@ records), 18775fee3 (5 goldens refilled) and df5120d03 (records); it re-measured
 the same totals on the toolchain stamped 0.0.0-0.dev+18775fee3 (below). Fill
 round 6 (2026-10-14) folds round 5's two implementation reviews: 56e400145
 (fixes, test sources, the design page, records), fb12f63cb (3 goldens, CHECK
-lines only) and the records commit after them; it re-measured the same totals on
-the toolchain stamped 0.0.0-0.dev+fb12f63cb (below). Not of record until
+lines only) and 857d5b048 (records); it re-measured the same totals on the
+toolchain stamped 0.0.0-0.dev+fb12f63cb (below), again on 857d5b048 for the
+records commit after it. Not of record until
 fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
@@ -2751,8 +2752,10 @@ and break condition:
     (sem_ir/typed_insts.h:2235 `StructuralRequirementType`;
     structural_conformance.cpp:696 `MakeStructuralRequirementName`, :746
     `GetStructuralRequirementOfType` and :811
-    `CheckValueIsNotStructuralRequirement`; convert.cpp:2645 in `Convert` and
-    :2457, :2476, :2490 and :2534 in the four template `PerformAction`s;
+    `CheckValueIsNotStructuralRequirement`; convert.cpp:2687 in `Convert` and
+    :2495, :2515, :2531 and :2575 in the four template `PerformAction`s,
+    re-cited at the round-6 head, where `Convert` and the first two call round
+    6's `CheckConversionIsNotOfStructuralRequirement`;
     call.cpp:772-775 in `PerformCallToNonFunction`; member_access.cpp:400 (the
     lookup) and :949 (the compound redirect); the type's lowering
     (lower/type.cpp:879), completion, destruction, import, printing and naming
@@ -2895,7 +2898,8 @@ and break condition:
     pointee, so objects of it exist, and binding or discarding a reference to
     one reads no value, as taking its address does not. Break condition:
     D-SC-20's, or upstream makes a conversion to a reference category read the
-    object. Observed with it, not SC-1's: a template's `F(ref *p)` is refused at
+    object; then that target leaves the exemption and is refused as a value is.
+    Observed with it, not SC-1's: a template's `F(ref *p)` is refused at
     instantiation when `*p` has the requirement's type (the replayed argument is
     a `SpecificInst` of the `ref` tag, which the rule does not look through),
     while trunk 0bdce60a5 aborts on every such template call (inst.h:249,
@@ -2994,7 +2998,13 @@ bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 111.3 s, the same two programs moving
 against fork/conformance/out/scoreboard.json; the 553 probe runs, the round-5
 reviews' 412 and round 6's 42 classify exactly as on the pre-commit build. Round
 6's commits: 56e400145 (fixes, test sources, docs, records), fb12f63cb (goldens)
-and the records commit after them.
+and 857d5b048 (records). Re-run for the records commit after 857d5b048, on
+857d5b048 with the installed toolchain stamped 0.0.0-0.dev+fb12f63cb (no
+toolchain source differs): autoupdate over the 19 SC-1 goldens changed nothing;
+gate 1959 passed and 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130,
+every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56
+(51.2 s), the same two programs moving; the 553, 412 and 42 probe runs give
+results identical, line for line, to the run on fb12f63cb.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

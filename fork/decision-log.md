@@ -4283,10 +4283,13 @@ refilled, CHECK lines only) and df5120d03 (records: the re-measure on a
 clean-stamped toolchain, misses (n) and (o)); the records commit after df5120d03
 adds round 4's per-finding dispositions with their cites, the line cites of
 round 5's decision and the re-measure on df5120d03. Fill round 6 (2026-10-14),
-folding round 5's two implementation reviews: 56e400145 (the fix, test
-sources, the design page and records), fb12f63cb (3 goldens, CHECK lines only)
-and the records commit after them (the clean-stamp re-measure, the round-6 rows
-marked FILLED, the commit hashes). Each fix is an R29(a)
+folding round 5's two implementation reviews: 56e400145 (the fix, test sources,
+the design page and records), fb12f63cb (3 goldens, CHECK lines only) and
+857d5b048 (records: the clean-stamp re-measure, the round-6 rows marked FILLED,
+the commit hashes); the records commit after 857d5b048 completes round 5's
+review record with the cites of its dispositions, gives ROUND 6's DECISION the
+consequence of its break condition, re-points round 5's convert.cpp cites at the
+round-6 head and records the re-measure on 857d5b048. Each fix is an R29(a)
 implementation decision recorded for after-the-fact veto, with its design
 citation and break condition; none reopens F-010 or the intent of a D-SC
 decision. Every count below is a measurement on the container, not of record
@@ -4539,10 +4542,12 @@ reviews' probes.
     (sem_ir/typed_insts.h:2235 `StructuralRequirementType`;
     structural_conformance.cpp:696 `MakeStructuralRequirementName`, called from
     member_access.cpp:400, :746 `GetStructuralRequirementOfType` and :811
-    `CheckValueIsNotStructuralRequirement`; convert.cpp:2645 in `Convert` and
-    :2457, :2476, :2490 and :2534 in the `PerformAction`s for `ConvertAction`,
-    `ConvertToCategoryAction`, `ConvertToValueAction` and `InitializeAction`;
-    call.cpp:772-775 in `PerformCallToNonFunction`; member_access.cpp:949
+    `CheckValueIsNotStructuralRequirement`; convert.cpp:2687 in `Convert` and
+    :2495, :2515, :2531 and :2575 in the `PerformAction`s for `ConvertAction`,
+    `ConvertToCategoryAction`, `ConvertToValueAction` and `InitializeAction`,
+    re-cited at the round-6 head, where `Convert` and the first two call round
+    6's `CheckConversionIsNotOfStructuralRequirement`; call.cpp:772-775 in
+    `PerformCallToNonFunction`; member_access.cpp:949
     `RedirectStructuralRequirementAccess`; toolchain/diagnostics/kind.def:477;
     review 1 BLOCKER-1, BLOCKER-2, MAJOR-1, MAJOR-2, review 2 BLOCKER-1,
     MAJOR-1). Symptom: through `typeof`, `fn H(unused f: typeof(HasN.N)) {}`
@@ -4619,7 +4624,8 @@ reviews' probes.
     parameter bound to the requirement's type is an accepted empty value, in a
     checked generic and in a template (round 5's review 1 MINOR-1). Design:
     D-SC-20 as amended at fill round 6. Break condition: D-SC-20's, or upstream
-    makes a conversion to a reference category read the object. Pinned by lower
+    makes a conversion to a reference category read the object; then that target
+    leaves the exemption and is refused as a value is. Pinned by lower
     `requirement_typeof_object` (fields of the type and of a tuple, struct and
     array of it, a generic class's, each destroyed; `ref` and `ref self`
     bindings; `Pass` and `LetValue`, the accepted type-parameter shapes) and
@@ -4826,7 +4832,7 @@ waiting-list defect, and both confirmed round 4's union drain. Fill round 5
 toolchain stamped 0.0.0-0.dev+ff490bd48, none rejected and none taken in part.
 Dispositions: review 1 BLOCKER-1 is ROUND 5's DECISION above through the
 type-based refusal and its replay in the template convert actions
-(convert.cpp:2457, :2476, :2490, :2534), pinned by requirement-call
+(convert.cpp:2495, :2515, :2531, :2575), pinned by requirement-call
 `fail_requirement_through_template_instantiation` and lower
 `requirement_through_template_instantiation`; review 1 BLOCKER-2 and review 2
 BLOCKER-1 are the same decision through the concrete type
@@ -4836,12 +4842,12 @@ are refused, pinned by `fail_requirement_typeof_value`, compound
 prefer and not their minimal alternative (refusing `typeof`, which a template's
 `typeof(T.N)`, evaluated at instantiation, would escape); MAJOR-1 of both
 reviews is agreed (R17) and answered by the same decision, the refusal in
-`Convert` (convert.cpp:2645) kept as D-SC-20's rule and not as a crash guard,
+`Convert` (convert.cpp:2687) kept as D-SC-20's rule and not as a crash guard,
 since deleting it would make `Take(HasN.N)` compile against round 4's decision
 and goldens (R16(b)), and review 2 MAJOR-1's records are amended (the
-convert.cpp:2641-2644 comment, D-SC-20, round 4's BLOCKER-1 bullet and decision
+convert.cpp:2682-2686 comment, D-SC-20, round 4's BLOCKER-1 bullet and decision
 in the plan and above, the design page, ORCHESTRATION); review 1 MAJOR-2 is the
-replayed category conversion (`ConvertToCategoryAction`, convert.cpp:2476),
+replayed category conversion (`ConvertToCategoryAction`, convert.cpp:2515),
 which refuses `T.N;`, `(T.N, 1);` and `{.a = T.N};` instantiated with `HasN`,
 pinned by `Discard`, `DiscardTuple` and `DiscardStruct`; review 1 MINOR-1 gives
 a value that deduction built the conversion's location
@@ -4876,25 +4882,33 @@ specifics; the one rejected valid class was MAJOR-1. The aborts their probes
 found reproduce on trunk 0bdce60a5 (handle_call.cpp:984, sem_ir/generic.cpp:84,
 import_ref.cpp:5172, custom_witness.cpp:487). Fill round 6 folds all 11, each
 reproduced first on the toolchain stamped 0.0.0-0.dev+18775fee3, none rejected.
-Dispositions: MAJOR-1 of both reviews is ROUND 6's DECISION above, fixed at the
-refusal's rule rather than by either suggested mechanism, for the reasons
-there; review 1 MINOR-1 is taken as its first fix (D-SC-20 narrowed, `Pass` and
-`LetValue` pinned), its second (an action for every template-dependent value
-conversion) declined because it cannot reach checked generics and would add
-actions to every template body upstream's goldens dump; MINOR-2 of both reviews
-adds import `requirement_type_a`, `requirement_type_b` (dumped) and
+Dispositions, with their cites at the round-6 head: MAJOR-1 of both reviews is
+ROUND 6's DECISION above (convert.cpp:2464, called at :2687, :2495 and :2515;
+the destroy body it lets through, custom_witness.cpp:984
+`MakeSubobjectDestroyOpBody`), fixed at the refusal's rule rather than by either
+suggested mechanism, for the reasons there, and pinned by lower
+`requirement_typeof_object` and requirement-call `ReadField`; review 1 MINOR-1
+is taken as its first fix (D-SC-20 narrowed, fork/structural/plan.md:757-776;
+`Pass` and `LetValue` pinned in lower `requirement_typeof_object`), its second
+(an action for every template-dependent value conversion) declined because it
+cannot reach checked generics and would add actions to every template body
+upstream's goldens dump; MINOR-2 of both reviews adds import
+`requirement_type_a`, `requirement_type_b` (dumped) and
 `fail_requirement_type_value` (the importer's refusal and `<type of
-Has(i32).N>*` printed), and the stringifier's fallback becomes a `CARBON_CHECK`
-(sem_ir/stringify.cpp:934), the type being formed only for a requirement;
-review 2 MAJOR-2 rewords (o) here, in the plan's §4.B row, misses list and
-round-5 note, and in the PR body, on evidence reproduced on this build and on
-trunk (`carbon -v compile` logs "Found equivalent specifics"; a `Take` whose
-body depends on `T` keeps three symbols and returns 111); review 2 MINOR-1 marks
-round 5's three §4.B rows NOT COUNTED and carries the disclosure here
-(FILL-CAUGHT MISSES) and in the PR body; MINOR-3 restates the name_lookup.cpp
-claim in ROUND 5's DECISION, D-SC-20, the plan's round-5 bullet and W-027's
-evidence; MINOR-4 amends D-SC-10 and the plan's round-1 mechanisms paragraph;
-MINOR-5 fixes the comment; MINOR-6 restores the UA-1 sentences' line breaks.
+Has(i32).N>*` printed), pinning the type's import (import_ref.cpp:3029-3051 and
+:5111-5113), and the stringifier's fallback becomes a `CARBON_CHECK`
+(sem_ir/stringify.cpp:934), the type being formed only for a requirement; review
+2 MAJOR-2 rewords (o) here, in the plan's §4.B row (plan.md:1173), misses list
+and round-5 note, and in the PR body, on evidence reproduced on this build and
+on trunk (lower/specific_coalescer.cpp; `carbon -v compile` logs "Found
+equivalent specifics"; a `Take` whose body depends on `T` keeps three symbols
+and returns 111); review 2 MINOR-1 marks round 5's three §4.B rows
+(plan.md:1171-1173) NOT COUNTED and carries the disclosure here (FILL-CAUGHT
+MISSES) and in the PR body; MINOR-3 restates the name_lookup.cpp claim in ROUND
+5's DECISION, D-SC-20 (plan.md:739-742), the plan's round-5 bullet and W-027's
+evidence; MINOR-4 amends D-SC-10 (plan.md:480-497) and the plan's round-1
+mechanisms paragraph; MINOR-5 fixes the comment (convert.cpp:2682-2686); MINOR-6
+restores the line breaks of ORCHESTRATION's UA-1 "Last updated" sentences.
 No residue is filed: W-169 is not used. Per-finding detail is in the plan's
 "Landed notes (SC-1 fill rounds, 2026-10-13)".
 
@@ -4985,7 +4999,15 @@ fb12f63cb with a clean tree (stamped 0.0.0-0.dev+fb12f63cb): autoupdate over the
 19 SC-1 goldens changed nothing; gate 1959 passed, 0 failed, exit 0, no `!` or
 `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets
 49 PASS, 0 FAIL, 7 SKIP of 56, 111.3 s; every probe run classifies as on the
-pre-commit build. Against
+pre-commit build. Re-run for the records commit after 857d5b048, on 857d5b048
+with that installed toolchain (no toolchain source differs from 56e400145):
+autoupdate over the 19 SC-1 goldens changed nothing (one dot each, git status
+clean); gate 1959 passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS
+130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of
+56, 51.2 s; the 553 probe runs of rounds 2 to 5, the round-5 reviews' 412 and
+round 6's 42 give results identical, line for line, to the run on fb12f63cb (398
+check errors, 131 compile and run, 5 with no `Run`, 19 aborts; 249, 135, 16 and
+12; 24 check errors and 18 compile and run). Against
 fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
 exactly two programs move in every run:
 generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
@@ -5076,9 +5098,18 @@ under FILL-CAUGHT MISSES, the measurements); the design page (objects of the
 type, values typed by a parameter bound to it); the ORCHESTRATION status
 paragraph, with df5120d03's rewrap of the UA-1 sentences undone, and Branches
 row; W-027's title, evidence and notes (six fill rounds). Round 6's records
-commit, after fb12f63cb: the three round-6 §4.B rows marked FILLED, round 6's
-commit hashes and the clean-stamp re-measure here, in the plan, in
-ORCHESTRATION's Branches row and in W-027's notes.
+commit 857d5b048: the three round-6 §4.B rows marked FILLED, round 6's commit
+hashes and the clean-stamp re-measure here, in the plan, in ORCHESTRATION's
+Branches row and in W-027's notes. The records commit after 857d5b048: 857d5b048
+named at the head of this entry and of the plan's note; round 5's review record
+completed with the cites of its dispositions (REVIEWS above); the consequence of
+ROUND 6's break condition, here and in the plan; the convert.cpp cites of ROUND
+5's DECISION, here and in the plan, and of round 4's dispositions re-pointed at
+the round-6 head (round 6 moved them, and `Convert` and the `ConvertAction` and
+`ConvertToCategoryAction` replays now call
+`CheckConversionIsNotOfStructuralRequirement`); the re-measure and probe re-run
+on 857d5b048 here and in the plan; the ORCHESTRATION status paragraph and
+Branches row; W-027's notes and goldens evidence (fb12f63cb for fill round 6).
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

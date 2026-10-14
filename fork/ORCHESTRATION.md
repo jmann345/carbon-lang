@@ -143,6 +143,28 @@ under adversarial review. Merge order: PR 53, PR 51, PR 52, SC-1, PR 54, PR 55,
 PR 56, PR 57, then PR 58 through its state L integration commit; OX-1 and VA-1
 after PR 58. None is merged.
 
+Later on 2026-10-14 (14:00 UTC): PR 59 (VA-1, claude/carbon-fork-0-1-va, head
+b0822a744, 19 commits over trunk 3eb7f36f0 of which the first two are upstream
+cherry-picks 2ec4bab59 and a045da8e6 with upstream authorship:
+definition-checked variadics slice 1, one pack `... each x: T` per function,
+statement and call-argument expansions, per-arity lowering; W-013 stays open
+with the slice in its notes, W-212 to W-230 filed, W-231 unused; expected
+137/0/21 over 158, 49/56; gap row 53 DESIGN-ONLY to PARTIAL expected) is OPEN
+and HELD, verified on the container-built toolchain (gate 1960/1960, eight
+mutants as predicted). Its two implementation reviews (APPROVE-WITH-FIXES, 5 and
+7 findings) were folded in a fix commit that changed four toolchain files and
+has no review of its own on record, as the PR body states. OX-1's plan reached
+rev 5 without a sign-off: three focused re-reviews each REJECTed the
+operator-export mechanism because exports made inside the Clang Sema that
+Carbon's own operator, call and conversion resolution consults leak into that
+resolution; the fourth re-review found three of its nine invariants failing on
+programs, so OX-1 is being PARKED at plan rev 6 with a root-cause record (row 48
+stays MISSING, W-202 to W-211 and F-017 stay reserved and unused). SC-1 is in
+fill round 13 (the round-12 review: no BLOCKER, both reviews APPROVE-WITH-FIXES
+with 5 findings each). Merge order: PR 53, PR 51, PR 52, SC-1, PR 54, PR 55, PR
+56, PR 57, PR 58 through its state L integration commit, then PR 59. None is
+merged.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -481,8 +503,8 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-st` | HELD OPEN as PR #55 — ST-1 str comparison, Core.StringBuf and concatenation (F-014) at 21307851a (W-057 discharged; W-160..W-167 filed; expected 133/0/21 over 154); merges after EV-1. |
 | `claude/carbon-fork-0-1-op` | HELD OPEN as PR 56 — OP-1 Core.Optional comparison and F-015 at 379f20f67 (W-058 discharged; W-170..W-179, W-195 filed; expected 132/0/25 over 157; row stays PARTIAL); merges after PR 55. |
 | `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at 628273444, stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1. |
-| `claude/carbon-fork-0-1-ox` | PLANNING — OX-1 operator export to C++ (W-054, gap row 48), cut from f67ab650d; reserves W-202..W-211, F-017 if minted; merges after DD-1. |
-| `claude/carbon-fork-0-1-va` | PLANNING — VA-1 definition-checked variadics, slice 1 (W-013, gap row 53), cut from f67ab650d; reserves W-212..W-231, F-018 if minted; merges after OX-1 or DD-1, whichever is later. |
+| `claude/carbon-fork-0-1-ox` | PARKED at plan rev 6 (local, unpushed) — OX-1 operator export to C++ (W-054, gap row 48 stays MISSING): four focused re-reviews, the export mechanism leaks into Carbon's own resolution; W-202..W-211, W-245..W-249 and F-017 reserved and unused; a future plan must separate operator exports from the Sema Carbon's own lookup consults. |
+| `claude/carbon-fork-0-1-va` | HELD OPEN as PR 59 — VA-1 definition-checked variadics slice 1 at b0822a744 (W-013 open with the slice recorded; W-212..W-230 filed; W-231 unused; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58. |
 | `claude/carbon-fork-0-1-dd` | HELD OPEN as PR 58 — DD-1 design docs without placeholders at fcee90d9b (W-065 discharged; W-182..W-185, W-188, W-189, W-191..W-194 filed; W-240..W-244 reserved, unused; expected 147/0/22 over 169; row 70 DONE expected; row 91 PARTIAL until state L); four document-review rounds folded; merges last of the held PRs through its state L integration commit. |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED AND FILLED on the container toolchain — SC-1 template structural conformance through fill round 3 at 2497d5000 (gate 1959/1959, conformance 130/0/21 over 151; W-134..W-143, W-151; W-168/W-169 reserved); round-3 review in progress, PR after it. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |

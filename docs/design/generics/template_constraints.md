@@ -520,18 +520,26 @@ requirement has a type of its own that does not depend on the constraint's
 `Self`, as an interface's `I.F` names an associated entity of a concrete type
 (D-SC-20, as amended at fill round 5). That type can be named with `typeof` and
 used as a type, but it has no values: passing `HasCount.Count` to a function,
-putting it in a tuple or struct, naming it as a statement, binding a parameter
-of its `typeof`, or doing any of these in a template instantiated with a facet
-type, is the same error, as is a bound method of a requirement found through a
-checked generic binding. An object of that type, such as a class field, exists
-without being a value: it is destroyed with its enclosing object, and binding
-it to a `ref` parameter, calling a `ref self` method on it, or reaching it
-through a pointer reads no value and is accepted, while reading it as a value
-is the same error. A value typed by a generic or template parameter that is
-bound to that type is an empty value and is accepted (D-SC-20, as amended at
-fill round 6). Named through a type that satisfies it, as
-`C.(HasCount.Count)`, it is that type's own function and is a value like any
-other (D-SC-20, as amended at fill round 4).
+putting it in a tuple or struct, naming it as a statement, binding a value
+parameter of its `typeof`, or doing any of these in a template instantiated with
+a facet type, is the same error, as is a bound method of a requirement found
+through a checked generic binding. An object of that type, such as a class
+field, exists without being a value: it is destroyed with its enclosing object,
+and binding it to a `ref` parameter, calling a `ref self` method on it, or
+reaching it through a pointer reads no value and is accepted, while reading it
+as a value is the same error, and so is reading a value of a tuple, struct or
+array that holds it, or of the type under `const`. A class value with such a
+field is accepted, but a field accessed through a class value is read as a
+value, so a field that is or holds the type is reached through a reference to
+the object, in a `ref self` method rather than a value one. A `var` parameter
+of the type can be declared, and each call, which initializes it from a value,
+is the same error. A value typed by a generic parameter that is bound to that
+type is an empty value and is accepted; in a template it is accepted only where
+its conversion records no action, such as a `let` of the parameter's type,
+while a call argument or a `var` initializer of it is refused when the template
+is instantiated (D-SC-20, as amended at fill rounds 6 and 7). Named through a
+type that satisfies it, as `C.(HasCount.Count)`, it is that type's own function
+and is a value like any other (D-SC-20, as amended at fill round 4).
 
 ## Satisfaction
 
@@ -590,6 +598,14 @@ substitution could repair) are hard errors of the constraint definition itself,
 not deferred to satisfaction checks. Definition-time checking produces, for each
 requirement, the residue of checks that depend on the concrete type; those are
 what [probe-mode evaluation](#probe-mode-evaluation) replays.
+
+As landed (SC-1, D-SC-10 as amended at fill round 7): `Self` in a template
+constraint is a checked-phase binding, as in a `constraint`, so a requirement's
+signature is checked at the definition as an interface's is, and one that names
+another requirement through `Self` (`fn M() -> typeof(Self.N)*`) is rejected
+there, as `Self.N` is in an interface being defined. Deferring the checks that
+involve `Self`, as this section describes, needs a template-phase `Self`, which
+SC-B2 takes up with validity blocks.
 
 ### Probe-mode evaluation
 

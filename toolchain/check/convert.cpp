@@ -2451,16 +2451,16 @@ static auto AddConvertActionIfDependent(Context& context, SemIR::LocId loc_id,
   return SemIR::InstId::None;
 }
 
-// Fork (SC-1, fork/structural/plan.md D-SC-20 as amended at fill rounds 4, 5
-// and 6): a `template constraint` requirement is never a runtime value, so a
-// conversion of `expr_id` for a target of `kind` is refused when that value
-// names or holds one (`CheckValueIsNotStructuralRequirement`). A reference to
-// an object that exists, kept a reference (bound to a `ref` parameter or
-// binding, the callee's own `ref self` included, used as a member access base,
-// or discarded), reads no value, as taking its address does not, and is not
-// refused: a class, tuple or struct with an element of a requirement's type is
-// destroyed through the `ref self` of its synthesized `Destroy.Op`
-// (custom_witness.cpp `MakeSubobjectDestroyOpBody`).
+// Fork (SC-1, fork/structural/plan.md D-SC-20 as amended at fill rounds 4 to
+// 7): a value or an initializer that names or holds a `template constraint`
+// requirement, by its type or as a bound method, is refused
+// (`CheckValueIsNotStructuralRequirement`). A reference kept a reference reads
+// no value, as taking its address does not, and is not refused: bound to a
+// `ref` parameter or binding (the callee's own `ref self` and the storage of a
+// `var` pattern or parameter included), used as a member access base, or
+// discarded. So a class, tuple, struct or array with an element of a
+// requirement's type is destroyed through the `ref self` of its synthesized
+// `Destroy.Op` (custom_witness.cpp `MakeSubobjectDestroyOpBody`).
 static auto CheckConversionIsNotOfStructuralRequirement(
     Context& context, SemIR::LocId loc_id, SemIR::InstId expr_id,
     ConversionTarget::Kind kind, bool diagnose) -> bool {
@@ -2679,10 +2679,11 @@ auto Convert(Context& context, SemIR::LocId loc_id, SemIR::InstId expr_id,
     return SemIR::ErrorInst::InstId;
   }
 
-  // Fork (SC-1, fork/structural/plan.md D-SC-20 as amended at fill rounds 4,
-  // 5 and 6): a `template constraint` requirement is never a runtime value,
-  // whatever the target; a reference kept a reference reads none. A template
-  // replays this check when it converts at instantiation (the `PerformAction`
+  // Fork (SC-1, fork/structural/plan.md D-SC-20 as amended at fill rounds 4
+  // to 7): a value or an initializer that names or holds a `template
+  // constraint` requirement is refused, and a reference kept a reference is
+  // not (`CheckConversionIsNotOfStructuralRequirement`). A template replays
+  // this check when it converts at instantiation (the `PerformAction`
   // overloads above).
   if (!CheckConversionIsNotOfStructuralRequirement(
           context, loc_id, expr_id, target.kind, target.diagnose)) {

@@ -16,7 +16,8 @@ library "[[@TEST_NAME]]";
 
 // A `template constraint` declares structural member requirements: a method
 // requirement and an associated-function requirement (fork decision F-010 /
-// SC-1, D-SC-1, D-SC-2). `Self` is a template-phase binding here (D-SC-10).
+// SC-1, D-SC-1, D-SC-2). `Self` is a checked-phase binding here, as in a
+// `constraint` (D-SC-10 as amended at fill round 7).
 template constraint HasGet {
   fn Get(self) -> i32;
   fn Make() -> Self;
@@ -51,6 +52,49 @@ library "[[@TEST_NAME]]";
 template constraint Has(T: type) {
   fn Get(self) -> T;
 }
+
+// --- fail_self_dependent_name.carbon
+library "[[@TEST_NAME]]";
+
+// A name of the body that depends on `Self`, named with no self type, is
+// symbolic, as a `constraint`'s is, and is checked where it is used (D-SC-10 as
+// amended at fill round 7, round 6's review 1 finding BLOCKER-1: with a
+// template-phase `Self` each of these was a template-dependent action that
+// non-template code never performs, so check passed and lowering aborted).
+template constraint HasN {
+  fn N() -> i32;
+  alias A = Self;
+  class Inner {
+    var k: i32;
+  }
+}
+
+fn AliasOfSelf() {
+  let unused y: HasN.A* = 1;
+}
+
+fn NestedClassAs() {
+  let unused x: bool = 1 as HasN.Inner;
+}
+
+fn NestedClassPointer() {
+  let unused y: HasN.Inner* = 1;
+}
+
+// --- nested_class.carbon
+library "[[@TEST_NAME]]";
+
+// A class declared in a template constraint is not a requirement, and its
+// member is called as a `constraint`'s nested class's member is (D-SC-10 as
+// amended at fill round 7). Lowering the call aborts at sem_ir/mangler.cpp:185,
+// as it does for a `constraint` on trunk 0bdce60a5.
+template constraint Outer {
+  class Inner {
+    fn N() -> i32 { return 1; }
+  }
+}
+
+fn F() -> i32 { return Outer.Inner.N(); }
 
 // CHECK:STDOUT: --- decl.carbon
 // CHECK:STDOUT:

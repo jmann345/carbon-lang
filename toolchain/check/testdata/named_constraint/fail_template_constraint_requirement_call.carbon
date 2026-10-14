@@ -222,12 +222,12 @@ library "[[@TEST_NAME]]";
 // function, it checked clean and aborted lowering at its `.Self`-symbolic
 // type). Since fill round 5 its type is the concrete
 // `StructuralRequirementType`, and `Convert` rejects any value whose type is,
-// or holds as a tuple or struct element, a requirement's type: an expression
-// statement, an argument, and an element of a tuple or struct literal. A value
-// that deduction built has no location of its own, so the error is at the
-// conversion (round 5, review 1 finding MINOR-1); an overload candidate rejects
-// it silently, so only the overload set's error is reported (review 2 finding
-// MINOR-2).
+// or holds as a tuple, struct or array element or under `const` (since fill
+// round 7), a requirement's type: an expression statement, an argument, and an
+// element of a tuple or struct literal. A value that deduction built has no
+// location of its own, so the error is at the conversion (round 5, review 1
+// finding MINOR-1); an overload candidate rejects it silently, so only the
+// overload set's error is reported (review 2 finding MINOR-2).
 template constraint HasN {
   fn N() -> i32;
 }
@@ -367,6 +367,10 @@ overload fn P[T: type](unused f: T) -> i32 { return 2; }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn Overload() -> i32 { return P(HasN.N); }
+
+// A tuple index of a refused tuple is not diagnosed again (round 6's review 2
+// finding MINOR-3: it added "type `<error>` does not support tuple indexing").
+fn TupleIndex() -> i32 { return (HasN.N, 1).1; }
 
 // --- fail_requirement_through_checked_binding_as_value.carbon
 library "[[@TEST_NAME]]";
@@ -706,6 +710,97 @@ fn ReadField() {
   // CHECK:STDERR:
   Ref(ref HasN.N);
 }
+
+// The type under `const`, or as an array's element, is held as a tuple's or a
+// struct's element is: a value of it is refused, a pointer to it is not
+// (D-SC-20 as amended at fill round 7, round 6's review 1 finding MAJOR-1).
+class V {
+  var f: typeof(HasN.N);
+  var a: array(typeof(HasN.N), 2);
+}
+
+impl V as Core.UnformedInit {}
+
+fn ConstParam(unused v: const typeof(HasN.N)) {}
+
+fn ConstPointer() -> i32 {
+  var v: V;
+  let p: const typeof(HasN.N)* = &v.f;
+  return Take(*p);
+}
+
+fn ArrayLet() {
+  var v: V;
+  let unused a: array(typeof(HasN.N), 2) = v.a;
+}
+
+fn ArrayArg() -> i32 {
+  var v: V;
+  return Take(v.a);
+}
+
+// A class value is accepted: it is not converted field by field. A field
+// accessed through it is read as a value (member_access.cpp acquires the value
+// of a class value's field), so a field that is or holds a requirement's type,
+// a tuple or struct field read only for its other element included, is reached
+// through a reference to the object, as in `GetRef` (D-SC-20 as amended at fill
+// round 7, round 6's review 2 finding MAJOR-1).
+class E {
+  var t: (typeof(HasN.N), i32);
+  var s: {.f: typeof(HasN.N), .x: i32};
+  fn Get(self) -> i32 { return self.t.1; }
+  fn GetRef(ref self) -> i32 { return self.t.1 + self.s.x; }
+}
+
+fn StructField(e: E) -> i32 { return e.s.x; }
+
+// A `var` parameter's storage is a reference, so its declaration is accepted;
+// a call initializes it from a value, which is refused (round 6's review 2
+// finding MINOR-1).
+fn VarParam(var x: typeof(HasN.N)) { Ref(ref x); }
+
+fn CallVarParam() {
+  var w: W;
+  VarParam(w.f);
+}
+
+// A template's call argument typed by its parameter is replayed at
+// instantiation and refused (round 6's review 1 finding MINOR-1); a `let` typed
+// by the parameter records no action and is accepted (lower
+// `requirement_typeof_object`, `LetValue`).
+fn TemplateDeref[template U: type](p: U*) -> i32 { return Take(*p); }
+
+fn UseTemplateDeref() -> i32 {
+  var w: W;
+  return TemplateDeref(&w.f);
+}
+
+// --- fail_nested_requirement_as_value.carbon
+library "[[@TEST_NAME]]";
+
+// A template constraint declared in a template constraint has the outer
+// constraint's checked-phase `Self` among its arguments, so its requirement
+// named with no self type is a value of a type symbolic in that `Self`, refused
+// as `HasN.N` is (D-SC-10 as amended at fill round 7, round 6's review 1
+// finding BLOCKER-1: with a template-phase `Self` each use was
+// template-dependent, checked clean and aborted lowering or ran).
+template constraint Outer {
+  template constraint Inner {
+    fn N() -> i32;
+  }
+}
+
+fn Take[T: type](unused f: T) -> i32 { return 1; }
+
+fn Init() {
+  let unused x: i32 = Outer.Inner.N;
+}
+
+fn Statement() { Outer.Inner.N; }
+
+fn Call() -> i32 { return Outer.Inner.N(); }
+
+fn Arg() -> i32 { return Take(Outer.Inner.N); }
 
 // --- fail_ladder_alias.carbon
 library "[[@TEST_NAME]]";

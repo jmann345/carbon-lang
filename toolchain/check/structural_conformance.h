@@ -93,19 +93,21 @@ auto MakeStructuralRequirementName(Context& context, SemIR::LocId loc_id,
     -> SemIR::InstId;
 
 // Returns the requirement `fn` that values of `type_id` name or hold: a
-// `StructuralRequirementType`, the `FunctionType` of a requirement, or a tuple
-// or struct type with such an element type. Otherwise returns `None`. (An
-// array's elements are converted one by one, so an array holds a requirement
-// only if an element conversion accepted one.)
+// `StructuralRequirementType`, the `FunctionType` of a requirement, a tuple,
+// struct or array type with such an element type, or such a type under
+// `const`. Otherwise returns `None`. A class, adapter or `MaybeUnformed` type
+// with such a field is not looked into: a value of it is not converted field
+// by field.
 auto GetStructuralRequirementOfType(Context& context, SemIR::TypeId type_id)
     -> SemIR::FunctionId;
 
-// D-SC-20 as amended at fill rounds 4 and 5: a requirement `fn` named with no
-// type that satisfies it is never a runtime value. If the value `expr_id`
-// names or holds a requirement (`GetStructuralRequirementOfType`, or a bound
-// method of one), diagnoses it when `diagnose` and returns false. The error is
-// at the innermost tuple or struct literal element that holds it, or at
-// `loc_id` when that value has no location of its own.
+// D-SC-20 as amended at fill rounds 4 to 7: a value or an initializer that
+// names or holds a requirement `fn` named with no type that satisfies it is
+// refused. If the value `expr_id` names or holds a requirement
+// (`GetStructuralRequirementOfType`, or a bound method of one), diagnoses it
+// when `diagnose` and returns false. The error is at the innermost tuple or
+// struct literal element that holds it, or at `loc_id` when that value has no
+// location of its own.
 auto CheckValueIsNotStructuralRequirement(Context& context, SemIR::LocId loc_id,
                                           SemIR::InstId expr_id, bool diagnose)
     -> bool;

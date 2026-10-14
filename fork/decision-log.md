@@ -4289,12 +4289,16 @@ the design page and records), fb12f63cb (3 goldens, CHECK lines only) and
 the commit hashes); the records commit after 857d5b048 completes round 5's
 review record with the cites of its dispositions, gives ROUND 6's DECISION the
 consequence of its break condition, re-points round 5's convert.cpp cites at the
-round-6 head and records the re-measure on 857d5b048. Each fix is an R29(a)
-implementation decision recorded for after-the-fact veto, with its design
-citation and break condition; none reopens F-010 or the intent of a D-SC
-decision. Every count below is a measurement on the container, not of record
-(R9): fork/conformance/out/scoreboard.json reads 128 / 0 / 22 over 150 until a
-run of record replaces it.
+round-6 head and records the re-measure on 857d5b048. Fill round 7 (same day),
+folding round 6's two implementation reviews: the round-7 fixes commit (the
+fixes, test sources, the design page and records, convert.cpp cites re-pointed
+at the round-7 head) and its goldens commit (2 goldens, CHECK lines only). Each
+fix is an R29(a) implementation decision recorded for after-the-fact veto, with
+its design citation and break condition; none reopens F-010 or the intent of a
+D-SC decision, and round 7's takes D-SC-10's own break condition. Every count
+below is a measurement on the container, not of record (R9):
+fork/conformance/out/scoreboard.json reads 128 / 0 / 22 over 150 until a run of
+record replaces it.
 
 THE FOUR DEFECTS (1a7cce0b2), each an implementation decision:
 
@@ -4542,7 +4546,7 @@ reviews' probes.
     (sem_ir/typed_insts.h:2235 `StructuralRequirementType`;
     structural_conformance.cpp:696 `MakeStructuralRequirementName`, called from
     member_access.cpp:400, :746 `GetStructuralRequirementOfType` and :811
-    `CheckValueIsNotStructuralRequirement`; convert.cpp:2687 in `Convert` and
+    `CheckValueIsNotStructuralRequirement`; convert.cpp:2688 in `Convert` and
     :2495, :2515, :2531 and :2575 in the `PerformAction`s for `ConvertAction`,
     `ConvertToCategoryAction`, `ConvertToValueAction` and `InitializeAction`,
     re-cited at the round-6 head, where `Convert` and the first two call round
@@ -4603,7 +4607,7 @@ reviews' probes.
 
 -   **A reference kept a reference is not a requirement's value**
     (convert.cpp:2464 `CheckConversionIsNotOfStructuralRequirement`, called by
-    `Convert` at :2687 and by the `ConvertAction` and `ConvertToCategoryAction`
+    `Convert` at :2688 and by the `ConvertAction` and `ConvertToCategoryAction`
     replays at :2495 and :2515; MAJOR-1 of both reviews). Symptom: a class,
     generic-class specific, tuple, struct or array with a field of
     `typeof(HasN.N)` could not be destroyed, so `var w: W;`, `MakeW().x`, a
@@ -4640,6 +4644,45 @@ reviews' probes.
     refused at instantiation (the replayed argument is a `SpecificInst` of the
     `ref` tag), while trunk 0bdce60a5 aborts on every such template call
     (inst.h:249, with `i32`).
+
+ROUND 7's DECISION (folding round 6's two implementation reviews, REVIEWS
+below), reproduced first on the toolchain stamped 0.0.0-0.dev+fb12f63cb with the
+reviews' probes.
+
+-   **`Self` in a template constraint is a checked-phase binding**
+    (handle_named_constraint.cpp:126-133; round 6's review 1 BLOCKER-1).
+    Symptom: an alias of `Self`, a class, interface or constraint declared in a
+    template constraint's body, or a template constraint nested in it with its
+    requirements, named with no self type from non-template code
+    (`let y: HasN.A* = 1`, `1 as Outer.Inner`, `Outer.Inner.N;`,
+    `Take(Outer.Inner.N)`), checked clean and aborted lowering on an
+    unexpanded `SpliceInst` (lower/function_context.cpp:223,
+    lower/handle.cpp:405) or ran, where the `constraint` spelling is diagnosed
+    on trunk 0bdce60a5. Root cause: D-SC-10 (SC-1a) made `Self` a
+    template-phase binding, so every with-self specific built for a lookup with
+    no self type was template-dependent, and `Convert`, calls and member access
+    recorded actions that a non-generic function never performs; D-SC-10's
+    "nothing in SC-1 depends on the phase" was false for every name of the body
+    but a requirement, which D-SC-20 gives a concrete type. Decision: D-SC-10's
+    own break condition, the reviewer's preferred option: `Self` is a
+    checked-phase binding, as before SC-1 (the base 8068151ed passes `false`),
+    so those names are symbolic as a `constraint`'s and are checked where they
+    are used; the template phase is filed as an SC-B2 prerequisite (W-028).
+    Requirements are unaffected (matched through specifics, named with no self
+    type a concrete value); a requirement naming another through `Self`
+    (`fn M() -> typeof(Self.N)*`), accepted before and never satisfiable, is
+    now upstream's "member access into facet of incomplete type", as in an
+    interface being defined. The reviewer's second option, refusing each such
+    name and diagnosing nested declarations as TODOs, is not taken: it keeps a
+    phase nothing in SC-1 uses and adds two rules where one flag suffices
+    (R17). Design: D-SC-10 as amended at fill round 7. Break condition: SC-B2's
+    validity blocks, which need the template phase; round 6's review-1 probes
+    are re-run when it returns. Pinned by declaration
+    `fail_self_dependent_name` and `nested_class` and requirement-call
+    `fail_nested_requirement_as_value`. The probes that still abort have
+    trunk analogs aborting at the same site (sem_ir/mangler.cpp:185 for a
+    `constraint`'s nested class; lower/file_context.h:187, check/eval.cpp:151
+    and check/generic.cpp:477 for an interface's nested declarations).
 
 FILL-CAUGHT MISSES (R28(d): a reviewed prediction the fill overturned; bcaeadb98
 lists (a) to (i), 502e7861a adds (j), bc8b37290 adds (k) and (l), ff490bd48 adds
@@ -4715,8 +4758,9 @@ row's `UseStructurally` note was read off the pre-fill build of round 3's own
 sources (round 3's review 2, MINOR-7). Round 5's rows are withdrawn the same way
 (fill round 6, round 5's review 2 MINOR-1, R16(d)): the development build ran
 the reviews' shapes before they were written, so none of their clauses counts as
-a prediction that held, and (n) and (o) stand as errors in them; round 6's rows
-are written after its build ran their shapes and are not counted either. No miss
+a prediction that held, and (n) and (o) stand as errors in them; round 6's and
+round 7's rows are written after their builds ran their shapes and are not
+counted either. No miss
 hides a defect: (a), (c), (f), (l), (m), (n) and (o) were prediction errors (the
 coalescing (o) shows is trunk's lowering, outside SC-1), (b) and (e) a cascade
 and a warning class now gone, (d), (j) and (k) test-source spellings, (g) a
@@ -4842,10 +4886,10 @@ are refused, pinned by `fail_requirement_typeof_value`, compound
 prefer and not their minimal alternative (refusing `typeof`, which a template's
 `typeof(T.N)`, evaluated at instantiation, would escape); MAJOR-1 of both
 reviews is agreed (R17) and answered by the same decision, the refusal in
-`Convert` (convert.cpp:2687) kept as D-SC-20's rule and not as a crash guard,
+`Convert` (convert.cpp:2688) kept as D-SC-20's rule and not as a crash guard,
 since deleting it would make `Take(HasN.N)` compile against round 4's decision
 and goldens (R16(b)), and review 2 MAJOR-1's records are amended (the
-convert.cpp:2682-2686 comment, D-SC-20, round 4's BLOCKER-1 bullet and decision
+convert.cpp:2682-2687 comment, D-SC-20, round 4's BLOCKER-1 bullet and decision
 in the plan and above, the design page, ORCHESTRATION); review 1 MAJOR-2 is the
 replayed category conversion (`ConvertToCategoryAction`, convert.cpp:2515),
 which refuses `T.N;`, `(T.N, 1);` and `{.a = T.N};` instantiated with `HasN`,
@@ -4883,7 +4927,7 @@ found reproduce on trunk 0bdce60a5 (handle_call.cpp:984, sem_ir/generic.cpp:84,
 import_ref.cpp:5172, custom_witness.cpp:487). Fill round 6 folds all 11, each
 reproduced first on the toolchain stamped 0.0.0-0.dev+18775fee3, none rejected.
 Dispositions, with their cites at the round-6 head: MAJOR-1 of both reviews is
-ROUND 6's DECISION above (convert.cpp:2464, called at :2687, :2495 and :2515;
+ROUND 6's DECISION above (convert.cpp:2464, called at :2688, :2495 and :2515;
 the destroy body it lets through, custom_witness.cpp:984
 `MakeSubobjectDestroyOpBody`), fixed at the refusal's rule rather than by either
 suggested mechanism, for the reasons there, and pinned by lower
@@ -4907,10 +4951,48 @@ and returns 111); review 2 MINOR-1 marks round 5's three §4.B rows
 MISSES) and in the PR body; MINOR-3 restates the name_lookup.cpp claim in ROUND
 5's DECISION, D-SC-20 (plan.md:739-742), the plan's round-5 bullet and W-027's
 evidence; MINOR-4 amends D-SC-10 (plan.md:480-497) and the plan's round-1
-mechanisms paragraph; MINOR-5 fixes the comment (convert.cpp:2682-2686); MINOR-6
+mechanisms paragraph; MINOR-5 fixes the comment (convert.cpp:2682-2687); MINOR-6
 restores the line breaks of ORCHESTRATION's UA-1 "Last updated" sentences.
 No residue is filed: W-169 is not used. Per-finding detail is in the plan's
 "Landed notes (SC-1 fill rounds, 2026-10-13)".
+
+Round 6's own diff (56e400145, fb12f63cb, 857d5b048, 4bc4802ae) then received
+two implementation reviews, 7 findings in all. Review 1, REJECT, 1 BLOCKER, 1
+MAJOR and 1 MINOR: BLOCKER-1 names of a template constraint's body that depend
+on its template-phase `Self`, check-clean in non-template code with type errors
+and refusals skipped, then aborting lowering (predating round 6: D-SC-10);
+MAJOR-1 values of `const typeof(HasN.N)` and `array(typeof(HasN.N), N)`
+accepted; MINOR-1 the convert.cpp comment and D-SC-20's template sentence
+overclaiming. Review 2, APPROVE-WITH-FIXES, 1 MAJOR and 3 MINOR: MAJOR-1 a tuple
+or struct field holding the type refused through a class value though reachable
+through a reference; MINOR-1 the design page and comments overclaiming
+(templates, `var` parameters, "never a runtime value", the helper's exempt
+uses); MINOR-2 the PR body's trunk advance and held-open PRs stale; MINOR-3 an
+`<error>` follow-on after a refused tuple-index base. On the round's question,
+both found that round 6's reference exemption lets no requirement value reach
+lowering or escape, that the stringifier's `CARBON_CHECK` is not reachable from
+user input, and the 1007 earlier probe runs unchanged. Fill round 7 folds all 7,
+each reproduced first on the toolchain stamped 0.0.0-0.dev+fb12f63cb, none
+rejected. Dispositions: BLOCKER-1 is ROUND 7's DECISION above; review 1 MAJOR-1
+is fixed as asked (structural_conformance.cpp:779-788 follows `const` and array
+element types; the header's array sentence replaced,
+structural_conformance.h:95-100), pinned by `ConstParam`, `ConstPointer`,
+`ArrayLet` and `ArrayArg`; review 2 MAJOR-1 is taken as its second option on
+evidence against its first: member access on a class value acquires the field
+as a value (member_access.cpp:614-624; a tuple field becomes a `tuple_value` of
+each element's `acquire_value`), so the projection does form a value of a type
+holding the requirement's, and D-SC-20, the design page and the test comments
+say such a field is reached through a reference, pinned by `Get`, `GetRef` and
+`StructField`; review 1 MINOR-1 and review 2 MINOR-1 reword convert.cpp
+:2454-2463 and :2682-2687 and structural_conformance.h:104-110, D-SC-20's
+template sentence (a `let` of the parameter accepted, a call argument or `var`
+initializer replayed and refused, pinned by `TemplateDeref`), and the design
+page (a `var` parameter declared and uncallable, pinned by `VarParam`); review
+2 MINOR-2 restates the PR body (outside the repository); review 2 MINOR-3
+returns `ErrorInst` from `PerformTupleAccess` for a failed base
+(member_access.cpp:1178-1183), pinned by `TupleIndex`. No residue is filed:
+W-169 is not used. Per-finding detail is in the plan's "Landed notes (SC-1 fill
+rounds, 2026-10-13)".
 
 MEASURED, on the container only. Round 1 (the toolchain built from 1a7cce0b2's
 sources): autoupdate over the 18 goldens rewrote all 18; the gate then ran 1958
@@ -5007,7 +5089,19 @@ clean); gate 1959 passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS
 56, 51.2 s; the 553 probe runs of rounds 2 to 5, the round-5 reviews' 412 and
 round 6's 42 give results identical, line for line, to the run on fb12f63cb (398
 check errors, 131 compile and run, 5 with no `Run`, 19 aborts; 249, 135, 16 and
-12; 24 check errors and 18 compile and run). Against
+12; 24 check errors and 18 compile and run). Round 7 (the toolchain built from
+the round-7 sources before the commit, stamped 0.0.0-0.dev+4bc4802ae.dirty, the
+uncommitted edits being exactly its fixes commit's): autoupdate over the 19 SC-1
+goldens to a fixpoint (pass 1 rewrote the 2 with new splits, pass 2 none); gate
+1959 passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every
+failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 76.8 s;
+the 553 runs give 399 check errors, 130 compile and run, 5 with no `Run` and 19
+aborts (round 4's v18b now refused, an empty array parameter of the type); the
+412 give 253, 132, 15 and 12 (four declarations of a requirement naming another
+through `Self.N` now rejected); the 42 as before; round 6's reviews' 347 probes
+give 241 check errors, 88 compile and run and 18 aborts (39 on fb12f63cb), each
+with a trunk-spelled analog aborting at the same site on 0bdce60a5, and their 49
+trunk analogs and 14 import sets as before. Against
 fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
 exactly two programs move in every run:
 generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new

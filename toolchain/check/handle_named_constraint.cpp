@@ -123,11 +123,14 @@ auto HandleParseNode(Context& context,
       BuildNamedConstraintDecl(context, node_id, /*is_definition=*/true);
   auto& constraint_info = context.named_constraints().Get(named_constraint_id);
 
-  // Inside a `template constraint`, `Self` is a template-phase binding
-  // (D-SC-10). The flag comes from the stored entity: a definition may be a
-  // redeclaration, and a `template` disagreement has by now been diagnosed and
-  // recovered as template (D-SC-16).
-  bool is_template = constraint_info.is_template;
+  // TODO: Support for `template constraint`.
+  // Fork (SC-1, fork/structural/plan.md D-SC-10 as amended at fill round 7):
+  // `Self` is a checked-phase binding in a `template constraint` too. A
+  // template-phase `Self` made every name of the body that depends on it (an
+  // alias of `Self`, a nested class or constraint) template-dependent where it
+  // is named with no self type, so non-template code recorded actions that
+  // nothing performs. The template phase is SC-B2's prerequisite.
+  bool is_template = false;
 
   // Track that this declaration is the definition.
   CARBON_CHECK(!constraint_info.has_definition_started(),

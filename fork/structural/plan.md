@@ -494,7 +494,29 @@ listing them verbatim at discharge (§8.5).
     fill shows a template-phase `Self` breaking a positive §4.A golden (a
     `<dependent type>` or `type_of_inst` in a requirement's parameter pattern,
     or a `CARBON_CHECK` in `CheckRedeclParams`) — then SC-1 passes `false` and
-    files the flip as an SC-B2 prerequisite.
+    files the flip as an SC-B2 prerequisite. TAKEN 2026-10-14 (fill round 7,
+    round 6's review 1 finding BLOCKER-1): "nothing in SC-1 depends on the
+    phase" was false for every other name of the body that depends on `Self`.
+    An alias of `Self`, a class, interface or constraint declared in the body,
+    and a template constraint nested in it (with its requirements) were
+    template-dependent where non-template code named them with no self type,
+    so `Convert`, calls and member access recorded actions that a non-generic
+    function never performs: type errors and D-SC-20's refusal were skipped,
+    check passed and lowering aborted on an unexpanded `SpliceInst`. SC-1 now
+    passes `false` (handle_named_constraint.cpp:126-133), as upstream's code
+    did before SC-1, so `Self` is a checked-phase binding in a template
+    constraint, those names are symbolic as a `constraint`'s are, and each
+    probe is diagnosed as its `constraint` spelling is on trunk 0bdce60a5 or
+    aborts as that spelling does there. Requirements are unaffected: their
+    signatures are matched through specifics that substitute either phase,
+    and a requirement named with no self type has its concrete type. One
+    shape moves from accepted to rejected: a requirement whose signature
+    names another requirement through `Self` (`fn M() -> typeof(Self.N)*`)
+    was accepted and could never be satisfied (the deferred access never
+    resolved); it is now upstream's "member access into facet of incomplete
+    type", as for an interface's own `Self.N` on trunk. The template phase is
+    filed as an SC-B2 prerequisite (W-028's notes): SC-B2's validity blocks
+    need expressions of the body to be checked per specific.
 -   **D-SC-11 — C++ interop is IN scope at the structural level, with one
     spelling rule.** A C++ class satisfies a template constraint through its
     imported methods under D-SC-5 unchanged; because imported methods are
@@ -745,10 +767,12 @@ listing them verbatim at discharge (§8.5).
     to the base type's own member, the facet type taken from its type (D-SC-4);
     an `alias` of it is that value; `typeof(HasN.N)` is its type, usable as a
     type (a pointer, a field, an impl's self, a generic argument) but with no
-    values. It is never a runtime value (amended at fill round 4, review
-    finding BLOCKER-1; restated at fill round 5): `Convert` refuses a value
-    whose type is, or holds as a tuple or struct element, a requirement's type,
-    and a bound method of a requirement found through a checked binding, whose
+    values. Named, it is never a runtime value (amended at fill round 4,
+    review finding BLOCKER-1; restated at fill round 5): `Convert` refuses a
+    value whose type is, or holds as a tuple or struct element, a
+    requirement's type (as an array element or under `const` too since fill
+    round 7), and a bound method of a requirement found through a checked
+    binding, whose
     type does not say; a template replays the refusal in its convert actions
     at instantiation (convert.cpp `PerformAction`), so `Take((T.N, 1))` and a
     discarded `T.N;` instantiated with `HasN` are refused like `Take((HasN.N,
@@ -768,10 +792,30 @@ listing them verbatim at discharge (§8.5).
     of such a class with a dozen copies of the error. A value typed by a type
     parameter bound to the requirement's type is an accepted empty value,
     lowered as `{}`: in a checked generic necessarily, since no refusal can
-    be replayed in a specific, and in a template because the conversion is
-    typed by the parameter at definition and records no action; both are
-    pinned by lower `requirement_typeof_object`, with requirement-call
-    `fail_requirement_typeof_value`'s `ReadField` for the boundary. Pinned by
+    be replayed in a specific, and in a template only where the conversion
+    records no action (a `let` typed by the parameter); both are pinned by
+    lower `requirement_typeof_object` (`Pass`, `LetValue`), with
+    requirement-call `fail_requirement_typeof_value`'s `ReadField` for the
+    boundary. (Amended 2026-10-14, fill round 7, round 6's review 1 findings
+    MAJOR-1 and MINOR-1 and review 2 findings MAJOR-1 and MINOR-1.) A type
+    holds a requirement's type when a value of it is built from values of
+    that type element by element: a tuple, struct or array element, or the
+    same type under `const`; a value of such a type is refused, while a
+    pointer to it is not (`ConstParam`, `ConstPointer`, `ArrayLet`,
+    `ArrayArg`). A class, adapter or `MaybeUnformed` value is a value of its
+    own type, not built element by element, and is accepted; but a field
+    accessed through a class value is read as a value (member access
+    acquires it, member_access.cpp:614-624), so that read is refused when the
+    field is or holds the type, a tuple or struct field read only for its
+    other element included (`self.t.1` in a value method, `Get`; `e.s.x`,
+    `StructField`): such a field is reached through a reference to the object
+    (`GetRef`), round 6's review 2 MAJOR-1 being taken as its second option.
+    In a template, a call argument or a `var` initializer that depends on the
+    parameter is replayed at instantiation and refused (`TemplateDeref`). A
+    value parameter of the type is refused at its declaration, whose binding
+    converts the parameter; a `var` parameter's binding keeps its storage a
+    reference, so its declaration is accepted and each call, which
+    initializes it from a value, is refused (`VarParam`). Pinned by
     requirement-call `fail_requirement_as_value`,
     `fail_requirement_through_checked_binding_as_value`,
     `fail_requirement_through_template_instantiation` and
@@ -815,6 +859,8 @@ template constraint Forward;      // forward declaration; D-SC-16
     on a new entity, and on a merged redeclaration compares the flag
     (`NamedConstraintRedeclTemplateMismatch`). `is_template` replaces the
     hard-coded `false` at :114 and reaches the `Self` binding (D-SC-10).
+    (Amended 2026-10-14, fill round 7: the `Self` binding takes `false`
+    again, D-SC-10's break condition.)
 3.  Check, members (D-SC-2, D-SC-18): in `MaybeAddToNameLookup`
     (handle_function.cpp:555-575) a `NamedConstraintWithSelfDecl` parent
     scope is recognized beside the interface case: if the constraint is not
@@ -1136,11 +1182,12 @@ convention).
 | File | Splits | Prediction |
 | --- | --- | --- |
 | parse/testdata/generics/named_constraint/template_constraint.carbon (EXISTING; split renamed) | `template_constraint.carbon` (was `fail_todo_template_constraint.carbon`; same source) | No STDERR. Tree: `TemplateModifier 'template'` leaf, then `NamedConstraintIntroducer 'constraint'`, `IdentifierNameNotBeforeSignature 'Foo'`, `NamedConstraintDefinitionStart '{'`, the two `FunctionDecl`/`FunctionDefinition` subtrees, `NamedConstraintDefinition '}'`; then the forward declaration as `TemplateModifier` + `NamedConstraintDecl ';'` (modifier placement as `AbstractModifier` before `ClassIntroducer` in parse/testdata/class/). Covers node kind `TemplateModifier` (parse coverage test) AMENDED 2026-10-13 (fill round 1, miss (a)): the tree prints `NamedConstraintIntroducer` first and `TemplateModifier` second, the parse/testdata/class/introducer.carbon:30-31 placement this row cites |
-| check/testdata/named_constraint/template_constraint.carbon (new) | `decl.carbon`: `template constraint HasGet { fn Get(self) -> i32; fn Make() -> Self; }` with `//@include-in-dumps`; `forward.carbon`: `template constraint F; template constraint F { fn G(ref self); }`; `compose.carbon`: a template constraint with `require impls Core.Destroy;` and a method; `generic.carbon`: `template constraint Has(T: type) { fn Get(self) -> T; }` | No STDERR. SemIR: `%HasGet.type: type = facet_type <@HasGet>` as for plain constraints (basic.carbon golden :59/:86 — re-cited 2026-10-06, review fold: B8); inside `@HasGet` a `%Self: %HasGet.type = symbolic_binding Self, 0, template [template]` (D-SC-10 — the `, template` suffix as member_access.carbon:137-138, re-cited) and two `fn_decl`s whose `self` pattern is `@HasGet.%Self`-typed; `generic.carbon` shows the with-self generic over `(T, Self)`. These shapes are DERIVED FROM INTERFACE ANALOGUES, not golden-backed: no check golden dumps a `fn` inside a named constraint (invalid_members.carbon has zero `CHECK:STDOUT`) or a template-phase `Self`, so the fill is evidence, not confirmation (R9/R16(d); amended 2026-10-06, review fold: A9) |
+| check/testdata/named_constraint/template_constraint.carbon (new) | `decl.carbon`: `template constraint HasGet { fn Get(self) -> i32; fn Make() -> Self; }` with `//@include-in-dumps`; `forward.carbon`: `template constraint F; template constraint F { fn G(ref self); }`; `compose.carbon`: a template constraint with `require impls Core.Destroy;` and a method; `generic.carbon`: `template constraint Has(T: type) { fn Get(self) -> T; }` | No STDERR. SemIR: `%HasGet.type: type = facet_type <@HasGet>` as for plain constraints (basic.carbon golden :59/:86 — re-cited 2026-10-06, review fold: B8); inside `@HasGet` a `%Self: %HasGet.type = symbolic_binding Self, 0, template [template]` (D-SC-10 — the `, template` suffix as member_access.carbon:137-138, re-cited) and two `fn_decl`s whose `self` pattern is `@HasGet.%Self`-typed; `generic.carbon` shows the with-self generic over `(T, Self)`. These shapes are DERIVED FROM INTERFACE ANALOGUES, not golden-backed: no check golden dumps a `fn` inside a named constraint (invalid_members.carbon has zero `CHECK:STDOUT`) or a template-phase `Self`, so the fill is evidence, not confirmation (R9/R16(d); amended 2026-10-06, review fold: A9) AMENDED 2026-10-14 (fill round 7, D-SC-10's break condition taken): `%Self: %HasGet.type = symbolic_binding Self, 0 [symbolic]` and the requirement `fn_decl`s and their patterns `[symbolic]`, the interface-analogue shape without the template phase |
 | check/testdata/named_constraint/fail_template_constraint_modifier.carbon (new) | `fail_on_fn.carbon`: `template fn F();`; `fail_on_class.carbon`: `template class C {}`; `fail_on_interface.carbon`: `template interface I {}`; `fail_twice.carbon`: `template template constraint X {}`; `fail_with_abstract.carbon`: `template abstract constraint X {}` (added 2026-10-06, review fold: A4) | `ModifierNotAllowedOnDeclaration` "`template` not allowed on `fn` declaration" (modifiers.cpp:102-104) etc.; `fail_twice` → `ModifierRepeated` from `HandleModifier` (handle_modifier.cpp:72-74); `fail_with_abstract` → `ModifierNotAllowedWith` (:76-78; both in the `Decl` at-most-one group) |
 | check/testdata/named_constraint/fail_template_constraint_redecl.carbon (new) | `fail_decl_then_template_def.carbon`: `constraint X; template constraint X {}`; `fail_template_decl_then_def.carbon`: `template constraint X; constraint X {}` | `NamedConstraintRedeclTemplateMismatch` at the second declaration + `RedeclPrevDecl` note at the first |
 | check/testdata/named_constraint/invalid_members.carbon (EXISTING; three splits move) | `todo_fail_invalid_fn.carbon` → `fail_invalid_fn.carbon` (same source, TODO comments rewritten); `fail_todo_invalid_var_template.carbon`, `fail_todo_invalid_let_template.carbon` keep their names | `fail_invalid_fn`: `FunctionInNonTemplateConstraint` at each of the four `fn`s (:19-20, :25-26). The two template splits lose `UnrecognizedDecl` + "handle invalid parse trees" and gain `SemanticsTodo` "`field requirement in `template constraint``" at the `var` |
 | check/testdata/named_constraint/fail_todo_template_constraint_members.carbon (new) | `fail_todo_definition.carbon`: `fn G(self) -> i32 { return 1; }` in a template constraint; `fail_todo_parameterized.carbon`: `fn H[U: type](self, u: U);`; `fail_todo_assoc_const.carbon`: `let X: type;` | `SemanticsTodo` with the D-SC-2 strings. `fail_todo_assoc_const` (amended 2026-10-06, review fold: B13): the parser accepts `let X: type;` in `DeclScopeLoopAsRegular` without error (`HandleLetAfterPattern` consumes `=` only if present, parse/handle_let.cpp:89-92), so check emits exactly two diagnostics — `SemanticsTodo` "associated constant requirement in `template constraint`" at the `let` introducer (`HandleIntroducer`, handle_let_and_var.cpp:67-81, runs first) and then `ExpectedInitializerAfterLet` (kind.def:471; handle_let_and_var.cpp:405) at the declaration — in that order |
+| check/testdata/named_constraint/template_constraint.carbon (round-7 splits, 2026-10-14) | new `fail_self_dependent_name` (`HasN` with `alias A = Self` and a nested `class Inner { var k: i32; }`; `AliasOfSelf`: `let unused y: HasN.A* = 1`; `NestedClassAs`: `let unused x: bool = 1 as HasN.Inner`; `NestedClassPointer`: `let unused y: HasN.Inner* = 1`); new `nested_class` (`Outer.Inner.N()` for a class with a method declared in a template constraint); `decl`'s comment | Round 7, written after the development build ran these shapes (observed, not counted, R16(d)): the fail split has the diagnostics of the `constraint` spelling on trunk 0bdce60a5, a `ConversionFailure` to `Self*`, to `Inner` with `as` followed by `Inner` to `bool`, and to `Inner*`, each with its `MissingImplInMemberAccessInContext` note; `nested_class` has no STDERR (its lowering aborts at sem_ir/mangler.cpp:185, as the `constraint` spelling does on trunk); the dumps of `decl`, `forward`, `compose` and `generic` show `Self`, the requirements' function types and their patterns `[symbolic]` where they were `[template]` (D-SC-10 as amended) |
 
 ### §4.B Commit 2
 
@@ -1174,6 +1221,7 @@ convention).
 | check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon (round-6 change, 2026-10-14) | `fail_requirement_typeof_value` gains `impl W as Core.UnformedInit {}`, `fn Ref(unused ref f: typeof(HasN.N))` and `ReadField` (`var w: W`, then `Ref(ref w.f)`, `let unused v: typeof(HasN.N) = w.f;` and `Ref(ref HasN.N)`) | Round 6, written after the development build ran these shapes (R16(d) disclosure: observed, not counted): nothing at `Ref(ref w.f)`, a reference bound to a `ref` parameter; one `StructuralRequirementUsed` with `StructuralRequirementHere` at `w.f` in the `let`, a value read; one `StructuralRequirementUsed` with `StructuralRequirementHere` and `InCallToFunctionParam` at `ref HasN.N`, a requirement name; the three existing uses unchanged FILLED 2026-10-14 (fill round 6, fb12f63cb): as written, observed and not counted |
 | check/testdata/named_constraint/template_constraint_import.carbon (round-6 splits, 2026-10-14) | new `requirement_type_a` (exports `HasN`, `Has(X: type)`, `Z`, `alias A = HasN.N`, `fn P(unused p: typeof(HasN.N)*)`, `impl typeof(Has(i32).N) as Z` and `Take`); new `requirement_type_b` (dumped: `Use(p: typeof(A)*)` returning `P(p) + typeof(Has(i32).N).(Z.F)() + C.(A)()`); new `fail_requirement_type_value` (`Take(A)`; `P(p)` for `p: typeof(Has(i32).N)*`) | Round 6, written after the development build ran these shapes (observed, not counted): `requirement_type_b` has no STDERR; its dump shows the imported `A` of the concrete `structural_requirement_type @HasN.WithSelf.N`, the imported impl's witness for `structural_requirement_type @Has.WithSelf.N, @Has(%i32)`, and `C.(A)` binding `@C.%C.N.decl` (D-SC-4); the fail split has one `StructuralRequirementUsed` with the imported `StructuralRequirementHere` and `InCallToFunctionParam`, and one `ConversionFailure` printing `<type of Has(i32).N>*` and `<type of HasN.N>*` FILLED 2026-10-14 (fill round 6, fb12f63cb): as written, observed and not counted |
 | lower/testdata/template/template_constraint.carbon (round-6 split, 2026-10-14) | new `requirement_typeof_object`: `class W` with fields of `typeof(HasN.N)`, `(typeof(HasN.N), i32)`, `{.f: typeof(Has(i32).N), .x: i32}`, `array(typeof(HasN.N), 2)` and `i32`, and `impl W as Core.UnformedInit`; `class Box(T: type)` used as `Box(typeof(HasN.N))`; in `Run`, a `var` of each, `w.f;`, a discarded `MakeW()`, `MakeW().x`, `D(&w)` for `D[T: Core.Destroy](p: T*)`, `Ref(ref w.f)`, the `ref self` method `Z.M` through `w.f` and `w.t.0`, `Pass(&w.f)` for a checked `Pass[T: type](p: T*)` returning `Take(*p)`, `LetValue(&w.f)` for a template `let unused v: T = *p`, and `C.(w.f)()` | Round 6, written after the development build ran these shapes (observed, not counted): no STDERR and no `CARBON_FATAL`; the requirement type lowers as `{}` inside `W`'s and `Box`'s LLVM struct types; the synthesized `SubobjectDestroy` bodies call `SelfDestruct` on every element, the requirement-typed ones empty; `@main` calls the impl's `M` with the field's address and `C.N` for `C.(w.f)()`; compiled and linked outside the golden, the program returns 23 FILLED 2026-10-14 (fill round 6, fb12f63cb): as written, observed and not counted |
+| check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon (round-7 changes, 2026-10-14) | `fail_requirement_as_value` gains `TupleIndex` (`(HasN.N, 1).1`); `fail_requirement_typeof_value` gains `class V` (fields of `typeof(HasN.N)` and `array(typeof(HasN.N), 2)`), `ConstParam`, `ConstPointer` (`Take(*p)` for `p: const typeof(HasN.N)*`), `ArrayLet`, `ArrayArg`, `class E` (a tuple and a struct field holding the type; a value `Get` reading `self.t.1` and a `GetRef(ref self)` reading `self.t.1 + self.s.x`), `StructField(e: E)` reading `e.s.x`, `VarParam(var x: typeof(HasN.N))` with `CallVarParam`, and `TemplateDeref` with `UseTemplateDeref`; new `fail_nested_requirement_as_value` (`Init`, `Statement`, `Call` and `Arg` naming `Outer.Inner.N`) | Round 7, written after the development build ran these shapes (observed, not counted, R16(d)): `TupleIndex` has one `StructuralRequirementUsed` and no `TupleIndexOnANonTupleType`; `ConstParam` one at the parameter; `ConstPointer` and `ArrayArg` one at the argument with `InCallToFunctionParam`; `ArrayLet` one at `v.a`; `Get` one at `self.t` and `StructField` one at `e.s`, each alone; `GetRef`, `VarParam` and `TemplateDeref`'s definition accepted; `CallVarParam` one at `w.f` with `InCallToFunctionParam` at the `var` parameter; `UseTemplateDeref` a `ResolvingSpecificHere` with the `StructuralRequirementUsed` note at `*p`, its requirement note and `InCallToFunctionParam`; the nested split one `StructuralRequirementUsed` per use naming `Inner`, with its requirement note, and `Arg` with `InCallToFunctionParam` |
 
 ### §4.C Commit 3
 
@@ -1448,7 +1496,9 @@ is a §5/§6 miss — stop and reconcile.
     goldens.** Falsifier: §4.A `decl.carbon` shows `<dependent type>` or a
     `type_of_inst` in a requirement's parameter pattern, or the fill
     CHECK-fails in `CheckRedeclParams`. Contingency: D-SC-10's break
-    condition (pass `false`; file for SC-B2).
+    condition (pass `false`; file for SC-B2). TAKEN 2026-10-14 (fill round 7)
+    on a different falsifier: round 6's review 1 BLOCKER-1, check-clean
+    non-template programs aborting lowering (D-SC-10).
 -   **R-5 — `FacetTypeHasStructuralRequirements` (D-SC-8(i)) misses a path
     or fires on an incomplete constraint.** It walks `DeclaredFacetType`'s
     three named-constraint vectors and each complete constraint's
@@ -2169,8 +2219,13 @@ round 6 (2026-10-14) folds round 5's two implementation reviews: 56e400145
 (fixes, test sources, the design page, records), fb12f63cb (3 goldens, CHECK
 lines only) and 857d5b048 (records); it re-measured the same totals on the
 toolchain stamped 0.0.0-0.dev+fb12f63cb (below), again on 857d5b048 for the
-records commit after it. Not of record until
-fork/conformance/out/scoreboard.json is updated (R9).
+records commit after it. Fill round 7 (2026-10-14) folds round 6's two
+implementation reviews (REJECT on one BLOCKER, and APPROVE-WITH-FIXES; 7
+findings, none rejected): a template constraint's `Self` is a checked-phase
+binding, D-SC-10's break condition; `const` and array types hold the
+requirement's type; a class value's field is reached through a reference; it
+measured the same totals on the toolchain built from its sources (below). Not
+of record until fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
 one falsified carries a dated amendment above):
@@ -2752,7 +2807,7 @@ and break condition:
     (sem_ir/typed_insts.h:2235 `StructuralRequirementType`;
     structural_conformance.cpp:696 `MakeStructuralRequirementName`, :746
     `GetStructuralRequirementOfType` and :811
-    `CheckValueIsNotStructuralRequirement`; convert.cpp:2687 in `Convert` and
+    `CheckValueIsNotStructuralRequirement`; convert.cpp:2688 in `Convert` and
     :2495, :2515, :2531 and :2575 in the four template `PerformAction`s,
     re-cited at the round-6 head, where `Convert` and the first two call round
     6's `CheckConversionIsNotOfStructuralRequirement`;
@@ -2824,7 +2879,7 @@ toolchain stamped 0.0.0-0.dev+18775fee3 with the reviews' probes:
     that stays a reference (a `NoOp`, `ValueOrRef`, `DurableRef`, `RefParam`,
     `UnmarkedRefParam` or `Discarded` target of a reference expression, a `ref`
     tag looked through) is not refused (convert.cpp:2464
-    `CheckConversionIsNotOfStructuralRequirement`, called by `Convert` at :2687
+    `CheckConversionIsNotOfStructuralRequirement`, called by `Convert` at :2688
     and by the `ConvertAction` and `ConvertToCategoryAction` replays at :2495
     and :2515); a value or an initializer stays refused. The reviews' first
     mechanism, skipping the destroy call for a requirement-typed element, would
@@ -2891,7 +2946,7 @@ Round 6's decision as an R29(a) implementation decision, with design citation
 and break condition:
 
 -   **A reference kept a reference is not a requirement's value**
-    (convert.cpp:2464 `CheckConversionIsNotOfStructuralRequirement`; :2687 in
+    (convert.cpp:2464 `CheckConversionIsNotOfStructuralRequirement`; :2688 in
     `Convert`, :2495 and :2515 in the `ConvertAction` and
     `ConvertToCategoryAction` replays). Design:
     D-SC-20 as amended at fill round 6: the type is usable as a field and a
@@ -2918,6 +2973,131 @@ type); against the reviews' recorded outcomes the only changes are the
 destroy probes, from refused to running (review 1's d11 now reaching upstream's
 "conversion of runtime facet value" TODO, as its trunk analog does), and review
 1's m14, a `ref self` method called through `(*p)`, from refused to running.
+
+Round 6's own diff (56e400145, fb12f63cb, 857d5b048, 4bc4802ae) had two
+implementation reviews, 7 findings in all: review 1, REJECT, 1 BLOCKER, 1 MAJOR
+and 1 MINOR (BLOCKER-1, MAJOR-1, MINOR-1); review 2, APPROVE-WITH-FIXES, 1 MAJOR
+and 3 MINOR (MAJOR-1, MINOR-1 to MINOR-3). Both confirmed round 6 on the
+0.0.0-0.dev+fb12f63cb driver, its gate and conformance privately and the 1007
+earlier probe runs line for line; on the round's question, both found that the
+reference exemption lets no requirement value reach lowering and that the
+stringifier's `CARBON_CHECK` is not reachable from user input, and both found
+the records accurate but for the overclaims below. The BLOCKER predates round
+6: D-SC-10's template-phase `Self`, since SC-1a.
+
+Fill round 7 (2026-10-14), by review finding, each reproduced first on the
+toolchain stamped 0.0.0-0.dev+fb12f63cb with the reviews' probes:
+
+-   BLOCKER-1 (review 1): a name of a template constraint's body that depends on
+    its `Self`, other than a requirement (an alias of `Self`, a class,
+    interface or constraint declared in the body, a template constraint nested
+    in it and its requirements), was template-dependent where non-template code
+    named it with no self type, through D-SC-10's template-phase `Self`.
+    `Convert`, calls and member access then recorded actions that a
+    non-generic function never performs, so type errors (`let y: HasN.A* = 1`,
+    `1 as Outer.Inner`) and D-SC-20's refusal (`Outer.Inner.N;`,
+    `Take(Outer.Inner.N)`) were skipped, check passed, and lowering aborted on
+    an unexpanded `SpliceInst` (function_context.cpp:223, handle.cpp:405) or
+    the program ran. Fixed by the reviewer's preferred option, D-SC-10's own
+    break condition: `Self` is a checked-phase binding in a template
+    constraint (handle_named_constraint.cpp:126-133 passes `false`, as the base
+    8068151ed did), so those names are symbolic as a `constraint`'s are and
+    are checked where they are used; D-SC-10 is amended and the template phase
+    filed as an SC-B2 prerequisite (W-028's notes). Pinned by declaration
+    `fail_self_dependent_name` (u01, v02, v10) and `nested_class` (v01), and
+    requirement-call `fail_nested_requirement_as_value` (y01, y06, y07, y10).
+    The probes that still abort reproduce on trunk 0bdce60a5 with an
+    `interface` or `constraint` spelling, at the same site: v01 at
+    sem_ir/mangler.cpp:185 (a `constraint`'s nested class); `var p:
+    typeof(Outer.Inner.N)*`, `HasN.A*`, a field of such a type and a nested
+    class local at lower/file_context.h:187; a nested constraint as a
+    binding's type at check/eval.cpp:151, an impl of its requirement's type at
+    check/generic.cpp:477; and the template-function forms (v08, u08) at
+    eval.cpp:151 after their error. One shape moves from accepted to rejected
+    (D-SC-10's amendment): a requirement whose signature names another through
+    `Self` is upstream's "member access into facet of incomplete type", as
+    `Self.N` in an interface being defined is on trunk; with the template
+    phase it was accepted and could never be satisfied.
+-   MAJOR-1 (review 1): `const typeof(HasN.N)` and `array(typeof(HasN.N), 2)`
+    were not looked into, so values of them were accepted (a by-value
+    parameter, `Take(*p)` through a `const` pointer, `let` and `Take` of an
+    array field), and an `if` over them reached LLVM's PHI assertion. Fixed as
+    asked: `GetStructuralRequirementOfType` follows a `ConstType`'s inner type
+    and an `ArrayType`'s element type (structural_conformance.cpp:779-788),
+    and the header's array sentence is replaced (structural_conformance.h:
+    95-100). Pinned by `ConstParam`, `ConstPointer`, `ArrayLet` and
+    `ArrayArg` in requirement-call `fail_requirement_typeof_value`. A class,
+    adapter or `MaybeUnformed` value stays accepted (D-SC-20 as amended at
+    fill round 7 says why).
+-   MAJOR-1 (review 2): `self.t.1` in a value method and `w.s.x` through a
+    class value were refused at a site that reads only an `i32`. Taken as the
+    reviewer's second option, with evidence against the first: member access
+    on a class value acquires the field as a value (member_access.cpp:614-624,
+    `ConvertToValueExpr` of the element access, which for a tuple field builds
+    `tuple_value` from an `acquire_value` of each element, the
+    requirement-typed one included), so a value of a type holding the
+    requirement's type is formed there, and the first option's premise, that
+    the projection "forms no new value", does not hold. D-SC-20, the design
+    page and the test comments now say that such a field is reached through a
+    reference to the object (a `ref self` method), and why a class value is
+    accepted; pinned by `Get`, `GetRef` and `StructField` in
+    `fail_requirement_typeof_value`.
+-   MINOR-1 (review 1) and MINOR-1 (review 2): the convert.cpp comments
+    (:2454-2463, :2682-2687) and structural_conformance.h:104-110 no longer say
+    "never a runtime value"; the helper's comment names the storage of a `var`
+    pattern or parameter; D-SC-20's template sentence says a template accepts
+    such a value only where its conversion records no action (a `let` of the
+    parameter's type), while a call argument or a `var` initializer is
+    replayed and refused (`TemplateDeref`, review 1's h22); the design page
+    says the same and that a `var` parameter of the type is declared and
+    uncallable (`VarParam`, `CallVarParam`, review 2's q14 and q15).
+-   MINOR-2 (review 2): the PR body's trunk advance is restated (seven
+    records-only commits ending at f67ab650d, `git merge-tree` re-run against
+    it), PRs 51 to 56 are listed as held open, and SC-1's position in trunk's
+    merge order is quoted. The body is outside the repository.
+-   MINOR-3 (review 2): `PerformTupleAccess` returns `ErrorInst` without a
+    second diagnostic when its base's conversion failed
+    (member_access.cpp:1178-1183), as member access already does; trunk's own
+    `undefined.1` cascade goes with it (no golden pins it). Pinned by
+    `TupleIndex` in `fail_requirement_as_value` and by the single errors of
+    `Get` and `StructField`.
+
+Rejected or narrowed: none of the 7. Review 2's MAJOR-1 is taken as its second
+option, on the evidence in its bullet; review 1's BLOCKER-1 as its first.
+
+Round 7's decision as an R29(a) implementation decision, with design citation
+and break condition:
+
+-   **`Self` in a template constraint is a checked-phase binding**
+    (handle_named_constraint.cpp:126-133). Design: D-SC-10 as amended at fill
+    round 7 (its own break condition, met by a different falsifier than the one
+    it named); the definition-time checking section of
+    docs/design/generics/template_constraints.md states the as-landed limit.
+    Break condition: SC-B2 (W-028) lands validity blocks, which need the
+    template phase; the flip comes back with them, and round 6's review-1
+    BLOCKER-1 probes are re-run then.
+
+Round 7's §4 rows were written after the development build ran their shapes
+(R16(d)): they record observations and are not counted as predictions. With
+the round-7 build, the 553 probe runs of rounds 2 to 4 give 399 check errors,
+130 compile and run, 5 with no `Run` and 19 aborts (round 4's v18b, a by-value
+`array(typeof(HasN.N), 0)` parameter, refused by the array rule); the round-5
+reviews' 412 give 253, 132, 15 and 12 (r05, s08, n22 and m33, a requirement
+naming another through `Self.N`, rejected at the declaration as above); round
+6's 42 give 24 and 18 as before; and the 19 + 12 aborts are the trunk classes
+recorded above. Round 6's reviews' probes: review 1's 271 (p, p2 to p15) give
+184 check errors, 70 compile and run and 17 aborts (38 on fb12f63cb), each with
+a trunk-spelled analog aborting at the same site on 0bdce60a5 (the BLOCKER-1
+bullet; r02 at inst.h:249 as r01t), and its 44 trunk analogs run as before;
+review 2's 76 give 57, 18 and 1 (q41, as its trunk analog t41), its 5 analogs as
+before; the 14 import sets of rounds 5 and 6 give the same results as on
+fb12f63cb, their two aborts trunk's import_ref.cpp:5172. Round 7's own 14
+probes (sc1-fix7/p7: `const` pointers discarded, array elements through a
+reference and through a value, a checked generic's array parameter, a class
+value's other field, `MaybeUnformed`, an alias of `Self` in a template, the
+satisfaction, redeclaration and generic-constraint paths) behave as D-SC-20 and
+D-SC-10 as amended say; the one abort (c07, an error then inst.h:249) is
+trunk's with an `interface` (c07t).
 
 Measured, on the container only (not of record, R9; hosted: not run, Actions
 disabled). Round 1: autoupdate over the 18 goldens in three passes (all 18
@@ -3004,7 +3184,17 @@ toolchain source differs): autoupdate over the 19 SC-1 goldens changed nothing;
 gate 1959 passed and 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130,
 every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56
 (51.2 s), the same two programs moving; the 553, 412 and 42 probe runs give
-results identical, line for line, to the run on fb12f63cb.
+results identical, line for line, to the run on fb12f63cb. Round 7, on the
+toolchain built from the round-7 sources before the commit (stamped
+0.0.0-0.dev+4bc4802ae.dirty, the uncommitted edits being exactly its fixes
+commit's): autoupdate over the 19 SC-1 goldens to a fixpoint (pass 1 rewrote
+the 2 with new splits, the declaration golden's dumps `[symbolic]` where they
+were `[template]`, pass 2 none); gate 1959 passed and 0 failed, exit 0, no `!`
+or `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151,
+bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 76.8 s, the same two programs moving
+against fork/conformance/out/scoreboard.json; the probe runs as stated under
+round 7's decision, and the 1007 earlier runs on fb12f63cb byte-identical to
+round 6's record.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

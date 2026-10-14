@@ -776,6 +776,16 @@ auto GetStructuralRequirementOfType(Context& context, SemIR::TypeId type_id)
         }
         break;
       }
+      case CARBON_KIND(SemIR::ArrayType array_type): {
+        work.push_back(context.types().GetTypeIdForTypeInstId(
+            array_type.element_type_inst_id));
+        break;
+      }
+      case CARBON_KIND(SemIR::ConstType const_type): {
+        work.push_back(
+            context.types().GetTypeIdForTypeInstId(const_type.inner_id));
+        break;
+      }
       default:
         break;
     }

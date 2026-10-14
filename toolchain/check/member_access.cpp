@@ -1175,6 +1175,12 @@ auto PerformTupleAccess(Context& context, SemIR::LocId loc_id,
                         SemIR::InstId tuple_inst_id,
                         SemIR::InstId index_inst_id) -> SemIR::InstId {
   tuple_inst_id = ConvertToValueOrRefExpr(context, tuple_inst_id);
+  // Fork (SC-1, fork/structural/plan.md D-SC-20): a base whose conversion
+  // failed has been diagnosed, as when `Convert` refuses a value that holds a
+  // `template constraint` requirement (`(HasN.N, 1).1`).
+  if (tuple_inst_id == SemIR::ErrorInst::InstId) {
+    return SemIR::ErrorInst::InstId;
+  }
   auto tuple_type_id = context.insts().Get(tuple_inst_id).type_id();
 
   auto tuple_type = context.types().TryGetAs<SemIR::TupleType>(tuple_type_id);

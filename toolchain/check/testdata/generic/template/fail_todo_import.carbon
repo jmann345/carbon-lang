@@ -75,6 +75,10 @@ fn Use() -> () {
 // --- fail_todo_import_function_declaration.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_function_declaration.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use(h: Holder) -> () {
@@ -84,6 +88,10 @@ fn Use(h: Holder) -> () {
 // --- fail_todo_import_class_declaration.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_todo_import_class_declaration.carbon:[[@LINE+4]]:1: error: semantics TODO: `using a generic from another library whose definition is resolved for each instantiation, such as a template` [SemanticsTodo]
+// CHECK:STDERR: import library "lib";
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 import library "lib";
 
 fn Use(unused p: Pick(Holder, ())) {}

@@ -257,5 +257,12 @@ class W(template T: A) {
 }
 
 fn Use(w: W(C)) -> i32 {
+  // CHECK:STDERR: fail_todo_field_of_template_class.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `Go(C as A)` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return w.Go();
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR: fail_todo_field_of_template_class.carbon:[[@LINE-7]]:31: note: member name `F` not found in `C` [MemberNameNotFoundInInstScope]
+  // CHECK:STDERR:   fn Go(self) -> i32 { return self.c.F(); }
+  // CHECK:STDERR:                               ^~~~~~~~
+  // CHECK:STDERR:
   return w.Go();
 }

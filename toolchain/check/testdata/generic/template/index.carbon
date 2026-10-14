@@ -106,6 +106,106 @@ fn Use(e: Empty) -> i32 {
   return At1(e);
 }
 
+
+// --- fail_tuple_index_const_param_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn Second[template T: type](p: const T) -> i32 {
+  return p.1;
+}
+
+fn Use(t: (i32, i32)) -> i32 {
+  // CHECK:STDERR: fail_tuple_index_const_param_on_instantiation.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `Second((i32, i32))` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return Second(t as const (i32, i32));
+  // CHECK:STDERR:          ^~~~~~
+  // CHECK:STDERR: fail_tuple_index_const_param_on_instantiation.carbon:[[@LINE-7]]:10: note: type `const (i32, i32)` does not support tuple indexing; only tuples can be indexed that way [TupleIndexOnANonTupleType]
+  // CHECK:STDERR:   return p.1;
+  // CHECK:STDERR:          ^~~
+  // CHECK:STDERR:
+  return Second(t as const (i32, i32));
+}
+
+// --- tuple_index_associated_type.carbon
+library "[[@TEST_NAME]]";
+
+interface Container {
+  let Elem: type;
+  fn Get(self) -> Elem;
+}
+
+class Pairs {
+  var p: (i32, i32);
+  impl as Container where .Elem = (i32, i32) {
+    fn Get(self) -> (i32, i32) { return self.p; }
+  }
+}
+
+//@dump-sem-ir-begin
+fn First[template T: Container](x: T) -> i32 {
+  let e: T.Elem = x.Get();
+  return e.0;
+}
+//@dump-sem-ir-end
+
+fn Use(c: Pairs) -> i32 {
+  return First(c);
+}
+
+// --- fail_index_in_array_bound_on_instantiation.carbon
+library "[[@TEST_NAME]]";
+
+fn Make(template T: type, template a: T) -> i32 {
+  var r: array(i32, a[0]);
+  r[0] = 5;
+  return r[0];
+}
+
+fn Use() -> i32 {
+  // CHECK:STDERR: fail_index_in_array_bound_on_instantiation.carbon:[[@LINE+17]]:10: error: unable to monomorphize specific `Make(array(i32, 1), (1,))` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return Make(array(i32, 1), (1,));
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR: fail_index_in_array_bound_on_instantiation.carbon:[[@LINE-9]]:21: note: non-constant call to compile-time-only function [NonConstantCallToCompTimeOnlyFunction]
+  // CHECK:STDERR:   var r: array(i32, a[0]);
+  // CHECK:STDERR:                     ^~~~
+  // CHECK:STDERR: {{.*}}/prelude/types/int.carbon:36:3: note: compile-time-only function declared here [CompTimeOnlyFunctionHere]
+  // CHECK:STDERR:   fn Convert(self) -> IntLiteral = "int.convert_checked";
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_index_in_array_bound_on_instantiation.carbon:[[@LINE+7]]:10: error: unable to monomorphize specific `Make(array(i32, 1), (1,))` [ResolvingSpecificHere]
+  // CHECK:STDERR:   return Make(array(i32, 1), (1,));
+  // CHECK:STDERR:          ^~~~
+  // CHECK:STDERR: fail_index_in_array_bound_on_instantiation.carbon:[[@LINE-19]]:21: note: expression is runtime; expected constant [EvalRequiresConstantValue]
+  // CHECK:STDERR:   var r: array(i32, a[0]);
+  // CHECK:STDERR:                     ^~~~
+  // CHECK:STDERR:
+  return Make(array(i32, 1), (1,));
+}
+
+// --- fail_redecl_differs_in_dependent_operation.carbon
+library "[[@TEST_NAME]]";
+
+class C(N: i32) {}
+
+fn F(template T: type, template v: T) -> array(i32, v.0);
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE+7]]:1: error: function redeclaration differs because return type is `array(i32, v.1)` [FunctionRedeclReturnTypeDiffers]
+// CHECK:STDERR: fn F(template T: type, template v: T) -> array(i32, v.1);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE-4]]:1: note: previously declared with return type `array(i32, v.0)` [FunctionRedeclReturnTypePrevious]
+// CHECK:STDERR: fn F(template T: type, template v: T) -> array(i32, v.0);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
+fn F(template T: type, template v: T) -> array(i32, v.1);
+
+fn G(template P: type, template p: P) -> C(*p);
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE+7]]:1: error: function redeclaration differs because return type is `C(p[0])` [FunctionRedeclReturnTypeDiffers]
+// CHECK:STDERR: fn G(template P: type, template p: P) -> C(p[0]);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_redecl_differs_in_dependent_operation.carbon:[[@LINE-4]]:1: note: previously declared with return type `C(*p)` [FunctionRedeclReturnTypePrevious]
+// CHECK:STDERR: fn G(template P: type, template p: P) -> C(*p);
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
+fn G(template P: type, template p: P) -> C(p[0]);
+
 // CHECK:STDOUT: --- tuple_index_param.carbon
 // CHECK:STDOUT:
 // CHECK:STDOUT: constants {
@@ -547,64 +647,255 @@ fn Use(e: Empty) -> i32 {
 // CHECK:STDOUT:   %.loc12_14.3 => <not constant>
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
-
-// --- fail_tuple_index_const_param_on_instantiation.carbon
-library "[[@TEST_NAME]]";
-
-fn Second[template T: type](p: const T) -> i32 {
-  return p.1;
-}
-
-fn Use(t: (i32, i32)) -> i32 {
-  return Second(t as const (i32, i32));
-}
-
-// --- tuple_index_associated_type.carbon
-library "[[@TEST_NAME]]";
-
-interface Container {
-  let Elem: type;
-  fn Get(self) -> Elem;
-}
-
-class Pairs {
-  var p: (i32, i32);
-  impl as Container where .Elem = (i32, i32) {
-    fn Get(self) -> (i32, i32) { return self.p; }
-  }
-}
-
-//@dump-sem-ir-begin
-fn First[template T: Container](x: T) -> i32 {
-  let e: T.Elem = x.Get();
-  return e.0;
-}
-//@dump-sem-ir-end
-
-fn Use(c: Pairs) -> i32 {
-  return First(c);
-}
-
-// --- fail_index_in_array_bound_on_instantiation.carbon
-library "[[@TEST_NAME]]";
-
-fn Make(template T: type, template a: T) -> i32 {
-  var r: array(i32, a[0]);
-  r[0] = 5;
-  return r[0];
-}
-
-fn Use() -> i32 {
-  return Make(array(i32, 1), (1,));
-}
-
-// --- fail_redecl_differs_in_dependent_operation.carbon
-library "[[@TEST_NAME]]";
-
-class C(N: i32) {}
-
-fn F(template T: type, template v: T) -> array(i32, v.0);
-fn F(template T: type, template v: T) -> array(i32, v.1);
-
-fn G(template P: type, template p: P) -> C(*p);
-fn G(template P: type, template p: P) -> C(p[0]);
+// CHECK:STDOUT: --- tuple_index_associated_type.carbon
+// CHECK:STDOUT:
+// CHECK:STDOUT: constants {
+// CHECK:STDOUT:   type: type = facet_type <type> [concrete]
+// CHECK:STDOUT:   %Container.type: type = facet_type <@Container> [concrete]
+// CHECK:STDOUT:   %Container.assoc_type: type = assoc_entity_type @Container [concrete]
+// CHECK:STDOUT:   %assoc0.318: %Container.assoc_type = assoc_entity element0, @Container.WithSelf.%Elem [concrete]
+// CHECK:STDOUT:   %assoc1: %Container.assoc_type = assoc_entity element1, @Container.WithSelf.%Container.WithSelf.Get.decl [concrete]
+// CHECK:STDOUT:   %Pairs: type = class_type @Pairs [concrete]
+// CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
+// CHECK:STDOUT:   %N: Core.IntLiteral = symbolic_binding N, 0 [symbolic]
+// CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
+// CHECK:STDOUT:   %tuple.type.e55: type = tuple_type (%i32, %i32) [concrete]
+// CHECK:STDOUT:   %pattern_type.394: type = pattern_type %tuple.type.e55 [concrete]
+// CHECK:STDOUT:   %Container.impl_witness: <witness> = impl_witness @Pairs.as.Container.impl.%Container.impl_witness_table [concrete]
+// CHECK:STDOUT:   %pattern_type.333: type = pattern_type %Pairs [concrete]
+// CHECK:STDOUT:   %Pairs.as.Container.impl.Get.type: type = fn_type @Pairs.as.Container.impl.Get [concrete]
+// CHECK:STDOUT:   %Pairs.as.Container.impl.Get: %Pairs.as.Container.impl.Get.type = struct_value () [concrete]
+// CHECK:STDOUT:   %Container.facet: %Container.type = facet_value %Pairs, (%Container.impl_witness) [concrete]
+// CHECK:STDOUT:   %Container.WithSelf.Get.type.313: type = fn_type @Container.WithSelf.Get, @Container.WithSelf(%Container.facet) [concrete]
+// CHECK:STDOUT:   %struct_type.p.025: type = struct_type {.p: %tuple.type.e55} [concrete]
+// CHECK:STDOUT:   %complete_type.0c2: <witness> = complete_type_witness %struct_type.p.025 [concrete]
+// CHECK:STDOUT:   %Copy.type: type = facet_type <@Copy> [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.ac8: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%N) [symbolic]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.5e0: %Int.as.Copy.impl.Op.type.ac8 = struct_value () [symbolic]
+// CHECK:STDOUT:   %Copy.impl_witness.b51: <witness> = impl_witness imports.%Copy.impl_witness_table.8d2, @Int.as.Copy.impl(%int_32) [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.type.3f6: type = fn_type @Int.as.Copy.impl.Op, @Int.as.Copy.impl(%int_32) [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.4f6: %Int.as.Copy.impl.Op.type.3f6 = struct_value () [concrete]
+// CHECK:STDOUT:   %Copy.facet: %Copy.type = facet_value %i32, (%Copy.impl_witness.b51) [concrete]
+// CHECK:STDOUT:   %Copy.WithSelf.Op.type.381: type = fn_type @Copy.WithSelf.Op, @Copy.WithSelf(%Copy.facet) [concrete]
+// CHECK:STDOUT:   %.737: type = fn_type_with_self_type %Copy.WithSelf.Op.type.381, %Copy.facet [concrete]
+// CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
+// CHECK:STDOUT:   %.795: Core.Form = init_form %i32 [concrete]
+// CHECK:STDOUT:   %return.param_patt.a9a: %pattern_type.6b6 = out_param_pattern [concrete]
+// CHECK:STDOUT:   %Int.as.Copy.impl.Op.specific_fn: <specific function> = specific_function %Int.as.Copy.impl.Op.4f6, @Int.as.Copy.impl.Op(%int_32) [concrete]
+// CHECK:STDOUT:   %.Self.frozen.e58: type = symbolic_binding .Self [symbolic_self]
+// CHECK:STDOUT:   %pattern_type.86b: type = pattern_type %Container.type [concrete]
+// CHECK:STDOUT:   %T.patt.466: %pattern_type.86b = symbolic_binding_pattern T, 0, template [template]
+// CHECK:STDOUT:   %T.473: %Container.type = symbolic_binding T, 0, template [template]
+// CHECK:STDOUT:   %T.as_type.612: type = facet_access_type %T.473 [template]
+// CHECK:STDOUT:   %pattern_type.719: type = pattern_type %T.as_type.612 [template]
+// CHECK:STDOUT:   %x.param_patt.4bb: %pattern_type.719 = value_param_pattern [template]
+// CHECK:STDOUT:   %x.patt.644: %pattern_type.719 = wrapper_binding_pattern x, %x.param_patt.4bb [template]
+// CHECK:STDOUT:   %return.patt.e1b: %pattern_type.6b6 = return_slot_pattern %return.param_patt.a9a, %i32 [concrete]
+// CHECK:STDOUT:   %First.type: type = fn_type @First [concrete]
+// CHECK:STDOUT:   %First: %First.type = struct_value () [concrete]
+// CHECK:STDOUT:   %require_complete.b8c: <witness> = require_complete_type %T.as_type.612 [template]
+// CHECK:STDOUT:   %.92e: type = type_of_inst @First.%.loc17_11.5 [template]
+// CHECK:STDOUT:   %.76c: %.92e = splice_inst @First.%.loc17_11.5 [template]
+// CHECK:STDOUT:   %.537: type = splice_inst @First.%.loc17_11.8 [template]
+// CHECK:STDOUT:   %require_complete.cb0: <witness> = require_complete_type %.537 [template]
+// CHECK:STDOUT:   %pattern_type.fcb: type = pattern_type %.537 [template]
+// CHECK:STDOUT:   %e.patt.4c4: %pattern_type.fcb = value_binding_pattern e [template]
+// CHECK:STDOUT:   %.1c3: type = type_of_inst @First.%.loc17_20.3 [template]
+// CHECK:STDOUT:   %.3a7: %.1c3 = splice_inst @First.%.loc17_20.3 [template]
+// CHECK:STDOUT:   %.c54: type = type_of_inst @First.%.loc17_25.4 [template]
+// CHECK:STDOUT:   %.424: %.c54 = splice_inst @First.%.loc17_25.4 [template]
+// CHECK:STDOUT:   %.739: %.537 = splice_inst @First.%.loc17_25.7 [template]
+// CHECK:STDOUT:   %int_0: Core.IntLiteral = int_value 0 [concrete]
+// CHECK:STDOUT:   %.a9b: type = type_of_inst @First.%.loc18_11.3 [template]
+// CHECK:STDOUT:   %.f4b: %.a9b = splice_inst @First.%.loc18_11.3 [template]
+// CHECK:STDOUT:   %.28a: %i32 = splice_inst @First.%.loc18_13.2 [template]
+// CHECK:STDOUT:   %x.param_patt.d84: %pattern_type.333 = value_param_pattern [concrete]
+// CHECK:STDOUT:   %x.patt.a01: %pattern_type.333 = wrapper_binding_pattern x, %x.param_patt.d84 [concrete]
+// CHECK:STDOUT:   %inst.splice_block.426619.1: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %.4e3: type = splice_block %impl.elem0.c75 [concrete = %tuple.type.e55] {
+// CHECK:STDOUT:       %as_type: type = facet_access_type %Container.facet [concrete = %Pairs]
+// CHECK:STDOUT:       %.cd3: type = converted %Container.facet, %as_type [concrete = %Pairs]
+// CHECK:STDOUT:       %Elem.ref: %Container.assoc_type = name_ref Elem, @Elem.%assoc0 [concrete = %assoc0.318]
+// CHECK:STDOUT:       %impl.elem0.c75: type = impl_witness_access %Container.impl_witness, element0 [concrete = %tuple.type.e55]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %inst.splice_block.426619.2: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %.a8f: type = splice_block %tuple.type.e55 [concrete = %tuple.type.e55] {}
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %complete_type.6c4: <witness> = complete_type_witness %tuple.type.e55 [concrete]
+// CHECK:STDOUT:   %e.patt.d6c: %pattern_type.394 = value_binding_pattern e [concrete]
+// CHECK:STDOUT:   %.c8f: type = fn_type_with_self_type %Container.WithSelf.Get.type.313, %Container.facet [concrete]
+// CHECK:STDOUT:   %inst.splice_block.426619.3: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %.170: <bound method> = splice_block %bound_method.aa0 {
+// CHECK:STDOUT:       %.7e7: %Pairs = specific_inst @First.%x.ref, @First(%Container.facet)
+// CHECK:STDOUT:       %Get.ref: %Container.assoc_type = name_ref Get, @Container.WithSelf.%assoc1 [concrete = %assoc1]
+// CHECK:STDOUT:       %impl.elem1: %.c8f = impl_witness_access %Container.impl_witness, element1 [concrete = %Pairs.as.Container.impl.Get]
+// CHECK:STDOUT:       %bound_method.aa0: <bound method> = bound_method %.7e7, %impl.elem1
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %inst.splice_block.426619.4: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %.4b3: init %tuple.type.e55 = splice_block %Pairs.as.Container.impl.Get.call {
+// CHECK:STDOUT:       %.0d2: ref %tuple.type.e55 = temporary_storage
+// CHECK:STDOUT:       %Pairs.as.Container.impl.Get.call: init %tuple.type.e55 to %.0d2 = call %.170(%.7e7)
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %inst.splice_block.426619.5: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %.50d: %tuple.type.e55 = splice_block %tuple.783 {
+// CHECK:STDOUT:       %.953: ref %tuple.type.e55 = temporary %.0d2, %.4b3
+// CHECK:STDOUT:       %tuple.elem0.35d: ref %i32 = tuple_access %.953, element0
+// CHECK:STDOUT:       %.32b: %i32 = acquire_value %tuple.elem0.35d
+// CHECK:STDOUT:       %tuple.elem1: ref %i32 = tuple_access %.953, element1
+// CHECK:STDOUT:       %.78c: %i32 = acquire_value %tuple.elem1
+// CHECK:STDOUT:       %tuple.783: %tuple.type.e55 = tuple_value (%.32b, %.78c)
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %inst.splice_block.426619.6: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %.ef2: %i32 = splice_block %tuple.elem0.aa3 {
+// CHECK:STDOUT:       %.3b9: %tuple.type.e55 = specific_inst @First.%e.ref, @First(%Container.facet)
+// CHECK:STDOUT:       %tuple.elem0.aa3: %i32 = tuple_access %.3b9, element0
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
+// CHECK:STDOUT:   %inst.splice_block.426619.7: <instruction> = inst_value [concrete] {
+// CHECK:STDOUT:     %.f9f: init %i32 = splice_block %Int.as.Copy.impl.Op.call {
+// CHECK:STDOUT:       %impl.elem0.882: %.737 = impl_witness_access %Copy.impl_witness.b51, element0 [concrete = %Int.as.Copy.impl.Op.4f6]
+// CHECK:STDOUT:       %bound_method.5b4: <bound method> = bound_method %.ef2, %impl.elem0.882
+// CHECK:STDOUT:       %specific_fn: <specific function> = specific_function %impl.elem0.882, @Int.as.Copy.impl.Op(%int_32) [concrete = %Int.as.Copy.impl.Op.specific_fn]
+// CHECK:STDOUT:       %bound_method.9e7: <bound method> = bound_method %.ef2, %specific_fn
+// CHECK:STDOUT:       %Int.as.Copy.impl.Op.call: init %i32 = call %bound_method.9e7(%.ef2)
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: imports {
+// CHECK:STDOUT:   %Core.import_ref.cd6: @Int.as.Copy.impl.%Int.as.Copy.impl.Op.type (%Int.as.Copy.impl.Op.type.ac8) = import_ref Core//prelude/types/int, loc{{\d+_\d+}}, loaded [symbolic = @Int.as.Copy.impl.%Int.as.Copy.impl.Op (constants.%Int.as.Copy.impl.Op.5e0)]
+// CHECK:STDOUT:   %Copy.impl_witness_table.8d2 = impl_witness_table (%Core.import_ref.cd6), @Int.as.Copy.impl [concrete]
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: file {
+// CHECK:STDOUT:   %First.decl: %First.type = fn_decl @First [concrete = constants.%First] {
+// CHECK:STDOUT:     %T.patt.loc16_20.1: %pattern_type.86b = symbolic_binding_pattern T, 0, template [template = %T.patt.loc16_20.2 (constants.%T.patt.466)]
+// CHECK:STDOUT:     %x.param_patt.loc16_34.1: @First.%pattern_type.loc16 (%pattern_type.719) = value_param_pattern [template = %x.param_patt.loc16_34.2 (constants.%x.param_patt.4bb)]
+// CHECK:STDOUT:     %x.patt.loc16_34.1: @First.%pattern_type.loc16 (%pattern_type.719) = wrapper_binding_pattern x, %x.param_patt.loc16_34.1 [template = %x.patt.loc16_34.2 (constants.%x.patt.644)]
+// CHECK:STDOUT:     %return.param_patt: %pattern_type.6b6 = out_param_pattern [concrete = constants.%return.param_patt.a9a]
+// CHECK:STDOUT:     %return.patt: %pattern_type.6b6 = return_slot_pattern %return.param_patt, %i32 [concrete = constants.%return.patt.e1b]
+// CHECK:STDOUT:   } {
+// CHECK:STDOUT:     %i32: type = type_literal constants.%i32 [concrete = constants.%i32]
+// CHECK:STDOUT:     %.loc16_42: Core.Form = init_form %i32 [concrete = constants.%.795]
+// CHECK:STDOUT:     %.loc16_22: type = splice_block %Container.ref [concrete = constants.%Container.type] {
+// CHECK:STDOUT:       %.Self.frozen: type = symbolic_binding .Self [symbolic_self = constants.%.Self.frozen.e58]
+// CHECK:STDOUT:       %Container.ref: type = name_ref Container, file.%Container.decl [concrete = constants.%Container.type]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %T.loc16_20.2: %Container.type = symbolic_binding T, 0, template [template = %T.loc16_20.1 (constants.%T.473)]
+// CHECK:STDOUT:     %x.param: @First.%T.as_type.loc16_36.1 (%T.as_type.612) = value_param call_param0
+// CHECK:STDOUT:     %.loc16_36.1: type = splice_block %.loc16_36.2 [template = %T.as_type.loc16_36.1 (constants.%T.as_type.612)] {
+// CHECK:STDOUT:       %T.ref.loc16: %Container.type = name_ref T, %T.loc16_20.2 [template = %T.loc16_20.1 (constants.%T.473)]
+// CHECK:STDOUT:       %T.as_type.loc16_36.2: type = facet_access_type %T.ref.loc16 [template = %T.as_type.loc16_36.1 (constants.%T.as_type.612)]
+// CHECK:STDOUT:       %.loc16_36.2: type = converted %T.ref.loc16, %T.as_type.loc16_36.2 [template = %T.as_type.loc16_36.1 (constants.%T.as_type.612)]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %x: @First.%T.as_type.loc16_36.1 (%T.as_type.612) = wrapper_binding x, %x.param
+// CHECK:STDOUT:     %return.param: ref %i32 = out_param call_param1
+// CHECK:STDOUT:     %return: ref %i32 = return_slot %return.param
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: generic fn @First(%T.loc16_20.2: %Container.type) {
+// CHECK:STDOUT:   %T.patt.loc16_20.2: %pattern_type.86b = symbolic_binding_pattern T, 0, template [template = %T.patt.loc16_20.2 (constants.%T.patt.466)]
+// CHECK:STDOUT:   %T.loc16_20.1: %Container.type = symbolic_binding T, 0, template [template = %T.loc16_20.1 (constants.%T.473)]
+// CHECK:STDOUT:   %T.as_type.loc16_36.1: type = facet_access_type %T.loc16_20.1 [template = %T.as_type.loc16_36.1 (constants.%T.as_type.612)]
+// CHECK:STDOUT:   %pattern_type.loc16: type = pattern_type %T.as_type.loc16_36.1 [template = %pattern_type.loc16 (constants.%pattern_type.719)]
+// CHECK:STDOUT:   %x.param_patt.loc16_34.2: @First.%pattern_type.loc16 (%pattern_type.719) = value_param_pattern [template = %x.param_patt.loc16_34.2 (constants.%x.param_patt.4bb)]
+// CHECK:STDOUT:   %x.patt.loc16_34.2: @First.%pattern_type.loc16 (%pattern_type.719) = wrapper_binding_pattern x, %x.param_patt.loc16_34.2 [template = %x.patt.loc16_34.2 (constants.%x.patt.644)]
+// CHECK:STDOUT:
+// CHECK:STDOUT: !definition:
+// CHECK:STDOUT:   %require_complete.loc16: <witness> = require_complete_type %T.as_type.loc16_36.1 [template = %require_complete.loc16 (constants.%require_complete.b8c)]
+// CHECK:STDOUT:   %.loc17_11.5: <instruction> = access_member_action %T.ref.loc17, Elem [template]
+// CHECK:STDOUT:   %.loc17_11.6: type = type_of_inst %.loc17_11.5 [template = %.loc17_11.6 (constants.%.92e)]
+// CHECK:STDOUT:   %.loc17_11.7: @First.%.loc17_11.6 (%.92e) = splice_inst %.loc17_11.5 [template = %.loc17_11.7 (constants.%.76c)]
+// CHECK:STDOUT:   %.loc17_11.8: <instruction> = convert_to_value_action %.loc17_11.3, type [template]
+// CHECK:STDOUT:   %.loc17_11.9: type = splice_inst %.loc17_11.8 [template = %.loc17_11.9 (constants.%.537)]
+// CHECK:STDOUT:   %require_complete.loc17: <witness> = require_complete_type %.loc17_11.9 [template = %require_complete.loc17 (constants.%require_complete.cb0)]
+// CHECK:STDOUT:   %pattern_type.loc17: type = pattern_type %.loc17_11.9 [template = %pattern_type.loc17 (constants.%pattern_type.fcb)]
+// CHECK:STDOUT:   %e.patt.loc17_8.2: @First.%pattern_type.loc17 (%pattern_type.fcb) = value_binding_pattern e [template = %e.patt.loc17_8.2 (constants.%e.patt.4c4)]
+// CHECK:STDOUT:   %.loc17_20.3: <instruction> = access_member_action %x.ref, Get [template]
+// CHECK:STDOUT:   %.loc17_20.4: type = type_of_inst %.loc17_20.3 [template = %.loc17_20.4 (constants.%.1c3)]
+// CHECK:STDOUT:   %.loc17_20.5: @First.%.loc17_20.4 (%.1c3) = splice_inst %.loc17_20.3 [template = %.loc17_20.5 (constants.%.3a7)]
+// CHECK:STDOUT:   %.loc17_25.4: <instruction> = call_action (%.loc17_20.2), false [template]
+// CHECK:STDOUT:   %.loc17_25.5: type = type_of_inst %.loc17_25.4 [template = %.loc17_25.5 (constants.%.c54)]
+// CHECK:STDOUT:   %.loc17_25.6: @First.%.loc17_25.5 (%.c54) = splice_inst %.loc17_25.4 [template = %.loc17_25.6 (constants.%.424)]
+// CHECK:STDOUT:   %.loc17_25.7: <instruction> = convert_to_value_action %.loc17_25.2, %.loc17_11.9 [template]
+// CHECK:STDOUT:   %.loc17_25.8: @First.%.loc17_11.9 (%.537) = splice_inst %.loc17_25.7 [template = %.loc17_25.8 (constants.%.739)]
+// CHECK:STDOUT:   %.loc18_11.3: <instruction> = tuple_index_action %e.ref, %int_0 [template]
+// CHECK:STDOUT:   %.loc18_11.4: type = type_of_inst %.loc18_11.3 [template = %.loc18_11.4 (constants.%.a9b)]
+// CHECK:STDOUT:   %.loc18_11.5: @First.%.loc18_11.4 (%.a9b) = splice_inst %.loc18_11.3 [template = %.loc18_11.5 (constants.%.f4b)]
+// CHECK:STDOUT:   %.loc18_13.2: <instruction> = convert_action %.loc18_11.2, constants.%i32, element10 [template]
+// CHECK:STDOUT:   %.loc18_13.3: %i32 = splice_inst %.loc18_13.2 [template = %.loc18_13.3 (constants.%.28a)]
+// CHECK:STDOUT:
+// CHECK:STDOUT:   fn(%x.param: @First.%T.as_type.loc16_36.1 (%T.as_type.612)) -> out %return.param: %i32 {
+// CHECK:STDOUT:   !entry:
+// CHECK:STDOUT:     %x.ref: @First.%T.as_type.loc16_36.1 (%T.as_type.612) = name_ref x, %x
+// CHECK:STDOUT:     %.loc17_20.1: type = type_of_inst %.loc17_20.3 [template = %.loc17_20.4 (constants.%.1c3)]
+// CHECK:STDOUT:     %.loc17_20.2: @First.%.loc17_20.4 (%.1c3) = splice_inst %.loc17_20.3 [template = %.loc17_20.5 (constants.%.3a7)]
+// CHECK:STDOUT:     %.loc17_25.1: type = type_of_inst %.loc17_25.4 [template = %.loc17_25.5 (constants.%.c54)]
+// CHECK:STDOUT:     %.loc17_25.2: @First.%.loc17_25.5 (%.c54) = splice_inst %.loc17_25.4 [template = %.loc17_25.6 (constants.%.424)]
+// CHECK:STDOUT:     %.loc17_25.3: @First.%.loc17_11.9 (%.537) = splice_inst %.loc17_25.7 [template = %.loc17_25.8 (constants.%.739)]
+// CHECK:STDOUT:     %.loc17_11.1: type = splice_block %.loc17_11.4 [template = %.loc17_11.9 (constants.%.537)] {
+// CHECK:STDOUT:       %T.ref.loc17: %Container.type = name_ref T, %T.loc16_20.2 [template = %T.loc16_20.1 (constants.%T.473)]
+// CHECK:STDOUT:       %.loc17_11.2: type = type_of_inst %.loc17_11.5 [template = %.loc17_11.6 (constants.%.92e)]
+// CHECK:STDOUT:       %.loc17_11.3: @First.%.loc17_11.6 (%.92e) = splice_inst %.loc17_11.5 [template = %.loc17_11.7 (constants.%.76c)]
+// CHECK:STDOUT:       %.loc17_11.4: type = splice_inst %.loc17_11.8 [template = %.loc17_11.9 (constants.%.537)]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %e: @First.%.loc17_11.9 (%.537) = wrapper_binding e, %.loc17_25.3
+// CHECK:STDOUT:     name_binding_decl {
+// CHECK:STDOUT:       %e.patt.loc17_8.1: @First.%pattern_type.loc17 (%pattern_type.fcb) = value_binding_pattern e [template = %e.patt.loc17_8.2 (constants.%e.patt.4c4)]
+// CHECK:STDOUT:     }
+// CHECK:STDOUT:     %e.ref: @First.%.loc17_11.9 (%.537) = name_ref e, %e
+// CHECK:STDOUT:     %int_0: Core.IntLiteral = int_value 0 [concrete = constants.%int_0]
+// CHECK:STDOUT:     %.loc18_11.1: type = type_of_inst %.loc18_11.3 [template = %.loc18_11.4 (constants.%.a9b)]
+// CHECK:STDOUT:     %.loc18_11.2: @First.%.loc18_11.4 (%.a9b) = splice_inst %.loc18_11.3 [template = %.loc18_11.5 (constants.%.f4b)]
+// CHECK:STDOUT:     %.loc18_13.1: %i32 = splice_inst %.loc18_13.2 [template = %.loc18_13.3 (constants.%.28a)]
+// CHECK:STDOUT:     return %.loc18_13.1
+// CHECK:STDOUT:   }
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: specific @First(constants.%T.473) {
+// CHECK:STDOUT:   %T.patt.loc16_20.2 => constants.%T.patt.466
+// CHECK:STDOUT:   %T.loc16_20.1 => constants.%T.473
+// CHECK:STDOUT:   %T.as_type.loc16_36.1 => constants.%T.as_type.612
+// CHECK:STDOUT:   %pattern_type.loc16 => constants.%pattern_type.719
+// CHECK:STDOUT:   %x.param_patt.loc16_34.2 => constants.%x.param_patt.4bb
+// CHECK:STDOUT:   %x.patt.loc16_34.2 => constants.%x.patt.644
+// CHECK:STDOUT: }
+// CHECK:STDOUT:
+// CHECK:STDOUT: specific @First(constants.%Container.facet) {
+// CHECK:STDOUT:   %T.patt.loc16_20.2 => constants.%T.patt.466
+// CHECK:STDOUT:   %T.loc16_20.1 => constants.%Container.facet
+// CHECK:STDOUT:   %T.as_type.loc16_36.1 => constants.%Pairs
+// CHECK:STDOUT:   %pattern_type.loc16 => constants.%pattern_type.333
+// CHECK:STDOUT:   %x.param_patt.loc16_34.2 => constants.%x.param_patt.d84
+// CHECK:STDOUT:   %x.patt.loc16_34.2 => constants.%x.patt.a01
+// CHECK:STDOUT:
+// CHECK:STDOUT: !definition:
+// CHECK:STDOUT:   %require_complete.loc16 => constants.%complete_type.0c2
+// CHECK:STDOUT:   %.loc17_11.5 => constants.%inst.splice_block.426619.1
+// CHECK:STDOUT:   %.loc17_11.6 => type
+// CHECK:STDOUT:   %.loc17_11.7 => constants.%tuple.type.e55
+// CHECK:STDOUT:   %.loc17_11.8 => constants.%inst.splice_block.426619.2
+// CHECK:STDOUT:   %.loc17_11.9 => constants.%tuple.type.e55
+// CHECK:STDOUT:   %require_complete.loc17 => constants.%complete_type.6c4
+// CHECK:STDOUT:   %pattern_type.loc17 => constants.%pattern_type.394
+// CHECK:STDOUT:   %e.patt.loc17_8.2 => constants.%e.patt.d6c
+// CHECK:STDOUT:   %.loc17_20.3 => constants.%inst.splice_block.426619.3
+// CHECK:STDOUT:   %.loc17_20.4 => <bound method>
+// CHECK:STDOUT:   %.loc17_20.5 => <not constant>
+// CHECK:STDOUT:   %.loc17_25.4 => constants.%inst.splice_block.426619.4
+// CHECK:STDOUT:   %.loc17_25.5 => constants.%tuple.type.e55
+// CHECK:STDOUT:   %.loc17_25.6 => <not constant>
+// CHECK:STDOUT:   %.loc17_25.7 => constants.%inst.splice_block.426619.5
+// CHECK:STDOUT:   %.loc17_25.8 => <not constant>
+// CHECK:STDOUT:   %.loc18_11.3 => constants.%inst.splice_block.426619.6
+// CHECK:STDOUT:   %.loc18_11.4 => constants.%i32
+// CHECK:STDOUT:   %.loc18_11.5 => <not constant>
+// CHECK:STDOUT:   %.loc18_13.2 => constants.%inst.splice_block.426619.7
+// CHECK:STDOUT:   %.loc18_13.3 => <not constant>
+// CHECK:STDOUT: }
+// CHECK:STDOUT:

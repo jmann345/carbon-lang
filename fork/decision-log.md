@@ -4348,16 +4348,18 @@ counts, the trunk analogs of the two new splits, of the evaluation-mode
 divergence and of W-233, the ledger's SC-1 cites), keeps the PR body under
 GitHub's description limit with a summary of the review record and the
 verification, and records the re-measure on fa9038828; the records commit after
-93f2b9f24 corrects its account of the PR body's layout and records the
-re-measure on 93f2b9f24. Fill round 12 (same day), folding round 11's two
+93f2b9f24, 62e25dcdd, corrects its account of the PR body's layout and records
+the re-measure on 93f2b9f24. Fill round 12 (same day), folding round 11's two
 implementation reviews: a6289f86e (one rule for errors, the comparison's
 errors-match mode, ROUND 12's first decision; a requirement with `self` needs a
 member with `self`, its second; test sources and the design page), 62d39c9f6 (1
-golden, CHECK lines only) and the records commit after them (round 11's review
-record; ROUND 11's first decision superseded; ROUND 12's DECISION; W-235 filed;
-the ledger's SC-1 cites that round 12 moved re-pointed; gap row 60;
-ORCHESTRATION; the re-measure on 62d39c9f6). Each fix is an R29(a)
-implementation decision
+golden, CHECK lines only) and 9af776bac (records: round 11's review record;
+ROUND 11's first decision superseded; ROUND 12's DECISION; W-235 filed; the
+ledger's SC-1 cites that round 12 moved re-pointed; gap row 60; ORCHESTRATION;
+the re-measure on 62d39c9f6); the records commit after 9af776bac corrects round
+11's finding count (ten, where 9af776bac said nine), adds round 11's review
+record to the plan's note, and records the re-measure on 9af776bac. Each fix is
+an R29(a) implementation decision
 recorded for after-the-fact veto, with its design citation and break condition;
 none reopens F-010 or the intent of a D-SC decision. Round 7's takes D-SC-10's
 own break condition on a falsifier other than the one it named (a template-phase
@@ -5788,7 +5790,8 @@ error"). None is rejected. Per-finding detail is in the plan's "Landed notes
 (SC-1 fill rounds, 2026-10-13)".
 
 Round 11's own diff (2ee29f311, e7783c80e, fa9038828, 93f2b9f24, 62e25dcdd) then
-received two implementation reviews, 9 findings in all: review 1,
+received two implementation reviews, 10 findings in all (9 as first recorded by
+9af776bac, which counted the one finding of both once): review 1,
 APPROVE-WITH-FIXES, 2 MAJOR and 3 MINOR; review 2, APPROVE-WITH-FIXES, 1 MAJOR
 and 4 MINOR. Both checked round 11 on the driver stamped 0.0.0-0.dev+e7783c80e
 against trunk 0bdce60a5; review 1 also against a round-10 toolchain it relinked
@@ -5828,10 +5831,11 @@ itself a patchwork. Review 1's probes are sc1-review11/adv1 (mx: the 330 cases
 with their trunk analogs; d, e, n, sp, tp and splits), and it re-ran probes.sh
 (1474 result lines over 16 sets) and imps.sh (93 lines, identical to round
 10's); review 2's are sc1-review11/adv2 (m: the 275 cases with their analogs;
-mf: the no-error baselines; d: d1 to d11, n1 to n4, s1 to s3, c1 to c3, r1 and
-r2 with their analogs; tp: 13), with the gate and a cite check (131 cites). The
-round counts 2 MAJOR, MAJOR-1 the one finding of both reviews, and no BLOCKER.
-Fill round 12 folds all 9, each reproduced first on the toolchain stamped
+mf: the no-error baselines; d: d1 to d11, n1 to n4, s1, s1f, s2, s3 and c1 to
+c3 with their trunk analogs, and r1 and r2, trunk redeclarations; tp: 13), with
+the gate and a cite check (131 cites). The round counts 2 MAJOR, MAJOR-1 the one
+finding of both reviews, and no BLOCKER. Fill round 12 folds all 10, each
+reproduced first on the toolchain stamped
 0.0.0-0.dev+e7783c80e. Dispositions: both MAJOR-1s and review 1's MAJOR-2 are
 ROUND 12's first decision, the default value compared by its parameter's type
 (g3, g3.t), and review 1's rule refined by ROUND 12's second decision (ms1, ms3,
@@ -6166,7 +6170,17 @@ import sets that still exist give round 11's results for all 31 runs; round
 11's reviews' 1989 probe files and round 12's own abort on no SC-1 path (the 60
 that abort are trunk spellings on upstream's paths), and the two reviews'
 matrices (330 and 275 cases) have no case silent where trunk's impl analog
-reports. Against
+reports. Round 12's commits: a6289f86e (fixes, test sources, the design page),
+62d39c9f6 (goldens) and 9af776bac (records), which re-ran the gate after its
+test comment's edit (1959 passed, 0 failed, exit 0, 54 s), and the records
+commit after it. Re-run on 9af776bac for the records commit after it with that
+toolchain (no toolchain source differs from 62d39c9f6, and no test source but
+that comment): gate 1959 passed, 0 failed, exit 0, 78 s, no `!` or `?` mark;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56, 114.4 s, the same two programs moving (sc1-records12/conf,
+in a private cache); `runner.py --self-test` OK (151 programs, 56 bullets); `git
+merge-tree` of 9af776bac against trunk 3eb7f36f0 conflicts in
+fork/ORCHESTRATION.md only. Against
 fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
 exactly two programs move in every run: generics/structural_conformance.carbon
 SKIP to PASS (`42` then `7`) and the new
@@ -6410,7 +6424,8 @@ row and in W-027's notes; its account of the PR body's layout corrected in
 review 2's MAJOR-2 disposition, here and in the plan, and in ORCHESTRATION's
 status paragraph (the NOT run paragraph stays in the body, which fits under the
 limit with it); the re-measure on 93f2b9f24 here and in the plan. No residue is
-filed by it. Round 12's fixes commit a6289f86e: the toolchain change (the
+filed by it. That records commit is 62e25dcdd. Round 12's fixes commit
+a6289f86e: the toolchain change (the
 errors-match mode, the `self` test, both parallel functions deleted), the new
 split shapes and comments, the four `fail_todo_` comments naming their W-ids,
 the design page's `self` sentence and D-SC-9 sentence. The records commit after
@@ -6428,6 +6443,18 @@ re-pointed at the round-12 head, which no records commit had done since round
 W-234 that round 12 moved, re-pointed; the template_constraint_require golden's
 comment cite of D-SC-6's branch (structural_conformance.cpp:562); W-235 filed
 (upstream's abort on two parameter patterns whose constant value is the error).
+That records commit is 9af776bac. The records commit after 9af776bac: 9af776bac
+named at the head of this entry and of the plan's note, in MEASURED, in RECORDS,
+in ORCHESTRATION's status paragraph and Branches row and in W-027's notes, and
+62e25dcdd named at the head of this entry and of the plan's note, in RECORDS and
+in ORCHESTRATION's status paragraph; round 11's review
+counted as 10 findings, where 9af776bac counted 9 (the one finding of both
+reviews once, as no earlier round's count does), here, in the plan, in
+ORCHESTRATION and in W-027's notes; round 11's review record written in the
+plan's note, which 9af776bac listed but had not written there (the plan held
+only the per-finding dispositions); review 2's `d` probes listed as its
+directory shows; the re-measure on 9af776bac here and in the plan. No residue is
+filed by it.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

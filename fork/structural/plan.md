@@ -2410,22 +2410,23 @@ with one, is reported as trunk's impl analog reports it; a tuple pattern
 parameter under a default value is the TODO too; the impl-lookup cycle after the
 error and W-233's member side are pinned; the ledger's SC-1 cites are checked
 mechanically at the head: 2ee29f311 (fixes, test sources, the design page),
-e7783c80e (2 goldens, CHECK lines only) and fa9038828 (records), which
-completes round 10's review record; it measured the same totals on the toolchain
-built from its sources, again on the toolchain stamped 0.0.0-0.dev+e7783c80e
-(below), again on fa9038828 for 93f2b9f24, which checks round 11's records
-against the head, and again on 93f2b9f24 for the records commit after it. Fill
+e7783c80e (2 goldens, CHECK lines only) and fa9038828 (records), which completes
+round 10's review record; it measured the same totals on the toolchain built
+from its sources, again on the toolchain stamped 0.0.0-0.dev+e7783c80e (below),
+again on fa9038828 for 93f2b9f24, which checks round 11's records against the
+head, and again on 93f2b9f24 for the records commit after it, 62e25dcdd. Fill
 round 12 (same day) folds round 11's two implementation reviews
-(APPROVE-WITH-FIXES both; 9 findings, none rejected): the error handling is one
+(APPROVE-WITH-FIXES both; 10 findings, none rejected): the error handling is one
 rule, D-SC-5(d)'s comparison in an errors-match mode of upstream's own
-comparison, which reads an erroneous default value as an error, so the new
-abort on two of them and the spurious mismatch beside one are gone; a
-requirement with `self` needs a member with `self`; the `fail_todo_` splits
-name their W-ids; upstream's abort on a redeclaration with two erroneous default
-values is filed as W-235: a6289f86e (fixes, test sources, the design page),
-62d39c9f6 (1 golden, CHECK lines only) and the records commit after them; it
-measured the same totals on the toolchain built from its sources and again on
-the toolchain stamped 0.0.0-0.dev+62d39c9f6 (below). Not of record until
+comparison, which reads an erroneous default value as an error, so the new abort
+on two of them and the spurious mismatch beside one are gone; a requirement with
+`self` needs a member with `self`; the `fail_todo_` splits name their W-ids;
+upstream's abort on a redeclaration with two erroneous default values is filed
+as W-235: a6289f86e (fixes, test sources, the design page), 62d39c9f6 (1 golden,
+CHECK lines only) and 9af776bac (records); it measured the same totals on the
+toolchain built from its sources, again on the toolchain stamped
+0.0.0-0.dev+62d39c9f6 (below) and again on 9af776bac for the records commit
+after it, which writes round 11's review record below. Not of record until
 fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
@@ -4062,6 +4063,61 @@ build, the splits give `fail_requirement_signature_error` 3 errors, `_genuine`
 two `fail_todo_requirement_signature_error_` splits 4 each (2 each on the
 round-10 build) and `fail_todo_tuple_pattern_param` 2 (1 on the round-10 build).
 
+Round 11's own diff (2ee29f311, e7783c80e, fa9038828, 93f2b9f24, 62e25dcdd) had
+two implementation reviews, 10 findings in all: review 1, APPROVE-WITH-FIXES, 2
+MAJOR and 3 MINOR (MAJOR-1, MAJOR-2, MINOR-1 to MINOR-3); review 2,
+APPROVE-WITH-FIXES, 1 MAJOR and 4 MINOR (MAJOR-1, MINOR-1 to MINOR-4). Both
+checked round 11 on the driver stamped 0.0.0-0.dev+e7783c80e against trunk
+0bdce60a5; review 1 also against a round-10 toolchain it relinked from
+444ccbafe's sources and then deleted, review 2 against the round-9 build
+(sc1-fix10/r9-install). On the round's question both found that round 11 hides
+no genuine failure and compiles no wrong program, a skip returning `Error`.
+Review 1's matrix of 330 cases (error positions none, `self`, a parameter, the
+return, a default value, a compile-time parameter and a modifier, on either side
+and both, against 15 mismatch positions) and review 2's of 275 (7
+requirement-side and 8 member-side error positions and 5 both-side placements,
+against 15 kinds of mismatch) found no case silent that trunk's impl analog
+reports and nothing hidden against round 9's member side.
+`CheckRedeclParamsMatchExceptErrors` had one caller and changed no non-SC-1
+behavior (review 1's file_test subset 115 / 115, review 2's gate 1959 / 0),
+though it copied upstream's list logic (review 1's MINOR-3, review 2's MINOR-4).
+A requirement's tuple pattern was refused in every form they built (review 1's
+tp: 17 and a redeclaration; review 2's tp: 13, a nested default, a tuple inside
+a struct pattern and a member-side default among them), the aborts among them
+being MINOR-1's. The two new splits gave 9 and 16 errors, each class as its
+trunk analog. The records held: the PR body at 63,377 characters and its first
+comment at 50,199, all 55 commits named, no model identifier, W-233 and W-234
+exact at the head, gap row 60. Both found an erroneous default value (`y: i32 =
+Undefined`, whose pattern's constant value is the error but not its type) read
+as no error, MAJOR-1 of both: one gave a spurious mismatch where trunk's analog
+is silent (review 1's d2, d10 and 11 matrix cases; review 2's d1, d2), and after
+a skipped erroneous parameter two aborted at merge.cpp:391 (review 2's n1, n2),
+an abort new in round 11. Review 1's MAJOR-2 (R17): the code followed one rule
+that fits a sentence, D-SC-5(d)'s comparison with errors counted as equal, but
+the records justified it by trunk's thunk, which is false for five classes newly
+reported in round 11 (a `var` form, the member's own compile-time parameters,
+`self` presence beside an erroneous `self`, an empty `[]`, a default value's
+error) and contradicted itself on the evaluation mode. Review 1's MINORs:
+MINOR-1 two erroneous default values still aborting, as trunk's plain
+redeclaration does; MINOR-2 parameter errors read in the generic and return
+errors in the specific (sp/s1, s2); MINOR-3 the copied list logic without a fork
+marker at its definition. Review 2's MINORs: MINOR-1 the same pre-existing abort
+(d3, n3; trunk's r1, r2); MINOR-2 the records' thunk analogy overclaimed (c1 to
+c3); MINOR-3 `fail_todo_tuple_pattern_param` and its three siblings not naming
+their W-ids; MINOR-4 the comparison logic duplicated. On R17 both stated the
+code's rule in one sentence, so neither graded the machinery itself a
+patchwork; review 1's MAJOR-2 graded the records' rationale for it. Review 1's
+probes are sc1-review11/adv1 (mx: the 330 cases with their trunk analogs; d, e,
+n, sp, tp and splits), and it re-ran probes.sh (1474 result lines over 16 sets)
+and imps.sh (93 lines, identical to round 10's); review 2's are
+sc1-review11/adv2 (m: the 275 cases with their analogs; mf: the no-error
+baselines; d: d1 to d11, n1 to n4, s1, s1f, s2, s3 and c1 to c3 with their trunk
+analogs, and r1 and r2, trunk redeclarations; tp: 13), with the gate and a cite
+check (131 cites). The round counts 2 MAJOR, MAJOR-1 the one finding of both
+reviews, and no BLOCKER. 9af776bac recorded the count as 9 findings, counting
+that one finding once, as no earlier round's count does; the records commit
+after it corrects it to 10 and writes this paragraph.
+
 Fill round 12 (2026-10-14), by review finding, each reproduced first on the
 toolchain stamped 0.0.0-0.dev+e7783c80e with the reviews' probes
 (sc1-review11/adv1 and adv2) and their trunk analogs on 0bdce60a5:
@@ -4492,8 +4548,16 @@ round 11 in 14 cases, 10 now silent as trunk's analogs are and 4 of round 11's
 aborts now the declarations' errors or a mismatch, and review 2's 275-case
 matrix in 7, each now silent as trunk's analog is; neither has a case silent
 where trunk's impl analog reports. Round 12's commits: a6289f86e (fixes, test
-sources, the design page), 62d39c9f6 (goldens) and the records commit after
-them.
+sources, the design page), 62d39c9f6 (goldens), 9af776bac (records), which
+re-ran the gate after its test comment's edit (1959 passed, 0 failed, exit 0, 54
+s), and the records commit after it. Re-run on 9af776bac for the records commit
+after it with the toolchain stamped 0.0.0-0.dev+62d39c9f6 (no toolchain source
+differs from 62d39c9f6, and no test source but that comment): gate 1959 passed,
+0 failed, exit 0, 78 s, no `!` or `?` mark; conformance PASS 130, every failure
+class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 114.4 s, the
+same two programs moving (sc1-records12/conf, in a private cache); `runner.py
+--self-test` OK (151 programs, 56 bullets); `git merge-tree` of 9af776bac
+against trunk 3eb7f36f0 conflicts in fork/ORCHESTRATION.md only.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

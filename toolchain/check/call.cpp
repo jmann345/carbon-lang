@@ -295,6 +295,131 @@ static auto RequireBuiltinCallPointeeComplete(
   });
 }
 
+// Returns whether `arg_id` is a pack expansion argument, `... expression`.
+static auto IsPackExpansionArg(Context& context, SemIR::InstId arg_id) -> bool {
+  return context.insts().Is<SemIR::PackExpansionExpr>(arg_id);
+}
+
+// Diagnoses a pack expansion argument for a callee without a pack expansion
+// parameter to match it.
+static auto DiagnosePackExpansionArgWithoutPackParam(Context& context,
+                                                     SemIR::InstId arg_id)
+    -> void {
+  CARBON_DIAGNOSTIC(PackExpansionArgWithoutPackParam, Error,
+                    "pack expansion argument is not matched by a pack "
+                    "expansion parameter");
+  context.emitter().Emit(arg_id, PackExpansionArgWithoutPackParam);
+}
+
+// Returns the index of the pack expansion pattern in `function`'s parameter
+// patterns, or `nullopt` if it has none.
+static auto FindPackExpansionParam(Context& context,
+                                   const SemIR::Function& function)
+    -> std::optional<size_t> {
+  for (auto [index, pattern_id] : llvm::enumerate(
+           context.inst_blocks().GetOrEmpty(function.param_patterns_id))) {
+    auto const_inst_id =
+        context.constant_values().GetConstantInstId(pattern_id);
+    if (const_inst_id.has_value() &&
+        context.insts().Is<SemIR::PackExpansionPattern>(const_inst_id)) {
+      return index;
+    }
+  }
+  return std::nullopt;
+}
+
+// Fork (VA-1): matches a call's arguments against a variadic callee's
+// parameters (docs/design/variadics.md, "Pattern matching"). The arguments
+// before and after the pack expansion pattern match the parameters before and
+// after it one to one, and the run of arguments between them becomes the
+// pattern's single scrutinee: a `PackLiteral` of those arguments, or a
+// forwarded pack expansion argument on its own (D-VA-4). Returns `false` after
+// diagnosing.
+static auto GroupPackArguments(
+    Context& context, SemIR::LocId loc_id, const SemIR::Function& function,
+    SemIR::InstId self_id, llvm::ArrayRef<SemIR::InstId> arg_ids,
+    llvm::SmallVectorImpl<SemIR::InstId>& grouped_arg_ids) -> bool {
+  auto is_expansion = [&](SemIR::InstId arg_id) {
+    return IsPackExpansionArg(context, arg_id);
+  };
+  auto pack_index = FindPackExpansionParam(context, function);
+  if (!pack_index) {
+    if (const auto* it = llvm::find_if(arg_ids, is_expansion);
+        it != arg_ids.end()) {
+      DiagnosePackExpansionArgWithoutPackParam(context, *it);
+      return false;
+    }
+    grouped_arg_ids.assign(arg_ids.begin(), arg_ids.end());
+    return true;
+  }
+
+  size_t self_size = self_id.has_value() ? 1 : 0;
+  size_t num_params =
+      context.inst_blocks().GetOrEmpty(function.param_patterns_id).size() -
+      self_size;
+  size_t num_before = *pack_index - self_size;
+  size_t num_after = num_params - num_before - 1;
+  if (arg_ids.size() < num_before + num_after) {
+    CARBON_DIAGNOSTIC(CallArgCountTooFewForPack, Error,
+                      "{0} argument{0:s} passed to function expecting at "
+                      "least {1} argument{1:s}",
+                      Diagnostics::IntAsSelect, Diagnostics::IntAsSelect);
+    CARBON_DIAGNOSTIC(InCallToVariadicFunction, Note,
+                      "calling function declared here");
+    context.emitter()
+        .Build(loc_id, CallArgCountTooFewForPack, arg_ids.size(),
+               num_before + num_after)
+        .Note(function.latest_decl_id(), InCallToVariadicFunction)
+        .Emit();
+    return false;
+  }
+
+  // A pack expansion argument's arity is not known until monomorphization, so
+  // it cannot be split to match a parameter that is not a pack expansion
+  // (docs/design/variadics.md, "Typechecking pattern matches").
+  for (auto arg_id : llvm::concat<const SemIR::InstId>(
+           arg_ids.take_front(num_before), arg_ids.take_back(num_after))) {
+    if (is_expansion(arg_id)) {
+      CARBON_DIAGNOSTIC(PackExpansionArgForSingularParam, Error,
+                        "pack expansion argument cannot match a parameter "
+                        "that is not a pack expansion");
+      context.emitter().Emit(arg_id, PackExpansionArgForSingularParam);
+      return false;
+    }
+  }
+
+  auto pack_arg_ids = arg_ids.drop_front(num_before).drop_back(num_after);
+  auto pack_arg_id = SemIR::InstId::None;
+  if (llvm::any_of(pack_arg_ids, is_expansion)) {
+    // Fork (VA-1, D-VA-4): merging a pack expansion argument with other
+    // arguments would deduce an arity `N + k`, and the arity has no `+` yet.
+    if (pack_arg_ids.size() != 1) {
+      context.TODO(loc_id,
+                   "pack expansion argument merged with other arguments for "
+                   "the same pack");
+      return false;
+    }
+    pack_arg_id = pack_arg_ids.front();
+  } else {
+    llvm::SmallVector<SemIR::InstId> type_inst_ids;
+    type_inst_ids.reserve(pack_arg_ids.size());
+    for (auto arg_id : pack_arg_ids) {
+      type_inst_ids.push_back(
+          context.types().GetTypeInstId(context.insts().Get(arg_id).type_id()));
+    }
+    pack_arg_id = AddInst<SemIR::PackLiteral>(
+        context,
+        pack_arg_ids.empty() ? loc_id : SemIR::LocId(pack_arg_ids.front()),
+        {.type_id = GetTupleType(context, type_inst_ids),
+         .elements_id = context.inst_blocks().Add(pack_arg_ids)});
+  }
+
+  grouped_arg_ids.assign(arg_ids.begin(), arg_ids.begin() + num_before);
+  grouped_arg_ids.push_back(pack_arg_id);
+  grouped_arg_ids.append(arg_ids.end() - num_after, arg_ids.end());
+  return true;
+}
+
 auto PerformCallToFunction(Context& context, SemIR::LocId loc_id,
                            SemIR::InstId callee_id,
                            const SemIR::CalleeFunction& callee_function,
@@ -304,6 +429,15 @@ auto PerformCallToFunction(Context& context, SemIR::LocId loc_id,
   // for the call. Also check the arity of the function against the arguments,
   // with allowance for default argument values.
   const auto& function = context.functions().Get(callee_function.function_id);
+
+  // A variadic callee matches a run of the arguments with its pack expansion
+  // pattern; group that run into the pattern's single scrutinee.
+  llvm::SmallVector<SemIR::InstId> grouped_arg_ids;
+  if (!GroupPackArguments(context, loc_id, function, callee_function.self_id,
+                          arg_ids, grouped_arg_ids)) {
+    return SemIR::ErrorInst::InstId;
+  }
+  arg_ids = grouped_arg_ids;
   auto callee_specific_id = ResolveCalleeInCall(
       context, loc_id, function, EntityKind::Function,
       callee_function.enclosing_specific_id, callee_function.self_id, arg_ids,
@@ -608,6 +742,16 @@ static auto PerformCallToOverloadSet(Context& context, SemIR::LocId loc_id,
     return SemIR::ErrorInst::InstId;
   }
 
+  // Fork (VA-1, D-VA-4): a variadic member or a pack expansion argument would
+  // need the probe to group the arguments for each member.
+  if (llvm::any_of(arg_ids, [&](SemIR::InstId arg_id) {
+        return IsPackExpansionArg(context, arg_id);
+      })) {
+    context.TODO(loc_id,
+                 "pack expansion argument in a call to an overload set");
+    return SemIR::ErrorInst::InstId;
+  }
+
   // D-OV-6 gate (xi): resolution over template-dependent arguments happens
   // after substitution, which is not supported yet.
   for (auto arg_id : arg_ids) {
@@ -649,6 +793,12 @@ static auto PerformCallToOverloadSet(Context& context, SemIR::LocId loc_id,
     if (self_id.has_value() && !function.self_param_id.has_value()) {
       reject_reasons.push_back(OverloadRejectReason::ReceiverOnNonMethod);
       continue;
+    }
+
+    // Fork (VA-1, D-VA-4): see above.
+    if (FindPackExpansionParam(context, function)) {
+      context.TODO(loc_id, "variadic member of an overload set");
+      return SemIR::ErrorInst::InstId;
     }
 
     // (b) Arity, keyed on the call's receiver as the ordinary call path is.
@@ -840,6 +990,20 @@ static auto PerformCallHelper(Context& context, SemIR::LocId loc_id,
                               bool is_desugared) {
   // Try treating the callee as a function first.
   auto callee = GetCallee(context.sem_ir(), callee_id);
+
+  // Fork (VA-1): only a Carbon function, or a member of an overload set, can
+  // have a pack expansion parameter to match a pack expansion argument.
+  if (!std::holds_alternative<SemIR::CalleeFunction>(callee) &&
+      !std::holds_alternative<SemIR::CalleeOverloadSet>(callee) &&
+      !std::holds_alternative<SemIR::CalleeError>(callee)) {
+    for (auto arg_id : arg_ids) {
+      if (IsPackExpansionArg(context, arg_id)) {
+        DiagnosePackExpansionArgWithoutPackParam(context, arg_id);
+        return SemIR::ErrorInst::InstId;
+      }
+    }
+  }
+
   CARBON_KIND_SWITCH(callee) {
     case CARBON_KIND(SemIR::CalleeError _): {
       return SemIR::ErrorInst::InstId;
@@ -873,6 +1037,16 @@ auto PerformCall(Context& context, SemIR::LocId loc_id, SemIR::InstId callee_id,
     -> SemIR::InstId {
   if (IsCallPerformable(context, callee_id, arg_ids)) {
     return PerformCallHelper(context, loc_id, callee_id, arg_ids, is_desugared);
+  }
+
+  // Fork (VA-1, D-VA-5): packs are not template-dependent in this slice.
+  for (auto arg_id : arg_ids) {
+    if (IsPackExpansionArg(context, arg_id)) {
+      context.TODO(arg_id,
+                   "pack expansion argument in a template-dependent "
+                   "call");
+      return SemIR::ErrorInst::InstId;
+    }
   }
 
   // Pack the callee and args into an inst block. This is an optimization to

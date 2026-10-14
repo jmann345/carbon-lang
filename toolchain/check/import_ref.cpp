@@ -2475,6 +2475,40 @@ static auto TryResolveTypedInst(ImportRefResolver& resolver,
 }
 
 static auto TryResolveTypedInst(ImportRefResolver& resolver,
+                                SemIR::PackExpansionPattern inst)
+    -> ResolveResult {
+  auto type_const_id = GetLocalConstantId(resolver, inst.type_id);
+  auto subpattern = GetLocalImportRefInfo(resolver, inst.subpattern_id);
+  auto arity_pattern = GetLocalImportRefInfo(resolver, inst.arity_pattern_id);
+  if (resolver.HasNewWork()) {
+    return ResolveResult::Retry();
+  }
+
+  return ResolveResult::Deduplicated<SemIR::PackExpansionPattern>(
+      resolver,
+      {.type_id =
+           resolver.local_types().GetTypeIdForTypeConstantId(type_const_id),
+       .subpattern_id = AddLoadedImportRef(resolver, subpattern),
+       .arity_pattern_id = AddLoadedImportRef(resolver, arity_pattern)});
+}
+
+static auto TryResolveTypedInst(ImportRefResolver& resolver,
+                                SemIR::PackType inst) -> ResolveResult {
+  CARBON_CHECK(inst.type_id == SemIR::TypeType::TypeId);
+  auto element_type_inst_id =
+      GetLocalTypeInstId(resolver, inst.element_type_inst_id);
+  auto arity_id = GetLocalConstantInstId(resolver, inst.arity_id);
+  if (resolver.HasNewWork()) {
+    return ResolveResult::Retry();
+  }
+
+  return ResolveResult::Deduplicated<SemIR::PackType>(
+      resolver, {.type_id = SemIR::TypeType::TypeId,
+                 .element_type_inst_id = element_type_inst_id,
+                 .arity_id = arity_id});
+}
+
+static auto TryResolveTypedInst(ImportRefResolver& resolver,
                                 SemIR::ExportDecl inst) -> ResolveResult {
   auto value_id = GetLocalConstantId(resolver, inst.value_id);
   return ResolveResult::RetryOrDone(resolver, value_id);
@@ -4979,6 +5013,12 @@ static auto TryResolveInstCanonical(ImportRefResolver& resolver,
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::OverloadSetValue inst): {
+      return TryResolveTypedInst(resolver, inst);
+    }
+    case CARBON_KIND(SemIR::PackExpansionPattern inst): {
+      return TryResolveTypedInst(resolver, inst);
+    }
+    case CARBON_KIND(SemIR::PackType inst): {
       return TryResolveTypedInst(resolver, inst);
     }
     case CARBON_KIND(SemIR::PartialType inst): {

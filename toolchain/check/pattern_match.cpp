@@ -255,6 +255,8 @@ class MatchContext {
                  SemIR::InstId scrutinee_id, WorkItem entry) -> void;
   auto DoPreWork(State state, SemIR::DefaultValuePattern default_value_pattern,
                  SemIR::InstId scrutinee_id, WorkItem entry) -> void;
+  auto DoPreWork(State state, SemIR::PackExpansionPattern pack_pattern,
+                 SemIR::InstId scrutinee_id, WorkItem entry) -> void;
 
   // Do the post-work for `entry`. `entry.work` must be a `PostWork`, and
   // the pattern argument must be the value of `entry.pattern_id` in `context_`.
@@ -2299,6 +2301,25 @@ auto MatchContext::DoPreWork(State state,
            .allow_unmarked_ref = entry.allow_unmarked_ref});
 }
 
+// Fork (VA-1): a pack expansion pattern matches the run of arguments that the
+// call grouped into its scrutinee by matching its operand, the each-name
+// binding, against it (docs/design/variadics.md, "Pattern matching"); the
+// operand's parameter converts the run to the value of the pack. The pack's
+// arity is a deduced parameter ("Explicit deduced arities"), so the callee
+// binds it like an implicit parameter, before the pack itself.
+auto MatchContext::DoPreWork(State state,
+                             SemIR::PackExpansionPattern pack_pattern,
+                             SemIR::InstId scrutinee_id, WorkItem entry)
+    -> void {
+  AddWork({.pattern_id = pack_pattern.subpattern_id,
+           .work = PreWork{.scrutinee_id = scrutinee_id},
+           .allow_unmarked_ref = entry.allow_unmarked_ref});
+  if (std::holds_alternative<CalleeState*>(state)) {
+    AddWork({.pattern_id = pack_pattern.arity_pattern_id,
+             .work = PreWork{.scrutinee_id = SemIR::InstId::None}});
+  }
+}
+
 // TODO: There is a cycle through pattern matching with an action.
 // NOLINTNEXTLINE(misc-no-recursion)
 auto MatchContext::Dispatch(State state, WorkItem entry) -> void {
@@ -2368,6 +2389,10 @@ auto MatchContext::Dispatch(State state, WorkItem entry) -> void {
         }
         case CARBON_KIND(SemIR::DefaultValuePattern default_value_pattern): {
           DoPreWork(state, default_value_pattern, work.scrutinee_id, entry);
+          break;
+        }
+        case CARBON_KIND(SemIR::PackExpansionPattern pack_pattern): {
+          DoPreWork(state, pack_pattern, work.scrutinee_id, entry);
           break;
         }
         default: {

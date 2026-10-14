@@ -1456,6 +1456,19 @@ auto InstNamer::NamingContext::NameInst() -> void {
       AddInstNameId(NameId::ReturnSlot);
       return;
     }
+    case CARBON_KIND(PackExpansionExpr inst): {
+      PushBlockId(scope_id_, inst.body_block_id);
+      AddInstName("");
+      return;
+    }
+    case CARBON_KIND(PackExpansionStatement inst): {
+      PushBlockId(scope_id_, inst.body_block_id);
+      return;
+    }
+    case PackType::Kind: {
+      AddInstName("pack_type");
+      return;
+    }
     case CARBON_KIND(SpliceBlock inst): {
       PushBlockId(scope_id_, inst.block_id);
       AddInstName("");

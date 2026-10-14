@@ -1633,6 +1633,131 @@ struct OverloadSetValue {
   OverloadSetId overload_set_id;
 };
 
+// The element of a pack that an each-name refers to on the current iteration
+// of the enclosing pack expansion: `each x` is the element of the pack `x` at
+// the pack index `index_id` (docs/design/variadics.md, "Execution Semantics":
+// "An each-name evaluates to the `$I`th value of the pack it refers to").
+// `pack_id` is a value of a `PackType`, which holds its elements' values, so
+// the element is read without copying it.
+struct PackElement {
+  static constexpr auto Kind = InstKind::PackElement.Define<Parse::NodeId>(
+      {.ir_name = "pack_element", .constant_kind = InstConstantKind::Never});
+
+  TypeId type_id;
+  InstId pack_id;
+  InstId index_id;
+};
+
+// A pack expansion element of a call argument list, `... body`
+// (docs/design/variadics.md, "Pack expansion expressions and statements"),
+// evaluated where it is written: `body_block_id` runs once per element of the
+// packs its each-names name, and the value of `result_id` on each iteration
+// becomes the next element of the resulting pack value. The same instruction
+// converts a pack value element by element ("Expansion convertibility"), with
+// a body that reads each element of the source pack.
+struct PackExpansionExpr {
+  static constexpr auto Kind =
+      InstKind::PackExpansionExpr.Define<Parse::NodeId>(
+          {.ir_name = "pack_expansion_expr",
+           .constant_kind = InstConstantKind::Never});
+
+  // Always a `PackType`: the type of `result_id`, repeated by the arity of the
+  // expansion.
+  TypeId type_id;
+  AbsoluteInstBlockId body_block_id;
+  InstId result_id;
+};
+
+// A pack expansion pattern, `... subpattern`, in a parameter list
+// (docs/design/variadics.md, "Pack expansion patterns"). `arity_pattern_id` is
+// the binding pattern of the pack's arity, a deduced parameter of the
+// enclosing full pattern ("Explicit deduced arities"): the callee binds it like
+// an implicit parameter, and a call supplies it by deduction.
+struct PackExpansionPattern {
+  static constexpr auto Kind =
+      InstKind::PackExpansionPattern.Define<Parse::PackExpansionPatternId>(
+          {.ir_name = "pack_expansion_pattern",
+           .expr_category = ExprCategory::Pattern,
+           .constant_kind = InstConstantKind::Always,
+           .is_lowered = false});
+
+  // Always a `PatternType` whose scrutinee type is a `PackType`.
+  TypeId type_id;
+  InstId subpattern_id;
+  InstId arity_pattern_id;
+};
+
+// A pack expansion statement, `... body` (docs/design/variadics.md,
+// "Execution Semantics"): `body_block_id` is executed once for each element of
+// the packs its each-names name, `arity_id` times.
+struct PackExpansionStatement {
+  static constexpr auto Kind =
+      InstKind::PackExpansionStatement.Define<Parse::PackExpansionStatementId>(
+          {.ir_name = "pack_expansion_statement",
+           .constant_kind = InstConstantKind::Never});
+
+  InstId arity_id;
+  AbsoluteInstBlockId body_block_id;
+};
+
+// The pack index `$I` of the innermost enclosing pack expansion: the index of
+// the element that an each-name refers to on the current iteration
+// (docs/design/variadics.md, "Execution Semantics": "Although the value of
+// `$I` can vary during execution, it is nevertheless treated as a
+// constant"). Its type is `Core.IntLiteral`; lowering supplies its value as a
+// constant on each iteration.
+struct PackIndex {
+  static constexpr auto Kind = InstKind::PackIndex.Define<Parse::NodeId>(
+      {.ir_name = "pack_index", .constant_kind = InstConstantKind::Never});
+
+  TypeId type_id;
+};
+
+// The run of arguments that a call matches against a pack expansion pattern,
+// merged into one segment: a pack literal (docs/design/variadics.md,
+// "Tuples, packs, segments, and shapes"). Its type is the tuple of its
+// elements' types; it is only ever converted to a `PackValue`, element by
+// element, and has no value of its own.
+struct PackLiteral {
+  static constexpr auto Kind = InstKind::PackLiteral.Define<Parse::NodeId>(
+      {.ir_name = "pack_literal",
+       .expr_category = ExprCategory::Mixed,
+       .constant_kind = InstConstantKind::Never});
+
+  TypeId type_id;
+  InstBlockId elements_id;
+};
+
+// The type `«E; N»` of a pack expansion segment: `arity_id` repetitions of
+// `element_type_inst_id` (docs/design/variadics.md, "Tuples, packs, segments,
+// and shapes"). A pack is a sequence of values, so a value of a pack type
+// holds the value representations of its elements, as a tuple value does,
+// and binding a pack never copies an element.
+struct PackType {
+  static constexpr auto Kind = InstKind::PackType.Define<Parse::NodeId>(
+      {.ir_name = "pack_type",
+       .is_type = InstIsType::Always,
+       .constant_kind = InstConstantKind::WheneverPossible,
+       .deduce_through = true});
+
+  TypeId type_id;
+  TypeInstId element_type_inst_id;
+  InstId arity_id;
+};
+
+// A value of a `PackType` formed from the values `elements_id`, one per
+// element: a call's pack literal converted to the type of the pack that it
+// initializes (docs/design/variadics.md, "Pattern matching": "the Nth
+// iteration of the pack expansion will initialize the Nth element of the
+// named pack from the Nth scrutinee").
+struct PackValue {
+  static constexpr auto Kind = InstKind::PackValue.Define<Parse::NodeId>(
+      {.ir_name = "pack_value", .constant_kind = InstConstantKind::Never});
+
+  TypeId type_id;
+  InstBlockId elements_id;
+};
+
 // Indicates `partial` on a type, such as `partial MyClass`.
 struct PartialType {
   static constexpr auto Kind =

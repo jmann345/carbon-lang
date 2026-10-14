@@ -1597,6 +1597,18 @@ static auto ExportFunctionToCpp(Context& context, SemIR::LocId loc_id,
       context.TODO(loc_id, "support exporting generic member functions");
       return nullptr;
     }
+    // Fork (VA-1, D-VA-5): a variadic function would be a function template
+    // over a parameter pack; its deduced arity has no name to export.
+    if (llvm::any_of(
+            context.inst_blocks().GetOrEmpty(
+                target->function.param_patterns_id),
+            [&](SemIR::InstId pattern_id) {
+              return context.insts().Is<SemIR::PackExpansionPattern>(
+                  context.constant_values().GetConstantInstId(pattern_id));
+            })) {
+      context.TODO(loc_id, "exporting a variadic function to C++");
+      return nullptr;
+    }
     return ExportGenericFunctionToCpp(context, loc_id, *target);
   }
 

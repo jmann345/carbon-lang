@@ -653,6 +653,8 @@ inline constexpr FloatKind FloatKind::PPCFloat128 = FloatKind(6);
   X(CppOperator)                                                 \
   /* The name of the default package `Main`. */                  \
   X(MainPackage)                                                 \
+  /* The name of the deduced arity of a pack. */                 \
+  X(PackArity)                                                   \
   /* The name of `package`. */                                   \
   X(PackageKeyword)                                              \
   /* The name of `.Self`. */                                     \

@@ -985,6 +985,13 @@ static auto CheckDefaults(Context& context, SemIR::Function& function)
                 wrapper_binding_pattern.subpattern_id);
             break;
           }
+          // Fork (VA-1): a pack expansion pattern's operand is its element.
+          case CARBON_KIND(
+              SemIR::PackExpansionPattern pack_expansion_pattern): {
+            state->pattern_work_list.push_back(
+                pack_expansion_pattern.subpattern_id);
+            break;
+          }
           case CARBON_KIND(SemIR::TuplePattern tuple_pattern): {
             auto elements =
                 context.inst_blocks().Get(tuple_pattern.elements_id);
@@ -1277,6 +1284,12 @@ static auto CheckUnusedBindingsInPattern(Context& context,
       }
       case CARBON_KIND(SemIR::DefaultValuePattern default_value_pattern): {
         work_list.push_back(default_value_pattern.subpattern_id);
+        break;
+      }
+      // Fork (VA-1): the each-name binding of a pack is checked like any
+      // other binding.
+      case CARBON_KIND(SemIR::PackExpansionPattern pack_expansion_pattern): {
+        work_list.push_back(pack_expansion_pattern.subpattern_id);
         break;
       }
       default:

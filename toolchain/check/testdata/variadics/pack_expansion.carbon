@@ -10,7 +10,7 @@
 // TIP: To dump output, run:
 // TIP:   bazel run //toolchain/testing:file_test -- --dump_output --file_tests=toolchain/check/testdata/variadics/pack_expansion.carbon
 
-// --- fail_todo_pack_expansion_statement.carbon
+// --- fail_pack_expansion_without_each_name.carbon
 library "[[@TEST_NAME]]";
 
 fn F() {

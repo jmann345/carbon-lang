@@ -295,6 +295,9 @@ class TypeCompleter {
   auto BuildInfoForInst(SemIR::TypeId type_id, SemIR::ArrayType /*inst*/) const
       -> SemIR::CompleteTypeInfo;
 
+  auto BuildInfoForInst(SemIR::TypeId type_id, SemIR::PackType pack_type) const
+      -> SemIR::CompleteTypeInfo;
+
   auto BuildInfoForInst(SemIR::TypeId /*type_id*/, SemIR::ClassType inst) const
       -> SemIR::CompleteTypeInfo;
 
@@ -447,6 +450,10 @@ auto TypeCompleter::AddNestedIncompleteTypes(SemIR::Inst type_inst) -> bool {
   // there.
   CARBON_KIND_SWITCH(type_inst) {
     case CARBON_KIND(SemIR::ArrayType inst): {
+      Push(context_->types().GetTypeIdForTypeInstId(inst.element_type_inst_id));
+      break;
+    }
+    case CARBON_KIND(SemIR::PackType inst): {
       Push(context_->types().GetTypeIdForTypeInstId(inst.element_type_inst_id));
       break;
     }
@@ -697,6 +704,40 @@ auto TypeCompleter::BuildInfoForInst(SemIR::TypeId type_id,
 
   return {.value_repr =
               MakePointerValueRepr(type_id, SemIR::ValueRepr::ObjectAggregate),
+          .object_layout = layout};
+}
+
+// Fork (VA-1, D-VA-3): a pack is a sequence of values, so a value of a pack
+// type holds the value representations of its elements, as a tuple value does
+// (`BuildStructOrTupleValueRepr`): binding an element never copies it. It is
+// always passed by address, like an array, so that it can be indexed by the
+// pack index.
+auto TypeCompleter::BuildInfoForInst(SemIR::TypeId type_id,
+                                     SemIR::PackType pack_type) const
+    -> SemIR::CompleteTypeInfo {
+  auto element_type_id =
+      context_->types().GetTypeIdForTypeInstId(pack_type.element_type_inst_id);
+  auto element_info = GetNestedInfo(element_type_id);
+  bool same_as_object_rep = element_info.value_repr.IsCopyOfObjectRepr(
+      context_->sem_ir(), element_type_id);
+  auto value_rep_id = same_as_object_rep
+                          ? type_id
+                          : GetPackType(*context_,
+                                        context_->types().GetTypeInstId(
+                                            element_info.value_repr.type_id),
+                                        pack_type.arity_id);
+
+  SemIR::ObjectLayout layout;
+  if (element_info.object_layout.has_value()) {
+    if (auto arity = context_->sem_ir().GetZExtIntValue(pack_type.arity_id)) {
+      layout =
+          SemIR::ObjectLayout::ForArray(element_info.object_layout, *arity);
+    }
+  }
+  return {.value_repr = MakePointerValueRepr(
+              value_rep_id, same_as_object_rep
+                                ? SemIR::ValueRepr::ValueAndObjectAggregate
+                                : SemIR::ValueRepr::ValueAggregate),
           .object_layout = layout};
 }
 

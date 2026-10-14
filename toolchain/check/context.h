@@ -519,6 +519,41 @@ class Context {
     return match_statement_stack_;
   }
 
+  // A pack expansion whose `...` has been checked but whose end has not
+  // (docs/design/variadics.md, "Pack expansions"). Pack expansions do not nest
+  // ("A pack expansion [...] cannot contain another pack expansion"), but the
+  // stack lets a nested `...` be diagnosed and recovered from.
+  struct PackExpansionScope {
+    enum class Kind : uint8_t { Statement, Expr, Pattern };
+
+    Kind kind;
+    // The `...` that starts the expansion.
+    Parse::PackExpansionStartId start_node_id;
+    // For a statement or expression: the block that holds the body, the
+    // cleanup depth on entry, and the arity of the packs that the body's
+    // each-names refer to, which is `None` until the first each-name.
+    SemIR::InstBlockId body_block_id = SemIR::InstBlockId::None;
+    ScopeStack::CleanupScopeDepth cleanup_depth =
+        ScopeStack::CleanupScopeDepth::None;
+    SemIR::InstId arity_id = SemIR::InstId::None;
+    // For a pattern: the binding pattern and binding of the pack's deduced
+    // arity, and the each-name binding pattern that the body declares with its
+    // element type, once checked.
+    SemIR::InstId arity_pattern_id = SemIR::InstId::None;
+    SemIR::InstId arity_binding_id = SemIR::InstId::None;
+    SemIR::InstId each_binding_pattern_id = SemIR::InstId::None;
+    SemIR::TypeInstId element_type_inst_id = SemIR::TypeInstId::None;
+  };
+  auto pack_expansion_stack() -> llvm::SmallVector<PackExpansionScope>& {
+    return pack_expansion_stack_;
+  }
+
+  // The arity binding of each pack declared by an each-name binding in this
+  // file, keyed by the pack's binding, which name lookup finds.
+  auto pack_binding_arities() -> Map<SemIR::InstId, SemIR::InstId>& {
+    return pack_binding_arities_;
+  }
+
   // An ongoing impl lookup, used to ensure termination.
   struct ImplLookupStackEntry {
     SemIR::ConstantId query_self_const_id;
@@ -896,6 +931,12 @@ class Context {
   // The stack of `match` statements currently being checked, tracking what
   // their arms cover for exhaustiveness.
   llvm::SmallVector<MatchStatementContext> match_statement_stack_;
+
+  // The stack of pack expansions currently being checked.
+  llvm::SmallVector<PackExpansionScope> pack_expansion_stack_;
+
+  // See `pack_binding_arities()`.
+  Map<SemIR::InstId, SemIR::InstId> pack_binding_arities_;
 
   // Tracks all ongoing impl lookups in order to ensure that lookup terminates
   // via the acyclic rule and the termination rule.

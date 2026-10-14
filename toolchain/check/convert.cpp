@@ -503,6 +503,104 @@ static auto ConvertTupleToArray(Context& context, SemIR::TupleType tuple_type,
                                     .dest_id = return_slot_arg_id});
 }
 
+// Fork (VA-1, D-VA-3): converts the pack literal of a call's run of arguments
+// to the value of the pack that it initializes. Each argument is converted to
+// a value of the element type, and a pack value holds its elements' values as
+// they are, so no element is copied: "the Nth iteration of the pack expansion
+// will initialize the Nth element of the named pack from the Nth scrutinee"
+// (docs/design/variadics.md, "Pack expansion patterns"). This only converts
+// the type, and produces a value.
+static auto ConvertPackLiteralToPack(Context& context,
+                                     SemIR::PackLiteral literal,
+                                     SemIR::PackType pack_type,
+                                     SemIR::InstId value_id,
+                                     ConversionTarget target) -> SemIR::InstId {
+  auto elements = context.inst_blocks().Get(literal.elements_id);
+  // Deduction made the pack's arity the literal's element count.
+  CARBON_CHECK(
+      context.sem_ir().GetZExtIntValue(pack_type.arity_id) == elements.size(),
+      "Pack literal of {0} elements converted to {1}", elements.size(),
+      target.type_id);
+  auto element_type_id =
+      context.types().GetTypeIdForTypeInstId(pack_type.element_type_inst_id);
+  llvm::SmallVector<SemIR::InstId> value_ids;
+  value_ids.reserve(elements.size());
+  for (auto element_id : elements) {
+    auto converted_id = Convert(context, SemIR::LocId(element_id), element_id,
+                                {.kind = ConversionTarget::Value,
+                                 .type_id = element_type_id,
+                                 .diagnose = target.diagnose});
+    if (converted_id == SemIR::ErrorInst::InstId) {
+      return SemIR::ErrorInst::InstId;
+    }
+    value_ids.push_back(converted_id);
+  }
+  return AddInst<SemIR::PackValue>(
+      context, SemIR::LocId(value_id),
+      {.type_id = target.type_id,
+       .elements_id = context.inst_blocks().Add(value_ids)});
+}
+
+// Fork (VA-1, D-VA-3): converts a pack value of type `«U; N»`, such as the
+// value of a pack expansion argument, to `«T; N»` when `U` converts to `T`
+// (docs/design/variadics.md, "Expansion convertibility"). The result is a pack
+// expansion whose body converts the source's element at the pack index; like
+// the argument's own expansion, it runs once per element. This only converts
+// the type, and produces a value.
+static auto ConvertPackToPack(Context& context, SemIR::PackType src_type,
+                              SemIR::PackType target_type,
+                              SemIR::InstId value_id, ConversionTarget target)
+    -> SemIR::InstId {
+  SemIR::LocId value_loc_id(value_id);
+
+  // Deduction made the target's arity the source's.
+  CARBON_CHECK(context.constant_values().Get(src_type.arity_id) ==
+                   context.constant_values().Get(target_type.arity_id),
+               "Pack of arity {0} converted to {1}", src_type.arity_id,
+               target.type_id);
+
+  auto cleanup_depth = context.scope_stack().cleanup_scope_depth();
+  context.inst_block_stack().Push();
+  auto body_block_id = context.inst_block_stack().PeekOrAdd();
+  auto index_id = AddInst<SemIR::PackIndex>(
+      context, value_loc_id,
+      {.type_id =
+           GetSingletonType(context, SemIR::IntLiteralType::TypeInstId)});
+  auto element_id = AddInst<SemIR::PackElement>(
+      context, value_loc_id,
+      {.type_id = context.types().GetTypeIdForTypeInstId(
+           src_type.element_type_inst_id),
+       .pack_id = value_id,
+       .index_id = index_id});
+  auto result_id = Convert(context, value_loc_id, element_id,
+                           {.kind = ConversionTarget::Value,
+                            .type_id = context.types().GetTypeIdForTypeInstId(
+                                target_type.element_type_inst_id),
+                            .diagnose = target.diagnose});
+  CARBON_CHECK(context.inst_block_stack().is_current_block_reachable() &&
+                   context.inst_block_stack().PeekOrAdd() == body_block_id,
+               "Control flow in a pack element conversion");
+  bool needs_cleanup =
+      context.scope_stack().cleanup_scope_depth() != cleanup_depth;
+  context.inst_block_stack().Pop();
+  if (result_id == SemIR::ErrorInst::InstId) {
+    return SemIR::ErrorInst::InstId;
+  }
+  // Fork (VA-1, D-VA-6): a temporary in an element conversion would need to be
+  // destroyed once per element.
+  if (needs_cleanup) {
+    if (target.diagnose) {
+      context.TODO(value_loc_id,
+                   "pack element conversion that needs a cleanup");
+    }
+    return SemIR::ErrorInst::InstId;
+  }
+  return AddInst<SemIR::PackExpansionExpr>(context, value_loc_id,
+                                           {.type_id = target.type_id,
+                                            .body_block_id = body_block_id,
+                                            .result_id = result_id});
+}
+
 // Performs a conversion from a function to a C++ function pointer type.
 static auto ConvertFunctionToCppPointer(
     Context& context, SemIR::LocId loc_id, SemIR::FunctionType src_type,
@@ -1287,6 +1385,7 @@ static auto TryToCompleteClassType(Context& context, SemIR::TypeId type_id,
         context.types().Is<SemIR::ConstType>(type_id) ||
         context.types().Is<SemIR::CustomLayoutType>(type_id) ||
         context.types().Is<SemIR::MaybeUnformedType>(type_id) ||
+        context.types().Is<SemIR::PackType>(type_id) ||
         context.types().Is<SemIR::PartialType>(type_id))) {
     return true;
   }
@@ -1781,6 +1880,21 @@ static auto PerformBuiltinConversion(Context& context, SemIR::LocId loc_id,
             sem_ir.types().TryGetAs<SemIR::TupleType>(value_type_id)) {
       return ConvertTupleToArray(context, *src_tuple_type, *target_array_type,
                                  value_id, target);
+    }
+  }
+
+  // Fork (VA-1, D-VA-3): a call's pack literal of types (T1, T2, ..., Tn)
+  // converts to the pack «T; n» if each Ti converts to T, and a pack «U; N»
+  // converts to «T; N» if U converts to T.
+  if (auto target_pack_type = target_type_inst.TryAs<SemIR::PackType>()) {
+    if (auto literal = value.TryAs<SemIR::PackLiteral>()) {
+      return ConvertPackLiteralToPack(context, *literal, *target_pack_type,
+                                      value_id, target);
+    }
+    if (auto src_pack_type =
+            sem_ir.types().TryGetAs<SemIR::PackType>(value_type_id)) {
+      return ConvertPackToPack(context, *src_pack_type, *target_pack_type,
+                               value_id, target);
     }
   }
 

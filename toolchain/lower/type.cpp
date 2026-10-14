@@ -732,6 +732,11 @@ static auto BuildTypeForInst(FileContext& context, SemIR::PointerType /*inst*/)
           nullptr};
 }
 
+static auto BuildTypeForInst(FileContext& /*context*/, SemIR::PackType /*inst*/)
+    -> LoweredTypes {
+  CARBON_FATAL("Unexpected pack type in lowering");
+}
+
 static auto BuildTypeForInst(FileContext& /*context*/,
                              SemIR::PatternType /*inst*/) -> LoweredTypes {
   CARBON_FATAL("Unexpected pattern type in lowering");

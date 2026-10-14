@@ -326,7 +326,64 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
       context.node_stack()
           .PopAndDiscardSoloNodeIdIf<Parse::NodeKind::RefBindingName>();
 
+  // The name may be an each-name, which declares a pack
+  // (docs/design/variadics.md, "Packs and each-names").
+  bool is_each =
+      context.node_stack()
+          .PopAndDiscardSoloNodeIdIf<Parse::NodeKind::EachBindingName>();
+
   auto [name_node, name_id] = context.node_stack().PopNameWithNodeId();
+
+  // The pack expansion pattern whose operand this binding is, if any.
+  Context::PackExpansionScope* pack_scope = nullptr;
+  if (!context.pack_expansion_stack().empty() &&
+      context.pack_expansion_stack().back().kind ==
+          Context::PackExpansionScope::Kind::Pattern) {
+    pack_scope = &context.pack_expansion_stack().back();
+  }
+  if (is_each && !pack_scope) {
+    CARBON_DIAGNOSTIC(EachBindingOutsidePackExpansion, Error,
+                      "each-name binding `each {0}` is not inside a pack "
+                      "expansion pattern",
+                      SemIR::NameId);
+    context.emitter().Emit(name_node, EachBindingOutsidePackExpansion, name_id);
+    is_each = false;
+  } else if (!is_each && pack_scope) {
+    // "a binding pattern within a pack expansion pattern must declare an
+    // each-name" (docs/design/variadics.md, "Pack expansion patterns").
+    CARBON_DIAGNOSTIC(PackExpansionBindingWithoutEach, Error,
+                      "binding pattern in a pack expansion must declare an "
+                      "each-name, such as `each {0}`",
+                      SemIR::NameId);
+    context.emitter().Emit(name_node, PackExpansionBindingWithoutEach, name_id);
+    return false;
+  } else if (is_each) {
+    // Fork (VA-1, D-VA-5): a pack's elements are values of a type that does
+    // not depend on the pack, and the operand declares one each-name.
+    if (node_kind != Parse::NodeKind::LetBindingPattern || is_ref) {
+      return context.TODO(name_node,
+                          "each-name binding that is not a value binding");
+    }
+    if (pack_scope->each_binding_pattern_id.has_value()) {
+      return context.TODO(name_node,
+                          "pack expansion pattern declaring more than one "
+                          "each-name");
+    }
+  }
+  // The type of an each-name binding's pack is `«E; N»` for the declared
+  // element type `E` and the pack's deduced arity `N`: "each X: T" becomes
+  // "each X: «T; __N»" (docs/design/variadics.md, "Explicit deduced
+  // arities"). A value of that type holds the elements' values (fork VA-1,
+  // D-VA-3).
+  auto element_type_inst_id = SemIR::TypeInstId::None;
+  if (is_each && type_expr.type_component_id != SemIR::ErrorInst::TypeId) {
+    element_type_inst_id = type_expr.type_component_inst_id;
+    auto pack_type_id = GetPackType(context, element_type_inst_id,
+                                    pack_scope->arity_binding_id);
+    type_expr.type_component_id = pack_type_id;
+    type_expr.type_component_inst_id =
+        context.types().GetTypeInstId(pack_type_id);
+  }
 
   const DeclIntroducerState& introducer =
       context.decl_introducer_state_stack().innermost();
@@ -499,6 +556,17 @@ static auto HandleAnyBindingPattern(Context& context, Parse::NodeId node_id,
           }
           result_inst_id = make_binding_pattern(
               SemIR::WrapperBindingPattern::Kind, param_pattern_id);
+          if (is_each) {
+            // Record the pack for its pack expansion pattern, and for name
+            // lookup of its each-name.
+            pack_scope->each_binding_pattern_id = result_inst_id;
+            pack_scope->element_type_inst_id = element_type_inst_id;
+            context.pack_binding_arities().Insert(context.bind_name_map()
+                                                      .Lookup(result_inst_id)
+                                                      .value()
+                                                      .bind_name_id,
+                                                  pack_scope->arity_binding_id);
+          }
           break;
         }
         case Parse::NodeKind::VarBindingPattern:

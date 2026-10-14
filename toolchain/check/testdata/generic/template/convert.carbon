@@ -2263,7 +2263,7 @@ fn F() {
 // CHECK:STDOUT:   %pattern_type.946: type = pattern_type %U.091 [template]
 // CHECK:STDOUT:   %_.patt.972: %pattern_type.946 = value_binding_pattern _ [template]
 // CHECK:STDOUT:   %.70e: %U.091 = splice_inst @AsType.%.loc6_16.3 [template]
-// CHECK:STDOUT:   %.33e: %U.091 = splice_inst @AsType.%.loc6_16.5 [template]
+// CHECK:STDOUT:   %.d4a: %U.091 = splice_inst @AsType.%.loc6_16.5 [template]
 // CHECK:STDOUT:   %int_32: Core.IntLiteral = int_value 32 [concrete]
 // CHECK:STDOUT:   %i32: type = class_type @Int, @Int(%int_32) [concrete]
 // CHECK:STDOUT:   %pattern_type.6b6: type = pattern_type %i32 [concrete]
@@ -2344,15 +2344,15 @@ fn F() {
 // CHECK:STDOUT:   %_.patt.loc6_8.2: @AsType.%pattern_type.loc6 (%pattern_type.946) = value_binding_pattern _ [template = %_.patt.loc6_8.2 (constants.%_.patt.972)]
 // CHECK:STDOUT:   %.loc6_16.3: <instruction> = convert_action %x.ref, %U.loc5_45.1, element7 [template]
 // CHECK:STDOUT:   %.loc6_16.4: @AsType.%U.loc5_45.1 (%U.091) = splice_inst %.loc6_16.3 [template = %.loc6_16.4 (constants.%.70e)]
-// CHECK:STDOUT:   %.loc6_16.5: <instruction> = convert_to_category_action %.loc6_16.1, element1 [template]
-// CHECK:STDOUT:   %.loc6_16.6: @AsType.%U.loc5_45.1 (%U.091) = splice_inst %.loc6_16.5 [template = %.loc6_16.6 (constants.%.33e)]
+// CHECK:STDOUT:   %.loc6_16.5: <instruction> = convert_to_value_action %.loc6_16.1, %U.loc5_45.1 [template]
+// CHECK:STDOUT:   %.loc6_16.6: @AsType.%U.loc5_45.1 (%U.091) = splice_inst %.loc6_16.5 [template = %.loc6_16.6 (constants.%.d4a)]
 // CHECK:STDOUT:
 // CHECK:STDOUT:   fn(%x.param: @AsType.%T.loc5_21.1 (%T.67db0b.1)) {
 // CHECK:STDOUT:   !entry:
 // CHECK:STDOUT:     %x.ref: @AsType.%T.loc5_21.1 (%T.67db0b.1) = name_ref x, %x
 // CHECK:STDOUT:     %U.ref.loc6_19: type = name_ref U, %U.loc5_45.2 [template = %U.loc5_45.1 (constants.%U.091)]
 // CHECK:STDOUT:     %.loc6_16.1: @AsType.%U.loc5_45.1 (%U.091) = splice_inst %.loc6_16.3 [template = %.loc6_16.4 (constants.%.70e)]
-// CHECK:STDOUT:     %.loc6_16.2: @AsType.%U.loc5_45.1 (%U.091) = splice_inst %.loc6_16.5 [template = %.loc6_16.6 (constants.%.33e)]
+// CHECK:STDOUT:     %.loc6_16.2: @AsType.%U.loc5_45.1 (%U.091) = splice_inst %.loc6_16.5 [template = %.loc6_16.6 (constants.%.d4a)]
 // CHECK:STDOUT:     %U.ref.loc6_10: type = name_ref U, %U.loc5_45.2 [template = %U.loc5_45.1 (constants.%U.091)]
 // CHECK:STDOUT:     %_: @AsType.%U.loc5_45.1 (%U.091) = wrapper_binding _, %.loc6_16.2
 // CHECK:STDOUT:     name_binding_decl {

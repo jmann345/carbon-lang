@@ -62,7 +62,7 @@ fn F(template c: C) {
 // CHECK:STDOUT:   %.237: type = type_of_inst @F.%.loc11_5.4 [template]
 // CHECK:STDOUT:   %.f96: %.237 = splice_inst @F.%.loc11_5.4 [template]
 // CHECK:STDOUT:   %require_complete.b43: <witness> = require_complete_type %.237 [template]
-// CHECK:STDOUT:   %.fb1: %.237 = splice_inst @F.%.loc11_5.7 [template]
+// CHECK:STDOUT:   %.737: %.237 = splice_inst @F.%.loc11_5.7 [template]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -107,15 +107,15 @@ fn F(template c: C) {
 // CHECK:STDOUT:   %.loc11_5.5: type = type_of_inst %.loc11_5.4 [template = %.loc11_5.5 (constants.%.237)]
 // CHECK:STDOUT:   %.loc11_5.6: @F.%.loc11_5.5 (%.237) = splice_inst %.loc11_5.4 [template = %.loc11_5.6 (constants.%.f96)]
 // CHECK:STDOUT:   %require_complete.loc11: <witness> = require_complete_type %.loc11_5.5 [template = %require_complete.loc11 (constants.%require_complete.b43)]
-// CHECK:STDOUT:   %.loc11_5.7: <instruction> = convert_to_category_action %.loc11_5.2, element1 [template]
-// CHECK:STDOUT:   %.loc11_5.8: @F.%.loc11_5.5 (%.237) = splice_inst %.loc11_5.7 [template = %.loc11_5.8 (constants.%.fb1)]
+// CHECK:STDOUT:   %.loc11_5.7: <instruction> = convert_to_value_action %.loc11_5.2, %.loc11_5.5 [template]
+// CHECK:STDOUT:   %.loc11_5.8: @F.%.loc11_5.5 (%.237) = splice_inst %.loc11_5.7 [template = %.loc11_5.8 (constants.%.737)]
 // CHECK:STDOUT:
 // CHECK:STDOUT:   fn(%x.param: @F.%T.loc6_16.1 (%T)) {
 // CHECK:STDOUT:   !entry:
 // CHECK:STDOUT:     %x.ref: @F.%T.loc6_16.1 (%T) = name_ref x, %x
 // CHECK:STDOUT:     %.loc11_5.1: type = type_of_inst %.loc11_5.4 [template = %.loc11_5.5 (constants.%.237)]
 // CHECK:STDOUT:     %.loc11_5.2: @F.%.loc11_5.5 (%.237) = splice_inst %.loc11_5.4 [template = %.loc11_5.6 (constants.%.f96)]
-// CHECK:STDOUT:     %.loc11_5.3: @F.%.loc11_5.5 (%.237) = splice_inst %.loc11_5.7 [template = %.loc11_5.8 (constants.%.fb1)]
+// CHECK:STDOUT:     %.loc11_5.3: @F.%.loc11_5.5 (%.237) = splice_inst %.loc11_5.7 [template = %.loc11_5.8 (constants.%.737)]
 // CHECK:STDOUT:     %.loc11_3: ref <error> = deref %.loc11_5.3 [concrete = <error>]
 // CHECK:STDOUT:     return
 // CHECK:STDOUT:   }
@@ -150,7 +150,7 @@ fn F(template c: C) {
 // CHECK:STDOUT:   %.237: type = type_of_inst @F.%.loc16_5.4 [template]
 // CHECK:STDOUT:   %.f96: %.237 = splice_inst @F.%.loc16_5.4 [template]
 // CHECK:STDOUT:   %require_complete.b43: <witness> = require_complete_type %.237 [template]
-// CHECK:STDOUT:   %.fb1: %.237 = splice_inst @F.%.loc16_5.7 [template]
+// CHECK:STDOUT:   %.737: %.237 = splice_inst @F.%.loc16_5.7 [template]
 // CHECK:STDOUT: }
 // CHECK:STDOUT:
 // CHECK:STDOUT: imports {
@@ -202,15 +202,15 @@ fn F(template c: C) {
 // CHECK:STDOUT:   %.loc16_5.5: type = type_of_inst %.loc16_5.4 [template = %.loc16_5.5 (constants.%.237)]
 // CHECK:STDOUT:   %.loc16_5.6: @F.%.loc16_5.5 (%.237) = splice_inst %.loc16_5.4 [template = %.loc16_5.6 (constants.%.f96)]
 // CHECK:STDOUT:   %require_complete: <witness> = require_complete_type %.loc16_5.5 [template = %require_complete (constants.%require_complete.b43)]
-// CHECK:STDOUT:   %.loc16_5.7: <instruction> = convert_to_category_action %.loc16_5.2, element1 [template]
-// CHECK:STDOUT:   %.loc16_5.8: @F.%.loc16_5.5 (%.237) = splice_inst %.loc16_5.7 [template = %.loc16_5.8 (constants.%.fb1)]
+// CHECK:STDOUT:   %.loc16_5.7: <instruction> = convert_to_value_action %.loc16_5.2, %.loc16_5.5 [template]
+// CHECK:STDOUT:   %.loc16_5.8: @F.%.loc16_5.5 (%.237) = splice_inst %.loc16_5.7 [template = %.loc16_5.8 (constants.%.737)]
 // CHECK:STDOUT:
 // CHECK:STDOUT:   fn() {
 // CHECK:STDOUT:   !entry:
 // CHECK:STDOUT:     %c.ref: %C = name_ref c, %c.loc11_16.2 [template = %c.loc11_16.1 (constants.%c)]
 // CHECK:STDOUT:     %.loc16_5.1: type = type_of_inst %.loc16_5.4 [template = %.loc16_5.5 (constants.%.237)]
 // CHECK:STDOUT:     %.loc16_5.2: @F.%.loc16_5.5 (%.237) = splice_inst %.loc16_5.4 [template = %.loc16_5.6 (constants.%.f96)]
-// CHECK:STDOUT:     %.loc16_5.3: @F.%.loc16_5.5 (%.237) = splice_inst %.loc16_5.7 [template = %.loc16_5.8 (constants.%.fb1)]
+// CHECK:STDOUT:     %.loc16_5.3: @F.%.loc16_5.5 (%.237) = splice_inst %.loc16_5.7 [template = %.loc16_5.8 (constants.%.737)]
 // CHECK:STDOUT:     %.loc16_3: ref <error> = deref %.loc16_5.3 [concrete = <error>]
 // CHECK:STDOUT:     return
 // CHECK:STDOUT:   }

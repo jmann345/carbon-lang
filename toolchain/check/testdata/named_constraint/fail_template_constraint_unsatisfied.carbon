@@ -1917,10 +1917,26 @@ library "[[@TEST_NAME]]";
 // Members whose parameter wraps an expression pattern with an error, under
 // `var` and under a default value, for `fail_member_signature_error_import`.
 class VarExpr {
+  // CHECK:STDERR: fail_member_signature_error_import_lib.carbon:[[@LINE+8]]:25: error: name `z` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(unused self, var z) -> i32 { return 1; }
+  // CHECK:STDERR:                         ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_member_signature_error_import_lib.carbon:[[@LINE+4]]:25: error: semantics TODO: `expression pattern` [SemanticsTodo]
+  // CHECK:STDERR:   fn F(unused self, var z) -> i32 { return 1; }
+  // CHECK:STDERR:                         ^
+  // CHECK:STDERR:
   fn F(unused self, var z) -> i32 { return 1; }
 }
 
 class DefaultExpr {
+  // CHECK:STDERR: fail_member_signature_error_import_lib.carbon:[[@LINE+8]]:22: error: name `z` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(unused self, (z) = 1) -> i32 { return 1; }
+  // CHECK:STDERR:                      ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_member_signature_error_import_lib.carbon:[[@LINE+4]]:22: error: semantics TODO: `expression pattern` [SemanticsTodo]
+  // CHECK:STDERR:   fn F(unused self, (z) = 1) -> i32 { return 1; }
+  // CHECK:STDERR:                      ^
+  // CHECK:STDERR:
   fn F(unused self, (z) = 1) -> i32 { return 1; }
 }
 
@@ -1949,10 +1965,18 @@ template constraint HasDefault {
 }
 
 template constraint HasFormError {
+  // CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE+4]]:27: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(self, y:? form(ref Undefined)) -> i32;
+  // CHECK:STDERR:                           ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(self, y:? form(ref Undefined)) -> i32;
 }
 
 template constraint HasFormErrorDefault {
+  // CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE+4]]:27: error: name `Undefined` not found [NameNotFound]
+  // CHECK:STDERR:   fn F(self, y:? form(ref Undefined) = 1) -> i32;
+  // CHECK:STDERR:                           ^~~~~~~~~
+  // CHECK:STDERR:
   fn F(self, y:? form(ref Undefined) = 1) -> i32;
 }
 
@@ -1966,12 +1990,54 @@ fn CallFormErrorDefault[template T: HasFormErrorDefault](unused x: T) -> i32 {
   return 0;
 }
 
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE+14]]:40: error: cannot convert type `VarExpr` into type implementing `HasVar` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn TestVar(v: VarExpr) -> i32 { return CallVar(v); }
+// CHECK:STDERR:                                        ^~~~~~~~~~
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-50]]:1: in import [InImport]
+// CHECK:STDERR: fail_member_signature_error_import_lib.carbon:14:3: note: member `F` of type `VarExpr` does not match the signature required by template constraint `HasVar` [StructuralMemberMismatch]
+// CHECK:STDERR:   fn F(unused self, var z) -> i32 { return 1; }
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-40]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn F(self, var y: i32) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-20]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallVar[template T: HasVar](unused x: T) -> i32 { return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TestVar(v: VarExpr) -> i32 { return CallVar(v); }
 
 fn TestVarFormError(v: VarExpr) -> i32 { return CallFormError(v); }
 
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE+14]]:48: error: cannot convert type `DefaultExpr` into type implementing `HasDefault` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn TestDefault(d: DefaultExpr) -> i32 { return CallDefault(d); }
+// CHECK:STDERR:                                                ^~~~~~~~~~~~~~
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-68]]:1: in import [InImport]
+// CHECK:STDERR: fail_member_signature_error_import_lib.carbon:26:3: note: member `F` of type `DefaultExpr` does not match the signature required by template constraint `HasDefault` [StructuralMemberMismatch]
+// CHECK:STDERR:   fn F(unused self, (z) = 1) -> i32 { return 1; }
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-54]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn F(self, y: i32 = 1) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-36]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallDefault[template T: HasDefault](unused x: T) -> i32 { return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TestDefault(d: DefaultExpr) -> i32 { return CallDefault(d); }
 
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE+14]]:57: error: cannot convert type `DefaultExpr` into type implementing `HasFormError` [ConversionFailureTypeToFacet]
+// CHECK:STDERR: fn TestDefaultFormError(d: DefaultExpr) -> i32 { return CallFormError(d); }
+// CHECK:STDERR:                                                         ^~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-84]]:1: in import [InImport]
+// CHECK:STDERR: fail_member_signature_error_import_lib.carbon:26:3: note: member `F` of type `DefaultExpr` does not match the signature required by template constraint `HasFormError` [StructuralMemberMismatch]
+// CHECK:STDERR:   fn F(unused self, (z) = 1) -> i32 { return 1; }
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-62]]:3: note: requirement declared here [StructuralRequirementHere]
+// CHECK:STDERR:   fn F(self, y:? form(ref Undefined)) -> i32;
+// CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR: fail_member_signature_error_import.carbon:[[@LINE-50]]:1: note: while deducing parameters of generic declared here [DeductionGenericHere]
+// CHECK:STDERR: fn CallFormError[template T: HasFormError](unused x: T) -> i32 { return 0; }
+// CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn TestDefaultFormError(d: DefaultExpr) -> i32 { return CallFormError(d); }
 
 fn TestDefaultFormErrorDefault(d: DefaultExpr) -> i32 {

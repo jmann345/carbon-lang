@@ -1,7 +1,7 @@
 {
   "schema": "fork/inventory work item v1",
   "generated": "2026-07-19",
-  "source": "Deduplicated from 99 raw items produced by four scanners (check-TODO scan, fail_todo golden-test scan, conformance-SKIP scan, design-sprint scan) against trunk @ 99cda60. Bullet strings are copied exactly from fork/gap-analysis.md. blocked_by references work-item ids (W-###), design-fork ids (F-006..F-011, see fork/design-sprint/README.md), decision-log sub-fork ids (SF-#, see fork/decision-log.md), or external upstream issues. Updated 2026-07-19 by the W4 slice-1 fixer: W-008 refreshed to post-slice-1 evidence; W-066 added (usefulness-diagnostic scope cut). Updated 2026-07-29 by the S2d implementer: W-008 refreshed to post-S2d evidence (guard gates discharged); W-067 added (default-clause guards scope trade). Updated 2026-08-08 by the S2e implementer: W-008/W-010 refreshed to post-S2e evidence (choice exhaustiveness landed; the no-default TODO narrowed to integer scrutinees); W-068 added (fewer-than-two-alternative choice matching stays scrutinee-gated). Updated 2026-08-08 by the W5-S3a implementer: W-010 refreshed (specifics of generic choices as match scrutinees landed, payload-free; generic residue narrowed to S3b payload synthesis + S3c destructuring); W-068 evidence extended with the specific-composition pins. Updated 2026-08-08 by the W5-S3b fixer: W-069 added (imported file-scope `let` lowering gap; scrutinee split re-authored to `var`). Updated 2026-08-08 by the B1b implementer: W-070 added (unit break types inexpressible under SF-6, fork/b1/plan.md §2.7). Updated 2026-08-08 by the B1b fixer: the blocked_by reference-forms sentence above amended to admit SF-* (W-070 is blocked_by SF-9). Updated 2026-08-08 by the B1b third fix round: W-071 added (symbolic ControlFlow carrier destroy; the `?` symbolic-operand narrowing gate). Updated 2026-08-09 by the B2a implementer: W-071 discharged by candidate (b) — the CanDestroyClass choice clause — with its evidence refreshed to the post-B2a pins, the Trivial-vs-NonTrivial wording deviation flagged for B2b ratification, and the successor-state revisit obligation recorded per fork/b2/plan.md §2.2. Updated 2026-08-09 by the B2a conformance round: W-072 added (projection rewrite-reduction gap; the generic `?` continue-threading limit surfaced by question_generic_diff's COMPILE-FAIL). Updated 2026-08-18 by the W72a implementer: W-072 notes updated to the dissolution verdict (idiom gap + verification gap, fork/w072/plan.md §0.1); stays OPEN until W72b's runtime arbiter. Updated 2026-08-18 by the W72a fixer: W-073 added (the plan §3 P-9 minting rule FIRED — the 3d261c0 regen showed the in-body recursive Branch call type-collapsing under `final`; the \"does not type-collapse\" comment family and the `Diverge` trailing-return idiom are falsified FOR final impls and get a retext/evaluation sweep once W72b's arbiter confirms). Updated 2026-08-18 by the W-073 sweep implementer: W-073 notes updated with the per-site sweep outcomes (retext at the non-final sites, simplification taken at the final-impl sites) and the DISCHARGE-STAGED status under the R9 hedge. Updated 2026-08-18 by the W-067 implementer: W-067 notes updated with the landed default-guard content (parse production + MatchGuardedDefault label, arms-after-guarded-default admitted per the usefulness rule, the no-coverage exhaustiveness interaction, reused mandatory-default diagnosis for the dangling else edge) and the DISCHARGE-STAGED status under the R9 hedge (expected floor 92/0/29 over 121). Updated 2026-08-18 by the W-068 implementer: W-068 notes updated with the landed fewer-than-two-alternatives content (IsMatchableChoiceType admits the empty-tuple discriminant at the scrutinee/alternative/exhaustiveness gates; constant-true dispatch with real payload extraction; the empty-choice lane recorded as type admission under parse's at-least-one-arm rule, vacuous exhaustiveness via the existing coverage analysis) and the DISCHARGE-STAGED status under the R9 hedge (expected floor 93/0/29 over 122); W-008/W-010 stale fewer-than-two sentences refreshed. Updated 2026-08-18 by the W69a implementer: W-069 notes extended with the staged scalar-promotion mechanism (lane (a1), lowering-only; no status change — discharge waits for W69b per fork/w069/plan.md §7) and the recorded `export x;`-form deviation. Updated 2026-08-18 by the W69h implementer: W-069 notes extended with the staged multi-unit conformance-harness support (W69h; capability only, no programs, no status changes). Updated 2026-08-18 by the W69h fixer: W-002 notes refreshed to post-W69h reality (COMPILE-ARGS answers the extra-args gap; the one-file-per-program limitation is gone — multi-unit directory programs are supported; README-table staleness is machine-checked) and its runner.py evidence pin re-pinned to the per-unit compile loop. Updated 2026-08-18 by the W69b implementer: W-069 notes extended with the staged pointer-rep arm, the restored runtime-bound acceptance split, the W69b golden set, and both conformance arbiters, and its status set to DISCHARGE-STAGED under the R9 hedge (expected floor 95/0/29 over 124, moving only by the two new programs' PASS). Updated 2026-08-18 by the W69b post-fix crash fixer: W-069 notes extended with the crash-round record (pre-existing AcquireValue/constant-folded-ref lowering defect surfaced by the un-suppressed imported_global_constant probe; fixed in toolchain/lower; hedge intact, no status change). Updated 2026-09-27 by the EH-A discharge: W-017/W-018 set to implemented (prelude `Core.Result` + `Try` impls, `Optional as Try`, `Result` entry points landed on claude/carbon-fork-0-1-eh), W-070 DISCHARGED by option (a), W-058/W-059 notes extended; no ids allocated (trunk max id W-079, the W-077 discharge). Updated 2026-09-27 by the EH-B discharge: W-019 DISCHARGED (catching thunks selected by `?`, `Cpp.Exception`, `Carbon::expected` export mapping + `<carbon/expected.h>`, the SF-1 fence diagnostic landed on claude/carbon-fork-0-1-ehb; kind implemented, blocked_by cleared — the W-007 precondition was never met), W-016 DISCHARGED (SF-1 diagnostic landed; title corrected to noexcept-spec fenced thunks; W-020's stale blocked_by on it cleared), W-007 notes record the additive landing without the refactor, W-059 notes gain the fence diagnostic's `write(2)` dependency and the macOS asm-label/`-lc++abi` notes; W-083/W-084/W-085 added (the three EH-B residue items, plan §8.5 provisional W-080/W-081/W-082 renumbered: `Cpp.Exception` accessors and release-on-destroy, catching-import selection in binding/argument contexts, `Carbon::expected` import direction).UN-1 discharge: W-009 set to implemented (native `union` landed on claude/carbon-fork-0-1-unions, fork/unions/plan.md UN-1), evidence re-pinned to the landed sites; W-015 blocked_by cleared (UN-2 is next, sequenced after EH-B); W-010's W-009 coordination line closed; W-086..W-093 added (the UN-1 residue: choice-typed fields, imported C++-typed fields, generic unions, member-restriction diagnostics, poison on invalid-representation reads, tree-sitter grammar, the copy predicate's textual-order dependence, user blanket Copy impls) — ids allocated on the ASSUMPTION that the EH-B branch, which merges before this one, takes W-083..W-085; verified at merge. Updated 2026-09-28 by the UN-2 discharge: W-015 DISCHARGED (imported C++ unions marked `is_union` and designated-initializable when they are C++ aggregates; Carbon unions export as `TagTypeKind::Union` with Carbon-supplied offset-zero layout; the by-value probe passed, so no residue is filed and no ids are allocated — W-093 remains the highest); W-009's evidence re-pinned off the deleted fail_todo_export.carbon and the deleted `union export` guards; W-007 and W-087 notes gain the UN-2 record.OV-1 discharge: W-024 set to implemented (same-file `overload fn` closed sets landed on claude/carbon-fork-0-1-overload, fork/overload/plan.md OV-1), title annotated per plan §0.2 items 2/6 and evidence re-pinned to the landed sites; W-025 blocked_by cleared (OV-2 is next) and W-026 keeps W-007 until OV-3 discharge per D-OV-9, both with the OV-1 hand-off in notes; W-013 and W-028 notes gain the arity-range and probe-idiom cross-references of §8.5; W-094..W-104 added (the eleven OV-1 residues: virtual members, non-value parameters, `self`-shape overloading, interfaces, Clang-granularity candidate notes, mixed method/non-method sets, per-member access, template-dependent arguments, explicit `ref self`/`addr self` receivers, `impl` bodies, unconditional constant-evaluation diagnostics inside probes) — ids allocated from the trunk c0c57285f max W-093 (UN-2's discharge allocated none). Updated 2026-10-05 by the SL-1 round-2 fixer: W-055 title/evidence/notes gain the review-fix record (declared `Destroy` impls selected over the destroy custom witness; `heap.allocate` overflow check; six goldens cleared for the fill); W-105 added (member-held `Buf` not freed: aggregate destroy-op bodies are the member-destruction placeholder) -- id allocated from this branch's max W-104. Updated 2026-10-05 by the SL-1 discharge: W-055 DISCHARGED (`Core.Slice(T)`, `Core.Buf(T)`, the runtime bounds fail-stop and four runtime-only builtins landed on claude/carbon-fork-0-1-slices; title/evidence/notes re-pinned to the landed sites and the four hosted rounds, verification placeholders pending the orchestrator's of-record runs); W-056 blocked_by cleared with the SL-1 hand-off in notes and its two stale citations corrected (plan §0.2 items 1, 2); the round-2 residue W-105 RENUMBERED W-108 because trunk's OV-2 discharge took W-105..W-107; W-109..W-116 added (the §8.5 residue by title: write-through indexing, `buf(T)` shorthand, element destructors + `Allocator`, over-aligned elements, the index in the fail-stop message, unchecked access, unformed `Buf` declarations, plus `i32` subscripts from D-SL-17). Updated 2026-10-05 by the SL-2 implementer: W-056 set to implemented (hosted verification pending; the `std::span` <-> `Core.Slice` mapping in both directions and the synthesized `CppContiguousRange` owning->view chain landed on claude/carbon-fork-0-1-sl2), title annotated per plan §0.2 items 2, 7, 9 and evidence re-pinned to the landed sites; W-119/W-120 added (the two §8.5 SL-2 residue titles: static-extent `std::span` mapping, ADL `data`/`size` sources for `CppContiguousRange`) — ids allocated after W-118 on the ASSUMPTION that OV-3, landing in parallel, takes W-117/W-118; verified at merge. Updated 2026-10-05 by the SL-2 discharge: W-056 DISCHARGED (the `std::span` <-> `Core.Slice` mapping in both directions and the synthesized `CppContiguousRange` owning->view chain landed on claude/carbon-fork-0-1-sl2 after two fix rounds — the round-1 relocation of the blanket impl beside `Slice`, the round-2 record corrections; title/evidence/notes re-pinned to the landed sites, the two review records and the hosted rounds, verification placeholders 37373875153 (fill 1d0c65f09)/37395916761 (on 556a8669d; the first gate, 37390683098, failed only on the round-5 fill's own `.loc` renumbering inside vector_view_span.carbon, the two-pass convergence of R26, and convergence run 37394549957 pushed 556a8669d, 130 `.loc` lines and nothing else)/37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit) pending the orchestrator's of-record runs); W-119/W-120 ids CONFIRMED against trunk 923c2f2af (OV-3's discharge took W-117/W-118, as assumed) and their evidence re-pinned; no further ids allocated — the §8.5 title 'owning C++ container to Core.Slice view' is not filed because the D-SL-9 fallback did not fire, and the deleted-copy element case is disclosed in W-056, not filed. Updated 2026-10-06 by the UA-1 fill round 3 fixer: W-101 notes record the gate (xi) retriage (upstream's `CallAction` deferral made `fail_todo_template_dependent` pass the fill; the split is now `template_dependent` with an instantiating pin); W-122 added (the conditional-operand cleanup guard's type-based over-approximation, fill round 2 review F2) -- id allocated after SL-2's W-119..W-121, which this branch carries since the re-merge of origin/trunk 59f1c30d5 (PR #49) on 2026-10-06. Updated 2026-10-06 by the UA-1 discharge: W-001 LANDED note (the F-002 staging flow as it now runs under R28, measured on the 183-commit advance); W-023 SUPERSEDED-MECHANISM note (upstream PRs 7788/7789/7881 replace the F8d embedding, D-UA-8; the honest revert recipe; the thread programs PASS on run 37399118672); W-069 the D-UA-10 line (S3b's incremental publication retired for upstream PR 7717's in-place value block; pins held); W-123..W-125 added (the D-UA-15 residues: the function-pointer catching-thunk TODO, the function-pointer fence-unbuildable TODO, choice-payload destroy synthesis under upstream's `SubobjectDestroy` walk) -- ids allocated after W-122, the maximum on this branch after the re-merge of trunk 59f1c30d5.",
+  "source": "Deduplicated from 99 raw items produced by four scanners (check-TODO scan, fail_todo golden-test scan, conformance-SKIP scan, design-sprint scan) against trunk @ 99cda60. Bullet strings are copied exactly from fork/gap-analysis.md. blocked_by references work-item ids (W-###), design-fork ids (F-006..F-011, see fork/design-sprint/README.md), decision-log sub-fork ids (SF-#, see fork/decision-log.md), or external upstream issues. Updated 2026-07-19 by the W4 slice-1 fixer: W-008 refreshed to post-slice-1 evidence; W-066 added (usefulness-diagnostic scope cut). Updated 2026-07-29 by the S2d implementer: W-008 refreshed to post-S2d evidence (guard gates discharged); W-067 added (default-clause guards scope trade). Updated 2026-08-08 by the S2e implementer: W-008/W-010 refreshed to post-S2e evidence (choice exhaustiveness landed; the no-default TODO narrowed to integer scrutinees); W-068 added (fewer-than-two-alternative choice matching stays scrutinee-gated). Updated 2026-08-08 by the W5-S3a implementer: W-010 refreshed (specifics of generic choices as match scrutinees landed, payload-free; generic residue narrowed to S3b payload synthesis + S3c destructuring); W-068 evidence extended with the specific-composition pins. Updated 2026-08-08 by the W5-S3b fixer: W-069 added (imported file-scope `let` lowering gap; scrutinee split re-authored to `var`). Updated 2026-08-08 by the B1b implementer: W-070 added (unit break types inexpressible under SF-6, fork/b1/plan.md §2.7). Updated 2026-08-08 by the B1b fixer: the blocked_by reference-forms sentence above amended to admit SF-* (W-070 is blocked_by SF-9). Updated 2026-08-08 by the B1b third fix round: W-071 added (symbolic ControlFlow carrier destroy; the `?` symbolic-operand narrowing gate). Updated 2026-08-09 by the B2a implementer: W-071 discharged by candidate (b) — the CanDestroyClass choice clause — with its evidence refreshed to the post-B2a pins, the Trivial-vs-NonTrivial wording deviation flagged for B2b ratification, and the successor-state revisit obligation recorded per fork/b2/plan.md §2.2. Updated 2026-08-09 by the B2a conformance round: W-072 added (projection rewrite-reduction gap; the generic `?` continue-threading limit surfaced by question_generic_diff's COMPILE-FAIL). Updated 2026-08-18 by the W72a implementer: W-072 notes updated to the dissolution verdict (idiom gap + verification gap, fork/w072/plan.md §0.1); stays OPEN until W72b's runtime arbiter. Updated 2026-08-18 by the W72a fixer: W-073 added (the plan §3 P-9 minting rule FIRED — the 3d261c0 regen showed the in-body recursive Branch call type-collapsing under `final`; the \"does not type-collapse\" comment family and the `Diverge` trailing-return idiom are falsified FOR final impls and get a retext/evaluation sweep once W72b's arbiter confirms). Updated 2026-08-18 by the W-073 sweep implementer: W-073 notes updated with the per-site sweep outcomes (retext at the non-final sites, simplification taken at the final-impl sites) and the DISCHARGE-STAGED status under the R9 hedge. Updated 2026-08-18 by the W-067 implementer: W-067 notes updated with the landed default-guard content (parse production + MatchGuardedDefault label, arms-after-guarded-default admitted per the usefulness rule, the no-coverage exhaustiveness interaction, reused mandatory-default diagnosis for the dangling else edge) and the DISCHARGE-STAGED status under the R9 hedge (expected floor 92/0/29 over 121). Updated 2026-08-18 by the W-068 implementer: W-068 notes updated with the landed fewer-than-two-alternatives content (IsMatchableChoiceType admits the empty-tuple discriminant at the scrutinee/alternative/exhaustiveness gates; constant-true dispatch with real payload extraction; the empty-choice lane recorded as type admission under parse's at-least-one-arm rule, vacuous exhaustiveness via the existing coverage analysis) and the DISCHARGE-STAGED status under the R9 hedge (expected floor 93/0/29 over 122); W-008/W-010 stale fewer-than-two sentences refreshed. Updated 2026-08-18 by the W69a implementer: W-069 notes extended with the staged scalar-promotion mechanism (lane (a1), lowering-only; no status change — discharge waits for W69b per fork/w069/plan.md §7) and the recorded `export x;`-form deviation. Updated 2026-08-18 by the W69h implementer: W-069 notes extended with the staged multi-unit conformance-harness support (W69h; capability only, no programs, no status changes). Updated 2026-08-18 by the W69h fixer: W-002 notes refreshed to post-W69h reality (COMPILE-ARGS answers the extra-args gap; the one-file-per-program limitation is gone — multi-unit directory programs are supported; README-table staleness is machine-checked) and its runner.py evidence pin re-pinned to the per-unit compile loop. Updated 2026-08-18 by the W69b implementer: W-069 notes extended with the staged pointer-rep arm, the restored runtime-bound acceptance split, the W69b golden set, and both conformance arbiters, and its status set to DISCHARGE-STAGED under the R9 hedge (expected floor 95/0/29 over 124, moving only by the two new programs' PASS). Updated 2026-08-18 by the W69b post-fix crash fixer: W-069 notes extended with the crash-round record (pre-existing AcquireValue/constant-folded-ref lowering defect surfaced by the un-suppressed imported_global_constant probe; fixed in toolchain/lower; hedge intact, no status change). Updated 2026-09-27 by the EH-A discharge: W-017/W-018 set to implemented (prelude `Core.Result` + `Try` impls, `Optional as Try`, `Result` entry points landed on claude/carbon-fork-0-1-eh), W-070 DISCHARGED by option (a), W-058/W-059 notes extended; no ids allocated (trunk max id W-079, the W-077 discharge). Updated 2026-09-27 by the EH-B discharge: W-019 DISCHARGED (catching thunks selected by `?`, `Cpp.Exception`, `Carbon::expected` export mapping + `<carbon/expected.h>`, the SF-1 fence diagnostic landed on claude/carbon-fork-0-1-ehb; kind implemented, blocked_by cleared — the W-007 precondition was never met), W-016 DISCHARGED (SF-1 diagnostic landed; title corrected to noexcept-spec fenced thunks; W-020's stale blocked_by on it cleared), W-007 notes record the additive landing without the refactor, W-059 notes gain the fence diagnostic's `write(2)` dependency and the macOS asm-label/`-lc++abi` notes; W-083/W-084/W-085 added (the three EH-B residue items, plan §8.5 provisional W-080/W-081/W-082 renumbered: `Cpp.Exception` accessors and release-on-destroy, catching-import selection in binding/argument contexts, `Carbon::expected` import direction).UN-1 discharge: W-009 set to implemented (native `union` landed on claude/carbon-fork-0-1-unions, fork/unions/plan.md UN-1), evidence re-pinned to the landed sites; W-015 blocked_by cleared (UN-2 is next, sequenced after EH-B); W-010's W-009 coordination line closed; W-086..W-093 added (the UN-1 residue: choice-typed fields, imported C++-typed fields, generic unions, member-restriction diagnostics, poison on invalid-representation reads, tree-sitter grammar, the copy predicate's textual-order dependence, user blanket Copy impls) — ids allocated on the ASSUMPTION that the EH-B branch, which merges before this one, takes W-083..W-085; verified at merge. Updated 2026-09-28 by the UN-2 discharge: W-015 DISCHARGED (imported C++ unions marked `is_union` and designated-initializable when they are C++ aggregates; Carbon unions export as `TagTypeKind::Union` with Carbon-supplied offset-zero layout; the by-value probe passed, so no residue is filed and no ids are allocated — W-093 remains the highest); W-009's evidence re-pinned off the deleted fail_todo_export.carbon and the deleted `union export` guards; W-007 and W-087 notes gain the UN-2 record.OV-1 discharge: W-024 set to implemented (same-file `overload fn` closed sets landed on claude/carbon-fork-0-1-overload, fork/overload/plan.md OV-1), title annotated per plan §0.2 items 2/6 and evidence re-pinned to the landed sites; W-025 blocked_by cleared (OV-2 is next) and W-026 keeps W-007 until OV-3 discharge per D-OV-9, both with the OV-1 hand-off in notes; W-013 and W-028 notes gain the arity-range and probe-idiom cross-references of §8.5; W-094..W-104 added (the eleven OV-1 residues: virtual members, non-value parameters, `self`-shape overloading, interfaces, Clang-granularity candidate notes, mixed method/non-method sets, per-member access, template-dependent arguments, explicit `ref self`/`addr self` receivers, `impl` bodies, unconditional constant-evaluation diagnostics inside probes) — ids allocated from the trunk c0c57285f max W-093 (UN-2's discharge allocated none). Updated 2026-10-05 by the SL-1 round-2 fixer: W-055 title/evidence/notes gain the review-fix record (declared `Destroy` impls selected over the destroy custom witness; `heap.allocate` overflow check; six goldens cleared for the fill); W-105 added (member-held `Buf` not freed: aggregate destroy-op bodies are the member-destruction placeholder) -- id allocated from this branch's max W-104. Updated 2026-10-05 by the SL-1 discharge: W-055 DISCHARGED (`Core.Slice(T)`, `Core.Buf(T)`, the runtime bounds fail-stop and four runtime-only builtins landed on claude/carbon-fork-0-1-slices; title/evidence/notes re-pinned to the landed sites and the four hosted rounds, verification placeholders pending the orchestrator's of-record runs); W-056 blocked_by cleared with the SL-1 hand-off in notes and its two stale citations corrected (plan §0.2 items 1, 2); the round-2 residue W-105 RENUMBERED W-108 because trunk's OV-2 discharge took W-105..W-107; W-109..W-116 added (the §8.5 residue by title: write-through indexing, `buf(T)` shorthand, element destructors + `Allocator`, over-aligned elements, the index in the fail-stop message, unchecked access, unformed `Buf` declarations, plus `i32` subscripts from D-SL-17). Updated 2026-10-05 by the SL-2 implementer: W-056 set to implemented (hosted verification pending; the `std::span` <-> `Core.Slice` mapping in both directions and the synthesized `CppContiguousRange` owning->view chain landed on claude/carbon-fork-0-1-sl2), title annotated per plan §0.2 items 2, 7, 9 and evidence re-pinned to the landed sites; W-119/W-120 added (the two §8.5 SL-2 residue titles: static-extent `std::span` mapping, ADL `data`/`size` sources for `CppContiguousRange`) — ids allocated after W-118 on the ASSUMPTION that OV-3, landing in parallel, takes W-117/W-118; verified at merge. Updated 2026-10-05 by the SL-2 discharge: W-056 DISCHARGED (the `std::span` <-> `Core.Slice` mapping in both directions and the synthesized `CppContiguousRange` owning->view chain landed on claude/carbon-fork-0-1-sl2 after two fix rounds — the round-1 relocation of the blanket impl beside `Slice`, the round-2 record corrections; title/evidence/notes re-pinned to the landed sites, the two review records and the hosted rounds, verification placeholders 37373875153 (fill 1d0c65f09)/37395916761 (on 556a8669d; the first gate, 37390683098, failed only on the round-5 fill's own `.loc` renumbering inside vector_view_span.carbon, the two-pass convergence of R26, and convergence run 37394549957 pushed 556a8669d, 130 `.loc` lines and nothing else)/37390640614 (on affa54e8a, which the final head differs from only by the scoreboard commit 2a17f0239 and the CHECK-only convergence commit) pending the orchestrator's of-record runs); W-119/W-120 ids CONFIRMED against trunk 923c2f2af (OV-3's discharge took W-117/W-118, as assumed) and their evidence re-pinned; no further ids allocated — the §8.5 title 'owning C++ container to Core.Slice view' is not filed because the D-SL-9 fallback did not fire, and the deleted-copy element case is disclosed in W-056, not filed. Updated 2026-10-06 by the UA-1 fill round 3 fixer: W-101 notes record the gate (xi) retriage (upstream's `CallAction` deferral made `fail_todo_template_dependent` pass the fill; the split is now `template_dependent` with an instantiating pin); W-122 added (the conditional-operand cleanup guard's type-based over-approximation, fill round 2 review F2) -- id allocated after SL-2's W-119..W-121, which this branch carries since the re-merge of origin/trunk 59f1c30d5 (PR #49) on 2026-10-06. Updated 2026-10-06 by the UA-1 discharge: W-001 LANDED note (the F-002 staging flow as it now runs under R28, measured on the 183-commit advance); W-023 SUPERSEDED-MECHANISM note (upstream PRs 7788/7789/7881 replace the F8d embedding, D-UA-8; the honest revert recipe; the thread programs PASS on run 37399118672); W-069 the D-UA-10 line (S3b's incremental publication retired for upstream PR 7717's in-place value block; pins held); W-123..W-125 added (the D-UA-15 residues: the function-pointer catching-thunk TODO, the function-pointer fence-unbuildable TODO, choice-payload destroy synthesis under upstream's `SubobjectDestroy` walk) -- ids allocated after W-122, the maximum on this branch after the re-merge of trunk 59f1c30d5. Updated 2026-10-14 by the VA-1 discharge: W-013 notes record slice 1; W-212..W-230 added (the §1.11 residues of fork/variadics/plan.md); W-231 reserved, unused; ids re-scanned before this commit (77 refs of /home/user/carbon-lang: trunk, origin/trunk and the 75 local and origin claude/carbon-fork-0-1-* refs; the maximum named is W-244, DD-1's reserved and unused W-240..W-244; W-212..W-231 and F-018 are named only as VA-1's reservation, on trunk, origin/trunk and the 7mwfb7, dd, ox and va branches, and filed on none).",
   "items": [
     {
       "id": "W-001",
@@ -237,10 +237,11 @@
       "evidence": [
         "docs/design/variadics.md",
         "toolchain/lex/token_kind.def",
-        "fork/conformance/programs/generics/variadics_each.carbon:6"
+        "fork/conformance/programs/generics/variadics_each.carbon (PASS, expected)",
+        "fork/variadics/plan.md (VA-1, slice 1)"
       ],
       "blocked_by": [],
-      "notes": "Complete accepted 964-line design (docs/design/variadics.md, proposal p002240) with zero implementation — no `...`/`each` tokens exist (verified by grep), so pack expansion fails at the lexer. Full-stack: lexer tokens, parse states, pack typechecking, pack lowering. Independent — can start immediately. W6 arbiter also rewrites core/prelude tuple Copy (hand-rolled for arities 0-3) as one variadic impl, unblocking part of 'Stdlib: tuple/array library parts'. OV-1 (2026-09-28, fork/overload/plan.md §8.5): the overload resolution loop's arity check is a range (`GetExplicitArityRange`, toolchain/check/call.cpp:338, returning `{n, n}` today) per fork/design-sprint/function-overloading.md:403-406, so variadic members slot in without reshaping the loop."
+      "notes": "Complete accepted 964-line design (docs/design/variadics.md, proposal p002240) with zero implementation — no `...`/`each` tokens exist (verified by grep), so pack expansion fails at the lexer. Full-stack: lexer tokens, parse states, pack typechecking, pack lowering. Independent — can start immediately. W6 arbiter also rewrites core/prelude tuple Copy (hand-rolled for arities 0-3) as one variadic impl, unblocking part of 'Stdlib: tuple/array library parts'. OV-1 (2026-09-28, fork/overload/plan.md §8.5): the overload resolution loop's arity check is a range (`GetExplicitArityRange`, toolchain/check/call.cpp:338, returning `{n, n}` today) per fork/design-sprint/function-overloading.md:403-406, so variadic members slot in without reshaping the loop. VA-1 slice 1 (2026-10-14, fork/variadics/plan.md): upstream's lex and parse of `...` cherry-picked (2ec4bab59, a045da8e6); `each` keyword; one pack `... each x: T` of one element type per function in its explicit parameter list, expression-statement and call-argument expansions, a deduced `Core.IntLiteral` arity (the design's explicit deduced arity), definition checking against the element type (the one-segment case of iterative typechecking), pack values bound without copies, expansion arguments evaluated where written, lowering per specific. Residues W-212..W-230. Next slice: W-212, then W-213 and W-218. OV-1's citation above is now toolchain/check/call.cpp:578 (:424 at f67ab650d)."
     },
     {
       "id": "W-014",
@@ -2217,6 +2218,273 @@
       ],
       "blocked_by": ["W-010"],
       "notes": "Filed at the UA-1 discharge (2026-10-06). Before the merge the fork's `MakeDestroyOpBody` emitted NOTHING for every aggregate (W-108's placeholder); upstream's `MakeSubobjectDestroyOpBody` is real for structs, classes, tuples and arrays (PRs 7829/7840/7842/7844) but has no choice or custom-layout arm, and its walk meets the fork's shapes inside the witness query (D-UA-9's traced path), so the two fork arms preserve the placeholder semantics exactly where the fork had them: a payload-carrying choice destroys neither its payload nor (through `SelfDestruct`) a payload's declared `Destroy` impl, except the S1 admitted-exception adapter payload which keeps its declared-impl `Op`. Mechanism: synthesize a `SubobjectDestroy.Op` for `is_choice` classes that branches on the discriminant (the match-arm destroy shape, handle_match.cpp's `BranchOnGuard` precedent) and calls the selected alternative's payload `SelfDestruct`; the `CustomLayoutType` arm then walks the region's fields for that alternative only. Needs SF-6 widened past scalars for a non-trivial payload to exist at all (W-010 gates it; W-083's release-on-destroy is the first consumer). Related: W-108 (a `Buf` field inside a class, struct, tuple or array -- upstream's walk may now reach it; UA-2 adds the pin golden). Break condition: a choice golden with a payload whose type has a declared `Destroy` impl shows the impl's `Op` call under the discriminant branch, and the seven choice goldens with `var`s refill without a stack dump."
+    },
+    {
+      "id": "W-212",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: generic and heterogeneous packs (`[... each T: type]`, `... each x: each T`, `each x: auto`) and multi-segment pack typechecking",
+      "subsystem": "toolchain/check + toolchain/lower",
+      "size": "XL",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "docs/design/variadics.md \"Pack expansion patterns\" (:215-221) and \"Iterative typechecking of pack expansions\" (:451-493); DR-4, DR-11, DR-17, DR-24, DR-31, DR-32, DR-40",
+        "toolchain/check/testdata/variadics/fail_todo_slice.carbon split `fail_todo_generic_pack` (`semantics TODO: pack expansion pattern outside an explicit parameter list`)"
+      ],
+      "blocked_by": [],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). The next slice of W-013. Packs whose elements have different types, or a type that is itself a pack, need pack types of several segments, shapes, and segment-by-segment checking; slice 1's pack type has one element type (D-VA-3), which this item generalizes. The indexing interfaces become variadic with it (proposals/p002274-subscript-syntax-and-semantics.md:250-257). Arbiter: the design's StrCat (:252-260). Break condition: StrCat compiles and runs. Follows VA-1 slice 1."
+    },
+    {
+      "id": "W-213",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: tuples with pack segments (`(... each x)` outside a call's argument list, tuple types `(... each T)`)",
+      "subsystem": "toolchain/check + toolchain/lower",
+      "size": "L",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "docs/design/variadics.md :109-110, :135-141, :484-491; DR-9, DR-14, DR-33",
+        "toolchain/check/testdata/variadics/fail_todo_slice.carbon split `fail_todo_tuple_literal`"
+      ],
+      "blocked_by": ["W-212"],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). A tuple literal with an expansion element has a tuple type with a pack segment, which slice 1 does not represent; call argument lists are handled by grouping (D-VA-4). Arbiters: Zip's return type, Apply, TupleConcat. Break condition: `(... each x)` is a value of a tuple type in a variadic function."
+    },
+    {
+      "id": "W-214",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: pack expansion patterns in tuple patterns outside a function's explicit parameter list",
+      "subsystem": "toolchain/check",
+      "size": "M",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "docs/design/variadics.md :111-112, :207-214; DR-10",
+        "toolchain/check/testdata/variadics/fail_todo_slice.carbon split `fail_todo_tuple_pattern`"
+      ],
+      "blocked_by": ["W-213"],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). `let (... each x: i64) = t;`, `var` and `match` tuple patterns, and tuple patterns nested inside a parameter list. Break condition: the split's `let` binds a pack."
+    },
+    {
+      "id": "W-215",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: merging and splitting segments (an expansion argument merged with other arguments, the `Arity` type's `+`, canonical full patterns, default values beside or on a pack)",
+      "subsystem": "toolchain/check",
+      "size": "L",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "docs/design/variadics.md :548-677, :700-704, :830-832, :843-973; DR-36, DR-37, DR-39, DR-41",
+        "toolchain/check/testdata/variadics/fail_todo_slice.carbon splits `fail_todo_merged_segments` (`ForEach(0, ... each n)`), `fail_todo_default_after_pack`, `fail_todo_default_before_pack` and `fail_todo_default_on_pack` (`semantics TODO: default value in a parameter list with a pack expansion pattern`)",
+        "fork/variadics/plan.md M-7: a deduced `Core.IntLiteral` array bound has no arithmetic (`array bound is not a constant` for `N + 1`)"
+      ],
+      "blocked_by": [],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). Slice 1 matches the parameters around a pack position by position and accepts as a pack's scrutinee either ordinary arguments or exactly one expansion argument. Break condition: `ForEach(0, ... each n)` deduces arity `N + 1`. Follows VA-1 slice 1."
+    },
+    {
+      "id": "W-216",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: `...and` and `...or`",
+      "subsystem": "toolchain/parse + toolchain/check + toolchain/lower",
+      "size": "M",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "docs/design/variadics.md :115-116, :308-315, :488-489; DR-12, DR-33",
+        "toolchain/parse/testdata/variadics/pack_expansion_expr.carbon split `fail_todo_and_or`: `...and` and `...or` fail to parse (\"expected expression\")"
+      ],
+      "blocked_by": [],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). Short-circuiting folds over a pack; they also need control flow in expansion bodies (W-219). Break condition: Zip's loop condition `...and each iter != each vector.End()` checks. Follows VA-1 slice 1."
+    },
+    {
+      "id": "W-217",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: `...expand` (check and lowering of upstream's `expand` operator or the design's `...expand` element)",
+      "subsystem": "toolchain/check + toolchain/lower",
+      "size": "M",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "docs/design/variadics.md :121-131, :152-153, :493 (\"TODO: Discuss typechecking `...expand`\"); DR-13, DR-18",
+        "upstream's toolchain/check/testdata/variadics/pack_expansion.carbon split `fail_todo_expand` (`HandlePrefixOperatorExpand`), cherry-picked by VA-1 commit C1"
+      ],
+      "blocked_by": ["W-213"],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). Upstream parses `expand` as a prefix operator anywhere (p002240's \"Generalize expand\" alternative, upstream 2ec4bab59); the design adopts the element form. Follow upstream's choice at the advance. Break condition: `F(...expand MakeArgs())` calls `F` with the tuple's elements."
+    },
+    {
+      "id": "W-218",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: statement expansions of declarations and compound statements (`... var each iter: auto = ...;`, `... if`, `... while`, `... return`)",
+      "subsystem": "toolchain/check + toolchain/lower",
+      "size": "L",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "docs/design/variadics.md :108, :305-306; DR-8",
+        "toolchain/check/testdata/variadics/fail_todo_slice.carbon split `fail_todo_statement_kind`"
+      ],
+      "blocked_by": ["W-212"],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). A declaration in an expansion declares a pack (one name per element); compound statements need blocks inside the per-element body. Arbiters: Zip (:71-83), Min (:264-271). Break condition: Min runs."
+    },
+    {
+      "id": "W-219",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: control flow inside an expansion body (`and`, `or`, `if` expressions; the type-versus-execution example)",
+      "subsystem": "toolchain/check + toolchain/lower",
+      "size": "M",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "docs/design/variadics.md \"Type versus execution semantics\" (a045da8e6, :495-528); DR-34",
+        "toolchain/check/testdata/variadics/fail_todo_slice.carbon split `fail_todo_control_flow`"
+      ],
+      "blocked_by": [],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). Slice 1 lowers an expansion body as one straight-line block per element (D-VA-6). Break condition: `... Consume(each b and true)` runs with short-circuiting per element. Follows VA-1 slice 1."
+    },
+    {
+      "id": "W-220",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: per-element cleanups (a temporary needing destruction inside an expansion body)",
+      "subsystem": "toolchain/check + toolchain/lower",
+      "size": "M",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "toolchain/check/handle_expr_statement.cpp `HandleParseNode(ExprStatementId)` for a statement expansion's body (split `fail_todo_cleanup_statement`) and toolchain/check/handle_pack_expansion.cpp `FinishPackExpansionBody` for an expression expansion's (split `fail_todo_cleanup_argument`): `semantics TODO: pack expansion element that needs a cleanup`; toolchain/check/testdata/variadics/fail_todo_cleanup.carbon",
+        "toolchain/check/convert.cpp `ConvertPackToPack`: `semantics TODO: pack element conversion that needs a cleanup`; fail_todo_slice.carbon split `fail_todo_conversion_cleanup`",
+        "fork/variadics/plan.md D-VA-6"
+      ],
+      "blocked_by": [],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). Break condition: an expansion over a call returning a class with a destructor destroys each temporary once. Follows VA-1 slice 1."
+    },
+    {
+      "id": "W-221",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: each-name bindings that are `ref`, `var` or phase-qualified, and expansion operands that are not one each-name binding",
+      "subsystem": "toolchain/check",
+      "size": "M",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "docs/design/variadics.md :223-235; a045da8e6's `fn G(... (each c: bool, each x: i32))`; DR-25, DR-34",
+        "toolchain/check/testdata/variadics/fail_todo_slice.carbon splits `fail_todo_ref_pack`, `fail_todo_two_each_names`, `fail_todo_tuple_operand`"
+      ],
+      "blocked_by": ["W-212"],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). Break condition: the three splits check."
+    },
+    {
+      "id": "W-222",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: more than one pack (fixed-arity expansions, packs in two parameter lists of one function, the same-arity rule across packs)",
+      "subsystem": "toolchain/check",
+      "size": "L",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "docs/design/variadics.md :147-148, :530-546; DR-16, DR-35",
+        "toolchain/check/handle_pack_expansion.cpp: `semantics TODO: pack expansion over packs of different arities` (unreachable in slice 1)",
+        "proposals/p002687-termination-algorithm-for-impl-selection.md:186-193, :210-215 (keys for variadic argument counts)"
+      ],
+      "blocked_by": ["W-212"],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). Arbiter: the design's `class C(... each T: type) { fn F[... each U: type](... each t: each T, ... each u: each U); }`. Break condition: it checks."
+    },
+    {
+      "id": "W-223",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: variadic members of `overload fn` sets and pack expansion arguments to them",
+      "subsystem": "toolchain/check",
+      "size": "M",
+      "bullet": "Functions: function overloading (Carbon-native)",
+      "evidence": [
+        "toolchain/check/handle_function.cpp `DiagnoseOverloadGates` (gate (iii), at the member's declaration) and toolchain/check/call.cpp `PerformCallToOverloadSet` (at the call): `semantics TODO: variadic member of an overload set`; `GetExplicitArityRange` (:424 at f67ab650d) returns a range for this purpose (OV-1, fork/overload/plan.md §8.5)",
+        "toolchain/check/testdata/variadics/fail_todo_slice.carbon splits `fail_todo_overload_member`, `fail_todo_overload_pack_arg`"
+      ],
+      "blocked_by": [],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). The overload probe would group arguments per member (D-VA-4). Break condition: both splits check and select a member. Follows VA-1 slice 1."
+    },
+    {
+      "id": "W-224",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: pack expansion arguments in template-dependent calls, and packs in templates",
+      "subsystem": "toolchain/check",
+      "size": "M",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "toolchain/check/call.cpp `PerformCall`",
+        "toolchain/check/testdata/variadics/fail_todo_slice.carbon split `fail_todo_template_dependent_call`"
+      ],
+      "blocked_by": [],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). Break condition: the split's `t.G(... each n)` instantiates. Follows VA-1 slice 1."
+    },
+    {
+      "id": "W-225",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: variadic impls; the prelude tuple `Copy` as one variadic impl, and tuple `Eq`/`Ordered`",
+      "subsystem": "core/prelude + toolchain/check",
+      "size": "L",
+      "bullet": "Stdlib: tuple/array library parts",
+      "evidence": [
+        "core/prelude/copy.carbon:49-71 (\"TODO: Implement tuple copy as a variadic generic impl.\", impls for arities 0 to 3)",
+        "proposals/p002687-termination-algorithm-for-impl-selection.md:210-215 (termination with variadic types)"
+      ],
+      "blocked_by": ["W-212", "W-213"],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). `impl forall [... each T: Copy] (... each T) as Copy` needs generic packs and tuple types with pack segments. Break condition: the four hand-written impls are replaced and a 4-tuple copies."
+    },
+    {
+      "id": "W-226",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: a variadic `Core.Call`",
+      "subsystem": "core/prelude + toolchain/check",
+      "size": "M",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "proposals/p002875-functions-function-types-and-function-calls.md:227 (\"`Call` should be variadic\") and :531"
+      ],
+      "blocked_by": ["W-212"],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). Break condition: `Call` takes a parameter list rather than a tuple."
+    },
+    {
+      "id": "W-227",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: importing C++ variadic templates (function templates and class templates with parameter packs) and instantiating them on Carbon packs",
+      "subsystem": "toolchain/check/cpp",
+      "size": "L",
+      "bullet": "Generics: C++ interop — importing C++ templates, instantiating on Carbon types",
+      "evidence": [
+        "toolchain/check/testdata/interop/cpp/function/import/variadic.carbon (a C++ `template<typename ...T>` function today)"
+      ],
+      "blocked_by": ["W-212"],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). Break condition: a Carbon pack expansion argument calls a C++ variadic function template."
+    },
+    {
+      "id": "W-228",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: exporting a variadic Carbon function to C++ as a function template over a parameter pack",
+      "subsystem": "toolchain/check/cpp",
+      "size": "L",
+      "bullet": "Generics: C++ interop — exporting Carbon templates/checked generics as C++ templates",
+      "evidence": [
+        "toolchain/check/cpp/export.cpp `ExportFunctionToCpp`: `semantics TODO: exporting a variadic function to C++`; toolchain/check/testdata/variadics/fail_todo_export.carbon split `fail_todo_export_variadic`",
+        "fork/variadics/plan.md §0.3 item 6: without the TODO, the arity binding reaches `CARBON_CHECK(param_ident, ...)` in `ExportGenericBindings` (export.cpp:349 at f67ab650d)"
+      ],
+      "blocked_by": ["W-212"],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). Break condition: C++ calls an exported Carbon `Sum(... each n: i64)` with any number of arguments."
+    },
+    {
+      "id": "W-229",
+      "kind": "missing-feature",
+      "title": "VA-1 residue: variadic interface functions (a pack expansion pattern in an interface function, its impls, and the thunks between them)",
+      "subsystem": "toolchain/check",
+      "size": "M",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "toolchain/check/handle_pack_expansion.cpp: `semantics TODO: pack expansion pattern in an interface function`; toolchain/check/testdata/variadics/fail_todo_slice.carbon split `fail_todo_interface_function`",
+        "toolchain/check/thunk.cpp `ClonePattern` (:137-182 at f67ab650d) CHECK-fails on a pattern kind it does not clone (:166-170)"
+      ],
+      "blocked_by": [],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11), from the review fold's audit of pattern walkers. An impl's function adapts to its interface's through a thunk whose parameter patterns are cloned. Follows VA-1 slice 1. Break condition: the split's interface function and an impl of it are called through the interface with three arguments."
+    },
+    {
+      "id": "W-230",
+      "kind": "design-needed",
+      "title": "VA-1 residue: a pack's name without `each` (operations on the whole sequence)",
+      "subsystem": "docs/design + toolchain/check",
+      "size": "S",
+      "bullet": "Generics: Definition-checked variadics",
+      "evidence": [
+        "proposals/p002240-variadics.md \"Omit each-names\" (:637-645): the bare name stays open for operations on the whole sequence",
+        "toolchain/check/handle_name.cpp: `semantics TODO: use of a pack's name without `each``; toolchain/check/testdata/variadics/fail_todo_slice.carbon split `fail_todo_pack_name_without_each`"
+      ],
+      "blocked_by": [],
+      "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). The design gives a pack's bare name no meaning yet; slice 1 does not decide one (D-VA-11). Follows VA-1 slice 1. Break condition: the design or upstream gives the bare name a meaning or makes it an error, and the TODO becomes that rule."
     }
   ]
 }

@@ -143,6 +143,43 @@ under adversarial review. Merge order: PR 53, PR 51, PR 52, SC-1, PR 54, PR 55,
 PR 56, PR 57, then PR 58 through its state L integration commit; OX-1 and VA-1
 after PR 58. None is merged.
 
+Later on 2026-10-14 (13:50 UTC), the VA-1 discharge (pushed, PR to open and
+hold): VA-1 (claude/carbon-fork-0-1-va, fork/variadics/plan.md rev 3, W-013, gap
+row 53 "Generics: Definition-checked variadics"; the discharge commit sits on
+the merge of trunk e25b27e34: definition-checked variadics, slice 1; upstream's
+2ec4bab59 and a045da8e6 cherry-picked as its first two commits with upstream
+authorship; W-013 stays open; W-212 to W-230 filed, W-231 of VA-1's reservation
+unused; F-018 not minted; expected 137/0/21 over 158; row 53 PARTIAL expected)
+is IMPLEMENTED AND DISCHARGED off trunk f67ab650d, after two plan reviews and a
+focused re-review (rev 3, ec0b1a7b0, signed off) and two implementation reviews
+(APPROVE-WITH-FIXES each, eleven distinct findings, all folded by fix 3
+0ee9f2d1b and its fill 88b1b5bd2, none rejected) — 44a5ce6e3 and 663a29df6 (the
+two cherry-picks), e90b4197e (lex and parse: the `each` keyword, pack expansion
+elements and patterns), 275967b1d (check and SemIR: one pack of values per
+function, eight new instructions, the slice's TODOs), 57d263799 (lowering per
+specific, the un-SKIP of generics/variadics_each.carbon and eight new programs,
+one with a C++17 oracle), three fix commits and four autoupdate fills, 9a0888ef0
+(row 53 PARTIAL, expected), 9fad11984 (the implementation review fold record)
+and e25b27e34 (the merge of trunk 3eb7f36f0, fork/ORCHESTRATION.md only).
+Verification is container-built and NOT of record (Actions disabled): the
+carbonbuild toolchain of 88b1b5bd2, which the merge does not change, file_test
+1960/1960 on the merge commit, the expected scoreboard 137 PASS / 0 FAIL / 21
+SKIP over 158, 49/56 bullets (scoreboard generated 2026-10-14T13:37:37Z), the
+nine variadics programs the only change from the floor of record 128 / 0 / 22
+over 150, and each of the plan's eight mutants caught by its predicted programs;
+the gap header reads 30 / 22 / 4 / 0. Not run: Bazel and its tests (the gtest
+unit tests, the diagnostics coverage test, lit tests, fuzzers) and the four
+Bazel-backed prek hooks, hosted CI with its clangd-tidy step, ASan, LLVM-side
+assertions, an opt-mode conformance toolchain, non-Linux platforms, any hosted
+run, and any composition with the held PRs' toolchains (fork/variadics/plan.md
+§8.9 and its landed notes). Merge order: PR 53, PR 51, PR 52, SC-1, PR 54, PR
+55, PR 56, PR 57, then PR 58 through its state L integration commit; OX-1 and
+VA-1 after PR 58 in the order their PRs open (OX-1 is at plan rev 5, not signed
+off). None is merged. Id reservation: VA-1 reserved W-212..W-231 and filed W-212
+to W-230 as reserved, after a re-scan of 77 refs found them named only as its
+reservation (maximum W-244, DD-1's unused block); W-231 stays unused and is
+never reused, and F-018 is not minted. The merge steps are Next actions item 5.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -482,7 +519,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-op` | HELD OPEN as PR 56 — OP-1 Core.Optional comparison and F-015 at 379f20f67 (W-058 discharged; W-170..W-179, W-195 filed; expected 132/0/25 over 157; row stays PARTIAL); merges after PR 55. |
 | `claude/carbon-fork-0-1-op2` | HELD OPEN as PR 57 — OP-2 Core.Optional ownership, the MaybeUnformed representation fix, checked Get and F-016 at 628273444, stacked on PR 56 (W-170, W-171, W-173 discharged; W-196..W-201 filed; expected 139/0/22 over 161; Optional row DONE expected); merges after PR 56, before DD-1. |
 | `claude/carbon-fork-0-1-ox` | PLANNING — OX-1 operator export to C++ (W-054, gap row 48), cut from f67ab650d; reserves W-202..W-211, F-017 if minted; merges after DD-1. |
-| `claude/carbon-fork-0-1-va` | PLANNING — VA-1 definition-checked variadics, slice 1 (W-013, gap row 53), cut from f67ab650d; reserves W-212..W-231, F-018 if minted; merges after OX-1 or DD-1, whichever is later. |
+| `claude/carbon-fork-0-1-va` | PUSHED, PR TO OPEN AND HOLD — VA-1 definition-checked variadics slice 1, discharged on top of the trunk merge e25b27e34 (W-013 open; W-212..W-230 filed, W-231 unused; F-018 not minted; expected 137/0/21 over 158; row 53 PARTIAL expected); merges after PR 58, OX-1 and VA-1 in the order their PRs open. |
 | `claude/carbon-fork-0-1-dd` | HELD OPEN as PR 58 — DD-1 design docs without placeholders at fcee90d9b (W-065 discharged; W-182..W-185, W-188, W-189, W-191..W-194 filed; W-240..W-244 reserved, unused; expected 147/0/22 over 169; row 70 DONE expected; row 91 PARTIAL until state L); four document-review rounds folded; merges last of the held PRs through its state L integration commit. |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED AND FILLED on the container toolchain — SC-1 template structural conformance through fill round 3 at 2497d5000 (gate 1959/1959, conformance 130/0/21 over 151; W-134..W-143, W-151; W-168/W-169 reserved); round-3 review in progress, PR after it. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
@@ -508,6 +545,14 @@ question_propagation_diff, a C++ early-return oracle) → 84 B2a → 86 F8a → 
 116 UN-2 → 118 OV-1 → 121 OV-2 → 124 SL-1 → 126 OV-3 → 128 SL-2. The scoreboard
 regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
 `conformance`; R28).
+
+Expected at VA-1, NOT of record: 137 PASS / 21 SKIP / 0 FAIL over 158, 49/56
+bullets (a container run on the carbonbuild toolchain of 88b1b5bd2 at VA-1's
+merge of trunk e25b27e34, scoreboard generated 2026-10-14T13:37:37Z; the
+variadics bullet PASS over nine programs, its gap row PARTIAL), from the floor
+of record 128 PASS / 22 SKIP / 0 FAIL over 150, 48/56 (the hosted conformance
+run 37402970811 on 606a99c5a, which the line above predates; PR 55 and PR 56
+re-quote that line on their branches).
 
 ### CI on jmann345/carbon-lang (GitHub-hosted only — R28)
 
@@ -561,6 +606,48 @@ regenerates on GitHub-hosted runners only (`Fork: hosted verification`, mode
     subpatterns (W-008).
 4.  Conformance depth: differential pair per flipped bullet; scoreboard in
     CI; W-066 match usefulness diagnostics.
+5.  VA-1 merge (`claude/carbon-fork-0-1-va`, W-013 slice 1; merges after PR 58,
+    OX-1 and VA-1 in the order their PRs open; this item renumbers after the
+    held PRs' own items at the land-time merge), in this order
+    (fork/variadics/plan.md §3 item 11, §1.10 and §8.8):
+    -   Merge the then-current trunk into the branch with a merge commit, never
+        a rebase (trunk 3eb7f36f0 is merged as e25b27e34). A conflicted golden
+        takes trunk's side and is refilled by autoupdate in a new "Autoupdate
+        testdata goldens on the container arbiter" commit; the conformance
+        README table is regenerated with `runner.py --update-readme-table`; the
+        records keep trunk's rows and entries for other branches and this
+        branch's VA-1 rows, re-anchored by bullet text, item id or heading; the
+        gap header is recounted, never merged.
+    -   Re-run plan §8.8 on that merge commit. The held PRs bring toolchain and
+        prelude changes (SC-1 shares 18 toolchain files with VA-1, every hunk
+        auto-merging, plan §6.2), so rebuild, refill (each changed golden in a
+        fill commit), gate (the base's count plus VA-1's fourteen new goldens
+        and upstream's four), conformance (the base's totals plus plan §5's
+        delta, PASS up 9, SKIP down 1 and programs up 8), the mutants MU-1 to
+        MU-8 and `runner.py --self-test`, and re-quote the totals from that run
+        (R9), never adding them by hand.
+    -   Re-anchor the records in new commits: the decision-log entry "VA-1:
+        definition-checked variadics, slice 1 (2026-10-14)" above the
+        then-newest landed workstream entry (plan §2.8); row 53 found by its
+        bullet text and its run re-quoted; the header's counts recounted and its
+        scoreboard sentence re-written from the run; W-212..W-230 after the
+        then-last ledger item; W-013's `GetExplicitArityRange` line
+        (toolchain/check/call.cpp:578 at e25b27e34) re-measured.
+    -   Re-run the plan's id scan; if any of W-212..W-230 is taken by then,
+        re-allocate from the maximum plus one, skipping every reserved block,
+        and renumber in the same commit the records that name them (no source,
+        golden or program header names one).
+    -   When Actions returns, the hosted conformance run on a tree with VA-1 in
+        it is the record (expected: PASS up 9, SKIP down 1 and programs up 8
+        over the base; the variadics bullet PASS over nine programs; row 53
+        PARTIAL), and the "not of record" phrases go in a records commit.
+    -   At the next upstream advance VA-1 adds four conflicted files (plan
+        M-16): toolchain/check/handle_pack_expansion.cpp,
+        toolchain/parse/node_kind.def and toolchain/parse/typed_nodes.h take the
+        fork's side, which holds upstream's lines, and
+        toolchain/check/testdata/variadics/pack_expansion.carbon takes
+        upstream's file and is refilled; the entry's V-3a register is reviewed
+        then.
 
 ### Standing user directives
 

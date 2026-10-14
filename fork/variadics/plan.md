@@ -8068,3 +8068,125 @@ assertions and the opt-mode conformance toolchain; §8.8 stays the discharge's.
 One observation outside the findings, not changed: a pack whose element type is
 invalid still gets a `pack_type` whose element operand is `invalid` in its
 declaration's SemIR (no golden dumps one); fix 3 keeps every call away from it.
+
+## Landed notes (VA-1, 2026-10-14)
+
+**Discharge.** §3's commit D, "VA-1 discharge: W-013 slice 1 recorded, residues
+W-212 to W-230 filed", writes §2.8's records after the two implementation
+reviews, their fold, the merge of trunk and §8.8's re-verification, so every
+count it quotes is from a run on the tree it lands on (R9), stated EXPECTED, not
+of record: W-013's evidence and notes (slice 1, the next slice,
+`GetExplicitArityRange` at toolchain/check/call.cpp:578) and W-212 to W-230
+exactly as §2.8's JSON gives them, appended after W-125, the highest item on
+this branch, with the `source` string's dated sentence
+(fork/inventory/work-items.json, 144 items); row 53's run re-quoted from §8.8
+and its "(filed at the discharge)" replaced by "(W-212..W-230)", the header's
+scoreboard sentence re-quoted with its counts recounted unchanged at 30 / 22 / 4
+/ 0, and §W6's slice sentence (fork/gap-analysis.md); the decision-log entry
+"VA-1: definition-checked variadics, slice 1 (2026-10-14)" immediately above
+SL-2's, the newest landed workstream entry at the merge commit;
+fork/ORCHESTRATION.md's dated paragraph, va Branches row, Scoreboard line and
+Next actions item 5; and this section. It changes no toolchain, golden, program
+or prelude file, and no design doc (D-VA-14).
+
+**Merge of trunk and §8.8.** Trunk 3eb7f36f0, two records-only commits past this
+branch's base f67ab650d (44761146d and 3eb7f36f0, fork/ORCHESTRATION.md only),
+was merged as e25b27e34 (`git merge --no-ff origin/trunk`) without a conflict,
+VA-1 not having touched fork/ORCHESTRATION.md before this commit; its message is
+written and carries the session trailers. `git diff --name-only 9fad11984
+e25b27e34` names only fork/ORCHESTRATION.md, and `ninja -n` in
+/home/user/carbon-build/carbon-va has no work, so the carbonbuild toolchain of
+88b1b5bd2 (`carbon version` 0.0.0-0.dev+88b1b5bd2) is the merge commit's
+toolchain, and §8.8 needed no rebuild, refill or mutant re-run. The merge was
+taken at the orchestrator's direction before the held PRs ahead of VA-1 have
+merged (trunk carries none of PR 51 to PR 58), so the land-time merge re-runs
+§8.8 and re-anchors these records in new commits (fork/ORCHESTRATION.md, Next
+actions item 5). Run on e25b27e34:
+
+-   gate.sh: "file_test test mode on /home/user/carbon-va: 1960 passed, 0 failed
+    (exit 0, 33s)", its log ending "Ran 1960 tests in 32234 ms wall time, 125084
+    ms across threads" and reporting 1960 tests PASSED, with 0 `!` and 0 `?`
+    marks.
+-   conformance.sh with `XDG_CACHE_HOME` a new private directory in the session
+    scratch (R5): "PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0,
+    OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 (of 158)", bullets 49 PASS / 0
+    FAIL / 7 SKIP / 0 NOT-WRITTEN of 56, scoreboard generated
+    2026-10-14T13:37:37Z in 73.9 s, log
+    `/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va1-impl/discharge/conf_merge.log`;
+    program by program the same status as F6's run (generated
+    2026-10-14T13:26:15Z), and the bullet "Generics: Definition-checked
+    variadics" PASS over its nine programs.
+-   `runner.py --self-test`: "self-test: 158 programs parsed, 56 bullets in
+    table, OK"; `--update-readme-table` changed nothing.
+-   The header recounted from the status column: 30 DONE / 22 PARTIAL / 4
+    MISSING / 0 DESIGN-ONLY over 56, the merge having left fork/gap-analysis.md
+    alone.
+
+**Ids.** The head's three commands ran immediately before the ledger was
+written, over 77 refs of /home/user/carbon-lang: trunk and origin/trunk at
+3eb7f36f0 and the 75 local and origin `claude/carbon-fork-0-1-*` refs, this
+branch's local ref at e25b27e34 among them. The maximum named is W-244, the end
+of DD-1's reserved and unused W-240..W-244. W-212..W-231 are named only as
+VA-1's reservation, on trunk, origin/trunk, the 7mwfb7 copies of
+fork/ORCHESTRATION.md, the dd branch (its fork/ORCHESTRATION.md,
+decision-log.md, gap-analysis.md and designdocs/plan.md), the ox branch's
+fork/opexport/plan.md and this branch, and filed in no ledger; F-018 is named
+only as VA-1's reservation and in this plan, and F-017 only as OX-1's. So W-212
+to W-230 are filed as reserved, W-231 stays unused and is never reused, and
+F-018 is not minted.
+
+**FILL-CAUGHT MISSES**, as the decision-log entry records them with their
+causes: none for upstream's goldens, F3 and F6. C4's first fill of §2.6's
+sources missed twelve splits, seven on `MissingGenericFunctionDefinition`
+(declared-only callees), two on `SelfInImplicitParamList` (`[self: Self]`),
+`fail_todo_tuple_literal` on `HandleAutoTypeLiteral`, and
+`fail_todo_tuple_operand` and `fail_todo_cleanup_statement`, which checked; fix
+1 repaired eleven in their sources and the last in
+toolchain/check/handle_expr_statement.cpp, and F4 then reproduced every check
+row of §4 but the `import.carbon` row's parenthetical, whose
+`pack_expansion_pattern` and `pack_type` through import refs appear in an
+unranged dump of the same files, not in the golden's ranged one. C5's first fill
+of the lower golden failed on five entry-point `Run` functions and a
+declared-only `Digits`; fix 2 repaired both, and F5 then reproduced every lower
+row.
+
+**Not run at the discharge**, the §8.9 list as it stands:
+
+-   Bazel and every Bazel-only test: the gtest unit tests (among them
+    toolchain/lex/tokenized_buffer_test.cpp, whose keyword table the `Each`
+    keyword extends through the X-macro, and the parser's typed-node tests), the
+    diagnostics coverage test (each new diagnostic kind has a `fail_` split),
+    lit tests and fuzzers; and the four Bazel-backed prek hooks that `SKIP=`
+    names.
+-   Hosted CI, its clangd-tidy step included, because GitHub Actions is disabled
+    on the fork; §8.6's local clang-tidy runs replace it, without `modernize-*`
+    and without clangd's own handling of headers.
+-   ASan, LLVM-side assertions (the container's LLVM is a Release build), an
+    opt-mode (`NDEBUG`) conformance toolchain, macOS and Windows.
+-   Any hosted run; the owner's runner is never used (R28).
+-   Any composition with the held PRs' toolchains (SC-1 shares 18 toolchain
+    files with VA-1, every hunk auto-merging, §6.2); the land-time §8.8 covers
+    it.
+-   §8.9's first, second and fourth bullets no longer hold: the builds, fills,
+    gates, conformance runs and mutants ran (§8.1 to §8.5, "Measured"), and the
+    lower golden's `lib` and `use` splits are filled.
+
+**Deviations**, each recorded where it happened:
+
+-   Fix 1 and fix 2 came before the implementation reviews without fills of
+    their own (VA1-IR2-m1; §3, "As implemented").
+-   F3 and F4 reached their autoupdate fixpoint at the third pass, each second
+    pass diagnosed as deterministic first (§8.2).
+-   The merge of trunk was taken before the held PRs ahead of VA-1 merged; the
+    land-time merge re-runs §8.8 (fork/ORCHESTRATION.md, Next actions item 5).
+-   D-VA-15 put VA-1 after OX-1 and DD-1; the merge order of record reads "OX-1
+    and VA-1 after PR 58 in the order their PRs open", and OX-1 is at plan rev
+    5, not signed off, so VA-1 may land first; their only touch point is
+    semantic, in export.cpp, away from VA-1's hunk (§6.2).
+-   R's row quoted §8.4's run and its scratch log; D re-quotes §8.8's run on the
+    merge commit.
+-   W-013's evidence pin
+    `fork/conformance/programs/generics/variadics_each.carbon:6` became the one
+    entry "fork/conformance/programs/generics/variadics_each.carbon (PASS,
+    expected)" rather than the file without a line beside that entry, so the
+    file is not listed twice.

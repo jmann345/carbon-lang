@@ -722,18 +722,21 @@ library "[[@TEST_NAME]]";
 // that is not a function, a parameter type that differs beside an erroneous
 // default value, a binding form that differs at a parameter with an error
 // (`ParamRef`, `DefaultRef`, `DefaultVar`), and a default value or a return
-// type that only the requirement has (`DefaultAbsent`, `ReturnAbsent`) are each
-// reported, as without the error. Building the thunk for an impl member reports
-// each against an interface member with the error on trunk 0bdce60a5 except
-// `OtherParamConvertible`, whose `i64` the thunk converts to, and
-// `DefaultType`, `ParamRef`, `DefaultRef`, `DefaultVar`, `DefaultAbsent` and
-// `ReturnAbsent`, whose interface analogs the thunk does not compare beside the
-// erroneous part. A member that matches only through an error (`ReturnOnly`,
-// `ParamOnly`, `DefaultOnly`, `DefaultBothErrors` and `MethodForStatic`) is
-// skipped (round 10's review 1 finding MAJOR-1 and review 2 finding MAJOR-1;
-// round 11's review 1 findings MAJOR-1 and MAJOR-2 and review 2 findings
-// MAJOR-1 and MINOR-1; round 12's review 1 findings MAJOR-1 and MINOR-1 and
-// review 2 finding MAJOR-1).
+// type that only one side has (`DefaultAbsent`, `ReturnAbsent`, and
+// `FormDefault` beside a parameter declared with a form that has an error) are
+// each reported, as without the error. Building the thunk for an impl member
+// reports each against an interface member with the error on trunk 0bdce60a5
+// except `OtherParamConvertible`, whose `i64` the thunk converts to, and
+// `DefaultType`, `ParamRef`, `DefaultRef`, `DefaultVar`, `DefaultAbsent`,
+// `ReturnAbsent` and `FormDefault`, whose interface analogs the thunk does not
+// compare beside the erroneous part. A member that matches only through an
+// error (`ReturnOnly`, `ParamOnly`, `DefaultOnly`, `DefaultBothErrors`,
+// `MethodForStatic`, and `FormOnly`, whose `y: i32` the erroneous form's
+// parameter counts as equal to, binding form included) is skipped (round 10's
+// review 1 finding MAJOR-1 and review 2 finding MAJOR-1; round 11's review 1
+// findings MAJOR-1 and MAJOR-2 and review 2 findings MAJOR-1 and MINOR-1; round
+// 12's review 1 findings MAJOR-1 and MINOR-1 and review 2 finding MAJOR-1;
+// round 13's review 1 finding MAJOR-1).
 template constraint HasReturnError {
   // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+4]]:25: error: name `Undefined` not found [NameNotFound]
   // CHECK:STDERR:   fn F(self, x: i32) -> Undefined;
@@ -764,6 +767,10 @@ template constraint HasStaticParamError {
   // CHECK:STDERR:                    ^~~~~~~~~
   // CHECK:STDERR:
   fn F(w: Self, x: Undefined) -> i32;
+}
+
+template constraint HasFormError {
+  fn F(self, x: i32, y:? form(ref Undefined)) -> i32;
 }
 
 class Arity {
@@ -852,6 +859,14 @@ class MethodForStatic {
   fn F(unused self, unused x: i32) -> i32 { return 1; }
 }
 
+class FormOnly {
+  fn F(unused self, unused x: i32, unused y: i32) -> i32 { return 1; }
+}
+
+class FormDefault {
+  fn F(unused self, unused x: i32, unused y: i32 = 1) -> i32 { return 1; }
+}
+
 fn CallR[template T: HasReturnError](unused x: T) -> i32 { return 0; }
 
 fn CallP[template T: HasParamError](unused x: T) -> i32 { return 0; }
@@ -859,6 +874,8 @@ fn CallP[template T: HasParamError](unused x: T) -> i32 { return 0; }
 fn CallD[template T: HasDefaultError](unused x: T) -> i32 { return 0; }
 
 fn CallS[template T: HasStaticParamError](unused x: T) -> i32 { return 0; }
+
+fn CallF[template T: HasFormError](unused x: T) -> i32 { return 0; }
 
 // CHECK:STDERR: fail_requirement_signature_error_genuine.carbon:[[@LINE+13]]:40: error: cannot convert type `Arity` into type implementing `HasReturnError` [ConversionFailureTypeToFacet]
 // CHECK:STDERR: fn TestArity(a: Arity) -> i32 { return CallR(a); }
@@ -1094,6 +1111,10 @@ fn TestDefaultRef(d: DefaultRef) -> i32 { return CallD(d); }
 fn TestDefaultVar(d: DefaultVar) -> i32 { return CallD(d); }
 
 fn TestMethodForStatic(m: MethodForStatic) -> i32 { return CallS(m); }
+
+fn TestFormOnly(f: FormOnly) -> i32 { return CallF(f); }
+
+fn TestFormDefault(f: FormDefault) -> i32 { return CallF(f); }
 
 // --- fail_requirement_signature_error_other_member.carbon
 library "[[@TEST_NAME]]";
@@ -1361,19 +1382,23 @@ library "[[@TEST_NAME]]";
 // `var` parameter where the requirement's is not, compile-time parameters of
 // the member's own, a parameter type that differs beside an erroneous default
 // value, a binding form that differs at the parameter with the error
-// (`ParamErrorRef`, `DefaultErrorRef`), and a default value or a return type
-// that only the member has (`DefaultError`, `ReturnErrorAbsent`). Each is
-// reported after the member's error, as without the error. Building the thunk
-// for such an impl member reports each on trunk 0bdce60a5 except
-// `ParamErrorVar`, `ParamErrorGeneric`, `ParamErrorRef` and
-// `ReturnErrorAbsent`, which the thunk adapts or does not compare beside the
-// error, and `DefaultError`, as the thunk accepts a default value of an impl
-// member's own; round 9 reported the first three. A member that matches only
-// through its errors (`ErrorsOnly`, `DefaultOnly`) is skipped, and
-// `DefaultOnly`'s interface analog aborts trunk's thunk (W-236) (round 10's
-// review 1 finding MAJOR-1 and review 2 finding MAJOR-1; round 11's review 1
-// findings MAJOR-1 and MAJOR-2; round 12's review 1 findings MAJOR-1 and
-// MINOR-1 and review 2 finding MAJOR-1).
+// (`ParamErrorRef`, `DefaultErrorRef`), a default value or a return type that
+// only the member has (`DefaultError`, `ReturnErrorAbsent`), and a default
+// value that only the requirement has beside the member's parameter declared
+// with a form that has an error (`FormErrorNoDefault`). Each is reported after
+// the member's error, as without the error. Building the thunk for such an impl
+// member reports each on trunk 0bdce60a5 except `ParamErrorVar`,
+// `ParamErrorGeneric`, `ParamErrorRef` and `ReturnErrorAbsent`, which the thunk
+// adapts or does not compare beside the error, `DefaultError`, as the thunk
+// accepts a default value of an impl member's own, and `FormErrorNoDefault`,
+// whose interface analog aborts the thunk (W-236); round 9 reported the first
+// three. A member that matches only through its errors (`ErrorsOnly`,
+// `DefaultOnly`, and `FormErrorOnly`, whose erroneous form's parameter counts
+// as equal to `y: i32`, binding form included) is skipped, and `DefaultOnly`'s
+// interface analog aborts trunk's thunk (W-236) (round 10's review 1 finding
+// MAJOR-1 and review 2 finding MAJOR-1; round 11's review 1 findings MAJOR-1
+// and MAJOR-2; round 12's review 1 findings MAJOR-1 and MINOR-1 and review 2
+// finding MAJOR-1; round 13's review 1 finding MAJOR-1).
 template constraint HasF {
   fn F(self, x: i32, y: i32) -> i32;
 }
@@ -1528,6 +1553,18 @@ class ReturnErrorAbsent {
   // CHECK:STDERR:                                                      ^~~~~~~~~
   // CHECK:STDERR:
   fn F(unused self, unused x: i32, unused y: i32) -> Undefined { return 1; }
+}
+
+class FormErrorOnly {
+  fn F(unused self, unused x: i32, y:? form(ref Undefined)) -> i32 {
+    return 1;
+  }
+}
+
+class FormErrorNoDefault {
+  fn F(unused self, unused x: i32, y:? form(ref Undefined)) -> i32 {
+    return 1;
+  }
 }
 
 fn Call[template T: HasF](unused x: T) -> i32 { return 0; }
@@ -1749,6 +1786,10 @@ fn TestDefaultErrorRef(o: DefaultErrorRef) -> i32 { return Call(o); }
 // CHECK:STDERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // CHECK:STDERR:
 fn TestReturnErrorAbsent(p: ReturnErrorAbsent) -> i32 { return CallN(p); }
+
+fn TestFormErrorOnly(q: FormErrorOnly) -> i32 { return Call(q); }
+
+fn TestFormErrorNoDefault(r: FormErrorNoDefault) -> i32 { return CallD(r); }
 
 // --- fail_todo_requirement_signature_error_overload.carbon
 library "[[@TEST_NAME]]";

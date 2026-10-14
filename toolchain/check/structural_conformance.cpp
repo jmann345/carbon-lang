@@ -499,21 +499,23 @@ static auto CheckRequirementFunction(
     return MemberFailureInfo{.failure = MemberFailure::Mismatch,
                              .member_decl_id = member_fn.latest_decl_id()};
   }
-  // D-SC-9 as amended at fill rounds 12 and 13, the one rule for errors: a
+  // D-SC-9 as amended at fill rounds 12 to 14, the one rule for errors: a
   // member satisfies a requirement exactly when D-SC-5(d)'s comparison holds.
   // When it does not, nothing more is reported if the comparison would hold
   // with each erroneous type and each erroneous default value of either
   // declaration counted as equal to the type or default value in its place in
   // the other: a type with an error anywhere in it is the error, and so is a
-  // default value of a parameter whose type is the error. Everything else is
-  // compared as without the error, including the binding form (`var`, `ref`)
-  // of a parameter with an error and whether a default value or a return type
-  // is there (the errors-match mode of `CheckFunctionTypeMatches`). A member
-  // that fails is reported as without the error; one that matches only through
-  // such a part is skipped with no further diagnostic, as its error was
-  // diagnosed at its declaration, and the check's result is then an error, so
-  // such a silent failure is still a failure for a direct use, an overload
-  // probe and a blanket impl (W-233).
+  // default value of a parameter whose type is the error. A parameter declared
+  // with a form that has an error (`y:? form(ref Undefined)`) is the error
+  // itself and counts as equal to the parameter in its place, binding form
+  // included. Everything else is compared as without the error, including the
+  // binding form (`var`, `ref`) of any other parameter with an error and
+  // whether a default value or a return type is there (the errors-match mode of
+  // `CheckFunctionTypeMatches`). A member that fails is reported as without the
+  // error; one that matches only through such a part is skipped with no further
+  // diagnostic, as its error was diagnosed at its declaration, and the check's
+  // result is then an error, so such a silent failure is still a failure for a
+  // direct use, an overload probe and a blanket impl (W-233).
   bool found_error = false;
   if (!CheckFunctionTypeMatches(context, member_fn, requirement_fn,
                                 specifics->requirement_specific_id,

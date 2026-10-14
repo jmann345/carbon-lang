@@ -229,12 +229,15 @@ struct DeclaredParamPattern {
   SemIR::InstId subpattern_id = SemIR::InstId::None;
 };
 
-// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 13):
-// returns the parameter pattern `pattern_id`, whose constant value is
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 13 and
+// 14): returns the parameter pattern `pattern_id`, whose constant value is
 // `const_inst`, as declared. A pattern with an error has the error as its
 // constant value, so it is read from the instruction that declares it, and the
 // subpattern of an imported one is imported in turn. Returns `std::nullopt`
-// for a parameter that is the error itself.
+// only for a parameter that is the error itself, as one declared with a form
+// that has an error is (`y:? form(ref Undefined)`). The kinds with a
+// subpattern are those of `CheckRedeclParam`'s switch; a kind it gains is
+// added here too.
 static auto GetDeclaredParamPattern(Context& context, SemIR::InstId pattern_id,
                                     SemIR::Inst const_inst)
     -> std::optional<DeclaredParamPattern> {
@@ -273,18 +276,22 @@ static auto GetDeclaredParamPattern(Context& context, SemIR::InstId pattern_id,
         .kind = inst.kind(),
         .subpattern_id = get_local_id(binding_pattern->subpattern_id)};
   }
-  if (inst.Is<SemIR::ErrorInst>() || inst.Is<SemIR::ImportRefLoaded>() ||
-      inst.Is<SemIR::ImportRefUnloaded>()) {
+  if (inst.Is<SemIR::ErrorInst>()) {
     return std::nullopt;
   }
+  // A member's `TuplePattern` is compared by its kind alone, which differs from
+  // the requirement's: no requirement has one (W-234).
+  CARBON_CHECK(
+      inst.Is<SemIR::AnyLeafParamPattern>() || inst.Is<SemIR::TuplePattern>(),
+      "Unexpected inst kind in parameter pattern: {0}", inst.kind());
   return DeclaredParamPattern{.kind = inst.kind()};
 }
 
 // Returns false if a param differs for a redeclaration. The caller is expected
 // to provide a diagnostic.
 //
-// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 12 and
-// 13): `found_error`, when not null, selects the errors-match mode that
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 12 to
+// 14): `found_error`, when not null, selects the errors-match mode that
 // `CheckRedeclParamsMatch` describes.
 static auto CheckRedeclParam(Context& context, bool is_implicit_param,
                              int32_t param_index,
@@ -358,7 +365,7 @@ static auto CheckRedeclParam(Context& context, bool is_implicit_param,
         context.constant_values().GetInst(prev_param_const_id);
 
     // Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 12
-    // and 13): in the errors-match mode, a pair of patterns of which either
+    // to 14): in the errors-match mode, a pair of patterns of which either
     // has an error is compared as declared, with only an erroneous type or
     // default value counted as equal to the type or default value in its place
     // in the other. A pattern's type is the error when its parameter's type
@@ -367,7 +374,9 @@ static auto CheckRedeclParam(Context& context, bool is_implicit_param,
     // alone is the error when its default value is. The kind of each pattern
     // (so the binding form, `var` or `ref`, and whether a default value is
     // there) and each type without an error are compared as without the error.
-    // Types are read in each pattern's own specific.
+    // A parameter declared with a form that has an error is the error itself,
+    // its binding form included, so only whether a default value is there is
+    // compared with it. Types are read in each pattern's own specific.
     if (found_error) {
       auto new_type_id = SemIR::GetTypeOfInstInSpecific(
           context.sem_ir(), new_specific_id, patterns.new_id);
@@ -384,6 +393,12 @@ static auto CheckRedeclParam(Context& context, bool is_implicit_param,
         auto prev_declared = GetDeclaredParamPattern(context, patterns.prev_id,
                                                      prev_param_pattern);
         if (!new_declared || !prev_declared) {
+          if ((new_declared &&
+               new_declared->kind == SemIR::DefaultValuePattern::Kind) ||
+              (prev_declared &&
+               prev_declared->kind == SemIR::DefaultValuePattern::Kind)) {
+            return false;
+          }
           continue;
         }
         if (new_declared->kind != prev_declared->kind) {

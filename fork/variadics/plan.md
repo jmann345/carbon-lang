@@ -21,11 +21,15 @@ MAJORs, nine MINORs). The "Review fold record (rev 2, 2026-10-14)" at the end
 gives each finding its disposition and the places it landed; review A's ids are
 written A-B1, A-B2, A-M1 and A-m1 to A-m4 (its `VA1-A-` prefix dropped), review
 B's B-M1 to B-M4 and B-m1 to B-m9, and neither is §7.2's A-n, nor is the
-re-review's RR-n. Rev 1 (aced921975) was the planner's draft. Nothing below is
-implemented on this branch. Branch `claude/carbon-fork-0-1-va`, cut from trunk
-f67ab650d, whose toolchain and core trees equal upstream cut 0bdce60a5. Every
-line number below is against f67ab650d unless a commit or branch is named. Every
-measured outcome in §0.2 was taken in this container with the trunk toolchain
+re-review's RR-n. Rev 1 (aced921975) was the planner's draft. Nothing below was
+implemented on this branch at rev 3; the implementation followed §3, a separate
+fixer folded its two implementation reviews (APPROVE-WITH-FIXES each) in new
+commits, and the "Implementation review fold record (2026-10-14)" at the end
+tables every finding (amended 2026-10-14, implementation-review fold:
+VA1-IR2-m1). Branch `claude/carbon-fork-0-1-va`, cut from trunk f67ab650d, whose
+toolchain and core trees equal upstream cut 0bdce60a5. Every line number below
+is against f67ab650d unless a commit or branch is named. Every measured outcome
+in §0.2 was taken in this container with the trunk toolchain
 (`/home/user/carbon-build/carbon-trunk`, `carbon version`
 `0.0.0-0.dev+0bdce60a5`), the upstream nightly 2026.10.12 (which carries
 2ec4bab59), the trunk build's own compiler flags, the CI-pinned clang-format
@@ -143,10 +147,12 @@ records the reservation's outcome in fork/ORCHESTRATION.md.
 **Design authority** (each cited where used):
 
 -   docs/design/variadics.md (accepted p002240; 964 lines at f67ab650d, 1000
-    after commit 2 adds a045da8e6's "Type versus execution semantics" after
-    :492, so every citation past :492 is +36 after commit 2): "Packs and
-    each-names" (:83-101), "Pack expansions" (:103-157), "Pack expansion
-    expressions and statements" (:159-202), "Pack expansion patterns"
+    after commit 2, which adds a table-of-contents line after :25 and
+    a045da8e6's "Type versus execution semantics" after :493, so that after
+    commit 2 a citation of :26 to :493 moves by one line and a citation past
+    :493 by 36; amended 2026-10-14, implementation-review fold: VA1-IR2-m4):
+    "Packs and each-names" (:83-101), "Pack expansions" (:103-157), "Pack
+    expansion expressions and statements" (:159-202), "Pack expansion patterns"
     (:204-236), "Execution Semantics" (:294-344), "Iterative typechecking of
     pack expansions" (:450-492), "Typechecking patterns" (:494-587),
     "Typechecking pattern matches" (:589-641), "Explicit deduced arities"
@@ -605,7 +611,10 @@ counts stand.
 2.  The brief names core/prelude/types/tuple.carbon for the tuple Copy impls;
     they are in core/prelude/copy.carbon:49-71 (§0.1 row 12).
 3.  W-013's notes cite `GetExplicitArityRange` at toolchain/check/call.cpp:338;
-    it is at :424 at f67ab650d. The discharge corrects the citation (§2.8).
+    it is at :424 at f67ab650d, and VA-1's own changes to call.cpp move it (:558
+    at 9a0888ef0, :578 at 0ee9f2d1b), so the discharge corrects the citation to
+    the line it measures at the merge commit (§2.8; amended 2026-10-14,
+    implementation-review fold: VA1-IR2-m5).
 4.  The arbiter's commented body would not compile even with variadics, because
     it prints an `i64` with `Core.Print` (M-8). The un-SKIP repairs it with `as
     i32` and says so in the header (R10, R16(d)).
@@ -1042,7 +1051,10 @@ type. Rev 2 completed it with `CompleteTypeOrCheckFail`, which records nothing
 for a symbolic type, so that forward was accepted and then crashed in lowering
 (amended 2026-10-14, review fold: RR-M1; the lower split
 `forward_converted_field`, variadics_forward's `Narrowed` and the mutant MU-8
-see it). _Break condition:_ the formatted SemIR of a golden shows an expansion
+see it). When `R` is incomplete, which forming a value of a facet type does not
+diagnose, the requirement diagnoses `IncompleteTypeInPackExpansion` and the
+expansion becomes an error (amended 2026-10-14, implementation-review fold:
+MAJOR-1). _Break condition:_ the formatted SemIR of a golden shows an expansion
 body evaluated outside its expansion, the verifier rejects a body the slice
 accepts, or lowering meets a specific's pack type that is not complete.
 
@@ -2307,6 +2319,23 @@ beside a `PackExpansionPattern`, and every other change is a new `case` or a
 new function. Rev 1's change to toolchain/sem_ir/expr_info.cpp is gone with
 `PackExpansionInit` (amended 2026-10-14, review fold: A-B1, A-B2, A-M1, A-m1,
 A-m3, B-M1, B-M2).
+
+The code blocks below are C4's; where later commits change the same code, the
+tree is the record (amended 2026-10-14, implementation-review fold: MAJOR-1,
+MAJOR-2, MINOR-1, MINOR-2, MINOR-3, VA1-IR2-m1). Fix 1 (32ce7d58b) adds the
+statement form of D-VA-6's cleanup TODO to `HandleParseNode(ExprStatementId)` in
+toolchain/check/handle_expr_statement.cpp. Fix 3 (0ee9f2d1b) makes the
+completeness requirement of `HandleParseNode(PackExpansionExprId)`
+(handle_pack_expansion.cpp) diagnose instead of check; makes
+`FindPackExpansionParam` (call.cpp) find a local pack pattern whose operand was
+diagnosed, and `GroupPackArguments` leave a call to it, or a call whose bound
+`self` is not the first explicit parameter, to the declaration's diagnostic;
+gives a binding named `_` or `self` in a pack expansion pattern
+`PackExpansionBindingNotIdentifier` without a suggestion
+(handle_binding_pattern.cpp); and raises the slice's TODO for a variadic
+`overload fn` member in gate (iii) of `DiagnoseOverloadGates`
+(handle_function.cpp). The implementation review fold record at the end gives
+the reasons.
 
 **Pattern walkers audited** (amended 2026-10-14, review fold: A-m3). Every
 switch or `TryAs` chain over parameter patterns that M-24's grep finds, with
@@ -4668,6 +4697,31 @@ changes too (its first split's name, D-VA-12). A split's name starts with
 `fail_` exactly when it is expected to produce an error, and with
 `fail_todo_` when that error is a `semantics TODO` (§4 predicts each).
 
+**Sources of record** (amended 2026-10-14, implementation-review fold:
+VA1-IR2-m1). Where the tree and this section differ, the tree's golden sources
+are the record, and each difference is a fix commit's (§3, "As implemented").
+Fix 1 (32ce7d58b) gives the seven callees that the splits
+`deduced_element_type`, `generic_caller`, `forward_fixed`, `forward_generic`,
+`forward_converted`, `fail_element_conversion` and
+`fail_todo_conversion_cleanup` only declared an empty body with `unused`
+bindings, because a variadic function is generic through its arity and check
+requires a definition of each specific a file uses
+(MissingGenericFunctionDefinition, toolchain/check/check_unit.cpp); it moves
+`self` out of the implicit parameter lists of `method` and
+`fail_variadic_virtual` (SelfInImplicitParamList,
+toolchain/check/handle_binding_pattern.cpp); and it makes
+`fail_todo_tuple_literal` declare `(i64, i64)` instead of `auto` and
+`fail_todo_tuple_operand` write `(each a: i64,)`, a tuple pattern rather than a
+parenthesized binding. Fix 2 (0a6367a39) renames the lower golden's five
+package-scope `Run` functions that return a value or take parameters to `Call`,
+because such a `Run` in the `Main` package is the entry point
+(toolchain/sem_ir/entry_point.cpp), and gives `arg_order`'s `Digits` a body
+returning `first`. Fix 3 (0ee9f2d1b) adds the seven splits of the implementation
+review fold record to fail_call.carbon, fail_each_name.carbon and
+fail_pack_expansion.carbon, and marks the packs of `fail_todo_overload_member`
+and `fail_without_each_name` `unused`. No change weakens a split: each still
+reaches the line §4 gives it.
+
 **toolchain/lex/testdata/each.carbon** (commit C3).
 
 <!-- google-doc-style-ignore -->
@@ -6367,12 +6421,18 @@ explicit deduced arity), definition checking against the element type (the
 one-segment case of iterative typechecking), pack values bound without copies,
 expansion arguments evaluated where written, lowering per specific. Residues
 W-212..W-230. Next slice: W-212, then W-213 and W-218. OV-1's citation above is
-now toolchain/check/call.cpp:424." The `source` string gains "Updated <date> by
-the VA-1 discharge: W-013 notes record slice 1; W-212..W-230 added (the §1.11
-residues of fork/variadics/plan.md); W-231 reserved, unused; ids re-scanned
-before this commit (<result>)." The nineteen new items, appended after the
+now toolchain/check/call.cpp:<n> (:424 at f67ab650d).", where `<n>` is the line
+of `GetExplicitArityRange` at the merge commit (amended 2026-10-14,
+implementation-review fold: VA1-IR2-m5). The `source` string gains
+"Updated <date> by the VA-1 discharge: W-013 notes record slice 1; W-212..W-230
+added (the §1.11 residues of fork/variadics/plan.md); W-231 reserved, unused;
+ids re-scanned before this commit (<result>)." The nineteen new items, appended
+after the
 highest existing item (amended 2026-10-14, review fold: B-m5 for every
-`blocked_by`, and the findings named in §1.11):
+`blocked_by`, and the findings named in §1.11). Their docs/design/variadics.md
+line numbers are the branch's after C2, which the merge commit keeps unless the
+merge changes that file, when D re-derives them (amended 2026-10-14,
+implementation-review fold: VA1-IR2-m4):
 
 <!-- google-doc-style-ignore -->
 
@@ -6386,11 +6446,11 @@ highest existing item (amended 2026-10-14, review fold: B-m5 for every
     "size": "XL",
     "bullet": "Generics: Definition-checked variadics",
     "evidence": [
-      "docs/design/variadics.md \"Pack expansion patterns\" (:214-220) and \"Iterative typechecking of pack expansions\" (:450-492); DR-4, DR-11, DR-17, DR-24, DR-31, DR-32, DR-40",
+      "docs/design/variadics.md \"Pack expansion patterns\" (:215-221) and \"Iterative typechecking of pack expansions\" (:451-493); DR-4, DR-11, DR-17, DR-24, DR-31, DR-32, DR-40",
       "toolchain/check/testdata/variadics/fail_todo_slice.carbon split `fail_todo_generic_pack` (`semantics TODO: pack expansion pattern outside an explicit parameter list`)"
     ],
     "blocked_by": [],
-    "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). The next slice of W-013. Packs whose elements have different types, or a type that is itself a pack, need pack types of several segments, shapes, and segment-by-segment checking; slice 1's pack type has one element type (D-VA-3), which this item generalizes. The indexing interfaces become variadic with it (proposals/p002274-subscript-syntax-and-semantics.md:250-257). Arbiter: the design's StrCat (:251-259). Break condition: StrCat compiles and runs. Follows VA-1 slice 1."
+    "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). The next slice of W-013. Packs whose elements have different types, or a type that is itself a pack, need pack types of several segments, shapes, and segment-by-segment checking; slice 1's pack type has one element type (D-VA-3), which this item generalizes. The indexing interfaces become variadic with it (proposals/p002274-subscript-syntax-and-semantics.md:250-257). Arbiter: the design's StrCat (:252-260). Break condition: StrCat compiles and runs. Follows VA-1 slice 1."
   },
   {
     "id": "W-213",
@@ -6400,7 +6460,7 @@ highest existing item (amended 2026-10-14, review fold: B-m5 for every
     "size": "L",
     "bullet": "Generics: Definition-checked variadics",
     "evidence": [
-      "docs/design/variadics.md :108-109, :134-140, :483-490; DR-9, DR-14, DR-33",
+      "docs/design/variadics.md :109-110, :135-141, :484-491; DR-9, DR-14, DR-33",
       "toolchain/check/testdata/variadics/fail_todo_slice.carbon split `fail_todo_tuple_literal`"
     ],
     "blocked_by": [
@@ -6416,7 +6476,7 @@ highest existing item (amended 2026-10-14, review fold: B-m5 for every
     "size": "M",
     "bullet": "Generics: Definition-checked variadics",
     "evidence": [
-      "docs/design/variadics.md :110-111, :206-213; DR-10",
+      "docs/design/variadics.md :111-112, :207-214; DR-10",
       "toolchain/check/testdata/variadics/fail_todo_slice.carbon split `fail_todo_tuple_pattern`"
     ],
     "blocked_by": [
@@ -6432,7 +6492,7 @@ highest existing item (amended 2026-10-14, review fold: B-m5 for every
     "size": "L",
     "bullet": "Generics: Definition-checked variadics",
     "evidence": [
-      "docs/design/variadics.md :512-641, :664-668, :794-796, :807-937; DR-36, DR-37, DR-39, DR-41",
+      "docs/design/variadics.md :548-677, :700-704, :830-832, :843-973; DR-36, DR-37, DR-39, DR-41",
       "toolchain/check/testdata/variadics/fail_todo_slice.carbon splits `fail_todo_merged_segments` (`ForEach(0, ... each n)`), `fail_todo_default_after_pack`, `fail_todo_default_before_pack` and `fail_todo_default_on_pack` (`semantics TODO: default value in a parameter list with a pack expansion pattern`)",
       "fork/variadics/plan.md M-7: a deduced `Core.IntLiteral` array bound has no arithmetic (`array bound is not a constant` for `N + 1`)"
     ],
@@ -6447,7 +6507,7 @@ highest existing item (amended 2026-10-14, review fold: B-m5 for every
     "size": "M",
     "bullet": "Generics: Definition-checked variadics",
     "evidence": [
-      "docs/design/variadics.md :114-115, :307-314, :487-488; DR-12, DR-33",
+      "docs/design/variadics.md :115-116, :308-315, :488-489; DR-12, DR-33",
       "toolchain/parse/testdata/variadics/pack_expansion_expr.carbon split `fail_todo_and_or`: `...and` and `...or` fail to parse (\"expected expression\")"
     ],
     "blocked_by": [],
@@ -6461,7 +6521,7 @@ highest existing item (amended 2026-10-14, review fold: B-m5 for every
     "size": "M",
     "bullet": "Generics: Definition-checked variadics",
     "evidence": [
-      "docs/design/variadics.md :120-130, :151-152, :492 (\"TODO: Discuss typechecking `...expand`\"); DR-13, DR-18",
+      "docs/design/variadics.md :121-131, :152-153, :493 (\"TODO: Discuss typechecking `...expand`\"); DR-13, DR-18",
       "upstream's toolchain/check/testdata/variadics/pack_expansion.carbon split `fail_todo_expand` (`HandlePrefixOperatorExpand`), cherry-picked by VA-1 commit C1"
     ],
     "blocked_by": [
@@ -6477,13 +6537,13 @@ highest existing item (amended 2026-10-14, review fold: B-m5 for every
     "size": "L",
     "bullet": "Generics: Definition-checked variadics",
     "evidence": [
-      "docs/design/variadics.md :107, :304-305; DR-8",
+      "docs/design/variadics.md :108, :305-306; DR-8",
       "toolchain/check/testdata/variadics/fail_todo_slice.carbon split `fail_todo_statement_kind`"
     ],
     "blocked_by": [
       "W-212"
     ],
-    "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). A declaration in an expansion declares a pack (one name per element); compound statements need blocks inside the per-element body. Arbiters: Zip (:70-82), Min (:263-270). Break condition: Min runs."
+    "notes": "Filed at the VA-1 discharge (fork/variadics/plan.md §1.11). A declaration in an expansion declares a pack (one name per element); compound statements need blocks inside the per-element body. Arbiters: Zip (:71-83), Min (:264-271). Break condition: Min runs."
   },
   {
     "id": "W-219",
@@ -6493,7 +6553,7 @@ highest existing item (amended 2026-10-14, review fold: B-m5 for every
     "size": "M",
     "bullet": "Generics: Definition-checked variadics",
     "evidence": [
-      "docs/design/variadics.md \"Type versus execution semantics\" (a045da8e6, :494-527 after VA-1 commit C2); DR-34",
+      "docs/design/variadics.md \"Type versus execution semantics\" (a045da8e6, :495-528); DR-34",
       "toolchain/check/testdata/variadics/fail_todo_slice.carbon split `fail_todo_control_flow`"
     ],
     "blocked_by": [],
@@ -6507,7 +6567,7 @@ highest existing item (amended 2026-10-14, review fold: B-m5 for every
     "size": "M",
     "bullet": "Generics: Definition-checked variadics",
     "evidence": [
-      "toolchain/check/handle_pack_expansion.cpp `FinishPackExpansionBody`: `semantics TODO: pack expansion element that needs a cleanup`; toolchain/check/testdata/variadics/fail_todo_cleanup.carbon splits `fail_todo_cleanup_statement` and `fail_todo_cleanup_argument`",
+      "toolchain/check/handle_expr_statement.cpp `HandleParseNode(ExprStatementId)` for a statement expansion's body (split `fail_todo_cleanup_statement`) and toolchain/check/handle_pack_expansion.cpp `FinishPackExpansionBody` for an expression expansion's (split `fail_todo_cleanup_argument`): `semantics TODO: pack expansion element that needs a cleanup`; toolchain/check/testdata/variadics/fail_todo_cleanup.carbon",
       "toolchain/check/convert.cpp `ConvertPackToPack`: `semantics TODO: pack element conversion that needs a cleanup`; fail_todo_slice.carbon split `fail_todo_conversion_cleanup`",
       "fork/variadics/plan.md D-VA-6"
     ],
@@ -6522,7 +6582,7 @@ highest existing item (amended 2026-10-14, review fold: B-m5 for every
     "size": "M",
     "bullet": "Generics: Definition-checked variadics",
     "evidence": [
-      "docs/design/variadics.md :222-234; a045da8e6's `fn G(... (each c: bool, each x: i32))`; DR-25, DR-34",
+      "docs/design/variadics.md :223-235; a045da8e6's `fn G(... (each c: bool, each x: i32))`; DR-25, DR-34",
       "toolchain/check/testdata/variadics/fail_todo_slice.carbon splits `fail_todo_ref_pack`, `fail_todo_two_each_names`, `fail_todo_tuple_operand`"
     ],
     "blocked_by": [
@@ -6538,7 +6598,7 @@ highest existing item (amended 2026-10-14, review fold: B-m5 for every
     "size": "L",
     "bullet": "Generics: Definition-checked variadics",
     "evidence": [
-      "docs/design/variadics.md :146-147, :494-510; DR-16, DR-35",
+      "docs/design/variadics.md :147-148, :530-546; DR-16, DR-35",
       "toolchain/check/handle_pack_expansion.cpp: `semantics TODO: pack expansion over packs of different arities` (unreachable in slice 1)",
       "proposals/p002687-termination-algorithm-for-impl-selection.md:186-193, :210-215 (keys for variadic argument counts)"
     ],
@@ -6555,7 +6615,7 @@ highest existing item (amended 2026-10-14, review fold: B-m5 for every
     "size": "M",
     "bullet": "Functions: function overloading (Carbon-native)",
     "evidence": [
-      "toolchain/check/call.cpp `PerformCallToOverloadSet`; `GetExplicitArityRange` (:424 at f67ab650d) returns a range for this purpose (OV-1, fork/overload/plan.md §8.5)",
+      "toolchain/check/handle_function.cpp `DiagnoseOverloadGates` (gate (iii), at the member's declaration) and toolchain/check/call.cpp `PerformCallToOverloadSet` (at the call): `semantics TODO: variadic member of an overload set`; `GetExplicitArityRange` (:424 at f67ab650d) returns a range for this purpose (OV-1, fork/overload/plan.md §8.5)",
       "toolchain/check/testdata/variadics/fail_todo_slice.carbon splits `fail_todo_overload_member`, `fail_todo_overload_pack_arg`"
     ],
     "blocked_by": [],
@@ -6686,9 +6746,9 @@ consequences), with its V-3a divergence-risk register:
 ```markdown
 ### VA-1: definition-checked variadics, slice 1 (<date>)
 
-Context: W-013 (gap row "Generics: Definition-checked variadics",
-DESIGN-ONLY); fork/variadics/plan.md, rev 2 after two plan reviews, both
-folded. Every decision auto-adopted under V-2/V-3 (R29(a)) and open to veto.
+Context: W-013 (gap row "Generics: Definition-checked variadics", DESIGN-ONLY);
+fork/variadics/plan.md, rev 3 after two plan reviews and a focused re-review,
+all folded. Every decision auto-adopted under V-2/V-3 (R29(a)) and open to veto.
 Options considered (plan §7.2): desugaring the arbiter to a tuple loop (A-1)
 and lexing and parsing only (A-2), both rejected as Goodhart; waiting for
 upstream (A-3); storing a pack as a tuple (A-4), as rev 1's `array(E, N)`,
@@ -6716,7 +6776,18 @@ merge position. D-VA-16, commit structure. Consequences: row PARTIAL
 un-SKIP of generics/variadics_each.carbon changed its commented body in one
 mechanical way, `as i32` on its two prints, because Core.Print takes an i32
 (core/io.carbon:12) and the body printed an i64 (plan M-8); the C5 commit
-message discloses the same repair.
+message discloses the same repair. Implementation (plan §3, "As implemented"):
+fix 1 (32ce7d58b) and fix 2 (0a6367a39) came before the implementation reviews
+and repaired golden sources that did not check on this tree (plan §2.6, "Sources
+of record"), and fix 1 raised D-VA-6's statement cleanup TODO in
+toolchain/check/handle_expr_statement.cpp; C4 and fix 1 share one fill and C5
+and fix 2 another, against D-VA-16's one fill per commit. Two implementation
+reviews, APPROVE-WITH-FIXES each, were folded by fix 3 (0ee9f2d1b, filled by
+88b1b5bd2): two crashes (an expansion argument of an incomplete facet type, on
+valid code, and a misplaced `self` beside a pack, after its error) and three
+diagnostics (the `each _` and `each self` suggestions, the overload gate's TODO
+for a variadic member, and a cascade after an invalid element type). Verified on
+the merge commit: <§8.8's run>.
 
 _V-3a divergence-risk register entries (reviewed at each upstream merge):_
 (i) `each` is a keyword (D-VA-10), which upstream's lexer does not have yet;
@@ -6803,6 +6874,27 @@ and the definition check stay. Row 53 still moves to PARTIAL on what remains
 (variadics_each, variadics_fixed_params, variadics_empty_pack, variadics_no_copy
 and the rest of variadics_generic_element), and the shrink is a plan revision
 the reviews see before it lands.
+
+**As implemented** (amended 2026-10-14, implementation-review fold: VA1-IR2-m1).
+The branch holds C1 44a5ce6e3 and C2 663a29df6 (F1 was not needed: the four
+upstream goldens passed as cherry-picked), C3 e90b4197e, F3 39df20a36, C4
+275967b1d, fix 1 32ce7d58b, F4 4888b50c1, C5 57d263799, fix 2 0a6367a39, F5
+31d4183cd and R 9a0888ef0, then the implementation-review fold's fix 3
+0ee9f2d1b, its fill F6 88b1b5bd2 and the plan commit that records the fold. Fix
+1 and fix 2 came after the first builds and before the implementation reviews,
+which departs from the letter of the paragraph above: each repairs golden
+sources that did not check on this tree (§2.6, "Sources of record"); fix 1 also
+raises D-VA-6's statement cleanup TODO in
+toolchain/check/handle_expr_statement.cpp, because an expression statement
+discards its temporaries' cleanups before its expansion ends, so
+`FinishPackExpansionBody` never saw them; and neither has a fill of its own, F4
+filling C4 and fix 1 together and F5 filling C5 and fix 2. Fix 3 folds the two
+implementation reviews and F6 fills it. Three of the three or four budgeted fix
+commits are used, and the shrink line was not needed. The gate measured 1946
+after C1 and C2, 1950 after F3, 1959 after F4, 1960 after F5 and 1960 after F6,
+and each implementation or fix commit alone was red on exactly the goldens it
+adds or changes and nothing else, with no crash: C3 on 4, C4 and fix 1 on 10, C5
+on 1 and fix 3 on 4.
 
 0.  **Plan.** Rev 1, "VA-1 plan (rev 1): definition-checked variadics,
     slice 1", rev 2, "VA-1 plan (rev 2): reviews A and B folded, 20
@@ -6995,15 +7087,21 @@ fold: RR-M1).
 | (same) | `fail_expansion_for_singular_param` | `error: pack expansion argument cannot match a parameter that is not a pack expansion [PackExpansionArgForSingularParam]` |
 | (same) | `fail_expansion_without_pack_param` | `error: pack expansion argument is not matched by a pack expansion parameter [PackExpansionArgWithoutPackParam]` |
 | (same) | `fail_element_conversion` | `error: cannot implicitly convert expression of type `C` to `i64` [ConversionFailure]` at `{} as C` |
+| (same) | `fail_self_after_pack` (amended 2026-10-14, implementation-review fold: MAJOR-2, VA1-IR2-M1) | `error: `self` must be the first explicit parameter [SelfNotFirstParam]` at the declaration, and nothing at `c.F(1, 2)`; no crash |
+| (same) | `fail_self_in_implicit_list_with_pack` (amended 2026-10-14, implementation-review fold: MAJOR-2, VA1-IR2-M1) | `error: `self` must be declared in the explicit parameter list [SelfInImplicitParamList]` at each declaration, and nothing at either call: no crash and no count of -1 |
 | check/testdata/variadics/fail_each_name.carbon (C4) | `fail_each_name_not_pack` | `error: `each x` does not name a pack [EachNameNotPack]`, and nothing for the expansion |
 | (same) | `fail_each_name_outside_expansion` | `error: each-name `each n` is not inside a pack expansion [EachNameOutsidePackExpansion]` |
 | (same) | `fail_unused_without_definition` (amended 2026-10-14, review fold: A-m3) | `error: `unused` modifier without a definition [UnusedModifierWithoutDefinition]` |
 | (same) | `fail_each_binding_outside_expansion` | `error: each-name binding `each n` is not inside a pack expansion pattern [EachBindingOutsidePackExpansion]`, then `warning: binding `n` unused [UnusedBinding]` (the binding stays an ordinary `n`) |
 | (same) | `fail_binding_without_each` | `error: binding pattern in a pack expansion must declare an each-name, such as `each n` [PackExpansionBindingWithoutEach]` |
+| (same) | `fail_underscore_without_each`, `fail_self_without_each` (amended 2026-10-14, implementation-review fold: MINOR-1) | `error: binding pattern in a pack expansion must declare an each-name, `each` followed by an identifier [PackExpansionBindingNotIdentifier]` at the `_` and at the `self`, which `each` cannot precede |
+| (same) | `fail_invalid_element_type` (amended 2026-10-14, implementation-review fold: MINOR-3) | `error: name `Undeclared` not found [NameNotFound]`, and nothing at the calls `F()`, `F(1)` and `F(1, 2)` |
 | check/testdata/variadics/fail_pack_expansion.carbon (C4) | `fail_nested` | `error: pack expansion cannot contain another pack expansion [NestedPackExpansion]`, note `enclosing pack expansion is here [EnclosingPackExpansion]` |
-| (same) | `fail_without_each_name` | `error: pack expansion does not use any each-name [PackExpansionWithoutEachName]` |
+| (same) | `fail_without_each_name` | `error: pack expansion does not use any each-name [PackExpansionWithoutEachName]`, and no UnusedBinding warning, its pack being `unused` (amended 2026-10-14, implementation-review fold: MINOR-2, VA1-IR2-m2) |
 | (same) | `fail_two_pack_patterns` | `error: parameter list can contain at most one pack expansion pattern [MultiplePackExpansionPatterns]`, note `previous pack expansion pattern is here [PreviousPackExpansionPattern]` |
 | (same) | `fail_variadic_virtual` (amended 2026-10-14, review fold: RR-m2) | `error: generic virtual function [GenericVirtual]` at `F`'s declaration (handle_function.cpp:798-802), and nothing else: no thunk is built and nothing crashes |
+| (same) | `fail_incomplete_element` (amended 2026-10-14, implementation-review fold: MAJOR-1) | `error: forming a pack of incomplete type `I` [IncompleteTypeInPackExpansion]` at the `...` of `G(... *each p)`, note `interface was forward declared here`, and nothing at the call; no crash |
+| (same) | `fail_incomplete_element_after_error` (amended 2026-10-14, implementation-review fold: MAJOR-1) | `error: parameter has incomplete type ... in function definition [IncompleteTypeInFunctionParam]` at `G`'s and at `F`'s pack, then `IncompleteTypeInPackExpansion` at the `...` of `G(... each p)`, each with the forward declaration's note, and nothing at the call; no crash |
 | check/testdata/variadics/fail_todo_slice.carbon (C4) | `fail_todo_generic_pack`, `fail_todo_tuple_pattern` | `semantics TODO: `pack expansion pattern outside an explicit parameter list`` |
 | (same) | `fail_todo_statement_kind` | `semantics TODO: `pack expansion of a statement other than an expression statement`` |
 | (same) | `fail_todo_control_flow` | `semantics TODO: `control flow in a pack expansion`` |
@@ -7012,7 +7110,7 @@ fold: RR-M1).
 | (same) | `fail_todo_ref_pack` | `semantics TODO: `each-name binding that is not a value binding`` |
 | (same) | `fail_todo_two_each_names` | `semantics TODO: `pack expansion pattern declaring more than one each-name`` |
 | (same) | `fail_todo_tuple_operand` | `semantics TODO: `pack expansion pattern whose operand is not an each-name binding`` |
-| (same) | `fail_todo_overload_member` | `semantics TODO: `variadic member of an overload set`` |
+| (same) | `fail_todo_overload_member` | `semantics TODO: `variadic member of an overload set`` at the declaration's pack pattern (toolchain/check/handle_function.cpp `DiagnoseOverloadGates`, gate (iii)) and again at the call (toolchain/check/call.cpp `PerformCallToOverloadSet`), and no UnusedBinding warning, its pack being `unused` (amended 2026-10-14, implementation-review fold: MINOR-2, VA1-IR2-m2) |
 | (same) | `fail_todo_overload_pack_arg` | `semantics TODO: `pack expansion argument in a call to an overload set`` |
 | (same) | `fail_todo_template_dependent_call` | `semantics TODO: `pack expansion argument in a template-dependent call`` |
 | (same) | `fail_todo_pack_name_without_each` (amended 2026-10-14, review fold: A-m2) | `semantics TODO: `use of a pack's name without `each``` |
@@ -7023,14 +7121,32 @@ fold: RR-M1).
 | check/testdata/variadics/fail_todo_export.carbon (C4; amended 2026-10-14, review fold: A-M1) | `fail_todo_export_variadic` | `semantics TODO: `exporting a variadic function to C++``, then the C++ error `no member named 'Sum' in namespace 'Carbon' [CppInteropParseError]`, as for interop/cpp/function/export/generic.carbon's TODO split; no crash |
 | lower/testdata/variadics/pack_expansion.carbon (C5) | `sum` | `Sum` lowered three times: the arity-3 specific with three `add` sequences over loads from `getelementptr [3 x i64]` at 0, 1, 2; the arity-0 specific with none; `SumOfDoubles` (arity 2) storing two doubled elements into a `[2 x i64]` alloca and passing its address to the arity-2 `Sum` (amended 2026-10-14, review fold: A-B2 / B-M1) |
 | (same) | `generic_element` | `ForEach` lowered for (`bool`, arity 2) and (`i32`, arity 1), each calling its `Consume` specific once per element |
-| (same) | `class_element` (amended 2026-10-14, review fold: A-B2 / B-M1) | `Run` stores the addresses of `c` and `d` into a `[2 x ptr]` alloca and passes it; `SumFields` loads each element's address and calls `Get`; no copy |
+| (same) | `class_element` (amended 2026-10-14, review fold: A-B2 / B-M1) | `Run` (`Call` after fix 2, 0a6367a39; amended 2026-10-14, implementation-review fold: VA1-IR2-m1) stores the addresses of `c` and `d` into a `[2 x ptr]` alloca and passes it; `SumFields` loads each element's address and calls `Get`; no copy |
 | (same) | `arg_order` (amended 2026-10-14, review fold: A-B1 / B-M2) | `Plain`'s arity-2 specific calls `P(1)`, then `P` twice, storing each result into a `[2 x i64]` alloca, then `P(9)`, then `Digits` |
 | (same) | `forward_converted_field` (amended 2026-10-14, review fold: RR-M1) | `SumHeld`'s arity-2 specific stores the address of each element's `w` field into a `[2 x ptr]` alloca (the argument's `«Wrap; 2»`), then calls `Wrap`'s `Convert` once per element, storing each `i64` into a `[2 x i64]` alloca whose address it passes to `Sum`'s arity-2 specific; the compiler does not crash |
 | (same) | `lib`, `use` (amended 2026-10-14, review fold: A-m4) | `use.carbon` lowers `Sum`'s arity-2 and arity-3 specifics from `lib.carbon`'s definition, with two and three `add` sequences |
 
-Totals: 14 new files with 69 splits (the lex file counted as one; rev 2: 67;
-rev 1: 12 with 49; amended 2026-10-14, review fold: RR-M1, RR-m2), 1 refill
-(D-VA-12) and 4 upstream files carried; no other golden changes (§6.1).
+Totals: 14 new files with 76 splits (the lex file counted as one; 69 before the
+implementation-review fold's seven, amended 2026-10-14, implementation-review
+fold: MAJOR-1, MAJOR-2, MINOR-1, MINOR-3; rev 2: 67; rev 1: 12 with 49; amended
+2026-10-14, review fold: RR-M1, RR-m2), 1 refill (D-VA-12) and 4 upstream files
+carried; no other golden changes (§6.1).
+
+The fills' output beyond the rows above, none of it contradicting a row (amended
+2026-10-14, implementation-review fold: VA1-IR2-m1, VA1-IR2-m2):
+`fail_todo_and_or` also gets `` `let` declarations must end with a `;`
+[ExpectedDeclSemi]`` at each `...`, as
+toolchain/parse/testdata/var/fail_runtime.carbon shows for an initializer that
+cannot start an expression; `fail_element_conversion` adds the notes
+MissingImplInMemberAccessInContext and InCallToFunctionParam, and
+`fail_todo_conversion_cleanup` adds InCallToFunctionParam; the arity binding
+prints as `symbolic_binding_pattern <pack arity>` and a value pack as a
+`value_param_pattern` under a `wrapper_binding_pattern`; the lower golden's
+`generic_element` lowers its `Run` as `@main`; and, until fix 3,
+`fail_todo_overload_member` and `fail_without_each_name` carried an
+UnusedBinding warning and the first also the overload gate's TODO for an
+`overload fn` with a non-value explicit parameter, which fix 3 replaced with the
+slice's own.
 
 ## §5 Conformance delta (from the floor of record, 128 PASS / 0 FAIL / 22 SKIP over 150)
 
@@ -7326,6 +7442,12 @@ commits, because each edits an X-macro header most objects include (M-19);
 the relink recipe is usable only for §8.5's mutants, which edit `.cpp` files
 alone. C2 changes docs only and needs no build.
 
+Measured (amended 2026-10-14, implementation-review fold: VA1-IR2-m1): full
+builds at C2 (whose toolchain is C1's), C3, C4 and fix 3 (which edits
+toolchain/diagnostics/kind.def), incremental ones at fix 1 and C5 (C5 edits no
+X-macro header), and version-stamp relinks for the fills, each with 0 warnings
+and followed by `install.sh`.
+
 ### §8.2 Autoupdate to its fixpoint (implementer)
 
 After each build that has new or changed goldens: `$CB/autoupdate.sh
@@ -7338,6 +7460,16 @@ again, which must change nothing (R26: a second run that changes more than
 before the fill commit; a golden whose fill contradicts §4 is a finding, never
 an edit.
 
+Measured (amended 2026-10-14, implementation-review fold: VA1-IR2-m1): F3 and F4
+reached their fixpoint at the third pass, and neither second pass was
+nondeterminism, so each was diagnosed before the third ran. F3's second pass
+changed only the lex golden's column padding: `TokenizedBuffer::Print`
+(toolchain/lex/tokenized_buffer.cpp) sizes the column field over every token,
+including the file-end token after the CHECK lines the first pass adds. F4's
+changed only one clang source-line number in `fail_todo_export`'s C++ snippet,
+which the CHECK lines inserted above it shift. F5's second pass changed nothing,
+and F6's changed nothing either.
+
 ### §8.3 Gate (implementer)
 
 `$CB/gate.sh /home/user/carbon-va`, file_test over every testdata file (trunk:
@@ -7347,6 +7479,11 @@ after F4; 1960 after F5 (rev 1: 1957 and 1958; rev 2 adds two check goldens;
 amended 2026-10-14, review fold: A-M1, B-m3). Each implementation commit alone
 is expected red on exactly its new goldens and its refill, nothing else and no
 crash (§3).
+
+Measured (amended 2026-10-14, implementation-review fold: VA1-IR2-m1): every
+expected count, and the fold's fix 3 alone red on exactly the 4 goldens whose
+sources it changes; after F6, `file_test test mode on /home/user/carbon-va: 1960
+passed, 0 failed (exit 0, 98s)` (the fold adds splits, not files).
 
 ### §8.4 Conformance (implementer)
 
@@ -7358,6 +7495,12 @@ B-m1): expected 137 PASS / 0 FAIL / 21 SKIP over 158 on this branch
 programs PASS with §1.6's output, and the C++ side of
 variadics_sum_diff compiles with the toolchain's own clang++ and agrees. The
 row commit R quotes this run, EXPECTED, not of record.
+
+Measured (amended 2026-10-14, implementation-review fold: VA1-IR2-m1): after F5,
+137 PASS / 0 FAIL / 21 SKIP over 158 with §1.6's outputs (R's run); after F6,
+PASS 137, COMPILE-FAIL 0, LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0,
+DIFF-MISMATCH 0, SKIP 21 (of 158), bullets 49 PASS, 0 FAIL, 7 SKIP of 56, and
+the nine variadics programs PASS.
 
 ### §8.5 Mutants that prove the programs are not vacuous (implementer)
 
@@ -7606,6 +7749,58 @@ MU-8 (amended 2026-10-14, review fold: RR-M1):
 
 <!-- google-doc-style-resume -->
 
+Re-run after fix 3 (amended 2026-10-14, implementation-review fold: MAJOR-1,
+MAJOR-2, MINOR-3). Fix 3 changes `GroupPackArguments` (call.cpp), which MU-5 and
+MU-7 edit, and `HandleParseNode(PackExpansionExprId)` in
+handle_pack_expansion.cpp, whose completeness check MU-8 edits and whose
+instruction MU-7 edits. MU-1 to MU-7 apply to fix 3's tree as written, at
+shifted lines. MU-8 restores `CompleteTypeOrCheckFail` in place of the check fix
+3 rewrote, so its diff against fix 3's tree is the one below. Every mutant was
+rebuilt with the relink recipe on fix 3's tree and the nine programs run against
+it, with a control relink of the unmodified source passing all nine: each of the
+eight gives the same status and output, program by program, as the implementer's
+run on F5, so each matches the table above.
+
+MU-8 against fix 3's tree:
+
+<!-- google-doc-style-ignore -->
+
+```diff
+--- a/toolchain/check/handle_pack_expansion.cpp
++++ b/toolchain/check/handle_pack_expansion.cpp
+@@ -242,25 +242,11 @@
+
+   // "The type of a pack expansion expression or pattern is `...B`, where `B`
+   // is the type of its body" (docs/design/variadics.md, "Typing and shaping
+-  // rules"): a pack of the body's type, with the arity of its each-names.
++  // rules"): a pack of the body's type, with the arity of its each-names. Its
++  // element type is complete, so it is too.
+   auto pack_type_id = GetPackType(
+       context, context.types().GetTypeInstId(result_type_id), scope.arity_id);
+-  // Lowering reads the pack type's value representation in every specific, so
+-  // each specific's pack type must be complete, even when nothing else requires
+-  // it, as when the call converts the elements to another type. For a symbolic
+-  // type, `RequireCompleteType` records that requirement in the generic (fork
+-  // VA-1, D-VA-7). Forming a value does not require every type complete (an
+-  // incomplete facet type, such as a forward-declared interface's, is not
+-  // diagnosed), so the element type can be incomplete here.
+-  if (!RequireCompleteType(context, pack_type_id, node_id, [&](auto& builder) {
+-        CARBON_DIAGNOSTIC(IncompleteTypeInPackExpansion, Context,
+-                          "forming a pack of incomplete type {0}",
+-                          SemIR::TypeId);
+-        builder.Context(node_id, IncompleteTypeInPackExpansion, result_type_id);
+-      })) {
+-    context.node_stack().Push(node_id, SemIR::ErrorInst::InstId);
+-    return true;
+-  }
++  CompleteTypeOrCheckFail(context, pack_type_id);
+
+   // "`...` in a tuple literal behaves like a series of comma-separated tuple
+   // elements" (docs/design/variadics.md, "Pack expansion expressions and
+```
+
+<!-- google-doc-style-resume -->
+
 ### §8.6 prek, clang-tidy and R31 (every agent, every commit)
 
 `SKIP=fix-cc-deps,check-build-graph,check-bazel-mod-deps,forbid-llvm-googletest
@@ -7813,3 +8008,63 @@ of §8.5 including MU-8, and two implementation reviews before the discharge.
 Residues take ids from the W-212..W-231 reservation by the head's rule, after
 its re-scan, and F-018 stays unminted. The row moves only as §2.8 says,
 expected and not of record. Merge position: D-VA-15.
+
+## Implementation review fold record (2026-10-14)
+
+Two implementation reviews of ec0b1a7b0..9a0888ef0 (§3 item 11): review 1
+(correctness and soundness; APPROVE-WITH-FIXES: two MAJOR and three MINOR
+findings, numbered MAJOR-1, MAJOR-2 and MINOR-1 to MINOR-3) and review 2
+(strictness, Goodhart and records readiness; APPROVE-WITH-FIXES: one MAJOR and
+six MINOR findings, numbered VA1-IR2-M1 and VA1-IR2-m1 to VA1-IR2-m6). Review
+1's MAJOR-2 and review 2's VA1-IR2-M1 are one defect, and so are review 1's
+MINOR-2 and review 2's VA1-IR2-m2. A separate fixer (R11) reproduced every
+finding on the reviewed toolchain (31d4183cd) with the reviews' probes, kept in
+`/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va1-impl/fix/probes`,
+folded all eleven and rejected none. The code findings are fix 3 (0ee9f2d1b,
+"VA-1 fix: implementation review crashes and diagnostics") with its fill F6
+(88b1b5bd2); the records findings are this plan's texts, the §2.8 ones being
+what the discharge D copies. No W-id or F-id was minted. Each amended sentence
+is marked "(amended 2026-10-14, implementation-review fold: <finding>)". R31,
+outside fenced code, before then after this fold: H1 1 and 1, H2 13 and 14 (this
+section), H3 38 and 38, dash items 52 and 52, numbered items 86 and 86; prek ran
+to its fixpoint.
+
+| Finding | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| MAJOR-1: an expansion argument whose element type is an incomplete facet type aborts at a `CARBON_CHECK` (valid code), and the check's comment claims the element type is complete | MAJOR | Yes: `interface I; fn G(... unused each x: type) {} fn F(... each p: I*) { G(... *each p); }` aborts at handle_pack_expansion.cpp:257 (exit 134), as does the after-error form `fn F(... each p: I) { G(... each p); }` | Folded as the review proposed: `RequireCompleteType` diagnoses with the new context `IncompleteTypeInPackExpansion` ("forming a pack of incomplete type {0}", the element type), the expansion becomes an error, and the `CARBON_CHECK` and the false sentence are gone; splits `fail_incomplete_element` and `fail_incomplete_element_after_error`; MU-8's diff re-derived and re-run | §4; §8.5; toolchain/check/handle_pack_expansion.cpp, toolchain/diagnostics/kind.def |
+| MAJOR-2 / VA1-IR2-M1: `GroupPackArguments` underflows `num_before` when a bound `self` is not the first explicit parameter, and aborts in `drop_front` (invalid code) | MAJOR | Yes: `class C { fn F(... each n: i64, self: Self); }` and `fn F[self: Self](... each n: i64, last: i64)` abort at the `ArrayRef::drop_front` assertion after their declaration errors, and `fn F[self: Self](... each n: i64)` counts "at least -1 arguments" | Folded with the review's better form: a bound `self` must match the first explicit parameter pattern, checked by name with `SemIR::IsSelfPattern` (which sees through import refs), and otherwise the call is not grouped, the declaration having been diagnosed (`SelfNotFirstParam`, `SelfInImplicitParamList`); splits `fail_self_after_pack` and `fail_self_in_implicit_list_with_pack` (both declarations of the implicit case, so the -1 count is pinned too) | §4; toolchain/check/call.cpp |
+| MINOR-1: `PackExpansionBindingWithoutEach` suggests `each _` and `each self`, which do not parse | MINOR | Yes: `fn F(... _: i64) {}` and `class C { fn F(... self) {} }` | Folded: a name that is not an identifier gets the new `PackExpansionBindingNotIdentifier` ("... must declare an each-name, `each` followed by an identifier"), without a suggestion; splits `fail_underscore_without_each` and `fail_self_without_each` | §4; toolchain/check/handle_binding_pattern.cpp, toolchain/diagnostics/kind.def |
+| MINOR-2 / VA1-IR2-m2: `fail_todo_overload_member` first hits the overload gate's misleading TODO, and it and `fail_without_each_name` carry unused-binding warnings | MINOR | Yes: the F4 fill shows both, and the probe `overload fn G(... unused each n: i64) {}` still gets the gate's TODO for `overload fn` with a non-value explicit parameter | Folded with the code option: gate (iii) of `DiagnoseOverloadGates` raises the slice's TODO "variadic member of an overload set" at the member's pack pattern, and call.cpp's guard stays for members declared elsewhere; both packs are `unused`; W-223's evidence names both sites | §2.8 W-223; §4; toolchain/check/handle_function.cpp |
+| MINOR-3: an invalid pack element type leaves an error-valued pack pattern, so calls get a spurious arity or deduction error | MINOR | Yes, with a correction: the pattern is a `pack_expansion_pattern` whose constant value is an error (its binding has an error type), not `ErrorInst`; `F(1, 2)` gets "2 arguments passed to function expecting 1 argument" and `F(1)` "cannot deduce value for generic parameter `<pack arity>`" | Folded with the review's first option, narrowed: `FindPackExpansionParam` also finds a local pack pattern by its kind, and `GroupPackArguments` does not group a call to a pack whose constant value is an error, so the declaration's error is the only one; trunk's arity error for an ordinary error-typed parameter is unchanged; split `fail_invalid_element_type` with calls of 0, 1 and 2 arguments | §4; toolchain/check/call.cpp |
+| VA1-IR2-m1: fix 1 and fix 2 came before the implementation reviews without their own fills, and edited golden sources §2.6 and §4 still describe | MINOR | Yes: the history and §3's D-VA-16 paragraph | Folded without rewriting history (AGENTS.md): §3 "As implemented" lists every commit and the shared fills; §2.6 "Sources of record" names each source change; §4 marks the renamed caller and the fills' extra output; §8.1 to §8.4 record the measurements; the decision-log text of §2.8 records the deviation for D | Head; §2.6; §2.8; §3; §4; §8.1 to §8.4 |
+| VA1-IR2-m3: W-220's evidence names only `FinishPackExpansionBody`, which no longer raises the statement split's TODO | MINOR | Yes: since fix 1, `fail_todo_cleanup_statement`'s TODO comes from handle_expr_statement.cpp | Folded: W-220's first evidence string names `HandleParseNode(ExprStatementId)` for the statement split and `FinishPackExpansionBody` for the argument split | §2.8 W-220 |
+| VA1-IR2-m4: ten ledger items cite docs/design/variadics.md lines valid only before C2, and the head's shift rule misses C2's table-of-contents line | MINOR | Yes: `git diff -U0 f67ab650d HEAD -- docs/design/variadics.md` inserts one line after :25 and 35 after :493; each re-derived range was checked line for line against f67ab650d's text | Folded: every variadics.md range in §2.8's JSON is the branch's after C2 (W-219 is :495-528), with a sentence saying so, and the head's rule is corrected | Head; §2.8 |
+| VA1-IR2-m5: W-013's note would record call.cpp:424 for `GetExplicitArityRange`, which C4 moved | MINOR | Yes: :558 at 9a0888ef0, :578 at fix 3 | Folded: the note's line is a field D fills from the merge commit, beside ":424 at f67ab650d"; §0.3 item 3 says so | §0.3; §2.8 |
+| VA1-IR2-m6: the decision-log text says rev 2 and omits the focused re-review and the implementation's deviations | MINOR | Yes | Folded: "rev 3 after two plan reviews and a focused re-review, all folded", a sentence on the three fix commits and the shared fills, and "Verified on the merge commit: <§8.8's run>" | §2.8 |
+
+Verification of fix 3 and F6 (§8): `build.sh` and `install.sh` at fix 3 (273 of
+273 ninja steps, because kind.def is an X-macro header; 0 warnings) and a
+version-stamp relink at F6 (`0.0.0-0.dev+88b1b5bd2`). clang-tidy on fix 3's four
+`.cpp` files: 0 diagnostics with `misc-no-recursion` and 0 with the
+line-filtered `.clang-tidy` minus `modernize-*`. The gate at fix 3 alone: `1956
+passed, 4 failed`, the four being fail_call.carbon, fail_each_name.carbon,
+fail_pack_expansion.carbon and fail_todo_slice.carbon, with no crash. F6's
+autoupdate: the second pass changed nothing, and every filled line is the one
+§4's new and amended rows predict, the predictions having been written before
+the fill. The gate after F6: `file_test test mode on /home/user/carbon-va: 1960
+passed, 0 failed` (`Ran 1960 tests`, 0 `!` and 0 `?` marks). Conformance after
+F6, with a private cache and output directory: PASS 137, COMPILE-FAIL 0,
+LINK-FAIL 0, RUN-FAIL 0, OUTPUT-MISMATCH 0, DIFF-MISMATCH 0, SKIP 21 of 158;
+bullets 49 PASS, 0 FAIL, 7 SKIP of 56. Every review probe re-run on F6's
+toolchain: no crash, and each gives only its declaration's diagnostic or the new
+one. An imported variadic method, called with a bound `self`, without one and
+with an empty pack, compiles, links and prints 25, as derived by hand from 6, 9,
+0 and 10. The mutants as §8.5's re-run says. prek on each commit's files,
+nothing modified.
+
+Not run, as §8.9 says: the Bazel-only tests (among them the diagnostics coverage
+test, which the two new diagnostic kinds' splits serve), hosted CI, LLVM-side
+assertions and the opt-mode conformance toolchain; §8.8 stays the discharge's.
+One observation outside the findings, not changed: a pack whose element type is
+invalid still gets a `pack_type` whose element operand is `invalid` in its
+declaration's SemIR (no golden dumps one); fix 3 keeps every call away from it.

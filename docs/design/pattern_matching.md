@@ -844,12 +844,13 @@ unparenthesized guard of [Guards](#guards) is rejected with
 
 The scrutinee may be of an integer type, `bool`, a choice type (including a
 specific of a generic choice and an imported choice such as
-`Core.Result(T, E)`), a tuple of those, or a struct type. Patterns are constant
-integer and `bool` expressions; bindings `x: T`, `var x: T`, and, for a
-reference scrutinee, `ref x: T`; `_`; tuple patterns; struct patterns with
-designated fields (`.w = 0`, `.w = w: i32`) or shorthand fields (`w: i32`) and a
-trailing `_` that discards the rest; and alternative patterns `.Name` and
-`.Name(...)`, whose payload subpatterns are constants or bindings.
+`Core.Result(T, E)`), or a tuple or struct type whose elements are of those
+types (nested tuples and structs included). Patterns are constant integer and
+`bool` expressions; bindings `x: T`, `var x: T`, and, for a reference
+scrutinee, `ref x: T`; `_`; tuple patterns; struct patterns with designated
+fields (`.w = 0`, `.w = w: i32`) or shorthand fields (`w: i32`) and a trailing
+`_` that discards the rest; and alternative patterns `.Name` and `.Name(...)`,
+whose payload subpatterns are constants or bindings.
 
 Arms are tried in order: the first arm whose pattern matches and whose guard, if
 any, is true runs, with the pattern's bindings in scope in the guard and the
@@ -920,7 +921,9 @@ fn Run() -> i32 {
 }
 ```
 
-This prints `12`, `0`, `-1`, `1`, and `45`. The checks, each an error:
+This prints `12`, `0`, `-1`, `1`, and `45`. Each of the following checks is an
+error. A `match` on a choice that leaves out an alternative and has no
+`default`:
 
 ```carbon
 choice Signal { Stop, Go, Wait }
@@ -934,8 +937,9 @@ fn F(s: Signal) -> i32 {
 }
 ```
 
-reports `` `match` on choice `Signal` has no `default` arm and does not cover
-alternative `.Wait` ``;
+The toolchain reports `` `match` on choice `Signal` has no `default` arm and
+does not cover alternative `.Wait` ``. A `match` on an integer type with no
+`default` and no irrefutable arm:
 
 ```carbon
 fn F(n: i32) -> i32 {
@@ -947,7 +951,8 @@ fn F(n: i32) -> i32 {
 }
 ```
 
-reports `` `match` on `i32` has no `default` arm and no `case` arm that matches every value ``;
+The toolchain reports `` `match` on `i32` has no `default` arm and no `case`
+arm that matches every value ``. An arm that a prior arm makes unreachable:
 
 ```carbon
 fn F(n: i32) -> i32 {
@@ -959,7 +964,9 @@ fn F(n: i32) -> i32 {
 }
 ```
 
-reports `` `case` pattern never matches; every value it can match is matched by a prior arm ``;
+The toolchain reports `` `case` pattern never matches; every value it can
+match is matched by a prior arm ``. A `default` arm after arms that match every
+value:
 
 ```carbon
 fn F(b: bool) -> i32 {
@@ -972,7 +979,8 @@ fn F(b: bool) -> i32 {
 }
 ```
 
-reports `` `default` arm never matches; every value of the scrutinee is matched by prior arms ``; and the unparenthesized guard
+The toolchain reports `` `default` arm never matches; every value of the
+scrutinee is matched by prior arms ``. A guard without parentheses:
 
 ```carbon
 fn F(x: (i32, i32)) -> i32 {
@@ -983,7 +991,7 @@ fn F(x: (i32, i32)) -> i32 {
 }
 ```
 
-reports ``expected `(` after `if` ``.
+The toolchain reports ``expected `(` after `if` ``.
 
 Not in the 0.1 toolchain, each a filed fork work item or a pinned
 `semantics TODO` in `toolchain/check/testdata/match/`:
@@ -993,20 +1001,22 @@ Not in the 0.1 toolchain, each a filed fork work item or a pinned
     with a `return`, and why `IsTrue` in
     [Refutability, overlap, usefulness, and exhaustiveness](#refutability-overlap-usefulness-and-exhaustiveness)
     is rejected (fork work item W-155, on held PR 54).
--   A set of tuple patterns never counts as exhaustive unless one arm is
-    irrefutable: the four arms `case (false, false)`, `case (false, true)`,
-    `case (true, false)` and `case (true, true)` on a `(bool, bool)`
-    scrutinee are rejected with
+-   A set of tuple or struct patterns never counts as exhaustive unless one
+    arm is irrefutable: the four arms `case (false, false)`,
+    `case (false, true)`, `case (true, false)` and `case (true, true)` on a
+    `(bool, bool)` scrutinee are rejected with
     `` `match` on `(bool, bool)` has no `default` arm and no `case` arm that
     matches every value ``, and so are the two arms `case (true, x: i32)` and
-    `case (false, y: i32)` on a `(bool, i32)` scrutinee, although each set
-    covers every value by the rules above, which treat a constant tuple as a
-    tuple pattern and `bool` like a choice type; a `default` or an irrefutable
-    arm is needed (W-189; pinned by `fail_bool_pair_enumeration.carbon` in
+    `case (false, y: i32)` on a `(bool, i32)` scrutinee and the two arms
+    `case {.a = true, _}` and `case {.a = false, _}` on a `{.a: bool, .b: i32}`
+    scrutinee, although each set covers every value by the rules above, which
+    treat constant tuples and structs as tuple and struct patterns and `bool`
+    like a choice type; a `default` or an irrefutable arm is needed (W-189;
+    pinned by `fail_bool_pair_enumeration.carbon` in
     `toolchain/check/testdata/match/fail_int_nonexhaustive.carbon`).
--   An alternative pattern inside a tuple pattern or a payload subpattern is
-    read as an expression, so the usefulness example above cannot be written
-    yet (W-182).
+-   An alternative pattern inside a tuple pattern, a struct pattern field, or a
+    payload subpattern is read as an expression, so the usefulness example
+    above cannot be written yet (W-182).
 -   An alternative pattern written with its choice type's name, such as
     `Opt.None` or `Opt.Some(n: i32)` for a choice `Opt`: the first reports
     ``semantics TODO: `qualified alternative pattern in match case` `` (pinned
@@ -1016,11 +1026,14 @@ Not in the 0.1 toolchain, each a filed fork work item or a pinned
     ``name `n` not found``; the leading-dot forms `.None` and `.Some(n: i32)`
     work.
 -   A scrutinee of any other type, including floating-point types, `str`,
-    classes, and template-dependent types, so the [Templates](#templates)
-    rules do not apply yet; expression patterns that are not constants, such
-    as a variable; and compile-time bindings in a `case`.
+    classes, template-dependent types, and a tuple or struct with an element
+    of such a type, so the [Templates](#templates) rules do not apply yet;
+    expression patterns that are not constants, such as a variable; and
+    compile-time bindings in a `case`.
 -   A refutable pattern in a plain `var` declaration, such as `var 5 = n;`
     above, stops the compiler instead of being diagnosed (W-080).
+
+Because an exhaustive `match` does not end control flow, `IsTrue` is rejected:
 
 ```carbon
 fn IsTrue(b: bool) -> bool {
@@ -1031,7 +1044,9 @@ fn IsTrue(b: bool) -> bool {
 }
 ```
 
-reports ``missing `return` at end of function with declared return type``, and
+The toolchain reports ``missing `return` at end of function with declared
+return type``. An alternative pattern nested in a tuple pattern is read as an
+expression:
 
 ```carbon
 choice Flag { Off, On }
@@ -1044,7 +1059,8 @@ fn Both(a: Flag, b: Flag) -> bool {
 }
 ```
 
-reports ``name `.Self` not found``; a `match` on `f64`
+The toolchain reports ``name `.Self` not found``. A floating-point scrutinee
+is not supported:
 
 ```carbon
 fn F(x: f64) -> i32 {
@@ -1054,7 +1070,8 @@ fn F(x: f64) -> i32 {
 }
 ```
 
-reports ``semantics TODO: `match on unsupported scrutinee type` ``.
+The toolchain reports
+``semantics TODO: `match on unsupported scrutinee type` ``.
 
 ### Refutable pattern bindings
 

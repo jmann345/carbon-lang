@@ -69,11 +69,10 @@ Carbon-native threading is deferred to at least 0.2
     ([Interoperating with C++ exceptions](../error_handling.md#interoperating-with-c-exceptions),
     with the `--cpp-exceptions` option of fork work item W-016).
 
-Held PR 53 (fork decision F-013, D-SAFE-16) names `Core.Thread` and
-`Core.Atomic(T)`, a Carbon signature over `Cpp.std.atomic(T)`, for the fifth
-stage of its safety design (fork work item W-149). Whether to reserve
-`Core.MemoryOrder` is an open question. Nothing in 0.1 declares any of the
-three.
+Held PR 53 (fork decision F-013) names `Core.Thread` and `Core.Atomic(T)`, a
+Carbon signature over `Cpp.std.atomic(T)` (fork work item W-149), for the fifth
+stage of its safety design. Whether to reserve `Core.MemoryOrder` is an open
+question. Nothing in 0.1 declares any of the three.
 
 ## In the 0.1 toolchain
 
@@ -138,11 +137,12 @@ documents the contract and leaves three toolchain defects unfixed; Option B,
 "Option A + targeted toolchain fixes for the three verified defects", the
 choice (`std::thread` on a Carbon function, a Carbon global of a C++ template
 specialization type, and `std::atomic` of a Carbon class, all fixed in the
-fork's toolchain, fork work items W-021 to W-023); Option C, "Option B + a
-`Core.Sync` veneer library", which adds a `Core.Sync` library veneer over the
-C++ types; and Option D, "Carbon-native atomics
-lowered directly to LLVM". The veneer and native atomics were rejected for 0.1
-as new design ahead of the 0.2 concurrency work.
+fork's toolchain, fork work items W-021 to W-023); Option C, which adds to
+Option B a `Core.Sync` library veneer over the C++ types (wrapper types, not
+the compiler-determined `Core.Sync` facet that held PR 53 names for the fifth
+stage of its safety design); and Option D, "Carbon-native atomics lowered
+directly to LLVM". The veneer and native atomics were rejected for 0.1 as new
+design ahead of the 0.2 concurrency work.
 
 ## References
 

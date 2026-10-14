@@ -26,10 +26,12 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #    no indented ```carbon fence;
 # 4. the W2 rule (plan section 2.12 item 5) over docs/design/, matched
 #    without regard to case: (a) no placeholder boilerplate, also when a
-#    phrase wraps across blockquote lines; (b) no heading that starts with
-#    TODO; (c) no section whose paragraphs are only TODO or TBD markers (in a
-#    blockquote, a list item or an HTML comment too), optionally with "See"
-#    or "References" paragraphs; and (d) no empty section without
+#    phrase wraps across blockquote lines or is split by emphasis or code
+#    markers; (b) no heading that starts with TODO or TBD, also after
+#    leading emphasis or code markers; (c) no section whose paragraphs are
+#    only TODO or TBD markers (in a blockquote, a list item or an HTML
+#    comment too), optionally with "See" or "References" paragraphs and the
+#    lists of links that follow them; and (d) no empty section without
 #    subsections; except the hits that QUALIFIED and ALLOWLIST name. An
 #    entry of either list that no longer hits is an error, so neither list
 #    can go stale.
@@ -167,6 +169,18 @@ SAMPLES = [
         "Templates in the 0.1 toolchain",
         BLOCK,
         "R10_checked_member.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X07_template_let_file_scope.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X08_template_auto.carbon",
     ),
     (
         "templates.md",
@@ -341,6 +355,12 @@ SAMPLES = [
     ),
     (
         INTEROP,
+        "Using C++ templates",
+        QUOTE,
+        "X09_cpp_template_symbolic_arg.carbon",
+    ),
+    (
+        INTEROP,
         "Using Carbon from C++",
         PROGRAM,
         "design_docs_carbon_from_cpp.carbon",
@@ -420,7 +440,8 @@ ALLOWLIST = {
 DISCLOSURE_QUOTE = QUALIFIED[("README.md", "This document is provisional", "a")]
 
 # Clause (a), matched without regard to case, over each file's text after
-# leading blockquote markers are stripped from every line.
+# leading blockquote markers are stripped from every line and the emphasis and
+# code markers `*`, `_` and backtick are removed.
 BOILERPLATE = re.compile(
     r"skeletal\s+design|it\s+is\s+a\s+placeholder|"
     r"should\s+not\s+be\s+treated\s+as\s+accepted|"
@@ -433,9 +454,15 @@ TODO_MARKER = re.compile(
     r"^(>\s*)*([-*+]\s+|[0-9]+[.)]\s+)?(<!--\s*)?[*_]*(TODO|TBD)",
     re.IGNORECASE,
 )
+# Clause (b): a heading that starts with TODO or TBD after leading emphasis
+# or code markers.
+HEADING_MARKER = re.compile(r"^[*_`\s]*(TODO|TBD)", re.IGNORECASE)
 # Clause (c)'s optional companions: a "See ..." or "References" paragraph,
-# matched without regard to case, also inside a blockquote.
+# matched without regard to case, also inside a blockquote, and a list whose
+# every item holds a link, when it follows a companion.
 SEE_MARKER = re.compile(r"^(>\s*)*(See|References)\b", re.IGNORECASE)
+LIST_ITEM = re.compile(r"^(>\s*)*\s*([-*+]|[0-9]+[.)])\s+")
+LINK = re.compile(r"\[[^\]]*\]\(|<https?://")
 # The sentence that states a program's output, up to its first `.`, `:` or
 # `;` outside a code span.
 PRINTS = re.compile(r"This prints ((?:`[^`]*`|[^`.:;])*)")
@@ -503,6 +530,21 @@ def normalize(text: str) -> str:
 
 def contains(prose: str, quote: str) -> bool:
     return normalize(quote) in normalize(prose)
+
+
+def is_link_list(paragraph: list[str]) -> bool:
+    """Returns whether a paragraph is a list whose every item holds a link."""
+    if not LIST_ITEM.match(paragraph[0]):
+        return False
+    items: list[str] = []
+    for line in paragraph:
+        if LIST_ITEM.match(line):
+            items.append(line)
+        elif line[:1] in (" ", "\t", ">"):
+            items[-1] += " " + line.strip()
+        else:
+            return False
+    return all(LINK.search(item) for item in items)
 
 
 def strip_leading_comments(text: str) -> str:
@@ -722,36 +764,44 @@ def w2_file_hits(rel: str, text: str) -> set[tuple[str, str, str]]:
     # (a) placeholder boilerplate anywhere in the file, also when a phrase
     # wraps across the lines of a blockquote.
     unquoted = "\n".join(strip_quote_markers(line) for line in lines)
+    unquoted = re.sub(r"[*_`]", "", unquoted)
     for m in BOILERPLATE.finditer(unquoted):
         line = unquoted.count("\n", 0, m.start())
         hits.add((rel, section_at(line), "a"))
     for k, (i, level, heading) in enumerate(heads):
-        # (b) a heading that starts with TODO.
-        if heading.upper().startswith("TODO"):
+        # (b) a heading that starts with TODO or TBD.
+        if HEADING_MARKER.match(heading):
             hits.add((rel, heading, "b"))
         # (c) a section whose paragraphs are all TODO or TBD markers, with
-        # optional "See ..." or "References" paragraphs. A fenced block
-        # is one paragraph that is not a marker.
+        # optional "See ..." or "References" paragraphs and the link lists
+        # that follow them. A fenced block is one paragraph that is not a
+        # marker.
         end = heads[k + 1][0] if k + 1 < len(heads) else len(lines)
-        paragraphs: list[str] = []
+        paragraphs: list[list[str]] = []
         current: list[str] = []
         for j in range(i + 1, end):
             line = lines[j]
             if not mask[j] and line.strip() in ("", ">"):
                 if current:
-                    paragraphs.append(current[0])
+                    paragraphs.append(current)
                     current = []
             else:
                 current.append(line)
         if current:
-            paragraphs.append(current[0])
-        if (
-            paragraphs
-            and all(
-                TODO_MARKER.match(p) or SEE_MARKER.match(p) for p in paragraphs
-            )
-            and any(TODO_MARKER.match(p) for p in paragraphs)
-        ):
+            paragraphs.append(current)
+        markers = 0
+        companion = False
+        all_marked = True
+        for p in paragraphs:
+            if TODO_MARKER.match(p[0]):
+                markers += 1
+                companion = False
+            elif SEE_MARKER.match(p[0]) or (companion and is_link_list(p)):
+                companion = True
+            else:
+                all_marked = False
+                break
+        if paragraphs and all_marked and markers:
             hits.add((rel, heading, "c"))
         # (d) an empty section with no subsection: the next heading, if
         # any, is at the same or a higher level.
@@ -917,6 +967,17 @@ def self_check() -> int:
         ),
         ("## S\n\nText beside a note.\n\n> **TODO:** Refine.\n", set()),
         ("## S\n\n_TODO_: Describe it.\n\nSeemingly done.\n", set()),
+        ("## S\n\nThis is a **skeletal** design.\n", {("S", "a")}),
+        ("## **TODO:** describe\n\nText.\n", {("**TODO:** describe", "b")}),
+        ("## `TODO` describe\n\nText.\n", {("`TODO` describe", "b")}),
+        ("## TBD: describe\n\nText.\n", {("TBD: describe", "b")}),
+        (
+            "## S\n\nTODO: later\n\nReferences:\n\n-   [A](a.md)\n"
+            "-   [B\n    title](b.md)\n",
+            {("S", "c")},
+        ),
+        ("## S\n\nTODO: later\n\nSee:\n\n-   An item, no link.\n", set()),
+        ("## S\n\nTODO: later\n\n-   [A](a.md)\n", set()),
     ]
     for text, want_hits in w2_cases:
         got = {

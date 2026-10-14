@@ -223,7 +223,7 @@ the remainder of which are in category C. §0.1f classifies every
 | PR-L exhaustive `match` with an irrefutable arm, no trailing `return` | "missing `return` at end of function with declared return type" | — | W-155 (EV-1, PR 54) already owns it and names the irrefutable `case x: i32` arm; R20 and PR-L join its evidence at integration (amended 2026-10-13, review fold: B-M-1) |
 | PR-R four constant `(bool, bool)` arms, no `default` | REJECTS: "`match` on `(bool, bool)` has no `default` arm and no `case` arm that matches every value" | no `match` | W-189: pattern_matching.md:589-592 makes the set exhaustive; fork/w078b/plan.md:109-125 recorded the boundary (its R-6) with no owning item (amended 2026-10-13, review fold: A-4) |
 | PR-S a Carbon function with a `template` parameter, called from C++ | CRASH rc 134: "CHECK failure at toolchain/sem_ir/generic.cpp:96: ... Queried generic_inst_in_def1 {kind: CallAction, ...} ... before it was resolved." (the same with `return x;`, `CompoundMemberAccessAction`; identical on OP-1's toolchain) | RUNS, prints `42` | W-191 (rev 2's W-190; RR-FX-1); the C++-use section states the limit (amended 2026-10-13, review fold: B-M-5) |
-| PR-T a checked generic's symbolic type parameter as a C++ template argument (`var unused b: Cpp.Box(T);` in `fn MakeBox[T: type]`) | REJECTS: "cannot convert type `<splice of <cannot stringify inst...>>` into type implementing `Core.DefaultOrUnformed`" | the same shape | W-043 owns it; prose only, because the message names internal instruction ids (amended 2026-10-13, review fold: B-M-5) |
+| PR-T a checked generic's symbolic type parameter as a C++ template argument (`var unused b: Cpp.Box(T);` in `fn MakeBox[T: type]`) | REJECTS: "cannot convert type `<splice of <cannot stringify inst...>>` into type implementing `Core.DefaultOrUnformed`" | the same shape | W-043 owns it; prose only, because the message names internal instruction ids (amended 2026-10-13, review fold: B-M-5). The rejection comes from the missing initializer, not from the template argument: with an initializer, `Cpp.Box(T)` on a checked generic's `T` compiles and runs on both toolchains (quote fixture X09), so the interop page states the uninitialized `var` as the limit (amended 2026-10-14, document-review fold 2: R2-2) |
 | PR-U tuple and struct swaps: `let u = (t.1, t.0); t = u;`, `s = {.a = s.b, .b = s.a};`, and `var old = t; t = (old.1, old.0);` | RUNS: `2 1`, `2 2`, `2 1` | the same | §2.3 states what was measured and leads issue 686's answer, under which both literal forms leave `(2, 1)`; W-188 (toolchain-defect) records the literal form's divergence from it (amended 2026-10-13, review fold: A-1; RR-A-1) |
 | PR-G2 `import Cpp;` then `inline Cpp` | RUNS, prints `41` | the same | the inline rule: an `import Cpp` earlier in the file (amended 2026-10-13, review fold: A-14 / B-m-4) |
 | SC-1 toolchains (`carbon-sc`: 0.0.0-0.dev+bc8b37290 at rev 1; ff490bd48 re-measured for rev 2; 18775fee3, the toolchain and prelude of the head a9c887101, re-measured for rev 4) | all 16 RUNS samples PASS; all 30 REJECTS diagnostics identical to trunk's; at ff490bd48 and at 18775fee3 every rev-1 page sample and fixture (47) and every rev-2 one gives trunk's result; PR-N runs on 18775fee3 | — | state L needs no sample change for SC-1; §8.10 names the build each head was measured on (amended 2026-10-14, review fold: RR2-2) |
@@ -414,7 +414,13 @@ RR2-FX-1).
     which sub-case is live". W-043's notes gain the measured answer (concrete
     Carbon classes work; the symbolic case PR-T does not); the row's status
     is W-043's to re-arbitrate, so DD-1 does not edit row 56 (added
-    2026-10-13, review fold: B-M-5).
+    2026-10-13, review fold: B-M-5). PR-T's failure is the `var` without an
+    initializer, not the symbolic template argument, which compiles and runs
+    with an initializer (X09), so W-043's notes are corrected to say so, and
+    they record that the SKIP reason of
+    fork/conformance/programs/interop/cpp_template_symbolic_arg.carbon is
+    stale for W-043's owner (amended 2026-10-14, document-review fold 2:
+    R2-2).
 9.  W-044's notes say that export of a Carbon `template` function, as distinct
     from a checked generic, "exists at all only after template lowering
     (W-014)". The nightly exports and runs
@@ -460,7 +466,13 @@ RR2-FX-1).
     include TBD and the list-item and HTML-comment forms (clause (d) and these
     extensions amended 2026-10-14, document-review fold: DR2-2 / DR2-8, under
     this decision's break condition: document review 2 showed placeholder
-    forms the rule missed). Inline notes beside
+    forms the rule missed; clause (a) also matches after emphasis and code
+    markers are removed, clause (b) also takes `TBD` and a heading's leading
+    emphasis or code markers, and clause (c)'s companions include a list of
+    links after a "See" or "References" paragraph, amended 2026-10-14,
+    document-review fold 2: DR2b-6, under the same break condition: document
+    review 2 of the second round showed forms the rule still missed). Inline
+    notes beside
     content (category C of §0.1c, §0.1f) are out of scope. Two lists qualify
     the result. `QUALIFIED` holds hits that stay by design because a DD-1 note
     in the same section answers them, and the checker requires that note's
@@ -563,8 +575,10 @@ RR2-FX-1).
     `volatile` and no `_Atomic` interop in 0.1, stated as non-goals on the page
     with no new diagnostics (the paper's open question 6, :514-517, asked only
     whether to call them out). (4) Reserving `Core.Thread`, `Core.Atomic` and
-    `Core.MemoryOrder`: held PR 53 (F-013, D-SAFE-16, W-149) names
-    `Core.Thread` and `Core.Atomic(T)` for its stage 5, which the page states;
+    `Core.MemoryOrder`: held PR 53 (F-013; W-149 for `Core.Atomic(T)`, and
+    D-SAFE-20's library residue for `Core.Thread`) names `Core.Thread` and
+    `Core.Atomic(T)` for its stage 5, which the page states (amended
+    2026-10-14, document-review fold 2: R2-3: D-SAFE-16 names neither);
     no record settles `Core.MemoryOrder`, so that part stays open, stated on
     the page (D-DD-3), and is not filed because no 0.1 behavior depends on it
     (amended 2026-10-14, document-review fold: DR1-3). (5)
@@ -964,11 +978,12 @@ Edit 2 appends after line 51:
 ## Statements in the 0.1 toolchain
 
 A function body is a block: statements between `{` and `}`, run in order. In
-the 0.1 toolchain a statement is one of:
+the 0.1 toolchain the statements include:
 
 -   an expression statement, such as a call, ending in `;`;
 -   a declaration: `var` (proposal 339), `let`, `returned var` (proposal 257),
-    or a local `alias`, `class`, or `fn`;
+    or a local `alias`, `class`, `choice`, `interface`, `constraint`, `impl`,
+    or `fn` declaration (a `namespace` declaration must be at file scope);
 -   an assignment `=`, a compound assignment such as `+=` or `%=`, or `++` and
     `--` ([Assignment](assignment.md), proposal 2511);
 -   `if`, with `else if` and `else` (proposal 285);
@@ -1103,7 +1118,13 @@ needs a statement that has a block, such as `if (true) { ... }`.
 
 (The last paragraph is amended 2026-10-14, document-review fold: DR1-4:
 "Until that is resolved" is dropped, the classes.md open question is cited,
-and W-185 is filed as design-needed, §8.5.)
+and W-185 is filed as design-needed, §8.5. The statement list is amended
+2026-10-14, document-review fold 2: R2-5: "a statement is one of" claimed a
+complete list, but the toolchain also accepts local `choice`, `interface`,
+`constraint` and `impl` declarations and rejects a local `namespace` with
+`` `namespace` declaration not at top level `` (probe PR-AH, §4.3, the same on
+the fork toolchain and the nightly), so the lead-in says "include" and the
+declaration item names them.)
 
 Counts after: H2 3 → 4, dash items 2 → 10 (TOC plus seven list items), no
 ordered items. Samples: P02 (design_docs_statements.carbon), R05, R06, R04.
@@ -1278,18 +1299,21 @@ Edit 1 replaces lines 22-27 with the **state T** text:
 > proposal 2200 lets a specialization change only an implementation and
 > rejects ad hoc API specialization (its "Alternatives considered"), which the
 > sketch's Overloading section anticipates, and its template constraints,
-> below, answer the open question of the sketch's last section. Where the 0.1
-> toolchain differs from proposal 2200 is listed under "Limits of the 0.1
-> toolchain" in
-> [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain) (fork work
-> items W-183 and W-014, and `match` on template-dependent values). Template
-> constraints are accepted: proposal 818 introduced `template constraint`
-> declarations, whose member requirements proposal 2200 specifies, and fork
-> decision F-010 adds `require` validity blocks and boolean predicates. Member
-> requirements are implemented on a held fork branch (SC-1), and `require`
-> blocks and predicates are fork work item W-028; none of them is in the
-> toolchain this page describes. What the 0.1 toolchain implements is
-> documented, with examples that compile, in
+> below, answer the open question of the sketch's last section. The
+> differences measured between the 0.1 toolchain and proposal 2200 are listed
+> under "Limits of the 0.1 toolchain" in
+> [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain): member
+> lookup that ignores the constraint (fork work item W-183), calls across
+> libraries (W-014), `match` on template-dependent values, template `let`
+> bindings (W-031), `auto` (W-039), arrays whose bound is a template parameter,
+> and `template constraint` declarations. Template constraints are accepted:
+> proposal 818 introduced `template constraint` declarations, whose member
+> requirements proposal 2200 specifies, and fork decision F-010 adds `require`
+> validity blocks and boolean predicates. Member requirements are implemented
+> on the fork's held template-constraint branch (SC-1), and `require` blocks
+> and predicates are fork work item W-028; none of them is in the toolchain
+> this page describes. What the 0.1 toolchain implements is documented, with
+> examples that compile, in
 > [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain).
 ````
 
@@ -1467,14 +1491,38 @@ Limits of the 0.1 toolchain:
     constraint. Proposal 2200 looks a name up both in the argument type and in
     the interface constraint; the toolchain looks only in the argument type, so
     a member that the type provides only through an `impl` without `extend` is
-    not found (fork work item W-183). Declaring it with
-    `extend impl as HasArea` makes the last example below compile.
+    not found (fork work item W-183). The example after this list shows it;
+    declaring the member with `extend impl as HasArea` makes it compile.
 -   A template function defined in one library and called from another stops
     the compiler during checking, as it does in the upstream nightly (W-014).
 -   A `match` on a template-dependent value is not supported (it reports
     ``semantics TODO: `match on unsupported scrutinee type` ``), so the
     [`match`-based rules](pattern_matching.md#templates) of pattern matching do
     not apply yet.
+-   Template `let` bindings are not supported (W-031). Proposal 2200's
+    `let template N:! i64 = 4;` is written `let template N: i64 = 4;` in the
+    toolchain's syntax; in a function body it reports the diagnostic shown in
+    [Compile-time evaluation in the 0.1 toolchain](metaprogramming.md#compile-time-evaluation-in-the-01-toolchain),
+    and at file scope, where proposal 2200's own example declares it with the
+    array bound `N`, it reports ``` semantics TODO: ``let` compile time
+    binding outside function or interface` ```.
+-   `auto`, which proposal 2200 calls a shortcut for an unnamed templated type,
+    is not supported as a type: `let x: auto = F();` and `fn F() -> auto`
+    report ``semantics TODO: `HandleAutoTypeLiteral` `` (W-039).
+-   An array whose bound is a template parameter cannot be initialized from a
+    list of values: `var a: array(i32, N) = (1, 2, 3);` in a function with the
+    parameter `template N: i32` reports
+    `cannot initialize array with dependent bound from a list of initializers`
+    (pinned by `fail_todo_init_template_dependent_bound.carbon` in
+    `toolchain/check/testdata/array/init_dependent_bound.carbon`). The upstream
+    nightly accepts this initialization.
+-   `template constraint` declarations are not parsed: the parser reports
+    `unrecognized declaration introducer` (pinned by
+    `fail_todo_template_constraint.carbon` in
+    `toolchain/parse/testdata/generics/named_constraint/`); see
+    [Status](#status).
+
+The first limit, for example:
 
 ```carbon
 interface HasArea {
@@ -1515,7 +1563,32 @@ item, which is accepted design and no limit, becomes the last paragraph; the
 "the last example below", and the `Circle` paragraph says what `Circle` is.
 DR1-2: the paragraph's last sentence cites proposals 818 and 2200. Fixer
 finding DR-FX-1: quote fixture X05 pins the `Circle` diagnostic, which no
-fixture pinned.)
+fixture pinned. Amended 2026-10-14, document-review fold 2: R2-1: the status
+note's "Where the 0.1 toolchain differs from proposal 2200 is listed under
+..." was again a completeness claim, false on the fork toolchain and the
+nightly: template `let` bindings (W-031; at file scope proposal 2200's own
+example, p002200:232-241), `auto` (W-039; p002200:327-347), an array whose
+bound is a template parameter, and `template constraint` declarations were
+not in the list; the note now names the differences measured, and the list
+gains four items, pinned by quote fixtures X07 (the file-scope binding) and
+X08 (`auto`), by R14 on metaprogramming.md (the function-body binding), by
+the testdata split `fail_todo_init_template_dependent_bound.carbon` with
+probe PR-AA (the nightly accepts that initialization), and by the parse
+testdata split `fail_todo_template_constraint.carbon` with probe PR-AC (§4.2,
+§4.3); DR2b-4: the W-183 item names "the example after this list", and "The
+first limit, for example:" introduces it; DR2b-5: SC-1 is named "the fork's
+held template-constraint branch".)
+
+At state L (SC-1 merged), the list's last item becomes (amended 2026-10-14,
+document-review fold 2: R2-1; SC-1's build at 36181a729 parses the
+declaration and reports a field requirement as a `semantics TODO`, probe
+PR-AC):
+
+````markdown
+-   `template constraint` declarations are implemented as
+    [Template constraints](generics/template_constraints.md) describes, with
+    the member forms it defers, such as field requirements.
+````
 
 At state L the paragraph's last sentence becomes (amended 2026-10-14,
 document-review fold: DR1-2 / DR1-7):
@@ -1525,12 +1598,14 @@ constraint on the members a type declares is a `template constraint`
 ([Template constraints](generics/template_constraints.md)).
 ````
 
-Counts after: H2 3 → 4, H3 4, dash items 6 → 10 (TOC plus three list items;
-amended 2026-10-14, document-review fold: DR1-7), no ordered items. Samples:
+Counts after: H2 3 → 4, H3 4, dash items 6 → 14 (TOC plus seven list items;
+amended 2026-10-14, document-review fold: DR1-7; document-review fold 2:
+R2-1), no ordered items. Samples:
 P04 (design_docs_templates.carbon, under "Generics: Integrated templates";
 rev 2 adds `Holder`, amended 2026-10-13, review fold: A-14 / B-m-4), R08,
-R10, R09; quote fixtures R11 (edit 3) and X05 (the `Circle` paragraph); probes
-PR-A, PR-D, PR-E, PR-J, PR-K, PR-N.
+R10, R09; quote fixtures R11 (edit 3), X05 (the `Circle` paragraph), X07 and
+X08 (the template `let` and `auto` limits); probes PR-A, PR-D, PR-E, PR-J,
+PR-K, PR-N, PR-AA, PR-AB, PR-AC.
 
 ### §2.5 docs/design/metaprogramming.md
 
@@ -1560,15 +1635,17 @@ Edit 2 appends after line 32:
 
 The toolchain evaluates constant expressions during compilation wherever the
 language needs a constant, such as an array bound, a type, or a template
-argument. Two function modifiers extend this to calls. Accepted proposals 7140
-and 7697 and [function types](functions.md#function-types-and-values) use
-`musteval fn` in examples, no proposal and no other design page shows
-`eval fn` in an example, and no proposal designs either modifier yet:
+argument. Two function modifiers extend this to calls:
 
 -   an `eval fn` may be called during compilation when its arguments are
     constants, and may also be called at run time;
 -   a `musteval fn` may only be called with constant arguments, so its result is
     always computed during compilation.
+
+No proposal designs either modifier yet. Accepted proposals 7140 and 7697 and
+the design pages on [function types](functions.md#function-types-and-values)
+and [type operators](expressions/type_operators.md) use `musteval fn` in
+examples; no proposal and no other design page shows `eval fn` in an example.
 
 Compile-time evaluation runs ordinary function bodies, with control flow and
 recursion, and can compute types, so an `eval fn` that returns `type` acts as a
@@ -1631,10 +1708,10 @@ fn F(x: i32) -> i32 {
 }
 ```
 
-with ``non-constant call to compile-time-only function``. A plain `fn` with a
-body is not evaluated during compilation (only `eval` and `musteval`
-functions, and builtin functions such as the prelude's operator functions,
-are):
+The toolchain reports ``non-constant call to compile-time-only function``. A
+plain `fn` with a body is not evaluated during compilation (only `eval` and
+`musteval` functions, and builtin functions such as the prelude's operator
+functions, are):
 
 ```carbon
 fn Three() -> i32 { return 3; }
@@ -1642,8 +1719,8 @@ fn Three() -> i32 { return 3; }
 var a: array(i32, Three()) = (0, 1, 2);
 ```
 
-reports `array bound is not a constant`. A local compile-time binding is not yet
-supported:
+The toolchain reports `array bound is not a constant`. A local compile-time
+binding is not yet supported:
 
 ```carbon
 fn F() -> i32 {
@@ -1652,8 +1729,8 @@ fn F() -> i32 {
 }
 ```
 
-reports ``semantics TODO: `local generic `let` bindings are currently unsupported` ``
-(fork work item W-031).
+The toolchain reports ``semantics TODO: `local generic `let` bindings are
+currently unsupported` `` (fork work item W-031).
 
 Other limits of the 0.1 toolchain: a `musteval fn` cannot yet pass its own
 parameters to another `musteval fn` (pinned by
@@ -1673,7 +1750,11 @@ fold: DR2-5: it no longer says `eval fn` appears on no design page, which
 this page contradicts. The plain-`fn` sentence is amended 2026-10-14,
 document-review fold: DR1-6: a builtin `fn`, such as an `Add` whose body is
 `= "int.sadd"`, is evaluated in an array bound on the fork and the nightly,
-probe PR-W, §4.3.)
+probe PR-W, §4.3. Amended 2026-10-14, document-review fold 2: DR2b-5: the
+provenance of the two modifiers moves to its own paragraph after the list,
+which the lead-in now introduces, and names type_operators.md's `musteval fn`
+example too; DR2b-3: each sentence after a rejected sample opens with "The
+toolchain reports", as on the sibling pages.)
 
 ### §2.6 docs/design/pattern_matching.md
 
@@ -1717,12 +1798,13 @@ unparenthesized guard of [Guards](#guards) is rejected with
 
 The scrutinee may be of an integer type, `bool`, a choice type (including a
 specific of a generic choice and an imported choice such as
-`Core.Result(T, E)`), a tuple of those, or a struct type. Patterns are constant
-integer and `bool` expressions; bindings `x: T`, `var x: T`, and, for a
-reference scrutinee, `ref x: T`; `_`; tuple patterns; struct patterns with
-designated fields (`.w = 0`, `.w = w: i32`) or shorthand fields (`w: i32`) and a
-trailing `_` that discards the rest; and alternative patterns `.Name` and
-`.Name(...)`, whose payload subpatterns are constants or bindings.
+`Core.Result(T, E)`), or a tuple or struct type whose elements are of those
+types (nested tuples and structs included). Patterns are constant integer and
+`bool` expressions; bindings `x: T`, `var x: T`, and, for a reference
+scrutinee, `ref x: T`; `_`; tuple patterns; struct patterns with designated
+fields (`.w = 0`, `.w = w: i32`) or shorthand fields (`w: i32`) and a trailing
+`_` that discards the rest; and alternative patterns `.Name` and `.Name(...)`,
+whose payload subpatterns are constants or bindings.
 
 Arms are tried in order: the first arm whose pattern matches and whose guard, if
 any, is true runs, with the pattern's bindings in scope in the guard and the
@@ -1793,7 +1875,9 @@ fn Run() -> i32 {
 }
 ```
 
-This prints `12`, `0`, `-1`, `1`, and `45`. The checks, each an error:
+This prints `12`, `0`, `-1`, `1`, and `45`. Each of the following checks is an
+error. A `match` on a choice that leaves out an alternative and has no
+`default`:
 
 ```carbon
 choice Signal { Stop, Go, Wait }
@@ -1807,8 +1891,9 @@ fn F(s: Signal) -> i32 {
 }
 ```
 
-reports
-`` `match` on choice `Signal` has no `default` arm and does not cover alternative `.Wait` ``;
+The toolchain reports `` `match` on choice `Signal` has no `default` arm and
+does not cover alternative `.Wait` ``. A `match` on an integer type with no
+`default` and no irrefutable arm:
 
 ```carbon
 fn F(n: i32) -> i32 {
@@ -1820,8 +1905,8 @@ fn F(n: i32) -> i32 {
 }
 ```
 
-reports
-`` `match` on `i32` has no `default` arm and no `case` arm that matches every value ``;
+The toolchain reports `` `match` on `i32` has no `default` arm and no `case`
+arm that matches every value ``. An arm that a prior arm makes unreachable:
 
 ```carbon
 fn F(n: i32) -> i32 {
@@ -1833,8 +1918,9 @@ fn F(n: i32) -> i32 {
 }
 ```
 
-reports
-`` `case` pattern never matches; every value it can match is matched by a prior arm ``;
+The toolchain reports `` `case` pattern never matches; every value it can
+match is matched by a prior arm ``. A `default` arm after arms that match every
+value:
 
 ```carbon
 fn F(b: bool) -> i32 {
@@ -1847,9 +1933,8 @@ fn F(b: bool) -> i32 {
 }
 ```
 
-reports
-`` `default` arm never matches; every value of the scrutinee is matched by prior arms ``;
-and the unparenthesized guard
+The toolchain reports `` `default` arm never matches; every value of the
+scrutinee is matched by prior arms ``. A guard without parentheses:
 
 ```carbon
 fn F(x: (i32, i32)) -> i32 {
@@ -1860,7 +1945,7 @@ fn F(x: (i32, i32)) -> i32 {
 }
 ```
 
-reports ``expected `(` after `if` ``.
+The toolchain reports ``expected `(` after `if` ``.
 
 Not in the 0.1 toolchain, each a filed fork work item or a pinned
 `semantics TODO` in `toolchain/check/testdata/match/`:
@@ -1870,20 +1955,22 @@ Not in the 0.1 toolchain, each a filed fork work item or a pinned
     with a `return`, and why `IsTrue` in
     [Refutability, overlap, usefulness, and exhaustiveness](#refutability-overlap-usefulness-and-exhaustiveness)
     is rejected (fork work item W-155, on held PR 54).
--   A set of tuple patterns never counts as exhaustive unless one arm is
-    irrefutable: the four arms `case (false, false)`, `case (false, true)`,
-    `case (true, false)` and `case (true, true)` on a `(bool, bool)`
-    scrutinee are rejected with
+-   A set of tuple or struct patterns never counts as exhaustive unless one
+    arm is irrefutable: the four arms `case (false, false)`,
+    `case (false, true)`, `case (true, false)` and `case (true, true)` on a
+    `(bool, bool)` scrutinee are rejected with
     `` `match` on `(bool, bool)` has no `default` arm and no `case` arm that
     matches every value ``, and so are the two arms `case (true, x: i32)` and
-    `case (false, y: i32)` on a `(bool, i32)` scrutinee, although each set
-    covers every value by the rules above, which treat a constant tuple as a
-    tuple pattern and `bool` like a choice type; a `default` or an irrefutable
-    arm is needed (W-189; pinned by `fail_bool_pair_enumeration.carbon` in
+    `case (false, y: i32)` on a `(bool, i32)` scrutinee and the two arms
+    `case {.a = true, _}` and `case {.a = false, _}` on a `{.a: bool, .b: i32}`
+    scrutinee, although each set covers every value by the rules above, which
+    treat constant tuples and structs as tuple and struct patterns and `bool`
+    like a choice type; a `default` or an irrefutable arm is needed (W-189;
+    pinned by `fail_bool_pair_enumeration.carbon` in
     `toolchain/check/testdata/match/fail_int_nonexhaustive.carbon`).
--   An alternative pattern inside a tuple pattern or a payload subpattern is
-    read as an expression, so the usefulness example above cannot be written
-    yet (W-182).
+-   An alternative pattern inside a tuple pattern, a struct pattern field, or a
+    payload subpattern is read as an expression, so the usefulness example
+    above cannot be written yet (W-182).
 -   An alternative pattern written with its choice type's name, such as
     `Opt.None` or `Opt.Some(n: i32)` for a choice `Opt`: the first reports
     ``semantics TODO: `qualified alternative pattern in match case` `` (pinned
@@ -1893,11 +1980,14 @@ Not in the 0.1 toolchain, each a filed fork work item or a pinned
     ``name `n` not found``; the leading-dot forms `.None` and `.Some(n: i32)`
     work.
 -   A scrutinee of any other type, including floating-point types, `str`,
-    classes, and template-dependent types, so the [Templates](#templates)
-    rules do not apply yet; expression patterns that are not constants, such
-    as a variable; and compile-time bindings in a `case`.
+    classes, template-dependent types, and a tuple or struct with an element
+    of such a type, so the [Templates](#templates) rules do not apply yet;
+    expression patterns that are not constants, such as a variable; and
+    compile-time bindings in a `case`.
 -   A refutable pattern in a plain `var` declaration, such as `var 5 = n;`
     above, stops the compiler instead of being diagnosed (W-080).
+
+Because an exhaustive `match` does not end control flow, `IsTrue` is rejected:
 
 ```carbon
 fn IsTrue(b: bool) -> bool {
@@ -1908,7 +1998,9 @@ fn IsTrue(b: bool) -> bool {
 }
 ```
 
-reports ``missing `return` at end of function with declared return type``, and
+The toolchain reports ``missing `return` at end of function with declared
+return type``. An alternative pattern nested in a tuple pattern is read as an
+expression:
 
 ```carbon
 choice Flag { Off, On }
@@ -1921,7 +2013,8 @@ fn Both(a: Flag, b: Flag) -> bool {
 }
 ```
 
-reports ``name `.Self` not found``; a `match` on `f64`
+The toolchain reports ``name `.Self` not found``. A floating-point scrutinee
+is not supported:
 
 ```carbon
 fn F(x: f64) -> i32 {
@@ -1931,7 +2024,8 @@ fn F(x: f64) -> i32 {
 }
 ```
 
-reports ``semantics TODO: `match on unsupported scrutinee type` ``.
+The toolchain reports
+``semantics TODO: `match on unsupported scrutinee type` ``.
 ````
 
 A diagnostic that starts or ends with a backtick is quoted in a double-backtick
@@ -1949,13 +2043,23 @@ choice type's name is added, the `Opt.None` form pinned by the testdata
 `semantics TODO` and the `Opt.Some(n: i32)` form by quote fixture X06. The
 grammar's `[...]?` stays, as DR2-5's last item is rejected: it is the
 notation of the upstream guard production at pattern_matching.md:816, which
-the 0.1 grammar mirrors.)
+the 0.1 grammar mirrors. Amended 2026-10-14, document-review fold 2: R2-4: the
+scrutinee sentence names tuples and structs whose elements are of the
+supported types, and the item on other types adds a tuple or struct with an
+unsupported element (probe PR-AE: `{.x: f64, .n: i32}` and `(f64, i32)`
+report ``semantics TODO: `match on unsupported scrutinee type` ``); the W-189
+item gains the struct case (probe PR-AF) and the W-182 item a struct pattern
+field (probe PR-AG); DR2b-3: every sentence after a rejected sample opens
+with "The toolchain reports", and each of the five checks has its own
+lead-in; DR2b-4: each of the three samples after the list opens with the
+limit it shows. The quoted diagnostics are unchanged.)
 
 Counts after: H4 10 → 11, dash items 112 → 122 (TOC plus nine list items;
 amended 2026-10-14, document-review fold: DR1-8), ordered items unchanged.
 Samples: P06 (design_docs_match.carbon, fork-only, under "Control flow:
 matching — good switch equivalents"), R15-R22; quote fixtures X02 (edit 1)
-and X06; probes PR-B, PR-D, PR-F, PR-L, PR-P, PR-R, PR-X, PR-Y, PR-Z.
+and X06; probes PR-B, PR-D, PR-F, PR-L, PR-P, PR-R, PR-X, PR-Y, PR-Z, PR-AE,
+PR-AF, PR-AG.
 
 ### §2.7 docs/design/interoperability/README.md
 
@@ -1971,11 +2075,11 @@ C++ source can also be written in a Carbon file. `import Cpp inline` followed by
 a string literal, usually a block string literal `'''...'''` tagged `c++`,
 compiles that source as if it were a header: its declarations join the `Cpp`
 package exactly as a header's do, and it may `#include` headers itself. It is an
-`import`, so it comes with the other imports, before any other declaration. The
-`inline Cpp` declaration may instead appear among Carbon declarations, and its
-C++ code can call the Carbon declarations above it through the `Carbon`
-namespace; it requires an `import Cpp` declaration earlier in the file, such
-as `import Cpp;` or the `import Cpp inline` above.
+`import`, so it comes with the other imports, before any other declaration. A
+second spelling, the declaration `inline Cpp '''...''';`, may appear among
+Carbon declarations, and its C++ code can call the Carbon declarations above it
+through the `Carbon` namespace; it requires an `import Cpp` declaration earlier
+in the file, such as `import Cpp;` or the `import Cpp inline` above.
 
 ```carbon
 import Core library "io";
@@ -2003,8 +2107,9 @@ fn Run() -> i32 {
 
 This prints `42` and `41`. The string literal's escape sequences are Carbon's
 and are processed before C++ sees the text, so a C++ `"\n"` is written `"\\n"`,
-or the whole block is written as a raw block string literal `#'''...'''#`. No
-accepted proposal covers the inline forms; the toolchain parses both
+or the whole block is written as a raw block string literal `#'''...'''#`.
+Accepted proposals 6668 and 7697 use `import Cpp inline` in examples, but no
+proposal designs the inline forms; the toolchain parses both
 (`toolchain/parse/handle_inline_decl.cpp`) and the tests in
 `toolchain/check/testdata/interop/cpp/basics/inline/` pin them. Without an
 earlier `import Cpp`, the `inline Cpp` declaration is an error:
@@ -2024,9 +2129,11 @@ Leads question
 whether `import Cpp inline` should be a declaration among the others rather than
 one of the imports that precede them. On 2026-03-26 it was decided as a
 top-level declaration spelled `inline Cpp '''...'''`, the second form above. The
-issue was reopened on 2026-03-30 only over whether that declaration ends with a
-semicolon, which the toolchain requires
-(`toolchain/parse/testdata/packages/import/cpp_inline.carbon`), so it is open.
+issue was reopened on 2026-03-30 over the trailing semicolon, which the
+toolchain requires
+(`toolchain/parse/testdata/packages/import/cpp_inline.carbon`); the discussion
+since has also weighed a fenced delimiter in place of `'''`, and no further
+decision is recorded, so the issue is open.
 ````
 
 (Amended 2026-10-13, review fold: A-14 / B-m-4: "after any `import Cpp`" read as
@@ -2059,8 +2166,9 @@ toolchain and the nightly, §4.2); the issue was re-read online for this fold.)
 ````markdown
 ### Constructors
 
-A C++ constructor is a member of its class with the class's name, as in C++, and
-is called with call syntax: `Cpp.Point.Point(1, 2)`. C++ overload resolution
+No accepted proposal covers C++ constructors. In the 0.1 toolchain, a C++
+constructor is a member of its class with the class's name, as in C++, and is
+called with call syntax: `Cpp.Point.Point(1, 2)`. C++ overload resolution
 chooses among the constructors and supplies default arguments
 ([Overload resolution](#overload-resolution)). A `var` with no initializer runs
 the default constructor; initializing from another object of the class runs its
@@ -2139,11 +2247,13 @@ C++ overload resolution finds no viable `Length`, and the toolchain reports
 ````markdown
 ### Struct literals
 
-A Carbon struct literal initializes two kinds of C++ class in 0.1: an empty
-struct literal `{}` initializes an aggregate with no fields, and a one-field
-struct literal initializes a C++ union, naming the member to make active
-([Unions](../unions.md), fork decision F-007). A C++ aggregate with fields is
-built in C++, by a function or a constructor, and then used field by field.
+No accepted proposal covers initializing a C++ class from a Carbon struct
+literal. In the 0.1 toolchain, a struct literal initializes two kinds of C++
+class: an empty struct literal `{}` initializes an aggregate with no fields,
+and a one-field struct literal initializes a C++ union, naming the member to
+make active ([Unions](../unions.md), fork decision F-007). A C++ aggregate with
+fields is built in C++, by a function or a constructor, and then used field by
+field.
 
 ```carbon
 import Core library "io";
@@ -2202,6 +2312,10 @@ The toolchain reports
 ````markdown
 ## Accessing C++ classes, structs, and members
 
+Proposal 6358 nests C++ namespaces in the `Cpp` package, and proposal 6254
+specifies calls to member functions, with the object as C++'s `this`, and the
+access check on the function that overload resolution selects; no accepted
+proposal covers fields, nested types, or base classes. In the 0.1 toolchain,
 C++ classes and structs are Carbon types in the `Cpp` package, nested in `Cpp`
 namespaces as in C++ (`Cpp.geo.Rect`). Their members use Carbon member access:
 fields and member functions through an object (`r.Area()`, `r.tag`), and static
@@ -2283,9 +2397,10 @@ fn F() -> i32 {
 }
 ```
 
-reports ``cannot access private member `v_` of type `Cpp.Box` ``. A `const`
-member function can be called on any object, including a value; a member
-function that is not `const` needs a reference expression, such as a `var`:
+The toolchain reports ``cannot access private member `v_` of type `Cpp.Box` ``.
+A `const` member function can be called on any object, including a value; a
+member function that is not `const` needs a reference expression, such as a
+`var`:
 
 ```carbon
 import Cpp inline '''c++
@@ -2327,10 +2442,12 @@ milestones.md:125-128, pinned by the two PASSing programs, §4.2.)
 ````markdown
 ## Accessing global variables
 
-A C++ variable at namespace scope, such as an `inline` variable or an `extern`
-declaration with its definition, is a durable reference expression in Carbon,
-named through the `Cpp` package: it can be read, assigned, and updated in place.
-A `const` variable can only be read.
+Proposal 6358 imports every C++ declaration into the `Cpp` package; no
+accepted proposal specifies how a C++ variable behaves in Carbon. In the 0.1
+toolchain, a C++ variable at namespace scope, such as an `inline` variable or
+an `extern` declaration with its definition, is a durable reference expression
+in Carbon, named through the `Cpp` package: it can be read, assigned, and
+updated in place. A `const` variable can only be read.
 
 ```carbon
 import Core library "io";
@@ -2357,7 +2474,7 @@ fn Run() -> i32 {
 }
 ```
 
-This prints `42`, `107`, and `3`. Assigning a `const` variable
+This prints `42`, `107`, and `3`. Assigning a `const` variable is an error:
 
 ```carbon
 import Cpp inline '''c++
@@ -2369,8 +2486,9 @@ fn F() {
 }
 ```
 
-reports `expression is not assignable`. C++ `thread_local` variables are
-covered in [Threads, atomics, and the memory model](threads_and_atomics.md).
+The toolchain reports `expression is not assignable`. C++ `thread_local`
+variables are covered in
+[Threads, atomics, and the memory model](threads_and_atomics.md).
 ````
 
 **Line 250**, `### Integers`:
@@ -2437,7 +2555,8 @@ fn F() -> i64 {
 }
 ```
 
-reports ``cannot implicitly convert expression of type `Cpp.long_long` to `i64` ``.
+The toolchain reports ``cannot implicitly convert expression of type
+`Cpp.long_long` to `i64` ``.
 ````
 
 **Line 275**, the H2 "Advanced type mapping: pointers, references, and
@@ -2522,7 +2641,7 @@ fn F() -> i32 {
 }
 ```
 
-reports ``argument to `ref` parameter not marked with `ref` ``.
+The toolchain reports ``argument to `ref` parameter not marked with `ref` ``.
 ````
 
 (Amended 2026-10-13, review fold: A-3: proposal 5434 defers C++ references,
@@ -2541,7 +2660,8 @@ regenerated from the page block, and only that comment line changes.)
 ````markdown
 ## Using C++ templates
 
-A C++ template is used from Carbon as C++ code uses it. A function template is
+No accepted proposal covers C++ templates. In the 0.1 toolchain, a C++
+template is used from Carbon as C++ code uses it. A function template is
 called like a function, and C++ deduces its template arguments from the Carbon
 arguments. A class template is named with its template arguments in
 parentheses, `Cpp.Box(i32)` for `Box<int>`, and each argument list names a
@@ -2584,18 +2704,23 @@ fn Run() -> i32 {
 }
 ```
 
-This prints `7`, `5`, and `4`. Limits in 0.1: a checked generic's symbolic
-type parameter cannot yet be a C++ template argument, so `Cpp.Box(T)` in the
-body of a function with a parameter `[T: type]` does not compile (fork work
-item W-043). A C++20 concept applied to types is a compile-time `bool`, so
-`Cpp.IsLarge(Cpp.Small)` can be a generic argument
+This prints `7`, `5`, and `4`. A checked generic's type parameter can be a C++
+template argument: in a function `F[T: Core.Copy](x: T) -> T`, the body
+`let b: Cpp.Box(T) = Cpp.Box(T).Make(x); return b.Get();` compiles, and the
+template is instantiated for each specific. Limits in 0.1: a `var` of such a
+specialization cannot be declared without an initializer, because
+`var b: Cpp.Box(T);` reports that the type does not implement
+`Core.DefaultOrUnformed` (fork work item W-043). A C++20 concept `IsLarge`
+applied to a C++ type is a compile-time `bool`, so `Cpp.IsLarge(Cpp.Small)` can
+be a generic argument
 (`toolchain/check/testdata/interop/cpp/template/concept.carbon`); Carbon
 constraints are not exported as C++ concepts (W-029). Using Carbon generics
 from C++ is described in [Using Carbon from C++](#using-carbon-from-c).
 
 ## Using Carbon from C++
 
-C++ code names Carbon declarations through the `Carbon` namespace:
+No accepted proposal covers using Carbon from C++. In the 0.1 toolchain, C++
+code names Carbon declarations through the `Carbon` namespace:
 `Carbon::Twice(7)` calls the Carbon function `Twice`, and `Carbon::Counter` is
 the Carbon class `Counter`, whose fields, methods, and class functions C++ uses
 as its members. A method declared with `ref self` can be called only on a
@@ -2688,11 +2813,14 @@ B-M-5):
 ````markdown
 ### C++ ranges in `for` loops
 
-A C++ range can be the range of a Carbon `for` loop. For a C++ class whose
-`begin` and `end` are found as members or by argument-dependent lookup and
-return an iterator of class type, the toolchain implements `Core.Iterate`, and
-the loop calls `begin` and `end` and dereferences and increments the iterator,
-as a C++ range-based `for` does (the fork's conformance programs
+Proposal 1885 lets a `for` loop iterate over a value of any type that
+implements its `Iterate` interface, and leaves C++ ranges to future work. In
+the 0.1 toolchain, a C++ range can be the range of a Carbon `for` loop. For a
+C++ class whose `begin` and `end` are found as members or by argument-dependent
+lookup and return an iterator of class type, the toolchain implements
+`Core.Iterate`, and the loop calls `begin` and `end` and dereferences and
+increments the iterator, as a C++ range-based `for` does (the fork's
+conformance programs
 `fork/conformance/programs/interop/cpp_range_member_begin_end_iterate.carbon`
 and `fork/conformance/programs/interop/cpp_range_adl_begin_end_iterate.carbon`).
 Standard library containers are ranges this way.
@@ -2852,15 +2980,38 @@ fn F() -> i32 {
 }
 ```
 
-with ``cannot implicitly convert expression of type `Core.IntLiteral` to `Cpp.Cell` ``.
-The other direction is not implemented: a Carbon type's operator interface
-implementations are not exported as C++ operators (fork work item W-054).
+The toolchain reports ``cannot implicitly convert expression of type
+`Core.IntLiteral` to `Cpp.Cell` ``. The other direction is not implemented: a
+Carbon type's operator interface implementations are not exported as C++
+operators (fork work item W-054).
 ````
 
 (Amended 2026-10-13, review fold: A-14: the operator list is split into the
 W-045 import gaps, pinned by the operators/ and deref.carbon `fail_todo`
 splits, and the operators with no Carbon spelling, which README.md:3685-3687
 keeps C++-only.)
+
+(Amended 2026-10-14, document-review fold 2, in the section texts above:
+R2-2: the C++ templates section said that a checked generic's symbolic type
+parameter cannot be a C++ template argument, but with an initializer it can,
+on the fork toolchain and the nightly (quote fixture X09 prints `7 8 4`);
+only a `var` without an initializer is rejected (probe PR-T), so the limit
+says that; R2-6: issue 6830's paragraph says the issue was reopened over the
+trailing semicolon and that the discussion since has weighed a fenced
+delimiter with no further decision (the issue re-read online for this fold,
+§8.10), and the inline section says that accepted proposals 6668 and 7697 use
+`import Cpp inline` in examples (p006668:323, p007697:246) while no proposal
+designs the inline forms; R2-7: Constructors, Struct literals, Accessing C++
+classes, structs, and members, Accessing global variables, Using C++
+templates, Using Carbon from C++ and C++ ranges in `for` loops each open with
+their source, either no accepted proposal or what proposals 6358, 6254 and
+1885 fix and leave (p006358:87-92, p006254:129-131 and :201-208,
+p001885:497-504 and :620-640), and then "In the 0.1 toolchain"; DR2b-3:
+every sentence after a rejected sample opens with "The toolchain reports",
+and the `const` variable's lead-in is a sentence; DR2b-5: the second inline
+spelling is introduced as "A second spelling, the declaration
+`inline Cpp '''...''';`", and `Cpp.IsLarge(Cpp.Small)` as a C++20 concept
+`IsLarge` applied to a C++ type. Counts unchanged.)
 
 The design README has two `### Operator overloading` headings: :3372 (Carbon's
 own operators, anchor `operator-overloading`) and :3657 (the interoperability
@@ -2876,7 +3027,7 @@ category C) (amended 2026-10-13, review fold: B-M-5). Samples:
 P07-P14 (programs design_docs_cpp_inline, _constructors, _struct_literals,
 _members, _globals, _integers, _pointers, _operators; P09 fork-only), P17
 (design_docs_cpp_templates), P18 (design_docs_carbon_from_cpp), P19
-(design_docs_cpp_ranges), R23-R30, R32-R34;
+(design_docs_cpp_ranges), R23-R30, R32-R34; quote fixtures X04 and X09;
 probes PR-G, PR-G2, PR-H, PR-O, PR-Q, PR-S, PR-T.
 
 ### §2.8 docs/design/interoperability/threads_and_atomics.md (new page)
@@ -2937,11 +3088,10 @@ Carbon-native threading is deferred to at least 0.2
     ([Interoperating with C++ exceptions](../error_handling.md#interoperating-with-c-exceptions),
     with the `--cpp-exceptions` option of fork work item W-016).
 
-Held PR 53 (fork decision F-013, D-SAFE-16) names `Core.Thread` and
-`Core.Atomic(T)`, a Carbon signature over `Cpp.std.atomic(T)`, for the fifth
-stage of its safety design (fork work item W-149). Whether to reserve
-`Core.MemoryOrder` is an open question. Nothing in 0.1 declares any of the
-three.
+Held PR 53 (fork decision F-013) names `Core.Thread` and `Core.Atomic(T)`, a
+Carbon signature over `Cpp.std.atomic(T)` (fork work item W-149), for the fifth
+stage of its safety design. Whether to reserve `Core.MemoryOrder` is an open
+question. Nothing in 0.1 declares any of the three.
 
 ## In the 0.1 toolchain
 
@@ -3006,11 +3156,12 @@ documents the contract and leaves three toolchain defects unfixed; Option B,
 "Option A + targeted toolchain fixes for the three verified defects", the
 choice (`std::thread` on a Carbon function, a Carbon global of a C++ template
 specialization type, and `std::atomic` of a Carbon class, all fixed in the
-fork's toolchain, fork work items W-021 to W-023); Option C, "Option B + a
-`Core.Sync` veneer library", which adds a `Core.Sync` library veneer over the
-C++ types; and Option D, "Carbon-native atomics
-lowered directly to LLVM". The veneer and native atomics were rejected for 0.1
-as new design ahead of the 0.2 concurrency work.
+fork's toolchain, fork work items W-021 to W-023); Option C, which adds to
+Option B a `Core.Sync` library veneer over the C++ types (wrapper types, not
+the compiler-determined `Core.Sync` facet that held PR 53 names for the fifth
+stage of its safety design); and Option D, "Carbon-native atomics lowered
+directly to LLVM". The veneer and native atomics were rejected for 0.1 as new
+design ahead of the 0.2 concurrency work.
 
 ## References
 
@@ -3044,7 +3195,16 @@ name-reservation paragraph says that held PR 53 names `Core.Thread` and
 `Core.Atomic(T)` for its stage 5
 (claude/carbon-fork-0-1-safe:docs/design/safety/mutation_safety.md:84-86 and
 :399-402), and only `Core.MemoryOrder` is left open; D-DD-7 sub-fork (4) is
-amended to match. Counts unchanged: H2 6 with the TOC heading, ordered 7.)
+amended to match. Counts unchanged: H2 6 with the TOC heading, ordered 7.
+Amended 2026-10-14, document-review fold 2: R2-3: the name-reservation
+paragraph cites F-013 and W-149 and no longer D-SAFE-16, which names neither
+type (claude/carbon-fork-0-1-safe:docs/design/safety/mutation_safety.md:84-87
+files `Core.Atomic(T)` under W-149 and calls `Core.Thread` D-SAFE-20 library
+residue; D-SAFE-16, :825-831, is the facets decision), and Option C's veneer
+is told apart from the compiler-determined `Core.Sync` facet that PR 53 names
+(:257-262); DR2b-5: Option C is described once, without its quoted title,
+and keeps §2.13's anchor phrase, and D-SAFE-16, which the page never
+defined, is gone from it; §2.13's state-L texts follow. Counts unchanged.)
 
 ### §2.9 docs/design/README.md
 
@@ -3232,7 +3392,7 @@ dated note follows :149. State T:
 > [Enums](#enums) and [Execution abstractions](#execution-abstractions)
 > sections, and the rules for
 > [assigning tuples, structs, and data classes](assignment.md#tuples-structs-choice-types-and-data-classes).
-> Two sections stay empty until held work lands:
+> Two sections stay TODO-only until held work lands:
 > [Lifetime and move semantics](#lifetime-and-move-semantics) (held PR 53) and
 > the [Strings](expressions/arithmetic.md#strings) section of arithmetic
 > (held PR 55). The provisional notes that remain qualify the text beside
@@ -3256,8 +3416,9 @@ that documents the 0.1 toolchain's behavior, and a last sentence defines the
 fork vocabulary the design pages use; DR2-2 / DR2-8: the checker's list
 gains the empty section of W2 clause (d); DR2-3: the label.) State L (PR 53
 and PR 55 merged, the W2 `ALLOWLIST` empty) replaces the sentence "Two
-sections stay empty ... (held PR 55)." with "No section under docs/design/ is
-an empty placeholder." (amended 2026-10-13, review fold: RR-N-2: rev 2's
+sections stay TODO-only ... (held PR 55)." with "No section under
+docs/design/ is a TODO-only or empty placeholder." (amended 2026-10-13,
+review fold: RR-N-2: rev 2's
 sentence also covered every page the README links, among them docs/project/
 and proposals/, which the W2 rule does not read; amended 2026-10-14,
 document-review fold: DR1-5: the state-L sentence replaces the state-T one
@@ -3265,7 +3426,11 @@ instead of being added before the last sentence), and drops the clause that
 defines "held PR" once no design page cites a held PR (§2.13; amended
 2026-10-14, document-review fold: DR2-4). The note's first sentence is the
 `QUALIFIED` entry's quote (§2.12 item 5), and it spans a blockquote line
-break, which the matcher handles (§2.12 item 3).
+break, which the matcher handles (§2.12 item 3). (Amended 2026-10-14,
+document-review fold 2: R2-8: the two sections are TODO-only, not empty, as
+the W2 rule reports both under clause (c), so the state-T sentence says
+"TODO-only", and the state-L sentence covers both forms; the `QUALIFIED`
+quote is unchanged.)
 
 Counts after: no heading or list change in README.md (the notes are
 blockquotes; the Enums sample is a fenced block). Sample: P15
@@ -3317,7 +3482,7 @@ bullet, its body and its SKIP directive; commit 1 replaces the SKIP reason (its
 line 6) with this text (R10: exact evidence, current line numbers):
 
 ```text
-// SKIP: documentation/goal bullet, arbitrated by document review of docs/design/ (gap row 91), not by a runnable program, as row 88 is (and row 89 on held PR 53). DD-1 (fork/designdocs/plan.md, W-065) replaced the placeholder self-descriptions of templates.md, metaprogramming.md, aliases.md, blocks_and_statements.md and pattern_matching.md's `match` section with dated status notes and measured sections, wrote the interoperability README's eight former TODO sections and three new ones, added docs/design/interoperability/threads_and_atomics.md, and qualified docs/design/README.md's "provisional or placeholder" disclosure (:143-149) with a dated note. The grep arbiter is `python3 fork/designdocs/check_samples.py`: its W2 rule reports placeholder boilerplate (including "provisional or placeholder"), TODO headings, TODO-only sections and empty sections under docs/design/ that its allowlist and qualified list do not name. The documented samples run as documentation-sync programs under their feature bullets (fork/conformance/programs/project/design_docs_*.carbon). No runnable program can distinguish a cohesive design doc from a placeholder one, so this program stays SKIP; the bullet's status is gap row 91's, set by the two document reviews.
+// SKIP: documentation/goal bullet, arbitrated by document review of docs/design/ (gap row 91), not by a runnable program, as row 88 is (and row 89 on held PR 53). DD-1 (fork/designdocs/plan.md, W-065) replaced the placeholder self-descriptions of templates.md, metaprogramming.md, aliases.md, blocks_and_statements.md and pattern_matching.md's `match` section with dated status notes and measured sections, wrote the interoperability README's eight former TODO sections and four new ones, one of them pointing to docs/design/interoperability/threads_and_atomics.md, which DD-1 added, and qualified docs/design/README.md's "provisional or placeholder" disclosure (:143-149) with a dated note. The grep arbiter is `python3 fork/designdocs/check_samples.py`: its W2 rule reports placeholder boilerplate (including "provisional or placeholder"), TODO headings, TODO-only sections and empty sections under docs/design/ that its allowlist and qualified list do not name. The documented samples run as documentation-sync programs under their feature bullets (fork/conformance/programs/project/design_docs_*.carbon). No runnable program can distinguish a cohesive design doc from a placeholder one, so this program stays SKIP; the bullet's status is gap row 91's, set by the two document reviews.
 ```
 
 (The SKIP text is amended 2026-10-14, document-review fold: DR1-15: row 89
@@ -3327,7 +3492,9 @@ allowlist; DR2-2 / DR2-8: the W2 rule gains clause (d), empty sections. The
 fold applies it to the stub's line 6 as a new commit, since commit 1 exists.
 The text still describes, from commit 1 on, what commits 2 and 3 land, as
 this section placed it; the PR lands as one unit, and commit 4/4's landed
-notes record it.)
+notes record it. Amended 2026-10-14, document-review fold 2: DR2b-7: the
+README gained four new sections, not three, the fourth pointing to the new
+threads page, so the text says so.)
 
 **The programs.** Add the nineteen programs below, each: the three-line
 license comment, a blank line, then
@@ -3393,11 +3560,17 @@ program changes.
 blank line, `// DESIGN-DOCS-SAMPLE: <page>, "<section>", <block|quote>`, then
 `// EXPECT-ERROR: <message>` (the text after `error:` on the first error line)
 or `// EXPECT-STDOUT:` lines in the runner's format, then for a quote fixture
-`// QUOTE: <text>`, a blank line, and the body. The thirty-nine fixtures and
+`// QUOTE: <text>`, a blank line, and the body. The forty-two fixtures and
 their pinned messages are the R and X rows of §4.1 (R01-R30, R32-R34,
-X01-X06; amended 2026-10-13, review fold: A-1 / A-9 / A-14 / B-M-5 / B-m-4;
+X01-X09; amended 2026-10-13, review fold: A-1 / A-9 / A-14 / B-M-5 / B-m-4;
 amended 2026-10-14, document-review fold: DR1-16 / DR1-8 / DR-FX-1, which add
-X04, X06 and X05). R11 and X01 to X06 are the quote fixtures. X04's QUOTE is
+X04, X06 and X05; amended 2026-10-14, document-review fold 2: R2-1 / R2-2,
+which add X07, X08 and X09). R11 and X01 to X09 are the quote fixtures. X07's
+and X08's QUOTE is each one's EXPECT-ERROR message, the file-scope template
+`let` and the `auto` diagnostics of templates.md's "Templates in the 0.1
+toolchain"; X09's QUOTE is the interop README's sentence on a checked
+generic's type parameter as a C++ template argument, in "Using C++
+templates", and its EXPECT-STDOUT pins that working form. X04's QUOTE is
 the interop README's escape-sequence sentence, in "Importing C++ code
 (inline)", and its EXPECT-STDOUT pins both working forms; X05's QUOTE is its
 EXPECT-ERROR message, the `Circle` diagnostic of templates.md's "Templates in
@@ -3535,7 +3708,21 @@ fork/evaluator/check_samples.py; ruff-clean; `main()` returns the status):
     (expressions/arithmetic.md, "Strings", PR 55)); in the integration commit,
     none. An allowlisted entry that no longer hits is itself an error (so the
     list cannot go stale), and so the checker exits 0 at every commit with the
-    expected list and only then.
+    expected list and only then. The second document-review fold extends the
+    rule against the forms document review 2 of that round found missed (amended
+    2026-10-14, document-review fold 2: DR2b-6, D-DD-2's break condition):
+    clause (a) also runs after the emphasis and code markers `*`, `_` and
+    backtick are removed, so "a **skeletal** design" hits; clause (b) matches a
+    heading that starts with `TODO` or `TBD`, without regard to case, after any
+    leading `*`, `_`, backtick or space characters, so a heading that starts
+    `**TODO:**`, `` `TODO` `` or `TBD:` hits; and in clause (c) a list whose
+    every item holds a link counts as a companion when it follows a "See" or
+    "References" paragraph, so a TODO marker followed by "References:" and a
+    list of links hits. Over this branch, trunk 162c7e839 and f67ab650d, and the
+    heads of PR 53 (adaae4e35), PR 55 (21307851a), SC-1 (fa4cd094d and
+    30716a8c2), OP-1 (379f20f67), OP-2 (757cd0e74 and a5b81889b), PR 54
+    (cb3ef2e74), PR 51 (f96fe8a7a) and PR 52 (ea573f672), the extended rule
+    gives exactly the hits of the rule before it.
 6.  `--toolchain PATH`: for each fixture, `PATH compile --output=<tmp>
     --output-last-input-only <fixture>`; an EXPECT-ERROR fixture must exit
     non-zero with its first `error:` line's message equal to the pin; an
@@ -3566,7 +3753,15 @@ fork/evaluator/check_samples.py; ruff-clean; `main()` returns the status):
     lowercase "see" paragraph, beside a "> See" paragraph and beside a
     "References:" paragraph, each a hit, and beside "Seemingly done.", which
     must not hit; the output reads `self-check: 4 quote cases, 17 W2 cases, 0
-    wrong` (amended 2026-10-14, implementation-review fold: F6).
+    wrong` (amended 2026-10-14, implementation-review fold: F6). The second
+    document-review fold adds seven: a boilerplate phrase split by `**`, a
+    heading that starts `**TODO:**`, one that starts `` `TODO` ``, one that
+    starts `TBD:`, and a TODO marker with a "References:" paragraph and a list
+    of links, each a hit (the rule before it missed all five), and a TODO
+    marker with "See:" and a list item without a link, and a TODO marker with
+    a list of links and no "See" paragraph, neither a hit; the output reads
+    `self-check: 4 quote cases, 24 W2 cases, 0 wrong` (amended 2026-10-14,
+    document-review fold 2: DR2b-6).
 
 The W2 rule as specified found the 36 hits of §0.1c at 162c7e839 (prototype run
 for this plan), 37 with clause (a)'s added phrase. Expected results, which each
@@ -3594,16 +3789,18 @@ applies, after merging trunk with every held PR on it:
     answer), and W-188's notes gain D-SAFE-17's scope (§8.5) (amended
     2026-10-13, review fold: RR-A-1).
 -   **threads_and_atomics.md** (PR 53): contract item 2's last sentence becomes
-    the block below; the Alternatives sentence's "a `Core.Sync` library veneer
-    over the C++ types" gains ", a set of wrapper types unrelated to the
-    `Core.Sync` facet that fork decision F-013 later defined" followed by the
-    link `([Data races and the
+    the block below; in the Alternatives sentence, "the compiler-determined
+    `Core.Sync` facet that held PR 53 names for the fifth stage of its safety
+    design" becomes "the compiler-determined `Core.Sync` facet that fork
+    decision F-013 defines" followed by the link `([Data races and the
     facets](../safety/mutation_safety.md#data-races-and-the-facets))`; and the
-    paragraph after the contract, "Held PR 53 (fork decision F-013, D-SAFE-16)
-    names", becomes "Fork decision F-013 (D-SAFE-16," followed by the link
-    `[Data races and the
-    facets](../safety/mutation_safety.md#data-races-and-the-facets)` and ")
-    names" (amended 2026-10-14, document-review fold: DR1-3).
+    paragraph after the contract, "Held PR 53 (fork decision F-013) names",
+    becomes "Fork decision F-013" followed by the link `([Data races and the
+    facets](../safety/mutation_safety.md#data-races-and-the-facets))` and
+    " names" (amended 2026-10-14, document-review fold: DR1-3; amended
+    2026-10-14, document-review fold 2: R2-3: the state-T text already tells
+    the veneer from the facet, and D-SAFE-16 is no longer cited for
+    `Core.Thread` and `Core.Atomic(T)`).
 -   **safety/mutation_safety.md** (PR 53): M7's parenthesized link to the
     design-sprint paper gains `[Threads, atomics, and the memory
     model](../interoperability/threads_and_atomics.md)` before it, so the 0.1
@@ -3620,13 +3817,13 @@ applies, after merging trunk with every held PR on it:
     in" and the link `[Template
     constraints](../generics/template_constraints.md#mapping-to-and-from-c20-concepts)`
     (SC-1).
--   **README.md**: the disclosure note's sentence on the two empty sections
-    is replaced by its state-L sentence, and its "held PR" definition is
-    dropped (item 6 of §2.9; amended 2026-10-14, document-review fold: DR1-5
-    / DR2-4), the :2890 note gains its state-L clause (item 3 of §2.9);
-    templates.md its state-L status sentences and the `Circle` paragraph's
-    last sentence (§2.4) (amended 2026-10-13, review fold: RR-N-4: rev 2's
-    wrap put "6)" at a continuation line's start; amended 2026-10-14,
+-   **README.md**: the disclosure note's sentence on the two TODO-only sections
+    is replaced by its state-L sentence, and its "held PR" definition is dropped
+    (item 6 of §2.9; amended 2026-10-14, document-review fold: DR1-5 / DR2-4),
+    the :2890 note gains its state-L clause (item 3 of §2.9); templates.md its
+    state-L status sentences, the `Circle` paragraph's last sentence and the
+    `template constraint` limit (§2.4) (amended 2026-10-13, review fold: RR-N-4:
+    rev 2's wrap put "6)" at a continuation line's start; amended 2026-10-14,
     document-review fold: DR1-2 / DR1-7).
 
 The threads page's contract item 2, from "The 0.1 toolchain does not detect
@@ -3697,9 +3894,20 @@ B-M-3 / B-M-7 / B-m-8.)
     [document-review fold record](#document-review-fold-2026-10-14) lists each
     disposition (amended 2026-10-14, document-review fold).
 -   **DD-1 (4/4): discharge** — §2.14 and §8.5-§8.9: row 70 DONE (expected),
-    row 91 PARTIAL pending state L, the ledger, the decision log, the
-    ORCHESTRATION stamp.
+    or PARTIAL when a second round of document reviews is owed (D-DD-13 as
+    amended at the implementation-review fold, F1), row 91 PARTIAL pending
+    state L, the ledger, the decision log, the ORCHESTRATION stamp.
 -   **Implementation review**, then **its fold**, its own commit.
+-   **The second round of both document reviews** (D-DD-11's break
+    condition, owed because document review 1 returned REJECT; run after the
+    implementation-review fold at the orchestrator's direction), then **its
+    fold**, "DD-1: second document-review fold", its own commit, then **the
+    commit that records the round's verdict**, which writes row 70 DONE
+    (expected) and the header 31 / 20 / 4 / 1, or keeps row 70 PARTIAL with
+    the unresolved finding as its bound (D-DD-13). Document review 1 of the
+    second round returned REJECT, so D-DD-11's break condition, as that review
+    reads it, owes a further round of both after the fold (amended
+    2026-10-14, document-review fold 2: DR2b-1).
 -   **Integration (state L)** — merge trunk after OP-1; §0.2's conflicts; the
     state-L texts of §2.3, §2.4, §2.9 items 3 and 6, and §2.13; the empty
     `ALLOWLIST`; W-188's notes and the W-014, W-155 and W-167 amendments; row 91
@@ -3793,11 +4001,19 @@ REJECTS cell shows the message after `error:` on the first error line.
 | X04 (`X04_cpp_inline_escapes.carbon`) | interop README, Importing C++ code (inline) (quote fixture; DR1-16) | RUNS, exit 0, prints `3 1 1` | RUNS, exit 0, prints `3 1 1` |
 | X05 (`X05_template_structural_circle.carbon`) | templates.md, Templates in the 0.1 toolchain (quote fixture; DR-FX-1) | REJECTS: `` cannot convert type `Circle` into type implementing `HasArea` `` | REJECTS: the same |
 | X06 (`X06_match_qualified_alternative.carbon`) | pattern_matching.md, `match` in the 0.1 toolchain (quote fixture; DR1-8) | REJECTS: `` name `n` not found `` | REJECTS: `` semantics TODO: `choice alternatives with parameters are not yet supported` `` |
+| X07 (`X07_template_let_file_scope.carbon`) | templates.md, Templates in the 0.1 toolchain (quote fixture; R2-1) | REJECTS: ``` semantics TODO: ``let` compile time binding outside function or interface` ``` | REJECTS: the same |
+| X08 (`X08_template_auto.carbon`) | templates.md, Templates in the 0.1 toolchain (quote fixture; R2-1) | REJECTS: `` semantics TODO: `HandleAutoTypeLiteral` `` | REJECTS: the same |
+| X09 (`X09_cpp_template_symbolic_arg.carbon`) | interop README, Using C++ templates (quote fixture; R2-2) | RUNS, exit 0, prints `7 8 4` | RUNS, exit 0, prints `7 8 4` |
 
 (Rows X04 to X06 are added 2026-10-14, document-review fold: DR1-16 / DR1-8 /
 DR-FX-1; measured by the fold's fixer on the fork toolchain and the nightly,
 and on the OP-1 (5d9edb3e0), SC-1 (fb12f63cb), UA-2 (05a5c30f7) and ST-1
 (84ff63560) builds, where each gives the fork's result.)
+
+(Rows X07 to X09 are added 2026-10-14, document-review fold 2: R2-1 / R2-2;
+measured by that fold's fixer on the fork toolchain and the nightly, and on
+the SC-1 (36181a729), OP-1 (5d9edb3e0), UA-2 (05a5c30f7) and ST-1 (84ff63560)
+builds, where each gives the fork's result.)
 
 (Rows P17-P19, R32-R34, X02 and X03, the new P04 and X01 bodies, and the R20
 item are amended 2026-10-13, review fold: A-1 / A-9 / A-14 / B-M-1 / B-M-5 /
@@ -3832,6 +4048,7 @@ expected output, derived from the sample's source alone:
 | X01 | the toolchain's measured behavior, element by element from the literal: from (1, 2), `t.0` becomes `t.1`, 2, then `t.1` becomes the new `t.0`, 2: `2`, `2`; the struct the same: `2`, `2`. Not a design derivation: issue 686's answer gives `2`, `1` for both, and W-188 is the defect (X01's header, §2.12; amended 2026-10-13, review fold: RR-A-1) |
 | X03 | `u` is bound to (2, 1) before `t` changes, so `t` becomes (2, 1): `2`, `1` |
 | X04 | Carbon turns `\\n` in a block string literal into `\n` before C++ sees it, so `strlen("a\nb")` is 3 characters: `3`; `"\n"[0]` is the newline, 10: `1`; the raw block string passes `"\n"` unchanged, the same: `1` (added 2026-10-14, document-review fold: DR1-16) |
+| X09 | `F(7 as i32)` boxes 7 in `Box<int>`, and `Get` returns it: `7`; `SizeOf(1 as i64)` instantiates `Box<long>`, whose `sizeof(T)` is 8 on 64-bit Linux: `8`; `SizeOf(1 as i32)` instantiates `Box<int>`, 4: `4` (added 2026-10-14, document-review fold 2: R2-2) |
 
 **Runner runs (2026-10-13, private `--out`):** rev 1 ran the sixteen
 generated programs in a scratch mirror of fork/conformance/programs (stub
@@ -3859,7 +4076,7 @@ toolchain: 128 / 0 / 22 over 150, 48/56 bullets PASS.
 | operators with no Carbon spelling (interop README) | operators.carbon `fail_todo_import_unsupported_unary_operators.carbon` (unary `+`, postfix `++`/`--`, `~` spelled `^`, `operator!`) and `fail_todo_import_unsupported_binary_operators.carbon` (`operator&&`, `operator||`, the comma operator), each a parse error, not an import; docs/design/README.md:3685-3687 keeps logical and comma operators C++-only (amended 2026-10-13, review fold: A-14) |
 | single-base inheritance across the boundary; W-046's gaps (interop README, members) | fork/conformance/programs/interop/inherit_carbon_extends_cpp.carbon and inherit_cpp_extends_carbon.carbon (PASS in scoreboard.json); inherit_multiple_bases.carbon (SKIP, W-046) (added 2026-10-13, review fold: B-M-5) |
 | a C++20 concept applied to types is a compile-time `bool` (interop README, C++ templates) | interop/cpp/template/concept.carbon split `use_concept.carbon` (`X(Cpp.IsLarge(Cpp.Small))`); W-029 for export (added 2026-10-13, review fold: B-M-5) |
-| a symbolic generic parameter is not a C++ template argument (interop README, C++ templates) | W-043; probe PR-T; fork/conformance/programs/interop/cpp_template_symbolic_arg.carbon (SKIP) (added 2026-10-13, review fold: B-M-5) |
+| a checked generic's type parameter is a C++ template argument when the specialization's `var` or `let` has an initializer; without one, `var b: Cpp.Box(T);` is rejected (interop README, C++ templates) | X09 (`7 8 4` on both toolchains); probe PR-T (the uninitialized `var`: ``Core.DefaultOrUnformed``); W-043 (added 2026-10-13, review fold: B-M-5; amended 2026-10-14, document-review fold 2: R2-2: the row said the symbolic argument fails, which PR-T's missing initializer caused; fork/conformance/programs/interop/cpp_template_symbolic_arg.carbon is SKIP with a stale reason, which W-043's notes record) |
 | `ref self` and `self` methods called from C++ (interop README, C++ use of Carbon) | interop/cpp/class/export/method.carbon splits `ref_method_lvalue.carbon`, `fail_ref_method_rvalue.carbon`, `fail_ref_method_const_lvalue.carbon`, `method_rvalue.carbon`, `method_const_lvalue.carbon` (added 2026-10-13, review fold: B-M-5) |
 | a Carbon `template` function called from C++ stops the compiler (interop README, C++ use of Carbon) | W-191 (rev 2's W-190; RR-FX-1); probe PR-S (added 2026-10-13, review fold: B-M-5) |
 | member and argument-dependent `begin`/`end` make a C++ range (interop README, ranges) | fork/conformance/programs/interop/cpp_range_member_begin_end_iterate.carbon and cpp_range_adl_begin_end_iterate.carbon (PASS); gap row 83 (added 2026-10-13, review fold: B-M-5) |
@@ -3879,6 +4096,17 @@ toolchain: 128 / 0 / 22 over 150, 48/56 bullets PASS.
 | `match` is a statement; no `match` expression parses (pattern_matching.md) | p002188:1173-1191 (future work); probe PR-Y (`expected expression` on both) (added 2026-10-14, document-review fold: DR1-8) |
 | an alternative pattern written with the choice type's name is not supported (pattern_matching.md) | match/fail_choice_alternative_pattern.carbon split `fail_todo_qualified_pattern.carbon`; probe PR-Z (`Opt.None`: the same `semantics TODO`); X06 (`Opt.Some(n: i32)`) (added 2026-10-14, document-review fold: DR1-8) |
 | a `match` on a template-dependent value reports a `semantics TODO` (templates.md) | probe PR-D (`` semantics TODO: `match on unsupported scrutinee type` ``), re-run by the fold (added 2026-10-14, document-review fold: DR1-7) |
+| a template `let` binding is not supported in a function body or at file scope (templates.md) | R14 (function body, on metaprogramming.md); X07 (file scope, proposal 2200's own example, p002200:232-241); W-031 (added 2026-10-14, document-review fold 2: R2-1) |
+| `auto` is not supported as a type (templates.md) | X08 (`let x: auto = F();`, p002200:327-347); probe PR-AB (`fn F() -> auto`, the same on both toolchains); W-039 (toolchain/check/handle_literal.cpp:151) (added 2026-10-14, document-review fold 2: R2-1) |
+| an array whose bound is a template parameter cannot be initialized from a list of values, and the nightly accepts it (templates.md) | array/init_dependent_bound.carbon split `fail_todo_init_template_dependent_bound.carbon` (`cannot initialize array with dependent bound from a list of initializers`, under "TODO: This should be valid."); probe PR-AA (fork: that error; nightly: RUNS, prints `0`) (added 2026-10-14, document-review fold 2: R2-1) |
+| `template constraint` declarations are not parsed (templates.md) | toolchain/parse/testdata/generics/named_constraint/template_constraint.carbon split `fail_todo_template_constraint.carbon` (`unrecognized declaration introducer`); probe PR-AC (the same on the fork toolchain and the nightly; SC-1's build parses it) (added 2026-10-14, document-review fold 2: R2-1) |
+| a tuple or struct scrutinee with an element of an unsupported type is not supported (pattern_matching.md) | probe PR-AE (`{.x: f64, .n: i32}` and `(f64, i32)`: `` semantics TODO: `match on unsupported scrutinee type` ``) (added 2026-10-14, document-review fold 2: R2-4) |
+| struct patterns with `bool` constants are not exhaustive without an irrefutable arm (pattern_matching.md, W-189) | probe PR-AF (fork: `` `match` on `{.a: bool, .b: i32}` has no `default` arm and no `case` arm that matches every value ``) (added 2026-10-14, document-review fold 2: R2-4) |
+| an alternative pattern in a struct pattern field is read as an expression (pattern_matching.md, W-182) | probe PR-AG (fork: ``name `.Self` not found``) (added 2026-10-14, document-review fold 2: R2-4) |
+| local `choice`, `interface`, `constraint` and `impl` declarations are statements, and a local `namespace` is rejected (blocks_and_statements.md) | probe PR-AH (both toolchains: the declarations compile; `namespace`: `` `namespace` declaration not at top level ``); toolchain/parse/handle_statement.cpp, the declaration introducers a statement accepts (added 2026-10-14, document-review fold 2: R2-5) |
+| accepted proposals 6668 and 7697 use `import Cpp inline` in examples (interop README, inline) | p006668:323, p007697:246; no other proposal contains the phrase (`grep` over proposals/) (added 2026-10-14, document-review fold 2: R2-6) |
+| what proposals 6358, 6254 and 1885 fix and leave for the interop sections that open with their source (interop README) | p006358:87-92 (C++ declarations in the `Cpp` package, namespaces as nested packages); p006254:129-131 (the access check) and :201-208 (member function calls); p001885:497-504 and :620-640 (C++ iteration left to future work) (added 2026-10-14, document-review fold 2: R2-7) |
+| type_operators.md uses `musteval fn` in an example (metaprogramming.md) | docs/design/expressions/type_operators.md:56 (added 2026-10-14, document-review fold 2: DR2b-5) |
 
 ### §4.3 Probe sources (for the reviewers; not page samples)
 
@@ -4445,6 +4673,92 @@ Fork and nightly: REJECTS: `` expected expression ``.
 Nightly: REJECTS: `` semantics TODO: `choice alternatives with parameters are
 not yet supported` ``.
 
+**Probes added by the second document-review fold** (2026-10-14, by its
+fixer, in its own scratch `.../scratchpad/dd1-dr2/fixer/p2/`, with
+`XDG_CACHE_HOME` there; each run on the fork toolchain, the nightly and the
+SC-1 (36181a729), OP-1 (5d9edb3e0), UA-2 (05a5c30f7) and ST-1 (84ff63560)
+builds, which give the fork's result except where noted).
+
+`PR-AA_dependent_bound.carbon` (R2-1):
+
+```carbon
+import Core library "io";
+
+fn F(template N: i32) -> i32 {
+  var a: array(i32, N) = (1, 2, 3);
+  return 0;
+}
+
+fn Run() -> i32 {
+  Core.Print(F(3));
+  return 0;
+}
+```
+
+Fork: REJECTS: `cannot initialize array with dependent bound from a list of
+initializers`. Nightly: RUNS, exit 0, prints `0`.
+
+`PR-AB_auto_return.carbon` (R2-1): `fn F() -> auto { return 3; }`. Fork and
+nightly: REJECTS: `` semantics TODO: `HandleAutoTypeLiteral` ``.
+
+`PR-AC_template_constraint.carbon` (R2-1):
+
+```carbon
+template constraint HasX {
+  var x: i32;
+}
+```
+
+Fork and nightly: REJECTS: `unrecognized declaration introducer`. SC-1's
+build parses the declaration and rejects its field requirement with a
+`semantics TODO` naming a field requirement in a `template constraint`.
+
+`PR-AE_unsupported_element.carbon` (R2-4): two functions, each a `match` with
+only a `default` arm, on `r: {.x: f64, .n: i32}` and on `r: (f64, i32)`. Fork:
+REJECTS: `` semantics TODO: `match on unsupported scrutinee type` `` for each
+(run singly). Nightly: REJECTS: `` semantics TODO: `HandleMatchIntroducer` ``.
+
+`PR-AF_struct_bool.carbon` (R2-4):
+
+```carbon
+fn F(r: {.a: bool, .b: i32}) -> i32 {
+  match (r) {
+    case {.a = true, _} => { return 1; }
+    case {.a = false, _} => { return 0; }
+  }
+  return 2;
+}
+```
+
+Fork: REJECTS: `` `match` on `{.a: bool, .b: i32}` has no `default` arm and no
+`case` arm that matches every value ``. Nightly: no `match`.
+
+`PR-AG_struct_alternative.carbon` (R2-4): `choice Flag { Off, On }` and a
+`match` on `r: {.f: Flag}` whose first arm is
+`case {.f = .On} => { return 1; }`, then `default`. Fork: REJECTS:
+``name `.Self` not found``. Nightly: no `match`.
+
+`PR-AH_local_declarations.carbon` (R2-5):
+
+```carbon
+fn F() -> i32 {
+  choice C { A, B }
+  interface I { fn G(); }
+  constraint K {}
+  class D {}
+  impl D as I { fn G() {} }
+  return 0;
+}
+```
+
+Fork and nightly: compiles. `PR-AH_local_namespace.carbon`, `namespace N;` in a
+function body: REJECTS: `` `namespace` declaration not at top level `` on
+both.
+
+`X09`'s limit form, `var b: Cpp.Box(T);` in a checked generic, is PR-T,
+re-run by this fold with the same result on both toolchains; X09 adds the
+initializer and runs.
+
 ## §5 Gap-row effect and scoreboard delta
 
 (Rewritten 2026-10-13, review fold: A-2 / B-1 / B-M-3 / B-M-4 / B-M-7 /
@@ -4671,7 +4985,11 @@ is dropped there in favor of upstream's accepted text.
     interface`` (DD-1 fixture R34)"; W-043 notes gain "DD-1 (2026-10-13)
     answers the verify note: a concrete Carbon class as a C++ template argument
     compiles and runs (P17, `Cpp.Box(Point)`); the symbolic case fails (probe
-    PR-T); gap row 56's sentence on class types is stale (plan §0.4 item 8)";
+    PR-T); gap row 56's sentence on class types is stale (plan §0.4 item 8)"
+    (amended 2026-10-14, document-review fold 2: R2-2: the fold corrects it
+    to "the symbolic case fails without an initializer (probe PR-T)" and
+    appends the measured correction, X09, and the stale SKIP reason of
+    cpp_template_symbolic_arg.carbon for W-043's owner);
     W-044 notes gain one pointer, "export of a Carbon `template` function:
     see W-191 (the nightly runs it; the fork stops at a CHECK, DD-1 probe
     PR-S)" (amended 2026-10-14, document-review fold: DR2-12: §0.4 item 9 is
@@ -4683,7 +5001,9 @@ is dropped there in favor of upstream's accepted text.
     status note). The texts above and below give them as re-pinned at the
     document-review fold, where `var 5 = n;` is pattern_matching.md:685, the
     `IsTrue` example's body comments :613-618, the usefulness example's
-    function :639-650, the constant-tuple rule :590-593, and the bare-block
+    function :639-650, the constant-tuple rule :591-596 (re-pinned 2026-10-14,
+    document-review fold 2: DR2b-7; :590 is the blank line before it), and the
+    bare-block
     example of blocks_and_statements.md, from its lead-in sentence to its
     closing fence, :50-60. The discharge re-opens each at its own commit
     before filing and records the pins in its message and the landed notes;
@@ -4712,10 +5032,13 @@ is dropped there in favor of upstream's accepted text.
     nothing for the residues below. Residues:
     -   **W-182** (missing-feature; bullet "Control flow: matching — sum-type
         consumption incl. std::variant/std::optional interop"): alternative
-        patterns inside tuple patterns and payload subpatterns are checked as
-        designator expressions (``name `.Self` not found``); evidence R21,
+        patterns inside tuple patterns, struct pattern fields and payload
+        subpatterns are checked as designator expressions
+        (``name `.Self` not found``); evidence R21,
         match/fail_choice_alternative_pattern.carbon
-        `fail_nested_designator_subpattern.carbon`, pattern_matching.md:639-650.
+        `fail_nested_designator_subpattern.carbon`, pattern_matching.md:639-650,
+        and PR-AG (the struct pattern field; amended 2026-10-14,
+        document-review fold 2: R2-4).
     -   **W-183** (language-gap; bullet "Generics: Integrated templates"):
         member lookup into a constrained template parameter ignores the
         constraint (p002200:433-441, :200-202); evidence R09, PR-K; the
@@ -4752,16 +5075,20 @@ is dropped there in favor of upstream's accepted text.
         X01, X03, PR-U, the issue 686 closing comment and issue 2489 (§8.10),
         assignment.md "Tuples, structs, choice types, and data classes".
     -   **W-189** (missing-feature; bullet "Control flow: matching — good
-        switch equivalents"): a set of tuple patterns never counts as
-        exhaustive unless one arm is irrefutable, although
-        pattern_matching.md:590-593 treats constant tuples as tuple patterns
-        and `bool` like a choice type; evidence PR-R (four constant
+        switch equivalents"): a set of tuple or struct patterns never counts
+        as exhaustive unless one arm is irrefutable, although
+        pattern_matching.md:591-596 treats constant tuples and structs as tuple
+        and struct patterns and `bool` like a choice type (amended 2026-10-14,
+        document-review fold 2: R2-4 / DR2b-7, which add PR-AF, the struct
+        case, below); evidence PR-R (four constant
         `(bool, bool)` arms), PR-X (`case (true, x: i32)` and
         `case (false, y: i32)` on `(bool, i32)`; added 2026-10-14,
         document-review fold: DR1-8),
         toolchain/check/testdata/match/fail_int_nonexhaustive.carbon:120
         (`fail_bool_pair_enumeration.carbon`), fork/w078b/plan.md:109-125 (its
-        R-6, the W-076 root-only record, which no open item owns).
+        R-6, the W-076 root-only record, which no open item owns), PR-AF
+        (`case {.a = true, _}` and `case {.a = false, _}` on
+        `{.a: bool, .b: i32}`).
     -   **W-191** (toolchain-defect; bullet "Generics: C++ interop — exporting
         Carbon templates/checked generics as C++ templates") (renumbered from
         rev 2's W-190 at rev 3, while OP-1 held W-190; amended 2026-10-13,
@@ -4858,7 +5185,8 @@ is dropped there in favor of upstream's accepted text.
         tracks the proposal for that answer, is open. Issue 749 was closed
         as completed on 2021-08-25, and PR 89 was closed unmerged on
         2021-08-29, as the aliases.md and metaprogramming.md status notes
-        say;
+        say (amended 2026-10-14, document-review fold 2: DR2b-7: the status
+        notes are consistent with both records; they do not state them);
     -   the document-review fold could not check leads issue 6830 online
         (the GitHub API and github.com refused carbon-language/carbon-lang in
         its session, and no record of the issue is in the repository), so
@@ -4924,7 +5252,26 @@ is dropped there in favor of upstream's accepted text.
         and from C++20 concepts" heading §2.13 links; over every head's
         docs/design/ the W2 rule finds no hit that trunk lacks; issue 6830,
         re-read online through its github.com page, is as the discharge
-        recorded it (amended 2026-10-14, implementation-review fold).
+        recorded it (amended 2026-10-14, implementation-review fold);
+    -   the second document-review fold re-read the heads with `git
+        for-each-ref`: trunk f67ab650d, OP-1 379f20f67, PR 53 adaae4e35, PR 51
+        f96fe8a7a, PR 52 ea573f672, PR 54 cb3ef2e74 and PR 55 21307851a,
+        unchanged since the implementation-review fold; SC-1 moved to fa4cd094d,
+        whose toolchain, prelude and docs/design/ equal 30716a8c2's (`git diff
+        --stat 30716a8c2 fa4cd094d -- toolchain core docs` is empty), so its
+        build at 36181a729 still has the head's toolchain and prelude; OP-2
+        moved to 757cd0e74 (its origin head a5b81889b), whose toolchain and
+        prelude differ from OP-1's, and no build of it was used; over every
+        head's docs/design/ the extended W2 rule gives the same hits as the rule
+        before it; the fold ran the checker's `--toolchain` mode on the builds
+        SC-1 36181a729, OP-1 5d9edb3e0, UA-2 05a5c30f7 and ST-1 84ff63560, 42
+        fixtures as pinned on each, and its new probes there, and it changed no
+        program, so the nineteen programs were not re-run on the held builds;
+        issue 6830, re-read online through its github.com page (the GitHub API
+        and the `gh` CLI refused carbon-language/carbon-lang in its session), is
+        open with no decision recorded after the reopen, and its thread of
+        2026-04-01 to 2026-04-04 also weighed markdown-style fences in place of
+        `'''` (amended 2026-10-14, document-review fold 2).
 
 ## Hand-off notes for the writer
 
@@ -5250,7 +5597,11 @@ notes), 6f1ba74ba (the document-review fold), 9f920d2b9 (4/4: the discharge) and
 "DD-1: implementation-review fold", which wrote 9f920d2b9 into these notes, the
 decision-log entry, W-065's notes, row 91 and fork/ORCHESTRATION.md (the DD-1
 paragraph and the dd Branches row), where the records said "the discharge
-commit, DD-1 (4/4)".
+commit, DD-1 (4/4)". That fold is 36e27f233; the second round of both document
+reviews read 6f1ba74ba, 9f920d2b9 and 36e27f233, and "DD-1: second
+document-review fold" folds its findings (the
+[second fold's record](#document-review-fold-2-2026-10-14) at the end of this
+plan).
 
 **Ids.** The scan at the discharge read 74 refs (trunk, origin/trunk,
 upstream-trunk and the 71 local and origin `claude/carbon-fork-0-1-*` refs):
@@ -5270,14 +5621,19 @@ checked-generic export).
 **Line pins (DR2-1).** Re-opened at the discharge, where the pages are as the
 fold left them apart from the interop README's new paragraph:
 pattern_matching.md:685 is `var 5 = n;`, :613-618 the `IsTrue` body comments,
-:639-650 the usefulness example's `F`, :590-593 the constant-tuple rule, and
-blocks_and_statements.md:50-60 the bare-block example from its lead-in sentence
-to its closing fence. The ledger's other page cites were read at this commit.
+:639-650 the usefulness example's `F`, :591-596 the constant-tuple rule (:590,
+the discharge's pin, is the blank line before it; re-pinned by the second
+document-review fold, DR2b-7), and blocks_and_statements.md:50-60 the bare-block
+example from its lead-in sentence to its closing fence. The ledger's other page
+cites were read at this commit.
 
 **Counts.** `TODO` lines over docs/design/*.md and docs/design/**/*.md: 110 in
 23 files at 162c7e839, 90 in 20 files at the discharge (the decision-log entry
-lists each file). The W2 rule: the two held-PR hits, allowlisted, and the
-README disclosure, qualified, as at commit 3 and the fold.
+lists each file), 93 in 20 files at the second document-review fold
+(templates.md 1 → 3, two quoted `semantics TODO` diagnostics of its new limits,
+and README.md 15 → 16, the disclosure note's word "TODO-only"). The W2 rule: the
+two held-PR hits, allowlisted, and the README disclosure, qualified, as at
+commit 3 and the fold.
 
 **Measured totals at the discharge** (local, not of record): the fork
 toolchain's full conformance run, 147 PASS / 0 FAIL / 22 SKIP over 169
@@ -5313,7 +5669,11 @@ fixtures, 3 W2 hits (2 allowlisted, 1 qualified), 0 errors.
     "# 2.12 item 5)"), no markdown line, so no heading was manufactured
     (implementation-review fold: F7).
 
-**Found at the discharge, not edited** (for the implementation review): row 54
+**Found at the discharge, not edited** (for the implementation review; the
+second document-review fold found two more stale clauses in cells DD-1 edited,
+row 54's on dependent operators, conversions and template lowering, DR2b-2,
+and row 67's residual naming W-077, DR2-FX-1, and replaced each with a dated
+sentence, statuses unchanged): row 54
 of fork/gap-analysis.md still says "templates.md is a self-described skeletal
 placeholder", and the file's narrative sections (the W2 arbiter, W7, W8's "~10
 placeholder sections", the documentation-completeness summary) keep the
@@ -5336,15 +5696,19 @@ discharge rewrote, gains P16 (F3).
 | Focused re-review 2 | rev 3 (15c719ddc) | APPROVE-WITH-AMENDMENTS | 3: 1 MAJOR, 2 MINOR | rev 4 (97686069f), with RR2-FX-1 |
 | Document review 1 (fidelity) | 3ff319642, a32421433, 4287fe0c0 | REJECT | 16: 1 BLOCKER, 4 MAJOR, 11 MINOR | 6f1ba74ba (15), the discharge (DR1-12) |
 | Document review 2 (readability, cohesion, Goodhart, records) | the same | APPROVE-WITH-AMENDMENTS | 12: 2 MAJOR, 10 MINOR | 6f1ba74ba, with DR-FX-1; DR2-1, DR2-11, DR2-12 carried out at the discharge |
-| Document reviews, second round (D-DD-11's break condition) | the fold and the discharge | not yet run | — | — |
+| Document reviews, second round (D-DD-11's break condition) | 6f1ba74ba, 9f920d2b9 and 36e27f233 | review 1 (fidelity) REJECT; review 2 (readability, cohesion, Goodhart, records) APPROVE-WITH-AMENDMENTS | 16: review 1 one BLOCKER (R2-1, DR1-1 re-opened), one MAJOR (R2-2), six MINOR; review 2 eight MINOR (DR2b-1 to DR2b-8) | "DD-1: second document-review fold": all 16 folded, none rejected, with DR2-FX-1 |
 | Implementation review | 97686069f to 9f920d2b9: programs, fixtures, checker, records | APPROVE-WITH-AMENDMENTS | 8: 0 BLOCKER, 1 MAJOR (F1), 7 MINOR (F2 to F8) | "DD-1: implementation-review fold": all 8 folded, none rejected |
 
 The document-review findings and their state after the discharge commit (each
-"closed" state awaits the second round's verification):
+"closed" state awaited the second round's verification; that round traced every
+one RESOLVED except DR1-1, which document review 1 of the round found half
+resolved and re-opened as R2-1, and document review 2 of the round traced DR2-1
+to DR2-12 and F1 to F8 RESOLVED; amended 2026-10-14, document-review fold 2:
+DR2b-1):
 
 | Finding | Grade | State after the discharge |
 | --- | --- | --- |
-| DR1-1: templates.md's status note said no other difference from proposal 2200 was known | BLOCKER | Closed at the fold: both comparisons stated |
+| DR1-1: templates.md's status note said no other difference from proposal 2200 was known | BLOCKER | Closed at the fold: both comparisons stated; re-opened by the second round as R2-1 (the Limits list the note pointed to was incomplete) and folded at the second document-review fold |
 | DR1-2: attribution of `template constraint` and member requirements | MAJOR | Closed at the fold: proposals 818 and 2200; F-010 for `require` and predicates; state-L texts follow |
 | DR1-3: held PR 53 names `Core.Thread` and `Core.Atomic(T)` | MAJOR | Closed at the fold: only `Core.MemoryOrder` stays open on the page |
 | DR1-4: the bare-block open question of classes.md:563-570 | MAJOR | Closed: the pages cite it at the fold; W-185 filed design-needed at the discharge |
@@ -5436,3 +5800,86 @@ this tree (R25): rumdl re-wrapped one paragraph of fork/decision-log.md, this
 fold's verification sentence, filled in after the `--files` fixpoint, and every
 other hook passed on every file; a later run on the final tree passed 28 hooks,
 skipped the four bazel-backed ones and changed nothing.
+
+## Document-review fold 2 (2026-10-14)
+
+The second round of both document reviews, which D-DD-11's break condition owed
+because document review 1 returned REJECT, read 6f1ba74ba, 9f920d2b9 and
+36e27f233 together. Review 1 (fidelity) returned **REJECT**, with one BLOCKER
+(R2-1, DR1-1 re-opened), one MAJOR (R2-2) and six MINOR (R2-3 to R2-8)
+findings, and traced every first-round finding RESOLVED except DR1-1. Review 2
+(readability, cohesion, Goodhart, records-readiness) returned
+**APPROVE-WITH-AMENDMENTS**, with eight MINOR findings (DR2b-1 to DR2b-8), and
+traced DR2-1 to DR2-12 and F1 to F8 RESOLVED. A separate fixer (R11)
+reproduced every finding in its own scratch
+(`.../scratchpad/dd1-dr2/fixer/`, `XDG_CACHE_HOME` there) and folds all
+sixteen, none rejected, in one commit, "DD-1: second document-review fold",
+with one finding of its own, DR2-FX-1. Two are folded with a cited deviation
+(R2-7, DR2b-5). Fold marks read "(amended 2026-10-14, document-review fold 2:
+<id>)". Because review 1 of this round returned REJECT, D-DD-11's break
+condition, as that review reads it, owes a further round of both document
+reviews after this fold; the commit that records this round's verdict writes
+row 70 (D-DD-13).
+
+The fixer's reproductions: probes in `.../dd1-dr2/fixer/p2/` on the fork
+toolchain, the nightly and the SC-1 (36181a729), OP-1 (5d9edb3e0), UA-2
+(05a5c30f7) and ST-1 (84ff63560) builds: a file-scope and a function-body
+template `let`, `auto` in a `let` and as a return type, a template-dependent
+array bound (fork-only rejection; the nightly runs it), a
+`template constraint` declaration (SC-1's build parses it) (R2-1); `Cpp.Box(T)`
+on a checked generic's `T` with and without an initializer (R2-2); PR 53's
+mutation_safety.md at adaae4e35, :84-87, :257-262, :393-404 and :825-847
+(R2-3); struct scrutinees with an `f64` field, struct patterns over `bool`
+constants and an alternative in a struct pattern field (R2-4); local `choice`,
+`interface`, `constraint`, `impl` and `namespace` declarations (R2-5); issue
+6830 re-read online, and `grep` over proposals/ for `import Cpp inline` (R2-6);
+proposals 6358, 6254 and 1885 (R2-7); the checker's clause (c) report of the
+two TODO-only sections (R2-8); the decision log's order sentence and plan §3
+(DR2b-1); `grep` for the CARBON_FATAL string under toolchain/ and
+lower/handle.cpp:494-505 (DR2b-2); a script that lists every lowercase
+continuation after a code fence on the DD-1 pages, sixteen (DR2b-3); the old
+W2 rule on five new self-check pages, all missed (DR2b-6); the interop README's
+new headings, four (DR2b-7).
+
+| Finding | Severity | Disposition | Where |
+| --- | --- | --- | --- |
+| R2-1 (DR1-1 re-opened) | BLOCKER | Folded. The status note names "the differences measured" instead of claiming that the Limits list holds every difference, and lists them; the Limits list gains template `let` bindings (W-031; quote fixture X07 pins proposal 2200's file-scope example, R14 the function-body form), `auto` (W-039; quote fixture X08, probe PR-AB), the optional item, an array whose bound is a template parameter (testdata `fail_todo_init_template_dependent_bound.carbon`, probe PR-AA; the nightly accepts it), and `template constraint` declarations (parse testdata, probe PR-AC), with a state-L text for the last item | templates.md; §2.4, §2.12, §2.13, §4.1-§4.3; W-031, W-039 |
+| R2-2 | MAJOR | Folded. The limit is the uninitialized `var`; the working form is stated and pinned by quote fixture X09 (`7 8 4` on both toolchains); W-043's notes, §0.1d's PR-T row and §0.4 item 8 are corrected, and W-043's notes record the stale SKIP reason of cpp_template_symbolic_arg.carbon for its owner | interop README; X09; §0.1d, §0.4, §2.7, §4.1, §4.2; W-043 |
+| R2-3 | MINOR | Folded. The paragraph cites F-013 and W-149 without D-SAFE-16; Option C's veneer is told apart from the compiler-determined `Core.Sync` facet; D-DD-7 (4) and the decision log's copy say W-149 and D-SAFE-20; §2.13's state-L texts follow | threads page; D-DD-7, §2.8, §2.13 |
+| R2-4 | MINOR | Folded. The scrutinee sentence and the other-types item name tuples and structs of the supported types; the W-189 item gains the struct case and the W-182 item a struct pattern field; W-189's and W-182's titles, evidence and notes follow (probes PR-AE, PR-AF, PR-AG) | pattern_matching.md; §2.6, §4.2, §4.3; W-182, W-189 |
+| R2-5 | MINOR | Folded. "The statements include", and the declaration item names `choice`, `interface`, `constraint` and `impl` and says a `namespace` must be at file scope (probe PR-AH) | blocks_and_statements.md; §2.2 |
+| R2-6 | MINOR | Folded with the review's wording: the reopen was over the semicolon, the thread since weighed a fenced delimiter, no decision is recorded; accepted proposals 6668 and 7697 use `import Cpp inline` in examples while no proposal designs the inline forms | interop README; §2.7, §4.2, §8.10 |
+| R2-7 | MINOR | Folded with a cited deviation from the review's uniform opener: Constructors, Struct literals, Using C++ templates and Using Carbon from C++ open with "No accepted proposal covers ..."; Accessing C++ classes, structs, and members and Accessing global variables open with what proposals 6358 and 6254 fix, and C++ ranges with what proposal 1885 leaves to future work, because "No accepted proposal covers" would be false for the first two (p006358:87-92, p006254:129-131, :201-208); each then says "In the 0.1 toolchain" | interop README; §2.7, §4.2 |
+| R2-8 | MINOR | Folded: "TODO-only"; the state-L sentence covers both forms; the `QUALIFIED` quote is unchanged | README.md; §2.9 item 6, §2.13 |
+| DR2b-1 | MINOR | Folded, except the verdict itself, which belongs to the commit that records it: §3 gains the round, its fold and that commit, and the discharge bullet says PARTIAL when a round is owed; the decision log's order sentence says the implementation review ran first, and the entry records the round; the landed notes' Reviews row and findings table carry the round's verdicts and traces; §8.10 gains the heads re-read at this fold, copied verbatim into rows 70 and 91, the decision log and the PR body draft; the PR body draft's commits, gap rows, review record and Not-run list follow. Row 70 DONE and the header 31 / 20 / 4 / 1 are left to the commit that records the verdict (D-DD-13) | §3, §8.10, landed notes; fork/gap-analysis.md :18, :74, :95; decision log; ORCHESTRATION; the PR body draft |
+| DR2b-2 | MINOR | Folded as F2 did: a dated sentence replaces the stale clause (the CARBON_FATAL string occurs nowhere under toolchain/, lower/handle.cpp:494-505 lowers SpliceInst within a file, and generic/template/unimplemented.carbon pins only dereferencing a dependent value); status unchanged | fork/gap-analysis.md:58; landed notes |
+| DR2b-3 | MINOR | Folded: each of the sixteen continuations opens with "The toolchain reports", and each lead-in is a sentence; the quoted diagnostics are unchanged | metaprogramming.md, pattern_matching.md, interop README; §2.5-§2.7 |
+| DR2b-4 | MINOR | Folded: "The first limit, for example:" and "The example after this list" on templates.md; each of the three samples after pattern_matching.md's list opens with its limit | templates.md, pattern_matching.md; §2.4, §2.6 |
+| DR2b-5 | MINOR | Folded with one cited deviation: (a) the provenance sentence follows the list and also names type_operators.md's `musteval fn` example, but keeps "no proposal and no other design page shows `eval fn` in an example" rather than the review's "`eval fn` appears in no proposal or other design page", which README.md:3995 contradicts; (b) Option C is described once; (c) "A second spelling, the declaration `inline Cpp '''...''';`"; (d) SC-1 is "the fork's held template-constraint branch", D-SAFE-16 leaves the threads page (R2-3), and `Cpp.IsLarge(Cpp.Small)` follows "A C++20 concept `IsLarge` applied to a C++ type"; no page links README.md's definitions at its first fork term, since the three terms the review names are now glossed in place | templates.md, metaprogramming.md, threads page, interop README; §2.4-§2.8 |
+| DR2b-6 | MINOR | Folded by extending the rule (D-DD-2's break condition): clause (a) after removing `*`, `_` and backticks, clause (b) with `TBD` and leading markers, clause (c)'s link lists after a companion; seven self-check cases (24); the same hits as before on this branch, trunk and every held head | check_samples.py; D-DD-2, §2.12 items 5 and 8 |
+| DR2b-7 | MINOR | Folded: (a) the stub's SKIP reason and §2.11 say four new sections, one pointing to the threads page; (b) §8.10's online-checks item is extended, never shortened, and copied verbatim; (c) W-189 and the landed notes pin :591-596 | stub; §2.11, §8.10, landed notes; W-189 |
+| DR2b-8 | MINOR | Folded in the draft, which is not a repository file: §3's title, the Summary list without its blank line, and the fixture sentence "R01-R10, R12-R30 and R32-R34 reject fixtures (32); quote fixtures R11, X02, X05 to X08 (error) and X01, X03, X04, X09 (output)" | scratchpad/pr_dd1.md |
+| DR2-FX-1 (fixer) | — | Added: row 67's residual clause named struct patterns in case position as W-077's residue, but W-077's match lane is DISCHARGED (its residue is W-079, struct patterns in `let`, `var` and parameters) and P06 matches struct patterns in `case`; a dated sentence replaces it, status unchanged | fork/gap-analysis.md:71 |
+
+**For the commit that records this round's verdict** (left by this fold):
+
+-   Row 70 PARTIAL → DONE (expected, not of record) and the header 31 / 20 / 4
+    / 1, unless the round leaves an in-scope finding on the threads page
+    unresolved (D-DD-13); this fold resolves R2-3, the round's only finding on
+    that page.
+-   The PR body draft's commit list and head, with this fold's sha.
+-   The further round of both document reviews that D-DD-11's break condition
+    owes, as document review 1 of this round reads it.
+
+**Verification** (each in the fold commit's message): see the commit message
+for the prek fixpoint and the R31 counts. The checker without and with
+`--toolchain` on the fork toolchain: `self-check: 4 quote cases, 24 W2 cases, 0
+wrong`, 19 program blocks, 42 fixtures, 3 W2 hits (2 allowlisted, 1
+qualified), 0 errors; on the nightly, exactly the ten predicted differences
+(X02, R15 to R22, X06); on the SC-1, OP-1, UA-2 and ST-1 builds, 0 errors;
+`--self-test`: 169 programs, 56 bullets, OK, and `--update-readme-table`
+changes nothing; a full local conformance run on the fork toolchain (private
+`--out`, scoreboard generated 2026-10-14T04:25:33Z): 147 PASS / 0 FAIL / 22
+SKIP over 169 programs, bullets 48 PASS, 0 FAIL, 8 SKIP of 56; the nineteen
+programs on the nightly: 16 PASS and 3 COMPILE-FAIL as labelled, the stub
+SKIP; `TODO` lines over docs/design/: 93 in 20 files.

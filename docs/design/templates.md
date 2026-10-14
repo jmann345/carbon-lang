@@ -33,18 +33,21 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 > proposal 2200 lets a specialization change only an implementation and
 > rejects ad hoc API specialization (its "Alternatives considered"), which the
 > sketch's Overloading section anticipates, and its template constraints,
-> below, answer the open question of the sketch's last section. Where the 0.1
-> toolchain differs from proposal 2200 is listed under "Limits of the 0.1
-> toolchain" in
-> [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain) (fork work
-> items W-183 and W-014, and `match` on template-dependent values). Template
-> constraints are accepted: proposal 818 introduced `template constraint`
-> declarations, whose member requirements proposal 2200 specifies, and fork
-> decision F-010 adds `require` validity blocks and boolean predicates. Member
-> requirements are implemented on a held fork branch (SC-1), and `require`
-> blocks and predicates are fork work item W-028; none of them is in the
-> toolchain this page describes. What the 0.1 toolchain implements is
-> documented, with examples that compile, in
+> below, answer the open question of the sketch's last section. The
+> differences measured between the 0.1 toolchain and proposal 2200 are listed
+> under "Limits of the 0.1 toolchain" in
+> [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain): member
+> lookup that ignores the constraint (fork work item W-183), calls across
+> libraries (W-014), `match` on template-dependent values, template `let`
+> bindings (W-031), `auto` (W-039), arrays whose bound is a template parameter,
+> and `template constraint` declarations. Template constraints are accepted:
+> proposal 818 introduced `template constraint` declarations, whose member
+> requirements proposal 2200 specifies, and fork decision F-010 adds `require`
+> validity blocks and boolean predicates. Member requirements are implemented
+> on the fork's held template-constraint branch (SC-1), and `require` blocks
+> and predicates are fork work item W-028; none of them is in the toolchain
+> this page describes. What the 0.1 toolchain implements is documented, with
+> examples that compile, in
 > [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain).
 
 ## Overview
@@ -262,14 +265,38 @@ Limits of the 0.1 toolchain:
     constraint. Proposal 2200 looks a name up both in the argument type and in
     the interface constraint; the toolchain looks only in the argument type, so
     a member that the type provides only through an `impl` without `extend` is
-    not found (fork work item W-183). Declaring it with
-    `extend impl as HasArea` makes the last example below compile.
+    not found (fork work item W-183). The example after this list shows it;
+    declaring the member with `extend impl as HasArea` makes it compile.
 -   A template function defined in one library and called from another stops
     the compiler during checking, as it does in the upstream nightly (W-014).
 -   A `match` on a template-dependent value is not supported (it reports
     ``semantics TODO: `match on unsupported scrutinee type` ``), so the
     [`match`-based rules](pattern_matching.md#templates) of pattern matching do
     not apply yet.
+-   Template `let` bindings are not supported (W-031). Proposal 2200's
+    `let template N:! i64 = 4;` is written `let template N: i64 = 4;` in the
+    toolchain's syntax; in a function body it reports the diagnostic shown in
+    [Compile-time evaluation in the 0.1 toolchain](metaprogramming.md#compile-time-evaluation-in-the-01-toolchain),
+    and at file scope, where proposal 2200's own example declares it with the
+    array bound `N`, it reports ``` semantics TODO: ``let` compile time
+    binding outside function or interface` ```.
+-   `auto`, which proposal 2200 calls a shortcut for an unnamed templated type,
+    is not supported as a type: `let x: auto = F();` and `fn F() -> auto`
+    report ``semantics TODO: `HandleAutoTypeLiteral` `` (W-039).
+-   An array whose bound is a template parameter cannot be initialized from a
+    list of values: `var a: array(i32, N) = (1, 2, 3);` in a function with the
+    parameter `template N: i32` reports
+    `cannot initialize array with dependent bound from a list of initializers`
+    (pinned by `fail_todo_init_template_dependent_bound.carbon` in
+    `toolchain/check/testdata/array/init_dependent_bound.carbon`). The upstream
+    nightly accepts this initialization.
+-   `template constraint` declarations are not parsed: the parser reports
+    `unrecognized declaration introducer` (pinned by
+    `fail_todo_template_constraint.carbon` in
+    `toolchain/parse/testdata/generics/named_constraint/`); see
+    [Status](#status).
+
+The first limit, for example:
 
 ```carbon
 interface HasArea {

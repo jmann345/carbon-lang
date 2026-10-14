@@ -163,11 +163,11 @@ C++ source can also be written in a Carbon file. `import Cpp inline` followed by
 a string literal, usually a block string literal `'''...'''` tagged `c++`,
 compiles that source as if it were a header: its declarations join the `Cpp`
 package exactly as a header's do, and it may `#include` headers itself. It is an
-`import`, so it comes with the other imports, before any other declaration. The
-`inline Cpp` declaration may instead appear among Carbon declarations, and its
-C++ code can call the Carbon declarations above it through the `Carbon`
-namespace; it requires an `import Cpp` declaration earlier in the file, such
-as `import Cpp;` or the `import Cpp inline` above.
+`import`, so it comes with the other imports, before any other declaration. A
+second spelling, the declaration `inline Cpp '''...''';`, may appear among
+Carbon declarations, and its C++ code can call the Carbon declarations above it
+through the `Carbon` namespace; it requires an `import Cpp` declaration earlier
+in the file, such as `import Cpp;` or the `import Cpp inline` above.
 
 ```carbon
 import Core library "io";
@@ -195,8 +195,9 @@ fn Run() -> i32 {
 
 This prints `42` and `41`. The string literal's escape sequences are Carbon's
 and are processed before C++ sees the text, so a C++ `"\n"` is written `"\\n"`,
-or the whole block is written as a raw block string literal `#'''...'''#`. No
-accepted proposal covers the inline forms; the toolchain parses both
+or the whole block is written as a raw block string literal `#'''...'''#`.
+Accepted proposals 6668 and 7697 use `import Cpp inline` in examples, but no
+proposal designs the inline forms; the toolchain parses both
 (`toolchain/parse/handle_inline_decl.cpp`) and the tests in
 `toolchain/check/testdata/interop/cpp/basics/inline/` pin them. Without an
 earlier `import Cpp`, the `inline Cpp` declaration is an error:
@@ -216,9 +217,11 @@ Leads question
 whether `import Cpp inline` should be a declaration among the others rather than
 one of the imports that precede them. On 2026-03-26 it was decided as a
 top-level declaration spelled `inline Cpp '''...'''`, the second form above. The
-issue was reopened on 2026-03-30 only over whether that declaration ends with a
-semicolon, which the toolchain requires
-(`toolchain/parse/testdata/packages/import/cpp_inline.carbon`), so it is open.
+issue was reopened on 2026-03-30 over the trailing semicolon, which the
+toolchain requires
+(`toolchain/parse/testdata/packages/import/cpp_inline.carbon`); the discussion
+since has also weighed a fenced delimiter in place of `'''`, and no further
+decision is recorded, so the issue is open.
 
 ### Accessing built-in C++ entities (file-less)
 
@@ -304,8 +307,9 @@ and `cpp_export_overload_set_divergence.carbon`).
 
 ### Constructors
 
-A C++ constructor is a member of its class with the class's name, as in C++, and
-is called with call syntax: `Cpp.Point.Point(1, 2)`. C++ overload resolution
+No accepted proposal covers C++ constructors. In the 0.1 toolchain, a C++
+constructor is a member of its class with the class's name, as in C++, and is
+called with call syntax: `Cpp.Point.Point(1, 2)`. C++ overload resolution
 chooses among the constructors and supplies default arguments
 ([Overload resolution](#overload-resolution)). A `var` with no initializer runs
 the default constructor; initializing from another object of the class runs its
@@ -380,11 +384,13 @@ C++ overload resolution finds no viable `Length`, and the toolchain reports
 
 ### Struct literals
 
-A Carbon struct literal initializes two kinds of C++ class in 0.1: an empty
-struct literal `{}` initializes an aggregate with no fields, and a one-field
-struct literal initializes a C++ union, naming the member to make active
-([Unions](../unions.md), fork decision F-007). A C++ aggregate with fields is
-built in C++, by a function or a constructor, and then used field by field.
+No accepted proposal covers initializing a C++ class from a Carbon struct
+literal. In the 0.1 toolchain, a struct literal initializes two kinds of C++
+class: an empty struct literal `{}` initializes an aggregate with no fields,
+and a one-field struct literal initializes a C++ union, naming the member to
+make active ([Unions](../unions.md), fork decision F-007). A C++ aggregate with
+fields is built in C++, by a function or a constructor, and then used field by
+field.
 
 ```carbon
 import Core library "io";
@@ -439,6 +445,10 @@ W-048 and W-051).
 
 ## Accessing C++ classes, structs, and members
 
+Proposal 6358 nests C++ namespaces in the `Cpp` package, and proposal 6254
+specifies calls to member functions, with the object as C++'s `this`, and the
+access check on the function that overload resolution selects; no accepted
+proposal covers fields, nested types, or base classes. In the 0.1 toolchain,
 C++ classes and structs are Carbon types in the `Cpp` package, nested in `Cpp`
 namespaces as in C++ (`Cpp.geo.Rect`). Their members use Carbon member access:
 fields and member functions through an object (`r.Area()`, `r.tag`), and static
@@ -520,9 +530,10 @@ fn F() -> i32 {
 }
 ```
 
-reports ``cannot access private member `v_` of type `Cpp.Box` ``. A `const`
-member function can be called on any object, including a value; a member
-function that is not `const` needs a reference expression, such as a `var`:
+The toolchain reports ``cannot access private member `v_` of type `Cpp.Box` ``.
+A `const` member function can be called on any object, including a value; a
+member function that is not `const` needs a reference expression, such as a
+`var`:
 
 ```carbon
 import Cpp inline '''c++
@@ -553,10 +564,12 @@ are fork work item W-046.
 
 ## Accessing global variables
 
-A C++ variable at namespace scope, such as an `inline` variable or an `extern`
-declaration with its definition, is a durable reference expression in Carbon,
-named through the `Cpp` package: it can be read, assigned, and updated in place.
-A `const` variable can only be read.
+Proposal 6358 imports every C++ declaration into the `Cpp` package; no
+accepted proposal specifies how a C++ variable behaves in Carbon. In the 0.1
+toolchain, a C++ variable at namespace scope, such as an `inline` variable or
+an `extern` declaration with its definition, is a durable reference expression
+in Carbon, named through the `Cpp` package: it can be read, assigned, and
+updated in place. A `const` variable can only be read.
 
 ```carbon
 import Core library "io";
@@ -583,7 +596,7 @@ fn Run() -> i32 {
 }
 ```
 
-This prints `42`, `107`, and `3`. Assigning a `const` variable
+This prints `42`, `107`, and `3`. Assigning a `const` variable is an error:
 
 ```carbon
 import Cpp inline '''c++
@@ -595,12 +608,14 @@ fn F() {
 }
 ```
 
-reports `expression is not assignable`. C++ `thread_local` variables are
-covered in [Threads, atomics, and the memory model](threads_and_atomics.md).
+The toolchain reports `expression is not assignable`. C++ `thread_local`
+variables are covered in
+[Threads, atomics, and the memory model](threads_and_atomics.md).
 
 ## Using C++ templates
 
-A C++ template is used from Carbon as C++ code uses it. A function template is
+No accepted proposal covers C++ templates. In the 0.1 toolchain, a C++
+template is used from Carbon as C++ code uses it. A function template is
 called like a function, and C++ deduces its template arguments from the Carbon
 arguments. A class template is named with its template arguments in
 parentheses, `Cpp.Box(i32)` for `Box<int>`, and each argument list names a
@@ -643,18 +658,23 @@ fn Run() -> i32 {
 }
 ```
 
-This prints `7`, `5`, and `4`. Limits in 0.1: a checked generic's symbolic
-type parameter cannot yet be a C++ template argument, so `Cpp.Box(T)` in the
-body of a function with a parameter `[T: type]` does not compile (fork work
-item W-043). A C++20 concept applied to types is a compile-time `bool`, so
-`Cpp.IsLarge(Cpp.Small)` can be a generic argument
+This prints `7`, `5`, and `4`. A checked generic's type parameter can be a C++
+template argument: in a function `F[T: Core.Copy](x: T) -> T`, the body
+`let b: Cpp.Box(T) = Cpp.Box(T).Make(x); return b.Get();` compiles, and the
+template is instantiated for each specific. Limits in 0.1: a `var` of such a
+specialization cannot be declared without an initializer, because
+`var b: Cpp.Box(T);` reports that the type does not implement
+`Core.DefaultOrUnformed` (fork work item W-043). A C++20 concept `IsLarge`
+applied to a C++ type is a compile-time `bool`, so `Cpp.IsLarge(Cpp.Small)` can
+be a generic argument
 (`toolchain/check/testdata/interop/cpp/template/concept.carbon`); Carbon
 constraints are not exported as C++ concepts (W-029). Using Carbon generics
 from C++ is described in [Using Carbon from C++](#using-carbon-from-c).
 
 ## Using Carbon from C++
 
-C++ code names Carbon declarations through the `Carbon` namespace:
+No accepted proposal covers using Carbon from C++. In the 0.1 toolchain, C++
+code names Carbon declarations through the `Carbon` namespace:
 `Carbon::Twice(7)` calls the Carbon function `Twice`, and `Carbon::Counter` is
 the Carbon class `Counter`, whose fields, methods, and class functions C++ uses
 as its members. A method declared with `ref self` can be called only on a
@@ -801,8 +821,8 @@ fn F() -> i64 {
 }
 ```
 
-reports ``cannot implicitly convert expression of type `Cpp.long_long` to
-`i64` ``.
+The toolchain reports ``cannot implicitly convert expression of type
+`Cpp.long_long` to `i64` ``.
 
 ### Literals
 
@@ -906,7 +926,7 @@ fn F() -> i32 {
 }
 ```
 
-reports ``argument to `ref` parameter not marked with `ref` ``.
+The toolchain reports ``argument to `ref` parameter not marked with `ref` ``.
 
 ## Bi-directional type mapping: standard library types
 
@@ -980,11 +1000,14 @@ only) and is imported as an ordinary class; it is not mapped to `Core.Slice`.
 
 ### C++ ranges in `for` loops
 
-A C++ range can be the range of a Carbon `for` loop. For a C++ class whose
-`begin` and `end` are found as members or by argument-dependent lookup and
-return an iterator of class type, the toolchain implements `Core.Iterate`, and
-the loop calls `begin` and `end` and dereferences and increments the iterator,
-as a C++ range-based `for` does (the fork's conformance programs
+Proposal 1885 lets a `for` loop iterate over a value of any type that
+implements its `Iterate` interface, and leaves C++ ranges to future work. In
+the 0.1 toolchain, a C++ range can be the range of a Carbon `for` loop. For a
+C++ class whose `begin` and `end` are found as members or by argument-dependent
+lookup and return an iterator of class type, the toolchain implements
+`Core.Iterate`, and the loop calls `begin` and `end` and dereferences and
+increments the iterator, as a C++ range-based `for` does (the fork's
+conformance programs
 `fork/conformance/programs/interop/cpp_range_member_begin_end_iterate.carbon`
 and `fork/conformance/programs/interop/cpp_range_adl_begin_end_iterate.carbon`).
 Standard library containers are ranges this way.
@@ -1132,10 +1155,10 @@ fn F() -> i32 {
 }
 ```
 
-with ``cannot implicitly convert expression of type `Core.IntLiteral` to
-`Cpp.Cell` ``. The other direction is not implemented: a Carbon type's operator
-interface implementations are not exported as C++ operators (fork work item
-W-054).
+The toolchain reports ``cannot implicitly convert expression of type
+`Core.IntLiteral` to `Cpp.Cell` ``. The other direction is not implemented: a
+Carbon type's operator interface implementations are not exported as C++
+operators (fork work item W-054).
 
 ## References
 

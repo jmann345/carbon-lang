@@ -40,15 +40,17 @@ preprocessing of source text such as C and C++ do.
 
 The toolchain evaluates constant expressions during compilation wherever the
 language needs a constant, such as an array bound, a type, or a template
-argument. Two function modifiers extend this to calls. Accepted proposals 7140
-and 7697 and [function types](functions.md#function-types-and-values) use
-`musteval fn` in examples, no proposal and no other design page shows
-`eval fn` in an example, and no proposal designs either modifier yet:
+argument. Two function modifiers extend this to calls:
 
 -   an `eval fn` may be called during compilation when its arguments are
     constants, and may also be called at run time;
 -   a `musteval fn` may only be called with constant arguments, so its result is
     always computed during compilation.
+
+No proposal designs either modifier yet. Accepted proposals 7140 and 7697 and
+the design pages on [function types](functions.md#function-types-and-values)
+and [type operators](expressions/type_operators.md) use `musteval fn` in
+examples; no proposal and no other design page shows `eval fn` in an example.
 
 Compile-time evaluation runs ordinary function bodies, with control flow and
 recursion, and can compute types, so an `eval fn` that returns `type` acts as a
@@ -111,10 +113,10 @@ fn F(x: i32) -> i32 {
 }
 ```
 
-with ``non-constant call to compile-time-only function``. A plain `fn` with a
-body is not evaluated during compilation (only `eval` and `musteval`
-functions, and builtin functions such as the prelude's operator functions,
-are):
+The toolchain reports ``non-constant call to compile-time-only function``. A
+plain `fn` with a body is not evaluated during compilation (only `eval` and
+`musteval` functions, and builtin functions such as the prelude's operator
+functions, are):
 
 ```carbon
 fn Three() -> i32 { return 3; }
@@ -122,8 +124,8 @@ fn Three() -> i32 { return 3; }
 var a: array(i32, Three()) = (0, 1, 2);
 ```
 
-reports `array bound is not a constant`. A local compile-time binding is not yet
-supported:
+The toolchain reports `array bound is not a constant`. A local compile-time
+binding is not yet supported:
 
 ```carbon
 fn F() -> i32 {
@@ -132,8 +134,8 @@ fn F() -> i32 {
 }
 ```
 
-reports ``semantics TODO: `local generic `let` bindings are currently
-unsupported` `` (fork work item W-031).
+The toolchain reports ``semantics TODO: `local generic `let` bindings are
+currently unsupported` `` (fork work item W-031).
 
 Other limits of the 0.1 toolchain: a `musteval fn` cannot yet pass its own
 parameters to another `musteval fn` (pinned by

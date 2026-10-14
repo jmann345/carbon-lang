@@ -62,11 +62,12 @@ fn Foo() {
 ## Statements in the 0.1 toolchain
 
 A function body is a block: statements between `{` and `}`, run in order. In
-the 0.1 toolchain a statement is one of:
+the 0.1 toolchain the statements include:
 
 -   an expression statement, such as a call, ending in `;`;
 -   a declaration: `var` (proposal 339), `let`, `returned var` (proposal 257),
-    or a local `alias`, `class`, or `fn`;
+    or a local `alias`, `class`, `choice`, `interface`, `constraint`, `impl`,
+    or `fn` declaration (a `namespace` declaration must be at file scope);
 -   an assignment `=`, a compound assignment such as `+=` or `%=`, or `++` and
     `--` ([Assignment](assignment.md), proposal 2511);
 -   `if`, with `else if` and `else` (proposal 285);

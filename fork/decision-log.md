@@ -2871,13 +2871,14 @@ fork/gap-analysis.md row 91, "Goal: design docs documented, cohesive,
 understandable without placeholders", stays PARTIAL until DD-1's integration
 commit at state L (D-DD-13), and row 70, "C++ interop: threading, atomics,
 memory model, synchronization", goes PARTIAL → DONE by D-DD-7, which absorbs
-W-020's documentation half, once the second round of the two document reviews
-that D-DD-11's break condition owes has run: the discharge wrote row 70 DONE
-before that round, and the implementation-review fold set it back to PARTIAL,
-bounded by the round (F1). Until then the header reads 30 DONE / 21 PARTIAL / 4
-MISSING / 1 DESIGN-ONLY over 56; the commit that records the round's verdict
-moves it to 31 / 20 / 4 / 1, and the integration commit moves it once more when
-row 91 flips. The expected conformance scoreboard is 147 PASS / 0
+W-020's documentation half, after the second round of the two document reviews
+that D-DD-11's break condition owes: the discharge wrote row 70 DONE before that
+round, and the implementation-review fold set it back to PARTIAL, bounded by the
+round (F1); the round ran on 2026-10-14, and the commit that records its verdict
+wrote row 70 DONE (expected, not of record) and moved the header from 30 DONE /
+21 PARTIAL / 4 MISSING / 1 DESIGN-ONLY to 31 / 20 / 4 / 1 over 56 (REVIEWS); the
+integration commit moves it once more when row 91 flips. The expected
+conformance scoreboard is 147 PASS / 0
 FAIL / 22 SKIP over 169 programs, 48/56 bullets (trunk's floor of record 128 / 0
 / 22 over 150, 48/56, run 37402970811, plus nineteen PASS programs), stated as
 expected, not of record: GitHub Actions on the repository is disabled, so the
@@ -2894,13 +2895,15 @@ and 97686069f (rev 4, focused re-review 2 folded, signed off): 3ff319642 (DD-1
 (1/4): the language pages), a32421433 (2/4: the interoperability README and the
 new threads page), 4287fe0c0 (3/4: the design README notes), 6f1ba74ba (the
 document-review fold), 9f920d2b9 (DD-1 (4/4), the discharge, which wrote this
-entry) and the implementation-review fold.
+entry), 36e27f233 (the implementation-review fold), a75c20391 (the second
+document-review fold) and "DD-1 records: second document-review round recorded;
+row 70 verdict".
 It touches no toolchain, prelude, golden, proposal or .github/ file. Every
 decision below is an R29(a) auto-adopt recorded for after-the-fact veto, each
 with its break condition. No fork design id is minted: F-016 stays unallocated
 (D-DD-3). The second round of both document reviews, which D-DD-11's break
 condition owes because document review 1 returned REJECT, had not run when this
-entry was written (DEVIATIONS, item 1).
+entry was written (DEVIATIONS, item 1); it ran on 2026-10-14 (REVIEWS).
 
 WHAT LANDED, page by page. (1) THE LANGUAGE PAGES (3ff319642, amended at
 6f1ba74ba). docs/design/aliases.md: `## TODO` becomes `## Status`, a dated note
@@ -3497,10 +3500,21 @@ still missed, three precision points, the PR body draft). A separate fixer
 document-review fold", with one finding of its own, DR2-FX-1 (row 67's residual
 clause still named W-077, whose match lane has landed); the plan's
 "Document-review fold 2 (2026-10-14)" lists each disposition. Across the nine
-reviews: 93 findings. Because document review 1 of the second round returned
-REJECT, D-DD-11's break condition, as that review reads it, owes a further
-round of both; the commit that records the second round's verdict writes row
-70 (D-DD-13).
+reviews: 93 findings, plus four fixer findings (RR-FX-1, RR2-FX-1, DR-FX-1,
+DR2-FX-1). Because document review 1 of the second round returned REJECT,
+D-DD-11's break condition, as that review reads it, owes a further round of
+both, which has not run (plan §8.10). The commit that records the second round's
+verdict, "DD-1 records: second document-review round recorded; row 70 verdict",
+applies D-DD-13: the round's findings on the threads page, R2-3 and item (b) of
+DR2b-5, both MINOR, are folded at a75c20391, the interop README's pointer
+section drew none, the page's sample P16 PASSes on the fork toolchain and the
+nightly, and the W2 rule finds no placeholder on the page, so no in-scope
+placeholder or unmeasured claim is left unresolved; row 70 goes PARTIAL → DONE
+(expected, not of record) on the second round, and the header from 30 / 21 / 4 /
+1 to 31 / 20 / 4 / 1. Row 91 stays PARTIAL, bounded by state L and by the
+further round; a finding of that round left unresolved on the threads page after
+its fold returns row 70 to PARTIAL (D-DD-13's break condition). The plan's
+"Document-review fold 2 (2026-10-14)" records the verdict.
 
 VERIFICATION, all LOCAL, never of record (D-DD-12). The fork toolchain is the
 container's CMake and Ninja build of trunk 0bdce60a5's sources
@@ -3544,7 +3558,14 @@ COMPILE-FAIL; `--self-test` OK; the checker, now `self-check: 4 quote cases, 24
 W2 cases, 0 wrong`, 19 program blocks, 42 fixtures, the same three W2 hits and 0
 errors without and with `--toolchain` on the fork toolchain, exactly the ten
 predicted differences on the nightly, and 0 errors on the SC-1, OP-1, UA-2 and
-ST-1 builds (plan "Landed notes").
+ST-1 builds (plan "Landed notes"). At the commit that records the second round's
+verdict (local, not of record), which changes no page, sample, fixture, program
+or checker: the checker, the same `self-check: 4 quote cases, 24 W2 cases, 0
+wrong`, 19 program blocks, 42 fixtures, three W2 hits and 0 errors without and
+with `--toolchain` on the fork toolchain; the threading bullet's seven programs
+on the fork busybox, 7 PASS; `--self-test` OK; the W2 rule over trunk and every
+held head, OP-2 at 503d25895 included, no hit that trunk lacks; the ledger's
+JSON parse, 132 items (plan "Document-review fold 2").
 
 Not run (plan §8.10, verbatim; the local gate of D-DD-12):
 
@@ -3668,7 +3689,26 @@ Not run (plan §8.10, verbatim; the local gate of D-DD-12):
     page (the GitHub API and the `gh` CLI refused carbon-language/carbon-lang in
     its session), is open with no decision recorded after the reopen, and its
     thread of 2026-04-01 to 2026-04-04 also weighed markdown-style fences in
-    place of `'''` (amended 2026-10-14, document-review fold 2).
+    place of `'''` (amended 2026-10-14, document-review fold 2);
+-   no further round of the two document reviews has run: document review 1 of
+    the second round returned REJECT, so D-DD-11's break condition, as that
+    review reads it, owes a further round of both after the second
+    document-review fold (a75c20391); the commit that records the second round's
+    verdict writes row 70 DONE (expected) because that fold leaves no in-scope
+    finding on the threads page unresolved (D-DD-13), and a further round that
+    leaves one unresolved after its fold returns row 70 to PARTIAL with that
+    finding as its bound (added 2026-10-14, second-round verdict commit);
+-   the commit that records the second round's verdict re-read the heads with
+    `git for-each-ref`: trunk f67ab650d, SC-1 fa4cd094d, OP-1 379f20f67, PR 53
+    adaae4e35, PR 51 f96fe8a7a, PR 52 ea573f672, PR 54 cb3ef2e74 and PR 55
+    21307851a, unchanged since the second document-review fold, and OP-2 moved
+    to 503d25895 (local; its origin head is still a5b81889b), whose docs/design/
+    changes optional.md and classes.md; over every head's docs/design/ the W2
+    rule finds no hit that trunk lacks; this commit changes no page, sample,
+    fixture, program or checker, so no fixture or program was re-run on a held
+    build or on the nightly, and on the fork toolchain the checker's
+    `--toolchain` mode and the threading bullet's seven programs were re-run,
+    all as pinned and PASS (added 2026-10-14, second-round verdict commit).
 
 DEVIATIONS FROM THE PLAN, each the closest faithful form. (1) The discharge was
 written at the orchestrator's direction before the second round of both document

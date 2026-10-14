@@ -3906,8 +3906,13 @@ B-M-3 / B-M-7 / B-m-8.)
     (expected) and the header 31 / 20 / 4 / 1, or keeps row 70 PARTIAL with
     the unresolved finding as its bound (D-DD-13). Document review 1 of the
     second round returned REJECT, so D-DD-11's break condition, as that review
-    reads it, owes a further round of both after the fold (amended
-    2026-10-14, document-review fold 2: DR2b-1).
+    reads it, owes a further round of both after the fold (amended 2026-10-14,
+    document-review fold 2: DR2b-1). The fold is a75c20391, and the commit that
+    records the verdict, "DD-1 records: second document-review round recorded;
+    row 70 verdict", writes row 70 DONE (expected) and the header 31 / 20 / 4 /
+    1, because the fold leaves no in-scope finding on the threads page
+    unresolved; the further round has not run (§8.10) (amended 2026-10-14,
+    second-round verdict commit).
 -   **Integration (state L)** — merge trunk after OP-1; §0.2's conflicts; the
     state-L texts of §2.3, §2.4, §2.9 items 3 and 6, and §2.13; the empty
     `ALLOWLIST`; W-188's notes and the W-014, W-155 and W-167 amendments; row 91
@@ -5271,7 +5276,28 @@ is dropped there in favor of upstream's accepted text.
         and the `gh` CLI refused carbon-language/carbon-lang in its session), is
         open with no decision recorded after the reopen, and its thread of
         2026-04-01 to 2026-04-04 also weighed markdown-style fences in place of
-        `'''` (amended 2026-10-14, document-review fold 2).
+        `'''` (amended 2026-10-14, document-review fold 2);
+    -   no further round of the two document reviews has run: document review 1
+        of the second round returned REJECT, so D-DD-11's break condition, as
+        that review reads it, owes a further round of both after the second
+        document-review fold (a75c20391); the commit that records the second
+        round's verdict writes row 70 DONE (expected) because that fold leaves
+        no in-scope finding on the threads page unresolved (D-DD-13), and a
+        further round that leaves one unresolved after its fold returns row 70
+        to PARTIAL with that finding as its bound (added 2026-10-14,
+        second-round verdict commit);
+    -   the commit that records the second round's verdict re-read the heads
+        with `git for-each-ref`: trunk f67ab650d, SC-1 fa4cd094d, OP-1
+        379f20f67, PR 53 adaae4e35, PR 51 f96fe8a7a, PR 52 ea573f672, PR 54
+        cb3ef2e74 and PR 55 21307851a, unchanged since the second
+        document-review fold, and OP-2 moved to 503d25895 (local; its origin
+        head is still a5b81889b), whose docs/design/ changes optional.md and
+        classes.md; over every head's docs/design/ the W2 rule finds no hit that
+        trunk lacks; this commit changes no page, sample, fixture, program or
+        checker, so no fixture or program was re-run on a held build or on the
+        nightly, and on the fork toolchain the checker's `--toolchain` mode and
+        the threading bullet's seven programs were re-run, all as pinned and
+        PASS (added 2026-10-14, second-round verdict commit).
 
 ## Hand-off notes for the writer
 
@@ -5599,9 +5625,11 @@ decision-log entry, W-065's notes, row 91 and fork/ORCHESTRATION.md (the DD-1
 paragraph and the dd Branches row), where the records said "the discharge
 commit, DD-1 (4/4)". That fold is 36e27f233; the second round of both document
 reviews read 6f1ba74ba, 9f920d2b9 and 36e27f233, and "DD-1: second
-document-review fold" folds its findings (the
-[second fold's record](#document-review-fold-2-2026-10-14) at the end of this
-plan).
+document-review fold", a75c20391, folds its findings (the [second fold's
+record](#document-review-fold-2-2026-10-14) at the end of this plan); "DD-1
+records: second document-review round recorded; row 70 verdict" records the
+round's verdict, row 70 DONE (expected) and the header 31 / 20 / 4 / 1
+(D-DD-13).
 
 **Ids.** The scan at the discharge read 74 refs (trunk, origin/trunk,
 upstream-trunk and the 71 local and origin `claude/carbon-fork-0-1-*` refs):
@@ -5696,7 +5724,7 @@ discharge rewrote, gains P16 (F3).
 | Focused re-review 2 | rev 3 (15c719ddc) | APPROVE-WITH-AMENDMENTS | 3: 1 MAJOR, 2 MINOR | rev 4 (97686069f), with RR2-FX-1 |
 | Document review 1 (fidelity) | 3ff319642, a32421433, 4287fe0c0 | REJECT | 16: 1 BLOCKER, 4 MAJOR, 11 MINOR | 6f1ba74ba (15), the discharge (DR1-12) |
 | Document review 2 (readability, cohesion, Goodhart, records) | the same | APPROVE-WITH-AMENDMENTS | 12: 2 MAJOR, 10 MINOR | 6f1ba74ba, with DR-FX-1; DR2-1, DR2-11, DR2-12 carried out at the discharge |
-| Document reviews, second round (D-DD-11's break condition) | 6f1ba74ba, 9f920d2b9 and 36e27f233 | review 1 (fidelity) REJECT; review 2 (readability, cohesion, Goodhart, records) APPROVE-WITH-AMENDMENTS | 16: review 1 one BLOCKER (R2-1, DR1-1 re-opened), one MAJOR (R2-2), six MINOR; review 2 eight MINOR (DR2b-1 to DR2b-8) | "DD-1: second document-review fold": all 16 folded, none rejected, with DR2-FX-1 |
+| Document reviews, second round (D-DD-11's break condition) | 6f1ba74ba, 9f920d2b9 and 36e27f233 | review 1 (fidelity) REJECT; review 2 (readability, cohesion, Goodhart, records) APPROVE-WITH-AMENDMENTS | 16: review 1 one BLOCKER (R2-1, DR1-1 re-opened), one MAJOR (R2-2), six MINOR; review 2 eight MINOR (DR2b-1 to DR2b-8) | a75c20391 ("DD-1: second document-review fold"): all 16 folded, none rejected, with DR2-FX-1; the verdict recorded by "DD-1 records: second document-review round recorded; row 70 verdict" (row 70 DONE, D-DD-13) |
 | Implementation review | 97686069f to 9f920d2b9: programs, fixtures, checker, records | APPROVE-WITH-AMENDMENTS | 8: 0 BLOCKER, 1 MAJOR (F1), 7 MINOR (F2 to F8) | "DD-1: implementation-review fold": all 8 folded, none rejected |
 
 The document-review findings and their state after the discharge commit (each
@@ -5883,3 +5911,61 @@ changes nothing; a full local conformance run on the fork toolchain (private
 SKIP over 169 programs, bullets 48 PASS, 0 FAIL, 8 SKIP of 56; the nineteen
 programs on the nightly: 16 PASS and 3 COMPILE-FAIL as labelled, the stub
 SKIP; `TODO` lines over docs/design/: 93 in 20 files.
+
+**The round's verdict, recorded (2026-10-14).** "DD-1 records: second
+document-review round recorded; row 70 verdict" records the second round:
+document review 1 (fidelity) REJECT, eight findings (one BLOCKER, R2-1; one
+MAJOR, R2-2; six MINOR, R2-3 to R2-8), and document review 2 (readability,
+cohesion, Goodhart, records-readiness) APPROVE-WITH-AMENDMENTS, eight MINOR
+(DR2b-1 to DR2b-8); all sixteen are folded at a75c20391, none rejected, R2-7 and
+DR2b-5 with a cited deviation each, plus the fixer's DR2-FX-1. Across the nine
+reviews: 93 findings (33, 5, 3, 16, 12, 8 and 16), plus four fixer findings
+(RR-FX-1, RR2-FX-1, DR-FX-1, DR2-FX-1). D-DD-13 applied: the round's findings on
+the threads page are R2-3 and item (b) of DR2b-5, both MINOR and both folded at
+a75c20391 (the list above names R2-3 alone; DR2b-5's item (b) rewrote Option C's
+sentence, and the threads-page part of its item (d) is R2-3's), and the interop
+README's pointer section drew none; the page's one sample, P16, PASSes on the
+fork toolchain at this commit with the threading bullet's six other programs,
+and on the nightly at a75c20391, and the W2 rule finds no placeholder on the
+page. No in-scope placeholder or unmeasured claim is left unresolved, so row 70
+goes PARTIAL → DONE (expected, not of record) and the header 30 / 21 / 4 / 1 →
+31 / 20 / 4 / 1, both naming the second round as the document review that
+flipped the row. Row 91 stays PARTIAL, bounded by state L and by the further
+round of both document reviews that D-DD-11's break condition owes as review 1
+of the second round reads it, which has not run (§8.10); a finding of that round
+left unresolved on the threads page after its fold returns row 70 to PARTIAL
+(D-DD-13's break condition). The decision-log entry's REVIEWS, the ledger notes
+of W-020 and W-065, fork/ORCHESTRATION.md (the stamp, the DD-1 paragraph and the
+dd Branches row) and the PR body draft follow.
+
+**Found at the verdict commit** (for the integration commit): OP-2's plan
+reserves W-196..W-201 from a5b81889b on (W-196..W-199 at 963adda99, as the
+decision-log entry and §8.10's discharge item recorded them then), and
+fork/ORCHESTRATION.md's DD-1 paragraph and the PR body draft now say
+W-196..W-201. OP-2's plan also mints fork design F-016 (from a5b81889b on; its
+pages cite it at 503d25895), so the sentences of this plan's Sign-off and the
+decision-log entry that F-016 "stays unallocated" hold for this branch in state
+T only; the integration commit, which merges trunk after OP-2 lands, re-reads
+them against trunk, where DD-1 still mints no fork design id (D-DD-3).
+
+**Verification at the verdict commit** (local, not of record; each in its
+message): the commit changes no page, sample, fixture, program, checker or
+toolchain file. The checker without and with `--toolchain` on the fork
+toolchain: `self-check: 4 quote cases, 24 W2 cases, 0 wrong`, 19 program blocks,
+42 fixtures, 3 W2 hits (2 allowlisted, 1 qualified), 0 errors, the expected W2
+output; the threading bullet's seven programs on the fork busybox with private
+`--out` directories (`--filter cpp_thread`, five programs, and `--filter
+cpp_atomic`, two): 7 PASS; `--self-test`: 169 programs, 56 bullets, OK, and
+`--update-readme-table` changes nothing; the W2 rule over trunk 162c7e839 and
+f67ab650d and every held head, OP-2 at 503d25895 and a5b81889b included: no hit
+that trunk lacks; `json.load` of the ledger: 132 items, the last W-191; prek on
+the five touched files to a fixpoint, and `prek run --all-files` with the same
+`SKIP` list in a clone of this tree (R25): 28 passed, 4 skipped (the
+bazel-backed four), 0 failed, nothing changed; R31 counts, fence-aware, before
+and after: plan.md dash items 101 → 103 (the two §8.10 items), decision-log.md
+dash items 61 → 63 (the same two items), every heading count and every other
+list count unchanged in the four markdown files, the heading sets unchanged, and
+the manufactured-heading grep of the diff empty. The full conformance suite was
+not re-run: no program changed since a75c20391, whose run gave 147 PASS / 0 FAIL
+/ 22 SKIP over 169, 48/56. The edits were applied by scripts, not the editor
+tools (R25), with the R12 hook run by hand on every touched file.

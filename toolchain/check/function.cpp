@@ -264,9 +264,11 @@ auto CheckFunctionReturnTypeMatches(Context& context,
       prev_function.GetDeclaredReturnType(context.sem_ir(), prev_specific_id);
   if (new_return_type_id == SemIR::ErrorInst::TypeId ||
       prev_return_type_id == SemIR::ErrorInst::TypeId) {
-    // Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
-    // in the errors-match mode, an error return type matches any type.
-    if (found_error) {
+    // Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 12
+    // and 13): in the errors-match mode, an error return type matches any
+    // return type, though not the absence of one.
+    if (found_error && new_return_type_id.has_value() &&
+        prev_return_type_id.has_value()) {
       *found_error = true;
       return true;
     }
@@ -358,6 +360,8 @@ static auto CheckFunctionEvaluationModeMatches(
   return false;
 }
 
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
+// `found_error` passes the errors-match mode through (see function.h).
 auto CheckFunctionTypeMatches(Context& context,
                               const SemIR::Function& new_function,
                               const SemIR::Function& prev_function,

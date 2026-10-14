@@ -77,9 +77,10 @@ auto MakeGeneratedFunctionDecl(Context& context, SemIR::LocId loc_id,
 // of a generic class specific matched against a requirement declared outside
 // that generic.
 //
-// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
-// `found_error`, when not null, selects the errors-match mode, in which an
-// error return type matches any type and sets `*found_error`.
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 12 and
+// 13): `found_error`, when not null, selects the errors-match mode, in which an
+// error return type matches any return type, though not the absence of one,
+// and sets `*found_error`.
 auto CheckFunctionReturnTypeMatches(
     Context& context, const SemIR::Function& new_function,
     const SemIR::Function& prev_function, SemIR::SpecificId prev_specific_id,

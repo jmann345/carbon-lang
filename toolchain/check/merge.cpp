@@ -219,11 +219,72 @@ static auto EntityHasParamError(Context& context, const DeclParams& info)
   return false;
 }
 
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 13): a
+// parameter pattern as declared, for the errors-match mode of
+// `CheckRedeclParam`.
+struct DeclaredParamPattern {
+  SemIR::InstKind kind;
+  // The pattern this one wraps: the subpattern of a `DefaultValuePattern`, of a
+  // `var` pattern or of a `WrapperBindingPattern`; `None` for any other.
+  SemIR::InstId subpattern_id = SemIR::InstId::None;
+};
+
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 13):
+// returns the parameter pattern `pattern_id`, whose constant value is
+// `const_inst`, as declared. A pattern with an error has the error as its
+// constant value, so it is read from the instruction that declares it, and the
+// subpattern of an imported one is imported in turn. Returns `std::nullopt`
+// for a parameter that is the error itself.
+static auto GetDeclaredParamPattern(Context& context, SemIR::InstId pattern_id,
+                                    SemIR::Inst const_inst)
+    -> std::optional<DeclaredParamPattern> {
+  auto inst = const_inst;
+  auto ir_id = SemIR::ImportIRId::None;
+  if (inst.Is<SemIR::ErrorInst>()) {
+    auto import_ir_inst = GetCanonicalImportIRInst(context, pattern_id);
+    ir_id = import_ir_inst.ir_id();
+    const auto* file = ir_id.has_value()
+                           ? context.import_irs().Get(ir_id).sem_ir
+                           : &context.sem_ir();
+    inst = file->insts().Get(import_ir_inst.inst_id());
+  }
+  auto get_local_id = [&](SemIR::InstId subpattern_id) {
+    if (!ir_id.has_value() || !subpattern_id.has_value()) {
+      return subpattern_id;
+    }
+    auto local_id =
+        AddImportRef(context, SemIR::ImportIRInst(ir_id, subpattern_id),
+                     SemIR::EntityNameId::None);
+    LoadImportRef(context, local_id);
+    return local_id;
+  };
+  if (auto default_value_pattern = inst.TryAs<SemIR::DefaultValuePattern>()) {
+    return DeclaredParamPattern{
+        .kind = inst.kind(),
+        .subpattern_id = get_local_id(default_value_pattern->subpattern_id)};
+  }
+  if (auto var_pattern = inst.TryAs<SemIR::AnyVarPattern>()) {
+    return DeclaredParamPattern{
+        .kind = inst.kind(),
+        .subpattern_id = get_local_id(var_pattern->subpattern_id)};
+  }
+  if (auto binding_pattern = inst.TryAs<SemIR::AnyBindingPattern>()) {
+    return DeclaredParamPattern{
+        .kind = inst.kind(),
+        .subpattern_id = get_local_id(binding_pattern->subpattern_id)};
+  }
+  if (inst.Is<SemIR::ErrorInst>() || inst.Is<SemIR::ImportRefLoaded>() ||
+      inst.Is<SemIR::ImportRefUnloaded>()) {
+    return std::nullopt;
+  }
+  return DeclaredParamPattern{.kind = inst.kind()};
+}
+
 // Returns false if a param differs for a redeclaration. The caller is expected
 // to provide a diagnostic.
 //
-// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
-// `found_error`, when not null, selects the errors-match mode that
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 12 and
+// 13): `found_error`, when not null, selects the errors-match mode that
 // `CheckRedeclParamsMatch` describes.
 static auto CheckRedeclParam(Context& context, bool is_implicit_param,
                              int32_t param_index,
@@ -296,30 +357,48 @@ static auto CheckRedeclParam(Context& context, bool is_implicit_param,
     auto prev_param_pattern =
         context.constant_values().GetInst(prev_param_const_id);
 
-    // Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
-    // in the errors-match mode, a pattern with an error is compared by its
-    // type alone, and an error type matches any type. A pattern's type is the
-    // error when its parameter's type is; its constant value is the error, and
-    // its type is not, when its default value is. Both types are read from the
-    // patterns as declared, since the constant value of a pattern with an
-    // erroneous default value is the error.
+    // Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 12
+    // and 13): in the errors-match mode, a pair of patterns of which either
+    // has an error is compared as declared, with only an erroneous type or
+    // default value counted as equal to the type or default value in its place
+    // in the other. A pattern's type is the error when its parameter's type
+    // has an error anywhere in it, and its constant value is then the error
+    // too, as is the default value converted to that type; its constant value
+    // alone is the error when its default value is. The kind of each pattern
+    // (so the binding form, `var` or `ref`, and whether a default value is
+    // there) and each type without an error are compared as without the error.
+    // Types are read in each pattern's own specific.
     if (found_error) {
-      auto new_declared_type_id = SemIR::GetTypeOfInstInSpecific(
+      auto new_type_id = SemIR::GetTypeOfInstInSpecific(
           context.sem_ir(), new_specific_id, patterns.new_id);
-      auto prev_declared_type_id = SemIR::GetTypeOfInstInSpecific(
+      auto prev_type_id = SemIR::GetTypeOfInstInSpecific(
           context.sem_ir(), prev_specific_id, patterns.prev_id);
-      if (new_declared_type_id == SemIR::ErrorInst::TypeId ||
-          prev_declared_type_id == SemIR::ErrorInst::TypeId) {
-        *found_error = true;
-        continue;
-      }
-      if (new_param_pattern.Is<SemIR::ErrorInst>() ||
+      bool new_type_is_error = new_type_id == SemIR::ErrorInst::TypeId;
+      bool prev_type_is_error = prev_type_id == SemIR::ErrorInst::TypeId;
+      if (new_type_is_error || prev_type_is_error ||
+          new_param_pattern.Is<SemIR::ErrorInst>() ||
           prev_param_pattern.Is<SemIR::ErrorInst>()) {
-        if (!context.types().AreEqualAcrossDeclarations(
-                new_declared_type_id, prev_declared_type_id)) {
+        *found_error = true;
+        auto new_declared = GetDeclaredParamPattern(context, patterns.new_id,
+                                                    new_param_pattern);
+        auto prev_declared = GetDeclaredParamPattern(context, patterns.prev_id,
+                                                     prev_param_pattern);
+        if (!new_declared || !prev_declared) {
+          continue;
+        }
+        if (new_declared->kind != prev_declared->kind) {
           return false;
         }
-        *found_error = true;
+        if (!new_type_is_error && !prev_type_is_error &&
+            !context.types().AreEqualAcrossDeclarations(new_type_id,
+                                                        prev_type_id)) {
+          return false;
+        }
+        if (new_declared->subpattern_id.has_value() &&
+            prev_declared->subpattern_id.has_value()) {
+          pattern_stack.push_back({.prev_id = prev_declared->subpattern_id,
+                                   .new_id = new_declared->subpattern_id});
+        }
         continue;
       }
     }
@@ -432,6 +511,9 @@ static auto CheckRedeclParam(Context& context, bool is_implicit_param,
 
 // Returns false if any pair of corresponding parameter patterns differs for a
 // redeclaration. The two lists must have the same size.
+//
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
+// `found_error` passes the errors-match mode through to `CheckRedeclParam`.
 static auto CheckRedeclParamLists(
     Context& context, llvm::ArrayRef<SemIR::InstId> new_param_pattern_ids,
     llvm::ArrayRef<SemIR::InstId> prev_param_pattern_ids,
@@ -452,6 +534,9 @@ static auto CheckRedeclParamLists(
 }
 
 // Returns false if the param refs differ for a redeclaration.
+//
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
+// `found_error` passes the errors-match mode through to `CheckRedeclParam`.
 static auto CheckRedeclParams(
     Context& context, SemIR::LocId new_decl_loc_id,
     SemIR::InstBlockId new_param_patterns_id, SemIR::LocId prev_decl_loc_id,

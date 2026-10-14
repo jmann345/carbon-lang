@@ -129,12 +129,15 @@ struct DeclParams {
 // `prev_specific_id` is for `prev_entity` — a member of a generic class
 // specific compared against a requirement declared outside that generic.
 //
-// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill round 12):
-// `found_error`, when not null, selects the errors-match mode, which the
+// Fork (SC-1, fork/structural/plan.md D-SC-9 as amended at fill rounds 12 and
+// 13): `found_error`, when not null, selects the errors-match mode, which the
 // structural check uses with `diagnose` false: a parameter with an error no
-// longer fails the comparison as a whole, but is compared by its type alone,
-// with an error type matching any type, and `*found_error` is set when such a
-// parameter is compared. Everything else is compared as without it.
+// longer fails the comparison as a whole, but is compared as declared with
+// only an erroneous type or default value counted as equal to the type or
+// default value in its place (see `CheckRedeclParam`), and `*found_error` is
+// set when such a parameter is compared. Everything else, including the
+// binding form of a parameter with an error and whether a default value is
+// there, is compared as without it.
 auto CheckRedeclParamsMatch(
     Context& context, const DeclParams& new_entity,
     const DeclParams& prev_entity, SemIR::SpecificId prev_specific_id,

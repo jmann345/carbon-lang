@@ -499,14 +499,21 @@ static auto CheckRequirementFunction(
     return MemberFailureInfo{.failure = MemberFailure::Mismatch,
                              .member_decl_id = member_fn.latest_decl_id()};
   }
-  // D-SC-9 as amended at fill round 12, the one rule for errors: the member is
-  // compared as without an error, except that each part of either declaration
-  // with an error is compared by what the error left of it (a parameter or
-  // return type that is the error matches any type; a parameter whose default
-  // value is the error is compared by its type; see `CheckRedeclParamsMatch`).
-  // A member that fails is reported as without the error; one that matches
-  // only through such a part is skipped with no further diagnostic, as its
-  // error was diagnosed at its declaration.
+  // D-SC-9 as amended at fill rounds 12 and 13, the one rule for errors: a
+  // member satisfies a requirement exactly when D-SC-5(d)'s comparison holds.
+  // When it does not, nothing more is reported if the comparison would hold
+  // with each erroneous type and each erroneous default value of either
+  // declaration counted as equal to the type or default value in its place in
+  // the other: a type with an error anywhere in it is the error, and so is a
+  // default value of a parameter whose type is the error. Everything else is
+  // compared as without the error, including the binding form (`var`, `ref`)
+  // of a parameter with an error and whether a default value or a return type
+  // is there (the errors-match mode of `CheckFunctionTypeMatches`). A member
+  // that fails is reported as without the error; one that matches only through
+  // such a part is skipped with no further diagnostic, as its error was
+  // diagnosed at its declaration, and the check's result is then an error, so
+  // such a silent failure is still a failure for a direct use, an overload
+  // probe and a blanket impl (W-233).
   bool found_error = false;
   if (!CheckFunctionTypeMatches(context, member_fn, requirement_fn,
                                 specifics->requirement_specific_id,
@@ -537,7 +544,7 @@ static auto CheckRequirements(Context& context, SemIR::LocId loc_id,
 
   // Whether a requirement was skipped because its member matches it only
   // through a part of one of the two declarations with an error (D-SC-9 as
-  // amended at fill rounds 9 to 12).
+  // amended at fill rounds 9 to 13).
   bool signature_error = false;
   for (const auto& requirement : requirements) {
     const auto& constraint = context.named_constraints().Get(
@@ -610,7 +617,7 @@ static auto CheckRequirements(Context& context, SemIR::LocId loc_id,
       if (!failure) {
         continue;
       }
-      // D-SC-9 as amended at fill rounds 9 to 12: a member function that
+      // D-SC-9 as amended at fill rounds 9 to 13: a member function that
       // matches the requirement only through a part with an error is skipped
       // with no further diagnostic, in both modes, since that error was
       // diagnosed at its declaration; every other requirement is still

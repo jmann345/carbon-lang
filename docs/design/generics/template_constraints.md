@@ -257,7 +257,14 @@ are those of
 [syntactic redeclaration matching](/proposals/p003763-matching-redeclarations.md)
 applied between the substituted requirement and the found declaration, so the
 same notion of "same signature" governs redeclarations, impl checking, and
-structural matching. As landed (SC-1, D-SC-5): the found member must resolve to
+structural matching. As landed (SC-1, D-SC-5(d) as amended 2026-10-14, fill
+round 12), structural matching uses the comparison the toolchain applies to an
+impl member and its interface member, in which a `self` parameter is compared as
+a parameter of the self type, and adds one check: a requirement with `self`
+needs a member with `self`. It so departs from redeclaration matching, which
+would reject a method for `fn Get(x: Self)`, and from impl checking, which
+accepts a member without `self` for `fn Get(self)`. As landed (SC-1, D-SC-5):
+the found member must resolve to
 exactly one function (an `overload fn` set, a field, a class or a namespace
 does not satisfy; a C++ overload set does only when it holds exactly one
 candidate), it must be accessible from the use site (a `private` member
@@ -270,7 +277,7 @@ signature: `fn Get(self)` does not match `fn Get(ref self)`. A requirement with
 the self type does not satisfy `fn Get(self)`, since it cannot be called as
 `x.Get()`; a requirement without `self`, `fn Get(x: Self)`, is satisfied by a
 method, whose `self` takes the first parameter's place when `T.Get(x)` calls it
-(D-SC-5(d) as amended at fill round 12). A default
+(D-SC-5(d) as amended 2026-10-14, fill round 12). A default
 definition (a requirement with a body) is a semantics TODO in SC-1 ("function
 definition in `template constraint`"); a `fn` in a plain, non-`template`
 `constraint` is an error. A requirement with a tuple pattern parameter,
@@ -633,15 +640,21 @@ for `Core.Slice(Self)` and `Core.Optional(Self)` (`Core.Optional` through its
 blanket `OptionalStorage` impl). Requiring a template constraint does not, since
 a checked-symbolic self never satisfies one (D-SC-6), and a member access into
 `Self` has no such workaround. A member is compared with a requirement rejected
-this way, or with any requirement when its own declaration has an error, as
-without the error, each part with an error compared by what the error left of
-it: a parameter or return type that is the error matches any type, and a
-parameter whose default value is the error is compared by its type. A member
-that matches only through such a part gets no diagnostic of its own, the error
-having been reported; a member that differs anywhere else is reported as
-without the error, and the type's other requirements, constraints and
-interfaces are still checked and reported (D-SC-9 as amended at fill rounds 9
-to 12). A
+this way, or with any requirement when its own declaration has an error, by one
+rule: it satisfies the requirement exactly when the signature comparison holds.
+When it does not, nothing more is reported if the comparison would hold with
+each erroneous type and each erroneous default value of either declaration
+counted as equal to the type or default value in its place in the other: a type
+with an error anywhere in it is the error, and so is a default value of a
+parameter whose type is the error. Everything else is compared as without the
+error, including the binding form (`var`, `ref`) of a parameter with an error
+and whether a default value or a return type is there; a member that differs so
+is reported as without the error. A member that matches only through an error
+gets no diagnostic of its own, the error having been reported, and the type's
+other requirements, constraints and interfaces are still checked and reported.
+Such a silent failure is still a failure for a direct use, an overload probe
+and a blanket impl (W-233) (D-SC-9 as amended 2026-10-14, fill rounds 9 to 13).
+A
 `require` whose facet type takes `Self` as an argument (`require Self impls
 Conv(Self)`, `require impls Has(Self)`), which a template-phase `Self` rejected,
 is accepted. Deferring the checks that involve `Self`, as this section

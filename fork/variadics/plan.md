@@ -6,36 +6,49 @@ Exceptions. See /LICENSE for license information.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 
-**Status:** rev 2, 2026-10-14: both plan reviews of R29(c) are folded, every
-finding of both, by a separate fixer (R11): review A (architecture; REJECT: two
-BLOCKERs, one MAJOR, four MINORs) and review B (concreteness, process and
-cross-workstream; APPROVE-WITH-AMENDMENTS: four MAJORs, nine MINORs). The
-"Review fold record (rev 2, 2026-10-14)" at the end gives each finding its
-disposition and the places it landed; review A's ids are written A-B1, A-B2,
-A-M1 and A-m1 to A-m4 (its `VA1-A-` prefix dropped), review B's B-M1 to B-M4 and
-B-m1 to B-m9, and neither is §7.2's A-n. Rev 1 (aced921975) was the planner's
-draft. Nothing below is implemented on this branch. Branch
-`claude/carbon-fork-0-1-va`, cut from trunk f67ab650d, whose toolchain and core
-trees equal upstream cut 0bdce60a5. Every line number below is against f67ab650d
-unless a commit or branch is named. Every measured outcome in §0.2 was taken in
-this container with the trunk toolchain (`/home/user/carbon-build/carbon-trunk`,
-`carbon version` 0.0.0-0.dev+0bdce60a5), the upstream nightly 2026.10.12 (which
-carries 2ec4bab59), the trunk build's own compiler flags, the CI-pinned
-clang-format 21.1.8 or the LLVM 21.1.8 clang-tidy, either in the planner's
-scratch directory
+**Status:** rev 3, 2026-10-14 -- SIGNED OFF FOR IMPLEMENTATION. Rev 3 folds the
+focused re-review of rev 2 (be623188d; APPROVE-WITH-AMENDMENTS: review A's two
+BLOCKERs verified RESOLVED, no new BLOCKER, one new MAJOR and three new MINOR
+findings, which the re-review numbered VA1-RR-M1 and VA1-RR-m1 to VA1-RR-m3 and
+this plan cites as RR-M1 and RR-m1 to RR-m3), each amended sentence or row
+marked "(amended 2026-10-14, review fold: RR-n)" and tabled in the "Review fold
+record (rev 3, 2026-10-14)" at the end; none is rejected, and the three reviews
+are listed in the "Sign-off" after it. Rev 2 (be623188d) folded both plan
+reviews of R29(c), every finding of both, by a separate fixer (R11): review A
+(architecture; REJECT: two BLOCKERs, one MAJOR, four MINORs) and review B
+(concreteness, process and cross-workstream; APPROVE-WITH-AMENDMENTS: four
+MAJORs, nine MINORs). The "Review fold record (rev 2, 2026-10-14)" at the end
+gives each finding its disposition and the places it landed; review A's ids are
+written A-B1, A-B2, A-M1 and A-m1 to A-m4 (its `VA1-A-` prefix dropped), review
+B's B-M1 to B-M4 and B-m1 to B-m9, and neither is §7.2's A-n, nor is the
+re-review's RR-n. Rev 1 (aced921975) was the planner's draft. Nothing below is
+implemented on this branch. Branch `claude/carbon-fork-0-1-va`, cut from trunk
+f67ab650d, whose toolchain and core trees equal upstream cut 0bdce60a5. Every
+line number below is against f67ab650d unless a commit or branch is named. Every
+measured outcome in §0.2 was taken in this container with the trunk toolchain
+(`/home/user/carbon-build/carbon-trunk`, `carbon version`
+`0.0.0-0.dev+0bdce60a5`), the upstream nightly 2026.10.12 (which carries
+2ec4bab59), the trunk build's own compiler flags, the CI-pinned clang-format
+(21.1.8) or LLVM's clang-tidy (21.1.8), either in the planner's scratch
+directory
 `/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va1`
-(`$V` below) or, for rev 2, in the fixer's
+(`$V` below), for rev 2, in the fixer's
 `/tmp/claude-0/-home-user-carbon-lang/b7af0e83-599b-5459-ba66-18f10d8e737b/scratchpad/va1-fixer`
-(`$F` below). No toolchain was built, nothing under /home/user/carbon-build was
-modified, no worktree other than this one was touched (the scratch clones
-`$V/cp` and `$F/cp` are `git clone --shared` copies, read-only for the
-repositories they were cloned from), and the owner's runner was not used (R28).
-The prototype that §2 quotes exists only in the fixer's scratch clone, on the
-branches `fx-c3` (6d15888c1), `fx-c4` (0cb0f3ec0) and `fx-c5` (1c61cab6f):
-`fx-c3` is rev 1's `va1-c3f` plus one commit, `fx-c4` replays `va1-c4f`'s commit
-onto it and adds one, and `fx-c5` replays `va1-c5f`'s commit with the fold's
-lowering in the same commit (§2.0). It is the source of every code block in §2,
-not a substitute for them.
+(`$F` below), or, for rev 3, in the second fixer's `$V/rr3` (`$R` below; amended
+2026-10-14, review fold: RR-M1, RR-m2). No toolchain was built, nothing under
+/home/user/carbon-build was modified, no worktree other than this one was
+touched (the scratch clones `$V/cp` and `$F/cp` are `git clone --shared` copies,
+read-only for the repositories they were cloned from), and the owner's runner
+was not used (R28). The prototype that §2 quotes exists only in the fixer's
+scratch clone `$F/cp`, on the branches `fx-c3` (6d15888c1), `rr-c4` (ee713955b)
+and `rr-c5` (5969337e8): `fx-c3` is rev 1's `va1-c3f` plus one commit; rev 2's
+`fx-c4` (0cb0f3ec0) replays `va1-c4f`'s commit onto it and adds one, and rev 2's
+`fx-c5` (1c61cab6f) replays `va1-c5f`'s commit with the fold's lowering in the
+same commit; rev 3's `rr-c4` is `fx-c4` plus one commit, and `rr-c5` replays
+`fx-c5`'s commit onto `rr-c4` and adds one, both written with git's plumbing and
+no checkout, because the container's disk had about 10 MB free (§2.0; amended
+2026-10-14, review fold: RR-M1, RR-m2). It is the source of every code block in
+§2, not a substitute for them.
 
 **Item:** W-013, "W6: implement definition-checked variadics"
 (fork/inventory/work-items.json; size XL; kind missing-feature). VA-1 is its
@@ -106,7 +119,12 @@ on the dd branch); SC-1 holds W-232..W-239; W-202..W-211 are OX-1's
 reservation; W-212..W-231 and F-018 are named on trunk, the dd branch and the
 ox branch only as VA-1's reservation ("reserves W-212 to W-231 and F-018 if
 minted", fork/ORCHESTRATION.md on trunk), and F-017 only as OX-1's, which its
-rev-2 plan mints. **VA-1 reserves W-212..W-231** (twenty ids): W-212..W-228
+rev-2 plan mints. For rev 3 the second fixer re-ran them on 2026-10-14 over the
+same 76 refs (local trunk still 3eb7f36f0): the maximum is still W-244, and
+W-212..W-231 and F-018 are named only as VA-1's reservation, on trunk, the
+integration branch `claude/carbon-fork-0-1-7mwfb7`, the dd branch, the ox
+branch (whose OX-1 plan is now at rev 2) and in this plan.
+**VA-1 reserves W-212..W-231** (twenty ids): W-212..W-228
 are the residues of §1.11's first seventeen items, W-229 and W-230 are the two
 residues the review fold adds (§1.11 items 18 and 19; amended 2026-10-14,
 review fold: A-m2, A-m3), W-231 stays a spare, and an unused reserved id stays
@@ -197,7 +215,7 @@ A-m2, A-m3).
 | 12 | Prelude tuple Copy | LANDED, hand-written | core/prelude/copy.carbon:49-71: "TODO: Implement tuple copy as a variadic generic impl." then impls for `()`, `(T,)`, `(T, U)` and `(T, U, V)`. There is no core/prelude/types/tuple.carbon (the brief's path does not exist; `ls core/prelude/types` lists none). |
 | 13 | Arbiter | SKIP | fork/conformance/programs/generics/variadics_each.carbon: body commented out, `Run` returns 1, SKIP reason "no `...`/`each` tokens exist in toolchain/lex/token_kind.def". |
 | 14 | Design | COMPLETE | docs/design/variadics.md, 964 lines; upstream a045da8e6 adds 36 (M-5). |
-| 15 | Value aggregates | LANDED | toolchain/check/type_completion.cpp:570-589 `BuildStructOrTupleValueRepr` and :638-678: a tuple or struct value is the address of its elements' value representations (`ValueAggregate`, toolchain/sem_ir/type_info.h:46-48); convert.cpp:594-596 forms a `TupleValue` from the elements' values without copy-initializing them, so a tuple of a class without `Core.Copy` binds as a value (M-21). Rev 2's pack type uses the same representation (D-VA-3; amended 2026-10-14, review fold: A-B2 / B-M1). |
+| 15 | Value aggregates | LANDED | toolchain/check/type_completion.cpp:570-589 `BuildStructOrTupleValueRepr` and :638-678: a tuple or struct value is the address of its elements' value representations (`ValueAggregate`, toolchain/sem_ir/type_info.h:46-48); convert.cpp:594-596 forms a `TupleValue` from the elements' values without copy-initializing them, so a tuple of a class without `Core.Copy` binds as a value (M-21). Rev 2's pack type uses a like representation, always passed by address (D-VA-3; amended 2026-10-14, review fold: A-B2 / B-M1; amended 2026-10-14, review fold: RR-m3). |
 
 ### §0.2 Measurements
 
@@ -555,6 +573,29 @@ grep -n 'DefaultValuePattern\|TuplePattern\|AnyVarPattern' \
 
 <!-- google-doc-style-resume -->
 
+**M-25. Rev 3's re-measurements** (amended 2026-10-14, review fold: RR-M1,
+RR-m2). Rev 3 changes four files of the prototype, each of which rev 2 already
+changes: toolchain/check/handle_pack_expansion.cpp (RR-M1's one hunk), the check
+golden fail_pack_expansion.carbon (one split), the lower golden (one split) and
+variadics_forward.carbon (two functions and one print). In `$R`, with the trunk
+build's flags and `$F/cp`'s checkout of `fx-c5` as the include root (every
+header that file includes is the same at `fx-c5`, `rr-c4` and `rr-c5`),
+check/handle_pack_expansion.cpp at `rr-c4` gives `-fsyntax-only` rc 0
+(`$R/synchk.py`), and rc 1 with "no matching function for call to
+'RequireCompleteType'" when the call's location argument is deleted (negative
+control); the same file at `rr-mu-7` gives rc 0. A `clang-format -i` (21.1.8) of
+a copy changes nothing. clang-tidy with the repository's .clang-tidy minus
+`modernize-*`, line-filtered to the changed hunk, gives rc 0 and no diagnostic
+(`$R/tidy_hpe.log`). `runner.py --self-test` on an extract of `rr-c5`'s
+fork/conformance, gap-analysis.md and milestones.md prints "self-test: 158
+programs parsed, 56 bullets in table, OK" and variadics_forward "[stdout: 5
+lines; exit: 0]", and `--update-readme-table` leaves the README unchanged
+(`$R/selftest.log`). No diagnostic kind is added, so M-13 stands. None of the
+four files exists on any of the head's 76 refs, and no upstream commit after
+2ec4bab59 touches handle_pack_expansion.cpp or the variadics testdata (`git log
+2ec4bab59..upstream/trunk` on those paths prints nothing), so M-15's and M-16's
+counts stand.
+
 ### §0.3 Ledger, row and brief claims found stale (each corrected where §2 says)
 
 1.  Row 53 and the arbiter's SKIP reason say "no `...`/`each` tokens exist in
@@ -691,7 +732,8 @@ golden) and filed.
 20. DR-20. An expansion is a loop run at monomorphization over the pack index
     0 to N - 1 (:161-167, :298-302). **IN** (D-VA-9).
 21. DR-21. `...` in a tuple literal behaves like N comma-separated elements
-    (:190-193, :316-318). **IN** for call arguments: an expansion argument is
+    (:199-202, :316-318; amended 2026-10-14, review fold: RR-m1). **IN** for
+    call arguments: an expansion argument is
     evaluated where it is written, before the arguments after it, as
     pattern_matching.md :1045-1047 requires ("the overall evaluation order is
     always consistent [...] with the written order of the scrutinee
@@ -721,7 +763,8 @@ golden) and filed.
 30. DR-30. The remaining elements match the operand in order, `$I` counting
     from 0 (:339-344). **IN**: the Nth element is bound to the Nth scrutinee
     as a value binding binds its scrutinee, with no copy initialization
-    (docs/design/values.md :184-185); rev 1 copy-initialized each element into
+    (docs/design/values.md :186-187; amended 2026-10-14, review fold: RR-m1);
+    rev 1 copy-initialized each element into
     an array (amended 2026-10-14, review fold: A-B2 / B-M1).
 31. DR-31. Segments, pack literals `⟬⟭`, arity coercions `«E; N»`, shapes and
     scalar components (:348-448). **IN** for one segment only: `«E; N»` is the
@@ -771,7 +814,9 @@ golden) and filed.
     convertibility" (:794-796) for one segment, `...T` converting to `...U` of
     equal arity when `T` converts to `U` (at the call, by a second expansion
     whose body converts each element of the first; amended 2026-10-14, review
-    fold: A-B1); the rest **OUT** (W-212, W-215).
+    fold: A-B1); the rest **OUT** (W-212, W-215). variadics_forward's
+    `Narrowed` and the lower split `forward_converted_field` run it (amended
+    2026-10-14, review fold: RR-M1).
 42. DR-42. Packs cannot be indexed in Carbon code; `[:N:]` is notation only
     (:176-177). **IN**, vacuously: there is no pack-indexing syntax, and
     indexing a pack's bare name stops at D-VA-11's TODO (amended 2026-10-14,
@@ -854,12 +899,16 @@ toolchain/check/pattern.cpp:165-215). The each-name binding `each n: E` inside
 the expansion is then declared with the type `«E; N»`, the new `PackType`, `N`
 being that arity binding: the design's rewrite of `each X: T` to
 `each X: «T; __N»`, taken literally. A pack is a sequence of values, so a value
-of a pack type holds its elements' values: its value representation is the
-address of `N` value representations of `E`, the representation a tuple value
-already has (§0.1 row 15, M-21), and binding the pack binds each element as a
+of a pack type holds its elements' values: its value representation is always
+a pointer to `N` element value representations, `ValueAndObjectAggregate` when
+`E`'s value representation is its object representation and `ValueAggregate`
+otherwise, the kind of representation a tuple value has (§0.1 row 15, M-21),
+though a tuple of one element is passed by copy and a pack never is (amended
+2026-10-14, review fold: RR-m3); and binding the pack binds each element as a
 value parameter binds its argument, with no copy initialization and no
 `Core.Copy` ("Value bindings require the matched expression to be a value
-expression", docs/design/values.md :184-185). A call forms the pack's value
+expression", docs/design/values.md :186-187; amended 2026-10-14, review fold:
+RR-m1). A call forms the pack's value
 from its arguments' values (`PackValue`) or from an expansion argument's
 iterations (`PackExpansionExpr`), and an each-name use `each n` reads the
 element at the pack index (`PackElement`, DR-27), a value of type `E`. The
@@ -961,7 +1010,7 @@ A-B2, B-M1, B-M2):
 
 | Inst (ir_name) | Fields | Constant kind | Category | Lowered as |
 | --- | --- | --- | --- | --- |
-| `PackType` (`pack_type`) | `type_id` (always `type`), `element_type_inst_id`, `arity_id` | `WheneverPossible`, `is_type` always, `deduce_through` | type | `[N x E]`; a value of it is the address of `N` value representations of `E` (type_completion.cpp gives it the tuple's `ValueAggregate` representation) |
+| `PackType` (`pack_type`) | `type_id` (always `type`), `element_type_inst_id`, `arity_id` | `WheneverPossible`, `is_type` always, `deduce_through` | type | `[N x E]`; a value of it is always a pointer to `N` element value representations of `E`, `ValueAndObjectAggregate` when `E`'s value representation is its object representation, otherwise `ValueAggregate` (type_completion.cpp; amended 2026-10-14, review fold: RR-m3) |
 | `PackElement` (`pack_element`) | `type_id` (the element type), `pack_id`, `index_id` | `Never` | value | a load of the element's value representation at the index from the pack's storage |
 | `PackExpansionPattern` (`pack_expansion_pattern`) | `type_id` (pattern type of a `PackType`), `subpattern_id`, `arity_pattern_id` | `Always` | pattern | not lowered (`is_lowered = false`) |
 | `PackExpansionStatement` (`pack_expansion_statement`) | `arity_id`, `body_block_id` | `Never` | not an expression | the body, `arity` times |
@@ -982,9 +1031,20 @@ type/execution discrepancy (DR-34) does not arise in the slice: it needs an
 expansion whose iterations have different types (an `if` expression inside an
 expansion, W-219, over a pack of several types, W-212), and every pack value
 of the slice has one element type (amended 2026-10-14, review fold: A-B2,
-which made packs values). _Break condition:_ the formatted SemIR of
-a golden shows an expansion body evaluated outside its expansion, or the
-verifier rejects a body the slice accepts.
+which made packs values). The handler of a pack expansion expression requires
+its type `«R; N»` complete with `RequireCompleteType`, which for the symbolic
+type of a variadic caller adds a `RequireCompleteType` instruction to the
+generic, so that each specific's `«R; k»` is complete when lowering reads its
+value representation, also when nothing else requires that type: in a forward
+whose elements the call converts, such as `Sum(... ToI32(each x))` into a pack
+of `i64`, only the converted `«i64; k»` is a parameter's or a conversion's
+type. Rev 2 completed it with `CompleteTypeOrCheckFail`, which records nothing
+for a symbolic type, so that forward was accepted and then crashed in lowering
+(amended 2026-10-14, review fold: RR-M1; the lower split
+`forward_converted_field`, variadics_forward's `Narrowed` and the mutant MU-8
+see it). _Break condition:_ the formatted SemIR of a golden shows an expansion
+body evaluated outside its expansion, the verifier rejects a body the slice
+accepts, or lowering meets a specific's pack type that is not complete.
 
 **D-VA-8 (definition checking).** The body of a variadic function is checked
 once, when it is defined, as any generic body is: `each n` is a `PackElement` of
@@ -1036,7 +1096,9 @@ each iteration (a `PackExpansionExpr` stores the iteration's result into the
 pack's storage there), and then erases from `locals_` every value the
 iteration set, so that the next iteration lowers the same instructions afresh
 (`SetLocal` refuses duplicates). A `PackExpansionExpr` is lowered where it
-stands in its block, which is the argument's position (D-VA-4). `PackValue`
+stands in its block, which is the argument's position (D-VA-4), and its pack
+type is complete in every specific (D-VA-7; amended 2026-10-14, review fold:
+RR-M1). `PackValue`
 stores its elements' values into new storage, `PackElement` loads one element
 at the pack index, and `PackIndex` lowers to `ConstantInt(i64, index)` (amended
 2026-10-14, review fold: A-B1, A-B2, B-M1, B-M2; rev 1 indexed an array and
@@ -1069,12 +1131,17 @@ DR-29, the first argument is `first`, the last is `last`, the rest is `mid`:
 `Digits(1, 2, 3)` has `mid` = (2), `total` = 1 then 12, result 123;
 `Digits(4, 3, 2, 1)` has `mid` = (3, 2), `total` = 4, 43, 432, result 4321.
 
-**variadics_forward** (123, 246, 0, 8). `Digits(... each d)` with `total`
+**variadics_forward** (123, 246, 0, 8, 456; amended 2026-10-14, review fold:
+RR-M1). `Digits(... each d)` with `total`
 from 0 gives the decimal number whose digits are the arguments in order.
 `Forward(1, 2, 3)` calls `Digits(... each d)`, which "behaves like a series of
 comma-separated tuple elements" (DR-21): `Digits(1, 2, 3)` = 123. `Doubled(1,
 2, 3)` calls `Digits(... each d + each d)` = `Digits(2, 4, 6)` = 246.
 `Forward()` calls `Digits()` = 0. `Doubled(4)` = `Digits(8)` = 8.
+`Narrowed(4, 5, 6)` calls `Digits(... ToI32(each d))`: the expansion evaluates
+`ToI32(4)`, `ToI32(5)` and `ToI32(6)`, the `i32` values 4, 5 and 6, and the
+call converts each to `i64` by DR-41's expansion convertibility (an `i32`
+implicitly converts to an `i64`), so it is `Digits(4, 5, 6)` = 456.
 
 **variadics_empty_pack** (7, 1, 2, 9). `PrintAll(... each n: i32)` prints
 each element in order. `PrintAll()` prints nothing; `Core.Print(7)` prints 7;
@@ -1154,13 +1221,15 @@ refilling it.
 bullet "Generics: Definition-checked variadics", each 10 to 60 lines, each
 arbitrating one concept, each EXPECT derived in §1.6; the last three are
 rev 2's, each the program that would have caught one of rev 1's defects
-(amended 2026-10-14, review fold: A-B1, A-B2, B-M1, B-M2):
+(amended 2026-10-14, review fold: A-B1, A-B2, B-M1, B-M2), and rev 3 adds to
+variadics_forward the line that catches rev 2's (amended 2026-10-14, review
+fold: RR-M1):
 
 | Program | Concept | EXPECT |
 | --- | --- | --- |
 | generics/variadics_each.carbon (un-SKIP) | statement expansion over a parameter pack, arity 3 and 0 | 6, 0 |
 | generics/variadics_fixed_params.carbon (new) | a pack between fixed parameters (DR-29), iteration order | 12, 123, 4321 |
-| generics/variadics_forward.carbon (new) | forwarding `... each d` and an expression expansion argument to another variadic function | 123, 246, 0, 8 |
+| generics/variadics_forward.carbon (new) | forwarding `... each d`, an expression expansion argument and one whose elements the call converts, to another variadic function (amended 2026-10-14, review fold: RR-M1) | 123, 246, 0, 8, 456 |
 | generics/variadics_empty_pack.carbon (new) | a side-effecting statement expansion runs once per element and never for an empty pack, directly and forwarded | 7, 1, 2, 9 |
 | generics/variadics_expansion_args.carbon (new) | an expansion argument between fixed arguments (the call's argument list as a tuple literal of segments) | 19, 1239, 15559 |
 | generics/variadics_sum_diff.carbon + .diff.cpp (new) | Horner and a forwarded expression expansion against C++17 variadic templates and comma folds | oracle: 123, 11, 0, 30, 0 |
@@ -1343,7 +1412,7 @@ would be circular (amended 2026-10-14, review fold: B-m5).
 | D-VA-4 | calls group the pack's arguments into a `PackLiteral` or one forwarded pack value; an expansion argument is evaluated where it is written; merging, tuple-literal expansions and overload sets are TODOs | a grouped scrutinee deduces a different arity or converts in a different order than DR-30 |
 | D-VA-5 | check's slice TODOs (implicit lists, tuple patterns, non-binding operands, `ref`/`var`/phase each-bindings, different arities, template-dependent calls, defaults beside a pack, interface functions, C++ export, a bare pack name) | a refused form is needed for the row to be PARTIAL |
 | D-VA-6 | expansion bodies are straight-line expression statements without cleanups | a straight-line body's lowering reuses a stale per-iteration value |
-| D-VA-7 | eight new instructions with the fields, constant kinds and lowering of §1.4's table | a golden shows an expansion body evaluated outside its expansion, or the verifier rejects an accepted body |
+| D-VA-7 | eight new instructions with the fields, constant kinds and lowering of §1.4's table; an expansion's pack type required complete per specific (amended 2026-10-14, review fold: RR-M1) | a golden shows an expansion body evaluated outside its expansion, the verifier rejects an accepted body, or lowering meets an incomplete pack type |
 | D-VA-8 | definition checking = the body checked once against the element type, the one-segment case of DR-32 | a body is accepted that the design's typechecking rejects for a one-segment pack, or the reverse |
 | D-VA-9 | lowering unrolls the body per specific where the expansion stands, erases per-iteration locals, fingerprints the arity | a specific evaluates a body other than arity times or out of order |
 | D-VA-10 | `each` is a keyword | upstream makes `each` contextual |
@@ -1358,26 +1427,31 @@ would be circular (amended 2026-10-14, review fold: B-m5).
 
 ### §2.0 Conventions
 
-Every code block below was generated from the fixer's scratch clone `$F/cp`
-by `$F/bin/gen_blocks.py` (`git diff -U3` between the per-commit branches, or
-`git show` of a whole file), never retyped: C1 is 3b4a431f0, C2 is 2f0d4c4c4,
-and C3, C4 and C5 are the branches `fx-c3` (6d15888c1), `fx-c4` (0cb0f3ec0)
-and `fx-c5` (1c61cab6f); §8.5's mutants are the branches `mu-1` to `mu-7`, each
-one commit on `fx-c5`. Rev 1's blocks came from `$V/cp`'s `va1-c3f`, `va1-c4f`
-and `va1-c5f` by `$V/bin/gen_s2.py`; the blocks of files the fold left alone
-regenerate byte for byte (fourteen compared, with the trailing whitespace the
-hook strips ignored), and every other block below is rev 2's (amended
-2026-10-14, review fold: all code findings). Each diff is against the previous
-commit's state, so applying §2.3, §2.4 and §2.5 in order to C2 reproduces C5.
-A diff's blank context lines have lost their leading space to the
-trailing-whitespace hook; `git apply` reads a line with nothing on it as a
-blank context line, so the diffs still apply. The blocks sit between
+Every code block below was generated from the fixer's scratch clone `$F/cp` by
+`$F/bin/gen_blocks.py` (`git diff -U3` between the per-commit branches, or `git
+show` of a whole file), never retyped: C1 is 3b4a431f0, C2 is 2f0d4c4c4, and C3,
+C4 and C5 are the branches `fx-c3` (6d15888c1), `rr-c4` (ee713955b) and `rr-c5`
+(5969337e8); §8.5's mutants are the branches `rr-mu-1` to `rr-mu-8`, each one
+commit on `rr-c5`, the first seven being rev 2's `mu-1` to `mu-7` (on `fx-c5`)
+replayed (amended 2026-10-14, review fold: RR-M1, RR-m2). Rev 1's blocks came
+from `$V/cp`'s `va1-c3f`, `va1-c4f` and `va1-c5f` by `$V/bin/gen_s2.py`; the
+blocks of files the fold left alone regenerate byte for byte (fourteen compared,
+with the trailing whitespace the hook strips ignored), and every other block
+below is rev 2's (amended 2026-10-14, review fold: all code findings). Rev 3's
+blocks come from `$R/bin/gen_blocks_rr.py`, the same script pointed at the `rr-`
+branches: of its 80 blocks, 74 equal rev 2's byte for byte, and the other six
+are the four files rev 3 changes, MU-7 (whose line numbers move) and MU-8 (new)
+(amended 2026-10-14, review fold: RR-M1, RR-m2). Each diff is against the
+previous commit's state, so applying §2.3, §2.4 and §2.5 in order to C2
+reproduces C5. A diff's blank context lines have lost their leading space to the
+trailing-whitespace hook; `git apply` reads a line with nothing on it as a blank
+context line, so the diffs still apply. The blocks sit between
 `google-doc-style-ignore` and `google-doc-style-resume` comment lines because
 the doc-style hook rewrites words inside code (R31(d)), and two context lines
 quote code that uses one of them. Every C++ file is clang-format 21.1.8 clean
 (M-12). The comments the fork adds carry "Fork (VA-1, D-VA-n)" where a decision
-of this plan shapes the code and cite the design's section by name; none names
-a W-id (the head's id rule).
+of this plan shapes the code and cite the design's section by name; none names a
+W-id (the head's id rule).
 
 ### §2.1 Commit C1: cherry-pick of 2ec4bab59
 
@@ -2220,7 +2294,7 @@ node kinds, replaced in C4.
 
 <!-- google-doc-style-resume -->
 
-### §2.4 Commit C4: check and SemIR (`fx-c4`)
+### §2.4 Commit C4: check and SemIR (`rr-c4`)
 
 The SemIR instructions of D-VA-7, the checking of D-VA-3 to D-VA-8 and D-VA-11,
 the diagnostics, import and redeclaration support, the TODOs of D-VA-5, and
@@ -2253,9 +2327,17 @@ its line at f67ab650d and what C4 does for a `PackExpansionPattern` there:
     cannot wrap a pack expansion pattern, because `...` starts its list
     element, and `... unused each n` marks the binding itself.
 -   `ClonePattern` (thunk.cpp:137): none; it CHECK-fails on a pattern kind it
-    does not know (:166-170) and runs only for the thunk between an interface
-    function and its impl, and C4 refuses a pack expansion pattern in an
-    interface function with a TODO (W-229).
+    does not know (:166-170) and runs for two kinds of thunk. One is between an
+    interface function and its impl, and C4 refuses a pack expansion pattern in
+    an interface function with a TODO (W-229). The other is every virtual
+    override: class.cpp:385-387 calls `BuildThunk` with the class's
+    `self_type_id`, so thunk.cpp:462-467's no-thunk shortcut never applies and
+    the base function's parameter patterns are cloned. A variadic virtual
+    function cannot reach it, because its arity binding makes it generic, and
+    handle_function.cpp:798-802 diagnoses `GenericVirtual` and drops its
+    `virtual`; the split `fail_variadic_virtual` pins that guard, so that a
+    relaxed generic-virtual rule shows up as a changed golden, not a crash
+    (amended 2026-10-14, review fold: RR-m2).
 -   `GetFirstBindingNameFromPatternId` (sem_ir/pattern.cpp:57) and its callers
     (handle_pattern_list.cpp's struct shorthand, eval_inst.cpp and mangler.cpp
     for variables, export.cpp for globals): none; they take `var` and struct
@@ -2840,9 +2922,12 @@ constructor.
 <!-- google-doc-style-resume -->
 
 **toolchain/check/type_completion.cpp.** A pack type's value representation is
-the address of its elements' value representations, built as a tuple's is,
-and completing it completes its element type first (amended 2026-10-14,
-review fold: A-B2 / B-M1).
+always a pointer to `N` element value representations,
+`ValueAndObjectAggregate` when the element's value representation is its
+object representation and `ValueAggregate` otherwise (a tuple of one element,
+by contrast, is passed by copy), and completing it completes its element type
+first (amended 2026-10-14, review fold: A-B2 / B-M1; amended 2026-10-14,
+review fold: RR-m3).
 
 <!-- google-doc-style-ignore -->
 
@@ -3810,7 +3895,7 @@ type, because nothing in C4 lowers; C5 replaces the stub.
 
 <!-- google-doc-style-resume -->
 
-**toolchain/check/handle_pack_expansion.cpp** (whole file at fx-c4). The whole
+**toolchain/check/handle_pack_expansion.cpp** (whole file at rr-c4). The whole
 file replaces C3's (upstream's three handlers, two of them replaced in place and
 `HandlePrefixOperatorExpand` kept as upstream's TODO, and C3's four stubs). A
 `...` decides its kind from the node it follows (a list start for an element,
@@ -3821,7 +3906,9 @@ pack's element at the pack index (`PackElement`). The end of an expansion
 checks D-VA-6's restrictions and DR-17 and builds the instruction; an
 expression expansion converts its result to a value inside its body and is
 added where the argument is written (amended 2026-10-14, review fold: A-B1,
-A-B2, A-m1, B-M1, B-M2, and A-m3's walker audit).
+A-B2, A-m1, B-M1, B-M2, and A-m3's walker audit). Its pack type is required
+complete with `RequireCompleteType`, so that every specific's is complete for
+lowering (D-VA-7; amended 2026-10-14, review fold: RR-M1).
 
 <!-- google-doc-style-ignore -->
 
@@ -4070,11 +4157,19 @@ auto HandleParseNode(Context& context, Parse::PackExpansionExprId node_id)
 
   // "The type of a pack expansion expression or pattern is `...B`, where `B`
   // is the type of its body" (docs/design/variadics.md, "Typing and shaping
-  // rules"): a pack of the body's type, with the arity of its each-names. Its
-  // element type is complete, so it is too.
+  // rules"): a pack of the body's type, with the arity of its each-names.
   auto pack_type_id = GetPackType(
       context, context.types().GetTypeInstId(result_type_id), scope.arity_id);
-  CompleteTypeOrCheckFail(context, pack_type_id);
+  // Lowering reads the pack type's value representation in every specific, so
+  // each specific's pack type must be complete, even when nothing else requires
+  // it, as when the call converts the elements to another type. For a symbolic
+  // type, `RequireCompleteType` records that requirement in the generic (fork
+  // VA-1, D-VA-7). The element type is complete, so the pack type is too, and
+  // no diagnostic context is needed here.
+  bool complete = RequireCompleteType(context, pack_type_id, node_id,
+                                      [](auto& /*builder*/) {});
+  CARBON_CHECK(complete, "Expected {0} to be a complete type",
+               context.types().GetAsInst(pack_type_id));
 
   // "`...` in a tuple literal behaves like a series of comma-separated tuple
   // elements" (docs/design/variadics.md, "Pack expansion expressions and
@@ -4212,7 +4307,7 @@ auto HandleParseNode(Context& context, Parse::PrefixOperatorExpandId node_id)
 
 <!-- google-doc-style-resume -->
 
-**toolchain/lower/handle_pack_expansion.cpp** (whole file at fx-c4). C4's
+**toolchain/lower/handle_pack_expansion.cpp** (whole file at rr-c4). C4's
 lowering stubs, one per lowered kind of D-VA-7: the dispatch needs a handler
 per lowered kind, and nothing in C4 reaches them (C4 has no lower golden and no
 program).
@@ -4266,7 +4361,7 @@ auto HandleInst(FunctionContext& /*context*/, SemIR::InstId /*inst_id*/,
 
 <!-- google-doc-style-resume -->
 
-### §2.5 Commit C5: lowering (`fx-c5`)
+### §2.5 Commit C5: lowering (`rr-c5`)
 
 Lowering per D-VA-9. Invariant: outside an expansion body, `pack_index_` is
 empty and `SetLocal` records nothing extra; no existing handler changes. Rev 1's
@@ -4422,7 +4517,7 @@ representations, lowered the same way (amended 2026-10-14, review fold: A-B2
 
 <!-- google-doc-style-resume -->
 
-**toolchain/lower/handle_pack_expansion.cpp** (whole file at fx-c5). Replaces
+**toolchain/lower/handle_pack_expansion.cpp** (whole file at rr-c5). Replaces
 C4's stubs: a statement reads its arity in the specific and runs its body that
 many times; an expansion expression allocates its pack's storage, runs its
 body that many times where it stands and stores each iteration's result; a
@@ -5145,6 +5240,9 @@ fn F(... unused each n: i64);
 <!-- google-doc-style-resume -->
 
 **toolchain/check/testdata/variadics/fail_pack_expansion.carbon** (commit C4).
+Rev 3 adds the split `fail_variadic_virtual`, which pins the `GenericVirtual`
+guard that keeps a variadic virtual function away from `ClonePattern` (§2.4's
+walker audit; amended 2026-10-14, review fold: RR-m2).
 
 <!-- google-doc-style-ignore -->
 
@@ -5183,6 +5281,13 @@ fn F(... each n: i64) {
 library "[[@TEST_NAME]]";
 
 fn F(... each a: i64, ... each b: i64);
+
+// --- fail_variadic_virtual.carbon
+library "[[@TEST_NAME]]";
+
+base class B {
+  virtual fn F[self: Self](... each n: i64);
+}
 ```
 
 <!-- google-doc-style-resume -->
@@ -5444,7 +5549,12 @@ void CallSum() {
 adds the splits `class_element` (a pack of class values, stored as addresses),
 `arg_order` (an expansion argument between two calls) and `lib` and `use` (an
 imported variadic function lowered at two arities) (amended 2026-10-14,
-review fold: A-B1, A-B2, A-m4).
+review fold: A-B1, A-B2, A-m4). Rev 3 adds `forward_converted_field`: the
+argument's pack type, `«Wrap; N»` of a field of each element, is required
+complete by nothing but the expansion, and the call converts it to `Sum`'s
+`«i64; N»`. The re-review's `ToI32` form needs an `i32` to `i64` conversion,
+which the min prelude does not have, so it is in variadics_forward instead
+(amended 2026-10-14, review fold: RR-M1).
 
 <!-- google-doc-style-ignore -->
 
@@ -5530,6 +5640,37 @@ fn Plain(... each x: i64) -> i64 {
 
 fn Run() -> i64 {
   return Plain(2, 3);
+}
+
+// --- forward_converted_field.carbon
+library "[[@TEST_NAME]]";
+
+class Wrap {
+  var n: i64;
+}
+
+impl Wrap as Core.ImplicitAs(i64) {
+  fn Convert(self) -> i64 { return self.n; }
+}
+
+class Holder {
+  var w: Wrap;
+}
+
+fn Add(a: i64, b: i64) -> i64 = "int.sadd";
+
+fn Sum(... each n: i64) -> i64 {
+  var total: i64 = 0;
+  ... total = Add(total, each n);
+  return total;
+}
+
+fn SumHeld(... each h: Holder) -> i64 {
+  return Sum(... each h.w);
+}
+
+fn Run(h: Holder, k: Holder) -> i64 {
+  return SumHeld(h, k);
 }
 
 // --- lib.carbon
@@ -5666,7 +5807,10 @@ fn Run() -> i32 {
 
 <!-- google-doc-style-resume -->
 
-**fork/conformance/programs/generics/variadics_forward.carbon** (new).
+**fork/conformance/programs/generics/variadics_forward.carbon** (new). Rev 3
+adds `ToI32`, `Narrowed` and the fifth print, 456: a forward whose elements the
+call converts from `i32` to `i64`, so that nothing but the expansion requires
+its pack type complete (amended 2026-10-14, review fold: RR-M1).
 
 <!-- google-doc-style-ignore -->
 
@@ -5682,6 +5826,7 @@ fn Run() -> i32 {
 //   246
 //   0
 //   8
+//   456
 //
 // A variadic function forwards its pack to another with a pack expansion
 // argument, `... each d` or `... each d + each d`: "`...` in a tuple
@@ -5691,7 +5836,13 @@ fn Run() -> i32 {
 // Digits(2, 4, 6). Digits appends one decimal digit per element in order:
 // 123, then 246; Forward() forwards an empty pack, 0; Doubled(4) is
 // Digits(8), 8. The callee's arity is deduced from the expansion's at each
-// caller specific.
+// caller specific. Narrowed(4, 5, 6) passes `... ToI32(each d)`, a pack of
+// i32 values 4, 5 and 6, which the call converts element by element to
+// Digits' i64 ("`...T` is convertible to `...U` if [...] the scalar
+// components of `T` are each convertible to all scalar components of `U`",
+// docs/design/variadics.md, "Equivalence, equality, and convertibility"):
+// Digits(4, 5, 6), 456. No other parameter or argument has the type of
+// that pack of i32, so only the expansion requires it to be complete.
 
 import Core library "io";
 
@@ -5709,11 +5860,20 @@ fn Doubled(... each d: i64) -> i64 {
   return Digits(... each d + each d);
 }
 
+fn ToI32(x: i64) -> i32 {
+  return x as i32;
+}
+
+fn Narrowed(... each d: i64) -> i64 {
+  return Digits(... ToI32(each d));
+}
+
 fn Run() -> i32 {
   Core.Print(Forward(1, 2, 3) as i32);
   Core.Print(Doubled(1, 2, 3) as i32);
   Core.Print(Forward() as i32);
   Core.Print(Doubled(4) as i32);
+  Core.Print(Narrowed(4, 5, 6) as i32);
   return 0;
 }
 ```
@@ -6625,8 +6785,9 @@ exactly this test, in node_stack.h, and was corrected by moving one case label
 from C4 to C3; §8.0.)
 
 **Fix commits and the shrink line** (amended 2026-10-14, review fold: B-m8).
-VA-1 is about 1.5 times UN-1 or OV-1 in non-test toolchain code (`fx-c5`
-against C2: 42 files, 1620 insertions and 41 deletions, against UN-1's 29
+VA-1 is about 1.5 times UN-1 or OV-1 in non-test toolchain code (`rr-c5`
+against C2: 42 files, 1628 insertions and 41 deletions, rev 2's `fx-c5` 1620;
+amended 2026-10-14, review fold: RR-M1; against UN-1's 29
 files, +1104/-258, and OV-1's 42 files, +1026/-35) with four times OV-1's two
 new instruction kinds, and it has never been built; UN-1 needed two code-fix
 commits after its reviews and OV-1 four. The plan therefore budgets three or
@@ -6644,8 +6805,10 @@ and the rest of variadics_generic_element), and the shrink is a plan revision
 the reviews see before it lands.
 
 0.  **Plan.** Rev 1, "VA-1 plan (rev 1): definition-checked variadics,
-    slice 1", and this revision, "VA-1 plan (rev 2): reviews A and B folded,
-    20 findings"; each later revision is a new commit, each amended sentence
+    slice 1", rev 2, "VA-1 plan (rev 2): reviews A and B folded, 20
+    findings", and this revision, "VA-1 plan (rev 3): focused re-review
+    folded, sign-off" (amended 2026-10-14, review fold: RR-M1); each later
+    revision is a new commit, each amended sentence
     marked "(amended <date>, review fold: <finding>)".
 1.  **C1, cherry-pick 2ec4bab59** (`git cherry-pick -x 2ec4bab59`, resolutions
     §2.1). Author Richard Smith, upstream's message plus `-x`'s line, committer
@@ -6670,19 +6833,20 @@ the reviews see before it lands.
     comments in state.def, and the four new lex and parse goldens. Expected
     gate: red on exactly the four new goldens.
 5.  **F3.** Autoupdate of C3's four goldens, to its fixpoint (R26).
-6.  **C4, check and SemIR** (§2.4; 39 files, 1840 insertions and 10 deletions
-    at `fx-c4`). Everything of §1.4 and the nine check goldens; the lowering
-    of the new instructions is a fatal TODO stub in
-    toolchain/lower/handle_pack_expansion.cpp (lowering needs a handler per
-    instruction kind), which no golden or program of C4 reaches. Expected gate:
-    red on exactly the nine new goldens and the one refill of D-VA-12 (amended
-    2026-10-14, review fold: A-M1, B-m3, B-m4).
+6.  **C4, check and SemIR** (§2.4; 39 files, 1855 insertions and 10 deletions at
+    `rr-c4`; amended 2026-10-14, review fold: RR-M1, RR-m2). Everything of §1.4
+    and the nine check goldens; the lowering of the new instructions is a fatal
+    TODO stub in toolchain/lower/handle_pack_expansion.cpp (lowering needs a
+    handler per instruction kind), which no golden or program of C4 reaches.
+    Expected gate: red on exactly the nine new goldens and the one refill of
+    D-VA-12 (amended 2026-10-14, review fold: A-M1, B-m3, B-m4).
 7.  **F4.** Autoupdate of those ten files.
-8.  **C5, lowering and programs** (§2.5, §2.7; 16 files, 702 insertions and 40
-    deletions at `fx-c5`). The lowering of D-VA-9, the lower golden, the
-    un-SKIP, the eight programs and the regenerated README table. Expected
-    gate: red on exactly the lower golden; conformance as §5 (amended
-    2026-10-14, review fold: A-B1, A-B2, A-m4, B-M1, B-M2).
+8.  **C5, lowering and programs** (§2.5, §2.7; 16 files, 749 insertions and 40
+    deletions at `rr-c5`; amended 2026-10-14, review fold: RR-M1). The lowering
+    of D-VA-9, the lower golden, the un-SKIP, the eight programs and the
+    regenerated README table. Expected gate: red on exactly the lower golden;
+    conformance as §5 (amended 2026-10-14, review fold: A-B1, A-B2, A-m4, B-M1,
+    B-M2).
 9.  **F5.** Autoupdate of the lower golden.
 10. **R, the row.** §2.8's row 53 and header change, quoting §8.4's container
     run, stated EXPECTED, not of record; nothing else.
@@ -6788,7 +6952,12 @@ Every line below is a prediction from the code of §2 and the diagnostic strings
 in it, not a run; columns and SemIR names are the fill's to decide, and a fill
 that contradicts a prediction is a finding for the implementation review, never
 a reason to edit a golden (R16(a)). Diagnostic texts are the `CARBON_DIAGNOSTIC`
-format strings of §2 with their arguments substituted.
+format strings of §2 with their arguments substituted. Rev 3's
+`RequireCompleteType` adds a `require_complete_type` of each expansion
+argument's pack type to its caller's generic, so the dumps of forward.carbon's
+splits show one beside the parameter's; whether the two share an instruction
+when the types are equal is the fill's to show (amended 2026-10-14, review
+fold: RR-M1).
 
 | File (commit) | Split | Predicted key output |
 | --- | --- | --- |
@@ -6820,7 +6989,7 @@ format strings of §2 with their arguments substituted.
 | (same) | `forward_expression` | as `forward`, the block calling `Double` |
 | (same) | `forward_fixed` | `Middle(0, ... each x, 9)`: the `pack_expansion_expr` between the `0` and the `9` in the block, so evaluated between them; `0` and `9` to the fixed parameters, the expansion to the pack (amended 2026-10-14, review fold: A-B1 / B-M2) |
 | (same) | `forward_generic` (amended 2026-10-14, review fold: B-M1) | no diagnostic: `Forward[T: type]`'s `ForEach(... each x)` passes a `pack_expansion_expr` of type `«%T; %arity»` |
-| (same) | `forward_converted` (amended 2026-10-14, review fold: A-B1) | `Unwrap`'s `ForEach(... each w)`: the argument's `pack_expansion_expr` of type `«%Wrap; %arity»`, then, at the call, a second `pack_expansion_expr` of type `«%i64; %arity»` whose block holds `pack_index`, `pack_element` and `Wrap`'s `Convert` |
+| (same) | `forward_converted` (amended 2026-10-14, review fold: A-B1) | `Unwrap`'s `ForEach(... each w)`: the argument's `pack_expansion_expr` of type `«%Wrap; %arity»`, then, at the call, a second `pack_expansion_expr` of type `«%i64; %arity»` whose block holds `pack_index`, `pack_element` and `Wrap`'s `Convert`; `Unwrap`'s generic requires the argument's `«%Wrap; %arity»` complete (`require_complete_type`; amended 2026-10-14, review fold: RR-M1) |
 | check/testdata/variadics/import.carbon (C4) | `lib`, `use` | `use.carbon` imports `ForEach` (`pack_expansion_pattern` and `pack_type` through import refs) and calls it with a 2-element `pack_literal` |
 | check/testdata/variadics/fail_call.carbon (C4) | `fail_too_few_args` | `error: 1 argument passed to function expecting at least 2 arguments [CallArgCountTooFewForPack]`, note `calling function declared here [InCallToVariadicFunction]` |
 | (same) | `fail_expansion_for_singular_param` | `error: pack expansion argument cannot match a parameter that is not a pack expansion [PackExpansionArgForSingularParam]` |
@@ -6834,6 +7003,7 @@ format strings of §2 with their arguments substituted.
 | check/testdata/variadics/fail_pack_expansion.carbon (C4) | `fail_nested` | `error: pack expansion cannot contain another pack expansion [NestedPackExpansion]`, note `enclosing pack expansion is here [EnclosingPackExpansion]` |
 | (same) | `fail_without_each_name` | `error: pack expansion does not use any each-name [PackExpansionWithoutEachName]` |
 | (same) | `fail_two_pack_patterns` | `error: parameter list can contain at most one pack expansion pattern [MultiplePackExpansionPatterns]`, note `previous pack expansion pattern is here [PreviousPackExpansionPattern]` |
+| (same) | `fail_variadic_virtual` (amended 2026-10-14, review fold: RR-m2) | `error: generic virtual function [GenericVirtual]` at `F`'s declaration (handle_function.cpp:798-802), and nothing else: no thunk is built and nothing crashes |
 | check/testdata/variadics/fail_todo_slice.carbon (C4) | `fail_todo_generic_pack`, `fail_todo_tuple_pattern` | `semantics TODO: `pack expansion pattern outside an explicit parameter list`` |
 | (same) | `fail_todo_statement_kind` | `semantics TODO: `pack expansion of a statement other than an expression statement`` |
 | (same) | `fail_todo_control_flow` | `semantics TODO: `control flow in a pack expansion`` |
@@ -6855,10 +7025,11 @@ format strings of §2 with their arguments substituted.
 | (same) | `generic_element` | `ForEach` lowered for (`bool`, arity 2) and (`i32`, arity 1), each calling its `Consume` specific once per element |
 | (same) | `class_element` (amended 2026-10-14, review fold: A-B2 / B-M1) | `Run` stores the addresses of `c` and `d` into a `[2 x ptr]` alloca and passes it; `SumFields` loads each element's address and calls `Get`; no copy |
 | (same) | `arg_order` (amended 2026-10-14, review fold: A-B1 / B-M2) | `Plain`'s arity-2 specific calls `P(1)`, then `P` twice, storing each result into a `[2 x i64]` alloca, then `P(9)`, then `Digits` |
+| (same) | `forward_converted_field` (amended 2026-10-14, review fold: RR-M1) | `SumHeld`'s arity-2 specific stores the address of each element's `w` field into a `[2 x ptr]` alloca (the argument's `«Wrap; 2»`), then calls `Wrap`'s `Convert` once per element, storing each `i64` into a `[2 x i64]` alloca whose address it passes to `Sum`'s arity-2 specific; the compiler does not crash |
 | (same) | `lib`, `use` (amended 2026-10-14, review fold: A-m4) | `use.carbon` lowers `Sum`'s arity-2 and arity-3 specifics from `lib.carbon`'s definition, with two and three `add` sequences |
 
-Totals: 14 new files with 67 splits (the lex file counted as one; rev 1: 12
-with 49), 1 refill
+Totals: 14 new files with 69 splits (the lex file counted as one; rev 2: 67;
+rev 1: 12 with 49; amended 2026-10-14, review fold: RR-M1, RR-m2), 1 refill
 (D-VA-12) and 4 upstream files carried; no other golden changes (§6.1).
 
 ## §5 Conformance delta (from the floor of record, 128 PASS / 0 FAIL / 22 SKIP over 150)
@@ -6867,7 +7038,7 @@ with 49), 1 refill
 | --- | --- | --- | --- |
 | generics/variadics_each.carbon | SKIP | PASS (6, 0) | C5 |
 | generics/variadics_fixed_params.carbon | absent | PASS (12, 123, 4321) | C5 |
-| generics/variadics_forward.carbon | absent | PASS (123, 246, 0, 8) | C5 |
+| generics/variadics_forward.carbon | absent | PASS (123, 246, 0, 8, 456; amended 2026-10-14, review fold: RR-M1) | C5 |
 | generics/variadics_empty_pack.carbon | absent | PASS (7, 1, 2, 9) | C5 |
 | generics/variadics_expansion_args.carbon | absent | PASS (19, 1239, 15559) | C5 |
 | generics/variadics_sum_diff.carbon | absent | PASS, C++ oracle agrees (123, 11, 0, 30, 0) | C5 |
@@ -6893,21 +7064,23 @@ arithmetic.
 Existing goldens that change: one, upstream's
 toolchain/check/testdata/variadics/pack_expansion.carbon, in C4 (D-VA-12: its
 first split renamed and its output refilled; amended 2026-10-14, review fold:
-B-m4).
-Everything else is predicted unchanged, for four measured reasons: no existing
-Carbon source uses `...` or `each` (M-10); parse dumps print node kinds by
-name, so new kinds renumber nothing visible; SemIR dumps print instruction
+B-m4). Everything else is predicted unchanged, for four measured reasons: no
+existing Carbon source uses `...` or `each` (M-10); parse dumps print node kinds
+by name, so new kinds renumber nothing visible; SemIR dumps print instruction
 kinds by `ir_name` and special names by spelling (raw dumps print
 `name(PeriodSelf)`, not an index; toolchain/check/testdata/basics/raw_sem_ir),
 so the new `PackArity` special name, inserted alphabetically before
 `PackageKeyword`, renumbers nothing visible; and the new diagnostics fire only
-on the new syntax. Rev 2's other changes to shared code fire only beside a
-pack too: the default-value TODO and the export TODO test for a
+on the new syntax. Rev 2's other changes to shared code fire only beside a pack
+too: the default-value TODO and the export TODO test for a
 `PackExpansionPattern`, the walker cases and the `TryToCompleteClassType` case
-match only pack kinds, and stringify's new case prints only a call to a
-variadic function (amended 2026-10-14, review fold: A-M1, A-m1, A-m3). A golden
-that changes anyway is refilled by the fill commit of the commit that changed
-it and listed in the implementation review, with its cause (§7 R-4).
+match only pack kinds, and stringify's new case prints only a call to a variadic
+function (amended 2026-10-14, review fold: A-M1, A-m1, A-m3). Rev 3's
+`RequireCompleteType` runs only in the handler of a pack expansion expression,
+so it changes no existing golden either (amended 2026-10-14, review fold:
+RR-M1). A golden that changes anyway is refilled by the fill commit of the
+commit that changed it and listed in the implementation review, with its cause
+(§7 R-4).
 
 ### §6.2 Collisions (M-15: `git merge-tree` against each branch, conflicts the branch already has with trunk subtracted)
 
@@ -6948,7 +7121,9 @@ cherry-picks themselves add none. Upstream's later
 variadics work will collide with VA-1 in handle_pack_expansion.cpp,
 typed_nodes.h and the check of call arguments, and that advance takes upstream's
 shapes where they differ from VA-1's (the fork's are additions beside
-upstream's, not rewrites of them, D-VA-1).
+upstream's, not rewrites of them, D-VA-1). Rev 3 changes only files that rev 2
+already changes and that exist on no other ref, so the table and these counts
+stand (M-25; amended 2026-10-14, review fold: RR-M1, RR-m2).
 
 ## §7 Risks and rejected alternatives (falsifiable)
 
@@ -7055,7 +7230,8 @@ upstream's, not rewrites of them, D-VA-1).
     excludes, and the design's iterative typechecking checks segments, not
     elements (DR-32).
 -   **A-6. A run-time loop in lowering** (rejected). Lower the body once inside
-    an LLVM loop over the array. It would work for this slice's one-type packs,
+    an LLVM loop over the pack's storage (amended 2026-10-14, review fold:
+    RR-m3). It would work for this slice's one-type packs,
     but the design specifies execution at monomorphization with `$I` "treated as
     a constant" (:300-302), which heterogeneous packs require (each iteration
     may have a different type), so a loop would be replaced, not extended, by
@@ -7134,6 +7310,13 @@ at each state. lower/handle_pack_expansion.cpp with lower/handle.cpp's flags
 seven mutants of §8.5 change, each at its mutant: eight checks, rc 0 at each
 (M-11).
 
+Rev 3 (second fixer, done; amended 2026-10-14, review fold: RR-M1): the one C++
+file it changes, check/handle_pack_expansion.cpp, at `rr-c4` (the same at
+`rr-c5`) and at `rr-mu-7`: rc 0 at each, with a negative control (M-25). Every
+other C++ and `.def` file of `rr-c4` and `rr-c5` is byte-identical to
+`fx-c4`'s and `fx-c5`'s, so rev 2's sweep stands for them, and MU-8's file is
+`fx-c5`'s, which rev 2 swept.
+
 ### §8.1 Build (implementer)
 
 After C1, C3, C4 and C5: `$CB/build.sh /home/user/carbon-va` then
@@ -7178,33 +7361,43 @@ row commit R quotes this run, EXPECTED, not of record.
 
 ### §8.5 Mutants that prove the programs are not vacuous (implementer)
 
-Each mutant below is an exact diff against `fx-c5`, the branch `mu-n` of
-`$F/cp` (amended 2026-10-14, review fold: B-m2, which asked for exact diffs
-and found rev 1's MU-1 prediction for variadics_fixed_params wrong: skipping
-the only iteration of `Digits(1, 2, 3)` gives 13, not 12). Each changes `.cpp`
-files only, so it is compiled and relinked into a scratch copy of the C5 build
-with the relink recipe (`$V/../st1-fixer/fix/relink.py`, generalized as
-OP-2's `bin/relink.py`), and the nine programs are run against it. MU-7 is
-rev 2's: it restores rev 1's order defect (A-B1 / B-M2). MU-1 leaves the last
-slot of a forwarded pack unwritten, but the callee's loop under the same mutant
-never reads it, so the predictions below hold. MU-6 makes the
-compiler abort in `ConvertPackLiteralToPack`'s `CARBON_CHECK` (a pack literal
-of k elements converted to a pack of arity k - 1). Predicted results, each
-derived from the program text under the mutant:
+Each mutant below is an exact diff against `rr-c5`, the branch `rr-mu-n` of
+`$F/cp` (rev 3; rev 2's were the branches `mu-n` on `fx-c5`, whose diffs differ
+only in MU-7's line numbers; amended 2026-10-14, review fold: RR-M1) (amended
+2026-10-14, review fold: B-m2, which asked for exact diffs and found rev 1's
+MU-1 prediction for variadics_fixed_params wrong: skipping the only iteration of
+`Digits(1, 2, 3)` gives 13, not 12). Each changes `.cpp` files only, so it is
+compiled and relinked into a scratch copy of the C5 build with the relink recipe
+(`$V/../st1-fixer/fix/relink.py`, generalized as OP-2's `bin/relink.py`), and
+the nine programs are run against it. MU-7 is rev 2's: it restores rev 1's order
+defect (A-B1 / B-M2). MU-8 is rev 3's: it restores rev 2's
+`CompleteTypeOrCheckFail` (RR-M1), and only variadics_forward's `Narrowed` sees
+it: lowering `Narrowed`'s arity-3 specific meets the incomplete `«i32; 3»` and
+the compiler aborts (a `CARBON_CHECK` in `GetPackElementAddr`, or
+`CreatePackStorage`'s use of a missing value representation type), so the
+program does not compile. MU-1 leaves the last slot of a forwarded pack
+unwritten, but the callee's loop under the same mutant never reads it, so the
+predictions below hold. MU-6 makes the compiler abort in
+`ConvertPackLiteralToPack`'s `CARBON_CHECK` (a pack literal of k elements
+converted to a pack of arity k - 1). Predicted results, each derived from the
+program text under the mutant:
 
 | Mutant | each | fixed_params | forward | empty_pack | expansion_args | sum_diff | arg_order | no_copy | generic_element |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| MU-1: skip the last iteration (function_context.cpp) | FAIL (3, 0) | FAIL (12, 13, 431) | FAIL (12, 24, 0, 0) | FAIL (7, 1, 9) | FAIL (19, 129, 1559) | FAIL (12, 5, 0, 14, 0) | FAIL (1, 2, 9, 129, 1, 9, 19) | FAIL (1, 3, 3) | FAIL (2, 1, 1) |
-| MU-2: run each iteration twice (function_context.cpp) | FAIL (12, 0) | FAIL (12, 1223, 433221) | FAIL (112233, 224466, 0, 88) | FAIL (7, 1, 1, 2, 2, 9) | FAIL (19, 122339, 15555559) | FAIL | FAIL (1, 2, 2, 3, 3, 9, 122339, 1, 9, 19) | FAIL (each line twice) | FAIL (6, 4, 4) |
-| MU-3: iterate the indexes in reverse (function_context.cpp) | PASS (6, 0) | FAIL (12, 123, 4231) | FAIL (321, 642, 0, 8) | FAIL (7, 2, 1, 9) | FAIL (19, 1329, 15559) | FAIL (321, ...) | FAIL (1, 3, 2, 9, 1329, 1, 9, 19) | FAIL (2, 1, 4, 3, 4, 3) | PASS (3, 2, 2) |
-| MU-4: `PackIndex` always 0 (lower handle_pack_expansion.cpp) | FAIL (3, 0) | FAIL (12, 123, 4331) | FAIL (111, 222, 0, 8) | FAIL (7, 1, 1, 9) | FAIL (19, 1229, 15559) | FAIL | FAIL (1, 2, 2, 9, 1229, 1, 9, 19) | FAIL (1, 1, 3, 3, 3, 3) | PASS (3, 2, 2) |
-| MU-5: the `PackLiteral`'s elements reversed (call.cpp) | PASS (6, 0) | FAIL (12, 123, 4231) | FAIL (321, 642, 0, 8) | FAIL (7, 2, 1, 9) | FAIL (19, 1329, 15559) | FAIL (321, ...) | FAIL (1, 3, 2, 9, 1329, 1, 9, 19) | FAIL (2, 1, 4, 3, 4, 3) | PASS (3, 2, 2) |
+| MU-1: skip the last iteration (function_context.cpp) | FAIL (3, 0) | FAIL (12, 13, 431) | FAIL (12, 24, 0, 0, 45) | FAIL (7, 1, 9) | FAIL (19, 129, 1559) | FAIL (12, 5, 0, 14, 0) | FAIL (1, 2, 9, 129, 1, 9, 19) | FAIL (1, 3, 3) | FAIL (2, 1, 1) |
+| MU-2: run each iteration twice (function_context.cpp) | FAIL (12, 0) | FAIL (12, 1223, 433221) | FAIL (112233, 224466, 0, 88, 445566) | FAIL (7, 1, 1, 2, 2, 9) | FAIL (19, 122339, 15555559) | FAIL | FAIL (1, 2, 2, 3, 3, 9, 122339, 1, 9, 19) | FAIL (each line twice) | FAIL (6, 4, 4) |
+| MU-3: iterate the indexes in reverse (function_context.cpp) | PASS (6, 0) | FAIL (12, 123, 4231) | FAIL (321, 642, 0, 8, 654) | FAIL (7, 2, 1, 9) | FAIL (19, 1329, 15559) | FAIL (321, ...) | FAIL (1, 3, 2, 9, 1329, 1, 9, 19) | FAIL (2, 1, 4, 3, 4, 3) | PASS (3, 2, 2) |
+| MU-4: `PackIndex` always 0 (lower handle_pack_expansion.cpp) | FAIL (3, 0) | FAIL (12, 123, 4331) | FAIL (111, 222, 0, 8, 444) | FAIL (7, 1, 1, 9) | FAIL (19, 1229, 15559) | FAIL | FAIL (1, 2, 2, 9, 1229, 1, 9, 19) | FAIL (1, 1, 3, 3, 3, 3) | PASS (3, 2, 2) |
+| MU-5: the `PackLiteral`'s elements reversed (call.cpp) | PASS (6, 0) | FAIL (12, 123, 4231) | FAIL (321, 642, 0, 8, 654) | FAIL (7, 2, 1, 9) | FAIL (19, 1329, 15559) | FAIL (321, ...) | FAIL (1, 3, 2, 9, 1329, 1, 9, 19) | FAIL (2, 1, 4, 3, 4, 3) | PASS (3, 2, 2) |
 | MU-6: arity deduced as the element count minus one (deduce.cpp) | FAIL (compile) | FAIL (compile) | FAIL (compile) | FAIL (compile) | FAIL (compile) | FAIL (compile) | FAIL (compile) | FAIL (compile) | FAIL (compile) |
 | MU-7: an expansion argument evaluated at the call, after the later arguments (handle_pack_expansion.cpp and call.cpp) | PASS | PASS | PASS | PASS | PASS | PASS | FAIL (1, 9, 2, 3, 1239, 1, 9, 19) | PASS | PASS |
+| MU-8: an expansion argument's pack type completed with `CompleteTypeOrCheckFail` (handle_pack_expansion.cpp; amended 2026-10-14, review fold: RR-M1) | PASS | PASS | FAIL (compile: lowering aborts on `Narrowed`) | PASS | PASS | PASS | PASS | PASS | PASS |
 
 MU-3, MU-4 and MU-5 show why the arbiter alone is not enough (a sum sees
 neither order nor which element is read), MU-7 why variadics_arg_order exists
-(every other program's operands are pure), and variadics_generic_element's
+(every other program's operands are pure), MU-8 why variadics_forward has
+`Narrowed` (every other expansion's body has its caller's element type;
+amended 2026-10-14, review fold: RR-M1), and variadics_generic_element's
 PASS under MU-3, MU-4 and MU-5 is expected, because it counts elements. The
 rev-1 representation is the natural mutant for variadics_no_copy and
 variadics_generic_element: on trunk the same array path rejects `Plain` and
@@ -7366,7 +7559,7 @@ MU-7:
      type_inst_ids.reserve(pack_arg_ids.size());
 --- a/toolchain/check/handle_pack_expansion.cpp
 +++ b/toolchain/check/handle_pack_expansion.cpp
-@@ -252,7 +252,7 @@ auto HandleParseNode(Context& context, Parse::PackExpansionExprId node_id)
+@@ -260,7 +260,7 @@ auto HandleParseNode(Context& context, Parse::PackExpansionExprId node_id)
    // elements" (docs/design/variadics.md, "Pack expansion expressions and
    // statements"), so the expansion is evaluated here, where it is written,
    // before the arguments that follow it (fork VA-1, D-VA-4).
@@ -7375,6 +7568,40 @@ MU-7:
                                           context, node_id,
                                           {.type_id = pack_type_id,
                                            .body_block_id = *body_block_id,
+```
+
+<!-- google-doc-style-resume -->
+
+MU-8 (amended 2026-10-14, review fold: RR-M1):
+
+<!-- google-doc-style-ignore -->
+
+```diff
+--- a/toolchain/check/handle_pack_expansion.cpp
++++ b/toolchain/check/handle_pack_expansion.cpp
+@@ -242,19 +242,11 @@ auto HandleParseNode(Context& context, Parse::PackExpansionExprId node_id)
+
+   // "The type of a pack expansion expression or pattern is `...B`, where `B`
+   // is the type of its body" (docs/design/variadics.md, "Typing and shaping
+-  // rules"): a pack of the body's type, with the arity of its each-names.
++  // rules"): a pack of the body's type, with the arity of its each-names. Its
++  // element type is complete, so it is too.
+   auto pack_type_id = GetPackType(
+       context, context.types().GetTypeInstId(result_type_id), scope.arity_id);
+-  // Lowering reads the pack type's value representation in every specific, so
+-  // each specific's pack type must be complete, even when nothing else requires
+-  // it, as when the call converts the elements to another type. For a symbolic
+-  // type, `RequireCompleteType` records that requirement in the generic (fork
+-  // VA-1, D-VA-7). The element type is complete, so the pack type is too, and
+-  // no diagnostic context is needed here.
+-  bool complete = RequireCompleteType(context, pack_type_id, node_id,
+-                                      [](auto& /*builder*/) {});
+-  CARBON_CHECK(complete, "Expected {0} to be a complete type",
+-               context.types().GetAsInst(pack_type_id));
++  CompleteTypeOrCheckFail(context, pack_type_id);
+
+   // "`...` in a tuple literal behaves like a series of comma-separated tuple
+   // elements" (docs/design/variadics.md, "Pack expansion expressions and
 ```
 
 <!-- google-doc-style-resume -->
@@ -7409,7 +7636,8 @@ new `NOLINT`.
 `python3 fork/conformance/runner.py --self-test` before every commit that
 touches programs (R7): expected "158 programs parsed, 56 bullets in table, OK"
 on this branch (M-14; amended 2026-10-14, review fold: A-B1, A-B2, B-M1,
-B-M2).
+B-M2); rev 3 re-ran it with its changed program (M-25; amended 2026-10-14,
+review fold: RR-M1).
 
 ### §8.8 Re-verification on the merge commit (implementer, before D)
 
@@ -7427,8 +7655,9 @@ commits; the totals of §8.3 and §8.4 then become whatever trunk's floor plus
     derivation (§1.6), not a measurement of VA-1's code.
 -   The runtime behavior of the lowering (R-2), and of rev 2's pack values
     (the stores and loads of element value representations, R-9), is
-    unmeasured until §8.4; the seven mutants of §8.5 were syntax-checked, not
-    run.
+    unmeasured until §8.4; the eight mutants of §8.5 were syntax-checked, not
+    run (amended 2026-10-14, review fold: RR-M1). RR-M1's crash and its fix
+    are hand-predicted from the cited code, as the re-review's analysis was.
 -   Bazel-only tests are not part of the container gate (carbonbuild README,
     "Bazel-only tests"): the gtest unit tests (among them
     toolchain/lex/tokenized_buffer_test.cpp, whose keyword table the `Each`
@@ -7460,8 +7689,10 @@ commits; the totals of §8.3 and §8.4 then become whatever trunk's floor plus
     the upstream objects (`git fetch /home/user/carbon-lang
     refs/remotes/upstream/trunk` first if the worktree lacks them).
 2.  **C3, C4 and C5 are §2.3, §2.4 and §2.5 plus §2.6 and §2.7.** The scratch
-    branches `fx-c3`, `fx-c4` and `fx-c5` in `$F/cp` hold exactly those trees
-    (rev 1's `va1-c3f`, `va1-c4f` and `va1-c5f` in `$V/cp` are superseded);
+    branches `fx-c3`, `rr-c4` and `rr-c5` in `$F/cp` hold exactly those trees
+    (rev 2's `fx-c4` and `fx-c5`, and rev 1's `va1-c3f`, `va1-c4f` and
+    `va1-c5f` in `$V/cp`, are superseded; amended 2026-10-14, review fold:
+    RR-M1, RR-m2);
     after writing each commit from the plan, `git diff <your commit> <scratch
     branch> -- toolchain fork/conformance` must be empty. If the plan and the
     scratch branch ever disagree, the plan is the authority and the disagreement
@@ -7470,9 +7701,11 @@ commits; the totals of §8.3 and §8.4 then become whatever trunk's floor plus
     container arbiter"), to their fixpoint (R26), reviewed against §4.
 4.  **What to run first after C5's build:** M-1's `sum.carbon` with `as i32`
     added to its prints (it is the arbiter's body); then variadics_arg_order
-    and variadics_no_copy, which check rev 2's two repairs; then the other
+    and variadics_no_copy, which check rev 2's two repairs, and
+    variadics_forward, whose `Narrowed` checks rev 3's; then the other
     programs; then §8.5's MU-7 and MU-3, the mutants that only the
-    order-sensitive programs catch.
+    order-sensitive programs catch, and MU-8 (amended 2026-10-14, review fold:
+    RR-M1).
 5.  **Watch-outs.** The `PackArity` special name is alphabetical in ids.h and
     has a spelling in name.cpp; the new kind.def kinds sit in their own blocks;
     upstream's `fail_todo_pack_expansion_statement` is renamed
@@ -7481,7 +7714,11 @@ commits; the totals of §8.3 and §8.4 then become whatever trunk's floor plus
     expansion over packs of different arities" (W-222; §1.11), which no slice
     program can reach; a pack value is the address of its elements' value
     representations, so a lowering path that treats it as an object is a
-    finding (R-9) (amended 2026-10-14, review fold: A-B2, B-m3, B-m4).
+    finding (R-9) (amended 2026-10-14, review fold: A-B2, B-m3, B-m4); and a
+    pack type that check builds is required complete with
+    `RequireCompleteType`, never completed with `CompleteTypeOrCheckFail`,
+    because lowering reads it in every specific (amended 2026-10-14, review
+    fold: RR-M1).
 6.  **Records only in R and D.** No W-id or F-id appears in source, goldens or
     program headers (head, id allocation); the re-scan runs before D.
 7.  **R31.** This plan's §2 code blocks sit between `<!--
@@ -7523,3 +7760,56 @@ from §1.2; it is DR-42. Each amended sentence above is marked "(amended
 | B-m7: review count ambiguous; no `--all-files` prek | MINOR | Yes | Folded: two implementation reviews; R25's run before hand-over | §3 |
 | B-m8: no fix-commit budget or shrink line | MINOR | Yes: UN-1 and OV-1's merges | Folded: three or four fix commits budgeted, and a named shrink line | §3 |
 | B-m9: lines starting with a dash; upstream messages | MINOR | Yes: four lines | Folded: re-wrapped; D-VA-1 records the upstream messages as an exception | §0.2; §1.1; §2.1 |
+
+## Review fold record (rev 3, 2026-10-14)
+
+The focused re-review of rev 2 (be623188d) returned APPROVE-WITH-AMENDMENTS.
+It verified both of review A's BLOCKERs RESOLVED: A-B1 by tracing review A's
+`Digits(P(1), ... P(each x), P(9))` through the plan's code, which prints 1, 2,
+3 and 9, with MU-7's prediction confirmed; A-B2 by `ConvertPackLiteralToPack`'s
+value conversions and `BuildInfoForInst(PackType)`'s pointer representation,
+with M-21 and M-22 reproduced on trunk. It also found §2.4's and §2.5's code
+byte-identical to `fx-c4` and `fx-c5`, re-derived the EXPECT lines of
+variadics_arg_order, variadics_no_copy and variadics_generic_element,
+re-counted R31 (H1 1, H2 11, H3 38, 52 dash and 86 numbered items), ran
+`runner.py --self-test` and `-fsyntax-only` on five files, and re-scanned the
+ids (maximum W-244). It found no new BLOCKER, one MAJOR and three MINORs,
+which it numbered VA1-RR-M1 and VA1-RR-m1 to VA1-RR-m3; this plan cites them
+as RR-M1 and RR-m1 to RR-m3. A second fixer (R11) folded all four and rejected
+none. The code finding was folded into the code of the new scratch branches
+`rr-c4` and `rr-c5`, and §2's blocks were regenerated from them (§2.0, M-25),
+never patched by hand. The container's disk had about 10 MB free, so the
+branches were written with git's plumbing, no build or checkout was possible,
+and RR-M1 stays hand-predicted, as the re-review's analysis was. Each amended
+sentence is marked "(amended 2026-10-14, review fold: RR-n)". R31, outside
+fenced code, rev 2 then rev 3: H1 1 and 1, H2 11 and 13 (this section and the
+Sign-off), H3 38 and 38, dash items 52 and 52, numbered items 86 and 86; prek
+ran to its fixpoint.
+
+| Finding | Severity | Reproduced | Disposition | Where |
+| --- | --- | --- | --- | --- |
+| RR-M1: an expansion argument's pack type is never required complete per specific, so a converted forward crashes in lowering | MAJOR | By the cited code, hand-derived as the re-review was: type_completion.cpp:882-887 (`CompleteTypeOrCheckFail` records nothing for a symbolic type) against :889-912 (`RequireCompleteType` adds a `RequireCompleteType` instruction for one), eval_inst.cpp:795-818, convert.cpp:2536-2560 and function.cpp:426-440; no build exists | Folded with the re-review's fix: `RequireCompleteType` with a diagnostic context that adds nothing and a `CARBON_CHECK` on its result, since the element type is complete; lower split `forward_converted_field` (`Sum(... each h.w)`, a `«Wrap; N»` that nothing else requires; the lower golden's min prelude has no `i32` to `i64` conversion, so the re-review's `ToI32` form went to the program); variadics_forward's `Narrowed(4, 5, 6)`, EXPECT 456; mutant MU-8 (rev 2's call), which only that program catches | Head; §0.2 M-25; §1.2 DR-41; §1.4 D-VA-7; §1.5; §1.6; §1.8; §1.12; §2.0; §2.4; §2.6; §2.7; §3; §4; §5; §6; §8.0; §8.5; §8.7; §8.9; hand-off |
+| RR-m1: the fold's design citations drift from the cited lines | MINOR | Yes: variadics.md:199-202 holds DR-21's sentence and :190-196 the `...and` loop; values.md:186-187 holds the value-binding rule and :184-185 the end of a code block | Folded: DR-21 cites `:199-202, :316-318`; DR-30 and D-VA-3 cite values.md `:186-187` | §1.2 DR-21, DR-30; §1.4 D-VA-3 |
+| RR-m2: the walker audit understates where `ClonePattern` runs | MINOR | Yes: class.cpp:385-387 calls `BuildThunk` with `class_info.self_type_id`; thunk.cpp:462-467 skips the no-thunk shortcut whenever `override_self_type_id` has a value; handle_function.cpp:798-802 diagnoses `GenericVirtual` | Folded: the audit bullet names both kinds of thunk and the `GenericVirtual` guard; check split `fail_variadic_virtual` in fail_pack_expansion.carbon, predicted `error: generic virtual function [GenericVirtual]` | §2.4 (the audit); §2.6; §4 |
+| RR-m3: descriptive text about the pack representation is inaccurate or stale | MINOR | Yes, by §2.4's `BuildInfoForInst(PackType)` hunk: always `MakePointerValueRepr`, tagged `ValueAndObjectAggregate` or `ValueAggregate` | Folded: the re-review's wording in D-VA-3, the D-VA-7 table, §0.1 row 15 and §2.4's type_completion.cpp note; A-6 says "the pack's storage" | §0.1; §1.4 D-VA-3, D-VA-7; §2.4; §7.2 A-6 |
+
+## Sign-off
+
+Three reviews, every finding folded or verified, none rejected:
+
+| Review | Of | Verdict | Findings |
+| --- | --- | --- | --- |
+| Review A: architecture | rev 1 (aced921975) | REJECT | 7: 2 BLOCKER, 1 MAJOR, 4 MINOR; all folded in rev 2 (be623188d) |
+| Review B: concreteness, process, Goodhart, scope honesty and cross-workstream | rev 1 (aced921975) | APPROVE-WITH-AMENDMENTS | 13: 4 MAJOR, 9 MINOR; all folded in rev 2 (be623188d) |
+| Focused re-review | rev 2 (be623188d) | APPROVE-WITH-AMENDMENTS | 4 new: 1 MAJOR, 3 MINOR (RR-M1, RR-m1 to RR-m3), with review A's two BLOCKERs verified RESOLVED; the four folded in rev 3 (this revision) |
+
+The re-review's verdict is not REJECT, and rev 3 folds all of its findings, so
+the plan is signed off for implementation at rev 3: R29(c)'s two plan reviews
+and the focused re-review that review A's REJECT required are complete. The
+implementation follows §3: the cherry-picks C1 and C2, then C3, C4 and C5 from
+§2.3 to §2.7 (the scratch branches `fx-c3`, `rr-c4` and `rr-c5`), each with its
+fill, against §4's matrix and §5's delta, with §8's verification, the mutants
+of §8.5 including MU-8, and two implementation reviews before the discharge.
+Residues take ids from the W-212..W-231 reservation by the head's rule, after
+its re-scan, and F-018 stays unminted. The row moves only as §2.8 says,
+expected and not of record. Merge position: D-VA-15.

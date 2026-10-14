@@ -3273,7 +3273,7 @@ toolchain of fb12f63cb for the round-6 behavior:
     with `(C as Has(T)).N` keeping the requirement and the method form
     redirected; requirement-call `fail_todo_symbolic_facet` pins l02, e01 and
     the method forms (n01). The header's adapter wording is corrected
-    (structural_conformance.h:97-99: a class with such a field, an adapter of
+    (structural_conformance.h:98-100: a class with such a field, an adapter of
     such a type and `MaybeUnformed` of it).
 -   MINOR-3 (review 2): D-SC-20's "Named, it is never a runtime value" and the
     requirement-call comment of `fail_requirement_as_value` are reworded ("a

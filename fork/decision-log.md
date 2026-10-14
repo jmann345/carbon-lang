@@ -5187,7 +5187,7 @@ with W-169, the declaration-time diagnosis declined as one more partial walk
 over a signature (R17); MINOR-2 of both rewords the TODO and its comment
 (member_access.cpp:1013-1036: "through a symbolic facet" for a constant facet
 that is not concrete, the runtime text kept for a runtime one) and the header
-(structural_conformance.h:97-99), records the limit in D-SC-20 and the design
+(structural_conformance.h:98-100), records the limit in D-SC-20 and the design
 page's name-lookup paragraph, and pins it by requirement-call
 `fail_todo_symbolic_facet`; MINOR-3 rewords D-SC-20 and the requirement-call
 comment; MINOR-4 is taken as asked (this entry's head and ROUND 7's first

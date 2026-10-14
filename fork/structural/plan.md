@@ -2603,11 +2603,12 @@ mismatch note through a name export, which aborts as upstream's own diagnostics
 at such a member do, is filed as W-239; W-238's title names the measured scope
 of upstream's import aborts; D-SC-9's dated amendment history is replaced by a
 pointer to this note: 866468cba (the fix, test sources), 5d978b5ad (1 golden,
-CHECK lines only) and the records commit after them, which writes round 16's
-review record and dispositions below; it measured the same totals on the
-toolchain stamped 0.0.0-0.dev+866468cba (below) and again on the records
-commit's tree. Not of record until fork/conformance/out/scoreboard.json is
-updated (R9).
+CHECK lines only) and 54d8a83f5 (records), which writes round 16's review record
+and dispositions below; it measured the same totals on the toolchain stamped
+0.0.0-0.dev+866468cba (below), again on its own tree and again on 54d8a83f5 for
+the records commit after it, which checks round 17's records against the head,
+as Measured below says. Not of record until fork/conformance/out/scoreboard.json
+is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
 one falsified carries a dated amendment above):
@@ -5921,9 +5922,54 @@ i32) = Undefined` and a generic class's `(1, w: T) = Undefined` abort at the
 member's name lookup here, as their plain access does on trunk (:5087) and the
 nightly (:4875); p/y's c aborts at absolute_node_ref.cpp:27 here, and ct and ic
 there on all three (W-239). Round 17's commits: 866468cba (the fix, test
-sources), 5d978b5ad (goldens) and the records commit after them, which re-ran
-the gate (1959 passed, 0 failed, exit 0, 32 s) and conformance (the same totals,
-45.7 s, sc1-fix17/conf2) on its tree with that toolchain.
+sources), 5d978b5ad (goldens) and 54d8a83f5 (records), which re-ran the gate
+(1959 passed, 0 failed, exit 0, 32 s) and conformance (the same totals, 45.7 s,
+sc1-fix17/conf2) on its tree with that toolchain, and the records commit after
+it. Re-run on 54d8a83f5 for the records commit after it with that toolchain (no
+toolchain or test source differs from 5d978b5ad): gate 1959 passed, 0 failed,
+exit 0, 32 s, no `!` or `?` mark; conformance PASS 130, every failure class 0,
+SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 65.8 s, the same two
+programs moving and no program's status differing from sc1-fix17/conf2
+(sc1-records17/conf, in a private cache); `runner.py --self-test` OK (151
+programs, 56 bullets); `git merge-tree` of 54d8a83f5 against trunk 8bfd78ae3
+conflicts in fork/ORCHESTRATION.md only; the 113 reproducers of sc1-fix17/repro,
+re-run on this build, trunk 0bdce60a5 and the nightly 62f1cc6a3
+(sc1-records17/repro), give sc1-fix17's 339 result lines line for line; the
+reviews' round-16 matrices (sc1-review16/adv1/mx, 2352 rows; adv2/mx, 2184),
+review 2's round-15 mxv (81) and sc1-fix16/mxw (517), re-run on this build
+(sc1-records17/mx), give sc1-fix17's runs byte for byte. Against the reviews'
+own round-16 runs (sc1-review16/adv1/mx_sc_ml.tsv and mx_sc_rest.tsv,
+adv2/mx_sc.tsv), 170 of adv1's 190 rows that aborted in
+`GetDeclaredParamPattern` and all 180 of adv2's give their local twin's result,
+adv1's other 20, reported rows through a name export, abort at
+absolute_node_ref.cpp:27 (W-239), and the 1581 and 1384 rows that did not abort
+give the same messages; the aborts left are adv1's 13 and adv2's 10 member
+shapes at the member's name lookup (adv1's generic mode at the class's), whose
+plain access aborts on trunk and the nightly too, and adv1's 107 rows of 28
+member shapes at absolute_node_ref.cpp:27; no local row aborts. For the records
+commit after 54d8a83f5, round 17's records checked against the head
+(sc1-records17): `fail_member_signature_error_import_lib` gives 6 errors and
+`fail_member_signature_error_import` 6 (4 and 5 at round 16), and every other
+split its round-16 count; 5d978b5ad adds 28 CHECK lines (8 in the library split,
+20 in the use split) and removes 6, all in the use split: the three `InImport`
+lines' `@LINE` offsets, moved by 866468cba's three added comment lines in the
+use split, and the three notes' member lines, moved by its two in the library
+split, each re-added with its new number; 866468cba's test-source edit adds no
+CHECK line; D-SC-9's statement of the rule, ROUND 14's DECISION's in the
+decision log and the plan's round-14 decision's are still the same word for
+word, and round 17 changed neither structural_conformance.cpp's statement nor
+the design page's; the cites of ROUND 17's DECISION (merge.cpp:230-235,
+:238-297, :268-273 and :421-441), of D-SC-2 (merge.cpp:548-549) and of D-SC-9's
+mechanism (merge.cpp:222-297, :376-449, :404-412 and :813-819;
+function.cpp:265-276; structural_conformance.cpp:502-531 and :622-632), of W-234
+and W-235 (merge.cpp:548-549 and :376-449), of W-238
+(handle_named_constraint.cpp:209-239 and :282-289; merge.cpp:230-235, :268-273,
+:292-295, :421-441 and :548-549; import_ref.cpp:5165-5172) and of W-239
+(absolute_node_ref.cpp:25-27, the same lines on trunk) hold at the head;
+`GetDeclaredParamPattern` has three calls (merge.cpp:400, :402 and :433), all
+inside `if (found_error)` at :389, the errors-match mode, which only
+structural_conformance.cpp:519-523 selects, every other caller of
+`CheckFunctionTypeMatches` and `CheckRedeclParamsMatch` passing none.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

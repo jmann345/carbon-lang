@@ -14,7 +14,7 @@
 library "[[@TEST_NAME]]";
 
 fn F() {
-  // CHECK:STDERR: fail_todo_pack_expansion_statement.carbon:[[@LINE+4]]:3: error: semantics TODO: `HandlePackExpansionStart` [SemanticsTodo]
+  // CHECK:STDERR: fail_pack_expansion_without_each_name.carbon:[[@LINE+4]]:3: error: pack expansion does not use any each-name [PackExpansionWithoutEachName]
   // CHECK:STDERR:   ... F();
   // CHECK:STDERR:   ^~~
   // CHECK:STDERR:

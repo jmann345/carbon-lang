@@ -16,6 +16,10 @@ library "[[@TEST_NAME]]";
 fn Consume(x: i64);
 
 fn F(x: i64) {
+  // CHECK:STDERR: fail_each_name_not_pack.carbon:[[@LINE+4]]:15: error: `each x` does not name a pack [EachNameNotPack]
+  // CHECK:STDERR:   ... Consume(each x);
+  // CHECK:STDERR:               ^~~~~~
+  // CHECK:STDERR:
   ... Consume(each x);
 }
 
@@ -25,20 +29,40 @@ library "[[@TEST_NAME]]";
 fn Consume(x: i64);
 
 fn F(... each n: i64) {
+  // CHECK:STDERR: fail_each_name_outside_expansion.carbon:[[@LINE+4]]:11: error: each-name `each n` is not inside a pack expansion [EachNameOutsidePackExpansion]
+  // CHECK:STDERR:   Consume(each n);
+  // CHECK:STDERR:           ^~~~~~
+  // CHECK:STDERR:
   Consume(each n);
 }
 
 // --- fail_each_binding_outside_expansion.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_each_binding_outside_expansion.carbon:[[@LINE+8]]:11: error: each-name binding `each n` is not inside a pack expansion pattern [EachBindingOutsidePackExpansion]
+// CHECK:STDERR: fn F(each n: i64) {}
+// CHECK:STDERR:           ^
+// CHECK:STDERR:
+// CHECK:STDERR: fail_each_binding_outside_expansion.carbon:[[@LINE+4]]:6: warning: binding `n` unused [UnusedBinding]
+// CHECK:STDERR: fn F(each n: i64) {}
+// CHECK:STDERR:      ^~~~~~~~~~~
+// CHECK:STDERR:
 fn F(each n: i64) {}
 
 // --- fail_binding_without_each.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_binding_without_each.carbon:[[@LINE+4]]:10: error: binding pattern in a pack expansion must declare an each-name, such as `each n` [PackExpansionBindingWithoutEach]
+// CHECK:STDERR: fn F(... n: i64) {}
+// CHECK:STDERR:          ^
+// CHECK:STDERR:
 fn F(... n: i64) {}
 
 // --- fail_unused_without_definition.carbon
 library "[[@TEST_NAME]]";
 
+// CHECK:STDERR: fail_unused_without_definition.carbon:[[@LINE+4]]:17: error: `unused` modifier without a definition [UnusedModifierWithoutDefinition]
+// CHECK:STDERR: fn F(... unused each n: i64);
+// CHECK:STDERR:                 ^~~~~~~~~~~
+// CHECK:STDERR:
 fn F(... unused each n: i64);

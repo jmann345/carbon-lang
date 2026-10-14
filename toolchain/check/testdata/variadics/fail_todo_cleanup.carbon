@@ -24,6 +24,10 @@ class C {
 fn Consume(c: C);
 
 fn F(... each c: C) {
+  // CHECK:STDERR: fail_todo_cleanup_statement.carbon:[[@LINE+4]]:3: error: semantics TODO: `pack expansion element that needs a cleanup` [SemanticsTodo]
+  // CHECK:STDERR:   ... Consume(C.Make(each c));
+  // CHECK:STDERR:   ^~~
+  // CHECK:STDERR:
   ... Consume(C.Make(each c));
 }
 
@@ -41,5 +45,9 @@ class C {
 fn ForEach(... each c: C);
 
 fn F(... each c: C) {
+  // CHECK:STDERR: fail_todo_cleanup_argument.carbon:[[@LINE+4]]:11: error: semantics TODO: `pack expansion element that needs a cleanup` [SemanticsTodo]
+  // CHECK:STDERR:   ForEach(... C.Make(each c));
+  // CHECK:STDERR:           ^~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   ForEach(... C.Make(each c));
 }

@@ -686,7 +686,24 @@ fn Ref(unused ref f: typeof(HasN.N)) {}
 fn ReadField() {
   var w: W;
   Ref(ref w.f);
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE+7]]:34: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+  // CHECK:STDERR:   let unused v: typeof(HasN.N) = w.f;
+  // CHECK:STDERR:                                  ^~~
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-51]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn N() -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~
+  // CHECK:STDERR:
   let unused v: typeof(HasN.N) = w.f;
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE+10]]:7: error: requirement `N` of template constraint `HasN` can only be used through a type that satisfies it [StructuralRequirementUsed]
+  // CHECK:STDERR:   Ref(ref HasN.N);
+  // CHECK:STDERR:       ^~~~~~~~~~
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-59]]:3: note: requirement declared here [StructuralRequirementHere]
+  // CHECK:STDERR:   fn N() -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~
+  // CHECK:STDERR: fail_requirement_typeof_value.carbon:[[@LINE-24]]:15: note: initializing function parameter [InCallToFunctionParam]
+  // CHECK:STDERR: fn Ref(unused ref f: typeof(HasN.N)) {}
+  // CHECK:STDERR:               ^~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   Ref(ref HasN.N);
 }
 

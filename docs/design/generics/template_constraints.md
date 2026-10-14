@@ -286,7 +286,11 @@ definition in `template constraint`"); a `fn` in a plain, non-`template`
 `constraint` is an error. A requirement with a tuple pattern parameter,
 directly, under `var` or under a default value, is a semantics TODO too ("tuple
 pattern parameter in `template constraint`") and is not collected, since the
-toolchain's signature comparison has no case for a tuple pattern (W-234).
+toolchain's signature comparison has no case for a tuple pattern (W-234). So,
+since fill round 15, is one with an expression pattern parameter, directly or
+under `var` ("expression pattern parameter in `template constraint`"): an
+expression pattern in a parameter list is a semantics TODO of its own, and the
+comparison has no case for two of them (W-238).
 
 > **F-010l — parameterized member requirements: DEFERRED (SC-1, D-SC-2, as
 > recommended).** Whether a requirement declaration may itself be a `template`
@@ -651,7 +655,11 @@ counted as equal to the type or default value in its place in the other: a type
 with an error anywhere in it is the error, and so is a default value of a
 parameter whose type is the error. A parameter declared with a form that has an
 error (`y:? form(ref Undefined)`) is the error itself and counts as equal to the
-parameter in its place, binding form included. Everything else is compared as
+parameter in its place, binding form included. A `self` declared with a form
+that has an error declares no `self`, and the check that a requirement with
+`self` has a member with `self` runs first, so a member with one is reported as
+a member without `self`, and a requirement with one is a requirement without
+`self` (stated 2026-10-14, fill round 15). Everything else is compared as
 without the error, including the binding form (`var`, `ref`) of any other
 parameter with an error and whether a default value or a return type is there; a
 member that differs so is reported as without the error. A member that matches

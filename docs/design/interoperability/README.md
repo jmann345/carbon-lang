@@ -564,9 +564,10 @@ Multiple, virtual, and diamond
 inheritance, and exporting an abstract class whose destructor is not virtual,
 are fork work item W-046.
 
-A C++ pointer to member cannot be used this way in the 0.1 toolchain (fork work
-item W-194). For a pointer `p` to a data member and a pointer `q` to a member
-function, bound to `a` as in proposal 7697's example:
+A C++ pointer to member cannot be used through compound member access,
+`a.(Cpp.p)`, in the 0.1 toolchain (fork work item W-194). For a pointer `p` to a
+data member and a pointer `q` to a member function, bound to `a` as in proposal
+7697's example:
 
 ```carbon
 import Cpp inline '''c++
@@ -584,7 +585,9 @@ fn G(ref a: Cpp.A) -> i32 {
 ```
 
 The toolchain reports ``semantics TODO: `Unsupported: var type: int A::*` ``
-for `Cpp.p`, and the call through `q` is not supported either.
+for `Cpp.p`, and, for the call through `q`, ``member name of type
+`<C++ type int (A::*)(void)>` in compound member access is not an instance
+member or an interface member``.
 
 ## Accessing global variables
 

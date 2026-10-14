@@ -20,8 +20,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #    block, and each block fixture's body equals its page block;
 # 2. each fixture's QUOTE and EXPECT-ERROR message occur in the prose of its
 #    section, compared after blockquote markers are stripped and whitespace
-#    is collapsed, and the backticked values of the "This prints ..."
-#    sentence of each program's section equal its EXPECT-STDOUT lines;
+#    is collapsed (an EXPECT-CRASH text, which names a stage of the
+#    compiler's crash report, is not quoted), and the backticked values of
+#    the "This prints ..." sentence of each program's section equal its
+#    EXPECT-STDOUT lines;
 # 3. each mapped section has exactly the ```carbon blocks the table maps, and
 #    no indented ```carbon fence;
 # 4. the W2 rule (plan section 2.12 item 5) over docs/design/, matched
@@ -39,11 +41,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #    can go stale.
 #
 # `--toolchain PATH` also compiles every fixture: an EXPECT-ERROR fixture must
-# fail with its pinned message on the first error line, and an EXPECT-STDOUT
-# fixture must compile, link, run with exit 0 and print the pinned lines.
-# `--self-check` runs only the built-in cases of the quote matcher and of the
-# W2 rule, which every default run also runs first. The script exits 1 on any
-# error, and `main()` returns the exit status.
+# fail with its pinned message on the first error line, an EXPECT-STDOUT
+# fixture must compile, link, run with exit 0 and print the pinned lines, and
+# an EXPECT-CRASH fixture must stop the compiler on a signal, with a crash
+# report ("Stack dump:") that contains the pinned text. A crash fixture pins a
+# page sentence that says the compiler stops; it changes when the toolchain
+# stops crashing, as an EXPECT-ERROR fixture does when its message changes.
+# `--self-check` runs only the built-in cases of the quote matcher, of the W2
+# rule and of the crash test, which every default run also runs first. The
+# script exits 1 on any error, and `main()` returns the exit status.
 #
 # Run it from anywhere as `python3 fork/designdocs/check_samples.py`.
 
@@ -205,32 +211,14 @@ SAMPLES = [
     (
         "templates.md",
         "Templates in the 0.1 toolchain",
-        QUOTE,
-        "X10_template_match_dependent.carbon",
+        BLOCK,
+        "R09_template_constraint_lookup.carbon",
     ),
     (
         "templates.md",
         "Templates in the 0.1 toolchain",
         QUOTE,
-        "X07_template_let_file_scope.carbon",
-    ),
-    (
-        "templates.md",
-        "Templates in the 0.1 toolchain",
-        QUOTE,
-        "X08_template_auto.carbon",
-    ),
-    (
-        "templates.md",
-        "Templates in the 0.1 toolchain",
-        QUOTE,
-        "X11_template_dependent_bound.carbon",
-    ),
-    (
-        "templates.md",
-        "Templates in the 0.1 toolchain",
-        QUOTE,
-        "X12_template_constraint_decl.carbon",
+        "X05_template_structural_circle.carbon",
     ),
     (
         "templates.md",
@@ -260,6 +248,24 @@ SAMPLES = [
         "templates.md",
         "Templates in the 0.1 toolchain",
         QUOTE,
+        "X20_template_uninit_var.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X26_template_partial.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X10_template_match_dependent.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
         "X17_template_dependent_call.carbon",
     ),
     (
@@ -278,25 +284,61 @@ SAMPLES = [
         "templates.md",
         "Templates in the 0.1 toolchain",
         QUOTE,
-        "X20_template_uninit_var.carbon",
+        "X28_template_for_dependent_range.carbon",
     ),
     (
         "templates.md",
         "Templates in the 0.1 toolchain",
         QUOTE,
-        "X26_template_partial.carbon",
-    ),
-    (
-        "templates.md",
-        "Templates in the 0.1 toolchain",
-        BLOCK,
-        "R09_template_constraint_lookup.carbon",
+        "X29_template_return_tuple.carbon",
     ),
     (
         "templates.md",
         "Templates in the 0.1 toolchain",
         QUOTE,
-        "X05_template_structural_circle.carbon",
+        "X30_template_return_struct.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X31_template_return_array.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X32_template_class_method_tuple.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X33_template_tuple_destructure.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X07_template_let_file_scope.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X08_template_auto.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X11_template_dependent_bound.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X12_template_constraint_decl.carbon",
     ),
     (
         "metaprogramming.md",
@@ -444,6 +486,12 @@ SAMPLES = [
         "Accessing C++ classes, structs, and members",
         BLOCK,
         "R35_cpp_pointer_to_member.carbon",
+    ),
+    (
+        INTEROP,
+        "Accessing C++ classes, structs, and members",
+        QUOTE,
+        "X27_cpp_pointer_to_member_function.carbon",
     ),
     (
         INTEROP,
@@ -735,6 +783,7 @@ class Fixture:
     sample: str | None = None
     error: str | None = None
     stdout: list[str] | None = None
+    crash: str | None = None
     quote: str | None = None
     body: str = ""
 
@@ -757,6 +806,8 @@ def parse_fixture(path: Path) -> Fixture:
             fixture.sample = line[len("// DESIGN-DOCS-SAMPLE: ") :]
         elif line.startswith("// EXPECT-ERROR: "):
             fixture.error = line[len("// EXPECT-ERROR: ") :]
+        elif line.startswith("// EXPECT-CRASH: "):
+            fixture.crash = line[len("// EXPECT-CRASH: ") :]
         elif line == "// EXPECT-STDOUT:":
             fixture.stdout = stdout
             in_stdout = True
@@ -885,9 +936,11 @@ def check_samples(errors: list[str]) -> tuple[int, list[Path]]:
                 f"{target}: DESIGN-DOCS-SAMPLE is "
                 f"{fixture.sample!r}, expected {expected!r}"
             )
-        if (fixture.error is None) == (fixture.stdout is None):
+        expects = (fixture.error, fixture.stdout, fixture.crash)
+        if sum(e is not None for e in expects) != 1:
             errors.append(
-                f"{target}: needs exactly one of EXPECT-ERROR and EXPECT-STDOUT"
+                f"{target}: needs exactly one of EXPECT-ERROR, EXPECT-STDOUT "
+                "and EXPECT-CRASH"
             )
         if kind == BLOCK and block is not None and block != fixture.body:
             errors.append(diff(block, fixture.body, where, target))
@@ -1027,23 +1080,41 @@ def first_error(stderr: str) -> str | None:
     return None
 
 
+def crash_error(
+    name: str, returncode: int, stderr: str, want: str
+) -> str | None:
+    """Returns why a compile is not the pinned crash, or None if it is."""
+    if returncode >= 0:
+        return f"{name}: exit {returncode}, expected a crash in: {want}"
+    if "Stack dump:" not in stderr or want not in stderr:
+        return f"{name}: crashed on signal {-returncode} without: {want}"
+    return None
+
+
 def run_fixture(toolchain: Path, path: Path, tmp: Path) -> str | None:
     """Compiles (and links and runs) one fixture; returns an error or None."""
     fixture = parse_fixture(path)
     obj = tmp / (path.stem + ".o")
     exe = tmp / path.stem
-    compiled = subprocess.run(
-        [
-            str(toolchain),
-            "compile",
-            f"--output={obj}",
-            "--output-last-input-only",
-            str(path),
-        ],
-        capture_output=True,
-        text=True,
-        timeout=300,
-    )
+    try:
+        compiled = subprocess.run(
+            [
+                str(toolchain),
+                "compile",
+                f"--output={obj}",
+                "--output-last-input-only",
+                str(path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+    except subprocess.TimeoutExpired:
+        return f"{path.name}: the compile did not finish in 300 seconds"
+    if fixture.crash is not None:
+        return crash_error(
+            path.name, compiled.returncode, compiled.stderr, fixture.crash
+        )
     if fixture.error is not None:
         got = first_error(compiled.stderr)
         if compiled.returncode == 0:
@@ -1174,9 +1245,25 @@ def self_check() -> int:
                 f"{sorted(want_hits)}",
                 file=sys.stderr,
             )
+    # The crash test: (exit status, stderr, whether it is the pinned crash).
+    report = "Stack dump:\n4.\tf.carbon:2:3: Checking ForHeader\n"
+    crash_cases = [
+        (-6, report, True),
+        (-11, "Stack dump:\n", False),
+        (1, "f.carbon:2:3: error: Checking ForHeader\n", False),
+        (0, "", False),
+    ]
+    for returncode, stderr, want in crash_cases:
+        got = crash_error("f", returncode, stderr, "Checking ForHeader")
+        if (got is None) != want:
+            wrong += 1
+            print(
+                f"self-check: crash test gives {got!r} for exit {returncode}",
+                file=sys.stderr,
+            )
     print(
         f"self-check: {len(cases)} quote cases, {len(w2_cases)} W2 cases, "
-        f"{wrong} wrong"
+        f"{len(crash_cases)} crash cases, {wrong} wrong"
     )
     return wrong
 
@@ -1193,7 +1280,8 @@ def main() -> int:
     parser.add_argument(
         "--self-check",
         action="store_true",
-        help="only run the quote matcher's and the W2 rule's built-in cases",
+        help="only run the built-in cases of the quote matcher, the W2 rule "
+        "and the crash test",
     )
     args = parser.parse_args()
     if self_check():

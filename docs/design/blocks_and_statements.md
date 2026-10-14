@@ -21,10 +21,12 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 > **Fork status (2026-10-14).** The [overview](#overview) below is the
 > original sketch, kept unchanged. Its rules are those of accepted proposal 162
 > (basic syntax), whose grammar makes a block one kind of statement, and of
-> proposal 2665 (semicolons terminate statements); each statement has its own
-> accepted proposal, cited in
-> [Statements in the 0.1 toolchain](#statements-in-the-01-toolchain), which
-> documents what the 0.1 toolchain implements. One difference: the toolchain
+> proposal 2665 (semicolons terminate statements).
+> [Statements in the 0.1 toolchain](#statements-in-the-01-toolchain) documents
+> what the 0.1 toolchain implements, with the accepted proposals it cites beside
+> the statements; the `match` statement, whose design proposal 5164 marks as not
+> yet accepted, and the refutable-binding forms, from fork decision F-011, have
+> no accepted proposal. One difference: the toolchain
 > does not accept a block on its own as a statement, which proposal 162's
 > grammar allows, so the overview's second example is rejected. How a leading
 > `{` is told apart from a struct literal is an open question of the

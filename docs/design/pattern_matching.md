@@ -861,8 +861,9 @@ one difference listed under "Not in the 0.1 toolchain" below: a `match`
 without an unguarded `default` arm must cover every alternative of a choice,
 both `bool` values, or have an unguarded irrefutable arm; for integer, tuple,
 and struct scrutinees only an irrefutable arm counts, because the toolchain
-never treats a set of expression patterns as exhaustive, even constant tuples
-of `bool` or choice values that the rules above make exhaustive. A guarded arm
+decides exhaustiveness at the scrutinee's root and does not combine tuple or
+struct patterns element by element, even where the rules above make a set of
+tuple or struct patterns over `bool` or choice values exhaustive. A guarded arm
 never counts toward coverage; an arm that can never match is an error.
 
 ```carbon

@@ -2896,95 +2896,113 @@ and 97686069f (rev 4, focused re-review 2 folded, signed off): 3ff319642 (DD-1
 new threads page), 4287fe0c0 (3/4: the design README notes), 6f1ba74ba (the
 document-review fold), 9f920d2b9 (DD-1 (4/4), the discharge, which wrote this
 entry), 36e27f233 (the implementation-review fold), a75c20391 (the second
-document-review fold) and "DD-1 records: second document-review round recorded;
-row 70 verdict".
+document-review fold), e27b917c8 ("DD-1 records: second document-review round
+recorded; row 70 verdict") and "DD-1: third document-review fold".
 It touches no toolchain, prelude, golden, proposal or .github/ file. Every
 decision below is an R29(a) auto-adopt recorded for after-the-fact veto, each
 with its break condition. No fork design id is minted: F-016 stays unallocated
 (D-DD-3). The second round of both document reviews, which D-DD-11's break
 condition owes because document review 1 returned REJECT, had not run when this
-entry was written (DEVIATIONS, item 1); it ran on 2026-10-14 (REVIEWS).
+entry was written (DEVIATIONS, item 1); it ran on 2026-10-14 (REVIEWS), and
+so did the third round, which D-DD-11's break condition owed as document review
+1 of the second round read it (REVIEWS).
 
 WHAT LANDED, page by page. (1) THE LANGUAGE PAGES (3ff319642, amended at
-6f1ba74ba). docs/design/aliases.md: `## TODO` becomes `## Status`, a dated note
-that no accepted proposal specifies `alias` (proposal 3938's "not fully
-designed"; the overview's syntax from proposal 107 and issue 749), and `##
-Aliases in the 0.1 toolchain` documents file, namespace, class and function
-scope aliases (P01), the rejected runtime value (R01), parameters (R02) and
-declarations through a namespace alias (R03), and the constant-value alias the
-toolchain accepts against the language overview's rule.
-docs/design/blocks_and_statements.md: `## Status` (proposals 162 and 2665; the
-toolchain rejects a bare block, which the struct literal design's open question
-at classes.md:563-570 leaves open, W-185) and `## Statements in the 0.1
-toolchain` (P02; R04, R05, R06). docs/design/assignment.md: the `_TODO_` line of
-"Tuples, structs, choice types, and data classes" becomes a dated status note
-with the measured rules, P03 (fork-only) and R07, and the swap paragraph states
-leads issue 686's answer and the toolchain's divergence from it (X01, X03,
-W-188). docs/design/templates.md: `## Status` (accepted proposal 2200; the page
-an older sketch, compared with proposal 2200 both ways; template constraints
-from proposals 818 and 2200, F-010's `require`; SC-1 held), three fork notes
-(the illustrative `buf(T)`, the rejected `Convert(i, f32)` pinned by R11,
+6f1ba74ba, a75c20391 and the third document-review fold).
+docs/design/aliases.md: `## TODO` becomes `## Status`, a dated note that no
+accepted proposal specifies `alias` (proposal 3938's "not fully designed"; the
+overview's syntax from proposal 107 and issue 749), and `## Aliases in the 0.1
+toolchain` documents file, namespace, class and function scope aliases (P01),
+the rejected runtime value (R01), parameters (R02) and declarations through a
+namespace alias (R03), and the constant-value alias the toolchain accepts
+against the language overview's rule. docs/design/blocks_and_statements.md: `##
+Status` (proposals 162 and 2665; the toolchain rejects a bare block, which the
+struct literal design's open question at classes.md:563-570 leaves open, W-185)
+and `## Statements in the 0.1 toolchain` (P02; R04, R05, R06; the status note no
+longer says every statement has an accepted proposal, third document-review
+fold). docs/design/assignment.md: the `_TODO_` line of "Tuples, structs, choice
+types, and data classes" becomes a dated status note with the measured rules,
+P03 (fork-only) and R07, and the swap paragraph states leads issue 686's answer
+and the toolchain's divergence from it (X01, X03, W-188).
+docs/design/templates.md: `## Status` (accepted proposal 2200; the page an older
+sketch, compared with proposal 2200 both ways; template constraints from
+proposals 818 and 2200, F-010's `require`; SC-1 held), three fork notes (the
+illustrative `buf(T)`, the rejected `Convert(i, f32)` pinned by R11,
 specialization by overload sets) and `## Templates in the 0.1 toolchain` (P04;
 R08, R09, R10; X05; limits W-183, W-014 and `match` on template-dependent
 values, to which the second document-review fold adds template `let` bindings,
-W-031, `auto`, W-039, arrays whose bound is a template parameter, and
-`template constraint` declarations, with X07 and X08).
-docs/design/metaprogramming.md: `## Status` (no proposal; PR 89 closed
-unmerged; milestones.md:272 defers the long tail) and `## Compile-time
-evaluation in the 0.1 toolchain` (P05; R12, R13, R14; W-031, W-036, W-184).
-docs/design/pattern_matching.md: the placeholder paragraph of "Pattern match
-control flow" becomes a dated status note keeping proposal 5164's statement and
-quoting the first example's measured diagnostic (X02), and "`match` in the 0.1
-toolchain" follows "Guards" (P06, fork-only; R15 to R22; X06; limits W-155 on
-held PR 54, W-189, W-182, the qualified alternative pattern, and `match`
-expressions as proposal 2188's future work).
+W-031, `auto`, W-039, arrays whose bound is a template parameter, and `template
+constraint` declarations, with X07 and X08; the third document-review fold makes
+the status note claim no completeness, adds two fork notes, an uninitialized
+`var` and an array index in a class (X23, X24; W-127 on held PR 51, W-192) and
+deduction through a class's arguments (X25; W-193), names the operators resolved
+per instantiation (X22), and adds limits for the operators `*`, `->` and `&` and
+tuple element access (X13 to X16), calls (X17), a struct copy and an array index
+(X18, X19), template-dependent tuples (W-014), `var y: T;` (X20) and `partial
+T*` (X26), and the case of a name the type and the constraint give different
+meanings to W-183's (X21), with quote fixtures X10 to X12 for the three limits
+that quoted a diagnostic without one). docs/design/metaprogramming.md: `##
+Status` (no proposal; PR 89 closed unmerged; milestones.md:272 defers the long
+tail) and `## Compile-time evaluation in the 0.1 toolchain` (P05; R12, R13, R14;
+W-031, W-036, W-184). docs/design/pattern_matching.md: the placeholder paragraph
+of "Pattern match control flow" becomes a dated status note keeping proposal
+5164's statement and quoting the first example's measured diagnostic (X02), and
+"`match` in the 0.1 toolchain" follows "Guards" (P06, fork-only; R15 to R22;
+X06; limits W-155 on held PR 54, W-189, W-182, the qualified alternative
+pattern, and `match` expressions as proposal 2188's future work; the
+exhaustiveness summary names the root-only rule, third document-review fold).
 docs/design/code_and_name_organization/README.md gains the aliasing note (R03)
 and docs/design/expressions/comparison_operators.md the custom-result-types note
 beside its kept upstream marker. (2) INTEROPERABILITY (a32421433, amended at
-6f1ba74ba and by this commit). docs/design/interoperability/README.md: the eight
-former `TODO:` sections are written from measured behavior, Importing C++ code
-(inline) (P07, R32, X04, and since this commit the status of leads issue 6830),
+6f1ba74ba, by the discharge, at 36e27f233 and a75c20391, and by the third
+document-review fold). docs/design/interoperability/README.md: the eight former
+`TODO:` sections are written from measured behavior, Importing C++ code (inline)
+(P07, R32, X04, and since this commit the status of leads issue 6830),
 Constructors (P08, R23), Struct literals (P09, fork-only, R24), Accessing C++
-classes, structs, and members (P10, R25, R26, and a measured inheritance
-sentence), Accessing global variables (P11, R27), Integers (P12, R28), Advanced
-type mapping: pointers, references, and `const` (P13, R29) and The operator
-interoperability model (P14, R30); three sections are added for milestone
-interop items that had none, Using C++ templates (P17), Using Carbon from C++
-(P18, R33, W-191) and C++ ranges in `for` loops (P19, R34); and Threads,
-atomics, and the memory model points to the new page.
+classes, structs, and members (P10, R25, R26, a measured inheritance sentence,
+and, from the third document-review fold, the pointer-to-member limit of
+proposals 3720 and 7697, R35 and W-194), Accessing global variables (P11, R27),
+Integers (P12, R28), Advanced type mapping: pointers, references, and `const`
+(P13, R29) and The operator interoperability model (P14, R30); three sections
+are added for milestone interop items that had none, Using C++ templates (P17),
+Using Carbon from C++ (P18, R33, W-191) and C++ ranges in `for` loops (P19,
+R34); and Threads, atomics, and the memory model points to the new page.
 docs/design/interoperability/threads_and_atomics.md (new) states F-008's
 seven-point contract with re-verified citations, the 0.1 toolchain's behavior
 (P16), the alternatives F-008 weighed and its references; held PR 53 names
 `Core.Thread` and `Core.Atomic(T)`, and reserving `Core.MemoryOrder` stays open
 on the page. docs/design/README.md gains `### Enums` (P15). (3) THE DESIGN
-README NOTES (4287fe0c0, amended at 6f1ba74ba). docs/design/README.md: a dated
-note after the "This document is provisional" disclosure, which the W2 rule
-carries as its one QUALIFIED entry; five cohesion notes after stale
-"provisional" notes (tuples, proposal 3646; patterns, proposal 2188; importing,
-proposal 6358; operator overloading, proposal 6254; standard types, proposals
-5448 and 6357); the template-constraints note; the Metaprogramming note; the
-abstract machine's content; and dated deferral notes beside the kept Co-routines
-and Concurrency markers. (4) PROGRAMS, FIXTURES AND THE CHECKER (commits 1 and
-2, extended at 6f1ba74ba).
+README NOTES (4287fe0c0, amended at 6f1ba74ba and a75c20391).
+docs/design/README.md: a dated note after the "This document is provisional"
+disclosure, which the W2 rule carries as its one QUALIFIED entry; five cohesion
+notes after stale "provisional" notes (tuples, proposal 3646; patterns, proposal
+2188; importing, proposal 6358; operator overloading, proposal 6254; standard
+types, proposals 5448 and 6357); the template-constraints note; the
+Metaprogramming note; the abstract machine's content; and dated deferral notes
+beside the kept Co-routines and Concurrency markers. (4) PROGRAMS, FIXTURES AND
+THE CHECKER (commits 1 and 2, extended at 6f1ba74ba, 36e27f233, a75c20391 and
+the third document-review fold).
 fork/conformance/programs/project/design_docs_*.carbon, nineteen programs, each
 a page block transcribed byte for byte after the §2.11 header, three of them
 fork-only; the stub design_docs_placeholders.carbon keeps its SKIP with the
 §2.11 reason; fork/designdocs/samples/ holds thirty-nine fixtures (R01 to R30,
 R32 to R34, X01 to X06; forty-two since the second document-review fold, which
-adds X07 to X09); fork/designdocs/check_samples.py diffs every page block
-against its program or fixture (R27), checks every quote and every "This prints"
-value against its program, runs the W2 rule over docs/design/ with its ALLOWLIST
-(two held-PR entries at state T, empty at state L) and its QUALIFIED list (the
-README disclosure), and with `--toolchain` compiles every fixture. (5) THE
-RECORDS (this commit): rows 70 and 91 and the header of fork/gap-analysis.md;
-the ledger; this entry; fork/ORCHESTRATION.md; the plan's §8.10 additions,
-§2.7's DR1-12 paragraph and "Landed notes (DD-1, 2026-10-14)".
+adds X07 to X09; sixty since the third, which adds X10 to X26 and R35);
+fork/designdocs/check_samples.py diffs every page block against its program or
+fixture (R27), checks every quote and every "This prints" value against its
+program, runs the W2 rule over docs/design/ with its ALLOWLIST (two held-PR
+entries at state T, empty at state L) and its QUALIFIED list (the README
+disclosure), and with `--toolchain` compiles every fixture. (5) THE RECORDS
+(this commit): rows 70 and 91 and the header of fork/gap-analysis.md; the
+ledger; this entry; fork/ORCHESTRATION.md; the plan's §8.10 additions, §2.7's
+DR1-12 paragraph and "Landed notes (DD-1, 2026-10-14)".
 
 THE DECISIONS, D-DD-1 to D-DD-13, verbatim from fork/designdocs/plan.md §0.5 as
 folded through the two plan reviews (A-1 to A-15, B-1, B-2, B-M-1 to B-M-8,
 B-m-1 to B-m-8), the two focused re-reviews (RR-A-1, RR-N-1 to RR-N-4, RR-FX-1;
 RR2-1 to RR2-3, RR2-FX-1), the document-review fold (DR1-n, DR2-n) and the
-second document-review fold (D-DD-2 by DR2b-6, D-DD-7 by R2-3); each
+second document-review fold (D-DD-2 by DR2b-6, D-DD-7 by R2-3) and the third
+(D-DD-2 by DR3b-2, D-DD-9 and D-DD-10 by R3-1 and R3-5); each
 break condition is the decision's own, and the `§`, row and finding references
 are the plan's:
 
@@ -3029,8 +3047,13 @@ are the plan's:
     emphasis or code markers, and clause (c)'s companions include a list of
     links after a "See" or "References" paragraph, amended 2026-10-14,
     document-review fold 2: DR2b-6, under the same break condition: document
-    review 2 of the second round showed forms the rule still missed). Inline
-    notes beside
+    review 2 of the second round showed forms the rule still missed; clause
+    (c)'s markers also take code markers, and clauses (c) and (d) read a
+    section without its HTML comments, multi-line ones included, so that a
+    section holding only a comment is empty and a comment whose text is a TODO
+    or TBD marker is a marker paragraph, amended 2026-10-14, document-review
+    fold 3: DR3b-2, under the same break condition: document review 2 of the
+    third round showed forms the rule still missed). Inline notes beside
     content (category C of §0.1c, §0.1f) are out of scope. Two lists qualify
     the result. `QUALIFIED` holds hits that stay by design because a DD-1 note
     in the same section answers them, and the checker requires that note's
@@ -3173,7 +3196,8 @@ are the plan's:
     concept link, the EV-1 sentences, the PR 53 citations and link, the
     strings pointer, the optional.md link, an empty W2 `ALLOWLIST`), adds
     F-013's scope to W-188's notes, applies the ledger amendments that land on
-    held PRs' text (W-014, W-155, W-167), writes row 91 DONE when §5's
+    held PRs' text (W-014, W-127, W-155, W-167; W-127 added 2026-10-14,
+    document-review fold 3: R3-1), writes row 91 DONE when §5's
     condition holds, and re-runs
     every sample, fixture and the full suite on a toolchain built from the
     merged trunk. Break: if DD-1 must merge before any of SC-1, PR 51, PR 53,
@@ -3211,7 +3235,19 @@ are the plan's:
     and every live branch head for the same defect, not only the id maximum. Rev
     1's W-180 (W-155's defect), W-181 (inside W-080's lane) and W-186 (W-167's
     defect) are withdrawn by this break and stay unused (amended 2026-10-13,
-    review fold: A-1 / A-4 / A-11 / B-M-1 / B-m-2 / B-m-3). Break: if review
+    review fold: A-1 / A-4 / A-11 / B-M-1 / B-m-2 / B-m-3). The third
+    document-review fold files W-192 (a struct copy or an array index on a
+    template-dependent value, resolved through `Core.Copy` or `Core.IndexWith`
+    on instantiation), W-193 (a deduced template parameter not computed from a
+    class's arguments) and W-194 (C++ pointers to members), the three spare ids
+    of DD-1's block, and adds two integration amendments: W-014 gains the
+    operators `*`, `->` and `&`, tuple element access and calls on a
+    template-dependent value, and the lowering of template-dependent tuples,
+    each inside its stated scope (dependent-form operators and template
+    lowering), and W-127, which exists only on PR 51, gains `var y: T;` for a
+    template parameter, inside its stated scope (an uninitialized
+    template-dependent `var`) (amended 2026-10-14, document-review fold 3:
+    R3-1 / R3-5). Break: if review
     shows a residue is inside an existing item's scope, it is folded there and
     its id stays unused.
 -   **D-DD-11 Reviews.** Two plan reviews (R29(c)) then a separate fixer (R11);
@@ -3392,7 +3428,8 @@ DD-1's block and reserves W-196..W-199.
 THE ARBITER AND THE COUNTS. D-DD-2 records a deviation from W-065's stated
 arbiter: W-065's notes call it "grep-verifiable ('no TODO/placeholder
 markers')", and the W2 rule is narrower, reporting placeholder boilerplate, TODO
-headings, TODO-only sections and empty sections, while inline TODO, TBD and
+or TBD headings, TODO- or TBD-only sections and empty sections, while inline
+TODO, TBD and
 provisional notes beside content stay by design and DD-1's pages add quoted
 toolchain diagnostics that contain `semantics TODO`. The `TODO` counts are line
 counts (`git grep -c TODO <commit> -- 'docs/design/*.md'
@@ -3406,7 +3443,12 @@ expressions/logical_operators.md 1 → 1, functions.md 2 → 2,
 functions_overloading.md 17 → 17, generics/details.md 17 → 17,
 interoperability/README.md 18 → 2, metaprogramming.md 2 → 1, pattern_matching.md
 1 → 6, sum_types.md 1 → 1, templates.md 2 → 1, unions.md 1 → 1, values.md 5 → 5,
-variadics.md 7 → 7. The W2 rule's output at this commit, as expected: the two
+variadics.md 7 → 7. Later counts: 93 lines in 20 files at the second
+document-review fold (a75c20391; templates.md 1 → 3, two quoted diagnostics;
+README.md 15 → 16, the word "TODO-only"), and 94 lines in 20 files at the third
+document-review fold (interoperability/README.md 2 → 3, the quoted
+`semantics TODO` of the pointer-to-member limit). The W2 rule's output at this
+commit, as expected: the two
 held-PR hits (README.md "Lifetime and move semantics", PR 53;
 expressions/arithmetic.md "Strings", PR 55), allowlisted, and the README
 disclosure, qualified by its note. Not designed, by milestone deferral or as an
@@ -3514,7 +3556,32 @@ placeholder or unmeasured claim is left unresolved; row 70 goes PARTIAL → DONE
 1 to 31 / 20 / 4 / 1. Row 91 stays PARTIAL, bounded by state L and by the
 further round; a finding of that round left unresolved on the threads page after
 its fold returns row 70 to PARTIAL (D-DD-13's break condition). The plan's
-"Document-review fold 2 (2026-10-14)" records the verdict.
+"Document-review fold 2 (2026-10-14)" records the verdict. That commit is
+e27b917c8. The third round of both document reviews, the further round, read
+a75c20391 and e27b917c8 on 2026-10-14. Document review 1 (fidelity) returned
+REJECT with six findings: two BLOCKER, R3-1 (R2-1 not resolved: the status
+note's "differences measured" omitted the dereference that the second fold had
+itself recorded in gap row 54, and seven more template differences reproduce)
+and R3-2 (the note's "three places" where the sketch and the toolchain differ),
+one MAJOR, R3-3 (the sentence that every operator whose meaning depends on a
+template parameter is resolved per instantiation), and three MINOR (R3-4, every
+statement's own proposal; R3-5, proposals 3720 and 7697's pointers to members;
+R3-6, three quoted diagnostics without a fixture). Document review 2
+(readability, cohesion, Goodhart, records-readiness) returned
+APPROVE-WITH-AMENDMENTS with eight MINOR findings, DR3b-1 to DR3b-8 (W-065's
+row pins, W2 forms still missed, the header's row 91 bounds, the decision log's
+and PR body's counts and labels, the exhaustiveness summary, two interop
+passages, the stub's TBD, records-readiness). Neither review has a finding on
+the threads page. A separate fixer (R11) reproduced each and folded all
+fourteen, none rejected, in "DD-1: third document-review fold", with two
+findings of its own, DR3-FX-1 (three more template differences: tuple element
+access, the lowering of template-dependent tuples, `partial T*`) and DR3-FX-2
+(W-127's citation beside W-043's); it files W-192, W-193 and W-194; the plan's
+"Document-review fold 3 (2026-10-14)" lists each disposition. Across the eleven
+reviews: 107 findings, plus six fixer findings. Because document review 1 of
+the third round returned REJECT, D-DD-11's break condition, as review 1 of the
+second round read it, owes a further round of both after the fold; the commit
+that records the third round's verdict applies D-DD-13.
 
 VERIFICATION, all LOCAL, never of record (D-DD-12). The fork toolchain is the
 container's CMake and Ninja build of trunk 0bdce60a5's sources
@@ -3565,7 +3632,18 @@ wrong`, 19 program blocks, 42 fixtures, three W2 hits and 0 errors without and
 with `--toolchain` on the fork toolchain; the threading bullet's seven programs
 on the fork busybox, 7 PASS; `--self-test` OK; the W2 rule over trunk and every
 held head, OP-2 at 503d25895 included, no hit that trunk lacks; the ledger's
-JSON parse, 132 items (plan "Document-review fold 2").
+JSON parse, 132 items (plan "Document-review fold 2"). At the third
+document-review fold (local, not of record): the full fork run, the same 147
+PASS / 0 FAIL / 22 SKIP over 169, 48/56 (scoreboard generated
+2026-10-14T06:11:39Z); the nightly, the same 16 PASS and three labelled
+COMPILE-FAIL; the nineteen programs on SC-1's builds (3245ec0d2 and a5078358c),
+19 PASS on each; `--self-test` OK; the checker, now `self-check: 4 quote cases,
+32 W2 cases, 0 wrong`, 19 program blocks, 60 fixtures, the same three W2 hits
+and 0 errors without and with `--toolchain` on the fork toolchain, exactly the
+twelve predicted differences on the nightly (X02, R15 to R22, X06, X10, X11), 0
+errors on the OP-1, OP-2, UA-2 and ST-1 builds and on SC-1's two builds the
+predicted X12; the ledger's JSON parse, 135 items, the last W-194 (plan
+"Document-review fold 3").
 
 Not run (plan §8.10, verbatim; the local gate of D-DD-12):
 
@@ -3708,7 +3786,46 @@ Not run (plan §8.10, verbatim; the local gate of D-DD-12):
     fixture, program or checker, so no fixture or program was re-run on a held
     build or on the nightly, and on the fork toolchain the checker's
     `--toolchain` mode and the threading bullet's seven programs were re-run,
-    all as pinned and PASS (added 2026-10-14, second-round verdict commit).
+    all as pinned and PASS (added 2026-10-14, second-round verdict commit);
+-   the third round of both document reviews, the further round that
+    D-DD-11's break condition owes as document review 1 of the second round
+    reads it, ran on 2026-10-14 and read a75c20391 and e27b917c8 (review 1
+    REJECT, review 2 APPROVE-WITH-AMENDMENTS); neither review has a finding
+    on the threads page; the third document-review fold folds its fourteen
+    findings, and the commit that records the round's verdict follows it;
+    because review 1 of the third round returned REJECT, the break
+    condition, as review 1 of the second round read it, owes a further
+    round of both after this fold, which has not run (added 2026-10-14,
+    document-review fold 3: DR3b-8);
+-   the third document-review fold re-read the heads with `git
+    for-each-ref`: trunk f67ab650d, OP-1 379f20f67, PR 53 adaae4e35, PR 51
+    f96fe8a7a, PR 52 ea573f672, PR 54 cb3ef2e74 and PR 55 21307851a,
+    unchanged since e27b917c8; SC-1 had moved before e27b917c8 was made (the
+    branch's reflog: 4c2ecee22 at 04:55:54 UTC and 3245ec0d2 at 04:56:14,
+    e27b917c8 at 05:01:33), so that commit's item above, which names
+    fa4cd094d, was stale when written; SC-1 then moved to 253dd4031,
+    a13e70542 and ee1f905b0, whose toolchain and prelude equal its build at
+    3245ec0d2 (`git diff --stat 3245ec0d2 ee1f905b0 -- toolchain core` is
+    empty), on which the fold measured its new fixtures and probes, and,
+    during the fold, to 58dc46eb6 and a5078358c (06:14 UTC), whose
+    toolchain and prelude differ from 3245ec0d2's in seven files and whose
+    build the container rebuilt at a5078358c, on which the fold re-ran the
+    checker's `--toolchain` mode and the nineteen programs; SC-1's
+    docs/design/ at a5078358c differs from fa4cd094d's in
+    generics/template_constraints.md only, which keeps the "Mapping to and
+    from C++20 concepts" heading §2.13 links; OP-2 moved to c396efeae and
+    628273444 (its discharge, also its origin head), whose toolchain and
+    prelude equal 9f9ccd768's, the version its build reports, and whose
+    docs/design/ changes optional.md; over every head's docs/design/ the W2
+    rule, before and after this fold's extension, gives the same hits and
+    none that trunk lacks; the fold ran the checker's `--toolchain` mode,
+    sixty fixtures, on the builds SC-1 3245ec0d2 and a5078358c, OP-1
+    5d9edb3e0, OP-2 9f9ccd768, UA-2 05a5c30f7 and ST-1 84ff63560, each as
+    pinned except X12 on SC-1's builds, which compile it as §4.1 predicts,
+    and the nineteen programs on both SC-1 builds, 19 PASS and the stub
+    SKIP on each; it changed no program, so the nineteen programs were not
+    re-run on the other held builds (added 2026-10-14, document-review
+    fold 3: DR3b-8).
 
 DEVIATIONS FROM THE PLAN, each the closest faithful form. (1) The discharge was
 written at the orchestrator's direction before the second round of both document
@@ -3746,21 +3863,22 @@ placed it (DR1-15, DR2-10); the PR lands as one unit.
 
 STATE L, the condition (D-DD-9, D-DD-13). The integration commit merges trunk
 after OP-1 lands (never a rebase of submitted commits; and, at the
-orchestrator's direction recorded by the implementation-review fold, after
-OP-2, which stacks on PR 56, so that DD-1 merges last), resolves §0.2's expected
+orchestrator's direction recorded by the implementation-review fold, after OP-2,
+which stacks on PR 56, so that DD-1 merges last), resolves §0.2's expected
 conflicts, applies the state-L texts of plan §2.3, §2.4, §2.9 items 3 and 6, and
 §2.13 (the held-PR citations, the F-013 citations on assignment.md and the
 threads page, M7's link to the threads page, the strings pointer in
 expressions/literals.md, the optional.md and template_constraints.md links, the
 README disclosure note's state-L sentence, the EV-1 sentences), empties the W2
-`ALLOWLIST`, writes the W-014, W-155 and W-167 amendments and W-188's F-013
-note, re-runs every sample, fixture and the full suite on a toolchain built from
-the merged trunk, and writes row 91 DONE (expected) only when PR 53 and PR 55
-are on trunk, the `ALLOWLIST` is empty and the document-review fold has landed,
-with the header moving once more. Break condition (D-DD-9): if DD-1 must merge
-before any of SC-1, PR 51, PR 53, PR 54 or PR 55, it merges in state T, row 91
-stays PARTIAL bounded by the missing state-L items, and W-187 is filed to apply
-them when those PRs land.
+`ALLOWLIST`, writes the W-014, W-127, W-155 and W-167 amendments and W-188's
+F-013 note (W-127 added by the third document-review fold), removes quote
+fixture X12 with the `template constraint` limit, re-runs every sample, fixture
+and the full suite on a toolchain built from the merged trunk, and writes row 91
+DONE (expected) only when PR 53 and PR 55 are on trunk, the `ALLOWLIST` is empty
+and the document-review fold has landed, with the header moving once more. Break
+condition (D-DD-9): if DD-1 must merge before any of SC-1, PR 51, PR 53, PR 54
+or PR 55, it merges in state T, row 91 stays PARTIAL bounded by the missing
+state-L items, and W-187 is filed to apply them when those PRs land.
 
 PROCESS. R29(a): every D-DD above auto-adopts with its break condition and is
 recorded for after-the-fact veto; no question was asked (R29). R11: the planner,

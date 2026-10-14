@@ -447,8 +447,10 @@ W-048 and W-051).
 
 Proposal 6358 nests C++ namespaces in the `Cpp` package, and proposal 6254
 specifies calls to member functions, with the object as C++'s `this`, and the
-access check on the function that overload resolution selects; no accepted
-proposal covers fields, nested types, or base classes. In the 0.1 toolchain,
+access check on the function that overload resolution selects; proposals 3720
+and 7697 make a C++ pointer to member usable once it is bound to an object with
+compound member access, `a.(Cpp.p)`; no accepted proposal covers fields, nested
+types, or base classes. In the 0.1 toolchain,
 C++ classes and structs are Carbon types in the `Cpp` package, nested in `Cpp`
 namespaces as in C++ (`Cpp.geo.Rect`). Their members use Carbon member access:
 fields and member functions through an object (`r.Area()`, `r.tag`), and static
@@ -562,6 +564,28 @@ Multiple, virtual, and diamond
 inheritance, and exporting an abstract class whose destructor is not virtual,
 are fork work item W-046.
 
+A C++ pointer to member cannot be used this way in the 0.1 toolchain (fork work
+item W-194). For a pointer `p` to a data member and a pointer `q` to a member
+function, bound to `a` as in proposal 7697's example:
+
+```carbon
+import Cpp inline '''c++
+struct A {
+  int m;
+  int F() { return 3; }
+};
+int A::* p = &A::m;
+int (A::* q)() = &A::F;
+''';
+
+fn G(ref a: Cpp.A) -> i32 {
+  return a.(Cpp.p) + a.(Cpp.q)();
+}
+```
+
+The toolchain reports ``semantics TODO: `Unsupported: var type: int A::*` ``
+for `Cpp.p`, and the call through `q` is not supported either.
+
 ## Accessing global variables
 
 Proposal 6358 imports every C++ declaration into the `Cpp` package; no
@@ -661,12 +685,12 @@ fn Run() -> i32 {
 This prints `7`, `5`, and `4`. A checked generic's type parameter can be a C++
 template argument: in a function `F[T: Core.Copy](x: T) -> T`, the body
 `let b: Cpp.Box(T) = Cpp.Box(T).Make(x); return b.Get();` compiles, and the
-template is instantiated for each specific. Limits in 0.1: a `var` of such a
-specialization cannot be declared without an initializer, because
+template is instantiated for each specific. One limit in 0.1: a `var` of such
+a specialization cannot be declared without an initializer, because
 `var b: Cpp.Box(T);` reports that the type does not implement
-`Core.DefaultOrUnformed` (fork work item W-043). A C++20 concept `IsLarge`
-applied to a C++ type is a compile-time `bool`, so `Cpp.IsLarge(Cpp.Small)` can
-be a generic argument
+`Core.DefaultOrUnformed` (fork work item W-043, and W-127 on held PR 51). C++20
+concepts can be used: a C++20 concept `IsLarge` applied to a C++ type is a
+compile-time `bool`, so `Cpp.IsLarge(Cpp.Small)` can be a generic argument
 (`toolchain/check/testdata/interop/cpp/template/concept.carbon`); Carbon
 constraints are not exported as C++ concepts (W-029). Using Carbon generics
 from C++ is described in [Using Carbon from C++](#using-carbon-from-c).
@@ -1134,7 +1158,8 @@ operator to map to, by design: unary `+`, postfix `++` and `--`, `!`, `&&`,
 `||`, and the comma operator, since Carbon's logical operators are `not`,
 `and`, and `or` on `bool`; the
 [language overview](../README.md#operator-overloading-1) keeps operators like
-these C++-only. Assignment from an `int` fails:
+these C++-only. Because `operator=` is not imported, assigning an `int` to a
+C++ class through its `operator=(int)` fails:
 
 ```carbon
 import Cpp inline '''c++

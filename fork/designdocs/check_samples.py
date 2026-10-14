@@ -30,9 +30,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #    markers; (b) no heading that starts with TODO or TBD, also after
 #    leading emphasis or code markers; (c) no section whose paragraphs are
 #    only TODO or TBD markers (in a blockquote, a list item or an HTML
-#    comment too), optionally with "See" or "References" paragraphs and the
-#    lists of links that follow them; and (d) no empty section without
-#    subsections; except the hits that QUALIFIED and ALLOWLIST name. An
+#    comment too, also after emphasis or code markers), optionally with "See"
+#    or "References" paragraphs and the lists of links that follow them; and
+#    (d) no empty section without subsections, where an HTML comment, which
+#    does not render, counts as no content unless its text is a TODO or TBD
+#    marker; except the hits that QUALIFIED and ALLOWLIST name. An
 #    entry of either list that no longer hits is an error, so neither list
 #    can go stale.
 #
@@ -148,9 +150,33 @@ SAMPLES = [
     ),
     (
         "templates.md",
+        "Types with template parameters",
+        QUOTE,
+        "X23_template_class_uninit_var.carbon",
+    ),
+    (
+        "templates.md",
+        "Types with template parameters",
+        QUOTE,
+        "X24_template_class_index.carbon",
+    ),
+    (
+        "templates.md",
         "Functions with template parameters",
         QUOTE,
         "R11_template_f32.carbon",
+    ),
+    (
+        "templates.md",
+        "Functions with template parameters",
+        QUOTE,
+        "X25_template_deduce_class_arg.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X22_template_operators.carbon",
     ),
     (
         "templates.md",
@@ -174,6 +200,18 @@ SAMPLES = [
         "templates.md",
         "Templates in the 0.1 toolchain",
         QUOTE,
+        "X21_template_lookup_both.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X10_template_match_dependent.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
         "X07_template_let_file_scope.carbon",
     ),
     (
@@ -181,6 +219,72 @@ SAMPLES = [
         "Templates in the 0.1 toolchain",
         QUOTE,
         "X08_template_auto.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X11_template_dependent_bound.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X12_template_constraint_decl.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X13_template_deref.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X16_template_tuple_element.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X14_template_arrow.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X15_template_address.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X17_template_dependent_call.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X18_template_struct_copy.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X19_template_array_index.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X20_template_uninit_var.carbon",
+    ),
+    (
+        "templates.md",
+        "Templates in the 0.1 toolchain",
+        QUOTE,
+        "X26_template_partial.carbon",
     ),
     (
         "templates.md",
@@ -337,6 +441,12 @@ SAMPLES = [
     ),
     (
         INTEROP,
+        "Accessing C++ classes, structs, and members",
+        BLOCK,
+        "R35_cpp_pointer_to_member.carbon",
+    ),
+    (
+        INTEROP,
         "Accessing global variables",
         PROGRAM,
         "design_docs_cpp_globals.carbon",
@@ -449,9 +559,10 @@ BOILERPLATE = re.compile(
     re.IGNORECASE,
 )
 # Clause (c): a paragraph that starts with a TODO or TBD marker, optionally
-# bold or italic, inside a blockquote, a list item or an HTML comment.
+# bold, italic or code-marked, inside a blockquote, a list item or an HTML
+# comment.
 TODO_MARKER = re.compile(
-    r"^(>\s*)*([-*+]\s+|[0-9]+[.)]\s+)?(<!--\s*)?[*_]*(TODO|TBD)",
+    r"^(>\s*)*([-*+]\s+|[0-9]+[.)]\s+)?(<!--\s*)?[*_`]*(TODO|TBD)",
     re.IGNORECASE,
 )
 # Clause (b): a heading that starts with TODO or TBD after leading emphasis
@@ -493,6 +604,65 @@ def fence_mask(lines: list[str]) -> list[bool]:
                 continue
         mask.append(fence is not None)
     return mask
+
+
+def visible_lines(lines: list[str], mask: list[bool]) -> list[str]:
+    """Returns the lines with the HTML comments outside fences removed.
+
+    A comment may span lines. A comment whose text is a TODO or TBD marker
+    keeps that text, so that it reads as a marker paragraph; any other comment
+    is dropped, and a line that held a comment is stripped of surrounding
+    whitespace. The result has one entry per line, so line indices still match
+    the headings.
+    """
+    segments: list[list[tuple[str, int | None]]] = []
+    comments: dict[int, list[str]] = {}
+    open_id: int | None = None
+    for i, line in enumerate(lines):
+        if mask[i] and open_id is None:
+            segments.append([(line, None)])
+            continue
+        parts: list[tuple[str, int | None]] = []
+        pos = 0
+        while True:
+            if open_id is None:
+                start = line.find("<!--", pos)
+                if start < 0:
+                    parts.append((line[pos:], None))
+                    break
+                parts.append((line[pos:start], None))
+                open_id = len(comments)
+                comments[open_id] = []
+                pos = start + len("<!--")
+            else:
+                end = line.find("-->", pos)
+                if end < 0:
+                    parts.append((line[pos:], open_id))
+                    comments[open_id].append(line[pos:])
+                    break
+                parts.append((line[pos:end], open_id))
+                comments[open_id].append(line[pos:end])
+                open_id = None
+                pos = end + len("-->")
+        segments.append(parts)
+    kept = {
+        k
+        for k, texts in comments.items()
+        if TODO_MARKER.match(" ".join(t.strip() for t in texts).strip())
+    }
+    result = []
+    for parts in segments:
+        if all(k is None for _, k in parts):
+            result.append("".join(text for text, _ in parts))
+        else:
+            result.append(
+                "".join(
+                    text.strip() if k is not None else text
+                    for text, k in parts
+                    if k is None or k in kept
+                ).strip()
+            )
+    return result
 
 
 def heading_levels(
@@ -753,6 +923,7 @@ def w2_file_hits(rel: str, text: str) -> set[tuple[str, str, str]]:
     lines = text.split("\n")
     mask = fence_mask(lines)
     heads = heading_levels(lines, mask)
+    visible = visible_lines(lines, mask)
 
     def section_at(index: int) -> str:
         name = ""
@@ -775,12 +946,13 @@ def w2_file_hits(rel: str, text: str) -> set[tuple[str, str, str]]:
         # (c) a section whose paragraphs are all TODO or TBD markers, with
         # optional "See ..." or "References" paragraphs and the link lists
         # that follow them. A fenced block is one paragraph that is not a
-        # marker.
+        # marker. Paragraphs are read from the visible text, without HTML
+        # comments other than marker ones.
         end = heads[k + 1][0] if k + 1 < len(heads) else len(lines)
         paragraphs: list[list[str]] = []
         current: list[str] = []
         for j in range(i + 1, end):
-            line = lines[j]
+            line = visible[j]
             if not mask[j] and line.strip() in ("", ">"):
                 if current:
                     paragraphs.append(current)
@@ -978,6 +1150,18 @@ def self_check() -> int:
         ),
         ("## S\n\nTODO: later\n\nSee:\n\n-   An item, no link.\n", set()),
         ("## S\n\nTODO: later\n\n-   [A](a.md)\n", set()),
+        ("## S\n\n`TODO`: describe it.\n", {("S", "c")}),
+        ("## S\n\n> `TODO`\n", {("S", "c")}),
+        ("## S\n\n-   `TBD`\n", {("S", "c")}),
+        ("## S\n\n**`TODO`**\n", {("S", "c")}),
+        ("## S\n\n<!--\nTODO: describe it.\n-->\n", {("S", "c")}),
+        ("## S\n\n<!--\nWrite this later.\n-->\n", {("S", "d")}),
+        ("## S\n\n<!-- Write this later. -->\n", {("S", "d")}),
+        (
+            "# T\n\n<!--\nPart of the Carbon Language project.\n-->\n\n"
+            "## S\n\nText.\n",
+            set(),
+        ),
     ]
     for text, want_hits in w2_cases:
         got = {

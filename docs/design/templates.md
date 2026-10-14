@@ -27,20 +27,19 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 > name-lookup rules of question-for-leads issue 949 and proposal 989, and the
 > [language overview](README.md#checked-and-template-parameters) summarizes the
 > accepted design. The [overview](#overview) below is an older sketch, kept
-> unchanged. The fork notes in it mark the three places where it and the 0.1
-> toolchain differ (the illustrative `buf(T)`, the `Convert(i, f32)` example,
-> and specialization). The sketch also differs from proposal 2200 itself:
+> unchanged. Dated fork notes in it mark where it and the 0.1 toolchain differ:
+> the illustrative `buf(T)`, two uses of a template type parameter in a class,
+> the `Convert(i, f32)` example, deduction through a class's arguments, and
+> specialization. The sketch also differs from proposal 2200 itself:
 > proposal 2200 lets a specialization change only an implementation and
 > rejects ad hoc API specialization (its "Alternatives considered"), which the
 > sketch's Overloading section anticipates, and its template constraints,
-> below, answer the open question of the sketch's last section. The
-> differences measured between the 0.1 toolchain and proposal 2200 are listed
-> under "Limits of the 0.1 toolchain" in
-> [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain): member
-> lookup that ignores the constraint (fork work item W-183), calls across
-> libraries (W-014), `match` on template-dependent values, template `let`
-> bindings (W-031), `auto` (W-039), arrays whose bound is a template parameter,
-> and `template constraint` declarations. Template constraints are accepted:
+> below, answer the open question of the sketch's last section. "Limits of the
+> 0.1 toolchain", in
+> [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain), lists
+> differences between the 0.1 toolchain and proposal 2200, each with the
+> program or toolchain test that shows it; neither that list nor the fork notes
+> is a complete comparison. Template constraints are accepted:
 > proposal 818 introduced `template constraint` declarations, whose member
 > requirements proposal 2200 specifies, and fork decision F-010 adds `require`
 > validity blocks and boolean predicates. Member requirements are implemented
@@ -87,6 +86,19 @@ instantiation.
 > `Holder` does in
 > [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain).
 
+> **Fork note (2026-10-14).** In the 0.1 toolchain, not every use of `T` in the
+> definition waits for instantiation. A method of `Stack` that declares `var y:
+> T;` without an initializer is rejected where the class is defined, with
+> ``cannot convert type `T` into type implementing `Core.DefaultOrUnformed` ``
+> (fork work item W-127, held PR 51). In a class `Holder(template T: type)`
+> whose method `First` returns `self.item[0]`, a call of `First` on a
+> `Holder(array(i32, 2))` is rejected with ``unable to monomorphize specific
+> `First(array(i32, 2))` `` and the note ``cannot access member of interface
+> `Core.IndexWith(Core.IntLiteral)` in type `array(i32, 2)` that does not
+> implement that interface`` (W-192), although an `array(i32, 2)` member can be
+> indexed in a class without a template parameter. The limits in
+> [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain) include both.
+
 ### Functions with template parameters
 
 Both deduced and explicit function parameters in Carbon can be marked as
@@ -124,6 +136,15 @@ declaration.
 > function with an `i64` target compiles and runs, as in
 > [Templates in the 0.1 toolchain](#templates-in-the-01-toolchain).
 
+> **Fork note (2026-10-14).** In the 0.1 toolchain, a deduced template
+> parameter is not computed from a class's arguments. With
+> `class Holder(T: type)`, a call of
+> `fn GetTemplate[template T: type](h: Holder(T)) -> T` on a `Holder(i32)` is
+> rejected with ``cannot deduce value for generic parameter `T` ``, while the
+> same declaration with a checked parameter, `[T: Core.Copy]`, deduces `T` as
+> `i32`; a parameter of type `Holder(T)*`, or `Vec(N)` for
+> `class Vec(template N: i32)`, behaves the same (fork work item W-193).
+
 ### Overloading
 
 An important feature of templates in C++ is the ability to customize how they
@@ -157,10 +178,16 @@ parameters rather than create a new constraint system.
 The toolchain implements template parameters: a binding marked `template` in a
 deduced parameter list (`[template T: type]`), in an explicit parameter list
 (`template N: i32`), or in a class's parameter list
-(`class Holder(template T: type)`). A function with a template parameter is
-type-checked when it is called, once for each distinct template argument: member
-access, conversions, and operators whose meaning depends on a template
-parameter are resolved for the argument that the call supplies.
+(`class Holder(template T: type)`). In a function with a template parameter,
+the expressions whose meaning depends on the parameter are type-checked when the
+function is called, once for each distinct template argument: member access,
+method calls, conversions, and the arithmetic, bitwise, comparison, and logical
+operators, including compound assignment, `++`, and `--`, are resolved for the
+argument that the call supplies. Some other uses of a template-dependent value
+are rejected where the function is defined, or fail when it is called for an
+argument that would make them valid; the limits below include the pointer
+operators `*`, `->`, and `&`, tuple element access, indexing an array, copying
+a struct, and calls.
 
 ```carbon
 import Core library "io";
@@ -259,14 +286,20 @@ fn GetX[T: type](p: T) -> i32 {
 
 This reports ``type `T` does not support qualified expressions``.
 
-Limits of the 0.1 toolchain:
+Limits of the 0.1 toolchain, each shown by the program or toolchain test cited
+(the list is not complete):
 
 -   Member lookup into a template parameter does not consult the parameter's
     constraint. Proposal 2200 looks a name up both in the argument type and in
     the interface constraint; the toolchain looks only in the argument type, so
     a member that the type provides only through an `impl` without `extend` is
     not found (fork work item W-183). The example after this list shows it;
-    declaring the member with `extend impl as HasArea` makes it compile.
+    declaring the member with `extend impl as HasArea` makes it compile. Where
+    the type and the constraint give a name different meanings, the toolchain
+    does not report it either: for a class with its own method `F` and an
+    `impl as A` without `extend` whose `F` differs, and `x.F()` in
+    `fn G[template T: A](x: T)`, proposal 2200 rejects the call when `G` is
+    instantiated, but the toolchain calls the type's member.
 -   A template function defined in one library and called from another stops
     the compiler during checking, as it does in the upstream nightly (W-014).
 -   A `match` on a template-dependent value is not supported (it reports
@@ -295,6 +328,56 @@ Limits of the 0.1 toolchain:
     `fail_todo_template_constraint.carbon` in
     `toolchain/parse/testdata/generics/named_constraint/`); see
     [Status](#status).
+-   Some operators on a template-dependent operand are checked where the
+    function is defined and rejected, whatever the argument: for a parameter `p:
+    T`, `*p` reports ``cannot dereference operand of non-pointer type `T` `` and
+    `p.1` reports ``type `T` does not support tuple indexing; only tuples can be
+    indexed that way``; for a member `p` of a template-dependent `x`, `x.p->n`
+    reports ``cannot apply `->` operator to non-pointer type `<dependent
+    type>` ``; and `&x.n` for a parameter `ref x: T` reports ``cannot take the
+    address of non-reference expression`` (fork work item W-014;
+    `generic/template/unimplemented.carbon` in the toolchain's check tests pins
+    the dereference as `fail_todo`). Each compiles in a function without a
+    template parameter.
+-   A value whose type is a template parameter cannot be called: for
+    `fn Apply[template G: type](h: G, x: i32) -> i32 { return h(x); }`, the call
+    `Apply(Twice, 4)` reports
+    ``unable to monomorphize specific `Apply(<type of Twice>)` `` with the note
+    ``value of type `<type of Twice>` is not callable`` (W-014; pinned as
+    `fail_todo` by `generic/template/call.carbon`).
+-   Copying a value whose type is a template argument of struct type, and
+    indexing one of array type, fail when the call is instantiated: the
+    toolchain resolves them through `Core.Copy` and `Core.IndexWith`, which
+    those types do not implement, although the same code with the type written
+    out runs (fork work item W-192). `fn Id[template T: type](p: T) -> T` with
+    the body `return p;`, called on a `{.x: i32, .y: i32}`, reports ``unable to
+    monomorphize specific `Id({.x: i32, .y: i32})` `` with the note ``cannot
+    access member of interface `Core.Copy` in type `{.x: i32, .y: i32}` that
+    does not implement that interface``, and `a[1]` for a parameter `a: T` in a
+    function `Second`, called on an `array(i32, 3)`, reports ``unable to
+    monomorphize specific `Second(array(i32, 3))` `` with the note ``cannot
+    access member of interface `Core.IndexWith(Core.IntLiteral)` in type
+    `array(i32, 3)` that does not implement that interface``.
+-   A tuple value whose type is a template argument is not compiled correctly:
+    on an `(i32, i32)` argument, destructuring a parameter `p: T` with
+    `let (a: i32, b: i32) = p;` stops the compiler while it lowers the
+    instantiation, and `fn Id[template T: type](p: T) -> T { return p; }`
+    returns values other than its argument's, which differ from run to run
+    (W-014).
+-   A `var` of a template parameter's type without an initializer, `var y: T;`,
+    is rejected where the function is defined with ``cannot convert type `T`
+    into type implementing `Core.DefaultOrUnformed` ``, where proposal 2200
+    delays impl lookup until the template argument is known; `var y: i32;`
+    compiles (fork work item W-127, held PR 51).
+-   A deduced template parameter is not computed from a class's arguments, as
+    the fork note in
+    [Functions with template parameters](#functions-with-template-parameters)
+    shows (W-193).
+-   `partial T*` for a template parameter `T` is rejected with
+    `` `partial` applied to final type `T` ``, as for a checked parameter,
+    although whether the template argument is final is known only on
+    instantiation (pinned as `fail_todo` by `class/partial/qualifier.carbon` in
+    the toolchain's check tests).
 
 The first limit, for example:
 

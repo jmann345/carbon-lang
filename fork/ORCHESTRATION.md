@@ -12,9 +12,11 @@ quantized-state files carry the deep detail).
 
 Last updated: 2026-10-14 (DD-1 discharged in state T on
 claude/carbon-fork-0-1-dd, its implementation review and its second
-document-review round folded, and the round's verdict recorded: gap row 70 DONE
-(expected, not of record), header 31 / 20 / 4 / 1; pushed, the PR to open and
-HOLD; see "DD-1 discharge (2026-10-14)" before the UA-1 paragraph below).
+document-review round folded, and the round's verdict recorded (e27b917c8): gap
+row 70 DONE (expected, not of record), header 31 / 20 / 4 / 1; its third
+document-review round folded, W-192..W-194 filed, the round's verdict to record;
+the PR to open and HOLD; see "DD-1 discharge (2026-10-14)" before the UA-1
+paragraph below).
 Earlier, 2026-10-12
 (weekly check fired; BLOCKED: GitHub Actions on the repository is DISABLED —
 every `workflow_dispatch` of `Fork: hosted verification` returns "Actions has
@@ -108,30 +110,36 @@ deferred and folded at the discharge), 9f920d2b9 (the discharge, DD-1 (4/4)),
 seven MINOR, all folded), a75c20391 (the second document-review fold: the second
 round of both document reviews, review 1 REJECT with one BLOCKER, R2-1, the
 templates page's list of differences from proposal 2200, and review 2
-APPROVE-WITH-AMENDMENTS; all sixteen findings folded) and "DD-1 records: second
-document-review round recorded; row 70 verdict". Gap row 70 is DONE (expected,
-not of record) on the second document-review round, which leaves no in-scope
-finding on the threads page unresolved (D-DD-13; the discharge had written it
-DONE before that round, and the implementation-review fold restored PARTIAL,
-F1); row 91 stays PARTIAL pending state L (PR 53's README.md "Lifetime and move
-semantics" and PR 55's arithmetic.md "Strings") and the further round of both
-document reviews; header 31 / 20 / 4 / 1; EXPECTED scoreboard 147 PASS / 0 FAIL
-/ 22 SKIP over 169, 48/56, whose nineteen new PASS lines are documentation-sync
-programs under already-PASS feature bullets, NOT OF RECORD. W-065 and W-020
-discharged; W-182..W-185, W-188, W-189 and W-191 filed. Id reservation:
-W-180..W-194 (W-180, W-181, W-186 withdrawn; W-187 contingent; W-190 unused;
-W-192..W-194 spare); OP-1's residue is W-195. OP-2 (claude/carbon-fork-0-1-op2)
-reserves W-196..W-201 (W-196..W-199 in its plan at 963adda99). Merge position:
-last, after PR 56 (OP-1): PR 53, PR 51, PR 52, SC-1, PR 54, PR 55, PR 56, then
-DD-1, and, at the orchestrator's direction, also after OP-2, which stacks on PR
-56; through its integration commit (state L: the merge of trunk after OP-1 (and
-OP-2) lands, the state-L texts, an empty W2 allowlist, the W-014, W-155 and
-W-167 amendments and W-188's F-013 note, row 91 DONE when PR 53 and PR 55 are on
-trunk, and the re-measure on the merged toolchain). NEXT for DD-1: the further
-round of both document reviews that D-DD-11's break condition owes, as document
-review 1 of the second round reads it, since that review returned REJECT (a
-finding it leaves unresolved on the threads page after its fold returns row 70
-to PARTIAL, D-DD-13); then open the PR and HOLD it.
+APPROVE-WITH-AMENDMENTS; all sixteen findings folded), e27b917c8 ("DD-1 records:
+second document-review round recorded; row 70 verdict") and "DD-1: third
+document-review fold" (the third round of both document reviews, review 1 REJECT
+with two BLOCKERs on templates.md's comparisons with proposal 2200 and the
+toolchain, R3-1 and R3-2, and review 2 APPROVE-WITH-AMENDMENTS, neither with a
+finding on the threads page; all fourteen findings folded). Gap row 70 is DONE
+(expected, not of record) on the second document-review round, which leaves no
+in-scope finding on the threads page unresolved (D-DD-13; the discharge had
+written it DONE before that round, and the implementation-review fold restored
+PARTIAL, F1); row 91 stays PARTIAL pending state L (PR 53's README.md "Lifetime
+and move semantics" and PR 55's arithmetic.md "Strings") and the further round
+of both document reviews; header 31 / 20 / 4 / 1; EXPECTED scoreboard 147 PASS /
+0 FAIL / 22 SKIP over 169, 48/56, whose nineteen new PASS lines are
+documentation-sync programs under already-PASS feature bullets, NOT OF RECORD.
+W-065 and W-020 discharged; W-182..W-185, W-188, W-189 and W-191 filed, and
+W-192..W-194 at the third document-review fold. Id reservation: W-180..W-194
+(W-180, W-181, W-186 withdrawn; W-187 contingent; W-190 unused; no spare left);
+OP-1's residue is W-195. OP-2 (claude/carbon-fork-0-1-op2) reserves W-196..W-201
+(W-196..W-199 in its plan at 963adda99). Merge position: last, after PR 56
+(OP-1): PR 53, PR 51, PR 52, SC-1, PR 54, PR 55, PR 56, then DD-1, and, at the
+orchestrator's direction, also after OP-2, which stacks on PR 56; through its
+integration commit (state L: the merge of trunk after OP-1 (and OP-2) lands, the
+state-L texts, an empty W2 allowlist, the W-014, W-127, W-155 and W-167
+amendments and W-188's F-013 note, row 91 DONE when PR 53 and PR 55 are on
+trunk, and the re-measure on the merged toolchain). NEXT for DD-1: the commit
+that records the third document-review round's verdict (a finding the round
+leaves unresolved on the threads page after its fold returns row 70 to PARTIAL,
+D-DD-13; the round has none), and whatever further round D-DD-11's break
+condition owes, since document review 1 of the third round returned REJECT; then
+open the PR and HOLD it.
 
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
@@ -470,7 +478,7 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-ev` | HELD OPEN as PR #54 — EV-1 evaluator guides and twelve transcribed programs at cb3ef2e74 (W-062 discharged; W-152, W-153, W-155 filed; expected 137/0/22 over 159); state T, merges after PR 52 through its state C integration commit. |
 | `claude/carbon-fork-0-1-st` | HELD OPEN as PR #55 — ST-1 str comparison, Core.StringBuf and concatenation (F-014) at 21307851a (W-057 discharged; W-160..W-167 filed; expected 133/0/21 over 154); merges after EV-1. |
 | `claude/carbon-fork-0-1-op` | PLANNING — OP-1 Core.Optional comparison (W-058); ids from W-170, F-015 if minted; merges last. |
-| `claude/carbon-fork-0-1-dd` | DISCHARGED in state T, implementation review and second document-review round folded, the round's verdict recorded; pushed, PR to open and HOLD — DD-1 design docs without placeholders (W-065, gap row 91) and the F-008 threads page (W-020's documentation half, gap row 70), plan rev 4 signed off at 97686069f, fold 6f1ba74ba, discharge 9f920d2b9, then the implementation-review fold 36e27f233, the second document-review fold a75c20391 and the commit that records that round's verdict (row 70 DONE, expected, not of record, on the second document-review round; row 91 PARTIAL, pending state L and the further document-review round; header 31 / 20 / 4 / 1; W-182..W-185, W-188, W-189, W-191 filed; ids W-180..W-194, W-190 unused; expected 147/0/22 over 169); the further round of both document reviews next; merges last, after PR 56 and OP-2, through its state L integration commit. |
+| `claude/carbon-fork-0-1-dd` | DISCHARGED in state T, implementation review and second document-review round folded, the round's verdict recorded, third document-review round folded; PR to open and HOLD — DD-1 design docs without placeholders (W-065, gap row 91) and the F-008 threads page (W-020's documentation half, gap row 70), plan rev 4 signed off at 97686069f, fold 6f1ba74ba, discharge 9f920d2b9, then the implementation-review fold 36e27f233, the second document-review fold a75c20391, e27b917c8, the commit that records that round's verdict (row 70 DONE, expected, not of record, on the second document-review round; row 91 PARTIAL, pending state L and the further document-review round; header 31 / 20 / 4 / 1; W-182..W-185, W-188, W-189, W-191 filed; ids W-180..W-194, W-190 unused; expected 147/0/22 over 169), and the third document-review fold (the third round's fourteen findings folded; W-192..W-194 filed); the commit that records the third round's verdict next; merges last, after PR 56 and OP-2, through its state L integration commit. |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED AND FILLED on the container toolchain — SC-1 template structural conformance through fill round 3 at 2497d5000 (gate 1959/1959, conformance 130/0/21 over 151; W-134..W-143, W-151; W-168/W-169 reserved); round-3 review in progress, PR after it. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |

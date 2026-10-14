@@ -108,13 +108,49 @@ library "[[@TEST_NAME]]";
 // fail_template_constraint_unsatisfied.carbon). A use of a type with matching
 // members reports nothing further.
 template constraint HasF {
+  // CHECK:STDERR: fail_todo_expr_pattern_param.carbon:[[@LINE+4]]:22: error: semantics TODO: `expression pattern` [SemanticsTodo]
+  // CHECK:STDERR:   fn F(self, x: i32, 1) -> i32;
+  // CHECK:STDERR:                      ^
+  // CHECK:STDERR:
   fn F(self, x: i32, 1) -> i32;
+  // CHECK:STDERR: fail_todo_expr_pattern_param.carbon:[[@LINE+4]]:26: error: semantics TODO: `expression pattern` [SemanticsTodo]
+  // CHECK:STDERR:   fn G(self, x: i32, var 1) -> i32;
+  // CHECK:STDERR:                          ^
+  // CHECK:STDERR:
   fn G(self, x: i32, var 1) -> i32;
+  // CHECK:STDERR: fail_todo_expr_pattern_param.carbon:[[@LINE+20]]:22: error: name `y` not found [NameNotFound]
+  // CHECK:STDERR:   fn H(self, x: i32, y) -> i32;
+  // CHECK:STDERR:                      ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_todo_expr_pattern_param.carbon:[[@LINE+16]]:22: error: semantics TODO: `expression pattern` [SemanticsTodo]
+  // CHECK:STDERR:   fn H(self, x: i32, y) -> i32;
+  // CHECK:STDERR:                      ^
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_todo_expr_pattern_param.carbon:[[@LINE-14]]:3: error: semantics TODO: `expression pattern parameter in `template constraint`` [SemanticsTodo]
+  // CHECK:STDERR:   fn F(self, x: i32, 1) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_todo_expr_pattern_param.carbon:[[@LINE-13]]:3: error: semantics TODO: `expression pattern parameter in `template constraint`` [SemanticsTodo]
+  // CHECK:STDERR:   fn G(self, x: i32, var 1) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_todo_expr_pattern_param.carbon:[[@LINE+4]]:3: error: semantics TODO: `expression pattern parameter in `template constraint`` [SemanticsTodo]
+  // CHECK:STDERR:   fn H(self, x: i32, y) -> i32;
+  // CHECK:STDERR:   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   fn H(self, x: i32, y) -> i32;
 }
 
 class D {
+  // CHECK:STDERR: fail_todo_expr_pattern_param.carbon:[[@LINE+4]]:36: error: semantics TODO: `expression pattern` [SemanticsTodo]
+  // CHECK:STDERR:   fn F(unused self, unused x: i32, 1) -> i32 { return 1; }
+  // CHECK:STDERR:                                    ^
+  // CHECK:STDERR:
   fn F(unused self, unused x: i32, 1) -> i32 { return 1; }
+  // CHECK:STDERR: fail_todo_expr_pattern_param.carbon:[[@LINE+4]]:40: error: semantics TODO: `expression pattern` [SemanticsTodo]
+  // CHECK:STDERR:   fn G(unused self, unused x: i32, var 1) -> i32 { return 1; }
+  // CHECK:STDERR:                                        ^
+  // CHECK:STDERR:
   fn G(unused self, unused x: i32, var 1) -> i32 { return 1; }
   fn H(unused self, unused x: i32, unused y: i32) -> i32 { return 1; }
 }

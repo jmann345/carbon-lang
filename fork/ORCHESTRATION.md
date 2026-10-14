@@ -90,6 +90,20 @@ ids from W-170 and fork design id F-015 if minted. Merge order now: PR 53, PR
 51, PR 52, SC-1, PR 54 (EV-1, after its state C integration commit), PR 55
 (ST-1), then OP-1. None is merged.
 
+On 2026-10-14: PR 56 (OP-1, claude/carbon-fork-0-1-op, head 379f20f67: the
+Core.Optional comparison impls and the fork design F-015, W-058 discharged,
+W-170 to W-179 and W-195 filed, expected 132/0/25 over 157; the Optional row
+stays PARTIAL by D-OP-13, bounded by W-170 and W-171) is OPEN and HELD, verified
+on the container-built toolchain. SC-1 is through fill round 5 (head a9c887101:
+the root fix, a concrete requirement type; gate 1959/1959, conformance 130/0/21
+over 151) with its round-5 review in progress; W-168 is filed, W-169 reserved.
+DD-1 (claude/carbon-fork-0-1-dd, fork/designdocs/plan.md: design docs without
+placeholders, W-065) is at plan rev 3, not yet signed off, with ids W-180 to
+W-189 and W-191 to W-194. W-190 was allocated by both OP-1 and DD-1 in
+parallel; both moved off it (OP-1 to W-195, DD-1 to W-191), so W-190 stays
+unused and is never reused. Merge order: PR 53, PR 51, PR 52, SC-1, PR 54,
+PR 55, PR 56, then DD-1. None is merged.
+
 Earlier (post-PR #50, 2026-10-06): UPSTREAM ADVANCE (UA-1) LANDED — the cut
 moved from 631f8fb (2026-08-20) to upstream c1e83b0b7 (2026-10-05): 183
 commits, 105 conflicts, every class-B mechanism re-expressed inside
@@ -426,7 +440,8 @@ code). Next check: Monday 14:00 UTC.
 | `claude/carbon-fork-0-1-safe` | HELD OPEN as PR #53 — SAFE-1 safe-Carbon design (F-013) at adaae4e35, documentation and records only (gap row 89 expected DONE on document review, W-063 discharged, W-144..W-150); merges first in the land sequence. |
 | `claude/carbon-fork-0-1-ev` | HELD OPEN as PR #54 — EV-1 evaluator guides and twelve transcribed programs at cb3ef2e74 (W-062 discharged; W-152, W-153, W-155 filed; expected 137/0/22 over 159); state T, merges after PR 52 through its state C integration commit. |
 | `claude/carbon-fork-0-1-st` | HELD OPEN as PR #55 — ST-1 str comparison, Core.StringBuf and concatenation (F-014) at 21307851a (W-057 discharged; W-160..W-167 filed; expected 133/0/21 over 154); merges after EV-1. |
-| `claude/carbon-fork-0-1-op` | PLANNING — OP-1 Core.Optional comparison (W-058); ids from W-170, F-015 if minted; merges last. |
+| `claude/carbon-fork-0-1-op` | HELD OPEN as PR 56 — OP-1 Core.Optional comparison and F-015 at 379f20f67 (W-058 discharged; W-170..W-179, W-195 filed; expected 132/0/25 over 157; row stays PARTIAL); merges after PR 55. |
+| `claude/carbon-fork-0-1-dd` | PLAN rev 3, NOT signed off — DD-1 design docs without placeholders (W-065, gap row 91); ids W-180..W-189 and W-191..W-194; second focused re-review in progress; merges last. |
 | `claude/carbon-fork-0-1-sc` | IMPLEMENTED AND FILLED on the container toolchain — SC-1 template structural conformance through fill round 3 at 2497d5000 (gate 1959/1959, conformance 130/0/21 over 151; W-134..W-143, W-151; W-168/W-169 reserved); round-3 review in progress, PR after it. |
 | `claude/carbon-fork-0-1-upstream-advance` | MERGED by way of PR #50 (14801f14a) — UA-1 (cut 631f8fb → c1e83b0b7); gate 37403008794 / conformance 37402970811 on 606a99c5a. UA-2 reconciliation cuts from the new trunk. |
 | `trunk` | Integrated line: match re-platform S2a-S2e + W5-S3a generic-choice specifics + B0 + W5-S1/S2 + upstream e7050af. Base all new work here. |

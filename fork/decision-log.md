@@ -4375,17 +4375,23 @@ reviews: 8fd124de8 (a parameter declared with a form that has an error is the
 error itself, its default value's presence compared, ROUND 14's DECISION; test
 sources), 0d596103e (1 golden, CHECK lines only), 55d77c5e1 (8fd124de8's check
 of the other pattern kinds, which aborted on an expression-pattern requirement,
-removed; the shape pinned), f02f4dcf5 (1 golden, CHECK lines only) and the
-records commit after them (round 13's review record; ROUND 13's DECISION
-amended; ROUND 14's DECISION; the return form's exclusion in D-SC-5(d); W-235's
-and W-236's evidence and W-236's trigger qualified; W-237 filed; the ledger's
-SC-1 cites that round 14 moved re-pointed; gap row 60; ORCHESTRATION; the PR
-body and comment against trunk 8bfd78ae3; the re-measure on f02f4dcf5). Each fix
-is an R29(a) implementation decision recorded for after-the-fact veto, with its
-design citation and break condition; none reopens F-010 or the intent of a D-SC
-decision. Round 7's takes D-SC-10's own break condition on a falsifier other
-than the one it named (a template-phase `Self` breaking a positive golden at the
-commit-1 fill; the falsifier was round 6's review 1 BLOCKER-1), R29(a),
+removed; the shape pinned), f02f4dcf5 (1 golden, CHECK lines only) and 9197882e5
+(records: round 13's review record; ROUND 13's DECISION amended; ROUND 14's
+DECISION; the return form's exclusion in D-SC-5(d); W-235's and W-236's evidence
+and W-236's trigger qualified; W-237 filed; the ledger's SC-1 cites that round
+14 moved re-pointed; gap row 60; ORCHESTRATION; the PR body and comment against
+trunk 8bfd78ae3; the re-measure on f02f4dcf5); the records commit after
+9197882e5 corrects the count of round 13's findings taken in part in
+ORCHESTRATION and W-027 (two, where they said one), checks round 14's records
+against the head (the split counts, the autoupdates' removed lines, the four
+statements of the rule, the cites of ROUND 14's DECISION and of W-235 to W-237,
+those residues' reproducers on trunk and the nightly, the callers of the changed
+functions, upstream's 66a250ad9) and records the re-measure on 9197882e5. Each
+fix is an R29(a) implementation decision recorded for after-the-fact veto, with
+its design citation and break condition; none reopens F-010 or the intent of a
+D-SC decision. Round 7's takes D-SC-10's own break condition on a falsifier
+other than the one it named (a template-phase `Self` breaking a positive golden
+at the commit-1 fill; the falsifier was round 6's review 1 BLOCKER-1), R29(a),
 veto-able, and round 8 keeps it as a trade, re-weighed (ROUND 8's DECISION).
 Every count below is a measurement on the container, not of record (R9):
 fork/conformance/out/scoreboard.json reads 128 / 0 / 22 over 150 until a run of
@@ -6496,11 +6502,27 @@ at merge.cpp:517 and W-236's at thunk.cpp:169, as recorded; the probes and
 matrices as in the plan's round-14 note; `git merge-tree` of f02f4dcf5 against
 trunk 8bfd78ae3 conflicts in fork/ORCHESTRATION.md only. Round 14's commits:
 8fd124de8 (fixes, test sources), 0d596103e (goldens), 55d77c5e1 (fixes, test
-sources), f02f4dcf5 (goldens) and the records commit after them, which re-ran
-the gate on its tree with that toolchain (1959 passed, 0 failed, exit 0, 67 s,
-no `!` or `?` mark). Against fork/conformance/out/scoreboard.json (128 / 0 / 22
-over 150, run 37402970811) exactly two programs move in every run:
-generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
+sources), f02f4dcf5 (goldens) and 9197882e5 (records), which re-ran the gate on
+its tree with that toolchain (1959 passed, 0 failed, exit 0, 67 s, no `!` or `?`
+mark), and the records commit after it. Re-run on 9197882e5 for the records
+commit after it with that toolchain (no toolchain or test source differs from
+f02f4dcf5): gate 1959 passed, 0 failed, exit 0, 43 s, no `!` or `?` mark;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56, 69.6 s, the same two programs moving (sc1-records14/conf, in
+a private cache); `runner.py --self-test` OK (151 programs, 56 bullets); `git
+merge-tree` of 9197882e5 against trunk 8bfd78ae3 conflicts in
+fork/ORCHESTRATION.md only; W-235's two redeclaration reproducers
+(sc1-review11/adv2/d r1 and r2) abort at merge.cpp:517 on the round-14 build and
+at merge.cpp:360 on trunk 0bdce60a5 and on the nightly 62f1cc6a3; W-236's twelve
+(sc1-fix14/p/w236) give the same on all three: h5t, i64, other, static, x_e3,
+x_e4 and x_e5 abort at thunk.cpp:169, same and implonly compile, and x_e1, x_e2
+and x_e6 give their declaration's one error; W-237's three (sc1-fix14/p/ai) give
+`MissingDefinitionInImpl` at the requirement on the round-14 build (Q1 and Q2,
+where trunk and the nightly reject `template constraint` itself) and at the
+interface member on all three (Q3) (sc1-records14). Against
+fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
+exactly two programs move in every run: generics/structural_conformance.carbon
+SKIP to PASS (`42` then `7`) and the new
 interop/cpp_structural_conformance.carbon PASS (`7` then `0`), plan §5's 130 / 0
 / 21 over 151, EXPECTED and not of record.
 
@@ -6828,7 +6850,40 @@ round 14 moved, re-pointed; W-235's evidence (the nightly) and note (the
 qualified trigger); W-236's title, evidence (the nightly, the trigger's bounds,
 an expression-pattern parameter) and break condition; W-237 filed
 (`MissingDefinitionInImpl` at a requirement declared in an impl file,
-upstream-shared).
+upstream-shared). That records commit is 9197882e5. The records commit after
+9197882e5: 9197882e5 named at the head of this entry and of the plan's note, in
+MEASURED, in RECORDS, in ORCHESTRATION's status paragraph and Branches row and
+in W-027's notes; the count of round 13's findings taken in part corrected to
+two (review 2's MINOR-4 and review 1's MINOR-3) in ORCHESTRATION's status
+paragraph and Branches row and in W-027's notes, which said one; round 14's
+records checked against the head (sc1-records14): the two `_genuine` splits give
+25 and 34 errors and `fail_static_for_method` 1, every other split its round-13
+count (the requirement split 22 at 0d596103e, before `ExprParam`); each of
+0d596103e's 72 removed CHECK lines matches one of its 110 added lines once its
+`@LINE` offset is normalized, and each of f02f4dcf5's 47 one of its 68; D-SC-9's
+statement of the rule, ROUND 14's DECISION's in the decision log and the plan's
+round-14 decision's are the same word for word, and the comment at
+structural_conformance.cpp:502-518 and the design page carry each of its clauses
+in the same words, written as sentences among their own on what is reported, the
+form clause a sentence of its own ("is the error itself and counts as equal"),
+the page naming "the signature comparison" for D-SC-5(d)'s; the composite clause
+("a type with an error anywhere in it is the error") reads the same in all four;
+the cites of ROUND 14's DECISION (merge.cpp:393-401 and :222-286,
+structural_conformance.cpp:502-518, handle_binding_pattern.cpp:520-522,
+pattern.cpp:342-343), of W-235 (merge.cpp:516-517 and :365-417), of W-236
+(thunk.cpp:153-171) and of W-237 (handle_function.cpp:1282-1283,
+check_unit.cpp:472-477) hold at the head; of the callers of the changed
+functions only structural_conformance.cpp:520 passes a `found_error`,
+function.cpp:372 and :378 passing it through, and decl_name_stack.cpp:533, :547
+and :567, impl.cpp:181, merge.cpp:766, :1053 and :1059, handle_function.cpp:184
+and :366 and thunk.cpp:466 and :486 none; upstream 66a250ad9 adds
+`CheckFunctionParams` (default values and positional parameters) and
+`CheckFunctionReturnOnFinish` to function.cpp and .h and changes merge.cpp only
+in `FillPrevEntityInfo`, touching neither `CheckRedeclParam*` nor
+`CheckFunction*Matches`, and a three-way merge of it with 9197882e5 conflicts in
+none of merge.cpp and .h, function.cpp and .h or structural_conformance.cpp; the
+reproducers and the re-measure on 9197882e5 here and in the plan. No residue is
+filed by it.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

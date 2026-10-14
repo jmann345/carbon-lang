@@ -2531,10 +2531,11 @@ the impl-file `MissingDefinitionInImpl` at a requirement is filed as W-237:
 8fd124de8 (fixes, test sources), 0d596103e (1 golden, CHECK lines only),
 55d77c5e1 (8fd124de8's check of the other pattern kinds, which aborted on an
 expression-pattern requirement, removed; the shape pinned), f02f4dcf5 (1 golden,
-CHECK lines only) and the records commit after them, which writes round 13's
-review record below; it measured the same totals on the toolchains built from
-its sources and again on the toolchain stamped 0.0.0-0.dev+55d77c5e1 (below).
-Not of record until fork/conformance/out/scoreboard.json is updated (R9).
+CHECK lines only) and 9197882e5 (records), which writes round 13's review record
+below; it measured the same totals on the toolchains built from its sources,
+again on the toolchain stamped 0.0.0-0.dev+55d77c5e1 (below) and again on
+9197882e5 for the records commit after it. Not of record until
+fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
 one falsified carries a dated amendment above):
@@ -5100,9 +5101,50 @@ at merge.cpp:517 and W-236's at thunk.cpp:169, as recorded; the probes and
 matrices as in round 14's expectations; `git merge-tree` of f02f4dcf5 against
 trunk 8bfd78ae3 conflicts in fork/ORCHESTRATION.md only. Round 14's commits:
 8fd124de8 (fixes, test sources), 0d596103e (goldens), 55d77c5e1 (fixes, test
-sources), f02f4dcf5 (goldens) and the records commit after them, which re-ran
-the gate on its tree with that toolchain (1959 passed, 0 failed, exit 0, 67 s,
-no `!` or `?` mark).
+sources), f02f4dcf5 (goldens) and 9197882e5 (records), which re-ran the gate on
+its tree with that toolchain (1959 passed, 0 failed, exit 0, 67 s, no `!` or `?`
+mark), and the records commit after it. Re-run on 9197882e5 for the records
+commit after it with that toolchain (no toolchain or test source differs from
+f02f4dcf5): gate 1959 passed, 0 failed, exit 0, 43 s, no `!` or `?` mark;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56, 69.6 s, the same two programs moving (sc1-records14/conf, in
+a private cache); `runner.py --self-test` OK (151 programs, 56 bullets); `git
+merge-tree` of 9197882e5 against trunk 8bfd78ae3 conflicts in
+fork/ORCHESTRATION.md only; W-235's two redeclaration reproducers
+(sc1-review11/adv2/d r1 and r2) abort at merge.cpp:517 on the round-14 build and
+at merge.cpp:360 on trunk 0bdce60a5 and on the nightly 62f1cc6a3; W-236's twelve
+(sc1-fix14/p/w236) give the same on all three: h5t, i64, other, static, x_e3,
+x_e4 and x_e5 abort at thunk.cpp:169, same and implonly compile, and x_e1, x_e2
+and x_e6 give their declaration's one error; W-237's three (sc1-fix14/p/ai) give
+`MissingDefinitionInImpl` at the requirement on the round-14 build (Q1 and Q2,
+where trunk and the nightly reject `template constraint` itself) and at the
+interface member on all three (Q3) (sc1-records14). For the records commit after
+9197882e5, round 14's records checked against the head (sc1-records14): the two
+`_genuine` splits give 25 and 34 errors and `fail_static_for_method` 1, every
+other split its round-13 count (the requirement split 22 at 0d596103e, before
+`ExprParam`); each of 0d596103e's 72 removed CHECK lines matches one of its 110
+added lines once its `@LINE` offset is normalized, and each of f02f4dcf5's 47
+one of its 68; D-SC-9's statement of the rule, ROUND 14's DECISION's in the
+decision log and the plan's round-14 decision's are the same word for word, and
+the comment at structural_conformance.cpp:502-518 and the design page carry each
+of its clauses in the same words, written as sentences among their own on what
+is reported, the form clause a sentence of its own ("is the error itself and
+counts as equal"), the page naming "the signature comparison" for D-SC-5(d)'s;
+the composite clause ("a type with an error anywhere in it is the error") reads
+the same in all four; the cites of ROUND 14's DECISION (merge.cpp:393-401 and
+:222-286, structural_conformance.cpp:502-518,
+handle_binding_pattern.cpp:520-522, pattern.cpp:342-343), of W-235
+(merge.cpp:516-517 and :365-417), of W-236 (thunk.cpp:153-171) and of W-237
+(handle_function.cpp:1282-1283, check_unit.cpp:472-477) hold at the head; of the
+callers of the changed functions only structural_conformance.cpp:520 passes a
+`found_error`, function.cpp:372 and :378 passing it through, and
+decl_name_stack.cpp:533, :547 and :567, impl.cpp:181, merge.cpp:766, :1053 and
+:1059, handle_function.cpp:184 and :366 and thunk.cpp:466 and :486 none;
+upstream 66a250ad9 adds `CheckFunctionParams` (default values and positional
+parameters) and `CheckFunctionReturnOnFinish` to function.cpp and .h and changes
+merge.cpp only in `FillPrevEntityInfo`, touching neither `CheckRedeclParam*` nor
+`CheckFunction*Matches`, and a three-way merge of it with 9197882e5 conflicts in
+none of merge.cpp and .h, function.cpp and .h or structural_conformance.cpp.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

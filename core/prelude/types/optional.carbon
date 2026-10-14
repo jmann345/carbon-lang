@@ -10,7 +10,7 @@ import library "prelude/destroy";
 import library "prelude/operators/as";
 import library "prelude/operators/bitwise";
 import library "prelude/try";
-import library "prelude/types/bool";
+import library "prelude/operators/comparison";
 import library "prelude/types/maybe_unformed";
 
 // TODO: Decide how to expose this in the public API.
@@ -24,7 +24,7 @@ private interface OptionalStorage {
   // copy, so that performs two copies.
   fn Copy(value: Type) -> Type;
 }
-
+// Fork amendment (2026-10-13, F-015): designed in docs/design/optional.md.
 // TODO: We don't have an approved design for an `Optional` type yet, but it's
 // used by the design for `Iterate`. The API here is a placeholder.
 class Optional(T: OptionalStorage) {
@@ -201,4 +201,75 @@ final impl forall [T: type] T* as OptionalStorage
     return value unsafe as T*;
   }
   fn Copy(value: MaybeUnformed(T*)) -> MaybeUnformed(T*) = "primitive_copy";
+}
+
+// Fork (OP-1, F-015, docs/design/optional.md): comparison when `T` compares,
+// with the semantics of C++ `std::optional`'s relational operators and Rust's
+// `Option`. Two empty values are equal; an empty and a non-empty value are
+// not; two non-empty values compare as their values do under `T`'s own
+// operator; and an empty value orders before every non-empty one. Each
+// function tests `HasValue()` before it calls `Get()`, so the storage of an
+// empty operand is never read. `Get()` returns a copy, destroyed by the end of
+// the call, so `Destroy` is in the bound (as in the `Try` impl above), and the
+// operands are left unchanged.
+final impl forall [T: Destroy & OptionalStorage & Eq]
+    Optional(T) as EqWith(Optional(T)) {
+  fn Equal(self, other: Optional(T)) -> bool {
+    if (self.HasValue() != other.HasValue()) {
+      return false;
+    }
+    if (not self.HasValue()) {
+      return true;
+    }
+    return self.Get() == other.Get();
+  }
+  fn NotEqual(self, other: Optional(T)) -> bool {
+    if (self.HasValue() != other.HasValue()) {
+      return true;
+    }
+    if (not self.HasValue()) {
+      return false;
+    }
+    return self.Get() != other.Get();
+  }
+}
+
+final impl forall [T: Destroy & OptionalStorage & Ordered]
+    Optional(T) as OrderedWith(Optional(T)) {
+  fn Less(self, other: Optional(T)) -> bool {
+    if (not other.HasValue()) {
+      return false;
+    }
+    if (not self.HasValue()) {
+      return true;
+    }
+    return self.Get() < other.Get();
+  }
+  fn LessOrEquivalent(self, other: Optional(T)) -> bool {
+    if (not self.HasValue()) {
+      return true;
+    }
+    if (not other.HasValue()) {
+      return false;
+    }
+    return self.Get() <= other.Get();
+  }
+  fn Greater(self, other: Optional(T)) -> bool {
+    if (not self.HasValue()) {
+      return false;
+    }
+    if (not other.HasValue()) {
+      return true;
+    }
+    return self.Get() > other.Get();
+  }
+  fn GreaterOrEquivalent(self, other: Optional(T)) -> bool {
+    if (not other.HasValue()) {
+      return true;
+    }
+    if (not self.HasValue()) {
+      return false;
+    }
+    return self.Get() >= other.Get();
+  }
 }

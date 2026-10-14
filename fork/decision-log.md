@@ -4416,12 +4416,22 @@ added lines, the statements of the rule and of the erroneous `self`'s place, the
 cites of ROUND 16's DECISION, of D-SC-2, of D-SC-9's mechanism and of W-234,
 W-235 and W-238, the reproducers of W-235 to W-238 and of round 15's findings on
 trunk and the nightly, the mxv and mxw re-runs) and records the re-measure on
-8ffca0e65. Each fix is an R29(a) implementation decision recorded for
-after-the-fact veto, with its design citation and break condition; none reopens
-F-010 or the intent of a D-SC decision. Round 7's takes D-SC-10's own break
-condition on a falsifier other than the one it named (a template-phase `Self`
-breaking a positive golden at the commit-1 fill; the falsifier was round 6's
-review 1 BLOCKER-1), R29(a), veto-able, and round 8 keeps it as a trade,
+8ffca0e65; that records commit is a35535174. Fill round 17 (same day), folding
+round 16's two implementation reviews: 866468cba (an imported member's tuple
+pattern under a default value with an error compared by its kind without being
+imported, ROUND 17's DECISION; the comment on a member's tuple or expression
+pattern corrected; test sources), 5d978b5ad (1 golden, CHECK lines only) and the
+records commit after them (records: round 16's review record; ROUND 16's
+DECISION amended; ROUND 17's DECISION; D-SC-9 amended, its dated amendment
+history moved into the plan's fill-round notes and its mechanism cites
+re-pointed; W-238's title and evidence; W-234's and W-235's evidence; W-239
+filed; gap row 60; ORCHESTRATION; the PR body and comment trimmed; the
+re-measure on 5d978b5ad). Each fix is an R29(a) implementation decision recorded
+for after-the-fact veto, with its design citation and break condition; none
+reopens F-010 or the intent of a D-SC decision. Round 7's takes D-SC-10's own
+break condition on a falsifier other than the one it named (a template-phase
+`Self` breaking a positive golden at the commit-1 fill; the falsifier was round
+6's review 1 BLOCKER-1), R29(a), veto-able, and round 8 keeps it as a trade,
 re-weighed (ROUND 8's DECISION). Every count below is a measurement on the
 container, not of record (R9): fork/conformance/out/scoreboard.json reads 128 /
 0 / 22 over 150 until a run of record replaces it.
@@ -5395,7 +5405,47 @@ reviews' probes (sc1-review15/adv1 and adv2) and their trunk analogs on
     `var y: i32`, `DefaultExpr` against `y: i32 = 1` and `y:? form(ref
     Undefined)`; nothing against `y:? form(ref Undefined)` for `VarExpr` or
     against `y:? form(ref Undefined) = 1` for `DefaultExpr`) and its library
-    split (4 errors).
+    split (4 errors). (AMENDED at fill round 17, ROUND 17's DECISION, finding
+    MAJOR-1 of both of round 16's reviews: the guard did not cover a
+    `TuplePattern` subpattern, whose import walks into an expression pattern it
+    holds, so a member imported with `(1, w: i32) = Undefined` still aborted;
+    such a subpattern is not imported either since.)
+
+ROUND 17's DECISION (folding round 16's two implementation reviews, REVIEWS
+below), reproduced first on the toolchain stamped 0.0.0-0.dev+5d778d044 with the
+reviews' probes (sc1-review16/adv1 and adv2) and their trunk analogs on
+0bdce60a5 and the upstream nightly 62f1cc6a3.
+
+-   **An imported tuple pattern is compared by its kind without being imported,
+    as an imported expression pattern is** (merge.cpp
+    `DeclaredParamPattern::wraps_unimported_pattern` :230-235,
+    `GetDeclaredParamPattern` :238-297 with the guard at :268-273, and the
+    comparison in `CheckRedeclParam`'s errors-match mode at :421-441; both of
+    round 16's reviews' MAJOR-1). Symptom: a member imported from another
+    library whose parameter is a default value with an error on a tuple pattern
+    that holds an expression pattern, `fn F(unused self, (1, unused w: i32) =
+    Undefined)` (also `(w: i32, 1)`, `(w: i32, (1, v: i32))`, `((1, w: i32), v:
+    i32)`, `(w: i32, 1 + 1)` and `(1,)` under such a default), aborted every use
+    of its type against a template constraint at import_ref.cpp:5172
+    (sc1-review16/adv1/p/t1; adv1/mx, 190 of 2352 rows; adv2/mx, 180 of 2184),
+    where trunk 0bdce60a5 and the nightly access and call such an imported
+    member and use an imported impl with one without aborting. Root cause: round
+    16's guard skipped the import of an `ExprPattern` subpattern only, and
+    upstream's import of a `TuplePattern` walks its elements into one. Decision:
+    an imported subpattern that is a `TuplePattern` is not imported either, and
+    the flag is renamed `wraps_unimported_pattern`; the two are the kinds that
+    no requirement has (`GetRefusedParamPatternKind`, W-234 and W-238), so
+    comparing such a subpattern by its kind alone gives the local result, a
+    match only against a parameter that is the error itself. The guard is
+    reached only in the errors-match mode, for an imported pattern whose
+    constant value is the error, so no other result changes. Design: D-SC-9 as
+    amended at fill rounds 16 and 17 (an imported member is compared as
+    declared, as a local one is); D-SC-5(d). Break condition: upstream's
+    `TryResolveInstCanonical` gains an `ExprPattern` case (W-238); then the
+    guard goes and such subpatterns are imported as any other. Pinned by
+    `fail_member_signature_error_import` (6 errors: `DefaultTupleExpr` reported
+    against `y: i32 = 1`, nothing against `y:? form(ref Undefined) = 1`) and its
+    library split (6 errors).
 
 FILL-CAUGHT MISSES (R28(d): a reviewed prediction the fill overturned; bcaeadb98
 lists (a) to (i), 502e7861a adds (j), bc8b37290 adds (k) and (l), ff490bd48 adds
@@ -5480,14 +5530,14 @@ on the development build, are not counted. Round 10's rows are derived by hand
 from the trunk analogs but written after its development build ran the reviews'
 shapes, so they are not counted either; nor are round 11's, derived from the
 trunk impl analogs after its development build ran the reviews' shapes, nor
-round 12's, round 13's, round 14's, round 15's or round 16's, derived from the
-rule and the trunk analogs (round 16's from the local twins too) after their
-development builds ran the reviews' shapes. No miss hides a defect: (a), (c),
-(f), (l), (m), (n) and (o) were prediction errors (the coalescing (o) shows is
-trunk's lowering, outside SC-1), (b) and (e) a cascade and a warning class now
-gone, (d), (j) and (k) test-source spellings, (g) a coverage gap now dumped
-where the claim needed a dump, and (h) and (i) design sentences amended in place
-beside their fixes.
+round 12's, round 13's, round 14's, round 15's, round 16's or round 17's,
+derived from the rule and the trunk analogs (round 16's and round 17's from the
+local twins too) after their development builds ran the reviews' shapes. No miss
+hides a defect: (a), (c), (f), (l), (m), (n) and (o) were prediction errors (the
+coalescing (o) shows is trunk's lowering, outside SC-1), (b) and (e) a cascade
+and a warning class now gone, (d), (j) and (k) test-source spellings, (g) a
+coverage gap now dumped where the claim needed a dump, and (h) and (i) design
+sentences amended in place beside their fixes.
 
 REVIEWS. Fill round 1 received two implementation reviews, both
 APPROVE-WITH-FIXES with no BLOCKER: review 1, 3 MAJOR and 5 MINOR (MAJOR-1
@@ -6380,6 +6430,74 @@ sentence. Review 1's three MINORs and review 2's MINOR-1 and MINOR-3 change no
 toolchain file. Per-finding detail is in the plan's "Landed notes (SC-1 fill
 rounds, 2026-10-13)".
 
+Round 16's own diff (5d778d044, 3f97eb57b, 8ffca0e65, a35535174) received two
+implementation reviews, 9 findings in all: review 1, APPROVE-WITH-FIXES, 1 MAJOR
+and 2 MINOR; review 2, APPROVE-WITH-FIXES, 1 MAJOR and 5 MINOR, the two MAJOR-1s
+the same defect. Both checked round 16 on the driver stamped
+0.0.0-0.dev+5d778d044 against trunk 0bdce60a5 and the upstream nightly
+62f1cc6a3, each with a private gate (1959 / 0). On the round's questions both
+found: (a) round 16's guard gives each shape it targets its local twin's result
+(an expression pattern with an error directly, under `var` and under a default
+value, and a tuple pattern whose constant value is the error) in every import
+mode they built (review 1: 42 member shapes against 13 requirements, declared
+locally and with the member imported, and against 5 of them with both imported,
+through `export import`, through a name export, through an api/impl split and in
+a generic class, 2352 rows; review 2: 28 member shapes against 15 requirements,
+locally, with the member imported, with both imported, through an api/impl split
+and through `export import`, 2184 rows), and every other import abort but the
+one class in their findings is upstream's (13 and 10 member shapes, at the
+member's name lookup, as accessing or calling such an imported member does on
+trunk and the nightly), mxw's 31 among them, `var 1 = Undefined` being W-238's
+and needing no residue of its own; (b) no caller outside SC-1 is changed: the
+three `GetDeclaredParamPattern` calls (merge.cpp:397, :399 and :430 at that
+head) are all in the errors-match mode, which only
+structural_conformance.cpp:519-523 selects; (c) the round-16 splits give 4 and 5
+errors and 3f97eb57b's 66 CHECK lines are theirs alone; (d) the PR texts name
+all 77 commits with no model name and the merge order running through PR 59, and
+the rule reads the same in its four places. Neither found the branch dry. Review
+1's findings: MAJOR-1 a member imported with a default value with an error on a
+tuple pattern that holds an expression pattern (`(1, unused w: i32) = Undefined`
+and five more shapes) aborts every use inside SC-1's `GetDeclaredParamPattern`,
+which imports the `TuplePattern`, where no trunk analog aborts (p/t1, p/t2; 190
+of its matrix's rows); MINOR-1 a reported mismatch at a member of a type reached
+only through a name export (`export C;`) aborts at absolute_node_ref.cpp:27, as
+trunk's and the nightly's own diagnostics at such a member do, and nothing
+records it (p/y; every reported name-export row of its matrix); MINOR-2 W-238's
+title names an expression pattern directly or under `var` only, where the
+upstream-shared import aborts also cover one under a default value without an
+error and one inside a tuple pattern. Review 2's findings: MAJOR-1 the same
+defect (`(1, w: i32) = Undefined`, `(w: i32, 1) = Undefined` and `(w: i32, (1,
+v: i32)) = Undefined`; 180 of its matrix's rows, sc1_only_aborts.list); MINOR-1
+the PR comment's verification lead names the round-15 toolchain, and the body's
+round-16 claim that each imported case gives its local twin's result is
+unscoped; MINOR-2 W-238's scope omits an expression pattern nested in a tuple
+pattern; MINOR-3 merge.cpp:290-292 says that a member's tuple or expression
+pattern never matches, where it matches a parameter that is the error itself;
+MINOR-4 the PR body and comment have about 2,200 characters of headroom, short
+of a round's account; MINOR-5 D-SC-9 interleaves eight rounds of dated amendment
+history with the rule. Review 1's probes are sc1-review16/adv1 (mx; p/t1, p/t2,
+p/ts, p/y); review 2's are sc1-review16/adv2 (mx; p/acc, p/impl_, p/trn, p/tup;
+mxw re-run). Fill round 17 folds all 9, MAJOR-1 reproduced first on the
+toolchain stamped 0.0.0-0.dev+5d778d044 and the records findings on the round-17
+build, trunk and the nightly, none rejected. Dispositions: the two MAJOR-1s are
+ROUND 17's DECISION (866468cba: a `TuplePattern` subpattern of an imported
+pattern is not imported either, compared by its kind as an `ExprPattern` is;
+pinned by `DefaultTupleExpr` in the two import splits); review 1's MINOR-1 files
+W-239 (upstream-shared) and adds it to D-SC-9; review 1's and review 2's MINOR-2
+reword W-238's title to the measured scope of upstream's import aborts and add
+the probes to its evidence, `var 1 = Undefined` among them, so no residue of its
+own is filed; review 2's MINOR-1 and MINOR-4 are taken in the PR body and
+comment, which are not repository files (the comment's verification lead names
+the round-17 toolchain, the body's round-16 claim is scoped to mxv and mxw, the
+body drops the eight "New splits" sentences of rounds 4 to 11, and the comment
+shortens the repeats of its verbatim gate and conformance lines and keeps only
+the first finding of each per-finding list of rounds 3 to 8's reviews); review
+2's MINOR-3 is taken in 866468cba, which edits merge.cpp for MAJOR-1; review 2's
+MINOR-5 replaces D-SC-9's dated amendment history by a pointer to the plan's
+fill-round notes, which hold it. Review 1's two MINORs and review 2's MINOR-1,
+MINOR-2, MINOR-4 and MINOR-5 change no toolchain file. Per-finding detail is in
+the plan's "Landed notes (SC-1 fill rounds, 2026-10-13)".
+
 MEASURED, on the container only. Round 1 (the toolchain built from 1a7cce0b2's
 sources): autoupdate over the 18 goldens rewrote all 18; the gate then ran 1958
 tests, 1955 passing and 3 reporting "Autoupdate would make changes"
@@ -6888,7 +7006,41 @@ report a mismatch through the thunk (an arity, a parameter type); p/sf s1
 reports `A` and `C` and not `B`, s2 `A3` and not `A2`, and trunk's t1 reports
 `A`; p/redecl r1 and r3 abort at merge.cpp:546 here, r1i, r4 and
 sc1-fix16/p/redecl r3i at :546 here and at :360 on trunk and the nightly, and r2
-reports the redundant redeclaration here and r2i on all three. Against
+reports the redundant redeclaration here and r2i on all three. Round 17 (the
+toolchain built from the round-17 sources before the commit, stamped
+0.0.0-0.dev+a35535174.dirty, the uncommitted edits being exactly 866468cba's):
+autoupdate of fail_template_constraint_unsatisfied added 28 CHECK lines and
+removed 6, all in the two import splits; the reviews' round-16 matrices
+(sc1-review16/adv1/mx, 2352 rows; adv2/mx, 2184) re-run: 170 of adv1's 190 rows
+and all 180 of adv2's that aborted in `GetDeclaredParamPattern` give their local
+twin's result, adv1's other 20, reported rows through a name export, abort at
+absolute_node_ref.cpp:27 as every reported name-export row does (W-239), the
+1581 and 1384 rows that did not abort give the same messages, and the remaining
+aborts are the shapes whose plain access aborts on trunk and the nightly too.
+Re-run on the toolchain rebuilt from 866468cba with a clean tree (stamped
+0.0.0-0.dev+866468cba): autoupdate over the 19 SC-1 goldens rewrote that golden
+alone, byte for byte the pre-commit fill, and a second pass none (5d978b5ad);
+gate on 5d978b5ad 1959 passed, 0 failed, exit 0, 39 s, no `!` or `?` mark;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56, 68.9 s, no program's status differing from round 16's run
+(sc1-fix17/conf, in a private cache); `runner.py --self-test` OK (151 programs,
+56 bullets); the reviews' round-16 matrices byte for byte the pre-commit
+build's; sc1-fix16/mx (6710 rows), review 2's round-15 mxv (81) and
+sc1-fix16/mxw (517 rows) byte-identical to their round-16 runs, with the same
+17, 0 and 31 aborts; the reproducers of round 16's list on this build, trunk and
+the nightly (sc1-fix17/repro) as round 16 recorded but each abort in merge.cpp's
+pattern switch at :549 here (:546 on the round-16 build); round 17's own
+(sc1-fix17/p17): the tuple shapes under a default value with an error give their
+errors without an abort, as their local twins do and as trunk's and the
+nightly's plain access and calls do, `(var 1, w: i32) = Undefined` and a generic
+class's `(1, w: T) = Undefined` abort at the member's name lookup here as their
+plain access does on trunk (:5087) and the nightly (:4875), and
+sc1-review16/adv1/p/y's c aborts at absolute_node_ref.cpp:27 here and ct and ic
+there on all three (W-239); `git merge-tree` of 5d978b5ad against trunk
+8bfd78ae3 conflicts in fork/ORCHESTRATION.md only. Round 17's commits: 866468cba
+(the fix, test sources), 5d978b5ad (goldens) and the records commit after them,
+which re-ran the gate (1959 passed, 0 failed, exit 0, 32 s) and conformance (the
+same totals, 45.7 s, sc1-fix17/conf2) on its tree with that toolchain. Against
 fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
 exactly two programs move in every run: generics/structural_conformance.carbon
 SKIP to PASS (`42` then `7`) and the new
@@ -7349,7 +7501,23 @@ and W-235 (merge.cpp:545-546 and :373-446) and of W-238
 errors-match mode, which only structural_conformance.cpp:519-523 selects; the
 reproducers and the re-measure on 8ffca0e65 in MEASURED and in the plan; the
 lone lines of MEASURED's last sentence and of ORCHESTRATION's status paragraph
-rejoined. No residue is filed by it.
+rejoined. No residue is filed by it. The records commit after 5d978b5ad:
+D-SC-2's cite and D-SC-9 (the import clause, a tuple pattern beside an
+expression pattern; W-239's sentence; sc1-fix17's matrices; its dated amendment
+history replaced by a pointer to the plan's fill-round notes, round 16's review
+2 finding MINOR-5; the mechanism cites re-pointed at the round-17 head; the
+maintenance note's import side); round 16's decision amended, round 16's review
+record, round 17's dispositions, decision, expectations and re-measure, the §4
+row for round 17 and the round-17 summary in the plan; this entry (its head,
+a35535174 named, ROUND 16's DECISION amended, ROUND 17's DECISION, the R16(d)
+sentence of FILL-CAUGHT MISSES, round 16's review record, MEASURED, RECORDS);
+ORCHESTRATION's status paragraph and Branches row (seventeen fill rounds,
+a35535174 named, W-239, the round-17 toolchain change unreviewed); gap row 60
+(seventeen fill rounds, W-239); W-027's title (seventeen fill rounds), evidence
+(the round-17 golden) and notes; W-238's title (the measured scope of upstream's
+import aborts), evidence and notes; W-234's evidence and notes; W-235's evidence
+(the moved cites, the round-17 build); W-239 filed (a mismatch note at a member
+reached only through a name export, upstream-shared).
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

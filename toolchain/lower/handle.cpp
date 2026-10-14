@@ -97,7 +97,35 @@ auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
 
 auto HandleInst(FunctionContext& context, SemIR::InstId inst_id,
                 SemIR::AsCompatible inst) -> void {
-  context.SetLocal(inst_id, context.GetValue(inst.source_id));
+  auto* value = context.GetValue(inst.source_id);
+  // Compatible types share an object representation, but a value of one can
+  // still have a different value representation from a value of the other:
+  // `MaybeUnformed(T)` uses a pointer where `T` may use a copy
+  // (check/type_completion.cpp). In a generic, which applies is known only per
+  // specific, so a value is converted here.
+  if (SemIR::GetExprCategory(context.sem_ir(), inst_id) ==
+      SemIR::ExprCategory::Value) {
+    auto source_type = context.GetTypeIdOfInst(inst.source_id);
+    auto target_type = context.GetTypeIdOfInst(inst_id);
+    auto source_repr = context.GetValueRepr(source_type).repr;
+    auto target_repr = context.GetValueRepr(target_type).repr;
+    if (source_repr.kind == SemIR::ValueRepr::Pointer &&
+        target_repr.kind == SemIR::ValueRepr::Copy) {
+      value = context.LoadObject(target_type, value);
+    } else if (source_repr.kind == SemIR::ValueRepr::Copy &&
+               target_repr.kind == SemIR::ValueRepr::Pointer) {
+      auto* storage = context.CreateAlloca(target_type);
+      context.StoreObject(source_type, value, storage);
+      value = storage;
+    } else {
+      // `MaybeUnformed` also turns a custom representation into a pointer, but
+      // no type has a custom one yet; fail loudly rather than misread it.
+      CARBON_CHECK(source_repr.kind == target_repr.kind,
+                   "as_compatible between value representations {0} and {1}",
+                   source_repr, target_repr);
+    }
+  }
+  context.SetLocal(inst_id, value);
 }
 
 auto HandleInst(FunctionContext& context, SemIR::InstId /*inst_id*/,

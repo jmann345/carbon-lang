@@ -1690,9 +1690,9 @@ static auto PerformBuiltinConversion(Context& context, SemIR::LocId loc_id,
         if ((removed_quals & SemIR::TypeQualifiers::MaybeUnformed) !=
                 SemIR::TypeQualifiers::None &&
             category == SemIR::ExprCategory::Value) {
-          auto value_rep =
-              SemIR::ValueRepr::ForType(context.sem_ir(), value_type_id);
           auto unformed_value_rep =
+              SemIR::ValueRepr::ForType(context.sem_ir(), value_type_id);
+          auto value_rep =
               SemIR::ValueRepr::ForType(context.sem_ir(), target.type_id);
           if (value_rep.kind != unformed_value_rep.kind) {
             CARBON_CHECK(unformed_value_rep.kind == SemIR::ValueRepr::Pointer);

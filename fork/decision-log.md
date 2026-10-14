@@ -4300,10 +4300,11 @@ cites of its dispositions), records round 7's other two fixes as decisions with
 their break conditions, gives ROUND 7's first break condition its consequence,
 re-points the structural_conformance.cpp and plan.md cites that round 7 moved at
 the round-7 head and records the re-measure on 30716a8c2. Fill round 8 (same
-day), folding round 7's two implementation reviews: the round-8 fixes commit
-(the comment and TODO rewording, test sources, the design page and records) and
-the goldens commit after it (4 goldens, CHECK lines only). Each fix is an R29(a)
-implementation decision recorded for after-the-fact veto, with its design
+day), folding round 7's two implementation reviews: 4c2ecee22 (the comment and
+TODO rewording, test sources, the design page and records), 3245ec0d2 (4
+goldens, CHECK lines only) and the records commit after them (the clean-stamp
+re-measure, the round-8 rows marked FILLED, the commit hashes). Each fix is an
+R29(a) implementation decision recorded for after-the-fact veto, with its design
 citation and break condition; none reopens F-010 or the intent of a D-SC
 decision. Round 7's takes D-SC-10's own break condition on a falsifier other
 than the one it named (a template-phase `Self` breaking a positive golden at the
@@ -5268,29 +5269,29 @@ aborts, each trunk's (the 9 runs of p40, p41 and p43; 6 of `typeof` of a bound
 method, type_iterator.cpp:310; 2 of C++ calling a Carbon template,
 sem_ir/generic.cpp:96; 2 of an `if` expression of a tuple holding a function
 value, in `BranchWithArg`), the trunk-spelled probes of each aborting so on the
-trunk build of 0bdce60a5. Round 6 (the toolchain built from the round-6
-sources before the commit, stamped 0.0.0-0.dev+a9c887101.dirty, the uncommitted
-edits being exactly its fixes commit's): autoupdate over the 19 SC-1 goldens to
-a fixpoint (pass 1 rewrote the 3 with new splits, pass 2 none); gate 1959
-passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every
+trunk build of 0bdce60a5. Round 6 (the toolchain built from the round-6 sources
+before the commit, stamped 0.0.0-0.dev+a9c887101.dirty, the uncommitted edits
+being exactly its fixes commit's): autoupdate over the 19 SC-1 goldens to a
+fixpoint (pass 1 rewrote the 3 with new splits, pass 2 none); gate 1959 passed,
+0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every failure class
+0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 51.2 s; the 553 probe
+runs classify exactly as on 18775fee3, the round-5 reviews' 412 runs as 249
+check errors, 135 that compile and run, 16 with no `Run` and 12 aborts, each
+reproduced on trunk 0bdce60a5. Re-run on the toolchain rebuilt from fb12f63cb
+with a clean tree (stamped 0.0.0-0.dev+fb12f63cb): autoupdate over the 19 SC-1
+goldens changed nothing; gate 1959 passed, 0 failed, exit 0, no `!` or `?` mark;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56, 111.3 s; every probe run classifies as on the pre-commit
+build. Re-run for the records commit after 857d5b048, on 857d5b048 with that
+installed toolchain (no toolchain source differs from 56e400145): autoupdate
+over the 19 SC-1 goldens changed nothing (one dot each, git status clean); gate
+1959 passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every
 failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 51.2 s;
-the 553 probe runs classify exactly as on 18775fee3, the round-5 reviews' 412
-runs as 249 check errors, 135 that compile and run, 16 with no `Run` and 12
-aborts, each reproduced on trunk 0bdce60a5. Re-run on the toolchain rebuilt from
-fb12f63cb with a clean tree (stamped 0.0.0-0.dev+fb12f63cb): autoupdate over the
-19 SC-1 goldens changed nothing; gate 1959 passed, 0 failed, exit 0, no `!` or
-`?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets
-49 PASS, 0 FAIL, 7 SKIP of 56, 111.3 s; every probe run classifies as on the
-pre-commit build. Re-run for the records commit after 857d5b048, on 857d5b048
-with that installed toolchain (no toolchain source differs from 56e400145):
-autoupdate over the 19 SC-1 goldens changed nothing (one dot each, git status
-clean); gate 1959 passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS
-130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of
-56, 51.2 s; the 553 probe runs of rounds 2 to 5, the round-5 reviews' 412 and
-round 6's 42 give results identical, line for line, to the run on fb12f63cb (398
-check errors, 131 compile and run, 5 with no `Run`, 19 aborts; 249, 135, 16 and
-12; 24 check errors and 18 compile and run). Round 7 (the toolchain built from
-the round-7 sources before the commit, stamped 0.0.0-0.dev+4bc4802ae.dirty, the
+the 553 probe runs of rounds 2 to 5, the round-5 reviews' 412 and round 6's 42
+give results identical, line for line, to the run on fb12f63cb (398 check
+errors, 131 compile and run, 5 with no `Run`, 19 aborts; 249, 135, 16 and 12; 24
+check errors and 18 compile and run). Round 7 (the toolchain built from the
+round-7 sources before the commit, stamped 0.0.0-0.dev+4bc4802ae.dirty, the
 uncommitted edits being exactly its fixes commit's): autoupdate over the 19 SC-1
 goldens to a fixpoint (pass 1 rewrote the 2 with new splits, pass 2 none); gate
 1959 passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every
@@ -5301,10 +5302,10 @@ aborts (round 4's v18b now refused, an empty array parameter of the type); the
 through `Self.N` now rejected); the 42 as before; round 6's reviews' 347 probes
 give 241 check errors, 88 compile and run and 18 aborts (39 on fb12f63cb), each
 with a trunk-spelled analog aborting at the same site on 0bdce60a5, and their 49
-trunk analogs and 14 import sets as before. Re-run on the toolchain rebuilt
-from 36181a729 with a clean tree (stamped 0.0.0-0.dev+36181a729): autoupdate
-over the 19 SC-1 goldens changed nothing (one dot each, git status clean); gate
-1959 passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every
+trunk analogs and 14 import sets as before. Re-run on the toolchain rebuilt from
+36181a729 with a clean tree (stamped 0.0.0-0.dev+36181a729): autoupdate over the
+19 SC-1 goldens changed nothing (one dot each, git status clean); gate 1959
+passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every
 failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 65.9 s;
 every probe run line for line as on the pre-commit build (but for the stack
 addresses of the two mangler.cpp:185 aborts). Re-run for the records commit
@@ -5320,21 +5321,28 @@ runs, round 6's reviews' 347 and 49 trunk analogs, the 14 import sets and round
 the stack addresses printed by the two sem_ir/mangler.cpp:185 aborts. Round 8
 (the toolchain built from the round-8 sources before the commit, stamped
 0.0.0-0.dev+fa4cd094d.dirty, the uncommitted edits being exactly its fixes
-commit's): autoupdate over the 19 SC-1 goldens to a fixpoint (pass 1 rewrote
-the 4 with new splits, pass 2 none, and after a comment-only rebuild a third
-pass none); gate 1959 passed, 0 failed, exit 0, no `!` or `?` mark; conformance
-PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP
-of 56, 67.0 s; every earlier probe run (the 1007, round 6's 42, round 6's
-reviews' 347 and 49 trunk analogs, round 7's 14, the 51 runs of the further
-directories round 7's review 1 re-ran, round 7's reviews' 298 and 203) gives
-results identical, line for line, to the run on 36181a729, but for nine runs
-whose TODO now says "through a symbolic facet" and the stack addresses of the
-two mangler.cpp:185 aborts, and the 29 import sets of rounds 5 to 7 the same
-results; round 8's 14 probes (sc1-fix8/p8) behave as its splits record.
-Against
+commit's): autoupdate over the 19 SC-1 goldens to a fixpoint (pass 1 rewrote the
+4 with new splits, pass 2 none, and after a comment-only rebuild a third pass
+none); gate 1959 passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS
+130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of
+56, 67.0 s; every earlier probe run (the 1007, round 6's 42, round 6's reviews'
+347 and 49 trunk analogs, round 7's 14, the 51 runs of the further directories
+round 7's review 1 re-ran, round 7's reviews' 298 and 203) gives results
+identical, line for line, to the run on 36181a729, but for nine runs whose TODO
+now says "through a symbolic facet" and the stack addresses of the two
+mangler.cpp:185 aborts, and the 29 import sets of rounds 5 to 7 the same
+results; round 8's 14 probes (sc1-fix8/p8) behave as its splits record. Re-run
+on the toolchain rebuilt from 3245ec0d2 with a clean tree (stamped
+0.0.0-0.dev+3245ec0d2, no toolchain source differing from 4c2ecee22): autoupdate
+over the 19 SC-1 goldens changed nothing (one dot each, git status clean); gate
+1959 passed, 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every
+failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 83.1 s;
+every probe run (the 1969 earlier runs, round 8's 14 and the 29 import sets)
+gives results identical, line for line, to the pre-commit build's, but for the
+stack addresses of the two mangler.cpp:185 aborts. Against
 fork/conformance/out/scoreboard.json (128 / 0 / 22 over 150, run 37402970811)
-exactly two programs move in every run:
-generics/structural_conformance.carbon SKIP to PASS (`42` then `7`) and the new
+exactly two programs move in every run: generics/structural_conformance.carbon
+SKIP to PASS (`42` then `7`) and the new
 interop/cpp_structural_conformance.carbon PASS (`7` then `0`), plan §5's 130 / 0
 / 21 over 151, EXPECTED and not of record.
 
@@ -5459,9 +5467,9 @@ the plan) and in round 4's dispositions, and in round 5's dispositions
 plan.md:757-776, :739-742, :1171-1173, :1173 and :480-497 to :781-799, :761-764,
 :1218-1220, :1220 and :480-519; the re-measure and probe re-run on 30716a8c2
 here and in the plan; the ORCHESTRATION status paragraph (round 6's records
-commit 4bc4802ae named) and Branches row; W-027's notes. Round 8's fixes commit:
-D-SC-10 restated (what the checked-phase `Self` rejects and accepts, the trade
-kept), D-SC-20 reworded ("never a runtime value") and amended (the
+commit 4bc4802ae named) and Branches row; W-027's notes. Round 8's fixes commit
+4c2ecee22: D-SC-10 restated (what the checked-phase `Self` rejects and accepts,
+the trade kept), D-SC-20 reworded ("never a runtime value") and amended (the
 symbolic-facet limit), round 7's BLOCKER-1 bullet and first decision amended,
 the third decision's cite re-pointed at the round-8 head, the §4.A and §4.B rows
 for round 8's splits (observed, not counted), round 7's review record, round 8's
@@ -5472,7 +5480,10 @@ sentence of FILL-CAUGHT MISSES); the design page (the as-landed note of
 definition-time checking, the symbolic-facet limit in name lookup, the
 dependency list); the ORCHESTRATION status paragraph and Branches row; W-027's
 title, evidence and notes (eight fill rounds), W-028's notes (the template
-phase's restorations and the require splits it must keep) and W-169 filed.
+phase's restorations and the require splits it must keep) and W-169 filed. Round
+8's records commit, after 3245ec0d2: the four round-8 §4 rows marked FILLED,
+round 8's commit hashes and the clean-stamp re-measure here, in the plan, in
+ORCHESTRATION and in W-027's notes.
 
 NOT RUN: bazel in any form (unit tests, lit tests, fuzzers, install tests, the
 four bazel-backed prek hooks); any hosted run (Actions disabled); an LLVM with

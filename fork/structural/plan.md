@@ -1222,7 +1222,7 @@ convention).
 | check/testdata/named_constraint/invalid_members.carbon (EXISTING; three splits move) | `todo_fail_invalid_fn.carbon` → `fail_invalid_fn.carbon` (same source, TODO comments rewritten); `fail_todo_invalid_var_template.carbon`, `fail_todo_invalid_let_template.carbon` keep their names | `fail_invalid_fn`: `FunctionInNonTemplateConstraint` at each of the four `fn`s (:19-20, :25-26). The two template splits lose `UnrecognizedDecl` + "handle invalid parse trees" and gain `SemanticsTodo` "`field requirement in `template constraint``" at the `var` |
 | check/testdata/named_constraint/fail_todo_template_constraint_members.carbon (new) | `fail_todo_definition.carbon`: `fn G(self) -> i32 { return 1; }` in a template constraint; `fail_todo_parameterized.carbon`: `fn H[U: type](self, u: U);`; `fail_todo_assoc_const.carbon`: `let X: type;` | `SemanticsTodo` with the D-SC-2 strings. `fail_todo_assoc_const` (amended 2026-10-06, review fold: B13): the parser accepts `let X: type;` in `DeclScopeLoopAsRegular` without error (`HandleLetAfterPattern` consumes `=` only if present, parse/handle_let.cpp:89-92), so check emits exactly two diagnostics — `SemanticsTodo` "associated constant requirement in `template constraint`" at the `let` introducer (`HandleIntroducer`, handle_let_and_var.cpp:67-81, runs first) and then `ExpectedInitializerAfterLet` (kind.def:471; handle_let_and_var.cpp:405) at the declaration — in that order |
 | check/testdata/named_constraint/template_constraint.carbon (round-7 splits, 2026-10-14) | new `fail_self_dependent_name` (`HasN` with `alias A = Self` and a nested `class Inner { var k: i32; }`; `AliasOfSelf`: `let unused y: HasN.A* = 1`; `NestedClassAs`: `let unused x: bool = 1 as HasN.Inner`; `NestedClassPointer`: `let unused y: HasN.Inner* = 1`); new `nested_class` (`Outer.Inner.N()` for a class with a method declared in a template constraint); `decl`'s comment | Round 7, written after the development build ran these shapes (observed, not counted, R16(d)): the fail split has the diagnostics of the `constraint` spelling on trunk 0bdce60a5, a `ConversionFailure` to `Self*`, to `Inner` with `as` followed by `Inner` to `bool`, and to `Inner*`, each with its `MissingImplInMemberAccessInContext` note; `nested_class` has no STDERR (its lowering aborts at sem_ir/mangler.cpp:185, as the `constraint` spelling does on trunk); the dumps of `decl`, `forward`, `compose` and `generic` show `Self`, the requirements' function types and their patterns `[symbolic]` where they were `[template]` (D-SC-10 as amended) FILLED 2026-10-14 (fill round 7, 36181a729): as written, observed and not counted |
-| check/testdata/named_constraint/template_constraint.carbon (round-8 splits, 2026-10-14) | new `fail_todo_self_member_in_signature` (`HasNM` with `fn M(p: typeof(Self.N)*) -> i32`; `HasA` with `alias A = i32` and `fn Get(self) -> Self.A`); new `fail_todo_self_facet_in_signature` (`fn Wrap(self) -> Box(Self)` for `class Box(T: J)`; `fn Get(self) -> Self.(HasElem.Elem)`); new `self_facet_in_signature_required` (the same two with `require impls J` and `require impls HasElem`, a class `C` that has `impl as J`, `Wrap`, `V` and `Get`, `impl C as HasElem where .Elem = i32`, called through `CallWrap` and `CallGet`); new `fail_todo_unqualified_requirement_in_signature` (`fn M(p: typeof(N)*) -> i32`, a class mirroring it, `CallN(c)`) | Round 8, written after the round-7 build ran these shapes in the reviews' probes (observed, not counted, R16(d)): `IncompleteTypeInMemberAccessOfFacet` at `Self` of `Self.N` and of `Self.A`, each with `NamedConstraintIncompleteWithinDefinition` at the constraint; `ConversionFailureFacetToFacet` at `Box(Self)` with `InitializingGenericParam` at `T: J`, and at `Self.(HasElem.Elem)`; no STDERR for the required split; `ConversionFailureTypeToFacet` at `CallN(c)` with `StructuralMemberMismatch` at `C.M`, `StructuralRequirementHere` and `DeductionGenericHere`; the dumps of the four dumped splits unchanged |
+| check/testdata/named_constraint/template_constraint.carbon (round-8 splits, 2026-10-14) | new `fail_todo_self_member_in_signature` (`HasNM` with `fn M(p: typeof(Self.N)*) -> i32`; `HasA` with `alias A = i32` and `fn Get(self) -> Self.A`); new `fail_todo_self_facet_in_signature` (`fn Wrap(self) -> Box(Self)` for `class Box(T: J)`; `fn Get(self) -> Self.(HasElem.Elem)`); new `self_facet_in_signature_required` (the same two with `require impls J` and `require impls HasElem`, a class `C` that has `impl as J`, `Wrap`, `V` and `Get`, `impl C as HasElem where .Elem = i32`, called through `CallWrap` and `CallGet`); new `fail_todo_unqualified_requirement_in_signature` (`fn M(p: typeof(N)*) -> i32`, a class mirroring it, `CallN(c)`) | Round 8, written after the round-7 build ran these shapes in the reviews' probes (observed, not counted, R16(d)): `IncompleteTypeInMemberAccessOfFacet` at `Self` of `Self.N` and of `Self.A`, each with `NamedConstraintIncompleteWithinDefinition` at the constraint; `ConversionFailureFacetToFacet` at `Box(Self)` with `InitializingGenericParam` at `T: J`, and at `Self.(HasElem.Elem)`; no STDERR for the required split; `ConversionFailureTypeToFacet` at `CallN(c)` with `StructuralMemberMismatch` at `C.M`, `StructuralRequirementHere` and `DeductionGenericHere`; the dumps of the four dumped splits unchanged FILLED 2026-10-14 (fill round 8, 3245ec0d2): as written, observed and not counted |
 
 ### §4.B Commit 2
 
@@ -1257,9 +1257,9 @@ convention).
 | check/testdata/named_constraint/template_constraint_import.carbon (round-6 splits, 2026-10-14) | new `requirement_type_a` (exports `HasN`, `Has(X: type)`, `Z`, `alias A = HasN.N`, `fn P(unused p: typeof(HasN.N)*)`, `impl typeof(Has(i32).N) as Z` and `Take`); new `requirement_type_b` (dumped: `Use(p: typeof(A)*)` returning `P(p) + typeof(Has(i32).N).(Z.F)() + C.(A)()`); new `fail_requirement_type_value` (`Take(A)`; `P(p)` for `p: typeof(Has(i32).N)*`) | Round 6, written after the development build ran these shapes (observed, not counted): `requirement_type_b` has no STDERR; its dump shows the imported `A` of the concrete `structural_requirement_type @HasN.WithSelf.N`, the imported impl's witness for `structural_requirement_type @Has.WithSelf.N, @Has(%i32)`, and `C.(A)` binding `@C.%C.N.decl` (D-SC-4); the fail split has one `StructuralRequirementUsed` with the imported `StructuralRequirementHere` and `InCallToFunctionParam`, and one `ConversionFailure` printing `<type of Has(i32).N>*` and `<type of HasN.N>*` FILLED 2026-10-14 (fill round 6, fb12f63cb): as written, observed and not counted |
 | lower/testdata/template/template_constraint.carbon (round-6 split, 2026-10-14) | new `requirement_typeof_object`: `class W` with fields of `typeof(HasN.N)`, `(typeof(HasN.N), i32)`, `{.f: typeof(Has(i32).N), .x: i32}`, `array(typeof(HasN.N), 2)` and `i32`, and `impl W as Core.UnformedInit`; `class Box(T: type)` used as `Box(typeof(HasN.N))`; in `Run`, a `var` of each, `w.f;`, a discarded `MakeW()`, `MakeW().x`, `D(&w)` for `D[T: Core.Destroy](p: T*)`, `Ref(ref w.f)`, the `ref self` method `Z.M` through `w.f` and `w.t.0`, `Pass(&w.f)` for a checked `Pass[T: type](p: T*)` returning `Take(*p)`, `LetValue(&w.f)` for a template `let unused v: T = *p`, and `C.(w.f)()` | Round 6, written after the development build ran these shapes (observed, not counted): no STDERR and no `CARBON_FATAL`; the requirement type lowers as `{}` inside `W`'s and `Box`'s LLVM struct types; the synthesized `SubobjectDestroy` bodies call `SelfDestruct` on every element, the requirement-typed ones empty; `@main` calls the impl's `M` with the field's address and `C.N` for `C.(w.f)()`; compiled and linked outside the golden, the program returns 23 FILLED 2026-10-14 (fill round 6, fb12f63cb): as written, observed and not counted |
 | check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon (round-7 changes, 2026-10-14) | `fail_requirement_as_value` gains `TupleIndex` (`(HasN.N, 1).1`); `fail_requirement_typeof_value` gains `class V` (fields of `typeof(HasN.N)` and `array(typeof(HasN.N), 2)`), `ConstParam`, `ConstPointer` (`Take(*p)` for `p: const typeof(HasN.N)*`), `ArrayLet`, `ArrayArg`, `class E` (a tuple and a struct field holding the type; a value `Get` reading `self.t.1` and a `GetRef(ref self)` reading `self.t.1 + self.s.x`), `StructField(e: E)` reading `e.s.x`, `VarParam(var x: typeof(HasN.N))` with `CallVarParam`, and `TemplateDeref` with `UseTemplateDeref`; new `fail_nested_requirement_as_value` (`Init`, `Statement`, `Call` and `Arg` naming `Outer.Inner.N`) | Round 7, written after the development build ran these shapes (observed, not counted, R16(d)): `TupleIndex` has one `StructuralRequirementUsed` and no `TupleIndexOnANonTupleType`; `ConstParam` one at the parameter; `ConstPointer` and `ArrayArg` one at the argument with `InCallToFunctionParam`; `ArrayLet` one at `v.a`; `Get` one at `self.t` and `StructField` one at `e.s`, each alone; `GetRef`, `VarParam` and `TemplateDeref`'s definition accepted; `CallVarParam` one at `w.f` with `InCallToFunctionParam` at the `var` parameter; `UseTemplateDeref` a `ResolvingSpecificHere` with the `StructuralRequirementUsed` note at `*p`, its requirement note and `InCallToFunctionParam`; the nested split one `StructuralRequirementUsed` per use naming `Inner`, with its requirement note, and `Arg` with `InCallToFunctionParam` FILLED 2026-10-14 (fill round 7, 36181a729): as written, observed and not counted |
-| check/testdata/named_constraint/template_constraint_require.carbon (round-8 splits, 2026-10-14) | new `require_self_argument` (`ConvSelf` with `require Self impls Conv(Self)`, `HasSelf` with `require impls Has(Self)`, a class `C` satisfying both, `Test(c)` calling `CallDo` and `CallGet`); new `fail_require_self_argument_unsatisfied` (`D` without `impl D as Conv(D)` and with `fn Get(self) -> i32`, `TestConv` and `TestHas`) | Round 8, observed, not counted (R16(d)): no STDERR for the positive split; `ConversionFailureTypeToFacet` at `CallConv(d)` with `DeductionGenericHere` only (a nominal `require` has no structural note, D-SC-9), and at `CallHas(d)` with `StructuralMemberMismatch` at `D.Get`, `StructuralRequirementHere` at `Has`'s `Get` and `DeductionGenericHere` |
-| check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon (round-8 changes, 2026-10-14) | new `fail_todo_symbolic_facet` (`Has(X: type)` with `N` and `Get`, `Outer` declaring `Inner` with `M` and `G`, a class `C` with all four; `Compound` `C.(Has(T).N)()`, `ThroughAs` `(C as Has(T)).N()` and `Method` `c.(Has(T).Get)()` in checked generics `[T: type]`, `NestedCompound` `C.(Outer.Inner.M)()` and `NestedMethod` `c.(Outer.Inner.G)()`); `fail_todo_runtime_facet`'s cite and `fail_requirement_as_value`'s first sentence | Round 8, observed, not counted (R16(d)): the `SemanticsTodo` "through a symbolic facet" at `Compound` and `NestedCompound`; `StructuralRequirementUsed` at `(C as Has(T)).N` with its note; no diagnostic for the two method forms; `fail_todo_runtime_facet` keeps "through a runtime facet value" |
-| lower/testdata/template/template_constraint.carbon (round-8 split, 2026-10-14) | new `require_self_argument` (the require split's constraints and class, `Run` returning `CallDo(c) + CallGet(c)`) | Round 8, observed, not counted (R16(d)): `CallDo`'s specific calls `C.Do` of `impl C as Conv(C)` and then `C.V`, `CallGet`'s calls `C.Get` and then `C.V`, and `main` adds the two results |
+| check/testdata/named_constraint/template_constraint_require.carbon (round-8 splits, 2026-10-14) | new `require_self_argument` (`ConvSelf` with `require Self impls Conv(Self)`, `HasSelf` with `require impls Has(Self)`, a class `C` satisfying both, `Test(c)` calling `CallDo` and `CallGet`); new `fail_require_self_argument_unsatisfied` (`D` without `impl D as Conv(D)` and with `fn Get(self) -> i32`, `TestConv` and `TestHas`) | Round 8, observed, not counted (R16(d)): no STDERR for the positive split; `ConversionFailureTypeToFacet` at `CallConv(d)` with `DeductionGenericHere` only (a nominal `require` has no structural note, D-SC-9), and at `CallHas(d)` with `StructuralMemberMismatch` at `D.Get`, `StructuralRequirementHere` at `Has`'s `Get` and `DeductionGenericHere` FILLED 2026-10-14 (fill round 8, 3245ec0d2): as written, observed and not counted |
+| check/testdata/named_constraint/fail_template_constraint_requirement_call.carbon (round-8 changes, 2026-10-14) | new `fail_todo_symbolic_facet` (`Has(X: type)` with `N` and `Get`, `Outer` declaring `Inner` with `M` and `G`, a class `C` with all four; `Compound` `C.(Has(T).N)()`, `ThroughAs` `(C as Has(T)).N()` and `Method` `c.(Has(T).Get)()` in checked generics `[T: type]`, `NestedCompound` `C.(Outer.Inner.M)()` and `NestedMethod` `c.(Outer.Inner.G)()`); `fail_todo_runtime_facet`'s cite and `fail_requirement_as_value`'s first sentence | Round 8, observed, not counted (R16(d)): the `SemanticsTodo` "through a symbolic facet" at `Compound` and `NestedCompound`; `StructuralRequirementUsed` at `(C as Has(T)).N` with its note; no diagnostic for the two method forms; `fail_todo_runtime_facet` keeps "through a runtime facet value" FILLED 2026-10-14 (fill round 8, 3245ec0d2): as written, observed and not counted |
+| lower/testdata/template/template_constraint.carbon (round-8 split, 2026-10-14) | new `require_self_argument` (the require split's constraints and class, `Run` returning `CallDo(c) + CallGet(c)`) | Round 8, observed, not counted (R16(d)): `CallDo`'s specific calls `C.Do` of `impl C as Conv(C)` and then `C.V`, `CallGet`'s calls `C.Get` and then `C.V`, and `main` adds the two results FILLED 2026-10-14 (fill round 8, 3245ec0d2): as written, observed and not counted |
 
 ### §4.C Commit 3
 
@@ -2270,11 +2270,11 @@ for the records commit after it. Fill round 8 (2026-10-14) folds round 7's two
 implementation reviews (APPROVE-WITH-FIXES both; 9 findings, none rejected): the
 checked-phase `Self` is kept as a trade, re-weighed, with what it rejects (filed
 as W-169) and what it accepts recorded and pinned, and the compound-access TODO
-names a symbolic facet: the round-8 fixes commit (fixes, test sources, the
-design page, records), the goldens commit after it (4 goldens, CHECK lines only)
-and a records commit; it measured the same totals on the toolchain built from
-its sources (below). Not of record until fork/conformance/out/scoreboard.json is
-updated (R9).
+names a symbolic facet: 4c2ecee22 (fixes, test sources, the design page,
+records), 3245ec0d2 (4 goldens, CHECK lines only) and the records commit after
+them; it measured the same totals on the toolchain built from its sources and
+again on the toolchain stamped 0.0.0-0.dev+3245ec0d2 (below). Not of record
+until fork/conformance/out/scoreboard.json is updated (R9).
 
 Fill-caught misses (a reviewed prediction a fill overturned; the plan text each
 one falsified carries a dated amendment above):
@@ -3351,46 +3351,46 @@ bc8b37290 (goldens) and 5171e5eda (records). Re-run for the records commit after
 5171e5eda, on 5171e5eda with the installed toolchain stamped
 0.0.0-0.dev+bc8b37290 (no toolchain source differs): gate 1959 passed and 0
 failed; conformance 130 / 0 / 21 over 151 with 49 of 56 bullets, the same two
-programs moving. Round 4, on the toolchain built from the round-4 sources
-before the commit (stamped 0.0.0-0.dev+2497d5000.dirty, the uncommitted edits
-being exactly aa67ea281's): autoupdate over the 19 SC-1 goldens to a fixpoint,
-the first pass reporting compound `checked_generic_name` as a failing positive
-(its statement use, now refused; respelled before aa67ea281), the last pass
-changing nothing; gate 1959 passed and 0 failed; conformance 130 / 0 / 21 over
-151 with 49 of 56 bullets. Re-run on the toolchain rebuilt from ff490bd48 with
-a clean tree (stamped 0.0.0-0.dev+ff490bd48): autoupdate over the 19 SC-1
-goldens changed nothing; gate 1959 passed and 0 failed, exit 0, no `!` or `?`
-mark; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49
-PASS, 0 FAIL, 7 SKIP of 56, the same two programs moving against
+programs moving. Round 4, on the toolchain built from the round-4 sources before
+the commit (stamped 0.0.0-0.dev+2497d5000.dirty, the uncommitted edits being
+exactly aa67ea281's): autoupdate over the 19 SC-1 goldens to a fixpoint, the
+first pass reporting compound `checked_generic_name` as a failing positive (its
+statement use, now refused; respelled before aa67ea281), the last pass changing
+nothing; gate 1959 passed and 0 failed; conformance 130 / 0 / 21 over 151 with
+49 of 56 bullets. Re-run on the toolchain rebuilt from ff490bd48 with a clean
+tree (stamped 0.0.0-0.dev+ff490bd48): autoupdate over the 19 SC-1 goldens
+changed nothing; gate 1959 passed and 0 failed, exit 0, no `!` or `?` mark;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56, the same two programs moving against
 fork/conformance/out/scoreboard.json. Round 4's commits: aa67ea281 (fixes, test
-sources, docs, records), ff490bd48 (goldens) and d232d4753 (records). Re-run
-for the records commit after d232d4753, on d232d4753 with the installed
-toolchain stamped 0.0.0-0.dev+ff490bd48 (no toolchain source differs):
-autoupdate over the 19 SC-1 goldens changed nothing (one dot per file, the
-satisfy golden whose W-168 comment round 4 edited among them); gate 1959 passed
-and 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every failure
-class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 48.9 s, the same
-two programs moving. Round 5, on the toolchain built from the round-5 sources
-before the commit (stamped 0.0.0-0.dev+77838fdd5.dirty, the uncommitted edits
-being exactly 616d0bc4f's): autoupdate over the 19 SC-1 goldens to a fixpoint
-(pass 1 rewrote 5, pass 2 none); gate 1959 passed and 0 failed; conformance 130
-/ 0 / 21 over 151 with 49 of 56 bullets. Re-run on the toolchain rebuilt from
-18775fee3 with a clean tree (stamped 0.0.0-0.dev+18775fee3): autoupdate over the
+sources, docs, records), ff490bd48 (goldens) and d232d4753 (records). Re-run for
+the records commit after d232d4753, on d232d4753 with the installed toolchain
+stamped 0.0.0-0.dev+ff490bd48 (no toolchain source differs): autoupdate over the
+19 SC-1 goldens changed nothing (one dot per file, the satisfy golden whose
+W-168 comment round 4 edited among them); gate 1959 passed and 0 failed, exit 0,
+no `!` or `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151,
+bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 48.9 s, the same two programs moving.
+Round 5, on the toolchain built from the round-5 sources before the commit
+(stamped 0.0.0-0.dev+77838fdd5.dirty, the uncommitted edits being exactly
+616d0bc4f's): autoupdate over the 19 SC-1 goldens to a fixpoint (pass 1 rewrote
+5, pass 2 none); gate 1959 passed and 0 failed; conformance 130 / 0 / 21 over
+151 with 49 of 56 bullets. Re-run on the toolchain rebuilt from 18775fee3 with a
+clean tree (stamped 0.0.0-0.dev+18775fee3): autoupdate over the 19 SC-1 goldens
+changed nothing; gate 1959 passed and 0 failed, exit 0, no `!` or `?` mark;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56, 60.9 s, the same two programs moving against
+fork/conformance/out/scoreboard.json. Round 5's commits: 616d0bc4f (fixes, test
+sources, docs, records), 18775fee3 (goldens) and df5120d03 (records). Re-run for
+the records commit after df5120d03, on df5120d03 with the installed toolchain
+stamped 0.0.0-0.dev+18775fee3 (no toolchain source differs): autoupdate over the
 19 SC-1 goldens changed nothing; gate 1959 passed and 0 failed, exit 0, no `!`
 or `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151,
-bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 60.9 s, the same two programs moving
-against fork/conformance/out/scoreboard.json. Round 5's commits: 616d0bc4f
-(fixes, test sources, docs, records), 18775fee3 (goldens) and df5120d03
-(records). Re-run for the records commit after df5120d03, on df5120d03 with the
-installed toolchain stamped 0.0.0-0.dev+18775fee3 (no toolchain source differs):
-autoupdate over the 19 SC-1 goldens changed nothing; gate 1959 passed and 0
-failed, exit 0, no `!` or `?` mark; conformance PASS 130, every failure class 0,
-SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 72.0 s, the same two
-programs moving; the 553 probe runs (round 2's, round 3's and round 4's review
-sets, 514, and round 5's 39) classify on it exactly as on 18775fee3: 398 check
-errors, 131 programs that compile and run, 5 that compile with no `Run` to link,
-and 19 aborts, each trunk's (the 9 runs of p40, p41 and p43; 6 of `typeof` of a
-bound method, type_iterator.cpp:310; 2 of C++ calling a Carbon template,
+bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 72.0 s, the same two programs moving; the
+553 probe runs (round 2's, round 3's and round 4's review sets, 514, and round
+5's 39) classify on it exactly as on 18775fee3: 398 check errors, 131 programs
+that compile and run, 5 that compile with no `Run` to link, and 19 aborts, each
+trunk's (the 9 runs of p40, p41 and p43; 6 of `typeof` of a bound method,
+type_iterator.cpp:310; 2 of C++ calling a Carbon template,
 sem_ir/generic.cpp:96; 2 of an `if` expression of a tuple holding a function
 value, in `BranchWithArg`), the trunk-spelled probes of each aborting so on the
 trunk build of 0bdce60a5. Round 6, on the toolchain built from the round-6
@@ -3398,9 +3398,9 @@ sources before the commit (stamped 0.0.0-0.dev+a9c887101.dirty, the uncommitted
 edits being exactly its fixes commit's): autoupdate over the 19 SC-1 goldens to
 a fixpoint (pass 1 rewrote the 3 with new splits, pass 2 none); gate 1959 passed
 and 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every failure
-class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 51.2 s, the
-same two programs moving; the probe runs as stated under round 6's decision.
-Re-run on the toolchain rebuilt from fb12f63cb with a clean tree (stamped
+class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 51.2 s, the same
+two programs moving; the probe runs as stated under round 6's decision. Re-run
+on the toolchain rebuilt from fb12f63cb with a clean tree (stamped
 0.0.0-0.dev+fb12f63cb, no toolchain source differing from 56e400145): autoupdate
 over the 19 SC-1 goldens changed nothing; gate 1959 passed and 0 failed, exit 0,
 no `!` or `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151,
@@ -3417,34 +3417,34 @@ every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56
 results identical, line for line, to the run on fb12f63cb. Round 7, on the
 toolchain built from the round-7 sources before the commit (stamped
 0.0.0-0.dev+4bc4802ae.dirty, the uncommitted edits being exactly its fixes
-commit's): autoupdate over the 19 SC-1 goldens to a fixpoint (pass 1 rewrote
-the 2 with new splits, the declaration golden's dumps `[symbolic]` where they
-were `[template]`, pass 2 none); gate 1959 passed and 0 failed, exit 0, no `!`
-or `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151,
-bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 76.8 s, the same two programs moving
-against fork/conformance/out/scoreboard.json; the probe runs as stated under
-round 7's decision, and the 1007 earlier runs on fb12f63cb byte-identical to
-round 6's record. Re-run on the toolchain rebuilt from 36181a729 with a clean
-tree (stamped 0.0.0-0.dev+36181a729, no toolchain source differing from
-c0fa52df2): autoupdate over the 19 SC-1 goldens changed nothing (one dot each,
-git status clean); gate 1959 passed and 0 failed, exit 0, no `!` or `?` mark;
-conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
-FAIL, 7 SKIP of 56, 65.9 s, the same two programs moving; every probe run of
-rounds 2 to 7 (the 1007, round 6's reviews' 347 and 49 trunk analogs, the 14
-import sets and round 7's 14) gives the same result, line for line, as on the
-pre-commit build, but for the stack addresses printed by the two
-sem_ir/mangler.cpp:185 aborts. Round 7's commits: c0fa52df2 (fixes, test
-sources, docs, records), 36181a729 (goldens) and 30716a8c2 (records). Re-run for
-the records commit after 30716a8c2, on 30716a8c2 with the installed toolchain
-stamped 0.0.0-0.dev+36181a729 (no toolchain source differs): autoupdate over the
-19 SC-1 goldens changed nothing (one dot each, git status clean); gate 1959
-passed and 0 failed, exit 0, no `!` or `?` mark; conformance PASS 130, every
-failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56 (2060.9
-s, its first links rebuilding the runtimes into a cold cache while other
-workstreams' runs loaded the machine), the same two programs moving; every probe
-run of rounds 2 to 7 (the 1007 earlier runs, round 6's reviews' 347 and 49 trunk
-analogs, the 14 import sets and round 7's 14) gives results identical, line for
-line, to the run on 36181a729, but for the stack addresses printed by the two
+commit's): autoupdate over the 19 SC-1 goldens to a fixpoint (pass 1 rewrote the
+2 with new splits, the declaration golden's dumps `[symbolic]` where they were
+`[template]`, pass 2 none); gate 1959 passed and 0 failed, exit 0, no `!` or `?`
+mark; conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49
+PASS, 0 FAIL, 7 SKIP of 56, 76.8 s, the same two programs moving against
+fork/conformance/out/scoreboard.json; the probe runs as stated under round 7's
+decision, and the 1007 earlier runs on fb12f63cb byte-identical to round 6's
+record. Re-run on the toolchain rebuilt from 36181a729 with a clean tree
+(stamped 0.0.0-0.dev+36181a729, no toolchain source differing from c0fa52df2):
+autoupdate over the 19 SC-1 goldens changed nothing (one dot each, git status
+clean); gate 1959 passed and 0 failed, exit 0, no `!` or `?` mark; conformance
+PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP
+of 56, 65.9 s, the same two programs moving; every probe run of rounds 2 to 7
+(the 1007, round 6's reviews' 347 and 49 trunk analogs, the 14 import sets and
+round 7's 14) gives the same result, line for line, as on the pre-commit build,
+but for the stack addresses printed by the two sem_ir/mangler.cpp:185 aborts.
+Round 7's commits: c0fa52df2 (fixes, test sources, docs, records), 36181a729
+(goldens) and 30716a8c2 (records). Re-run for the records commit after
+30716a8c2, on 30716a8c2 with the installed toolchain stamped
+0.0.0-0.dev+36181a729 (no toolchain source differs): autoupdate over the 19 SC-1
+goldens changed nothing (one dot each, git status clean); gate 1959 passed and 0
+failed, exit 0, no `!` or `?` mark; conformance PASS 130, every failure class 0,
+SKIP 21 of 151, bullets 49 PASS, 0 FAIL, 7 SKIP of 56 (2060.9 s, its first links
+rebuilding the runtimes into a cold cache while other workstreams' runs loaded
+the machine), the same two programs moving; every probe run of rounds 2 to 7
+(the 1007 earlier runs, round 6's reviews' 347 and 49 trunk analogs, the 14
+import sets and round 7's 14) gives results identical, line for line, to the run
+on 36181a729, but for the stack addresses printed by the two
 sem_ir/mangler.cpp:185 aborts. Round 8, on the toolchain built from the round-8
 sources before the commit (stamped 0.0.0-0.dev+fa4cd094d.dirty, the uncommitted
 edits being exactly its fixes commit's): autoupdate over the 19 SC-1 goldens to
@@ -3453,7 +3453,17 @@ after a comment-only rebuild none); gate 1959 passed and 0 failed, exit 0, no
 `!` or `?` mark; conformance PASS 130, every failure class 0, SKIP 21 of 151,
 bullets 49 PASS, 0 FAIL, 7 SKIP of 56, 67.0 s, the same two programs moving
 against fork/conformance/out/scoreboard.json; the probe runs as stated under
-round 8's decision.
+round 8's decision. Re-run on the toolchain rebuilt from 3245ec0d2 with a clean
+tree (stamped 0.0.0-0.dev+3245ec0d2, no toolchain source differing from
+4c2ecee22): autoupdate over the 19 SC-1 goldens changed nothing (one dot each,
+git status clean); gate 1959 passed and 0 failed, exit 0, no `!` or `?` mark;
+conformance PASS 130, every failure class 0, SKIP 21 of 151, bullets 49 PASS, 0
+FAIL, 7 SKIP of 56, 83.1 s, the same two programs moving; every probe run (the
+1969 earlier runs, round 8's 14 and the 29 import sets) gives the same result,
+line for line, as on the pre-commit build, but for the stack addresses printed
+by the two sem_ir/mangler.cpp:185 aborts. Round 8's commits: 4c2ecee22 (fixes,
+test sources, docs, records), 3245ec0d2 (goldens) and the records commit after
+them.
 
 Verification of the fill-rounds records commit: prek (rumdl, google-doc-style,
 markdown-toc, prettier on the ledger, codespell, copyright, check-links) at a

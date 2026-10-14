@@ -317,10 +317,41 @@ class Inc;
 class Impl;
 impl Impl as I {}
 
+// CHECK:STDERR: fail_incomplete_and_interface.carbon:[[@LINE+4]]:6: warning: binding `T` unused [UnusedBinding]
+// CHECK:STDERR: fn F(template T: HasGet & I) {}
+// CHECK:STDERR:      ^~~~~~~~~~~~~~~~~~~~~~
+// CHECK:STDERR:
 fn F(template T: HasGet & I) {}
 
 fn Test() {
+  // CHECK:STDERR: fail_incomplete_and_interface.carbon:[[@LINE+17]]:3: error: incomplete type `Inc` cannot satisfy template constraint `HasGet` [StructuralRequirementIncompleteType]
+  // CHECK:STDERR:   F(Inc);
+  // CHECK:STDERR:   ^~~~~~
+  // CHECK:STDERR: fail_incomplete_and_interface.carbon:[[@LINE-15]]:1: note: class was forward declared here [ClassForwardDeclaredHere]
+  // CHECK:STDERR: class Inc;
+  // CHECK:STDERR: ^~~~~~~~~~
+  // CHECK:STDERR: fail_incomplete_and_interface.carbon:[[@LINE-9]]:6: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+  // CHECK:STDERR: fn F(template T: HasGet & I) {}
+  // CHECK:STDERR:      ^~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
+  // CHECK:STDERR: fail_incomplete_and_interface.carbon:[[@LINE+7]]:3: error: cannot convert type `Inc` into type implementing `I & HasGet` [ConversionFailureTypeToFacet]
+  // CHECK:STDERR:   F(Inc);
+  // CHECK:STDERR:   ^~~~~~
+  // CHECK:STDERR: fail_incomplete_and_interface.carbon:[[@LINE-16]]:6: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+  // CHECK:STDERR: fn F(template T: HasGet & I) {}
+  // CHECK:STDERR:      ^~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   F(Inc);
+  // CHECK:STDERR: fail_incomplete_and_interface.carbon:[[@LINE+10]]:3: error: incomplete type `Impl` cannot satisfy template constraint `HasGet` [StructuralRequirementIncompleteType]
+  // CHECK:STDERR:   F(Impl);
+  // CHECK:STDERR:   ^~~~~~~
+  // CHECK:STDERR: fail_incomplete_and_interface.carbon:[[@LINE-31]]:1: note: class was forward declared here [ClassForwardDeclaredHere]
+  // CHECK:STDERR: class Impl;
+  // CHECK:STDERR: ^~~~~~~~~~~
+  // CHECK:STDERR: fail_incomplete_and_interface.carbon:[[@LINE-27]]:6: note: initializing generic parameter `T` declared here [InitializingGenericParam]
+  // CHECK:STDERR: fn F(template T: HasGet & I) {}
+  // CHECK:STDERR:      ^~~~~~~~~~~~~~~~~~~~~~
+  // CHECK:STDERR:
   F(Impl);
 }
 
